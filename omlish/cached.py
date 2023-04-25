@@ -1,10 +1,12 @@
 _IGNORE = object()
 
+_property = property
+
 
 class Property:
     def __init__(self, fn, *, name=None, ignore_if=lambda _: False, clear_on_init=False):
         super().__init__()
-        if isinstance(fn, property):
+        if isinstance(fn, _property):
             fn = fn.fget
         self._fn = fn
         self._ignore_if = ignore_if
