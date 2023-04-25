@@ -69,7 +69,11 @@ class Injector:
         self._bs = bs
         self._p = check.isinstance(p, (Injector, type(None)))
 
-        self._pfm = _build_provider_map(bs)
+        self._pfm = {k: v.provider_fn() for k, v in _build_provider_map(bs).items()}
 
-    def provide(self, key: ta.Any) -> ta.Any:
-        raise NotImplementedError
+    def try_provide(self, key: ta.Any) -> ta.Any:
+        check.isinstance(key, Key)
+        fn = self._pfm.get(key)
+        if fn is None:
+            return None
+        return fn(self)
