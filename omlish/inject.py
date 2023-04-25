@@ -3,6 +3,7 @@ import dataclasses as dc
 import typing as ta
 
 from . import check
+from . import lang
 
 
 @dc.dataclass(frozen=True)
@@ -45,6 +46,40 @@ class Binding:
 
 
 Bindings = ta.Iterable[Binding]
+
+
+Binder = ta.Callable[[], Bindings]
+
+
+class _BindingGen(abc.ABC):
+    @abc.abstractmethod
+    def binding(self) -> Binding:
+        raise NotImplementedError
+
+
+class _ProviderGen(abc.ABC):
+    @abc.abstractmethod
+    def provider(self) -> Provider:
+        raise NotImplementedError
+
+
+def _as_binding(o: ta.Any) -> Binding:
+    check.not_none(o)
+    # check.not_isinstance(o, Bindings)
+    if isinstance(o, Binding):
+        return o
+    if isinstance(o, _BindingGen):
+        return o.binding()
+    if isinstance(o, Provider):
+        return Binding(Key(o.provided_cls(lambda _: lang.raise_(TypeError(o)))), o)
+    if isinstance(o, _ProviderGen):
+        return _as_binding(o.provider())
+    cls = type(o)
+    return Binding(Key(cls), SimpleProvider(cls, lambda _: o))
+
+
+def bind(*args: ta.Any) -> Binder:
+    raise NotImplementedError
 
 
 def _build_provider_map(bs: Bindings) -> ta.Mapping[Key, Provider]:

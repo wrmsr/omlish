@@ -3,7 +3,7 @@ from .. import inject as inj
 
 def test_inject():
     bs = [
-        inj.Binding(inj.Key(int), inj.SimpleProvider(int, lambda _: 420)),
+        inj._as_binding(420),
     ]
 
     i = inj.Injector(bs)
