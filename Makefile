@@ -1,6 +1,6 @@
 SHELL:=/bin/bash
 
-PROJECT:=omnibus
+PROJECT:=omlish
 
 PYTHON_VERSION:=3.9.9
 
@@ -16,7 +16,7 @@ REQUIREMENTS_TXT=requirements-dev.txt
 clean:
 	-rm -rf build
 	-rm -rf dist
-	-rm -rf $(PROJECT).egg-info
+	-rm -rf ${PROJECT}.egg-info
 
 
 ### Venv
@@ -26,15 +26,25 @@ PYTHON=.venv/bin/python
 .PHONY: venv
 venv:
 	if [ ! -d .venv ] ; then \
-		$(PYENV_BIN) install -s $(PYTHON_VERSION) && \
-		"$(PYENV_ROOT)/versions/$(PYTHON_VERSION)/bin/python" -mvenv .venv && \
-		$(PYTHON) -mpip install --upgrade pip setuptools wheel && \
-		$(PYTHON) -mpip install -r $(REQUIREMENTS_TXT) ; \
+		$(PYENV_BIN) install -s ${PYTHON_VERSION} && \
+		"$(PYENV_ROOT)/versions/${PYTHON_VERSION}/bin/python" -mvenv .venv && \
+		${PYTHON} -mpip install --upgrade pip setuptools wheel && \
+		${PYTHON} -mpip install -r ${REQUIREMENTS_TXT} ; \
 	fi
+
+
+### Check
+
+.PHONY: check
+check: mypy
+
+.PHONY: mypy
+mypy:
+	.venv/bin/mypy ${PROJECT}
 
 
 ### Test
 
 .PHONY: test
 test: venv
-	$(PYTHON) -mpytest omlish
+	${PYTHON} -mpytest ${PROJECT}
