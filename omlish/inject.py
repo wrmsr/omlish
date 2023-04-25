@@ -28,7 +28,7 @@ class Provider(abc.ABC):
 
 
 @dc.dataclass(frozen=True)
-class SimpleProvider(Provider):
+class FnProvider(Provider):
     cls: type
     fn: ProviderFn
 
@@ -37,6 +37,36 @@ class SimpleProvider(Provider):
 
     def provider_fn(self) -> ProviderFn:
         return self.fn
+
+
+@dc.dataclass(frozen=True)
+class ConstProvider(Provider):
+    cls: type
+    v: ta.Any
+
+    def provided_cls(self, rec: ta.Callable[[Key], type]) -> type:
+        return self.cls
+
+    def provider_fn(self) -> ProviderFn:
+        return lambda _: self.v
+
+
+@dc.dataclass(frozen=True)
+class SingletonProvider(Provider):
+    p: Provider
+
+    def provided_cls(self, rec: ta.Callable[[Key], type]) -> type:
+        return self.p.provided_cls(rec)
+
+    def provider_fn(self) -> ProviderFn:
+        def fn(i):
+            nonlocal v
+            if v is not_set:
+                v = pfn(i)
+            return v
+        pfn = self.p.provider_fn()
+        v = not_set = object()
+        return fn
 
 
 @dc.dataclass(frozen=True)
@@ -64,7 +94,7 @@ class _ProviderGen(abc.ABC):
 
 
 def _as_provider(o: ta.Any) -> Provider:
-    return ConstProvider()
+    return ConstProvider(type(o), o)
 
 
 def _as_binding(o: ta.Any) -> Binding:
@@ -79,7 +109,7 @@ def _as_binding(o: ta.Any) -> Binding:
     if isinstance(o, _ProviderGen):
         return _as_binding(o.provider())
     cls = type(o)
-    return Binding(Key(cls), SimpleProvider(cls, lambda _: o))
+    return Binding(Key(cls), ConstProvider(cls, o))
 
 
 def bind(*args: ta.Any) -> Binder:
