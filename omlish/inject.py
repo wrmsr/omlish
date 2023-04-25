@@ -63,6 +63,10 @@ class _ProviderGen(abc.ABC):
         raise NotImplementedError
 
 
+def _as_provider(o: ta.Any) -> Provider:
+    return ConstProvider()
+
+
 def _as_binding(o: ta.Any) -> Binding:
     check.not_none(o)
     # check.not_isinstance(o, Bindings)
