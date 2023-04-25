@@ -65,3 +65,7 @@ class Nullary:
             return None
         self._value = val
         return val
+
+
+nullary = Nullary
+property = Property  # noqa
