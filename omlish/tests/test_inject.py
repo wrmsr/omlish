@@ -1,2 +1,8 @@
+from .. import inject as inj
+
+
 def test_inject():
-    pass
+    bs = [
+        inj.Binding(inj.Key(int), inj.SimpleProvider(int, lambda: 420)),
+    ]
+
