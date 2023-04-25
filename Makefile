@@ -4,8 +4,8 @@ PROJECT:=omnibus
 
 PYTHON_VERSION:=3.9.9
 
-PYENV_ROOT:=$(shell sh -c "if [ -z '$${PYENV_ROOT}' ] ; then echo '$${HOME}/.pyenv' ; else echo '$${PYENV_ROOT%/}' ; fi")
-PYENV_BIN:=$(shell sh -c "if [ -f '$${HOME}/.pyenv/bin/pyenv' ] ; then echo '$${HOME}/.pyenv/bin/pyenv' ; else echo pyenv ; fi")
+PYENV_ROOT:=$$(sh -c "if [ -z '$${PYENV_ROOT}' ] ; then echo '$${HOME}/.pyenv' ; else echo '$${PYENV_ROOT%/}' ; fi")
+PYENV_BIN:=$$(sh -c "if [ -f '$${HOME}/.pyenv/bin/pyenv' ] ; then echo '$${HOME}/.pyenv/bin/pyenv' ; else echo pyenv ; fi")
 
 REQUIREMENTS_TXT=requirements-dev.txt
 
@@ -31,3 +31,10 @@ venv:
 		$(PYTHON) -mpip install --upgrade pip setuptools wheel && \
 		$(PYTHON) -mpip install -r $(REQUIREMENTS_TXT) ; \
 	fi
+
+
+### Test
+
+.PHONY: test
+test: venv
+	$(PYTHON) -mpytest omlish
