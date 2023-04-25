@@ -1,0 +1,25 @@
+#!/bin/bash
+set -e
+
+if [ -f /proc/1/cgroup ] &&
+        ( cat /proc/1/cgroup | egrep -o '^[0-9]+:([^:]+,)*cpu(,[^:]+)*:/docker/' > /dev/null ) &&
+        ( cat /proc/1/cgroup | egrep -o '^[0-9]+:([^:]+,)*memory(,[^:]+)*:/docker/' > /dev/null ) ; then
+    VENV=.venv-docker
+else
+    VENV=.venv
+fi
+
+VENV_PYTHON_PATH="${BASH_SOURCE%/*}/$VENV/bin/python"
+if [ -f "$VENV_PYTHON_PATH" ] ; then
+    PYTHON="$VENV_PYTHON_PATH"
+elif command -v python3 &> /dev/null ; then
+    PYTHON=python3
+else
+    PYTHON=python
+fi
+
+if [ $# -eq 0 ] && "$PYTHON" -c "import IPython" 2> /dev/null ; then
+    "$PYTHON" -m IPython
+else
+    "$PYTHON" "$@"
+fi
