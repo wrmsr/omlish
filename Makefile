@@ -4,9 +4,6 @@ PROJECT:=omlish
 
 PYTHON_VERSION:=3.9.16
 
-PYENV_ROOT:=$$(sh -c "if [ -z '$${PYENV_ROOT}' ] ; then echo '$${HOME}/.pyenv' ; else echo '$${PYENV_ROOT%/}' ; fi")
-PYENV_BIN:=$$(sh -c "if [ -f '$${HOME}/.pyenv/bin/pyenv' ] ; then echo '$${HOME}/.pyenv/bin/pyenv' ; else echo pyenv ; fi")
-
 REQUIREMENTS_TXT=requirements-dev.txt
 
 
@@ -23,6 +20,9 @@ clean:
 
 VENV:=$$(if [ "$$_VENV" ] ; then echo "$$_VENV" ; else echo .venv ; fi)
 PYTHON:=$$(echo "$(VENV)/bin/python")
+
+PYENV_ROOT:=$$(sh -c "if [ -z '$${PYENV_ROOT}' ] ; then echo '$${HOME}/.pyenv' ; else echo '$${PYENV_ROOT%/}' ; fi")
+PYENV_BIN:=$$(sh -c "if [ -f '$${HOME}/.pyenv/bin/pyenv' ] ; then echo '$${HOME}/.pyenv/bin/pyenv' ; else echo pyenv ; fi")
 
 .PHONY: venv
 venv:
