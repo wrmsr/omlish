@@ -6,12 +6,14 @@ def test_inject():
         nonlocal ifn_n
         ifn_n += 1
         return ifn_n
+
     ifn_n = 0
 
     def sfn(_):
         nonlocal sfn_n
         sfn_n += 1
         return str(sfn_n)
+
     sfn_n = 0
 
     bs = [

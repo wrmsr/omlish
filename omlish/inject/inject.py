@@ -64,6 +64,7 @@ class SingletonProvider(Provider):
             if v is not_set:
                 v = pfn(i)
             return v
+
         pfn = self.p.provider_fn()
         v = not_set = object()
         return fn
@@ -76,7 +77,6 @@ class Binding:
 
 
 Bindings = ta.Iterable[Binding]
-
 
 Binder = ta.Callable[[], Bindings]
 

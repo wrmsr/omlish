@@ -31,6 +31,7 @@ def isinstance(v: T, spec: ta.Any) -> T:  # noqa
 def of_isinstance(spec: ta.Any) -> ta.Callable[[T], T]:
     def inner(v):
         return isinstance(v, _unpack_isinstance_spec(spec))
+
     return inner
 
 
@@ -43,6 +44,7 @@ def not_isinstance(v: T, spec: ta.Any) -> T:  # noqa
 def of_not_isinstance(spec: ta.Any) -> ta.Callable[[T], T]:
     def inner(v):
         return not_isinstance(v, _unpack_isinstance_spec(spec))
+
     return inner
 
 

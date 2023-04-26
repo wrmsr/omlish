@@ -16,4 +16,5 @@ def error_logging(log=log):
                 raise
 
         return inner
+
     return outer

@@ -12,7 +12,6 @@ K2 = ta.TypeVar('K2')
 V = ta.TypeVar('V')
 V2 = ta.TypeVar('V2')
 
-
 _map = map
 
 
@@ -63,6 +62,7 @@ def seq_of(
 ) -> ta.Callable[[ta.Iterable[T]], ta.Sequence[T2]]:
     def inner(it):
         return seq(fn(e) for e in it)
+
     fn = _unpack_fn(fn)  # type: ignore
     return inner
 
@@ -75,6 +75,7 @@ def optional_seq_of(
             return None
         else:
             return seq(fn(e) for e in it)
+
     fn = _unpack_fn(fn)  # type: ignore
     return inner
 
@@ -91,6 +92,7 @@ def seq_of_or_none(
                 return ret
             else:
                 return None
+
     fn = _unpack_fn(fn)  # type: ignore
     return inner
 
@@ -136,6 +138,7 @@ def abs_set_of(
 ) -> ta.Callable[[ta.Iterable[T]], ta.AbstractSet[T2]]:
     def inner(it):
         return abs_set(fn(e) for e in it)
+
     fn = _unpack_fn(fn)  # type: ignore
     return inner
 
@@ -148,6 +151,7 @@ def optional_abs_set_of(
             return None
         else:
             return abs_set(fn(e) for e in it)
+
     fn = _unpack_fn(fn)  # type: ignore
     return inner
 
@@ -164,6 +168,7 @@ def abs_set_of_or_none(
                 return ret
             else:
                 return None
+
     fn = _unpack_fn(fn)  # type: ignore
     return inner
 
@@ -203,11 +208,12 @@ def map_of(
         key_fn: ta.Union[ta.Callable[[K], K2], tuple],
         value_fn: ta.Union[ta.Callable[[V], V2], tuple],
 ) -> ta.Callable[
-     [ta.Union[ta.Mapping[K, V], ta.Iterable[ta.Tuple[K, V]]]],
-     ta.Mapping[K2, V2],
+    [ta.Union[ta.Mapping[K, V], ta.Iterable[ta.Tuple[K, V]]]],
+    ta.Mapping[K2, V2],
 ]:
     def inner(src):
         return map((key_fn(k), value_fn(v)) for k, v in dict(src).items())
+
     key_fn = _unpack_fn(key_fn)  # type: ignore
     value_fn = _unpack_fn(value_fn)  # type: ignore
     return inner
@@ -225,6 +231,7 @@ def optional_map_of(
             return None
         else:
             return map((key_fn(k), value_fn(v)) for k, v in dict(src).items())
+
     key_fn = _unpack_fn(key_fn)  # type: ignore
     value_fn = _unpack_fn(value_fn)  # type: ignore
     return inner
@@ -246,9 +253,9 @@ def map_of_or_none(
                 return ret
             else:
                 return None
+
     key_fn = _unpack_fn(key_fn)  # type: ignore
     value_fn = _unpack_fn(value_fn)  # type: ignore
     return inner
-
 
 # endregion

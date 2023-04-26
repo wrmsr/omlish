@@ -3,6 +3,7 @@ import collections.abc
 import itertools
 import typing as ta
 
+
 T = ta.TypeVar('T')
 K = ta.TypeVar('K')
 V = ta.TypeVar('V')

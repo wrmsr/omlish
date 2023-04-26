@@ -32,7 +32,6 @@ FormatterConfig = ta.Dict[str, ta.Any]
 HandlerConfig = ta.Dict[str, ta.Any]
 LoggerConfig = ta.Dict[str, ta.Any]
 
-
 STANDARD_LOG_FORMAT_PARTS = [
     ('asctime', '%(asctime)-15s'),
     ('process', 'pid=%(process)-6s'),
