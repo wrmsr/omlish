@@ -1,8 +1,8 @@
 import typing as ta
 
-from . import check
-from .collections import FrozenDict
-from .collections import FrozenList
+from .. import check
+from .frozen import FrozenDict
+from .frozen import FrozenList
 
 
 T = ta.TypeVar('T')

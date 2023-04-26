@@ -2,8 +2,8 @@ import abc
 import dataclasses as dc
 import typing as ta
 
-from . import check
-from . import lang
+from .. import check
+from .. import lang
 
 
 @dc.dataclass(frozen=True)

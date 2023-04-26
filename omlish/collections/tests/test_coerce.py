@@ -3,13 +3,13 @@ import typing as ta
 import pytest
 
 from .. import coerce
-from .. import collections as col
+from ..frozen import Frozen
 
 
 def test_coerce():
     r = coerce.seq_of(str)([1, 2])
     assert r == ['1', '2']
-    assert isinstance(r, col.Frozen)
+    assert isinstance(r, Frozen)
     assert isinstance(r, ta.Sequence)
 
     c = coerce.seq_of((int,))  # type: ignore
