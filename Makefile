@@ -74,6 +74,14 @@ mypy: venv
 test: venv
 	$(PYTHON) -mpytest ${PROJECT}
 
+.PHONY: test-3.10
+test-3.10:
+	_PYTHON_VERSION=3.10.10 _VENV=.venv-3.10 ${MAKE} test
+
+.PHONY: test-3.11
+test-3.11:
+	_PYTHON_VERSION=3.11.2 _VENV=.venv-3.11 ${MAKE} test
+
 
 ###
 
