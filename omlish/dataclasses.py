@@ -3,10 +3,19 @@ TODO:
  - default_fn
   - toposort
  - type_check
- - kwonly
  - coerce
+
+Backport:
+ - dc:
+  - match_args=True
+  - kw_only=False
+  - slots=False
+  - weakref_slot=False
+ - field:
+  - kw_only=MISSING
 """
 import dataclasses as _dc
+
 
 Field = _dc.Field
 FrozenInstanceError = _dc.FrozenInstanceError

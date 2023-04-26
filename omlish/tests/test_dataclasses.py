@@ -5,7 +5,7 @@ from .. import dataclasses as dc
 class Point:
     x: int
     y: int
-    name: str = 'foo'
+    name: str = dc.field(default='foo', kw_only=True)
 
 
 def test_dataclasses():
