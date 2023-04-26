@@ -4,16 +4,6 @@ import types
 import typing as ta
 
 
-##
-
-
-def raise_(o: BaseException) -> ta.NoReturn:
-    raise o
-
-
-##
-
-
 _CLS_DCT_ATTR_SETS = [
     {
         '__module__',
@@ -27,7 +17,7 @@ _CLS_DCT_ATTR_SETS = [
 
 def _skip_cls_dct_frames(f: types.FrameType) -> types.FrameType:
     if sys.implementation.name == 'pypy':
-        if f.f_code is functools.partial.__call__.__code__:
+        if f.f_code is functools.partial.__call__.__code__:  # noqa
             return _skip_cls_dct_frames(f.f_back)  # type: ignore
 
     return f

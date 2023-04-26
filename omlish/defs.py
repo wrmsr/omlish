@@ -14,7 +14,6 @@ from . import lang
 
 _repr = repr
 
-
 BASICS = {}
 
 
@@ -54,6 +53,7 @@ def _repr_guard(fn):
                 return f'<seen@{hex(id(obj))[2:]}>'
             ids.add(id(obj))
             return fn(obj, *args, **kwargs)
+
     return inner
 
 
@@ -86,6 +86,7 @@ def build_repr(obj, *attrs):
 def repr(cls_dct, *attrs, mro=False, priority=None):
     def __repr__(self):
         return build_attr_repr(self, mro=mro)
+
     cls_dct['__repr_attrs__'] = attrs
     if priority is not None:
         cls_dct['__repr_priority__'] = priority
@@ -96,6 +97,7 @@ def repr(cls_dct, *attrs, mro=False, priority=None):
 def bare_repr(cls_dct, *attrs):
     def __repr__(self):
         return lang.attr_repr(self, *attrs)
+
     cls_dct['__repr__'] = __repr__
 
 
@@ -103,6 +105,7 @@ def bare_repr(cls_dct, *attrs):
 def name_repr(cls_dct):
     def __repr__(self):
         return self.__name__
+
     cls_dct['__repr__'] = __repr__
 
 
@@ -110,6 +113,7 @@ def name_repr(cls_dct):
 def ne(cls_dct):
     def __ne__(self, other):
         return not (self == other)
+
     cls_dct['__ne__'] = __ne__
 
 
@@ -120,6 +124,7 @@ def no_order(cls_dct, *, raise_=None):
             return NotImplemented
         else:
             raise raise_
+
     for att in [
         '__lt__',
         '__le__',
@@ -134,6 +139,7 @@ def no_order(cls_dct, *, raise_=None):
 def hash_eq(cls_dct, *attrs):
     def __hash__(self):
         return hash(tuple(getattr(self, attr) for attr in attrs))
+
     cls_dct['__hash__'] = __hash__
 
     def __eq__(self, other):
@@ -143,6 +149,7 @@ def hash_eq(cls_dct, *attrs):
             if getattr(self, attr) != getattr(other, attr):
                 return False
         return True
+
     cls_dct['__eq__'] = __eq__
 
     ne(cls_dct=cls_dct)
@@ -164,6 +171,7 @@ def not_implemented(cls_dct, *names, **kwargs):
         @wrapper
         def not_implemented(self, *args, **kwargs):
             raise NotImplementedError
+
         not_implemented.__name__ = name
         cls_dct[name] = not_implemented
         ret.append(not_implemented)
@@ -190,7 +198,9 @@ def delegate_method(cls_dct, *attrs, to):
     def gen(attr):
         def delegate(self, *args, **kwargs):
             return getattr(getattr(self, to), attr)(*args, **kwargs)
+
         return delegate
+
     for attr in attrs:
         cls_dct[attr] = gen(attr)
 
@@ -201,6 +211,8 @@ def delegate_property(cls_dct, *attrs, to):
         @property
         def delegate(self):
             return getattr(getattr(self, to), attr)
+
         return delegate
+
     for attr in attrs:
         cls_dct[attr] = gen(attr)
