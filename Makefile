@@ -33,17 +33,37 @@ venv:
 	fi
 
 
+### Deps
+
+.PHONY: dep-freze
+dep-freeze: venv
+	.venv/bin/pip freeze > requirements-frz.txt
+
+.PHONY: dep-unfreeze
+dep-unfreeze: venv
+	.venv/bin/pip install -r requirements-frz.txt
+
+.PHONY: dep-tree
+dep-tree: venv
+	.venv/bin/pipdeptree
+
+.PHONY: dep-updates
+dep-updates: venv
+	.venv/bin/pip list -o --format=columns
+
+
 ### Check
 
 .PHONY: check
-check: mypy
+check: flake8 mypy test
+
+.PHONY: flake8
+flake8:
+	${PYTHON} -mflake8 ${PROJECT}
 
 .PHONY: mypy
 mypy:
-	.venv/bin/mypy ${PROJECT}
-
-
-### Test
+	${PYTHON} -mmypy ${PROJECT}
 
 .PHONY: test
 test: venv
