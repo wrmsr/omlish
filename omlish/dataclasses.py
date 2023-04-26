@@ -4,6 +4,7 @@ TODO:
   - toposort
  - type_check
  - coerce
+ - init/check/validate
 
 Backport:
  - dc:
