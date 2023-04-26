@@ -21,15 +21,16 @@ clean:
 
 ### Venv
 
-PYTHON=.venv/bin/python
+VENV:=$$(if [ "$$_VENV" ] ; then echo "$$_VENV" ; else echo .venv ; fi)
+PYTHON:=$$(echo "$(VENV)/bin/python")
 
 .PHONY: venv
 venv:
-	if [ ! -d .venv ] ; then \
+	if [ ! -d $(VENV) ] ; then \
 		$(PYENV_BIN) install -s ${PYTHON_VERSION} && \
-		"$(PYENV_ROOT)/versions/${PYTHON_VERSION}/bin/python" -mvenv .venv && \
-		${PYTHON} -mpip install --upgrade pip setuptools wheel && \
-		${PYTHON} -mpip install -r ${REQUIREMENTS_TXT} ; \
+		"$(PYENV_ROOT)/versions/${PYTHON_VERSION}/bin/python" -mvenv $(VENV) && \
+		$(PYTHON) -mpip install --upgrade pip setuptools wheel && \
+		$(PYTHON) -mpip install -r ${REQUIREMENTS_TXT} ; \
 	fi
 
 
@@ -37,19 +38,19 @@ venv:
 
 .PHONY: dep-freze
 dep-freeze: venv
-	${PYTHON} -mpip freeze > requirements-frz.txt
+	$(PYTHON) -mpip freeze > requirements-frz.txt
 
 .PHONY: dep-unfreeze
 dep-unfreeze: venv
-	${PYTHON} -mpip install -r requirements-frz.txt
+	$(PYTHON) -mpip install -r requirements-frz.txt
 
 .PHONY: dep-tree
 dep-tree: venv
-	${PYTHON} -mpipdeptree
+	$(PYTHON) -mpipdeptree
 
 .PHONY: dep-updates
 dep-updates: venv
-	${PYTHON} -mpip list -o --format=columns
+	$(PYTHON) -mpip list -o --format=columns
 
 
 ### Check
@@ -59,15 +60,15 @@ check: flake8 mypy test
 
 .PHONY: flake8
 flake8: venv
-	${PYTHON} -mflake8 ${PROJECT}
+	$(PYTHON) -mflake8 ${PROJECT}
 
 .PHONY: mypy
 mypy: venv
-	${PYTHON} -mmypy ${PROJECT}
+	$(PYTHON) -mmypy ${PROJECT}
 
 .PHONY: test
 test: venv
-	${PYTHON} -mpytest ${PROJECT}
+	$(PYTHON) -mpytest ${PROJECT}
 
 
 ###
