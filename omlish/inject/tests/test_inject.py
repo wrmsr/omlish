@@ -1,4 +1,8 @@
-from .. import inject as inj
+from ..injector import create_injector
+from ..providers import FnProvider
+from ..providers import SingletonProvider
+from ..types import Binding
+from ..types import Key
 
 
 def test_inject():
@@ -17,13 +21,13 @@ def test_inject():
     sfn_n = 0
 
     bs = [
-        # inj._as_binding(420),
-        inj.Binding(inj.Key(int), inj.FnProvider(int, ifn)),
-        inj.Binding(inj.Key(str), inj.SingletonProvider(inj.FnProvider(str, sfn))),
+        # _as_binding(420),
+        Binding(Key(int), FnProvider(int, ifn)),
+        Binding(Key(str), SingletonProvider(FnProvider(str, sfn))),
     ]
 
-    i = inj.Injector(bs)
-    assert i.try_provide(inj.Key(int)) == 1
-    assert i.try_provide(inj.Key(int)) == 2
-    assert i.try_provide(inj.Key(str)) == '1'
-    assert i.try_provide(inj.Key(str)) == '1'
+    i = create_injector(bs)
+    assert i.try_provide(Key(int)) == 1
+    assert i.try_provide(Key(int)) == 2
+    assert i.try_provide(Key(str)) == '1'
+    assert i.try_provide(Key(str)) == '1'

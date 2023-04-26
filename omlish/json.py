@@ -12,6 +12,7 @@ loads = _json.loads
 
 ##
 
+
 PRETTY_INDENT = 2
 
 PRETTY_KWARGS = dict(
@@ -22,6 +23,7 @@ dump_pretty = functools.partial(dump, **PRETTY_KWARGS)
 dumps_pretty = functools.partial(dumps, **PRETTY_KWARGS)
 
 ##
+
 
 COMPACT_SEPARATORS = (',', ':')
 
