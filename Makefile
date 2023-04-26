@@ -2,7 +2,7 @@ SHELL:=/bin/bash
 
 PROJECT:=omlish
 
-PYTHON_VERSION:=3.9.9
+PYTHON_VERSION:=3.9.16
 
 PYENV_ROOT:=$$(sh -c "if [ -z '$${PYENV_ROOT}' ] ; then echo '$${HOME}/.pyenv' ; else echo '$${PYENV_ROOT%/}' ; fi")
 PYENV_BIN:=$$(sh -c "if [ -f '$${HOME}/.pyenv/bin/pyenv' ] ; then echo '$${HOME}/.pyenv/bin/pyenv' ; else echo pyenv ; fi")
@@ -58,11 +58,11 @@ dep-updates: venv
 check: flake8 mypy test
 
 .PHONY: flake8
-flake8:
+flake8: venv
 	${PYTHON} -mflake8 ${PROJECT}
 
 .PHONY: mypy
-mypy:
+mypy: venv
 	${PYTHON} -mmypy ${PROJECT}
 
 .PHONY: test
