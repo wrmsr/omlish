@@ -2,7 +2,7 @@ SHELL:=/bin/bash
 
 PROJECT:=omlish
 
-PYTHON_VERSION:=3.9.16
+DEFAULT_PYTHON_VERSION:=3.9.16
 
 REQUIREMENTS_TXT=requirements-dev.txt
 
@@ -15,10 +15,14 @@ clean:
 	-rm -rf dist
 	-rm -rf ${PROJECT}.egg-info
 
+	-rm -rf .venv*
+
 
 ### Venv
 
 VENV:=$$(if [ "$$_VENV" ] ; then echo "$$_VENV" ; else echo .venv ; fi)
+PYTHON_VERSION:=$$(if [ "$$_PYTHON_VERSION" ] ; then echo "$$_PYTHON_VERSION" ; else echo ${DEFAULT_PYTHON_VERSION} ; fi)
+
 PYTHON:=$$(echo "$(VENV)/bin/python")
 
 PYENV_ROOT:=$$(sh -c "if [ -z '$${PYENV_ROOT}' ] ; then echo '$${HOME}/.pyenv' ; else echo '$${PYENV_ROOT%/}' ; fi")
@@ -27,8 +31,8 @@ PYENV_BIN:=$$(sh -c "if [ -f '$${HOME}/.pyenv/bin/pyenv' ] ; then echo '$${HOME}
 .PHONY: venv
 venv:
 	if [ ! -d $(VENV) ] ; then \
-		$(PYENV_BIN) install -s ${PYTHON_VERSION} && \
-		"$(PYENV_ROOT)/versions/${PYTHON_VERSION}/bin/python" -mvenv $(VENV) && \
+		$(PYENV_BIN) install -s $(PYTHON_VERSION) && \
+		"$(PYENV_ROOT)/versions/$(PYTHON_VERSION)/bin/python" -mvenv $(VENV) && \
 		$(PYTHON) -mpip install --upgrade pip setuptools wheel && \
 		$(PYTHON) -mpip install -r ${REQUIREMENTS_TXT} ; \
 	fi
