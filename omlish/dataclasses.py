@@ -67,5 +67,5 @@ def _dataclass(
 dataclass = _dc.dataclass
 field = _dc.field
 
-setattr(globals(), 'dataclass', _dataclass)
-setattr(globals(), 'field', _field)
+globals()['dataclass'] = _dataclass
+globals()['field'] = _field
