@@ -37,19 +37,19 @@ venv:
 
 .PHONY: dep-freze
 dep-freeze: venv
-	.venv/bin/pip freeze > requirements-frz.txt
+	${PYTHON} -mpip freeze > requirements-frz.txt
 
 .PHONY: dep-unfreeze
 dep-unfreeze: venv
-	.venv/bin/pip install -r requirements-frz.txt
+	${PYTHON} -mpip install -r requirements-frz.txt
 
 .PHONY: dep-tree
 dep-tree: venv
-	.venv/bin/pipdeptree
+	${PYTHON} -mpipdeptree
 
 .PHONY: dep-updates
 dep-updates: venv
-	.venv/bin/pip list -o --format=columns
+	${PYTHON} -mpip list -o --format=columns
 
 
 ### Check
@@ -68,3 +68,9 @@ mypy: venv
 .PHONY: test
 test: venv
 	${PYTHON} -mpytest ${PROJECT}
+
+
+###
+
+.PHONY: barf
+barf:
