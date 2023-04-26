@@ -39,6 +39,8 @@ def _field(
         hash=None,
         compare=True,
         metadata=None,
+
+        kw_only=False,
 ):
     return _dc.field(
         default=default,
@@ -74,7 +76,6 @@ def _dataclass(
 
 
 dataclass = _dc.dataclass
-field = _dc.field
-
 globals()['dataclass'] = _dataclass
-globals()['field'] = _field
+
+field = _field
