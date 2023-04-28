@@ -2,7 +2,10 @@ SHELL:=/bin/bash
 
 PROJECT:=omlish
 
-DEFAULT_PYTHON_VERSION:=3.9.16
+PYTHON_VERSION_9:=3.9.16
+PYTHON_VERSION_10:=3.10.10
+PYTHON_VERSION_11:=3.11.2
+
 
 REQUIREMENTS_TXT=requirements-dev.txt
 
@@ -20,19 +23,22 @@ clean:
 
 ### Venv
 
-VENV:=$$(if [ "$$_VENV" ] ; then echo "$$_VENV" ; else echo .venv ; fi)
-PYTHON_VERSION:=$$(if [ "$$_PYTHON_VERSION" ] ; then echo "$$_PYTHON_VERSION" ; else echo ${DEFAULT_PYTHON_VERSION} ; fi)
+DEFAULT_PYTHON_VERSION:=${PYTHON_VERSION_9}
+DEFAULT_VENV_ROOT:=.venv
 
-PYTHON:=$$(echo "$(VENV)/bin/python")
+PYTHON_VERSION:=$$(echo "$${_PYTHON_VERSION:-${DEFAULT_PYTHON_VERSION}}")
+VENV_ROOT:=$$(echo "$${_VENV_ROOT:-${DEFAULT_VENV_ROOT}}")
+
+PYTHON:=$$(echo "$(VENV_ROOT)/bin/python")
 
 PYENV_ROOT:=$$(sh -c "if [ -z '$${PYENV_ROOT}' ] ; then echo '$${HOME}/.pyenv' ; else echo '$${PYENV_ROOT%/}' ; fi")
 PYENV_BIN:=$$(sh -c "if [ -f '$${HOME}/.pyenv/bin/pyenv' ] ; then echo '$${HOME}/.pyenv/bin/pyenv' ; else echo pyenv ; fi")
 
 .PHONY: venv
 venv:
-	if [ ! -d $(VENV) ] ; then \
+	if [ ! -d $(VENV_ROOT) ] ; then \
 		$(PYENV_BIN) install -s $(PYTHON_VERSION) && \
-		"$(PYENV_ROOT)/versions/$(PYTHON_VERSION)/bin/python" -mvenv $(VENV) && \
+		"$(PYENV_ROOT)/versions/$(PYTHON_VERSION)/bin/python" -mvenv $(VENV_ROOT) && \
 		$(PYTHON) -mpip install --upgrade pip setuptools wheel && \
 		$(PYTHON) -mpip install -r ${REQUIREMENTS_TXT} ; \
 	fi
@@ -74,13 +80,13 @@ mypy: venv
 test: venv
 	$(PYTHON) -mpytest ${PROJECT}
 
-.PHONY: test-3.10
-test-3.10:
-	_PYTHON_VERSION=3.10.10 _VENV=.venv-3.10 ${MAKE} test
+.PHONY: test-10
+test-10:
+	_PYTHON_VERSION=${PYTHON_VERSION_10} _VENV_ROOT=.venv-10 ${MAKE} test
 
-.PHONY: test-3.11
-test-3.11:
-	_PYTHON_VERSION=3.11.2 _VENV=.venv-3.11 ${MAKE} test
+.PHONY: test-11
+test-11:
+	_PYTHON_VERSION=${PYTHON_VERSION_11} _VENV_ROOT=.venv-11 ${MAKE} test
 
 
 ###
