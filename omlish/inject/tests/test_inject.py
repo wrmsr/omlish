@@ -31,3 +31,9 @@ def test_inject():
     assert i.try_provide(Key(int)) == 2
     assert i.try_provide(Key(str)) == '1'
     assert i.try_provide(Key(str)) == '1'
+
+    def barf(x: int) -> int:
+        return x + 1
+
+    i.provide_kwargs(barf)
+    i.provide_kwargs(barf)
