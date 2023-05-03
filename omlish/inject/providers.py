@@ -4,6 +4,13 @@ import typing as ta
 from .types import Key
 from .types import Provider
 from .types import ProviderFn
+from .types import _ProviderGen
+
+
+def as_provider(o: ta.Any) -> Provider:
+    if isinstance(o, _ProviderGen):
+        return o.provider()
+    return ConstProvider(type(o), o)
 
 
 @dc.dataclass(frozen=True)

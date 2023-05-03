@@ -1,5 +1,9 @@
-from .injector import bind  # noqa
+from .bindings import bind  # noqa
+from .exceptions import DuplicateKeyException  # noqa
+from .exceptions import KeyException  # noqa
+from .exceptions import UnboundKeyException  # noqa
 from .injector import create_injector  # noqa
+from .keys import as_key  # noqa
 from .providers import ConstProvider  # noqa
 from .providers import FnProvider  # noqa
 from .providers import SingletonProvider  # noqa

@@ -47,15 +47,21 @@ Binder = ta.Callable[[], Bindings]
 ##
 
 
-class _BindingGen(abc.ABC):
+class _KeyGen(abc.ABC):
     @abc.abstractmethod
-    def binding(self) -> Binding:
+    def key(self) -> Key:
         raise NotImplementedError
 
 
 class _ProviderGen(abc.ABC):
     @abc.abstractmethod
     def provider(self) -> Provider:
+        raise NotImplementedError
+
+
+class _BindingGen(abc.ABC):
+    @abc.abstractmethod
+    def binding(self) -> Binding:
         raise NotImplementedError
 
 
