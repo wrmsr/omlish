@@ -6,9 +6,9 @@ from .injector import create_injector  # noqa
 from .keys import array  # noqa
 from .keys import as_key  # noqa
 from .keys import tag  # noqa
-from .providers import ConstProvider  # noqa
-from .providers import FnProvider  # noqa
-from .providers import SingletonProvider  # noqa
+from .providers import const  # noqa
+from .providers import link  # noqa
+from .providers import singleton  # noqa
 from .types import Binder  # noqa
 from .types import Binding  # noqa
 from .types import Bindings  # noqa

@@ -1,3 +1,5 @@
+import abc
+
 from ..bindings import bind
 from ..injector import create_injector
 from ..providers import FnProvider
@@ -38,6 +40,22 @@ def test_inject():
 
     assert i.inject(barf) == 4
     assert i.inject(barf) == 5
+
+
+class Barf(abc.ABC):
+    @abc.abstractmethod
+    def barf(self) -> str:
+        raise NotImplementedError
+
+
+class BarfA(Barf):
+    def barf(self) -> str:
+        return 'a'
+
+
+class BarfB(Barf):
+    def barf(self) -> str:
+        return 'b'
 
 
 def test_inject2():
