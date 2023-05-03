@@ -12,6 +12,7 @@ matplotlib-inline==0.1.6
 mccabe==0.7.0
 mypy==1.2.0
 mypy-extensions==1.0.0
+numpy==1.24.3
 packaging==23.1
 parso==0.8.3
 pexpect==4.8.0

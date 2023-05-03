@@ -9,6 +9,10 @@ PYTHON_VERSION_11:=3.11.2
 
 REQUIREMENTS_TXT=requirements-dev.txt
 
+SOURCES:=\
+	${PROJECT} \
+	nn \
+
 
 ### Clean
 
@@ -70,15 +74,15 @@ check: flake8 mypy
 
 .PHONY: flake8
 flake8: venv
-	$(PYTHON) -mflake8 ${PROJECT}
+	$(PYTHON) -mflake8 ${SOURCES}
 
 .PHONY: mypy
 mypy: venv
-	$(PYTHON) -mmypy ${PROJECT}
+	$(PYTHON) -mmypy ${SOURCES}
 
 .PHONY: test
 test: venv
-	$(PYTHON) -mpytest ${PROJECT}
+	$(PYTHON) -mpytest ${SOURCES}
 
 .PHONY: test-all
 test-all: test test-10 test-11
