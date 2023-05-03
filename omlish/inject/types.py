@@ -39,7 +39,11 @@ class Binding:
     provider: Provider
 
 
-Bindings = ta.Iterable[Binding]
+class Bindings(abc.ABC):
+    @abc.abstractmethod
+    def bindings(self) -> ta.Iterator[Binding]:
+        raise NotImplementedError
+
 
 Binder = ta.Callable[[], Bindings]
 

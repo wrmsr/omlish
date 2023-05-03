@@ -16,8 +16,8 @@ class _Injector(Injector):
     def __init__(self, bs: Bindings, p: ta.Optional['Injector'] = None) -> None:
         super().__init__()
 
-        self._bs = bs
-        self._p = check.isinstance(p, (Injector, type(None)))
+        self._bs = check.isinstance(bs, Bindings)
+        self._p = check.isinstance(p, (Injector, None))
 
         self._pfm = {k: v.provider_fn() for k, v in build_provider_map(bs).items()}
 

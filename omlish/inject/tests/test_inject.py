@@ -21,11 +21,11 @@ def test_inject():
 
     sfn_n = 0
 
-    bs = [
+    bs = bind(
         # _as_binding(420),
         Binding(Key(int), FnProvider(int, ifn)),
         Binding(Key(str), SingletonProvider(FnProvider(str, sfn))),
-    ]
+    )
 
     i = create_injector(bs)
     assert i.try_provide(Key(int)) == 1

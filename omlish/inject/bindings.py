@@ -28,34 +28,34 @@ def as_binding(o: ta.Any) -> Binding:
 
 
 @dc.dataclass(frozen=True)
-class _Bindings:
+class _Bindings(Bindings):
     bs: ta.Optional[ta.Sequence[Binding]] = None
     ps: ta.Optional[ta.Sequence[Bindings]] = None
 
-    def __iter__(self) -> ta.Iterator[Binding]:
+    def bindings(self) -> ta.Iterator[Binding]:
         if self.bs is not None:
             yield from self.bs
         if self.ps is not None:
             for p in self.ps:
-                yield from p
+                yield from p.bindings()
 
 
-def as_bindings(*args: ta.Any) -> Bindings:
+def as_bindings(it: ta.Iterable[ta.Any]) -> ta.Sequence[Binding]:
     bs: ta.List[Binding] = []
-    for a in args:
+    for a in it:
         if a is not None:
             bs.append(as_binding(a))
-    return _Bindings(bs)
+    return bs
 
 
 def bind(*args: ta.Any) -> Bindings:
-    raise NotImplementedError
+    return _Bindings(as_bindings(args))
 
 
 def build_provider_map(bs: Bindings) -> ta.Mapping[Key, Provider]:
     pm: ta.Dict[Key, Provider] = {}
     am: ta.Dict[Key, ta.List[Provider]] = {}
-    for b in bs:
+    for b in bs.bindings():
         if b.key.arr:
             am.setdefault(b.key, []).append(b.provider)
         else:
