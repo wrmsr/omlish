@@ -110,6 +110,10 @@ class _Injector(Injector):
             ret[n] = self.provide(k)
         return ret
 
+    def inject(self, obj: ta.Any) -> ta.Any:
+        kws = self.provide_kwargs(obj)
+        return obj(**kws)
+
 
 def create_injector(bs: Bindings, p: ta.Optional['Injector'] = None) -> Injector:
     return _Injector(bs, p)

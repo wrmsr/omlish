@@ -74,3 +74,7 @@ class Injector(abc.ABC):
     @abc.abstractmethod
     def provide_kwargs(self, obj: ta.Any) -> ta.Mapping[str, ta.Any]:
         raise NotImplementedError
+
+    @abc.abstractmethod
+    def inject(self, obj: ta.Any) -> ta.Any:
+        raise NotImplementedError

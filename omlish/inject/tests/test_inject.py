@@ -35,5 +35,5 @@ def test_inject():
     def barf(x: int) -> int:
         return x + 1
 
-    i.provide_kwargs(barf)
-    i.provide_kwargs(barf)
+    assert i.inject(barf) == 4
+    assert i.inject(barf) == 5
