@@ -21,33 +21,20 @@ Backport:
  - field:
   - kw_only=MISSING
 """
-import dataclasses as _dc
+import dataclasses as dc
 import typing as ta
 
-from .lang import Marker as _Marker
+from .. import lang
 
 
-Field = _dc.Field
-FrozenInstanceError = _dc.FrozenInstanceError
-InitVar = _dc.InitVar
-MISSING = _dc.MISSING
-
-fields = _dc.fields
-asdict = _dc.asdict
-astuple = _dc.astuple
-make_dataclass = _dc.make_dataclass
-replace = _dc.replace
-is_dataclass = _dc.is_dataclass
-
-
-class _Check(_Marker):
+class Check(lang.Marker):
     pass
 
 
-def _field(
+def field(
         *,
-        default=MISSING,
-        default_factory=MISSING,
+        default=dc.MISSING,
+        default_factory=dc.MISSING,
         init=True,
         repr=True,
         hash=None,
@@ -61,11 +48,11 @@ def _field(
     md = {**(metadata or {})}
 
     if check is not None:
-        if _Check in md:
+        if Check in md:
             raise KeyError(md)
-        md[_Check] = check
+        md[Check] = check
 
-    fld = _dc.field(  # type: ignore
+    fld = dc.field(  # type: ignore
         default=default,
         default_factory=default_factory,
         init=init,
@@ -77,7 +64,7 @@ def _field(
     return fld
 
 
-class _Params(ta.NamedTuple):
+class Params(ta.NamedTuple):
     init: bool
     repr: bool
     eq: bool
@@ -86,8 +73,8 @@ class _Params(ta.NamedTuple):
     frozen: bool
 
 
-def _process_class(cls: type, params: _Params) -> type:
-    dcls = _dc.dataclass(  # type: ignore
+def process_class(cls: type, params: Params) -> type:
+    dcls = dc.dataclass(  # type: ignore
         cls,
         init=params.init,
         repr=params.repr,
@@ -99,7 +86,7 @@ def _process_class(cls: type, params: _Params) -> type:
     return dcls
 
 
-def _dataclass(
+def dataclass(
         cls=None,
         /,
         *,
@@ -111,7 +98,7 @@ def _dataclass(
         frozen=False,
 ):
     def wrap(cls):
-        return _process_class(cls, _Params(
+        return process_class(cls, Params(
             init=init,
             repr=repr,
             eq=eq,
@@ -123,11 +110,3 @@ def _dataclass(
     if cls is None:
         return wrap
     return wrap(cls)
-
-
-from dataclasses import dataclass  # noqa
-
-
-globals()['dataclass'] = _dataclass
-
-field = _field
