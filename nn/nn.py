@@ -1,3 +1,32 @@
+"""
+- Unary
+ - No
+ - Neg
+ - Relu
+ - Exp
+ - Log
+ - Sign
+- Binary
+ - Add
+ - Sub
+ - Mul
+ - Div
+ - Pow
+ - CmpEq
+- Reduce
+ - Sum
+ - Max
+- Movement
+ - Reshape
+ - Permute
+ - Slice
+ - Expand
+ - Flip
+- Processing
+ - Conv
+- Load
+ - FromCpu
+"""
 import numpy as np  # noqa
 
 
