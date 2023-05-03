@@ -1,6 +1,6 @@
 """
 - Unary
- - No
+ - Nop
  - Neg
  - Relu
  - Exp
