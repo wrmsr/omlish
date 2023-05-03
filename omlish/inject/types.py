@@ -1,6 +1,8 @@
 import abc
-import dataclasses as dc
 import typing as ta
+
+from .. import dataclasses as dc
+from .. import maybe
 
 
 ##
@@ -74,7 +76,7 @@ class _BindingGen(abc.ABC):
 
 class Injector(abc.ABC):
     @abc.abstractmethod
-    def try_provide(self, key: ta.Any) -> ta.Any:
+    def try_provide(self, key: ta.Any) -> maybe.Maybe[ta.Any]:
         raise NotImplementedError
 
     @abc.abstractmethod

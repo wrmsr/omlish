@@ -28,10 +28,10 @@ def test_inject():
     )
 
     i = create_injector(bs)
-    assert i.try_provide(Key(int)) == 1
-    assert i.try_provide(Key(int)) == 2
-    assert i.try_provide(Key(str)) == '1'
-    assert i.try_provide(Key(str)) == '1'
+    assert i.provide(Key(int)) == 1
+    assert i.provide(Key(int)) == 2
+    assert i.provide(Key(str)) == '1'
+    assert i.provide(Key(str)) == '1'
 
     def barf(x: int) -> int:
         return x + 1

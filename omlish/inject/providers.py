@@ -1,13 +1,18 @@
-import dataclasses as dc
 import typing as ta
 
+from .. import check
+from .. import dataclasses as dc
+from .types import Binding
+from .types import Bindings
 from .types import Key
 from .types import Provider
 from .types import ProviderFn
+from .types import _BindingGen
 from .types import _ProviderGen
 
 
 def as_provider(o: ta.Any) -> Provider:
+    check.not_isinstance(o, (Binding, _BindingGen, Bindings))
     if isinstance(o, _ProviderGen):
         return o._gen_provider()  # noqa
     return ConstProvider(type(o), o)

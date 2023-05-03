@@ -2,6 +2,7 @@ import inspect
 import typing as ta
 
 from .. import check
+from .. import maybe
 from .bindings import build_provider_map
 from .exceptions import DuplicateKeyException
 from .exceptions import UnboundKeyException
@@ -21,24 +22,24 @@ class _Injector(Injector):
 
         self._pfm = {k: v.provider_fn() for k, v in build_provider_map(bs).items()}
 
-    def try_provide(self, key: ta.Any) -> ta.Optional[ta.Any]:
+    def try_provide(self, key: ta.Any) -> maybe.Maybe[ta.Any]:
         key = as_key(key)
 
         fn = self._pfm.get(key)
         if fn is not None:
-            return fn(self)
+            return maybe.just(fn(self))
 
         if self._p is not None:
             pv = self._p.try_provide(key)
             if pv is not None:
-                return None
+                return maybe.empty()
 
-        return None
+        return maybe.empty()
 
     def provide(self, key: ta.Any) -> ta.Any:
         v = self.try_provide(key)
-        if v is not None:
-            return v
+        if v.present:
+            return v.must()
 
         raise UnboundKeyException(key)
 

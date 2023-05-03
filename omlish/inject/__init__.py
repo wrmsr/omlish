@@ -3,7 +3,9 @@ from .exceptions import DuplicateKeyException  # noqa
 from .exceptions import KeyException  # noqa
 from .exceptions import UnboundKeyException  # noqa
 from .injector import create_injector  # noqa
+from .keys import array  # noqa
 from .keys import as_key  # noqa
+from .keys import tag  # noqa
 from .providers import ConstProvider  # noqa
 from .providers import FnProvider  # noqa
 from .providers import SingletonProvider  # noqa
