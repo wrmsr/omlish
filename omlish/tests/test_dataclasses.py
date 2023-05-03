@@ -27,3 +27,9 @@ def test_reorder():
 
     # FIXME:
     # assert [f.name for f in dc.fields(D)] == ['x', 'z', 'y']
+
+
+def test_check():
+    @dc.dataclass()
+    class C:
+        x: int = dc.field(check=lambda x: x > 10)

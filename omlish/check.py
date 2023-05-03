@@ -74,6 +74,21 @@ def not_issubclass(v: ta.Type[T], spec: ta.Any) -> ta.Type[T]:  # noqa
 ##
 
 
+def in_(v: T, c: ta.Container[T]) -> T:
+    if v not in c:
+        _raise(ValueError(v, c))
+    return v
+
+
+def not_in(v: T, c: ta.Container[T]) -> T:
+    if v in c:
+        _raise(ValueError(v, c))
+    return v
+
+
+##
+
+
 def not_none(v: ta.Optional[T]) -> T:
     if v is None:
         _raise(ValueError(v))

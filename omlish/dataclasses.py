@@ -22,6 +22,9 @@ Backport:
   - kw_only=MISSING
 """
 import dataclasses as _dc
+import typing as ta
+
+from .lang import Marker as _Marker
 
 
 Field = _dc.Field
@@ -37,6 +40,10 @@ replace = _dc.replace
 is_dataclass = _dc.is_dataclass
 
 
+class _Check(_Marker):
+    pass
+
+
 def _field(
         *,
         default=MISSING,
@@ -48,16 +55,48 @@ def _field(
         metadata=None,
 
         kw_only=False,
+
+        check: ta.Optional[ta.Callable[[ta.Any], bool]] = None,
 ):
-    return _dc.field(  # type: ignore
+    md = {**(metadata or {})}
+
+    if check is not None:
+        if _Check in md:
+            raise KeyError(md)
+        md[_Check] = check
+
+    fld = _dc.field(  # type: ignore
         default=default,
         default_factory=default_factory,
         init=init,
         repr=repr,
         hash=hash,
         compare=compare,
-        metadata=metadata,
+        metadata=md,
     )
+    return fld
+
+
+class _Params(ta.NamedTuple):
+    init: bool
+    repr: bool
+    eq: bool
+    order: bool
+    unsafe_hash: bool
+    frozen: bool
+
+
+def _process_class(cls: type, params: _Params) -> type:
+    dcls = _dc.dataclass(  # type: ignore
+        cls,
+        init=params.init,
+        repr=params.repr,
+        eq=params.eq,
+        order=params.order,
+        unsafe_hash=params.unsafe_hash,
+        frozen=params.frozen,
+    )
+    return dcls
 
 
 def _dataclass(
@@ -71,15 +110,19 @@ def _dataclass(
         unsafe_hash=False,
         frozen=False,
 ):
-    return _dc.dataclass(  # type: ignore
-        cls,
-        init=init,
-        repr=repr,
-        eq=eq,
-        order=order,
-        unsafe_hash=unsafe_hash,
-        frozen=frozen,
-    )
+    def wrap(cls):
+        return _process_class(cls, _Params(
+            init=init,
+            repr=repr,
+            eq=eq,
+            order=order,
+            unsafe_hash=unsafe_hash,
+            frozen=frozen,
+        ))
+
+    if cls is None:
+        return wrap
+    return wrap(cls)
 
 
 from dataclasses import dataclass  # noqa

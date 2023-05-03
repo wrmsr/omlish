@@ -1,4 +1,5 @@
 from .classes import Final  # noqa
+from .classes import Marker  # noqa
 from .classes import Namespace  # noqa
 from .classes import NotInstantiable  # noqa
 from .clsdct import ClassDctFn  # noqa
