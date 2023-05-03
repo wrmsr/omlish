@@ -4,7 +4,6 @@ from .. import check
 from .. import lang
 from .providers import ConstProvider
 from .providers import Provider
-from .types import Binder
 from .types import Binding
 from .types import Bindings
 from .types import Key
@@ -27,7 +26,15 @@ def as_binding(o: ta.Any) -> Binding:
     return Binding(Key(cls), ConstProvider(cls, o))
 
 
-def bind(*args: ta.Any) -> Binder:
+def as_bindings(*args: ta.Any) -> Bindings:
+    bs: ta.List[Binding] = []
+    for a in args:
+        if a is not None:
+            bs.append(as_binding(a))
+    return bs
+
+
+def bind(*args: ta.Any) -> Bindings:
     raise NotImplementedError
 
 

@@ -22,20 +22,24 @@ class _Injector(Injector):
         self._pfm = {k: v.provider_fn() for k, v in build_provider_map(bs).items()}
 
     def try_provide(self, key: ta.Any) -> ta.Optional[ta.Any]:
-        check.isinstance(key, Key)
+        key = as_key(key)
+
         fn = self._pfm.get(key)
         if fn is not None:
             return fn(self)
+
         if self._p is not None:
             pv = self._p.try_provide(key)
             if pv is not None:
                 return None
+
         return None
 
     def provide(self, key: ta.Any) -> ta.Any:
         v = self.try_provide(key)
         if v is not None:
             return v
+
         raise UnboundKeyException(key)
 
     def provide_kwargs(self, obj: ta.Any) -> ta.Mapping[str, ta.Any]:

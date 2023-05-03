@@ -1,3 +1,4 @@
+from ..bindings import bind
 from ..injector import create_injector
 from ..providers import FnProvider
 from ..providers import SingletonProvider
@@ -37,3 +38,8 @@ def test_inject():
 
     assert i.inject(barf) == 4
     assert i.inject(barf) == 5
+
+
+def test_inject2():
+    i = create_injector(bind(420))
+    assert i.provide(int) == 420
