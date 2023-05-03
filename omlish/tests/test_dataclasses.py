@@ -1,3 +1,5 @@
+import pytest
+
 from .. import dataclasses as dc
 
 
@@ -33,3 +35,7 @@ def test_check():
     @dc.dataclass()
     class C:
         x: int = dc.field(check=lambda x: x > 10)
+
+    C(11)
+    with pytest.raises(Exception):
+        C(9)

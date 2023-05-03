@@ -22,6 +22,7 @@ Backport:
   - kw_only=MISSING
 """
 import dataclasses as dc
+import io
 import typing as ta
 
 from .. import lang
@@ -50,6 +51,8 @@ def field(
     if check is not None:
         if Check in md:
             raise KeyError(md)
+        if not callable(check):
+            raise TypeError(check)
         md[Check] = check
 
     fld = dc.field(  # type: ignore
@@ -73,6 +76,14 @@ class Params(ta.NamedTuple):
     frozen: bool
 
 
+def fieldsmap(cls: ta.Any) -> ta.Mapping[str, dc.Field]:
+    return {f.name: f for f in dc.fields(cls)}
+
+
+class CheckException(Exception):
+    pass
+
+
 def process_class(cls: type, params: Params) -> type:
     dcls = dc.dataclass(  # type: ignore
         cls,
@@ -83,6 +94,39 @@ def process_class(cls: type, params: Params) -> type:
         unsafe_hash=params.unsafe_hash,
         frozen=params.frozen,
     )
+
+    flds = fieldsmap(dcls)
+    self_name = '__dataclass_self__' if 'self' in flds else 'self'
+
+    lines = []
+    glo = {
+        '__dataclass_init__': dcls.__init__,
+        '_CheckException': CheckException,
+    }
+
+    buf = io.StringIO()
+    buf.write(f'def __init__({self_name}')
+    for i, fn in enumerate(flds):
+        buf.write(', ')
+        buf.write(fn)
+    buf.write('):')
+    lines.append(buf.getvalue())
+    buf.truncate(0)
+
+    for f in flds.values():
+        chk = f.metadata.get(Check)
+        if chk is not None:
+            cn = f'_check_' + f.name
+            glo[cn] = chk
+            lines.append(f'    if not {cn}({f.name}): raise _CheckException')
+
+    lines.append(f'    return __dataclass_init__({self_name}, {", ".join(flds)})')
+
+    ns: ta.Dict[str, ta.Any] = {}
+    exec('\n'.join(lines), glo, ns)
+
+    dcls.__init__ = ns['__init__']
+
     return dcls
 
 
