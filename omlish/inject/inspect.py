@@ -3,7 +3,7 @@ import typing as ta
 import weakref
 
 
-_signature_cache = weakref.WeakKeyDictionary()
+_signature_cache: ta.MutableMapping[ta.Any, inspect.Signature] = weakref.WeakKeyDictionary()
 
 
 def signature(obj: ta.Any) -> inspect.Signature:
