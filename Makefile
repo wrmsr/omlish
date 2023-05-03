@@ -66,7 +66,7 @@ dep-updates: venv
 ### Check
 
 .PHONY: check
-check: flake8 mypy test
+check: flake8 mypy
 
 .PHONY: flake8
 flake8: venv
@@ -79,6 +79,9 @@ mypy: venv
 .PHONY: test
 test: venv
 	$(PYTHON) -mpytest ${PROJECT}
+
+.PHONY: test-all
+test-all: test test-10 test-11
 
 .PHONY: test-10
 test-10:
