@@ -1,3 +1,4 @@
+from .bindings import as_  # noqa
 from .bindings import bind  # noqa
 from .exceptions import DuplicateKeyException  # noqa
 from .exceptions import KeyException  # noqa

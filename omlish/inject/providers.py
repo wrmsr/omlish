@@ -97,8 +97,8 @@ class SingletonProvider(Provider):
         return fn
 
 
-def singleton(p: Provider) -> Provider:
-    return SingletonProvider(p)
+def singleton(p: ta.Any) -> Provider:
+    return SingletonProvider(as_provider(p))
 
 
 ##

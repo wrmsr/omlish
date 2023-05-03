@@ -4,14 +4,14 @@ from .. import inject as inj
 
 
 def test_inject():
-    def ifn(_):
+    def ifn() -> int:
         nonlocal ifn_n
         ifn_n += 1
         return ifn_n
 
     ifn_n = 0
 
-    def sfn(_):
+    def sfn() -> str:
         nonlocal sfn_n
         sfn_n += 1
         return str(sfn_n)
@@ -20,15 +20,15 @@ def test_inject():
 
     bs = inj.bind(
         # _as_binding(420),
-        Binding(Key(int), FnProvider(int, ifn)),
-        Binding(Key(str), SingletonProvider(FnProvider(str, sfn))),
+        ifn,
+        inj.singleton(sfn),
     )
 
-    i = create_injector(bs)
-    assert i.provide(Key(int)) == 1
-    assert i.provide(Key(int)) == 2
-    assert i.provide(Key(str)) == '1'
-    assert i.provide(Key(str)) == '1'
+    i = inj.create_injector(bs)
+    assert i.provide(int) == 1
+    assert i.provide(int) == 2
+    assert i.provide(str) == '1'
+    assert i.provide(str) == '1'
 
     def barf(x: int) -> int:
         return x + 1
@@ -54,5 +54,5 @@ class BarfB(Barf):
 
 
 def test_inject2():
-    i = create_injector(bind(420))
+    i = inj.create_injector(bind(420))
     assert i.provide(int) == 420
