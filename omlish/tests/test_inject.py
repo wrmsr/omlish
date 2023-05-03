@@ -1,11 +1,6 @@
 import abc
 
-from ..bindings import bind
-from ..injector import create_injector
-from ..providers import FnProvider
-from ..providers import SingletonProvider
-from ..types import Binding
-from ..types import Key
+from .. import inject as inj
 
 
 def test_inject():
@@ -23,7 +18,7 @@ def test_inject():
 
     sfn_n = 0
 
-    bs = bind(
+    bs = inj.bind(
         # _as_binding(420),
         Binding(Key(int), FnProvider(int, ifn)),
         Binding(Key(str), SingletonProvider(FnProvider(str, sfn))),

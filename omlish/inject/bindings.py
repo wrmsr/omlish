@@ -3,13 +3,18 @@ import typing as ta
 from .. import check
 from .. import dataclasses as dc
 from .. import lang
+from .keys import as_key
 from .providers import ConstProvider
 from .providers import Provider
+from .providers import as_provider
 from .types import Binding
 from .types import Bindings
 from .types import Key
 from .types import _BindingGen
 from .types import _ProviderGen
+
+
+##
 
 
 def as_binding(o: ta.Any) -> Binding:
@@ -27,6 +32,21 @@ def as_binding(o: ta.Any) -> Binding:
     return Binding(Key(cls), ConstProvider(cls, o))
 
 
+def as_bindings(it: ta.Iterable[ta.Any]) -> ta.Sequence[Binding]:
+    bs: ta.List[Binding] = []
+    for a in it:
+        if a is not None:
+            bs.append(as_binding(a))
+    return bs
+
+
+def as_(k: ta.Any, p: ta.Any) -> Binding:
+    return Binding(as_key(k), as_provider(p))
+
+
+##
+
+
 @dc.dataclass(frozen=True)
 class _Bindings(Bindings):
     bs: ta.Optional[ta.Sequence[Binding]] = None
@@ -40,16 +60,11 @@ class _Bindings(Bindings):
                 yield from p.bindings()
 
 
-def as_bindings(it: ta.Iterable[ta.Any]) -> ta.Sequence[Binding]:
-    bs: ta.List[Binding] = []
-    for a in it:
-        if a is not None:
-            bs.append(as_binding(a))
-    return bs
-
-
 def bind(*args: ta.Any) -> Bindings:
     return _Bindings(as_bindings(args))
+
+
+##
 
 
 def build_provider_map(bs: Bindings) -> ta.Mapping[Key, Provider]:

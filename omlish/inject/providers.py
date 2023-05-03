@@ -2,6 +2,7 @@ import typing as ta
 
 from .. import check
 from .. import dataclasses as dc
+from .inspect import signature
 from .keys import as_key
 from .types import Binding
 from .types import Bindings
@@ -17,8 +18,14 @@ from .types import _ProviderGen
 
 def as_provider(o: ta.Any) -> Provider:
     check.not_isinstance(o, (Binding, _BindingGen, Bindings))
+    if isinstance(o, Provider):
+        return o
     if isinstance(o, _ProviderGen):
         return o._gen_provider()  # noqa
+    if isinstance(o, Key):
+        return LinkProvider(o)
+    if callable(o):
+        return fn(o)
     return ConstProvider(type(o), o)
 
 
@@ -28,13 +35,23 @@ def as_provider(o: ta.Any) -> Provider:
 @dc.dataclass(frozen=True)
 class FnProvider(Provider):
     cls: type
-    fn: ProviderFn
+    fn: ta.Any
 
     def provided_cls(self, rec: ta.Callable[[Key], type]) -> type:
         return self.cls
 
     def provider_fn(self) -> ProviderFn:
-        return self.fn
+        def fn(i):
+            return i.inject(self.fn)
+
+        return fn
+
+
+def fn(fn: ta.Any, cls: ta.Optional[type] = None) -> Provider:
+    sig = signature(fn)
+    if cls is None:
+        cls = check.isinstance(sig.return_annotation, type)
+    return FnProvider(cls, fn)
 
 
 ##
