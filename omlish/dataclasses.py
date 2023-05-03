@@ -80,7 +80,7 @@ def _dataclass(
     )
 
 
-dataclass = _dc.dataclass
+from dataclasses import dataclass  # noqa
 globals()['dataclass'] = _dataclass
 
 field = _field

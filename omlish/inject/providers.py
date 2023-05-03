@@ -9,7 +9,7 @@ from .types import _ProviderGen
 
 def as_provider(o: ta.Any) -> Provider:
     if isinstance(o, _ProviderGen):
-        return o.provider()
+        return o._gen_provider()  # noqa
     return ConstProvider(type(o), o)
 
 

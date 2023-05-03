@@ -8,7 +8,7 @@ def as_key(o: ta.Any) -> Key:
     if isinstance(o, Key):
         return o
     if isinstance(o, _KeyGen):
-        return o.key()
+        return o._gen_key()  # noqa
     if isinstance(o, type):
         return Key(o)
     raise TypeError(o)
