@@ -14,7 +14,7 @@ from .types import _ProviderGen
 
 def as_binding(o: ta.Any) -> Binding:
     check.not_none(o)
-    # check.not_isinstance(o, Bindings)
+    check.not_isinstance(o, Bindings)
     if isinstance(o, Binding):
         return o
     if isinstance(o, _BindingGen):
