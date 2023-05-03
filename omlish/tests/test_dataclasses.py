@@ -1,6 +1,9 @@
 from .. import dataclasses as dc
 
 
+REQUIRED = object()
+
+
 @dc.dataclass(frozen=True)
 class Point:
     x: int
@@ -11,3 +14,16 @@ class Point:
 def test_dataclasses():
     pt = Point(1, 2)
     print(pt)
+
+
+def test_reorder():
+    @dc.dataclass()
+    class C:
+        x: int
+        y: int = 5
+
+    @dc.dataclass()
+    class D(C):
+        z: int = dc.field(default=REQUIRED)
+
+    assert [f.name for f in dc.fields(D)] == ['x', 'z', 'y']

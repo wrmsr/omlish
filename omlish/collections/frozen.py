@@ -3,6 +3,8 @@ import collections.abc
 import itertools
 import typing as ta
 
+from .utils import yield_dict_init
+
 
 T = ta.TypeVar('T')
 K = ta.TypeVar('K')
@@ -25,7 +27,7 @@ class FrozenDict(ta.Mapping[K, V], Frozen):
         self._hash = None
         if len(args) > 1:
             raise TypeError(args)
-        self._dct = {}
+        self._dct: ta.Dict[K, V] = {}
         self._dct.update(yield_dict_init(*args, **kwargs))
 
     @property
@@ -59,11 +61,11 @@ class FrozenDict(ta.Mapping[K, V], Frozen):
         return not (self == other)
 
     def __setstate__(self, t):
-        self.__init__(t)
+        self.__init__(t)  # type: ignore
 
     def drop(self, *keys):
-        keys = frozenset(keys)
-        return type(self)((k, self[k]) for k in self if k not in keys)
+        ks = frozenset(keys)
+        return type(self)((k, self[k]) for k in self if k not in ks)
 
     def set(self, *args, **kwargs):
         new = type(self)(*args, **kwargs)

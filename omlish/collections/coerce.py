@@ -61,7 +61,7 @@ def seq_of(
         fn: ta.Union[ta.Callable[[T], T2], tuple],
 ) -> ta.Callable[[ta.Iterable[T]], ta.Sequence[T2]]:
     def inner(it):
-        return seq(fn(e) for e in it)
+        return seq(fn(e) for e in it)  # type: ignore
 
     fn = _unpack_fn(fn)  # type: ignore
     return inner
@@ -74,7 +74,7 @@ def optional_seq_of(
         if it is None:
             return None
         else:
-            return seq(fn(e) for e in it)
+            return seq(fn(e) for e in it)  # type: ignore
 
     fn = _unpack_fn(fn)  # type: ignore
     return inner
@@ -87,7 +87,7 @@ def seq_of_or_none(
         if it is None:
             return None
         else:
-            ret = seq(fn(e) for e in it)
+            ret = seq(fn(e) for e in it)  # type: ignore
             if ret:
                 return ret
             else:
@@ -137,7 +137,7 @@ def abs_set_of(
         fn: ta.Union[ta.Callable[[T], T2], tuple],
 ) -> ta.Callable[[ta.Iterable[T]], ta.AbstractSet[T2]]:
     def inner(it):
-        return abs_set(fn(e) for e in it)
+        return abs_set(fn(e) for e in it)  # type: ignore
 
     fn = _unpack_fn(fn)  # type: ignore
     return inner
@@ -150,7 +150,7 @@ def optional_abs_set_of(
         if it is None:
             return None
         else:
-            return abs_set(fn(e) for e in it)
+            return abs_set(fn(e) for e in it)  # type: ignore
 
     fn = _unpack_fn(fn)  # type: ignore
     return inner
@@ -163,7 +163,7 @@ def abs_set_of_or_none(
         if it is None:
             return None
         else:
-            ret = abs_set(fn(e) for e in it)
+            ret = abs_set(fn(e) for e in it)  # type: ignore
             if ret:
                 return ret
             else:
@@ -212,7 +212,7 @@ def map_of(
     ta.Mapping[K2, V2],
 ]:
     def inner(src):
-        return map((key_fn(k), value_fn(v)) for k, v in dict(src).items())
+        return map((key_fn(k), value_fn(v)) for k, v in dict(src).items())  # type: ignore
 
     key_fn = _unpack_fn(key_fn)  # type: ignore
     value_fn = _unpack_fn(value_fn)  # type: ignore
@@ -230,7 +230,7 @@ def optional_map_of(
         if src is None:
             return None
         else:
-            return map((key_fn(k), value_fn(v)) for k, v in dict(src).items())
+            return map((key_fn(k), value_fn(v)) for k, v in dict(src).items())  # type: ignore
 
     key_fn = _unpack_fn(key_fn)  # type: ignore
     value_fn = _unpack_fn(value_fn)  # type: ignore
@@ -248,7 +248,7 @@ def map_of_or_none(
         if src is None:
             return None
         else:
-            ret = map((key_fn(k), value_fn(v)) for k, v in dict(src).items())
+            ret = map((key_fn(k), value_fn(v)) for k, v in dict(src).items())  # type: ignore
             if ret:
                 return ret
             else:

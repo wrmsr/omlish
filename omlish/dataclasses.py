@@ -9,6 +9,7 @@ TODO:
  - coerce
  - Optional/Sequence/AbstractSet/Mapping unpacking
  - init/check/validate
+ - reorder? tools hate it
 
 Backport:
  - dc:
@@ -47,7 +48,7 @@ def _field(
 
         kw_only=False,
 ):
-    return _dc.field(
+    return _dc.field(  # type: ignore
         default=default,
         default_factory=default_factory,
         init=init,
@@ -69,7 +70,7 @@ def _dataclass(
         unsafe_hash=False,
         frozen=False,
 ):
-    return _dc.dataclass(
+    return _dc.dataclass(  # type: ignore
         cls,
         init=init,
         repr=repr,

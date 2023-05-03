@@ -78,7 +78,7 @@ flake8: venv
 
 .PHONY: mypy
 mypy: venv
-	$(PYTHON) -mmypy ${SOURCES}
+	$(PYTHON) -mmypy --check-untyped-defs ${SOURCES}
 
 .PHONY: test
 test: venv

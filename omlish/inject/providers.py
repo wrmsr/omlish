@@ -86,6 +86,8 @@ class SingletonProvider(Provider):
         return self.p.provided_cls(rec)
 
     def provider_fn(self) -> ProviderFn:
+        v = not_set = object()
+
         def fn(i):
             nonlocal v
             if v is not_set:
@@ -93,7 +95,6 @@ class SingletonProvider(Provider):
             return v
 
         pfn = self.p.provider_fn()
-        v = not_set = object()
         return fn
 
 

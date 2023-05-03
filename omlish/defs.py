@@ -191,28 +191,3 @@ def abstract_property(cls_dct, *names):
 @lang.cls_dct_fn()
 def abstract_hash_eq(cls_dct):
     return not_implemented(cls_dct, '__hash__', '__eq__', '__ne__', wrapper=abc.abstractmethod)
-
-
-@lang.cls_dct_fn()
-def delegate_method(cls_dct, *attrs, to):
-    def gen(attr):
-        def delegate(self, *args, **kwargs):
-            return getattr(getattr(self, to), attr)(*args, **kwargs)
-
-        return delegate
-
-    for attr in attrs:
-        cls_dct[attr] = gen(attr)
-
-
-@lang.cls_dct_fn()
-def delegate_property(cls_dct, *attrs, to):
-    def gen(attr):
-        @property
-        def delegate(self):
-            return getattr(getattr(self, to), attr)
-
-        return delegate
-
-    for attr in attrs:
-        cls_dct[attr] = gen(attr)

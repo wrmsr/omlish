@@ -1,16 +1,6 @@
 from .. import defs
 
 
-def test_delegate_method():
-    class C:
-        def __init__(self, lst):
-            self.lst = lst
-
-        defs.delegate_method('__len__', to='lst')
-
-    assert len(C([1, 2, 3])) == 3
-
-
 def test_repr():
     class A:
         defs.repr('a', 'b', mro=True)
