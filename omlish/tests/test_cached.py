@@ -19,7 +19,6 @@ def test_property():
 
     class C:
         @cached.property
-        @property
         def x(self) -> int:
             nonlocal n
             n += 1

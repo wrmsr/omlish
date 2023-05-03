@@ -69,5 +69,8 @@ class Nullary:
         return val
 
 
+property = property
+
+globals()['property'] = Property  # noqa
+
 nullary = Nullary
-property = Property  # noqa
