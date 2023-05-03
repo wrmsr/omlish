@@ -1,3 +1,10 @@
+"""
+TODO:
+ - override
+ - arrays
+ - defer
+ - defaults
+"""
 import inspect
 import typing as ta
 

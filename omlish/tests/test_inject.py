@@ -4,19 +4,19 @@ from .. import inject as inj
 
 
 def test_inject():
+    ifn_n = 0
+
     def ifn() -> int:
         nonlocal ifn_n
         ifn_n += 1
         return ifn_n
 
-    ifn_n = 0
+    sfn_n = 0
 
     def sfn() -> str:
         nonlocal sfn_n
         sfn_n += 1
         return str(sfn_n)
-
-    sfn_n = 0
 
     bs = inj.bind(
         # _as_binding(420),
@@ -54,5 +54,5 @@ class BarfB(Barf):
 
 
 def test_inject2():
-    i = inj.create_injector(bind(420))
+    i = inj.create_injector(inj.bind(420))
     assert i.provide(int) == 420
