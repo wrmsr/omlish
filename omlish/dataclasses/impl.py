@@ -21,13 +21,16 @@ Backport:
  - field:
   - kw_only=MISSING
 """
-import collections.abc
 import dataclasses as dc
 import inspect
 import io
 import typing as ta
 
 from . import md
+from .. import collections as col
+
+
+VERBOSE = False
 
 
 def field(
@@ -118,16 +121,12 @@ class NsGen:
         self._dct[k] = v
         return k
 
-    def update(self, *args: ta.Union[ta.Mapping[str, ta.Any], ta.Iterable[ta.Tuple[str, ta.Any]]],
-               **kwargs: ta.Any) -> None:
-        for a in args:
-            if isinstance(a, collections.abc.Mapping):
-                for k in a:
-                    self.put(k, a[k])
-            else:
-                for k, v in a:
-                    self.put(k, v)
-        for k, v in kwargs.items():
+    def update(
+            self,
+            *args: ta.Union[ta.Mapping[str, ta.Any], ta.Iterable[ta.Tuple[str, ta.Any]]],
+            **kwargs: ta.Any,
+    ) -> None:
+        for k, v in col.yield_dict_init(*args, **kwargs):
             self.put(k, v)
 
 
@@ -193,7 +192,8 @@ def process_class(cls: type, params: Params) -> type:
     ns = nsg.dct
 
     src = '\n'.join(lines)
-    print(src)
+    if VERBOSE:
+        print(src)
     exec(src, ns)
 
     dcls.__init__ = ns['__init__']
