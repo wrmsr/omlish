@@ -21,6 +21,7 @@ Backport:
  - field:
   - kw_only=MISSING
 """
+import collections.abc
 import dataclasses as dc
 import io
 import typing as ta
@@ -84,14 +85,48 @@ class CheckException(Exception):
     pass
 
 
-class Ns:
-    def __init__(self, reserved: ta.Optional[ta.Iterable[str]]) -> None:
+class NsGen:
+    def __init__(self, reserved: ta.Optional[ta.Iterable[str]] = None) -> None:
         super().__init__()
         self._missing = missing = object()
         self._dct: ta.Dict[str, ta.Any] = {k: missing for k in (reserved or [])}
+        self._pnd: ta.Dict[str, int] = {}
+
+    @property
+    def dct(self) -> ta.Dict[str, ta.Any]:
+        return self._dct
 
     def new(self, v: ta.Any, pfx: str = '') -> str:
-        k = self._new_name()
+        p = '_'
+        if pfx:
+            p += pfx + '_'
+        i = self._pnd.get(p, 0)
+        while True:
+            k = p + str(i)
+            i += 1
+            if k not in self._dct:
+                break
+        self._pnd[p] = i
+        self._dct[k] = v
+        return k
+
+    def put(self, k: str, v: ta.Any) -> str:
+        if k in self._dct:
+            raise KeyError(k)
+        self._dct[k] = v
+        return k
+
+    def update(self, *args: ta.Union[ta.Mapping[str, ta.Any], ta.Iterable[ta.Tuple[str, ta.Any]]],
+               **kwargs: ta.Any) -> None:
+        for a in args:
+            if isinstance(a, collections.abc.Mapping):
+                for k in a:
+                    self.put(k, a[k])
+            else:
+                for k, v in a:
+                    self.put(k, v)
+        for k, v in kwargs.items():
+            self.put(k, v)
 
 
 def process_class(cls: type, params: Params) -> type:
@@ -109,10 +144,11 @@ def process_class(cls: type, params: Params) -> type:
     self_name = '__dataclass_self__' if 'self' in flds else 'self'
 
     lines = []
-    ns = {
+    nsg = NsGen()
+    nsg.update({
         '__dataclass_init__': dcls.__init__,
         '_CheckException': CheckException,
-    }
+    })
 
     buf = io.StringIO()
     buf.write(f'def __init__({self_name}')
@@ -126,11 +162,12 @@ def process_class(cls: type, params: Params) -> type:
     for f in flds.values():
         chk = f.metadata.get(Check)
         if chk is not None:
-            cn = f'_check_' + f.name
-            ns[cn] = chk
+            cn = nsg.put(f'_check_' + f.name, chk)
             lines.append(f'    if not {cn}({f.name}): raise _CheckException')
 
     lines.append(f'    return __dataclass_init__({self_name}, {", ".join(flds)})')
+
+    ns = nsg.dct
 
     exec('\n'.join(lines), ns)
 
