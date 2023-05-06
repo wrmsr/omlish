@@ -27,6 +27,14 @@ def is_possibly_cls_dct(dct: ta.Mapping[str, ta.Any]) -> bool:
     return any(all(a in dct for a in s) for s in _CLS_DCT_ATTR_SETS)
 
 
+def get_caller_cls_dct(offset: int = 0) -> ta.MutableMapping[str, ta.Any]:
+    f = sys._getframe(offset + 2)  # noqa
+    cls_dct = _skip_cls_dct_frames(f).f_locals
+    if not is_possibly_cls_dct(cls_dct):
+        raise TypeError(cls_dct)
+    return cls_dct
+
+
 class ClassDctFn:
 
     def __init__(self, fn: ta.Callable, offset: ta.Optional[int] = None, *, wrap=True) -> None:
@@ -39,7 +47,7 @@ class ClassDctFn:
             functools.update_wrapper(self, fn)
 
     def __get__(self, instance, owner=None):
-        return type(self)(self._fn.__get__(instance, owner), self._offset)
+        return type(self)(self._fn.__get__(instance, owner), self._offset)  # noqa
 
     def __call__(self, *args, **kwargs):
         try:

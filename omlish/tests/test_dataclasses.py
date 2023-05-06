@@ -36,6 +36,8 @@ def test_check():
     class C:
         x: int = dc.field(check=lambda x: x > 10)
 
+        dc.check(lambda x: x < 20)
+
     C(11)
     with pytest.raises(Exception):
         C(9)

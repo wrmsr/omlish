@@ -1,7 +1,6 @@
 import dataclasses as _dc
 
-from .impl import dataclass as _dataclass
-from .impl import field as _field
+from .impl import check  # noqa
 
 
 ##
@@ -20,6 +19,9 @@ is_dataclass = _dc.is_dataclass
 
 ##
 
+
+from .impl import dataclass as _dataclass  # noqa
+from .impl import field as _field  # noqa
 
 from dataclasses import dataclass  # noqa
 

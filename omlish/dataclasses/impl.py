@@ -29,6 +29,9 @@ import typing as ta
 from .. import lang
 
 
+METADATA_KEY = '__dataclass_metadata__'
+
+
 class Check(lang.Marker):
     pass
 
@@ -97,7 +100,7 @@ class NsGen:
         return self._dct
 
     def new(self, v: ta.Any, pfx: str = '') -> str:
-        p = '_'
+        p = '__'
         if pfx:
             p += pfx + '__'
         i = self._pnd.get(p, 0)
@@ -147,7 +150,7 @@ def process_class(cls: type, params: Params) -> type:
     nsg = NsGen()
     nsg.update({
         '__dataclass_init__': dcls.__init__,
-        '_CheckException': CheckException,
+        '__CheckException': CheckException,
     })
 
     buf = io.StringIO()
@@ -156,13 +159,13 @@ def process_class(cls: type, params: Params) -> type:
         buf.write(f', {f.name}')
         if f.type is not None:
             buf.write(': ')
-            buf.write(nsg.put(f'_type__{f.name}', f.type))
+            buf.write(nsg.put(f'__type__{f.name}', f.type))
         if f.default is not dc.MISSING:
             buf.write(' = ')
-            buf.write(nsg.put(f'_default__{f.name}', f.default))
+            buf.write(nsg.put(f'__default__{f.name}', f.default))
         if f.default_factory is not dc.MISSING:
             buf.write(' = ')
-            buf.write(nsg.put(f'_default_factory__{f.name}', f.default_factory))
+            buf.write(nsg.put(f'__default_factory__{f.name}', f.default_factory))
     buf.write(') -> None:')
     lines.append(buf.getvalue())
     buf.truncate(0)
@@ -170,8 +173,8 @@ def process_class(cls: type, params: Params) -> type:
     for f in flds.values():
         chk = f.metadata.get(Check)
         if chk is not None:
-            cn = nsg.put(f'_check_' + f.name, chk)
-            lines.append(f'    if not {cn}({f.name}): raise _CheckException')
+            cn = nsg.put(f'__check_' + f.name, chk)
+            lines.append(f'    if not {cn}({f.name}): raise __CheckException')
 
     lines.append(f'    return __dataclass_init__({self_name}, {", ".join(flds)})')
 
@@ -208,3 +211,7 @@ def dataclass(
     if cls is None:
         return wrap
     return wrap(cls)
+
+
+def check(fn: ta.Callable[..., bool]) -> None:
+    lang.get_caller_cls_dct().setdefault(METADATA_KEY, {}).setdefault(Check, []).append(fn)
