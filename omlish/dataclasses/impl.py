@@ -89,20 +89,25 @@ class CheckException(Exception):
 
 
 class NsGen:
-    def __init__(self, reserved: ta.Optional[ta.Iterable[str]] = None) -> None:
+    def __init__(self, reserved: ta.Optional[ta.Iterable[str]] = None, *, sep: str = '__') -> None:
         super().__init__()
         self._missing = missing = object()
         self._dct: ta.Dict[str, ta.Any] = {k: missing for k in (reserved or [])}
+        self._sep = sep
         self._pnd: ta.Dict[str, int] = {}
 
     @property
     def dct(self) -> ta.Dict[str, ta.Any]:
         return self._dct
 
+    @property
+    def sep(self) -> str:
+        return self._sep
+
     def new(self, v: ta.Any, pfx: str = '') -> str:
-        p = '__'
+        p = self._sep
         if pfx:
-            p += pfx + '__'
+            p += pfx + self._sep
         i = self._pnd.get(p, 0)
         while True:
             k = p + str(i)
