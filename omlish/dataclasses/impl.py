@@ -27,14 +27,7 @@ import inspect
 import io
 import typing as ta
 
-from .. import lang
-
-
-METADATA_KEY = '__dataclass_metadata__'
-
-
-class Check(lang.Marker):
-    pass
+from . import md
 
 
 def field(
@@ -51,14 +44,14 @@ def field(
 
         check: ta.Optional[ta.Callable[[ta.Any], bool]] = None,
 ):
-    md = {**(metadata or {})}
+    fmd = {**(metadata or {})}
 
     if check is not None:
-        if Check in md:
-            raise KeyError(md)
+        if md.Check in fmd:
+            raise KeyError(fmd)
         if not callable(check):
             raise TypeError(check)
-        md[Check] = check
+        fmd[md.Check] = check
 
     fld = dc.field(  # type: ignore
         default=default,
@@ -67,7 +60,7 @@ def field(
         repr=repr,
         hash=hash,
         compare=compare,
-        metadata=md,
+        metadata=fmd,
     )
     return fld
 
@@ -177,13 +170,13 @@ def process_class(cls: type, params: Params) -> type:
     buf.truncate(0)
 
     for f in flds.values():
-        chk = f.metadata.get(Check)
+        chk = f.metadata.get(md.Check)
         if chk is not None:
             cn = nsg.put(f'__check_' + f.name, chk)
             lines.append(f'    if not {cn}({f.name}): raise __CheckException')
 
-    md = getattr(dcls, METADATA_KEY, {})
-    for i, c in enumerate(md.get(Check, [])):
+    dcmd = getattr(dcls, md.METADATA_KEY, {})
+    for i, c in enumerate(dcmd.get(md.Check, [])):
         if isinstance(c, staticmethod):
             c = c.__func__
         cn = nsg.put(f'__check_{i}', c)
@@ -226,7 +219,3 @@ def dataclass(
     if cls is None:
         return wrap
     return wrap(cls)
-
-
-def check(fn: ta.Union[ta.Callable[..., bool], staticmethod]) -> None:
-    lang.get_caller_cls_dct().setdefault(METADATA_KEY, {}).setdefault(Check, []).append(fn)
