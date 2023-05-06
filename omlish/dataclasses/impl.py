@@ -84,6 +84,16 @@ class CheckException(Exception):
     pass
 
 
+class Ns:
+    def __init__(self, reserved: ta.Optional[ta.Iterable[str]]) -> None:
+        super().__init__()
+        self._missing = missing = object()
+        self._dct: ta.Dict[str, ta.Any] = {k: missing for k in (reserved or [])}
+
+    def new(self, v: ta.Any, pfx: str = '') -> str:
+        k = self._new_name()
+
+
 def process_class(cls: type, params: Params) -> type:
     dcls = dc.dataclass(  # type: ignore
         cls,
@@ -99,7 +109,7 @@ def process_class(cls: type, params: Params) -> type:
     self_name = '__dataclass_self__' if 'self' in flds else 'self'
 
     lines = []
-    glo = {
+    ns = {
         '__dataclass_init__': dcls.__init__,
         '_CheckException': CheckException,
     }
@@ -117,13 +127,12 @@ def process_class(cls: type, params: Params) -> type:
         chk = f.metadata.get(Check)
         if chk is not None:
             cn = f'_check_' + f.name
-            glo[cn] = chk
+            ns[cn] = chk
             lines.append(f'    if not {cn}({f.name}): raise _CheckException')
 
     lines.append(f'    return __dataclass_init__({self_name}, {", ".join(flds)})')
 
-    ns: ta.Dict[str, ta.Any] = {}
-    exec('\n'.join(lines), glo, ns)
+    exec('\n'.join(lines), ns)
 
     dcls.__init__ = ns['__init__']
 
