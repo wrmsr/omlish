@@ -31,7 +31,7 @@ def test_reorder():
     # assert [f.name for f in dc.fields(D)] == ['x', 'z', 'y']
 
 
-def test_check():
+def test_check_init():
     @dc.dataclass()
     class C:
         x: int = dc.field(check=lambda x: x > 10)
@@ -52,3 +52,14 @@ def test_check():
 
     with pytest.raises(Exception):
         C(9)
+
+
+def test_md():
+    @dc.tag(a=10)
+    @dc.dataclass()
+    class Foo:
+        pass
+
+    dc.tag(Foo, {'b': 20})
+
+    assert dc.metadata(Foo) == {'a': 10, 'b': 20}

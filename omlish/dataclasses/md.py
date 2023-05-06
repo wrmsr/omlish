@@ -1,6 +1,7 @@
 import dataclasses as dc
 import typing as ta
 
+from .. import collections as col
 from .. import lang
 
 
@@ -29,6 +30,30 @@ def metadata(class_or_instance: ta.Any) -> ta.Mapping[ta.Any, ta.Any]:
             else:
                 dct[k] = v
     return dct
+
+
+def tag(*args, **kwargs):
+    cls = None
+    if len(args) > 0:
+        if isinstance(args[0], type):
+            cls, args = args[0], args[1:]
+
+    def inner(cls):
+        if not (isinstance(cls, type) and dc.is_dataclass(cls)):
+            raise TypeError('must be called with a dataclass type')
+        try:
+            cmd = cls.__dict__[METADATA_KEY]
+        except KeyError:
+            cmd = {}
+            setattr(cls, METADATA_KEY, cmd)
+        for k, v in col.yield_dict_init(*args, **kwargs):
+            cmd[k] = v
+        return cls
+
+    if cls is None:
+        return inner
+    else:
+        inner(cls)
 
 
 def _add_cls_md(k, v):
