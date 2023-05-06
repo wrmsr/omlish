@@ -29,4 +29,4 @@ class Init(lang.Marker):
 
 
 def init(fn: ta.Union[ta.Callable[..., bool], staticmethod]) -> None:
-    _add_cls_md(Check, fn)
+    _add_cls_md(Init, fn)

@@ -43,6 +43,12 @@ def test_check():
         def _check_x_not_15(x: int) -> bool:
             return x != 15
 
-    C(11)
+        @dc.init
+        def _init_foo(self) -> None:
+            self._foo = 100
+
+    c = C(11)
+    assert c._foo == 100
+
     with pytest.raises(Exception):
         C(9)

@@ -176,19 +176,25 @@ def process_class(cls: type, params: Params) -> type:
             lines.append(f'    if not {cn}({f.name}): raise __CheckException')
 
     dcmd = getattr(dcls, md.METADATA_KEY, {})
-    for i, c in enumerate(dcmd.get(md.Check, [])):
-        if isinstance(c, staticmethod):
-            c = c.__func__
-        cn = nsg.put(f'__check_{i}', c)
-        csig = inspect.signature(c)
+
+    for i, fn in enumerate(dcmd.get(md.Check, [])):
+        if isinstance(fn, staticmethod):
+            fn = fn.__func__
+        cn = nsg.put(f'__check_{i}', fn)
+        csig = inspect.signature(fn)
         cas = ', '.join(p.name for p in csig.parameters.values())
         lines.append(f'    if not {cn}({cas}): raise __CheckException')
 
     lines.append(f'    __dataclass_init__({self_name}, {", ".join(flds)})')
 
+    for i, fn in enumerate(dcmd.get(md.Init, [])):
+        lines.append(f'    {nsg.put(f"__init_{i}", fn)}({self_name})')
+
     ns = nsg.dct
 
-    exec('\n'.join(lines), ns)
+    src = '\n'.join(lines)
+    print(src)
+    exec(src, ns)
 
     dcls.__init__ = ns['__init__']
 
