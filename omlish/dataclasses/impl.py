@@ -99,7 +99,7 @@ class NsGen:
     def new(self, v: ta.Any, pfx: str = '') -> str:
         p = '_'
         if pfx:
-            p += pfx + '_'
+            p += pfx + '__'
         i = self._pnd.get(p, 0)
         while True:
             k = p + str(i)
@@ -152,10 +152,18 @@ def process_class(cls: type, params: Params) -> type:
 
     buf = io.StringIO()
     buf.write(f'def __init__({self_name}')
-    for i, fn in enumerate(flds):
-        buf.write(', ')
-        buf.write(fn)
-    buf.write('):')
+    for i, f in enumerate(flds.values()):
+        buf.write(f', {f.name}')
+        if f.type is not None:
+            buf.write(': ')
+            buf.write(nsg.put(f'_type__{f.name}', f.type))
+        if f.default is not dc.MISSING:
+            buf.write(' = ')
+            buf.write(nsg.put(f'_default__{f.name}', f.default))
+        if f.default_factory is not dc.MISSING:
+            buf.write(' = ')
+            buf.write(nsg.put(f'_default_factory__{f.name}', f.default_factory))
+    buf.write(') -> None:')
     lines.append(buf.getvalue())
     buf.truncate(0)
 
