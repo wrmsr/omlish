@@ -38,6 +38,11 @@ def test_check():
 
         dc.check(lambda x: x < 20)
 
+        @dc.check  # noqa
+        @staticmethod
+        def _check_x_not_15(x: int) -> bool:
+            return x != 15
+
     C(11)
     with pytest.raises(Exception):
         C(9)

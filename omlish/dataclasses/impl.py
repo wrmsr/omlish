@@ -23,6 +23,7 @@ Backport:
 """
 import collections.abc
 import dataclasses as dc
+import inspect
 import io
 import typing as ta
 
@@ -181,7 +182,16 @@ def process_class(cls: type, params: Params) -> type:
             cn = nsg.put(f'__check_' + f.name, chk)
             lines.append(f'    if not {cn}({f.name}): raise __CheckException')
 
-    lines.append(f'    return __dataclass_init__({self_name}, {", ".join(flds)})')
+    md = getattr(dcls, METADATA_KEY, {})
+    for i, c in enumerate(md.get(Check, [])):
+        if isinstance(c, staticmethod):
+            c = c.__func__
+        cn = nsg.put(f'__check_{i}', c)
+        csig = inspect.signature(c)
+        cas = ', '.join(p.name for p in csig.parameters.values())
+        lines.append(f'    if not {cn}({cas}): raise __CheckException')
+
+    lines.append(f'    __dataclass_init__({self_name}, {", ".join(flds)})')
 
     ns = nsg.dct
 
@@ -218,5 +228,5 @@ def dataclass(
     return wrap(cls)
 
 
-def check(fn: ta.Callable[..., bool]) -> None:
+def check(fn: ta.Union[ta.Callable[..., bool], staticmethod]) -> None:
     lang.get_caller_cls_dct().setdefault(METADATA_KEY, {}).setdefault(Check, []).append(fn)
