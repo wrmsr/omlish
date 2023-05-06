@@ -2,6 +2,7 @@ import dataclasses as _dc
 
 from .md import check  # noqa
 from .md import init  # noqa
+from .md import metadata  # noqa
 
 
 ##
