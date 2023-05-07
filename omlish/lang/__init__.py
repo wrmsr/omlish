@@ -1,8 +1,13 @@
 from .classes import Abstract  # noqa
 from .classes import Final  # noqa
+from .classes import FinalException  # noqa
 from .classes import Marker  # noqa
 from .classes import Namespace  # noqa
 from .classes import NotInstantiable  # noqa
+from .classes import NotPicklable  # noqa
+from .classes import PackageSealed  # noqa
+from .classes import Sealed  # noqa
+from .classes import SealedException  # noqa
 from .classes import abstract  # noqa
 from .classes import is_abstract  # noqa
 from .classes import is_abstract_class  # noqa
@@ -11,6 +16,8 @@ from .clsdct import ClassDctFn  # noqa
 from .clsdct import cls_dct_fn  # noqa
 from .clsdct import get_caller_cls_dct  # noqa
 from .clsdct import is_possibly_cls_dct  # noqa
+from .descriptors import AccessForbiddenException  # noqa
+from .descriptors import access_forbidden  # noqa
 from .descriptors import is_method_descriptor  # noqa
 from .descriptors import unwrap_method_descriptors  # noqa
 from .functions import unwrap_func  # noqa
