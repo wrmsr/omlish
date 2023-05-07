@@ -45,7 +45,8 @@ class ReplServer:
 
         self._socket: ta.Optional[sock.socket] = None
         self._is_running = False
-        self._consoles_by_threads: ta.MutableMapping[threading.Thread, InteractiveSocketConsole] = weakref.WeakKeyDictionary()  # noqa
+        self._consoles_by_threads: ta.MutableMapping[threading.Thread, InteractiveSocketConsole] = \
+            weakref.WeakKeyDictionary()  # noqa
         self._is_shutdown = threading.Event()
         self._should_shutdown = False
 

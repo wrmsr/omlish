@@ -8,7 +8,6 @@ import typing as ta
 
 DEFAULT_TIMEOUT_S = 30
 
-
 T = ta.TypeVar('T')
 
 
@@ -89,4 +88,5 @@ def xfail(fn):
             fn(*args, **kwargs)
         except Exception:  # noqa
             traceback.print_exc()
+
     return inner
