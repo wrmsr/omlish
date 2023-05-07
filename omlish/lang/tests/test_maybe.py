@@ -1,6 +1,6 @@
-from .. import maybe
+from .. import maybes
 
 
 def test_maybe():
-    m = maybe.just(10)
+    m = maybes.just(10)
     assert m.must() == 10

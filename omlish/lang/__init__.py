@@ -6,6 +6,10 @@ from .clsdct import ClassDctFn  # noqa
 from .clsdct import cls_dct_fn  # noqa
 from .clsdct import get_caller_cls_dct  # noqa
 from .clsdct import is_possibly_cls_dct  # noqa
+from .maybes import Maybe  # noqa
+from .maybes import empty  # noqa
+from .maybes import just  # noqa
+from .maybes import maybe  # noqa
 from .utils import arg_repr  # noqa
 from .utils import attr_repr  # noqa
 from .utils import defer  # noqa

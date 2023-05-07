@@ -45,7 +45,7 @@ T = ta.TypeVar('T')
 def merge(sequences: ta.MutableSequence[ta.List[T]]) -> ta.List[T]:
     """Merges MROs in *sequences* to a single MRO using the C3 algorithm.
 
-    Adapted from http://www.python.org/download/releases/2.3/mro/.
+    Adapted from https://www.python.org/download/releases/2.3/mro/.
     """
 
     result: ta.List[T] = []
@@ -105,8 +105,7 @@ def mro(
                 issubclass(cls, base) and  # noqa
                 not any(issubclass(b, base) for b in getbases(cls))  # noqa
         ):
-            # If *cls* is the class that introduces behaviour described by
-            # an ABC *base*, insert said ABC to its MRO.
+            # If *cls* is the class that introduces behaviour described by an ABC *base*, insert said ABC to its MRO.
             abstract_bases.append(base)
     for base in abstract_bases:
         abcs.remove(base)
