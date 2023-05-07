@@ -126,7 +126,7 @@ class ReplServer:
                 self._is_shutdown.set()
                 self._is_running = False
 
-    def shutdown(self, block: bool = False, timeout: float = None) -> None:
+    def shutdown(self, block: bool = False, timeout: ta.Optional[float] = None) -> None:
         self._should_shutdown = True
         if block:
             self._is_shutdown.wait(timeout=timeout)

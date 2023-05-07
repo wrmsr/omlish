@@ -43,7 +43,7 @@ class InteractiveSocketConsole:
     def __init__(
             self,
             conn: sock.socket,
-            locals: ta.MutableMapping = None,
+            locals: ta.Optional[ta.Dict[str, ta.Any]] = None,
             filename: str = '<console>'
     ) -> None:
         super().__init__()
@@ -73,7 +73,7 @@ class InteractiveSocketConsole:
 
     CPRT = 'Type "help", "copyright", "credits" or "license" for more information.'
 
-    def interact(self, banner: str = None, exitmsg: str = None) -> None:
+    def interact(self, banner: ta.Optional[str] = None, exitmsg: ta.Optional[str] = None) -> None:
         log.info(f'Console {id(self)} on thread {threading.current_thread().ident} interacting')
 
         try:
@@ -225,9 +225,9 @@ class InteractiveSocketConsole:
             lines = traceback.format_exception(ei[0], ei[1], last_tb.tb_next)  # type: ignore
             self.write(''.join(lines))
         finally:
-            last_tb = ei = None
+            last_tb = ei = None  # type: ignore  # noqa
 
-    def show_syntax_error(self, filename: str = None) -> None:
+    def show_syntax_error(self, filename: ta.Optional[str] = None) -> None:
         type, value, tb = sys.exc_info()
         sys.last_type = type
         sys.last_value = value
@@ -235,7 +235,7 @@ class InteractiveSocketConsole:
         if filename and type is SyntaxError:
             # Work hard to stuff the correct filename in the exception
             try:
-                msg, (dummy_filename, lineno, offset, line) = value.args
+                msg, (dummy_filename, lineno, offset, line) = value.args  # type: ignore
             except ValueError:
                 # Not the format we expect; leave it alone
                 pass

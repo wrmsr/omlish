@@ -15,7 +15,7 @@ def test_replserver():
         conn = socket.socket(socket.AF_UNIX)
         conn.settimeout(0.1)
 
-        deadline = time.time() + 3
+        deadline = time.time() + 2
         while True:
             try:
                 conn.connect(path)
@@ -53,7 +53,7 @@ def test_replserver():
 
     def inner():
         server = server_.ReplServer(server_.ReplServer.Config(path))
-        with lang.defer(lambda: server.shutdown(True, 5)):
+        with lang.defer(lambda: server.shutdown(True, 2)):
             def run():
                 with server:
                     server.run()
@@ -67,6 +67,7 @@ def test_replserver():
 
             server.shutdown()
             thread.join(3)
+            assert not thread.is_alive()
 
     path = os.path.join(tempfile.mkdtemp(), 'sock')
     run_with_timeout(inner)
