@@ -26,6 +26,10 @@ class Maybe(abc.ABC, ta.Generic[T]):
         raise NotImplementedError
 
     @abc.abstractmethod
+    def __getitem__(self, item: int) -> T:
+        raise NotImplementedError
+
+    @abc.abstractmethod
     def if_present(self, consumer: ta.Callable[[T], None]) -> None:
         raise NotImplementedError
 
@@ -65,10 +69,19 @@ class _Maybe(Maybe[T], tuple):
             raise ValueNotPresentException
         return self[0]
 
-    def __iter__(self):
+    def __iter__(self) -> ta.Iterator[T]:
         raise TypeError
 
     locals()['__iter__'] = tuple.__iter__
+
+    def __getitem__(self, item: int) -> T:  # type: ignore
+        raise TypeError
+
+    locals()['__getitem__'] = tuple.__getitem__
+
+    def if_present(self, consumer: ta.Callable[[T], None]) -> None:
+        if self:
+            consumer(self[0])
 
     def filter(self, predicate: ta.Callable[[T], bool]) -> Maybe[T]:
         return self if self and predicate(self[0]) else _empty
