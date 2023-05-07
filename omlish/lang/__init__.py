@@ -20,6 +20,14 @@ from .descriptors import AccessForbiddenException  # noqa
 from .descriptors import access_forbidden  # noqa
 from .descriptors import is_method_descriptor  # noqa
 from .descriptors import unwrap_method_descriptors  # noqa
+from .functions import cmp  # noqa
+from .functions import constant  # noqa
+from .functions import identity  # noqa
+from .functions import is_none  # noqa
+from .functions import is_not_none  # noqa
+from .functions import raise_  # noqa
+from .functions import recurse  # noqa
+from .functions import try_  # noqa
 from .functions import unwrap_func  # noqa
 from .maybes import Maybe  # noqa
 from .maybes import empty  # noqa
@@ -28,4 +36,3 @@ from .maybes import maybe  # noqa
 from .utils import arg_repr  # noqa
 from .utils import attr_repr  # noqa
 from .utils import defer  # noqa
-from .utils import raise_  # noqa
