@@ -1,7 +1,12 @@
+from .classes import Abstract  # noqa
 from .classes import Final  # noqa
 from .classes import Marker  # noqa
 from .classes import Namespace  # noqa
 from .classes import NotInstantiable  # noqa
+from .classes import abstract  # noqa
+from .classes import is_abstract  # noqa
+from .classes import is_abstract_class  # noqa
+from .classes import is_abstract_method  # noqa
 from .clsdct import ClassDctFn  # noqa
 from .clsdct import cls_dct_fn  # noqa
 from .clsdct import get_caller_cls_dct  # noqa
