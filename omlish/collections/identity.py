@@ -27,10 +27,10 @@ class IdentityWrapper(ta.Generic[T]):
     def value(self) -> T:
         return self._value
 
-    def __eq__(self, other: T) -> bool:  # type: ignore
+    def __eq__(self, other):
         return isinstance(other, IdentityWrapper) and other._value is self._value
 
-    def __ne__(self, other: T) -> bool:  # type: ignore
+    def __ne__(self, other):
         return not (self == other)
 
     def __hash__(self):
