@@ -51,7 +51,7 @@ def merge(sequences: ta.MutableSequence[ta.List[T]]) -> ta.List[T]:
     result: ta.List[T] = []
     candidate: ta.Optional[T] = None
     while True:
-        sequences = [s for s in sequences if s]   # purge empty sequences
+        sequences = [s for s in sequences if s]  # purge empty sequences
         if not sequences:
             return result
         for s1 in sequences:  # find merge candidates among seq heads
@@ -148,6 +148,7 @@ def compose_mro(
             if typ != other and typ in (getmro(other) or []):
                 return True
         return False
+
     types = [n for n in types if not is_strict_base(n)]
 
     # Subclasses of the ABCs in *types* which are also implemented by *cls* can be used to stabilize ABC ordering.

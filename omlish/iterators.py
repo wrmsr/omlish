@@ -5,7 +5,6 @@ import typing as ta
 
 T = ta.TypeVar('T')
 
-
 _MISSING = object()
 
 

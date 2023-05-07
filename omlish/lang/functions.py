@@ -36,7 +36,9 @@ def try_(
                 return fn(*args, **kwargs)
             except exct:
                 return default
+
         return inner
+
     exct = (exc,) if isinstance(exc, type) else tuple(exc)
     return outer
 
@@ -44,6 +46,7 @@ def try_(
 def recurse(fn: ta.Callable[..., T], *args, **kwargs) -> T:
     def rec(*args, **kwargs) -> T:
         return fn(rec, *args, **kwargs)
+
     return rec(*args, **kwargs)
 
 
