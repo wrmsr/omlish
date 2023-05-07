@@ -25,8 +25,8 @@ def _find_impl(cls, registry):
 
 
 def function(func):
-    registry = {}
-    dispatch_cache = weakref.WeakKeyDictionary()
+    registry: ta.Dict[type, ta.Any] = {}
+    dispatch_cache: ta.MutableMapping[type, ta.Any] = weakref.WeakKeyDictionary()
     cache_token = None
 
     def dispatch(cls):
@@ -98,10 +98,10 @@ def function(func):
 
     funcname = getattr(func, '__name__', 'singledispatch function')
     registry[object] = func
-    wrapper.register = register
-    wrapper.dispatch = dispatch
-    wrapper.registry = types.MappingProxyType(registry)
-    wrapper._clear_cache = dispatch_cache.clear
+    wrapper.register = register  # type: ignore
+    wrapper.dispatch = dispatch  # type: ignore
+    wrapper.registry = types.MappingProxyType(registry)  # type: ignore
+    wrapper._clear_cache = dispatch_cache.clear  # type: ignore
     functools.update_wrapper(wrapper, func)
     return wrapper
 
@@ -130,8 +130,8 @@ class method:
             method = self.dispatcher.dispatch(type(args[0]))
             return method.__get__(obj, cls)(*args, **kwargs)
 
-        _method.__isabstractmethod__ = self.__isabstractmethod__
-        _method.register = self.register
+        _method.__isabstractmethod__ = self.__isabstractmethod__  # type: ignore
+        _method.register = self.register  # type: ignore
         functools.update_wrapper(_method, self._wrapped_func)
         return _method
 

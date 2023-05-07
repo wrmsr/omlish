@@ -6,6 +6,9 @@ from .clsdct import ClassDctFn  # noqa
 from .clsdct import cls_dct_fn  # noqa
 from .clsdct import get_caller_cls_dct  # noqa
 from .clsdct import is_possibly_cls_dct  # noqa
+from .descriptors import is_method_descriptor  # noqa
+from .descriptors import unwrap_method_descriptors  # noqa
+from .functions import unwrap_func  # noqa
 from .maybes import Maybe  # noqa
 from .maybes import empty  # noqa
 from .maybes import just  # noqa
