@@ -1,7 +1,3 @@
-"""
-TODO:
- - cy: retain pycharm dbg output - public prop?
-"""
 import operator as op
 import typing as ta
 

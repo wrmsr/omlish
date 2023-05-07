@@ -1,7 +1,3 @@
-"""
-TODO:
- - use types.MappingProxyType like dataclasses? .. no, prob not, be meor generic, but keep on radar
-"""
 import typing as ta
 
 from .. import lang

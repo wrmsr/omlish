@@ -1,8 +1,3 @@
-"""
-TODO:
- - clean tf up lol
- - https://github.com/LuminosoInsight/ordered-set/blob/master/ordered_set.py
-"""
 import typing as ta
 
 
@@ -11,11 +6,11 @@ T = ta.TypeVar('T')
 
 class OrderedSet(ta.MutableSet[T]):
 
-    def __init__(self, iterable=None):
+    def __init__(self, iterable: ta.Optional[ta.Iterable[T]] = None) -> None:
         super().__init__()
         self._dct: ta.Dict[T, ta.Any] = {}
         if iterable is not None:
-            self |= iterable
+            self |= iterable  # type: ignore  # noqa
 
     def __len__(self) -> int:
         return len(self._dct)
