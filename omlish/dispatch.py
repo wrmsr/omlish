@@ -1,6 +1,8 @@
 import abc
 import functools
+import types
 import typing as ta
+import weakref
 
 from . import c3
 
@@ -15,7 +17,7 @@ def _find_impl(cls, registry):
                     and match not in cls.__mro__
                     and not issubclass(match, t)
             ):
-                raise RuntimeError("Ambiguous dispatch: {} or {}".format(match, t))
+                raise RuntimeError('Ambiguous dispatch: {} or {}'.format(match, t))
             break
         if t in registry:
             match = t
@@ -23,8 +25,6 @@ def _find_impl(cls, registry):
 
 
 def function(func):
-    import types, weakref
-
     registry = {}
     dispatch_cache = weakref.WeakKeyDictionary()
     cache_token = None
@@ -46,8 +46,16 @@ def function(func):
             dispatch_cache[cls] = impl
         return impl
 
+    def _is_union_type(cls):
+        if hasattr(ta, 'UnionType'):
+            return ta.get_origin(cls) in {ta.Union, getattr(ta, 'UnionType')}
+        else:
+            return ta.get_origin(cls) in {ta.Union}
+
     def _is_valid_dispatch_type(cls):
-        return isinstance(cls, type) and not isinstance(cls, ta.GenericAlias)
+        if isinstance(cls, type):
+            return True
+        return (_is_union_type(cls) and all(isinstance(arg, type) for arg in ta.get_args(cls)))
 
     def register(cls, func=None):
         nonlocal cache_token
@@ -56,21 +64,27 @@ def function(func):
                 return lambda f: register(cls, f)
         else:
             if func is not None:
-                raise TypeError(f"Invalid first argument to `register()`. {cls!r} is not a class.")
+                raise TypeError(f'Invalid first argument to `register()`. {cls!r} is not a class or union type.')
             ann = getattr(cls, '__annotations__', {})
             if not ann:
                 raise TypeError(
-                    f"Invalid first argument to `register()`: {cls!r}. "
-                    f"Use either `@register(some_class)` or plain `@register` on an annotated function."
+                    f'Invalid first argument to `register()`: {cls!r}. Use either `@register(some_class)` or plain '
+                    f'`@register` on an annotated function.'
                 )
             func = cls
 
-            from typing import get_type_hints
-            argname, cls = next(iter(get_type_hints(func).items()))
+            argname, cls = next(iter(ta.get_type_hints(func).items()))
             if not _is_valid_dispatch_type(cls):
-                raise TypeError(f"Invalid annotation for {argname!r}. {cls!r} is not a class.")
+                if _is_union_type(cls):
+                    raise TypeError(f'Invalid annotation for {argname!r}. {cls!r} not all arguments are classes.')
+                else:
+                    raise TypeError(f'Invalid annotation for {argname!r}. {cls!r} is not a class.')
 
-        registry[cls] = func
+        if _is_union_type(cls):
+            for arg in ta.get_args(cls):
+                registry[arg] = func
+        else:
+            registry[cls] = func
         if cache_token is None and hasattr(cls, '__abstractmethods__'):
             cache_token = abc.get_cache_token()
         dispatch_cache.clear()
@@ -80,7 +94,7 @@ def function(func):
         if not args:
             raise TypeError(f'{funcname} requires at least 1 positional argument')
 
-        return dispatch(args[0].__class__)(*args, **kw)
+        return dispatch(type(args[0]))(*args, **kw)
 
     funcname = getattr(func, '__name__', 'singledispatch function')
     registry[object] = func
@@ -95,8 +109,8 @@ def function(func):
 class method:
 
     def __init__(self, func):
-        if not callable(func) and not hasattr(func, "__get__"):
-            raise TypeError(f"{func!r} is not callable or a descriptor")
+        if not callable(func) and not hasattr(func, '__get__'):
+            raise TypeError(f'{func!r} is not callable or a descriptor')
 
         self.dispatcher = function(func)
         self.func = func
@@ -113,7 +127,7 @@ class method:
 
     def __get__(self, obj, cls=None):
         def _method(*args, **kwargs):
-            method = self.dispatcher.dispatch(args[0].__class__)
+            method = self.dispatcher.dispatch(type(args[0]))
             return method.__get__(obj, cls)(*args, **kwargs)
 
         _method.__isabstractmethod__ = self.__isabstractmethod__
