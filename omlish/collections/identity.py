@@ -2,7 +2,7 @@ import operator as op
 import typing as ta
 
 from .. import lang
-from .utils import yield_dict_init
+from .mappings import yield_dict_init
 
 
 T = ta.TypeVar('T')

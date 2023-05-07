@@ -3,7 +3,7 @@ import collections.abc
 import itertools
 import typing as ta
 
-from .utils import yield_dict_init
+from .mappings import yield_dict_init
 
 
 T = ta.TypeVar('T')

@@ -24,6 +24,10 @@ from .frozen import frozenlist  # noqa
 from .identity import IdentityKeyDict  # noqa
 from .identity import IdentitySet  # noqa
 from .identity import IdentityWrapper  # noqa
+from .mappings import ItemSeqTypeMap  # noqa
+from .mappings import guarded_map_update  # noqa
+from .mappings import multikey_dict  # noqa
+from .mappings import yield_dict_init  # noqa
 from .ordered import OrderedFrozenSet  # noqa
 from .ordered import OrderedSet  # noqa
 from .sorted import SkipList  # noqa
@@ -38,4 +42,3 @@ from .unmodifiable import UnmodifiableSequence  # noqa
 from .unmodifiable import UnmodifiableSet  # noqa
 from .utils import mut_toposort  # noqa
 from .utils import toposort  # noqa
-from .utils import yield_dict_init  # noqa

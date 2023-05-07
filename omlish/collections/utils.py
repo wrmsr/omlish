@@ -1,24 +1,8 @@
-import collections.abc
 import functools
 import typing as ta
 
 
 T = ta.TypeVar('T')
-
-
-def yield_dict_init(*args, **kwargs) -> ta.Iterable[ta.Tuple[ta.Any, ta.Any]]:
-    if len(args) > 1:
-        raise TypeError
-    if args:
-        [src] = args
-        if isinstance(src, collections.abc.Mapping):
-            for k in src:
-                yield (k, src[k])
-        else:
-            for k, v in src:
-                yield (k, v)
-    for k, v in kwargs.items():
-        yield (k, v)
 
 
 def mut_toposort(data: ta.Dict[T, ta.Set[T]]) -> ta.Iterator[ta.Set[T]]:
