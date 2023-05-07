@@ -5,6 +5,7 @@ PROJECT:=omlish
 PYTHON_VERSION_9:=3.9.16
 PYTHON_VERSION_10:=3.10.10
 PYTHON_VERSION_11:=3.11.2
+PYTHON_VERSION_NOGIL:=nogil-3.9.10-1
 
 
 REQUIREMENTS_TXT=requirements-dev.txt
@@ -85,7 +86,7 @@ test: venv
 	$(PYTHON) -mpytest ${SOURCES}
 
 .PHONY: test-all
-test-all: test test-10 test-11
+test-all: test test-10 test-11 test-nogil
 
 .PHONY: test-10
 test-10:
@@ -94,6 +95,10 @@ test-10:
 .PHONY: test-11
 test-11:
 	_PYTHON_VERSION=${PYTHON_VERSION_11} _VENV_ROOT=.venv-11 ${MAKE} test
+
+.PHONY: test-nogil
+test-nogil:
+	_PYTHON_VERSION=${PYTHON_VERSION_NOGIL} _VENV_ROOT=.venv-nogil ${MAKE} test
 
 
 ###
