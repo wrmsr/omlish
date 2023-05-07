@@ -1,6 +1,6 @@
 """
 class UnaryOps(Enum):
-    NOOP = auto()
+    NOP = auto()
     EXP = auto()
     LOG = auto()
     CAST = auto()

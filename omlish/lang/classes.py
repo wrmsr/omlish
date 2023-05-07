@@ -26,7 +26,7 @@ class Abstract(abc.ABC):
         else:
             cls.__forceabstract__ = False  # type: ignore
 
-        super().__init_subclass__(**kwargs)  # type: ignore
+        super().__init_subclass__(**kwargs)
 
         if not _DISABLE_CHECKS and Abstract not in cls.__bases__:
             ams = {a for a, o in cls.__dict__.items() if is_abstract_method(o)}
@@ -128,7 +128,7 @@ class Sealed:
                 if Sealed in base.__bases__:
                     if cls.__module__ != base.__module__:
                         raise SealedException(base)
-        super().__init_subclass__(**kwargs)  # type: ignore
+        super().__init_subclass__(**kwargs)
 
 
 class PackageSealed:
@@ -140,7 +140,7 @@ class PackageSealed:
                 if PackageSealed in base.__bases__:
                     if cls.__module__.split('.')[:-1] != base.__module__.split('.')[:-1]:
                         raise SealedException(base)
-        super().__init_subclass__(**kwargs)  # type: ignore
+        super().__init_subclass__(**kwargs)
 
 
 ##
@@ -149,7 +149,7 @@ class PackageSealed:
 class NotInstantiable(Abstract):
     __slots__ = ()
 
-    def __new__(cls, *args, **kwargs) -> ta.NoReturn:  # type: ignore
+    def __new__(cls, *args, **kwargs) -> ta.NoReturn:
         raise TypeError
 
 

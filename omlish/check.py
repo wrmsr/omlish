@@ -47,7 +47,7 @@ def _unpack_isinstance_spec(spec: ta.Any) -> tuple:
     if not _isinstance(spec, tuple):
         spec = (spec,)
     if None in spec:
-        spec = tuple(filter(None, spec)) + (_NONE_TYPE,)  # type: ignore
+        spec = tuple(filter(None, spec)) + (_NONE_TYPE,)
     if ta.Any in spec:
         spec = (object,)
     return spec
@@ -148,7 +148,7 @@ def none(v: ta.Any, msg: Message) -> None:
 def not_none(v: ta.Optional[T], msg: Message = None) -> T:
     if v is None:
         _raise(ValueError, 'Must not be None', msg, v)
-    return v  # type: ignore
+    return v
 
 
 ##

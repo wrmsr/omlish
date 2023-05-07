@@ -108,7 +108,7 @@ class FrozenList(ta.Sequence[T], Frozen):
 
     def __hash__(self) -> int:
         if self._hash is None:
-            self._hash = hash(self._tup)  # type: ignore
+            self._hash = hash(self._tup)
         return self._hash
 
     def __getitem__(self, idx: ta.Union[int, slice]) -> 'FrozenList[T]':  # type: ignore
@@ -141,7 +141,7 @@ class FrozenList(ta.Sequence[T], Frozen):
         return super().count(x)
 
     def index(self, x: ta.Any, *args, **kwargs) -> int:  # type: ignore
-        return self._tup.index(x, *args, **kwargs)  # type: ignore
+        return self._tup.index(x, *args, **kwargs)
 
 
 frozendict = FrozenDict

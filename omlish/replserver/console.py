@@ -177,7 +177,7 @@ class InteractiveSocketConsole:
             return True
 
         if (
-                isinstance(node, ast.Module) and  # type: ignore
+                isinstance(node, ast.Module) and
                 node.body and
                 isinstance(node.body[-1], ast.Expr)
         ):

@@ -12,7 +12,7 @@ def _find_impl(cls, registry):
     match = None
     for t in mro:
         if match is not None:
-            if (
+            if (  # type: ignore
                     t in registry and t not in cls.__mro__
                     and match not in cls.__mro__
                     and not issubclass(match, t)
@@ -32,7 +32,7 @@ def function(func):
     def dispatch(cls):
         nonlocal cache_token
         if cache_token is not None:
-            current_token = abc.get_cache_token()
+            current_token = abc.get_cache_token()  # type: ignore
             if cache_token != current_token:
                 dispatch_cache.clear()
                 cache_token = current_token

@@ -17,5 +17,5 @@ def test_coerce():
     with pytest.raises(TypeError):
         c([1, '2'])
 
-    c = coerce.seq_of((int, None))  # type: ignore
+    c = coerce.seq_of((int, None))
     assert c([1, 2, None]) == [1, 2, None]

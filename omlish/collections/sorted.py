@@ -138,7 +138,7 @@ class SkipList(SortedCollection[T]):
                 return False
             node.prev, cur.prev = cur.prev, node
         else:
-            node.prev = update[0]
+            node.prev = update[0]  # type: ignore
 
         if node.level > self._height:
             for i in range(self._height, node.level):
@@ -292,7 +292,7 @@ class SortedListDict(SortedMutableMapping[K, V]):
             yield k
 
     def items(self) -> ta.Iterator[ta.Tuple[K, V]]:  # type: ignore
-        yield from self._impl.iter()  # type: ignore
+        yield from self._impl.iter()
 
     def ritems(self) -> ta.Iterator[ta.Tuple[K, V]]:
         yield from self._impl.riter()

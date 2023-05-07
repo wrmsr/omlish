@@ -121,7 +121,7 @@ _empty = tuple.__new__(_Maybe, ())
 
 
 def empty() -> Maybe[T]:
-    return _empty  # type: ignore
+    return _empty
 
 
 def maybe(o: ta.Optional[T]) -> Maybe[T]:

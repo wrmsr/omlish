@@ -63,7 +63,7 @@ def seq_of(
     def inner(it):
         return seq(fn(e) for e in it)  # type: ignore
 
-    fn = _unpack_fn(fn)  # type: ignore
+    fn = _unpack_fn(fn)
     return inner
 
 
@@ -76,7 +76,7 @@ def optional_seq_of(
         else:
             return seq(fn(e) for e in it)  # type: ignore
 
-    fn = _unpack_fn(fn)  # type: ignore
+    fn = _unpack_fn(fn)
     return inner
 
 
@@ -93,7 +93,7 @@ def seq_of_or_none(
             else:
                 return None
 
-    fn = _unpack_fn(fn)  # type: ignore
+    fn = _unpack_fn(fn)
     return inner
 
 
@@ -139,7 +139,7 @@ def abs_set_of(
     def inner(it):
         return abs_set(fn(e) for e in it)  # type: ignore
 
-    fn = _unpack_fn(fn)  # type: ignore
+    fn = _unpack_fn(fn)
     return inner
 
 
@@ -152,7 +152,7 @@ def optional_abs_set_of(
         else:
             return abs_set(fn(e) for e in it)  # type: ignore
 
-    fn = _unpack_fn(fn)  # type: ignore
+    fn = _unpack_fn(fn)
     return inner
 
 
@@ -169,7 +169,7 @@ def abs_set_of_or_none(
             else:
                 return None
 
-    fn = _unpack_fn(fn)  # type: ignore
+    fn = _unpack_fn(fn)
     return inner
 
 
@@ -214,8 +214,8 @@ def map_of(
     def inner(src):
         return map((key_fn(k), value_fn(v)) for k, v in dict(src).items())  # type: ignore
 
-    key_fn = _unpack_fn(key_fn)  # type: ignore
-    value_fn = _unpack_fn(value_fn)  # type: ignore
+    key_fn = _unpack_fn(key_fn)
+    value_fn = _unpack_fn(value_fn)
     return inner
 
 
@@ -232,8 +232,8 @@ def optional_map_of(
         else:
             return map((key_fn(k), value_fn(v)) for k, v in dict(src).items())  # type: ignore
 
-    key_fn = _unpack_fn(key_fn)  # type: ignore
-    value_fn = _unpack_fn(value_fn)  # type: ignore
+    key_fn = _unpack_fn(key_fn)
+    value_fn = _unpack_fn(value_fn)
     return inner
 
 
@@ -254,8 +254,8 @@ def map_of_or_none(
             else:
                 return None
 
-    key_fn = _unpack_fn(key_fn)  # type: ignore
-    value_fn = _unpack_fn(value_fn)  # type: ignore
+    key_fn = _unpack_fn(key_fn)
+    value_fn = _unpack_fn(value_fn)
     return inner
 
 # endregion

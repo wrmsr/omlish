@@ -27,7 +27,7 @@ def unwrap_method_descriptors(fn: ta.Callable) -> ta.Callable:
 class AccessForbiddenException(Exception):
 
     def __init__(self, name: ta.Optional[str] = None, *args: ta.Any, **kwargs: ta.Any) -> None:
-        super().__init__(*((name,) if name is not None else ()), *args, **kwargs)  # type: ignore
+        super().__init__(*((name,) if name is not None else ()), *args, **kwargs)  # noqa
         self.name = name
 
 

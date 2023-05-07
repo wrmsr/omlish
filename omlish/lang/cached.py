@@ -33,7 +33,7 @@ class _CachedNullary(ta.Generic[T]):
 
     def __call__(self) -> T:
         if self._value is not _MISSING:
-            return self._value  # type: ignore
+            return self._value
         value = self._value = self._value_fn()
         return value
 
