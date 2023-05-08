@@ -4,6 +4,7 @@ import typing as ta
 from omlish import cached
 from omlish import check
 from omlish import dataclasses as dc
+import numpy as np
 
 
 T = ta.TypeVar('T')
@@ -37,6 +38,10 @@ class Shape(Dims):
         for i in range(len(self) - 2, -1, -1):
             sts[i] = sts[i + 1] * self[i + 1]
         return Stride(st if s != 1 else 0 for st, s in zip(sts, self))
+
+    @staticmethod
+    def of_np(x: np.ndarray) -> 'Shape':
+        return Shape(x.shape)
 
 
 class Stride(Dims):
