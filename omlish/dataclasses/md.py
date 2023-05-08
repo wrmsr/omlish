@@ -5,6 +5,8 @@ from .. import collections as col
 from .. import lang
 
 
+Metadata = ta.Mapping[ta.Any, ta.Any]
+
 METADATA_KEY = '__dataclass_metadata__'
 
 MERGED_KEYS: ta.Set[ta.Any] = set()
@@ -15,7 +17,7 @@ def _merged(o):
     return o
 
 
-def metadata(class_or_instance: ta.Any) -> ta.Mapping[ta.Any, ta.Any]:
+def metadata(class_or_instance: ta.Any) -> Metadata:
     cls = class_or_instance if isinstance(class_or_instance, type) else type(class_or_instance)
     if not dc.is_dataclass(cls):
         raise TypeError('must be called with a dataclass type or instance')
@@ -82,3 +84,10 @@ class Init(lang.Marker):
 
 def init(fn: ta.Callable[..., None]) -> None:
     _add_cls_md(Init, fn)
+
+
+##
+
+
+class KwOnly(lang.Marker):
+    pass

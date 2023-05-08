@@ -63,3 +63,13 @@ def test_md():
     dc.tag(Foo, {'b': 20})
 
     assert dc.metadata(Foo) == {'a': 10, 'b': 20}
+
+
+def test_kw_only():
+    @dc.dataclass()
+    class C:
+        x: int
+
+    assert C(x=10).x == 10
+    with pytest.raises(Exception):
+        C(10)  # noqa

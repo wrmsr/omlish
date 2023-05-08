@@ -1,12 +1,5 @@
 import dataclasses as _dc
 
-from .md import check  # noqa
-from .md import init  # noqa
-from .md import metadata  # noqa
-from .md import tag  # noqa
-
-
-##
 
 Field = _dc.Field
 FrozenInstanceError = _dc.FrozenInstanceError
@@ -23,8 +16,17 @@ is_dataclass = _dc.is_dataclass
 ##
 
 
+from .md import KwOnly  # noqa
+from .md import check  # noqa
+from .md import init  # noqa
+from .md import metadata  # noqa
+from .md import tag  # noqa
+
 from .impl import dataclass as _dataclass  # noqa
 from .impl import field as _field  # noqa
+
+##
+
 
 from dataclasses import dataclass  # noqa
 

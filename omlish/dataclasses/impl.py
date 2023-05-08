@@ -3,6 +3,7 @@ FIXME:
  - make_dataclass
 
 TODO:
+ - !! @dc.opaque_dataclass - mypy bypass, allow everything,
  - default_fn
   - toposort
  - type_check
@@ -25,10 +26,19 @@ import dataclasses as dc
 import inspect
 import io
 import typing as ta
+import sys
 
-from . import md
 from .. import collections as col
+from .md import Check
+from .md import Init
+from .md import KwOnly
+from .md import METADATA_KEY
+from .md import Metadata
 
+
+if sys.version_info[0] != 3:
+    raise RuntimeError
+IS_10 = sys.version_info[1] >= 10
 
 VERBOSE = False
 
@@ -43,18 +53,25 @@ def field(
         compare=True,
         metadata=None,
 
-        kw_only=False,
+        kw_only=dc.MISSING,
 
         check: ta.Optional[ta.Callable[[ta.Any], bool]] = None,
 ):
-    fmd = {**(metadata or {})}
+    md = {**(metadata or {})}
 
     if check is not None:
-        if md.Check in fmd:
-            raise KeyError(fmd)
+        if Check in md:
+            raise KeyError(md)
         if not callable(check):
             raise TypeError(check)
-        fmd[md.Check] = check
+        md[Check] = check
+
+    kwargs = {}
+
+    if kw_only:
+        md[KwOnly] = True
+        if IS_10:
+            kwargs['kw_only'] = True
 
     fld = dc.field(  # type: ignore
         default=default,
@@ -63,7 +80,9 @@ def field(
         repr=repr,
         hash=hash,
         compare=compare,
-        metadata=fmd,
+        metadata=md,
+
+        **kwargs,
     )
     return fld
 
@@ -75,6 +94,8 @@ class Params(ta.NamedTuple):
     order: bool
     unsafe_hash: bool
     frozen: bool
+
+    metadata: ta.Optional[Metadata]
 
 
 def fieldsmap(cls: ta.Any) -> ta.Mapping[str, dc.Field]:
@@ -169,14 +190,14 @@ def process_class(cls: type, params: Params) -> type:
     buf.truncate(0)
 
     for f in flds.values():
-        chk = f.metadata.get(md.Check)
+        chk = f.metadata.get(Check)
         if chk is not None:
             cn = nsg.put(f'__check_' + f.name, chk)
             lines.append(f'    if not {cn}({f.name}): raise __CheckException')
 
-    dcmd = getattr(dcls, md.METADATA_KEY, {})
+    dcmd = getattr(dcls, METADATA_KEY, {})
 
-    for i, fn in enumerate(dcmd.get(md.Check, [])):
+    for i, fn in enumerate(dcmd.get(Check, [])):
         if isinstance(fn, staticmethod):
             fn = fn.__func__
         cn = nsg.put(f'__check_{i}', fn)
@@ -186,7 +207,7 @@ def process_class(cls: type, params: Params) -> type:
 
     lines.append(f'    __dataclass_init__({self_name}, {", ".join(flds)})')
 
-    for i, fn in enumerate(dcmd.get(md.Init, [])):
+    for i, fn in enumerate(dcmd.get(Init, [])):
         lines.append(f'    {nsg.put(f"__init_{i}", fn)}({self_name})')
 
     ns = nsg.dct
@@ -211,6 +232,8 @@ def dataclass(
         order=False,
         unsafe_hash=False,
         frozen=False,
+
+        metadata=None,
 ):
     def wrap(cls):
         return process_class(cls, Params(
@@ -220,6 +243,8 @@ def dataclass(
             order=order,
             unsafe_hash=unsafe_hash,
             frozen=frozen,
+
+            metadata=metadata,
         ))
 
     if cls is None:
