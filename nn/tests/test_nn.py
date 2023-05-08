@@ -74,7 +74,7 @@ class View:
     offset: int = 0
 
     @staticmethod
-    def of(sh: Shape) -> 'View':
+    def of_shape(sh: Shape) -> 'View':
         check.arg(len(sh) > 0)
         return View(sh, sh.base_stride())
 
@@ -84,7 +84,32 @@ class View:
 
 
 class ShapeTracker:
-    pass
+    def __int__(
+            self,
+            shape: ta.Union[Shape, 'ShapeTracker'],
+            views: ta.Optional[ta.Iterable['View']] = None,
+    ) -> None:
+        super().__init__()
+
+        if views is not None:
+            self._views = list(views)
+        elif isinstance(shape, ShapeTracker):
+            self._views = list(shape._views)
+        else:
+            self._views = [View.of_shape(shape)]
+
+    @property
+    def view(self) -> View:
+        return self._views[-1]
+
+    @property
+    def shape(self) -> Shape:
+        return self.view.shape
+
+    @property
+    def size(self) -> int:
+        v = self.view
+        return math.prod([s for s, st in zip(v.shape, v.stride) if st != 0])
 
 
 def test_nn():
@@ -94,4 +119,4 @@ def test_nn():
     print(v)
     print(v.shape_strides)
     print(v.shape_strides)
-    print(View.of(sh))
+    print(View.of_shape(sh))
