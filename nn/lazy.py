@@ -45,3 +45,6 @@ class LazyBuffer(Lazy):
 
         self._realized: ta.Optional[RawBuffer] = None
         self._children: ta.MutableSet['LazyBuffer'] = weakref.WeakSet()
+
+        for b in op.buffers:
+            b._children.add(self)
