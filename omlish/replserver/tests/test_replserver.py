@@ -63,7 +63,7 @@ def test_replserver():
 
             check(path)
 
-            time.sleep(1)
+            time.sleep(.1)
 
             server.shutdown()
             thread.join(3)

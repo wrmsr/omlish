@@ -1,6 +1,7 @@
 import math
 import typing as ta
 
+from omlish import cached
 from omlish import check
 from omlish import dataclasses as dc
 
@@ -18,6 +19,13 @@ class Shape(Dims):
     @property
     def dim(self) -> int:
         return math.prod(self)
+
+    def base_stride(self) -> 'Stride':
+        sts = [0] * len(self)
+        sts[-1] = 1
+        for i in range(len(self) - 2, -1, -1):
+            sts[i] = sts[i + 1] * self[i + 1]
+        return Stride(st if s != 1 else 0 for st, s in zip(sts, self))
 
 
 class Stride(Dims):
@@ -54,12 +62,15 @@ class View:
     stride: Stride
     offset: int = 0
 
+    @cached.property
+    def shape_strides(self) -> ta.Sequence[ShapeStride]:
+        return ShapeStride.calc(self.shape, self.stride)
+
 
 def test_nn():
     sh = Shape((1, 2, 3))
     st = Stride((3, 3, 3))
     v = View(sh, st)
     print(v)
-    print(ShapeStride.calc(sh, st))
-    print(ShapeStride.calc(Shape((3, 3)), Stride((3, 1))))
-    print(Shape.of(1, 2, 3))
+    print(v.shape_strides)
+    print(v.shape_strides)
