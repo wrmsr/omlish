@@ -10,9 +10,20 @@ T = ta.TypeVar('T')
 
 
 class Dims(tuple):
-    @classmethod
-    def of(cls: ta.Type[T], *dims) -> T:
-        return cls(dims)  # type: ignore
+    def __new__(cls, *args, **kwargs):
+        if kwargs:
+            raise TypeError
+        if not args:
+            return super().__new__(cls)
+        if isinstance(args[0], int):
+            t = args
+        else:
+            [t] = args
+            t = tuple(t)
+        for d in t:
+            if not isinstance(d, int):
+                raise TypeError(d)
+        return super().__new__(cls, t)
 
 
 class Shape(Dims):
@@ -62,15 +73,25 @@ class View:
     stride: Stride
     offset: int = 0
 
+    @staticmethod
+    def of(sh: Shape) -> 'View':
+        check.arg(len(sh) > 0)
+        return View(sh, sh.base_stride())
+
     @cached.property
     def shape_strides(self) -> ta.Sequence[ShapeStride]:
         return ShapeStride.calc(self.shape, self.stride)
 
 
+class ShapeTracker:
+    pass
+
+
 def test_nn():
-    sh = Shape((1, 2, 3))
-    st = Stride((3, 3, 3))
+    sh = Shape(1, 2, 3)
+    st = Stride(3, 3, 3)
     v = View(sh, st)
     print(v)
     print(v.shape_strides)
     print(v.shape_strides)
+    print(View.of(sh))
