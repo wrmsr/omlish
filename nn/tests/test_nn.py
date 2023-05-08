@@ -10,8 +10,8 @@ T = ta.TypeVar('T')
 
 class Dims(tuple):
     @classmethod
-    def of(cls: T, *dims) -> T:
-        return cls(dims)
+    def of(cls: ta.Type[T], *dims) -> T:
+        return cls(dims)  # type: ignore
 
 
 class Shape(Dims):
