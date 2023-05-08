@@ -154,6 +154,11 @@ def not_none(v: ta.Optional[T], msg: Message = None) -> T:
 ##
 
 
+def arg(v: bool, msg: Message = None) -> None:
+    if not v:
+        _raise(RuntimeError, 'Argument condition not met', msg)
+
+
 def state(v: bool, msg: Message = None) -> None:
     if not v:
         _raise(RuntimeError, 'State condition not met', msg)
