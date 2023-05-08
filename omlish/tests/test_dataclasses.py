@@ -76,3 +76,10 @@ def test_kw_only():
     assert C(x=10).x == 10
     with pytest.raises(Exception):
         C(10)  # noqa
+
+
+def test_mcls():
+    class C(dc.Data):
+        x: int
+
+    assert C(10).x == 10

@@ -16,6 +16,7 @@ from .clsdct import ClassDctFn  # noqa
 from .clsdct import cls_dct_fn  # noqa
 from .clsdct import get_caller_cls_dct  # noqa
 from .clsdct import is_possibly_cls_dct  # noqa
+from .contextmanagers import defer  # noqa
 from .descriptors import AccessForbiddenException  # noqa
 from .descriptors import access_forbidden  # noqa
 from .descriptors import is_method_descriptor  # noqa
@@ -33,6 +34,7 @@ from .maybes import Maybe  # noqa
 from .maybes import empty  # noqa
 from .maybes import just  # noqa
 from .maybes import maybe  # noqa
-from .utils import arg_repr  # noqa
-from .utils import attr_repr  # noqa
-from .utils import defer  # noqa
+from .objects import arg_repr  # noqa
+from .objects import attr_repr  # noqa
+from .objects import new_type  # noqa
+from .objects import super_meta  # noqa
