@@ -4,6 +4,7 @@ FIXME:
 
 TODO:
  - !! @dc.opaque_dataclass - mypy bypass, allow everything,
+  - !!! NOPE: either won't understand __init__ args OR won't understand field accesses - need mcls :/
  - default_fn
   - toposort
  - type_check
@@ -34,6 +35,7 @@ from .md import Init
 from .md import KwOnly
 from .md import METADATA_KEY
 from .md import Metadata
+from .md import metadata
 
 
 if sys.version_info[0] != 3:
@@ -68,10 +70,10 @@ def field(
 
     kwargs = {}
 
-    if kw_only:
-        md[KwOnly] = True
+    if kw_only is not dc.MISSING:
+        md[KwOnly] = kw_only
         if IS_10:
-            kwargs['kw_only'] = True
+            kwargs['kw_only'] = kw_only
 
     fld = dc.field(  # type: ignore
         default=default,
@@ -96,6 +98,7 @@ class Params(ta.NamedTuple):
     frozen: bool
 
     metadata: ta.Optional[Metadata]
+    kw_only: bool
 
 
 def fieldsmap(cls: ta.Any) -> ta.Mapping[str, dc.Field]:
@@ -152,6 +155,11 @@ class NsGen:
 
 
 def process_class(cls: type, params: Params) -> type:
+    dckw = {}
+    if IS_10:
+        if params.kw_only:
+            dckw['kw_only'] = params.kw_only
+
     dcls = dc.dataclass(  # type: ignore
         cls,
         init=params.init,
@@ -160,7 +168,13 @@ def process_class(cls: type, params: Params) -> type:
         order=params.order,
         unsafe_hash=params.unsafe_hash,
         frozen=params.frozen,
+
+        **dckw,
     )
+
+    if params.metadata:
+        imd = getattr(dcls, METADATA_KEY, {})
+        setattr(dcls, METADATA_KEY, {**imd, **params.metadata})
 
     flds = fieldsmap(dcls)
     self_name = '__dataclass_self__' if 'self' in flds else 'self'
@@ -174,6 +188,8 @@ def process_class(cls: type, params: Params) -> type:
 
     buf = io.StringIO()
     buf.write(f'def __init__({self_name}')
+    if params.kw_only:
+        buf.write(', *')
     for i, f in enumerate(flds.values()):
         buf.write(f', {f.name}')
         if f.type is not None:
@@ -195,9 +211,9 @@ def process_class(cls: type, params: Params) -> type:
             cn = nsg.put(f'__check_' + f.name, chk)
             lines.append(f'    if not {cn}({f.name}): raise __CheckException')
 
-    dcmd = getattr(dcls, METADATA_KEY, {})
+    md = metadata(dcls)
 
-    for i, fn in enumerate(dcmd.get(Check, [])):
+    for i, fn in enumerate(md.get(Check, [])):
         if isinstance(fn, staticmethod):
             fn = fn.__func__
         cn = nsg.put(f'__check_{i}', fn)
@@ -205,9 +221,9 @@ def process_class(cls: type, params: Params) -> type:
         cas = ', '.join(p.name for p in csig.parameters.values())
         lines.append(f'    if not {cn}({cas}): raise __CheckException')
 
-    lines.append(f'    __dataclass_init__({self_name}, {", ".join(flds)})')
+    lines.append(f'    __dataclass_init__({self_name}, {", ".join(f"{f}={f}" for f in flds)})')
 
-    for i, fn in enumerate(dcmd.get(Init, [])):
+    for i, fn in enumerate(md.get(Init, [])):
         lines.append(f'    {nsg.put(f"__init_{i}", fn)}({self_name})')
 
     ns = nsg.dct
@@ -222,6 +238,11 @@ def process_class(cls: type, params: Params) -> type:
     return dcls
 
 
+class Opaque:
+    def __init__(self, *args, **kwargs):
+        raise TypeError
+
+
 def dataclass(
         cls=None,
         /,
@@ -234,6 +255,7 @@ def dataclass(
         frozen=False,
 
         metadata=None,
+        kw_only=False,
 ):
     def wrap(cls):
         return process_class(cls, Params(
@@ -245,6 +267,7 @@ def dataclass(
             frozen=frozen,
 
             metadata=metadata,
+            kw_only=kw_only,
         ))
 
     if cls is None:

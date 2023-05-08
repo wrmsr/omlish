@@ -1,3 +1,5 @@
+import sys
+
 import pytest
 
 from .. import dataclasses as dc
@@ -65,8 +67,9 @@ def test_md():
     assert dc.metadata(Foo) == {'a': 10, 'b': 20}
 
 
+@pytest.mark.skipif(sys.version_info[1] < 10, reason='-')
 def test_kw_only():
-    @dc.dataclass()
+    @dc.dataclass(**{'kw_only': True})
     class C:
         x: int
 

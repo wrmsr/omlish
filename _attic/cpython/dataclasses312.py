@@ -550,12 +550,10 @@ def _get_field(cls, a_name, a_type, default_kw_only):
     else:
         assert f._field_type is _FIELD_CLASSVAR
         if f.kw_only is not MISSING:
-            raise TypeError(f'field {f.name} is a ClassVar but specifies '
-                            'kw_only')
+            raise TypeError(f'field {f.name} is a ClassVar but specifies kw_only')
 
     if f._field_type is _FIELD and f.default.__class__.__hash__ is None:
-        raise ValueError(f'mutable default {type(f.default)} for field '
-                         f'{f.name} is not allowed: use default_factory')
+        raise ValueError(f'mutable default {type(f.default)} for field {f.name} is not allowed: use default_factory')
 
     return f
 
