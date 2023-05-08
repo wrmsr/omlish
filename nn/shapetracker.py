@@ -6,7 +6,7 @@ from .dims import Shape
 
 
 class ShapeTracker:
-    def __int__(
+    def __init__(
             self,
             shape: ta.Union[Shape, 'ShapeTracker'],
             views: ta.Optional[ta.Iterable['View']] = None,
@@ -19,6 +19,14 @@ class ShapeTracker:
             self._views = list(shape._views)
         else:
             self._views = [View.of_shape(shape)]
+
+    @staticmethod
+    def of(o: ta.Union['ShapeTracker', Shape]) -> 'ShapeTracker':
+        if isinstance(o, ShapeTracker):
+            return o
+        if isinstance(o, Shape):
+            return ShapeTracker(o)
+        raise TypeError(o)
 
     @property
     def view(self) -> View:

@@ -2,6 +2,8 @@ from ..dims import Shape
 from ..dims import Stride
 from ..dims import View
 
+# from ..tensors import Tensor
+
 
 def test_nn():
     sh = Shape(1, 2, 3)
@@ -11,3 +13,5 @@ def test_nn():
     print(v.shape_strides)
     print(v.shape_strides)
     print(View.of_shape(sh))
+
+    # t = Tensor()
