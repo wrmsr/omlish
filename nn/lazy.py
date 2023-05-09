@@ -69,6 +69,15 @@ class LazyBuffer(Lazy):
                 raise TypeError(self._op.op)
         return self
 
+    @property
+    def is_realized(self) -> bool:
+        return self._realized is not None
+
+    def realized(self) -> RawBuffer:
+        if self._realized is None:
+            raise RuntimeError('Not realized')
+        return self._realized
+
 
 def elementwise_op(op: ta.Union[UnaryOp, BinaryOp], *srcs: LazyBuffer, arg: ta.Optional[ta.Any] = None) -> LazyBuffer:
     return LazyBuffer(
