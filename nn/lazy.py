@@ -7,9 +7,11 @@ from omlish import lang
 
 from .dims import Shape
 from .ops import BinaryOp
+from .ops import LoadOp
 from .ops import Op
 from .ops import UnaryOp
 from .raw import RawBuffer
+from .raw import RawCpuBuffer
 from .shapetracker import ShapeTracker
 
 
@@ -58,6 +60,14 @@ class LazyBuffer(Lazy):
 
     def binary_op(self, op: BinaryOp, y: 'LazyBuffer') -> 'LazyBuffer':
         raise NotImplementedError
+
+    def realize(self) -> 'LazyBuffer':
+        if self._realized is None:
+            if self._op.op == LoadOp.FROM_CPU:
+                self._realized = RawCpuBuffer.from_cpu(self._op.arg)
+            else:
+                raise TypeError(self._op.op)
+        return self
 
 
 def elementwise_op(op: ta.Union[UnaryOp, BinaryOp], *srcs: LazyBuffer, arg: ta.Optional[ta.Any] = None) -> LazyBuffer:

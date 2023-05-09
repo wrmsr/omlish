@@ -66,6 +66,19 @@ def of_isinstance(spec: ta.Any, msg: Message = None) -> ta.Callable[[T], T]:
     return inner
 
 
+def cast(v: ta.Any, cls: ta.Type[T], msg: Message = None) -> T:  # noqa
+    if not _isinstance(v, cls):
+        _raise(TypeError, 'Must be instance', msg, v, cls)
+    return v
+
+
+def of_cast(cls: ta.Type[T], msg: Message = None) -> ta.Callable[[T], T]:
+    def inner(v):
+        return isinstance(v, cls, msg)
+
+    return inner
+
+
 def not_isinstance(v: T, spec: ta.Any, msg: Message = None) -> T:  # noqa
     if _isinstance(v, _unpack_isinstance_spec(spec)):
         _raise(TypeError, 'Must not be instance', msg, v, spec)

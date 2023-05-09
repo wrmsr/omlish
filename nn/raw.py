@@ -52,3 +52,17 @@ class RawConst(RawBuffer, lang.Final):
     def from_cpu(cls, x: np.ndarray) -> 'RawConst':
         check.arg(x.shape == (1,))
         return RawConst(x[0])
+
+
+class RawCpuBuffer(RawBuffer):
+    def __init__(self, buf: np.ndarray) -> None:
+        check.isinstance(buf, np.ndarray)
+        super().__init__(buf.size, Dtype.of_np(buf.dtype))
+        self._buf = buf
+
+    def to_cpu(self) -> np.ndarray:
+        return self._buf
+
+    @classmethod
+    def from_cpu(cls: ta.Type[T], x: np.ndarray) -> T:
+        return cls(x)  # type: ignore

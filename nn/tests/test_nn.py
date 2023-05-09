@@ -20,8 +20,8 @@ def test_nn():
 
     # t = Tensor()
 
-    x = np.asarray([1, 2])
-    y = np.asarray([3, 4])
+    x = np.asarray([1., 2.], dtype=np.float32)
+    # y = np.asarray([3., 4.], dtype=np.float32)
 
     xb = LazyBuffer(
         ShapeTracker.of(Shape.of_np(x)),
@@ -32,16 +32,4 @@ def test_nn():
         ),
     )
 
-    """
-    func MakeLoadBuffer(data *Buffer) *LazyBuffer {
-        return NewLazyBuffer(
-            NewShapeTracker(data.Shape()),
-            LoadOpType,
-            &LazyOp{
-                op:   FromCpuOp,
-                srcs: nil,
-                arg:  data,
-            },
-        )
-    }
-    """
+    xb.realize()
