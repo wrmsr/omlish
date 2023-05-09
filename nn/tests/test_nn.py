@@ -21,18 +21,20 @@ def test_nn():
     # t = Tensor()
 
     x = np.asarray([1., 2.], dtype=np.float32)
-    # y = np.asarray([3., 4.], dtype=np.float32)
+    y = np.asarray([3., 4.], dtype=np.float32)
 
-    print(x)
+    def make_load(a: np.ndarray) -> LazyBuffer:
+        return LazyBuffer(
+            ShapeTracker.of(Shape.of_np(a)),
+            LazyOp(
+                LoadOp.FROM_CPU,
+                [],
+                a,
+            ),
+        )
 
-    xb = LazyBuffer(
-        ShapeTracker.of(Shape.of_np(x)),
-        LazyOp(
-            LoadOp.FROM_CPU,
-            [],
-            x,
-        ),
-    )
+    xb = make_load(x)
+    yb = make_load(y)
 
     x2 = xb.realize().realized().to_cpu()
     print(x2)
