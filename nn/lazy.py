@@ -65,6 +65,10 @@ class LazyBuffer(Lazy):
         if self._realized is None:
             if self._op.op == LoadOp.FROM_CPU:
                 self._realized = RawCpuBuffer.from_cpu(self._op.arg)
+
+            elif self._op.op == BinaryOp.MUL:
+                raise NotImplementedError
+
             else:
                 raise TypeError(self._op.op)
 

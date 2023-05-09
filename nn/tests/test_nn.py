@@ -5,6 +5,7 @@ from ..dims import Stride
 from ..dims import View
 from ..lazy import LazyBuffer
 from ..lazy import LazyOp
+from ..ops import BinaryOp
 from ..ops import LoadOp
 from ..shapetracker import ShapeTracker
 
@@ -20,8 +21,8 @@ def test_nn():
 
     # t = Tensor()
 
-    x = np.asarray([1., 2.], dtype=np.float32)
-    y = np.asarray([3., 4.], dtype=np.float32)
+    xa = np.asarray([1., 2.], dtype=np.float32)
+    ya = np.asarray([3., 4.], dtype=np.float32)
 
     def make_load(a: np.ndarray) -> LazyBuffer:
         return LazyBuffer(
@@ -33,8 +34,16 @@ def test_nn():
             ),
         )
 
-    xb = make_load(x)
-    yb = make_load(y)
+    xb = make_load(xa)
+    yb = make_load(ya)
 
-    x2 = xb.realize().realized().to_cpu()
-    print(x2)
+    zb = LazyBuffer(
+        ShapeTracker.of(xb.shape),
+        LazyOp(
+            BinaryOp.MUL,
+            [xb, yb],
+        ),
+    )
+
+    za = zb.realize().realized().to_cpu()
+    print(za)
