@@ -23,6 +23,8 @@ def test_nn():
     x = np.asarray([1., 2.], dtype=np.float32)
     # y = np.asarray([3., 4.], dtype=np.float32)
 
+    print(x)
+
     xb = LazyBuffer(
         ShapeTracker.of(Shape.of_np(x)),
         LazyOp(
@@ -32,4 +34,5 @@ def test_nn():
         ),
     )
 
-    xb.realize()
+    x2 = xb.realize().realized().to_cpu()
+    print(x2)

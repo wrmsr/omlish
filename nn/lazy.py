@@ -67,6 +67,7 @@ class LazyBuffer(Lazy):
                 self._realized = RawCpuBuffer.from_cpu(self._op.arg)
             else:
                 raise TypeError(self._op.op)
+
         return self
 
     @property
