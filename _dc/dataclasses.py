@@ -1,11 +1,12 @@
-import _thread
 import copy
+import dataclasses as dc
 import functools
 import inspect
 import itertools
 import keyword
 import re
 import sys
+import threading
 import types
 
 from . import polyfill as pf
@@ -33,26 +34,19 @@ class FrozenInstanceError(AttributeError):
     pass
 
 
-class _HAS_DEFAULT_FACTORY_CLASS:
-    def __repr__(self):
-        return '<factory>'
+_HAS_DEFAULT_FACTORY = getattr(dc, '_HAS_DEFAULT_FACTORY')
 
 
-_HAS_DEFAULT_FACTORY = _HAS_DEFAULT_FACTORY_CLASS()
+MISSING = dc.MISSING
 
 
-class _MISSING_TYPE:
-    pass
+if hasattr(dc, 'KW_ONLY'):
+    KW_ONLY = dc.KW_ONLY
+else:
+    class _KW_ONLY_TYPE:
+        pass
 
-
-MISSING = _MISSING_TYPE()
-
-
-class _KW_ONLY_TYPE:
-    pass
-
-
-KW_ONLY = _KW_ONLY_TYPE()
+    KW_ONLY = _KW_ONLY_TYPE()
 
 _EMPTY_METADATA = types.MappingProxyType({})
 
@@ -103,7 +97,7 @@ def _recursive_repr(user_function):
 
     @functools.wraps(user_function)
     def wrapper(self):
-        key = id(self), _thread.get_ident()
+        key = id(self), threading.get_ident()
         if key in repr_running:
             return '...'
         repr_running.add(key)
