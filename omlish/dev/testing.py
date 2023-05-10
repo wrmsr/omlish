@@ -1,4 +1,5 @@
 import functools
+import importlib
 import os
 import threading
 import time
@@ -79,6 +80,15 @@ def waitpid_with_timeout(
         elapsed_time = time.time() - start_time
         if elapsed_time >= timeout_s:
             raise timeout_exception
+
+
+def can_import(*args, **kwargs) -> bool:
+    try:
+        importlib.import_module(*args, **kwargs)
+    except ImportError:
+        return False
+    else:
+        return True
 
 
 def xfail(fn):

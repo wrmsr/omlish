@@ -1,4 +1,12 @@
 from .classes import Abstract  # noqa
+from .imports import lazy_import  # noqa
+from .imports import proxy_import  # noqa
+from .imports import import_module  # noqa
+from .imports import import_module_attr  # noqa
+from .imports import yield_importable  # noqa
+from .imports import yield_import_all  # noqa
+from .imports import import_all  # noqa
+from .imports import try_import  # noqa
 from .classes import Final  # noqa
 from .classes import FinalException  # noqa
 from .classes import Marker  # noqa
