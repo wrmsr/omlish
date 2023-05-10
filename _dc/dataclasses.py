@@ -1,6 +1,4 @@
-from types import FunctionType, GenericAlias
 import _thread
-import abc
 import copy
 import functools
 import inspect
@@ -197,7 +195,7 @@ class Field:
         if func:
             func(self.default, owner, name)
 
-    __class_getitem__ = classmethod(GenericAlias)
+    __class_getitem__ = classmethod(types.GenericAlias)
 
 
 class _DataclassParams:
@@ -568,7 +566,7 @@ def _get_field(cls, a_name, a_type, default_kw_only):
 
 
 def _set_qualname(cls, value):
-    if isinstance(value, FunctionType):
+    if isinstance(value, types.FunctionType):
         value.__qualname__ = f"{cls.__qualname__}.{value.__name__}"
     return value
 
