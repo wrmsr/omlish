@@ -189,7 +189,7 @@ class Field:
             f'metadata={self.metadata!r},'
             f'kw_only={self.kw_only!r},'
             f'_field_type={self._field_type}'
-            ')',
+            ')'
         )
 
     def __set_name__(self, owner, name):
@@ -842,9 +842,10 @@ def _add_slots(cls, is_frozen, weakref_slot):
         cls.__qualname__ = qualname
 
     if is_frozen:
-        cls.__getstate__ = _dataclass_getstate
-        cls.__setstate__ = _dataclass_setstate
-
+        if '__getstate__' not in cls_dict:
+            cls.__getstate__ = _dataclass_getstate
+        if '__setstate__' not in cls_dict:
+            cls.__setstate__ = _dataclass_setstate
     return cls
 
 
