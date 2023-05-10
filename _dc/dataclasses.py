@@ -10,6 +10,8 @@ import re
 import sys
 import types
 
+from . import polyfill as pf
+
 
 __all__ = [
     'dataclass',
@@ -78,7 +80,7 @@ _POST_INIT_NAME = '__post_init__'
 _MODULE_IDENTIFIER_RE = re.compile(r'^(?:\s*(\w+)\s*\.)?\s*(\w+)')
 
 _ATOMIC_TYPES = frozenset({
-    types.NoneType,
+    pf.NoneType,
     bool,
     int,
     float,
@@ -87,8 +89,8 @@ _ATOMIC_TYPES = frozenset({
     complex,
     bytes,
 
-    types.EllipsisType,
-    types.NotImplementedType,
+    pf.EllipsisType,
+    pf.NotImplementedType,
     types.CodeType,
     types.BuiltinFunctionType,
     types.FunctionType,
@@ -660,7 +662,7 @@ def _process_class(
             if getattr(b, _PARAMS).frozen:
                 any_frozen_base = True
 
-    cls_annotations = inspect.get_annotations(cls)
+    cls_annotations = pf.get_annotations(cls)
 
     cls_fields = []
 
@@ -781,7 +783,7 @@ def _process_class(
     if slots:
         cls = _add_slots(cls, frozen, weakref_slot)
 
-    abc.update_abstractmethods(cls)
+    pf.update_abstractmethods(cls)
 
     return cls
 
@@ -796,15 +798,15 @@ def _dataclass_setstate(self, state):
 
 
 def _get_slots(cls):
-    match cls.__dict__.get('__slots__'):
-        case None:
-            return
-        case str(slot):
-            yield slot
-        case iterable if not hasattr(iterable, '__next__'):
-            yield from iterable
-        case _:
-            raise TypeError(f"Slots of '{cls.__name__}' cannot be determined")
+    sl = cls.__dict__.get('__slots__')
+    if sl is None:
+        return
+    elif isinstance(sl, str):
+        yield sl
+    elif not hasattr(sl, '__next__'):
+        yield from sl
+    else:
+        raise TypeError(f"Slots of '{cls.__name__}' cannot be determined")
 
 
 def _add_slots(cls, is_frozen, weakref_slot):
