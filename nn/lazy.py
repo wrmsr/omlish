@@ -8,6 +8,7 @@ from omlish import lang
 from .devices import Device
 from .dims import Shape
 from .dtypes import Dtype
+from .numpy import LazyNpArray
 from .ops import BinaryOp
 from .ops import LoadOp
 from .ops import Op
@@ -202,6 +203,15 @@ class LazyBuffer(Lazy):
         # ast = map_buffers(real_srcs, self.op)
         # return LazyOp(MovementOp.RESHAPE, (ast,), self.shape) if intermediate_shape != self.shape else ast
         raise NotImplementedError
+
+    @staticmethod
+    def from_cpu(x: LazyNpArray, device: Device) -> 'LazyBuffer':
+        return LazyBuffer(
+            device,
+            ShapeTracker.of(x.shape),
+            LazyOp(LoadOp.FROM_CPU, (), x),
+            Dtype.of_np(x.dtype),
+        )
 
 
 def elementwise_op(

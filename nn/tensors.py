@@ -11,7 +11,7 @@ from .dtypes import Dtype
 from .dtypes import Float32
 from .funcs import Func
 from .lazy import LazyBuffer
-from .numpy import LazyNumpyArray  # noqa
+from .numpy import LazyNpArray
 
 
 DEFAULT_DTYPE = Float32
@@ -33,31 +33,46 @@ class Tensor(lang.Final):
 
     @staticmethod
     def of(
-            data: ta.Union[ta.Iterable, LazyBuffer, np.ndarray],
+            src: ta.Union[
+                ta.Iterable,
+                LazyBuffer,
+                LazyNpArray,
+                np.ndarray,
+            ],
             *,
             device: ta.Optional[Device] = None,
             dtype: ta.Optional[Dtype] = None,
+            **kwargs: ta.Any,
     ) -> 'Tensor':
-        # if isinstance(data, list):
-        #     data = np.array(data, dtype=(dtype if dtype is not None else Tensor.default_type).np)
-        #
-        # elif isinstance(data, LazyBuffer) and data.device != device:
-        #     raise NotImplementedError
-        #
-        # if isinstance(data, np.ndarray):
-        #     data = LazyNumpyArray(data, data.shape, data.dtype)
-        #
-        # if isinstance(data, LazyNumpyArray):
-        #     if not data.shape:
-        #         # FIXME: ??
-        #         data = data.reshape(Shape(1,))
-        #     lazydata = LazyBuffer.fromCPU(data.astype(dtype.np) if dtype is not None else data, device)
-        # elif isinstance(data, LazyBuffer):
-        #     assert dtype is None or dtype == data.dtype, "dtype doesn't match, and casting isn't supported"
-        #     lazydata = data
-        # else:
-        #     raise RuntimeError(f"can't create Tensor from {data}")
-        raise NotImplementedError
+        if device is None:
+            device = DEFAULT_DEVICE
+
+        if isinstance(src, list):
+            src = np.array(src, dtype=(dtype or DEFAULT_DTYPE).np)
+
+        if isinstance(src, LazyBuffer) and src.device != device:
+            # FIXME:
+            raise NotImplementedError
+
+        if isinstance(src, np.ndarray):
+            src = LazyNpArray(src, Shape(src.shape), Dtype.of_np(src.dtype))
+
+        if isinstance(src, LazyNpArray):
+            if not src.shape:
+                # FIXME: ??
+                src = src.reshape(Shape(1, ))
+            if dtype is not None:
+                src = src.astype(dtype.np)
+            data = LazyBuffer.from_cpu(src, device)
+
+        elif isinstance(src, LazyBuffer):
+            check.arg(dtype is None or dtype == src.dtype)
+            data = src
+
+        else:
+            raise TypeError(src)
+
+        return Tensor(data, **kwargs)
 
     @property
     def data(self) -> LazyBuffer:

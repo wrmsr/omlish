@@ -7,7 +7,7 @@ import numpy as np
 @dc.dataclass(frozen=True)
 class Dtype:
     name: str
-    numpy: ta.Any
+    np: ta.Any
 
     @staticmethod
     def of_np(npdt: np.dtype) -> 'Dtype':

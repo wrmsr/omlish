@@ -8,20 +8,20 @@ from .dtypes import Dtype
 
 
 @dc.dataclass(frozen=True)
-class LazyNumpyArray:
-    src: ta.Any  # np.array_like | Callable[[LazyNumpyArray], np.array_like]
+class LazyNpArray:
+    src: ta.Any  # np.array_like | Callable[[LazyNpArray], np.array_like]
     shape: Shape
     dtype: Dtype
 
     def __call__(self) -> np.ndarray:
         return np.require(
             self.src(self) if callable(self.src) else self.src,
-            dtype=self.dtype.numpy,
+            dtype=self.dtype.np,
             requirements='C',
         ).reshape(self.shape)
 
-    def reshape(self, shape: Shape) -> 'LazyNumpyArray':
+    def reshape(self, shape: Shape) -> 'LazyNpArray':
         return dc.replace(self, shape=shape)
 
-    def astype(self, dtype: Dtype) -> 'LazyNumpyArray':
+    def astype(self, dtype: Dtype) -> 'LazyNpArray':
         return dc.replace(self, dtype=dtype)
