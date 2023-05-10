@@ -4,9 +4,12 @@ import typing as ta
 from omlish import check
 from omlish import lang
 
+from .dims import Shape
 from .devices import Device
 from .lazy import LazyBuffer
 from .ops import BinaryOp
+from .ops import ReduceOp
+from .ops import MovementOp
 
 
 if ta.TYPE_CHECKING:
@@ -80,3 +83,26 @@ class Mul(Func):
             self._y.binary_op(BinaryOp.MUL, grad_output) if self._needs_input_grad[0] else None,
             self._x.binary_op(BinaryOp.MUL, grad_output) if self._needs_input_grad[1] else None,
         )
+
+
+class Expand(Func):
+    _input_shape: Shape
+
+    def forward(self, x: LazyBuffer, shape: ShapeType) -> LazyBuffer:
+        self._input_shape = x.shape
+        return x.movement_op(MovementOp.EXPAND, shape)
+
+    def backward(self, grad_output: LazyBuffer) -> LazyBuffer:
+        return grad_output.reduce_op(ReduceOp.SUM, self._input_shape)
+
+
+class Reshape(Func):
+    _input_shape: Shape
+
+    def forward(self, x: LazyBuffer, shape: ShapeType) -> LazyBuffer:
+        self._input_shape = x.shape
+        return x.movement_op(MovementOp.RESHAPE, shape)
+
+    def backward(self, grad_output: LazyBuffer) -> LazyBuffer:
+        return grad_output.movement_op(MovementOp.RESHAPE, self._input_shape)
+

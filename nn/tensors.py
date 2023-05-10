@@ -115,11 +115,17 @@ class Tensor(lang.Final):
 
     ##
 
-    def reshape(self):
-        raise NotImplementedError
+    def reshape(self, shape, *args) -> 'Tensor':
+        new_shape = argfix(shape, *args)
+        check.arg(len(new_shape) > 0 and all(x != 0 for x in new_shape), f"zeros not allowed in shape {new_shape}")
+        return funcs.Reshape.apply(
+            self,
+            shape=tuple(-prod(self.shape) // prod(new_shape) if s == -1 else s for s in new_shape)
+        )
 
-    def expand(self):
-        raise NotImplementedError
+    def expand(self, shape, *args) -> 'Tensor':
+        return funcs.Expand.apply(
+            self, shape=tuple(x if x != -1 else s for s, x in zip(self.shape, argfix(shape, *args))))
 
     def _broadcasted(
             self,
