@@ -4,12 +4,12 @@ from omlish import check
 from omlish import lang
 import numpy as np
 
+from . import funcs
 from .devices import DEFAULT_DEVICE  # noqa
 from .devices import Device
 from .dims import Shape
 from .dtypes import Dtype
 from .dtypes import Float32
-from .funcs import Func
 from .lazy import LazyBuffer
 from .numpy import LazyNpArray
 
@@ -17,11 +17,23 @@ from .numpy import LazyNpArray
 DEFAULT_DTYPE = Float32
 
 
+TensorLike = ta.Union[
+    'Tensor',
+    float,
+    ta.Iterable,
+    LazyBuffer,
+    LazyNpArray,
+    np.ndarray,
+]
+
+
 class Tensor(lang.Final):
     def __init__(
             self,
             data: LazyBuffer,
             requires_grad: ta.Optional[bool] = None,
+            *,
+            func: ta.Optional[funcs.Func] = None,
     ) -> None:
         super().__init__()
 
@@ -29,16 +41,12 @@ class Tensor(lang.Final):
         self._requires_grad: ta.Optional[bool] = check.isinstance(requires_grad, (bool, None))
 
         self._grad: ta.Optional['Tensor'] = None
-        self._func: ta.Optional[Func] = None
+        self._func: ta.Optional[funcs.Func] = check.isinstance(func, (funcs.Func, None))
+        self._had_func = func is not None
 
     @staticmethod
     def of(
-            src: ta.Union[
-                ta.Iterable,
-                LazyBuffer,
-                LazyNpArray,
-                np.ndarray,
-            ],
+            src: TensorLike,
             *,
             device: ta.Optional[Device] = None,
             dtype: ta.Optional[Dtype] = None,
@@ -47,10 +55,18 @@ class Tensor(lang.Final):
         if device is None:
             device = DEFAULT_DEVICE
 
+        if isinstance(src, Tensor):
+            if src.device != device:
+                raise NotImplementedError
+            return src
+
         if isinstance(src, list):  # FIXME
             src = np.array(src, dtype=(dtype or DEFAULT_DTYPE).np)
 
-        if isinstance(src, LazyBuffer) and src.device != device:
+        elif isinstance(src, float):
+            raise NotImplementedError
+
+        elif isinstance(src, LazyBuffer) and src.device != device:
             # FIXME:
             raise NotImplementedError
 
@@ -71,6 +87,9 @@ class Tensor(lang.Final):
 
         else:
             raise TypeError(src)
+
+        if dtype is not None and data.dtype != dtype:
+            raise NotImplementedError
 
         return Tensor(data, **kwargs)
 
@@ -93,3 +112,35 @@ class Tensor(lang.Final):
     @property
     def requires_grad(self) -> ta.Optional[bool]:
         return self._requires_grad
+
+    ##
+
+    def reshape(self):
+        raise NotImplementedError
+
+    def expand(self):
+        raise NotImplementedError
+
+    def _broadcasted(
+            self,
+            func: ta.Type[funcs.Func],
+            other: TensorLike,
+            reverse: bool = False,
+    ) -> 'Tensor':
+        other = Tensor.of(other)
+        x, y = (other, self) if reverse else (self, other)
+
+        x, y = [
+            t.reshape([1] * (max(len(x.shape), len(y.shape)) - len(t.shape)) + list(t.shape))
+            for t in [x, y]
+        ]
+
+        ret_shape = tuple(max(sx, sy) for sx, sy in zip(x.shape, y.shape))
+
+        return func.apply(x.expand(ret_shape), y.expand(ret_shape))
+
+    def mul(self, x: TensorLike, reverse=False) -> 'Tensor':
+        return self._broadcasted(funcs.Mul, x, reverse)
+
+    def __mul__(self, other: TensorLike) -> 'Tensor':
+        return self.mul(other)

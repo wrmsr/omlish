@@ -12,5 +12,7 @@ def test_nn():
     xt = Tensor.of(xa)  # noqa
     yt = Tensor.of(ya)  # noqa
 
+    zt = xt * yt  # noqa
+
     # za = zb.realize().realized().to_cpu()
     # print(za)
