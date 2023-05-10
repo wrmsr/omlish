@@ -1283,10 +1283,11 @@ class TestCase(unittest.TestCase):
         self.assertEqual(repr(InitVar[int]), 'dataclasses.InitVar[int]')
         self.assertEqual(repr(InitVar[List[int]]),
                          'dataclasses.InitVar[typing.List[int]]')
-        self.assertEqual(repr(InitVar[list[int]]),
-                         'dataclasses.InitVar[list[int]]')
-        self.assertEqual(repr(InitVar[int|str]),
-                         'dataclasses.InitVar[int | str]')
+        if sys.version_info[1] >= 11:
+            self.assertEqual(repr(InitVar[list[int]]),
+                             'dataclasses.InitVar[list[int]]')
+            self.assertEqual(repr(InitVar[int|str]),
+                             'dataclasses.InitVar[int | str]')
 
     def test_init_var_inheritance(self):
         # Note that this deliberately tests that a dataclass need not
