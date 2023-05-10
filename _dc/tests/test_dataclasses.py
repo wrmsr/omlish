@@ -3640,7 +3640,7 @@ class TestStringAnnotations(unittest.TestCase):
 
     def test_initvar(self):
         # These tests assume that both "import dataclasses" and "from
-        #  dataclasses import *" have been run in this file.
+        # dataclasses import *" have been run in this file.
         for typestr in ('InitVar[int]',
                         'InitVar [int]'
                         ' InitVar [int]',
@@ -4200,7 +4200,10 @@ class TestAbstract(unittest.TestCase):
             day: 'int'
 
         self.assertTrue(inspect.isabstract(Date))
-        msg = "class Date without an implementation for abstract method 'foo'"
+        if sys.version_info[1] >= 12:
+            msg = "class Date without an implementation for abstract method 'foo'"
+        else:
+            msg = "Can't instantiate abstract class Date with abstract method foo"
         self.assertRaisesRegex(TypeError, msg, Date)
 
 
