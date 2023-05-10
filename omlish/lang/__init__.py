@@ -1,12 +1,4 @@
 from .classes import Abstract  # noqa
-from .imports import lazy_import  # noqa
-from .imports import proxy_import  # noqa
-from .imports import import_module  # noqa
-from .imports import import_module_attr  # noqa
-from .imports import yield_importable  # noqa
-from .imports import yield_import_all  # noqa
-from .imports import import_all  # noqa
-from .imports import try_import  # noqa
 from .classes import Final  # noqa
 from .classes import FinalException  # noqa
 from .classes import Marker  # noqa
@@ -38,6 +30,14 @@ from .functions import raise_  # noqa
 from .functions import recurse  # noqa
 from .functions import try_  # noqa
 from .functions import unwrap_func  # noqa
+from .imports import import_all  # noqa
+from .imports import import_module  # noqa
+from .imports import import_module_attr  # noqa
+from .imports import lazy_import  # noqa
+from .imports import proxy_import  # noqa
+from .imports import try_import  # noqa
+from .imports import yield_import_all  # noqa
+from .imports import yield_importable  # noqa
 from .maybes import Maybe  # noqa
 from .maybes import empty  # noqa
 from .maybes import just  # noqa
