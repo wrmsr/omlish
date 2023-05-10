@@ -1,4 +1,6 @@
 from ..dataclasses import *
+from .. import dataclasses
+
 import sys
 
 import abc
@@ -17,7 +19,7 @@ from collections import deque, OrderedDict, namedtuple, defaultdict
 from functools import total_ordering
 
 import typing       # Needed for the string "typing.ClassVar[int]" to work as an annotation.
-import dataclasses  # Needed for the string "dataclasses.InitVar[int]" to work as an annotation.
+# import dataclasses  # Needed for the string "dataclasses.InitVar[int]" to work as an annotation.
 
 # Just any custom exception we can catch.
 class CustomError(Exception): pass
