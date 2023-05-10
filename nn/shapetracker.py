@@ -1,8 +1,30 @@
 import math
 import typing as ta
 
-from .dims import View
+from omlish import cached
+from omlish import check
+from omlish import dataclasses as dc
+
 from .dims import Shape
+from .dims import ShapeStride
+from .dims import Stride
+
+
+@dc.dataclass(frozen=True)
+class View:
+    shape: Shape
+    stride: Stride
+    offset: int = 0
+    mask: ta.Any = None  # FIXME: ta.Optional[ta.Tuple[ta.Tuple[int, int], ...]]
+
+    @staticmethod
+    def of_shape(sh: Shape) -> 'View':
+        check.arg(len(sh) > 0)
+        return View(sh, sh.base_stride())
+
+    @cached.property
+    def shape_strides(self) -> ta.Sequence[ShapeStride]:
+        return ShapeStride.calc(self.shape, self.stride)
 
 
 class ShapeTracker:
@@ -40,3 +62,10 @@ class ShapeTracker:
     def size(self) -> int:
         v = self.view
         return math.prod([s for s, st in zip(v.shape, v.stride) if st != 0])
+
+    def movement_op(self, op, arg: ta.Union[ta.Tuple[int, ...], ta.Tuple[ta.Tuple[int, int], ...]]) -> 'ShapeTracker':
+        # assert isinstance(arg, tuple) and (len(arg) == len(self.shape) or op == MovementOps.RESHAPE), \
+        #     f"arg {arg} for {op} doesn't match dim of shape {self.shape}"
+        # dispatch[op](self, arg)
+        # return self
+        raise NotImplementedError

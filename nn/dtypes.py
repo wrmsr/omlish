@@ -1,3 +1,5 @@
+import typing as ta
+
 from omlish import dataclasses as dc
 import numpy as np
 
@@ -5,6 +7,7 @@ import numpy as np
 @dc.dataclass(frozen=True)
 class Dtype:
     name: str
+    numpy: ta.Any
 
     @staticmethod
     def of_np(npdt: np.dtype) -> 'Dtype':
@@ -13,4 +16,4 @@ class Dtype:
         raise ValueError(npdt)
 
 
-Float32 = Dtype('float32')
+Float32 = Dtype('float32', np.float32)

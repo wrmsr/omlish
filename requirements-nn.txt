@@ -1,10 +1,8 @@
 numpy==1.24.3
 
+##
+
 llvmlite==0.40.0
-pandas==2.0.1
-pillow==9.5.0
-torch==2.0.0
-torchvision==0.15.1
 
 pyopencl==2022.3.1
 
@@ -14,3 +12,15 @@ pyobjc-core==9.1.1; sys_platform == 'darwin'
 pyobjc-framework-cocoa==9.1.1; sys_platform == 'darwin'
 pyobjc-framework-libdispatch==9.1.1; sys_platform == 'darwin'
 pyobjc-framework-metal==9.1.1; sys_platform == 'darwin'
+
+##
+
+pandas==2.0.1
+
+opencv-python==4.7.0.72
+pillow==9.5.0
+
+##
+
+torch==2.0.0
+torchvision==0.15.1

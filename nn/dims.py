@@ -1,7 +1,6 @@
 import math
 import typing as ta
 
-from omlish import cached
 from omlish import check
 from omlish import dataclasses as dc
 import numpy as np
@@ -70,19 +69,3 @@ class ShapeStride:
             else:
                 ret.append(ShapeStride(sh[i], st[i]))
         return ret
-
-
-@dc.dataclass(frozen=True)
-class View:
-    shape: Shape
-    stride: Stride
-    offset: int = 0
-
-    @staticmethod
-    def of_shape(sh: Shape) -> 'View':
-        check.arg(len(sh) > 0)
-        return View(sh, sh.base_stride())
-
-    @cached.property
-    def shape_strides(self) -> ta.Sequence[ShapeStride]:
-        return ShapeStride.calc(self.shape, self.stride)
