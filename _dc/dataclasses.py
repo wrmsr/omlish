@@ -606,19 +606,7 @@ _hash_action = {
 }
 
 
-def _process_class(
-        cls,
-        init,
-        repr,
-        eq,
-        order,
-        unsafe_hash,
-        frozen,
-        match_args,
-        kw_only,
-        slots,
-        weakref_slot,
-):
+def _process_class(cls, params: _DataclassParams):
     fields = {}
 
     if cls.__module__ in sys.modules:
@@ -629,18 +617,7 @@ def _process_class(
     setattr(
         cls,
         _PARAMS,
-        _DataclassParams(
-            init,
-            repr,
-            eq,
-            order,
-            unsafe_hash,
-            frozen,
-            match_args,
-            kw_only,
-            slots,
-            weakref_slot,
-        ),
+        params,
     )
 
     any_frozen_base = False
@@ -658,16 +635,17 @@ def _process_class(
 
     cls_fields = []
 
-    KW_ONLY_seen = False
+    kw_only = params.kw_only
+    kw_only_seen = False
     dataclasses = sys.modules[__name__]
     for name, type in cls_annotations.items():
         if (
                 _is_kw_only(type, dataclasses)
                 or (isinstance(type, str) and _is_type(type, cls, dataclasses, dataclasses.KW_ONLY, _is_kw_only))
         ):
-            if KW_ONLY_seen:
+            if kw_only_seen:
                 raise TypeError(f'{name!r} is KW_ONLY, but KW_ONLY has already been specified')
-            KW_ONLY_seen = True
+            kw_only_seen = True
             kw_only = True
         else:
             cls_fields.append(_get_field(cls, name, type, kw_only))
@@ -685,10 +663,10 @@ def _process_class(
             raise TypeError(f'{name!r} is a field but has no type annotation')
 
     if has_dataclass_bases:
-        if any_frozen_base and not frozen:
+        if any_frozen_base and not params.frozen:
             raise TypeError('cannot inherit non-frozen dataclass from a frozen one')
 
-        if not any_frozen_base and frozen:
+        if not any_frozen_base and params.frozen:
             raise TypeError('cannot inherit frozen dataclass from a non-frozen one')
 
     setattr(cls, _FIELDS, fields)
@@ -696,13 +674,13 @@ def _process_class(
     class_hash = cls.__dict__.get('__hash__', MISSING)
     has_explicit_hash = not (class_hash is MISSING or (class_hash is None and '__eq__' in cls.__dict__))
 
-    if order and not eq:
+    if params.order and not params.eq:
         raise ValueError('eq must be true if order is true')
 
     all_init_fields = [f for f in fields.values() if f._field_type in (_FIELD, _FIELD_INITVAR)]
     std_init_fields, kw_only_init_fields = _fields_in_init_order(all_init_fields)
 
-    if init:
+    if params.init:
         has_post_init = hasattr(cls, _POST_INIT_NAME)
 
         _set_new_attribute(
@@ -712,27 +690,27 @@ def _process_class(
                 all_init_fields,
                 std_init_fields,
                 kw_only_init_fields,
-                frozen,
+                params.frozen,
                 has_post_init,
                 '__dataclass_self__' if 'self' in fields else 'self',
                 globals,
-                slots,
+                params.slots,
             ),
         )
 
     field_list = [f for f in fields.values() if f._field_type is _FIELD]
 
-    if repr:
+    if params.repr:
         flds = [f for f in field_list if f.repr]
         _set_new_attribute(cls, '__repr__', _repr_fn(flds, globals))
 
-    if eq:
+    if params.eq:
         flds = [f for f in field_list if f.compare]
         self_tuple = _tuple_str('self', flds)
         other_tuple = _tuple_str('other', flds)
         _set_new_attribute(cls, '__eq__', _cmp_fn('__eq__', '==', self_tuple, other_tuple, globals=globals))
 
-    if order:
+    if params.order:
         flds = [f for f in field_list if f.compare]
         self_tuple = _tuple_str('self', flds)
         other_tuple = _tuple_str('other', flds)
@@ -743,20 +721,19 @@ def _process_class(
             ('__ge__', '>='),
         ]:
             if _set_new_attribute(cls, name, _cmp_fn(name, op, self_tuple, other_tuple, globals=globals)):
-                raise TypeError(f'Cannot overwrite attribute {name} '
-                                f'in class {cls.__name__}. Consider using '
-                                'functools.total_ordering')
+                raise TypeError(f'Cannot overwrite attribute {name} in class {cls.__name__}. Consider using functools.total_ordering')  # noqa
 
-    if frozen:
+    if params.frozen:
         for fn in _frozen_get_del_attr(cls, field_list, globals):
             if _set_new_attribute(cls, fn.__name__, fn):
-                raise TypeError(f'Cannot overwrite attribute {fn.__name__} '
-                                f'in class {cls.__name__}')
+                raise TypeError(f'Cannot overwrite attribute {fn.__name__} in class {cls.__name__}')
 
-    hash_action = _hash_action[bool(unsafe_hash),
-    bool(eq),
-    bool(frozen),
-    has_explicit_hash]
+    hash_action = _hash_action[(
+        bool(params.unsafe_hash),
+        bool(params.eq),
+        bool(params.frozen),
+        has_explicit_hash,
+    )]
     if hash_action:
         cls.__hash__ = hash_action(cls, field_list, globals)
 
@@ -767,13 +744,13 @@ def _process_class(
             text_sig = ''
         cls.__doc__ = (cls.__name__ + text_sig)
 
-    if match_args:
+    if params.match_args:
         _set_new_attribute(cls, '__match_args__', tuple(f.name for f in std_init_fields))
 
-    if weakref_slot and not slots:
+    if params.weakref_slot and not params.slots:
         raise TypeError('weakref_slot is True but slots is False')
-    if slots:
-        cls = _add_slots(cls, frozen, weakref_slot)
+    if params.slots:
+        cls = _add_slots(cls, params.frozen, params.weakref_slot)
 
     pf.update_abstractmethods(cls)
 
@@ -857,8 +834,7 @@ def dataclass(
         weakref_slot=False,
 ):
     def wrap(cls):
-        return _process_class(
-            cls,
+        return _process_class(cls, _DataclassParams(
             init,
             repr,
             eq,
@@ -869,7 +845,7 @@ def dataclass(
             kw_only,
             slots,
             weakref_slot,
-        )
+        ))
 
     if cls is None:
         return wrap
