@@ -210,7 +210,7 @@ class LazyBuffer(Lazy):
             device,
             ShapeTracker.of(x.shape),
             LazyOp(LoadOp.FROM_CPU, (), x),
-            Dtype.of_np(x.dtype),
+            x.dtype,
         )
 
 

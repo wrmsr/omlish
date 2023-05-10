@@ -21,7 +21,7 @@ class Tensor(lang.Final):
     def __init__(
             self,
             data: LazyBuffer,
-            requires_grad: ta.Optional[bool],
+            requires_grad: ta.Optional[bool] = None,
     ) -> None:
         super().__init__()
 
@@ -47,7 +47,7 @@ class Tensor(lang.Final):
         if device is None:
             device = DEFAULT_DEVICE
 
-        if isinstance(src, list):
+        if isinstance(src, list):  # FIXME
             src = np.array(src, dtype=(dtype or DEFAULT_DTYPE).np)
 
         if isinstance(src, LazyBuffer) and src.device != device:

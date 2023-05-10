@@ -1,6 +1,7 @@
 import abc
 import typing as ta
 
+from omlish import check
 from omlish import lang
 
 from .lazy import LazyBuffer
@@ -8,15 +9,17 @@ from .ops import BinaryOp
 
 
 if ta.TYPE_CHECKING:
-    from .tensors import Tensor
+    from . import tensors as tn
+else:
+    tn = lang.proxy_import('.tensor', __package__)
 
 
 class Func(lang.Abstract):
 
-    def __init__(self, *parents: Tensor) -> None:
+    def __init__(self, *parents: 'tn.Tensor') -> None:
         super().__init__()
 
-        self._parents = parents  # [check.isinstance(p, Tensor) for p in parents]
+        self._parents = [check.isinstance(p, tn.Tensor) for p in parents]
 
         self._needs_input_grad = [t.requires_grad for t in parents]
 
