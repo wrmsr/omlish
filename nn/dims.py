@@ -25,6 +25,10 @@ class Dims(tuple):
                 raise TypeError(d)
         return super().__new__(cls, t)
 
+    @property
+    def prod(self) -> int:
+        return math.prod(self)
+
 
 class Shape(Dims):
     @property

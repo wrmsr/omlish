@@ -88,7 +88,7 @@ class Mul(Func):
 class Expand(Func):
     _input_shape: Shape
 
-    def forward(self, x: LazyBuffer, shape: ShapeType) -> LazyBuffer:
+    def forward(self, x: LazyBuffer, shape: Shape) -> LazyBuffer:
         self._input_shape = x.shape
         return x.movement_op(MovementOp.EXPAND, shape)
 
@@ -99,10 +99,9 @@ class Expand(Func):
 class Reshape(Func):
     _input_shape: Shape
 
-    def forward(self, x: LazyBuffer, shape: ShapeType) -> LazyBuffer:
+    def forward(self, x: LazyBuffer, shape: Shape) -> LazyBuffer:
         self._input_shape = x.shape
         return x.movement_op(MovementOp.RESHAPE, shape)
 
     def backward(self, grad_output: LazyBuffer) -> LazyBuffer:
         return grad_output.movement_op(MovementOp.RESHAPE, self._input_shape)
-

@@ -115,17 +115,18 @@ class Tensor(lang.Final):
 
     ##
 
-    def reshape(self, shape, *args) -> 'Tensor':
-        new_shape = argfix(shape, *args)
-        check.arg(len(new_shape) > 0 and all(x != 0 for x in new_shape), f"zeros not allowed in shape {new_shape}")
+    def reshape(self, shape: Shape) -> 'Tensor':
+        check.arg(len(shape) > 0 and all(x != 0 for x in shape), f'Zeros not allowed in shape {shape}')
         return funcs.Reshape.apply(
             self,
-            shape=tuple(-prod(self.shape) // prod(new_shape) if s == -1 else s for s in new_shape)
+            shape=Shape(-self.shape.prod // shape.prod if s == -1 else s for s in shape)
         )
 
-    def expand(self, shape, *args) -> 'Tensor':
+    def expand(self, shape: Shape) -> 'Tensor':
         return funcs.Expand.apply(
-            self, shape=tuple(x if x != -1 else s for s, x in zip(self.shape, argfix(shape, *args))))
+            self,
+            shape=Shape(x if x != -1 else s for s, x in zip(self.shape, shape))
+        )
 
     def _broadcasted(
             self,
@@ -137,11 +138,11 @@ class Tensor(lang.Final):
         x, y = (other, self) if reverse else (self, other)
 
         x, y = [
-            t.reshape([1] * (max(len(x.shape), len(y.shape)) - len(t.shape)) + list(t.shape))
+            t.reshape(Shape([1] * (max(len(x.shape), len(y.shape)) - len(t.shape)) + list(t.shape)))
             for t in [x, y]
         ]
 
-        ret_shape = tuple(max(sx, sy) for sx, sy in zip(x.shape, y.shape))
+        ret_shape = Shape(max(sx, sy) for sx, sy in zip(x.shape, y.shape))
 
         return func.apply(x.expand(ret_shape), y.expand(ret_shape))
 
