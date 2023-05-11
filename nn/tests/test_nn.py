@@ -1,6 +1,6 @@
 import numpy as np
 
-from ..tensors import Tensor
+from ..tensor import Tensor
 
 
 def test_nn():

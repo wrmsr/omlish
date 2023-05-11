@@ -13,7 +13,7 @@ from .ops import MovementOp
 
 
 if ta.TYPE_CHECKING:
-    from . import tensors as tn
+    from . import tensor as tn
 else:
     tn = lang.proxy_import('.tensor', __package__)
 
