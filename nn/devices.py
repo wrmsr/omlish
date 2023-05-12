@@ -1,8 +1,10 @@
 import abc
+import operator
 import typing as ta
 
 from omlish import lang
 
+from .ops import BinaryOp
 from .raw import RawCpuBuffer
 
 if ta.TYPE_CHECKING:
@@ -31,5 +33,7 @@ DEFAULT_DEVICE: Device = CpuDevice()
 def numpy_interpreter() -> 'eval_.Interpreter':
     return eval_.Interpreter(
         RawCpuBuffer,
-        {},
+        {
+            BinaryOp.MUL: operator.mul,
+        },
     )
