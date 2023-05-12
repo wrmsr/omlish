@@ -108,11 +108,17 @@ class LazyBuffer(Lazy):
         return elementwise_op(op, self, y)
 
     def reduce_op(self: 'LazyBuffer', op: ReduceOp, new_shape: Shape) -> 'LazyBuffer':
-        # if self.shape == tuple(new_shape):
-        #     return self
-        # srcs = _push_movement_ops((self,)) if SHUFFLE_MOVEMENT_OPS else (self,)
-        # return create_lazybuffer(self.device, new_shape, ReduceOps, LazyOp(op, tuple(srcs), new_shape), self.dtype)
-        raise NotImplementedError
+        if self.shape == new_shape:
+            return self
+
+        srcs = _push_movement_ops([self])
+
+        return create_lazy_buffer(
+            self.device,
+            new_shape,
+            LazyOp(op, tuple(srcs), new_shape),
+            self.dtype,
+        )
 
     # shrink -> stride -> permute -> reshape -> pad -> expand
     def movement_op(self: 'LazyBuffer', op: MovementOp, arg: ta.Any) -> 'LazyBuffer':
@@ -195,6 +201,9 @@ class LazyBuffer(Lazy):
 
         elif self._op.op == BinaryOp.MUL:
             self._op = self._eval_binary_op()
+
+        elif self.op.op == MovementOp.EXPAND:
+            pass
 
         else:
             raise TypeError(self._op.op)
@@ -309,3 +318,64 @@ def elementwise_op(
         ),
         out_dtype,
     )
+
+
+def _replace_with_movement_ops(
+        y: Lazy,
+        ops: ta.List[ta.Tuple[MovementOp, ta.Any]],
+) -> 'LazyBuffer':
+    if isinstance(y, LazyBuffer):
+        for op, arg in ops:
+            y = y.movement_op(op, arg)
+        return y
+
+    elif isinstance(y, LazyOp):
+        check.isinstance(y.op, (BinaryOp, UnaryOp))
+
+        return elementwise_op(
+            y.op,  # type: ignore
+            *[_replace_with_movement_ops(z, ops) for z in y.srcs],
+            arg=y.arg
+        )
+
+    else:
+        raise TypeError(y)
+
+
+def _push_movement_ops(srcs: ta.Sequence[LazyBuffer]) -> ta.Sequence[LazyBuffer]:
+    new_srcs = []
+
+    for x in srcs:
+        mops: ta.List[ta.Tuple[MovementOp, ta.Any]] = []
+        bx = x
+
+        # backwalk all the movement ops. don't push PAD or EXPAND
+        while (
+                bx._realized is None
+                and isinstance(bx.op, MovementOp)
+                and bx.op.op != MovementOp.EXPAND
+                and (
+                        bx.op.op != MovementOp.PAD
+                        # or SHUFFLE_PAD_OPS
+                )
+                and len(bx._children) <= 1
+        ):
+            mops.append((check.isinstance(bx.op.op, MovementOp), bx.op.arg))
+            bx = check.isinstance(bx.op.srcs[0], LazyBuffer)
+
+        # NOTE: can't push pads with a div
+        if (
+                bx._realized is None
+                and isinstance(bx.op, BinaryOp)
+                and len(bx._children) <= 1
+                and len(mops)
+                and (
+                        all(x[0] != MovementOp.PAD for x in mops) or
+                        all(x.op != BinaryOp.DIV for x in bx.op.ops)
+                )
+        ):
+            new_srcs.append(_replace_with_movement_ops(bx.op, mops[::-1]))
+        else:
+            new_srcs.append(x)
+
+    return tuple(new_srcs)

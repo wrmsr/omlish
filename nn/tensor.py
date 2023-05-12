@@ -226,20 +226,23 @@ class Tensor(lang.Final):
         self._grad = Tensor.of([1], device=self.device, requires_grad=False)
 
         for cur in reversed(self.deep_walk()):
-            if not any(x.requires_grad for x in cur._func.parents):
+            cur_func = check.not_none(cur._func)
+            if not any(x.requires_grad for x in cur_func.parents):
                 del cur._func  # TODO: does it help to delete this here ever?
                 continue
 
-            check.not_none(cur._grad)
-            grads = cur._func.backward(cur.grad.lazydata)
+            grads = cur_func.backward(check.not_none(cur._grad)._data)
             grads = [
-                Tensor(g, device=self.device, requires_grad=False) if g is not None else None
-                for g in ([grads] if len(cur._func.parents) == 1 else grads)
+                Tensor.of(g, device=self.device, requires_grad=False) if g is not None else None
+                for g in ([grads] if len(cur_func.parents) == 1 else grads)
             ]
 
-            for p, g in zip(cur._func.parents, grads):
+            for p, g in zip(cur_func.parents, grads):
                 if g is not None and p.requires_grad:
                     check.state(g.shape == p.shape, f'grad shape must match tensor shape, {g.shape!r} != {p.shape!r}')
-                    p.grad = g if p.grad is None else (p.grad + g)
+                    if p._grad is None:
+                        p._grad = g
+                    else:
+                        p._grad = p._grad + g
 
             del cur._func

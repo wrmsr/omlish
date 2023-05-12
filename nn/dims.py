@@ -1,3 +1,7 @@
+"""
+TODO:
+ - __eq__ type constraining - ** strict_eq **
+"""
 import math
 import typing as ta
 
