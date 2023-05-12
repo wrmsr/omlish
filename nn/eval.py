@@ -18,7 +18,7 @@ class Evaluator(lang.Abstract):
     def eval(
             self,
             expr: LazyOp,
-            output: ta.Optional[LazyBuffer],
+            output: ta.Optional[LazyBuffer] = None,
             *,
             context: ta.Optional[EvalContext] = None,
     ) -> RawBuffer:
@@ -29,14 +29,14 @@ class Interpreter(Evaluator):
 
     def __init__(
             self,
-            buffer_cls: ta.Type[RawBuffer],
+            make_buffer: ta.Callable[[ta.Any], RawBuffer],
             fns_by_op: ta.Mapping[Op, ta.Callable],
             from_lazy_buffer: ta.Callable[[LazyBuffer], ta.Any] = lambda x: x.get_realized(),
-            to_underlying: ta.Callable[[RawBuffer], ta.Any] = lambda x: x._buf,  # FIXME  # noqa
+            to_underlying: ta.Callable[[RawBuffer], ta.Any] = lambda x: x._buf,  #  type: ignore  # noqa  # FIXME
     ) -> None:
         super().__init__()
 
-        self._buffer_cls = check.issubclass(buffer_cls, RawBuffer)
+        self._make_buffer = check.callable(make_buffer)
         self._fns_by_op = {check.isinstance(op, Op): check.callable(fn) for op, fn in fns_by_op.items()}
         self._from_lazy_buffer = check.callable(from_lazy_buffer)
         self._to_underlying = check.callable(to_underlying)
@@ -44,7 +44,7 @@ class Interpreter(Evaluator):
     def eval(
             self,
             expr: LazyOp,
-            output: ta.Optional[LazyBuffer],
+            output: ta.Optional[LazyBuffer] = None,
             *,
             context: ta.Optional[EvalContext] = None,
     ) -> RawBuffer:
@@ -63,13 +63,20 @@ class Interpreter(Evaluator):
             return context[expr]
 
         srcs = [
-            self.eval(x, context=context) if isinstance(x, LazyOp) else self._from_lazy_buffer(x)
+            self.eval(x, context=context)
+            if isinstance(x, LazyOp) else
+            self._from_lazy_buffer(check.isinstance(x, LazyBuffer))
             for x in expr.srcs
         ]
 
-        ret = self._buffer_cls(
+        ret = self._make_buffer(
             self._fns_by_op[expr.op](
-                *([self._to_underlying(x) for x in srcs] + ([expr.arg] if expr.arg is not None else []))))
+                *(
+                        [self._to_underlying(x) for x in srcs] +
+                        ([expr.arg] if expr.arg is not None else [])
+                )
+            )
+        )
 
         if not created_context:
             context[expr] = ret

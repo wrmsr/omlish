@@ -197,7 +197,7 @@ class LazyBuffer(Lazy):
             for x in self.op.buffers:
                 x.realize()
 
-            self._realized = self.device.eval(self.op, output=self, **self._device_extra_args())
+            self._realized = self.device.evaluator.eval(self.op, output=self)
 
         # check.isinstance(self.get_realized(), (RawConst, Device[self.device].buffer)),
         #     f"device mismatch on realized got {type(self.realized)} expected {self.device}")
@@ -228,7 +228,7 @@ class LazyBuffer(Lazy):
             if real_srcs[x] is None:
                 real_srcs[x] = x.movement_op(MovementOp.RESHAPE, intermediate_shape)
 
-        expr = map_buffers(real_srcs, self.op)
+        expr = map_buffers({k: check.not_none(v) for k, v in real_srcs.items()}, self.op)
         if intermediate_shape != self.shape:
             return LazyOp(MovementOp.RESHAPE, (expr,), self.shape)
         else:
