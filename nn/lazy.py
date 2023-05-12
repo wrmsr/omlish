@@ -113,6 +113,57 @@ class LazyBuffer(Lazy):
         if op == MovementOp.RESHAPE and self.shape == arg:
             return self
 
+        # TODO: look into why that copy is needed
+        local_st = ShapeTracker(self.shape).movement_op(op, arg)
+
+        # instant nops
+        if local_st.contiguous and self.shape == local_st.shape:
+            return self
+
+        # two ops in a row is one op. merge them if unresolved
+        if self._realized is None and self._op.op == op:
+            sb = check.isinstance(self.op.srcs[0], LazyBuffer)  # FIXME
+
+            # TODO: why is deleting self from children needed? shouldn't GC do it?
+            sb._children.discard(self)
+
+            if op in (MovementOp.RESHAPE, MovementOp.EXPAND):
+                return sb.movement_op(op, arg)
+
+            if op == MovementOp.SHRINK:
+                return sb.movement_op(
+                    op,
+                    tuple(
+                        (b1 + b2, b1 + e2)
+                        for (b1, e1), (b2, e2)
+                        in zip(self.op.arg, arg)
+                    ),
+                )
+
+            if op == MovementOp.PERMUTE:
+                return sb.movement_op(op, tuple(self.op.arg[i] for i in arg))
+
+            if op == MovementOp.PAD:
+                return sb.movement_op(
+                    op,
+                    tuple((b1 + b2, e1 + e2) for (b1, e1), (b2, e2) in zip(self.op.arg, arg)),
+                )
+
+            if op == MovementOp.STRIDE:
+                return sb.movement_op(op, tuple(i * j for i, j in zip(arg, self.op.arg)))
+
+        # some permutes are actually just reshapes
+        if op == MovementOp.PERMUTE and local_st.contiguous:
+            return self.movement_op(MovementOp.RESHAPE, tuple(self.shape[i] for i in arg))
+
+        # move permutes before expands (always, this is safe)
+        if op == MovementOp.PERMUTE and self._realized is None and self.op.op == MovementOp.EXPAND:
+            sb = check.isinstance(self.op.srcs[0], LazyBuffer)  # FIXME
+            sb._children.discard(self)
+            return sb \
+                .movement_op(MovementOp.PERMUTE, arg) \
+                .movement_op(MovementOp.EXPAND, tuple(self.op.arg[a] for a in arg))
+
         ret = create_lazy_buffer(
             self.device,
             ShapeTracker(self._st).movement_op(op, arg),
