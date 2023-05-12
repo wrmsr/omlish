@@ -8,7 +8,7 @@ from .raw import RawCpuBuffer
 if ta.TYPE_CHECKING:
     from . import eval as eval_
 else:
-    eval = lang.proxy_import('.eval', __package__)
+    eval_ = lang.proxy_import('.eval', __package__)
 
 
 class Device(lang.Abstract):

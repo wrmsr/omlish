@@ -178,7 +178,7 @@ class LazyBuffer(Lazy):
             return self
 
         if self._op.op == LoadOp.FROM_CPU:
-            self._realized = RawCpuBuffer.from_cpu(self._op.arg)
+            self._realized = RawCpuBuffer.from_cpu(check.isinstance(self._op.arg, LazyNpArray)())
 
         elif self.op.op == LoadOp.CONTIGUOUS:
             sb = check.isinstance(self.op.srcs[0], LazyBuffer)  # FIXME: cast??
