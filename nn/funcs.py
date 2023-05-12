@@ -105,3 +105,14 @@ class Reshape(Func):
 
     def backward(self, grad_output: LazyBuffer) -> LazyBuffer:
         return grad_output.movement_op(MovementOp.RESHAPE, self._input_shape)
+
+
+class Sum(Func):
+    _input_shape: Shape
+
+    def forward(self, x: LazyBuffer, shape: Shape) -> LazyBuffer:
+        self._input_shape = x.shape
+        return x.reduce_op(ReduceOp.SUM, shape)
+
+    def backward(self, grad_output):
+        return grad_output.movement_op(MovementOp.EXPAND, self._input_shape)

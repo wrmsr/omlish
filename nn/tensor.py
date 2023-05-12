@@ -158,3 +158,44 @@ class Tensor(lang.Final):
 
     def __mul__(self, other: TensorLike) -> 'Tensor':
         return self.mul(other)
+
+    def _reduce(
+            self,
+            func: ta.Type[funcs.Func],
+            axis: ta.Union[int, ta.Iterable[int], None] = None,
+            keep_dim=False,
+    ):
+        ax: ta.List[int]
+        if axis is None:
+            ax = list(range(len(self.shape)))
+        elif isinstance(axis, int):
+            ax = [axis]
+        else:
+            ax = list(axis)
+
+        ax = [
+            x if x >= 0 else x + len(self.shape)
+            for x in ax
+        ]
+
+        shape = [
+            self.shape[i]
+            for i in range(len(self.shape))
+            if i not in ax
+        ]
+
+        ret = func.apply(
+            self,
+            shape=Shape(
+                1 if i in ax else self.shape[i]
+                for i in range(len(self.shape))
+            ),
+        )
+
+        if keep_dim:
+            return ret
+
+        return ret.reshape(Shape([1] if not shape else shape))
+
+    def sum(self, axis=None, keepdim=False):
+        return self._reduce(funcs.Sum, axis, keepdim)

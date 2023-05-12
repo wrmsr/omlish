@@ -23,3 +23,14 @@ def test_nn():
 
     # za = zt.realized().to_cpu()
     # print(za)
+
+
+def test_mul_backward():
+    xt = Tensor(np.asarray([1., 2.], dtype=np.float32), requires_grad=True)
+    yt = Tensor(np.asarray([3., 4.], dtype=np.float32), requires_grad=True)
+
+    zt = (xt * yt).sum()
+    zt.backward()
+
+    print(xt.grad.numpy())
+    print(yt.grad.numpy())
