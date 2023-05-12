@@ -77,6 +77,8 @@ class LazyBuffer(Lazy):
         self._dtype = check.isinstance(dtype, Dtype)
 
         self._realized: ta.Optional[RawBuffer] = None
+        self._output_buffer: ta.Optional[RawBuffer] = None
+
         self._children: ta.MutableSet['LazyBuffer'] = weakref.WeakSet()
 
         for b in op.buffers:
@@ -97,6 +99,10 @@ class LazyBuffer(Lazy):
     @property
     def dtype(self) -> Dtype:
         return self._dtype
+
+    @property
+    def output_buffer(self) -> ta.Optional[RawBuffer]:
+        return self._output_buffer
 
     def binary_op(self: 'LazyBuffer', op: BinaryOp, y: 'LazyBuffer') -> 'LazyBuffer':
         return elementwise_op(op, self, y)

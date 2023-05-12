@@ -81,7 +81,7 @@ class Interpreter(Evaluator):
         if not created_context:
             context[expr] = ret
 
-        if output is not None:  # and output.output_buffer is not None:
+        if output is not None and output.output_buffer is not None:
             # assert output.output_buffer.size == ret.size, output.output_buffer.dtype == ret.dtype
             # output.output_buffer._buf = ret._buf
             # return output.output_buffer
