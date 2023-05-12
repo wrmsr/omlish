@@ -1,3 +1,4 @@
+from .cached import cached_nullary  # noqa
 from .classes import Abstract  # noqa
 from .classes import Final  # noqa
 from .classes import FinalException  # noqa

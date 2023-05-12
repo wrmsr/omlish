@@ -8,6 +8,11 @@ from omlish import dataclasses as dc
 from .dims import Shape
 from .dims import ShapeStride
 from .dims import Stride
+from .ops import MovementOp
+
+
+def is_contiguous(shape: Shape, stride: Stride) -> bool:
+    return all(s1 == s2 or s == 1 for s, s1, s2 in zip(shape, stride, shape.base_stride()))
 
 
 @dc.dataclass(frozen=True)
@@ -16,6 +21,10 @@ class View:
     stride: Stride
     offset: int = 0
     mask: ta.Any = None  # FIXME: ta.Optional[ta.Tuple[ta.Tuple[int, int], ...]]
+
+    @cached.property
+    def contiguous(self) -> bool:
+        return self.offset == 0 and is_contiguous(self.shape, self.stride) and self.mask is None
 
     @staticmethod
     def of_shape(sh: Shape) -> 'View':
@@ -63,9 +72,28 @@ class ShapeTracker:
         v = self.view
         return math.prod([s for s, st in zip(v.shape, v.stride) if st != 0])
 
-    def movement_op(self, op, arg: ta.Union[ta.Tuple[int, ...], ta.Tuple[ta.Tuple[int, int], ...]]) -> 'ShapeTracker':
-        # assert isinstance(arg, tuple) and (len(arg) == len(self.shape) or op == MovementOps.RESHAPE), \
-        #     f"arg {arg} for {op} doesn't match dim of shape {self.shape}"
-        # dispatch[op](self, arg)
-        # return self
-        raise NotImplementedError
+    @property
+    def contiguous(self) -> bool:
+        return len(self._views) == 1 and self._views[-1].contiguous
+
+    def expand(self, new_shape: Shape) -> None:
+        check.arg(all(
+            isinstance(x, int) and (s == x or (s == 1 and st == 0))
+            for s, x, st in zip(self.shape, new_shape, self._views[-1].stride)
+        ), f"can't expand {self.shape} into {new_shape}")
+
+        # NOTE: can the mask ever be (0,0)?
+        mask = tuple(
+            (((0, 0) if m != (0, 1) else (0, ns)) if s != ns else m)
+            for m, s, ns in zip(self._views[-1].mask, self.shape, new_shape)
+        ) if self._views[-1].mask else None
+        self._views[-1] = View(new_shape, self._views[-1].stride, self._views[-1].offset, mask)
+
+    def movement_op(self, op: MovementOp, arg: Shape) -> 'ShapeTracker':
+        if op != MovementOp.RESHAPE and len(arg) != len(self.shape):
+            raise RuntimeError(f'arg {arg} for {op} does not match dim of shape {self.shape}')
+        if op == MovementOp.EXPAND:
+            self.expand(arg)
+        else:
+            raise TypeError(op)
+        return self

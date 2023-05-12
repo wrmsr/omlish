@@ -115,6 +115,13 @@ class Tensor(lang.Final):
 
     ##
 
+    def realize(self) -> 'Tensor':
+        self._data.realize()
+        return self
+
+    def numpy(self) -> np.ndarray:
+        return self._data.to_cpu()
+
     def reshape(self, shape: Shape) -> 'Tensor':
         check.arg(len(shape) > 0 and all(x != 0 for x in shape), f'Zeros not allowed in shape {shape}')
         return funcs.Reshape.apply(
