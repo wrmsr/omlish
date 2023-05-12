@@ -3,8 +3,10 @@ import operator
 import typing as ta
 
 from omlish import lang
+import numpy as np
 
 from .ops import BinaryOp
+from .ops import MovementOp
 from .raw import RawCpuBuffer
 
 if ta.TYPE_CHECKING:
@@ -35,5 +37,6 @@ def numpy_interpreter() -> 'eval_.Interpreter':
         RawCpuBuffer,
         {
             BinaryOp.MUL: operator.mul,
+            MovementOp.EXPAND: np.broadcast_to,
         },
     )
