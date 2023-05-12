@@ -26,11 +26,11 @@ def test_nn():
 
 
 def test_mul_backward():
-    xt = Tensor(np.asarray([1., 2.], dtype=np.float32), requires_grad=True)
-    yt = Tensor(np.asarray([3., 4.], dtype=np.float32), requires_grad=True)
+    xt = Tensor.of(np.asarray([1., 2.], dtype=np.float32), requires_grad=True)
+    yt = Tensor.of(np.asarray([3., 4.], dtype=np.float32), requires_grad=True)
 
     zt = (xt * yt).sum()
     zt.backward()
 
-    print(xt.grad.numpy())
-    print(yt.grad.numpy())
+    print(xt.get_grad().numpy())
+    print(yt.get_grad().numpy())

@@ -113,6 +113,9 @@ class Tensor(lang.Final):
     def requires_grad(self) -> ta.Optional[bool]:
         return self._requires_grad
 
+    def get_grad(self) -> 'Tensor':
+        return check.not_none(self._grad)
+
     ##
 
     def realize(self) -> 'Tensor':
@@ -199,3 +202,44 @@ class Tensor(lang.Final):
 
     def sum(self, axis=None, keepdim=False):
         return self._reduce(funcs.Sum, axis, keepdim)
+
+    def deep_walk(self) -> ta.Sequence['Tensor']:
+        nodes: ta.List[Tensor] = []
+        visited = set()
+
+        def rec(node: 'Tensor') -> None:
+            visited.add(node)
+            if node._func:
+                for i in node._func.parents:
+                    if i not in visited:
+                        rec(i)
+                nodes.append(node)
+
+        rec(self)
+        return nodes
+
+    def backward(self) -> None:
+        check.state(self.shape == Shape(1))
+
+        # fill in the first grad with one. don't use Tensor.ones because we don't need contiguous - this is "implicit
+        # gradient creation"
+        self._grad = Tensor.of([1], device=self.device, requires_grad=False)
+
+        for cur in reversed(self.deep_walk()):
+            if not any(x.requires_grad for x in cur._func.parents):
+                del cur._func  # TODO: does it help to delete this here ever?
+                continue
+
+            check.not_none(cur._grad)
+            grads = cur._func.backward(cur.grad.lazydata)
+            grads = [
+                Tensor(g, device=self.device, requires_grad=False) if g is not None else None
+                for g in ([grads] if len(cur._func.parents) == 1 else grads)
+            ]
+
+            for p, g in zip(cur._func.parents, grads):
+                if g is not None and p.requires_grad:
+                    check.state(g.shape == p.shape, f'grad shape must match tensor shape, {g.shape!r} != {p.shape!r}')
+                    p.grad = g if p.grad is None else (p.grad + g)
+
+            del cur._func
