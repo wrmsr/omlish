@@ -1,7 +1,13 @@
 import typing as ta
 
 from omlish import check
+from omlish import lang
 import numpy as np
+
+if ta.TYPE_CHECKING:
+    import torch
+else:
+    torch = lang.proxy_import('torch')
 
 from ..tensor import Tensor
 
@@ -40,8 +46,6 @@ def test_mul_backward():
 
 
 def torch_test(vs: ta.Sequence[np.ndarray], fn: ta.Callable) -> None:
-    import torch
-
     def to_np(t: ta.Union[Tensor, torch.Tensor]) -> np.ndarray:
         if isinstance(t, Tensor):
             return t.numpy()
