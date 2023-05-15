@@ -42,12 +42,12 @@ def test_mul_backward():
 def torch_test(vs: ta.Sequence[np.ndarray], fn: ta.Callable) -> None:
     import torch
 
-    def to_np(o) -> np.ndarray:
-        if isinstance(o, Tensor):
-            return o.numpy()
-        if isinstance(o, torch.Tensor):
-            return o.detach().numpy()
-        raise TypeError(o)
+    def to_np(t: ta.Union[Tensor, torch.Tensor]) -> np.ndarray:
+        if isinstance(t, Tensor):
+            return t.numpy()
+        if isinstance(t, torch.Tensor):
+            return t.detach().numpy()
+        raise TypeError(t)
 
     def cmp_ts(our_t: Tensor, tor_t: torch.Tensor) -> None:
         print(to_np(check.isinstance(our_t, Tensor)))
@@ -75,7 +75,7 @@ def torch_test(vs: ta.Sequence[np.ndarray], fn: ta.Callable) -> None:
 
     for i, (our_t, tor_t) in enumerate(zip(our_ts, tor_ts)):
         our_tg = our_t.get_grad()
-        tor_tg = tor_t.grad
+        tor_tg = check.not_none(tor_t.grad)
         cmp_ts(our_tg, tor_tg)
 
 

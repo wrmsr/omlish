@@ -132,7 +132,7 @@ class Tensor(lang.Final):
         return self._data.to_cpu()
 
     def reshape(self, shape: Shape) -> 'Tensor':
-        check.arg(shape and all(x != 0 for x in shape), f'Zeros not allowed in shape {shape}')
+        check.arg(bool(shape) and all(x != 0 for x in shape), f'Zeros not allowed in shape {shape}')
         return funcs.Reshape.apply(
             self,
             shape=Shape(-self.shape.prod // shape.prod if s == -1 else s for s in shape)
