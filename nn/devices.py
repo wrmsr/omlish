@@ -36,6 +36,7 @@ def numpy_interpreter() -> 'eval_.Interpreter':
     return eval_.Interpreter(
         RawCpuBuffer,
         {
+            BinaryOp.ADD: operator.add,
             BinaryOp.MUL: operator.mul,
             MovementOp.EXPAND: np.broadcast_to,
         },

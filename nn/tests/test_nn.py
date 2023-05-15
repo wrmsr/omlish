@@ -1,3 +1,6 @@
+import typing as ta
+
+from omlish import check
 import numpy as np
 
 from ..tensor import Tensor
@@ -34,3 +37,50 @@ def test_mul_backward():
 
     print(xt.get_grad().numpy())
     print(yt.get_grad().numpy())
+
+
+def torch_test(vs: ta.Sequence[np.ndarray], fn: ta.Callable) -> None:
+    import torch
+
+    def to_np(o) -> np.ndarray:
+        if isinstance(o, Tensor):
+            return o.numpy()
+        if isinstance(o, torch.Tensor):
+            return o.detach().numpy()
+        raise TypeError(o)
+
+    def cmp_ts(our_t: Tensor, tor_t: torch.Tensor) -> None:
+        print(to_np(check.isinstance(our_t, Tensor)))
+        print(to_np(check.isinstance(tor_t, torch.Tensor)))
+        print()
+
+    print()
+
+    our_ts = [Tensor.of(v, requires_grad=True) for v in vs]
+    tor_ts = [torch.tensor(v, requires_grad=True) for v in vs]
+
+    our_res = check.isinstance(fn(*our_ts), Tensor)
+    tor_res = check.isinstance(fn(*tor_ts), torch.Tensor)
+    cmp_ts(our_res, tor_res)
+
+    our_g = (our_res + 1).square().mean()
+    tor_g = (tor_res + 1).square().mean()  # noqa
+    cmp_ts(our_g, tor_g)
+
+    our_g.backward()
+    tor_g.backward()
+
+    for t in our_ts:
+        t.get_grad().realize()
+
+    for i, (our_t, tor_t) in enumerate(zip(our_ts, tor_ts)):
+        our_tg = our_t.get_grad()
+        tor_tg = tor_t.grad
+        cmp_ts(our_tg, tor_tg)
+
+
+def test_mul_2():
+    torch_test([
+        np.asarray([1., 2.], dtype=np.float32),
+        np.asarray([3., 4.], dtype=np.float32),
+    ], lambda l, r: l * r)

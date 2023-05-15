@@ -1,6 +1,8 @@
 """
 TODO:
  - __eq__ type constraining - ** strict_eq **
+ - class Axes(Dims) ?
+ - check non-neg, non-z?
 """
 import math
 import typing as ta

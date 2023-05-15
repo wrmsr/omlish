@@ -202,11 +202,7 @@ class LazyBuffer(Lazy):
         elif self._op.op == BinaryOp.MUL:
             self._op = self._eval_binary_op()
 
-        elif self.op.op == MovementOp.EXPAND:
-            pass
-
-        else:
-            raise TypeError(self._op.op)
+        ##
 
         if self._realized is None:
             for x in self.op.buffers:

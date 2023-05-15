@@ -13,18 +13,18 @@ from .ops import MovementOp
 
 
 if ta.TYPE_CHECKING:
-    from . import tensor as tn
+    from . import tensor
 else:
-    tn = lang.proxy_import('.tensor', __package__)
+    tensor = lang.proxy_import('.tensor', __package__)
 
 
 class Func(lang.Abstract):
 
-    def __init__(self, device: Device, *parents: 'tn.Tensor') -> None:
+    def __init__(self, device: Device, *parents: 'tensor.Tensor') -> None:
         super().__init__()
 
         self._device = check.isinstance(device, Device)
-        self._parents = tuple(check.isinstance(p, tn.Tensor) for p in parents)
+        self._parents = tuple(check.isinstance(p, tensor.Tensor) for p in parents)
 
         self._needs_input_grad = tuple(t.requires_grad for t in parents)
 
@@ -39,7 +39,7 @@ class Func(lang.Abstract):
         return self._device
 
     @property
-    def parents(self) -> ta.Sequence['tn.Tensor']:
+    def parents(self) -> ta.Sequence['tensor.Tensor']:
         return self._parents
 
     @property
@@ -59,9 +59,9 @@ class Func(lang.Abstract):
         raise NotImplementedError
 
     @classmethod
-    def apply(cls: ta.Type['Func'], *args: 'tn.Tensor', **kwargs: ta.Any) -> 'tn.Tensor':
+    def apply(cls: ta.Type['Func'], *args: 'tensor.Tensor', **kwargs: ta.Any) -> 'tensor.Tensor':
         func = cls(args[0].device, *args)
-        ret = tn.Tensor.of(
+        ret = tensor.Tensor.of(
             func.forward(*[t.data for t in args], **kwargs),
             device=func.device,
             requires_grad=func.requires_grad,
@@ -70,12 +70,29 @@ class Func(lang.Abstract):
         return ret
 
 
+class Add(Func):
+    _x: LazyBuffer
+    _y: LazyBuffer
+
+    def forward(self, x: LazyBuffer, y: LazyBuffer) -> LazyBuffer:
+        self._x = x
+        self._y = y
+        return x.binary_op(BinaryOp.ADD, y)
+
+    def backward(self, grad_output: LazyBuffer) -> ta.Tuple[ta.Optional[LazyBuffer], ta.Optional[LazyBuffer]]:
+        return (
+            grad_output if self._needs_input_grad[0] else None,
+            grad_output if self._needs_input_grad[1] else None,
+        )
+
+
 class Mul(Func):
     _x: LazyBuffer
     _y: LazyBuffer
 
     def forward(self, x: LazyBuffer, y: LazyBuffer) -> LazyBuffer:
-        self._x, self._y = x, y
+        self._x = x
+        self._y = y
         return x.binary_op(BinaryOp.MUL, y)
 
     def backward(self, grad_output: LazyBuffer) -> ta.Tuple[ta.Optional[LazyBuffer], ta.Optional[LazyBuffer]]:

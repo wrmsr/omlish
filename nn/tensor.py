@@ -50,6 +50,8 @@ class Tensor(lang.Final):
             *,
             device: ta.Optional[Device] = None,
             dtype: ta.Optional[Dtype] = None,
+
+            requires_grad: ta.Optional[bool] = None,
             **kwargs: ta.Any,
     ) -> 'Tensor':
         if device is None:
@@ -60,11 +62,11 @@ class Tensor(lang.Final):
                 raise NotImplementedError
             return src
 
-        if isinstance(src, list):  # FIXME
+        if isinstance(src, list):
             src = np.array(src, dtype=(dtype or DEFAULT_DTYPE).np)
 
-        elif isinstance(src, float):
-            raise NotImplementedError
+        elif isinstance(src, (int, float)):
+            src = np.array([src], dtype=(dtype or DEFAULT_DTYPE).np)
 
         elif isinstance(src, LazyBuffer) and src.device != device:
             # FIXME:
@@ -91,7 +93,11 @@ class Tensor(lang.Final):
         if dtype is not None and data.dtype != dtype:
             raise NotImplementedError
 
-        return Tensor(data, **kwargs)
+        return Tensor(
+            data,
+            requires_grad=requires_grad,
+            **kwargs,
+        )
 
     @property
     def data(self) -> LazyBuffer:
@@ -126,7 +132,7 @@ class Tensor(lang.Final):
         return self._data.to_cpu()
 
     def reshape(self, shape: Shape) -> 'Tensor':
-        check.arg(len(shape) > 0 and all(x != 0 for x in shape), f'Zeros not allowed in shape {shape}')
+        check.arg(shape and all(x != 0 for x in shape), f'Zeros not allowed in shape {shape}')
         return funcs.Reshape.apply(
             self,
             shape=Shape(-self.shape.prod // shape.prod if s == -1 else s for s in shape)
@@ -156,8 +162,32 @@ class Tensor(lang.Final):
 
         return func.apply(x.expand(ret_shape), y.expand(ret_shape))
 
+    def add(self, x: TensorLike, reverse=False) -> 'Tensor':
+        return self._broadcasted(funcs.Add, x, reverse)
+
     def mul(self, x: TensorLike, reverse=False) -> 'Tensor':
         return self._broadcasted(funcs.Mul, x, reverse)
+
+    def square(self) -> 'Tensor':
+        return self * self
+
+    def sum(
+            self,
+            axis: ta.Union[int, ta.Iterable[int], None] = None,
+            keepdim: bool = False,
+    ) -> 'Tensor':
+        return self._reduce(funcs.Sum, axis, keepdim)
+
+    def mean(
+            self,
+            axis: ta.Union[int, ta.Iterable[int], None] = None,
+            keepdim: bool = False,
+    ) -> 'Tensor':
+        out = self.sum(axis=axis, keepdim=keepdim)
+        return out * (out.shape.prod / self.shape.prod)
+
+    def __add__(self, other: TensorLike) -> 'Tensor':
+        return self.add(other)
 
     def __mul__(self, other: TensorLike) -> 'Tensor':
         return self.mul(other)
@@ -166,7 +196,7 @@ class Tensor(lang.Final):
             self,
             func: ta.Type[funcs.Func],
             axis: ta.Union[int, ta.Iterable[int], None] = None,
-            keep_dim=False,
+            keepdim=False,
     ):
         ax: ta.List[int]
         if axis is None:
@@ -195,13 +225,10 @@ class Tensor(lang.Final):
             ),
         )
 
-        if keep_dim:
+        if keepdim:
             return ret
 
         return ret.reshape(Shape([1] if not shape else shape))
-
-    def sum(self, axis=None, keepdim=False):
-        return self._reduce(funcs.Sum, axis, keepdim)
 
     def deep_walk(self) -> ta.Sequence['Tensor']:
         nodes: ta.List[Tensor] = []
