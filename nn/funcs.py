@@ -131,5 +131,14 @@ class Sum(Func):
         self._input_shape = x.shape
         return x.reduce_op(ReduceOp.SUM, shape)
 
-    def backward(self, grad_output):
+    def backward(self, grad_output: LazyBuffer) -> LazyBuffer:
         return grad_output.movement_op(MovementOp.EXPAND, self._input_shape)
+
+
+class Contiguous(Func):
+
+    def forward(self, x: LazyBuffer) -> LazyBuffer:
+        return x.contiguous()
+
+    def backward(self, grad_output: LazyBuffer) -> LazyBuffer:
+        return grad_output

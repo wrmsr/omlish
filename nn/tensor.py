@@ -1,3 +1,4 @@
+import math
 import typing as ta
 
 from omlish import check
@@ -78,7 +79,7 @@ class Tensor(lang.Final):
         if isinstance(src, LazyNpArray):
             if not src.shape:
                 # FIXME: ??
-                src = src.reshape(Shape(1, ))
+                src = src.reshape(Shape(1))
             if dtype is not None:
                 src = src.astype(dtype.np)
             data = LazyBuffer.from_cpu(src, device)
@@ -136,17 +137,31 @@ class Tensor(lang.Final):
         self._data.realize()
         return self
 
+    def assign(self, x: TensorLike) -> 'Tensor':
+        if not isinstance(x, Tensor):
+            x = Tensor.of(x)
+        check.arg(self.shape == x.shape, f'assign shape mismatch {self.shape} != {x.shape}')
+        check.state(not x.requires_grad)
+        if self._data._realized is not None:  # FIXME: ???
+            x._data._output_buffer = self._data._realized  # FIXME: ???
+        self._data = x._data
+        return self
+
+    def detach(self):
+        return Tensor.of(self._data, device=self.device, requires_grad=False)
+
     def numpy(self) -> np.ndarray:
         return self._data.to_cpu()
 
-    def reshape(self, shape: Shape) -> 'Tensor':
-        check.arg(bool(shape) and all(x != 0 for x in shape), f'Zeros not allowed in shape {shape}')
+    def reshape(self, *shape: int) -> 'Tensor':
+        check.arg(bool(shape) and all(check.isinstance(x, int) != 0 for x in shape))
         return funcs.Reshape.apply(
             self,
-            shape=Shape(-self.shape.prod // shape.prod if s == -1 else s for s in shape)
+            shape=Shape(-self.shape.prod // math.prod(shape) if s == -1 else s for s in shape)
         )
 
-    def expand(self, shape: Shape) -> 'Tensor':
+    def expand(self, *shape: int) -> 'Tensor':
+        check.arg(all(check.isinstance(x, int) for x in shape))
         return funcs.Expand.apply(
             self,
             shape=Shape(x if x != -1 else s for s, x in zip(self.shape, shape))
@@ -162,13 +177,13 @@ class Tensor(lang.Final):
         x, y = (other, self) if reverse else (self, other)
 
         x, y = [
-            t.reshape(Shape([1] * (max(len(x.shape), len(y.shape)) - len(t.shape)) + list(t.shape)))
+            t.reshape(*([1] * (max(len(x.shape), len(y.shape)) - len(t.shape)) + list(t.shape)))
             for t in [x, y]
         ]
 
         ret_shape = Shape(max(sx, sy) for sx, sy in zip(x.shape, y.shape))
 
-        return func.apply(x.expand(ret_shape), y.expand(ret_shape))
+        return func.apply(x.expand(*ret_shape), y.expand(*ret_shape))
 
     def add(self, x: TensorLike, reverse=False) -> 'Tensor':
         return self._broadcasted(funcs.Add, x, reverse)
@@ -199,6 +214,12 @@ class Tensor(lang.Final):
 
     def __mul__(self, other: TensorLike) -> 'Tensor':
         return self.mul(other)
+
+    def __radd__(self, other: TensorLike) -> 'Tensor':
+        return self.add(other, reverse=True)
+
+    def __rmul__(self, other: TensorLike) -> 'Tensor':
+        return self.mul(other, reverse=True)
 
     def _reduce(
             self,
@@ -236,7 +257,10 @@ class Tensor(lang.Final):
         if keepdim:
             return ret
 
-        return ret.reshape(Shape([1] if not shape else shape))
+        return ret.reshape(*([1] if not shape else shape))
+
+    def contiguous(self):
+        return funcs.Contiguous.apply(self)
 
     def deep_walk(self) -> ta.Sequence['Tensor']:
         nodes: ta.List[Tensor] = []
@@ -281,3 +305,17 @@ class Tensor(lang.Final):
                         p._grad = p._grad + g
 
             del cur._func
+
+    @staticmethod
+    def zeros(*shape: int, **kwargs: ta.Any) -> 'Tensor':
+        return Tensor.of([0], **kwargs) \
+            .reshape(*([1] * len(shape))) \
+            .expand(*shape) \
+            .contiguous()
+
+    @staticmethod
+    def ones(*shape: int, **kwargs: ta.Any) -> 'Tensor':
+        return Tensor.of([1], **kwargs) \
+            .reshape(*([1] * len(shape))) \
+            .expand(*shape) \
+            .contiguous()

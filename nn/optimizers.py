@@ -3,6 +3,7 @@ import itertools
 import typing as ta
 
 from omlish import check
+from omlish import dataclasses as dc
 from omlish import lang
 
 from .tensor import Tensor
@@ -40,3 +41,36 @@ class Optimizer(lang.Abstract):
                 self._buffers,
         ):
             t.realize()
+
+
+class Sgd(Optimizer):
+    class Config(dc.Data):
+        lr = 0.001
+        momentum = 0.
+        nesterov = False
+
+    def __init__(self, ts: ta.Iterable[Tensor], config: Config = Config()) -> None:
+        super().__init__(ts)
+        self._config = config
+
+        self._b = [
+            Tensor.zeros(*t.shape, device=t.device, requires_grad=False)
+            for t in self._params
+        ] if config.momentum else []
+
+    def step(self) -> None:
+        # https://pytorch.org/docs/stable/generated/torch.optim.SGD.html
+        for i, t in enumerate(self._params):
+            g = check.not_none(t.get_grad()).realize()
+            if self._config.momentum:
+                self._b[i].assign(
+                    # NOTE: self.b[i] is zero on the first run, no if required
+                    self._config.momentum * self._b[i] + g
+                ).realize()
+                if self._config.nesterov:
+                    g = g + self._config.momentum * self._b[i]
+                else:
+                    g = self._b[i]
+            t.assign(t.detach() - g * self._config.lr)
+
+        self.realize(self._b)
