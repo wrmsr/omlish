@@ -12,21 +12,21 @@ from .ops import ReduceOp
 from .raw import RawCpuBuffer
 
 if ta.TYPE_CHECKING:
-    from . import eval as eval_
+    from . import evaluators
 else:
-    eval_ = lang.proxy_import('.eval', __package__)
+    evaluators = lang.proxy_import('.evaluators', __package__)
 
 
 class Device(lang.Abstract):
     @property
     @abc.abstractmethod
-    def evaluator(self) -> 'eval_.Evaluator':
+    def evaluator(self) -> 'evaluators.Evaluator':
         raise NotImplementedError
 
 
 class CpuDevice(Device):
     @property
-    def evaluator(self) -> 'eval_.Evaluator':
+    def evaluator(self) -> 'evaluators.Evaluator':
         return numpy_interpreter()
 
 
@@ -39,8 +39,8 @@ def shape_to_axis(old_shape: ta.Sequence[int], new_shape: ta.Sequence[int]) -> t
 
 
 @lang.cached_nullary
-def numpy_interpreter() -> 'eval_.Interpreter':
-    return eval_.Interpreter(
+def numpy_interpreter() -> 'evaluators.Interpreter':
+    return evaluators.Interpreter(
         RawCpuBuffer,
         {
             BinaryOp.ADD: operator.add,

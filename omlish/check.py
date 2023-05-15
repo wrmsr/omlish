@@ -153,7 +153,7 @@ def single(obj: ta.Iterable[T], message: Message = None) -> T:
 ##
 
 
-def none(v: ta.Any, msg: Message) -> None:
+def none(v: ta.Any, msg: Message = None) -> None:
     if v is not None:
         _raise(ValueError, 'Must be None', msg, v)
 

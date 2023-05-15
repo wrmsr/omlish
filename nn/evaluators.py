@@ -89,3 +89,17 @@ class Interpreter(Evaluator):
 
         else:
             return ret
+
+
+# class Compiler(Evaluator):
+#
+#     def __init__(
+#             self,
+#             make_buffer: ta.Callable[[ta.Any], RawBuffer],
+#             codegen: Codegen,
+#             runtime: Runtime,
+#             synchronize: ta.Callable = lambda: None,
+#     ) -> None:
+#         super().__init__()
+#
+#         self._make_buffer = check.callable(make_buffer)

@@ -119,8 +119,16 @@ class Tensor(lang.Final):
     def requires_grad(self) -> ta.Optional[bool]:
         return self._requires_grad
 
+    def set_requires_grad(self, b: bool) -> 'Tensor':
+        check.none(self._requires_grad)
+        self._requires_grad = b
+        return self
+
     def get_grad(self) -> 'Tensor':
         return check.not_none(self._grad)
+
+    def zero_grad(self) -> None:
+        self._grad = None
 
     ##
 
