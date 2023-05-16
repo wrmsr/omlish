@@ -516,7 +516,6 @@ def _get_field(cls, a_name, a_type, default_kw_only):
         f = default
     else:
         if isinstance(default, types.MemberDescriptorType):
-
             default = MISSING
         f = field(default=default)
 
