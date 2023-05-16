@@ -114,7 +114,12 @@ class ShapeTracker:
             (((0, 0) if m != (0, 1) else (0, ns)) if s != ns else m)
             for m, s, ns in zip(self._views[-1].mask, self.shape, new_shape)
         ) if self._views[-1].mask else None
-        self._views[-1] = View(new_shape, self._views[-1].stride, self._views[-1].offset, mask)
+        self._views[-1] = View(
+            new_shape,
+            self._views[-1].stride,
+            self._views[-1].offset,
+            mask,
+        )
 
     def permute(self, axis: ta.Sequence[int]) -> None:
         check.arg(
@@ -144,21 +149,21 @@ class ShapeTracker:
         # check if this is adding or removing 1s (only)
         # NOTE: this is optional, but removes most calls to (expensive!) merge_views (with mask, not optional)
         if tuple(x for x in self.shape if x != 1) == tuple(x for x in new_shape if x != 1):
-            old_strides = [y for x, y in zip(self.shape, self._views[-1].stride) if x != 1]
-            new_strides_tuple = tuple(0 if x == 1 else old_strides.pop(0) for x in new_shape)
-            new_mask_tuple = None
+            old_stride = [y for x, y in zip(self.shape, self._views[-1].stride) if x != 1]
+            new_stride = tuple(0 if x == 1 else old_stride.pop(0) for x in new_shape)
+            new_mask = None
             if self._views[-1].mask:
                 if any(y != (0, 1) for x, y in zip(self.shape, self._views[-1].mask) if x == 1):
                     # mask it all out!
-                    new_mask_tuple = tuple((0, 0) for _ in new_shape)
+                    new_mask = tuple((0, 0) for _ in new_shape)
                 else:
                     old_mask = [y for x, y in zip(self.shape, self._views[-1].mask) if x != 1]
-                    new_mask_tuple = tuple((0, 1) if x == 1 else old_mask.pop(0) for x in new_shape)
+                    new_mask = tuple((0, 1) if x == 1 else old_mask.pop(0) for x in new_shape)
             self._views[-1] = View(
                 Shape(new_shape),
-                Stride(new_strides_tuple),
+                Stride(new_stride),
                 self._views[-1].offset,
-                new_mask_tuple,
+                new_mask,
             )
             return
 
