@@ -45,9 +45,9 @@ class Optimizer(lang.Abstract):
 
 class Sgd(Optimizer):
     class Config(dc.Data):
-        lr = 0.001
-        momentum = 0.
-        nesterov = False
+        lr: float = 0.001
+        momentum: float = 0.
+        nesterov: bool = False
 
     def __init__(self, ts: ta.Iterable[Tensor], config: Config = Config()) -> None:
         super().__init__(ts)
