@@ -48,6 +48,13 @@ def reflect(obj: ta.Any) -> Reflected:
 ##
 
 
+KNOWN_GENERICS: ta.AbstractSet[type] = frozenset([
+    collections.abc.Mapping,
+    collections.abc.Sequence,
+    collections.abc.Set,
+])
+
+
 def isinstance_of(rfl: Reflected) -> ta.Callable[[ta.Any], bool]:
     if isinstance(rfl, type):
         return lambda o: isinstance(o, rfl)  # type: ignore
@@ -57,14 +64,11 @@ def isinstance_of(rfl: Reflected) -> ta.Callable[[ta.Any], bool]:
         return lambda o: any(fn(o) for fn in fns)
 
     if isinstance(rfl, Generic):
-        if (
-                rfl.cls is collections.abc.Sequence or
-                rfl.cls is collections.abc.Set
-        ):
+        if rfl.cls in (collections.abc.Sequence, collections.abc.Set):
             [efn] = map(isinstance_of, rfl.args)
             return lambda o: isinstance(o, rfl.cls) and all(efn(e) for e in o)  # type: ignore
 
-        if rfl.cls is collections.abc.Mapping:
+        if rfl.cls == collections.abc.Mapping:
             kfn, vfn = map(isinstance_of, rfl.args)
             return lambda o: isinstance(o, rfl.cls) and all(kfn(k) and vfn(v) for k, v in o.items())  # type: ignore
 
