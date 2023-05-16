@@ -18,6 +18,8 @@ from .numpy import LazyNpArray
 DEFAULT_DTYPE = Float32
 
 
+AxisLike = ta.Union[int, ta.Iterable[int]]
+
 TensorLike = ta.Union[
     'Tensor',
     float,
@@ -147,7 +149,7 @@ class Tensor(lang.Final):
         self._data = x._data
         return self
 
-    def detach(self):
+    def detach(self) -> 'Tensor':
         return Tensor.of(self._data, device=self.device, requires_grad=False)
 
     def numpy(self) -> np.ndarray:
@@ -185,47 +187,57 @@ class Tensor(lang.Final):
 
         return func.apply(x.expand(*ret_shape), y.expand(*ret_shape))
 
-    def add(self, x: TensorLike, reverse=False) -> 'Tensor':
+    def add(self, x: TensorLike, reverse: bool = False) -> 'Tensor':
         return self._broadcasted(funcs.Add, x, reverse)
 
-    def mul(self, x: TensorLike, reverse=False) -> 'Tensor':
+    def sub(self, x: TensorLike, reverse: bool = False) -> 'Tensor':
+        return self._broadcasted(funcs.Sub, x, reverse)
+
+    def mul(self, x: TensorLike, reverse: bool = False) -> 'Tensor':
         return self._broadcasted(funcs.Mul, x, reverse)
+
+    def div(self, x: TensorLike, reverse: bool = False) -> 'Tensor':
+        return self._broadcasted(funcs.Div, x, reverse)
 
     def square(self) -> 'Tensor':
         return self * self
 
-    def sum(
-            self,
-            axis: ta.Union[int, ta.Iterable[int], None] = None,
-            keepdim: bool = False,
-    ) -> 'Tensor':
+    def sum(self, axis: ta.Optional[AxisLike] = None, keepdim: bool = False) -> 'Tensor':
         return self._reduce(funcs.Sum, axis, keepdim)
 
-    def mean(
-            self,
-            axis: ta.Union[int, ta.Iterable[int], None] = None,
-            keepdim: bool = False,
-    ) -> 'Tensor':
+    def mean(self, axis: ta.Optional[AxisLike] = None, keepdim: bool = False) -> 'Tensor':
         out = self.sum(axis=axis, keepdim=keepdim)
         return out * (out.shape.prod / self.shape.prod)
 
     def __add__(self, other: TensorLike) -> 'Tensor':
         return self.add(other)
 
-    def __mul__(self, other: TensorLike) -> 'Tensor':
-        return self.mul(other)
-
     def __radd__(self, other: TensorLike) -> 'Tensor':
         return self.add(other, reverse=True)
+
+    def __sub__(self, other: TensorLike) -> 'Tensor':
+        return self.sub(other)
+
+    def __rsub__(self, other: TensorLike) -> 'Tensor':
+        return self.sub(other, reverse=True)
+
+    def __mul__(self, other: TensorLike) -> 'Tensor':
+        return self.mul(other)
 
     def __rmul__(self, other: TensorLike) -> 'Tensor':
         return self.mul(other, reverse=True)
 
+    def __truediv__(self, other: TensorLike) -> 'Tensor':
+        return self.div(other)
+
+    def __rtruediv__(self, other: TensorLike) -> 'Tensor':
+        return self.div(other, reverse=True)
+
     def _reduce(
             self,
             func: ta.Type[funcs.Func],
-            axis: ta.Union[int, ta.Iterable[int], None] = None,
-            keepdim=False,
+            axis: ta.Optional[AxisLike] = None,
+            keepdim: bool = False,
     ):
         ax: ta.List[int]
         if axis is None:
@@ -259,7 +271,7 @@ class Tensor(lang.Final):
 
         return ret.reshape(*([1] if not shape else shape))
 
-    def contiguous(self):
+    def contiguous(self) -> 'Tensor':
         return funcs.Contiguous.apply(self)
 
     def deep_walk(self) -> ta.Sequence['Tensor']:
@@ -319,3 +331,50 @@ class Tensor(lang.Final):
             .reshape(*([1] * len(shape))) \
             .expand(*shape) \
             .contiguous()
+
+    def permute(self, *order: int) -> 'Tensor':
+        check.arg(sorted(order) == list(range(len(order))))
+        return funcs.Permute.apply(self, order=order)
+
+    def transpose(self, ax1: int = 1, ax2: int = 0) -> 'Tensor':
+        order = list(range(len(self.shape)))
+        order[ax1], order[ax2] = order[ax2], order[ax1]
+        return self.permute(*order)
+
+    def dot(self, w: 'Tensor') -> 'Tensor':
+        x = self.reshape(*self.shape[0:-1], 1, self.shape[-1])
+        w = w.reshape(*w.shape[0:-2], 1, w.shape[-2], w.shape[-1]).transpose(-1, -2)
+        return (x * w).sum(-1).reshape(*x.shape[0:-2], -1)
+
+    def matmul(self, x: 'Tensor', reverse: bool = False) -> 'Tensor':
+        return x.dot(self) if reverse else self.dot(x)
+
+    def log(self) -> 'Tensor':
+        return funcs.Log.apply(self)
+
+    def exp(self) -> 'Tensor':
+        return funcs.Exp.apply(self)
+
+    def relu(self) -> 'Tensor':
+        return funcs.Relu.apply(self)
+
+    def max(self, axis: ta.Optional[AxisLike] = None, keepdim: bool = False) -> 'Tensor':
+        return self._reduce(funcs.Max, axis, keepdim)
+
+    class _Softmax(ta.NamedTuple):
+        m: 'Tensor'
+        e: 'Tensor'
+        ss: 'Tensor'
+
+    def _softmax(self, axis: AxisLike) -> _Softmax:
+        m = self - self.max(axis=axis, keepdim=True)
+        e = m.exp()
+        return Tensor._Softmax(m, e, e.sum(axis=axis, keepdim=True))
+
+    def softmax(self, axis: AxisLike = -1) -> 'Tensor':
+        sm = self._softmax(axis)
+        return sm.e.div(sm.ss)
+
+    def log_softmax(self, axis: AxisLike = -1) -> 'Tensor':
+        sm = self._softmax(axis)
+        return sm.m - sm.ss.log()

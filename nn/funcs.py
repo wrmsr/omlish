@@ -4,12 +4,13 @@ import typing as ta
 from omlish import check
 from omlish import lang
 
-from .dims import Shape
 from .devices import Device
+from .dims import Shape
 from .lazy import LazyBuffer
 from .ops import BinaryOp
-from .ops import ReduceOp
 from .ops import MovementOp
+from .ops import ReduceOp
+from .ops import UnaryOp
 
 
 if ta.TYPE_CHECKING:
@@ -86,6 +87,18 @@ class Add(Func):
         )
 
 
+class Sub(Func):
+
+    def forward(self, x: LazyBuffer, y: LazyBuffer) -> LazyBuffer:
+        return x.binary_op(BinaryOp.SUB, y)
+
+    def backward(self, grad_output: LazyBuffer) -> ta.Tuple[ta.Optional[LazyBuffer], ta.Optional[LazyBuffer]]:
+        return (
+            grad_output if self.needs_input_grad[0] else None,
+            grad_output.const_like(0).binary_op(BinaryOp.SUB, grad_output) if self.needs_input_grad[1] else None,
+        )
+
+
 class Mul(Func):
     _x: LazyBuffer
     _y: LazyBuffer
@@ -99,6 +112,28 @@ class Mul(Func):
         return (
             self._y.binary_op(BinaryOp.MUL, grad_output) if self._needs_input_grad[0] else None,
             self._x.binary_op(BinaryOp.MUL, grad_output) if self._needs_input_grad[1] else None,
+        )
+
+
+class Div(Func):
+    _x: LazyBuffer
+    _y: LazyBuffer
+
+    def forward(self, x: LazyBuffer, y: LazyBuffer) -> LazyBuffer:
+        self._x = x
+        self._y = y
+        return x.binary_op(BinaryOp.DIV, y)
+
+    def backward(self, grad_output: LazyBuffer) -> ta.Tuple[ta.Optional[LazyBuffer], ta.Optional[LazyBuffer]]:
+        return (
+            grad_output.binary_op(BinaryOp.DIV, self._y) if self.needs_input_grad[0] else None,
+            (
+                grad_output
+                .const_like(0)
+                .binary_op(BinaryOp.SUB, grad_output)
+                .binary_op(BinaryOp.MUL, self._x)
+                .binary_op(BinaryOp.DIV, self._y.binary_op(BinaryOp.MUL, self._y))
+            ) if self.needs_input_grad[1] else None
         )
 
 
@@ -142,3 +177,75 @@ class Contiguous(Func):
 
     def backward(self, grad_output: LazyBuffer) -> LazyBuffer:
         return grad_output
+
+
+class Permute(Func):
+    _input_order: ta.Sequence[int]
+
+    def forward(self, x: LazyBuffer, order: ta.Sequence[int]) -> LazyBuffer:
+        self._input_order = order
+        return x.movement_op(MovementOp.PERMUTE, order)
+
+    def backward(self, grad_output: LazyBuffer) -> LazyBuffer:
+        output_order = tuple(t[0] for t in sorted(enumerate(self._input_order), key=lambda t: t[1]))
+        return grad_output.movement_op(MovementOp.PERMUTE, output_order)
+
+
+class Relu(Func):
+    _ret: LazyBuffer
+
+    def forward(self, x: LazyBuffer) -> LazyBuffer:
+        self._ret = x.binary_op(BinaryOp.MAX, x.const_like(0))
+        return self._ret
+
+    def backward(self, grad_output: LazyBuffer) -> LazyBuffer:
+        mask = self._ret.const_like(1) \
+            .binary_op(BinaryOp.SUB, self._ret.binary_op(BinaryOp.CMP_EQ, self._ret.const_like(0)))
+        return mask.binary_op(BinaryOp.MUL, grad_output)
+
+
+class Log(Func):
+    _x: LazyBuffer
+
+    def forward(self, x: LazyBuffer) -> LazyBuffer:
+        self._x = x
+        return x.unary_op(UnaryOp.LOG)
+
+    def backward(self, grad_output: LazyBuffer) -> LazyBuffer:
+        return grad_output.binary_op(BinaryOp.DIV, self._x)
+
+
+class Exp(Func):
+    _ret: LazyBuffer
+
+    def forward(self, x: LazyBuffer) -> LazyBuffer:
+        self._ret = x.unary_op(UnaryOp.EXP)
+        return self._ret
+
+    def backward(self, grad_output: LazyBuffer) -> LazyBuffer:
+        return self._ret.binary_op(BinaryOp.MUL, grad_output)
+
+
+class Max(Func):
+    _x: LazyBuffer
+    _ret: LazyBuffer
+
+    def forward(self, x: LazyBuffer, shape: Shape) -> LazyBuffer:
+        self._x = x
+        self._ret = x.reduce_op(ReduceOp.MAX, shape)
+        return self._ret
+
+    def backward(self, grad_output: LazyBuffer) -> LazyBuffer:
+        # 1s in locations where the max was chosen (can be two locations)
+        max_is_1s = self._x.binary_op(BinaryOp.CMP_EQ, self._ret.movement_op(MovementOp.EXPAND, self._x.shape))
+
+        # sum of locations, averaged
+        div = max_is_1s \
+            .reduce_op(ReduceOp.SUM, grad_output.shape) \
+            .movement_op(MovementOp.EXPAND, self._x.shape)
+
+        max_is_amount = max_is_1s \
+            .binary_op(BinaryOp.DIV, div)
+
+        grad_output_expanded = grad_output.movement_op(MovementOp.EXPAND, self._x.shape)
+        return max_is_amount.binary_op(BinaryOp.MUL, grad_output_expanded)

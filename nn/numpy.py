@@ -11,7 +11,7 @@ from .dtypes import Dtype
 class LazyNpArray:
     src: ta.Any  # np.array_like | Callable[[LazyNpArray], np.array_like]
     shape: Shape
-    dtype: Dtype
+    dtype: Dtype = dc.field(check=lambda v: isinstance(v, Dtype))
 
     def __call__(self) -> np.ndarray:
         return np.require(

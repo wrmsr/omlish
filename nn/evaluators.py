@@ -81,11 +81,10 @@ class Interpreter(Evaluator):
         if not created_context:
             context[expr] = ret
 
-        if output is not None and output.output_buffer is not None:
-            # assert output.output_buffer.size == ret.size, output.output_buffer.dtype == ret.dtype
-            # output.output_buffer._buf = ret._buf
-            # return output.output_buffer
-            raise NotImplementedError
+        if output is not None and (ob := output.output_buffer) is not None:
+            check.state(ob.size == ret.size and ob.dtype == ret.dtype)
+            ob._buf = ret._buf  # type: ignore  # FIXME  # noqa
+            return ob
 
         else:
             return ret

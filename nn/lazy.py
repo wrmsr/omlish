@@ -104,10 +104,13 @@ class LazyBuffer(Lazy):
     def output_buffer(self) -> ta.Optional[RawBuffer]:
         return self._output_buffer
 
-    def binary_op(self: 'LazyBuffer', op: BinaryOp, y: 'LazyBuffer') -> 'LazyBuffer':
+    def unary_op(self, op: UnaryOp) -> 'LazyBuffer':
+        return elementwise_op(op, self)
+
+    def binary_op(self, op: BinaryOp, y: 'LazyBuffer') -> 'LazyBuffer':
         return elementwise_op(op, self, y)
 
-    def reduce_op(self: 'LazyBuffer', op: ReduceOp, new_shape: Shape) -> 'LazyBuffer':
+    def reduce_op(self, op: ReduceOp, new_shape: Shape) -> 'LazyBuffer':
         if self.shape == new_shape:
             return self
 
@@ -273,6 +276,25 @@ class LazyBuffer(Lazy):
         realized = self.cast(Dtype.of_np(self.dtype.np)).contiguous().realize().get_realized()
         ret = check.isinstance(realized, RawBuffer).to_cpu().reshape(self.shape)
         return ret
+
+    # create a constant with the shape and dtype of self
+    def const_like(self, val) -> 'LazyBuffer':
+        return create_lazy_buffer(
+            self.device,
+            Shape(1),
+            LazyOp(
+                LoadOp.FROM_CPU,
+                (),
+                LazyNpArray(
+                    [val],
+                    Shape(1),
+                    self.dtype,
+                ),
+            ),
+            self.dtype,
+        ) \
+            .movement_op(MovementOp.RESHAPE, Shape((1,) * len(self.shape), )) \
+            .movement_op(MovementOp.EXPAND, self.shape)
 
 
 def create_lazy_buffer(

@@ -9,6 +9,7 @@ import numpy as np
 from .ops import BinaryOp
 from .ops import MovementOp
 from .ops import ReduceOp
+from .ops import UnaryOp
 from .raw import RawCpuBuffer
 
 if ta.TYPE_CHECKING:
@@ -44,13 +45,29 @@ def numpy_interpreter() -> 'evaluators.Interpreter':
         RawCpuBuffer,
         {
             BinaryOp.ADD: operator.add,
+            BinaryOp.SUB: operator.sub,
             BinaryOp.MUL: operator.mul,
+            BinaryOp.DIV: operator.truediv,
 
             ReduceOp.SUM: lambda x, new_shape: (
                 x.sum(shape_to_axis(x.shape, new_shape), keepdims=True)
                 if tuple(x.shape) != tuple(new_shape) else x[:]
             ),
 
+            ReduceOp.MAX: lambda x, new_shape: (
+                (x.amax if hasattr(x, 'amax') else x.max)(shape_to_axis(x.shape, new_shape), keepdims=True)
+                if tuple(x.shape) != tuple(new_shape) else x[:]
+            ),
+
+            BinaryOp.MAX: np.maximum,
+            BinaryOp.CMP_EQ: lambda x, y: (x == y).astype(np.float32),  # noqa
+
+            UnaryOp.EXP: np.exp,
+            UnaryOp.LOG: np.log,
+
             MovementOp.EXPAND: np.broadcast_to,
+            MovementOp.RESHAPE: lambda x, arg: x.reshape(arg),
+            MovementOp.PERMUTE: lambda x, order: x.transpose(order),
+            MovementOp.PAD: np.pad,
         },
     )

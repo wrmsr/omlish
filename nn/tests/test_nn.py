@@ -1,16 +1,15 @@
-import functools
 import typing as ta
 
 from omlish import check
 from omlish import lang
 import numpy as np
 
-
 if ta.TYPE_CHECKING:
     import torch
 else:
     torch = lang.proxy_import('torch')
 
+from ..optimizers import Sgd
 from ..tensor import Tensor
 
 
@@ -97,8 +96,6 @@ def test_mul_2():
 
 ##
 
-from ..optimizers import Sgd
-
 
 np.random.seed(1337)
 
@@ -145,14 +142,15 @@ def _test_optim(
     for x, y in zip(
             step(
                 Tensor.of,
-                functools.partial(our_optim, config=our_optim.Config(**opts)),
+                our_optim,
                 steps,
+                config=our_optim.Config(**opts),
             ),
             step(
                 torch.tensor,
                 tor_optim,
                 steps,
-                kwargs=opts,
+                **opts,
             ),
     ):
         np.testing.assert_allclose(x, y, atol=atol, rtol=rtol)

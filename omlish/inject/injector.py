@@ -4,6 +4,8 @@ TODO:
  - arrays
  - defer
  - defaults
+ - private
+ - circular proxies
 """
 import inspect
 import typing as ta
