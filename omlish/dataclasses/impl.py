@@ -238,11 +238,6 @@ def process_class(cls: type, params: Params) -> type:
     return dcls
 
 
-class Opaque:
-    def __init__(self, *args, **kwargs):
-        raise TypeError
-
-
 def dataclass(
         cls=None,
         /,
