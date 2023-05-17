@@ -4,6 +4,7 @@ import typing as ta
 from omlish import cached
 from omlish import check
 from omlish import dataclasses as dc
+from omlish import lang
 
 from .dims import Shape
 from .dims import ShapeStride
@@ -15,8 +16,7 @@ def is_contiguous(shape: Shape, stride: Stride) -> bool:
     return all(s1 == s2 or s == 1 for s, s1, s2 in zip(shape, stride, shape.base_stride()))
 
 
-@dc.dataclass(frozen=True)
-class View:
+class View(dc.Data, lang.Final):
     shape: Shape
     stride: Stride
     offset: int = 0
@@ -63,7 +63,7 @@ class View:
 #     return None
 
 
-class ShapeTracker:
+class ShapeTracker(lang.Final):
     def __init__(
             self,
             shape: ta.Union[Shape, 'ShapeTracker'],
@@ -140,6 +140,7 @@ class ShapeTracker:
     def reshape(self, new_shape: ta.Sequence[int]) -> None:
         if self.shape == new_shape:
             return
+
         check.arg(
             all(check.isinstance(x, int) > 0 for x in new_shape),
             f"shape must be ints and can't contain 0 or negative numbers {new_shape}"
@@ -152,6 +153,7 @@ class ShapeTracker:
             old_stride = [y for x, y in zip(self.shape, self._views[-1].stride) if x != 1]
             new_stride = tuple(0 if x == 1 else old_stride.pop(0) for x in new_shape)
             new_mask = None
+
             if self._views[-1].mask:
                 if any(y != (0, 1) for x, y in zip(self.shape, self._views[-1].mask) if x == 1):
                     # mask it all out!
@@ -159,12 +161,14 @@ class ShapeTracker:
                 else:
                     old_mask = [y for x, y in zip(self.shape, self._views[-1].mask) if x != 1]
                     new_mask = tuple((0, 1) if x == 1 else old_mask.pop(0) for x in new_shape)
+
             self._views[-1] = View(
                 Shape(new_shape),
                 Stride(new_stride),
                 self._views[-1].offset,
                 new_mask,
             )
+
             return
 
         # view = View(new_shape, Shape(new_shape).base_stride())
@@ -181,12 +185,11 @@ class ShapeTracker:
     def movement_op(self, op: MovementOp, arg: Shape) -> 'ShapeTracker':
         if op != MovementOp.RESHAPE and len(arg) != len(self.shape):
             raise RuntimeError(f'arg {arg} for {op} does not match dim of shape {self.shape}')
-        elif op == MovementOp.EXPAND:
-            self.expand(arg)
-        elif op == MovementOp.PERMUTE:
-            self.permute(arg)
-        elif op == MovementOp.RESHAPE:
-            self.reshape(arg)
-        else:
-            raise TypeError(op)
+        self._movement_op_dispatch[op](self, arg)
         return self
+
+    _movement_op_dispatch: ta.Final[ta.Mapping[MovementOp, ta.Callable]] = {
+        MovementOp.EXPAND: expand,
+        MovementOp.PERMUTE: permute,
+        MovementOp.RESHAPE: reshape,
+    }
