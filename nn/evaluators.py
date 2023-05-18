@@ -17,7 +17,7 @@ class Evaluator(lang.Abstract):
     @abc.abstractmethod
     def eval(
             self,
-            expr: LazyOp,
+            op: LazyOp,
             output: ta.Optional[LazyBuffer] = None,
             *,
             context: ta.Optional[EvalContext] = None,
@@ -43,7 +43,7 @@ class Interpreter(Evaluator):
 
     def eval(
             self,
-            expr: LazyOp,
+            op: LazyOp,
             output: ta.Optional[LazyBuffer] = None,
             *,
             context: ta.Optional[EvalContext] = None,
@@ -59,27 +59,27 @@ class Interpreter(Evaluator):
         created_context = context is None
         if context is None:
             context = {}
-        if not created_context and expr in context:
-            return context[expr]
+        if not created_context and op in context:
+            return context[op]
 
         srcs = [
             self.eval(x, context=context)
             if isinstance(x, LazyOp) else
-            self._from_lazy_buffer(check.isinstance(x, LazyBuffer))
-            for x in expr.srcs
+            self._from_lazy_buffer(x.as_buffer())
+            for x in op.srcs
         ]
 
         ret = self._make_buffer(
-            self._fns_by_op[expr.op](
+            self._fns_by_op[op.op](
                 *(
                         [self._to_underlying(x) for x in srcs] +
-                        ([expr.arg] if expr.arg is not None else [])
+                        ([op.arg] if op.arg is not None else [])
                 )
             )
         )
 
         if not created_context:
-            context[expr] = ret
+            context[op] = ret
 
         if output is not None and (ob := output.output_buffer) is not None:
             check.state(ob.size == ret.size and ob.dtype == ret.dtype)

@@ -22,6 +22,8 @@ pillow==9.5.0
 
 onnx==1.14.0
 
+sentencepiece==0.1.99
+
 ##
 
 torch==2.0.1

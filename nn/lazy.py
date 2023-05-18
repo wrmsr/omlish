@@ -24,7 +24,12 @@ from .shapetracker import ShapeTracker
 
 
 class Lazy(lang.Abstract, lang.Sealed):
-    pass
+
+    def as_op(self) -> 'LazyOp':
+        return check.isinstance(self, LazyOp)
+
+    def as_buffer(self) -> 'LazyBuffer':
+        return check.isinstance(self, LazyBuffer)
 
 
 @dc.dataclass(frozen=True)
@@ -137,7 +142,7 @@ class LazyBuffer(Lazy):
 
         # two ops in a row is one op. merge them if unresolved
         if self._realized is None and self._op.op == op:
-            sb = check.isinstance(self.op.srcs[0], LazyBuffer)  # FIXME
+            sb = self.op.srcs[0].as_buffer()
 
             # TODO: why is deleting self from children needed? shouldn't GC do it?
             sb._children.discard(self)
@@ -173,7 +178,7 @@ class LazyBuffer(Lazy):
 
         # move permutes before expands (always, this is safe)
         if op == MovementOp.PERMUTE and self._realized is None and self.op.op == MovementOp.EXPAND:
-            sb = check.isinstance(self.op.srcs[0], LazyBuffer)  # FIXME
+            sb = self.op.srcs[0].as_buffer()  # FIXME
             sb._children.discard(self)
             return sb \
                 .movement_op(MovementOp.PERMUTE, arg) \
@@ -196,7 +201,7 @@ class LazyBuffer(Lazy):
             self._realized = RawCpuBuffer.from_cpu(check.isinstance(self._op.arg, LazyNpArray)())
 
         elif self.op.op == LoadOp.CONTIGUOUS:
-            sb = check.isinstance(self.op.srcs[0], LazyBuffer)  # FIXME: cast??
+            sb = self.op.srcs[0].as_buffer()  # FIXME: cast??
             realized = sb.realize().get_realized()
             if sb._st.contiguous and not isinstance(realized, RawConst) and realized.size == math.prod(self.shape):
                 # no need to run an AST, this is already contiguous
@@ -242,11 +247,11 @@ class LazyBuffer(Lazy):
             if real_srcs[x] is None:
                 real_srcs[x] = x.movement_op(MovementOp.RESHAPE, intermediate_shape)
 
-        expr = map_buffers({k: check.not_none(v) for k, v in real_srcs.items()}, self.op)
+        ret = map_buffers({k: check.not_none(v) for k, v in real_srcs.items()}, self.op)
         if intermediate_shape != self.shape:
-            return LazyOp(MovementOp.RESHAPE, (expr,), self.shape)
+            return LazyOp(MovementOp.RESHAPE, (ret,), self.shape)
         else:
-            return expr
+            return ret
 
     @staticmethod
     def from_cpu(x: LazyNpArray, device: Device) -> 'LazyBuffer':
@@ -379,7 +384,7 @@ def _push_movement_ops(srcs: ta.Sequence[LazyBuffer]) -> ta.Sequence[LazyBuffer]
                 and len(bx._children) <= 1
         ):
             mops.append((check.isinstance(bx.op.op, MovementOp), bx.op.arg))
-            bx = check.isinstance(bx.op.srcs[0], LazyBuffer)
+            bx = bx.op.srcs[0].as_buffer()
 
         # NOTE: can't push pads with a div
         if (
