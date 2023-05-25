@@ -1,8 +1,7 @@
-import sys
-
 import pytest
 
 from .. import dataclasses as dc
+from ..dev import pytest as ptu
 
 
 @dc.dataclass(frozen=True)
@@ -67,7 +66,7 @@ def test_md():
     assert dc.metadata(Foo) == {'a': 10, 'b': 20}
 
 
-@pytest.mark.skipif(sys.version_info[1] < 10, reason='-')
+@ptu.skip_if_python_version_less_than((3, 10))
 def test_kw_only():
     @dc.dataclass(**{'kw_only': True})
     class C:
