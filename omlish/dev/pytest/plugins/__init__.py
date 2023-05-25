@@ -1,5 +1,6 @@
 from . import logging  # noqa
 from . import pycharm  # noqa
+from . import repeat  # noqa
 from ._registry import ALL
 
 
