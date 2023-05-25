@@ -12,6 +12,7 @@ REQUIREMENTS_TXT=requirements-dev.txt
 
 SOURCES:=\
 	${PROJECT} \
+	infra \
 	nn \
 
 
@@ -103,9 +104,3 @@ test-12:
 .PHONY: test-nogil
 test-nogil:
 	_PYTHON_VERSION=${PYTHON_VERSION_NOGIL} _VENV_ROOT=.venv-nogil ${MAKE} test
-
-
-###
-
-.PHONY: barf
-barf:
