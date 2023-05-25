@@ -1,3 +1,7 @@
+"""
+TODO:
+ - class and/or field usage enforcement / codification
+"""
 import dataclasses as dc
 import typing as ta
 
@@ -9,11 +13,11 @@ Metadata = ta.Mapping[ta.Any, ta.Any]
 
 METADATA_KEY = '__dataclass_metadata__'
 
-MERGED_KEYS: ta.Set[ta.Any] = set()
+CLASS_MERGED_KEYS: ta.Set[ta.Any] = set()
 
 
-def _merged(o):
-    MERGED_KEYS.add(o)
+def _class_merged(o):
+    CLASS_MERGED_KEYS.add(o)
     return o
 
 
@@ -27,7 +31,7 @@ def metadata(class_or_instance: ta.Any) -> Metadata:
         if not smd:
             continue
         for k, v in smd.items():
-            if k in MERGED_KEYS:
+            if k in CLASS_MERGED_KEYS:
                 dct.setdefault(k, []).extend(v)
             else:
                 dct[k] = v
@@ -65,7 +69,7 @@ def _add_cls_md(k, v):
 ##
 
 
-@_merged
+@_class_merged
 class Check(lang.Marker):
     pass
 
@@ -77,7 +81,7 @@ def check(fn: ta.Union[ta.Callable[..., bool], staticmethod]) -> None:
 ##
 
 
-@_merged
+@_class_merged
 class Init(lang.Marker):
     pass
 
@@ -90,4 +94,11 @@ def init(fn: ta.Callable[..., None]) -> None:
 
 
 class KwOnly(lang.Marker):
+    pass
+
+
+##
+
+
+class Coerce(lang.Marker):
     pass

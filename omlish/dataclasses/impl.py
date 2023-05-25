@@ -31,6 +31,7 @@ import sys
 
 from .. import collections as col
 from .md import Check
+from .md import Coerce
 from .md import Init
 from .md import KwOnly
 from .md import METADATA_KEY
@@ -57,6 +58,7 @@ def field(
 
         kw_only=dc.MISSING,
 
+        coerce: ta.Optional[ta.Callable[[ta.Any], ta.Any]] = None,
         check: ta.Optional[ta.Callable[[ta.Any], bool]] = None,
 ):
     md = {**(metadata or {})}
@@ -67,6 +69,13 @@ def field(
         if not callable(check):
             raise TypeError(check)
         md[Check] = check
+
+    if coerce is not None:
+        if Coerce in md:
+            raise KeyError(md)
+        if not callable(coerce):
+            raise TypeError(coerce)
+        md[Coerce] = coerce
 
     kwargs = {}
 
@@ -204,6 +213,13 @@ def process_class(cls: type, params: Params) -> type:
     buf.write(') -> None:')
     lines.append(buf.getvalue())
     buf.truncate(0)
+
+    # FIXME: ...
+    # for f in flds.values():
+    #     chk = f.metadata.get(Coerce)
+    #     if chk is not None:
+    #         cn = nsg.put(f'__check_' + f.name, chk)
+    #         lines.append(f'    if not {cn}({f.name}): raise __CheckException')
 
     for f in flds.values():
         chk = f.metadata.get(Check)
