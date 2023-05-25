@@ -1,3 +1,4 @@
+from . import logging  # noqa
 from . import pycharm  # noqa
 from ._registry import ALL
 

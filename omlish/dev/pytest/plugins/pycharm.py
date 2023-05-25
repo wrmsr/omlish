@@ -1,6 +1,6 @@
 import threading
 
-from ._registry import register_plugin  # noqa
+from ._registry import register_plugin
 
 
 @register_plugin

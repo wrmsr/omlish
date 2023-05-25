@@ -4,6 +4,7 @@
 **/.cache/
 **/.idea/
 **/.revision
+**/__pycache__/
 *.dylib
 *.exe
 *.log
@@ -16,15 +17,14 @@
 *.so
 *.sock
 *.swp
+.env
 /*.egg-info/
-/.env
+/.cache/
 /.mypy_cache/
 /.pytest_cache/
-/.python-version
 /.tox/
 /.venv*/
 /MANIFEST
-/__pycache__/
 /build/
 /cython_debug/
 /dist/

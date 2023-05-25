@@ -64,19 +64,15 @@ class View(dc.Data, lang.Final):
 
 
 class ShapeTracker(lang.Final):
-    def __init__(
-            self,
-            shape: ta.Union[Shape, 'ShapeTracker'],
-            views: ta.Optional[ta.Iterable['View']] = None,
-    ) -> None:
+    def __init__(self, shape: ta.Union[Shape, 'ShapeTracker']) -> None:
         super().__init__()
 
-        if views is not None:
-            self._views = list(views)
-        elif isinstance(shape, ShapeTracker):
+        if isinstance(shape, ShapeTracker):
             self._views = list(shape._views)
         else:
             self._views = [View.of_shape(shape)]
+
+    _views: ta.List[View]
 
     @staticmethod
     def of(o: ta.Union['ShapeTracker', Shape]) -> 'ShapeTracker':
