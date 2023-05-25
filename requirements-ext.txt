@@ -34,6 +34,10 @@ sentencepiece==0.1.99
 torch==2.0.1
 torchvision==0.15.2
 
+##
+
+librosa==0.10.0.post2
+
 
 ### infra
 
