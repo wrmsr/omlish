@@ -41,4 +41,6 @@ from .unmodifiable import UnmodifiableMapping  # noqa
 from .unmodifiable import UnmodifiableSequence  # noqa
 from .unmodifiable import UnmodifiableSet  # noqa
 from .utils import mut_toposort  # noqa
+from .utils import partition  # noqa
 from .utils import toposort  # noqa
+from .utils import unique  # noqa

@@ -144,12 +144,12 @@ class Compiler(Evaluator):
         if output._realized is None:
             output._realized = self._buffer_cls(math.prod(output.shape), output.dtype)
 
-        opg = self._codegen.op(op, output)
+        cgop = self._codegen.op(op, output)
 
         try:
-            prog = self._prog_cache[opg.key]
+            prog = self._prog_cache[cgop.key]
         except KeyError:
-            prog = self._prog_cache[opg.key] = opg.build()
+            prog = self._prog_cache[cgop.key] = cgop.build()
 
-        prog.exec(opg.buffers)
+        prog.exec(cgop.buffers)
         return output.get_realized()

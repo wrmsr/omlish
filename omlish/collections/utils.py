@@ -22,3 +22,26 @@ def mut_toposort(data: ta.Dict[T, ta.Set[T]]) -> ta.Iterator[ta.Set[T]]:
 
 def toposort(data: ta.Mapping[T, ta.AbstractSet[T]]) -> ta.Iterator[ta.Set[T]]:
     return mut_toposort({k: set(v) for k, v in data.items()})
+
+
+def partition(items: ta.Iterable[T], pred: ta.Callable[[T], bool]) -> ta.Tuple[ta.List[T], ta.List[T]]:
+    t: ta.List[T] = []
+    f: ta.List[T] = []
+    for e in items:
+        if pred(e):
+            t.append(e)
+        else:
+            f.append(e)
+    return t, f
+
+
+def unique(it: ta.Iterable[T]) -> ta.Sequence[T]:
+    if isinstance(it, str):
+        raise TypeError(it)
+    ret: ta.List[T] = []
+    seen: ta.Set[T] = set()
+    for e in it:
+        if e not in seen:
+            seen.add(e)
+            ret.append(e)
+    return ret
