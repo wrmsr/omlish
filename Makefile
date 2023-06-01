@@ -31,10 +31,12 @@ clean:
 ### Venv
 
 DEFAULT_PYTHON_VERSION:=${PYTHON_VERSION_9}
+DEFAULT_VENV_FLAGS:=  # --copies
 DEFAULT_VENV_ROOT:=.venv
 DEFAULT_REQUIREMENTS_TXT:=requirements-ext.txt
 
 PYTHON_VERSION:=$$(echo "$${_PYTHON_VERSION:-${DEFAULT_PYTHON_VERSION}}")
+VENV_FLAGS:=$$(echo "$${_VENV_FLAGS:-${DEFAULT_VENV_FLAGS}}")
 VENV_ROOT:=$$(echo "$${_VENV_ROOT:-${DEFAULT_VENV_ROOT}}")
 REQUIREMENTS_TXT:=$$(echo "$${_REQUIREMENTS_TXT:-${DEFAULT_REQUIREMENTS_TXT}}")
 
@@ -47,7 +49,7 @@ PYENV_BIN:=$$(sh -c "if [ -f '$${HOME}/.pyenv/bin/pyenv' ] ; then echo '$${HOME}
 venv:
 	if [ ! -d $(VENV_ROOT) ] ; then \
 		$(PYENV_BIN) install -s $(PYTHON_VERSION) && \
-		"$(PYENV_ROOT)/versions/$(PYTHON_VERSION)/bin/python" -mvenv $(VENV_ROOT) && \
+		"$(PYENV_ROOT)/versions/$(PYTHON_VERSION)/bin/python" -mvenv $(VENV_FLAGS) $(VENV_ROOT) && \
 		$(PYTHON) -mpip install --upgrade pip setuptools wheel && \
 		$(PYTHON) -mpip install -r ${REQUIREMENTS_TXT} ; \
 	fi
