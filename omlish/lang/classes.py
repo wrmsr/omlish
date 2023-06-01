@@ -41,9 +41,6 @@ class Abstract(abc.ABC):
                 )
 
 
-abstract = abc.abstractmethod
-
-
 def is_abstract_method(obj: ta.Any) -> bool:
     return bool(getattr(obj, '__isabstractmethod__', False))
 

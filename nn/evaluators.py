@@ -5,6 +5,8 @@ import typing as ta
 from omlish import check
 from omlish import lang
 
+from .codegen import Codegen
+from .codegen import Program
 from .lazy import LazyBuffer
 from .lazy import LazyOp
 from .ops import MovementOp
@@ -98,13 +100,15 @@ class Compiler(Evaluator):
     def __init__(
             self,
             buffer_cls: ta.Type[RawBuffer],
-            # codegen: Codegen,
-            # runtime: Runtime,
+            codegen: Codegen,
             # synchronize: ta.Callable = lambda: None,
     ) -> None:
         super().__init__()
 
         self._buffer_cls = check.issubclass(buffer_cls, RawBuffer)
+        self._codegen = check.isinstance(codegen, Codegen)
+
+        self._prog_cache: ta.Dict[str, Program] = {}
 
     def eval(
             self,
@@ -120,9 +124,9 @@ class Compiler(Evaluator):
         if (
                 isinstance(op.op, MovementOp)
                 and isinstance((src0 := op.srcs[0]), LazyBuffer)
-                and src0.is_realized
+                and src0.is_realized  # noqa
         ):
-            return src0.get_realized()
+            return src0.get_realized()  # noqa
 
         # check if we can reuse the output buffer. If it's aliased, don't use it.
         # NOTE: this is pretty wrong actually, who knows where else this buffer is used?
@@ -140,4 +144,12 @@ class Compiler(Evaluator):
         if output._realized is None:
             output._realized = self._buffer_cls(math.prod(output.shape), output.dtype)
 
-        raise NotImplementedError
+        opg = self._codegen.op(op, output)
+
+        try:
+            prog = self._prog_cache[opg.key]
+        except KeyError:
+            prog = self._prog_cache[opg.key] = opg.build()
+
+        prog.exec(opg.buffers)
+        return output.get_realized()

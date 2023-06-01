@@ -8,6 +8,7 @@ else:
     cl = lang.proxy_import('pyopencl')
 
 from . import evaluators
+from .codegen import CstyleCodegen
 from .devices import Device
 from .dtypes import Dtype
 from .evaluators import Evaluator
@@ -68,10 +69,15 @@ class OpenclBuffer(RawBufferCopyInOut):
         cl.enqueue_copy(_runtime().queue[self._buf.device], x, self._buf, is_blocking=True)
 
 
+class OpenclCodegen(CstyleCodegen):
+    pass
+
+
 class OpenclCompiler(evaluators.Compiler):
     def __init__(self) -> None:
         super().__init__(
             OpenclBuffer,
+            OpenclCodegen(),
         )
 
 

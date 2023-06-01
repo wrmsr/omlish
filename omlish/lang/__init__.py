@@ -9,7 +9,6 @@ from .classes import NotPicklable  # noqa
 from .classes import PackageSealed  # noqa
 from .classes import Sealed  # noqa
 from .classes import SealedException  # noqa
-from .classes import abstract  # noqa
 from .classes import is_abstract  # noqa
 from .classes import is_abstract_class  # noqa
 from .classes import is_abstract_method  # noqa
