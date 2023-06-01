@@ -7,9 +7,14 @@ from .dims import Shape
 from .dtypes import Dtype
 
 
+NumpyValue = ta.Union[np.ndarray, np.generic]
+
+NUMPY_VALUE_TYPES = (np.ndarray, np.generic)
+
+
 @dc.dataclass(frozen=True)
 class LazyNpArray:
-    src: ta.Any  # np.array_like | Callable[[LazyNpArray], np.array_like]
+    src: ta.Any  # np.array_like | Callable[[LazyNumpy], np.array_like]
     shape: Shape
     dtype: Dtype = dc.field(check=lambda v: isinstance(v, Dtype))
 

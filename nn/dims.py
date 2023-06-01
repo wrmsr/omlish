@@ -43,13 +43,14 @@ class Shape(Dims):
 
     def base_stride(self) -> 'Stride':
         sts = [0] * len(self)
-        sts[-1] = 1
+        if self:
+            sts[-1] = 1
         for i in range(len(self) - 2, -1, -1):
             sts[i] = sts[i + 1] * self[i + 1]
         return Stride(st if s != 1 else 0 for st, s in zip(sts, self))
 
     @staticmethod
-    def of_np(x: np.ndarray) -> 'Shape':
+    def of_np(x: ta.Union[np.ndarray, np.generic]) -> 'Shape':  # FIXME: NumpyValue
         return Shape(x.shape)
 
 

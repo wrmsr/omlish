@@ -5,12 +5,12 @@ import weakref
 from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
-import numpy as np
 
 from .devices import Device
 from .dims import Shape
 from .dtypes import Dtype
 from .numpy import LazyNpArray
+from .numpy import NumpyValue
 from .ops import BinaryOp
 from .ops import LoadOp
 from .ops import MovementOp
@@ -277,7 +277,7 @@ class LazyBuffer(Lazy):
             self.dtype,
         )
 
-    def to_cpu(self) -> np.ndarray:
+    def to_cpu(self) -> NumpyValue:
         realized = self.cast(Dtype.of_np(self.dtype.np)).contiguous().realize().get_realized()
         ret = check.isinstance(realized, RawBuffer).to_cpu().reshape(self.shape)
         return ret

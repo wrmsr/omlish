@@ -13,6 +13,7 @@ from .dtypes import Dtype
 from .dtypes import Float32
 from .lazy import LazyBuffer
 from .numpy import LazyNpArray
+from .numpy import NumpyValue
 
 
 DEFAULT_DTYPE = Float32
@@ -20,13 +21,17 @@ DEFAULT_DTYPE = Float32
 
 AxisLike = ta.Union[int, ta.Iterable[int]]
 
+Scalar = ta.Union[int, float]
+
+SCALAR_TYPES = (int, float)
+
 TensorLike = ta.Union[
     'Tensor',
-    float,
+    Scalar,
     ta.Iterable,
     LazyBuffer,
     LazyNpArray,
-    np.ndarray,
+    NumpyValue,
 ]
 
 
@@ -47,60 +52,8 @@ class Tensor(lang.Final):
         self._func: ta.Optional[funcs.Func] = check.isinstance(func, (funcs.Func, None))
         self._had_func = func is not None
 
-    @staticmethod
-    def of(
-            src: TensorLike,
-            *,
-            device: ta.Optional[Device] = None,
-            dtype: ta.Optional[Dtype] = None,
-
-            requires_grad: ta.Optional[bool] = None,
-            **kwargs: ta.Any,
-    ) -> 'Tensor':
-        if device is None:
-            device = DEFAULT_DEVICE
-
-        if isinstance(src, Tensor):
-            if src.device != device:
-                raise NotImplementedError
-            return src
-
-        if isinstance(src, list):
-            src = np.array(src, dtype=(dtype or DEFAULT_DTYPE).np)
-
-        elif isinstance(src, (int, float)):
-            src = np.array([src], dtype=(dtype or DEFAULT_DTYPE).np)
-
-        elif isinstance(src, LazyBuffer) and src.device != device:
-            # FIXME:
-            raise NotImplementedError
-
-        if isinstance(src, np.ndarray):
-            src = LazyNpArray(src, Shape(src.shape), Dtype.of_np(src.dtype))
-
-        if isinstance(src, LazyNpArray):
-            if not src.shape:
-                # FIXME: ??
-                src = src.reshape(Shape(1))
-            if dtype is not None:
-                src = src.astype(dtype.np)
-            data = LazyBuffer.from_cpu(src, device)
-
-        elif isinstance(src, LazyBuffer):
-            check.arg(dtype is None or dtype == src.dtype)
-            data = src
-
-        else:
-            raise TypeError(src)
-
-        if dtype is not None and data.dtype != dtype:
-            raise NotImplementedError
-
-        return Tensor(
-            data,
-            requires_grad=requires_grad,
-            **kwargs,
-        )
+    ##
+    # Accessors
 
     @property
     def data(self) -> LazyBuffer:
@@ -134,6 +87,73 @@ class Tensor(lang.Final):
         self._grad = None
 
     ##
+    # Creators
+
+    @staticmethod
+    def of(
+            src: TensorLike,
+            *,
+            device: ta.Optional[Device] = None,
+            dtype: ta.Optional[Dtype] = None,
+
+            requires_grad: ta.Optional[bool] = None,
+            **kwargs: ta.Any,
+    ) -> 'Tensor':
+        if device is None:
+            device = DEFAULT_DEVICE
+
+        if isinstance(src, Tensor):
+            if src.device != device:
+                raise NotImplementedError
+            return src
+
+        if isinstance(src, SCALAR_TYPES) or isinstance(src, list):
+            src = np.array(src, dtype=(dtype or DEFAULT_DTYPE).np)
+
+        elif isinstance(src, LazyBuffer) and src.device != device:
+            # FIXME:
+            raise NotImplementedError
+
+        if isinstance(src, np.ndarray):
+            src = LazyNpArray(src, Shape(src.shape), Dtype.of_np(src.dtype))
+
+        if isinstance(src, LazyNpArray):
+            if dtype is not None:
+                src = src.astype(dtype.np)
+            data = LazyBuffer.from_cpu(src, device)
+
+        elif isinstance(src, LazyBuffer):
+            check.arg(dtype is None or dtype == src.dtype)
+            data = src
+
+        else:
+            raise TypeError(src)
+
+        if dtype is not None and data.dtype != dtype:
+            raise NotImplementedError
+
+        return Tensor(
+            data,
+            requires_grad=requires_grad,
+            **kwargs,
+        )
+
+    @staticmethod
+    def full(shape: Shape, fill_value: Scalar, **kwargs: ta.Any) -> 'Tensor':
+        return Tensor.of(fill_value, **kwargs) \
+            .reshape(*([1] * len(shape))) \
+            .expand(*shape) \
+            .contiguous()
+
+    @staticmethod
+    def zeros(*shape: int, **kwargs: ta.Any) -> 'Tensor':
+        return Tensor.full(Shape(shape), 0, **kwargs)
+
+    @staticmethod
+    def ones(*shape: int, **kwargs: ta.Any) -> 'Tensor':
+        return Tensor.full(Shape(shape), 1, **kwargs)
+
+    ##
 
     def realize(self) -> 'Tensor':
         self._data.realize()
@@ -152,11 +172,11 @@ class Tensor(lang.Final):
     def detach(self) -> 'Tensor':
         return Tensor.of(self._data, device=self.device, requires_grad=False)
 
-    def numpy(self) -> np.ndarray:
+    def numpy(self) -> NumpyValue:
         return self._data.to_cpu()
 
     def reshape(self, *shape: int) -> 'Tensor':
-        check.arg(bool(shape) and all(check.isinstance(x, int) != 0 for x in shape))
+        check.arg(all(check.isinstance(x, int) != 0 for x in shape))
         return funcs.Reshape.apply(
             self,
             shape=Shape(-self.shape.prod // math.prod(shape) if s == -1 else s for s in shape)
@@ -269,7 +289,7 @@ class Tensor(lang.Final):
         if keepdim:
             return ret
 
-        return ret.reshape(*([1] if not shape else shape))
+        return ret.reshape(*shape)
 
     def contiguous(self) -> 'Tensor':
         return funcs.Contiguous.apply(self)
@@ -290,11 +310,11 @@ class Tensor(lang.Final):
         return nodes
 
     def backward(self) -> None:
-        check.state(self.shape == Shape(1))
+        check.state(not self.shape)
 
         # fill in the first grad with one. don't use Tensor.ones because we don't need contiguous - this is "implicit
         # gradient creation"
-        self._grad = Tensor.of([1], device=self.device, requires_grad=False)
+        self._grad = Tensor.of(1, device=self.device, requires_grad=False)
 
         for cur in reversed(self.deep_walk()):
             cur_func = check.not_none(cur._func)
@@ -318,20 +338,6 @@ class Tensor(lang.Final):
 
             del cur._func
 
-    @staticmethod
-    def zeros(*shape: int, **kwargs: ta.Any) -> 'Tensor':
-        return Tensor.of([0], **kwargs) \
-            .reshape(*([1] * len(shape))) \
-            .expand(*shape) \
-            .contiguous()
-
-    @staticmethod
-    def ones(*shape: int, **kwargs: ta.Any) -> 'Tensor':
-        return Tensor.of([1], **kwargs) \
-            .reshape(*([1] * len(shape))) \
-            .expand(*shape) \
-            .contiguous()
-
     def permute(self, *order: int) -> 'Tensor':
         check.arg(sorted(order) == list(range(len(order))))
         return funcs.Permute.apply(self, order=order)
@@ -342,6 +348,7 @@ class Tensor(lang.Final):
         return self.permute(*order)
 
     def dot(self, w: 'Tensor') -> 'Tensor':
+        check.arg(bool(self.shape) and bool(w.shape))
         x = self.reshape(*self.shape[0:-1], 1, self.shape[-1])
         w = w.reshape(*w.shape[0:-2], 1, w.shape[-2], w.shape[-1]).transpose(-1, -2)
         r = (x * w).sum(-1)

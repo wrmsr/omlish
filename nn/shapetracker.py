@@ -28,7 +28,6 @@ class View(dc.Data, lang.Final):
 
     @staticmethod
     def of_shape(sh: Shape) -> 'View':
-        check.arg(len(sh) > 0)
         return View(sh, sh.base_stride())
 
     @cached.property

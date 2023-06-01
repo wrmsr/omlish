@@ -9,6 +9,7 @@ if ta.TYPE_CHECKING:
 else:
     torch = lang.proxy_import('torch')
 
+from ..numpy import NumpyValue
 from ..optimizers import Sgd
 from ..tensor import Tensor
 
@@ -49,8 +50,8 @@ def test_mul_backward():
     print(yt.get_grad().numpy())
 
 
-def torch_test(vs: ta.Sequence[np.ndarray], fn: ta.Callable) -> None:
-    def to_np(t: ta.Union[Tensor, torch.Tensor]) -> np.ndarray:
+def torch_test(vs: ta.Sequence[NumpyValue], fn: ta.Callable) -> None:
+    def to_np(t: ta.Union[Tensor, torch.Tensor]) -> NumpyValue:
         if isinstance(t, Tensor):
             return t.numpy()
         if isinstance(t, torch.Tensor):

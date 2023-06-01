@@ -7,6 +7,8 @@ from omlish import lang
 import numpy as np
 
 from .dtypes import Dtype
+from .numpy import NUMPY_VALUE_TYPES
+from .numpy import NumpyValue
 
 
 T = ta.TypeVar('T')
@@ -30,12 +32,12 @@ class RawBuffer(lang.Abstract):
         return self._dt
 
     @abc.abstractmethod
-    def to_cpu(self) -> np.ndarray:
+    def to_cpu(self) -> NumpyValue:
         raise NotImplementedError
 
     @classmethod
     @abc.abstractmethod
-    def from_cpu(cls: ta.Type[T], x: np.ndarray) -> T:
+    def from_cpu(cls: ta.Type[T], x: NumpyValue) -> T:
         raise NotImplementedError
 
 
@@ -45,24 +47,23 @@ class RawConst(RawBuffer, lang.Final):
         super().__init__(1, Dtype.of_np(x.dtype))
         self._x = x
 
-    def to_cpu(self) -> np.ndarray:
-        return np.asarray(self._x)
+    def to_cpu(self) -> NumpyValue:
+        return self._x
 
     @classmethod
-    def from_cpu(cls, x: np.ndarray) -> 'RawConst':
-        check.arg(x.shape == (1,))
-        return RawConst(x[0])
+    def from_cpu(cls, x: NumpyValue) -> 'RawConst':
+        return RawConst(x.item())
 
 
 class RawCpuBuffer(RawBuffer):
-    def __init__(self, buf: np.ndarray) -> None:
-        check.isinstance(buf, np.ndarray)
+    def __init__(self, buf: NumpyValue) -> None:
+        check.isinstance(buf, NUMPY_VALUE_TYPES)
         super().__init__(buf.size, Dtype.of_np(buf.dtype))
         self._buf = buf
 
-    def to_cpu(self) -> np.ndarray:
+    def to_cpu(self) -> NumpyValue:
         return self._buf
 
     @classmethod
-    def from_cpu(cls: ta.Type[T], x: np.ndarray) -> T:
+    def from_cpu(cls: ta.Type[T], x: NumpyValue) -> T:
         return cls(x)  # type: ignore
