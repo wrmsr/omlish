@@ -40,9 +40,11 @@ class OpenclRuntime:
             for dev in self._context.devices
         ]
 
+    @property
     def context(self) -> cl.Context:
         return self._context
 
+    @property
     def queue(self) -> ta.List[cl.CommandQueue]:
         return self._queue
 
@@ -55,9 +57,9 @@ def _runtime() -> OpenclRuntime:
 class OpenclBuffer(RawBufferCopyInOut):
 
     def __init__(self, sz: int, dt: Dtype, device: int = 0) -> None:
+        super().__init__(sz, dt)
         self._buf = cl.Buffer(_runtime().context, cl.mem_flags.READ_WRITE, sz * dt.item_size)
         setattr(self._buf, _DEVICE_ATTR, device)  # device is tracked on the underlying buffer
-        super().__init__(sz, dt)
 
     def _copy_in(self, x: NumpyValue) -> None:
         cl.enqueue_copy(_runtime().queue[self._buf.device], self._buf, x, is_blocking=False)

@@ -1,4 +1,5 @@
 import abc
+import math
 import typing as ta
 
 from omlish import check
@@ -9,6 +10,7 @@ from .lazy import LazyOp
 from .ops import MovementOp
 from .ops import Op
 from .raw import RawBuffer
+from .raw import RawConst
 
 
 EvalContext = ta.MutableMapping[LazyOp, RawBuffer]
@@ -111,6 +113,8 @@ class Compiler(Evaluator):
             *,
             context: ta.Optional[EvalContext] = None,
     ) -> RawBuffer:
+        output = check.not_none(output)
+
         # TODO: ???
         # All movementops do nothing in a Compiled buffer!
         if (
@@ -119,5 +123,21 @@ class Compiler(Evaluator):
                 and src0.is_realized
         ):
             return src0.get_realized()
+
+        # check if we can reuse the output buffer. If it's aliased, don't use it.
+        # NOTE: this is pretty wrong actually, who knows where else this buffer is used?
+        # FIXME: ?????
+        output._realized = output._output_buffer
+        if output._realized is not None:
+            if isinstance(output._realized, RawConst):
+                output._realized = None  # can't assign to RawConst
+            for a in op.buffers:
+                if a._realized == output._realized and not a.shape_tracker.contiguous:
+                    output._realized = None
+                    break
+
+        # We don't have an output buffer, we have to create it
+        if output._realized is None:
+            output._realized = self._buffer_cls(math.prod(output.shape), output.dtype)
 
         raise NotImplementedError

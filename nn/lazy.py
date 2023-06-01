@@ -94,6 +94,10 @@ class LazyBuffer(Lazy):
         return self._device
 
     @property
+    def shape_tracker(self) -> ShapeTracker:
+        return self._st
+
+    @property
     def shape(self) -> Shape:
         return self._st.shape
 
