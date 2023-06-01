@@ -1,4 +1,5 @@
 import abc
+import math
 import typing as ta
 
 from omlish import check
@@ -9,9 +10,6 @@ import numpy as np
 from .dtypes import Dtype
 from .numpy import NUMPY_VALUE_TYPES
 from .numpy import NumpyValue
-
-
-T = ta.TypeVar('T')
 
 
 class RawBuffer(lang.Abstract):
@@ -37,7 +35,7 @@ class RawBuffer(lang.Abstract):
 
     @classmethod
     @abc.abstractmethod
-    def from_cpu(cls: ta.Type[T], x: NumpyValue) -> T:
+    def from_cpu(cls, x: NumpyValue) -> 'RawBuffer':
         raise NotImplementedError
 
 
@@ -51,7 +49,7 @@ class RawConst(RawBuffer, lang.Final):
         return self._x
 
     @classmethod
-    def from_cpu(cls, x: NumpyValue) -> 'RawConst':
+    def from_cpu(cls, x: NumpyValue) -> RawBuffer:
         return RawConst(x.item())
 
 
@@ -65,5 +63,42 @@ class RawCpuBuffer(RawBuffer):
         return self._buf
 
     @classmethod
-    def from_cpu(cls: ta.Type[T], x: NumpyValue) -> T:
-        return cls(x)  # type: ignore
+    def from_cpu(cls, x: NumpyValue) -> RawBuffer:
+        return cls(x)
+
+
+class RawBufferCopyIn(RawBuffer, lang.Abstract):
+
+    @abc.abstractmethod
+    def _copy_in(self, x: np.ndarray) -> None:
+        raise NotImplementedError
+
+    @classmethod
+    def from_cpu(cls, x: NumpyValue, **kwargs: ta.Any) -> RawBuffer:
+        ret = cls(math.prod(x.shape), Dtype.of_np(x.dtype), **kwargs)
+        ret._copy_in(x)  # type: ignore  # noqa
+        return ret
+
+
+class RawBufferMapped(RawBufferCopyIn, lang.Abstract):
+
+    @abc.abstractmethod
+    def _buffer(self) -> memoryview:
+        raise NotImplementedError
+
+    def to_cpu(self) -> NumpyValue:
+        return np.frombuffer(self._buffer(), dtype=self.dtype.np)
+
+    def _copy_in(self, x: NumpyValue) -> None:
+        np.copyto(check.isinstance(self.to_cpu(), np.ndarray), x.reshape(-1))
+
+
+class RawBufferCopyInOut(RawBufferCopyIn, lang.Abstract):
+
+    def _copy_out(self, x: NumpyValue) -> None:
+        raise NotImplementedError
+
+    def to_cpu(self) -> NumpyValue:
+        x: np.ndarray = np.empty(self.size, dtype=self.dtype.np)
+        self._copy_out(x)
+        return x

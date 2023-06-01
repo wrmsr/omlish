@@ -90,15 +90,24 @@ class Interpreter(Evaluator):
             return ret
 
 
-# class Compiler(Evaluator):
-#
-#     def __init__(
-#             self,
-#             make_buffer: ta.Callable[[ta.Any], RawBuffer],
-#             codegen: Codegen,
-#             runtime: Runtime,
-#             synchronize: ta.Callable = lambda: None,
-#     ) -> None:
-#         super().__init__()
-#
-#         self._make_buffer = check.callable(make_buffer)
+class Compiler(Evaluator):
+
+    def __init__(
+            self,
+            make_buffer: ta.Callable[[ta.Any], RawBuffer],
+            # codegen: Codegen,
+            # runtime: Runtime,
+            # synchronize: ta.Callable = lambda: None,
+    ) -> None:
+        super().__init__()
+
+        self._make_buffer = check.callable(make_buffer)
+
+    def eval(
+            self,
+            op: LazyOp,
+            output: ta.Optional[LazyBuffer] = None,
+            *,
+            context: ta.Optional[EvalContext] = None,
+    ) -> RawBuffer:
+        raise NotImplementedError
