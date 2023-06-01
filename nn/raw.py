@@ -70,7 +70,7 @@ class RawCpuBuffer(RawBuffer):
 class RawBufferCopyIn(RawBuffer, lang.Abstract):
 
     @abc.abstractmethod
-    def _copy_in(self, x: np.ndarray) -> None:
+    def _copy_in(self, x: NumpyValue) -> None:
         raise NotImplementedError
 
     @classmethod

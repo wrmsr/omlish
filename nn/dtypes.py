@@ -8,6 +8,7 @@ import numpy as np
 class Dtype:
     name: str
     np: ta.Any
+    item_size: int
 
     @staticmethod
     def of_np(npdt: np.dtype) -> 'Dtype':
@@ -16,4 +17,4 @@ class Dtype:
         raise ValueError(npdt)
 
 
-Float32 = Dtype('float32', np.float32)
+Float32 = Dtype('float32', np.float32, 4)
