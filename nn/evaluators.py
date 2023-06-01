@@ -6,6 +6,7 @@ from omlish import lang
 
 from .lazy import LazyBuffer
 from .lazy import LazyOp
+from .ops import MovementOp
 from .ops import Op
 from .raw import RawBuffer
 
@@ -110,4 +111,13 @@ class Compiler(Evaluator):
             *,
             context: ta.Optional[EvalContext] = None,
     ) -> RawBuffer:
+        # TODO: ???
+        # All movementops do nothing in a Compiled buffer!
+        if (
+                isinstance(op.op, MovementOp)
+                and isinstance((src0 := op.srcs[0]), LazyBuffer)
+                and src0.is_realized
+        ):
+            return src0.get_realized()
+
         raise NotImplementedError

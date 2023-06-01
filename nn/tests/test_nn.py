@@ -163,3 +163,11 @@ def _test_sgd(steps, opts, atol, rtol):
 
 def test_sgd():
     _test_sgd(1, {'lr': 0.001}, 1e-6, 0)
+
+
+def test_simple_mul():
+    x = Tensor.of(1)
+    y = Tensor.of(2)
+    z = x + y
+    n = z.numpy()
+    print(n)
