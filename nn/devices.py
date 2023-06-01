@@ -31,7 +31,15 @@ class CpuDevice(Device):
         return numpy_interpreter()
 
 
-DEFAULT_DEVICE: Device = CpuDevice()
+@lang.cached_nullary
+def default_device() -> Device:
+    device_cls: ta.Type[Device]
+    device_cls = CpuDevice
+
+    from .opencl import OpenclDevice
+    device_cls = OpenclDevice
+
+    return device_cls()
 
 
 def shape_to_axis(old_shape: ta.Sequence[int], new_shape: ta.Sequence[int]) -> ta.Sequence[int]:

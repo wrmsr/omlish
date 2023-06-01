@@ -94,14 +94,14 @@ class Compiler(Evaluator):
 
     def __init__(
             self,
-            make_buffer: ta.Callable[[ta.Any], RawBuffer],
+            buffer_cls: ta.Type[RawBuffer],
             # codegen: Codegen,
             # runtime: Runtime,
             # synchronize: ta.Callable = lambda: None,
     ) -> None:
         super().__init__()
 
-        self._make_buffer = check.callable(make_buffer)
+        self._buffer_cls = check.issubclass(buffer_cls, RawBuffer)
 
     def eval(
             self,

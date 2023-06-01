@@ -6,7 +6,7 @@ from omlish import lang
 import numpy as np
 
 from . import funcs
-from .devices import DEFAULT_DEVICE  # noqa
+from .devices import default_device  # noqa
 from .devices import Device
 from .dims import Shape
 from .dtypes import Dtype
@@ -100,7 +100,7 @@ class Tensor(lang.Final):
             **kwargs: ta.Any,
     ) -> 'Tensor':
         if device is None:
-            device = DEFAULT_DEVICE
+            device = default_device()
 
         if isinstance(src, Tensor):
             if src.device != device:

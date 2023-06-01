@@ -18,12 +18,6 @@ from .raw import RawBufferCopyInOut
 _DEVICE_ATTR = '_omlish_device'
 
 
-class OpenclDevice(Device):
-    @property
-    def evaluator(self) -> Evaluator:
-        raise NotImplementedError
-
-
 class OpenclRuntime:
     def __init__(self) -> None:
         super().__init__()
@@ -72,13 +66,19 @@ class OpenclBuffer(RawBufferCopyInOut):
         cl.enqueue_copy(_runtime().queue[self._buf.device], x, self._buf, is_blocking=True)
 
 
-# class OpenclCompiler(evaluators.Compiler):
-#     def __int__(self) -> None:
-#         super().__init__(
-#
-#         )
+class OpenclCompiler(evaluators.Compiler):
+    def __init__(self) -> None:
+        super().__init__(
+            OpenclBuffer,
+        )
 
 
 @lang.cached_nullary
 def opencl_compiler() -> evaluators.Compiler:
-    raise NotImplementedError
+    return OpenclCompiler()
+
+
+class OpenclDevice(Device):
+    @property
+    def evaluator(self) -> Evaluator:
+        return opencl_compiler()
