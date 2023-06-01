@@ -76,7 +76,7 @@ class RawBufferCopyIn(RawBuffer, lang.Abstract):
     @classmethod
     def from_cpu(cls, x: NumpyValue, **kwargs: ta.Any) -> RawBuffer:
         ret = cls(math.prod(x.shape), Dtype.of_np(x.dtype), **kwargs)
-        ret._copy_in(x)  # type: ignore  # noqa
+        ret._copy_in(x)
         return ret
 
 

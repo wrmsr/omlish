@@ -15,6 +15,9 @@ from .numpy import NumpyValue
 from .raw import RawBufferCopyInOut
 
 
+_DEVICE_ATTR = '_omlish_device'
+
+
 class OpenclDevice(Device):
     @property
     def evaluator(self) -> Evaluator:
@@ -56,23 +59,17 @@ def _runtime() -> OpenclRuntime:
 
 
 class OpenclBuffer(RawBufferCopyInOut):
-    def __init__(self, sz: int, dt: Dtype, device: int = 0) -> None:
-        buf = cl.Buffer(_runtime().context, cl.mem_flags.READ_WRITE, sz * dt.item_size)
-        setattr(buf, "device", device)  # device is tracked on the underlying buffer
-        super().__init__(sz, dt, buf)
 
-    def _copy_in(self, x: np.ndarray):
-        assert not self.dtype.name.startswith(
-            "image"
-        ), f"can't copyin images {self.dtype}"
+    def __init__(self, sz: int, dt: Dtype, device: int = 0) -> None:
+        self._buf = cl.Buffer(_runtime().context, cl.mem_flags.READ_WRITE, sz * dt.item_size)
+        setattr(self._buf, _DEVICE_ATTR, device)  # device is tracked on the underlying buffer
+        super().__init__(sz, dt)
+
+    def _copy_in(self, x: NumpyValue) -> None:
         cl.enqueue_copy(_runtime().queue[self._buf.device], self._buf, x, is_blocking=False)
 
-    def _copy_out(self, x: np.ndarray):
-        assert not self.dtype.name.startswith(
-            "image"
-        ), f"can't copyout images {self.dtype}"
-        cl.enqueue_copy(CL.cl_queue[self._buf.device], x, self._buf, is_blocking=True)
-
+    def _copy_out(self, x: NumpyValue) -> None:
+        cl.enqueue_copy(_runtime().queue[self._buf.device], x, self._buf, is_blocking=True)
 
 
 # class OpenclCompiler(evaluators.Compiler):
