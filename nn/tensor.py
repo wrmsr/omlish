@@ -6,14 +6,14 @@ from omlish import lang
 import numpy as np
 
 from . import funcs
-from .devices import default_device  # noqa
 from .devices import Device
+from .devices import default_device  # noqa
 from .dims import Shape
 from .dtypes import Dtype
 from .dtypes import Float32
 from .lazy import LazyBuffer
-from .numpy import LazyNpArray
 from .numpy import NumpyValue
+from .ops import LoadOp
 
 
 DEFAULT_DTYPE = Float32
@@ -30,7 +30,6 @@ TensorLike = ta.Union[
     Scalar,
     ta.Iterable,
     LazyBuffer,
-    LazyNpArray,
     NumpyValue,
 ]
 
@@ -52,7 +51,6 @@ class Tensor(lang.Final):
         self._func: ta.Optional[funcs.Func] = check.isinstance(func, (funcs.Func, None))
         self._had_func = func is not None
 
-    ##
     # Accessors
 
     @property
@@ -86,7 +84,6 @@ class Tensor(lang.Final):
     def zero_grad(self) -> None:
         self._grad = None
 
-    ##
     # Creators
 
     @staticmethod
@@ -107,30 +104,33 @@ class Tensor(lang.Final):
                 raise NotImplementedError
             return src
 
-        if isinstance(src, SCALAR_TYPES) or isinstance(src, list):
+        if isinstance(src, list):
             src = np.array(src, dtype=(dtype or DEFAULT_DTYPE).np)
-
         elif isinstance(src, LazyBuffer) and src.device != device:
-            # FIXME:
-            raise NotImplementedError
+            # TODO: this has to realize, it shouldn't have to
+            src = src.realize().to_cpu()
 
-        if isinstance(src, np.ndarray):
-            src = LazyNpArray(src, Shape(src.shape), Dtype.of_np(src.dtype))
-
-        if isinstance(src, LazyNpArray):
-            if dtype is not None:
-                src = src.astype(dtype.np)
-            data = LazyBuffer.from_cpu(src, device)
-
-        elif isinstance(src, LazyBuffer):
+        if isinstance(src, LazyBuffer):
             check.arg(dtype is None or dtype == src.dtype)
             data = src
-
+        elif isinstance(src, np.ndarray):
+            data = LazyBuffer.load_op(
+                LoadOp.FROM_CPU,
+                Shape(src.shape),
+                Dtype.of_np(src.dtype),
+                device,
+                src,
+            )
+        elif isinstance(src, (int, float)):
+            data = LazyBuffer.load_op(
+                LoadOp.CONST,
+                Shape(),
+                (dtype or DEFAULT_DTYPE),
+                device,
+                src,
+            )
         else:
-            raise TypeError(src)
-
-        if dtype is not None and data.dtype != dtype:
-            raise NotImplementedError
+            raise RuntimeError(f"can't create Tensor from {src}")
 
         return Tensor(
             data,
@@ -153,7 +153,33 @@ class Tensor(lang.Final):
     def ones(*shape: int, **kwargs: ta.Any) -> 'Tensor':
         return Tensor.full(Shape(shape), 1, **kwargs)
 
-    ##
+    @staticmethod
+    def _load_op(
+            op: LoadOp,
+            sz: int,
+            device: ta.Optional[Device] = None,
+            dtype: ta.Optional[Dtype] = None,
+            arg: ta.Any = None,
+            **kwargs: ta.Any
+    ) -> 'Tensor':
+        return Tensor.of(
+            LazyBuffer.load_op(
+                op,
+                Shape(sz),
+                dtype or DEFAULT_DTYPE,
+                device or default_device(),
+                arg,
+            ),
+            dtype=dtype,
+            device=device,
+            **kwargs,
+        )
+
+    @staticmethod
+    def empty(*shape: int, **kwargs: ta.Any) -> 'Tensor':
+        return Tensor._load_op(LoadOp.EMPTY, math.prod(shape), **kwargs).reshape(*shape)
+
+    #
 
     def realize(self) -> 'Tensor':
         self._data.realize()

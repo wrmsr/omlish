@@ -48,6 +48,7 @@ class Sgd(Optimizer):
         lr: float = 0.001
         momentum: float = 0.
         nesterov: bool = False
+        weight_decay: float = 0.
 
     def __init__(self, ts: ta.Iterable[Tensor], config: Config = Config()) -> None:
         super().__init__(ts)
@@ -61,7 +62,7 @@ class Sgd(Optimizer):
     def step(self) -> None:
         # https://pytorch.org/docs/stable/generated/torch.optim.SGD.html
         for i, t in enumerate(self._params):
-            g = check.not_none(t.get_grad()).realize()
+            g = check.not_none(t.get_grad()).realize() + self._config.weight_decay * t.detach()
             if self._config.momentum:
                 self._b[i].assign(
                     # NOTE: self.b[i] is zero on the first run, no if required

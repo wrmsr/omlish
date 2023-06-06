@@ -5,11 +5,11 @@ import weakref
 from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
+import numpy as np
 
 from .devices import Device
 from .dims import Shape
 from .dtypes import Dtype
-from .numpy import LazyNpArray
 from .numpy import NumpyValue
 from .ops import BinaryOp
 from .ops import LoadOp
@@ -202,7 +202,7 @@ class LazyBuffer(Lazy):
             return self
 
         if self._op.op == LoadOp.FROM_CPU:
-            self._realized = RawCpuBuffer.from_cpu(check.isinstance(self._op.arg, LazyNpArray)())
+            self._realized = RawCpuBuffer.from_cpu(self._op.arg)
 
         elif self.op.op == LoadOp.CONTIGUOUS:
             sb = self.op.srcs[0].as_buffer()  # FIXME: cast??
@@ -210,6 +210,11 @@ class LazyBuffer(Lazy):
             if sb._st.contiguous and not isinstance(realized, RawConst) and realized.size == math.prod(self.shape):
                 # no need to run an AST, this is already contiguous
                 self._realized = realized
+
+        elif self.op.op == LoadOp.EMPTY:
+            self._realized = RawCpuBuffer(np.empty(math.prod(self.shape), dtype=self.dtype.np))  # FIXME
+        elif self.op.op == LoadOp.CONST:
+            self._realized = RawCpuBuffer.from_cpu(np.array(self.op.arg, dtype=self.dtype.np))
 
         elif self._op.op == BinaryOp.MUL:
             self._op = self._eval_binary_op()
@@ -258,12 +263,18 @@ class LazyBuffer(Lazy):
             return ret
 
     @staticmethod
-    def from_cpu(x: LazyNpArray, device: Device) -> 'LazyBuffer':
+    def load_op(
+            op: LoadOp,
+            shape: Shape,
+            dtype: Dtype,
+            device: Device,
+            arg: ta.Any = None,
+    ) -> 'LazyBuffer':
         return create_lazy_buffer(
             device,
-            ShapeTracker.of(x.shape),
-            LazyOp(LoadOp.FROM_CPU, (), x),
-            x.dtype,
+            shape,
+            LazyOp(op, (), arg),
+            dtype,
         )
 
     def cast(self: 'LazyBuffer', arg: Dtype) -> 'LazyBuffer':
@@ -286,24 +297,20 @@ class LazyBuffer(Lazy):
         ret = check.isinstance(realized, RawBuffer).to_cpu().reshape(self.shape)
         return ret
 
-    # create a constant with the shape and dtype of self
     def const_like(self, val) -> 'LazyBuffer':
-        return create_lazy_buffer(
+        return self.load_op(
+            LoadOp.CONST,
+            Shape(),
+            Dtype.of_np(self.dtype.np),
             self.device,
-            Shape(1),
-            LazyOp(
-                LoadOp.FROM_CPU,
-                (),
-                LazyNpArray(
-                    [val],
-                    Shape(1),
-                    self.dtype,
-                ),
-            ),
-            self.dtype,
-        ) \
-            .movement_op(MovementOp.RESHAPE, Shape((1,) * len(self.shape), )) \
-            .movement_op(MovementOp.EXPAND, self.shape)
+            arg=val
+        ).movement_op(
+            MovementOp.RESHAPE,
+            (1,) * len(self.shape)
+        ).movement_op(
+            MovementOp.EXPAND,
+            self.shape,
+        )
 
 
 def create_lazy_buffer(

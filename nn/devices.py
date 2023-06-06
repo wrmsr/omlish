@@ -36,8 +36,8 @@ def default_device() -> Device:
     device_cls: ta.Type[Device]
     device_cls = CpuDevice
 
-    from .opencl import OpenclDevice
-    device_cls = OpenclDevice
+    # from .opencl import OpenclDevice
+    # device_cls = OpenclDevice
 
     return device_cls()
 

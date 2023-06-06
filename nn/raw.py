@@ -93,7 +93,7 @@ class RawBufferMapped(RawBufferCopyIn, lang.Abstract):
         np.copyto(check.isinstance(self.to_cpu(), np.ndarray), x.reshape(-1))
 
 
-class RawBufferCopyInOut(RawBufferCopyIn, lang.Abstract):
+class RawBufferCopyInOut(RawBufferCopyIn, lang.Abstract):  # noqa
 
     def _copy_out(self, x: NumpyValue) -> None:
         raise NotImplementedError
