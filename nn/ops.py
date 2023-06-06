@@ -46,7 +46,7 @@ class LoadOp(Op, enum.Enum):
     EMPTY = enum.auto()
     RAND = enum.auto()
     CONST = enum.auto()
+    FROM = enum.auto()
     FROM_CPU = enum.auto()
     CONTIGUOUS = enum.auto()
-    TO_CPU = enum.auto()
     CUSTOM = enum.auto()

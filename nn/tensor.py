@@ -9,6 +9,7 @@ from . import funcs
 from .devices import Device
 from .devices import default_device  # noqa
 from .dims import Shape
+from .dims import Stride
 from .dtypes import Dtype
 from .dtypes import Float32
 from .lazy import LazyBuffer
@@ -96,6 +97,8 @@ class Tensor(lang.Final):
             requires_grad: ta.Optional[bool] = None,
             **kwargs: ta.Any,
     ) -> 'Tensor':
+        check.not_isinstance(src, (Shape, Stride))
+
         if device is None:
             device = default_device()
 
@@ -104,15 +107,20 @@ class Tensor(lang.Final):
                 raise NotImplementedError
             return src
 
-        if isinstance(src, list):
+        if isinstance(src, ta.Iterable):
             src = np.array(src, dtype=(dtype or DEFAULT_DTYPE).np)
-        elif isinstance(src, LazyBuffer) and src.device != device:
-            # TODO: this has to realize, it shouldn't have to
-            src = src.realize().to_cpu()
 
         if isinstance(src, LazyBuffer):
             check.arg(dtype is None or dtype == src.dtype)
             data = src
+            if data.device != device:
+                data = LazyBuffer.load_op(
+                    LoadOp.FROM,
+                    data.shape,
+                    data.dtype,
+                    device,
+                    src=data,
+                )
         elif isinstance(src, np.ndarray):
             data = LazyBuffer.load_op(
                 LoadOp.FROM_CPU,
@@ -121,7 +129,7 @@ class Tensor(lang.Final):
                 device,
                 src,
             )
-        elif isinstance(src, (int, float)):
+        elif isinstance(src, SCALAR_TYPES):
             data = LazyBuffer.load_op(
                 LoadOp.CONST,
                 Shape(),

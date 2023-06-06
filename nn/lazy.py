@@ -211,6 +211,10 @@ class LazyBuffer(Lazy):
                 # no need to run an AST, this is already contiguous
                 self._realized = realized
 
+        elif self.op.op == LoadOp.FROM:
+            raw = self.op.srcs[0].as_buffer().get_realized()
+            self._realized = RawCpuBuffer.from_cpu(raw.to_cpu())
+
         elif self.op.op == LoadOp.EMPTY:
             self._realized = RawCpuBuffer(np.empty(math.prod(self.shape), dtype=self.dtype.np))  # FIXME
         elif self.op.op == LoadOp.CONST:
@@ -269,11 +273,12 @@ class LazyBuffer(Lazy):
             dtype: Dtype,
             device: Device,
             arg: ta.Any = None,
+            src: ta.Any = None,
     ) -> 'LazyBuffer':
         return create_lazy_buffer(
             device,
             shape,
-            LazyOp(op, (), arg),
+            LazyOp(op, (src,) if src is not None else (), arg),
             dtype,
         )
 
