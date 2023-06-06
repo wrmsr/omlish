@@ -41,5 +41,5 @@ librosa==0.10.0.post2
 
 ### infra
 
-boto3==1.26.145
+boto3==1.26.147
 google-cloud-compute==1.11.0
