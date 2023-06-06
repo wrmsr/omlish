@@ -1,6 +1,6 @@
 """
 TODO:
- - encode self._realized <-> self._op w/ enumclass, invalid state unrepresentable
+ - encode self._realized <-> self._op w/ case class, invalid state unrepresentable
 """
 import math
 import typing as ta
