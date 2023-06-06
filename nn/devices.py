@@ -32,14 +32,15 @@ class CpuDevice(Device):
 
 
 @lang.cached_nullary
+def cpu_device() -> CpuDevice:
+    return CpuDevice()
+
+
+@lang.cached_nullary
 def default_device() -> Device:
-    device_cls: ta.Type[Device]
-    device_cls = CpuDevice
-
     # from .opencl import OpenclDevice
-    # device_cls = OpenclDevice
-
-    return device_cls()
+    # return OpenclDevice()
+    return cpu_device()
 
 
 def shape_to_axis(old_shape: ta.Sequence[int], new_shape: ta.Sequence[int]) -> ta.Sequence[int]:

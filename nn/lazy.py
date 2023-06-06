@@ -1,3 +1,7 @@
+"""
+TODO:
+ - encode self._realized <-> self._op w/ enumclass, invalid state unrepresentable
+"""
 import math
 import typing as ta
 import weakref
@@ -8,6 +12,7 @@ from omlish import lang
 import numpy as np
 
 from .devices import Device
+from .devices import cpu_device
 from .dims import Shape
 from .dtypes import Dtype
 from .numpy import NumpyValue
@@ -71,23 +76,30 @@ class LazyBuffer(Lazy):
             self,
             device: Device,
             st: ShapeTracker,
-            op: LazyOp,
+            src: ta.Union[LazyOp, RawBuffer],
             dtype: Dtype,
     ) -> None:
         super().__init__()
 
         self._device = check.isinstance(device, Device)
         self._st = check.isinstance(st, ShapeTracker)
-        self._op = check.isinstance(op, LazyOp)
         self._dtype = check.isinstance(dtype, Dtype)
 
+        self._op: ta.Optional[LazyOp] = None
         self._realized: ta.Optional[RawBuffer] = None
+        if isinstance(src, LazyOp):
+            self._op = src
+        elif isinstance(src, RawBuffer):
+            self._realized = src
+        else:
+            raise TypeError(src)
+
         self._output_buffer: ta.Optional[RawBuffer] = None
 
         self._children: ta.MutableSet['LazyBuffer'] = weakref.WeakSet()
-
-        for b in op.buffers:
-            b._children.add(self)
+        if isinstance(src, LazyOp):
+            for b in src.buffers:
+                b._children.add(self)
 
     @property
     def device(self) -> Device:
@@ -102,8 +114,20 @@ class LazyBuffer(Lazy):
         return self._st.shape
 
     @property
-    def op(self) -> LazyOp:
+    def op(self) -> ta.Optional[LazyOp]:
         return self._op
+
+    def get_op(self) -> LazyOp:
+        return check.not_none(self._op)
+
+    @property
+    def is_realized(self) -> bool:
+        return self._realized is not None
+
+    def get_realized(self) -> RawBuffer:
+        if self._realized is None:
+            raise RuntimeError('Not realized')
+        return self._realized
 
     @property
     def dtype(self) -> Dtype:
@@ -145,8 +169,8 @@ class LazyBuffer(Lazy):
             return self
 
         # two ops in a row is one op. merge them if unresolved
-        if self._realized is None and self._op.op == op:
-            sb = self.op.srcs[0].as_buffer()
+        if self._realized is None and (self_op := self.get_op()).op == op:
+            sb = self_op.srcs[0].as_buffer()
 
             # TODO: why is deleting self from children needed? shouldn't GC do it?
             sb._children.discard(self)
@@ -160,33 +184,33 @@ class LazyBuffer(Lazy):
                     tuple(
                         (b1 + b2, b1 + e2)
                         for (b1, e1), (b2, e2)
-                        in zip(self.op.arg, arg)
+                        in zip(self_op.arg, arg)
                     ),
                 )
 
             if op == MovementOp.PERMUTE:
-                return sb.movement_op(op, tuple(self.op.arg[i] for i in arg))
+                return sb.movement_op(op, tuple(self_op.arg[i] for i in arg))
 
             if op == MovementOp.PAD:
                 return sb.movement_op(
                     op,
-                    tuple((b1 + b2, e1 + e2) for (b1, e1), (b2, e2) in zip(self.op.arg, arg)),
+                    tuple((b1 + b2, e1 + e2) for (b1, e1), (b2, e2) in zip(self_op.arg, arg)),
                 )
 
             if op == MovementOp.STRIDE:
-                return sb.movement_op(op, tuple(i * j for i, j in zip(arg, self.op.arg)))
+                return sb.movement_op(op, tuple(i * j for i, j in zip(arg, self_op.arg)))
 
         # some permutes are actually just reshapes
         if op == MovementOp.PERMUTE and local_st.contiguous:
             return self.movement_op(MovementOp.RESHAPE, tuple(self.shape[i] for i in arg))
 
         # move permutes before expands (always, this is safe)
-        if op == MovementOp.PERMUTE and self._realized is None and self.op.op == MovementOp.EXPAND:
-            sb = self.op.srcs[0].as_buffer()  # FIXME
+        if op == MovementOp.PERMUTE and self._realized is None and (self_op := self.get_op()).op == MovementOp.EXPAND:
+            sb = self_op.srcs[0].as_buffer()  # FIXME
             sb._children.discard(self)
             return sb \
                 .movement_op(MovementOp.PERMUTE, arg) \
-                .movement_op(MovementOp.EXPAND, tuple(self.op.arg[a] for a in arg))
+                .movement_op(MovementOp.EXPAND, tuple(self_op.arg[a] for a in arg))
 
         ret = create_lazy_buffer(
             self.device,
@@ -201,57 +225,49 @@ class LazyBuffer(Lazy):
         if self._realized is not None:
             return self
 
-        if self._op.op == LoadOp.FROM_CPU:
-            self._realized = RawCpuBuffer.from_cpu(self._op.arg)
-
-        elif self.op.op == LoadOp.CONTIGUOUS:
-            sb = self.op.srcs[0].as_buffer()  # FIXME: cast??
+        self_op = self.get_op()
+        if self_op.op == LoadOp.CONTIGUOUS:
+            sb = self_op.srcs[0].as_buffer()  # FIXME: cast??
             realized = sb.realize().get_realized()
             if sb._st.contiguous and not isinstance(realized, RawConst) and realized.size == math.prod(self.shape):
                 # no need to run an AST, this is already contiguous
                 self._realized = realized
 
-        elif self.op.op == LoadOp.FROM:
-            raw = self.op.srcs[0].as_buffer().get_realized()
+        elif self_op.op == LoadOp.FROM:
+            raw = self_op.srcs[0].as_buffer().get_realized()
             self._realized = RawCpuBuffer.from_cpu(raw.to_cpu())
 
-        elif self.op.op == LoadOp.EMPTY:
+        elif self_op.op == LoadOp.EMPTY:
             self._realized = RawCpuBuffer(np.empty(math.prod(self.shape), dtype=self.dtype.np))  # FIXME
-        elif self.op.op == LoadOp.CONST:
-            self._realized = RawCpuBuffer.from_cpu(np.array(self.op.arg, dtype=self.dtype.np))
+        elif self_op.op == LoadOp.CONST:
+            self._realized = RawCpuBuffer.from_cpu(np.array(self_op.arg, dtype=self.dtype.np))
 
-        elif self._op.op == BinaryOp.MUL:
+        elif self_op.op == BinaryOp.MUL:
             self._op = self._eval_binary_op()
+
+        del self_op  # self._op is possibly reassigned
 
         ##
 
         if self._realized is None:
-            for x in self.op.buffers:
+            self_op = self.get_op()
+            for x in self_op.buffers:
                 x.realize()
-
-            self._realized = self.device.evaluator.eval(self.op, output=self)
+            self._realized = self.device.evaluator.eval(self_op, output=self)
 
         # check.isinstance(self.get_realized(), (RawConst, Device[self.device].buffer)),
         #     f"device mismatch on realized got {type(self.realized)} expected {self.device}")
 
         # no need to keep the op after realization
-        del self._op
+        self._op = None
 
         return self
 
-    @property
-    def is_realized(self) -> bool:
-        return self._realized is not None
-
-    def get_realized(self) -> RawBuffer:
-        if self._realized is None:
-            raise RuntimeError('Not realized')
-        return self._realized
-
     def _eval_binary_op(self) -> LazyOp:
-        check.isinstance(self._op.op, BinaryOp)
+        self_op = self.get_op()
+        check.isinstance(self_op.op, BinaryOp)
 
-        real_srcs: ta.Dict[LazyBuffer, ta.Optional[Lazy]] = {x: None for x in self._op.buffers}
+        real_srcs: ta.Dict[LazyBuffer, ta.Optional[Lazy]] = {x: None for x in self_op.buffers}
 
         intermediate_shape = self.shape
         # reshape all the late ops into the output shape
@@ -260,7 +276,7 @@ class LazyBuffer(Lazy):
             if real_srcs[x] is None:
                 real_srcs[x] = x.movement_op(MovementOp.RESHAPE, intermediate_shape)
 
-        ret = map_buffers({k: check.not_none(v) for k, v in real_srcs.items()}, self.op)
+        ret = map_buffers({k: check.not_none(v) for k, v in real_srcs.items()}, self_op)
         if intermediate_shape != self.shape:
             return LazyOp(MovementOp.RESHAPE, (ret,), self.shape)
         else:
@@ -282,13 +298,22 @@ class LazyBuffer(Lazy):
             dtype,
         )
 
+    @staticmethod
+    def from_cpu(x: np.ndarray) -> 'LazyBuffer':
+        return LazyBuffer(
+            cpu_device(),
+            ShapeTracker(Shape(x.shape)),
+            RawCpuBuffer.from_cpu(x),
+            Dtype.of_np(x.dtype),
+        )
+
     def cast(self: 'LazyBuffer', arg: Dtype) -> 'LazyBuffer':
         if self.dtype == arg:
             return self
         return elementwise_op(UnaryOp.CAST, self, arg=arg)
 
     def contiguous(self: 'LazyBuffer') -> 'LazyBuffer':
-        if self._realized is None and self.op.op == LoadOp.CONTIGUOUS:
+        if self._realized is None and self.get_op().op == LoadOp.CONTIGUOUS:
             return self  # two CONTIGUOUS in a row is one
         return create_lazy_buffer(
             self.device,

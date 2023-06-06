@@ -110,7 +110,9 @@ class Tensor(lang.Final):
         if isinstance(src, ta.Iterable):
             src = np.array(src, dtype=(dtype or DEFAULT_DTYPE).np)
 
-        if isinstance(src, LazyBuffer):
+        if isinstance(src, np.ndarray):
+            data = LazyBuffer.from_cpu(src)
+        elif isinstance(src, LazyBuffer):
             check.arg(dtype is None or dtype == src.dtype)
             data = src
             if data.device != device:
@@ -121,14 +123,6 @@ class Tensor(lang.Final):
                     device,
                     src=data,
                 )
-        elif isinstance(src, np.ndarray):
-            data = LazyBuffer.load_op(
-                LoadOp.FROM_CPU,
-                Shape(src.shape),
-                Dtype.of_np(src.dtype),
-                device,
-                src,
-            )
         elif isinstance(src, SCALAR_TYPES):
             data = LazyBuffer.load_op(
                 LoadOp.CONST,
