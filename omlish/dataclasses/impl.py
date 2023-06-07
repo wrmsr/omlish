@@ -214,12 +214,11 @@ def process_class(cls: type, params: Params) -> type:
     lines.append(buf.getvalue())
     buf.truncate(0)
 
-    # FIXME: ...
-    # for f in flds.values():
-    #     chk = f.metadata.get(Coerce)
-    #     if chk is not None:
-    #         cn = nsg.put(f'__check_' + f.name, chk)
-    #         lines.append(f'    if not {cn}({f.name}): raise __CheckException')
+    for f in flds.values():
+        coe = f.metadata.get(Coerce)
+        if coe is not None:
+            cn = nsg.put(f'__coerce_' + f.name, coe)
+            lines.append(f'    {f.name} = {cn}({f.name})')
 
     for f in flds.values():
         chk = f.metadata.get(Check)

@@ -17,8 +17,8 @@ def is_contiguous(shape: Shape, stride: Stride) -> bool:
 
 
 class View(dc.Data, lang.Final):
-    shape: Shape
-    stride: Stride
+    shape: Shape = dc.field(coerce=check.of_isinstance(Shape))
+    stride: Stride = dc.field(coerce=check.of_isinstance(Stride))
     offset: int = 0
     mask: ta.Any = None  # FIXME: ta.Optional[ta.Tuple[ta.Tuple[int, int], ...]]
 
@@ -177,7 +177,7 @@ class ShapeTracker(lang.Final):
 
         raise NotImplementedError
 
-    def movement_op(self, op: MovementOp, arg: Shape) -> 'ShapeTracker':
+    def movement_op(self, op: MovementOp, arg: ta.Sequence[int]) -> 'ShapeTracker':
         if op != MovementOp.RESHAPE and len(arg) != len(self.shape):
             raise RuntimeError(f'arg {arg} for {op} does not match dim of shape {self.shape}')
         self._movement_op_dispatch[op](self, arg)

@@ -147,7 +147,7 @@ class LazyBuffer(Lazy):
         if self.shape == new_shape:
             return self
 
-        srcs = _push_movement_ops([self])
+        srcs = _push_movement_ops([self])  # SHUFFLE_MOVEMENT_OPS
 
         return create_lazy_buffer(
             self.device,
@@ -202,7 +202,7 @@ class LazyBuffer(Lazy):
 
         # some permutes are actually just reshapes
         if op == MovementOp.PERMUTE and local_st.contiguous:
-            return self.movement_op(MovementOp.RESHAPE, tuple(self.shape[i] for i in arg))
+            return self.movement_op(MovementOp.RESHAPE, Shape(self.shape[i] for i in arg))
 
         # move permutes before expands (always, this is safe)
         if op == MovementOp.PERMUTE and self._realized is None and (self_op := self.get_op()).op == MovementOp.EXPAND:
@@ -210,7 +210,20 @@ class LazyBuffer(Lazy):
             sb._children.discard(self)
             return sb \
                 .movement_op(MovementOp.PERMUTE, arg) \
-                .movement_op(MovementOp.EXPAND, tuple(self_op.arg[a] for a in arg))
+                .movement_op(MovementOp.EXPAND, Shape(self_op.arg[a] for a in arg))
+
+        # if this MovementOp is being applied to a BinaryOp, apply the MovementOp to all the BinaryOp inputs instead.
+        if (
+                # SHUFFLE_MOVEMENT_OPS and
+                self._realized is None and
+                isinstance(self.get_op().op, BinaryOp) and
+                (
+                        op in (MovementOp.SHRINK, MovementOp.STRIDE, MovementOp.PERMUTE) or
+                        (op == MovementOp.RESHAPE and isinstance(self.get_op().op, UnaryOp))
+                )
+                and len(self._children) == 0
+        ):
+            return _replace_with_movement_ops(self.get_op(), [(op, arg)])
 
         ret = create_lazy_buffer(
             self.device,
@@ -364,6 +377,8 @@ def elementwise_op(
         arg: ta.Optional[ta.Any] = None,
 ) -> LazyBuffer:
     check.not_empty(srcs)
+
+    srcs = tuple(_push_movement_ops(srcs))  # SHUFFLE_MOVEMENT_OPS
 
     out_device = srcs[0].device
     out_shape = srcs[0].shape

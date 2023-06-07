@@ -1,3 +1,7 @@
+"""
+TODO:
+ - case class hierarchy of ops w/ typed args
+"""
 import enum
 
 from omlish import lang
@@ -30,10 +34,10 @@ class ReduceOp(Op, enum.Enum):
 
 
 class MovementOp(Op, enum.Enum):
-    RESHAPE = enum.auto()
+    RESHAPE = enum.auto()  # arg: new_shape: Shape
     PERMUTE = enum.auto()
     EXPAND = enum.auto()
-    PAD = enum.auto()
+    PAD = enum.auto()  # arg: padding: [(left, right) for _ in shape]
     SHRINK = enum.auto()
     STRIDE = enum.auto()
 
