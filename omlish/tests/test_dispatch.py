@@ -32,3 +32,35 @@ def test_dispatch():
 
     assert f(A()) == 'a_or_b'
     assert f(B()) == 'a_or_b'
+
+
+def test_mro():
+    class A:
+        @dispatch.method
+        def f(self, x: object):
+            return 'A:object'
+
+        @f.register
+        def f_str(self, x: str):
+            return 'A:str'
+
+    assert A().f(None) == 'A:object'
+    assert A().f(1) == 'A:object'
+    assert A().f('') == 'A:str'
+
+    class B(A):
+        @A.f.register
+        def f_int(self, x: int):
+            return 'B:int'
+
+        @A.f.register
+        def f_str(self, x: str):
+            return 'B:str'
+
+    assert A().f(None) == 'A:object'
+    assert A().f(1) == 'A:object'
+    assert A().f('') == 'A:str'
+
+    assert B().f(None) == 'A:object'
+    assert B().f(1) == 'B:int'
+    assert B().f('') == 'B:str'

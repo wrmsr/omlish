@@ -1,6 +1,8 @@
 """
 TODO:
  - {sum,and}_nodes -> cls.new
+ - *** NEED BOUNDS ON KEY?
+  - sdm
 """
 import abc
 import math
