@@ -52,8 +52,7 @@ class Node(lang.Abstract, lang.Sealed):
         raise NotImplementedError
 
     def __sub__(self, b: ta.Union['Node', int]) -> 'Node':
-        # return self + -b
-        raise NotImplementedError
+        return self + -b
 
     def __ge__(self, b: int) -> 'Node':
         return Ge.new(self, b)
@@ -69,13 +68,34 @@ class Node(lang.Abstract, lang.Sealed):
         return Mul.new(self, b)
 
     def _floordiv(self, b: int, factoring_allowed: bool = True) -> 'Node':
-        raise NotImplementedError
+        if b == 0:
+            raise ValueError
+        if b < 0:
+            return (self // -b) * -1
+        if b == 1:
+            return self
+
+        # the numerator of div is not allowed to be negative
+        if self.min < 0:
+            offset = self.min // b
+            # factor out an "offset" to make the numerator positive. don't allowing factoring again
+            return (self + -offset * b)._floordiv(b, factoring_allowed=False) + offset
+
+        return Div.new(self, b)
 
     def __floordiv__(self, b: int) -> 'Node':
         return self._floordiv(b)
 
     def __mod__(self, b: int) -> 'Node':
-        raise NotImplementedError
+        if b <= 0:
+            raise ValueError
+        if b == 1:
+            return Num(0)
+        if self.min >= 0 and self.max < b:
+            return self
+        if self.min < 0:
+            return (self - ((self.min // b) * b)) % b
+        return Mod.new(self, b)
 
 
 ##
@@ -213,7 +233,7 @@ class Mul(Op):
     def __mul__(self, b: int) -> Node:
         return self.a * (self.b * b)  # two muls in one mul
 
-    def _floordiv( self, b: int, factoring_allowed: bool = False) -> Node:
+    def _floordiv(self, b: int, factoring_allowed: bool = False) -> Node:
         # NOTE: mod negative isn't handled right
         if self.b % b == 0:
             return self.a * (self.b // b)
