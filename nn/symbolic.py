@@ -47,6 +47,9 @@ class Node(lang.Abstract, lang.Sealed):
     def key(self) -> str:
         return render_node(self)
 
+    def __repr__(self) -> str:
+        return f'<{self.key}>'
+
     def __eq__(self, other: ta.Any) -> bool:
         if not isinstance(other, Node):
             return NotImplemented

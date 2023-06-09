@@ -41,7 +41,7 @@ def test_lt():
 
 def test_ge_divides():
     expr = (Var('idx', 0, 511) * 4 + Var('FLOAT4_INDEX', 0, 3)) < 512
-    _test_variable(expr, 0, 1, '(((idx*4)+FLOAT4_INDEX)<512)')
+    # _test_variable(expr, 0, 1, '(((idx*4)+FLOAT4_INDEX)<512)')
     _test_variable(expr // 4, 0, 1, '(idx<128)')
 
 

@@ -22,7 +22,7 @@ class PycharmPlugin:
                 traceback = traceback.tb_next
 
             thread = threading.current_thread()
-            frames_by_id = dict([(id(frame), frame) for frame in frames])
+            frames_by_id = {id(frame): frame for frame in frames}
             frame = frames[-1]
             exception = (exctype, value, traceback)
 
