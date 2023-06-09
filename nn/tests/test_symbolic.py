@@ -48,8 +48,7 @@ class Node(lang.Abstract, lang.Sealed):
         return self * -1
 
     def __add__(self, b: ta.Union['Node', int]) -> 'Node':
-        # return Variable.sum([self, b if isinstance(b, Node) else Variable.num(b)])
-        raise NotImplementedError
+        return Node.sum([self, b if isinstance(b, Node) else Num(b)])
 
     def __sub__(self, b: ta.Union['Node', int]) -> 'Node':
         return self + -b
@@ -281,7 +280,51 @@ class Mod(Op):
 
 
 class Red(Node, lang.Abstract):
-    pass
+    def __init__(self, nodes: ta.Sequence[Node], *, _min: int, _max: int) -> None:
+        super().__init__()
+        self._nodes = [check.isinstance(n, Node) for n in nodes]
+        self._min = check.isinstance(_min, int)
+        self._max = check.isinstance(_max, int)
+
+    @property
+    def nodes(self) -> ta.Sequence[Node]:
+        return self._nodes
+
+    @property
+    def min(self) -> int:
+        return self._min
+
+    @property
+    def max(self) -> int:
+        return self._max
+
+    @classmethod
+    def new(cls, nodes: ta.Sequence['Node']) -> 'Node':
+        mn, mx = cls.calc_bounds(nodes)
+        return cls(nodes, _min=mn, _max=mx)
+
+    glyph: ta.ClassVar[str]
+
+    @classmethod
+    @abc.abstractmethod
+    def calc_bounds(cls, nodes: ta.Sequence[Node]) -> ta.Tuple[int, int]:
+        raise NotImplementedError
+
+
+class Sum(Red):
+    glyph = '+'
+
+    @classmethod
+    def calc_bounds(cls, nodes: ta.Sequence[Node]) -> ta.Tuple[int, int]:
+        return sum(x.min for x in nodes), sum(x.max for x in nodes)
+
+
+class And(Red):
+    glyph = 'and '
+
+    @classmethod
+    def calc_bounds(cls, nodes: ta.Sequence[Node]) -> ta.Tuple[int, int]:
+        return min(x.min for x in nodes), max(x.max for x in nodes)
 
 
 ##
