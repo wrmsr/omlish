@@ -1,3 +1,7 @@
+"""
+TODO:
+ - {sum,and}_nodes -> cls.new
+"""
 import abc
 import math
 import string
