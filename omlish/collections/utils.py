@@ -45,3 +45,21 @@ def unique(it: ta.Iterable[T]) -> ta.Sequence[T]:
             seen.add(e)
             ret.append(e)
     return ret
+
+
+def all_equal(it: ta.Iterable[T]) -> bool:
+    i = iter(it)
+    try:
+        l = next(i)
+    except StopIteration:
+        return True
+    return all(r == l for r in i)
+
+
+def all_not_equal(it: ta.Iterable[T]) -> bool:
+    s = set()
+    for v in it:
+        if v in s:
+            return False
+        s.add(v)
+    return True
