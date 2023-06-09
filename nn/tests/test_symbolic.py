@@ -1,8 +1,8 @@
-from ..symbollic import render_node
-from ..symbollic import Var
-from ..symbollic import Num
-from ..symbollic import and_nodes
-from ..symbollic import sum_nodes
+from ..symbolic import render_node
+from ..symbolic import Var
+from ..symbolic import Num
+from ..symbolic import and_nodes
+from ..symbolic import sum_nodes
 
 
 ##
