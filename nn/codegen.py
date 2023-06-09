@@ -6,7 +6,6 @@ from omlish import lang
 
 from .lazy import LazyBuffer
 from .lazy import LazyOp
-from .lazy import map_buffers
 from .ops import MovementOp
 
 
@@ -56,14 +55,16 @@ class LinearCodegenOp(CodegenOp):
         # get the output buffers
         self._bufs = [output, *col.unique(op.buffers)]
 
+        # FIXME: ...
         # bufs are needed because kernels like f(x) = x + x and f(x, y) = x + y have the same str(ast), but are
         # different kernels. mapping the buffers to integers is required because a-b != b-a (and how would you tell a
         # and b apart?)
-        self._key = (
-            f'LinearCodegenOp '
-            f'op={str(map_buffers({x: i for i, x in enumerate(self._bufs)}, op))} '  # FIXME: oof...
-            f'bufs={self._bufs}'
-        )
+        # self._key = (
+        #     f'LinearCodegenOp '
+        #     f'op={str(map_buffers({x: i for i, x in enumerate(self._bufs)}, op))} '  # FIXME: oof...
+        #     f'bufs={self._bufs}'
+        # )
+        self._key = '???'
 
     @property
     def key(self) -> str:

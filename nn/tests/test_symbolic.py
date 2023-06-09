@@ -12,7 +12,12 @@ def render_node(n: 'Node') -> str:
         return n.name
     if isinstance(n, Num):
         return str(n.num)
+    if isinstance(n, Op):
+        return f'({render_node(n.a)}{n.glyph}{n.b})'
     raise TypeError(n)
+
+
+##
 
 
 class Node(lang.Abstract, lang.Sealed):
@@ -35,6 +40,12 @@ class Node(lang.Abstract, lang.Sealed):
         if not isinstance(other, Node):
             return NotImplemented
         return self.key == other.key
+
+    def __ge__(self, b: int):
+        return Ge.new(self, b)
+
+
+##
 
 
 class Var(Node, lang.Final):
@@ -64,6 +75,9 @@ class Var(Node, lang.Final):
         return self._max
 
 
+##
+
+
 class Num(Node, lang.Final):
     def __init__(self, num: int) -> None:
         super().__init__()
@@ -82,16 +96,111 @@ class Num(Node, lang.Final):
         return self._num
 
 
-# class Op(Node, lang.Abstract):
-#     pass
-#
-#
-# class Red(Node, lang.Abstract):
-#     pass
+##
+
+
+class Op(Node, lang.Abstract):   # noqa
+
+    def __init__(self, a: Node, b: int, *, _min: int, _max: int) -> None:
+        super().__init__()
+        self._a = check.isinstance(a, Node)
+        self._b = check.isinstance(b, int)
+        self._min = check.isinstance(_min, int)
+        self._max = check.isinstance(_max, int)
+
+    @property
+    def a(self) -> Node:
+        return self._a
+
+    @property
+    def b(self) -> int:
+        return self._b
+
+    @property
+    def min(self) -> int:
+        return self._min
+
+    @property
+    def max(self) -> int:
+        return self._max
+
+    @classmethod
+    def new(cls, a: Node, b: int) -> 'Node':
+        mn, mx = cls.calc_bounds(a, b)
+        if mn == mx:
+            return Num(mn)
+        return cls(a, b, _min=mn, _max=mx)
+
+    glyph: ta.ClassVar[str]
+
+    @classmethod
+    @abc.abstractmethod
+    def calc_bounds(cls, a: Node, b: int) -> ta.Tuple[int, int]:
+        raise NotImplementedError
+
+
+class Ge(Op):
+    glyph = '>='
+
+    @classmethod
+    def calc_bounds(cls, a: Node, b: int) -> ta.Tuple[int, int]:
+        return int(a.min >= b), int(a.max >= b)
+
+
+class LtNode(Op):
+    glyph = '<'
+
+    @classmethod
+    def calc_bounds(cls, a: Node, b: int) -> ta.Tuple[int, int]:
+        return int(a.max < b), int(a.min < b)
+
+
+class MulNode(Op):
+    glyph = '*'
+
+    @classmethod
+    def calc_bounds(cls, a: Node, b: int) -> ta.Tuple[int, int]:
+        if b >= 0:
+            return a.min * b, a.max * b
+        else:
+            return a.max * b, a.min * b
+
+
+class DivNode(Op):
+    glyph = '//'
+
+    @classmethod
+    def calc_bounds(cls, a: Node, b: int) -> ta.Tuple[int, int]:
+        if a.min < 0:
+            raise ValueError
+        return a.min // b, a.max // b
+
+
+class ModNode(Op):
+    glyph = '%'
+
+    @classmethod
+    def calc_bounds(cls, a: Node, b: int) -> ta.Tuple[int, int]:
+        if a.min < 0:
+            raise ValueError
+        if a.max - a.min >= b or (a.min != a.max and a.min % b >= a.max % b):
+            return 0, b - 1
+        else:
+            return a.min % b, a.max % b
+
+
+##
+
+
+class Red(Node, lang.Abstract):
+    pass
+
+
+##
 
 
 def _test_variable(v, n, m, s):
-    assert v.render() == s
+    assert render_node(v) == s
     assert v.min == n
     assert v.max == m
 
@@ -101,3 +210,12 @@ def test_symbolic():
     idx2 = Var('idx2', 0, 3)
     assert idx1 == idx1
     assert idx1 != idx2
+
+
+def test_ge():
+    _test_variable(Var('a', 3, 8) >= 77, 0, 0, '0')
+    _test_variable(Var('a', 3, 8) >= 9, 0, 0, '0')
+    _test_variable(Var('a', 3, 8) >= 8, 0, 1, '(a>=8)')
+    _test_variable(Var('a', 3, 8) >= 4, 0, 1, '(a>=4)')
+    _test_variable(Var('a', 3, 8) >= 3, 1, 1, '1')
+    _test_variable(Var('a', 3, 8) >= 2, 1, 1, '1')
