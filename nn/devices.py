@@ -71,8 +71,8 @@ def numpy_interpreter() -> 'evaluators.Interpreter':
             BinaryOp.MAX: np.maximum,
             BinaryOp.CMP_EQ: lambda x, y: (x == y).astype(np.float32),  # noqa
 
-            UnaryOp.EXP: np.exp,
-            UnaryOp.LOG: np.log,
+            UnaryOp.EXP2: np.exp2,
+            UnaryOp.LOG2: np.log2,
 
             MovementOp.EXPAND: np.broadcast_to,
             MovementOp.RESHAPE: lambda x, arg: x.reshape(arg),

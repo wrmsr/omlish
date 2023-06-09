@@ -1,4 +1,5 @@
 import abc
+import math
 import typing as ta
 
 from omlish import check
@@ -207,9 +208,11 @@ class Relu(Func):
 class Log(Func):
     _x: LazyBuffer
 
+    _mult: ta.Final[float] = math.log(2) / math.log(math.e)
+
     def forward(self, x: LazyBuffer) -> LazyBuffer:
         self._x = x
-        return x.unary_op(UnaryOp.LOG)
+        return x.unary_op(UnaryOp.LOG2).binary_op(BinaryOp.MUL, x.const_like(self._mult))
 
     def backward(self, grad_output: LazyBuffer) -> LazyBuffer:
         return grad_output.binary_op(BinaryOp.DIV, self._x)
@@ -218,8 +221,10 @@ class Log(Func):
 class Exp(Func):
     _ret: LazyBuffer
 
+    _mult: ta.Final[float] = math.log(math.e) / math.log(2)
+
     def forward(self, x: LazyBuffer) -> LazyBuffer:
-        self._ret = x.unary_op(UnaryOp.EXP)
+        self._ret = x.binary_op(BinaryOp.MUL, x.const_like(self._mult)).unary_op(UnaryOp.EXP2)
         return self._ret
 
     def backward(self, grad_output: LazyBuffer) -> LazyBuffer:

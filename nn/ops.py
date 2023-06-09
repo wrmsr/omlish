@@ -13,8 +13,8 @@ class Op(lang.Sealed):
 
 class UnaryOp(Op, enum.Enum):
     NOP = enum.auto()
-    EXP = enum.auto()
-    LOG = enum.auto()
+    EXP2 = enum.auto()
+    LOG2 = enum.auto()
     CAST = enum.auto()
 
 

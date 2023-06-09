@@ -6,7 +6,8 @@ class Node(lang.Abstract, lang.Sealed):
 
 
 class Var(Node, lang.Final):
-    pass
+    def __init__(self) -> None:
+        raise NotImplementedError
 
 
 class Num(Node, lang.Final):
