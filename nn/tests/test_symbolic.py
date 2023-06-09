@@ -46,22 +46,16 @@ def test_ge_divides():
 
 
 def test_ge_divides_and():
-    expr = and_nodes(
-        [
-            (Var('idx1', 0, 511) * 4 + Var('FLOAT4_INDEX', 0, 3)) < 512,
-            (Var('idx2', 0, 511) * 4 + Var('FLOAT4_INDEX', 0, 3)) < 512,
-        ]
-    )
+    expr = and_nodes([
+        (Var('idx1', 0, 511) * 4 + Var('FLOAT4_INDEX', 0, 3)) < 512,
+        (Var('idx2', 0, 511) * 4 + Var('FLOAT4_INDEX', 0, 3)) < 512,
+    ])
     _test_variable(expr // 4, 0, 1, '((idx1<128) and (idx2<128))')
-    expr = and_nodes(
-        [
-            (Var('idx1', 0, 511) * 4 + Var('FLOAT4_INDEX', 0, 3)) < 512,
-            (Var('idx2', 0, 511) * 4 + Var('FLOAT8_INDEX', 0, 7)) < 512,
-        ]
-    )
-    _test_variable(
-        expr // 4, 0, 1, '((((FLOAT8_INDEX//4)+idx2)<128) and (idx1<128))'
-    )
+    expr = and_nodes([
+        (Var('idx1', 0, 511) * 4 + Var('FLOAT4_INDEX', 0, 3)) < 512,
+        (Var('idx2', 0, 511) * 4 + Var('FLOAT8_INDEX', 0, 7)) < 512,
+    ])
+    _test_variable(expr // 4, 0, 1, '((((FLOAT8_INDEX//4)+idx2)<128) and (idx1<128))')
 
 
 def test_div_becomes_num():
@@ -299,7 +293,7 @@ def _test_numeric(f):
         for kmax in range(mn, mx):
             if kmin > kmax:
                 continue
-            v = f(Var("tmp", kmin, kmax))
+            v = f(Var('tmp', kmin, kmax))
             values = [f(rv) for rv in range(kmin, kmax + 1)]
             # the min and max may not be exact
             assert v.min <= min(values)
