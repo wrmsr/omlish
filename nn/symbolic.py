@@ -349,21 +349,16 @@ def sum_nodes(nodes: ta.Sequence[Node]) -> Node:
     if nums:
         news.append(Num(sum([x.b for x in nums])))
 
-    # combine any Muls that factorize (big hack sticking the Mul(x, 1) on things)
-    # FIXME: lol
-    muls += [check.isinstance(Mul.new(x, 1), Mul) for x in news]
-    mul_groups: ta.Dict[str, ta.Tuple[Node, ta.List[Mul]]] = {}
+    # combine any Muls that factorize
+    scales: ta.Dict[str, ta.Tuple[Node, int]] = {n.key: (n, 1) for n in news}
     for node in muls:  # NOTE can we somehow avoid rendering here?
         key = node.a.key
         try:
-            t = mul_groups[key]
+            t = scales[key]
         except KeyError:
-            l = []
-        else:
-            l = t[1]
-        l.append(node)
-        mul_groups[key] = (node.a, l)
-    new_muls = [k * sum(x.b for x in g) for k, g in mul_groups.values()]
+            t = (node.a, 1)
+        scales[key] = (t[0], node.b * t[1])
+    new_muls = [n * s for n, s in scales.values()]
     news = [x if not isinstance(x, Mul) or x.b != 1 else x.a for x in new_muls]
 
     # filter 0s
