@@ -47,11 +47,13 @@ class Node(lang.Abstract, lang.Sealed):
     def __neg__(self) -> 'Node':
         return self * -1
 
-    # def __add__(self, b: Union[Node, int]) -> 'Node':
-    #     return Variable.sum([self, b if isinstance(b, Node) else Variable.num(b)])
+    def __add__(self, b: ta.Union['Node', int]) -> 'Node':
+        # return Variable.sum([self, b if isinstance(b, Node) else Variable.num(b)])
+        raise NotImplementedError
 
-    # def __sub__(self, b: Union[Node, int]) -> 'Node':
-    #     return self + -b
+    def __sub__(self, b: ta.Union['Node', int]) -> 'Node':
+        # return self + -b
+        raise NotImplementedError
 
     def __ge__(self, b: int) -> 'Node':
         return Ge.new(self, b)
@@ -65,6 +67,15 @@ class Node(lang.Abstract, lang.Sealed):
         elif b == 1:
             return self
         return Mul.new(self, b)
+
+    def _floordiv(self, b: int, factoring_allowed: bool = True) -> 'Node':
+        raise NotImplementedError
+
+    def __floordiv__(self, b: int) -> 'Node':
+        return self._floordiv(b)
+
+    def __mod__(self, b: int) -> 'Node':
+        raise NotImplementedError
 
 
 ##
@@ -168,6 +179,12 @@ class Ge(Op):
     def calc_bounds(cls, a: Node, b: int) -> ta.Tuple[int, int]:
         return int(a.min >= b), int(a.max >= b)
 
+    def __mul__(self, b: int) -> Node:
+        return (self.a * b) >= (self.b * b)
+
+    def _floordiv(self, b: int, factoring_allowed: bool = True) -> Node:
+        return (self.a // b) >= (self.b // b)
+
 
 class Lt(Op):
     glyph = '<'
@@ -175,6 +192,12 @@ class Lt(Op):
     @classmethod
     def calc_bounds(cls, a: Node, b: int) -> ta.Tuple[int, int]:
         return int(a.max < b), int(a.min < b)
+
+    def __mul__(self, b: int) -> Node:
+        return (self.a * b) < (self.b * b)
+
+    def _floordiv(self, b: int, factoring_allowed: bool = False) -> Node:
+        return (self.a // b) < (self.b // b)
 
 
 class Mul(Op):
@@ -187,6 +210,21 @@ class Mul(Op):
         else:
             return a.max * b, a.min * b
 
+    def __mul__(self, b: int) -> Node:
+        return self.a * (self.b * b)  # two muls in one mul
+
+    def _floordiv( self, b: int, factoring_allowed: bool = False) -> Node:
+        # NOTE: mod negative isn't handled right
+        if self.b % b == 0:
+            return self.a * (self.b // b)
+        if b % self.b == 0 and self.b > 0:
+            return self.a // (b // self.b)
+        return super()._floordiv(b, factoring_allowed)
+
+    def __mod__(self, b: int):
+        a = self.a * (self.b % b)
+        return a % b
+
 
 class Div(Op):
     glyph = '//'
@@ -196,6 +234,9 @@ class Div(Op):
         if a.min < 0:
             raise ValueError
         return a.min // b, a.max // b
+
+    def _floordiv(self, b: int, factoring_allowed: bool = False) -> Node:
+        return self.a // (self.b * b)  # two divs is one div
 
 
 class Mod(Op):
@@ -209,6 +250,11 @@ class Mod(Op):
             return 0, b - 1
         else:
             return a.min % b, a.max % b
+
+    def _floordiv(self, b: int, factoring_allowed: bool = True) -> Node:
+        if self.b % b == 0:
+            return (self.a // b) % (self.b // b)  # put the div inside mod
+        return super()._floordiv(b, factoring_allowed)
 
 
 ##
