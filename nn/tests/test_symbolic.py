@@ -1,8 +1,9 @@
-from ..symbolic import render_node
-from ..symbolic import Var
 from ..symbolic import Num
+from ..symbolic import Var
 from ..symbolic import and_nodes
+from ..symbolic import render_node
 from ..symbolic import sum_nodes
+from ..symbolic import var
 
 
 ##
@@ -63,7 +64,7 @@ def test_div_becomes_num():
 
 
 def test_var_becomes_num():
-    assert isinstance(Var('a', 2, 2), Num)
+    assert isinstance(var('a', 2, 2), Num)
 
 
 def test_equality():

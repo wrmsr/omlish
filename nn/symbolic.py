@@ -111,19 +111,30 @@ class Node(lang.Abstract, lang.Sealed):
 ##
 
 
+def var(name: str, min: int, max: int) -> Node:
+    if name[0] not in Var._name_first_set or frozenset(name[1:]) - Var._name_rest_set:
+        raise ValueError(f'Invalid var name: {name!r} {min} {max}')
+    if check.isinstance(min, int) == check.isinstance(max, int):
+        return Num(min)
+    return Var(name, min, max)
+
+
 class Var(Node, lang.Final):
     _name_first_set: ta.Final[ta.AbstractSet[str]] = frozenset(string.ascii_letters + '_')
     _name_rest_set: ta.Final[ta.AbstractSet[str]] = frozenset([*_name_first_set, *string.digits])
 
     def __init__(self, name: str, min: int, max: int) -> None:
+        check.isinstance(min, int)
+        check.isinstance(max, int)
         if min < 0 or min >= max:
             raise ValueError(f'Invalid var range: {name!r} {min} {max}')
+        check.non_empty_str(name)
         if name[0] not in Var._name_first_set or frozenset(name[1:]) - Var._name_rest_set:
             raise ValueError(f'Invalid var name: {name!r} {min} {max}')
         super().__init__()
-        self._name = check.non_empty_str(name)
-        self._min = check.isinstance(min, int)
-        self._max = check.isinstance(max, int)
+        self._name = name
+        self._min = min
+        self._max = max
 
     @property
     def name(self) -> str:
@@ -253,7 +264,7 @@ class Mul(Op):
 
     def __mod__(self, b: int):
         a = self.a * (self.b % b)
-        return a % b
+        return Node.__mod__(a, b)  # FIXME:
 
 
 class Div(Op):
@@ -356,8 +367,8 @@ def sum_nodes(nodes: ta.Sequence[Node]) -> Node:
         try:
             t = scales[key]
         except KeyError:
-            t = (node.a, 1)
-        scales[key] = (t[0], node.b * t[1])
+            t = (node.a, 0)
+        scales[key] = (t[0], node.b + t[1])
     new_muls = [n * s for n, s in scales.values()]
     news = [x if not isinstance(x, Mul) or x.b != 1 else x.a for x in new_muls]
 
@@ -413,9 +424,9 @@ class Sum(Red):
                 nofactor_term = sum_nodes(nofactor) // b
 
             return sum_nodes([
-                                 (x.a * (x.b // b)) if isinstance(x, Mul) else Num(x.b // b)  # type: ignore
-                                 for x in factors
-                             ] + [nofactor_term])
+                (x.a * (x.b // b)) if isinstance(x, Mul) else Num(x.b // b)  # type: ignore
+                for x in factors
+            ] + [nofactor_term])
 
         muls = [x.b for x in nofactor if isinstance(x, Mul)]
         for m in muls:
