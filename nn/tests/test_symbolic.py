@@ -7,6 +7,9 @@ from omlish import check
 from omlish import lang
 
 
+##
+
+
 def render_node(n: 'Node') -> str:
     if isinstance(n, Var):
         return n.name
@@ -41,8 +44,27 @@ class Node(lang.Abstract, lang.Sealed):
             return NotImplemented
         return self.key == other.key
 
-    def __ge__(self, b: int):
+    def __neg__(self) -> 'Node':
+        return self * -1
+
+    # def __add__(self, b: Union[Node, int]) -> 'Node':
+    #     return Variable.sum([self, b if isinstance(b, Node) else Variable.num(b)])
+
+    # def __sub__(self, b: Union[Node, int]) -> 'Node':
+    #     return self + -b
+
+    def __ge__(self, b: int) -> 'Node':
         return Ge.new(self, b)
+
+    def __lt__(self, b: int) -> 'Node':
+        return Lt.new(self, b)
+
+    def __mul__(self, b: int) -> 'Node':
+        if b == 0:
+            return Num(0)
+        elif b == 1:
+            return self
+        return Mul.new(self, b)
 
 
 ##
@@ -147,7 +169,7 @@ class Ge(Op):
         return int(a.min >= b), int(a.max >= b)
 
 
-class LtNode(Op):
+class Lt(Op):
     glyph = '<'
 
     @classmethod
@@ -155,7 +177,7 @@ class LtNode(Op):
         return int(a.max < b), int(a.min < b)
 
 
-class MulNode(Op):
+class Mul(Op):
     glyph = '*'
 
     @classmethod
@@ -166,7 +188,7 @@ class MulNode(Op):
             return a.max * b, a.min * b
 
 
-class DivNode(Op):
+class Div(Op):
     glyph = '//'
 
     @classmethod
@@ -176,7 +198,7 @@ class DivNode(Op):
         return a.min // b, a.max // b
 
 
-class ModNode(Op):
+class Mod(Op):
     glyph = '%'
 
     @classmethod
