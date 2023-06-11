@@ -13,7 +13,8 @@ def _find_impl(cls, registry):
     for t in mro:
         if match is not None:
             if (  # type: ignore
-                    t in registry and t not in cls.__mro__
+                    t in registry
+                    and t not in cls.__mro__
                     and match not in cls.__mro__
                     and not issubclass(match, t)
             ):
@@ -107,36 +108,37 @@ def function(func):
 
 
 class Method:
-    def __init__(self, func):
+    def __init__(self, func: ta.Callable) -> None:
         if not callable(func) and not hasattr(func, '__get__'):
             raise TypeError(f'{func!r} is not callable or a descriptor')
 
-        self.dispatcher = function(func)
-        self.func = func
+        self._func = func
+        self._dispatcher = Dispatcher()
+        self._dispatcher.register(func, object)
 
         if isinstance(func, (staticmethod, classmethod)):
             self._wrapped_func = func.__func__
         else:
             self._wrapped_func = func
 
-    def register(self, cls, method=None):
-        if isinstance(cls, (staticmethod, classmethod)):
-            cls.__annotations__ = getattr(cls.__func__, '__annotations__', {})
-        return self.dispatcher.register(cls, func=method)
+        self.__isabstractmethod__ = getattr(func, '__isabstractmethod__', False)  # noqa
+
+    def register(self, impl):
+        if isinstance(impl, (staticmethod, classmethod)):
+            impl.__annotations__ = getattr(impl.__func__, '__annotations__', {})
+        self._dispatcher.register(impl)
 
     def __get__(self, obj, cls=None):
-        def _method(*args, **kwargs):
-            method = self.dispatcher.dispatch(type(args[0]))
-            return method.__get__(obj, cls)(*args, **kwargs)
+        @functools.wraps(self._wrapped_func)
+        def method(*args, **kwargs):
+            impl = self._dispatcher.dispatch(type(args[0]))
+            return impl.__get__(obj, cls)(*args, **kwargs)  # noqa
 
-        _method.__isabstractmethod__ = self.__isabstractmethod__  # type: ignore
-        _method.register = self.register  # type: ignore
-        functools.update_wrapper(_method, self._wrapped_func)
-        return _method
+        method.register = self.register  # type: ignore
 
-    @property
-    def __isabstractmethod__(self):
-        return getattr(self.func, '__isabstractmethod__', False)
+        method.__isabstractmethod__ = self.__isabstractmethod__  # type: ignore  # noqa
+
+        return method
 
 
 method = Method
