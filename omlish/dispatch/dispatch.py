@@ -1,10 +1,10 @@
 import abc
 import functools
-import types
 import typing as ta
 import weakref
 
 from .. import c3
+from .. import check
 
 
 def _find_impl(cls, registry):
@@ -37,31 +37,17 @@ def _is_valid_dispatch_type(cls):
     return (_is_union_type(cls) and all(isinstance(arg, type) for arg in ta.get_args(cls)))
 
 
-class Function:
-    def __init__(self, func: callable) -> None:
+class Dispatcher:
+    def __init__(self) -> None:
         super().__init__()
 
-        self._func = func
-        self._registry: ta.Dict[type, ta.Any] = {object: func}
+        self._registry: ta.Dict[type, ta.Any] = {}
         self._dispatch_cache: ta.MutableMapping[type, ta.Any] = weakref.WeakKeyDictionary()
-        self._cache_token = None
+        self._cache_token: ta.Any = None
 
-        func_name = getattr(func, '__name__', 'singledispatch function')
-
-        @functools.wraps(func)
-        def wrapper(*args, **kw):
-            if not args:
-                raise TypeError(f'{func_name} requires at least 1 positional argument')
-
-            return self.dispatch(type(args[0]))(*args, **kw)
-
-        wrapper.register = self.register  # type: ignore
-        wrapper.dispatch = self.dispatch  # type: ignore
-        self.wrapper = wrapper
-
-    def dispatch(self, cls: ta.Any) -> None:
+    def dispatch(self, cls: ta.Any) -> ta.Callable:
         if self._cache_token is not None:
-            current_token = abc.get_cache_token()  # type: ignore
+            current_token = abc.get_cache_token()
             if self._cache_token != current_token:
                 self._dispatch_cache.clear()
                 self._cache_token = current_token
@@ -77,45 +63,50 @@ class Function:
 
         return impl
 
-    def register(self, cls: ta.Any, func=None):
-        if _is_valid_dispatch_type(cls):
-            if func is None:
-                return lambda f: self.register(cls, f)
-        else:
-            if func is not None:
-                raise TypeError(f'Invalid first argument to `register()`. {cls!r} is not a class or union type.')
-            ann = getattr(cls, '__annotations__', {})
+    def register(self, impl: ta.Callable, cls: ta.Any = None) -> None:
+        if cls is None:
+            ann = getattr(impl, '__annotations__', {})
             if not ann:
-                raise TypeError(
-                    f'Invalid first argument to `register()`: {cls!r}. Use either `@register(some_class)` or plain '
-                    f'`@register` on an annotated function.'
-                )
-            func = cls
+                raise TypeError(f'Invalid first argument to `register()`: {impl!r}')
 
-            argname, cls = next(iter(ta.get_type_hints(func).items()))
+            arg_name, cls = next(iter(ta.get_type_hints(impl).items()))
             if not _is_valid_dispatch_type(cls):
                 if _is_union_type(cls):
-                    raise TypeError(f'Invalid annotation for {argname!r}. {cls!r} not all arguments are classes.')
+                    raise TypeError(f'Invalid annotation for {arg_name!r}. {cls!r} not all arguments are classes.')
                 else:
-                    raise TypeError(f'Invalid annotation for {argname!r}. {cls!r} is not a class.')
+                    raise TypeError(f'Invalid annotation for {arg_name!r}. {cls!r} is not a class.')
 
+        check.arg(_is_valid_dispatch_type(cls))
         if _is_union_type(cls):
             for arg in ta.get_args(cls):
-                self._registry[arg] = func
+                self._registry[arg] = impl
         else:
-            self._registry[cls] = func
+            self._registry[cls] = impl
+
         if self._cache_token is None and hasattr(cls, '__abstractmethods__'):
             self._cache_token = abc.get_cache_token()
+
         self._dispatch_cache.clear()
-        return func
 
 
 def function(func):
-    return Function(func).wrapper
+    disp = Dispatcher()
+    disp.register(func, object)
+
+    func_name = getattr(func, '__name__', 'singledispatch function')
+
+    @functools.wraps(func)
+    def wrapper(*args, **kw):
+        if not args:
+            raise TypeError(f'{func_name} requires at least 1 positional argument')
+        return disp.dispatch(type(args[0]))(*args, **kw)
+
+    wrapper.register = disp.register  # type: ignore
+    wrapper.dispatch = disp.dispatch  # type: ignore
+    return wrapper
 
 
-class method:
-
+class Method:
     def __init__(self, func):
         if not callable(func) and not hasattr(func, '__get__'):
             raise TypeError(f'{func!r} is not callable or a descriptor')
@@ -146,3 +137,6 @@ class method:
     @property
     def __isabstractmethod__(self):
         return getattr(self.func, '__isabstractmethod__', False)
+
+
+method = Method
