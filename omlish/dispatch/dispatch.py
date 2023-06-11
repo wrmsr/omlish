@@ -4,7 +4,7 @@ import types
 import typing as ta
 import weakref
 
-from . import c3
+from .. import c3
 
 
 def _find_impl(cls, registry):
@@ -24,44 +24,63 @@ def _find_impl(cls, registry):
     return registry.get(match)
 
 
-def function(func):
-    registry: ta.Dict[type, ta.Any] = {}
-    dispatch_cache: ta.MutableMapping[type, ta.Any] = weakref.WeakKeyDictionary()
-    cache_token = None
+def _is_union_type(cls):
+    if hasattr(ta, 'UnionType'):
+        return ta.get_origin(cls) in {ta.Union, getattr(ta, 'UnionType')}
+    else:
+        return ta.get_origin(cls) in {ta.Union}
 
-    def dispatch(cls):
-        nonlocal cache_token
-        if cache_token is not None:
+
+def _is_valid_dispatch_type(cls):
+    if isinstance(cls, type):
+        return True
+    return (_is_union_type(cls) and all(isinstance(arg, type) for arg in ta.get_args(cls)))
+
+
+class Function:
+    def __init__(self, func: callable) -> None:
+        super().__init__()
+
+        self._func = func
+        self._registry: ta.Dict[type, ta.Any] = {object: func}
+        self._dispatch_cache: ta.MutableMapping[type, ta.Any] = weakref.WeakKeyDictionary()
+        self._cache_token = None
+
+        func_name = getattr(func, '__name__', 'singledispatch function')
+
+        @functools.wraps(func)
+        def wrapper(*args, **kw):
+            if not args:
+                raise TypeError(f'{func_name} requires at least 1 positional argument')
+
+            return self.dispatch(type(args[0]))(*args, **kw)
+
+        wrapper.register = self.register  # type: ignore
+        wrapper.dispatch = self.dispatch  # type: ignore
+        self.wrapper = wrapper
+
+    def dispatch(self, cls: ta.Any) -> None:
+        if self._cache_token is not None:
             current_token = abc.get_cache_token()  # type: ignore
-            if cache_token != current_token:
-                dispatch_cache.clear()
-                cache_token = current_token
+            if self._cache_token != current_token:
+                self._dispatch_cache.clear()
+                self._cache_token = current_token
+
         try:
-            impl = dispatch_cache[cls]
+            impl = self._dispatch_cache[cls]
         except KeyError:
             try:
-                impl = registry[cls]
+                impl = self._registry[cls]
             except KeyError:
-                impl = _find_impl(cls, registry)
-            dispatch_cache[cls] = impl
+                impl = _find_impl(cls, self._registry)
+            self._dispatch_cache[cls] = impl
+
         return impl
 
-    def _is_union_type(cls):
-        if hasattr(ta, 'UnionType'):
-            return ta.get_origin(cls) in {ta.Union, getattr(ta, 'UnionType')}
-        else:
-            return ta.get_origin(cls) in {ta.Union}
-
-    def _is_valid_dispatch_type(cls):
-        if isinstance(cls, type):
-            return True
-        return (_is_union_type(cls) and all(isinstance(arg, type) for arg in ta.get_args(cls)))
-
-    def register(cls, func=None):
-        nonlocal cache_token
+    def register(self, cls: ta.Any, func=None):
         if _is_valid_dispatch_type(cls):
             if func is None:
-                return lambda f: register(cls, f)
+                return lambda f: self.register(cls, f)
         else:
             if func is not None:
                 raise TypeError(f'Invalid first argument to `register()`. {cls!r} is not a class or union type.')
@@ -82,28 +101,17 @@ def function(func):
 
         if _is_union_type(cls):
             for arg in ta.get_args(cls):
-                registry[arg] = func
+                self._registry[arg] = func
         else:
-            registry[cls] = func
-        if cache_token is None and hasattr(cls, '__abstractmethods__'):
-            cache_token = abc.get_cache_token()
-        dispatch_cache.clear()
+            self._registry[cls] = func
+        if self._cache_token is None and hasattr(cls, '__abstractmethods__'):
+            self._cache_token = abc.get_cache_token()
+        self._dispatch_cache.clear()
         return func
 
-    def wrapper(*args, **kw):
-        if not args:
-            raise TypeError(f'{funcname} requires at least 1 positional argument')
 
-        return dispatch(type(args[0]))(*args, **kw)
-
-    funcname = getattr(func, '__name__', 'singledispatch function')
-    registry[object] = func
-    wrapper.register = register  # type: ignore
-    wrapper.dispatch = dispatch  # type: ignore
-    wrapper.registry = types.MappingProxyType(registry)  # type: ignore
-    wrapper._clear_cache = dispatch_cache.clear  # type: ignore
-    functools.update_wrapper(wrapper, func)
-    return wrapper
+def function(func):
+    return Function(func).wrapper
 
 
 class method:

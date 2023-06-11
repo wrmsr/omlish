@@ -67,7 +67,7 @@ class Node(lang.Abstract, lang.Sealed):
         return self + -b
 
     def __ge__(self, b: int) -> 'Node':
-        return Ge.new(self, b)
+        return Lt.new(-self, -b + 1)
 
     def __lt__(self, b: int) -> 'Node':
         return Lt.new(self, b)
@@ -213,20 +213,6 @@ class Op(Node, lang.Abstract):   # noqa
     @abc.abstractmethod
     def calc_bounds(cls, a: Node, b: int) -> ta.Tuple[int, int]:
         raise NotImplementedError
-
-
-class Ge(Op):
-    glyph = '>='
-
-    @classmethod
-    def calc_bounds(cls, a: Node, b: int) -> ta.Tuple[int, int]:
-        return int(a.min >= b), int(a.max >= b)
-
-    def __mul__(self, b: int) -> Node:
-        return (self.a * b) >= (self.b * b)
-
-    def _floordiv(self, b: int, factoring_allowed: bool = True) -> Node:
-        return (self.a // b) >= (self.b // b)
 
 
 class Lt(Op):

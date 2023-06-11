@@ -25,8 +25,8 @@ def test_symbolic():
 def test_ge():
     _test_variable(Var('a', 3, 8) >= 77, 0, 0, '0')
     _test_variable(Var('a', 3, 8) >= 9, 0, 0, '0')
-    _test_variable(Var('a', 3, 8) >= 8, 0, 1, '(a>=8)')
-    _test_variable(Var('a', 3, 8) >= 4, 0, 1, '(a>=4)')
+    _test_variable(Var('a', 3, 8) >= 8, 0, 1, '((a*-1)<-7)')
+    _test_variable(Var('a', 3, 8) >= 4, 0, 1, '((a*-1)<-3)')
     _test_variable(Var('a', 3, 8) >= 3, 1, 1, '1')
     _test_variable(Var('a', 3, 8) >= 2, 1, 1, '1')
 
