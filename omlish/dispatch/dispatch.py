@@ -143,7 +143,7 @@ class Method:
         self._func = func
 
         self._impls: ta.MutableSet[ta.Callable] = weakref.WeakSet()
-        self._dispatch_by_cls: ta.MutableMapping[type, ta.Callable[[type], ta.Callable]] = weakref.WeakKeyDictionary()
+        self._dispatches_by_cls: ta.MutableMapping[type, ta.Callable[[type], ta.Callable]] = weakref.WeakKeyDictionary()
 
         # bpo-45678: special-casing for classmethod/staticmethod in Python <=3.9, as functools.update_wrapper doesn't
         # work properly in singledispatchmethod.__get__ if it is applied to an unbound classmethod/staticmethod
@@ -185,13 +185,13 @@ class Method:
         check.callable(impl)
         if impl not in self._impls:
             self._impls.add(impl)  # type: ignore
-            self._dispatch_by_cls.clear()
+            self._dispatches_by_cls.clear()
 
         return impl
 
     def get_dispatch(self, cls: type) -> ta.Callable[[type], ta.Callable]:
         try:
-            return self._dispatch_by_cls[cls]
+            return self._dispatches_by_cls[cls]
         except KeyError:
             pass
 
@@ -204,7 +204,7 @@ class Method:
                     disp.register(att, _get_impl_cls_set(att))
 
         ret = disp.dispatch
-        self._dispatch_by_cls[cls] = ret
+        self._dispatches_by_cls[cls] = ret
         return ret
 
     def update_wrapper(self, wrapper):
