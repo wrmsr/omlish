@@ -227,6 +227,9 @@ class _MethodAccessor:
         if instance is self._instance and owner is self._owner:
             return self
 
+        # if instance is not None and type(instance) is not owner:
+        #     raise TypeError  # FIXME: super()
+
         nxt = _MethodAccessor(self._method, instance, owner)  # noqa
         name = self._method._name  # noqa
         if instance is not None:

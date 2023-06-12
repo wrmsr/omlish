@@ -106,11 +106,11 @@ def test_method_mro():
         assert obj.f('') == 'D:B:str'
 
     # TODO:
-    # class E(B):
-    #     @A.f.register
-    #     def f_str(self, x: str):
-    #         return 'E:' + super().f(x)
-    #
-    # assert E().f(None) == 'A:object'
-    # assert E().f(1) == 'B:int'
-    # assert E().f('') == 'E:B:str'
+    class E(B):
+        @A.f.register
+        def f_str(self, x: str):
+            return 'E:' + super().f(x)
+
+    assert E().f(None) == 'A:object'
+    assert E().f(1) == 'B:int'
+    assert E().f('') == 'E:B:str'
