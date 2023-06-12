@@ -227,7 +227,7 @@ class _MethodAccessor:
         if instance is self._instance and owner is self._owner:
             return self
 
-        nxt = _MethodAccessor(self._method, instance, owner)
+        nxt = _MethodAccessor(self._method, instance, owner)  # noqa
 
         if instance is not None:
             instance.__dict__[self._method._name] = nxt  # noqa
@@ -239,13 +239,8 @@ class _MethodAccessor:
         return nxt
 
     def __call__(self, *args, **kwargs):
-        impl = self._method.get_dispatcher(self._owner).dispatch(type(args[0]))
-        bound = impl.__get__(self._instance, self._owner)
-
-        # if self._instance is not None:
-        #     self._instance.__dict__[self._method._name] = bound  # noqa
-
-        return bound(*args, **kwargs)
+        impl = self._method.get_dispatcher(self._owner).dispatch(type(args[0])).__get__(self._instance, self._owner)
+        return impl(*args, **kwargs)
 
 
 def method(func):
