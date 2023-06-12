@@ -19,6 +19,7 @@ google-api-core==2.11.0
 google-auth==2.19.1
 google-cloud-compute==1.11.0
 googleapis-common-protos==1.59.0
+gprof2dot==2022.7.29
 greenlet==2.0.2
 grpcio==1.54.2
 grpcio-status==1.54.2

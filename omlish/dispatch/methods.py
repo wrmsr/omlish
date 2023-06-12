@@ -38,7 +38,7 @@ class Method:
 
         self._owner: ta.Any = None
         self._name: ta.Optional[str] = None
-        self._accessor_cls: ta.Optional[ta.Type[_MethodAccessor]] = None
+        self._accessor_cls: ta.Optional[type] = None
 
     def __set_name__(self, owner, name):
         check.none(self._owner)
@@ -54,13 +54,62 @@ class Method:
         self._owner = owner
         self._name = name
 
+        method_owner = owner
+        method_get_dispatch = self.get_dispatch
+
+        def __init__(accessor, instance: ta.Any, owner: type) -> None:
+            accessor._instance = instance
+            accessor._owner = owner
+            accessor._get_dispatch = functools.partial(method_get_dispatch, accessor._owner)
+
+        def __get__(accessor, instance, owner=None):
+            self_instance = accessor._instance  # noqa
+            self_owner = accessor._owner  # noqa
+            if instance is self_instance and owner is self_owner:
+                return accessor
+
+            nxt = accessor_cls(instance, owner)  # noqa
+
+            if instance is not None:
+                instance.__dict__[name] = nxt  # noqa
+
+                inst_cls = type(instance)
+                try:
+                    inst_cls.__dict__[name]
+
+                except KeyError:
+                    for mro_cls in inst_cls.__mro__[:-1]:
+                        try:
+                            mro_cls.__dict__[name]
+                        except KeyError:
+                            if issubclass(mro_cls, method_owner):
+                                setattr(owner, name, accessor_cls(None, mro_cls))
+
+                else:
+                    if self_owner is not inst_cls:
+                        raise TypeError('super() not supported')  # FIXME
+
+            elif owner is not None:
+                setattr(owner, name, nxt)
+
+            else:
+                raise TypeError
+
+            return nxt
+
+        def __call__(accessor, *args, **kwargs):
+            impl = accessor._get_dispatch()(type(args[0])).__get__(accessor._instance, accessor._owner)  # noqa
+            return impl(*args, **kwargs)
+
         accessor_cls = self._accessor_cls = lang.new_type(
-            _MethodAccessor.__name__ + '$',
-            (_MethodAccessor,),
+            type(self).__name__ + '$Accessor',
+            (),
             {
-                '_method_name': name,
-                '_method_owner': owner,
+                '__qualname__': type(self).__qualname__ + '$Accessor',
                 '_method_get_dispatch': self.get_dispatch,
+                '__init__': __init__,
+                '__get__': __get__,
+                '__call__': __call__,
             },
         )
         self.update_wrapper(accessor_cls)
@@ -121,62 +170,6 @@ class Method:
             return impl(*args, **kwargs)  # noqa
 
         return method
-
-
-class _MethodAccessor:
-    def __init__(self, instance: ta.Any, owner: type) -> None:
-        super().__init__()
-
-        self._instance = instance
-        self._owner = owner
-
-        self._get_dispatch = functools.partial(self._method_get_dispatch, self._owner)
-
-    _method_name: ta.ClassVar[str]
-    _method_owner: ta.ClassVar[ta.Any]
-    _method_get_dispatch: ta.ClassVar[ta.Any]
-
-    def __get__(self, instance, owner=None):
-        self_instance = self._instance
-        self_owner = self._owner
-        if instance is self_instance and owner is self_owner:
-            return self
-
-        self_cls = type(self)
-        nxt = self_cls(instance, owner)  # noqa
-
-        method_name = self._method_name
-        if instance is not None:
-            instance.__dict__[method_name] = nxt  # noqa
-
-            inst_cls = type(instance)
-            try:
-                inst_cls.__dict__[method_name]
-
-            except KeyError:
-                method_owner = self._method_owner
-                for mro_cls in inst_cls.__mro__[:-1]:
-                    try:
-                        mro_cls.__dict__[method_name]
-                    except KeyError:
-                        if issubclass(mro_cls, method_owner):
-                            setattr(owner, method_name, self_cls(None, mro_cls))
-
-            else:
-                if self_owner is not inst_cls:
-                    raise TypeError('super() not supported')  # FIXME
-
-        elif owner is not None:
-            setattr(owner, method_name, nxt)
-
-        else:
-            raise TypeError
-
-        return nxt
-
-    def __call__(self, *args, **kwargs):
-        impl = self._get_dispatch()(type(args[0])).__get__(self._instance, self._owner)
-        return impl(*args, **kwargs)
 
 
 def method(func):
