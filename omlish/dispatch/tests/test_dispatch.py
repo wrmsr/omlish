@@ -79,3 +79,10 @@ def test_method_mro():
     assert B().f(None) == 'A:object'
     assert B().f(1) == 'B:int'
     assert B().f('') == 'B:str'
+
+    class C(B):
+        pass
+
+    assert C().f(None) == 'A:object'
+    assert C().f(1) == 'B:int'
+    assert C().f('') == 'B:str'
