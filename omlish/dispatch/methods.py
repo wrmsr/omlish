@@ -33,7 +33,7 @@ class Method:
             unwrapped_func = func
         self._unwrapped_func = unwrapped_func
 
-        self.__isabstractmethod__ = getattr(func, '__isabstractmethod__', False)  # noqa
+        self._is_abstractmethod = getattr(func, '__isabstractmethod__', False)  # noqa
 
         self._owner: ta.Any = None
         self._name: ta.Optional[str] = None
@@ -88,7 +88,7 @@ class Method:
 
     def update_wrapper(self, wrapper):
         functools.update_wrapper(wrapper, self._unwrapped_func)
-        setattr(wrapper, '__isabstractmethod__', self.__isabstractmethod__)  # noqa
+        setattr(wrapper, '__isabstractmethod__', self._is_abstractmethod)  # noqa
         return wrapper
 
     def __get__(self, instance, owner=None):
