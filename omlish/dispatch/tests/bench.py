@@ -3,7 +3,7 @@
 """
 import time
 
-from ..methods import method
+from omlish.dispatch.methods import method
 
 
 class C:

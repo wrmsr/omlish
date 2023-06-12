@@ -1,6 +1,6 @@
 """
 TODO:
- - collections.defaultdict in C, _dispatch_by_cls ~could~ be all C hot, but it's actually a WeakKeyDict :/
+ - weakrefs to cells, close over hard owner ref
 """
 import functools
 import typing as ta
@@ -60,7 +60,6 @@ class Method:
         def __init__(accessor, instance: ta.Any, owner: type) -> None:
             accessor._instance = instance
             accessor._owner = owner
-            accessor._get_dispatch = functools.partial(method_get_dispatch, accessor._owner)
 
         def __get__(accessor, instance, owner=None):
             self_instance = accessor._instance  # noqa
@@ -98,7 +97,7 @@ class Method:
             return nxt
 
         def __call__(accessor, *args, **kwargs):
-            impl = accessor._get_dispatch()(type(args[0])).__get__(accessor._instance, accessor._owner)  # noqa
+            impl = method_get_dispatch(accessor_owner := accessor._owner)(type(args[0])).__get__(accessor._instance, accessor_owner)  # noqa
             return impl(*args, **kwargs)
 
         accessor_cls = self._accessor_cls = lang.new_type(
@@ -106,7 +105,6 @@ class Method:
             (),
             {
                 '__qualname__': type(self).__qualname__ + '$Accessor',
-                '_method_get_dispatch': self.get_dispatch,
                 '__init__': __init__,
                 '__get__': __get__,
                 '__call__': __call__,
