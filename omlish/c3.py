@@ -42,7 +42,7 @@ import typing as ta
 T = ta.TypeVar('T')
 
 
-def merge(sequences: ta.MutableSequence[ta.List[T]]) -> ta.List[T]:
+def merge(seqs: ta.MutableSequence[ta.List[T]]) -> ta.List[T]:
     """Merges MROs in *sequences* to a single MRO using the C3 algorithm.
 
     Adapted from https://www.python.org/download/releases/2.3/mro/.
@@ -51,12 +51,12 @@ def merge(sequences: ta.MutableSequence[ta.List[T]]) -> ta.List[T]:
     result: ta.List[T] = []
     candidate: ta.Optional[T] = None
     while True:
-        sequences = [s for s in sequences if s]  # purge empty sequences
-        if not sequences:
+        seqs = [s for s in seqs if s]  # purge empty sequences
+        if not seqs:
             return result
-        for s1 in sequences:  # find merge candidates among seq heads
+        for s1 in seqs:  # find merge candidates among seq heads
             candidate = s1[0]
-            for s2 in sequences:
+            for s2 in seqs:
                 if candidate in s2[1:]:
                     candidate = None
                     break  # reject the current head, it appears later
@@ -66,7 +66,7 @@ def merge(sequences: ta.MutableSequence[ta.List[T]]) -> ta.List[T]:
             raise RuntimeError('Inconsistent hierarchy')
         result.append(candidate)
         # remove the chosen candidate
-        for seq in sequences:
+        for seq in seqs:
             if seq[0] == candidate:
                 del seq[0]
 
@@ -75,8 +75,8 @@ def mro(
         cls: T,
         abcs: ta.Optional[ta.Sequence[T]] = None,
         *,
-        getbases: ta.Callable[[T], ta.Sequence[T]] = operator.attrgetter('__bases__'),
-        issubclass: ta.Callable[[T, T], bool] = issubclass,  # type: ignore
+        get_bases: ta.Callable[[T], ta.Sequence[T]] = operator.attrgetter('__bases__'),
+        is_subclass: ta.Callable[[T, T], bool] = issubclass,  # type: ignore
 ) -> ta.List[T]:
     """Computes the method resolution order using extended C3 linearization.
 
@@ -90,28 +90,28 @@ def mro(
     each other in the resulting MRO, their ordering depends on the order of types in *abcs*.
     """
 
-    for i, base in enumerate(reversed(getbases(cls))):
+    for i, base in enumerate(reversed(get_bases(cls))):
         if hasattr(base, '__abstractmethods__'):
-            boundary = len(getbases(cls)) - i
+            boundary = len(get_bases(cls)) - i
             break  # Bases up to the last explicit ABC are considered first.
     else:
         boundary = 0
     abcs = list(abcs) if abcs else []
-    explicit_bases = list(getbases(cls)[:boundary])
+    explicit_bases = list(get_bases(cls)[:boundary])
     abstract_bases = []
-    other_bases = list(getbases(cls)[boundary:])
+    other_bases = list(get_bases(cls)[boundary:])
     for base in abcs:
         if (
-                issubclass(cls, base) and  # noqa
-                not any(issubclass(b, base) for b in getbases(cls))  # noqa
+                is_subclass(cls, base) and  # noqa
+                not any(is_subclass(b, base) for b in get_bases(cls))  # noqa
         ):
             # If *cls* is the class that introduces behaviour described by an ABC *base*, insert said ABC to its MRO.
             abstract_bases.append(base)
     for base in abstract_bases:
         abcs.remove(base)
-    explicit_c3_mros = [mro(base, abcs=abcs, getbases=getbases, issubclass=issubclass) for base in explicit_bases]
-    abstract_c3_mros = [mro(base, abcs=abcs, getbases=getbases, issubclass=issubclass) for base in abstract_bases]
-    other_c3_mros = [mro(base, abcs=abcs, getbases=getbases, issubclass=issubclass) for base in other_bases]
+    explicit_c3_mros = [mro(base, abcs=abcs, get_bases=get_bases, is_subclass=is_subclass) for base in explicit_bases]
+    abstract_c3_mros = [mro(base, abcs=abcs, get_bases=get_bases, is_subclass=is_subclass) for base in abstract_bases]
+    other_c3_mros = [mro(base, abcs=abcs, get_bases=get_bases, is_subclass=is_subclass) for base in other_bases]
     return merge(
         [[cls]] +
         explicit_c3_mros + abstract_c3_mros + other_c3_mros +
@@ -123,10 +123,10 @@ def compose_mro(
         cls: T,
         types: ta.Iterable[T],
         *,
-        getmro: ta.Callable[[T], ta.Optional[ta.Sequence[T]]] = operator.attrgetter('__mro__'),
-        getbases: ta.Callable[[T], ta.Sequence[T]] = operator.attrgetter('__bases__'),
-        issubclass: ta.Callable[[T, T], bool] = issubclass,  # type: ignore
-        getsubclasses: ta.Callable[[T], ta.Iterable[T]] = operator.methodcaller('__subclasses__'),
+        get_mro: ta.Callable[[T], ta.Optional[ta.Sequence[T]]] = operator.attrgetter('__mro__'),
+        get_bases: ta.Callable[[T], ta.Sequence[T]] = operator.attrgetter('__bases__'),
+        is_subclass: ta.Callable[[T, T], bool] = issubclass,  # type: ignore
+        get_subclasses: ta.Callable[[T], ta.Iterable[T]] = operator.methodcaller('__subclasses__'),
 ) -> ta.List[T]:
     """Calculates the method resolution order for a given class *cls*.
 
@@ -134,18 +134,18 @@ def compose_mro(
     linearization algorithm.
     """
 
-    bases = set(getmro(cls) or [])
+    bases = set(get_mro(cls) or [])
 
     # Remove entries which are already present in the __mro__ or unrelated.
     def is_related(typ):
-        return typ not in bases and getmro(typ) is not None and issubclass(cls, typ)
+        return typ not in bases and get_mro(typ) is not None and is_subclass(cls, typ)
 
     types = [n for n in types if is_related(n)]
 
     # Remove entries which are strict bases of other entries (they will end up in the MRO anyway.
     def is_strict_base(typ):
         for other in types:
-            if typ != other and typ in (getmro(other) or []):
+            if typ != other and typ in (get_mro(other) or []):
                 return True
         return False
 
@@ -156,9 +156,9 @@ def compose_mro(
     _mro = []
     for typ in types:
         found: ta.List[ta.List[T]] = []
-        for sub in getsubclasses(typ):
-            if sub not in bases and issubclass(cls, sub):  # noqa
-                found.append([s for s in (getmro(sub) or []) if s in type_set])
+        for sub in get_subclasses(typ):
+            if sub not in bases and is_subclass(cls, sub):  # noqa
+                found.append([s for s in (get_mro(sub) or []) if s in type_set])
         if not found:
             _mro.append(typ)
             continue
@@ -170,4 +170,4 @@ def compose_mro(
                 if subcls not in _mro:
                     _mro.append(subcls)
 
-    return mro(cls, abcs=_mro, getbases=getbases, issubclass=issubclass)
+    return mro(cls, abcs=_mro, get_bases=get_bases, is_subclass=is_subclass)
