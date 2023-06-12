@@ -1,2 +1,2 @@
 from .dispatch import function  # noqa
-from .dispatch import method  # noqa
+from .methods import method  # noqa
