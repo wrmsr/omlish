@@ -115,6 +115,10 @@ class Method:
         main_func: ta.Optional[ta.Callable] = None
         funcs_by_instance_cls: ta.MutableMapping[type, ta.Callable] = weakref.WeakKeyDictionary()
 
+        def build_func(instance_cls: type) -> ta.Callable:
+            att_disp = self.build_attr_dispatcher(owner_cls, instance_cls)
+            return self._build_dispatch_func(att_disp)
+
         def invalidate(accessor):
             nonlocal main_func
             main_func = None
@@ -137,12 +141,20 @@ class Method:
                 # FIXME: install, chain
                 raise NotImplementedError
 
-            att_disp = self.build_attr_dispatcher(owner_cls, instance_cls)
-            disp_func = self._build_dispatch_func(att_disp)
-            return disp_func.__get__(instance, owner)
+            if instance_cls is owner_cls:
+                nonlocal main_func
+                if main_func is None:
+                    main_func = build_func(owner_cls)
+                return main_func.__get__(instance, owner)  # noqa
+
+            try:
+                func = funcs_by_instance_cls[instance_cls]
+            except KeyError:
+                func = funcs_by_instance_cls[instance_cls] = build_func(instance_cls)
+            return func.__get__(instance, owner)  # noqa
 
         def __call__(accessor, *args, **kwargs):
-            raise NotImplementedError
+            raise TypeError  # FIXME: ??
 
         cls_suffix = f'<{owner_cls.__qualname__}>'
         accessor_cls = lang.new_type(
