@@ -23,7 +23,6 @@ class Method:
         self._func = func
 
         self._impls: ta.MutableSet[ta.Callable] = weakref.WeakSet()
-        self._dispatches_by_cls: ta.MutableMapping[type, ta.Callable[[type], ta.Callable]] = weakref.WeakKeyDictionary()
 
         # bpo-45678: special-casing for classmethod/staticmethod in Python <=3.9, as functools.update_wrapper doesn't
         # work properly in singledispatchmethod.__get__ if it is applied to an unbound classmethod/staticmethod
@@ -36,29 +35,7 @@ class Method:
 
         self._is_abstractmethod = getattr(func, '__isabstractmethod__', False)  # noqa
 
-        self._owner: ta.Any = None
-        self._name: ta.Optional[str] = None
-        self._accessor_cls: ta.Optional[type] = None
-
-    def __set_name__(self, owner, name):
-        check.none(self._owner)
-        check.none(self._name)
-        check.none(self._accessor_cls)
-
-        check.isinstance(owner, type)
-        check.non_empty_str(name)
-
-        ex = owner.__dict__[name]
-        check.state(ex is self)
-
-        self._owner = owner
-        self._name = name
-
-        accessor_cls = self._build_accessor_cls(owner)
-        self._accessor_cls = accessor_cls
-        acc = accessor_cls(None, owner)
-        acc.register = self.register
-        setattr(owner, name, acc)
+        self._accessor_cls_map: ta.MutableMapping[type, type] = weakref.WeakKeyDictionary()
 
     def _build_accessor_cls(self, owner: type) -> type:
         name = check.non_empty_str(self._name)
@@ -132,7 +109,8 @@ class Method:
         check.callable(impl)
         if impl not in self._impls:
             self._impls.add(impl)  # type: ignore
-            self._dispatches_by_cls.clear()
+            for acc_cls in self._accessor_cls_map.values():
+                acc_cls._invalidate()  # noqa
 
         return impl
 
