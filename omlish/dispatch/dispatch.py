@@ -11,6 +11,9 @@ from .. import c3
 from .. import check
 
 
+T = ta.TypeVar('T')
+
+
 ##
 
 
@@ -82,7 +85,7 @@ class Dispatcher:
         impls_by_arg_cls: ta.Dict[type, ta.Callable] = {}
         self._impls_by_arg_cls = impls_by_arg_cls
 
-        dispatch_cache: ta.MutableMapping[type, ta.Callable] = weakref.WeakKeyDictionary()
+        dispatch_cache: ta.MutableMapping[type, ta.Callable] = {}  # weakref.WeakKeyDictionary()
         self._dispatch_cache = dispatch_cache
 
         cache_token: ta.Any = None
@@ -97,7 +100,7 @@ class Dispatcher:
                     cache_token = current_token
 
             try:
-                return dispatch_cache[cls]
+                return dispatch_cache[cls]  # ~98ns
             except KeyError:
                 pass
 
@@ -111,22 +114,26 @@ class Dispatcher:
 
         self.dispatch = dispatch
 
-        def register(impl: ta.Callable, cls_col: ta.Iterable[type]) -> None:
+        def register(impl: T, cls_col: ta.Iterable[type]) -> T:
             nonlocal cache_token
 
+            check.callable(impl)
+
             for cls in cls_col:
-                impls_by_arg_cls[cls] = impl
+                impls_by_arg_cls[cls] = impl  # type: ignore
 
                 if cache_token is None and hasattr(cls, '__abstractmethods__'):
                     cache_token = abc.get_cache_token()
 
             self._dispatch_cache.clear()
 
+            return impl
+
         self.register = register
 
     dispatch: ta.Callable[[type], ta.Callable]
 
-    register: ta.Callable[[ta.Callable, ta.Iterable[type]], None]
+    register: ta.Callable[[T, ta.Iterable[type]], T]
 
 
 ##
