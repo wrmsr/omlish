@@ -87,11 +87,12 @@ def test_method_mro():
     assert C().f(1) == 'B:int'
     assert C().f('') == 'B:str'
 
-    # class D(B):
-    #     @A.f.register
-    #     def f_str(self, x: str):
-    #         return 'D:' + super().f(x)
-    #
-    # assert D().f(None) == 'A:object'
-    # assert D().f(1) == 'B:int'
-    # assert D().f('') == 'D:B:str'
+    class D(B):
+        @A.f.register
+        def f_str(self, x: str):
+            sup = super().f
+            return 'D:' + sup(x)
+
+    assert D().f(None) == 'A:object'
+    assert D().f(1) == 'B:int'
+    assert D().f('') == 'D:B:str'

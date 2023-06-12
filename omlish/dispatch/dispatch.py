@@ -10,6 +10,9 @@ from .. import check
 T = ta.TypeVar('T')
 
 
+##
+
+
 def _is_union_type(cls: ta.Any) -> bool:
     if hasattr(ta, 'UnionType'):
         return ta.get_origin(cls) in {ta.Union, getattr(ta, 'UnionType')}
@@ -57,6 +60,9 @@ def _find_impl(cls: type, registry: ta.Mapping[type, ta.Callable]) -> ta.Callabl
     return impl
 
 
+##
+
+
 class Dispatcher:
     def __init__(self) -> None:
         super().__init__()
@@ -93,6 +99,9 @@ class Dispatcher:
         self._dispatch_cache.clear()
 
 
+##
+
+
 def function(func):
     disp = Dispatcher()
     disp.register(func, [object])
@@ -115,6 +124,9 @@ def function(func):
     wrapper.register = register  # type: ignore
     wrapper.dispatch = disp.dispatch  # type: ignore
     return wrapper
+
+
+##
 
 
 class Method:
@@ -185,4 +197,5 @@ class Method:
         return method
 
 
-method = Method
+def method(func):
+    return Method(func)
