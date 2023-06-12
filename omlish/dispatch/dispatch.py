@@ -228,11 +228,16 @@ class _MethodAccessor:
             return self
 
         nxt = _MethodAccessor(self._method, instance, owner)  # noqa
-
+        name = self._method._name  # noqa
         if instance is not None:
-            instance.__dict__[self._method._name] = nxt  # noqa
+            instance.__dict__[name] = nxt  # noqa
+            cls = type(instance)
+            try:
+                cls.__dict__[name]  # type: ignore
+            except KeyError:
+                setattr(owner, name, _MethodAccessor(self._method, None, cls))  # type: ignore  # noqa
         elif owner is not None:
-            setattr(owner, self._method._name, nxt)  # type: ignore  # noqa
+            setattr(owner, name, nxt)  # type: ignore  # noqa
         else:
             raise TypeError
 
