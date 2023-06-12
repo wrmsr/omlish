@@ -55,6 +55,14 @@ def test_mro():
         (C, D),
         (B, D),
         (A, D),
+
+        (C, C),
+        (A, C),
+
+        (B, B),
+        (A, B),
+
+        (A, A),
     ]:
         print((oc, ic))
         dct = build_mro_dct(oc, ic)
