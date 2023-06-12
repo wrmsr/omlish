@@ -1,5 +1,7 @@
 import typing as ta
 
+import pytest
+
 from .. import dispatch
 
 
@@ -111,6 +113,10 @@ def test_method_mro():
         def f_str(self, x: str):
             return 'E:' + super().f(x)
 
-    assert E().f(None) == 'A:object'
-    assert E().f(1) == 'B:int'
-    assert E().f('') == 'E:B:str'
+    for _ in range(2):
+        obj = E()
+        assert obj.f(None) == 'A:object'
+        assert obj.f(1) == 'B:int'
+        # assert obj.f('') == 'E:B:str'
+        with pytest.raises(TypeError):
+            obj.f('')

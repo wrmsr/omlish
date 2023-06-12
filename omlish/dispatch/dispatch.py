@@ -1,3 +1,7 @@
+"""
+TODO:
+ - functools.partial get_dispatcher.dispatcher -> collections.defaultdict, almost all C instance inner
+"""
 import abc
 import functools
 import typing as ta
@@ -137,7 +141,6 @@ class Method:
         self._func = func
 
         self._impls: ta.MutableSet[ta.Callable] = weakref.WeakSet()
-
         self._dispatchers_by_cls: ta.MutableMapping[type, Dispatcher] = weakref.WeakKeyDictionary()
 
         # bpo-45678: special-casing for classmethod/staticmethod in Python <=3.9, as functools.update_wrapper doesn't
@@ -224,23 +227,37 @@ class _MethodAccessor:
         method.update_wrapper(self)
 
     def __get__(self, instance, owner=None):
-        if instance is self._instance and owner is self._owner:
+        self_instance = self._instance
+        self_owner = self._owner
+        if instance is self_instance and owner is self_owner:
             return self
 
-        # if instance is not None and type(instance) is not owner:
-        #     raise TypeError  # FIXME: super()
+        self_method = self._method
+        name = self_method._name  # noqa
 
-        nxt = _MethodAccessor(self._method, instance, owner)  # noqa
-        name = self._method._name  # noqa
+        nxt = _MethodAccessor(self_method, instance, owner)  # noqa
         if instance is not None:
             instance.__dict__[name] = nxt  # noqa
-            cls = type(instance)
+
+            inst_cls = type(instance)
             try:
-                cls.__dict__[name]  # type: ignore
+                inst_cls.__dict__[name]  # type: ignore
+
             except KeyError:
-                setattr(owner, name, _MethodAccessor(self._method, None, cls))  # type: ignore  # noqa
+                for mro_cls in inst_cls.__mro__:
+                    try:
+                        mro_cls.__dict__[name]  # type: ignore
+                    except KeyError:
+                        if issubclass(mro_cls, self_method._owner):  # noqa
+                            setattr(owner, name, _MethodAccessor(self_method, None, mro_cls))  # type: ignore  # noqa
+
+            else:
+                if self_owner is not inst_cls:
+                    raise TypeError('super() not supported')  # FIXME
+
         elif owner is not None:
             setattr(owner, name, nxt)  # type: ignore  # noqa
+
         else:
             raise TypeError
 
