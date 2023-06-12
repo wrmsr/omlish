@@ -143,7 +143,7 @@ class Method:
         self._func = func
 
         self._impls: ta.MutableSet[ta.Callable] = weakref.WeakSet()
-        self._dispatchers_by_cls: ta.MutableMapping[type, Dispatcher] = weakref.WeakKeyDictionary()
+        self._dispatch_by_cls: ta.MutableMapping[type, ta.Callable[[type], ta.Callable]] = weakref.WeakKeyDictionary()
 
         # bpo-45678: special-casing for classmethod/staticmethod in Python <=3.9, as functools.update_wrapper doesn't
         # work properly in singledispatchmethod.__get__ if it is applied to an unbound classmethod/staticmethod
@@ -185,13 +185,13 @@ class Method:
         check.callable(impl)
         if impl not in self._impls:
             self._impls.add(impl)  # type: ignore
-            self._dispatchers_by_cls.clear()
+            self._dispatch_by_cls.clear()
 
         return impl
 
-    def get_dispatcher(self, cls: type) -> Dispatcher:
+    def get_dispatch(self, cls: type) -> ta.Callable[[type], ta.Callable]:
         try:
-            return self._dispatchers_by_cls[cls]
+            return self._dispatch_by_cls[cls]
         except KeyError:
             pass
 
@@ -203,8 +203,9 @@ class Method:
                 if att in self._impls:
                     disp.register(att, _get_impl_cls_set(att))
 
-        self._dispatchers_by_cls[cls] = disp
-        return disp
+        ret = disp.dispatch
+        self._dispatch_by_cls[cls] = ret
+        return ret
 
     def update_wrapper(self, wrapper):
         functools.update_wrapper(wrapper, self._unwrapped_func)
@@ -214,8 +215,8 @@ class Method:
     def __get__(self, instance, owner=None):
         @self.update_wrapper
         def method(*args, **kwargs):  # noqa
-            impl = self.get_dispatcher(owner).dispatch(type(args[0]))
-            return impl.__get__(instance, owner)(*args, **kwargs)  # noqa
+            impl = self.get_dispatch(owner)(type(args[0])).__get__(instance, owner)  # noqa
+            return impl(*args, **kwargs)  # noqa
 
         return method
 
@@ -230,7 +231,7 @@ class _MethodAccessor:
 
         method.update_wrapper(self)
 
-        self._get_dispatcher = functools.partial(method.get_dispatcher, self._owner)
+        self._get_dispatch = functools.partial(method.get_dispatch, self._owner)
 
     def __get__(self, instance, owner=None):
         self_instance = self._instance
@@ -270,7 +271,7 @@ class _MethodAccessor:
         return nxt
 
     def __call__(self, *args, **kwargs):
-        impl = self._get_dispatcher().dispatch(type(args[0])).__get__(self._instance, self._owner)
+        impl = self._get_dispatch()(type(args[0])).__get__(self._instance, self._owner)
         return impl(*args, **kwargs)
 
 

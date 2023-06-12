@@ -120,3 +120,15 @@ def test_method_mro():
         # assert obj.f('') == 'E:B:str'
         with pytest.raises(TypeError):
             obj.f('')
+
+
+def test_method_no_name():
+    class A:
+        pass
+
+    def f(self, x: object):
+        return 'A:object'
+
+    A.f = dispatch.method(f)  # type: ignore
+
+    assert A().f(None) == 'A:object'  # type: ignore
