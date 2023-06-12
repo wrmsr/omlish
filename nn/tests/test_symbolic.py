@@ -20,8 +20,9 @@ def test_dispatch():
     from ..symbolic import DebugNodeRenderer
 
     v = Var('a', 3, 8) >= 8
-    assert NodeRenderer().render(v) == '((a*-1)<-7)'
-    assert DebugNodeRenderer().render(v) == '((a[3,8]*-1)<-7)'
+    for _ in range(2):
+        assert NodeRenderer().render(v) == '((a*-1)<-7)'
+        assert DebugNodeRenderer().render(v) == '((a[3,8]*-1)<-7)'
 
 
 def test_symbolic():
