@@ -45,10 +45,11 @@ def test_mro():
         except ValueError:
             raise TypeError(f'Owner class {owner_cls} not in mro of instance class {instance_cls}')
         dct: ta.Dict[str, ta.Any] = {}
-        for cur_cls in mro[:pos]:
+        for cur_cls in mro[:pos + 1]:
             dct.update(cur_cls.__dict__)
         return dct
 
+    print()
     for oc, ic in [
         (D, D),
         (C, D),
