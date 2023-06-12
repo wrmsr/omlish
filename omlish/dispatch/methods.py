@@ -106,6 +106,9 @@ class Method:
         self.update_wrapper(__call__)
         return __call__
 
+    class _Accessor:
+        pass
+
     def _get_accessor(self, owner_cls: type) -> ta.Any:
         try:
             return self._accessor_map[owner_cls]
@@ -128,8 +131,7 @@ class Method:
 
         def __get__(accessor, instance, owner=None):
             if instance is None:
-                # FIXME: classmethod/staticmethod
-                raise NotImplementedError
+                return self.__get__(instance, owner)
 
             instance_cls = type_(instance)
             if owner is None:
@@ -158,31 +160,50 @@ class Method:
         cls_suffix = f'<{owner_cls.__qualname__}>'
         accessor_cls = lang.new_type(
             type(self).__name__ + cls_suffix,
-            (),
+            (Method._Accessor,),
             {
                 '__qualname__': type(self).__qualname__ + cls_suffix,
                 '__get__': __get__,
                 '__call__': __call__,
-                '_method': self,
                 '_invalidate': invalidate,
+                '_owner': owner_cls,
             },
         )
         self.update_wrapper(accessor_cls)
 
         accessor = accessor_cls()
-        self._accessor_map[owner_cls] = accessor
+        accessor._method = self
+        self._accessor_map[owner_cls] = accessor  # FIXME: lol it hits Method.__get__ when in cls dct
         return accessor
 
     def __get__(self, instance, owner=None):
-        if owner is None:
-            if instance is None:
-                raise TypeError
-            owner = type(instance)
-        elif instance is None:
+        if instance is None:
+            # FIXME: classmethod/staticmethod
             return self
 
-        # FIXME: install... ????
-        return self._get_accessor(owner).__get__(instance, owner)
+        if owner is None:
+            owner = type(instance)
+
+        mro_dct: ta.Dict[str, ta.Any] = {}
+        for cur_cls in owner.__mro__[-2::-1]:
+            # FIXME: dirty atts, dont rescan
+            mro_dct.update(cur_cls.__dict__)
+            cur_acc = None
+            for nam, att in mro_dct.items():
+                if not (
+                    att is self or (
+                        isinstance(att, Method._Accessor) and
+                        att._method is self and  # noqa
+                        att._owner is not cur_cls  # noqa
+                    )
+                ):
+                    continue
+                if cur_acc is None:
+                    cur_acc = self._get_accessor(cur_cls)
+                setattr(cur_cls, nam, cur_acc)
+
+        owner_acc = self._get_accessor(owner)
+        return owner_acc.__get__(instance, owner)
 
 
 def method(func):
