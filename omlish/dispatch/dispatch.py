@@ -85,7 +85,7 @@ class Dispatcher:
         impls_by_arg_cls: ta.Dict[type, ta.Callable] = {}
         self._impls_by_arg_cls = impls_by_arg_cls
 
-        dispatch_cache: ta.MutableMapping[type, ta.Callable] = {}  # weakref.WeakKeyDictionary()
+        dispatch_cache: ta.MutableMapping[type, ta.Callable] = weakref.WeakKeyDictionary()
         self._dispatch_cache = dispatch_cache
 
         cache_token: ta.Any = None
@@ -126,7 +126,6 @@ class Dispatcher:
                     cache_token = abc.get_cache_token()
 
             self._dispatch_cache.clear()
-
             return impl
 
         self.register = register
@@ -158,6 +157,7 @@ def function(func):
         else:
             cls_col = frozenset([cls])
         disp.register(impl, cls_col)
+        return impl
 
     wrapper.register = register  # type: ignore
     wrapper.dispatch = disp.dispatch  # type: ignore

@@ -23,7 +23,7 @@ def _main():
     start = time.time_ns()
 
     for _ in range(n):
-        f_str('')
+        f('')
 
     end = time.time_ns()
     total = end - start
