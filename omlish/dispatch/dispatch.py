@@ -83,14 +83,16 @@ class Dispatcher:
                 self._cache_token = current_token
 
         try:
-            impl = self._dispatch_cache[cls]
+            return self._dispatch_cache[cls]
         except KeyError:
-            try:
-                impl = self._impls_by_arg_cls[cls]
-            except KeyError:
-                impl = _find_impl(cls, self._impls_by_arg_cls)
-            self._dispatch_cache[cls] = impl
+            pass
 
+        try:
+            impl = self._impls_by_arg_cls[cls]
+        except KeyError:
+            impl = _find_impl(cls, self._impls_by_arg_cls)
+
+        self._dispatch_cache[cls] = impl
         return impl
 
     def register(self, impl: ta.Callable, cls_col: ta.Iterable[type]) -> None:
@@ -221,10 +223,14 @@ class Method:
 class _MethodAccessor:
     def __init__(self, method: Method, instance: ta.Any, owner: type) -> None:
         super().__init__()
+
         self._method = method
         self._instance = instance
         self._owner = owner
+
         method.update_wrapper(self)
+
+        self._get_dispatcher = functools.partial(method.get_dispatcher, self._owner)
 
     def __get__(self, instance, owner=None):
         self_instance = self._instance
@@ -264,7 +270,7 @@ class _MethodAccessor:
         return nxt
 
     def __call__(self, *args, **kwargs):
-        impl = self._method.get_dispatcher(self._owner).dispatch(type(args[0])).__get__(self._instance, self._owner)
+        impl = self._get_dispatcher().dispatch(type(args[0])).__get__(self._instance, self._owner)
         return impl(*args, **kwargs)
 
 
