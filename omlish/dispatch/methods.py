@@ -80,8 +80,16 @@ class Method:
         disp.register(self._func, [object])
 
         mro_dct = build_mro_dct(owner_cls, instance_cls)
-        for nam, att in mro_dct.__dict__.items():
+        seen: ta.Mapping[ta.Any, str] = {}
+        for nam, att in mro_dct.items():
             if att in self._impls:
+                try:
+                    ex_nam = seen[att]
+                except KeyError:
+                    pass
+                else:
+                    raise TypeError(f'Duplicate impl: {owner_cls} {instance_cls} {nam} {ex_nam}')
+                # FIXME: base case lol, not on any att
                 disp.register(nam, get_impl_func_cls_set(att))
 
         return disp
@@ -111,8 +119,26 @@ class Method:
             main_func = None
             funcs_by_instance_cls.clear()
 
+        type_ = type
+
         def __get__(accessor, instance, owner=None):
-            raise NotImplementedError
+            if instance is None:
+                # FIXME: classmethod/staticmethod
+                raise NotImplementedError
+
+            instance_cls = type_(instance)
+            if owner is None:
+                if instance is None:
+                    raise TypeError
+                owner = instance_cls
+
+            if owner is not owner_cls:
+                # FIXME: install, chain
+                raise NotImplementedError
+
+            att_disp = self.build_attr_dispatcher(owner_cls, instance_cls)
+            disp_func = self._build_dispatch_func(att_disp)
+            return disp_func.__get__(instance, owner)
 
         def __call__(accessor, *args, **kwargs):
             raise NotImplementedError
