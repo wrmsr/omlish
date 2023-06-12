@@ -7,6 +7,7 @@ import typing as ta
 import weakref
 
 from .. import check
+from .. import lang
 from .dispatch import Dispatcher
 from .dispatch import _get_impl_cls_set
 
@@ -37,10 +38,13 @@ class Method:
 
         self._owner: ta.Any = None
         self._name: ta.Optional[str] = None
+        self._accessor_cls: ta.Optional[ta.Type[_MethodAccessor]] = None
 
     def __set_name__(self, owner, name):
         check.none(self._owner)
         check.none(self._name)
+        check.none(self._accessor_cls)
+
         check.isinstance(owner, type)
         check.non_empty_str(name)
 
@@ -50,8 +54,19 @@ class Method:
         self._owner = owner
         self._name = name
 
-        acc = _MethodAccessor(self, None, owner)
-        acc.register = self.register  # type: ignore
+        accessor_cls = self._accessor_cls = lang.new_type(
+            _MethodAccessor.__name__ + '$',
+            (_MethodAccessor,),
+            {
+                '_method_name': name,
+                '_method_owner': owner,
+                '_method_get_dispatch': self.get_dispatch,
+            },
+        )
+        self.update_wrapper(accessor_cls)
+
+        acc = accessor_cls(None, owner)
+        acc.register = self.register
         setattr(owner, name, acc)
 
     def register(self, impl: T) -> T:
@@ -87,8 +102,16 @@ class Method:
         return ret
 
     def update_wrapper(self, wrapper):
-        functools.update_wrapper(wrapper, self._unwrapped_func)
+        for attr in functools.WRAPPER_ASSIGNMENTS:
+            try:
+                value = getattr(self._unwrapped_func, attr)
+            except AttributeError:
+                pass
+            else:
+                setattr(wrapper, attr, value)
+
         setattr(wrapper, '__isabstractmethod__', self._is_abstractmethod)  # noqa
+
         return wrapper
 
     def __get__(self, instance, owner=None):
@@ -101,16 +124,17 @@ class Method:
 
 
 class _MethodAccessor:
-    def __init__(self, method: Method, instance: ta.Any, owner: type) -> None:
+    def __init__(self, instance: ta.Any, owner: type) -> None:
         super().__init__()
 
-        self._method = method
         self._instance = instance
         self._owner = owner
 
-        method.update_wrapper(self)
+        self._get_dispatch = functools.partial(self._method_get_dispatch, self._owner)
 
-        self._get_dispatch = functools.partial(method.get_dispatch, self._owner)
+    _method_name: ta.ClassVar[str]
+    _method_owner: ta.ClassVar[ta.Any]
+    _method_get_dispatch: ta.ClassVar[ta.Any]
 
     def __get__(self, instance, owner=None):
         self_instance = self._instance
@@ -118,31 +142,32 @@ class _MethodAccessor:
         if instance is self_instance and owner is self_owner:
             return self
 
-        self_method = self._method
-        name = self_method._name  # noqa
+        self_cls = type(self)
+        nxt = self_cls(instance, owner)  # noqa
 
-        nxt = _MethodAccessor(self_method, instance, owner)  # noqa
+        method_name = self._method_name
         if instance is not None:
-            instance.__dict__[name] = nxt  # noqa
+            instance.__dict__[method_name] = nxt  # noqa
 
             inst_cls = type(instance)
             try:
-                inst_cls.__dict__[name]  # type: ignore
+                inst_cls.__dict__[method_name]
 
             except KeyError:
+                method_owner = self._method_owner
                 for mro_cls in inst_cls.__mro__[:-1]:
                     try:
-                        mro_cls.__dict__[name]  # type: ignore
+                        mro_cls.__dict__[method_name]
                     except KeyError:
-                        if issubclass(mro_cls, self_method._owner):  # noqa
-                            setattr(owner, name, _MethodAccessor(self_method, None, mro_cls))  # type: ignore  # noqa
+                        if issubclass(mro_cls, method_owner):
+                            setattr(owner, method_name, self_cls(None, mro_cls))
 
             else:
                 if self_owner is not inst_cls:
                     raise TypeError('super() not supported')  # FIXME
 
         elif owner is not None:
-            setattr(owner, name, nxt)  # type: ignore  # noqa
+            setattr(owner, method_name, nxt)
 
         else:
             raise TypeError

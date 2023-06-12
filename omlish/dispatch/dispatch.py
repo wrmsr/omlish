@@ -84,9 +84,9 @@ class Dispatcher:
         self._cache_token: ta.Any = None
 
     def dispatch(self, cls: type) -> ta.Callable:
-        if self._cache_token is not None:
+        if (cache_token := self._cache_token) is not None:
             current_token = abc.get_cache_token()
-            if self._cache_token != current_token:
+            if cache_token != current_token:
                 self._dispatch_cache.clear()
                 self._cache_token = current_token
 
