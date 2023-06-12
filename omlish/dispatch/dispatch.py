@@ -159,10 +159,16 @@ class Method:
         check.none(self._name)
         check.isinstance(owner, type)
         check.non_empty_str(name)
+
         ex = owner.__dict__[name]
         check.state(ex is self)
+
         self._owner = owner
         self._name = name
+
+        acc = _MethodAccessor(self, None, owner)
+        acc.register = self.register  # type: ignore
+        setattr(owner, name, acc)
 
     def register(self, impl: T) -> T:
         # bpo-39679: in Python <= 3.9, classmethods and staticmethods don't inherit __annotations__ of the wrapped
@@ -195,19 +201,51 @@ class Method:
         self._dispatchers_by_cls[cls] = disp
         return disp
 
-    def __get__(self, obj, cls=None):
-        check.not_none(cls)  # FIXME:
+    def update_wrapper(self, wrapper):
+        functools.update_wrapper(wrapper, self._unwrapped_func)
+        setattr(wrapper, '__isabstractmethod__', self.__isabstractmethod__)  # noqa
+        return wrapper
 
-        @functools.wraps(self._unwrapped_func)
+    def __get__(self, instance, owner=None):
+        @self.update_wrapper
         def method(*args, **kwargs):  # noqa
-            impl = self.get_dispatcher(cls).dispatch(type(args[0]))
-            return impl.__get__(obj, cls)(*args, **kwargs)  # noqa
-
-        method.register = self.register  # type: ignore
-
-        method.__isabstractmethod__ = self.__isabstractmethod__  # type: ignore  # noqa
+            impl = self.get_dispatcher(owner).dispatch(type(args[0]))
+            return impl.__get__(instance, owner)(*args, **kwargs)  # noqa
 
         return method
+
+
+class _MethodAccessor:
+    def __init__(self, method: Method, instance: ta.Any, owner: type) -> None:
+        super().__init__()
+        self._method = method
+        self._instance = instance
+        self._owner = owner
+        method.update_wrapper(self)
+
+    def __get__(self, instance, owner=None):
+        if instance is self._instance and owner is self._owner:
+            return self
+
+        nxt = _MethodAccessor(self._method, instance, owner)
+
+        if instance is not None:
+            instance.__dict__[self._method._name] = nxt  # noqa
+        elif owner is not None:
+            setattr(owner, self._method._name, nxt)  # type: ignore  # noqa
+        else:
+            raise TypeError
+
+        return nxt
+
+    def __call__(self, *args, **kwargs):
+        impl = self._method.get_dispatcher(self._owner).dispatch(type(args[0]))
+        bound = impl.__get__(self._instance, self._owner)
+
+        # if self._instance is not None:
+        #     self._instance.__dict__[self._method._name] = bound  # noqa
+
+        return bound(*args, **kwargs)
 
 
 def method(func):
