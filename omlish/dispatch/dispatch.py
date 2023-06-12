@@ -43,7 +43,7 @@ def get_impl_func_cls_set(func: ta.Callable) -> ta.FrozenSet[type]:
     return ret
 
 
-def find_impl(cls: type, registry: ta.Mapping[type, T]) -> T:
+def find_impl(cls: type, registry: ta.Mapping[type, T]) -> ta.Optional[T]:
     mro = c3.compose_mro(cls, registry.keys())
 
     match: ta.Optional[type] = None
@@ -63,12 +63,7 @@ def find_impl(cls: type, registry: ta.Mapping[type, T]) -> T:
         if t in registry:
             match = t
 
-    impl: ta.Optional[T] = None
-    if match is not None:
-        impl = registry.get(match)
-    if impl is None:
-        raise RuntimeError(f'No dispatch: {cls}')
-    return impl
+    return registry.get(match)
 
 
 ##
@@ -81,12 +76,12 @@ class Dispatcher(ta.Generic[T]):
         impls_by_arg_cls: ta.Dict[type, T] = {}
         self._impls_by_arg_cls = impls_by_arg_cls
 
-        dispatch_cache: ta.MutableMapping[type, T] = weakref.WeakKeyDictionary()
+        dispatch_cache: ta.MutableMapping[type, ta.Optional[T]] = weakref.WeakKeyDictionary()
         self._dispatch_cache = dispatch_cache
 
         cache_token: ta.Any = None
 
-        def dispatch(cls: type) -> T:
+        def dispatch(cls: type) -> ta.Optional[T]:
             nonlocal cache_token
 
             if cache_token is not None:
@@ -124,6 +119,6 @@ class Dispatcher(ta.Generic[T]):
 
         self.register = register
 
-    dispatch: ta.Callable[[type], T]
+    dispatch: ta.Callable[[type], ta.Optional[T]]
 
     register: ta.Callable[[U, ta.Iterable[type]], U]

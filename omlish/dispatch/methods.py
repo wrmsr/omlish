@@ -77,7 +77,6 @@ class Method:
 
     def build_attr_dispatcher(self, owner_cls: type, instance_cls: type) -> Dispatcher[str]:
         disp: Dispatcher[str] = Dispatcher()
-        disp.register(self._func, [object])
 
         mro_dct = build_mro_dct(owner_cls, instance_cls)
         seen: ta.Mapping[ta.Any, str] = {}
@@ -89,7 +88,6 @@ class Method:
                     pass
                 else:
                     raise TypeError(f'Duplicate impl: {owner_cls} {instance_cls} {nam} {ex_nam}')
-                # FIXME: base case lol, not on any att
                 disp.register(nam, get_impl_func_cls_set(att))
 
         return disp
@@ -98,9 +96,12 @@ class Method:
         dispatch = disp.dispatch
         type_ = type
         getattr_ = getattr
+        base_func = self._func
 
         def __call__(self, *args, **kwargs):  # noqa
-            return getattr_(self, dispatch(type_(args[0])))(*args, **kwargs)
+            if (impl_att := dispatch(type_(args[0]))) is not None:
+                return getattr_(self, impl_att)(*args, **kwargs)
+            return base_func.__get__(self)(*args, **kwargs)  # noqa
 
         self.update_wrapper(__call__)
         return __call__

@@ -16,7 +16,9 @@ def function(func):
     def wrapper(*args, **kw):
         if not args:
             raise TypeError(f'{func_name} requires at least 1 positional argument')
-        return disp.dispatch(type(args[0]))(*args, **kw)
+        if (impl := disp.dispatch(type(args[0]))) is not None:
+            return impl(*args, **kw)
+        raise RuntimeError(f'No dispatch: {type(args[0])}')
 
     def register(impl, cls=None):
         check.callable(impl)
