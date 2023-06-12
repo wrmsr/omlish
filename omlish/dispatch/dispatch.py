@@ -79,38 +79,54 @@ class Dispatcher:
     def __init__(self) -> None:
         super().__init__()
 
-        self._impls_by_arg_cls: ta.Dict[type, ta.Callable] = {}
-        self._dispatch_cache: ta.MutableMapping[type, ta.Callable] = weakref.WeakKeyDictionary()
-        self._cache_token: ta.Any = None
+        impls_by_arg_cls: ta.Dict[type, ta.Callable] = {}
+        self._impls_by_arg_cls = impls_by_arg_cls
 
-    def dispatch(self, cls: type) -> ta.Callable:
-        if (cache_token := self._cache_token) is not None:
-            current_token = abc.get_cache_token()
-            if cache_token != current_token:
-                self._dispatch_cache.clear()
-                self._cache_token = current_token
+        dispatch_cache: ta.MutableMapping[type, ta.Callable] = weakref.WeakKeyDictionary()
+        self._dispatch_cache = dispatch_cache
 
-        try:
-            return self._dispatch_cache[cls]
-        except KeyError:
-            pass
+        cache_token: ta.Any = None
 
-        try:
-            impl = self._impls_by_arg_cls[cls]
-        except KeyError:
-            impl = _find_impl(cls, self._impls_by_arg_cls)
+        def dispatch(cls: type) -> ta.Callable:
+            nonlocal cache_token
 
-        self._dispatch_cache[cls] = impl
-        return impl
+            if cache_token is not None:
+                current_token = abc.get_cache_token()
+                if cache_token != current_token:
+                    dispatch_cache.clear()
+                    cache_token = current_token
 
-    def register(self, impl: ta.Callable, cls_col: ta.Iterable[type]) -> None:
-        for cls in cls_col:
-            self._impls_by_arg_cls[cls] = impl
+            try:
+                return dispatch_cache[cls]
+            except KeyError:
+                pass
 
-            if self._cache_token is None and hasattr(cls, '__abstractmethods__'):
-                self._cache_token = abc.get_cache_token()
+            try:
+                impl = impls_by_arg_cls[cls]
+            except KeyError:
+                impl = _find_impl(cls, impls_by_arg_cls)
 
-        self._dispatch_cache.clear()
+            dispatch_cache[cls] = impl
+            return impl
+
+        self.dispatch = dispatch
+
+        def register(impl: ta.Callable, cls_col: ta.Iterable[type]) -> None:
+            nonlocal cache_token
+
+            for cls in cls_col:
+                impls_by_arg_cls[cls] = impl
+
+                if cache_token is None and hasattr(cls, '__abstractmethods__'):
+                    cache_token = abc.get_cache_token()
+
+            self._dispatch_cache.clear()
+
+        self.register = register
+
+    dispatch: ta.Callable[[type], ta.Callable]
+
+    register: ta.Callable[[ta.Callable, ta.Iterable[type]], None]
 
 
 ##
