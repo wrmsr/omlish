@@ -1,10 +1,10 @@
 import typing as ta
 
-from .. import dispatch
+from ..functions import function
 
 
 def test_function():
-    @dispatch.function
+    @function
     def f(x: object):
         return 'object'
 

@@ -1,0 +1,33 @@
+import functools
+import typing as ta
+
+from .. import check
+from .dispatch import Dispatcher
+from .dispatch import get_impl_func_cls_set
+
+
+def function(func):
+    disp = Dispatcher()
+    disp.register(func, [object])
+
+    func_name = getattr(func, '__name__', 'singledispatch function')
+
+    @functools.wraps(func)
+    def wrapper(*args, **kw):
+        if not args:
+            raise TypeError(f'{func_name} requires at least 1 positional argument')
+        return disp.dispatch(type(args[0]))(*args, **kw)
+
+    def register(impl, cls=None):
+        check.callable(impl)
+        cls_col: ta.Iterable[type]
+        if cls is None:
+            cls_col = get_impl_func_cls_set(impl)
+        else:
+            cls_col = frozenset([cls])
+        disp.register(impl, cls_col)
+        return impl
+
+    wrapper.register = register  # type: ignore
+    wrapper.dispatch = disp.dispatch  # type: ignore
+    return wrapper

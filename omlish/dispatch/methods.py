@@ -9,10 +9,22 @@ import weakref
 from .. import check
 from .. import lang
 from .dispatch import Dispatcher
-from .dispatch import _get_impl_cls_set
+from .dispatch import get_impl_func_cls_set
 
 
 T = ta.TypeVar('T')
+
+
+def build_mro_dct(owner_cls: type, instance_cls: type) -> ta.Mapping[str, ta.Any]:
+    mro = instance_cls.__mro__[-2::-1]
+    try:
+        pos = mro.index(owner_cls)
+    except ValueError:
+        raise TypeError(f'Owner class {owner_cls} not in mro of instance class {instance_cls}')
+    dct: ta.Dict[str, ta.Any] = {}
+    for cur_cls in mro[:pos + 1]:
+        dct.update(cur_cls.__dict__)
+    return dct
 
 
 class Method:
@@ -114,19 +126,14 @@ class Method:
 
         return impl
 
-    def get_dispatch(self, cls: type) -> ta.Callable[[type], ta.Callable]:
-        try:
-            return self._dispatches_by_cls[cls]
-        except KeyError:
-            pass
-
+    def build_dispatch(self, owner_cls: type, instance_cls: type) -> ta.Callable[[type], ta.Callable]:
         disp = Dispatcher()
         disp.register(self._func, [object])
 
-        for mro_cls in cls.__mro__[1::-1]:
-            for nam, att in mro_cls.__dict__.items():
-                if att in self._impls:
-                    disp.register(att, _get_impl_cls_set(att))
+        mro_dct = build_mro_dct(owner_cls, instance_cls)
+        for nam, att in mro_dct.__dict__.items():
+            if att in self._impls:
+                disp.register(att, get_impl_func_cls_set(att))
 
         ret = disp.dispatch
         self._dispatches_by_cls[cls] = ret
