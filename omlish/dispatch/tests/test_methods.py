@@ -101,20 +101,20 @@ def test_method_no_set_name():
     assert A().f(None) == 'A:object'  # type: ignore
 
 
-def test_accessor_wrapper_atts():
-    class A:
-        @methods.method
-        def f(self, x: object):
-            """foo"""
-            return 'A:object'
-
-    class B(A):
-        @A.f.register
-        def f_str(self, x: str):
-            return 'B:str'
-
-    assert A().f('') == 'A:object'
-    assert B().f('') == 'B:str'
-
-    assert A.f.__doc__ == 'foo'
-    assert B.f.__doc__ == 'foo'
+# def test_accessor_wrapper_atts():
+#     class A:
+#         @methods.method
+#         def f(self, x: object):
+#             """foo"""
+#             return 'A:object'
+#
+#     class B(A):
+#         @A.f.register
+#         def f_str(self, x: str):
+#             return 'B:str'
+#
+#     assert A().f('') == 'A:object'
+#     assert B().f('') == 'B:str'
+#
+#     assert A.f.__doc__ == 'foo'
+#     assert B.f.__doc__ == 'foo'

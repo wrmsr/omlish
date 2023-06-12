@@ -181,7 +181,7 @@ class Method:
         elif instance is None:
             return self
 
-        # FIXME: install
+        # FIXME: install... ????
         return self._get_accessor(owner).__get__(instance, owner)
 
 
