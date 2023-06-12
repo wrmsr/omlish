@@ -1,7 +1,7 @@
 """
 TODO:
  - ***** INSTALL, AND INTO PARENTS
- - ** non-weakkeymap hit in accessor_cls for when instance_cls is owner_cls
+ - *** __call__
  - classmethod/staticmethod
 """
 import functools
@@ -138,8 +138,7 @@ class Method:
                 owner = instance_cls
 
             if owner is not owner_cls:
-                # FIXME: install, chain
-                raise NotImplementedError
+                return self.__get__(instance, owner)
 
             if instance_cls is owner_cls:
                 nonlocal main_func
@@ -179,6 +178,10 @@ class Method:
             if instance is None:
                 raise TypeError
             owner = type(instance)
+        elif instance is None:
+            return self
+
+        # FIXME: install
         return self._get_accessor(owner).__get__(instance, owner)
 
 

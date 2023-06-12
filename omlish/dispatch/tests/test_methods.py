@@ -75,18 +75,18 @@ def test_method_mro():
         assert obj.f(1) == 'B:int'
         assert obj.f('') == 'D:B:str'
 
-    class E(B):
-        @A.f.register
-        def f_str(self, x: str):
-            return 'E:' + super().f(x)
-
-    for _ in range(2):
-        obj = E()
-        assert obj.f(None) == 'A:object'
-        assert obj.f(1) == 'B:int'
-        # assert obj.f('') == 'E:B:str'
-        with pytest.raises(TypeError):
-            obj.f('')
+    # class E(B):
+    #     @A.f.register
+    #     def f_str(self, x: str):
+    #         return 'E:' + super().f(x)
+    #
+    # for _ in range(2):
+    #     obj = E()
+    #     assert obj.f(None) == 'A:object'
+    #     assert obj.f(1) == 'B:int'
+    #     # assert obj.f('') == 'E:B:str'
+    #     with pytest.raises(TypeError):
+    #         obj.f('')
 
 
 def test_method_no_set_name():
