@@ -88,7 +88,7 @@ def test_method_mro():
             obj.f('')
 
 
-def test_method_no_name():
+def test_method_no_set_name():
     class A:
         pass
 

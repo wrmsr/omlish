@@ -54,7 +54,15 @@ class Method:
         self._owner = owner
         self._name = name
 
-        method_owner = owner
+        accessor_cls = self._build_accessor_cls(owner)
+        self._accessor_cls = accessor_cls
+        acc = accessor_cls(None, owner)
+        acc.register = self.register
+        setattr(owner, name, acc)
+
+    def _build_accessor_cls(self, owner: type) -> type:
+        name = check.non_empty_str(self._name)
+        method_owner = check.not_none(owner)
         method_get_dispatch = self.get_dispatch
 
         def __init__(accessor, instance: ta.Any, owner: type) -> None:
@@ -100,7 +108,7 @@ class Method:
             impl = method_get_dispatch(accessor_owner := accessor._owner)(type(args[0])).__get__(accessor._instance, accessor_owner)  # noqa
             return impl(*args, **kwargs)
 
-        accessor_cls = self._accessor_cls = lang.new_type(
+        accessor_cls = lang.new_type(
             type(self).__name__ + '$Accessor',
             (),
             {
@@ -112,9 +120,7 @@ class Method:
         )
         self.update_wrapper(accessor_cls)
 
-        acc = accessor_cls(None, owner)
-        acc.register = self.register
-        setattr(owner, name, acc)
+        return accessor_cls
 
     def register(self, impl: T) -> T:
         # bpo-39679: in Python <= 3.9, classmethods and staticmethods don't inherit __annotations__ of the wrapped
