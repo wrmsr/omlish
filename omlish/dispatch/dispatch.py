@@ -151,6 +151,19 @@ class Method:
 
         self.__isabstractmethod__ = getattr(func, '__isabstractmethod__', False)  # noqa
 
+        self._owner: ta.Any = None
+        self._name: ta.Optional[str] = None
+
+    def __set_name__(self, owner, name):
+        check.none(self._owner)
+        check.none(self._name)
+        check.isinstance(owner, type)
+        check.non_empty_str(name)
+        ex = owner.__dict__[name]
+        check.state(ex is self)
+        self._owner = owner
+        self._name = name
+
     def register(self, impl: T) -> T:
         # bpo-39679: in Python <= 3.9, classmethods and staticmethods don't inherit __annotations__ of the wrapped
         # function (fixed in 3.10+ as a side-effect of bpo-43682) but we need that for annotation-derived
