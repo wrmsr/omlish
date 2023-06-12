@@ -1,6 +1,8 @@
 """
 TODO:
+ - ***** INSTALL, AND INTO PARENTS
  - ** non-weakkeymap hit in accessor_cls for when instance_cls is owner_cls
+ - classmethod/staticmethod
 """
 import functools
 import typing as ta
