@@ -77,7 +77,7 @@ class Method:
         disp = Dispatcher()
         disp.register(self._func, [object])
 
-        for mro_cls in reversed(cls.__mro__):
+        for mro_cls in cls.__mro__[1::-1]:
             for nam, att in mro_cls.__dict__.items():
                 if att in self._impls:
                     disp.register(att, _get_impl_cls_set(att))
@@ -130,7 +130,7 @@ class _MethodAccessor:
                 inst_cls.__dict__[name]  # type: ignore
 
             except KeyError:
-                for mro_cls in inst_cls.__mro__:
+                for mro_cls in inst_cls.__mro__[:-1]:
                     try:
                         mro_cls.__dict__[name]  # type: ignore
                     except KeyError:

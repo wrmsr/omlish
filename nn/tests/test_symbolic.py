@@ -15,6 +15,15 @@ def _test_variable(v, n, m, s):
     assert v.max == m
 
 
+def test_dispatch():
+    from ..symbolic import NodeRenderer
+    from ..symbolic import DebugNodeRenderer
+
+    v = Var('a', 3, 8) >= 8
+    assert NodeRenderer().render(v) == '((a*-1)<-7)'
+    assert DebugNodeRenderer().render(v) == '((a[3,8]*-1)<-7)'
+
+
 def test_symbolic():
     idx1 = Var('idx1', 0, 3)
     idx2 = Var('idx2', 0, 3)

@@ -11,6 +11,7 @@ import typing as ta
 
 from omlish import cached
 from omlish import check
+from omlish import dispatch
 from omlish import collections as col
 from omlish import lang
 
@@ -28,6 +29,37 @@ def render_node(n: 'Node') -> str:
     if isinstance(n, Red):
         return f'({n.glyph.join(sorted(render_node(x) for x in n.nodes))})'
     raise TypeError(n)
+
+
+##
+
+
+class NodeRenderer:
+    @dispatch.method
+    def render(self, n: 'Node') -> str:
+        raise TypeError(n)
+
+    @render.register
+    def render_var(self, n: 'Var') -> str:
+        return n.name
+
+    @render.register
+    def render_num(self, n: 'Num') -> str:
+        return str(n.b)
+
+    @render.register
+    def render_op(self, n: 'Op') -> str:
+        return f'({self.render(n.a)}{n.glyph}{n.b})'
+
+    @render.register
+    def render_red(self, n: 'Red') -> str:
+        return f'({n.glyph.join(sorted(self.render(x) for x in n.nodes))})'
+
+
+class DebugNodeRenderer(NodeRenderer):
+    @NodeRenderer.render.register
+    def render_var(self, n: 'Var') -> str:
+        return f'{n.name}[{n.min},{n.max}]'
 
 
 ##

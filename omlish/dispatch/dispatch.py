@@ -21,16 +21,27 @@ def _is_union_type(cls: ta.Any) -> bool:
         return ta.get_origin(cls) in {ta.Union}
 
 
-def _get_impl_cls_set(func: ta.Callable) -> ta.Set[type]:
+_IMPL_CLS_SET_CACHE: ta.MutableMapping[ta.Callable, ta.FrozenSet[type]] = weakref.WeakKeyDictionary()
+
+
+def _get_impl_cls_set(func: ta.Callable) -> ta.FrozenSet[type]:
+    try:
+        return _IMPL_CLS_SET_CACHE[func]
+    except KeyError:
+        pass
+
     ann = getattr(func, '__annotations__', {})
     if not ann:
         raise TypeError(f'Invalid impl: {func!r}')
 
     _, cls = next(iter(ta.get_type_hints(func).items()))
     if _is_union_type(cls):
-        return {check.isinstance(arg, type) for arg in ta.get_args(cls)}
+        ret = frozenset(check.isinstance(arg, type) for arg in ta.get_args(cls))
     else:
-        return {check.isinstance(cls, type)}
+        ret = frozenset([check.isinstance(cls, type)])
+
+    _IMPL_CLS_SET_CACHE[func] = ret
+    return ret
 
 
 def _find_impl(cls: type, registry: ta.Mapping[type, ta.Callable]) -> ta.Callable:
@@ -118,11 +129,12 @@ def function(func):
         return disp.dispatch(type(args[0]))(*args, **kw)
 
     def register(impl, cls=None):
+        cls_col: ta.Iterable[type]
         if cls is None:
-            cls_set = _get_impl_cls_set(impl)
+            cls_col = _get_impl_cls_set(impl)
         else:
-            cls_set = {cls}
-        disp.register(impl, cls_set)
+            cls_col = frozenset([cls])
+        disp.register(impl, cls_col)
 
     wrapper.register = register  # type: ignore
     wrapper.dispatch = disp.dispatch  # type: ignore
