@@ -7,6 +7,9 @@ from .. import c3
 from .. import check
 
 
+T = ta.TypeVar('T')
+
+
 def _is_union_type(cls: ta.Any) -> bool:
     if hasattr(ta, 'UnionType'):
         return ta.get_origin(cls) in {ta.Union, getattr(ta, 'UnionType')}
@@ -34,19 +37,24 @@ def _find_impl(cls: type, registry: ta.Mapping[type, ta.Callable]) -> ta.Callabl
         if match is not None:
             # If *match* is an implicit ABC but there is another unrelated, equally matching implicit ABC, refuse the
             # temptation to guess.
-            if (  # type: ignore
+            if (
                     t in registry
                     and t not in cls.__mro__
                     and match not in cls.__mro__
                     and not issubclass(match, t)
             ):
-                raise RuntimeError('Ambiguous dispatch: {} or {}'.format(match, t))
+                raise RuntimeError(f'Ambiguous dispatch: {match} or {t}')
             break
 
         if t in registry:
             match = t
 
-    return registry.get(match)
+    impl: ta.Optional[ta.Callable] = None
+    if match is not None:
+        impl = registry.get(match)
+    if impl is None:
+        raise RuntimeError(f'No dispatch: {cls}')
+    return impl
 
 
 class Dispatcher:
@@ -111,26 +119,27 @@ def function(func):
 
 class Method:
     def __init__(self, func: ta.Callable) -> None:
-        if not callable(func) and not hasattr(func, '__get__'):
+        if not callable(func) and not hasattr(func, '__get__'):  # type: ignore
             raise TypeError(f'{func!r} is not callable or a descriptor')
 
         self._func = func
 
         self._impls: ta.MutableSet[ta.Callable] = weakref.WeakSet()
-        self._impls.add(func)
 
         self._dispatchers_by_cls: ta.MutableMapping[type, Dispatcher] = weakref.WeakKeyDictionary()
 
         # bpo-45678: special-casing for classmethod/staticmethod in Python <=3.9, as functools.update_wrapper doesn't
         # work properly in singledispatchmethod.__get__ if it is applied to an unbound classmethod/staticmethod
+        unwrapped_func: ta.Any
         if isinstance(func, (staticmethod, classmethod)):
-            self._unwrapped_func = func.__func__
+            unwrapped_func = func.__func__  # type: ignore
         else:
-            self._unwrapped_func = func
+            unwrapped_func = func
+        self._unwrapped_func = unwrapped_func
 
         self.__isabstractmethod__ = getattr(func, '__isabstractmethod__', False)  # noqa
 
-    def register(self, impl):
+    def register(self, impl: T) -> T:
         # bpo-39679: in Python <= 3.9, classmethods and staticmethods don't inherit __annotations__ of the wrapped
         # function (fixed in 3.10+ as a side-effect of bpo-43682) but we need that for annotation-derived
         # singledispatches. So we add that just-in-time here.
@@ -138,18 +147,28 @@ class Method:
             impl.__annotations__ = getattr(impl.__func__, '__annotations__', {})
 
         check.callable(impl)
-        if impl in self._impls:
-            return
+        if impl not in self._impls:
+            self._impls.add(impl)  # type: ignore
+            self._dispatchers_by_cls.clear()
 
-        self._impls.add(impl)
-        self._dispatchers_by_cls.clear()
+        return impl
 
     def get_dispatcher(self, cls: type) -> Dispatcher:
         try:
             return self._dispatchers_by_cls[cls]
         except KeyError:
-            breakpoint()
-            raise NotImplementedError
+            pass
+
+        disp = Dispatcher()
+        disp.register(self._func, [object])
+
+        for mro_cls in reversed(cls.__mro__):
+            for nam, att in mro_cls.__dict__.items():
+                if att in self._impls:
+                    disp.register(att, _get_impl_cls_set(att))
+
+        self._dispatchers_by_cls[cls] = disp
+        return disp
 
     def __get__(self, obj, cls=None):
         check.not_none(cls)  # FIXME:
