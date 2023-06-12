@@ -46,7 +46,7 @@ class Method:
         self._unwrapped_func = unwrapped_func
         self._is_abstractmethod = getattr(func, '__isabstractmethod__', False)  # noqa
 
-        self._accessor_cls_map: ta.MutableMapping[type, type] = weakref.WeakKeyDictionary()
+        self._accessor_map: ta.MutableMapping[type, ta.Any] = weakref.WeakKeyDictionary()
 
     def update_wrapper(self, wrapper: T) -> T:
         for attr in functools.WRAPPER_ASSIGNMENTS:
@@ -68,12 +68,12 @@ class Method:
         check.callable(impl)
         if impl not in self._impls:
             self._impls.add(impl)  # type: ignore
-            for acc_cls in self._accessor_cls_map.values():
+            for acc_cls in self._accessor_map.values():
                 acc_cls._invalidate()  # noqa
 
         return impl
 
-    def build_attr_dispatch(self, owner_cls: type, instance_cls: type) -> ta.Callable[[type], str]:
+    def build_attr_dispatcher(self, owner_cls: type, instance_cls: type) -> Dispatcher[str]:
         disp: Dispatcher[str] = Dispatcher()
         disp.register(self._func, [object])
 
@@ -82,69 +82,63 @@ class Method:
             if att in self._impls:
                 disp.register(nam, get_impl_func_cls_set(att))
 
-        return disp.dispatch
+        return disp
 
-    def _build_accessor_cls(self, owner_cls: type) -> type:
+    def _build_dispatch_func(self, disp: Dispatcher[str]) -> ta.Callable:
+        dispatch = disp.dispatch
+        type_ = type
+        getattr_ = getattr
+
+        def __call__(self, *args, **kwargs):  # noqa
+            return getattr_(self, dispatch(type_(args[0])))(*args, **kwargs)
+
+        self.update_wrapper(__call__)
+        return __call__
+
+    def _get_accessor(self, owner_cls: type) -> ta.Any:
+        try:
+            return self._accessor_map[owner_cls]
+        except KeyError:
+            pass
+
+        main_func: ta.Optional[ta.Callable] = None
+        funcs_by_instance_cls: ta.MutableMapping[type, ta.Callable] = weakref.WeakKeyDictionary()
+
+        def invalidate(accessor):
+            nonlocal main_func
+            main_func = None
+            funcs_by_instance_cls.clear()
+
         def __get__(accessor, instance, owner=None):
-            self_instance = accessor._instance  # noqa
-            self_owner = accessor._owner  # noqa
-            if instance is self_instance and owner is self_owner:
-                return accessor
-
-            nxt = accessor_cls(instance, owner)  # noqa
-
-            if instance is not None:
-                instance.__dict__[name] = nxt  # noqa
-
-                inst_cls = type(instance)
-                try:
-                    inst_cls.__dict__[name]
-
-                except KeyError:
-                    for mro_cls in inst_cls.__mro__[:-1]:
-                        try:
-                            mro_cls.__dict__[name]
-                        except KeyError:
-                            if issubclass(mro_cls, method_owner):
-                                setattr(owner, name, accessor_cls(None, mro_cls))
-
-                else:
-                    if self_owner is not inst_cls:
-                        raise TypeError('super() not supported')  # FIXME
-
-            elif owner is not None:
-                setattr(owner, name, nxt)
-
-            else:
-                raise TypeError
-
-            return nxt
+            raise NotImplementedError
 
         def __call__(accessor, *args, **kwargs):
-            impl = method_get_dispatch(accessor_owner := accessor._owner)(type(args[0])).__get__(accessor._instance, accessor_owner)  # noqa
-            return impl(*args, **kwargs)
+            raise NotImplementedError
 
+        cls_suffix = f'<{owner_cls.__qualname__}>'
         accessor_cls = lang.new_type(
-            type(self).__name__ + '$Accessor',
+            type(self).__name__ + cls_suffix,
             (),
             {
-                '__qualname__': type(self).__qualname__ + '$Accessor',
-                '__init__': __init__,
+                '__qualname__': type(self).__qualname__ + cls_suffix,
                 '__get__': __get__,
                 '__call__': __call__,
+                '_method': self,
+                '_invalidate': invalidate,
             },
         )
         self.update_wrapper(accessor_cls)
 
-        return accessor_cls
+        accessor = accessor_cls()
+        self._accessor_map[owner_cls] = accessor
+        return accessor
 
     def __get__(self, instance, owner=None):
-        @self.update_wrapper
-        def method(*args, **kwargs):  # noqa
-            impl = self.get_dispatch(owner)(type(args[0])).__get__(instance, owner)  # noqa
-            return impl(*args, **kwargs)  # noqa
-
-        return method
+        if owner is None:
+            if instance is None:
+                raise TypeError
+            owner = type(instance)
+        return self._get_accessor(owner).__get__(instance, owner)
 
 
 def method(func):
