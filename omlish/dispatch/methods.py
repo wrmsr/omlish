@@ -1,6 +1,6 @@
 """
 TODO:
- - weakrefs to cells, close over hard owner ref
+ - ** non-weakkeymap hit in accessor_cls for when instance_cls is owner_cls
 """
 import functools
 import typing as ta
@@ -44,20 +44,47 @@ class Method:
         else:
             unwrapped_func = func
         self._unwrapped_func = unwrapped_func
-
         self._is_abstractmethod = getattr(func, '__isabstractmethod__', False)  # noqa
 
         self._accessor_cls_map: ta.MutableMapping[type, type] = weakref.WeakKeyDictionary()
 
-    def _build_accessor_cls(self, owner: type) -> type:
-        name = check.non_empty_str(self._name)
-        method_owner = check.not_none(owner)
-        method_get_dispatch = self.get_dispatch
+    def update_wrapper(self, wrapper: T) -> T:
+        for attr in functools.WRAPPER_ASSIGNMENTS:
+            try:
+                value = getattr(self._unwrapped_func, attr)
+            except AttributeError:
+                continue
+            setattr(wrapper, attr, value)
+        setattr(wrapper, '__isabstractmethod__', self._is_abstractmethod)  # noqa
+        return wrapper
 
-        def __init__(accessor, instance: ta.Any, owner: type) -> None:
-            accessor._instance = instance
-            accessor._owner = owner
+    def register(self, impl: T) -> T:
+        # bpo-39679: in Python <= 3.9, classmethods and staticmethods don't inherit __annotations__ of the wrapped
+        # function (fixed in 3.10+ as a side-effect of bpo-43682) but we need that for annotation-derived
+        # singledispatches. So we add that just-in-time here.
+        if isinstance(impl, (staticmethod, classmethod)):
+            impl.__annotations__ = getattr(impl.__func__, '__annotations__', {})
 
+        check.callable(impl)
+        if impl not in self._impls:
+            self._impls.add(impl)  # type: ignore
+            for acc_cls in self._accessor_cls_map.values():
+                acc_cls._invalidate()  # noqa
+
+        return impl
+
+    def build_attr_dispatch(self, owner_cls: type, instance_cls: type) -> ta.Callable[[type], str]:
+        disp: Dispatcher[str] = Dispatcher()
+        disp.register(self._func, [object])
+
+        mro_dct = build_mro_dct(owner_cls, instance_cls)
+        for nam, att in mro_dct.__dict__.items():
+            if att in self._impls:
+                disp.register(nam, get_impl_func_cls_set(att))
+
+        return disp.dispatch
+
+    def _build_accessor_cls(self, owner_cls: type) -> type:
         def __get__(accessor, instance, owner=None):
             self_instance = accessor._instance  # noqa
             self_owner = accessor._owner  # noqa
@@ -110,47 +137,6 @@ class Method:
         self.update_wrapper(accessor_cls)
 
         return accessor_cls
-
-    def register(self, impl: T) -> T:
-        # bpo-39679: in Python <= 3.9, classmethods and staticmethods don't inherit __annotations__ of the wrapped
-        # function (fixed in 3.10+ as a side-effect of bpo-43682) but we need that for annotation-derived
-        # singledispatches. So we add that just-in-time here.
-        if isinstance(impl, (staticmethod, classmethod)):
-            impl.__annotations__ = getattr(impl.__func__, '__annotations__', {})
-
-        check.callable(impl)
-        if impl not in self._impls:
-            self._impls.add(impl)  # type: ignore
-            for acc_cls in self._accessor_cls_map.values():
-                acc_cls._invalidate()  # noqa
-
-        return impl
-
-    def build_dispatch(self, owner_cls: type, instance_cls: type) -> ta.Callable[[type], ta.Callable]:
-        disp = Dispatcher()
-        disp.register(self._func, [object])
-
-        mro_dct = build_mro_dct(owner_cls, instance_cls)
-        for nam, att in mro_dct.__dict__.items():
-            if att in self._impls:
-                disp.register(att, get_impl_func_cls_set(att))
-
-        ret = disp.dispatch
-        self._dispatches_by_cls[cls] = ret
-        return ret
-
-    def update_wrapper(self, wrapper):
-        for attr in functools.WRAPPER_ASSIGNMENTS:
-            try:
-                value = getattr(self._unwrapped_func, attr)
-            except AttributeError:
-                pass
-            else:
-                setattr(wrapper, attr, value)
-
-        setattr(wrapper, '__isabstractmethod__', self._is_abstractmethod)  # noqa
-
-        return wrapper
 
     def __get__(self, instance, owner=None):
         @self.update_wrapper
