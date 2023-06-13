@@ -91,12 +91,11 @@ class Dispatcher(ta.Generic[T]):
         self._get_cache_token = lambda: cache_token
 
         weakref_ref_ = weakref.ref
-        abc_get_cache_token_ = abc.get_cache_token
 
         def dispatch(cls: type) -> ta.Optional[T]:
             nonlocal cache_token
 
-            if cache_token is not None and (current_token := abc_get_cache_token_()) != cache_token:
+            if cache_token is not None and (current_token := abc.get_cache_token()) != cache_token:
                 dispatch_cache.clear()
                 cache_token = current_token
 
