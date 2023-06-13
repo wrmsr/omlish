@@ -24,15 +24,19 @@ def test_weaks():
         class B(A):
             pass
 
-        assert len(disp._get_dispatch_cache()) == 2
         for _ in range(2):
             assert disp.dispatch(B) == 'A'
-        assert len(disp._get_dispatch_cache()) == 3
 
     for _ in range(2):
+        assert len(disp._get_dispatch_cache()) == 2
         inner()
+        assert len(disp._get_dispatch_cache()) == 3
         gc.collect()
         assert len(disp._get_dispatch_cache()) == 2
+
+    # for _ in range(10):
+    #     inner()
+    # gc.collect()
 
 
 def test_abc():
@@ -55,3 +59,37 @@ def test_abc():
     A.register(B)  # noqa
     assert disp.dispatch(A) == 'A'
     assert disp.dispatch(B) == 'A'
+
+
+def test_abc_weaks():
+    disp: Dispatcher[str] = Dispatcher()
+
+    class A(abc.ABC):
+        pass
+
+    disp.register('object', [object])
+    disp.register('A', [A])
+
+    def inner():
+        class B:
+            pass
+
+        for _ in range(2):
+            assert disp.dispatch(B) == 'object'
+            assert disp.dispatch(C) == 'A'
+
+        A.register(B)  # noqa
+
+        for _ in range(2):
+            assert disp.dispatch(B) == 'A'
+            assert disp.dispatch(C) == 'A'
+
+    class C:
+        pass
+
+    A.register(C)  # noqa
+
+    for _ in range(10):
+        inner()
+
+    gc.collect()

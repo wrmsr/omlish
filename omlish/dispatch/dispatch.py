@@ -73,30 +73,6 @@ def find_impl(cls: type, registry: ta.Mapping[type, T]) -> ta.Optional[T]:
 ##
 
 
-class _WeakKeyDictionary:
-    def __init__(self):
-        self._data = {}
-
-        def remove(k, selfref=weakref.ref(self)):
-            self = selfref()
-            if self is not None:
-                try:
-                    del self._data[k]
-                except KeyError:
-                    pass
-
-        self._remove = remove
-
-    def __getitem__(self, key):
-        return self._data[weakref.ref(key)]
-
-    def __len__(self):
-        return len(self._data)
-
-    def __setitem__(self, key, value):
-        self._data[weakref.ref(key, self._remove)] = value
-
-
 class Dispatcher(ta.Generic[T]):
     def __init__(self) -> None:
         super().__init__()
@@ -104,24 +80,32 @@ class Dispatcher(ta.Generic[T]):
         impls_by_arg_cls: ta.Dict[type, T] = {}
         self._impls_by_arg_cls = impls_by_arg_cls
 
-        dispatch_cache: ta.Any = _WeakKeyDictionary()
+        dispatch_cache: ta.Any = {}
         self._get_dispatch_cache = lambda: dispatch_cache
+
+        def cache_remove(k, self_ref=weakref.ref(self)):
+            if (ref_self := self_ref()) is not None:
+                cache = ref_self._get_dispatch_cache()  # noqa
+                try:
+                    del cache[k]
+                except KeyError:
+                    pass
 
         cache_token: ta.Any = None
         self._get_cache_token = lambda: cache_token
 
+        weakref_ref_ = weakref.ref
+        abc_get_cache_token_ = abc.get_cache_token
+
         def dispatch(cls: type) -> ta.Optional[T]:
             nonlocal cache_token
-            nonlocal dispatch_cache
 
-            if cache_token is not None:
-                current_token = abc.get_cache_token()
-                if cache_token != current_token:
-                    dispatch_cache = _WeakKeyDictionary()
-                    cache_token = current_token
+            if cache_token is not None and (current_token := abc_get_cache_token_()) != cache_token:
+                dispatch_cache.clear()
+                cache_token = current_token
 
             try:
-                return dispatch_cache[cls]  # ~98ns
+                return dispatch_cache[weakref_ref_(cls)]
             except KeyError:
                 pass
 
@@ -130,14 +114,13 @@ class Dispatcher(ta.Generic[T]):
             except KeyError:
                 impl = find_impl(cls, impls_by_arg_cls)
 
-            dispatch_cache[cls] = impl
+            dispatch_cache[weakref_ref_(cls, cache_remove)] = impl
             return impl
 
         self.dispatch = dispatch
 
         def register(impl: T, cls_col: ta.Iterable[type]) -> T:
             nonlocal cache_token
-            nonlocal dispatch_cache
 
             for cls in cls_col:
                 impls_by_arg_cls[cls] = impl  # type: ignore
@@ -145,7 +128,7 @@ class Dispatcher(ta.Generic[T]):
                 if cache_token is None and hasattr(cls, '__abstractmethods__'):
                     cache_token = abc.get_cache_token()
 
-            dispatch_cache = _WeakKeyDictionary()
+            dispatch_cache.clear()
             return impl
 
         self.register = register
