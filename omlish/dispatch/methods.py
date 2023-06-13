@@ -17,7 +17,9 @@ from .dispatch import get_impl_func_cls_set
 T = ta.TypeVar('T')
 
 
-def build_mro_dct(owner_cls: type, instance_cls: type) -> ta.Mapping[str, ta.Any]:
+def build_mro_dct(instance_cls: type, owner_cls: ta.Optional[type] = None) -> ta.Mapping[str, ta.Any]:
+    if owner_cls is None:
+        instance_cls = owner_cls
     mro = instance_cls.__mro__[-2::-1]
     try:
         pos = mro.index(owner_cls)
@@ -78,7 +80,7 @@ class Method:
     def build_attr_dispatcher(self, owner_cls: type, instance_cls: type) -> Dispatcher[str]:
         disp: Dispatcher[str] = Dispatcher()
 
-        mro_dct = build_mro_dct(owner_cls, instance_cls)
+        mro_dct = build_mro_dct(instance_cls, owner_cls)
         seen: ta.Mapping[ta.Any, str] = {}
         for nam, att in mro_dct.items():
             if att in self._impls:
