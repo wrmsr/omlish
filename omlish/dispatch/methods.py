@@ -1,6 +1,6 @@
 """
 TODO:
- - ***** INSTALL, AND INTO PARENTS
+ - ALT: A.f(super(), ... ? :/
  - *** __call__
  - classmethod/staticmethod
 """
