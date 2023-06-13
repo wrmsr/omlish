@@ -4,7 +4,7 @@ import gc
 from ..dispatch import Dispatcher
 
 
-def test_weaks():
+def test_simple():
     disp: Dispatcher[str] = Dispatcher()
 
     class A:
@@ -16,6 +16,20 @@ def test_weaks():
         assert disp.dispatch(A) == 'object'
 
     disp.register('A', [A])
+    for _ in range(2):
+        assert disp.dispatch(object) == 'object'
+        assert disp.dispatch(A) == 'A'
+
+
+def test_weaks():
+    disp: Dispatcher[str] = Dispatcher()
+
+    class A:
+        pass
+
+    disp.register('object', [object])
+    disp.register('A', [A])
+
     for _ in range(2):
         assert disp.dispatch(object) == 'object'
         assert disp.dispatch(A) == 'A'
@@ -34,9 +48,9 @@ def test_weaks():
         gc.collect()
         assert len(disp._get_dispatch_cache()) == 2
 
-    # for _ in range(10):
-    #     inner()
-    # gc.collect()
+    for _ in range(10):
+        inner()
+    gc.collect()
 
 
 def test_abc():
