@@ -109,6 +109,7 @@ class Dispatcher(ta.Generic[T]):
                 return dispatch_cache[cls_ref]
             except KeyError:
                 pass
+            del cls_ref
 
             try:
                 impl = impls_by_arg_cls[cls]
