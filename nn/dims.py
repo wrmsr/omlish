@@ -59,6 +59,12 @@ class Stride(Dims):
         check.arg(len(self) == len(idxs))
         return sum(d * i for d, i in zip(self, idxs))
 
+    def squeeze(self, shape: Shape) -> 'Stride':
+        check.arg(len(shape) == len(self))
+        if all(sh != 1 for sh in shape):
+            return self
+        return Stride(st if sh != 1 else 0 for sh, st in zip(shape, self))
+
 
 @dc.dataclass(frozen=True)
 class ShapeStride:

@@ -22,6 +22,10 @@ class View(dc.Data, lang.Final):
     offset: int = 0
     mask: ta.Any = None  # FIXME: ta.Optional[ta.Tuple[ta.Tuple[int, int], ...]]
 
+    @classmethod
+    def new(cls, shape: Shape, stride: Stride, **kwargs: ta.Any) -> 'View':
+        return cls(shape, stride.squeeze(shape), **kwargs)
+
     @cached.property
     def contiguous(self) -> bool:
         return self.offset == 0 and is_contiguous(self.shape, self.stride) and self.mask is None
@@ -109,11 +113,11 @@ class ShapeTracker(lang.Final):
             (((0, 0) if m != (0, 1) else (0, ns)) if s != ns else m)
             for m, s, ns in zip(self._views[-1].mask, self.shape, new_shape)
         ) if self._views[-1].mask else None
-        self._views[-1] = View(
+        self._views[-1] = View.new(
             new_shape,
             self._views[-1].stride,
-            self._views[-1].offset,
-            mask,
+            offset=self._views[-1].offset,
+            mask=mask,
         )
 
     def permute(self, axis: ta.Sequence[int]) -> None:
@@ -125,11 +129,11 @@ class ShapeTracker(lang.Final):
             len(set(axis)) == len(axis) and len(axis) == len(self.shape),
             f"can't permute {self.shape} with {axis}",
         )
-        self._views[-1] = View(
+        self._views[-1] = View.new(
             Shape(self.shape[a] for a in axis),
             Stride(self._views[-1].stride[a] for a in axis),
-            self._views[-1].offset,
-            tuple(self._views[-1].mask[a] for a in axis) if self._views[-1].mask is not None else None,
+            offset=self._views[-1].offset,
+            mask=tuple(self._views[-1].mask[a] for a in axis) if self._views[-1].mask is not None else None,
         )
 
     def reshape(self, new_shape: ta.Sequence[int]) -> None:
@@ -157,11 +161,11 @@ class ShapeTracker(lang.Final):
                     old_mask = [y for x, y in zip(self.shape, self._views[-1].mask) if x != 1]
                     new_mask = tuple((0, 1) if x == 1 else old_mask.pop(0) for x in new_shape)
 
-            self._views[-1] = View(
+            self._views[-1] = View.new(
                 Shape(new_shape),
                 Stride(new_stride),
-                self._views[-1].offset,
-                new_mask,
+                offset=self._views[-1].offset,
+                mask=new_mask,
             )
 
             return
