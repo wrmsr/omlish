@@ -9,7 +9,6 @@ import typing as ta
 import weakref
 
 from .. import check
-from .. import lang
 from .dispatch import Dispatcher
 from .dispatch import get_impl_func_cls_set
 
@@ -50,8 +49,6 @@ class Method:
         self._unwrapped_func = unwrapped_func
         self._is_abstractmethod = getattr(func, '__isabstractmethod__', False)  # noqa
 
-        self._accessor_map: ta.MutableMapping[type, ta.Any] = weakref.WeakKeyDictionary()
-
     def update_wrapper(self, wrapper: T) -> T:
         for attr in functools.WRAPPER_ASSIGNMENTS:
             try:
@@ -72,8 +69,8 @@ class Method:
         check.callable(impl)
         if impl not in self._impls:
             self._impls.add(impl)  # type: ignore
-            for acc_cls in self._accessor_map.values():
-                acc_cls._invalidate()  # noqa
+            # for acc_cls in self._accessor_map.values():
+            #     acc_cls._invalidate()  # noqa
 
         return impl
 
@@ -94,7 +91,7 @@ class Method:
 
         return disp
 
-    def _build_dispatch_func(self, disp: Dispatcher[str]) -> ta.Callable:
+    def build_dispatch_func(self, disp: Dispatcher[str]) -> ta.Callable:
         dispatch = disp.dispatch
         type_ = type
         getattr_ = getattr
@@ -108,76 +105,6 @@ class Method:
         self.update_wrapper(__call__)
         return __call__
 
-    class _Accessor:
-        pass
-
-    def _get_accessor(self, owner_cls: type) -> ta.Any:
-        try:
-            return self._accessor_map[owner_cls]
-        except KeyError:
-            pass
-
-        main_func: ta.Optional[ta.Callable] = None
-        funcs_by_instance_cls: ta.MutableMapping[type, ta.Callable] = weakref.WeakKeyDictionary()
-
-        def build_func(instance_cls: type) -> ta.Callable:
-            att_disp = self.build_attr_dispatcher(owner_cls, instance_cls)
-            return self._build_dispatch_func(att_disp)
-
-        def invalidate(accessor):
-            nonlocal main_func
-            main_func = None
-            funcs_by_instance_cls.clear()
-
-        type_ = type
-
-        def __get__(accessor, instance, owner=None):
-            if instance is None:
-                return self.__get__(instance, owner)
-
-            instance_cls = type_(instance)
-            if owner is None:
-                if instance is None:
-                    raise TypeError
-                owner = instance_cls
-
-            if owner is not owner_cls:
-                return self.__get__(instance, owner)
-
-            if instance_cls is owner_cls:
-                nonlocal main_func
-                if main_func is None:
-                    main_func = build_func(owner_cls)
-                return main_func.__get__(instance, owner)  # noqa
-
-            try:
-                func = funcs_by_instance_cls[instance_cls]
-            except KeyError:
-                func = funcs_by_instance_cls[instance_cls] = build_func(instance_cls)
-            return func.__get__(instance, owner)  # noqa
-
-        def __call__(accessor, *args, **kwargs):
-            raise TypeError  # FIXME: ??
-
-        cls_suffix = f'<{owner_cls.__qualname__}>'
-        accessor_cls = lang.new_type(
-            type(self).__name__ + cls_suffix,
-            (Method._Accessor,),
-            {
-                '__qualname__': type(self).__qualname__ + cls_suffix,
-                '__get__': __get__,
-                '__call__': __call__,
-                '_invalidate': invalidate,
-                '_owner': owner_cls,
-            },
-        )
-        self.update_wrapper(accessor_cls)
-
-        accessor = accessor_cls()
-        accessor._method = self
-        self._accessor_map[owner_cls] = accessor  # FIXME: lol it hits Method.__get__ when in cls dct
-        return accessor
-
     def __get__(self, instance, owner=None):
         if instance is None:
             # FIXME: classmethod/staticmethod
@@ -186,8 +113,8 @@ class Method:
         if owner is None:
             owner = type(instance)
 
-        owner_acc = self._get_accessor(owner)
-        return owner_acc.__get__(instance, owner)
+        att_disp = self.build_attr_dispatcher(owner, type(instance))
+        return self.build_dispatch_func(att_disp).__get__(instance, owner)
 
 
 def method(func):
