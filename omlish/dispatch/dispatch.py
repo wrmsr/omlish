@@ -74,7 +74,7 @@ def find_impl(cls: type, registry: ta.Mapping[type, T]) -> ta.Optional[T]:
 ##
 
 
-class WeakKeyDictionary(collections.abc.MutableMapping):
+class WeakKeyDictionary:
     """ Mapping class that references keys weakly.
 
     Entries in the dictionary will be discarded when there is no
@@ -266,17 +266,19 @@ class Dispatcher(ta.Generic[T]):
         self._impls_by_arg_cls = impls_by_arg_cls
 
         dispatch_cache: ta.MutableMapping[type, ta.Optional[T]] = WeakKeyDictionary()
-        self._dispatch_cache = dispatch_cache
+        self._get_dispatch_cache = lambda: dispatch_cache
 
         cache_token: ta.Any = None
+        self._get_cache_token = lambda: cache_token
 
         def dispatch(cls: type) -> ta.Optional[T]:
             nonlocal cache_token
+            nonlocal dispatch_cache
 
             if cache_token is not None:
                 current_token = abc.get_cache_token()
                 if cache_token != current_token:
-                    dispatch_cache.clear()
+                    dispatch_cache = WeakKeyDictionary()
                     cache_token = current_token
 
             try:
@@ -296,6 +298,7 @@ class Dispatcher(ta.Generic[T]):
 
         def register(impl: T, cls_col: ta.Iterable[type]) -> T:
             nonlocal cache_token
+            nonlocal dispatch_cache
 
             for cls in cls_col:
                 impls_by_arg_cls[cls] = impl  # type: ignore
@@ -303,10 +306,13 @@ class Dispatcher(ta.Generic[T]):
                 if cache_token is None and hasattr(cls, '__abstractmethods__'):
                     cache_token = abc.get_cache_token()
 
-            self._dispatch_cache.clear()
+            dispatch_cache = WeakKeyDictionary()
             return impl
 
         self.register = register
+
+    _get_cache_token: ta.Callable[[], int]
+    _get_dispatch_cache: ta.Callable[[], ta.Any]
 
     dispatch: ta.Callable[[type], ta.Optional[T]]
 
