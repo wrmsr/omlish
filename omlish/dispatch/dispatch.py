@@ -104,8 +104,9 @@ class Dispatcher(ta.Generic[T]):
                 dispatch_cache.clear()
                 cache_token = current_token
 
+            cls_ref = weakref_ref_(cls)
             try:
-                return dispatch_cache[weakref_ref_(cls)]
+                return dispatch_cache[cls_ref]
             except KeyError:
                 pass
 
