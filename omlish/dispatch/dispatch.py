@@ -1,3 +1,7 @@
+"""
+TODO:
+ - inline WeakKeyDictionary
+"""
 import abc
 import typing as ta
 import weakref

@@ -184,24 +184,6 @@ class Method:
         if owner is None:
             owner = type(instance)
 
-        mro_dct: ta.Dict[str, ta.Any] = {}
-        for cur_cls in owner.__mro__[-2::-1]:
-            # FIXME: dirty atts, dont rescan
-            mro_dct.update(cur_cls.__dict__)
-            cur_acc = None
-            for nam, att in mro_dct.items():
-                if not (
-                    att is self or (
-                        isinstance(att, Method._Accessor) and
-                        att._method is self and  # noqa
-                        att._owner is not cur_cls  # noqa
-                    )
-                ):
-                    continue
-                if cur_acc is None:
-                    cur_acc = self._get_accessor(cur_cls)
-                setattr(cur_cls, nam, cur_acc)
-
         owner_acc = self._get_accessor(owner)
         return owner_acc.__get__(instance, owner)
 
