@@ -11,14 +11,16 @@ def function(func):
     disp.register(func, [object])
 
     func_name = getattr(func, '__name__', 'singledispatch function')
+    disp_dispatch = disp.dispatch
+    type_ = type
 
     @functools.wraps(func)
     def wrapper(*args, **kw):
         if not args:
             raise TypeError(f'{func_name} requires at least 1 positional argument')
-        if (impl := disp.dispatch(type(args[0]))) is not None:
+        if (impl := disp_dispatch(type_(args[0]))) is not None:
             return impl(*args, **kw)
-        raise RuntimeError(f'No dispatch: {type(args[0])}')
+        raise RuntimeError(f'No dispatch: {type_(args[0])}')
 
     def register(impl, cls=None):
         check.callable(impl)
