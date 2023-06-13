@@ -3,7 +3,6 @@ TODO:
  - inline WeakKeyDictionary
 """
 import abc
-import collections.abc
 import typing as ta
 import weakref
 
@@ -77,6 +76,7 @@ def find_impl(cls: type, registry: ta.Mapping[type, T]) -> ta.Optional[T]:
 class _WeakKeyDictionary:
     def __init__(self):
         self._data = {}
+
         def remove(k, selfref=weakref.ref(self)):
             self = selfref()
             if self is not None:
@@ -84,39 +84,14 @@ class _WeakKeyDictionary:
                     del self._data[k]
                 except KeyError:
                     pass
+
         self._remove = remove
-        # A list of dead weakrefs (keys to be removed)
-        self._pending_removals = []
-        self._dirty_len = False
-
-    def _commit_removals(self):
-        pop = self._pending_removals.pop
-        d = self._data
-        while True:
-            try:
-                key = pop()
-            except IndexError:
-                return
-
-            try:
-                del d[key]
-            except KeyError:
-                pass
-
-    def _scrub_removals(self):
-        d = self._data
-        self._pending_removals = [k for k in self._pending_removals if k in d]
-        self._dirty_len = False
 
     def __getitem__(self, key):
         return self._data[weakref.ref(key)]
 
     def __len__(self):
-        if self._dirty_len and self._pending_removals:
-            # self._pending_removals may still contain keys which were
-            # explicitly removed, we have to scrub them (see issue #21173).
-            self._scrub_removals()
-        return len(self._data) - len(self._pending_removals)
+        return len(self._data)
 
     def __setitem__(self, key, value):
         self._data[weakref.ref(key, self._remove)] = value
