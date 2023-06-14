@@ -48,6 +48,7 @@ class Method:
             unwrapped_func = func
         self._unwrapped_func = unwrapped_func
         self._is_abstractmethod = getattr(func, '__isabstractmethod__', False)  # noqa
+        self.update_wrapper(self)
 
         self._dispatch_func_cache: ta.Dict[ta.Any, ta.Callable] = {}
 
@@ -85,7 +86,7 @@ class Method:
 
         return impl
 
-    def build_attr_dispatcher(self, owner_cls: type, instance_cls: type) -> Dispatcher[str]:
+    def build_attr_dispatcher(self, instance_cls: type, owner_cls: ta.Optional[type] = None) -> Dispatcher[str]:
         disp: Dispatcher[str] = Dispatcher()
 
         mro_dct = build_mro_dct(instance_cls, owner_cls)
@@ -116,32 +117,38 @@ class Method:
         self.update_wrapper(__call__)
         return __call__
 
+    def get_dispatch_func(self, instance_cls: type) -> ta.Callable:
+        cls_ref = weakref.ref(instance_cls)
+        try:
+            return self._dispatch_func_cache[cls_ref]
+        except KeyError:
+            pass
+        del cls_ref
+
+        att_disp = self.build_attr_dispatcher(instance_cls)
+        func = self.build_dispatch_func(att_disp)
+        self._dispatch_func_cache[weakref.ref(instance_cls, self._dispatch_func_cache_remove)] = func
+        return func
+
     def __get__(self, instance, owner=None):
         if instance is None:
             # FIXME: classmethod/staticmethod
             return self
 
         instance_cls = type(instance)
-        owner_cls = owner
-        if owner_cls is None:
-            owner_cls = instance_cls
-        elif owner_cls is not instance_cls:
-            # FIXME: super()?
-            raise TypeError
-
-        cls_ref = weakref.ref(instance_cls)
         try:
-            func = self._dispatch_func_cache[cls_ref]
+            func = self._dispatch_func_cache[weakref.ref(instance_cls)]
         except KeyError:
-            pass
-        else:
-            return func
-        del cls_ref
+            func = self.get_dispatch_func(instance_cls)
+        return func.__get__(instance, owner)  # noqa
 
-        att_disp = self.build_attr_dispatcher(owner_cls, instance_cls)
-        func = self.build_dispatch_func(att_disp).__get__(instance, owner)  # noqa
-        self._dispatch_func_cache[weakref.ref(instance_cls, self._dispatch_func_cache_remove)] = func
-        return func
+    def __call__(self, instance, *args, **kwargs):
+        instance_cls = type(instance)
+        try:
+            func = self._dispatch_func_cache[weakref.ref(instance_cls)]
+        except KeyError:
+            func = self.get_dispatch_func(instance_cls)
+        return func.__get__(instance)(*args, **kwargs)  # noqa
 
 
 def method(func):

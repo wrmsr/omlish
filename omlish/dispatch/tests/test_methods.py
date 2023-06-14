@@ -23,7 +23,7 @@ def test_build_mro_dct():
         z = 'D.z'
 
     print()
-    for oc, ic in [
+    for ic, oc in [
         (D, D),
         (D, C),
         (D, B),
@@ -74,6 +74,9 @@ def test_method_mro():
         assert obj.f(None) == 'A:object'
         assert obj.f(1) == 'A:object'
         assert obj.f('') == 'A:str'
+        assert A.f(obj, None) == 'A:object'
+        assert A.f(obj, 1) == 'A:object'
+        assert A.f(obj, '') == 'A:str'
 
     class B(A):
         @A.f.register
@@ -89,11 +92,17 @@ def test_method_mro():
         assert obj.f(None) == 'A:object'
         assert obj.f(1) == 'A:object'
         assert obj.f('') == 'A:str'
+        assert A.f(obj, None) == 'A:object'
+        assert A.f(obj, 1) == 'A:object'
+        assert A.f(obj, '') == 'A:str'
 
         obj = B()
         assert obj.f(None) == 'A:object'
         assert obj.f(1) == 'B:int'
         assert obj.f('') == 'B:str'
+        assert A.f(obj, None) == 'A:object'
+        assert A.f(obj, 1) == 'B:int'
+        assert A.f(obj, '') == 'B:str'
 
     class C(B):
         pass
@@ -141,20 +150,20 @@ def test_method_no_set_name():
     assert A().f(None) == 'A:object'  # type: ignore
 
 
-# def test_accessor_wrapper_atts():
-#     class A:
-#         @methods.method
-#         def f(self, x: object):
-#             """foo"""
-#             return 'A:object'
-#
-#     class B(A):
-#         @A.f.register
-#         def f_str(self, x: str):
-#             return 'B:str'
-#
-#     assert A().f('') == 'A:object'
-#     assert B().f('') == 'B:str'
-#
-#     assert A.f.__doc__ == 'foo'
-#     assert B.f.__doc__ == 'foo'
+def test_accessor_wrapper_atts():
+    class A:
+        @methods.method
+        def f(self, x: object):
+            """foo"""
+            return 'A:object'
+
+    class B(A):
+        @A.f.register
+        def f_str(self, x: str):
+            return 'B:str'
+
+    assert A().f('') == 'A:object'
+    assert B().f('') == 'B:str'
+
+    assert A.f.__doc__ == 'foo'
+    assert B.f.__doc__ == 'foo'
