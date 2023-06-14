@@ -69,6 +69,8 @@ def test_method_mro():
         def f_str(self, x: str):
             return 'A:str'
 
+    repr(A.f)  # noqa
+
     for _ in range(2):
         obj = A()
         assert obj.f(None) == 'A:object'

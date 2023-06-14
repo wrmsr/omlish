@@ -1,7 +1,7 @@
 """
 TODO:
+ - .super(instance[_cls], owner)
  - ALT: A.f(super(), ... ? :/
- - *** __call__
  - classmethod/staticmethod
 """
 import functools
@@ -61,6 +61,9 @@ class Method:
                     pass
 
         self._dispatch_func_cache_remove = dispatch_func_cache_remove
+
+    def __repr__(self) -> str:
+        return f'<{type(self).__module__}.{type(self).__qualname__}:{self._func} at 0x{id(self):x}>'
 
     def update_wrapper(self, wrapper: T) -> T:
         for attr in functools.WRAPPER_ASSIGNMENTS:
