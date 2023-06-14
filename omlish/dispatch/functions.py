@@ -7,7 +7,7 @@ from .dispatch import get_impl_func_cls_set
 
 
 def function(func):
-    disp = Dispatcher()
+    disp = Dispatcher()  # type: ignore
     disp.register(func, [object])
 
     func_name = getattr(func, '__name__', 'singledispatch function')

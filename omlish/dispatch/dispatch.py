@@ -63,6 +63,8 @@ def find_impl(cls: type, registry: ta.Mapping[type, T]) -> ta.Optional[T]:
         if t in registry:
             match = t
 
+    if match is None:
+        return None
     return registry.get(match)
 
 
@@ -76,7 +78,7 @@ class Dispatcher(ta.Generic[T]):
         impls_by_arg_cls: ta.Dict[type, T] = {}
         self._impls_by_arg_cls = impls_by_arg_cls
 
-        dispatch_cache: ta.Any = {}
+        dispatch_cache: ta.Dict[ta.Any, T] = {}
         self._get_dispatch_cache = lambda: dispatch_cache
 
         def cache_remove(k, self_ref=weakref.ref(self)):
@@ -109,14 +111,14 @@ class Dispatcher(ta.Generic[T]):
             try:
                 impl = impls_by_arg_cls[cls]
             except KeyError:
-                impl = find_impl(cls, impls_by_arg_cls)
+                impl = find_impl(cls, impls_by_arg_cls)  # type: ignore
 
             dispatch_cache[weakref_ref_(cls, cache_remove)] = impl
             return impl
 
         self.dispatch = dispatch
 
-        def register(impl: T, cls_col: ta.Iterable[type]) -> T:
+        def register(impl: U, cls_col: ta.Iterable[type]) -> U:
             nonlocal cache_token
 
             for cls in cls_col:

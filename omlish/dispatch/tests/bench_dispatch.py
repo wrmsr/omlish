@@ -4,7 +4,7 @@ from omlish.dispatch import Dispatcher
 
 
 def _main():
-    disp = Dispatcher()
+    disp = Dispatcher()  # type: ignore
     disp.register('object', [object])
     disp.register('str', [str])
     disp_dispatch = disp.dispatch
