@@ -35,7 +35,7 @@ def partition(items: ta.Iterable[T], pred: ta.Callable[[T], bool]) -> ta.Tuple[t
     return t, f
 
 
-def unique(it: ta.Iterable[T]) -> ta.Sequence[T]:
+def unique(it: ta.Iterable[T]) -> ta.List[T]:
     if isinstance(it, str):
         raise TypeError(it)
     ret: ta.List[T] = []

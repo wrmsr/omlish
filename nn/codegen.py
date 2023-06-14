@@ -1,6 +1,7 @@
 import abc
 import typing as ta
 
+from omlish import check
 from omlish import collections as col
 from omlish import lang
 
@@ -50,12 +51,12 @@ class LinearCodegenOp(CodegenOp):
         super().__init__()
 
         # NOTE: if there's a RESHAPE, we skip it. the output shape is set from the reduce op or a latebuf
-        self._op = op.srcs[0] if op.op == MovementOp.RESHAPE else op
+        self._op = check.isinstance(op.srcs[0], LazyOp) if op.op == MovementOp.RESHAPE else op
 
         # get the output buffers
         self._bufs = [output, *col.unique(op.buffers)]
 
-        # FIXME: ...
+        # FIXME: ... lol... formalized keyifier plz - str is right though
         # bufs are needed because kernels like f(x) = x + x and f(x, y) = x + y have the same str(ast), but are
         # different kernels. mapping the buffers to integers is required because a-b != b-a (and how would you tell a
         # and b apart?)
@@ -80,11 +81,16 @@ class LinearCodegenOp(CodegenOp):
 
 class LinearCodegen(Codegen):
     def op(self, op: LazyOp, output: LazyBuffer) -> CodegenOp:
-        raise NotImplementedError
+        return LinearCodegenOp(op, output)
 
 
 ##
 
 
-class CstyleCodegen(LinearCodegen):
+class CStyleCodegenOp(LinearCodegenOp):
     pass
+
+
+class CstyleCodegen(LinearCodegen):
+    def op(self, op: LazyOp, output: LazyBuffer) -> CodegenOp:
+        return CStyleCodegenOp(op, output)
