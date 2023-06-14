@@ -107,12 +107,12 @@ class Tensor(lang.Final):
                 raise NotImplementedError
             return src
 
-        if isinstance(src, ta.Iterable):
+        if isinstance(src, np.ndarray):
+            src = LazyBuffer.from_cpu(src)
+        elif isinstance(src, ta.Iterable):
             src = np.array(src, dtype=(dtype or DEFAULT_DTYPE).np)
 
-        if isinstance(src, np.ndarray):
-            data = LazyBuffer.from_cpu(src)
-        elif isinstance(src, LazyBuffer):
+        if isinstance(src, LazyBuffer):
             check.arg(dtype is None or dtype == src.dtype)
             data = src
             if data.device != device:
