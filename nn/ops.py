@@ -16,6 +16,7 @@ class UnaryOp(Op, enum.Enum):
     EXP2 = enum.auto()
     LOG2 = enum.auto()
     CAST = enum.auto()
+    SIN = enum.auto()
 
 
 class BinaryOp(Op, enum.Enum):
@@ -26,6 +27,8 @@ class BinaryOp(Op, enum.Enum):
     POW = enum.auto()
     CMP_EQ = enum.auto()
     MAX = enum.auto()
+    MOD = enum.auto()
+    CMP_LT = enum.auto()
 
 
 class ReduceOp(Op, enum.Enum):
