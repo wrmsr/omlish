@@ -255,7 +255,7 @@ _OP_CONVERTERS: ta.Mapping[_ops.Op, ta.Callable[[LazyOp], Op]] = {
     ]},
 
     _ops.MovementOp.RESHAPE: lambda op: Reshape(convert_from_lazy(op.srcs[0]), check.isinstance(op.arg, Shape)),
-    _ops.MovementOp.PERMUTE: lambda op: Reshape(convert_from_lazy(op.srcs[0]), col.seq_of(check.of_isinstance(int))(op.arg)),  # noqa
+    _ops.MovementOp.PERMUTE: lambda op: Permute(convert_from_lazy(op.srcs[0]), col.seq_of(check.of_isinstance(int))(op.arg)),  # noqa
     _ops.MovementOp.EXPAND: lambda op: Expand(convert_from_lazy(op.srcs[0]), check.isinstance(op.arg, Shape)),
 }
 
