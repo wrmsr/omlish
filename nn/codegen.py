@@ -3,6 +3,7 @@ import typing as ta
 
 from omlish import check
 from omlish import collections as col
+from omlish import dispatch
 from omlish import lang
 
 from .lazy import LazyBuffer
@@ -46,6 +47,15 @@ class Codegen(lang.Abstract):
 ##
 
 
+from . import ops2  # noqa
+
+
+class LinearAnalyzer:
+    @dispatch.method
+    def analyze(self, op: ops2.Op) -> None:
+        raise TypeError(op)
+
+
 class LinearCodegenOp(CodegenOp):
     def __init__(self, op: LazyOp, output: LazyBuffer) -> None:
         super().__init__()
@@ -76,7 +86,7 @@ class LinearCodegenOp(CodegenOp):
         return self._bufs
 
     def build(self) -> Program:
-        raise NotImplementedError
+        LinearAnalyzer().analyze(ops2.convert_from_lazy_op(self._op))
 
 
 class LinearCodegen(Codegen):
