@@ -61,6 +61,9 @@ class Interpreter(Evaluator):
         # ):
         #     ast = LazyOp(FusedOps.MULACC, ast.src[0].src, ast.arg)
 
+        from .ops2 import convert_from_lazy
+        convert_from_lazy(op)
+
         created_context = context is None
         if context is None:
             context = {}

@@ -37,6 +37,11 @@ class Dims(tuple):
 
 
 class Shape(Dims):
+    def __eq__(self, other):
+        if not isinstance(other, Shape):
+            raise TypeError(other)
+        return super().__eq__(other)
+
     @property
     def dim(self) -> int:
         return math.prod(self)
