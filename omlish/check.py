@@ -167,14 +167,11 @@ def not_none(v: ta.Optional[T], msg: Message = None) -> T:
 ##
 
 
-def arg(v: bool, msg: Message = None) -> None:
-    if not v:
-        _raise(RuntimeError, 'Argument condition not met', msg)
-
-
-def state(v: bool, msg: Message = None) -> None:
-    if not v:
-        _raise(RuntimeError, 'State condition not met', msg)
+def equal(v: T, *os: ta.Any, msg: Message = None) -> T:
+    for o in os:
+        if o != v:
+            _raise(ValueError, 'Must be equal', msg, v, os)
+    return v
 
 
 def callable(v: T, msg: Message = None) -> T:
@@ -187,3 +184,16 @@ def non_empty_str(v: ta.Optional[str], msg: Message = None) -> str:
     if not _isinstance(v, str) or not v:
         _raise(ValueError, 'Must be non-empty str', msg, v)
     return v
+
+
+##
+
+
+def arg(v: bool, msg: Message = None) -> None:
+    if not v:
+        _raise(RuntimeError, 'Argument condition not met', msg)
+
+
+def state(v: bool, msg: Message = None) -> None:
+    if not v:
+        _raise(RuntimeError, 'State condition not met', msg)

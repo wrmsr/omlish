@@ -89,6 +89,8 @@ class LazyBuffer(Lazy):
         self._st = check.isinstance(st, ShapeTracker)
         self._dtype = check.isinstance(dtype, Dtype)
 
+        # self._src = check.isinstance(src, (LazyOp, RawBuffer))
+
         self._op: ta.Optional[LazyOp] = None
         self._realized: ta.Optional[RawBuffer] = None
         if isinstance(src, LazyOp):

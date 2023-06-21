@@ -17,6 +17,7 @@ class UnaryOp(Op, enum.Enum):
     LOG2 = enum.auto()
     CAST = enum.auto()
     SIN = enum.auto()
+    RECIP = enum.auto()
 
 
 class BinaryOp(Op, enum.Enum):

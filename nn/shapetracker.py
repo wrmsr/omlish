@@ -39,33 +39,6 @@ class View(dc.Data, lang.Final):
         return ShapeStride.calc(self.shape, self.stride)
 
 
-# def merge_views(vm2: View, vm1: View) -> ta.Optional[View]:
-#     if vm2.mask:
-#         return None  # this isn't supported yet
-#     new_strides, new_offset = [], vm2.expr_node(Variable.num(vm1.offset))
-#     check,isinstance(new_offset, NumNode)
-#     for s, st in zip(vm1.shape, vm1.strides):
-#         this_dim = View(vm2.shape, vm2.strides).expr_node(Variable('idx', 0, s - 1) * st)
-#         if s == 1:
-#             new_strides.append(0)  # all shape 1 can have stride 0
-#         elif isinstance(this_dim, NumNode) and this_dim.b == 0:
-#             new_strides.append(0)
-#         elif isinstance(this_dim, Variable):
-#             new_strides.append(1)
-#         elif isinstance(this_dim, MulNode) and isinstance(this_dim.a, Variable):
-#             new_strides.append(this_dim.b)
-#         else:
-#             break
-#     if len(new_strides) == len(vm1.strides):
-#         return View(
-#             vm1.shape,
-#             tuple(new_strides),
-#             new_offset.b,
-#             vm1.mask,
-#         )
-#     return None
-
-
 class ShapeTracker(lang.Final):
     def __init__(self, shape: ta.Union[Shape, 'ShapeTracker']) -> None:
         super().__init__()

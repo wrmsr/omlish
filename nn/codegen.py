@@ -3,9 +3,12 @@ import typing as ta
 
 from omlish import check
 from omlish import collections as col
+from omlish import dataclasses as dc
 from omlish import dispatch
 from omlish import lang
 
+from .dims import Shape
+from .dtypes import Dtype
 from .lazy import LazyBuffer
 from .lazy import LazyOp
 from .ops import MovementOp
@@ -50,10 +53,60 @@ class Codegen(lang.Abstract):
 from . import ops2  # noqa
 
 
+@dc.dataclass(frozen=True)
+class LinearAnalysis:
+    obj: ta.Any
+
+    shape: Shape = dc.field(coerce=check.of_isinstance(Shape))
+    dtype: Dtype = dc.field(coerce=check.of_isinstance(Dtype))
+    flops: int = dc.field(coerce=check.of_isinstance(int))
+
+
 class LinearAnalyzer:
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._dct: ta.MutableMapping[ta.Any, LinearAnalysis] = col.IdentityKeyDict()
+
+    def analyze(self, x: ta.Any) -> LinearAnalysis:
+        try:
+            return self._dct[x]
+        except KeyError:
+            ret = self._dct[x] = self._analyze(x)
+            return ret
+
     @dispatch.method
-    def analyze(self, op: ops2.Op) -> None:
+    def _analyze(self, x: ta.Any) -> LinearAnalysis:
+        raise TypeError(x)
+
+    @_analyze.register
+    def _analyze_buffer(self, buf: ops2.Buffer) -> LinearAnalysis:
+        lb = check.isinstance(buf.obj, LazyBuffer)
+        return LinearAnalysis(
+            buf,
+            lb.shape,
+            lb.dtype,
+            0,
+        )
+
+    @_analyze.register
+    def _analyze_unary_op(self, op: ops2.UnaryOp) -> LinearAnalysis:
+        raise NotImplementedError
+
+    @_analyze.register
+    def _analyze_cast(self, op: ops2.Cast) -> LinearAnalysis:
         raise TypeError(op)
+
+    @_analyze.register
+    def _analyze_binary_op(self, op: ops2.BinaryOp) -> LinearAnalysis:
+        xa = self._analyze(op.x)
+        ya = self._analyze(op.y)
+        return LinearAnalysis(
+            op,
+            xa.shape,
+            check.equal(xa.dtype, ya.dtype),
+            xa.flops + ya.flops + xa.shape.prod,
+        )
 
 
 class LinearCodegenOp(CodegenOp):
@@ -86,7 +139,8 @@ class LinearCodegenOp(CodegenOp):
         return self._bufs
 
     def build(self) -> Program:
-        LinearAnalyzer().analyze(ops2.convert_from_lazy_op(self._op))
+        a = LinearAnalyzer().analyze(ops2.convert_from_lazy_op(self._op))
+        raise NotImplementedError
 
 
 class LinearCodegen(Codegen):

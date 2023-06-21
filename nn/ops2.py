@@ -1,3 +1,7 @@
+"""
+TODO:
+ - identity eq? identity cols?
+"""
 import typing as ta
 
 from omlish import check
@@ -53,6 +57,11 @@ class Cast(UnaryOp):
 
 @dc.dataclass(frozen=True)
 class Sin(UnaryOp):
+    pass
+
+
+@dc.dataclass(frozen=True)
+class Recip(UnaryOp):
     pass
 
 
@@ -234,6 +243,7 @@ _OP_CONVERTERS: ta.Mapping[_ops.Op, ta.Callable[[LazyOp], Op]] = {
         (_ops.UnaryOp.EXP2, Exp2),
         (_ops.UnaryOp.LOG2, Log2),
         (_ops.UnaryOp.SIN, Sin),
+        (_ops.UnaryOp.RECIP, Recip),
     ]},
     _ops.UnaryOp.CAST: lambda op: Cast(convert_from_lazy(op.srcs[0]), check.isinstance(op.arg, Dtype)),
 
