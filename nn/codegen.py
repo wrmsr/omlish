@@ -139,7 +139,7 @@ class LinearCodegenOp(CodegenOp):
         return self._bufs
 
     def build(self) -> Program:
-        a = LinearAnalyzer().analyze(ops2.convert_from_lazy_op(self._op))
+        a = LinearAnalyzer().analyze(ops2.convert_from_lazy_op(self._op))  # noqa
         raise NotImplementedError
 
 
