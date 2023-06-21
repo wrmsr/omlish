@@ -1,4 +1,5 @@
 import abc
+import io
 import typing as ta
 
 from omlish import check
@@ -6,6 +7,7 @@ from omlish import collections as col
 from omlish import dataclasses as dc
 from omlish import dispatch
 from omlish import lang
+from omlish.collections import coerce
 
 from .dims import Shape
 from .dtypes import Dtype
@@ -109,6 +111,28 @@ class LinearAnalyzer:
         )
 
 
+class KeyRenderer:
+    def __init__(self, writer: ta.Callable[[str], ta.Any], bufs: ta.Sequence[LazyBuffer]) -> None:
+        super().__init__()
+
+        self._writer = check.callable(writer)
+        self._bufs = coerce.seq_of((LazyBuffer,))(bufs)
+        self._buf_idx_map: ta.Mapping[LazyBuffer, int] = col.IdentityKeyDict((buf, i) for i, buf in enumerate(self._bufs))  # noqa
+
+    @dispatch.method
+    def render(self, obj: ta.Any) -> None:
+        raise TypeError(obj)
+
+    def _render_buffer(self, buf: ops2.Buffer) -> None:
+        self._writer(f'buf@{self._buf_idx_map[buf.obj]}')
+
+
+def render_key(op: LazyOp, bufs: ta.Sequence[LazyBuffer]) -> str:
+    buf = io.StringIO()
+    KeyRenderer(buf.write, bufs).render(ops2.convert_from_lazy_op(op))
+    return buf.getvalue()
+
+
 class LinearCodegenOp(CodegenOp):
     def __init__(self, op: LazyOp, output: LazyBuffer) -> None:
         super().__init__()
@@ -128,7 +152,7 @@ class LinearCodegenOp(CodegenOp):
         #     f'op={str(map_buffers({x: i for i, x in enumerate(self._bufs)}, op))} '  # FIXME: oof...
         #     f'bufs={self._bufs}'
         # )
-        self._key = '???'
+        self._key = render_key(op, self._bufs)
 
     @property
     def key(self) -> str:
