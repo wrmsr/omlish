@@ -116,15 +116,30 @@ class KeyRenderer:
         super().__init__()
 
         self._writer = check.callable(writer)
-        self._bufs = coerce.seq_of((LazyBuffer,))(bufs)
+        self._bufs = coerce.seq_of(check.of_isinstance(LazyBuffer))(bufs)
         self._buf_idx_map: ta.Mapping[LazyBuffer, int] = col.IdentityKeyDict((buf, i) for i, buf in enumerate(self._bufs))  # noqa
 
     @dispatch.method
     def render(self, obj: ta.Any) -> None:
         raise TypeError(obj)
 
+    @render.register
     def _render_buffer(self, buf: ops2.Buffer) -> None:
-        self._writer(f'buf@{self._buf_idx_map[buf.obj]}')
+        self._writer(f'{type(buf).__name__}:{self._buf_idx_map[buf.obj]}')
+
+    @render.register
+    def _render_unary_op(self, op: ops2.UnaryOp) -> None:
+        self._writer(f'({type(op).__name__} ')
+        self.render(op.x)
+        self._writer(')')
+
+    @render.register
+    def _render_binary_op(self, op: ops2.BinaryOp) -> None:
+        self._writer(f'({type(op).__name__} ')
+        self.render(op.x)
+        self._writer(' ')
+        self.render(op.y)
+        self._writer(')')
 
 
 def render_key(op: LazyOp, bufs: ta.Sequence[LazyBuffer]) -> str:
