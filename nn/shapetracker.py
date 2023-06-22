@@ -119,14 +119,14 @@ class ShapeTracker(lang.Final):
 
     @property
     def contiguous(self) -> bool:
-        return len(self._views) == 1 and self._views[-1].contiguous
+        return len(self._views) == 1 and self.view.contiguous
 
     def copy(self) -> 'ShapeTracker':
         return ShapeTracker(self.shape, list(self._views))
 
     def simplify(self):
         if len(self._views) >= 2:
-            new_view = merge_views(self._views[-2], self._views[-1])
+            new_view = merge_views(self._views[-2], self.view)
             if new_view:
                 self._views = [*self._views[:-2], new_view]
                 self.simplify()
@@ -134,18 +134,18 @@ class ShapeTracker(lang.Final):
     def expand(self, new_shape: Shape) -> None:
         check.arg(all(
             isinstance(x, int) and (s == x or (s == 1 and st == 0))
-            for s, x, st in zip(self.shape, new_shape, self._views[-1].stride)
+            for s, x, st in zip(self.shape, new_shape, self.view.stride)
         ), f"can't expand {self.shape} into {new_shape}")
 
         # NOTE: can the mask ever be (0,0)?
         mask = tuple(
             (((0, 0) if m != (0, 1) else (0, ns)) if s != ns else m)
-            for m, s, ns in zip(self._views[-1].mask, self.shape, new_shape)
-        ) if self._views[-1].mask else None
+            for m, s, ns in zip(self.view.mask, self.shape, new_shape)
+        ) if self.view.mask else None
         self._views[-1] = View.new(
             new_shape,
-            self._views[-1].stride,
-            offset=self._views[-1].offset,
+            self.view.stride,
+            offset=self.view.offset,
             mask=mask,
         )
 
@@ -160,9 +160,9 @@ class ShapeTracker(lang.Final):
         )
         self._views[-1] = View.new(
             Shape(self.shape[a] for a in axis),
-            Stride(self._views[-1].stride[a] for a in axis),
-            offset=self._views[-1].offset,
-            mask=tuple(self._views[-1].mask[a] for a in axis) if self._views[-1].mask is not None else None,
+            Stride(self.view.stride[a] for a in axis),
+            offset=self.view.offset,
+            mask=tuple(self.view.mask[a] for a in axis) if self.view.mask is not None else None,
         )
 
     def reshape(self, new_shape: ta.Sequence[int]) -> None:
@@ -178,22 +178,22 @@ class ShapeTracker(lang.Final):
         # check if this is adding or removing 1s (only)
         # NOTE: this is optional, but removes most calls to (expensive!) merge_views (with mask, not optional)
         if tuple(x for x in self.shape if x != 1) == tuple(x for x in new_shape if x != 1):
-            old_stride = [y for x, y in zip(self.shape, self._views[-1].stride) if x != 1]
+            old_stride = [y for x, y in zip(self.shape, self.view.stride) if x != 1]
             new_stride = tuple(0 if x == 1 else old_stride.pop(0) for x in new_shape)
             new_mask = None
 
-            if self._views[-1].mask:
-                if any(y != (0, 1) for x, y in zip(self.shape, self._views[-1].mask) if x == 1):
+            if self.view.mask:
+                if any(y != (0, 1) for x, y in zip(self.shape, self.view.mask) if x == 1):
                     # mask it all out!
                     new_mask = tuple((0, 0) for _ in new_shape)
                 else:
-                    old_mask = [y for x, y in zip(self.shape, self._views[-1].mask) if x != 1]
+                    old_mask = [y for x, y in zip(self.shape, self.view.mask) if x != 1]
                     new_mask = tuple((0, 1) if x == 1 else old_mask.pop(0) for x in new_shape)
 
             self._views[-1] = View.new(
                 Shape(new_shape),
                 Stride(new_stride),
-                offset=self._views[-1].offset,
+                offset=self.view.offset,
                 mask=new_mask,
             )
 
@@ -235,7 +235,7 @@ class ShapeTracker(lang.Final):
     def expr_node(self, idx="idx"):
         if isinstance(idx,  str):
             idx = sym.Var(idx, 0, self.shape.prod - 1)
-        return self._expr_idx(self._views[-1].expr_node(idx), self._views[-1].expr_node_mask(idx))
+        return self._expr_idx(self.view.expr_node(idx), self.view.expr_node_mask(idx))
 
     # these are multiview strides, value is None if it's not a simple strided dimension
     # TODO: this can be shared code between simplify and merge_views
@@ -246,7 +246,7 @@ class ShapeTracker(lang.Final):
 
     def real_strides(self) -> ta.Tuple[ta.Optional[int], ...]:
         if len(self._views) == 1:
-            return self._views[-1].stride
+            return self.view.stride
         ret: ta.List[ta.Optional[int]] = []
         acc, real_offset = 1, self.real_offset()
         for s in reversed(self.shape):
