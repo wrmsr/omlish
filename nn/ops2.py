@@ -33,6 +33,10 @@ class Op(Source, lang.Abstract):
     def sources(self) -> ta.Sequence[Source]:
         raise NotImplementedError
 
+    @property
+    def args(self) -> ta.Sequence[ta.Any]:
+        return []
+
 
 #
 
@@ -64,6 +68,10 @@ class Log2(UnaryOp):
 @dc.dataclass(frozen=True)
 class Cast(UnaryOp):
     dtype: Dtype
+
+    @property
+    def args(self) -> ta.Sequence[ta.Any]:
+        return [self.dtype]
 
 
 @dc.dataclass(frozen=True)
@@ -140,11 +148,16 @@ class CmpLt(BinaryOp):
 @dc.dataclass(frozen=True)
 class ReduceOp(Op, lang.Abstract):
     x: Source
+
     new_shape: Shape
 
     @property
     def sources(self) -> ta.Sequence[Source]:
         return [self.x]
+
+    @property
+    def args(self) -> ta.Sequence[ta.Any]:
+        return [self.new_shape]
 
 
 @dc.dataclass(frozen=True)
@@ -173,30 +186,54 @@ class MovementOp(Op, lang.Abstract):
 class Reshape(MovementOp):
     new_shape: Shape
 
+    @property
+    def args(self) -> ta.Sequence[ta.Any]:
+        return [self.new_shape]
+
 
 @dc.dataclass(frozen=True)
 class Permute(MovementOp):
     axes: ta.Sequence[int]
+
+    @property
+    def args(self) -> ta.Sequence[ta.Any]:
+        return [self.axes]
 
 
 @dc.dataclass(frozen=True)
 class Expand(MovementOp):
     new_shape: Shape
 
+    @property
+    def args(self) -> ta.Sequence[ta.Any]:
+        return [self.new_shape]
+
 
 @dc.dataclass(frozen=True)
 class Pad(MovementOp):
     padding: ta.Sequence[ta.Tuple[int, int]]
+
+    @property
+    def args(self) -> ta.Sequence[ta.Any]:
+        return [self.padding]
 
 
 @dc.dataclass(frozen=True)
 class Shrink(MovementOp):
     bounds: ta.Sequence[ta.Tuple[int, int]]  # (l, r) per dim
 
+    @property
+    def args(self) -> ta.Sequence[ta.Any]:
+        return [self.bounds]
+
 
 @dc.dataclass(frozen=True)
 class Restride(MovementOp):  # MovementOps.STRIDE
     stride: Stride
+
+    @property
+    def args(self) -> ta.Sequence[ta.Any]:
+        return [self.stride]
 
 
 #
@@ -210,11 +247,16 @@ class FusedOp(Op, lang.Abstract):
 @dc.dataclass(frozen=True)
 class MulAcc(FusedOp):
     x: Source
+
     new_shape: Shape
 
     @property
     def sources(self) -> ta.Sequence[Source]:
         return [self.x]
+
+    @property
+    def args(self) -> ta.Sequence[ta.Any]:
+        return [self.new_shape]
 
 
 #
@@ -236,20 +278,36 @@ class Empty(LoadOp):
 class Rand(LoadOp):
     seed: int
 
+    @property
+    def args(self) -> ta.Sequence[ta.Any]:
+        return [self.seed]
+
 
 @dc.dataclass(frozen=True)
 class Const(LoadOp):
     c: ta.Any  # FIXME: float
+
+    @property
+    def args(self) -> ta.Sequence[ta.Any]:
+        return [self.c]
 
 
 @dc.dataclass(frozen=True)
 class From(LoadOp):
     buf: ta.Any  # FIXME: [LazyBuffer, weakref.Ref[LazyBuffer]]
 
+    @property
+    def args(self) -> ta.Sequence[ta.Any]:
+        return [self.buf]
+
 
 @dc.dataclass(frozen=True)
 class Contiguous(LoadOp):
     buf: ta.Any  # FIXME: [LazyBuffer, weakref.Ref[LazyBuffer]]
+
+    @property
+    def args(self) -> ta.Sequence[ta.Any]:
+        return [self.buf]
 
 
 # CUSTOM = enum.auto()

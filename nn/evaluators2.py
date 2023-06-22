@@ -3,7 +3,6 @@ import typing as ta
 
 from omlish import check
 from omlish import collections as col
-from omlish import dispatch
 from omlish import lang
 import numpy as np
 
@@ -71,6 +70,8 @@ class Interpreter(Evaluator, lang.Abstract, ta.Generic[T]):  # noqa
 ##
 
 
+import operator  # noqa
+
 from .raw import RawCpuBuffer  # noqa
 
 
@@ -82,10 +83,15 @@ class NumpyInterpreter(Interpreter[np.ndarray]):
     def _raw_to_obj(self, rb: RawBuffer) -> np.ndarray:
         return check.isinstance(rb, RawCpuBuffer).to_cpu()
 
-    @dispatch.method
-    def _eval(self, op: ops2.Op, *objs: np.ndarray) -> np.ndarray:
-        raise TypeError(op)
+    _fns_by_op_cls: ta.Final[ta.Mapping[type, ta.Callable[..., np.ndarray]]] = {
+        ops2.Exp2: np.exp2,
+        ops2.Log2: np.log2,
 
-    @_eval.register
-    def _eval_mul(self, op: ops2.Mul, x: np.ndarray, y: np.ndarray) -> np.ndarray:
-        return x * y
+        ops2.Add: operator.add,
+        ops2.Sub: operator.sub,
+        ops2.Mul: operator.mul,
+        ops2.Div: operator.truediv,
+    }
+
+    def _eval(self, op: ops2.Op, *objs: np.ndarray) -> np.ndarray:
+        return self._fns_by_op_cls[type(op)](*objs, *op.args)
