@@ -58,10 +58,6 @@ class LazyOp(Lazy):
             if isinstance(s, LazyOp):
                 yield from s.ops
 
-    def __post_init__(self):
-        if self.op == MovementOp.RESHAPE and not isinstance(self.arg, Shape):
-            breakpoint()
-
 
 def map_buffers(srcs: ta.Mapping[Lazy, Lazy], x: LazyOp) -> LazyOp:
     check.isinstance(x, LazyOp)
