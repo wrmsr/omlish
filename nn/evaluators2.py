@@ -81,7 +81,7 @@ class NumpyInterpreter(Interpreter[np.ndarray]):
         return RawCpuBuffer(obj)
 
     def _raw_to_obj(self, rb: RawBuffer) -> np.ndarray:
-        return check.isinstance(rb, RawCpuBuffer).to_cpu()
+        return check.isinstance(check.isinstance(rb, RawCpuBuffer).to_cpu(), np.ndarray)
 
     _fns_by_op_cls: ta.Final[ta.Mapping[type, ta.Callable[..., np.ndarray]]] = {
         ops2.Exp2: np.exp2,
