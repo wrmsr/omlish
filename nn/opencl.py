@@ -8,7 +8,7 @@ else:
     cl = lang.proxy_import('pyopencl')
 
 from . import evaluators
-from .codegen import CstyleCodegen
+from .cstyle import CstyleCodegen
 from .devices import Device
 from .dtypes import Dtype
 from .evaluators import Evaluator
