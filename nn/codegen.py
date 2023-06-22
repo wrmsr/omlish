@@ -184,7 +184,7 @@ class LinearCodegenOp(CodegenOp):
         early_bufs = col.unique(reduce_op.buffers) if reduce_op is not None else []
 
         # create new shapetrackers inside this kernel, we will permute them
-        sts: ta.List[ShapeTracker] = [x.st.copy() for x in self._bufs]
+        sts: ta.List[ShapeTracker] = [x.shape_tracker.copy() for x in self._bufs]
         for st in sts:
             st.simplify()
 

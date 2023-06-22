@@ -6,6 +6,7 @@ from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 
+from . import symbolic as sym
 from .dims import Shape
 from .dims import ShapeStride
 from .dims import Stride
@@ -38,6 +39,29 @@ class View(dc.Data, lang.Final):
     def shape_strides(self) -> ta.Sequence[ShapeStride]:
         return ShapeStride.calc(self.shape, self.stride)
 
+    ##
+
+    def expr_node_mask(self, idx, valid=None) -> sym.Node:
+        expr = [valid] if valid is not None else []
+        if self.mask is not None:
+            acc = 1
+            for ns, (x, y) in reversed(list(zip(self.shape, self.mask))):
+                base = (idx // acc) % ns
+                expr += [base >= x, base < y]
+                acc *= ns
+        return sym.and_nodes(expr)
+
+    # generate an expression if you have a single idx variable
+    def expr_node(self, idx=None) -> sym.Node:
+        if idx is None:
+            idx = sym.Var("idx", 0, self.shape.prod)
+        ret = [sym.Num(self.offset)]
+        acc = 1
+        for d, s in reversed(self.shape_strides):
+            ret.append(((idx // acc) % d) * s)
+            acc *= d
+        return sym.sum_nodes(ret)
+
 
 def merge_views(vm2: View, vm1: View) -> ta.Optional[View]:
     if vm2.mask:
@@ -55,10 +79,17 @@ def merge_views(vm2: View, vm1: View) -> ta.Optional[View]:
 
 
 class ShapeTracker(lang.Final):
-    def __init__(self, shape: ta.Union[Shape, 'ShapeTracker']) -> None:
+    def __init__(
+            self,
+            shape: ta.Union[Shape, 'ShapeTracker'],
+            views: ta.Optional[ta.Sequence[View]] = None,
+    ) -> None:
         super().__init__()
 
-        if isinstance(shape, ShapeTracker):
+        if views is not None:
+            # TODO: check against shape? lol
+            self._views = list(views)
+        elif isinstance(shape, ShapeTracker):
             self._views = list(shape._views)
         else:
             self._views = [View.of_shape(shape)]
@@ -168,14 +199,16 @@ class ShapeTracker(lang.Final):
 
             return
 
-        # view = View(new_shape, Shape(new_shape).base_stride())
-        # if self.contiguous:
-        #     self._views[-1] = view  # NOTE: if it's contiguous it can't have an offset
+        # new_view = View(new_shape, strides_for_shape(new_shape))
+        # if view.contiguous:
+        #     return new_view, False  # NOTE: if it's contiguous it can't have an offset
         # else:
-        #     if (merged_view := merge_views(self._views[-1], view)) is not None:
-        #         self._views[-1] = merged_view
+        #     if (merged_view := merge_views(view, new_view)) is not None:
+        #         return merged_view, False
         #     else:
-        #         self._views.append(view)
+        #         if DEBUG >= 4:
+        #             print(f"WARNING: creating new view with reshape {view} -> {new_shape}")
+        #         return new_view, True
 
         raise NotImplementedError
 
@@ -193,33 +226,44 @@ class ShapeTracker(lang.Final):
 
     ##
 
+    def _expr_idx(self, idx, valid):
+        for v in reversed(self._views[0:-1]):
+            valid = v.expr_node_mask(idx, valid)
+            idx = v.expr_node(idx)
+        return idx, valid
+
+    def expr_node(self, idx="idx"):
+        if idx.__class__ is str:
+            idx = sym.Var(idx, 0, self.shape.prod - 1)
+        return self._expr_idx(self._views[-1].expr_node(idx), self._views[-1].expr_node_mask(idx))
+
     # these are multiview strides, value is None if it's not a simple strided dimension
     # TODO: this can be shared code between simplify and merge_views
     def real_offset(self) -> int:
-        real_offset, mask = self.expr_node(Variable("zero", 0, 0))
-        assert ( real_offset.__class__ is NumNode ), f"how is the offset not a number? {real_offset} {mask}"
+        real_offset, mask = self.expr_node(sym.Var("zero", 0, 0))
+        assert real_offset.__class__ is sym.Num, f"how is the offset not a number? {real_offset} {mask}"
         return real_offset.b
 
-    def real_strides(self) -> Tuple[Optional[int], ...]:
-        if len(self.views) == 1:
-            return self.views[-1].strides
-        ret: List[Optional[int]] = []
+    def real_strides(self) -> ta.Tuple[ta.Optional[int], ...]:
+        if len(self._views) == 1:
+            return self._views[-1].stride
+        ret: ta.List[ta.Optional[int]] = []
         acc, real_offset = 1, self.real_offset()
         for s in reversed(self.shape):
             if s == 1:  # fast path, all shape 1 have stride 0
                 ret.append(0)
                 continue
-            var = Variable("idx", 0, s - 1)
+            var = sym.Var("idx", 0, s - 1)
             this_dim, _ = self.expr_node(var * acc)
             this_dim -= real_offset
             acc *= s
             # TODO: sometimes a mod here is okay if you are say, reading a float4, since you only care %4
             # if test.__class__ is ModNode and test.b%4 == 0: return check_no_mul(test.a, var)   # removing a mod is okay
-            if ( this_dim.__class__ is MulNode and cast(MulNode, this_dim).a.__class__ is Variable ):
+            if this_dim.__class__ is sym.Mul and ta.cast(sym.Mul, this_dim).a.__class__ is sym.Var:
                 ret.append(this_dim.b)
-            elif this_dim.__class__ is NumNode and this_dim.b == 0:
+            elif this_dim.__class__ is sym.Num and this_dim.b == 0:
                 ret.append(0)
-            elif this_dim.__class__ is Variable:
+            elif this_dim.__class__ is sym.Var:
                 ret.append(1)
             else:
                 ret.append(None)
