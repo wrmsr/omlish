@@ -8,6 +8,7 @@ from omlish import dispatch
 from omlish.collections import coerce
 
 from . import ops2  # noqa
+from . import symbolic as sym
 from .codegen import Codegen
 from .codegen import CodegenOp
 from .codegen import Program
@@ -162,55 +163,57 @@ class LinearCodegen(Codegen):
 ##
 
 
-# # bottom ones are asm only
-# class UOps(Enum):
-#     LOOP = auto()
-#     DEFINE_LOCAL = auto()
-#     LOAD = auto()
-#     ALU = auto()
-#     CONST = auto()
-#     ENDLOOP = auto()
-#     STORE = auto()
-#     CAST = auto()
-#     SPECIAL = auto()
-#     DEFINE_REGISTER = auto()
-#     LABEL = auto()
-#     COND_BRANCH = auto()  # noqa: E702
-#
-#
-# class Token(NamedTuple):
-#     name: str
-#     dtype: DType
-#     offset: Optional[int] = None
-#
-#     def render(self, with_type=False):
-#         if with_type:
-#             assert self.offset is None
-#             return f"{self.dtype.name} {self.name}"
-#         if self.offset is None:
-#             return self.name
-#         assert self.dtype == dtypes._float4
-#         return self.name + "." + "xyzw"[int(self.offset)]
-#
-#     def __repr__(self):
-#         return (
-#             f"<{self.name}>"
-#             if self.offset is None and self.dtype == dtypes.float32
-#             else f"<{self.name}:{self.dtype.name}:{self.offset}>"
-#         )
-#
-#
-# class MemOp(NamedTuple):
-#     i: int
-#     idx: Variable
-#     valid: Variable
-#
-#
-# class UOp(NamedTuple):
-#     uop: UOps
-#     out: Optional[Token]
-#     vin: List[Token]
-#     arg: Any
-#
-#     def __repr__(self):
-#         return f"{str(self.uop):20s}: {str(self.out) if self.out is not None else '':25s} {str(self.vin):32s} {self.arg}"
+# bottom ones are asm only
+class UOps(Enum):
+    LOOP = auto()  # arg: ([Variable], str)
+    DEFINE_LOCAL = auto()  # arg: (str, int)
+    LOAD = auto()  # arg: MemOp
+    ALU = auto()  # arg: UnaryOps | BinaryOps
+    CONST = auto()  # arg: float
+    ENDLOOP = auto()  # arg: ([Variable], str)
+    STORE = auto()  # arg: MemOp
+    CAST = auto()  # arg: None
+
+    SPECIAL = auto()
+
+    DEFINE_REGISTER = auto()
+    LABEL = auto()
+    COND_BRANCH = auto()  # noqa: E702
+
+
+class Token(NamedTuple):
+    name: str
+    dtype: Dtype
+    offset: ta.Optional[int] = None
+
+    def render(self, with_type=False):
+        if with_type:
+            assert self.offset is None
+            return f"{self.dtype.name} {self.name}"
+        if self.offset is None:
+            return self.name
+        assert self.dtype == dtypes._float4
+        return self.name + "." + "xyzw"[int(self.offset)]
+
+    def __repr__(self):
+        return (
+            f"<{self.name}>"
+            if self.offset is None and self.dtype == dtypes.float32
+            else f"<{self.name}:{self.dtype.name}:{self.offset}>"
+        )
+
+
+class MemOp(NamedTuple):
+    i: int
+    idx: sym.Var
+    valid: sym.Var
+
+
+class UOp(NamedTuple):
+    uop: UOps
+    out: Optional[Token]
+    vin: List[Token]
+    arg: Any
+
+    def __repr__(self):
+        return f"{str(self.uop):20s}: {str(self.out) if self.out is not None else '':25s} {str(self.vin):32s} {self.arg}"
