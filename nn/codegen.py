@@ -14,6 +14,8 @@ from .dtypes import Dtype
 from .lazy import LazyBuffer
 from .lazy import LazyOp
 from .ops import MovementOp
+from .ops import ReduceOp
+from .shapetracker import ShapeTracker
 
 
 class Program(lang.Abstract):
@@ -155,18 +157,8 @@ class LinearCodegenOp(CodegenOp):
         # NOTE: if there's a RESHAPE, we skip it. the output shape is set from the reduce op or a latebuf
         self._op = check.isinstance(op.srcs[0], LazyOp) if op.op == MovementOp.RESHAPE else op
 
-        # get the output buffers
         self._bufs = [output, *col.unique(op.buffers)]
 
-        # FIXME: ... lol... formalized keyifier plz - str is right though
-        # bufs are needed because kernels like f(x) = x + x and f(x, y) = x + y have the same str(ast), but are
-        # different kernels. mapping the buffers to integers is required because a-b != b-a (and how would you tell a
-        # and b apart?)
-        # self._key = (
-        #     f'LinearCodegenOp '
-        #     f'op={str(map_buffers({x: i for i, x in enumerate(self._bufs)}, op))} '  # FIXME: oof...
-        #     f'bufs={self._bufs}'
-        # )
         self._key = render_key(op, self._bufs)
 
     @property
@@ -178,7 +170,24 @@ class LinearCodegenOp(CodegenOp):
         return self._bufs
 
     def build(self) -> Program:
-        a = LinearAnalyzer().analyze(ops2.convert_from_lazy_op(self._op))  # noqa
+        ana = LinearAnalyzer().analyze(ops2.convert_from_lazy_op(self._op))  # noqa
+        mem_est = sum(  # noqa
+            x.dtype.item_size * (x.get_realized().size if x.is_realized is not None else x.shape.prod)
+            for x in self._bufs
+        )
+
+        # there's only allowed to be one reduce op
+        reduce_ops = [x for x in self._op.ops if isinstance(x.op, ReduceOp)]
+        reduce_op = check.single(reduce_ops) if reduce_ops else None  # noqa
+
+        # get early bufs, before the one reduce op
+        early_bufs = col.unique(reduce_op.buffers) if reduce_op is not None else []
+
+        # create new shapetrackers inside this kernel, we will permute them
+        sts: ta.List[ShapeTracker] = [x.st.copy() for x in self._bufs]
+        for st in sts:
+            st.simplify()
+
         raise NotImplementedError
 
 

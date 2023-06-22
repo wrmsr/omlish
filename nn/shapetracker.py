@@ -39,6 +39,21 @@ class View(dc.Data, lang.Final):
         return ShapeStride.calc(self.shape, self.stride)
 
 
+def merge_views(vm2: View, vm1: View) -> ta.Optional[View]:
+    if vm2.mask:
+        return None  # this isn't supported yet
+    mst = ShapeTracker(vm1.shape, [vm2, vm1])
+    strides = mst.real_strides()
+    if None in strides:
+        return None
+    return View(
+        vm1.shape,
+        strides,
+        mst.real_offset(),
+        vm1.mask,
+    )
+
+
 class ShapeTracker(lang.Final):
     def __init__(self, shape: ta.Union[Shape, 'ShapeTracker']) -> None:
         super().__init__()
@@ -74,6 +89,16 @@ class ShapeTracker(lang.Final):
     @property
     def contiguous(self) -> bool:
         return len(self._views) == 1 and self._views[-1].contiguous
+
+    def copy(self) -> 'ShapeTracker':
+        return ShapeTracker(self.shape, list(self._views))
+
+    def simplify(self):
+        if len(self._views) >= 2:
+            new_view = merge_views(self._views[-2], self._views[-1])
+            if new_view:
+                self._views = [*self._views[:-2], new_view]
+                self.simplify()
 
     def expand(self, new_shape: Shape) -> None:
         check.arg(all(
@@ -165,3 +190,37 @@ class ShapeTracker(lang.Final):
         MovementOp.PERMUTE: permute,
         MovementOp.RESHAPE: reshape,
     }
+
+    ##
+
+    # these are multiview strides, value is None if it's not a simple strided dimension
+    # TODO: this can be shared code between simplify and merge_views
+    def real_offset(self) -> int:
+        real_offset, mask = self.expr_node(Variable("zero", 0, 0))
+        assert ( real_offset.__class__ is NumNode ), f"how is the offset not a number? {real_offset} {mask}"
+        return real_offset.b
+
+    def real_strides(self) -> Tuple[Optional[int], ...]:
+        if len(self.views) == 1:
+            return self.views[-1].strides
+        ret: List[Optional[int]] = []
+        acc, real_offset = 1, self.real_offset()
+        for s in reversed(self.shape):
+            if s == 1:  # fast path, all shape 1 have stride 0
+                ret.append(0)
+                continue
+            var = Variable("idx", 0, s - 1)
+            this_dim, _ = self.expr_node(var * acc)
+            this_dim -= real_offset
+            acc *= s
+            # TODO: sometimes a mod here is okay if you are say, reading a float4, since you only care %4
+            # if test.__class__ is ModNode and test.b%4 == 0: return check_no_mul(test.a, var)   # removing a mod is okay
+            if ( this_dim.__class__ is MulNode and cast(MulNode, this_dim).a.__class__ is Variable ):
+                ret.append(this_dim.b)
+            elif this_dim.__class__ is NumNode and this_dim.b == 0:
+                ret.append(0)
+            elif this_dim.__class__ is Variable:
+                ret.append(1)
+            else:
+                ret.append(None)
+        return tuple(ret[::-1])
