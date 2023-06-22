@@ -272,6 +272,11 @@ class LazyBuffer(Lazy):
             self_op = self.get_op()
             for x in self_op.buffers:
                 x.realize()
+
+            from .evaluators2 import NumpyInterpreter
+            from . import ops2
+            NumpyInterpreter().eval(ops2.convert_from_lazy_op(self_op))
+
             self._realized = self.device.evaluator.eval(self_op, output=self)
 
         # check.isinstance(self.get_realized(), (RawConst, Device[self.device].buffer)),

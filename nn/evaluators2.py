@@ -39,7 +39,7 @@ class Interpreter(Evaluator, lang.Abstract, ta.Generic[T]):  # noqa
         raise NotImplementedError
 
     @abc.abstractmethod
-    def _eval(self, op: ops2.Op, *srcs: T) -> T:
+    def _eval(self, op: ops2.Op, *objs: T) -> T:
         raise NotImplementedError
 
     def eval(self, op: ops2.Op, output: ta.Optional[ops2.Buffer] = None) -> RawBuffer:
@@ -57,7 +57,7 @@ class Interpreter(Evaluator, lang.Abstract, ta.Generic[T]):  # noqa
             else:
                 raise TypeError(src)
 
-        out = self._eval(op, *srcs)
+        out = self._eval(op, *[self._raw_to_obj(src) for src in srcs])
         ret = self._raws_by_op[op] = self._obj_to_raw(out)
 
         if output is not None and (ob := output.obj.output_buffer) is not None:
@@ -83,7 +83,7 @@ class NumpyInterpreter(Interpreter[np.ndarray]):
         return check.isinstance(rb, RawCpuBuffer).to_cpu()
 
     @dispatch.method
-    def _eval(self, op: ops2.Op, *srcs: np.ndarray) -> np.ndarray:
+    def _eval(self, op: ops2.Op, *objs: np.ndarray) -> np.ndarray:
         raise TypeError(op)
 
     @_eval.register
