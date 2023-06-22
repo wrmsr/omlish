@@ -41,35 +41,38 @@ class View(dc.Data, lang.Final):
 
     ##
 
-    def expr_node_mask(self, idx: sym.Node, valid: ta.Optional[sym.Node] = None) -> sym.Node:
-        expr = [valid] if valid is not None else []
+    def gen_mask_sym(self, idx: sym.Node, valid: ta.Optional[sym.Node] = None) -> sym.Node:
+        ret = [valid] if valid is not None else []
         if self.mask is not None:
             acc = 1
             for ns, (x, y) in reversed(list(zip(self.shape, self.mask))):
                 base = (idx // acc) % ns
-                expr += [base >= x, base < y]
+                ret += [base >= x, base < y]
                 acc *= ns
-        return sym.and_nodes(expr)
+        return sym.and_(ret)
 
     # generate an expression if you have a single idx variable
-    def expr_node(self, idx: ta.Optional[sym.Node] = None) -> sym.Node:
+    def gen_sym(self, idx: ta.Optional[sym.Node] = None) -> sym.Node:
         if idx is None:
             idx = sym.Var('idx', 0, self.shape.prod)
+
         ret: ta.List[sym.Node] = [sym.Num(self.offset)]
         acc = 1
         for ss in reversed(self.shape_strides):
             ret.append(((idx // acc) % ss.shape) * ss.stride)
             acc *= ss.shape
-        return sym.sum_nodes(ret)
+        return sym.sum_(ret)
 
 
 def merge_views(vm2: View, vm1: View) -> ta.Optional[View]:
     if vm2.mask:
         return None  # this isn't supported yet
+
     mst = ShapeTracker(vm1.shape, [vm2, vm1])
     strides = mst.real_strides()
     if None in strides:
         return None
+
     return View(
         vm1.shape,
         strides,
@@ -212,50 +215,58 @@ class ShapeTracker(lang.Final):
 
         raise NotImplementedError
 
-    def movement_op(self, op: MovementOp, arg: ta.Sequence[int]) -> 'ShapeTracker':
-        if op != MovementOp.RESHAPE and len(arg) != len(self.shape):
-            raise RuntimeError(f'arg {arg} for {op} does not match dim of shape {self.shape}')
-        self._movement_op_dispatch[op](self, arg)
-        return self
-
     _movement_op_dispatch: ta.Final[ta.Mapping[MovementOp, ta.Callable]] = {
         MovementOp.EXPAND: expand,
         MovementOp.PERMUTE: permute,
         MovementOp.RESHAPE: reshape,
     }
 
+    def movement_op(self, op: MovementOp, arg: ta.Sequence[int]) -> 'ShapeTracker':
+        if op != MovementOp.RESHAPE and len(arg) != len(self.shape):
+            raise RuntimeError(f'arg {arg} for {op} does not match dim of shape {self.shape}')
+        self._movement_op_dispatch[op](self, arg)
+        return self
+
     ##
 
-    def _expr_idx(self, idx: sym.Node, valid: sym.Node) -> ta.Tuple[sym.Node, sym.Node]:
-        for v in reversed(self._views[0:-1]):
-            valid = v.expr_node_mask(idx, valid)
-            idx = v.expr_node(idx)
-        return idx, valid
+    class Sym(ta.NamedTuple):
+        idx: sym.Node
+        mask: sym.Node
 
-    def expr_node(self, idx: ta.Union[sym.Node, str] = "idx") -> ta.Tuple[sym.Node, sym.Node]:
+    def _gen_sym(self, idx: sym.Node, valid: sym.Node) -> Sym:
+        for v in reversed(self._views[0:-1]):
+            valid = v.gen_mask_sym(idx, valid)
+            idx = v.gen_sym(idx)
+        return ShapeTracker.Sym(idx, valid)
+
+    def gen_sym(self, idx: ta.Union[sym.Node, str] = 'idx') -> Sym:
         if isinstance(idx,  str):
             idx = sym.Var(idx, 0, self.shape.prod - 1)
-        return self._expr_idx(self.view.expr_node(idx), self.view.expr_node_mask(idx))
+        return self._gen_sym(self.view.gen_sym(idx), self.view.gen_mask_sym(idx))
 
     # these are multiview strides, value is None if it's not a simple strided dimension
     # TODO: this can be shared code between simplify and merge_views
     def real_offset(self) -> int:
-        real_offset, mask = self.expr_node(sym.Var("zero", 0, 0))
+        real_offset, mask = self.gen_sym(sym.Var('zero', 0, 0))
         return check.isinstance(real_offset, sym.Num).b
 
     def real_strides(self) -> ta.Sequence[ta.Optional[int]]:
         if len(self._views) == 1:
             return self.view.stride
+
         ret: ta.List[ta.Optional[int]] = []
-        acc, real_offset = 1, self.real_offset()
+        acc = 1
+        real_offset = self.real_offset()
         for s in reversed(self.shape):
             if s == 1:  # fast path, all shape 1 have stride 0
                 ret.append(0)
                 continue
-            var = sym.Var("idx", 0, s - 1)
-            this_dim, _ = self.expr_node(var * acc)
+
+            var = sym.Var('idx', 0, s - 1)
+            this_dim, _ = self.gen_sym(var * acc)
             this_dim -= real_offset
             acc *= s
+
             # TODO: sometimes a mod here is okay if you are say, reading a float4, since you only care %4
             # if isinstance(test, sym.Mod) and test.b%4 == 0: return check_no_mul(test.a, var)  # removing a mod is okay
             if isinstance(this_dim, sym.Mul) and isinstance(this_dim.a, sym.Var):
@@ -266,4 +277,5 @@ class ShapeTracker(lang.Final):
                 ret.append(1)
             else:
                 ret.append(None)
+
         return ret[::-1]

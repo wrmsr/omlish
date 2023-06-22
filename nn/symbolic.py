@@ -93,7 +93,7 @@ class Node(lang.Abstract, lang.Sealed):
         return self * -1
 
     def __add__(self, b: ta.Union['Node', int]) -> 'Node':
-        return sum_nodes([self, b if isinstance(b, Node) else Num(b)])
+        return sum_([self, b if isinstance(b, Node) else Num(b)])
 
     def __sub__(self, b: ta.Union['Node', int]) -> 'Node':
         return self + -b
@@ -353,7 +353,7 @@ class Red(Node, lang.Abstract):
         raise NotImplementedError
 
 
-def sum_nodes(nodes: ta.Sequence[Node]) -> Node:
+def sum_(nodes: ta.Sequence[Node]) -> Node:
     news: ta.List[Node] = []
     sums: ta.List[Sum] = []
     nums: ta.List[Num] = []
@@ -374,7 +374,7 @@ def sum_nodes(nodes: ta.Sequence[Node]) -> Node:
         news.extend(muls)
         for x in sums:
             news += x.nodes
-        return sum_nodes(news)
+        return sum_(news)
 
     # combine any numbers inside a sum
     if nums:
@@ -410,7 +410,7 @@ class Sum(Red):
         return sum(x.min for x in nodes), sum(x.max for x in nodes)
 
     def __mul__(self, b: int) -> Node:
-        return sum_nodes([x * b for x in self.nodes])  # distribute mul into sum
+        return sum_([x * b for x in self.nodes])  # distribute mul into sum
 
     def _floordiv(self, b: int, factoring_allowed: bool = True) -> Node:
         if not factoring_allowed:
@@ -436,14 +436,14 @@ class Sum(Red):
         if len(factors) > 0:
             # these don't have to be the same, just having a common factor
             if len(gcd) > 0 and col.all_equal(gcd) and gcd[0] is not None and gcd[0] > 1:
-                nofactor_term = sum_nodes([
+                nofactor_term = sum_([
                     (x.a * (x.b // gcd[0])) if isinstance(x, Mul) else Num(x.b // gcd[0])  # type: ignore  # FIXME: ??
                     for x in nofactor
                 ]) // (b // gcd[0])
             else:
-                nofactor_term = sum_nodes(nofactor) // b
+                nofactor_term = sum_(nofactor) // b
 
-            return sum_nodes([
+            return sum_([
                 (x.a * (x.b // b)) if isinstance(x, Mul) else Num(x.b // b)  # type: ignore
                 for x in factors
             ] + [nofactor_term])
@@ -464,10 +464,10 @@ class Sum(Red):
                 new_nodes.append(x.a * (x.b % b))
             else:
                 new_nodes.append(x)
-        return sum_nodes(new_nodes) % b
+        return sum_(new_nodes) % b
 
 
-def and_nodes(nodes: ta.Sequence[Node]) -> Node:
+def and_(nodes: ta.Sequence[Node]) -> Node:
     if any((x.min == 0 and x.max == 0) for x in nodes):
         return Num(0)
 
@@ -489,7 +489,7 @@ class And(Red):
         return min(x.min for x in nodes), max(x.max for x in nodes)
 
     def __mul__(self, b: int) -> Node:
-        return and_nodes([x * b for x in self.nodes])
+        return and_([x * b for x in self.nodes])
 
     def _floordiv(self, b: int, factoring_allowed: bool = True) -> Node:
-        return and_nodes([x // b for x in self.nodes])
+        return and_([x // b for x in self.nodes])

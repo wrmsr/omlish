@@ -2,6 +2,7 @@
 TODO:
  - identity eq? identity cols?
 """
+import abc
 import typing as ta
 
 from omlish import check
@@ -11,6 +12,9 @@ from omlish import lang
 from .dims import Shape
 from .dims import Stride
 from .dtypes import Dtype
+
+
+#
 
 
 class Source(lang.Sealed, lang.Abstract):
@@ -24,7 +28,10 @@ class Buffer(Source):
 
 @dc.dataclass(frozen=True)
 class Op(Source, lang.Abstract):
-    pass
+    @property
+    @abc.abstractmethod
+    def sources(self) -> ta.Sequence[Source]:
+        raise NotImplementedError
 
 
 #
@@ -33,6 +40,10 @@ class Op(Source, lang.Abstract):
 @dc.dataclass(frozen=True)
 class UnaryOp(Op, lang.Abstract):
     x: Source
+
+    @property
+    def sources(self) -> ta.Sequence[Source]:
+        return [self.x]
 
 
 @dc.dataclass(frozen=True)
@@ -72,6 +83,10 @@ class Recip(UnaryOp):
 class BinaryOp(Op, lang.Abstract):
     x: Source
     y: Source
+
+    @property
+    def sources(self) -> ta.Sequence[Source]:
+        return [self.x, self.y]
 
 
 @dc.dataclass(frozen=True)
@@ -127,6 +142,10 @@ class ReduceOp(Op, lang.Abstract):
     x: Source
     new_shape: Shape
 
+    @property
+    def sources(self) -> ta.Sequence[Source]:
+        return [self.x]
+
 
 @dc.dataclass(frozen=True)
 class Sum(ReduceOp):
@@ -144,6 +163,10 @@ class Max(ReduceOp):
 @dc.dataclass(frozen=True)
 class MovementOp(Op, lang.Abstract):
     x: Source
+
+    @property
+    def sources(self) -> ta.Sequence[Source]:
+        return [self.x]
 
 
 @dc.dataclass(frozen=True)
@@ -189,13 +212,19 @@ class MulAcc(FusedOp):
     x: Source
     new_shape: Shape
 
+    @property
+    def sources(self) -> ta.Sequence[Source]:
+        return [self.x]
+
 
 #
 
 
 @dc.dataclass(frozen=True)
 class LoadOp(Op, lang.Abstract):
-    pass
+    @property
+    def sources(self) -> ta.Sequence[Source]:
+        return []
 
 
 @dc.dataclass(frozen=True)

@@ -9,8 +9,11 @@ from .codegen import Codegen
 from .codegen import Program
 from .lazy import LazyBuffer
 from .lazy import LazyOp
+from .ops import BinaryOp
+from .ops import FusedOp
 from .ops import MovementOp
 from .ops import Op
+from .ops import ReduceOp
 from .raw import RawBuffer
 from .raw import RawConst
 
@@ -24,8 +27,6 @@ class Evaluator(lang.Abstract):
             self,
             op: LazyOp,
             output: ta.Optional[LazyBuffer] = None,
-            *,
-            context: ta.Optional[EvalContext] = None,
     ) -> RawBuffer:
         raise NotImplementedError
 
@@ -53,13 +54,13 @@ class Interpreter(Evaluator):
             *,
             context: ta.Optional[EvalContext] = None,
     ) -> RawBuffer:
-        # if (
-        #         FusedOps.MULACC in self.fxn_for_op and
-        #         ast.op == ReduceOps.SUM and
-        #         isinstance(ast.src[0], LazyOp) and
-        #         ast.src[0].op == BinaryOps.MUL
-        # ):
-        #     ast = LazyOp(FusedOps.MULACC, ast.src[0].src, ast.arg)
+        if (
+                FusedOp.MUL_ACC in self._fns_by_op and
+                op.op == ReduceOp.SUM and
+                isinstance(op.srcs[0], LazyOp) and
+                op.srcs[0].as_op().op == BinaryOp.MUL
+        ):
+            op = LazyOp(FusedOp.MUL_ACC, op.srcs[0].as_op().srcs, op.arg)
 
         from .ops2 import convert_from_lazy
         convert_from_lazy(op)
@@ -70,7 +71,7 @@ class Interpreter(Evaluator):
         if not created_context and op in context:
             return context[op]
 
-        srcs = [
+        srcs: ta.List[RawBuffer] = [
             self.eval(x, context=context)
             if isinstance(x, LazyOp) else
             self._from_lazy_buffer(x.as_buffer())
@@ -78,12 +79,10 @@ class Interpreter(Evaluator):
         ]
 
         ret = self._make_buffer(
-            self._fns_by_op[op.op](
-                *(
-                        [self._to_underlying(x) for x in srcs] +
-                        ([op.arg] if op.arg is not None else [])
-                )
-            )
+            self._fns_by_op[op.op](*(
+                [self._to_underlying(x) for x in srcs] +
+                ([op.arg] if op.arg is not None else [])
+            ))
         )
 
         if not created_context:

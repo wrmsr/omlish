@@ -1,8 +1,8 @@
 from ..symbolic import Num
 from ..symbolic import Var
-from ..symbolic import and_nodes
+from ..symbolic import and_
 from ..symbolic import render_node
-from ..symbolic import sum_nodes
+from ..symbolic import sum_
 from ..symbolic import var
 
 
@@ -57,12 +57,12 @@ def test_ge_divides():
 
 
 def test_ge_divides_and():
-    expr = and_nodes([
+    expr = and_([
         (Var('idx1', 0, 511) * 4 + Var('FLOAT4_INDEX', 0, 3)) < 512,
         (Var('idx2', 0, 511) * 4 + Var('FLOAT4_INDEX', 0, 3)) < 512,
     ])
     _test_variable(expr // 4, 0, 1, '((idx1<128) and (idx2<128))')
-    expr = and_nodes([
+    expr = and_([
         (Var('idx1', 0, 511) * 4 + Var('FLOAT4_INDEX', 0, 3)) < 512,
         (Var('idx2', 0, 511) * 4 + Var('FLOAT8_INDEX', 0, 7)) < 512,
     ])
@@ -158,32 +158,32 @@ def test_div_neg_min_max():
 
 
 def test_sum_div_min_max():
-    _test_variable(sum_nodes([Var('a', 0, 7), Var('b', 0, 3)]) // 2, 0, 5, '((a+b)//2)')
+    _test_variable(sum_([Var('a', 0, 7), Var('b', 0, 3)]) // 2, 0, 5, '((a+b)//2)')
 
 
 def test_sum_div_factor():
-    _test_variable(sum_nodes([Var('a', 0, 7) * 4, Var('b', 0, 3) * 4]) // 2, 0, 20, '((a*2)+(b*2))')
+    _test_variable(sum_([Var('a', 0, 7) * 4, Var('b', 0, 3) * 4]) // 2, 0, 20, '((a*2)+(b*2))')
 
 
 def test_sum_div_some_factor():
-    _test_variable(sum_nodes([Var('a', 0, 7) * 5, Var('b', 0, 3) * 4]) // 2, 0, 23, '(((a*5)//2)+(b*2))')
+    _test_variable(sum_([Var('a', 0, 7) * 5, Var('b', 0, 3) * 4]) // 2, 0, 23, '(((a*5)//2)+(b*2))')
 
 
 def test_sum_div_no_factor():
-    _test_variable(sum_nodes([Var('a', 0, 7) * 5, Var('b', 0, 3) * 5]) // 2, 0, 25, '(((a*5)+(b*5))//2)')
+    _test_variable(sum_([Var('a', 0, 7) * 5, Var('b', 0, 3) * 5]) // 2, 0, 25, '(((a*5)+(b*5))//2)')
 
 
 def test_mod_factor():
     # NOTE: even though the mod max is 50, it can't know this without knowing about the mul
-    _test_variable(sum_nodes([Var('a', 0, 7) * 100, Var('b', 0, 3) * 50]) % 100, 0, 99, '((b*50)%100)')
+    _test_variable(sum_([Var('a', 0, 7) * 100, Var('b', 0, 3) * 50]) % 100, 0, 99, '((b*50)%100)')
 
 
 def test_sum_div_const():
-    _test_variable(sum_nodes([Var('a', 0, 7) * 4, Num(3)]) // 4, 0, 7, 'a')
+    _test_variable(sum_([Var('a', 0, 7) * 4, Num(3)]) // 4, 0, 7, 'a')
 
 
 def test_sum_div_const_big():
-    _test_variable(sum_nodes([Var('a', 0, 7) * 4, Num(3)]) // 16, 0, 1, '(a//4)')
+    _test_variable(sum_([Var('a', 0, 7) * 4, Num(3)]) // 16, 0, 1, '(a//4)')
 
 
 def test_mod_mul():
@@ -200,7 +200,7 @@ def test_div_div():
 
 def test_distribute_mul():
     _test_variable(
-        sum_nodes([Var('a', 0, 3), Var('b', 0, 5)]) * 3,
+        sum_([Var('a', 0, 3), Var('b', 0, 5)]) * 3,
         0,
         24,
         '((a*3)+(b*3))',
@@ -208,11 +208,11 @@ def test_distribute_mul():
 
 
 def test_mod_mul_sum():
-    _test_variable(sum_nodes([Var('b', 0, 2), Var('a', 0, 5) * 10]) % 9, 0, 7, '(a+b)')
+    _test_variable(sum_([Var('b', 0, 2), Var('a', 0, 5) * 10]) % 9, 0, 7, '(a+b)')
 
 
 def test_sum_0():
-    _test_variable(sum_nodes([Var('a', 0, 7)]), 0, 7, 'a')
+    _test_variable(sum_([Var('a', 0, 7)]), 0, 7, 'a')
 
 
 def test_mod_remove():
@@ -239,28 +239,28 @@ def test_lt_remove():
 
 
 def test_and_fold():
-    _test_variable(and_nodes([Num(0), Var('a', 0, 1)]), 0, 0, '0')
+    _test_variable(and_([Num(0), Var('a', 0, 1)]), 0, 0, '0')
 
 
 def test_and_remove():
-    _test_variable(and_nodes([Num(1), Var('a', 0, 1)]), 0, 1, 'a')
+    _test_variable(and_([Num(1), Var('a', 0, 1)]), 0, 1, 'a')
 
 
 def test_mod_factor_negative():
-    _test_variable(sum_nodes([Num(-29), Var('a', 0, 10), Var('b', 0, 10) * 28]) % 28, 0, 27, '((27+a)%28)')
-    _test_variable(sum_nodes([Num(-29), Var('a', 0, 100), Var('b', 0, 10) * 28]) % 28, 0, 27, '((27+a)%28)')
+    _test_variable(sum_([Num(-29), Var('a', 0, 10), Var('b', 0, 10) * 28]) % 28, 0, 27, '((27+a)%28)')
+    _test_variable(sum_([Num(-29), Var('a', 0, 100), Var('b', 0, 10) * 28]) % 28, 0, 27, '((27+a)%28)')
 
 
 def test_sum_combine_num():
-    _test_variable(sum_nodes([Num(29), Var('a', 0, 10), Num(-23)]), 6, 16, '(6+a)')
+    _test_variable(sum_([Num(29), Var('a', 0, 10), Num(-23)]), 6, 16, '(6+a)')
 
 
 def test_sum_num_hoisted_and_factors_cancel_out():
-    _test_variable(sum_nodes([Var('a', 0, 1) * -4 + 1, Var('a', 0, 1) * 4]), 1, 1, '1')
+    _test_variable(sum_([Var('a', 0, 1) * -4 + 1, Var('a', 0, 1) * 4]), 1, 1, '1')
 
 
 def test_div_factor():
-    _test_variable(sum_nodes([Num(-40), Var('a', 0, 10) * 2, Var('b', 0, 10) * 40]) // 40, -1, 9, '(-1+b)')
+    _test_variable(sum_([Num(-40), Var('a', 0, 10) * 2, Var('b', 0, 10) * 40]) // 40, -1, 9, '(-1+b)')
 
 
 def test_mul_div():
@@ -276,7 +276,7 @@ def test_mul_div_factor_div():
 
 
 def test_div_remove():
-    _test_variable(sum_nodes([Var('idx0', 0, 127) * 4, Var('idx2', 0, 3)]) // 4, 0, 127, 'idx0')
+    _test_variable(sum_([Var('idx0', 0, 127) * 4, Var('idx2', 0, 3)]) // 4, 0, 127, 'idx0')
 
 
 def test_div_numerator_negative():
