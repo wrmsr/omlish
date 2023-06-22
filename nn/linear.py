@@ -5,6 +5,7 @@ from omlish import check
 from omlish import collections as col
 from omlish import dataclasses as dc
 from omlish import dispatch
+from omlish import lang
 from omlish.collections import coerce
 
 from . import ops2  # noqa
@@ -145,7 +146,7 @@ class LinearCodegenOp(CodegenOp):
         reduce_op = check.single(reduce_ops) if reduce_ops else None  # noqa
 
         # get early bufs, before the one reduce op
-        early_bufs = col.unique(reduce_op.buffers) if reduce_op is not None else []
+        early_bufs = col.unique(reduce_op.buffers) if reduce_op is not None else []  # noqa
 
         # create new shapetrackers inside this kernel, we will permute them
         sts: ta.List[ShapeTracker] = [x.shape_tracker.copy() for x in self._bufs]
@@ -163,57 +164,77 @@ class LinearCodegen(Codegen):
 ##
 
 
-# bottom ones are asm only
-class UOps(Enum):
-    LOOP = auto()  # arg: ([Variable], str)
-    DEFINE_LOCAL = auto()  # arg: (str, int)
-    LOAD = auto()  # arg: MemOp
-    ALU = auto()  # arg: UnaryOps | BinaryOps
-    CONST = auto()  # arg: float
-    ENDLOOP = auto()  # arg: ([Variable], str)
-    STORE = auto()  # arg: MemOp
-    CAST = auto()  # arg: None
-
-    SPECIAL = auto()
-
-    DEFINE_REGISTER = auto()
-    LABEL = auto()
-    COND_BRANCH = auto()  # noqa: E702
-
-
-class Token(NamedTuple):
+@dc.dataclass(frozen=True)
+class Token:
     name: str
     dtype: Dtype
     offset: ta.Optional[int] = None
 
-    def render(self, with_type=False):
-        if with_type:
-            assert self.offset is None
-            return f"{self.dtype.name} {self.name}"
-        if self.offset is None:
-            return self.name
-        assert self.dtype == dtypes._float4
-        return self.name + "." + "xyzw"[int(self.offset)]
 
-    def __repr__(self):
-        return (
-            f"<{self.name}>"
-            if self.offset is None and self.dtype == dtypes.float32
-            else f"<{self.name}:{self.dtype.name}:{self.offset}>"
-        )
+##
 
 
-class MemOp(NamedTuple):
+@dc.dataclass(frozen=True)
+class UOp(lang.Sealed, lang.Abstract):
+    out: ta.Optional[Token]
+    vin: ta.List[Token]
+
+
+@dc.dataclass(frozen=True)
+class Const(UOp):
+    v: float
+
+
+@dc.dataclass(frozen=True)
+class Cast(UOp):
+    pass
+
+
+@dc.dataclass(frozen=True)
+class Alu(UOp):
+    ty: type  # ta.Union[ta.Type[ops2.UnaryOp], ta.Type[ops2.BinaryOp]]
+
+
+@dc.dataclass(frozen=True)
+class DefineLocal(UOp):
+    s: str
+    sz: int
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class LoopOp(UOp, lang.Abstract):
+    idxs: ta.Sequence[sym.Var]
+    s: str
+
+
+@dc.dataclass(frozen=True)
+class Loop(LoopOp):
+    pass
+
+
+@dc.dataclass(frozen=True)
+class EndLoop(LoopOp):
+    pass
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class MemOp(UOp, lang.Abstract):
     i: int
     idx: sym.Var
     valid: sym.Var
 
 
-class UOp(NamedTuple):
-    uop: UOps
-    out: Optional[Token]
-    vin: List[Token]
-    arg: Any
+@dc.dataclass(frozen=True)
+class Load(MemOp):
+    pass
 
-    def __repr__(self):
-        return f"{str(self.uop):20s}: {str(self.out) if self.out is not None else '':25s} {str(self.vin):32s} {self.arg}"
+
+@dc.dataclass(frozen=True)
+class Store(MemOp):
+    pass

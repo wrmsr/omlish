@@ -233,7 +233,7 @@ class ShapeTracker(lang.Final):
         return idx, valid
 
     def expr_node(self, idx="idx"):
-        if idx.__class__ is str:
+        if isinstance(idx,  str):
             idx = sym.Var(idx, 0, self.shape.prod - 1)
         return self._expr_idx(self._views[-1].expr_node(idx), self._views[-1].expr_node_mask(idx))
 
@@ -258,7 +258,7 @@ class ShapeTracker(lang.Final):
             this_dim -= real_offset
             acc *= s
             # TODO: sometimes a mod here is okay if you are say, reading a float4, since you only care %4
-            # if test.__class__ is ModNode and test.b%4 == 0: return check_no_mul(test.a, var)   # removing a mod is okay
+            # if test.__class__ is ModNode and test.b%4 == 0: return check_no_mul(test.a, var)  # removing a mod is okay
             if this_dim.__class__ is sym.Mul and ta.cast(sym.Mul, this_dim).a.__class__ is sym.Var:
                 ret.append(this_dim.b)
             elif this_dim.__class__ is sym.Num and this_dim.b == 0:

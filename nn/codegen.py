@@ -38,4 +38,3 @@ class Codegen(lang.Abstract):
     @abc.abstractmethod
     def op(self, op: LazyOp, output: LazyBuffer) -> CodegenOp:
         raise NotImplementedError
-
