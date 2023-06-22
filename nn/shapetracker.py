@@ -41,7 +41,7 @@ class View(dc.Data, lang.Final):
 
     ##
 
-    def expr_node_mask(self, idx, valid=None) -> sym.Node:
+    def expr_node_mask(self, idx: sym.Node, valid: ta.Optional[sym.Node] = None) -> sym.Node:
         expr = [valid] if valid is not None else []
         if self.mask is not None:
             acc = 1
@@ -52,14 +52,14 @@ class View(dc.Data, lang.Final):
         return sym.and_nodes(expr)
 
     # generate an expression if you have a single idx variable
-    def expr_node(self, idx=None) -> sym.Node:
+    def expr_node(self, idx: ta.Optional[sym.Node] = None) -> sym.Node:
         if idx is None:
-            idx = sym.Var("idx", 0, self.shape.prod)
-        ret = [sym.Num(self.offset)]
+            idx = sym.Var('idx', 0, self.shape.prod)
+        ret: ta.List[sym.Node] = [sym.Num(self.offset)]
         acc = 1
-        for d, s in reversed(self.shape_strides):
-            ret.append(((idx // acc) % d) * s)
-            acc *= d
+        for ss in reversed(self.shape_strides):
+            ret.append(((idx // acc) % ss.shape) * ss.stride)
+            acc *= ss.shape
         return sym.sum_nodes(ret)
 
 
@@ -135,7 +135,7 @@ class ShapeTracker(lang.Final):
         check.arg(all(
             isinstance(x, int) and (s == x or (s == 1 and st == 0))
             for s, x, st in zip(self.shape, new_shape, self.view.stride)
-        ), f"can't expand {self.shape} into {new_shape}")
+        ), f"Can't expand {self.shape} into {new_shape}")
 
         # NOTE: can the mask ever be (0,0)?
         mask = tuple(
@@ -156,7 +156,7 @@ class ShapeTracker(lang.Final):
         )
         check.arg(
             len(set(axis)) == len(axis) and len(axis) == len(self.shape),
-            f"can't permute {self.shape} with {axis}",
+            f"Can't permute {self.shape} with {axis}",
         )
         self._views[-1] = View.new(
             Shape(self.shape[a] for a in axis),
@@ -171,9 +171,9 @@ class ShapeTracker(lang.Final):
 
         check.arg(
             all(check.isinstance(x, int) > 0 for x in new_shape),
-            f"shape must be ints and can't contain 0 or negative numbers {new_shape}"
+            f"Shape must be ints and can't contain 0 or negative numbers {new_shape}"
         )
-        check.arg(math.prod(self.shape) == math.prod(new_shape), f"can't reshape {self.shape} -> {new_shape}")
+        check.arg(math.prod(self.shape) == math.prod(new_shape), f"Can't reshape {self.shape} -> {new_shape}")
 
         # check if this is adding or removing 1s (only)
         # NOTE: this is optional, but removes most calls to (expensive!) merge_views (with mask, not optional)
@@ -226,13 +226,13 @@ class ShapeTracker(lang.Final):
 
     ##
 
-    def _expr_idx(self, idx, valid):
+    def _expr_idx(self, idx: sym.Node, valid: sym.Node) -> ta.Tuple[sym.Node, sym.Node]:
         for v in reversed(self._views[0:-1]):
             valid = v.expr_node_mask(idx, valid)
             idx = v.expr_node(idx)
         return idx, valid
 
-    def expr_node(self, idx="idx"):
+    def expr_node(self, idx: ta.Union[sym.Node, str] = "idx") -> ta.Tuple[sym.Node, sym.Node]:
         if isinstance(idx,  str):
             idx = sym.Var(idx, 0, self.shape.prod - 1)
         return self._expr_idx(self.view.expr_node(idx), self.view.expr_node_mask(idx))
@@ -241,10 +241,9 @@ class ShapeTracker(lang.Final):
     # TODO: this can be shared code between simplify and merge_views
     def real_offset(self) -> int:
         real_offset, mask = self.expr_node(sym.Var("zero", 0, 0))
-        assert real_offset.__class__ is sym.Num, f"how is the offset not a number? {real_offset} {mask}"
-        return real_offset.b
+        return check.isinstance(real_offset, sym.Num).b
 
-    def real_strides(self) -> ta.Tuple[ta.Optional[int], ...]:
+    def real_strides(self) -> ta.Sequence[ta.Optional[int]]:
         if len(self._views) == 1:
             return self.view.stride
         ret: ta.List[ta.Optional[int]] = []
@@ -258,13 +257,13 @@ class ShapeTracker(lang.Final):
             this_dim -= real_offset
             acc *= s
             # TODO: sometimes a mod here is okay if you are say, reading a float4, since you only care %4
-            # if test.__class__ is ModNode and test.b%4 == 0: return check_no_mul(test.a, var)  # removing a mod is okay
-            if this_dim.__class__ is sym.Mul and ta.cast(sym.Mul, this_dim).a.__class__ is sym.Var:
+            # if isinstance(test, sym.Mod) and test.b%4 == 0: return check_no_mul(test.a, var)  # removing a mod is okay
+            if isinstance(this_dim, sym.Mul) and isinstance(this_dim.a, sym.Var):
                 ret.append(this_dim.b)
-            elif this_dim.__class__ is sym.Num and this_dim.b == 0:
+            elif isinstance(this_dim, sym.Num) and this_dim.b == 0:
                 ret.append(0)
-            elif this_dim.__class__ is sym.Var:
+            elif isinstance(this_dim, sym.Var):
                 ret.append(1)
             else:
                 ret.append(None)
-        return tuple(ret[::-1])
+        return ret[::-1]
