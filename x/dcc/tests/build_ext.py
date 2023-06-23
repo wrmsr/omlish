@@ -83,9 +83,10 @@ class BuildExt:
         dry_run: bool = False
         verbose: bool = False
 
-    def __init__(self, opts: Options = Options()) -> None:
+    def __init__(self, exts: ta.Iterable[Extension], opts: Options = Options()) -> None:
         super().__init__()
 
+        self._exts = list(exts)
         self._opts = opts
 
         # build_py
@@ -126,8 +127,6 @@ class BuildExt:
 
     def finalize_options(self):
         opts = self.Options()
-
-        self.extensions = None
 
         self.build_base = opts.build_base or 'build'
 
@@ -239,7 +238,7 @@ class BuildExt:
     def run(self):
         from distutils.ccompiler import new_compiler
 
-        if not self.extensions:
+        if not self._exts:
             return
 
         # FIXME: note build_clib
@@ -348,23 +347,23 @@ class BuildExt:
             extensions[i] = ext
 
     def get_source_files(self):
-        self.check_extensions_list(self.extensions)
+        self.check_extensions_list(self._exts)
         filenames = []
 
-        for ext in self.extensions:
+        for ext in self._exts:
             filenames.extend(ext.sources)
         return filenames
 
     def get_outputs(self):
-        self.check_extensions_list(self.extensions)
+        self.check_extensions_list(self._exts)
 
         outputs = []
-        for ext in self.extensions:
+        for ext in self._exts:
             outputs.append(self.get_ext_fullpath(ext.name))
         return outputs
 
     def build_extensions(self):
-        self.check_extensions_list(self.extensions)
+        self.check_extensions_list(self._exts)
         if self._opts.parallel is not None:
             self._build_extensions_parallel()
         else:
@@ -381,13 +380,13 @@ class BuildExt:
             return
 
         with ThreadPoolExecutor(max_workers=workers) as executor:
-            futures = [executor.submit(self.build_extension, ext) for ext in self.extensions]
-            for ext, fut in zip(self.extensions, futures):
+            futures = [executor.submit(self.build_extension, ext) for ext in self._exts]
+            for ext, fut in zip(self._exts, futures):
                 with self._filter_build_errors(ext):
                     fut.result()
 
     def _build_extensions_serial(self):
-        for ext in self.extensions:
+        for ext in self._exts:
             with self._filter_build_errors(ext):
                 self.build_extension(ext)
 
