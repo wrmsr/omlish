@@ -1,0 +1,21 @@
+- ** re-add ref sharing for immuts
+- ** fix json unwanted mutability
+- * TypeMap / TypeSet wrappers
+
+- pool linkedlist
+- pool treap
+
+- index
+- concmap
+- table (indexes)
+- btree
+- indexableset
+- multimap
+- hamt
+- pervec
+- intervals
+- blooms
+- generalize rbtree json
+- generalize map builder - use ord, return directly if impl is ord else use fac
+- bitset
+- scapegoat
