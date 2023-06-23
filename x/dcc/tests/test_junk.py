@@ -6,10 +6,18 @@
 -std=c++14
 """
 import os.path
+import glob
+import shutil
 import sys
 
 
 def test_junk():
+    here = os.path.join(os.path.dirname(__file__))
+    if os.path.exists(bdir := os.path.join(here, 'build')):
+        shutil.rmtree(bdir)
+    for f in glob.glob(os.path.join(here, '*.so')):
+        os.remove(f)
+
     import distutils as du
     import distutils.ccompiler
     import distutils.core
@@ -20,16 +28,20 @@ def test_junk():
 
     ext = du.core.Extension(
         'junk',
-        sources=[os.path.abspath(os.path.join(os.path.dirname(__file__), '../junk.cc'))],
+        sources=[os.path.abspath(os.path.join(here, '../junk.cc'))],
         extra_compile_args=['-std=c++14'],
     )
 
     from .build_ext import BuildExt
-    cmd_obj = BuildExt()
+    cmd_obj = BuildExt(BuildExt.Options(
+        inplace=True,
+    ))
     cmd_obj.finalize_options()
     cmd_obj.extensions = [ext]
-    cmd_obj.inplace = 1
     cmd_obj.run()
+
+    from . import junk  # noqa
+    assert junk.junk() == 421
 
     # ##
     #

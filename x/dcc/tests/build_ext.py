@@ -51,18 +51,42 @@ import typing as ta
 
 from site import USER_BASE
 
+from omlish import check
+from omlish import cached
+
 
 extension_name_re = re.compile(r'^[a-zA-Z_][a-zA-Z_0-9]*(\.[a-zA-Z_][a-zA-Z_0-9]*)*$')
 
 
 class BuildExt:
 
-    def __init__(self):
-        self.dry_run = 0
-        self.verbose = 1
-        self.force = None
-        self.help = 0
-        self.finalized = 0
+    @dc.dataclass(frozen=True)
+    class Options:
+        build_base: ta.Optional[str] = None
+        build_lib: ta.Optional[str] = None  # directory for compiled extension modules
+        build_temp: ta.Optional[str] = None  # directory for temporary files (build by-products)
+        plat_name: ta.Optional[str] = None  # platform name to cross-compile for, if supported
+        inplace: bool = False  # ignore build-lib and put compiled extensions into the source directory
+        include_dirs: ta.Optional[ta.Sequence[str]] = None  # list of directories to search for header files (pathsep)
+        define: ta.Optional[ta.Sequence[str]] = None  # C preprocessor macros to define
+        undef: ta.Optional[ta.Sequence[str]] = None  # C preprocessor macros to undefine
+        libraries: ta.Optional[ta.Sequence[str]] = None  # external C libraries to link with
+        library_dirs: ta.Optional[ta.Sequence[str]] = None  # directories to search for external C libraries (pathsep)
+        rpath: ta.Optional[ta.Sequence[str]] = None  # directories to search for shared C libraries at runtime
+        link_objects: ta.Optional[ta.Sequence[str]] = None  # extra explicit link objects to include in the link
+        debug: bool = False  # compile/link with debugging information
+        force: bool = False  # forcibly build everything (ignore file timestamps)
+        compiler: ta.Optional[str] = None  # specify the compiler type
+        parallel: ta.Optional[int] = None  # number of parallel build jobs
+        user: bool = False  # add user include, library and rpath
+
+        dry_run: bool = False
+        verbose: bool = False
+
+    def __init__(self, opts: Options = Options()) -> None:
+        super().__init__()
+
+        self._opts = opts
 
         # build_py
         self.package_dir = {}
@@ -100,38 +124,11 @@ class BuildExt:
 
     # build_ext
 
-    @dc.dataclass(frozen=True)
-    class Options:
-        build_base: ta.Optional[str] = None
-        build_lib: ta.Optional[str] = None  # directory for compiled extension modules
-        build_temp: ta.Optional[str] = None  # directory for temporary files (build by-products)
-        plat_name: ta.Optional[str] = None  # platform name to cross-compile for, if supported
-        inplace: bool = False  # ignore build-lib and put compiled extensions into the source directory
-        include_dirs: ta.Optional[ta.Sequence[str]] = None  # list of directories to search for header files (pathsep)
-        define: ta.Optional[ta.Sequence[str]] = None  # C preprocessor macros to define
-        undef: ta.Optional[ta.Sequence[str]] = None  # C preprocessor macros to undefine
-        libraries: ta.Optional[ta.Sequence[str]] = None  # external C libraries to link with
-        library_dirs: ta.Optional[ta.Sequence[str]] = None  # directories to search for external C libraries (pathsep)
-        rpath: ta.Optional[ta.Sequence[str]] = None  # directories to search for shared C libraries at runtime
-        link_objects: ta.Optional[ta.Sequence[str]] = None  # extra explicit link objects to include in the link
-        debug: bool = False  # compile/link with debugging information
-        force: bool = False  # forcibly build everything (ignore file timestamps)
-        compiler: ta.Optional[str] = None  # specify the compiler type
-        parallel: ta.Optional[int] = None  # number of parallel build jobs
-        user: bool = False  # add user include, library and rpath
-
     def finalize_options(self):
         opts = self.Options()
 
         self.extensions = None
 
-        self.inplace = opts.inplace
-
-        self.debug = opts.debug
-        self.force = opts.force
-        self.compiler_opt = opts.compiler
-        self.user = opts.user
-        self.parallel = opts.parallel
         self.build_base = opts.build_base or 'build'
 
         ##
@@ -159,12 +156,6 @@ class BuildExt:
         self.build_temp = opts.build_temp
         if self.build_temp is None:
             self.build_temp = os.path.join(self.build_base, 'temp' + plat_specifier)
-
-        if isinstance(self.parallel, str):
-            try:
-                self.parallel = int(self.parallel)
-            except ValueError:
-                raise DistutilsOptionError("parallel should be an integer")
 
         ## build_ext
 
@@ -198,7 +189,7 @@ class BuildExt:
             self.library_dirs.append(os.path.join(sys.exec_prefix, 'libs'))
             if sys.base_exec_prefix != sys.prefix:  # Issue 16116
                 self.library_dirs.append(os.path.join(sys.base_exec_prefix, 'libs'))
-            if self.debug:
+            if self._opts.debug:
                 self.build_temp = os.path.join(self.build_temp, "Debug")
             else:
                 self.build_temp = os.path.join(self.build_temp, "Release")
@@ -236,7 +227,7 @@ class BuildExt:
 
         self.undef = opts.undef
 
-        if self.user:
+        if self._opts.user:
             user_include = os.path.join(USER_BASE, "include")
             user_lib = os.path.join(USER_BASE, "lib")
             if os.path.isdir(user_include):
@@ -244,12 +235,6 @@ class BuildExt:
             if os.path.isdir(user_lib):
                 self.library_dirs.append(user_lib)
                 self.rpath.append(user_lib)
-
-        if isinstance(self.parallel, str):
-            try:
-                self.parallel = int(self.parallel)
-            except ValueError:
-                raise DistutilsOptionError("parallel should be an integer")
 
     def run(self):
         from distutils.ccompiler import new_compiler
@@ -264,11 +249,12 @@ class BuildExt:
         #     self.library_dirs.append(build_clib.build_clib)
 
         self.compiler = new_compiler(
-            compiler=self.compiler_opt,
-            verbose=self.verbose,
-            dry_run=self.dry_run,
-            force=self.force,
+            compiler=self._opts.compiler,
+            verbose=int(self._opts.verbose),
+            dry_run=int(self._opts.dry_run),
+            force=int(self._opts.force),
         )
+
         customize_compiler(self.compiler)
         if os.name == 'nt' and self.plat_name != get_platform():
             self.compiler.initialize(self.plat_name)
@@ -379,19 +365,16 @@ class BuildExt:
 
     def build_extensions(self):
         self.check_extensions_list(self.extensions)
-        if self.parallel:
+        if self._opts.parallel is not None:
             self._build_extensions_parallel()
         else:
             self._build_extensions_serial()
 
     def _build_extensions_parallel(self):
-        workers = self.parallel
-        if self.parallel is True:
+        workers = self._opts.parallel
+        if workers < 1:
             workers = os.cpu_count()  # may return None
-        try:
-            from concurrent.futures import ThreadPoolExecutor
-        except ImportError:
-            workers = None
+        from concurrent.futures import ThreadPoolExecutor
 
         if workers is None:
             self._build_extensions_serial()
@@ -429,7 +412,7 @@ class BuildExt:
 
         ext_path = self.get_ext_fullpath(ext.name)
         depends = sources + ext.depends
-        if not (self.force or newer_group(depends, ext_path, 'newer')):
+        if not (self._opts.force or newer_group(depends, ext_path, 'newer')):
             log.debug("skipping '%s' extension (up-to-date)", ext.name)
             return
         else:
@@ -446,7 +429,7 @@ class BuildExt:
             output_dir=self.build_temp,
             macros=macros,
             include_dirs=ext.include_dirs,
-            debug=self.debug,
+            debug=int(self._opts.debug),
             extra_postargs=extra_args,
             depends=ext.depends,
         )
@@ -466,7 +449,7 @@ class BuildExt:
             runtime_library_dirs=ext.runtime_library_dirs,
             extra_postargs=extra_args,
             export_symbols=self.get_export_symbols(ext),
-            debug=self.debug,
+            debug=int(self._opts.debug),
             build_temp=self.build_temp,
             target_lang=language)
 
@@ -475,7 +458,7 @@ class BuildExt:
         modpath = fullname.split('.')
         filename = self.get_ext_filename(modpath[-1])
 
-        if not self.inplace:
+        if not self._opts.inplace:
             filename = os.path.join(*modpath[:-1] + [filename])
             return os.path.join(self.build_lib, filename)
 
@@ -515,7 +498,7 @@ class BuildExt:
             from distutils._msvccompiler import MSVCCompiler
             if not isinstance(self.compiler, MSVCCompiler):
                 template = "python%d%d"
-                if self.debug:
+                if self._opts.debug:
                     template = template + '_d'
                 pythonlib = (template % (sys.hexversion >> 24, (sys.hexversion >> 16) & 0xff))
                 return ext.libraries + [pythonlib]
