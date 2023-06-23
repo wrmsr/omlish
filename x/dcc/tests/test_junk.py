@@ -24,11 +24,11 @@ def test_junk():
         extra_compile_args=['-std=c++14'],
     )
 
-    from .build_ext import build_ext
-    cmd_obj = build_ext()
+    from .build_ext import BuildExt
+    cmd_obj = BuildExt()
     cmd_obj.extensions = [ext]
     cmd_obj.inplace = 1
-    cmd_obj.ensure_finalized()
+    cmd_obj.finalize_options()
     cmd_obj.run()
 
     # ##

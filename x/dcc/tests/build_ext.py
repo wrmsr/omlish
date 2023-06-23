@@ -39,7 +39,6 @@ import contextlib
 import os
 import re
 import sys
-from distutils.core import Command
 from distutils.errors import *
 from distutils.sysconfig import customize_compiler, get_python_version
 from distutils.sysconfig import get_config_h_filename
@@ -47,6 +46,8 @@ from distutils.dep_util import newer_group
 from distutils.extension import Extension
 from distutils.util import get_platform, convert_path
 from distutils import log
+import dataclasses as dc
+import typing as ta
 
 from site import USER_BASE
 
@@ -54,16 +55,7 @@ from site import USER_BASE
 extension_name_re = re.compile(r'^[a-zA-Z_][a-zA-Z_0-9]*(\.[a-zA-Z_][a-zA-Z_0-9]*)*$')
 
 
-def show_compilers():
-    from distutils.ccompiler import show_compilers
-    show_compilers()
-
-
-class build_ext(
-    # Command
-):
-
-    # Command
+class BuildExt:
 
     def __init__(self):
         self.initialize_options()
@@ -76,14 +68,6 @@ class build_ext(
 
         # build_py
         self.package_dir = {}
-
-    def get_command_name(self):
-        return 'build_ext'
-
-    def ensure_finalized(self):
-        if not self.finalized:
-            self.finalize_options()
-        self.finalized = 1
 
     def ensure_string_list(self, option):
         val = getattr(self, option)
@@ -132,45 +116,25 @@ class build_ext(
 
     # build_ext
 
-    description = "build C/C++ extensions (compile/link to build directory)"
-
-    sep_by = " (separated by '%s')" % os.pathsep
-    user_options = [
-        ('build-lib=', 'b', "directory for compiled extension modules"),
-        ('build-temp=', 't', "directory for temporary files (build by-products)"),
-        ('plat-name=', 'p', "platform name to cross-compile for, if supported " "(default: %s)" % get_platform()),
-        ('inplace', 'i', "ignore build-lib and put compiled extensions into the source " + "directory alongside your pure Python modules"),
-        ('include-dirs=', 'I', "list of directories to search for header files" + sep_by),
-        ('define=', 'D', "C preprocessor macros to define"),
-        ('undef=', 'U', "C preprocessor macros to undefine"),
-        ('libraries=', 'l', "external C libraries to link with"),
-        ('library-dirs=', 'L', "directories to search for external C libraries" + sep_by),
-        ('rpath=', 'R', "directories to search for shared C libraries at runtime"),
-        ('link-objects=', 'O', "extra explicit link objects to include in the link"),
-        ('debug', 'g', "compile/link with debugging information"),
-        ('force', 'f', "forcibly build everything (ignore file timestamps)"),
-        ('compiler=', 'c', "specify the compiler type"),
-        ('parallel=', 'j', "number of parallel build jobs"),
-        ('user', None, "add user include, library and rpath"),
-
-        # build
-
-        ('build-lib=', None, "build directory for all distribution (defaults to either " + "build-purelib or build-platlib"),
-        ('build-temp=', 't', "temporary build directory"),
-        ('compiler=', 'c', "specify the compiler type"),
-        ('debug', 'g', "compile extensions and libraries with debugging information"),
-        ('force', 'f', "forcibly build everything (ignore file timestamps)"),
-        ('parallel=', 'j', "number of parallel build jobs"),
-        ('plat-name=', 'p', "platform name to build for, if supported " "(default: %s)" % get_platform()),
-
-    ]
-
-    boolean_options = ['inplace', 'debug', 'force', 'user']
-
-    help_options = [
-        ('help-compiler', None,
-         "list available compilers", show_compilers),
-    ]
+    @dc.dataclass(frozen=True)
+    class Options:
+        build_base: str = 'build'
+        build_lib: ta.Optional[str] = None  # directory for compiled extension modules
+        build_temp: ta.Optional[str] = None  # directory for temporary files (build by-products)
+        plat_name: ta.Optional[str] = None  # platform name to cross-compile for, if supported
+        inplace: bool = False  # ignore build-lib and put compiled extensions into the source directory
+        include_dirs: ta.Optional[ta.Sequence[str]] = None  # list of directories to search for header files (pathsep)
+        define: ta.Optional[ta.Sequence[str]] = None  # C preprocessor macros to define
+        undef: ta.Optional[ta.Sequence[str]] = None  # C preprocessor macros to undefine
+        libraries: ta.Optional[ta.Sequence[str]] = None  # external C libraries to link with
+        library_dirs: ta.Optional[ta.Sequence[str]] = None  # directories to search for external C libraries (pathsep)
+        rpath: ta.Optional[ta.Sequence[str]] = None  # directories to search for shared C libraries at runtime
+        link_objects: ta.Optional[ta.Sequence[str]] = None  # extra explicit link objects to include in the link
+        debug: bool = False  # compile/link with debugging information
+        force: bool = False  # forcibly build everything (ignore file timestamps)
+        compiler: ta.Optional[str] = None  # specify the compiler type
+        parallel: ta.Optional[int] = None  # number of parallel build jobs
+        user: bool = False  # add user include, library and rpath
 
     def initialize_options(self):
         self.extensions = None
@@ -205,7 +169,7 @@ class build_ext(
             self.plat_name = get_platform()
         else:
             if os.name != 'nt':
-                raise DistutilsOptionError( "--plat-name only supported on Windows (try " "using './configure --help' on your platform)")
+                raise DistutilsOptionError("--plat-name only supported on Windows (try " "using './configure --help' on your platform)")
 
         plat_specifier = ".%s-%d.%d" % (self.plat_name, *sys.version_info[:2])
 
@@ -330,10 +294,12 @@ class build_ext(
         #     self.libraries.extend(build_clib.get_library_names() or [])
         #     self.library_dirs.append(build_clib.build_clib)
 
-        self.compiler = new_compiler(compiler=self.compiler,
-                                     verbose=self.verbose,
-                                     dry_run=self.dry_run,
-                                     force=self.force)
+        self.compiler = new_compiler(
+            compiler=self.compiler,
+            verbose=self.verbose,
+            dry_run=self.dry_run,
+            force=self.force,
+        )
         customize_compiler(self.compiler)
         if os.name == 'nt' and self.plat_name != get_platform():
             self.compiler.initialize(self.plat_name)
@@ -369,18 +335,23 @@ class build_ext(
                 # by Extension constructor)
 
             if not isinstance(ext, tuple) or len(ext) != 2:
-                raise DistutilsSetupError("each element of 'ext_modules' option must be an " "Extension instance or 2-tuple")
+                raise DistutilsSetupError(
+                    "each element of 'ext_modules' option must be an " "Extension instance or 2-tuple")
 
             ext_name, build_info = ext
 
-            log.warn("old-style (ext_name, build_info) tuple found in " "ext_modules for extension '%s' " "-- please convert to Extension instance", ext_name)
+            log.warn(
+                "old-style (ext_name, build_info) tuple found in " "ext_modules for extension '%s' " "-- please convert to Extension instance",
+                ext_name)
 
             if not (isinstance(ext_name, str) and
                     extension_name_re.match(ext_name)):
-                raise DistutilsSetupError( "first element of each tuple in 'ext_modules' " "must be the extension name (a string)")
+                raise DistutilsSetupError(
+                    "first element of each tuple in 'ext_modules' " "must be the extension name (a string)")
 
             if not isinstance(build_info, dict):
-                raise DistutilsSetupError( "second element of each tuple in 'ext_modules' " "must be a dictionary (build info)")
+                raise DistutilsSetupError(
+                    "second element of each tuple in 'ext_modules' " "must be a dictionary (build info)")
 
             # OK, the (ext_name, build_info) dict is type-safe: convert it
             # to an Extension instance.
@@ -413,7 +384,7 @@ class build_ext(
                 ext.undef_macros = []
                 for macro in macros:
                     if not (isinstance(macro, tuple) and len(macro) in (1, 2)):
-                        raise DistutilsSetupError( "'macros' element of build info dict " "must be 1- or 2-tuple")
+                        raise DistutilsSetupError("'macros' element of build info dict " "must be 1- or 2-tuple")
                     if len(macro) == 1:
                         ext.undef_macros.append(macro[0])
                     elif len(macro) == 2:
