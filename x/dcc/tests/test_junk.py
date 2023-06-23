@@ -24,7 +24,6 @@ def test_junk():
         extra_compile_args=['-std=c++14'],
     )
 
-    from .build_ext import build_ext
 
     dist = du.core.Distribution(attrs=dict(
         name='junk',
@@ -32,8 +31,19 @@ def test_junk():
     ))
 
     dist.script_args = ['build_ext', '--inplace']
+
     dist.parse_command_line()
-    dist.run_commands()
+
+    # dist.run_commands()
+
+    dist.set_defaults()
+    from .build_ext import build_ext
+    cmd_obj = build_ext(dist)
+    options = dist.command_options.get('build_ext')
+    if options:
+        dist._set_command_options(cmd_obj, options)
+    cmd_obj.ensure_finalized()
+    cmd_obj.run()
 
     # ##
     #
