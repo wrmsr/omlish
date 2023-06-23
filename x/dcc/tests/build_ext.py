@@ -58,8 +58,6 @@ extension_name_re = re.compile(r'^[a-zA-Z_][a-zA-Z_0-9]*(\.[a-zA-Z_][a-zA-Z_0-9]
 class BuildExt:
 
     def __init__(self):
-        self.initialize_options()
-
         self.dry_run = 0
         self.verbose = 1
         self.force = None
@@ -68,20 +66,6 @@ class BuildExt:
 
         # build_py
         self.package_dir = {}
-
-    def ensure_string_list(self, option):
-        val = getattr(self, option)
-        if val is None:
-            return
-        elif isinstance(val, str):
-            setattr(self, option, re.split(r',\s*|\s+', val))
-        else:
-            if isinstance(val, list):
-                ok = all(isinstance(v, str) for v in val)
-            else:
-                ok = False
-            if not ok:
-                raise DistutilsOptionError("'{}' must be a list of strings (got {!r})".format(option, val))
 
     # build_py
 
@@ -118,7 +102,7 @@ class BuildExt:
 
     @dc.dataclass(frozen=True)
     class Options:
-        build_base: str = 'build'
+        build_base: ta.Optional[str] = None
         build_lib: ta.Optional[str] = None  # directory for compiled extension modules
         build_temp: ta.Optional[str] = None  # directory for temporary files (build by-products)
         plat_name: ta.Optional[str] = None  # platform name to cross-compile for, if supported
@@ -136,35 +120,27 @@ class BuildExt:
         parallel: ta.Optional[int] = None  # number of parallel build jobs
         user: bool = False  # add user include, library and rpath
 
-    def initialize_options(self):
-        self.extensions = None
-        self.build_lib = None
-        self.plat_name = None
-        self.build_temp = None
-        self.inplace = 0
-        self.package = None
-
-        self.include_dirs = None
-        self.define = None
-        self.undef = None
-        self.libraries = None
-        self.library_dirs = None
-        self.rpath = None
-        self.link_objects = None
-        self.debug = None
-        self.force = None
-        self.compiler = None
-        self.user = None
-        self.parallel = None
-
-        self.build_base = 'build'
-        self.build_platlib = None
-
     def finalize_options(self):
+        opts = self.Options()
+
+        self.extensions = None
+
+        self.inplace = opts.inplace
+
+        self.debug = opts.debug
+        self.force = opts.force
+        self.compiler_opt = opts.compiler
+        self.user = opts.user
+        self.parallel = opts.parallel
+        self.build_base = opts.build_base or 'build'
+
+        ##
+
         from distutils import sysconfig
 
         ## build
 
+        self.plat_name = opts.plat_name
         if self.plat_name is None:
             self.plat_name = get_platform()
         else:
@@ -176,12 +152,11 @@ class BuildExt:
         if hasattr(sys, 'gettotalrefcount'):
             plat_specifier += '-pydebug'
 
-        if self.build_platlib is None:
-            self.build_platlib = os.path.join(self.build_base, 'lib' + plat_specifier)
-
+        self.build_lib = opts.build_lib
         if self.build_lib is None:
-            self.build_lib = self.build_platlib
+            self.build_lib = os.path.join(self.build_base, 'lib' + plat_specifier)
 
+        self.build_temp = opts.build_temp
         if self.build_temp is None:
             self.build_temp = os.path.join(self.build_base, 'temp' + plat_specifier)
 
@@ -197,8 +172,7 @@ class BuildExt:
 
         py_include = sysconfig.get_python_inc()
         plat_py_include = sysconfig.get_python_inc(plat_specific=1)
-        if self.include_dirs is None:
-            self.include_dirs = []
+        self.include_dirs = list(opts.include_dirs or [])
         if isinstance(self.include_dirs, str):
             self.include_dirs = self.include_dirs.split(os.pathsep)
 
@@ -209,20 +183,16 @@ class BuildExt:
         if plat_py_include != py_include:
             self.include_dirs.extend(plat_py_include.split(os.path.pathsep))
 
-        self.ensure_string_list('libraries')
-        self.ensure_string_list('link_objects')
+        self.libraries = list(opts.libraries or [])
+        self.link_objects = list(opts.link_objects or [])
 
-        if self.libraries is None:
-            self.libraries = []
+        self.library_dirs = list(opts.library_dirs or [])
         if self.library_dirs is None:
             self.library_dirs = []
         elif isinstance(self.library_dirs, str):
             self.library_dirs = self.library_dirs.split(os.pathsep)
 
-        if self.rpath is None:
-            self.rpath = []
-        elif isinstance(self.rpath, str):
-            self.rpath = self.rpath.split(os.pathsep)
+        self.rpath = list(opts.rpath or [])
 
         if os.name == 'nt':
             self.library_dirs.append(os.path.join(sys.exec_prefix, 'libs'))
@@ -260,12 +230,11 @@ class BuildExt:
                 # building python standard extensions
                 self.library_dirs.append('.')
 
-        if self.define:
-            defines = self.define.split(',')
-            self.define = [(symbol, '1') for symbol in defines]
+        self.define = None
+        if opts.define:
+            self.define = [(symbol, '1') for symbol in opts.define]
 
-        if self.undef:
-            self.undef = self.undef.split(',')
+        self.undef = opts.undef
 
         if self.user:
             user_include = os.path.join(USER_BASE, "include")
@@ -295,7 +264,7 @@ class BuildExt:
         #     self.library_dirs.append(build_clib.build_clib)
 
         self.compiler = new_compiler(
-            compiler=self.compiler,
+            compiler=self.compiler_opt,
             verbose=self.verbose,
             dry_run=self.dry_run,
             force=self.force,

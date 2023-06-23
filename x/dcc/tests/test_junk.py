@@ -26,9 +26,9 @@ def test_junk():
 
     from .build_ext import BuildExt
     cmd_obj = BuildExt()
+    cmd_obj.finalize_options()
     cmd_obj.extensions = [ext]
     cmd_obj.inplace = 1
-    cmd_obj.finalize_options()
     cmd_obj.run()
 
     # ##
