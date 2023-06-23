@@ -26,7 +26,7 @@ ABOUT = _read_about(os.path.join(DIR, PROJECT, '__about__.py'))
 
 if __name__ == '__main__':
     st.setup(
-        name=DIST.rname,
+        name=PROJECT,
         version=ABOUT['__version__'],
         description=ABOUT['__description__'],
         author=ABOUT['__author__'],

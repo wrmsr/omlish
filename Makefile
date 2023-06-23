@@ -10,8 +10,8 @@ PYTHON_VERSION_NOGIL:=nogil-3.9.10-1
 
 SOURCES:=\
 	${PROJECT} \
-	infra \
 	nn \
+	x \
 
 
 ### Clean
