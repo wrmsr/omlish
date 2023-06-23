@@ -45,7 +45,7 @@ from distutils.sysconfig import customize_compiler, get_python_version
 from distutils.sysconfig import get_config_h_filename
 from distutils.dep_util import newer_group
 from distutils.extension import Extension
-from distutils.util import get_platform
+from distutils.util import get_platform, convert_path
 from distutils import log
 
 from site import USER_BASE
@@ -65,15 +65,17 @@ class build_ext(
 
     # Command
 
-    def __init__(self, dist):
-        self.distribution = dist
+    def __init__(self):
         self.initialize_options()
 
         self.dry_run = 0
-        self.verbose = dist.verbose
+        self.verbose = 1
         self.force = None
         self.help = 0
         self.finalized = 0
+
+        # build_py
+        self.package_dir = {}
 
     def get_command_name(self):
         return 'build_ext'
@@ -82,13 +84,6 @@ class build_ext(
         if not self.finalized:
             self.finalize_options()
         self.finalized = 1
-
-    def set_undefined_options(self, src_cmd, *option_pairs):
-        src_cmd_obj = self.distribution.get_command_obj(src_cmd)
-        src_cmd_obj.ensure_finalized()
-        for src_option, dst_option in option_pairs:
-            if getattr(self, dst_option) is None:
-                setattr(self, dst_option, getattr(src_cmd_obj, src_option))
 
     def ensure_string_list(self, option):
         val = getattr(self, option)
@@ -104,10 +99,36 @@ class build_ext(
             if not ok:
                 raise DistutilsOptionError("'{}' must be a list of strings (got {!r})".format(option, val))
 
-    def get_finalized_command(self, command, create=1):
-        cmd_obj = self.distribution.get_command_obj(command, create)
-        cmd_obj.ensure_finalized()
-        return cmd_obj
+    # build_py
+
+    def get_package_dir(self, package):
+        path = package.split('.')
+
+        if not self.package_dir:
+            if path:
+                return os.path.join(*path)
+            else:
+                return ''
+        else:
+            tail = []
+            while path:
+                try:
+                    pdir = self.package_dir['.'.join(path)]
+                except KeyError:
+                    tail.insert(0, path[-1])
+                    del path[-1]
+                else:
+                    tail.insert(0, pdir)
+                    return os.path.join(*tail)
+            else:
+                pdir = self.package_dir.get('')
+                if pdir is not None:
+                    tail.insert(0, pdir)
+
+                if tail:
+                    return os.path.join(*tail)
+                else:
+                    return ''
 
     # build_ext
 
@@ -130,7 +151,18 @@ class build_ext(
         ('force', 'f', "forcibly build everything (ignore file timestamps)"),
         ('compiler=', 'c', "specify the compiler type"),
         ('parallel=', 'j', "number of parallel build jobs"),
-        ('user', None, "add user include, library and rpath")
+        ('user', None, "add user include, library and rpath"),
+
+        # build
+
+        ('build-lib=', None, "build directory for all distribution (defaults to either " + "build-purelib or build-platlib"),
+        ('build-temp=', 't', "temporary build directory"),
+        ('compiler=', 'c', "specify the compiler type"),
+        ('debug', 'g', "compile extensions and libraries with debugging information"),
+        ('force', 'f', "forcibly build everything (ignore file timestamps)"),
+        ('parallel=', 'j', "number of parallel build jobs"),
+        ('plat-name=', 'p', "platform name to build for, if supported " "(default: %s)" % get_platform()),
+
     ]
 
     boolean_options = ['inplace', 'debug', 'force', 'user']
@@ -161,29 +193,48 @@ class build_ext(
         self.user = None
         self.parallel = None
 
+        self.build_base = 'build'
+        self.build_platlib = None
+
     def finalize_options(self):
         from distutils import sysconfig
 
-        self.set_undefined_options(
-            'build',
-            ('build_lib', 'build_lib'),
-            ('build_temp', 'build_temp'),
-            ('compiler', 'compiler'),
-            ('debug', 'debug'),
-            ('force', 'force'),
-            ('parallel', 'parallel'),
-            ('plat_name', 'plat_name'),
-        )
+        ## build
 
-        if self.package is None:
-            self.package = self.distribution.ext_package
+        if self.plat_name is None:
+            self.plat_name = get_platform()
+        else:
+            if os.name != 'nt':
+                raise DistutilsOptionError( "--plat-name only supported on Windows (try " "using './configure --help' on your platform)")
 
-        self.extensions = self.distribution.ext_modules
+        plat_specifier = ".%s-%d.%d" % (self.plat_name, *sys.version_info[:2])
+
+        if hasattr(sys, 'gettotalrefcount'):
+            plat_specifier += '-pydebug'
+
+        if self.build_platlib is None:
+            self.build_platlib = os.path.join(self.build_base, 'lib' + plat_specifier)
+
+        if self.build_lib is None:
+            self.build_lib = self.build_platlib
+
+        if self.build_temp is None:
+            self.build_temp = os.path.join(self.build_base, 'temp' + plat_specifier)
+
+        if isinstance(self.parallel, str):
+            try:
+                self.parallel = int(self.parallel)
+            except ValueError:
+                raise DistutilsOptionError("parallel should be an integer")
+
+        ## build_ext
+
+        self.package = None
 
         py_include = sysconfig.get_python_inc()
         plat_py_include = sysconfig.get_python_inc(plat_specific=1)
         if self.include_dirs is None:
-            self.include_dirs = self.distribution.include_dirs or []
+            self.include_dirs = []
         if isinstance(self.include_dirs, str):
             self.include_dirs = self.include_dirs.split(os.pathsep)
 
@@ -273,10 +324,11 @@ class build_ext(
         if not self.extensions:
             return
 
-        if self.distribution.has_c_libraries():
-            build_clib = self.get_finalized_command('build_clib')
-            self.libraries.extend(build_clib.get_library_names() or [])
-            self.library_dirs.append(build_clib.build_clib)
+        # FIXME: note build_clib
+        # if self.distribution.has_c_libraries():
+        #     build_clib = self.get_finalized_command('build_clib')
+        #     self.libraries.extend(build_clib.get_library_names() or [])
+        #     self.library_dirs.append(build_clib.build_clib)
 
         self.compiler = new_compiler(compiler=self.compiler,
                                      verbose=self.verbose,
@@ -488,8 +540,7 @@ class build_ext(
             return os.path.join(self.build_lib, filename)
 
         package = '.'.join(modpath[0:-1])
-        build_py = self.get_finalized_command('build_py')
-        package_dir = os.path.abspath(build_py.get_package_dir(package))
+        package_dir = os.path.abspath(self.get_package_dir(package))
 
         return os.path.join(package_dir, filename)
 
