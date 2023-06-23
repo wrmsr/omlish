@@ -8,7 +8,6 @@
 import os.path
 import glob
 import shutil
-import sys
 
 
 def test_junk():
@@ -19,10 +18,7 @@ def test_junk():
         os.remove(f)
 
     import distutils as du
-    import distutils.ccompiler
     import distutils.core
-    import distutils.sysconfig
-    import distutils.util
 
     ##
 
@@ -39,7 +35,6 @@ def test_junk():
             inplace=True,
         ),
     )
-    cmd_obj.finalize_options()
     cmd_obj.run()
 
     from . import junk  # noqa

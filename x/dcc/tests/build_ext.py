@@ -38,26 +38,26 @@ License Agreement.
 import concurrent.futures as cf
 import contextlib
 import dataclasses as dc
+import logging
 import os
-import re
 import site
 import sys
 import typing as ta
 
 import distutils as du
+import distutils.ccompiler
 import distutils.core
 import distutils.dep_util
 import distutils.errors
 import distutils.sysconfig
 import distutils.util
 
-from distutils import log
-
 from omlish import check
 from omlish import cached
+from omlish import lang
 
 
-extension_name_re = re.compile(r'^[a-zA-Z_][a-zA-Z_0-9]*(\.[a-zA-Z_][a-zA-Z_0-9]*)*$')
+log = logging.getLogger(__name__)
 
 
 class BuildExt:
@@ -67,15 +67,19 @@ class BuildExt:
         build_base: ta.Optional[str] = None
         build_lib: ta.Optional[str] = None  # directory for compiled extension modules
         build_temp: ta.Optional[str] = None  # directory for temporary files (build by-products)
+
         plat_name: ta.Optional[str] = None  # platform name to cross-compile for, if supported
-        inplace: bool = False  # ignore build-lib and put compiled extensions into the source directory
+
         include_dirs: ta.Optional[ta.Sequence[str]] = None  # list of directories to search for header files (pathsep)
-        define: ta.Optional[ta.Sequence[str]] = None  # C preprocessor macros to define
+        define: ta.Optional[ta.Mapping[str, str]] = None  # C preprocessor macros to define
         undef: ta.Optional[ta.Sequence[str]] = None  # C preprocessor macros to undefine
+
         libraries: ta.Optional[ta.Sequence[str]] = None  # external C libraries to link with
         library_dirs: ta.Optional[ta.Sequence[str]] = None  # directories to search for external C libraries (pathsep)
         rpath: ta.Optional[ta.Sequence[str]] = None  # directories to search for shared C libraries at runtime
         link_objects: ta.Optional[ta.Sequence[str]] = None  # extra explicit link objects to include in the link
+
+        inplace: bool = False  # ignore build-lib and put compiled extensions into the source directory
         debug: bool = False  # compile/link with debugging information
         force: bool = False  # forcibly build everything (ignore file timestamps)
         compiler: ta.Optional[str] = None  # specify the compiler type
@@ -85,49 +89,16 @@ class BuildExt:
         dry_run: bool = False
         verbose: bool = False
 
+        package: ta.Optional[str] = None
+        package_dir: ta.Optional[ta.Mapping[str, str]] = None
+
     def __init__(self, exts: ta.Iterable[du.core.Extension], opts: Options = Options()) -> None:
         super().__init__()
 
-        self._exts = list(exts)
-        self._opts = opts
+        self._exts = [check.isinstance(e, du.core.Extension) for e in exts]
+        self._opts = check.isinstance(opts, BuildExt.Options)
 
-        # build_py
-        self.package_dir = {}
-
-    # build_py
-
-    package = None
-
-    def get_package_dir(self, package):
-        path = package.split('.')
-
-        if not self.package_dir:
-            if path:
-                return os.path.join(*path)
-            else:
-                return ''
-        else:
-            tail = []
-            while path:
-                try:
-                    pdir = self.package_dir['.'.join(path)]
-                except KeyError:
-                    tail.insert(0, path[-1])
-                    del path[-1]
-                else:
-                    tail.insert(0, pdir)
-                    return os.path.join(*tail)
-            else:
-                pdir = self.package_dir.get('')
-                if pdir is not None:
-                    tail.insert(0, pdir)
-
-                if tail:
-                    return os.path.join(*tail)
-                else:
-                    return ''
-
-    # build_ext
+    #
 
     @property
     def options(self) -> Options:
@@ -234,16 +205,45 @@ class BuildExt:
             runtime=rpath,
         )
 
-    def finalize_options(self):
-        opts = self.Options()
+    #
 
-        self.define = None
-        if opts.define:
-            self.define = [(symbol, '1') for symbol in opts.define]
+    @lang.cached_nullary
+    def get_compiler(self) -> du.ccompiler.CCompiler:
+        cc = du.ccompiler.new_compiler(
+            compiler=self._opts.compiler,
+            verbose=int(self._opts.verbose),
+            dry_run=int(self._opts.dry_run),
+            force=int(self._opts.force),
+        )
 
-    def run(self):
-        from distutils.ccompiler import new_compiler
+        du.sysconfig.customize_compiler(cc)
 
+        if os.name == 'nt' and self.plat_name != du.util.get_platform():
+            cc.initialize(self.plat_name)  # noqa
+
+        cc.set_include_dirs(list(self.cdirs.include))
+
+        if self._opts.define:
+            for (name, value) in self._opts.define.items():
+                cc.define_macro(name, value)
+
+        if self._opts.undef is not None:
+            for macro in self._opts.undef:
+                cc.undefine_macro(macro)
+
+        if self._opts.libraries:
+            cc.set_libraries(list(self._opts.libraries))
+
+        cc.set_library_dirs(list(self.cdirs.library))
+
+        cc.set_runtime_library_dirs(list(self.cdirs.runtime))
+
+        if self._opts.link_objects:
+            cc.set_link_objects(list(self._opts.link_objects))
+
+        return cc
+
+    def run(self) -> None:
         if not self._exts:
             return
 
@@ -253,55 +253,33 @@ class BuildExt:
         #     self.libraries.extend(build_clib.get_library_names() or [])
         #     self.library_dirs.append(build_clib.build_clib)
 
-        self.compiler = new_compiler(
-            compiler=self._opts.compiler,
-            verbose=int(self._opts.verbose),
-            dry_run=int(self._opts.dry_run),
-            force=int(self._opts.force),
-        )
-
-        du.sysconfig.customize_compiler(self.compiler)
-        if os.name == 'nt' and self.plat_name != du.util.get_platform():
-            self.compiler.initialize(self.plat_name)  # noqa
-
-        self.compiler.set_include_dirs(list(self.cdirs.include))
-        if self.define is not None:
-            # 'define' option is a list of (name,value) tuples
-            for (name, value) in self.define:
-                self.compiler.define_macro(name, value)
-        if self._opts.undef is not None:
-            for macro in self._opts.undef:
-                self.compiler.undefine_macro(macro)
-        if self._opts.libraries:
-            self.compiler.set_libraries(list(self._opts.libraries))
-        self.compiler.set_library_dirs(list(self.cdirs.library))
-        self.compiler.set_runtime_library_dirs(list(self.cdirs.runtime))
-        if self._opts.link_objects:
-            self.compiler.set_link_objects(list(self._opts.link_objects))
-
-        # Now actually compile and link everything.
         self.build_extensions()
 
-    def get_source_files(self):
-        filenames = []
-
-        for ext in self._exts:
-            filenames.extend(ext.sources)
-        return filenames
-
-    def get_outputs(self):
-        outputs = []
-        for ext in self._exts:
-            outputs.append(self.get_ext_fullpath(ext.name))
-        return outputs
-
-    def build_extensions(self):
+    def build_extensions(self) -> None:
         if self._opts.parallel is not None:
             self._build_extensions_parallel()
         else:
             self._build_extensions_serial()
 
-    def _build_extensions_parallel(self):
+    @contextlib.contextmanager
+    def _filter_build_errors(self, ext: du.core.Extension) -> ta.Iterator[None]:
+        try:
+            yield
+        except (
+                du.errors.CCompilerError,
+                du.errors.CompileError,
+                du.errors.DistutilsError,
+        ) as e:
+            if not ext.optional:
+                raise
+            log.warning('building extension "%s" failed: %s' % (ext.name, e))
+
+    def _build_extensions_serial(self) -> None:
+        for ext in self._exts:
+            with self._filter_build_errors(ext):
+                self.build_extension(ext)
+
+    def _build_extensions_parallel(self) -> None:
         workers = self._opts.parallel
         if workers < 1:
             workers = os.cpu_count()  # may return None
@@ -316,21 +294,9 @@ class BuildExt:
                 with self._filter_build_errors(ext):
                     fut.result()
 
-    def _build_extensions_serial(self):
-        for ext in self._exts:
-            with self._filter_build_errors(ext):
-                self.build_extension(ext)
+    #
 
-    @contextlib.contextmanager
-    def _filter_build_errors(self, ext):
-        try:
-            yield
-        except (du.errors.CCompilerError, du.errors.DistutilsError, du.errors.CompileError) as e:
-            if not ext.optional:
-                raise
-            log.warn('building extension "%s" failed: %s' % (ext.name, e))
-
-    def build_extension(self, ext):
+    def build_extension(self, ext: du.core.Extension) -> None:
         sources = ext.sources
         sources = sorted(sources)
 
@@ -348,7 +314,9 @@ class BuildExt:
         for undef in ext.undef_macros:
             macros.append((undef,))
 
-        objects = self.compiler.compile(
+        cc = self.get_compiler()
+
+        objects = cc.compile(
             sources,
             output_dir=self.build_temp,
             macros=macros,
@@ -358,26 +326,27 @@ class BuildExt:
             depends=ext.depends,
         )
 
-        self._built_objects = objects[:]
-
         if ext.extra_objects:
             objects.extend(ext.extra_objects)
         extra_args = ext.extra_link_args or []
 
-        language = ext.language or self.compiler.detect_language(sources)
+        language = ext.language or cc.detect_language(sources)
 
-        self.compiler.link_shared_object(
+        cc.link_shared_object(
             objects, ext_path,
-            libraries=self.get_libraries(ext),
+            libraries=list(self.get_libraries(ext)),
             library_dirs=ext.library_dirs,
             runtime_library_dirs=ext.runtime_library_dirs,
             extra_postargs=extra_args,
-            export_symbols=self.get_export_symbols(ext),
-            debug=int(self._opts.debug),
+            export_symbols=list(self.get_export_symbols(ext)),
+            debug=int(self._opts.debug),  # noqa
             build_temp=self.build_temp,
-            target_lang=language)
+            target_lang=language,
+        )
 
-    def get_ext_fullpath(self, ext_name):
+    #
+
+    def get_ext_fullpath(self, ext_name: str) -> str:
         fullname = self.get_ext_fullname(ext_name)
         modpath = fullname.split('.')
         filename = self.get_ext_filename(modpath[-1])
@@ -391,18 +360,50 @@ class BuildExt:
 
         return os.path.join(package_dir, filename)
 
-    def get_ext_fullname(self, ext_name):
-        if self.package is None:
+    def get_package_dir(self, package: str) -> str:
+        path = package.split('.')
+
+        if self._opts.package_dir is None:
+            if path:
+                return os.path.join(*path)
+            else:
+                return ''
+
+        tail = []
+        while path:
+            try:
+                pdir = self._opts.package_dir['.'.join(path)]
+            except KeyError:
+                tail.insert(0, path[-1])
+                del path[-1]
+            else:
+                tail.insert(0, pdir)
+                return os.path.join(*tail)
+
+        else:
+            pdir = self._opts.package_dir.get('')
+            if pdir is not None:
+                tail.insert(0, pdir)
+
+            if tail:
+                return os.path.join(*tail)
+            else:
+                return ''
+
+    def get_ext_fullname(self, ext_name: str) -> str:
+        if self._opts.package is None:
             return ext_name
         else:
-            return self.package + '.' + ext_name
+            return self._opts.package + '.' + ext_name
 
-    def get_ext_filename(self, ext_name):
+    def get_ext_filename(self, ext_name: str) -> str:
         ext_path = ext_name.split('.')
         ext_suffix = du.sysconfig.get_config_var('EXT_SUFFIX')
         return os.path.join(*ext_path) + ext_suffix
 
-    def get_export_symbols(self, ext):
+    #
+
+    def get_export_symbols(self, ext: du.core.Extension) -> ta.Sequence[str]:
         suffix = '_' + ext.name.split('.')[-1]
         try:
             # Unicode module name support as defined in PEP-489
@@ -416,15 +417,17 @@ class BuildExt:
             ext.export_symbols.append(initfunc_name)
         return ext.export_symbols
 
-    def get_libraries(self, ext):
+    def get_libraries(self, ext: du.core.Extension) -> ta.Sequence[str]:
         if sys.platform == 'win32':
             from distutils._msvccompiler import MSVCCompiler  # noqa
-            if not isinstance(self.compiler, MSVCCompiler):
+
+            if not isinstance(self.get_compiler(), MSVCCompiler):
                 template = 'python%d%d'
                 if self._opts.debug:
                     template = template + '_d'
                 pythonlib = (template % (sys.hexversion >> 24, (sys.hexversion >> 16) & 0xff))
                 return ext.libraries + [pythonlib]
+
         else:
             link_libpython = False
             if du.sysconfig.get_config_var('Py_ENABLE_SHARED'):
