@@ -143,7 +143,7 @@ class BuildExt:
 
     @cached.property
     def plat_specifier(self) -> str:
-        ps = ".{}-{:d}.{:d}".format(self.plat_name, *sys.version_info[:2])
+        ps = '.{}-{:d}.{:d}'.format(self.plat_name, *sys.version_info[:2])
         if hasattr(sys, 'gettotalrefcount'):
             ps += '-pydebug'
         return ps
@@ -159,47 +159,42 @@ class BuildExt:
         bt = os.path.join(self.build_base, 'temp' + self.plat_specifier)
         if os.name == 'nt':
             if self._opts.debug:
-                bt = os.path.join(bt, "Debug")
+                bt = os.path.join(bt, 'Debug')
             else:
-                bt = os.path.join(bt, "Release")
+                bt = os.path.join(bt, 'Release')
         return bt
 
-    def finalize_options(self):
-        opts = self.Options()
+    @dc.dataclass(frozen=True)
+    class CDirs:
+        include: ta.Sequence[str]
+        library: ta.Sequence[str]
+        runtime: ta.Sequence[str]
+
+    @cached.property
+    def cdirs(self) -> CDirs:
+        include_dirs = list(self._opts.include_dirs or [])
+        library_dirs = list(self._opts.library_dirs or [])
+        rpath = list(self._opts.rpath or [])
 
         plat_py_include = du.sysconfig.get_python_inc(plat_specific=1)  # noqa
-        self.include_dirs = list(opts.include_dirs or [])
-        if isinstance(self.include_dirs, str):
-            self.include_dirs = self.include_dirs.split(os.pathsep)
 
         if sys.exec_prefix != sys.base_exec_prefix:
-            self.include_dirs.append(os.path.join(sys.exec_prefix, 'include'))
+            include_dirs.append(os.path.join(sys.exec_prefix, 'include'))
 
         py_include = du.sysconfig.get_python_inc()
-        self.include_dirs.extend(py_include.split(os.path.pathsep))
+        include_dirs.extend(py_include.split(os.path.pathsep))
         if plat_py_include != py_include:
-            self.include_dirs.extend(plat_py_include.split(os.path.pathsep))
-
-        self.libraries = list(opts.libraries or [])
-        self.link_objects = list(opts.link_objects or [])
-
-        self.library_dirs = list(opts.library_dirs or [])
-        if self.library_dirs is None:
-            self.library_dirs = []
-        elif isinstance(self.library_dirs, str):
-            self.library_dirs = self.library_dirs.split(os.pathsep)
-
-        self.rpath = list(opts.rpath or [])
+            include_dirs.extend(plat_py_include.split(os.path.pathsep))
 
         if os.name == 'nt':
-            self.library_dirs.append(os.path.join(sys.exec_prefix, 'libs'))
+            library_dirs.append(os.path.join(sys.exec_prefix, 'libs'))
             if sys.base_exec_prefix != sys.prefix:  # Issue 16116
-                self.library_dirs.append(os.path.join(sys.base_exec_prefix, 'libs'))
+                library_dirs.append(os.path.join(sys.base_exec_prefix, 'libs'))
 
-            self.include_dirs.append(os.path.dirname(du.sysconfig.get_config_h_filename()))
+            include_dirs.append(os.path.dirname(du.sysconfig.get_config_h_filename()))
             _sys_home = getattr(sys, '_home', None)
             if _sys_home:
-                self.library_dirs.append(_sys_home)
+                library_dirs.append(_sys_home)
 
             if self.plat_name == 'win32':
                 suffix = 'win32'
@@ -208,33 +203,43 @@ class BuildExt:
             new_lib = os.path.join(sys.exec_prefix, 'PCbuild')
             if suffix:
                 new_lib = os.path.join(new_lib, suffix)
-            self.library_dirs.append(new_lib)
+            library_dirs.append(new_lib)
 
         if sys.platform[:6] == 'cygwin':
-            if sys.executable.startswith(os.path.join(sys.exec_prefix, "bin")):
-                self.library_dirs.append(os.path.join(sys.prefix, "lib", "python" + du.sysconfig.get_python_version(), "config"))  # noqa
+            if sys.executable.startswith(os.path.join(sys.exec_prefix, 'bin')):
+                library_dirs.append(os.path.join(sys.prefix, 'lib', 'python' + du.sysconfig.get_python_version(), 'config'))  # noqa
             else:
-                self.library_dirs.append('.')
+                library_dirs.append('.')
 
         if (du.sysconfig.get_config_var('Py_ENABLE_SHARED')):
             if not du.sysconfig.python_build:  # noqa
-                self.library_dirs.append(du.sysconfig.get_config_var('LIBDIR'))
+                library_dirs.append(du.sysconfig.get_config_var('LIBDIR'))
             else:
                 # building python standard extensions
-                self.library_dirs.append('.')
+                library_dirs.append('.')
+
+        if self._opts.user:
+            user_include = os.path.join(site.USER_BASE, 'include')
+            if os.path.isdir(user_include):
+                include_dirs.append(user_include)
+
+            user_lib = os.path.join(site.USER_BASE, 'lib')
+            if os.path.isdir(user_lib):
+                library_dirs.append(user_lib)
+                rpath.append(user_lib)
+
+        return BuildExt.CDirs(
+            include=include_dirs,
+            library=library_dirs,
+            runtime=rpath,
+        )
+
+    def finalize_options(self):
+        opts = self.Options()
 
         self.define = None
         if opts.define:
             self.define = [(symbol, '1') for symbol in opts.define]
-
-        if self._opts.user:
-            user_include = os.path.join(site.USER_BASE, "include")
-            user_lib = os.path.join(site.USER_BASE, "lib")
-            if os.path.isdir(user_include):
-                self.include_dirs.append(user_include)
-            if os.path.isdir(user_lib):
-                self.library_dirs.append(user_lib)
-                self.rpath.append(user_lib)
 
     def run(self):
         from distutils.ccompiler import new_compiler
@@ -257,10 +262,9 @@ class BuildExt:
 
         du.sysconfig.customize_compiler(self.compiler)
         if os.name == 'nt' and self.plat_name != du.util.get_platform():
-            self.compiler.initialize(self.plat_name)
+            self.compiler.initialize(self.plat_name)  # noqa
 
-        if self.include_dirs is not None:
-            self.compiler.set_include_dirs(self.include_dirs)
+        self.compiler.set_include_dirs(list(self.cdirs.include))
         if self.define is not None:
             # 'define' option is a list of (name,value) tuples
             for (name, value) in self.define:
@@ -268,14 +272,12 @@ class BuildExt:
         if self._opts.undef is not None:
             for macro in self._opts.undef:
                 self.compiler.undefine_macro(macro)
-        if self.libraries is not None:
-            self.compiler.set_libraries(self.libraries)
-        if self.library_dirs is not None:
-            self.compiler.set_library_dirs(self.library_dirs)
-        if self.rpath is not None:
-            self.compiler.set_runtime_library_dirs(self.rpath)
-        if self.link_objects is not None:
-            self.compiler.set_link_objects(self.link_objects)
+        if self._opts.libraries:
+            self.compiler.set_libraries(list(self._opts.libraries))
+        self.compiler.set_library_dirs(list(self.cdirs.library))
+        self.compiler.set_runtime_library_dirs(list(self.cdirs.runtime))
+        if self._opts.link_objects:
+            self.compiler.set_link_objects(list(self._opts.link_objects))
 
         # Now actually compile and link everything.
         self.build_extensions()
@@ -330,20 +332,15 @@ class BuildExt:
 
     def build_extension(self, ext):
         sources = ext.sources
-        if sources is None or not isinstance(sources, (list, tuple)):
-            raise du.errors.DistutilsSetupError(
-                "in 'ext_modules' option (extension '%s'), "
-                "'sources' must be present and must be "
-                "a list of source filenames" % ext.name)
         sources = sorted(sources)
 
         ext_path = self.get_ext_fullpath(ext.name)
         depends = sources + ext.depends
         if not (self._opts.force or du.dep_util.newer_group(depends, ext_path, 'newer')):
-            log.debug("skipping '%s' extension (up-to-date)", ext.name)
+            log.debug('skipping "%s" extension (up-to-date)', ext.name)
             return
         else:
-            log.info("building '%s' extension", ext.name)
+            log.info('building "%s" extension', ext.name)
 
         extra_args = ext.extra_compile_args or []
 
@@ -356,7 +353,7 @@ class BuildExt:
             output_dir=self.build_temp,
             macros=macros,
             include_dirs=ext.include_dirs,
-            debug=int(self._opts.debug),
+            debug=int(self._opts.debug),  # noqa
             extra_postargs=extra_args,
             depends=ext.depends,
         )
@@ -414,16 +411,16 @@ class BuildExt:
         except UnicodeEncodeError:
             suffix = 'U' + suffix.encode('punycode').replace(b'-', b'_').decode('ascii')
 
-        initfunc_name = "PyInit" + suffix
+        initfunc_name = 'PyInit' + suffix
         if initfunc_name not in ext.export_symbols:
             ext.export_symbols.append(initfunc_name)
         return ext.export_symbols
 
     def get_libraries(self, ext):
-        if sys.platform == "win32":
+        if sys.platform == 'win32':
             from distutils._msvccompiler import MSVCCompiler  # noqa
             if not isinstance(self.compiler, MSVCCompiler):
-                template = "python%d%d"
+                template = 'python%d%d'
                 if self._opts.debug:
                     template = template + '_d'
                 pythonlib = (template % (sys.hexversion >> 24, (sys.hexversion >> 16) & 0xff))
@@ -437,13 +434,13 @@ class BuildExt:
                     link_libpython = True
                 elif '_PYTHON_HOST_PLATFORM' in os.environ:
                     # We are cross-compiling for one of the relevant platforms
-                    if get_config_var('ANDROID_API_LEVEL') != 0:
+                    if du.sysconfig.get_config_var('ANDROID_API_LEVEL') != 0:
                         link_libpython = True
-                    elif get_config_var('MACHDEP') == 'cygwin':
+                    elif du.sysconfig.get_config_var('MACHDEP') == 'cygwin':
                         link_libpython = True
 
             if link_libpython:
-                ldversion = get_config_var('LDVERSION')
+                ldversion = du.sysconfig.get_config_var('LDVERSION')
                 return ext.libraries + ['python' + ldversion]
 
         return ext.libraries
