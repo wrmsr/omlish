@@ -36,20 +36,21 @@ trademark sense to endorse or promote products or services of Licensee, or any t
 License Agreement.
 """
 import contextlib
+import dataclasses as dc
 import os
 import re
+import site
 import sys
-from distutils.errors import *
-from distutils.sysconfig import customize_compiler, get_python_version
-from distutils.sysconfig import get_config_h_filename
-from distutils.dep_util import newer_group
-from distutils.extension import Extension
-from distutils.util import get_platform, convert_path
-from distutils import log
-import dataclasses as dc
 import typing as ta
 
-from site import USER_BASE
+import distutils as du
+import distutils.core
+import distutils.dep_util
+import distutils.errors
+import distutils.sysconfig
+import distutils.util
+
+from distutils import log
 
 from omlish import check
 from omlish import cached
@@ -83,7 +84,7 @@ class BuildExt:
         dry_run: bool = False
         verbose: bool = False
 
-    def __init__(self, exts: ta.Iterable[Extension], opts: Options = Options()) -> None:
+    def __init__(self, exts: ta.Iterable[du.core.Extension], opts: Options = Options()) -> None:
         super().__init__()
 
         self._exts = list(exts)
@@ -138,12 +139,12 @@ class BuildExt:
 
         self.plat_name = opts.plat_name
         if self.plat_name is None:
-            self.plat_name = get_platform()
+            self.plat_name = du.util.get_platform()
         else:
             if os.name != 'nt':
-                raise DistutilsOptionError("--plat-name only supported on Windows (try " "using './configure --help' on your platform)")
+                raise du.errors.DistutilsOptionError("--plat-name only supported on Windows (try " "using './configure --help' on your platform)")
 
-        plat_specifier = ".%s-%d.%d" % (self.plat_name, *sys.version_info[:2])
+        plat_specifier = ".{}-{:d}.{:d}".format(self.plat_name, *sys.version_info[:2])
 
         if hasattr(sys, 'gettotalrefcount'):
             plat_specifier += '-pydebug'
@@ -161,7 +162,7 @@ class BuildExt:
         self.package = None
 
         py_include = sysconfig.get_python_inc()
-        plat_py_include = sysconfig.get_python_inc(plat_specific=1)
+        plat_py_include = sysconfig.get_python_inc(plat_specific=1)  # noqa
         self.include_dirs = list(opts.include_dirs or [])
         if isinstance(self.include_dirs, str):
             self.include_dirs = self.include_dirs.split(os.pathsep)
@@ -193,7 +194,7 @@ class BuildExt:
             else:
                 self.build_temp = os.path.join(self.build_temp, "Release")
 
-            self.include_dirs.append(os.path.dirname(get_config_h_filename()))
+            self.include_dirs.append(os.path.dirname(du.sysconfig.get_config_h_filename()))
             _sys_home = getattr(sys, '_home', None)
             if _sys_home:
                 self.library_dirs.append(_sys_home)
@@ -209,7 +210,7 @@ class BuildExt:
 
         if sys.platform[:6] == 'cygwin':
             if sys.executable.startswith(os.path.join(sys.exec_prefix, "bin")):
-                self.library_dirs.append(os.path.join(sys.prefix, "lib", "python" + get_python_version(), "config"))
+                self.library_dirs.append(os.path.join(sys.prefix, "lib", "python" + du.sysconfig.get_python_version(), "config"))  # noqa
             else:
                 self.library_dirs.append('.')
 
@@ -224,11 +225,9 @@ class BuildExt:
         if opts.define:
             self.define = [(symbol, '1') for symbol in opts.define]
 
-        self.undef = opts.undef
-
         if self._opts.user:
-            user_include = os.path.join(USER_BASE, "include")
-            user_lib = os.path.join(USER_BASE, "lib")
+            user_include = os.path.join(site.USER_BASE, "include")
+            user_lib = os.path.join(site.USER_BASE, "lib")
             if os.path.isdir(user_include):
                 self.include_dirs.append(user_include)
             if os.path.isdir(user_lib):
@@ -254,8 +253,8 @@ class BuildExt:
             force=int(self._opts.force),
         )
 
-        customize_compiler(self.compiler)
-        if os.name == 'nt' and self.plat_name != get_platform():
+        du.sysconfig.customize_compiler(self.compiler)
+        if os.name == 'nt' and self.plat_name != du.util.get_platform():
             self.compiler.initialize(self.plat_name)
 
         if self.include_dirs is not None:
@@ -264,8 +263,8 @@ class BuildExt:
             # 'define' option is a list of (name,value) tuples
             for (name, value) in self.define:
                 self.compiler.define_macro(name, value)
-        if self.undef is not None:
-            for macro in self.undef:
+        if self._opts.undef is not None:
+            for macro in self._opts.undef:
                 self.compiler.undefine_macro(macro)
         if self.libraries is not None:
             self.compiler.set_libraries(self.libraries)
@@ -279,75 +278,7 @@ class BuildExt:
         # Now actually compile and link everything.
         self.build_extensions()
 
-    def check_extensions_list(self, extensions):
-        if not isinstance(extensions, list):
-            raise DistutilsSetupError("'ext_modules' option must be a list of Extension instances")
-
-        for i, ext in enumerate(extensions):
-            if isinstance(ext, Extension):
-                continue  # OK! (assume type-checking done
-                # by Extension constructor)
-
-            if not isinstance(ext, tuple) or len(ext) != 2:
-                raise DistutilsSetupError(
-                    "each element of 'ext_modules' option must be an " "Extension instance or 2-tuple")
-
-            ext_name, build_info = ext
-
-            log.warn(
-                "old-style (ext_name, build_info) tuple found in " "ext_modules for extension '%s' " "-- please convert to Extension instance",
-                ext_name)
-
-            if not (isinstance(ext_name, str) and
-                    extension_name_re.match(ext_name)):
-                raise DistutilsSetupError(
-                    "first element of each tuple in 'ext_modules' " "must be the extension name (a string)")
-
-            if not isinstance(build_info, dict):
-                raise DistutilsSetupError(
-                    "second element of each tuple in 'ext_modules' " "must be a dictionary (build info)")
-
-            # OK, the (ext_name, build_info) dict is type-safe: convert it
-            # to an Extension instance.
-            ext = Extension(ext_name, build_info['sources'])
-
-            # Easy stuff: one-to-one mapping from dict elements to
-            # instance attributes.
-            for key in (
-                    'include_dirs',
-                    'library_dirs',
-                    'libraries',
-                    'extra_objects',
-                    'extra_compile_args',
-                    'extra_link_args',
-            ):
-                val = build_info.get(key)
-                if val is not None:
-                    setattr(ext, key, val)
-
-            # Medium-easy stuff: same syntax/semantics, different names.
-            ext.runtime_library_dirs = build_info.get('rpath')
-            if 'def_file' in build_info:
-                log.warn("'def_file' element of build info dict " "no longer supported")
-
-            # Non-trivial stuff: 'macros' split into 'define_macros'
-            # and 'undef_macros'.
-            macros = build_info.get('macros')
-            if macros:
-                ext.define_macros = []
-                ext.undef_macros = []
-                for macro in macros:
-                    if not (isinstance(macro, tuple) and len(macro) in (1, 2)):
-                        raise DistutilsSetupError("'macros' element of build info dict " "must be 1- or 2-tuple")
-                    if len(macro) == 1:
-                        ext.undef_macros.append(macro[0])
-                    elif len(macro) == 2:
-                        ext.define_macros.append(macro)
-
-            extensions[i] = ext
-
     def get_source_files(self):
-        self.check_extensions_list(self._exts)
         filenames = []
 
         for ext in self._exts:
@@ -355,15 +286,12 @@ class BuildExt:
         return filenames
 
     def get_outputs(self):
-        self.check_extensions_list(self._exts)
-
         outputs = []
         for ext in self._exts:
             outputs.append(self.get_ext_fullpath(ext.name))
         return outputs
 
     def build_extensions(self):
-        self.check_extensions_list(self._exts)
         if self._opts.parallel is not None:
             self._build_extensions_parallel()
         else:
@@ -394,16 +322,15 @@ class BuildExt:
     def _filter_build_errors(self, ext):
         try:
             yield
-        except (CCompilerError, DistutilsError, CompileError) as e:
+        except (du.errors.CCompilerError, du.errors.DistutilsError, du.errors.CompileError) as e:
             if not ext.optional:
                 raise
-            self.warn('building extension "%s" failed: %s' %
-                      (ext.name, e))
+            log.warn('building extension "%s" failed: %s' % (ext.name, e))
 
     def build_extension(self, ext):
         sources = ext.sources
         if sources is None or not isinstance(sources, (list, tuple)):
-            raise DistutilsSetupError(
+            raise du.errors.DistutilsSetupError(
                 "in 'ext_modules' option (extension '%s'), "
                 "'sources' must be present and must be "
                 "a list of source filenames" % ext.name)
@@ -411,7 +338,7 @@ class BuildExt:
 
         ext_path = self.get_ext_fullpath(ext.name)
         depends = sources + ext.depends
-        if not (self._opts.force or newer_group(depends, ext_path, 'newer')):
+        if not (self._opts.force or du.dep_util.newer_group(depends, ext_path, 'newer')):
             log.debug("skipping '%s' extension (up-to-date)", ext.name)
             return
         else:
