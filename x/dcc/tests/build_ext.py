@@ -35,6 +35,7 @@ trademark sense to endorse or promote products or services of Licensee, or any t
 8. By copying, installing or otherwise using Python, Licensee agrees to be bound by the terms and conditions of this
 License Agreement.
 """
+import concurrent.futures as cf
 import contextlib
 import dataclasses as dc
 import os
@@ -95,6 +96,8 @@ class BuildExt:
 
     # build_py
 
+    package = None
+
     def get_package_dir(self, package):
         path = package.split('.')
 
@@ -126,43 +129,45 @@ class BuildExt:
 
     # build_ext
 
+    @property
+    def options(self) -> Options:
+        return self._opts
+
+    @cached.property
+    def build_base(self) -> str:
+        return self._opts.build_base or 'build'
+
+    @cached.property
+    def plat_name(self) -> str:
+        return self._opts.plat_name or du.util.get_platform()
+
+    @cached.property
+    def plat_specifier(self) -> str:
+        ps = ".{}-{:d}.{:d}".format(self.plat_name, *sys.version_info[:2])
+        if hasattr(sys, 'gettotalrefcount'):
+            ps += '-pydebug'
+        return ps
+
+    @cached.property
+    def build_lib(self) -> str:
+        return self._opts.build_lib or os.path.join(self.build_base, 'lib' + self.plat_specifier)
+
+    @cached.property
+    def build_temp(self) -> str:
+        if self._opts.build_temp:
+            return self._opts.build_temp
+        bt = os.path.join(self.build_base, 'temp' + self.plat_specifier)
+        if os.name == 'nt':
+            if self._opts.debug:
+                bt = os.path.join(bt, "Debug")
+            else:
+                bt = os.path.join(bt, "Release")
+        return bt
+
     def finalize_options(self):
         opts = self.Options()
 
-        self.build_base = opts.build_base or 'build'
-
-        ##
-
-        from distutils import sysconfig
-
-        ## build
-
-        self.plat_name = opts.plat_name
-        if self.plat_name is None:
-            self.plat_name = du.util.get_platform()
-        else:
-            if os.name != 'nt':
-                raise du.errors.DistutilsOptionError("--plat-name only supported on Windows (try " "using './configure --help' on your platform)")
-
-        plat_specifier = ".{}-{:d}.{:d}".format(self.plat_name, *sys.version_info[:2])
-
-        if hasattr(sys, 'gettotalrefcount'):
-            plat_specifier += '-pydebug'
-
-        self.build_lib = opts.build_lib
-        if self.build_lib is None:
-            self.build_lib = os.path.join(self.build_base, 'lib' + plat_specifier)
-
-        self.build_temp = opts.build_temp
-        if self.build_temp is None:
-            self.build_temp = os.path.join(self.build_base, 'temp' + plat_specifier)
-
-        ## build_ext
-
-        self.package = None
-
-        py_include = sysconfig.get_python_inc()
-        plat_py_include = sysconfig.get_python_inc(plat_specific=1)  # noqa
+        plat_py_include = du.sysconfig.get_python_inc(plat_specific=1)  # noqa
         self.include_dirs = list(opts.include_dirs or [])
         if isinstance(self.include_dirs, str):
             self.include_dirs = self.include_dirs.split(os.pathsep)
@@ -170,6 +175,7 @@ class BuildExt:
         if sys.exec_prefix != sys.base_exec_prefix:
             self.include_dirs.append(os.path.join(sys.exec_prefix, 'include'))
 
+        py_include = du.sysconfig.get_python_inc()
         self.include_dirs.extend(py_include.split(os.path.pathsep))
         if plat_py_include != py_include:
             self.include_dirs.extend(plat_py_include.split(os.path.pathsep))
@@ -189,10 +195,6 @@ class BuildExt:
             self.library_dirs.append(os.path.join(sys.exec_prefix, 'libs'))
             if sys.base_exec_prefix != sys.prefix:  # Issue 16116
                 self.library_dirs.append(os.path.join(sys.base_exec_prefix, 'libs'))
-            if self._opts.debug:
-                self.build_temp = os.path.join(self.build_temp, "Debug")
-            else:
-                self.build_temp = os.path.join(self.build_temp, "Release")
 
             self.include_dirs.append(os.path.dirname(du.sysconfig.get_config_h_filename()))
             _sys_home = getattr(sys, '_home', None)
@@ -214,9 +216,9 @@ class BuildExt:
             else:
                 self.library_dirs.append('.')
 
-        if (sysconfig.get_config_var('Py_ENABLE_SHARED')):
-            if not sysconfig.python_build:
-                self.library_dirs.append(sysconfig.get_config_var('LIBDIR'))
+        if (du.sysconfig.get_config_var('Py_ENABLE_SHARED')):
+            if not du.sysconfig.python_build:  # noqa
+                self.library_dirs.append(du.sysconfig.get_config_var('LIBDIR'))
             else:
                 # building python standard extensions
                 self.library_dirs.append('.')
@@ -301,13 +303,12 @@ class BuildExt:
         workers = self._opts.parallel
         if workers < 1:
             workers = os.cpu_count()  # may return None
-        from concurrent.futures import ThreadPoolExecutor
 
         if workers is None:
             self._build_extensions_serial()
             return
 
-        with ThreadPoolExecutor(max_workers=workers) as executor:
+        with cf.ThreadPoolExecutor(max_workers=workers) as executor:
             futures = [executor.submit(self.build_extension, ext) for ext in self._exts]
             for ext, fut in zip(self._exts, futures):
                 with self._filter_build_errors(ext):
@@ -400,9 +401,8 @@ class BuildExt:
             return self.package + '.' + ext_name
 
     def get_ext_filename(self, ext_name):
-        from distutils.sysconfig import get_config_var
         ext_path = ext_name.split('.')
-        ext_suffix = get_config_var('EXT_SUFFIX')
+        ext_suffix = du.sysconfig.get_config_var('EXT_SUFFIX')
         return os.path.join(*ext_path) + ext_suffix
 
     def get_export_symbols(self, ext):
@@ -421,7 +421,7 @@ class BuildExt:
 
     def get_libraries(self, ext):
         if sys.platform == "win32":
-            from distutils._msvccompiler import MSVCCompiler
+            from distutils._msvccompiler import MSVCCompiler  # noqa
             if not isinstance(self.compiler, MSVCCompiler):
                 template = "python%d%d"
                 if self._opts.debug:
@@ -429,9 +429,8 @@ class BuildExt:
                 pythonlib = (template % (sys.hexversion >> 24, (sys.hexversion >> 16) & 0xff))
                 return ext.libraries + [pythonlib]
         else:
-            from distutils.sysconfig import get_config_var
             link_libpython = False
-            if get_config_var('Py_ENABLE_SHARED'):
+            if du.sysconfig.get_config_var('Py_ENABLE_SHARED'):
                 if hasattr(sys, 'getandroidapilevel'):
                     link_libpython = True
                 elif sys.platform == 'cygwin':
