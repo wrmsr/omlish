@@ -59,7 +59,57 @@ def show_compilers():
     show_compilers()
 
 
-class build_ext(Command):
+class build_ext(
+    # Command
+):
+
+    # Command
+
+    def __init__(self, dist):
+        self.distribution = dist
+        self.initialize_options()
+
+        self.dry_run = 0
+        self.verbose = dist.verbose
+        self.force = None
+        self.help = 0
+        self.finalized = 0
+
+    def get_command_name(self):
+        return 'build_ext'
+
+    def ensure_finalized(self):
+        if not self.finalized:
+            self.finalize_options()
+        self.finalized = 1
+
+    def set_undefined_options(self, src_cmd, *option_pairs):
+        src_cmd_obj = self.distribution.get_command_obj(src_cmd)
+        src_cmd_obj.ensure_finalized()
+        for src_option, dst_option in option_pairs:
+            if getattr(self, dst_option) is None:
+                setattr(self, dst_option, getattr(src_cmd_obj, src_option))
+
+    def ensure_string_list(self, option):
+        val = getattr(self, option)
+        if val is None:
+            return
+        elif isinstance(val, str):
+            setattr(self, option, re.split(r',\s*|\s+', val))
+        else:
+            if isinstance(val, list):
+                ok = all(isinstance(v, str) for v in val)
+            else:
+                ok = False
+            if not ok:
+                raise DistutilsOptionError("'{}' must be a list of strings (got {!r})".format(option, val))
+
+    def get_finalized_command(self, command, create=1):
+        cmd_obj = self.distribution.get_command_obj(command, create)
+        cmd_obj.ensure_finalized()
+        return cmd_obj
+
+    # build_ext
 
     description = "build C/C++ extensions (compile/link to build directory)"
 
