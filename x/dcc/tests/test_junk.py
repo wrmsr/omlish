@@ -29,14 +29,10 @@ def test_junk():
     )
 
     from .build_ext import BuildExt
-    cmd_obj = BuildExt(
-        [ext],
-        BuildExt.Options(
-            inplace=True,
-        ),
-    )
-    cmd_obj.run()
+    cmd_obj = BuildExt(BuildExt.Options(
+        inplace=True,
+    ))
+    cmd_obj.build_extension(ext)
 
-    from . import junk  # noqa
+    from . import junk  # type: ignore  # noqa
     assert junk.junk() == 421
-

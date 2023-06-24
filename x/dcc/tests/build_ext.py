@@ -35,7 +35,6 @@ trademark sense to endorse or promote products or services of Licensee, or any t
 8. By copying, installing or otherwise using Python, Licensee agrees to be bound by the terms and conditions of this
 License Agreement.
 """
-import concurrent.futures as cf
 import contextlib
 import dataclasses as dc
 import logging
@@ -58,6 +57,10 @@ from omlish import lang
 
 
 log = logging.getLogger(__name__)
+
+
+def _get_str_config_var(name: str) -> str:
+    return check.isinstance(du.sysconfig.get_config_var(name), str)
 
 
 class BuildExt:
@@ -92,10 +95,9 @@ class BuildExt:
         package: ta.Optional[str] = None
         package_dir: ta.Optional[ta.Mapping[str, str]] = None
 
-    def __init__(self, exts: ta.Iterable[du.core.Extension], opts: Options = Options()) -> None:
+    def __init__(self, opts: Options = Options()) -> None:
         super().__init__()
 
-        self._exts = [check.isinstance(e, du.core.Extension) for e in exts]
         self._opts = check.isinstance(opts, BuildExt.Options)
 
     #
@@ -147,7 +149,7 @@ class BuildExt:
         library_dirs = list(self._opts.library_dirs or [])
         rpath = list(self._opts.rpath or [])
 
-        plat_py_include = du.sysconfig.get_python_inc(plat_specific=1)  # noqa
+        plat_py_include = du.sysconfig.get_python_inc(plat_specific=1)  # type: ignore  # noqa
 
         if sys.exec_prefix != sys.base_exec_prefix:
             include_dirs.append(os.path.join(sys.exec_prefix, 'include'))
@@ -184,17 +186,16 @@ class BuildExt:
 
         if (du.sysconfig.get_config_var('Py_ENABLE_SHARED')):
             if not du.sysconfig.python_build:  # noqa
-                library_dirs.append(du.sysconfig.get_config_var('LIBDIR'))
+                library_dirs.append(_get_str_config_var('LIBDIR'))
             else:
-                # building python standard extensions
                 library_dirs.append('.')
 
         if self._opts.user:
-            user_include = os.path.join(site.USER_BASE, 'include')
+            user_include = os.path.join(check.isinstance(site.USER_BASE, str), 'include')
             if os.path.isdir(user_include):
                 include_dirs.append(user_include)
 
-            user_lib = os.path.join(site.USER_BASE, 'lib')
+            user_lib = os.path.join(check.isinstance(site.USER_BASE, str), 'lib')
             if os.path.isdir(user_lib):
                 library_dirs.append(user_lib)
                 rpath.append(user_lib)
@@ -219,7 +220,7 @@ class BuildExt:
         du.sysconfig.customize_compiler(cc)
 
         if os.name == 'nt' and self.plat_name != du.util.get_platform():
-            cc.initialize(self.plat_name)  # noqa
+            cc.initialize(self.plat_name)  # type: ignore  # noqa
 
         cc.set_include_dirs(list(self.cdirs.include))
 
@@ -243,107 +244,6 @@ class BuildExt:
 
         return cc
 
-    def run(self) -> None:
-        if not self._exts:
-            return
-
-        # FIXME: note build_clib
-        # if self.distribution.has_c_libraries():
-        #     build_clib = self.get_finalized_command('build_clib')
-        #     self.libraries.extend(build_clib.get_library_names() or [])
-        #     self.library_dirs.append(build_clib.build_clib)
-
-        self.build_extensions()
-
-    def build_extensions(self) -> None:
-        if self._opts.parallel is not None:
-            self._build_extensions_parallel()
-        else:
-            self._build_extensions_serial()
-
-    @contextlib.contextmanager
-    def _filter_build_errors(self, ext: du.core.Extension) -> ta.Iterator[None]:
-        try:
-            yield
-        except (
-                du.errors.CCompilerError,
-                du.errors.CompileError,
-                du.errors.DistutilsError,
-        ) as e:
-            if not ext.optional:
-                raise
-            log.warning('building extension "%s" failed: %s' % (ext.name, e))
-
-    def _build_extensions_serial(self) -> None:
-        for ext in self._exts:
-            with self._filter_build_errors(ext):
-                self.build_extension(ext)
-
-    def _build_extensions_parallel(self) -> None:
-        workers = self._opts.parallel
-        if workers < 1:
-            workers = os.cpu_count()  # may return None
-
-        if workers is None:
-            self._build_extensions_serial()
-            return
-
-        with cf.ThreadPoolExecutor(max_workers=workers) as executor:
-            futures = [executor.submit(self.build_extension, ext) for ext in self._exts]
-            for ext, fut in zip(self._exts, futures):
-                with self._filter_build_errors(ext):
-                    fut.result()
-
-    #
-
-    def build_extension(self, ext: du.core.Extension) -> None:
-        sources = ext.sources
-        sources = sorted(sources)
-
-        ext_path = self.get_ext_fullpath(ext.name)
-        depends = sources + ext.depends
-        if not (self._opts.force or du.dep_util.newer_group(depends, ext_path, 'newer')):
-            log.debug('skipping "%s" extension (up-to-date)', ext.name)
-            return
-        else:
-            log.info('building "%s" extension', ext.name)
-
-        extra_args = ext.extra_compile_args or []
-
-        macros = ext.define_macros[:]
-        for undef in ext.undef_macros:
-            macros.append((undef,))
-
-        cc = self.get_compiler()
-
-        objects = cc.compile(
-            sources,
-            output_dir=self.build_temp,
-            macros=macros,
-            include_dirs=ext.include_dirs,
-            debug=int(self._opts.debug),  # noqa
-            extra_postargs=extra_args,
-            depends=ext.depends,
-        )
-
-        if ext.extra_objects:
-            objects.extend(ext.extra_objects)
-        extra_args = ext.extra_link_args or []
-
-        language = ext.language or cc.detect_language(sources)
-
-        cc.link_shared_object(
-            objects, ext_path,
-            libraries=list(self.get_libraries(ext)),
-            library_dirs=ext.library_dirs,
-            runtime_library_dirs=ext.runtime_library_dirs,
-            extra_postargs=extra_args,
-            export_symbols=list(self.get_export_symbols(ext)),
-            debug=int(self._opts.debug),  # noqa
-            build_temp=self.build_temp,
-            target_lang=language,
-        )
-
     #
 
     def get_ext_fullpath(self, ext_name: str) -> str:
@@ -363,16 +263,17 @@ class BuildExt:
     def get_package_dir(self, package: str) -> str:
         path = package.split('.')
 
-        if self._opts.package_dir is None:
+        package_dir = self._opts.package_dir
+        if package_dir is None:
             if path:
                 return os.path.join(*path)
             else:
                 return ''
 
-        tail = []
+        tail: ta.List[str] = []
         while path:
             try:
-                pdir = self._opts.package_dir['.'.join(path)]
+                pdir = package_dir['.'.join(path)]
             except KeyError:
                 tail.insert(0, path[-1])
                 del path[-1]
@@ -381,7 +282,7 @@ class BuildExt:
                 return os.path.join(*tail)
 
         else:
-            pdir = self._opts.package_dir.get('')
+            pdir = package_dir.get('')  # type: ignore
             if pdir is not None:
                 tail.insert(0, pdir)
 
@@ -398,7 +299,7 @@ class BuildExt:
 
     def get_ext_filename(self, ext_name: str) -> str:
         ext_path = ext_name.split('.')
-        ext_suffix = du.sysconfig.get_config_var('EXT_SUFFIX')
+        ext_suffix = _get_str_config_var('EXT_SUFFIX')
         return os.path.join(*ext_path) + ext_suffix
 
     #
@@ -443,7 +344,77 @@ class BuildExt:
                         link_libpython = True
 
             if link_libpython:
-                ldversion = du.sysconfig.get_config_var('LDVERSION')
+                ldversion = _get_str_config_var('LDVERSION')
                 return ext.libraries + ['python' + ldversion]
 
         return ext.libraries
+
+    #
+
+    def build_extension(self, ext: du.core.Extension) -> ta.Sequence[str]:
+        with self._filter_build_errors(ext):
+            return self._build_extension(ext)
+
+    @contextlib.contextmanager
+    def _filter_build_errors(self, ext: du.core.Extension) -> ta.Iterator[None]:
+        try:
+            yield
+        except (
+                du.errors.CCompilerError,
+                du.errors.CompileError,
+                du.errors.DistutilsError,
+        ) as e:
+            if not ext.optional:
+                raise
+            log.warning('building extension "%s" failed: %s' % (ext.name, e))
+
+    def _build_extension(self, ext: du.core.Extension) -> ta.Sequence[str]:
+        sources = ext.sources
+        sources = sorted(sources)
+
+        ext_path = self.get_ext_fullpath(ext.name)
+        depends = sources + ext.depends
+        if not (self._opts.force or du.dep_util.newer_group(depends, ext_path, 'newer')):
+            log.debug('skipping "%s" extension (up-to-date)', ext.name)
+            return []
+        else:
+            log.info('building "%s" extension', ext.name)
+
+        extra_args = ext.extra_compile_args or []
+
+        macros = ext.define_macros[:]
+        for undef in ext.undef_macros:
+            macros.append((undef,))
+
+        cc = self.get_compiler()
+
+        objects = cc.compile(
+            sources,
+            output_dir=self.build_temp,
+            macros=macros,
+            include_dirs=ext.include_dirs,
+            debug=int(self._opts.debug),  # noqa
+            extra_postargs=extra_args,
+            depends=ext.depends,
+        )
+
+        if ext.extra_objects:
+            objects.extend(ext.extra_objects)
+        extra_args = ext.extra_link_args or []
+
+        language = ext.language or cc.detect_language(sources)
+
+        cc.link_shared_object(
+            objects,
+            ext_path,
+            libraries=list(self.get_libraries(ext)),
+            library_dirs=ext.library_dirs,
+            runtime_library_dirs=ext.runtime_library_dirs,
+            extra_postargs=extra_args,
+            export_symbols=list(self.get_export_symbols(ext)),
+            debug=int(self._opts.debug),  # noqa
+            build_temp=self.build_temp,
+            target_lang=language,
+        )
+
+        return objects
