@@ -417,7 +417,7 @@ def _repr_fn(fields, globals):
     fn = _create_fn(
         '__repr__',
         ('self',),
-        [('return self.__class__.__qualname__ + f"(' +
+        [('return f"{self.__class__.__qualname__}(' +
           ', '.join([f"{f.name}={{self.{f.name}!r}}" for f in fields]) +
           ')"')],
         globals=globals,
@@ -704,10 +704,18 @@ def _process_class(cls, params: _DataclassParams):
         _set_new_attribute(cls, '__repr__', _repr_fn(flds, globals))
 
     if params.eq:
-        flds = [f for f in field_list if f.compare]
-        self_tuple = _tuple_str('self', flds)
-        other_tuple = _tuple_str('other', flds)
-        _set_new_attribute(cls, '__eq__', _cmp_fn('__eq__', '==', self_tuple, other_tuple, globals=globals))
+        # flds = [f for f in field_list if f.compare]
+        # self_tuple = _tuple_str('self', flds)
+        # other_tuple = _tuple_str('other', flds)
+        # _set_new_attribute(cls, '__eq__', _cmp_fn('__eq__', '==', self_tuple, other_tuple, globals=globals))
+        cmp_fields = (field for field in field_list if field.compare)
+        terms = [f'self.{field.name}==other.{field.name}' for field in cmp_fields]
+        field_comparisons = ' and '.join(terms) or 'True'
+        body = [f'if other.__class__ is self.__class__:',
+                f' return {field_comparisons}',
+                f'return NotImplemented']
+        func = _create_fn('__eq__', ('self', 'other'), body, globals=globals)
+        _set_new_attribute(cls, '__eq__', func)
 
     if params.order:
         flds = [f for f in field_list if f.compare]
@@ -879,11 +887,18 @@ def _asdict_inner(obj, dict_factory):
     if type(obj) in _ATOMIC_TYPES:
         return obj
     elif _is_dataclass_instance(obj):
-        result = []
-        for f in fields(obj):
-            value = _asdict_inner(getattr(obj, f.name), dict_factory)
-            result.append((f.name, value))
-        return dict_factory(result)
+        # fast path for the common case
+        if dict_factory is dict:
+            return {
+                f.name: _asdict_inner(getattr(obj, f.name), dict)
+                for f in fields(obj)
+            }
+        else:
+            result = []
+            for f in fields(obj):
+                value = _asdict_inner(getattr(obj, f.name), dict_factory)
+                result.append((f.name, value))
+            return dict_factory(result)
     elif isinstance(obj, tuple) and hasattr(obj, '_fields'):
         return type(obj)(*[_asdict_inner(v, dict_factory) for v in obj])
     elif isinstance(obj, (list, tuple)):
