@@ -3,11 +3,11 @@
 
 ### nn
 
-numpy==1.24.3
+numpy==1.25.0
 
 ##
 
-llvmlite==0.40.0
+llvmlite==0.40.1
 
 pyopencl==2023.1
 
@@ -36,10 +36,10 @@ torchvision==0.15.2
 
 ##
 
-librosa==0.10.0.post2
+# librosa==0.10.0.post2  # FIXME: -> >numba -> >numpy
 
 
 ### infra
 
-boto3==1.26.151
+boto3==1.26.160
 google-cloud-compute==1.11.0
