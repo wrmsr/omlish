@@ -26,6 +26,7 @@ def test_junk():
         'junk',
         sources=[os.path.abspath(os.path.join(here, '../junk.cc'))],
         extra_compile_args=['-std=c++14'],
+        undef_macros=['BARF'],
     )
 
     from .build_ext import BuildExt

@@ -384,14 +384,14 @@ class BuildExt:
 
         macros = ext.define_macros[:]
         for undef in ext.undef_macros:
-            macros.append((undef,))
+            macros.append((undef,))  # type: ignore  # noqa
 
         cc = self.get_compiler()
 
         objects = cc.compile(
             sources,
             output_dir=self.build_temp,
-            macros=macros,
+            macros=macros,  # noqa
             include_dirs=ext.include_dirs,
             debug=int(self._opts.debug),  # noqa
             extra_postargs=extra_args,
