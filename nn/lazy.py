@@ -220,8 +220,8 @@ class LazyBuffer(Lazy):
                 self._realized is None and
                 isinstance(self.get_op().op, BinaryOp) and
                 (
-                        op in (MovementOp.SHRINK, MovementOp.STRIDE, MovementOp.PERMUTE) or
-                        (op == MovementOp.RESHAPE and isinstance(self.get_op().op, UnaryOp))
+                    op in (MovementOp.SHRINK, MovementOp.STRIDE, MovementOp.PERMUTE) or
+                    (op == MovementOp.RESHAPE and isinstance(self.get_op().op, UnaryOp))
                 )
                 and len(self._children) == 0
         ):
@@ -443,8 +443,8 @@ def _push_movement_ops(srcs: ta.Sequence[LazyBuffer]) -> ta.Sequence[LazyBuffer]
                 and isinstance(bx.op, MovementOp)
                 and bx.op.op != MovementOp.EXPAND
                 and (
-                        bx.op.op != MovementOp.PAD
-                        # or SHUFFLE_PAD_OPS
+                    bx.op.op != MovementOp.PAD
+                    # or SHUFFLE_PAD_OPS
                 )
                 and len(bx._children) <= 1
         ):
@@ -458,8 +458,8 @@ def _push_movement_ops(srcs: ta.Sequence[LazyBuffer]) -> ta.Sequence[LazyBuffer]
                 and len(bx._children) <= 1
                 and len(mops)
                 and (
-                        all(x[0] != MovementOp.PAD for x in mops) or
-                        all(x.op != BinaryOp.DIV for x in bx.op.ops)
+                    all(x[0] != MovementOp.PAD for x in mops) or
+                    all(x.op != BinaryOp.DIV for x in bx.op.ops)
                 )
         ):
             new_srcs.append(_replace_with_movement_ops(bx.op, mops[::-1]))

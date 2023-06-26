@@ -13,8 +13,8 @@ def attr_repr(obj: ta.Any, *attrs: str) -> str:
 
 def arg_repr(*args, **kwargs) -> str:
     return ', '.join(*(
-            list(map(repr, args)) +
-            [f'{k}={repr(v)}' for k, v in kwargs.items()]
+        list(map(repr, args)) +
+        [f'{k}={repr(v)}' for k, v in kwargs.items()]
     ))
 
 

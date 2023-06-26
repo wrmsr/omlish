@@ -43,6 +43,10 @@ import site
 import sys
 import typing as ta
 
+from omlish import check
+from omlish import cached
+from omlish import lang
+
 import distutils as du
 import distutils.ccompiler
 import distutils.core
@@ -51,9 +55,13 @@ import distutils.errors
 import distutils.sysconfig
 import distutils.util
 
-from omlish import check
-from omlish import cached
-from omlish import lang
+# import setuptools._distutils as du  # noqa
+# import setuptools._distutils.ccompiler  # noqa
+# import setuptools._distutils.core  # noqa
+# import setuptools._distutils.dep_util  # noqa
+# import setuptools._distutils.errors  # noqa
+# import setuptools._distutils.sysconfig  # noqa
+# import setuptools._distutils.util  # noqa
 
 
 log = logging.getLogger(__name__)

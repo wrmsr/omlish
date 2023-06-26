@@ -240,7 +240,7 @@ class ShapeTracker(lang.Final):
         return ShapeTracker.Sym(idx, valid)
 
     def gen_sym(self, idx: ta.Union[sym.Node, str] = 'idx') -> Sym:
-        if isinstance(idx,  str):
+        if isinstance(idx, str):
             idx = sym.Var(idx, 0, self.shape.prod - 1)
         return self._gen_sym(self.view.gen_sym(idx), self.view.gen_mask_sym(idx))
 

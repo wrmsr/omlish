@@ -75,7 +75,7 @@ class LinearAnalyzer:
             xa.shape,
             check.equal(xa.dtype, ya.dtype),
             xa.flops + ya.flops + xa.shape.prod,
-            )
+        )
 
 
 class KeyRenderer:
