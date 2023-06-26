@@ -1,6 +1,7 @@
 import io
 import typing as ta
 
+from omlish import cached
 from omlish import check
 from omlish import collections as col
 from omlish import dataclasses as dc
@@ -127,31 +128,62 @@ class LinearCodegenOp(CodegenOp):
         self._key = render_key(op, self._bufs)
 
     @property
-    def key(self) -> str:
-        return self._key
+    def op(self) -> LazyOp:
+        return self._op
 
     @property
     def buffers(self) -> ta.Sequence[LazyBuffer]:
         return self._bufs
 
-    def build(self) -> Program:
-        ana = LinearAnalyzer().analyze(ops2.convert_from_lazy_op(self._op))  # noqa
-        mem_est = sum(  # noqa
-            x.dtype.item_size * (x.get_realized().size if x.is_realized is not None else x.shape.prod)
-            for x in self._bufs
-        )
+    @cached.property
+    def analysis(self) -> LinearAnalysis:
+        return LinearAnalyzer().analyze(ops2.convert_from_lazy_op(self._op))  # noqa
 
+    @property
+    def key(self) -> str:
+        return self._key
+
+    @cached.property
+    def reduce_op(self) -> ta.Optional[LazyOp]:
         # there's only allowed to be one reduce op
         reduce_ops = [x for x in self._op.ops if isinstance(x.op, ReduceOp)]
-        reduce_op = check.single(reduce_ops) if reduce_ops else None  # noqa
+        return check.single(reduce_ops) if reduce_ops else None  # noqa
 
+    @cached.property
+    def early_buffers(self) -> ta.Sequence[LazyBuffer]:
         # get early bufs, before the one reduce op
-        early_bufs = col.unique(reduce_op.buffers) if reduce_op is not None else []  # noqa
+        return col.unique(self.reduce_op.buffers) if self.reduce_op is not None else []  # noqa
+
+    @cached.property
+    def full_buffer_index(self) -> int:
+        return self.buffers.index(self.early_buffers[0]) if len(self.early_buffers) > 0 else 0
+
+    @property
+    def full_shape(self) -> Shape:
+        return self._sts[self.full_buffer_index].shape
+
+    _sts: ta.List[ShapeTracker]
+
+    def build(self) -> Program:
+        # mem_est = sum(  # noqa
+        #     x.dtype.item_size * (x.get_realized().size if x.is_realized is not None else x.shape.prod)
+        #     for x in self._bufs
+        # )
 
         # create new shapetrackers inside this kernel, we will permute them
-        sts: ta.List[ShapeTracker] = [x.shape_tracker.copy() for x in self._bufs]
-        for st in sts:
+        self._sts = [x.shape_tracker.copy() for x in self._bufs]
+        for st in self._sts:
             st.simplify()
+
+        # make the output buffer shape correct in here
+        self._sts[0].reshape(self.analysis.shape)
+
+        # move all reduce axes to the end
+        reduce = list(enumerate(zip(self.full_shape, self._sts[0].shape)))
+        permute = tuple(
+            [i for i, (s, n) in reduce if s == n]
+            + [i for i, (s, n) in reduce if s != n]
+        )
 
         raise NotImplementedError
 

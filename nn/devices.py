@@ -38,9 +38,9 @@ def cpu_device() -> CpuDevice:
 
 @lang.cached_nullary
 def default_device() -> Device:
-    # from .opencl import OpenclDevice
-    # return OpenclDevice()
-    return cpu_device()
+    from .opencl import OpenclDevice
+    return OpenclDevice()
+    # return cpu_device()
 
 
 def shape_to_axis(old_shape: ta.Sequence[int], new_shape: ta.Sequence[int]) -> ta.Sequence[int]:
