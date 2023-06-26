@@ -3,6 +3,7 @@ import itertools
 import typing as ta
 
 from omlish import check
+from omlish import collections as col
 from omlish import dataclasses as dc
 from omlish import lang
 
@@ -21,8 +22,8 @@ class Optimizer(lang.Abstract):
             if t.requires_grad is None:
                 t.set_requires_grad(True)
 
-        self._params: ta.List[Tensor] = [x for x in ts if x.requires_grad]
-        self._buffers: ta.List[Tensor] = [x for x in ts if not x.requires_grad]  # buffers are still realized
+        self._params: ta.List[Tensor] = col.unique(x for x in ts if x.requires_grad)
+        self._buffers: ta.List[Tensor] = col.unique(x for x in ts if not x.requires_grad)  # buffers are still realized
 
     @abc.abstractmethod
     def step(self) -> None:
