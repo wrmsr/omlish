@@ -112,6 +112,10 @@ class ShapeTracker(lang.Final):
         return self._views[-1]
 
     @property
+    def views(self) -> ta.Sequence[View]:
+        return self._views
+
+    @property
     def shape(self) -> Shape:
         return self.view.shape
 
@@ -168,7 +172,7 @@ class ShapeTracker(lang.Final):
             mask=tuple(self.view.mask[a] for a in axis) if self.view.mask is not None else None,
         )
 
-    def reshape(self, new_shape: ta.Sequence[int]) -> None:
+    def reshape(self, new_shape: Shape) -> None:
         if self.shape == new_shape:
             return
 
