@@ -182,7 +182,7 @@ class LinearCodegenOp(CodegenOp):
     _upcasted: int
     _local_dims: int
 
-    def build(self) -> Program:
+    def prepare(self) -> None:
         # mem_est = sum(  # noqa
         #     x.dtype.item_size * (x.get_realized().size if x.is_realized is not None else x.shape.prod)
         #     for x in self._bufs
@@ -211,6 +211,9 @@ class LinearCodegenOp(CodegenOp):
         # group simplifies
         self.simplify_ones()
         self.simplify_merge_adjacent()
+
+    def build(self) -> Program:
+        self.prepare()
 
         raise NotImplementedError
 
@@ -276,6 +279,41 @@ class LinearCodegenOp(CodegenOp):
         # do the reshapes
         for i, x in enumerate(rets):
             self._sts[i].reshape(Shape(y[0] for y in x))
+
+    # axis : the axis to pull from
+    # amount : the amount to take
+    # top : if you want to pull that amount from the top
+    # insert_before : place to insert the new stuff
+    def shift_to(
+            self,
+            axis: int,
+            amount: int,
+            top: bool = False,
+            insert_before: ta.Optional[int] = None,
+    ) -> None:
+        if insert_before is None:
+            insert_before = self.shape_len
+
+        move_axis = axis if top else axis + 1
+        if move_axis < insert_before:
+            insert_before += 1
+
+        self.reshape_and_permute(
+            lambda x: Shape(
+                list(x[0:axis]) +
+                (
+                    [amount, x[axis] // amount] if top else
+                    [x[axis] // amount, amount] if x[axis] > 1 else
+                    [1, 1]
+                ) +
+                list(x[axis + 1:])
+            ),
+            (
+                [i for i in range(insert_before) if i != move_axis] +
+                [move_axis] +
+                [i for i in range(insert_before, self.shape_len + 1) if i != move_axis]
+            ),
+        )
 
 
 class LinearCodegen(Codegen):
