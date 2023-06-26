@@ -41,6 +41,15 @@ class View(dc.Data, lang.Final):
 
     ##
 
+    def idxs_to_idx(self, idxs: ta.Iterable[sym.Node]) -> sym.Node:
+        check.arg(len(idxs) == len(self.shape))
+        acc = 1
+        ret = []
+        for tidx, d in reversed(list(zip(idxs, self.shape))):
+            ret.append(tidx * acc)
+            acc *= d
+        return sym.sum_(ret)
+
     def gen_mask_sym(self, idx: sym.Node, valid: ta.Optional[sym.Node] = None) -> sym.Node:
         ret = [valid] if valid is not None else []
         if self.mask is not None:
@@ -62,6 +71,17 @@ class View(dc.Data, lang.Final):
             ret.append(((idx // acc) % ss.shape) * ss.stride)
             acc *= ss.shape
         return sym.sum_(ret)
+
+    # generate an expression if you have a variable or expression for each index
+    def gen_syms(self, idxs: ta.Sequence[sym.Node]) -> sym.Node:
+        check.arg(len(idxs) == len(self.shape))
+        return sym.sum_(
+            [sym.Num(self.offset)] + [
+                idx * st
+                for idx, sh, st in zip(idxs, self.shape, self.stride)
+                if sh != 1 and st != 0
+            ]
+        )
 
 
 def merge_views(vm2: View, vm1: View) -> ta.Optional[View]:
@@ -247,6 +267,13 @@ class ShapeTracker(lang.Final):
         if isinstance(idx, str):
             idx = sym.Var(idx, 0, self.shape.prod - 1)
         return self._gen_sym(self.view.gen_sym(idx), self.view.gen_mask_sym(idx))
+
+    def gen_syms(self, idxs: ta.Optional[ta.Sequence[sym.Node]] = None) -> Sym:
+        if idxs is None:
+            idxs = [sym.Var(f'idx{i}', 0, s - 1) for i, s in enumerate(self.shape)]
+        idx = self.views[-1].gen_syms(idxs)
+        valid = self.views[-1].gen_mask_sym(self.views[-1].idxs_to_idx(idxs))
+        return self._gen_sym(idx, valid)
 
     # these are multiview strides, value is None if it's not a simple strided dimension
     # TODO: this can be shared code between simplify and merge_views

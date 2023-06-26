@@ -1,4 +1,7 @@
+import collections
 import io
+import itertools
+import math
 import typing as ta
 
 from omlish import cached
@@ -6,16 +9,17 @@ from omlish import check
 from omlish import collections as col
 from omlish import dataclasses as dc
 from omlish import dispatch
-from omlish import lang
 from omlish.collections import coerce
 
 from . import ops2  # noqa
 from . import symbolic as sym
+from . import uops as uo
 from .codegen import Codegen
 from .codegen import CodegenOp
 from .codegen import Program
 from .dims import Shape
 from .dtypes import Dtype
+from .dtypes import Float32
 from .lazy import LazyBuffer
 from .lazy import LazyOp
 from .ops import MovementOp
@@ -116,6 +120,10 @@ def render_key(op: LazyOp, bufs: ta.Sequence[LazyBuffer]) -> str:
     return buf.getvalue()
 
 
+def mnum(i: int) -> str:
+    return str(i) if i >= 0 else f"m{-i}"
+
+
 class LinearCodegenOp(CodegenOp):
     def __init__(self, op: LazyOp, output: LazyBuffer) -> None:
         super().__init__()
@@ -167,9 +175,9 @@ class LinearCodegenOp(CodegenOp):
         return [
             x != y
             for x, y in zip(
-                self._sts[0].shape[: self.shape_len - self.upcasted] + (0,),
-                self.full_shape[: self.shape_len - self.upcasted] + (1,),
-                )
+                self._sts[0].shape[: self.shape_len - self._upcasted] + (0,),
+                self.full_shape[: self.shape_len - self._upcasted] + (1,),
+            )
         ].index(True)
 
     @property
@@ -215,7 +223,138 @@ class LinearCodegenOp(CodegenOp):
     def build(self) -> Program:
         self.prepare()
 
+        for axis in range(self.first_reduce - self._local_dims - 1, -1, -1):
+            if self.full_shape[axis] == 1:
+                continue
+
+            local_size = math.prod(self.full_shape[self.first_reduce - self._local_dims: self.first_reduce])
+            last_try = self._local_dims == 0 and axis == 0
+            if (
+                any(
+                    self._sts[buf_index].views[-1].stride[axis] == 0
+                    for buf_index in range(len(self._sts))
+                ) or last_try
+            ):
+                for sz in [
+                    x
+                    for x in (([32] if last_try else []) + [16, 8, 4, 3])
+                    if self.full_shape[axis] % x == 0 and local_size * x <= 128
+                ]:
+                    self.shift_to(axis, sz, insert_before=self.first_reduce - self._local_dims)
+                    self._local_dims += 1
+                    break
+
+            if self._local_dims >= 3:
+                break
+
+        self.simplify_ones()
+
+        self.linearize()
+
         raise NotImplementedError
+
+    _uops: ta.List[uo.Uop]
+
+    def _uop(self, uop: uo.Uop) -> ta.Optional:
+        self._uops.append(uop)
+        return uop.out
+
+    def linearize(self) -> None:
+        # uops
+        self._uops = []
+
+        fn_name = ('r_' if self.reduce_op is not None else 'E_') + '_'.join([str(x) for x in self.full_shape])
+
+        loaded_buffers = {}
+        acc = []
+
+        # ssa
+        _ssa: ta.DefaultDict[str, int] = collections.defaultdict(int)
+
+        def ssa(name: str, ltype: Dtype = Float32) -> uo.Token:
+            _ssa[name] += 1
+            return uo.Token(f'{name}{_ssa[name]-1}', ltype)
+
+        # global loop
+        global_idxs = [
+            sym.Var(f'gidx{i}', 0, self.full_shape[i] - 1)
+            for i in range(0, self.first_reduce - self._local_dims)
+        ]
+
+        self._uop(uo.Loop(out=None, vin=[], idxs=global_idxs, s='global'))
+
+        # local loop
+        local_idxs = [
+            sym.Var(f'lidx{i}', 0, self.full_shape[i] - 1)
+            for i in range(
+                self.first_reduce - self._local_dims,
+                self.first_reduce + len(self._group_for_reduce),
+            )
+        ]
+        self._uop(uo.Loop(out=None, vin=[], idxs=local_idxs, s='local'))
+        gl_idxs = global_idxs + local_idxs
+
+        # reduce op
+        fake_reduce_idxs = []
+        check.none(self.reduce_op)
+
+        # load latebufs
+        for i, b in enumerate(self._bufs):
+            if b not in self.early_buffers and i != 0:  # FIXME: and not isinstance(b, LocalBuffer)
+                loaded_buffers[b] = self.global_load(i, global_idxs + local_idxs + fake_reduce_idxs)
+
+        raise NotImplementedError
+
+    def shape_offsets(self, i: int) -> ta.Sequence[ta.Sequence[int]]:
+        if self._upcasted < 1:
+            return [()]
+
+        return itertools.product(*[
+            list(range(s))
+            for s in self._sts[i].shape[self.shape_len - self._upcasted:][::-1]
+        ])
+
+    class _Gl(ta.NamedTuple):
+        local_type: Dtype
+        uidx_list: ta.Sequence[int]
+        idx: sym.Node
+        valid: sym.Node
+
+    def global_load(self, i: int, idxs: ta.Sequence[sym.Var], const=None) -> ta.Sequence[uo.Token]:
+        load_offset: ta.Dict[ta.Sequence[int], LinearCodegenOp._Gl] = {}
+        for uidxs in self.shape_offsets(i):
+            gs = self._sts[i].gen_syms(idxs + [sym.Num(x) for x in uidxs[::-1]])
+            load_offset[uidxs] = LinearCodegenOp._Gl(
+                Float32,
+                uidxs,
+                gs.idx,
+                gs.mask,
+            )
+
+        # do loads
+        cache = {}
+        loaded = {}
+        for uidxs, (localtype, uidx_list, idx, valid) in load_offset.items():
+            key = f'{localtype}{idx.render()}{valid.render()}'
+            if key not in cache:
+                if const is None:
+                    cache[key] = self._uop(uo.Load(
+                        out=uo.Token(f'val{mnum(i)}_{len(cache)}', localtype),
+                        vin=[],
+                        i=i,
+                        idx=idx,
+                        valid=valid,
+                    ))
+                else:
+                    cache[key] = self._uop(uo.Const(
+                        out=uo.Token(f'acc{mnum(i)}_{len(cache)}', localtype),
+                        vin=[],
+                        v=const,
+                    ))
+
+            loaded[uidxs] = cache[key]
+
+        return [loaded[uidxs] for uidxs in self.shape_offsets(i)]
 
     def reshape_and_permute(
             self,
@@ -227,6 +366,11 @@ class LinearCodegenOp(CodegenOp):
                 st.reshape(Shape(new_shape_fn(st.shape)))
             if axis is not None:
                 st.permute(tuple(axis))
+
+    # drops the final dimension
+    def upcast(self) -> None:
+        check.arg(self.full_shape[-1] == 1)
+        self._upcasted += 1
 
     def simplify_ones(self) -> None:
         # remove places where the shape is all ones
@@ -324,77 +468,3 @@ class LinearCodegen(Codegen):
 ##
 
 
-@dc.dataclass(frozen=True)
-class Token:
-    name: str
-    dtype: Dtype
-    offset: ta.Optional[int] = None
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class UOp(lang.Sealed, lang.Abstract):
-    out: ta.Optional[Token]
-    vin: ta.List[Token]
-
-
-@dc.dataclass(frozen=True)
-class Const(UOp):
-    v: float
-
-
-@dc.dataclass(frozen=True)
-class Cast(UOp):
-    pass
-
-
-@dc.dataclass(frozen=True)
-class Alu(UOp):
-    ty: type  # ta.Union[ta.Type[ops2.UnaryOp], ta.Type[ops2.BinaryOp]]
-
-
-@dc.dataclass(frozen=True)
-class DefineLocal(UOp):
-    s: str
-    sz: int
-
-
-#
-
-
-@dc.dataclass(frozen=True)
-class LoopOp(UOp, lang.Abstract):
-    idxs: ta.Sequence[sym.Var]
-    s: str
-
-
-@dc.dataclass(frozen=True)
-class Loop(LoopOp):
-    pass
-
-
-@dc.dataclass(frozen=True)
-class EndLoop(LoopOp):
-    pass
-
-
-#
-
-
-@dc.dataclass(frozen=True)
-class MemOp(UOp, lang.Abstract):
-    i: int
-    idx: sym.Var
-    valid: sym.Var
-
-
-@dc.dataclass(frozen=True)
-class Load(MemOp):
-    pass
-
-
-@dc.dataclass(frozen=True)
-class Store(MemOp):
-    pass
