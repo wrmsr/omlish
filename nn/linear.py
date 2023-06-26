@@ -162,7 +162,25 @@ class LinearCodegenOp(CodegenOp):
     def full_shape(self) -> Shape:
         return self._sts[self.full_buffer_index].shape
 
+    @property
+    def first_reduce(self) -> int:
+        return [
+            x != y
+            for x, y in zip(
+                self._sts[0].shape[: self.shape_len - self.upcasted] + (0,),
+                self.full_shape[: self.shape_len - self.upcasted] + (1,),
+                )
+        ].index(True)
+
+    @property
+    def shape_len(self) -> int:
+        return len(self._sts[0].shape)
+
     _sts: ta.List[ShapeTracker]
+
+    _group_for_reduce: ta.List[int]
+    _upcasted: int
+    _local_dims: int
 
     def build(self) -> Program:
         # mem_est = sum(  # noqa
@@ -184,8 +202,80 @@ class LinearCodegenOp(CodegenOp):
             [i for i, (s, n) in reduce if s == n]
             + [i for i, (s, n) in reduce if s != n]
         )
+        self.reshape_and_permute(None, permute)
+
+        self._group_for_reduce = []
+        self._upcasted = 0
+        self._local_dims = 0
+
+        # group simplifies
+        self.simplify_ones()
+        self.simplify_merge_adjacent()
 
         raise NotImplementedError
+
+    def reshape_and_permute(
+            self,
+            new_shape_fn: ta.Optional[ta.Callable[[Shape], Shape]] = None,
+            axis: ta.Optional[ta.Sequence[int]] = None,
+    ) -> None:
+        for st in self._sts:
+            if new_shape_fn is not None:
+                st.reshape(Shape(new_shape_fn(st.shape)))
+            if axis is not None:
+                st.permute(tuple(axis))
+
+    def simplify_ones(self) -> None:
+        # remove places where the shape is all ones
+        # TODO: this should be factored in to multi shape stride
+        if self.shape_len == 0:
+            return
+
+        all_ones = [
+            all(st.shape[i] == 1 for st in self._sts)
+            for i in range(self.shape_len)
+        ]
+
+        # keep at least 1 one
+        if all(all_ones):
+            all_ones[-1] = False
+
+        self.reshape_and_permute(
+            lambda shape: Shape(x for i, x in enumerate(shape) if not all_ones[i]),
+            None,
+        )
+
+    def simplify_merge_adjacent(self):
+        if self.shape_len == 0:
+            return
+
+        shapes = [x.shape for x in self._sts]
+        strides = [x.views[-1].stride for x in self._sts]
+
+        # merge dimensions if we can, multi get_shape_strides
+        # TODO: does this always preserve the reduce dimension, NO
+        # TODO: move this into shapetracker, with tests!
+        rets = [[(shapes[j][0], strides[j][0])] for j in range(len(shapes))]
+        for i in range(1, len(shapes[0])):
+            can_merge = []
+            for j in range(len(shapes)):
+                # TODO: added the always mergeability of 1s, is this right? if so, add to shapetracker in the 1 case
+                can_merge.append(
+                    (strides[j][i] != 0 and rets[j][-1][1] == shapes[j][i] * strides[j][i]) or
+                    (strides[j][i] == 0 and rets[j][-1][1] == 0)
+                )
+
+            # more can merge than this
+            mergeable = all(can_merge) and i != self.first_reduce
+            for j in range(len(shapes)):
+                if mergeable:
+                    rets[j][-1] = (rets[j][-1][0] * shapes[j][i], strides[j][i])
+                else:
+                    rets[j].append((shapes[j][i], strides[j][i]))
+
+        # do the reshapes
+        for i, x in enumerate(rets):
+            self._sts[i].reshape(Shape(y[0] for y in x))
 
 
 class LinearCodegen(Codegen):
