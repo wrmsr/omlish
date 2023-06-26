@@ -72,6 +72,8 @@ class Interpreter(Evaluator, lang.Abstract, ta.Generic[T]):  # noqa
 
 import operator  # noqa
 
+from .numpy import NUMPY_VALUE_TYPES  # noqa
+from .numpy import NumpyValue  # noqa
 from .raw import RawCpuBuffer  # noqa
 
 
@@ -80,15 +82,15 @@ def shape_to_axis(old_shape: ta.Sequence[int], new_shape: ta.Sequence[int]) -> t
     return tuple(i for i, (a, b) in enumerate(zip(old_shape, new_shape)) if a != b)
 
 
-class NumpyInterpreter(Interpreter[np.ndarray]):
+class NumpyInterpreter(Interpreter[NumpyValue]):
 
-    def _obj_to_raw(self, obj: np.ndarray) -> RawBuffer:
+    def _obj_to_raw(self, obj: NumpyValue) -> RawBuffer:
         return RawCpuBuffer(obj)
 
-    def _raw_to_obj(self, rb: RawBuffer) -> np.ndarray:
-        return check.isinstance(check.isinstance(rb, RawCpuBuffer).to_cpu(), np.ndarray)
+    def _raw_to_obj(self, rb: RawBuffer) -> NumpyValue:
+        return check.isinstance(check.isinstance(rb, RawCpuBuffer).to_cpu(), NUMPY_VALUE_TYPES)
 
-    _fns_by_op_cls: ta.Final[ta.Mapping[type, ta.Callable[..., np.ndarray]]] = {
+    _fns_by_op_cls: ta.Final[ta.Mapping[type, ta.Callable[..., NumpyValue]]] = {
         ops2.Exp2: np.exp2,
         ops2.Log2: np.log2,
 
@@ -115,5 +117,5 @@ class NumpyInterpreter(Interpreter[np.ndarray]):
         ops2.Pad: np.pad,
     }
 
-    def _eval(self, op: ops2.Op, *objs: np.ndarray) -> np.ndarray:
+    def _eval(self, op: ops2.Op, *objs: NumpyValue) -> NumpyValue:
         return self._fns_by_op_cls[type(op)](*objs, *op.args)

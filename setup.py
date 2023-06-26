@@ -1,3 +1,7 @@
+"""
+TODO:
+ - https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html
+"""
 import os.path
 import sys
 import typing as ta
