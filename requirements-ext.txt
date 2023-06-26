@@ -9,7 +9,7 @@ numpy==1.25.0
 
 llvmlite==0.40.1
 
-pyopencl==2023.1
+pyopencl==2023.1.1
 
 pycuda==2022.2.2; sys_platform != 'darwin'
 

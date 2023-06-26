@@ -75,6 +75,11 @@ import operator  # noqa
 from .raw import RawCpuBuffer  # noqa
 
 
+def shape_to_axis(old_shape: ta.Sequence[int], new_shape: ta.Sequence[int]) -> ta.Sequence[int]:
+    check.arg(len(old_shape) == len(new_shape), 'reduce shapes must have same dimensions')
+    return tuple(i for i, (a, b) in enumerate(zip(old_shape, new_shape)) if a != b)
+
+
 class NumpyInterpreter(Interpreter[np.ndarray]):
 
     def _obj_to_raw(self, obj: np.ndarray) -> RawBuffer:
@@ -91,6 +96,23 @@ class NumpyInterpreter(Interpreter[np.ndarray]):
         ops2.Sub: operator.sub,
         ops2.Mul: operator.mul,
         ops2.Div: operator.truediv,
+        ops2.CmpEq: lambda x, y: (x == y).astype(np.float32),  # noqa
+        ops2.Maximum: np.maximum,
+
+        ops2.Sum: lambda x, new_shape: (
+            x.sum(shape_to_axis(x.shape, new_shape), keepdims=True)
+            if tuple(x.shape) != tuple(new_shape) else x[:]
+        ),
+
+        ops2.Max: lambda x, new_shape: (
+            (x.amax if hasattr(x, 'amax') else x.max)(shape_to_axis(x.shape, new_shape), keepdims=True)
+            if tuple(x.shape) != tuple(new_shape) else x[:]
+        ),
+
+        ops2.Reshape: lambda x, arg: x.reshape(arg),
+        ops2.Permute: lambda x, order: x.transpose(order),
+        ops2.Expand: np.broadcast_to,
+        ops2.Pad: np.pad,
     }
 
     def _eval(self, op: ops2.Op, *objs: np.ndarray) -> np.ndarray:
