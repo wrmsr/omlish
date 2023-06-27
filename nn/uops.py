@@ -8,6 +8,9 @@ from . import symbolic as sym
 from .dtypes import Dtype
 
 
+##
+
+
 @dc.dataclass(frozen=True)
 class Token:
     name: str
@@ -43,6 +46,11 @@ class Alu(Uop):
 class DefineLocal(Uop):
     s: str
     sz: int
+
+
+@dc.dataclass(frozen=True)
+class Barrier(Uop):
+    pass
 
 
 #
