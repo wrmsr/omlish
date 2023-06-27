@@ -250,12 +250,12 @@ class LazyBuffer(Lazy):
 
         elif self_op.op == LoadOp.FROM:
             raw = self_op.srcs[0].as_buffer().get_realized()
-            self._realized = RawCpuBuffer.from_cpu(raw.to_cpu())
+            self._realized = self.device.make_raw_buffer(raw.to_cpu())
 
         elif self_op.op == LoadOp.EMPTY:
-            self._realized = RawCpuBuffer(np.empty(math.prod(self.shape), dtype=self.dtype.np))  # FIXME
+            self._realized = self.device.make_raw_buffer(np.empty(math.prod(self.shape), dtype=self.dtype.np))  # FIXME
         elif self_op.op == LoadOp.CONST:
-            self._realized = RawCpuBuffer.from_cpu(np.array(self_op.arg, dtype=self.dtype.np))
+            self._realized = self.device.make_raw_buffer(np.array(self_op.arg, dtype=self.dtype.np))
 
         elif self_op.op == BinaryOp.MUL:
             self._op = self._eval_binary_op()

@@ -68,10 +68,10 @@ class OpenclBuffer(RawBufferCopyInOut):
         setattr(self._buf, _DEVICE_ATTR, device)  # device is tracked on the underlying buffer
 
     def _copy_in(self, x: NumpyValue) -> None:
-        cl.enqueue_copy(_runtime().queue[self._buf.device], self._buf, x, is_blocking=False)
+        cl.enqueue_copy(_runtime().queue[getattr(self._buf, _DEVICE_ATTR)], self._buf, x, is_blocking=False)
 
     def _copy_out(self, x: NumpyValue) -> None:
-        cl.enqueue_copy(_runtime().queue[self._buf.device], x, self._buf, is_blocking=True)
+        cl.enqueue_copy(_runtime().queue[getattr(self._buf, _DEVICE_ATTR)], x, self._buf, is_blocking=True)
 
 
 class OpenclCodegen(CstyleCodegen):
@@ -120,6 +120,9 @@ class OpenclDevice(Device):
     @property
     def evaluator(self) -> Evaluator:
         return opencl_compiler()
+
+    def make_raw_buffer(self, obj: ta.Any) -> OpenclBuffer:
+        return OpenclBuffer.from_cpu(obj)  # noqa
 
 
 _IS_OSX = platform.system() == "Darwin"
