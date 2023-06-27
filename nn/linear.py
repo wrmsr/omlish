@@ -304,6 +304,15 @@ class LinearCodegenOp(CodegenOp):
 
         self.linearize()
 
+        from .opencl import OpenclDialect
+        from .cstyle import CstyleRenderer
+
+        rendered = CstyleRenderer(
+            self._uops,
+            self._bufs,
+            OpenclDialect,
+        )
+
         raise NotImplementedError
 
     _uops: ta.List[uo.Uop]
