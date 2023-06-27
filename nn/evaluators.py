@@ -1,102 +1,135 @@
-$FIXME
-
 import abc
-import math
 import typing as ta
 
 from omlish import check
+from omlish import collections as col
 from omlish import lang
+import numpy as np
 
-from .codegen import Codegen
-from .codegen import Program
-from .lazy import LazyBuffer
-from .lazy import LazyOp
-from .ops import BinaryOp
-from .ops import FusedOp
-from .ops import MovementOp
-from .ops import Op
-from .ops import ReduceOp
+from . import ops
+from .buffers import Buffer
 from .raw import RawBuffer
-from .raw import RawConst
-
-
-EvalContext = ta.MutableMapping[LazyOp, RawBuffer]
 
 
 class Evaluator(lang.Abstract):
     @abc.abstractmethod
-    def eval(
-            self,
-            op: LazyOp,
-            output: ta.Optional[LazyBuffer] = None,
-    ) -> RawBuffer:
+    def eval(self, op: ops.Op, output: ta.Optional[Buffer] = None) -> RawBuffer:
         raise NotImplementedError
 
 
-class Interpreter(Evaluator):
+T = ta.TypeVar('T')
 
-    def __init__(
-            self,
-            make_buffer: ta.Callable[[ta.Any], RawBuffer],
-            fns_by_op: ta.Mapping[Op, ta.Callable],
-            from_lazy_buffer: ta.Callable[[LazyBuffer], ta.Any] = lambda x: x.get_realized(),
-            to_underlying: ta.Callable[[RawBuffer], ta.Any] = lambda x: x._buf,  #  type: ignore  # noqa  # FIXME
-    ) -> None:
+
+class Interpreter(Evaluator, lang.Abstract, ta.Generic[T]):  # noqa
+
+    def __init__(self) -> None:
         super().__init__()
 
-        self._make_buffer = check.callable(make_buffer)
-        self._fns_by_op = {check.isinstance(op, Op): check.callable(fn) for op, fn in fns_by_op.items()}
-        self._from_lazy_buffer = check.callable(from_lazy_buffer)
-        self._to_underlying = check.callable(to_underlying)
+        self._raws_by_op: ta.MutableMapping[ops.Op, RawBuffer] = col.IdentityKeyDict()
 
-    def eval(
-            self,
-            op: LazyOp,
-            output: ta.Optional[LazyBuffer] = None,
-            *,
-            context: ta.Optional[EvalContext] = None,
-    ) -> RawBuffer:
-        if (
-                FusedOp.MUL_ACC in self._fns_by_op and
-                op.op == ReduceOp.SUM and
-                isinstance(op.srcs[0], LazyOp) and
-                op.srcs[0].as_op().op == BinaryOp.MUL
-        ):
-            op = LazyOp(FusedOp.MUL_ACC, op.srcs[0].as_op().srcs, op.arg)
+    def _buf_to_raw(self, lb: Buffer) -> RawBuffer:  # noqa
+        return check.isinstance(lb.get_realized(), RawBuffer)
 
-        from .ops2 import convert_from_lazy
-        convert_from_lazy(op)
+    @abc.abstractmethod
+    def _obj_to_raw(self, obj: T) -> RawBuffer:
+        raise NotImplementedError
 
-        created_context = context is None
-        if context is None:
-            context = {}
-        if not created_context and op in context:
-            return context[op]
+    @abc.abstractmethod
+    def _raw_to_obj(self, rb: RawBuffer) -> T:
+        raise NotImplementedError
 
-        srcs: ta.List[RawBuffer] = [
-            self.eval(x, context=context)
-            if isinstance(x, LazyOp) else
-            self._from_lazy_buffer(x.as_buffer())
-            for x in op.srcs
-        ]
+    @abc.abstractmethod
+    def _eval(self, op: ops.Op, *objs: T) -> T:
+        raise NotImplementedError
 
-        ret = self._make_buffer(
-            self._fns_by_op[op.op](*(
-                [self._to_underlying(x) for x in srcs] +
-                ([op.arg] if op.arg is not None else [])
-            ))
-        )
+    def eval(self, op: ops.Op, output: ta.Optional[Buffer] = None) -> RawBuffer:
+        try:
+            return self._raws_by_op[op]
+        except KeyError:
+            pass
 
-        if not created_context:
-            context[op] = ret
+        srcs: ta.List[RawBuffer] = []
+        for src in op.srcs:
+            if isinstance(src, ops.Op):
+                srcs.append(self.eval(src))
+            elif isinstance(src, Buffer):
+                srcs.append(self._buf_to_raw(src))
+            else:
+                raise TypeError(src)
+
+        out = self._eval(op, *[self._raw_to_obj(src) for src in srcs])
+        ret = self._raws_by_op[op] = self._obj_to_raw(out)
 
         if output is not None and (ob := output.output_buffer) is not None:
             check.state(ob.size == ret.size and ob.dtype == ret.dtype)
             ob._buf = ret._buf  # type: ignore  # FIXME  # noqa
             return ob
 
-        else:
-            return ret
+        return ret
+
+
+##
+
+
+import operator  # noqa
+
+from .numpy import NUMPY_VALUE_TYPES  # noqa
+from .numpy import NumpyValue  # noqa
+from .raw import RawCpuBuffer  # noqa
+
+
+def shape_to_axis(old_shape: ta.Sequence[int], new_shape: ta.Sequence[int]) -> ta.Sequence[int]:
+    check.arg(len(old_shape) == len(new_shape), 'reduce shapes must have same dimensions')
+    return tuple(i for i, (a, b) in enumerate(zip(old_shape, new_shape)) if a != b)
+
+
+class NumpyInterpreter(Interpreter[NumpyValue]):
+
+    def _obj_to_raw(self, obj: NumpyValue) -> RawBuffer:
+        return RawCpuBuffer(obj)
+
+    def _raw_to_obj(self, rb: RawBuffer) -> NumpyValue:
+        return check.isinstance(check.isinstance(rb, RawCpuBuffer).to_cpu(), NUMPY_VALUE_TYPES)
+
+    _fns_by_op_cls: ta.Final[ta.Mapping[type, ta.Callable[..., NumpyValue]]] = {
+        ops.Exp2: np.exp2,
+        ops.Log2: np.log2,
+
+        ops.Add: operator.add,
+        ops.Sub: operator.sub,
+        ops.Mul: operator.mul,
+        ops.Div: operator.truediv,
+        ops.CmpEq: lambda x, y: (x == y).astype(np.float32),  # noqa
+        ops.Maximum: np.maximum,
+
+        ops.Sum: lambda x, new_shape: (
+            x.sum(shape_to_axis(x.shape, new_shape), keepdims=True)
+            if tuple(x.shape) != tuple(new_shape) else x[:]
+        ),
+
+        ops.Max: lambda x, new_shape: (
+            (x.amax if hasattr(x, 'amax') else x.max)(shape_to_axis(x.shape, new_shape), keepdims=True)
+            if tuple(x.shape) != tuple(new_shape) else x[:]
+        ),
+
+        ops.Reshape: lambda x, arg: x.reshape(arg),
+        ops.Permute: lambda x, order: x.transpose(order),
+        ops.Expand: np.broadcast_to,
+        ops.Pad: np.pad,
+    }
+
+    def _eval(self, op: ops.Op, *objs: NumpyValue) -> NumpyValue:
+        return self._fns_by_op_cls[type(op)](*objs, *op.args)
+
+
+##
+
+
+import math  # noqa
+
+from .codegen import Codegen  # noqa
+from .codegen import Program  # noqa
+from .raw import RawConst  # noqa
 
 
 class Compiler(Evaluator):
@@ -116,18 +149,16 @@ class Compiler(Evaluator):
 
     def eval(
             self,
-            op: LazyOp,
-            output: ta.Optional[LazyBuffer] = None,
-            *,
-            context: ta.Optional[EvalContext] = None,
+            op: ops.Op,
+            output: ta.Optional[Buffer] = None,
     ) -> RawBuffer:
         output = check.not_none(output)
 
         # TODO: ???
         # All movementops do nothing in a Compiled buffer!
         if (
-                isinstance(op.op, MovementOp)
-                and isinstance((src0 := op.srcs[0]), LazyBuffer)
+                isinstance(op, ops.MovementOp)
+                and isinstance((src0 := op.srcs[0]), Buffer)
                 and src0.is_realized  # noqa
         ):
             return src0.get_realized()  # noqa
