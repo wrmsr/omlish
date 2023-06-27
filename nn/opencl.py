@@ -126,8 +126,8 @@ class OpenclProgram(Program):
             self,
             name: str,
             src: str,
-            global_size: ta.Sequence[int],
-            local_size: ta.Sequence[int],
+            global_size: ta.Optional[ta.Sequence[int]] = None,
+            local_size: ta.Optional[ta.Sequence[int]] = None,
     ) -> None:
         super().__init__()
 
@@ -151,5 +151,12 @@ class OpenclProgram(Program):
             for x in bufs
             if x.is_realized and not isinstance(x.get_realized(), RawConst)
         ]
+
+        et = self._cl_fn(
+            ([*self._global_size, 1] * (3 - len(self._global_size))) if self._global_size is not None else None,
+            ([*self._local_size, 1] * (3 - len(self._local_size))) if self._local_size is not None else None,
+            *raw_bufs,
+            wait=True,
+        )
 
         raise NotImplementedError
