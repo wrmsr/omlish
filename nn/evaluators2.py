@@ -6,13 +6,14 @@ from omlish import collections as col
 from omlish import lang
 import numpy as np
 
+from . import ops
+from .buffers import Buffer
 from .raw import RawBuffer
-from . import ops2
 
 
 class Evaluator(lang.Abstract):
     @abc.abstractmethod
-    def eval(self, op: ops2.Op, output: ta.Optional[ops2.Buffer] = None) -> RawBuffer:
+    def eval(self, op: ops.Op, output: ta.Optional[Buffer] = None) -> RawBuffer:
         raise NotImplementedError
 
 
@@ -24,10 +25,10 @@ class Interpreter(Evaluator, lang.Abstract, ta.Generic[T]):  # noqa
     def __init__(self) -> None:
         super().__init__()
 
-        self._raws_by_op: ta.MutableMapping[ops2.Op, RawBuffer] = col.IdentityKeyDict()
+        self._raws_by_op: ta.MutableMapping[ops.Op, RawBuffer] = col.IdentityKeyDict()
 
-    def _buf_to_raw(self, lb: ops2.Buffer) -> RawBuffer:  # noqa
-        return check.isinstance(lb.obj.get_realized(), RawBuffer)
+    def _buf_to_raw(self, lb: Buffer) -> RawBuffer:  # noqa
+        return check.isinstance(lb.get_realized(), RawBuffer)
 
     @abc.abstractmethod
     def _obj_to_raw(self, obj: T) -> RawBuffer:
@@ -38,10 +39,10 @@ class Interpreter(Evaluator, lang.Abstract, ta.Generic[T]):  # noqa
         raise NotImplementedError
 
     @abc.abstractmethod
-    def _eval(self, op: ops2.Op, *objs: T) -> T:
+    def _eval(self, op: ops.Op, *objs: T) -> T:
         raise NotImplementedError
 
-    def eval(self, op: ops2.Op, output: ta.Optional[ops2.Buffer] = None) -> RawBuffer:
+    def eval(self, op: ops.Op, output: ta.Optional[Buffer] = None) -> RawBuffer:
         try:
             return self._raws_by_op[op]
         except KeyError:
@@ -49,9 +50,9 @@ class Interpreter(Evaluator, lang.Abstract, ta.Generic[T]):  # noqa
 
         srcs: ta.List[RawBuffer] = []
         for src in op.srcs:
-            if isinstance(src, ops2.Op):
+            if isinstance(src, ops.Op):
                 srcs.append(self.eval(src))
-            elif isinstance(src, ops2.Buffer):
+            elif isinstance(src, Buffer):
                 srcs.append(self._buf_to_raw(src))
             else:
                 raise TypeError(src)
@@ -59,7 +60,7 @@ class Interpreter(Evaluator, lang.Abstract, ta.Generic[T]):  # noqa
         out = self._eval(op, *[self._raw_to_obj(src) for src in srcs])
         ret = self._raws_by_op[op] = self._obj_to_raw(out)
 
-        if output is not None and (ob := output.obj.output_buffer) is not None:
+        if output is not None and (ob := output.output_buffer) is not None:
             check.state(ob.size == ret.size and ob.dtype == ret.dtype)
             ob._buf = ret._buf  # type: ignore  # FIXME  # noqa
             return ob
@@ -91,31 +92,31 @@ class NumpyInterpreter(Interpreter[NumpyValue]):
         return check.isinstance(check.isinstance(rb, RawCpuBuffer).to_cpu(), NUMPY_VALUE_TYPES)
 
     _fns_by_op_cls: ta.Final[ta.Mapping[type, ta.Callable[..., NumpyValue]]] = {
-        ops2.Exp2: np.exp2,
-        ops2.Log2: np.log2,
+        ops.Exp2: np.exp2,
+        ops.Log2: np.log2,
 
-        ops2.Add: operator.add,
-        ops2.Sub: operator.sub,
-        ops2.Mul: operator.mul,
-        ops2.Div: operator.truediv,
-        ops2.CmpEq: lambda x, y: (x == y).astype(np.float32),  # noqa
-        ops2.Maximum: np.maximum,
+        ops.Add: operator.add,
+        ops.Sub: operator.sub,
+        ops.Mul: operator.mul,
+        ops.Div: operator.truediv,
+        ops.CmpEq: lambda x, y: (x == y).astype(np.float32),  # noqa
+        ops.Maximum: np.maximum,
 
-        ops2.Sum: lambda x, new_shape: (
+        ops.Sum: lambda x, new_shape: (
             x.sum(shape_to_axis(x.shape, new_shape), keepdims=True)
             if tuple(x.shape) != tuple(new_shape) else x[:]
         ),
 
-        ops2.Max: lambda x, new_shape: (
+        ops.Max: lambda x, new_shape: (
             (x.amax if hasattr(x, 'amax') else x.max)(shape_to_axis(x.shape, new_shape), keepdims=True)
             if tuple(x.shape) != tuple(new_shape) else x[:]
         ),
 
-        ops2.Reshape: lambda x, arg: x.reshape(arg),
-        ops2.Permute: lambda x, order: x.transpose(order),
-        ops2.Expand: np.broadcast_to,
-        ops2.Pad: np.pad,
+        ops.Reshape: lambda x, arg: x.reshape(arg),
+        ops.Permute: lambda x, order: x.transpose(order),
+        ops.Expand: np.broadcast_to,
+        ops.Pad: np.pad,
     }
 
-    def _eval(self, op: ops2.Op, *objs: NumpyValue) -> NumpyValue:
+    def _eval(self, op: ops.Op, *objs: NumpyValue) -> NumpyValue:
         return self._fns_by_op_cls[type(op)](*objs, *op.args)
