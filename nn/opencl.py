@@ -9,6 +9,7 @@ else:
 
 from . import evaluators
 from .cstyle import CstyleCodegen
+from .cstyle import CstyleDialect
 from .devices import Device
 from .dtypes import Dtype
 from .evaluators import Evaluator
@@ -79,6 +80,31 @@ class OpenclCompiler(evaluators.Compiler):
             OpenclBuffer,
             OpenclCodegen(),
         )
+
+
+OpenclDialect = CstyleDialect(
+    kernel_prefix='__kernel',
+    buffer_prefix='__global ',
+    smem_prefix='__local ',
+
+    barrier='barrier(CLK_LOCAL_MEM_FENCE);',
+
+    gid=[f'get_group_id({i})' for i in range(3)],
+    lid=[f'get_local_id({i})' for i in range(3)],
+
+    float4='(float4)',
+
+    half_prekernel='#pragma OPENCL EXTENSION cl_khr_fp16 : enable',
+    double_prekernel="""
+#ifdef cl_khr_fp64
+#pragma OPENCL EXTENSION cl_khr_fp64 : enable
+#elif defined(cl_amd_fp64)
+#pragma OPENCL EXTENSION cl_amd_fp64 : enable
+#endif
+""",
+
+    uses_vload=True,
+)
 
 
 @lang.cached_nullary
