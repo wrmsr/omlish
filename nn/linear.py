@@ -95,10 +95,10 @@ class LinearAnalyzer:
 
 
 class KeyRenderer:
-    def __init__(self, writer: ta.Callable[[str], ta.Any], bufs: ta.Sequence[LazyBuffer]) -> None:
+    def __init__(self, write: ta.Callable[[str], ta.Any], bufs: ta.Sequence[LazyBuffer]) -> None:
         super().__init__()
 
-        self._writer = check.callable(writer)
+        self._write = check.callable(write)
         self._bufs = coerce.seq_of(check.of_isinstance(LazyBuffer))(bufs)
         self._buf_idx_map: ta.Mapping[LazyBuffer, int] = col.IdentityKeyDict((buf, i) for i, buf in enumerate(self._bufs))  # noqa
 
@@ -107,22 +107,34 @@ class KeyRenderer:
         raise TypeError(obj)
 
     @render.register
+    def render_shape(self, sh: Shape) -> None:
+        self._write(f'({", ".join(map(str, sh))})')
+
+    @render.register
     def _render_buffer(self, buf: ops2.Buffer) -> None:
-        self._writer(f'{type(buf).__name__}:{self._buf_idx_map[buf.obj]}')
+        self._write(f'{type(buf).__name__}:{self._buf_idx_map[buf.obj]}')
 
     @render.register
     def _render_unary_op(self, op: ops2.UnaryOp) -> None:
-        self._writer(f'({type(op).__name__} ')
+        self._write(f'({type(op).__name__} ')
         self.render(op.x)
-        self._writer(')')
+        self._write(')')
 
     @render.register
     def _render_binary_op(self, op: ops2.BinaryOp) -> None:
-        self._writer(f'({type(op).__name__} ')
+        self._write(f'({type(op).__name__} ')
         self.render(op.x)
-        self._writer(' ')
+        self._write(' ')
         self.render(op.y)
-        self._writer(')')
+        self._write(')')
+
+    @render.register
+    def _render_reduce_op(self, op: ops2.ReduceOp) -> None:
+        self._write(f'({type(op).__name__} ')
+        self.render(op.x)
+        self._write(' ')
+        self.render(op.new_shape)
+        self._write(')')
 
 
 def render_key(op: LazyOp, bufs: ta.Sequence[LazyBuffer]) -> str:
