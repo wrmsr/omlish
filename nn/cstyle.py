@@ -103,23 +103,38 @@ class CstyleRenderer:
             self._local_size,
         )
 
+    _dtype_names: ta.Final[ta.Mapping[Dtype, str]] = {  # FIXME: lol
+        Float32: 'float',
+    }
+
     @lang.cached_nullary
     def _render_params(self) -> ta.Sequence[str]:
         params: ta.List[str] = []
+
         for i, x in enumerate(self._bufs):
             if not isinstance(x, LazyBuffer) or (x.is_realized and isinstance(x.get_realized(), RawConst)):
                 continue
-            ''.join([
-                self._buf_names[i],
-                ' ',
+
+            params.append(''.join([
                 'const ' if i > 0 else '',
                 self._dialect.buffer_prefix,
-                x.dtype.name,
+                self._dtype_names[x.dtype],
                 '*',
                 self._dialect.buffer_suffix,
-            ])
+                ' ',
+                self._buf_names[i],
+            ]))
+
         params.extend(self._dialect.extra_params)
         return params
+
+    def _render_token(self, tok: uo.Token, with_type: bool = False) -> str:
+        if with_type:
+            check.none(tok.offset)
+            return f'{self._dtype_names[tok.dtype]} {tok.name}'
+        if tok.offset is None:
+            return tok.name
+        raise NotImplementedError
 
     def _line(self, s: str) -> None:
         self._lines.append('  ' * self._depth + s)
@@ -176,9 +191,9 @@ class CstyleRenderer:
     def _render_const(self, u: uo.Const) -> None:
         check.not_none(u.out)
         if u.v == -math.inf:
-            self._line(f'{u.out.render(True)} = -INFINITY;')
+            self._line(f'{self._render_token(u.out, True)} = -INFINITY;')
         else:
-            self._line(f'{u.out.render(True)} = {u.v}f;')
+            self._line(f'{self._render_token(u.out, True)} = {u.v}f;')
 
     _code_for_op: ta.Final[ta.Mapping[ta.Type[ops2.Op], ta.Callable[..., str]]] = {
         ops2.Exp2: lambda x: f'exp2({x})',
@@ -198,9 +213,15 @@ class CstyleRenderer:
     def _render_alu(self, u: uo.Alu) -> None:
         check.not_none(u.out)
         if u.out in u.vin:
-            self._line(f'{u.out.render()} = {self._code_for_op[u.ty](*[x.render() for x in u.vin])};')
+            self._line(
+                f'{self._render_token(u.out)} = '
+                f'{self._code_for_op[u.ty](*[self._render_token(x) for x in u.vin])};'
+            )
         else:
-            self._line(f'{u.out.render(True)} = {self._code_for_op[u.ty](*[x.render() for x in u.vin])};')
+            self._line(
+                f'{self._render_token(u.out, True)} = '
+                f'{self._code_for_op[u.ty](*[self._render_token(x) for x in u.vin])};'
+            )
 
     class _Cast(ta.NamedTuple):
         prefix: str
@@ -216,9 +237,9 @@ class CstyleRenderer:
         buf = self._bufs[u.i]
 
         # TODO: merge with CONST?
-        if isinstance(buf.realized, RawConst):
+        if buf.is_realized and isinstance(realized := buf.get_realized(), RawConst):
             check.state(out.dtype == Float32)
-            x = float(check.isinstance(buf.realized.to_cpu(), np.float))
+            x = float(check.isinstance(realized.to_cpu(), np.float))
             if math.isnan(x):
                 val = 'NAN'
             elif math.isinf(x):
@@ -230,16 +251,16 @@ class CstyleRenderer:
 
         # NOTE: if min and max are both 0, it should be a CONST in the Linearizer
         if u.valid.min == 1:
-            self._line(f'{out.render(True)} = {val};')
+            self._line(f'{self._render_token(out, True)} = {val};')
         else:
             cast = self._casts_by_dtype[out.dtype]
-            self._line(f'{out.render(True)} = ({_render_sym(u.valid)}) ? {cast.prefix}({val}) : {cast.zero};')
+            self._line(f'{self._render_token(out, True)} = ({_render_sym(u.valid)}) ? {cast.prefix}({val}) : {cast.zero};')
 
     @_render_uop.register
     def _render_store(self, u: uo.Store) -> None:
         check.state(u.vin[0].dtype == Float32)
         check.state(u.valid.min == 1)
-        self._line(f'{self._buf_names[u.i]}[{_render_sym(u.idx)}] = {u.vin[0].render()};')
+        self._line(f'{self._buf_names[u.i]}[{_render_sym(u.idx)}] = {self._render_token(u.vin[0])};')
 
     @_render_uop.register
     def _render_cast(self, u: uo.Cast) -> None:

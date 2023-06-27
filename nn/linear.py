@@ -311,9 +311,22 @@ class LinearCodegenOp(CodegenOp):
             self._uops,
             self._bufs,
             OpenclDialect,
+        ).render()
+
+        from .opencl import OpenclProgram
+
+        prg = OpenclProgram(
+            self.fn_name,
+            rendered.src.replace('KERNEL_NAME_PLACEHOLDER', self.fn_name),
+            rendered.global_size[::-1],
+            rendered.local_size[::-1],
         )
 
-        raise NotImplementedError
+        return prg
+
+    @cached.property
+    def fn_name(self) -> str:
+        return ('r_' if self.reduce_op is not None else 'E_') + '_'.join([str(x) for x in self.full_shape])
 
     _uops: ta.List[uo.Uop]
 
@@ -327,8 +340,6 @@ class LinearCodegenOp(CodegenOp):
 
         if len(self._group_for_reduce):
             raise NotImplementedError
-
-        fn_name = ('r_' if self.reduce_op is not None else 'E_') + '_'.join([str(x) for x in self.full_shape])
 
         loaded_buffers = {}
         acc = []
