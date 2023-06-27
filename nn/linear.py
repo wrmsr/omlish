@@ -22,8 +22,11 @@ from .dtypes import Dtype
 from .dtypes import Float32
 from .lazy import LazyBuffer
 from .lazy import LazyOp
+from .ops import BinaryOp
+from .ops import FusedOp
 from .ops import MovementOp
 from .ops import ReduceOp
+from .ops import UnaryOp
 from .shapetracker import ShapeTracker
 
 
@@ -122,6 +125,48 @@ def render_key(op: LazyOp, bufs: ta.Sequence[LazyBuffer]) -> str:
 
 def mnum(i: int) -> str:
     return str(i) if i >= 0 else f"m{-i}"
+
+
+def get_grouped_float4_idxs(acc: ta.Sequence[uo.Token]) -> ta.Optional[ta.Sequence[int]]:
+    idxs: ta.Optional[ta.List[int]] = []
+    for i, a in enumerate(acc):
+        if idxs is None:
+            break
+        if i in idxs:
+            continue
+
+        if a.dtype.item_size > 1 and a.offset == 0:
+            idxs.append(i)
+            friends: ta.List[int] = []
+            for j, b in enumerate(acc):
+                if len(friends) == 3:
+                    break
+                if j in idxs:
+                    continue
+
+                if a.name == b.name and b.dtype.item_size > 1 and b.offset == len(friends) + 1:
+                    friends.append(j)
+
+            if len(friends) == 3:
+                idxs += friends
+            else:
+                idxs = None
+
+        else:
+            idxs = None
+
+    return idxs
+
+
+def get_grouped_maybe_float4(*values: ta.Sequence[uo.Token], grouping_allowed: bool = True):
+    check.arg(col.all_equal([len(x) for x in values]))
+
+    # these use accumulators, we can only fold if the acc is a float4
+    idxs = get_grouped_float4_idxs(values[-1]) if grouping_allowed else None
+    if idxs is not None:
+        raise NotImplementedError
+
+    return zip([[i] for i in range(len(values[0]))], zip(*values))
 
 
 class LinearCodegenOp(CodegenOp):
@@ -303,7 +348,54 @@ class LinearCodegenOp(CodegenOp):
             if b not in self.early_buffers and i != 0:  # FIXME: and not isinstance(b, LocalBuffer)
                 loaded_buffers[b] = self.global_load(i, global_idxs + local_idxs + fake_reduce_idxs)
 
-        raise NotImplementedError
+        # run late AST
+        val = self.process_one(self._op, acc, loaded_buffers, ssa)
+
+        # store
+        self.global_store(0, global_idxs + local_idxs + fake_reduce_idxs, val, ssa)
+
+        if not self._group_for_reduce:
+            # end the local loop
+            self._uop(uo.EndLoop(out=None, vin=[], idxs=local_idxs, s='local'))
+
+        self._uop(uo.EndLoop(out=None, vin=[], idxs=global_idxs, s='global'))
+
+    def process_one(self, x, acc, loaded_buffers, ssa, do_reduce=False) -> ta.List[uo.Token]:
+        if not isinstance(x, LazyOp):
+            return loaded_buffers[x]
+        x = ta.cast(LazyOp, x)
+
+        if x.op in (UnaryOp.NOP, UnaryOp.CAST):
+            return self.process_one(x.srcs[0], acc, loaded_buffers, ssa)  # cast isn't an ALU op
+
+        values = [self.process_one(v, acc, loaded_buffers, ssa) for v in x.srcs]
+
+        if isinstance(x.op, (ReduceOp, FusedOp)):
+            raise NotImplementedError
+
+        else:
+            ret = [
+                (
+                    idx,
+                    self._uop(uo.Alu(
+                        out=ssa("alu"),
+                        vin=list(val),
+                        ty=type(ops2.convert_from_lazy_op(x)),
+                    )),
+                )
+                for idx, val in get_grouped_maybe_float4(*values, grouping_allowed=False)
+            ]
+
+        ordered_ret: ta.List[ta.Optional[uo.Token]] = [None] * len(values[0])
+
+        # scatter
+        for i, j in ret:
+            for o, k in enumerate(i):
+                ordered_ret[k] = j
+
+        check.state(all(isinstance(x, uo.Token) for x in ordered_ret))
+
+        return ordered_ret
 
     def shape_offsets(self, i: int) -> ta.Sequence[ta.Sequence[int]]:
         if self._upcasted < 1:
@@ -355,6 +447,20 @@ class LinearCodegenOp(CodegenOp):
             loaded[uidxs] = cache[key]
 
         return [loaded[uidxs] for uidxs in self.shape_offsets(i)]
+
+    def global_store(self, i, idxs: ta.Sequence[sym.Var], store: ta.Sequence[uo.Token], ssa) -> None:
+        store_offset: ta.Dict[ta.Sequence[int], uo.Token] = dict(zip(self.shape_offsets(i), store))
+
+        # do stores
+        for uidxs, var in store_offset.items():
+            gl = self._sts[i].gen_syms(idxs + [sym.Num(x) for x in uidxs[::-1]])
+            self._uop(uo.Store(
+                out=None,
+                vin=[var],
+                i=i,
+                idx=gl.idx,
+                valid=gl.mask,
+            ))
 
     def reshape_and_permute(
             self,
@@ -463,8 +569,3 @@ class LinearCodegenOp(CodegenOp):
 class LinearCodegen(Codegen):
     def op(self, op: LazyOp, output: LazyBuffer) -> CodegenOp:
         return LinearCodegenOp(op, output)
-
-
-##
-
-
