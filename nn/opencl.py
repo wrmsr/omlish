@@ -1,3 +1,4 @@
+import platform
 import typing as ta
 
 from omlish import lang
@@ -121,6 +122,12 @@ class OpenclDevice(Device):
         return opencl_compiler()
 
 
+_IS_OSX = platform.system() == "Darwin"
+_OSX_TIMING_RATIO = (
+    (125 / 3) if _IS_OSX else 1.0
+)  # see test/external_osx_profiling.py to determine this ratio. it's in like GPU clocks or something
+
+
 class OpenclProgram(Program):
     def __init__(
             self,
@@ -145,6 +152,26 @@ class OpenclProgram(Program):
     def name(self) -> str:
         return self._name
 
+    def _cl_exec(self, global_size, local_size, *bufs, wait=False) -> ta.Optional[float]:
+        cl_bufs = [x._buf if isinstance(x, OpenclBuffer) else x for x in bufs]
+
+        rt: OpenclRuntime = _runtime()
+        e = self._cl_fn(
+            rt.queue[getattr(cl_bufs[0], _DEVICE_ATTR)],
+            [g * l for g, l in zip(global_size, local_size)] if local_size is not None else global_size,
+            local_size,
+            *cl_bufs,
+        )
+
+        if wait:
+            e.wait()
+            try:
+                return ((e.profile.end - e.profile.start) * _OSX_TIMING_RATIO) * 1e-9
+            except cl.RuntimeError:  # no profiling info available
+                return None
+
+        return None
+
     def exec(self, bufs: ta.Sequence[LazyBuffer]) -> None:
         raw_bufs = [
             x.get_realized()
@@ -152,11 +179,9 @@ class OpenclProgram(Program):
             if x.is_realized and not isinstance(x.get_realized(), RawConst)
         ]
 
-        et = self._cl_fn(
+        self._cl_exec(
             ([*self._global_size, 1] * (3 - len(self._global_size))) if self._global_size is not None else None,
             ([*self._local_size, 1] * (3 - len(self._local_size))) if self._local_size is not None else None,
             *raw_bufs,
             wait=True,
         )
-
-        raise NotImplementedError
