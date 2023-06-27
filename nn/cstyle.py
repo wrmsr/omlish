@@ -1,24 +1,35 @@
+import typing as ta
+
+from omlish import dataclasses as dc
+
+from . import symbolic as sym
 from .lazy import LazyBuffer
 from .lazy import LazyOp
 from .linear import LinearCodegen
 from .linear import LinearCodegenOp
 
 
-render_cl = render_python.copy()
-render_cl[DivNode] = lambda self, ops, ctx: f"({self.a.render(ops, ctx)}/{self.b})"
-render_cl[AndNode] = lambda self, ops, ctx: f"({'&&'.join(sorted([x.render(ops,ctx) for x in self.nodes]))})"
+class CstyleSymRenderer(sym.NodeRenderer):
+    @sym.NodeRenderer.render.register
+    def render_div(self, n: sym.Div) -> str:
+        return f'({self.render(n.a)}/{n.b})'
+
+    @sym.NodeRenderer.render.register
+    def render_and(self, n: sym.And) -> str:
+        return f'({"&&".join(sorted(self.render(x) for x in n.nodes))})'
 
 
-class CStyleLanguage(NamedTuple):
-    kernel_prefix: str = ""
-    buffer_prefix: str = ""
-    buffer_suffix: str = ""
-    smem_prefix: str = ""
-    barrier: str = ""
-    gid: List[str] = []
-    lid: List[str] = []
-    extra_args: List[str] = []
-    float4: Optional[str] = None
+@dc.dataclass(frozen=True)
+class CStyleLanguage:
+    kernel_prefix: str = ''
+    buffer_prefix: str = ''
+    buffer_suffix: str = ''
+    smem_prefix: str = ''
+    barrier: str = ''
+    gid: ta.List[str] = []
+    lid: ta.List[str] = []
+    extra_args: ta.List[str] = []
+    float4: ta.Optional[str] = None
     half_prekernel: Optional[str] = None
     double_prekernel: Optional[str] = None
     uses_vload: bool = False
@@ -75,7 +86,8 @@ def uops_to_cstyle(
     pend_close = None
 
     bufnames = [
-        "temp" if isinstance(b, LocalBuffer) else f"data{i}" for i, b in enumerate(bufs)
+        b.name if isinstance(b, LocalBuffer) else f"data{i}"
+        for i, b in enumerate(bufs)
     ]
 
     depth = 0
@@ -113,10 +125,11 @@ def uops_to_cstyle(
                             f"for (int {var.expr} = {var.min}; {var.expr} <= {var.max}; ++{var.expr}) {{"
                         )
             depth += 1
+        elif uop == UOps.BARRIER:
+            kk(lang.barrier)
         elif uop == UOps.ENDLOOP:
             if args[1] == "local" and len(lang.lid):
                 # TODO: this is a bit of a hack. the local loop isn't real on the GPU
-                kk(lang.barrier)
                 kk(f"if ({Variable.sum(args[0]).render(render_cl)} == 0) {{")
                 pend_close = "}" * (len(args[0]) + 1) + f" /* {args[1]} */"
             else:
