@@ -6,10 +6,7 @@ from omlish import check
 from omlish import lang
 import numpy as np
 
-from .ops import BinaryOp
-from .ops import MovementOp
-from .ops import ReduceOp
-from .ops import UnaryOp
+from . import ops
 from .raw import RawBuffer
 from .raw import RawCpuBuffer
 

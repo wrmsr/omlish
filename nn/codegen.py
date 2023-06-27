@@ -3,8 +3,8 @@ import typing as ta
 
 from omlish import lang
 
-from .lazy import LazyBuffer
-from .lazy import LazyOp
+from .buffers import Buffer
+from .ops import Op
 
 
 class Program(lang.Abstract):
@@ -14,7 +14,7 @@ class Program(lang.Abstract):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def exec(self, bufs: ta.Sequence[LazyBuffer]) -> None:
+    def exec(self, bufs: ta.Sequence[Buffer]) -> None:
         raise NotImplementedError
 
 
@@ -26,7 +26,7 @@ class CodegenOp(lang.Abstract):
 
     @property
     @abc.abstractmethod
-    def buffers(self) -> ta.Sequence[LazyBuffer]:
+    def buffers(self) -> ta.Sequence[Buffer]:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -36,5 +36,5 @@ class CodegenOp(lang.Abstract):
 
 class Codegen(lang.Abstract):
     @abc.abstractmethod
-    def op(self, op: LazyOp, output: LazyBuffer) -> CodegenOp:
+    def op(self, op: Op, output: Buffer) -> CodegenOp:
         raise NotImplementedError

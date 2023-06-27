@@ -10,13 +10,13 @@ import numpy as np
 from . import ops
 from . import symbolic as sym
 from . import uops as uo
+from .buffers import Buffer
 from .dtypes import Dtype
 from .dtypes import Float32
-from .lazy import LazyBuffer
-from .lazy import LazyOp
 from .linear import LinearCodegen
 from .linear import LinearCodegenOp
 from .linear import LocalBuffer
+from .ops import Op
 from .raw import RawConst
 
 
@@ -61,7 +61,7 @@ class CstyleRenderer:
     def __init__(
             self,
             uops: ta.Sequence[uo.Uop],
-            bufs: ta.Sequence[ta.Union[LazyBuffer, LocalBuffer]],
+            bufs: ta.Sequence[ta.Union[Buffer, LocalBuffer]],
             dialect: CstyleDialect,
     ) -> None:
         super().__init__()
@@ -112,7 +112,7 @@ class CstyleRenderer:
         params: ta.List[str] = []
 
         for i, x in enumerate(self._bufs):
-            if not isinstance(x, LazyBuffer) or (x.is_realized and isinstance(x.get_realized(), RawConst)):
+            if not isinstance(x, Buffer) or (x.is_realized and isinstance(x.get_realized(), RawConst)):
                 continue
 
             params.append(''.join([
@@ -272,5 +272,5 @@ class CStyleCodegenOp(LinearCodegenOp):
 
 
 class CstyleCodegen(LinearCodegen):
-    def op(self, op: LazyOp, output: LazyBuffer) -> LinearCodegenOp:
+    def op(self, op: Op, output: Buffer) -> LinearCodegenOp:
         return CStyleCodegenOp(op, output)
