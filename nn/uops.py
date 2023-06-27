@@ -18,14 +18,6 @@ class Token:
     dtype: Dtype
     offset: ta.Optional[int] = None
 
-    def render(self, with_type: bool = False) -> str:
-        if with_type:
-            check.none(self.offset)
-            return f'{self.dtype.name} {self.name}'
-        if self.offset is None:
-            return self.name
-        raise NotImplementedError
-
 
 ##
 

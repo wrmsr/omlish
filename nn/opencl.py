@@ -13,8 +13,11 @@ from .cstyle import CstyleDialect
 from .devices import Device
 from .dtypes import Dtype
 from .evaluators import Evaluator
+from .evaluators import Program
+from .lazy import LazyBuffer
 from .numpy import NumpyValue
 from .raw import RawBufferCopyInOut
+from .raw import RawConst
 
 
 _DEVICE_ATTR = '_omlish_device'
@@ -116,3 +119,37 @@ class OpenclDevice(Device):
     @property
     def evaluator(self) -> Evaluator:
         return opencl_compiler()
+
+
+class OpenclProgram(Program):
+    def __init__(
+            self,
+            name: str,
+            src: str,
+            global_size: ta.Sequence[int],
+            local_size: ta.Sequence[int],
+    ) -> None:
+        super().__init__()
+
+        self._name = name
+        self._src = src
+        self._global_size = global_size
+        self._local_size = local_size
+
+        rt: OpenclRuntime = _runtime()
+        self._cl_prg = cl.Program(rt.context, src)
+        self._cl_bin = self._cl_prg.build()
+        self._cl_fn = getattr(self._cl_bin, name)
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    def exec(self, bufs: ta.Sequence[LazyBuffer]) -> None:
+        raw_bufs = [
+            x.get_realized()
+            for x in bufs
+            if x.is_realized and not isinstance(x.get_realized(), RawConst)
+        ]
+
+        raise NotImplementedError
