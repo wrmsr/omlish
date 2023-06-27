@@ -10,6 +10,8 @@ class Dtype:
     np: ta.Any
     item_size: int
 
+    is_int: bool = False
+
     @staticmethod
     def of_np(npdt: np.dtype) -> 'Dtype':
         if npdt == np.float32:
