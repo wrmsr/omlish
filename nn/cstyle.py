@@ -1,8 +1,13 @@
+import math
 import typing as ta
 
+from omlish import check
 from omlish import dataclasses as dc
+from omlish import dispatch
 
+from . import ops2
 from . import symbolic as sym
+from . import uops as uo
 from .lazy import LazyBuffer
 from .lazy import LazyOp
 from .linear import LinearCodegen
@@ -20,64 +25,127 @@ class CstyleSymRenderer(sym.NodeRenderer):
 
 
 @dc.dataclass(frozen=True)
-class CStyleLanguage:
+class CstyleDialect:
     kernel_prefix: str = ''
     buffer_prefix: str = ''
     buffer_suffix: str = ''
     smem_prefix: str = ''
+
     barrier: str = ''
-    gid: ta.List[str] = []
-    lid: ta.List[str] = []
-    extra_args: ta.List[str] = []
+
+    gid: ta.Sequence[str]
+    lid: ta.Sequence[str]
+
+    extra_args: ta.Sequence[str] = []
+
     float4: ta.Optional[str] = None
-    half_prekernel: Optional[str] = None
-    double_prekernel: Optional[str] = None
+
+    half_prekernel: ta.Optional[str] = None
+    double_prekernel: ta.Optional[str] = None
+
     uses_vload: bool = False
 
 
-def to_image_idx(
-        base_shape: Tuple[int, ...], idxy: Node, valid: Node, validhacks=False
-) -> Tuple[Node, Node]:
-    idy = idxy // (4 * base_shape[1])
-    if validhacks and valid.min == 0:
-        idx = (idxy // 4) + (idy * -base_shape[1])
-        # find the ones in idx that didn't factorize and remove them (TODO: this is not universal)
-        if isinstance(idx, SumNode):
-            unfactored, idx_nodes = partition(
-                idx.nodes, lambda x: isinstance(x, MulNode) and x.b == -base_shape[1]
-            )
-            assert len(unfactored) <= 1
-            idx = Variable.sum(idx_nodes)
-            unfactored = Variable.sum(unfactored) // base_shape[1]
-            idy += unfactored
-            # ugh really...handtuned garbage
-            if idx.min >= (base_shape[1] * 3) // 4:
-                idx -= base_shape[1]
-                idy += 1
-    else:
-        idx = (idxy // 4) % base_shape[1]
-    if DEBUG >= 5:
-        print("to_image_idx", base_shape, idx.min, idx.max, idy.min, idy.max, idx, idy)
-    return idx, idy
-
-
-code_for_op: Final[Dict[Op, Callable]] = {
-    UnaryOps.EXP2: lambda x: f"exp2({x})",
-    UnaryOps.LOG2: lambda x: f"log2({x})",
-    UnaryOps.SIN: lambda x: f"sin({x})",
-    BinaryOps.ADD: lambda a, b: f"({a}+{b})",
-    BinaryOps.SUB: lambda a, b: f"({a}-{b})",
-    BinaryOps.MUL: lambda a, b: f"({a}*{b})",
-    BinaryOps.DIV: lambda a, b: f"({a}/{b})",
-    BinaryOps.POW: lambda a, b: f"pow({a},{b})",
-    BinaryOps.MAX: lambda a, b: f"max({a},{b})",
-    BinaryOps.CMPEQ: lambda a, b: f"({a}=={b})",
-    FusedOps.MULACC: lambda a, b, c: f"(({a}*{b})+{c})",
+code_for_op: ta.MutableMapping[ta.Type[ops2.Op], ta.Callable[..., str]] = {
+    ops2.Exp2: lambda x: f'exp2({x})',
+    ops2.Log2: lambda x: f'log2({x})',
+    ops2.Sin: lambda x: f'sin({x})',
+    ops2.Add: lambda a, b: f'({a}+{b})',
+    ops2.Sub: lambda a, b: f'({a}-{b})',
+    ops2.Mul: lambda a, b: f'({a}*{b})',
+    ops2.Div: lambda a, b: f'({a}/{b})',
+    ops2.Pow: lambda a, b: f'pow({a},{b})',
+    ops2.Max: lambda a, b: f'max({a},{b})',
+    ops2.CmpEq: lambda a, b: f'({a}=={b})',
+    ops2.MulAcc: lambda a, b, c: f'(({a}*{b})+{c})',
 }
 
 
+class CstyleRenderer:
+
+    def __init__(self, dialect: CstyleDialect) -> None:
+        super().__init__()
+
+        self._dialect = check.isinstance(dialect, CstyleDialect)
+
+        self._global_size: ta.List[int] = []
+        self._local_size: ta.List[int] = []
+        self._lines: ta.List[str] = []
+        self._depth = 0
+        self._pend_close: ta.Optional[str] = None
+
+    def _line(self, s: str) -> None:
+        self._lines.append('  ' * self._depth + s)
+
+    @dispatch.method
+    def _render_uop(self, uop: uo.Uop) -> None:
+        raise TypeError(uop)
+
+    @_render_uop.register
+    def _render_loop(self, u: uo.Loop) -> None:
+        for i, var in enumerate(u.idxs):
+            if isinstance(var, sym.Num):
+                if u.s == 'global' and self._dialect.gid:
+                    self._global_size.append(1)
+                if u.s == 'local' and self._dialect.lid:
+                    self._local_size.append(1)
+                # one number, not an index
+                self._line('{')
+
+            elif u.s == 'global' and self._dialect.gid:
+                check.state(len(u.idxs) <= len(self._dialect.gid))
+                self._line(f'{{ int {var.expr} = {self._dialect.gid[len(u.idxs) - 1 - i]};  /* {var.max + 1} */')
+                self._global_size.append(var.max + 1)
+
+            elif u.s == 'local' and self._dialect.lid:
+                check.state(len(u.idxs) <= len(self._dialect.lid))
+                self._line(f'{{ int {var.expr} = {self._dialect.lid[len(u.idxs) - 1 - i]};  /* {var.max + 1} */')
+                self._local_size.append(var.max + 1)
+
+            else:
+                self._line(f'for (int {var.expr} = {var.min}; {var.expr} <= {var.max}; ++{var.expr}) {{')
+
+        self._depth += 1
+
+    @_render_uop.register
+    def _render_end_loop(self, u: uo.EndLoop) -> None:
+        if u.s == 'local' and len(self._dialect.lid):
+            # TODO: this is a bit of a hack. the local loop isn't real on the GPU
+            self._line(f'if ({CstyleSymRenderer().render(sym.sum_(u.idxs))} == 0) {{')
+            self._pend_close = '}' * (len(u.idxs) + 1) + f' /* {u.s} */'
+        else:
+            if u.s == 'global' and self._pend_close:
+                self._depth -= 1
+                self._line(self._pend_close)
+                self._pend_close = None
+            self._depth -= 1
+            self._line('}' * len(u.idxs) + f' /* {u.s} */')
+
+    @_render_uop.register
+    def _render_barrier(self, u: uo.Barrier) -> None:
+        self._line(self._dialect.barrier)
+
+    @_render_uop.register
+    def _render_const(self, u: uo.Const) -> None:
+        check.not_none(u.out)
+        if u.v == -math.inf:
+            self._line(f"{u.out.render(True)} = -INFINITY;")
+        else:
+            self._line(f"{u.out.render(True)} = {u.v}f;")
+
+    @_render_uop.register
+    def _render_alu(self, u: uo.Alu) -> None:
+        check.not_none(u.out)
+        if u.out in u.vin:
+            self._line(f'{u.out.render()} = {code_for_op[u.ty](*[x.render() for x in u.vin])};')
+        else:
+            self._line(f'{u.out.render(True)} = {code_for_op[u.ty](*[x.render() for x in u.vin])};')
+
+
 def uops_to_cstyle(
-        uops: List[UOp], bufs: List[Union[LocalBuffer, LazyBuffer]], lang: CStyleLanguage
+        uops: List[UOp],
+        bufs: List[Union[LocalBuffer, LazyBuffer]],
+        lang: CStyleLanguage,
 ) -> Tuple[str, List[int], List[int]]:
     prekernel: Set[str] = set()
     kernel = []
@@ -107,23 +175,15 @@ def uops_to_cstyle(
                     kk("{")
                 else:
                     if args[1] == "global" and lang.gid:
-                        assert len(args[0]) <= len(
-                            lang.gid
-                        ), f"too many global dimensions, has {len(args[0])} and {len(lang.gid)} are supported"
-                        kk(
-                            f"{{ int {var.expr} = {lang.gid[len(args[0])-1-i]};  /* {var.max+1} */"
-                        )
+                        assert len(args[0]) <= len(lang.gid), f"too many global dimensions, has {len(args[0])} and {len(lang.gid)} are supported"
+                        kk(f"{{ int {var.expr} = {lang.gid[len(args[0])-1-i]};  /* {var.max+1} */")
                         global_size.append(var.max + 1)
                     elif args[1] == "local" and lang.lid:
                         assert len(args[0]) <= len(lang.lid)
-                        kk(
-                            f"{{ int {var.expr} = {lang.lid[len(args[0])-1-i]};  /* {var.max+1} */"
-                        )
+                        kk(f"{{ int {var.expr} = {lang.lid[len(args[0])-1-i]};  /* {var.max+1} */")
                         local_size.append(var.max + 1)
                     else:
-                        kk(
-                            f"for (int {var.expr} = {var.min}; {var.expr} <= {var.max}; ++{var.expr}) {{"
-                        )
+                        kk(f"for (int {var.expr} = {var.min}; {var.expr} <= {var.max}; ++{var.expr}) {{")
             depth += 1
         elif uop == UOps.BARRIER:
             kk(lang.barrier)
@@ -150,13 +210,10 @@ def uops_to_cstyle(
         elif uop == UOps.ALU:
             assert newvar is not None
             if newvar in vin:
-                kk(
-                    f"{newvar.render()} = {code_for_op[args](*[x.render() for x in vin])};"
-                )
+                kk(f"{newvar.render()} = {code_for_op[args](*[x.render() for x in vin])};")
             else:
-                kk(
-                    f"{newvar.render(True)} = {code_for_op[args](*[x.render() for x in vin])};"
-                )
+                kk(f"{newvar.render(True)} = {code_for_op[args](*[x.render() for x in vin])};")
+
         elif uop == UOps.LOAD and newvar is not None:
             # TODO: merge with CONST?
             if bufs[args.i] is not None and isinstance(bufs[args.i].realized, RawConst):
@@ -172,9 +229,7 @@ def uops_to_cstyle(
                     )
             elif isinstance(bufs[args.i].dtype, ImageDType):
                 assert newvar.dtype == dtypes._float4, "image must be float4"
-                prekernel.add(
-                    "const sampler_t smp = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP | CLK_FILTER_NEAREST;\n"
-                )
+                prekernel.add("const sampler_t smp = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP | CLK_FILTER_NEAREST;\n")
                 idx, idy = to_image_idx(bufs[args.i].dtype.shape, args.idx, args.valid)
                 val = f"read_imagef({bufnames[args.i]}, smp, (int2)({idx.render(render_cl)}, {idy.render(render_cl)}))"
             else:
@@ -271,6 +326,7 @@ def uops_to_cstyle(
     if lang.double_prekernel and any(x.dtype == dtypes.float64 for x in bufs):
         prg = "".join([f"{lang.double_prekernel}", "\n", prg])
     return prg, global_size, local_size
+
 
 class CStyleCodegenOp(LinearCodegenOp):
     pass
