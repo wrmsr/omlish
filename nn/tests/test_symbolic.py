@@ -1,7 +1,6 @@
 from ..symbolic import Num
 from ..symbolic import Var
 from ..symbolic import and_
-from ..symbolic import render_node
 from ..symbolic import sum_
 from ..symbolic import var
 
@@ -10,7 +9,7 @@ from ..symbolic import var
 
 
 def _test_variable(v, n, m, s):
-    assert render_node(v) == s
+    assert v.expr == s
     assert v.min == n
     assert v.max == m
 
@@ -304,7 +303,7 @@ def _test_numeric(f):
         for kmax in range(mn, mx):
             if kmin > kmax:
                 continue
-            v = f(Var('tmp', kmin, kmax))
+            v = f(var('tmp', kmin, kmax))
             values = [f(rv) for rv in range(kmin, kmax + 1)]
             # the min and max may not be exact
             assert v.min <= min(values)

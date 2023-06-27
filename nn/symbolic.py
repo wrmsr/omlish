@@ -19,21 +19,6 @@ from omlish import lang
 ##
 
 
-def render_node(n: 'Node') -> str:
-    if isinstance(n, Var):
-        return n.name
-    if isinstance(n, Num):
-        return str(n.b)
-    if isinstance(n, Op):
-        return f'({render_node(n.a)}{n.glyph}{n.b})'
-    if isinstance(n, Red):
-        return f'({n.glyph.join(sorted(render_node(x) for x in n.nodes))})'
-    raise TypeError(n)
-
-
-##
-
-
 class NodeRenderer:
     @dispatch.method
     def render(self, n: 'Node') -> str:
@@ -78,11 +63,19 @@ class Node(lang.Abstract, lang.Sealed):
         raise NotImplementedError
 
     @cached.property
+    def expr(self) -> str:
+        return NodeRenderer().render(self)
+
+    @cached.property
+    def debug(self) -> str:
+        return DebugNodeRenderer().render(self)
+
+    @cached.property
     def key(self) -> str:
-        return render_node(self)
+        return self.debug
 
     def __repr__(self) -> str:
-        return f'<{self.key}>'
+        return f'<{self.expr}>'
 
     def __eq__(self, other: ta.Any) -> bool:
         if not isinstance(other, Node):
@@ -464,7 +457,7 @@ class Sum(Red):
                 new_nodes.append(x.a * (x.b % b))
             else:
                 new_nodes.append(x)
-        return sum_(new_nodes) % b
+        return Node.__mod__(sum_(new_nodes), b)
 
 
 def and_(nodes: ta.Sequence[Node]) -> Node:
