@@ -335,7 +335,7 @@ class LinearCodegenOp(CodegenOp):
         cache = {}
         loaded = {}
         for uidxs, (localtype, uidx_list, idx, valid) in load_offset.items():
-            key = f'{localtype}{idx.render()}{valid.render()}'
+            key = f'{localtype}{idx.expr}{valid.expr}'
             if key not in cache:
                 if const is None:
                     cache[key] = self._uop(uo.Load(
