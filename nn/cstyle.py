@@ -4,14 +4,20 @@ import typing as ta
 from omlish import check
 from omlish import dataclasses as dc
 from omlish import dispatch
+from omlish import lang
+import numpy as np
 
 from . import ops2
 from . import symbolic as sym
 from . import uops as uo
+from .dtypes import Dtype
+from .dtypes import Float32
 from .lazy import LazyBuffer
 from .lazy import LazyOp
 from .linear import LinearCodegen
 from .linear import LinearCodegenOp
+from .linear import LocalBuffer
+from .raw import RawConst
 
 
 class CstyleSymRenderer(sym.NodeRenderer):
@@ -22,6 +28,10 @@ class CstyleSymRenderer(sym.NodeRenderer):
     @sym.NodeRenderer.render.register
     def render_and(self, n: sym.And) -> str:
         return f'({"&&".join(sorted(self.render(x) for x in n.nodes))})'
+
+
+def _render_sym(n: sym.Node) -> str:
+    return CstyleSymRenderer().render(n)
 
 
 @dc.dataclass(frozen=True)
@@ -48,9 +58,16 @@ class CstyleDialect:
 
 class CstyleRenderer:
 
-    def __init__(self, dialect: CstyleDialect) -> None:
+    def __init__(
+            self,
+            uops: ta.Sequence[uo.Uop],
+            bufs: ta.Sequence[ta.Union[LazyBuffer, LocalBuffer]],
+            dialect: CstyleDialect,
+    ) -> None:
         super().__init__()
 
+        self._uops = uops
+        self._bufs = bufs
         self._dialect = check.isinstance(dialect, CstyleDialect)
 
         self._global_size: ta.List[int] = []
@@ -58,6 +75,15 @@ class CstyleRenderer:
         self._lines: ta.List[str] = []
         self._depth = 0
         self._pend_close: ta.Optional[str] = None
+
+        self._buf_names = [
+            b.name if isinstance(b, LocalBuffer) else f'data{i}'
+            for i, b in enumerate(bufs)
+        ]
+
+    @lang.cached_nullary
+    def render(self) -> str:
+        raise NotImplementedError
 
     def _line(self, s: str) -> None:
         self._lines.append('  ' * self._depth + s)
@@ -96,7 +122,7 @@ class CstyleRenderer:
     def _render_end_loop(self, u: uo.EndLoop) -> None:
         if u.s == 'local' and len(self._dialect.lid):
             # TODO: this is a bit of a hack. the local loop isn't real on the GPU
-            self._line(f'if ({CstyleSymRenderer().render(sym.sum_(u.idxs))} == 0) {{')
+            self._line(f'if ({_render_sym(sym.sum_(u.idxs))} == 0) {{')
             self._pend_close = '}' * (len(u.idxs) + 1) + f' /* {u.s} */'
         else:
             if u.s == 'global' and self._pend_close:
@@ -114,9 +140,9 @@ class CstyleRenderer:
     def _render_const(self, u: uo.Const) -> None:
         check.not_none(u.out)
         if u.v == -math.inf:
-            self._line(f"{u.out.render(True)} = -INFINITY;")
+            self._line(f'{u.out.render(True)} = -INFINITY;')
         else:
-            self._line(f"{u.out.render(True)} = {u.v}f;")
+            self._line(f'{u.out.render(True)} = {u.v}f;')
 
     _code_for_op: ta.Final[ta.Mapping[ta.Type[ops2.Op], ta.Callable[..., str]]] = {
         ops2.Exp2: lambda x: f'exp2({x})',
@@ -140,49 +166,38 @@ class CstyleRenderer:
         else:
             self._line(f'{u.out.render(True)} = {self._code_for_op[u.ty](*[x.render() for x in u.vin])};')
 
+    class _Cast(ta.NamedTuple):
+        prefix: str
+        zero: str
+
+    _casts_by_dtype: ta.Final[ta.Mapping[Dtype, _Cast]] = {
+        Float32: _Cast('(float)', '0.0f'),
+    }
+
     @_render_uop.register
     def _render_load(self, u: uo.Load) -> None:
-        newvar = check.not_none(u.out)
+        out = check.not_none(u.out)
+        buf = self._bufs[u.i]
+
         # TODO: merge with CONST?
-        if bufs[u.i] is not None and isinstance(bufs[u.i].realized, RawConst):
-            assert newvar.dtype == dtypes.float, "const can't be float4"
-            x = bufs[u.i].realized._buf
+        if isinstance(buf.realized, RawConst):
+            check.state(out.dtype == Float32)
+            x = float(check.isinstance(buf.realized.to_cpu(), np.float))
             if math.isnan(x):
-                val = "NAN"
+                val = 'NAN'
             elif math.isinf(x):
-                val = ("-" if x < 0 else "") + "INFINITY"
+                val = ('-' if x < 0 else '') + 'INFINITY'
             else:
-                val = f"{x}" + (
-                    "f" if not dtypes.is_int(bufs[u.i].dtype) else ""
-                )
-        elif isinstance(bufs[u.i].dtype, ImageDType):
-            assert newvar.dtype == dtypes._float4, "image must be float4"
-            prekernel.add("const sampler_t smp = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP | CLK_FILTER_NEAREST;\n")
-            idx, idy = to_image_idx(bufs[u.i].dtype.shape, u.idx, u.valid)
-            val = f"read_imagef({bufnames[u.i]}, smp, (int2)({idx.render(render_cl)}, {idy.render(render_cl)}))"
+                val = f'{x}' + ('f' if not buf.dtype.is_int else '')
         else:
-            if lang.uses_vload and bufs[u.i].dtype == dtypes.float16:
-                if newvar.dtype == dtypes._float4:
-                    val = f"vload_half4({(u.idx//4).render(render_cl)}, {bufnames[u.i]})"
-                else:
-                    val = f"vload_half({u.idx.render(render_cl)}, {bufnames[u.i]})"
-            else:
-                if newvar.dtype == dtypes._float4:
-                    val = f"({newvar.dtype.name})((({lang.smem_prefix if isinstance(bufs[u.i], LocalBuffer) else lang.buffer_prefix}{bufs[u.i].dtype.name}4*){bufnames[u.i]})[{(u.idx//4).render(render_cl)}])"
-                else:
-                    val = f"{bufnames[u.i]}[{u.idx.render(render_cl)}]"
+            val = f'{self._buf_names[u.i]}[{_render_sym(u.idx)}]'
+
         # NOTE: if min and max are both 0, it should be a CONST in the Linearizer
         if u.valid.min == 1:
-            kk(f"{newvar.render(True)} = {val};")
+            self._line(f'{out.render(True)} = {val};')
         else:
-            casts = {
-                dtypes._float4: ("", f"{lang.float4}(0.0f, 0.0f, 0.0f, 0.0f)"),
-                dtypes.half: ("(half)", "(half)(0.0f)"),
-                dtypes.float: ("(float)", "0.0f"),
-            }[newvar.dtype]
-            kk(
-                f"{newvar.render(True)} = ({u.valid.render(render_cl)}) ? {casts[0]}({val}) : {casts[1]};"
-            )
+            cast = self._casts_by_dtype[out.dtype]
+            self._line(f'{out.render(True)} = ({_render_sym(u.valid)}) ? {cast.prefix}({val}) : {cast.zero};')
 
 
 def uops_to_cstyle(
@@ -256,7 +271,6 @@ def uops_to_cstyle(
                 kk(f"{newvar.render()} = {code_for_op[args](*[x.render() for x in vin])};")
             else:
                 kk(f"{newvar.render(True)} = {code_for_op[args](*[x.render() for x in vin])};")
-
         elif uop == UOps.LOAD and newvar is not None:
             # TODO: merge with CONST?
             if bufs[args.i] is not None and isinstance(bufs[args.i].realized, RawConst):
@@ -298,6 +312,7 @@ def uops_to_cstyle(
                 kk(
                     f"{newvar.render(True)} = ({args.valid.render(render_cl)}) ? {casts[0]}({val}) : {casts[1]};"
                 )
+
         elif uop == UOps.STORE and (
                 vin[0].dtype == dtypes.float
                 or (vin[0].dtype == dtypes._float4 and vin[0].offset is not None)
