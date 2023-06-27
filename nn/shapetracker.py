@@ -41,7 +41,7 @@ class View(dc.Data, lang.Final):
 
     ##
 
-    def idxs_to_idx(self, idxs: ta.Iterable[sym.Node]) -> sym.Node:
+    def idxs_to_idx(self, idxs: ta.Sequence[sym.Node]) -> sym.Node:
         check.arg(len(idxs) == len(self.shape))
         acc = 1
         ret = []
