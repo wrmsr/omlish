@@ -4,7 +4,7 @@ from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 
-from . import ops2  # noqa
+from . import ops
 from . import symbolic as sym
 from .dtypes import Dtype
 
@@ -40,7 +40,7 @@ class Cast(Uop):
 
 @dc.dataclass(frozen=True)
 class Alu(Uop):
-    ty: ta.Type[ops2.Op]
+    ty: ta.Type[ops.Op]
 
 
 @dc.dataclass(frozen=True)

@@ -199,7 +199,7 @@ class Buffer(Lazy):
 
         return ret
 
-    def realize(self) -> 'LazyBuffer':
+    def realize(self) -> 'Buffer':
         if self._realized is not None:
             return self
 
@@ -261,6 +261,7 @@ class Buffer(Lazy):
             if real_srcs[x] is None:
                 real_srcs[x] = x.movement_op(ops.Reshape, intermediate_shape)
 
+        breakpoint()
         ret = map_buffers({k: check.not_none(v) for k, v in real_srcs.items()}, self_op)
         if intermediate_shape != self.shape:
             return ops.Reshape((ret,), self.shape)
@@ -275,11 +276,11 @@ class Buffer(Lazy):
             device: Device,
             arg: ta.Any = None,
             src: ta.Any = None,
-    ) -> 'LazyBuffer':
+    ) -> 'Buffer':
         return create_lazy_buffer(
             device,
             shape,
-            op((src,) if src is not None else (), arg),
+            op(*((src,) if src is not None else ()), *([arg] if arg is not None else ())),
             dtype,
         )
 

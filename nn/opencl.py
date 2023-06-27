@@ -9,13 +9,13 @@ else:
     cl = lang.proxy_import('pyopencl')
 
 from . import evaluators
+from .buffers import Buffer
 from .cstyle import CstyleCodegen
 from .cstyle import CstyleDialect
 from .devices import Device
 from .dtypes import Dtype
 from .evaluators import Evaluator
 from .evaluators import Program
-from .lazy import LazyBuffer
 from .numpy import NumpyValue
 from .raw import RawBufferCopyInOut
 from .raw import RawConst
@@ -175,7 +175,7 @@ class OpenclProgram(Program):
 
         return None
 
-    def exec(self, bufs: ta.Sequence[LazyBuffer]) -> None:
+    def exec(self, bufs: ta.Sequence[Buffer]) -> None:
         raw_bufs = [
             x.get_realized()
             for x in bufs
