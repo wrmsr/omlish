@@ -27,7 +27,15 @@ from .ops import FusedOp
 from .ops import MovementOp
 from .ops import ReduceOp
 from .ops import UnaryOp
+from .raw import RawBuffer
 from .shapetracker import ShapeTracker
+
+
+@dc.dataclass(frozen=True)
+class LocalBuffer:
+    name: str
+    dtype: Dtype = Float32
+    realized: ta.Optional[RawBuffer] = None
 
 
 @dc.dataclass(frozen=True)
@@ -176,7 +184,7 @@ class LinearCodegenOp(CodegenOp):
         # NOTE: if there's a RESHAPE, we skip it. the output shape is set from the reduce op or a latebuf
         self._op = check.isinstance(op.srcs[0], LazyOp) if op.op == MovementOp.RESHAPE else op
 
-        self._bufs = [output, *col.unique(op.buffers)]
+        self._bufs: ta.List[ta.Union[LazyBuffer, LocalBuffer]] = [output, *col.unique(op.buffers)]
 
         self._key = render_key(op, self._bufs)
 
@@ -185,7 +193,7 @@ class LinearCodegenOp(CodegenOp):
         return self._op
 
     @property
-    def buffers(self) -> ta.Sequence[LazyBuffer]:
+    def buffers(self) -> ta.Sequence[ta.Union[LazyBuffer, LazyBuffer]]:
         return self._bufs
 
     @cached.property
@@ -308,6 +316,9 @@ class LinearCodegenOp(CodegenOp):
         # uops
         self._uops = []
 
+        if len(self._group_for_reduce):
+            raise NotImplementedError
+
         fn_name = ('r_' if self.reduce_op is not None else 'E_') + '_'.join([str(x) for x in self.full_shape])
 
         loaded_buffers = {}
@@ -345,7 +356,7 @@ class LinearCodegenOp(CodegenOp):
 
         # load latebufs
         for i, b in enumerate(self._bufs):
-            if b not in self.early_buffers and i != 0:  # FIXME: and not isinstance(b, LocalBuffer)
+            if b not in self.early_buffers and i != 0 and not isinstance(b, LocalBuffer):
                 loaded_buffers[b] = self.global_load(i, global_idxs + local_idxs + fake_reduce_idxs)
 
         # run late AST

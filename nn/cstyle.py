@@ -33,10 +33,10 @@ class CstyleDialect:
 
     barrier: str = ''
 
-    gid: ta.Sequence[str]
-    lid: ta.Sequence[str]
+    gid: ta.Sequence[str] = ()
+    lid: ta.Sequence[str] = ()
 
-    extra_args: ta.Sequence[str] = []
+    extra_args: ta.Sequence[str] = ()
 
     float4: ta.Optional[str] = None
 
@@ -139,6 +139,50 @@ class CstyleRenderer:
             self._line(f'{u.out.render()} = {self._code_for_op[u.ty](*[x.render() for x in u.vin])};')
         else:
             self._line(f'{u.out.render(True)} = {self._code_for_op[u.ty](*[x.render() for x in u.vin])};')
+
+    @_render_uop.register
+    def _render_load(self, u: uo.Load) -> None:
+        newvar = check.not_none(u.out)
+        # TODO: merge with CONST?
+        if bufs[u.i] is not None and isinstance(bufs[u.i].realized, RawConst):
+            assert newvar.dtype == dtypes.float, "const can't be float4"
+            x = bufs[u.i].realized._buf
+            if math.isnan(x):
+                val = "NAN"
+            elif math.isinf(x):
+                val = ("-" if x < 0 else "") + "INFINITY"
+            else:
+                val = f"{x}" + (
+                    "f" if not dtypes.is_int(bufs[u.i].dtype) else ""
+                )
+        elif isinstance(bufs[u.i].dtype, ImageDType):
+            assert newvar.dtype == dtypes._float4, "image must be float4"
+            prekernel.add("const sampler_t smp = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP | CLK_FILTER_NEAREST;\n")
+            idx, idy = to_image_idx(bufs[u.i].dtype.shape, u.idx, u.valid)
+            val = f"read_imagef({bufnames[u.i]}, smp, (int2)({idx.render(render_cl)}, {idy.render(render_cl)}))"
+        else:
+            if lang.uses_vload and bufs[u.i].dtype == dtypes.float16:
+                if newvar.dtype == dtypes._float4:
+                    val = f"vload_half4({(u.idx//4).render(render_cl)}, {bufnames[u.i]})"
+                else:
+                    val = f"vload_half({u.idx.render(render_cl)}, {bufnames[u.i]})"
+            else:
+                if newvar.dtype == dtypes._float4:
+                    val = f"({newvar.dtype.name})((({lang.smem_prefix if isinstance(bufs[u.i], LocalBuffer) else lang.buffer_prefix}{bufs[u.i].dtype.name}4*){bufnames[u.i]})[{(u.idx//4).render(render_cl)}])"
+                else:
+                    val = f"{bufnames[u.i]}[{u.idx.render(render_cl)}]"
+        # NOTE: if min and max are both 0, it should be a CONST in the Linearizer
+        if u.valid.min == 1:
+            kk(f"{newvar.render(True)} = {val};")
+        else:
+            casts = {
+                dtypes._float4: ("", f"{lang.float4}(0.0f, 0.0f, 0.0f, 0.0f)"),
+                dtypes.half: ("(half)", "(half)(0.0f)"),
+                dtypes.float: ("(float)", "0.0f"),
+            }[newvar.dtype]
+            kk(
+                f"{newvar.render(True)} = ({u.valid.render(render_cl)}) ? {casts[0]}({val}) : {casts[1]};"
+            )
 
 
 def uops_to_cstyle(
