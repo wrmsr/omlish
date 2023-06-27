@@ -10,6 +10,7 @@ from .ops import BinaryOp
 from .ops import MovementOp
 from .ops import ReduceOp
 from .ops import UnaryOp
+from .raw import RawBuffer
 from .raw import RawCpuBuffer
 
 if ta.TYPE_CHECKING:
@@ -24,11 +25,18 @@ class Device(lang.Abstract):
     def evaluator(self) -> 'evaluators.Evaluator':
         raise NotImplementedError
 
+    @abc.abstractmethod
+    def make_raw_buffer(self, obj: ta.Any) -> RawBuffer:
+        raise NotImplementedError
+
 
 class CpuDevice(Device):
     @property
     def evaluator(self) -> 'evaluators.Evaluator':
         return numpy_interpreter()
+
+    def make_raw_buffer(self, obj: ta.Any) -> RawCpuBuffer:
+        return RawCpuBuffer.from_cpu(obj)  # noqa
 
 
 @lang.cached_nullary
