@@ -46,21 +46,6 @@ class CstyleDialect:
     uses_vload: bool = False
 
 
-code_for_op: ta.MutableMapping[ta.Type[ops2.Op], ta.Callable[..., str]] = {
-    ops2.Exp2: lambda x: f'exp2({x})',
-    ops2.Log2: lambda x: f'log2({x})',
-    ops2.Sin: lambda x: f'sin({x})',
-    ops2.Add: lambda a, b: f'({a}+{b})',
-    ops2.Sub: lambda a, b: f'({a}-{b})',
-    ops2.Mul: lambda a, b: f'({a}*{b})',
-    ops2.Div: lambda a, b: f'({a}/{b})',
-    ops2.Pow: lambda a, b: f'pow({a},{b})',
-    ops2.Max: lambda a, b: f'max({a},{b})',
-    ops2.CmpEq: lambda a, b: f'({a}=={b})',
-    ops2.MulAcc: lambda a, b, c: f'(({a}*{b})+{c})',
-}
-
-
 class CstyleRenderer:
 
     def __init__(self, dialect: CstyleDialect) -> None:
@@ -133,13 +118,27 @@ class CstyleRenderer:
         else:
             self._line(f"{u.out.render(True)} = {u.v}f;")
 
+    _code_for_op: ta.Final[ta.Mapping[ta.Type[ops2.Op], ta.Callable[..., str]]] = {
+        ops2.Exp2: lambda x: f'exp2({x})',
+        ops2.Log2: lambda x: f'log2({x})',
+        ops2.Sin: lambda x: f'sin({x})',
+        ops2.Add: lambda a, b: f'({a}+{b})',
+        ops2.Sub: lambda a, b: f'({a}-{b})',
+        ops2.Mul: lambda a, b: f'({a}*{b})',
+        ops2.Div: lambda a, b: f'({a}/{b})',
+        ops2.Pow: lambda a, b: f'pow({a},{b})',
+        ops2.Max: lambda a, b: f'max({a},{b})',
+        ops2.CmpEq: lambda a, b: f'({a}=={b})',
+        ops2.MulAcc: lambda a, b, c: f'(({a}*{b})+{c})',
+    }
+
     @_render_uop.register
     def _render_alu(self, u: uo.Alu) -> None:
         check.not_none(u.out)
         if u.out in u.vin:
-            self._line(f'{u.out.render()} = {code_for_op[u.ty](*[x.render() for x in u.vin])};')
+            self._line(f'{u.out.render()} = {self._code_for_op[u.ty](*[x.render() for x in u.vin])};')
         else:
-            self._line(f'{u.out.render(True)} = {code_for_op[u.ty](*[x.render() for x in u.vin])};')
+            self._line(f'{u.out.render(True)} = {self._code_for_op[u.ty](*[x.render() for x in u.vin])};')
 
 
 def uops_to_cstyle(
