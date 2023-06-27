@@ -6,11 +6,11 @@ from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 
+from . import ops
 from . import symbolic as sym
 from .dims import Shape
 from .dims import ShapeStride
 from .dims import Stride
-from .ops import MovementOp
 
 
 def is_contiguous(shape: Shape, stride: Stride) -> bool:
@@ -239,14 +239,14 @@ class ShapeTracker(lang.Final):
 
         raise NotImplementedError
 
-    _movement_op_dispatch: ta.Final[ta.Mapping[MovementOp, ta.Callable]] = {
-        MovementOp.EXPAND: expand,
-        MovementOp.PERMUTE: permute,
-        MovementOp.RESHAPE: reshape,
+    _movement_op_dispatch: ta.Final[ta.Mapping[ta.Type[ops.MovementOp], ta.Callable]] = {
+        ops.Expand: expand,
+        ops.Permute: permute,
+        ops.Reshape: reshape,
     }
 
-    def movement_op(self, op: MovementOp, arg: ta.Sequence[int]) -> 'ShapeTracker':
-        if op != MovementOp.RESHAPE and len(arg) != len(self.shape):
+    def movement_op(self, op: ta.Type[ops.MovementOp], arg: ta.Sequence[int]) -> 'ShapeTracker':
+        if op != ops.Reshape and len(arg) != len(self.shape):
             raise RuntimeError(f'arg {arg} for {op} does not match dim of shape {self.shape}')
         self._movement_op_dispatch[op](self, arg)
         return self

@@ -48,7 +48,7 @@ class Interpreter(Evaluator, lang.Abstract, ta.Generic[T]):  # noqa
             pass
 
         srcs: ta.List[RawBuffer] = []
-        for src in op.sources:
+        for src in op.srcs:
             if isinstance(src, ops2.Op):
                 srcs.append(self.eval(src))
             elif isinstance(src, ops2.Buffer):

@@ -7,7 +7,7 @@ from omlish import dispatch
 from omlish import lang
 import numpy as np
 
-from . import ops2
+from . import ops
 from . import symbolic as sym
 from . import uops as uo
 from .dtypes import Dtype
@@ -195,18 +195,18 @@ class CstyleRenderer:
         else:
             self._line(f'{self._render_token(u.out, True)} = {u.v}f;')
 
-    _code_for_op: ta.Final[ta.Mapping[ta.Type[ops2.Op], ta.Callable[..., str]]] = {
-        ops2.Exp2: lambda x: f'exp2({x})',
-        ops2.Log2: lambda x: f'log2({x})',
-        ops2.Sin: lambda x: f'sin({x})',
-        ops2.Add: lambda a, b: f'({a}+{b})',
-        ops2.Sub: lambda a, b: f'({a}-{b})',
-        ops2.Mul: lambda a, b: f'({a}*{b})',
-        ops2.Div: lambda a, b: f'({a}/{b})',
-        ops2.Pow: lambda a, b: f'pow({a},{b})',
-        ops2.Max: lambda a, b: f'max({a},{b})',
-        ops2.CmpEq: lambda a, b: f'({a}=={b})',
-        ops2.MulAcc: lambda a, b, c: f'(({a}*{b})+{c})',
+    _code_for_op: ta.Final[ta.Mapping[ta.Type[ops.Op], ta.Callable[..., str]]] = {
+        ops.Exp2: lambda x: f'exp2({x})',
+        ops.Log2: lambda x: f'log2({x})',
+        ops.Sin: lambda x: f'sin({x})',
+        ops.Add: lambda a, b: f'({a}+{b})',
+        ops.Sub: lambda a, b: f'({a}-{b})',
+        ops.Mul: lambda a, b: f'({a}*{b})',
+        ops.Div: lambda a, b: f'({a}/{b})',
+        ops.Pow: lambda a, b: f'pow({a},{b})',
+        ops.Max: lambda a, b: f'max({a},{b})',
+        ops.CmpEq: lambda a, b: f'({a}=={b})',
+        ops.MulAcc: lambda a, b, c: f'(({a}*{b})+{c})',
     }
 
     @_render_uop.register
