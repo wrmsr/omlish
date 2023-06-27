@@ -48,7 +48,7 @@ class Cast(Uop):
 
 @dc.dataclass(frozen=True)
 class Alu(Uop):
-    ty: type  # ta.Union[ta.Type[ops2.UnaryOp], ta.Type[ops2.BinaryOp]]
+    ty: ta.Type[ops2.Op]
 
 
 @dc.dataclass(frozen=True)
