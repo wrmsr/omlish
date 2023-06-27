@@ -11,22 +11,16 @@ from omlish import dataclasses as dc
 from omlish import dispatch
 from omlish.collections import coerce
 
-from . import ops2  # noqa
+from . import ops
 from . import symbolic as sym
 from . import uops as uo
+from .buffers import Buffer
 from .codegen import Codegen
 from .codegen import CodegenOp
 from .codegen import Program
 from .dims import Shape
 from .dtypes import Dtype
 from .dtypes import Float32
-from .lazy import LazyBuffer
-from .lazy import LazyOp
-from .ops import BinaryOp
-from .ops import FusedOp
-from .ops import MovementOp
-from .ops import ReduceOp
-from .ops import UnaryOp
 from .raw import RawBuffer
 from .shapetracker import ShapeTracker
 
@@ -65,25 +59,24 @@ class LinearAnalyzer:
         raise TypeError(x)
 
     @_analyze.register
-    def _analyze_buffer(self, buf: ops2.Buffer) -> LinearAnalysis:
-        lb = check.isinstance(buf.obj, LazyBuffer)
+    def _analyze_buffer(self, buf: Buffer) -> LinearAnalysis:
         return LinearAnalysis(
             buf,
-            lb.shape,
-            lb.dtype,
+            buf.shape,
+            buf.dtype,
             0,
         )
 
     @_analyze.register
-    def _analyze_unary_op(self, op: ops2.UnaryOp) -> LinearAnalysis:
+    def _analyze_unary_op(self, op: ops.UnaryOp) -> LinearAnalysis:
         raise NotImplementedError
 
     @_analyze.register
-    def _analyze_cast(self, op: ops2.Cast) -> LinearAnalysis:
+    def _analyze_cast(self, op: ops.Cast) -> LinearAnalysis:
         raise TypeError(op)
 
     @_analyze.register
-    def _analyze_binary_op(self, op: ops2.BinaryOp) -> LinearAnalysis:
+    def _analyze_binary_op(self, op: ops.BinaryOp) -> LinearAnalysis:
         xa = self._analyze(op.x)
         ya = self._analyze(op.y)
         return LinearAnalysis(
@@ -95,12 +88,12 @@ class LinearAnalyzer:
 
 
 class KeyRenderer:
-    def __init__(self, write: ta.Callable[[str], ta.Any], bufs: ta.Sequence[LazyBuffer]) -> None:
+    def __init__(self, write: ta.Callable[[str], ta.Any], bufs: ta.Sequence[Buffer]) -> None:
         super().__init__()
 
         self._write = check.callable(write)
-        self._bufs = coerce.seq_of(check.of_isinstance(LazyBuffer))(bufs)
-        self._buf_idx_map: ta.Mapping[LazyBuffer, int] = col.IdentityKeyDict((buf, i) for i, buf in enumerate(self._bufs))  # noqa
+        self._bufs = coerce.seq_of(check.of_isinstance(Buffer))(bufs)
+        self._buf_idx_map: ta.Mapping[Buffer, int] = col.IdentityKeyDict((buf, i) for i, buf in enumerate(self._bufs))  # noqa
 
     @dispatch.method
     def render(self, obj: ta.Any) -> None:
@@ -111,17 +104,17 @@ class KeyRenderer:
         self._write(f'({", ".join(map(str, sh))})')
 
     @render.register
-    def _render_buffer(self, buf: ops2.Buffer) -> None:
-        self._write(f'{type(buf).__name__}:{self._buf_idx_map[buf.obj]}')
+    def _render_buffer(self, buf: Buffer) -> None:
+        self._write(f'{type(buf).__name__}:{self._buf_idx_map[buf]}')
 
     @render.register
-    def _render_unary_op(self, op: ops2.UnaryOp) -> None:
+    def _render_unary_op(self, op: ops.UnaryOp) -> None:
         self._write(f'({type(op).__name__} ')
         self.render(op.x)
         self._write(')')
 
     @render.register
-    def _render_binary_op(self, op: ops2.BinaryOp) -> None:
+    def _render_binary_op(self, op: ops.BinaryOp) -> None:
         self._write(f'({type(op).__name__} ')
         self.render(op.x)
         self._write(' ')
@@ -129,7 +122,7 @@ class KeyRenderer:
         self._write(')')
 
     @render.register
-    def _render_reduce_op(self, op: ops2.ReduceOp) -> None:
+    def _render_reduce_op(self, op: ops.ReduceOp) -> None:
         self._write(f'({type(op).__name__} ')
         self.render(op.x)
         self._write(' ')
@@ -137,9 +130,9 @@ class KeyRenderer:
         self._write(')')
 
 
-def render_key(op: LazyOp, bufs: ta.Sequence[LazyBuffer]) -> str:
+def render_key(op: ops.Op, bufs: ta.Sequence[Buffer]) -> str:
     buf = io.StringIO()
-    KeyRenderer(buf.write, bufs).render(ops2.convert_from_lazy_op(op))
+    KeyRenderer(buf.write, bufs).render(op)
     return buf.getvalue()
 
 
@@ -190,40 +183,40 @@ def get_grouped_maybe_float4(*values: ta.Sequence[uo.Token], grouping_allowed: b
 
 
 class LinearCodegenOp(CodegenOp):
-    def __init__(self, op: LazyOp, output: LazyBuffer) -> None:
+    def __init__(self, op: ops.Op, output: Buffer) -> None:
         super().__init__()
 
         # NOTE: if there's a RESHAPE, we skip it. the output shape is set from the reduce op or a latebuf
-        self._op = check.isinstance(op.srcs[0], LazyOp) if op.op == MovementOp.RESHAPE else op
+        self._op = check.isinstance(op.srcs[0], ops.Op) if isinstance(op, ops.Reshape) else op
 
-        self._bufs: ta.List[ta.Union[LazyBuffer, LocalBuffer]] = [output, *col.unique(op.buffers)]
+        self._bufs: ta.List[ta.Union[Buffer, LocalBuffer]] = [output, *col.unique(op.buffers)]
 
         self._key = render_key(op, self._bufs)
 
     @property
-    def op(self) -> LazyOp:
+    def op(self) -> ops.Op:
         return self._op
 
     @property
-    def buffers(self) -> ta.Sequence[ta.Union[LazyBuffer, LazyBuffer]]:
+    def buffers(self) -> ta.Sequence[ta.Union[Buffer, LocalBuffer]]:
         return self._bufs
 
     @cached.property
     def analysis(self) -> LinearAnalysis:
-        return LinearAnalyzer().analyze(ops2.convert_from_lazy_op(self._op))  # noqa
+        return LinearAnalyzer().analyze(self._op)  # noqa
 
     @property
     def key(self) -> str:
         return self._key
 
     @cached.property
-    def reduce_op(self) -> ta.Optional[LazyOp]:
+    def reduce_op(self) -> ta.Optional[ops.Op]:
         # there's only allowed to be one reduce op
-        reduce_ops = [x for x in self._op.ops if isinstance(x.op, ReduceOp)]
+        reduce_ops = [x for x in self._op.ops if isinstance(x.op, ops.ReduceOp)]
         return check.single(reduce_ops) if reduce_ops else None  # noqa
 
     @cached.property
-    def early_buffers(self) -> ta.Sequence[LazyBuffer]:
+    def early_buffers(self) -> ta.Sequence[Buffer]:
         # get early bufs, before the one reduce op
         return col.unique(self.reduce_op.buffers) if self.reduce_op is not None else []  # noqa
 
@@ -404,16 +397,16 @@ class LinearCodegenOp(CodegenOp):
         self._uop(uo.EndLoop(out=None, vin=[], idxs=global_idxs, s='global'))
 
     def process_one(self, x, acc, loaded_buffers, ssa, do_reduce=False) -> ta.List[uo.Token]:
-        if not isinstance(x, LazyOp):
+        if not isinstance(x, ops.Op):
             return loaded_buffers[x]
-        x = ta.cast(LazyOp, x)
+        x = ta.cast(ops.Op, x)
 
-        if x.op in (UnaryOp.NOP, UnaryOp.CAST):
+        if isinstance(x.op, (ops.Nop, ops.Cast)):
             return self.process_one(x.srcs[0], acc, loaded_buffers, ssa)  # cast isn't an ALU op
 
         values = [self.process_one(v, acc, loaded_buffers, ssa) for v in x.srcs]
 
-        if isinstance(x.op, (ReduceOp, FusedOp)):
+        if isinstance(x.op, (ops.ReduceOp, ops.FusedOp)):
             raise NotImplementedError
 
         else:
@@ -423,7 +416,7 @@ class LinearCodegenOp(CodegenOp):
                     self._uop(uo.Alu(
                         out=ssa("alu"),
                         vin=list(val),
-                        ty=type(ops2.convert_from_lazy_op(x)),
+                        ty=type(x),
                     )),
                 )
                 for idx, val in get_grouped_maybe_float4(*values, grouping_allowed=False)
@@ -610,5 +603,5 @@ class LinearCodegenOp(CodegenOp):
 
 
 class LinearCodegen(Codegen):
-    def op(self, op: LazyOp, output: LazyBuffer) -> CodegenOp:
+    def op(self, op: ops.Op, output: Buffer) -> CodegenOp:
         return LinearCodegenOp(op, output)

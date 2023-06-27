@@ -6,15 +6,15 @@ from omlish import lang
 import numpy as np
 
 from . import funcs
+from .buffers import Buffer
 from .devices import Device
 from .devices import default_device  # noqa
 from .dims import Shape
 from .dims import Stride
 from .dtypes import Dtype
 from .dtypes import Float32
-from .lazy import LazyBuffer
 from .numpy import NumpyValue
-from .ops import LoadOp
+from . import ops
 
 
 DEFAULT_DTYPE = Float32
@@ -30,7 +30,7 @@ TensorLike = ta.Union[
     'Tensor',
     Scalar,
     ta.Iterable,
-    LazyBuffer,
+    Buffer,
     NumpyValue,
 ]
 
@@ -38,14 +38,14 @@ TensorLike = ta.Union[
 class Tensor(lang.Final):
     def __init__(
             self,
-            data: LazyBuffer,
+            data: Buffer,
             requires_grad: ta.Optional[bool] = None,
             *,
             func: ta.Optional[funcs.Func] = None,
     ) -> None:
         super().__init__()
 
-        self._data = check.isinstance(data, LazyBuffer)
+        self._data = check.isinstance(data, Buffer)
         self._requires_grad: ta.Optional[bool] = check.isinstance(requires_grad, (bool, None))
 
         self._grad: ta.Optional['Tensor'] = None
@@ -55,7 +55,7 @@ class Tensor(lang.Final):
     # Accessors
 
     @property
-    def data(self) -> LazyBuffer:
+    def data(self) -> Buffer:
         return self._data
 
     @property
@@ -108,24 +108,24 @@ class Tensor(lang.Final):
             return src
 
         if isinstance(src, np.ndarray):
-            src = LazyBuffer.from_cpu(src)
+            src = Buffer.from_cpu(src)
         elif isinstance(src, ta.Iterable):
             src = np.array(src, dtype=(dtype or DEFAULT_DTYPE).np)
 
-        if isinstance(src, LazyBuffer):
+        if isinstance(src, Buffer):
             check.arg(dtype is None or dtype == src.dtype)
             data = src
             if data.device != device:
-                data = LazyBuffer.load_op(
-                    LoadOp.FROM,
+                data = Buffer.load_op(
+                    ops.From,
                     data.shape,
                     data.dtype,
                     device,
                     src=data,
                 )
         elif isinstance(src, SCALAR_TYPES):
-            data = LazyBuffer.load_op(
-                LoadOp.CONST,
+            data = Buffer.load_op(
+                ops.Const,
                 Shape(),
                 (dtype or DEFAULT_DTYPE),
                 device,
@@ -157,7 +157,7 @@ class Tensor(lang.Final):
 
     @staticmethod
     def _load_op(
-            op: LoadOp,
+            op: ta.Type[ops.LoadOp],
             sz: int,
             device: ta.Optional[Device] = None,
             dtype: ta.Optional[Dtype] = None,
@@ -165,7 +165,7 @@ class Tensor(lang.Final):
             **kwargs: ta.Any
     ) -> 'Tensor':
         return Tensor.of(
-            LazyBuffer.load_op(
+            Buffer.load_op(
                 op,
                 Shape(sz),
                 dtype or DEFAULT_DTYPE,
@@ -179,7 +179,7 @@ class Tensor(lang.Final):
 
     @staticmethod
     def empty(*shape: int, **kwargs: ta.Any) -> 'Tensor':
-        return Tensor._load_op(LoadOp.EMPTY, math.prod(shape), **kwargs).reshape(*shape)
+        return Tensor._load_op(ops.Empty, math.prod(shape), **kwargs).reshape(*shape)
 
     #
 
