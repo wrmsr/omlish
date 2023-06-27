@@ -8,9 +8,9 @@ import typing as ta
 from omlish import dataclasses as dc
 from omlish import lang
 
-from .dims import Shape
-from .dims import Stride
-from .dtypes import Dtype
+from .dims import Shape as _Shape
+from .dims import Stride as _Stride
+from .dtypes import Dtype as _Dtype
 from .lazy import Lazy
 
 if ta.TYPE_CHECKING:
@@ -78,7 +78,7 @@ class Log2(UnaryOp):
 
 @dc.dataclass(frozen=True)
 class Cast(UnaryOp):
-    dtype: Dtype
+    dtype: _Dtype
 
     @property
     def args(self) -> ta.Sequence[ta.Any]:
@@ -160,7 +160,7 @@ class CmpLt(BinaryOp):
 class ReduceOp(Op, lang.Abstract):
     x: Lazy
 
-    new_shape: Shape
+    new_shape: _Shape
 
     @property
     def srcs(self) -> ta.Sequence[Lazy]:
@@ -195,7 +195,7 @@ class MovementOp(Op, lang.Abstract):
 
 @dc.dataclass(frozen=True)
 class Reshape(MovementOp):
-    new_shape: Shape
+    new_shape: _Shape
 
     @property
     def args(self) -> ta.Sequence[ta.Any]:
@@ -213,7 +213,7 @@ class Permute(MovementOp):
 
 @dc.dataclass(frozen=True)
 class Expand(MovementOp):
-    new_shape: Shape
+    new_shape: _Shape
 
     @property
     def args(self) -> ta.Sequence[ta.Any]:
@@ -240,7 +240,7 @@ class Shrink(MovementOp):
 
 @dc.dataclass(frozen=True)
 class Restride(MovementOp):  # MovementOps.STRIDE
-    stride: Stride
+    stride: _Stride
 
     @property
     def args(self) -> ta.Sequence[ta.Any]:
@@ -259,7 +259,7 @@ class FusedOp(Op, lang.Abstract):
 class MulAcc(FusedOp):
     x: Lazy
 
-    new_shape: Shape
+    new_shape: _Shape
 
     @property
     def srcs(self) -> ta.Sequence[Lazy]:
