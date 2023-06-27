@@ -269,11 +269,11 @@ class LazyBuffer(Lazy):
             for x in self_op.buffers:
                 x.realize()
 
-            from .evaluators2 import NumpyInterpreter
-            from . import ops2
-            so2 = ops2.convert_from_lazy_op(self_op)
-            ni = NumpyInterpreter()
-            ni.eval(so2)
+            # from .evaluators2 import NumpyInterpreter
+            # from . import ops2
+            # so2 = ops2.convert_from_lazy_op(self_op)
+            # ni = NumpyInterpreter()
+            # ni.eval(so2)
 
             self._realized = self.device.evaluator.eval(self_op, output=self)
 
