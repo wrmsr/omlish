@@ -5,6 +5,7 @@ TODO:
 import abc
 import typing as ta
 
+from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 
@@ -54,7 +55,7 @@ class Op(Lazy, lang.Abstract):
 
 @dc.dataclass(frozen=True)
 class UnaryOp(Op, lang.Abstract):
-    x: Lazy
+    x: Lazy = dc.field(coerce=check.of_isinstance(Lazy))
 
     @property
     def srcs(self) -> ta.Sequence[Lazy]:
@@ -100,8 +101,8 @@ class Recip(UnaryOp):
 
 @dc.dataclass(frozen=True)
 class BinaryOp(Op, lang.Abstract):
-    x: Lazy
-    y: Lazy
+    x: Lazy = dc.field(coerce=check.of_isinstance(Lazy))
+    y: Lazy = dc.field(coerce=check.of_isinstance(Lazy))
 
     @property
     def srcs(self) -> ta.Sequence[Lazy]:
@@ -158,9 +159,9 @@ class CmpLt(BinaryOp):
 
 @dc.dataclass(frozen=True)
 class ReduceOp(Op, lang.Abstract):
-    x: Lazy
+    x: Lazy = dc.field(coerce=check.of_isinstance(Lazy))
 
-    new_shape: _Shape
+    new_shape: _Shape = dc.field(coerce=check.of_isinstance(_Shape))
 
     @property
     def srcs(self) -> ta.Sequence[Lazy]:
@@ -186,7 +187,7 @@ class Max(ReduceOp):
 
 @dc.dataclass(frozen=True)
 class MovementOp(Op, lang.Abstract):
-    x: Lazy
+    x: Lazy = dc.field(coerce=check.of_isinstance(Lazy))
 
     @property
     def srcs(self) -> ta.Sequence[Lazy]:
@@ -195,7 +196,7 @@ class MovementOp(Op, lang.Abstract):
 
 @dc.dataclass(frozen=True)
 class Reshape(MovementOp):
-    new_shape: _Shape
+    new_shape: _Shape = dc.field(coerce=check.of_isinstance(_Shape))
 
     @property
     def args(self) -> ta.Sequence[ta.Any]:
@@ -213,7 +214,7 @@ class Permute(MovementOp):
 
 @dc.dataclass(frozen=True)
 class Expand(MovementOp):
-    new_shape: _Shape
+    new_shape: _Shape = dc.field(coerce=check.of_isinstance(_Shape))
 
     @property
     def args(self) -> ta.Sequence[ta.Any]:
@@ -257,9 +258,9 @@ class FusedOp(Op, lang.Abstract):
 
 @dc.dataclass(frozen=True)
 class MulAcc(FusedOp):
-    x: Lazy
+    x: Lazy = dc.field(coerce=check.of_isinstance(Lazy))
 
-    new_shape: _Shape
+    new_shape: _Shape = dc.field(coerce=check.of_isinstance(_Shape))
 
     @property
     def srcs(self) -> ta.Sequence[Lazy]:

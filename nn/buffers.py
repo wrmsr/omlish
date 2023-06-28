@@ -261,7 +261,6 @@ class Buffer(Lazy):
             if real_srcs[x] is None:
                 real_srcs[x] = x.movement_op(ops.Reshape, intermediate_shape)
 
-        breakpoint()
         ret = map_buffers({k: check.not_none(v) for k, v in real_srcs.items()}, self_op)
         if intermediate_shape != self.shape:
             return ops.Reshape((ret,), self.shape)
@@ -363,7 +362,7 @@ def elementwise_op(
     return create_lazy_buffer(
         out_device,
         ShapeTracker.of(out_shape),
-        op(srcs, arg),
+        op(*srcs, *([arg] if arg is not None else [])),
         out_dtype,
     )
 
