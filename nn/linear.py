@@ -499,10 +499,11 @@ class LinearCodegenOp(CodegenOp):
         self.global_store(0, global_idxs + local_idxs + fake_reduce_idxs, val, ssa)
 
         if not self._group_for_reduce:
-            # end the local loop
-            self._uop(uo.EndLoop(out=None, vin=[], idxs=local_idxs, s='local'))
-
-        self._uop(uo.EndLoop(out=None, vin=[], idxs=global_idxs, s='global'))
+            # end the global+local loop
+            self._uop(uo.EndLoop(out=None, vin=[], idxs=global_idxs + local_idxs, s='global+local'))
+        else:
+            # end the global loop
+            self._uop(uo.EndLoop(out=None, vin=[], idxs=global_idxs, s='global'))
 
     def process_one(self, x, acc, loaded_buffers, ssa, do_reduce=False) -> ta.List[uo.Token]:
         if not isinstance(x, ops.Op):

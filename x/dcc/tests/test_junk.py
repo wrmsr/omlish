@@ -32,6 +32,7 @@ def test_junk():
     from .build_ext import BuildExt
     cmd_obj = BuildExt(BuildExt.Options(
         inplace=True,
+        debug=True,
     ))
     cmd_obj.build_extension(ext)
 
