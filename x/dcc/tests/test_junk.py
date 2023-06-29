@@ -37,4 +37,5 @@ def test_junk():
     cmd_obj.build_extension(ext)
 
     from . import junk  # type: ignore  # noqa
+    print(junk.abctok())
     assert junk.junk() == 421

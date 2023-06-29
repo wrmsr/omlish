@@ -168,8 +168,21 @@ static PyObject * junk(PyObject *self, PyObject *args)
 }
 
 
+static PyObject *abc_get_cache_token = NULL;
+
+
+static PyObject * abctok(PyObject *self, PyObject *args)
+{
+    PyObject *et = PyTuple_New(0);
+    PyObject *ret = PyObject_Call(abc_get_cache_token, et, NULL);
+    Py_DECREF(et);
+    return ret;
+}
+
+
 static PyMethodDef module_methods[] = {
     {"junk", junk, METH_NOARGS, "junk"},
+    {"abctok", abctok, METH_NOARGS, "abctok"},
     {NULL, NULL, 0, NULL}
 };
 
@@ -191,15 +204,27 @@ PyMODINIT_FUNC PyInit_junk(void)
         return NULL;
     }
 
+    PyObject *abc_module = PyImport_ImportModule("abc");
+    if (abc_module == NULL) {
+        return NULL;
+    }
+    if ((abc_get_cache_token = PyObject_GetAttrString(abc_module, "get_cache_token")) == NULL) {
+        Py_DECREF(abc_module);
+        return NULL;
+    }
+    Py_DECREF(abc_module);
+
     PyObject *m;
 
     m = PyModule_Create(&module_def);
     if (m == NULL) {
+        Py_DECREF(abc_get_cache_token);
         return NULL;
     }
 
     Py_INCREF(&CustomType);
     if (PyModule_AddObject(m, "Custom", (PyObject *) &CustomType) < 0) {
+        Py_DECREF(abc_get_cache_token);
         Py_DECREF(&CustomType);
         Py_DECREF(m);
         return NULL;
