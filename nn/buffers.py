@@ -380,7 +380,7 @@ def _replace_with_movement_ops(
         check.isinstance(y, (ops.BinaryOp, ops.UnaryOp))
 
         return elementwise_op(
-            y.op,  # type: ignore
+            type(y),  # type: ignore
             *[_replace_with_movement_ops(z, lst) for z in y.srcs],
             *y.args
         )
