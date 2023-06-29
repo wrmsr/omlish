@@ -9,6 +9,7 @@ flake8==6.0.0
 flake8-pyproject==1.2.3
 
 gprof2dot==2022.7.29
+matplotlib==3.7.1
 mypy==1.4.1
 pipdeptree==2.9.3
 
