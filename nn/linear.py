@@ -212,7 +212,7 @@ class LinearCodegenOp(CodegenOp):
     @cached.property
     def reduce_op(self) -> ta.Optional[ops.Op]:
         # there's only allowed to be one reduce op
-        reduce_ops = [x for x in self._op.ops if isinstance(x.op, ops.ReduceOp)]
+        reduce_ops = [x for x in self._op.ops if isinstance(x, ops.ReduceOp)]
         return check.single(reduce_ops) if reduce_ops else None  # noqa
 
     @cached.property
@@ -401,12 +401,12 @@ class LinearCodegenOp(CodegenOp):
             return loaded_buffers[x]
         x = ta.cast(ops.Op, x)
 
-        if isinstance(x.op, (ops.Nop, ops.Cast)):
+        if isinstance(x, (ops.Nop, ops.Cast)):
             return self.process_one(x.srcs[0], acc, loaded_buffers, ssa)  # cast isn't an ALU op
 
         values = [self.process_one(v, acc, loaded_buffers, ssa) for v in x.srcs]
 
-        if isinstance(x.op, (ops.ReduceOp, ops.FusedOp)):
+        if isinstance(x, (ops.ReduceOp, ops.FusedOp)):
             raise NotImplementedError
 
         else:

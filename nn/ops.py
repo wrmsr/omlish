@@ -4,6 +4,7 @@ TODO:
 """
 import abc
 import typing as ta
+import weakref
 
 from omlish import check
 from omlish import dataclasses as dc
@@ -306,20 +307,32 @@ class Const(LoadOp):
 
 @dc.dataclass(frozen=True)
 class From(LoadOp):
-    buf: ta.Any  # FIXME: [LazyBuffer, weakref.Ref[LazyBuffer]]
+    buf: ta.Union['buffers.Buffer', weakref.ReferenceType['buffers.Buffer']] = dc.field(
+        check=lambda o: isinstance(o, (buffers.Buffer, weakref.ref)),
+    )
+
+    @property
+    def srcs(self) -> ta.Sequence[Lazy]:
+        return[self.buf() if isinstance(self.buf, weakref.ref) else self.buf]
 
     @property
     def args(self) -> ta.Sequence[ta.Any]:
-        return [self.buf]
+        return []
 
 
 @dc.dataclass(frozen=True)
 class Contiguous(LoadOp):
-    buf: ta.Any  # FIXME: [LazyBuffer, weakref.Ref[LazyBuffer]]
+    buf: ta.Union['buffers.Buffer', weakref.ReferenceType['buffers.Buffer']] = dc.field(
+        check=lambda o: isinstance(o, (buffers.Buffer, weakref.ref)),
+    )
+
+    @property
+    def srcs(self) -> ta.Sequence[Lazy]:
+        return[self.buf() if isinstance(self.buf, weakref.ref) else self.buf]
 
     @property
     def args(self) -> ta.Sequence[ta.Any]:
-        return [self.buf]
+        return []
 
 
 # CUSTOM = enum.auto()
