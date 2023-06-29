@@ -1,7 +1,9 @@
 import builtins
 import contextlib
+import itertools as it
 import operator as op
 import typing as ta
+import weakref
 
 import numpy as np
 
@@ -267,8 +269,11 @@ def bind(prim, *args, **params):
 
 
 def find_top_trace(xs) -> Trace:
-    top_main = max((x._trace.main for x in xs if isinstance(x, Tracer)),
-                   default=trace_stack[0], key=op.attrgetter('level'))
+    top_main = max(
+        (x._trace.main for x in xs if isinstance(x, Tracer)),
+        default=trace_stack[0],
+        key=op.attrgetter('level'),
+    )
     if dynamic_trace and dynamic_trace.level > top_main.level:
         top_main = dynamic_trace
     return top_main.trace_type(top_main)
@@ -574,32 +579,26 @@ class Store:
         return self.val
 
 
-import itertools as it
-from typing import Callable, Type, Hashable, Dict, Iterable, Iterator
-
-
 class NodeType(ta.NamedTuple):
     name: str
-    to_iterable: Callable
-    from_iterable: Callable
+    to_iterable: ta.Callable
+    from_iterable: ta.Callable
 
 
-def register_pytree_node(ty: ta.Type, to_iter: Callable, from_iter: Callable
+def register_pytree_node(ty: ta.Type, to_iter: ta.Callable, from_iter: ta.Callable
                          ) -> None:
     node_types[ty] = NodeType(str(ty), to_iter, from_iter)
 
 
-node_types: Dict[ta.Type, NodeType] = {}
+node_types: ta.Dict[ta.Type, NodeType] = {}
 register_pytree_node(tuple, lambda t: (None, t), lambda _, xs: tuple(xs))
 register_pytree_node(list, lambda l: (None, l), lambda _, xs: list(xs))
-register_pytree_node(dict,
-                     lambda d: map(tuple, unzip2(sorted(d.items()))),
-                     lambda keys, vals: dict(zip(keys, vals)))
+register_pytree_node(dict, lambda d: map(tuple, unzip2(sorted(d.items()))), lambda keys, vals: dict(zip(keys, vals)))
 
 
 class PyTreeDef(ta.NamedTuple):
     node_type: NodeType
-    node_metadata: Hashable
+    node_metadata: ta.Hashable
     child_treedefs: ta.Tuple['PyTreeDef', ...]
 
 
@@ -615,7 +614,7 @@ def tree_flatten(x: ta.Any) -> ta.Tuple[ta.List[ta.Any], PyTreeDef]:
     return list(children_iter), treedef
 
 
-def _tree_flatten(x: ta.Any) -> ta.Tuple[Iterable, PyTreeDef]:
+def _tree_flatten(x: ta.Any) -> ta.Tuple[ta.Iterable, PyTreeDef]:
     node_type = node_types.get(type(x))
     if node_type:
         node_metadata, children = node_type.to_iterable(x)
@@ -630,7 +629,7 @@ def tree_unflatten(treedef: PyTreeDef, xs: ta.List[ta.Any]) -> ta.Any:
     return _tree_unflatten(treedef, iter(xs))
 
 
-def _tree_unflatten(treedef: PyTreeDef, xs: Iterator) -> ta.Any:
+def _tree_unflatten(treedef: PyTreeDef, xs: ta.Iterator) -> ta.Any:
     if treedef is leaf:
         return next(xs)
     else:
@@ -780,8 +779,7 @@ vmap_rules[reduce_sum_p] = reduce_sum_batching_rule
 
 
 def vmap_flat(f, in_axes, *args):
-    axis_size, = {x.shape[ax] for x, ax in zip(args, in_axes)
-                  if ax is not not_mapped}
+    axis_size, = {x.shape[ax] for x, ax in zip(args, in_axes) if ax is not not_mapped}
     with new_main(BatchTrace, axis_size) as main:
         trace = BatchTrace(main)
         tracers_in = [BatchTracer(trace, x, ax) if ax is not None else x
@@ -851,13 +849,11 @@ foo()
 ##
 
 
-from typing import Set
-
-
 class Var:
     aval: ShapedArray
 
-    def __init__(self, aval): self.aval = aval
+    def __init__(self, aval):
+        self.aval = aval
 
 
 class Lit:
@@ -875,7 +871,7 @@ Atom = Union[Var, Lit]
 class JaxprEqn(ta.NamedTuple):
     primitive: Primitive
     inputs: ta.List[Atom]
-    params: Dict[str, ta.Any]
+    params: ta.Dict[str, ta.Any]
     out_binders: ta.List[Var]
 
 
@@ -907,7 +903,7 @@ class JaxprType(ta.NamedTuple):
 
 
 def typecheck_jaxpr(jaxpr: Jaxpr) -> JaxprType:
-    env: Set[Var] = set()
+    env: ta.Set[Var] = set()
 
     for v in jaxpr.in_binders:
         if v in env:
@@ -930,7 +926,7 @@ def typecheck_jaxpr(jaxpr: Jaxpr) -> JaxprType:
     return JaxprType(in_types, out_types)
 
 
-def typecheck_atom(env: Set[Var], x: Atom) -> ShapedArray:
+def typecheck_atom(env: ta.Set[Var], x: Atom) -> ShapedArray:
     if isinstance(x, Var):
         if x not in env:
             raise TypeError("unbound variable")
@@ -945,7 +941,7 @@ def typecheck_atom(env: Set[Var], x: Atom) -> ShapedArray:
 
 
 def eval_jaxpr(jaxpr: Jaxpr, args: ta.List[ta.Any]) -> ta.List[ta.Any]:
-    env: Dict[Var, ta.Any] = {}
+    env: ta.Dict[Var, ta.Any] = {}
 
     def read(x: Atom) -> ta.Any:
         return env[x] if type(x) is Var else x.val
@@ -1035,9 +1031,9 @@ abstract_eval_rules = {}
 
 class JaxprBuilder:
     eqns: ta.List[JaxprEqn]
-    tracer_to_var: Dict[int, Var]
-    const_tracers: Dict[int, JaxprTracer]
-    constvals: Dict[Var, ta.Any]
+    tracer_to_var: ta.Dict[int, Var]
+    const_tracers: ta.Dict[int, JaxprTracer]
+    constvals: ta.Dict[Var, ta.Any]
     tracers: ta.List[JaxprTracer]
 
     def __init__(self):
@@ -1071,8 +1067,11 @@ class JaxprBuilder:
         self.constvals[var] = val
         return var
 
-    def build(self, in_tracers: ta.List[JaxprTracer], out_tracers: ta.List[JaxprTracer]
-              ) -> ta.Tuple[Jaxpr, ta.List[ta.Any]]:
+    def build(
+            self,
+            in_tracers: ta.List[JaxprTracer],
+            out_tracers: ta.List[JaxprTracer]
+    ) -> ta.Tuple[Jaxpr, ta.List[ta.Any]]:
         constvars, constvals = unzip2(self.constvals.items())
         t2v = lambda t: self.tracer_to_var[id(t)]
         in_binders = constvars + [t2v(t) for t in in_tracers]
@@ -1092,8 +1091,10 @@ def _inline_literals(jaxpr: Jaxpr, consts: ta.List[ta.Any]) -> ta.Tuple[Jaxpr, t
     new_const_binders, lit_binders = partition_list(scalars, const_binders)
     new_consts, lit_vals = partition_list(scalars, consts)
     literals = dict(zip(lit_binders, map(Lit, lit_vals)))
-    new_eqns = [JaxprEqn(eqn.primitive, [literals.get(x, x) for x in eqn.inputs],
-                         eqn.params, eqn.out_binders) for eqn in jaxpr.eqns]
+    new_eqns = [
+        JaxprEqn(eqn.primitive, [literals.get(x, x) for x in eqn.inputs], eqn.params, eqn.out_binders)
+        for eqn in jaxpr.eqns
+    ]
     new_outs = [literals.get(x, x) for x in jaxpr.outs]
     new_jaxpr = Jaxpr(new_const_binders + other_binders, new_eqns, new_outs)
     typecheck_jaxpr(new_jaxpr)
@@ -1136,8 +1137,7 @@ abstract_eval_rules[cos_p] = vectorized_unop_abstract_eval
 abstract_eval_rules[neg_p] = vectorized_unop_abstract_eval
 
 
-def reduce_sum_abstract_eval(x: ShapedArray, *, axis: ta.Tuple[int, ...]
-                             ) -> ta.List[ShapedArray]:
+def reduce_sum_abstract_eval(x: ShapedArray, *, axis: ta.Tuple[int, ...]) -> ta.List[ShapedArray]:
     axis_ = set(axis)
     new_shape = [d for i, d in enumerate(x.shape) if i not in axis_]
     return [ShapedArray(tuple(new_shape), x.dtype)]
@@ -1146,8 +1146,7 @@ def reduce_sum_abstract_eval(x: ShapedArray, *, axis: ta.Tuple[int, ...]
 abstract_eval_rules[reduce_sum_p] = reduce_sum_abstract_eval
 
 
-def broadcast_abstract_eval(x: ShapedArray, *, shape: ta.Sequence[int],
-                            axes: ta.Sequence[int]) -> ta.List[ShapedArray]:
+def broadcast_abstract_eval(x: ShapedArray, *, shape: ta.Sequence[int], axes: ta.Sequence[int]) -> ta.List[ShapedArray]:
     return [ShapedArray(tuple(shape), x.dtype)]
 
 
@@ -1202,8 +1201,7 @@ def new_dynamic(main: MainTrace):
 
 
 @lru_cache()
-def make_jaxpr(f: Callable, *avals_in: ShapedArray,
-               ) -> ta.Tuple[Jaxpr, ta.List[ta.Any], PyTreeDef]:
+def make_jaxpr(f: ta.Callable, *avals_in: ShapedArray) -> ta.Tuple[Jaxpr, ta.List[ta.Any], PyTreeDef]:
     avals_in, in_tree = tree_flatten(avals_in)
     f, out_tree = flatten_fun(f, in_tree)
 
@@ -1281,8 +1279,7 @@ impl_rules[xla_call_p] = xla_call_impl
 
 
 @lru_cache()
-def xla_callable(hashable_jaxpr: IDHashable,
-                 hashable_consts: ta.Tuple[IDHashable, ...]):
+def xla_callable(hashable_jaxpr: IDHashable, hashable_consts: ta.Tuple[IDHashable, ...]):
     jaxpr: Jaxpr = hashable_jaxpr.val
     typecheck_jaxpr(jaxpr)
     consts = [x.val for x in hashable_consts]
@@ -1300,7 +1297,9 @@ def xla_callable(hashable_jaxpr: IDHashable,
 def _xla_consts(c: xe.XlaBuilder, consts: ta.List[ta.Any]) -> ta.List[xe.XlaOp]:
     unique_consts = {id(cnst): cnst for cnst in consts}
     xla_consts = {
-        id_: xops.ConstantLiteral(c, cnst) for id_, cnst in unique_consts.items()}
+        id_: xops.ConstantLiteral(c, cnst)
+        for id_, cnst in unique_consts.items()
+    }
     return [xla_consts[id(cnst)] for cnst in consts]
 
 
@@ -1315,9 +1314,8 @@ def _xla_shape(aval: ShapedArray) -> xe.Shape:
 ##
 
 
-def jaxpr_subcomp(c: xe.XlaBuilder, jaxpr: Jaxpr, args: ta.List[xe.XlaOp]
-                  ) -> ta.List[xe.XlaOp]:
-    env: Dict[Var, xe.XlaOp] = {}
+def jaxpr_subcomp(c: xe.XlaBuilder, jaxpr: Jaxpr, args: ta.List[xe.XlaOp]) -> ta.List[xe.XlaOp]:
+    env: ta.Dict[Var, xe.XlaOp] = {}
 
     def read(x: Atom) -> xe.XlaOp:
         return env[x] if type(x) is Var else xops.Constant(c, np.asarray(x.val))
@@ -1342,8 +1340,8 @@ def execute_compiled(compiled, out_avals, *args):
 
 
 default_input_handler = xb.get_backend(None).buffer_from_pyval
-input_handlers = {ty: default_input_handler for ty in
-                  [bool, int, float, np.ndarray, np.float64, np.float32]}
+
+input_handlers = {ty: default_input_handler for ty in [bool, int, float, np.ndarray, np.float64, np.float32]}
 
 
 def handle_result(aval: ShapedArray, buf):
@@ -1470,8 +1468,7 @@ vmap_rules[xla_call_p] = xla_call_vmap_rule
 
 
 @lru_cache()
-def vmap_jaxpr(jaxpr: Jaxpr, axis_size: int, bdims_in: ta.Tuple[BatchAxis, ...]
-               ) -> ta.Tuple[Jaxpr, ta.List[ta.Any]]:
+def vmap_jaxpr(jaxpr: Jaxpr, axis_size: int, bdims_in: ta.Tuple[BatchAxis, ...]) -> ta.Tuple[Jaxpr, ta.List[ta.Any]]:
     vmap_traceable = vmap(jaxpr_as_fun(jaxpr), tuple(bdims_in))
     in_avals = [unmapped_aval(axis_size, d, v.aval)
                 for v, d in zip(jaxpr.in_binders, bdims_in)]
@@ -1479,8 +1476,7 @@ def vmap_jaxpr(jaxpr: Jaxpr, axis_size: int, bdims_in: ta.Tuple[BatchAxis, ...]
     return new_jaxpr, new_consts
 
 
-def unmapped_aval(axis_size: int, batch_dim: BatchAxis, aval: ShapedArray
-                  ) -> ShapedArray:
+def unmapped_aval(axis_size: int, batch_dim: BatchAxis, aval: ShapedArray) -> ShapedArray:
     if batch_dim is not_mapped:
         return aval
     else:
@@ -1563,11 +1559,14 @@ class DeviceArray:
     shape = property(lambda self: self.aval.shape)
     ndim = property(lambda self: self.aval.ndim)
 
-    def __array__(self): return np.asarray(self.buf)
+    def __array__(self):
+        return np.asarray(self.buf)
 
-    def __repr__(self):  return repr(np.asarray(self.buf))
+    def __repr__(self):
+        return repr(np.asarray(self.buf))
 
-    def __str__(self):   return str(np.asarray(self.buf))
+    def __str__(self):
+        return str(np.asarray(self.buf))
 
     _neg = staticmethod(neg)
     _add = staticmethod(add)
@@ -1623,8 +1622,10 @@ def merge_lists(which: ta.List[bool], l1: ta.List[ta.Any], l2: ta.List[ta.Any]) 
 
 
 def linearize_flat(f, *primals_in):
-    pvals_in = ([PartialVal.known(x) for x in primals_in] +
-                [PartialVal.unknown(vspace(get_aval(x))) for x in primals_in])
+    pvals_in = (
+            [PartialVal.known(x) for x in primals_in] +
+            [PartialVal.unknown(vspace(get_aval(x))) for x in primals_in]
+    )
 
     def f_jvp(*primals_tangents_in):
         primals_out, tangents_out = jvp(f, *split_half(primals_tangents_in))
@@ -1680,7 +1681,7 @@ class PartialVal(ta.NamedTuple):
 ##
 
 
-def partial_eval_flat(f: Callable, pvals_in: ta.List[PartialVal]
+def partial_eval_flat(f: ta.Callable, pvals_in: ta.List[PartialVal]
                       ) -> ta.Tuple[Jaxpr, ta.List[PartialVal], ta.List[ta.Any]]:
     with new_main(PartialEvalTrace) as main:
         trace = PartialEvalTrace(main)
@@ -1697,9 +1698,6 @@ def partial_eval_flat(f: Callable, pvals_in: ta.List[PartialVal]
 ##
 
 
-from weakref import ref, ReferenceType
-
-
 class LambdaBindingRecipe(ta.NamedTuple):
     pass
 
@@ -1711,9 +1709,9 @@ class ConstRecipe(ta.NamedTuple):
 class JaxprEqnRecipe(ta.NamedTuple):
     prim: Primitive
     tracers_in: ta.List['PartialEvalTracer']
-    params: Dict[str, ta.Any]
+    params: ta.Dict[str, ta.Any]
     avals_out: ta.List[ShapedArray]
-    tracer_refs_out: ta.List['ReferenceType[PartialEvalTracer]']
+    tracer_refs_out: ta.List['weakref.ReferenceType[PartialEvalTracer]']
 
 
 JaxprRecipe = Union[LambdaBindingRecipe, ConstRecipe, JaxprEqnRecipe]
@@ -1767,7 +1765,7 @@ class PartialEvalTrace(Trace):
         tracers_out = [PartialEvalTracer(self, PartialVal.unknown(aval), None)
                        for aval in avals_out]
         eqn = JaxprEqnRecipe(primitive, tracers_in, params, avals_out,
-                             map(ref, tracers_out))
+                             map(weakref.ref, tracers_out))
         for t in tracers_out:
             t.recipe = eqn
         return tracers_out
@@ -1779,13 +1777,14 @@ partial_eval_rules = {}
 ##
 
 
-def tracers_to_jaxpr(tracers_in: ta.List[PartialEvalTracer],
-                     tracers_out: ta.List[PartialEvalTracer]):
-    tracer_to_var: Dict[int, Var] = {id(t): Var(raise_to_shaped(t.aval))
-                                     for t in tracers_in}
-    constvar_to_val: Dict[int, ta.Any] = {}
-    constid_to_var: Dict[int, Var] = {}
-    processed_eqns: Set[int] = set()
+def tracers_to_jaxpr(
+        tracers_in: ta.List[PartialEvalTracer],
+        tracers_out: ta.List[PartialEvalTracer],
+):
+    tracer_to_var: ta.Dict[int, Var] = {id(t): Var(raise_to_shaped(t.aval)) for t in tracers_in}
+    constvar_to_val: ta.Dict[int, ta.Any] = {}
+    constid_to_var: ta.Dict[int, Var] = {}
+    processed_eqns: ta.Set[int] = set()
     eqns: ta.List[JaxprEqn] = []
     for t in toposort(tracers_out, tracer_parents):
         if isinstance(t.recipe, LambdaBindingRecipe):
@@ -1813,8 +1812,7 @@ def tracers_to_jaxpr(tracers_in: ta.List[PartialEvalTracer],
     return jaxpr, constvals
 
 
-def recipe_to_eqn(tracer_to_var: Dict[int, Var], recipe: JaxprEqnRecipe
-                  ) -> JaxprEqn:
+def recipe_to_eqn(tracer_to_var: ta.Dict[int, Var], recipe: JaxprEqnRecipe) -> JaxprEqn:
     inputs = [tracer_to_var[id(t)] for t in recipe.tracers_in]
     out_binders = [Var(aval) for aval in recipe.avals_out]
     for t_ref, var in zip(recipe.tracer_refs_out, out_binders):
@@ -1830,7 +1828,7 @@ def tracer_parents(t: PartialEvalTracer) -> ta.List[PartialEvalTracer]:
 ##
 
 
-def toposort(out_nodes: ta.List[ta.Any], parents: Callable[[ta.Any], ta.List[ta.Any]]):
+def toposort(out_nodes: ta.List[ta.Any], parents: ta.Callable[[ta.Any], ta.List[ta.Any]]):
     if not out_nodes:
         return []
     out_nodes = remove_duplicates(out_nodes)
@@ -1868,7 +1866,7 @@ def remove_duplicates(lst):
     return [x for x in lst if id(x) not in seen and not seen.add(id(x))]
 
 
-def check_toposort(nodes: ta.List[ta.Any], parents: Callable[[ta.Any], ta.List[ta.Any]]):
+def check_toposort(nodes: ta.List[ta.Any], parents: ta.Callable[[ta.Any], ta.List[ta.Any]]):
     seen = set()
     for node in nodes:
         assert all(id(parent) in seen for parent in parents(node))
@@ -1904,7 +1902,7 @@ def xla_call_partial_eval(trace, tracers, *, jaxpr, num_consts):
              for v in jaxpr2.outs]
     eqn = JaxprEqnRecipe(xla_call_p, res_tracers + unknown_tracers,
                          dict(jaxpr=jaxpr2, num_consts=0),
-                         [v.aval for v in jaxpr2.outs], map(ref, outs2))
+                         [v.aval for v in jaxpr2.outs], map(weakref.ref, outs2))
     for t in outs2:
         t.recipe = eqn
     return merge_lists(out_unknowns, outs1, outs2)
@@ -1913,11 +1911,13 @@ def xla_call_partial_eval(trace, tracers, *, jaxpr, num_consts):
 partial_eval_rules[xla_call_p] = xla_call_partial_eval
 
 
-def partial_eval_jaxpr(jaxpr: Jaxpr, in_unknowns: ta.List[bool],
-                       instantiate: ta.Optional[ta.List[bool]] = None,
-                       ) -> ta.Tuple[Jaxpr, Jaxpr, ta.List[bool], int]:
-    env: Dict[Var, bool] = {}
-    residuals: Set[Var] = set()
+def partial_eval_jaxpr(
+        jaxpr: Jaxpr,
+        in_unknowns: ta.List[bool],
+        instantiate: ta.Optional[ta.List[bool]] = None,
+) -> ta.Tuple[Jaxpr, Jaxpr, ta.List[bool], int]:
+    env: ta.Dict[Var, bool] = {}
+    residuals: ta.Set[Var] = set()
 
     def read(x: Atom) -> bool:
         return type(x) is Var and env[x]
@@ -1996,8 +1996,10 @@ def typecheck_partial_eval_jaxpr(jaxpr, unks_in, unks_out, jaxpr1, jaxpr2):
 partial_eval_jaxpr_rules = {}
 
 
-def xla_call_peval_eqn(unks_in: ta.List[bool], eqn: JaxprEqn,
-                       ) -> ta.Tuple[JaxprEqn, JaxprEqn, ta.List[bool], ta.List[Var]]:
+def xla_call_peval_eqn(
+        unks_in: ta.List[bool],
+        eqn: JaxprEqn,
+) -> ta.Tuple[JaxprEqn, JaxprEqn, ta.List[bool], ta.List[Var]]:
     jaxpr = eqn.params['jaxpr']
     jaxpr1, jaxpr2, unks_out, num_res = partial_eval_jaxpr(jaxpr, unks_in)
     ins1, ins2 = partition_list(unks_in, eqn.inputs)
@@ -2060,8 +2062,10 @@ def vjp(f, x):
 
 
 def vjp_flat(f, *primals_in):
-    pvals_in = ([PartialVal.known(x) for x in primals_in] +
-                [PartialVal.unknown(vspace(get_aval(x))) for x in primals_in])
+    pvals_in = (
+            [PartialVal.known(x) for x in primals_in] +
+            [PartialVal.unknown(vspace(get_aval(x))) for x in primals_in]
+    )
     primal_pvals_in, tangent_pvals_in = split_half(pvals_in)
 
     def f_jvp(*primals_tangents_in):
@@ -2095,19 +2099,16 @@ class UndefPrimal(ta.NamedTuple):
     aval: ShapedArray
 
 
-register_pytree_node(UndefPrimal,
-                     lambda u: (u.aval, ()),
-                     lambda aval, _: UndefPrimal(aval))
+register_pytree_node(UndefPrimal, lambda u: (u.aval, ()), lambda aval, _: UndefPrimal(aval))
 
 
 ##
 
 
 # NB: the analogous function in JAX is called 'backward_pass'
-def eval_jaxpr_transposed(jaxpr: Jaxpr, args: ta.List[ta.Any], cotangents: ta.List[ta.Any]
-                          ) -> ta.List[ta.Any]:
-    primal_env: Dict[Var, ta.Any] = {}
-    ct_env: Dict[Var, ta.Any] = {}
+def eval_jaxpr_transposed(jaxpr: Jaxpr, args: ta.List[ta.Any], cotangents: ta.List[ta.Any]) -> ta.List[ta.Any]:
+    primal_env: ta.Dict[Var, ta.Any] = {}
+    ct_env: ta.Dict[Var, ta.Any] = {}
 
     def read_primal(x: Atom) -> ta.Any:
         return primal_env.get(x, UndefPrimal(x.aval)) if type(x) is Var else x.val
@@ -2191,8 +2192,7 @@ transpose_rules[xla_call_p] = xla_call_transpose_rule
 
 
 @lru_cache()
-def transpose_jaxpr(jaxpr: Jaxpr, undef_primals: ta.Tuple[bool, ...]
-                    ) -> ta.Tuple[Jaxpr, ta.List[ta.Any]]:
+def transpose_jaxpr(jaxpr: Jaxpr, undef_primals: ta.Tuple[bool, ...]) -> ta.Tuple[Jaxpr, ta.List[ta.Any]]:
     avals_in, avals_out = typecheck_jaxpr(jaxpr)
     traceable = partial(eval_jaxpr_transposed, jaxpr)
     args = [UndefPrimal(a) if u else a for a, u in zip(avals_in, undef_primals)]
@@ -2310,8 +2310,7 @@ def cond(pred, true_fn, false_fn, *operands):
 cond_p = Primitive('cond')
 
 
-def _join_jaxpr_consts(jaxpr1: Jaxpr, jaxpr2: Jaxpr, n1: int, n2: int
-                       ) -> ta.Tuple[Jaxpr, Jaxpr]:
+def _join_jaxpr_consts(jaxpr1: Jaxpr, jaxpr2: Jaxpr, n1: int, n2: int) -> ta.Tuple[Jaxpr, Jaxpr]:
     jaxpr1_type, jaxpr2_type = typecheck_jaxpr(jaxpr1), typecheck_jaxpr(jaxpr2)
     assert jaxpr1_type.in_types[n1:] == jaxpr2_type.in_types[n2:]
     consts1, rest1 = split_list(jaxpr1.in_binders, n1)
@@ -2493,7 +2492,7 @@ def cond_partial_eval(trace, tracers, *, true_jaxpr, false_jaxpr):
              for v in t_jaxpr2.outs]
     eqn = JaxprEqnRecipe(cond_p, [pred_tracer_, *res_tracers, *unknown_tracers],
                          dict(true_jaxpr=t_jaxpr2, false_jaxpr=f_jaxpr2),
-                         [v.aval for v in t_jaxpr2.outs], map(ref, outs2))
+                         [v.aval for v in t_jaxpr2.outs], map(weakref.ref, outs2))
     for t in outs2:
         t.recipe = eqn
     return merge_lists(out_uks, outs1, outs2)
@@ -2502,8 +2501,11 @@ def cond_partial_eval(trace, tracers, *, true_jaxpr, false_jaxpr):
 partial_eval_rules[cond_p] = cond_partial_eval
 
 
-def _cond_partial_eval(true_jaxpr: Jaxpr, false_jaxpr: Jaxpr, in_uks: ta.List[bool]
-                       ) -> ta.Tuple[Jaxpr, Jaxpr, Jaxpr, Jaxpr, ta.List[bool], int]:
+def _cond_partial_eval(
+        true_jaxpr: Jaxpr,
+        false_jaxpr: Jaxpr,
+        in_uks: ta.List[bool]
+) -> ta.Tuple[Jaxpr, Jaxpr, Jaxpr, Jaxpr, ta.List[bool], int]:
     _, _, t_out_uks, _ = partial_eval_jaxpr(true_jaxpr, in_uks)
     _, _, f_out_uks, _ = partial_eval_jaxpr(false_jaxpr, in_uks)
     out_uks = map(op.or_, t_out_uks, f_out_uks)
@@ -2520,8 +2522,7 @@ def _cond_partial_eval(true_jaxpr: Jaxpr, false_jaxpr: Jaxpr, in_uks: ta.List[bo
     return t_jaxpr1, f_jaxpr1, t_jaxpr2, f_jaxpr2, out_uks, num_res
 
 
-def _join_jaxpr_res(jaxpr1: Jaxpr, jaxpr2: Jaxpr, n1: int, n2: int
-                    ) -> ta.Tuple[Jaxpr, Jaxpr]:
+def _join_jaxpr_res(jaxpr1: Jaxpr, jaxpr2: Jaxpr, n1: int, n2: int) -> ta.Tuple[Jaxpr, Jaxpr]:
     jaxpr1_type, jaxpr2_type = typecheck_jaxpr(jaxpr1), typecheck_jaxpr(jaxpr2)
     out_types1, _ = split_list(jaxpr1_type.out_types, len(jaxpr1.outs) - n1)
     out_types2, _ = split_list(jaxpr2_type.out_types, len(jaxpr2.outs) - n2)
@@ -2552,8 +2553,10 @@ foo()
 ##
 
 
-def cond_peval_eqn(unks_in: ta.List[bool], eqn: JaxprEqn,
-                   ) -> ta.Tuple[JaxprEqn, JaxprEqn, ta.List[bool], ta.List[Atom]]:
+def cond_peval_eqn(
+        unks_in: ta.List[bool],
+        eqn: JaxprEqn,
+) -> ta.Tuple[JaxprEqn, JaxprEqn, ta.List[bool], ta.List[Atom]]:
     pred_unk, *unks_in = unks_in
     assert not pred_unk
     true_jaxpr, false_jaxpr = eqn.params['true_jaxpr'], eqn.params['false_jaxpr']
@@ -2562,12 +2565,18 @@ def cond_peval_eqn(unks_in: ta.List[bool], eqn: JaxprEqn,
     ins1, ins2 = partition_list(unks_in, eqn.inputs[1:])
     outs1, outs2 = partition_list(unks_out, eqn.out_binders)
     residuals, _ = split_list(t_jaxpr2.in_binders, num_res)
-    eqn1 = JaxprEqn(cond_p, [eqn.inputs[0], *ins1],
-                    dict(true_jaxpr=t_jaxpr1, false_jaxpr=f_jaxpr1),
-                    outs1 + residuals)
-    eqn2 = JaxprEqn(cond_p, [eqn.inputs[0], *residuals, *ins2],
-                    dict(true_jaxpr=t_jaxpr2, false_jaxpr=f_jaxpr2),
-                    outs2)
+    eqn1 = JaxprEqn(
+        cond_p,
+        [eqn.inputs[0], *ins1],
+        dict(true_jaxpr=t_jaxpr1, false_jaxpr=f_jaxpr1),
+        outs1 + residuals,
+    )
+    eqn2 = JaxprEqn(
+        cond_p,
+        [eqn.inputs[0], *residuals, *ins2],
+        dict(true_jaxpr=t_jaxpr2, false_jaxpr=f_jaxpr2),
+        outs2,
+    )
     res = [eqn.inputs[0], *residuals] if type(eqn.inputs[0]) is Var else residuals
     return eqn1, eqn2, unks_out, res
 
@@ -2593,8 +2602,7 @@ def cond_transpose_rule(cts, pred, *invals, true_jaxpr, false_jaxpr):
     undef_primals = tuple(type(x) is UndefPrimal for x in invals)
     true_jaxpr, true_consts = transpose_jaxpr(true_jaxpr, undef_primals)
     false_jaxpr, false_consts = transpose_jaxpr(false_jaxpr, undef_primals)
-    true_jaxpr, false_jaxpr = _join_jaxpr_consts(
-        true_jaxpr, false_jaxpr, len(true_consts), len(false_consts))
+    true_jaxpr, false_jaxpr = _join_jaxpr_consts(true_jaxpr, false_jaxpr, len(true_consts), len(false_consts))
     res = [x for x in invals if type(x) is not UndefPrimal]
     outs = bind_cond(pred, *true_consts, *false_consts, *res, *cts,
                      true_jaxpr=true_jaxpr, false_jaxpr=false_jaxpr)

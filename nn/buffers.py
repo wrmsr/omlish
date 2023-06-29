@@ -117,7 +117,7 @@ class Buffer(Lazy):
         return create_lazy_buffer(
             self.device,
             new_shape,
-            op(tuple(srcs), new_shape),
+            op(*srcs, new_shape),
             self.dtype,
         )
 
@@ -193,7 +193,7 @@ class Buffer(Lazy):
         ret = create_lazy_buffer(
             self.device,
             ShapeTracker(self._st).movement_op(op, arg),
-            op((self,), arg),
+            op(self, arg),
             self.dtype,
         )
 
@@ -303,7 +303,7 @@ class Buffer(Lazy):
         return create_lazy_buffer(
             self.device,
             self.shape,
-            ops.Contiguous((self,)),
+            ops.Contiguous(self),
             self.dtype,
         )
 
