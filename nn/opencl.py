@@ -141,6 +141,10 @@ class OpenclProgram(Program):
     ) -> None:
         super().__init__()
 
+        print(name)
+        print(src)
+        print()
+
         self._name = name
         self._src = src
         self._global_size = global_size

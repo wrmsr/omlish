@@ -16,8 +16,8 @@ import textwrap
 import types
 import typing as ta
 
-from . import check
-from . import lang
+from .. import check
+from .. import lang
 
 
 ALLOW_DEBUGGER_CALLS = False
@@ -29,7 +29,7 @@ DEBUGGER_CALL_PACKAGES = {
 
 
 def is_debugger_call(hoist: int = 0, walk: int = 2) -> bool:
-    frame = sys._getframe(2 + hoist)
+    frame = sys._getframe(2 + hoist)  # noqa
     for _ in range(walk):
         if frame is None:
             break
@@ -127,7 +127,7 @@ def maybe_reexec(
     except ImportError:
         return
 
-    if pydevd.SetupHolder.setup is not None:
+    if pydevd.SetupHolder.setup is not None:  # noqa
         return
 
     if module is not None:
