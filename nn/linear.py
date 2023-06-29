@@ -86,6 +86,16 @@ class LinearAnalyzer:
             xa.flops + ya.flops + xa.shape.prod,
         )
 
+    @_analyze.register
+    def _analyze_reduce_op(self, op: ops.ReduceOp) -> LinearAnalysis:
+        xa = self._analyze(op.x)
+        return LinearAnalysis(
+            op,
+            op.new_shape,
+            xa.dtype,
+            xa.flops + xa.shape.prod,
+        )
+
 
 class KeyRenderer:
     def __init__(self, write: ta.Callable[[str], ta.Any], bufs: ta.Sequence[Buffer]) -> None:
@@ -278,9 +288,7 @@ class LinearCodegenOp(CodegenOp):
         self.simplify_ones()
         self.simplify_merge_adjacent()
 
-    def build(self) -> Program:
-        self.prepare()
-
+    def _prepare_local_dims(self) -> None:
         for axis in range(self.first_reduce - self._local_dims - 1, -1, -1):
             if self.full_shape[axis] == 1:
                 continue
@@ -288,10 +296,10 @@ class LinearCodegenOp(CodegenOp):
             local_size = math.prod(self.full_shape[self.first_reduce - self._local_dims: self.first_reduce])
             last_try = self._local_dims == 0 and axis == 0
             if (
-                any(
-                    self._sts[buf_index].views[-1].stride[axis] == 0
-                    for buf_index in range(len(self._sts))
-                ) or last_try
+                    any(
+                        self._sts[buf_index].views[-1].stride[axis] == 0
+                        for buf_index in range(len(self._sts))
+                    ) or last_try
             ):
                 for sz in [
                     x
@@ -304,6 +312,11 @@ class LinearCodegenOp(CodegenOp):
 
             if self._local_dims >= 3:
                 break
+
+    def build(self) -> Program:
+        self.prepare()
+
+        self._prepare_local_dims()
 
         self.simplify_ones()
 
