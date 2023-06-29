@@ -22,6 +22,7 @@ from .dims import Shape
 from .dtypes import Dtype
 from .dtypes import Float32
 from .raw import RawBuffer
+from .raw import RawConst
 from .shapetracker import ShapeTracker
 
 
@@ -390,7 +391,101 @@ class LinearCodegenOp(CodegenOp):
 
         # reduce op
         fake_reduce_idxs = []
-        check.none(self.reduce_op)
+        if self.reduce_op is not None:
+            # define indexes
+            reduce_idxs = [
+                sym.Var(f'ridx{i}', 0, self.full_shape[i] - 1)
+                for i in range(
+                    self.first_reduce + len(self._group_for_reduce),
+                    self.shape_len - self._upcasted,
+                )
+            ]
+            fake_reduce_idxs = [x * 0 for x in reduce_idxs]
+
+            # define accumulator
+            acc = self.global_load(
+                0,
+                gl_idxs + fake_reduce_idxs,
+                {ops.Sum: 0.0, ops.Max: -math.inf}[type(self.reduce_op)],
+            )
+
+            # reduce loop
+            self._uop(uo.Loop(out=None, vin=[], idxs=reduce_idxs, s='reduce'))
+
+            # load earlybufs
+            loaded_buffers.update({
+                b: self.global_load(i, gl_idxs + reduce_idxs)
+                for i, b in enumerate(self._bufs)
+                if b in self.early_buffers and i != 0
+            })
+
+            # run early AST (with reduce)
+            self.process_one(
+                self.reduce_op,
+                [acc[off] for off in self.acc_offsets(self.full_buffer_index)],
+                loaded_buffers,
+                ssa,
+                do_reduce=True,
+            )
+
+            # end the reduce loop
+            self._uop(uo.EndLoop(out=None, vin=[], idxs=reduce_idxs, s='reduce'))
+
+            # end the local loop, do the local reduce
+            if self._group_for_reduce:
+                fake_global_idxs = [x * 0 for x in global_idxs]
+                self.global_store(-1, fake_global_idxs + local_idxs + fake_reduce_idxs, acc, ssa)  # store accumulators
+                self._uop(uo.Barrier(out=None, vin=[]))
+                self._uop(uo.EndLoop(out=None, vin=[], idxs=local_idxs, s='local'))
+
+                # local indexs are over, 0 them out
+                local_idxs = [x * 0 for x in local_idxs]
+
+                # if any group_for_reduce items aren't reduces, upcast them here
+                for j in self.upcast_in_mid_reduce_axes:
+                    self.reshape_and_permute(
+                        None, [i for i in range(self.shape_len) if i != j] + [j]
+                    )
+                    self.upcast()
+                    self._group_for_reduce.pop()
+                    local_idxs = local_idxs[:-1]
+
+                # NOTE: this structure is the same as the reduce op above
+
+                # define late accumulator
+                acc = self.global_load(
+                    -1,
+                    fake_global_idxs + local_idxs + fake_reduce_idxs,
+                    {ops.Sum: 0.0, ops.Max: -math.inf}[type(self.reduce_op)],
+                )
+
+                # late reduce loop
+                end_local_idxs = [
+                    sym.Var(
+                        f'tidx{i}',
+                        0,
+                        self.full_shape[i] - 1 if i >= self.first_reduce else 0,
+                    )
+                    for i in range(0, self.first_reduce + len(self._group_for_reduce))
+                ]
+                self._uop(uo.Loop(out=None, vin=[], idxs=end_local_idxs, s='late_reduce'))
+
+                # # load localbufs
+                # loaded_buffers['LOCAL_BUFFER'] = self.global_load(-1, end_local_idxs + fake_reduce_idxs)
+
+                # # there's no AST here (and there's no shape for the reduce LazyOp)
+                # self.process_one(
+                #     LazyOp(self.reduceop.op, ("LOCAL_BUFFER",)),
+                #     [acc[off] for off in self.acc_offsets(-1)],
+                #     loaded_buffers,
+                #     ssa,
+                #     do_reduce=True,
+                # )
+
+                # # end the late reduce loop
+                # self._uop(uo.EndLoop(out=None, vin=[], idxs=end_local_idxs, s='late_reduce'))
+
+                raise NotImplementedError
 
         # load latebufs
         for i, b in enumerate(self._bufs):
@@ -417,10 +512,54 @@ class LinearCodegenOp(CodegenOp):
         if isinstance(x, (ops.Nop, ops.Cast)):
             return self.process_one(x.srcs[0], acc, loaded_buffers, ssa)  # cast isn't an ALU op
 
-        values = [self.process_one(v, acc, loaded_buffers, ssa) for v in x.srcs]
+        if isinstance(x, ops.ReduceOp) and not do_reduce:
+            return acc
+
+        # MulAcc fusion. TODO: this is copied from Interpreted
+        if (
+                isinstance(x, ops.Sum) and
+                isinstance(x.x, ops.Mul)
+        ):
+            x = ops.MulAcc(x.x.x, x.new_shape)
+
+        if (
+                isinstance(x, ops.Sum) and
+                isinstance(x.x, ops.Cast) and
+                isinstance(x.x.x, ops.Mul)
+        ):
+            x = ops.MulAcc(x.x.x.x, x.new_shape)
+
+        srcs = list(x.srcs)
+        if isinstance(x, (ops.Add, ops.Mul)):
+            # Reorder sources to put constants first so get_grouped_maybe_float4 can fold the op
+            srcs = sorted(
+                srcs,
+                key=lambda src: not (
+                        isinstance(src, Buffer) and
+                        src.is_realized and
+                        isinstance(src.get_realized(), RawConst)
+                ),
+            )
+
+        values = [self.process_one(v, acc, loaded_buffers, ssa) for v in srcs]
 
         if isinstance(x, (ops.ReduceOp, ops.FusedOp)):
-            raise NotImplementedError
+            ot = {
+                ops.Sum: ops.Add,
+                ops.Max: ops.Maximum,
+                ops.MulAcc: ops.MulAcc,
+            }[type(x)]
+            ret = [
+                (
+                    idx,
+                    self._uop(uo.Alu(
+                        out=val[-1],
+                        vin=list(val),
+                        ty=ot,
+                    )),
+                )
+                for idx, val in get_grouped_maybe_float4(*values, acc, grouping_allowed=False)
+            ]
 
         else:
             ret = [
@@ -454,6 +593,14 @@ class LinearCodegenOp(CodegenOp):
             list(range(s))
             for s in self._sts[i].shape[self.shape_len - self._upcasted:][::-1]
         ])
+
+    @property
+    def upcast_in_mid_reduce_axes(self) -> ta.Sequence[int]:
+        return [
+            j
+            for j in range(self.first_reduce, self.first_reduce + len(self._group_for_reduce))
+            if self.full_shape[j] == self._sts[0].shape[j]
+        ]
 
     class _Gl(ta.NamedTuple):
         local_type: Dtype
@@ -526,6 +673,36 @@ class LinearCodegenOp(CodegenOp):
     def upcast(self) -> None:
         check.arg(self.full_shape[-1] == 1)
         self._upcasted += 1
+
+    def upcasted_axis(self, i):
+        return list(zip(
+            self._sts[i].shape[self.shape_len - self._upcasted:],
+            self._sts[i].real_strides()[self.shape_len - self._upcasted:],
+            [
+                x != y
+                for x, y in zip(
+                    self._sts[0].shape[self.shape_len - self._upcasted:],
+                    self.full_shape[self.shape_len - self._upcasted:],
+                )
+            ],
+        ))
+
+    # TODO: is there a better way to write this?
+    def acc_offsets(self, i):
+        if self._upcasted == 0:
+            return [0]
+        upcasted_i = self.upcasted_axis(i)
+        acc_strides = [
+            x * (1 - upcasted_i[::-1][i][2])
+            for i, x in enumerate(Shape(1 if r else s for s, _, r in upcasted_i[::-1]).base_stride())
+        ]
+        return [
+            sum(t)
+            for t in itertools.product(*[
+                [y * acc_strides[i] for y in range(x[0])]
+                for i, x in enumerate(upcasted_i[::-1])
+            ])
+        ]
 
     def simplify_ones(self) -> None:
         # remove places where the shape is all ones
