@@ -114,7 +114,8 @@ class Method:
 
         def __call__(self, *args, **kwargs):  # noqa
             if (impl_att := dispatch(type_(args[0]))) is not None:
-                return getattr_(self, impl_att)(*args, **kwargs)
+                fn = getattr_(self, impl_att)
+                return fn(*args, **kwargs)
             return base_func.__get__(self)(*args, **kwargs)  # noqa
 
         self.update_wrapper(__call__)
