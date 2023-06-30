@@ -30,8 +30,8 @@ from .mappings import multikey_dict  # noqa
 from .mappings import yield_dict_init  # noqa
 from .ordered import OrderedFrozenSet  # noqa
 from .ordered import OrderedSet  # noqa
-from .sorted import SkipList  # noqa
-from .sorted import SkipListDict  # noqa
+from .skiplist import SkipList  # noqa
+from .skiplist import SkipListDict  # noqa
 from .sorted import SortedCollection  # noqa
 from .sorted import SortedListDict  # noqa
 from .sorted import SortedMapping  # noqa
