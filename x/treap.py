@@ -163,31 +163,38 @@ def diff(n: TreapNode[T], other: TreapNode[T], c: Comparer[T]) -> ta.Optional[Tr
     return _join(left, right)
 
 
-"""
-def _join(n: TreapNode[T], other: TreapNode[T]) -> TreapNode[T]:
-    result: TreapNode[T]
-    resultp := &result
-    for {
-        if n == nil {
-            *resultp = other
-            return result
-        }
-        if other == nil {
-            *resultp = n
-            return result
-        }
+def _join(n: TreapNode[T], other: TreapNode[T]) -> ta.Optional[TreapNode[T]]:
+    result: ta.Optional[TreapNode[T]] = None
+    resultp = [None, None]
 
-        if n.Priority <= other.Priority {
-            root := &TreapNode[T]{n.Value, n.Priority, n.Left, nil}
-            *resultp = root
-            resultp = &root.Right
-            n = n.Right
-        } else {
-            root := &TreapNode[T]{other.Value, other.Priority, nil, other.Right}
-            *resultp = root
-            resultp = &root.Left
-            other = other.Left
-        }
-    }
-}
-"""
+    def setresultp(o):
+        t, s = resultp
+        if t is None:
+            nonlocal result
+            result = o
+        elif s == 'l':
+            t.left = o
+        elif s == 'r':
+            t.right = o
+        else:
+            raise ValueError(resultp)
+
+    while True:
+        if n is None:
+            setresultp(other)
+            return result
+
+        if other is None:
+            setresultp(n)
+            return result
+
+        if n.priority <= other.priority:
+            root = TreapNode(n.value, n.priority, n.left, None)
+            setresultp(root)
+            resultp[0], resultp[1] = root, 'r'
+            n = n.right
+        else:
+            root = TreapNode(other.value, other.priority, None, other.right)
+            setresultp(root)
+            resultp[0], resultp[1] = root, 'l'
+            other = other.left
