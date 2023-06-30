@@ -1,6 +1,7 @@
 import math
 import typing as ta
 
+from omlish import cached
 from omlish import check
 from omlish import dataclasses as dc
 from omlish import dispatch
@@ -13,6 +14,7 @@ from . import uops as uo
 from .buffers import Buffer
 from .dtypes import Dtype
 from .dtypes import Float32
+from .dtypes import Float4
 from .linear import LinearCodegen
 from .linear import LinearCodegenOp
 from .linear import LocalBuffer
@@ -192,6 +194,8 @@ class CstyleRenderer:
         check.not_none(u.out)
         if u.v == -math.inf:
             self._line(f'{self._render_token(u.out, True)} = -INFINITY;')
+        elif u.out.dtype == Float4:
+            self._line(f'{self._render_token(u.out, True)} = {{ {u.v}f, {u.v}f, {u.v}f, {u.v}f }};')
         else:
             self._line(f'{self._render_token(u.out, True)} = {u.v}f;')
 
@@ -227,9 +231,12 @@ class CstyleRenderer:
         prefix: str
         zero: str
 
-    _casts_by_dtype: ta.Final[ta.Mapping[Dtype, _Cast]] = {
-        Float32: _Cast('(float)', '0.0f'),
-    }
+    @cached.property
+    def _casts_by_dtype(self) -> ta.Mapping[Dtype, _Cast]:
+        return {
+            Float32: self._Cast('(float)', '0.0f'),
+            Float4: self._Cast('', f'{self._dialect.float4}(0.0f, 0.0f, 0.0f, 0.0f)'),
+        }
 
     @_render_uop.register
     def _render_load(self, u: uo.Load) -> None:
@@ -246,6 +253,17 @@ class CstyleRenderer:
                 val = ('-' if x < 0 else '') + 'INFINITY'
             else:
                 val = f'{x}' + ('f' if not buf.dtype.is_int else '')
+        elif u.out.dtype == Float4:
+            val = (
+                f'({u.out.dtype.name})'
+                f'('
+                f'('
+                f'({self._dialect.smem_prefix if isinstance(buf, LocalBuffer) else self._dialect.buffer_prefix}{buf.dtype.name}4*)'  # noqa
+                f'{self._buf_names[u.i]}'
+                f')'
+                f'[{_render_sym(u.idx // 4)}]'
+                f')'
+            )
         else:
             val = f'{self._buf_names[u.i]}[{_render_sym(u.idx)}]'
 
@@ -258,13 +276,31 @@ class CstyleRenderer:
 
     @_render_uop.register
     def _render_store(self, u: uo.Store) -> None:
-        check.state(u.vin[0].dtype == Float32)
-        check.state(u.valid.min == 1)
-        self._line(f'{self._buf_names[u.i]}[{_render_sym(u.idx)}] = {self._render_token(u.vin[0])};')
+        if u.vin[0].dtype == Float32 or (u.vin[0].dtype == Float4 and u.vin[0].offset is not None):
+            check.state(u.valid.min == 1)
+            self._line(f'{self._buf_names[u.i]}[{_render_sym(u.idx)}] = {self._render_token(u.vin[0])};')
+
+        elif len(u.vin) != 0 and u.vin[0].dtype == Float4 and u.vin[0].offset is None:
+            check.state(u.valid.min == 1)
+            self._line(
+                f'('
+                f'({self._dialect.smem_prefix if isinstance(self._bufs[u.i], LocalBuffer) else self._dialect.buffer_prefix}float4*)'  # noqa
+                f'{self._buf_names[u.i]}'
+                f')'
+                f'[{_render_sym(u.idx//4)}] = {self._render_token(u.vin[0])};'
+            )
 
     @_render_uop.register
     def _render_cast(self, u: uo.Cast) -> None:
-        raise NotImplementedError  # FIXME: float4 only?
+        check.state(u.out.dtype == Float4)
+        self._line(
+            f'{self._render_token(u.out)} = '
+            f'{self._dialect.float4}({",".join([self._render_token(x) for x in u.vin])});'
+        )
+
+    @_render_uop.register
+    def _render_define_local(self, u: uo.DefineLocal) -> None:
+        self._line(self._dialect.smem_prefix + f'float {u.s}[{u.sz}];')
 
 
 class CStyleCodegenOp(LinearCodegenOp):
