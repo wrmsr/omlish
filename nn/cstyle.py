@@ -136,7 +136,9 @@ class CstyleRenderer:
             return f'{self._dtype_names[tok.dtype]} {tok.name}'
         if tok.offset is None:
             return tok.name
-        raise NotImplementedError
+        if tok.dtype == Float4:
+            return tok.name + '.' + 'xyzw'[int(tok.offset)]
+        raise TypeError(tok)
 
     def _line(self, s: str) -> None:
         self._lines.append('  ' * self._depth + s)

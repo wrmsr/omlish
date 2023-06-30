@@ -21,6 +21,7 @@ from .codegen import Program
 from .dims import Shape
 from .dtypes import Dtype
 from .dtypes import Float32
+from .dtypes import Float4
 from .raw import RawBuffer
 from .raw import RawConst
 from .shapetracker import ShapeTracker
@@ -182,13 +183,33 @@ def get_grouped_float4_idxs(acc: ta.Sequence[uo.Token]) -> ta.Optional[ta.Sequen
     return idxs
 
 
+def to_float4(x: ta.Sequence[uo.Token]) -> ta.Optional[uo.Token]:
+    if col.all_equal(x):
+        return x[0]
+    if (
+            col.all_equal(y.name for y in x) and
+            all(y.dtype == Float4 and y.offset == i for i, y in enumerate(x))
+    ):
+        return uo.Token(x[0].name, Float4)
+    return None
+
+
 def get_grouped_maybe_float4(*values: ta.Sequence[uo.Token], grouping_allowed: bool = True):
     check.arg(col.all_equal([len(x) for x in values]))
 
     # these use accumulators, we can only fold if the acc is a float4
     idxs = get_grouped_float4_idxs(values[-1]) if grouping_allowed else None
     if idxs is not None:
-        raise NotImplementedError
+        new_idxs = []
+        new_values = []
+        for i in range(0, len(idxs), 4):
+            nv = [to_float4([v[j] for j in idxs[i: i + 4]]) for v in values]
+            if any([x is None for x in nv]):
+                break
+            new_idxs.append(idxs[i: i + 4])
+            new_values.append(nv)
+        if len(new_values) == len(idxs) // 4:
+            return zip(new_idxs, new_values)
 
     return zip([[i] for i in range(len(values[0]))], zip(*values))
 
@@ -316,6 +337,9 @@ class LinearCodegenOp(CodegenOp):
             for x in self._sts[i].unit_stride_axes()
             if x >= self.shape_len - self._upcasted and self._sts[i].shape[x] % 4 == 0
         ]
+
+    supports_float4: bool = False
+    supports_float4_alu: bool = False
 
     @property
     def full_unupcasted_shape(self) -> Shape:
@@ -472,6 +496,18 @@ class LinearCodegenOp(CodegenOp):
                 break
 
         self.simplify_ones()
+
+    def _group_float4(self, i, store_offset):
+        store_offset_float4 = {}
+        float4_axis = (self._upcasted - 1) - self.float4_axis(i)[0]
+        for uidxs, var in store_offset.items():
+            if uidxs[float4_axis] % 4 == 0:
+                store_offset_float4[uidxs] = [var]
+            else:
+                uidxs2 = list(uidxs)
+                uidxs2[float4_axis] -= uidxs2[float4_axis] % 4
+                store_offset_float4[tuple(uidxs2)].append(var)
+        return store_offset_float4
 
     def limit_global_dims(self, limit):
         # sometimes, there's more dimensions than len(self.lang.gid).
@@ -749,7 +785,7 @@ class LinearCodegenOp(CodegenOp):
         # scatter
         for i, j in ret:
             for o, k in enumerate(i):
-                ordered_ret[k] = j
+                ordered_ret[k] = uo.Token(j.name, j.dtype, o) if j.dtype == Float4 else j
 
         check.state(all(isinstance(x, uo.Token) for x in ordered_ret))
 
@@ -789,6 +825,43 @@ class LinearCodegenOp(CodegenOp):
                 gs.mask,
             )
 
+        # float4 grouping (optional)
+        should_upcast = (
+            self.supports_float4 and
+            self._bufs[i].dtype in (Float32,) and
+            len(self.float4_axis(i)) == 1
+        )
+        if should_upcast:
+            load_offset_new = {}
+            for k, out_tokens in self._group_float4(i, load_offset).items():
+                idxs = [x[2] - out_tokens[0][2] for x in out_tokens]
+
+                valids_okay = (
+                    col.all_equal([x[3] for x in out_tokens]) or (
+                        col.all_equal([x[3] // 4 for x in out_tokens]) and
+                        (out_tokens[0][3] // 4) * 4 == out_tokens[0][3]
+                    )
+                )
+
+                if (
+                        any(idx.min != idx.max or idx.min != val for idx, val in zip(idxs, range(4))) or
+                        (out_tokens[0][2] // 4) * 4 != out_tokens[0][2] or
+                        not valids_okay
+                ):
+                    # idxs not in order, valids don't match, or idx doesn't evenly divide 4. use normal float
+                    for x in out_tokens:
+                        load_offset_new[x[1]] = x
+
+                else:
+                    load_offset_new[k] = LinearCodegenOp._Gl(
+                        Float4,
+                        [x[1] for x in out_tokens],
+                        out_tokens[0][2],
+                        out_tokens[0][3],
+                    )
+
+            load_offset = load_offset_new
+
         # do loads
         cache = {}
         loaded = {}
@@ -810,12 +883,35 @@ class LinearCodegenOp(CodegenOp):
                         v=const,
                     ))
 
-            loaded[uidxs] = cache[key]
+            if localtype == Float4:
+                for j, uidx in enumerate(uidx_list):
+                    loaded[uidx] = uo.Token(cache[key].name, Float4, j)
+            else:
+                loaded[uidxs] = cache[key]
 
         return [loaded[uidxs] for uidxs in self.shape_offsets(i)]
 
     def global_store(self, i, idxs: ta.Sequence[sym.Var], store: ta.Sequence[uo.Token], ssa) -> None:
         store_offset: ta.Dict[ta.Sequence[int], uo.Token] = dict(zip(self.shape_offsets(i), store))
+
+        # float4 grouping (optional)
+        # TODO: why does this not work for float16?
+        should_upcast = (
+                self.supports_float4 and
+                self._bufs[i].dtype == Float32 and
+                len(self.float4_axis(i)) == 1
+        )
+        if should_upcast:
+            store_offset_new = {}
+            for k, out_tokens in self._group_float4(i, store_offset).items():
+                if (
+                        col.all_equal(x.name for x in out_tokens) and
+                        tuple(range(4)) == tuple(x.offset for x in out_tokens)
+                ):  # noqa
+                    store_offset_new[k] = uo.Token(out_tokens[0].name, Float4)
+                else:
+                    store_offset_new[k] = self._uop(uo.Cast(out=ssa("alu", Float4), vin=out_tokens))
+            store_offset = store_offset_new
 
         # do stores
         for uidxs, var in store_offset.items():
