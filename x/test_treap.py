@@ -14,3 +14,7 @@ def test_treapmap():
     m = m.with_(55, "here")
 
     print(m)
+
+    it = m.iterate()
+    while it.has_next():
+        print(it.next())
