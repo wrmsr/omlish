@@ -8,7 +8,8 @@ documentation files (the "Software"), to deal in the Software without restrictio
 rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
 persons to whom the Software is furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
 WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -77,7 +78,7 @@ def split(
         n: TreapNode[T],
         v: T,
         c Comparer[T],
-) -> ta.Tuple[TreapNode[T], TreapNode[T], TreapNode[T]]:  # (left, mid, right)  # noqa
+) -> ta.Tuple[TreapNode[T], TreapNode[T], TreapNode[T]]:
     leftp, rightp = &left, &right
     for {
         if n == nil {
@@ -88,25 +89,22 @@ def split(
 
         root = TreapNode(n.value, n.priority, None, None)
         d = c(n.value, v)
-        switch {
-        case d < 0:
+        if d < 0:
             *leftp = root
             root.Left = n.Left
             leftp = &root.Right
             n = n.Right
-        case d > 0:
+        elif d > 0:
             *rightp = root
             root.Right = n.Right
             rightp = &root.Left
             n = n.Left
-        default:
+        else:
             *leftp = n.Left
             *rightp = n.Right
             return left, root, right
-        }
-    }
-}
 """
+
 
 def intersect(
         n: ta.Optional[TreapNode[T]],
@@ -132,10 +130,10 @@ def intersect(
 
 def delete(n: TreapNode[T], v: T, c: Comparer[T]) -> TreapNode[T]:
     left, _, right = split(n, v, c)
-    return join(left, right)
+    return _join(left, right)
 
 
-def diff(n: TreapNode[T], other: TreapNode[T], c: Comparer[T]) -> TreapNode[T]:
+def diff(n: TreapNode[T], other: TreapNode[T], c: Comparer[T]) -> ta.Optional[TreapNode[T]]:
     if n is None or other is None:
         return n
 
