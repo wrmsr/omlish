@@ -1,12 +1,12 @@
 import typing as ta
 
-from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 
 from . import ops
 from . import symbolic as sym
 from .dtypes import Dtype
+from .dtypes import Float32
 
 
 ##
@@ -17,6 +17,13 @@ class Token:
     name: str
     dtype: Dtype
     offset: ta.Optional[int] = None
+
+    def __repr__(self) -> str:
+        return (
+            f'<{self.name}>'
+            if self.offset is None and self.dtype == Float32
+            else f'<{self.name}:{self.dtype.name}:{self.offset}>'
+        )
 
 
 ##
