@@ -73,37 +73,49 @@ def union(
     return TreapNode(value, n.priority, left, right)
 
 
-"""
 def split(
         n: TreapNode[T],
         v: T,
-        c Comparer[T],
-) -> ta.Tuple[TreapNode[T], TreapNode[T], TreapNode[T]]:
-    leftp, rightp = &left, &right
-    for {
-        if n == nil {
-            *leftp = nil
-            *rightp = nil
-            return left, nil, right
-        }
+        c: Comparer[T],
+) -> ta.Tuple[
+    ta.Optional[TreapNode[T]],
+    ta.Optional[TreapNode[T]],
+    ta.Optional[TreapNode[T]],
+]:
+    tmp = TreapNode(None, 0, None, None)
+    leftp, rightp = [tmp, 'l'], [tmp, 'r']
 
-        root = TreapNode(n.value, n.priority, None, None)
+    def setp(p, o):
+        t, s = p
+        if s == 'l':
+            t.left = o
+        elif s == 'r':
+            t.right = o
+        else:
+            raise ValueError(p)
+
+    while True:
+        if n is None:
+            setp(leftp, None)
+            setp(rightp, None)
+            return tmp.left, None, tmp.right
+
         d = c(n.value, v)
         if d < 0:
-            *leftp = root
-            root.Left = n.Left
-            leftp = &root.Right
-            n = n.Right
+            root = TreapNode(n.value, n.priority, n.left, None)
+            setp(leftp, root)
+            leftp[0], leftp[1] = root, 'r'
+            n = n.right
         elif d > 0:
-            *rightp = root
-            root.Right = n.Right
-            rightp = &root.Left
-            n = n.Left
+            root = TreapNode(n.value, n.priority, None, n.right)
+            setp(rightp, root)
+            rightp[0], rightp[1] = root, 'l'
+            n = n.left
         else:
-            *leftp = n.Left
-            *rightp = n.Right
-            return left, root, right
-"""
+            root = TreapNode(n.value, n.priority, None, None)
+            setp(leftp, n.left)
+            setp(rightp, n.right)
+            return tmp.left, root, tmp.right
 
 
 def intersect(
