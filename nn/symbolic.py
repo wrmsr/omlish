@@ -75,7 +75,7 @@ class Node(lang.Abstract, lang.Sealed):
         return self.debug
 
     def __repr__(self) -> str:
-        return f'<{self.expr}>'
+        return f'<{self.debug}>'
 
     def __eq__(self, other: ta.Any) -> bool:
         if not isinstance(other, Node):

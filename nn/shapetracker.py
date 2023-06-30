@@ -310,3 +310,6 @@ class ShapeTracker(lang.Final):
                 ret.append(None)
 
         return ret[::-1]
+
+    def unit_stride_axes(self) -> ta.Sequence[int]:
+        return [i for i, st in enumerate(self.real_strides()) if st == 1]

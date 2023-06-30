@@ -259,7 +259,7 @@ class LinearCodegenOp(CodegenOp):
     _upcasted: int
     _local_dims: int
 
-    def prepare(self) -> None:
+    def process(self) -> None:
         # mem_est = sum(  # noqa
         #     x.dtype.item_size * (x.get_realized().size if x.is_realized is not None else x.shape.prod)
         #     for x in self._bufs
@@ -289,7 +289,164 @@ class LinearCodegenOp(CodegenOp):
         self.simplify_ones()
         self.simplify_merge_adjacent()
 
-    def _prepare_local_dims(self) -> None:
+    def required_optimizations(self, early_only=False):
+        for buf_index, buf in enumerate(self._bufs):
+            unit_stride_axes_mul_4 = [
+                i
+                for i in self._sts[buf_index].unit_stride_axes()
+                if self._sts[buf_index].shape[i] % 4 == 0
+            ]
+            # if (not early_only or buf in self.earlybufs) and self.bufs[buf_index].dtype.__class__ is ImageDType:
+            #     assert (
+            #             len(unit_stride_axes_mul_4) >= 1
+            #     ), f"needs a unit stride axis in {self.bufs[buf_index]}"
+            #     if (
+            #             all(
+            #                 x < (self.shape_len - self.upcasted)
+            #                 for x in unit_stride_axes_mul_4
+            #             )
+            #             and unit_stride_axes_mul_4[0] not in self.upcast_in_mid_reduce_axes
+            #     ):
+            #         self.shift_to(unit_stride_axes_mul_4[0], 4)
+            #         self.upcast()
+
+    def float4_axis(self, i):
+        return [
+            x - (self.shape_len - self._upcasted)
+            for x in self._sts[i].unit_stride_axes()
+            if x >= self.shape_len - self._upcasted and self._sts[i].shape[x] % 4 == 0
+        ]
+
+    @property
+    def full_unupcasted_shape(self) -> Shape:
+        return Shape(self.full_shape[: self.shape_len - self._upcasted])
+
+    def hand_coded_optimizations(self) -> None:
+        # if there's images in the earlybufs, we have to make an axis the 4 loading one
+        self.required_optimizations(early_only=True)
+
+        # simplify
+        self.simplify_ones()
+
+        # are we grouping? (requires local shape support)
+        if (
+                not self.float4_axis(0) and
+                self.first_reduce <= 2 and
+                self.first_reduce + 1 <= self.shape_len and
+                math.prod(self._sts[0].shape[: self.first_reduce]) <= 2048
+        ):
+            # TODO: use 1024 if it's allowed in a smarter way
+            for sz in (
+                    ([256, 16]) if math.prod(self._sts[0].shape[: self.first_reduce]) <= 32 else [16]
+            ):
+                if all([
+                    st.shape[self.first_reduce] % sz == 0 or st.shape[self.first_reduce] == 1
+                    for st in self._sts
+                ]):
+                    self.shift_to(
+                        self.first_reduce,
+                        sz,
+                        top=True,
+                        insert_before=self.first_reduce + len(self._group_for_reduce),
+                    )
+                    self._group_for_reduce.append(sz)
+                    break
+
+        # now do everything required
+        self.required_optimizations()
+
+        # simplify (sets first_reduce)
+        self.simplify_ones()
+
+        # use more opencl indexing if the output buffer is an image and we have room
+        if (
+                self._bufs[0].dtype.name.startswith("image") and
+                self.first_reduce + len(self._group_for_reduce) < 3
+        ):
+            base_shape = self._bufs[0].dtype.shape
+            if (base_shape[0] * base_shape[1]) % self.sts[0].shape[0] == 0 and self._sts[0].shape[0] // base_shape[0] != 0:
+                self.reshape_and_permute(
+                    lambda x: Shape([base_shape[0], x[0] // base_shape[0]] + list(x[1:])),
+                    None
+                )
+                self.simplify_ones()
+
+        # no more opt if we are grouping
+        if self._group_for_reduce:
+            return
+
+        # **** below this line need to be optional and benchmarked ****
+
+        # potentially do more upcasts of non reduce axes based on a heuristic
+        upcasted_axis = set()
+        while math.prod(self._sts[0].shape[: self.first_reduce]) >= 1024:
+            xb_choices = []
+            # consider all the non reduce axes, and a 3 or 4 reduce
+            for axis, upcast_amount in itertools.product(range(self.first_reduce), [3, 4]):
+                # if we haven't upcasted it, it mods, and some buffer has stride 0 on axis while having no stride 0 in
+                # the upcasted axis already
+                if (
+                        axis not in upcasted_axis and
+                        self.full_shape[axis] % upcast_amount == 0 and
+                        any(
+                            self._sts[buf_index].views[-1].stride[axis] == 0 and
+                            not any(x[1] == 0 for x in self.upcasted_axis(buf_index))
+                            for buf_index in range(len(self._sts))
+                        )
+                ):
+                    xb_choices.append(
+                        (
+                            sum(st.views[-1].stride[axis] > 0 for st in self._sts),
+                            sum(st.views[-1].stride[axis] for st in self._sts),
+                            axis,
+                            upcast_amount,
+                        )
+                    )
+            if len(xb_choices):
+                xb_choices = sorted(xb_choices)
+                self.shift_to(xb_choices[0][2], amount=xb_choices[0][3])
+                self.upcast()
+                self.simplify_ones()
+                upcasted_axis.add(xb_choices[0][2])
+            else:
+                break
+
+        # if last dim <= 16 and it's a reduce dim, upcast the reduce (loop unrolling). no simplify needed since it's
+        # just an upcast. NOTE: careful, this has broken VALIDHACKS
+        if self.first_reduce < (self.shape_len - self._upcasted) and (
+                len(list(self.shape_offsets(self.full_buffer_index))) <= 4
+                or not any(r for _, _, r in self.upcasted_axis(self.full_buffer_index))
+        ):
+            if self.full_unupcasted_shape[-1] <= 16:
+                self.upcast()
+            else:
+                for splits in [4]:
+                    if self.full_unupcasted_shape[-1] % splits == 0:
+                        self.shift_to(
+                            len(self.full_unupcasted_shape) - 1,
+                            splits,
+                            insert_before=len(self.full_unupcasted_shape),
+                        )
+                        self.upcast()
+                        break
+
+        # if nothing at all is upcasted and it's easy to, do an upcast
+        # TODO: this is breaking the tests
+        for splits in [4]:
+            if (
+                    self._upcasted == 0 and
+                    len(self.full_unupcasted_shape) > 0 and
+                    self.full_unupcasted_shape[-1] % splits == 0
+            ):
+                self.shift_to(
+                    len(self.full_unupcasted_shape) - 1,
+                    splits,
+                    insert_before=len(self.full_unupcasted_shape),
+                )
+                self.upcast()
+
+        # **** local groups ****
+
         for axis in range(self.first_reduce - self._local_dims - 1, -1, -1):
             if self.full_shape[axis] == 1:
                 continue
@@ -314,16 +471,28 @@ class LinearCodegenOp(CodegenOp):
             if self._local_dims >= 3:
                 break
 
-    def build(self) -> Program:
-        self.prepare()
-
-        self._prepare_local_dims()
-
         self.simplify_ones()
+
+    def limit_global_dims(self, limit):
+        # sometimes, there's more dimensions than len(self.lang.gid).
+        # compact all the dimensions into the first
+        # NOTE: this might make multiview shapetrackers
+        if limit and (self.first_reduce - self._local_dims) > limit:
+            num_to_merge = ((self.first_reduce - self._local_dims) - limit) + 1
+            self.reshape_and_permute(
+                lambda x: (math.prod(x[0:num_to_merge]),) + x[num_to_merge:], None
+            )
+
+    def build(self) -> Program:
+        self.process()
+
+        from .opencl import OpenclDialect
+
+        self.hand_coded_optimizations()
+        self.limit_global_dims(len(OpenclDialect.gid))
 
         self.linearize()
 
-        from .opencl import OpenclDialect
         from .cstyle import CstyleRenderer
 
         rendered = CstyleRenderer(
@@ -672,7 +841,7 @@ class LinearCodegenOp(CodegenOp):
 
     # drops the final dimension
     def upcast(self) -> None:
-        check.arg(self.full_shape[-1] == 1)
+        check.arg(self.full_shape[-1] != 1)
         self._upcasted += 1
 
     def upcasted_axis(self, i):
