@@ -71,7 +71,7 @@ def find_impl(cls: type, registry: ta.Mapping[type, T]) -> ta.Optional[T]:
 ##
 
 
-class _Dispatcher(ta.Generic[T]):
+class Dispatcher(ta.Generic[T]):
     def __init__(self) -> None:
         super().__init__()
 
@@ -143,7 +143,7 @@ class _Dispatcher(ta.Generic[T]):
 ##
 
 
-class Dispatcher(ta.Generic[T]):
+class _Dispatcher(ta.Generic[T]):
     def __init__(self) -> None:
         super().__init__()
 
