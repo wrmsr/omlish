@@ -223,17 +223,39 @@ class Tensor(lang.Final):
             other: TensorLike,
             reverse: bool = False,
     ) -> 'Tensor':
-        other = Tensor.of(other)
-        x, y = (other, self) if reverse else (self, other)
+        # other = Tensor.of(other)
+        # x, y = (other, self) if reverse else (self, other)
+        #
+        # x, y = [
+        #     t.reshape(*([1] * (max(len(x.shape), len(y.shape)) - len(t.shape)) + list(t.shape)))
+        #     for t in [x, y]
+        # ]
+        #
+        # ret_shape = Shape(max(sx, sy) for sx, sy in zip(x.shape, y.shape))
+        # return func.apply(x.expand(*ret_shape), y.expand(*ret_shape))
 
-        x, y = [
-            t.reshape(*([1] * (max(len(x.shape), len(y.shape)) - len(t.shape)) + list(t.shape)))
-            for t in [x, y]
-        ]
+        x = self
+        y = Tensor.of(other)
+        if reverse:
+            x, y = y, x
+        if x.shape == y.shape:
+            return func.apply(x, y)
 
-        ret_shape = Shape(max(sx, sy) for sx, sy in zip(x.shape, y.shape))
+        len_x_shape, len_y_shape = len(x.shape), len(y.shape)
+        max_shape = max(len_x_shape, len_y_shape)
 
-        return func.apply(x.expand(*ret_shape), y.expand(*ret_shape))
+        if len_x_shape != max_shape:
+            x = x.reshape(*((1,) * (max_shape - len_x_shape) + x.shape))
+        if len_y_shape != max_shape:
+            y = y.reshape(*((1,) * (max_shape - len_y_shape) + y.shape))
+
+        shape_ret = [max(x, y) for x, y in zip(x.shape, y.shape)]
+        if x.shape != shape_ret:
+            x = x.expand(*shape_ret)
+        if y.shape != shape_ret:
+            y = y.expand(*shape_ret)
+
+        return func.apply(x, y)
 
     def add(self, x: TensorLike, reverse: bool = False) -> 'Tensor':
         return self._broadcasted(funcs.Add, x, reverse)
