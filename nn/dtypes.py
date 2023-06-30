@@ -20,3 +20,4 @@ class Dtype:
 
 
 Float32 = Dtype('float32', np.float32, 4)
+Float4 = Dtype('float4', None, 1)
