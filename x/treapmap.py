@@ -16,6 +16,7 @@ WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEM
 COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
+import random
 import typing as ta
 
 from . import treap
@@ -32,17 +33,18 @@ def key_cmp(fn: ta.Callable[[K, K], int]) -> Comparer[K, V]:
 
 
 class TreapMap(ta.Generic[K, V]):
+    __slots__ = ('_n', '_c')
     
     def __init__(
             self,
             *,
-            _n: treap.TreapNode[ta.Tuple[K, V]],
+            _n: ta.Optional[treap.TreapNode[ta.Tuple[K, V]]],
             _c: treap.Comparer[ta.Tuple[K, V]],
     ) -> None:
         super().__init__()
 
-        self._c = _c
         self._n = _n
+        self._c = _c
 
     def __len__(self) -> int:
         # TODO: memo
@@ -66,79 +68,69 @@ class TreapMap(ta.Generic[K, V]):
             raise KeyError(item)
         return n.value
 
+    def iterate(self) -> 'TreapMapIterator[K, V]':
+        i = TreapMapIterator(
+            _st=[],
+            _n=self._n,
+            _b=False,
+        )
+        while i._n.left is not None:  # noqa
+            i._st.append(i._n)  # noqa
+            i._n = i._n.left  # noqa
+        return i
 
-"""
-type treapMapIterator[K, V any] struct {
-    st []*treap.TreapNode[bt.Kv[K, V]]
-    n  *treap.TreapNode[bt.Kv[K, V]]
-    b  bool
-}
+    def with_(self, k: K, v: V) -> 'TreapMap[K, V]':
+        node = treap.TreapNode(
+            _value=(k, v),
+            _priority=int(random.random() * 0xFFFFFFFF),
+            _left=None,
+            _right=None,
+        )
+        n = treap.union(self._n, node, self._c, True)
+        return TreapMap(_n=n, _c=self._c)
 
-var _ bt.Iterator[bt.Kv[int, string]] = &treapMapIterator[int, string]{}
+    def without_(self, k: K) -> 'TreapMap[K, V]':
+        n = treap.delete(self._n, (k, None), self._c)
+        return TreapMap(_n=n, _c=self._c)
 
-func (i *treapMapIterator[K, V]) Iterate() bt.Iterator[bt.Kv[K, V]] {
-    return i
-}
+    def default(self, k: K, v: V) -> 'TreapMap[K, V]':
+        try:
+            self[k]  # noqa
+        except KeyError:
+            return self.with_(k, v)
+        else:
+            return self
 
-func (i *treapMapIterator[K, V]) HasNext() bool {
-    return i.n != nil
-}
 
-func (i *treapMapIterator[K, V]) Next() bt.Kv[K, V] {
-    n := i.n
-    if n.Right != nil {
-        i.n = n.Right
-        for i.n.Left != nil {
-            i.st = append(i.st, i.n)
-            i.n = i.n.Left
-        }
-    } else if len(i.st) > 0 {
-        i.n = i.st[len(i.st)-1]
-        i.st = i.st[:len(i.st)-1]
-    } else {
-        i.n = nil
-    }
-    return n.Value
-}
+class TreapMapIterator(ta.Generic[K, V]):
+    __slots__ = ('_st', '_n', '_b')
 
-func (m TreapMap[K, V]) Iterate() bt.Iterator[bt.Kv[K, V]] {
-    i := &treapMapIterator[K, V]{
-        st: make([]*treap.TreapNode[bt.Kv[K, V]], 0, 8),
-        n:  m.n,
-    }
-    for i.n.Left != nil {
-        i.st = append(i.st, i.n)
-        i.n = i.n.Left
-    }
-    return i
-}
+    def __init__(
+            self,
+            *,
+            _st: ta.List[treap.TreapNode[ta.Tuple[K, V]]],
+            _n: ta.Optional[treap.TreapNode[ta.Tuple[K, V]]],
+            _b: bool,
+    ) -> None:
+        super().__init__()
 
-func (m TreapMap[K, V]) ForEach(fn func(kv bt.Kv[K, V]) bool) bool {
-    return m.n.ForEach(func(kv bt.Kv[K, V]) bool {
-        return fn(kv)
-    })
-}
+        self._st = _st
+        self._n = _n
+        self._b = _b
 
-func (m TreapMap[K, V]) With(k K, v V) PersistentMap[K, V] {
-    node := &treap.TreapNode[bt.Kv[K, V]]{
-        bt.KvOf(k, v),
-        int(rndu.FastUint32()),
-        nil,
-        nil,
-    }
-    n := m.n.Union(node, m.c, true)
-    return TreapMap[K, V]{n, m.c}
-}
+    def has_next(self) -> bool:
+        return self._n is not None
 
-func (m TreapMap[K, V]) Without(k K) PersistentMap[K, V] {
-    n := m.n.Delete(bt.KvOf[K, V](k, bt.Zero[V]()), m.c)
-    return TreapMap[K, V]{n, m.c}
-}
-
-func (m TreapMap[K, V]) Default(k K, v V) PersistentMap[K, V] {
-    if _, ok := m.TryGet(k); ok {
-        return m
-    }
-    return m.With(k, v)
-}
-"""
+    def next(self) -> ta.Tuple[K, V]:
+        n = self._n
+        if n.right is not None:
+            self._n = n.right
+            while self._n.left is not None:
+                self._st.append(self._n)
+                self._n = self._n.left
+        elif len(self._st) > 0:
+            self._n = self._st[-1]
+            self._st.pop()
+        else:
+            self._n = None
+        return n.value
