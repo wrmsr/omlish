@@ -173,10 +173,7 @@ static PyObject *abc_get_cache_token = NULL;
 
 static PyObject * abctok(PyObject *self, PyObject *args)
 {
-    PyObject *et = PyTuple_New(0);
-    PyObject *ret = PyObject_Call(abc_get_cache_token, et, NULL);
-    Py_DECREF(et);
-    return ret;
+    return PyObject_Vectorcall(abc_get_cache_token, NULL, 0, NULL);
 }
 
 
