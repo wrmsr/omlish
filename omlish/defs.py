@@ -50,7 +50,7 @@ def _repr_guard(fn):
                 del _REPR_SEEN.ids
         else:
             if id(obj) in ids:
-                return f'<seen@{hex(id(obj))[2:]}>'
+                return f'<seen:{type(obj).__name__}@{hex(id(obj))[2:]}>'
             ids.add(id(obj))
             return fn(obj, *args, **kwargs)
 

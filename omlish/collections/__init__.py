@@ -24,6 +24,8 @@ from .frozen import frozenlist  # noqa
 from .identity import IdentityKeyDict  # noqa
 from .identity import IdentitySet  # noqa
 from .identity import IdentityWrapper  # noqa
+from .indexed import IndexedSeq  # noqa
+from .indexed import IndexedSetSeq  # noqa
 from .mappings import ItemSeqTypeMap  # noqa
 from .mappings import guarded_map_update  # noqa
 from .mappings import multikey_dict  # noqa
