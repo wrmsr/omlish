@@ -69,6 +69,9 @@ class Func(lang.Abstract):
         return ret
 
 
+##
+
+
 class Add(Func):
     _x: Buffer
     _y: Buffer
@@ -133,6 +136,9 @@ class Div(Func):
                 .binary_op(ops.Div, self._y.binary_op(ops.Mul, self._y))
             ) if self.needs_input_grad[1] else None
         )
+
+
+##
 
 
 class Expand(Func):
@@ -202,10 +208,13 @@ class Relu(Func):
         return mask.binary_op(ops.Mul, grad_output)
 
 
+##
+
+
 class Log(Func):
     _x: Buffer
 
-    _mult: ta.Final[float] = math.log(2) / math.log(math.e)
+    _mult: ta.Final[float] = math.log(2)
 
     def forward(self, x: Buffer) -> Buffer:
         self._x = x
@@ -218,7 +227,7 @@ class Log(Func):
 class Exp(Func):
     _ret: Buffer
 
-    _mult: ta.Final[float] = math.log(math.e) / math.log(2)
+    _mult: ta.Final[float] = 1 / math.log(2)
 
     def forward(self, x: Buffer) -> Buffer:
         self._ret = x.binary_op(ops.Mul, x.const_like(self._mult)).unary_op(ops.Exp2)
@@ -226,6 +235,48 @@ class Exp(Func):
 
     def backward(self, grad_output: Buffer) -> Buffer:
         return self._ret.binary_op(ops.Mul, grad_output)
+
+
+class Sqrt(Func):
+    _ret: Buffer
+
+    def forward(self, x: Buffer) -> Buffer:
+        self._ret = x.unary_op(ops.Sqrt)
+        return self._ret
+
+    def backward(self, grad_output: Buffer) -> Buffer:
+        return grad_output.binary_op(ops.Div, self._ret.binary_op(ops.Mul, self._ret.const_like(2)))
+
+
+class Sigmoid(Func):
+    _ret: Buffer
+
+    _mult: ta.Final[float] = -1 / math.log(2)
+
+    def forward(self, x: Buffer) -> Buffer:
+        self._ret = x.const_like(
+            1,
+        ).binary_op(
+            ops.Div,
+            x.const_like(1).binary_op(
+                ops.Add,
+                x.binary_op(
+                    ops.Mul,
+                    x.const_like(self._mult),
+                ).unary_op(ops.Exp2)))  # noqa
+        return self._ret
+
+    def backward(self, grad_output: Buffer) -> Buffer:
+        return self._ret.binary_op(
+            ops.Mul,
+            self._ret.const_like(1).binary_op(
+                ops.Sub,
+                self._ret,
+            ),
+        ).binary_op(
+            ops.Mul,
+            grad_output,
+        )
 
 
 class Max(Func):

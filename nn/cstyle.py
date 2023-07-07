@@ -1,3 +1,4 @@
+$
 import math
 import typing as ta
 
@@ -204,13 +205,14 @@ class CstyleRenderer:
     _code_for_op: ta.Final[ta.Mapping[ta.Type[ops.Op], ta.Callable[..., str]]] = {
         ops.Exp2: lambda x: f'exp2({x})',
         ops.Log2: lambda x: f'log2({x})',
+        ops.Sqrt: lambda x: f'sqrt({x})',
         ops.Sin: lambda x: f'sin({x})',
+
         ops.Add: lambda a, b: f'({a}+{b})',
         ops.Sub: lambda a, b: f'({a}-{b})',
         ops.Mul: lambda a, b: f'({a}*{b})',
         ops.Div: lambda a, b: f'({a}/{b})',
-        ops.Pow: lambda a, b: f'pow({a},{b})',
-        ops.Max: lambda a, b: f'max({a},{b})',
+        ops.Maximum: lambda a, b: f'max({a},{b})',
         ops.CmpEq: lambda a, b: f'({a}=={b})',
         ops.MulAcc: lambda a, b, c: f'(({a}*{b})+{c})',
     }
@@ -258,14 +260,10 @@ class CstyleRenderer:
         elif u.out.dtype == Float4:
             val = (
                 f'({u.out.dtype.name})'
-                f'('
-                f'('
+                f'(*('
                 f'({self._dialect.smem_prefix if isinstance(buf, LocalBuffer) else self._dialect.buffer_prefix}{buf.dtype.name}4*)'  # noqa
-                f'{self._buf_names[u.i]}'
-                f')'
-                f'[{_render_sym(u.idx // 4)}]'
-                f')'
-            )
+                f'({self._buf_names[u.i]}+{_render_sym(u.idx)})'
+                f'))')
         else:
             val = f'{self._buf_names[u.i]}[{_render_sym(u.idx)}]'
 
@@ -283,13 +281,13 @@ class CstyleRenderer:
             self._line(f'{self._buf_names[u.i]}[{_render_sym(u.idx)}] = {self._render_token(u.vin[0])};')
 
         elif len(u.vin) != 0 and u.vin[0].dtype == Float4 and u.vin[0].offset is None:
+            buf = self._bufs[u.i]
             check.state(u.valid.min == 1)
             self._line(
-                f'('
-                f'({self._dialect.smem_prefix if isinstance(self._bufs[u.i], LocalBuffer) else self._dialect.buffer_prefix}float4*)'  # noqa
-                f'{self._buf_names[u.i]}'
-                f')'
-                f'[{_render_sym(u.idx//4)}] = {self._render_token(u.vin[0])};'
+                f'*('
+                f'({self._dialect.smem_prefix if isinstance(buf, LocalBuffer) else self._dialect.buffer_prefix}{buf.dtype.name}4*)'  # noqa
+                f'({self._buf_names[u.i]}+{_render_sym(u.idx)})'
+                f') = ({buf.dtype.name}4){self._render_token(u.vin[0])};'
             )
 
     @_render_uop.register

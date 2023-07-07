@@ -93,6 +93,11 @@ class Sin(UnaryOp):
 
 
 @dc.dataclass(frozen=True)
+class Sqrt(UnaryOp):
+    pass
+
+
+@dc.dataclass(frozen=True)
 class Recip(UnaryOp):
     pass
 
@@ -127,11 +132,6 @@ class Mul(BinaryOp):
 
 @dc.dataclass(frozen=True)
 class Div(BinaryOp):
-    pass
-
-
-@dc.dataclass(frozen=True)
-class Pow(BinaryOp):
     pass
 
 

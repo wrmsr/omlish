@@ -212,7 +212,7 @@ class ShapeTracker(lang.Final):
             if self.view.mask:
                 if any(y != (0, 1) for x, y in zip(self.shape, self.view.mask) if x == 1):
                     # mask it all out!
-                    new_mask = tuple((0, 0) for _ in new_shape)
+                    new_mask = ((0, 0),) * len(new_shape)
                 else:
                     old_mask = [y for x, y in zip(self.shape, self.view.mask) if x != 1]
                     new_mask = tuple((0, 1) if x == 1 else old_mask.pop(0) for x in new_shape)
