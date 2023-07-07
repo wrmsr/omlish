@@ -7,6 +7,7 @@ import typing as ta
 import weakref
 
 from omlish import check
+from omlish import defs
 import numpy as np
 
 from . import ops
@@ -65,6 +66,13 @@ class Buffer(Lazy):
         if isinstance(src, ops.Op):
             for b in src.buffers:
                 b._children.add(self)
+
+    defs.repr(
+        'device',
+        '_op',
+        '_realized',
+        '_st',
+    )
 
     @property
     def device(self) -> Device:

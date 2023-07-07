@@ -46,6 +46,7 @@ def test_mul_backward():
     zt = (xt * yt).sum()
     zt.backward()
 
+    print(zt.numpy())
     print(xt.get_grad().numpy())
     print(yt.get_grad().numpy())
 

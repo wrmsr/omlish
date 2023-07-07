@@ -1,6 +1,7 @@
 import platform
 import typing as ta
 
+from omlish import defs
 from omlish import lang
 
 if ta.TYPE_CHECKING:
@@ -117,6 +118,9 @@ def opencl_compiler() -> evaluators.Compiler:
 
 
 class OpenclDevice(Device):
+
+    defs.repr()
+
     @property
     def evaluator(self) -> Evaluator:
         return opencl_compiler()

@@ -4,13 +4,16 @@ from omlish import dataclasses as dc
 import numpy as np
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, repr=False)
 class Dtype:
     name: str
     np: ta.Any
     item_size: int
 
     is_int: bool = False
+
+    def __repr__(self) -> str:
+        return f'<Dtype:{self.name}>'
 
     @staticmethod
     def of_np(npdt: np.dtype) -> 'Dtype':
