@@ -70,8 +70,9 @@ class Node(lang.Abstract, lang.Sealed):
     def debug(self) -> str:
         return DebugNodeRenderer().render(self)
 
-    def vars(self):
-        return []
+    def vars(self) -> ta.Iterator['Var']:
+        yield
+        return
 
     @cached.property
     def key(self) -> str:
@@ -181,6 +182,9 @@ class Var(Node, lang.Final):
     def max(self) -> int:
         return self._max
 
+    def vars(self) -> ta.Iterator['Var']:
+        yield self
+
 
 ##
 
@@ -244,6 +248,9 @@ class Op(Node, lang.Abstract):   # noqa
     @abc.abstractmethod
     def calc_bounds(cls, a: Node, b: int) -> ta.Tuple[int, int]:
         raise NotImplementedError
+
+    def vars(self) -> ta.Iterator[Var]:
+        return self._a.vars()
 
 
 class Lt(Op):
@@ -350,6 +357,10 @@ class Red(Node, lang.Abstract):
     @abc.abstractmethod
     def calc_bounds(cls, nodes: ta.Sequence[Node]) -> ta.Tuple[int, int]:
         raise NotImplementedError
+
+    def vars(self) -> ta.Iterator[Var]:
+        for n in self._nodes:
+            yield from n.vars()
 
 
 def sum_(nodes: ta.Sequence[Node]) -> Node:

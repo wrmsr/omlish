@@ -20,9 +20,9 @@ pyobjc-framework-metal==9.2; sys_platform == 'darwin'
 
 ##
 
-pandas==2.0.2
+pandas==2.0.3
 
-opencv-python==4.7.0.72
+opencv-python==4.8.0.74
 pillow==9.5.0
 
 onnx==1.14.0
@@ -41,5 +41,5 @@ torchvision==0.15.2
 
 ### infra
 
-boto3==1.26.160
-google-cloud-compute==1.11.0
+boto3==1.28.1
+google-cloud-compute==1.12.1
