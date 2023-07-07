@@ -12,7 +12,7 @@ from .tensor import Tensor
 
 class Optimizer(lang.Abstract):
 
-    def __init__(self, ts: ta.Iterable[Tensor]) -> None:
+    def __init__(self, ts: ta.Iterable[Tensor], lr: float) -> None:
         super().__init__()
 
         ts = [check.isinstance(t, Tensor) for t in ts]
@@ -24,6 +24,7 @@ class Optimizer(lang.Abstract):
 
         self._params: ta.List[Tensor] = col.unique(x for x in ts if x.requires_grad)
         self._buffers: ta.List[Tensor] = col.unique(x for x in ts if not x.requires_grad)  # buffers are still realized
+        self._lr = Tensor.of([lr], requires_grad=False)
 
     @abc.abstractmethod
     def step(self) -> None:
@@ -73,6 +74,6 @@ class Sgd(Optimizer):
                     g = g + self._config.momentum * self._b[i]
                 else:
                     g = self._b[i]
-            t.assign(t.detach() - g * self._config.lr)
+            t.assign(t.detach() - g * self._lr)
 
         self.realize(self._b)

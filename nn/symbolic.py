@@ -70,12 +70,18 @@ class Node(lang.Abstract, lang.Sealed):
     def debug(self) -> str:
         return DebugNodeRenderer().render(self)
 
+    def vars(self):
+        return []
+
     @cached.property
     def key(self) -> str:
         return self.debug
 
     def __repr__(self) -> str:
         return f'<{self.debug}>'
+
+    def __hash__(self) -> int:
+        return hash(self.key)
 
     def __eq__(self, other: ta.Any) -> bool:
         if not isinstance(other, Node):

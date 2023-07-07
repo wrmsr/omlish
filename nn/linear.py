@@ -1,3 +1,4 @@
+$
 import collections
 import io
 import itertools
@@ -25,6 +26,9 @@ from .dtypes import Float4
 from .raw import RawBuffer
 from .raw import RawConst
 from .shapetracker import ShapeTracker
+
+
+VarOrNum = ta.Union[sym.Var, sym.Num]
 
 
 @dc.dataclass(frozen=True)
@@ -212,6 +216,14 @@ def get_grouped_maybe_float4(*values: ta.Sequence[uo.Token], grouping_allowed: b
             return zip(new_idxs, new_values)
 
     return zip([[i] for i in range(len(values[0]))], zip(*values))
+
+
+def expand_idxs(idxs: ta.Sequence[VarOrNum]) -> ta.Iterator[ta.Sequence[VarOrNum]]:
+    for x in itertools.product(*[
+        [idx] if not isinstance(idx, sym.Var) or idx.expr is not None else
+        [sym.Num(j) for j in range(idx.min, idx.max + 1)] for idx in idxs[::-1]
+    ]):
+        yield x[::-1]
 
 
 class LinearCodegenOp(CodegenOp):
@@ -496,18 +508,6 @@ class LinearCodegenOp(CodegenOp):
                 break
 
         self.simplify_ones()
-
-    def _group_float4(self, i, store_offset):
-        store_offset_float4 = {}
-        float4_axis = (self._upcasted - 1) - self.float4_axis(i)[0]
-        for uidxs, var in store_offset.items():
-            if uidxs[float4_axis] % 4 == 0:
-                store_offset_float4[uidxs] = [var]
-            else:
-                uidxs2 = list(uidxs)
-                uidxs2[float4_axis] -= uidxs2[float4_axis] % 4
-                store_offset_float4[tuple(uidxs2)].append(var)
-        return store_offset_float4
 
     def limit_global_dims(self, limit):
         # sometimes, there's more dimensions than len(self.lang.gid).
