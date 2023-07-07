@@ -1,4 +1,3 @@
-$
 import math
 import typing as ta
 

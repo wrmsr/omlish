@@ -24,7 +24,7 @@ class Optimizer(lang.Abstract):
 
         self._params: ta.List[Tensor] = col.unique(x for x in ts if x.requires_grad)
         self._buffers: ta.List[Tensor] = col.unique(x for x in ts if not x.requires_grad)  # buffers are still realized
-        self._lr = Tensor.of([lr], requires_grad=False)
+        self._lr = Tensor.of(lr, requires_grad=False)
 
     @abc.abstractmethod
     def step(self) -> None:
@@ -53,7 +53,7 @@ class Sgd(Optimizer):
         weight_decay: float = 0.
 
     def __init__(self, ts: ta.Iterable[Tensor], config: Config = Config()) -> None:
-        super().__init__(ts)
+        super().__init__(ts, config.lr)
         self._config = config
 
         self._b = [

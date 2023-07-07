@@ -368,7 +368,7 @@ class Tensor(lang.Final):
 
         for cur in reversed(self.deep_walk()):
             cur_func = check.not_none(cur._func)
-            if not x.requires_grad:  # any(x.requires_grad for x in cur_func.parents):
+            if not cur.requires_grad:  # any(x.requires_grad for x in cur_func.parents):
                 del cur._func  # TODO: does it help to delete this here ever?
                 continue
 

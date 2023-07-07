@@ -1,4 +1,3 @@
-$
 import collections
 import io
 import itertools
@@ -34,6 +33,7 @@ VarOrNum = ta.Union[sym.Var, sym.Num]
 @dc.dataclass(frozen=True)
 class LocalBuffer:
     name: str
+    size: int
     dtype: Dtype = Float32
     realized: ta.Optional[RawBuffer] = None
 
@@ -236,6 +236,37 @@ class LinearCodegenOp(CodegenOp):
         self._bufs: ta.List[ta.Union[Buffer, LocalBuffer]] = [output, *col.unique(op.buffers)]
 
         self._key = render_key(op, self._bufs)
+
+    def build(self) -> Program:
+        self.process()
+
+        from .opencl import OpenclDialect
+
+        self.hand_coded_optimizations()
+        self.limit_global_dims(len(OpenclDialect.gid))
+
+        self.linearize()
+
+        from .cstyle import CstyleRenderer
+
+        rendered = CstyleRenderer(
+            self._uops,
+            self._bufs,
+            OpenclDialect,
+        ).render()
+
+        from .opencl import OpenclProgram
+
+        prg = OpenclProgram(
+            self.fn_name,
+            rendered.src.replace('KERNEL_NAME_PLACEHOLDER', self.fn_name),
+            rendered.global_size[::-1],
+            rendered.local_size[::-1],
+        )
+
+        return prg
+
+    ##
 
     @property
     def op(self) -> ops.Op:
@@ -447,14 +478,21 @@ class LinearCodegenOp(CodegenOp):
             else:
                 break
 
-        # if last dim <= 16 and it's a reduce dim, upcast the reduce (loop unrolling). no simplify needed since it's
+        # if last dim is small(ish) and it's a reduce dim, upcast the reduce (loop unrolling). no simplify needed it's
         # just an upcast. NOTE: careful, this has broken VALIDHACKS
         if self.first_reduce < (self.shape_len - self._upcasted) and (
                 len(list(self.shape_offsets(self.full_buffer_index))) <= 4
                 or not any(r for _, _, r in self.upcasted_axis(self.full_buffer_index))
         ):
-            if self.full_unupcasted_shape[-1] <= 16:
+            if (s := self.full_unupcasted_shape[-1]) <= 32:
                 self.upcast()
+                # if it's small, upcast a second reduce dimension too
+                if (
+                        self.first_reduce < (self.shape_len - self._upcasted) and
+                        s <= 3 and
+                        self.full_unupcasted_shape[-1] <= 3
+                ):
+                    self.upcast()
             else:
                 for splits in [4]:
                     if self.full_unupcasted_shape[-1] % splits == 0:
@@ -518,35 +556,6 @@ class LinearCodegenOp(CodegenOp):
             self.reshape_and_permute(
                 lambda x: (math.prod(x[0:num_to_merge]),) + x[num_to_merge:], None
             )
-
-    def build(self) -> Program:
-        self.process()
-
-        from .opencl import OpenclDialect
-
-        self.hand_coded_optimizations()
-        self.limit_global_dims(len(OpenclDialect.gid))
-
-        self.linearize()
-
-        from .cstyle import CstyleRenderer
-
-        rendered = CstyleRenderer(
-            self._uops,
-            self._bufs,
-            OpenclDialect,
-        ).render()
-
-        from .opencl import OpenclProgram
-
-        prg = OpenclProgram(
-            self.fn_name,
-            rendered.src.replace('KERNEL_NAME_PLACEHOLDER', self.fn_name),
-            rendered.global_size[::-1],
-            rendered.local_size[::-1],
-        )
-
-        return prg
 
     @cached.property
     def fn_name(self) -> str:

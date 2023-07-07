@@ -41,16 +41,8 @@ class View(dc.Data, lang.Final):
 
     ##
 
-    def idxs_to_idx(self, idxs: ta.Sequence[sym.Node]) -> sym.Node:
-        check.arg(len(idxs) == len(self.shape))
-        acc = 1
-        ret = []
-        for tidx, d in reversed(list(zip(idxs, self.shape))):
-            ret.append(tidx * acc)
-            acc *= d
-        return sym.sum_(ret)
-
     def gen_mask_sym(self, idx: sym.Node, valid: ta.Optional[sym.Node] = None) -> sym.Node:
+        """~expr_node_mask"""
         ret = [valid] if valid is not None else []
         if self.mask is not None:
             acc = 1
@@ -60,8 +52,18 @@ class View(dc.Data, lang.Final):
                 acc *= ns
         return sym.and_(ret)
 
+    def idxs_to_idx(self, idxs: ta.Sequence[sym.Node]) -> sym.Node:
+        check.arg(len(idxs) == len(self.shape))
+        acc = 1
+        ret = []
+        for tidx, d in reversed(list(zip(idxs, self.shape))):
+            ret.append(tidx * acc)
+            acc *= d
+        return sym.sum_(ret)
+
     # generate an expression if you have a single idx variable
     def gen_sym(self, idx: ta.Optional[sym.Node] = None) -> sym.Node:
+        """~expr_node"""
         if idx is None:
             idx = sym.Var('idx', 0, self.shape.prod)
 
@@ -74,6 +76,7 @@ class View(dc.Data, lang.Final):
 
     # generate an expression if you have a variable or expression for each index
     def gen_syms(self, idxs: ta.Sequence[sym.Node]) -> sym.Node:
+        """~expr_idxs"""
         check.arg(len(idxs) == len(self.shape))
         return sym.sum_(
             [sym.Num(self.offset)] + [
@@ -258,17 +261,20 @@ class ShapeTracker(lang.Final):
         mask: sym.Node
 
     def _gen_sym(self, idx: sym.Node, valid: sym.Node) -> Sym:
+        """~_expr_idx"""
         for v in reversed(self._views[0:-1]):
             valid = v.gen_mask_sym(idx, valid)
             idx = v.gen_sym(idx)
         return ShapeTracker.Sym(idx, valid)
 
     def gen_sym(self, idx: ta.Union[sym.Node, str] = 'idx') -> Sym:
+        """~expr_idx"""
         if isinstance(idx, str):
             idx = sym.Var(idx, 0, self.shape.prod - 1)
         return self._gen_sym(self.view.gen_sym(idx), self.view.gen_mask_sym(idx))
 
     def gen_syms(self, idxs: ta.Optional[ta.Sequence[sym.Node]] = None) -> Sym:
+        """~expr_idxs"""
         if idxs is None:
             idxs = [sym.Var(f'idx{i}', 0, s - 1) for i, s in enumerate(self.shape)]
         idx = self.views[-1].gen_syms(idxs)
@@ -281,35 +287,28 @@ class ShapeTracker(lang.Final):
         real_offset, mask = self.gen_sym(sym.Var('zero', 0, 0))
         return check.isinstance(real_offset, sym.Num).b
 
-    def real_strides(self) -> ta.Sequence[ta.Optional[int]]:
-        if len(self._views) == 1:
-            return self.view.stride
+    def real_strides(self, ignore_valid=False) -> ta.Sequence[ta.Optional[int]]:
+        if len(self.views) == 1 and self.views[-1].mask is None:
+            return self.views[-1].stride
 
-        ret: ta.List[ta.Optional[int]] = []
-        acc = 1
-        real_offset = self.real_offset()
-        for s in reversed(self.shape):
-            if s == 1:  # fast path, all shape 1 have stride 0
-                ret.append(0)
-                continue
+        idxs = [sym.Var(f'idx{i}', 0, s - 1) for i, s in enumerate(self.shape)]
+        idx, valid = self.gen_syms(idxs)
+        ret: ta.List[ta.Optional[int]] = [None] * len(self.shape)
 
-            var = sym.Var('idx', 0, s - 1)
-            this_dim, _ = self.gen_sym(var * acc)
-            this_dim -= real_offset
-            acc *= s
-
-            # TODO: sometimes a mod here is okay if you are say, reading a float4, since you only care %4
-            # if isinstance(test, sym.Mod) and test.b%4 == 0: return check_no_mul(test.a, var)  # removing a mod is okay
+        for this_dim in idx.nodes if isinstance(idx, sym.Sum) else [idx]:
             if isinstance(this_dim, sym.Mul) and isinstance(this_dim.a, sym.Var):
-                ret.append(this_dim.b)
-            elif isinstance(this_dim, sym.Num) and this_dim.b == 0:
-                ret.append(0)
+                ret[idxs.index(this_dim.a)] = this_dim.b
             elif isinstance(this_dim, sym.Var):
-                ret.append(1)
-            else:
-                ret.append(None)
+                ret[idxs.index(this_dim)] = 1
 
-        return ret[::-1]
+        idx_vars, valid_vars = list(idx.vars()), list(valid.vars())
+        for i, tidx in enumerate(idxs):
+            if tidx in valid_vars and not ignore_valid:
+                ret[i] = None
+            elif tidx not in idx_vars:
+                ret[i] = 0
+
+        return tuple(ret)
 
     def unit_stride_axes(self) -> ta.Sequence[int]:
         return [i for i, st in enumerate(self.real_strides()) if st == 1]
