@@ -1,8 +1,12 @@
 import functools
 import typing as ta
 
+from .identity import IdentityKeyDict
+
 
 T = ta.TypeVar('T')
+K = ta.TypeVar('K')
+V = ta.TypeVar('V')
 
 
 def mut_toposort(data: ta.Dict[T, ta.Set[T]]) -> ta.Iterator[ta.Set[T]]:
@@ -45,6 +49,15 @@ def unique(it: ta.Iterable[T]) -> ta.List[T]:
             seen.add(e)
             ret.append(e)
     return ret
+
+
+def unique_dict(items: ta.Iterable[ta.Tuple[K, V]], *, identity: bool = False) -> ta.Dict[K, V]:
+    dct = IdentityKeyDict() if identity else {}
+    for k, v in items:
+        if k in dct:
+            raise KeyError(k)
+        dct[k] = v
+    return dct
 
 
 def all_equal(it: ta.Iterable[T]) -> bool:

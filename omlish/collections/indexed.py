@@ -24,13 +24,13 @@ class IndexedSeq(ta.Sequence[T]):
     def __iter__(self) -> ta.Iterator[T]:
         return iter(self._lst)
 
-    def __getitem__(self, idx: int) -> T:
+    def __getitem__(self, idx: int) -> T:  # type: ignore
         return self._lst[idx]
 
     def __len__(self) -> int:
         return len(self._lst)
 
-    def __contains__(self, obj: T) -> bool:
+    def __contains__(self, obj: T) -> bool:  # type: ignore
         return obj in self._idxs
 
     @property
@@ -58,13 +58,13 @@ class IndexedSetSeq(ta.Sequence[ta.AbstractSet[T]]):
     def __iter__(self) -> ta.Iterator[ta.AbstractSet[T]]:
         return iter(self._lst)
 
-    def __getitem__(self, idx: int) -> ta.AbstractSet[T]:
+    def __getitem__(self, idx: int) -> ta.AbstractSet[T]:  # type ignore
         return self._lst[idx]
 
     def __len__(self) -> int:
         return len(self._lst)
 
-    def __contains__(self, obj: T) -> bool:
+    def __contains__(self, obj: T) -> bool:  # type: ignore
         return obj in self._idxs
 
     @property

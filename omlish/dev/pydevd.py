@@ -64,7 +64,7 @@ def is_present() -> bool:
 
 def get_setup() -> ta.Optional[dict]:
     if is_present():
-        return _pydevd().SetupHolder.setup  # type: ignore
+        return _pydevd().SetupHolder.setup
     else:
         return None
 
@@ -79,15 +79,15 @@ ARGS_ENV_VAR = 'PYDEVD_ARGS'
 def get_args() -> ta.List[str]:
     check.state(is_present())
     setup = check.isinstance(get_setup(), dict)
-    args = [_pydevd().__file__]  # type: ignore
+    args = [_pydevd().__file__]
 
     for k in [
         'port',
         'vm_type',
         'client',
     ]:
-        if setup[k]:
-            args.extend(['--' + k, str(setup[k])])
+        if v := setup[k]:
+            args.extend(['--' + k, str(v)])
 
     for k in [
         'server',

@@ -48,3 +48,4 @@ from .utils import mut_toposort  # noqa
 from .utils import partition  # noqa
 from .utils import toposort  # noqa
 from .utils import unique  # noqa
+from .utils import unique_dict  # noqa
