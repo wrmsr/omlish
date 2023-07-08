@@ -172,3 +172,13 @@ def test_simple_mul():
     z = x + y
     n = z.numpy()
     print(n)
+
+
+def test_dot():
+    xt = Tensor.of(np.asarray([1., 2.], dtype=np.float32), requires_grad=True)
+    yt = Tensor.of(np.asarray([3., 4.], dtype=np.float32), requires_grad=True)
+    zt = (xt * yt).sum()
+
+    from .. import dot
+
+    dot.DotGen().gen(zt)
