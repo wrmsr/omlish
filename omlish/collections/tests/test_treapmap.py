@@ -1,10 +1,11 @@
 import pytest
 
 from .. import treapmap as tm
+from ..utils import key_cmp
 
 
 def test_treapmap():
-    m: tm.TreapMap[int, str] = tm.TreapMap(_n=None, _c=tm.key_cmp(lambda l, r: l - r))
+    m: tm.TreapMap[int, str] = tm.TreapMap(_n=None, _c=key_cmp(lambda l, r: l - r))
 
     for i in range(32):
         m = m.with_(i, str(i))

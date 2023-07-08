@@ -76,3 +76,7 @@ def all_not_equal(it: ta.Iterable[T]) -> bool:
             return False
         s.add(v)
     return True
+
+
+def key_cmp(fn: ta.Callable[[K, K], int]) -> ta.Callable[[ta.Tuple[K, V], ta.Tuple[K, V]], int]:
+    return lambda t0, t1: fn(t0[0], t1[0])
