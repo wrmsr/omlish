@@ -1,8 +1,8 @@
 import random
 import typing as ta
 
-from ..sorted import SkipList
-from ..sorted import SkipListDict
+from ..skiplist import SkipList
+from ..skiplist import SkipListDict
 
 
 def test_skiplist():

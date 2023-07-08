@@ -35,5 +35,5 @@ def test_repr_recursion():
 
     b = A()
     a.o, b.o = b, a
-    assert '(o=<seen@' in repr(a)
-    assert '(o=<seen@' in repr(b)
+    assert '(o=<seen:' in repr(a)
+    assert '(o=<seen:' in repr(b)

@@ -10,16 +10,17 @@ from omlish import check
 from omlish import defs
 import numpy as np
 
-from . import ops
 from .devices import Device
 from .devices import cpu_device
 from .dims import Shape
+from .dims import Stride
 from .dtypes import Dtype
 from .numpy import NumpyValue
 from .raw import RawBuffer
 from .raw import RawConst
 from .raw import RawCpuBuffer
 from .shapetracker import ShapeTracker
+from .shapetracker import View
 from .lazy import Lazy
 from . import ops
 
@@ -304,7 +305,7 @@ class Buffer(Lazy):
     def from_cpu(x: np.ndarray) -> 'Buffer':
         return Buffer(
             cpu_device(),
-            ShapeTracker(Shape(x.shape)),
+            ShapeTracker(Shape(x.shape), [View(x.shape, Stride(st // x.itemsize for st in x.strides))]),
             RawCpuBuffer.from_cpu(x),
             Dtype.of_np(x.dtype),
         )
