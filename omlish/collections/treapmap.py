@@ -91,7 +91,7 @@ class TreapMap(ta.Generic[K, V]):
         n = treap.union(self._n, node, self._c, True)
         return TreapMap(_n=n, _c=self._c)
 
-    def without_(self, k: K) -> 'TreapMap[K, V]':
+    def without(self, k: K) -> 'TreapMap[K, V]':
         n = treap.delete(self._n, (k, None), self._c)  # type: ignore
         return TreapMap(_n=n, _c=self._c)
 
