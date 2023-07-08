@@ -1,4 +1,4 @@
-from . import treapmap as tm
+from .. import treapmap as tm
 
 
 def test_treapmap():

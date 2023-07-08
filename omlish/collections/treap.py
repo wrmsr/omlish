@@ -18,6 +18,8 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 """
 import typing as ta
 
+from .. import check
+
 
 T = ta.TypeVar('T')
 Comparer = ta.Callable[[T, T], int]
@@ -65,7 +67,7 @@ class TreapNode(ta.Generic[T]):
             yield from self._right
 
 
-def find(n: TreapNode[T], v: T, c: Comparer[T]) -> ta.Optional[TreapNode[T]]:
+def find(n: ta.Optional[TreapNode[T]], v: T, c: Comparer[T]) -> ta.Optional[TreapNode[T]]:
     while True:
         if n is None:
             return None
@@ -83,7 +85,7 @@ def union(
         other: ta.Optional[TreapNode[T]],
         c: Comparer[T],
         overwrite: bool,
-) -> TreapNode[T]:
+) -> ta.Optional[TreapNode[T]]:
     if n is None:
         return other
     if other is None:
@@ -100,7 +102,7 @@ def union(
 
 
 def split(
-        n: TreapNode[T],
+        n: ta.Optional[TreapNode[T]],
         v: T,
         c: Comparer[T],
 ) -> ta.Tuple[
@@ -108,7 +110,7 @@ def split(
     ta.Optional[TreapNode[T]],
     ta.Optional[TreapNode[T]],
 ]:
-    tmp = TreapNode(_value=None, _priority=0, _left=None, _right=None)
+    tmp: TreapNode[T] = TreapNode(_value=None, _priority=0, _left=None, _right=None)  # type: ignore
     leftp, rightp = [tmp, 'l'], [tmp, 'r']
 
     def setp(p, o):
@@ -120,27 +122,28 @@ def split(
         else:
             raise ValueError(p)
 
+    cur: ta.Optional[TreapNode[T]] = n
     while True:
-        if n is None:
+        if cur is None:
             setp(leftp, None)
             setp(rightp, None)
-            return tmp._left, None, tmp._right
+            return tmp._left, None, tmp._right  # noqa
 
-        d = c(n._value, v)
+        d = c(cur._value, v)
         if d < 0:
-            root = TreapNode(_value=n._value, _priority=n._priority, _left=n._left, _right=None)
+            root = TreapNode(_value=cur._value, _priority=cur._priority, _left=cur._left, _right=None)
             setp(leftp, root)
             leftp[0], leftp[1] = root, 'r'
-            n = n._right
+            cur = cur._right
         elif d > 0:
-            root = TreapNode(_value=n._value, _priority=n._priority, _left=None, _right=n._right)
+            root = TreapNode(_value=cur._value, _priority=cur._priority, _left=None, _right=cur._right)
             setp(rightp, root)
             rightp[0], rightp[1] = root, 'l'
-            n = n._left
+            cur = cur._left
         else:
-            root = TreapNode(_value=n._value, _priority=n._priority, _left=None, _right=None)
-            setp(leftp, n._left)
-            setp(rightp, n._right)
+            root = TreapNode(_value=cur._value, _priority=cur._priority, _left=None, _right=None)
+            setp(leftp, cur._left)
+            setp(rightp, cur._right)
             return tmp._left, root, tmp._right
 
 
@@ -166,12 +169,12 @@ def intersect(
     return TreapNode(_value=n._value, _priority=n._priority, _left=left, _right=right)
 
 
-def delete(n: TreapNode[T], v: T, c: Comparer[T]) -> TreapNode[T]:
+def delete(n: ta.Optional[TreapNode[T]], v: T, c: Comparer[T]) -> ta.Optional[TreapNode[T]]:
     left, _, right = split(n, v, c)
     return _join(left, right)
 
 
-def diff(n: TreapNode[T], other: TreapNode[T], c: Comparer[T]) -> ta.Optional[TreapNode[T]]:
+def diff(n: ta.Optional[TreapNode[T]], other: ta.Optional[TreapNode[T]], c: Comparer[T]) -> ta.Optional[TreapNode[T]]:
     if n is None or other is None:
         return n
 
@@ -189,9 +192,9 @@ def diff(n: TreapNode[T], other: TreapNode[T], c: Comparer[T]) -> ta.Optional[Tr
     return _join(left, right)
 
 
-def _join(n: TreapNode[T], other: TreapNode[T]) -> ta.Optional[TreapNode[T]]:
+def _join(n: ta.Optional[TreapNode[T]], other: ta.Optional[TreapNode[T]]) -> ta.Optional[TreapNode[T]]:
     result: ta.Optional[TreapNode[T]] = None
-    resultp = [None, None]
+    resultp: ta.List[ta.Any] = [None, None]
 
     def setresultp(o):
         t, s = resultp
@@ -205,20 +208,21 @@ def _join(n: TreapNode[T], other: TreapNode[T]) -> ta.Optional[TreapNode[T]]:
         else:
             raise ValueError(resultp)
 
+    cur: ta.Optional[TreapNode[T]] = n
     while True:
-        if n is None:
+        if cur is None:
             setresultp(other)
             return result
 
         if other is None:
-            setresultp(n)
+            setresultp(cur)
             return result
 
-        if n._priority <= other._priority:
-            root = TreapNode(_value=n._value, _priority=n._priority, _left=n._left, _right=None)
+        if cur._priority <= other._priority:
+            root = TreapNode(_value=cur._value, _priority=cur._priority, _left=cur._left, _right=None)
             setresultp(root)
             resultp[0], resultp[1] = root, 'r'
-            n = n._right
+            cur = cur._right
         else:
             root = TreapNode(_value=other._value, _priority=other._priority, _left=None, _right=other._right)
             setresultp(root)

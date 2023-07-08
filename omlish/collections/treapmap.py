@@ -34,7 +34,7 @@ def key_cmp(fn: ta.Callable[[K, K], int]) -> Comparer[K, V]:
 
 class TreapMap(ta.Generic[K, V]):
     __slots__ = ('_n', '_c')
-    
+
     def __init__(
             self,
             *,
