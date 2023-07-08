@@ -5,8 +5,12 @@ import typing as ta
 
 
 @contextlib.contextmanager
-def tmp_dir(root_dir: str = None, cleanup: bool = True) -> ta.Iterator[str]:
-    path = tempfile.mkdtemp(dir=root_dir)
+def tmp_dir(
+        root_dir: str = None,
+        cleanup: bool = True,
+        **kwargs: ta.Any
+) -> ta.Iterator[str]:
+    path = tempfile.mkdtemp(dir=root_dir, **kwargs)
     try:
         yield path
     finally:
@@ -15,12 +19,14 @@ def tmp_dir(root_dir: str = None, cleanup: bool = True) -> ta.Iterator[str]:
 
 
 @contextlib.contextmanager
-def tmp_file(root_dir: str = None, cleanup: bool = True) -> ta.Iterator[tempfile._TemporaryFileWrapper]:  # type: ignore  # noqa
-    with tempfile.NamedTemporaryFile(dir=root_dir, delete=False) as f:
+def tmp_file(
+        root_dir: str = None,
+        cleanup: bool = True,
+        **kwargs: ta.Any
+) -> ta.Iterator[tempfile._TemporaryFileWrapper]:  # type: ignore  # noqa
+    with tempfile.NamedTemporaryFile(dir=root_dir, delete=False, **kwargs) as f:
         try:
             yield f
         finally:
             if cleanup:
                 shutil.rmtree(f.name, ignore_errors=True)
-
-

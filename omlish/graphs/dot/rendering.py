@@ -1,10 +1,11 @@
 import html
 import io
 import subprocess
+import tempfile
+import time
 import typing as ta
 
 from ... import dispatch
-from ... import os as osu
 from .items import Attrs
 from .items import Cell
 from .items import Edge
@@ -114,22 +115,28 @@ def render(item: Item) -> str:
     return out.getvalue()
 
 
-def open_dot(gv: str, *, timeout: float = 1.) -> None:
+def open_dot(gv: str, *, timeout_s: float = 1., sleep_s: float = 0.) -> None:
     stdout, _ = subprocess.Popen(
         ['dot', '-Tpdf'],
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
     ).communicate(
         input=gv.encode('utf-8'),
-        timeout=timeout,
+        timeout=timeout_s,
     )
 
-    with osu.tmp_file() as pdf:
+    with tempfile.NamedTemporaryFile(
+        suffix='.pdf',
+        delete=True,
+    ) as pdf:
         pdf.file.write(stdout)
         pdf.file.flush()
 
         _, _ = subprocess.Popen(
             ['open', pdf.name],
         ).communicate(
-            timeout=timeout,
+            timeout=timeout_s,
         )
+
+        if sleep_s > 0.:
+            time.sleep(sleep_s)
