@@ -440,7 +440,14 @@ class LinearCodegenOp(CodegenOp):
         ]
 
     def get_upcast_dim(self, i, amt=4):
-        raise NotImplementedError
+        should_upcast = self.supports_float4 and self._bufs[i].dtype in (Float32,)
+        return [
+            x
+            for x in self._sts[i].unit_stride_axes()
+            if should_upcast
+            and x >= self.shape_len - self._upcasted
+            and self._sts[i].shape[x] == amt
+        ]
 
     def global_load(self, i: int, idxs: ta.Sequence[sym.Var], const=None) -> ta.Sequence[uo.Token]:
         load_offset: ta.Dict[ta.Sequence[int], LinearCodegenOp._Gl] = {}
