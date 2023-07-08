@@ -181,6 +181,7 @@ class Compiler(Evaluator):
 
         cgop = self._codegen.op(op, output)
 
+        print(cgop.key)
         try:
             prog = self._prog_cache[cgop.key]
         except KeyError:
