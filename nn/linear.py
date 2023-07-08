@@ -354,6 +354,15 @@ class LinearCodegenOp(CodegenOp):
     _upcasted: int
     _local_dims: int
 
+    supports_float4: bool = False
+    supports_float4_alu: bool = False
+
+    @cached.property
+    def fn_name(self) -> str:
+        return ('r_' if self.reduce_op is not None else 'E_') + '_'.join([str(x) for x in self.full_shape])
+
+    ##
+
     def process(self) -> None:
         # mem_est = sum(  # noqa
         #     x.dtype.item_size * (x.get_realized().size if x.is_realized is not None else x.shape.prod)
@@ -808,8 +817,159 @@ class LinearCodegenOp(CodegenOp):
     def shape_len(self) -> int:
         return len(self._sts[0].shape)
 
-    supports_float4: bool = False
-    supports_float4_alu: bool = False
+    @property
+    def upcast_in_mid_reduce_axes(self) -> ta.Sequence[int]:
+        return [
+            j
+            for j in range(self.first_reduce, self.first_reduce + len(self._group_for_reduce))
+            if self.full_shape[j] == self._sts[0].shape[j]
+        ]
+
+    # ~~colors lol~~
+
+    def reshape_and_permute(
+            self,
+            new_shape_fn: ta.Optional[ta.Callable[[Shape], Shape]] = None,
+            axis: ta.Optional[ta.Sequence[int]] = None,
+    ) -> None:
+        for st in self._sts:
+            if new_shape_fn is not None:
+                st.reshape(Shape(new_shape_fn(st.shape)))
+            if axis is not None:
+                st.permute(tuple(axis))
+
+    # drops the final dimension
+    def upcast(self) -> None:
+        check.arg(self.full_shape[-1] != 1)
+        self._upcasted += 1
+
+    # axis : the axis to pull from
+    # amount : the amount to take
+    # top : if you want to pull that amount from the top
+    # insert_before : place to insert the new stuff
+    def shift_to(
+            self,
+            axis: int,
+            amount: int,
+            top: bool = False,
+            insert_before: ta.Optional[int] = None,
+    ) -> None:
+        if insert_before is None:
+            insert_before = self.shape_len
+
+        move_axis = axis if top else axis + 1
+        if move_axis < insert_before:
+            insert_before += 1
+
+        self.reshape_and_permute(
+            lambda x: Shape(
+                list(x[0:axis]) +
+                (
+                    [amount, x[axis] // amount] if top else
+                    [x[axis] // amount, amount] if x[axis] > 1 else
+                    [1, 1]
+                ) +
+                list(x[axis + 1:])
+            ),
+            (
+                    [i for i in range(insert_before) if i != move_axis] +
+                    [move_axis] +
+                    [i for i in range(insert_before, self.shape_len + 1) if i != move_axis]
+            ),
+        )
+
+    ##
+
+    def simplify_ones(self) -> None:
+        # remove places where the shape is all ones
+        # TODO: this should be factored in to multi shape stride
+        if self.shape_len == 0:
+            return
+
+        all_ones = [
+            all(st.shape[i] == 1 for st in self._sts)
+            for i in range(self.shape_len)
+        ]
+
+        # keep at least 1 one
+        if all(all_ones):
+            all_ones[-1] = False
+
+        self.reshape_and_permute(
+            lambda shape: Shape(x for i, x in enumerate(shape) if not all_ones[i]),
+            None,
+        )
+
+    def simplify_merge_adjacent(self):
+        if self.shape_len == 0:
+            return
+
+        shapes = [x.shape for x in self._sts]
+        strides = [x.views[-1].stride for x in self._sts]
+
+        # merge dimensions if we can, multi get_shape_strides
+        # TODO: does this always preserve the reduce dimension, NO
+        # TODO: move this into shapetracker, with tests!
+        rets = [[(shapes[j][0], strides[j][0])] for j in range(len(shapes))]
+        for i in range(1, len(shapes[0])):
+            can_merge = []
+            for j in range(len(shapes)):
+                # TODO: added the always mergeability of 1s, is this right? if so, add to shapetracker in the 1 case
+                can_merge.append(
+                    (strides[j][i] != 0 and rets[j][-1][1] == shapes[j][i] * strides[j][i]) or
+                    (strides[j][i] == 0 and rets[j][-1][1] == 0)
+                )
+
+            # more can merge than this
+            mergeable = all(can_merge) and i != self.first_reduce
+            for j in range(len(shapes)):
+                if mergeable:
+                    rets[j][-1] = (rets[j][-1][0] * shapes[j][i], strides[j][i])
+                else:
+                    rets[j].append((shapes[j][i], strides[j][i]))
+
+        # do the reshapes
+        for i, x in enumerate(rets):
+            self._sts[i].reshape(Shape(y[0] for y in x))
+
+    ##
+
+    class _Gl(ta.NamedTuple):
+        local_type: Dtype
+        uidx_list: ta.Sequence[int]
+        idx: sym.Node
+        valid: sym.Node
+
+    def required_optimizations(self, early_only=False):
+        for buf_index, buf in enumerate(self._bufs):
+            unit_stride_axes_mul_4 = [
+                i
+                for i in self._sts[buf_index].unit_stride_axes()
+                if self._sts[buf_index].shape[i] % 4 == 0
+            ]
+            # if (not early_only or buf in self.earlybufs) and self.bufs[buf_index].dtype.__class__ is ImageDType:
+            #     assert (
+            #             len(unit_stride_axes_mul_4) >= 1
+            #     ), f"needs a unit stride axis in {self.bufs[buf_index]}"
+            #     if (
+            #             all(
+            #                 x < (self.shape_len - self.upcasted)
+            #                 for x in unit_stride_axes_mul_4
+            #             )
+            #             and unit_stride_axes_mul_4[0] not in self.upcast_in_mid_reduce_axes
+            #     ):
+            #         self.shift_to(unit_stride_axes_mul_4[0], 4)
+            #         self.upcast()
+
+    def limit_global_dims(self, limit):
+        # sometimes, there's more dimensions than len(self.lang.gid).
+        # compact all the dimensions into the first
+        # NOTE: this might make multiview shapetrackers
+        if limit and (self.first_reduce - self._local_dims) > limit:
+            num_to_merge = ((self.first_reduce - self._local_dims) - limit) + 1
+            self.reshape_and_permute(
+                lambda x: (math.prod(x[0:num_to_merge]),) + x[num_to_merge:], None
+            )
 
     def hand_coded_optimizations(self) -> None:
         # if there's images in the earlybufs, we have to make an axis the 4 loading one
@@ -969,158 +1129,6 @@ class LinearCodegenOp(CodegenOp):
                 break
 
         self.simplify_ones()
-
-    def limit_global_dims(self, limit):
-        # sometimes, there's more dimensions than len(self.lang.gid).
-        # compact all the dimensions into the first
-        # NOTE: this might make multiview shapetrackers
-        if limit and (self.first_reduce - self._local_dims) > limit:
-            num_to_merge = ((self.first_reduce - self._local_dims) - limit) + 1
-            self.reshape_and_permute(
-                lambda x: (math.prod(x[0:num_to_merge]),) + x[num_to_merge:], None
-            )
-
-    @cached.property
-    def fn_name(self) -> str:
-        return ('r_' if self.reduce_op is not None else 'E_') + '_'.join([str(x) for x in self.full_shape])
-
-    @property
-    def upcast_in_mid_reduce_axes(self) -> ta.Sequence[int]:
-        return [
-            j
-            for j in range(self.first_reduce, self.first_reduce + len(self._group_for_reduce))
-            if self.full_shape[j] == self._sts[0].shape[j]
-        ]
-
-    class _Gl(ta.NamedTuple):
-        local_type: Dtype
-        uidx_list: ta.Sequence[int]
-        idx: sym.Node
-        valid: sym.Node
-
-    def reshape_and_permute(
-            self,
-            new_shape_fn: ta.Optional[ta.Callable[[Shape], Shape]] = None,
-            axis: ta.Optional[ta.Sequence[int]] = None,
-    ) -> None:
-        for st in self._sts:
-            if new_shape_fn is not None:
-                st.reshape(Shape(new_shape_fn(st.shape)))
-            if axis is not None:
-                st.permute(tuple(axis))
-
-    # drops the final dimension
-    def upcast(self) -> None:
-        check.arg(self.full_shape[-1] != 1)
-        self._upcasted += 1
-
-    def simplify_ones(self) -> None:
-        # remove places where the shape is all ones
-        # TODO: this should be factored in to multi shape stride
-        if self.shape_len == 0:
-            return
-
-        all_ones = [
-            all(st.shape[i] == 1 for st in self._sts)
-            for i in range(self.shape_len)
-        ]
-
-        # keep at least 1 one
-        if all(all_ones):
-            all_ones[-1] = False
-
-        self.reshape_and_permute(
-            lambda shape: Shape(x for i, x in enumerate(shape) if not all_ones[i]),
-            None,
-        )
-
-    def simplify_merge_adjacent(self):
-        if self.shape_len == 0:
-            return
-
-        shapes = [x.shape for x in self._sts]
-        strides = [x.views[-1].stride for x in self._sts]
-
-        # merge dimensions if we can, multi get_shape_strides
-        # TODO: does this always preserve the reduce dimension, NO
-        # TODO: move this into shapetracker, with tests!
-        rets = [[(shapes[j][0], strides[j][0])] for j in range(len(shapes))]
-        for i in range(1, len(shapes[0])):
-            can_merge = []
-            for j in range(len(shapes)):
-                # TODO: added the always mergeability of 1s, is this right? if so, add to shapetracker in the 1 case
-                can_merge.append(
-                    (strides[j][i] != 0 and rets[j][-1][1] == shapes[j][i] * strides[j][i]) or
-                    (strides[j][i] == 0 and rets[j][-1][1] == 0)
-                )
-
-            # more can merge than this
-            mergeable = all(can_merge) and i != self.first_reduce
-            for j in range(len(shapes)):
-                if mergeable:
-                    rets[j][-1] = (rets[j][-1][0] * shapes[j][i], strides[j][i])
-                else:
-                    rets[j].append((shapes[j][i], strides[j][i]))
-
-        # do the reshapes
-        for i, x in enumerate(rets):
-            self._sts[i].reshape(Shape(y[0] for y in x))
-
-    # axis : the axis to pull from
-    # amount : the amount to take
-    # top : if you want to pull that amount from the top
-    # insert_before : place to insert the new stuff
-    def shift_to(
-            self,
-            axis: int,
-            amount: int,
-            top: bool = False,
-            insert_before: ta.Optional[int] = None,
-    ) -> None:
-        if insert_before is None:
-            insert_before = self.shape_len
-
-        move_axis = axis if top else axis + 1
-        if move_axis < insert_before:
-            insert_before += 1
-
-        self.reshape_and_permute(
-            lambda x: Shape(
-                list(x[0:axis]) +
-                (
-                    [amount, x[axis] // amount] if top else
-                    [x[axis] // amount, amount] if x[axis] > 1 else
-                    [1, 1]
-                ) +
-                list(x[axis + 1:])
-            ),
-            (
-                [i for i in range(insert_before) if i != move_axis] +
-                [move_axis] +
-                [i for i in range(insert_before, self.shape_len + 1) if i != move_axis]
-            ),
-        )
-
-    def required_optimizations(self, early_only=False):
-        for buf_index, buf in enumerate(self._bufs):
-            unit_stride_axes_mul_4 = [
-                i
-                for i in self._sts[buf_index].unit_stride_axes()
-                if self._sts[buf_index].shape[i] % 4 == 0
-            ]
-            # if (not early_only or buf in self.earlybufs) and self.bufs[buf_index].dtype.__class__ is ImageDType:
-            #     assert (
-            #             len(unit_stride_axes_mul_4) >= 1
-            #     ), f"needs a unit stride axis in {self.bufs[buf_index]}"
-            #     if (
-            #             all(
-            #                 x < (self.shape_len - self.upcasted)
-            #                 for x in unit_stride_axes_mul_4
-            #             )
-            #             and unit_stride_axes_mul_4[0] not in self.upcast_in_mid_reduce_axes
-            #     ):
-            #         self.shift_to(unit_stride_axes_mul_4[0], 4)
-            #         self.upcast()
 
 
 class LinearCodegen(Codegen):
