@@ -176,7 +176,7 @@ class ShapeTracker(lang.Final):
                 (max(mx1, mx2), min(my1, my2))
                 for (mx1, my1), (mx2, my2) in zip(nmask, mask)
             ) if mask is not None else nmask
-        self.views[-1] = View(
+        self._views[-1] = View(
             tuple([y - x for x, y in arg]),
             self.views[-1].stride,
             self.views[-1].offset + offset,
@@ -211,7 +211,7 @@ class ShapeTracker(lang.Final):
             )
             for (mx, my), s, m in zip(self.views[-1].mask, self.views[-1].shape, mul)
         ) if self.views[-1].mask is not None else None
-        self.views[-1] = View(new_shape, strides, self.views[-1].offset + offset, mask)
+        self._views[-1] = View(new_shape, strides, self.views[-1].offset + offset, mask)
 
     ##
 
