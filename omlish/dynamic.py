@@ -207,28 +207,6 @@ class Binding(ta.Generic[T]):
         del self._frame
 
 
-class Dyn:
-
-    def __init__(self) -> None:
-        super().__init__()
-
-        self.__var = Var()
-
-    def __call__(self, **kwargs):
-        return self.__var.binding(kwargs)
-
-    def __getattr__(self, key):
-        for dct in self.__var.values:
-            try:
-                return dct[key]
-            except KeyError:
-                pass
-        raise AttributeError(key)
-
-
-dyn = Dyn()
-
-
 class _GeneratorContextManager(contextlib._GeneratorContextManager):  # noqa
 
     @hoist(2)
