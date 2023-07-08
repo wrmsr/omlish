@@ -29,7 +29,7 @@ DEBUGGER_CALL_PACKAGES = {
 
 
 def is_debugger_call(hoist: int = 0, walk: int = 2) -> bool:
-    frame = sys._getframe(2 + hoist)  # noqa
+    frame: ta.Optional[types.FrameType] = sys._getframe(2 + hoist)  # noqa
     for _ in range(walk):
         if frame is None:
             break

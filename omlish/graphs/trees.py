@@ -149,7 +149,7 @@ class BasicTreeAnalysis(ta.Generic[NodeT]):
 
         root = check.single([n for n, p in pairs if p is None])  # noqa
 
-        children_by_node: ta.MutableMapping[NodeT, ta.MutableSequence[NodeT]] = col.IdentityKeyDict() if identity else {}  # noqa
+        children_by_node: ta.MutableMapping[NodeT, ta.MutableSequence[NodeT]] = col.IdentityKeyDict() if identity else {}  # type: ignore  # noqa
         for n, _ in pairs:
             children_by_node[n] = []
         for n, p in pairs:
@@ -216,15 +216,15 @@ class BasicTreeAnalysis(ta.Generic[NodeT]):
 
     def get_node_type_set(self, ty: ta.Type[T]) -> ta.AbstractSet[T]:
         try:
-            return self._node_sets_by_type[ty]
+            return self._node_sets_by_type[ty]  # type: ignore
         except KeyError:
             ret = self._node_sets_by_type[ty] = self._set_fac(n for n in self.nodes if isinstance(n, ty))
-            return ret
+            return ret  # type: ignore
 
     def iter_ancestors(self, node: NodeT) -> NodeGenerator[NodeT]:
         cur: ta.Optional[NodeT] = node
         while True:
-            cur = self.parents_by_node.get(cur)
+            cur = self.parents_by_node.get(cur)  # type: ignore
             if cur is None:
                 break
             yield cur
