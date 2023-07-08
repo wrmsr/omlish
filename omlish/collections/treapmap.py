@@ -20,19 +20,14 @@ import random
 import typing as ta
 
 from . import treap
+from .persistent import PersistentMap
 
 
 K = ta.TypeVar('K')
 V = ta.TypeVar('V')
 
-Comparer = ta.Callable[[ta.Tuple[K, V], ta.Tuple[K, V]], int]
 
-
-def key_cmp(fn: ta.Callable[[K, K], int]) -> Comparer[K, V]:
-    return lambda t0, t1: fn(t0[0], t1[0])
-
-
-class TreapMap(ta.Generic[K, V]):
+class TreapMap(PersistentMap[K, V]):
     __slots__ = ('_n', '_c')
 
     def __init__(
@@ -70,6 +65,11 @@ class TreapMap(ta.Generic[K, V]):
             raise KeyError(item)
         return n.value
 
+    def __iter__(self) -> ta.Iterator[ta.Tuple[K, V]]:
+        i = self.iterate()
+        while i.has_next():
+            yield i.next()
+
     def iterate(self) -> 'TreapMapIterator[K, V]':
         i = TreapMapIterator(
             _st=[],
@@ -102,6 +102,10 @@ class TreapMap(ta.Generic[K, V]):
             return self.with_(k, v)
         else:
             return self
+
+
+def new_treap_map(cmp: ta.Callable[[ta.Tuple[K, V], ta.Tuple[K, V]], int]) -> PersistentMap[K, V]:
+    return TreapMap(_n=None, _c=cmp)
 
 
 class TreapMapIterator(ta.Generic[K, V]):
