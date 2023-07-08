@@ -115,7 +115,12 @@ def render(item: Item) -> str:
     return out.getvalue()
 
 
-def open_dot(gv: str, *, timeout_s: float = 1., sleep_s: float = 0.) -> None:
+def open_dot(
+        gv: str,
+        *,
+        timeout_s: float = 1.,
+        sleep_s: float = 0.,
+) -> None:
     stdout, _ = subprocess.Popen(
         ['dot', '-Tpdf'],
         stdin=subprocess.PIPE,
