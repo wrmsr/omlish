@@ -305,7 +305,7 @@ class Buffer(Lazy):
     def from_cpu(x: np.ndarray) -> 'Buffer':
         return Buffer(
             cpu_device(),
-            ShapeTracker(Shape(x.shape), [View(x.shape, Stride(st // x.itemsize for st in x.strides))]),
+            ShapeTracker(Shape(x.shape), [View(Shape(x.shape), Stride(st // x.itemsize for st in x.strides))]),
             RawCpuBuffer.from_cpu(x),
             Dtype.of_np(x.dtype),
         )
