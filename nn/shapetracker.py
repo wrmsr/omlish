@@ -161,6 +161,60 @@ class ShapeTracker(lang.Final):
                 self._views = [*self._views[:-2], new_view]
                 self.simplify()
 
+    ##
+
+    def _unsafe_resize(self, arg: ta.Sequence[ta.Tuple[int, int]], mask: ta.Any = None) -> None:
+        offset = sum([s * x[0] for s, x in zip(self.views[-1].stride, arg)])
+        if self.views[-1].mask is not None:
+            # move the old mask
+            nmask = tuple([
+                (max(mx - ax, 0), min(my - ax, ay - ax))
+                for (mx, my), (ax, ay) in zip(self.views[-1].mask, arg)
+            ])
+            # merge the masks if we have two
+            mask = tuple(
+                (max(mx1, mx2), min(my1, my2))
+                for (mx1, my1), (mx2, my2) in zip(nmask, mask)
+            ) if mask is not None else nmask
+        self.views[-1] = View(
+            tuple([y - x for x, y in arg]),
+            self.views[-1].stride,
+            self.views[-1].offset + offset,
+            mask,
+        )
+
+    def pad(self, arg: ta.Sequence[ta.Tuple[int, int]]) -> None:
+        check.arg(all((b >= 0 and e >= 0) for b, e in arg) and len(arg) == len(self.shape))
+        if any(b or e for b, e in arg):
+            zvarg = tuple((-b, s + e) for s, (b, e) in zip(self.shape, arg))
+            mask = tuple((b, s + b) for s, (b, _) in zip(self.shape, arg))
+            self._unsafe_resize(zvarg, mask=mask)
+
+    def shrink(self, arg: ta.Sequence[ta.Tuple[int, int]]) -> None:
+        check.arg(all((b >= 0 and e <= s) for s, (b, e) in zip(self.shape, arg)) and len(arg) == len(self.shape))
+        self._unsafe_resize(arg)
+
+    # except for the negative case, you can build this from the others. invertible in the negative case
+    def restride(self, mul: ta.Sequence[int]) -> None:
+        check.arg(all(isinstance(x, int) and x != 0 for x in mul))
+        strides = tuple([z * m for z, m in zip(self.views[-1].stride, mul)])
+        new_shape = tuple([(s + (abs(m) - 1)) // abs(m) for s, m in zip(self.views[-1].shape, mul)])
+        offset = sum(
+            (s - 1) * z
+            for s, z, m in zip(self.views[-1].shape, self.views[-1].stride, mul)
+            if m < 0
+        )
+        mask = tuple(
+            (
+                ((mx if m > 0 else s - my) + (abs(m) - 1)) // abs(m),
+                ((my if m > 0 else s - mx) + (abs(m) - 1)) // abs(m),
+            )
+            for (mx, my), s, m in zip(self.views[-1].mask, self.views[-1].shape, mul)
+        ) if self.views[-1].mask is not None else None
+        self.views[-1] = View(new_shape, strides, self.views[-1].offset + offset, mask)
+
+    ##
+
     def expand(self, new_shape: Shape) -> None:
         check.arg(all(
             isinstance(x, int) and (s == x or (s == 1 and st == 0))
