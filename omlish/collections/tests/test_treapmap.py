@@ -1,3 +1,5 @@
+import pytest
+
 from .. import treapmap as tm
 
 
@@ -14,6 +16,21 @@ def test_treapmap():
     m = m.with_(55, "here")
 
     print(m)
+
+    it = m.iterate()
+    while it.has_next():
+        print(it.next())
+
+    print(len(m))
+
+    old = m.with_(500, 'five hundred')
+    m = m.without(53)
+
+    with pytest.raises(KeyError):
+        print(m[53])
+    print(old[53])
+    print(old[52])
+    print(old[500])
 
     it = m.iterate()
     while it.has_next():
