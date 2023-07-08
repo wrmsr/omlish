@@ -55,7 +55,7 @@ class BasicTreeAnalysis(ta.Generic[NodeT]):
 
         self._set_fac: ta.Callable[..., ta.MutableSet[NodeT]] = col.IdentitySet if identity else set
         self._dict_fac: ta.Callable[..., ta.MutableMapping[NodeT, ta.Any]] = col.IdentityKeyDict if identity else dict
-        self._idx_seq_fac: ta.Callable[..., col.IndexedSeq[NodeT]] = functools.partial(col.IndexedSeq, identity=identity)  # noqa
+        self._idx_seq_fac: ta.Callable[..., col.IndexedSeq[NodeT]] = functools.partial(col.IndexedSeq, identity=identity)  # type: ignore  # noqa
 
         def walk(cur: NodeT, parent: ta.Optional[NodeT]) -> None:
             check.not_none(cur)
@@ -115,11 +115,11 @@ class BasicTreeAnalysis(ta.Generic[NodeT]):
         return self._node_set
 
     @property
-    def children_by_node(self) -> ta.Mapping[NodeT, col.IndexedSeq[NodeT]]:
+    def children_by_node(self) -> ta.Mapping[ta.Optional[NodeT], col.IndexedSeq[NodeT]]:
         return self._children_by_node
 
     @property
-    def child_sets_by_node(self) -> ta.Mapping[NodeT, ta.AbstractSet[NodeT]]:
+    def child_sets_by_node(self) -> ta.Mapping[ta.Optional[NodeT], ta.AbstractSet[NodeT]]:
         return self._child_sets_by_node
 
     @property
@@ -137,20 +137,19 @@ class BasicTreeAnalysis(ta.Generic[NodeT]):
             identity: bool = False,
             **kwargs
     ) -> 'BasicTreeAnalysis[NodeT]':
+        pairs: ta.Sequence[ta.Tuple[NodeT, NodeT]]
         if isinstance(src, ta.Mapping):
-            pairs = list(src.items())
+            pairs = list(src.items())  # type: ignore
         elif isinstance(src, ta.Iterable):
-            pairs = list(src)
+            pairs = list(src)  # type: ignore
         else:
             raise TypeError(src)
 
-        pairs: ta.Sequence[ta.Tuple[NodeT, NodeT]]
         pairs = [(check.not_none(n), p) for n, p in pairs]
 
         root = check.single([n for n, p in pairs if p is None])  # noqa
 
-        children_by_node: ta.MutableMapping[NodeT, ta.MutableSequence[NodeT]]
-        children_by_node = col.IdentityKeyDict() if identity else {}
+        children_by_node: ta.MutableMapping[NodeT, ta.MutableSequence[NodeT]] = col.IdentityKeyDict() if identity else {}  # noqa
         for n, _ in pairs:
             children_by_node[n] = []
         for n, p in pairs:
@@ -175,6 +174,7 @@ class BasicTreeAnalysis(ta.Generic[NodeT]):
             identity: bool = False,
             **kwargs
     ) -> 'BasicTreeAnalysis[NodeT]':
+        pairs: ta.Sequence[ta.Tuple[NodeT, ta.Sequence[NodeT]]]
         if isinstance(src, ta.Mapping):
             pairs = list(src.items())
         elif isinstance(src, ta.Iterable):
@@ -182,11 +182,10 @@ class BasicTreeAnalysis(ta.Generic[NodeT]):
         else:
             raise TypeError(src)
 
-        pairs: ta.Sequence[ta.Tuple[NodeT, ta.Sequence[NodeT]]]
         pairs = [(check.not_none(n), [check.not_none(c) for c in cs]) for n, cs in pairs]
 
-        children_by_node = col.IdentityKeyDict() if identity else {}
-        parents_by_node = col.IdentityKeyDict() if identity else {}
+        children_by_node: ta.MutableMapping[NodeT, ta.Sequence[NodeT]] = col.IdentityKeyDict() if identity else {}
+        parents_by_node: ta.MutableMapping[NodeT, NodeT] = col.IdentityKeyDict() if identity else {}
         for n, cs in pairs:
             check.not_in(n, children_by_node)
             children_by_node[n] = cs

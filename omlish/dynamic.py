@@ -65,7 +65,15 @@ class Var(ta.Generic[T]):
         self._validate = validate
         self._bindings_by_frame: ta.MutableMapping[types.FrameType, ta.MutableMapping[int, Binding]] = weakref.WeakValueDictionary()  # noqa
 
-    def __call__(self, *args, **kwargs) -> ta.Union[T, ta.ContextManager[T]]:
+    @ta.overload
+    def __call__(self) -> T:
+        ...
+
+    @ta.overload
+    def __call__(self, value: T, **kwargs: ta.Any) -> ta.ContextManager[T]:
+        ...
+
+    def __call__(self, *args, **kwargs):
         if not args:
             if kwargs:
                 raise TypeError(kwargs)
@@ -228,7 +236,7 @@ class _GeneratorContextManager(contextlib._GeneratorContextManager):  # noqa
         return super().__enter__()
 
 
-def contextmanager(fn: ta.Callable[..., ta.Iterator[T]]) -> ta.ContextManager[T]:
+def contextmanager(fn):
     @functools.wraps(fn)
     def helper(*args, **kwds):
         return _GeneratorContextManager(fn, args, kwds)

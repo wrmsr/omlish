@@ -57,7 +57,7 @@ def test_dyn():
 
 
 def test_var():
-    v = dyn.Var()
+    v: dyn.Var[int] = dyn.Var()
     with v(4):
         assert v() == 4
 
@@ -96,6 +96,8 @@ def test_cm():
 def test_greenlet():
     import greenlet
 
+    done = 0
+
     def test1():
         assert list(v.values) == [0]
         with v(2):
@@ -129,7 +131,6 @@ def test_greenlet():
         done += 1
         gr1.switch()
 
-    done = 0
     v = dyn.Var(0)
     assert list(v.values) == [0]
     with v(1):
