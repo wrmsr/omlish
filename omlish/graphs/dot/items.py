@@ -113,7 +113,7 @@ class Id(Item):
 class Attrs(Item):
     attrs: ta.Mapping[str, Value] = dc.field(
         coerce=lambda o: col.frozendict(
-            (check.not_empty(check.isinstance(k, str)), Value.of(v))
+            (check.not_empty(check.isinstance(k, str)), Value.of(v))  # type: ignore
             for k, v in check.isinstance(o, ta.Mapping).items()
         )
     )

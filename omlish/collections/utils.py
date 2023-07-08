@@ -51,8 +51,8 @@ def unique(it: ta.Iterable[T]) -> ta.List[T]:
     return ret
 
 
-def unique_dict(items: ta.Iterable[ta.Tuple[K, V]], *, identity: bool = False) -> ta.Dict[K, V]:
-    dct = IdentityKeyDict() if identity else {}
+def unique_dict(items: ta.Iterable[ta.Tuple[K, V]], *, identity: bool = False) -> ta.MutableMapping[K, V]:
+    dct: ta.MutableMapping[K, V] = IdentityKeyDict() if identity else {}
     for k, v in items:
         if k in dct:
             raise KeyError(k)
