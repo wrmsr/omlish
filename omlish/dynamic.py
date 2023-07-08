@@ -121,7 +121,7 @@ class Var(ta.Generic[T]):
 
     @property
     def values(self) -> ta.Iterator[T]:
-        frame = sys._getframe().f_back
+        frame = sys._getframe().f_back  # noqa
         while frame:
             try:
                 frame_bindings = self._bindings_by_frame[frame]
@@ -129,7 +129,7 @@ class Var(ta.Generic[T]):
                 pass
             else:
                 for level, frame_binding in sorted(frame_bindings.items()):
-                    yield frame_binding._value
+                    yield frame_binding._value  # noqa
             frame = frame.f_back
 
         if self._new is not MISSING:
@@ -160,7 +160,7 @@ class Binding(ta.Generic[T]):
         self._offset = offset
 
     def __enter__(self) -> T:
-        frame = sys._getframe(self._offset).f_back
+        frame = sys._getframe(self._offset).f_back  # noqa
         lag_frame = frame
         while lag_frame is not None:
             for cur_depth in range(_MAX_HOIST_DEPTH + 1):
@@ -180,9 +180,9 @@ class Binding(ta.Generic[T]):
 
         self._frame = frame
         try:
-            self._frame_bindings = self._var._bindings_by_frame[self._frame]
+            self._frame_bindings = self._var._bindings_by_frame[self._frame]  # noqa
         except KeyError:
-            self._frame_bindings = self._var._bindings_by_frame[self._frame] = weakref.WeakValueDictionary()
+            self._frame_bindings = self._var._bindings_by_frame[self._frame] = weakref.WeakValueDictionary()  # noqa
             self._level = 0
         else:
             self._level = min(self._frame_bindings.keys() or [1]) - 1
@@ -221,7 +221,7 @@ class Dyn:
 dyn = Dyn()
 
 
-class _GeneratorContextManager(contextlib._GeneratorContextManager):
+class _GeneratorContextManager(contextlib._GeneratorContextManager):  # noqa
 
     @hoist(2)
     def __enter__(self):
