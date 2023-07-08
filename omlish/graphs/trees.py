@@ -193,6 +193,8 @@ class BasicTreeAnalysis(ta.Generic[NodeT]):
                 check.not_in(c, parents_by_node)
                 parents_by_node[c] = n
 
+        e: ta.Any
+        d: ta.Any
         if identity:
             e, d = id, col.unique_dict((id(n), n) for n, _ in pairs)
         else:
