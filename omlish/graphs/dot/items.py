@@ -34,7 +34,7 @@ class Raw(Value):
     raw: str
 
     @classmethod
-    def of(cls, obj: ta.Union['Raw', str]) -> 'Raw':
+    def of(cls, obj: ta.Union['Raw', str]) -> 'Raw':  # type: ignore
         if isinstance(obj, Raw):
             return obj
         elif isinstance(obj, str):
@@ -47,7 +47,7 @@ class Text(Value):
     text: str
 
     @classmethod
-    def of(cls, obj: ta.Union['Text', str]) -> 'Text':
+    def of(cls, obj: ta.Union['Text', str]) -> 'Text':  # type: ignore
         if isinstance(obj, Text):
             return obj
         elif isinstance(obj, str):
@@ -86,7 +86,7 @@ class Table(Value):
     rows: ta.Sequence[Row] = dc.field(coerce=col.seq)
 
     @classmethod
-    def of(cls, obj: ta.Union['Table', ta.Sequence[ta.Any]]) -> 'Table':
+    def of(cls, obj: ta.Union['Table', ta.Sequence[ta.Any]]) -> 'Table':  # type: ignore
         if isinstance(obj, Table):
             return obj
         elif isinstance(obj, str):
