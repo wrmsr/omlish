@@ -103,6 +103,15 @@ class Buffer(Lazy):
         return self._realized
 
     @property
+    def src(self) -> ta.Union[ops.Op, RawBuffer]:
+        if self._op is not None:
+            return self._op
+        elif self._realized is not None:
+            return self._realized
+        else:
+            raise ValueError(self)
+
+    @property
     def dtype(self) -> Dtype:
         return self._dtype
 

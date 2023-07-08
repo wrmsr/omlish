@@ -179,6 +179,34 @@ def test_dot():
     yt = Tensor.of(np.asarray([3., 4.], dtype=np.float32), requires_grad=True)
     zt = (xt * yt).sum()
 
-    from .. import dot
+    # from .. import dot
+    # dot.DotGen().gen(zt)
 
-    dot.DotGen().gen(zt)
+    from omlish import collections as col
+    from omlish.graphs import dot
+
+    from .. import buffers
+    from .. import ops
+    from .. import raw
+
+    items = []
+    seen = col.IdentitySet()
+
+    def rec(o):
+        if o in seen:
+            return
+        items.append(dot.Node(str(id(o)), {'label': f'{type(o).__name__}:{id(o)}'}))
+        if isinstance(o, buffers.Buffer):
+            rec(o.src)
+            items.append(dot.Edge(str(id(o)), str(id(o.src))))
+        elif isinstance(o, ops.Op):
+            for s in o.srcs:
+                rec(s)
+                items.append(dot.Edge(str(id(o)), str(id(s))))
+        elif isinstance(o, raw.RawBuffer):
+            pass
+        else:
+            raise TypeError(o)
+
+    rec(zt.data)
+    dot.open_dot(dot.render(dot.Graph(items)), timeout_s=10., sleep_s=1.)
