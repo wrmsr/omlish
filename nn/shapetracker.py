@@ -297,9 +297,12 @@ class ShapeTracker(lang.Final):
         raise NotImplementedError
 
     _movement_op_dispatch: ta.Final[ta.Mapping[ta.Type[ops.MovementOp], ta.Callable]] = {
-        ops.Expand: expand,
-        ops.Permute: permute,
         ops.Reshape: reshape,
+        ops.Permute: permute,
+        ops.Expand: expand,
+        ops.Pad: pad,
+        ops.Shrink: shrink,
+        ops.Restride: restride,
     }
 
     def movement_op(self, op: ta.Type[ops.MovementOp], arg: ta.Sequence[int]) -> 'ShapeTracker':
