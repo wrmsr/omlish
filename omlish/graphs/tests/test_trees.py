@@ -9,7 +9,7 @@ def test_basic():
         'd': 'b',
     })
 
-    a1 = trees.BasicTreeAnalysis.from_children({
+    a1 = trees.BasicTreeAnalysis.from_children({  # type: ignore
         'a': ['b', 'c'],
         'b': ['d'],
         'c': [],

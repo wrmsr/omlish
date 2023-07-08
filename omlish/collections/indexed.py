@@ -58,7 +58,7 @@ class IndexedSetSeq(ta.Sequence[ta.AbstractSet[T]]):
     def __iter__(self) -> ta.Iterator[ta.AbstractSet[T]]:
         return iter(self._lst)
 
-    def __getitem__(self, idx: int) -> ta.AbstractSet[T]:  # type ignore
+    def __getitem__(self, idx: int) -> ta.AbstractSet[T]:  # type: ignore
         return self._lst[idx]
 
     def __len__(self) -> int:

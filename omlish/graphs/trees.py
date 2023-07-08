@@ -77,19 +77,19 @@ class BasicTreeAnalysis(ta.Generic[NodeT]):
                 walk(child, cur)
 
         nodes: ta.List[NodeT] = []
-        node_set: ta.MutableSet[NodeT] = self._set_fac()
-        children_by_node: ta.MutableMapping[ta.Optional[NodeT], ta.Sequence[NodeT]] = self._dict_fac()
-        child_sets_by_node: ta.MutableMapping[ta.Optional[NodeT], ta.AbstractSet[NodeT]] = self._dict_fac()
-        parents_by_node: ta.MutableMapping[NodeT, ta.Optional[NodeT]] = self._dict_fac()
+        node_set: ta.MutableSet[NodeT] = self._set_fac()  # type: ignore
+        children_by_node: ta.MutableMapping[ta.Optional[NodeT], ta.Sequence[NodeT]] = self._dict_fac()  # type: ignore
+        child_sets_by_node: ta.MutableMapping[ta.Optional[NodeT], ta.AbstractSet[NodeT]] = self._dict_fac()  # type: ignore  # noqa
+        parents_by_node: ta.MutableMapping[NodeT, ta.Optional[NodeT]] = self._dict_fac()  # type: ignore
 
         children_by_node[None] = [root]
-        child_sets_by_node[None] = self._set_fac([root])
+        child_sets_by_node[None] = self._set_fac([root])  # type: ignore
 
         walk(root, None)
 
         self._nodes = self._idx_seq_fac(nodes)
         self._node_set: ta.AbstractSet[NodeT] = node_set
-        self._children_by_node: ta.Mapping[ta.Optional[NodeT], col.IndexedSeq[NodeT]] = self._dict_fac(
+        self._children_by_node: ta.Mapping[ta.Optional[NodeT], col.IndexedSeq[NodeT]] = self._dict_fac(  # type: ignore
             [(n, self._idx_seq_fac(cs)) for n, cs in children_by_node.items()])
         self._child_sets_by_node: ta.Mapping[ta.Optional[NodeT], ta.AbstractSet[NodeT]] = child_sets_by_node
         self._parents_by_node: ta.Mapping[NodeT, ta.Optional[NodeT]] = parents_by_node
@@ -176,16 +176,16 @@ class BasicTreeAnalysis(ta.Generic[NodeT]):
     ) -> 'BasicTreeAnalysis[NodeT]':
         pairs: ta.Sequence[ta.Tuple[NodeT, ta.Sequence[NodeT]]]
         if isinstance(src, ta.Mapping):
-            pairs = list(src.items())
+            pairs = list(src.items())  # type: ignore
         elif isinstance(src, ta.Iterable):
-            pairs = list(src)
+            pairs = list(src)  # type: ignore
         else:
             raise TypeError(src)
 
         pairs = [(check.not_none(n), [check.not_none(c) for c in cs]) for n, cs in pairs]
 
-        children_by_node: ta.MutableMapping[NodeT, ta.Sequence[NodeT]] = col.IdentityKeyDict() if identity else {}
-        parents_by_node: ta.MutableMapping[NodeT, NodeT] = col.IdentityKeyDict() if identity else {}
+        children_by_node: ta.MutableMapping[NodeT, ta.Sequence[NodeT]] = col.IdentityKeyDict() if identity else {}  # type: ignore  # noqa
+        parents_by_node: ta.MutableMapping[NodeT, NodeT] = col.IdentityKeyDict() if identity else {}  # type: ignore
         for n, cs in pairs:
             check.not_in(n, children_by_node)
             children_by_node[n] = cs
@@ -220,7 +220,7 @@ class BasicTreeAnalysis(ta.Generic[NodeT]):
             return ret
 
     def iter_ancestors(self, node: NodeT) -> NodeGenerator[NodeT]:
-        cur = node
+        cur: ta.Optional[NodeT] = node
         while True:
             cur = self.parents_by_node.get(cur)
             if cur is None:
@@ -230,7 +230,7 @@ class BasicTreeAnalysis(ta.Generic[NodeT]):
     def get_lineage(self, node: NodeT) -> col.IndexedSeq[NodeT]:
         return self._idx_seq_fac(reversed([node, *self.iter_ancestors(node)]))
 
-    def get_first_parent_of_type(self, node: NodeT, ty: ta.Type[T]) -> ta.Optional[NodeT]:
+    def get_first_parent_of_type(self, node: NodeT, ty: ta.Type[T]) -> ta.Optional[T]:
         for cur in self.iter_ancestors(node):
             if isinstance(cur, ty):
                 return cur
