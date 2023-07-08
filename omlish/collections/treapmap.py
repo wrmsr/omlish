@@ -49,6 +49,8 @@ class TreapMap(ta.Generic[K, V]):
     def __len__(self) -> int:
         # TODO: memo
         # TODO: itertools lol
+        if self._n is None:
+            return 0
         result = 0
         for _ in self._n:
             result += 1
@@ -63,7 +65,7 @@ class TreapMap(ta.Generic[K, V]):
             return True
 
     def __getitem__(self, item: K) -> V:
-        n = treap.find(self._n, (item, None), self._c)
+        n = treap.find(self._n, (item, None), self._c)  # type: ignore
         if n is None:
             raise KeyError(item)
         return n.value
@@ -74,9 +76,9 @@ class TreapMap(ta.Generic[K, V]):
             _n=self._n,
             _b=False,
         )
-        while i._n.left is not None:  # noqa
-            i._st.append(i._n)  # noqa
-            i._n = i._n.left  # noqa
+        while (n := i._n) is not None and n.left is not None:  # noqa
+            i._st.append(n)  # noqa
+            i._n = n.left  # noqa
         return i
 
     def with_(self, k: K, v: V) -> 'TreapMap[K, V]':
@@ -90,7 +92,7 @@ class TreapMap(ta.Generic[K, V]):
         return TreapMap(_n=n, _c=self._c)
 
     def without_(self, k: K) -> 'TreapMap[K, V]':
-        n = treap.delete(self._n, (k, None), self._c)
+        n = treap.delete(self._n, (k, None), self._c)  # type: ignore
         return TreapMap(_n=n, _c=self._c)
 
     def default(self, k: K, v: V) -> 'TreapMap[K, V]':
@@ -123,6 +125,8 @@ class TreapMapIterator(ta.Generic[K, V]):
 
     def next(self) -> ta.Tuple[K, V]:
         n = self._n
+        if n is None:
+            raise StopIteration
         if n.right is not None:
             self._n = n.right
             while self._n.left is not None:
