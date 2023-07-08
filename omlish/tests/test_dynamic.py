@@ -5,36 +5,39 @@ from ..dev.pytest import skip_if_cant_import
 
 
 def test_dyn():
-    with dyn.dyn(x=5):
-        assert dyn.dyn.x == 5
-        with dyn.dyn(y=10):
-            assert dyn.dyn.x == 5 and dyn.dyn.y == 10
-            with dyn.dyn(x=6):
-                assert dyn.dyn.x == 6 and dyn.dyn.y == 10
-                with dyn.dyn(y=11):
-                    assert dyn.dyn.x == 6 and dyn.dyn.y == 11
-                assert dyn.dyn.x == 6 and dyn.dyn.y == 10
-            assert dyn.dyn.x == 5 and dyn.dyn.y == 10
-        assert dyn.dyn.x == 5
+    x: dyn.Var[int] = dyn.Var()
+    y: dyn.Var[int] = dyn.Var()
+
+    with x(5):
+        assert x() == 5
+        with y(10):
+            assert x() == 5 and y() == 10
+            with x(6):
+                assert x() == 6 and y() == 10
+                with y(11):
+                    assert x() == 6 and y() == 11
+                assert x() == 6 and y() == 10
+            assert x() == 5 and y() == 10
+        assert x() == 5
 
     try:
-        dyn.dyn.x
-    except AttributeError:
+        x()
+    except dyn.UnboundVarError:
         pass
     else:
         assert False
 
     def _g1():
         while True:
-            yield dyn.dyn.x
+            yield x()
     g1 = _g1()
 
-    with dyn.dyn(x=99):
+    with x(99):
         assert next(g1) == 99
 
     def _g2(x):
         while True:
-            with dyn.dyn(x=x):
+            with x(x):
                 yield next(g1)
 
     # g2a = _g2('a')
@@ -43,14 +46,14 @@ def test_dyn():
     # FIXME
     # assert next(g2a) == 'a'
     # assert next(g2b) == 'b'
-    # with dyn.dyn(x=100):
+    # with x(100):
     #     assert next(g1) == 100
     #     assert next(g2a) == 'a'
     #     assert next(g2b) == 'b'
 
     try:
         next(g1)
-    except AttributeError:
+    except dyn.UnboundVarError:
         pass
     else:
         assert False
