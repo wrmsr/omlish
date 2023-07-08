@@ -34,7 +34,7 @@ def hoist(depth=0):
     return inner
 
 
-hoist()(contextlib.ExitStack.enter_context)
+hoist()(contextlib.ExitStack.enter_context)  # noqa
 
 
 class MISSING(lang.Marker):
@@ -49,19 +49,18 @@ class Var(ta.Generic[T]):
 
     def __init__(
             self,
-            default: ta.Union[T, ta.Type[MISSING]] = MISSING,
+            default: ta.Union[T, ta.Type[MISSING]] = MISSING,  # type: ignore
             *,
             new: ta.Union[ta.Callable[[], T], ta.Type[MISSING]] = MISSING,
-            validate: ta.Callable[[T], None] = None,
+            validate: ta.Optional[ta.Callable[[T], None]] = None,
     ) -> None:
         super().__init__()
 
-        new: ta.Any
         if default is not MISSING and new is not MISSING:
             raise TypeError('Cannot set both default and new')
         elif default is not MISSING:
-            new = lambda: default
-        self._new = ta.cast(ta.Union[ta.Type[MISSING], ta.Callable[[], T]], new)
+            new = lambda: default  # type: ignore
+        self._new: ta.Union[ta.Type[MISSING], ta.Callable[[], T]] = new
         self._validate = validate
         self._bindings_by_frame: ta.MutableMapping[types.FrameType, ta.MutableMapping[int, Binding]] = weakref.WeakValueDictionary()  # noqa
 
@@ -102,7 +101,6 @@ class Var(ta.Generic[T]):
 
         def outer(fn):
             class Descriptor:
-                func_name = fn.__name__
 
                 @staticmethod
                 @functools.wraps(fn)
@@ -119,7 +117,6 @@ class Var(ta.Generic[T]):
                         with this.binding(bound_binding_fn(*args, **kwargs)):
                             return bound_fn(*args, **kwargs)
 
-                    inner.func_name = fn.__name__
                     return inner
 
             dct = dict((k, getattr(fn, k)) for k in functools.WRAPPER_ASSIGNMENTS)
@@ -169,11 +166,11 @@ class Binding(ta.Generic[T]):
 
     def __enter__(self) -> T:
         frame = sys._getframe(self._offset).f_back  # noqa
-        lag_frame = frame
+        lag_frame: ta.Optional[types.FrameType] = frame
         while lag_frame is not None:
             for cur_depth in range(_MAX_HOIST_DEPTH + 1):
                 if lag_frame is None:
-                    break
+                    break  # type: ignore
                 try:
                     lag_hoist = _HOISTED_CODE_DEPTH[lag_frame.f_code]
                 except KeyError:
@@ -186,6 +183,8 @@ class Binding(ta.Generic[T]):
             else:
                 break
 
+        if frame is None:
+            raise RuntimeError
         self._frame = frame
         try:
             self._frame_bindings = self._var._bindings_by_frame[self._frame]  # noqa
