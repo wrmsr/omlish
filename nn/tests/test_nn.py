@@ -178,8 +178,11 @@ def test_dot():
     xt = Tensor.of(np.asarray([1., 2.], dtype=np.float32), requires_grad=True)
     yt = Tensor.of(np.asarray([3., 4.], dtype=np.float32), requires_grad=True)
     zt = (xt * yt).sum()
+    zt.backward()
 
     from .. import dot
-    from omlish.graphs import dot as dotu
 
-    dotu.open_dot(dotu.render(dot.DotGen.graph(zt)), timeout_s=10., sleep_s=1.)
+    dot.open_dot(zt)
+    dot.open_dot(zt.get_grad())
+    dot.open_dot(xt.get_grad())
+    dot.open_dot(yt.get_grad())

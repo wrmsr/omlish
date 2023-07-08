@@ -66,3 +66,14 @@ class DotGen:
         nid = str(id(obj))
         self._items.append(dot.Node(nid, {'label': f'{type(obj).__name__}:{id(obj)}'}))
         return nid
+
+
+def open_dot(
+        obj: ta.Any,
+        *,
+        timeout_s: float = 10.,
+        sleep_s: float = 1.,
+        **kwargs: ta.Any
+) -> None:
+    g = DotGen.graph(obj, **kwargs)
+    dot.open_dot(dot.render(g), timeout_s=timeout_s, sleep_s=sleep_s)
