@@ -402,6 +402,54 @@ class LinearCodegenOp(CodegenOp):
         self.simplify_ones()
         self.simplify_merge_adjacent()
 
+    def shape_offsets(self, i: int) -> ta.Sequence[ta.Sequence[int]]:
+        if self._upcasted < 1:
+            return [()]
+
+        return itertools.product(*[
+            list(range(s))
+            for s in self._sts[i].shape[self.shape_len - self._upcasted:][::-1]
+        ])
+
+    def float4_axis(self, i):
+        return [
+            x - (self.shape_len - self._upcasted)
+            for x in self._sts[i].unit_stride_axes()
+            if x >= self.shape_len - self._upcasted and self._sts[i].shape[x] % 4 == 0
+        ]
+
+    def upcasted_axis(self, i):
+        return list(zip(
+            self._sts[i].shape[self.shape_len - self._upcasted:],
+            self._sts[i].real_strides()[self.shape_len - self._upcasted:],
+            [
+                x != y
+                for x, y in zip(
+                self._sts[0].shape[self.shape_len - self._upcasted:],
+                self.full_shape[self.shape_len - self._upcasted:],
+            )
+            ],
+        ))
+
+    # TODO: is there a better way to write this?
+    def acc_offsets(self, i):
+        if self._upcasted == 0:
+            return [0]
+        upcasted_i = self.upcasted_axis(i)
+        acc_strides = [
+            x * (1 - upcasted_i[::-1][i][2])
+            for i, x in enumerate(Shape(1 if r else s for s, _, r in upcasted_i[::-1]).base_stride())
+        ]
+        return [
+            sum(t)
+            for t in itertools.product(*[
+                [y * acc_strides[i] for y in range(x[0])]
+                for i, x in enumerate(upcasted_i[::-1])
+            ])
+        ]
+
+    def get_upcast_dim(self, i, amt=4):
+
     def required_optimizations(self, early_only=False):
         for buf_index, buf in enumerate(self._bufs):
             unit_stride_axes_mul_4 = [
@@ -422,13 +470,6 @@ class LinearCodegenOp(CodegenOp):
             #     ):
             #         self.shift_to(unit_stride_axes_mul_4[0], 4)
             #         self.upcast()
-
-    def float4_axis(self, i):
-        return [
-            x - (self.shape_len - self._upcasted)
-            for x in self._sts[i].unit_stride_axes()
-            if x >= self.shape_len - self._upcasted and self._sts[i].shape[x] % 4 == 0
-        ]
 
     supports_float4: bool = False
     supports_float4_alu: bool = False
@@ -849,15 +890,6 @@ class LinearCodegenOp(CodegenOp):
 
         return ordered_ret
 
-    def shape_offsets(self, i: int) -> ta.Sequence[ta.Sequence[int]]:
-        if self._upcasted < 1:
-            return [()]
-
-        return itertools.product(*[
-            list(range(s))
-            for s in self._sts[i].shape[self.shape_len - self._upcasted:][::-1]
-        ])
-
     @property
     def upcast_in_mid_reduce_axes(self) -> ta.Sequence[int]:
         return [
@@ -997,36 +1029,6 @@ class LinearCodegenOp(CodegenOp):
     def upcast(self) -> None:
         check.arg(self.full_shape[-1] != 1)
         self._upcasted += 1
-
-    def upcasted_axis(self, i):
-        return list(zip(
-            self._sts[i].shape[self.shape_len - self._upcasted:],
-            self._sts[i].real_strides()[self.shape_len - self._upcasted:],
-            [
-                x != y
-                for x, y in zip(
-                    self._sts[0].shape[self.shape_len - self._upcasted:],
-                    self.full_shape[self.shape_len - self._upcasted:],
-                )
-            ],
-        ))
-
-    # TODO: is there a better way to write this?
-    def acc_offsets(self, i):
-        if self._upcasted == 0:
-            return [0]
-        upcasted_i = self.upcasted_axis(i)
-        acc_strides = [
-            x * (1 - upcasted_i[::-1][i][2])
-            for i, x in enumerate(Shape(1 if r else s for s, _, r in upcasted_i[::-1]).base_stride())
-        ]
-        return [
-            sum(t)
-            for t in itertools.product(*[
-                [y * acc_strides[i] for y in range(x[0])]
-                for i, x in enumerate(upcasted_i[::-1])
-            ])
-        ]
 
     def simplify_ones(self) -> None:
         # remove places where the shape is all ones
