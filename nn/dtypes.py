@@ -12,6 +12,8 @@ class Dtype:
 
     is_int: bool = False
 
+    sz: ta.Final[int] = 1   # FIXME:
+
     def __repr__(self) -> str:
         return f'<Dtype:{self.name}>'
 
