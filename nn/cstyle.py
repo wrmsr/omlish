@@ -266,73 +266,32 @@ class CstyleRenderer:
         out = check.not_none(u.out)
         buf = self._bufs[u.i]
 
-        # # TODO: merge with CONST?
-        # if buf.is_realized and isinstance(realized := buf.get_realized(), RawConst):
-        #     check.state(out.dtype == Float32)
-        #     x = float(check.isinstance(realized.to_cpu(), np.float))
-        #     if math.isnan(x):
-        #         val = 'NAN'
-        #     elif math.isinf(x):
-        #         val = ('-' if x < 0 else '') + 'INFINITY'
-        #     else:
-        #         val = f'{x}' + ('f' if not buf.dtype.is_int else '')
-        # elif u.out.dtype == Float4:
-        #     val = (
-        #         f'({u.out.dtype.name})'
-        #         f'(*('
-        #         f'({self._dialect.smem_prefix if isinstance(buf, LocalBuffer) else self._dialect.buffer_prefix}{buf.dtype.name}4*)'  # noqa
-        #         f'({self._buf_names[u.i]}+{_render_sym(u.idx)})'
-        #         f'))')
-        # else:
-        #     val = f'{self._buf_names[u.i]}[{_render_sym(u.idx)}]'
-        #
-        # # NOTE: if min and max are both 0, it should be a CONST in the Linearizer
-        # if u.valid.min == 1:
-        #     self._append(f'{self._render_token(out, True)} = {val};')
-        # else:
-        #     cast = self._casts_by_dtype[out.dtype]
-        #     self._append(f'{self._render_token(out, True)} = ({_render_sym(u.valid)}) ? {cast.prefix}({val}) : {cast.zero};')
-
-        if args.valid.max == 0:
-            val = lang.render_const(0.0, newvar.dtype)
-        elif isinstance(bufs[args.i].realized, RawConst):
-            val = lang.render_const(bufs[args.i].realized._buf, newvar.dtype)
+        if u.valid.max == 0:
+            val = self._render_const(0.0, out.dtype)
+        elif buf.is_realized and isinstance(buf.get_realized(), RawConst):
+            val = self._render_const(self._bufs[u.i].get_realized()._buf, out.dtype)
         else:
-            val = lang.render_load(
-                newvar.dtype,
-                bufnames[args.i],
-                bufs[args.i].dtype,
-                args.idx,
-                isinstance(bufs[args.i], LocalBuffer),
+            val = self._render_load(
+                out.dtype,
+                self._buf_names[u.i],
+                buf.dtype,
+                u.idx,
+                isinstance(buf, LocalBuffer),
             )
-        if args.valid.min == 0 and args.valid.max == 1:
-            val = f"({args.valid.render(render_cl)}) ? ({val}) : {lang.render_const(0.0, newvar.dtype)}"
-        kk(f"{newvar.render(True)} = {val};")
+        if u.valid.min == 0 and u.valid.max == 1:
+            val = f"({_render_sym(u.valid)}) ? ({val}) : {self._render_const(0.0, out.dtype)}"
+        self._append(f'{self._render_token(out, True)} = {val};')
 
     @_append_uop.register
     def _append_store(self, u: uo.Store) -> None:
-        # if u.vin[0].dtype == Float32 or (u.vin[0].dtype == Float4 and u.vin[0].offset is not None):
-        #     check.state(u.valid.min == 1)
-        #     self._append(f'{self._buf_names[u.i]}[{_render_sym(u.idx)}] = {self._render_token(u.vin[0])};')
-        #
-        # elif len(u.vin) != 0 and u.vin[0].dtype == Float4 and u.vin[0].offset is None:
-        #     buf = self._bufs[u.i]
-        #     check.state(u.valid.min == 1)
-        #     self._append(
-        #         f'*('
-        #         f'({self._dialect.smem_prefix if isinstance(buf, LocalBuffer) else self._dialect.buffer_prefix}{buf.dtype.name}4*)'  # noqa
-        #         f'({self._buf_names[u.i]}+{_render_sym(u.idx)})'
-        #         f') = ({buf.dtype.name}4){self._render_token(u.vin[0])};'
-        #     )
-
-        kk(
-            lang.render_store(
-                bufnames[args.i],
-                bufs[args.i].dtype,
-                vin[0].render(),
-                vin[0].dtype if vin[0].offset is None else dtypes.float,
-                args.idx,
-                isinstance(bufs[args.i], LocalBuffer),
+        self._append(
+            self._render_store(
+                self._buf_names[u.i],
+                self._bufs[u.i].dtype,
+                self._render_token(u.vin[0]),
+                u.vin[0].dtype if u.vin[0].offset is None else Float32,
+                u.idx,
+                isinstance(self._bufs[u.i], LocalBuffer),
             )
         )
 

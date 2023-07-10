@@ -205,3 +205,5 @@ def test_matmul():
     tst = [Tensor.of(x.detach().numpy(), requires_grad=True) for x in ts]
     x, y = tst
     ret: Tensor = x.matmul(y).realize()
+
+    print(ret.numpy())

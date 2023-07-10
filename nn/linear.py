@@ -39,6 +39,13 @@ class LocalBuffer:
     dtype: Dtype = Float32
     realized: ta.Optional[RawBuffer] = None
 
+    @property
+    def is_realized(self) -> bool:
+        return self.realized is not None
+
+    def get_realized(self) -> RawBuffer:
+        return check.not_none(self.realized)
+
 
 @dc.dataclass(frozen=True)
 class LinearAnalysis:
