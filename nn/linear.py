@@ -645,7 +645,25 @@ class LinearCodegenOp(CodegenOp):
         self._uops = []
 
         if len(self._group_for_reduce):
-            raise NotImplementedError
+            # TODO: the strides of this can be controlled
+            self._sts.append(
+                ShapeTracker(
+                    Shape(
+                        [1] * self.first_reduce
+                        + self._group_for_reduce
+                        + [1]
+                        * (
+                                self.shape_len
+                                - self._upcasted
+                                - len(self._group_for_reduce)
+                                - self.first_reduce
+                        )
+                        + [x[0] for x in self.upcasted_axis(0)]
+                    )
+                )
+            )
+            self._bufs.append(LocalBuffer('temp', self._sts[-1].size))
+            self._uop(uo.DefineLocal(out=None, vin=[], s='temp', sz=self._sts[-1].size))
 
         loaded_buffers = {}
         acc = []
@@ -762,7 +780,7 @@ class LinearCodegenOp(CodegenOp):
 
                 # late reduce loop
                 end_local_idxs = [
-                    sym.Var(
+                    sym.var(
                         f'tidx{i}',
                         0,
                         self.full_shape[i] - 1 if i >= self.first_reduce else 0,
@@ -967,9 +985,8 @@ class LinearCodegenOp(CodegenOp):
             lambda x: Shape(
                 list(x[0:axis]) +
                 (
-                    [amount, x[axis] // amount] if top else
-                    [x[axis] // amount, amount] if x[axis] > 1 else
-                    [1, 1]
+                    ([amount, x[axis] // amount] if top else
+                     [x[axis] // amount, amount]) if x[axis] > 1 else [1, 1]
                 ) +
                 list(x[axis + 1:])
             ),
