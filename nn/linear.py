@@ -792,19 +792,40 @@ class LinearCodegenOp(CodegenOp):
                 # load localbufs
                 loaded_buffers['LOCAL_BUFFER'] = self.global_load(-1, end_local_idxs + fake_reduce_idxs + upcast_idxs)
 
-                # there's no AST here (and there's no shape for the reduce LazyOp)
-                self.process_one(
-                    LazyOp(self.reduceop.op, ('LOCAL_BUFFER',)),
-                    [acc[off] for off in self.acc_offsets(-1)],
-                    loaded_buffers,
-                    ssa,
-                    do_reduce=True,
-                )
+                # # there's no AST here (and there's no shape for the reduce LazyOp)
+                # self.process_one(
+                #     LazyOp(self.reduceop.op, ('LOCAL_BUFFER',)),
+                #     [acc[off] for off in self.acc_offsets(-1)],
+                #     loaded_buffers,
+                #     ssa,
+                #     do_reduce=True,
+                # )
+
+                ####
+
+                breakpoint()
+                ot = {
+                    ops.Sum: ops.Add,
+                    ops.Max: ops.Maximum,
+                    ops.MulAcc: ops.MulAcc,
+                }[type(self.reduce_op)]
+                [
+                    (
+                        idx,
+                        self._uop(uo.Alu(
+                            out=val[-1],
+                            vin=list(val),
+                            ty=ot,
+                        )),
+                    )
+                    for idx, val in
+                    get_grouped_maybe_float4(loaded_buffers['LOCAL_BUFFER'], acc, grouping_allowed=self.supports_float4_alu)
+                ]
+
+                ####
 
                 # end the late reduce loop
                 self._uop(uo.EndLoop(out=None, vin=[], idxs=end_local_idxs, s='late_reduce'))
-
-                raise NotImplementedError
 
         # load latebufs
         for i, b in enumerate(self._bufs):

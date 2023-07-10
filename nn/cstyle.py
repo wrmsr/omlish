@@ -95,7 +95,7 @@ class CstyleRenderer:
         )
 
         for u in self._uops:
-            self._render_uop(u)
+            self._append_uop(u)
 
         self._lines.append('}')
 
@@ -140,15 +140,46 @@ class CstyleRenderer:
             return tok.name + '.' + 'xyzw'[int(tok.offset)]
         raise TypeError(tok)
 
-    def _line(self, s: str) -> None:
+    def _render_const(self, x: ta.Union[float, int], var_dtype: Dtype) -> str:
+        if math.isnan(x):
+            val = 'NAN'
+        elif math.isinf(x):
+            val = ('-' if x < 0 else '') + 'INFINITY'
+        else:
+            val = f'{x}' + ('' if var_dtype.is_int else 'f')
+        return f'{self._dialect.float4}({val}, {val}, {val}, {val})' if var_dtype == Float4 else val
+
+    def _render_load(self, output_dtype: Dtype, buf_name: str, buf_dtype: Dtype, idx: sym.Node, local=False) -> str:
+        if output_dtype == Float4:
+            return (
+                f'({output_dtype.name})'
+                f'(*('
+                f'({self._dialect.smem_prefix if local else self._dialect.buffer_prefix}{buf_dtype.name}{output_dtype.sz}*)'  # noqa
+                f'({buf_name}+{_render_sym(idx)})'
+                f'))'
+            )
+        else:
+            return f'{buf_name}[{_render_sym(idx)}]'
+
+    def _render_store(self, buf_name: str, buf_dtype: Dtype, var_name: str, var_dtype: Dtype, idx: sym.Node, local: bool = False) -> str:
+        if var_dtype.sz > 1:
+            return (
+                f'*(({self._dialect.smem_prefix if local else self._dialect.buffer_prefix}{buf_dtype.name}{var_dtype.sz}*)'  # noqa
+                f'({buf_name}+{_render_sym(idx)})) = '
+                f'({buf_dtype.name}{var_dtype.sz}){var_name};'
+            )
+        else:
+            return f'{buf_name}[{_render_sym(idx)}] = {var_name};'
+
+    def _append(self, s: str) -> None:
         self._lines.append('  ' * self._depth + s)
 
     @dispatch.method
-    def _render_uop(self, uop: uo.Uop) -> None:
+    def _append_uop(self, uop: uo.Uop) -> None:
         raise TypeError(uop)
 
-    @_render_uop.register
-    def _render_loop(self, u: uo.Loop) -> None:
+    @_append_uop.register
+    def _append_loop(self, u: uo.Loop) -> None:
         for i, var in enumerate(u.idxs):
             if isinstance(var, sym.Num):
                 if u.s == 'global' and self._dialect.gid:
@@ -156,50 +187,45 @@ class CstyleRenderer:
                 if u.s == 'local' and self._dialect.lid:
                     self._local_size.append(1)
                 # one number, not an index
-                self._line('{')
+                self._append('{')
 
             elif u.s == 'global' and self._dialect.gid:
                 check.state(len(u.idxs) <= len(self._dialect.gid))
-                self._line(f'{{ int {var.expr} = {self._dialect.gid[len(u.idxs) - 1 - i]};  /* {var.max + 1} */')
+                self._append(f'{{ int {var.expr} = {self._dialect.gid[len(u.idxs) - 1 - i]};  /* {var.max + 1} */')
                 self._global_size.append(var.max + 1)
 
             elif u.s == 'local' and self._dialect.lid:
                 check.state(len(u.idxs) <= len(self._dialect.lid))
-                self._line(f'{{ int {var.expr} = {self._dialect.lid[len(u.idxs) - 1 - i]};  /* {var.max + 1} */')
+                self._append(f'{{ int {var.expr} = {self._dialect.lid[len(u.idxs) - 1 - i]};  /* {var.max + 1} */')
                 self._local_size.append(var.max + 1)
 
             else:
-                self._line(f'for (int {var.expr} = {var.min}; {var.expr} <= {var.max}; ++{var.expr}) {{')
+                self._append(f'for (int {var.expr} = {var.min}; {var.expr} <= {var.max}; ++{var.expr}) {{')
 
         self._depth += 1
 
-    @_render_uop.register
-    def _render_end_loop(self, u: uo.EndLoop) -> None:
+    @_append_uop.register
+    def _append_end_loop(self, u: uo.EndLoop) -> None:
         if u.s == 'local' and len(self._dialect.lid):
             # TODO: this is a bit of a hack. the local loop isn't real on the GPU
-            self._line(f'if ({_render_sym(sym.sum_(u.idxs))} == 0) {{')
+            self._append(f'if ({_render_sym(sym.sum_(u.idxs))} == 0) {{')
             self._pend_close = '}' * (len(u.idxs) + 1) + f' /* {u.s} */'
         else:
             if u.s == 'global' and self._pend_close:
                 self._depth -= 1
-                self._line(self._pend_close)
+                self._append(self._pend_close)
                 self._pend_close = None
             self._depth -= 1
-            self._line('}' * len(u.idxs) + f' /* {u.s} */')
+            self._append('}' * len(u.idxs) + f' /* {u.s} */')
 
-    @_render_uop.register
-    def _render_barrier(self, u: uo.Barrier) -> None:
-        self._line(self._dialect.barrier)
+    @_append_uop.register
+    def _append_barrier(self, u: uo.Barrier) -> None:
+        self._append(self._dialect.barrier)
 
-    @_render_uop.register
-    def _render_const(self, u: uo.Const) -> None:
+    @_append_uop.register
+    def _append_const(self, u: uo.Const) -> None:
         check.not_none(u.out)
-        if u.v == -math.inf:
-            self._line(f'{self._render_token(u.out, True)} = -INFINITY;')
-        elif u.out.dtype == Float4:
-            self._line(f'{self._render_token(u.out, True)} = {{ {u.v}f, {u.v}f, {u.v}f, {u.v}f }};')
-        else:
-            self._line(f'{self._render_token(u.out, True)} = {u.v}f;')
+        self._append(f'{self._render_token(u.out, True)} = {self._render_const(u.v, u.out.dtype)};')
 
     _code_for_op: ta.Final[ta.Mapping[ta.Type[ops.Op], ta.Callable[..., str]]] = {
         ops.Exp2: lambda x: f'exp2({x})',
@@ -216,19 +242,13 @@ class CstyleRenderer:
         ops.MulAcc: lambda a, b, c: f'(({a}*{b})+{c})',
     }
 
-    @_render_uop.register
-    def _render_alu(self, u: uo.Alu) -> None:
+    @_append_uop.register
+    def _append_alu(self, u: uo.Alu) -> None:
         check.not_none(u.out)
-        if u.out in u.vin:
-            self._line(
-                f'{self._render_token(u.out)} = '
-                f'{self._code_for_op[u.ty](*[self._render_token(x) for x in u.vin])};'
-            )
-        else:
-            self._line(
-                f'{self._render_token(u.out, True)} = '
-                f'{self._code_for_op[u.ty](*[self._render_token(x) for x in u.vin])};'
-            )
+        self._append(
+            f'{self._render_token(u.out, u.out not in u.vin)} = '
+            f'{self._code_for_op[u.ty](*[self._render_token(x) for x in u.vin])};'
+        )
 
     class _Cast(ta.NamedTuple):
         prefix: str
@@ -241,65 +261,92 @@ class CstyleRenderer:
             Float4: self._Cast('', f'{self._dialect.float4}(0.0f, 0.0f, 0.0f, 0.0f)'),
         }
 
-    @_render_uop.register
-    def _render_load(self, u: uo.Load) -> None:
+    @_append_uop.register
+    def _append_load(self, u: uo.Load) -> None:
         out = check.not_none(u.out)
         buf = self._bufs[u.i]
 
-        # TODO: merge with CONST?
-        if buf.is_realized and isinstance(realized := buf.get_realized(), RawConst):
-            check.state(out.dtype == Float32)
-            x = float(check.isinstance(realized.to_cpu(), np.float))
-            if math.isnan(x):
-                val = 'NAN'
-            elif math.isinf(x):
-                val = ('-' if x < 0 else '') + 'INFINITY'
-            else:
-                val = f'{x}' + ('f' if not buf.dtype.is_int else '')
-        elif u.out.dtype == Float4:
-            val = (
-                f'({u.out.dtype.name})'
-                f'(*('
-                f'({self._dialect.smem_prefix if isinstance(buf, LocalBuffer) else self._dialect.buffer_prefix}{buf.dtype.name}4*)'  # noqa
-                f'({self._buf_names[u.i]}+{_render_sym(u.idx)})'
-                f'))')
+        # # TODO: merge with CONST?
+        # if buf.is_realized and isinstance(realized := buf.get_realized(), RawConst):
+        #     check.state(out.dtype == Float32)
+        #     x = float(check.isinstance(realized.to_cpu(), np.float))
+        #     if math.isnan(x):
+        #         val = 'NAN'
+        #     elif math.isinf(x):
+        #         val = ('-' if x < 0 else '') + 'INFINITY'
+        #     else:
+        #         val = f'{x}' + ('f' if not buf.dtype.is_int else '')
+        # elif u.out.dtype == Float4:
+        #     val = (
+        #         f'({u.out.dtype.name})'
+        #         f'(*('
+        #         f'({self._dialect.smem_prefix if isinstance(buf, LocalBuffer) else self._dialect.buffer_prefix}{buf.dtype.name}4*)'  # noqa
+        #         f'({self._buf_names[u.i]}+{_render_sym(u.idx)})'
+        #         f'))')
+        # else:
+        #     val = f'{self._buf_names[u.i]}[{_render_sym(u.idx)}]'
+        #
+        # # NOTE: if min and max are both 0, it should be a CONST in the Linearizer
+        # if u.valid.min == 1:
+        #     self._append(f'{self._render_token(out, True)} = {val};')
+        # else:
+        #     cast = self._casts_by_dtype[out.dtype]
+        #     self._append(f'{self._render_token(out, True)} = ({_render_sym(u.valid)}) ? {cast.prefix}({val}) : {cast.zero};')
+
+        if args.valid.max == 0:
+            val = lang.render_const(0.0, newvar.dtype)
+        elif isinstance(bufs[args.i].realized, RawConst):
+            val = lang.render_const(bufs[args.i].realized._buf, newvar.dtype)
         else:
-            val = f'{self._buf_names[u.i]}[{_render_sym(u.idx)}]'
-
-        # NOTE: if min and max are both 0, it should be a CONST in the Linearizer
-        if u.valid.min == 1:
-            self._line(f'{self._render_token(out, True)} = {val};')
-        else:
-            cast = self._casts_by_dtype[out.dtype]
-            self._line(f'{self._render_token(out, True)} = ({_render_sym(u.valid)}) ? {cast.prefix}({val}) : {cast.zero};')
-
-    @_render_uop.register
-    def _render_store(self, u: uo.Store) -> None:
-        if u.vin[0].dtype == Float32 or (u.vin[0].dtype == Float4 and u.vin[0].offset is not None):
-            check.state(u.valid.min == 1)
-            self._line(f'{self._buf_names[u.i]}[{_render_sym(u.idx)}] = {self._render_token(u.vin[0])};')
-
-        elif len(u.vin) != 0 and u.vin[0].dtype == Float4 and u.vin[0].offset is None:
-            buf = self._bufs[u.i]
-            check.state(u.valid.min == 1)
-            self._line(
-                f'*('
-                f'({self._dialect.smem_prefix if isinstance(buf, LocalBuffer) else self._dialect.buffer_prefix}{buf.dtype.name}4*)'  # noqa
-                f'({self._buf_names[u.i]}+{_render_sym(u.idx)})'
-                f') = ({buf.dtype.name}4){self._render_token(u.vin[0])};'
+            val = lang.render_load(
+                newvar.dtype,
+                bufnames[args.i],
+                bufs[args.i].dtype,
+                args.idx,
+                isinstance(bufs[args.i], LocalBuffer),
             )
+        if args.valid.min == 0 and args.valid.max == 1:
+            val = f"({args.valid.render(render_cl)}) ? ({val}) : {lang.render_const(0.0, newvar.dtype)}"
+        kk(f"{newvar.render(True)} = {val};")
 
-    @_render_uop.register
-    def _render_cast(self, u: uo.Cast) -> None:
+    @_append_uop.register
+    def _append_store(self, u: uo.Store) -> None:
+        # if u.vin[0].dtype == Float32 or (u.vin[0].dtype == Float4 and u.vin[0].offset is not None):
+        #     check.state(u.valid.min == 1)
+        #     self._append(f'{self._buf_names[u.i]}[{_render_sym(u.idx)}] = {self._render_token(u.vin[0])};')
+        #
+        # elif len(u.vin) != 0 and u.vin[0].dtype == Float4 and u.vin[0].offset is None:
+        #     buf = self._bufs[u.i]
+        #     check.state(u.valid.min == 1)
+        #     self._append(
+        #         f'*('
+        #         f'({self._dialect.smem_prefix if isinstance(buf, LocalBuffer) else self._dialect.buffer_prefix}{buf.dtype.name}4*)'  # noqa
+        #         f'({self._buf_names[u.i]}+{_render_sym(u.idx)})'
+        #         f') = ({buf.dtype.name}4){self._render_token(u.vin[0])};'
+        #     )
+
+        kk(
+            lang.render_store(
+                bufnames[args.i],
+                bufs[args.i].dtype,
+                vin[0].render(),
+                vin[0].dtype if vin[0].offset is None else dtypes.float,
+                args.idx,
+                isinstance(bufs[args.i], LocalBuffer),
+            )
+        )
+
+    @_append_uop.register
+    def _append_cast(self, u: uo.Cast) -> None:
         check.state(u.out.dtype == Float4)
-        self._line(
+        self._append(
             f'{self._render_token(u.out)} = '
             f'{self._dialect.float4}({",".join([self._render_token(x) for x in u.vin])});'
         )
 
-    @_render_uop.register
-    def _render_define_local(self, u: uo.DefineLocal) -> None:
-        self._line(self._dialect.smem_prefix + f'float {u.s}[{u.sz}];')
+    @_append_uop.register
+    def _append_define_local(self, u: uo.DefineLocal) -> None:
+        self._append(self._dialect.smem_prefix + f'float {u.s}[{u.sz}];')
 
 
 class CStyleCodegenOp(LinearCodegenOp):
