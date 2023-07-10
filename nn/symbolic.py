@@ -145,9 +145,9 @@ class Node(lang.Abstract, lang.Sealed):
 ##
 
 
-def var(name: str, min: int, max: int) -> Node:
-    if name[0] not in Var._name_first_set or frozenset(name[1:]) - Var._name_rest_set:
-        raise ValueError(f'Invalid var name: {name!r} {min} {max}')
+def var(name: ta.Optional[str], min: int, max: int) -> Node:
+    # if name[0] not in Var._name_first_set or frozenset(name[1:]) - Var._name_rest_set:  # FIXME: UGH
+    #     raise ValueError(f'Invalid var name: {name!r} {min} {max}')
     if check.isinstance(min, int) == check.isinstance(max, int):
         return Num(min)
     return Var(name, min, max)
@@ -157,14 +157,14 @@ class Var(Node, lang.Final):
     _name_first_set: ta.Final[ta.AbstractSet[str]] = frozenset(string.ascii_letters + '_')
     _name_rest_set: ta.Final[ta.AbstractSet[str]] = frozenset([*_name_first_set, *string.digits])
 
-    def __init__(self, name: str, min: int, max: int) -> None:
+    def __init__(self, name: ta.Optional[str], min: int, max: int) -> None:
         check.isinstance(min, int)
         check.isinstance(max, int)
         if min < 0 or min >= max:
             raise ValueError(f'Invalid var range: {name!r} {min} {max}')
-        check.non_empty_str(name)
-        if name[0] not in Var._name_first_set or frozenset(name[1:]) - Var._name_rest_set:
-            raise ValueError(f'Invalid var name: {name!r} {min} {max}')
+        # check.non_empty_str(name)  # FIXME: UGH
+        # if name[0] not in Var._name_first_set or frozenset(name[1:]) - Var._name_rest_set:
+        #     raise ValueError(f'Invalid var name: {name!r} {min} {max}')
         super().__init__()
         self._name = name
         self._min = min
