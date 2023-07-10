@@ -191,8 +191,8 @@ class OpenclProgram(Program):
         ]
 
         self._cl_exec(
-            ([*self._global_size, 1] * (3 - len(self._global_size))) if self._global_size is not None else None,
-            ([*self._local_size, 1] * (3 - len(self._local_size))) if self._local_size is not None else None,
+            ([*self._global_size, *([1] * (3 - len(self._global_size)))]) if self._global_size is not None else None,
+            ([*self._local_size, *([1] * (3 - len(self._local_size)))]) if self._local_size is not None else None,
             *raw_bufs,
             wait=True,
         )
