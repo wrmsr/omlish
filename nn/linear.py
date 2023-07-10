@@ -615,7 +615,7 @@ class LinearCodegenOp(CodegenOp):
         # float4 grouping
         upcast_dim = self.get_upcast_dim(i)
         if len(upcast_dim) == 1:
-            grouped_store_offset = defaultdict(list)
+            grouped_store_offset = collections.defaultdict(list)
             for k in store_offset:
                 _idx = k[: upcast_dim[0]] + (sym.Num(0),) + k[upcast_dim[0] + 1 :]
                 try:
@@ -626,7 +626,7 @@ class LinearCodegenOp(CodegenOp):
             store_offset_new = {}
             for k, out_tokens in grouped_store_offset.items():
                 idx, valid = self._sts[i].gen_syms(k)
-                check.arg(idx.render() == ((idx // 4) * 4).render())
+                check.arg(idx.expr == ((idx // 4) * 4).expr)
                 check.arg(valid.min == 1)
                 if col.all_equal(x.name for x in out_tokens) and tuple(x.offset for x in out_tokens) == (0, 1, 2, 3):
                     store_offset_new[k] = uo.Token(out_tokens[0].name, Float4)
