@@ -270,7 +270,8 @@ def get_grouped_maybe_float4(*values: ta.Sequence[uo.Token], grouping_allowed: b
 def expand_idxs(idxs: ta.Sequence[VarOrNum]) -> ta.Iterator[ta.Sequence[VarOrNum]]:
     for x in itertools.product(*[
         [idx] if not isinstance(idx, sym.Var) or idx.expr is not None else
-        [sym.Num(j) for j in range(idx.min, idx.max + 1)] for idx in idxs[::-1]
+        [sym.Num(j) for j in range(idx.min, idx.max + 1)]
+        for idx in idxs[::-1]
     ]):
         yield x[::-1]
 
@@ -354,8 +355,8 @@ class LinearCodegenOp(CodegenOp):
     _upcasted: int
     _local_dims: int
 
-    supports_float4: bool = False
-    supports_float4_alu: bool = False
+    supports_float4: bool = True
+    supports_float4_alu: bool = True
 
     @cached.property
     def fn_name(self) -> str:
@@ -416,9 +417,9 @@ class LinearCodegenOp(CodegenOp):
             [
                 x != y
                 for x, y in zip(
-                self._sts[0].shape[self.shape_len - self._upcasted:],
-                self.full_shape[self.shape_len - self._upcasted:],
-            )
+                    self._sts[0].shape[self.shape_len - self._upcasted:],
+                    self.full_shape[self.shape_len - self._upcasted:],
+                )
             ],
         ))
 
@@ -676,11 +677,11 @@ class LinearCodegenOp(CodegenOp):
 
         # upcast indexes
         full_upcast_idxs = [
-            sym.Var(f'?full_upcast_idx{i}?', 0, s - 1)
+            sym.var(None, 0, s - 1)
             for i, s in enumerate(self.full_shape[self.shape_len - self._upcasted:])
         ]
         upcast_idxs = [
-            sym.Var(f'?upcast_idx{i}?', 0, s - 1)
+            sym.var(None, 0, s - 1)
             for i, s in enumerate(self.output_shape[self.shape_len - self._upcasted:])
         ]
 
@@ -708,6 +709,7 @@ class LinearCodegenOp(CodegenOp):
             self._uop(uo.Loop(out=None, vin=[], idxs=reduce_idxs, s='reduce'))
 
             # load earlybufs
+            breakpoint()
             loaded_buffers.update({
                 b: self.global_load(i, global_idxs + local_idxs + reduce_idxs + full_upcast_idxs)
                 for i, b in enumerate(self._bufs)
@@ -746,7 +748,7 @@ class LinearCodegenOp(CodegenOp):
                     local_idxs = local_idxs[:-1]
                     # regenerate upcast_idxs
                     upcast_idxs = [
-                        sym.Var(f'?upcast_idx{i}?', 0, s - 1)
+                        sym.var(None, 0, s - 1)
                         for i, s in enumerate(self.output_shape[self.shape_len - self._upcasted:])
                     ]
 
@@ -848,6 +850,8 @@ class LinearCodegenOp(CodegenOp):
                 ),
             )
 
+        if isinstance(x, ops.ReduceOp):
+            breakpoint()
         values = [self.process_one(v, acc, loaded_buffers, ssa) for v in srcs]
 
         if isinstance(x, (ops.ReduceOp, ops.FusedOp)):
@@ -865,7 +869,7 @@ class LinearCodegenOp(CodegenOp):
                         ty=ot,
                     )),
                 )
-                for idx, val in get_grouped_maybe_float4(*values, acc, grouping_allowed=False)
+                for idx, val in get_grouped_maybe_float4(*values, acc, grouping_allowed=self.supports_float4_alu)
             ]
 
         else:
@@ -878,7 +882,7 @@ class LinearCodegenOp(CodegenOp):
                         ty=type(x),
                     )),
                 )
-                for idx, val in get_grouped_maybe_float4(*values, grouping_allowed=False)
+                for idx, val in get_grouped_maybe_float4(*values, grouping_allowed=self.supports_float4_alu)
             ]
 
         ordered_ret: ta.List[ta.Optional[uo.Token]] = [None] * len(values[0])
