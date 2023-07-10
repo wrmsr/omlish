@@ -709,7 +709,6 @@ class LinearCodegenOp(CodegenOp):
             self._uop(uo.Loop(out=None, vin=[], idxs=reduce_idxs, s='reduce'))
 
             # load earlybufs
-            breakpoint()
             loaded_buffers.update({
                 b: self.global_load(i, global_idxs + local_idxs + reduce_idxs + full_upcast_idxs)
                 for i, b in enumerate(self._bufs)
@@ -850,8 +849,6 @@ class LinearCodegenOp(CodegenOp):
                 ),
             )
 
-        if isinstance(x, ops.ReduceOp):
-            breakpoint()
         values = [self.process_one(v, acc, loaded_buffers, ssa) for v in srcs]
 
         if isinstance(x, (ops.ReduceOp, ops.FusedOp)):

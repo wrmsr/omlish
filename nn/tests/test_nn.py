@@ -186,3 +186,20 @@ def test_dot():
     dot.open_dot(zt.get_grad())
     dot.open_dot(xt.get_grad())
     dot.open_dot(yt.get_grad())
+
+
+def test_matmul():
+    shps = [64, (64, 99)]
+    np.random.seed(0)
+    a = -0.5
+    b = 3
+    ts = [
+        torch.tensor(
+            (np.random.random(size=x) + a) * b,
+            requires_grad=True,
+            dtype=torch.float32,
+        )
+        for x in shps
+    ]
+
+    tst = [Tensor.of(x.detach().numpy(), requires_grad=True) for x in ts]
