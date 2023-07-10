@@ -65,7 +65,7 @@ class View(dc.Data, lang.Final):
     def gen_sym(self, idx: ta.Optional[sym.Node] = None) -> sym.Node:
         """~expr_node"""
         if idx is None:
-            idx = sym.Var('idx', 0, self.shape.prod)
+            idx = sym.var('idx', 0, self.shape.prod)
 
         ret: ta.List[sym.Node] = [sym.Num(self.offset)]
         acc = 1
@@ -98,10 +98,42 @@ def merge_views(vm2: View, vm1: View) -> ta.Optional[View]:
 
     return View(
         vm1.shape,
-        strides,
+        Stride(strides),
         mst.real_offset(),
         vm1.mask,
     )
+
+
+def _reshape(view: View, new_shape: Shape) -> ta.Tuple[View, bool]:
+    shape = view.shape
+    mask = view.mask
+    strides = view.stride
+    offset = view.offset
+
+    # check if this is adding or removing 1s (only)
+    # NOTE: this is optional, but removes most calls to (expensive!) merge_views (with mask, not optional)
+    if [x for x in shape if x != 1] == [x for x in new_shape if x != 1]:
+        new_strides: ta.List[int] = [y for x, y in zip(shape, strides) if x != 1]
+        new_strides_tuple: ta.Tuple[int, ...] = tuple([0 if x == 1 else new_strides.pop(0) for x in new_shape])
+        new_mask_tuple = None
+        if mask:
+            for x, y in zip(shape, mask):
+                if x == 1 and y != (0, 1):
+                    new_mask_tuple = ((0, 0),) * len(new_shape)
+                    break
+            else:
+                new_mask: ta.List[ta.Tuple[int, int]] = [y for x, y in zip(shape, mask) if x != 1]
+                new_mask_tuple = tuple([(0, 1) if x == 1 else new_mask.pop(0) for x in new_shape])
+        return View(new_shape, Stride(new_strides_tuple), offset, new_mask_tuple), False
+
+    new_view = View(new_shape, new_shape.base_stride())
+    if view.contiguous:
+        return new_view, False  # NOTE: if it's contiguous it can't have an offset
+    else:
+        if (merged_view := merge_views(view, new_view)) is not None:
+            return merged_view, False
+        else:
+            return new_view, True
 
 
 class ShapeTracker(lang.Final):
@@ -248,53 +280,64 @@ class ShapeTracker(lang.Final):
             offset=self.view.offset,
             mask=tuple(self.view.mask[a] for a in axis) if self.view.mask is not None else None,
         )
+    #
+    # def reshape(self, new_shape: Shape) -> None:
+    #     if self.shape == new_shape:
+    #         return
+    #
+    #     check.arg(
+    #         all(check.isinstance(x, int) > 0 for x in new_shape),
+    #         f"Shape must be ints and can't contain 0 or negative numbers {new_shape}"
+    #     )
+    #     check.arg(math.prod(self.shape) == math.prod(new_shape), f"Can't reshape {self.shape} -> {new_shape}")
+    #
+    #     # check if this is adding or removing 1s (only)
+    #     # NOTE: this is optional, but removes most calls to (expensive!) merge_views (with mask, not optional)
+    #     if tuple(x for x in self.shape if x != 1) == tuple(x for x in new_shape if x != 1):
+    #         old_stride = [y for x, y in zip(self.shape, self.view.stride) if x != 1]
+    #         new_stride = tuple(0 if x == 1 else old_stride.pop(0) for x in new_shape)
+    #         new_mask = None
+    #
+    #         if self.view.mask:
+    #             if any(y != (0, 1) for x, y in zip(self.shape, self.view.mask) if x == 1):
+    #                 # mask it all out!
+    #                 new_mask = ((0, 0),) * len(new_shape)
+    #             else:
+    #                 old_mask = [y for x, y in zip(self.shape, self.view.mask) if x != 1]
+    #                 new_mask = tuple((0, 1) if x == 1 else old_mask.pop(0) for x in new_shape)
+    #
+    #         self._views[-1] = View.new(
+    #             Shape(new_shape),
+    #             Stride(new_stride),
+    #             offset=self.view.offset,
+    #             mask=new_mask,
+    #         )
+    #
+    #         return
+    #
+    #     # new_view = View(new_shape, strides_for_shape(new_shape))
+    #     # if view.contiguous:
+    #     #     return new_view, False  # NOTE: if it's contiguous it can't have an offset
+    #     # else:
+    #     #     if (merged_view := merge_views(view, new_view)) is not None:
+    #     #         return merged_view, False
+    #     #     else:
+    #     #         if DEBUG >= 4:
+    #     #             print(f"WARNING: creating new view with reshape {view} -> {new_shape}")
+    #     #         return new_view, True
+    #
+    #     raise NotImplementedError
 
     def reshape(self, new_shape: Shape) -> None:
-        if self.shape == new_shape:
+        if self.views[-1].shape == new_shape:
             return
-
-        check.arg(
-            all(check.isinstance(x, int) > 0 for x in new_shape),
-            f"Shape must be ints and can't contain 0 or negative numbers {new_shape}"
-        )
-        check.arg(math.prod(self.shape) == math.prod(new_shape), f"Can't reshape {self.shape} -> {new_shape}")
-
-        # check if this is adding or removing 1s (only)
-        # NOTE: this is optional, but removes most calls to (expensive!) merge_views (with mask, not optional)
-        if tuple(x for x in self.shape if x != 1) == tuple(x for x in new_shape if x != 1):
-            old_stride = [y for x, y in zip(self.shape, self.view.stride) if x != 1]
-            new_stride = tuple(0 if x == 1 else old_stride.pop(0) for x in new_shape)
-            new_mask = None
-
-            if self.view.mask:
-                if any(y != (0, 1) for x, y in zip(self.shape, self.view.mask) if x == 1):
-                    # mask it all out!
-                    new_mask = ((0, 0),) * len(new_shape)
-                else:
-                    old_mask = [y for x, y in zip(self.shape, self.view.mask) if x != 1]
-                    new_mask = tuple((0, 1) if x == 1 else old_mask.pop(0) for x in new_shape)
-
-            self._views[-1] = View.new(
-                Shape(new_shape),
-                Stride(new_stride),
-                offset=self.view.offset,
-                mask=new_mask,
-            )
-
-            return
-
-        # new_view = View(new_shape, strides_for_shape(new_shape))
-        # if view.contiguous:
-        #     return new_view, False  # NOTE: if it's contiguous it can't have an offset
-        # else:
-        #     if (merged_view := merge_views(view, new_view)) is not None:
-        #         return merged_view, False
-        #     else:
-        #         if DEBUG >= 4:
-        #             print(f"WARNING: creating new view with reshape {view} -> {new_shape}")
-        #         return new_view, True
-
-        raise NotImplementedError
+        check.arg(all(isinstance(x, int) and x > 0 for x in new_shape))
+        check.arg(self.shape.prod == new_shape.prod)
+        new_view, extra = _reshape(self.views[-1], new_shape)
+        if extra:
+            self._views.append(new_view)
+        else:
+            self._views[-1] = new_view
 
     _movement_op_dispatch: ta.Final[ta.Mapping[ta.Type[ops.MovementOp], ta.Callable]] = {
         ops.Reshape: reshape,
@@ -327,13 +370,13 @@ class ShapeTracker(lang.Final):
     def gen_sym(self, idx: ta.Union[sym.Node, str] = 'idx') -> Sym:
         """~expr_idx"""
         if isinstance(idx, str):
-            idx = sym.Var(idx, 0, self.shape.prod - 1)
+            idx = sym.var(idx, 0, self.shape.prod - 1)
         return self._gen_sym(self.view.gen_sym(idx), self.view.gen_mask_sym(idx))
 
     def gen_syms(self, idxs: ta.Optional[ta.Sequence[sym.Node]] = None) -> Sym:
         """~expr_idxs"""
         if idxs is None:
-            idxs = [sym.Var(f'idx{i}', 0, s - 1) for i, s in enumerate(self.shape)]
+            idxs = [sym.var(f'idx{i}', 0, s - 1) for i, s in enumerate(self.shape)]
         idx = self.views[-1].gen_syms(idxs)
         valid = self.views[-1].gen_mask_sym(self.views[-1].idxs_to_idx(idxs))
         return self._gen_sym(idx, valid)
@@ -341,14 +384,14 @@ class ShapeTracker(lang.Final):
     # these are multiview strides, value is None if it's not a simple strided dimension
     # TODO: this can be shared code between simplify and merge_views
     def real_offset(self) -> int:
-        real_offset, mask = self.gen_sym(sym.Var('zero', 0, 0))
+        real_offset, mask = self.gen_sym(sym.var('zero', 0, 0))
         return check.isinstance(real_offset, sym.Num).b
 
     def real_strides(self, ignore_valid=False) -> ta.Sequence[ta.Optional[int]]:
         if len(self.views) == 1 and self.views[-1].mask is None:
             return self.views[-1].stride
 
-        idxs = [sym.Var(f'idx{i}', 0, s - 1) for i, s in enumerate(self.shape)]
+        idxs = [sym.var(f'idx{i}', 0, s - 1) for i, s in enumerate(self.shape)]
         idx, valid = self.gen_syms(idxs)
         ret: ta.List[ta.Optional[int]] = [None] * len(self.shape)
 
