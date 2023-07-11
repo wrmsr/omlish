@@ -148,26 +148,44 @@ class CstyleRenderer:
             val = ('-' if x < 0 else '') + 'INFINITY'
         else:
             val = f'{x}' + ('' if var_dtype.is_int else 'f')
-        return f'{self._dialect.float4}({val}, {val}, {val}, {val})' if var_dtype == Float4 else val
+        if var_dtype == Float4:
+            return f'{self._dialect.float4}({val}, {val}, {val}, {val})'
+        else:
+            return val
 
-    def _render_load(self, output_dtype: Dtype, buf_name: str, buf_dtype: Dtype, idx: sym.Node, local=False) -> str:
+    def _render_load(
+            self,
+            output_dtype: Dtype,
+            buf_name: str,
+            buf_dtype: Dtype,
+            idx: sym.Node,
+            local: bool = False,
+    ) -> str:
         if output_dtype == Float4:
             return (
-                f'({output_dtype.name})'
+                f'({self._dtype_names[output_dtype]})'
                 f'(*('
-                f'({self._dialect.smem_prefix if local else self._dialect.buffer_prefix}{buf_dtype.name}{output_dtype.sz}*)'  # noqa
+                f'({self._dialect.smem_prefix if local else self._dialect.buffer_prefix}{self._dtype_names[buf_dtype]}{output_dtype.sz}*)'  # noqa
                 f'({buf_name}+{_render_sym(idx)})'
                 f'))'
             )
         else:
             return f'{buf_name}[{_render_sym(idx)}]'
 
-    def _render_store(self, buf_name: str, buf_dtype: Dtype, var_name: str, var_dtype: Dtype, idx: sym.Node, local: bool = False) -> str:
+    def _render_store(
+            self,
+            buf_name: str,
+            buf_dtype: Dtype,
+            var_name: str,
+            var_dtype: Dtype,
+            idx: sym.Node,
+            local: bool = False,
+    ) -> str:
         if var_dtype.sz > 1:
             return (
-                f'*(({self._dialect.smem_prefix if local else self._dialect.buffer_prefix}{buf_dtype.name}{var_dtype.sz}*)'  # noqa
+                f'*(({self._dialect.smem_prefix if local else self._dialect.buffer_prefix}{self._dtype_names[buf_dtype]}{var_dtype.sz}*)'  # noqa
                 f'({buf_name}+{_render_sym(idx)})) = '
-                f'({buf_dtype.name}{var_dtype.sz}){var_name};'
+                f'({self._dtype_names[buf_dtype]}{var_dtype.sz}){var_name};'
             )
         else:
             return f'{buf_name}[{_render_sym(idx)}] = {var_name};'
@@ -300,7 +318,7 @@ class CstyleRenderer:
     def _append_cast(self, u: uo.Cast) -> None:
         check.state(u.out.dtype == Float4)
         self._append(
-            f'{self._render_token(u.out)} = '
+            f'{self._render_token(u.out, True)} = '
             f'{self._dialect.float4}({",".join([self._render_token(x) for x in u.vin])});'
         )
 

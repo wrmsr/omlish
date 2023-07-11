@@ -12,7 +12,7 @@ class Dtype:
 
     is_int: bool = False
 
-    sz: ta.Final[int] = 1   # FIXME:
+    sz: int = 1
 
     def __repr__(self) -> str:
         return f'<Dtype:{self.name}>'
@@ -25,4 +25,4 @@ class Dtype:
 
 
 Float32 = Dtype('float32', np.float32, 4)
-Float4 = Dtype('float4', None, 1)
+Float4 = Dtype('float4', None, 1, sz=4)
