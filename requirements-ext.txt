@@ -3,7 +3,7 @@
 
 ### nn
 
-numpy==1.25.0
+numpy==1.25.1
 
 ##
 
@@ -41,5 +41,5 @@ torchvision==0.15.2
 
 ### infra
 
-boto3==1.28.1
-google-cloud-compute==1.12.1
+boto3==1.28.2
+google-cloud-compute==1.13.0

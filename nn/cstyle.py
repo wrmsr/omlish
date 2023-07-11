@@ -95,6 +95,7 @@ class CstyleRenderer:
         )
 
         for u in self._uops:
+            print(u)
             self._append_uop(u)
 
         self._lines.append('}')
