@@ -377,11 +377,6 @@ class LinearCodegenOp(CodegenOp):
     ##
 
     def process(self) -> None:
-        # mem_est = sum(  # noqa
-        #     x.dtype.item_size * (x.get_realized().size if x.is_realized is not None else x.shape.prod)
-        #     for x in self._bufs
-        # )
-
         # create new shapetrackers inside this kernel, we will permute them
         self._sts = [x.shape_tracker.copy() for x in self._bufs]
         for st in self._sts:
@@ -462,83 +457,6 @@ class LinearCodegenOp(CodegenOp):
             and self._sts[i].shape[x] == amt
         ]
 
-    # def global_load(self, i: int, idxs: ta.Sequence[sym.Var], const=None) -> ta.Sequence[uo.Token]:
-    #     load_offset: ta.Dict[ta.Sequence[int], LinearCodegenOp._Gl] = {}
-    #     for uidxs in self.shape_offsets(i):
-    #         gs = self._sts[i].gen_syms(idxs + [sym.Num(x) for x in uidxs[::-1]])
-    #         load_offset[uidxs] = LinearCodegenOp._Gl(
-    #             Float32,
-    #             uidxs,
-    #             gs.idx,
-    #             gs.mask,
-    #         )
-    #
-    #     # float4 grouping (optional)
-    #     should_upcast = (
-    #             self.supports_float4 and
-    #             self._bufs[i].dtype in (Float32,) and
-    #             len(self.float4_axis(i)) == 1
-    #     )
-    #     if should_upcast:
-    #         load_offset_new = {}
-    #         for k, out_tokens in self._group_float4(i, load_offset).items():
-    #             idxs = [x[2] - out_tokens[0][2] for x in out_tokens]
-    #
-    #             valids_okay = (
-    #                     col.all_equal([x[3] for x in out_tokens]) or (
-    #                     col.all_equal([x[3] // 4 for x in out_tokens]) and
-    #                     (out_tokens[0][3] // 4) * 4 == out_tokens[0][3]
-    #             )
-    #             )
-    #
-    #             if (
-    #                     any(idx.min != idx.max or idx.min != val for idx, val in zip(idxs, range(4))) or
-    #                     (out_tokens[0][2] // 4) * 4 != out_tokens[0][2] or
-    #                     not valids_okay
-    #             ):
-    #                 # idxs not in order, valids don't match, or idx doesn't evenly divide 4. use normal float
-    #                 for x in out_tokens:
-    #                     load_offset_new[x[1]] = x
-    #
-    #             else:
-    #                 load_offset_new[k] = LinearCodegenOp._Gl(
-    #                     Float4,
-    #                     [x[1] for x in out_tokens],
-    #                     out_tokens[0][2],
-    #                     out_tokens[0][3],
-    #                 )
-    #
-    #         load_offset = load_offset_new
-    #
-    #     # do loads
-    #     cache = {}
-    #     loaded = {}
-    #     for uidxs, (localtype, uidx_list, idx, valid) in load_offset.items():
-    #         key = f'{localtype}{idx.expr}{valid.expr}'
-    #         if key not in cache:
-    #             if const is None:
-    #                 cache[key] = self._uop(uo.Load(
-    #                     out=uo.Token(f'val{mnum(i)}_{len(cache)}', localtype),
-    #                     vin=[],
-    #                     i=i,
-    #                     idx=idx,
-    #                     valid=valid,
-    #                 ))
-    #             else:
-    #                 cache[key] = self._uop(uo.Const(
-    #                     out=uo.Token(f'acc{mnum(i)}_{len(cache)}', localtype),
-    #                     vin=[],
-    #                     v=const,
-    #                 ))
-    #
-    #         if localtype == Float4:
-    #             for j, uidx in enumerate(uidx_list):
-    #                 loaded[uidx] = uo.Token(cache[key].name, Float4, j)
-    #         else:
-    #             loaded[uidxs] = cache[key]
-    #
-    #     return [loaded[uidxs] for uidxs in self.shape_offsets(i)]
-
     def global_load(self, i: int, idxs: ta.Sequence[VarOrNum], const=None) -> ta.Sequence[uo.Token]:
         upcast_dim = self.get_upcast_dim(i)
         cache: ta.Dict[str, uo.Token] = {}
@@ -580,39 +498,6 @@ class LinearCodegenOp(CodegenOp):
                 if localtype == Float4 else cache[key]
             )
         return ret
-
-    # def global_store(self, i, idxs: ta.Sequence[sym.Var], store: ta.Sequence[uo.Token], ssa) -> None:
-    #     store_offset: ta.Dict[ta.Sequence[int], uo.Token] = dict(zip(self.shape_offsets(i), store))
-    #
-    #     # float4 grouping (optional)
-    #     # TODO: why does this not work for float16?
-    #     should_upcast = (
-    #             self.supports_float4 and
-    #             self._bufs[i].dtype == Float32 and
-    #             len(self.float4_axis(i)) == 1
-    #     )
-    #     if should_upcast:
-    #         store_offset_new = {}
-    #         for k, out_tokens in self._group_float4(i, store_offset).items():
-    #             if (
-    #                     col.all_equal(x.name for x in out_tokens) and
-    #                     tuple(range(4)) == tuple(x.offset for x in out_tokens)
-    #             ):  # noqa
-    #                 store_offset_new[k] = uo.Token(out_tokens[0].name, Float4)
-    #             else:
-    #                 store_offset_new[k] = self._uop(uo.Cast(out=ssa("alu", Float4), vin=out_tokens))
-    #         store_offset = store_offset_new
-    #
-    #     # do stores
-    #     for uidxs, var in store_offset.items():
-    #         gl = self._sts[i].gen_syms(idxs + [sym.Num(x) for x in uidxs[::-1]])
-    #         self._uop(uo.Store(
-    #             out=None,
-    #             vin=[var],
-    #             i=i,
-    #             idx=gl.idx,
-    #             valid=gl.mask,
-    #         ))
 
     def global_store(self, i: int, idxs: ta.Sequence[VarOrNum], store: ta.Sequence[uo.Token], ssa) -> None:
         store_offset = dict(zip(expand_idxs(idxs), store))
@@ -689,7 +574,7 @@ class LinearCodegenOp(CodegenOp):
 
         # global loop
         global_idxs = [
-            sym.Var(f'gidx{i}', 0, self.full_shape[i] - 1)
+            sym.var(f'gidx{i}', 0, self.full_shape[i] - 1)
             for i in range(0, self.first_reduce - self._local_dims)
         ]
 
@@ -697,11 +582,11 @@ class LinearCodegenOp(CodegenOp):
 
         # local loop
         local_idxs = [
-            sym.Var(f'lidx{i}', 0, self.full_shape[i] - 1)
+            sym.var(f'lidx{i}', 0, self.full_shape[i] - 1)
             for i in range(
                 self.first_reduce - self._local_dims,
                 self.first_reduce + len(self._group_for_reduce),
-                )
+            )
         ]
         self._uop(uo.Loop(out=None, vin=[], idxs=local_idxs, s='local'))
 
@@ -1159,19 +1044,6 @@ class LinearCodegenOp(CodegenOp):
 
         # simplify (sets first_reduce)
         self.simplify_ones()
-
-        # use more opencl indexing if the output buffer is an image and we have room
-        if (
-                self._bufs[0].dtype.name.startswith("image") and
-                self.first_reduce + len(self._group_for_reduce) < 3
-        ):
-            base_shape = self._bufs[0].dtype.shape
-            if (base_shape[0] * base_shape[1]) % self.sts[0].shape[0] == 0 and self._sts[0].shape[0] // base_shape[0] != 0:
-                self.reshape_and_permute(
-                    lambda x: Shape([base_shape[0], x[0] // base_shape[0]] + list(x[1:])),
-                    None
-                )
-                self.simplify_ones()
 
         # no more opt if we are grouping
         if self._group_for_reduce:

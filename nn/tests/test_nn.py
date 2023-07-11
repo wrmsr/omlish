@@ -163,7 +163,7 @@ def _test_sgd(steps, opts, atol, rtol):
 
 
 def test_sgd():
-    _test_sgd(1, {'lr': 0.001}, 1e-6, 0)
+    _test_sgd(10, {'lr': 0.001}, 1e-6, 0)
 
 
 def test_simple_mul():
