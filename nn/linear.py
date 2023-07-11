@@ -220,7 +220,7 @@ def get_grouped_float4_idxs(acc: ta.Sequence[uo.Token]) -> ta.Optional[ta.Sequen
         if i in idxs:
             continue
 
-        if a.dtype.item_size > 1 and a.offset == 0:
+        if a.dtype.sz > 1 and a.offset == 0:
             idxs.append(i)
             friends: ta.List[int] = []
             for j, b in enumerate(acc):
@@ -229,7 +229,7 @@ def get_grouped_float4_idxs(acc: ta.Sequence[uo.Token]) -> ta.Optional[ta.Sequen
                 if j in idxs:
                     continue
 
-                if a.name == b.name and b.dtype.item_size > 1 and b.offset == len(friends) + 1:
+                if a.name == b.name and b.dtype.sz > 1 and b.offset == len(friends) + 1:
                     friends.append(j)
 
             if len(friends) == 3:
