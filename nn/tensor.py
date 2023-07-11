@@ -107,10 +107,11 @@ class Tensor(lang.Final):
                 raise NotImplementedError
             return src
 
+        if isinstance(src, ta.Iterable):
+            src = np.array(src, dtype=(dtype or DEFAULT_DTYPE).np)
+
         if isinstance(src, np.ndarray):
             src = Buffer.from_cpu(src)
-        elif isinstance(src, ta.Iterable):
-            src = np.array(src, dtype=(dtype or DEFAULT_DTYPE).np)
 
         if isinstance(src, Buffer):
             check.arg(dtype is None or dtype == src.dtype)
@@ -146,6 +147,15 @@ class Tensor(lang.Final):
             .reshape(*([1] * len(shape))) \
             .expand(*shape) \
             .contiguous()
+
+    @staticmethod
+    def full_like(tensor: 'Tensor', fill_value, dtype: ta.Optional[Dtype] = None, **kwargs: ta.Any) -> 'Tensor':
+        return Tensor.full(
+            tensor.shape,
+            fill_value=fill_value,
+            dtype=tensor.dtype if dtype is None else dtype,
+            **kwargs,
+        )
 
     @staticmethod
     def zeros(*shape: int, **kwargs: ta.Any) -> 'Tensor':
@@ -223,17 +233,6 @@ class Tensor(lang.Final):
             other: TensorLike,
             reverse: bool = False,
     ) -> 'Tensor':
-        # other = Tensor.of(other)
-        # x, y = (other, self) if reverse else (self, other)
-        #
-        # x, y = [
-        #     t.reshape(*([1] * (max(len(x.shape), len(y.shape)) - len(t.shape)) + list(t.shape)))
-        #     for t in [x, y]
-        # ]
-        #
-        # ret_shape = Shape(max(sx, sy) for sx, sy in zip(x.shape, y.shape))
-        # return func.apply(x.expand(*ret_shape), y.expand(*ret_shape))
-
         x = self
         y = Tensor.of(other)
         if reverse:

@@ -280,53 +280,6 @@ class ShapeTracker(lang.Final):
             offset=self.view.offset,
             mask=tuple(self.view.mask[a] for a in axis) if self.view.mask is not None else None,
         )
-    #
-    # def reshape(self, new_shape: Shape) -> None:
-    #     if self.shape == new_shape:
-    #         return
-    #
-    #     check.arg(
-    #         all(check.isinstance(x, int) > 0 for x in new_shape),
-    #         f"Shape must be ints and can't contain 0 or negative numbers {new_shape}"
-    #     )
-    #     check.arg(math.prod(self.shape) == math.prod(new_shape), f"Can't reshape {self.shape} -> {new_shape}")
-    #
-    #     # check if this is adding or removing 1s (only)
-    #     # NOTE: this is optional, but removes most calls to (expensive!) merge_views (with mask, not optional)
-    #     if tuple(x for x in self.shape if x != 1) == tuple(x for x in new_shape if x != 1):
-    #         old_stride = [y for x, y in zip(self.shape, self.view.stride) if x != 1]
-    #         new_stride = tuple(0 if x == 1 else old_stride.pop(0) for x in new_shape)
-    #         new_mask = None
-    #
-    #         if self.view.mask:
-    #             if any(y != (0, 1) for x, y in zip(self.shape, self.view.mask) if x == 1):
-    #                 # mask it all out!
-    #                 new_mask = ((0, 0),) * len(new_shape)
-    #             else:
-    #                 old_mask = [y for x, y in zip(self.shape, self.view.mask) if x != 1]
-    #                 new_mask = tuple((0, 1) if x == 1 else old_mask.pop(0) for x in new_shape)
-    #
-    #         self._views[-1] = View.new(
-    #             Shape(new_shape),
-    #             Stride(new_stride),
-    #             offset=self.view.offset,
-    #             mask=new_mask,
-    #         )
-    #
-    #         return
-    #
-    #     # new_view = View(new_shape, strides_for_shape(new_shape))
-    #     # if view.contiguous:
-    #     #     return new_view, False  # NOTE: if it's contiguous it can't have an offset
-    #     # else:
-    #     #     if (merged_view := merge_views(view, new_view)) is not None:
-    #     #         return merged_view, False
-    #     #     else:
-    #     #         if DEBUG >= 4:
-    #     #             print(f"WARNING: creating new view with reshape {view} -> {new_shape}")
-    #     #         return new_view, True
-    #
-    #     raise NotImplementedError
 
     def reshape(self, new_shape: Shape) -> None:
         if self.views[-1].shape == new_shape:
