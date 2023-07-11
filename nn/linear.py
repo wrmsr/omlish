@@ -83,7 +83,13 @@ class LinearAnalyzer:
 
     @_analyze.register
     def _analyze_unary_op(self, op: ops.UnaryOp) -> LinearAnalysis:
-        raise NotImplementedError
+        xa = self._analyze(op.x)
+        return LinearAnalysis(
+            op,
+            xa.shape,
+            xa.dtype,
+            xa.flops + xa.shape.prod,
+        )
 
     @_analyze.register
     def _analyze_cast(self, op: ops.Cast) -> LinearAnalysis:
