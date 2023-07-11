@@ -1,4 +1,3 @@
-import collections
 import io
 import itertools
 import math
@@ -615,9 +614,9 @@ class LinearCodegenOp(CodegenOp):
         # float4 grouping
         upcast_dim = self.get_upcast_dim(i)
         if len(upcast_dim) == 1:
-            grouped_store_offset = collections.defaultdict(list)
+            grouped_store_offset = {}
             for k in store_offset:
-                _idx = k[: upcast_dim[0]] + (sym.Num(0),) + k[upcast_dim[0] + 1 :]
+                _idx = k[: upcast_dim[0]] + (sym.Num(0),) + k[upcast_dim[0] + 1:]
                 try:
                     l = grouped_store_offset[_idx]
                 except KeyError:
@@ -676,10 +675,10 @@ class LinearCodegenOp(CodegenOp):
         acc = []
 
         # ssa
-        _ssa: ta.DefaultDict[str, int] = collections.defaultdict(int)
+        _ssa: ta.DefaultDict[str, int] = {}
 
         def ssa(name: str, ltype: Dtype = Float32) -> uo.Token:
-            _ssa[name] += 1
+            _ssa[name] = _ssa.get(name, 0) + 1
             return uo.Token(f'{name}{_ssa[name]-1}', ltype)
 
         # global loop
@@ -920,7 +919,7 @@ class LinearCodegenOp(CodegenOp):
                 (
                     idx,
                     self._uop(uo.Alu(
-                        out=ssa("alu"),
+                        out=ssa('alu', Float4) if any(x.dtype == Float4 and x.offset is None for x in val) else ssa('alu'),  # noqa
                         vin=list(val),
                         ty=type(x),
                     )),
