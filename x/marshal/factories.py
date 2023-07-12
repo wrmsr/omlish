@@ -1,5 +1,6 @@
 import abc
 import dataclasses as dc
+import enum
 import threading
 import typing as ta
 
@@ -53,24 +54,64 @@ class SpecCacheFactory(Factory[R, C]):
                 return ret
 
 
-class RecursiveSpecFactory(Factory[R, C]):
-    def __int__(self, f: Factory[R, C]) -> None:
-        super().__init__()
-        self._f = f
-        self._dct: ta.Dict[Spec, ta.Optional[R]] = {}
+# FIXME:
+# class RecursiveSpecFactory(Factory[R, C]):
+#     def __int__(self, f: Factory[R, C]) -> None:
+#         super().__init__()
+#         self._f = f
+#         self._dct: ta.Dict[Spec, ta.Optional[R]] = {}
+#
+#     @dc.dataclass()
+#     class _Proxy(Factory[R, C, Spec]):
+#         f: ta.Optional[Factory[R, C, Spec]] = None
+#
+#         def __call__(self, ctx: C, spec: Spec) -> ta.Optional[R]:
+#             if self.f is None:
+#                 raise TypeError('recursive impl not yet set')
+#             return self.f(ctx, spec)
+#
+#     def __call__(self, ctx: C, spec: Spec) -> ta.Optional[R]:
+#         try:
+#             return self._dct[spec]
+#         except KeyError:
+#             pass
+#
+#         p = self._dct[spec] = self._Proxy()
+#         try:
+#             f = self._f(ctx, spec)
+#         except Exception:
+#             del self._dct[spec]
+#             raise
+#         p.f = f
+#         return f
 
-    def __call__(self, ctx: C, spec: Spec) -> ta.Optional[R]:
-        """
-        if r, ok := f.m[a]; ok {
-            return r, nil
-        }
-        p, sp := f.p()
-        f.m[a] = p
-        defer delete(f.m, a)
-        i, err := f.f.Make(ctx, a)
-        if err != nil {
-            var z R
-            return z, err
-        }
-        sp(i)
-        """
+
+class CompositeFactory(Factory[R, C, A]):
+    class Strategy(enum.Enum):
+        FIRST = enum.auto()
+        ONE = enum.auto()
+
+    def __init__(self, *fs: Factory[R, C, A], strategy: Strategy = Strategy.FIRST) -> None:
+        super().__init__()
+        self._fs = fs
+        self._st = strategy
+
+    def __call__(self, ctx: C, arg: A) -> ta.Optional[R]:
+        w: ta.List[R] = []
+        for c in self._fs:
+            if (r := c(ctx, arg)) is None:
+                continue
+            if self._st is CompositeFactory.Strategy.FIRST:
+                return r
+            w.append(r)
+
+        if not w:
+            return None
+
+        if self._st is CompositeFactory.Strategy.ONE:
+            if len(w) == 1:
+                return w[0]
+
+            raise TypeError(f'multiple implementations: {arg} {w}')
+
+        raise TypeError(f'unknown composite strategy: {self._st}')
