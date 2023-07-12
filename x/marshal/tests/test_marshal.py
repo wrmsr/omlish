@@ -1,5 +1,7 @@
+from ..base import MarshalContext
 from ..primitives import PrimitiveMarshaler
 
 
 def test_marshal():
-    pass
+    v = PrimitiveMarshaler()(MarshalContext(), 420)
+    print(v)
