@@ -106,3 +106,32 @@ def jvp_v1(f, primals, tangents):
         tracer_out = full_raise(trace, out)
         primal_out, tangent_out = tracer_out.primal, tracer_out.tangent
     return primal_out, tangent_out
+
+
+##
+
+from .trees import flatten_fun  # noqa
+from .trees import tree_flatten  # noqa
+from .trees import tree_unflatten  # noqa
+
+
+def jvp_flat(f, primals, tangents):
+    with new_main(JVPTrace) as main:
+        trace = JVPTrace(main)
+        tracers_in = [JVPTracer(trace, x, t) for x, t in zip(primals, tangents)]
+        outs = f(*tracers_in)
+        tracers_out = [full_raise(trace, out) for out in outs]
+        primals_out, tangents_out = unzip2((t.primal, t.tangent) for t in tracers_out)
+    return primals_out, tangents_out
+
+
+def jvp(f, primals, tangents):
+    primals_flat, in_tree = tree_flatten(primals)
+    tangents_flat, in_tree2 = tree_flatten(tangents)
+    if in_tree != in_tree2:
+        raise TypeError
+    f, out_tree = flatten_fun(f, in_tree)
+    primals_out_flat, tangents_out_flat = jvp_flat(f, primals_flat, tangents_flat)
+    primals_out = tree_unflatten(out_tree(), primals_out_flat)
+    tangents_out = tree_unflatten(out_tree(), tangents_out_flat)
+    return primals_out, tangents_out

@@ -82,3 +82,15 @@ def get_aval(x):
 def zeros_like(val):
     aval = get_aval(val)
     return np.zeros(aval.shape, aval.dtype)
+
+
+def mapped_aval(batch_dim, aval):
+    shape = list(aval.shape)
+    del shape[batch_dim]
+    return ShapedArray(tuple(shape), aval.dtype)
+
+
+def moveaxis(x, src: int, dst: int):
+    perm = [i for i in range(np.ndim(x)) if i != src]
+    perm.insert(dst, src)
+    return prims.transpose(x, perm)
