@@ -7,6 +7,7 @@ PYTHON_VERSION_10:=3.10.12
 PYTHON_VERSION_11:=3.11.4
 PYTHON_VERSION_12:=3.12-dev
 PYTHON_VERSION_NOGIL:=nogil-3.9.10-1
+PYTHON_VERSION_PYPY:=pypy3.10-7.3.12
 
 SOURCES:=\
 	${PROJECT} \
@@ -31,12 +32,14 @@ clean:
 ### Venv
 
 DEFAULT_PYTHON_VERSION:=${PYTHON_VERSION_9}
-DEFAULT_VENV_FLAGS:=  # --copies
+DEFAULT_PYENV_INSTALL_OPTS:=
+DEFAULT_PYENV_VERSION_SUFFIX:=
+DEFAULT_VENV_OPTS:=  # --copies
 DEFAULT_VENV_ROOT:=.venv
 DEFAULT_REQUIREMENTS_TXT:=requirements-ext.txt
 
 PYTHON_VERSION:=$$(echo "$${_PYTHON_VERSION:-${DEFAULT_PYTHON_VERSION}}")
-VENV_FLAGS:=$$(echo "$${_VENV_FLAGS:-${DEFAULT_VENV_FLAGS}}")
+VENV_OPTS:=$$(echo "$${_VENV_OPTS:-${DEFAULT_VENV_OPTS}}")
 VENV_ROOT:=$$(echo "$${_VENV_ROOT:-${DEFAULT_VENV_ROOT}}")
 REQUIREMENTS_TXT:=$$(echo "$${_REQUIREMENTS_TXT:-${DEFAULT_REQUIREMENTS_TXT}}")
 
@@ -44,12 +47,14 @@ PYTHON:=$$(echo "$(VENV_ROOT)/bin/python")
 
 PYENV_ROOT:=$$(sh -c "if [ -z '$${PYENV_ROOT}' ] ; then echo '$${HOME}/.pyenv' ; else echo '$${PYENV_ROOT%/}' ; fi")
 PYENV_BIN:=$$(sh -c "if [ -f '$${HOME}/.pyenv/bin/pyenv' ] ; then echo '$${HOME}/.pyenv/bin/pyenv' ; else echo pyenv ; fi")
+PYENV_INSTALL_OPTS:=$$(echo "$${_PYENV_INSTALL_OPTS:-${DEFAULT_PYENV_INSTALL_OPTS}}")
+PYENV_VERSION_SUFFIX:=$$(echo "$${_PYENV_VERSION_SUFFIX:-${DEFAULT_PYENV_VERSION_SUFFIX}}")
 
 .PHONY: venv
 venv:
 	if [ ! -d $(VENV_ROOT) ] ; then \
-		$(PYENV_BIN) install -s $(PYTHON_VERSION) && \
-		"$(PYENV_ROOT)/versions/$(PYTHON_VERSION)/bin/python" -mvenv $(VENV_FLAGS) $(VENV_ROOT) && \
+		$(PYENV_BIN) install -s $(PYENV_INSTALL_OPTS) $(PYTHON_VERSION) && \
+		"$(PYENV_ROOT)/versions/$(PYTHON_VERSION)$(PYENV_VERSION_SUFFIX)/bin/python" -mvenv $(VENV_OPTS) $(VENV_ROOT) && \
 		$(PYTHON) -mpip install --upgrade pip setuptools wheel && \
 		$(PYTHON) -mpip install -r ${REQUIREMENTS_TXT} ; \
 	fi
@@ -98,9 +103,6 @@ TEST_SOURCES:=$$(echo "$${_TEST_SOURCES:-${DEFAULT_TEST_SOURCES}}")
 test: venv
 	$(PYTHON) -mpytest $(TEST_SOURCES)
 
-.PHONY: test-all
-test-all: test test-10 test-11 test-12 test-nogil
-
 .PHONY: test-10
 test-10:
 	_PYTHON_VERSION=${PYTHON_VERSION_10} _VENV_ROOT=.venv-10 \
@@ -109,6 +111,20 @@ test-10:
 .PHONY: test-11
 test-11:
 	_PYTHON_VERSION=${PYTHON_VERSION_11} _VENV_ROOT=.venv-11 \
+	${MAKE} test
+
+.PHONY: test-all
+test-all: test test-10 test-11
+
+#
+
+.PHONY: test-debug
+test-debug:
+	_PYTHON_VERSION=${PYTHON_VERSION_9} _VENV_ROOT=.venv-debug \
+	_PYENV_INSTALL_OPTS=-g \
+	_PYENV_VERSION_SUFFIX=-debug \
+	_REQUIREMENTS_TXT=requirements-dev.txt \
+	_TEST_SOURCES="${PROJECT}" \
 	${MAKE} test
 
 .PHONY: test-12
@@ -121,6 +137,13 @@ test-12:
 .PHONY: test-nogil
 test-nogil:
 	_PYTHON_VERSION=${PYTHON_VERSION_NOGIL} _VENV_ROOT=.venv-nogil \
+	_REQUIREMENTS_TXT=requirements-dev.txt \
+	_TEST_SOURCES="${PROJECT}" \
+	${MAKE} test
+
+.PHONY: test-pypy
+test-pypy:
+	_PYTHON_VERSION=${PYTHON_VERSION_PYPY} _VENV_ROOT=.venv-pypy \
 	_REQUIREMENTS_TXT=requirements-dev.txt \
 	_TEST_SOURCES="${PROJECT}" \
 	${MAKE} test
