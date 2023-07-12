@@ -54,36 +54,30 @@ class SpecCacheFactory(Factory[R, C]):
                 return ret
 
 
-# FIXME:
-# class RecursiveSpecFactory(Factory[R, C]):
-#     def __int__(self, f: Factory[R, C]) -> None:
-#         super().__init__()
-#         self._f = f
-#         self._dct: ta.Dict[Spec, ta.Optional[R]] = {}
-#
-#     @dc.dataclass()
-#     class _Proxy(Factory[R, C, Spec]):
-#         f: ta.Optional[Factory[R, C, Spec]] = None
-#
-#         def __call__(self, ctx: C, spec: Spec) -> ta.Optional[R]:
-#             if self.f is None:
-#                 raise TypeError('recursive impl not yet set')
-#             return self.f(ctx, spec)
-#
-#     def __call__(self, ctx: C, spec: Spec) -> ta.Optional[R]:
-#         try:
-#             return self._dct[spec]
-#         except KeyError:
-#             pass
-#
-#         p = self._dct[spec] = self._Proxy()
-#         try:
-#             f = self._f(ctx, spec)
-#         except Exception:
-#             del self._dct[spec]
-#             raise
-#         p.f = f
-#         return f
+class RecursiveSpecFactory(Factory[R, C]):
+    def __int__(
+            self,
+            f: Factory[R, C],
+            prx: ta.Callable[[], ta.Tuple[ta.Optional[R], ta.Callable[[ta.Optional[R]], None]]],
+    ) -> None:
+        super().__init__()
+        self._f = f
+        self._prx = prx
+        self._dct: ta.Dict[Spec, ta.Optional[R]] = {}
+
+    def __call__(self, ctx: C, spec: Spec) -> ta.Optional[R]:
+        try:
+            return self._dct[spec]
+        except KeyError:
+            pass
+        p, sp = self._prx
+        self._dct[spec] = p
+        try:
+            r = self._f(ctx, spec)
+            sp(r)
+            return r
+        finally:
+            del self._dct[spec]
 
 
 class CompositeFactory(Factory[R, C, A]):
