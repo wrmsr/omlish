@@ -2,6 +2,7 @@ import dataclasses as dc
 import itertools as it
 import typing as ta
 
+from .utils import map_
 from .utils import unzip2
 
 
@@ -50,7 +51,7 @@ def register_pytree_node(ty: ta.Type, to_iter: ta.Callable, from_iter: ta.Callab
 node_types: ta.Dict[ta.Type, NodeType] = {}
 register_pytree_node(tuple, lambda t: (None, t), lambda _, xs: tuple(xs))
 register_pytree_node(list, lambda l: (None, l), lambda _, xs: list(xs))
-register_pytree_node(dict, lambda d: map(tuple, unzip2(sorted(d.items()))), lambda keys, vals: dict(zip(keys, vals)))
+register_pytree_node(dict, lambda d: map_(tuple, unzip2(sorted(d.items()))), lambda keys, vals: dict(zip(keys, vals)))
 
 
 @dc.dataclass(frozen=True)

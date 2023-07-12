@@ -1,15 +1,72 @@
 """
 pip install jax jaxlib
 """
-import builtins
-import contextlib
 import dataclasses as dc
-import itertools as it
+import functools
 import operator as op
 import typing as ta
 import weakref
 
 import numpy as np
+
+from .arrays import ShapedArray
+from .arrays import get_aval
+from .arrays import raise_to_shaped
+from .batches import BatchAxis
+from .batches import not_mapped
+from .batches import vmap
+from .batches import vmap_rules
+from .eval import impl_rules
+from .jaxprs import Atom
+from .jaxprs import Jaxpr
+from .jaxprs import JaxprEqn
+from .jaxprs import Lit
+from .jaxprs import Var
+from .jaxprs import abstract_eval_rules
+from .jaxprs import eval_jaxpr
+from .jaxprs import jaxpr_as_fun
+from .jaxprs import make_jaxpr
+from .jaxprs import typecheck_jaxpr
+from .jvp import jvp
+from .jvp import jvp_rules
+from .prims import Primitive
+from .prims import add
+from .prims import add_p
+from .prims import broadcast
+from .prims import broadcast_p
+from .prims import cos
+from .prims import cos_p
+from .prims import greater
+from .prims import greater_p
+from .prims import jax_types
+from .prims import less
+from .prims import less_p
+from .prims import mul
+from .prims import mul_p
+from .prims import neg
+from .prims import neg_p
+from .prims import reduce_sum
+from .prims import reduce_sum_p
+from .prims import sin
+from .prims import sin_p
+from .prims import transpose
+from .traces import Trace
+from .traces import Tracer
+from .traces import bind
+from .traces import full_lower
+from .traces import full_raise
+from .traces import new_main
+from .trees import flatten_fun
+from .trees import register_pytree_node
+from .trees import tree_flatten
+from .trees import tree_unflatten
+from .utils import IDHashable
+from .utils import map_
+from .utils import merge_lists
+from .utils import partition_list
+from .utils import split_half
+from .utils import split_list
+from .utils import unzip2
 
 
 ##
@@ -26,22 +83,6 @@ def jit(f):
 
 
 xla_call_p = Primitive('xla_call')
-
-
-##
-
-
-class IDHashable:
-    val: ta.Any
-
-    def __init__(self, val):
-        self.val = val
-
-    def __hash__(self) -> int:
-        return id(self.val)
-
-    def __eq__(self, other):
-        return type(other) is IDHashable and id(self.val) == id(other.val)
 
 
 ##
@@ -65,7 +106,7 @@ def xla_call_impl(*args, jaxpr: Jaxpr, num_consts: int):
 impl_rules[xla_call_p] = xla_call_impl
 
 
-@lru_cache()
+@functools.lru_cache()
 def xla_callable(hashable_jaxpr: IDHashable, hashable_consts: ta.Tuple[IDHashable, ...]):
     jaxpr: Jaxpr = hashable_jaxpr.val
     typecheck_jaxpr(jaxpr)
@@ -76,9 +117,8 @@ def xla_callable(hashable_jaxpr: IDHashable, hashable_consts: ta.Tuple[IDHashabl
     xla_params = _xla_params(c, in_avals)
     outs = jaxpr_subcomp(c, jaxpr, xla_consts + xla_params)
     out = xops.Tuple(c, outs)
-    compiled = xb.get_backend(None).compile(
-        xc._xla.mlir.xla_computation_to_mlir_module(c.build(out)))
-    return partial(execute_compiled, compiled, [v.aval for v in jaxpr.outs])
+    compiled = xb.get_backend(None).compile(xc._xla.mlir.xla_computation_to_mlir_module(c.build(out)))
+    return functools.partial(execute_compiled, compiled, [v.aval for v in jaxpr.outs])
 
 
 def _xla_consts(c: xe.XlaBuilder, consts: ta.List[ta.Any]) -> ta.List[xe.XlaOp]:
@@ -110,14 +150,14 @@ def jaxpr_subcomp(c: xe.XlaBuilder, jaxpr: Jaxpr, args: ta.List[xe.XlaOp]) -> ta
     def write(v: Var, val: xe.XlaOp) -> None:
         env[v] = val
 
-    map(write, jaxpr.in_binders, args)
+    map_(write, jaxpr.in_binders, args)
     for eqn in jaxpr.eqns:
         in_avals = [x.aval for x in eqn.inputs]
-        in_vals = map(read, eqn.inputs)
+        in_vals = map_(read, eqn.inputs)
         rule = xla_translations[eqn.primitive]
         out_vals = rule(c, in_avals, in_vals, **eqn.params)
-        map(write, eqn.out_binders, out_vals)
-    return map(read, jaxpr.outs)
+        map_(write, eqn.out_binders, out_vals)
+    return map_(read, jaxpr.outs)
 
 
 def execute_compiled(compiled, out_avals, *args):
@@ -147,13 +187,13 @@ def direct_translation(op, c, in_avals, in_vals):
     return [op(*in_vals)]
 
 
-xla_translations[add_p] = partial(direct_translation, xops.Add)
-xla_translations[mul_p] = partial(direct_translation, xops.Mul)
-xla_translations[neg_p] = partial(direct_translation, xops.Neg)
-xla_translations[sin_p] = partial(direct_translation, xops.Sin)
-xla_translations[cos_p] = partial(direct_translation, xops.Cos)
-xla_translations[greater_p] = partial(direct_translation, xops.Gt)
-xla_translations[less_p] = partial(direct_translation, xops.Lt)
+xla_translations[add_p] = functools.partial(direct_translation, xops.Add)
+xla_translations[mul_p] = functools.partial(direct_translation, xops.Mul)
+xla_translations[neg_p] = functools.partial(direct_translation, xops.Neg)
+xla_translations[sin_p] = functools.partial(direct_translation, xops.Sin)
+xla_translations[cos_p] = functools.partial(direct_translation, xops.Cos)
+xla_translations[greater_p] = functools.partial(direct_translation, xops.Gt)
+xla_translations[less_p] = functools.partial(direct_translation, xops.Lt)
 
 
 def reduce_sum_translation(c, in_avals, in_vals, *, axis):
@@ -221,8 +261,14 @@ foo()
 def xla_call_jvp_rule(primals, tangents, *, jaxpr, num_consts):
     del num_consts  # Unused
     new_jaxpr, new_consts = jvp_jaxpr(jaxpr)
-    outs = bind(xla_call_p, *new_consts, *primals, *tangents, jaxpr=new_jaxpr,
-                num_consts=len(new_consts))
+    outs = bind(
+        xla_call_p,
+        *new_consts,
+        *primals,
+        *tangents,
+        jaxpr=new_jaxpr,
+        num_consts=len(new_consts),
+    )
     n = len(outs) // 2
     primals_out, tangents_out = outs[:n], outs[n:]
     return primals_out, tangents_out
@@ -231,7 +277,7 @@ def xla_call_jvp_rule(primals, tangents, *, jaxpr, num_consts):
 jvp_rules[xla_call_p] = xla_call_jvp_rule
 
 
-@lru_cache()
+@functools.lru_cache()
 def jvp_jaxpr(jaxpr: Jaxpr) -> ta.Tuple[Jaxpr, ta.List[ta.Any]]:
     def jvp_traceable(*primals_and_tangents):
         n = len(primals_and_tangents) // 2
@@ -246,19 +292,26 @@ def jvp_jaxpr(jaxpr: Jaxpr) -> ta.Tuple[Jaxpr, ta.List[ta.Any]]:
 def xla_call_vmap_rule(axis_size, vals_in, dims_in, *, jaxpr, num_consts):
     del num_consts  # Unused
     new_jaxpr, new_consts = vmap_jaxpr(jaxpr, axis_size, tuple(dims_in))
-    outs = bind(xla_call_p, *new_consts, *vals_in, jaxpr=new_jaxpr,
-                num_consts=len(new_consts))
+    outs = bind(
+        xla_call_p,
+        *new_consts,
+        *vals_in,
+        jaxpr=new_jaxpr,
+        num_consts=len(new_consts),
+    )
     return outs, [0] * len(outs)
 
 
 vmap_rules[xla_call_p] = xla_call_vmap_rule
 
 
-@lru_cache()
+@functools.lru_cache()
 def vmap_jaxpr(jaxpr: Jaxpr, axis_size: int, bdims_in: ta.Tuple[BatchAxis, ...]) -> ta.Tuple[Jaxpr, ta.List[ta.Any]]:
     vmap_traceable = vmap(jaxpr_as_fun(jaxpr), tuple(bdims_in))
-    in_avals = [unmapped_aval(axis_size, d, v.aval)
-                for v, d in zip(jaxpr.in_binders, bdims_in)]
+    in_avals = [
+        unmapped_aval(axis_size, d, v.aval)
+        for v, d in zip(jaxpr.in_binders, bdims_in)
+    ]
     new_jaxpr, new_consts, _ = make_jaxpr(vmap_traceable, *in_avals)
     return new_jaxpr, new_consts
 
@@ -391,18 +444,6 @@ foo()
 
 
 ##
-
-
-def split_half(lst: ta.List[ta.Any]) -> ta.Tuple[ta.List[ta.Any], ta.List[ta.Any]]:
-    assert not len(lst) % 2
-    return split_list(lst, len(lst) // 2)
-
-
-def merge_lists(which: ta.List[bool], l1: ta.List[ta.Any], l2: ta.List[ta.Any]) -> ta.List[ta.Any]:
-    l1, l2 = iter(l1), iter(l2)
-    out = [next(l2) if b else next(l1) for b in which]
-    assert next(l1, None) is next(l2, None) is None
-    return out
 
 
 ##
@@ -555,10 +596,8 @@ class PartialEvalTrace(Trace):
         tracers_in = [self.instantiate_const(t) for t in tracers]
         avals_in = [t.aval for t in tracers_in]
         avals_out = abstract_eval_rules[primitive](*avals_in, **params)
-        tracers_out = [PartialEvalTracer(self, PartialVal.unknown(aval), None)
-                       for aval in avals_out]
-        eqn = JaxprEqnRecipe(primitive, tracers_in, params, avals_out,
-                             map(weakref.ref, tracers_out))
+        tracers_out = [PartialEvalTracer(self, PartialVal.unknown(aval), None) for aval in avals_out]
+        eqn = JaxprEqnRecipe(primitive, tracers_in, params, avals_out, map_(weakref.ref, tracers_out))
         for t in tracers_out:
             t.recipe = eqn
         return tracers_out
@@ -691,11 +730,14 @@ def xla_call_partial_eval(trace, tracers, *, jaxpr, num_consts):
     outs1_res = bind(xla_call_p, *known_vals, jaxpr=jaxpr1, num_consts=0)
     outs1, res = split_list(outs1_res, len(jaxpr1.outs) - num_res)
     res_tracers = [trace.instantiate_const(full_raise(trace, x)) for x in res]
-    outs2 = [PartialEvalTracer(trace, PartialVal.unknown(v.aval), None)
-             for v in jaxpr2.outs]
-    eqn = JaxprEqnRecipe(xla_call_p, res_tracers + unknown_tracers,
-                         dict(jaxpr=jaxpr2, num_consts=0),
-                         [v.aval for v in jaxpr2.outs], map(weakref.ref, outs2))
+    outs2 = [PartialEvalTracer(trace, PartialVal.unknown(v.aval), None) for v in jaxpr2.outs]
+    eqn = JaxprEqnRecipe(
+        xla_call_p,
+        res_tracers + unknown_tracers,
+        dict(jaxpr=jaxpr2, num_consts=0),
+        [v.aval for v in jaxpr2.outs],
+        map_(weakref.ref, outs2),
+    )
     for t in outs2:
         t.recipe = eqn
     return merge_lists(out_unknowns, outs1, outs2)
@@ -724,29 +766,29 @@ def partial_eval_jaxpr(
         return x
 
     eqns1, eqns2 = [], []
-    map(write, in_unknowns, jaxpr.in_binders)
+    map_(write, in_unknowns, jaxpr.in_binders)
     for eqn in jaxpr.eqns:
-        unks_in = map(read, eqn.inputs)
+        unks_in = map_(read, eqn.inputs)
         rule = partial_eval_jaxpr_rules.get(eqn.primitive)
         if rule:
             eqn1, eqn2, unks_out, res = rule(unks_in, eqn)
             eqns1.append(eqn1);
             eqns2.append(eqn2);
             residuals.update(res)
-            map(write, unks_out, eqn.out_binders)
+            map_(write, unks_out, eqn.out_binders)
         elif any(unks_in):
             inputs = [v if unk else new_res(v) for unk, v in zip(unks_in, eqn.inputs)]
             eqns2.append(JaxprEqn(eqn.primitive, inputs, eqn.params, eqn.out_binders))
-            map(partial(write, True), eqn.out_binders)
+            map_(functools.partial(write, True), eqn.out_binders)
         else:
             eqns1.append(eqn)
-            map(partial(write, False), eqn.out_binders)
-    out_unknowns = map(read, jaxpr.outs)
+            map_(functools.partial(write, False), eqn.out_binders)
+    out_unknowns = map_(read, jaxpr.outs)
     if instantiate is not None:
         for v, uk, inst in zip(jaxpr.outs, out_unknowns, instantiate):
             if inst and not uk:
                 new_res(v)
-        out_unknowns = map(op.or_, out_unknowns, instantiate)
+        out_unknowns = map_(op.or_, out_unknowns, instantiate)
 
     residuals, num_res = list(residuals), len(residuals)
     assert all(type(v) is Var for v in residuals), residuals
@@ -798,10 +840,8 @@ def xla_call_peval_eqn(
     ins1, ins2 = partition_list(unks_in, eqn.inputs)
     out_binders1, out_binders2 = partition_list(unks_out, eqn.out_binders)
     residuals = [Var(v.aval) for v in jaxpr2.in_binders[:num_res]]
-    eqn1 = JaxprEqn(xla_call_p, ins1, dict(jaxpr=jaxpr1, num_consts=0),
-                    out_binders1 + residuals)
-    eqn2 = JaxprEqn(xla_call_p, residuals + ins2,
-                    dict(jaxpr=jaxpr2, num_consts=0), out_binders2)
+    eqn1 = JaxprEqn(xla_call_p, ins1, dict(jaxpr=jaxpr1, num_consts=0), out_binders1 + residuals)
+    eqn2 = JaxprEqn(xla_call_p, residuals + ins2, dict(jaxpr=jaxpr2, num_consts=0), out_binders2)
     return eqn1, eqn2, unks_out, residuals
 
 
@@ -918,17 +958,16 @@ def eval_jaxpr_transposed(jaxpr: Jaxpr, args: ta.List[ta.Any], cotangents: ta.Li
         if type(x) is Var and val is not None:
             ct_env[x] = add(ct_env[x], val) if x in ct_env else val
 
-    map(write_primal, jaxpr.in_binders, args)
-    map(write_cotangent, jaxpr.outs, cotangents)
+    map_(write_primal, jaxpr.in_binders, args)
+    map_(write_cotangent, jaxpr.outs, cotangents)
     for eqn in jaxpr.eqns[::-1]:
-        primals_in = map(read_primal, eqn.inputs)
-        cts_in = map(read_cotangent, eqn.out_binders)
+        primals_in = map_(read_primal, eqn.inputs)
+        cts_in = map_(read_cotangent, eqn.out_binders)
         rule = transpose_rules[eqn.primitive]
         cts_out = rule(cts_in, *primals_in, **eqn.params)
-        map(write_cotangent, eqn.inputs, cts_out)
+        map_(write_cotangent, eqn.inputs, cts_out)
 
-    return [read_cotangent(v) for v, x in zip(jaxpr.in_binders, args)
-            if type(x) is UndefPrimal]
+    return [read_cotangent(v) for v, x in zip(jaxpr.in_binders, args) if type(x) is UndefPrimal]
 
 
 transpose_rules = {}
@@ -976,8 +1015,7 @@ def xla_call_transpose_rule(cts, *invals, jaxpr, num_consts):
     undef_primals = [type(x) is UndefPrimal for x in invals]
     transposed_jaxpr, new_consts = transpose_jaxpr(jaxpr, tuple(undef_primals))
     residuals, _ = partition_list(undef_primals, invals)
-    outs = bind(xla_call_p, *new_consts, *residuals, *cts,
-                jaxpr=transposed_jaxpr, num_consts=len(new_consts))
+    outs = bind(xla_call_p, *new_consts, *residuals, *cts, jaxpr=transposed_jaxpr, num_consts=len(new_consts))
     outs = iter(outs)
     return [next(outs) if undef else None for undef in undef_primals]
 
@@ -985,10 +1023,10 @@ def xla_call_transpose_rule(cts, *invals, jaxpr, num_consts):
 transpose_rules[xla_call_p] = xla_call_transpose_rule
 
 
-@lru_cache()
+@functools.lru_cache()
 def transpose_jaxpr(jaxpr: Jaxpr, undef_primals: ta.Tuple[bool, ...]) -> ta.Tuple[Jaxpr, ta.List[ta.Any]]:
     avals_in, avals_out = (jt := typecheck_jaxpr(jaxpr)).in_types, jt.out_types
-    traceable = partial(eval_jaxpr_transposed, jaxpr)
+    traceable = functools.partial(eval_jaxpr_transposed, jaxpr)
     args = [UndefPrimal(a) if u else a for a, u in zip(avals_in, undef_primals)]
     trans_jaxpr, consts, _ = make_jaxpr(traceable, tuple(args), tuple(avals_out))
     typecheck_jaxpr(trans_jaxpr)
@@ -1282,11 +1320,14 @@ def cond_partial_eval(trace, tracers, *, true_jaxpr, false_jaxpr):
     outs1, res = split_list(outs1_res, len(outs1_res) - num_res)
     pred_tracer_ = trace.instantiate_const(full_raise(trace, pred_tracer))
     res_tracers = [trace.instantiate_const(full_raise(trace, x)) for x in res]
-    outs2 = [PartialEvalTracer(trace, PartialVal.unknown(v.aval), None)
-             for v in t_jaxpr2.outs]
-    eqn = JaxprEqnRecipe(cond_p, [pred_tracer_, *res_tracers, *unknown_tracers],
-                         dict(true_jaxpr=t_jaxpr2, false_jaxpr=f_jaxpr2),
-                         [v.aval for v in t_jaxpr2.outs], map(weakref.ref, outs2))
+    outs2 = [PartialEvalTracer(trace, PartialVal.unknown(v.aval), None) for v in t_jaxpr2.outs]
+    eqn = JaxprEqnRecipe(
+        cond_p,
+        [pred_tracer_, *res_tracers, *unknown_tracers],
+        dict(true_jaxpr=t_jaxpr2, false_jaxpr=f_jaxpr2),
+        [v.aval for v in t_jaxpr2.outs],
+        map_(weakref.ref, outs2),
+    )
     for t in outs2:
         t.recipe = eqn
     return merge_lists(out_uks, outs1, outs2)
@@ -1302,7 +1343,7 @@ def _cond_partial_eval(
 ) -> ta.Tuple[Jaxpr, Jaxpr, Jaxpr, Jaxpr, ta.List[bool], int]:
     _, _, t_out_uks, _ = partial_eval_jaxpr(true_jaxpr, in_uks)
     _, _, f_out_uks, _ = partial_eval_jaxpr(false_jaxpr, in_uks)
-    out_uks = map(op.or_, t_out_uks, f_out_uks)
+    out_uks = map_(op.or_, t_out_uks, f_out_uks)
 
     t_jaxpr1, t_jaxpr2, _, t_nres = partial_eval_jaxpr(true_jaxpr, in_uks, out_uks)
     f_jaxpr1, f_jaxpr2, _, f_nres = partial_eval_jaxpr(false_jaxpr, in_uks, out_uks)

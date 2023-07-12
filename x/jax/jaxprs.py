@@ -18,6 +18,7 @@ from .traces import new_main
 from .trees import PyTreeDef
 from .trees import flatten_fun
 from .trees import tree_flatten
+from .utils import map_
 from .utils import partition_list
 from .utils import split_list
 from .utils import unzip2
@@ -126,12 +127,12 @@ def eval_jaxpr(jaxpr: Jaxpr, args: ta.List[ta.Any]) -> ta.List[ta.Any]:
         assert v not in env  # single-assignment
         env[v] = val
 
-    map(write, jaxpr.in_binders, args)
+    map_(write, jaxpr.in_binders, args)
     for eqn in jaxpr.eqns:
-        in_vals = map(read, eqn.inputs)
+        in_vals = map_(read, eqn.inputs)
         outs = bind(eqn.primitive, *in_vals, **eqn.params)
-        map(write, eqn.out_binders, outs)
-    return map(read, jaxpr.outs)
+        map_(write, eqn.out_binders, outs)
+    return map_(read, jaxpr.outs)
 
 
 def jaxpr_as_fun(jaxpr: Jaxpr):
