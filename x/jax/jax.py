@@ -1,5 +1,5 @@
 """
-pip install jaxlib
+pip install jax jaxlib
 """
 import builtins
 import contextlib
