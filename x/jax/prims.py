@@ -64,3 +64,16 @@ def reduce_sum(x, axis=None):
     if type(axis) is int:
         axis = (axis,)
     return bind1(reduce_sum_p, x, axis=axis)
+
+
+jax_types = {
+    bool,
+    int,
+    float,
+    np.bool_,
+    np.int32,
+    np.int64,
+    np.float32,
+    np.float64,
+    np.ndarray,
+}

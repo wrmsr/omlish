@@ -4,6 +4,7 @@ import numpy as np
 
 from . import prims
 from .traces import Tracer
+from .utils import swap
 
 
 class ShapedArray:
@@ -20,12 +21,12 @@ class ShapedArray:
         return len(self.shape)
 
     _neg = staticmethod(prims.neg)
-    _add = staticmethod(add)
-    _radd = staticmethod(swap(add))
-    _mul = staticmethod(mul)
-    _rmul = staticmethod(swap(mul))
-    _gt = staticmethod(greater)
-    _lt = staticmethod(less)
+    _add = staticmethod(prims.add)
+    _radd = staticmethod(swap(prims.add))
+    _mul = staticmethod(prims.mul)
+    _rmul = staticmethod(swap(prims.mul))
+    _gt = staticmethod(prims.greater)
+    _lt = staticmethod(prims.less)
 
     @staticmethod
     def _bool(tracer):
@@ -43,9 +44,9 @@ class ShapedArray:
 
     def __eq__(self, other):
         return (
-                type(self) is type(other) and
-                self.shape == other.shape and
-                self.dtype == other.dtype
+            type(self) is type(other) and
+            self.shape == other.shape and
+            self.dtype == other.dtype
         )
 
     def __repr__(self):
@@ -72,20 +73,12 @@ class ConcreteArray(ShapedArray):
 def get_aval(x):
     if isinstance(x, Tracer):
         return x.aval
-    elif type(x) in jax_types:
+    elif type(x) in prims.jax_types:
         return ConcreteArray(np.asarray(x))
     else:
         raise TypeError(x)
 
 
-jax_types = {
-    bool,
-    int,
-    float,
-    np.bool_,
-    np.int32,
-    np.int64,
-    np.float32,
-    np.float64,
-    np.ndarray,
-}
+def zeros_like(val):
+    aval = get_aval(val)
+    return np.zeros(aval.shape, aval.dtype)
