@@ -7,29 +7,18 @@ import dataclasses as dc
 import threading
 import typing as ta
 
+from .factories import Factory
 from .specs import Spec
 from .values import Value
 
 
-#
+# @dc.dataclass(frozen=True)
+# class SetType(RegistryItem):
+#     marshaler: 'Marshaler'
 
 
-
-
-#
-
-
-@dc.dataclass(frozen=True)
-class SetType(RegistryItem):
-    marshaler: 'Marshaler'
-
-
-
-#
-
-
-class Manager:
-    pass
+# class Manager:
+#     pass
 
 
 Marshaler = ta.Callable[['MarshalContext', ta.Any], Value]
@@ -37,5 +26,5 @@ MarshalerFactory = Factory['MarshalContext', Spec, Marshaler]
 
 
 class MarshalContext:
-    def make(self, ty: Spec) -> Marshaler:
+    def make(self, spec: Spec) -> Marshaler:
         raise NotImplementedError
