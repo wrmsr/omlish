@@ -1,10 +1,16 @@
 import numpy as np
 
 from .. import eval  # noqa
+from ..arrays import get_aval
+from ..arrays import raise_to_shaped
 from ..batches import vmap
+from ..jaxprs import make_jaxpr
+from ..jaxprs import make_jaxpr_v1
+from ..jaxprs import typecheck_jaxpr
 from ..jvp import jvp
 from ..jvp import jvp_v1
 from ..prims import cos
+from ..prims import mul
 from ..prims import sin
 
 
@@ -92,4 +98,19 @@ def test_batches1():
 
     print(jacfwd(f, np.arange(3.)))
 
+    print()
+
+
+def test_jaxprs0():
+    jaxpr, consts, _ = make_jaxpr_v1(lambda x: 2. * x, raise_to_shaped(get_aval(3.)))
+
+    print(jaxpr)
+    print(typecheck_jaxpr(jaxpr))
+
+    print()
+
+
+def test_jaxprs1():
+    jaxpr, consts, _ = make_jaxpr(lambda: mul(2., 2.))
+    print(jaxpr)
     print()

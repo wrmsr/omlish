@@ -137,3 +137,13 @@ def full_raise(trace: Trace, val: ta.Any) -> Tracer:
         raise Exception(f"Can't lift level {val._trace.main.level} to {level}.")
     else:  # val._trace.level == level
         raise Exception(f"Different traces at same level: {val._trace}, {trace}.")
+
+
+@contextlib.contextmanager
+def new_dynamic(main: MainTrace):
+    global dynamic_trace
+    prev_dynamic_trace, dynamic_trace = dynamic_trace, main
+    try:
+        yield
+    finally:
+        dynamic_trace = prev_dynamic_trace

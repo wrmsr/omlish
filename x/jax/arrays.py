@@ -94,3 +94,7 @@ def moveaxis(x, src: int, dst: int):
     perm = [i for i in range(np.ndim(x)) if i != src]
     perm.insert(dst, src)
     return prims.transpose(x, perm)
+
+
+def raise_to_shaped(aval):
+    return ShapedArray(aval.shape, aval.dtype)
