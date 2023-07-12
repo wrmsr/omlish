@@ -27,14 +27,14 @@ class FuncFactory(ta.Generic[R, C, A]):
 
 
 @dc.dataclass(frozen=True)
-class SpecMapFactory(Factory[R, C]):
+class SpecMapFactory(Factory[R, C, Spec]):
     m: ta.Mapping[Spec, R] = dc.field(default_factory=dict)
 
     def __call__(self, ctx: C, spec: Spec) -> ta.Optional[R]:
         return self.m.get(spec)
 
 
-class SpecCacheFactory(Factory[R, C]):
+class SpecCacheFactory(Factory[R, C, Spec]):
     def __init__(self, f: Factory[R, C, Spec]) -> None:
         super().__init__()
         self._f = f
@@ -54,10 +54,10 @@ class SpecCacheFactory(Factory[R, C]):
                 return ret
 
 
-class RecursiveSpecFactory(Factory[R, C]):
+class RecursiveSpecFactory(Factory[R, C, Spec]):
     def __int__(
             self,
-            f: Factory[R, C],
+            f: Factory[R, C, Spec],
             prx: ta.Callable[[], ta.Tuple[ta.Optional[R], ta.Callable[[ta.Optional[R]], None]]],
     ) -> None:
         super().__init__()
