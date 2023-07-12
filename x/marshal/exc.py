@@ -2,4 +2,6 @@ from .specs import Spec
 
 
 class UnhandledSpecException(Exception):
-    spec: Spec
+    @property
+    def spec(self) -> Spec:
+        return self.args[0]
