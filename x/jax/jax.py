@@ -3,6 +3,7 @@ pip install jax jaxlib
 """
 import builtins
 import contextlib
+import dataclasses as dc
 import itertools as it
 import operator as op
 import typing as ta
@@ -14,7 +15,8 @@ import numpy as np
 ##
 
 
-class Primitive(ta.NamedTuple):
+@dc.dataclass(frozen=True)
+class Primitive:
     name: str
 
 
@@ -82,7 +84,8 @@ def bind1(prim, *args, **params):
 ##
 
 
-class MainTrace(ta.NamedTuple):
+@dc.dataclass(frozen=True)
+class MainTrace:
     level: int
     trace_type: ta.Type['Trace']
     global_data: ta.Optional[ta.Any]
@@ -110,14 +113,17 @@ class Trace:
     def __init__(self, main: MainTrace) -> None:
         self.main = main
 
+    # @abc.abstractmethod
     def pure(self, val) -> ta.Any:
-        assert False  # must override
+        raise NotImplementedError
 
+    # @abc.abstractmethod
     def lift(self, val) -> ta.Any:
-        assert False  # must override
+        raise NotImplementedError
 
+    # @abc.abstractmethod
     def process_primitive(self, primitive, tracers, params):
-        assert False  # must override
+        raise NotImplementedError
 
 
 class Tracer:
@@ -126,8 +132,9 @@ class Tracer:
     __array_priority__ = 1000
 
     @property
+    # @abc.abstractmethod
     def aval(self) -> ta.Any:
-        assert False  # must override
+        raise NotImplementedError
 
     def full_lower(self):
         return self  # default implementation
@@ -582,14 +589,14 @@ class Store:
         return self.val
 
 
-class NodeType(ta.NamedTuple):
+@dc.dataclass(frozen=True)
+class NodeType:
     name: str
     to_iterable: ta.Callable
     from_iterable: ta.Callable
 
 
-def register_pytree_node(ty: ta.Type, to_iter: ta.Callable, from_iter: ta.Callable
-                         ) -> None:
+def register_pytree_node(ty: ta.Type, to_iter: ta.Callable, from_iter: ta.Callable) -> None:
     node_types[ty] = NodeType(str(ty), to_iter, from_iter)
 
 
@@ -599,7 +606,8 @@ register_pytree_node(list, lambda l: (None, l), lambda _, xs: list(xs))
 register_pytree_node(dict, lambda d: map(tuple, unzip2(sorted(d.items()))), lambda keys, vals: dict(zip(keys, vals)))
 
 
-class PyTreeDef(ta.NamedTuple):
+@dc.dataclass(frozen=True)
+class PyTreeDef:
     node_type: NodeType
     node_metadata: ta.Hashable
     child_treedefs: ta.Tuple['PyTreeDef', ...]
@@ -871,14 +879,16 @@ class Lit:
 Atom = Union[Var, Lit]
 
 
-class JaxprEqn(ta.NamedTuple):
+@dc.dataclass(frozen=True)
+class JaxprEqn:
     primitive: Primitive
     inputs: ta.List[Atom]
     params: ta.Dict[str, ta.Any]
     out_binders: ta.List[Var]
 
 
-class Jaxpr(ta.NamedTuple):
+@dc.dataclass(frozen=True)
+class Jaxpr:
     in_binders: ta.List[Var]
     eqns: ta.List[JaxprEqn]
     outs: ta.List[Atom]
@@ -895,7 +905,8 @@ def raise_to_shaped(aval):
 ##
 
 
-class JaxprType(ta.NamedTuple):
+@dc.dataclass(frozen=True)
+class JaxprType:
     in_types: ta.List[ShapedArray]
     out_types: ta.List[ShapedArray]
 
@@ -1665,7 +1676,8 @@ def vspace(aval: ShapedArray) -> ShapedArray:
 ##
 
 
-class PartialVal(ta.NamedTuple):
+@dc.dataclass(frozen=True)
+class PartialVal:
     aval: ShapedArray
     const: ta.Optional[ta.Any]
 
@@ -1684,8 +1696,10 @@ class PartialVal(ta.NamedTuple):
 ##
 
 
-def partial_eval_flat(f: ta.Callable, pvals_in: ta.List[PartialVal]
-                      ) -> ta.Tuple[Jaxpr, ta.List[PartialVal], ta.List[ta.Any]]:
+def partial_eval_flat(
+        f: ta.Callable,
+        pvals_in: ta.List[PartialVal],
+) -> ta.Tuple[Jaxpr, ta.List[PartialVal], ta.List[ta.Any]]:
     with new_main(PartialEvalTrace) as main:
         trace = PartialEvalTrace(main)
         tracers_in = [trace.new_arg(pval) for pval in pvals_in]
@@ -1701,15 +1715,18 @@ def partial_eval_flat(f: ta.Callable, pvals_in: ta.List[PartialVal]
 ##
 
 
-class LambdaBindingRecipe(ta.NamedTuple):
+@dc.dataclass(frozen=True)
+class LambdaBindingRecipe:
     pass
 
 
-class ConstRecipe(ta.NamedTuple):
+@dc.dataclass(frozen=True)
+class ConstRecipe:
     val: ta.Any
 
 
-class JaxprEqnRecipe(ta.NamedTuple):
+@dc.dataclass(frozen=True)
+class JaxprEqnRecipe:
     prim: Primitive
     tracers_in: ta.List['PartialEvalTracer']
     params: ta.Dict[str, ta.Any]
@@ -2098,7 +2115,8 @@ def vjp(f, *primals_in):
     return primals_out, f_vjp
 
 
-class UndefPrimal(ta.NamedTuple):
+@dc.dataclass(frozen=True)
+class UndefPrimal:
     aval: ShapedArray
 
 
@@ -2196,7 +2214,7 @@ transpose_rules[xla_call_p] = xla_call_transpose_rule
 
 @lru_cache()
 def transpose_jaxpr(jaxpr: Jaxpr, undef_primals: ta.Tuple[bool, ...]) -> ta.Tuple[Jaxpr, ta.List[ta.Any]]:
-    avals_in, avals_out = typecheck_jaxpr(jaxpr)
+    avals_in, avals_out = (jt := typecheck_jaxpr(jaxpr)).in_types, jt.out_types
     traceable = partial(eval_jaxpr_transposed, jaxpr)
     args = [UndefPrimal(a) if u else a for a, u in zip(avals_in, undef_primals)]
     trans_jaxpr, consts, _ = make_jaxpr(traceable, tuple(args), tuple(avals_out))
