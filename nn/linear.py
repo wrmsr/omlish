@@ -322,8 +322,8 @@ class LinearCodegenOp(CodegenOp):
         prg = OpenclProgram(
             self.fn_name,
             rendered.src.replace('KERNEL_NAME_PLACEHOLDER', self.fn_name),
-            rendered.global_size[::-1],
-            rendered.local_size[::-1],
+            rendered.global_size,
+            rendered.local_size,
         )
 
         return prg

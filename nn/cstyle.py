@@ -3,10 +3,10 @@ import typing as ta
 
 from omlish import cached
 from omlish import check
+from omlish import collections as col
 from omlish import dataclasses as dc
 from omlish import dispatch
 from omlish import lang
-import numpy as np
 
 from . import ops
 from . import symbolic as sym
@@ -41,6 +41,8 @@ def _render_sym(n: sym.Node, *, strip_parens: bool = False) -> str:
 
 @dc.dataclass(frozen=True)
 class CstyleDialect:
+    size_prefix: str = 'int'
+    generic_var_prefix: str = ''
     kernel_prefix: str = ''
     buffer_prefix: str = ''
     buffer_suffix: str = ''
@@ -60,8 +62,25 @@ class CstyleDialect:
 
     uses_vload: bool = False
 
+    external_local_bufs: bool = False
 
-# def _add_gl_dimension(s: str, i, var, local_size: ta.List[int], xid: ta.Sequence[str]) -> str:
+    code_for_op: ta.Mapping[ta.Type[ops.Op], ta.Callable[..., str]] = col.frozendict({
+        ops.Exp2: lambda x: f'exp2({x})',
+        ops.Log2: lambda x: f'log2({x})',
+        ops.Sin: lambda x: f'sin({x})',
+        ops.Sqrt: lambda x: f'sqrt({x})',
+
+        ops.Add: lambda a, b: f'({a}+{b})',
+        ops.Sub: lambda a, b: f'({a}-{b})',
+        ops.Mul: lambda a, b: f'({a}*{b})',
+        ops.Div: lambda a, b: f'({a}/{b})',
+        ops.CmpEq: lambda a, b: f'({a}=={b})',
+        ops.Maximum: lambda a, b: f'max({a},{b})',
+        ops.MulAcc: lambda a, b, c: f'(({a}*{b})+{c})',
+    })
+
+
+# def _add_gl_dimension(prefix: str, s: str, i, var, local_size: ta.List[int], xid: ta.Sequence[str]) -> str:
 #     # for M1 tensor core stuff, support > 3 dims
 #     if i >= 2 and len(s) > len(xid):
 #         # do this on the x dim for warps
@@ -71,10 +90,10 @@ class CstyleDialect:
 #         lidx = sym.Var(xid[0], 0, math.prod(x.max + 1 for x in s[2:]) - 1)
 #         lidx = (lidx // ((lidx.max + 1) // local_size[-1])) % (var.max + 1)
 #         check.arg(lidx.max == var.max and lidx.min == var.min)
-#         return f'{{ int {var.expr} = {_render_sym(lidx)};  /* {var.max + 1} */'
+#         return f'{{ {prefix} {var.expr} = {_render_sym(lidx)};  /* {var.max + 1} */'
 #     else:
 #         local_size.append(var.max + 1)
-#         return f'{{ int {var.expr} = {xid[min(len(xid), len(s)) - 1 - i]};  /* {var.max + 1} */'
+#         return f'{{ {prefix} {var.expr} = {xid[min(len(xid), len(s)) - 1 - i]};  /* {var.max + 1} */'
 
 
 class CstyleRenderer:
@@ -121,8 +140,8 @@ class CstyleRenderer:
 
         return CstyleRenderer.Rendered(
             '\n'.join(self._lines),
-            self._global_size,
-            self._local_size,
+            self._global_size[::-1],
+            self._local_size[::-1],
         )
 
     _dtype_names: ta.Final[ta.Mapping[Dtype, str]] = {  # FIXME: lol
@@ -273,27 +292,12 @@ class CstyleRenderer:
         check.not_none(u.out)
         self._append(f'{self._render_token(u.out, True)} = {self._render_const(u.v, u.out.dtype)};')
 
-    _code_for_op: ta.Final[ta.Mapping[ta.Type[ops.Op], ta.Callable[..., str]]] = {
-        ops.Exp2: lambda x: f'exp2({x})',
-        ops.Log2: lambda x: f'log2({x})',
-        ops.Sqrt: lambda x: f'sqrt({x})',
-        ops.Sin: lambda x: f'sin({x})',
-
-        ops.Add: lambda a, b: f'({a}+{b})',
-        ops.Sub: lambda a, b: f'({a}-{b})',
-        ops.Mul: lambda a, b: f'({a}*{b})',
-        ops.Div: lambda a, b: f'({a}/{b})',
-        ops.Maximum: lambda a, b: f'max({a},{b})',
-        ops.CmpEq: lambda a, b: f'({a}=={b})',
-        ops.MulAcc: lambda a, b, c: f'(({a}*{b})+{c})',
-    }
-
     @_append_uop.register
     def _append_alu(self, u: uo.Alu) -> None:
         check.not_none(u.out)
         self._append(
             f'{self._render_token(u.out, u.out not in u.vin)} = '
-            f'{self._code_for_op[u.ty](*[self._render_token(x) for x in u.vin])};'
+            f'{self._dialect.code_for_op[u.ty](*[self._render_token(x) for x in u.vin])};'
         )
 
     class _Cast(ta.NamedTuple):
