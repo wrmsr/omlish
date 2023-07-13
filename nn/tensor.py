@@ -74,7 +74,19 @@ class Tensor(lang.Final):
                 src = np.array(src, dtype=(dtype or DEFAULT_DTYPE).np)
 
             if isinstance(src, np.ndarray):
-                data = Buffer.from_cpu(src)
+                if src.size == 1:
+                    data = Buffer.load_op(
+                        ops.Const,
+                        Shape(),
+                        Dtype.of_np(src.dtype),
+                        device,
+                        src.flat[0],
+                    ).movement_op(
+                        ops.Reshape,
+                        Shape(src.shape),
+                    )
+                else:
+                    data = Buffer.from_cpu(src)
 
             else:
                 raise TypeError(src)
