@@ -26,6 +26,7 @@ class PrimitiveMarshaler(Marshaler):
 
 
 PRIMITIVE_MARSHALER = PrimitiveMarshaler()
+
 PRIMITIVE_MARSHALER_FACTORY: MarshalerFactory = SpecMapFactory({  # noqa
     t: PRIMITIVE_MARSHALER for t in PRIMITIVE_TYPES
 })
