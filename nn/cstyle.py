@@ -41,8 +41,8 @@ def _render_sym(n: sym.Node, *, strip_parens: bool = False) -> str:
 
 @dc.dataclass(frozen=True)
 class CstyleDialect:
-    size_prefix: str = 'int'
-    generic_var_prefix: str = ''
+    size_prefix: str = 'int'  # TODO
+    generic_var_prefix: str = ''  # TODO
     kernel_prefix: str = ''
     buffer_prefix: str = ''
     buffer_suffix: str = ''
@@ -57,12 +57,12 @@ class CstyleDialect:
 
     float4: ta.Optional[str] = None
 
-    half_prekernel: ta.Optional[str] = None
-    double_prekernel: ta.Optional[str] = None
+    half_prekernel: ta.Optional[str] = None  # TODO
+    double_prekernel: ta.Optional[str] = None  # TODO
 
-    uses_vload: bool = False
+    uses_vload: bool = False  # TODO
 
-    external_local_bufs: bool = False
+    external_local_bufs: bool = False  # TODO
 
     code_for_op: ta.Mapping[ta.Type[ops.Op], ta.Callable[..., str]] = col.frozendict({
         ops.Exp2: lambda x: f'exp2({x})',
