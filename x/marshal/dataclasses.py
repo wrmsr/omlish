@@ -20,8 +20,10 @@ class DataclassMarshalerFactory(MarshalerFactory):
     def __call__(self, ctx: MarshalContext, spec: Spec) -> ta.Optional[Marshaler]:
         if isinstance(spec, type) and dc.is_dataclass(spec):
             flds: ta.List[ta.Tuple[str, Marshaler]] = []
+            th = ta.get_type_hints(spec)
             for fld in dc.fields(spec):
-                if (m := ctx.make(fld.type)) is None:
+                fty = th[fld.name]
+                if (m := ctx.make(fty)) is None:
                     return None
                 flds.append((fld.name, m))
             return DataclassMarshaler(flds)

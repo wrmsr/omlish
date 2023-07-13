@@ -19,11 +19,11 @@ from ..primitives import PRIMITIVE_MARSHALER_FACTORY
 from ..registries import Registry
 from ..specs import Spec
 from ..specs import spec_of
+from .foox import Foox
 
 
 @dc.dataclass(frozen=True)
-class Foo:
-    il: list[int]
+class Foo(Foox):
     s: str
     f: ta.Optional['Foo'] = None
 
