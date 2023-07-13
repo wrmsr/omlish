@@ -38,7 +38,7 @@ def _test_op(
             for x in shps
         ]
 
-    tst = [Tensor.of(x.detach().numpy(), requires_grad=not forward_only) for x in ts]
+    tst = [Tensor(x.detach().numpy(), requires_grad=not forward_only) for x in ts]
 
     st = time.monotonic()
     out = torch_fxn(*ts)
@@ -97,7 +97,7 @@ def _test_op(
 
 
 def test_full_like():
-    a = Tensor.of([[1, 2, 3], [4, 5, 6]])
+    a = Tensor([[1, 2, 3], [4, 5, 6]])
     b = torch.tensor([[1, 2, 3], [4, 5, 6]])
     _test_op(
         [],

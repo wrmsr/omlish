@@ -24,7 +24,7 @@ class Optimizer(lang.Abstract):
 
         self._params: ta.List[Tensor] = col.unique(x for x in ts if x.requires_grad)
         self._buffers: ta.List[Tensor] = col.unique(x for x in ts if not x.requires_grad)  # buffers are still realized
-        self._lr = Tensor.of(lr, requires_grad=False)
+        self._lr = Tensor(lr, requires_grad=False)
 
     @abc.abstractmethod
     def step(self) -> None:

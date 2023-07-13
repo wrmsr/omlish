@@ -60,7 +60,7 @@ class Func(lang.Abstract):
     @classmethod
     def apply(cls: ta.Type['Func'], *args: 'tensor.Tensor', **kwargs: ta.Any) -> 'tensor.Tensor':
         func = cls(args[0].device, *args)
-        ret = tensor.Tensor.of(
+        ret = tensor.Tensor(
             func.forward(*[t.data for t in args], **kwargs),
             device=func.device,
             requires_grad=func.requires_grad,

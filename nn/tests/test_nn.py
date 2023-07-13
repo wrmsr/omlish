@@ -26,8 +26,8 @@ def test_nn():
     print(xa)
     print(ya)
 
-    xt = Tensor.of(xa)  # noqa
-    yt = Tensor.of(ya)  # noqa
+    xt = Tensor(xa)  # noqa
+    yt = Tensor(ya)  # noqa
 
     zt = xt * yt  # noqa
 
@@ -41,8 +41,8 @@ def test_nn():
 
 
 def test_mul_backward():
-    xt = Tensor.of(np.asarray([1., 2.], dtype=np.float32), requires_grad=True)
-    yt = Tensor.of(np.asarray([3., 4.], dtype=np.float32), requires_grad=True)
+    xt = Tensor(np.asarray([1., 2.], dtype=np.float32), requires_grad=True)
+    yt = Tensor(np.asarray([3., 4.], dtype=np.float32), requires_grad=True)
 
     zt = (xt * yt).sum()
     zt.backward()
@@ -67,7 +67,7 @@ def torch_test(vs: ta.Sequence[NumpyValue], fn: ta.Callable) -> None:
 
     print()
 
-    our_ts = [Tensor.of(v, requires_grad=True) for v in vs]
+    our_ts = [Tensor(v, requires_grad=True) for v in vs]
     tor_ts = [torch.tensor(v, requires_grad=True) for v in vs]
 
     our_res = check.isinstance(fn(*our_ts), Tensor)
@@ -144,7 +144,7 @@ def _test_optim(
 ):
     for x, y in zip(
             step(
-                Tensor.of,
+                Tensor,
                 our_optim,
                 steps,
                 config=our_optim.Config(**opts),
@@ -168,8 +168,8 @@ def test_sgd():
 
 
 def test_simple_mul():
-    x = Tensor.of(1)
-    y = Tensor.of(2)
+    x = Tensor(1)
+    y = Tensor(2)
     z = x + y
     n = z.numpy()
     print(n)
@@ -177,8 +177,8 @@ def test_simple_mul():
 
 @pytest.mark.skip()
 def test_dot():
-    xt = Tensor.of(np.asarray([1., 2.], dtype=np.float32), requires_grad=True)
-    yt = Tensor.of(np.asarray([3., 4.], dtype=np.float32), requires_grad=True)
+    xt = Tensor(np.asarray([1., 2.], dtype=np.float32), requires_grad=True)
+    yt = Tensor(np.asarray([3., 4.], dtype=np.float32), requires_grad=True)
     zt = (xt * yt).sum()
     zt.backward()
 
@@ -204,7 +204,7 @@ def test_matmul():
         for x in shps
     ]
 
-    tst = [Tensor.of(x.detach().numpy(), requires_grad=True) for x in ts]
+    tst = [Tensor(x.detach().numpy(), requires_grad=True) for x in ts]
     x, y = tst
     ret: Tensor = x.matmul(y).realize()
 
