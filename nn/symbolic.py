@@ -44,7 +44,7 @@ class NodeRenderer:
 class DebugNodeRenderer(NodeRenderer):
     @NodeRenderer.render.register
     def render_var(self, n: 'Var') -> str:
-        return f'{n.name}[{n.min},{n.max}]'
+        return f'{n.name if n.name is not None else "?"}[{n.min},{n.max}]'
 
 
 ##
@@ -146,8 +146,9 @@ class Node(lang.Abstract, lang.Sealed):
 
 
 def var(name: ta.Optional[str], min: int, max: int) -> Node:
-    # if name[0] not in Var._name_first_set or frozenset(name[1:]) - Var._name_rest_set:  # FIXME: UGH
-    #     raise ValueError(f'Invalid var name: {name!r} {min} {max}')
+    if name is not None:
+        if not name or name[0] not in Var._name_first_set or frozenset(name[1:]) - Var._name_rest_set:
+            raise ValueError(f'Invalid var name: {name!r} {min} {max}')
     if check.isinstance(min, int) == check.isinstance(max, int):
         return Num(min)
     return Var(name, min, max)
@@ -162,9 +163,9 @@ class Var(Node, lang.Final):
         check.isinstance(max, int)
         if min < 0 or min >= max:
             raise ValueError(f'Invalid var range: {name!r} {min} {max}')
-        # check.non_empty_str(name)  # FIXME: UGH
-        # if name[0] not in Var._name_first_set or frozenset(name[1:]) - Var._name_rest_set:
-        #     raise ValueError(f'Invalid var name: {name!r} {min} {max}')
+        if name is not None:
+            if not name or name[0] not in Var._name_first_set or frozenset(name[1:]) - Var._name_rest_set:
+                raise ValueError(f'Invalid var name: {name!r} {min} {max}')
         super().__init__()
         self._name = name
         self._min = min

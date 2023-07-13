@@ -132,9 +132,11 @@ class CstyleRenderer:
             f'{self._dialect.kernel_prefix} void KERNEL_NAME_PLACEHOLDER({", ".join(self._render_params())}) {{'
         )
 
+        print()
         for u in self._uops:
             print(u)
             self._append_uop(u)
+        print()
 
         self._lines.append('}')
 
