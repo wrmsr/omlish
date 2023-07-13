@@ -488,9 +488,7 @@ class LinearCodegenOp(CodegenOp):
                         i=i,
                         idx=idx,
                         valid=valid,
-                    ))
-                    if const is None
-                    else self._uop(uo.Const(
+                    )) if const is None else self._uop(uo.Const(
                         out=uo.Token(f'acc{mnum(i)}_{len(cache)}', localtype),
                         vin=[],
                         v=const,
@@ -569,7 +567,7 @@ class LinearCodegenOp(CodegenOp):
         acc = []
 
         # ssa
-        _ssa: ta.DefaultDict[str, int] = {}
+        _ssa: ta.Dict[str, int] = {}
 
         def ssa(name: str, ltype: Dtype = Float32) -> uo.Token:
             _ssa[name] = _ssa.get(name, 0) + 1

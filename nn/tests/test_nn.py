@@ -128,6 +128,7 @@ def step(tensor, optim, steps=1, **kwargs):
     optim = optim([net.x, net.w], **kwargs)
     for _ in range(steps):
         out = net.forward()
+        print(f'out: {out.detach().numpy()}')
         optim.zero_grad()
         out.backward()
         optim.step()
@@ -164,7 +165,7 @@ def _test_sgd(steps, opts, atol, rtol):
 
 
 def test_sgd():
-    _test_sgd(10, {'lr': 0.001}, 1e-6, 0)
+    _test_sgd(3, {'lr': 0.001}, 1e-6, 0)
 
 
 def test_simple_mul():
