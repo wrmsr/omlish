@@ -1,13 +1,18 @@
 import typing as ta
 
+from omlish import check
 from omlish import collections as col
 from omlish import dispatch
 from omlish.graphs import dot
 
+from . import ops
 from .buffers import Buffer
-from .ops import Op
 from .raw import RawBuffer
 from .tensor import Tensor
+
+
+def _gen_id(o: ta.Any) -> str:
+    return hex(id(o))[2:]
 
 
 class DotGen:
@@ -40,31 +45,50 @@ class DotGen:
         raise TypeError(obj)
 
     @_add.register
-    def _add_tensor(self, obj: Tensor) -> str:
-        nid = str(id(obj))
-        self._items.append(dot.Node(nid, {'label': f'{type(obj).__name__}:{id(obj)}'}))
-        self._items.append(dot.Edge(nid, self.add(obj.data)))
+    def _add_tensor(self, x: Tensor) -> str:
+        nid = _gen_id(x)
+        self._items.append(dot.Node(nid, {'label': [
+            [f'{type(x).__name__}:{nid}'],
+        ]}))
+        self._items.append(dot.Edge(nid, self.add(x.data)))
         return nid
 
     @_add.register
-    def _add_buffer(self, obj: Buffer) -> str:
-        nid = str(id(obj))
-        self._items.append(dot.Node(nid, {'label': f'{type(obj).__name__}:{id(obj)}'}))
-        self._items.append(dot.Edge(nid, self.add(obj.src)))
+    def _add_buffer(self, buf: Buffer) -> str:
+        nid = _gen_id(buf)
+        self._items.append(dot.Node(nid, {'label': [
+            [f'{type(buf).__name__}:{nid}'],
+        ]}))
+        self._items.append(dot.Edge(nid, self.add(buf.src)))
         return nid
 
     @_add.register
-    def _add_op(self, obj: Op) -> str:
-        nid = str(id(obj))
-        self._items.append(dot.Node(nid, {'label': f'{type(obj).__name__}:{id(obj)}'}))
-        for s in obj.srcs:
+    def _add_op(self, op: ops.Op) -> str:
+        nid = _gen_id(op)
+        self._items.append(dot.Node(nid, {'label': [
+            [f'{type(op).__name__}:{nid}'],
+        ]}))
+        for s in op.srcs:
             self._items.append(dot.Edge(nid, self.add(s)))
         return nid
 
     @_add.register
-    def _add_raw_buffer(self, obj: RawBuffer) -> str:
-        nid = str(id(obj))
-        self._items.append(dot.Node(nid, {'label': f'{type(obj).__name__}:{id(obj)}'}))
+    def _add_movement_op(self, op: ops.MovementOp) -> str:
+        nid = _gen_id(op)
+        self._items.append(dot.Node(nid, {'label': [
+            [f'{type(op).__name__}:{nid}'],
+            [repr(check.single(op.args))],
+        ]}))
+        for s in op.srcs:
+            self._items.append(dot.Edge(nid, self.add(s)))
+        return nid
+
+    @_add.register
+    def _add_raw_buffer(self, rb: RawBuffer) -> str:
+        nid = _gen_id(rb)
+        self._items.append(dot.Node(nid, {'label': [
+            [f'{type(rb).__name__}:{nid}'],
+        ]}))
         return nid
 
 
