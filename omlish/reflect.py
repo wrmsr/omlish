@@ -4,7 +4,7 @@ import typing as ta
 
 NoneType = type(None)
 
-_NONE_TYPE_FROZENSET = frozenset([NoneType])
+_NONE_TYPE_FROZENSET: ta.FrozenSet['Reflected'] = frozenset([NoneType])  # type: ignore
 
 
 _GenericAlias = ta._GenericAlias  # type: ignore  # noqa
