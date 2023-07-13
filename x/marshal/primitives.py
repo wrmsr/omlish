@@ -7,7 +7,7 @@ from .values import Value
 
 
 class PrimitiveMarshaler(Marshaler):
-    def __call__(self, ctx: MarshalContext, o: ta.Any) -> Value:
+    def marshal(self, ctx: MarshalContext, o: ta.Any) -> Value:
         if isinstance(o, int):
             return o
-        raise UnhandledSpecException(o)
+        raise UnhandledSpecException(type(o))

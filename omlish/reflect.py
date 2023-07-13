@@ -29,20 +29,27 @@ class Generic(ta.NamedTuple):
     args: ta.Sequence[Reflected]
 
 
+REFLECTED_TYPES = (
+    type,
+    Union,
+    Generic,
+)
+
+
 def reflect(obj: ta.Any) -> Reflected:
     if isinstance(obj, (Union, Generic)):
         return obj
 
     if type(obj) is _UnionGenericAlias:
-        return Union([reflect(a) for a in ta.get_args(obj)])
+        return Union(tuple(reflect(a) for a in ta.get_args(obj)))
 
     if type(obj) is _GenericAlias or type(obj) is ta.GenericAlias:  # type: ignore  # noqa
-        return Generic(reflect(ta.get_origin(obj)), [reflect(a) for a in ta.get_args(obj)])
+        return Generic(reflect(ta.get_origin(obj)), tuple(reflect(a) for a in ta.get_args(obj)))
 
     if isinstance(obj, type):
         return obj
 
-    raise NotImplementedError
+    raise TypeError(obj)
 
 
 ##

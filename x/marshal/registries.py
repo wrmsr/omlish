@@ -3,6 +3,9 @@ import dataclasses as dc
 import threading
 import typing as ta
 
+from omlish import check
+
+from .specs import SPEC_TYPES
 from .specs import Spec
 
 
@@ -32,21 +35,25 @@ class Registry:
         self._dct: ta.Dict[Spec, _SpecRegistry] = {}
         self._ps: ta.Sequence['Registry'] = []
 
-    def register(self, ty: Spec, *items: RegistryItem) -> None:
+    def register(self, spec: Spec, *items: RegistryItem) -> 'Registry':
+        check.isinstance(spec, SPEC_TYPES)
         with self._mtx:
-            if (tr := self._dct.get(ty)):
-                tr = self._dct[ty] = _SpecRegistry(ty)
-            tr.add(*items)
+            if (sr := self._dct.get(spec)) is None:
+                sr = self._dct[spec] = _SpecRegistry(spec)
+            sr.add(*items)
+        return self
 
-    def get(self, ty: Spec) -> ta.Sequence[RegistryItem]:
+    def get(self, spec: Spec) -> ta.Sequence[RegistryItem]:
+        check.isinstance(spec, SPEC_TYPES)
         try:
-            return self._dct[ty].items
+            return self._dct[spec].items
         except KeyError:
             return ()
 
-    def get_of(self, ty: Spec, item_ty: ta.Type[RegistryItemT]) -> ta.Sequence[RegistryItemT]:
+    def get_of(self, spec: Spec, item_ty: ta.Type[RegistryItemT]) -> ta.Sequence[RegistryItemT]:
+        check.isinstance(spec, SPEC_TYPES)
         try:
-            tr = self._dct[ty]
+            sr = self._dct[spec]
         except KeyError:
             return ()
-        return tr.item_lists_by_ty.get(item_ty, ())
+        return sr.item_lists_by_ty.get(item_ty, ())

@@ -3,7 +3,6 @@ import dataclasses as dc
 import typing as ta
 
 from .factories import Factory
-from .factories import FuncFactory
 from .factories import RecursiveSpecFactory
 from .registries import RegistryItem
 from .specs import Spec
@@ -12,7 +11,7 @@ from .values import Value
 
 class Marshaler(abc.ABC):
     @abc.abstractmethod
-    def __call__(self, ctx: 'MarshalContext', o: ta.Any) -> Value:
+    def marshal(self, ctx: 'MarshalContext', o: ta.Any) -> Value:
         raise NotImplementedError
 
 
@@ -20,7 +19,7 @@ class Marshaler(abc.ABC):
 class FuncMarshaler(Marshaler):
     fn: ta.Callable[['MarshalContext', ta.Any], Value]
 
-    def __call__(self, ctx: 'MarshalContext', o: ta.Any) -> Value:
+    def marshal(self, ctx: 'MarshalContext', o: ta.Any) -> Value:
         return self.fn(ctx, o)
 
 
@@ -32,23 +31,31 @@ class MarshalContext:
         raise NotImplementedError
 
 
+class _ProxyFunc:
+    _fn = None
+
+    def __call__(self, *args, **kwargs):
+        if self._fn is None:
+            raise TypeError('recursive proxy not set')
+        return self._fn(*args, **kwargs)
+
+    def _set_fn(self, fn):
+        if self._fn is not None:
+            raise TypeError('recursive proxy already set')
+        self._fn = fn
+
+    @classmethod
+    def _new(cls):
+        return (p := cls()), p._set_fn
+
+
+class _ProxyMarshaler(_ProxyFunc, Marshaler):
+    marshal = _ProxyFunc.__call__
+
+
 class RecursiveMarshalerFactory(RecursiveSpecFactory[Marshaler, MarshalContext]):
     def __init__(self, f: MarshalerFactory) -> None:
-        def prx():
-            m: ta.Optional[Marshaler] = None
-
-            def inner(ctx, spec):
-                if m is None:
-                    raise TypeError('recursive proxy not set')
-                return m(ctx, spec)
-
-            def setm(r):
-                nonlocal m
-                m = r
-
-            return inner, setm
-
-        super().__init__(f, prx)
+        super().__init__(f, _ProxyMarshaler._new)  # noqa
 
 
 @dc.dataclass(frozen=True)
