@@ -1,9 +1,14 @@
+import typing as ta
+
 from ..base import MarshalContext
 from ..base import Marshaler
 from ..base import MarshalerFactory
+from ..base import RecursiveMarshalerFactory
 from ..base import SetType
 from ..exc import UnhandledSpecException
 from ..factories import CompositeFactory
+from ..factories import RecursiveSpecFactory
+from ..factories import SpecCacheFactory
 from ..factories import SpecMapFactory
 from ..primitives import PrimitiveMarshaler
 from ..registries import Registry
@@ -25,10 +30,18 @@ def test_marshal():
     reg = Registry()
     reg.register(spec_of(int), SetType(marshaler=PrimitiveMarshaler()))
 
-    mf: MarshalerFactory = CompositeFactory(
+    mfs: ta.List[MarshalerFactory] = [  # noqa
         SpecMapFactory({
             int: PrimitiveMarshaler(),
         }),
+    ]
+
+    mf: MarshalerFactory = SpecCacheFactory(  # noqa
+        RecursiveMarshalerFactory(
+            CompositeFactory(
+                *mfs
+            )
+        )
     )
 
     mc = MarshalContext()

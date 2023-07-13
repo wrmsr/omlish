@@ -55,7 +55,7 @@ class SpecCacheFactory(Factory[R, C, Spec]):
 
 
 class RecursiveSpecFactory(Factory[R, C, Spec]):
-    def __int__(
+    def __init__(
             self,
             f: Factory[R, C, Spec],
             prx: ta.Callable[[], ta.Tuple[ta.Optional[R], ta.Callable[[ta.Optional[R]], None]]],
@@ -70,7 +70,7 @@ class RecursiveSpecFactory(Factory[R, C, Spec]):
             return self._dct[spec]
         except KeyError:
             pass
-        p, sp = self._prx
+        p, sp = self._prx()
         self._dct[spec] = p
         try:
             r = self._f(ctx, spec)
