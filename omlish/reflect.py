@@ -4,6 +4,8 @@ import typing as ta
 
 NoneType = type(None)
 
+_NONE_TYPE_FROZENSET = frozenset([NoneType])
+
 
 _GenericAlias = ta._GenericAlias  # type: ignore  # noqa
 _UnionGenericAlias = ta._UnionGenericAlias  # type: ignore  # noqa
@@ -17,16 +19,24 @@ Reflected = ta.Union[
 
 
 class Union(ta.NamedTuple):
-    args: ta.Sequence[Reflected]
+    args: ta.FrozenSet[Reflected]
 
     @property
     def is_optional(self) -> bool:
         return NoneType in self.args
 
+    def without_none(self) -> Reflected:
+        if NoneType not in self.args:
+            return self
+        rem = self.args - _NONE_TYPE_FROZENSET
+        if len(rem) == 1:
+            return next(iter(rem))
+        return Union(rem)
+
 
 class Generic(ta.NamedTuple):
     cls: ta.Any
-    args: ta.Sequence[Reflected]
+    args: ta.Tuple[Reflected, ...]
 
 
 REFLECTED_TYPES: ta.Tuple[type, ...] = (
@@ -41,7 +51,7 @@ def reflect(obj: ta.Any) -> Reflected:
         return obj
 
     if type(obj) is _UnionGenericAlias:
-        return Union(tuple(reflect(a) for a in ta.get_args(obj)))
+        return Union(frozenset(reflect(a) for a in ta.get_args(obj)))
 
     if type(obj) is _GenericAlias or type(obj) is ta.GenericAlias:  # type: ignore  # noqa
         return Generic(reflect(ta.get_origin(obj)), tuple(reflect(a) for a in ta.get_args(obj)))
