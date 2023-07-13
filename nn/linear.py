@@ -300,6 +300,9 @@ class LinearCodegenOp(CodegenOp):
         self._key = render_key(op, self._bufs)
 
     def build(self) -> Program:
+        # from . import dot
+        # dot.open_dot(self._op)
+
         self.process()
 
         from .opencl import OpenclDialect
