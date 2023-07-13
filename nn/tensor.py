@@ -27,23 +27,76 @@ Scalar = ta.Union[int, float]
 SCALAR_TYPES = (int, float)
 
 TensorLike = ta.Union[
-    'Tensor',
     Scalar,
     ta.Iterable,
     Buffer,
     NumpyValue,
 ]
 
+TensorOrLike = ta.Union['Tensor', TensorLike]
+
 
 class Tensor(lang.Final):
     def __init__(
             self,
-            data: Buffer,
+            src: TensorLike,
             requires_grad: ta.Optional[bool] = None,
             *,
+            device: ta.Optional[Device] = None,
+            dtype: ta.Optional[Dtype] = None,
+
             func: ta.Optional[funcs.Func] = None,
     ) -> None:
         super().__init__()
+
+        if device is None:
+            device = default_device()
+
+        """
+        if isinstance(src, ta.Iterable):
+            src = np.array(src, dtype=(dtype or DEFAULT_DTYPE).np)
+
+        if isinstance(src, np.ndarray):
+            src = Buffer.from_cpu(src)
+        """
+
+        if isinstance(src, Buffer):
+            check.arg(dtype is None or dtype == src.dtype)
+            data = src
+            if data.device != device:
+                data = Buffer.load_op(
+                    ops.From,
+                    data.shape,
+                    data.dtype,
+                    device,
+                    src=data,
+                )
+
+        elif isinstance(src, SCALAR_TYPES):
+            data = Buffer.load_op(
+                ops.Const,
+                Shape(),
+                (dtype or DEFAULT_DTYPE),
+                device,
+                src,
+            )
+        else:
+            raise RuntimeError(f"can't create Tensor from {src}")
+
+        if data.__class__ is list:
+            data = np.array(data, dtype=(dtype or Tensor.default_type).np)
+
+        if data.__class__ is np.ndarray:
+            data = cast(np.ndarray, data)
+            data = LazyBuffer.fromCPU(data)
+            self.lazydata = (
+                data
+                if data.device == device
+                else LazyBuffer.loadop(
+                    LoadOps.FROM, data.shape, data.dtype, device, src=data
+                )
+            )
+            return
 
         self._data = check.isinstance(data, Buffer)
         self._requires_grad: ta.Optional[bool] = check.isinstance(requires_grad, (bool, None))
@@ -138,7 +191,7 @@ class Tensor(lang.Final):
 
     @staticmethod
     def full(shape: Shape, fill_value: Scalar, **kwargs: ta.Any) -> 'Tensor':
-        return Tensor.of(fill_value, **kwargs) \
+        return Tensor(fill_value, **kwargs) \
             .reshape(*([1] * len(shape))) \
             .expand(*shape) \
             .contiguous()
@@ -169,7 +222,7 @@ class Tensor(lang.Final):
             arg: ta.Any = None,
             **kwargs: ta.Any
     ) -> 'Tensor':
-        return Tensor.of(
+        return Tensor(
             Buffer.load_op(
                 op,
                 Shape(sz),
@@ -192,9 +245,8 @@ class Tensor(lang.Final):
         self._data.realize()
         return self
 
-    def assign(self, x: TensorLike) -> 'Tensor':
-        if not isinstance(x, Tensor):
-            x = Tensor.of(x)
+    def assign(self, x: TensorOrLike) -> 'Tensor':
+        x = x if isinstance(x, Tensor) else Tensor(x)
         check.arg(self.shape == x.shape, f'assign shape mismatch {self.shape} != {x.shape}')
         check.state(not x.requires_grad)
         if self._data._realized is not None:  # FIXME: ???
@@ -203,7 +255,7 @@ class Tensor(lang.Final):
         return self
 
     def detach(self) -> 'Tensor':
-        return Tensor.of(self._data, device=self.device, requires_grad=False)
+        return Tensor(self._data, device=self.device, requires_grad=False)
 
     def numpy(self) -> NumpyValue:
         return self._data.to_cpu()
@@ -225,11 +277,11 @@ class Tensor(lang.Final):
     def _broadcasted(
             self,
             func: ta.Type[funcs.Func],
-            other: TensorLike,
+            other: TensorOrLike,
             reverse: bool = False,
     ) -> 'Tensor':
         x = self
-        y = other if isinstance(other, Tensor) else Tensor.of(other)
+        y = other if isinstance(other, Tensor) else Tensor(other)
         if reverse:
             x, y = y, x
         if x.shape == y.shape:
@@ -251,16 +303,16 @@ class Tensor(lang.Final):
 
         return func.apply(x, y)
 
-    def add(self, x: TensorLike, reverse: bool = False) -> 'Tensor':
+    def add(self, x: TensorOrLike, reverse: bool = False) -> 'Tensor':
         return self._broadcasted(funcs.Add, x, reverse)
 
-    def sub(self, x: TensorLike, reverse: bool = False) -> 'Tensor':
+    def sub(self, x: TensorOrLike, reverse: bool = False) -> 'Tensor':
         return self._broadcasted(funcs.Sub, x, reverse)
 
-    def mul(self, x: TensorLike, reverse: bool = False) -> 'Tensor':
+    def mul(self, x: TensorOrLike, reverse: bool = False) -> 'Tensor':
         return self._broadcasted(funcs.Mul, x, reverse)
 
-    def div(self, x: TensorLike, reverse: bool = False) -> 'Tensor':
+    def div(self, x: TensorOrLike, reverse: bool = False) -> 'Tensor':
         return self._broadcasted(funcs.Div, x, reverse)
 
     def square(self) -> 'Tensor':
@@ -273,28 +325,28 @@ class Tensor(lang.Final):
         out = self.sum(axis=axis, keepdim=keepdim)
         return out * (out.shape.prod / self.shape.prod)
 
-    def __add__(self, other: TensorLike) -> 'Tensor':
+    def __add__(self, other: TensorOrLike) -> 'Tensor':
         return self.add(other)
 
-    def __radd__(self, other: TensorLike) -> 'Tensor':
+    def __radd__(self, other: TensorOrLike) -> 'Tensor':
         return self.add(other, reverse=True)
 
-    def __sub__(self, other: TensorLike) -> 'Tensor':
+    def __sub__(self, other: TensorOrLike) -> 'Tensor':
         return self.sub(other)
 
-    def __rsub__(self, other: TensorLike) -> 'Tensor':
+    def __rsub__(self, other: TensorOrLike) -> 'Tensor':
         return self.sub(other, reverse=True)
 
-    def __mul__(self, other: TensorLike) -> 'Tensor':
+    def __mul__(self, other: TensorOrLike) -> 'Tensor':
         return self.mul(other)
 
-    def __rmul__(self, other: TensorLike) -> 'Tensor':
+    def __rmul__(self, other: TensorOrLike) -> 'Tensor':
         return self.mul(other, reverse=True)
 
-    def __truediv__(self, other: TensorLike) -> 'Tensor':
+    def __truediv__(self, other: TensorOrLike) -> 'Tensor':
         return self.div(other)
 
-    def __rtruediv__(self, other: TensorLike) -> 'Tensor':
+    def __rtruediv__(self, other: TensorOrLike) -> 'Tensor':
         return self.div(other, reverse=True)
 
     def _reduce(
@@ -358,7 +410,7 @@ class Tensor(lang.Final):
 
         # fill in the first grad with one. don't use Tensor.ones because we don't need contiguous - this is "implicit
         # gradient creation"
-        self._grad = Tensor.of(1, device=self.device, requires_grad=False)
+        self._grad = Tensor(1, device=self.device, requires_grad=False)
 
         for cur in reversed(self.deep_walk()):
             cur_func = check.not_none(cur._func)
@@ -368,7 +420,7 @@ class Tensor(lang.Final):
 
             grads = cur_func.backward(check.not_none(cur._grad)._data)
             grads = [
-                Tensor.of(g, device=self.device, requires_grad=False) if g is not None else None
+                Tensor(g, device=self.device, requires_grad=False) if g is not None else None
                 for g in ([grads] if len(cur_func.parents) == 1 else grads)
             ]
 
