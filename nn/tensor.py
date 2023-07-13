@@ -47,30 +47,18 @@ class Tensor(lang.Final):
 
             func: ta.Optional[funcs.Func] = None,
     ) -> None:
+        check.not_isinstance(src, (Shape, Stride))
+
         super().__init__()
 
         if device is None:
             device = default_device()
 
-        """
-        if isinstance(src, ta.Iterable):
-            src = np.array(src, dtype=(dtype or DEFAULT_DTYPE).np)
-
-        if isinstance(src, np.ndarray):
-            src = Buffer.from_cpu(src)
-        """
+        data: Buffer
 
         if isinstance(src, Buffer):
             check.arg(dtype is None or dtype == src.dtype)
             data = src
-            if data.device != device:
-                data = Buffer.load_op(
-                    ops.From,
-                    data.shape,
-                    data.dtype,
-                    device,
-                    src=data,
-                )
 
         elif isinstance(src, SCALAR_TYPES):
             data = Buffer.load_op(
@@ -80,23 +68,25 @@ class Tensor(lang.Final):
                 device,
                 src,
             )
+
         else:
-            raise RuntimeError(f"can't create Tensor from {src}")
+            if isinstance(src, ta.Iterable):
+                src = np.array(src, dtype=(dtype or DEFAULT_DTYPE).np)
 
-        if data.__class__ is list:
-            data = np.array(data, dtype=(dtype or Tensor.default_type).np)
+            if isinstance(src, np.ndarray):
+                data = Buffer.from_cpu(src)
 
-        if data.__class__ is np.ndarray:
-            data = cast(np.ndarray, data)
-            data = LazyBuffer.fromCPU(data)
-            self.lazydata = (
-                data
-                if data.device == device
-                else LazyBuffer.loadop(
-                    LoadOps.FROM, data.shape, data.dtype, device, src=data
-                )
+            else:
+                raise TypeError(src)
+
+        if data.device != device:
+            data = Buffer.load_op(
+                ops.From,
+                data.shape,
+                data.dtype,
+                device,
+                src=data,
             )
-            return
 
         self._data = check.isinstance(data, Buffer)
         self._requires_grad: ta.Optional[bool] = check.isinstance(requires_grad, (bool, None))
@@ -141,53 +131,11 @@ class Tensor(lang.Final):
     # Creators
 
     @staticmethod
-    def of(
-            src: TensorLike,
-            *,
-            device: ta.Optional[Device] = None,
-            dtype: ta.Optional[Dtype] = None,
-
-            requires_grad: ta.Optional[bool] = None,
-            **kwargs: ta.Any,
-    ) -> 'Tensor':
-        check.not_isinstance(src, (Shape, Stride))
-
-        if device is None:
-            device = default_device()
-
-        if isinstance(src, ta.Iterable):
-            src = np.array(src, dtype=(dtype or DEFAULT_DTYPE).np)
-
-        if isinstance(src, np.ndarray):
-            src = Buffer.from_cpu(src)
-
-        if isinstance(src, Buffer):
-            check.arg(dtype is None or dtype == src.dtype)
-            data = src
-            if data.device != device:
-                data = Buffer.load_op(
-                    ops.From,
-                    data.shape,
-                    data.dtype,
-                    device,
-                    src=data,
-                )
-        elif isinstance(src, SCALAR_TYPES):
-            data = Buffer.load_op(
-                ops.Const,
-                Shape(),
-                (dtype or DEFAULT_DTYPE),
-                device,
-                src,
-            )
+    def of(src: TensorOrLike) -> 'Tensor':
+        if isinstance(src, Tensor):
+            return src
         else:
-            raise RuntimeError(f"can't create Tensor from {src}")
-
-        return Tensor(
-            data,
-            requires_grad=requires_grad,
-            **kwargs,
-        )
+            return Tensor(src)
 
     @staticmethod
     def full(shape: Shape, fill_value: Scalar, **kwargs: ta.Any) -> 'Tensor':
