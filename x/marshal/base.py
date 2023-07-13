@@ -2,11 +2,15 @@ import abc
 import dataclasses as dc
 import typing as ta
 
+from omlish import check
+
+from .exc import UnhandledSpecException
 from .factories import Factory
 from .factories import RecursiveSpecFactory
 from .registries import RegistryItem
 from .specs import Spec
 from .specs import spec_of
+from .utils import _ProxyFunc
 from .values import Value
 
 
@@ -29,28 +33,13 @@ MarshalerFactory = Factory['MarshalContext', Spec, Marshaler]
 
 @dc.dataclass(frozen=True)
 class MarshalContext:
-    marshaler_factory: ta.Optional[MarshalerFactory] = None
+    factory: ta.Optional[MarshalerFactory] = None
 
     def make(self, spec: Spec) -> Marshaler:
-        return self.marshaler_factory(self, spec_of(spec))
-
-
-class _ProxyFunc:
-    _fn = None
-
-    def __call__(self, *args, **kwargs):
-        if self._fn is None:
-            raise TypeError('recursive proxy not set')
-        return self._fn(*args, **kwargs)
-
-    def _set_fn(self, fn):
-        if self._fn is not None:
-            raise TypeError('recursive proxy already set')
-        self._fn = fn
-
-    @classmethod
-    def _new(cls):
-        return (p := cls()), p._set_fn
+        spec = spec_of(spec)
+        if (m := check.not_none(self.factory)(self, spec)) is not None:  # noqa
+            return m
+        raise UnhandledSpecException(spec)
 
 
 class _ProxyMarshaler(_ProxyFunc, Marshaler):
@@ -66,5 +55,3 @@ class RecursiveMarshalerFactory(RecursiveSpecFactory[Marshaler, MarshalContext])
 class SetType(RegistryItem):
     marshaler: ta.Optional[Marshaler] = None
     marshaler_factory: ta.Optional[MarshalerFactory] = None
-
-

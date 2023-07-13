@@ -21,7 +21,7 @@ Value = ta.Union[
     # Number,
     str,
     bytes,
-    list,  # ta.Sequence[Value],
-    dict,  # ta.Mapping[str, Value],
+    list,  # list[Value],
+    dict,  # dict[str, Value],
     # ta.Any,
 ]
