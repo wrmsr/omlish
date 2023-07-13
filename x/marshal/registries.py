@@ -56,4 +56,4 @@ class Registry:
             sr = self._dct[spec]
         except KeyError:
             return ()
-        return sr.item_lists_by_ty.get(item_ty, ())
+        return sr.item_lists_by_ty.get(item_ty, ())  # type: ignore

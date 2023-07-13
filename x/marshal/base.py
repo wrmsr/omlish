@@ -28,7 +28,7 @@ class FuncMarshaler(Marshaler):
         return self.fn(ctx, o)
 
 
-MarshalerFactory = Factory['MarshalContext', Spec, Marshaler]
+MarshalerFactory = Factory[Marshaler, 'MarshalContext', Spec]
 
 
 @dc.dataclass(frozen=True)
@@ -42,7 +42,7 @@ class MarshalContext:
         raise UnhandledSpecException(spec)
 
 
-class _ProxyMarshaler(_Proxy, Marshaler):
+class _ProxyMarshaler(_Proxy[Marshaler], Marshaler):
     def marshal(self, ctx: MarshalContext, o: ta.Any) -> Value:
         return self._obj.marshal(ctx, o)
 
