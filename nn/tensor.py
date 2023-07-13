@@ -194,7 +194,7 @@ class Tensor(lang.Final):
         return self
 
     def assign(self, x: TensorOrLike) -> 'Tensor':
-        x = x if isinstance(x, Tensor) else Tensor(x)
+        x = Tensor.of(x)
         check.arg(self.shape == x.shape, f'assign shape mismatch {self.shape} != {x.shape}')
         check.state(not x.requires_grad)
         if self._data._realized is not None:  # FIXME: ???
@@ -229,7 +229,7 @@ class Tensor(lang.Final):
             reverse: bool = False,
     ) -> 'Tensor':
         x = self
-        y = other if isinstance(other, Tensor) else Tensor(other)
+        y = Tensor.of(other)
         if reverse:
             x, y = y, x
         if x.shape == y.shape:
