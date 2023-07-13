@@ -10,6 +10,7 @@ from ..factories import CompositeFactory
 from ..factories import RecursiveSpecFactory
 from ..factories import SpecCacheFactory
 from ..factories import SpecMapFactory
+from ..iterables import IterableMarshalerFactory
 from ..primitives import PrimitiveMarshaler
 from ..registries import Registry
 from ..specs import Spec
@@ -34,6 +35,7 @@ def test_marshal():
         SpecMapFactory({
             int: PrimitiveMarshaler(),
         }),
+        IterableMarshalerFactory(),
     ]
 
     mf: MarshalerFactory = SpecCacheFactory(  # noqa
@@ -44,6 +46,6 @@ def test_marshal():
         )
     )
 
-    mc = MarshalContext()
-    m = mf(mc, int)
-    print(m.marshal(mc, 421))
+    mc = MarshalContext(marshaler_factory=mf)
+    print(mc.make(int).marshal(mc, 421))
+    print(mc.make(list[int]).marshal(mc, [421, 422]))

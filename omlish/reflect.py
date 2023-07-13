@@ -29,7 +29,7 @@ class Generic(ta.NamedTuple):
     args: ta.Sequence[Reflected]
 
 
-REFLECTED_TYPES = (
+REFLECTED_TYPES: ta.Tuple[type, ...] = (
     type,
     Union,
     Generic,

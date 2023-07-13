@@ -6,6 +6,7 @@ from .factories import Factory
 from .factories import RecursiveSpecFactory
 from .registries import RegistryItem
 from .specs import Spec
+from .specs import spec_of
 from .values import Value
 
 
@@ -26,9 +27,12 @@ class FuncMarshaler(Marshaler):
 MarshalerFactory = Factory['MarshalContext', Spec, Marshaler]
 
 
+@dc.dataclass(frozen=True)
 class MarshalContext:
+    marshaler_factory: ta.Optional[MarshalerFactory] = None
+
     def make(self, spec: Spec) -> Marshaler:
-        raise NotImplementedError
+        return self.marshaler_factory(self, spec_of(spec))
 
 
 class _ProxyFunc:
