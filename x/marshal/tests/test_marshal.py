@@ -1,8 +1,13 @@
 from ..base import MarshalContext
+from ..base import Marshaler
+from ..base import MarshalerFactory
 from ..base import SetType
 from ..exc import UnhandledSpecException
+from ..factories import CompositeFactory
+from ..factories import SpecMapFactory
 from ..primitives import PrimitiveMarshaler
 from ..registries import Registry
+from ..specs import Spec
 from ..specs import spec_of
 
 
@@ -19,3 +24,13 @@ def test_marshal():
 
     reg = Registry()
     reg.register(spec_of(int), SetType(marshaler=PrimitiveMarshaler()))
+
+    mf: MarshalerFactory = CompositeFactory(
+        SpecMapFactory({
+            int: PrimitiveMarshaler(),
+        }),
+    )
+
+    mc = MarshalContext()
+    m = mf(mc, int)
+    print(m.marshal(mc, 421))
