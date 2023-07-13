@@ -13,8 +13,9 @@ from ..factories import RecursiveSpecFactory
 from ..factories import SpecCacheFactory
 from ..factories import SpecMapFactory
 from ..iterables import IterableMarshalerFactory
-from ..primitives import PRIMITIVE_MARSHALER_FACTORY
+from ..optionals import OptionalMarshalerFactory
 from ..primitives import PRIMITIVE_MARSHALER
+from ..primitives import PRIMITIVE_MARSHALER_FACTORY
 from ..registries import Registry
 from ..specs import Spec
 from ..specs import spec_of
@@ -32,6 +33,7 @@ def test_marshal():
 
     mfs: ta.List[MarshalerFactory] = [  # noqa
         PRIMITIVE_MARSHALER_FACTORY,
+        OptionalMarshalerFactory(),
         DataclassMarshalerFactory(),
         IterableMarshalerFactory(),
     ]
@@ -45,4 +47,6 @@ def test_marshal():
     )
 
     mc = MarshalContext(factory=mf)
-    print(mc.make(Foo).marshal(mc, Foo([420, 421], 'barf')))
+    for _ in range(2):
+        print(mc.make(Foo).marshal(mc, Foo([420, 421], 'barf')))
+    mc.make(ta.Optional[int]).marshal(mc, 420)

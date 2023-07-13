@@ -1,16 +1,17 @@
-class _ProxyFunc:
-    _fn = None
+class _Proxy:
+    __obj = None
 
-    def __call__(self, *args, **kwargs):
-        if self._fn is None:
+    @property
+    def _obj(self):
+        if self.__obj is None:
             raise TypeError('recursive proxy not set')
-        return self._fn(*args, **kwargs)
+        return self.__obj
 
-    def _set_fn(self, fn):
-        if self._fn is not None:
+    def _set_obj(self, obj):
+        if self.__obj is not None:
             raise TypeError('recursive proxy already set')
-        self._fn = fn
+        self.__obj = obj
 
     @classmethod
     def _new(cls):
-        return (p := cls()), p._set_fn
+        return (p := cls()), p._set_obj

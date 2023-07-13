@@ -9,7 +9,6 @@ from .values import Value
 
 
 PRIMITIVE_TYPES: ta.Tuple[type, ...] = (
-    type(None),
     bool,
     int,
     float,

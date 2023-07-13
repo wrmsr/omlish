@@ -10,7 +10,7 @@ from .factories import RecursiveSpecFactory
 from .registries import RegistryItem
 from .specs import Spec
 from .specs import spec_of
-from .utils import _ProxyFunc
+from .utils import _Proxy
 from .values import Value
 
 
@@ -42,8 +42,9 @@ class MarshalContext:
         raise UnhandledSpecException(spec)
 
 
-class _ProxyMarshaler(_ProxyFunc, Marshaler):
-    marshal = _ProxyFunc.__call__
+class _ProxyMarshaler(_Proxy, Marshaler):
+    def marshal(self, ctx: MarshalContext, o: ta.Any) -> Value:
+        return self._obj.marshal(ctx, o)
 
 
 class RecursiveMarshalerFactory(RecursiveSpecFactory[Marshaler, MarshalContext]):
