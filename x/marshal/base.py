@@ -1,3 +1,12 @@
+"""
+TODO:
+ - poly
+ - base64
+ - enums
+ - mappings
+ - naming
+ - datetime
+"""
 import abc
 import dataclasses as dc
 import typing as ta
