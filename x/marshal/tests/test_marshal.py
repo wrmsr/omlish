@@ -25,6 +25,7 @@ from ..specs import spec_of
 class Foo:
     il: list[int]
     s: str
+    f: ta.Optional['Foo'] = None
 
 
 def test_marshal():
@@ -48,5 +49,5 @@ def test_marshal():
 
     mc = MarshalContext(factory=mf)
     for _ in range(2):
-        print(mc.make(Foo).marshal(mc, Foo([420, 421], 'barf')))
+        print(mc.make(Foo).marshal(mc, Foo([420, 421], 'barf', Foo([1, 2], 'xxx'))))
     mc.make(ta.Optional[int]).marshal(mc, 420)
