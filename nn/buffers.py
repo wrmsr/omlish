@@ -222,23 +222,27 @@ class Buffer(Lazy):
             return self
 
         self_op = self.get_op()
-        if type(self_op) == ops.Contiguous:
+        if isinstance(self_op, ops.Contiguous):
             sb = self_op.srcs[0].as_buffer()  # FIXME: cast??
             realized = sb.realize().get_realized()
-            if sb._st.contiguous and not isinstance(realized, RawConst) and realized.size == math.prod(self.shape):
+            if (
+                    sb._st.contiguous and
+                    not isinstance(realized, RawConst) and
+                    realized.size == math.prod(self.shape)
+            ):
                 # no need to run an AST, this is already contiguous
                 self._realized = realized
 
-        elif type(self_op) == ops.From:
+        elif isinstance(self_op, ops.From):
             raw = self_op.srcs[0].as_buffer().get_realized()
             self._realized = self.device.make_raw_buffer(raw.to_cpu())
 
-        elif type(self_op) == ops.Empty:
+        elif isinstance(self_op, ops.Empty):
             self._realized = self.device.make_raw_buffer(np.empty(math.prod(self.shape), dtype=self.dtype.np))  # FIXME
-        elif type(self_op) == ops.Const:
+        elif isinstance(self_op, ops.Const):
             self._realized = self.device.make_raw_buffer(np.array(check.isinstance(self_op, ops.Const).c, dtype=self.dtype.np))  # noqa
 
-        elif type(self_op) == ops.Mul:
+        elif isinstance(self_op, ops.Mul):
             self._op = self._eval_binary_op()
 
         del self_op  # self._op is possibly reassigned
