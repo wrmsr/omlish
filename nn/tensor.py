@@ -102,11 +102,6 @@ class Tensor(lang.Final):
         if device is None:
             device = default_device()
 
-        if isinstance(src, Tensor):
-            if src.device != device:
-                raise NotImplementedError
-            return src
-
         if isinstance(src, ta.Iterable):
             src = np.array(src, dtype=(dtype or DEFAULT_DTYPE).np)
 
@@ -234,7 +229,7 @@ class Tensor(lang.Final):
             reverse: bool = False,
     ) -> 'Tensor':
         x = self
-        y = Tensor.of(other)
+        y = other if isinstance(other, Tensor) else Tensor.of(other)
         if reverse:
             x, y = y, x
         if x.shape == y.shape:

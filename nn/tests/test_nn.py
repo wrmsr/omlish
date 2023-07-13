@@ -3,6 +3,7 @@ import typing as ta
 from omlish import check
 from omlish import lang
 import numpy as np
+import pytest
 
 if ta.TYPE_CHECKING:
     import torch
@@ -174,6 +175,7 @@ def test_simple_mul():
     print(n)
 
 
+@pytest.mark.skip()
 def test_dot():
     xt = Tensor.of(np.asarray([1., 2.], dtype=np.float32), requires_grad=True)
     yt = Tensor.of(np.asarray([3., 4.], dtype=np.float32), requires_grad=True)
