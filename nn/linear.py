@@ -700,7 +700,6 @@ class LinearCodegenOp(CodegenOp):
 
                 ####
 
-                breakpoint()
                 ot = {
                     ops.Sum: ops.Add,
                     ops.Max: ops.Maximum,

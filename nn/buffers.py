@@ -422,7 +422,8 @@ def _push_movement_ops(srcs: ta.Sequence[Buffer]) -> ta.Sequence[Buffer]:
             mops.append((type(check.isinstance(bx.op, ops.MovementOp)), check.single(bx.op.args)))
             bx = bx.op.srcs[0].as_buffer()
 
-        # NOTE: can't push pads with a div
+        # NOTE: can't push pads past anything where f(0, 0) != 0 or f(0) != 0
+        unsafe_pad_ops = {ops.Div, ops.CmpEq, ops.Log2, ops.Exp2, ops.Recip}
         if (
                 bx._realized is None
                 and isinstance(bx.op, ops.BinaryOp)
@@ -430,7 +431,7 @@ def _push_movement_ops(srcs: ta.Sequence[Buffer]) -> ta.Sequence[Buffer]:
                 and len(mops)
                 and (
                 all(x[0] != ops.Pad for x in mops) or
-                all(type(x) != ops.Div for x in bx.op.ops)
+                all(type(x) not in unsafe_pad_ops for x in bx.op.ops)
         )
         ):
             new_srcs.append(_replace_with_movement_ops(bx.op, mops[::-1]))

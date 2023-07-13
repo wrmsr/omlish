@@ -32,8 +32,11 @@ class CstyleSymRenderer(sym.NodeRenderer):
         return f'({"&&".join(sorted(self.render(x) for x in n.nodes))})'
 
 
-def _render_sym(n: sym.Node) -> str:
-    return CstyleSymRenderer().render(n)
+def _render_sym(n: sym.Node, *, strip_parens: bool = False) -> str:
+    s = CstyleSymRenderer().render(n)
+    if strip_parens and s[0] == '(' and s[-1] == ')':
+        s = s[1:-1]
+    return s
 
 
 @dc.dataclass(frozen=True)
@@ -56,6 +59,22 @@ class CstyleDialect:
     double_prekernel: ta.Optional[str] = None
 
     uses_vload: bool = False
+
+
+# def _add_gl_dimension(s: str, i, var, local_size: ta.List[int], xid: ta.Sequence[str]) -> str:
+#     # for M1 tensor core stuff, support > 3 dims
+#     if i >= 2 and len(s) > len(xid):
+#         # do this on the x dim for warps
+#         if len(local_size) == 2:
+#             local_size.append(1)
+#         local_size[-1] *= var.max + 1
+#         lidx = sym.Var(xid[0], 0, math.prod(x.max + 1 for x in s[2:]) - 1)
+#         lidx = (lidx // ((lidx.max + 1) // local_size[-1])) % (var.max + 1)
+#         check.arg(lidx.max == var.max and lidx.min == var.min)
+#         return f'{{ int {var.expr} = {_render_sym(lidx)};  /* {var.max + 1} */'
+#     else:
+#         local_size.append(var.max + 1)
+#         return f'{{ int {var.expr} = {xid[min(len(xid), len(s)) - 1 - i]};  /* {var.max + 1} */'
 
 
 class CstyleRenderer:
@@ -142,6 +161,13 @@ class CstyleRenderer:
             return tok.name + '.' + 'xyzw'[int(tok.offset)]
         raise TypeError(tok)
 
+    def _render_cast(self, x: ta.List[str], var_dtype: Dtype) -> str:
+        check.arg(len(x) == var_dtype.sz)
+        check.arg(bool(self._dialect.float4))
+        if var_dtype == Float4:
+            return f"{self._dialect.float4}({','.join(x)})"
+        raise TypeError(f"no cast for {var_dtype}")
+
     def _render_const(self, x: ta.Union[float, int], var_dtype: Dtype) -> str:
         if math.isnan(x):
             val = 'NAN'
@@ -149,8 +175,8 @@ class CstyleRenderer:
             val = ('-' if x < 0 else '') + 'INFINITY'
         else:
             val = f'{x}' + ('' if var_dtype.is_int else 'f')
-        if var_dtype == Float4:
-            return f'{self._dialect.float4}({val}, {val}, {val}, {val})'
+        if var_dtype.sz > 1:
+            return self._render_cast([val] * var_dtype.sz, var_dtype)
         else:
             return val
 
@@ -167,7 +193,7 @@ class CstyleRenderer:
                 f'({self._dtype_names[output_dtype]})'
                 f'(*('
                 f'({self._dialect.smem_prefix if local else self._dialect.buffer_prefix}{self._dtype_names[buf_dtype]}{output_dtype.sz}*)'  # noqa
-                f'({buf_name}+{_render_sym(idx)})'
+                f'({buf_name}+{_render_sym(idx, strip_parens=True)})'
                 f'))'
             )
         else:
@@ -185,11 +211,11 @@ class CstyleRenderer:
         if var_dtype.sz > 1:
             return (
                 f'*(({self._dialect.smem_prefix if local else self._dialect.buffer_prefix}{self._dtype_names[buf_dtype]}{var_dtype.sz}*)'  # noqa
-                f'({buf_name}+{_render_sym(idx)})) = '
+                f'({buf_name}+{_render_sym(idx, strip_parens=True)})) = '
                 f'({self._dtype_names[buf_dtype]}{var_dtype.sz}){var_name};'
             )
         else:
-            return f'{buf_name}[{_render_sym(idx)}] = {var_name};'
+            return f'{buf_name}[{_render_sym(idx, strip_parens=True)}] = {var_name};'
 
     def _append(self, s: str) -> None:
         self._lines.append('  ' * self._depth + s)
