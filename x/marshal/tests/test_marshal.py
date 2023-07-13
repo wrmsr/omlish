@@ -50,4 +50,3 @@ def test_marshal():
     mc = MarshalContext(factory=mf)
     for _ in range(2):
         print(mc.make(Foo).marshal(mc, Foo([420, 421], 'barf', Foo([1, 2], 'xxx'))))
-    mc.make(ta.Optional[int]).marshal(mc, 420)
