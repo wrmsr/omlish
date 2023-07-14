@@ -12,10 +12,16 @@ C = ta.TypeVar('C')
 A = ta.TypeVar('A')
 
 
+##
+
+
 class Factory(abc.ABC, ta.Generic[R, C, A]):
     @abc.abstractmethod
     def __call__(self, ctx: C, arg: A) -> ta.Optional[R]:
         raise NotImplementedError
+
+
+##
 
 
 @dc.dataclass(frozen=True)
@@ -26,12 +32,18 @@ class FuncFactory(ta.Generic[R, C, A]):
         return self.fn(ctx, arg)
 
 
+##
+
+
 @dc.dataclass(frozen=True)
 class SpecMapFactory(Factory[R, C, Spec]):
     m: ta.Mapping[Spec, R] = dc.field(default_factory=dict)
 
     def __call__(self, ctx: C, spec: Spec) -> ta.Optional[R]:
         return self.m.get(spec)
+
+
+##
 
 
 class SpecCacheFactory(Factory[R, C, Spec]):
@@ -52,6 +64,9 @@ class SpecCacheFactory(Factory[R, C, Spec]):
             except KeyError:
                 ret = self._dct[spec] = self._f(ctx, spec)
                 return ret
+
+
+##
 
 
 class RecursiveSpecFactory(Factory[R, C, Spec]):
@@ -78,6 +93,9 @@ class RecursiveSpecFactory(Factory[R, C, Spec]):
             return r
         finally:
             del self._dct[spec]
+
+
+##
 
 
 class CompositeFactory(Factory[R, C, A]):
