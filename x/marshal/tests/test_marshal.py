@@ -7,7 +7,7 @@ from ..base import Marshaler
 from ..base import MarshalerFactory
 from ..base import RecursiveMarshalerFactory
 from ..base import SetType
-from ..base64 import Base64MarshalerFactory
+from ..base64 import BASE64_MARSHALER_FACTORY
 from ..dataclasses import DataclassMarshalerFactory
 from ..datetimes import DatetimeMarshalerFactory
 from ..enums import EnumMarshalerFactory
@@ -22,7 +22,7 @@ from ..primitives import PRIMITIVE_MARSHALER_FACTORY
 from ..registries import Registry
 from ..specs import Spec
 from ..specs import spec_of
-from ..uuids import UuidMarshalerFactory
+from ..uuids import UUID_MARSHALER_FACTORY
 from .foox import Foox
 
 
@@ -48,8 +48,8 @@ def test_marshal():
         OptionalMarshalerFactory(),
         DataclassMarshalerFactory(),
         EnumMarshalerFactory(),
-        UuidMarshalerFactory(),
-        Base64MarshalerFactory(),
+        UUID_MARSHALER_FACTORY,
+        BASE64_MARSHALER_FACTORY,
         DatetimeMarshalerFactory(),
         IterableMarshalerFactory(),
     ]
