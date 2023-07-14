@@ -8,6 +8,7 @@ import weakref
 
 from omlish import check
 from omlish import defs
+from omlish import dispatch
 import numpy as np
 
 from .devices import Device
@@ -342,6 +343,12 @@ class Buffer(Lazy):
             ops.Expand,
             self.shape,
         )
+
+
+class Realizer:
+    @dispatch.method
+    def realize(self, op: ops.Op, buf: Buffer) -> RawBuffer:
+        raise NotImplementedError
 
 
 def create_lazy_buffer(
