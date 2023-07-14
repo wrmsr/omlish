@@ -18,7 +18,6 @@ from ..factories import SpecCacheFactory
 from ..factories import SpecMapFactory
 from ..iterables import IterableMarshalerFactory
 from ..optionals import OptionalMarshalerFactory
-from ..primitives import PRIMITIVE_MARSHALER
 from ..primitives import PRIMITIVE_MARSHALER_FACTORY
 from ..registries import Registry
 from ..specs import Spec
