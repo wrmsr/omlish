@@ -16,7 +16,7 @@ from .values import Value
 class IterableMarshaler(Marshaler):
     e: Marshaler
 
-    def marshal(self, ctx: MarshalContext, o: ta.Any) -> Value:
+    def marshal(self, ctx: MarshalContext, o: ta.Iterable) -> Value:
         return list(map(functools.partial(self.e.marshal, ctx), o))
 
 

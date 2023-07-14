@@ -13,7 +13,7 @@ from .values import Value
 class OptionalMarshaler(Marshaler):
     e: Marshaler
 
-    def marshal(self, ctx: MarshalContext, o: ta.Any) -> Value:
+    def marshal(self, ctx: MarshalContext, o: ta.Optional) -> Value:
         if o is None:
             return None
         return self.e.marshal(ctx, o)

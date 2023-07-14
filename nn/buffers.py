@@ -347,7 +347,7 @@ class Buffer(Lazy):
 
 class Realizer:
     @dispatch.method
-    def realize(self, op: ops.Op, buf: Buffer) -> RawBuffer:
+    def realize(self, op: ops.Op) -> RawBuffer:
         raise NotImplementedError
 
 
