@@ -66,7 +66,6 @@ def test_md():
     assert dc.metadata(Foo) == {'a': 10, 'b': 20}
 
 
-@ptu.skip_if_python_version_less_than((3, 10))
 def test_kw_only():
     @dc.dataclass(**{'kw_only': True})
     class C:
