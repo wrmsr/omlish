@@ -8,6 +8,8 @@ from omlish import lang
 import numpy as np
 
 from .dtypes import Dtype
+from .dtypes import SCALAR_TYPES
+from .dtypes import Scalar
 from .numpy import NUMPY_VALUE_TYPES
 from .numpy import NumpyValue
 
@@ -40,9 +42,9 @@ class RawBuffer(lang.Abstract):
 
 
 class RawConst(RawBuffer, lang.Final):
-    def __init__(self, x: np.number) -> None:
-        check.isinstance(x, np.number)
-        super().__init__(1, Dtype.of_np(x.dtype))
+    def __init__(self, x: Scalar, dtype: Dtype) -> None:
+        check.isinstance(x, SCALAR_TYPES)
+        super().__init__(1, dtype)
         self._x = x
 
     def to_cpu(self) -> NumpyValue:

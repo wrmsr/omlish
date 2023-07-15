@@ -12,14 +12,14 @@ class Primitive:
 
 add_p = Primitive('add')
 mul_p = Primitive('mul')
-neg_p = Primitive("neg")
-sin_p = Primitive("sin")
-cos_p = Primitive("cos")
-reduce_sum_p = Primitive("reduce_sum")
-greater_p = Primitive("greater")
-less_p = Primitive("less")
-transpose_p = Primitive("transpose")
-broadcast_p = Primitive("broadcast")
+neg_p = Primitive('neg')
+sin_p = Primitive('sin')
+cos_p = Primitive('cos')
+reduce_sum_p = Primitive('reduce_sum')
+greater_p = Primitive('greater')
+less_p = Primitive('less')
+transpose_p = Primitive('transpose')
+broadcast_p = Primitive('broadcast')
 
 
 def add(x, y):
