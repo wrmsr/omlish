@@ -321,7 +321,7 @@ class CstyleRenderer:
         if u.valid.max == 0:
             val = self._render_const(0.0, out.dtype)
         elif buf.is_realized and isinstance(buf.get_realized(), RawConst):
-            val = self._render_const(self._bufs[u.i].get_realized()._buf, out.dtype)  # FIXME:
+            val = self._render_const(float(self._bufs[u.i].get_realized().to_cpu()), out.dtype)  # FIXME:
         else:
             val = self._render_load(
                 out.dtype,

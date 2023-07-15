@@ -223,6 +223,7 @@ class Buffer(Lazy):
             return self
 
         self_op = self.get_op()
+
         if isinstance(self_op, ops.Contiguous):
             sb = self_op.srcs[0].as_buffer()  # FIXME: cast??
             realized = sb.realize().get_realized()
@@ -240,8 +241,11 @@ class Buffer(Lazy):
 
         elif isinstance(self_op, ops.Empty):
             self._realized = self.device.make_raw_buffer(np.empty(math.prod(self.shape), dtype=self.dtype.np))  # FIXME
+
         elif isinstance(self_op, ops.Const):
-            self._realized = self.device.make_raw_buffer(np.array(check.isinstance(self_op, ops.Const).c, dtype=self.dtype.np))  # noqa
+            # FIXME: supports_constant_folding
+            # self._realized = self.device.make_raw_buffer(np.array(check.isinstance(self_op, ops.Const).c, dtype=self.dtype.np))  # noqa
+            self._realized = RawConst(self_op.c, self.dtype)
 
         elif isinstance(self_op, ops.Mul):
             self._op = self._eval_binary_op()

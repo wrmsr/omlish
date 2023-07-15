@@ -6,6 +6,7 @@ from omlish import lang
 import numpy as np
 
 from . import funcs
+from . import ops
 from .buffers import Buffer
 from .devices import Device
 from .devices import default_device  # noqa
@@ -13,18 +14,15 @@ from .dims import Shape
 from .dims import Stride
 from .dtypes import Dtype
 from .dtypes import Float32
+from .dtypes import SCALAR_TYPES
+from .dtypes import Scalar
 from .numpy import NumpyValue
-from . import ops
 
 
 DEFAULT_DTYPE = Float32
 
 
 AxisLike = ta.Union[int, ta.Iterable[int]]
-
-Scalar = ta.Union[int, float]
-
-SCALAR_TYPES = (int, float)
 
 TensorLike = ta.Union[
     Scalar,
