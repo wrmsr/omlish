@@ -299,6 +299,9 @@ class LinearCodegenOp(CodegenOp):
 
         self._key = render_key(op, self._bufs)
 
+    fn_counts: ta.Final[ta.Dict[str, int]] = {}
+    fn_names: ta.Final[ta.Dict[str, str]] = {}
+
     def build(self) -> Program:
         # from . import dot
         # dot.open_dot(self._op)
@@ -322,9 +325,18 @@ class LinearCodegenOp(CodegenOp):
 
         from .opencl import OpenclProgram
 
+        try:
+            fn_name = self.fn_names[rendered.src]
+        except KeyError:
+            fn_name = ('r_' if self.reduce_op is not None else 'E_') + '_'.join([str(x) for x in self.full_shape])
+            n = self.fn_counts.get(fn_name, 0)
+            self.fn_counts[fn_name] = n + 1
+            if n:
+                fn_name += f'n{n}'
+
         prg = OpenclProgram(
-            self.fn_name,
-            rendered.src.replace('KERNEL_NAME_PLACEHOLDER', self.fn_name),
+            fn_name,
+            rendered.src.replace('KERNEL_NAME_PLACEHOLDER', fn_name),
             rendered.global_size,
             rendered.local_size,
         )
@@ -372,10 +384,6 @@ class LinearCodegenOp(CodegenOp):
 
     supports_float4: bool = True
     supports_float4_alu: bool = True
-
-    @cached.property
-    def fn_name(self) -> str:
-        return ('r_' if self.reduce_op is not None else 'E_') + '_'.join([str(x) for x in self.full_shape])
 
     ##
 
