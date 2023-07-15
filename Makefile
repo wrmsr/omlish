@@ -2,12 +2,10 @@ SHELL:=/bin/bash
 
 PROJECT:=omlish
 
-PYTHON_VERSION_9:=3.9.17
 PYTHON_VERSION_10:=3.10.12
 PYTHON_VERSION_11:=3.11.4
 PYTHON_VERSION_12:=3.12-dev
-PYTHON_VERSION_NOGIL:=nogil-3.9.10-1
-PYTHON_VERSION_PYPY:=pypy3.10-7.3.12
+PYTHON_VERSION_NOGIL:=nogil-3.12
 
 SOURCES:=\
 	${PROJECT} \
@@ -31,7 +29,7 @@ clean:
 
 ### Venv
 
-DEFAULT_PYTHON_VERSION:=${PYTHON_VERSION_9}
+DEFAULT_PYTHON_VERSION:=${PYTHON_VERSION_10}
 DEFAULT_PYENV_INSTALL_OPTS:=
 DEFAULT_PYENV_VERSION_SUFFIX:=
 DEFAULT_VENV_OPTS:=  # --copies
@@ -103,24 +101,19 @@ TEST_SOURCES:=$$(echo "$${_TEST_SOURCES:-${DEFAULT_TEST_SOURCES}}")
 test: venv
 	$(PYTHON) -mpytest $(TEST_SOURCES)
 
-.PHONY: test-10
-test-10:
-	_PYTHON_VERSION=${PYTHON_VERSION_10} _VENV_ROOT=.venv-10 \
-	${MAKE} test
-
 .PHONY: test-11
 test-11:
 	_PYTHON_VERSION=${PYTHON_VERSION_11} _VENV_ROOT=.venv-11 \
 	${MAKE} test
 
 .PHONY: test-all
-test-all: test test-10 test-11
+test-all: test test-11
 
 #
 
 .PHONY: test-debug
 test-debug:
-	_PYTHON_VERSION=${PYTHON_VERSION_9} _VENV_ROOT=.venv-debug \
+	_PYTHON_VERSION=${DEFAULT_PYTHON_VERSION} _VENV_ROOT=.venv-debug \
 	_PYENV_INSTALL_OPTS=-g \
 	_PYENV_VERSION_SUFFIX=-debug \
 	_REQUIREMENTS_TXT=requirements-dev.txt \
@@ -137,13 +130,6 @@ test-12:
 .PHONY: test-nogil
 test-nogil:
 	_PYTHON_VERSION=${PYTHON_VERSION_NOGIL} _VENV_ROOT=.venv-nogil \
-	_REQUIREMENTS_TXT=requirements-dev.txt \
-	_TEST_SOURCES="${PROJECT}" \
-	${MAKE} test
-
-.PHONY: test-pypy
-test-pypy:
-	_PYTHON_VERSION=${PYTHON_VERSION_PYPY} _VENV_ROOT=.venv-pypy \
 	_REQUIREMENTS_TXT=requirements-dev.txt \
 	_TEST_SOURCES="${PROJECT}" \
 	${MAKE} test

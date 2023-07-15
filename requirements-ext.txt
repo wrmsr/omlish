@@ -6,6 +6,8 @@
 matplotlib==3.7.2
 numpy==1.25.1
 
+huggingface_hub==0.16.4
+
 ##
 
 llvmlite==0.40.1
@@ -42,5 +44,5 @@ torchvision==0.15.2
 
 ### infra
 
-boto3==1.28.2
+boto3==1.28.3
 google-cloud-compute==1.13.0

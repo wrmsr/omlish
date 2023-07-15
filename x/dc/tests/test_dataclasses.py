@@ -1555,7 +1555,6 @@ class TestCase(unittest.TestCase):
         with self.assertRaisesRegex(TypeError, 'dataclass type or instance'):
             fields(C())
 
-    @unittest.skipUnless(sys.version_info[1] >= 10, reason='-')
     def test_clean_traceback_from_fields_exception(self):
         stdout = io.StringIO()
         try:
@@ -2177,12 +2176,8 @@ class TestCase(unittest.TestCase):
         ):
             self.assertEqual(getattr(A, function).__qualname__, f"TestCase.test_dataclasses_qualnames.<locals>.A.{function}")
 
-        if sys.version_info[1] >= 10:
-            with self.assertRaisesRegex(TypeError, r"A\.__init__\(\) missing"):
-                A()
-        else:
-            with self.assertRaisesRegex(TypeError, r"__init__\(\) missing"):
-                A()
+        with self.assertRaisesRegex(TypeError, r"A\.__init__\(\) missing"):
+            A()
 
 
 class TestFieldNoAnnotation(unittest.TestCase):
