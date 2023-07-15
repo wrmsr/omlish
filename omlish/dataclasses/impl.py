@@ -41,7 +41,6 @@ from .md import metadata
 
 if sys.version_info[0] != 3:
     raise RuntimeError
-IS_10 = sys.version_info[1] >= 10
 
 VERBOSE = False
 
@@ -81,8 +80,7 @@ def field(
 
     if kw_only is not dc.MISSING:
         md[KwOnly] = kw_only
-        if IS_10:
-            kwargs['kw_only'] = kw_only
+        kwargs['kw_only'] = kw_only
 
     fld = dc.field(  # type: ignore
         default=default,
@@ -165,9 +163,8 @@ class NsGen:
 
 def process_class(cls: type, params: Params) -> type:
     dckw = {}
-    if IS_10:
-        if params.kw_only:
-            dckw['kw_only'] = params.kw_only
+    if params.kw_only:
+        dckw['kw_only'] = params.kw_only
 
     dcls = dc.dataclass(  # type: ignore
         cls,
