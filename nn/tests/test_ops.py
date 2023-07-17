@@ -109,3 +109,40 @@ def test_full_like():
 
 def test_add():
     _test_op([(45, 68), (45, 68)], lambda x, y: x + y, Tensor.add)
+
+
+def test_add_number():
+    _test_op([(), ()], lambda x, y: x + y, Tensor.add)
+
+
+def test_add3():
+    _test_op([(45, 65), (45, 65), (45, 65)], lambda x, y, z: x + y + z)
+
+
+def test_add_simple():
+    _test_op(
+        [(256), (256)], lambda x, y: x + y, Tensor.add, forward_only=True
+    )
+
+
+def test_broadcasted_add():
+    _test_op([(45, 65), (45, 1)], lambda x, y: x + y, lambda x, y: x + y)
+    _test_op([(45, 65), ()], lambda x, y: x + y, lambda x, y: x + y)
+
+
+def test_broadcasted_add_2():
+    _test_op([(45, 65), (65,)], lambda x, y: x + y, lambda x, y: x + y)
+
+
+def test_sub():
+    _test_op([(45, 65), (45, 65)], lambda x, y: x - y, Tensor.sub)
+    _test_op([(), ()], lambda x, y: x - y, Tensor.sub)
+
+
+def test_neg():
+    _test_op([(45, 65)], lambda x: -x)
+    _test_op([()], lambda x: -x)
+
+
+def test_mul():
+    _test_op([(64, 64), (64, 64)], lambda x, y: x * y, Tensor.mul)
