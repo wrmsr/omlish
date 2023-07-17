@@ -95,8 +95,8 @@ class Sub(Func):
 
     def backward(self, grad_output: Buffer) -> ta.Tuple[ta.Optional[Buffer], ta.Optional[Buffer]]:
         return (
-            grad_output if self.needs_input_grad[0] else None,
-            grad_output.const_like(0).binary_op(ops.Sub, grad_output) if self.needs_input_grad[1] else None,
+            grad_output if self._needs_input_grad[0] else None,
+            grad_output.const_like(0).binary_op(ops.Sub, grad_output) if self._needs_input_grad[1] else None,
         )
 
 
@@ -127,14 +127,14 @@ class Div(Func):
 
     def backward(self, grad_output: Buffer) -> ta.Tuple[ta.Optional[Buffer], ta.Optional[Buffer]]:
         return (
-            grad_output.binary_op(ops.Div, self._y) if self.needs_input_grad[0] else None,
+            grad_output.binary_op(ops.Div, self._y) if self._needs_input_grad[0] else None,
             (
                 grad_output
                 .const_like(0)
                 .binary_op(ops.Sub, grad_output)
                 .binary_op(ops.Mul, self._x)
                 .binary_op(ops.Div, self._y.binary_op(ops.Mul, self._y))
-            ) if self.needs_input_grad[1] else None
+            ) if self._needs_input_grad[1] else None
         )
 
 
@@ -302,3 +302,25 @@ class Max(Func):
 
         grad_output_expanded = grad_output.movement_op(ops.Expand, self._x.shape)
         return max_is_amount.binary_op(ops.Mul, grad_output_expanded)
+
+
+##
+
+
+class Where(Func):
+    _x: Buffer
+    _y: Buffer
+    _z: Buffer
+
+    def forward(self, x: Buffer, y: Buffer, z: Buffer) -> Buffer:
+        self._x = x
+        self._y = y
+        self._z = z
+        return x.ternary_op(ops.Where, y, z)
+
+    def backward(self, grad_output: Buffer) -> ta.Tuple[ta.Optional[Buffer], ta.Optional[Buffer], ta.Optional[Buffer]]:
+        return (
+            None,
+            self._x.ternary_op(ops.Where, grad_output, self._x.const_like(0)) if self._needs_input_grad[1] else None,
+            self._x.ternary_op(ops.Where, self._x.const_like(0), grad_output) if self._needs_input_grad[2] else None,
+        )

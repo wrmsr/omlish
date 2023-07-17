@@ -253,12 +253,12 @@ class Restride(MovementOp):  # MovementOps.STRIDE
 
 
 @dc.dataclass(frozen=True)
-class FusedOp(Op, lang.Abstract):
+class TernaryOp(Op, lang.Abstract):
     pass
 
 
 @dc.dataclass(frozen=True)
-class MulAcc(FusedOp):
+class MulAcc(TernaryOp):
     x: Lazy = dc.field(coerce=check.of_isinstance(Lazy))
 
     new_shape: _Shape = dc.field(coerce=check.of_isinstance(_Shape))
@@ -270,6 +270,17 @@ class MulAcc(FusedOp):
     @property
     def args(self) -> ta.Sequence[ta.Any]:
         return [self.new_shape]
+
+
+@dc.dataclass(frozen=True)
+class Where(TernaryOp):
+    x: Lazy
+    y: Lazy
+    z: Lazy
+
+    @property
+    def srcs(self) -> ta.Sequence[Lazy]:
+        return [self.x, self.y, self.z]
 
 
 #
