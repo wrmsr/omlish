@@ -228,7 +228,7 @@ class Buffer(Lazy):
         self_op = self.get_op()
 
         if isinstance(self_op, ops.Contiguous):
-            sb = self_op.srcs[0].as_buffer()  # FIXME: cast??
+            sb = self_op.buf.as_buffer()  # FIXME: cast??
             realized = sb.realize().get_realized()
             if (
                     sb._st.contiguous and
@@ -237,6 +237,8 @@ class Buffer(Lazy):
             ):
                 # no need to run an AST, this is already contiguous
                 self._realized = realized
+            else:
+                self._op = ops.Nop(self_op.buf)
 
         elif isinstance(self_op, ops.From):
             raw = self_op.srcs[0].as_buffer().get_realized()
