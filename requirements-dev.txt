@@ -10,6 +10,6 @@ flake8-pyproject==1.2.3
 
 gprof2dot==2022.7.29
 mypy==1.4.1
-pipdeptree==2.10.0
+pipdeptree==2.10.2
 
 ipython==8.14.0

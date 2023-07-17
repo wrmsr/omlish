@@ -301,7 +301,7 @@ class ShapeTracker(lang.Final):
         ops.Restride: restride,
     }
 
-    def movement_op(self, op: ta.Type[ops.MovementOp], arg: ta.Sequence[int]) -> 'ShapeTracker':
+    def movement_op(self, op: ta.Type[ops.MovementOp], arg: ta.Any) -> 'ShapeTracker':
         if op != ops.Reshape and len(arg) != len(self.shape):
             raise RuntimeError(f'arg {arg} for {op} does not match dim of shape {self.shape}')
         self._movement_op_dispatch[op](self, arg)

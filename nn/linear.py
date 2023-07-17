@@ -128,6 +128,16 @@ class LinearAnalyzer:
             xa.flops + ya.flops + za.flops + xa.shape.prod,
         )
 
+    @_analyze.register
+    def _analyze_movement_op(self, op: ops.MovementOp) -> LinearAnalysis:
+        xa = self._analyze(op.x)
+        return LinearAnalysis(
+            op,
+            ShapeTracker(xa.shape).movement_op(type(op), op.args).shape,
+            xa.dtype,
+            xa.flops,
+        )
+
 
 class KeyRenderer:
     def __init__(self, write: ta.Callable[[str], ta.Any], bufs: ta.Sequence[Buffer]) -> None:
@@ -197,26 +207,12 @@ class KeyRenderer:
             self._write(f')')
 
     @render.register
-    def _render_unary_op(self, op: ops.UnaryOp) -> None:
+    def _render_op(self, op: ops.Op) -> None:
         self._write(f'{type(op).__name__}(')
-        self.render(op.x)
-        self._write(')')
-
-    @render.register
-    def _render_binary_op(self, op: ops.BinaryOp) -> None:
-        self._write(f'{type(op).__name__}(')
-        self.render(op.x)
-        self._write(', ')
-        self.render(op.y)
-        self._write(')')
-
-    @render.register
-    def _render_reduce_op(self, op: ops.ReduceOp) -> None:
-        self._write(f'{type(op).__name__}(')
-        self.render(op.x)
-        self._write(', ')
-        self.render(op.new_shape)
-        self._write(')')
+        for i, x in enumerate(itertools.chain(op.srcs, op.args)):
+            if i > 0:
+                self._write(', ')
+            self.render(x)
 
 
 def render_key(op: ops.Op, bufs: ta.Sequence[Buffer]) -> str:

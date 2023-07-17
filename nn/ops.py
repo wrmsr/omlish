@@ -194,14 +194,23 @@ class MovementOp(Op, lang.Abstract):
     def srcs(self) -> ta.Sequence[Lazy]:
         return [self.x]
 
+    @property
+    @abc.abstractmethod
+    def arg(self) -> ta.Any:
+        raise NotImplementedError
+
+    @property
+    def args(self) -> ta.Sequence[ta.Any]:
+        return [self.arg]
+
 
 @dc.dataclass(frozen=True)
 class Reshape(MovementOp):
     new_shape: _Shape = dc.field(coerce=check.of_isinstance(_Shape))
 
     @property
-    def args(self) -> ta.Sequence[ta.Any]:
-        return [self.new_shape]
+    def arg(self) -> _Shape:
+        return self.new_shape
 
 
 @dc.dataclass(frozen=True)
@@ -209,8 +218,8 @@ class Permute(MovementOp):
     axes: ta.Sequence[int]
 
     @property
-    def args(self) -> ta.Sequence[ta.Any]:
-        return [self.axes]
+    def arg(self) -> ta.Sequence[int]:
+        return self.axes
 
 
 @dc.dataclass(frozen=True)
@@ -218,8 +227,8 @@ class Expand(MovementOp):
     new_shape: _Shape = dc.field(coerce=check.of_isinstance(_Shape))
 
     @property
-    def args(self) -> ta.Sequence[ta.Any]:
-        return [self.new_shape]
+    def arg(self) -> _Shape:
+        return self.new_shape
 
 
 @dc.dataclass(frozen=True)
@@ -227,8 +236,8 @@ class Pad(MovementOp):
     padding: ta.Sequence[ta.Tuple[int, int]]
 
     @property
-    def args(self) -> ta.Sequence[ta.Any]:
-        return [self.padding]
+    def arg(self) -> ta.Sequence[ta.Tuple[int, int]]:
+        return self.padding
 
 
 @dc.dataclass(frozen=True)
@@ -236,8 +245,8 @@ class Shrink(MovementOp):
     bounds: ta.Sequence[ta.Tuple[int, int]]  # (l, r) per dim
 
     @property
-    def args(self) -> ta.Sequence[ta.Any]:
-        return [self.bounds]
+    def arg(self) -> ta.Sequence[ta.Tuple[int, int]]:
+        return self.bounds
 
 
 @dc.dataclass(frozen=True)
@@ -245,8 +254,8 @@ class Restride(MovementOp):  # MovementOps.STRIDE
     stride: _Stride
 
     @property
-    def args(self) -> ta.Sequence[ta.Any]:
-        return [self.stride]
+    def arg(self) -> _Stride:
+        return self.stride
 
 
 #
