@@ -4,11 +4,6 @@ from omlish import dataclasses as dc
 import numpy as np
 
 
-Scalar = ta.Union[int, float]
-
-SCALAR_TYPES = (int, float)
-
-
 @dc.dataclass(frozen=True, repr=False)
 class Dtype:
     name: str
