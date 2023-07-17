@@ -283,6 +283,9 @@ class Tensor(lang.Final):
         out = self.sum(axis=axis, keepdim=keepdim)
         return out * (out.shape.prod / self.shape.prod)
 
+    def __neg__(self) -> 'Tensor':
+        return 0.0 - self
+
     def __add__(self, other: TensorOrLike) -> 'Tensor':
         return self.add(other)
 
