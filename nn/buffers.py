@@ -251,7 +251,7 @@ class Buffer(Lazy):
             # FIXME: supports_constant_folding
             # FIXME: urghh
             # self._realized = self.device.make_raw_buffer(np.array(check.isinstance(self_op, ops.Const).c, dtype=self.dtype.np))  # noqa
-            self._realized = RawConst(self_op.c, self.dtype)
+            self._realized = RawConst(float(self_op.c), self.dtype)
 
         elif isinstance(self_op, ops.Mul):
             self._op = self._eval_binary_op()

@@ -14,9 +14,10 @@ from .dims import Shape
 from .dims import Stride
 from .dtypes import Dtype
 from .dtypes import Float32
-from .dtypes import SCALAR_TYPES
-from .dtypes import Scalar
 from .numpy import NumpyValue
+from .numpy import np_to_scalar
+from .scalars import SCALAR_TYPES
+from .scalars import Scalar
 
 
 DEFAULT_DTYPE = Float32
@@ -78,7 +79,7 @@ class Tensor(lang.Final):
                         Shape(),
                         Dtype.of_np(src.dtype),
                         device,
-                        src.flat[0],
+                        np_to_scalar(src.flat[0]),
                     ).movement_op(
                         ops.Reshape,
                         Shape(src.shape),

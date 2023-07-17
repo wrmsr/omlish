@@ -14,6 +14,8 @@ from .dims import Shape as _Shape
 from .dims import Stride as _Stride
 from .dtypes import Dtype as _Dtype
 from .lazy import Lazy
+from .scalars import SCALAR_TYPES
+from .scalars import Scalar
 
 if ta.TYPE_CHECKING:
     from . import buffers
@@ -318,7 +320,7 @@ class Rand(LoadOp):
 
 @dc.dataclass(frozen=True)
 class Const(LoadOp):
-    c: ta.Any  # FIXME: float
+    c: Scalar = dc.field(check=lambda c: isinstance(c, SCALAR_TYPES))
 
     @property
     def args(self) -> ta.Sequence[ta.Any]:

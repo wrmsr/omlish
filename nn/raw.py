@@ -8,10 +8,10 @@ from omlish import lang
 import numpy as np
 
 from .dtypes import Dtype
-from .dtypes import SCALAR_TYPES
-from .dtypes import Scalar
 from .numpy import NUMPY_VALUE_TYPES
 from .numpy import NumpyValue
+from .scalars import SCALAR_TYPES
+from .scalars import Scalar
 
 
 class RawBuffer(lang.Abstract):
