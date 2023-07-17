@@ -218,6 +218,9 @@ class Buffer(Lazy):
 
         return ret
 
+    def ternary_op(self, op: ta.Type[ops.TernaryOp], y: 'Buffer', z: 'Buffer') -> 'Buffer':
+        return elementwise_op(op, self, y, z)
+
     def realize(self) -> 'Buffer':
         if self._realized is not None:
             return self
@@ -244,8 +247,9 @@ class Buffer(Lazy):
 
         elif isinstance(self_op, ops.Const):
             # FIXME: supports_constant_folding
-            # self._realized = self.device.make_raw_buffer(np.array(check.isinstance(self_op, ops.Const).c, dtype=self.dtype.np))  # noqa
-            self._realized = RawConst(self_op.c, self.dtype)
+            # FIXME: urghh
+            self._realized = self.device.make_raw_buffer(np.array(check.isinstance(self_op, ops.Const).c, dtype=self.dtype.np))  # noqa
+            # self._realized = RawConst(self_op.c, self.dtype)
 
         elif isinstance(self_op, ops.Mul):
             self._op = self._eval_binary_op()
@@ -371,7 +375,7 @@ def create_lazy_buffer(
 
 
 def elementwise_op(
-        op: ta.Union[ta.Type[ops.UnaryOp], ta.Type[ops.BinaryOp]],
+        op: ta.Union[ta.Type[ops.UnaryOp], ta.Type[ops.BinaryOp], ta.Type[ops.TernaryOp]],
         *srcs: Buffer,
         arg: ta.Optional[ta.Any] = None,
 ) -> Buffer:

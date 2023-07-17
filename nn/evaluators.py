@@ -116,6 +116,8 @@ class NumpyInterpreter(Interpreter[NumpyValue]):
         ops.Permute: lambda x, order: x.transpose(order),
         ops.Expand: np.broadcast_to,
         ops.Pad: np.pad,
+
+        ops.Where: np.where,
     }
 
     def _eval(self, op: ops.Op, *objs: NumpyValue) -> NumpyValue:

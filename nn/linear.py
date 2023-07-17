@@ -116,6 +116,18 @@ class LinearAnalyzer:
             xa.flops + xa.shape.prod,
         )
 
+    @_analyze.register
+    def _analyze_where_op(self, op: ops.Where) -> LinearAnalysis:
+        xa = self._analyze(op.x)
+        ya = self._analyze(op.y)
+        za = self._analyze(op.z)
+        return LinearAnalysis(
+            op,
+            xa.shape,
+            xa.dtype,
+            xa.flops + ya.flops + za.flops + xa.shape.prod,
+        )
+
 
 class KeyRenderer:
     def __init__(self, write: ta.Callable[[str], ta.Any], bufs: ta.Sequence[Buffer]) -> None:
@@ -795,12 +807,13 @@ class LinearCodegenOp(CodegenOp):
 
         values = [self.process_one(v, acc, loaded_buffers, ssa) for v in srcs]
 
-        if isinstance(x, (ops.ReduceOp, ops.FusedOp)):
-            ot = {
-                ops.Sum: ops.Add,
-                ops.Max: ops.Maximum,
-                ops.MulAcc: ops.MulAcc,
-            }[type(x)]
+        otd = {
+            ops.Sum: ops.Add,
+            ops.Max: ops.Maximum,
+            ops.MulAcc: ops.MulAcc,
+        }
+        if type(x) in otd:
+            ot = otd[type(x)]
             ret = [
                 (
                     idx,
@@ -810,7 +823,11 @@ class LinearCodegenOp(CodegenOp):
                         ty=ot,
                     )),
                 )
-                for idx, val in get_grouped_maybe_float4(*values, acc, grouping_allowed=self.supports_float4_alu)
+                for idx, val in get_grouped_maybe_float4(
+                    *values,
+                    acc,
+                    grouping_allowed=self.supports_float4_alu,
+                )
             ]
 
         else:
@@ -823,7 +840,10 @@ class LinearCodegenOp(CodegenOp):
                         ty=type(x),
                     )),
                 )
-                for idx, val in get_grouped_maybe_float4(*values, grouping_allowed=self.supports_float4_alu)
+                for idx, val in get_grouped_maybe_float4(
+                    *values,
+                    grouping_allowed=self.supports_float4_alu and not isinstance(x, (ops.CmpEq, ops.Where)),
+                )
             ]
 
         ordered_ret: ta.List[ta.Optional[uo.Token]] = [None] * len(values[0])
