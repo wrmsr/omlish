@@ -146,3 +146,32 @@ def test_neg():
 
 def test_mul():
     _test_op([(64, 64), (64, 64)], lambda x, y: x * y, Tensor.mul)
+
+
+def test_pow():
+    # TODO: why is a=0 for these tests?
+    _test_op([(45, 65)], lambda x: x ** 2, lambda x: Tensor.pow(x, 2), a=0)
+    _test_op([(45, 65)], lambda x: x ** 3, lambda x: Tensor.pow(x, 3), a=0)
+    _test_op([(45, 65)], lambda x: x ** -2, lambda x: Tensor.pow(x, -2), a=0)
+    _test_op([(45, 65), (45, 65)], lambda x, y: x ** y, Tensor.pow, a=0)
+    _test_op([()], lambda x: x ** 2, lambda x: Tensor.pow(x, 2), a=0)
+    _test_op([()], lambda x: x ** -2, lambda x: Tensor.pow(x, -2), a=0)
+
+
+def test_pow_const():
+    _test_op([(45, 65)], lambda x: x ** 1.0, lambda x: x ** 1.0)
+    _test_op([(45, 65)], lambda x: x ** -1.0, lambda x: x ** -1.0)
+    _test_op([(45, 65)], lambda x: 1.0 ** x, lambda x: 1.0 ** x)
+    _test_op([(45, 65)], lambda x: x ** 2.0, lambda x: x ** 2.0)
+    _test_op([(45, 65)], lambda x: 2.0 ** x, lambda x: 2.0 ** x)
+    _test_op([()], lambda x: x ** 2.0, lambda x: x ** 2.0)
+    _test_op([()], lambda x: 2.0 ** x, lambda x: 2.0 ** x)
+
+
+def test_sqrt():
+    _test_op([(45, 65)], lambda x: x.sqrt(), Tensor.sqrt, a=0)
+    _test_op([()], lambda x: x.sqrt(), Tensor.sqrt, a=0)
+
+
+def test_sin():
+    _test_op([(45, 65)], lambda x: x.sin(), Tensor.sin, a=0)
