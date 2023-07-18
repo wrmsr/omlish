@@ -191,6 +191,12 @@ class KeyRenderer:
         self._write(')')
 
     @render.register
+    def render_raw_const(self, rb: RawConst) -> None:
+        self._write(f'{type(rb).__name__}({rb.c}, ')
+        self.render(rb.dtype)
+        self._write(')')
+
+    @render.register
     def _render_buffer(self, buf: Buffer) -> None:
         self._write(f'{type(buf).__name__}:{self._buf_idx_map[buf]}')
         if buf not in self._seen_bufs:

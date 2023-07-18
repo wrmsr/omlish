@@ -45,14 +45,18 @@ class RawConst(RawBuffer, lang.Final):
     def __init__(self, x: Scalar, dtype: Dtype) -> None:
         check.isinstance(x, SCALAR_TYPES)
         super().__init__(1, dtype)
-        self._x = x
+        self._c = x
+
+    @property
+    def c(self) -> Scalar:
+        return self._c
 
     def to_cpu(self) -> NumpyValue:
-        return self._x
+        return self._c
 
     @classmethod
-    def from_cpu(cls, x: NumpyValue) -> RawBuffer:
-        return RawConst(x.item())
+    def from_cpu(cls, c: NumpyValue) -> RawBuffer:
+        return RawConst(c.item())
 
 
 class RawCpuBuffer(RawBuffer):
