@@ -316,7 +316,7 @@ class Tensor(lang.Final):
         return self.pow(x)
 
     def __rpow__(self, x: TensorOrLike) -> 'Tensor':
-        return self.pow(x, True)
+        return self.pow(x, reverse=True)
 
     def __truediv__(self, other: TensorOrLike) -> 'Tensor':
         return self.div(other)
