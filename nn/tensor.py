@@ -263,12 +263,18 @@ class Tensor(lang.Final):
         return func.apply(x, y)
 
     def add(self, x: TensorOrLike, reverse: bool = False) -> 'Tensor':
+        if isinstance(x, float) and x == 0.:
+            return self
         return self._broadcasted(funcs.Add, x, reverse)
 
     def sub(self, x: TensorOrLike, reverse: bool = False) -> 'Tensor':
+        if isinstance(x, float) and x == 0.:
+            return self
         return self._broadcasted(funcs.Sub, x, reverse)
 
     def mul(self, x: TensorOrLike, reverse: bool = False) -> 'Tensor':
+        if isinstance(x, float) and x == 1.:
+            return self
         return self._broadcasted(funcs.Mul, x, reverse)
 
     def div(self, x: TensorOrLike, reverse: bool = False) -> 'Tensor':
