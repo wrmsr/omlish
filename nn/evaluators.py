@@ -188,7 +188,6 @@ class Compiler(Evaluator):
             prog = self._prog_cache[cgop.key]
         except KeyError:
             prog = self._prog_cache[cgop.key] = cgop.build()
-        # prog = self._prog_cache[cgop.key] = cgop.build()
 
         prog.exec(cgop.buffers)
         return output.get_realized()
