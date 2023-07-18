@@ -25,6 +25,8 @@ class Dims(tuple):
             t = args
         else:
             [t] = args
+            if isinstance(t, cls):
+                return t
             t = tuple(t)
         for d in t:
             if not isinstance(d, int):

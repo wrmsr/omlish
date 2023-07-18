@@ -42,16 +42,24 @@ class TgConverter:
         return self.DTYPE_DCT[dt]
 
     OP_CONVERTERS: ta.Final[ta.Mapping[tg_ops.Op, ta.Callable[['TgConverter', TgLazyOp], ops.Op]]] = {
-        **{o: (lambda ot: lambda self, op: ot(self.convert_tg_lazy(op.srcs[0])))(ot) for o, ot in [
+        **{o: (lambda ot: lambda self, op: ot(
+            self.convert_tg_lazy(op.src[0]),
+        ))(ot) for o, ot in [
             (tg_ops.UnaryOps.NOOP, ops.Nop),
             (tg_ops.UnaryOps.EXP2, ops.Exp2),
             (tg_ops.UnaryOps.LOG2, ops.Log2),
             (tg_ops.UnaryOps.SIN, ops.Sin),
             (tg_ops.UnaryOps.RECIP, ops.Recip),
         ]},
-        tg_ops.UnaryOps.CAST: lambda self, op: ops.Cast(self.convert_tg_lazy(op.srcs[0]), check.isinstance(op.arg, Dtype)),
+        tg_ops.UnaryOps.CAST: lambda self, op: ops.Cast(
+            self.convert_tg_lazy(op.src[0]),
+            self.convert_tg_dtype(op.arg),
+        ),
 
-        **{o: (lambda ot: lambda self, op: ot(self.convert_tg_lazy(op.srcs[0]), self.convert_tg_lazy(op.srcs[1])))(ot) for o, ot in [  # noqa
+        **{o: (lambda ot: lambda self, op: ot(
+            self.convert_tg_lazy(op.src[0]),
+            self.convert_tg_lazy(op.src[1]),
+        ))(ot) for o, ot in [  # noqa
             (tg_ops.BinaryOps.ADD, ops.Add),
             (tg_ops.BinaryOps.SUB, ops.Sub),
             (tg_ops.BinaryOps.MUL, ops.Mul),
@@ -61,14 +69,26 @@ class TgConverter:
             (tg_ops.BinaryOps.MOD, ops.Mod),
         ]},
 
-        **{o: (lambda ot: lambda self, op: ot(self.convert_tg_lazy(op.srcs[0]), check.isinstance(op.arg, Shape)))(ot) for o, ot in [  # noqa
+        **{o: (lambda ot: lambda self, op: ot(
+            self.convert_tg_lazy(op.src[0]),
+            Shape(op.arg),
+        ))(ot) for o, ot in [  # noqa
             (tg_ops.ReduceOps.SUM, ops.Sum),
             (tg_ops.ReduceOps.MAX, ops.Max),
         ]},
 
-        tg_ops.MovementOps.RESHAPE: lambda self, op: ops.Reshape(self.convert_tg_lazy(op.srcs[0]), check.isinstance(op.arg, Shape)),  # noqa
-        tg_ops.MovementOps.PERMUTE: lambda self, op: ops.Permute(self.convert_tg_lazy(op.srcs[0]), col.seq_of(check.of_isinstance(int))(op.arg)),  # noqa
-        tg_ops.MovementOps.EXPAND: lambda self, op: ops.Expand(self.convert_tg_lazy(op.srcs[0]), check.isinstance(op.arg, Shape)),
+        tg_ops.MovementOps.RESHAPE: lambda self, op: ops.Reshape(
+            self.convert_tg_lazy(op.src[0]),
+            Shape(op.arg),
+        ),  # noqa
+        tg_ops.MovementOps.PERMUTE: lambda self, op: ops.Permute(
+            self.convert_tg_lazy(op.src[0]),
+            col.seq_of(check.of_isinstance(int))(op.arg),
+        ),  # noqa
+        tg_ops.MovementOps.EXPAND: lambda self, op: ops.Expand(
+            self.convert_tg_lazy(op.src[0]),
+            Shape(op.arg),
+        ),
     }
 
     @convert.register
