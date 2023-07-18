@@ -30,14 +30,14 @@ TgLazy = ta.Union[TgLazyOp, TgLazyBuffer]
 
 class TgConverter:
     @dispatch.method
-    def convert(self, obj: ta.Any) -> ta.Any:
+    def convert_tg(self, obj: ta.Any) -> ta.Any:
         raise TypeError(obj)
 
     DTYPE_DCT: ta.Final[ta.Mapping[TgDtype, Dtype]] = {
         tg_dtypes.float32: Float32,
     }
 
-    @convert.register
+    @convert_tg.register
     def convert_tg_dtype(self, dt: TgDtype) -> Dtype:
         return self.DTYPE_DCT[dt]
 
@@ -59,7 +59,7 @@ class TgConverter:
         **{o: (lambda ot: lambda self, op: ot(
             self.convert_tg_lazy(op.src[0]),
             self.convert_tg_lazy(op.src[1]),
-        ))(ot) for o, ot in [  # noqa
+        ))(ot) for o, ot in [
             (tg_ops.BinaryOps.ADD, ops.Add),
             (tg_ops.BinaryOps.SUB, ops.Sub),
             (tg_ops.BinaryOps.MUL, ops.Mul),
@@ -72,7 +72,7 @@ class TgConverter:
         **{o: (lambda ot: lambda self, op: ot(
             self.convert_tg_lazy(op.src[0]),
             Shape(op.arg),
-        ))(ot) for o, ot in [  # noqa
+        ))(ot) for o, ot in [
             (tg_ops.ReduceOps.SUM, ops.Sum),
             (tg_ops.ReduceOps.MAX, ops.Max),
         ]},
@@ -80,32 +80,32 @@ class TgConverter:
         tg_ops.MovementOps.RESHAPE: lambda self, op: ops.Reshape(
             self.convert_tg_lazy(op.src[0]),
             Shape(op.arg),
-        ),  # noqa
+        ),
         tg_ops.MovementOps.PERMUTE: lambda self, op: ops.Permute(
             self.convert_tg_lazy(op.src[0]),
             col.seq_of(check.of_isinstance(int))(op.arg),
-        ),  # noqa
+        ),
         tg_ops.MovementOps.EXPAND: lambda self, op: ops.Expand(
             self.convert_tg_lazy(op.src[0]),
             Shape(op.arg),
         ),
     }
 
-    @convert.register
+    @convert_tg.register
     def convert_tg_lazy_op(self, op: TgLazyOp) -> ops.Op:
         return self.OP_CONVERTERS[op.op](self, op)
 
     def convert_tg_device(self, dev: str) -> Device:
         raise NotImplementedError
 
-    @convert.register
+    @convert_tg.register
     def convert_tg_shape_tracker(self, st: TgShapeTracker) -> ShapeTracker:
         # return ShapeTracker(
         #
         # )
         raise NotImplementedError
 
-    @convert.register
+    @convert_tg.register
     def convert_tg_lazy_buffer(self, buf: TgLazyBuffer) -> Buffer:
         src: ta.Union[ops.Op, RawBuffer]
         if (buf_op := getattr(buf, 'op', None)) is not None:
@@ -130,4 +130,4 @@ class TgConverter:
 
 
 def convert_tg(obj: ta.Any) -> ta.Any:
-    return TgConverter().convert(obj)
+    return TgConverter().convert_tg(obj)
