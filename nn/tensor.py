@@ -311,6 +311,12 @@ class Tensor(lang.Final):
     def __rmul__(self, other: TensorOrLike) -> 'Tensor':
         return self.mul(other, reverse=True)
 
+    def __pow__(self, x: TensorOrLike) -> 'Tensor':
+        return self.pow(x)
+
+    def __rpow__(self, x: TensorOrLike) -> 'Tensor':
+        return self.pow(x, True)
+
     def __truediv__(self, other: TensorOrLike) -> 'Tensor':
         return self.div(other)
 
@@ -449,3 +455,24 @@ class Tensor(lang.Final):
     def log_softmax(self, axis: AxisLike = -1) -> 'Tensor':
         sm = self._softmax(axis)
         return sm.m - sm.ss.log()
+
+    def sin(self):
+        return funcs.Sin.apply(self)
+
+    def sqrt(self):
+        return funcs.Sqrt.apply(self)
+
+    def pow(self, x: TensorOrLike, reverse: bool = False) -> 'Tensor':
+        if not isinstance(x, Tensor) and not reverse:
+            # simple pow identities
+            if x < 0:
+                return (1.0 / self).pow(-x)
+            if x == 2.0:
+                return self * self
+            if x == 1.0:
+                return self
+            if x == 0.5:
+                return self.sqrt()
+        if not reverse or isinstance(x, Tensor):
+            return self.log().mul(x).exp()
+        return self.mul(math.log(x)).exp()

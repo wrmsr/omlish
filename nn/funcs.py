@@ -248,6 +248,22 @@ class Sqrt(Func):
         return grad_output.binary_op(ops.Div, self._ret.binary_op(ops.Mul, self._ret.const_like(2)))
 
 
+class Sin(Func):
+    _x: Buffer
+
+    def forward(self, x: Buffer) -> Buffer:
+        self._x = x
+        return x.unary_op(ops.Sin)
+
+    def backward(self, grad: Buffer) -> Buffer:
+        return (
+            self._x.const_like(math.pi / 2)
+            .binary_op(ops.Sub, self._x)
+            .unary_op(ops.Sin)
+            .binary_op(ops.Mul, grad)
+        )
+
+
 class Sigmoid(Func):
     _ret: Buffer
 
