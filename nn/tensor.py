@@ -237,6 +237,7 @@ class Tensor(lang.Final):
             self,
             func: ta.Type[funcs.Func],
             other: TensorOrLike,
+            *,
             reverse: bool = False,
     ) -> 'Tensor':
         x = self
@@ -265,20 +266,20 @@ class Tensor(lang.Final):
     def add(self, x: TensorOrLike, reverse: bool = False) -> 'Tensor':
         if isinstance(x, float) and x == 0.:
             return self
-        return self._broadcasted(funcs.Add, x, reverse)
+        return self._broadcasted(funcs.Add, x, reverse=reverse)
 
     def sub(self, x: TensorOrLike, reverse: bool = False) -> 'Tensor':
-        if isinstance(x, float) and x == 0.:
+        if not reverse and isinstance(x, float) and x == 0.:
             return self
-        return self._broadcasted(funcs.Sub, x, reverse)
+        return self._broadcasted(funcs.Sub, x, reverse=reverse)
 
     def mul(self, x: TensorOrLike, reverse: bool = False) -> 'Tensor':
         if isinstance(x, float) and x == 1.:
             return self
-        return self._broadcasted(funcs.Mul, x, reverse)
+        return self._broadcasted(funcs.Mul, x, reverse=reverse)
 
     def div(self, x: TensorOrLike, reverse: bool = False) -> 'Tensor':
-        return self._broadcasted(funcs.Div, x, reverse)
+        return self._broadcasted(funcs.Div, x, reverse=reverse)
 
     def square(self) -> 'Tensor':
         return self * self
