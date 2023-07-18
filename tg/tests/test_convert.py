@@ -2,7 +2,7 @@ from tinygrad.tensor import Tensor as TgTensor
 
 from nn.tensor import Tensor
 
-from ..ops import convert_from_tg_lazy
+from ..convert import convert_tg
 
 
 def test_ops():
@@ -12,4 +12,4 @@ def test_ops():
     x = Tensor([1, 2, 3]) + 2
     print(x.numpy())
 
-    print(convert_from_tg_lazy(tgx.lazydata))
+    print(convert_tg(tgx.lazydata))
