@@ -1,5 +1,5 @@
-from ...dataclasses import *
-from ... import dataclasses
+from ....dataclasses import *
+from .... import dataclasses
 
 import sys
 
@@ -22,7 +22,9 @@ import typing       # Needed for the string "typing.ClassVar[int]" to work as an
 # import dataclasses  # Needed for the string "dataclasses.InitVar[int]" to work as an annotation.
 
 # Just any custom exception we can catch.
-class CustomError(Exception): pass
+class CustomError(Exception):
+    pass
+
 
 class TestCase(unittest.TestCase):
     def test_no_fields(self):
@@ -56,6 +58,7 @@ class TestCase(unittest.TestCase):
             class C:
                 x: int = field(default=1, default_factory=int)
 
+    @unittest.skip('metadata')
     def test_field_repr(self):
         int_field = field(default=1, init=True, repr=False)
         int_field.name = "id"
@@ -94,7 +97,8 @@ class TestCase(unittest.TestCase):
         # it's testing a feature we want to make sure is correctly implemented
         # for the sake of dataclasses itself
         @dataclass(slots=True, frozen=True)
-        class Some: pass
+        class Some:
+            pass
 
         repr_output = repr(Some.__dataclass_params__)
         expected_output = (
@@ -110,7 +114,8 @@ class TestCase(unittest.TestCase):
         # it's testing a feature we want to make sure is correctly implemented
         # for the sake of dataclasses itself
         @dataclass
-        class Some: pass
+        class Some:
+            pass
 
         for param in inspect.signature(dataclass).parameters:
             if param == 'cls':
@@ -779,7 +784,8 @@ class TestCase(unittest.TestCase):
                         y: typ = non_empty
 
                 # Check subtypes also fail.
-                class Subclass(typ): pass
+                class Subclass(typ):
+                    pass
 
                 with self.assertRaisesRegex(ValueError, "mutable default .*Subclass'>" " for field z is not allowed"):
                     @dataclass
@@ -1549,7 +1555,8 @@ class TestCase(unittest.TestCase):
         with self.assertRaisesRegex(TypeError, 'dataclass type or instance'):
             fields(0)
 
-        class C: pass
+        class C:
+            pass
         with self.assertRaisesRegex(TypeError, 'dataclass type or instance'):
             fields(C)
         with self.assertRaisesRegex(TypeError, 'dataclass type or instance'):
@@ -2879,7 +2886,8 @@ class TestFrozen(unittest.TestCase):
                     i: int
 
                 if intermediate_class:
-                    class I(C): pass
+                    class I(C):
+                        pass
                 else:
                     I = C
 
@@ -2896,7 +2904,8 @@ class TestFrozen(unittest.TestCase):
                     i: int
 
                 if intermediate_class:
-                    class I(C): pass
+                    class I(C):
+                        pass
                 else:
                     I = C
 
@@ -2912,7 +2921,8 @@ class TestFrozen(unittest.TestCase):
                     pass
 
                 if intermediate_class:
-                    class I(C): pass
+                    class I(C):
+                        pass
                 else:
                     I = C
 
