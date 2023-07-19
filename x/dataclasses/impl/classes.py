@@ -277,7 +277,7 @@ def process_class(cls: type, params: ExParams) -> type:
         unsafe_hash=params.unsafe_hash,
         frozen=params.frozen,
     )
-    if sys.version_info[1] >= 11:
+    if sys.version_info[1] >= 12:
         bpkw.update(
             match_args=params.match_args,
             kw_only=params.kw_only,
