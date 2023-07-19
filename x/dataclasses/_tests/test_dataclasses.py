@@ -1,5 +1,5 @@
-from ..dataclasses import *
-from .. import dataclasses
+from ...dataclasses import *
+from ... import dataclasses
 
 import sys
 

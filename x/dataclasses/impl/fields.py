@@ -34,8 +34,8 @@ def field(
         raise ValueError('cannot specify both default and default_factory')
 
     ex = ExField(
-        default=default if default is not MISSING else lang.empty(),
-        default_factory=default_factory if default_factory is not MISSING else lang.empty(),
+        default=lang.just(default) if default is not MISSING else lang.empty(),
+        default_factory=lang.just(default_factory) if default_factory is not MISSING else lang.empty(),
         init=init,
         repr=repr,
         hash=hash,

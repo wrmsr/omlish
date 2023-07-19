@@ -252,8 +252,6 @@ def add_slots(
 
 
 def process_class(cls: type, params: ExParams) -> type:
-    fields = {}
-
     if cls.__module__ in sys.modules:
         globals = sys.modules[cls.__module__].__dict__
     else:
@@ -294,6 +292,8 @@ def process_class(cls: type, params: ExParams) -> type:
 
     # field list
 
+    fields: ta.Dict[str, ExField] = {}
+
     any_frozen_base = False
     has_dataclass_bases = False
     for b in cls.__mro__[-1:0:-1]:
@@ -301,7 +301,7 @@ def process_class(cls: type, params: ExParams) -> type:
         if base_fields is not None:
             has_dataclass_bases = True
             for f in base_fields.values():
-                fields[f.name] = f
+                fields[f.name] = ex_field(f)
             if getattr(b, PARAMS_ATTR).frozen:
                 any_frozen_base = True
 
