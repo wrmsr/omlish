@@ -3,11 +3,12 @@ import typing as ta
 
 from omlish import lang
 
-from .internals import DataclassParams
 from .internals import FieldType
+from .internals import Params
 
 
 EX_PARAMS_ATTR = '__dataclass_ex_params__'
+EX_FIELDS_ATTR = '__dataclass_ex_fields__'
 
 
 @dc.dataclass()
@@ -21,7 +22,7 @@ class ExField:
     init: bool = True
     compare: bool = True
     metadata: ta.Optional[ta.Mapping[ta.Any, ta.Any]] = None
-    kw_only: lang.Maybe[ta.Any] = lang.empty()
+    kw_only: ta.Optional[bool] = None
 
     field_type: FieldType = FieldType.INSTANCE
 
@@ -51,7 +52,7 @@ class ExParams:
 def ex_params(obj: ta.Any) -> ExParams:
     if isinstance(obj, ExParams):
         return obj
-    if isinstance(obj, DataclassParams):
+    if isinstance(obj, Params):
         return obj.metadata[ExParams]
     if dc.is_dataclass(obj):
         return getattr(obj, EX_PARAMS_ATTR)

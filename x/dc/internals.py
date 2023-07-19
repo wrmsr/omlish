@@ -14,7 +14,7 @@ PARAMS_ATTR = dc._PARAMS  # type: ignore  # noqa
 
 POST_INIT_NAME = dc._POST_INIT_NAME  # type: ignore  # noqa
 
-DataclassParams = dc._DataclassParams  # type: ignore  # noqa
+Params = dc._DataclassParams  # type: ignore  # noqa
 
 HASH_ACTIONS = dc._hash_action  # type: ignore  # noqa
 

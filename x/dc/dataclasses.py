@@ -59,113 +59,6 @@ _FIELD_INITVAR = dc._FIELD_INITVAR
 _MODULE_IDENTIFIER_RE = re.compile(r'^(?:\s*(\w+)\s*\.)?\s*(\w+)')
 
 
-def _fields_in_init_order(fields):
-    return (
-        tuple(f for f in fields if f.init and not f.kw_only),
-        tuple(f for f in fields if f.init and f.kw_only),
-    )
-
-
-
-
-def _field_assign(frozen, name, value, self_name):
-    if frozen:
-        return f'__dataclass_builtins_object__.__setattr__({self_name},{name!r},{value})'
-    return f'{self_name}.{name}={value}'
-
-
-def _field_init(f, frozen, globals, self_name, slots):
-    default_name = f'__dataclass_dflt_{f.name}__'
-    if f.default_factory is not MISSING:
-        if f.init:
-            globals[default_name] = f.default_factory
-            value = (f'{default_name}() '
-                     f'if {f.name} is __dataclass_HAS_DEFAULT_FACTORY__ '
-                     f'else {f.name}')
-        else:
-            globals[default_name] = f.default_factory
-            value = f'{default_name}()'
-    else:
-        if f.init:
-            if f.default is MISSING:
-                value = f.name
-            elif f.default is not MISSING:
-                globals[default_name] = f.default
-                value = f.name
-        else:
-            if slots and f.default is not MISSING:
-                globals[default_name] = f.default
-                value = default_name
-            else:
-                return None
-
-    if f._field_type is _FIELD_INITVAR:
-        return None
-
-    return _field_assign(frozen, f.name, value, self_name)
-
-
-def _init_param(f):
-    if f.default is MISSING and f.default_factory is MISSING:
-        default = ''
-    elif f.default is not MISSING:
-        default = f'=__dataclass_dflt_{f.name}__'
-    elif f.default_factory is not MISSING:
-        default = '=__dataclass_HAS_DEFAULT_FACTORY__'
-    return f'{f.name}:__dataclass_type_{f.name}__{default}'
-
-
-def _init_fn(
-        fields,
-        std_fields,
-        kw_only_fields,
-        frozen,
-        has_post_init,
-        self_name,
-        globals,
-        slots,
-):
-    seen_default = False
-    for f in std_fields:
-        if f.init:
-            if not (f.default is MISSING and f.default_factory is MISSING):
-                seen_default = True
-            elif seen_default:
-                raise TypeError(f'non-default argument {f.name!r} follows default argument')
-
-    locals = {f'__dataclass_type_{f.name}__': f.type for f in fields}
-    locals.update({
-        '__dataclass_HAS_DEFAULT_FACTORY__': _HAS_DEFAULT_FACTORY,
-        '__dataclass_builtins_object__': object,
-    })
-
-    body_lines = []
-    for f in fields:
-        line = _field_init(f, frozen, locals, self_name, slots)
-
-        if line:
-            body_lines.append(line)
-
-    if has_post_init:
-        params_str = ','.join(f.name for f in fields if f._field_type is _FIELD_INITVAR)
-        body_lines.append(f'{self_name}.{POST_INIT_NAME}({params_str})')
-
-    if not body_lines:
-        body_lines = ['pass']
-
-    _init_params = [_init_param(f) for f in std_fields]
-    if kw_only_fields:
-        _init_params += ['*']
-        _init_params += [_init_param(f) for f in kw_only_fields]
-
-    return _create_fn(
-        '__init__',
-        [self_name] + _init_params,
-        body_lines,
-        locals=locals,
-        globals=globals,
-        return_type=None,
-    )
 
 
 def _repr_fn(fields, globals):
@@ -227,7 +120,6 @@ def _cmp_fn(name, op, self_tuple, other_tuple, globals):
         ],
         globals=globals,
     )
-
 
 
 def _set_qualname(cls, value):

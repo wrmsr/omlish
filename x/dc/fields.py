@@ -3,16 +3,20 @@ import collections
 import types
 import typing as ta
 
+from omlish import check
 from omlish import lang
 
 from .internals import FieldType
+from .internals import is_classvar
+from .internals import is_initvar
+from .internals import is_kwonly
 from .params import ExField
+from .params import ex_field
 
 
 MISSING = dc.MISSING
 
 EMPTY_METADATA = types.MappingProxyType({})
-
 
 
 def field(
@@ -37,7 +41,7 @@ def field(
         hash=hash,
         compare=compare,
         metadata=metadata,
-        kw_only=kw_only if kw_only is not MISSING else lang.empty(),
+        kw_only=kw_only if kw_only is not MISSING else None,
     )
 
     md: ta.Mapping = {ExField: ex}
@@ -57,55 +61,108 @@ def field(
 
 
 def preprocess_field(
-        cls,
+        cls: type,
         a_name: str,
         a_type: ta.Any,
         default_kw_only: bool,
 ) -> ExField:
     default = getattr(cls, a_name, MISSING)
     if isinstance(default, dc.Field):
-        f = default
+        bf = default
     else:
         if isinstance(default, types.MemberDescriptorType):
             default = MISSING
-        f = field(default=default)
+        bf = field(default=default)
+    f = ex_field(bf)
 
     f.name = a_name
     f.type = a_type
 
-    f._field_type = _FIELD
+    f.field_type = FieldType.INSTANCE
 
-    typing = sys.modules.get('typing')
-    if typing:
-        if (
-                _is_classvar(a_type, typing)
-                or (isinstance(f.type, str) and _is_type(f.type, cls, typing, typing.ClassVar, _is_classvar))
-        ):
-            f._field_type = dc._FIELD_CLASSVAR
+    if is_classvar(cls, f.type):
+        f.field_type = FieldType.CLASS
+    if is_initvar(cls, f.type):
+        f.field_type = FieldType.INIT
 
-    if f._field_type is _FIELD:
-        dataclasses = sys.modules[__name__]
-        if (
-                _is_initvar(a_type, dataclasses)
-                or (
-                isinstance(f.type, str) and _is_type(f.type, cls, dataclasses, dataclasses.InitVar, _is_initvar))
-        ):
-            f._field_type = _FIELD_INITVAR
-
-    if f._field_type in (_FIELD_CLASSVAR, _FIELD_INITVAR):
-        if f.default_factory is not MISSING:
+    if f.field_type in (FieldType.CLASS, FieldType.INIT):
+        if f.default_factory.present:
             raise TypeError(f'field {f.name} cannot have a default factory')
 
-    if f._field_type in (_FIELD, _FIELD_INITVAR):
-        if f.kw_only is MISSING:
+    if f.field_type in (FieldType.INSTANCE, FieldType.INIT):
+        if f.kw_only is None:
             f.kw_only = default_kw_only
     else:
-        assert f._field_type is _FIELD_CLASSVAR
-        if f.kw_only is not MISSING:
+        check.arg(f.field_type is FieldType.CLASS)
+        if f.kw_only is not None:
             raise TypeError(f'field {f.name} is a ClassVar but specifies kw_only')
 
-    if f._field_type is _FIELD and f.default.__class__.__hash__ is None:
-        raise ValueError(
-            f'mutable default {type(f.default)} for field {f.name} is not allowed: use default_factory')
+    if f.field_type is FieldType.INSTANCE and f.default.__class__.__hash__ is None:
+        raise ValueError(f'mutable default {type(f.default)} for field {f.name} is not allowed: use default_factory')
+
+    bf.name = f.name
+    bf.type = f.type
+    bf._field_type = f.field_type.value
+    bf.kw_only = f.kw_only
 
     return f
+
+
+def fields_in_init_order(fields: ta.Sequence[ExField]) -> ta.Tuple[ta.Sequence[ExField], ta.Sequence[ExField]]:
+    return (
+        tuple(f for f in fields if f.init and not f.kw_only),
+        tuple(f for f in fields if f.init and f.kw_only),
+    )
+
+
+def field_assign(
+        frozen: bool,
+        name: str,
+        value: ta.Any,
+        self_name: str,
+) -> str:
+    if frozen:
+        return f'__dataclass_builtins_object__.__setattr__({self_name},{name!r},{value})'
+    return f'{self_name}.{name}={value}'
+
+
+def field_init(
+        f: ExField,
+        frozen: bool,
+        globals: ta.MutableMapping[str, ta.Any],
+        self_name: str,
+        slots: bool,
+) -> ta.Optional[str]:
+    default_name = f'__dataclass_dflt_{f.name}__'
+
+    if f.default_factory.present:
+        if f.init:
+            globals[default_name] = f.default_factory.must()
+            value = (
+                f'{default_name}() '
+                f'if {f.name} is __dataclass_HAS_DEFAULT_FACTORY__ '
+                f'else {f.name}'
+            )
+        else:
+            globals[default_name] = f.default_factory.must()
+            value = f'{default_name}()'
+
+    else:
+        if f.init:
+            if not f.default.present:
+                value = f.name
+            elif f.default.present:
+                globals[default_name] = f.default.must()
+                value = f.name
+
+        else:
+            if slots and f.default.present:
+                globals[default_name] = f.default.must()
+                value = default_name
+            else:
+                return None
+
+    if f.field_type is FieldType.INIT:
+        return None
+
+    return field_assign(frozen, f.name, value, self_name)  # noqa
