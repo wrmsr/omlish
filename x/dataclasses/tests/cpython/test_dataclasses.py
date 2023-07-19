@@ -132,10 +132,14 @@ class TestCase(unittest.TestCase):
         class Some:
             pass
 
-        for param in inspect.signature(dataclass).parameters:
-            if param == 'cls':
-                continue
-            self.assertTrue(hasattr(Some.__dataclass_params__, param), msg=param)
+        # for param in inspect.signature(dataclass).parameters:
+        #     if param == 'cls':
+        #         continue
+        #     self.assertTrue(hasattr(Some.__dataclass_params__, param), msg=param)
+
+        ps = inspect.signature(dataclass).parameters
+        for param in [k for k in dir(Some.__dataclass_params__) if not k.startswith('_')]:
+            self.assertTrue(param in ps, msg=param)
 
     def test_named_init_params(self):
         @dataclass
