@@ -4,11 +4,15 @@ import typing as ta
 from omlish import lang
 
 from .internals import FieldType
+from .internals import PARAMS_ATTR
 from .internals import Params
 
 
 EX_PARAMS_ATTR = '__dataclass_ex_params__'
 EX_FIELDS_ATTR = '__dataclass_ex_fields__'
+
+
+##
 
 
 @dc.dataclass()
@@ -35,6 +39,18 @@ def ex_field(obj: ta.Any) -> ExField:
     raise TypeError(obj)
 
 
+def ex_fields(class_or_instance: ta.Any) -> ta.Sequence[ExField]:
+    try:
+        fields = getattr(class_or_instance, EX_FIELDS_ATTR)
+    except AttributeError:
+        raise TypeError('must be called with a dataclass type or instance') from None
+    # order, so the order of the tuple is as the fields were defined.
+    return tuple(f for f in fields.values() if f.field_type is FieldType.INSTANCE)
+
+
+##
+
+
 @dc.dataclass()
 class ExParams:
     init: bool = True
@@ -47,6 +63,12 @@ class ExParams:
     kw_only: bool = False
     slots: bool = False
     weakref_slot: bool = False
+
+
+def params(obj: ta.Any) -> Params:
+    if dc.is_dataclass(obj):
+        return getattr(obj, PARAMS_ATTR)
+    raise TypeError(obj)
 
 
 def ex_params(obj: ta.Any) -> ExParams:

@@ -59,8 +59,6 @@ _FIELD_INITVAR = dc._FIELD_INITVAR
 _MODULE_IDENTIFIER_RE = re.compile(r'^(?:\s*(\w+)\s*\.)?\s*(\w+)')
 
 
-
-
 def _set_qualname(cls, value):
     if isinstance(value, types.FunctionType):
         value.__qualname__ = f"{cls.__qualname__}.{value.__name__}"
@@ -234,65 +232,6 @@ def _process_class(cls, params: dc._DataclassParams):
     return cls
 
 
-def _dataclass_getstate(self):
-    return [getattr(self, f.name) for f in fields(self)]
-
-
-def _dataclass_setstate(self, state):
-    for field, value in zip(fields(self), state):
-        object.__setattr__(self, field.name, value)
-
-
-def _get_slots(cls):
-    sl = cls.__dict__.get('__slots__')
-    if sl is None:
-        return
-    elif isinstance(sl, str):
-        yield sl
-    elif not hasattr(sl, '__next__'):
-        yield from sl
-    else:
-        raise TypeError(f"Slots of '{cls.__name__}' cannot be determined")
-
-
-def _add_slots(cls, is_frozen, weakref_slot):
-    if '__slots__' in cls.__dict__:
-        raise TypeError(f'{cls.__name__} already specifies __slots__')
-
-    cls_dict = dict(cls.__dict__)
-    field_names = tuple(f.name for f in fields(cls))
-
-    inherited_slots = set(
-        itertools.chain.from_iterable(map(_get_slots, cls.__mro__[1:-1]))
-    )
-
-    cls_dict["__slots__"] = tuple(
-        itertools.filterfalse(
-            inherited_slots.__contains__,
-            itertools.chain(
-                field_names,
-                ('__weakref__',) if weakref_slot else ()
-            )
-        ),
-    )
-
-    for field_name in field_names:
-        cls_dict.pop(field_name, None)
-
-    cls_dict.pop('__dict__', None)
-    cls_dict.pop('__weakref__', None)
-
-    qualname = getattr(cls, '__qualname__', None)
-    cls = type(cls)(cls.__name__, cls.__bases__, cls_dict)
-    if qualname is not None:
-        cls.__qualname__ = qualname
-
-    if is_frozen:
-        if '__getstate__' not in cls_dict:
-            cls.__getstate__ = _dataclass_getstate
-        if '__setstate__' not in cls_dict:
-            cls.__setstate__ = _dataclass_setstate
-    return cls
 
 
 def dataclass(
