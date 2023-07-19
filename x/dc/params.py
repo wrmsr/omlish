@@ -1,32 +1,36 @@
 import dataclasses as dc
 import typing as ta
 
+from omlish import lang
+
+from .internals import FieldType
+
 
 @dc.dataclass()
 class ExField:
     name: str
-    type: ta.Any
-    default: ta.Any
-    default_factory: ta.Any
-    repr: bool
-    hash: ta.Optional[bool]
-    init: bool
-    compare: bool
-    metadata: ta.Optional[ta.Mapping[ta.Any, ta.Any]]
-    kw_only: bool
+    type: ta.Any = None
+    default: lang.Maybe[ta.Any] = lang.empty()
+    default_factory: lang.Maybe[ta.Any] = lang.empty()
+    repr: bool = True
+    hash: ta.Optional[bool] = None
+    init: bool = True
+    compare: bool = True
+    metadata: ta.Optional[ta.Mapping[ta.Any, ta.Any]] = None
+    kw_only: lang.Maybe[ta.Any] = lang.empty()
 
-    # _field_type
+    field_type: FieldType = FieldType.INSTANCE
 
 
 @dc.dataclass()
 class ExParams:
-    init: bool
-    repr: bool
-    eq: bool
-    order: bool
-    unsafe_hash: bool
-    frozen: bool
-    match_args: bool
-    kw_only: bool
-    slots: bool
-    weakref_slot: bool
+    init: bool = True
+    repr: bool = True
+    eq: bool = True
+    order: bool = False
+    unsafe_hash: bool = False
+    frozen: bool = False
+    match_args: bool = True
+    kw_only: bool = False
+    slots: bool = False
+    weakref_slot: bool = False

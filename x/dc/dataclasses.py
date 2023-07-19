@@ -49,6 +49,7 @@ replace = dc.replace
 
 ##
 
+
 _HAS_DEFAULT_FACTORY = dc._HAS_DEFAULT_FACTORY
 _FIELD = dc._FIELD
 _FIELD_CLASSVAR = dc._FIELD_CLASSVAR
@@ -180,8 +181,7 @@ def _init_fn(
             if not (f.default is MISSING and f.default_factory is MISSING):
                 seen_default = True
             elif seen_default:
-                raise TypeError(f'non-default argument {f.name!r} '
-                                'follows default argument')
+                raise TypeError(f'non-default argument {f.name!r} follows default argument')
 
     locals = {f'__dataclass_type_{f.name}__': f.type for f in fields}
     locals.update({
@@ -222,9 +222,11 @@ def _repr_fn(fields, globals):
     fn = _create_fn(
         '__repr__',
         ('self',),
-        [('return f"{self.__class__.__qualname__}(' +
-          ', '.join([f"{f.name}={{self.{f.name}!r}}" for f in fields]) +
-          ')"')],
+        [
+            'return f"{self.__class__.__qualname__}(' +
+            ', '.join([f"{f.name}={{self.{f.name}!r}}" for f in fields]) +
+            ')"'
+        ],
         globals=globals,
     )
     return recursive_repr(fn)
@@ -242,20 +244,22 @@ def _frozen_get_del_attr(cls, fields, globals):
         _create_fn(
             '__setattr__',
             ('self', 'name', 'value'),
-            (
+            [
                 f'if {condition}:',
                 ' raise FrozenInstanceError(f"cannot assign to field {name!r}")',
                 f'super(cls, self).__setattr__(name, value)',
-            ),
+            ],
             locals=locals,
             globals=globals,
         ),
         _create_fn(
             '__delattr__',
             ('self', 'name'),
-            (f'if {condition}:',
-             ' raise FrozenInstanceError(f"cannot delete field {name!r}")',
-             f'super(cls, self).__delattr__(name)'),
+            [
+                f'if {condition}:',
+                ' raise FrozenInstanceError(f"cannot delete field {name!r}")',
+                f'super(cls, self).__delattr__(name)',
+            ],
             locals=locals,
             globals=globals,
         ),
@@ -266,17 +270,19 @@ def _cmp_fn(name, op, self_tuple, other_tuple, globals):
     return _create_fn(
         name,
         ('self', 'other'),
-        ['if other.__class__ is self.__class__:',
-         f' return {self_tuple}{op}{other_tuple}',
-         'return NotImplemented'],
+        [
+            'if other.__class__ is self.__class__:',
+            f' return {self_tuple}{op}{other_tuple}',
+            'return NotImplemented',
+        ],
         globals=globals,
     )
 
 
 def _is_classvar(a_type, typing):
     return (
-            a_type is typing.ClassVar
-            or (type(a_type) is typing._GenericAlias and a_type.__origin__ is typing.ClassVar)
+            a_type is typing.ClassVar or
+            (type(a_type) is typing._GenericAlias and a_type.__origin__ is typing.ClassVar)
     )
 
 
