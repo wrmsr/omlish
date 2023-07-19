@@ -14,12 +14,15 @@ import typing as ta
 from omlish import lang
 
 from .fields import field_init
+from .fields import fields_in_init_order
+from .fields import preprocess_field
 from .internals import FIELDS_ATTR
 from .internals import FieldType
 from .internals import HASH_ACTIONS
 from .internals import HAS_DEFAULT_FACTORY
 from .internals import PARAMS_ATTR
 from .internals import POST_INIT_NAME
+from .internals import is_kw_only
 from .internals import recursive_repr
 from .internals import tuple_str
 from .params import ExField
@@ -27,6 +30,7 @@ from .params import ExParams
 from .params import ex_fields
 from .utils import Namespace
 from .utils import create_fn
+from .utils import set_new_attribute
 
 
 # init
@@ -236,5 +240,191 @@ def add_slots(
             cls.__getstate__ = _dataclass_getstate
         if '__setstate__' not in cls_dict:
             cls.__setstate__ = _dataclass_setstate
+
+    return cls
+
+
+# process
+
+
+def process_class(cls: type, params: ExParams) -> type:
+    fields = {}
+
+    if cls.__module__ in sys.modules:
+        globals = sys.modules[cls.__module__].__dict__
+    else:
+        globals = {}
+
+    # params
+
+    if params.order and not params.eq:
+        raise ValueError('eq must be true if order is true')
+
+    setattr(
+        cls,
+        PARAMS_ATTR,
+        params,
+    )
+
+    # field list
+
+    any_frozen_base = False
+    has_dataclass_bases = False
+    for b in cls.__mro__[-1:0:-1]:
+        base_fields = getattr(b, FIELDS_ATTR, None)
+        if base_fields is not None:
+            has_dataclass_bases = True
+            for f in base_fields.values():
+                fields[f.name] = f
+            if getattr(b, PARAMS_ATTR).frozen:
+                any_frozen_base = True
+
+    cls_annotations = inspect.get_annotations(cls)
+
+    cls_fields = []
+
+    kw_only = params.kw_only
+    kw_only_seen = False
+    for name, type in cls_annotations.items():
+        if is_kw_only(cls, type):
+            if kw_only_seen:
+                raise TypeError(f'{name!r} is KW_ONLY, but KW_ONLY has already been specified')
+            kw_only_seen = True
+            kw_only = True
+        else:
+            cls_fields.append(preprocess_field(cls, name, type, kw_only))
+
+    for f in cls_fields:
+        fields[f.name] = f
+        if isinstance(getattr(cls, f.name, None), dc.Field):
+            if not f.default.present:
+                delattr(cls, f.name)
+            else:
+                setattr(cls, f.name, f.default.must())
+
+    for name, value in cls.__dict__.items():
+        if isinstance(value, dc.Field) and not name in cls_annotations:
+            raise TypeError(f'{name!r} is a field but has no type annotation')
+
+    if has_dataclass_bases:
+        if any_frozen_base and not params.frozen:
+            raise TypeError('cannot inherit non-frozen dataclass from a frozen one')
+
+        if not any_frozen_base and params.frozen:
+            raise TypeError('cannot inherit frozen dataclass from a non-frozen one')
+
+    setattr(cls, FIELDS_ATTR, fields)
+
+    field_list = [f for f in fields.values() if f.field_type is FieldType.INSTANCE]
+
+    # init
+
+    all_init_fields = [f for f in fields.values() if f.field_type in (FieldType.INSTANCE, FieldType.INIT)]
+    std_init_fields, kw_only_init_fields = fields_in_init_order(all_init_fields)
+
+    if params.init:
+        has_post_init = hasattr(cls, POST_INIT_NAME)
+
+        set_new_attribute(
+            cls,
+            '__init__',
+            init_fn(
+                params,
+                all_init_fields,
+                std_init_fields,
+                kw_only_init_fields,
+                has_post_init,
+                '__dataclass_self__' if 'self' in fields else 'self',
+                globals,
+            ),
+        )
+
+    # repr
+
+    if params.repr:
+        flds = [f for f in field_list if f.repr]
+        set_new_attribute(cls, '__repr__', repr_fn(flds, globals))
+
+    # eq
+
+    if params.eq:
+        # flds = [f for f in field_list if f.compare]
+        # self_tuple = tuple_str('self', flds)
+        # other_tuple = tuple_str('other', flds)
+        # set_new_attribute(cls, '__eq__', _cmp_fn('__eq__', '==', self_tuple, other_tuple, globals=globals))
+        cmp_fields = (field for field in field_list if field.compare)
+        terms = [f'self.{field.name}==other.{field.name}' for field in cmp_fields]
+        field_comparisons = ' and '.join(terms) or 'True'
+        body = [
+            f'if other.__class__ is self.__class__:',
+            f' return {field_comparisons}',
+            f'return NotImplemented',
+        ]
+        func = create_fn('__eq__', ('self', 'other'), body, globals=globals)
+        set_new_attribute(cls, '__eq__', func)
+
+    # order
+
+    if params.order:
+        flds = [f for f in field_list if f.compare]
+        self_tuple = tuple_str('self', flds)
+        other_tuple = tuple_str('other', flds)
+        for name, op in [
+            ('__lt__', '<'),
+            ('__le__', '<='),
+            ('__gt__', '>'),
+            ('__ge__', '>='),
+        ]:
+            if set_new_attribute(cls, name, cmp_fn(name, op, self_tuple, other_tuple, globals=globals)):
+                raise TypeError(
+                    f'Cannot overwrite attribute {name} in class {cls.__name__}. '
+                    f'Consider using functools.total_ordering'
+                )
+
+    # frozen
+
+    if params.frozen:
+        for fn in frozen_get_del_attr(cls, field_list, globals):
+            if set_new_attribute(cls, fn.__name__, fn):
+                raise TypeError(f'Cannot overwrite attribute {fn.__name__} in class {cls.__name__}')
+
+    # hash
+
+    class_hash = cls.__dict__.get('__hash__', dc.MISSING)
+    has_explicit_hash = not (class_hash is dc.MISSING or (class_hash is None and '__eq__' in cls.__dict__))
+
+    hash_action = HASH_ACTIONS[(
+        bool(params.unsafe_hash),
+        bool(params.eq),
+        bool(params.frozen),
+        has_explicit_hash,
+    )]
+    if hash_action:
+        cls.__hash__ = hash_action(cls, field_list, globals)
+
+    # doc
+
+    if not getattr(cls, '__doc__'):
+        try:
+            text_sig = str(inspect.signature(cls)).replace(' -> None', '')
+        except (TypeError, ValueError):
+            text_sig = ''
+        cls.__doc__ = (cls.__name__ + text_sig)
+
+    # match_args
+
+    if params.match_args:
+        set_new_attribute(cls, '__match_args__', tuple(f.name for f in std_init_fields))
+
+    # slots
+
+    if params.weakref_slot and not params.slots:
+        raise TypeError('weakref_slot is True but slots is False')
+    if params.slots:
+        cls = add_slots(cls, params.frozen, params.weakref_slot)
+
+    # finalize
+
+    abc.update_abstractmethods(cls)
 
     return cls

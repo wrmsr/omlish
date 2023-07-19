@@ -97,8 +97,8 @@ def preprocess_field(
         if f.kw_only is not None:
             raise TypeError(f'field {f.name} is a ClassVar but specifies kw_only')
 
-    if f.field_type is FieldType.INSTANCE and f.default.__class__.__hash__ is None:
-        raise ValueError(f'mutable default {type(f.default)} for field {f.name} is not allowed: use default_factory')
+    if f.field_type is FieldType.INSTANCE and f.default.present and (d := f.default.must()).__class__.__hash__ is None:
+        raise ValueError(f'mutable default {type(d)} for field {f.name} is not allowed: use default_factory')
 
     bf.name = f.name
     bf.type = f.type

@@ -93,7 +93,7 @@ def is_initvar(cls: type, ty: ta.Any) -> bool:
     )
 
 
-def is_kwonly(cls: type, ty: ta.Any) -> bool:
+def is_kw_only(cls: type, ty: ta.Any) -> bool:
     return (
             dc._is_kw_only(ty, dc)  # noqa
             or (isinstance(ty, str) and dc._is_type(ty, cls, dc, dc.KW_ONLY, dc._is_kw_only))  # noqa

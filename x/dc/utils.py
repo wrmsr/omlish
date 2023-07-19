@@ -1,8 +1,10 @@
+import types
 import typing as ta
 
 from omlish import lang
 
 
+T = ta.TypeVar('T')
 Namespace = ta.MutableMapping[str, ta.Any]
 
 
@@ -31,3 +33,17 @@ def create_fn(
     ns = {}
     exec(txt, globals, ns)
     return ns['__create_fn__'](**locals)
+
+
+def set_qualname(cls: type, value: T) -> T:
+    if isinstance(value, types.FunctionType):
+        value.__qualname__ = f"{cls.__qualname__}.{value.__name__}"
+    return value
+
+
+def set_new_attribute(cls: type, name: str, value: ta.Any) -> bool:
+    if name in cls.__dict__:
+        return True
+    set_qualname(cls, value)
+    setattr(cls, name, value)
+    return False
