@@ -24,8 +24,9 @@ from .internals import recursive_repr
 from .internals import tuple_str
 from .params import ExField
 from .params import ExParams
-from .utils import create_fn
+from .params import ex_fields
 from .utils import Namespace
+from .utils import create_fn
 
 
 # init
@@ -174,11 +175,11 @@ def cmp_fn(
 
 
 def _dataclass_getstate(self):
-    return [getattr(self, f.name) for f in fields(self)]
+    return [getattr(self, f.name) for f in ex_fields(self)]
 
 
 def _dataclass_setstate(self, state):
-    for field, value in zip(fields(self), state):
+    for field, value in zip(ex_fields(self), state):
         object.__setattr__(self, field.name, value)
 
 
@@ -194,18 +195,22 @@ def _get_slots(cls):
         raise TypeError(f"Slots of '{cls.__name__}' cannot be determined")
 
 
-def _add_slots(cls, is_frozen, weakref_slot):
+def add_slots(
+        cls: type,
+        is_frozen: bool,
+        weakref_slot: bool,
+) -> type:
     if '__slots__' in cls.__dict__:
         raise TypeError(f'{cls.__name__} already specifies __slots__')
 
     cls_dict = dict(cls.__dict__)
-    field_names = tuple(f.name for f in fields(cls))
+    field_names = tuple(f.name for f in ex_fields(cls))
 
     inherited_slots = set(
         itertools.chain.from_iterable(map(_get_slots, cls.__mro__[1:-1]))
     )
 
-    cls_dict["__slots__"] = tuple(
+    cls_dict['__slots__'] = tuple(
         itertools.filterfalse(
             inherited_slots.__contains__,
             itertools.chain(
@@ -231,4 +236,5 @@ def _add_slots(cls, is_frozen, weakref_slot):
             cls.__getstate__ = _dataclass_getstate
         if '__setstate__' not in cls_dict:
             cls.__setstate__ = _dataclass_setstate
+
     return cls
