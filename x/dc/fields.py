@@ -9,9 +9,9 @@ from omlish import lang
 from .internals import FieldType
 from .internals import is_classvar
 from .internals import is_initvar
-from .internals import is_kwonly
 from .params import ExField
 from .params import ex_field
+from .utils import Namespace
 
 
 MISSING = dc.MISSING
@@ -129,7 +129,7 @@ def field_assign(
 def field_init(
         f: ExField,
         frozen: bool,
-        globals: ta.MutableMapping[str, ta.Any],
+        globals: Namespace,
         self_name: str,
         slots: bool,
 ) -> ta.Optional[str]:

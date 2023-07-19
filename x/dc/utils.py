@@ -3,13 +3,16 @@ import typing as ta
 from omlish import lang
 
 
+Namespace = ta.MutableMapping[str, ta.Any]
+
+
 def create_fn(
         name: str,
         args: ta.Sequence[str],
         body: ta.Sequence[str],
         *,
-        globals: ta.Optional[ta.MutableMapping[str, ta.Any]] = None,
-        locals: ta.Optional[ta.MutableMapping[str, ta.Any]] = None,
+        globals: ta.Optional[Namespace] = None,
+        locals: ta.Optional[Namespace] = None,
         return_type: lang.Maybe[ta.Any] = lang.empty(),
 ) -> ta.Callable:
     if locals is None:

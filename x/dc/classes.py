@@ -90,3 +90,67 @@ def _init_fn(
         globals=globals,
         return_type=lang.empty(),
     )
+
+
+# misc
+
+
+def repr_fn(fields: ta.Sequence[ExField], globals: ta.MutableMapping[str, ta.Any]):
+    fn = _create_fn(
+        '__repr__',
+        ('self',),
+        [
+            'return f"{self.__class__.__qualname__}(' +
+            ', '.join([f"{f.name}={{self.{f.name}!r}}" for f in fields]) +
+            ')"'
+        ],
+        globals=globals,
+    )
+    return recursive_repr(fn)
+
+
+def frozen_get_del_attr(cls, fields, globals):
+    locals = {
+        'cls': cls,
+        'FrozenInstanceError': FrozenInstanceError,
+    }
+    condition = 'type(self) is cls'
+    if fields:
+        condition += ' or name in {' + ', '.join(repr(f.name) for f in fields) + '}'
+    return (
+        _create_fn(
+            '__setattr__',
+            ('self', 'name', 'value'),
+            [
+                f'if {condition}:',
+                ' raise FrozenInstanceError(f"cannot assign to field {name!r}")',
+                f'super(cls, self).__setattr__(name, value)',
+            ],
+            locals=locals,
+            globals=globals,
+        ),
+        _create_fn(
+            '__delattr__',
+            ('self', 'name'),
+            [
+                f'if {condition}:',
+                ' raise FrozenInstanceError(f"cannot delete field {name!r}")',
+                f'super(cls, self).__delattr__(name)',
+            ],
+            locals=locals,
+            globals=globals,
+        ),
+    )
+
+
+def cmp_fn(name, op, self_tuple, other_tuple, globals):
+    return _create_fn(
+        name,
+        ('self', 'other'),
+        [
+            'if other.__class__ is self.__class__:',
+            f' return {self_tuple}{op}{other_tuple}',
+            'return NotImplemented',
+        ],
+        globals=globals,
+    )
