@@ -1,25 +1,39 @@
+# from dataclasses import *
+# import dataclasses  # Needed for the string "dataclasses.InitVar[int]" to work as an annotation.
+
 from ....dataclasses import *
 from .... import dataclasses
 
-import sys
-
 import abc
+import builtins
+import collections
+import functools
+import inspect
 import io
 import pickle
-import inspect
-import builtins
-import types
-import weakref
+import sys
 import traceback
+import types
+import typing  # Needed for the string "typing.ClassVar[int]" to work as an annotation.
 import unittest
-from unittest.mock import Mock
-from typing import ClassVar, Any, List, Union, Tuple, Dict, Generic, TypeVar, Optional, Protocol, DefaultDict
-from typing import get_type_hints
-from collections import deque, OrderedDict, namedtuple, defaultdict
-from functools import total_ordering
+import weakref
 
-import typing       # Needed for the string "typing.ClassVar[int]" to work as an annotation.
-# import dataclasses  # Needed for the string "dataclasses.InitVar[int]" to work as an annotation.
+from typing import (
+    Any,
+    ClassVar,
+    DefaultDict,
+    Dict,
+    Generic,
+    List,
+    Optional,
+    Protocol,
+    Tuple,
+    TypeVar,
+    Union,
+)
+
+from unittest.mock import Mock
+
 
 # Just any custom exception we can catch.
 class CustomError(Exception):
@@ -177,8 +191,10 @@ class TestCase(unittest.TestCase):
         @dataclass(frozen=True)
         class C:
             x: int
+
             def __hash__(self):
                 return 301
+
         self.assertEqual(hash(C(100)), 301)
 
         # Test that declaring this class isn't an error.  It should
@@ -186,8 +202,10 @@ class TestCase(unittest.TestCase):
         @dataclass(frozen=True)
         class C:
             x: int
+
             def __eq__(self, other):
                 return False
+
         self.assertEqual(hash(C(100)), hash((100,)))
 
         # But this one should generate an exception, because with
@@ -205,8 +223,10 @@ class TestCase(unittest.TestCase):
         @dataclass(unsafe_hash=True)
         class C:
             x: int
+
             def __eq__(self):
                 pass
+
         # The generated hash function works as we'd expect.
         self.assertEqual(hash(C(10)), hash((10,)))
 
@@ -217,8 +237,10 @@ class TestCase(unittest.TestCase):
             @dataclass(unsafe_hash=True)
             class C:
                 x: int
+
                 def __eq__(self):
                     pass
+
                 def __hash__(self):
                     pass
 
@@ -248,7 +270,8 @@ class TestCase(unittest.TestCase):
         @dataclass
         class C:
             self: str
-        c=C('foo')
+
+        c = C('foo')
         self.assertEqual(c.self, 'foo')
 
         # Make sure the first parameter is not named 'self'.
@@ -270,6 +293,7 @@ class TestCase(unittest.TestCase):
         @dataclass
         class C:
             object: str
+
         c = C('foo')
         self.assertEqual(c.object, 'foo')
 
@@ -277,6 +301,7 @@ class TestCase(unittest.TestCase):
         @dataclass(frozen=True)
         class C:
             object: str
+
         c = C('foo')
         self.assertEqual(c.object, 'foo')
 
@@ -285,6 +310,7 @@ class TestCase(unittest.TestCase):
         @dataclass(frozen=True)
         class C:
             BUILTINS: int
+
         c = C(5)
         self.assertEqual(c.BUILTINS, 5)
 
@@ -369,6 +395,7 @@ class TestCase(unittest.TestCase):
         @dataclass(order=True)
         class C:
             pass
+
         self.assertLessEqual(C(), C())
         self.assertGreaterEqual(C(), C())
 
@@ -402,6 +429,7 @@ class TestCase(unittest.TestCase):
         @dataclass(order=True)
         class C:
             x: int
+
         self.assertLess(C(0), C(1))
         self.assertLessEqual(C(0), C(1))
         self.assertLessEqual(C(1), C(1))
@@ -427,6 +455,7 @@ class TestCase(unittest.TestCase):
                 self.assertEqual(cls(1, 2), cls(1, 2))
                 self.assertNotEqual(cls(1, 0), cls(0, 0))
                 self.assertNotEqual(cls(1, 0), cls(1, 1))
+
                 for idx, fn in enumerate([
                     lambda a, b: a < b,
                     lambda a, b: a <= b,
@@ -515,6 +544,7 @@ class TestCase(unittest.TestCase):
                         @dataclass(eq=eq, order=order)
                         class C:
                             pass
+
                 else:
                     @dataclass(eq=eq, order=order)
                     class C:
@@ -526,18 +556,21 @@ class TestCase(unittest.TestCase):
                         self.assertNotIn('__le__', C.__dict__)
                         self.assertNotIn('__gt__', C.__dict__)
                         self.assertNotIn('__ge__', C.__dict__)
+
                     elif result == 'both':
                         self.assertIn('__eq__', C.__dict__)
                         self.assertIn('__lt__', C.__dict__)
                         self.assertIn('__le__', C.__dict__)
                         self.assertIn('__gt__', C.__dict__)
                         self.assertIn('__ge__', C.__dict__)
+
                     elif result == 'eq_only':
                         self.assertIn('__eq__', C.__dict__)
                         self.assertNotIn('__lt__', C.__dict__)
                         self.assertNotIn('__le__', C.__dict__)
                         self.assertNotIn('__gt__', C.__dict__)
                         self.assertNotIn('__ge__', C.__dict__)
+
                     else:
                         assert False, f'unknown result {result!r}'
 
@@ -548,13 +581,12 @@ class TestCase(unittest.TestCase):
 
         self.assertEqual(C(5).x, 5)
 
-        with self.assertRaisesRegex(TypeError,
-                                    r"__init__\(\) missing 1 required "
-                                    "positional argument: 'x'"):
+        with self.assertRaisesRegex(TypeError, r"__init__\(\) missing 1 required positional argument: 'x'"):
             C()
 
     def test_field_default(self):
         default = object()
+
         @dataclass
         class C:
             x: object = field(default=default)
@@ -574,8 +606,10 @@ class TestCase(unittest.TestCase):
         @dataclass
         class C:
             x: int = field(repr=False)
+
         with self.assertRaises(TypeError):
             C()
+
         c = C(10)
         self.assertEqual(repr(c), 'TestCase.test_not_in_repr.<locals>.C()')
 
@@ -583,6 +617,7 @@ class TestCase(unittest.TestCase):
         class C:
             x: int = field(repr=False)
             y: int
+
         c = C(10, 20)
         self.assertEqual(repr(c), 'TestCase.test_not_in_repr.<locals>.C(y=20)')
 
@@ -617,8 +652,10 @@ class TestCase(unittest.TestCase):
         # class's __hash__, not the instance's __hash__.
         with self.assertRaisesRegex(ValueError, unhashable_re):
             unhashable = Unhashable()
+
             # This shouldn't make the variable hashable.
             unhashable.__hash__ = lambda: 0
+
             @dataclass
             class A:
                 a: Any = unhashable
@@ -779,7 +816,6 @@ class TestCase(unittest.TestCase):
                     class Point:
                         x: typ = empty
 
-
                 # Nor a non-zero-length value
                 with self.assertRaisesRegex(ValueError, f'mutable default {typ} for field ' 'y is not allowed'):
                     @dataclass
@@ -840,6 +876,7 @@ class TestCase(unittest.TestCase):
         class Point:
             x: int
             y: int
+
         self.assertNotEqual(Point(1, 2), (1, 2))
 
         # And that we can't compare to another unrelated dataclass.
@@ -847,6 +884,7 @@ class TestCase(unittest.TestCase):
         class C:
             x: int
             y: int
+
         self.assertNotEqual(Point(1, 3), C(1, 3))
 
     def test_not_other_dataclass(self):
@@ -955,16 +993,20 @@ class TestCase(unittest.TestCase):
         #  specified.
         @dataclass
         class C:
-            x: int=field(default=MISSING)
+            x: int = field(default=MISSING)
+
         with self.assertRaisesRegex(TypeError, r'__init__\(\) missing 1 required ' 'positional argument'):
             C()
+
         self.assertNotIn('x', C.__dict__)
 
         @dataclass
         class D:
             x: int
+
         with self.assertRaisesRegex(TypeError, r'__init__\(\) missing 1 required ' 'positional argument'):
             D()
+
         self.assertNotIn('x', D.__dict__)
 
     def test_missing_default_factory(self):
@@ -973,16 +1015,20 @@ class TestCase(unittest.TestCase):
         #  being specified, too).
         @dataclass
         class C:
-            x: int=field(default_factory=MISSING)
+            x: int = field(default_factory=MISSING)
+
         with self.assertRaisesRegex(TypeError, r'__init__\(\) missing 1 required ' 'positional argument'):
             C()
+
         self.assertNotIn('x', C.__dict__)
 
         @dataclass
         class D:
-            x: int=field(default=MISSING, default_factory=MISSING)
+            x: int = field(default=MISSING, default_factory=MISSING)
+
         with self.assertRaisesRegex(TypeError, r'__init__\(\) missing 1 required ' 'positional argument'):
             D()
+
         self.assertNotIn('x', D.__dict__)
 
     def test_missing_repr(self):
@@ -992,11 +1038,14 @@ class TestCase(unittest.TestCase):
         @dataclass
         class C:
             i: int
+
             def foo(self) -> int:
                 return 4
+
             @property
             def bar(self) -> int:
                 return 5
+
         self.assertEqual(list(C.__annotations__), ['i'])
         self.assertEqual(C(10).foo(), 4)
         self.assertEqual(C(10).bar, 5)
@@ -1209,8 +1258,7 @@ class TestCase(unittest.TestCase):
     def test_class_var_default_factory(self):
         # It makes no sense for a ClassVar to have a default factory. When
         #  would it be called? Call it yourself, since it's class-wide.
-        with self.assertRaisesRegex(TypeError,
-                                    'cannot have a default factory'):
+        with self.assertRaisesRegex(TypeError, 'cannot have a default factory'):
             @dataclass
             class C:
                 x: ClassVar[int] = field(default_factory=int)
@@ -1541,7 +1589,6 @@ class TestCase(unittest.TestCase):
         if sys.version_info[1] >= 11:
             self.assertTrue(is_dataclass(a))
 
-
     def test_helper_fields_with_class_instance(self):
         # Check that we can call fields() on either a class or instance,
         #  and get back the same thing.
@@ -1685,16 +1732,16 @@ class TestCase(unittest.TestCase):
             x: int
             y: int
         c = C(1, 2)
-        d = asdict(c, dict_factory=OrderedDict)
-        self.assertEqual(d, OrderedDict([('x', 1), ('y', 2)]))
-        self.assertIsNot(d, asdict(c, dict_factory=OrderedDict))
+        d = asdict(c, dict_factory=collections.OrderedDict)
+        self.assertEqual(d, collections.OrderedDict([('x', 1), ('y', 2)]))
+        self.assertIsNot(d, asdict(c, dict_factory=collections.OrderedDict))
         c.x = 42
-        d = asdict(c, dict_factory=OrderedDict)
-        self.assertEqual(d, OrderedDict([('x', 42), ('y', 2)]))
-        self.assertIs(type(d), OrderedDict)
+        d = asdict(c, dict_factory=collections.OrderedDict)
+        self.assertEqual(d, collections.OrderedDict([('x', 42), ('y', 2)]))
+        self.assertIs(type(d), collections.OrderedDict)
 
     def test_helper_asdict_namedtuple(self):
-        T = namedtuple('T', 'a b c')
+        T = collections.namedtuple('T', 'a b c')
         @dataclass
         class C:
             x: str
@@ -1707,12 +1754,12 @@ class TestCase(unittest.TestCase):
         # Now with a dict_factory.  OrderedDict is convenient, but
         # since it compares to dicts, we also need to have separate
         # assertIs tests.
-        d = asdict(c, dict_factory=OrderedDict)
+        d = asdict(c, dict_factory=collections.OrderedDict)
         self.assertEqual(d, {'x': 'outer', 'y': T(1, {'x': 'inner', 'y': T(11, 12, 13)}, 2)})
 
         # Make sure that the returned dicts are actually OrderedDicts.
-        self.assertIs(type(d), OrderedDict)
-        self.assertIs(type(d['y'][1]), OrderedDict)
+        self.assertIs(type(d), collections.OrderedDict)
+        self.assertIs(type(d['y'][1]), collections.OrderedDict)
 
     def test_helper_asdict_namedtuple_key(self):
         # Ensure that a field that contains a dict which has a
@@ -1721,14 +1768,14 @@ class TestCase(unittest.TestCase):
         @dataclass
         class C:
             f: dict
-        T = namedtuple('T', 'a')
+        T = collections.namedtuple('T', 'a')
 
         c = C({T('an a'): 0})
 
         self.assertEqual(asdict(c), {'f': {T(a='an a'): 0}})
 
     def test_helper_asdict_namedtuple_derived(self):
-        class T(namedtuple('Tbase', 'a')):
+        class T(collections.namedtuple('Tbase', 'a')):
             def my_a(self):
                 return self.a
 
@@ -1752,7 +1799,7 @@ class TestCase(unittest.TestCase):
         class C:
             mp: DefaultDict[str, List]
 
-        dd = defaultdict(list)
+        dd = collections.defaultdict(list)
         dd["x"].append(12)
         c = C(mp=dd)
         d = asdict(c)
@@ -1822,18 +1869,22 @@ class TestCase(unittest.TestCase):
         class User:
             name: str
             id: int
+
         @dataclass
         class GroupList:
             id: int
             users: List[User]
+
         @dataclass
         class GroupTuple:
             id: int
             users: Tuple[User, ...]
+
         @dataclass
         class GroupDict:
             id: int
             users: Dict[str, User]
+
         a = User('Alice', 1)
         b = User('Bob', 2)
         gl = GroupList(0, [a, b])
@@ -1860,9 +1911,12 @@ class TestCase(unittest.TestCase):
         class C:
             x: int
             y: int
-        NT = namedtuple('NT', 'x y')
+
+        NT = collections.namedtuple('NT', 'x y')
+
         def nt(lst):
             return NT(*lst)
+
         c = C(1, 2)
         t = astuple(c, tuple_factory=nt)
         self.assertEqual(t, NT(1, 2))
@@ -1873,11 +1927,13 @@ class TestCase(unittest.TestCase):
         self.assertIs(type(t), NT)
 
     def test_helper_astuple_namedtuple(self):
-        T = namedtuple('T', 'a b c')
+        T = collections.namedtuple('T', 'a b c')
+
         @dataclass
         class C:
             x: str
             y: T
+
         c = C('outer', T(1, C('inner', T(11, 12, 13)), 2))
 
         t = astuple(c)
@@ -1894,7 +1950,7 @@ class TestCase(unittest.TestCase):
         class C:
             mp: DefaultDict[str, List]
 
-        dd = defaultdict(list)
+        dd = collections.defaultdict(list)
         dd["x"].append(12)
         c = C(mp=dd)
         t = astuple(c)
@@ -1937,6 +1993,7 @@ class TestCase(unittest.TestCase):
             f: int = 4
 
         calls = []
+
         def setattr(self, name, value):
             calls.append((name, value))
 
@@ -1985,6 +2042,7 @@ class TestCase(unittest.TestCase):
         @dataclass
         class C:
             x: int
+
             @classmethod
             def from_file(cls, filename):
                 # In a real example, create a new instance
@@ -2016,9 +2074,11 @@ class TestCase(unittest.TestCase):
 
         # Make sure an empty dict works.
         d = {}
+
         @dataclass
         class C:
             i: int = field(metadata=d)
+
         self.assertFalse(fields(C)[0].metadata)
         self.assertEqual(len(fields(C)[0].metadata), 0)
         # Update should work (see bpo-35960).
@@ -2034,6 +2094,7 @@ class TestCase(unittest.TestCase):
         @dataclass
         class C:
             i: int = field(metadata=d)
+
         self.assertEqual(len(fields(C)[0].metadata), 3)
         self.assertEqual(fields(C)[0].metadata['test'], 10)
         self.assertEqual(fields(C)[0].metadata['bar'], '42')
@@ -2118,6 +2179,7 @@ class TestCase(unittest.TestCase):
         @dataclass
         class Parent(Generic[T]):
             x: T
+
         Child = make_dataclass(
             'Child',
             [
@@ -2127,6 +2189,7 @@ class TestCase(unittest.TestCase):
             bases=(Parent[int], Generic[T]),
             namespace={'other': 42},
         )
+
         self.assertIs(Child[int](1, 2).z, None)
         self.assertEqual(Child[int](1, 2, 3).z, 3)
         self.assertEqual(Child[int](1, 2, 3).other, 42)
@@ -2138,18 +2201,22 @@ class TestCase(unittest.TestCase):
 
     def test_dataclasses_pickleable(self):
         global P, Q, R
+
         @dataclass
         class P:
             x: int
             y: int = 0
+
         @dataclass
         class Q:
             x: int
             y: int = field(default=0, init=False)
+
         @dataclass
         class R:
             x: int
             y: List[int] = field(default_factory=list)
+
         q = Q(1)
         q.y = 2
         samples = [P(1), P(1, 2), Q(1), q, R(1), R(1, [2, 3, 4])]
@@ -2299,14 +2366,14 @@ class TestDocString(unittest.TestCase):
     def test_docstring_deque_field(self):
         @dataclass
         class C:
-            x: deque
+            x: collections.deque
 
         self.assertDocStrEqual(C.__doc__, "C(x:collections.deque)")
 
     def test_docstring_deque_field_with_default_factory(self):
         @dataclass
         class C:
-            x: deque = field(default_factory=deque)
+            x: collections.deque = field(default_factory=collections.deque)
 
         self.assertDocStrEqual(C.__doc__, "C(x:collections.deque=<factory>)")
 
@@ -2314,6 +2381,7 @@ class TestDocString(unittest.TestCase):
         # See https://github.com/python/cpython/issues/103449
         class Meta(type):
             __call__ = dict
+
         class Base(metaclass=Meta):
             pass
 
@@ -2337,6 +2405,7 @@ class TestInit(unittest.TestCase):
         @dataclass
         class C(B):
             x: int = 0
+
         c = C(10)
         self.assertEqual(c.x, 10)
         self.assertNotIn('z', vars(c))
@@ -2346,6 +2415,7 @@ class TestInit(unittest.TestCase):
         @dataclass(init=False)
         class C(B):
             x: int = 10
+
         c = C()
         self.assertEqual(c.x, 10)
         self.assertEqual(c.z, 100)
@@ -2354,13 +2424,16 @@ class TestInit(unittest.TestCase):
         @dataclass(init=False)
         class C:
             i: int = 0
+
         self.assertEqual(C().i, 0)
 
         @dataclass(init=False)
         class C:
             i: int = 2
+
             def __init__(self):
                 self.i = 3
+
         self.assertEqual(C().i, 3)
 
     def test_overwriting_init(self):
@@ -2370,22 +2443,28 @@ class TestInit(unittest.TestCase):
         @dataclass
         class C:
             x: int
+
             def __init__(self, x):
                 self.x = 2 * x
+
         self.assertEqual(C(3).x, 6)
 
         @dataclass(init=True)
         class C:
             x: int
+
             def __init__(self, x):
                 self.x = 2 * x
+
         self.assertEqual(C(4).x, 8)
 
         @dataclass(init=False)
         class C:
             x: int
+
             def __init__(self, x):
                 self.x = 2 * x
+
         self.assertEqual(C(5).x, 10)
 
     def test_inherit_from_protocol(self):
@@ -2425,16 +2504,20 @@ class TestRepr(unittest.TestCase):
         @dataclass
         class D(C):
             x: int = 20
+
         self.assertEqual(repr(D()), 'TestRepr.test_repr.<locals>.D(x=20, y=10)')
 
         @dataclass
         class C:
+
             @dataclass
             class D:
                 i: int
+
             @dataclass
             class E:
                 pass
+
         self.assertEqual(repr(C.D(0)), 'TestRepr.test_repr.<locals>.C.D(i=0)')
         self.assertEqual(repr(C.E()), 'TestRepr.test_repr.<locals>.C.E()')
 
@@ -2443,15 +2526,17 @@ class TestRepr(unittest.TestCase):
         @dataclass(repr=False)
         class C:
             x: int
-        self.assertIn(f'{__name__}.TestRepr.test_no_repr.<locals>.C object at',
-                      repr(C(3)))
+
+        self.assertIn(f'{__name__}.TestRepr.test_no_repr.<locals>.C object at', repr(C(3)))
 
         # Test a class with a __repr__ and repr=False.
         @dataclass(repr=False)
         class C:
             x: int
+
             def __repr__(self):
                 return 'C-class'
+
         self.assertEqual(repr(C(3)), 'C-class')
 
     def test_overwriting_repr(self):
@@ -2461,22 +2546,28 @@ class TestRepr(unittest.TestCase):
         @dataclass
         class C:
             x: int
+
             def __repr__(self):
                 return 'x'
+
         self.assertEqual(repr(C(0)), 'x')
 
         @dataclass(repr=True)
         class C:
             x: int
+
             def __repr__(self):
                 return 'x'
+
         self.assertEqual(repr(C(0)), 'x')
 
         @dataclass(repr=False)
         class C:
             x: int
+
             def __repr__(self):
                 return 'x'
+
         self.assertEqual(repr(C(0)), 'x')
 
 
@@ -2486,6 +2577,7 @@ class TestEq(unittest.TestCase):
         @dataclass(eq=False)
         class C:
             x: int
+
         self.assertNotEqual(C(0), C(0))
         c = C(3)
         self.assertEqual(c, c)
@@ -2494,8 +2586,10 @@ class TestEq(unittest.TestCase):
         @dataclass(eq=False)
         class C:
             x: int
+
             def __eq__(self, other):
                 return other == 10
+
         self.assertEqual(C(3), 10)
 
     def test_overwriting_eq(self):
@@ -2505,24 +2599,30 @@ class TestEq(unittest.TestCase):
         @dataclass
         class C:
             x: int
+
             def __eq__(self, other):
                 return other == 3
+
         self.assertEqual(C(1), 3)
         self.assertNotEqual(C(1), 1)
 
         @dataclass(eq=True)
         class C:
             x: int
+
             def __eq__(self, other):
                 return other == 4
+
         self.assertEqual(C(1), 4)
         self.assertNotEqual(C(1), 1)
 
         @dataclass(eq=False)
         class C:
             x: int
+
             def __eq__(self, other):
                 return other == 5
+
         self.assertEqual(C(1), 5)
         self.assertNotEqual(C(1), 1)
 
@@ -2530,10 +2630,11 @@ class TestEq(unittest.TestCase):
 class TestOrdering(unittest.TestCase):
     def test_functools_total_ordering(self):
         # Test that functools.total_ordering works with this class.
-        @total_ordering
+        @functools.total_ordering
         @dataclass
         class C:
             x: int
+
             def __lt__(self, other):
                 # Perform the test "backward", just to make
                 #  sure this is being called.
@@ -2559,8 +2660,10 @@ class TestOrdering(unittest.TestCase):
         @dataclass(order=False)
         class C:
             x: int
+
             def __lt__(self, other):
                 return False
+
         # Make sure other methods aren't added.
         self.assertNotIn('__le__', C.__dict__)
         self.assertNotIn('__ge__', C.__dict__)
@@ -2571,6 +2674,7 @@ class TestOrdering(unittest.TestCase):
             @dataclass(order=True)
             class C:
                 x: int
+
                 def __lt__(self):
                     pass
 
@@ -2578,6 +2682,7 @@ class TestOrdering(unittest.TestCase):
             @dataclass(order=True)
             class C:
                 x: int
+
                 def __le__(self):
                     pass
 
@@ -2585,6 +2690,7 @@ class TestOrdering(unittest.TestCase):
             @dataclass(order=True)
             class C:
                 x: int
+
                 def __gt__(self):
                     pass
 
@@ -2592,8 +2698,10 @@ class TestOrdering(unittest.TestCase):
             @dataclass(order=True)
             class C:
                 x: int
+
                 def __ge__(self):
                     pass
+
 
 class TestHash(unittest.TestCase):
     def test_unsafe_hash(self):
@@ -2601,6 +2709,7 @@ class TestHash(unittest.TestCase):
         class C:
             x: int
             y: str
+
         self.assertEqual(hash(C(1, 'foo')), hash((1, 'foo')))
 
     def test_hash_rules(self):
@@ -2669,7 +2778,7 @@ class TestHash(unittest.TestCase):
                   (True,         False, True,   'fn',                'exception'),
                   (True,         True,  False,  'fn',                'exception'),
                   (True,         True,  True,   'fn',                'exception'),
-                  ], 1):
+        ], 1):
             test(case, unsafe_hash, eq, frozen, False, res_no_defined_hash)
             test(case, unsafe_hash, eq, frozen, True,  res_defined_hash)
 
@@ -2678,7 +2787,6 @@ class TestHash(unittest.TestCase):
             #  handles non-bool values.
             test(case, non_bool(unsafe_hash), non_bool(eq), non_bool(frozen), False, res_no_defined_hash)
             test(case, non_bool(unsafe_hash), non_bool(eq), non_bool(frozen), True,  res_defined_hash)
-
 
     def test_eq_only(self):
         # If a class defines __eq__, __hash__ is automatically added
@@ -2689,8 +2797,10 @@ class TestHash(unittest.TestCase):
         @dataclass
         class C:
             i: int
+
             def __eq__(self, other):
                 return self.i == other.i
+
         self.assertEqual(C(1), C(1))
         self.assertNotEqual(C(1), C(4))
 
@@ -2699,8 +2809,10 @@ class TestHash(unittest.TestCase):
         @dataclass(unsafe_hash=True)
         class C:
             i: int
+
             def __eq__(self, other):
                 return self.i == other.i
+
         self.assertEqual(C(1), C(1.0))
         self.assertEqual(hash(C(1)), hash(C(1.0)))
 
@@ -2709,8 +2821,10 @@ class TestHash(unittest.TestCase):
         @dataclass(unsafe_hash=True, eq=True)
         class C:
             i: int
+
             def __eq__(self, other):
                 return self.i == 3 and self.i == other.i
+
         self.assertEqual(C(3), C(3))
         self.assertNotEqual(C(1), C(1))
         self.assertEqual(hash(C(1)), hash(C(1.0)))
@@ -2719,23 +2833,27 @@ class TestHash(unittest.TestCase):
         @dataclass(frozen=True)
         class C:
             pass
+
         self.assertEqual(hash(C()), hash(()))
 
         @dataclass(unsafe_hash=True)
         class C:
             pass
+
         self.assertEqual(hash(C()), hash(()))
 
     def test_1_field_hash(self):
         @dataclass(frozen=True)
         class C:
             x: int
+
         self.assertEqual(hash(C(4)), hash((4,)))
         self.assertEqual(hash(C(42)), hash((42,)))
 
         @dataclass(unsafe_hash=True)
         class C:
             x: int
+
         self.assertEqual(hash(C(4)), hash((4,)))
         self.assertEqual(hash(C(42)), hash((42,)))
 
@@ -2751,7 +2869,7 @@ class TestHash(unittest.TestCase):
 
         # If frozen or eq is None, then use the default value (do not
         #  specify any value in the decorator).
-        for frozen, eq,    base,   expected       in [
+        for frozen, eq,    base,   expected in [
             (None,  None,  object, 'unhashable'),
             (None,  None,  Base,   'unhashable'),
             (None,  False, object, 'object'),
@@ -2770,7 +2888,7 @@ class TestHash(unittest.TestCase):
             (True,  False, Base,   'base'),
             (True,  True,  object, 'tuple'),
             (True,  True,  Base,   'tuple'),
-            ]:
+        ]:
 
             with self.subTest(frozen=frozen, eq=eq, base=base, expected=expected):
                 # First, create the class.
@@ -2778,14 +2896,17 @@ class TestHash(unittest.TestCase):
                     @dataclass
                     class C(base):
                         i: int
+
                 elif frozen is None:
                     @dataclass(eq=eq)
                     class C(base):
                         i: int
+
                 elif eq is None:
                     @dataclass(frozen=frozen)
                     class C(base):
                         i: int
+
                 else:
                     @dataclass(frozen=frozen, eq=eq)
                     class C(base):
@@ -2879,8 +3000,7 @@ class TestFrozen(unittest.TestCase):
         self.assertEqual(d.j, 3)
         self.assertIsInstance(d, C)
 
-    # Test both ways: with an intermediate normal (non-dataclass)
-    #  class and without an intermediate class.
+    # Test both ways: with an intermediate normal (non-dataclass) class and without an intermediate class.
     def test_inherit_nonfrozen_from_frozen(self):
         for intermediate_class in [True, False]:
             with self.subTest(intermediate_class=intermediate_class):
@@ -2891,6 +3011,7 @@ class TestFrozen(unittest.TestCase):
                 if intermediate_class:
                     class I(C):
                         pass
+
                 else:
                     I = C
 
@@ -3006,14 +3127,17 @@ class TestFrozen(unittest.TestCase):
             @dataclass(frozen=True)
             class C:
                 x: int
+
                 def __delattr__(self):
                     pass
 
         @dataclass(frozen=False)
         class C:
             x: int
+
             def __setattr__(self, name, value):
                 self.__dict__['x'] = value * 2
+
         self.assertEqual(C(10).x, 20)
 
     def test_frozen_hash(self):
@@ -3095,7 +3219,6 @@ class TestSlots(unittest.TestCase):
                 x: int
 
     def test_generated_slots_value(self):
-
         class Root:
             __slots__ = {'x'}
 
@@ -3133,7 +3256,6 @@ class TestSlots(unittest.TestCase):
         self.assertNotIn('__slots__', AnotherDerived.__dict__)
 
     def test_cant_inherit_from_iterator_slots(self):
-
         class Root:
             __slots__ = iter(['a'])
 
@@ -3406,6 +3528,7 @@ class TestDescriptors(unittest.TestCase):
         class D:
             def __set_name__(self, owner, name):
                 self.name = name + 'x'
+
             def __get__(self, instance, owner):
                 if instance is not None:
                     return 1
@@ -3416,6 +3539,7 @@ class TestDescriptors(unittest.TestCase):
         @dataclass
         class C:
             c: int=D()
+
         self.assertEqual(C.c.name, 'cx')
 
         # Now test with a default value and init=False, which is the
@@ -3424,6 +3548,7 @@ class TestDescriptors(unittest.TestCase):
         @dataclass
         class C:
             c: int=field(default=D(), init=False)
+
         self.assertEqual(C.c.name, 'cx')
         self.assertEqual(C().c, 1)
 
@@ -3437,7 +3562,8 @@ class TestDescriptors(unittest.TestCase):
 
         @dataclass
         class C:
-            c: int=field(default=D(), init=False)
+            c: int = field(default=D(), init=False)
+
         self.assertEqual(C.c.name, 'cx')
 
     def test_lookup_on_instance(self):
@@ -3452,7 +3578,7 @@ class TestDescriptors(unittest.TestCase):
         # Make sure d.__set_name__ is not called.
         @dataclass
         class C:
-            i: int=field(default=d, init=False)
+            i: int = field(default=d, init=False)
 
         self.assertEqual(d.__set_name__.call_count, 0)
 
@@ -3465,7 +3591,7 @@ class TestDescriptors(unittest.TestCase):
         # Make sure D.__set_name__ is called.
         @dataclass
         class C:
-            i: int=field(default=D(), init=False)
+            i: int = field(default=D(), init=False)
 
         self.assertEqual(D.__set_name__.call_count, 1)
 
@@ -3578,6 +3704,7 @@ class TestDescriptors(unittest.TestCase):
 
         with self.assertRaisesRegex(TypeError, 'missing 1 required positional argument'):
             c = C()
+
 
 class TestStringAnnotations(unittest.TestCase):
     def test_classvar(self):
@@ -3706,7 +3833,6 @@ class TestStringAnnotations(unittest.TestCase):
                     c = m.CV()
                 self.assertEqual(c.cv0, 20)
 
-
                 # There's a difference in how the InitVars are
                 # interpreted when using string annotations or
                 # not. See the imported modules for details.
@@ -3732,11 +3858,11 @@ class TestStringAnnotations(unittest.TestCase):
         from . import dataclass_textanno
 
         self.assertEqual(
-            get_type_hints(dataclass_textanno.Bar),
+            typing.get_type_hints(dataclass_textanno.Bar),
             {'foo': dataclass_textanno.Foo},
         )
         self.assertEqual(
-            get_type_hints(dataclass_textanno.Bar.__init__),
+            typing.get_type_hints(dataclass_textanno.Bar.__init__),
             {'foo': dataclass_textanno.Foo, 'return': type(None)},
         )
 
@@ -3745,6 +3871,7 @@ ByMakeDataClass = make_dataclass('ByMakeDataClass', [('x', int)])
 ManualModuleMakeDataClass = make_dataclass('ManualModuleMakeDataClass', [('x', int)], module=__name__)
 WrongNameMakeDataclass = make_dataclass('Wrong', [('x', int)])
 WrongModuleMakeDataclass = make_dataclass('WrongModuleMakeDataclass', [('x', int)], module='custom')
+
 
 class TestMakeDataclass(unittest.TestCase):
     def test_simple(self):
@@ -3760,10 +3887,10 @@ class TestMakeDataclass(unittest.TestCase):
         self.assertEqual((c.x, c.y), (10, 5))
         self.assertEqual(c.add_one(), 11)
 
-
     def test_no_mutate_namespace(self):
         # Make sure a provided namespace isn't mutated.
         ns = {}
+
         C = make_dataclass(
             'C',
             [
@@ -3772,13 +3899,16 @@ class TestMakeDataclass(unittest.TestCase):
             ],
             namespace=ns,
         )
+
         self.assertEqual(ns, {})
 
     def test_base(self):
         class Base1:
             pass
+
         class Base2:
             pass
+
         C = make_dataclass(
             'C',
             [
@@ -3786,6 +3916,7 @@ class TestMakeDataclass(unittest.TestCase):
             ],
             bases=(Base1, Base2),
         )
+
         c = C(2)
         self.assertIsInstance(c, C)
         self.assertIsInstance(c, Base1)
@@ -3795,8 +3926,10 @@ class TestMakeDataclass(unittest.TestCase):
         @dataclass
         class Base1:
             x: int
+
         class Base2:
             pass
+
         C = make_dataclass(
             'C',
             [
@@ -3804,6 +3937,7 @@ class TestMakeDataclass(unittest.TestCase):
             ],
             bases=(Base1, Base2),
         )
+
         with self.assertRaisesRegex(TypeError, 'required positional'):
             c = C(2)
         c = C(1, 2)
@@ -3825,6 +3959,7 @@ class TestMakeDataclass(unittest.TestCase):
             ],
             namespace={'__post_init__': post_init},
         )
+
         c = C(2, 3)
         self.assertEqual(vars(c), {'x': 6})
         self.assertEqual(len(fields(c)), 1)
@@ -3838,6 +3973,7 @@ class TestMakeDataclass(unittest.TestCase):
                 ('z', ClassVar[int], field(default=20)),
             ],
         )
+
         c = C(1)
         self.assertEqual(vars(c), {'x': 1})
         self.assertEqual(len(fields(c)), 1)
@@ -3854,6 +3990,7 @@ class TestMakeDataclass(unittest.TestCase):
             ],
             init=False
         )
+
         # Make sure we have a repr, but no init.
         self.assertNotIn('__init__', vars(C))
         self.assertIn('__repr__', vars(C))
@@ -3864,6 +4001,7 @@ class TestMakeDataclass(unittest.TestCase):
 
     def test_no_types(self):
         C = make_dataclass('Point', ['x', 'y', 'z'])
+
         c = C(1, 2, 3)
         self.assertEqual(vars(c), {'x': 1, 'y': 2, 'z': 3})
         self.assertEqual(
@@ -3974,6 +4112,7 @@ class TestMakeDataclass(unittest.TestCase):
                 C = make_dataclass(classname, ['a', 'b'])
                 self.assertEqual(C.__name__, classname)
 
+
 class TestReplace(unittest.TestCase):
     def test(self):
         @dataclass(frozen=True)
@@ -3998,7 +4137,6 @@ class TestReplace(unittest.TestCase):
         c1 = replace(c, x=3)
         self.assertEqual((c.x, c.y, c.z, c.t), (1, 2, 10, 100))
         self.assertEqual((c1.x, c1.y, c1.z, c1.t), (3, 2, 10, 100))
-
 
         with self.assertRaisesRegex(ValueError, 'init=False'):
             replace(c, x=3, z=20, t=50)
@@ -4192,19 +4330,20 @@ class TestReplace(unittest.TestCase):
             ".<locals>.C(f=..., g=1)",
         )
 
-    ## def test_initvar(self):
-    ##     @dataclass
-    ##     class C:
-    ##         x: int
-    ##         y: InitVar[int]
+    # def test_initvar(self):
+    #     @dataclass
+    #     class C:
+    #         x: int
+    #         y: InitVar[int]
+    #
+    #     c = C(1, 10)
+    #     d = C(2, 20)
+    #
+    #     # In our case, replacing an InitVar is a no-op
+    #     self.assertEqual(c, replace(c, y=5))
+    #
+    #     replace(c, x=5)
 
-    ##     c = C(1, 10)
-    ##     d = C(2, 20)
-
-    ##     # In our case, replacing an InitVar is a no-op
-    ##     self.assertEqual(c, replace(c, y=5))
-
-    ##     replace(c, x=5)
 
 class TestAbstract(unittest.TestCase):
     def test_abc_implementation(self):
@@ -4224,7 +4363,7 @@ class TestAbstract(unittest.TestCase):
             day: 'int'
 
         self.assertFalse(inspect.isabstract(Date))
-        self.assertGreater(Date(2020,12,25), Date(2020,8,31))
+        self.assertGreater(Date(2020, 12, 25), Date(2020, 8, 31))
 
     def test_maintain_abc(self):
         class A(abc.ABC):
@@ -4251,14 +4390,17 @@ class TestMatchArgs(unittest.TestCase):
         @dataclass
         class C:
             a: int
+
         self.assertEqual(C(42).__match_args__, ('a',))
 
     def test_explicit_match_args(self):
         ma = ()
+
         @dataclass
         class C:
             a: int
             __match_args__ = ma
+
         self.assertIs(C(42).__match_args__, ma)
 
     def test_bpo_43764(self):
@@ -4267,23 +4409,27 @@ class TestMatchArgs(unittest.TestCase):
             a: int
             b: int
             c: int
+
         self.assertEqual(X.__match_args__, ("a", "b", "c"))
 
     def test_match_args_argument(self):
         @dataclass(match_args=False)
         class X:
             a: int
+
         self.assertNotIn('__match_args__', X.__dict__)
 
         @dataclass(match_args=False)
         class Y:
             a: int
             __match_args__ = ('b',)
+
         self.assertEqual(Y.__match_args__, ('b',))
 
         @dataclass(match_args=False)
         class Z(Y):
             z: int
+
         self.assertEqual(Z.__match_args__, ('b',))
 
         # Ensure parent dataclass __match_args__ is seen, if child class
@@ -4292,9 +4438,11 @@ class TestMatchArgs(unittest.TestCase):
         class A:
             a: int
             z: int
+
         @dataclass(match_args=False)
         class B(A):
             b: int
+
         self.assertEqual(B.__match_args__, ('a', 'z'))
 
     def test_make_dataclasses(self):
@@ -4314,6 +4462,7 @@ class TestMatchArgs(unittest.TestCase):
 class TestKeywordArgs(unittest.TestCase):
     def test_no_classvar_kwarg(self):
         msg = 'field a is a ClassVar but specifies kw_only'
+
         with self.assertRaisesRegex(TypeError, msg):
             @dataclass
             class A:
@@ -4335,16 +4484,19 @@ class TestKeywordArgs(unittest.TestCase):
         @dataclass(kw_only=True)
         class A:
             a: int
+
         self.assertTrue(fields(A)[0].kw_only)
 
         @dataclass(kw_only=True)
         class A:
             a: int = field(kw_only=True)
+
         self.assertTrue(fields(A)[0].kw_only)
 
         @dataclass(kw_only=True)
         class A:
             a: int = field(kw_only=False)
+
         self.assertFalse(fields(A)[0].kw_only)
 
         #######################
@@ -4352,16 +4504,19 @@ class TestKeywordArgs(unittest.TestCase):
         @dataclass(kw_only=False)
         class A:
             a: int
+
         self.assertFalse(fields(A)[0].kw_only)
 
         @dataclass(kw_only=False)
         class A:
             a: int = field(kw_only=True)
+
         self.assertTrue(fields(A)[0].kw_only)
 
         @dataclass(kw_only=False)
         class A:
             a: int = field(kw_only=False)
+
         self.assertFalse(fields(A)[0].kw_only)
 
         #######################
@@ -4369,16 +4524,19 @@ class TestKeywordArgs(unittest.TestCase):
         @dataclass
         class A:
             a: int
+
         self.assertFalse(fields(A)[0].kw_only)
 
         @dataclass
         class A:
             a: int = field(kw_only=True)
+
         self.assertTrue(fields(A)[0].kw_only)
 
         @dataclass
         class A:
             a: int = field(kw_only=False)
+
         self.assertFalse(fields(A)[0].kw_only)
 
     def test_match_args(self):
@@ -4386,12 +4544,14 @@ class TestKeywordArgs(unittest.TestCase):
         @dataclass(kw_only=True)
         class C:
             a: int
+
         self.assertEqual(C(a=42).__match_args__, ())
 
         @dataclass
         class C:
             a: int
             b: int = field(kw_only=True)
+
         self.assertEqual(C(42, b=10).__match_args__, ('a',))
 
     def test_KW_ONLY(self):
@@ -4401,11 +4561,11 @@ class TestKeywordArgs(unittest.TestCase):
             _: KW_ONLY
             b: int
             c: int
+
         A(3, c=5, b=4)
         msg = "takes 2 positional arguments but 4 were given"
         with self.assertRaisesRegex(TypeError, msg):
             A(3, 4, 5)
-
 
         @dataclass(kw_only=True)
         class B:
@@ -4413,6 +4573,7 @@ class TestKeywordArgs(unittest.TestCase):
             _: KW_ONLY
             b: int
             c: int
+
         B(a=3, b=4, c=5)
         msg = "takes 1 positional argument but 4 were given"
         with self.assertRaisesRegex(TypeError, msg):
@@ -4425,6 +4586,7 @@ class TestKeywordArgs(unittest.TestCase):
             _: KW_ONLY
             b: int
             c: int = field(kw_only=False)
+
         c = C(1, 2, b=3)
         self.assertEqual(c.a, 1)
         self.assertEqual(c.b, 3)
@@ -4449,6 +4611,7 @@ class TestKeywordArgs(unittest.TestCase):
             _: 'dataclasses.KW_ONLY'
             b: int
             c: int
+
         A(3, c=5, b=4)
         msg = "takes 2 positional arguments but 4 were given"
         with self.assertRaisesRegex(TypeError, msg):
@@ -4499,6 +4662,7 @@ class TestKeywordArgs(unittest.TestCase):
             _: KW_ONLY
             b: int
             c: int
+
         @dataclass
         class B(A):
             _: KW_ONLY
@@ -4512,12 +4676,12 @@ class TestKeywordArgs(unittest.TestCase):
                 _: KW_ONLY
                 b: int
                 c: int
+
             @dataclass
             class B(A):
                 X: KW_ONLY
                 d: int
                 Y: KW_ONLY
-
 
     def test_post_init(self):
         @dataclass
@@ -4527,8 +4691,10 @@ class TestKeywordArgs(unittest.TestCase):
             b: InitVar[int]
             c: int
             d: InitVar[int]
+
             def __post_init__(self, b, d):
                 raise CustomError(f'{b=} {d=}')
+
         with self.assertRaisesRegex(CustomError, 'b=3 d=4'):
             A(1, c=2, b=3, d=4)
 
@@ -4539,9 +4705,11 @@ class TestKeywordArgs(unittest.TestCase):
             b: InitVar[int]
             c: int
             d: InitVar[int]
+
             def __post_init__(self, b, d):
                 self.a = b
                 self.c = d
+
         b = B(1, c=2, b=3, d=4)
         self.assertEqual(asdict(b), {'a': 3, 'c': 4})
 
