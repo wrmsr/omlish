@@ -1,5 +1,6 @@
 import dataclasses as dc
 import enum
+import sys
 import types
 import typing as ta
 
@@ -79,6 +80,16 @@ class FieldType(enum.Enum):
     INIT = dc._FIELD_INITVAR  # type: ignore  # noqa
 
 
+_SELF_MODULE = None
+
+
+def _self_module():
+    global _SELF_MODULE
+    if _SELF_MODULE is None:
+        _SELF_MODULE = sys.modules[__package__.rpartition('.')[0]]
+    return _SELF_MODULE
+
+
 def is_classvar(cls: type, ty: ta.Any) -> bool:
     return (
             dc._is_classvar(ty, ta)  # noqa
@@ -89,12 +100,24 @@ def is_classvar(cls: type, ty: ta.Any) -> bool:
 def is_initvar(cls: type, ty: ta.Any) -> bool:
     return (
             dc._is_initvar(ty, dc)  # noqa
-            or (isinstance(ty, str) and dc._is_type(ty, cls, dc, dc.InitVar, dc._is_initvar))  # noqa
+            or (
+                    isinstance(ty, str)
+                    and any(
+                            dc._is_type(ty, cls, mod, dc.InitVar, dc._is_initvar)  # noqa
+                            for mod in (dc, _self_module())
+                    )
+            )
     )
 
 
 def is_kw_only(cls: type, ty: ta.Any) -> bool:
     return (
             dc._is_kw_only(ty, dc)  # noqa
-            or (isinstance(ty, str) and dc._is_type(ty, cls, dc, dc.KW_ONLY, dc._is_kw_only))  # noqa
+            or (
+                    isinstance(ty, str)
+                    and any(
+                            dc._is_type(ty, cls, mod, dc.KW_ONLY, dc._is_kw_only)  # noqa
+                            for mod in (dc, _self_module())
+                    )
+            )
     )
