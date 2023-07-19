@@ -59,31 +59,6 @@ _FIELD_INITVAR = dc._FIELD_INITVAR
 _MODULE_IDENTIFIER_RE = re.compile(r'^(?:\s*(\w+)\s*\.)?\s*(\w+)')
 
 
-def field(
-        *,
-        default=MISSING,
-        default_factory=MISSING,
-        init=True,
-        repr=True,
-        hash=None,
-        compare=True,
-        metadata=None,
-        kw_only=MISSING,
-):
-    if default is not MISSING and default_factory is not MISSING:
-        raise ValueError('cannot specify both default and default_factory')
-    return dc.Field(
-        default,
-        default_factory,
-        init,
-        repr,
-        hash,
-        compare,
-        metadata,
-        kw_only,
-    )
-
-
 def _fields_in_init_order(fields):
     return (
         tuple(f for f in fields if f.init and not f.kw_only),
@@ -91,31 +66,6 @@ def _fields_in_init_order(fields):
     )
 
 
-def _create_fn(
-        name,
-        args,
-        body,
-        *,
-        globals=None,
-        locals=None,
-        return_type=MISSING,
-):
-    if locals is None:
-        locals = {}
-    return_annotation = ''
-    if return_type is not MISSING:
-        locals['__dataclass_return_type__'] = return_type
-        return_annotation = '->__dataclass_return_type__'
-    args = ','.join(args)
-    body = '\n'.join(f'  {b}' for b in body)
-
-    txt = f' def {name}({args}){return_annotation}:\n{body}'
-
-    local_vars = ', '.join(locals.keys())
-    txt = f"def __create_fn__({local_vars}):\n{txt}\n return {name}"
-    ns = {}
-    exec(txt, globals, ns)
-    return ns['__create_fn__'](**locals)
 
 
 def _field_assign(frozen, name, value, self_name):
@@ -277,40 +227,6 @@ def _cmp_fn(name, op, self_tuple, other_tuple, globals):
         ],
         globals=globals,
     )
-
-
-def _is_classvar(a_type, typing):
-    return (
-            a_type is typing.ClassVar or
-            (type(a_type) is typing._GenericAlias and a_type.__origin__ is typing.ClassVar)
-    )
-
-
-def _is_initvar(a_type, dataclasses):
-    return (
-            a_type is dataclasses.InitVar
-            or type(a_type) is dataclasses.InitVar
-    )
-
-
-def _is_kw_only(a_type, dataclasses):
-    return a_type is dataclasses.KW_ONLY
-
-
-def _is_type(annotation, cls, a_module, a_type, is_type_predicate):
-    match = _MODULE_IDENTIFIER_RE.match(annotation)
-    if match:
-        ns = None
-        module_name = match.group(1)
-        if not module_name:
-            ns = sys.modules.get(cls.__module__).__dict__
-        else:
-            module = sys.modules.get(cls.__module__)
-            if module and module.__dict__.get(module_name) is a_module:
-                ns = sys.modules.get(a_type.__module__).__dict__
-        if ns and is_type_predicate(ns.get(match.group(2)), a_module):
-            return True
-    return False
 
 
 def _get_field(cls, a_name, a_type, default_kw_only):

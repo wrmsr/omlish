@@ -81,6 +81,6 @@ class _CachedNullaryDescriptor(_CachedNullary[T]):
 
 def cached_nullary(fn):
     if isinstance(fn, staticmethod):
-        return _CachedNullary(fn, value_fn=unwrap_func(fn))  # type: ignore
+        return _CachedNullary(fn, value_fn=unwrap_func(fn))
     scope = classmethod if isinstance(fn, classmethod) else None
     return _CachedNullaryDescriptor(fn, scope)

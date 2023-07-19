@@ -8,7 +8,7 @@ from .internals import FieldType
 
 @dc.dataclass()
 class ExField:
-    name: str
+    name: ta.Optional[str] = None
     type: ta.Any = None
     default: lang.Maybe[ta.Any] = lang.empty()
     default_factory: lang.Maybe[ta.Any] = lang.empty()

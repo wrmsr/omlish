@@ -43,7 +43,7 @@ class Method:
         # work properly in singledispatchmethod.__get__ if it is applied to an unbound classmethod/staticmethod
         unwrapped_func: ta.Any
         if isinstance(func, (staticmethod, classmethod)):
-            unwrapped_func = func.__func__  # type: ignore
+            unwrapped_func = func.__func__
         else:
             unwrapped_func = func
         self._unwrapped_func = unwrapped_func
