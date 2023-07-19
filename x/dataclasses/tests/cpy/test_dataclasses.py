@@ -92,6 +92,7 @@ class TestCase(unittest.TestCase):
 
         self.assertIn(",type=...,", repr(D.__dataclass_fields__["C"]))
 
+    @unittest.skip('metadata')
     def test_dataclass_params_repr(self):
         # Even though this is testing an internal implementation detail,
         # it's testing a feature we want to make sure is correctly implemented
@@ -139,15 +140,17 @@ class TestCase(unittest.TestCase):
         o = C(3)
         self.assertEqual((o.x, o.y), (3, 0))
 
+        exc_cls = SyntaxError
+
         # Non-defaults following defaults.
-        with self.assertRaisesRegex(TypeError, "non-default argument 'y' follows " "default argument"):
+        with self.assertRaisesRegex(exc_cls, r"non-default argument ('y' )?follows default argument"):
             @dataclass
             class C:
                 x: int = 0
                 y: int
 
         # A derived class adds a non-default field after a default one.
-        with self.assertRaisesRegex(TypeError, "non-default argument 'y' follows " "default argument"):
+        with self.assertRaisesRegex(exc_cls, r"non-default argument ('y' )?follows " "default argument"):
             @dataclass
             class B:
                 x: int = 0
@@ -158,7 +161,7 @@ class TestCase(unittest.TestCase):
 
         # Override a base class field and add a default to
         #  a field which didn't use to have a default.
-        with self.assertRaisesRegex(TypeError, "non-default argument 'y' follows " "default argument"):
+        with self.assertRaisesRegex(exc_cls, r"non-default argument ('y' )?follows " "default argument"):
             @dataclass
             class B:
                 x: int

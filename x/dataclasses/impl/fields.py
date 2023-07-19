@@ -48,7 +48,7 @@ def field(
     if metadata is not None:
         md = collections.ChainMap(md, metadata)
 
-    return dc.Field(
+    bf = dc.Field(
         default,
         default_factory,  # noqa
         init,
@@ -58,6 +58,10 @@ def field(
         md,
         kw_only,  # noqa
     )
+
+    ex.base = bf
+
+    return bf
 
 
 def preprocess_field(

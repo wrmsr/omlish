@@ -11,6 +11,7 @@ import threading
 import types
 import typing as ta
 
+from omlish import check
 from omlish import lang
 
 from .fields import field_init
@@ -283,11 +284,12 @@ def process_class(cls: type, params: ExParams) -> type:
             slots=params.slots,
             weakref_slot=params.weakref_slot,
         )
-
+    bp = Params(**bpkw)
+    params.base = bp
     setattr(
         cls,
         PARAMS_ATTR,
-        Params(**bpkw),
+        bp,
     )
 
     # field list
@@ -307,7 +309,7 @@ def process_class(cls: type, params: ExParams) -> type:
 
     cls_annotations = inspect.get_annotations(cls)
 
-    cls_bfields: ta.List[dc.Field] = []
+    cls_fields: ta.List[dc.Field] = []
 
     kw_only = params.kw_only
     kw_only_seen = False
@@ -318,9 +320,9 @@ def process_class(cls: type, params: ExParams) -> type:
             kw_only_seen = True
             kw_only = True
         else:
-            cls_bfields.append(preprocess_field(cls, name, type, kw_only))
+            cls_fields.append(preprocess_field(cls, name, type, kw_only))
 
-    for bf in cls_bfields:
+    for bf in cls_fields:
         fields[bf.name] = f = ex_field(bf)
         if isinstance(getattr(cls, f.name, None), dc.Field):
             if not f.default.present:
@@ -343,7 +345,7 @@ def process_class(cls: type, params: ExParams) -> type:
 
     field_list = [f for f in fields.values() if f.field_type is FieldType.INSTANCE]
 
-    setattr(cls, FIELDS_ATTR, {bf.name: bf for bf in cls_bfields})
+    setattr(cls, FIELDS_ATTR, {f.name: check.not_none(f.base) for f in fields.values()})
 
     # init
 

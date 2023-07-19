@@ -30,6 +30,8 @@ class ExField:
 
     field_type: FieldType = FieldType.INSTANCE
 
+    base: ta.Optional[dc.Field] = None
+
 
 def ex_field(obj: ta.Any) -> ExField:
     if isinstance(obj, ExField):
@@ -63,6 +65,8 @@ class ExParams:
     kw_only: bool = False
     slots: bool = False
     weakref_slot: bool = False
+
+    base: ta.Optional[Params] = None
 
 
 def params(obj: ta.Any) -> Params:
