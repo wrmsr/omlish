@@ -1,29 +1,32 @@
-"""
-Field:
-    'name',
-    'type',
-    'default',
-    'default_factory',
-    'repr',
-    'hash',
-    'init',
-    'compare',
-    'metadata',
-    'kw_only',
-    '_field_type',
+import dataclasses as dc
+import typing as ta
 
 
-Class:
-    'init',
-    'repr',
-    'eq',
-    'order',
-    'unsafe_hash',
-    'frozen',
-    'match_args',
-    'kw_only',
-    'slots',
-    'weakref_slot',
+@dc.dataclass()
+class ExField:
+    name: str
+    type: ta.Any
+    default: ta.Any
+    default_factory: ta.Any
+    repr: bool
+    hash: ta.Optional[bool]
+    init: bool
+    compare: bool
+    metadata: ta.Optional[ta.Mapping[ta.Any, ta.Any]]
+    kw_only: bool
+
+    # _field_type
 
 
-"""
+@dc.dataclass()
+class ExParams:
+    init: bool
+    repr: bool
+    eq: bool
+    order: bool
+    unsafe_hash: bool
+    frozen: bool
+    match_args: bool
+    kw_only: bool
+    slots: bool
+    weakref_slot: bool

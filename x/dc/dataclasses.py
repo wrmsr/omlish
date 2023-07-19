@@ -9,242 +9,15 @@ import sys
 import threading
 import types
 
-from . import polyfill as pf
-
-
-__all__ = [
-    'dataclass',
-    'field',
-    'Field',
-    'FrozenInstanceError',
-    'InitVar',
-    'KW_ONLY',
-    'MISSING',
-
-    'fields',
-    'asdict',
-    'astuple',
-    'make_dataclass',
-    'replace',
-    'is_dataclass',
-]
-
-
-class FrozenInstanceError(AttributeError):
-    pass
-
-
-_HAS_DEFAULT_FACTORY = getattr(dc, '_HAS_DEFAULT_FACTORY')
+from .internals import FIELDS_ATTR
+from .internals import PARAMS_ATTR
+from .internals import POST_INIT_NAME
 
 
 MISSING = dc.MISSING
 
 
-if hasattr(dc, 'KW_ONLY'):
-    KW_ONLY = dc.KW_ONLY
-else:
-    class _KW_ONLY_TYPE:
-        pass
-
-    KW_ONLY = _KW_ONLY_TYPE()
-
-_EMPTY_METADATA = types.MappingProxyType({})
-
-
-class _FIELD_BASE:
-    def __init__(self, name):
-        self.name = name
-
-    def __repr__(self):
-        return self.name
-
-
-_FIELD = _FIELD_BASE('_FIELD')
-_FIELD_CLASSVAR = _FIELD_BASE('_FIELD_CLASSVAR')
-_FIELD_INITVAR = _FIELD_BASE('_FIELD_INITVAR')
-
-_FIELDS = '__dataclass_fields__'
-
-_PARAMS = '__dataclass_params__'
-
-_POST_INIT_NAME = '__post_init__'
-
 _MODULE_IDENTIFIER_RE = re.compile(r'^(?:\s*(\w+)\s*\.)?\s*(\w+)')
-
-_ATOMIC_TYPES = frozenset({
-    pf.NoneType,
-    bool,
-    int,
-    float,
-    str,
-
-    complex,
-    bytes,
-
-    pf.EllipsisType,
-    pf.NotImplementedType,
-    types.CodeType,
-    types.BuiltinFunctionType,
-    types.FunctionType,
-    type,
-    range,
-    property,
-})
-
-
-def _recursive_repr(user_function):
-    repr_running = set()
-
-    @functools.wraps(user_function)
-    def wrapper(self):
-        key = id(self), threading.get_ident()
-        if key in repr_running:
-            return '...'
-        repr_running.add(key)
-        try:
-            result = user_function(self)
-        finally:
-            repr_running.discard(key)
-        return result
-
-    return wrapper
-
-
-class InitVar:
-    __slots__ = ('type',)
-
-    def __init__(self, type):
-        self.type = type
-
-    def __repr__(self):
-        if isinstance(self.type, type):
-            type_name = self.type.__name__
-        else:
-
-            type_name = repr(self.type)
-        return f'dataclasses.InitVar[{type_name}]'
-
-    def __class_getitem__(cls, type):
-        return InitVar(type)
-
-
-class Field:
-    __slots__ = (
-        'name',
-        'type',
-        'default',
-        'default_factory',
-        'repr',
-        'hash',
-        'init',
-        'compare',
-        'metadata',
-        'kw_only',
-        '_field_type',
-    )
-
-    def __init__(
-            self,
-            default,
-            default_factory,
-            init,
-            repr,
-            hash,
-            compare,
-            metadata,
-            kw_only,
-    ):
-        self.name = None
-        self.type = None
-        self.default = default
-        self.default_factory = default_factory
-        self.init = init
-        self.repr = repr
-        self.hash = hash
-        self.compare = compare
-        self.metadata = (_EMPTY_METADATA if metadata is None else types.MappingProxyType(metadata))
-        self.kw_only = kw_only
-        self._field_type = None
-
-    @_recursive_repr
-    def __repr__(self):
-        return (
-            'Field('
-            f'name={self.name!r},'
-            f'type={self.type!r},'
-            f'default={self.default!r},'
-            f'default_factory={self.default_factory!r},'
-            f'init={self.init!r},'
-            f'repr={self.repr!r},'
-            f'hash={self.hash!r},'
-            f'compare={self.compare!r},'
-            f'metadata={self.metadata!r},'
-            f'kw_only={self.kw_only!r},'
-            f'_field_type={self._field_type}'
-            ')'
-        )
-
-    def __set_name__(self, owner, name):
-        func = getattr(type(self.default), '__set_name__', None)
-        if func:
-            func(self.default, owner, name)
-
-    __class_getitem__ = classmethod(types.GenericAlias)
-
-
-class _DataclassParams:
-    __slots__ = (
-        'init',
-        'repr',
-        'eq',
-        'order',
-        'unsafe_hash',
-        'frozen',
-        'match_args',
-        'kw_only',
-        'slots',
-        'weakref_slot',
-    )
-
-    def __init__(
-            self,
-            init,
-            repr,
-            eq,
-            order,
-            unsafe_hash,
-            frozen,
-            match_args,
-            kw_only,
-            slots,
-            weakref_slot,
-    ):
-        self.init = init
-        self.repr = repr
-        self.eq = eq
-        self.order = order
-        self.unsafe_hash = unsafe_hash
-        self.frozen = frozen
-        self.match_args = match_args
-        self.kw_only = kw_only
-        self.slots = slots
-        self.weakref_slot = weakref_slot
-
-    def __repr__(self):
-        return (
-            '_DataclassParams('
-            f'init={self.init!r},'
-            f'repr={self.repr!r},'
-            f'eq={self.eq!r},'
-            f'order={self.order!r},'
-            f'unsafe_hash={self.unsafe_hash!r},'
-            f'frozen={self.frozen!r},'
-            f'match_args={self.match_args!r},'
-            f'kw_only={self.kw_only!r},'
-            f'slots={self.slots!r},'
-            f'weakref_slot={self.weakref_slot!r}'
-            ')'
-        )
 
 
 def field(
@@ -260,7 +33,7 @@ def field(
 ):
     if default is not MISSING and default_factory is not MISSING:
         raise ValueError('cannot specify both default and default_factory')
-    return Field(
+    return dc.Field(
         default,
         default_factory,
         init,
@@ -393,7 +166,7 @@ def _init_fn(
 
     if has_post_init:
         params_str = ','.join(f.name for f in fields if f._field_type is _FIELD_INITVAR)
-        body_lines.append(f'{self_name}.{_POST_INIT_NAME}({params_str})')
+        body_lines.append(f'{self_name}.{POST_INIT_NAME}({params_str})')
 
     if not body_lines:
         body_lines = ['pass']
@@ -512,7 +285,7 @@ def _is_type(annotation, cls, a_module, a_type, is_type_predicate):
 
 def _get_field(cls, a_name, a_type, default_kw_only):
     default = getattr(cls, a_name, MISSING)
-    if isinstance(default, Field):
+    if isinstance(default, dc.Field):
         f = default
     else:
         if isinstance(default, types.MemberDescriptorType):
@@ -530,7 +303,7 @@ def _get_field(cls, a_name, a_type, default_kw_only):
                 _is_classvar(a_type, typing)
                 or (isinstance(f.type, str) and _is_type(f.type, cls, typing, typing.ClassVar, _is_classvar))
         ):
-            f._field_type = _FIELD_CLASSVAR
+            f._field_type = dc._FIELD_CLASSVAR
 
     if f._field_type is _FIELD:
         dataclasses = sys.modules[__name__]
@@ -572,39 +345,6 @@ def _set_new_attribute(cls, name, value):
     return False
 
 
-def _hash_set_none(cls, fields, globals):
-    return None
-
-
-def _hash_add(cls, fields, globals):
-    flds = [f for f in fields if (f.compare if f.hash is None else f.hash)]
-    return _set_qualname(cls, _hash_fn(flds, globals))
-
-
-def _hash_exception(cls, fields, globals):
-    raise TypeError(f'Cannot overwrite attribute __hash__  in class {cls.__name__}')
-
-
-_hash_action = {
-    (False, False, False, False): None,
-    (False, False, False, True): None,
-    (False, False, True, False): None,
-    (False, False, True, True): None,
-    (False, True, False, False): _hash_set_none,
-    (False, True, False, True): None,
-    (False, True, True, False): _hash_add,
-    (False, True, True, True): None,
-    (True, False, False, False): _hash_add,
-    (True, False, False, True): _hash_exception,
-    (True, False, True, False): _hash_add,
-    (True, False, True, True): _hash_exception,
-    (True, True, False, False): _hash_add,
-    (True, True, False, True): _hash_exception,
-    (True, True, True, False): _hash_add,
-    (True, True, True, True): _hash_exception,
-}
-
-
 def _process_class(cls, params: _DataclassParams):
     fields = {}
 
@@ -615,19 +355,19 @@ def _process_class(cls, params: _DataclassParams):
 
     setattr(
         cls,
-        _PARAMS,
+        PARAMS_ATTR,
         params,
     )
 
     any_frozen_base = False
     has_dataclass_bases = False
     for b in cls.__mro__[-1:0:-1]:
-        base_fields = getattr(b, _FIELDS, None)
+        base_fields = getattr(b, FIELDS_ATTR, None)
         if base_fields is not None:
             has_dataclass_bases = True
             for f in base_fields.values():
                 fields[f.name] = f
-            if getattr(b, _PARAMS).frozen:
+            if getattr(b, PARAMS_ATTR).frozen:
                 any_frozen_base = True
 
     cls_annotations = pf.get_annotations(cls)
@@ -651,14 +391,14 @@ def _process_class(cls, params: _DataclassParams):
 
     for f in cls_fields:
         fields[f.name] = f
-        if isinstance(getattr(cls, f.name, None), Field):
+        if isinstance(getattr(cls, f.name, None), dc.Field):
             if f.default is MISSING:
                 delattr(cls, f.name)
             else:
                 setattr(cls, f.name, f.default)
 
     for name, value in cls.__dict__.items():
-        if isinstance(value, Field) and not name in cls_annotations:
+        if isinstance(value, dc.Field) and not name in cls_annotations:
             raise TypeError(f'{name!r} is a field but has no type annotation')
 
     if has_dataclass_bases:
@@ -668,7 +408,7 @@ def _process_class(cls, params: _DataclassParams):
         if not any_frozen_base and params.frozen:
             raise TypeError('cannot inherit frozen dataclass from a non-frozen one')
 
-    setattr(cls, _FIELDS, fields)
+    setattr(cls, FIELDS_ATTR, fields)
 
     class_hash = cls.__dict__.get('__hash__', MISSING)
     has_explicit_hash = not (class_hash is MISSING or (class_hash is None and '__eq__' in cls.__dict__))
@@ -680,7 +420,7 @@ def _process_class(cls, params: _DataclassParams):
     std_init_fields, kw_only_init_fields = _fields_in_init_order(all_init_fields)
 
     if params.init:
-        has_post_init = hasattr(cls, _POST_INIT_NAME)
+        has_post_init = hasattr(cls, POST_INIT_NAME)
 
         _set_new_attribute(
             cls,
@@ -862,19 +602,19 @@ def dataclass(
 
 def fields(class_or_instance):
     try:
-        fields = getattr(class_or_instance, _FIELDS)
+        fields = getattr(class_or_instance, FIELDS_ATTR)
     except AttributeError:
         raise TypeError('must be called with a dataclass type or instance') from None
     return tuple(f for f in fields.values() if f._field_type is _FIELD)
 
 
 def _is_dataclass_instance(obj):
-    return hasattr(type(obj), _FIELDS)
+    return hasattr(type(obj), FIELDS_ATTR)
 
 
 def is_dataclass(obj):
     cls = obj if isinstance(obj, type) else type(obj)
-    return hasattr(cls, _FIELDS)
+    return hasattr(cls, FIELDS_ATTR)
 
 
 def asdict(obj, *, dict_factory=dict):
@@ -1027,7 +767,7 @@ def replace(obj, /, **changes):
     if not _is_dataclass_instance(obj):
         raise TypeError("replace() should be called on dataclass instances")
 
-    for f in getattr(obj, _FIELDS).values():
+    for f in getattr(obj, FIELDS_ATTR).values():
         if f._field_type is _FIELD_CLASSVAR:
             continue
 
