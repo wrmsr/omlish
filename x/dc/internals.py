@@ -61,5 +61,5 @@ else:
 
 recursive_repr = dc._recursive_repr  # type: ignore  # noqa
 tuple_str = dc._tuple_str  # type: ignore  # noqa
-hash_action = dc._hash_action  # type: ignore  # noqa
+HASH_ACTIONS = dc._hash_action  # type: ignore  # noqa
 is_dataclass_instance = dc._is_dataclass_instance  # type: ignore  # noqa

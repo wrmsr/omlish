@@ -1,3 +1,4 @@
+import abc
 import copy
 import dataclasses as dc
 import functools
@@ -12,9 +13,46 @@ import types
 from .internals import FIELDS_ATTR
 from .internals import PARAMS_ATTR
 from .internals import POST_INIT_NAME
+from .internals import HASH_ACTIONS
+from .internals import recursive_repr
+from .internals import tuple_str
 
+from .params import ExField
+from .params import ExParams
+
+
+##
+
+
+FrozenInstanceError = dc.FrozenInstanceError
 
 MISSING = dc.MISSING
+KW_ONLY = dc.KW_ONLY
+
+InitVar = dc.InitVar
+Field = dc.Field
+
+# field = dc.field
+
+# dataclass = dc.dataclass
+# make_dataclass = dc.make_dataclass
+
+fields = dc.fields
+
+is_dataclass = dc.is_dataclass
+
+asdict = dc.asdict
+astuple = dc.astuple
+
+replace = dc.replace
+
+
+##
+
+_HAS_DEFAULT_FACTORY = dc._HAS_DEFAULT_FACTORY
+_FIELD = dc._FIELD
+_FIELD_CLASSVAR = dc._FIELD_CLASSVAR
+_FIELD_INITVAR = dc._FIELD_INITVAR
 
 
 _MODULE_IDENTIFIER_RE = re.compile(r'^(?:\s*(\w+)\s*\.)?\s*(\w+)')
@@ -50,12 +88,6 @@ def _fields_in_init_order(fields):
         tuple(f for f in fields if f.init and not f.kw_only),
         tuple(f for f in fields if f.init and f.kw_only),
     )
-
-
-def _tuple_str(obj_name, fields):
-    if not fields:
-        return '()'
-    return f'({",".join([f"{obj_name}.{f.name}" for f in fields])},)'
 
 
 def _create_fn(
@@ -195,7 +227,7 @@ def _repr_fn(fields, globals):
           ')"')],
         globals=globals,
     )
-    return _recursive_repr(fn)
+    return recursive_repr(fn)
 
 
 def _frozen_get_del_attr(cls, fields, globals):
@@ -210,9 +242,11 @@ def _frozen_get_del_attr(cls, fields, globals):
         _create_fn(
             '__setattr__',
             ('self', 'name', 'value'),
-            (f'if {condition}:',
-             ' raise FrozenInstanceError(f"cannot assign to field {name!r}")',
-             f'super(cls, self).__setattr__(name, value)'),
+            (
+                f'if {condition}:',
+                ' raise FrozenInstanceError(f"cannot assign to field {name!r}")',
+                f'super(cls, self).__setattr__(name, value)',
+            ),
             locals=locals,
             globals=globals,
         ),
@@ -235,16 +269,6 @@ def _cmp_fn(name, op, self_tuple, other_tuple, globals):
         ['if other.__class__ is self.__class__:',
          f' return {self_tuple}{op}{other_tuple}',
          'return NotImplemented'],
-        globals=globals,
-    )
-
-
-def _hash_fn(fields, globals):
-    self_tuple = _tuple_str('self', fields)
-    return _create_fn(
-        '__hash__',
-        ('self',),
-        [f'return hash({self_tuple})'],
         globals=globals,
     )
 
@@ -345,7 +369,7 @@ def _set_new_attribute(cls, name, value):
     return False
 
 
-def _process_class(cls, params: _DataclassParams):
+def _process_class(cls, params: dc._DataclassParams):
     fields = {}
 
     if cls.__module__ in sys.modules:
@@ -370,7 +394,7 @@ def _process_class(cls, params: _DataclassParams):
             if getattr(b, PARAMS_ATTR).frozen:
                 any_frozen_base = True
 
-    cls_annotations = pf.get_annotations(cls)
+    cls_annotations = inspect.get_annotations(cls)
 
     cls_fields = []
 
@@ -445,8 +469,8 @@ def _process_class(cls, params: _DataclassParams):
 
     if params.eq:
         # flds = [f for f in field_list if f.compare]
-        # self_tuple = _tuple_str('self', flds)
-        # other_tuple = _tuple_str('other', flds)
+        # self_tuple = tuple_str('self', flds)
+        # other_tuple = tuple_str('other', flds)
         # _set_new_attribute(cls, '__eq__', _cmp_fn('__eq__', '==', self_tuple, other_tuple, globals=globals))
         cmp_fields = (field for field in field_list if field.compare)
         terms = [f'self.{field.name}==other.{field.name}' for field in cmp_fields]
@@ -459,8 +483,8 @@ def _process_class(cls, params: _DataclassParams):
 
     if params.order:
         flds = [f for f in field_list if f.compare]
-        self_tuple = _tuple_str('self', flds)
-        other_tuple = _tuple_str('other', flds)
+        self_tuple = tuple_str('self', flds)
+        other_tuple = tuple_str('other', flds)
         for name, op in [
             ('__lt__', '<'),
             ('__le__', '<='),
@@ -475,7 +499,7 @@ def _process_class(cls, params: _DataclassParams):
             if _set_new_attribute(cls, fn.__name__, fn):
                 raise TypeError(f'Cannot overwrite attribute {fn.__name__} in class {cls.__name__}')
 
-    hash_action = _hash_action[(
+    hash_action = HASH_ACTIONS[(
         bool(params.unsafe_hash),
         bool(params.eq),
         bool(params.frozen),
@@ -499,7 +523,7 @@ def _process_class(cls, params: _DataclassParams):
     if params.slots:
         cls = _add_slots(cls, params.frozen, params.weakref_slot)
 
-    pf.update_abstractmethods(cls)
+    abc.update_abstractmethods(cls)
 
     return cls
 
@@ -581,7 +605,7 @@ def dataclass(
         weakref_slot=False,
 ):
     def wrap(cls):
-        return _process_class(cls, _DataclassParams(
+        return _process_class(cls, dc._DataclassParams(
             init,
             repr,
             eq,
@@ -598,91 +622,6 @@ def dataclass(
         return wrap
 
     return wrap(cls)
-
-
-def fields(class_or_instance):
-    try:
-        fields = getattr(class_or_instance, FIELDS_ATTR)
-    except AttributeError:
-        raise TypeError('must be called with a dataclass type or instance') from None
-    return tuple(f for f in fields.values() if f._field_type is _FIELD)
-
-
-def _is_dataclass_instance(obj):
-    return hasattr(type(obj), FIELDS_ATTR)
-
-
-def is_dataclass(obj):
-    cls = obj if isinstance(obj, type) else type(obj)
-    return hasattr(cls, FIELDS_ATTR)
-
-
-def asdict(obj, *, dict_factory=dict):
-    if not _is_dataclass_instance(obj):
-        raise TypeError("asdict() should be called on dataclass instances")
-    return _asdict_inner(obj, dict_factory)
-
-
-def _asdict_inner(obj, dict_factory):
-    if type(obj) in _ATOMIC_TYPES:
-        return obj
-    elif _is_dataclass_instance(obj):
-        # fast path for the common case
-        if dict_factory is dict:
-            return {
-                f.name: _asdict_inner(getattr(obj, f.name), dict)
-                for f in fields(obj)
-            }
-        else:
-            result = []
-            for f in fields(obj):
-                value = _asdict_inner(getattr(obj, f.name), dict_factory)
-                result.append((f.name, value))
-            return dict_factory(result)
-    elif isinstance(obj, tuple) and hasattr(obj, '_fields'):
-        return type(obj)(*[_asdict_inner(v, dict_factory) for v in obj])
-    elif isinstance(obj, (list, tuple)):
-        return type(obj)(_asdict_inner(v, dict_factory) for v in obj)
-    elif isinstance(obj, dict):
-        if hasattr(type(obj), 'default_factory'):
-            result = type(obj)(getattr(obj, 'default_factory'))
-            for k, v in obj.items():
-                result[_asdict_inner(k, dict_factory)] = _asdict_inner(v, dict_factory)
-            return result
-        return type(obj)((_asdict_inner(k, dict_factory), _asdict_inner(v, dict_factory)) for k, v in obj.items())
-    else:
-        return copy.deepcopy(obj)
-
-
-def astuple(obj, *, tuple_factory=tuple):
-    if not _is_dataclass_instance(obj):
-        raise TypeError("astuple() should be called on dataclass instances")
-    return _astuple_inner(obj, tuple_factory)
-
-
-def _astuple_inner(obj, tuple_factory):
-    if type(obj) in _ATOMIC_TYPES:
-        return obj
-    elif _is_dataclass_instance(obj):
-        result = []
-        for f in fields(obj):
-            value = _astuple_inner(getattr(obj, f.name), tuple_factory)
-            result.append(value)
-        return tuple_factory(result)
-    elif isinstance(obj, tuple) and hasattr(obj, '_fields'):
-        return type(obj)(*[_astuple_inner(v, tuple_factory) for v in obj])
-    elif isinstance(obj, (list, tuple)):
-        return type(obj)(_astuple_inner(v, tuple_factory) for v in obj)
-    elif isinstance(obj, dict):
-        obj_type = type(obj)
-        if hasattr(obj_type, 'default_factory'):
-            result = obj_type(getattr(obj, 'default_factory'))
-            for k, v in obj.items():
-                result[_astuple_inner(k, tuple_factory)] = _astuple_inner(v, tuple_factory)
-            return result
-        return obj_type((_astuple_inner(k, tuple_factory), _astuple_inner(v, tuple_factory)) for k, v in obj.items())
-    else:
-        return copy.deepcopy(obj)
 
 
 def make_dataclass(
@@ -761,24 +700,3 @@ def make_dataclass(
         slots=slots,
         weakref_slot=weakref_slot,
     )
-
-
-def replace(obj, /, **changes):
-    if not _is_dataclass_instance(obj):
-        raise TypeError("replace() should be called on dataclass instances")
-
-    for f in getattr(obj, FIELDS_ATTR).values():
-        if f._field_type is _FIELD_CLASSVAR:
-            continue
-
-        if not f.init:
-            if f.name in changes:
-                raise ValueError(f'field {f.name} is declared with init=False, it cannot be specified with replace()')
-            continue
-
-        if f.name not in changes:
-            if f._field_type is _FIELD_INITVAR and f.default is MISSING:
-                raise ValueError(f"InitVar {f.name!r} " 'must be specified with replace()')
-            changes[f.name] = getattr(obj, f.name)
-
-    return obj.__class__(**changes)
