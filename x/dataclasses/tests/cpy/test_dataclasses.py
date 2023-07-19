@@ -4563,8 +4563,9 @@ class TestKeywordArgs(unittest.TestCase):
 
         # Make sure we still check for non-kwarg non-defaults not following
         # defaults.
-        err_regex = "non-default argument 'z' follows default argument"
-        with self.assertRaisesRegex(TypeError, err_regex):
+        exc_cls = SyntaxError
+        err_regex = r"non-default argument ('z' )?follows default argument"
+        with self.assertRaisesRegex(exc_cls, err_regex):
             @dataclass
             class A:
                 a: int = 0
