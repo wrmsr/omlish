@@ -65,7 +65,7 @@ def preprocess_field(
         a_name: str,
         a_type: ta.Any,
         default_kw_only: bool,
-) -> ExField:
+) -> dc.Field:
     default = getattr(cls, a_name, MISSING)
     if isinstance(default, dc.Field):
         bf = default
@@ -105,7 +105,7 @@ def preprocess_field(
     bf._field_type = f.field_type.value
     bf.kw_only = f.kw_only
 
-    return f
+    return bf
 
 
 def fields_in_init_order(fields: ta.Sequence[ExField]) -> ta.Tuple[ta.Sequence[ExField], ta.Sequence[ExField]]:

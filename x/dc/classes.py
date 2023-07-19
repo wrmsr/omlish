@@ -22,11 +22,15 @@ from .internals import HASH_ACTIONS
 from .internals import HAS_DEFAULT_FACTORY
 from .internals import PARAMS_ATTR
 from .internals import POST_INIT_NAME
+from .internals import Params
 from .internals import is_kw_only
 from .internals import recursive_repr
 from .internals import tuple_str
+from .params import EX_FIELDS_ATTR
+from .params import EX_PARAMS_ATTR
 from .params import ExField
 from .params import ExParams
+from .params import ex_field
 from .params import ex_fields
 from .utils import Namespace
 from .utils import create_fn
@@ -262,8 +266,30 @@ def process_class(cls: type, params: ExParams) -> type:
 
     setattr(
         cls,
-        PARAMS_ATTR,
+        EX_PARAMS_ATTR,
         params,
+    )
+
+    bpkw = dict(
+        init=params.init,
+        repr=params.repr,
+        eq=params.eq,
+        order=params.order,
+        unsafe_hash=params.unsafe_hash,
+        frozen=params.frozen,
+    )
+    if sys.version_info[1] >= 11:
+        bpkw.update(
+            match_args=params.match_args,
+            kw_only=params.kw_only,
+            slots=params.slots,
+            weakref_slot=params.weakref_slot,
+        )
+
+    setattr(
+        cls,
+        PARAMS_ATTR,
+        Params(**bpkw),
     )
 
     # field list
@@ -281,7 +307,7 @@ def process_class(cls: type, params: ExParams) -> type:
 
     cls_annotations = inspect.get_annotations(cls)
 
-    cls_fields = []
+    cls_bfields: ta.List[dc.Field] = []
 
     kw_only = params.kw_only
     kw_only_seen = False
@@ -292,10 +318,10 @@ def process_class(cls: type, params: ExParams) -> type:
             kw_only_seen = True
             kw_only = True
         else:
-            cls_fields.append(preprocess_field(cls, name, type, kw_only))
+            cls_bfields.append(preprocess_field(cls, name, type, kw_only))
 
-    for f in cls_fields:
-        fields[f.name] = f
+    for bf in cls_bfields:
+        fields[bf.name] = f = ex_field(bf)
         if isinstance(getattr(cls, f.name, None), dc.Field):
             if not f.default.present:
                 delattr(cls, f.name)
@@ -303,7 +329,7 @@ def process_class(cls: type, params: ExParams) -> type:
                 setattr(cls, f.name, f.default.must())
 
     for name, value in cls.__dict__.items():
-        if isinstance(value, dc.Field) and not name in cls_annotations:
+        if isinstance(value, dc.Field) and name not in cls_annotations:
             raise TypeError(f'{name!r} is a field but has no type annotation')
 
     if has_dataclass_bases:
@@ -313,9 +339,11 @@ def process_class(cls: type, params: ExParams) -> type:
         if not any_frozen_base and params.frozen:
             raise TypeError('cannot inherit frozen dataclass from a non-frozen one')
 
-    setattr(cls, FIELDS_ATTR, fields)
+    setattr(cls, EX_FIELDS_ATTR, fields)
 
     field_list = [f for f in fields.values() if f.field_type is FieldType.INSTANCE]
+
+    setattr(cls, FIELDS_ATTR, {bf.name: bf for bf in cls_bfields})
 
     # init
 
@@ -428,3 +456,119 @@ def process_class(cls: type, params: ExParams) -> type:
     abc.update_abstractmethods(cls)
 
     return cls
+
+
+# api
+
+
+def dataclass(
+        cls=None,
+        /,
+        *,
+        init=True,
+        repr=True,
+        eq=True,
+        order=False,
+        unsafe_hash=False,
+        frozen=False,
+        match_args=True,
+        kw_only=False,
+        slots=False,
+        weakref_slot=False,
+):
+    def wrap(cls):
+        return process_class(cls, ExParams(
+            init=init,
+            repr=repr,
+            eq=eq,
+            order=order,
+            unsafe_hash=unsafe_hash,
+            frozen=frozen,
+            match_args=match_args,
+            kw_only=kw_only,
+            slots=slots,
+            weakref_slot=weakref_slot,
+        ))
+
+    if cls is None:
+        return wrap
+
+    return wrap(cls)
+
+
+def make_dataclass(
+        cls_name,
+        fields,
+        *,
+        bases=(),
+        namespace=None,
+        init=True,
+        repr=True,
+        eq=True,
+        order=False,
+        unsafe_hash=False,
+        frozen=False,
+        match_args=True,
+        kw_only=False,
+        slots=False,
+        weakref_slot=False,
+        module=None,
+):
+    if namespace is None:
+        namespace = {}
+
+    seen = set()
+    annotations = {}
+    defaults = {}
+    for item in fields:
+        if isinstance(item, str):
+            name = item
+            tp = 'typing.Any'
+        elif len(item) == 2:
+            name, tp, = item
+        elif len(item) == 3:
+            name, tp, spec = item
+            defaults[name] = spec
+        else:
+            raise TypeError(f'Invalid field: {item!r}')
+        if not isinstance(name, str) or not name.isidentifier():
+            raise TypeError(f'Field names must be valid identifiers: {name!r}')
+        if keyword.iskeyword(name):
+            raise TypeError(f'Field names must not be keywords: {name!r}')
+        if name in seen:
+            raise TypeError(f'Field name duplicated: {name!r}')
+
+        seen.add(name)
+        annotations[name] = tp
+
+    def exec_body_callback(ns):
+        ns.update(namespace)
+        ns.update(defaults)
+        ns['__annotations__'] = annotations
+
+    cls = types.new_class(cls_name, bases, {}, exec_body_callback)
+
+    if module is None:
+        try:
+            module = sys._getframemodulename(1) or '__main__'  # noqa
+        except AttributeError:
+            try:
+                module = sys._getframe(1).f_globals.get('__name__', '__main__')  # noqa
+            except (AttributeError, ValueError):
+                pass
+    if module is not None:
+        cls.__module__ = module
+
+    return dataclass(
+        cls,
+        init=init,
+        repr=repr,
+        eq=eq,
+        order=order,
+        unsafe_hash=unsafe_hash,
+        frozen=frozen,
+        match_args=match_args,
+        kw_only=kw_only,
+        slots=slots,
+        weakref_slot=weakref_slot,
+    )
