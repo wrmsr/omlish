@@ -9,6 +9,7 @@ PYTHON_VERSION_NOGIL:=nogil-3.12
 
 SOURCES:=\
 	${PROJECT} \
+	hn \
 	nn \
 	x \
 
