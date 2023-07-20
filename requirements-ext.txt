@@ -44,7 +44,7 @@ torchvision==0.15.2
 
 ### infra
 
-boto3==1.28.3
+boto3==1.28.6
 google-cloud-compute==1.13.0
 
 
