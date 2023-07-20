@@ -99,7 +99,7 @@ def init_fn(
         body_lines,
         locals=locals,
         globals=globals,
-        return_type=lang.empty(),
+        return_type=lang.just(None),
     )
 
 
