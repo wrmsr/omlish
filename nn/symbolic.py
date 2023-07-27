@@ -16,6 +16,13 @@ from omlish import collections as col
 from omlish import lang
 
 
+SymInt = ta.Union['Node']
+
+
+def is_sym_int(o: ta.Any) -> bool:
+    return isinstance(o, (Node, int))
+
+
 ##
 
 
@@ -95,13 +102,23 @@ class Node(lang.Abstract, lang.Sealed):
     def __add__(self, b: ta.Union['Node', int]) -> 'Node':
         return sum_([self, b if isinstance(b, Node) else Num(b)])
 
+    def __radd__(self, b: int) -> 'Node':
+        return self + b
+
     def __sub__(self, b: ta.Union['Node', int]) -> 'Node':
         return self + -b
+
+    def __le__(self, b: ta.Union['Node', int]) -> 'Node':
+        return self < (b + 1)
+
+    def __gt__(self, b: ta.Union['Node', int]) -> 'Node':
+        return (-self) < (-b)
 
     def __ge__(self, b: int) -> 'Node':
         return Lt.new(-self, -b + 1)
 
     def __lt__(self, b: int) -> 'Node':
+        # FIXME: UPDATE
         return Lt.new(self, b)
 
     def __mul__(self, b: int) -> 'Node':
@@ -110,6 +127,9 @@ class Node(lang.Abstract, lang.Sealed):
         elif b == 1:
             return self
         return Mul.new(self, b)
+
+    def __rmul__(self, b: ta.Union['Node', int]) -> 'Node':
+        return self * b
 
     def _floordiv(self, b: int, factoring_allowed: bool = True) -> 'Node':
         if b == 0:
@@ -195,6 +215,9 @@ class Num(Node, lang.Final):
         super().__init__()
         self._b = check.isinstance(b, int)
 
+    def __int__(self):
+        return self._b
+
     @property
     def b(self) -> int:
         return self._b
@@ -213,9 +236,9 @@ class Num(Node, lang.Final):
 
 class Op(Node, lang.Abstract):   # noqa
 
-    def __init__(self, a: Node, b: int, *, _min: int, _max: int) -> None:
+    def __init__(self, a: Node, b: ta.Union[Node, int], *, _min: int, _max: int) -> None:
         super().__init__()
-        self._a = check.isinstance(a, Node)
+        self._a = check.isinstance(a, (Node, int))
         self._b = check.isinstance(b, int)
         self._min = check.isinstance(_min, int)
         self._max = check.isinstance(_max, int)
@@ -225,7 +248,7 @@ class Op(Node, lang.Abstract):   # noqa
         return self._a
 
     @property
-    def b(self) -> int:
+    def b(self) -> ta.Union[Node, int]:
         return self._b
 
     @property
@@ -237,7 +260,7 @@ class Op(Node, lang.Abstract):   # noqa
         return self._max
 
     @classmethod
-    def new(cls, a: Node, b: int) -> 'Node':
+    def new(cls, a: Node, b: int) -> Node:
         mn, mx = cls.calc_bounds(a, b)
         if mn == mx:
             return Num(mn)
@@ -261,7 +284,7 @@ class Lt(Op):
     def calc_bounds(cls, a: Node, b: int) -> ta.Tuple[int, int]:
         return int(a.max < b), int(a.min < b)
 
-    def __mul__(self, b: int) -> Node:
+    def __mul__(self, b: ta.Union[Node, int]) -> Node:
         return (self.a * b) < (self.b * b)
 
     def _floordiv(self, b: int, factoring_allowed: bool = False) -> Node:
@@ -278,11 +301,12 @@ class Mul(Op):
         else:
             return a.max * b, a.min * b
 
-    def __mul__(self, b: int) -> Node:
+    def __mul__(self, b: ta.Union[Node, int]) -> Node:
         return self.a * (self.b * b)  # two muls in one mul
 
     def _floordiv(self, b: int, factoring_allowed: bool = False) -> Node:
         # NOTE: mod negative isn't handled right
+        check.isinstance(b, int)
         if self.b % b == 0:
             return self.a * (self.b // b)
         if b % self.b == 0 and self.b > 0:
@@ -299,7 +323,7 @@ class Div(Op):
 
     @classmethod
     def calc_bounds(cls, a: Node, b: int) -> ta.Tuple[int, int]:
-        if a.min < 0:
+        if a.min < 0 or not isinstance(b, int):
             raise ValueError
         return a.min // b, a.max // b
 
@@ -312,7 +336,7 @@ class Mod(Op):
 
     @classmethod
     def calc_bounds(cls, a: Node, b: int) -> ta.Tuple[int, int]:
-        if a.min < 0:
+        if a.min < 0 or not isinstance(b, int):
             raise ValueError
         if a.max - a.min >= b or (a.min != a.max and a.min % b >= a.max % b):
             return 0, b - 1
@@ -420,7 +444,7 @@ class Sum(Red):
     def calc_bounds(cls, nodes: ta.Sequence[Node]) -> ta.Tuple[int, int]:
         return sum(x.min for x in nodes), sum(x.max for x in nodes)
 
-    def __mul__(self, b: int) -> Node:
+    def __mul__(self, b: ta.Union[Node, int]) -> Node:
         return sum_([x * b for x in self.nodes])  # distribute mul into sum
 
     def _floordiv(self, b: int, factoring_allowed: bool = True) -> Node:
@@ -499,7 +523,7 @@ class And(Red):
     def calc_bounds(cls, nodes: ta.Sequence[Node]) -> ta.Tuple[int, int]:
         return min(x.min for x in nodes), max(x.max for x in nodes)
 
-    def __mul__(self, b: int) -> Node:
+    def __mul__(self, b: ta.Union[Node, int]) -> Node:
         return and_([x * b for x in self.nodes])
 
     def _floordiv(self, b: int, factoring_allowed: bool = True) -> Node:
