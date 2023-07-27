@@ -7,10 +7,13 @@ PYTHON_VERSION_11:=3.11.4
 PYTHON_VERSION_12:=3.12-dev
 PYTHON_VERSION_NOGIL:=nogil-3.12
 
-SOURCES:=\
+MAIN_SOURCES:=\
 	${PROJECT} \
-	hn \
 	nn \
+
+ALL_SOURCES:=\
+	${MAIN_SOURCES} \
+	hn \
 	x \
 
 
@@ -85,16 +88,16 @@ check: flake8 mypy
 
 .PHONY: flake8
 flake8: venv
-	$(PYTHON) -mflake8 ${SOURCES}
+	$(PYTHON) -mflake8 ${MAIN_SOURCES}
 
 .PHONY: mypy
 mypy: venv
-	$(PYTHON) -mmypy --check-untyped-defs ${SOURCES}
+	$(PYTHON) -mmypy --check-untyped-defs ${MAIN_SOURCES}
 
 
 ### Test
 
-DEFAULT_TEST_SOURCES:=${SOURCES}
+DEFAULT_TEST_SOURCES:=${ALL_SOURCES}
 
 TEST_SOURCES:=$$(echo "$${_TEST_SOURCES:-${DEFAULT_TEST_SOURCES}}")
 
