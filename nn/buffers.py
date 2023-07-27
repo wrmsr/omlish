@@ -225,74 +225,14 @@ class Buffer(Lazy):
         if self._realized is not None:
             return self
 
-        self_op = self.get_op()
+        raw, op = Realizer(self).realize()
 
-        if isinstance(self_op, ops.Contiguous):
-            sb = self_op.buf.as_buffer()  # FIXME: cast??
-            realized = sb.realize().get_realized()
-            if (
-                    sb._st.contiguous and
-                    not isinstance(realized, RawConst) and
-                    realized.size == math.prod(self.shape)
-            ):
-                # no need to run an AST, this is already contiguous
-                self._realized = realized
-            else:
-                self._op = ops.Nop(self_op.buf)
+        self._realized = raw
 
-        elif isinstance(self_op, ops.From):
-            raw = self_op.srcs[0].as_buffer().get_realized()
-            self._realized = self.device.make_raw_buffer(raw.to_cpu())
-
-        elif isinstance(self_op, ops.Empty):
-            self._realized = self.device.make_raw_buffer(np.empty(math.prod(self.shape), dtype=self.dtype.np))  # FIXME
-
-        elif isinstance(self_op, ops.Const):
-            # FIXME: supports_constant_folding
-            # FIXME: urghh
-            # self._realized = self.device.make_raw_buffer(np.array(check.isinstance(self_op, ops.Const).c, dtype=self.dtype.np))  # noqa
-            self._realized = RawConst(float(self_op.c), self.dtype)
-
-        elif isinstance(self_op, ops.Mul):
-            self._op = self._eval_binary_op()
-
-        del self_op  # self._op is possibly reassigned
-
-        ##
-
-        if self._realized is None:
-            self_op = self.get_op()
-            for x in self_op.buffers:
-                x.realize()
-
-            self._realized = self.device.evaluator.eval(self_op, output=self)
-
-        # check.isinstance(self.get_realized(), (RawConst, Device[self.device].buffer)),
-        #     f"device mismatch on realized got {type(self.realized)} expected {self.device}")
-
-        # no need to keep the op after realization
+        # self._op = op
         self._op = None
 
         return self
-
-    def _eval_binary_op(self) -> ops.Op:
-        self_op = self.get_op()
-        check.isinstance(self_op, ops.BinaryOp)
-
-        real_srcs: ta.Dict[Buffer, ta.Optional[Lazy]] = {x: None for x in self_op.buffers}
-
-        intermediate_shape = self.shape
-        # reshape all the late ops into the output shape
-        # NOTE: these reshapes will return self if they don't change the shape
-        for x in real_srcs.keys():
-            if real_srcs[x] is None:
-                real_srcs[x] = x.movement_op(ops.Reshape, intermediate_shape)
-
-        ret = map_buffers({k: check.not_none(v) for k, v in real_srcs.items()}, self_op)
-        if intermediate_shape != self.shape:
-            return ops.Reshape((ret,), self.shape)
-        else:
-            return ret
 
     @staticmethod
     def load_op(
@@ -356,9 +296,75 @@ class Buffer(Lazy):
 
 
 class Realizer:
+    def __init__(self, buf: Buffer) -> None:
+        super().__init__()
+
+        self._buf = check.isinstance(buf, Buffer)
+
+    def realize(self) -> tuple[RawBuffer, ops.Op]:
+        return self._realize(self._buf.op)
+
     @dispatch.method
-    def realize(self, op: ops.Op) -> RawBuffer:
-        raise NotImplementedError
+    def _realize(self, op: object) -> tuple[RawBuffer, ops.Op]:
+        raise TypeError(op)
+
+    @_realize.register
+    def _realize_op(self, op: ops.Op) -> tuple[RawBuffer, ops.Op]:
+        for x in op.buffers:
+            x.realize()
+
+        realized = self._buf.device.evaluator.eval(op, output=self._buf)  # FIXME: output mutates ugh
+        return (realized, op)
+
+    @_realize.register
+    def _realize_contiguous(self, op: ops.Contiguous) -> tuple[RawBuffer, ops.Op]:
+        sb = op.buf.as_buffer()  # FIXME: cast??
+        realized = sb.realize().get_realized()
+        if (
+                sb._st.contiguous and
+                not isinstance(realized, RawConst) and
+                realized.size == math.prod(self._buf.shape)
+        ):
+            # no need to run an AST, this is already contiguous
+            return (realized, op)
+        else:
+            return self._realize(ops.Nop(op.buf))
+
+    @_realize.register
+    def _realize_from(self, op: ops.From) -> tuple[RawBuffer, ops.Op]:
+        raw = op.srcs[0].as_buffer().get_realized()
+        return (self._buf.device.make_raw_buffer(raw.to_cpu()), op)
+
+    @_realize.register
+    def _realize_empty(self, op: ops.Empty) -> tuple[RawBuffer, ops.Op]:
+        raw = self._buf.device.make_raw_buffer(np.empty(math.prod(self._buf.shape), dtype=self._buf.dtype.np))
+        return (raw, op)
+
+    @_realize.register
+    def _realize_const(self, op: ops.Const) -> tuple[RawBuffer, ops.Op]:
+        # FIXME: supports_constant_folding
+        # FIXME: urghh
+        # self._realized = self.device.make_raw_buffer(np.array(check.isinstance(self_op, ops.Const).c, dtype=self.dtype.np))  # noqa
+        return (RawConst(float(op.c), self._buf.dtype), op)
+
+    @_realize.register
+    def _realize_binary_op(self, op: ops.BinaryOp) -> tuple[RawBuffer, ops.Op]:
+        real_srcs: ta.Dict[Buffer, ta.Optional[Lazy]] = {x: None for x in op.buffers}
+
+        intermediate_shape = self._buf.shape
+        # reshape all the late ops into the output shape
+        # NOTE: these reshapes will return self if they don't change the shape
+        for x in real_srcs.keys():
+            if real_srcs[x] is None:
+                real_srcs[x] = x.movement_op(ops.Reshape, intermediate_shape)
+
+        ret = map_buffers({k: check.not_none(v) for k, v in real_srcs.items()}, op)
+        if intermediate_shape != self._buf.shape:
+            ret_op = ops.Reshape((ret,), self._buf.shape)
+        else:
+            ret_op = op
+
+        return self._realize_op(ret_op)
 
 
 def create_lazy_buffer(
