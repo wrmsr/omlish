@@ -41,6 +41,10 @@ torchvision==0.15.2
 
 # librosa==0.10.0.post2  # FIXME: -> >numba -> >numpy
 
+## tinygrad
+
+networkx==3.1
+
 
 ### infra
 
