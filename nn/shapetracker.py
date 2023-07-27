@@ -1,3 +1,8 @@
+"""
+TODO:
+ - SymDims / SymShape / SymStride :|
+  - BaseDims? urrgh
+"""
 import math
 import typing as ta
 

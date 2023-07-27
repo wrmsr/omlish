@@ -15,7 +15,7 @@ import numpy as np
 T = ta.TypeVar('T')
 
 
-class Dims(tuple):
+class Dims(tuple[int]):
     def __new__(cls, *args, **kwargs):
         if kwargs:
             raise TypeError
