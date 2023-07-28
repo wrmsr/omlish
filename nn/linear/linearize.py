@@ -45,7 +45,7 @@ class LocalBuffer:
 
 
 def mnum(i: int) -> str:
-    return str(i) if i >= 0 else f"m{-i}"
+    return str(i) if i >= 0 else f'm{-i}'
 
 
 def get_grouped_float4_idxs(acc: ta.Sequence[uo.Token]) -> ta.Optional[ta.Sequence[int]]:
@@ -119,6 +119,25 @@ def expand_idxs(idxs: ta.Sequence[VarOrNum]) -> ta.Iterator[ta.Sequence[VarOrNum
         yield x[::-1]
 
 
+class FnNamer:
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._counts: ta.Dict[str, int] = {}
+        self._names: ta.Dict[str, str] = {}
+
+    def __call__(self, src: str, shape: Shape, has_reduce: bool) -> str:
+        try:
+            return self._names[src]
+        except KeyError:
+            name = ('r_' if has_reduce is not None else 'E_') + '_'.join([str(x) for x in shape])
+            n = self._counts.get(name, 0)
+            self._counts[name] = n + 1
+            if n:
+                name += f'n{n}'
+            return name
+
+
 class LinearCodegenOp(CodegenOp):
     def __init__(self, op: ops.Op, output: Buffer) -> None:
         super().__init__()
@@ -130,8 +149,7 @@ class LinearCodegenOp(CodegenOp):
 
         self._key = render_key(op, self._bufs)
 
-    fn_counts: ta.Final[ta.Dict[str, int]] = {}
-    fn_names: ta.Final[ta.Dict[str, str]] = {}
+    fn_namer: ta.Final[FnNamer] = FnNamer()
 
     def build(self) -> Program:
         # from . import dot
@@ -154,16 +172,9 @@ class LinearCodegenOp(CodegenOp):
             OpenclDialect,
         ).render()
 
-        from ..opencl import OpenclProgram
+        fn_name = self.fn_namer(rendered.src, self.full_shape, self.reduce_op is not None)
 
-        try:
-            fn_name = self.fn_names[rendered.src]
-        except KeyError:
-            fn_name = ('r_' if self.reduce_op is not None else 'E_') + '_'.join([str(x) for x in self.full_shape])
-            n = self.fn_counts.get(fn_name, 0)
-            self.fn_counts[fn_name] = n + 1
-            if n:
-                fn_name += f'n{n}'
+        from ..opencl import OpenclProgram
 
         prg = OpenclProgram(
             fn_name,
