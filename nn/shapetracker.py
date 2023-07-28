@@ -180,6 +180,10 @@ class ShapeTracker(lang.Final):
         return self.view.shape
 
     @property
+    def stride(self) -> Stride:
+        return self.view.stride
+
+    @property
     def size(self) -> int:
         v = self.view
         return math.prod([s for s, st in zip(v.shape, v.stride) if st != 0])
@@ -192,7 +196,7 @@ class ShapeTracker(lang.Final):
         return ShapeTracker(self.shape, list(self._views))
 
     def simplify(self):
-        if len(self._views) >= 2:
+        if len(self._views) > 1:
             new_view = merge_views(self._views[-2], self.view)
             if new_view:
                 self._views = [*self._views[:-2], new_view]

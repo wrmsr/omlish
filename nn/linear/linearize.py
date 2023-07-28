@@ -172,7 +172,11 @@ class LinearCodegenOp(CodegenOp):
             OpenclDialect,
         ).render()
 
-        fn_name = self.fn_namer(rendered.src, self.full_shape, self.reduce_op is not None)
+        fn_name = self.fn_namer(
+            rendered.src,
+            self.full_shape,
+            self.reduce_op is not None,
+        )
 
         from ..opencl import OpenclProgram
 
@@ -263,14 +267,14 @@ class LinearCodegenOp(CodegenOp):
             for s in self._sts[i].shape[self.shape_len - self._upcasted:][::-1]
         ])
 
-    def float4_axis(self, i):
+    def float4_axis(self, i: int) -> ta.Sequence[int]:
         return [
             x - (self.shape_len - self._upcasted)
             for x in self._sts[i].unit_stride_axes()
             if x >= self.shape_len - self._upcasted and self._sts[i].shape[x] % 4 == 0
         ]
 
-    def upcasted_axis(self, i):
+    def upcasted_axis(self, i: int) -> ta.Sequence[ta.Tuple[Shape, ta.Sequence[ta.Optional[int]], bool]]:
         return list(zip(
             self._sts[i].shape[self.shape_len - self._upcasted:],
             self._sts[i].real_strides()[self.shape_len - self._upcasted:],
@@ -284,7 +288,7 @@ class LinearCodegenOp(CodegenOp):
         ))
 
     # TODO: is there a better way to write this?
-    def acc_offsets(self, i):
+    def acc_offsets(self, i: int) -> ta.Sequence[int]:
         if self._upcasted == 0:
             return [0]
         upcasted_i = self.upcasted_axis(i)
@@ -300,7 +304,7 @@ class LinearCodegenOp(CodegenOp):
             ])
         ]
 
-    def get_upcast_dim(self, i, amt=4):
+    def get_upcast_dim(self, i: int, amt: int = 4) -> ta.Sequence[int]:
         should_upcast = self.supports_float4 and self._bufs[i].dtype in (Float32,)
         return [
             x
@@ -800,7 +804,7 @@ class LinearCodegenOp(CodegenOp):
             return
 
         shapes = [x.shape for x in self._sts]
-        strides = [x.views[-1].stride for x in self._sts]
+        strides = [x.stride for x in self._sts]
 
         # merge dimensions if we can, multi get_shape_strides
         # TODO: does this always preserve the reduce dimension, NO
@@ -856,7 +860,7 @@ class LinearCodegenOp(CodegenOp):
             #         self.shift_to(unit_stride_axes_mul_4[0], 4)
             #         self.upcast()
 
-    def limit_global_dims(self, limit):
+    def limit_global_dims(self, limit: int) -> None:
         # sometimes, there's more dimensions than len(self.lang.gid).
         # compact all the dimensions into the first
         # NOTE: this might make multiview shapetrackers
@@ -921,15 +925,15 @@ class LinearCodegenOp(CodegenOp):
                         axis not in upcasted_axis and
                         self.full_shape[axis] % upcast_amount == 0 and
                         any(
-                            self._sts[buf_index].views[-1].stride[axis] == 0 and
+                            self._sts[buf_index].stride[axis] == 0 and
                             not any(x[1] == 0 for x in self.upcasted_axis(buf_index))
                             for buf_index in range(len(self._sts))
                         )
                 ):
                     xb_choices.append(
                         (
-                            sum(st.views[-1].stride[axis] > 0 for st in self._sts),
-                            sum(st.views[-1].stride[axis] for st in self._sts),
+                            sum(st.stride[axis] > 0 for st in self._sts),
+                            sum(st.stride[axis] for st in self._sts),
                             axis,
                             upcast_amount,
                         )
@@ -994,7 +998,7 @@ class LinearCodegenOp(CodegenOp):
             last_try = self._local_dims == 0 and axis == 0
             if (
                     any(
-                        self._sts[buf_index].views[-1].stride[axis] == 0
+                        self._sts[buf_index].stride[axis] == 0
                         for buf_index in range(len(self._sts))
                     ) or last_try
             ):
