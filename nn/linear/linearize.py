@@ -1,4 +1,3 @@
-import io
 import itertools
 import math
 import typing as ta
@@ -7,25 +6,24 @@ from omlish import cached
 from omlish import check
 from omlish import collections as col
 from omlish import dataclasses as dc
-from omlish import dispatch
-from omlish.collections import coerce
 
-from . import ops
-from . import symbolic as sym
 from . import uops as uo
-from .buffers import Buffer
-from .codegen import Codegen
-from .codegen import CodegenOp
-from .codegen import Program
-from .dims import Shape
-from .dims import Stride
-from .dtypes import Dtype
-from .dtypes import Float32
-from .dtypes import Float4
-from .raw import RawBuffer
-from .raw import RawConst
-from .shapetracker import ShapeTracker
-from .shapetracker import View
+from .. import ops
+from .. import symbolic as sym
+from ..buffers import Buffer
+from ..codegen import Codegen
+from ..codegen import CodegenOp
+from ..codegen import Program
+from ..dims import Shape
+from ..dtypes import Dtype
+from ..dtypes import Float32
+from ..dtypes import Float4
+from ..raw import RawBuffer
+from ..raw import RawConst
+from ..shapetracker import ShapeTracker
+from .analysis import LinearAnalysis
+from .analysis import LinearAnalyzer
+from .keys import render_key
 
 
 VarOrNum = ta.Union[sym.Var, sym.Num]
@@ -44,187 +42,6 @@ class LocalBuffer:
 
     def get_realized(self) -> RawBuffer:
         return check.not_none(self.realized)
-
-
-@dc.dataclass(frozen=True)
-class LinearAnalysis:
-    obj: ta.Any
-
-    shape: Shape = dc.field(coerce=check.of_isinstance(Shape))
-    dtype: Dtype = dc.field(coerce=check.of_isinstance(Dtype))
-    flops: int = dc.field(coerce=check.of_isinstance(int))
-
-
-class LinearAnalyzer:
-    def __init__(self) -> None:
-        super().__init__()
-
-        self._dct: ta.MutableMapping[ta.Any, LinearAnalysis] = col.IdentityKeyDict()
-
-    def analyze(self, x: ta.Any) -> LinearAnalysis:
-        try:
-            return self._dct[x]
-        except KeyError:
-            ret = self._dct[x] = self._analyze(x)
-            return ret
-
-    @dispatch.method
-    def _analyze(self, x: ta.Any) -> LinearAnalysis:
-        raise TypeError(x)
-
-    @_analyze.register
-    def _analyze_buffer(self, buf: Buffer) -> LinearAnalysis:
-        return LinearAnalysis(
-            buf,
-            buf.shape,
-            buf.dtype,
-            0,
-        )
-
-    @_analyze.register
-    def _analyze_unary_op(self, op: ops.UnaryOp) -> LinearAnalysis:
-        xa = self._analyze(op.x)
-        return LinearAnalysis(
-            op,
-            xa.shape,
-            xa.dtype,
-            xa.flops + xa.shape.prod,
-        )
-
-    @_analyze.register
-    def _analyze_cast(self, op: ops.Cast) -> LinearAnalysis:
-        raise TypeError(op)
-
-    @_analyze.register
-    def _analyze_binary_op(self, op: ops.BinaryOp) -> LinearAnalysis:
-        xa = self._analyze(op.x)
-        ya = self._analyze(op.y)
-        return LinearAnalysis(
-            op,
-            xa.shape,
-            check.equal(xa.dtype, ya.dtype),
-            xa.flops + ya.flops + xa.shape.prod,
-        )
-
-    @_analyze.register
-    def _analyze_reduce_op(self, op: ops.ReduceOp) -> LinearAnalysis:
-        xa = self._analyze(op.x)
-        return LinearAnalysis(
-            op,
-            op.new_shape,
-            xa.dtype,
-            xa.flops + xa.shape.prod,
-        )
-
-    @_analyze.register
-    def _analyze_where_op(self, op: ops.Where) -> LinearAnalysis:
-        xa = self._analyze(op.x)
-        ya = self._analyze(op.y)
-        za = self._analyze(op.z)
-        return LinearAnalysis(
-            op,
-            xa.shape,
-            xa.dtype,
-            xa.flops + ya.flops + za.flops + xa.shape.prod,
-        )
-
-    @_analyze.register
-    def _analyze_movement_op(self, op: ops.MovementOp) -> LinearAnalysis:
-        xa = self._analyze(op.x)
-        return LinearAnalysis(
-            op,
-            ShapeTracker(xa.shape).movement_op(type(op), op.args).shape,
-            xa.dtype,
-            xa.flops,
-        )
-
-
-class KeyRenderer:
-    def __init__(self, write: ta.Callable[[str], ta.Any], bufs: ta.Sequence[Buffer]) -> None:
-        super().__init__()
-
-        self._write = check.callable(write)
-        self._bufs = coerce.seq_of(check.of_isinstance(Buffer))(bufs)
-        self._buf_idx_map: ta.Mapping[Buffer, int] = col.IdentityKeyDict((buf, i) for i, buf in enumerate(self._bufs))  # noqa
-        self._seen_bufs: ta.MutableSet[Buffer] = col.IdentitySet()
-
-    @dispatch.method
-    def render(self, obj: ta.Any) -> None:
-        raise TypeError(obj)
-
-    @render.register
-    def render_shape(self, sh: Shape) -> None:
-        self._write(f'Shape({", ".join(map(str, sh))})')
-
-    @render.register
-    def render_stride(self, st: Stride) -> None:
-        self._write(f'Stride({", ".join(map(str, st))})')
-
-    @render.register
-    def render_view(self, v: View) -> None:
-        self._write('View(')
-        self.render(v.shape)
-        self._write(', ')
-        self.render(v.stride)
-        self._write(f', offset={v.offset}')
-        if v.mask is not None:
-            raise NotImplementedError
-        self._write(')')
-
-    @render.register
-    def render_shape_tracker(self, st: ShapeTracker) -> None:
-        self._write('ShapeTracker(')
-        for i, v in enumerate(st.views):
-            if i > 0:
-                self._write(', ')
-            self.render(v)
-        self._write(')')
-
-    @render.register
-    def render_dtype(self, dt: Dtype) -> None:
-        self._write(dt.name)
-
-    @render.register
-    def render_raw_buffer(self, rb: RawBuffer) -> None:
-        self._write(f'{type(rb).__name__}(size={rb.size}, ')
-        self.render(rb.dtype)
-        self._write(')')
-
-    @render.register
-    def render_raw_const(self, rb: RawConst) -> None:
-        self._write(f'{type(rb).__name__}({rb.c}, ')
-        self.render(rb.dtype)
-        self._write(')')
-
-    @render.register
-    def _render_buffer(self, buf: Buffer) -> None:
-        self._write(f'{type(buf).__name__}:{self._buf_idx_map[buf]}')
-        if buf not in self._seen_bufs:
-            self._seen_bufs.add(buf)
-            self._write(f'(')
-            self.render(buf.dtype)
-            self._write(', ')
-            if buf.is_realized:
-                self.render(buf.get_realized())
-            else:
-                self.render(buf.get_op())
-            self._write(', ')
-            self.render(buf.shape_tracker)
-            self._write(f')')
-
-    @render.register
-    def _render_op(self, op: ops.Op) -> None:
-        self._write(f'{type(op).__name__}(')
-        for i, x in enumerate(itertools.chain(op.srcs, op.args)):
-            if i > 0:
-                self._write(', ')
-            self.render(x)
-
-
-def render_key(op: ops.Op, bufs: ta.Sequence[Buffer]) -> str:
-    buf = io.StringIO()
-    KeyRenderer(buf.write, bufs).render(op)
-    return buf.getvalue()
 
 
 def mnum(i: int) -> str:
@@ -322,14 +139,14 @@ class LinearCodegenOp(CodegenOp):
 
         self.process()
 
-        from .opencl import OpenclDialect
+        from ..opencl import OpenclDialect
 
         self.hand_coded_optimizations()
         self.limit_global_dims(len(OpenclDialect.gid))
 
         self.linearize()
 
-        from .cstyle import CstyleRenderer
+        from ..cstyle import CstyleRenderer
 
         rendered = CstyleRenderer(
             self._uops,
@@ -337,7 +154,7 @@ class LinearCodegenOp(CodegenOp):
             OpenclDialect,
         ).render()
 
-        from .opencl import OpenclProgram
+        from ..opencl import OpenclProgram
 
         try:
             fn_name = self.fn_names[rendered.src]

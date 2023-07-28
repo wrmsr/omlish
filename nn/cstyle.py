@@ -10,14 +10,14 @@ from omlish import lang
 
 from . import ops
 from . import symbolic as sym
-from . import uops as uo
 from .buffers import Buffer
 from .dtypes import Dtype
 from .dtypes import Float32
 from .dtypes import Float4
-from .linear import LinearCodegen
-from .linear import LinearCodegenOp
-from .linear import LocalBuffer
+from .linear import uops as uo
+from .linear.linearize import LinearCodegen
+from .linear.linearize import LinearCodegenOp
+from .linear.linearize import LocalBuffer
 from .ops import Op
 from .raw import RawConst
 

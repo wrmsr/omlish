@@ -3,10 +3,10 @@ import typing as ta
 from omlish import dataclasses as dc
 from omlish import lang
 
-from . import ops
-from . import symbolic as sym
-from .dtypes import Dtype
-from .dtypes import Float32
+from .. import ops
+from .. import symbolic as sym
+from ..dtypes import Dtype
+from ..dtypes import Float32
 
 
 ##
