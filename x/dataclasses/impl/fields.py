@@ -19,6 +19,13 @@ MISSING = dc.MISSING
 EMPTY_METADATA = types.MappingProxyType({})
 
 
+def field_type(f: dc.Field) -> FieldType:
+    if (ft := getattr(f, '_field_type')) is not None:
+        return FieldType[ft]
+    else:
+        return FieldType.INSTANCE
+
+
 def field(
         *,
         default=MISSING,

@@ -2,54 +2,53 @@ import dataclasses as dc
 import sys
 import typing as ta
 
+from omlish import cached
 from omlish import check
 from omlish import lang
 
 from .internals import Params
+from .metadata import Metadata
+from .metadata import get_metadata
+from .params import Params12
+from .params import get_params
 
 
 IS_12 = sys.version_info[1] >= 12
 
 
-class FieldInfo:
-    def __init__(self, f: dc.Field) -> None:
+TypeT = ta.TypeVar('TypeT', bound=type, covariant=True)
+
+
+class ClassInfo(ta.Generic[TypeT]):
+
+    def __init__(self, cls: ta.Type[TypeT]) -> None:
+        check.isinstance(cls, type)
+        check.arg(dc.is_dataclass(cls))
         super().__init__()
-        self._f = check.isinstance(f, dc.Field)
+        self._cls = cls
 
     @property
-    def base(self) -> dc.Field:
-        return self._f
+    def cls(self) -> TypeT:
+        return self._cls
 
-    name: ta.Optional[str] = None
-    type: ta.Any = None
-    default: lang.Maybe[ta.Any] = lang.empty()
-    default_factory: lang.Maybe[ta.Any] = lang.empty()
-    repr: bool = True
-    hash: ta.Optional[bool] = None
-    init: bool = True
-    compare: bool = True
-    metadata: ta.Optional[ta.Mapping[ta.Any, ta.Any]] = None
-    kw_only: ta.Optional[bool] = None
+    @cached.property
+    def metadata(self) -> Metadata:
+        return get_metadata(self._cls)
 
+    @cached.property
+    def params(self) -> Params:
+        return get_params(self._cls)
 
-
-class ClassInfo:
-    def __init__(self, p: Params) -> None:
-        super().__init__()
-        self._p = check.isinstance(p, Params)
-
-    @property
-    def base(self) -> Params:
-        return self._p
-
-    init: bool = True
-    repr: bool = True
-    eq: bool = True
-    order: bool = False
-    unsafe_hash: bool = False
-    frozen: bool = False
-
-    match_args: bool = True
-    kw_only: bool = False
-    slots: bool = False
-    weakref_slot: bool = False
+    @cached.property
+    def params12(self) -> Params12:
+        if IS_12:
+            return Params12(
+                match_args=(p := self.params).match_args,
+                kw_only=p.kw_only,
+                slots=p.slots,
+                weakref_slot=p.weakref_slot,
+            )
+        elif (md_p12 := self.metadata.get(Params12)) is not None:
+            return md_p12
+        else:
+            return Params12()
