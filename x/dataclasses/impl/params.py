@@ -9,7 +9,7 @@ Field:
     init: bool = True
     compare: bool = True
     metadata: Metadata | None = None
-    kw_only: bool | None = None
+    kw_only: bool | MISSING = MISSING
 
     _field_type: Any = None
 
@@ -43,7 +43,7 @@ def get_params(obj: ta.Any) -> Params:
 
 
 @dc.dataclass(frozen=True)
-class ExtraFieldParams(lang.Final):
+class FieldExtras(lang.Final):
     coerce: ta.Optional[ta.Union[bool, ta.Callable[[ta.Any], ta.Any]]] = None
 
 
@@ -56,5 +56,5 @@ class Params12(lang.Final):
 
 
 @dc.dataclass(frozen=True)
-class ExtraParams(lang.Final):
+class ParamsExtras(lang.Final):
     metadata: ta.Optional[ta.Mapping[ta.Any, ta.Any]] = None

@@ -4,7 +4,6 @@ import typing as ta
 
 from omlish import cached
 from omlish import check
-from omlish import lang
 
 from .internals import Params
 from .metadata import Metadata

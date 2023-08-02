@@ -4,19 +4,15 @@ import types
 import typing as ta
 
 from omlish import check
-from omlish import lang
 
 from .internals import FieldType
 from .internals import is_classvar
 from .internals import is_initvar
-from .params import ExField
-from .params import ex_field
+from .params import FieldExtras
 from .utils import Namespace
 
 
 MISSING = dc.MISSING
-
-EMPTY_METADATA = types.MappingProxyType({})
 
 
 def field_type(f: dc.Field) -> FieldType:
@@ -36,39 +32,30 @@ def field(
         compare=True,
         metadata=None,
         kw_only=MISSING,
+
+        coerce: ta.Optional[ta.Callable[[ta.Any], ta.Any]] = None,
 ):  # -> dc.Field
     if default is not MISSING and default_factory is not MISSING:
         raise ValueError('cannot specify both default and default_factory')
 
-    ex = ExField(
-        default=lang.just(default) if default is not MISSING else lang.empty(),
-        default_factory=lang.just(default_factory) if default_factory is not MISSING else lang.empty(),
-        init=init,
-        repr=repr,
-        hash=hash,
-        compare=compare,
-        metadata=metadata,
-        kw_only=kw_only if kw_only is not MISSING else None,
+    fx = FieldExtras(
+        coerce=coerce,
     )
 
-    md: ta.Mapping = {ExField: ex}
+    md: ta.Mapping = {FieldExtras: fx}
     if metadata is not None:
         md = collections.ChainMap(md, metadata)
 
-    bf = dc.Field(
+    return dc.Field(
         default,
         default_factory,  # noqa
         init,
         repr,
         hash,
         compare,
-        md,
+        types.MappingProxyType(md),
         kw_only,  # noqa
     )
-
-    ex.base = bf
-
-    return bf
 
 
 def preprocess_field(
@@ -79,47 +66,40 @@ def preprocess_field(
 ) -> dc.Field:
     default = getattr(cls, a_name, MISSING)
     if isinstance(default, dc.Field):
-        bf = default
+        f = default
     else:
         if isinstance(default, types.MemberDescriptorType):
             default = MISSING
-        bf = field(default=default)
-    f = ex_field(bf)
+        f = field(default=default)
 
     f.name = a_name
     f.type = a_type
 
-    f.field_type = FieldType.INSTANCE
-
+    ft = FieldType.INSTANCE
     if is_classvar(cls, f.type):
-        f.field_type = FieldType.CLASS
+        ft = FieldType.CLASS
     if is_initvar(cls, f.type):
-        f.field_type = FieldType.INIT
-
-    if f.field_type in (FieldType.CLASS, FieldType.INIT):
+        ft = FieldType.INIT
+    if ft in (FieldType.CLASS, FieldType.INIT):
         if f.default_factory.present:
             raise TypeError(f'field {f.name} cannot have a default factory')
+    f._field_type = ft.value
 
-    if f.field_type in (FieldType.INSTANCE, FieldType.INIT):
+    if ft in (FieldType.INSTANCE, FieldType.INIT):
         if f.kw_only is None:
             f.kw_only = default_kw_only
     else:
-        check.arg(f.field_type is FieldType.CLASS)
+        check.arg(ft is FieldType.CLASS)
         if f.kw_only is not None:
             raise TypeError(f'field {f.name} is a ClassVar but specifies kw_only')
 
-    if f.field_type is FieldType.INSTANCE and f.default.present and (d := f.default.must()).__class__.__hash__ is None:
+    if ft is FieldType.INSTANCE and f.default.present and (d := f.default.must()).__class__.__hash__ is None:
         raise ValueError(f'mutable default {type(d)} for field {f.name} is not allowed: use default_factory')
 
-    bf.name = f.name
-    bf.type = f.type
-    bf._field_type = f.field_type.value
-    bf.kw_only = f.kw_only
-
-    return bf
+    return f
 
 
-def fields_in_init_order(fields: ta.Sequence[ExField]) -> ta.Tuple[ta.Sequence[ExField], ta.Sequence[ExField]]:
+def fields_in_init_order(fields: ta.Sequence[dc.Field]) -> ta.Tuple[ta.Sequence[dc.Field], ta.Sequence[dc.Field]]:
     return (
         tuple(f for f in fields if f.init and not f.kw_only),
         tuple(f for f in fields if f.init and f.kw_only),
@@ -138,7 +118,7 @@ def field_assign(
 
 
 def field_init(
-        f: ExField,
+        f: dc.Field,
         frozen: bool,
         globals: Namespace,
         self_name: str,
@@ -173,7 +153,7 @@ def field_init(
             else:
                 return None
 
-    if f.field_type is FieldType.INIT:
+    if field_type(f) is FieldType.INIT:
         return None
 
     return field_assign(frozen, f.name, value, self_name)  # noqa
