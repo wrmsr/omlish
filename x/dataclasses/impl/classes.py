@@ -1,4 +1,5 @@
 import abc
+import collections.abc
 import copy
 import dataclasses as dc
 import functools
@@ -15,6 +16,7 @@ from omlish import check
 from omlish import lang
 
 from .fields import field_init
+from .fields import field_type
 from .fields import fields_in_init_order
 from .fields import preprocess_field
 from .internals import FIELDS_ATTR
@@ -27,13 +29,15 @@ from .internals import Params
 from .internals import is_kw_only
 from .internals import recursive_repr
 from .internals import tuple_str
+from .metadata import METADATA_ATTR
+from .metadata import Metadata
 from .params import FieldExtras
 from .params import Params12
 from .params import ParamsExtras
+from .params import get_params12
 from .utils import Namespace
 from .utils import create_fn
 from .utils import set_new_attribute
-from .fields import field_type
 
 
 MISSING = dc.MISSING
@@ -56,6 +60,7 @@ def init_param(f: dc.Field) -> str:
 
 def init_fn(
         params: Params,
+        params12: Params12,
         fields: ta.Sequence[dc.Field],
         std_fields: ta.Sequence[dc.Field],
         kw_only_fields: ta.Sequence[dc.Field],
@@ -79,7 +84,7 @@ def init_fn(
 
     body_lines = []
     for f in fields:
-        line = field_init(f, params.frozen, locals, self_name, params.slots)
+        line = field_init(f, params.frozen, locals, self_name, params12.slots)
 
         if line:
             body_lines.append(line)
@@ -187,11 +192,11 @@ def cmp_fn(
 
 
 def _dataclass_getstate(self):
-    return [getattr(self, f.name) for f in ex_fields(self)]
+    return [getattr(self, f.name) for f in dc.fields(self)]
 
 
 def _dataclass_setstate(self, state):
-    for field, value in zip(ex_fields(self), state):
+    for field, value in zip(dc.fields(self), state):
         object.__setattr__(self, field.name, value)
 
 
@@ -216,11 +221,9 @@ def add_slots(
         raise TypeError(f'{cls.__name__} already specifies __slots__')
 
     cls_dict = dict(cls.__dict__)
-    field_names = tuple(f.name for f in ex_fields(cls))
+    field_names = tuple(f.name for f in dc.fields(cls))  # noqa
 
-    inherited_slots = set(
-        itertools.chain.from_iterable(map(_get_slots, cls.__mro__[1:-1]))
-    )
+    inherited_slots = set(itertools.chain.from_iterable(map(_get_slots, cls.__mro__[1:-1])))
 
     cls_dict['__slots__'] = tuple(
         itertools.filterfalse(
@@ -255,7 +258,7 @@ def add_slots(
 # process
 
 
-def process_class(cls: type, params: ExParams) -> type:
+def process_class(cls: type) -> type:
     if cls.__module__ in sys.modules:
         globals = sys.modules[cls.__module__].__dict__
     else:
@@ -263,41 +266,17 @@ def process_class(cls: type, params: ExParams) -> type:
 
     # params
 
+    params = check.isinstance(cls.__dict__[PARAMS_ATTR], Params)
+    metadata = check.isinstance(cls.__dict__[METADATA_ATTR], collections.abc.Mapping)
+    params12 = get_params12(cls)
+    params_extras = check.isinstance(metadata[ParamsExtras], ParamsExtras)  # noqa
+
     if params.order and not params.eq:
         raise ValueError('eq must be true if order is true')
 
-    setattr(
-        cls,
-        EX_PARAMS_ATTR,
-        params,
-    )
-
-    bpkw = dict(
-        init=params.init,
-        repr=params.repr,
-        eq=params.eq,
-        order=params.order,
-        unsafe_hash=params.unsafe_hash,
-        frozen=params.frozen,
-    )
-    if IS_12:
-        bpkw.update(
-            match_args=params.match_args,
-            kw_only=params.kw_only,
-            slots=params.slots,
-            weakref_slot=params.weakref_slot,
-        )
-    bp = Params(**bpkw)
-    params.base = bp
-    setattr(
-        cls,
-        PARAMS_ATTR,
-        bp,
-    )
-
     # field list
 
-    fields: ta.Dict[str, ExField] = {}
+    fields: ta.Dict[str, dc.Field] = {}
 
     any_frozen_base = False
     has_dataclass_bases = False
@@ -306,7 +285,7 @@ def process_class(cls: type, params: ExParams) -> type:
         if base_fields is not None:
             has_dataclass_bases = True
             for f in base_fields.values():
-                fields[f.name] = ex_field(f)
+                fields[f.name] = f
             if getattr(b, PARAMS_ATTR).frozen:
                 any_frozen_base = True
 
@@ -314,7 +293,7 @@ def process_class(cls: type, params: ExParams) -> type:
 
     cls_fields: ta.List[dc.Field] = []
 
-    kw_only = params.kw_only
+    kw_only = params12.kw_only
     kw_only_seen = False
     for name, type in cls_annotations.items():
         if is_kw_only(cls, type):
@@ -325,8 +304,8 @@ def process_class(cls: type, params: ExParams) -> type:
         else:
             cls_fields.append(preprocess_field(cls, name, type, kw_only))
 
-    for bf in cls_fields:
-        fields[bf.name] = f = ex_field(bf)
+    for f in cls_fields:
+        fields[f.name] = f
         if isinstance(getattr(cls, f.name, None), dc.Field):
             if f.default is MISSING:
                 delattr(cls, f.name)
@@ -344,11 +323,9 @@ def process_class(cls: type, params: ExParams) -> type:
         if not any_frozen_base and params.frozen:
             raise TypeError('cannot inherit frozen dataclass from a non-frozen one')
 
-    setattr(cls, EX_FIELDS_ATTR, fields)
+    setattr(cls, FIELDS_ATTR, fields)
 
     field_list = [f for f in fields.values() if field_type(f) is FieldType.INSTANCE]
-
-    setattr(cls, FIELDS_ATTR, {f.name: check.not_none(f.base) for f in fields.values()})
 
     # init
 
@@ -363,6 +340,7 @@ def process_class(cls: type, params: ExParams) -> type:
             '__init__',
             init_fn(
                 params,
+                params12,
                 all_init_fields,
                 std_init_fields,
                 kw_only_init_fields,
@@ -446,15 +424,15 @@ def process_class(cls: type, params: ExParams) -> type:
 
     # match_args
 
-    if params.match_args:
+    if params12.match_args:
         set_new_attribute(cls, '__match_args__', tuple(f.name for f in std_init_fields))
 
     # slots
 
-    if params.weakref_slot and not params.slots:
+    if params12.weakref_slot and not params12.slots:
         raise TypeError('weakref_slot is True but slots is False')
-    if params.slots:
-        cls = add_slots(cls, params.frozen, params.weakref_slot)
+    if params12.slots:
+        cls = add_slots(cls, params.frozen, params12.weakref_slot)
 
     # finalize
 
@@ -482,18 +460,38 @@ def dataclass(
         weakref_slot=False,
 ):
     def wrap(cls):
-        return process_class(cls, ExParams(
+        pkw = dict(
             init=init,
             repr=repr,
             eq=eq,
             order=order,
             unsafe_hash=unsafe_hash,
             frozen=frozen,
+        )
+        p12kw = dict(
             match_args=match_args,
             kw_only=kw_only,
             slots=slots,
             weakref_slot=weakref_slot,
-        ))
+        )
+
+        mmd: dict = {
+            ParamsExtras: ParamsExtras(),
+        }
+
+        if IS_12:
+            pkw.update(p12kw)
+        else:
+            mmd[Params12] = Params12(**p12kw)
+
+        md: Metadata = mmd
+        if (dmd := cls.__dict__.get(METADATA_ATTR)) is not None:
+            md = collections.ChainMap(md, dmd)
+
+        setattr(cls, PARAMS_ATTR, Params(**pkw))
+        setattr(cls, METADATA_ATTR, md)
+
+        return process_class(cls)
 
     if cls is None:
         return wrap

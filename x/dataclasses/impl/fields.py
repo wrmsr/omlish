@@ -17,7 +17,7 @@ MISSING = dc.MISSING
 
 def field_type(f: dc.Field) -> FieldType:
     if (ft := getattr(f, '_field_type')) is not None:
-        return FieldType[ft]
+        return FieldType(ft)
     else:
         return FieldType.INSTANCE
 

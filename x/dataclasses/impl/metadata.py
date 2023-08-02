@@ -1,4 +1,3 @@
-import dataclasses as dc
 import types
 import typing as ta
 
@@ -11,6 +10,6 @@ EMPTY_METADATA = types.MappingProxyType({})
 
 
 def get_metadata(cls: type) -> Metadata:
-    if not isinstance(cls, type) or not dc.is_dataclass(cls):
+    if not isinstance(cls, type):
         raise TypeError(cls)
     return cls.__dict__.get(METADATA_ATTR, EMPTY_METADATA)
