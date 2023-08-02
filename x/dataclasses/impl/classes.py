@@ -27,16 +27,16 @@ from .internals import Params
 from .internals import is_kw_only
 from .internals import recursive_repr
 from .internals import tuple_str
-from .params import EX_FIELDS_ATTR
-from .params import EX_PARAMS_ATTR
-from .params import ExField
-from .params import ExParams
-from .params import ex_field
-from .params import ex_fields
+from .params import FieldExtras
+from .params import Params12
+from .params import ParamsExtras
 from .utils import Namespace
 from .utils import create_fn
 from .utils import set_new_attribute
+from .fields import field_type
 
+
+MISSING = dc.MISSING
 
 IS_12 = sys.version_info[1] >= 12
 
@@ -44,21 +44,21 @@ IS_12 = sys.version_info[1] >= 12
 # init
 
 
-def init_param(f: ExField) -> str:
-    if not f.default.present and not f.default_factory.present:
+def init_param(f: dc.Field) -> str:
+    if f.default is MISSING and f.default_factory is MISSING:
         default = ''
-    elif f.default.present:
+    elif f.default is not MISSING:
         default = f'=__dataclass_dflt_{f.name}__'
-    elif f.default_factory.present:
+    elif f.default_factory is not MISSING:
         default = '=__dataclass_HAS_DEFAULT_FACTORY__'
     return f'{f.name}:__dataclass_type_{f.name}__{default}'  # noqa
 
 
 def init_fn(
-        params: ExParams,
-        fields: ta.Sequence[ExField],
-        std_fields: ta.Sequence[ExField],
-        kw_only_fields: ta.Sequence[ExField],
+        params: Params,
+        fields: ta.Sequence[dc.Field],
+        std_fields: ta.Sequence[dc.Field],
+        kw_only_fields: ta.Sequence[dc.Field],
         has_post_init: bool,
         self_name: str,
         globals: Namespace,
@@ -66,7 +66,7 @@ def init_fn(
     seen_default = False
     for f in std_fields:
         if f.init:
-            if not (f.default.present and f.default_factory.present):
+            if not (f.default is MISSING and f.default_factory is MISSING):
                 seen_default = True
             elif seen_default:
                 raise TypeError(f'non-default argument {f.name!r} follows default argument')
@@ -85,7 +85,7 @@ def init_fn(
             body_lines.append(line)
 
     if has_post_init:
-        params_str = ','.join(f.name for f in fields if f.field_type is FieldType.INIT)
+        params_str = ','.join(f.name for f in fields if field_type(f) is FieldType.INIT)
         body_lines.append(f'{self_name}.{POST_INIT_NAME}({params_str})')
 
     if not body_lines:
@@ -110,7 +110,7 @@ def init_fn(
 
 
 def repr_fn(
-        fields: ta.Sequence[ExField],
+        fields: ta.Sequence[dc.Field],
         globals: Namespace,
 ) -> ta.Callable:
     fn = create_fn(
@@ -128,7 +128,7 @@ def repr_fn(
 
 def frozen_get_del_attr(
         cls: type,
-        fields: ta.Sequence[ExField],
+        fields: ta.Sequence[dc.Field],
         globals: Namespace,
 ) -> ta.Tuple[ta.Callable, ta.Callable]:
     locals = {
@@ -328,10 +328,10 @@ def process_class(cls: type, params: ExParams) -> type:
     for bf in cls_fields:
         fields[bf.name] = f = ex_field(bf)
         if isinstance(getattr(cls, f.name, None), dc.Field):
-            if not f.default.present:
+            if f.default is MISSING:
                 delattr(cls, f.name)
             else:
-                setattr(cls, f.name, f.default.must())
+                setattr(cls, f.name, f.default)
 
     for name, value in cls.__dict__.items():
         if isinstance(value, dc.Field) and name not in cls_annotations:
@@ -346,13 +346,13 @@ def process_class(cls: type, params: ExParams) -> type:
 
     setattr(cls, EX_FIELDS_ATTR, fields)
 
-    field_list = [f for f in fields.values() if f.field_type is FieldType.INSTANCE]
+    field_list = [f for f in fields.values() if field_type(f) is FieldType.INSTANCE]
 
     setattr(cls, FIELDS_ATTR, {f.name: check.not_none(f.base) for f in fields.values()})
 
     # init
 
-    all_init_fields = [f for f in fields.values() if f.field_type in (FieldType.INSTANCE, FieldType.INIT)]
+    all_init_fields = [f for f in fields.values() if field_type(f) in (FieldType.INSTANCE, FieldType.INIT)]
     std_init_fields, kw_only_init_fields = fields_in_init_order(all_init_fields)
 
     if params.init:

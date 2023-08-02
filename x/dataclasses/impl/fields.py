@@ -81,7 +81,7 @@ def preprocess_field(
     if is_initvar(cls, f.type):
         ft = FieldType.INIT
     if ft in (FieldType.CLASS, FieldType.INIT):
-        if f.default_factory.present:
+        if f.default_factory is not MISSING:
             raise TypeError(f'field {f.name} cannot have a default factory')
     f._field_type = ft.value
 
@@ -93,8 +93,8 @@ def preprocess_field(
         if f.kw_only is not None:
             raise TypeError(f'field {f.name} is a ClassVar but specifies kw_only')
 
-    if ft is FieldType.INSTANCE and f.default.present and (d := f.default.must()).__class__.__hash__ is None:
-        raise ValueError(f'mutable default {type(d)} for field {f.name} is not allowed: use default_factory')
+    if ft is FieldType.INSTANCE and f.default is not MISSING and f.default.__class__.__hash__ is None:
+        raise ValueError(f'mutable default {type(f.default)} for field {f.name} is not allowed: use default_factory')
 
     return f
 
@@ -126,29 +126,29 @@ def field_init(
 ) -> ta.Optional[str]:
     default_name = f'__dataclass_dflt_{f.name}__'
 
-    if f.default_factory.present:
+    if f.default_factory is not MISSING:
         if f.init:
-            globals[default_name] = f.default_factory.must()
+            globals[default_name] = f.default_factory
             value = (
                 f'{default_name}() '
                 f'if {f.name} is __dataclass_HAS_DEFAULT_FACTORY__ '
                 f'else {f.name}'
             )
         else:
-            globals[default_name] = f.default_factory.must()
+            globals[default_name] = f.default_factory
             value = f'{default_name}()'
 
     else:
         if f.init:
-            if not f.default.present:
+            if f.default is MISSING:
                 value = f.name
-            elif f.default.present:
-                globals[default_name] = f.default.must()
+            elif f.default is not MISSING:
+                globals[default_name] = f.default
                 value = f.name
 
         else:
-            if slots and f.default.present:
-                globals[default_name] = f.default.must()
+            if slots and f.default is not MISSING:
+                globals[default_name] = f.default
                 value = default_name
             else:
                 return None
