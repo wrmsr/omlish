@@ -92,4 +92,4 @@ def get_params12(obj: ta.Any) -> Params12:
 
 @dc.dataclass(frozen=True)
 class ParamsExtras(lang.Final):
-    metadata: ta.Optional[ta.Mapping[ta.Any, ta.Any]] = None
+    reorder: bool = False

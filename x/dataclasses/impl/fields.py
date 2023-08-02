@@ -86,11 +86,11 @@ def preprocess_field(
     f._field_type = ft.value
 
     if ft in (FieldType.INSTANCE, FieldType.INIT):
-        if f.kw_only is None:
+        if f.kw_only is MISSING:
             f.kw_only = default_kw_only
     else:
         check.arg(ft is FieldType.CLASS)
-        if f.kw_only is not None:
+        if f.kw_only is not MISSING:
             raise TypeError(f'field {f.name} is a ClassVar but specifies kw_only')
 
     if ft is FieldType.INSTANCE and f.default is not MISSING and f.default.__class__.__hash__ is None:

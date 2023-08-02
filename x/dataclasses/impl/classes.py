@@ -489,7 +489,7 @@ def dataclass(
             md = collections.ChainMap(md, dmd)
 
         setattr(cls, PARAMS_ATTR, Params(**pkw))
-        setattr(cls, METADATA_ATTR, md)
+        setattr(cls, METADATA_ATTR, types.MappingProxyType(md))
 
         return process_class(cls)
 
