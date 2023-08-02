@@ -38,6 +38,9 @@ from .utils import create_fn
 from .utils import set_new_attribute
 
 
+IS_12 = sys.version_info[1] >= 12
+
+
 # init
 
 
@@ -277,7 +280,7 @@ def process_class(cls: type, params: ExParams) -> type:
         unsafe_hash=params.unsafe_hash,
         frozen=params.frozen,
     )
-    if sys.version_info[1] >= 12:
+    if IS_12:
         bpkw.update(
             match_args=params.match_args,
             kw_only=params.kw_only,
