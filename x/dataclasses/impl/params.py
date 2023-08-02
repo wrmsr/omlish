@@ -1,3 +1,32 @@
+"""
+Field:
+    name: str | None = None
+    type: Any = None
+    default: Any | MISSING = MISSING
+    default_factory: Any | MISSING = MISSING
+    repr: bool = True
+    hash: bool | None = None
+    init: bool = True
+    compare: bool = True
+    metadata: Metadata | None = None
+    kw_only: bool | None = None
+
+    _field_type: Any = None
+
+
+Params:
+    init: bool = True
+    repr: bool = True
+    eq: bool = True
+    order: bool = False
+    unsafe_hash: bool = False
+    frozen: bool = False
+
+    match_args: bool = True
+    kw_only: bool = False
+    slots: bool = False
+    weakref_slot: bool = False
+"""
 import dataclasses as dc
 import typing as ta
 
