@@ -279,189 +279,198 @@ def add_slots(
 # process
 
 
-def process_class(cls: type) -> type:
-    if cls.__module__ in sys.modules:
-        globals = sys.modules[cls.__module__].__dict__
-    else:
-        globals = {}
+class ClassProcessor:
+    def __init__(self, cls: type) -> None:
+        super().__init__()
+        self._cls = cls
 
-    # params
-
-    params = check.isinstance(cls.__dict__[PARAMS_ATTR], Params)  # type: ignore
-    metadata = check.isinstance(cls.__dict__[METADATA_ATTR], collections.abc.Mapping)
-    params12 = get_params12(cls)
-    params_extras = check.isinstance(metadata[ParamsExtras], ParamsExtras)  # type: ignore  # noqa
-    merged_metadata = get_merged_metadata(cls)
-
-    if params.order and not params.eq:
-        raise ValueError('eq must be true if order is true')
-
-    # field list
-
-    fields: dict[str, dc.Field] = {}
-
-    any_frozen_base = False
-    has_dataclass_bases = False
-    for b in cls.__mro__[-1:0:-1]:
-        base_fields = getattr(b, FIELDS_ATTR, None)
-        if base_fields is not None:
-            has_dataclass_bases = True
-            for f in base_fields.values():
-                fields[f.name] = f
-            if getattr(b, PARAMS_ATTR).frozen:
-                any_frozen_base = True
-
-    cls_annotations = inspect.get_annotations(cls)
-
-    cls_fields: list[dc.Field] = []
-
-    kw_only = params12.kw_only
-    kw_only_seen = False
-    for name, type in cls_annotations.items():
-        if is_kw_only(cls, type):
-            if kw_only_seen:
-                raise TypeError(f'{name!r} is KW_ONLY, but KW_ONLY has already been specified')
-            kw_only_seen = True
-            kw_only = True
+    def __call__(self) -> type:
+        if self._cls.__module__ in sys.modules:
+            globals = sys.modules[self._cls.__module__].__dict__
         else:
-            cls_fields.append(preprocess_field(cls, name, type, kw_only))
+            globals = {}
 
-    for f in cls_fields:
-        fields[f.name] = f
-        if isinstance(getattr(cls, f.name, None), dc.Field):
-            if f.default is MISSING:
-                delattr(cls, f.name)
+        # params
+
+        params = check.isinstance(self._cls.__dict__[PARAMS_ATTR], Params)  # type: ignore
+        metadata = check.isinstance(self._cls.__dict__[METADATA_ATTR], collections.abc.Mapping)
+        params12 = get_params12(self._cls)
+        params_extras = check.isinstance(metadata[ParamsExtras], ParamsExtras)  # type: ignore  # noqa
+        merged_metadata = get_merged_metadata(self._cls)
+
+        if params.order and not params.eq:
+            raise ValueError('eq must be true if order is true')
+
+        # field list
+
+        fields: dict[str, dc.Field] = {}
+
+        any_frozen_base = False
+        has_dataclass_bases = False
+        for b in self._cls.__mro__[-1:0:-1]:
+            base_fields = getattr(b, FIELDS_ATTR, None)
+            if base_fields is not None:
+                has_dataclass_bases = True
+                for f in base_fields.values():
+                    fields[f.name] = f
+                if getattr(b, PARAMS_ATTR).frozen:
+                    any_frozen_base = True
+
+        cls_annotations = inspect.get_annotations(self._cls)
+
+        cls_fields: list[dc.Field] = []
+
+        kw_only = params12.kw_only
+        kw_only_seen = False
+        for name, type in cls_annotations.items():
+            if is_kw_only(self._cls, type):
+                if kw_only_seen:
+                    raise TypeError(f'{name!r} is KW_ONLY, but KW_ONLY has already been specified')
+                kw_only_seen = True
+                kw_only = True
             else:
-                setattr(cls, f.name, f.default)
+                cls_fields.append(preprocess_field(self._cls, name, type, kw_only))
 
-    for name, value in cls.__dict__.items():
-        if isinstance(value, dc.Field) and name not in cls_annotations:
-            raise TypeError(f'{name!r} is a field but has no type annotation')
+        for f in cls_fields:
+            fields[f.name] = f
+            if isinstance(getattr(self._cls, f.name, None), dc.Field):
+                if f.default is MISSING:
+                    delattr(self._cls, f.name)
+                else:
+                    setattr(self._cls, f.name, f.default)
 
-    if has_dataclass_bases:
-        if any_frozen_base and not params.frozen:
-            raise TypeError('cannot inherit non-frozen dataclass from a frozen one')
+        for name, value in self._cls.__dict__.items():
+            if isinstance(value, dc.Field) and name not in cls_annotations:
+                raise TypeError(f'{name!r} is a field but has no type annotation')
 
-        if not any_frozen_base and params.frozen:
-            raise TypeError('cannot inherit frozen dataclass from a non-frozen one')
+        if has_dataclass_bases:
+            if any_frozen_base and not params.frozen:
+                raise TypeError('cannot inherit non-frozen dataclass from a frozen one')
 
-    setattr(cls, FIELDS_ATTR, fields)
+            if not any_frozen_base and params.frozen:
+                raise TypeError('cannot inherit frozen dataclass from a non-frozen one')
 
-    field_list = [f for f in fields.values() if field_type(f) is FieldType.INSTANCE]
+        setattr(self._cls, FIELDS_ATTR, fields)
 
-    # init
+        field_list = [f for f in fields.values() if field_type(f) is FieldType.INSTANCE]
 
-    all_init_fields = [f for f in fields.values() if field_type(f) in (FieldType.INSTANCE, FieldType.INIT)]
-    std_init_fields, kw_only_init_fields = fields_in_init_order(all_init_fields)
+        # init
 
-    if params.init:
-        has_post_init = hasattr(cls, POST_INIT_NAME)
+        all_init_fields = [f for f in fields.values() if field_type(f) in (FieldType.INSTANCE, FieldType.INIT)]
+        std_init_fields, kw_only_init_fields = fields_in_init_order(all_init_fields)
 
-        set_new_attribute(
-            cls,
-            '__init__',
-            init_fn(
-                params,
-                params12,
-                merged_metadata,
-                all_init_fields,
-                std_init_fields,
-                kw_only_init_fields,
-                has_post_init,
-                '__dataclass_self__' if 'self' in fields else 'self',
-                globals,
-            ),
-        )
+        if params.init:
+            has_post_init = hasattr(self._cls, POST_INIT_NAME)
 
-    # repr
+            set_new_attribute(
+                self._cls,
+                '__init__',
+                init_fn(
+                    params,
+                    params12,
+                    merged_metadata,
+                    all_init_fields,
+                    std_init_fields,
+                    kw_only_init_fields,
+                    has_post_init,
+                    '__dataclass_self__' if 'self' in fields else 'self',
+                    globals,
+                ),
+            )
 
-    if params.repr:
-        flds = [f for f in field_list if f.repr]
-        set_new_attribute(cls, '__repr__', repr_fn(flds, globals))
+        # repr
 
-    # eq
+        if params.repr:
+            flds = [f for f in field_list if f.repr]
+            set_new_attribute(self._cls, '__repr__', repr_fn(flds, globals))
 
-    if params.eq:
-        # flds = [f for f in field_list if f.compare]
-        # self_tuple = tuple_str('self', flds)
-        # other_tuple = tuple_str('other', flds)
-        # set_new_attribute(cls, '__eq__', _cmp_fn('__eq__', '==', self_tuple, other_tuple, globals=globals))
-        cmp_fields = (field for field in field_list if field.compare)
-        terms = [f'self.{field.name}==other.{field.name}' for field in cmp_fields]
-        field_comparisons = ' and '.join(terms) or 'True'
-        body = [
-            f'if other.__class__ is self.__class__:',
-            f' return {field_comparisons}',
-            f'return NotImplemented',
-        ]
-        func = create_fn('__eq__', ('self', 'other'), body, globals=globals)
-        set_new_attribute(cls, '__eq__', func)
+        # eq
 
-    # order
+        if params.eq:
+            # flds = [f for f in field_list if f.compare]
+            # self_tuple = tuple_str('self', flds)
+            # other_tuple = tuple_str('other', flds)
+            # set_new_attribute(cls, '__eq__', _cmp_fn('__eq__', '==', self_tuple, other_tuple, globals=globals))
+            cmp_fields = (field for field in field_list if field.compare)
+            terms = [f'self.{field.name}==other.{field.name}' for field in cmp_fields]
+            field_comparisons = ' and '.join(terms) or 'True'
+            body = [
+                f'if other.__class__ is self.__class__:',
+                f' return {field_comparisons}',
+                f'return NotImplemented',
+            ]
+            func = create_fn('__eq__', ('self', 'other'), body, globals=globals)
+            set_new_attribute(self._cls, '__eq__', func)
 
-    if params.order:
-        flds = [f for f in field_list if f.compare]
-        self_tuple = tuple_str('self', flds)
-        other_tuple = tuple_str('other', flds)
-        for name, op in [
-            ('__lt__', '<'),
-            ('__le__', '<='),
-            ('__gt__', '>'),
-            ('__ge__', '>='),
-        ]:
-            if set_new_attribute(cls, name, cmp_fn(name, op, self_tuple, other_tuple, globals=globals)):
-                raise TypeError(
-                    f'Cannot overwrite attribute {name} in class {cls.__name__}. '
-                    f'Consider using functools.total_ordering'
-                )
+        # order
 
-    # frozen
+        if params.order:
+            flds = [f for f in field_list if f.compare]
+            self_tuple = tuple_str('self', flds)
+            other_tuple = tuple_str('other', flds)
+            for name, op in [
+                ('__lt__', '<'),
+                ('__le__', '<='),
+                ('__gt__', '>'),
+                ('__ge__', '>='),
+            ]:
+                if set_new_attribute(self._cls, name, cmp_fn(name, op, self_tuple, other_tuple, globals=globals)):
+                    raise TypeError(
+                        f'Cannot overwrite attribute {name} in class {self._cls.__name__}. '
+                        f'Consider using functools.total_ordering'
+                    )
 
-    if params.frozen:
-        for fn in frozen_get_del_attr(cls, field_list, globals):
-            if set_new_attribute(cls, fn.__name__, fn):
-                raise TypeError(f'Cannot overwrite attribute {fn.__name__} in class {cls.__name__}')
+        # frozen
 
-    # hash
+        if params.frozen:
+            for fn in frozen_get_del_attr(self._cls, field_list, globals):
+                if set_new_attribute(self._cls, fn.__name__, fn):
+                    raise TypeError(f'Cannot overwrite attribute {fn.__name__} in class {self._cls.__name__}')
 
-    class_hash = cls.__dict__.get('__hash__', dc.MISSING)
-    has_explicit_hash = not (class_hash is dc.MISSING or (class_hash is None and '__eq__' in cls.__dict__))
+        # hash
 
-    hash_action = HASH_ACTIONS[(
-        bool(params.unsafe_hash),
-        bool(params.eq),
-        bool(params.frozen),
-        has_explicit_hash,
-    )]
-    if hash_action:
-        cls.__hash__ = hash_action(cls, field_list, globals)  # type: ignore
+        class_hash = self._cls.__dict__.get('__hash__', dc.MISSING)
+        has_explicit_hash = not (class_hash is dc.MISSING or (class_hash is None and '__eq__' in self._cls.__dict__))
 
-    # doc
+        hash_action = HASH_ACTIONS[(
+            bool(params.unsafe_hash),
+            bool(params.eq),
+            bool(params.frozen),
+            has_explicit_hash,
+        )]
+        if hash_action:
+            self._cls.__hash__ = hash_action(self._cls, field_list, globals)  # type: ignore
 
-    if not getattr(cls, '__doc__'):
-        try:
-            text_sig = str(inspect.signature(cls)).replace(' -> None', '')
-        except (TypeError, ValueError):
-            text_sig = ''
-        cls.__doc__ = (cls.__name__ + text_sig)
+        # doc
 
-    # match_args
+        if not getattr(self._cls, '__doc__'):
+            try:
+                text_sig = str(inspect.signature(self._cls)).replace(' -> None', '')
+            except (TypeError, ValueError):
+                text_sig = ''
+            self._cls.__doc__ = (self._cls.__name__ + text_sig)
 
-    if params12.match_args:
-        set_new_attribute(cls, '__match_args__', tuple(f.name for f in std_init_fields))
+        # match_args
 
-    # slots
+        if params12.match_args:
+            set_new_attribute(self._cls, '__match_args__', tuple(f.name for f in std_init_fields))
 
-    if params12.weakref_slot and not params12.slots:
-        raise TypeError('weakref_slot is True but slots is False')
-    if params12.slots:
-        cls = add_slots(cls, params.frozen, params12.weakref_slot)
+        # slots
 
-    # finalize
+        if params12.weakref_slot and not params12.slots:
+            raise TypeError('weakref_slot is True but slots is False')
+        if params12.slots:
+            self._cls = add_slots(self._cls, params.frozen, params12.weakref_slot)
 
-    abc.update_abstractmethods(cls)
+        # finalize
 
-    return cls
+        abc.update_abstractmethods(self._cls)  # noqa
+
+        return self._cls
+
+
+def process_class(cls: type) -> type:
+    return ClassProcessor(cls)()
 
 
 # api
