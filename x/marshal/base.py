@@ -2,6 +2,7 @@
 TODO:
  - mappings
  - redacted
+ - strongly typed Composite/Cached Marshaler/Unmarshaler factories - footgun
 
 Jackson:
  - USE_ANNOTATIONS

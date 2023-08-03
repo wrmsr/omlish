@@ -11,6 +11,7 @@ from ..base import SetType
 from ..base import UnmarshalContext
 from ..base import UnmarshalerFactory
 from ..base64 import BASE64_MARSHALER_FACTORY
+from ..base64 import BASE64_UNMARSHALER_FACTORY
 from ..dataclasses import DataclassMarshalerFactory
 from ..dataclasses import DataclassUnmarshalerFactory
 from ..datetimes import DatetimeMarshalerFactory
@@ -31,6 +32,7 @@ from ..registries import Registry
 from ..specs import Spec
 from ..specs import spec_of
 from ..uuids import UUID_MARSHALER_FACTORY
+from ..uuids import UUID_UNMARSHALER_FACTORY
 from .foox import Foox
 
 
@@ -51,7 +53,7 @@ def test_marshal():
     # reg = Registry()
     # reg.register(spec_of(int), SetType(marshaler=PrimitiveMarshaler()))
 
-    mfs: list[MarshalerFactory] = [  # noqa
+    mfs: list[MarshalerFactory] = [
         PRIMITIVE_MARSHALER_FACTORY,
         OptionalMarshalerFactory(),
         DataclassMarshalerFactory(),
@@ -84,11 +86,13 @@ def test_marshal():
         print(mobj)
     print()
 
-    ufs: list[UnmarshalerFactory] = [  # noqa
+    ufs: list[UnmarshalerFactory] = [
         PRIMITIVE_UNMARSHALER_FACTORY,
         OptionalUnmarshalerFactory(),
         DataclassUnmarshalerFactory(),
         EnumUnmarshalerFactory(),
+        UUID_UNMARSHALER_FACTORY,
+        BASE64_UNMARSHALER_FACTORY,
         IterableUnmarshalerFactory(),
     ]
 
