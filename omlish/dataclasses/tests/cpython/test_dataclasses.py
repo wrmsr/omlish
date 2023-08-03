@@ -156,17 +156,15 @@ class TestCase(unittest.TestCase):
         o = C(3)
         self.assertEqual((o.x, o.y), (3, 0))
 
-        exc_cls = SyntaxError if sys.version_info[1] >= 12 else TypeError
-
         # Non-defaults following defaults.
-        with self.assertRaisesRegex(exc_cls, r"non-default argument ('y' )?follows default argument"):
+        with self.assertRaisesRegex(TypeError, r"non-default argument ('y' )?follows default argument"):
             @dataclass
             class C:
                 x: int = 0
                 y: int
 
         # A derived class adds a non-default field after a default one.
-        with self.assertRaisesRegex(exc_cls, r"non-default argument ('y' )?follows " "default argument"):
+        with self.assertRaisesRegex(TypeError, r"non-default argument ('y' )?follows " "default argument"):
             @dataclass
             class B:
                 x: int = 0
@@ -176,7 +174,7 @@ class TestCase(unittest.TestCase):
                 y: int
 
         # Override a base class field and add a default to a field which didn't use to have a default.
-        with self.assertRaisesRegex(exc_cls, r"non-default argument ('y' )?follows " "default argument"):
+        with self.assertRaisesRegex(TypeError, r"non-default argument ('y' )?follows " "default argument"):
             @dataclass
             class B:
                 x: int
@@ -4698,9 +4696,8 @@ class TestKeywordArgs(unittest.TestCase):
         self.assertEqual(a.d, 4)
 
         # Make sure we still check for non-kwarg non-defaults not following defaults.
-        exc_cls = SyntaxError if sys.version_info[1] >= 12 else TypeError
         err_regex = r"non-default argument ('z' )?follows default argument"
-        with self.assertRaisesRegex(exc_cls, err_regex):
+        with self.assertRaisesRegex(TypeError, err_regex):
             @dataclass
             class A:
                 a: int = 0
