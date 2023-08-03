@@ -21,8 +21,8 @@ class Polymorphism:
         self._ty = ty
         self._impls = list(impls)
 
-        by_ty: ta.Dict[type, Impl] = {}
-        by_tag: ta.Dict[str, Impl] = {}
+        by_ty: dict[type, Impl] = {}
+        by_tag: dict[str, Impl] = {}
         for i in self._impls:
             if not issubclass(i.ty, ty) or i.ty in by_ty:
                 raise TypeError(i.ty, ty)

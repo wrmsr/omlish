@@ -6,7 +6,7 @@ from .base import MarshalerFactory
 from .base import UnmarshalContext
 from .base import Unmarshaler
 from .base import UnmarshalerFactory
-from .exc import UnhandledSpecException
+from .exceptions import UnhandledSpecException
 from .factories import SpecMapFactory
 from .values import Value
 
@@ -24,7 +24,7 @@ class PrimitiveMarshalerUnmarshaler(Marshaler, Unmarshaler):
     def marshal(self, ctx: MarshalContext, o: ta.Any) -> Value:
         if isinstance(o, PRIMITIVE_TYPES):
             return o
-        raise UnhandledSpecException(type(o))
+        raise TypeError(o)
 
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any:
         if isinstance(v, PRIMITIVE_TYPES):

@@ -39,7 +39,7 @@ import typing as ta
 
 from omlish import check
 
-from .exc import UnhandledSpecException
+from .exceptions import UnhandledSpecException
 from .factories import Factory
 from .factories import RecursiveSpecFactory
 from .registries import Registry

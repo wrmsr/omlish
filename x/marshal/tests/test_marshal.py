@@ -6,19 +6,25 @@ from ..base import MarshalContext
 from ..base import Marshaler
 from ..base import MarshalerFactory
 from ..base import RecursiveMarshalerFactory
+from ..base import RecursiveUnmarshalerFactory
 from ..base import SetType
+from ..base import UnmarshalContext
+from ..base import UnmarshalerFactory
 from ..base64 import BASE64_MARSHALER_FACTORY
 from ..dataclasses import DataclassMarshalerFactory
+from ..dataclasses import DataclassUnmarshalerFactory
 from ..datetimes import DatetimeMarshalerFactory
 from ..enums import EnumMarshalerFactory
-from ..exc import UnhandledSpecException
 from ..factories import CompositeFactory
+from ..exceptions import UnhandledSpecException
 from ..factories import RecursiveSpecFactory
 from ..factories import SpecCacheFactory
 from ..factories import SpecMapFactory
 from ..iterables import IterableMarshalerFactory
 from ..optionals import OptionalMarshalerFactory
+from ..optionals import OptionalUnmarshalerFactory
 from ..primitives import PRIMITIVE_MARSHALER_FACTORY
+from ..primitives import PRIMITIVE_UNMARSHALER_FACTORY
 from ..registries import Registry
 from ..specs import Spec
 from ..specs import spec_of
@@ -43,7 +49,7 @@ def test_marshal():
     # reg = Registry()
     # reg.register(spec_of(int), SetType(marshaler=PrimitiveMarshaler()))
 
-    mfs: ta.List[MarshalerFactory] = [  # noqa
+    mfs: list[MarshalerFactory] = [  # noqa
         PRIMITIVE_MARSHALER_FACTORY,
         OptionalMarshalerFactory(),
         DataclassMarshalerFactory(),
@@ -63,6 +69,29 @@ def test_marshal():
     )
 
     reg = Registry()
+
+    obj = Foo([420, 421], 'barf', Foo([1, 2], 'xxx', e=E.Y))
+
     mc = MarshalContext(registry=reg, factory=mf)
     for _ in range(2):
-        print(mc.make(Foo).marshal(mc, Foo([420, 421], 'barf', Foo([1, 2], 'xxx', e=E.Y))))
+        mobj = mc.make(type(obj)).marshal(mc, obj)
+        print(mobj)
+
+    ufs: list[UnmarshalerFactory] = [  # noqa
+        PRIMITIVE_UNMARSHALER_FACTORY,
+        OptionalUnmarshalerFactory(),
+        DataclassMarshalerFactory(),
+    ]
+
+    uf: UnmarshalerFactory = SpecCacheFactory(  # noqa
+        RecursiveUnmarshalerFactory(
+            CompositeFactory(
+                *ufs
+            )
+        )
+    )
+
+    uc = UnmarshalContext(registry=reg, factory=uf)
+    for _ in range(2):
+        uobj = uc.make(type(obj)).unmarshal(uc, mobj)
+        print(uobj)

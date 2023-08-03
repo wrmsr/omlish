@@ -50,7 +50,7 @@ class SpecCacheFactory(Factory[R, C, Spec]):
     def __init__(self, f: Factory[R, C, Spec]) -> None:
         super().__init__()
         self._f = f
-        self._dct: ta.Dict[Spec, ta.Optional[R]] = {}
+        self._dct: dict[Spec, ta.Optional[R]] = {}
         self._mtx = threading.RLock()
 
     def __call__(self, ctx: C, spec: Spec) -> ta.Optional[R]:
@@ -78,7 +78,7 @@ class RecursiveSpecFactory(Factory[R, C, Spec]):
         super().__init__()
         self._f = f
         self._prx = prx
-        self._dct: ta.Dict[Spec, ta.Optional[R]] = {}
+        self._dct: dict[Spec, ta.Optional[R]] = {}
 
     def __call__(self, ctx: C, spec: Spec) -> ta.Optional[R]:
         try:
@@ -109,7 +109,7 @@ class CompositeFactory(Factory[R, C, A]):
         self._st = strategy
 
     def __call__(self, ctx: C, arg: A) -> ta.Optional[R]:
-        w: ta.List[R] = []
+        w: list[R] = []
         for c in self._fs:
             if (r := c(ctx, arg)) is None:
                 continue

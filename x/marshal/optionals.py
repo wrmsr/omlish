@@ -4,6 +4,9 @@ import typing as ta
 from .base import MarshalContext
 from .base import Marshaler
 from .base import MarshalerFactory
+from .base import UnmarshalContext
+from .base import Unmarshaler
+from .base import UnmarshalerFactory
 from .specs import Spec
 from .specs import Union
 from .values import Value
@@ -25,4 +28,23 @@ class OptionalMarshalerFactory(MarshalerFactory):
             if (e := ctx.make(spec.without_none())) is None:
                 return None
             return OptionalMarshaler(e)
+        return None
+
+
+@dc.dataclass(frozen=True)
+class OptionalUnmarshaler(Unmarshaler):
+    e: Unmarshaler
+
+    def marshal(self, ctx: UnmarshalContext, v: Value) -> ta.Optional:
+        if v is None:
+            return None
+        return self.e.unmarshal(ctx, v)
+
+
+class OptionalUnmarshalerFactory(UnmarshalerFactory):
+    def __call__(self, ctx: UnmarshalContext, spec: Spec) -> ta.Optional[Unmarshaler]:
+        if isinstance(spec, Union) and spec.is_optional:
+            if (e := ctx.make(spec.without_none())) is None:
+                return None
+            return OptionalUnmarshaler(e)
         return None
