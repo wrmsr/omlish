@@ -287,9 +287,9 @@ class ClassProcessor:
         self._cls = check.isinstance(cls, type)
 
         self._params = check.isinstance(self._cls.__dict__[PARAMS_ATTR], Params)  # type: ignore
-        self._metadata = check.isinstance(self._cls.__dict__[METADATA_ATTR], collections.abc.Mapping)
+        self._cls_metadata = check.isinstance(self._cls.__dict__[METADATA_ATTR], collections.abc.Mapping)
         self._params12 = get_params12(self._cls)
-        self._params_extras = check.isinstance(self._metadata[ParamsExtras], ParamsExtras)  # type: ignore  # noqa
+        self._params_extras = check.isinstance(self._cls_metadata[ParamsExtras], ParamsExtras)  # type: ignore  # noqa
         self._merged_metadata = get_merged_metadata(self._cls)
 
     @cached.property
@@ -490,11 +490,13 @@ class ClassProcessor:
 
         set_new_attribute(self._cls, '__match_args__', tuple(f.name for f in self._init_fields().std))
 
-    def _process_slots(self) -> None:
+    @lang.cached_nullary
+    def _transform_slots(self) -> None:
         if self._params12.weakref_slot and not self._params12.slots:
             raise TypeError('weakref_slot is True but slots is False')
-        if self._params12.slots:
-            self._cls = add_slots(self._cls, self._params.frozen, self._params12.weakref_slot)
+        if not self._params12.slots:
+            return
+        self._cls = add_slots(self._cls, self._params.frozen, self._params12.weakref_slot)
 
     @lang.cached_nullary
     def process(self) -> type:
@@ -512,7 +514,8 @@ class ClassProcessor:
         self._process_hash()
         self._process_doc()
         self._process_match_args()
-        self._process_slots()
+
+        self._transform_slots()
 
         abc.update_abstractmethods(self._cls)  # noqa
 
