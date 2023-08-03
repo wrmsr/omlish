@@ -1,0 +1,2 @@
+class CheckException(Exception):
+    pass

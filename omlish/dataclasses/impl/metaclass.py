@@ -1,7 +1,8 @@
 import abc
 
-from .. import lang
-from .impl import dataclass
+from omlish import lang
+
+from .classes import dataclass
 
 
 class DataMeta(abc.ABCMeta):

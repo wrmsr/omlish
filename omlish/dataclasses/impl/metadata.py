@@ -1,0 +1,61 @@
+import types
+import typing as ta
+
+from omlish import lang
+
+
+METADATA_ATTR = '__dataclass_metadata__'
+
+Metadata: ta.TypeAlias = ta.Mapping[ta.Any, ta.Any]
+
+EMPTY_METADATA = types.MappingProxyType({})
+
+_CLASS_MERGED_KEYS: set = set()
+CLASS_MERGED_KEYS: ta.AbstractSet = _CLASS_MERGED_KEYS
+
+
+def _class_merged(o):
+    _CLASS_MERGED_KEYS.add(o)
+    return o
+
+
+def get_merged_metadata(obj: ta.Any) -> Metadata:
+    cls = obj if isinstance(obj, type) else type(obj)
+    dct: ta.Dict[ta.Any, ta.Any] = {}
+    for cur in cls.__mro__[::-1]:
+        if not (smd := cur.__dict__.get(METADATA_ATTR)):
+            continue
+        for k, v in smd.items():
+            if k in CLASS_MERGED_KEYS:
+                dct.setdefault(k, []).extend(v)
+            else:
+                dct[k] = v
+    return dct
+
+
+def _add_cls_md(k, v):
+    lang.get_caller_cls_dct(1).setdefault(METADATA_ATTR, {}).setdefault(k, []).append(v)
+
+
+##
+
+
+@_class_merged
+class Check(lang.Marker):
+    pass
+
+
+def check(fn: ta.Union[ta.Callable[..., bool], staticmethod]) -> None:
+    _add_cls_md(Check, fn)
+
+
+##
+
+
+@_class_merged
+class Init(lang.Marker):
+    pass
+
+
+def init(fn: ta.Callable[..., None]) -> None:
+    _add_cls_md(Init, fn)

@@ -1,37 +1,52 @@
-import dataclasses as _dc
+from dataclasses import (  # noqa
+    FrozenInstanceError,
 
+    MISSING,
+    KW_ONLY,
 
-Field = _dc.Field
-FrozenInstanceError = _dc.FrozenInstanceError
-InitVar = _dc.InitVar
-MISSING = _dc.MISSING
+    InitVar,
+    Field,
 
-fields = _dc.fields
-asdict = _dc.asdict
-astuple = _dc.astuple
-make_dataclass = _dc.make_dataclass
-replace = _dc.replace
-is_dataclass = _dc.is_dataclass
+    # field,
+
+    # dataclass,
+    # make_dataclass,
+
+    fields,
+
+    is_dataclass,
+
+    # asdict,
+    # astuple,
+
+    replace,
+)
+
+from .impl.fields import field
+
+from .impl.classes import (
+    dataclass,
+    make_dataclass,
+)
+
+from .impl.as_ import (
+    asdict,
+    astuple,
+)
 
 ##
 
+from .impl.exceptions import CheckException
 
-from .impl import dataclass as _dataclass  # noqa
-from .impl import field as _field  # noqa
-from .mcls import Data  # noqa
-from .mcls import DataMeta  # noqa
-from .md import KwOnly  # noqa
-from .md import check  # noqa
-from .md import init  # noqa
-from .md import metadata  # noqa
-from .md import tag  # noqa
+from .impl.metaclass import (
+    DataMeta,
+    Data,
+)
 
-##
+from .impl.metadata import (
+    Check,
+    check,
 
-
-from dataclasses import dataclass  # noqa
-
-
-globals()['dataclass'] = _dataclass
-
-field = _field
+    Init,
+    init,
+)

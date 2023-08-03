@@ -1,0 +1,128 @@
+"""
+Field:
+    name: str | None = None
+    type: Any = None
+    default: Any | MISSING = MISSING
+    default_factory: Any | MISSING = MISSING
+    repr: bool = True
+    hash: bool | None = None
+    init: bool = True
+    compare: bool = True
+    metadata: Metadata | None = None
+    kw_only: bool | MISSING = MISSING
+
+    _field_type: Any = None
+
+
+Params:
+    init: bool = True
+    repr: bool = True
+    eq: bool = True
+    order: bool = False
+    unsafe_hash: bool = False
+    frozen: bool = False
+
+    match_args: bool = True
+    kw_only: bool = False
+    slots: bool = False
+    weakref_slot: bool = False
+"""
+import dataclasses as dc
+import sys
+import typing as ta
+
+from omlish import lang
+
+from .internals import PARAMS_ATTR
+from .internals import Params
+from .metadata import EMPTY_METADATA
+from .metadata import METADATA_ATTR
+
+
+IS_12 = sys.version_info[1] >= 12
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class FieldExtras(lang.Final):
+    coerce: ta.Optional[ta.Union[bool, ta.Callable[[ta.Any], ta.Any]]] = None
+    check: ta.Optional[ta.Callable[[ta.Any], bool]] = None
+
+
+DEFAULT_FIELD_EXTRAS = FieldExtras()
+
+
+def get_field_extras(f: dc.Field) -> FieldExtras:
+    if not isinstance(f, dc.Field):
+        raise TypeError(f)
+    return f.metadata.get(FieldExtras, DEFAULT_FIELD_EXTRAS)
+
+
+##
+
+
+def get_params_cls(obj: ta.Any) -> type | None:
+    if not isinstance(obj, type):
+        obj = type(obj)
+    for cur in obj.__mro__:
+        if PARAMS_ATTR in cur.__dict__:
+            return cur
+    return None
+
+
+def get_params(obj: ta.Any) -> Params:
+    if not hasattr(obj, PARAMS_ATTR):
+        raise TypeError(obj)
+    return getattr(obj, PARAMS_ATTR)
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class Params12(lang.Final):
+    match_args: bool = True
+    kw_only: bool = False
+    slots: bool = False
+    weakref_slot: bool = False
+
+
+DEFAULT_PARAMS12 = Params12()
+
+
+def get_params12(obj: ta.Any) -> Params12:
+    if IS_12:
+        p = get_params(obj)
+        return Params12(
+            match_args=p.match_args,
+            kw_only=p.kw_only,
+            slots=p.slots,
+            weakref_slot=p.weakref_slot,
+        )
+
+    if (pcls := get_params_cls(obj)) is None:
+        raise TypeError(pcls)
+
+    md = pcls.__dict__.get(METADATA_ATTR, EMPTY_METADATA)
+    return md.get(Params12, DEFAULT_PARAMS12)
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class ParamsExtras(lang.Final):
+    reorder: bool = False
+
+
+DEFAULT_PARAMS_EXTRAS = ParamsExtras()
+
+
+def get_params_extras(obj: ta.Any) -> ParamsExtras:
+    if (pcls := get_params_cls(obj)) is None:
+        raise TypeError(pcls)
+
+    md = pcls.__dict__.get(METADATA_ATTR, EMPTY_METADATA)
+    return md.get(ParamsExtras, DEFAULT_PARAMS_EXTRAS)

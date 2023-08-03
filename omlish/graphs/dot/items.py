@@ -12,10 +12,12 @@ from ... import dataclasses as dc
 from ... import lang
 
 
-class Item(dc.Data, lang.Abstract, lang.Sealed):
+@dc.dataclass(frozen=True)
+class Item(lang.Abstract, lang.Sealed):
     pass
 
 
+@dc.dataclass(frozen=True)
 class Value(Item, lang.Abstract):
 
     @classmethod
@@ -30,6 +32,7 @@ class Value(Item, lang.Abstract):
             raise TypeError(obj)
 
 
+@dc.dataclass(frozen=True)
 class Raw(Value):
     raw: str
 
@@ -43,6 +46,7 @@ class Raw(Value):
             raise TypeError(obj)
 
 
+@dc.dataclass(frozen=True)
 class Text(Value):
     text: str
 
@@ -56,6 +60,7 @@ class Text(Value):
             raise TypeError(obj)
 
 
+@dc.dataclass(frozen=True)
 class Cell(Item):
     value: Value
 
@@ -67,6 +72,7 @@ class Cell(Item):
             return Cell(Value.of(obj))
 
 
+@dc.dataclass(frozen=True)
 class Row(Item):
     cells: ta.Sequence[Cell] = dc.field(coerce=col.seq)
 
@@ -82,6 +88,7 @@ class Row(Item):
             raise TypeError(obj)
 
 
+@dc.dataclass(frozen=True)
 class Table(Value):
     rows: ta.Sequence[Row] = dc.field(coerce=col.seq)
 
@@ -97,6 +104,7 @@ class Table(Value):
             raise TypeError(obj)
 
 
+@dc.dataclass(frozen=True)
 class Id(Item):
     id: str
 
@@ -110,6 +118,7 @@ class Id(Item):
             raise TypeError(obj)
 
 
+@dc.dataclass(frozen=True)
 class Attrs(Item):
     attrs: ta.Mapping[str, Value] = dc.field(
         coerce=lambda o: col.frozendict(
@@ -128,10 +137,12 @@ class Attrs(Item):
             raise TypeError(obj)
 
 
+@dc.dataclass(frozen=True)
 class Stmt(Item, lang.Abstract):
     pass
 
 
+@dc.dataclass(frozen=True)
 class RawStmt(Stmt):
     raw: str
 
@@ -145,17 +156,20 @@ class RawStmt(Stmt):
             raise TypeError(obj)
 
 
+@dc.dataclass(frozen=True)
 class Edge(Stmt):
     left: Id = dc.field(coerce=Id.of)
     right: Id = dc.field(coerce=Id.of)
     attrs: Attrs = dc.field(default=Attrs({}), coerce=Attrs.of)
 
 
+@dc.dataclass(frozen=True)
 class Node(Stmt):
     id: Id = dc.field(coerce=Id.of)
     attrs: Attrs = dc.field(default=Attrs({}), coerce=Attrs.of)
 
 
+@dc.dataclass(frozen=True)
 class Graph(Item):
     stmts: ta.Sequence[Stmt] = dc.field(coerce=col.seq)
 
