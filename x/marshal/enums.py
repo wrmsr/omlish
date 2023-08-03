@@ -5,6 +5,9 @@ import typing as ta
 from .base import MarshalContext
 from .base import Marshaler
 from .base import MarshalerFactory
+from .base import UnmarshalContext
+from .base import Unmarshaler
+from .base import UnmarshalerFactory
 from .specs import Spec
 from .values import Value
 
@@ -22,3 +25,19 @@ class EnumMarshalerFactory(MarshalerFactory):
         if isinstance(spec, type) and issubclass(spec, enum.Enum):
             return EnumMarshaler(spec)
         return None
+
+
+@dc.dataclass(frozen=True)
+class EnumUnmarshaler(Unmarshaler):
+    ty: ta.Type[enum.Enum]
+
+    def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any:
+        return self.ty[v]
+
+
+class EnumUnmarshalerFactory(UnmarshalerFactory):
+    def __call__(self, ctx: UnmarshalContext, spec: Spec) -> ta.Optional[Unmarshaler]:
+        if isinstance(spec, type) and issubclass(spec, enum.Enum):
+            return EnumUnmarshaler(spec)
+        return None
+

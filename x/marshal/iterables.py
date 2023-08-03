@@ -7,6 +7,9 @@ from omlish import check
 from .base import MarshalContext
 from .base import Marshaler
 from .base import MarshalerFactory
+from .base import UnmarshalContext
+from .base import Unmarshaler
+from .base import UnmarshalerFactory
 from .specs import Generic
 from .specs import Spec
 from .values import Value
@@ -26,4 +29,21 @@ class IterableMarshalerFactory(MarshalerFactory):
             if (e := ctx.make(check.single(spec.args))) is None:
                 return None
             return IterableMarshaler(e)
+        return None
+
+
+@dc.dataclass(frozen=True)
+class IterableUnmarshaler(Unmarshaler):
+    e: Unmarshaler
+
+    def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Iterable:
+        return list(map(functools.partial(self.e.unmarshal, ctx), v))
+
+
+class IterableUnmarshalerFactory(UnmarshalerFactory):
+    def __call__(self, ctx: UnmarshalContext, spec: Spec) -> ta.Optional[Unmarshaler]:
+        if isinstance(spec, Generic) and spec.cls is list:
+            if (e := ctx.make(check.single(spec.args))) is None:
+                return None
+            return IterableUnmarshaler(e)
         return None

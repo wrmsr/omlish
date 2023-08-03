@@ -35,7 +35,7 @@ class OptionalMarshalerFactory(MarshalerFactory):
 class OptionalUnmarshaler(Unmarshaler):
     e: Unmarshaler
 
-    def marshal(self, ctx: UnmarshalContext, v: Value) -> ta.Optional:
+    def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Optional:
         if v is None:
             return None
         return self.e.unmarshal(ctx, v)

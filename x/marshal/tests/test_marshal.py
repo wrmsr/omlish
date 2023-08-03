@@ -15,12 +15,14 @@ from ..dataclasses import DataclassMarshalerFactory
 from ..dataclasses import DataclassUnmarshalerFactory
 from ..datetimes import DatetimeMarshalerFactory
 from ..enums import EnumMarshalerFactory
-from ..factories import CompositeFactory
+from ..enums import EnumUnmarshalerFactory
 from ..exceptions import UnhandledSpecException
+from ..factories import CompositeFactory
 from ..factories import RecursiveSpecFactory
 from ..factories import SpecCacheFactory
 from ..factories import SpecMapFactory
 from ..iterables import IterableMarshalerFactory
+from ..iterables import IterableUnmarshalerFactory
 from ..optionals import OptionalMarshalerFactory
 from ..optionals import OptionalUnmarshalerFactory
 from ..primitives import PRIMITIVE_MARSHALER_FACTORY
@@ -70,17 +72,24 @@ def test_marshal():
 
     reg = Registry()
 
+    print()
+
     obj = Foo([420, 421], 'barf', Foo([1, 2], 'xxx', e=E.Y))
+    print(obj)
+    print()
 
     mc = MarshalContext(registry=reg, factory=mf)
     for _ in range(2):
         mobj = mc.make(type(obj)).marshal(mc, obj)
         print(mobj)
+    print()
 
     ufs: list[UnmarshalerFactory] = [  # noqa
         PRIMITIVE_UNMARSHALER_FACTORY,
         OptionalUnmarshalerFactory(),
-        DataclassMarshalerFactory(),
+        DataclassUnmarshalerFactory(),
+        EnumUnmarshalerFactory(),
+        IterableUnmarshalerFactory(),
     ]
 
     uf: UnmarshalerFactory = SpecCacheFactory(  # noqa
@@ -95,3 +104,4 @@ def test_marshal():
     for _ in range(2):
         uobj = uc.make(type(obj)).unmarshal(uc, mobj)
         print(uobj)
+    print()
