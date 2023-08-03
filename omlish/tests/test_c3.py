@@ -23,7 +23,7 @@ def test_mro():
 
     bases: list[type] = [c.Sequence, c.MutableMapping, c.Mapping, c.Set]
     for haystack in itertools.permutations(bases):
-        m = c3.compose_mro(dict, haystack)
+        m = c3.compose_mro(dict, haystack)  # noqa
         assert m == [
             dict,
             c.MutableMapping,
@@ -37,7 +37,7 @@ def test_mro():
 
     bases = [c.Container, c.Mapping, c.MutableMapping, collections.OrderedDict]
     for haystack in itertools.permutations(bases):
-        m = c3.compose_mro(collections.ChainMap, haystack)
+        m = c3.compose_mro(collections.ChainMap, haystack)  # noqa
         assert m == [
             collections.ChainMap,
             c.MutableMapping,
