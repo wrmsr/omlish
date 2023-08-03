@@ -16,11 +16,11 @@ def _asdict_inner(obj, dict_factory):
         return obj
 
     elif is_dataclass_instance(obj):
-        result = []
+        l = []
         for f in dc.fields(obj):
             value = _asdict_inner(getattr(obj, f.name), dict_factory)
-            result.append((f.name, value))
-        return dict_factory(result)
+            l.append((f.name, value))
+        return dict_factory(l)
 
     elif isinstance(obj, tuple) and hasattr(obj, '_fields'):
         return type(obj)(*[_asdict_inner(v, dict_factory) for v in obj])
@@ -30,10 +30,10 @@ def _asdict_inner(obj, dict_factory):
 
     elif isinstance(obj, dict):
         if hasattr(type(obj), 'default_factory'):
-            result = type(obj)(getattr(obj, 'default_factory'))
+            d = type(obj)(getattr(obj, 'default_factory'))
             for k, v in obj.items():
-                result[_asdict_inner(k, dict_factory)] = _asdict_inner(v, dict_factory)
-            return result
+                d[_asdict_inner(k, dict_factory)] = _asdict_inner(v, dict_factory)
+            return d
         return type(obj)((_asdict_inner(k, dict_factory), _asdict_inner(v, dict_factory)) for k, v in obj.items())
 
     else:
@@ -51,11 +51,11 @@ def _astuple_inner(obj, tuple_factory):
         return obj
 
     elif is_dataclass_instance(obj):
-        result = []
+        l = []
         for f in dc.fields(obj):
             value = _astuple_inner(getattr(obj, f.name), tuple_factory)
-            result.append(value)
-        return tuple_factory(result)
+            l.append(value)
+        return tuple_factory(l)
 
     elif isinstance(obj, tuple) and hasattr(obj, '_fields'):
         return type(obj)(*[_astuple_inner(v, tuple_factory) for v in obj])
@@ -66,10 +66,10 @@ def _astuple_inner(obj, tuple_factory):
     elif isinstance(obj, dict):
         obj_type = type(obj)
         if hasattr(obj_type, 'default_factory'):
-            result = obj_type(getattr(obj, 'default_factory'))
+            d = obj_type(getattr(obj, 'default_factory'))
             for k, v in obj.items():
-                result[_astuple_inner(k, tuple_factory)] = _astuple_inner(v, tuple_factory)
-            return result
+                d[_astuple_inner(k, tuple_factory)] = _astuple_inner(v, tuple_factory)
+            return d
         return obj_type((_astuple_inner(k, tuple_factory), _astuple_inner(v, tuple_factory)) for k, v in obj.items())
 
     else:

@@ -83,7 +83,7 @@ def init_fn(
         '__dataclass_CheckException__': CheckException,
     })
 
-    body_lines = []
+    body_lines: list[str] = []
     for f in fields:
         f_lines = field_init(
             f,
@@ -269,9 +269,9 @@ def add_slots(
 
     if is_frozen:
         if '__getstate__' not in cls_dict:
-            cls.__getstate__ = _dataclass_getstate
+            cls.__getstate__ = _dataclass_getstate  # type: ignore
         if '__setstate__' not in cls_dict:
-            cls.__setstate__ = _dataclass_setstate
+            cls.__setstate__ = _dataclass_setstate  # type: ignore
 
     return cls
 
@@ -287,10 +287,10 @@ def process_class(cls: type) -> type:
 
     # params
 
-    params = check.isinstance(cls.__dict__[PARAMS_ATTR], Params)
+    params = check.isinstance(cls.__dict__[PARAMS_ATTR], Params)  # type: ignore
     metadata = check.isinstance(cls.__dict__[METADATA_ATTR], collections.abc.Mapping)
     params12 = get_params12(cls)
-    params_extras = check.isinstance(metadata[ParamsExtras], ParamsExtras)  # noqa
+    params_extras = check.isinstance(metadata[ParamsExtras], ParamsExtras)  # type: ignore  # noqa
     merged_metadata = get_merged_metadata(cls)
 
     if params.order and not params.eq:
@@ -434,7 +434,7 @@ def process_class(cls: type) -> type:
         has_explicit_hash,
     )]
     if hash_action:
-        cls.__hash__ = hash_action(cls, field_list, globals)
+        cls.__hash__ = hash_action(cls, field_list, globals)  # type: ignore
 
     # doc
 
@@ -516,7 +516,7 @@ def dataclass(
         if (dmd := cls.__dict__.get(METADATA_ATTR)) is not None:
             cmds.append(dmd)
         if cmds:
-            md = collections.ChainMap(md, *cmds)
+            md = collections.ChainMap(md, *cmds)  # type: ignore
 
         setattr(cls, PARAMS_ATTR, Params(**pkw))
         setattr(cls, METADATA_ATTR, types.MappingProxyType(md))
@@ -583,7 +583,7 @@ def make_dataclass(
 
     if module is None:
         try:
-            module = sys._getframemodulename(1) or '__main__'  # noqa
+            module = sys._getframemodulename(1) or '__main__'  # type: ignore  # noqa
         except AttributeError:
             try:
                 module = sys._getframe(1).f_globals.get('__name__', '__main__')  # noqa

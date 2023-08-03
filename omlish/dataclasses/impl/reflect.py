@@ -1,5 +1,4 @@
 import dataclasses as dc
-import sys
 import typing as ta
 
 from omlish import cached
@@ -9,9 +8,6 @@ from .internals import Params
 from .params import Params12
 from .params import get_params
 from .params import get_params12
-
-
-IS_12 = sys.version_info[1] >= 12
 
 
 TypeT = ta.TypeVar('TypeT', bound=type, covariant=True)
@@ -26,7 +22,7 @@ class ClassInfo(ta.Generic[TypeT]):
         self._cls = cls
 
     @property
-    def cls(self) -> TypeT:
+    def cls(self) -> ta.Type[TypeT]:
         return self._cls
 
     # @cached.property

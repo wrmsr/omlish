@@ -30,10 +30,10 @@ def test_simple():
 def test_check_coerce():
     @dc.dataclass()
     class Bar:
-        x: int = dc.field(coerce=int, check=lambda x: x < 10)
+        x: int = dc.xfield(coerce=int, check=lambda x: x < 10)
 
     print(Bar(4))
-    print(Bar('4'))  # noqa
+    print(Bar('4'))  # type: ignore
 
     with pytest.raises(dc.CheckException):
         Bar(11)
@@ -42,7 +42,7 @@ def test_check_coerce():
 def test_check_init():
     @dc.dataclass()
     class C:
-        x: int = dc.field(check=lambda x: x > 10)
+        x: int = dc.xfield(check=lambda x: x > 10)
 
         dc.check(lambda x: x < 20)
 

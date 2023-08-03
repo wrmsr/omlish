@@ -5,7 +5,7 @@ from omlish import lang
 
 
 T = ta.TypeVar('T')
-Namespace = ta.MutableMapping[str, ta.Any]
+Namespace: ta.TypeAlias = ta.MutableMapping[str, ta.Any]
 
 
 def create_fn(
@@ -30,8 +30,8 @@ def create_fn(
 
     local_vars = ', '.join(locals.keys())
     txt = f"def __create_fn__({local_vars}):\n{txt}\n return {name}"
-    ns = {}
-    exec(txt, globals, ns)
+    ns: dict[str, ta.Any] = {}
+    exec(txt, globals, ns)  # type: ignore
     return ns['__create_fn__'](**locals)
 
 

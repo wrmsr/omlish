@@ -8,7 +8,7 @@ METADATA_ATTR = '__dataclass_metadata__'
 
 Metadata: ta.TypeAlias = ta.Mapping[ta.Any, ta.Any]
 
-EMPTY_METADATA = types.MappingProxyType({})
+EMPTY_METADATA: Metadata = types.MappingProxyType({})
 
 _CLASS_MERGED_KEYS: set = set()
 CLASS_MERGED_KEYS: ta.AbstractSet = _CLASS_MERGED_KEYS

@@ -74,7 +74,7 @@ class Cell(Item):
 
 @dc.dataclass(frozen=True)
 class Row(Item):
-    cells: ta.Sequence[Cell] = dc.field(coerce=col.seq)
+    cells: ta.Sequence[Cell] = dc.xfield(coerce=col.seq)
 
     @classmethod
     def of(cls, obj: ta.Union['Row', ta.Sequence[ta.Any]]) -> 'Row':
@@ -90,7 +90,7 @@ class Row(Item):
 
 @dc.dataclass(frozen=True)
 class Table(Value):
-    rows: ta.Sequence[Row] = dc.field(coerce=col.seq)
+    rows: ta.Sequence[Row] = dc.xfield(coerce=col.seq)
 
     @classmethod
     def of(cls, obj: ta.Union['Table', ta.Sequence[ta.Any]]) -> 'Table':  # type: ignore
@@ -158,19 +158,19 @@ class RawStmt(Stmt):
 
 @dc.dataclass(frozen=True)
 class Edge(Stmt):
-    left: Id = dc.field(coerce=Id.of)
-    right: Id = dc.field(coerce=Id.of)
-    attrs: Attrs = dc.field(default=Attrs({}), coerce=Attrs.of)
+    left: Id = dc.xfield(coerce=Id.of)
+    right: Id = dc.xfield(coerce=Id.of)
+    attrs: Attrs = dc.xfield(default=Attrs({}), coerce=Attrs.of)
 
 
 @dc.dataclass(frozen=True)
 class Node(Stmt):
-    id: Id = dc.field(coerce=Id.of)
-    attrs: Attrs = dc.field(default=Attrs({}), coerce=Attrs.of)
+    id: Id = dc.xfield(coerce=Id.of)
+    attrs: Attrs = dc.xfield(default=Attrs({}), coerce=Attrs.of)
 
 
 @dc.dataclass(frozen=True)
 class Graph(Item):
-    stmts: ta.Sequence[Stmt] = dc.field(coerce=col.seq)
+    stmts: ta.Sequence[Stmt] = dc.xfield(coerce=col.seq)
 
-    id: Id = dc.field(default=Id('G'), kw_only=True)
+    id: Id = dc.xfield(default=Id('G'), kw_only=True)
