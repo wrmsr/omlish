@@ -55,8 +55,8 @@ class _Injector(Injector):
     def provide_kwargs(self, obj: ta.Any) -> ta.Mapping[str, ta.Any]:
         sig = signature(obj)
 
-        seen: ta.Set[Key] = set()
-        kd: ta.Dict[str, Key] = {}
+        seen: set[Key] = set()
+        kd: dict[str, Key] = {}
         for p in sig.parameters.values():
             k = as_key(p.annotation)
 
@@ -68,7 +68,7 @@ class _Injector(Injector):
                 raise TypeError(sig)
             kd[p.name] = k
 
-        ret: ta.Dict[str, ta.Any] = {}
+        ret: dict[str, ta.Any] = {}
         for n, k in kd.items():
             ret[n] = self.provide(k)
         return ret

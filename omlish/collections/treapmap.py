@@ -114,7 +114,7 @@ class TreapMapIterator(ta.Generic[K, V]):
     def __init__(
             self,
             *,
-            _st: ta.List[treap.TreapNode[ta.Tuple[K, V]]],
+            _st: list[treap.TreapNode[ta.Tuple[K, V]]],
             _n: ta.Optional[treap.TreapNode[ta.Tuple[K, V]]],
             _b: bool,
     ) -> None:

@@ -43,7 +43,7 @@ class InteractiveSocketConsole:
     def __init__(
             self,
             conn: sock.socket,
-            locals: ta.Optional[ta.Dict[str, ta.Any]] = None,
+            locals: ta.Optional[dict[str, ta.Any]] = None,
             filename: str = '<console>'
     ) -> None:
         super().__init__()
@@ -60,7 +60,7 @@ class InteractiveSocketConsole:
         self._filename = filename
 
         self._compiler = codeop.CommandCompiler()
-        self._buffer: ta.List[str] = []
+        self._buffer: list[str] = []
         self._count = 0
         self._write_count = -1
 

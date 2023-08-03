@@ -36,7 +36,7 @@ def as_binding(o: ta.Any) -> Binding:
 
 
 def as_bindings(it: ta.Iterable[ta.Any]) -> ta.Sequence[Binding]:
-    bs: ta.List[Binding] = []
+    bs: list[Binding] = []
     for a in it:
         if a is not None:
             bs.append(as_binding(a))
@@ -71,8 +71,8 @@ def bind(*args: ta.Any) -> Bindings:
 
 
 def build_provider_map(bs: Bindings) -> ta.Mapping[Key, Provider]:
-    pm: ta.Dict[Key, Provider] = {}
-    am: ta.Dict[Key, ta.List[Provider]] = {}
+    pm: dict[Key, Provider] = {}
+    am: dict[Key, list[Provider]] = {}
     for b in bs.bindings():
         if b.key.arr:
             am.setdefault(b.key, []).append(b.provider)

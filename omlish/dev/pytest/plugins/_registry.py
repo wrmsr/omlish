@@ -1,7 +1,4 @@
-import typing as ta
-
-
-ALL: ta.List[type] = []
+ALL: list[type] = []
 
 
 def register_plugin(obj):

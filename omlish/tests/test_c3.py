@@ -1,6 +1,5 @@
 import collections.abc
 import itertools
-import typing as ta
 
 from .. import c3
 
@@ -22,7 +21,7 @@ def test_mro():
 
     c = collections.abc
 
-    bases: ta.List[type] = [c.Sequence, c.MutableMapping, c.Mapping, c.Set]
+    bases: list[type] = [c.Sequence, c.MutableMapping, c.Mapping, c.Set]
     for haystack in itertools.permutations(bases):
         m = c3.compose_mro(dict, haystack)
         assert m == [

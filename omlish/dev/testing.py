@@ -16,13 +16,13 @@ def call_many_with_timeout(
         fns: ta.Iterable[ta.Callable[[], T]],
         timeout_s: ta.Optional[int] = None,
         timeout_exception: Exception = RuntimeError('Thread timeout'),
-) -> ta.List[T]:
+) -> list[T]:
     if timeout_s is None:
         timeout_s = DEFAULT_TIMEOUT_S
 
     fns = list(fns)
     missing = object()
-    rets: ta.List[ta.Any] = [missing] * len(fns)
+    rets: list[ta.Any] = [missing] * len(fns)
     thread_exception: ta.Optional[Exception] = None
 
     def inner(fn, idx):
@@ -49,7 +49,7 @@ def call_many_with_timeout(
         if ret is missing:
             raise ValueError
 
-    return ta.cast(ta.List[T], rets)
+    return ta.cast(list[T], rets)
 
 
 def run_with_timeout(

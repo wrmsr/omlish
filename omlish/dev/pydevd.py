@@ -76,7 +76,7 @@ def is_running() -> bool:
 ARGS_ENV_VAR = 'PYDEVD_ARGS'
 
 
-def get_args() -> ta.List[str]:
+def get_args() -> list[str]:
     check.state(is_present())
     setup: ta.Mapping[ta.Any, ta.Any] = check.isinstance(get_setup(), dict)
     args = [_pydevd().__file__]

@@ -27,7 +27,7 @@ class FrozenDict(ta.Mapping[K, V], Frozen):
         self._hash = None
         if len(args) > 1:
             raise TypeError(args)
-        self._dct: ta.Dict[K, V] = {}
+        self._dct: dict[K, V] = {}
         self._dct.update(yield_dict_init(*args, **kwargs))
 
     @property

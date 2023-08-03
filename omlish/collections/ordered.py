@@ -8,7 +8,7 @@ class OrderedSet(ta.MutableSet[T]):
 
     def __init__(self, iterable: ta.Optional[ta.Iterable[T]] = None) -> None:
         super().__init__()
-        self._dct: ta.Dict[T, ta.Any] = {}
+        self._dct: dict[T, ta.Any] = {}
         if iterable is not None:
             self |= iterable  # type: ignore  # noqa
 

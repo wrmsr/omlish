@@ -76,7 +76,7 @@ class BasicTreeAnalysis(ta.Generic[NodeT]):
             for child in children:
                 walk(child, cur)
 
-        nodes: ta.List[NodeT] = []
+        nodes: list[NodeT] = []
         node_set: ta.MutableSet[NodeT] = self._set_fac()  # type: ignore
         children_by_node: ta.MutableMapping[ta.Optional[NodeT], ta.Sequence[NodeT]] = self._dict_fac()  # type: ignore
         child_sets_by_node: ta.MutableMapping[ta.Optional[NodeT], ta.AbstractSet[NodeT]] = self._dict_fac()  # type: ignore  # noqa

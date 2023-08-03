@@ -21,7 +21,7 @@ def _class_merged(o):
 
 def get_merged_metadata(obj: ta.Any) -> Metadata:
     cls = obj if isinstance(obj, type) else type(obj)
-    dct: ta.Dict[ta.Any, ta.Any] = {}
+    dct: dict[ta.Any, ta.Any] = {}
     for cur in cls.__mro__[::-1]:
         if not (smd := cur.__dict__.get(METADATA_ATTR)):
             continue

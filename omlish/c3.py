@@ -42,13 +42,13 @@ import typing as ta
 T = ta.TypeVar('T')
 
 
-def merge(seqs: ta.MutableSequence[ta.List[T]]) -> ta.List[T]:
+def merge(seqs: ta.MutableSequence[list[T]]) -> list[T]:
     """Merges MROs in *sequences* to a single MRO using the C3 algorithm.
 
     Adapted from https://www.python.org/download/releases/2.3/mro/.
     """
 
-    result: ta.List[T] = []
+    result: list[T] = []
     candidate: ta.Optional[T] = None
     while True:
         seqs = [s for s in seqs if s]  # purge empty sequences
@@ -77,7 +77,7 @@ def mro(
         *,
         get_bases: ta.Callable[[T], ta.Sequence[T]] = operator.attrgetter('__bases__'),
         is_subclass: ta.Callable[[T, T], bool] = issubclass,  # type: ignore
-) -> ta.List[T]:
+) -> list[T]:
     """Computes the method resolution order using extended C3 linearization.
 
     If no *abcs* are given, the algorithm works exactly like the built-in C3 linearization used for method resolution.
@@ -127,7 +127,7 @@ def compose_mro(
         get_bases: ta.Callable[[T], ta.Sequence[T]] = operator.attrgetter('__bases__'),
         is_subclass: ta.Callable[[T, T], bool] = issubclass,  # type: ignore
         get_subclasses: ta.Callable[[T], ta.Iterable[T]] = operator.methodcaller('__subclasses__'),
-) -> ta.List[T]:
+) -> list[T]:
     """Calculates the method resolution order for a given class *cls*.
 
     Includes relevant abstract base classes (with their respective bases) from the *types* list. Uses a modified C3
@@ -155,7 +155,7 @@ def compose_mro(
     type_set = set(types)
     _mro = []
     for typ in types:
-        found: ta.List[ta.List[T]] = []
+        found: list[list[T]] = []
         for sub in get_subclasses(typ):
             if sub not in bases and is_subclass(cls, sub):  # noqa
                 found.append([s for s in (get_mro(sub) or []) if s in type_set])

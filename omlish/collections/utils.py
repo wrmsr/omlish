@@ -9,7 +9,7 @@ K = ta.TypeVar('K')
 V = ta.TypeVar('V')
 
 
-def mut_toposort(data: ta.Dict[T, ta.Set[T]]) -> ta.Iterator[ta.Set[T]]:
+def mut_toposort(data: dict[T, set[T]]) -> ta.Iterator[set[T]]:
     for k, v in data.items():
         v.discard(k)
     extra_items_in_deps = functools.reduce(set.union, data.values()) - set(data.keys())
@@ -24,13 +24,13 @@ def mut_toposort(data: ta.Dict[T, ta.Set[T]]) -> ta.Iterator[ta.Set[T]]:
         raise ValueError('Cyclic dependencies exist among these items: ' + ' '.join(repr(x) for x in data.items()))
 
 
-def toposort(data: ta.Mapping[T, ta.AbstractSet[T]]) -> ta.Iterator[ta.Set[T]]:
+def toposort(data: ta.Mapping[T, ta.AbstractSet[T]]) -> ta.Iterator[set[T]]:
     return mut_toposort({k: set(v) for k, v in data.items()})
 
 
-def partition(items: ta.Iterable[T], pred: ta.Callable[[T], bool]) -> ta.Tuple[ta.List[T], ta.List[T]]:
-    t: ta.List[T] = []
-    f: ta.List[T] = []
+def partition(items: ta.Iterable[T], pred: ta.Callable[[T], bool]) -> ta.Tuple[list[T], list[T]]:
+    t: list[T] = []
+    f: list[T] = []
     for e in items:
         if pred(e):
             t.append(e)
@@ -39,11 +39,11 @@ def partition(items: ta.Iterable[T], pred: ta.Callable[[T], bool]) -> ta.Tuple[t
     return t, f
 
 
-def unique(it: ta.Iterable[T]) -> ta.List[T]:
+def unique(it: ta.Iterable[T]) -> list[T]:
     if isinstance(it, str):
         raise TypeError(it)
-    ret: ta.List[T] = []
-    seen: ta.Set[T] = set()
+    ret: list[T] = []
+    seen: set[T] = set()
     for e in it:
         if e not in seen:
             seen.add(e)
