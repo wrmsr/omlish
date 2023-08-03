@@ -65,3 +65,8 @@ from .impl.metadata import (  # noqa
     Init,
     init,
 )
+
+from .impl.reflect import (  # noqa
+    ClassInfo,
+    reflect,
+)
