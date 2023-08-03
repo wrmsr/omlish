@@ -27,6 +27,7 @@ from .identity import IdentityWrapper  # noqa
 from .indexed import IndexedSeq  # noqa
 from .indexed import IndexedSetSeq  # noqa
 from .mappings import ItemSeqTypeMap  # noqa
+from .mappings import MissingDict  # noqa
 from .mappings import guarded_map_update  # noqa
 from .mappings import multikey_dict  # noqa
 from .mappings import yield_dict_init  # noqa
