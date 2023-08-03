@@ -24,7 +24,7 @@ def build_mro_dct(instance_cls: type, owner_cls: ta.Optional[type] = None) -> ta
         pos = mro.index(owner_cls)
     except ValueError:
         raise TypeError(f'Owner class {owner_cls} not in mro of instance class {instance_cls}')
-    dct: ta.Dict[str, ta.Any] = {}
+    dct: dict[str, ta.Any] = {}
     for cur_cls in mro[:pos + 1]:
         dct.update(cur_cls.__dict__)
     return dct
@@ -50,7 +50,7 @@ class Method:
         self._is_abstractmethod = getattr(func, '__isabstractmethod__', False)  # noqa
         self.update_wrapper(self)
 
-        self._dispatch_func_cache: ta.Dict[ta.Any, ta.Callable] = {}
+        self._dispatch_func_cache: dict[ta.Any, ta.Callable] = {}
 
         def dispatch_func_cache_remove(k, self_ref=weakref.ref(self)):
             if (ref_self := self_ref()) is not None:

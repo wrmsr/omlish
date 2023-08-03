@@ -136,14 +136,14 @@ class CmakeGen:
             self._write_cmd(Command('target_link_libraries', [target.name, 'PRIVATE'], target.link_libraries))
 
     @property
-    def preamble(self) -> ta.List[str]:
+    def preamble(self) -> list[str]:
         return [
             'cmake_minimum_required(VERSION 3.1...3.16)',
             'set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR})',
         ]
 
     @property
-    def common_vars(self) -> ta.List[Var]:
+    def common_vars(self) -> list[Var]:
         return []
 
     def write(self) -> None:

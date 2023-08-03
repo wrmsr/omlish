@@ -146,7 +146,7 @@ def unzip(it: ta.Iterable[T], width: ta.Optional[int] = None) -> ta.List:
         except StopIteration:
             return []
 
-    its: ta.List[PrefetchIterator[T]] = []
+    its: list[PrefetchIterator[T]] = []
     running = True
 
     def next_fn(idx):

@@ -106,8 +106,8 @@ def yield_importable(
 def yield_import_all(
         package_root: str,
         *,
-        globals: ta.Optional[ta.Dict[str, ta.Any]] = None,
-        locals: ta.Optional[ta.Dict[str, ta.Any]] = None,
+        globals: ta.Optional[dict[str, ta.Any]] = None,
+        locals: ta.Optional[dict[str, ta.Any]] = None,
         recursive: bool = False,
         filter: ta.Optional[ta.Callable[[str], bool]] = None,
         include_special: bool = False,

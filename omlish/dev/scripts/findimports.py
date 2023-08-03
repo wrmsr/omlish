@@ -3,7 +3,6 @@ import importlib.machinery
 import importlib.util
 import os.path
 import sys
-import typing as ta
 
 
 def _main() -> None:
@@ -16,12 +15,12 @@ def _main() -> None:
         #     return
         with open(fp, 'r') as f:
             buf = f.read()
-        nodes: ta.List[ast.AST] = []
+        nodes: list[ast.AST] = []
         rec(ast.parse(buf))
         imps.update(na.name for i in nodes if isinstance(i, ast.Import) for na in i.names)
         imps.update(i.module for i in nodes if isinstance(i, ast.ImportFrom) if i.module and not i.level)
 
-    imps: ta.Set[str] = set()
+    imps: set[str] = set()
     for rootp in sys.argv[1:]:
         for dp, dns, fns in os.walk(os.path.expanduser(rootp)):
             for fn in fns:

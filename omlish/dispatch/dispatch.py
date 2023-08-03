@@ -75,10 +75,10 @@ class Dispatcher(ta.Generic[T]):
     def __init__(self) -> None:
         super().__init__()
 
-        impls_by_arg_cls: ta.Dict[type, T] = {}
+        impls_by_arg_cls: dict[type, T] = {}
         self._impls_by_arg_cls = impls_by_arg_cls
 
-        dispatch_cache: ta.Dict[ta.Any, T] = {}
+        dispatch_cache: dict[ta.Any, T] = {}
         self._get_dispatch_cache = lambda: dispatch_cache
 
         def cache_remove(k, self_ref=weakref.ref(self)):
@@ -147,8 +147,8 @@ class _Dispatcher(ta.Generic[T]):
     def __init__(self) -> None:
         super().__init__()
 
-        self._impls_by_arg_cls: ta.Dict[type, T] = {}
-        self._dispatch_cache: ta.Dict[ta.Any, T] = {}
+        self._impls_by_arg_cls: dict[type, T] = {}
+        self._dispatch_cache: dict[ta.Any, T] = {}
 
         def cache_remove(k, self_ref=weakref.ref(self)):
             if (ref_self := self_ref()) is not None:

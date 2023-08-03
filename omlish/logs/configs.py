@@ -6,7 +6,7 @@ from .filters import TidFilter
 from .formatters import StandardLogFormatter
 
 
-NOISY_LOGGERS: ta.Set[str] = {
+NOISY_LOGGERS: set[str] = {
     'boto3.resources.action',
     'datadog.dogstatsd',
     'elasticsearch',
@@ -20,17 +20,17 @@ class DictConfig:
     version: int = 1
     incremental: bool = False
     disable_existing_loggers: bool = False
-    filters: ta.Dict[str, 'FilterConfig'] = dc.field(default_factory=dict)
-    formatters: ta.Dict[str, 'FormatterConfig'] = dc.field(default_factory=dict)
-    handlers: ta.Dict[str, 'HandlerConfig'] = dc.field(default_factory=dict)
-    loggers: ta.Dict[str, 'LoggerConfig'] = dc.field(default_factory=dict)
+    filters: dict[str, 'FilterConfig'] = dc.field(default_factory=dict)
+    formatters: dict[str, 'FormatterConfig'] = dc.field(default_factory=dict)
+    handlers: dict[str, 'HandlerConfig'] = dc.field(default_factory=dict)
+    loggers: dict[str, 'LoggerConfig'] = dc.field(default_factory=dict)
     root: ta.Optional['LoggerConfig'] = None
 
 
-FilterConfig = ta.Dict[str, ta.Any]
-FormatterConfig = ta.Dict[str, ta.Any]
-HandlerConfig = ta.Dict[str, ta.Any]
-LoggerConfig = ta.Dict[str, ta.Any]
+FilterConfig = dict[str, ta.Any]
+FormatterConfig = dict[str, ta.Any]
+HandlerConfig = dict[str, ta.Any]
+LoggerConfig = dict[str, ta.Any]
 
 STANDARD_LOG_FORMAT_PARTS = [
     ('asctime', '%(asctime)-15s'),

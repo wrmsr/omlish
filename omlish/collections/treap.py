@@ -192,7 +192,7 @@ def diff(n: ta.Optional[TreapNode[T]], other: ta.Optional[TreapNode[T]], c: Comp
 
 def _join(n: ta.Optional[TreapNode[T]], other: ta.Optional[TreapNode[T]]) -> ta.Optional[TreapNode[T]]:
     result: ta.Optional[TreapNode[T]] = None
-    resultp: ta.List[ta.Any] = [None, None]
+    resultp: list[ta.Any] = [None, None]
 
     def setresultp(o):
         t, s = resultp

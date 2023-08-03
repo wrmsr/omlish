@@ -313,7 +313,7 @@ def process_class(cls: type) -> type:
 
     cls_annotations = inspect.get_annotations(cls)
 
-    cls_fields: ta.List[dc.Field] = []
+    cls_fields: list[dc.Field] = []
 
     kw_only = params12.kw_only
     kw_only_seen = False

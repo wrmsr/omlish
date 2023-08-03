@@ -83,7 +83,7 @@ class Final(Abstract):
     def __init_subclass__(cls, **kwargs) -> None:
         super().__init_subclass__(**kwargs)
 
-        abstracts: ta.Set[ta.Any] = set()
+        abstracts: set[ta.Any] = set()
         for base in cls.__bases__:
             if base is Abstract:
                 raise FinalException(base)
@@ -176,7 +176,7 @@ Namespace: type = _Namespace()  # type: ignore
 ##
 
 
-_MARKER_NAMESPACE_KEYS: ta.Optional[ta.Set[str]] = None
+_MARKER_NAMESPACE_KEYS: ta.Optional[set[str]] = None
 
 
 class _MarkerMeta(abc.ABCMeta):

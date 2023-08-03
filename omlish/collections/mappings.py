@@ -8,7 +8,7 @@ K = ta.TypeVar('K')
 V = ta.TypeVar('V')
 
 
-def multikey_dict(dct: ta.Mapping[ta.Union[ta.Iterable[K], K], V], *, deep: bool = False) -> ta.Dict[K, V]:
+def multikey_dict(dct: ta.Mapping[ta.Union[ta.Iterable[K], K], V], *, deep: bool = False) -> dict[K, V]:
     ret = {}
     for k, v in dct.items():
         if deep and isinstance(v, dict):

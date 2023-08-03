@@ -12,7 +12,7 @@ class Color(ta.NamedTuple):
     b: int
 
 
-def gen_rainbow(steps: int) -> ta.List[Color]:
+def gen_rainbow(steps: int) -> list[Color]:
     colors = []
     for r in range(steps):
         colors.append(Color(r * 255 // steps, 255, 0))

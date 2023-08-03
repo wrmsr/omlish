@@ -37,7 +37,7 @@ class IdentityKeyDict(ta.MutableMapping[K, V]):
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__()
-        self._dict: ta.Dict[int, ta.Tuple[K, V]] = {}
+        self._dict: dict[int, ta.Tuple[K, V]] = {}
         for k, v in yield_dict_init(*args, **kwargs):
             self[k] = v
 
@@ -71,7 +71,7 @@ class IdentitySet(ta.MutableSet[T]):
 
     def __init__(self, init: ta.Optional[ta.Iterable[T]] = None) -> None:
         super().__init__()
-        self._dict: ta.Dict[int, T] = {}
+        self._dict: dict[int, T] = {}
         if init is not None:
             for item in init:
                 self.add(item)

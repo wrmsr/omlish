@@ -15,8 +15,8 @@ Value = ta.Union[
     float,
     str,
     bytes,
-    ta.List['Value'],
-    ta.Dict[str, 'Value'],
+    list['Value'],
+    dict[str, 'Value'],
 ]
 
 
