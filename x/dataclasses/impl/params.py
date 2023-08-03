@@ -33,9 +33,10 @@ import typing as ta
 
 from omlish import lang
 
-from .metadata import get_metadata
-from .internals import Params
 from .internals import PARAMS_ATTR
+from .internals import Params
+from .metadata import EMPTY_METADATA
+from .metadata import METADATA_ATTR
 
 
 IS_12 = sys.version_info[1] >= 12
@@ -60,6 +61,15 @@ def get_field_extras(f: dc.Field) -> FieldExtras:
 
 
 ##
+
+
+def get_params_cls(obj: ta.Any) -> type | None:
+    if not isinstance(obj, type):
+        obj = type(obj)
+    for cur in obj.__mro__:
+        if PARAMS_ATTR in cur.__dict__:
+            return cur
+    return None
 
 
 def get_params(obj: ta.Any) -> Params:
@@ -92,7 +102,10 @@ def get_params12(obj: ta.Any) -> Params12:
             weakref_slot=p.weakref_slot,
         )
 
-    md = get_metadata(obj)
+    if (pcls := get_params_cls(obj)) is None:
+        raise TypeError(pcls)
+
+    md = pcls.__dict__.get(METADATA_ATTR, EMPTY_METADATA)
     return md.get(Params12, DEFAULT_PARAMS12)
 
 
@@ -107,6 +120,9 @@ class ParamsExtras(lang.Final):
 DEFAULT_PARAMS_EXTRAS = ParamsExtras()
 
 
-def get_params_extras(cls: ta.Any) -> ParamsExtras:
-    md = get_metadata(cls)
+def get_params_extras(obj: ta.Any) -> ParamsExtras:
+    if (pcls := get_params_cls(obj)) is None:
+        raise TypeError(pcls)
+
+    md = pcls.__dict__.get(METADATA_ATTR, EMPTY_METADATA)
     return md.get(ParamsExtras, DEFAULT_PARAMS_EXTRAS)
