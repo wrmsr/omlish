@@ -8,6 +8,7 @@ import sys
 import types
 import typing as ta
 
+from omlish import cached
 from omlish import check
 from omlish import lang
 
@@ -291,23 +292,62 @@ class ClassProcessor:
         self._params_extras = check.isinstance(self._metadata[ParamsExtras], ParamsExtras)  # type: ignore  # noqa
         self._merged_metadata = get_merged_metadata(self._cls)
 
+    @cached.property
+    def _globals(self) -> Namespace:
+        if self._cls.__module__ in sys.modules:
+            return sys.modules[self._cls.__module__].__dict__
+        else:
+            return {}
+
+    def _check_frozen_bases(self) -> None:
+        any_frozen_base = False
+        has_dataclass_bases = False
+        for b in self._cls.__mro__[-1:0:-1]:
+            base_fields = getattr(b, FIELDS_ATTR, None)
+            if base_fields is not None:
+                has_dataclass_bases = True
+                if getattr(b, PARAMS_ATTR).frozen:
+                    any_frozen_base = True
+
+        if has_dataclass_bases:
+            if any_frozen_base and not self._params.frozen:
+                raise TypeError('cannot inherit non-frozen dataclass from a frozen one')
+
+            if not any_frozen_base and self._params.frozen:
+                raise TypeError('cannot inherit frozen dataclass from a non-frozen one')
+
+    def _process_eq(self) -> None:
+        if not self._params.eq:
+            return
+
+        # flds = [f for f in field_list if f.compare]
+        # self_tuple = tuple_str('self', flds)
+        # other_tuple = tuple_str('other', flds)
+        # set_new_attribute(cls, '__eq__', _cmp_fn('__eq__', '==', self_tuple, other_tuple, globals=globals))
+        cmp_fields = (field for field in field_list if field.compare)
+        terms = [f'self.{field.name}==other.{field.name}' for field in cmp_fields]
+        field_comparisons = ' and '.join(terms) or 'True'
+        body = [
+            f'if other.__class__ is self.__class__:',
+            f' return {field_comparisons}',
+            f'return NotImplemented',
+        ]
+        func = create_fn('__eq__', ('self', 'other'), body, globals=self._globals)
+        set_new_attribute(self._cls, '__eq__', func)
+
     @lang.cached_nullary
     def __call__(self) -> type:
-        if self._cls.__module__ in sys.modules:
-            globals = sys.modules[self._cls.__module__].__dict__
-        else:
-            globals = {}
-
         # params
 
         if self._params.order and not self._params.eq:
             raise ValueError('eq must be true if order is true')
 
+        self._check_frozen_bases()
+
         # field list
 
         fields: dict[str, dc.Field] = {}
 
-        any_frozen_base = False
         has_dataclass_bases = False
         for b in self._cls.__mro__[-1:0:-1]:
             base_fields = getattr(b, FIELDS_ATTR, None)
@@ -315,8 +355,6 @@ class ClassProcessor:
                 has_dataclass_bases = True
                 for f in base_fields.values():
                     fields[f.name] = f
-                if getattr(b, PARAMS_ATTR).frozen:
-                    any_frozen_base = True
 
         cls_annotations = inspect.get_annotations(self._cls)
 
@@ -345,13 +383,6 @@ class ClassProcessor:
             if isinstance(value, dc.Field) and name not in cls_annotations:
                 raise TypeError(f'{name!r} is a field but has no type annotation')
 
-        if has_dataclass_bases:
-            if any_frozen_base and not self._params.frozen:
-                raise TypeError('cannot inherit non-frozen dataclass from a frozen one')
-
-            if not any_frozen_base and self._params.frozen:
-                raise TypeError('cannot inherit frozen dataclass from a non-frozen one')
-
         setattr(self._cls, FIELDS_ATTR, fields)
 
         field_list = [f for f in fields.values() if field_type(f) is FieldType.INSTANCE]
@@ -376,7 +407,7 @@ class ClassProcessor:
                     kw_only_init_fields,
                     has_post_init,
                     '__dataclass_self__' if 'self' in fields else 'self',
-                    globals,
+                    self._globals,
                 ),
             )
 
@@ -384,25 +415,11 @@ class ClassProcessor:
 
         if self._params.repr:
             flds = [f for f in field_list if f.repr]
-            set_new_attribute(self._cls, '__repr__', repr_fn(flds, globals))
+            set_new_attribute(self._cls, '__repr__', repr_fn(flds, self._globals))
 
         # eq
 
-        if self._params.eq:
-            # flds = [f for f in field_list if f.compare]
-            # self_tuple = tuple_str('self', flds)
-            # other_tuple = tuple_str('other', flds)
-            # set_new_attribute(cls, '__eq__', _cmp_fn('__eq__', '==', self_tuple, other_tuple, globals=globals))
-            cmp_fields = (field for field in field_list if field.compare)
-            terms = [f'self.{field.name}==other.{field.name}' for field in cmp_fields]
-            field_comparisons = ' and '.join(terms) or 'True'
-            body = [
-                f'if other.__class__ is self.__class__:',
-                f' return {field_comparisons}',
-                f'return NotImplemented',
-            ]
-            func = create_fn('__eq__', ('self', 'other'), body, globals=globals)
-            set_new_attribute(self._cls, '__eq__', func)
+        self._process_eq()
 
         # order
 
@@ -416,7 +433,7 @@ class ClassProcessor:
                 ('__gt__', '>'),
                 ('__ge__', '>='),
             ]:
-                if set_new_attribute(self._cls, name, cmp_fn(name, op, self_tuple, other_tuple, globals=globals)):
+                if set_new_attribute(self._cls, name, cmp_fn(name, op, self_tuple, other_tuple, globals=self._globals)):
                     raise TypeError(
                         f'Cannot overwrite attribute {name} in class {self._cls.__name__}. '
                         f'Consider using functools.total_ordering'
@@ -425,7 +442,7 @@ class ClassProcessor:
         # frozen
 
         if self._params.frozen:
-            for fn in frozen_get_del_attr(self._cls, field_list, globals):
+            for fn in frozen_get_del_attr(self._cls, field_list, self._globals):
                 if set_new_attribute(self._cls, fn.__name__, fn):
                     raise TypeError(f'Cannot overwrite attribute {fn.__name__} in class {self._cls.__name__}')
 
@@ -441,7 +458,7 @@ class ClassProcessor:
             has_explicit_hash,
         )]
         if hash_action:
-            self._cls.__hash__ = hash_action(self._cls, field_list, globals)  # type: ignore
+            self._cls.__hash__ = hash_action(self._cls, field_list, self._globals)  # type: ignore
 
         # doc
 
