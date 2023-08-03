@@ -26,3 +26,12 @@ class DataMeta(abc.ABCMeta):
 class Data(metaclass=DataMeta):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+    def __post_init__(self, *args, **kwargs) -> None:
+        try:
+            spi = super().__post_init__  # type: ignore  # noqa
+        except AttributeError:
+            if args or kwargs:
+                raise TypeError(args, kwargs)
+        else:
+            spi(*args, **kwargs)
