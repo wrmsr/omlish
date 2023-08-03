@@ -24,8 +24,12 @@ from dataclasses import (  # noqa
 
 from .impl.fields import field
 
-from .impl.classes import dataclass
-from .impl.classes import make_dataclass
+from .impl.classes import (
+    dataclass,
+    make_dataclass,
+)
 
-from .impl.api import asdict
-from .impl.api import astuple
+from .impl.as_ import (
+    asdict,
+    astuple,
+)

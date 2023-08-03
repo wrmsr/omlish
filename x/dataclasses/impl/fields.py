@@ -1,5 +1,5 @@
 import dataclasses as dc
-import collections
+import collections.abc
 import types
 import typing as ta
 
@@ -44,7 +44,7 @@ def field(
 
     md: ta.Mapping = {FieldExtras: fx}
     if metadata is not None:
-        md = collections.ChainMap(md, metadata)
+        md = collections.ChainMap(md, check.isinstance(metadata, collections.abc.Mapping))  # noqa
 
     return dc.Field(
         default,

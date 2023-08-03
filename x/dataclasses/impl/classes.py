@@ -458,6 +458,8 @@ def dataclass(
         kw_only=False,
         slots=False,
         weakref_slot=False,
+
+        metadata=None,
 ):
     def wrap(cls):
         pkw = dict(
@@ -485,8 +487,13 @@ def dataclass(
             mmd[Params12] = Params12(**p12kw)
 
         md: Metadata = mmd
+        cmds = []
         if (dmd := cls.__dict__.get(METADATA_ATTR)) is not None:
-            md = collections.ChainMap(md, dmd)
+            cmds.append(dmd)
+        if metadata is not None:
+            cmds.append(check.isinstance(metadata, collections.abc.Mapping))
+        if cmds:
+            md = collections.ChainMap(md, *cmds)
 
         setattr(cls, PARAMS_ATTR, Params(**pkw))
         setattr(cls, METADATA_ATTR, types.MappingProxyType(md))
