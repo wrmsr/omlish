@@ -8,10 +8,10 @@ PYTHON_VERSION_NOGIL:=nogil-3.12
 
 MAIN_SOURCES:=\
 	${PROJECT} \
-	nn \
 
 ALL_SOURCES:=\
 	${MAIN_SOURCES} \
+	nn \
 	hn \
 	x \
 

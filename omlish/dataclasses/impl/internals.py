@@ -92,32 +92,32 @@ def _self_module():
 
 def is_classvar(cls: type, ty: ta.Any) -> bool:
     return (
-            dc._is_classvar(ty, ta)  # noqa
-            or (isinstance(ty, str) and dc._is_type(ty, cls, ta, ta.ClassVar, dc._is_classvar))  # noqa
+        dc._is_classvar(ty, ta)  # noqa
+        or (isinstance(ty, str) and dc._is_type(ty, cls, ta, ta.ClassVar, dc._is_classvar))  # noqa
     )
 
 
 def is_initvar(cls: type, ty: ta.Any) -> bool:
     return (
-            dc._is_initvar(ty, dc)  # noqa
-            or (
-                    isinstance(ty, str)
-                    and any(
-                            dc._is_type(ty, cls, mod, dc.InitVar, dc._is_initvar)  # noqa
-                            for mod in (dc, _self_module())
-                    )
+        dc._is_initvar(ty, dc)  # noqa
+        or (
+            isinstance(ty, str)
+            and any(
+                dc._is_type(ty, cls, mod, dc.InitVar, dc._is_initvar)  # noqa
+                for mod in (dc, _self_module())
             )
+        )
     )
 
 
 def is_kw_only(cls: type, ty: ta.Any) -> bool:
     return (
-            dc._is_kw_only(ty, dc)  # noqa
-            or (
-                    isinstance(ty, str)
-                    and any(
-                            dc._is_type(ty, cls, mod, dc.KW_ONLY, dc._is_kw_only)  # noqa
-                            for mod in (dc, _self_module())
-                    )
+        dc._is_kw_only(ty, dc)  # noqa
+        or (
+            isinstance(ty, str)
+            and any(
+                dc._is_type(ty, cls, mod, dc.KW_ONLY, dc._is_kw_only)  # noqa
+                for mod in (dc, _self_module())
             )
+        )
     )
