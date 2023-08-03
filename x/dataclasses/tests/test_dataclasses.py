@@ -60,3 +60,10 @@ def test_check_init():
 
     with pytest.raises(Exception):
         C(9)
+
+
+def test_mcls():
+    class C(dc.Data):
+        x: int
+
+    assert C(10).x == 10

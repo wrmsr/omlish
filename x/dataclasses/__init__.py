@@ -38,6 +38,11 @@ from .impl.as_ import (
 
 from .impl.exceptions import CheckException
 
+from .impl.metaclass import (
+    DataMeta,
+    Data,
+)
+
 from .impl.metadata import (
     Check,
     check,
