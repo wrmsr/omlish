@@ -47,15 +47,27 @@ IS_12 = sys.version_info[1] >= 12
 @dc.dataclass(frozen=True)
 class FieldExtras(lang.Final):
     coerce: ta.Optional[ta.Union[bool, ta.Callable[[ta.Any], ta.Any]]] = None
+    check: ta.Optional[ta.Callable[[ta.Any], bool]] = None
+
+
+DEFAULT_FIELD_EXTRAS = FieldExtras()
+
+
+def get_field_extras(f: dc.Field) -> FieldExtras:
+    if not isinstance(f, dc.Field):
+        raise TypeError(f)
+    return f.metadata.get(FieldExtras, DEFAULT_FIELD_EXTRAS)
 
 
 ##
 
 
 def get_params(obj: ta.Any) -> Params:
-    if hasattr(obj, PARAMS_ATTR):
-        return getattr(obj, PARAMS_ATTR)
-    raise TypeError(obj)
+    if not hasattr(obj, PARAMS_ATTR):
+        raise TypeError(obj)
+    return getattr(obj, PARAMS_ATTR)
+
+
 ##
 
 
@@ -71,8 +83,8 @@ DEFAULT_PARAMS12 = Params12()
 
 
 def get_params12(obj: ta.Any) -> Params12:
-    p = get_params(obj)
     if IS_12:
+        p = get_params(obj)
         return Params12(
             match_args=p.match_args,
             kw_only=p.kw_only,
@@ -81,10 +93,7 @@ def get_params12(obj: ta.Any) -> Params12:
         )
 
     md = get_metadata(obj)
-    if (md_p12 := md.get(Params12)) is not None:
-        return md_p12
-
-    return DEFAULT_PARAMS12
+    return md.get(Params12, DEFAULT_PARAMS12)
 
 
 ##
@@ -93,3 +102,11 @@ def get_params12(obj: ta.Any) -> Params12:
 @dc.dataclass(frozen=True)
 class ParamsExtras(lang.Final):
     reorder: bool = False
+
+
+DEFAULT_PARAMS_EXTRAS = ParamsExtras()
+
+
+def get_params_extras(cls: ta.Any) -> ParamsExtras:
+    md = get_metadata(cls)
+    return md.get(ParamsExtras, DEFAULT_PARAMS_EXTRAS)

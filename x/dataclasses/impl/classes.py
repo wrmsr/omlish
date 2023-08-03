@@ -1,20 +1,17 @@
 import abc
 import collections.abc
-import copy
 import dataclasses as dc
-import functools
 import inspect
 import itertools
 import keyword
-import re
 import sys
-import threading
 import types
 import typing as ta
 
 from omlish import check
 from omlish import lang
 
+from .exceptions import CheckException
 from .fields import field_init
 from .fields import field_type
 from .fields import fields_in_init_order
@@ -31,7 +28,6 @@ from .internals import recursive_repr
 from .internals import tuple_str
 from .metadata import METADATA_ATTR
 from .metadata import Metadata
-from .params import FieldExtras
 from .params import Params12
 from .params import ParamsExtras
 from .params import get_params12
@@ -80,11 +76,18 @@ def init_fn(
     locals.update({
         '__dataclass_HAS_DEFAULT_FACTORY__': HAS_DEFAULT_FACTORY,
         '__dataclass_builtins_object__': object,
+        '__dataclass_CheckException__': CheckException,
     })
 
     body_lines = []
     for f in fields:
-        line = field_init(f, params.frozen, locals, self_name, params12.slots)
+        line = field_init(
+            f,
+            params.frozen,
+            locals,
+            self_name,
+            params12.slots,
+        )
 
         if line:
             body_lines.append(line)
@@ -276,7 +279,7 @@ def process_class(cls: type) -> type:
 
     # field list
 
-    fields: ta.Dict[str, dc.Field] = {}
+    fields: dict[str, dc.Field] = {}
 
     any_frozen_base = False
     has_dataclass_bases = False

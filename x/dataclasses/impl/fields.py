@@ -3,7 +3,7 @@ import collections.abc
 import types
 import typing as ta
 
-from omlish import check
+from omlish import check as check_
 
 from .internals import FieldType
 from .internals import is_classvar
@@ -34,17 +34,19 @@ def field(
         kw_only=MISSING,
 
         coerce: ta.Optional[ta.Callable[[ta.Any], ta.Any]] = None,
+        check: ta.Optional[ta.Callable[[ta.Any], bool]] = None,
 ):  # -> dc.Field
     if default is not MISSING and default_factory is not MISSING:
         raise ValueError('cannot specify both default and default_factory')
 
     fx = FieldExtras(
         coerce=coerce,
+        check=check,
     )
 
     md: ta.Mapping = {FieldExtras: fx}
     if metadata is not None:
-        md = collections.ChainMap(md, check.isinstance(metadata, collections.abc.Mapping))  # noqa
+        md = collections.ChainMap(md, check_.isinstance(metadata, collections.abc.Mapping))  # noqa
 
     return dc.Field(
         default,
@@ -89,7 +91,7 @@ def preprocess_field(
         if f.kw_only is MISSING:
             f.kw_only = default_kw_only
     else:
-        check.arg(ft is FieldType.CLASS)
+        check_.arg(ft is FieldType.CLASS)
         if f.kw_only is not MISSING:
             raise TypeError(f'field {f.name} is a ClassVar but specifies kw_only')
 
@@ -120,7 +122,7 @@ def field_assign(
 def field_init(
         f: dc.Field,
         frozen: bool,
-        globals: Namespace,
+        locals: dict[str, ta.Any],
         self_name: str,
         slots: bool,
 ) -> ta.Optional[str]:
@@ -128,14 +130,14 @@ def field_init(
 
     if f.default_factory is not MISSING:
         if f.init:
-            globals[default_name] = f.default_factory
+            locals[default_name] = f.default_factory
             value = (
                 f'{default_name}() '
                 f'if {f.name} is __dataclass_HAS_DEFAULT_FACTORY__ '
                 f'else {f.name}'
             )
         else:
-            globals[default_name] = f.default_factory
+            locals[default_name] = f.default_factory
             value = f'{default_name}()'
 
     else:
@@ -143,12 +145,12 @@ def field_init(
             if f.default is MISSING:
                 value = f.name
             elif f.default is not MISSING:
-                globals[default_name] = f.default
+                locals[default_name] = f.default
                 value = f.name
 
         else:
             if slots and f.default is not MISSING:
-                globals[default_name] = f.default
+                locals[default_name] = f.default
                 value = default_name
             else:
                 return None

@@ -27,3 +27,12 @@ class Baz1(Foo, Bar):
 
 def test_foo():
     print(Foo(1, 2))
+
+
+@dc.dataclass()
+class Bar:
+    x: int = dc.field(coerce=int, check=lambda x: x < 10)
+
+
+def test_bar():
+    print(Bar(4))
