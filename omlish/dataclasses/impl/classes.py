@@ -282,8 +282,16 @@ def add_slots(
 class ClassProcessor:
     def __init__(self, cls: type) -> None:
         super().__init__()
-        self._cls = cls
 
+        self._cls = check.isinstance(cls, type)
+
+        self._params = check.isinstance(self._cls.__dict__[PARAMS_ATTR], Params)  # type: ignore
+        self._metadata = check.isinstance(self._cls.__dict__[METADATA_ATTR], collections.abc.Mapping)
+        self._params12 = get_params12(self._cls)
+        self._params_extras = check.isinstance(self._metadata[ParamsExtras], ParamsExtras)  # type: ignore  # noqa
+        self._merged_metadata = get_merged_metadata(self._cls)
+
+    @lang.cached_nullary
     def __call__(self) -> type:
         if self._cls.__module__ in sys.modules:
             globals = sys.modules[self._cls.__module__].__dict__
@@ -292,13 +300,7 @@ class ClassProcessor:
 
         # params
 
-        params = check.isinstance(self._cls.__dict__[PARAMS_ATTR], Params)  # type: ignore
-        metadata = check.isinstance(self._cls.__dict__[METADATA_ATTR], collections.abc.Mapping)
-        params12 = get_params12(self._cls)
-        params_extras = check.isinstance(metadata[ParamsExtras], ParamsExtras)  # type: ignore  # noqa
-        merged_metadata = get_merged_metadata(self._cls)
-
-        if params.order and not params.eq:
+        if self._params.order and not self._params.eq:
             raise ValueError('eq must be true if order is true')
 
         # field list
@@ -320,7 +322,7 @@ class ClassProcessor:
 
         cls_fields: list[dc.Field] = []
 
-        kw_only = params12.kw_only
+        kw_only = self._params12.kw_only
         kw_only_seen = False
         for name, type in cls_annotations.items():
             if is_kw_only(self._cls, type):
@@ -344,10 +346,10 @@ class ClassProcessor:
                 raise TypeError(f'{name!r} is a field but has no type annotation')
 
         if has_dataclass_bases:
-            if any_frozen_base and not params.frozen:
+            if any_frozen_base and not self._params.frozen:
                 raise TypeError('cannot inherit non-frozen dataclass from a frozen one')
 
-            if not any_frozen_base and params.frozen:
+            if not any_frozen_base and self._params.frozen:
                 raise TypeError('cannot inherit frozen dataclass from a non-frozen one')
 
         setattr(self._cls, FIELDS_ATTR, fields)
@@ -359,16 +361,16 @@ class ClassProcessor:
         all_init_fields = [f for f in fields.values() if field_type(f) in (FieldType.INSTANCE, FieldType.INIT)]
         std_init_fields, kw_only_init_fields = fields_in_init_order(all_init_fields)
 
-        if params.init:
+        if self._params.init:
             has_post_init = hasattr(self._cls, POST_INIT_NAME)
 
             set_new_attribute(
                 self._cls,
                 '__init__',
                 init_fn(
-                    params,
-                    params12,
-                    merged_metadata,
+                    self._params,
+                    self._params12,
+                    self._merged_metadata,
                     all_init_fields,
                     std_init_fields,
                     kw_only_init_fields,
@@ -380,13 +382,13 @@ class ClassProcessor:
 
         # repr
 
-        if params.repr:
+        if self._params.repr:
             flds = [f for f in field_list if f.repr]
             set_new_attribute(self._cls, '__repr__', repr_fn(flds, globals))
 
         # eq
 
-        if params.eq:
+        if self._params.eq:
             # flds = [f for f in field_list if f.compare]
             # self_tuple = tuple_str('self', flds)
             # other_tuple = tuple_str('other', flds)
@@ -404,7 +406,7 @@ class ClassProcessor:
 
         # order
 
-        if params.order:
+        if self._params.order:
             flds = [f for f in field_list if f.compare]
             self_tuple = tuple_str('self', flds)
             other_tuple = tuple_str('other', flds)
@@ -422,7 +424,7 @@ class ClassProcessor:
 
         # frozen
 
-        if params.frozen:
+        if self._params.frozen:
             for fn in frozen_get_del_attr(self._cls, field_list, globals):
                 if set_new_attribute(self._cls, fn.__name__, fn):
                     raise TypeError(f'Cannot overwrite attribute {fn.__name__} in class {self._cls.__name__}')
@@ -433,9 +435,9 @@ class ClassProcessor:
         has_explicit_hash = not (class_hash is dc.MISSING or (class_hash is None and '__eq__' in self._cls.__dict__))
 
         hash_action = HASH_ACTIONS[(
-            bool(params.unsafe_hash),
-            bool(params.eq),
-            bool(params.frozen),
+            bool(self._params.unsafe_hash),
+            bool(self._params.eq),
+            bool(self._params.frozen),
             has_explicit_hash,
         )]
         if hash_action:
@@ -452,15 +454,15 @@ class ClassProcessor:
 
         # match_args
 
-        if params12.match_args:
+        if self._params12.match_args:
             set_new_attribute(self._cls, '__match_args__', tuple(f.name for f in std_init_fields))
 
         # slots
 
-        if params12.weakref_slot and not params12.slots:
+        if self._params12.weakref_slot and not self._params12.slots:
             raise TypeError('weakref_slot is True but slots is False')
-        if params12.slots:
-            self._cls = add_slots(self._cls, params.frozen, params12.weakref_slot)
+        if self._params12.slots:
+            self._cls = add_slots(self._cls, self._params.frozen, self._params12.weakref_slot)
 
         # finalize
 
