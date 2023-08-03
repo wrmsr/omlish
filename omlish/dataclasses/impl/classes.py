@@ -316,6 +316,10 @@ class ClassProcessor:
             if not any_frozen_base and self._params.frozen:
                 raise TypeError('cannot inherit frozen dataclass from a non-frozen one')
 
+    @cached.property
+    def _cls_annotations(self) -> dict[str, ta.Any]:
+        return inspect.get_annotations(self._cls)
+
     def _process_eq(self) -> None:
         if not self._params.eq:
             return
@@ -348,21 +352,17 @@ class ClassProcessor:
 
         fields: dict[str, dc.Field] = {}
 
-        has_dataclass_bases = False
         for b in self._cls.__mro__[-1:0:-1]:
             base_fields = getattr(b, FIELDS_ATTR, None)
             if base_fields is not None:
-                has_dataclass_bases = True
                 for f in base_fields.values():
                     fields[f.name] = f
-
-        cls_annotations = inspect.get_annotations(self._cls)
 
         cls_fields: list[dc.Field] = []
 
         kw_only = self._params12.kw_only
         kw_only_seen = False
-        for name, type in cls_annotations.items():
+        for name, type in self._cls_annotations.items():
             if is_kw_only(self._cls, type):
                 if kw_only_seen:
                     raise TypeError(f'{name!r} is KW_ONLY, but KW_ONLY has already been specified')
@@ -380,7 +380,7 @@ class ClassProcessor:
                     setattr(self._cls, f.name, f.default)
 
         for name, value in self._cls.__dict__.items():
-            if isinstance(value, dc.Field) and name not in cls_annotations:
+            if isinstance(value, dc.Field) and name not in self._cls_annotations:
                 raise TypeError(f'{name!r} is a field but has no type annotation')
 
         setattr(self._cls, FIELDS_ATTR, fields)
