@@ -15,6 +15,7 @@ from ..base64 import BASE64_UNMARSHALER_FACTORY
 from ..dataclasses import DataclassMarshalerFactory
 from ..dataclasses import DataclassUnmarshalerFactory
 from ..datetimes import DatetimeMarshalerFactory
+from ..datetimes import DatetimeUnmarshalerFactory
 from ..enums import EnumMarshalerFactory
 from ..enums import EnumUnmarshalerFactory
 from ..exceptions import UnhandledSpecException
@@ -93,6 +94,7 @@ def test_marshal():
         EnumUnmarshalerFactory(),
         UUID_UNMARSHALER_FACTORY,
         BASE64_UNMARSHALER_FACTORY,
+        DatetimeUnmarshalerFactory(),
         IterableUnmarshalerFactory(),
     ]
 
