@@ -37,6 +37,7 @@ exclude = [
     '.git',
     '.idea',
     '.venv',
+    'omlish/dataclasses/tests/cpython/',
 ]
 
 ignore = [
