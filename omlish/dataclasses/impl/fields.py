@@ -46,7 +46,7 @@ def field(
 
     md: ta.Mapping = {FieldExtras: fx}
     if metadata is not None:
-        md = collections.ChainMap(md, check_.isinstance(metadata, collections.abc.Mapping))  # noqa
+        md = collections.ChainMap(md, check_.isinstance(metadata, collections.abc.Mapping))  # type: ignore
 
     return dc.Field(
         default,
@@ -85,7 +85,7 @@ def preprocess_field(
     if ft in (FieldType.CLASS, FieldType.INIT):
         if f.default_factory is not MISSING:
             raise TypeError(f'field {f.name} cannot have a default factory')
-    f._field_type = ft.value
+    f._field_type = ft.value  # type: ignore
 
     if ft in (FieldType.INSTANCE, FieldType.INIT):
         if f.kw_only is MISSING:

@@ -7,10 +7,10 @@ from dataclasses import (  # noqa
     InitVar,
     Field,
 
-    # field,
+    field,
 
-    # dataclass,
-    # make_dataclass,
+    dataclass,
+    make_dataclass,
 
     fields,
 
@@ -22,11 +22,13 @@ from dataclasses import (  # noqa
     replace,
 )
 
-from .impl.fields import field  # noqa
+from .impl.fields import (  # noqa
+    field as xfield,
+)
 
 from .impl.classes import (  # noqa
-    dataclass,
-    make_dataclass,
+    dataclass as xdataclass,
+    make_dataclass as xmake_dataclass,
 )
 
 from .impl.as_ import (  # noqa
@@ -34,9 +36,22 @@ from .impl.as_ import (  # noqa
     astuple,
 )
 
+
 ##
 
-from .impl.exceptions import CheckException  # noqa
+
+globals()['field'] = xfield
+
+globals()['dataclass'] = xdataclass
+globals()['make_dataclass'] = xmake_dataclass
+
+
+##
+
+
+from .impl.exceptions import (  # noqa
+    CheckException,
+)
 
 from .impl.metaclass import (  # noqa
     DataMeta,

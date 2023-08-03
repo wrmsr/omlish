@@ -8,7 +8,7 @@ import typing as ta
 ##
 
 
-HAS_DEFAULT_FACTORY = dc._HAS_DEFAULT_FACTORY  # noqa
+HAS_DEFAULT_FACTORY = dc._HAS_DEFAULT_FACTORY  # type: ignore  # noqa
 
 FIELDS_ATTR = dc._FIELDS  # type: ignore  # noqa
 PARAMS_ATTR = dc._PARAMS  # type: ignore  # noqa
@@ -92,18 +92,18 @@ def _self_module():
 
 def is_classvar(cls: type, ty: ta.Any) -> bool:
     return (
-        dc._is_classvar(ty, ta)  # noqa
-        or (isinstance(ty, str) and dc._is_type(ty, cls, ta, ta.ClassVar, dc._is_classvar))  # noqa
+        dc._is_classvar(ty, ta)  # type: ignore  # noqa
+        or (isinstance(ty, str) and dc._is_type(ty, cls, ta, ta.ClassVar, dc._is_classvar))  # type: ignore  # noqa
     )
 
 
 def is_initvar(cls: type, ty: ta.Any) -> bool:
     return (
-        dc._is_initvar(ty, dc)  # noqa
+        dc._is_initvar(ty, dc)  # type: ignore  # noqa
         or (
             isinstance(ty, str)
             and any(
-                dc._is_type(ty, cls, mod, dc.InitVar, dc._is_initvar)  # noqa
+                dc._is_type(ty, cls, mod, dc.InitVar, dc._is_initvar)  # type: ignore  # noqa
                 for mod in (dc, _self_module())
             )
         )
@@ -112,11 +112,11 @@ def is_initvar(cls: type, ty: ta.Any) -> bool:
 
 def is_kw_only(cls: type, ty: ta.Any) -> bool:
     return (
-        dc._is_kw_only(ty, dc)  # noqa
+        dc._is_kw_only(ty, dc)  # type: ignore  # noqa
         or (
             isinstance(ty, str)
             and any(
-                dc._is_type(ty, cls, mod, dc.KW_ONLY, dc._is_kw_only)  # noqa
+                dc._is_type(ty, cls, mod, dc.KW_ONLY, dc._is_kw_only)  # type: ignore  # noqa
                 for mod in (dc, _self_module())
             )
         )
