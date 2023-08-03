@@ -33,3 +33,7 @@ from .impl.as_ import (
     asdict,
     astuple,
 )
+
+##
+
+from .impl.exceptions import CheckException

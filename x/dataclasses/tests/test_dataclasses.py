@@ -1,5 +1,7 @@
 import dataclasses as _dc
 
+import pytest
+
 from ... import dataclasses as dc
 
 
@@ -36,3 +38,7 @@ class Bar:
 
 def test_bar():
     print(Bar(4))
+    print(Bar('4'))  # noqa
+
+    with pytest.raises(dc.CheckException):
+        Bar(11)

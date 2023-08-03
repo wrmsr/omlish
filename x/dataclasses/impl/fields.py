@@ -9,7 +9,7 @@ from .internals import FieldType
 from .internals import is_classvar
 from .internals import is_initvar
 from .params import FieldExtras
-from .utils import Namespace
+from .params import get_field_extras
 
 
 MISSING = dc.MISSING
@@ -125,9 +125,23 @@ def field_init(
         locals: dict[str, ta.Any],
         self_name: str,
         slots: bool,
-) -> ta.Optional[str]:
+) -> ta.Sequence[str]:
     default_name = f'__dataclass_dflt_{f.name}__'
+    fx = get_field_extras(f)
 
+    lines = []
+
+    if fx.coerce is not None:
+        cn = f'__dataclass_coerce__{f.name}__'
+        locals[cn] = fx.coerce
+        lines.append(f'{f.name} = {cn}({f.name})')
+
+    if fx.check is not None:
+        cn = f'__dataclass_check__{f.name}__'
+        locals[cn] = fx.check
+        lines.append(f'if not {cn}({f.name}): raise __dataclass_CheckException__')
+
+    value: str | None = None
     if f.default_factory is not MISSING:
         if f.init:
             locals[default_name] = f.default_factory
@@ -140,22 +154,21 @@ def field_init(
             locals[default_name] = f.default_factory
             value = f'{default_name}()'
 
+    elif f.init:
+        if f.default is MISSING:
+            value = f.name
+        elif f.default is not MISSING:
+            locals[default_name] = f.default
+            value = f.name
+
     else:
-        if f.init:
-            if f.default is MISSING:
-                value = f.name
-            elif f.default is not MISSING:
-                locals[default_name] = f.default
-                value = f.name
-
+        if slots and f.default is not MISSING:
+            locals[default_name] = f.default
+            value = default_name
         else:
-            if slots and f.default is not MISSING:
-                locals[default_name] = f.default
-                value = default_name
-            else:
-                return None
+            pass
 
-    if field_type(f) is FieldType.INIT:
-        return None
+    if value is not None and field_type(f) is not FieldType.INIT:
+        lines.append(field_assign(frozen, f.name, value, self_name))  # noqa
 
-    return field_assign(frozen, f.name, value, self_name)  # noqa
+    return lines

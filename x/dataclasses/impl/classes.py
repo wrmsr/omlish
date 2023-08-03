@@ -81,7 +81,7 @@ def init_fn(
 
     body_lines = []
     for f in fields:
-        line = field_init(
+        f_lines = field_init(
             f,
             params.frozen,
             locals,
@@ -89,8 +89,8 @@ def init_fn(
             params12.slots,
         )
 
-        if line:
-            body_lines.append(line)
+        if f_lines:
+            body_lines.extend(f_lines)
 
     if has_post_init:
         params_str = ','.join(f.name for f in fields if field_type(f) is FieldType.INIT)
