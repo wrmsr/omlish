@@ -37,3 +37,11 @@ from .impl.as_ import (
 ##
 
 from .impl.exceptions import CheckException
+
+from .impl.metadata import (
+    Check,
+    check,
+
+    Init,
+    init,
+)

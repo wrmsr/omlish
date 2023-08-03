@@ -26,8 +26,11 @@ from .internals import Params
 from .internals import is_kw_only
 from .internals import recursive_repr
 from .internals import tuple_str
+from .metadata import Check
+from .metadata import Init
 from .metadata import METADATA_ATTR
 from .metadata import Metadata
+from .metadata import get_merged_metadata
 from .params import Params12
 from .params import ParamsExtras
 from .params import get_params12
@@ -57,6 +60,7 @@ def init_param(f: dc.Field) -> str:
 def init_fn(
         params: Params,
         params12: Params12,
+        merged_metadata: Metadata,
         fields: ta.Sequence[dc.Field],
         std_fields: ta.Sequence[dc.Field],
         kw_only_fields: ta.Sequence[dc.Field],
@@ -95,6 +99,20 @@ def init_fn(
     if has_post_init:
         params_str = ','.join(f.name for f in fields if field_type(f) is FieldType.INIT)
         body_lines.append(f'{self_name}.{POST_INIT_NAME}({params_str})')
+
+    for i, fn in enumerate(merged_metadata.get(Check, [])):
+        if isinstance(fn, staticmethod):
+            fn = fn.__func__
+        cn = f'__dataclass_check_{i}__'
+        locals[cn] = fn
+        csig = inspect.signature(fn)
+        cas = ', '.join(p.name for p in csig.parameters.values())
+        body_lines.append(f'if not {cn}({cas}): raise __dataclass_CheckException__')
+
+    for i, fn in enumerate(merged_metadata.get(Init, [])):
+        cn = f'__dataclass_init_{i}__'
+        locals[cn] = fn
+        body_lines.append(f'{cn}({self_name})')
 
     if not body_lines:
         body_lines = ['pass']
@@ -273,6 +291,7 @@ def process_class(cls: type) -> type:
     metadata = check.isinstance(cls.__dict__[METADATA_ATTR], collections.abc.Mapping)
     params12 = get_params12(cls)
     params_extras = check.isinstance(metadata[ParamsExtras], ParamsExtras)  # noqa
+    merged_metadata = get_merged_metadata(cls)
 
     if params.order and not params.eq:
         raise ValueError('eq must be true if order is true')
@@ -344,6 +363,7 @@ def process_class(cls: type) -> type:
             init_fn(
                 params,
                 params12,
+                merged_metadata,
                 all_init_fields,
                 std_init_fields,
                 kw_only_init_fields,
@@ -491,10 +511,10 @@ def dataclass(
 
         md: Metadata = mmd
         cmds = []
-        if (dmd := cls.__dict__.get(METADATA_ATTR)) is not None:
-            cmds.append(dmd)
         if metadata is not None:
             cmds.append(check.isinstance(metadata, collections.abc.Mapping))
+        if (dmd := cls.__dict__.get(METADATA_ATTR)) is not None:
+            cmds.append(dmd)
         if cmds:
             md = collections.ChainMap(md, *cmds)
 
