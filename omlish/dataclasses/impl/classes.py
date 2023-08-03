@@ -324,11 +324,11 @@ class ClassProcessor:
         if not self._params.eq:
             return
 
-        # flds = [f for f in field_list if f.compare]
+        # flds = [f for f in self._field_list() if f.compare]
         # self_tuple = tuple_str('self', flds)
         # other_tuple = tuple_str('other', flds)
         # set_new_attribute(cls, '__eq__', _cmp_fn('__eq__', '==', self_tuple, other_tuple, globals=globals))
-        cmp_fields = (field for field in field_list if field.compare)
+        cmp_fields = (field for field in self._field_list() if field.compare)
         terms = [f'self.{field.name}==other.{field.name}' for field in cmp_fields]
         field_comparisons = ' and '.join(terms) or 'True'
         body = [
@@ -340,16 +340,7 @@ class ClassProcessor:
         set_new_attribute(self._cls, '__eq__', func)
 
     @lang.cached_nullary
-    def __call__(self) -> type:
-        # params
-
-        if self._params.order and not self._params.eq:
-            raise ValueError('eq must be true if order is true')
-
-        self._check_frozen_bases()
-
-        # field list
-
+    def _process_fields(self) -> dict[str, dc.Field]:
         fields: dict[str, dc.Field] = {}
 
         for b in self._cls.__mro__[-1:0:-1]:
@@ -383,13 +374,34 @@ class ClassProcessor:
             if isinstance(value, dc.Field) and name not in self._cls_annotations:
                 raise TypeError(f'{name!r} is a field but has no type annotation')
 
-        setattr(self._cls, FIELDS_ATTR, fields)
+        return fields
 
-        field_list = [f for f in fields.values() if field_type(f) is FieldType.INSTANCE]
+    @lang.cached_nullary
+    def _fields(self) -> dict[str, dc.Field]:
+        return self._process_fields()
+
+    @lang.cached_nullary
+    def _field_list(self) -> ta.Sequence[dc.Field]:
+        return [f for f in self._process_fields().values() if field_type(f) is FieldType.INSTANCE]
+
+    @lang.cached_nullary
+    def __call__(self) -> type:
+        # params
+
+        if self._params.order and not self._params.eq:
+            raise ValueError('eq must be true if order is true')
+
+        self._check_frozen_bases()
+
+        # field list
+
+        setattr(self._cls, FIELDS_ATTR, self._fields())
+
+        field_list = [f for f in self._fields().values() if field_type(f) is FieldType.INSTANCE]
 
         # init
 
-        all_init_fields = [f for f in fields.values() if field_type(f) in (FieldType.INSTANCE, FieldType.INIT)]
+        all_init_fields = [f for f in self._fields().values() if field_type(f) in (FieldType.INSTANCE, FieldType.INIT)]
         std_init_fields, kw_only_init_fields = fields_in_init_order(all_init_fields)
 
         if self._params.init:
@@ -406,7 +418,7 @@ class ClassProcessor:
                     std_init_fields,
                     kw_only_init_fields,
                     has_post_init,
-                    '__dataclass_self__' if 'self' in fields else 'self',
+                    '__dataclass_self__' if 'self' in self._fields() else 'self',
                     self._globals,
                 ),
             )
@@ -414,7 +426,7 @@ class ClassProcessor:
         # repr
 
         if self._params.repr:
-            flds = [f for f in field_list if f.repr]
+            flds = [f for f in self._field_list() if f.repr]
             set_new_attribute(self._cls, '__repr__', repr_fn(flds, self._globals))
 
         # eq
@@ -424,7 +436,7 @@ class ClassProcessor:
         # order
 
         if self._params.order:
-            flds = [f for f in field_list if f.compare]
+            flds = [f for f in self._field_list() if f.compare]
             self_tuple = tuple_str('self', flds)
             other_tuple = tuple_str('other', flds)
             for name, op in [
@@ -442,7 +454,7 @@ class ClassProcessor:
         # frozen
 
         if self._params.frozen:
-            for fn in frozen_get_del_attr(self._cls, field_list, self._globals):
+            for fn in frozen_get_del_attr(self._cls, self._field_list(), self._globals):
                 if set_new_attribute(self._cls, fn.__name__, fn):
                     raise TypeError(f'Cannot overwrite attribute {fn.__name__} in class {self._cls.__name__}')
 
@@ -458,7 +470,7 @@ class ClassProcessor:
             has_explicit_hash,
         )]
         if hash_action:
-            self._cls.__hash__ = hash_action(self._cls, field_list, self._globals)  # type: ignore
+            self._cls.__hash__ = hash_action(self._cls, self._field_list(), self._globals)  # type: ignore
 
         # doc
 
