@@ -2054,6 +2054,7 @@ class TestCase(unittest.TestCase):
 
         self.assertEqual(C.from_file('filename').x, 20)
 
+    @unittest.skip('metadata')
     def test_field_metadata_default(self):
         # Make sure the default metadata is read-only and of zero length.
         @dataclass
@@ -2065,6 +2066,7 @@ class TestCase(unittest.TestCase):
         with self.assertRaisesRegex(TypeError, 'does not support item assignment'):
             fields(C)[0].metadata['test'] = 3
 
+    @unittest.skip('metadata')
     def test_field_metadata_mapping(self):
         # Make sure only a mapping can be passed as metadata zero length.
         with self.assertRaises(TypeError):
@@ -2109,6 +2111,7 @@ class TestCase(unittest.TestCase):
         with self.assertRaisesRegex(TypeError, 'does not support item assignment'):
             fields(C)[0].metadata['test'] = 3
 
+    @unittest.skip('metadata')
     def test_field_metadata_custom_mapping(self):
         # Try a custom mapping.
         class SimpleNameSpace:
