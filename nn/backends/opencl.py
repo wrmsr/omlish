@@ -9,17 +9,17 @@ if ta.TYPE_CHECKING:
 else:
     cl = lang.proxy_import('pyopencl')
 
-from . import evaluators
-from .buffers import Buffer
-from .cstyle import CstyleCodegen
-from .cstyle import CstyleDialect
-from .devices import Device
-from .dtypes import Dtype
-from .evaluators import Evaluator
-from .evaluators import Program
-from .numpy import NumpyValue
-from .raw import RawBufferCopyInOut
-from .raw import RawConst
+from .. import evaluators
+from ..buffers import Buffer
+from ..codegen.cstyle import CstyleCodegen
+from ..codegen.cstyle import CstyleDialect
+from ..devices import Device
+from ..dtypes import Dtype
+from ..evaluators import Evaluator
+from ..codegen.codegen import Program
+from ..numpy import NumpyValue
+from ..raw import RawBufferCopyInOut
+from ..raw import RawConst
 
 
 _DEVICE_ATTR = '_omlish_device'

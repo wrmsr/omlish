@@ -44,6 +44,6 @@ def cpu_device() -> CpuDevice:
 
 @lang.cached_nullary
 def default_device() -> Device:
-    from .opencl import OpenclDevice
+    from .backends.opencl import OpenclDevice
     return OpenclDevice()
     # return cpu_device()

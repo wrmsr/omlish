@@ -11,9 +11,9 @@ from . import uops as uo
 from .. import ops
 from .. import symbolic as sym
 from ..buffers import Buffer
-from ..codegen import Codegen
-from ..codegen import CodegenOp
-from ..codegen import Program
+from ..codegen.codegen import Codegen
+from ..codegen.codegen import CodegenOp
+from ..codegen.codegen import Program
 from ..dims import Shape
 from ..dtypes import Dtype
 from ..dtypes import Float32
@@ -157,14 +157,14 @@ class LinearCodegenOp(CodegenOp):
 
         self.process()
 
-        from ..opencl import OpenclDialect
+        from ..backends.opencl import OpenclDialect
 
         self.hand_coded_optimizations()
         self.limit_global_dims(len(OpenclDialect.gid))
 
         self.linearize()
 
-        from ..cstyle import CstyleRenderer
+        from ..codegen.cstyle import CstyleRenderer
 
         rendered = CstyleRenderer(
             self._uops,
@@ -178,7 +178,7 @@ class LinearCodegenOp(CodegenOp):
             self.reduce_op is not None,
         )
 
-        from ..opencl import OpenclProgram
+        from ..backends.opencl import OpenclProgram
 
         prg = OpenclProgram(
             fn_name,
