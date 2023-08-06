@@ -3,8 +3,8 @@ import typing as ta
 
 from omlish import lang
 
-from .buffers import Buffer
-from .ops import Op
+from ..buffers import Buffer
+from ..ops import Op
 
 
 class Program(lang.Abstract):

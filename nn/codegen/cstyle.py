@@ -8,18 +8,18 @@ from omlish import dataclasses as dc
 from omlish import dispatch
 from omlish import lang
 
-from . import ops
-from . import symbolic as sym
-from .buffers import Buffer
-from .dtypes import Dtype
-from .dtypes import Float32
-from .dtypes import Float4
-from .linear import uops as uo
-from .linear.linearize import LinearCodegen
-from .linear.linearize import LinearCodegenOp
-from .linear.linearize import LocalBuffer
-from .ops import Op
-from .raw import RawConst
+from .. import ops
+from .. import symbolic as sym
+from ..buffers import Buffer
+from ..dtypes import Dtype
+from ..dtypes import Float32
+from ..dtypes import Float4
+from ..linearize import uops as uo
+from ..linearize.linearize import LinearCodegen
+from ..linearize.linearize import LinearCodegenOp
+from ..linearize.linearize import LocalBuffer
+from ..ops import Op
+from ..raw import RawConst
 
 
 class CstyleSymRenderer(sym.NodeRenderer):

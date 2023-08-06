@@ -129,8 +129,8 @@ class NumpyInterpreter(Interpreter[NumpyValue]):
 
 import math  # noqa
 
-from .codegen import Codegen  # noqa
-from .codegen import Program  # noqa
+from .codegen.codegen import Codegen  # noqa
+from .codegen.codegen import Program  # noqa
 from .raw import RawConst  # noqa
 
 
