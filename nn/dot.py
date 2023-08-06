@@ -47,7 +47,7 @@ class DotGen:
     @_add.register
     def _add_tensor(self, x: Tensor) -> str:
         nid = _gen_id(x)
-        self._items.append(dot.Node(nid, {'label': [
+        self._items.append(dot.Node(nid, {'label': [  # noqa
             [f'{type(x).__name__}:{nid}'],
         ]}))
         self._items.append(dot.Edge(nid, self.add(x.data)))
@@ -56,16 +56,16 @@ class DotGen:
     @_add.register
     def _add_buffer(self, buf: Buffer) -> str:
         nid = _gen_id(buf)
-        self._items.append(dot.Node(nid, {'label': [
+        self._items.append(dot.Node(nid, {'label': [  # noqa
             [f'{type(buf).__name__}:{nid}'],
         ]}))
-        self._items.append(dot.Edge(nid, self.add(buf.src)))
+        self._items.append(dot.Edge(nid, self.add(buf.src)))  # noqa
         return nid
 
     @_add.register
     def _add_op(self, op: ops.Op) -> str:
         nid = _gen_id(op)
-        self._items.append(dot.Node(nid, {'label': [
+        self._items.append(dot.Node(nid, {'label': [  # noqa
             [f'{type(op).__name__}:{nid}'],
         ]}))
         for s in op.srcs:
@@ -75,7 +75,7 @@ class DotGen:
     @_add.register
     def _add_movement_op(self, op: ops.MovementOp) -> str:
         nid = _gen_id(op)
-        self._items.append(dot.Node(nid, {'label': [
+        self._items.append(dot.Node(nid, {'label': [  # noqa
             [f'{type(op).__name__}:{nid}'],
             [repr(check.single(op.args))],
         ]}))
@@ -86,7 +86,7 @@ class DotGen:
     @_add.register
     def _add_raw_buffer(self, rb: RawBuffer) -> str:
         nid = _gen_id(rb)
-        self._items.append(dot.Node(nid, {'label': [
+        self._items.append(dot.Node(nid, {'label': [  # noqa
             [f'{type(rb).__name__}:{nid}'],
         ]}))
         return nid

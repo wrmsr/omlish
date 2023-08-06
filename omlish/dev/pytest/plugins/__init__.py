@@ -1,6 +1,9 @@
-from . import logging  # noqa
-from . import pycharm  # noqa
-from . import repeat  # noqa
+from . import (  # noqa
+    alone,
+    logging,
+    pycharm,
+    repeat,
+)
 from ._registry import ALL
 
 
