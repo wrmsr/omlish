@@ -12,3 +12,8 @@ def skip_if_cant_import(module: str, *args, **kwargs):
 
 def skip_if_python_version_less_than(num: ta.Sequence[int]):
     return pytest.mark.skipif(sys.version_info < tuple(num), reason=f'python version {tuple(sys.version_info)} < {tuple(num)}')  # noqa
+
+
+def skip_if_not_single():
+    # [resolve_collection_argument(a) for a in session.config.args]
+    raise NotImplementedError

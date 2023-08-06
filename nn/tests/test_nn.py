@@ -176,7 +176,7 @@ def test_simple_mul():
     print(n)
 
 
-@pytest.mark.skip()
+@pytest.mark.skip_unless_alone()
 def test_dot():
     xt = Tensor(np.asarray([1., 2.], dtype=np.float32), requires_grad=True)
     yt = Tensor(np.asarray([3., 4.], dtype=np.float32), requires_grad=True)
