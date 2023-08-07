@@ -28,20 +28,20 @@ class InspectState:
 
 @dc.dataclass()
 class Ps:
-    command: str        # `json:"Command"`
-    created_at: str     # `json:"CreatedAt"`
-    id: str             # `json:"ID"`
-    image: str          # `json:"Image"`
-    labels: str         # `json:"Labels"`
-    local_volumes: str  # `json:"LocalVolumes"`
-    mounts: str         # `json:"Mounts"`
-    names: str          # `json:"Names"`
-    networks: str       # `json:"Networks"`
-    ports: str          # `json:"Ports"`
-    running_for: str    # `json:"RunningFor"`
-    size: str           # `json:"Size"`
-    state: str          # `json:"State"`
-    status: str         # `json:"Status"`
+    command: str = dc.field(metadata={msh.Field: msh.Field(name='Command')})
+    created_at: str = dc.field(metadata={msh.Field: msh.Field(name='CreatedAt')})
+    id: str = dc.field(metadata={msh.Field: msh.Field(name='ID')})
+    image: str = dc.field(metadata={msh.Field: msh.Field(name='Image')})
+    labels: str = dc.field(metadata={msh.Field: msh.Field(name='Labels')})
+    local_volumes: str = dc.field(metadata={msh.Field: msh.Field(name='LocalVolumes')})
+    mounts: str = dc.field(metadata={msh.Field: msh.Field(name='Mounts')})
+    names: str = dc.field(metadata={msh.Field: msh.Field(name='Names')})
+    networks: str = dc.field(metadata={msh.Field: msh.Field(name='Networks')})
+    ports: str = dc.field(metadata={msh.Field: msh.Field(name='Ports')})
+    running_for: str = dc.field(metadata={msh.Field: msh.Field(name='RunningFor')})
+    size: str = dc.field(metadata={msh.Field: msh.Field(name='Size')})
+    state: str = dc.field(metadata={msh.Field: msh.Field(name='State')})
+    status: str = dc.field(metadata={msh.Field: msh.Field(name='Status')})
 
     # x: dict[str, ta.Any]  # `json:"-"`
 

@@ -18,6 +18,10 @@ from .base import (  # noqa
     SetType,
 )
 
+from .dataclasses import (  # noqa
+    Field,
+)
+
 from .registries import (  # noqa
     Registry,
 )

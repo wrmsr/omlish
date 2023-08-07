@@ -16,23 +16,32 @@ from .values import Value
 
 
 @dc.dataclass(frozen=True)
+class Field:
+    name: str | None = None
+
+
+@dc.dataclass(frozen=True)
 class DataclassMarshaler(Marshaler):
-    flds: ta.Sequence[ta.Tuple[str, Marshaler]]
+    flds: ta.Sequence[ta.Tuple[str, Marshaler, str]]
 
     def marshal(self, ctx: MarshalContext, o: ta.Any) -> Value:
-        return {k: m.marshal(ctx, getattr(o, k)) for k, m in self.flds}
+        return {k: m.marshal(ctx, getattr(o, a)) for a, m, k in self.flds}
 
 
 class DataclassMarshalerFactory(MarshalerFactory):
     def __call__(self, ctx: MarshalContext, spec: Spec) -> ta.Optional[Marshaler]:
         if isinstance(spec, type) and dc.is_dataclass(spec):
-            flds: list[ta.Tuple[str, Marshaler]] = []
+            flds: list[ta.Tuple[str, Marshaler, str]] = []
             th = ta.get_type_hints(spec)
             for fld in dc.fields(spec):
                 fty = th[fld.name]
                 if (m := ctx.make(fty)) is None:
                     return None
-                flds.append((fld.name, m))
+                k = fld.name
+                if (mdf := fld.metadata.get(Field)) is not None:
+                    if mdf.name is not None:
+                        k = mdf.name
+                flds.append((fld.name, m, k))
             return DataclassMarshaler(flds)
         return None
 
@@ -40,21 +49,25 @@ class DataclassMarshalerFactory(MarshalerFactory):
 @dc.dataclass(frozen=True)
 class DataclassUnmarshaler(Unmarshaler):
     cls: type
-    flds: ta.Sequence[ta.Tuple[str, Unmarshaler]]
+    flds: ta.Sequence[ta.Tuple[str, Unmarshaler, str]]
 
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any:
-        return self.cls(**{k: u.unmarshal(ctx, v[k]) for k, u in self.flds})
+        return self.cls(**{a: u.unmarshal(ctx, v[k]) for k, u, a in self.flds})
 
 
 class DataclassUnmarshalerFactory(UnmarshalerFactory):
     def __call__(self, ctx: UnmarshalContext, spec: Spec) -> ta.Optional[Unmarshaler]:
         if isinstance(spec, type) and dc.is_dataclass(spec):
-            flds: list[ta.Tuple[str, Unmarshaler]] = []
+            flds: list[ta.Tuple[str, Unmarshaler, str]] = []
             th = ta.get_type_hints(spec)
             for fld in dc.fields(spec):
                 fty = th[fld.name]
                 if (u := ctx.make(fty)) is None:
                     return None
-                flds.append((fld.name, u))
+                k = fld.name
+                if (mdf := fld.metadata.get(Field)) is not None:
+                    if mdf.name is not None:
+                        k = mdf.name
+                flds.append((k, u, fld.name))
             return DataclassUnmarshaler(spec, flds)
         return None
