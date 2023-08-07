@@ -2,6 +2,7 @@ import dataclasses as dc
 import enum
 import typing as ta
 
+from .. import check
 from .base import MarshalContext
 from .base import Marshaler
 from .base import MarshalerFactory
@@ -32,7 +33,7 @@ class EnumUnmarshaler(Unmarshaler):
     ty: ta.Type[enum.Enum]
 
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any:
-        return self.ty[v]
+        return self.ty[check.isinstance(v, str)]
 
 
 class EnumUnmarshalerFactory(UnmarshalerFactory):
@@ -40,4 +41,3 @@ class EnumUnmarshalerFactory(UnmarshalerFactory):
         if isinstance(spec, type) and issubclass(spec, enum.Enum):
             return EnumUnmarshaler(spec)
         return None
-

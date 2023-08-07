@@ -4,8 +4,7 @@ import subprocess
 import typing as ta  # noqa
 
 from omlish import dataclasses as dc
-
-from ... import marshal as msh
+from omlish import marshal as msh
 
 
 @dc.dataclass()

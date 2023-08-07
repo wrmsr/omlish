@@ -1,6 +1,7 @@
 import re
 import uuid
 
+from .. import check
 from .base import MarshalContext
 from .base import Marshaler
 from .base import MarshalerFactory
@@ -18,8 +19,8 @@ class UuidMarshalerUnmarshaler(Marshaler, Unmarshaler):
     def marshal(self, ctx: MarshalContext, o: uuid.UUID) -> Value:
         return str(o)
 
-    def unmarshal(self, ctx: UnmarshalContext, v: str) -> uuid.UUID:
-        return uuid.UUID(v.replace('-', ''))
+    def unmarshal(self, ctx: UnmarshalContext, v: Value) -> uuid.UUID:
+        return uuid.UUID(check.isinstance(v, str).replace('-', ''))
 
 
 UUID_MARSHALER_UNMARSHALER = UuidMarshalerUnmarshaler()

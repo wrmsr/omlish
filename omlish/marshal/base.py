@@ -39,8 +39,7 @@ import abc
 import dataclasses as dc
 import typing as ta
 
-from omlish import check
-
+from .. import check
 from .exceptions import UnhandledSpecException
 from .factories import Factory
 from .factories import RecursiveSpecFactory

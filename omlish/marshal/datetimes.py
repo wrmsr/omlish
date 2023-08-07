@@ -2,6 +2,7 @@ import dataclasses as dc
 import datetime
 import typing as ta
 
+from .. import check
 from .base import MarshalContext
 from .base import Marshaler
 from .base import MarshalerFactory
@@ -48,6 +49,7 @@ class DatetimeUnmarshaler(Unmarshaler):
     fmts: ta.Sequence[str]
 
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> datetime.datetime:
+        v = check.isinstance(v, str)
         for fmt in self.fmts:
             try:
                 return datetime.datetime.strptime(v, fmt)

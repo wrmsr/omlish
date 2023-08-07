@@ -6,7 +6,6 @@ from .base import MarshalerFactory
 from .base import UnmarshalContext
 from .base import Unmarshaler
 from .base import UnmarshalerFactory
-from .exceptions import UnhandledSpecException
 from .factories import SpecMapFactory
 from .values import Value
 

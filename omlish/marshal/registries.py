@@ -3,8 +3,7 @@ import dataclasses as dc
 import threading
 import typing as ta
 
-from omlish import check
-
+from .. import check
 from .specs import SPEC_TYPES
 from .specs import Spec
 

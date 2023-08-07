@@ -1,4 +1,4 @@
-from omlish import reflect as rfl
+from .. import reflect as rfl
 
 
 Spec = rfl.Reflected

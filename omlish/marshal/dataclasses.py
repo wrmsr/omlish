@@ -2,9 +2,11 @@
 TODO:
  - cfg naming
 """
+import collections.abc
 import dataclasses as dc
 import typing as ta
 
+from .. import check
 from .base import MarshalContext
 from .base import Marshaler
 from .base import MarshalerFactory
@@ -35,8 +37,7 @@ class DataclassMarshalerFactory(MarshalerFactory):
             th = ta.get_type_hints(spec)
             for fld in dc.fields(spec):
                 fty = th[fld.name]
-                if (m := ctx.make(fty)) is None:
-                    return None
+                m = ctx.make(fty)
                 k = fld.name
                 if (mdf := fld.metadata.get(Field)) is not None:
                     if mdf.name is not None:
@@ -52,7 +53,8 @@ class DataclassUnmarshaler(Unmarshaler):
     flds: ta.Sequence[ta.Tuple[str, Unmarshaler, str]]
 
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any:
-        return self.cls(**{a: u.unmarshal(ctx, v[k]) for k, u, a in self.flds})
+        ma = check.isinstance(v, collections.abc.Mapping)
+        return self.cls(**{a: u.unmarshal(ctx, ma[k]) for k, u, a in self.flds})  # type: ignore
 
 
 class DataclassUnmarshalerFactory(UnmarshalerFactory):
@@ -62,8 +64,7 @@ class DataclassUnmarshalerFactory(UnmarshalerFactory):
             th = ta.get_type_hints(spec)
             for fld in dc.fields(spec):
                 fty = th[fld.name]
-                if (u := ctx.make(fty)) is None:
-                    return None
+                u = ctx.make(fty)
                 k = fld.name
                 if (mdf := fld.metadata.get(Field)) is not None:
                     if mdf.name is not None:

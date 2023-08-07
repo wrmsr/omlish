@@ -1,9 +1,9 @@
+import collections.abc
 import dataclasses as dc
 import functools
 import typing as ta
 
-from omlish import check
-
+from .. import check
 from .base import MarshalContext
 from .base import Marshaler
 from .base import MarshalerFactory
@@ -25,9 +25,9 @@ class IterableMarshaler(Marshaler):
 
 class IterableMarshalerFactory(MarshalerFactory):
     def __call__(self, ctx: MarshalContext, spec: Spec) -> ta.Optional[Marshaler]:
-        if isinstance(spec, Generic) and spec.cls is list:
+        if isinstance(spec, Generic) and spec.cls is list:  # type: ignore
             if (e := ctx.make(check.single(spec.args))) is None:
-                return None
+                return None  # type: ignore
             return IterableMarshaler(e)
         return None
 
@@ -37,13 +37,13 @@ class IterableUnmarshaler(Unmarshaler):
     e: Unmarshaler
 
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Iterable:
-        return list(map(functools.partial(self.e.unmarshal, ctx), v))
+        return list(map(functools.partial(self.e.unmarshal, ctx), check.isinstance(v, collections.abc.Iterable)))
 
 
 class IterableUnmarshalerFactory(UnmarshalerFactory):
     def __call__(self, ctx: UnmarshalContext, spec: Spec) -> ta.Optional[Unmarshaler]:
-        if isinstance(spec, Generic) and spec.cls is list:
+        if isinstance(spec, Generic) and spec.cls is list:  # type: ignore
             if (e := ctx.make(check.single(spec.args))) is None:
-                return None
+                return None  # type: ignore
             return IterableUnmarshaler(e)
         return None

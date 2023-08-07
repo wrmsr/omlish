@@ -16,7 +16,7 @@ from .values import Value
 class OptionalMarshaler(Marshaler):
     e: Marshaler
 
-    def marshal(self, ctx: MarshalContext, o: ta.Optional) -> Value:
+    def marshal(self, ctx: MarshalContext, o: ta.Optional[ta.Any]) -> Value:
         if o is None:
             return None
         return self.e.marshal(ctx, o)
@@ -24,9 +24,9 @@ class OptionalMarshaler(Marshaler):
 
 class OptionalMarshalerFactory(MarshalerFactory):
     def __call__(self, ctx: MarshalContext, spec: Spec) -> ta.Optional[Marshaler]:
-        if isinstance(spec, Union) and spec.is_optional:
+        if isinstance(spec, Union) and spec.is_optional:  # type: ignore
             if (e := ctx.make(spec.without_none())) is None:
-                return None
+                return None  # type: ignore
             return OptionalMarshaler(e)
         return None
 
@@ -35,7 +35,7 @@ class OptionalMarshalerFactory(MarshalerFactory):
 class OptionalUnmarshaler(Unmarshaler):
     e: Unmarshaler
 
-    def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Optional:
+    def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Optional[ta.Any]:
         if v is None:
             return None
         return self.e.unmarshal(ctx, v)
@@ -43,8 +43,8 @@ class OptionalUnmarshaler(Unmarshaler):
 
 class OptionalUnmarshalerFactory(UnmarshalerFactory):
     def __call__(self, ctx: UnmarshalContext, spec: Spec) -> ta.Optional[Unmarshaler]:
-        if isinstance(spec, Union) and spec.is_optional:
+        if isinstance(spec, Union) and spec.is_optional:  # type: ignore
             if (e := ctx.make(spec.without_none())) is None:
-                return None
+                return None  # type: ignore
             return OptionalUnmarshaler(e)
         return None
