@@ -1,8 +1,8 @@
 from . import (  # noqa
-    alone,
     logging,
     pycharm,
     repeat,
+    skips,
 )
 from ._registry import ALL
 

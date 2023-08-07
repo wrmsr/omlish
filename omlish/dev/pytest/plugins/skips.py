@@ -1,3 +1,7 @@
+"""
+TODO:
+ - go-style tags: +slow,-ci, ...
+"""
 from _pytest.main import resolve_collection_argument  # noqa
 import pytest
 
@@ -5,7 +9,7 @@ from ._registry import register_plugin
 
 
 @register_plugin
-class AlonePlugin:
+class SkipsPlugin:
 
     def pytest_collection_modifyitems(self, session, items):
         dct = {}
