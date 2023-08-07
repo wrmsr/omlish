@@ -12,7 +12,7 @@ from ._registry import register_plugin
 class SkipsPlugin:
 
     def pytest_collection_modifyitems(self, session, items):
-        dct = {}
+        dct: dict[str, set[str]] = {}
         for arg in session.config.args:
             fspath, parts = resolve_collection_argument(
                 session.config.invocation_params.dir,
