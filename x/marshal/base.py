@@ -3,6 +3,7 @@ TODO:
  - mappings
  - redacted
  - strongly typed Composite/Cached Marshaler/Unmarshaler factories - footgun
+ - streaming? Start/EndObject, etc..
 
 Jackson:
  - USE_ANNOTATIONS
