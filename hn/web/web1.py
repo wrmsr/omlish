@@ -25,6 +25,8 @@ USERS = [
     }
 ]
 
+USERS_BY_ID = {u['id']: u for u in USERS}
+
 
 async def login(request):
     post_data = await request.post()
@@ -47,6 +49,28 @@ async def login(request):
     return json_response({'token': jwt_token})
 
 
-app = aiohttp.web.Application()
+async def get_user(request):
+    return json_response({'user': str(request.user)})
+
+
+async def auth_middleware(app, handler):
+    async def middleware(request):
+        request.user = None
+
+        if (jwt_token := request.headers.get('authorization', None)):
+            try:
+                payload = jwt.decode(jwt_token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+            except (jwt.DecodeError, jwt.ExpiredSignatureError) as je:  # noqa
+                return json_response({'message': 'Token is invalid'}, status=400)
+
+            request.user = USERS_BY_ID[payload['user_id']]
+
+        return await handler(request)
+
+    return middleware
+
+
+app = aiohttp.web.Application(middlewares=[auth_middleware])
+app.router.add_route('GET', '/get-user', get_user)
 app.router.add_route('POST', '/login', login)
 aiohttp.web.run_app(app)
