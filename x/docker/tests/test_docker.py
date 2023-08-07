@@ -1,4 +1,5 @@
 import datetime
+import json
 import subprocess
 import typing as ta  # noqa
 
@@ -46,8 +47,10 @@ class Ps:
 
 
 def test_docker():
-    out, err = subprocess.Popen(['docker', 'ps', '--format', '{{json .}}']).communicate()
-    print(out)
+    out, err = subprocess.Popen(['docker', 'ps', '--format', '{{json .}}'], stdout=subprocess.PIPE).communicate()
+    dct = json.loads(out.decode('utf-8'))
+    print(dct)
+
 
     # reg = msh.Registry()
     # uf = msh.new_standard_unmarshaler_factory()
