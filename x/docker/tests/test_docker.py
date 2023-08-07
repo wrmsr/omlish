@@ -51,8 +51,8 @@ def test_docker():
     dct = json.loads(out.decode('utf-8'))
     print(dct)
 
-
-    # reg = msh.Registry()
-    # uf = msh.new_standard_unmarshaler_factory()
-    # uc = msh.UnmarshalContext(registry=reg, factory=uf)
-    # uobj = uc.make(Ps).unmarshal(uc, mobj)
+    reg = msh.Registry()
+    uf = msh.new_standard_unmarshaler_factory()
+    uc = msh.UnmarshalContext(registry=reg, factory=uf)
+    ps = uc.make(Ps).unmarshal(uc, dct)
+    print(ps)
