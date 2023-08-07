@@ -131,3 +131,21 @@ test-nogil:
 	_REQUIREMENTS_TXT=requirements-dev.txt \
 	_TEST_SOURCES="${PROJECT}" \
 	${MAKE} test
+
+
+### Docker
+
+DOCKER_COMPOSE=docker-compose -f docker/docker-compose.yml
+
+.PHONY: docker-stop
+docker-stop:
+	${DOCKER_COMPOSE} stop
+
+.PHONY: docker-reup
+docker-reup: docker-stop
+	${DOCKER_COMPOSE} rm -f
+	${DOCKER_COMPOSE} up
+
+.PHONY: docker-invalidate
+docker-invalidate:
+	date +%s > docker/.dockertimestamp

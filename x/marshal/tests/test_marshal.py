@@ -3,38 +3,11 @@ import enum
 import typing as ta
 
 from ..base import MarshalContext
-from ..base import Marshaler
-from ..base import MarshalerFactory
-from ..base import RecursiveMarshalerFactory
-from ..base import RecursiveUnmarshalerFactory
-from ..base import SetType
 from ..base import UnmarshalContext
-from ..base import UnmarshalerFactory
-from ..base64 import BASE64_MARSHALER_FACTORY
-from ..base64 import BASE64_UNMARSHALER_FACTORY
-from ..dataclasses import DataclassMarshalerFactory
-from ..dataclasses import DataclassUnmarshalerFactory
-from ..datetimes import DatetimeMarshalerFactory
-from ..datetimes import DatetimeUnmarshalerFactory
-from ..enums import EnumMarshalerFactory
-from ..enums import EnumUnmarshalerFactory
-from ..exceptions import UnhandledSpecException
-from ..factories import CompositeFactory
-from ..factories import RecursiveSpecFactory
-from ..factories import SpecCacheFactory
-from ..factories import SpecMapFactory
-from ..iterables import IterableMarshalerFactory
-from ..iterables import IterableUnmarshalerFactory
-from ..optionals import OptionalMarshalerFactory
-from ..optionals import OptionalUnmarshalerFactory
-from ..primitives import PRIMITIVE_MARSHALER_FACTORY
-from ..primitives import PRIMITIVE_UNMARSHALER_FACTORY
 from ..registries import Registry
-from ..specs import Spec
-from ..specs import spec_of
-from ..uuids import UUID_MARSHALER_FACTORY
-from ..uuids import UUID_UNMARSHALER_FACTORY
 from .foox import Foox
+from ..standard import new_standard_marshaler_factory
+from ..standard import new_standard_unmarshaler_factory
 
 
 class E(enum.Enum):
@@ -54,24 +27,7 @@ def test_marshal():
     # reg = Registry()
     # reg.register(spec_of(int), SetType(marshaler=PrimitiveMarshaler()))
 
-    mfs: list[MarshalerFactory] = [
-        PRIMITIVE_MARSHALER_FACTORY,
-        OptionalMarshalerFactory(),
-        DataclassMarshalerFactory(),
-        EnumMarshalerFactory(),
-        UUID_MARSHALER_FACTORY,
-        BASE64_MARSHALER_FACTORY,
-        DatetimeMarshalerFactory(),
-        IterableMarshalerFactory(),
-    ]
-
-    mf: MarshalerFactory = SpecCacheFactory(  # noqa
-        RecursiveMarshalerFactory(
-            CompositeFactory(
-                *mfs
-            )
-        )
-    )
+    mf = new_standard_marshaler_factory()
 
     reg = Registry()
 
@@ -87,24 +43,7 @@ def test_marshal():
         print(mobj)
     print()
 
-    ufs: list[UnmarshalerFactory] = [
-        PRIMITIVE_UNMARSHALER_FACTORY,
-        OptionalUnmarshalerFactory(),
-        DataclassUnmarshalerFactory(),
-        EnumUnmarshalerFactory(),
-        UUID_UNMARSHALER_FACTORY,
-        BASE64_UNMARSHALER_FACTORY,
-        DatetimeUnmarshalerFactory(),
-        IterableUnmarshalerFactory(),
-    ]
-
-    uf: UnmarshalerFactory = SpecCacheFactory(  # noqa
-        RecursiveUnmarshalerFactory(
-            CompositeFactory(
-                *ufs
-            )
-        )
-    )
+    uf = new_standard_unmarshaler_factory()
 
     uc = UnmarshalContext(registry=reg, factory=uf)
     for _ in range(2):
