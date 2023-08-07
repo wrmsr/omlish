@@ -47,7 +47,12 @@ class Ps:
 
 
 def test_docker():
-    out, err = subprocess.Popen(['docker', 'ps', '--format', '{{json .}}'], stdout=subprocess.PIPE).communicate()
+    out, err = subprocess.Popen([
+        'docker',
+        'ps',
+        '--no-trunc',
+        '--format', '{{json .}}',
+    ], stdout=subprocess.PIPE).communicate()
     dct = json.loads(out.decode('utf-8'))
     print(dct)
 
