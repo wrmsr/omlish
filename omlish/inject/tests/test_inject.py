@@ -1,6 +1,6 @@
 import abc
 
-from .. import inject as inj
+from ... import inject as inj
 
 
 def test_inject():

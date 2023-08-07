@@ -2,28 +2,31 @@
 TODO:
  - encode self._realized <-> self._op w/ case class, invalid state unrepresentable
 """
-import math
 import typing as ta
 import weakref
 
 from omlish import check
 from omlish import defs
-from omlish import dispatch
+from omlish import lang
 import numpy as np
 
-from .devices import Device
-from .devices import cpu_device
-from .dims import Shape
-from .dims import Stride
-from .dtypes import Dtype
-from .numpy import NumpyValue
-from .raw import RawBuffer
-from .raw import RawConst
-from .raw import RawCpuBuffer
-from .shapetracker import ShapeTracker
-from .shapetracker import View
-from .lazy import Lazy
-from . import ops
+from ..devices import Device
+from ..devices import cpu_device
+from ..dims import Shape
+from ..dims import Stride
+from ..dtypes import Dtype
+from ..numpy import NumpyValue
+from ..raw import RawBuffer
+from ..raw import RawCpuBuffer
+from ..shapetracker import ShapeTracker
+from ..shapetracker import View
+from ..lazy import Lazy
+from .. import ops
+
+if ta.TYPE_CHECKING:
+    from . import transforms
+else:
+    transforms = lang.proxy_import('.transforms', __package__)
 
 
 def map_buffers(srcs: ta.Mapping[Lazy, Lazy], x: ops.Op) -> ops.Op:
@@ -131,7 +134,7 @@ class Buffer(Lazy):
         if self.shape == new_shape:
             return self
 
-        srcs = _push_movement_ops([self])  # SHUFFLE_MOVEMENT_OPS
+        srcs = transforms.push_movement_ops([self])  # SHUFFLE_MOVEMENT_OPS
 
         return create_lazy_buffer(
             self.device,
@@ -207,7 +210,7 @@ class Buffer(Lazy):
                 )
                 and len(self._children) == 0
         ):
-            return _replace_with_movement_ops(self.get_op(), [(op, arg)])
+            return transforms.replace_with_movement_ops(self.get_op(), [(op, arg)])
 
         ret = create_lazy_buffer(
             self.device,
@@ -225,6 +228,7 @@ class Buffer(Lazy):
         if self._realized is not None:
             return self
 
+        from .realize import Realizer
         raw, op = Realizer(self).realize()
 
         self._realized = raw
@@ -295,78 +299,6 @@ class Buffer(Lazy):
         )
 
 
-class Realizer:
-    def __init__(self, buf: Buffer) -> None:
-        super().__init__()
-
-        self._buf = check.isinstance(buf, Buffer)
-
-    def realize(self) -> tuple[RawBuffer, ops.Op]:
-        return self._realize(self._buf.op)
-
-    @dispatch.method
-    def _realize(self, op: object) -> tuple[RawBuffer, ops.Op]:
-        raise TypeError(op)
-
-    @_realize.register
-    def _realize_op(self, op: ops.Op) -> tuple[RawBuffer, ops.Op]:
-        for x in op.buffers:
-            x.realize()
-
-        realized = self._buf.device.evaluator.eval(op, output=self._buf)  # FIXME: output mutates ugh
-        return (realized, op)
-
-    @_realize.register
-    def _realize_contiguous(self, op: ops.Contiguous) -> tuple[RawBuffer, ops.Op]:
-        sb = op.buf.as_buffer()  # FIXME: cast??
-        realized = sb.realize().get_realized()
-        if (
-                sb._st.contiguous and
-                not isinstance(realized, RawConst) and
-                realized.size == math.prod(self._buf.shape)
-        ):
-            # no need to run an AST, this is already contiguous
-            return (realized, op)
-        else:
-            return self._realize(ops.Nop(op.buf))
-
-    @_realize.register
-    def _realize_from(self, op: ops.From) -> tuple[RawBuffer, ops.Op]:
-        raw = op.srcs[0].as_buffer().get_realized()
-        return (self._buf.device.make_raw_buffer(raw.to_cpu()), op)
-
-    @_realize.register
-    def _realize_empty(self, op: ops.Empty) -> tuple[RawBuffer, ops.Op]:
-        raw = self._buf.device.make_raw_buffer(np.empty(math.prod(self._buf.shape), dtype=self._buf.dtype.np))
-        return (raw, op)
-
-    @_realize.register
-    def _realize_const(self, op: ops.Const) -> tuple[RawBuffer, ops.Op]:
-        # FIXME: supports_constant_folding
-        # FIXME: urghh
-        # self._realized = self.device.make_raw_buffer(np.array(check.isinstance(self_op, ops.Const).c, dtype=self.dtype.np))  # noqa
-        return (RawConst(float(op.c), self._buf.dtype), op)
-
-    @_realize.register
-    def _realize_binary_op(self, op: ops.BinaryOp) -> tuple[RawBuffer, ops.Op]:
-        real_srcs: ta.Dict[Buffer, ta.Optional[Lazy]] = {x: None for x in op.buffers}
-
-        intermediate_shape = self._buf.shape
-        # reshape all the late ops into the output shape
-        # NOTE: these reshapes will return self if they don't change the shape
-        for x in real_srcs.keys():
-            if real_srcs[x] is None:
-                real_srcs[x] = x.movement_op(ops.Reshape, intermediate_shape)
-
-        ret = map_buffers({k: check.not_none(v) for k, v in real_srcs.items()}, op)
-        if intermediate_shape != self._buf.shape:
-            ret_op = ops.Reshape((ret,), self._buf.shape)
-        else:
-            ret_op = op
-
-        return self._realize_op(ret_op)
-
-
 def create_lazy_buffer(
         device: Device,
         shape: ta.Union[ShapeTracker, Shape],
@@ -389,7 +321,7 @@ def elementwise_op(
 ) -> Buffer:
     check.not_empty(srcs)
 
-    srcs = tuple(_push_movement_ops(srcs))  # SHUFFLE_MOVEMENT_OPS
+    srcs = tuple(transforms.push_movement_ops(srcs))  # SHUFFLE_MOVEMENT_OPS
 
     out_device = srcs[0].device
     out_shape = srcs[0].shape
@@ -404,65 +336,3 @@ def elementwise_op(
         op(*srcs, *([arg] if arg is not None else [])),
         out_dtype,
     )
-
-
-def _replace_with_movement_ops(
-        y: Lazy,
-        lst: ta.List[ta.Tuple[ta.Type[ops.MovementOp], ta.Any]],
-) -> 'Buffer':
-    if isinstance(y, Buffer):
-        for op, arg in lst:
-            y = y.movement_op(op, arg)
-        return y
-
-    elif isinstance(y, ops.Op):
-        check.isinstance(y, (ops.BinaryOp, ops.UnaryOp))
-
-        return elementwise_op(
-            type(y),  # type: ignore
-            *[_replace_with_movement_ops(z, lst) for z in y.srcs],
-            *y.args
-        )
-
-    else:
-        raise TypeError(y)
-
-
-def _push_movement_ops(srcs: ta.Sequence[Buffer]) -> ta.Sequence[Buffer]:
-    new_srcs = []
-
-    for x in srcs:
-        mops: ta.List[ta.Tuple[ta.Type[ops.MovementOp], ta.Any]] = []
-        bx = x
-
-        # backwalk all the movement ops. don't push PAD or EXPAND
-        while (
-                bx._realized is None
-                and isinstance(bx.op, ops.MovementOp)
-                and type(bx.op) != ops.Expand
-                and (
-                        type(bx.op) != ops.Pad
-                        # or SHUFFLE_PAD_OPS
-                )
-                and len(bx._children) <= 1
-        ):
-            mops.append((type(check.isinstance(bx.op, ops.MovementOp)), check.single(bx.op.args)))
-            bx = bx.op.srcs[0].as_buffer()
-
-        # NOTE: can't push pads past anything where f(0, 0) != 0 or f(0) != 0
-        unsafe_pad_ops = {ops.Div, ops.CmpEq, ops.Log2, ops.Exp2, ops.Recip}
-        if (
-                bx._realized is None
-                and isinstance(bx.op, ops.BinaryOp)
-                and len(bx._children) <= 1
-                and len(mops)
-                and (
-                all(x[0] != ops.Pad for x in mops) or
-                all(type(x) not in unsafe_pad_ops for x in bx.op.ops)
-        )
-        ):
-            new_srcs.append(_replace_with_movement_ops(bx.op, mops[::-1]))
-        else:
-            new_srcs.append(x)
-
-    return tuple(new_srcs)
