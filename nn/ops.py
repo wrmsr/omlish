@@ -329,7 +329,7 @@ class Const(LoadOp):
 
 @dc.dataclass(frozen=True)
 class From(LoadOp):
-    buf: ta.Union['buffers.Buffer', weakref.ReferenceType['buffers.Buffer']] = dc.field(
+    buf: ta.Union['buffers.Buffer', weakref.ReferenceType['buffers.Buffer']] = dc.field(  # noqa
         check=lambda o: isinstance(o, (buffers.Buffer, weakref.ref)),
     )
 
@@ -344,7 +344,7 @@ class From(LoadOp):
 
 @dc.dataclass(frozen=True)
 class Contiguous(LoadOp):
-    buf: ta.Union['buffers.Buffer', weakref.ReferenceType['buffers.Buffer']] = dc.field(
+    buf: ta.Union['buffers.Buffer', weakref.ReferenceType['buffers.Buffer']] = dc.field(  # noqa
         check=lambda o: isinstance(o, (buffers.Buffer, weakref.ref)),
     )
 
