@@ -7,6 +7,7 @@ from .keys import as_key
 from .providers import ConstProvider
 from .providers import Provider
 from .providers import as_provider
+from .providers import ctor as ctor_provider
 from .providers import fn as fn_provider
 from .types import Binding
 from .types import Bindings
@@ -29,6 +30,8 @@ def as_binding(o: ta.Any) -> Binding:
         return Binding(Key(o.provided_cls(lambda _: lang.raise_(TypeError(o)))), o)
     if isinstance(o, _ProviderGen):
         return as_binding(o._gen_provider())  # noqa
+    if isinstance(o, type):
+        return as_binding(ctor_provider(o))
     if callable(o):
         return as_binding(fn_provider(o))
     cls = type(o)

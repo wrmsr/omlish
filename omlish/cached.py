@@ -1,5 +1,9 @@
 _IGNORE = object()
 
+
+##
+
+
 _property = property
 
 
@@ -40,6 +44,9 @@ class Property:
         raise TypeError(self._name)
 
 
+##
+
+
 class Nullary:
     def __init__(self, fn, *, name=None):
         super().__init__()
@@ -69,8 +76,13 @@ class Nullary:
         return val
 
 
-property = property
+nullary = Nullary
+
+
+##
+
+
+# Last
+property = property  # noqa
 
 globals()['property'] = Property  # noqa
-
-nullary = Nullary

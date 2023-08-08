@@ -6,6 +6,7 @@ from .inspect import signature
 from .keys import as_key
 from .types import Binding
 from .types import Bindings
+from .types import Injector
 from .types import Key
 from .types import Provider
 from .types import ProviderFn
@@ -24,6 +25,8 @@ def as_provider(o: ta.Any) -> Provider:
         return o._gen_provider()  # noqa
     if isinstance(o, Key):
         return LinkProvider(o)
+    if isinstance(o, type):
+        return ctor(o)
     if callable(o):
         return fn(o)
     return ConstProvider(type(o), o)
@@ -41,17 +44,39 @@ class FnProvider(Provider):
         return self.cls
 
     def provider_fn(self) -> ProviderFn:
-        def fn(i):
+        def pfn(i: Injector) -> ta.Any:
             return i.inject(self.fn)
 
-        return fn
+        return pfn
 
 
 def fn(fn: ta.Any, cls: ta.Optional[type] = None) -> Provider:
+    check.not_isinstance(fn, type)
     sig = signature(fn)
     if cls is None:
         cls = check.isinstance(sig.return_annotation, type)
     return FnProvider(cls, fn)
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class CtorProvider(Provider):
+    cls: type
+
+    def provided_cls(self, rec: ta.Callable[[Key], type]) -> type:
+        return self.cls
+
+    def provider_fn(self) -> ProviderFn:
+        def pfn(i: Injector) -> ta.Any:
+            return i.inject(self.cls)
+
+        return pfn
+
+
+def ctor(cls: type) -> Provider:
+    return CtorProvider(check.isinstance(cls, type))
 
 
 ##
@@ -88,14 +113,14 @@ class SingletonProvider(Provider):
     def provider_fn(self) -> ProviderFn:
         v = not_set = object()
 
-        def fn(i):
+        def pfn(i: Injector) -> ta.Any:
             nonlocal v
             if v is not_set:
-                v = pfn(i)
+                v = ufn(i)
             return v
 
-        pfn = self.p.provider_fn()
-        return fn
+        ufn = self.p.provider_fn()
+        return pfn
 
 
 def singleton(p: ta.Any) -> Provider:
@@ -113,10 +138,10 @@ class LinkProvider(Provider):
         return rec(self.k)
 
     def provider_fn(self) -> ProviderFn:
-        def fn(i):
+        def pfn(i: Injector) -> ta.Any:
             return i.provide(self.k)
 
-        return fn
+        return pfn
 
 
 def link(k: ta.Any) -> Provider:

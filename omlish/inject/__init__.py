@@ -8,6 +8,8 @@ from .keys import array  # noqa
 from .keys import as_key  # noqa
 from .keys import tag  # noqa
 from .providers import const  # noqa
+from .providers import ctor  # noqa
+from .providers import fn  # noqa
 from .providers import link  # noqa
 from .providers import singleton  # noqa
 from .types import Binder  # noqa

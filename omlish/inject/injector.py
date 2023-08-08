@@ -7,23 +7,20 @@ TODO:
  - private
  - circular proxies
 """
-import inspect
 import typing as ta
 
 from .. import check
 from .. import lang
 from .bindings import build_provider_map
-from .exceptions import DuplicateKeyException
 from .exceptions import UnboundKeyException
-from .inspect import signature
+from .inspect import build_kwarg_keys
 from .keys import as_key
 from .types import Bindings
 from .types import Injector
-from .types import Key
 
 
 class _Injector(Injector):
-    def __init__(self, bs: Bindings, p: ta.Optional['Injector'] = None) -> None:
+    def __init__(self, bs: Bindings, p: ta.Optional[Injector] = None) -> None:
         super().__init__()
 
         self._bs = check.isinstance(bs, Bindings)
@@ -49,25 +46,10 @@ class _Injector(Injector):
         v = self.try_provide(key)
         if v.present:
             return v.must()
-
         raise UnboundKeyException(key)
 
     def provide_kwargs(self, obj: ta.Any) -> ta.Mapping[str, ta.Any]:
-        sig = signature(obj)
-
-        seen: set[Key] = set()
-        kd: dict[str, Key] = {}
-        for p in sig.parameters.values():
-            k = as_key(p.annotation)
-
-            if k in seen:
-                raise DuplicateKeyException(k)
-            seen.add(k)
-
-            if p.kind not in (inspect.Parameter.POSITIONAL_OR_KEYWORD, inspect.Parameter.KEYWORD_ONLY):
-                raise TypeError(sig)
-            kd[p.name] = k
-
+        kd = build_kwarg_keys(obj)
         ret: dict[str, ta.Any] = {}
         for n, k in kd.items():
             ret[n] = self.provide(k)
@@ -78,5 +60,5 @@ class _Injector(Injector):
         return obj(**kws)
 
 
-def create_injector(bs: Bindings, p: ta.Optional['Injector'] = None) -> Injector:
+def create_injector(bs: Bindings, p: ta.Optional[Injector] = None) -> Injector:
     return _Injector(bs, p)
