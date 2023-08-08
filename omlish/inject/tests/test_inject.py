@@ -1,5 +1,6 @@
 import abc
 
+from ... import dataclasses as dc
 from ... import inject as inj
 
 
@@ -56,3 +57,13 @@ class BarfB(Barf):
 def test_inject2():
     i = inj.create_injector(inj.bind(420))
     assert i.provide(int) == 420
+
+
+def test_dataclasses():
+    @dc.dataclass(frozen=True)
+    class Foo:
+        i: int
+        s: str
+
+    foo = inj.create_injector(inj.bind(420, inj.fn(lambda: 'howdy', str), Foo)).provide(Foo)
+    print(foo)
