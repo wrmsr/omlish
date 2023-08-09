@@ -139,8 +139,15 @@ class FnNamer:
 
 
 class LinearCodegenOp(CodegenOp):
-    def __init__(self, op: ops.Op, output: Buffer) -> None:
+    @dc.dataclass(frozen=True)
+    class Options:
+        supports_float4: bool = True
+        supports_float4_alu: bool = True
+
+    def __init__(self, op: ops.Op, output: Buffer, opts: Options = Options()) -> None:
         super().__init__()
+
+        self._opts = check.isinstance(opts, LinearCodegenOp.Options)
 
         # NOTE: if there's a RESHAPE, we skip it. the output shape is set from the reduce op or a latebuf
         self._op = check.isinstance(op.srcs[0], ops.Op) if isinstance(op, ops.Reshape) else op
@@ -228,9 +235,6 @@ class LinearCodegenOp(CodegenOp):
     _upcasted: int
     _local_dims: int
 
-    supports_float4: bool = True
-    supports_float4_alu: bool = True
-
     ##
 
     def process(self) -> None:
@@ -305,7 +309,7 @@ class LinearCodegenOp(CodegenOp):
         ]
 
     def get_upcast_dim(self, i: int, amt: int = 4) -> ta.Sequence[int]:
-        should_upcast = self.supports_float4 and self._bufs[i].dtype in (Float32,)
+        should_upcast = self._opts.supports_float4 and self._bufs[i].dtype in (Float32,)
         return [
             x
             for x in self._sts[i].unit_stride_axes()
@@ -570,7 +574,7 @@ class LinearCodegenOp(CodegenOp):
                         )),
                     )
                     for idx, val in
-                    get_grouped_maybe_float4(loaded_buffers['LOCAL_BUFFER'], acc, grouping_allowed=self.supports_float4_alu)
+                    get_grouped_maybe_float4(loaded_buffers['LOCAL_BUFFER'], acc, grouping_allowed=self._opts.supports_float4_alu)
                 ]
 
                 ####
@@ -660,7 +664,7 @@ class LinearCodegenOp(CodegenOp):
                 for idx, val in get_grouped_maybe_float4(
                     *values,
                     acc,
-                    grouping_allowed=self.supports_float4_alu,
+                    grouping_allowed=self._opts.supports_float4_alu,
                 )
             ]
 
@@ -676,7 +680,7 @@ class LinearCodegenOp(CodegenOp):
                 )
                 for idx, val in get_grouped_maybe_float4(
                     *values,
-                    grouping_allowed=self.supports_float4_alu and not isinstance(x, (ops.CmpEq, ops.Where)),
+                    grouping_allowed=self._opts.supports_float4_alu and not isinstance(x, (ops.CmpLt, ops.Where)),
                 )
             ]
 
