@@ -74,7 +74,7 @@ class CstyleDialect:
         ops.Sub: lambda a, b: f'({a}-{b})',
         ops.Mul: lambda a, b: f'({a}*{b})',
         ops.Div: lambda a, b: f'({a}/{b})',
-        ops.CmpEq: lambda a, b: f'({a}=={b})',
+        ops.CmpLt: lambda a, b: f'({a}<{b})',
         ops.Maximum: lambda a, b: f'max({a},{b})',
         ops.MulAcc: lambda a, b, c: f'(({a}*{b})+{c})',
     })

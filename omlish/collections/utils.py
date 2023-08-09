@@ -2,6 +2,7 @@ import functools
 import typing as ta
 
 from .identity import IdentityKeyDict
+from .identity import IdentitySet
 
 
 T = ta.TypeVar('T')
@@ -39,11 +40,11 @@ def partition(items: ta.Iterable[T], pred: ta.Callable[[T], bool]) -> ta.Tuple[l
     return t, f
 
 
-def unique(it: ta.Iterable[T]) -> list[T]:
+def unique(it: ta.Iterable[T], *, identity: bool = False) -> list[T]:
     if isinstance(it, str):
         raise TypeError(it)
     ret: list[T] = []
-    seen: set[T] = set()
+    seen: ta.MutableSet[T] = IdentitySet() if identity else set()
     for e in it:
         if e not in seen:
             seen.add(e)

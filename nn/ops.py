@@ -138,7 +138,7 @@ class Div(BinaryOp):
 
 
 @dc.dataclass(frozen=True)
-class CmpEq(BinaryOp):
+class CmpLt(BinaryOp):
     pass
 
 

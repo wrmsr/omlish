@@ -53,9 +53,8 @@ class Func(lang.Abstract):
     def forward(self, *args, **kwargs):
         raise NotImplementedError
 
-    @abc.abstractmethod
     def backward(self, *args, **kwargs):
-        raise NotImplementedError
+        raise TypeError(f'backward not implemented for {type(self)}')
 
     @classmethod
     def apply(cls: ta.Type['Func'], *args: 'tensor.Tensor', **kwargs: ta.Any) -> 'tensor.Tensor':
@@ -138,6 +137,12 @@ class Div(Func):
         )
 
 
+class Less(Func):
+
+    def forward(self, x: Buffer, y: Buffer) -> Buffer:
+        return x.binary_op(ops.CmpLt, y)
+
+
 ##
 
 
@@ -203,8 +208,7 @@ class Relu(Func):
         return self._ret
 
     def backward(self, grad_output: Buffer) -> Buffer:
-        mask = self._ret.const_like(1) \
-            .binary_op(ops.Sub, self._ret.binary_op(ops.CmpEq, self._ret.const_like(0)))
+        mask = self._ret.const_like(0).binary_op(ops.CmpLt, self._ret)
         return mask.binary_op(ops.Mul, grad_output)
 
 
@@ -306,7 +310,8 @@ class Max(Func):
 
     def backward(self, grad_output: Buffer) -> Buffer:
         # 1s in locations where the max was chosen (can be two locations)
-        max_is_1s = self._x.binary_op(ops.CmpEq, self._ret.movement_op(ops.Expand, self._x.shape))
+        max_is_1s = self._x.const_like(1) \
+            .binary_op(ops.Sub, self._x.binary_op(ops.CmpLt, self._ret.movement_op(ops.Expand, self._x.shape)))
 
         # sum of locations, averaged
         div = max_is_1s \

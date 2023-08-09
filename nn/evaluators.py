@@ -8,6 +8,7 @@ import numpy as np
 
 from . import ops
 from .buffers import Buffer
+from .dtypes import Dtype
 from .raw import RawBuffer
 
 
@@ -83,6 +84,19 @@ def shape_to_axis(old_shape: ta.Sequence[int], new_shape: ta.Sequence[int]) -> t
     return tuple(i for i, (a, b) in enumerate(zip(old_shape, new_shape)) if a != b)
 
 
+def promote_types(x, y):
+    return  ret if (ret := np.promote_types(x.dtype, y.dtype)) != np.float64 else np.float32
+
+
+def match_types(x, y):
+    up = (
+        x.dtype
+        if Dtype.of_np(x.dtype).priority > Dtype.of_np(y.dtype).priority
+        else y.dtype
+    )
+    return x.astype(up, copy=False), y.astype(up, copy=False)
+
+
 class NumpyInterpreter(Interpreter[NumpyValue]):
 
     def _obj_to_raw(self, obj: NumpyValue) -> RawBuffer:
@@ -99,7 +113,7 @@ class NumpyInterpreter(Interpreter[NumpyValue]):
         ops.Sub: operator.sub,
         ops.Mul: operator.mul,
         ops.Div: operator.truediv,
-        ops.CmpEq: lambda x, y: (x == y).astype(np.float32),  # noqa
+        ops.CmpLt: lambda x, y: (x < y).astype(promote_types(x, y)),  # noqa
         ops.Maximum: np.maximum,
 
         ops.Sum: lambda x, new_shape: (

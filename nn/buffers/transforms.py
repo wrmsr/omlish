@@ -52,7 +52,7 @@ def push_movement_ops(srcs: ta.Sequence[Buffer]) -> ta.Sequence[Buffer]:
             bx = bx.op.srcs[0].as_buffer()
 
         # NOTE: can't push pads past anything where f(0, 0) != 0 or f(0) != 0
-        unsafe_pad_ops = {ops.Div, ops.CmpEq, ops.Log2, ops.Exp2, ops.Recip}
+        unsafe_pad_ops = {ops.Div, ops.CmpLt, ops.Log2, ops.Exp2, ops.Recip}
         if (
                 bx._realized is None
                 and isinstance(bx.op, ops.BinaryOp)

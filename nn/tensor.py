@@ -2,6 +2,7 @@ import math
 import typing as ta
 
 from omlish import check
+from omlish import collections as col
 from omlish import lang
 import numpy as np
 
@@ -105,6 +106,10 @@ class Tensor(lang.Final):
         self._grad: ta.Optional['Tensor'] = None
         self._func: ta.Optional[funcs.Func] = check.isinstance(func, (funcs.Func, None))
         self._had_func = func is not None
+
+    def __hash__(self) -> int:
+        # NOTE: intentionally not hashable - has special __eq__ - use identity collections
+        raise TypeError(self)
 
     # Accessors
 
@@ -324,6 +329,24 @@ class Tensor(lang.Final):
     def __rtruediv__(self, other: TensorOrLike) -> 'Tensor':
         return self.div(other, reverse=True)
 
+    def __lt__(self, x: TensorOrLike) -> 'Tensor':
+        return self._broadcasted(funcs.Less, x, False)
+
+    def __gt__(self, x: TensorOrLike) -> 'Tensor':
+        return self._broadcasted(funcs.Less, x, True)
+
+    def __ge__(self, x: TensorOrLike) -> 'Tensor':
+        return 1.0 - (self < x)
+
+    def __le__(self, x: TensorOrLike) -> 'Tensor':
+        return 1.0 - (self > x)
+
+    def __ne__(self, x: TensorOrLike) -> 'Tensor':
+        return (self < x) + (self > x)  # type: ignore
+
+    def __eq__(self, x: TensorOrLike) -> 'Tensor':
+        return 1.0 - (self != x)  # type: ignore
+
     def _reduce(
             self,
             func: ta.Type[funcs.Func],
@@ -367,7 +390,7 @@ class Tensor(lang.Final):
 
     def deep_walk(self) -> ta.Sequence['Tensor']:
         nodes: ta.List[Tensor] = []
-        visited = set()
+        visited = col.IdentitySet()
 
         def rec(node: 'Tensor') -> None:
             visited.add(node)
