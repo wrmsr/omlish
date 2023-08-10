@@ -3,11 +3,12 @@ TODO:
 """
 import collections.abc
 import typing as ta
+import types
 
 
-NoneType = type(None)
+_NoneType = types.NoneType
 
-_NONE_TYPE_FROZENSET: ta.FrozenSet['Type'] = frozenset([NoneType])  # type: ignore
+_NONE_TYPE_FROZENSET: ta.FrozenSet['Type'] = frozenset([_NoneType])  # type: ignore
 
 
 _GenericAlias = ta._GenericAlias  # type: ignore  # noqa
@@ -26,10 +27,10 @@ class Union(ta.NamedTuple):
 
     @property
     def is_optional(self) -> bool:
-        return NoneType in self.args
+        return _NoneType in self.args
 
     def without_none(self) -> Type:
-        if NoneType not in self.args:
+        if _NoneType not in self.args:
             return self
         rem = self.args - _NONE_TYPE_FROZENSET
         if len(rem) == 1:
