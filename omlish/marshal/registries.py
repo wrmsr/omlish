@@ -16,7 +16,7 @@ RegistryItemT = ta.TypeVar('RegistryItemT', bound=RegistryItem)
 
 @dc.dataclass(frozen=True)
 class _TypeRegistry:
-    rty: rfl.Reflected
+    rty: rfl.Type
     items: list[RegistryItem] = dc.field(default_factory=list)
     item_lists_by_ty: dict[ta.Type[RegistryItem], list[RegistryItem]] = dc.field(default_factory=dict)
 
@@ -30,26 +30,26 @@ class Registry:
     def __init__(self) -> None:
         super().__init__()
         self._mtx = threading.Lock()
-        self._dct: dict[rfl.Reflected, _TypeRegistry] = {}
+        self._dct: dict[rfl.Type, _TypeRegistry] = {}
         self._ps: ta.Sequence['Registry'] = []
 
-    def register(self, rty: rfl.Reflected, *items: RegistryItem) -> 'Registry':
-        check.isinstance(rty, rfl.REFLECTED_TYPES)
+    def register(self, rty: rfl.Type, *items: RegistryItem) -> 'Registry':
+        check.isinstance(rty, rfl.TYPES)
         with self._mtx:
             if (sr := self._dct.get(rty)) is None:
                 sr = self._dct[rty] = _TypeRegistry(rty)
             sr.add(*items)
         return self
 
-    def get(self, rty: rfl.Reflected) -> ta.Sequence[RegistryItem]:
-        check.isinstance(rty, rfl.REFLECTED_TYPES)
+    def get(self, rty: rfl.Type) -> ta.Sequence[RegistryItem]:
+        check.isinstance(rty, rfl.TYPES)
         try:
             return self._dct[rty].items
         except KeyError:
             return ()
 
-    def get_of(self, rty: rfl.Reflected, item_ty: ta.Type[RegistryItemT]) -> ta.Sequence[RegistryItemT]:
-        check.isinstance(rty, rfl.REFLECTED_TYPES)
+    def get_of(self, rty: rfl.Type, item_ty: ta.Type[RegistryItemT]) -> ta.Sequence[RegistryItemT]:
+        check.isinstance(rty, rfl.TYPES)
         try:
             sr = self._dct[rty]
         except KeyError:

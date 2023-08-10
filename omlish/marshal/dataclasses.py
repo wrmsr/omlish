@@ -31,7 +31,7 @@ class DataclassMarshaler(Marshaler):
 
 
 class DataclassMarshalerFactory(MarshalerFactory):
-    def __call__(self, ctx: MarshalContext, rty: rfl.Reflected) -> ta.Optional[Marshaler]:
+    def __call__(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Optional[Marshaler]:
         if isinstance(rty, type) and dc.is_dataclass(rty):
             flds: list[ta.Tuple[str, Marshaler, str]] = []
             th = ta.get_type_hints(rty)
@@ -58,7 +58,7 @@ class DataclassUnmarshaler(Unmarshaler):
 
 
 class DataclassUnmarshalerFactory(UnmarshalerFactory):
-    def __call__(self, ctx: UnmarshalContext, rty: rfl.Reflected) -> ta.Optional[Unmarshaler]:
+    def __call__(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Optional[Unmarshaler]:
         if isinstance(rty, type) and dc.is_dataclass(rty):
             flds: list[ta.Tuple[str, Unmarshaler, str]] = []
             th = ta.get_type_hints(rty)

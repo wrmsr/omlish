@@ -44,7 +44,7 @@ def unique(it: ta.Iterable[T], *, identity: bool = False) -> list[T]:
     if isinstance(it, str):
         raise TypeError(it)
     ret: list[T] = []
-    seen: ta.MutableSet[T] = IdentitySet() if identity else set()
+    seen: ta.MutableSet[T] = IdentitySet() if identity else set()  # type: ignore
     for e in it:
         if e not in seen:
             seen.add(e)

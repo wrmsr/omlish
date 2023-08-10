@@ -2,7 +2,6 @@ import typing as ta
 
 from .. import dataclasses as dc
 from .providers import Provider
-from .providers import as_provider
 from .types import Injector
 from .types import Key
 from .types import ProviderFn
@@ -38,5 +37,6 @@ def array_provider(cls: type, *ps: Provider) -> ArrayProvider:
     return ArrayProvider(
         cls,
         ps,
-        ta.Sequence[cls],
+        # FIXME:
+        ta.Sequence[cls],  # type: ignore
     )

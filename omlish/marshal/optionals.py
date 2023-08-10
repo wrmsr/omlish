@@ -22,8 +22,8 @@ class OptionalMarshaler(Marshaler):
 
 
 class OptionalMarshalerFactory(MarshalerFactory):
-    def __call__(self, ctx: MarshalContext, rty: rfl.Reflected) -> ta.Optional[Marshaler]:
-        if isinstance(rty, rfl.Union) and rty.is_optional:  # type: ignore
+    def __call__(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Optional[Marshaler]:
+        if isinstance(rty, rfl.Union) and rty.is_optional:
             if (e := ctx.make(rty.without_none())) is None:
                 return None  # type: ignore
             return OptionalMarshaler(e)
@@ -41,8 +41,8 @@ class OptionalUnmarshaler(Unmarshaler):
 
 
 class OptionalUnmarshalerFactory(UnmarshalerFactory):
-    def __call__(self, ctx: UnmarshalContext, rty: rfl.Reflected) -> ta.Optional[Unmarshaler]:
-        if isinstance(rty, rfl.Union) and rty.is_optional:  # type: ignore
+    def __call__(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Optional[Unmarshaler]:
+        if isinstance(rty, rfl.Union) and rty.is_optional:
             if (e := ctx.make(rty.without_none())) is None:
                 return None  # type: ignore
             return OptionalUnmarshaler(e)

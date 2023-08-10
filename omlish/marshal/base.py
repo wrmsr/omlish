@@ -65,8 +65,8 @@ class Unmarshaler(abc.ABC):
         raise NotImplementedError
 
 
-MarshalerFactory = Factory[Marshaler, 'MarshalContext', rfl.Reflected]
-UnmarshalerFactory = Factory[Unmarshaler, 'UnmarshalContext', rfl.Reflected]
+MarshalerFactory = Factory[Marshaler, 'MarshalContext', rfl.Type]
+UnmarshalerFactory = Factory[Unmarshaler, 'UnmarshalContext', rfl.Type]
 
 
 ##
@@ -101,7 +101,7 @@ class MarshalContext(BaseContext):
     factory: ta.Optional[MarshalerFactory] = None
 
     def make(self, o: ta.Any) -> Marshaler:
-        rty = rfl.reflect(o)
+        rty = rfl.type_(o)
         if (m := check.not_none(self.factory)(self, rty)) is not None:  # noqa
             return m
         raise UnhandledTypeException(rty)
@@ -112,7 +112,7 @@ class UnmarshalContext(BaseContext):
     factory: ta.Optional[UnmarshalerFactory] = None
 
     def make(self, o: ta.Any) -> Unmarshaler:
-        rty = rfl.reflect(o)
+        rty = rfl.type_(o)
         if (m := check.not_none(self.factory)(self, rty)) is not None:  # noqa
             return m
         raise UnhandledTypeException(rty)

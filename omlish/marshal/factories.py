@@ -36,24 +36,24 @@ class FuncFactory(ta.Generic[R, C, A]):
 
 
 @dc.dataclass(frozen=True)
-class TypeMapFactory(Factory[R, C, rfl.Reflected]):
-    m: ta.Mapping[rfl.Reflected, R] = dc.field(default_factory=dict)
+class TypeMapFactory(Factory[R, C, rfl.Type]):
+    m: ta.Mapping[rfl.Type, R] = dc.field(default_factory=dict)
 
-    def __call__(self, ctx: C, rty: rfl.Reflected) -> ta.Optional[R]:
+    def __call__(self, ctx: C, rty: rfl.Type) -> ta.Optional[R]:
         return self.m.get(rty)
 
 
 ##
 
 
-class TypeCacheFactory(Factory[R, C, rfl.Reflected]):
-    def __init__(self, f: Factory[R, C, rfl.Reflected]) -> None:
+class TypeCacheFactory(Factory[R, C, rfl.Type]):
+    def __init__(self, f: Factory[R, C, rfl.Type]) -> None:
         super().__init__()
         self._f = f
-        self._dct: dict[rfl.Reflected, ta.Optional[R]] = {}
+        self._dct: dict[rfl.Type, ta.Optional[R]] = {}
         self._mtx = threading.RLock()
 
-    def __call__(self, ctx: C, rty: rfl.Reflected) -> ta.Optional[R]:
+    def __call__(self, ctx: C, rty: rfl.Type) -> ta.Optional[R]:
         try:
             return self._dct[rty]
         except KeyError:
@@ -69,18 +69,18 @@ class TypeCacheFactory(Factory[R, C, rfl.Reflected]):
 ##
 
 
-class RecursiveTypeFactory(Factory[R, C, rfl.Reflected]):
+class RecursiveTypeFactory(Factory[R, C, rfl.Type]):
     def __init__(
             self,
-            f: Factory[R, C, rfl.Reflected],
+            f: Factory[R, C, rfl.Type],
             prx: ta.Callable[[], ta.Tuple[ta.Optional[R], ta.Callable[[ta.Optional[R]], None]]],
     ) -> None:
         super().__init__()
         self._f = f
         self._prx = prx
-        self._dct: dict[rfl.Reflected, ta.Optional[R]] = {}
+        self._dct: dict[rfl.Type, ta.Optional[R]] = {}
 
-    def __call__(self, ctx: C, rty: rfl.Reflected) -> ta.Optional[R]:
+    def __call__(self, ctx: C, rty: rfl.Type) -> ta.Optional[R]:
         try:
             return self._dct[rty]
         except KeyError:
