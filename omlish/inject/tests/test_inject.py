@@ -1,4 +1,5 @@
 import abc
+import typing as ta
 
 from ... import dataclasses as dc
 from ... import inject as inj
@@ -78,3 +79,13 @@ def test_override():
     i1 = inj.create_injector(b1)
     assert i1.provide(int) == 421
     assert i1.provide(str) == 'abc'
+
+
+def test_arrays():
+    bs = inj.bind(
+        inj.as_(inj.array(int), 420),
+        inj.as_(inj.array(int), 421),
+    )
+    i = inj.create_injector(bs)
+    p = i.provide(inj.array(int))
+    print(p)
