@@ -3,13 +3,13 @@ import datetime
 import typing as ta
 
 from .. import check
+from .. import reflect as rfl
 from .base import MarshalContext
 from .base import Marshaler
 from .base import MarshalerFactory
 from .base import UnmarshalContext
 from .base import Unmarshaler
 from .base import UnmarshalerFactory
-from .specs import Spec
 from .values import Value
 
 
@@ -38,8 +38,8 @@ class DatetimeMarshaler(Marshaler):
 
 
 class DatetimeMarshalerFactory(MarshalerFactory):
-    def __call__(self, ctx: MarshalContext, spec: Spec) -> ta.Optional[Marshaler]:
-        if spec is datetime.datetime:
+    def __call__(self, ctx: MarshalContext, rty: rfl.Reflected) -> ta.Optional[Marshaler]:
+        if rty is datetime.datetime:
             return DatetimeMarshaler(DATETIME_FORMATS[0])
         return None
 
@@ -59,7 +59,7 @@ class DatetimeUnmarshaler(Unmarshaler):
 
 
 class DatetimeUnmarshalerFactory(UnmarshalerFactory):
-    def __call__(self, ctx: UnmarshalContext, spec: Spec) -> ta.Optional[Unmarshaler]:
-        if spec is datetime.datetime:
+    def __call__(self, ctx: UnmarshalContext, rty: rfl.Reflected) -> ta.Optional[Unmarshaler]:
+        if rty is datetime.datetime:
             return DatetimeUnmarshaler(DATETIME_FORMATS)
         return None

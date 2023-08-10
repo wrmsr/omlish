@@ -11,7 +11,7 @@ from .datetimes import DatetimeUnmarshalerFactory
 from .enums import EnumMarshalerFactory
 from .enums import EnumUnmarshalerFactory
 from .factories import CompositeFactory
-from .factories import SpecCacheFactory
+from .factories import TypeCacheFactory
 from .iterables import IterableMarshalerFactory
 from .iterables import IterableUnmarshalerFactory
 from .optionals import OptionalMarshalerFactory
@@ -35,7 +35,7 @@ STANDARD_MARSHALER_FACTORIES: list[MarshalerFactory] = [
 
 
 def new_standard_marshaler_factory() -> MarshalerFactory:
-    return SpecCacheFactory(  # noqa
+    return TypeCacheFactory(  # noqa
         RecursiveMarshalerFactory(
             CompositeFactory(
                 *STANDARD_MARSHALER_FACTORIES
@@ -57,7 +57,7 @@ STANDARD_UNMARSHALER_FACTORIES: list[UnmarshalerFactory] = [
 
 
 def new_standard_unmarshaler_factory() -> UnmarshalerFactory:
-    return SpecCacheFactory(  # noqa
+    return TypeCacheFactory(  # noqa
         RecursiveUnmarshalerFactory(
             CompositeFactory(
                 *STANDARD_UNMARSHALER_FACTORIES

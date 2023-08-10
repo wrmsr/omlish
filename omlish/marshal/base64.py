@@ -7,7 +7,7 @@ from .base import MarshalerFactory
 from .base import UnmarshalContext
 from .base import Unmarshaler
 from .base import UnmarshalerFactory
-from .factories import SpecMapFactory
+from .factories import TypeMapFactory
 from .values import Value
 
 
@@ -21,5 +21,5 @@ class Base64MarshalerUnmarshaler(Marshaler, Unmarshaler):
 
 BASE64_MARSHALER_UNMARSHALER = Base64MarshalerUnmarshaler()
 
-BASE64_MARSHALER_FACTORY: MarshalerFactory = SpecMapFactory({bytes: BASE64_MARSHALER_UNMARSHALER})
-BASE64_UNMARSHALER_FACTORY: UnmarshalerFactory = SpecMapFactory({bytes: BASE64_MARSHALER_UNMARSHALER})
+BASE64_MARSHALER_FACTORY: MarshalerFactory = TypeMapFactory({bytes: BASE64_MARSHALER_UNMARSHALER})
+BASE64_UNMARSHALER_FACTORY: UnmarshalerFactory = TypeMapFactory({bytes: BASE64_MARSHALER_UNMARSHALER})

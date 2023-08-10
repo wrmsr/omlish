@@ -4,8 +4,7 @@ import threading
 import typing as ta
 
 from .. import check
-from .specs import SPEC_TYPES
-from .specs import Spec
+from .. import reflect as rfl
 
 
 class RegistryItem(abc.ABC):
@@ -16,8 +15,8 @@ RegistryItemT = ta.TypeVar('RegistryItemT', bound=RegistryItem)
 
 
 @dc.dataclass(frozen=True)
-class _SpecRegistry:
-    spec: Spec
+class _TypeRegistry:
+    rty: rfl.Reflected
     items: list[RegistryItem] = dc.field(default_factory=list)
     item_lists_by_ty: dict[ta.Type[RegistryItem], list[RegistryItem]] = dc.field(default_factory=dict)
 
@@ -31,28 +30,28 @@ class Registry:
     def __init__(self) -> None:
         super().__init__()
         self._mtx = threading.Lock()
-        self._dct: dict[Spec, _SpecRegistry] = {}
+        self._dct: dict[rfl.Reflected, _TypeRegistry] = {}
         self._ps: ta.Sequence['Registry'] = []
 
-    def register(self, spec: Spec, *items: RegistryItem) -> 'Registry':
-        check.isinstance(spec, SPEC_TYPES)
+    def register(self, rty: rfl.Reflected, *items: RegistryItem) -> 'Registry':
+        check.isinstance(rty, rfl.REFLECTED_TYPES)
         with self._mtx:
-            if (sr := self._dct.get(spec)) is None:
-                sr = self._dct[spec] = _SpecRegistry(spec)
+            if (sr := self._dct.get(rty)) is None:
+                sr = self._dct[rty] = _TypeRegistry(rty)
             sr.add(*items)
         return self
 
-    def get(self, spec: Spec) -> ta.Sequence[RegistryItem]:
-        check.isinstance(spec, SPEC_TYPES)
+    def get(self, rty: rfl.Reflected) -> ta.Sequence[RegistryItem]:
+        check.isinstance(rty, rfl.REFLECTED_TYPES)
         try:
-            return self._dct[spec].items
+            return self._dct[rty].items
         except KeyError:
             return ()
 
-    def get_of(self, spec: Spec, item_ty: ta.Type[RegistryItemT]) -> ta.Sequence[RegistryItemT]:
-        check.isinstance(spec, SPEC_TYPES)
+    def get_of(self, rty: rfl.Reflected, item_ty: ta.Type[RegistryItemT]) -> ta.Sequence[RegistryItemT]:
+        check.isinstance(rty, rfl.REFLECTED_TYPES)
         try:
-            sr = self._dct[spec]
+            sr = self._dct[rty]
         except KeyError:
             return ()
         return sr.item_lists_by_ty.get(item_ty, ())  # type: ignore

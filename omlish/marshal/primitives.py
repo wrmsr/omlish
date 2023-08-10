@@ -6,7 +6,7 @@ from .base import MarshalerFactory
 from .base import UnmarshalContext
 from .base import Unmarshaler
 from .base import UnmarshalerFactory
-from .factories import SpecMapFactory
+from .factories import TypeMapFactory
 from .values import Value
 
 
@@ -33,10 +33,10 @@ class PrimitiveMarshalerUnmarshaler(Marshaler, Unmarshaler):
 
 PRIMITIVE_MARSHALER_UNMARSHALER = PrimitiveMarshalerUnmarshaler()
 
-PRIMITIVE_MARSHALER_FACTORY: MarshalerFactory = SpecMapFactory({  # noqa
+PRIMITIVE_MARSHALER_FACTORY: MarshalerFactory = TypeMapFactory({  # noqa
     t: PRIMITIVE_MARSHALER_UNMARSHALER for t in PRIMITIVE_TYPES
 })
 
-PRIMITIVE_UNMARSHALER_FACTORY: UnmarshalerFactory = SpecMapFactory({  # noqa
+PRIMITIVE_UNMARSHALER_FACTORY: UnmarshalerFactory = TypeMapFactory({  # noqa
     t: PRIMITIVE_MARSHALER_UNMARSHALER for t in PRIMITIVE_TYPES
 })

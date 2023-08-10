@@ -40,13 +40,12 @@ import dataclasses as dc
 import typing as ta
 
 from .. import check
-from .exceptions import UnhandledSpecException
+from .. import reflect as rfl
+from .exceptions import UnhandledTypeException
 from .factories import Factory
-from .factories import RecursiveSpecFactory
+from .factories import RecursiveTypeFactory
 from .registries import Registry
 from .registries import RegistryItem
-from .specs import Spec
-from .specs import spec_of
 from .utils import _Proxy
 from .values import Value
 
@@ -66,8 +65,8 @@ class Unmarshaler(abc.ABC):
         raise NotImplementedError
 
 
-MarshalerFactory = Factory[Marshaler, 'MarshalContext', Spec]
-UnmarshalerFactory = Factory[Unmarshaler, 'UnmarshalContext', Spec]
+MarshalerFactory = Factory[Marshaler, 'MarshalContext', rfl.Reflected]
+UnmarshalerFactory = Factory[Unmarshaler, 'UnmarshalContext', rfl.Reflected]
 
 
 ##
@@ -101,22 +100,22 @@ class BaseContext(abc.ABC):
 class MarshalContext(BaseContext):
     factory: ta.Optional[MarshalerFactory] = None
 
-    def make(self, spec: Spec) -> Marshaler:
-        spec = spec_of(spec)
-        if (m := check.not_none(self.factory)(self, spec)) is not None:  # noqa
+    def make(self, o: ta.Any) -> Marshaler:
+        rty = rfl.reflect(o)
+        if (m := check.not_none(self.factory)(self, rty)) is not None:  # noqa
             return m
-        raise UnhandledSpecException(spec)
+        raise UnhandledTypeException(rty)
 
 
 @dc.dataclass(frozen=True)
 class UnmarshalContext(BaseContext):
     factory: ta.Optional[UnmarshalerFactory] = None
 
-    def make(self, spec: Spec) -> Unmarshaler:
-        spec = spec_of(spec)
-        if (m := check.not_none(self.factory)(self, spec)) is not None:  # noqa
+    def make(self, o: ta.Any) -> Unmarshaler:
+        rty = rfl.reflect(o)
+        if (m := check.not_none(self.factory)(self, rty)) is not None:  # noqa
             return m
-        raise UnhandledSpecException(spec)
+        raise UnhandledTypeException(rty)
 
 
 ##
@@ -127,7 +126,7 @@ class _ProxyMarshaler(_Proxy[Marshaler], Marshaler):
         return self._obj.marshal(ctx, o)
 
 
-class RecursiveMarshalerFactory(RecursiveSpecFactory[Marshaler, MarshalContext]):
+class RecursiveMarshalerFactory(RecursiveTypeFactory[Marshaler, MarshalContext]):
     def __init__(self, f: MarshalerFactory) -> None:
         super().__init__(f, _ProxyMarshaler._new)  # noqa
 
@@ -137,7 +136,7 @@ class _ProxyUnmarshaler(_Proxy[Unmarshaler], Unmarshaler):
         return self._obj.unmarshal(ctx, v)
 
 
-class RecursiveUnmarshalerFactory(RecursiveSpecFactory[Unmarshaler, UnmarshalContext]):
+class RecursiveUnmarshalerFactory(RecursiveTypeFactory[Unmarshaler, UnmarshalContext]):
     def __init__(self, f: UnmarshalerFactory) -> None:
         super().__init__(f, _ProxyUnmarshaler._new)  # noqa
 

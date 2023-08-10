@@ -1,3 +1,7 @@
+"""
+TODO:
+ - s/Reflected/Type, s/reflect/reflect_type
+"""
 import collections.abc
 import typing as ta
 
