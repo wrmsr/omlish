@@ -38,7 +38,7 @@ class DatetimeMarshaler(Marshaler):
 
 
 class DatetimeMarshalerFactory(MarshalerFactory):
-    def __call__(self, ctx: MarshalContext, rty: rfl.Reflected) -> ta.Optional[Marshaler]:
+    def __call__(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Optional[Marshaler]:
         if rty is datetime.datetime:
             return DatetimeMarshaler(DATETIME_FORMATS[0])
         return None
@@ -59,7 +59,7 @@ class DatetimeUnmarshaler(Unmarshaler):
 
 
 class DatetimeUnmarshalerFactory(UnmarshalerFactory):
-    def __call__(self, ctx: UnmarshalContext, rty: rfl.Reflected) -> ta.Optional[Unmarshaler]:
+    def __call__(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Optional[Unmarshaler]:
         if rty is datetime.datetime:
             return DatetimeUnmarshaler(DATETIME_FORMATS)
         return None

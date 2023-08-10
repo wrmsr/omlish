@@ -1,6 +1,5 @@
 """
 TODO:
- - s/Reflected/Type, s/reflect/reflect_type
 """
 import collections.abc
 import typing as ta
@@ -8,14 +7,14 @@ import typing as ta
 
 NoneType = type(None)
 
-_NONE_TYPE_FROZENSET: ta.FrozenSet['Reflected'] = frozenset([NoneType])  # type: ignore
+_NONE_TYPE_FROZENSET: ta.FrozenSet['Type'] = frozenset([NoneType])  # type: ignore
 
 
 _GenericAlias = ta._GenericAlias  # type: ignore  # noqa
 _UnionGenericAlias = ta._UnionGenericAlias  # type: ignore  # noqa
 
 
-Reflected = ta.Union[
+Type = ta.Union[
     type,
     'Union',
     'Generic',
@@ -23,13 +22,13 @@ Reflected = ta.Union[
 
 
 class Union(ta.NamedTuple):
-    args: ta.FrozenSet[Reflected]
+    args: ta.FrozenSet[Type]
 
     @property
     def is_optional(self) -> bool:
         return NoneType in self.args
 
-    def without_none(self) -> Reflected:
+    def without_none(self) -> Type:
         if NoneType not in self.args:
             return self
         rem = self.args - _NONE_TYPE_FROZENSET
@@ -40,25 +39,25 @@ class Union(ta.NamedTuple):
 
 class Generic(ta.NamedTuple):
     cls: ta.Any
-    args: ta.Tuple[Reflected, ...]
+    args: ta.Tuple[Type, ...]
 
 
-REFLECTED_TYPES: ta.Tuple[type, ...] = (
+TYPES: ta.Tuple[type, ...] = (
     type,
     Union,
     Generic,
 )
 
 
-def reflect(obj: ta.Any) -> Reflected:
+def type_(obj: ta.Any) -> Type:
     if isinstance(obj, (Union, Generic)):
         return obj
 
     if type(obj) is _UnionGenericAlias:
-        return Union(frozenset(reflect(a) for a in ta.get_args(obj)))
+        return Union(frozenset(type_(a) for a in ta.get_args(obj)))
 
     if type(obj) is _GenericAlias or type(obj) is ta.GenericAlias:  # type: ignore  # noqa
-        return Generic(reflect(ta.get_origin(obj)), tuple(reflect(a) for a in ta.get_args(obj)))
+        return Generic(type_(ta.get_origin(obj)), tuple(type_(a) for a in ta.get_args(obj)))
 
     if isinstance(obj, type):
         return obj
@@ -76,7 +75,7 @@ KNOWN_GENERICS: ta.AbstractSet[type] = frozenset([
 ])
 
 
-def isinstance_of(rfl: Reflected) -> ta.Callable[[ta.Any], bool]:
+def isinstance_of(rfl: Type) -> ta.Callable[[ta.Any], bool]:
     if isinstance(rfl, type):
         return lambda o: isinstance(o, rfl)  # type: ignore
 

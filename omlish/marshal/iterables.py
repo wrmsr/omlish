@@ -23,8 +23,8 @@ class IterableMarshaler(Marshaler):
 
 
 class IterableMarshalerFactory(MarshalerFactory):
-    def __call__(self, ctx: MarshalContext, rty: rfl.Reflected) -> ta.Optional[Marshaler]:
-        if isinstance(rty, rfl.Generic) and rty.cls is list:  # type: ignore
+    def __call__(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Optional[Marshaler]:
+        if isinstance(rty, rfl.Generic) and rty.cls is list:
             if (e := ctx.make(check.single(rty.args))) is None:
                 return None  # type: ignore
             return IterableMarshaler(e)
@@ -40,8 +40,8 @@ class IterableUnmarshaler(Unmarshaler):
 
 
 class IterableUnmarshalerFactory(UnmarshalerFactory):
-    def __call__(self, ctx: UnmarshalContext, rty: rfl.Reflected) -> ta.Optional[Unmarshaler]:
-        if isinstance(rty, rfl.Generic) and rty.cls is list:  # type: ignore
+    def __call__(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Optional[Unmarshaler]:
+        if isinstance(rty, rfl.Generic) and rty.cls is list:
             if (e := ctx.make(check.single(rty.args))) is None:
                 return None  # type: ignore
             return IterableUnmarshaler(e)
