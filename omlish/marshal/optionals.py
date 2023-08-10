@@ -1,14 +1,13 @@
 import dataclasses as dc
 import typing as ta
 
+from .. import reflect as rfl
 from .base import MarshalContext
 from .base import Marshaler
 from .base import MarshalerFactory
 from .base import UnmarshalContext
 from .base import Unmarshaler
 from .base import UnmarshalerFactory
-from .specs import Spec
-from .specs import Union
 from .values import Value
 
 
@@ -23,9 +22,9 @@ class OptionalMarshaler(Marshaler):
 
 
 class OptionalMarshalerFactory(MarshalerFactory):
-    def __call__(self, ctx: MarshalContext, spec: Spec) -> ta.Optional[Marshaler]:
-        if isinstance(spec, Union) and spec.is_optional:  # type: ignore
-            if (e := ctx.make(spec.without_none())) is None:
+    def __call__(self, ctx: MarshalContext, rty: rfl.Reflected) -> ta.Optional[Marshaler]:
+        if isinstance(rty, rfl.Union) and rty.is_optional:  # type: ignore
+            if (e := ctx.make(rty.without_none())) is None:
                 return None  # type: ignore
             return OptionalMarshaler(e)
         return None
@@ -42,9 +41,9 @@ class OptionalUnmarshaler(Unmarshaler):
 
 
 class OptionalUnmarshalerFactory(UnmarshalerFactory):
-    def __call__(self, ctx: UnmarshalContext, spec: Spec) -> ta.Optional[Unmarshaler]:
-        if isinstance(spec, Union) and spec.is_optional:  # type: ignore
-            if (e := ctx.make(spec.without_none())) is None:
+    def __call__(self, ctx: UnmarshalContext, rty: rfl.Reflected) -> ta.Optional[Unmarshaler]:
+        if isinstance(rty, rfl.Union) and rty.is_optional:  # type: ignore
+            if (e := ctx.make(rty.without_none())) is None:
                 return None  # type: ignore
             return OptionalUnmarshaler(e)
         return None

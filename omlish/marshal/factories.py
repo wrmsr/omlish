@@ -4,7 +4,7 @@ import enum
 import threading
 import typing as ta
 
-from .specs import Spec
+from .. import reflect as rfl
 
 
 R = ta.TypeVar('R')
@@ -36,63 +36,63 @@ class FuncFactory(ta.Generic[R, C, A]):
 
 
 @dc.dataclass(frozen=True)
-class SpecMapFactory(Factory[R, C, Spec]):
-    m: ta.Mapping[Spec, R] = dc.field(default_factory=dict)
+class TypeMapFactory(Factory[R, C, rfl.Reflected]):
+    m: ta.Mapping[rfl.Reflected, R] = dc.field(default_factory=dict)
 
-    def __call__(self, ctx: C, spec: Spec) -> ta.Optional[R]:
-        return self.m.get(spec)
+    def __call__(self, ctx: C, rty: rfl.Reflected) -> ta.Optional[R]:
+        return self.m.get(rty)
 
 
 ##
 
 
-class SpecCacheFactory(Factory[R, C, Spec]):
-    def __init__(self, f: Factory[R, C, Spec]) -> None:
+class TypeCacheFactory(Factory[R, C, rfl.Reflected]):
+    def __init__(self, f: Factory[R, C, rfl.Reflected]) -> None:
         super().__init__()
         self._f = f
-        self._dct: dict[Spec, ta.Optional[R]] = {}
+        self._dct: dict[rfl.Reflected, ta.Optional[R]] = {}
         self._mtx = threading.RLock()
 
-    def __call__(self, ctx: C, spec: Spec) -> ta.Optional[R]:
+    def __call__(self, ctx: C, rty: rfl.Reflected) -> ta.Optional[R]:
         try:
-            return self._dct[spec]
+            return self._dct[rty]
         except KeyError:
             pass
         with self._mtx:
             try:
-                return self._dct[spec]
+                return self._dct[rty]
             except KeyError:
-                ret = self._dct[spec] = self._f(ctx, spec)
+                ret = self._dct[rty] = self._f(ctx, rty)
                 return ret
 
 
 ##
 
 
-class RecursiveSpecFactory(Factory[R, C, Spec]):
+class RecursiveTypeFactory(Factory[R, C, rfl.Reflected]):
     def __init__(
             self,
-            f: Factory[R, C, Spec],
+            f: Factory[R, C, rfl.Reflected],
             prx: ta.Callable[[], ta.Tuple[ta.Optional[R], ta.Callable[[ta.Optional[R]], None]]],
     ) -> None:
         super().__init__()
         self._f = f
         self._prx = prx
-        self._dct: dict[Spec, ta.Optional[R]] = {}
+        self._dct: dict[rfl.Reflected, ta.Optional[R]] = {}
 
-    def __call__(self, ctx: C, spec: Spec) -> ta.Optional[R]:
+    def __call__(self, ctx: C, rty: rfl.Reflected) -> ta.Optional[R]:
         try:
-            return self._dct[spec]
+            return self._dct[rty]
         except KeyError:
             pass
         p, sp = self._prx()
-        self._dct[spec] = p
+        self._dct[rty] = p
         try:
-            r = self._f(ctx, spec)
+            r = self._f(ctx, rty)
             sp(r)
             return r
         finally:
-            del self._dct[spec]
+            del self._dct[rty]
 
 
 ##

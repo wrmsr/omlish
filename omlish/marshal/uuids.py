@@ -8,7 +8,7 @@ from .base import MarshalerFactory
 from .base import UnmarshalContext
 from .base import Unmarshaler
 from .base import UnmarshalerFactory
-from .factories import SpecMapFactory
+from .factories import TypeMapFactory
 from .values import Value
 
 
@@ -25,5 +25,5 @@ class UuidMarshalerUnmarshaler(Marshaler, Unmarshaler):
 
 UUID_MARSHALER_UNMARSHALER = UuidMarshalerUnmarshaler()
 
-UUID_MARSHALER_FACTORY: MarshalerFactory = SpecMapFactory({uuid.UUID: UUID_MARSHALER_UNMARSHALER})
-UUID_UNMARSHALER_FACTORY: UnmarshalerFactory = SpecMapFactory({uuid.UUID: UUID_MARSHALER_UNMARSHALER})
+UUID_MARSHALER_FACTORY: MarshalerFactory = TypeMapFactory({uuid.UUID: UUID_MARSHALER_UNMARSHALER})
+UUID_UNMARSHALER_FACTORY: UnmarshalerFactory = TypeMapFactory({uuid.UUID: UUID_MARSHALER_UNMARSHALER})

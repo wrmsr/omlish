@@ -7,13 +7,13 @@ import dataclasses as dc
 import typing as ta
 
 from .. import check
+from .. import reflect as rfl
 from .base import MarshalContext
 from .base import Marshaler
 from .base import MarshalerFactory
 from .base import UnmarshalContext
 from .base import Unmarshaler
 from .base import UnmarshalerFactory
-from .specs import Spec
 from .values import Value
 
 
@@ -31,11 +31,11 @@ class DataclassMarshaler(Marshaler):
 
 
 class DataclassMarshalerFactory(MarshalerFactory):
-    def __call__(self, ctx: MarshalContext, spec: Spec) -> ta.Optional[Marshaler]:
-        if isinstance(spec, type) and dc.is_dataclass(spec):
+    def __call__(self, ctx: MarshalContext, rty: rfl.Reflected) -> ta.Optional[Marshaler]:
+        if isinstance(rty, type) and dc.is_dataclass(rty):
             flds: list[ta.Tuple[str, Marshaler, str]] = []
-            th = ta.get_type_hints(spec)
-            for fld in dc.fields(spec):
+            th = ta.get_type_hints(rty)
+            for fld in dc.fields(rty):
                 fty = th[fld.name]
                 m = ctx.make(fty)
                 k = fld.name
@@ -58,11 +58,11 @@ class DataclassUnmarshaler(Unmarshaler):
 
 
 class DataclassUnmarshalerFactory(UnmarshalerFactory):
-    def __call__(self, ctx: UnmarshalContext, spec: Spec) -> ta.Optional[Unmarshaler]:
-        if isinstance(spec, type) and dc.is_dataclass(spec):
+    def __call__(self, ctx: UnmarshalContext, rty: rfl.Reflected) -> ta.Optional[Unmarshaler]:
+        if isinstance(rty, type) and dc.is_dataclass(rty):
             flds: list[ta.Tuple[str, Unmarshaler, str]] = []
-            th = ta.get_type_hints(spec)
-            for fld in dc.fields(spec):
+            th = ta.get_type_hints(rty)
+            for fld in dc.fields(rty):
                 fty = th[fld.name]
                 u = ctx.make(fty)
                 k = fld.name
@@ -70,5 +70,5 @@ class DataclassUnmarshalerFactory(UnmarshalerFactory):
                     if mdf.name is not None:
                         k = mdf.name
                 flds.append((k, u, fld.name))
-            return DataclassUnmarshaler(spec, flds)
+            return DataclassUnmarshaler(rty, flds)
         return None

@@ -4,14 +4,13 @@ import functools
 import typing as ta
 
 from .. import check
+from .. import reflect as rfl
 from .base import MarshalContext
 from .base import Marshaler
 from .base import MarshalerFactory
 from .base import UnmarshalContext
 from .base import Unmarshaler
 from .base import UnmarshalerFactory
-from .specs import Generic
-from .specs import Spec
 from .values import Value
 
 
@@ -24,9 +23,9 @@ class IterableMarshaler(Marshaler):
 
 
 class IterableMarshalerFactory(MarshalerFactory):
-    def __call__(self, ctx: MarshalContext, spec: Spec) -> ta.Optional[Marshaler]:
-        if isinstance(spec, Generic) and spec.cls is list:  # type: ignore
-            if (e := ctx.make(check.single(spec.args))) is None:
+    def __call__(self, ctx: MarshalContext, rty: rfl.Reflected) -> ta.Optional[Marshaler]:
+        if isinstance(rty, rfl.Generic) and rty.cls is list:  # type: ignore
+            if (e := ctx.make(check.single(rty.args))) is None:
                 return None  # type: ignore
             return IterableMarshaler(e)
         return None
@@ -41,9 +40,9 @@ class IterableUnmarshaler(Unmarshaler):
 
 
 class IterableUnmarshalerFactory(UnmarshalerFactory):
-    def __call__(self, ctx: UnmarshalContext, spec: Spec) -> ta.Optional[Unmarshaler]:
-        if isinstance(spec, Generic) and spec.cls is list:  # type: ignore
-            if (e := ctx.make(check.single(spec.args))) is None:
+    def __call__(self, ctx: UnmarshalContext, rty: rfl.Reflected) -> ta.Optional[Unmarshaler]:
+        if isinstance(rty, rfl.Generic) and rty.cls is list:  # type: ignore
+            if (e := ctx.make(check.single(rty.args))) is None:
                 return None  # type: ignore
             return IterableUnmarshaler(e)
         return None

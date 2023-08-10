@@ -1,7 +1,7 @@
-from .specs import Spec
+from .. import reflect as rfl
 
 
-class UnhandledSpecException(Exception):
+class UnhandledTypeException(Exception):
     @property
-    def spec(self) -> Spec:
+    def rty(self) -> rfl.Reflected:
         return self.args[0]

@@ -3,13 +3,13 @@ import enum
 import typing as ta
 
 from .. import check
+from .. import reflect as rfl
 from .base import MarshalContext
 from .base import Marshaler
 from .base import MarshalerFactory
 from .base import UnmarshalContext
 from .base import Unmarshaler
 from .base import UnmarshalerFactory
-from .specs import Spec
 from .values import Value
 
 
@@ -22,9 +22,9 @@ class EnumMarshaler(Marshaler):
 
 
 class EnumMarshalerFactory(MarshalerFactory):
-    def __call__(self, ctx: MarshalContext, spec: Spec) -> ta.Optional[Marshaler]:
-        if isinstance(spec, type) and issubclass(spec, enum.Enum):
-            return EnumMarshaler(spec)
+    def __call__(self, ctx: MarshalContext, rty: rfl.Reflected) -> ta.Optional[Marshaler]:
+        if isinstance(rty, type) and issubclass(rty, enum.Enum):
+            return EnumMarshaler(rty)
         return None
 
 
@@ -37,7 +37,7 @@ class EnumUnmarshaler(Unmarshaler):
 
 
 class EnumUnmarshalerFactory(UnmarshalerFactory):
-    def __call__(self, ctx: UnmarshalContext, spec: Spec) -> ta.Optional[Unmarshaler]:
-        if isinstance(spec, type) and issubclass(spec, enum.Enum):
-            return EnumUnmarshaler(spec)
+    def __call__(self, ctx: UnmarshalContext, rty: rfl.Reflected) -> ta.Optional[Unmarshaler]:
+        if isinstance(rty, type) and issubclass(rty, enum.Enum):
+            return EnumUnmarshaler(rty)
         return None
