@@ -6,7 +6,7 @@ import typing as ta
 import types
 
 
-_NoneType = types.NoneType
+_NoneType = types.NoneType  # type: ignore
 
 _NONE_TYPE_FROZENSET: ta.FrozenSet['Type'] = frozenset([_NoneType])  # type: ignore
 
