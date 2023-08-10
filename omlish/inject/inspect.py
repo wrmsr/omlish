@@ -1,6 +1,7 @@
 """
 TODO:
  - cache kwarg_keys
+ - tag annotations
 """
 import inspect
 import typing as ta

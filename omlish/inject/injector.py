@@ -1,7 +1,6 @@
 """
 TODO:
- - override
- - arrays
+ - unify reflect with marshal - fix type anns (ta.Seq is not a `type`)
  - defer
  - defaults
  - private
