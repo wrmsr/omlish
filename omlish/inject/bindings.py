@@ -3,6 +3,7 @@ import typing as ta
 from .. import check
 from .. import dataclasses as dc
 from .. import lang
+from .exceptions import DuplicateKeyException
 from .keys import as_key
 from .providers import ConstProvider
 from .providers import Provider
@@ -68,6 +69,28 @@ class _Bindings(Bindings):
 
 def bind(*args: ta.Any) -> Bindings:
     return _Bindings(as_bindings(args))
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class _Overrides(Bindings):
+    p: Bindings
+    m: ta.Mapping[Key, Binding]
+
+    def bindings(self) -> ta.Iterator[Binding]:
+        for b in self.p.bindings():
+            yield self.m.get(b.key, b)
+
+
+def override(p: Bindings, *a: ta.Any) -> Bindings:
+    m: dict[Key, Binding] = {}
+    for b in bind(*a).bindings():
+        if b.key in m:
+            raise DuplicateKeyException(b.key)
+        m[b.key] = b
+    return _Overrides(p, m)
 
 
 ##

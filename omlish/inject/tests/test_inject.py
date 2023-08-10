@@ -67,3 +67,14 @@ def test_dataclasses():
 
     foo = inj.create_injector(inj.bind(420, inj.fn(lambda: 'howdy', str), Foo)).provide(Foo)
     print(foo)
+
+
+def test_override():
+    b0 = inj.bind(420, 'abc')
+    i0 = inj.create_injector(b0)
+    assert i0.provide(int) == 420
+    assert i0.provide(str) == 'abc'
+    b1 = inj.override(b0, 421)
+    i1 = inj.create_injector(b1)
+    assert i1.provide(int) == 421
+    assert i1.provide(str) == 'abc'
