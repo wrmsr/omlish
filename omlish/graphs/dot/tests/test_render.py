@@ -6,7 +6,7 @@ from .. import items
 from .. import rendering
 
 
-@pytest.mark.skip()
+@pytest.mark.skip_unless_alone()
 def test_open_dot():
     src = textwrap.dedent("""
     digraph G {

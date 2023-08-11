@@ -107,28 +107,53 @@ test: venv
 .PHONY: test-all
 test-all: test
 
-#
 
-.PHONY: test-debug
-test-debug:
-	_PYTHON_VERSION=${DEFAULT_PYTHON_VERSION} _VENV_ROOT=.venv-debug \
+### Alts
+
+# debug
+
+.PHONY: venv-debug
+venv-debug:
+	_VENV_ROOT=.venv-debug \
+	_PYTHON_VERSION=${DEFAULT_PYTHON_VERSION} \
 	_PYENV_INSTALL_OPTS=-g \
 	_PYENV_VERSION_SUFFIX=-debug \
 	_REQUIREMENTS_TXT=requirements-dev.txt \
+	${MAKE} venv
+
+.PHONY: test-debug
+test-debug: venv-debug
+	_VENV_ROOT=.venv-debug \
 	_TEST_SOURCES="${PROJECT}" \
 	${MAKE} test
+
+# 12
+
+.PHONY: venv-12
+venv-12:
+	_VENV_ROOT=.venv-12 \
+	_PYTHON_VERSION=${PYTHON_VERSION_12} \
+	_REQUIREMENTS_TXT=requirements-dev.txt \
+	${MAKE} venv
 
 .PHONY: test-12
-test-12:
-	_PYTHON_VERSION=${PYTHON_VERSION_12} _VENV_ROOT=.venv-12 \
-	_REQUIREMENTS_TXT=requirements-dev.txt \
+test-12: venv-12
+	_VENV_ROOT=.venv-12 \
 	_TEST_SOURCES="${PROJECT}" \
 	${MAKE} test
 
+# nogil
+
 .PHONY: test-nogil
-test-nogil:
-	_PYTHON_VERSION=${PYTHON_VERSION_NOGIL} _VENV_ROOT=.venv-nogil \
+venv-nogil:
+	_VENV_ROOT=.venv-nogil \
+	_PYTHON_VERSION=${PYTHON_VERSION_NOGIL} \
 	_REQUIREMENTS_TXT=requirements-dev.txt \
+	${MAKE} venv
+
+.PHONY: test-nogil
+test-nogil: venv-nogil
+	_VENV_ROOT=.venv-nogil \
 	_TEST_SOURCES="${PROJECT}" \
 	${MAKE} test
 
