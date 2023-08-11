@@ -48,7 +48,7 @@ networkx==3.1
 
 ### infra
 
-boto3>=1.28.23
+boto3>=1.28.25
 
 google-cloud-compute==1.14.0
 

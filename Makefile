@@ -149,3 +149,21 @@ docker-reup: docker-stop
 .PHONY: docker-invalidate
 docker-invalidate:
 	date +%s > docker/.dockertimestamp
+
+
+### Utils
+
+.PHONY: pg-repl
+pg-repl: venv
+	F=$$(mktemp) ; \
+	echo -e "\n\
+import yaml \n\
+with open('docker/docker-compose.yml', 'r') as f: \n\
+    dct = yaml.safe_load(f.read()) \n\
+cfg = dct['services']['$(PROJECT)-postgres'] \n\
+print('PG_USER=' + cfg['environment']['POSTGRES_USER']) \n\
+print('PG_PASSWORD=' + cfg['environment']['POSTGRES_PASSWORD']) \n\
+print('PG_PORT=' + cfg['ports'][0].split(':')[0]) \n\
+" >> $$F ; \
+	export $$(.venv/bin/python "$$F" | xargs) && \
+	PGPASSWORD="$$PG_PASSWORD" .venv/bin/pgcli --user "$$PG_USER" --host localhost --port "$$PG_PORT"
