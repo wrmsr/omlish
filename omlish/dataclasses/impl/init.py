@@ -80,13 +80,13 @@ class InitBuilder:
     def build(self) -> ta.Callable:
         ifs = get_init_fields(self._fields.values())
 
-        seen_default = False
+        seen_default = None
         for f in ifs.std:
             if f.init:
                 if not (f.default is MISSING and f.default_factory is MISSING):
-                    seen_default = True
+                    seen_default = f
                 elif seen_default:
-                    raise TypeError(f'non-default argument {f.name!r} follows default argument')
+                    raise TypeError(f'non-default argument {f.name!r} follows default argument {seen_default.name!r}')
 
         locals = {f'__dataclass_type_{f.name}__': f.type for f in ifs.all}
         locals.update({
