@@ -157,14 +157,14 @@ class TestCase(unittest.TestCase):
         self.assertEqual((o.x, o.y), (3, 0))
 
         # Non-defaults following defaults.
-        with self.assertRaisesRegex(TypeError, r"non-default argument ('y' )?follows default argument"):
+        with self.assertRaisesRegex(TypeError, r"non-default argument ('y' )?follows default argument 'x'"):
             @dataclass
             class C:
                 x: int = 0
                 y: int
 
         # A derived class adds a non-default field after a default one.
-        with self.assertRaisesRegex(TypeError, r"non-default argument ('y' )?follows " "default argument"):
+        with self.assertRaisesRegex(TypeError, r"non-default argument ('y' )?follows " "default argument 'x'"):
             @dataclass
             class B:
                 x: int = 0
@@ -174,7 +174,7 @@ class TestCase(unittest.TestCase):
                 y: int
 
         # Override a base class field and add a default to a field which didn't use to have a default.
-        with self.assertRaisesRegex(TypeError, r"non-default argument ('y' )?follows " "default argument"):
+        with self.assertRaisesRegex(TypeError, r"non-default argument ('y' )?follows " "default argument 'x'"):
             @dataclass
             class B:
                 x: int
@@ -4696,7 +4696,7 @@ class TestKeywordArgs(unittest.TestCase):
         self.assertEqual(a.d, 4)
 
         # Make sure we still check for non-kwarg non-defaults not following defaults.
-        err_regex = r"non-default argument ('z' )?follows default argument"
+        err_regex = r"non-default argument ('z' )?follows default argument 'a'"
         with self.assertRaisesRegex(TypeError, err_regex):
             @dataclass
             class A:
