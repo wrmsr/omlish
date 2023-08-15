@@ -22,11 +22,9 @@ from dataclasses import (  # noqa
     replace,
 )
 
-from .impl.fields import (  # noqa
+from .impl.api import (  # noqa
     field as xfield,
-)
 
-from .impl.classes import (  # noqa
     dataclass as xdataclass,
     make_dataclass as xmake_dataclass,
 )

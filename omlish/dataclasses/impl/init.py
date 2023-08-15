@@ -2,8 +2,7 @@ import dataclasses as dc
 import inspect
 import typing as ta
 
-from omlish import lang
-
+from ... import lang
 from .exceptions import CheckException
 from .fields import field_init
 from .fields import field_type

@@ -1,7 +1,7 @@
 import types
 import typing as ta
 
-from omlish import lang
+from ... import lang
 
 
 METADATA_ATTR = '__dataclass_metadata__'
