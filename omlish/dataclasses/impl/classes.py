@@ -309,7 +309,7 @@ class ClassProcessor:
         # other_tuple = tuple_str('other', flds)
         # set_new_attribute(cls, '__eq__', _cmp_fn('__eq__', '==', self_tuple, other_tuple, globals=globals))
         cmp_fields = (field for field in self._field_list() if field.compare)
-        terms = [f'self.{field.name}==other.{field.name}' for field in cmp_fields]
+        terms = [f'self.{field.name} == other.{field.name}' for field in cmp_fields]
         field_comparisons = ' and '.join(terms) or 'True'
         body = [
             f'if other.__class__ is self.__class__:',
