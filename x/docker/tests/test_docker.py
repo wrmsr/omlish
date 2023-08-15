@@ -5,6 +5,7 @@ import typing as ta  # noqa
 
 from omlish import dataclasses as dc
 from omlish import marshal as msh
+import pytest
 
 
 @dc.dataclass()
@@ -52,7 +53,10 @@ def test_docker():
         '--no-trunc',
         '--format', '{{json .}}',
     ], stdout=subprocess.PIPE).communicate()
-    dct = json.loads(out.decode('utf-8'))
+    buf = out.decode('utf-8')
+    if buf.startswith('Cannot connect to the Docker daemon at '):
+        pytest.skip('docker not running')
+    dct = json.loads(buf)
     print(dct)
 
     reg = msh.Registry()
