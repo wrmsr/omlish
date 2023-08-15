@@ -12,7 +12,7 @@ huggingface_hub==0.16.4
 
 llvmlite==0.40.1
 
-pyopencl==2023.1.1
+pyopencl==2023.1.2
 
 pycuda==2022.2.2; sys_platform != 'darwin'
 
@@ -45,10 +45,12 @@ torchvision==0.15.2
 
 networkx==3.1
 
+unicorn==2.0.1.post1
+
 
 ### infra
 
-boto3>=1.28.25
+boto3>=1.28.27
 
 google-cloud-compute==1.14.0
 
