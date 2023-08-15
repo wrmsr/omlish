@@ -3,15 +3,12 @@ import collections.abc
 import dataclasses as dc
 import inspect
 import itertools
-import keyword
 import sys
-import types
 import typing as ta
 
-from omlish import cached
-from omlish import check
-from omlish import lang
-
+from ... import cached
+from ... import check
+from ... import lang
 from .fields import field_type
 from .fields import preprocess_field
 from .init import InitBuilder
@@ -26,9 +23,7 @@ from .internals import is_kw_only
 from .internals import recursive_repr
 from .internals import tuple_str
 from .metadata import METADATA_ATTR
-from .metadata import Metadata
 from .metadata import get_merged_metadata
-from .params import Params12
 from .params import ParamsExtras
 from .params import get_params12
 from .utils import Namespace
@@ -37,8 +32,6 @@ from .utils import set_new_attribute
 
 
 MISSING = dc.MISSING
-
-IS_12 = sys.version_info[1] >= 12
 
 
 # misc
@@ -417,146 +410,3 @@ class ClassProcessor:
 
 def process_class(cls: type) -> type:
     return ClassProcessor(cls).process()
-
-
-# api
-
-
-def dataclass(
-        cls=None,
-        /,
-        *,
-        init=True,
-        repr=True,
-        eq=True,
-        order=False,
-        unsafe_hash=False,
-        frozen=False,
-        match_args=True,
-        kw_only=False,
-        slots=False,
-        weakref_slot=False,
-
-        metadata=None,
-):
-    def wrap(cls):
-        pkw = dict(
-            init=init,
-            repr=repr,
-            eq=eq,
-            order=order,
-            unsafe_hash=unsafe_hash,
-            frozen=frozen,
-        )
-        p12kw = dict(
-            match_args=match_args,
-            kw_only=kw_only,
-            slots=slots,
-            weakref_slot=weakref_slot,
-        )
-
-        mmd: dict = {
-            ParamsExtras: ParamsExtras(),
-        }
-
-        if IS_12:
-            pkw.update(p12kw)
-        else:
-            mmd[Params12] = Params12(**p12kw)
-
-        md: Metadata = mmd
-        cmds = []
-        if metadata is not None:
-            cmds.append(check.isinstance(metadata, collections.abc.Mapping))
-        if (dmd := cls.__dict__.get(METADATA_ATTR)) is not None:
-            cmds.append(dmd)
-        if cmds:
-            md = collections.ChainMap(md, *cmds)  # type: ignore
-
-        setattr(cls, PARAMS_ATTR, Params(**pkw))
-        setattr(cls, METADATA_ATTR, types.MappingProxyType(md))
-
-        return process_class(cls)
-
-    if cls is None:
-        return wrap
-
-    return wrap(cls)
-
-
-def make_dataclass(
-        cls_name,
-        fields,
-        *,
-        bases=(),
-        namespace=None,
-        init=True,
-        repr=True,
-        eq=True,
-        order=False,
-        unsafe_hash=False,
-        frozen=False,
-        match_args=True,
-        kw_only=False,
-        slots=False,
-        weakref_slot=False,
-        module=None,
-):
-    if namespace is None:
-        namespace = {}
-
-    seen = set()
-    annotations = {}
-    defaults = {}
-    for item in fields:
-        if isinstance(item, str):
-            name = item
-            tp = 'typing.Any'
-        elif len(item) == 2:
-            name, tp, = item
-        elif len(item) == 3:
-            name, tp, spec = item
-            defaults[name] = spec
-        else:
-            raise TypeError(f'Invalid field: {item!r}')
-        if not isinstance(name, str) or not name.isidentifier():
-            raise TypeError(f'Field names must be valid identifiers: {name!r}')
-        if keyword.iskeyword(name):
-            raise TypeError(f'Field names must not be keywords: {name!r}')
-        if name in seen:
-            raise TypeError(f'Field name duplicated: {name!r}')
-
-        seen.add(name)
-        annotations[name] = tp
-
-    def exec_body_callback(ns):
-        ns.update(namespace)
-        ns.update(defaults)
-        ns['__annotations__'] = annotations
-
-    cls = types.new_class(cls_name, bases, {}, exec_body_callback)
-
-    if module is None:
-        try:
-            module = sys._getframemodulename(1) or '__main__'  # type: ignore  # noqa
-        except AttributeError:
-            try:
-                module = sys._getframe(1).f_globals.get('__name__', '__main__')  # noqa
-            except (AttributeError, ValueError):
-                pass
-    if module is not None:
-        cls.__module__ = module
-
-    return dataclass(
-        cls,
-        init=init,
-        repr=repr,
-        eq=eq,
-        order=order,
-        unsafe_hash=unsafe_hash,
-        frozen=frozen,
-        match_args=match_args,
-        kw_only=kw_only,
-        slots=slots,
-        weakref_slot=weakref_slot,
-    )

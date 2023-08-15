@@ -31,8 +31,7 @@ import dataclasses as dc
 import sys
 import typing as ta
 
-from omlish import lang
-
+from ... import lang
 from .internals import PARAMS_ATTR
 from .internals import Params
 from .metadata import EMPTY_METADATA

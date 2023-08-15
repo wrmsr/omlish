@@ -1,9 +1,8 @@
 import dataclasses as dc
 import typing as ta
 
-from omlish import cached
-from omlish import check
-
+from ... import cached
+from ... import check
 from .internals import Params
 from .metadata import Metadata
 from .metadata import get_merged_metadata

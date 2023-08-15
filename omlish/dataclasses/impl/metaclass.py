@@ -1,8 +1,12 @@
 import abc
+import typing as ta
 
-from omlish import lang
+from ... import lang
 
-from .classes import dataclass
+if ta.TYPE_CHECKING:
+    from . import api
+else:
+    api = lang.proxy_import('.api', __package__)
 
 
 class DataMeta(abc.ABCMeta):
@@ -20,7 +24,7 @@ class DataMeta(abc.ABCMeta):
             bases,
             namespace,
         )
-        return dataclass(cls, **kwargs)
+        return api.dataclass(cls, **kwargs)
 
 
 class Data(metaclass=DataMeta):

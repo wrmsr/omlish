@@ -1,7 +1,7 @@
 import types
 import typing as ta
 
-from omlish import lang
+from ... import lang
 
 
 T = ta.TypeVar('T')

@@ -1,15 +1,18 @@
 import dataclasses as dc
-import collections.abc
 import types
 import typing as ta
 
-from omlish import check as check_
-
+from ... import check as check_
+from ... import lang
 from .internals import FieldType
 from .internals import is_classvar
 from .internals import is_initvar
-from .params import FieldExtras
 from .params import get_field_extras
+
+if ta.TYPE_CHECKING:
+    from . import api
+else:
+    api = lang.proxy_import('.api', __package__)
 
 
 MISSING = dc.MISSING
@@ -20,44 +23,6 @@ def field_type(f: dc.Field) -> FieldType:
         return FieldType(ft)
     else:
         return FieldType.INSTANCE
-
-
-def field(
-        *,
-        default=MISSING,
-        default_factory=MISSING,
-        init=True,
-        repr=True,
-        hash=None,
-        compare=True,
-        metadata=None,
-        kw_only=MISSING,
-
-        coerce: ta.Optional[ta.Callable[[ta.Any], ta.Any]] = None,
-        check: ta.Optional[ta.Callable[[ta.Any], bool]] = None,
-):  # -> dc.Field
-    if default is not MISSING and default_factory is not MISSING:
-        raise ValueError('cannot specify both default and default_factory')
-
-    fx = FieldExtras(
-        coerce=coerce,
-        check=check,
-    )
-
-    md: ta.Mapping = {FieldExtras: fx}
-    if metadata is not None:
-        md = collections.ChainMap(md, check_.isinstance(metadata, collections.abc.Mapping))  # type: ignore
-
-    return dc.Field(
-        default,
-        default_factory,  # noqa
-        init,
-        repr,
-        hash,
-        compare,
-        types.MappingProxyType(md),
-        kw_only,  # noqa
-    )
 
 
 def preprocess_field(
@@ -72,7 +37,7 @@ def preprocess_field(
     else:
         if isinstance(default, types.MemberDescriptorType):
             default = MISSING
-        f = field(default=default)
+        f = api.field(default=default)
 
     f.name = a_name
     f.type = a_type
