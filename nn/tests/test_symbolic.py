@@ -302,27 +302,27 @@ class TestSymbolicVars:
         a = Var('a', 0, 10)
         b = Var('b', 0, 10)
         c = Var('c', 0, 10)
-        assert z.vars() == z.vars() == []
-        assert a.vars() == a.vars() == [a]
+        assert list(z.vars()) == list(z.vars()) == []
+        assert list(a.vars()) == list(a.vars()) == [a]
         m = Mul.new(a, 3)
-        assert m.vars() == [a]
+        assert list(m.vars()) == [a]
         s = Sum.new([a, b, c])
-        assert s.vars() == [a, b, c]
+        assert list(s.vars()) == [a, b, c]
 
     def test_compound(self):
         a = Var('a', 0, 10)
         b = Var('b', 0, 10)
         c = Var('c', 0, 10)
-        assert (a + b * c).vars() == [a, b, c]
-        assert (a % 3 + b // 5).vars() == [a, b]
-        assert (a + b + c - a).vars() == [b, c]
+        assert list((a + b * c).vars()) == [a, b, c]
+        assert list((a % 3 + b // 5).vars()) == [a, b]
+        assert list((a + b + c - a).vars()) == [b, c]
 
 
 class TestSymbolicMinMax:
     def test_min_max_known(self):
         a = Var('a', 1, 8)
-        assert max(1, a) == max(a, 1) == a
-        assert min(1, a) == min(a, 1) == 1
+        assert max(1, a) == max(a, 1) == a  # type: ignore
+        assert min(1, a) == min(a, 1) == 1  # type: ignore
 
 
 class TestSymRender:
