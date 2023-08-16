@@ -48,10 +48,10 @@ def init_param(f: dc.Field) -> str:
     if f.default is MISSING and f.default_factory is MISSING:
         default = ''
     elif f.default is not MISSING:
-        default = f'=__dataclass_dflt_{f.name}__'
+        default = f' = __dataclass_dflt_{f.name}__'
     elif f.default_factory is not MISSING:
-        default = '=__dataclass_HAS_DEFAULT_FACTORY__'
-    return f'{f.name}:__dataclass_type_{f.name}__{default}'  # noqa
+        default = ' = __dataclass_HAS_DEFAULT_FACTORY__'
+    return f'{f.name}: __dataclass_type_{f.name}__{default}'  # noqa
 
 
 class InitBuilder:

@@ -34,6 +34,7 @@ def field(
 
         coerce: ta.Optional[ta.Callable[[ta.Any], ta.Any]] = None,
         check: ta.Optional[ta.Callable[[ta.Any], bool]] = None,
+        override: bool = False,
 ):  # -> dc.Field
     if default is not MISSING and default_factory is not MISSING:
         raise ValueError('cannot specify both default and default_factory')
@@ -41,6 +42,7 @@ def field(
     fx = FieldExtras(
         coerce=coerce,
         check=check,
+        override=override,
     )
 
     md: ta.Mapping = {FieldExtras: fx}

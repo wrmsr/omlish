@@ -9,6 +9,7 @@ import typing as ta
 from ... import cached
 from ... import check
 from ... import lang
+from .fields import field_assign
 from .fields import field_type
 from .fields import preprocess_field
 from .init import InitBuilder
@@ -25,6 +26,7 @@ from .internals import tuple_str
 from .metadata import METADATA_ATTR
 from .metadata import get_merged_metadata
 from .params import ParamsExtras
+from .params import get_field_extras
 from .params import get_params12
 from .utils import Namespace
 from .utils import create_fn
@@ -286,12 +288,48 @@ class ClassProcessor:
             self_name,
             self._globals,
         ).build()
-
         set_new_attribute(
             self._cls,
             '__init__',
             init,
         )
+
+    def _process_overrides(self) -> None:
+        for f in self._field_list():
+            fx = get_field_extras(f)
+            if not fx.override:
+                continue
+
+            if self._params12.slots:
+                raise TypeError
+
+            self_name = '__dataclass_self__' if 'self' in self._fields() else 'self'
+
+            getter = create_fn(
+                f.name,
+                (self_name,),
+                [f'return {self_name}.__dict__[{f.name!r}]'],
+                globals=self._globals,
+                return_type=lang.just(f.type),
+            )
+            prop = property(getter)
+
+            if not self._params.frozen:
+                setter = create_fn(
+                    f.name,
+                    (self_name, f'{f.name}: __dataclass_type_{f.name}__'),
+                    [field_assign(self._params.frozen, f.name, f.name, self_name, fx.override)],
+                    globals=self._globals,
+                    locals={f'__dataclass_type_{f.name}__': f.type},
+                    return_type=lang.just(None),
+                )
+                prop = prop.setter(setter)
+
+            set_new_attribute(
+                self._cls,
+                f.name,
+                prop,
+            )
 
     def _process_repr(self) -> None:
         if not self._params.repr:
@@ -393,6 +431,7 @@ class ClassProcessor:
         setattr(self._cls, FIELDS_ATTR, self._fields())
 
         self._process_init()
+        self._process_overrides()
         self._process_repr()
         self._process_eq()
         self._process_order()

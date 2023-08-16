@@ -1,6 +1,7 @@
 import types
 import typing as ta
 
+from ... import check
 from ... import lang
 
 
@@ -17,6 +18,9 @@ def create_fn(
         locals: ta.Optional[Namespace] = None,
         return_type: lang.Maybe[ta.Any] = lang.empty(),
 ) -> ta.Callable:
+    check.not_isinstance(args, str)
+    check.not_isinstance(body, str)
+
     if locals is None:
         locals = {}
     return_annotation = ''

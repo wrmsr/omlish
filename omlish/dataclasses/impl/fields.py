@@ -71,10 +71,13 @@ def field_assign(
         name: str,
         value: ta.Any,
         self_name: str,
+        override: bool,
 ) -> str:
+    if override:
+        return f'{self_name}.__dict__[{name!r}] = {value}'
     if frozen:
-        return f'__dataclass_builtins_object__.__setattr__({self_name},{name!r},{value})'
-    return f'{self_name}.{name}={value}'
+        return f'__dataclass_builtins_object__.__setattr__({self_name}, {name!r}, {value})'
+    return f'{self_name}.{name} = {value}'
 
 
 def field_init(
@@ -127,6 +130,6 @@ def field_init(
             pass
 
     if value is not None and field_type(f) is not FieldType.INIT:
-        lines.append(field_assign(frozen, f.name, value, self_name))  # noqa
+        lines.append(field_assign(frozen, f.name, value, self_name, fx.override))  # noqa
 
     return lines

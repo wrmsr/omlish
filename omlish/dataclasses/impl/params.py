@@ -48,6 +48,7 @@ IS_12 = sys.version_info[1] >= 12
 class FieldExtras(lang.Final):
     coerce: ta.Optional[ta.Union[bool, ta.Callable[[ta.Any], ta.Any]]] = None
     check: ta.Optional[ta.Callable[[ta.Any], bool]] = None
+    override: bool = False
 
 
 DEFAULT_FIELD_EXTRAS = FieldExtras()
