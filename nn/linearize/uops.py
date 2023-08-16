@@ -65,8 +65,8 @@ class Uop(lang.Sealed, lang.Abstract):
 class Const(Uop, Masked):
     v: float
 
-    valid: sym.Var
-    invalid_value: Scalar = 0.
+    valid: sym.Var = dc.field(override=True)  # type: ignore
+    invalid_value: Scalar = dc.field(default=0., override=True)  # type: ignore
 
 
 @dc.dataclass(frozen=True)
@@ -119,8 +119,8 @@ class MemOp(Uop, Masked, lang.Abstract):
     local: bool
     dtype: Dtype
 
-    valid: sym.Var
-    invalid_value: Scalar = 0.
+    valid: sym.Var = dc.field(override=True)  # type: ignore
+    invalid_value: Scalar = dc.field(default=0., override=True)  # type: ignore
 
 
 @dc.dataclass(frozen=True)
