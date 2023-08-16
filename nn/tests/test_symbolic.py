@@ -1,4 +1,7 @@
+from ..symbolic import Lt
+from ..symbolic import Mul
 from ..symbolic import Num
+from ..symbolic import Sum
 from ..symbolic import Var
 from ..symbolic import and_
 from ..symbolic import sum_
@@ -293,104 +296,101 @@ class TestSymbolicNumeric:
         _test_numeric(lambda x: ((x * 2 + 3) // 4) % 4)
 
 
-##
+class TestSymbolicVars:
+    def test_simple(self):
+        z = Num(0)
+        a = Var('a', 0, 10)
+        b = Var('b', 0, 10)
+        c = Var('c', 0, 10)
+        assert z.vars() == z.vars() == []
+        assert a.vars() == a.vars() == [a]
+        m = Mul.new(a, 3)
+        assert m.vars() == [a]
+        s = Sum.new([a, b, c])
+        assert s.vars() == [a, b, c]
+
+    def test_compound(self):
+        a = Var('a', 0, 10)
+        b = Var('b', 0, 10)
+        c = Var('c', 0, 10)
+        assert (a + b * c).vars() == [a, b, c]
+        assert (a % 3 + b // 5).vars() == [a, b]
+        assert (a + b + c - a).vars() == [b, c]
 
 
-# class TestSymbolicVars:
-#     def test_simple(self):
-#         z = NumSym(0)
-#         a = Variable("a", 0, 10)
-#         b = Variable("b", 0, 10)
-#         c = Variable("c", 0, 10)
-#         assert z.vars() == z.vars() == []
-#         assert a.vars() == a.vars() == [a]
-#         m = MulSym(a, 3)
-#         assert m.vars() == [a]
-#         s = SumSym([a, b, c])
-#         assert s.vars() == [a, b, c]
-#
-#     def test_compound(self):
-#         a = Variable("a", 0, 10)
-#         b = Variable("b", 0, 10)
-#         c = Variable("c", 0, 10)
-#         assert (a + b * c).vars() == [a, b, c]
-#         assert (a % 3 + b // 5).vars() == [a, b]
-#         assert (a + b + c - a).vars() == [b, c]
-#
-#
-# class TestSymbolicMinMax:
-#     def test_min_max_known(self):
-#         a = Variable("a", 1, 8)
-#         assert max(1, a) == max(a, 1) == a
-#         assert min(1, a) == min(a, 1) == 1
-#
-#
-# class TestSymRender:
-#     def test_sym_render(self):
-#         a = Variable("a", 1, 8)
-#         b = Variable("b", 1, 10)
-#         assert sym_render(a) == "a"
-#         assert sym_render(1) == "1"
-#         assert sym_render(a + 1) == "(1+a)"
-#         assert sym_render(a * b) == "(a*b)"
+class TestSymbolicMinMax:
+    def test_min_max_known(self):
+        a = Var('a', 1, 8)
+        assert max(1, a) == max(a, 1) == a
+        assert min(1, a) == min(a, 1) == 1
 
 
-# class TestSymbolicSymbolicOps:
-#     def test_sym_div_sym(self):
-#         i = Variable("i", 1, 10)
-#         idx0 = Variable("idx0", 0, i * 3 - 1)
-#         assert NumSym(0) // (Variable("i", 1, 10) * 128) == 0
-#         assert NumSym(127) // (Variable("i", 1, 10) * 128) == 0
-#         assert idx0 // (i * 3) == 0
-#
-#     def test_sym_mod_sym(self):
-#         i = Variable("i", 1, 10)
-#         idx0 = Variable("idx0", 0, i * 3 - 1)
-#         assert NumSym(0) % (Variable("i", 1, 10) * 128) == 0
-#         assert NumSym(127) % (Variable("i", 1, 10) * 128) == 127
-#         assert NumSym(128) % (Variable("i", 1, 10) * 128 + 128) == 128
-#         assert 0 % (Variable("i", 1, 10) * 128) == 0
-#         assert 127 % (Variable("i", 1, 10) * 128) == 127
-#         assert 128 % (Variable("i", 1, 10) * 128 + 128) == 128
-#         assert idx0 % (i * 3) == idx0
-#         assert i % i == 0
-#
-#     def test_mulsym_divmod_sym(self):
-#         i = Variable("i", 1, 10)
-#         idx0 = Variable("idx0", 0, 31)
-#         assert (idx0 * (i * 4 + 4)) // (i + 1) == (idx0 * 4)
-#         assert (idx0 * (i * 4 + 4)) % (i + 1) == 0
-#         assert (idx0 * i) % i == 0
-#
-#     def test_sumsym_divmod_sumsym(self):
-#         i = Variable("i", 1, 10)
-#         idx0 = Variable("idx0", 0, 7)
-#         idx1 = Variable("idx1", 0, 3)
-#         idx2 = Variable("idx2", 0, i)
-#         assert (idx0 * (i * 4 + 4) + idx1 * (i + 1) + idx2) // (i + 1) == idx0 * 4 + idx1
-#         assert (idx0 * (i * 4 + 4) + idx1 * (i + 1) + idx2) % (i + 1) == idx2
-#         assert (i + 1) % (i * 128 + 128) == (i + 1)
-#
-#     def test_sym_lt_sym(self):
-#         a = Variable("a", 1, 5)
-#         b = Variable("b", 6, 9)
-#         c = Variable("c", 1, 10)
-#         # if the value is always the same, it folds to num
-#         assert (a < b) == 1
-#         # if it remains as a LtSym, bool is always true and we need to test against min to test if it always evals to True
-#         assert (a < c).__class__ is LtSym and (a < c).min == 0 and (a < c).max == 1
-#         assert a < c
-#         assert not (a < c).min
-#         assert (a > c).__class__ is LtSym and (a > c).min == 0 and (a > c).max == 1
-#         assert not (a > c).min
-#         # same when comparing with a constant
-#         assert a < 3
-#         assert a > 3
-#
-#     def test_num_sym_mul_sym(self):
+class TestSymRender:
+    def test_sym_render(self):
+        a = Var('a', 1, 8)
+        b = Var('b', 1, 10)
+        assert sym_render(a) == 'a'
+        assert sym_render(1) == '1'
+        assert sym_render(a + 1) == '(1+a)'
+        assert sym_render(a * b) == '(a*b)'
 
-#         a = NumSym(2)
-#         b = Variable("b", 1, 5)
-#         c = a * b
-#         assert c == b * 2
-#         assert isinstance(c, MulSym)
+
+class TestSymbolicSymbolicOps:
+    def test_sym_div_sym(self):
+        i = Var('i', 1, 10)
+        idx0 = Var('idx0', 0, i * 3 - 1)
+        assert Num(0) // (Var('i', 1, 10) * 128) == 0
+        assert Num(127) // (Var('i', 1, 10) * 128) == 0
+        assert idx0 // (i * 3) == 0
+
+    def test_sym_mod_sym(self):
+        i = Var('i', 1, 10)
+        idx0 = Var('idx0', 0, i * 3 - 1)
+        assert Num(0) % (Var('i', 1, 10) * 128) == 0
+        assert Num(127) % (Var('i', 1, 10) * 128) == 127
+        assert Num(128) % (Var('i', 1, 10) * 128 + 128) == 128
+        assert 0 % (Var('i', 1, 10) * 128) == 0
+        assert 127 % (Var('i', 1, 10) * 128) == 127
+        assert 128 % (Var('i', 1, 10) * 128 + 128) == 128
+        assert idx0 % (i * 3) == idx0
+        assert i % i == 0
+
+    def test_mulsym_divmod_sym(self):
+        i = Var('i', 1, 10)
+        idx0 = Var('idx0', 0, 31)
+        assert (idx0 * (i * 4 + 4)) // (i + 1) == (idx0 * 4)
+        assert (idx0 * (i * 4 + 4)) % (i + 1) == 0
+        assert (idx0 * i) % i == 0
+
+    def test_sumsym_divmod_sumsym(self):
+        i = Var('i', 1, 10)
+        idx0 = Var('idx0', 0, 7)
+        idx1 = Var('idx1', 0, 3)
+        idx2 = Var('idx2', 0, i)
+        assert (idx0 * (i * 4 + 4) + idx1 * (i + 1) + idx2) // (i + 1) == idx0 * 4 + idx1
+        assert (idx0 * (i * 4 + 4) + idx1 * (i + 1) + idx2) % (i + 1) == idx2
+        assert (i + 1) % (i * 128 + 128) == (i + 1)
+
+    def test_sym_lt_sym(self):
+        a = Var('a', 1, 5)
+        b = Var('b', 6, 9)
+        c = Var('c', 1, 10)
+        # if the value is always the same, it folds to num
+        assert a < b
+        # if it remains as a LtSym, bool is always true and we need to test against min to test if it always evals to
+        # True
+        assert isinstance(a < c, Lt) and (a < c).min == 0 and (a < c).max == 1
+        assert a < c
+        assert not (a < c).min
+        assert isinstance(a > c, Lt) and (a > c).min == 0 and (a > c).max == 1
+        assert not (a > c).min
+        # same when comparing with a constant
+        assert a < 3
+        assert a > 3
+
+    def test_num_sym_mul_sym(self):
+        a = Num(2)
+        b = Var('b', 1, 5)
+        c = a * b
+        assert c == b * 2
+        assert isinstance(c, Mul)

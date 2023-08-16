@@ -17,6 +17,7 @@ from omlish import lang
 
 
 SymInt: ta.TypeAlias = ta.Union['Sym', int]
+RedT = ta.TypeVar('RedT', bound='Red')
 
 
 def is_sym_int(o: ta.Any) -> bool:
@@ -131,7 +132,6 @@ class Sym(lang.Abstract, lang.Sealed):
                     mul_gcd = math.gcd(mul_gcd, x.b)
                 if b % mul_gcd == 0:
                     all_others = sum_(others)
-                    # print(mul_gcd, muls, all_others)
                     if all_others.min >= 0 and all_others.max < mul_gcd:
                         # TODO: should we divide both by mul_gcd here?
                         lhs = sum_(muls)
@@ -142,7 +142,7 @@ class Sym(lang.Abstract, lang.Sealed):
             return Num(0)
         elif b == 1:
             return self
-        if isinstance(self,  Num):
+        if isinstance(self, Num):
             if isinstance(b, int):
                 return Num(self.b * b)
             else:
@@ -428,7 +428,7 @@ class Red(Sym, lang.Abstract):
         return self._max
 
     @classmethod
-    def new(cls, syms: ta.Sequence['Sym']) -> 'Sym':
+    def new(cls: ta.Type[RedT], syms: ta.Sequence['Sym']) -> RedT:
         mn, mx = cls.calc_bounds(syms)
         return cls(syms, _min=mn, _max=mx)
 
@@ -482,13 +482,14 @@ class Sum(Red):
         return sum_([x * b for x in self.syms])  # distribute mul into sum
 
     def _floordiv(self, b: SymInt, factoring_allowed: bool = True) -> Sym:
-        fully_divided: list[Sym] = []
-        rest: list[Sym] = []
         if isinstance(b, Sum):
             nu_num = sum(sym.b for sym in self.flat() if isinstance(sym, Num))
             de_num = sum(sym.b for sym in b.flat() if isinstance(sym, Num))
             if de_num and nu_num % de_num == 0 and b * (d := nu_num // de_num) == self:
                 return Num(d)
+
+        fully_divided: list[Sym] = []
+        rest: list[Sym] = []
         if isinstance(b, Sym):
             for x in self.flat():
                 if x % b == 0:
@@ -498,13 +499,14 @@ class Sum(Red):
             if (b > (sum_rest := Sum.new(rest))).min and (sum_rest >= 0).min:
                 return Sum.new(fully_divided)
             return Sym._floordiv(self, b, False)
+
         if b == 1:
             return self
         if not factoring_allowed:
             return Sym._floordiv(self, b, factoring_allowed)
 
         fully_divided, rest = [], []
-        _gcd = b
+        gcd = b
         divisor = 1
         for x in self.flat():
             if isinstance(x, (Num, Mul)):
@@ -512,27 +514,29 @@ class Sum(Red):
                     fully_divided.append(x // b)
                 else:
                     rest.append(x)
-                    _gcd = math.gcd(_gcd, x.b)
+                    gcd = math.gcd(gcd, x.b)
                     if isinstance(x, Mul) and divisor == 1 and b % x.b == 0:
                         divisor = x.b
             else:
                 rest.append(x)
-                _gcd = 1
+                gcd = 1
 
-        if _gcd > 1:
-            return sum_(fully_divided) + sum_(rest)._floordiv(_gcd) // (b // _gcd)
+        if gcd > 1:
+            return sum_(fully_divided) + sum_(rest)._floordiv(gcd) // (b // gcd)
         if divisor > 1:
             return sum_(fully_divided) + sum_(rest)._floordiv(divisor) // (b // divisor)
         return sum_(fully_divided) + Sym._floordiv(sum_(rest), b)
 
-    def __mod__(self, b: SymInt):
+    def __mod__(self, b: SymInt) -> 'Sym':
         if isinstance(b, Sum):
             nu_num = sum(sym.b for sym in self.flat() if isinstance(sym, Num))
             de_num = sum(sym.b for sym in b.flat() if isinstance(sym, Num))
             if de_num and nu_num % de_num == 0 and b * (nu_num // de_num) == self:
                 return Num(0)
+
         if isinstance(b, Sym) and (b - self).min > 0:
             return self  # b - self simplifies the sym
+
         new_syms: list[Sym] = []
         for x in self.syms:
             if isinstance(x, Num):
@@ -541,6 +545,7 @@ class Sum(Red):
                 new_syms.append(x.a * (x.b % b))
             else:
                 new_syms.append(x)
+
         return Sym.__mod__(sum_(new_syms), b)
 
     def flat(self) -> ta.Iterator[Sym]:
