@@ -26,7 +26,7 @@ pyobjc-framework-metal==9.2; sys_platform == 'darwin'
 pandas==2.0.3
 
 opencv-python==4.8.0.76
-pillow==9.5.0
+pillow==10.0.0
 
 onnx==1.14.0
 
