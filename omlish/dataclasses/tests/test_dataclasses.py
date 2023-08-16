@@ -1,8 +1,10 @@
+import abc
 import dataclasses as _dc
 
 import pytest
 
 from ... import dataclasses as dc
+from ... import lang
 
 
 def test_simple():
@@ -90,3 +92,34 @@ def test_reflect():
     print(ref.params12)
     print(ref.params_extras)
     print(ref.merged_metadata)
+
+
+def test_abc():
+    class Abc(abc.ABC):
+        def foo(self):
+            return 'foo'
+
+        @abc.abstractmethod
+        def m(self):
+            raise NotImplementedError
+
+        @property
+        @abc.abstractmethod
+        def p(self):
+            raise NotImplementedError
+
+    class D0(Abc):
+        pass
+    with pytest.raises(TypeError):
+        D0()
+
+    @dc.dataclass(frozen=True)
+    class D1(Abc):
+        def m(self):
+            return 'm'
+
+        p: str
+
+    d1 = D1('p')
+    assert d1.p == 'p'
+    assert d1.p == 'p'

@@ -7,6 +7,7 @@ TODO:
  - LABEL
  - COND_BRANCH
 """
+import abc
 import typing as ta
 
 from omlish import dataclasses as dc
@@ -16,6 +17,7 @@ from .. import ops
 from .. import symbolic as sym
 from ..dtypes import Dtype
 from ..dtypes import Float32
+from ..scalars import Scalar
 
 
 ##
@@ -38,6 +40,21 @@ class Token:
 ##
 
 
+class Masked(lang.Abstract):
+    @property
+    @abc.abstractmethod
+    def valid(self) -> sym.Var:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def invalid_value(self) -> Scalar:
+        raise NotImplementedError
+
+
+##
+
+
 @dc.dataclass(frozen=True)
 class Uop(lang.Sealed, lang.Abstract):
     out: ta.Optional[Token]
@@ -45,8 +62,11 @@ class Uop(lang.Sealed, lang.Abstract):
 
 
 @dc.dataclass(frozen=True)
-class Const(Uop):
+class Const(Uop, Masked):
     v: float
+
+    valid: sym.Var
+    invalid_value: Scalar = 0.
 
 
 @dc.dataclass(frozen=True)
@@ -93,10 +113,14 @@ class EndLoop(LoopOp):
 
 
 @dc.dataclass(frozen=True)
-class MemOp(Uop, lang.Abstract):
-    i: int
+class MemOp(Uop, Masked, lang.Abstract):
+    name: str
     idx: sym.Var
+    local: bool
+    dtype: Dtype
+
     valid: sym.Var
+    invalid_value: Scalar = 0.
 
 
 @dc.dataclass(frozen=True)
