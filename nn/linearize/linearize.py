@@ -840,8 +840,8 @@ class LinearCodegenOp(CodegenOp):
     class _Gl(ta.NamedTuple):
         local_type: Dtype
         uidx_list: ta.Sequence[int]
-        idx: sym.Node
-        valid: sym.Node
+        idx: sym.Sym
+        valid: sym.Sym
 
     def required_optimizations(self, early_only=False):
         for buf_index, buf in enumerate(self._bufs):

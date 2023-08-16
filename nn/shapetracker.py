@@ -46,7 +46,7 @@ class View(dc.Data, lang.Final):
 
     ##
 
-    def gen_mask_sym(self, idx: sym.Node, valid: ta.Optional[sym.Node] = None) -> sym.Node:
+    def gen_mask_sym(self, idx: sym.Sym, valid: ta.Optional[sym.Sym] = None) -> sym.Sym:
         """~expr_node_mask"""
         ret = [valid] if valid is not None else []
         if self.mask is not None:
@@ -57,7 +57,7 @@ class View(dc.Data, lang.Final):
                 acc *= ns
         return sym.and_(ret)
 
-    def idxs_to_idx(self, idxs: ta.Sequence[sym.Node]) -> sym.Node:
+    def idxs_to_idx(self, idxs: ta.Sequence[sym.Sym]) -> sym.Sym:
         check.arg(len(idxs) == len(self.shape))
         acc = 1
         ret = []
@@ -67,12 +67,12 @@ class View(dc.Data, lang.Final):
         return sym.sum_(ret)
 
     # generate an expression if you have a single idx variable
-    def gen_sym(self, idx: ta.Optional[sym.Node] = None) -> sym.Node:
+    def gen_sym(self, idx: ta.Optional[sym.Sym] = None) -> sym.Sym:
         """~expr_node"""
         if idx is None:
             idx = sym.var('idx', 0, self.shape.prod)
 
-        ret: ta.List[sym.Node] = [sym.Num(self.offset)]
+        ret: ta.List[sym.Sym] = [sym.Num(self.offset)]
         acc = 1
         for ss in reversed(self.shape_strides):
             ret.append(((idx // acc) % ss.shape) * ss.stride)
@@ -80,7 +80,7 @@ class View(dc.Data, lang.Final):
         return sym.sum_(ret)
 
     # generate an expression if you have a variable or expression for each index
-    def gen_syms(self, idxs: ta.Sequence[sym.Node]) -> sym.Node:
+    def gen_syms(self, idxs: ta.Sequence[sym.Sym]) -> sym.Sym:
         """~expr_idxs"""
         check.arg(len(idxs) == len(self.shape))
         return sym.sum_(
@@ -319,23 +319,23 @@ class ShapeTracker(lang.Final):
     ##
 
     class Sym(ta.NamedTuple):
-        idx: sym.Node
-        mask: sym.Node
+        idx: sym.Sym
+        mask: sym.Sym
 
-    def _gen_sym(self, idx: sym.Node, valid: sym.Node) -> Sym:
+    def _gen_sym(self, idx: sym.Sym, valid: sym.Sym) -> Sym:
         """~_expr_idx"""
         for v in reversed(self._views[0:-1]):
             valid = v.gen_mask_sym(idx, valid)
             idx = v.gen_sym(idx)
         return ShapeTracker.Sym(idx, valid)
 
-    def gen_sym(self, idx: ta.Union[sym.Node, str] = 'idx') -> Sym:
+    def gen_sym(self, idx: ta.Union[sym.Sym, str] = 'idx') -> Sym:
         """~expr_idx"""
         if isinstance(idx, str):
             idx = sym.var(idx, 0, self.shape.prod - 1)
         return self._gen_sym(self.view.gen_sym(idx), self.view.gen_mask_sym(idx))
 
-    def gen_syms(self, idxs: ta.Optional[ta.Sequence[sym.Node]] = None) -> Sym:
+    def gen_syms(self, idxs: ta.Optional[ta.Sequence[sym.Sym]] = None) -> Sym:
         """~expr_idxs"""
         if idxs is None:
             idxs = [sym.var(f'idx{i}', 0, s - 1) for i, s in enumerate(self.shape)]
@@ -357,7 +357,7 @@ class ShapeTracker(lang.Final):
         idx, valid = self.gen_syms(idxs)
         ret: ta.List[ta.Optional[int]] = [None] * len(self.shape)
 
-        for this_dim in idx.nodes if isinstance(idx, sym.Sum) else [idx]:
+        for this_dim in idx.syms if isinstance(idx, sym.Sum) else [idx]:
             if isinstance(this_dim, sym.Mul) and isinstance(this_dim.a, sym.Var):
                 ret[idxs.index(this_dim.a)] = this_dim.b
             elif isinstance(this_dim, sym.Var):
