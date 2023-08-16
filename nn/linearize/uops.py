@@ -1,3 +1,12 @@
+"""
+TODO:
+ - DEFINE_GLOBAL
+ - WMMA
+ - SPECIAL
+ - DEFINE_REGISTER
+ - LABEL
+ - COND_BRANCH
+"""
 import typing as ta
 
 from omlish import dataclasses as dc
