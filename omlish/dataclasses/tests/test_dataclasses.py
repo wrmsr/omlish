@@ -111,15 +111,77 @@ def test_abc():
     class D0(Abc):
         pass
     with pytest.raises(TypeError):
-        D0()
+        D0()  # type: ignore
 
     @dc.dataclass(frozen=True)
     class D1(Abc):
         def m(self):
             return 'm'
 
-        p: str
+        p: str = dc.field(override=True)  # type: ignore
 
     d1 = D1('p')
     assert d1.p == 'p'
     assert d1.p == 'p'
+    with pytest.raises(dc.FrozenInstanceError):
+        d1.p = 'p2'  # type: ignore
+    assert d1.foo() == 'foo'
+
+    @dc.dataclass()
+    class D2(Abc):
+        def m(self):
+            return 'm'
+
+        p: str = dc.field(override=True)  # type: ignore
+
+    d2 = D2('p')
+    assert d2.p == 'p'
+    assert d2.p == 'p'
+    d2.p = 'p2'
+    assert d2.p == 'p2'
+
+    ##
+
+    class Abstract(lang.Abstract):
+        def foo(self):
+            return 'foo'
+
+        @abc.abstractmethod
+        def m(self):
+            raise NotImplementedError
+
+        @property
+        @abc.abstractmethod
+        def p(self):
+            raise NotImplementedError
+
+    with pytest.raises(TypeError):
+        class D3(Abstract):
+            pass
+
+    @dc.dataclass(frozen=True)
+    class D4(Abstract):
+        def m(self):
+            return 'm'
+
+        p: str = dc.field(override=True)  # type: ignore
+
+    d4 = D4('p')
+    assert d4.p == 'p'
+    assert d4.p == 'p'
+    with pytest.raises(dc.FrozenInstanceError):
+        d4.p = 'p2'  # type: ignore
+    assert d4.foo() == 'foo'
+
+    @dc.dataclass()
+    class D5(Abstract):
+        def m(self):
+            return 'm'
+
+        p: str = dc.field(override=True)  # type: ignore
+
+    d5 = D5('p')
+    assert d5.p == 'p'
+    assert d5.p == 'p'
+    d5.p = 'p5'
+    assert d5.p == 'p5'
