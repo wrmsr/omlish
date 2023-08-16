@@ -82,8 +82,8 @@ class Sym(lang.Abstract, lang.Sealed):
         return DebugSymRenderer().render(self)
 
     def vars(self) -> ta.Iterator['Var']:
-        yield
         return
+        yield  # noqa
 
     @cached.property
     def key(self) -> str:
@@ -257,7 +257,13 @@ class Num(Sym, lang.Final):
         super().__init__()
         self._b = check.isinstance(b, int)
 
-    def __int__(self):
+    def __eq__(self, other: ta.Any) -> bool:
+        return self.b == other
+
+    def __hash__(self) -> int:
+        return super().__hash__()
+
+    def __int__(self) -> int:
         return self._b
 
     @property
