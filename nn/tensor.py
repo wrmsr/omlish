@@ -299,23 +299,23 @@ class Tensor(lang.Final):
     def __neg__(self) -> 'Tensor':
         return 0.0 - self
 
-    def __add__(self, other: TensorOrLike) -> 'Tensor':
-        return self.add(other)
+    def __add__(self, x: TensorOrLike) -> 'Tensor':
+        return self.add(x)
 
-    def __radd__(self, other: TensorOrLike) -> 'Tensor':
-        return self.add(other, reverse=True)
+    def __radd__(self, x: TensorOrLike) -> 'Tensor':
+        return self.add(x, reverse=True)
 
-    def __sub__(self, other: TensorOrLike) -> 'Tensor':
-        return self.sub(other)
+    def __sub__(self, x: TensorOrLike) -> 'Tensor':
+        return self.sub(x)
 
-    def __rsub__(self, other: TensorOrLike) -> 'Tensor':
-        return self.sub(other, reverse=True)
+    def __rsub__(self, x: TensorOrLike) -> 'Tensor':
+        return self.sub(x, reverse=True)
 
-    def __mul__(self, other: TensorOrLike) -> 'Tensor':
-        return self.mul(other)
+    def __mul__(self, x: TensorOrLike) -> 'Tensor':
+        return self.mul(x)
 
-    def __rmul__(self, other: TensorOrLike) -> 'Tensor':
-        return self.mul(other, reverse=True)
+    def __rmul__(self, x: TensorOrLike) -> 'Tensor':
+        return self.mul(x, reverse=True)
 
     def __pow__(self, x: TensorOrLike) -> 'Tensor':
         return self.pow(x)
@@ -323,11 +323,11 @@ class Tensor(lang.Final):
     def __rpow__(self, x: TensorOrLike) -> 'Tensor':
         return self.pow(x, reverse=True)
 
-    def __truediv__(self, other: TensorOrLike) -> 'Tensor':
-        return self.div(other)
+    def __truediv__(self, x: TensorOrLike) -> 'Tensor':
+        return self.div(x)
 
-    def __rtruediv__(self, other: TensorOrLike) -> 'Tensor':
-        return self.div(other, reverse=True)
+    def __rtruediv__(self, x: TensorOrLike) -> 'Tensor':
+        return self.div(x, reverse=True)
 
     def __lt__(self, x: TensorOrLike) -> 'Tensor':
         return self._broadcasted(funcs.Less, x, False)
@@ -346,6 +346,12 @@ class Tensor(lang.Final):
 
     def __eq__(self, x: TensorOrLike) -> 'Tensor':
         return 1.0 - (self != x)  # type: ignore
+
+    def __matmul__(self, x: TensorOrLike) -> 'Tensor':
+        return self.matmul(x)
+
+    def __rmatmul__(self, x: TensorOrLike) -> 'Tensor':
+        return self.matmul(x, reverse=True)
 
     def _reduce(
             self,
