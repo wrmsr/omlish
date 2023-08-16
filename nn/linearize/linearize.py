@@ -144,6 +144,11 @@ class LinearCodegenOp(CodegenOp):
         supports_float4: bool = True
         supports_float4_alu: bool = True
 
+        has_local: bool = True
+
+        global_max: ta.Optional[ta.Sequence[int]] = None
+        local_max: ta.Optional[ta.Sequence[int]] = None
+
     def __init__(self, op: ops.Op, output: Buffer, opts: Options = Options()) -> None:
         super().__init__()
 
@@ -257,6 +262,9 @@ class LinearCodegenOp(CodegenOp):
         self._group_for_reduce = []
         self._upcasted = 0
         self._local_dims = 0
+        self._local_alias: dict[int, LocalBuffer] = {}
+        self._use_tensor_cores: bool = False
+        self._exclude_local_upcast: int = 0
 
         # group simplifies
         self.simplify_ones()
@@ -399,6 +407,13 @@ class LinearCodegenOp(CodegenOp):
     def linearize(self) -> None:
         # uops
         self._uops = []
+
+        if self._opts.global_max and self._opts.local_max:
+            self.limit_global_dims(3, self._opts.global_max, self._opts.local_max)
+
+        # add global buffers
+        for buf, name in self._arg_bufs.items():
+            self.uop(UOps.DEFINE_GLOBAL, None, [], (name, buf.dtype))
 
         if len(self._group_for_reduce):
             # TODO: the strides of this can be controlled
