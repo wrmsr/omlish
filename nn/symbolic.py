@@ -91,6 +91,9 @@ class Node(lang.Abstract, lang.Sealed):
     def __hash__(self) -> int:
         return hash(self.key)
 
+    def __bool__(self) -> bool:
+        return not (self.max == self.min == 0)
+
     def __eq__(self, other: ta.Any) -> bool:
         if not isinstance(other, Node):
             return NotImplemented
@@ -114,24 +117,48 @@ class Node(lang.Abstract, lang.Sealed):
     def __gt__(self, b: SymInt) -> 'Node':
         return (-self) < (-b)
 
-    def __ge__(self, b: int) -> 'Node':
+    def __ge__(self, b: SymInt) -> 'Node':
         return Lt.new(-self, -b + 1)
 
-    def __lt__(self, b: int) -> 'Node':
+    def __lt__(self, b: SymInt) -> 'Node':
         # FIXME: UPDATE
+        # lhs = self
+        # if isinstance(lhs, SumNode) and isinstance(b, int):
+        #     muls, others = partition(lhs.nodes, lambda x: isinstance(x, MulNode) and x.b > 0 and x.max >= b)
+        #     if len(muls):
+        #         # NOTE: gcd in python 3.8 takes exactly 2 args
+        #         mul_gcd = muls[0].b
+        #         for x in muls[1:]:
+        #             mul_gcd = gcd(mul_gcd, x.b)
+        #         if b % mul_gcd == 0:
+        #             all_others = Variable.sum(others)
+        #             # print(mul_gcd, muls, all_others)
+        #             if all_others.min >= 0 and all_others.max < mul_gcd:
+        #                 # TODO: should we divide both by mul_gcd here?
+        #                 lhs = Variable.sum(muls)
+        # return create_node(LtNode(lhs, b))
         return Lt.new(self, b)
 
-    def __mul__(self, b: int) -> 'Node':
+    def __mul__(self, b: SymInt) -> 'Node':
         if b == 0:
             return Num(0)
         elif b == 1:
             return self
+        # if self.__class__ is NumNode:
+        #     return NumNode(self.b * b) if isinstance(b, int) else create_node(MulNode(b, self.b))
         return Mul.new(self, b)
 
     def __rmul__(self, b: SymInt) -> 'Node':
         return self * b
 
+    def __rfloordiv__(self, b: int) -> 'Node':
+        raise TypeError(f'Not supported: {b} // {self}')
+
     def _floordiv(self, b: int, factoring_allowed: bool = True) -> 'Node':
+        if isinstance(b, Node):
+            if (b > self).min > 0 and self.min >= 0:
+                return Num(0)
+            raise TypeError(f'Not supported: {self} // {b}')
         if b == 0:
             raise ValueError
         if b < 0:
@@ -150,7 +177,18 @@ class Node(lang.Abstract, lang.Sealed):
     def __floordiv__(self, b: int) -> 'Node':
         return self._floordiv(b)
 
-    def __mod__(self, b: int) -> 'Node':
+    def __rmod__(self, b: int) -> 'Node':
+        if self.min > b >= 0:
+            return Num(b)
+        raise TypeError(f'Not supported: {b} % {self}')
+
+    def __mod__(self, b: SymInt) -> 'Node':
+        if isinstance(b, Node):
+            if self == b:
+                return Num(0)
+            if (b - self).min > 0 and self.min >= 0:
+                return self  # b - self simplifies the node
+            raise TypeError(f'Not supported: {self} % {b}')
         if b <= 0:
             raise ValueError
         if b == 1:
