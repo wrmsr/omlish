@@ -15,13 +15,13 @@ def _test_variable(v, n, m, s):
 
 
 def test_dispatch():
-    from ..symbolic import NodeRenderer
-    from ..symbolic import DebugNodeRenderer
+    from ..symbolic import SymRenderer
+    from ..symbolic import DebugSymRenderer
 
     v = Var('a', 3, 8) >= 8
     for _ in range(2):
-        assert NodeRenderer().render(v) == '((a*-1)<-7)'
-        assert DebugNodeRenderer().render(v) == '((a[3,8]*-1)<-7)'
+        assert SymRenderer().render(v) == '((a*-1)<-7)'
+        assert DebugSymRenderer().render(v) == '((a[3,8]*-1)<-7)'
 
 
 class TestSymbolic:
@@ -298,15 +298,15 @@ class TestSymbolicNumeric:
 
 # class TestSymbolicVars:
 #     def test_simple(self):
-#         z = NumNode(0)
+#         z = NumSym(0)
 #         a = Variable("a", 0, 10)
 #         b = Variable("b", 0, 10)
 #         c = Variable("c", 0, 10)
 #         assert z.vars() == z.vars() == []
 #         assert a.vars() == a.vars() == [a]
-#         m = MulNode(a, 3)
+#         m = MulSym(a, 3)
 #         assert m.vars() == [a]
-#         s = SumNode([a, b, c])
+#         s = SumSym([a, b, c])
 #         assert s.vars() == [a, b, c]
 #
 #     def test_compound(self):
@@ -336,33 +336,33 @@ class TestSymbolicNumeric:
 
 
 # class TestSymbolicSymbolicOps:
-#     def test_node_div_node(self):
+#     def test_sym_div_sym(self):
 #         i = Variable("i", 1, 10)
 #         idx0 = Variable("idx0", 0, i * 3 - 1)
-#         assert NumNode(0) // (Variable("i", 1, 10) * 128) == 0
-#         assert NumNode(127) // (Variable("i", 1, 10) * 128) == 0
+#         assert NumSym(0) // (Variable("i", 1, 10) * 128) == 0
+#         assert NumSym(127) // (Variable("i", 1, 10) * 128) == 0
 #         assert idx0 // (i * 3) == 0
 #
-#     def test_node_mod_node(self):
+#     def test_sym_mod_sym(self):
 #         i = Variable("i", 1, 10)
 #         idx0 = Variable("idx0", 0, i * 3 - 1)
-#         assert NumNode(0) % (Variable("i", 1, 10) * 128) == 0
-#         assert NumNode(127) % (Variable("i", 1, 10) * 128) == 127
-#         assert NumNode(128) % (Variable("i", 1, 10) * 128 + 128) == 128
+#         assert NumSym(0) % (Variable("i", 1, 10) * 128) == 0
+#         assert NumSym(127) % (Variable("i", 1, 10) * 128) == 127
+#         assert NumSym(128) % (Variable("i", 1, 10) * 128 + 128) == 128
 #         assert 0 % (Variable("i", 1, 10) * 128) == 0
 #         assert 127 % (Variable("i", 1, 10) * 128) == 127
 #         assert 128 % (Variable("i", 1, 10) * 128 + 128) == 128
 #         assert idx0 % (i * 3) == idx0
 #         assert i % i == 0
 #
-#     def test_mulnode_divmod_node(self):
+#     def test_mulsym_divmod_sym(self):
 #         i = Variable("i", 1, 10)
 #         idx0 = Variable("idx0", 0, 31)
 #         assert (idx0 * (i * 4 + 4)) // (i + 1) == (idx0 * 4)
 #         assert (idx0 * (i * 4 + 4)) % (i + 1) == 0
 #         assert (idx0 * i) % i == 0
 #
-#     def test_sumnode_divmod_sumnode(self):
+#     def test_sumsym_divmod_sumsym(self):
 #         i = Variable("i", 1, 10)
 #         idx0 = Variable("idx0", 0, 7)
 #         idx1 = Variable("idx1", 0, 3)
@@ -371,25 +371,26 @@ class TestSymbolicNumeric:
 #         assert (idx0 * (i * 4 + 4) + idx1 * (i + 1) + idx2) % (i + 1) == idx2
 #         assert (i + 1) % (i * 128 + 128) == (i + 1)
 #
-#     def test_node_lt_node(self):
+#     def test_sym_lt_sym(self):
 #         a = Variable("a", 1, 5)
 #         b = Variable("b", 6, 9)
 #         c = Variable("c", 1, 10)
 #         # if the value is always the same, it folds to num
 #         assert (a < b) == 1
-#         # if it remains as a LtNode, bool is always true and we need to test against min to test if it always evals to True
-#         assert (a < c).__class__ is LtNode and (a < c).min == 0 and (a < c).max == 1
+#         # if it remains as a LtSym, bool is always true and we need to test against min to test if it always evals to True
+#         assert (a < c).__class__ is LtSym and (a < c).min == 0 and (a < c).max == 1
 #         assert a < c
 #         assert not (a < c).min
-#         assert (a > c).__class__ is LtNode and (a > c).min == 0 and (a > c).max == 1
+#         assert (a > c).__class__ is LtSym and (a > c).min == 0 and (a > c).max == 1
 #         assert not (a > c).min
 #         # same when comparing with a constant
 #         assert a < 3
 #         assert a > 3
 #
-#     def test_num_node_mul_node(self):
-#         a = NumNode(2)
+#     def test_num_sym_mul_sym(self):
+
+#         a = NumSym(2)
 #         b = Variable("b", 1, 5)
 #         c = a * b
 #         assert c == b * 2
-#         assert isinstance(c, MulNode)
+#         assert isinstance(c, MulSym)

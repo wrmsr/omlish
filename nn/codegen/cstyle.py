@@ -22,17 +22,17 @@ from ..ops import Op
 from ..raw import RawConst
 
 
-class CstyleSymRenderer(sym.NodeRenderer):
-    @sym.NodeRenderer.render.register
+class CstyleSymRenderer(sym.SymRenderer):
+    @sym.SymRenderer.render.register
     def render_div(self, n: sym.Div) -> str:
         return f'({self.render(n.a)}/{n.b})'
 
-    @sym.NodeRenderer.render.register
+    @sym.SymRenderer.render.register
     def render_and(self, n: sym.And) -> str:
-        return f'({"&&".join(sorted(self.render(x) for x in n.nodes))})'
+        return f'({"&&".join(sorted(self.render(x) for x in n.syms))})'
 
 
-def _render_sym(n: sym.Node, *, strip_parens: bool = False) -> str:
+def _render_sym(n: sym.Sym, *, strip_parens: bool = False) -> str:
     s = CstyleSymRenderer().render(n)
     if strip_parens and s[0] == '(' and s[-1] == ')':
         s = s[1:-1]
@@ -210,7 +210,7 @@ class CstyleRenderer:
             output_dtype: Dtype,
             buf_name: str,
             buf_dtype: Dtype,
-            idx: sym.Node,
+            idx: sym.Sym,
             local: bool = False,
     ) -> str:
         if output_dtype == Float4:
@@ -230,7 +230,7 @@ class CstyleRenderer:
             buf_dtype: Dtype,
             var_name: str,
             var_dtype: Dtype,
-            idx: sym.Node,
+            idx: sym.Sym,
             local: bool = False,
     ) -> str:
         if var_dtype.sz > 1:

@@ -1,6 +1,6 @@
 """
 TODO:
- - {sum,and}_nodes -> cls.new
+ - {sum,and}_syms -> cls.new
  - *** NEED BOUNDS ON KEY?
   - sdm
 """
@@ -16,19 +16,19 @@ from omlish import collections as col
 from omlish import lang
 
 
-SymInt: ta.TypeAlias = ta.Union['Node', int]
+SymInt: ta.TypeAlias = ta.Union['Sym', int]
 
 
 def is_sym_int(o: ta.Any) -> bool:
-    return isinstance(o, (Node, int))
+    return isinstance(o, (Sym, int))
 
 
 ##
 
 
-class NodeRenderer:
+class SymRenderer:
     @dispatch.method
-    def render(self, n: 'Node') -> str:
+    def render(self, n: 'Sym') -> str:
         raise TypeError(n)
 
     @render.register
@@ -45,11 +45,11 @@ class NodeRenderer:
 
     @render.register
     def render_red(self, n: 'Red') -> str:
-        return f'({n.glyph.join(sorted(self.render(x) for x in n.nodes))})'
+        return f'({n.glyph.join(sorted(self.render(x) for x in n.syms))})'
 
 
-class DebugNodeRenderer(NodeRenderer):
-    @NodeRenderer.render.register
+class DebugSymRenderer(SymRenderer):
+    @SymRenderer.render.register
     def render_var(self, n: 'Var') -> str:
         return f'{n.name if n.name is not None else "?"}[{n.min},{n.max}]'
 
@@ -57,7 +57,7 @@ class DebugNodeRenderer(NodeRenderer):
 ##
 
 
-class Node(lang.Abstract, lang.Sealed):
+class Sym(lang.Abstract, lang.Sealed):
 
     @property
     @abc.abstractmethod
@@ -71,11 +71,11 @@ class Node(lang.Abstract, lang.Sealed):
 
     @cached.property
     def expr(self) -> str:
-        return NodeRenderer().render(self)
+        return SymRenderer().render(self)
 
     @cached.property
     def debug(self) -> str:
-        return DebugNodeRenderer().render(self)
+        return DebugSymRenderer().render(self)
 
     def vars(self) -> ta.Iterator['Var']:
         yield
@@ -95,36 +95,36 @@ class Node(lang.Abstract, lang.Sealed):
         return not (self.max == self.min == 0)
 
     def __eq__(self, other: ta.Any) -> bool:
-        if not isinstance(other, Node):
+        if not isinstance(other, Sym):
             return NotImplemented
         return self.key == other.key
 
-    def __neg__(self) -> 'Node':
+    def __neg__(self) -> 'Sym':
         return self * -1
 
-    def __add__(self, b: SymInt) -> 'Node':
-        return sum_([self, b if isinstance(b, Node) else Num(b)])
+    def __add__(self, b: SymInt) -> 'Sym':
+        return sum_([self, b if isinstance(b, Sym) else Num(b)])
 
-    def __radd__(self, b: int) -> 'Node':
+    def __radd__(self, b: int) -> 'Sym':
         return self + b
 
-    def __sub__(self, b: SymInt) -> 'Node':
+    def __sub__(self, b: SymInt) -> 'Sym':
         return self + -b
 
-    def __le__(self, b: SymInt) -> 'Node':
+    def __le__(self, b: SymInt) -> 'Sym':
         return self < (b + 1)
 
-    def __gt__(self, b: SymInt) -> 'Node':
+    def __gt__(self, b: SymInt) -> 'Sym':
         return (-self) < (-b)
 
-    def __ge__(self, b: SymInt) -> 'Node':
+    def __ge__(self, b: SymInt) -> 'Sym':
         return Lt.new(-self, -b + 1)
 
-    def __lt__(self, b: SymInt) -> 'Node':
+    def __lt__(self, b: SymInt) -> 'Sym':
         # FIXME: UPDATE
         # lhs = self
-        # if isinstance(lhs, SumNode) and isinstance(b, int):
-        #     muls, others = partition(lhs.nodes, lambda x: isinstance(x, MulNode) and x.b > 0 and x.max >= b)
+        # if isinstance(lhs, SumSym) and isinstance(b, int):
+        #     muls, others = partition(lhs.syms, lambda x: isinstance(x, MulSym) and x.b > 0 and x.max >= b)
         #     if len(muls):
         #         # NOTE: gcd in python 3.8 takes exactly 2 args
         #         mul_gcd = muls[0].b
@@ -136,26 +136,26 @@ class Node(lang.Abstract, lang.Sealed):
         #             if all_others.min >= 0 and all_others.max < mul_gcd:
         #                 # TODO: should we divide both by mul_gcd here?
         #                 lhs = Variable.sum(muls)
-        # return create_node(LtNode(lhs, b))
+        # return create_sym(LtSym(lhs, b))
         return Lt.new(self, b)
 
-    def __mul__(self, b: SymInt) -> 'Node':
+    def __mul__(self, b: SymInt) -> 'Sym':
         if b == 0:
             return Num(0)
         elif b == 1:
             return self
-        # if self.__class__ is NumNode:
-        #     return NumNode(self.b * b) if isinstance(b, int) else create_node(MulNode(b, self.b))
+        # if self.__class__ is NumSym:
+        #     return NumSym(self.b * b) if isinstance(b, int) else create_sym(MulSym(b, self.b))
         return Mul.new(self, b)
 
-    def __rmul__(self, b: SymInt) -> 'Node':
+    def __rmul__(self, b: SymInt) -> 'Sym':
         return self * b
 
-    def __rfloordiv__(self, b: int) -> 'Node':
+    def __rfloordiv__(self, b: int) -> 'Sym':
         raise TypeError(f'Not supported: {b} // {self}')
 
-    def _floordiv(self, b: int, factoring_allowed: bool = True) -> 'Node':
-        if isinstance(b, Node):
+    def _floordiv(self, b: int, factoring_allowed: bool = True) -> 'Sym':
+        if isinstance(b, Sym):
             if (b > self).min > 0 and self.min >= 0:
                 return Num(0)
             raise TypeError(f'Not supported: {self} // {b}')
@@ -174,20 +174,20 @@ class Node(lang.Abstract, lang.Sealed):
 
         return Div.new(self, b)
 
-    def __floordiv__(self, b: int) -> 'Node':
+    def __floordiv__(self, b: int) -> 'Sym':
         return self._floordiv(b)
 
-    def __rmod__(self, b: int) -> 'Node':
+    def __rmod__(self, b: int) -> 'Sym':
         if self.min > b >= 0:
             return Num(b)
         raise TypeError(f'Not supported: {b} % {self}')
 
-    def __mod__(self, b: SymInt) -> 'Node':
-        if isinstance(b, Node):
+    def __mod__(self, b: SymInt) -> 'Sym':
+        if isinstance(b, Sym):
             if self == b:
                 return Num(0)
             if (b - self).min > 0 and self.min >= 0:
-                return self  # b - self simplifies the node
+                return self  # b - self simplifies the sym
             raise TypeError(f'Not supported: {self} % {b}')
         if b <= 0:
             raise ValueError
@@ -203,7 +203,7 @@ class Node(lang.Abstract, lang.Sealed):
 ##
 
 
-def var(name: ta.Optional[str], min: int, max: int) -> Node:
+def var(name: ta.Optional[str], min: int, max: int) -> Sym:
     if name is not None:
         if not name or name[0] not in Var._name_first_set or frozenset(name[1:]) - Var._name_rest_set:
             raise ValueError(f'Invalid var name: {name!r} {min} {max}')
@@ -212,7 +212,7 @@ def var(name: ta.Optional[str], min: int, max: int) -> Node:
     return Var(name, min, max)
 
 
-class Var(Node, lang.Final):
+class Var(Sym, lang.Final):
     _name_first_set: ta.Final[ta.AbstractSet[str]] = frozenset(string.ascii_letters + '_')
     _name_rest_set: ta.Final[ta.AbstractSet[str]] = frozenset([*_name_first_set, *string.digits])
 
@@ -248,7 +248,7 @@ class Var(Node, lang.Final):
 ##
 
 
-class Num(Node, lang.Final):
+class Num(Sym, lang.Final):
     def __init__(self, b: int) -> None:
         super().__init__()
         self._b = check.isinstance(b, int)
@@ -272,17 +272,17 @@ class Num(Node, lang.Final):
 ##
 
 
-class Op(Node, lang.Abstract):   # noqa
+class Op(Sym, lang.Abstract):   # noqa
 
-    def __init__(self, a: Node, b: SymInt, *, _min: int, _max: int) -> None:
+    def __init__(self, a: Sym, b: SymInt, *, _min: int, _max: int) -> None:
         super().__init__()
-        self._a = check.isinstance(a, (Node, int))
+        self._a = check.isinstance(a, (Sym, int))
         self._b = check.isinstance(b, int)
         self._min = check.isinstance(_min, int)
         self._max = check.isinstance(_max, int)
 
     @property
-    def a(self) -> Node:
+    def a(self) -> Sym:
         return self._a
 
     @property
@@ -298,7 +298,7 @@ class Op(Node, lang.Abstract):   # noqa
         return self._max
 
     @classmethod
-    def new(cls, a: Node, b: int) -> Node:
+    def new(cls, a: Sym, b: int) -> Sym:
         mn, mx = cls.calc_bounds(a, b)
         if mn == mx:
             return Num(mn)
@@ -308,7 +308,7 @@ class Op(Node, lang.Abstract):   # noqa
 
     @classmethod
     @abc.abstractmethod
-    def calc_bounds(cls, a: Node, b: int) -> ta.Tuple[int, int]:
+    def calc_bounds(cls, a: Sym, b: int) -> ta.Tuple[int, int]:
         raise NotImplementedError
 
     def vars(self) -> ta.Iterator[Var]:
@@ -319,13 +319,13 @@ class Lt(Op):
     glyph = '<'
 
     @classmethod
-    def calc_bounds(cls, a: Node, b: int) -> ta.Tuple[int, int]:
+    def calc_bounds(cls, a: Sym, b: int) -> ta.Tuple[int, int]:
         return int(a.max < b), int(a.min < b)
 
-    def __mul__(self, b: SymInt) -> Node:
+    def __mul__(self, b: SymInt) -> Sym:
         return (self.a * b) < (self.b * b)
 
-    def _floordiv(self, b: int, factoring_allowed: bool = False) -> Node:
+    def _floordiv(self, b: int, factoring_allowed: bool = False) -> Sym:
         return (self.a // b) < (self.b // b)
 
 
@@ -333,16 +333,16 @@ class Mul(Op):
     glyph = '*'
 
     @classmethod
-    def calc_bounds(cls, a: Node, b: int) -> ta.Tuple[int, int]:
+    def calc_bounds(cls, a: Sym, b: int) -> ta.Tuple[int, int]:
         if b >= 0:
             return a.min * b, a.max * b
         else:
             return a.max * b, a.min * b
 
-    def __mul__(self, b: SymInt) -> Node:
+    def __mul__(self, b: SymInt) -> Sym:
         return self.a * (self.b * b)  # two muls in one mul
 
-    def _floordiv(self, b: int, factoring_allowed: bool = False) -> Node:
+    def _floordiv(self, b: int, factoring_allowed: bool = False) -> Sym:
         # NOTE: mod negative isn't handled right
         check.isinstance(b, int)
         if self.b % b == 0:
@@ -353,19 +353,19 @@ class Mul(Op):
 
     def __mod__(self, b: int):
         a = self.a * (self.b % b)
-        return Node.__mod__(a, b)  # FIXME:
+        return Sym.__mod__(a, b)  # FIXME:
 
 
 class Div(Op):
     glyph = '//'
 
     @classmethod
-    def calc_bounds(cls, a: Node, b: int) -> ta.Tuple[int, int]:
+    def calc_bounds(cls, a: Sym, b: int) -> ta.Tuple[int, int]:
         if a.min < 0 or not isinstance(b, int):
             raise ValueError
         return a.min // b, a.max // b
 
-    def _floordiv(self, b: int, factoring_allowed: bool = False) -> Node:
+    def _floordiv(self, b: int, factoring_allowed: bool = False) -> Sym:
         return self.a // (self.b * b)  # two divs is one div
 
 
@@ -373,7 +373,7 @@ class Mod(Op):
     glyph = '%'
 
     @classmethod
-    def calc_bounds(cls, a: Node, b: int) -> ta.Tuple[int, int]:
+    def calc_bounds(cls, a: Sym, b: int) -> ta.Tuple[int, int]:
         if a.min < 0 or not isinstance(b, int):
             raise ValueError
         if a.max - a.min >= b or (a.min != a.max and a.min % b >= a.max % b):
@@ -381,7 +381,7 @@ class Mod(Op):
         else:
             return a.min % b, a.max % b
 
-    def _floordiv(self, b: int, factoring_allowed: bool = True) -> Node:
+    def _floordiv(self, b: int, factoring_allowed: bool = True) -> Sym:
         if self.b % b == 0:
             return (self.a // b) % (self.b // b)  # put the div inside mod
         return super()._floordiv(b, factoring_allowed)
@@ -390,16 +390,16 @@ class Mod(Op):
 ##
 
 
-class Red(Node, lang.Abstract):
-    def __init__(self, nodes: ta.Sequence[Node], *, _min: int, _max: int) -> None:
+class Red(Sym, lang.Abstract):
+    def __init__(self, syms: ta.Sequence[Sym], *, _min: int, _max: int) -> None:
         super().__init__()
-        self._nodes = [check.isinstance(n, Node) for n in nodes]
+        self._syms = [check.isinstance(n, Sym) for n in syms]
         self._min = check.isinstance(_min, int)
         self._max = check.isinstance(_max, int)
 
     @property
-    def nodes(self) -> ta.Sequence[Node]:
-        return self._nodes
+    def syms(self) -> ta.Sequence[Sym]:
+        return self._syms
 
     @property
     def min(self) -> int:
@@ -410,43 +410,43 @@ class Red(Node, lang.Abstract):
         return self._max
 
     @classmethod
-    def new(cls, nodes: ta.Sequence['Node']) -> 'Node':
-        mn, mx = cls.calc_bounds(nodes)
-        return cls(nodes, _min=mn, _max=mx)
+    def new(cls, syms: ta.Sequence['Sym']) -> 'Sym':
+        mn, mx = cls.calc_bounds(syms)
+        return cls(syms, _min=mn, _max=mx)
 
     glyph: ta.ClassVar[str]
 
     @classmethod
     @abc.abstractmethod
-    def calc_bounds(cls, nodes: ta.Sequence[Node]) -> ta.Tuple[int, int]:
+    def calc_bounds(cls, syms: ta.Sequence[Sym]) -> ta.Tuple[int, int]:
         raise NotImplementedError
 
     def vars(self) -> ta.Iterator[Var]:
-        for n in self._nodes:
+        for n in self._syms:
             yield from n.vars()
 
 
-def sum_(nodes: ta.Sequence[Node]) -> Node:
-    news: ta.List[Node] = []
+def sum_(syms: ta.Sequence[Sym]) -> Sym:
+    news: ta.List[Sym] = []
     sums: ta.List[Sum] = []
     nums: ta.List[Num] = []
     muls: ta.List[Mul] = []
-    for node in nodes:
-        if isinstance(node, Num):
-            nums.append(node)
-        elif isinstance(node, Mul):
-            muls.append(node)
-        elif isinstance(node, Sum):  # expand any sums inside one sum
-            sums.append(node)
+    for sym in syms:
+        if isinstance(sym, Num):
+            nums.append(sym)
+        elif isinstance(sym, Mul):
+            muls.append(sym)
+        elif isinstance(sym, Sum):  # expand any sums inside one sum
+            sums.append(sym)
         else:
-            news.append(node)
+            news.append(sym)
 
     # expand any sums inside one sum
     if sums:
         news.extend(nums)
         news.extend(muls)
         for x in sums:
-            news += x.nodes
+            news += x.syms
         return sum_(news)
 
     # combine any numbers inside a sum
@@ -454,14 +454,14 @@ def sum_(nodes: ta.Sequence[Node]) -> Node:
         news.append(Num(sum([x.b for x in nums])))
 
     # combine any Muls that factorize
-    scales: ta.Dict[str, ta.Tuple[Node, int]] = {n.key: (n, 1) for n in news}
-    for node in muls:  # NOTE can we somehow avoid rendering here?
-        key = node.a.key
+    scales: ta.Dict[str, ta.Tuple[Sym, int]] = {n.key: (n, 1) for n in news}
+    for sym in muls:  # NOTE can we somehow avoid rendering here?
+        key = sym.a.key
         try:
             t = scales[key]
         except KeyError:
-            t = (node.a, 0)
-        scales[key] = (t[0], node.b + t[1])
+            t = (sym.a, 0)
+        scales[key] = (t[0], sym.b + t[1])
     new_muls = [n * s for n, s in scales.values()]
     news = [x if not isinstance(x, Mul) or x.b != 1 else x.a for x in new_muls]
 
@@ -479,20 +479,20 @@ class Sum(Red):
     glyph = '+'
 
     @classmethod
-    def calc_bounds(cls, nodes: ta.Sequence[Node]) -> ta.Tuple[int, int]:
-        return sum(x.min for x in nodes), sum(x.max for x in nodes)
+    def calc_bounds(cls, syms: ta.Sequence[Sym]) -> ta.Tuple[int, int]:
+        return sum(x.min for x in syms), sum(x.max for x in syms)
 
-    def __mul__(self, b: SymInt) -> Node:
-        return sum_([x * b for x in self.nodes])  # distribute mul into sum
+    def __mul__(self, b: SymInt) -> Sym:
+        return sum_([x * b for x in self.syms])  # distribute mul into sum
 
-    def _floordiv(self, b: int, factoring_allowed: bool = True) -> Node:
+    def _floordiv(self, b: int, factoring_allowed: bool = True) -> Sym:
         if not factoring_allowed:
             return super()._floordiv(b, factoring_allowed)
 
-        factors, tmp_nofactor = col.partition(self.nodes, lambda x: (isinstance(x, (Mul, Num))) and x.b % b == 0)
+        factors, tmp_nofactor = col.partition(self.syms, lambda x: (isinstance(x, (Mul, Num))) and x.b % b == 0)
 
         # ugh, i doubt this is universally right
-        nofactor: ta.List[Node] = []
+        nofactor: ta.List[Sym] = []
         for x in tmp_nofactor:
             if isinstance(x, Num):
                 if (x.b % b) != x.b:
@@ -528,28 +528,28 @@ class Sum(Red):
 
         return super()._floordiv(b, factoring_allowed)
 
-    def __mod__(self, b: int) -> Node:
-        new_nodes: ta.List[Node] = []
-        for x in self.nodes:
+    def __mod__(self, b: int) -> Sym:
+        new_syms: ta.List[Sym] = []
+        for x in self.syms:
             if isinstance(x, Num):
-                new_nodes.append(Num(x.b % b))
+                new_syms.append(Num(x.b % b))
             elif isinstance(x, Mul):
-                new_nodes.append(x.a * (x.b % b))
+                new_syms.append(x.a * (x.b % b))
             else:
-                new_nodes.append(x)
-        return Node.__mod__(sum_(new_nodes), b)
+                new_syms.append(x)
+        return Sym.__mod__(sum_(new_syms), b)
 
 
-def and_(nodes: ta.Sequence[Node]) -> Node:
-    if any((x.min == 0 and x.max == 0) for x in nodes):
+def and_(syms: ta.Sequence[Sym]) -> Sym:
+    if any((x.min == 0 and x.max == 0) for x in syms):
         return Num(0)
 
     # filter 1s
-    nodes = [x for x in nodes if x.min != x.max]
-    if len(nodes) > 1:
-        return And.new(nodes)
-    elif len(nodes) == 1:
-        return nodes[0]
+    syms = [x for x in syms if x.min != x.max]
+    if len(syms) > 1:
+        return And.new(syms)
+    elif len(syms) == 1:
+        return syms[0]
     else:
         return Num(1)
 
@@ -558,11 +558,11 @@ class And(Red):
     glyph = ' and '
 
     @classmethod
-    def calc_bounds(cls, nodes: ta.Sequence[Node]) -> ta.Tuple[int, int]:
-        return min(x.min for x in nodes), max(x.max for x in nodes)
+    def calc_bounds(cls, syms: ta.Sequence[Sym]) -> ta.Tuple[int, int]:
+        return min(x.min for x in syms), max(x.max for x in syms)
 
-    def __mul__(self, b: SymInt) -> Node:
-        return and_([x * b for x in self.nodes])
+    def __mul__(self, b: SymInt) -> Sym:
+        return and_([x * b for x in self.syms])
 
-    def _floordiv(self, b: int, factoring_allowed: bool = True) -> Node:
-        return and_([x // b for x in self.nodes])
+    def _floordiv(self, b: int, factoring_allowed: bool = True) -> Sym:
+        return and_([x // b for x in self.syms])
