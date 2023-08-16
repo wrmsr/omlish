@@ -32,8 +32,12 @@ def check_sym_int(o: ta.Any) -> SymInt:
 
 class SymRenderer:
     @dispatch.method
-    def render(self, n: 'Sym') -> str:
+    def render(self, n: SymInt) -> str:
         raise TypeError(n)
+
+    @render.register
+    def render_int(self, n: int) -> str:
+        return str(n)
 
     @render.register
     def render_var(self, n: 'Var') -> str:
@@ -45,11 +49,15 @@ class SymRenderer:
 
     @render.register
     def render_op(self, n: 'Op') -> str:
-        return f'({self.render(n.a)}{n.glyph}{n.b})'
+        return f'({self.render(n.a)}{n.glyph}{self.render(n.b)})'
 
     @render.register
     def render_red(self, n: 'Red') -> str:
         return f'({n.glyph.join(sorted(self.render(x) for x in n.syms))})'
+
+
+def render(n: SymInt) -> str:
+    return SymRenderer().render(n)
 
 
 class DebugSymRenderer(SymRenderer):

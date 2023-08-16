@@ -4,6 +4,7 @@ from ..symbolic import Num
 from ..symbolic import Sum
 from ..symbolic import Var
 from ..symbolic import and_
+from ..symbolic import render
 from ..symbolic import sum_
 from ..symbolic import var
 
@@ -329,10 +330,10 @@ class TestSymRender:
     def test_sym_render(self):
         a = Var('a', 1, 8)
         b = Var('b', 1, 10)
-        assert sym_render(a) == 'a'
-        assert sym_render(1) == '1'
-        assert sym_render(a + 1) == '(1+a)'
-        assert sym_render(a * b) == '(a*b)'
+        assert render(a) == 'a'
+        assert render(1) == '1'
+        assert render(a + 1) == '(1+a)'
+        assert render(a * b) == '(a*b)'
 
 
 class TestSymbolicSymbolicOps:
