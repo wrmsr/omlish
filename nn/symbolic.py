@@ -122,13 +122,13 @@ class Sym(lang.Abstract, lang.Sealed):
 
     def __lt__(self, b: SymInt) -> 'Sym':
         lhs = self
-        if isinstance(lhs, SumSym) and isinstance(b, int):
-            muls, others = partition(lhs.syms, lambda x: isinstance(x, MulSym) and x.b > 0 and x.max >= b)
+        if isinstance(lhs, Sum) and isinstance(b, int):
+            muls, others = col.partition(lhs.syms, lambda x: isinstance(x, Mul) and x.b > 0 and x.max >= b)
             if len(muls):
                 # NOTE: gcd in python 3.8 takes exactly 2 args
                 mul_gcd = muls[0].b
                 for x in muls[1:]:
-                    mul_gcd = gcd(mul_gcd, x.b)
+                    mul_gcd = math.gcd(mul_gcd, x.b)
                 if b % mul_gcd == 0:
                     all_others = sum_(others)
                     # print(mul_gcd, muls, all_others)
@@ -371,7 +371,7 @@ def factorize(syms: ta.Iterable[Sym]) -> list[Sym]:
     for x in syms:
         a, b = (x.a, x.b) if isinstance(x, Mul) else (x, 1)
         mul_groups[a] = mul_groups.get(a, 0) + b
-    return [Mul(a, b_sum) if b_sum != 1 else a for a, b_sum in mul_groups.items() if b_sum != 0]
+    return [Mul.new(a, b_sum) if b_sum != 1 else a for a, b_sum in mul_groups.items() if b_sum != 0]
 
 
 class Div(Op):
@@ -453,7 +453,7 @@ def sum_(syms: ta.Sequence[Sym]) -> Sym:
 
     new_syms: list[Sym] = []
     num_sym_sum = 0
-    for sym in Sum(syms).flat():
+    for sym in Sum.new(syms).flat():
         if isinstance(sym, Num):
             num_sym_sum += sym.b
         else:
@@ -463,8 +463,12 @@ def sum_(syms: ta.Sequence[Sym]) -> Sym:
         new_syms = factorize(new_syms)
     if num_sym_sum:
         new_syms.append(Num(num_sym_sum))
-    return create_redsym(Sum, new_syms) if len(new_syms) > 1 else new_syms[0] if len(
-        new_syms) == 1 else Num(0)
+    if len(new_syms) > 1:
+        return Sum.new(new_syms)
+    elif len(new_syms) == 1:
+        return new_syms[0]
+    else:
+        return Num(0)
 
 
 class Sum(Red):
@@ -478,8 +482,8 @@ class Sum(Red):
         return sum_([x * b for x in self.syms])  # distribute mul into sum
 
     def _floordiv(self, b: SymInt, factoring_allowed: bool = True) -> Sym:
-        fully_divided: List[Sym] = []
-        rest: List[Sym] = []
+        fully_divided: list[Sym] = []
+        rest: list[Sym] = []
         if isinstance(b, Sum):
             nu_num = sum(sym.b for sym in self.flat() if isinstance(sym, Num))
             de_num = sum(sym.b for sym in b.flat() if isinstance(sym, Num))
@@ -491,13 +495,14 @@ class Sum(Red):
                     fully_divided.append(x // b)
                 else:
                     rest.append(x)
-            if (b > (sum_rest := create_redsym(Sum, rest))).min and (sum_rest >= 0).min:
-                return create_redsym(Sum, fully_divided)
+            if (b > (sum_rest := Sum.new(rest))).min and (sum_rest >= 0).min:
+                return Sum.new(fully_divided)
             return Sym._floordiv(self, b, False)
         if b == 1:
             return self
         if not factoring_allowed:
             return Sym._floordiv(self, b, factoring_allowed)
+
         fully_divided, rest = [], []
         _gcd = b
         divisor = 1
@@ -507,16 +512,17 @@ class Sum(Red):
                     fully_divided.append(x // b)
                 else:
                     rest.append(x)
-                    _gcd = gcd(_gcd, x.b)
+                    _gcd = math.gcd(_gcd, x.b)
                     if isinstance(x, Mul) and divisor == 1 and b % x.b == 0:
                         divisor = x.b
             else:
                 rest.append(x)
                 _gcd = 1
+
         if _gcd > 1:
-            return sum_(fully_divided) + sum_(rest).__floordiv__(_gcd) // (b // _gcd)
+            return sum_(fully_divided) + sum_(rest)._floordiv(_gcd) // (b // _gcd)
         if divisor > 1:
-            return sum_(fully_divided) + sum_(rest).__floordiv__(divisor) // (b // divisor)
+            return sum_(fully_divided) + sum_(rest)._floordiv(divisor) // (b // divisor)
         return sum_(fully_divided) + Sym._floordiv(sum_(rest), b)
 
     def __mod__(self, b: SymInt):
@@ -527,7 +533,7 @@ class Sum(Red):
                 return Num(0)
         if isinstance(b, Sym) and (b - self).min > 0:
             return self  # b - self simplifies the sym
-        new_syms: List[Sym] = []
+        new_syms: list[Sym] = []
         for x in self.syms:
             if isinstance(x, Num):
                 new_syms.append(Num(x.b % b))
