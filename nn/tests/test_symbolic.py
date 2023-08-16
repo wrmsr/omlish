@@ -378,8 +378,7 @@ class TestSymbolicSymbolicOps:
         c = Var('c', 1, 10)
         # if the value is always the same, it folds to num
         assert a < b
-        # if it remains as a LtSym, bool is always true and we need to test against min to test if it always evals to
-        # True
+        # if it remains as a Lt, bool is always true and we need to test against min to test if it always evals to True
         assert isinstance(a < c, Lt) and (a < c).min == 0 and (a < c).max == 1
         assert a < c
         assert not (a < c).min
