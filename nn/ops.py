@@ -138,11 +138,6 @@ class Div(BinaryOp):
 
 
 @dc.dataclass(frozen=True)
-class CmpLt(BinaryOp):
-    pass
-
-
-@dc.dataclass(frozen=True)
 class Maximum(BinaryOp):  # BinaryOps.MAX
     pass
 
