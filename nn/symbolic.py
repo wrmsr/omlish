@@ -17,11 +17,14 @@ from omlish import lang
 
 
 SymInt: ta.TypeAlias = ta.Union['Sym', int]
-RedT = ta.TypeVar('RedT', bound='Red')
 
 
 def is_sym_int(o: ta.Any) -> bool:
     return isinstance(o, (Sym, int))
+
+
+def check_sym_int(o: ta.Any) -> SymInt:
+    return check.isinstance(o, (Sym, int))
 
 
 ##
@@ -62,12 +65,12 @@ class Sym(lang.Abstract, lang.Sealed):
 
     @property
     @abc.abstractmethod
-    def min(self) -> int:
+    def min(self) -> SymInt:
         raise NotImplementedError
 
     @property
     @abc.abstractmethod
-    def max(self) -> int:
+    def max(self) -> SymInt:
         raise NotImplementedError
 
     @cached.property
@@ -204,11 +207,11 @@ class Sym(lang.Abstract, lang.Sealed):
 ##
 
 
-def var(name: ta.Optional[str], min: int, max: int) -> Sym:
+def var(name: ta.Optional[str], min: SymInt, max: SymInt) -> Sym:
     if name is not None:
         if not name or name[0] not in Var._name_first_set or frozenset(name[1:]) - Var._name_rest_set:
             raise ValueError(f'Invalid var name: {name!r} {min} {max}')
-    if check.isinstance(min, int) == check.isinstance(max, int):
+    if isinstance(min, int) and isinstance(max, int) and min == max:
         return Num(min)
     return Var(name, min, max)
 
@@ -217,9 +220,9 @@ class Var(Sym, lang.Final):
     _name_first_set: ta.Final[ta.AbstractSet[str]] = frozenset(string.ascii_letters + '_')
     _name_rest_set: ta.Final[ta.AbstractSet[str]] = frozenset([*_name_first_set, *string.digits])
 
-    def __init__(self, name: ta.Optional[str], min: int, max: int) -> None:
-        check.isinstance(min, int)
-        check.isinstance(max, int)
+    def __init__(self, name: ta.Optional[str], min: SymInt, max: SymInt) -> None:
+        check_sym_int(min)
+        check_sym_int(max)
         if min < 0 or min >= max:
             raise ValueError(f'Invalid var range: {name!r} {min} {max}')
         if name is not None:
@@ -235,11 +238,11 @@ class Var(Sym, lang.Final):
         return self._name
 
     @property
-    def min(self) -> int:
+    def min(self) -> SymInt:
         return self._min
 
     @property
-    def max(self) -> int:
+    def max(self) -> SymInt:
         return self._max
 
     def vars(self) -> ta.Iterator['Var']:
@@ -275,12 +278,12 @@ class Num(Sym, lang.Final):
 
 class Op(Sym, lang.Abstract):   # noqa
 
-    def __init__(self, a: Sym, b: SymInt, *, _min: int, _max: int) -> None:
+    def __init__(self, a: Sym, b: SymInt, *, _min: SymInt, _max: SymInt) -> None:
         super().__init__()
-        self._a = check.isinstance(a, (Sym, int))
-        self._b = check.isinstance(b, (Sym, int))
-        self._min = check.isinstance(_min, int)
-        self._max = check.isinstance(_max, int)
+        self._a = check.isinstance(a, Sym)
+        self._b = check_sym_int(b)
+        self._min = check_sym_int(_min)
+        self._max = check_sym_int(_max)
 
     @property
     def a(self) -> Sym:
@@ -291,11 +294,11 @@ class Op(Sym, lang.Abstract):   # noqa
         return self._b
 
     @property
-    def min(self) -> int:
+    def min(self) -> SymInt:
         return self._min
 
     @property
-    def max(self) -> int:
+    def max(self) -> SymInt:
         return self._max
 
     @classmethod
@@ -309,7 +312,7 @@ class Op(Sym, lang.Abstract):   # noqa
 
     @classmethod
     @abc.abstractmethod
-    def calc_bounds(cls, a: Sym, b: SymInt) -> ta.Tuple[int, int]:
+    def calc_bounds(cls, a: Sym, b: SymInt) -> ta.Tuple[SymInt, SymInt]:
         raise NotImplementedError
 
     def vars(self) -> ta.Iterator[Var]:
@@ -322,7 +325,7 @@ class Lt(Op):
     glyph = '<'
 
     @classmethod
-    def calc_bounds(cls, a: Sym, b: SymInt) -> ta.Tuple[int, int]:
+    def calc_bounds(cls, a: Sym, b: SymInt) -> ta.Tuple[SymInt, SymInt]:
         # return int(a.max < b), int(a.min < b)
         if isinstance(b, int):
             return int(a.max < b), int(a.min < b)
@@ -344,7 +347,7 @@ class Mul(Op):
     glyph = '*'
 
     @classmethod
-    def calc_bounds(cls, a: Sym, b: SymInt) -> ta.Tuple[int, int]:
+    def calc_bounds(cls, a: Sym, b: SymInt) -> ta.Tuple[SymInt, SymInt]:
         if b >= 0:
             return a.min * b, a.max * b
         else:
@@ -374,11 +377,11 @@ def factorize(syms: ta.Iterable[Sym]) -> list[Sym]:
     return [Mul.new(a, b_sum) if b_sum != 1 else a for a, b_sum in mul_groups.items() if b_sum != 0]
 
 
-class Div(Op):
+class Div(Op, lang.Final):
     glyph = '//'
 
     @classmethod
-    def calc_bounds(cls, a: Sym, b: SymInt) -> ta.Tuple[int, int]:
+    def calc_bounds(cls, a: Sym, b: SymInt) -> ta.Tuple[SymInt, SymInt]:
         if a.min < 0 or not isinstance(b, int):
             raise ValueError(b)
         return a.min // b, a.max // b
@@ -387,11 +390,11 @@ class Div(Op):
         return self.a // (self.b * b)  # two divs is one div
 
 
-class Mod(Op):
+class Mod(Op, lang.Final):
     glyph = '%'
 
     @classmethod
-    def calc_bounds(cls, a: Sym, b: SymInt) -> ta.Tuple[int, int]:
+    def calc_bounds(cls, a: Sym, b: SymInt) -> ta.Tuple[SymInt, SymInt]:
         if a.min < 0 or not isinstance(b, int):
             raise ValueError(b)
         if a.max - a.min >= b or (a.min != a.max and a.min % b >= a.max % b):
@@ -408,27 +411,30 @@ class Mod(Op):
 ##
 
 
+RedT = ta.TypeVar('RedT', bound='Red')
+
+
 class Red(Sym, lang.Abstract):
-    def __init__(self, syms: ta.Sequence[Sym], *, _min: int, _max: int) -> None:
+    def __init__(self, syms: ta.Sequence[Sym], *, _min: SymInt, _max: SymInt) -> None:
         super().__init__()
         self._syms = [check.isinstance(n, Sym) for n in syms]
-        self._min = check.isinstance(_min, int)
-        self._max = check.isinstance(_max, int)
+        self._min = check_sym_int(_min)
+        self._max = check_sym_int(_max)
 
     @property
     def syms(self) -> ta.Sequence[Sym]:
         return self._syms
 
     @property
-    def min(self) -> int:
+    def min(self) -> SymInt:
         return self._min
 
     @property
-    def max(self) -> int:
+    def max(self) -> SymInt:
         return self._max
 
     @classmethod
-    def new(cls: ta.Type[RedT], syms: ta.Sequence['Sym']) -> RedT:
+    def new(cls: ta.Type[RedT], syms: ta.Sequence[Sym]) -> RedT:
         mn, mx = cls.calc_bounds(syms)
         return cls(syms, _min=mn, _max=mx)
 
@@ -436,7 +442,7 @@ class Red(Sym, lang.Abstract):
 
     @classmethod
     @abc.abstractmethod
-    def calc_bounds(cls, syms: ta.Sequence[Sym]) -> ta.Tuple[int, int]:
+    def calc_bounds(cls, syms: ta.Sequence[Sym]) -> ta.Tuple[SymInt, SymInt]:
         raise NotImplementedError
 
     def vars(self) -> ta.Iterator[Var]:
@@ -471,11 +477,11 @@ def sum_(syms: ta.Sequence[Sym]) -> Sym:
         return Num(0)
 
 
-class Sum(Red):
+class Sum(Red, lang.Final):
     glyph = '+'
 
     @classmethod
-    def calc_bounds(cls, syms: ta.Sequence[Sym]) -> ta.Tuple[int, int]:
+    def calc_bounds(cls, syms: ta.Sequence[Sym]) -> ta.Tuple[SymInt, SymInt]:
         return sum(x.min for x in syms), sum(x.max for x in syms)
 
     def __mul__(self, b: SymInt) -> Sym:
@@ -527,7 +533,7 @@ class Sum(Red):
             return sum_(fully_divided) + sum_(rest)._floordiv(divisor) // (b // divisor)
         return sum_(fully_divided) + Sym._floordiv(sum_(rest), b)
 
-    def __mod__(self, b: SymInt) -> 'Sym':
+    def __mod__(self, b: SymInt) -> Sym:
         if isinstance(b, Sum):
             nu_num = sum(sym.b for sym in self.flat() if isinstance(sym, Num))
             de_num = sum(sym.b for sym in b.flat() if isinstance(sym, Num))
@@ -574,11 +580,11 @@ def and_(syms: ta.Sequence[Sym]) -> Sym:
         return Num(1)
 
 
-class And(Red):
+class And(Red, lang.Final):
     glyph = ' and '
 
     @classmethod
-    def calc_bounds(cls, syms: ta.Sequence[Sym]) -> ta.Tuple[int, int]:
+    def calc_bounds(cls, syms: ta.Sequence[Sym]) -> ta.Tuple[SymInt, SymInt]:
         return min(x.min for x in syms), max(x.max for x in syms)
 
     def __mul__(self, b: SymInt) -> Sym:
