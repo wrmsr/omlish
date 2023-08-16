@@ -124,7 +124,7 @@ def test_abc():
     assert d1.p == 'p'
     assert d1.p == 'p'
     with pytest.raises(dc.FrozenInstanceError):
-        d1.p = 'p2'  # type: ignore
+        d1.p = 'p2'  # type: ignore  # noqa
     assert d1.foo() == 'foo'
 
     @dc.dataclass()
@@ -170,7 +170,7 @@ def test_abc():
     assert d4.p == 'p'
     assert d4.p == 'p'
     with pytest.raises(dc.FrozenInstanceError):
-        d4.p = 'p2'  # type: ignore
+        d4.p = 'p2'  # type: ignore  # noqa
     assert d4.foo() == 'foo'
 
     @dc.dataclass()
