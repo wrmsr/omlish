@@ -121,31 +121,32 @@ class Sym(lang.Abstract, lang.Sealed):
         return Lt.new(-self, -b + 1)
 
     def __lt__(self, b: SymInt) -> 'Sym':
-        # FIXME: UPDATE
-        # lhs = self
-        # if isinstance(lhs, SumSym) and isinstance(b, int):
-        #     muls, others = partition(lhs.syms, lambda x: isinstance(x, MulSym) and x.b > 0 and x.max >= b)
-        #     if len(muls):
-        #         # NOTE: gcd in python 3.8 takes exactly 2 args
-        #         mul_gcd = muls[0].b
-        #         for x in muls[1:]:
-        #             mul_gcd = gcd(mul_gcd, x.b)
-        #         if b % mul_gcd == 0:
-        #             all_others = Variable.sum(others)
-        #             # print(mul_gcd, muls, all_others)
-        #             if all_others.min >= 0 and all_others.max < mul_gcd:
-        #                 # TODO: should we divide both by mul_gcd here?
-        #                 lhs = Variable.sum(muls)
-        # return create_sym(LtSym(lhs, b))
-        return Lt.new(self, b)
+        lhs = self
+        if isinstance(lhs, SumSym) and isinstance(b, int):
+            muls, others = partition(lhs.syms, lambda x: isinstance(x, MulSym) and x.b > 0 and x.max >= b)
+            if len(muls):
+                # NOTE: gcd in python 3.8 takes exactly 2 args
+                mul_gcd = muls[0].b
+                for x in muls[1:]:
+                    mul_gcd = gcd(mul_gcd, x.b)
+                if b % mul_gcd == 0:
+                    all_others = sum_(others)
+                    # print(mul_gcd, muls, all_others)
+                    if all_others.min >= 0 and all_others.max < mul_gcd:
+                        # TODO: should we divide both by mul_gcd here?
+                        lhs = sum_(muls)
+        return Lt.new(lhs, b)
 
     def __mul__(self, b: SymInt) -> 'Sym':
         if b == 0:
             return Num(0)
         elif b == 1:
             return self
-        # if self.__class__ is NumSym:
-        #     return NumSym(self.b * b) if isinstance(b, int) else create_sym(MulSym(b, self.b))
+        if isinstance(self,  Num):
+            if isinstance(b, int):
+                return Num(self.b * b)
+            else:
+                return Mul.new(b, self.b)
         return Mul.new(self, b)
 
     def __rmul__(self, b: SymInt) -> 'Sym':
@@ -154,7 +155,7 @@ class Sym(lang.Abstract, lang.Sealed):
     def __rfloordiv__(self, b: int) -> 'Sym':
         raise TypeError(f'Not supported: {b} // {self}')
 
-    def _floordiv(self, b: int, factoring_allowed: bool = True) -> 'Sym':
+    def _floordiv(self, b: SymInt, factoring_allowed: bool = True) -> 'Sym':
         if isinstance(b, Sym):
             if (b > self).min > 0 and self.min >= 0:
                 return Num(0)
@@ -174,7 +175,7 @@ class Sym(lang.Abstract, lang.Sealed):
 
         return Div.new(self, b)
 
-    def __floordiv__(self, b: int) -> 'Sym':
+    def __floordiv__(self, b: SymInt) -> 'Sym':
         return self._floordiv(b)
 
     def __rmod__(self, b: int) -> 'Sym':
@@ -277,7 +278,7 @@ class Op(Sym, lang.Abstract):   # noqa
     def __init__(self, a: Sym, b: SymInt, *, _min: int, _max: int) -> None:
         super().__init__()
         self._a = check.isinstance(a, (Sym, int))
-        self._b = check.isinstance(b, int)
+        self._b = check.isinstance(b, (Sym, int))
         self._min = check.isinstance(_min, int)
         self._max = check.isinstance(_max, int)
 
@@ -298,7 +299,7 @@ class Op(Sym, lang.Abstract):   # noqa
         return self._max
 
     @classmethod
-    def new(cls, a: Sym, b: int) -> Sym:
+    def new(cls, a: Sym, b: SymInt) -> Sym:
         mn, mx = cls.calc_bounds(a, b)
         if mn == mx:
             return Num(mn)
@@ -308,24 +309,34 @@ class Op(Sym, lang.Abstract):   # noqa
 
     @classmethod
     @abc.abstractmethod
-    def calc_bounds(cls, a: Sym, b: int) -> ta.Tuple[int, int]:
+    def calc_bounds(cls, a: Sym, b: SymInt) -> ta.Tuple[int, int]:
         raise NotImplementedError
 
     def vars(self) -> ta.Iterator[Var]:
-        return self._a.vars()
+        yield from self._a.vars()
+        if isinstance(self._b, Sym):
+            yield from self._b.vars()
 
 
 class Lt(Op):
     glyph = '<'
 
     @classmethod
-    def calc_bounds(cls, a: Sym, b: int) -> ta.Tuple[int, int]:
-        return int(a.max < b), int(a.min < b)
+    def calc_bounds(cls, a: Sym, b: SymInt) -> ta.Tuple[int, int]:
+        # return int(a.max < b), int(a.min < b)
+        if isinstance(b, int):
+            return int(a.max < b), int(a.min < b)
+        elif a.max < b.min:
+            return (1, 1)
+        elif a.min > b.max:
+            return (0, 0)
+        else:
+            return (0, 1)
 
     def __mul__(self, b: SymInt) -> Sym:
         return (self.a * b) < (self.b * b)
 
-    def _floordiv(self, b: int, factoring_allowed: bool = False) -> Sym:
+    def _floordiv(self, b: SymInt, factoring_allowed: bool = False) -> Sym:
         return (self.a // b) < (self.b // b)
 
 
@@ -333,7 +344,7 @@ class Mul(Op):
     glyph = '*'
 
     @classmethod
-    def calc_bounds(cls, a: Sym, b: int) -> ta.Tuple[int, int]:
+    def calc_bounds(cls, a: Sym, b: SymInt) -> ta.Tuple[int, int]:
         if b >= 0:
             return a.min * b, a.max * b
         else:
@@ -342,9 +353,8 @@ class Mul(Op):
     def __mul__(self, b: SymInt) -> Sym:
         return self.a * (self.b * b)  # two muls in one mul
 
-    def _floordiv(self, b: int, factoring_allowed: bool = False) -> Sym:
+    def _floordiv(self, b: SymInt, factoring_allowed: bool = False) -> Sym:
         # NOTE: mod negative isn't handled right
-        check.isinstance(b, int)
         if self.b % b == 0:
             return self.a * (self.b // b)
         if b % self.b == 0 and self.b > 0:
@@ -356,16 +366,24 @@ class Mul(Op):
         return Sym.__mod__(a, b)  # FIXME:
 
 
+def factorize(syms: ta.Iterable[Sym]) -> list[Sym]:
+    mul_groups: dict[Sym, int] = {}
+    for x in syms:
+        a, b = (x.a, x.b) if isinstance(x, Mul) else (x, 1)
+        mul_groups[a] = mul_groups.get(a, 0) + b
+    return [Mul(a, b_sum) if b_sum != 1 else a for a, b_sum in mul_groups.items() if b_sum != 0]
+
+
 class Div(Op):
     glyph = '//'
 
     @classmethod
-    def calc_bounds(cls, a: Sym, b: int) -> ta.Tuple[int, int]:
+    def calc_bounds(cls, a: Sym, b: SymInt) -> ta.Tuple[int, int]:
         if a.min < 0 or not isinstance(b, int):
-            raise ValueError
+            raise ValueError(b)
         return a.min // b, a.max // b
 
-    def _floordiv(self, b: int, factoring_allowed: bool = False) -> Sym:
+    def _floordiv(self, b: SymInt, factoring_allowed: bool = False) -> Sym:
         return self.a // (self.b * b)  # two divs is one div
 
 
@@ -373,15 +391,15 @@ class Mod(Op):
     glyph = '%'
 
     @classmethod
-    def calc_bounds(cls, a: Sym, b: int) -> ta.Tuple[int, int]:
+    def calc_bounds(cls, a: Sym, b: SymInt) -> ta.Tuple[int, int]:
         if a.min < 0 or not isinstance(b, int):
-            raise ValueError
+            raise ValueError(b)
         if a.max - a.min >= b or (a.min != a.max and a.min % b >= a.max % b):
             return 0, b - 1
         else:
             return a.min % b, a.max % b
 
-    def _floordiv(self, b: int, factoring_allowed: bool = True) -> Sym:
+    def _floordiv(self, b: SymInt, factoring_allowed: bool = True) -> Sym:
         if self.b % b == 0:
             return (self.a // b) % (self.b // b)  # put the div inside mod
         return super()._floordiv(b, factoring_allowed)
@@ -427,52 +445,26 @@ class Red(Sym, lang.Abstract):
 
 
 def sum_(syms: ta.Sequence[Sym]) -> Sym:
-    news: ta.List[Sym] = []
-    sums: ta.List[Sum] = []
-    nums: ta.List[Num] = []
-    muls: ta.List[Mul] = []
-    for sym in syms:
-        if isinstance(sym, Num):
-            nums.append(sym)
-        elif isinstance(sym, Mul):
-            muls.append(sym)
-        elif isinstance(sym, Sum):  # expand any sums inside one sum
-            sums.append(sym)
-        else:
-            news.append(sym)
-
-    # expand any sums inside one sum
-    if sums:
-        news.extend(nums)
-        news.extend(muls)
-        for x in sums:
-            news += x.syms
-        return sum_(news)
-
-    # combine any numbers inside a sum
-    if nums:
-        news.append(Num(sum([x.b for x in nums])))
-
-    # combine any Muls that factorize
-    scales: ta.Dict[str, ta.Tuple[Sym, int]] = {n.key: (n, 1) for n in news}
-    for sym in muls:  # NOTE can we somehow avoid rendering here?
-        key = sym.a.key
-        try:
-            t = scales[key]
-        except KeyError:
-            t = (sym.a, 0)
-        scales[key] = (t[0], sym.b + t[1])
-    new_muls = [n * s for n, s in scales.values()]
-    news = [x if not isinstance(x, Mul) or x.b != 1 else x.a for x in new_muls]
-
-    # filter 0s
-    news = [x for x in news if x.min != 0 or x.max != 0]
-    if len(news) > 1:
-        return Sum.new(news)
-    elif len(news) == 1:
-        return news[0]
-    else:
+    syms = [x for x in syms if x.max or x.min]
+    if not syms:
         return Num(0)
+    if len(syms) == 1:
+        return syms[0]
+
+    new_syms: list[Sym] = []
+    num_sym_sum = 0
+    for sym in Sum(syms).flat():
+        if isinstance(sym, Num):
+            num_sym_sum += sym.b
+        else:
+            new_syms.append(sym)
+
+    if len(new_syms) > 1 and len(set([x.a if isinstance(x, Mul) else x for x in new_syms])) < len(new_syms):
+        new_syms = factorize(new_syms)
+    if num_sym_sum:
+        new_syms.append(Num(num_sym_sum))
+    return create_redsym(Sum, new_syms) if len(new_syms) > 1 else new_syms[0] if len(
+        new_syms) == 1 else Num(0)
 
 
 class Sum(Red):
@@ -485,51 +477,57 @@ class Sum(Red):
     def __mul__(self, b: SymInt) -> Sym:
         return sum_([x * b for x in self.syms])  # distribute mul into sum
 
-    def _floordiv(self, b: int, factoring_allowed: bool = True) -> Sym:
+    def _floordiv(self, b: SymInt, factoring_allowed: bool = True) -> Sym:
+        fully_divided: List[Sym] = []
+        rest: List[Sym] = []
+        if isinstance(b, Sum):
+            nu_num = sum(sym.b for sym in self.flat() if isinstance(sym, Num))
+            de_num = sum(sym.b for sym in b.flat() if isinstance(sym, Num))
+            if de_num and nu_num % de_num == 0 and b * (d := nu_num // de_num) == self:
+                return Num(d)
+        if isinstance(b, Sym):
+            for x in self.flat():
+                if x % b == 0:
+                    fully_divided.append(x // b)
+                else:
+                    rest.append(x)
+            if (b > (sum_rest := create_redsym(Sum, rest))).min and (sum_rest >= 0).min:
+                return create_redsym(Sum, fully_divided)
+            return Sym._floordiv(self, b, False)
+        if b == 1:
+            return self
         if not factoring_allowed:
-            return super()._floordiv(b, factoring_allowed)
-
-        factors, tmp_nofactor = col.partition(self.syms, lambda x: (isinstance(x, (Mul, Num))) and x.b % b == 0)
-
-        # ugh, i doubt this is universally right
-        nofactor: ta.List[Sym] = []
-        for x in tmp_nofactor:
-            if isinstance(x, Num):
-                if (x.b % b) != x.b:
-                    factors.append(Num(x.b - (x.b % b)))  # python does floor division
-                nofactor.append(Num(x.b % b))
+            return Sym._floordiv(self, b, factoring_allowed)
+        fully_divided, rest = [], []
+        _gcd = b
+        divisor = 1
+        for x in self.flat():
+            if isinstance(x, (Num, Mul)):
+                if x.b % b == 0:
+                    fully_divided.append(x // b)
+                else:
+                    rest.append(x)
+                    _gcd = gcd(_gcd, x.b)
+                    if isinstance(x, Mul) and divisor == 1 and b % x.b == 0:
+                        divisor = x.b
             else:
-                nofactor.append(x)
+                rest.append(x)
+                _gcd = 1
+        if _gcd > 1:
+            return sum_(fully_divided) + sum_(rest).__floordiv__(_gcd) // (b // _gcd)
+        if divisor > 1:
+            return sum_(fully_divided) + sum_(rest).__floordiv__(divisor) // (b // divisor)
+        return sum_(fully_divided) + Sym._floordiv(sum_(rest), b)
 
-        gcd = [
-            math.gcd(x.b, b) if isinstance(x, (Mul, Num)) else None
-            for x in nofactor
-        ]
-
-        if len(factors) > 0:
-            # these don't have to be the same, just having a common factor
-            if len(gcd) > 0 and col.all_equal(gcd) and gcd[0] is not None and gcd[0] > 1:
-                nofactor_term = sum_([
-                    (x.a * (x.b // gcd[0])) if isinstance(x, Mul) else Num(x.b // gcd[0])  # type: ignore  # FIXME: ??
-                    for x in nofactor
-                ]) // (b // gcd[0])
-            else:
-                nofactor_term = sum_(nofactor) // b
-
-            return sum_([
-                (x.a * (x.b // b)) if isinstance(x, Mul) else Num(x.b // b)  # type: ignore
-                for x in factors
-            ] + [nofactor_term])
-
-        muls = [x.b for x in nofactor if isinstance(x, Mul)]
-        for m in muls:
-            if m > 1 and b % m == 0:
-                return (self // m) // (b // m)
-
-        return super()._floordiv(b, factoring_allowed)
-
-    def __mod__(self, b: int) -> Sym:
-        new_syms: ta.List[Sym] = []
+    def __mod__(self, b: SymInt):
+        if isinstance(b, Sum):
+            nu_num = sum(sym.b for sym in self.flat() if isinstance(sym, Num))
+            de_num = sum(sym.b for sym in b.flat() if isinstance(sym, Num))
+            if de_num and nu_num % de_num == 0 and b * (nu_num // de_num) == self:
+                return Num(0)
+        if isinstance(b, Sym) and (b - self).min > 0:
+            return self  # b - self simplifies the sym
+        new_syms: List[Sym] = []
         for x in self.syms:
             if isinstance(x, Num):
                 new_syms.append(Num(x.b % b))
@@ -539,9 +537,20 @@ class Sum(Red):
                 new_syms.append(x)
         return Sym.__mod__(sum_(new_syms), b)
 
+    def flat(self) -> ta.Iterator[Sym]:
+        for x in self.syms:
+            if isinstance(x, Sum):
+                yield from x.flat()
+            else:
+                yield x
+
 
 def and_(syms: ta.Sequence[Sym]) -> Sym:
-    if any((x.min == 0 and x.max == 0) for x in syms):
+    if not syms:
+        return Num(1)
+    if len(syms) == 1:
+        return syms[0]
+    if any(not x for x in syms):
         return Num(0)
 
     # filter 1s
@@ -564,5 +573,5 @@ class And(Red):
     def __mul__(self, b: SymInt) -> Sym:
         return and_([x * b for x in self.syms])
 
-    def _floordiv(self, b: int, factoring_allowed: bool = True) -> Sym:
+    def _floordiv(self, b: SymInt, factoring_allowed: bool = True) -> Sym:
         return and_([x // b for x in self.syms])
