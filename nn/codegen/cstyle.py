@@ -53,16 +53,20 @@ class CstyleDialect:
     gid: ta.Sequence[str] = ()
     lid: ta.Sequence[str] = ()
 
+    global_max: ta.Sequence[int] = ()  # TODO
+    local_max: ta.Sequence[int] = ()  # TODO
+
     extra_params: ta.Sequence[str] = ()
 
     float4: ta.Optional[str] = None
 
     half_prekernel: ta.Optional[str] = None  # TODO
-    double_prekernel: ta.Optional[str] = None  # TODO
 
     uses_vload: bool = False  # TODO
 
     external_local_bufs: bool = False  # TODO
+
+    uses_ptr_arithmetic: bool = False  # TODO
 
     code_for_op: ta.Mapping[ta.Type[ops.Op], ta.Callable[..., str]] = col.frozendict({
         ops.Exp2: lambda x: f'exp2({x})',

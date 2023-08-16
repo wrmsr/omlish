@@ -100,13 +100,6 @@ OpenclDialect = CstyleDialect(
     float4='(float4)',
 
     half_prekernel='#pragma OPENCL EXTENSION cl_khr_fp16 : enable',
-    double_prekernel="""
-#ifdef cl_khr_fp64
-#pragma OPENCL EXTENSION cl_khr_fp64 : enable
-#elif defined(cl_amd_fp64)
-#pragma OPENCL EXTENSION cl_amd_fp64 : enable
-#endif
-""",
 
     uses_vload=True,
 )
