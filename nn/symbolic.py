@@ -624,3 +624,28 @@ def infer(n: SymInt, var_vals: ta.Mapping[Var, int]) -> int:
     if isinstance(n, Sum):
         return sum(infer(s, var_vals) for s in n.syms)
     raise TypeError(n)
+
+
+class Labeler:
+    def __init__(self, prefix: str = 's') -> None:
+        super().__init__()
+        self._dct: dict[Sym, str] = {}
+        self._pfx = prefix
+
+    def clear(self) -> None:
+        self._dct.clear()
+
+    def __call__(self, s: Sym) -> str:
+        check.isinstance(s, Sym)
+        try:
+            return self._dct[s]
+        except KeyError:
+            l = self._dct[s] = f'{self._pfx}{len(self._dct)}'
+            return l
+
+
+_LABELER = Labeler()
+
+
+def label(s: Sym) -> str:
+    return _LABELER(s)
