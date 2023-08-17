@@ -168,9 +168,12 @@ class Sym(lang.Abstract, lang.Sealed):
 
     def _floordiv(self, b: SymInt, factoring_allowed: bool = True) -> 'Sym':
         if isinstance(b, Sym):
+            if self == b:
+                return Num(1)
             if (b > self).min > 0 and self.min >= 0:
                 return Num(0)
             raise TypeError(f'Not supported: {self} // {b}')
+
         if b == 0:
             raise ValueError
         if b < 0:
@@ -381,14 +384,6 @@ class Mul(Op):
     def __mod__(self, b: int):
         a = self.a * (self.b % b)
         return Sym.__mod__(a, b)  # FIXME:
-
-
-def factorize(syms: ta.Iterable[Sym]) -> list[Sym]:
-    mul_groups: dict[Sym, int] = {}
-    for x in syms:
-        a, b = (x.a, x.b) if isinstance(x, Mul) else (x, 1)
-        mul_groups[a] = mul_groups.get(a, 0) + b
-    return [Mul.new(a, b_sum) if b_sum != 1 else a for a, b_sum in mul_groups.items() if b_sum != 0]
 
 
 class Div(Op, lang.Final):
@@ -606,3 +601,26 @@ class And(Red, lang.Final):
 
     def _floordiv(self, b: SymInt, factoring_allowed: bool = True) -> Sym:
         return and_([x // b for x in self.syms])
+
+
+##
+
+
+def factorize(syms: ta.Iterable[Sym]) -> list[Sym]:
+    mul_groups: dict[Sym, int] = {}
+    for x in syms:
+        a, b = (x.a, x.b) if isinstance(x, Mul) else (x, 1)
+        mul_groups[a] = mul_groups.get(a, 0) + b
+    return [Mul.new(a, b_sum) if b_sum != 1 else a for a, b_sum in mul_groups.items() if b_sum != 0]
+
+
+def infer(n: SymInt, var_vals: ta.Mapping[Var, int]) -> int:
+    if isinstance(n, (int, Num)):
+        return int(n)
+    if isinstance(n, Var):
+        return var_vals[n]
+    if isinstance(n, Mul):
+        return infer(n.a, var_vals) * infer(n.b, var_vals)
+    if isinstance(n, Sum):
+        return sum(infer(s, var_vals) for s in n.syms)
+    raise TypeError(n)
