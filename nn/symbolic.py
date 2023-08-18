@@ -72,6 +72,7 @@ class DebugSymRenderer(SymRenderer):
 class Sym(lang.Abstract, lang.Sealed):
     def __init__(self) -> None:
         super().__init__()
+        # if not (self.min <= self.max):
         if self.min > self.max:
             raise ValueError
         if self.min == self.max and not isinstance(self, Num):
@@ -460,7 +461,7 @@ class Red(Sym, lang.Abstract):
         return self._max
 
     @classmethod
-    def new(cls: ta.Type[RedT], syms: ta.Sequence[Sym]) -> RedT:
+    def new(cls: ta.Type[RedT], syms: ta.Sequence[Sym]) -> Sym:
         mn, mx = cls.calc_bounds(syms)
         if mn == mx:
             return Num(mn)
@@ -487,7 +488,12 @@ def sum_(syms: ta.Sequence[Sym]) -> Sym:
 
     new_syms: list[Sym] = []
     num_sym_sum = 0
-    for sym in Sum.new(syms).flat():
+    flat: list[Sym]
+    if isinstance((summed := Sum.new(syms)), Sum):
+        flat = list(ta.cast(Sum, summed).flat())
+    else:
+        flat = [check.isinstance(summed, Num)]
+    for sym in flat:
         if isinstance(sym, Num):
             num_sym_sum += sym.b
         else:
