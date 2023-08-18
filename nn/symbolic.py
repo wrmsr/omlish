@@ -69,11 +69,11 @@ class DebugSymRenderer(SymRenderer):
 ##
 
 
-def truthy(s: SymInt) -> bool:
+def truthy(s: SymInt) -> ta.Optional[bool]:
     if isinstance(s, (int, Num)):
         return s != 0
     if isinstance(s, Sym):
-        return False
+        return None
     raise TypeError(s)
 
 
@@ -117,11 +117,11 @@ class Sym(lang.Abstract, lang.Sealed):
     def __hash__(self) -> int:
         return hash(self.key)
 
-    def bool(self) -> bool:
+    def eqz(self) -> SymInt:
         return not (self.max == self.min == 0)
 
     def __bool__(self) -> bool:
-        # return self.bool()
+        # return self.eqz()
         raise TypeError(self)
 
     def __eq__(self, other: ta.Any) -> bool:
