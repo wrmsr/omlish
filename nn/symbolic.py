@@ -69,11 +69,18 @@ class DebugSymRenderer(SymRenderer):
 ##
 
 
+def truthy(s: SymInt) -> bool:
+    if isinstance(s, (int, Num)):
+        return s != 0
+    if isinstance(s, Sym):
+        return False
+    raise TypeError(s)
+
+
 class Sym(lang.Abstract, lang.Sealed):
     def __init__(self) -> None:
         super().__init__()
-        # if not (self.min <= self.max):
-        if self.min > self.max:
+        if truthy(self.min > self.max):
             raise ValueError
         if self.min == self.max and not isinstance(self, Num):
             raise ValueError
