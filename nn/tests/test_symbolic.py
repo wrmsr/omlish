@@ -374,15 +374,15 @@ class TestSymbolicSymbolicOps:
         idx1 = Var('idx1', 0, 3)
         idx2 = Var('idx2', 0, i)
         assert (idx0 * (i * 4 + 4) + idx1 * (i + 1) + idx2) // (i + 1) == idx0 * 4 + idx1
-        # assert (idx0 * (i * 4 + 4) + idx1 * (i + 1) + idx2) % (i + 1) == idx2
-        # assert (i + 1) // (i * 128 + 128) == 0
-        # assert (i + 1) % (i * 128 + 128) == (i + 1)
-        # assert (i + 1 + idx2) // (i + 1) == 1
-        # assert (i + 1 + idx2) % (i + 1) == idx2
-        # assert (idx0 * (i * 4 + 4) + i + 1 + idx2) // (i + 1) == idx0 * 4 + 1
-        # assert (idx0 * (i * 4 + 4) + i + 1 + idx2) % (i + 1) == idx2
-        # assert (i * 128 + 128) * 2 // (i * 128 + 128) == 2
-        # assert (i * 128 + 128) * 2 % (i * 128 + 128) == 0
+        assert (idx0 * (i * 4 + 4) + idx1 * (i + 1) + idx2) % (i + 1) == idx2
+        assert (i + 1) // (i * 128 + 128) == 0
+        assert (i + 1) % (i * 128 + 128) == (i + 1)
+        assert (i + 1 + idx2) // (i + 1) == 1
+        assert (i + 1 + idx2) % (i + 1) == idx2
+        assert (idx0 * (i * 4 + 4) + i + 1 + idx2) // (i + 1) == idx0 * 4 + 1
+        assert (idx0 * (i * 4 + 4) + i + 1 + idx2) % (i + 1) == idx2
+        assert (i * 128 + 128) * 2 // (i * 128 + 128) == 2
+        assert (i * 128 + 128) * 2 % (i * 128 + 128) == 0
 
     def test_sumnode_divmod_sumnode_complex(self):
         i = Var('i', 1, 1024)

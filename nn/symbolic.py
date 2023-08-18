@@ -462,6 +462,8 @@ class Red(Sym, lang.Abstract):
     @classmethod
     def new(cls: ta.Type[RedT], syms: ta.Sequence[Sym]) -> RedT:
         mn, mx = cls.calc_bounds(syms)
+        if mn == mx:
+            return Num(mn)
         return cls(syms, _min=mn, _max=mx)
 
     glyph: ta.ClassVar[str]
@@ -530,12 +532,12 @@ class Sum(Red, lang.Final):
                     rest.append(x)
             if (sum_fully_divided := Sum.new(fully_divided)) != 0:
                 return sum_fully_divided + Sum.new(rest) // b
-            return super()._floordiv(self, b, False)
+            return super()._floordiv(b, False)
 
         if b == 1:
             return self
         if not factoring_allowed:
-            return super()._floordiv(self, b, factoring_allowed)
+            return super()._floordiv(b, factoring_allowed)
 
         fully_divided, rest = [], []
         gcd = b
@@ -557,7 +559,7 @@ class Sum(Red, lang.Final):
             return sum_(fully_divided) + sum_(rest)._floordiv(gcd) // (b // gcd)
         if divisor > 1:
             return sum_(fully_divided) + sum_(rest)._floordiv(divisor) // (b // divisor)
-        return sum_(fully_divided) + super()._floordiv(sum_(rest), b)
+        return sum_(fully_divided) + Sym._floordiv(sum_(rest), b)  # FIXME: :|
 
     def __mod__(self, b: SymInt) -> Sym:
         if isinstance(b, Sum):
@@ -578,7 +580,7 @@ class Sum(Red, lang.Final):
             else:
                 new_syms.append(x)
 
-        return super().__mod__(sum_(new_syms), b)
+        return Sym.__mod__(sum_(new_syms), b)  # FIXME: :|
 
     def flat(self) -> ta.Iterator[Sym]:
         for x in self.syms:
