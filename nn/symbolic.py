@@ -117,8 +117,12 @@ class Sym(lang.Abstract, lang.Sealed):
     def __hash__(self) -> int:
         return hash(self.key)
 
-    def __bool__(self) -> bool:
+    def bool(self) -> bool:
         return not (self.max == self.min == 0)
+
+    def __bool__(self) -> bool:
+        # return self.bool()
+        raise TypeError(self)
 
     def __eq__(self, other: ta.Any) -> bool:
         if not isinstance(other, Sym):
@@ -260,7 +264,7 @@ class Var(Sym, lang.Final):
     def __init__(self, name: ta.Optional[str], min: SymInt, max: SymInt) -> None:
         check_sym_int(min)
         check_sym_int(max)
-        if min < 0 or min >= max:
+        if truthy(min < 0) or truthy(min >= max):
             raise ValueError(f'Invalid var range: {name!r} {min} {max}')
         if name is not None:
             if not name or name[0] not in Var._name_first_set or frozenset(name[1:]) - Var._name_rest_set:
@@ -390,7 +394,7 @@ class Mul(Op):
 
     @classmethod
     def calc_bounds(cls, a: Sym, b: SymInt) -> ta.Tuple[SymInt, SymInt]:
-        if b >= 0:
+        if truthy(b >= 0):
             return a.min * b, a.max * b
         else:
             return a.max * b, a.min * b
