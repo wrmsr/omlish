@@ -70,6 +70,12 @@ class DebugSymRenderer(SymRenderer):
 
 
 class Sym(lang.Abstract, lang.Sealed):
+    def __init__(self) -> None:
+        super().__init__()
+        if self.min > self.max:
+            raise ValueError
+        if self.min == self.max and not isinstance(self, Num):
+            raise ValueError
 
     @property
     @abc.abstractmethod
@@ -135,6 +141,7 @@ class Sym(lang.Abstract, lang.Sealed):
     def __lt__(self, b: SymInt) -> 'Sym':
         lhs = self
         if isinstance(lhs, Sum) and isinstance(b, int):
+            muls: list[Mul]
             muls, others = col.partition(lhs.syms, lambda x: isinstance(x, Mul) and x.b > 0 and x.max >= b)
             if len(muls):
                 # NOTE: gcd in python 3.8 takes exactly 2 args
@@ -151,26 +158,33 @@ class Sym(lang.Abstract, lang.Sealed):
     def __mul__(self, b: SymInt) -> 'Sym':
         if b == 0:
             return Num(0)
-        elif b == 1:
+        if b == 1:
             return self
         if isinstance(self, Num):
             if isinstance(b, int):
                 return Num(self.b * b)
-            else:
-                return Mul.new(b, self.b)
+            return b * self.b
+        if isinstance(b, Num):
+            return Mul.new(self, b.b)
         return Mul.new(self, b)
 
     def __rmul__(self, b: SymInt) -> 'Sym':
         return self * b
 
     def __rfloordiv__(self, b: int) -> 'Sym':
+        if self.min > b >= 0:
+            return Num(0)
+        if isinstance(self, Num):
+            return Num(b // self.b)
         raise TypeError(f'Not supported: {b} // {self}')
 
     def _floordiv(self, b: SymInt, factoring_allowed: bool = True) -> 'Sym':
         if isinstance(b, Sym):
+            if isinstance(b, Num):
+                return self // b.b
             if self == b:
                 return Num(1)
-            if (b > self).min > 0 and self.min >= 0:
+            if (b - self).min > 0 and self.min >= 0:
                 return Num(0)
             raise TypeError(f'Not supported: {self} // {b}')
 
@@ -195,10 +209,14 @@ class Sym(lang.Abstract, lang.Sealed):
     def __rmod__(self, b: int) -> 'Sym':
         if self.min > b >= 0:
             return Num(b)
+        if isinstance(self, Num):
+            return Num(b % self.b)
         raise TypeError(f'Not supported: {b} % {self}')
 
     def __mod__(self, b: SymInt) -> 'Sym':
         if isinstance(b, Sym):
+            if isinstance(b, Num):
+                return self % b.b
             if self == b:
                 return Num(0)
             if (b - self).min > 0 and self.min >= 0:
@@ -239,10 +257,10 @@ class Var(Sym, lang.Final):
         if name is not None:
             if not name or name[0] not in Var._name_first_set or frozenset(name[1:]) - Var._name_rest_set:
                 raise ValueError(f'Invalid var name: {name!r} {min} {max}')
-        super().__init__()
         self._name = name
         self._min = min
         self._max = max
+        super().__init__()
 
     @property
     def name(self) -> str:
@@ -265,8 +283,8 @@ class Var(Sym, lang.Final):
 
 class Num(Sym, lang.Final):
     def __init__(self, b: int) -> None:
-        super().__init__()
         self._b = check.isinstance(b, int)
+        super().__init__()
 
     def __eq__(self, other: ta.Any) -> bool:
         return self.b == other
@@ -294,13 +312,12 @@ class Num(Sym, lang.Final):
 
 
 class Op(Sym, lang.Abstract):   # noqa
-
     def __init__(self, a: Sym, b: SymInt, *, _min: SymInt, _max: SymInt) -> None:
-        super().__init__()
         self._a = check.isinstance(a, Sym)
         self._b = check_sym_int(b)
         self._min = check_sym_int(_min)
         self._max = check_sym_int(_max)
+        super().__init__()
 
     @property
     def a(self) -> Sym:
@@ -383,7 +400,7 @@ class Mul(Op):
 
     def __mod__(self, b: int):
         a = self.a * (self.b % b)
-        return Sym.__mod__(a, b)  # FIXME:
+        return Sym.__mod__(a, b)  # FIXME: :|
 
 
 class Div(Op, lang.Final):
@@ -425,10 +442,10 @@ RedT = ta.TypeVar('RedT', bound='Red')
 
 class Red(Sym, lang.Abstract):
     def __init__(self, syms: ta.Sequence[Sym], *, _min: SymInt, _max: SymInt) -> None:
-        super().__init__()
         self._syms = [check.isinstance(n, Sym) for n in syms]
         self._min = check_sym_int(_min)
         self._max = check_sym_int(_max)
+        super().__init__()
 
     @property
     def syms(self) -> ta.Sequence[Sym]:
@@ -500,8 +517,8 @@ class Sum(Red, lang.Final):
         if isinstance(b, Sum):
             nu_num = sum(sym.b for sym in self.flat() if isinstance(sym, Num))
             de_num = sum(sym.b for sym in b.flat() if isinstance(sym, Num))
-            if de_num and nu_num % de_num == 0 and b * (d := nu_num // de_num) == self:
-                return Num(d)
+            if nu_num > 0 and de_num and (d := nu_num // de_num) > 0:
+                return Num(d) + (self - b * d) // b
 
         fully_divided: list[Sym] = []
         rest: list[Sym] = []
@@ -511,14 +528,14 @@ class Sum(Red, lang.Final):
                     fully_divided.append(x // b)
                 else:
                     rest.append(x)
-            if (b > (sum_rest := Sum.new(rest))).min and (sum_rest >= 0).min:
-                return Sum.new(fully_divided)
-            return Sym._floordiv(self, b, False)
+            if (sum_fully_divided := Sum.new(fully_divided)) != 0:
+                return sum_fully_divided + Sum.new(rest) // b
+            return super()._floordiv(self, b, False)
 
         if b == 1:
             return self
         if not factoring_allowed:
-            return Sym._floordiv(self, b, factoring_allowed)
+            return super()._floordiv(self, b, factoring_allowed)
 
         fully_divided, rest = [], []
         gcd = b
@@ -540,14 +557,14 @@ class Sum(Red, lang.Final):
             return sum_(fully_divided) + sum_(rest)._floordiv(gcd) // (b // gcd)
         if divisor > 1:
             return sum_(fully_divided) + sum_(rest)._floordiv(divisor) // (b // divisor)
-        return sum_(fully_divided) + Sym._floordiv(sum_(rest), b)
+        return sum_(fully_divided) + super()._floordiv(sum_(rest), b)
 
     def __mod__(self, b: SymInt) -> Sym:
         if isinstance(b, Sum):
             nu_num = sum(sym.b for sym in self.flat() if isinstance(sym, Num))
             de_num = sum(sym.b for sym in b.flat() if isinstance(sym, Num))
-            if de_num and nu_num % de_num == 0 and b * (nu_num // de_num) == self:
-                return Num(0)
+            if nu_num > 0 and de_num and (d := nu_num // de_num) > 0:
+                return (self - b * d) % b
 
         if isinstance(b, Sym) and (b - self).min > 0:
             return self  # b - self simplifies the sym
@@ -561,7 +578,7 @@ class Sum(Red, lang.Final):
             else:
                 new_syms.append(x)
 
-        return Sym.__mod__(sum_(new_syms), b)
+        return super().__mod__(sum_(new_syms), b)
 
     def flat(self) -> ta.Iterator[Sym]:
         for x in self.syms:
