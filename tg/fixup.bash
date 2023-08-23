@@ -16,4 +16,4 @@ sed -i '' '/class _Device:.*/i \
 __import__("os").environ["GPU"] = "1"\
 \
 \
-' tinygrad/tinygrad/lazy.py
+' tinygrad/tinygrad/ops.py

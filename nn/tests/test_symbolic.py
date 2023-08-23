@@ -209,6 +209,9 @@ class TestSymbolic:
         _test_variable(Var('a', 0, 6) < 3, 0, 1, '(a<3)')
         _test_variable(Var('a', 0, 6) < 8, 1, 1, '1')
 
+    def test_lt_sum_remove(self):
+        _test_variable((Var('a', 0, 6) + 2) < 3, 0, 1, '(a<1)')
+
     def test_and_fold(self):
         _test_variable(and_([Num(0), Var('a', 0, 1)]), 0, 0, '0')
 
