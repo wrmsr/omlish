@@ -599,6 +599,18 @@ class Sum(Red, lang.Final):
 
         return Sym.__mod__(sum_(new_syms), b)  # FIXME: :|
 
+    def __lt__(self, b: SymInt) -> SymInt:
+        if isinstance(b, int):
+            new_sum = []
+            for x in self.syms:
+                # TODO: should we just force the last one to always be the number
+                if isinstance(x, Num):
+                    b -= x.b
+                else:
+                    new_sum.append(x)
+            return Sym.__lt__(sum_(new_sum), b)  # FIME: :|
+        return super().__lt__(b)
+
     def flat(self) -> ta.Iterator[Sym]:
         for x in self.syms:
             if isinstance(x, Sum):

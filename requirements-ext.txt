@@ -52,14 +52,14 @@ unicorn==2.0.1.post1
 
 ### infra
 
-boto3>=1.28.29
+boto3>=1.28.33
 
 google-cloud-compute==1.14.0
 
 
 ### hn
 
-selectolax==0.3.15
+selectolax==0.3.16
 
 soco==0.29.1
 
