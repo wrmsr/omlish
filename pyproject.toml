@@ -20,6 +20,8 @@ show_error_context = true
 show_traceback = true
 #verbosity = 1
 
+check_untyped_defs = true
+
 exclude = [
     'omlish/dataclasses/tests/cpython/',
 ]

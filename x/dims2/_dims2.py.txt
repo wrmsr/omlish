@@ -1,3 +1,29 @@
+"""
+Dims
+IntDims
+
+Shape
+IntShape
+
+Strides
+IntStrides
+
+##
+
+assert isinstance(int_dims, Dims)
+assert isinstance(int_dims, IntDims)
+
+assert isinstance(int_shape, Dims)
+assert isinstance(int_shape, IntDims)
+assert isinstance(int_shape, Shape)
+assert isinstance(int_shape, IntShape)
+
+assert not isinstance(sym_shape, IntShape)
+
+##
+
+- analogy w/ const-ness?
+"""
 import typing as ta
 
 from omlish import lang
@@ -37,7 +63,7 @@ class Strides(BaseStrides[SymInt], lang.Final):
     pass
 
 
-class IntStrides()
+# class IntStrides()
 
 
 def _main() -> None:
