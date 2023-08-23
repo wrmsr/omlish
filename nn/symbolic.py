@@ -105,7 +105,7 @@ class Sym(lang.Abstract, lang.Sealed):
 
     def vars(self) -> ta.Iterator['Var']:
         return
-        yield  # noqa
+        yield  # type: ignore  # noqa
 
     @cached.property
     def key(self) -> str:
