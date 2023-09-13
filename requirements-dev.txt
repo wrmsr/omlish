@@ -1,6 +1,6 @@
 -r requirements.txt
 
-pytest==7.4.0
+pytest==7.4.2
 pytest-benchmark==4.0.0
 pytest-clarity==1.0.1
 pytest-xdist==3.3.1
@@ -8,11 +8,11 @@ pytest-xdist==3.3.1
 flake8==6.1.0
 flake8-pyproject==1.2.3
 
-black==23.7.0
+black==23.9.1
 gprof2dot==2022.7.29
 mypy==1.5.1
 pipdeptree==2.13.0
 
-ipython==8.14.0
+ipython==8.15.0
 
 pgcli==3.5.0; python_version < '3.12'
