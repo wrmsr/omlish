@@ -5,6 +5,7 @@ TODO:
   - sdm
 """
 import abc
+import itertools
 import math
 import string
 import typing as ta
@@ -140,6 +141,9 @@ class Sym(lang.Abstract, lang.Sealed):
 
     def __sub__(self, b: SymInt) -> 'Sym':
         return self + -b
+
+    def __rsub__(self, b: int) -> 'Sym':
+        return -self + b
 
     def __le__(self, b: SymInt) -> 'Sym':
         return self < (b + 1)
@@ -306,6 +310,9 @@ class Num(Sym, lang.Final):
 
     def __int__(self) -> int:
         return self._b
+
+    def __index__(self) -> int:
+        return self.b
 
     @property
     def b(self) -> int:
@@ -662,16 +669,55 @@ def factorize(syms: ta.Iterable[Sym]) -> list[Sym]:
     return [Mul.new(a, b_sum) if b_sum != 1 else a for a, b_sum in mul_groups.items() if b_sum != 0]
 
 
-def infer(n: SymInt, var_vals: ta.Mapping[Var, int]) -> int:
-    if isinstance(n, (int, Num)):
-        return int(n)
+def substitute(n: Sym, var_vals: ta.Mapping[Var, Sym]) -> Sym:
+    if isinstance(n, Num):
+        return n
     if isinstance(n, Var):
-        return var_vals[n]
+        return var_vals.get(n, n)
+    if isinstance(n, Lt):
+        return substitute(n.a, var_vals) < (n.b if isinstance(n.b, int) else substitute(n.b, var_vals))
     if isinstance(n, Mul):
-        return infer(n.a, var_vals) * infer(n.b, var_vals)
+        return substitute(n.a, var_vals) * (n.b if isinstance(n.b, int) else substitute(n.b, var_vals))
+    if isinstance(n, Div):
+        return substitute(n.a, var_vals) // check.isinstance(n.b, int)
+    if isinstance(n, Mod):
+        return substitute(n.a, var_vals) % n.b
     if isinstance(n, Sum):
-        return sum(infer(s, var_vals) for s in n.syms)
+        return sum_([substitute(s, var_vals) for s in n.syms])
+    if isinstance(n, And):
+        subed = []
+        for node in n.syms:
+            if not (sub := substitute(node, var_vals)):
+                return Num(0)
+            subed.append(sub)
+        return and_(subed)
     raise TypeError(n)
+
+
+def infer(n: SymInt, var_vals: ta.Mapping[Var, int]) -> int:
+    if isinstance(n, Num):
+        return n.b
+    ret = substitute(n, {k: Num(v) for k, v in var_vals.items()})
+    return check.isinstance(ret, Num).b
+
+
+def expand(n: Sym) -> ta.List[Sym]:
+    if isinstance(n, Var):
+        return [n] if n.expr is not None else [Num(j) for j in range(n.min, n.max + 1)]
+    if isinstance(n, Num):
+        return [n]
+    if isinstance(n, Mul):
+        return [x * n.b for x in expand(n.a)]
+    if isinstance(n, Div):
+        return [x // n.b for x in expand(n.a)]
+    if isinstance(n, Mod):
+        return [x % n.b for x in expand(n.a)]
+    if isinstance(n, Sum):
+        return [sum_(it) for it in itertools.product(*[expand(x) for x in n.syms])]
+    raise TypeError(n)
+
+
+##
 
 
 class Labeler:
