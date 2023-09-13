@@ -353,6 +353,9 @@ class Tensor(lang.Final):
     def __rmatmul__(self, x: TensorOrLike) -> 'Tensor':
         return self.matmul(x, reverse=True)
 
+    def __neg__(self) -> 'Tensor':
+        return funcs.Neg.apply(self)
+
     def _reduce(
             self,
             func: ta.Type[funcs.Func],

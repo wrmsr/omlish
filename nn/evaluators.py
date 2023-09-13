@@ -108,6 +108,7 @@ class NumpyInterpreter(Interpreter[NumpyValue]):
     _fns_by_op_cls: ta.Final[ta.Mapping[type, ta.Callable[..., NumpyValue]]] = {
         ops.Exp2: np.exp2,
         ops.Log2: np.log2,
+        ops.Neg: operator.neg,
 
         ops.Add: operator.add,
         ops.Sub: operator.sub,

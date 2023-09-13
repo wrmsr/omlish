@@ -104,6 +104,11 @@ class Recip(UnaryOp):
     pass
 
 
+@dc.dataclass(frozen=True)
+class Neg(UnaryOp):
+    pass
+
+
 #
 
 
@@ -184,6 +189,40 @@ class Max(ReduceOp):
 
 
 @dc.dataclass(frozen=True)
+class TernaryOp(Op, lang.Abstract):
+    pass
+
+
+@dc.dataclass(frozen=True)
+class MulAcc(TernaryOp):
+    x: Lazy = dc.field(coerce=check.of_isinstance(Lazy))
+
+    new_shape: _Shape = dc.field(coerce=check.of_isinstance(_Shape))
+
+    @property
+    def srcs(self) -> ta.Sequence[Lazy]:
+        return [self.x]
+
+    @property
+    def args(self) -> ta.Sequence[ta.Any]:
+        return [self.new_shape]
+
+
+@dc.dataclass(frozen=True)
+class Where(TernaryOp):
+    x: Lazy
+    y: Lazy
+    z: Lazy
+
+    @property
+    def srcs(self) -> ta.Sequence[Lazy]:
+        return [self.x, self.y, self.z]
+
+
+#
+
+
+@dc.dataclass(frozen=True)
 class MovementOp(Op, lang.Abstract):
     x: Lazy = dc.field(coerce=check.of_isinstance(Lazy))
 
@@ -253,40 +292,6 @@ class Restride(MovementOp):  # MovementOps.STRIDE
     @property
     def arg(self) -> _Stride:
         return self.stride
-
-
-#
-
-
-@dc.dataclass(frozen=True)
-class TernaryOp(Op, lang.Abstract):
-    pass
-
-
-@dc.dataclass(frozen=True)
-class MulAcc(TernaryOp):
-    x: Lazy = dc.field(coerce=check.of_isinstance(Lazy))
-
-    new_shape: _Shape = dc.field(coerce=check.of_isinstance(_Shape))
-
-    @property
-    def srcs(self) -> ta.Sequence[Lazy]:
-        return [self.x]
-
-    @property
-    def args(self) -> ta.Sequence[ta.Any]:
-        return [self.new_shape]
-
-
-@dc.dataclass(frozen=True)
-class Where(TernaryOp):
-    x: Lazy
-    y: Lazy
-    z: Lazy
-
-    @property
-    def srcs(self) -> ta.Sequence[Lazy]:
-        return [self.x, self.y, self.z]
 
 
 #

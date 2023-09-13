@@ -73,6 +73,7 @@ class CstyleDialect:
         ops.Log2: lambda x: f'log2({x})',
         ops.Sin: lambda x: f'sin({x})',
         ops.Sqrt: lambda x: f'sqrt({x})',
+        ops.Neg: lambda x: f'(-{x})',
 
         ops.Add: lambda a, b: f'({a}+{b})',
         ops.Sub: lambda a, b: f'({a}-{b})',
