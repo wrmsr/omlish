@@ -95,7 +95,7 @@ class Sub(Func):
     def backward(self, grad_output: Buffer) -> ta.Tuple[ta.Optional[Buffer], ta.Optional[Buffer]]:
         return (
             grad_output if self._needs_input_grad[0] else None,
-            grad_output.const_like(0).binary_op(ops.Sub, grad_output) if self._needs_input_grad[1] else None,
+            grad_output.unary_op(ops.Neg) if self._needs_input_grad[1] else None,
         )
 
 
@@ -129,8 +129,7 @@ class Div(Func):
             grad_output.binary_op(ops.Div, self._y) if self._needs_input_grad[0] else None,
             (
                 grad_output
-                .const_like(0)
-                .binary_op(ops.Sub, grad_output)
+                .unary_op(ops.Neg)
                 .binary_op(ops.Mul, self._x)
                 .binary_op(ops.Div, self._y.binary_op(ops.Mul, self._y))
             ) if self._needs_input_grad[1] else None
@@ -323,6 +322,15 @@ class Max(Func):
 
         grad_output_expanded = grad_output.movement_op(ops.Expand, self._x.shape)
         return max_is_amount.binary_op(ops.Mul, grad_output_expanded)
+
+
+class Neg(Func):
+
+    def forward(self, x: Buffer) -> Buffer:
+        return x.unary_op(ops.Neg)
+
+    def backward(self, grad: Buffer) -> Buffer:
+        return grad.unary_op(ops.Neg)
 
 
 ##
