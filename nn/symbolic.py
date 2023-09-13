@@ -120,9 +120,9 @@ class Sym(lang.Abstract, lang.Sealed):
     def eqz(self) -> SymInt:
         return not (self.max == self.min == 0)
 
-    def __bool__(self) -> bool:
-        # return self.eqz()
-        raise TypeError(self)
+    def __bool__(self) -> bool:  # FIXME:
+        # raise TypeError(self)  # FIXME:
+        return self.eqz()
 
     def __eq__(self, other: ta.Any) -> bool:
         if not isinstance(other, Sym):
