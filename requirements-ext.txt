@@ -3,10 +3,10 @@
 
 ### nn
 
-matplotlib==3.7.2
+matplotlib==3.7.3
 numpy==1.25.2
 
-huggingface_hub==0.16.4
+huggingface_hub==0.17.1
 
 ##
 
@@ -23,7 +23,7 @@ pyobjc-framework-metal==9.2; sys_platform == 'darwin'
 
 ##
 
-pandas==2.0.3
+pandas==2.1.0
 
 opencv-python==4.8.0.76
 pillow==10.0.0
@@ -45,14 +45,14 @@ torchvision==0.15.2
 
 networkx==3.1
 
-nevergrad==0.11.0
+nevergrad==0.12.0
 
 unicorn==2.0.1.post1
 
 
 ### infra
 
-boto3>=1.28.37
+boto3>=1.28.47
 
 google-cloud-compute==1.14.0
 
@@ -66,8 +66,8 @@ soco==0.29.1
 sounddevice==0.4.6
 vosk==0.3.44
 
-bellows==0.35.9
-zigpy==0.56.4
+bellows==0.36.3
+zigpy==0.57.1
 
 # python-openzwave
-zwave-js-server-python==0.51.0
+zwave-js-server-python==0.51.2

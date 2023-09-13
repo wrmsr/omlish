@@ -105,7 +105,7 @@ class Sym(lang.Abstract, lang.Sealed):
 
     def vars(self) -> ta.Iterator['Var']:
         return
-        yield  # noqa
+        yield  # type: ignore  # noqa
 
     @cached.property
     def key(self) -> str:
@@ -141,6 +141,9 @@ class Sym(lang.Abstract, lang.Sealed):
     def __sub__(self, b: SymInt) -> 'Sym':
         return self + -b
 
+    def __rsub__(self, b: int) -> 'Sym':
+        return -self + b
+
     def __le__(self, b: SymInt) -> 'Sym':
         return self < (b + 1)
 
@@ -148,7 +151,7 @@ class Sym(lang.Abstract, lang.Sealed):
         return (-self) < (-b)
 
     def __ge__(self, b: SymInt) -> 'Sym':
-        return Lt.new(-self, -b + 1)
+        return (-self) < (-b + 1)
 
     def __lt__(self, b: SymInt) -> 'Sym':
         lhs = self
@@ -275,7 +278,7 @@ class Var(Sym, lang.Final):
         super().__init__()
 
     @property
-    def name(self) -> str:
+    def name(self) -> ta.Optional[str]:
         return self._name
 
     @property
@@ -305,6 +308,9 @@ class Num(Sym, lang.Final):
         return super().__hash__()
 
     def __int__(self) -> int:
+        return self._b
+
+    def __index__(self) -> int:
         return self._b
 
     @property
@@ -374,7 +380,7 @@ class Lt(Op):
     def calc_bounds(cls, a: Sym, b: SymInt) -> ta.Tuple[SymInt, SymInt]:
         # return int(a.max < b), int(a.min < b)
         if isinstance(b, int):
-            return int(a.max < b), int(a.min < b)
+            return a.max < b, a.min < b
         elif a.max < b.min:
             return (1, 1)
         elif a.min > b.max:
@@ -599,7 +605,7 @@ class Sum(Red, lang.Final):
 
         return Sym.__mod__(sum_(new_syms), b)  # FIXME: :|
 
-    def __lt__(self, b: SymInt) -> SymInt:
+    def __lt__(self, b: SymInt) -> Sym:
         if isinstance(b, int):
             new_sum = []
             for x in self.syms:

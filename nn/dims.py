@@ -11,8 +11,11 @@ from omlish import check
 from omlish import dataclasses as dc
 import numpy as np
 
+from . import symbolic as sym
+
 
 T = ta.TypeVar('T')
+SymIntT = ta.TypeVar('SymIntT', bound=sym.SymInt)
 
 
 class Dims(tuple[int]):

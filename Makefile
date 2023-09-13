@@ -2,7 +2,7 @@ SHELL:=/bin/bash
 
 PROJECT:=omlish
 
-PYTHON_VERSION_11:=3.11.4
+PYTHON_VERSION_11:=3.11.5
 PYTHON_VERSION_12:=3.12-dev
 PYTHON_VERSION_NOGIL:=nogil-3.12
 
@@ -18,16 +18,18 @@ ALL_SOURCES:=\
 
 ### Clean
 
+.PHONY: clean-venv
+clean-venv:
+	-rm -rf .venv*
+
 .PHONY: clean
-clean:
+clean: clean-venv
 	-rm -rf ${PROJECT}.egg-info
 	-rm -rf *.sock
 	-rm -rf .mypy_cache
 	-rm -rf .pytest_cache
 	-rm -rf build
 	-rm -rf dist
-
-	-rm -rf .venv*
 
 
 ### Venv
