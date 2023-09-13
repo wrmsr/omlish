@@ -55,7 +55,7 @@ class LinearAnalyzer:
             xa.shape,
             xa.dtype,
             xa.flops + xa.shape.prod,
-            )
+        )
 
     @_analyze.register
     def _analyze_cast(self, op: ops.Cast) -> LinearAnalysis:
@@ -70,7 +70,7 @@ class LinearAnalyzer:
             xa.shape,
             check.equal(xa.dtype, ya.dtype),
             xa.flops + ya.flops + xa.shape.prod,
-            )
+        )
 
     @_analyze.register
     def _analyze_reduce_op(self, op: ops.ReduceOp) -> LinearAnalysis:
@@ -80,7 +80,7 @@ class LinearAnalyzer:
             op.new_shape,
             xa.dtype,
             xa.flops + xa.shape.prod,
-            )
+        )
 
     @_analyze.register
     def _analyze_where_op(self, op: ops.Where) -> LinearAnalysis:
@@ -92,7 +92,7 @@ class LinearAnalyzer:
             xa.shape,
             xa.dtype,
             xa.flops + ya.flops + za.flops + xa.shape.prod,
-            )
+        )
 
     @_analyze.register
     def _analyze_movement_op(self, op: ops.MovementOp) -> LinearAnalysis:
