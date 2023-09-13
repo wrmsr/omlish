@@ -1,5 +1,5 @@
 import time
-import typing as ta
+import typing as ta  # noqa
 
 from omlish import check
 import numpy as np

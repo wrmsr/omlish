@@ -411,9 +411,9 @@ class LinearCodegenOp(CodegenOp):
         if self._opts.global_max and self._opts.local_max:
             self.limit_global_dims(3, self._opts.global_max, self._opts.local_max)
 
-        # add global buffers
-        for buf, name in self._arg_bufs.items():
-            self.uop(UOps.DEFINE_GLOBAL, None, [], (name, buf.dtype))
+        ## add global buffers
+        # for buf, name in self._arg_bufs.items():
+        #     self.uop(UOps.DEFINE_GLOBAL, None, [], (name, buf.dtype))
 
         if len(self._group_for_reduce):
             # TODO: the strides of this can be controlled
