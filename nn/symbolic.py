@@ -155,21 +155,7 @@ class Sym(lang.Abstract, lang.Sealed):
         return Lt.new(-self, -b + 1)
 
     def __lt__(self, b: SymInt) -> 'Sym':
-        lhs = self
-        if isinstance(lhs, Sum) and isinstance(b, int):
-            muls: list[Mul]
-            muls, others = col.partition(lhs.syms, lambda x: isinstance(x, Mul) and x.b > 0 and x.max >= b)
-            if len(muls):
-                # NOTE: gcd in python 3.8 takes exactly 2 args
-                mul_gcd = muls[0].b
-                for x in muls[1:]:
-                    mul_gcd = math.gcd(mul_gcd, x.b)
-                if b % mul_gcd == 0:
-                    all_others = sum_(others)
-                    if all_others.min >= 0 and all_others.max < mul_gcd:
-                        # TODO: should we divide both by mul_gcd here?
-                        lhs = sum_(muls)
-        return Lt.new(lhs, b)
+        return Lt.new(self, b)
 
     def __mul__(self, b: SymInt) -> 'Sym':
         if b == 0:
@@ -607,6 +593,8 @@ class Sum(Red, lang.Final):
         return Sym.__mod__(sum_(new_syms), b)  # FIXME: :|
 
     def __lt__(self, b: SymInt) -> SymInt:
+        lhs: Sym = self
+
         if isinstance(b, int):
             new_sum = []
             for x in self.syms:
@@ -615,8 +603,24 @@ class Sum(Red, lang.Final):
                     b -= x.b
                 else:
                     new_sum.append(x)
-            return Sym.__lt__(sum_(new_sum), b)  # FIME: :|
-        return super().__lt__(b)
+            lhs = sum_(new_sum)
+
+            if isinstance(lhs, Sum):
+                muls: list[Mul]
+                muls, others = col.partition(lhs.syms, lambda x: isinstance(x, Mul) and x.b > 0 and x.max >= b)
+                if muls:
+                    # NOTE: gcd in python 3.8 takes exactly 2 args
+                    mul_gcd = muls[0].b
+                    for x in muls[1:]:
+                        mul_gcd = gcd(mul_gcd, x.b)  # type: ignore  # mypy cannot tell x.b is int here
+
+                    if b % mul_gcd == 0:
+                        all_others = sum_(others)
+                        if all_others.min >= 0 and all_others.max < mul_gcd:
+                            # TODO: should we divide both by mul_gcd here?
+                            lhs = sum_(muls)
+
+        return Sym.__lt__(lhs, b)  # FIXME: :|
 
     def flat(self) -> ta.Iterator[Sym]:
         for x in self.syms:
