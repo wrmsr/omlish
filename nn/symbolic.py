@@ -18,6 +18,7 @@ from omlish import lang
 
 
 SymInt: ta.TypeAlias = ta.Union['Sym', int]
+VarNum: ta.TypeAlias = ta.Union['Var', 'Num']
 
 
 def is_sym_int(o: ta.Any) -> bool:
@@ -673,7 +674,7 @@ def factorize(syms: ta.Iterable[Sym]) -> list[Sym]:
     return [Mul.new(a, b_sum) if b_sum != 1 else a for a, b_sum in mul_groups.items() if b_sum != 0]
 
 
-def substitute(n: Sym, var_vals: ta.Mapping[Var, Sym]) -> Sym:
+def substitute(n: Sym, var_vals: ta.Mapping[VarNum, Sym]) -> Sym:
     if isinstance(n, Num):
         return n
     if isinstance(n, Var):
@@ -705,20 +706,19 @@ def infer(n: SymInt, var_vals: ta.Mapping[Var, int]) -> int:
     return check.isinstance(ret, Num).b
 
 
-def expand(n: Sym) -> ta.List[Sym]:
-    if isinstance(n, Var):
-        return [n] if n.expr is not None else [Num(j) for j in range(n.min, n.max + 1)]
-    if isinstance(n, Num):
-        return [n]
-    if isinstance(n, Mul):
-        return [x * n.b for x in expand(n.a)]
-    if isinstance(n, Div):
-        return [x // n.b for x in expand(n.a)]
-    if isinstance(n, Mod):
-        return [x % n.b for x in expand(n.a)]
-    if isinstance(n, Sum):
-        return [sum_(it) for it in itertools.product(*[expand(x) for x in n.syms])]
-    raise TypeError(n)
+def expand_idx(n: Sym) -> VarNum:
+    return next((v for v in n.vars() if v.expr is None), Num(0))
+
+
+def expand(n, idxs: ta.Optional[ta.Sequence[VarNum]] = None) -> ta.List[Sym]:
+    if idxs is None:
+        idxs = (n.expand_idx(),)
+    return [n.substitute(dict(zip(idxs, (Num(x) for x in rep)))) for rep in iter_idxs(idxs)]
+
+
+def iter_idxs(idxs: ta.Sequence[VarNum]) -> ta.Iterator[ta.Sequence[int]]:
+    for x in itertools.product(*[[x for x in range(v.min, v.max + 1)] for v in idxs[::-1]]):
+        yield from x[::-1]
 
 
 ##
