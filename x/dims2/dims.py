@@ -30,7 +30,9 @@ class Stride(Dims[IntStrT]):
 def _main() -> None:
     assert isinstance(Shape([1, 2, 3]), Shape)
     assert isinstance(Shape(['1', '2', '3']), Shape)
-    assert isinstance(Shape(ta.cast(ta.List[int | str], ['1', 2, '3'])), Shape)
+    assert isinstance(s := Shape(ta.cast(ta.List[int | str], ['1', 2, '3'])), Shape)
+    if ta.TYPE_CHECKING:
+        reveal_type(s)
     assert isinstance(Shape(['1', 2, 3.]), Shape)
 
 

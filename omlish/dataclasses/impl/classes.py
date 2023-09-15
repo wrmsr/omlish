@@ -28,6 +28,7 @@ from .metadata import get_merged_metadata
 from .params import ParamsExtras
 from .params import get_field_extras
 from .params import get_params12
+from .replace import _replace
 from .utils import Namespace
 from .utils import create_fn
 from .utils import set_new_attribute
@@ -414,6 +415,9 @@ class ClassProcessor:
         ifs = get_init_fields(self._fields().values())
         set_new_attribute(self._cls, '__match_args__', tuple(f.name for f in ifs.std))
 
+    def _process_replace(self) -> None:
+        set_new_attribute(self._cls, '__replace__', _replace)
+
     @lang.cached_nullary
     def _transform_slots(self) -> None:
         if self._params12.weakref_slot and not self._params12.slots:
@@ -439,6 +443,7 @@ class ClassProcessor:
         self._process_hash()
         self._process_doc()
         self._process_match_args()
+        self._process_replace()
 
         self._transform_slots()
 

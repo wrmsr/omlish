@@ -19,7 +19,7 @@ from dataclasses import (  # noqa
     # asdict,
     # astuple,
 
-    replace,
+    # replace,
 )
 
 from .impl.api import (  # noqa
@@ -32,6 +32,10 @@ from .impl.api import (  # noqa
 from .impl.as_ import (  # noqa
     asdict,
     astuple,
+)
+
+from .impl.replace import (  # noqa
+    replace,
 )
 
 
