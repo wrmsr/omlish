@@ -1,19 +1,3 @@
-"""
-LOOP = auto()
-END = auto()
-SPECIAL = auto()  # loops can be global, local, or other # noqa: E702
-DEFINE_GLOBAL = auto()
-DEFINE_LOCAL = auto()
-DEFINE_ACC = auto()  # this defines buffers # noqa: E702
-LOAD = auto()
-STORE = auto()
-CONST = auto()
-BARRIER = auto()  # noqa: E702
-ALU = auto()
-WMMA = auto()
-CAST = auto()
-GEP = auto()  # noqa: E702
-"""
 import abc
 import typing as ta
 
@@ -45,22 +29,24 @@ class End(Uop, lang.Final):
 
 @dc.dataclass(frozen=True)
 class Special(Uop, lang.Final):
-    pass
+    args: ta.Sequence[ta.Any]
 
 
 @dc.dataclass(frozen=True)
 class DefineGlobal(Uop, lang.Final):
-    pass
+    name: str
+    elem_dtype: Dtype
 
 
 @dc.dataclass(frozen=True)
 class DefineLocal(Uop, lang.Final):
-    pass
+    name: str
+    sz: int
 
 
 @dc.dataclass(frozen=True)
 class DefineAcc(Uop, lang.Final):
-    pass
+    init: float
 
 
 @dc.dataclass(frozen=True)
@@ -75,7 +61,7 @@ class Store(Uop, lang.Final):
 
 @dc.dataclass(frozen=True)
 class Const(Uop, lang.Final):
-    pass
+    v: Scalar
 
 
 @dc.dataclass(frozen=True)
@@ -85,7 +71,7 @@ class Barrier(Uop, lang.Final):
 
 @dc.dataclass(frozen=True)
 class Alu(Uop, lang.Final):
-    pass
+    ty: ta.Type[ops.Op]
 
 
 @dc.dataclass(frozen=True)
@@ -100,4 +86,4 @@ class Cast(Uop, lang.Final):
 
 @dc.dataclass(frozen=True)
 class Gep(Uop, lang.Final):
-    pass
+    idx: int
