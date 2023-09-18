@@ -67,7 +67,7 @@ class ConcreteDtype(Dtype, lang.Final):
 
 
 Float32 = ConcreteDtype('float32', 4, np_.float32, 4)
-Float4 = ConcreteDtype('float4', 4, None, 1, sz=4)
+Float4 = ConcreteDtype('float4', 4, None, 4 * 4, sz=4)
 
 
 @dc.dataclass(frozen=True, repr=False, eq=False)
