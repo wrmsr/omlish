@@ -14,10 +14,7 @@ import numpy as np
 from . import symbolic as sym
 
 
-SymIntT = ta.TypeVar('SymIntT', bound=sym.SymInt)
-
-
-class Dims(tuple[SymIntT]):
+class Dims(tuple[sym.SymInt]):
     def __new__(cls, *args, **kwargs):
         if kwargs:
             raise TypeError
@@ -40,7 +37,7 @@ class Dims(tuple[SymIntT]):
         return math.prod(self)
 
 
-class Shape(Dims[SymIntT]):
+class Shape(Dims):
     def __eq__(self, other):
         if not isinstance(other, Shape):
             raise TypeError(other)
@@ -63,7 +60,7 @@ class Shape(Dims[SymIntT]):
         return Shape(x.shape)
 
 
-class Stride(Dims[SymIntT]):
+class Stride(Dims):
     def offset(self, *idxs: int) -> int:
         check.arg(len(self) == len(idxs))
         return sum(d * i for d, i in zip(self, idxs))
