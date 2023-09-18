@@ -22,8 +22,8 @@ IS_12 = sys.version_info[1] >= 12
 
 
 def field(
-        *,
         default=MISSING,
+        *,
         default_factory=MISSING,
         init=True,
         repr=True,

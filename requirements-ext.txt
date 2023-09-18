@@ -4,9 +4,9 @@
 ### nn
 
 matplotlib==3.8.0
-numpy==1.25.2
+numpy==1.26.0
 
-huggingface_hub==0.17.1
+huggingface_hub==0.17.2
 
 ##
 
@@ -52,7 +52,7 @@ unicorn==2.0.1.post1
 
 ### infra
 
-boto3>=1.28.48
+boto3>=1.28.50
 
 google-cloud-compute==1.14.1
 

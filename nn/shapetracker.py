@@ -25,7 +25,7 @@ def is_contiguous(shape: Shape, stride: Stride) -> bool:
 class View(dc.Data, lang.Final):
     shape: Shape = dc.field(coerce=check.of_isinstance(Shape))
     stride: Stride = dc.field(coerce=check.of_isinstance(Stride))
-    offset: int = 0
+    offset: sym.SymInt = 0
     mask: ta.Any = None  # FIXME: ta.Optional[ta.Tuple[ta.Tuple[int, int], ...]]
 
     @classmethod
@@ -72,7 +72,12 @@ class View(dc.Data, lang.Final):
         if idx is None:
             idx = sym.var('idx', 0, self.shape.prod)
 
-        ret: ta.List[sym.Sym] = [sym.Num(self.offset)]
+        ret: ta.List[sym.Sym]
+        if self.offset:
+            ret = [sym.Num(self.offset) if isinstance(self.offset, int) else self.offset]
+        else:
+            ret = []
+
         acc = 1
         for ss in reversed(self.shape_strides):
             ret.append(((idx // acc) % ss.shape) * ss.stride)
@@ -84,7 +89,7 @@ class View(dc.Data, lang.Final):
         """~expr_idxs"""
         check.arg(len(idxs) == len(self.shape))
         return sym.sum_(
-            [sym.Num(self.offset)] + [
+            [sym.Num(self.offset) if isinstance(self.offset, int) else self.offset] + [
                 idx * st
                 for idx, sh, st in zip(idxs, self.shape, self.stride)
                 if sh != 1 and st != 0
@@ -358,7 +363,7 @@ class ShapeTracker(lang.Final):
         ret: ta.List[ta.Optional[int]] = [None] * len(self.shape)
 
         for this_dim in idx.syms if isinstance(idx, sym.Sum) else [idx]:
-            if isinstance(this_dim, sym.Mul) and isinstance(this_dim.a, sym.Var):
+            if isinstance(this_dim, sym.Mul) and isinstance(this_dim.a, sym.Var) and this_dim.a in idxs:
                 ret[idxs.index(this_dim.a)] = this_dim.b
             elif isinstance(this_dim, sym.Var):
                 ret[idxs.index(this_dim)] = 1
