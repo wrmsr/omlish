@@ -258,8 +258,11 @@ class Variable(Node):
             return NumNode(nmin)
         return super().__new__(cls)
 
-    def __init__(self, expr: ta.Optional[str], nmin: int, nmax: int):
-        self.expr, self.min, self.max = expr, nmin, nmax
+    def __init__(self, expr: ta.Optional[str], nmin: int, nmax: int) -> None:
+        super().__init__()
+        self.expr = expr
+        self.min = nmin
+        self.max = nmax
 
     def vars(self):
         return [self]
@@ -269,10 +272,12 @@ class Variable(Node):
 
 
 class NumNode(Node):
-    def __init__(self, num: int):
+    def __init__(self, num: int) -> None:
+        super().__init__()
         assert isinstance(num, int), f"{num} is not an int"
         self.b: int = num
-        self.min, self.max = num, num
+        self.min = num
+        self.max = num
 
     def __eq__(self, other):
         return self.b == other
@@ -294,8 +299,10 @@ def create_node(ret: Node):
 
 
 class OpNode(Node):
-    def __init__(self, a: Node, b: ta.Union[Node, int]):
-        self.a, self.b = a, b
+    def __init__(self, a: Node, b: ta.Union[Node, int]) -> None:
+        super().__init__()
+        self.a = a
+        self.b = b
         self.min, self.max = self.get_bounds()
 
     def vars(self):
@@ -395,7 +402,8 @@ class ModNode(OpNode):
 
 
 class RedNode(Node):
-    def __init__(self, nodes: list[Node]):
+    def __init__(self, nodes: list[Node]) -> None:
+        super().__init__()
         self.nodes = nodes
 
     def vars(self):

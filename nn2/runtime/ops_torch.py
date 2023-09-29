@@ -67,13 +67,12 @@ torch_fxn_for_op: dict[type[ops.LazyOp], ta.Callable] = {
 
 
 class RawTorchBuffer(RawBuffer):
-    def __init__(self, size: int, dtype: DType, buf: ta.Optional[torch.Tensor] = None):
+    def __init__(self, size: int, dtype: DType, buf: ta.Optional[torch.Tensor] = None) -> None:
         super().__init__(
             size,
             dtype,
             buf
-            if buf is not None
-            else torch.empty([size], dtype=inverse_type_map[dtype]),
+            if buf is not None else torch.empty([size], dtype=inverse_type_map[dtype]),
         )
 
     @classmethod

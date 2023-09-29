@@ -19,7 +19,8 @@ class LLVM:
     engine: ta.ClassVar[llvm.executionengine.ExecutionEngine] = None
     optimizer: ta.ClassVar[llvm.passmanagers.ModulePassManager] = None
 
-    def __init__(self):
+    def __init__(self) -> None:
+        super().__init__()
         if LLVM.engine is not None:
             return
         llvm.initialize()
@@ -57,7 +58,8 @@ class LLVM:
 
 
 class LlvmProgram:
-    def __init__(self, name: str, prg: str, binary=False):
+    def __init__(self, name: str, prg: str, binary=False) -> None:
+        super().__init__()
         self.mod = llvm.parse_assembly(prg)
         self.mod.verify()
         LLVM().optimizer.run(self.mod)

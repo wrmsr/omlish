@@ -18,7 +18,8 @@ class RawDiskBuffer(RawBufferMapped):
         buf=None,
         shape=None,
         offset=0,
-    ):  # pylint: disable=super-init-not-called
+    ) -> None:  # pylint: disable=super-init-not-called
+        # super *not* called
         self.shape = (size,) if shape is None else shape
         self.offset = offset  # this is an offset in bytes
         assert (

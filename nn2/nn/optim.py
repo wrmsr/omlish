@@ -3,7 +3,9 @@ from ..tensor import Tensor
 
 
 class Optimizer:
-    def __init__(self, params: list[Tensor], lr: float):
+    def __init__(self, params: list[Tensor], lr: float) -> None:
+        super().__init__()
+
         # if it's None, but being put into an optimizer, set it to True
         for x in params:
             if x.requires_grad is None:
@@ -38,9 +40,11 @@ class SGD(Optimizer):
         momentum=0,
         weight_decay=0.0,
         nesterov=False,
-    ):
+    ) -> None:
         super().__init__(params, lr)
-        self.momentum, self.wd, self.nesterov = momentum, weight_decay, nesterov
+        self.momentum = momentum
+        self.wd = weight_decay
+        self.nesterov = nesterov
         self.b = (
             [
                 Tensor.zeros(*t.shape, device=t.device, requires_grad=False)
@@ -86,14 +90,12 @@ class LAMB(Optimizer):
         adam=False,
     ):
         super().__init__(params, lr)
-        self.b1, self.b2, self.eps, self.wd, self.adam, self.t = (
-            b1,
-            b2,
-            eps,
-            wd,
-            adam,
-            Tensor([0], requires_grad=False).realize(),
-        )
+        self.b1 = b1
+        self.b2 = b2
+        self.eps = eps
+        self.wd = wd
+        self.adam = adam
+        self.t = Tensor([0], requires_grad=False).realize()
         self.m = [
             Tensor.zeros(*t.shape, device=t.device, requires_grad=False)
             for t in self.params

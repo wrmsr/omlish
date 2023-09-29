@@ -42,7 +42,8 @@ class MetalAllocator(LruAllocator):
 
 
 class _METAL:
-    def __init__(self):
+    def __init__(self) -> None:
+        super().__init__()
         self.mtl_buffers_in_flight: list[ta.Any] = []
         self.device = Metal.MTLCreateSystemDefaultDevice()
         self.mtl_queue = self.device.newCommandQueueWithMaxCommandBufferCount_(1024)
@@ -61,7 +62,7 @@ METAL = _METAL()
 
 
 class RawMetalBuffer(RawBufferMapped):
-    def __init__(self, size: int, dtype: DType):
+    def __init__(self, size: int, dtype: DType) -> None:
         assert dtype != dtypes.double, f"METAL does not support {dtype.name}"
         super().__init__(size, dtype, allocator=METAL.allocator)
 
@@ -77,7 +78,8 @@ def unwrap(x):
 
 
 class MetalProgram:
-    def __init__(self, name: str, prg: str, binary: bool = False):
+    def __init__(self, name: str, prg: str, binary: bool = False) -> None:
+        super().__init__()
         if METAL_XCODE:
             air = subprocess.check_output(
                 [
