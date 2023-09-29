@@ -1,78 +1,71 @@
 from __future__ import annotations
-from typing import (
-    List,
-    Tuple,
-    Any,
-    Optional,
-    cast,
-    DefaultDict,
-    NamedTuple,
-    Dict,
-    Union,
-    Sequence,
-    Final,
-    Set,
-)
-import itertools, math, functools
-from collections import defaultdict
-from enum import Enum, auto
 
-from ..helpers import (
-    colored,
-    ImageDType,
-    DEBUG,
-    dtypes,
-    DType,
-    prod,
-    PtrDType,
-    all_same,
-)
-from ..ops import LazyOp, UnaryOps, ConstBuffer, MemBuffer, BufferOps
-from ..ops import ReduceOps, BinaryOps, TernaryOps
-from ..shape.shapetracker import ShapeTracker
-from ..shape.symbolic import (
-    Variable,
-    NumNode,
-    Node,
-    SumNode,
-    MulNode,
-    DivNode,
-    ModNode,
-    LtNode,
-    AndNode,
-    sym_rename,
-)
-from ..codegen.optimizer import OptimizedKernel
+import typing as ta
+import itertools
+import math
+import functools
+import collections
+import enum
+
 from ..codegen.kernel import LocalBuffer
+from ..codegen.optimizer import OptimizedKernel
+from ..helpers import DEBUG
+from ..helpers import DType
+from ..helpers import ImageDType
+from ..helpers import PtrDType
+from ..helpers import all_same
+from ..helpers import colored
+from ..helpers import dtypes
+from ..helpers import prod
+from ..ops import BinaryOps
+from ..ops import BufferOps
+from ..ops import ConstBuffer
+from ..ops import LazyOp
+from ..ops import MemBuffer
+from ..ops import ReduceOps
+from ..ops import TernaryOps
+from ..ops import UnaryOps
+from ..shape.shapetracker import ShapeTracker
+from ..shape.symbolic import AndNode
+from ..shape.symbolic import DivNode
+from ..shape.symbolic import LtNode
+from ..shape.symbolic import ModNode
+from ..shape.symbolic import MulNode
+from ..shape.symbolic import Node
+from ..shape.symbolic import NumNode
+from ..shape.symbolic import SumNode
+from ..shape.symbolic import Variable
+from ..shape.symbolic import sym_rename
 
-VariableOrNum = Union[Variable, NumNode, Node]
+
+VariableOrNum = ta.Union[Variable, NumNode, Node]
 
 
 # bottom ones are asm only
-class UOps(Enum):
-    LOOP = auto()
-    END = auto()
-    SPECIAL = auto()  # loops can be global, local, or other # noqa: E702
-    DEFINE_GLOBAL = auto()
-    DEFINE_LOCAL = auto()
-    DEFINE_ACC = auto()  # this defines buffers # noqa: E702
-    LOAD = auto()
-    STORE = auto()
-    CONST = auto()
-    BARRIER = auto()  # noqa: E702
-    ALU = auto()
-    WMMA = auto()
-    CAST = auto()
-    GEP = auto()  # noqa: E702
+class UOps(enum.Enum):
+    LOOP = enum.auto()
+    END = enum.auto()
+    SPECIAL = enum.auto()  # loops can be global, local, or other # noqa: E702
+    DEFINE_GLOBAL = enum.auto()
+    DEFINE_LOCAL = enum.auto()
+    DEFINE_ACC = enum.auto()  # this defines buffers # noqa: E702
+    LOAD = enum.auto()
+    STORE = enum.auto()
+    CONST = enum.auto()
+    BARRIER = enum.auto()  # noqa: E702
+    ALU = enum.auto()
+    WMMA = enum.auto()
+    CAST = enum.auto()
+    GEP = enum.auto()  # noqa: E702
 
 
 def to_image_idx(
-    base_shape: Tuple[int, ...], idxy: Node, valid: Node
-) -> Tuple[Tuple[Node, Node], Node]:
+    base_shape: tuple[int, ...], idxy: Node, valid: Node
+) -> tuple[tuple[Node, Node], Node]:
     # This part is substituting variables by just looking at single var LtNodes in valid
     # Basically if var[0-5] < 3 -> var[0-2]
     if valid.min == 0:
-        nodes: List = valid.nodes if isinstance(valid, AndNode) else [valid]
+        nodes: list = valid.nodes if isinstance(valid, AndNode) else [valid]
         var_dict = {var: [var.min, var.max] for var in valid.vars()}
 
         for nd in nodes:
@@ -88,7 +81,7 @@ def to_image_idx(
                 var_range[1] = nd.b - 1
         # We do not allow NumNode because it is constant
         # TODO: Remove mx != mn
-        sub_dict: dict[Union[Variable, NumNode], Node] = {
+        sub_dict: dict[ta.Union[Variable, NumNode], Node] = {
             v: Variable(v.expr, mn, mx) for v, (mn, mx) in var_dict.items() if mx != mn
         }
         valid, idxy = valid.substitute(sub_dict), idxy.substitute(sub_dict)
@@ -99,7 +92,7 @@ def to_image_idx(
     # Simplify ModNode if possibe # test_padded_conv_transpose2d, Needs much more thinking
     if valid.min == 0 and isinstance(idx, ModNode) and isinstance(idx.a, SumNode):
         nodes = valid.nodes if isinstance(valid, AndNode) else [valid]
-        same_dict: Dict[Node, List[Tuple[int, Node]]] = {}
+        same_dict: dict[Node, list[tuple[int, Node]]] = {}
         idx_nodes = idx.a.flat_components
 
         for node in nodes:
@@ -170,7 +163,7 @@ def to_image_idx(
             idx.expand(variables),
             idy.expand(variables),
         )
-        val_dict: Dict[int, Set[Tuple[int, int]]] = {0: set(), 1: set()}
+        val_dict: dict[int, set[tuple[int, int]]] = {0: set(), 1: set()}
 
         for v, x, y in zip(val_infer, idx_infer, idy_infer):
             val_dict[v.min].add((x.min, y.min))
@@ -183,11 +176,11 @@ def to_image_idx(
     return (idx, idy), valid
 
 
-class UOp(NamedTuple):
+class UOp(ta.NamedTuple):
     uop: UOps
-    dtype: Optional[DType]
-    vin: Tuple[UOp, ...]
-    arg: Any
+    dtype: ta.Optional[DType]
+    vin: tuple[UOp, ...]
+    arg: ta.Any
 
     def __repr__(self):
         return f"{self.num:4d} {str(self.uop):20s}: {str(self.dtype) if self.dtype is not None else '':25s} {str([x.num for x in self.vin]):32s} {self.arg}"
@@ -225,15 +218,15 @@ def get_grouped_dims(prefix, start_dim, local_dims, maxdim: int = 0):
 
 class Linearizer(OptimizedKernel):
     def uop_alu_idx(self, a: UOp, b, ops, ctx: Linearizer, op, dtype=dtypes.int32):
-        render_b: UOp = cast(
+        render_b: UOp = ta.cast(
             UOp, (NumNode(b) if not isinstance(b, Node) else b).render(ops, ctx)
         )
         return self.uop(UOps.ALU, dtype, (a, render_b), op)
 
-    def const(self, b: Union[int, float], dtype=dtypes.int32) -> UOp:
+    def const(self, b: ta.Union[int, float], dtype=dtypes.int32) -> UOp:
         return self.uop(UOps.CONST, dtype, tuple(), b)
 
-    render_ops: Any = {
+    render_ops: ta.Any = {
         Variable: lambda self, ops, ctx: ctx.loop_uops[self.expr],
         NumNode: lambda self, ops, ctx: ctx.const(self.b),
         MulNode: lambda self, ops, ctx: ctx.uop_alu_idx(
@@ -267,7 +260,7 @@ class Linearizer(OptimizedKernel):
         ),
     }
 
-    def global_load(self, i: int, idxs: Sequence[VariableOrNum], acc=None) -> List[UOp]:
+    def global_load(self, i: int, idxs: ta.Sequence[VariableOrNum], acc=None) -> list[UOp]:
         const = self.bufs[i].val if isinstance(self.bufs[i], ConstBuffer) else acc
 
         expanded_nodes = [idx.expand() for idx in idxs]
@@ -288,7 +281,7 @@ class Linearizer(OptimizedKernel):
         ret = []
         invalid_value = 0 if dtypes.is_int(self.bufs[i].dtype) else 0.0
         for _idx in _idxs:
-            substitute: Dict[VariableOrNum, Node] = {
+            substitute: dict[VariableOrNum, Node] = {
                 a: b for a, b in zip(fake_idxs, _idx) if isinstance(a, Variable)
             }
             if amt > 1:
@@ -380,7 +373,7 @@ class Linearizer(OptimizedKernel):
             )
         return ret
 
-    def global_store(self, i: int, idxs: List[VariableOrNum], store: List[UOp]) -> None:
+    def global_store(self, i: int, idxs: list[VariableOrNum], store: list[UOp]) -> None:
         buf_uop = self.buf_uops[i]
         assert buf_uop is not None, f"buffer {i} wasn't UOped"
 
@@ -391,7 +384,7 @@ class Linearizer(OptimizedKernel):
         # float4 grouping
         upcast_dim = self.get_upcast_dim(i)
         if len(upcast_dim) == 1 and len(expanded_nodes[upcast_dim[0]]) in [2, 4]:
-            grouped_store_offset = defaultdict(list)
+            grouped_store_offset = collections.defaultdict(list)
             for k in store_offset:
                 _idx = (
                     k[: upcast_dim[0]]
@@ -427,22 +420,22 @@ class Linearizer(OptimizedKernel):
                 rendered_idx = idx.render(self.render_ops, self)
             self.uop(UOps.STORE, None, (buf_uop, rendered_idx, var))
 
-    kernel_cnt: Final[DefaultDict[str, int]] = defaultdict(int)
+    kernel_cnt: ta.Final[ta.DefaultDict[str, int]] = collections.defaultdict(int)
 
     def linearize(self):
         self.process()
 
         # global uop cache
-        self.saved_exprs: Dict[Tuple, UOp] = dict()
+        self.saved_exprs: dict[tuple, UOp] = dict()
 
         # limit dims if we need to
         # TODO: broken, and doesn't really belong here
         # if self.opts.global_max and self.opts.local_max: self.limit_dims_to_max(self.opts.global_max, self.opts.local_max)
 
         # uops
-        self.uops: List[UOp] = []
-        self.buf_uops: List[Optional[UOp]] = [None] * len(self.bufs)
-        self.loop_uops: Dict[str, UOp] = {}
+        self.uops: list[UOp] = []
+        self.buf_uops: list[ta.Optional[UOp]] = [None] * len(self.bufs)
+        self.loop_uops: dict[str, UOp] = {}
 
         # add global buffers
         for i, buf in enumerate(self.bufs):
@@ -553,7 +546,7 @@ class Linearizer(OptimizedKernel):
         ]
 
         # global and local loops
-        def render_loop(xx: List[Variable]):
+        def render_loop(xx: list[Variable]):
             self.loop_uops.update(
                 {
                     x.expr: self.uop(
@@ -562,10 +555,10 @@ class Linearizer(OptimizedKernel):
                         (
                             self.const(x.min)
                             if isinstance(x.min, int)
-                            else cast(Variable, x.min).render(self.render_ops, self),
+                            else ta.cast(Variable, x.min).render(self.render_ops, self),
                             self.const(x.max)
                             if isinstance(x.max, int)
-                            else cast(Variable, x.max).render(self.render_ops, self),
+                            else ta.cast(Variable, x.max).render(self.render_ops, self),
                         ),
                         cachable=False,
                     )
@@ -574,7 +567,7 @@ class Linearizer(OptimizedKernel):
                 }
             )
 
-        def end_loop(xx: List[Variable]):
+        def end_loop(xx: list[Variable]):
             for x in xx[::-1]:
                 if not isinstance(x, NumNode) and x.expr is not None:
                     loop_uop = self.loop_uops[x.expr]
@@ -615,7 +608,7 @@ class Linearizer(OptimizedKernel):
         # parse AST
         loaded_buffers = {}
         acc = []
-        self.load_cache: Dict[str, UOp] = {}
+        self.load_cache: dict[str, UOp] = {}
 
         # reduce op
         fake_reduce_idxs = []
@@ -635,7 +628,7 @@ class Linearizer(OptimizedKernel):
                 0,
                 global_idxs + local_idxs + fake_reduce_idxs + upcast_idxs,
                 {ReduceOps.SUM: 0.0, ReduceOps.MAX: -math.inf}[
-                    cast(ReduceOps, self.reduceop.op)
+                    ta.cast(ReduceOps, self.reduceop.op)
                 ],
             )
 
@@ -663,7 +656,7 @@ class Linearizer(OptimizedKernel):
                     )
                     if st == 0
                 ]
-                this_upcast_idxs: List[Node] = []
+                this_upcast_idxs: list[Node] = []
                 # TODO: just flipping the order here is likely not generic at all
                 for j, v in (
                     list(enumerate(full_upcast_idxs))[::-1]
@@ -866,7 +859,7 @@ class Linearizer(OptimizedKernel):
                     -1,
                     fake_global_idxs + local_idxs + fake_reduce_idxs + upcast_idxs,
                     {ReduceOps.SUM: 0.0, ReduceOps.MAX: -math.inf}[
-                        cast(ReduceOps, self.reduceop.op)
+                        ta.cast(ReduceOps, self.reduceop.op)
                     ],
                 )
 
@@ -920,11 +913,11 @@ class Linearizer(OptimizedKernel):
             UOps.DEFINE_GLOBAL,
         }
         while 1:
-            has_child: Set[UOp] = set()
+            has_child: set[UOp] = set()
             for ru in self.uops:
                 for vu in ru.vin:
                     has_child.add(vu)
-            nu: List[UOp] = [
+            nu: list[UOp] = [
                 x for x in self.uops if x in has_child or x.uop in UOPS_W_SIDE_EFFECTS
             ]
             if len(nu) == len(self.uops):
@@ -938,9 +931,9 @@ class Linearizer(OptimizedKernel):
     def uop(
         self,
         uop: UOps,
-        dtype: Optional[DType],
-        vin: Tuple[UOp, ...],
-        arg: Any = None,
+        dtype: ta.Optional[DType],
+        vin: tuple[UOp, ...],
+        arg: ta.Any = None,
         cachable=True,
     ) -> UOp:
         key = (uop, dtype, vin, arg)
@@ -1005,7 +998,7 @@ class Linearizer(OptimizedKernel):
             self.saved_exprs[key] = self.uops[-1]
         return self.uops[-1]
 
-    def ast_parse(self, x, acc, loaded_buffers, do_reduce=False) -> List[UOp]:
+    def ast_parse(self, x, acc, loaded_buffers, do_reduce=False) -> list[UOp]:
         if x.__class__ is not LazyOp:
             return loaded_buffers[x]  # for LOCAL_BUFFER
         if x.op in BufferOps:
@@ -1059,7 +1052,7 @@ class Linearizer(OptimizedKernel):
                 (idx, self.uop(UOps.ALU, dtypes.float32, val, x.op))
                 for idx, val in zip([[i] for i in range(len(values[0]))], zip(*values))
             ]
-        ordered_ret: List[Optional[UOp]] = [None] * len(values[0])
+        ordered_ret: list[ta.Optional[UOp]] = [None] * len(values[0])
         # scatter
         for i, j in ret:
             for k in i:
@@ -1067,4 +1060,4 @@ class Linearizer(OptimizedKernel):
         assert all(
             isinstance(x, UOp) for x in ordered_ret
         ), "some tokens didn't get scattered?"
-        return cast(List[UOp], ordered_ret)
+        return ta.cast(list[UOp], ordered_ret)

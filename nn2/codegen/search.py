@@ -1,7 +1,10 @@
-from typing import Callable
+import typing as ta
 import time
+
 from ..codegen.linearizer import Linearizer
-from ..helpers import DEBUG, prod, getenv
+from ..helpers import DEBUG
+from ..helpers import getenv
+from ..helpers import prod
 
 
 def get_divisors(n, min_div=1, max_div=512):
@@ -55,7 +58,7 @@ def kernel_optimize_opts(k: Linearizer):
 
 
 def kernel_optimize_search(
-    k: Linearizer, create_k: Callable[[], Linearizer], to_prg, baseline, bufs
+    k: Linearizer, create_k: ta.Callable[[], Linearizer], to_prg, baseline, bufs
 ):
     import nevergrad as ng
 
@@ -108,7 +111,7 @@ def kernel_optimize_search(
 global_db = None
 
 
-def kernel_optimize(k: Linearizer, create_k: Callable[[], Linearizer], to_prg, bufs):
+def kernel_optimize(k: Linearizer, create_k: ta.Callable[[], Linearizer], to_prg, bufs):
     global global_db
 
     k.process()
