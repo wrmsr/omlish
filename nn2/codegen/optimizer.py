@@ -4,6 +4,7 @@ import itertools
 import math
 import os
 
+from .. import ops
 from ..codegen.kernel import Kernel
 from ..codegen.kernel import LocalBuffer
 from ..dtypes import ImageDType
@@ -11,11 +12,7 @@ from ..dtypes import dtypes
 from ..helpers import DEBUG
 from ..helpers import getenv
 from ..helpers import prod
-from ..ops import BinaryOps
-from ..ops import BufferOps
 from ..ops import LazyOp
-from ..ops import ReduceOps
-from ..ops import UnaryOps
 from ..shape.shapetracker import ShapeTracker
 from ..shape.view import View
 
@@ -273,13 +270,13 @@ class OptimizedKernel(Kernel):
             use_tensor_cores != 0
             and self.opts.device == "HIP"
             and self.reduceop
-            and self.reduceop.op == ReduceOps.SUM
+            and isinstance(self.reduceop, ops.Sum)
             and isinstance(self.reduceop.src[0], LazyOp)
-            and self.reduceop.src[0].op == UnaryOps.CAST
+            and isinstance(self.reduceop.src[0], ops.Cast)
             and isinstance(self.reduceop.src[0].src[0], LazyOp)
-            and self.reduceop.src[0].src[0].op == BinaryOps.MUL
-            and self.reduceop.src[0].src[0].src[0].op == BufferOps.MEM
-            and self.reduceop.src[0].src[0].src[1].op == BufferOps.MEM
+            and isinstance(self.reduceop.src[0].src[0], ops.Mul)
+            and isinstance(self.reduceop.src[0].src[0].src[0], ops.Mem)
+            and isinstance(self.reduceop.src[0].src[0].src[1], ops.Mem)
             and self.opts.has_local
             and ta.cast(LazyOp, self.reduceop.src[0].src[0].src[0]).arg.dtype
             == dtypes.half
@@ -373,11 +370,11 @@ class OptimizedKernel(Kernel):
         if (
             tensor_cores_allowed
             and self.reduceop
-            and self.reduceop.op == ReduceOps.SUM
+            and isinstance(self.reduceop, ops.Sum)
             and isinstance(self.reduceop.src[0], LazyOp)
-            and self.reduceop.src[0].op == BinaryOps.MUL
-            and self.reduceop.src[0].src[0].op == BufferOps.MEM
-            and self.reduceop.src[0].src[1].op == BufferOps.MEM
+            and isinstance(self.reduceop.src[0], ops.Mul)
+            and isinstance(self.reduceop.src[0].src[0]. ops.Mem)
+            and isinstance(self.reduceop.src[0].src[1]. ops.Mem)
             and self.opts.has_local
         ):
             # METAL tensor cores are 8x8x8, with 2 elements per thread in the 32 thread warp
