@@ -60,7 +60,7 @@ class Function:
         return ret
 
 
-from . import mlops  # noqa
+from . import funcs  # noqa
 
 
 class Tensor:
@@ -382,11 +382,11 @@ class Tensor:
                     t.grad = g if t.grad is None else (t.grad + g)
             del t0._ctx
 
-    # ***** movement mlops *****
+    # ***** movement funcs *****
     def reshape(self, shape, *args) -> Tensor:
         new_shape = argfix(shape, *args)
         assert 0 not in new_shape, f"zeros not allowed in shape {new_shape}"
-        return mlops.Reshape.apply(
+        return funcs.Reshape.apply(
             self,
             shape=tuple(
                 [
@@ -397,7 +397,7 @@ class Tensor:
         )
 
     def expand(self, shape, *args) -> Tensor:
-        return mlops.Expand.apply(
+        return funcs.Expand.apply(
             self,
             shape=tuple(
                 [x if x != -1 else s for s, x in zip(self.shape, argfix(shape, *args))]
@@ -405,27 +405,27 @@ class Tensor:
         )
 
     def permute(self, order, *args) -> Tensor:
-        return mlops.Permute.apply(self, order=argfix(order, *args))
+        return funcs.Permute.apply(self, order=argfix(order, *args))
 
     def flip(self, axis, *args) -> Tensor:
-        return mlops.Flip.apply(
+        return funcs.Flip.apply(
             self,
             axis=[x if x >= 0 else x + len(self.shape) for x in argfix(axis, *args)],
         )
 
     def shrink(self, arg: tuple[tuple[sint, sint], ...]) -> Tensor:
         return (
-            mlops.Shrink.apply(self, arg=arg)
+            funcs.Shrink.apply(self, arg=arg)
             if any(x != (0, s) for x, s in zip(arg, self.shape))
             else self
         )
 
     def pad(self, arg: tuple[tuple[int, int], ...], value: float = 0) -> Tensor:
-        ret = mlops.Pad.apply(self, arg=arg) if any(x != (0, 0) for x in arg) else self
+        ret = funcs.Pad.apply(self, arg=arg) if any(x != (0, 0) for x in arg) else self
         return (
             ret
             if 0 == value
-            else ret + mlops.Pad.apply(Tensor.ones_like(self), arg=arg).where(0, value)
+            else ret + funcs.Pad.apply(Tensor.ones_like(self), arg=arg).where(0, value)
         )
 
     # ***** movement hlops *****
@@ -778,10 +778,10 @@ class Tensor:
         return ret if keepdim else ret.reshape(shape=shape)
 
     def sum(self, axis=None, keepdim=False):
-        return self._reduce(mlops.Sum, axis, keepdim)
+        return self._reduce(funcs.Sum, axis, keepdim)
 
     def max(self, axis=None, keepdim=False):
-        return self._reduce(mlops.Max, axis, keepdim)
+        return self._reduce(funcs.Max, axis, keepdim)
 
     def min(self, axis=None, keepdim=False):
         return -((-self).max(axis=axis, keepdim=keepdim))
@@ -1161,37 +1161,37 @@ class Tensor:
             .transpose(axis, -1)
         )
 
-    # ***** mlops (unary) *****
+    # ***** funcs (unary) *****
 
     def __neg__(self):
-        return mlops.Neg.apply(self)
+        return funcs.Neg.apply(self)
 
     def contiguous(self):
-        return mlops.Contiguous.apply(self)
+        return funcs.Contiguous.apply(self)
 
     def contiguous_backward(self):
-        return mlops.ContiguousBackward.apply(self)
+        return funcs.ContiguousBackward.apply(self)
 
     def log(self):
-        return mlops.Log.apply(self)
+        return funcs.Log.apply(self)
 
     def log2(self):
-        return mlops.Log.apply(self) / math.log(2)
+        return funcs.Log.apply(self) / math.log(2)
 
     def exp(self):
-        return mlops.Exp.apply(self)
+        return funcs.Exp.apply(self)
 
     def relu(self):
-        return mlops.Relu.apply(self)
+        return funcs.Relu.apply(self)
 
     def sigmoid(self):
-        return mlops.Sigmoid.apply(self)
+        return funcs.Sigmoid.apply(self)
 
     def sin(self):
-        return mlops.Sin.apply(self)
+        return funcs.Sin.apply(self)
 
     def sqrt(self):
-        return mlops.Sqrt.apply(self)
+        return funcs.Sqrt.apply(self)
 
     def rsqrt(self):
         return (1 / self).sqrt()
@@ -1296,7 +1296,7 @@ class Tensor:
     def softsign(self):
         return self / (1 + self.abs())
 
-    # ***** broadcasted binary mlops *****
+    # ***** broadcasted binary funcs *****
 
     def _broadcasted(
         self, y: ta.Union[Tensor, float], reverse: bool = False
@@ -1333,32 +1333,32 @@ class Tensor:
 
     def add(self, x: ta.Union[Tensor, float], reverse=False) -> Tensor:
         return (
-            mlops.Add.apply(*self._broadcasted(x, reverse))
+            funcs.Add.apply(*self._broadcasted(x, reverse))
             if x.__class__ is Tensor or x
             else self
         )
 
     def sub(self, x: ta.Union[Tensor, float], reverse=False) -> Tensor:
         return (
-            mlops.Sub.apply(*self._broadcasted(x, reverse))
+            funcs.Sub.apply(*self._broadcasted(x, reverse))
             if x.__class__ is Tensor or x
             else (-self if reverse else self)
         )
 
     def mul(self, x: ta.Union[Tensor, float], reverse=False) -> Tensor:
         if x.__class__ is not Tensor and x == 0.0:
-            return mlops.Zero.apply(self)
+            return funcs.Zero.apply(self)
         if x.__class__ is not Tensor and x == -1.0:
             return -self
         return (
-            mlops.Mul.apply(*self._broadcasted(x, reverse))
+            funcs.Mul.apply(*self._broadcasted(x, reverse))
             if x.__class__ is Tensor or x != 1.0
             else self
         )
 
     def div(self, x: ta.Union[Tensor, float], reverse=False) -> Tensor:
         return (
-            mlops.Div.apply(*self._broadcasted(x, reverse))
+            funcs.Div.apply(*self._broadcasted(x, reverse))
             if x.__class__ is Tensor
             or reverse
             or not x
@@ -1453,7 +1453,7 @@ class Tensor:
     def where(self: Tensor, input_: ta.Union[Tensor, float], other: ta.Union[Tensor, float]):
         x_, y = self._broadcasted(input_)
         x, z = x_._broadcasted(other)
-        return mlops.Where.apply(x, *y._broadcasted(z))
+        return funcs.Where.apply(x, *y._broadcasted(z))
 
     # ***** binary op wrappers (18 wasted lines to make the typechecker happy) *****
 
@@ -1513,10 +1513,10 @@ class Tensor:
         return self.assign(self.matmul(x))
 
     def __lt__(self, x) -> Tensor:
-        return mlops.Less.apply(*self._broadcasted(x, False))
+        return funcs.Less.apply(*self._broadcasted(x, False))
 
     def __gt__(self, x) -> Tensor:
-        return mlops.Less.apply(*self._broadcasted(x, True))
+        return funcs.Less.apply(*self._broadcasted(x, True))
 
     def __ge__(self, x) -> Tensor:
         return 1.0 - (self < x)
@@ -1614,14 +1614,14 @@ class Tensor:
     # ***** cast ops *****
 
     def cast(self, dtype: DType) -> Tensor:
-        return mlops.Cast.apply(self, dtype=dtype) if self.dtype != dtype else self
+        return funcs.Cast.apply(self, dtype=dtype) if self.dtype != dtype else self
 
     def bitcast(self, dtype: DType) -> Tensor:
         assert (
             self.dtype.itemsize == dtype.itemsize
         ), "can't bitcast mismatched dtype itemsizes"
         return (
-            mlops.Cast.apply(self, dtype=dtype, bitcast=True)
+            funcs.Cast.apply(self, dtype=dtype, bitcast=True)
             if self.dtype != dtype
             else self
         )
