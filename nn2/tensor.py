@@ -58,7 +58,7 @@ class Function:
         return ret
 
 
-import tinygrad.mlops as mlops
+from . import mlops
 
 # **** start with two base classes, Tensor and Function ****
 
