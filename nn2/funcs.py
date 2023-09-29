@@ -1,13 +1,10 @@
 import math
 import typing as ta
 
+from . import ops
 from .dtypes import DType
 from .helpers import argsort
 from .lazy import LazyBuffer
-from .ops import BinaryOps
-from .ops import ReduceOps
-from .ops import TernaryOps
-from .ops import UnaryOps
 from .shape.symbolic import sint
 from .tensor import Function
 
@@ -31,10 +28,10 @@ class ContiguousBackward(Function):
 class Cast(Function):
     def forward(self, x: LazyBuffer, dtype: DType, bitcast: bool = False) -> LazyBuffer:
         self.input_dtype, self.bitcast = x.dtype, bitcast
-        return x.e(UnaryOps.CAST, arg=(dtype, bitcast))
+        return x.e(ops.Cast, arg=(dtype, bitcast))
 
     def backward(self, grad_output: LazyBuffer) -> LazyBuffer:
-        return grad_output.e(UnaryOps.CAST, arg=(self.input_dtype, self.bitcast))
+        return grad_output.e(ops.Cast, arg=(self.input_dtype, self.bitcast))
 
 
 # ************* unary ops *************
@@ -49,64 +46,64 @@ class Zero(Function):
 
 class Neg(Function):
     def forward(self, x: LazyBuffer) -> LazyBuffer:
-        return x.e(UnaryOps.NEG)
+        return x.e(ops.Neg)
 
     def backward(self, grad: LazyBuffer) -> LazyBuffer:
-        return grad.e(UnaryOps.NEG)
+        return grad.e(ops.Neg)
 
 
 class Sin(Function):
     def forward(self, x: LazyBuffer) -> LazyBuffer:
         self.x = x
-        return x.e(UnaryOps.SIN)
+        return x.e(ops.Sin)
 
     def backward(self, grad: LazyBuffer) -> LazyBuffer:
         return (
             self.x.const(math.pi / 2)
-            .e(BinaryOps.SUB, self.x)
-            .e(UnaryOps.SIN)
-            .e(BinaryOps.MUL, grad)
+            .e(ops.Sub, self.x)
+            .e(ops.Sin)
+            .e(ops.Mul, grad)
         )
 
 
 # NOTE: maximum(x, 0) behaves differently where x=0
 class Relu(Function):
     def forward(self, x: LazyBuffer) -> LazyBuffer:
-        self.ret = x.e(BinaryOps.MAX, x.const(0))
+        self.ret = x.e(ops.Max2, x.const(0))
         return self.ret
 
     def backward(self, grad_output: LazyBuffer) -> LazyBuffer:
         return (
-            self.ret.const(0).e(BinaryOps.CMPLT, self.ret).e(BinaryOps.MUL, grad_output)
+            self.ret.const(0).e(ops.CmpLt, self.ret).e(ops.Mul, grad_output)
         )
 
 
 class Log(Function):
     def forward(self, x: LazyBuffer) -> LazyBuffer:
         self.x = x
-        return x.e(UnaryOps.LOG2).e(BinaryOps.MUL, x.const(math.log(2)))
+        return x.e(ops.Log2).e(ops.Mul, x.const(math.log(2)))
 
     def backward(self, grad_output: LazyBuffer) -> LazyBuffer:
-        return grad_output.e(BinaryOps.DIV, self.x)
+        return grad_output.e(ops.Div, self.x)
 
 
 class Exp(Function):
     def forward(self, x: LazyBuffer) -> LazyBuffer:
-        self.ret = x.e(BinaryOps.MUL, x.const(1 / math.log(2))).e(UnaryOps.EXP2)
+        self.ret = x.e(ops.Mul, x.const(1 / math.log(2))).e(ops.Exp2)
         return self.ret
 
     def backward(self, grad_output: LazyBuffer) -> LazyBuffer:
-        return self.ret.e(BinaryOps.MUL, grad_output)
+        return self.ret.e(ops.Mul, grad_output)
 
 
 class Sqrt(Function):
     def forward(self, x: LazyBuffer) -> LazyBuffer:
-        self.ret = x.e(UnaryOps.SQRT)
+        self.ret = x.e(ops.Sqrt)
         return self.ret
 
     def backward(self, grad_output: LazyBuffer) -> LazyBuffer:
         return grad_output.e(
-            BinaryOps.DIV, self.ret.e(BinaryOps.MUL, self.ret.const(2))
+            ops.Div, self.ret.e(ops.Mul, self.ret.const(2))
         )
 
 
@@ -116,18 +113,18 @@ class Sqrt(Function):
 class Sigmoid(Function):
     def forward(self, x: LazyBuffer) -> LazyBuffer:
         self.ret = x.const(1).e(
-            BinaryOps.DIV,
+            ops.Div,
             x.const(1).e(
-                BinaryOps.ADD,
-                x.e(BinaryOps.MUL, x.const(-1 / math.log(2))).e(UnaryOps.EXP2),
+                ops.Add,
+                x.e(ops.Mul, x.const(-1 / math.log(2))).e(ops.Exp2),
             ),
         )
         return self.ret
 
     def backward(self, grad_output: LazyBuffer) -> LazyBuffer:
         return self.ret.e(
-            BinaryOps.MUL, self.ret.const(1).e(BinaryOps.SUB, self.ret)
-        ).e(BinaryOps.MUL, grad_output)
+            ops.Mul, self.ret.const(1).e(ops.Sub, self.ret)
+        ).e(ops.Mul, grad_output)
 
 
 # ************* binary ops *************
@@ -135,12 +132,12 @@ class Sigmoid(Function):
 
 class Less(Function):
     def forward(self, x: LazyBuffer, y: LazyBuffer) -> LazyBuffer:
-        return x.e(BinaryOps.CMPLT, y)
+        return x.e(ops.CmpLt, y)
 
 
 class Add(Function):
     def forward(self, x: LazyBuffer, y: LazyBuffer) -> LazyBuffer:
-        return x.e(BinaryOps.ADD, y)
+        return x.e(ops.Add, y)
 
     def backward(
         self, grad_output: LazyBuffer
@@ -153,44 +150,44 @@ class Add(Function):
 
 class Sub(Function):
     def forward(self, x: LazyBuffer, y: LazyBuffer) -> LazyBuffer:
-        return x.e(BinaryOps.SUB, y)
+        return x.e(ops.Sub, y)
 
     def backward(
         self, grad_output: LazyBuffer
     ) -> tuple[ta.Optional[LazyBuffer], ta.Optional[LazyBuffer]]:
         return (
             grad_output if self.needs_input_grad[0] else None,
-            grad_output.e(UnaryOps.NEG) if self.needs_input_grad[1] else None,
+            grad_output.e(ops.Neg) if self.needs_input_grad[1] else None,
         )
 
 
 class Mul(Function):
     def forward(self, x: LazyBuffer, y: LazyBuffer) -> LazyBuffer:
         self.x, self.y = x, y
-        return x.e(BinaryOps.MUL, y)
+        return x.e(ops.Mul, y)
 
     def backward(
         self, grad_output: LazyBuffer
     ) -> tuple[ta.Optional[LazyBuffer], ta.Optional[LazyBuffer]]:
         return (
-            self.y.e(BinaryOps.MUL, grad_output) if self.needs_input_grad[0] else None,
-            self.x.e(BinaryOps.MUL, grad_output) if self.needs_input_grad[1] else None,
+            self.y.e(ops.Mul, grad_output) if self.needs_input_grad[0] else None,
+            self.x.e(ops.Mul, grad_output) if self.needs_input_grad[1] else None,
         )
 
 
 class Div(Function):
     def forward(self, x: LazyBuffer, y: LazyBuffer) -> LazyBuffer:
         self.x, self.y = x, y
-        return x.e(BinaryOps.DIV, y)
+        return x.e(ops.Div, y)
 
     def backward(
         self, grad_output: LazyBuffer
     ) -> tuple[ta.Optional[LazyBuffer], ta.Optional[LazyBuffer]]:
         return (
-            grad_output.e(BinaryOps.DIV, self.y) if self.needs_input_grad[0] else None,
-            grad_output.e(UnaryOps.NEG)
-            .e(BinaryOps.MUL, self.x)
-            .e(BinaryOps.DIV, self.y.e(BinaryOps.MUL, self.y))
+            grad_output.e(ops.Div, self.y) if self.needs_input_grad[0] else None,
+            grad_output.e(ops.Neg)
+            .e(ops.Mul, self.x)
+            .e(ops.Div, self.y.e(ops.Mul, self.y))
             if self.needs_input_grad[1]
             else None,
         )
@@ -202,17 +199,17 @@ class Div(Function):
 class Where(Function):
     def forward(self, x: LazyBuffer, y: LazyBuffer, z: LazyBuffer) -> LazyBuffer:
         self.x = x
-        return x.e(TernaryOps.WHERE, y, z)
+        return x.e(ops.Where, y, z)
 
     def backward(
         self, grad_output: LazyBuffer
     ) -> tuple[None, ta.Optional[LazyBuffer], ta.Optional[LazyBuffer]]:
         return (
             None,
-            self.x.e(TernaryOps.WHERE, grad_output, grad_output.const(0))
+            self.x.e(ops.Where, grad_output, grad_output.const(0))
             if self.needs_input_grad[1]
             else None,
-            self.x.e(TernaryOps.WHERE, grad_output.const(0), grad_output)
+            self.x.e(ops.Where, grad_output.const(0), grad_output)
             if self.needs_input_grad[2]
             else None,
         )
@@ -224,7 +221,7 @@ class Where(Function):
 class Sum(Function):
     def forward(self, x: LazyBuffer, new_shape: tuple[int, ...]) -> LazyBuffer:
         self.input_shape = x.shape
-        return x.r(ReduceOps.SUM, new_shape)
+        return x.r(ops.Sum, new_shape)
 
     def backward(self, grad_output: LazyBuffer) -> LazyBuffer:
         return grad_output.expand(self.input_shape)
@@ -232,17 +229,17 @@ class Sum(Function):
 
 class Max(Function):
     def forward(self, x: LazyBuffer, new_shape: tuple[int, ...]) -> LazyBuffer:
-        self.x, self.ret = x, x.r(ReduceOps.MAX, new_shape)
+        self.x, self.ret = x, x.r(ops.Max, new_shape)
         return self.ret
 
     def backward(self, grad_output: LazyBuffer) -> LazyBuffer:
         # 1s in locations where the max was chosen (can be two locations)
         max_is_1s = self.x.const(1.0).e(
-            BinaryOps.SUB, self.x.e(BinaryOps.CMPLT, self.ret.expand(self.x.shape))
+            ops.Sub, self.x.e(ops.CmpLt, self.ret.expand(self.x.shape))
         )
-        div = max_is_1s.r(ReduceOps.SUM, grad_output.shape).expand(self.x.shape)
-        return max_is_1s.e(BinaryOps.DIV, div).e(
-            BinaryOps.MUL, grad_output.expand(self.x.shape)
+        div = max_is_1s.r(ops.Sum, grad_output.shape).expand(self.x.shape)
+        return max_is_1s.e(ops.Div, div).e(
+            ops.Mul, grad_output.expand(self.x.shape)
         )
 
 
@@ -256,7 +253,7 @@ class Expand(Function):
         return x.expand(shape)
 
     def backward(self, grad_output: LazyBuffer) -> LazyBuffer:
-        return grad_output.r(ReduceOps.SUM, self.input_shape)
+        return grad_output.r(ops.Sum, self.input_shape)
 
 
 class Reshape(Function):
