@@ -461,7 +461,7 @@ class LazyBuffer:
         )
 
     @staticmethod
-    def fromCPU(x: np.ndarray) -> LazyBuffer:
+    def fromCpu(x: np.ndarray) -> LazyBuffer:
         return LazyBuffer(
             "CPU",
             ShapeTracker.from_shape(x.shape),
@@ -469,7 +469,7 @@ class LazyBuffer:
             None,
             dtypes.from_np(x.dtype),
             {},
-            RawNumpyBuffer.fromCPU(x),
+            RawNumpyBuffer.fromCpu(x),
         )
 
     def prepare_transfer(self):
@@ -480,10 +480,10 @@ class LazyBuffer:
         )
         return self_casted.contiguous().realize().realized
 
-    def toCPU(self) -> np.ndarray:
-        assert self.dtype.np, f"{self.dtype} is not supported in toCPU"
-        assert all_int(self.shape), f"no toCPU if shape is symbolic, {self.shape=}"
-        return ta.cast(RawBuffer, self.prepare_transfer()).toCPU().reshape(self.shape)
+    def toCpu(self) -> np.ndarray:
+        assert self.dtype.np, f"{self.dtype} is not supported in toCpu"
+        assert all_int(self.shape), f"no toCpu if shape is symbolic, {self.shape=}"
+        return ta.cast(RawBuffer, self.prepare_transfer()).toCpu().reshape(self.shape)
 
     # *** elementwise ops ***
 
@@ -858,8 +858,8 @@ def _realize_from(buffer: LazyBuffer) -> None:
             rawbuf.realized, buffer.shape, buffer.dtype, **buffer._device_extra_args()
         )
     else:
-        buffer.realized = Device[buffer.device].buffer.fromCPU(
-            rawbuf.toCPU(), **buffer._device_extra_args()
+        buffer.realized = Device[buffer.device].buffer.fromCpu(
+            rawbuf.toCpu(), **buffer._device_extra_args()
         )
 
 
@@ -872,11 +872,11 @@ def _realize_empty(buffer: LazyBuffer) -> None:
 
 def _realize_rand(buffer: LazyBuffer) -> None:
     rng = np.random.default_rng(buffer.op.arg)
-    buffer.realized = Device[buffer.device].buffer.fromCPU(rng.random(size=buffer.shape, dtype=np.float32).astype(dtype=buffer.dtype.np, copy=False), **buffer._device_extra_args())  # type: ignore
+    buffer.realized = Device[buffer.device].buffer.fromCpu(rng.random(size=buffer.shape, dtype=np.float32).astype(dtype=buffer.dtype.np, copy=False), **buffer._device_extra_args())  # type: ignore
 
 
 def _realize_const(buffer: LazyBuffer) -> None:
-    buffer.realized = Device[buffer.device].buffer.fromCPU(
+    buffer.realized = Device[buffer.device].buffer.fromCpu(
         np.array(buffer.op.arg, dtype=buffer.dtype.np), **buffer._device_extra_args()
     )
 

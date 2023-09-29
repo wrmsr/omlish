@@ -45,10 +45,10 @@ class RawBuffer:  # pylint: disable=abstract-method
 
     # NOTE: this interface allows for 0 copy
     @classmethod
-    def fromCPU(cls: type[_T], x: np.ndarray) -> _T:
+    def fromCpu(cls: type[_T], x: np.ndarray) -> _T:
         raise NotImplementedError("must be implemented")
 
-    def toCPU(self) -> np.ndarray:
+    def toCpu(self) -> np.ndarray:
         raise NotImplementedError("must be implemented")
 
 
@@ -73,7 +73,7 @@ class RawBufferCopyIn(RawBuffer):
         raise NotImplementedError("must be implemented")
 
     @classmethod
-    def fromCPU(cls, x: np.ndarray, **kwargs):
+    def fromCpu(cls, x: np.ndarray, **kwargs):
         ret = cls(prod(x.shape), dtypes.from_np(x.dtype), **kwargs)
         if x.size > 0:
             ret._copyin(x)
@@ -85,11 +85,11 @@ class RawBufferMapped(RawBufferCopyIn):
         raise NotImplementedError("must be implemented")
 
     # NOTE: this metadata prevents the backing buffer from being freed. hack can be removed with PEP688
-    def toCPU(self) -> np.ndarray:
+    def toCpu(self) -> np.ndarray:
         return np.frombuffer(self._buffer(), dtype=np.dtype(self.dtype.np, metadata={"backing": self}), count=self.size)  # type: ignore
 
     def _copyin(self, x: np.ndarray) -> None:
-        np.copyto(self.toCPU(), x.reshape(-1))
+        np.copyto(self.toCpu(), x.reshape(-1))
 
 
 # this one is simple enough that i moved it out of the runtimes
@@ -124,7 +124,7 @@ class RawBufferCopyInOut(RawBufferCopyIn):
     def _copyout(self, x: np.ndarray) -> None:
         raise NotImplementedError("must be implemented")
 
-    def toCPU(self) -> np.ndarray:
+    def toCpu(self) -> np.ndarray:
         x: np.ndarray = np.empty(self.size, dtype=self.dtype.np)
         if x.size > 0:
             self._copyout(x)
@@ -142,7 +142,7 @@ class RawBufferTransfer(RawBuffer):
         return ret
 
 
-class LRUAllocator:
+class LruAllocator:
     def __init__(self, dev_memsz=(4 << 30)):
         self.epoch = 0
         self.free_space: dict[ta.Any, int] = collections.defaultdict(lambda: dev_memsz)

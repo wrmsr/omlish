@@ -112,14 +112,14 @@ class Tensor:
             assert (
                 dtype is None or dtype.np is not None
             ), f"{dtype} doesn't have a numpy dtype"
-            data = LazyBuffer.fromCPU(
+            data = LazyBuffer.fromCpu(
                 np.array(data, dtype=(dtype or Tensor.default_type).np)
             )
         elif isinstance(data, np.ndarray):
             assert (
                 dtype is None or dtype.np is not None
             ), f"{dtype} doesn't have a numpy dtype"
-            data = LazyBuffer.fromCPU(
+            data = LazyBuffer.fromCpu(
                 data.astype(dtype.np)
                 if dtype is not None and dtype.np is not None
                 else data
@@ -188,7 +188,7 @@ class Tensor:
         return Tensor(self.lazydata, device=self.device, requires_grad=False)
 
     def numpy(self) -> np.ndarray:
-        return self.lazydata.toCPU()
+        return self.lazydata.toCpu()
 
     # TODO: if things are realized this won't work
     def to_(self, device: str):

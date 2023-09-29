@@ -137,13 +137,13 @@ class RawNumpyBuffer(RawBuffer):
         )
 
     @classmethod
-    def fromCPU(cls, x):
+    def fromCpu(cls, x):
         return cls(x.size, dtypes.from_np(x.dtype), x)
 
-    def toCPU(self):
+    def toCpu(self):
         return self._buf
 
 
-CPUBuffer = Interpreted(
-    RawNumpyBuffer, numpy_fxn_for_op, from_underlying=RawNumpyBuffer.fromCPU
+CpuBuffer = Interpreted(
+    RawNumpyBuffer, numpy_fxn_for_op, from_underlying=RawNumpyBuffer.fromCpu
 )

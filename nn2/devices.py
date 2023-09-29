@@ -46,11 +46,16 @@ class _Device:
             lambda val, ele: ele if getenv(ele) == 1 else val, self._buffers, None
         )
         if device_from_env:
+            print(device_from_env)
             return device_from_env
         for device in [
             "METAL",
             "CUDA",
             "OPENCL",
+
+            # "LLVM",
+            # "CLANG",
+            # "TORCH",
         ]:
             try:
                 if self[device]:

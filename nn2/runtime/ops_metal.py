@@ -18,14 +18,14 @@ from ..helpers import prod
 from ..ops import Compiled
 from ..renderer.cstyle import CStyleLanguage
 from ..renderer.cstyle import uops_to_cstyle
-from ..runtime.lib import LRUAllocator
+from ..runtime.lib import LruAllocator
 from ..runtime.lib import RawBufferMapped
 
 
 METAL_XCODE = getenv("METAL_XCODE")
 
 
-class MetalAllocator(LRUAllocator):
+class MetalAllocator(LruAllocator):
     def _do_alloc(self, size, dtype, device, **kwargs):
         return METAL.device.newBufferWithLength_options_(
             size * dtype.itemsize, Metal.MTLResourceStorageModeShared

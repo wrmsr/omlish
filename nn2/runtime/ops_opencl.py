@@ -17,7 +17,7 @@ from ..helpers import prod
 from ..ops import Compiled
 from ..renderer.cstyle import CStyleLanguage
 from ..renderer.cstyle import uops_to_cstyle
-from ..runtime.lib import LRUAllocator
+from ..runtime.lib import LruAllocator
 from ..runtime.lib import RawBufferCopyInOut
 from ..runtime.lib import RawBufferTransfer
 
@@ -33,7 +33,7 @@ if DEBUG >= 5:
     early_exec = fromimport("extra.helpers", "enable_early_exec")()
 
 
-class CLAllocator(LRUAllocator):
+class ClAllocator(LruAllocator):
     def _do_alloc(self, size, dtype, device, **kwargs):
         if isinstance(dtype, ImageDType):
             # NOTE: the memory is a bit off here due to padding, it's buf.row_pitch * buf.height * 4 * dtype.itemsize
@@ -98,7 +98,7 @@ class _CL:
             )
             for ctx in self.cl_ctxs
         ]
-        self.cl_allocator = CLAllocator(
+        self.cl_allocator = ClAllocator(
             CL.cl_ctxs[0].devices[0].get_info(cl.device_info.GLOBAL_MEM_SIZE)
         )
 
@@ -108,11 +108,12 @@ class _CL:
 
 
 CL = _CL()
+
 if not getenv("DELAYED_RUNTIME_INIT", False):
     CL.post_init()
 
 
-class CLBuffer(RawBufferCopyInOut, RawBufferTransfer):
+class ClBuffer(RawBufferCopyInOut, RawBufferTransfer):
     def __init__(self, size, dtype, device="0"):
         super().__init__(size, dtype, allocator=CL.cl_allocator, **{"device": device})
 
@@ -170,7 +171,7 @@ class CLBuffer(RawBufferCopyInOut, RawBufferTransfer):
             )
 
 
-class CLProgram:
+class ClProgram:
     def __init__(self, name: str, prg: str, binary=False, argdtypes=None, options=None):
         self.name, self.clprograms = name, [cl.Program(ctx, ctx.devices, [prg] * len(ctx.devices)) if binary else cl.Program(ctx, prg) for ctx in CL.cl_ctxs]  # type: ignore
         try:
@@ -219,11 +220,11 @@ class CLProgram:
     def __call__(self, global_size, local_size, *bufs, wait=False) -> ta.Optional[float]:
         if not hasattr(self, "argdtypes"):
             self.set_argdtypes(
-                tuple(None if x.__class__ is CLBuffer else np.int32 for x in bufs)
+                tuple(None if x.__class__ is ClBuffer else np.int32 for x in bufs)
             )
         cl_bufs, wait_for = [], []
         for x in bufs:
-            if x.__class__ is CLBuffer:
+            if x.__class__ is ClBuffer:
                 cl_bufs.append(x._buf)
                 if hasattr(x, "event"):
                     wait_for.append(x.event)
@@ -262,4 +263,4 @@ renderer = functools.partial(
         uses_vload=True,
     ),
 )
-OpenClBuffer = Compiled(CLBuffer, LinearizerOptions(), renderer, CLProgram, CL.synchronize)
+OpenClBuffer = Compiled(ClBuffer, LinearizerOptions(), renderer, ClProgram, CL.synchronize)
