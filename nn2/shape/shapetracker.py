@@ -5,8 +5,8 @@ import typing as ta
 
 from omlish import dataclasses as dc
 
+from .. import ops
 from ..helpers import prod, DEBUG
-from ..ops import MovementOps
 from ..shape.symbolic import MulNode
 from ..shape.symbolic import Node
 from ..shape.symbolic import NumNode
@@ -124,8 +124,8 @@ class ShapeTracker:
     def size(self):
         return self.views[-1].size()
 
-    def to_movement_ops(self) -> list[tuple[MovementOps, tuple]]:
-        to_apply: list[tuple[MovementOps, tuple]] = []
+    def to_movement_ops(self) -> list[tuple[type[ops.MovementOp], tuple]]:
+        to_apply: list[tuple[type[ops.MovementOp], tuple]] = []
         for v in self.views:
             real_shape = tuple(y - x for x, y in v.mask) if v.mask else v.shape
             real_offset = v.offset + (
@@ -137,7 +137,7 @@ class ShapeTracker:
             # TODO: don't use as_strided
             to_apply.append(
                 (
-                    MovementOps.AS_STRIDED,
+                    ops.AsStrided,
                     (
                         [s if st != 0 else 1 for s, st in zip(real_shape, v.strides)],
                         v.strides,
@@ -156,16 +156,16 @@ class ShapeTracker:
                     for (x, y), s, st in zip(v.mask, v.shape, v.strides)
                 )
                 if any(x != (0, 0) for x in pre_expand_pads):
-                    to_apply.append((MovementOps.PAD, pre_expand_pads))
+                    to_apply.append((ops.Pad, pre_expand_pads))
                     real_shape = tuple(
                         x + s[0] + s[1] for x, s in zip(real_shape, pre_expand_pads)
                     )
             # then, we do any expands
             if any(s != 1 and st == 0 for s, st in zip(real_shape, v.strides)):
-                to_apply.append((MovementOps.EXPAND, real_shape))
+                to_apply.append((ops.Expand, real_shape))
             # lastly, we apply post expand pads
             if v.mask is not None and any(x != (0, 0) for x in post_expand_pads):
-                to_apply.append((MovementOps.PAD, post_expand_pads))
+                to_apply.append((ops.Pad, post_expand_pads))
         return to_apply
 
     # these are multiview strides, value is None if it's not a simple strided dimension

@@ -2,16 +2,12 @@ import typing as ta
 
 import torch
 
+from .. import ops
 from ..dtypes import DType
 from ..dtypes import dtypes
 from ..execution import Interpreted
 from ..helpers import getenv
 from ..helpers import prod
-from ..ops import BinaryOps
-from ..ops import MovementOps
-from ..ops import Op
-from ..ops import TernaryOps
-from ..ops import UnaryOps
 from ..runtime.lib import RawBuffer
 from ..runtime.ops_cpu import base_fxn_for_op
 from ..runtime.ops_cpu import einsum_mulacc
@@ -44,38 +40,28 @@ def as_strided(x, arg):
     return torch.as_strided(x.contiguous(), arg[0], arg[1], arg[2])
 
 
-torch_fxn_for_op: dict[Op, ta.Callable] = {
+torch_fxn_for_op: dict[type[ops.LazyOp], ta.Callable] = {
     **base_fxn_for_op,
     **{
-        UnaryOps.NOOP: lambda x: x.contiguous(),
-        UnaryOps.SQRT: lambda x: x.sqrt(),
-        UnaryOps.EXP2: lambda x: x.exp2(),
-        UnaryOps.LOG2: lambda x: x.log2(),
-        UnaryOps.SIN: torch.sin,
-        UnaryOps.CAST: lambda x, y: (x.view if y[1] else x.type)(
-            next(k for k, v in type_map.items() if v == y[0])
-        ),
-        BinaryOps.MAX2: torch.maximum,
-        BinaryOps.CMPLT: lambda x, y: (x < y).type(
-            torch.promote_types(x.dtype, y.dtype)
-        ),
-        MovementOps.PAD: lambda x, padding: torch.nn.functional.pad(
-            x, [item for sublist in padding[::-1] for item in sublist]
-        ),
-        TernaryOps.MULACC: einsum_mulacc(
-            lambda s, a, b: torch.einsum(s, a.float(), b.float()).type(
-                torch.promote_types(a.dtype, b.dtype)
-            ),
+        ops.Nop: lambda x: x.contiguous(),
+        ops.Sqrt: lambda x: x.sqrt(),
+        ops.Exp2: lambda x: x.exp2(),
+        ops.Log2: lambda x: x.log2(),
+        ops.Sin: torch.sin,
+        ops.Cast: lambda x, y: (x.view if y[1] else x.type)(next(k for k, v in type_map.items() if v == y[0])),
+        ops.Max2: torch.maximum,
+        ops.CmpLt: lambda x, y: (x < y).type(torch.promote_types(x.dtype, y.dtype)),
+        ops.Pad: lambda x, padding: torch.nn.functional.pad(x, [item for sublist in padding[::-1] for item in sublist]),  # noqa
+        ops.MulAcc: einsum_mulacc(
+            lambda s, a, b: torch.einsum(s, a.float(), b.float()).type(torch.promote_types(a.dtype, b.dtype)),
             lambda x: x.stride(),
             lambda x, s: x.expand(s),
         ),
-        TernaryOps.WHERE: lambda x, y, z: torch.where(x != 0, y, z),
-        MovementOps.STRIDE: lambda x, arg: x[
-            tuple(slice(None, None, abs(i)) for i in arg)
-        ].flip([i for i, a in enumerate(arg) if a < 0]),
-        MovementOps.EXPAND: lambda x, arg: x.expand(arg),
-        MovementOps.PERMUTE: lambda x, arg: x.permute(arg),
-        MovementOps.AS_STRIDED: as_strided,
+        ops.Where: lambda x, y, z: torch.where(x != 0, y, z),
+        ops.Restride: lambda x, arg: x[tuple(slice(None, None, abs(i)) for i in arg)].flip([i for i, a in enumerate(arg) if a < 0]),  # noqa
+        ops.Expand: lambda x, arg: x.expand(arg),
+        ops.Permute: lambda x, arg: x.permute(arg),
+        ops.AsStrided: as_strided,
     },
 }
 

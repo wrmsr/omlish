@@ -2,12 +2,10 @@ import mmap
 import os
 import typing as ta
 
+from .. import ops
 from ..dtypes import DType
 from ..execution import Interpreted
 from ..helpers import prod
-from ..ops import MovementOps
-from ..ops import Op
-from ..ops import UnaryOps
 from ..runtime.lib import RawBufferMapped
 
 
@@ -84,10 +82,10 @@ class RawDiskBuffer(RawBufferMapped):
         self._buf[0].readinto(buf)
 
 
-disk_fxn_for_op: dict[Op, ta.Callable] = {
-    UnaryOps.NOOP: lambda x: x,
-    UnaryOps.CAST: RawDiskBuffer.cast,
-    MovementOps.AS_STRIDED: RawDiskBuffer.as_strided,
+disk_fxn_for_op: dict[type[ops.LazyOp], ta.Callable] = {
+    ops.Nop: lambda x: x,
+    ops.Cast: RawDiskBuffer.cast,
+    ops.AsStrided: RawDiskBuffer.as_strided,
 }
 DiskBuffer = Interpreted(
     RawDiskBuffer,
