@@ -47,7 +47,6 @@ class Zero(Function):
     def backward(self, grad: LazyBuffer) -> LazyBuffer:
         return grad.const(0)
 
-
 class Neg(Function):
     def forward(self, x: LazyBuffer) -> LazyBuffer:
         return x.e(UnaryOps.NEG)

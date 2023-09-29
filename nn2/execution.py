@@ -5,6 +5,7 @@ import typing as ta
 
 from omlish import dataclasses as dc
 
+from . import ops
 from .dtypes import DType
 from .helpers import DEBUG
 from .helpers import GlobalCounters
@@ -12,13 +13,7 @@ from .helpers import ansilen
 from .helpers import colored
 from .helpers import getenv
 from .helpers import prod
-from .ops import BinaryOps
-from .ops import BufferOps
 from .ops import LazyOp
-from .ops import Op
-from .ops import ReduceOps
-from .ops import TernaryOps
-from .ops import UnaryOps
 
 if ta.TYPE_CHECKING:
     from .shape.shapetracker import ShapeTracker
@@ -45,7 +40,7 @@ class Interpreted:
     def __init__(
             self,
             buffer,
-            fxn_for_op: dict[Op, ta.Callable],
+            fxn_for_op: dict[type[LazyOp], ta.Callable],
             to_underlying=lambda x: x._buf,
             from_underlying=None,
     ):
@@ -67,19 +62,19 @@ class Interpreted:
             context=None,
             **kwargs,
     ):
-        if ast.op == BufferOps.MEM and BufferOps.MEM not in self.fxn_for_op:
+        if isinstance(ast, ops.Mem) and ops.Mem not in self.fxn_for_op:
             assert inputs[ast.arg.idx - 1].dtype == ast.arg.dtype, "dtype mismatch"
             buf = self.to_underlying(inputs[ast.arg.idx - 1])
             for mop, arg in ast.arg.st.to_movement_ops():
                 buf = self.fxn_for_op[mop](buf, arg)
             return self.from_underlying(buf)
         if (
-                TernaryOps.MULACC in self.fxn_for_op
-                and ast.op == ReduceOps.SUM
+                ops.MulAcc in self.fxn_for_op
+                and isinstance(ast, ops.Sum)
                 and isinstance(ast.src[0], LazyOp)
-                and ast.src[0].op == BinaryOps.MUL
+                and isinstance(ast.src[0], ops.Mul)
         ):
-            ast = LazyOp(TernaryOps.MULACC, ast.src[0].src, ast.arg)
+            ast = LazyOp(ops.MulAcc, ast.src[0].src, ast.arg)
         created_context = context is None
         if context is None:
             context = dict()
@@ -92,7 +87,7 @@ class Interpreted:
         if DEBUG >= 3:
             st = time.perf_counter()
         ret = self.from_underlying(
-            self.fxn_for_op[ast.op](
+            self.fxn_for_op[type(ast)](
                 *(
                     [self.to_underlying(x) for x in srcs] +
                     ([ast.arg] if ast.arg is not None else [])
@@ -102,10 +97,10 @@ class Interpreted:
         if (
                 output is not None
                 and ret.dtype != output.dtype
-                and UnaryOps.CAST in self.fxn_for_op
+                and ops.Cast in self.fxn_for_op
         ):
             ret = self.from_underlying(
-                self.fxn_for_op[UnaryOps.CAST](
+                self.fxn_for_op[ops.Cast](
                     self.to_underlying(ret), (output.dtype, False)
                 )
             )  # Do manual casting of ret if it does not match the required output dtype.
@@ -115,7 +110,7 @@ class Interpreted:
                     f"*** {'exec' if created_context else '    '} "
                     f"{GlobalCounters.mem_used/1e9:5.2f} GB "
                     f"{(time.perf_counter()-st)*1e3:7.2f} ms "
-                    f"op: {ast.op:20s} "
+                    f"op: {type(ast):20s} "
                     f"out({ret.dtype.name}): "
                     f"{str(ret._buf.shape) if hasattr(ret._buf, 'shape') else str(len(ret._buf)):30s} "
                     f"in({len(srcs)}):"
@@ -152,10 +147,10 @@ class FlopCounter:
         return ret
 
 
-shape_fxn_for_op: dict[Op, ta.Callable] = {
-    BufferOps.MEM: lambda arg: (arg.st.shape, arg.dtype, 0),
-    BufferOps.CONST: lambda arg: (arg.st.shape, arg.dtype, 0),
-    UnaryOps.CAST: lambda self, arg: (
+shape_fxn_for_op: dict[type[LazyOp], ta.Callable] = {
+    ops.Mem: lambda arg: (arg.st.shape, arg.dtype, 0),
+    ops.Const: lambda arg: (arg.st.shape, arg.dtype, 0),
+    ops.Cast: lambda self, arg: (
         self.shape,
         arg[0],
         self.consume_flops(),
@@ -166,8 +161,8 @@ shape_fxn_for_op: dict[Op, ta.Callable] = {
             self.dtype,
             self.consume_flops() + prod(self.shape),
         )
-        for op in UnaryOps
-        if op != UnaryOps.CAST
+        for op in ops.UnaryOp.__subclasses__()
+        if op != ops.Cast
     },
     **{
         op: lambda self, y: (
@@ -175,7 +170,7 @@ shape_fxn_for_op: dict[Op, ta.Callable] = {
             max(self.dtype, y.dtype),
             self.consume_flops() + y.consume_flops() + prod(self.shape),
         )
-        for op in BinaryOps
+        for op in ops.BinaryOp.__subclasses__()
     },
     **{
         op: lambda self, new_shape: (
@@ -183,9 +178,9 @@ shape_fxn_for_op: dict[Op, ta.Callable] = {
             self.dtype,
             self.consume_flops() + prod(self.shape),
         )
-        for op in ReduceOps
+        for op in ops.ReduceOp.__subclasses__()
     },
-    TernaryOps.WHERE: lambda self, y, z: (
+    ops.Where: lambda self, y, z: (
         self.shape,
         y.dtype,
         self.consume_flops() + y.consume_flops() + z.consume_flops() + prod(self.shape),
@@ -398,7 +393,7 @@ class Compiled:
                     if any(
                             not x.arg.st.contiguous
                             for x in ast.get_lazyops()
-                            if x.op == BufferOps.MEM and x.arg.idx == i + 1
+                            if isinstance(x, ops.Mem) and x.arg.idx == i + 1
                     ):
                         output.realized = None
                         break
