@@ -1,4 +1,5 @@
 import numpy as np
+
 from .tensor import Tensor
 
 
@@ -26,6 +27,7 @@ def jacobian(func, input):
 
         for i, grad in enumerate(input.grad.numpy().reshape(-1)):
             J[o, i] = grad
+
     return J
 
 
@@ -39,16 +41,13 @@ def numerical_jacobian(func, input, eps=1e-3):
     for i in range(ji):
         eps_perturb = mask_like(input.numpy(), i, mask_value=eps)
 
-        output_perturb_add = (
-            func(Tensor(input.numpy() + eps_perturb)).numpy().reshape(-1)
-        )
-        output_perturb_sub = (
-            func(Tensor(input.numpy() - eps_perturb)).numpy().reshape(-1)
-        )
+        output_perturb_add = func(Tensor(input.numpy() + eps_perturb)).numpy().reshape(-1)
+        output_perturb_sub = func(Tensor(input.numpy() - eps_perturb)).numpy().reshape(-1)
 
         grad_approx = ((output_perturb_add) - (output_perturb_sub)) / (2 * eps)
 
         NJ[:, i] = grad_approx
+
     return NJ
 
 

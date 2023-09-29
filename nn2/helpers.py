@@ -11,39 +11,22 @@ import tempfile
 import time
 import typing as ta
 
-from typing import (
-    Dict,
-    Tuple,
-    Union,
-    List,
-    NamedTuple,
-    Final,
-    Iterator,
-    ClassVar,
-    Optional,
-    Iterable,
-    Any,
-    TypeVar,
-    TYPE_CHECKING,
-)
-
 import numpy as np
 
 if ta.TYPE_CHECKING:  # TODO: remove this and import TypeGuard from typing once minimum python supported version is 3.10
     from typing_extensions import TypeGuard
 
 
-T = TypeVar("T")
+T = ta.TypeVar("T")
 
 
 # NOTE: it returns int 1 if x is empty regardless of the type of x
-def prod(x: Iterable[T]) -> Union[T, int]:
+def prod(x: ta.Iterable[T]) -> ta.Union[T, int]:
     return functools.reduce(operator.__mul__, x, 1)
 
 
 # NOTE: helpers is not allowed to import from anything else in tinygrad
 OSX = platform.system() == "Darwin"
-CI = os.getenv("CI", "") != ""
 
 
 def dedup(x):
@@ -64,7 +47,7 @@ def all_same(items):
     return all(x == items[0] for x in items)
 
 
-def all_int(t: Tuple[Any, ...]) -> TypeGuard[Tuple[int, ...]]:
+def all_int(t: tuple[ta.Any, ...]) -> TypeGuard[tuple[int, ...]]:
     return all(isinstance(s, int) for s in t)
 
 
@@ -80,11 +63,11 @@ def ansilen(s):
     return len(re.sub("\x1b\\[(K|.*?m)", "", s))
 
 
-def make_pair(x: Union[int, Tuple[int, ...]], cnt=2) -> Tuple[int, ...]:
+def make_pair(x: ta.Union[int, tuple[int, ...]], cnt=2) -> tuple[int, ...]:
     return (x,) * cnt if isinstance(x, int) else x
 
 
-def flatten(l: Iterator):
+def flatten(l: ta.Iterator):
     return [item for sublist in l for item in sublist]
 
 
@@ -102,7 +85,7 @@ def strip_parens(fst):
     )
 
 
-def merge_dicts(ds: Iterable[Dict]) -> Dict:
+def merge_dicts(ds: ta.Iterable[dict]) -> dict:
     assert len(kvs := set([(k, v) for d in ds for k, v in d.items()])) == len(
         set(kv[0] for kv in kvs)
     ), f"cannot merge, {kvs} contains different values for the same key"
@@ -110,8 +93,8 @@ def merge_dicts(ds: Iterable[Dict]) -> Dict:
 
 
 def partition(lst, fxn):
-    a: list[Any] = []
-    b: list[Any] = []
+    a: list[ta.Any] = []
+    b: list[ta.Any] = []
     for s in lst:
         (a if fxn(s) else b).append(s)
     return a, b
@@ -123,7 +106,7 @@ def getenv(key, default=0):
 
 
 class Context(contextlib.ContextDecorator):
-    stack: ClassVar[List[dict[str, int]]] = [{}]
+    stack: ta.ClassVar[list[dict[str, int]]] = [{}]
 
     def __init__(self, **kwargs):
         self.kwargs = kwargs
@@ -146,7 +129,7 @@ class Context(contextlib.ContextDecorator):
 
 
 class ContextVar:
-    _cache: ClassVar[Dict[str, ContextVar]] = {}
+    _cache: ta.ClassVar[dict[str, ContextVar]] = {}
     value: int
 
     def __new__(cls, key, default_value):
@@ -196,11 +179,11 @@ class Timing(contextlib.ContextDecorator):
 # **** tinygrad now supports dtypes! *****
 
 
-class DType(NamedTuple):
+class DType(ta.NamedTuple):
     priority: int  # this determines when things get upcasted
     itemsize: int
     name: str
-    np: Optional[
+    np: ta.Optional[
         type
     ]  # TODO: someday this will be removed with the "remove numpy" project
     sz: int = 1
@@ -215,9 +198,7 @@ class ImageDType(DType):
         return super().__new__(cls, priority, itemsize, name, np)
 
     def __init__(self, priority, itemsize, name, np, shape):
-        self.shape: Tuple[
-            int, ...
-        ] = shape  # arbitrary arg for the dtype, used in image for the shape
+        self.shape: tuple[int, ...] = shape  # arbitrary arg for the dtype, used in image for the shape
         super().__init__()
 
     def __repr__(self):
@@ -266,34 +247,34 @@ class dtypes:
         return DTYPES_DICT[np.dtype(x).name]
 
     @staticmethod
-    def fields() -> Dict[str, DType]:
+    def fields() -> dict[str, DType]:
         return DTYPES_DICT
 
-    bool: Final[DType] = DType(0, 1, "bool", np.bool_)
-    float16: Final[DType] = DType(0, 2, "half", np.float16)
+    bool: ta.Final[DType] = DType(0, 1, "bool", np.bool_)
+    float16: ta.Final[DType] = DType(0, 2, "half", np.float16)
     half = float16
-    float32: Final[DType] = DType(4, 4, "float", np.float32)
+    float32: ta.Final[DType] = DType(4, 4, "float", np.float32)
     float = float32
-    float64: Final[DType] = DType(0, 8, "double", np.float64)
+    float64: ta.Final[DType] = DType(0, 8, "double", np.float64)
     double = float64
-    int8: Final[DType] = DType(0, 1, "char", np.int8)
-    int16: Final[DType] = DType(1, 2, "short", np.int16)
-    int32: Final[DType] = DType(2, 4, "int", np.int32)
-    int64: Final[DType] = DType(3, 8, "long", np.int64)
-    uint8: Final[DType] = DType(0, 1, "unsigned char", np.uint8)
-    uint16: Final[DType] = DType(1, 2, "unsigned short", np.uint16)
-    uint32: Final[DType] = DType(2, 4, "unsigned int", np.uint32)
-    uint64: Final[DType] = DType(3, 8, "unsigned long", np.uint64)
+    int8: ta.Final[DType] = DType(0, 1, "char", np.int8)
+    int16: ta.Final[DType] = DType(1, 2, "short", np.int16)
+    int32: ta.Final[DType] = DType(2, 4, "int", np.int32)
+    int64: ta.Final[DType] = DType(3, 8, "long", np.int64)
+    uint8: ta.Final[DType] = DType(0, 1, "unsigned char", np.uint8)
+    uint16: ta.Final[DType] = DType(1, 2, "unsigned short", np.uint16)
+    uint32: ta.Final[DType] = DType(2, 4, "unsigned int", np.uint32)
+    uint64: ta.Final[DType] = DType(3, 8, "unsigned long", np.uint64)
 
     # NOTE: bfloat16 isn't supported in numpy
-    bfloat16: Final[DType] = DType(0, 2, "__bf16", None)
+    bfloat16: ta.Final[DType] = DType(0, 2, "__bf16", None)
 
     # NOTE: these are internal dtypes, should probably check for that
-    _int2: Final[DType] = DType(2, 4 * 2, "int2", None, 2)
-    _half4: Final[DType] = DType(0, 2 * 4, "half4", None, 4)
-    _float2: Final[DType] = DType(4, 4 * 2, "float2", None, 2)
-    _float4: Final[DType] = DType(4, 4 * 4, "float4", None, 4)
-    _arg_int32: Final[DType] = DType(2, 4, "_arg_int32", None)
+    _int2: ta.Final[DType] = DType(2, 4 * 2, "int2", None, 2)
+    _half4: ta.Final[DType] = DType(0, 2 * 4, "half4", None, 4)
+    _float2: ta.Final[DType] = DType(4, 4 * 2, "float2", None, 2)
+    _float4: ta.Final[DType] = DType(4, 4 * 4, "float4", None, 4)
+    _arg_int32: ta.Final[DType] = DType(2, 4, "_arg_int32", None)
 
 
 # HACK: staticmethods are not callable in 3.8 so we have to compare the class
@@ -305,12 +286,12 @@ DTYPES_DICT = {
 
 
 class GlobalCounters:
-    global_ops: ClassVar[int] = 0
-    global_mem: ClassVar[int] = 0
-    time_sum_s: ClassVar[float] = 0.0
-    kernel_count: ClassVar[int] = 0
-    mem_used: ClassVar[int] = 0  # NOTE: this is not reset
-    mem_cached: ClassVar[int] = 0  # NOTE: this is not reset
+    global_ops: ta.ClassVar[int] = 0
+    global_mem: ta.ClassVar[int] = 0
+    time_sum_s: ta.ClassVar[float] = 0.0
+    kernel_count: ta.ClassVar[int] = 0
+    mem_used: ta.ClassVar[int] = 0  # NOTE: this is not reset
+    mem_cached: ta.ClassVar[int] = 0  # NOTE: this is not reset
 
     @staticmethod
     def reset():
