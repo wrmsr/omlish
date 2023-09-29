@@ -7,6 +7,7 @@ from omlish import dataclasses as dc
 from .. import dtypes as dt
 from .. import ops
 from ..buffers import Buffer
+from ..linearize.keys import render_key
 from ..raw import RawConst
 
 from tinygrad.ops import LazyOp, MovementOps, FlopCounter, get_lazyop_info, ReduceOps
