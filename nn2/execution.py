@@ -43,12 +43,11 @@ class Interpreted:
             fxn_for_op: dict[type[LazyOp], ta.Callable],
             to_underlying=lambda x: x._buf,
             from_underlying=None,
-    ):
-        self.buffer, self.fxn_for_op, self.to_underlying = (
-            buffer,
-            fxn_for_op,
-            to_underlying,
-        )
+    ) -> None:
+        super().__init__()
+        self.buffer = buffer
+        self.fxn_for_op = fxn_for_op
+        self.to_underlying = to_underlying
         self.from_underlying = buffer if from_underlying is None else from_underlying
         self.synchronize = lambda: None
         self.codegen = None
@@ -68,6 +67,7 @@ class Interpreted:
             for mop, arg in ast.arg.st.to_movement_ops():
                 buf = self.fxn_for_op[mop](buf, arg)
             return self.from_underlying(buf)
+
         if (
                 ops.MulAcc in self.fxn_for_op
                 and isinstance(ast, ops.Sum)
@@ -75,17 +75,23 @@ class Interpreted:
                 and isinstance(ast.src[0], ops.Mul)
         ):
             ast = ops.MulAcc(ast.src[0].src, ast.arg)
+
         created_context = context is None
+
         if context is None:
             context = dict()
+
         if not created_context and ast in context:
             return context[ast]
+
         srcs = [
             self.exec_ast(ta.cast(LazyOp, x), inputs=inputs, context=context, **kwargs)
             for x in ast.src
         ]
+
         if DEBUG >= 3:
             st = time.perf_counter()
+
         ret = self.from_underlying(
             self.fxn_for_op[type(ast)](
                 *(
@@ -94,6 +100,7 @@ class Interpreted:
                 )
             )
         )
+
         if (
                 output is not None
                 and ret.dtype != output.dtype
@@ -104,6 +111,7 @@ class Interpreted:
                     self.to_underlying(ret), (output.dtype, False)
                 )
             )  # Do manual casting of ret if it does not match the required output dtype.
+
         if DEBUG >= 5 or (self.buffer != FlopCounter and DEBUG >= 3):
             print(
                 (
@@ -123,8 +131,10 @@ class Interpreted:
                 ),
                 ast.arg if ast.arg is not None else "",
             )
+
         if not created_context:
             context[ast] = ret
+
         if output is not None and output.output_buffer is not None:
             # TODO: does this check have any meaning anymore?
             # It fails on things like batchnorm initted with zeros
@@ -132,6 +142,7 @@ class Interpreted:
             assert output.output_buffer.dtype == ret.dtype
             output.output_buffer._buf = ret._buf
             return output.output_buffer
+
         return ret
 
 
@@ -229,25 +240,14 @@ class ASTRunner:
                 or not runtime_args["binary"]
         ):
             print(prg)
-        (
-            self.name,
-            self.prg,
-            self.global_size,
-            self.local_size,
-            self.op_estimate,
-            self.mem_estimate,
-            self.display_name,
-            self.runtime_args,
-        ) = (
-            name,
-            prg,
-            global_size,
-            local_size,
-            op_estimate,
-            mem_estimate,
-            display_name,
-            runtime_args if runtime_args is not None else {},
-        )
+        self.name = name
+        self.prg = prg
+        self.global_size = global_size
+        self.local_size = local_size
+        self.op_estimate = op_estimate
+        self.mem_estimate = mem_estimate
+        self.display_name = display_name
+        self.runtime_args = runtime_args if runtime_args is not None else {}
 
     def build(self, runtime, batch_exec=BasicBatchExecutor):
         self.clprg, self.batch_exec = (
@@ -267,6 +267,7 @@ class ASTRunner:
 
         if not optimizing:
             CacheCollector.add(self, rawbufs, var_vals if var_vals is not None else {})
+
         return self(rawbufs, var_vals, force_wait=force_wait)
 
     def launch_dims(self, var_vals):
@@ -278,6 +279,7 @@ class ASTRunner:
             if self.global_size is not None
             else self.global_size
         )
+
         local_size = (
             (
                 [sym_infer(sz, var_vals) for sz in self.local_size] +
@@ -286,6 +288,7 @@ class ASTRunner:
             if self.local_size is not None
             else self.local_size
         )
+
         return global_size, local_size
 
     def __call__(
@@ -297,7 +300,9 @@ class ASTRunner:
     ) -> ta.Optional[float]:
         if var_vals is None:
             var_vals = {}
+
         global_size, local_size = self.launch_dims(var_vals)
+
         if et := self.clprg(
                 global_size,
                 local_size,
@@ -306,7 +311,9 @@ class ASTRunner:
                 wait=force_wait or DEBUG >= 1,
         ):
             GlobalCounters.time_sum_s += et
+
         op_estimate = sym_infer(self.op_estimate, var_vals)
+
         if DEBUG >= 2:
             print(
                 (
@@ -328,9 +335,11 @@ class ASTRunner:
                     )
                 )
             )
+
         GlobalCounters.kernel_count += 1
         GlobalCounters.global_ops += op_estimate
         GlobalCounters.global_mem += self.mem_estimate
+
         return et
 
 
@@ -343,20 +352,21 @@ class Compiled:
             runtime,
             synchronize=lambda: None,
             batch_exec=BasicBatchExecutor,
-    ):
-        (
-            self.buffer,
-            self.linearizer_opts,
-            self.renderer,
-            self.runtime,
-            self.synchronize,
-            self.batch_exec,
-        ) = (buffer, linearizer_opts, renderer, runtime, synchronize, batch_exec)
+    ) -> None:
+        super().__init__()
+        self.buffer = buffer
+        self.linearizer_opts = linearizer_opts
+        self.renderer = renderer
+        self.runtime = runtime
+        self.synchronize = synchronize
+        self.batch_exec = batch_exec
         self.method_cache: dict[ta.Any, ASTRunner] = {}
 
     def to_program(self, k):
         k.linearize()
+
         src = self.renderer(k.function_name, k.uops)
+
         if len(src) == 3:
             return ASTRunner(
                 k.function_name,
@@ -366,6 +376,7 @@ class Compiled:
                 display_name=k.display_name,
                 runtime_args=src[2],
             ).build(self.runtime)
+
         return ASTRunner(
             k.function_name,
             src,
