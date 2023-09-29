@@ -262,4 +262,4 @@ renderer = functools.partial(
         uses_vload=True,
     ),
 )
-GPUBuffer = Compiled(CLBuffer, LinearizerOptions(), renderer, CLProgram, CL.synchronize)
+OpenClBuffer = Compiled(CLBuffer, LinearizerOptions(), renderer, CLProgram, CL.synchronize)

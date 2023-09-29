@@ -7,13 +7,13 @@ import typing as ta
 
 import tqdm
 
+from ..devices import Device
 from ..dtypes import dtypes
 from ..helpers import DEBUG
 from ..helpers import GlobalCounters
 from ..helpers import Timing
 from ..helpers import argsort
 from ..helpers import prod
-from ..ops import Device
 from ..shape.view import strides_for_shape
 from ..tensor import Tensor
 

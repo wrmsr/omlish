@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 import torch
 
+from ..devices import Device
 from ..helpers import getenv
 from ..jit import TinyJit
 from ..nn.conv import Conv1d
@@ -17,7 +18,6 @@ from ..nn.nn import InstanceNorm
 from ..nn.nn import LayerNorm
 from ..nn.nn import LayerNorm2d
 from ..nn.nn import Linear
-from ..tensor import Device
 from ..tensor import Tensor
 
 
