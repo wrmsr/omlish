@@ -11,6 +11,8 @@ import tempfile
 import time
 import typing as ta
 
+import tqdm
+
 if ta.TYPE_CHECKING:  # TODO: remove this and import TypeGuard from typing once minimum python supported version is 3.10
     from typing_extensions import TypeGuard
 
@@ -229,3 +231,29 @@ def print_tree(tensor: Tensor):
             ]
         )
     )
+
+
+def download_file(url, fp, skip_if_exists=True):
+    import requests
+
+    if skip_if_exists and pathlib.Path(fp).is_file() and pathlib.Path(fp).stat().st_size > 0:
+        return
+
+    r = requests.get(url, stream=True)
+
+    assert r.status_code == 200
+
+    progress_bar = tqdm.tqdm(
+        total=int(r.headers.get("content-length", 0)),
+        unit="B",
+        unit_scale=True,
+        desc=url,
+    )
+
+    (path := pathlib.Path(fp).parent).mkdir(parents=True, exist_ok=True)
+
+    with tempfile.NamedTemporaryFile(dir=path, delete=False) as f:
+        for chunk in r.iter_content(chunk_size=16384):
+            progress_bar.update(f.write(chunk))
+        f.close()
+        pathlib.Path(f.name).rename(fp)
