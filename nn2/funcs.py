@@ -1,12 +1,53 @@
+from __future__ import annotations
+
 import math
 import typing as ta
+
+from omlish import lang
 
 from . import ops
 from .dtypes import DType
 from .helpers import argsort
 from .lazy import LazyBuffer
 from .shape.symbolic import sint
-from .tensor import Function
+
+if ta.TYPE_CHECKING:
+    from . import tensor
+else:
+    tensor = lang.proxy_import('.tensor', __package__)
+
+
+# An instantiation of the Function is the Context
+class Function:
+    def __init__(self, device: str, *tensors: tensor.Tensor) -> None:
+        super().__init__()
+        self.device = device
+        self.needs_input_grad = [t.requires_grad for t in tensors]
+        self.requires_grad = (
+            True if any(self.needs_input_grad) else
+            None if None in self.needs_input_grad else
+            False
+        )
+        if self.requires_grad:
+            self.parents = tensors
+
+    def forward(self, *args, **kwargs):
+        raise NotImplementedError(f"forward not implemented for {type(self)}")
+
+    def backward(self, *args, **kwargs):
+        raise RuntimeError(f"backward not implemented for {type(self)}")
+
+    @classmethod
+    def apply(fxn: type[Function], *x: tensor.Tensor, **kwargs) -> tensor.Tensor:
+        ctx = fxn(x[0].device, *x)
+        ret = tensor.Tensor(
+            ctx.forward(*[t.lazydata for t in x], **kwargs),
+            device=ctx.device,
+            requires_grad=ctx.requires_grad,
+        )
+        if ctx.requires_grad and not tensor.Tensor.no_grad:
+            ret._ctx = ctx  # used by autograd engine
+        return ret
 
 
 ##
