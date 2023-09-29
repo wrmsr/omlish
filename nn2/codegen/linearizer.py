@@ -7,6 +7,7 @@ import functools
 import collections
 import enum
 
+from .. import ops as ops_
 from ..codegen.kernel import LocalBuffer
 from ..codegen.optimizer import OptimizedKernel
 from ..dtypes import DType
@@ -19,13 +20,7 @@ from ..helpers import DEBUG
 from ..helpers import all_same
 from ..helpers import colored
 from ..helpers import prod
-from .. import ops as ops_
-from ..ops import BinaryOps
-from ..ops import BufferOps
 from ..ops import LazyOp
-from ..ops import ReduceOps
-from ..ops import TernaryOps
-from ..ops import UnaryOps
 from ..shape.shapetracker import ShapeTracker
 from ..shape.symbolic import AndNode
 from ..shape.symbolic import DivNode
@@ -327,7 +322,7 @@ class Linearizer(OptimizedKernel):
                                 self.load_cache[key],
                                 self.const(invalid_value, localtype),
                             ),
-                            TernaryOps.WHERE,
+                            ops_.Where,
                         )
                 else:
                     buf_uop = self.buf_uops[i]
@@ -627,9 +622,7 @@ class Linearizer(OptimizedKernel):
             acc = self.global_load(
                 0,
                 global_idxs + local_idxs + fake_reduce_idxs + upcast_idxs,
-                {ReduceOps.SUM: 0.0, ReduceOps.MAX: -math.inf}[
-                    ta.cast(ReduceOps, self.reduceop.op)
-                ],
+                {ops_.Sum: 0.0, ops_.Max: -math.inf}[type(self.reduceop)],
             )
 
             # reduce loop
@@ -858,9 +851,7 @@ class Linearizer(OptimizedKernel):
                 acc = self.global_load(
                     -1,
                     fake_global_idxs + local_idxs + fake_reduce_idxs + upcast_idxs,
-                    {ReduceOps.SUM: 0.0, ReduceOps.MAX: -math.inf}[
-                        ta.cast(ReduceOps, self.reduceop.op)
-                    ],
+                    {ops_.Sum: 0.0, ops_.Max: -math.inf}[type(self.reduceop)],
                 )
 
                 # late reduce loop
@@ -958,7 +949,7 @@ class Linearizer(OptimizedKernel):
             if (
                 arg == ops_.Add
                 and vin[1].uop == UOps.ALU
-                and vin[1].arg == UnaryOps.NEG
+                and vin[1].arg == ops_.Neg
             ):
                 return self.uop(
                     UOps.ALU,
@@ -968,7 +959,7 @@ class Linearizer(OptimizedKernel):
                     cachable=cachable,
                 )
             # constant folding
-            if arg == UnaryOps.NEG and vin[0].uop == UOps.CONST:
+            if arg == ops_.Neg and vin[0].uop == UOps.CONST:
                 return self.const(-vin[0].arg, dtype)
             # zero folding
             for x in [0, 1]:
@@ -1004,27 +995,26 @@ class Linearizer(OptimizedKernel):
         return self.uops[-1]
 
     def ast_parse(self, x, acc, loaded_buffers, do_reduce=False) -> list[UOp]:
-        if x.__class__ is not LazyOp:
+        if not isinstance(x, LazyOp):
             return loaded_buffers[x]  # for LOCAL_BUFFER
-        if x.op in BufferOps:
+        if isinstance(x, ops_.BufferOp):
             return loaded_buffers[x.arg]
-        if x.op in [UnaryOps.NOOP, UnaryOps.CAST]:
+        if isinstance(x, (ops_.Nop, ops_.Cast)):
             return self.ast_parse(x.src[0], acc, loaded_buffers)  # cast isn't an ALU op
-        if x.op in ReduceOps and not do_reduce:
+        if isinstance(x, ops_.ReduceOp) and not do_reduce:
             return acc
         # MULACC fusion. TODO: this is copied from Interpreted
         if (
-            x.op == ReduceOps.SUM
-            and x.src[0].__class__ is LazyOp
-            and x.src[0].op == ops_.Mul
+            isinstance(x, ops_.Sum)
+            and isinstance(x.src[0], ops_.Mul)
         ):
-            x = LazyOp(TernaryOps.MULACC, x.src[0].src, x.arg)
+            x = ops_.MulAcc(x.src[0].src, x.arg)
         if (
-            x.op == ReduceOps.SUM
+            isinstance(x, ops_.Sum)
             and isinstance(x.src[0], ops_.Cast)
             and isinstance(x.src[0].src[0], ops_.Mul)
         ):
-            x = LazyOp(TernaryOps.MULACC, x.src[0].src[0].src, x.arg)
+            x = ops_.MulAcc(x.src[0].src[0].src, x.arg)
         values = [self.ast_parse(v, acc, loaded_buffers) for v in x.src]
         ops = {
             ops_.Sum: ops_.Add,
