@@ -9,6 +9,7 @@ import typing as ta
 
 import numpy as np
 
+from . import funcs
 from . import ops
 from .devices import Device
 from .dtypes import DType
@@ -26,46 +27,9 @@ from .lazy import LazyBuffer
 from .shape.symbolic import sint
 
 
-# An instantiation of the Function is the Context
-class Function:
-    def __init__(self, device: str, *tensors: Tensor) -> None:
-        super().__init__()
-        self.device = device
-        self.needs_input_grad = [t.requires_grad for t in tensors]
-        self.requires_grad = (
-            True
-            if any(self.needs_input_grad)
-            else None
-            if None in self.needs_input_grad
-            else False
-        )
-        if self.requires_grad:
-            self.parents = tensors
-
-    def forward(self, *args, **kwargs):
-        raise NotImplementedError(f"forward not implemented for {type(self)}")
-
-    def backward(self, *args, **kwargs):
-        raise RuntimeError(f"backward not implemented for {type(self)}")
-
-    @classmethod
-    def apply(fxn: type[Function], *x: Tensor, **kwargs) -> Tensor:
-        ctx = fxn(x[0].device, *x)
-        ret = Tensor(
-            ctx.forward(*[t.lazydata for t in x], **kwargs),
-            device=ctx.device,
-            requires_grad=ctx.requires_grad,
-        )
-        if ctx.requires_grad and not Tensor.no_grad:
-            ret._ctx = ctx  # used by autograd engine
-        return ret
-
-
-from . import funcs  # noqa
-
-
 class Tensor:
     __deletable__ = ("_ctx",)
+
     training: ta.ClassVar[bool] = False
 
     class train:
