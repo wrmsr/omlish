@@ -61,12 +61,10 @@ def _ast_reduceops(op: LazyOp) -> LazyOp:
     # TODO: this can also corealize a binary op after the reduce, not just before
     src = op.src[0]
     if not src.realized:
-        assert isinstance(
-            src.op, LazyOp
-        ), "if not src.realized, then src.op must be a LazyOp"
+        assert isinstance(src.op, LazyOp), "if not src.realized, then src.op must be a LazyOp"
         if (
             MERGE_ELEMENTWISE_INTO_REDUCE
-            and isinstance(src.op, ops.BinaryOp)
+            and issubclass(src.optype, ops.BinaryOp)
             and len(src.children) <= 1
         ):
             src = src.op
@@ -86,7 +84,7 @@ def _ast_binaryops(op: LazyOp, shape: tuple[sint, ...]) -> LazyOp:
         for k, x in zip(
             real_srcs.keys(), map(get_movementroot_contiguous, real_srcs.keys())
         )
-        if isinstance(x.op, ops.ReduceOp)
+        if issubclass(x.optype, ops.ReduceOp)
         and not x.realized
         and prod(k.shape) == prod(x.shape)
         and len(x.children) <= 1
@@ -97,7 +95,7 @@ def _ast_binaryops(op: LazyOp, shape: tuple[sint, ...]) -> LazyOp:
         psrc = psrcs[
             0
         ]  # NOTE: right now we can't handle multiple, as we'd have to check for loop
-        if isinstance(psrc[1], ops.ReduceOp):
+        if issubclass(psrc[1].optype, ops.ReduceOp):
             top = _ast_reduceops(psrc[1].op)
         real_srcs[psrc[0]] = top
         real_srcs.update(
@@ -155,7 +153,7 @@ def get_movementroot(root: LazyBuffer, allow_contiguous=False) -> LazyBuffer:
         get_movementroot(ta.cast(LazyBuffer, root.op.src[0]), allow_contiguous)
         if not root.realized
         and (
-            isinstance(root.op, ops.MovementOp)
+            issubclass(root.optype, ops.MovementOp)
             or (
                 isinstance(root.op, ops.Contiguous)
                 and allow_contiguous
@@ -172,7 +170,7 @@ def get_movementroot_contiguous(x: LazyBuffer) -> LazyBuffer:
         if not x.realized and isinstance(x.op, ops.Contiguous)
         else (
             get_movementroot(x, True)
-            if isinstance(x.op, ops.MovementOp) and x.st.contiguous
+            if issubclass(x.optype, ops.MovementOp) and x.st.contiguous
             else x
         )
     )
@@ -225,7 +223,6 @@ UNSAFE_PAD_OPS = {
 
 
 class LazyBuffer:
-    __deletable__ = ("op",)
 
     def __init__(
         self,
@@ -253,10 +250,11 @@ class LazyBuffer:
         self.views: weakref.WeakSet = weakref.WeakSet()
         # NOTE: op should be read only after construction of LazyBuffer. it is now with schedule
         self.op: LazyOp = op
+        self.optype = type(op)
         for x in op.buffers:
             x.children.add(self)
         assert (
-            not isinstance(op, ops.MovementOp) or (base is not None and not isinstance(base.op, ops.MovementOp))
+            not isinstance(op, ops.MovementOp) or (base is not None and not issubclass(base.optype, ops.MovementOp))
         ), "MovementOps must be based"
         self._base = base
         if base:
@@ -341,7 +339,7 @@ class LazyBuffer:
         if self in seen or self.realized or self.is_unrealized_const():
             return []
         seen.add(self)
-        if isinstance(self.op, ops.MovementOp):
+        if issubclass(self.optype, ops.MovementOp):
             return self.base.schedule(seen)
 
         op = (
@@ -352,9 +350,9 @@ class LazyBuffer:
         if isinstance(op, ops.LoadOp):
             return [(self.op, self, ())]
 
-        if isinstance(self.op, ops.BinaryOp):
+        if issubclass(self.optype, ops.BinaryOp):
             op = _ast_binaryops(op, self.shape)
-        elif isinstance(self.op, ops.ReduceOp):
+        elif issubclass(self.optype, ops.ReduceOp):
             op = _ast_reduceops(op)
 
         # HACK: image shape can be wrong, hot cast it back to a normal float
@@ -515,7 +513,7 @@ class LazyBuffer:
         if MERGE_ELEMENTWISE_OPS:
             # remove the buffers from any (childless) BinaryOps that feed into this
             srcs = tuple(  # type: ignore
-                x.op if isinstance(x.op, ops.BinaryOp) and not x.children and not x.realized else x
+                x.op if issubclass(x.optype, ops.BinaryOp) and not x.children and not x.realized else x
                 for x in srcs
             )
 
@@ -586,7 +584,7 @@ class LazyBuffer:
     ) -> LazyBuffer:
         if (
             SHUFFLE_MOVEMENT_OPS
-            and isinstance(self.op, ops.BinaryOp)
+            and issubclass(self.optype, ops.BinaryOp)
             and not self.realized
             and (
                 op in {ops.Shrink, ops.Restride, ops.Permute}
@@ -662,7 +660,7 @@ class LazyBuffer:
     def permute(self: LazyBuffer, arg: tuple[int, ...]) -> LazyBuffer:
         if arg == tuple(range(len(self.shape))):
             return self
-        if not self.realized and isinstance(self.op, ops.Permute):
+        if not self.realized and issubclass(self.optype, ops.Permute):
             return self.op.src[0].permute(tuple([self.op.arg[i] for i in arg]))
         if not self.realized:
             if PUSH_PERMUTES and isinstance(self.op, ops.ReduceOp):
@@ -735,7 +733,7 @@ def _push_movement_ops(srcs: tuple[LazyBuffer, ...]) -> tuple[LazyBuffer, ...]:
         # backwalk all the movement ops. don't push PAD or EXPAND
         while (
             not bx.realized
-            and isinstance(bx.op, ops.MovementOp)
+            and issubclass(bx.optype, ops.MovementOp)
             and not isinstance(bx.op, ops.Expand)
             and (SHUFFLE_PAD_OPS or not isinstance(bx.op, ops.Pad))
             and len(bx.children) <= 1
@@ -748,7 +746,7 @@ def _push_movement_ops(srcs: tuple[LazyBuffer, ...]) -> tuple[LazyBuffer, ...]:
         if (
             mops
             and not bx.realized
-            and isinstance(bx.op, ops.BinaryOp)
+            and issubclass(bx.optype, ops.BinaryOp)
             and len(bx.children) <= 1
             and (
                 all(x[0] is not ops.Pad for x in mops)

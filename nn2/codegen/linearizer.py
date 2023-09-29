@@ -1021,7 +1021,7 @@ class Linearizer(OptimizedKernel):
             ops_.Max: ops_.Max2,
             ops_.MulAcc: ops_.MulAcc,
         }
-        if x.op in ops:
+        if type(x) in ops:
             ret = [
                 (
                     idx,
@@ -1031,7 +1031,7 @@ class Linearizer(OptimizedKernel):
                         (
                             val[-1],
                             self.uop(
-                                UOps.ALU, dtypes.float32, val, ops[x.op], cachable=False
+                                UOps.ALU, dtypes.float32, val, ops[type(x)], cachable=False
                             ),
                         ),
                     ),
@@ -1042,7 +1042,7 @@ class Linearizer(OptimizedKernel):
             ]
         else:
             ret = [
-                (idx, self.uop(UOps.ALU, dtypes.float32, val, x.op))
+                (idx, self.uop(UOps.ALU, dtypes.float32, val, type(x)))
                 for idx, val in zip([[i] for i in range(len(values[0]))], zip(*values))
             ]
         ordered_ret: list[ta.Optional[UOp]] = [None] * len(values[0])
