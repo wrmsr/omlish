@@ -169,7 +169,7 @@ class Kernel:
             itertools.product(
                 *[
                     list(range(s))
-                    for s in self.sts[i].shape[self.shape_len - self.upcasted :][::-1]
+                    for s in self.sts[i].shape[self.shape_len - self.upcasted:][::-1]
                 ]
             )
             if self.upcasted > 0
@@ -186,13 +186,13 @@ class Kernel:
     def upcasted_axis(self, i):
         return list(
             zip(
-                self.sts[i].shape[self.shape_len - self.upcasted :],
-                self.sts[i].real_strides()[self.shape_len - self.upcasted :],
+                self.sts[i].shape[self.shape_len - self.upcasted:],
+                self.sts[i].real_strides()[self.shape_len - self.upcasted:],
                 [
                     x != y
                     for x, y in zip(
-                        self.sts[0].shape[self.shape_len - self.upcasted :],
-                        self.full_shape[self.shape_len - self.upcasted :],
+                        self.sts[0].shape[self.shape_len - self.upcasted:],
+                        self.full_shape[self.shape_len - self.upcasted:],
                     )
                 ],
             )
@@ -287,7 +287,8 @@ class Kernel:
         colors = ["blue"] * self.global_dims
         # except the local_dims, these are non-reduce locals (cyan)
         colors += ["cyan"] * self.local_dims
-        # between first_reduce and first_reduce + group_for_reduce, they are either local (cyan), or late upcasted (green)
+        # between first_reduce and first_reduce + group_for_reduce, they are either local (cyan), or late upcasted
+        # (green)
         colors += [
             "white" if i in self.upcast_in_mid_reduce_axes else "green"
             for i in range(

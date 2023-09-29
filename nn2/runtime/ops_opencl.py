@@ -173,7 +173,11 @@ class ClBuffer(RawBufferCopyInOut, RawBufferTransfer):
 
 class ClProgram:
     def __init__(self, name: str, prg: str, binary=False, argdtypes=None, options=None):
-        self.name, self.clprograms = name, [cl.Program(ctx, ctx.devices, [prg] * len(ctx.devices)) if binary else cl.Program(ctx, prg) for ctx in CL.cl_ctxs]  # type: ignore
+        self.name = name
+        self.clprograms = [  # type: ignore
+            cl.Program(ctx, ctx.devices, [prg] * len(ctx.devices))
+            if binary else cl.Program(ctx, prg) for ctx in CL.cl_ctxs
+        ]
         try:
             self._clprgs = [
                 clprogram.build(options=options) for clprogram in self.clprograms

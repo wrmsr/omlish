@@ -73,7 +73,7 @@ class OptimizedKernel(Kernel):
                 if x[axis] > 1
                 else [1, 1]
             )
-            + list(x[axis + 1 :]),
+            + list(x[axis + 1:]),
             [i for i in range(insert_before) if i != move_axis]
             + [move_axis]
             + [i for i in range(insert_before, self.shape_len + 1) if i != move_axis],
@@ -88,9 +88,9 @@ class OptimizedKernel(Kernel):
             return
         all_ones = [s == 1 for s in self.full_shape]
         self.local_dims -= sum(
-            all_ones[self.first_reduce - self.local_dims : self.first_reduce]
+            all_ones[self.first_reduce - self.local_dims:self.first_reduce]
         )
-        self.upcasted -= sum(all_ones[self.shape_len - self.upcasted :])
+        self.upcasted -= sum(all_ones[self.shape_len - self.upcasted:])
         self.reshape_and_permute(
             lambda shape: [x for i, x in enumerate(shape) if not all_ones[i]], None
         )
@@ -165,7 +165,7 @@ class OptimizedKernel(Kernel):
                     )
                 assert max(global_max) >= max(
                     self.full_shape[:global_dims]
-                ), f"device max allocation {max(self.full_shape[:global_dims])} exceeds global dim maximum {max(global_max)}"
+                ), f"device max allocation {max(self.full_shape[:global_dims])} exceeds global dim maximum {max(global_max)}"  # noqa
             for i in range(global_dims - 1):
                 if self.full_shape[i] > global_max[i]:
                     order = list(range(len(self.full_shape)))
@@ -399,7 +399,7 @@ class OptimizedKernel(Kernel):
                 (self.shape_len - self.first_reduce) == 3
                 and self.full_shape[self.first_reduce + 1] % 2 == 1
                 and self.full_shape[self.first_reduce + 2] % 2 == 1
-                and max(self.full_shape[self.first_reduce + 1 : self.first_reduce + 3])
+                and max(self.full_shape[self.first_reduce + 1: self.first_reduce + 3])
                 < 21
             )
             if (
@@ -460,7 +460,7 @@ class OptimizedKernel(Kernel):
                     if (
                         max(
                             self.full_shape[
-                                self.first_reduce + 1 : self.first_reduce + 3
+                                self.first_reduce + 1: self.first_reduce + 3
                             ]
                         )
                         < 5
@@ -478,7 +478,8 @@ class OptimizedKernel(Kernel):
                                 self.upcast()
                                 break
 
-                # very late upcast to run group at the same time. only if actually using real tensor cores, otherwise local isn't a simdgroup
+                # very late upcast to run group at the same time. only if actually using real tensor cores, otherwise
+                # local isn't a simdgroup
                 if self.use_tensor_cores and self.full_shape[s0] % 2 == 0:
                     self.shift_to(
                         s0, 2, insert_before=self.first_reduce - self.local_dims
@@ -571,7 +572,8 @@ class OptimizedKernel(Kernel):
         # if there are small dims with lots of valid masks, upcast them (they might be from Tensor.stack)
         # this can be made much smarter
         to_upcast = []
-        # upcast leading axes first (hack-ish for winograd; we actually want to upcast masked axes with low stride first)
+        # upcast leading axes first (hack-ish for winograd; we actually want to upcast masked axes with low stride
+        # first)
         for axis in range(self.first_reduce):
             # we might want to be able to split axes that are masked, or refuse to merge them in simplify_merge_adjacent
             # for now skip upcasting here if there is a symbolic axis
@@ -579,7 +581,7 @@ class OptimizedKernel(Kernel):
                 isinstance(self.full_shape[axis], int)
                 and self.full_shape[axis] <= 7
                 and any(st.axis_is_masked(axis) for st in self.sts)
-                and prod(self.full_shape[self.shape_len - self.upcasted :])
+                and prod(self.full_shape[self.shape_len - self.upcasted:])
                 * self.full_shape[axis]
                 <= 7 * 7
             ):
@@ -598,7 +600,8 @@ class OptimizedKernel(Kernel):
             for axis, upcast_amount in itertools.product(
                 range(self.first_reduce), [3, 4]
             ):  # consider all the non reduce axes, and a 3 or 4 reduce
-                # if we haven't upcasted it, it's not symbolic, it mods, and some buffer has stride 0 on axis while having no stride 0 in the upcasted axis already
+                # if we haven't upcasted it, it's not symbolic, it mods, and some buffer has stride 0 on axis while
+                # having no stride 0 in the upcasted axis already
                 if (
                     axis not in upcasted_axis
                     and isinstance(self.full_shape[axis], int)
@@ -628,7 +631,8 @@ class OptimizedKernel(Kernel):
             else:
                 break
 
-        # if last dim is small(ish) and it's a reduce dim, upcast the reduce (loop unrolling). no simplify needed since it's just an upcast. NOTE: careful, this has broken VALIDHACKS
+        # if last dim is small(ish) and it's a reduce dim, upcast the reduce (loop unrolling). no simplify needed since
+        # it's just an upcast. NOTE: careful, this has broken VALIDHACKS
         if self.first_reduce < (self.shape_len - self.upcasted) and (
             len(list(self.shape_offsets(self.full_buf_index))) <= 4
             or not any(r for _, _, r in self.upcasted_axis(self.full_buf_index))

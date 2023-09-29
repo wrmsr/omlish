@@ -138,5 +138,3 @@ class ConvTranspose2d(Conv2d):
         return Tensor.kaiming_uniform(
             in_channels, out_channels // groups, *self.kernel_size, a=math.sqrt(5)
         )
-
-

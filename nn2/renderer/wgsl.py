@@ -77,7 +77,9 @@ class WGSLLanguage(CStyleLanguage):
             ]
         )
         prg += (
-            f"\n@compute @workgroup_size({','.join([str(x) for x in local_size])}) fn {function_name}(@builtin(workgroup_id) gindex: vec3<u32>, @builtin(local_invocation_id) lindex: vec3<u32>) {{\n"
+            f"\n@compute @workgroup_size({','.join([str(x) for x in local_size])}) "
+            f"fn {function_name}"
+            f"(@builtin(workgroup_id) gindex: vec3<u32>, @builtin(local_invocation_id) lindex: vec3<u32>) {{\n"
             + "\n".join(kernel)
             + "\n}"
         )

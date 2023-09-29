@@ -90,7 +90,15 @@ class CStyleLanguage(ta.NamedTuple):
             return f"vload_half{'' if output_dtype.sz == 1 else str(output_dtype.sz)}(0, {buf_name}+{idx})"
         cast = f"({output_dtype.name})" if output_dtype != buf_dtype else ""
         if output_dtype.sz > 1:
-            return f"{cast}(*(({self.smem_prefix if local else self.buffer_prefix}{buf_dtype.name}{output_dtype.sz}*)({buf_name}+{idx})))"
+            return (
+                f"{cast}"
+                f"(*"
+                f"("
+                f"({self.smem_prefix if local else self.buffer_prefix}{buf_dtype.name}{output_dtype.sz}*)"
+                f"({buf_name}+{idx})"
+                f")"
+                f")"
+            )
         return (
             f"{cast}(*({buf_name}+{idx}))"
             if self.uses_ptr_arithmetic
@@ -138,7 +146,8 @@ class CStyleLanguage(ta.NamedTuple):
         ]
         prg = "".join(
             [
-                f"{self.kernel_prefix}void {f'__launch_bounds__ ({prod(local_size)}, 1) ' if self.launch_bounds else ''}{function_name}(",
+                f"{self.kernel_prefix}void "
+                f"{f'__launch_bounds__ ({prod(local_size)}, 1) ' if self.launch_bounds else ''}{function_name}(",
             ]
             + [", ".join([f"{t} {name}" for name, t in buftypes] + self.extra_args)]
             + [") {\n" + tmp]
@@ -164,7 +173,10 @@ class CStyleLanguage(ta.NamedTuple):
         if self.uses_vload and buf_dtype == dtypes.float16:
             return f"vstore_half{'' if var_dtype.sz == 1 else str(var_dtype.sz)}({var_name}, 0, {buf_name}+{idx});"
         if var_dtype.sz > 1:
-            return f"*(({self.smem_prefix if local else self.buffer_prefix}{buf_dtype.name}{var_dtype.sz}*)({buf_name}+{idx})) = ({buf_dtype.name}{var_dtype.sz}){var_name};"
+            return (
+                f"*(({self.smem_prefix if local else self.buffer_prefix}{buf_dtype.name}{var_dtype.sz}*)"
+                f"({buf_name}+{idx})) = ({buf_dtype.name}{var_dtype.sz}){var_name};"
+            )
         return (
             f"*({buf_name}+{idx}) = {var_name};"
             if self.uses_ptr_arithmetic
@@ -262,7 +274,8 @@ def uops_to_cstyle(lang: CStyleLanguage, function_name: str, uops: list[UOp]) ->
         elif uop == UOps.DEFINE_ACC:
             assert dtype is not None
             kk(
-                f"{lang.generic_var_prefix if lang.generic_var_prefix else dtype.name} {ssa(u,'acc')} = {lang.render_const(args, dtype)};"
+                f"{lang.generic_var_prefix if lang.generic_var_prefix else dtype.name} "
+                f"{ssa(u,'acc')} = {lang.render_const(args, dtype)};"
             )
         elif uop == UOps.SPECIAL:
             xid = lang.gid if args[1].startswith("g") else lang.lid

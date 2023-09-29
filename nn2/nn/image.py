@@ -22,7 +22,7 @@ def image_dot(self, w):
     ), f"both arguments to matmul need to be at least 1D, but they are {n1}D and {n2}D"
     assert (
         self.shape[-1] == w.shape[-min(n2, 2)]
-    ), f"Input Tensor shapes {self.shape} and {w.shape} cannot be multiplied ({self.shape[-1]} != {w.shape[-min(n2, 2)]})"
+    ), f"Input Tensor shapes {self.shape} and {w.shape} cannot be multiplied ({self.shape[-1]} != {w.shape[-min(n2, 2)]})"  # noqa
     bs, groups = prod(self.shape[0:-2]), prod(w.shape[0:-2])
     cin, cout = w.shape[-2], w.shape[-1]
     out_shape_t = self.shape[0:-2] + (cout, -1)

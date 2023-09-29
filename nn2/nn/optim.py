@@ -64,7 +64,8 @@ class SGD(Optimizer):
         self.realize(self.b)
 
 
-# LAMB is essentially just the trust ratio part of LARS applied to Adam/W so if we just set the trust ratio to 1.0 its just Adam/W.
+# LAMB is essentially just the trust ratio part of LARS applied to Adam/W so if we just set the trust ratio to 1.0 its
+# just Adam/W.
 def AdamW(params: list[Tensor], lr=0.001, b1=0.9, b2=0.999, eps=1e-8, wd=0.01):
     return LAMB(params, lr, b1, b2, eps, wd, adam=True)
 

@@ -10,7 +10,8 @@ from ..helpers import partition
 
 
 # NOTE: Python has different behavior for negative mod and floor div than c
-# symbolic matches the Python behavior, but the code output is agnostic, and will never have negative numbers in div or mod
+# symbolic matches the Python behavior, but the code output is agnostic, and will never have negative numbers in div or
+# mod
 
 
 def is_sym_int(x: ta.Any) -> bool:

@@ -1,9 +1,10 @@
-import os
+import collections
 import json
+import os
 import pathlib
-import zipfile
 import pickle
 import typing as ta
+import zipfile
 
 import tqdm
 
@@ -36,9 +37,9 @@ def safe_load(fn: ta.Union[Tensor, str]) -> dict[str, Tensor]:
         else Tensor.empty(os.stat(fn).st_size, dtype=dtypes.uint8, device=f"disk:{fn}")
     )
     json_len = t[0:1].cast(dtypes.int64).numpy()[0]
-    metadata = json.loads(t[8 : 8 + json_len].numpy().tobytes())
+    metadata = json.loads(t[8:8 + json_len].numpy().tobytes())
     return {
-        k: t[8 + json_len + v["data_offsets"][0] :]
+        k: t[8 + json_len + v["data_offsets"][0]:]
         .cast(safe_dtypes[v["dtype"]])[: prod(v["shape"])]
         .reshape(v["shape"])
         for k, v in metadata.items()
@@ -60,16 +61,12 @@ def safe_save(tensors: dict[str, Tensor], fn: str):
     pathlib.Path(fn).unlink(missing_ok=True)
     t = Tensor.empty(8 + len(j) + offset, dtype=dtypes.uint8, device=f"disk:{fn}")
     t[0:1].cast(dtypes.int64).assign([len(j)])
-    t[8 : 8 + len(j)].assign(
-        Tensor(list(j.encode("utf-8")), dtype=dtypes.uint8, device="cpu")
-    )
+    t[8:8 + len(j)].assign(Tensor(list(j.encode("utf-8")), dtype=dtypes.uint8, device="cpu"))
     for k, v in safe_load(t).items():
         v.assign(tensors[k])
 
 
 # state dict
-
-from collections import OrderedDict
 
 
 def get_state_dict(obj, prefix: str = "", tensor_type=Tensor) -> dict[str, Tensor]:
@@ -77,7 +74,7 @@ def get_state_dict(obj, prefix: str = "", tensor_type=Tensor) -> dict[str, Tenso
         return {prefix.strip("."): obj}
     if hasattr(obj, "_asdict"):
         return get_state_dict(obj._asdict(), prefix, tensor_type)  # namedtuple
-    if isinstance(obj, OrderedDict):
+    if isinstance(obj, collections.OrderedDict):
         return get_state_dict(dict(obj), prefix, tensor_type)
     if hasattr(obj, "__dict__"):
         return get_state_dict(obj.__dict__, prefix, tensor_type)
@@ -140,11 +137,12 @@ def torch_load(fn: str):
         if storage[2] not in offsets:
             return None
         byte_offset = offsets[storage[2]] + storage_offset * storage[1].itemsize
-        ret = t[byte_offset : byte_offset + prod(size)].cast(storage[1])
+        ret = t[byte_offset:byte_offset + prod(size)].cast(storage[1])
         # convert bfloat16 -> float16 using LLVM for Llama 2
         # upstream LLaMA also does this conversion:
-        # https://github.com/facebookresearch/llama/blob/6c7fe276574e78057f917549435a2554000a876d/llama/generation.py#L95
-        # TODO: should this be done in the example instead? or maybe we don't need this anymore with better bfloat16 support
+        # https://github.com/facebookresearch/llama/blob/6c7fe276574e78057f917549435a2554000a876d/llama/generation.py#L95  # noqa
+        # TODO: should this be done in the example instead? or maybe we don't need this anymore with better bfloat16
+        #  support
         if storage[1] == dtypes.bfloat16:
             ret = (
                 ret.bitcast(dtypes.uint16)

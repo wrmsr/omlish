@@ -123,7 +123,7 @@ class MetalProgram:
             )
             # clone https://github.com/dougallj/applegpu.git in tinygrad/disassemblers
             os.system(
-                f"cd {pathlib.Path(__file__).parents[2]}/disassemblers/applegpu && python3 compiler_explorer.py /tmp/shader.bin"
+                f"cd {pathlib.Path(__file__).parents[2]}/disassemblers/applegpu && python3 compiler_explorer.py /tmp/shader.bin"  # noqa
             )
         self.pipeline_state = unwrap(
             METAL.device.newComputePipelineStateWithFunction_error_(self.fxn, None)
@@ -132,7 +132,7 @@ class MetalProgram:
     def __call__(self, global_size, local_size, *bufs, wait=False):
         assert (
             prod(local_size) <= self.pipeline_state.maxTotalThreadsPerThreadgroup()
-        ), f"local size {local_size} bigger than {self.pipeline_state.maxTotalThreadsPerThreadgroup()} with exec width {self.pipeline_state.threadExecutionWidth()} memory length {self.pipeline_state.staticThreadgroupMemoryLength()}"
+        ), f"local size {local_size} bigger than {self.pipeline_state.maxTotalThreadsPerThreadgroup()} with exec width {self.pipeline_state.threadExecutionWidth()} memory length {self.pipeline_state.staticThreadgroupMemoryLength()}"  # noqa
         command_buffer = METAL.mtl_queue.commandBuffer()
         encoder = command_buffer.computeCommandEncoder()
         encoder.setComputePipelineState_(self.pipeline_state)
