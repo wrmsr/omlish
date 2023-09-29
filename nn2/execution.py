@@ -150,8 +150,10 @@ class Interpreted:
 
 
 class FlopCounter:
-    def __init__(self, tup: tuple[tuple[int, ...], DType, int]):
-        self.shape, self.dtype, self.flops, self._buf = *tup, self
+    def __init__(self, tup: tuple[tuple[int, ...], DType, int]) -> None:
+        super().__init__()
+        self.shape, self.dtype, self.flops = tup
+        self._buf = self
 
     def consume_flops(self):
         self.flops, ret = 0, self.flops
@@ -214,8 +216,8 @@ from .shape.symbolic import sym_infer  # noqa
 
 
 class BasicBatchExecutor:
-    def __init__(self, jit_cache: list[tuple[ta.Any, ta.Any, ta.Any]]):
-        pass
+    def __init__(self, jit_cache: list[tuple[ta.Any, ta.Any, ta.Any]]) -> None:
+        super().__init__()
 
     def exec(self, jit_cache: list[tuple[ta.Any, ta.Any, ta.Any]], updatable_entries):
         for prg, pargs, variables in jit_cache:
@@ -233,7 +235,8 @@ class ASTRunner:
             mem_estimate=0,
             display_name: ta.Optional[str] = None,
             runtime_args: ta.Optional[dict] = None,
-    ):
+    ) -> None:
+        super().__init__()
         if DEBUG >= 4 and (
                 runtime_args is None
                 or "binary" not in runtime_args

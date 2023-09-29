@@ -23,7 +23,7 @@ class ImageDType(DType):
     def __new__(cls, priority, itemsize, name, np, shape):
         return super().__new__(cls, priority, itemsize, name, np)
 
-    def __init__(self, priority, itemsize, name, np, shape):
+    def __init__(self, priority, itemsize, name, np, shape) -> None:
         self.shape: tuple[int, ...] = shape  # arbitrary arg for the dtype, used in image for the shape
         super().__init__()
 

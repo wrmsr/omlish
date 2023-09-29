@@ -15,6 +15,7 @@ if ta.TYPE_CHECKING:
 
 class _Device:
     def __init__(self) -> None:
+        super().__init__()
         self._buffers: list[str] = [
             x.stem[len("ops_"):].upper()
             for x in (pathlib.Path(__file__).parent / "runtime").iterdir()

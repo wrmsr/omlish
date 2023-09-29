@@ -19,22 +19,21 @@ JIT_SUPPORTED_DEVICE = ["OPENCL", "CLANG", "METAL", "CUDA", "HIP", "WEBGPU", "LL
 
 
 class TinyJit:
-    def __init__(self, fxn: ta.Callable):
+    def __init__(self, fxn: ta.Callable) -> None:
+        super().__init__()
+
         self.fxn: ta.Callable = fxn
         self.cnt: int = 0
-        self.jit_cache: list[
-            tuple[ta.Any, list[ta.Optional[RawBuffer]], dict[Variable, int]]
-        ] = []
+        self.jit_cache: list[tuple[ta.Any, list[ta.Optional[RawBuffer]], dict[Variable, int]]] = []
         self.ret: ta.Any = None
-        self.input_replace: dict[
-            tuple[int, int], tuple[ta.Union[int, str], ShapeTracker, DType]
-        ] = (
-            {}
-        )  # (kernel_number, buffer_number) -> (input_name, expected_shapetracker, expected_type)
+
+        # (kernel_number, buffer_number) -> (input_name, expected_shapetracker, expected_type)
+        self.input_replace: dict[tuple[int, int], tuple[ta.Union[int, str], ShapeTracker, DType]] = {}
+
         self.batch_executor: ta.Any = None
-        self.updatable_entries: dict[int, list[int]] = collections.defaultdict(
-            list
-        )  # (kernel_number) -> list(argument id). These are buffers from input + variables.
+
+        # (kernel_number) -> list(argument id). These are buffers from input + variables.
+        self.updatable_entries: dict[int, list[int]] = collections.defaultdict(list)
 
     # add support for instance methods
     def __get__(self, obj, objtype):
@@ -134,14 +133,13 @@ class TinyJit:
 
 class _CacheCollector:
     class _Placeholder:
-        def __init__(self, buf):
-            self.size, self.dtype, self._device, self.ref, self.buftype = (
-                buf.size,
-                buf.dtype,
-                getattr(buf, "_device", None),
-                weakref.ref(buf),
-                type(buf),
-            )
+        def __init__(self, buf) -> None:
+            super().__init__()
+            self.size = buf.size
+            self.dtype = buf.dtype
+            self._device = getattr(buf, "_device", None)
+            self.ref = weakref.ref(buf)
+            self.buftype = type(buf)
 
         def alloc_rawbuf(self):
             return self.buftype(
@@ -150,13 +148,14 @@ class _CacheCollector:
                 **({"device": self._device} if self._device is not None else dict()),
             )
 
-    def __init__(self):
+    def __init__(self) -> None:
+        super().__init__()
+
         self.cache: ta.Optional[list[tuple[ta.Callable, list[ta.Any], dict[ta.Any, ta.Any]]]] = None
-        self.placeholders: dict[
-            weakref.ref[RawBuffer], _CacheCollector._Placeholder
-        ] = (
-            {}
-        )  # Output rawbufs are replaced with placeholders to allow freeing of the real buffer while collecting cache.
+
+        # Output rawbufs are replaced with placeholders to allow freeing of the real buffer while collecting cache.
+        self.placeholders: dict[weakref.ref[RawBuffer], _CacheCollector._Placeholder] = {}
+
         self.circular_signatures: set[ta.Any] = set()
 
     def start(self):
@@ -165,17 +164,20 @@ class _CacheCollector:
     def add(self, prg, rawbufs, var_vals):
         if self.cache is None:
             return
+
         # Substitute output buffers with placeholders to find the most optimal reusage.
         if weakref.ref(rawbufs[0]) not in self.placeholders:
             self.placeholders[weakref.ref(rawbufs[0])] = _CacheCollector._Placeholder(
                 rawbufs[0]
             )
+
         cached_rawbufs = [
             self.placeholders.get(weakref.ref(buf), buf)
             if isinstance(buf, RawBuffer) and weakref.ref(buf) not in self.circular_signatures
             else buf
             for buf in rawbufs
         ]
+
         self.cache.append((prg, cached_rawbufs, var_vals))
 
     def finish(self):
@@ -215,6 +217,7 @@ class _CacheCollector:
             key=lambda x: x[0],
             reverse=True,
         )
+
         for _, start, end, buf in query_list:
             pool_idx = next(
                 (
@@ -235,6 +238,7 @@ class _CacheCollector:
             (p, [buf_map.get(buf, buf) for buf in cached_bufs], var_vals)
             for p, cached_bufs, var_vals in self.cache
         ]
+
         self.cache = None
         return cache_result
 

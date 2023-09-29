@@ -108,8 +108,12 @@ class LinearizerOptions(ta.NamedTuple):
 
 class Kernel:
     def __init__(
-        self, ast: LazyOp, opts: ta.Optional[LinearizerOptions] = None, var_vals=None
-    ):
+        self,
+            ast: LazyOp,
+            opts: ta.Optional[LinearizerOptions] = None,
+            var_vals=None
+    ) -> None:
+        super().__init__()
         self.opts = opts if opts else LinearizerOptions()
         self.ast = ast
         self.var_vals = var_vals
