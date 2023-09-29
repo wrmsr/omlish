@@ -4,10 +4,10 @@ import typing as ta
 
 import numpy as np
 
-from ..helpers import DType
+from ..dtypes import DType
+from ..dtypes import ImageDType
+from ..dtypes import dtypes
 from ..helpers import GlobalCounters
-from ..helpers import ImageDType
-from ..helpers import dtypes
 from ..helpers import prod
 
 

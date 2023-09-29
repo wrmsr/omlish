@@ -3,8 +3,8 @@ import operator
 
 import numpy as np
 
-from ..helpers import DType
-from ..helpers import dtypes
+from ..dtypes import DType
+from ..dtypes import dtypes
 from ..ops import BinaryOps
 from ..ops import Interpreted
 from ..ops import MovementOps

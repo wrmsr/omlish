@@ -1,7 +1,7 @@
 import math
 import typing as ta
 
-from .helpers import DType
+from .dtypes import DType
 from .helpers import argsort
 from .lazy import LazyBuffer
 from .ops import BinaryOps

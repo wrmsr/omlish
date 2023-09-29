@@ -10,8 +10,8 @@ import typing as ta
 
 from omlish import dataclasses as dc
 
+from .dtypes import DType
 from .helpers import DEBUG
-from .helpers import DType
 from .helpers import GlobalCounters
 from .helpers import ansilen
 from .helpers import colored

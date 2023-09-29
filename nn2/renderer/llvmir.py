@@ -4,7 +4,7 @@ from llvmlite import ir  # type: ignore
 
 from ..codegen.linearizer import UOp
 from ..codegen.linearizer import UOps
-from ..helpers import dtypes
+from ..dtypes import dtypes
 from ..ops import BinaryOps
 from ..ops import Op
 from ..ops import TernaryOps

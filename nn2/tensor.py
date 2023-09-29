@@ -9,13 +9,13 @@ import typing as ta
 
 import numpy as np
 
+from .dtypes import DType
+from .dtypes import ImageDType
+from .dtypes import dtypes
 from .helpers import DEBUG
-from .helpers import DType
 from .helpers import IMAGE
-from .helpers import ImageDType
 from .helpers import all_int
 from .helpers import argfix
-from .helpers import dtypes
 from .helpers import flatten
 from .helpers import getenv
 from .helpers import make_pair

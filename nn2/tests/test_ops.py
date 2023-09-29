@@ -1,11 +1,17 @@
-import torch
 import time
 import math
-import numpy as np
 import unittest
-from ..tensor import Tensor
-from ..helpers import getenv, IMAGE, DEBUG, dtypes
+
+import numpy as np
+import torch
+
+from ..dtypes import dtypes
+from ..helpers import DEBUG
+from ..helpers import IMAGE
+from ..helpers import getenv
 from ..ops import Device
+from ..tensor import Tensor
+
 
 FORWARD_ONLY = getenv("FORWARD_ONLY", 0)
 PRINT_TENSORS = getenv("PRINT_TENSORS", 0)

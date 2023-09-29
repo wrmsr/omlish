@@ -9,13 +9,13 @@ import enum
 
 from ..codegen.kernel import LocalBuffer
 from ..codegen.optimizer import OptimizedKernel
+from ..dtypes import DType
+from ..dtypes import ImageDType
+from ..dtypes import PtrDType
+from ..dtypes import dtypes
 from ..helpers import DEBUG
-from ..helpers import DType
-from ..helpers import ImageDType
-from ..helpers import PtrDType
 from ..helpers import all_same
 from ..helpers import colored
-from ..helpers import dtypes
 from ..helpers import prod
 from ..ops import BinaryOps
 from ..ops import BufferOps
