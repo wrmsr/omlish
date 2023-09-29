@@ -10,22 +10,22 @@ huggingface_hub==0.17.2
 
 ##
 
-llvmlite==0.40.1
+llvmlite==0.41.0
 
 pyopencl==2023.1.2
 
 pycuda==2022.2.2; sys_platform != 'darwin'
 
-pyobjc-core==9.2; sys_platform == 'darwin'
-pyobjc-framework-cocoa==9.2; sys_platform == 'darwin'
-pyobjc-framework-libdispatch==9.2; sys_platform == 'darwin'
-pyobjc-framework-metal==9.2; sys_platform == 'darwin'
+pyobjc-core==10.0; sys_platform == 'darwin'
+pyobjc-framework-cocoa==10.0; sys_platform == 'darwin'
+pyobjc-framework-libdispatch==10.0; sys_platform == 'darwin'
+pyobjc-framework-metal==10.0; sys_platform == 'darwin'
 
 ##
 
-pandas==2.1.0
+pandas==2.1.1
 
-opencv-python==4.8.0.76
+opencv-python==4.8.1.78
 pillow==10.0.1
 
 onnx==1.14.1
@@ -52,7 +52,7 @@ unicorn==2.0.1.post1
 
 ### infra
 
-boto3>=1.28.50
+boto3>=1.28.57
 
 google-cloud-compute==1.14.1
 
@@ -66,8 +66,8 @@ soco==0.29.1
 sounddevice==0.4.6
 vosk==0.3.44
 
-bellows==0.36.3
-zigpy==0.57.1
+bellows==0.36.5
+zigpy==0.57.2
 
 # python-openzwave
-zwave-js-server-python==0.51.2
+zwave-js-server-python==0.52.0
