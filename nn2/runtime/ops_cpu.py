@@ -120,10 +120,8 @@ numpy_fxn_for_op: dict[type[ops.LazyOp], ta.Callable] = {
 
 
 class RawNumpyBuffer(RawBuffer):
-    def __init__(self, size: int, dtype: DType, buf: ta.Optional[np.ndarray] = None):
-        super().__init__(
-            size, dtype, buf if buf is not None else np.empty([size], dtype.np)
-        )
+    def __init__(self, size: int, dtype: DType, buf: ta.Optional[np.ndarray] = None) -> None:
+        super().__init__(size, dtype, buf if buf is not None else np.empty([size], dtype.np))
 
     @classmethod
     def fromCpu(cls, x):

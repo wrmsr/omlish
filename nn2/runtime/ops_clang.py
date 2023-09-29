@@ -70,7 +70,8 @@ def emulate_ext_calls(fn, uc, address, size, user_data):
 
 
 class ClangProgram:
-    def __init__(self, name: str, prg: str, binary: bool = False):
+    def __init__(self, name: str, prg: str, binary: bool = False) -> None:
+        super().__init__()
         # TODO: is there a way to not write this to disk?
         # A: it seems there isn't
         #  https://stackoverflow.com/questions/28053328/ctypes-cdll-load-library-from-memory-rather-than-file

@@ -176,7 +176,8 @@ class LayerNorm2d(LayerNorm):
 
 
 class Embedding:
-    def __init__(self, vocab_size: int, embed_size: int):
+    def __init__(self, vocab_size: int, embed_size: int) -> None:
+        super().__init__()
         self.vocab_size = vocab_size
         self.weight = Tensor.glorot_uniform(vocab_size, embed_size)
 

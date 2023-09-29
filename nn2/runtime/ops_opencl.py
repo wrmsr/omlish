@@ -63,7 +63,8 @@ class ClAllocator(LruAllocator):
 
 
 class _CL:
-    def __init__(self):
+    def __init__(self) -> None:
+        super().__init__()
         cl_platforms = cl.get_platforms()
         platform_devices: list[list[cl.Device]] = [
             y
@@ -114,7 +115,7 @@ if not getenv("DELAYED_RUNTIME_INIT", False):
 
 
 class ClBuffer(RawBufferCopyInOut, RawBufferTransfer):
-    def __init__(self, size, dtype, device="0"):
+    def __init__(self, size, dtype, device="0") -> None:
         super().__init__(size, dtype, allocator=CL.cl_allocator, **{"device": device})
 
     def _copyin(self, x: np.ndarray):
@@ -172,12 +173,16 @@ class ClBuffer(RawBufferCopyInOut, RawBufferTransfer):
 
 
 class ClProgram:
-    def __init__(self, name: str, prg: str, binary=False, argdtypes=None, options=None):
+    def __init__(self, name: str, prg: str, binary=False, argdtypes=None, options=None) -> None:
+        super().__init__()
+
         self.name = name
+
         self.clprograms = [
             cl.Program(ctx, ctx.devices, [prg] * len(ctx.devices))
             if binary else cl.Program(ctx, prg) for ctx in CL.cl_ctxs
         ]
+
         try:
             self._clprgs = [
                 clprogram.build(options=options) for clprogram in self.clprograms
@@ -186,7 +191,9 @@ class ClProgram:
             if DEBUG >= 3:
                 print("FAILED TO BUILD", prg)
             raise e
+
         self.clprgs = [clprg.__getattr__(name) for clprg in self._clprgs]
+
         if DEBUG >= 5 and not OSX:
             if "Adreno" in CL.cl_ctxs[0].devices[0].name:
                 fromimport("disassemblers.adreno", "disasm")(self.binary())
@@ -206,6 +213,7 @@ class ClProgram:
             else:
                 # print the PTX for NVIDIA. TODO: probably broken for everything else
                 print(self.binary().decode("utf-8"))
+
         if argdtypes is not None:
             self.set_argdtypes(argdtypes)
 
@@ -226,6 +234,7 @@ class ClProgram:
             self.set_argdtypes(
                 tuple(None if x.__class__ is ClBuffer else np.int32 for x in bufs)
             )
+
         cl_bufs, wait_for = [], []
         for x in bufs:
             if x.__class__ is ClBuffer:
@@ -234,6 +243,7 @@ class ClProgram:
                     wait_for.append(x.event)
             else:
                 cl_bufs.append(x)
+
         e = self.clprgs[cl_bufs[0].device](
             CL.cl_queue[cl_bufs[0].device],
             [g * l for g, l in zip(global_size, local_size)]
@@ -243,6 +253,7 @@ class ClProgram:
             *cl_bufs,
             wait_for=wait_for,
         )
+
         if wait:
             e.wait()
             try:

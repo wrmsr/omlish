@@ -105,7 +105,7 @@ class RawBufferMapped(RawBufferCopyIn):
 
 # this one is simple enough that i moved it out of the runtimes
 class RawMallocBuffer(RawBufferMapped):
-    def __init__(self, size, dtype: DType):
+    def __init__(self, size, dtype: DType) -> None:
         super().__init__(
             size,
             dtype,
@@ -154,18 +154,15 @@ class RawBufferTransfer(RawBuffer):
 
 
 class LruAllocator:
-    def __init__(self, dev_memsz=(4 << 30)):
+    def __init__(self, dev_memsz=(4 << 30)) -> None:
+        super().__init__()
         self.epoch = 0
         self.free_space: dict[ta.Any, int] = collections.defaultdict(lambda: dev_memsz)
         self.buffer_info: dict[ta.Any, tuple[int, DType, str]] = dict()
-        self.cached_buffers: dict[
-            tuple[int, ...], ta.Deque[tuple[ta.Any, int]]
-        ] = collections.defaultdict(
-            collections.deque
-        )  # Cached buffer storage, splitted by type and size, newest first.
-        self.aging_order: dict[ta.Any, ta.Deque[tuple[tuple[int, ...], int]]] = collections.defaultdict(
-            collections.deque
-        )  # Keys of cached_buffers, ordered from oldest to newest updates.
+        # Cached buffer storage, splitted by type and size, newest first.
+        self.cached_buffers: dict[tuple[int, ...], ta.Deque[tuple[ta.Any, int]]] = collections.defaultdict(collections.deque)  # noqa
+        # Keys of cached_buffers, ordered from oldest to newest updates.
+        self.aging_order: dict[ta.Any, ta.Deque[tuple[tuple[int, ...], int]]] = collections.defaultdict(collections.deque)  # noqa
 
     def _cache_reuse_buffer(
         self, rawbufs: ta.Deque[tuple[ta.Any, int]]
