@@ -70,7 +70,7 @@ def _ast_reduceops(op: LazyOp) -> LazyOp:
             and len(src.children) <= 1
         ):
             src = src.op
-    return LazyOp(op.op, (src,), op.arg)
+    return type(op)((src,), op.arg)
 
 
 # this supports late merging an upstream Reduce op and even an Elementwise op above that
@@ -256,7 +256,7 @@ class LazyBuffer:
         for x in op.buffers:
             x.children.add(self)
         assert (
-                not isinstance(op, ops.MovementOp) or (base is not None and not isinstance(base.op, ops.MovementOp))
+            not isinstance(op, ops.MovementOp) or (base is not None and not isinstance(base.op, ops.MovementOp))
         ), "MovementOps must be based"
         self._base = base
         if base:
@@ -310,13 +310,13 @@ class LazyBuffer:
         self._var_vals = val
 
     def __repr__(self):
-        return f"<LB {self.shape} {self.dtype} op={self.op.op if hasattr(self, 'op') else self._realized} st={self.st}>"
+        return f"<LB {self.shape} {self.dtype} op={type(self.op).__name__ if hasattr(self, 'op') else self._realized} st={self.st}>"  # noqa
 
     @property
     def key(self):
         if self.realized:
             return (self.dtype, self.realized.key, self.st, self.var_vals_key)
-        return (self.dtype, self.op.op, self.st, self.var_vals_key)
+        return (self.dtype, type(self.op), self.st, self.var_vals_key)
 
     def _device_extra_args(self) -> dict[str, str]:
         return {"device": self.device.split(":", 1)[1]} if ":" in self.device else {}
@@ -522,7 +522,7 @@ class LazyBuffer:
         return create_lazybuffer(
             out_device,
             ShapeTracker.from_shape(out_shape),
-            LazyOp(op, srcs, arg),
+            op(srcs, arg),
             out_dtype,
             self.var_vals,
         )
@@ -538,7 +538,7 @@ class LazyBuffer:
         return create_lazybuffer(
             self.device,
             ShapeTracker.from_shape(new_shape),
-            LazyOp(op, srcs, new_shape),
+            op(srcs, new_shape),
             self.dtype,
             self.var_vals,
         )
@@ -607,7 +607,7 @@ class LazyBuffer:
         return create_lazybuffer(
             self.device,
             st,
-            LazyOp(op, (self,), arg),
+            op((self,), arg),
             self.dtype,
             self.var_vals,
             base=self.base,
@@ -668,7 +668,7 @@ class LazyBuffer:
             if PUSH_PERMUTES and isinstance(self.op, ops.ReduceOp):
                 # reduceops have one buffer input, permute it
                 narg = tuple([self.op.arg[a] for a in arg])
-                src, rop = self.op.src[0], self.op.op
+                src, rop = self.op.src[0], type(self.op)
                 src.children.discard(self)
                 del self  # TODO: why doesn't this delete remove it from the children
                 return src.permute(arg).r(rop, narg)
