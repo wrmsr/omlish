@@ -74,7 +74,7 @@ class Interpreted:
                 and isinstance(ast.src[0], LazyOp)
                 and isinstance(ast.src[0], ops.Mul)
         ):
-            ast = LazyOp(ops.MulAcc, ast.src[0].src, ast.arg)
+            ast = ops.MulAcc(ast.src[0].src, ast.arg)
         created_context = context is None
         if context is None:
             context = dict()
