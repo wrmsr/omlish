@@ -1,11 +1,9 @@
 import typing as ta
 import math
 
+from .. import ops
 from ..dtypes import DType
 from ..dtypes import dtypes
-from ..ops import BinaryOps
-from ..ops import TernaryOps
-from ..ops import UnaryOps
 from ..renderer.cstyle import CStyleLanguage
 
 
@@ -26,20 +24,20 @@ class WGSLLanguage(CStyleLanguage):
     generic_var_prefix = "var "
     external_local_bufs = True
     code_for_op = {
-        UnaryOps.NEG: lambda x: f"(-{x})",
-        UnaryOps.EXP2: lambda x: f"exp2({x})",
-        UnaryOps.LOG2: lambda x: f"log2({x})",
-        UnaryOps.SIN: lambda x: f"sin({x})",
-        UnaryOps.SQRT: lambda x: f"sqrt({x})",
-        BinaryOps.ADD: lambda x, y: f"({x}+{y})",
-        BinaryOps.SUB: lambda x, y: f"({x}-{y})",
-        BinaryOps.MUL: lambda x, y: f"({x}*{y})",
-        BinaryOps.DIV: lambda x, y: f"({x}/{y})",
-        BinaryOps.MOD: lambda x, y: f"({x}%{y})",
-        BinaryOps.MAX: lambda x, y: f"max({x},{y})",
-        BinaryOps.CMPLT: lambda x, y: f"f32({x}<{y})",
-        TernaryOps.MULACC: lambda x, y, z: f"fma({x},{y},{z})",
-        TernaryOps.WHERE: lambda a, b, c: f"select({c},{b},{a}!=0.)",
+        ops.Neg: lambda x: f"(-{x})",
+        ops.Exp2: lambda x: f"exp2({x})",
+        ops.Log2: lambda x: f"log2({x})",
+        ops.Sin: lambda x: f"sin({x})",
+        ops.Sqrt: lambda x: f"sqrt({x})",
+        ops.Add: lambda x, y: f"({x}+{y})",
+        ops.Sub: lambda x, y: f"({x}-{y})",
+        ops.Mul: lambda x, y: f"({x}*{y})",
+        ops.Div: lambda x, y: f"({x}/{y})",
+        ops.Mod: lambda x, y: f"({x}%{y})",
+        ops.Max2: lambda x, y: f"max({x},{y})",
+        ops.CmpLt: lambda x, y: f"f32({x}<{y})",
+        ops.MulAcc: lambda x, y, z: f"fma({x},{y},{z})",
+        ops.Where: lambda a, b, c: f"select({c},{b},{a}!=0.)",
     }
 
     def render_local(self, name: str, size: int):

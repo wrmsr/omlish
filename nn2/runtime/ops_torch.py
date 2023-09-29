@@ -55,7 +55,7 @@ torch_fxn_for_op: dict[Op, ta.Callable] = {
         UnaryOps.CAST: lambda x, y: (x.view if y[1] else x.type)(
             next(k for k, v in type_map.items() if v == y[0])
         ),
-        BinaryOps.MAX: torch.maximum,
+        BinaryOps.MAX2: torch.maximum,
         BinaryOps.CMPLT: lambda x, y: (x < y).type(
             torch.promote_types(x.dtype, y.dtype)
         ),
