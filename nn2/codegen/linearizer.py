@@ -120,7 +120,8 @@ def to_image_idx(
                 same_dict[same_sum] = same_dict.get(same_sum, []) + [(k, node)]
 
         for key in same_dict.keys():
-            same, mnn, mxn = key.flat_components, key.min, key.max  # type: ignore # Same is sumnode because node.a is SumNode
+            # Same is sumnode because node.a is SumNode
+            same, mnn, mxn = key.flat_components, key.min, key.max  # type: ignore
             for k, node in same_dict[key]:  # TODO: This part may need more thinking
                 if k < 0:
                     mnn = (-k) * max(
@@ -150,7 +151,8 @@ def to_image_idx(
             Variable.sum([i for i in flat if not isinstance(i, NumNode)])
             for flat in flats
         ]
-        ones = [node for sym_sum in sym_sums for node in nds if (node.a == sym_sum) or (-(node.a) == sym_sum)]  # type: ignore # AndNode always consists of LtNode
+        # AndNode always consists of LtNode
+        ones = [node for sym_sum in sym_sums for node in nds if (node.a == sym_sum) or (-(node.a) == sym_sum)]  # type: ignore   # noqa
         valid = Variable.ands([i for i in nds if i not in ones])
 
     # This is the slow part
@@ -183,9 +185,13 @@ class UOp(ta.NamedTuple):
     arg: ta.Any
 
     def __repr__(self):
-        return f"{self.num:4d} {str(self.uop):20s}: {str(self.dtype) if self.dtype is not None else '':25s} {str([x.num for x in self.vin]):32s} {self.arg}"
-
-    # def __repr__(self): return f"{str(self.uop):20s}: {str(self.dtype) if self.dtype is not None else '':25s} {str(self.vin):32s} {self.arg}"
+        return (
+            f"{self.num:4d} "
+            f"{str(self.uop):20s}: "
+            f"{str(self.dtype) if self.dtype is not None else '':25s} "
+            f"{str([x.num for x in self.vin]):32s} "
+            f"{self.arg}"
+        )
 
     # UOps are unique
     num: int
@@ -201,7 +207,7 @@ def get_grouped_dims(prefix, start_dim, local_dims, maxdim: int = 0):
     local_idxs = loop_local_idxs = [
         Variable(f"{prefix}{start_dim+i}", 0, s - 1)
         for i, s in enumerate(
-            local_dims[0 : maxdim - 1] + (prod(local_dims[maxdim - 1 :]),)
+            local_dims[0: maxdim - 1] + (prod(local_dims[maxdim - 1:]),)
             if len(local_dims) > maxdim
             else local_dims
         )
@@ -209,10 +215,10 @@ def get_grouped_dims(prefix, start_dim, local_dims, maxdim: int = 0):
     if maxdim != 0 and len(local_dims) > maxdim:
         dd = local_idxs[maxdim - 1]
         nli = []
-        for s in local_dims[maxdim - 1 :][::-1]:
+        for s in local_dims[maxdim - 1:][::-1]:
             nli.append(dd % s)
             dd //= s
-        local_idxs = local_idxs[0 : maxdim - 1] + nli[::-1]
+        local_idxs = local_idxs[0: maxdim - 1] + nli[::-1]
     return local_idxs, [x for x in loop_local_idxs if not isinstance(x, NumNode)]
 
 
@@ -308,7 +314,13 @@ class Linearizer(OptimizedKernel):
                 if valid.max == 0
                 else (const, idx, valid)
             )
-            key = f"{acc}{localtype}{this_const if this_const is not None and acc is None else (self.bufs[i].idx if isinstance(self.bufs[i], MemBuffer) else self.bufs[i].name)}{idx.render()}{valid.render()}"
+            key = (
+                f"{acc}"
+                f"{localtype}"
+                f"{this_const if this_const is not None and acc is None else (self.bufs[i].idx if isinstance(self.bufs[i], MemBuffer) else self.bufs[i].name)}"  # noqa
+                f"{idx.render()}"
+                f"{valid.render()}"
+            )
             if key not in self.load_cache:
                 if acc is not None:
                     assert valid.min == 1
@@ -389,7 +401,7 @@ class Linearizer(OptimizedKernel):
                 _idx = (
                     k[: upcast_dim[0]]
                     + (expanded_nodes[upcast_dim[0]][0],)
-                    + k[upcast_dim[0] + 1 :]
+                    + k[upcast_dim[0] + 1:]
                 )
                 grouped_store_offset[_idx].append(store_offset[k])
             store_offset_new = {}
@@ -430,7 +442,8 @@ class Linearizer(OptimizedKernel):
 
         # limit dims if we need to
         # TODO: broken, and doesn't really belong here
-        # if self.opts.global_max and self.opts.local_max: self.limit_dims_to_max(self.opts.global_max, self.opts.local_max)
+        # if self.opts.global_max and self.opts.local_max:
+        #    self.limit_dims_to_max(self.opts.global_max, self.opts.local_max)
 
         # uops
         self.uops: list[UOp] = []
@@ -471,7 +484,7 @@ class Linearizer(OptimizedKernel):
                         [1] * self.global_dims
                         + list(
                             self.full_shape[
-                                self.global_dims : self.global_dims
+                                self.global_dims:self.global_dims
                                 + self.local_dims
                                 + len(self.group_for_reduce)
                             ]
@@ -532,17 +545,17 @@ class Linearizer(OptimizedKernel):
             "lidx",
             self.global_dims,
             self.full_shape[
-                self.global_dims : self.first_reduce + len(self.group_for_reduce)
+                self.global_dims:self.first_reduce + len(self.group_for_reduce)
             ],
             3 if self.opts.has_local else 0,
         )
         full_upcast_idxs = [
             Variable(None, 0, s - 1)
-            for s in self.full_shape[self.shape_len - self.upcasted :]
+            for s in self.full_shape[self.shape_len - self.upcasted:]
         ]
         upcast_idxs = [
             Variable(None, 0, s - 1)
-            for s in self.output_shape[self.shape_len - self.upcasted :]
+            for s in self.output_shape[self.shape_len - self.upcasted:]
         ]
 
         # global and local loops
@@ -575,9 +588,8 @@ class Linearizer(OptimizedKernel):
                         self.uop(UOps.END, None, (loop_uop,))
 
         if self.opts.has_local:
-            self.global_size, self.local_size = [x.max + 1 for x in loop_global_idxs][
-                ::-1
-            ], [x.max + 1 for x in loop_local_idxs][::-1]
+            self.global_size = [x.max + 1 for x in loop_global_idxs][::-1]
+            self.local_size = [x.max + 1 for x in loop_local_idxs][::-1]
             self.global_size += [1] * (3 - len(self.global_size))
             self.local_size += [1] * (3 - len(self.local_size))
             self.loop_uops.update(
@@ -648,10 +660,10 @@ class Linearizer(OptimizedKernel):
                 extra_locals = [
                     lidx
                     for lidx, st in zip(
-                        local_idxs[self.exclude_local_upcast :],
+                        local_idxs[self.exclude_local_upcast:],
                         strides[
                             len(global_idxs)
-                            + self.exclude_local_upcast : self.first_reduce
+                            + self.exclude_local_upcast: self.first_reduce
                         ],
                     )
                     if st == 0
@@ -752,8 +764,8 @@ class Linearizer(OptimizedKernel):
                             for y0, y1, x0, x1 in zip(
                                 locals_to_store[1][2][:k],
                                 locals_to_store[1][2][k:],
-                                locals_to_store[0][2][k * i :],
-                                locals_to_store[0][2][k * i + k :],
+                                locals_to_store[0][2][k * i:],
+                                locals_to_store[0][2][k * i + k:],
                             ):
                                 self.uop(
                                     UOps.WMMA,
@@ -769,9 +781,9 @@ class Linearizer(OptimizedKernel):
                                 UOps.WMMA,
                                 None,
                                 tuple(
-                                    acc[i : i + 8]
-                                    + locals_to_store[0][2][x : x + 0x10]
-                                    + locals_to_store[1][2][y : y + 0x10]
+                                    acc[i:i + 8]
+                                    + locals_to_store[0][2][x:x + 0x10]
+                                    + locals_to_store[1][2][y:y + 0x10]
                                 ),
                                 "HIP",
                             )
@@ -834,7 +846,7 @@ class Linearizer(OptimizedKernel):
                 ]
                 local_idxs = (
                     local_idxs[: self.local_dims]
-                    + end_local_idxs[self.global_dims + self.local_dims :]
+                    + end_local_idxs[self.global_dims + self.local_dims:]
                 )
 
                 # if any group_for_reduce items aren't reduces, upcast them here
@@ -849,7 +861,7 @@ class Linearizer(OptimizedKernel):
                     # regenerate upcast_idxs
                     upcast_idxs = [
                         Variable(None, 0, s - 1)
-                        for s in self.output_shape[self.shape_len - self.upcasted :]
+                        for s in self.output_shape[self.shape_len - self.upcasted:]
                     ]
 
                 # NOTE: this structure is the same as the reduce op above
@@ -872,7 +884,12 @@ class Linearizer(OptimizedKernel):
                 )
 
                 # there's no AST here (and there's no shape for the reduce LazyOp)
-                self.ast_parse(LazyOp(self.reduceop.op, ("LOCAL_BUFFER",)), [acc[off] for off in self.acc_offsets(-1)], loaded_buffers, do_reduce=True)  # type: ignore
+                self.ast_parse(  # type: ignore
+                    LazyOp(self.reduceop.op, ("LOCAL_BUFFER",)),
+                    [acc[off] for off in self.acc_offsets(-1)],
+                    loaded_buffers,
+                    do_reduce=True,
+                )
 
                 # end the late reduce loop
                 end_loop(end_local_idxs)

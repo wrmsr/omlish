@@ -24,7 +24,7 @@ class TestConv(unittest.TestCase):
     def test_simple_rand(self):
         x = Tensor.rand(1, 12, 128, 256)
         w = Tensor.rand(32, 12, 3, 3)
-        ret = x.conv2d(w, stride=(2, 2), padding=(1, 1)).numpy()
+        ret = x.conv2d(w, stride=(2, 2), padding=(1, 1)).numpy()  # noqa
 
     def test_many_simple(self):
         x = Tensor(np.arange(8 * 2 * 8).reshape(1, 8, 2, 8).astype(np.float32))
@@ -125,14 +125,14 @@ class TestConv(unittest.TestCase):
 
         w = Tensor.rand(32, 1, 3, 3)
         x = x.conv2d(w, padding=(1, 1), groups=32)
-        out = x.numpy()
+        out = x.numpy()  # noqa
         Tensor.no_grad = False
 
     def test_reduce_relu(self):
         Tensor.no_grad = True
         x = Tensor.rand(1, 12, 128, 256)
         x = x.sum(keepdim=True).relu()
-        out = x.numpy()
+        out = x.numpy()  # noqa
         Tensor.no_grad = False
 
     def test_bias(self):
@@ -143,7 +143,7 @@ class TestConv(unittest.TestCase):
         x = c(x).relu()
         w = Tensor.uniform(32, 1, 3, 3)
         x = x.conv2d(w, groups=32)
-        out = x.numpy()
+        out = x.numpy()  # noqa
         Tensor.no_grad = False
 
     def test_multiadd(self):

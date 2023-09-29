@@ -43,7 +43,8 @@ class TinyJit:
     def __call__(self, *args, **kwargs) -> ta.Any:
         if Device.DEFAULT not in JIT_SUPPORTED_DEVICE:
             return self.fxn(*args, **kwargs)  # only jit on supported device
-        # NOTE: this cast is needed since although we know realize will create a ".realized" RawBuffer, the type checker doesn't
+        # NOTE: this cast is needed since although we know realize will create a ".realized" RawBuffer, the type checke
+        # doesn't
         input_rawbuffers: dict[ta.Union[int, str], tuple[RawBuffer, ShapeTracker]] = {
             ta.cast(ta.Union[int, str], k): (
                 ta.cast(RawBuffer, v.realize().lazydata.realized),
@@ -73,11 +74,12 @@ class TinyJit:
                 assert (
                     input_rawbuffers[input_name][0].dtype == expected_type
                 ), f"type mismatch in JIT, {input_rawbuffers[input_name][0].dtype} != {expected_type}"
-                # NOTE: if we pass jit_ctx instead of using reshape to update the var_vals, we cannot compare the shapetracker directly
+                # NOTE: if we pass jit_ctx instead of using reshape to update the var_vals, we cannot compare the
+                # shapetracker directly
                 if "jit_ctx" not in kwargs:
                     assert (
                         input_rawbuffers[input_name][1].views == expected_st.views
-                    ), f"ShapeTracker.views mismatch in JIT, {input_rawbuffers[input_name][1].views} != {expected_st.views}"
+                    ), f"ShapeTracker.views mismatch in JIT, {input_rawbuffers[input_name][1].views} != {expected_st.views}"  # noqa
                 self.jit_cache[j][1][i] = input_rawbuffers[input_name][0]
             for j in self.updatable_entries.keys():
                 for k in self.jit_cache[j][2].keys():
@@ -112,7 +114,8 @@ class TinyJit:
                         self.updatable_entries[j_].append(i)
                 for i in range(len(cache[2])):
                     self.updatable_entries[j_].append(len(cache[1]) + i)
-                # if prg.local_size is None: prg.local_size = prg.optimize_local_size(args, preserve_output=True)  # the JIT can optimize local
+                # the JIT can optimize local
+                # if prg.local_size is None: prg.local_size = prg.optimize_local_size(args, preserve_output=True)
             assert set([x[0] for x in self.input_replace.values()]) == set(
                 input_rawbuffers.keys()
             ), "some input tensors not found"
@@ -196,8 +199,9 @@ class _CacheCollector:
                 else:
                     buf_usage_bounds[buf] = buf_usage_bounds.get(buf, (j, j))[0], j
 
-        # The query list contains a query for every placeholder that should be replaced with the actual rawbuffer. Queries are served from the largest to the smallest.
-        # For each query, find any rawbuffer that is free within the query timeframe or allocate a new one.
+        # The query list contains a query for every placeholder that should be replaced with the actual rawbuffer.
+        # Queries are served from the largest to the smallest. For each query, find any rawbuffer that is free within
+        # the query timeframe or allocate a new one.
         query_list = sorted(
             [
                 (

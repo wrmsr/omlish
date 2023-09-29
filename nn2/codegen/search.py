@@ -102,7 +102,12 @@ def kernel_optimize_search(
     et = time.perf_counter() - st
     if DEBUG >= 1:
         print(
-            f"optimizer({et:6.2f} s to search) space {search_space:8d} with tm {recommendation.loss:5.2f} ms vs baseline {baseline:5.2f} ms, a {baseline/recommendation.loss:5.2f}x gain : {k.colored_shape()}"
+            f"optimizer({et:6.2f} s to search) "
+            f"space {search_space:8d} "
+            f"with tm {recommendation.loss:5.2f} ms "
+            f"vs baseline {baseline:5.2f} ms, "
+            f"a {baseline/recommendation.loss:5.2f}x gain "
+            f": {k.colored_shape()}"
         )
     return recommendation.value if recommendation.loss < baseline else "BASELINE"
 

@@ -1,10 +1,6 @@
 from __future__ import annotations
 
 import enum
-import functools
-import importlib
-import inspect
-import pathlib
 import time
 import typing as ta
 
@@ -95,20 +91,6 @@ if ta.TYPE_CHECKING:
     from .shape.shapetracker import ShapeTracker
 
 
-@dc.dataclass(frozen=True)
-class MemBuffer:
-    idx: int
-    dtype: DType
-    st: ShapeTracker
-
-
-@dc.dataclass(frozen=True)
-class ConstBuffer:
-    val: ta.Any
-    dtype: DType
-    st: ShapeTracker
-
-
 class LazyOp:
     __slots__ = "op", "src", "arg", "buffers", "__weakref__"
     op: Op
@@ -120,7 +102,9 @@ class LazyOp:
         self, op: Op, src: tuple[ta.Union[LazyOp, LazyBuffer], ...], arg: ta.Any = None
     ):
         self.op, self.src, self.arg, self.buffers = op, src, arg, ()
-        try:  # NOTE: the linearizer's key function maps the buffers to ints, and LOCAL_BUFFER is used. we don't care about buffers in these cases
+        # NOTE: the linearizer's key function maps the buffers to ints, and LOCAL_BUFFER is used. we don't care about
+        # buffers in these cases
+        try:
             for x in src:
                 self.buffers += x.buffers
         except AttributeError:
@@ -208,6 +192,20 @@ class LazyOp:
         raise NotImplementedError
 
 
+@dc.dataclass(frozen=True)
+class MemBuffer:
+    idx: int
+    dtype: DType
+    st: ShapeTracker
+
+
+@dc.dataclass(frozen=True)
+class ConstBuffer:
+    val: ta.Any
+    dtype: DType
+    st: ShapeTracker
+
+
 # **************** for Interpreted Buffers ****************
 
 
@@ -281,7 +279,15 @@ class Interpreted:
             )  # Do manual casting of ret if it does not match the required output dtype.
         if DEBUG >= 5 or (self.buffer != FlopCounter and DEBUG >= 3):
             print(
-                f"*** {'exec' if created_context else '    '} {GlobalCounters.mem_used/1e9:5.2f} GB {(time.perf_counter()-st)*1e3:7.2f} ms op: {ast.op:20s} out({ret.dtype.name}): {str(ret._buf.shape) if hasattr(ret._buf, 'shape') else str(len(ret._buf)):30s} in({len(srcs)}):",
+                (
+                    f"*** {'exec' if created_context else '    '} "
+                    f"{GlobalCounters.mem_used/1e9:5.2f} GB "
+                    f"{(time.perf_counter()-st)*1e3:7.2f} ms "
+                    f"op: {ast.op:20s} "
+                    f"out({ret.dtype.name}): "
+                    f"{str(ret._buf.shape) if hasattr(ret._buf, 'shape') else str(len(ret._buf)):30s} "
+                    f"in({len(srcs)}):"
+                ),
                 list(
                     set(
                         x._buf.shape if hasattr(x._buf, "shape") else len(x._buf)
@@ -353,6 +359,7 @@ shape_fxn_for_op: dict[Op, ta.Callable] = {
         self.consume_flops() + y.consume_flops() + z.consume_flops() + prod(self.shape),
     ),
 }
+
 InterpretedFlopCounter = Interpreted(FlopCounter, shape_fxn_for_op, lambda x: x)
 
 
@@ -362,8 +369,10 @@ def get_lazyop_info(ast: LazyOp) -> FlopCounter:
 
 # **************** for Compiled Buffers ****************
 
-from .runtime.lib import RawBuffer
-from .shape.symbolic import Variable, sym_infer
+
+from .runtime.lib import RawBuffer  # noqa
+from .shape.symbolic import Variable  # noqa
+from .shape.symbolic import sym_infer  # noqa
 
 
 class BasicBatchExecutor:
@@ -473,11 +482,23 @@ class ASTRunner:
         op_estimate = sym_infer(self.op_estimate, var_vals)
         if DEBUG >= 2:
             print(
-                f"{colored(f'*** {GlobalCounters.kernel_count:4d}', 'magenta' if jit else None)} {(self.display_name+' '*(37-ansilen(self.display_name))) if self.display_name is not None else self.name:33s} arg {len(rawbufs):3d} sz {str(global_size):18s} {str(local_size):12s} OPs {int(op_estimate/1e6):6d}M/{GlobalCounters.global_ops/1e9:7.2f}G  mem {GlobalCounters.mem_used/1e9:5.2f} GB "
+                (
+                    f"{colored(f'*** {GlobalCounters.kernel_count:4d}', 'magenta' if jit else None)} "
+                    f"{(self.display_name+' '*(37-ansilen(self.display_name))) if self.display_name is not None else self.name:33s} "  # noqa
+                    f"arg {len(rawbufs):3d} "
+                    f"sz {str(global_size):18s} {str(local_size):12s} "
+                    f"OPs {int(op_estimate/1e6):6d}M/{GlobalCounters.global_ops/1e9:7.2f}G  "
+                    f"mem {GlobalCounters.mem_used/1e9:5.2f} GB "
+                )
                 + (
                     str()
                     if et is None
-                    else f"tm {et*1e6:9.2f}us/{GlobalCounters.time_sum_s*1e3:9.2f}ms ({op_estimate/((et or 1e-20)*1e9):8.2f} GFLOPS, {self.mem_estimate/((et or 1e-20)*1e9):7.2f} GB/s)"
+                    else (
+                        f"tm "
+                        f"{et*1e6:9.2f}us/{GlobalCounters.time_sum_s*1e3:9.2f}ms "
+                        f"({op_estimate/((et or 1e-20)*1e9):8.2f} GFLOPS, "
+                        f"{self.mem_estimate/((et or 1e-20)*1e9):7.2f} GB/s)"
+                    )
                 )
             )
         GlobalCounters.kernel_count += 1

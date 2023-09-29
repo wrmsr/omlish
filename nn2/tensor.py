@@ -60,9 +60,7 @@ class Function:
         return ret
 
 
-from . import mlops
-
-# **** start with two base classes, Tensor and Function ****
+from . import mlops  # noqa
 
 
 class Tensor:
@@ -441,16 +439,19 @@ class Tensor:
     # - Empty slices are not allowed (tensors with 0s in shape have to be supported first, for all backends).
     # - For a slice [i:j:k] finding the correct indices is delegated to slice.indices(len).
     # - Strides > 1 and < 0 are now allowed!:
-    #    - This works by applying Shrink -> [[Flip -> ] Pad -> Reshape -> Shrink] -> Reshape (ops in brackets are optional)
+    #    - This works by applying Shrink -> [[Flip -> ] Pad -> Reshape -> Shrink] -> Reshape (ops in brackets are
+    #      optional)
     #    - Idea of stride < 0 support:
-    #        - Do the slice first, flip the axes were slice.step is negative, do slice.step -> -slice.step. Go to steps below.
+    #        - Do the slice first, flip the axes were slice.step is negative, do slice.step -> -slice.step. Go to steps
+    #          below.
     #    - Idea of stride `s` > 1 support (Pad -> Reshape -> Shrink):
     #        - Instead of doing [::s] on axis [dim_sz], do [:, 0] on axes [dim_sz_padded // s, s].
-    #        - So pad dim_sz with as many zeros as needed (dim_sz -> dim_sz_padded) so that reshape to [dim_sz_padded // s, s]
-    #          is possible.
+    #        - So pad dim_sz with as many zeros as needed (dim_sz -> dim_sz_padded) so that reshape to
+    #          [dim_sz_padded // s, s] is possible.
     #        - Apply Shrink to do the slice [:, 0] on axes of shapes [dim_sz_padded // s, s].
     # - Fancy indexing and combined indexing is supported
-    #    - Combined indexing works by letting regular slicing finish first -> computing the resulting dims w.r.t to Tensors passed in -> fancy indexing
+    #    - Combined indexing works by letting regular slicing finish first -> computing the resulting dims w.r.t to
+    #      Tensors passed in -> fancy indexing
     #    - Any Tensors passed in __getitem__ will perform (CMPEQ with arange -> MUL with self -> SUM_REDUCE) iteratively
     #        - The first iteration will expand the dim of self while consecutive iterations will reduce the dim
     #    - There's a special case where a permute is needed at the end:
@@ -481,7 +482,7 @@ class Tensor:
             raise IndexError("an index can only have a single ellipsis ('...')")
 
         ellipsis_idx = ellipsis_found[0] if ellipsis_found else len(orig_slices)
-        orig_slices[ellipsis_idx : ellipsis_idx + 1] = [slice(None)] * (
+        orig_slices[ellipsis_idx:ellipsis_idx + 1] = [slice(None)] * (
             len(self.shape) - num_slices
         )
 
@@ -593,7 +594,7 @@ class Tensor:
             ret = ret.reshape(
                 *ret.shape[: sum_dim[0] + 1],
                 *[1] * max_dim,
-                *ret.shape[sum_dim[0] + 1 :],
+                *ret.shape[sum_dim[0] + 1:],
             )
             # iteratively fancy index
             for a, i, sd in zip(arange, idx, sum_dim):
@@ -606,9 +607,9 @@ class Tensor:
             ):
                 ret_dims = list(range(ret.ndim))
                 ret = ret.permute(
-                    ret_dims[dim[0] : dim[0] + max_dim]
+                    ret_dims[dim[0]:dim[0] + max_dim]
                     + ret_dims[: dim[0]]
-                    + ret_dims[dim[0] + max_dim :]
+                    + ret_dims[dim[0] + max_dim:]
                 )
         return ret
 
@@ -639,7 +640,7 @@ class Tensor:
         idx = idx.transpose(ax1=dim, ax2=0).unsqueeze(-1)
         permarg = list(range(self.ndim))
         permarg = (
-            permarg[1:dim] + [permarg[0]] + permarg[dim + 1 :] + [permarg[dim]]
+            permarg[1:dim] + [permarg[0]] + permarg[dim + 1:] + [permarg[dim]]
             if dim != 0
             else permarg[1:] + [permarg[0]]
         )
@@ -720,7 +721,7 @@ class Tensor:
             return self  # This is to match PyTorch behavior
         if not -self.ndim <= dim < self.ndim:
             raise IndexError(
-                f"Dimension out of range (expected to be in range of [{-self.ndim if self.ndim > 0 else self.ndim-1}, {self.ndim-1 if self.ndim > 0 else self.ndim}], but got {dim})"
+                f"Dimension out of range (expected to be in range of [{-self.ndim if self.ndim > 0 else self.ndim-1}, {self.ndim-1 if self.ndim > 0 else self.ndim}], but got {dim})"  # noqa
             )
         if dim < 0:
             dim += self.ndim
@@ -767,7 +768,7 @@ class Tensor:
         axis: ta.Optional[ta.Union[int, tuple[int, ...]]] = None,
         keepdim=False,
     ):
-        axis_: list[int] = list(range(len(self.shape))) if axis is None else ([axis] if axis.__class__ is int else list(axis))  # type: ignore
+        axis_: list[int] = list(range(len(self.shape))) if axis is None else ([axis] if axis.__class__ is int else list(axis))  # type: ignore  # noqa
         axis_ = [x if x >= 0 else x + len(self.shape) for x in axis_]
         shape = [s for i, s in enumerate(self.shape) if i not in axis_]
         ret = fxn.apply(
@@ -853,9 +854,9 @@ class Tensor:
             d_
         ), f"stride/dilation mismatch kernel:{k_} stride:{s_} dilation:{d_}"
         slc_prefix, prefix, i_ = (
-            [(0, x) for x in self.shape[0 : -len(k_)]],
-            self.shape[0 : -len(k_)],
-            self.shape[-len(k_) :],
+            [(0, x) for x in self.shape[0:-len(k_)]],
+            self.shape[0:-len(k_)],
+            self.shape[-len(k_):],
         )
         if any(k > s for k, s in zip(k_, s_)) or any(d != 1 for d in d_):
             o_ = [(i - d * (k - 1) - 1) // s + 1 for i, d, k, s in zip(i_, d_, k_, s_)]
@@ -891,7 +892,8 @@ class Tensor:
                 *[len(prefix) + i * 2 + 1 for i in range(len(k_))],
                 *[len(prefix) + i * 2 for i in range(len(k_))],
             )
-        # TODO: once the shapetracker can optimize well, remove this alternative implementation. or not if the CPU implementation doesn't use ShapeTracker
+        # TODO: once the shapetracker can optimize well, remove this alternative implementation. or not if the CPU
+        #  implementation doesn't use ShapeTracker
         o_ = [(i + (s - k)) // s for i, s, k in zip(i_, s_, k_)]
         xup = self.slice(slc_prefix + [(0, o * s) for o, s in zip(o_, s_)])
         xup = xup.reshape(*prefix, *flatten(((o, s) for o, s in zip(o_, s_))))
@@ -978,11 +980,11 @@ class Tensor:
         (bs, cin_), (cout, cin), HW = self.shape[:2], weight.shape[:2], weight.shape[2:]
         assert groups * cin == cin_ and len(self.shape) == len(
             weight.shape
-        ), f"Input Tensor shape {self.shape} does not match the shape of the weights {weight.shape}. ({groups*cin} vs. {cin_})"
+        ), f"Input Tensor shape {self.shape} does not match the shape of the weights {weight.shape}. ({groups*cin} vs. {cin_})"  # noqa
         if isinstance(padding, (tuple, list)):
             assert len(padding) == 2 * len(HW) or len(padding) == len(
                 HW
-            ), f"Expected padding of length {2*len(HW)} or {len(HW)}, but got {len(padding)} for tensor of shape {self.shape}"
+            ), f"Expected padding of length {2*len(HW)} or {len(HW)}, but got {len(padding)} for tensor of shape {self.shape}"  # noqa
         padding_ = (
             [padding] * 2 * len(HW)
             if isinstance(padding, int)
@@ -997,7 +999,7 @@ class Tensor:
         x = self.pad2d(padding_)._pool(
             HW, stride, dilation
         )  # (bs, groups*cin, oy, ox, H, W)
-        rcout, oyx = cout // groups, x.shape[2 : -len(HW)]
+        rcout, oyx = cout // groups, x.shape[2:-len(HW)]
         if (
             not all(x == 3 for x in HW)
             or stride != 1
@@ -1079,9 +1081,9 @@ class Tensor:
                     [
                         padding_[i * 2],
                         padding_[i * 2 + 1]
-                        + (-(dim + sum(padding_[i * 2 : (i + 1) * 2]) - 2) % 4),
+                        + (-(dim + sum(padding_[i * 2:(i + 1) * 2]) - 2) % 4),
                     ]
-                    for i, dim in enumerate(self.shape[-len(HW) :])
+                    for i, dim in enumerate(self.shape[-len(HW):])
                 ],
                 [],
             )
@@ -1091,7 +1093,7 @@ class Tensor:
         d = d.permute(
             *range(len(d.shape) - len(HW), len(d.shape)), *range(len(d.shape) - len(HW))
         ).contiguous_backward()  # move HW to the front: # (HWI, bs, cin_, tyx)
-        tyx = d.shape[-len(HWI) :]  # dim of tiling
+        tyx = d.shape[-len(HWI):]  # dim of tiling
 
         g = weight.permute(
             *range(len(weight.shape) - len(HW), len(weight.shape)),
@@ -1141,12 +1143,12 @@ class Tensor:
         ), f"both arguments to matmul need to be at least 1D, but they are {n1}D and {n2}D"
         assert (
             self.shape[-1] == w.shape[-min(n2, 2)]
-        ), f"Input Tensor shapes {self.shape} and {w.shape} cannot be multiplied ({self.shape[-1]} != {w.shape[-min(n2, 2)]})"
+        ), f"Input Tensor shapes {self.shape} and {w.shape} cannot be multiplied ({self.shape[-1]} != {w.shape[-min(n2, 2)]})"  # noqa
         x = self.reshape(
             *self.shape[0:-1], *[1] * min(n1 - 1, n2 - 1, 1), self.shape[-1]
         )
         w = w.reshape(
-            *w.shape[0:-2], *[1] * min(n1 - 1, n2 - 1, 1), *w.shape[-min(n2, 2) :]
+            *w.shape[0:-2], *[1] * min(n1 - 1, n2 - 1, 1), *w.shape[-min(n2, 2):]
         ).transpose(-1, -min(n2, 2))
         return (x * w).sum(-1)
 
@@ -1384,7 +1386,8 @@ class Tensor:
             if not reverse or isinstance(x, Tensor)
             else self.mul(math.log(abs(x))).exp()
         )
-        # correct sign of negative numbers raised to a power (cos has a period of 2pi so we use it here to get the oddness of the power)
+        # correct sign of negative numbers raised to a power (cos has a period of 2pi so we use it here to get the
+        # oddness of the power)
         sign = (
             (x * math.pi).cos()
             if isinstance(x, Tensor)

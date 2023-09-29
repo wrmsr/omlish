@@ -170,7 +170,7 @@ class TestTinygrad(unittest.TestCase):
         original_rand, Tensor.rand = Tensor.rand, Tensor.zeros
         try:
             self.assertNotIn(np.inf, Tensor.randn(16).numpy())
-        except:
+        except Exception:  # noqa
             raise
         finally:
             Tensor.rand = original_rand

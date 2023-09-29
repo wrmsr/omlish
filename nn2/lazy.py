@@ -85,7 +85,8 @@ def _ast_binaryops(op: LazyOp, shape: tuple[sint, ...]) -> LazyOp:
     real_srcs: dict[LazyBuffer, ta.Optional[ta.Union[LazyOp, LazyBuffer]]] = {
         x: None for x in op.buffers
     }
-    # NOTE: contiguous does not always mean the same size with SHRINK. this is still mergeable but requires more thought how
+    # NOTE: contiguous does not always mean the same size with SHRINK. this is still mergeable but requires more thought
+    # how
     # TODO: this can also support late fusion of BinaryOps, required for test_fold_conv_sgd
     psrcs: list[tuple[LazyBuffer, LazyBuffer]] = [
         (k, x)
@@ -531,7 +532,7 @@ class LazyBuffer:
 
         if MERGE_ELEMENTWISE_OPS:
             # remove the buffers from any (childless) BinaryOps that feed into this
-            srcs = tuple([x.op if x.optype == BinaryOps and not x.children and not x.realized else x for x in srcs])  # type: ignore
+            srcs = tuple(x.op if x.optype == BinaryOps and not x.children and not x.realized else x for x in srcs)  # type: ignore  # noqa
 
         return create_lazybuffer(
             out_device,
@@ -567,7 +568,11 @@ class LazyBuffer:
             return self._reduce_op(
                 op, new_shape
             )  # The amount of work should be big enough to take the benefit of "2 kernels" approach.
-        heuristic, divisor, dim_to_split = max(((divisor := math.gcd(256, old)) / (stride or math.inf), divisor, i) for i, (old, new, stride) in enumerate(zip(self.shape, new_shape, self.st.real_strides())) if old != new)  # type: ignore
+        heuristic, divisor, dim_to_split = max(  # type: ignore
+            ((divisor := math.gcd(256, old)) / (stride or math.inf), divisor, i)
+            for i, (old, new, stride) in enumerate(zip(self.shape, new_shape, self.st.real_strides()))
+            if old != new
+        )
         if divisor < 16 or heuristic < 0.1:
             return self._reduce_op(
                 op, new_shape
@@ -578,7 +583,7 @@ class LazyBuffer:
                 self.shape[:dim_to_split]
                 + (self.shape[dim_to_split] // divisor,)
                 + dim_aft_div
-                + self.shape[dim_to_split + 1 :]
+                + self.shape[dim_to_split + 1:]
             )
 
         return (
@@ -872,12 +877,16 @@ def _realize_empty(buffer: LazyBuffer) -> None:
 
 def _realize_rand(buffer: LazyBuffer) -> None:
     rng = np.random.default_rng(buffer.op.arg)
-    buffer.realized = Device[buffer.device].buffer.fromCpu(rng.random(size=buffer.shape, dtype=np.float32).astype(dtype=buffer.dtype.np, copy=False), **buffer._device_extra_args())  # type: ignore
+    buffer.realized = Device[buffer.device].buffer.fromCpu(  # type: ignore
+        rng.random(size=buffer.shape, dtype=np.float32).astype(dtype=buffer.dtype.np, copy=False),
+        **buffer._device_extra_args()
+    )
 
 
 def _realize_const(buffer: LazyBuffer) -> None:
     buffer.realized = Device[buffer.device].buffer.fromCpu(
-        np.array(buffer.op.arg, dtype=buffer.dtype.np), **buffer._device_extra_args()
+        np.array(buffer.op.arg, dtype=buffer.dtype.np),
+        **buffer._device_extra_args()
     )
 
 

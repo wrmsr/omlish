@@ -16,7 +16,7 @@ if ta.TYPE_CHECKING:
 class _Device:
     def __init__(self) -> None:
         self._buffers: list[str] = [
-            x.stem[len("ops_") :].upper()
+            x.stem[len("ops_"):].upper()
             for x in (pathlib.Path(__file__).parent / "runtime").iterdir()
             if x.stem.startswith("ops_")
         ]
@@ -24,8 +24,8 @@ class _Device:
     def canonicalize(self, device: ta.Optional[str]) -> str:
         return (
             (
-                    device.split(":", 1)[0].upper()
-                    + ((":" + device.split(":", 1)[1]) if ":" in device else "")
+                device.split(":", 1)[0].upper() +
+                ((":" + device.split(":", 1)[1]) if ":" in device else "")
             ).replace(":0", "")
             if device is not None
             else self.DEFAULT

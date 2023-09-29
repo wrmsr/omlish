@@ -356,9 +356,9 @@ class TestNN(unittest.TestCase):
 
         # test
         x = Tensor.randn(N, C, H, W)
-        z = layer(x)
+        z = layer(x)  # noqa
         torch_x = torch.tensor(x.numpy())
-        torch_z = torch_layer(torch_x.permute(0, 2, 3, 1)).permute(0, 3, 1, 2)
+        torch_z = torch_layer(torch_x.permute(0, 2, 3, 1)).permute(0, 3, 1, 2)  # noqa
 
     def test_instancenorm_2d(self):
         N, C, H, W = 20, 5, 10, 10

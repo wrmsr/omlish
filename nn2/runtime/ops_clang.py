@@ -33,7 +33,15 @@ args = {
     "Darwin": {"cflags": "-lm -fPIC --rtlib=compiler-rt ", "ext": "dylib", "exp": ""},
 }[platform.system()]
 
-CLANG_PROGRAM_HEADER = "#include <math.h>\n#define max(x,y) ((x>y)?x:y)\n#define int64 long\n#define half __fp16\n#define uchar unsigned char\n#define bool uchar\n"
+CLANG_PROGRAM_HEADER = """
+#include <math.h>
+#define max(x,y) ((x>y)?x:y)
+#define int64 long
+#define half __fp16
+#define uchar unsigned char
+#define bool uchar
+""".lstrip()
+
 ADDRESS = 0x10000
 
 
@@ -52,14 +60,18 @@ def emulate_ext_calls(fn, uc, address, size, user_data):
             "I", uc.reg_read(getattr(arm64_const, f"UC_ARM64_REG_S{fn[2][1:]}"))
         ),
     )[0]
-    uc.reg_write(getattr(arm64_const, f"UC_ARM64_REG_S{fn[1][1:]}"), struct.unpack("I", struct.pack("f", mock_lm[fn[0]](s_in)))[0])  # type: ignore
+    uc.reg_write(  # type: ignore
+        getattr(arm64_const, f"UC_ARM64_REG_S{fn[1][1:]}"),
+        struct.unpack("I", struct.pack("f", mock_lm[fn[0]](s_in)))[0],
+    )
 
 
 class ClangProgram:
     def __init__(self, name: str, prg: str, binary: bool = False):
         # TODO: is there a way to not write this to disk?
-        # A: it seems there isn't https://stackoverflow.com/questions/28053328/ctypes-cdll-load-library-from-memory-rather-than-file
-        #    because ctypes.CDLL() calls dlopen (POSIX) or LoadLibrary (Windows) which require a file
+        # A: it seems there isn't
+        #  https://stackoverflow.com/questions/28053328/ctypes-cdll-load-library-from-memory-rather-than-file
+        # because ctypes.CDLL() calls dlopen (POSIX) or LoadLibrary (Windows) which require a file
         fn = f"{tempfile.gettempdir()}/clang_{hashlib.md5(prg.encode('utf-8')).hexdigest()}.{args['ext']}"
         if binary and DEBUG >= 5:
             print(prg)
@@ -140,7 +152,8 @@ class ClangProgram:
                 if i <= 7:
                     mu.reg_write(getattr(arm64_const, f"UC_ARM64_REG_X{i}"), addr)
                 else:
-                    # NOTE: In ARM, args beyond the first 8 are placed on the stack it also account for the stack red zone.
+                    # NOTE: In ARM, args beyond the first 8 are placed on the stack it also account for the stack red
+                    # zone.
                     mu.mem_write(
                         ADDRESS + total_mem - (len(args[8:]) + 2) * 8 + 8 * (i - 8),
                         addr.to_bytes(8, "little"),
