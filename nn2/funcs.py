@@ -85,7 +85,7 @@ class Cast(Function):
         return grad_output.e(ops.Cast, arg=(self._input_dtype, self._bitcast))
 
 
-## UnaryOps
+# UnaryOps
 
 
 class Zero(Function):
@@ -94,6 +94,7 @@ class Zero(Function):
 
     def backward(self, grad: LazyBuffer) -> LazyBuffer:
         return grad.const(0)
+
 
 class Neg(Function):
     def forward(self, x: LazyBuffer) -> LazyBuffer:
@@ -190,7 +191,7 @@ class Sigmoid(Function):
         ).e(ops.Mul, grad_output)
 
 
-## BinaryOps
+# BinaryOps
 
 
 class Less(Function):
@@ -264,7 +265,7 @@ class Div(Function):
         )
 
 
-## TernaryOps
+# TernaryOps
 
 
 class Where(Function):
@@ -284,7 +285,7 @@ class Where(Function):
         )
 
 
-## ReduceOps
+# ReduceOps
 
 
 class Sum(Function):
@@ -318,7 +319,7 @@ class Max(Function):
         )
 
 
-## MovementOps
+# MovementOps
 
 
 # NOTE: this is sum in reverse
