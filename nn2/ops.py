@@ -1,117 +1,110 @@
 from __future__ import annotations
-import time, importlib, inspect, functools, pathlib
-from enum import Enum, auto
-from typing import (
-    TYPE_CHECKING,
-    Union,
-    Type,
-    Tuple,
-    Any,
-    List,
-    Optional,
-    Dict,
-    Callable,
-    cast,
-    Mapping,
-)
-from .helpers import (
-    ansilen,
-    prod,
-    DEBUG,
-    getenv,
-    GlobalCounters,
-    DType,
-    colored,
-)
-from dataclasses import dataclass
+
+import enum
+import functools
+import importlib
+import inspect
+import pathlib
+import time
+import typing as ta
+
+from omlish import dataclasses as dc
+
+from .helpers import DEBUG
+from .helpers import DType
+from .helpers import GlobalCounters
+from .helpers import ansilen
+from .helpers import colored
+from .helpers import getenv
+from .helpers import prod
 
 
 # these are the llops your accelerator must implement, along with toCpu
 # the Enum class doesn't work with mypy, this is static. sorry it's ugly
 # NOTE: MOD, CMPLT don't have to be implemented on vectors, just scalars
 # NOTE: rdna3 only has RECIP and not DIV. DIV and POW are on the chopping block
-class UnaryOps(Enum):
-    NOOP = auto()
-    EXP2 = auto()
-    LOG2 = auto()
-    CAST = auto()
-    SIN = auto()
-    SQRT = auto()
-    RECIP = auto()
-    NEG = auto()  # noqa: E702
+class UnaryOps(enum.Enum):
+    NOOP = enum.auto()
+    EXP2 = enum.auto()
+    LOG2 = enum.auto()
+    CAST = enum.auto()
+    SIN = enum.auto()
+    SQRT = enum.auto()
+    RECIP = enum.auto()
+    NEG = enum.auto()  # noqa: E702
 
 
-class BinaryOps(Enum):
-    ADD = auto()
-    SUB = auto()
-    MUL = auto()
-    DIV = auto()
-    MAX = auto()
-    MOD = auto()
-    CMPLT = auto()  # noqa: E702
+class BinaryOps(enum.Enum):
+    ADD = enum.auto()
+    SUB = enum.auto()
+    MUL = enum.auto()
+    DIV = enum.auto()
+    MAX = enum.auto()
+    MOD = enum.auto()
+    CMPLT = enum.auto()  # noqa: E702
 
 
-class TernaryOps(Enum):
-    MULACC = auto()
-    WHERE = auto()  # noqa: E702
+class TernaryOps(enum.Enum):
+    MULACC = enum.auto()
+    WHERE = enum.auto()  # noqa: E702
 
 
-class ReduceOps(Enum):
-    SUM = auto()
-    MAX = auto()  # noqa: E702
+class ReduceOps(enum.Enum):
+    SUM = enum.auto()
+    MAX = enum.auto()  # noqa: E702
 
 
-class BufferOps(Enum):
-    MEM = auto()
-    CONST = auto()  # noqa: E702
+class BufferOps(enum.Enum):
+    MEM = enum.auto()
+    CONST = enum.auto()  # noqa: E702
 
 
 # Ops below this line are not allowed in ASTs
-class MovementOps(Enum):
-    RESHAPE = auto()
-    PERMUTE = auto()
-    EXPAND = auto()
-    PAD = auto()
-    SHRINK = auto()
-    STRIDE = auto()
-    AS_STRIDED = auto()  # noqa: E702
+class MovementOps(enum.Enum):
+    RESHAPE = enum.auto()
+    PERMUTE = enum.auto()
+    EXPAND = enum.auto()
+    PAD = enum.auto()
+    SHRINK = enum.auto()
+    STRIDE = enum.auto()
+    AS_STRIDED = enum.auto()  # noqa: E702
 
 
-class LoadOps(Enum):
-    EMPTY = auto()
-    RAND = auto()
-    CONST = auto()
-    FROM = auto()
-    CONTIGUOUS = auto()
-    CUSTOM = auto()  # noqa: E702
+class LoadOps(enum.Enum):
+    EMPTY = enum.auto()
+    RAND = enum.auto()
+    CONST = enum.auto()
+    FROM = enum.auto()
+    CONTIGUOUS = enum.auto()
+    CUSTOM = enum.auto()  # noqa: E702
 
 
-Op = Union[UnaryOps, BinaryOps, ReduceOps, MovementOps, LoadOps, TernaryOps, BufferOps]
-OpType = Union[
-    Type[UnaryOps],
-    Type[BinaryOps],
-    Type[ReduceOps],
-    Type[MovementOps],
-    Type[LoadOps],
-    Type[TernaryOps],
-    Type[BufferOps],
+Op = ta.Union[UnaryOps, BinaryOps, ReduceOps, MovementOps, LoadOps, TernaryOps, BufferOps]
+OpType = ta.Union[
+    type[UnaryOps],
+    type[BinaryOps],
+    type[ReduceOps],
+    type[MovementOps],
+    type[LoadOps],
+    type[TernaryOps],
+    type[BufferOps],
 ]
 
-if TYPE_CHECKING:
+if ta.TYPE_CHECKING:
     from .lazy import LazyBuffer
     from .shape.shapetracker import ShapeTracker
 
 
-@dataclass(frozen=True)
+@dc.dataclass(frozen=True)
 class MemBuffer:
     idx: int
     dtype: DType
     st: ShapeTracker
 
 
-@dataclass(frozen=True)
+@dc.dataclass(frozen=True)
 class ConstBuffer:
-    val: Any
+    val: ta.Any
     dtype: DType
     st: ShapeTracker
 
@@ -119,12 +112,12 @@ class ConstBuffer:
 class LazyOp:
     __slots__ = "op", "src", "arg", "buffers", "__weakref__"
     op: Op
-    src: Tuple[Union[LazyOp, LazyBuffer], ...]
-    arg: Any
-    buffers: Tuple[LazyBuffer, ...]
+    src: tuple[ta.Union[LazyOp, LazyBuffer], ...]
+    arg: ta.Any
+    buffers: tuple[LazyBuffer, ...]
 
     def __init__(
-        self, op: Op, src: Tuple[Union[LazyOp, LazyBuffer], ...], arg: Any = None
+        self, op: Op, src: tuple[ta.Union[LazyOp, LazyBuffer], ...], arg: ta.Any = None
     ):
         self.op, self.src, self.arg, self.buffers = op, src, arg, ()
         try:  # NOTE: the linearizer's key function maps the buffers to ints, and LOCAL_BUFFER is used. we don't care about buffers in these cases
@@ -156,17 +149,17 @@ class LazyOp:
         )
 
     def map_buffers(
-        self, real_srcs: Mapping[LazyBuffer, Union[LazyBuffer, LazyOp]]
+        self, real_srcs: ta.Mapping[LazyBuffer, ta.Union[LazyBuffer, LazyOp]]
     ) -> LazyOp:
         return LazyOp(
             self.op, tuple([y.map_buffers(real_srcs) for y in self.src]), self.arg
         )
 
-    def get_lazyops(self) -> List[LazyOp]:
+    def get_lazyops(self) -> list[LazyOp]:
         return [self] + [item for x in self.src for item in x.get_lazyops()]
 
     def replace_with_movement_ops(
-        self: LazyOp, ops: List[Tuple[MovementOps, Tuple[Any, ...]]]
+        self: LazyOp, ops: list[tuple[MovementOps, tuple[ta.Any, ...]]]
     ) -> "LazyBuffer":
         assert self.op in BinaryOps or self.op in UnaryOps or self.op in TernaryOps
         srcs = [z.replace_with_movement_ops(ops) for z in self.src]
@@ -220,13 +213,13 @@ class LazyOp:
 
 class _Device:
     def __init__(self) -> None:
-        self._buffers: List[str] = [
+        self._buffers: list[str] = [
             x.stem[len("ops_") :].upper()
             for x in (pathlib.Path(__file__).parent / "runtime").iterdir()
             if x.stem.startswith("ops_")
         ]
 
-    def canonicalize(self, device: Optional[str]) -> str:
+    def canonicalize(self, device: ta.Optional[str]) -> str:
         return (
             (
                 device.split(":", 1)[0].upper()
@@ -237,7 +230,7 @@ class _Device:
         )
 
     @functools.lru_cache(maxsize=None)  # this class is a singleton, pylint: disable=method-cache-max-size-none
-    def __getitem__(self, x: str) -> Union[Interpreted, Compiled]:
+    def __getitem__(self, x: str) -> ta.Union[Interpreted, Compiled]:
         x = x.split(":")[0].upper()
         return [
             cls
@@ -247,7 +240,7 @@ class _Device:
 
     @functools.cached_property
     def DEFAULT(self) -> str:
-        device_from_env: Optional[str] = functools.reduce(
+        device_from_env: ta.Optional[str] = functools.reduce(
             lambda val, ele: ele if getenv(ele) == 1 else val, self._buffers, None
         )
         if device_from_env:
@@ -270,7 +263,7 @@ class Interpreted:
     def __init__(
         self,
         buffer,
-        fxn_for_op: Dict[Op, Callable],
+        fxn_for_op: dict[Op, ta.Callable],
         to_underlying=lambda x: x._buf,
         from_underlying=None,
     ):
@@ -311,7 +304,7 @@ class Interpreted:
         if not created_context and ast in context:
             return context[ast]
         srcs = [
-            self.exec_ast(cast(LazyOp, x), inputs=inputs, context=context, **kwargs)
+            self.exec_ast(ta.cast(LazyOp, x), inputs=inputs, context=context, **kwargs)
             for x in ast.src
         ]
         if DEBUG >= 3:
@@ -361,7 +354,7 @@ class Interpreted:
 
 
 class FlopCounter:
-    def __init__(self, tup: Tuple[Tuple[int, ...], DType, int]):
+    def __init__(self, tup: tuple[tuple[int, ...], DType, int]):
         self.shape, self.dtype, self.flops, self._buf = *tup, self
 
     def consume_flops(self):
@@ -369,7 +362,7 @@ class FlopCounter:
         return ret
 
 
-shape_fxn_for_op: Dict[Op, Callable] = {
+shape_fxn_for_op: dict[Op, ta.Callable] = {
     BufferOps.MEM: lambda arg: (arg.st.shape, arg.dtype, 0),
     BufferOps.CONST: lambda arg: (arg.st.shape, arg.dtype, 0),
     UnaryOps.CAST: lambda self, arg: (
@@ -422,10 +415,10 @@ from .shape.symbolic import Variable, sym_infer
 
 
 class BasicBatchExecutor:
-    def __init__(self, jit_cache: List[Tuple[Any, Any, Any]]):
+    def __init__(self, jit_cache: list[tuple[ta.Any, ta.Any, ta.Any]]):
         pass
 
-    def exec(self, jit_cache: List[Tuple[Any, Any, Any]], updatable_entries):
+    def exec(self, jit_cache: list[tuple[ta.Any, ta.Any, ta.Any]], updatable_entries):
         for prg, pargs, variables in jit_cache:
             prg(pargs, variables, jit=True)
 
@@ -435,12 +428,12 @@ class ASTRunner:
         self,
         name,
         prg,
-        global_size: Optional[List[int]] = None,
-        local_size: Optional[List[int]] = None,
+        global_size: ta.Optional[list[int]] = None,
+        local_size: ta.Optional[list[int]] = None,
         op_estimate=0,
         mem_estimate=0,
-        display_name: Optional[str] = None,
-        runtime_args: Optional[dict] = None,
+        display_name: ta.Optional[str] = None,
+        runtime_args: ta.Optional[dict] = None,
     ):
         if DEBUG >= 4 and (
             runtime_args is None
@@ -478,10 +471,10 @@ class ASTRunner:
     def exec(
         self,
         rawbufs,
-        var_vals: Optional[Dict[Variable, int]] = None,
+        var_vals: ta.Optional[dict[Variable, int]] = None,
         force_wait=False,
         optimizing=False,
-    ) -> Optional[float]:
+    ) -> ta.Optional[float]:
         from .jit import CacheCollector
 
         if not optimizing:
@@ -509,11 +502,11 @@ class ASTRunner:
 
     def __call__(
         self,
-        rawbufs: List[RawBuffer],
-        var_vals: Optional[Dict[Variable, int]] = None,
+        rawbufs: list[RawBuffer],
+        var_vals: ta.Optional[dict[Variable, int]] = None,
         jit=False,
         force_wait=False,
-    ) -> Optional[float]:
+    ) -> ta.Optional[float]:
         if var_vals is None:
             var_vals = {}
         global_size, local_size = self.launch_dims(var_vals)
@@ -544,7 +537,7 @@ class ASTRunner:
 class Compiled:
     def __init__(
         self,
-        buffer: Type[RawBuffer],
+        buffer: type[RawBuffer],
         linearizer_opts,
         renderer,
         runtime,
@@ -559,7 +552,7 @@ class Compiled:
             self.synchronize,
             self.batch_exec,
         ) = (buffer, linearizer_opts, renderer, runtime, synchronize, batch_exec)
-        self.method_cache: Dict[Any, ASTRunner] = {}
+        self.method_cache: dict[ta.Any, ASTRunner] = {}
 
     def to_program(self, k):
         k.linearize()

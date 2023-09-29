@@ -1,31 +1,38 @@
-from typing import Callable, List, Tuple, Any, Dict, cast, Union, Optional, Set
-from weakref import ref
-from collections import defaultdict
-import functools, itertools
-from .helpers import DEBUG, DType, merge_dicts, ImageDType
-from .ops import RawBuffer, Device, BasicBatchExecutor
-from .tensor import Tensor
+import weakref
+import collections
+import functools
+import itertools
+import typing as ta
+
+from .helpers import DEBUG
+from .helpers import DType
+from .helpers import ImageDType
+from .helpers import merge_dicts
+from .ops import BasicBatchExecutor
+from .ops import Device
+from .ops import RawBuffer
 from .shape.shapetracker import ShapeTracker
 from .shape.symbolic import Variable
+from .tensor import Tensor
 
 JIT_SUPPORTED_DEVICE = ["GPU", "CLANG", "METAL", "CUDA", "HIP", "WEBGPU", "LLVM"]
 
 
 class TinyJit:
-    def __init__(self, fxn: Callable):
-        self.fxn: Callable = fxn
+    def __init__(self, fxn: ta.Callable):
+        self.fxn: ta.Callable = fxn
         self.cnt: int = 0
-        self.jit_cache: List[
-            Tuple[Any, List[Optional[RawBuffer]], Dict[Variable, int]]
+        self.jit_cache: list[
+            tuple[ta.Any, list[ta.Optional[RawBuffer]], dict[Variable, int]]
         ] = []
-        self.ret: Any = None
-        self.input_replace: Dict[
-            Tuple[int, int], Tuple[Union[int, str], ShapeTracker, DType]
+        self.ret: ta.Any = None
+        self.input_replace: dict[
+            tuple[int, int], tuple[ta.Union[int, str], ShapeTracker, DType]
         ] = (
             {}
         )  # (kernel_number, buffer_number) -> (input_name, expected_shapetracker, expected_type)
-        self.batch_executor: Any = None
-        self.updatable_entries: Dict[int, List[int]] = defaultdict(
+        self.batch_executor: ta.Any = None
+        self.updatable_entries: dict[int, list[int]] = collections.defaultdict(
             list
         )  # (kernel_number) -> list(argument id). These are buffers from input + variables.
 
@@ -33,13 +40,13 @@ class TinyJit:
     def __get__(self, obj, objtype):
         return functools.partial(self.__call__, obj)
 
-    def __call__(self, *args, **kwargs) -> Any:
+    def __call__(self, *args, **kwargs) -> ta.Any:
         if Device.DEFAULT not in JIT_SUPPORTED_DEVICE:
             return self.fxn(*args, **kwargs)  # only jit on supported device
         # NOTE: this cast is needed since although we know realize will create a ".realized" RawBuffer, the type checker doesn't
-        input_rawbuffers: Dict[Union[int, str], Tuple[RawBuffer, ShapeTracker]] = {
-            cast(Union[int, str], k): (
-                cast(RawBuffer, v.realize().lazydata.realized),
+        input_rawbuffers: dict[ta.Union[int, str], tuple[RawBuffer, ShapeTracker]] = {
+            ta.cast(ta.Union[int, str], k): (
+                ta.cast(RawBuffer, v.realize().lazydata.realized),
                 v.lazydata.st,
             )
             for k, v in itertools.chain(enumerate(args), kwargs.items())
@@ -51,7 +58,7 @@ class TinyJit:
         ), "duplicate inputs to JIT"
         if self.cnt >= 2:
             try:
-                var_vals: Dict[Variable, int] = kwargs["jit_ctx"]
+                var_vals: dict[Variable, int] = kwargs["jit_ctx"]
             except KeyError:
                 var_vals = merge_dicts(
                     [arg.lazydata.var_vals for arg in args if arg.__class__ is Tensor]
@@ -94,7 +101,7 @@ class TinyJit:
             # get the inputs for replacement
             for j_, cache in enumerate(
                 self.jit_cache
-            ):  # type: Tuple[int, Tuple[Callable, List[Optional[RawBuffer]], Dict[Variable, int]]]
+            ):  # type: tuple[int, tuple[ta.Callable, list[ta.Optional[RawBuffer]], dict[Variable, int]]]
                 for i, a in enumerate(cache[1]):
                     if a in [v[0] for v in input_rawbuffers.values()]:
                         self.input_replace[(j_, i)] = [
@@ -129,7 +136,7 @@ class _CacheCollector:
                 buf.size,
                 buf.dtype,
                 getattr(buf, "_device", None),
-                ref(buf),
+                weakref.ref(buf),
                 type(buf),
             )
 
@@ -141,13 +148,13 @@ class _CacheCollector:
             )
 
     def __init__(self):
-        self.cache: Optional[List[Tuple[Callable, List[Any], Dict[Any, Any]]]] = None
-        self.placeholders: Dict[
-            ref[RawBuffer], _CacheCollector._Placeholder
+        self.cache: ta.Optional[list[tuple[ta.Callable, list[ta.Any], dict[ta.Any, ta.Any]]]] = None
+        self.placeholders: dict[
+            weakref.ref[RawBuffer], _CacheCollector._Placeholder
         ] = (
             {}
         )  # Output rawbufs are replaced with placeholders to allow freeing of the real buffer while collecting cache.
-        self.circular_signatures: Set[Any] = set()
+        self.circular_signatures: set[ta.Any] = set()
 
     def start(self):
         self.cache, self.placeholders, self.circular_signatures = [], {}, set()
@@ -156,13 +163,13 @@ class _CacheCollector:
         if self.cache is None:
             return
         # Substitute output buffers with placeholders to find the most optimal reusage.
-        if ref(rawbufs[0]) not in self.placeholders:
-            self.placeholders[ref(rawbufs[0])] = _CacheCollector._Placeholder(
+        if weakref.ref(rawbufs[0]) not in self.placeholders:
+            self.placeholders[weakref.ref(rawbufs[0])] = _CacheCollector._Placeholder(
                 rawbufs[0]
             )
         cached_rawbufs = [
-            self.placeholders.get(ref(buf), buf)
-            if isinstance(buf, RawBuffer) and ref(buf) not in self.circular_signatures
+            self.placeholders.get(weakref.ref(buf), buf)
+            if isinstance(buf, RawBuffer) and weakref.ref(buf) not in self.circular_signatures
             else buf
             for buf in rawbufs
         ]
@@ -172,9 +179,9 @@ class _CacheCollector:
         if self.cache is None:
             return []
 
-        rawbuf_pool: List[Tuple[RawBuffer, List[Tuple[int, int]]]] = []
-        buf_usage_bounds: Dict[_CacheCollector._Placeholder, Tuple[int, int]] = {}
-        buf_map: Dict[_CacheCollector._Placeholder, RawBuffer] = {}
+        rawbuf_pool: list[tuple[RawBuffer, list[tuple[int, int]]]] = []
+        buf_usage_bounds: dict[_CacheCollector._Placeholder, tuple[int, int]] = {}
+        buf_map: dict[_CacheCollector._Placeholder, RawBuffer] = {}
 
         for j, (_, bufs, _) in enumerate(self.cache):
             for buf in bufs:
@@ -227,7 +234,7 @@ class _CacheCollector:
         self.cache = None
         return cache_result
 
-    def _no_intersect(self, start: int, end: int, usages: List[Tuple[int, int]]):
+    def _no_intersect(self, start: int, end: int, usages: list[tuple[int, int]]):
         return all(en < start or end < st for st, en in usages)
 
     def _can_substitute(self, buf, with_buf):
@@ -241,7 +248,7 @@ class _CacheCollector:
         )
 
     def _mark_output_buffer(self, output_buffer):
-        self.circular_signatures.add(ref(output_buffer))
+        self.circular_signatures.add(weakref.ref(output_buffer))
 
 
 CacheCollector = _CacheCollector()

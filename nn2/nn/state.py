@@ -2,7 +2,7 @@ import os, json, pathlib, zipfile, pickle
 from tqdm import tqdm
 from typing import Dict, Union, List
 from ..tensor import Tensor
-from ..helpers import dtypes, prod, argsort, DEBUG, Timing, GlobalCounters, CI
+from ..helpers import dtypes, prod, argsort, DEBUG, Timing, GlobalCounters
 from ..shape.view import strides_for_shape
 from ..ops import Device
 
@@ -94,7 +94,7 @@ def load_state_dict(model, state_dict, strict=True):
                 "WARNING: unused weights in state_dict",
                 sorted(list(state_dict.keys() - model_state_dict.keys())),
             )
-        for k, v in (t := tqdm(model_state_dict.items(), disable=CI)):
+        for k, v in (t := tqdm(model_state_dict.items(), disable=False)):
             t.set_description(
                 f"ram used: {GlobalCounters.mem_used/1e9:5.2f} GB, {k:50s}"
             )

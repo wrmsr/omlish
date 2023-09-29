@@ -4,13 +4,8 @@ import math
 import numpy as np
 import unittest
 from ..tensor import Tensor
-from ..helpers import getenv, IMAGE, DEBUG, CI, dtypes
+from ..helpers import getenv, IMAGE, DEBUG, dtypes
 from ..ops import Device
-
-if CI:
-    import warnings
-
-    warnings.filterwarnings("ignore", message="Non-empty compiler output encountered")
 
 FORWARD_ONLY = getenv("FORWARD_ONLY", 0)
 PRINT_TENSORS = getenv("PRINT_TENSORS", 0)
@@ -79,18 +74,17 @@ def helper_test_op(
                 rtol=grad_rtol,
             )
 
-    if not CI:
-        print(
-            "\ntesting %40r   torch/tinygrad fp: %.2f / %.2f ms  bp: %.2f / %.2f ms "
-            % (
-                shps,
-                torch_fp * 1000,
-                tinygrad_fp * 1000,
-                torch_fbp * 1000,
-                tinygrad_fbp * 1000,
-            ),
-            end="",
-        )
+    print(
+        "\ntesting %40r   torch/tinygrad fp: %.2f / %.2f ms  bp: %.2f / %.2f ms "
+        % (
+            shps,
+            torch_fp * 1000,
+            tinygrad_fp * 1000,
+            torch_fbp * 1000,
+            tinygrad_fbp * 1000,
+        ),
+        end="",
+    )
 
 
 def prepare_test_op(a, b, shps, vals, forward_only=False):
@@ -135,12 +129,11 @@ class TestOps(unittest.TestCase):
             tinygrad_fxn(*tst)
         if exact:
             self.assertEqual(str(torch_cm.exception), str(tinygrad_cm.exception))
-        if not CI:
-            print(
-                "\ntesting %40r   torch/tinygrad exception: %s / %s"
-                % (shps, torch_cm.exception, tinygrad_cm.exception),
-                end="",
-            )
+        print(
+            "\ntesting %40r   torch/tinygrad exception: %s / %s"
+            % (shps, torch_cm.exception, tinygrad_cm.exception),
+            end="",
+        )
 
     def test_full_like(self):
         a = Tensor([[1, 2, 3], [4, 5, 6]])
@@ -1813,7 +1806,7 @@ class TestOps(unittest.TestCase):
             )
 
     @unittest.skipIf(
-        Device.DEFAULT == "METAL" and getenv("CI", "") != "", "broken in METAL CI"
+        Device.DEFAULT == "METAL", "broken in METAL CI"
     )
     def test_output_padded_conv_transpose2d(self):
         for output_padding, stride in [((1, 1), (2, 3)), ((2, 1), (3, 2))]:
@@ -2091,7 +2084,7 @@ class TestOps(unittest.TestCase):
                         )
 
     @unittest.skipIf(
-        Device.DEFAULT == "METAL" and getenv("CI", "") != "", "broken in METAL CI"
+        Device.DEFAULT == "METAL", "broken in METAL CI"
     )
     def test_padded_conv2d_p21(self):
         bs, cin, H, W, padding = 4, 3, 3, 3, (2, 1)
@@ -2103,7 +2096,7 @@ class TestOps(unittest.TestCase):
         )
 
     @unittest.skipIf(
-        Device.DEFAULT == "METAL" and getenv("CI", "") != "", "broken in METAL CI"
+        Device.DEFAULT == "METAL", "broken in METAL CI"
     )
     def test_padded_conv2d_p22(self):
         bs, cin, H, W, padding = 4, 3, 3, 3, (2, 2)

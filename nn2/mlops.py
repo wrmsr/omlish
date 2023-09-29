@@ -1,10 +1,15 @@
 import math
-from typing import Tuple, Optional, cast
-from .helpers import argsort, DType
-from .ops import UnaryOps, BinaryOps, TernaryOps, ReduceOps
-from .tensor import Function
+import typing as ta
+
+from .helpers import DType
+from .helpers import argsort
 from .lazy import LazyBuffer
+from .ops import BinaryOps
+from .ops import ReduceOps
+from .ops import TernaryOps
+from .ops import UnaryOps
 from .shape.symbolic import sint
+from .tensor import Function
 
 
 class Contiguous(Function):
@@ -140,7 +145,7 @@ class Add(Function):
 
     def backward(
         self, grad_output: LazyBuffer
-    ) -> Tuple[Optional[LazyBuffer], Optional[LazyBuffer]]:
+    ) -> tuple[ta.Optional[LazyBuffer], ta.Optional[LazyBuffer]]:
         return (
             grad_output if self.needs_input_grad[0] else None,
             grad_output if self.needs_input_grad[1] else None,
@@ -153,7 +158,7 @@ class Sub(Function):
 
     def backward(
         self, grad_output: LazyBuffer
-    ) -> Tuple[Optional[LazyBuffer], Optional[LazyBuffer]]:
+    ) -> tuple[ta.Optional[LazyBuffer], ta.Optional[LazyBuffer]]:
         return (
             grad_output if self.needs_input_grad[0] else None,
             grad_output.e(UnaryOps.NEG) if self.needs_input_grad[1] else None,
@@ -167,7 +172,7 @@ class Mul(Function):
 
     def backward(
         self, grad_output: LazyBuffer
-    ) -> Tuple[Optional[LazyBuffer], Optional[LazyBuffer]]:
+    ) -> tuple[ta.Optional[LazyBuffer], ta.Optional[LazyBuffer]]:
         return (
             self.y.e(BinaryOps.MUL, grad_output) if self.needs_input_grad[0] else None,
             self.x.e(BinaryOps.MUL, grad_output) if self.needs_input_grad[1] else None,
@@ -181,7 +186,7 @@ class Div(Function):
 
     def backward(
         self, grad_output: LazyBuffer
-    ) -> Tuple[Optional[LazyBuffer], Optional[LazyBuffer]]:
+    ) -> tuple[ta.Optional[LazyBuffer], ta.Optional[LazyBuffer]]:
         return (
             grad_output.e(BinaryOps.DIV, self.y) if self.needs_input_grad[0] else None,
             grad_output.e(UnaryOps.NEG)
@@ -202,7 +207,7 @@ class Where(Function):
 
     def backward(
         self, grad_output: LazyBuffer
-    ) -> Tuple[None, Optional[LazyBuffer], Optional[LazyBuffer]]:
+    ) -> tuple[None, ta.Optional[LazyBuffer], ta.Optional[LazyBuffer]]:
         return (
             None,
             self.x.e(TernaryOps.WHERE, grad_output, grad_output.const(0))
@@ -218,7 +223,7 @@ class Where(Function):
 
 
 class Sum(Function):
-    def forward(self, x: LazyBuffer, new_shape: Tuple[int, ...]) -> LazyBuffer:
+    def forward(self, x: LazyBuffer, new_shape: tuple[int, ...]) -> LazyBuffer:
         self.input_shape = x.shape
         return x.r(ReduceOps.SUM, new_shape)
 
@@ -227,7 +232,7 @@ class Sum(Function):
 
 
 class Max(Function):
-    def forward(self, x: LazyBuffer, new_shape: Tuple[int, ...]) -> LazyBuffer:
+    def forward(self, x: LazyBuffer, new_shape: tuple[int, ...]) -> LazyBuffer:
         self.x, self.ret = x, x.r(ReduceOps.MAX, new_shape)
         return self.ret
 
@@ -247,7 +252,7 @@ class Max(Function):
 
 # NOTE: this is sum in reverse
 class Expand(Function):
-    def forward(self, x: LazyBuffer, shape: Tuple[int, ...]) -> LazyBuffer:
+    def forward(self, x: LazyBuffer, shape: tuple[int, ...]) -> LazyBuffer:
         self.input_shape = x.shape
         return x.expand(shape)
 
@@ -256,7 +261,7 @@ class Expand(Function):
 
 
 class Reshape(Function):
-    def forward(self, x: LazyBuffer, shape: Tuple[int, ...]) -> LazyBuffer:
+    def forward(self, x: LazyBuffer, shape: tuple[int, ...]) -> LazyBuffer:
         self.input_shape = x.shape
         return x.reshape(shape)
 
@@ -265,7 +270,7 @@ class Reshape(Function):
 
 
 class Permute(Function):
-    def forward(self, x: LazyBuffer, order: Tuple[int, ...]) -> LazyBuffer:
+    def forward(self, x: LazyBuffer, order: tuple[int, ...]) -> LazyBuffer:
         self.input_order = order
         return x.permute(order)
 
@@ -274,7 +279,7 @@ class Permute(Function):
 
 
 class Pad(Function):
-    def forward(self, x: LazyBuffer, arg: Tuple[Tuple[int, int], ...]) -> LazyBuffer:
+    def forward(self, x: LazyBuffer, arg: tuple[tuple[int, int], ...]) -> LazyBuffer:
         self.narg = tuple([(p[0], s + p[0]) for s, p in zip(x.shape, arg)])
         return x.pad(arg)
 
@@ -283,7 +288,7 @@ class Pad(Function):
 
 
 class Shrink(Function):
-    def forward(self, x: LazyBuffer, arg: Tuple[Tuple[sint, sint], ...]) -> LazyBuffer:
+    def forward(self, x: LazyBuffer, arg: tuple[tuple[sint, sint], ...]) -> LazyBuffer:
         self.narg = tuple([(p[0], s - p[1]) for s, p in zip(x.shape, arg)])
         return x.shrink(arg)
 
@@ -292,11 +297,11 @@ class Shrink(Function):
             isinstance(x[0], int) and isinstance(x[1], int) for x in self.narg
         ), "symbolic shrink does not support backward"
         # need this cast because mypy cannot narrow the type even with assert
-        return grad_output.pad(cast(Tuple[Tuple[int, int], ...], self.narg))
+        return grad_output.pad(ta.cast(tuple[tuple[int, int], ...], self.narg))
 
 
 class Flip(Function):
-    def forward(self, x: LazyBuffer, axis: Tuple[int, ...]) -> LazyBuffer:
+    def forward(self, x: LazyBuffer, axis: tuple[int, ...]) -> LazyBuffer:
         self.arg = tuple([-1 if i in set(axis) else 1 for i in range(len(x.shape))])
         return x.stride(self.arg)
 
