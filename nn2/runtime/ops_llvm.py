@@ -56,7 +56,7 @@ class LLVM:
         LLVM.engine = llvm.create_mcjit_compiler(backing_mod, LLVM.target_machine)
 
 
-class LLVMProgram:
+class LlvmProgram:
     def __init__(self, name: str, prg: str, binary=False):
         self.mod = llvm.parse_assembly(prg)
         self.mod.verify()
@@ -81,9 +81,9 @@ class LLVMProgram:
             return time.monotonic() - st
 
 
-LLVMBuffer = Compiled(
+LlvmBuffer = Compiled(
     RawMallocBuffer,
     LinearizerOptions(supports_float4=False, has_local=False),
     uops_to_llvm_ir,
-    LLVMProgram,
+    LlvmProgram,
 )

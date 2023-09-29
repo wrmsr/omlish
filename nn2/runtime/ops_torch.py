@@ -91,11 +91,11 @@ class RawTorchBuffer(RawBuffer):
         )
 
     @classmethod
-    def fromCPU(cls, x):
+    def fromCpu(cls, x):
         buf = torch.from_numpy(x).requires_grad_(False).to(device)
         return cls(prod(x.shape), type_map[buf.dtype], buf)
 
-    def toCPU(self):
+    def toCpu(self):
         return self._buf.cpu().numpy()
 
 
