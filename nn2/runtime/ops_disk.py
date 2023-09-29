@@ -2,7 +2,7 @@ import mmap
 import os
 import typing as ta
 
-from ..helpers import DType
+from ..dtypes import DType
 from ..helpers import prod
 from ..ops import Interpreted
 from ..ops import MovementOps
