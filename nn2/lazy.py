@@ -8,6 +8,7 @@ import weakref
 
 import numpy as np
 
+from . import ops
 from .devices import Device
 from .dtypes import DType
 from .dtypes import ImageDType
@@ -23,16 +24,7 @@ from .helpers import getenv
 from .helpers import merge_dicts
 from .helpers import partition
 from .helpers import prod
-from . import ops
-from .ops import BinaryOps
-from .ops import BufferOps
 from .ops import LazyOp
-from .ops import LoadOps
-from .ops import MovementOps
-from .ops import OpType
-from .ops import ReduceOps
-from .ops import TernaryOps
-from .ops import UnaryOps
 from .runtime.lib import RawBuffer
 from .runtime.lib import RawBufferMapped
 from .runtime.lib import RawBufferTransfer
@@ -125,7 +117,7 @@ def _ast_binaryops(op: LazyOp, shape: tuple[sint, ...]) -> LazyOp:
     # NOTE: cast the type to remove the Optional
     ast = op.map_buffers(ta.cast(dict[LazyBuffer, ta.Union[LazyOp, LazyBuffer]], real_srcs))
     return (
-        LazyOp(MovementOps.RESHAPE, (ast,), shape)
+        ops.Reshape((ast,), shape)
         if intermediate_shape != shape
         else ast
     )
@@ -142,7 +134,7 @@ def _replace_bufferops(op: LazyOp) -> tuple[LazyOp, list[LazyBuffer]]:
             replacements[x] = ops.Const((), ConstBuffer(float(x.base.op.arg), x.dtype, st))
         else:
             raise NotImplementedError(f"not handled {x}")
-    return (op.src[0] if op.op == MovementOps.RESHAPE else op).map_buffers(
+    return (op.src[0] if isinstance(op, ops.Reshape) else op).map_buffers(
         replacements
     ), base_bufs
 
@@ -355,14 +347,14 @@ class LazyBuffer:
         op = (
             self.op
             if not isinstance(self.op, ops.Contiguous)
-            else LazyOp(UnaryOps.NOOP, self.op.src)
+            else ops.Nop(self.op.src)
         )
         if isinstance(op, ops.LoadOp):
             return [(self.op, self, ())]
 
         if isinstance(self.op, ops.BinaryOp):
             op = _ast_binaryops(op, self.shape)
-        elif isinstance(self.op, ops.ReduceOps):
+        elif isinstance(self.op, ops.ReduceOp):
             op = _ast_reduceops(op)
 
         # HACK: image shape can be wrong, hot cast it back to a normal float
@@ -370,14 +362,13 @@ class LazyBuffer:
             prod(self.shape) != prod(self.dtype.shape)
             or not any(self.shape[x] % 4 == 0 for x in self.st.unit_stride_axes())
         ):
-            if op.op == MovementOps.RESHAPE:
-                op = LazyOp(
-                    MovementOps.RESHAPE,
-                    (LazyOp(UnaryOps.CAST, op.src, (dtypes.float32, False)),),
+            if isinstance(op, ops.Reshape):
+                op = ops.Reshape(
+                    (ops.Cast(op.src, (dtypes.float32, False)),),
                     op.arg,
                 )
             else:
-                op = LazyOp(UnaryOps.CAST, (op,), (dtypes.float32, False))
+                op = ops.Cast((op,), (dtypes.float32, False))
             self.dtype = dtypes.float32
 
         # contiguous can be a copy. must do this after the image hack
@@ -458,8 +449,7 @@ class LazyBuffer:
         return LazyBuffer(
             "CPU",
             ShapeTracker.from_shape(x.shape),
-            LoadOps,  # FIXME
-            None,
+            ops.From(()),
             dtypes.from_np(x.dtype),
             {},
             RawNumpyBuffer.fromCpu(x),
@@ -467,7 +457,7 @@ class LazyBuffer:
 
     def prepare_transfer(self):
         self_casted = (
-            self.e(UnaryOps.CAST, arg=(dtypes.from_np(self.dtype.np), False))
+            self.e(ops.Cast, arg=(dtypes.from_np(self.dtype.np), False))
             if dtypes.from_np(self.dtype.np) != self.dtype
             else self
         )
@@ -498,7 +488,7 @@ class LazyBuffer:
             srcs[0].device,
             srcs[0].shape,
             max([x.dtype for x in srcs])
-            if op != UnaryOps.CAST
+            if op != ops.Cast
             else ta.cast(tuple[DType, bool], arg)[0],
         )
 
@@ -540,7 +530,7 @@ class LazyBuffer:
     # *** reduce ops ***
 
     def _reduce_op(
-        self: LazyBuffer, op: ReduceOps, new_shape: tuple[sint, ...]
+        self: LazyBuffer, op: type[ops.ReduceOp], new_shape: tuple[sint, ...]
     ) -> LazyBuffer:
         if self.shape == tuple(new_shape):
             return self
@@ -553,7 +543,7 @@ class LazyBuffer:
             self.var_vals,
         )
 
-    def r(self: LazyBuffer, op: ReduceOps, new_shape: tuple[sint, ...]) -> LazyBuffer:
+    def r(self: LazyBuffer, op: type[ops.ReduceOp], new_shape: tuple[sint, ...]) -> LazyBuffer:
         if (
             any(not isinstance(s, int) for s in self.shape)
             or prod(self.shape) // prod(new_shape) < 32768
@@ -591,7 +581,7 @@ class LazyBuffer:
     def _movement_op(
         self,
         st: ShapeTracker,
-        op: MovementOps,
+        op: type[ops.MovementOp],
         arg: ta.Union[tuple[sint, ...], tuple[tuple[sint, sint], ...]],
     ) -> LazyBuffer:
         if (
@@ -599,8 +589,8 @@ class LazyBuffer:
             and isinstance(self.op, ops.BinaryOp)
             and not self.realized
             and (
-                op in {MovementOps.SHRINK, MovementOps.STRIDE, MovementOps.PERMUTE}
-                or (op == MovementOps.RESHAPE and self.op.op in UnaryOps)
+                op in {ops.Shrink, ops.Restride, ops.Permute}
+                or (op == ops.Reshape and isinstance(self.op, ops.UnaryOp))
             )
             and not self.children
         ):
@@ -643,36 +633,36 @@ class LazyBuffer:
                 assert (
                     self.var_vals[new_var] == new_val
                 ), f"value conflicts, was {self.var_vals[new_var]}, set to {new_val}"
-        if not self.realized and self.op.op == MovementOps.RESHAPE:
+        if not self.realized and isinstance(self.op, ops.Reshape):
             assert isinstance(self.op.src[0], LazyBuffer)
             self.op.src[0].children.discard(
                 self
             )  # NOTE: this is only required in reshape and when pushing permutes, why??
             return self.op.src[0].reshape(arg)
-        return self._movement_op(self.st.reshape(arg), MovementOps.RESHAPE, arg)
+        return self._movement_op(self.st.reshape(arg), ops.Reshape, arg)
 
     def pad(self: LazyBuffer, arg: tuple[tuple[int, int], ...]) -> LazyBuffer:
         if all(b == 0 and e == 0 for b, e in arg):
             return self
-        if not self.realized and self.op.op == MovementOps.PAD:
+        if not self.realized and isinstance(self.op, ops.Pad):
             return self.op.src[0].pad(
                 tuple(
                     [(b1 + b2, e1 + e2) for (b1, e1), (b2, e2) in zip(self.op.arg, arg)]
                 )
             )
-        return self._movement_op(self.st.pad(arg), MovementOps.PAD, arg)
+        return self._movement_op(self.st.pad(arg), ops.Pad, arg)
 
     def expand(self: LazyBuffer, arg: tuple[sint, ...]) -> LazyBuffer:
         if self.shape == arg:
             return self
-        if not self.realized and self.op.op == MovementOps.EXPAND:
+        if not self.realized and isinstance(self.op, ops.Expand):
             return self.op.src[0].expand(arg)
-        return self._movement_op(self.st.expand(arg), MovementOps.EXPAND, arg)
+        return self._movement_op(self.st.expand(arg), ops.Expand, arg)
 
     def permute(self: LazyBuffer, arg: tuple[int, ...]) -> LazyBuffer:
         if arg == tuple(range(len(self.shape))):
             return self
-        if not self.realized and self.op.op == MovementOps.PERMUTE:
+        if not self.realized and isinstance(self.op, ops.Permute):
             return self.op.src[0].permute(tuple([self.op.arg[i] for i in arg]))
         if not self.realized:
             if PUSH_PERMUTES and isinstance(self.op, ops.ReduceOp):
@@ -681,10 +671,10 @@ class LazyBuffer:
                 src, rop = self.op.src[0], self.op.op
                 src.children.discard(self)
                 del self  # TODO: why doesn't this delete remove it from the children
-                return src.permute(arg).r(ta.cast(ReduceOps, rop), narg)
+                return src.permute(arg).r(rop, narg)
 
             # move permutes before expands (always, this is safe)
-            if self.op.op == MovementOps.EXPAND:
+            if isinstance(self.op, ops.Expand):
                 return (
                     self.op.src[0]
                     .permute(arg)
@@ -694,7 +684,7 @@ class LazyBuffer:
             # move permutes before reshapes if we can
             if (
                 PUSH_PERMUTES
-                and self.op.op == MovementOps.RESHAPE
+                and isinstance(self.op == ops.Reshape)
                 and isinstance(self.op.src[0], LazyBuffer)
             ):
                 if shape_idx_groups := get_contraction(
@@ -708,28 +698,28 @@ class LazyBuffer:
                         .permute(tuple(flatten(shape_idx_groups[i] for i in arg)))
                         .reshape(self.st.permute(arg).shape)
                     )
-        return self._movement_op(self.st.permute(arg), MovementOps.PERMUTE, arg)
+        return self._movement_op(self.st.permute(arg), ops.Permute, arg)
 
     def shrink(self: LazyBuffer, arg: tuple[tuple[sint, sint], ...]) -> LazyBuffer:
         if all(b - a == s for s, (a, b) in zip(self.shape, arg)):
             return self
-        if not self.realized and self.op.op == MovementOps.SHRINK:
+        if not self.realized and isinstance(self.op, ops.Shrink):
             return self.op.src[0].shrink(
                 tuple(
                     [(b1 + b2, b1 + e2) for (b1, _), (b2, e2) in zip(self.op.arg, arg)]
                 )
             )
-        return self._movement_op(self.st.shrink(arg), MovementOps.SHRINK, arg)
+        return self._movement_op(self.st.shrink(arg), ops.Shrink, arg)
 
     def stride(self: LazyBuffer, arg: tuple[int, ...]) -> LazyBuffer:
         if all(a == 1 for a in arg):
             return self
-        if not self.realized and self.op.op == MovementOps.STRIDE:
+        if not self.realized and isinstance(self.op, ops.Restride):
             return self.op.src[0].stride(tuple(map(operator.mul, arg, self.op.arg)))
-        return self._movement_op(self.st.stride(arg), MovementOps.STRIDE, arg)
+        return self._movement_op(self.st.stride(arg), ops.Restride, arg)
 
     def replace_with_movement_ops(
-        self: LazyBuffer, ops_: list[tuple[MovementOps, ta.Any]]
+        self: LazyBuffer, ops_: list[tuple[type[ops.MovementOp], ta.Any]]
     ) -> LazyBuffer:
         y = self
         for op, arg in ops_:
@@ -740,7 +730,7 @@ class LazyBuffer:
 def _push_movement_ops(srcs: tuple[LazyBuffer, ...]) -> tuple[LazyBuffer, ...]:
     new_srcs = []
     for x in srcs:
-        mops: list[tuple[MovementOps, ta.Any]] = []
+        mops: list[tuple[type[ops.MovementOp], ta.Any]] = []
         bx = x
         # backwalk all the movement ops. don't push PAD or EXPAND
         while (
@@ -750,8 +740,8 @@ def _push_movement_ops(srcs: tuple[LazyBuffer, ...]) -> tuple[LazyBuffer, ...]:
             and (SHUFFLE_PAD_OPS or not isinstance(bx.op, ops.Pad))
             and len(bx.children) <= 1
         ):
-            assert isinstance(bx.op.op, MovementOps)
-            mops.append((bx.op.op, bx.op.arg))
+            assert isinstance(bx.op, ops.MovementOp)
+            mops.append((type(bx.op), bx.op.arg))
             assert isinstance(bx.op.src[0], LazyBuffer)
             bx = bx.op.src[0]
         # NOTE: can't push pads past anything where f(0, 0) != 0 or f(0) != 0
@@ -761,8 +751,8 @@ def _push_movement_ops(srcs: tuple[LazyBuffer, ...]) -> tuple[LazyBuffer, ...]:
             and isinstance(bx.op, ops.BinaryOp)
             and len(bx.children) <= 1
             and (
-                all(x[0] is not MovementOps.PAD for x in mops)
-                or all(x.op not in UNSAFE_PAD_OPS for x in bx.op.get_lazyops())
+                all(x[0] is not ops.Pad for x in mops)
+                or all(type(x) not in UNSAFE_PAD_OPS for x in bx.op.get_lazyops())
             )
         ):
             new_srcs.append(bx.op.replace_with_movement_ops(mops[::-1]))
