@@ -64,7 +64,6 @@ from . import funcs  # noqa
 
 
 class Tensor:
-    __slots__ = "lazydata", "requires_grad", "grad", "_ctx"
     __deletable__ = ("_ctx",)
     training: ta.ClassVar[bool] = False
 
