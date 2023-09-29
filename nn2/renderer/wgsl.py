@@ -1,9 +1,13 @@
-from ..helpers import dtypes, DType
-from ..renderer.cstyle import CStyleLanguage
-from ..ops import UnaryOps, BinaryOps, TernaryOps
-from typing import List, Union
+import typing as ta
 import math
-from typing import Tuple
+
+from ..helpers import DType
+from ..helpers import dtypes
+from ..ops import BinaryOps
+from ..ops import TernaryOps
+from ..ops import UnaryOps
+from ..renderer.cstyle import CStyleLanguage
+
 
 type_map = {
     dtypes.float: "f32",
@@ -41,7 +45,7 @@ class WGSLLanguage(CStyleLanguage):
     def render_local(self, name: str, size: int):
         return f"var<workgroup> {name}: array<f32,{size}>;"
 
-    def render_const(self, x: Union[float, int], var_dtype) -> str:
+    def render_const(self, x: ta.Union[float, int], var_dtype) -> str:
         if math.isnan(x):
             val = "nan()"
         elif math.isinf(x):
@@ -57,10 +61,10 @@ class WGSLLanguage(CStyleLanguage):
     def render_kernel(
         self,
         function_name: str,
-        kernel: List[str],
-        bufs: List[Tuple[str, DType]],
-        local_size: List[int],
-        prekernel: List[str],
+        kernel: list[str],
+        bufs: list[tuple[str, DType]],
+        local_size: list[int],
+        prekernel: list[str],
     ) -> str:
         local_size = local_size[::-1] if local_size else [1]
         bind_it = iter(range(len(bufs)))
@@ -80,7 +84,7 @@ class WGSLLanguage(CStyleLanguage):
         return prg
 
     def render_for(
-        self, expr: str, _min: Union[int, str], _max: Union[int, str]
+        self, expr: str, _min: ta.Union[int, str], _max: ta.Union[int, str]
     ) -> str:
         return f"for(var {expr} = {_min}; {expr} <= {_max}; {expr}++) {{"
 

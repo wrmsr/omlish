@@ -1,15 +1,22 @@
+import collections
 import ctypes
-import numpy as np
-from collections import defaultdict, deque
-from typing import TypeVar, Type, Any, Dict, Deque, Tuple
-from ..helpers import DType, dtypes, prod, GlobalCounters, ImageDType
+import typing as ta
 
-_T = TypeVar("_T")
+import numpy as np
+
+from ..helpers import DType
+from ..helpers import GlobalCounters
+from ..helpers import ImageDType
+from ..helpers import dtypes
+from ..helpers import prod
+
+
+_T = ta.TypeVar("_T")
 
 
 class RawBuffer:  # pylint: disable=abstract-method
     def __init__(
-        self, size: int, dtype: DType, buf: Any = None, allocator: Any = None, **kwargs
+        self, size: int, dtype: DType, buf: ta.Any = None, allocator: ta.Any = None, **kwargs
     ):
         self.size: int = size
         self.dtype: DType = dtype
@@ -38,7 +45,7 @@ class RawBuffer:  # pylint: disable=abstract-method
 
     # NOTE: this interface allows for 0 copy
     @classmethod
-    def fromCPU(cls: Type[_T], x: np.ndarray) -> _T:
+    def fromCPU(cls: type[_T], x: np.ndarray) -> _T:
         raise NotImplementedError("must be implemented")
 
     def toCPU(self) -> np.ndarray:
@@ -138,19 +145,19 @@ class RawBufferTransfer(RawBuffer):
 class LRUAllocator:
     def __init__(self, dev_memsz=(4 << 30)):
         self.epoch = 0
-        self.free_space: Dict[Any, int] = defaultdict(lambda: dev_memsz)
-        self.buffer_info: Dict[Any, Tuple[int, DType, str]] = dict()
-        self.cached_buffers: Dict[
-            Tuple[int, ...], Deque[Tuple[Any, int]]
-        ] = defaultdict(
-            deque
+        self.free_space: dict[ta.Any, int] = collections.defaultdict(lambda: dev_memsz)
+        self.buffer_info: dict[ta.Any, tuple[int, DType, str]] = dict()
+        self.cached_buffers: dict[
+            tuple[int, ...], ta.Deque[tuple[ta.Any, int]]
+        ] = collections.defaultdict(
+            collections.deque
         )  # Cached buffer storage, splitted by type and size, newest first.
-        self.aging_order: Dict[Any, Deque[Tuple[Tuple[int, ...], int]]] = defaultdict(
-            deque
+        self.aging_order: dict[ta.Any, ta.Deque[tuple[tuple[int, ...], int]]] = collections.defaultdict(
+            collections.deque
         )  # Keys of cached_buffers, ordered from oldest to newest updates.
 
     def _cache_reuse_buffer(
-        self, rawbufs: Deque[Tuple[Any, int]]
+        self, rawbufs: ta.Deque[tuple[ta.Any, int]]
     ):  # The newest cached buffer is reused.
         GlobalCounters.mem_cached -= self._underlying_buf_memsz(rawbufs[0][0])
         return rawbufs.popleft()[0]
@@ -206,7 +213,7 @@ class LRUAllocator:
     def _underlying_buf_memsz(self, buf):
         return self.buffer_info[buf][0] * self.buffer_info[buf][1].itemsize
 
-    def _cached_bufkey(self, size, dtype, device) -> Tuple[int, ...]:
+    def _cached_bufkey(self, size, dtype, device) -> tuple[int, ...]:
         return (
             (device, size, dtype, dtype.shape)
             if isinstance(dtype, ImageDType)

@@ -1,10 +1,16 @@
-from typing import Final, Dict, Callable, Any, List, Optional
-from llvmlite import ir  # type: ignore
-from ..codegen.linearizer import UOps, UOp
-from ..helpers import dtypes
-from ..ops import Op, UnaryOps, BinaryOps, TernaryOps
+import typing as ta
 
-code_for_op: Final[Dict[Op, Callable]] = {
+from llvmlite import ir  # type: ignore
+
+from ..codegen.linearizer import UOp
+from ..codegen.linearizer import UOps
+from ..helpers import dtypes
+from ..ops import BinaryOps
+from ..ops import Op
+from ..ops import TernaryOps
+from ..ops import UnaryOps
+
+code_for_op: ta.Final[dict[Op, ta.Callable]] = {
     UnaryOps.NEG: lambda builder, x: builder.neg(x)
     if isinstance(x.type, ir.IntType)
     else builder.fneg(x, flags=("fast",)),
@@ -122,7 +128,7 @@ def cast(bb, val, input_type, output_type):
     )
 
 
-def uops_to_llvm_ir(function_name: str, uops: List[UOp]) -> str:
+def uops_to_llvm_ir(function_name: str, uops: list[UOp]) -> str:
     # all llvm stuff goes into a module
     module = ir.Module(name=__file__)
 
@@ -155,10 +161,10 @@ def uops_to_llvm_ir(function_name: str, uops: List[UOp]) -> str:
     func.attributes.add('"no-nans-fp-math"="true"')
 
     bb = [ir.IRBuilder(func.append_basic_block("entry"))]
-    loop_blocks: List = []
-    reduce_phis: List = []
+    loop_blocks: list = []
+    reduce_phis: list = []
     # TODO: newvar probably shouldn't be optional
-    lvars: Dict[Optional[UOp], Any] = {}  # this Any is an llvm type
+    lvars: dict[optional[UOp], ta.Any] = {}  # this Any is an llvm type
 
     for bufname, dtype in buf_to_dtype.items():
         if dtype == dtypes._arg_int32:

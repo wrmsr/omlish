@@ -1,13 +1,26 @@
 from __future__ import annotations
-import pathlib, functools
+
+import pathlib
+import functools
+import typing as ta
+
 import numpy as np
 import pyopencl as cl  # type: ignore
-from typing import Optional, List
-from ..helpers import DEBUG, getenv, prod, ImageDType, OSX, fromimport
-from ..ops import Compiled
-from ..runtime.lib import RawBufferCopyInOut, LRUAllocator, RawBufferTransfer
+
 from ..codegen.kernel import LinearizerOptions
-from ..renderer.cstyle import uops_to_cstyle, CStyleLanguage
+from ..helpers import DEBUG
+from ..helpers import ImageDType
+from ..helpers import OSX
+from ..helpers import fromimport
+from ..helpers import getenv
+from ..helpers import prod
+from ..ops import Compiled
+from ..renderer.cstyle import CStyleLanguage
+from ..renderer.cstyle import uops_to_cstyle
+from ..runtime.lib import LRUAllocator
+from ..runtime.lib import RawBufferCopyInOut
+from ..runtime.lib import RawBufferTransfer
+
 
 OSX_TIMING_RATIO = (
     (125 / 3) if OSX else 1.0
@@ -52,7 +65,7 @@ class CLAllocator(LRUAllocator):
 class _CL:
     def __init__(self):
         cl_platforms = cl.get_platforms()
-        platform_devices: List[List[cl.Device]] = [
+        platform_devices: list[list[cl.Device]] = [
             y
             for y in (
                 [x.get_devices(device_type=cl.device_type.GPU) for x in cl_platforms]
@@ -68,7 +81,7 @@ class _CL:
         self.cl_platform = self.devices[0].platform
 
     def post_init(self, device=None):
-        self.cl_ctxs: List[cl.Context] = (
+        self.cl_ctxs: list[cl.Context] = (
             [cl.Context(devices=[x]) for x in self.devices]
             if device is None
             else [cl.Context(devices=[self.devices[device]])]
@@ -77,7 +90,7 @@ class _CL:
             print(
                 f"using devices: {[ctx.devices[0].hashable_model_and_version_identifier for ctx in self.cl_ctxs]}"
             )
-        self.cl_queue: List[cl.CommandQueue] = [
+        self.cl_queue: list[cl.CommandQueue] = [
             cl.CommandQueue(
                 ctx,
                 device=ctx.devices[0],
@@ -203,7 +216,7 @@ class CLProgram:
     def max_work_group_size():
         return CL.cl_ctxs[0].devices[0].max_work_group_size
 
-    def __call__(self, global_size, local_size, *bufs, wait=False) -> Optional[float]:
+    def __call__(self, global_size, local_size, *bufs, wait=False) -> ta.Optional[float]:
         if not hasattr(self, "argdtypes"):
             self.set_argdtypes(
                 tuple(None if x.__class__ is CLBuffer else np.int32 for x in bufs)

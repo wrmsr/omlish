@@ -1,27 +1,28 @@
-import numpy as np
+import typing as ta
 import operator
-from typing import Callable, Dict, Tuple, Optional
-from ..helpers import dtypes, DType
-from ..ops import (
-    UnaryOps,
-    BinaryOps,
-    MovementOps,
-    ReduceOps,
-    TernaryOps,
-    Op,
-    Interpreted,
-)
+
+import numpy as np
+
+from ..helpers import DType
+from ..helpers import dtypes
+from ..ops import BinaryOps
+from ..ops import Interpreted
+from ..ops import MovementOps
+from ..ops import Op
+from ..ops import ReduceOps
+from ..ops import TernaryOps
+from ..ops import UnaryOps
 from ..runtime.lib import RawBuffer
 
 
 def shape_to_axis(
-    old_shape: Tuple[int, ...], new_shape: Tuple[int, ...]
-) -> Tuple[int, ...]:
+    old_shape: tuple[int, ...], new_shape: tuple[int, ...]
+) -> tuple[int, ...]:
     assert len(old_shape) == len(new_shape), "reduce shapes must have same dimensions"
     return tuple(i for i, (a, b) in enumerate(zip(old_shape, new_shape)) if a != b)
 
 
-base_fxn_for_op: Dict[Op, Callable] = {
+base_fxn_for_op: dict[Op, ta.Callable] = {
     UnaryOps.NEG: operator.neg,
     BinaryOps.ADD: operator.add,
     BinaryOps.SUB: operator.sub,
@@ -87,7 +88,7 @@ def einsum_mulacc(einsum, get_strides, expand):
     return mulacc
 
 
-numpy_fxn_for_op: Dict[Op, Callable] = {
+numpy_fxn_for_op: dict[Op, ta.Callable] = {
     **base_fxn_for_op,
     **{
         UnaryOps.NOOP: lambda x: np.require(x, requirements="C"),
@@ -130,7 +131,7 @@ numpy_fxn_for_op: Dict[Op, Callable] = {
 
 
 class RawNumpyBuffer(RawBuffer):
-    def __init__(self, size: int, dtype: DType, buf: Optional[np.ndarray] = None):
+    def __init__(self, size: int, dtype: DType, buf: ta.Optional[np.ndarray] = None):
         super().__init__(
             size, dtype, buf if buf is not None else np.empty([size], dtype.np)
         )
