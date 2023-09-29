@@ -5,11 +5,11 @@ import unittest
 import numpy as np
 import torch
 
+from ..devices import Device
 from ..dtypes import dtypes
 from ..helpers import DEBUG
 from ..helpers import IMAGE
 from ..helpers import getenv
-from ..ops import Device
 from ..tensor import Tensor
 
 

@@ -9,6 +9,7 @@ import typing as ta
 
 import numpy as np
 
+from .devices import Device
 from .dtypes import DType
 from .dtypes import ImageDType
 from .dtypes import dtypes
@@ -21,7 +22,6 @@ from .helpers import getenv
 from .helpers import make_pair
 from .helpers import prod
 from .lazy import LazyBuffer
-from .ops import Device
 from .ops import LoadOps
 from .shape.symbolic import sint
 

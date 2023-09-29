@@ -4,12 +4,12 @@ import unittest
 import numpy as np
 import torch
 
+from ..devices import Device
 from ..dtypes import dtypes
 from ..gradcheck import gradcheck
 from ..gradcheck import jacobian
 from ..gradcheck import numerical_jacobian
 from ..helpers import temp_file
-from ..tensor import Device
 from ..tensor import Tensor
 
 

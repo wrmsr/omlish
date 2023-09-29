@@ -3,8 +3,8 @@ import unittest
 import numpy as np
 import pytest
 
+from ..devices import Device
 from ..nn.conv import Conv2d
-from ..tensor import Device
 from ..tensor import Tensor
 
 

@@ -1,6 +1,8 @@
 import itertools
 import typing as ta
 
+from omlish import dataclasses as dc
+
 from ..dtypes import DType
 from ..dtypes import ImageDType
 from ..dtypes import dtypes

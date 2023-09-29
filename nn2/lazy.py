@@ -8,6 +8,7 @@ import weakref
 
 import numpy as np
 
+from .devices import Device
 from .dtypes import DType
 from .dtypes import ImageDType
 from .dtypes import dtypes
@@ -23,7 +24,6 @@ from .ops import BinaryOps
 from .ops import BufferOps
 from .ops import Compiled
 from .ops import ConstBuffer
-from .ops import Device
 from .ops import LazyOp
 from .ops import LoadOps
 from .ops import MemBuffer
