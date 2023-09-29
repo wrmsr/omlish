@@ -7,6 +7,7 @@ from ..dtypes import DType
 from ..dtypes import dtypes
 from ..execution import Interpreted
 from ..ops import BinaryOps
+from .. import ops
 from ..ops import MovementOps
 from ..ops import Op
 from ..ops import ReduceOps
@@ -22,7 +23,7 @@ def shape_to_axis(
     return tuple(i for i, (a, b) in enumerate(zip(old_shape, new_shape)) if a != b)
 
 
-base_fxn_for_op: dict[Op, ta.Callable] = {
+base_fxn_for_op: dict[type[ops.LazyOp], ta.Callable] = {
     UnaryOps.NEG: operator.neg,
     BinaryOps.ADD: operator.add,
     BinaryOps.SUB: operator.sub,
@@ -98,7 +99,7 @@ numpy_fxn_for_op: dict[Op, ta.Callable] = {
         UnaryOps.CAST: lambda x, y: x.view(y[0].np)
         if y[1]
         else x.astype(y[0].np, copy=False),
-        BinaryOps.MAX: np.maximum,
+        BinaryOps.MAX2: np.maximum,
         BinaryOps.CMPLT: lambda x, y: (x < y).astype(
             np.promote_types(x.dtype, y.dtype)
         ),

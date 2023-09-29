@@ -2,6 +2,7 @@ import collections
 import math
 import typing as ta
 
+from .. import ops
 from ..codegen.linearizer import UOp
 from ..codegen.linearizer import UOps
 from ..dtypes import DType
@@ -9,9 +10,6 @@ from ..dtypes import ImageDType
 from ..dtypes import dtypes
 from ..helpers import prod
 from ..helpers import strip_parens
-from ..ops import BinaryOps
-from ..ops import TernaryOps
-from ..ops import UnaryOps
 
 
 class CStyleLanguage(ta.NamedTuple):
@@ -35,20 +33,20 @@ class CStyleLanguage(ta.NamedTuple):
     uses_ptr_arithmetic: bool = False
     launch_bounds: bool = False
     code_for_op: dict = {
-        UnaryOps.NEG: lambda x: f"(-{x})",
-        UnaryOps.EXP2: lambda x: f"exp2({x})",
-        UnaryOps.LOG2: lambda x: f"log2({x})",
-        UnaryOps.SIN: lambda x: f"sin({x})",
-        UnaryOps.SQRT: lambda x: f"sqrt({x})",
-        BinaryOps.ADD: lambda a, b: f"({a}+{b})",
-        BinaryOps.SUB: lambda a, b: f"({a}-{b})",
-        BinaryOps.MUL: lambda a, b: f"({a}*{b})",
-        BinaryOps.DIV: lambda a, b: f"({a}/{b})",
-        BinaryOps.MAX: lambda a, b: f"max({a},{b})",
-        BinaryOps.MOD: lambda a, b: f"({a}%{b})",
-        BinaryOps.CMPLT: lambda a, b: f"({a}<{b})",
-        TernaryOps.MULACC: lambda a, b, c: f"(({a}*{b})+{c})",
-        TernaryOps.WHERE: lambda a, b, c: f"({a}!=0?{b}:{c})",
+        ops.Neg: lambda x: f"(-{x})",
+        ops.Exp2: lambda x: f"exp2({x})",
+        ops.Log2: lambda x: f"log2({x})",
+        ops.Sin: lambda x: f"sin({x})",
+        ops.Sqrt: lambda x: f"sqrt({x})",
+        ops.Add: lambda a, b: f"({a}+{b})",
+        ops.Sub: lambda a, b: f"({a}-{b})",
+        ops.Mul: lambda a, b: f"({a}*{b})",
+        ops.Div: lambda a, b: f"({a}/{b})",
+        ops.Max2: lambda a, b: f"max({a},{b})",
+        ops.Mod: lambda a, b: f"({a}%{b})",
+        ops.CmpLt: lambda a, b: f"({a}<{b})",
+        ops.MulAcc: lambda a, b, c: f"(({a}*{b})+{c})",
+        ops.Where: lambda a, b, c: f"({a}!=0?{b}:{c})",
     }
 
     # returns a str expression of the casted xs with the given type
@@ -257,7 +255,7 @@ def uops_to_cstyle(lang: CStyleLanguage, function_name: str, uops: list[UOp]) ->
             if (
                 vin[0].uop == UOps.ALU
                 and vin[0].arg == args
-                and args in {BinaryOps.ADD, BinaryOps.SUB, BinaryOps.MUL}
+                and args in {ops.Add, ops.Sub, ops.Mul}
             ):
                 val = lang.code_for_op[args](
                     strip_parens(r[vin[0]]), *[r[x] for x in vin[1:]]
