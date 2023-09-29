@@ -1,37 +1,40 @@
-from typing import NamedTuple, Optional, List, Tuple, cast, Dict
 import itertools
-from ..ops import (
-    LazyOp,
-    FlopCounter,
-    get_lazyop_info,
-    ReduceOps,
-    MemBuffer,
-    BufferOps,
-)
-from ..helpers import dedup, dtypes, colored, ImageDType, DType, all_int
+import typing as ta
+
+from ..helpers import DType
+from ..helpers import ImageDType
+from ..helpers import all_int
+from ..helpers import colored
+from ..helpers import dedup
+from ..helpers import dtypes
+from ..ops import BufferOps
+from ..ops import FlopCounter
+from ..ops import LazyOp
+from ..ops import MemBuffer
+from ..ops import ReduceOps
+from ..ops import get_lazyop_info
 from ..shape.shapetracker import ShapeTracker
 from ..shape.symbolic import sint
 from ..shape.view import strides_for_shape
-from dataclasses import dataclass
 
 
-@dataclass(frozen=True)
+@dc.dataclass(frozen=True)
 class TensorCore:
     device: str
-    dims: List[int]
+    dims: list[int]
     dtype_in: DType
     dtype_out: DType
-    threads: List[int]
-    thread_local_aliases: List[List[List[int]]]
-    thread_local_sizes: List[int]
-    arch: Optional[str] = None
+    threads: list[int]
+    thread_local_aliases: list[list[list[int]]]
+    thread_local_sizes: list[int]
+    arch: ta.Optional[str] = None
 
     def __str__(self):
         return f"tensor_core<{self.device}, {self.dims}, {self.dtype_in}, {self.dtype_out}>"
 
 
 # TODO(TC): doesn't belong here!!!
-tensor_cores: Dict[str, List[TensorCore]] = {
+tensor_cores: dict[str, list[TensorCore]] = {
     "METAL": [
         TensorCore(
             device="METAL",
@@ -80,7 +83,7 @@ tensor_cores: Dict[str, List[TensorCore]] = {
 }
 
 
-class LocalBuffer(NamedTuple):
+class LocalBuffer(ta.NamedTuple):
     name: str
     size: int
     dtype: DType = dtypes.float32
@@ -90,7 +93,7 @@ class LocalBuffer(NamedTuple):
         return f"localbuffer<{self.name}[{self.size}]>"
 
 
-class LinearizerOptions(NamedTuple):
+class LinearizerOptions(ta.NamedTuple):
     device: str = ""
     # TODO: make this generic with a list of supported types
     supports_float4: bool = True
@@ -98,13 +101,13 @@ class LinearizerOptions(NamedTuple):
     has_local: bool = True
     has_shared: bool = True
     # NOTE: these two should be in z,y,x(reversed) order for cstyle backends, they are flipped when kernel is rendered
-    global_max: Optional[List[int]] = None
-    local_max: Optional[List[int]] = None
+    global_max: ta.Optional[list[int]] = None
+    local_max: ta.Optional[list[int]] = None
 
 
 class Kernel:
     def __init__(
-        self, ast: LazyOp, opts: Optional[LinearizerOptions] = None, var_vals=None
+        self, ast: LazyOp, opts: ta.Optional[LinearizerOptions] = None, var_vals=None
     ):
         self.opts = opts if opts else LinearizerOptions()
         self.ast = ast
@@ -116,7 +119,7 @@ class Kernel:
             return  # already processed
 
         # fetch lazyop info
-        self.info: FlopCounter = get_lazyop_info(cast(LazyOp, self.ast))
+        self.info: FlopCounter = get_lazyop_info(ta.cast(LazyOp, self.ast))
 
         # there's only allowed to be one reduceop
         reduceops = [x for x in self.ast.get_lazyops() if x.op in ReduceOps]
@@ -127,7 +130,7 @@ class Kernel:
         self.bufs = [
             MemBuffer(0, self.info.dtype, ShapeTracker.from_shape(self.info.shape))
         ] + dedup([x.arg for x in self.ast.get_lazyops() if x.op in BufferOps])
-        self.sts: List[ShapeTracker] = [x.st for x in self.bufs]
+        self.sts: list[ShapeTracker] = [x.st for x in self.bufs]
 
         self.mem_estimate: int = sum(x.dtype.itemsize * x.st.size() for x in self.bufs)
 
@@ -142,16 +145,16 @@ class Kernel:
         )
 
         # parameters
-        self.group_for_reduce: List[int] = []
+        self.group_for_reduce: list[int] = []
         self.upcasted: int = 0
         self.local_dims: int = 0
-        self.local_alias: Dict[int, LocalBuffer] = {}
+        self.local_alias: dict[int, LocalBuffer] = {}
         self.use_tensor_cores: bool = False
         self.exclude_local_upcast: int = 0
         self.reverse_upcast_dir: bool = False
 
-        self.global_size: Optional[List[int]] = None
-        self.local_size: Optional[List[int]] = None
+        self.global_size: ta.Optional[list[int]] = None
+        self.local_size: ta.Optional[list[int]] = None
 
     def has_variable_shape(self) -> bool:
         for b in self.bufs:
@@ -214,7 +217,7 @@ class Kernel:
             )
         ]
 
-    def get_upcast_dim(self, i) -> List[int]:
+    def get_upcast_dim(self, i) -> list[int]:
         should_upcast = self.opts.supports_float4 and (
             self.bufs[i].dtype in [dtypes.float32, dtypes.float16]
             or isinstance(self.bufs[i].dtype, ImageDType)
@@ -238,15 +241,15 @@ class Kernel:
         ].index(True)
 
     @property
-    def output_shape(self) -> Tuple[sint, ...]:
+    def output_shape(self) -> tuple[sint, ...]:
         return self.sts[0].shape
 
     @property
-    def full_shape(self) -> Tuple[sint, ...]:
+    def full_shape(self) -> tuple[sint, ...]:
         return self.sts[self.full_buf_index].shape
 
     @property
-    def full_unupcasted_shape(self) -> Tuple[sint, ...]:
+    def full_unupcasted_shape(self) -> tuple[sint, ...]:
         return self.full_shape[: self.shape_len - self.upcasted]
 
     @property
@@ -254,7 +257,7 @@ class Kernel:
         return len(self.sts[0].shape)
 
     @property
-    def upcast_in_mid_reduce_axes(self) -> List[int]:
+    def upcast_in_mid_reduce_axes(self) -> list[int]:
         return [
             j
             for j in range(
@@ -277,7 +280,7 @@ class Kernel:
     #  *** self.upcasted
     # purple -- reduce upcasted
     # yellow -- normal upcasted dimensions
-    def colors(self) -> List[str]:
+    def colors(self) -> list[str]:
         # up to first_reduce, they are all global (blue)
         colors = ["blue"] * self.global_dims
         # except the local_dims, these are non-reduce locals (cyan)

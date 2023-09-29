@@ -1,8 +1,21 @@
-from typing import Tuple, List, cast, Optional
-import itertools, math, os
-from ..helpers import DEBUG, prod, getenv, ImageDType, dtypes
-from ..ops import ReduceOps, BinaryOps, UnaryOps, LazyOp, BufferOps
-from ..codegen.kernel import Kernel, LocalBuffer
+import typing as ta
+
+import itertools
+import math
+import os
+
+from ..codegen.kernel import Kernel
+from ..codegen.kernel import LocalBuffer
+from ..helpers import DEBUG
+from ..helpers import ImageDType
+from ..helpers import dtypes
+from ..helpers import getenv
+from ..helpers import prod
+from ..ops import BinaryOps
+from ..ops import BufferOps
+from ..ops import LazyOp
+from ..ops import ReduceOps
+from ..ops import UnaryOps
 from ..shape.shapetracker import ShapeTracker
 from ..shape.view import View
 
@@ -103,7 +116,7 @@ class OptimizedKernel(Kernel):
                         (
                             strides[j][i] != 0
                             and rets[j][-1][1]
-                            == shapes[j][i] * cast(int, strides[j][i])
+                            == shapes[j][i] * ta.cast(int, strides[j][i])
                         )
                         or (strides[j][i] == 0 and rets[j][-1][1] == 0)
                     )
@@ -121,7 +134,7 @@ class OptimizedKernel(Kernel):
             self.sts[i] = self.sts[i].reshape(tuple([y[0] for y in x]))
 
     # ******************** GPU simplifiers ********************
-    def _limit_size(self, x: Tuple[int], max_size: List) -> Tuple[int, ...]:
+    def _limit_size(self, x: tuple[int], max_size: list) -> tuple[int, ...]:
         new_shape, dims = list(x), len(x)
         for i in range(dims):
             next_idx = (i + 1) % dims
@@ -134,7 +147,7 @@ class OptimizedKernel(Kernel):
                     new_shape[next_idx] = new_shape[next_idx] * 2
         return tuple(new_shape)
 
-    def limit_dims_to_max(self, global_max: List[int], local_max: List[int]):
+    def limit_dims_to_max(self, global_max: list[int], local_max: list[int]):
         # Check the global allocation limit, current the global_size will be flipped during codegen
         # and then padded right with 1s if its length < 3 which makes this part a bit awkward to write
         global_dims = self.first_reduce - self.local_dims
@@ -268,14 +281,14 @@ class OptimizedKernel(Kernel):
             and self.reduceop.src[0].src[0].src[0].op == BufferOps.MEM
             and self.reduceop.src[0].src[0].src[1].op == BufferOps.MEM
             and self.opts.has_local
-            and cast(LazyOp, self.reduceop.src[0].src[0].src[0]).arg.dtype
+            and ta.cast(LazyOp, self.reduceop.src[0].src[0].src[0]).arg.dtype
             == dtypes.half
-            and cast(LazyOp, self.reduceop.src[0].src[0].src[1]).arg.dtype
+            and ta.cast(LazyOp, self.reduceop.src[0].src[0].src[1]).arg.dtype
             == dtypes.half
         ):
             # HIP tensor cores are 16x16x16
-            buf0 = self.bufs.index(cast(LazyOp, self.reduceop.src[0].src[0].src[0]).arg)
-            buf1 = self.bufs.index(cast(LazyOp, self.reduceop.src[0].src[0].src[1]).arg)
+            buf0 = self.bufs.index(ta.cast(LazyOp, self.reduceop.src[0].src[0].src[0]).arg)
+            buf1 = self.bufs.index(ta.cast(LazyOp, self.reduceop.src[0].src[0].src[1]).arg)
             buf0_strides = self.sts[buf0].real_strides()
             buf1_strides = self.sts[buf1].real_strides()
             axis_buf0 = [
@@ -368,8 +381,8 @@ class OptimizedKernel(Kernel):
             and self.opts.has_local
         ):
             # METAL tensor cores are 8x8x8, with 2 elements per thread in the 32 thread warp
-            buf0 = self.bufs.index(cast(LazyOp, self.reduceop.src[0].src[0]).arg)
-            buf1 = self.bufs.index(cast(LazyOp, self.reduceop.src[0].src[1]).arg)
+            buf0 = self.bufs.index(ta.cast(LazyOp, self.reduceop.src[0].src[0]).arg)
+            buf1 = self.bufs.index(ta.cast(LazyOp, self.reduceop.src[0].src[1]).arg)
             buf0_strides = self.sts[buf0].real_strides()
             buf1_strides = self.sts[buf1].real_strides()
             axis_buf0 = [
@@ -671,10 +684,10 @@ class OptimizedKernel(Kernel):
                 )
                 for axis in range(len(self.full_shape[: self.first_reduce]))
             ]
-            to_local: List[Tuple[int, int]] = []
+            to_local: list[tuple[int, int]] = []
             for _, axis in sorted(local_axis_ranking, key=lambda x: (-x[0], -x[1])):
                 local_size = prod(sz for _, sz in to_local)
-                local_sz: Optional[int] = next(
+                local_sz: ta.Optional[int] = next(
                     (
                         x
                         for x in ([32] * (axis == 0) + [16, 8, 4, 3, 2])

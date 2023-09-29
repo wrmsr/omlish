@@ -1,18 +1,16 @@
-# sorted in order of increasing complexity
-from typing import List
 from ..helpers import dedup
 from ..tensor import Tensor
 
 
 class Optimizer:
-    def __init__(self, params: List[Tensor], lr: float):
+    def __init__(self, params: list[Tensor], lr: float):
         # if it's None, but being put into an optimizer, set it to True
         for x in params:
             if x.requires_grad is None:
                 x.requires_grad = True
 
-        self.params: List[Tensor] = dedup([x for x in params if x.requires_grad])
-        self.buffers: List[Tensor] = dedup(
+        self.params: list[Tensor] = dedup([x for x in params if x.requires_grad])
+        self.buffers: list[Tensor] = dedup(
             [x for x in params if not x.requires_grad]
         )  # buffers are still realized
         self.lr = Tensor([lr], requires_grad=False).contiguous()
@@ -35,7 +33,7 @@ class Optimizer:
 class SGD(Optimizer):
     def __init__(
         self,
-        params: List[Tensor],
+        params: list[Tensor],
         lr=0.001,
         momentum=0,
         weight_decay=0.0,
@@ -67,18 +65,18 @@ class SGD(Optimizer):
 
 
 # LAMB is essentially just the trust ratio part of LARS applied to Adam/W so if we just set the trust ratio to 1.0 its just Adam/W.
-def AdamW(params: List[Tensor], lr=0.001, b1=0.9, b2=0.999, eps=1e-8, wd=0.01):
+def AdamW(params: list[Tensor], lr=0.001, b1=0.9, b2=0.999, eps=1e-8, wd=0.01):
     return LAMB(params, lr, b1, b2, eps, wd, adam=True)
 
 
-def Adam(params: List[Tensor], lr=0.001, b1=0.9, b2=0.999, eps=1e-8):
+def Adam(params: list[Tensor], lr=0.001, b1=0.9, b2=0.999, eps=1e-8):
     return LAMB(params, lr, b1, b2, eps, 0.0, adam=True)
 
 
 class LAMB(Optimizer):
     def __init__(
         self,
-        params: List[Tensor],
+        params: list[Tensor],
         lr=0.001,
         b1=0.9,
         b2=0.999,

@@ -1,10 +1,22 @@
-import os, json, pathlib, zipfile, pickle
-from tqdm import tqdm
-from typing import Dict, Union, List
-from ..tensor import Tensor
-from ..helpers import dtypes, prod, argsort, DEBUG, Timing, GlobalCounters
-from ..shape.view import strides_for_shape
+import os
+import json
+import pathlib
+import zipfile
+import pickle
+import typing as ta
+
+import tqdm
+
+from ..helpers import DEBUG
+from ..helpers import GlobalCounters
+from ..helpers import Timing
+from ..helpers import argsort
+from ..helpers import dtypes
+from ..helpers import prod
 from ..ops import Device
+from ..shape.view import strides_for_shape
+from ..tensor import Tensor
+
 
 safe_dtypes = {
     "F16": dtypes.float16,
@@ -17,7 +29,7 @@ safe_dtypes = {
 inverse_safe_dtypes = {v: k for k, v in safe_dtypes.items()}
 
 
-def safe_load(fn: Union[Tensor, str]) -> Dict[str, Tensor]:
+def safe_load(fn: ta.Union[Tensor, str]) -> dict[str, Tensor]:
     t = (
         fn
         if isinstance(fn, Tensor)
@@ -34,7 +46,7 @@ def safe_load(fn: Union[Tensor, str]) -> Dict[str, Tensor]:
     }
 
 
-def safe_save(tensors: Dict[str, Tensor], fn: str):
+def safe_save(tensors: dict[str, Tensor], fn: str):
     metadata, offset = {}, 0
     for k, v in tensors.items():
         metadata[k] = {
@@ -60,7 +72,7 @@ def safe_save(tensors: Dict[str, Tensor], fn: str):
 from collections import OrderedDict
 
 
-def get_state_dict(obj, prefix: str = "", tensor_type=Tensor) -> Dict[str, Tensor]:
+def get_state_dict(obj, prefix: str = "", tensor_type=Tensor) -> dict[str, Tensor]:
     if isinstance(obj, tensor_type):
         return {prefix.strip("."): obj}
     if hasattr(obj, "_asdict"):
@@ -79,7 +91,7 @@ def get_state_dict(obj, prefix: str = "", tensor_type=Tensor) -> Dict[str, Tenso
     return state_dict
 
 
-def get_parameters(obj) -> List[Tensor]:
+def get_parameters(obj) -> list[Tensor]:
     return list(get_state_dict(obj).values())
 
 
@@ -94,7 +106,7 @@ def load_state_dict(model, state_dict, strict=True):
                 "WARNING: unused weights in state_dict",
                 sorted(list(state_dict.keys() - model_state_dict.keys())),
             )
-        for k, v in (t := tqdm(model_state_dict.items(), disable=False)):
+        for k, v in (t := tqdm.tqdm(model_state_dict.items(), disable=False)):
             t.set_description(
                 f"ram used: {GlobalCounters.mem_used/1e9:5.2f} GB, {k:50s}"
             )
@@ -111,8 +123,8 @@ def load_state_dict(model, state_dict, strict=True):
 def torch_load(fn: str):
     t = Tensor.empty(os.stat(fn).st_size, dtype=dtypes.uint8, device=f"disk:{fn}")
 
-    offsets: Dict[str, int] = {}
-    lens: Dict[str, int] = {}
+    offsets: dict[str, int] = {}
+    lens: dict[str, int] = {}
 
     def _rebuild_tensor_v2(
         storage,

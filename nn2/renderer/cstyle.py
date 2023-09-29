@@ -1,12 +1,20 @@
-from typing import Dict, List, Optional, NamedTuple, Tuple, Union, DefaultDict
+import collections
 import math
-from collections import defaultdict
-from ..codegen.linearizer import UOps, UOp
-from ..ops import UnaryOps, BinaryOps, TernaryOps
-from ..helpers import ImageDType, dtypes, prod, DType, strip_parens
+import typing as ta
+
+from ..codegen.linearizer import UOp
+from ..codegen.linearizer import UOps
+from ..helpers import DType
+from ..helpers import ImageDType
+from ..helpers import dtypes
+from ..helpers import prod
+from ..helpers import strip_parens
+from ..ops import BinaryOps
+from ..ops import TernaryOps
+from ..ops import UnaryOps
 
 
-class CStyleLanguage(NamedTuple):
+class CStyleLanguage(ta.NamedTuple):
     size_prefix: str = "int"
     generic_var_prefix: str = ""
     kernel_prefix: str = ""
@@ -15,18 +23,18 @@ class CStyleLanguage(NamedTuple):
     smem_prefix: str = ""
     arg_int_prefix: str = ""
     barrier: str = ""
-    gid: List[str] = []
-    lid: List[str] = []
-    global_max: List[int] = []
-    local_max: List[int] = []
-    extra_args: List[str] = []
-    float4: Optional[str] = None
-    half_prekernel: Optional[str] = None
+    gid: list[str] = []
+    lid: list[str] = []
+    global_max: list[int] = []
+    local_max: list[int] = []
+    extra_args: list[str] = []
+    float4: ta.Optional[str] = None
+    half_prekernel: ta.Optional[str] = None
     uses_vload: bool = False
     external_local_bufs: bool = False
     uses_ptr_arithmetic: bool = False
     launch_bounds: bool = False
-    code_for_op: Dict = {
+    code_for_op: dict = {
         UnaryOps.NEG: lambda x: f"(-{x})",
         UnaryOps.EXP2: lambda x: f"exp2({x})",
         UnaryOps.LOG2: lambda x: f"log2({x})",
@@ -44,7 +52,7 @@ class CStyleLanguage(NamedTuple):
     }
 
     # returns a str expression of the casted xs with the given type
-    def render_cast(self, x: List[str], var_dtype: DType) -> str:
+    def render_cast(self, x: list[str], var_dtype: DType) -> str:
         assert len(x) == var_dtype.sz, f"cast is wrong size {len(x)} != {var_dtype.sz}"
         assert self.float4 is not None, "cast is not supported on this platform"
         if var_dtype == dtypes._float4:
@@ -56,7 +64,7 @@ class CStyleLanguage(NamedTuple):
         raise NotImplementedError(f"no cast for {var_dtype}")
 
     # returns a str expression of the const with the given type
-    def render_const(self, x: Union[float, int], var_dtype) -> str:
+    def render_const(self, x: ta.Union[float, int], var_dtype) -> str:
         if math.isnan(x):
             val = "NAN"
         elif math.isinf(x):
@@ -93,7 +101,7 @@ class CStyleLanguage(NamedTuple):
         return self.smem_prefix + f"float {name}[{size}];"
 
     def render_for(
-        self, expr: str, _min: Union[int, str], _max: Union[int, str]
+        self, expr: str, _min: ta.Union[int, str], _max: ta.Union[int, str]
     ) -> str:
         return f"for (int {expr} = {_min}; {expr} <= {_max}; ++{expr}) {{"
 
@@ -103,10 +111,10 @@ class CStyleLanguage(NamedTuple):
     def render_kernel(
         self,
         function_name: str,
-        kernel: List[str],
-        bufs: List[Tuple[str, DType]],
-        local_size: List[int],
-        prekernel: List[str],
+        kernel: list[str],
+        bufs: list[tuple[str, DType]],
+        local_size: list[int],
+        prekernel: list[str],
     ) -> str:
         tmp = (
             "const sampler_t smp = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP | CLK_FILTER_NEAREST;\n"
@@ -164,8 +172,8 @@ class CStyleLanguage(NamedTuple):
         )
 
 
-def uops_to_cstyle(lang: CStyleLanguage, function_name: str, uops: List[UOp]) -> str:
-    local_size: List[int] = []
+def uops_to_cstyle(lang: CStyleLanguage, function_name: str, uops: list[UOp]) -> str:
+    local_size: list[int] = []
     kernel, prekernel, bufs = [], [], []
     # pend_close = None
     depth = 1
@@ -173,8 +181,8 @@ def uops_to_cstyle(lang: CStyleLanguage, function_name: str, uops: List[UOp]) ->
     def kk(s):
         kernel.append("  " * depth + s)
 
-    c: DefaultDict[str, int] = defaultdict(int)
-    r: Dict[UOp, str] = {}
+    c: ta.DefaultDict[str, int] = collections.defaultdict(int)
+    r: dict[UOp, str] = {}
 
     def ssa(u, prefix="t"):
         nonlocal c, r
@@ -182,7 +190,7 @@ def uops_to_cstyle(lang: CStyleLanguage, function_name: str, uops: List[UOp]) ->
         r[u] = f"{prefix}{c[prefix]-1}"
         return r[u]
 
-    child_count: DefaultDict[UOp, int] = defaultdict(int)
+    child_count: ta.DefaultDict[UOp, int] = collections.defaultdict(int)
     for ru in uops:
         for v in ru.vin:
             child_count[v] += 1
