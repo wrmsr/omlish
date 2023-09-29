@@ -1,18 +1,25 @@
-# ShapeTracker allows movement operations to a buffer that don't require a copy to be made.
 from __future__ import annotations
+
 import functools
-from dataclasses import dataclass
-from typing import Tuple, List, Optional, cast
-from ..ops import MovementOps
+import typing as ta
+
+from omlish import dataclasses as dc
+
 from ..helpers import prod, DEBUG
-from ..shape.symbolic import Variable, MulNode, NumNode, Node, SumNode, sint
+from ..ops import MovementOps
+from ..shape.symbolic import MulNode
+from ..shape.symbolic import Node
+from ..shape.symbolic import NumNode
+from ..shape.symbolic import SumNode
+from ..shape.symbolic import Variable
+from ..shape.symbolic import sint
 from ..shape.view import View
 
 
 @functools.lru_cache(maxsize=None)
 def to_shape_strides(
-    shape: Tuple[int, ...], strides: Tuple[int, ...]
-) -> Tuple[Tuple[int, int], ...]:
+    shape: tuple[int, ...], strides: tuple[int, ...]
+) -> tuple[tuple[int, int], ...]:
     assert len(shape) == len(strides)
     ret = [(shape[0], strides[0])] if shape else []
     for i in range(1, len(shape)):
@@ -41,7 +48,7 @@ def expr_node_mask(view: View, idx, valid=None) -> Node:
 def expr_node(view: View, idx=None) -> Node:
     if idx is None:
         idx = Variable("idx", 0, prod(view.shape) - 1)
-    ret: List[Node] = (
+    ret: list[Node] = (
         [Variable.num(view.offset) if isinstance(view.offset, int) else view.offset]
         if view.offset
         else []
@@ -69,7 +76,7 @@ def expr_idxs(view: View, idxs) -> Node:
 
 
 @functools.lru_cache(maxsize=None)
-def merge_views(vm2: View, vm1: View) -> Optional[View]:
+def merge_views(vm2: View, vm1: View) -> ta.Optional[View]:
     if vm2.mask:
         return None  # this isn't supported yet
     mst = ShapeTracker((vm2, vm1))
@@ -77,12 +84,12 @@ def merge_views(vm2: View, vm1: View) -> Optional[View]:
     if None in strides:
         return None
     return View.create(
-        vm1.shape, cast(Tuple[sint, ...], strides), mst.real_offset(), vm1.mask
+        vm1.shape, ta.cast(tuple[sint, ...], strides), mst.real_offset(), vm1.mask
     )
 
 
 @functools.lru_cache(maxsize=None)
-def idxs_to_idx(shape: Tuple[int, ...], idxs) -> Node:
+def idxs_to_idx(shape: tuple[int, ...], idxs) -> Node:
     assert len(idxs) == len(shape), "need an idx for all dimensions"
     acc = 1
     ret = []
@@ -92,9 +99,9 @@ def idxs_to_idx(shape: Tuple[int, ...], idxs) -> Node:
     return Variable.sum(ret)
 
 
-@dataclass(frozen=True)
+@dc.dataclass(frozen=True)
 class ShapeTracker:
-    views: Tuple[View, ...]
+    views: tuple[View, ...]
 
     def __post_init__(self):
         assert isinstance(self.views, tuple) and all(
@@ -102,7 +109,7 @@ class ShapeTracker:
         ), "ShapeTracker must be created with a tuple of Views"
 
     @staticmethod
-    def from_shape(shape: Tuple[sint, ...]):
+    def from_shape(shape: tuple[sint, ...]):
         return ShapeTracker((View.create(shape),))
 
     @property
@@ -110,15 +117,15 @@ class ShapeTracker:
         return len(self.views) == 1 and self.views[0].contiguous
 
     @property
-    def shape(self) -> Tuple[sint, ...]:
+    def shape(self) -> tuple[sint, ...]:
         return self.views[-1].shape
 
     # this is the real size (ish)
     def size(self):
         return self.views[-1].size()
 
-    def to_movement_ops(self) -> List[Tuple[MovementOps, Tuple]]:
-        to_apply: List[Tuple[MovementOps, Tuple]] = []
+    def to_movement_ops(self) -> list[tuple[MovementOps, tuple]]:
+        to_apply: list[tuple[MovementOps, tuple]] = []
         for v in self.views:
             real_shape = tuple(y - x for x, y in v.mask) if v.mask else v.shape
             real_offset = v.offset + (
@@ -168,12 +175,12 @@ class ShapeTracker:
         return real_offset.b if isinstance(real_offset, NumNode) else real_offset
 
     # NOTE: if a stride is not always valid, it will be None
-    def real_strides(self, ignore_valid=False) -> Tuple[Optional[sint], ...]:
+    def real_strides(self, ignore_valid=False) -> tuple[ta.Optional[sint], ...]:
         if len(self.views) == 1 and self.views[-1].mask is None:
             return self.views[-1].strides
         idxs = [Variable(f"idx{i}", 0, s - 1) for i, s in enumerate(self.shape)]
         idx, valid = self.expr_idxs(idxs)
-        ret: List[Optional[sint]] = [None] * len(self.views[-1].shape)
+        ret: list[ta.Optional[sint]] = [None] * len(self.views[-1].shape)
         for this_dim in idx.nodes if isinstance(idx, SumNode) else [idx]:
             if (
                 isinstance(this_dim, MulNode)
@@ -191,10 +198,10 @@ class ShapeTracker:
                 ret[i] = 0
         return tuple(ret)
 
-    def unit_stride_axes(self, ignore_valid=False) -> List[int]:
+    def unit_stride_axes(self, ignore_valid=False) -> list[int]:
         return [i for i, st in enumerate(self.real_strides(ignore_valid)) if st == 1]
 
-    def _expr_idx(self, idx, valid) -> Tuple[Node, Node]:
+    def _expr_idx(self, idx, valid) -> tuple[Node, Node]:
         for v in reversed(self.views[0:-1]):
             if valid.max == 0:
                 return Variable.num(-1), valid
@@ -235,22 +242,22 @@ class ShapeTracker:
 
     # *** under this line are the movement ops ***
 
-    def pad(self, arg: Tuple[Tuple[int, int], ...]) -> ShapeTracker:
+    def pad(self, arg: tuple[tuple[int, int], ...]) -> ShapeTracker:
         return ShapeTracker(self.views[0:-1] + (self.views[-1].pad(arg),))
 
-    def shrink(self, arg: Tuple[Tuple[sint, sint], ...]) -> ShapeTracker:
+    def shrink(self, arg: tuple[tuple[sint, sint], ...]) -> ShapeTracker:
         return ShapeTracker(self.views[0:-1] + (self.views[-1].shrink(arg),))
 
-    def expand(self, new_shape: Tuple[sint, ...]) -> ShapeTracker:
+    def expand(self, new_shape: tuple[sint, ...]) -> ShapeTracker:
         return ShapeTracker(self.views[0:-1] + (self.views[-1].expand(new_shape),))
 
-    def permute(self, axis: Tuple[int, ...]) -> ShapeTracker:
+    def permute(self, axis: tuple[int, ...]) -> ShapeTracker:
         return ShapeTracker(self.views[0:-1] + (self.views[-1].permute(axis),))
 
-    def stride(self, mul: Tuple[int, ...]) -> ShapeTracker:
+    def stride(self, mul: tuple[int, ...]) -> ShapeTracker:
         return ShapeTracker(self.views[0:-1] + (self.views[-1].stride(mul),))
 
-    def reshape(self, new_shape: Tuple[sint, ...]) -> ShapeTracker:
+    def reshape(self, new_shape: tuple[sint, ...]) -> ShapeTracker:
         new_view = self.views[-1].reshape(new_shape)
         if new_view is None:
             extra_view = View.create(new_shape)
@@ -264,10 +271,10 @@ class ShapeTracker:
 # returns the axes to create new_shape if new_shape can be created by combining axis from old_shape
 # TODO: if we remove movementops from lazy.py we can delete this
 def get_contraction(
-    old_shape: Tuple[sint, ...], new_shape: Tuple[sint, ...]
-) -> Optional[List[List[int]]]:
+    old_shape: tuple[sint, ...], new_shape: tuple[sint, ...]
+) -> ta.Optional[list[list[int]]]:
     # Pre-allocate all groups.
-    axis_groups: List[List[int]] = [[] for _ in range(len(new_shape))]
+    axis_groups: list[list[int]] = [[] for _ in range(len(new_shape))]
     # Index for new_shape and axis_groups.
     i: int = 0
     old_shape_i: int = 0

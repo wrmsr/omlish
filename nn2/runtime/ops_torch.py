@@ -1,9 +1,21 @@
+import typing as ta
+
 import torch
-from typing import Dict, Callable, Optional
-from ..ops import UnaryOps, BinaryOps, MovementOps, TernaryOps, Op, Interpreted
-from ..helpers import getenv, dtypes, prod, DType
-from ..runtime.ops_cpu import base_fxn_for_op, einsum_mulacc
+
+from ..helpers import DType
+from ..helpers import dtypes
+from ..helpers import getenv
+from ..helpers import prod
+from ..ops import BinaryOps
+from ..ops import Interpreted
+from ..ops import MovementOps
+from ..ops import Op
+from ..ops import TernaryOps
+from ..ops import UnaryOps
 from ..runtime.lib import RawBuffer
+from ..runtime.ops_cpu import base_fxn_for_op
+from ..runtime.ops_cpu import einsum_mulacc
+
 
 device = torch.device(
     "cuda:0" if torch.cuda.is_available() else ("mps" if getenv("MPS", 0) else "cpu")
@@ -32,7 +44,7 @@ def as_strided(x, arg):
     return torch.as_strided(x.contiguous(), arg[0], arg[1], arg[2])
 
 
-torch_fxn_for_op: Dict[Op, Callable] = {
+torch_fxn_for_op: dict[Op, ta.Callable] = {
     **base_fxn_for_op,
     **{
         UnaryOps.NOOP: lambda x: x.contiguous(),
@@ -69,7 +81,7 @@ torch_fxn_for_op: Dict[Op, Callable] = {
 
 
 class RawTorchBuffer(RawBuffer):
-    def __init__(self, size: int, dtype: DType, buf: Optional[torch.Tensor] = None):
+    def __init__(self, size: int, dtype: DType, buf: ta.Optional[torch.Tensor] = None):
         super().__init__(
             size,
             dtype,

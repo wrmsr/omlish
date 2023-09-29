@@ -1,39 +1,46 @@
 from __future__ import annotations
+
 import functools
-from dataclasses import dataclass
-from typing import Tuple, List, Optional
-from ..helpers import prod, all_int
-from ..shape.symbolic import Node, NumNode, is_sym_int, sint
+import typing as ta
+
+from omlish import dataclasses as dc
+
+from ..helpers import all_int
+from ..helpers import prod
+from ..shape.symbolic import Node
+from ..shape.symbolic import NumNode
+from ..shape.symbolic import is_sym_int
+from ..shape.symbolic import sint
 
 
 @functools.lru_cache(maxsize=None)
-def filter_strides(shape: Tuple[int, ...], strides: Tuple[int, ...]) -> Tuple[int, ...]:
+def filter_strides(shape: tuple[int, ...], strides: tuple[int, ...]) -> tuple[int, ...]:
     return tuple(stride if shp != 1 else 0 for stride, shp in zip(strides, shape))
 
 
 @functools.lru_cache(maxsize=None)
-def strides_for_shape(shape: Tuple[int, ...]) -> Tuple[int, ...]:
+def strides_for_shape(shape: tuple[int, ...]) -> tuple[int, ...]:
     strides = [1] if shape else []
     for d in shape[::-1][:-1]:
         strides = [d * strides[0]] + strides
     return filter_strides(shape, tuple(strides))
 
 
-@dataclass(frozen=True)
+@dc.dataclass(frozen=True)
 class View:
-    shape: Tuple[sint, ...]
-    strides: Tuple[sint, ...]
+    shape: tuple[sint, ...]
+    strides: tuple[sint, ...]
     offset: sint
-    mask: Optional[Tuple[Tuple[sint, sint], ...]]
+    mask: ta.Optional[tuple[tuple[sint, sint], ...]]
     contiguous: bool
 
     @staticmethod
     @functools.lru_cache(maxsize=None)
     def create(
-        shape: Tuple[sint, ...],
-        strides: Optional[Tuple[sint, ...]] = None,
+        shape: tuple[sint, ...],
+        strides: ta.Optional[tuple[sint, ...]] = None,
         offset: sint = 0,
-        mask: Optional[Tuple[Tuple[sint, sint], ...]] = None,
+        mask: ta.Optional[tuple[tuple[sint, sint], ...]] = None,
     ):
         strides = (
             filter_strides(shape, strides) if strides else strides_for_shape(shape)
@@ -57,7 +64,7 @@ class View:
 
     # MovementOps live here now
 
-    def __unsafe_resize(self, arg: Tuple[Tuple[sint, sint], ...], mask=None) -> View:
+    def __unsafe_resize(self, arg: tuple[tuple[sint, sint], ...], mask=None) -> View:
         offset = sum([s * x[0] for s, x in zip(self.strides, arg)])
         if self.mask:
             # move the old mask
@@ -87,7 +94,7 @@ class View:
         )
 
     @functools.lru_cache(maxsize=None)  # pylint: disable=method-cache-max-size-none
-    def pad(self, arg: Tuple[Tuple[int, int], ...]) -> View:
+    def pad(self, arg: tuple[tuple[int, int], ...]) -> View:
         assert all((b >= 0 and e >= 0) for b, e in arg) and len(arg) == len(self.shape)
         if any(b or e for b, e in arg):
             zvarg = tuple([(-b, s + e) for s, (b, e) in zip(self.shape, arg)])
@@ -96,14 +103,14 @@ class View:
         return self
 
     @functools.lru_cache(maxsize=None)  # pylint: disable=method-cache-max-size-none
-    def shrink(self, arg: Tuple[Tuple[sint, sint], ...]) -> View:
+    def shrink(self, arg: tuple[tuple[sint, sint], ...]) -> View:
         assert all((b >= 0 and e <= s) for s, (b, e) in zip(self.shape, arg)) and len(
             arg
         ) == len(self.shape)
         return self.__unsafe_resize(arg)
 
     @functools.lru_cache(maxsize=None)  # pylint: disable=method-cache-max-size-none
-    def expand(self, new_shape: Tuple[sint, ...]) -> View:
+    def expand(self, new_shape: tuple[sint, ...]) -> View:
         assert len(new_shape) == len(self.shape)
         assert all(
             is_sym_int(x) and (s == x or (s == 1 and st == 0))
@@ -123,7 +130,7 @@ class View:
         return View.create(new_shape, self.strides, self.offset, mask)
 
     @functools.lru_cache(maxsize=None)  # pylint: disable=method-cache-max-size-none
-    def permute(self, axis: Tuple[int, ...]) -> View:
+    def permute(self, axis: tuple[int, ...]) -> View:
         assert all(
             isinstance(x, int) and x >= 0 and x < len(self.shape) for x in axis
         ), f"invalid permute {axis} for {self.shape}"
@@ -138,7 +145,7 @@ class View:
         )
 
     @functools.lru_cache(maxsize=None)  # pylint: disable=method-cache-max-size-none
-    def stride(self, mul: Tuple[int, ...]) -> View:
+    def stride(self, mul: tuple[int, ...]) -> View:
         # except for the negative case, you can build this from the others. invertible in the negative case
         assert all(
             isinstance(x, int) and x != 0 for x in mul
@@ -166,7 +173,7 @@ class View:
         return View.create(new_shape, strides, self.offset + offset, mask)
 
     @functools.lru_cache(maxsize=None)  # pylint: disable=method-cache-max-size-none
-    def reshape(self, new_shape: Tuple[sint, ...]) -> Optional[View]:
+    def reshape(self, new_shape: tuple[sint, ...]) -> ta.Optional[View]:
         if self.shape == new_shape:
             return self
 
@@ -186,20 +193,20 @@ class View:
         # check if this is adding or removing 1s (only)
         # NOTE: this is optional, but removes most calls to (expensive!) merge_views (with mask, not optional)
         if [x for x in self.shape if x != 1] == [x for x in new_shape if x != 1]:
-            new_strides: List[sint] = [
+            new_strides: list[sint] = [
                 y for x, y in zip(self.shape, self.strides) if x != 1
             ]
-            new_strides_tuple: Tuple[sint, ...] = tuple(
+            new_strides_tuple: tuple[sint, ...] = tuple(
                 [0 if x == 1 else new_strides.pop(0) for x in new_shape]
             )
-            new_mask_tuple: Optional[Tuple[Tuple[sint, sint], ...]] = None
+            new_mask_tuple: ta.Optional[tuple[tuple[sint, sint], ...]] = None
             if self.mask:
                 for x, y in zip(self.shape, self.mask):
                     if x == 1 and y != (0, 1):
                         new_mask_tuple = ((0, 0),) * len(new_shape)
                         break
                 else:
-                    new_mask: List[Tuple[sint, sint]] = [
+                    new_mask: list[tuple[sint, sint]] = [
                         y for x, y in zip(self.shape, self.mask) if x != 1
                     ]
                     new_mask_tuple = tuple(

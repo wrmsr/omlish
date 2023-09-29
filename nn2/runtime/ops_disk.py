@@ -1,9 +1,14 @@
-import os, mmap
-from typing import Optional
-from typing import Callable, Dict, Tuple
-from ..helpers import prod, DType
+import mmap
+import os
+import typing as ta
+
+from ..helpers import DType
+from ..helpers import prod
+from ..ops import Interpreted
+from ..ops import MovementOps
+from ..ops import Op
+from ..ops import UnaryOps
 from ..runtime.lib import RawBufferMapped
-from ..ops import Interpreted, Op, MovementOps, UnaryOps
 
 
 class RawDiskBuffer(RawBufferMapped):
@@ -11,7 +16,7 @@ class RawDiskBuffer(RawBufferMapped):
         self,
         size,
         dtype: DType,
-        device: Optional[str] = None,
+        device: ta.Optional[str] = None,
         buf=None,
         shape=None,
         offset=0,
@@ -36,7 +41,7 @@ class RawDiskBuffer(RawBufferMapped):
         if self._buf[2] == 0:
             self._buf[0].close()
 
-    def cast(self, arg: Tuple[DType, bool]):
+    def cast(self, arg: tuple[DType, bool]):
         return RawDiskBuffer(
             self.size, arg[0], buf=self._buf, shape=self.shape, offset=self.offset
         )
@@ -79,7 +84,7 @@ class RawDiskBuffer(RawBufferMapped):
         self._buf[0].readinto(buf)
 
 
-disk_fxn_for_op: Dict[Op, Callable] = {
+disk_fxn_for_op: dict[Op, ta.Callable] = {
     UnaryOps.NOOP: lambda x: x,
     UnaryOps.CAST: RawDiskBuffer.cast,
     MovementOps.AS_STRIDED: RawDiskBuffer.as_strided,

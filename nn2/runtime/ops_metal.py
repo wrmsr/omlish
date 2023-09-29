@@ -1,12 +1,26 @@
-# pip3 install pyobjc-framework-Metal pyobjc-framework-Cocoa pyobjc-framework-libdispatch
-import os, subprocess, pathlib, functools, ctypes
-import Metal, Cocoa, libdispatch  # type: ignore
-from typing import List, Any
+import os
+import subprocess
+import pathlib
+import functools
+import ctypes
+import typing as ta
+
+import Metal  # type: ignore
+import Cocoa  # type: ignore
+import libdispatch  # type: ignore
+
 from ..codegen.kernel import LinearizerOptions
-from ..renderer.cstyle import uops_to_cstyle, CStyleLanguage
-from ..helpers import prod, getenv, DEBUG, DType, dtypes
+from ..helpers import DEBUG
+from ..helpers import DType
+from ..helpers import dtypes
+from ..helpers import getenv
+from ..helpers import prod
 from ..ops import Compiled
-from ..runtime.lib import RawBufferMapped, LRUAllocator
+from ..renderer.cstyle import CStyleLanguage
+from ..renderer.cstyle import uops_to_cstyle
+from ..runtime.lib import LRUAllocator
+from ..runtime.lib import RawBufferMapped
+
 
 METAL_XCODE = getenv("METAL_XCODE")
 
@@ -29,7 +43,7 @@ class MetalAllocator(LRUAllocator):
 
 class _METAL:
     def __init__(self):
-        self.mtl_buffers_in_flight: List[Any] = []
+        self.mtl_buffers_in_flight: list[ta.Any] = []
         self.device = Metal.MTLCreateSystemDefaultDevice()
         self.mtl_queue = self.device.newCommandQueueWithMaxCommandBufferCount_(1024)
         self.allocator = MetalAllocator(
