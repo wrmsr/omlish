@@ -131,7 +131,7 @@ class Attention:
                 start_pos
                 == sym_infer(cache_k.shape[1], cache_k.lazydata.var_vals)
                 == sym_infer(cache_v.shape[1], cache_v.lazydata.var_vals)
-            ), f"cache has wrong shape, not ({start_pos} == {sym_infer(cache_k.shape[1], cache_k.lazydata.var_vals)} == {sym_infer(cache_v.shape[1], cache_v.lazydata.var_vals)})"
+            ), f"cache has wrong shape, not ({start_pos} == {sym_infer(cache_k.shape[1], cache_k.lazydata.var_vals)} == {sym_infer(cache_v.shape[1], cache_v.lazydata.var_vals)})"  # noqa
             assert (
                 seqlen == xk.shape[1] and seqlen == xv.shape[1]
             ), "seqlen is wrong shape?!?"
@@ -210,7 +210,8 @@ class TransformerBlock:
             cache_v = cache_v.reshape(
                 cache_v.shape[0], pos, cache_v.shape[2], cache_v.shape[3]
             )
-            # need this because we don't reshape back to int shape in the jitted path and we don't have the correct var_vars in cache
+            # need this because we don't reshape back to int shape in the jitted path and we don't have the correct
+            # var_vars in cache
             cache_k.lazydata.var_vals[pos] = start_pos
             cache_v.lazydata.var_vals[pos] = start_pos
 
@@ -332,7 +333,8 @@ class Transformer:
                     mask=None,
                     jit_ctx={pos: start_pos},
                 )
-                # TODO: move the kv cache into Attention, pre-allocate the cache and instead of cat, update the cache in-place
+                # TODO: move the kv cache into Attention, pre-allocate the cache and instead of cat, update the cache
+                #  in-place
                 self.kv_caches[i] = (cache_k, cache_v)
             return self.postprocess_jitted(h, temperature)
         else:
@@ -358,7 +360,8 @@ class Transformer:
             for i, (layer, (cache_k, cache_v)) in enumerate(
                 zip(self.layers, self.kv_caches)
             ):
-                # need this reshape back to int shape in conversational mode because jitted and unjitted calls share the same cache
+                # need this reshape back to int shape in conversational mode because jitted and unjitted calls share the
+                # same cache
                 if cache_k is not None and start_pos > 0:
                     cache_k = cache_k.reshape(
                         cache_k.shape[0], start_pos, cache_k.shape[2], cache_k.shape[3]
@@ -755,64 +758,12 @@ class LLaMa:
 # **** main code ****
 """
 test:
-python3 examples/llama.py  --temperature=0 --count=50 --prompt="Hello."
-output:
-Hello. I'm a 20 year old male. I'm a student at the University of Texas at Austin. I'm a sophomore majoring in Computer Science.
-
-test:
-python3 examples/llama.py --gen='2' --temperature=0 --count=50 --prompt="Hello."
-output:
-Hello. I'm a 20 year old girl who is looking for a good lay in Palm Coast. I don't care whether it's at your place or not, as long as it's clean.
-
-test:
-python3 examples/llama.py --gen="code" --temperature=0.2 --count=50 --prompt="\
-import argparse
-
-def main(string: str):
-    print(string)
-    print(string[::-1])
-
-if __name__ == "__main__":"
-output:
-    parser = argparse.ArgumentParser()
-    parser.add_argument('string', type=str, help='string to be reversed')
-    args = parser.parse_args()
-    main(args.string)
-
-test:
-python3 examples/llama.py --gen="code" --size="7B-Python" --temperature=0.2 --count=70 --prompt="def add_elements(arr,k):"
-output:
-    for i in range(len(arr)):
-        arr[i] += k
-    return arr
-
-
-arr = [1, 2, 3, 4, 5]
-k = 2
-print(add_elements(arr, k))
-
-test:
-python3 examples/llama.py --gen="code" --size="7B-Instruct" --temperature=0.2 --count=120 --prompt="write a function in c++ that adds three float numbers"
-output:
-\begin{code}
-#include<iostream>
-using namespace std;
-
-float add(float a, float b, float c)
-{
-    return a+b+c;
-}
-
-int main()
-{
-    float a, b, c;
-    cout<<"Enter three numbers: ";
-    cin>>a>>b>>c;
-    cout<<"The sum is: "<<add(a,b,c);
-    return 0;
-}
-\end{code}
-"""
+--temperature=0 --count=50 --prompt="Hello."
+--gen='2' --temperature=0 --count=50 --prompt="Hello."
+--gen="code" --temperature=0.2 --count=50 --prompt="\
+--gen="code" --size="7B-Python" --temperature=0.2 --count=70 --prompt="def add_elements(arr,k):"
+--gen="code" --size="7B-Instruct" --temperature=0.2 --count=120 --prompt="write a function in c++ that adds three float numbers"
+"""  # noqa
 if __name__ == "__main__":
     Tensor.no_grad = True
     print(f"using {Device.DEFAULT} backend")
@@ -847,7 +798,7 @@ if __name__ == "__main__":
         "--size",
         type=str,
         default="13B",
-        help="Size of model to use [7B, 13B, 30B, 65B] for Gen 1, [7B, 13B, 70B] for Gen 2, [7B, 13B, 34B] for Code LLaMA",
+        help="Size of model to use [7B, 13B, 30B, 65B] for Gen 1, [7B, 13B, 70B] for Gen 2, [7B, 13B, 34B] for Code LLaMA",  # noqa
     )
     parser.add_argument(
         "--gen", default="1", help="Generation of the model to use ['1', '2', 'code']"
@@ -858,7 +809,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--model",
         type=pathlib.Path,
-        default=pathlib.Path.home() / ".cache/huggingface/hub/models--huggyllama--llama-13b/snapshots/bf57045473f207bb1de1ed035ace226f4d9f9bba/model.safetensors.index.json",
+        default=pathlib.Path.home() / ".cache/huggingface/hub/models--huggyllama--llama-13b/snapshots/bf57045473f207bb1de1ed035ace226f4d9f9bba/model.safetensors.index.json",  # noqa
         help="Folder with the original weights to load, or single .index.json, .safetensors or .bin file",
     )
 
@@ -879,8 +830,8 @@ After you are done speaking, output [EOS]. You are not the User.
 """
         examples = {
             "What is your name?": "Hi! My name is Stacy. I'm a rapper with bipolar disorder.",
-            "french revolution was what year?": "The French Revolution started in 1789, and lasted 10 years until 1799.",
-            "What is bigger, the moon or the sun?": "The sun is bigger than the moon, except when Mercury is in retrograde.",
+            "french revolution was what year?": "The French Revolution started in 1789, and lasted 10 years until 1799.",  # noqa
+            "What is bigger, the moon or the sun?": "The sun is bigger than the moon, except when Mercury is in retrograde.",  # noqa
         }
 
         user_delim = "\nUser: "
@@ -891,7 +842,7 @@ After you are done speaking, output [EOS]. You are not the User.
         )
     elif args.personality.lower() == "george":
         print(
-            "WARNING: AI George Hotz is terrible and is completely disowned by the real George Hotz. Stacy is much smarter."
+            "WARNING: AI George Hotz is terrible and is completely disowned by the real George Hotz. Stacy is much smarter."  # noqa
         )
         pre_prompt = f"""Consider that the following is conversation between an AI assistant named George and User
 You are an AI version of George Hotz. You act as much as you can like George.
@@ -905,10 +856,10 @@ After you are done speaking, output [EOS]. You are not the User.
 """
         examples = {
             "What is your name?": "I'm am an AI version of George Hotz.",
-            "What's the complexity of matrix multiplication?": "O(n^3), though it can be faster with things like Strassen's algorithm",
-            "What's a buffer overflow?": "I assume you mean a stack buffer overflow. That's when the stack is too small for the data being copied to it, and the data corrupts things beyond the buffer",
+            "What's the complexity of matrix multiplication?": "O(n^3), though it can be faster with things like Strassen's algorithm",  # noqa
+            "What's a buffer overflow?": "I assume you mean a stack buffer overflow. That's when the stack is too small for the data being copied to it, and the data corrupts things beyond the buffer",  # noqa
             "How many weights do you have?": "I am based off LLaMA trained by Facebook. I'm the 7B weight version",
-            "What is swap memory?": "It is when the memory is about to overflow and unused memory is freed and stored on disk",
+            "What is swap memory?": "It is when the memory is about to overflow and unused memory is freed and stored on disk",  # noqa
         }
 
         user_delim = "\nUser: "
@@ -929,7 +880,7 @@ After you are done speaking, output [EOS]. You are not the User.
 """
         examples = {
             "What is your name?": "I am Gary. I used to sell cars.",
-            "What is 2+3?": "I don't know, but I can get you a great deal on a certified preowned slightly used Toyota Corolla",
+            "What is 2+3?": "I don't know, but I can get you a great deal on a certified preowned slightly used Toyota Corolla",  # noqa
         }
 
         user_delim = "\nUser: "
@@ -948,7 +899,7 @@ You are at the bar with Chad. You are on a date. What follows is a transcript of
 After you are done speaking, output [EOS]. You are not Chad.
 
 <CHAT LOG>
-"""
+"""  # noqa
         examples = {
             "hi lexie": "hi chad, glad we finally met up!",
             "you look better than your pictures": "thanks! are you subscribed to my onlyfans?",
@@ -1058,7 +1009,7 @@ After you are done speaking, output [EOS]. You are not Chad.
 
             # TODO: this is a hack to deal with spaces. i think the decode is fast though, so who cares?
             cur = llama.tokenizer.decode(toks)
-            sys.stdout.write(cur[len(outputted) :])
+            sys.stdout.write(cur[len(outputted):])
             sys.stdout.flush()
             outputted = cur
 

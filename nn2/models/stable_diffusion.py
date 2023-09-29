@@ -455,7 +455,6 @@ class CLIPAttention:
         proj_shape = (bsz * self.num_heads, -1, self.head_dim)
         query_states = self._shape(query_states, tgt_len, bsz).reshape(*proj_shape)
         key_states = key_states.reshape(*proj_shape)
-        src_len = key_states.shape[1]
         value_states = value_states.reshape(*proj_shape)
 
         attn_output = Tensor.scaled_dot_product_attention(
@@ -584,7 +583,7 @@ class ClipTokenizer:
         super().__init__()
         self.byte_encoder = bytes_to_unicode()
         merges = gzip.open(bpe_path).read().decode("utf-8").split("\n")
-        merges = merges[1 : 49152 - 256 - 2 + 1]
+        merges = merges[1:49152 - 256 - 2 + 1]
         merges = [tuple(merge.split()) for merge in merges]
         vocab = list(bytes_to_unicode().values())
         vocab = vocab + [v + "</w>" for v in vocab]
@@ -770,7 +769,6 @@ if __name__ == "__main__":
     alphas_prev = Tensor([1.0]).cat(alphas[:-1])
 
     def get_x_prev_and_pred_x0(x, e_t, index):
-        temperature = 1
         a_t, a_prev = alphas[index], alphas_prev[index]
         sigma_t = 0
         sqrt_one_minus_at = (1 - a_t).sqrt()
