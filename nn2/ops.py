@@ -1,3 +1,4 @@
+from __future__ import annotations
 import time, importlib, inspect, functools, pathlib
 from enum import Enum, auto
 from typing import (
@@ -235,16 +236,12 @@ class _Device:
             else self.DEFAULT
         )
 
-    @functools.lru_cache(
-        maxsize=None
-    )  # this class is a singleton, pylint: disable=method-cache-max-size-none
+    @functools.lru_cache(maxsize=None)  # this class is a singleton, pylint: disable=method-cache-max-size-none
     def __getitem__(self, x: str) -> Union[Interpreted, Compiled]:
         x = x.split(":")[0].upper()
         return [
             cls
-            for cname, cls in inspect.getmembers(
-                importlib.import_module(f"tinygrad.runtime.ops_{x.lower()}")
-            )
+            for cname, cls in inspect.getmembers(importlib.import_module(f".runtime.ops_{x.lower()}", __package__))
             if (cname.lower() == x.lower() + "buffer") and x in self._buffers
         ][0]
 

@@ -1,9 +1,9 @@
 import os, mmap
 from typing import Optional
 from typing import Callable, Dict, Tuple
-from tinygrad.helpers import prod, DType
-from tinygrad.runtime.lib import RawBufferMapped
-from tinygrad.ops import Interpreted, Op, MovementOps, UnaryOps
+from ..helpers import prod, DType
+from ..runtime.lib import RawBufferMapped
+from ..ops import Interpreted, Op, MovementOps, UnaryOps
 
 
 class RawDiskBuffer(RawBufferMapped):

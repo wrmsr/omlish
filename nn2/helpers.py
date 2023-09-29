@@ -1,6 +1,16 @@
 from __future__ import annotations
-import os, functools, platform, time, re, contextlib, operator
-import numpy as np
+
+import contextlib
+import functools
+import operator
+import os
+import pathlib
+import platform
+import re
+import tempfile
+import time
+import typing as ta
+
 from typing import (
     Dict,
     Tuple,
@@ -17,10 +27,11 @@ from typing import (
     TYPE_CHECKING,
 )
 
-if (
-    TYPE_CHECKING
-):  # TODO: remove this and import TypeGuard from typing once minimum python supported version is 3.10
+import numpy as np
+
+if ta.TYPE_CHECKING:  # TODO: remove this and import TypeGuard from typing once minimum python supported version is 3.10
     from typing_extensions import TypeGuard
+
 
 T = TypeVar("T")
 
@@ -309,3 +320,7 @@ class GlobalCounters:
             GlobalCounters.time_sum_s,
             GlobalCounters.kernel_count,
         ) = (0, 0, 0.0, 0)
+
+
+def temp_file(x: str) -> str:
+    return (pathlib.Path(tempfile.gettempdir()) / x).as_posix()
