@@ -28,7 +28,8 @@ from .shape.symbolic import sint
 
 # An instantiation of the Function is the Context
 class Function:
-    def __init__(self, device: str, *tensors: Tensor):
+    def __init__(self, device: str, *tensors: Tensor) -> None:
+        super().__init__()
         self.device = device
         self.needs_input_grad = [t.requires_grad for t in tensors]
         self.requires_grad = (
@@ -84,7 +85,9 @@ class Tensor:
         device: ta.Optional[str] = None,
         dtype: ta.Optional[DType] = None,
         requires_grad: ta.Optional[bool] = None,
-    ):
+    ) -> None:
+        super().__init__()
+
         assert dtype is None or isinstance(dtype, DType), f"invalid dtype {dtype}"
         device = Device.canonicalize(device)
         # tensors have gradients, buffers do not

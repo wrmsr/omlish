@@ -7,22 +7,28 @@ from ..tensor import Tensor
 
 class BatchNorm2d:
     def __init__(
-            self, sz, eps=1e-5, affine=True, track_running_stats=True, momentum=0.1
-    ):
-        self.eps, self.track_running_stats, self.momentum = (
-            eps,
-            track_running_stats,
-            momentum,
-        )
+            self,
+            sz,
+            eps=1e-5,
+            affine=True,
+            track_running_stats=True,
+            momentum=0.1,
+    ) -> None:
+        super().__init__()
+
+        self.eps = eps
+        self.track_running_stats = track_running_stats
+        self.momentum = momentum
 
         if affine:
-            self.weight, self.bias = Tensor.ones(sz), Tensor.zeros(sz)
+            self.weight = Tensor.ones(sz)
+            self.bias = Tensor.zeros(sz)
         else:
-            self.weight, self.bias = None, None
+            self.weight = None
+            self.bias = None
 
-        self.running_mean, self.running_var = Tensor.zeros(
-            sz, requires_grad=False
-        ), Tensor.ones(sz, requires_grad=False)
+        self.running_mean = Tensor.zeros(sz, requires_grad=False)
+        self.running_var = Tensor.ones(sz, requires_grad=False)
         self.num_batches_tracked = Tensor.zeros(1, requires_grad=False)
 
     def __call__(self, x: Tensor):
@@ -64,14 +70,13 @@ class BatchNorm2d:
 
 
 class Linear:
-    def __init__(self, in_features, out_features, bias=True):
+    def __init__(self, in_features, out_features, bias=True) -> None:
+        super().__init__()
         self.weight = Tensor.kaiming_uniform(out_features, in_features, a=math.sqrt(5))
         # TODO: remove this once we can represent Tensor with int shape in typing
         assert isinstance(self.weight.shape[1], int), "does not support symbolic shape"
         bound = 1 / math.sqrt(self.weight.shape[1])
-        self.bias = (
-            Tensor.uniform(out_features, low=-bound, high=bound) if bias else None
-        )
+        self.bias = Tensor.uniform(out_features, low=-bound, high=bound) if bias else None
 
     def __call__(self, x):
         return x.linear(self.weight.transpose(), self.bias)
@@ -79,9 +84,16 @@ class Linear:
 
 class GroupNorm:
     def __init__(
-            self, num_groups: int, num_channels: int, eps: float = 1e-5, affine: bool = True
-    ):
-        self.num_groups, self.num_channels, self.eps = num_groups, num_channels, eps
+            self,
+            num_groups: int,
+            num_channels: int,
+            eps: float = 1e-5,
+            affine: bool = True,
+    ) -> None:
+        super().__init__()
+        self.num_groups = num_groups
+        self.num_channels = num_channels
+        self.eps = eps
         self.weight: ta.Optional[Tensor] = Tensor.ones(num_channels) if affine else None
         self.bias: ta.Optional[Tensor] = Tensor.zeros(num_channels) if affine else None
 
@@ -103,8 +115,10 @@ class GroupNorm:
 
 
 class InstanceNorm:
-    def __init__(self, num_features: int, eps: float = 1e-5, affine: bool = True):
-        self.num_features, self.eps = num_features, eps
+    def __init__(self, num_features: int, eps: float = 1e-5, affine: bool = True) -> None:
+        super().__init__()
+        self.num_features = num_features
+        self.eps = eps
         self.weight: ta.Optional[Tensor] = Tensor.ones(num_features) if affine else None
         self.bias: ta.Optional[Tensor] = Tensor.zeros(num_features) if affine else None
 
@@ -127,22 +141,24 @@ class LayerNorm:
             normalized_shape: ta.Union[int, tuple[int, ...]],
             eps: float = 1e-5,
             elementwise_affine: bool = True,
-    ):
+    ) -> None:
+        super().__init__()
+
         self.normalized_shape = (
             (normalized_shape,)
             if isinstance(normalized_shape, int)
             else tuple(normalized_shape)
         )
-        self.axis, self.eps, self.elementwise_affine = (
-            tuple(-1 - i for i in range(len(self.normalized_shape))),
-            eps,
-            elementwise_affine,
-        )
-        self.weight, self.bias = (
-            (Tensor.ones(*self.normalized_shape), Tensor.zeros(*self.normalized_shape))
-            if elementwise_affine
-            else (None, None)
-        )
+        self.axis = tuple(-1 - i for i in range(len(self.normalized_shape)))
+        self.eps = eps
+        self.elementwise_affine = elementwise_affine
+
+        if elementwise_affine:
+            self.weight = Tensor.ones(*self.normalized_shape)
+            self.bias = Tensor.zeros(*self.normalized_shape)
+        else:
+            self.weight = None
+            self.bias = None
 
     def __call__(self, x: Tensor):
         assert (

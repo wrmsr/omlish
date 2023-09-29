@@ -108,7 +108,8 @@ def getenv(key, default=0):
 class Context(contextlib.ContextDecorator):
     stack: ta.ClassVar[list[dict[str, int]]] = [{}]
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
+        super().__init__()
         self.kwargs = kwargs
 
     def __enter__(self):
@@ -161,8 +162,11 @@ GRAPH, PRUNEGRAPH, GRAPHPATH = (
 
 
 class Timing(contextlib.ContextDecorator):
-    def __init__(self, prefix="", on_exit=None, enabled=True):
-        self.prefix, self.on_exit, self.enabled = prefix, on_exit, enabled
+    def __init__(self, prefix="", on_exit=None, enabled=True) -> None:
+        super().__init__()
+        self.prefix = prefix
+        self.on_exit = on_exit
+        self.enabled = enabled
 
     def __enter__(self):
         self.st = time.perf_counter_ns()

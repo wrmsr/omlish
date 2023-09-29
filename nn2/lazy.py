@@ -240,8 +240,8 @@ class LazyBuffer:
 
         self.st: ShapeTracker = st
         self._var_vals: dict[Variable, int] = var_vals
-        self.device= device
-        self.shape= self.st.shape
+        self.device = device
+        self.shape = self.st.shape
         self._dtype = dtype
         self._realized: ta.Optional[RawBuffer] = src
         self.output_buffer: ta.Optional[RawBuffer] = None  # TODO: do we really need this? or can we just use realized

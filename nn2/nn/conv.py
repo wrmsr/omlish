@@ -39,20 +39,23 @@ class Conv2d:
             dilation=1,
             groups=1,
             bias=True,
-    ):
+    ) -> None:
+        super().__init__()
+
         self.kernel_size = (
             (kernel_size, kernel_size)
             if isinstance(kernel_size, int)
             else tuple(kernel_size)
         )
-        self.stride, self.padding, self.dilation, self.groups = (
-            stride,
-            padding,
-            dilation,
-            groups,
-        )
+
+        self.stride = stride
+        self.padding = padding
+        self.dilation = dilation
+        self.groups = groups
+
         self.weight = self.initialize_weight(out_channels, in_channels, groups)
         assert all_int(self.weight.shape), "does not support symbolic shape"
+
         bound = 1 / math.sqrt(prod(self.weight.shape[1:]))
         self.bias = (
             Tensor.uniform(out_channels, low=-bound, high=bound) if bias else None
@@ -110,7 +113,7 @@ class ConvTranspose2d(Conv2d):
             dilation=1,
             groups=1,
             bias=True,
-    ):
+    ) -> None:
         super().__init__(
             in_channels,
             out_channels,
