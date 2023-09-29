@@ -93,10 +93,6 @@ class LazyOp(lang.Abstract):
     def realized(self):
         raise NotImplementedError
 
-    @property
-    def optype(self):
-        raise NotImplementedError
-
     def realize(self):
         raise NotImplementedError
 
