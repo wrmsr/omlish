@@ -59,7 +59,8 @@ class LazyOp(lang.Abstract):
         )
 
     def map_buffers(
-        self, real_srcs: ta.Mapping[LazyBuffer, ta.Union[LazyBuffer, LazyOp]]
+            self,
+            real_srcs: ta.Mapping[LazyBuffer, ta.Union[LazyBuffer, LazyOp]]
     ) -> LazyOp:
         return type(self)(
             tuple([y.map_buffers(real_srcs) for y in self.src]), self.arg
@@ -69,12 +70,12 @@ class LazyOp(lang.Abstract):
         return [self] + [item for x in self.src for item in x.get_lazyops()]
 
     def replace_with_movement_ops(
-        self: LazyOp,
-            ops: list[tuple[MovementOps, tuple[ta.Any, ...]]]
+            self,
+            ops: list[tuple[type[MovementOp], tuple[ta.Any, ...]]]
     ) -> "LazyBuffer":
-        assert self.op in BinaryOps or self.op in UnaryOps or self.op in TernaryOps
+        assert isinstance(self, (BinaryOp, UnaryOp, TernaryOp))
         srcs = [z.replace_with_movement_ops(ops) for z in self.src]
-        return srcs[0].e(self.op, *srcs[1:], arg=self.arg)  # type: ignore
+        return srcs[0].e(type(self), *srcs[1:], arg=self.arg)  # type: ignore
 
     @property
     def st(self):
