@@ -7,9 +7,9 @@ import ctypes as ct
 import llvmlite.binding as llvm
 
 from ..codegen.kernel import LinearizerOptions
+from ..execution import Compiled
 from ..helpers import DEBUG
 from ..helpers import getenv
-from ..ops import Compiled
 from ..renderer.llvmir import uops_to_llvm_ir
 from ..runtime.lib import RawMallocBuffer
 

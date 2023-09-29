@@ -14,10 +14,17 @@ from ..helpers import prod
 _T = ta.TypeVar("_T")
 
 
-class RawBuffer:  # pylint: disable=abstract-method
+class RawBuffer:
     def __init__(
-        self, size: int, dtype: DType, buf: ta.Any = None, allocator: ta.Any = None, **kwargs
-    ):
+            self,
+            size: int,
+            dtype: DType,
+            buf: ta.Any = None,
+            allocator: ta.Any = None,
+            **kwargs
+    ) -> None:
+        super().__init__()
+
         self.size: int = size
         self.dtype: DType = dtype
         self._buf = (

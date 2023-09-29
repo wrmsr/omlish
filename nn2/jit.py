@@ -7,10 +7,10 @@ import typing as ta
 from .devices import Device
 from .dtypes import DType
 from .dtypes import ImageDType
+from .execution import BasicBatchExecutor
 from .helpers import DEBUG
 from .helpers import merge_dicts
-from .ops import BasicBatchExecutor
-from .ops import RawBuffer
+from .runtime.lib import RawBuffer
 from .shape.shapetracker import ShapeTracker
 from .shape.symbolic import Variable
 from .tensor import Tensor

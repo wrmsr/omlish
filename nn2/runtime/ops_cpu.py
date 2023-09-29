@@ -5,8 +5,8 @@ import numpy as np
 
 from ..dtypes import DType
 from ..dtypes import dtypes
+from ..execution import Interpreted
 from ..ops import BinaryOps
-from ..ops import Interpreted
 from ..ops import MovementOps
 from ..ops import Op
 from ..ops import ReduceOps

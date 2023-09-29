@@ -11,10 +11,10 @@ import time
 import numpy as np
 
 from ..codegen.kernel import LinearizerOptions
+from ..execution import Compiled
 from ..helpers import DEBUG
 from ..helpers import fromimport
 from ..helpers import getenv
-from ..ops import Compiled
 from ..renderer.cstyle import CStyleLanguage
 from ..renderer.cstyle import uops_to_cstyle
 from ..runtime.lib import RawMallocBuffer

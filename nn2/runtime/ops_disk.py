@@ -3,8 +3,8 @@ import os
 import typing as ta
 
 from ..dtypes import DType
+from ..execution import Interpreted
 from ..helpers import prod
-from ..ops import Interpreted
 from ..ops import MovementOps
 from ..ops import Op
 from ..ops import UnaryOps
