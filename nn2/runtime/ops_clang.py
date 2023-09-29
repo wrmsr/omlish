@@ -177,7 +177,7 @@ class ClangProgram:
 renderer = (
     fromimport("tinygrad.renderer.assembly_arm64", "uops_to_arm64_asm")
     if ARM64
-    else functools.functools.partial(
+    else functools.partial(
         uops_to_cstyle,
         CStyleLanguage(
             kernel_prefix=args["exp"],
