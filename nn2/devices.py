@@ -9,8 +9,8 @@ import typing as ta
 from .helpers import getenv
 
 if ta.TYPE_CHECKING:
-    from .ops import Compiled
-    from .ops import Interpreted
+    from .execution import Compiled
+    from .execution import Interpreted
 
 
 class _Device:

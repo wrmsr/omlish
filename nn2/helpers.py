@@ -220,8 +220,8 @@ def print_tree(tensor: Tensor):
             [
                 f"{str(i).rjust(3)} {s}"
                 for i, s in enumerate(
-                _tree(tensor if not isinstance(tensor, Tensor) else tensor.lazydata)
-            )
+                    _tree(tensor if not isinstance(tensor, Tensor) else tensor.lazydata)
+                )
             ]
         )
     )

@@ -12,6 +12,9 @@ from .devices import Device
 from .dtypes import DType
 from .dtypes import ImageDType
 from .dtypes import dtypes
+from .execution import Compiled
+from .execution import ConstBuffer
+from .execution import MemBuffer
 from .helpers import DEBUG
 from .helpers import all_int
 from .helpers import dedup
@@ -22,11 +25,8 @@ from .helpers import partition
 from .helpers import prod
 from .ops import BinaryOps
 from .ops import BufferOps
-from .ops import Compiled
-from .ops import ConstBuffer
 from .ops import LazyOp
 from .ops import LoadOps
-from .ops import MemBuffer
 from .ops import MovementOps
 from .ops import OpType
 from .ops import ReduceOps

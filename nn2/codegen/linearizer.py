@@ -13,15 +13,15 @@ from ..dtypes import DType
 from ..dtypes import ImageDType
 from ..dtypes import PtrDType
 from ..dtypes import dtypes
+from ..execution import ConstBuffer
+from ..execution import MemBuffer
 from ..helpers import DEBUG
 from ..helpers import all_same
 from ..helpers import colored
 from ..helpers import prod
 from ..ops import BinaryOps
 from ..ops import BufferOps
-from ..ops import ConstBuffer
 from ..ops import LazyOp
-from ..ops import MemBuffer
 from ..ops import ReduceOps
 from ..ops import TernaryOps
 from ..ops import UnaryOps

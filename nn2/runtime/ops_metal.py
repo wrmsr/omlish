@@ -12,10 +12,10 @@ import libdispatch
 from ..codegen.kernel import LinearizerOptions
 from ..dtypes import DType
 from ..dtypes import dtypes
+from ..execution import Compiled
 from ..helpers import DEBUG
 from ..helpers import getenv
 from ..helpers import prod
-from ..ops import Compiled
 from ..renderer.cstyle import CStyleLanguage
 from ..renderer.cstyle import uops_to_cstyle
 from ..runtime.lib import LruAllocator
