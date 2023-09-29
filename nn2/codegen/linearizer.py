@@ -19,6 +19,7 @@ from ..helpers import DEBUG
 from ..helpers import all_same
 from ..helpers import colored
 from ..helpers import prod
+from .. import ops as ops_
 from ..ops import BinaryOps
 from ..ops import BufferOps
 from ..ops import LazyOp
@@ -235,31 +236,18 @@ class Linearizer(OptimizedKernel):
     render_ops: ta.Any = {
         Variable: lambda self, ops, ctx: ctx.loop_uops[self.expr],
         NumNode: lambda self, ops, ctx: ctx.const(self.b),
-        MulNode: lambda self, ops, ctx: ctx.uop_alu_idx(
-            self.a.render(ops, ctx), self.b, ops, ctx, BinaryOps.MUL
-        ),
-        DivNode: lambda self, ops, ctx: ctx.uop_alu_idx(
-            self.a.render(ops, ctx), self.b, ops, ctx, BinaryOps.DIV
-        ),
-        ModNode: lambda self, ops, ctx: ctx.uop_alu_idx(
-            self.a.render(ops, ctx), self.b, ops, ctx, BinaryOps.MOD
-        ),
-        LtNode: lambda self, ops, ctx: ctx.uop_alu_idx(
-            self.a.render(ops, ctx),
-            self.b,
-            ops,
-            ctx,
-            BinaryOps.CMPLT,
-            dtype=dtypes.bool,
-        ),
+        MulNode: lambda self, ops, ctx: ctx.uop_alu_idx(self.a.render(ops, ctx), self.b, ops, ctx, ops_.Mul),
+        DivNode: lambda self, ops, ctx: ctx.uop_alu_idx(self.a.render(ops, ctx), self.b, ops, ctx, ops_.Div),
+        ModNode: lambda self, ops, ctx: ctx.uop_alu_idx(self.a.render(ops, ctx), self.b, ops, ctx, ops_.Mod),
+        LtNode: lambda self, ops, ctx: ctx.uop_alu_idx(self.a.render(ops, ctx), self.b, ops, ctx, ops_.CmpLt, dtype=dtypes.bool),  # noqa
         SumNode: lambda self, ops, ctx: functools.reduce(
-            lambda a, b: ctx.uop_alu_idx(a, b, ops, ctx, BinaryOps.ADD),
+            lambda a, b: ctx.uop_alu_idx(a, b, ops, ctx, ops_.Add),
             self.nodes[1:],
             self.nodes[0].render(ops, ctx),
         ),
         AndNode: lambda self, ops, ctx: functools.reduce(
             lambda a, b: ctx.uop_alu_idx(
-                a, b, ops, ctx, BinaryOps.MUL, dtype=dtypes.bool
+                a, b, ops, ctx, ops_.Mul, dtype=dtypes.bool
             ),
             self.nodes[1:],
             self.nodes[0].render(ops, ctx),
@@ -968,7 +956,7 @@ class Linearizer(OptimizedKernel):
         if uop == UOps.ALU:
             # rewrites. NOTE: the rewritten NEG op is still around...
             if (
-                arg == BinaryOps.ADD
+                arg == ops_.Add
                 and vin[1].uop == UOps.ALU
                 and vin[1].arg == UnaryOps.NEG
             ):
@@ -976,7 +964,7 @@ class Linearizer(OptimizedKernel):
                     UOps.ALU,
                     dtype,
                     (vin[0], vin[1].vin[0]),
-                    BinaryOps.SUB,
+                    ops_.Sub,
                     cachable=cachable,
                 )
             # constant folding
@@ -985,26 +973,26 @@ class Linearizer(OptimizedKernel):
             # zero folding
             for x in [0, 1]:
                 if (
-                    arg == BinaryOps.ADD
+                    arg == ops_.Add
                     and vin[x].uop == UOps.CONST
                     and vin[x].arg == 0.0
                 ):
                     return vin[1 - x]
                 if (
-                    arg == BinaryOps.MUL
+                    arg == ops_.Mul
                     and vin[x].uop == UOps.CONST
                     and vin[x].arg == 1.0
                 ):
                     return vin[1 - x]
                 if (
-                    arg == BinaryOps.MUL
+                    arg == ops_.Mul
                     and vin[x].uop == UOps.CONST
                     and vin[x].arg == 0.0
                 ):
                     return vin[x]
-            if arg == BinaryOps.SUB and vin[1].uop == UOps.CONST and vin[1].arg == 0.0:
+            if arg == ops_.Sub and vin[1].uop == UOps.CONST and vin[1].arg == 0.0:
                 return vin[0]
-            if arg == BinaryOps.DIV and vin[1].uop == UOps.CONST and vin[1].arg == 1.0:
+            if arg == ops_.Div and vin[1].uop == UOps.CONST and vin[1].arg == 1.0:
                 return vin[0]
         if cachable and key in self.saved_exprs:
             return self.saved_exprs[key]
@@ -1028,22 +1016,20 @@ class Linearizer(OptimizedKernel):
         if (
             x.op == ReduceOps.SUM
             and x.src[0].__class__ is LazyOp
-            and x.src[0].op == BinaryOps.MUL
+            and x.src[0].op == ops_.Mul
         ):
             x = LazyOp(TernaryOps.MULACC, x.src[0].src, x.arg)
         if (
             x.op == ReduceOps.SUM
-            and x.src[0].__class__ is LazyOp
-            and x.src[0].op == UnaryOps.CAST
-            and x.src[0].src[0].__class__ is LazyOp
-            and x.src[0].src[0].op == BinaryOps.MUL
+            and isinstance(x.src[0], ops_.Cast)
+            and isinstance(x.src[0].src[0], ops_.Mul)
         ):
             x = LazyOp(TernaryOps.MULACC, x.src[0].src[0].src, x.arg)
         values = [self.ast_parse(v, acc, loaded_buffers) for v in x.src]
         ops = {
-            ReduceOps.SUM: BinaryOps.ADD,
-            ReduceOps.MAX: BinaryOps.MAX,
-            TernaryOps.MULACC: TernaryOps.MULACC,
+            ops_.Sum: ops_.Add,
+            ops_.Max: ops_.Max2,
+            ops_.MulAcc: ops_.MulAcc,
         }
         if x.op in ops:
             ret = [

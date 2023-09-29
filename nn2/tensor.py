@@ -9,6 +9,7 @@ import typing as ta
 
 import numpy as np
 
+from . import ops
 from .devices import Device
 from .dtypes import DType
 from .dtypes import ImageDType
@@ -22,7 +23,6 @@ from .helpers import getenv
 from .helpers import make_pair
 from .helpers import prod
 from .lazy import LazyBuffer
-from .ops import LoadOps
 from .shape.symbolic import sint
 
 
@@ -102,7 +102,7 @@ class Tensor:
             ), "dtype doesn't match, and casting isn't supported"
         elif isinstance(data, (int, float)):
             self.lazydata = LazyBuffer.loadop(
-                LoadOps.CONST, tuple(), dtype or Tensor.default_type, device, data
+                ops.LoadConst, tuple(), dtype or Tensor.default_type, device, data
             )
             return
         elif data.__class__ is list:
@@ -128,7 +128,7 @@ class Tensor:
             data
             if data.device == device
             else LazyBuffer.loadop(
-                LoadOps.FROM, data.shape, data.dtype, device, src=data
+                ops.From, data.shape, data.dtype, device, src=data
             )
         )
 
@@ -227,7 +227,7 @@ class Tensor:
     @staticmethod
     def empty(*shape, **kwargs):
         assert all_int(shape), f"cannot create with symbolic shape {shape}"
-        return Tensor._loadop(LoadOps.EMPTY, prod(shape), **kwargs).reshape(shape)
+        return Tensor._loadop(ops.Empty, prod(shape), **kwargs).reshape(shape)
 
     _seed: int = int(time.time())
 
@@ -240,7 +240,7 @@ class Tensor:
         assert all_int(shape), f"cannot create with symbolic shape {shape}"
         Tensor._seed += 1
         return Tensor._loadop(
-            LoadOps.RAND, prod(shape), arg=Tensor._seed, **kwargs
+            ops.Rand, prod(shape), arg=Tensor._seed, **kwargs
         ).reshape(shape)
 
     # ***** creation helper functions *****
