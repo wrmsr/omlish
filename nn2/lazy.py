@@ -568,7 +568,7 @@ class LazyBuffer:
             return self._reduce_op(
                 op, new_shape
             )  # The amount of work should be big enough to take the benefit of "2 kernels" approach.
-        heuristic, divisor, dim_to_split = max(  # type: ignore
+        heuristic, divisor, dim_to_split = max(
             ((divisor := math.gcd(256, old)) / (stride or math.inf), divisor, i)
             for i, (old, new, stride) in enumerate(zip(self.shape, new_shape, self.st.real_strides()))
             if old != new
@@ -797,9 +797,9 @@ def run_schedule(schedule: list[tuple[LazyOp, LazyBuffer, tuple[LazyBuffer, ...]
         op, out, buffers = schedule.pop(0)
         # log_schedule_item(op, out, buffers)
         if DEBUG >= 3:
-            from extra.utils import print_tree  # type: ignore
-
+            from .helpers import print_tree
             print_tree(op)
+
         if op.op in LoadOps:
             LOAD_OPS_DISPATCHER[ta.cast(LoadOps, op.op)](out)
             # TODO: why can't we delete these ops?
@@ -877,7 +877,7 @@ def _realize_empty(buffer: LazyBuffer) -> None:
 
 def _realize_rand(buffer: LazyBuffer) -> None:
     rng = np.random.default_rng(buffer.op.arg)
-    buffer.realized = Device[buffer.device].buffer.fromCpu(  # type: ignore
+    buffer.realized = Device[buffer.device].buffer.fromCpu(
         rng.random(size=buffer.shape, dtype=np.float32).astype(dtype=buffer.dtype.np, copy=False),
         **buffer._device_extra_args()
     )

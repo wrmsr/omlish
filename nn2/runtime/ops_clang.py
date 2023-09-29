@@ -25,10 +25,13 @@ ARM64 = getenv("ARM64", False)
 CI = False
 
 if CI and ARM64:
-    from unicorn import Uc, UC_ARCH_ARM64, UC_MODE_ARM, UC_HOOK_CODE, arm64_const  # type: ignore
+    from unicorn import UC_ARCH_ARM64
+    from unicorn import UC_HOOK_CODE
+    from unicorn import UC_MODE_ARM
+    from unicorn import Uc
+    from unicorn import arm64_const
 
 args = {
-    "Windows": {"cflags": "", "ext": "dll", "exp": "__declspec(dllexport) "},
     "Linux": {"cflags": "-lm -fPIC --rtlib=compiler-rt ", "ext": "so", "exp": ""},
     "Darwin": {"cflags": "-lm -fPIC --rtlib=compiler-rt ", "ext": "dylib", "exp": ""},
 }[platform.system()]
@@ -60,9 +63,9 @@ def emulate_ext_calls(fn, uc, address, size, user_data):
             "I", uc.reg_read(getattr(arm64_const, f"UC_ARM64_REG_S{fn[2][1:]}"))
         ),
     )[0]
-    uc.reg_write(  # type: ignore
+    uc.reg_write(
         getattr(arm64_const, f"UC_ARM64_REG_S{fn[1][1:]}"),
-        struct.unpack("I", struct.pack("f", mock_lm[fn[0]](s_in)))[0],
+        struct.unpack("I", struct.pack("f", mock_lm[fn[0]](s_in)))[0],  # noqa
     )
 
 

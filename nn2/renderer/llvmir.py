@@ -164,7 +164,7 @@ def uops_to_llvm_ir(function_name: str, uops: list[UOp]) -> str:
     loop_blocks: list = []
     reduce_phis: list = []
     # TODO: newvar probably shouldn't be optional
-    lvars: dict[optional[UOp], ta.Any] = {}  # this Any is an llvm type
+    lvars: dict[ta.Optional[UOp], ta.Any] = {}  # this Any is an llvm type
 
     for bufname, dtype in buf_to_dtype.items():
         if dtype == dtypes._arg_int32:

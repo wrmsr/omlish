@@ -552,7 +552,7 @@ class Compiled:
 
     def exec_ast(self, ast: LazyOp, output, inputs, var_vals, **kwargs):
         # if DEBUG >= 4:
-        #  from extra.utils import print_tree
+        #  from .helpers import print_tree
         #  print_tree(ast)
 
         # check if we can reuse the output buffer

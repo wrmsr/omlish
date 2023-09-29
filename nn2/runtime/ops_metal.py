@@ -5,9 +5,9 @@ import functools
 import ctypes
 import typing as ta
 
-import Metal  # type: ignore
-import Cocoa  # type: ignore
-import libdispatch  # type: ignore
+import Metal
+import Cocoa
+import libdispatch
 
 from ..codegen.kernel import LinearizerOptions
 from ..dtypes import DType
