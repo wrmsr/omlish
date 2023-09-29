@@ -1,12 +1,12 @@
 import itertools
 import typing as ta
 
-from ..helpers import DType
-from ..helpers import ImageDType
+from ..dtypes import DType
+from ..dtypes import ImageDType
+from ..dtypes import dtypes
 from ..helpers import all_int
 from ..helpers import colored
 from ..helpers import dedup
-from ..helpers import dtypes
 from ..ops import BufferOps
 from ..ops import FlopCounter
 from ..ops import LazyOp

@@ -1,8 +1,8 @@
 import typing as ta
 import math
 
-from ..helpers import DType
-from ..helpers import dtypes
+from ..dtypes import DType
+from ..dtypes import dtypes
 from ..ops import BinaryOps
 from ..ops import TernaryOps
 from ..ops import UnaryOps

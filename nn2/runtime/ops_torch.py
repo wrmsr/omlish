@@ -2,8 +2,8 @@ import typing as ta
 
 import torch
 
-from ..helpers import DType
-from ..helpers import dtypes
+from ..dtypes import DType
+from ..dtypes import dtypes
 from ..helpers import getenv
 from ..helpers import prod
 from ..ops import BinaryOps

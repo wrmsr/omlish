@@ -9,7 +9,7 @@ import pyopencl as cl  # type: ignore
 
 from ..codegen.kernel import LinearizerOptions
 from ..helpers import DEBUG
-from ..helpers import ImageDType
+from ..dtypes import ImageDType
 from ..helpers import OSX
 from ..helpers import fromimport
 from ..helpers import getenv

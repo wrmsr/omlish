@@ -4,9 +4,9 @@ import typing as ta
 
 from ..codegen.linearizer import UOp
 from ..codegen.linearizer import UOps
-from ..helpers import DType
-from ..helpers import ImageDType
-from ..helpers import dtypes
+from ..dtypes import DType
+from ..dtypes import ImageDType
+from ..dtypes import dtypes
 from ..helpers import prod
 from ..helpers import strip_parens
 from ..ops import BinaryOps

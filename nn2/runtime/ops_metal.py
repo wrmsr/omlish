@@ -10,9 +10,9 @@ import Cocoa  # type: ignore
 import libdispatch  # type: ignore
 
 from ..codegen.kernel import LinearizerOptions
+from ..dtypes import DType
+from ..dtypes import dtypes
 from ..helpers import DEBUG
-from ..helpers import DType
-from ..helpers import dtypes
 from ..helpers import getenv
 from ..helpers import prod
 from ..ops import Compiled

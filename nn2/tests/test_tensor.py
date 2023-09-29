@@ -1,10 +1,17 @@
+import copy
+import unittest
+
 import numpy as np
 import torch
-import unittest, copy
-from ..tensor import Tensor, Device
-from ..helpers import dtypes
-from ..gradcheck import numerical_jacobian, jacobian, gradcheck
+
+from ..dtypes import dtypes
+from ..gradcheck import gradcheck
+from ..gradcheck import jacobian
+from ..gradcheck import numerical_jacobian
 from ..helpers import temp_file
+from ..tensor import Device
+from ..tensor import Tensor
+
 
 x_init = np.random.randn(1, 3).astype(np.float32)
 U_init = np.random.randn(3, 3).astype(np.float32)

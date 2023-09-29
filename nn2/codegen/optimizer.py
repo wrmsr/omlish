@@ -6,9 +6,9 @@ import os
 
 from ..codegen.kernel import Kernel
 from ..codegen.kernel import LocalBuffer
+from ..dtypes import ImageDType
+from ..dtypes import dtypes
 from ..helpers import DEBUG
-from ..helpers import ImageDType
-from ..helpers import dtypes
 from ..helpers import getenv
 from ..helpers import prod
 from ..ops import BinaryOps

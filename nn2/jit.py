@@ -4,9 +4,9 @@ import functools
 import itertools
 import typing as ta
 
+from .dtypes import DType
+from .dtypes import ImageDType
 from .helpers import DEBUG
-from .helpers import DType
-from .helpers import ImageDType
 from .helpers import merge_dicts
 from .ops import BasicBatchExecutor
 from .ops import Device

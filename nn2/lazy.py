@@ -8,12 +8,12 @@ import weakref
 
 import numpy as np
 
+from .dtypes import DType
+from .dtypes import ImageDType
+from .dtypes import dtypes
 from .helpers import DEBUG
-from .helpers import DType
-from .helpers import ImageDType
 from .helpers import all_int
 from .helpers import dedup
-from .helpers import dtypes
 from .helpers import flatten
 from .helpers import getenv
 from .helpers import merge_dicts
@@ -41,6 +41,7 @@ from .shape.shapetracker import ShapeTracker
 from .shape.shapetracker import get_contraction
 from .shape.symbolic import Variable
 from .shape.symbolic import sint
+
 
 # lazy can recurse a lot
 sys.setrecursionlimit(10000)

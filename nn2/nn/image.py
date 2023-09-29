@@ -1,8 +1,8 @@
 import numpy as np
 
+from ..dtypes import ImageDType
+from ..dtypes import dtypes
 from ..helpers import IMAGE
-from ..helpers import ImageDType
-from ..helpers import dtypes
 from ..helpers import getenv
 from ..helpers import prod
 from ..lazy import get_single_root
