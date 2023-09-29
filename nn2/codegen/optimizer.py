@@ -373,8 +373,8 @@ class OptimizedKernel(Kernel):
             and isinstance(self.reduceop, ops.Sum)
             and isinstance(self.reduceop.src[0], LazyOp)
             and isinstance(self.reduceop.src[0], ops.Mul)
-            and isinstance(self.reduceop.src[0].src[0]. ops.Mem)
-            and isinstance(self.reduceop.src[0].src[1]. ops.Mem)
+            and isinstance(self.reduceop.src[0].src[0], ops.Mem)
+            and isinstance(self.reduceop.src[0].src[1], ops.Mem)
             and self.opts.has_local
         ):
             # METAL tensor cores are 8x8x8, with 2 elements per thread in the 32 thread warp
