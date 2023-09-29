@@ -61,10 +61,8 @@ def apply_rotary_emb(xq, xk, freqs_cis) -> tuple[Tensor, Tensor]:
     xq = xq.reshape(*xq.shape[0:-1], -1, 2)
     xk = xk.reshape(*xk.shape[0:-1], -1, 2)
     assert len(xq.shape) == 5 and len(xk.shape) == 5 and len(freqs_cis.shape) == 5
-    c, d = (
-        freqs_cis[:, : xq.shape[1], :, :, 0:1],
-        freqs_cis[:, : xq.shape[1], :, :, 1:2],
-    )
+    c = freqs_cis[:, : xq.shape[1], :, :, 0:1]
+    d = freqs_cis[:, : xq.shape[1], :, :, 1:2]
     xq_out = complex_mult(xq, c, d)
     xk_out = complex_mult(xk, c, d)
     return xq_out.flatten(3), xk_out.flatten(3)
@@ -116,7 +114,9 @@ class Attention:
         jit_ctx: ta.Optional[dict[Variable, int]] = None,
     ) -> tuple[Tensor, Tensor, Tensor]:
         bsz, seqlen, _ = x.shape
-        xq, xk, xv = self.wq(x), self.wk(x), self.wv(x)
+        xq = self.wq(x)
+        xk = self.wk(x)
+        xv = self.wv(x)
         xq = xq.reshape(xq.shape[0], xq.shape[1], self.n_heads, self.head_dim)
         xk = xk.reshape(xk.shape[0], xk.shape[1], self.n_kv_heads, self.head_dim)
         xv = xv.reshape(xv.shape[0], xv.shape[1], self.n_kv_heads, self.head_dim)
@@ -157,12 +157,15 @@ class FeedForward:
         self, dim, hidden_dim, multiple_of, linear=Linear, ffn_dim_multiplier=None
     ) -> None:
         super().__init__()
+
         # TODO: what is this?
         hidden_dim = int(2 * hidden_dim / 3)
+
         # custom dim factor multiplier
         if ffn_dim_multiplier is not None:
             hidden_dim = int(ffn_dim_multiplier * hidden_dim)
         hidden_dim = multiple_of * ((hidden_dim + multiple_of - 1) // multiple_of)
+
         self.w1 = linear(dim, hidden_dim, bias=False)
         self.w2 = linear(hidden_dim, dim, bias=False)
         self.w3 = linear(dim, hidden_dim, bias=False)
@@ -184,9 +187,7 @@ class TransformerBlock:
     ) -> None:
         super().__init__()
         self.attention = Attention(dim, n_heads, n_kv_heads, linear)
-        self.feed_forward = FeedForward(
-            dim, 4 * dim, multiple_of, linear, ffn_dim_multiplier
-        )
+        self.feed_forward = FeedForward(dim, 4 * dim, multiple_of, linear, ffn_dim_multiplier)
         self.attention_norm = RMSNorm(dim, norm_eps)
         self.ffn_norm = RMSNorm(dim, norm_eps)
 
@@ -201,6 +202,7 @@ class TransformerBlock:
         jit_ctx: ta.Optional[dict[Variable, int]] = None,
     ):
         bsz, seqlen, _ = x.shape
+
         if JIT and mask is None:
             assert cache_k is not None and cache_v is not None, "no cache"
             pos = Variable("pos", 1, 1024)
@@ -226,6 +228,7 @@ class TransformerBlock:
                 )
             )
             freqs_cis.lazydata.var_vals[pos] = start_pos
+
         else:
             freqs_cis = freqs_cis.shrink(
                 (
@@ -246,7 +249,9 @@ class TransformerBlock:
             mask,
             jit_ctx=jit_ctx,
         )
+
         h = x + output
+
         return (
             (h + self.feed_forward(self.ffn_norm(h))).realize(),
             cache_k.realize(),
@@ -305,11 +310,16 @@ class Transformer:
         return logits.realize()
 
     def __call__(
-        self, tokens: Tensor, start_pos: int, temperature: ta.Optional[float] = None
+            self,
+            tokens: Tensor,
+            start_pos: int,
+            temperature: ta.Optional[float] = None,
     ):
         _bsz, seqlen = tokens.shape
+
         if seqlen == 1 and JIT:
             pos = Variable("pos", 1, 1024)
+
             freqs_cis = self.freqs_cis.shrink(
                 (
                     (0, self.freqs_cis.shape[0]),
@@ -319,8 +329,11 @@ class Transformer:
                     (0, self.freqs_cis.shape[4]),
                 )
             )
+
             freqs_cis.lazydata.var_vals[pos] = start_pos
+
             h = self.tok_embeddings_jitted(tokens)
+
             for i, (layer, (cache_k, cache_v)) in enumerate(
                 zip(self.layers_jitted, self.kv_caches)
             ):
@@ -336,7 +349,9 @@ class Transformer:
                 # TODO: move the kv cache into Attention, pre-allocate the cache and instead of cat, update the cache
                 #  in-place
                 self.kv_caches[i] = (cache_k, cache_v)
+
             return self.postprocess_jitted(h, temperature)
+
         else:
             freqs_cis = self.freqs_cis.shrink(
                 (
@@ -347,6 +362,7 @@ class Transformer:
                     (0, self.freqs_cis.shape[4]),
                 )
             )
+
             mask = (
                 Tensor.full(
                     (1, 1, seqlen, start_pos + seqlen),
@@ -356,19 +372,18 @@ class Transformer:
                 .triu(start_pos + 1)
                 .realize()
             )
+
             h = self.tok_embeddings(tokens)
+
             for i, (layer, (cache_k, cache_v)) in enumerate(
                 zip(self.layers, self.kv_caches)
             ):
                 # need this reshape back to int shape in conversational mode because jitted and unjitted calls share the
                 # same cache
                 if cache_k is not None and start_pos > 0:
-                    cache_k = cache_k.reshape(
-                        cache_k.shape[0], start_pos, cache_k.shape[2], cache_k.shape[3]
-                    )
-                    cache_v = cache_v.reshape(
-                        cache_v.shape[0], start_pos, cache_v.shape[2], cache_v.shape[3]
-                    )
+                    cache_k = cache_k.reshape(cache_k.shape[0], start_pos, cache_k.shape[2], cache_k.shape[3])
+                    cache_v = cache_v.reshape(cache_v.shape[0], start_pos, cache_v.shape[2], cache_v.shape[3])
+
                 h, cache_k, cache_v = layer(
                     h,
                     cache_k,
@@ -377,7 +392,9 @@ class Transformer:
                     freqs_cis=self.freqs_cis,
                     mask=mask,
                 )
+
                 self.kv_caches[i] = (cache_k, cache_v)
+
             return self.postprocess(h, temperature)
 
 
@@ -597,6 +614,7 @@ def concat_weights(models):
         disk_tensors = [model[name] for model in models]
         if len(disk_tensors) == 1 or len(disk_tensors[0].shape) == 1:
             return disk_tensors[0].to(device=Device.DEFAULT)
+
         axis = (
             1
             if name.startswith("tok_embeddings.")
@@ -617,12 +635,16 @@ def load(fn: str):
     if fn.endswith(".index.json"):
         with open(fn) as fp:
             weight_map = json.load(fp)["weight_map"]
+
         parts = {
-            n: load(str(pathlib.Path(fn).parent / pathlib.Path(n).name)) for n in set(weight_map.values())
+            n: load(str(pathlib.Path(fn).parent / pathlib.Path(n).name))
+            for n in set(weight_map.values())
         }
         return {k: parts[n][k] for k, n in weight_map.items()}
+
     elif fn.endswith(".safetensors"):
         return safe_load(fn)
+
     else:
         return torch_load(fn)
 
@@ -657,7 +679,7 @@ def convert_from_huggingface(weights, model):
 class AbsmaxQuantizedLinear:
     def __init__(self, in_features, out_features, bias=False) -> None:
         super().__init__()
-        assert bias == False
+        assert not bias
         self.weight = Tensor.ones(out_features, in_features, dtype=dtypes.int8)
         self.scale = Tensor.ones(out_features, dtype=dtypes.half)
 
@@ -700,6 +722,7 @@ class LLaMa:
         )
 
         params = MODEL_PARAMS[model_gen][model_size]
+
         model = (
             Transformer(**params["args"], linear=AbsmaxQuantizedLinear)
             if quantize
@@ -718,6 +741,7 @@ class LLaMa:
             )
         else:
             weights = load(str(model_path))
+
         if "model.embed_tokens.weight" in weights:
             weights = convert_from_huggingface(weights, model)
 
