@@ -5,7 +5,7 @@ import functools
 import typing as ta
 
 import numpy as np
-import pyopencl as cl  # type: ignore
+import pyopencl as cl
 
 from ..codegen.kernel import LinearizerOptions
 from ..dtypes import ImageDType
@@ -174,7 +174,7 @@ class ClBuffer(RawBufferCopyInOut, RawBufferTransfer):
 class ClProgram:
     def __init__(self, name: str, prg: str, binary=False, argdtypes=None, options=None):
         self.name = name
-        self.clprograms = [  # type: ignore
+        self.clprograms = [
             cl.Program(ctx, ctx.devices, [prg] * len(ctx.devices))
             if binary else cl.Program(ctx, prg) for ctx in CL.cl_ctxs
         ]

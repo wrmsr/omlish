@@ -884,7 +884,7 @@ class Linearizer(OptimizedKernel):
                 )
 
                 # there's no AST here (and there's no shape for the reduce LazyOp)
-                self.ast_parse(  # type: ignore
+                self.ast_parse(
                     LazyOp(self.reduceop.op, ("LOCAL_BUFFER",)),
                     [acc[off] for off in self.acc_offsets(-1)],
                     loaded_buffers,

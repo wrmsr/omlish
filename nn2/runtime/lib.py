@@ -86,7 +86,7 @@ class RawBufferMapped(RawBufferCopyIn):
 
     # NOTE: this metadata prevents the backing buffer from being freed. hack can be removed with PEP688
     def toCpu(self) -> np.ndarray:
-        return np.frombuffer(  # type: ignore
+        return np.frombuffer(
             self._buffer(),
             dtype=np.dtype(self.dtype.np, metadata={"backing": self}),
             count=self.size,

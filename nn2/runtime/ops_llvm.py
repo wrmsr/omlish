@@ -4,7 +4,7 @@ import ctypes
 import typing as ta
 import ctypes as ct
 
-import llvmlite.binding as llvm  # type: ignore
+import llvmlite.binding as llvm
 
 from ..codegen.kernel import LinearizerOptions
 from ..helpers import DEBUG

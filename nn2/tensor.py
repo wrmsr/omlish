@@ -163,7 +163,7 @@ class Tensor:
         if self.device.startswith("DISK"):
             if x.__class__ is not Tensor:
                 x = Tensor(x, device="CPU", dtype=self.dtype)
-            self.lazydata.contiguous().realize().realized._copyin(x.numpy())  # type: ignore
+            self.lazydata.contiguous().realize().realized._copyin(x.numpy())
             return self
         if x.__class__ is not Tensor:
             x = Tensor(x, device=self.device, dtype=self.dtype)
@@ -1525,10 +1525,10 @@ class Tensor:
         return 1.0 - (self > x)
 
     def __ne__(self, x) -> Tensor:
-        return (self < x) + (self > x)  # type: ignore
+        return (self < x) + (self > x)
 
     def __eq__(self, x) -> Tensor:
-        return 1.0 - (self != x)  # type: ignore
+        return 1.0 - (self != x)
 
     # ***** functional nn ops *****
 
