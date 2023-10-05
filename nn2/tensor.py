@@ -24,7 +24,6 @@ from .helpers import getenv
 from .helpers import make_pair
 from .helpers import prod
 from .lazy import LazyBuffer
-from .realize import run_schedule
 from .shape.symbolic import sint
 
 
@@ -96,11 +95,7 @@ class Tensor:
             data
             if data.device == device
             else LazyBuffer.loadop(
-                ops.From,
-                data.shape,
-                data.dtype,
-                device,
-                src=data.contiguous(),
+                ops.From, data.shape, data.dtype, device, src=data
             )
         )
 
@@ -125,16 +120,8 @@ class Tensor:
 
     # ***** data handlers ****
 
-    @staticmethod
-    def corealize(lst: ta.Iterable[Tensor]) -> None:
-        seen: ta.Set[LazyBuffer] = set()
-        sched = []
-        for t in lst:
-            sched += t.lazydata.schedule(seen)
-        run_schedule(sched)
-
     def realize(self) -> Tensor:
-        run_schedule(self.lazydata.schedule())
+        self.lazydata.realize()
         return self
 
     def assign(self, x) -> Tensor:
@@ -142,7 +129,7 @@ class Tensor:
         if self.device.startswith("DISK"):
             if x.__class__ is not Tensor:
                 x = Tensor(x, device="CPU", dtype=self.dtype)
-            self.contiguous().realize().lazydata.realized._copyin(x.numpy())  # type: ignore
+            self.lazydata.contiguous().realize().realized._copyin(x.numpy())
             return self
         if x.__class__ is not Tensor:
             x = Tensor(x, device=self.device, dtype=self.dtype)
@@ -165,9 +152,7 @@ class Tensor:
         return Tensor(self.lazydata, device=self.device, requires_grad=False)
 
     def numpy(self) -> np.ndarray:
-        assert all_int(self.shape), f"no numpy if shape is symbolic, {self.shape=}"
-        assert self.dtype.np is not None, f"no numpy dtype for {self.dtype}"
-        return self.detach().cast(dtypes.from_np(self.dtype.np)).contiguous().to('CPU').realize().lazydata.realized.toCPU().reshape(self.shape)
+        return self.lazydata.toCpu()
 
     # TODO: if things are realized this won't work
     def to_(self, device: str):
@@ -1013,15 +998,21 @@ class Tensor:
         def apply_matrix(mat, t, dim=0):
             return (
                 t
-                if dim == len(HW) else
-                Tensor.stack([
-                    apply_matrix(
-                        mat,
-                        sum(mm * t[j] for j, mm in enumerate(m) if mm),
-                        dim=dim + 1,
-                    )
-                    for m in mat
-                ])
+                if dim == len(HW)
+                else Tensor.stack(
+                    [
+                        apply_matrix(
+                            mat,
+                            sum(
+                                mat[i][j] * t[j]
+                                for j in range(len(mat[i]))
+                                if mat[i][j]
+                            ),
+                            dim=dim + 1,
+                        )
+                        for i in range(len(mat))
+                    ]
+                )
             )
 
         HWI, HWO = (6,) * len(HW), (4,) * len(HW)  # F(4x4,3x3) winograd tiles

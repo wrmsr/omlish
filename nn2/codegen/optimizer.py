@@ -6,7 +6,6 @@ import os
 
 from .. import ops
 from ..codegen.kernel import Kernel
-from ..codegen.kernel import LinearizerOptions
 from ..codegen.kernel import LocalBuffer
 from ..dtypes import ImageDType
 from ..dtypes import dtypes
@@ -19,13 +18,10 @@ from ..shape.view import View
 
 
 class OptimizedKernel(Kernel):
-    def __init__(
-            self,
-            ast: LazyOp,
-            opts: ta.Optional[LinearizerOptions] = None,
-            var_vals=None,
-    ) -> None:
-        super().__init__(ast, opts, var_vals)
+    def process(self) -> None:
+        if hasattr(self, "sts"):
+            return  # already processed
+        super().process()
 
         # move all reduce axes to the end
         reduce = list(enumerate(zip(self.full_shape, self.sts[0].shape)))
@@ -261,6 +257,8 @@ class OptimizedKernel(Kernel):
                     self.upcast()
 
     def hand_coded_optimizations(self, use_tensor_cores=getenv("TC", 1)):
+        self.process()
+
         # if there's images in the earlybufs, we have to make an axis the 4 loading one
         self.required_optimizations(early_only=True)
 
@@ -394,15 +392,13 @@ class OptimizedKernel(Kernel):
                 for i, s in enumerate(buf1_strides)
                 if s == 0 and self.full_shape[i] % 8 == 0 and i < self.first_reduce
             ]
-            #optim_conv2d = (
-            #    (self.shape_len - self.first_reduce) == 3
-            #    and self.full_shape[self.first_reduce + 1] % 2 == 1
-            #    and self.full_shape[self.first_reduce + 2] % 2 == 1
-            #    and max(self.full_shape[self.first_reduce + 1: self.first_reduce + 3]) < 21
-            #)
-            # enabling this gives wrong answers!! https://github.com/tinygrad/tinygrad/issues/1967
-            # TODO: WMMA must be a lot better before reenabling things like this
-            optim_conv2d = False
+            optim_conv2d = (
+                (self.shape_len - self.first_reduce) == 3
+                and self.full_shape[self.first_reduce + 1] % 2 == 1
+                and self.full_shape[self.first_reduce + 2] % 2 == 1
+                and max(self.full_shape[self.first_reduce + 1: self.first_reduce + 3])
+                < 21
+            )
             if (
                 axis_buf0
                 and axis_buf1
@@ -491,71 +487,6 @@ class OptimizedKernel(Kernel):
                 # early exit
                 return
 
-        # should use matvec - TODO: adjust/tune based on the wide vs tall/large vs small mat
-        MV_BLOCKSIZE = getenv("MV_BLOCKSIZE", 4)
-        MV_THREADS_PER_ROW = getenv("MV_THREADS_PER_ROW", 8)
-        MV_ROWS_PER_THREAD = getenv("MV_ROWS_PER_THREAD", 4)
-        if (
-                self.opts.has_local
-                and getenv("MV", 1) != 0
-                and (
-                    MV_BLOCKSIZE > 1
-                    or MV_THREADS_PER_ROW > 1
-                    or MV_ROWS_PER_THREAD > 1
-                )
-                and self.reduceop
-                and isinstance(self.reduceop.op, ops.Sum)
-                and len(self.full_shape) >= 2
-                and isinstance(self.reduceop.src[0], LazyOp)
-                and isinstance(self.reduceop.src[0], ops.Mul)
-                and isinstance(self.reduceop.src[0].src[0].op, ops.Mem)
-                and isinstance(self.reduceop.src[0].src[1].op, ops.Mem)
-        ):
-            buf0 = self.bufs.index(ta.cast(LazyOp, self.reduceop.src[0].src[0]).arg)
-            buf1 = self.bufs.index(ta.cast(LazyOp, self.reduceop.src[0].src[1]).arg)
-            buf0_strides = self.sts[buf0].real_strides()
-            buf1_strides = self.sts[buf1].real_strides()
-
-            def has_expanded_axis(s, st):
-                return any(x > 1 and y == 0 for x, y in zip(s, st))
-
-            if (
-                    buf0_strides[self.first_reduce] == 1
-                    and not (
-                        has_expanded_axis(self.sts[buf0].shape, buf0_strides)
-                        and has_expanded_axis(self.sts[buf1].shape, buf1_strides)
-                    )
-            ):
-                for global_idx in range(self.global_dims):
-                    if (
-                            self.full_shape[self.first_reduce] % MV_THREADS_PER_ROW == 0
-                            and self.full_shape[global_idx] % (MV_BLOCKSIZE * MV_ROWS_PER_THREAD) == 0
-                    ):
-                        if MV_THREADS_PER_ROW > 1:
-                            self.shift_to(
-                                self.first_reduce,
-                                MV_THREADS_PER_ROW,
-                                top=False,
-                                insert_before=self.first_reduce + len(self.group_for_reduce),
-                            )
-                            self.group_for_reduce.append(MV_THREADS_PER_ROW)
-
-                        if MV_BLOCKSIZE > 1:
-                            self.shift_to(
-                                global_idx,
-                                MV_BLOCKSIZE,
-                                insert_before=self.first_reduce,
-                            )
-                            self.local_dims += 1
-
-                        if MV_ROWS_PER_THREAD > 1:
-                            self.shift_to(
-                                global_idx,
-                                MV_ROWS_PER_THREAD,
-                            )
-                            self.upcast()
-                        return
-
         if (
             self.opts.has_local
             and self.opts.has_shared
@@ -583,7 +514,8 @@ class OptimizedKernel(Kernel):
                             self.first_reduce,
                             sz,
                             top=True,
-                            insert_before=self.first_reduce + len(self.group_for_reduce),
+                            insert_before=self.first_reduce
+                            + len(self.group_for_reduce),
                         )
                         self.group_for_reduce.append(sz)
                         break
