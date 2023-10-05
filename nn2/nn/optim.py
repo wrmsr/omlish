@@ -22,14 +22,7 @@ class Optimizer:
             param.grad = None
 
     def realize(self, extra=None):
-        # TODO: corealize
-        # NOTE: in extra is too late for most of the params due to issues with assign
-        for p in (
-            extra + self.params + self.buffers
-            if extra is not None
-            else self.params + self.buffers
-        ):
-            p.realize()
+        Tensor.corealize(extra + self.params + self.buffers if extra is not None else self.params + self.buffers)
 
 
 class SGD(Optimizer):

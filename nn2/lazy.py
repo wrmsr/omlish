@@ -41,9 +41,7 @@ sys.setrecursionlimit(10000)
 
 
 OPT = getenv("OPT", 2)
-LAZY = getenv("LAZY", 1)
 LAZYCACHE = getenv("LAZYCACHE", 1)
-P2P = getenv("P2P", 0)
 
 # TODO: movement ops that only change shape are really nops. treat them as such
 REMOVE_MOVEMENT_NOPS = OPT >= 1
@@ -142,11 +140,11 @@ def _replace_bufferops(op: LazyOp) -> tuple[LazyOp, list[LazyBuffer]]:
 # **** lazy operations ****
 
 
-def get_single_root(root: LazyBuffer) -> LazyBuffer:
+def get_single_root(root:LazyBuffer) -> LazyBuffer:
     return (
         get_single_root(ta.cast(LazyBuffer, root.op.src[0]))
-        if getattr(root, "op", None) and len(root.op.src) == 1
-        else root
+        if getattr(root, 'op', None) and len(root.op.src) == 1 and isinstance(root.op.src[0], LazyBuffer) else
+        root
     )
 
 
@@ -261,8 +259,6 @@ class LazyBuffer:
             base.views.add(self)
         else:
             assert st.contiguous, "unbased LazyBuffers must be contiguous"
-        if not LAZY:
-            self.realize()
 
     @property
     def var_vals_key(self):
@@ -273,12 +269,7 @@ class LazyBuffer:
         return self._base if self._base is not None else self
 
     def is_unrealized_const(self):
-        # consts are broken in LLVM in NaN/inf
-        return not self.realized and (
-            isinstance(self.base.op, ops.LoadConst)
-            and isinstance(Device[self.device], Compiled)
-            and self.device != "LLVM"
-        )
+        return not self.realized and isinstance(self.base.op, ops.LoadConst)
 
     @property
     def realized(self):
@@ -339,45 +330,20 @@ class LazyBuffer:
         if self in seen or self.realized or self.is_unrealized_const():
             return []
         seen.add(self)
-        if issubclass(self.optype, ops.MovementOp):
+        if self.base != self:
             return self.base.schedule(seen)
 
+        # rewrite unbased CONTIGUOUS into UnaryOps.NOOP
         op = (
             self.op
             if not isinstance(self.op, ops.Contiguous)
             else ops.Nop(self.op.src)
         )
-        if isinstance(op, ops.LoadOp):
-            return [(self.op, self, ())]
 
         if issubclass(self.optype, ops.BinaryOp):
             op = _ast_binaryops(op, self.shape)
         elif issubclass(self.optype, ops.ReduceOp):
             op = _ast_reduceops(op)
-
-        # HACK: image shape can be wrong, hot cast it back to a normal float
-        if isinstance(self.dtype, ImageDType) and (
-            prod(self.shape) != prod(self.dtype.shape)
-            or not any(self.shape[x] % 4 == 0 for x in self.st.unit_stride_axes())
-        ):
-            if isinstance(op, ops.Reshape):
-                op = ops.Reshape(
-                    (ops.Cast(op.src, (dtypes.float32, False)),),
-                    op.arg,
-                )
-            else:
-                op = ops.Cast((op,), (dtypes.float32, False))
-            self.dtype = dtypes.float32
-
-        # contiguous can be a copy. must do this after the image hack
-        if isinstance(self.op, ops.Contiguous):
-            src = ta.cast(LazyBuffer, self.op.src[0])
-            if (
-                src.st.contiguous
-                and src.st.size() == src.base.st.size()
-                and not src.is_unrealized_const()
-            ):
-                return src.schedule(seen) + [(self.op, self, ())]
 
         # realize the past and exec the AST
         ret = []
@@ -395,11 +361,6 @@ class LazyBuffer:
         # run the ast and log the op
         op, base_bufs = _replace_bufferops(op)
         return ret + [(op, self, tuple(base_bufs))]
-
-    def realize(self: LazyBuffer) -> LazyBuffer:
-        if not self.realized:
-            run_schedule(self.schedule())
-        return self
 
     # *** creation/special ops ***
 
@@ -434,6 +395,19 @@ class LazyBuffer:
         if not self.realized and isinstance(self.op, ops.Const):
             return self  # two CONTIGUOUS in a row is one
 
+        if self.st.contiguous and self.st.size() == self.base.st.size() and not self.is_unrealized_const():
+            # this will turn into nothing, it's based and a copy
+            # TODO: based lazybuffers shouldn't take dtype or var_vals, same issue in movementops
+            return create_lazybuffer(
+                self.device,
+                ShapeTracker.from_shape(tuple(self.shape)),
+                ops.Contiguous((self,), None),
+                self.dtype,
+                self.var_vals,
+                base=self.base,
+            )
+
+        # real contiguous, this will turn into a UnaryOps.NOOP
         return self.loadop(
             ops.Contiguous,
             self.shape,
@@ -453,19 +427,6 @@ class LazyBuffer:
             {},
             RawNumpyBuffer.fromCpu(x),
         )
-
-    def prepare_transfer(self):
-        self_casted = (
-            self.e(ops.Cast, arg=(dtypes.from_np(self.dtype.np), False))
-            if dtypes.from_np(self.dtype.np) != self.dtype
-            else self
-        )
-        return self_casted.contiguous().realize().realized
-
-    def toCpu(self) -> np.ndarray:
-        assert self.dtype.np, f"{self.dtype} is not supported in toCpu"
-        assert all_int(self.shape), f"no toCpu if shape is symbolic, {self.shape=}"
-        return ta.cast(RawBuffer, self.prepare_transfer()).toCpu().reshape(self.shape)
 
     # *** elementwise ops ***
 
@@ -787,126 +748,4 @@ MOVEMENT_OPS_DISPATCHER: dict[type[ops.MovementOp], ta.Callable] = {
     ops.Permute: LazyBuffer.permute,
     ops.Pad: LazyBuffer.pad,
     ops.Restride: LazyBuffer.stride,
-}
-
-# *** realization (unrelated to lazy) ***
-
-
-def run_schedule(schedule: list[tuple[LazyOp, LazyBuffer, tuple[LazyBuffer, ...]]]):
-    # NOTE: if you for loop the schedule it's slow because nothing frees
-    while len(schedule):
-        op, out, buffers = schedule.pop(0)
-        # log_schedule_item(op, out, buffers)
-        if DEBUG >= 3:
-            from .helpers import print_tree
-            print_tree(op)
-
-        if isinstance(op, ops.LoadOp):
-            LOAD_OPS_DISPATCHER[type(op)](out)
-            # TODO: why can't we delete these ops?
-        else:
-            out.realized = Device[out.device].exec_ast(
-                op,
-                output=out,
-                inputs=[x.realized for x in buffers],
-                var_vals=out.var_vals,
-                **out._device_extra_args(),
-            )
-            del out.op
-            for v in out.views:
-                del v.op
-
-        assert out.realized and isinstance(
-            out.realized, Device[out.device].buffer
-        ), f"device mismatch on realized got {type(out.realized)} expected {out.device}"
-
-        assert out.realized.dtype == out.dtype, "realized dtype is incorrect"
-
-
-def _realize_contiguous(buffer: LazyBuffer) -> None:
-    # this is just a copy now, if it's not a copy schedule will handle it
-    src = ta.cast(LazyBuffer, buffer.op.src[0])
-    buffer.realized = src.realized
-    assert (
-        buffer.dtype == src.dtype
-    ), f"contiguous dtype mismatch, expecting {buffer.dtype}, got {src.dtype}"
-
-
-def _realize_custom(buffer: LazyBuffer) -> None:
-    # this needs to immediately realize
-    buffer.realized = buffer.op.arg(buffer, *[x.realize() for x in buffer.op.src])
-
-
-def _realize_from(buffer: LazyBuffer) -> None:
-    rawbuf = buffer.op.src[0].realize()
-    assert rawbuf.realized, "realize failed?"
-    if DEBUG >= 3:
-        print(
-            f"*** copy {buffer.device} <- {rawbuf.device} size {rawbuf.realized.size} dtype {rawbuf.realized.dtype}"
-        )
-
-    # TODO: make this generic
-    if isinstance(rawbuf.realized, RawDiskBuffer) and issubclass(
-        Device[buffer.device].buffer, RawBufferMapped
-    ):
-        assert all_int(buffer.shape), "does not support symbolic shape"
-        buffer.realized = Device[buffer.device].buffer(
-            prod(buffer.shape),
-            buffer.dtype,
-            **buffer._device_extra_args()
-        )
-        rawbuf.prepare_transfer().readinto(
-            ta.cast(RawBufferMapped, buffer.realized)._buffer()
-        )
-
-    elif (
-        isinstance(rawbuf.realized, RawBufferTransfer)
-        and issubclass(Device[buffer.device].buffer, RawBufferTransfer)
-        and P2P >= 1
-    ):
-        buffer.realized = ta.cast(
-            RawBufferTransfer, Device[buffer.device].buffer
-        ).transfer(
-            rawbuf.realized,
-            buffer.shape,
-            buffer.dtype,
-            **buffer._device_extra_args()
-        )
-
-    else:
-        buffer.realized = Device[buffer.device].buffer.fromCpu(
-            rawbuf.toCpu(),
-            **buffer._device_extra_args()
-        )
-
-
-def _realize_empty(buffer: LazyBuffer) -> None:
-    assert all_int(buffer.shape), "does not support symbolic shape"
-    buffer.realized = Device[buffer.device].buffer(
-        prod(buffer.shape), buffer.dtype, **buffer._device_extra_args()
-    )
-
-
-def _realize_rand(buffer: LazyBuffer) -> None:
-    rng = np.random.default_rng(buffer.op.arg)
-    buffer.realized = Device[buffer.device].buffer.fromCpu(
-        rng.random(size=buffer.shape, dtype=np.float32).astype(dtype=buffer.dtype.np, copy=False),
-        **buffer._device_extra_args()
-    )
-
-
-def _realize_const(buffer: LazyBuffer) -> None:
-    buffer.realized = Device[buffer.device].buffer.fromCpu(
-        np.array(buffer.op.arg, dtype=buffer.dtype.np),
-        **buffer._device_extra_args()
-    )
-
-
-LOAD_OPS_DISPATCHER: dict[type[ops.LoadOp], ta.Callable] = {
-    ops.Contiguous: _realize_contiguous,
-    ops.Custom: _realize_custom,
-    ops.From: _realize_from,
-    ops.Empty: _realize_empty,
-    ops.Rand: _realize_rand,
-    ops.LoadConst: _realize_const,
 }

@@ -8,11 +8,14 @@ from ..codegen.linearizer import UOps
 from ..dtypes import dtypes
 
 
+LLVM_FAST_MATH_FLAGS = ('nsz', 'arcp', 'contract', 'afn', 'reassoc') # All from fast math, but nnan and ninf
+
+
 code_for_op: ta.Final[dict[type[ops.LazyOp], ta.Callable]] = {
     ops.Neg: lambda builder, x: (
         builder.neg(x)
         if isinstance(x.type, ir.IntType) else
-        builder.fneg(x, flags=("fast",))
+        builder.fneg(x, flags=LLVM_FAST_MATH_FLAGS)
     ),
     ops.Exp2: lambda builder, x: (
         builder.call(
@@ -45,32 +48,32 @@ code_for_op: ta.Final[dict[type[ops.LazyOp], ta.Callable]] = {
     ops.Add: lambda builder, x, y: (
         builder.add(x, y)
         if isinstance(x.type, ir.IntType) else
-        builder.fadd(x, y, flags=("fast",))
+        builder.fadd(x, y, flags=LLVM_FAST_MATH_FLAGS)
     ),
     ops.Sub: lambda builder, x, y: (
         builder.sub(x, y)
         if isinstance(x.type, ir.IntType) else
-        builder.fsub(x, y, flags=("fast",))
+        builder.fsub(x, y, flags=LLVM_FAST_MATH_FLAGS)
     ),
     ops.Mul: lambda builder, x, y: (
         builder.mul(x, y)
         if isinstance(x.type, ir.IntType) else
-        builder.fmul(x, y, flags=("fast",))
+        builder.fmul(x, y, flags=LLVM_FAST_MATH_FLAGS)
     ),
     ops.Div: lambda builder, x, y: (
         builder.sdiv(x, y)
         if isinstance(x.type, ir.IntType) else
-        builder.fdiv(x, y, flags=("fast",))
+        builder.fdiv(x, y, flags=LLVM_FAST_MATH_FLAGS)
     ),
     # TODO: this should be casted
     ops.CmpLt: lambda builder, x, y: (
         builder.zext(builder.icmp_signed("<", x, y), ir.IntType(32))
         if isinstance(x.type, ir.IntType) else
-        builder.uitofp(builder.fcmp_ordered("<", x, y, flags=("fast",)), ir.FloatType())
+        builder.uitofp(builder.fcmp_ordered("<", x, y, flags=LLVM_FAST_MATH_FLAGS), ir.FloatType())
     ),
     ops.Max2: lambda builder, x, y: (
         builder.select(
-            builder.fcmp_unordered(">", x, y, flags=("fast",)), x, y, flags=("fast",)
+            builder.fcmp_unordered(">", x, y, flags=LLVM_FAST_MATH_FLAGS), x, y, flags=LLVM_FAST_MATH_FLAGS
         )
     ),
     ops.Mod: lambda builder, x, y: (
@@ -78,17 +81,17 @@ code_for_op: ta.Final[dict[type[ops.LazyOp], ta.Callable]] = {
     ),
     ops.MulAcc: lambda builder, x, y, z: (
         builder.fadd(
-            builder.fmul(x, y, flags=("fast",)), z, flags=("fast",)
+            builder.fmul(x, y, flags=LLVM_FAST_MATH_FLAGS), z, flags=LLVM_FAST_MATH_FLAGS
         )
     ),
     ops.Where: lambda builder, x, y, z: (
         builder.select(
-            builder.fcmp_unordered("!=", x, ir.Constant(ir.FloatType(), 0), flags=("fast",))
+            builder.fcmp_unordered("!=", x, ir.Constant(ir.FloatType(), 0), flags=LLVM_FAST_MATH_FLAGS)
             if isinstance(x.type, ir.FloatType) else
             builder.trunc(x, ir.IntType(1)),
             y,
             z,
-            flags=("fast",),
+            flags=LLVM_FAST_MATH_FLAGS,
         )
     ),
 }
@@ -118,14 +121,18 @@ def cast(bb, val, input_type, output_type):
                 if dtypes.is_unsigned(input_type) or input_type == dtypes.bool
                 else bb[-1].sitofp(val, ir.FloatType())
             )
+
         elif input_type == dtypes.bfloat16:
             val = bb[-1].sext(val, ir.IntType(32))
             val = bb[-1].shl(val, ir.Constant(ir.IntType(32), 16))
             val = bb[-1].bitcast(val, ir.FloatType())
+
         elif input_type == dtypes.float64:
             val = bb[-1].fptrunc(val, ir.FloatType())
+
         else:
             val = bb[-1].fpext(val, ir.FloatType())
+
         return val
 
     if input_type == dtypes.float32:
@@ -135,19 +142,21 @@ def cast(bb, val, input_type, output_type):
                 if dtypes.is_unsigned(output_type) or output_type == dtypes.bool
                 else bb[-1].fptosi(val, dtype_to_llvm_dtype[output_type])
             )
+
         elif output_type == dtypes.bfloat16:
             val = bb[-1].bitcast(val, ir.IntType(32))
             val = bb[-1].lshr(val, ir.Constant(ir.IntType(32), 16))
             val = bb[-1].trunc(val, ir.IntType(16))
+
         elif output_type == dtypes.float64:
             val = bb[-1].fpext(val, ir.DoubleType())
+
         else:
             val = bb[-1].fptrunc(val, dtype_to_llvm_dtype[output_type])
+
         return val
 
-    raise NotImplementedError(
-        f"cast from {input_type} -> {output_type} not implemented"
-    )
+    raise TypeError(f"cast from {input_type} -> {output_type} not implemented")
 
 
 def uops_to_llvm_ir(function_name: str, uops: list[UOp]) -> str:
@@ -164,6 +173,7 @@ def uops_to_llvm_ir(function_name: str, uops: list[UOp]) -> str:
     func_dtypes = [
         (dtype_to_llvm_dtype[dtype], dtype) for dtype in buf_to_dtype.values()
     ]
+
     func = ir.Function(
         module,
         ir.FunctionType(
@@ -177,9 +187,7 @@ def uops_to_llvm_ir(function_name: str, uops: list[UOp]) -> str:
             a.add_attribute("noalias")
 
     # force llvmlite to allow us to add function attribute then add the attribute
-    func.attributes._known = func.attributes._known.union(
-        frozenset(['"no-nans-fp-math"="true"'])
-    )
+    func.attributes._known = func.attributes._known.union(frozenset(['"no-nans-fp-math"="true"']))
     func.attributes.add('"no-nans-fp-math"="true"')
 
     bb = [ir.IRBuilder(func.append_basic_block("entry"))]
@@ -194,6 +202,7 @@ def uops_to_llvm_ir(function_name: str, uops: list[UOp]) -> str:
 
     for u in uops:
         uop, dtype, vin, args, _ = u
+
         if uop == UOps.LOOP:
             bb.append(
                 ir.IRBuilder(func.append_basic_block(f"loop_body_{len(loop_blocks)}"))
@@ -210,6 +219,7 @@ def uops_to_llvm_ir(function_name: str, uops: list[UOp]) -> str:
             lvars[u] = bb[-1].phi(ir.IntType(32), name=f"loop{len(loop_blocks)}")
             lvars[u].add_incoming(lvars[vin[0]], bb[-2]._block)
             loop_blocks.append((bb[-1], phis))
+
         if uop == UOps.END:
             block, phis = loop_blocks.pop()
             idx_p1 = bb[-1].add(lvars[vin[0]], ir.Constant(ir.IntType(32), 1))
@@ -224,22 +234,25 @@ def uops_to_llvm_ir(function_name: str, uops: list[UOp]) -> str:
                 bb[-1]._block,
                 block._block,
             )
+
         if uop == UOps.DEFINE_GLOBAL:
             lvars[u] = func.args[buf_index[args[0]]]
+
         if uop == UOps.DEFINE_ACC:
             lvars[u] = ir.Constant(dtype_to_llvm_dtype[dtype], args)
             reduce_phis.append(u)
+
         if uop == UOps.SPECIAL:
             lvars[u] = lvars[args.expr]
+
         if uop == UOps.CONST:
             value = (
-                int(args)
-                if dtypes.is_int(dtype)
-                else bool(args)
-                if dtype == dtypes.bool
-                else args
+                int(args) if dtypes.is_int(dtype) else
+                bool(args) if dtype == dtypes.bool else
+                args
             )
             lvars[u] = ir.Constant(dtype_to_llvm_dtype[dtype], value)
+
         if uop == UOps.LOAD:
             assert dtype is not None
             if len(vin) > 2:
@@ -251,19 +264,17 @@ def uops_to_llvm_ir(function_name: str, uops: list[UOp]) -> str:
                 val = cast(bb, val, vin[0].dtype, dtype)
                 val = bb[-1].select(gate, val, lvars[vin[3]])
             else:
-                val = bb[-1].load(
-                    bb[-1].gep(lvars[vin[0]], [lvars[vin[1]]], inbounds=True)
-                )
+                val = bb[-1].load(bb[-1].gep(lvars[vin[0]], [lvars[vin[1]]], inbounds=True))
                 val = cast(bb, val, vin[0].dtype, dtype)
             lvars[u] = val
+
         if uop == UOps.STORE:
             if len(vin) == 2:
                 lvars[vin[0]] = lvars[vin[1]]
             elif len(vin) == 3:
                 element = cast(bb, lvars[vin[2]], vin[2].dtype, vin[0].dtype)
-                bb[-1].store(
-                    element, bb[-1].gep(lvars[vin[0]], [lvars[vin[1]]], inbounds=True)
-                )
+                bb[-1].store(element, bb[-1].gep(lvars[vin[0]], [lvars[vin[1]]], inbounds=True))
+
         if uop == UOps.ALU:
             lvars[u] = code_for_op[args](bb[-1], *[lvars[x] for x in vin])
 

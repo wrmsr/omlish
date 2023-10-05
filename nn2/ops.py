@@ -60,10 +60,10 @@ class LazyOp(lang.Abstract):
 
     def map_buffers(
             self,
-            real_srcs: ta.Mapping[LazyBuffer, ta.Union[LazyBuffer, LazyOp]]
+            real_srcs: ta.Mapping[ta.Any, ta.Union[LazyBuffer, LazyOp]]
     ) -> LazyOp:
         return type(self)(
-            tuple([y.map_buffers(real_srcs) for y in self.src]), self.arg
+            tuple([y.map_buffers(real_srcs) if y not in real_srcs else real_srcs[y] for y in self.src]), self.arg
         )
 
     def get_lazyops(self) -> list[LazyOp]:
@@ -82,10 +82,6 @@ class LazyOp(lang.Abstract):
         raise NotImplementedError
 
     @property
-    def children(self):
-        raise NotImplementedError
-
-    @property
     def shape(self):
         raise NotImplementedError
 
@@ -93,7 +89,8 @@ class LazyOp(lang.Abstract):
     def realized(self):
         raise NotImplementedError
 
-    def realize(self):
+    @property
+    def children(self):
         raise NotImplementedError
 
     # movement ops
