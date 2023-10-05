@@ -4,11 +4,9 @@ import typing as ta
 from omlish import dataclasses as dc
 
 from .. import ops
-from ..devices import Device
 from ..dtypes import DType
 from ..dtypes import ImageDType
 from ..dtypes import dtypes
-from ..execution import Compiled
 from ..execution import FlopCounter
 from ..execution import MemBuffer
 from ..execution import get_lazyop_info
@@ -116,15 +114,14 @@ class Kernel:
             var_vals=None
     ) -> None:
         super().__init__()
-        if not opts:
-            if isinstance(Device[Device.DEFAULT], Compiled):
-                opts = ta.cast(Compiled, Device[Device.DEFAULT]).linearizer_opts
-            else:
-                opts =LinearizerOptions()
-        self.opts = opts
+        self.opts = opts if opts else LinearizerOptions()
         self.ast = ast
         self.var_vals = var_vals
         self.key = (ast, tuple(var_vals.keys())) if var_vals else ast
+
+    def process(self) -> None:
+        if hasattr(self, "sts"):
+            return  # already processed
 
         # fetch lazyop info
         self.info: FlopCounter = get_lazyop_info(ta.cast(LazyOp, self.ast))

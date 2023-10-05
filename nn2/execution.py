@@ -4,7 +4,6 @@ import time
 import typing as ta
 
 from omlish import dataclasses as dc
-import numpy as np
 
 from . import ops
 from .dtypes import DType
@@ -62,12 +61,9 @@ class Interpreted:
             context=None,
             **kwargs,
     ):
-        if isinstance(ast, ops.BufferOp) and type(ast) not in self.fxn_for_op:
-            if isinstance(ast, ops.Mem):
-                assert inputs[ast.arg.idx-1].dtype == ast.arg.dtype, "dtype mismatch"
-                buf = self.to_underlying(inputs[ast.arg.idx-1].realized)
-            elif isinstance(ast, ops.Const):
-                buf = self.to_underlying(self.buffer.fromCPU(np.array(ast.arg.val, dtype=ast.arg.dtype.np)))
+        if isinstance(ast, ops.Mem) and ops.Mem not in self.fxn_for_op:
+            assert inputs[ast.arg.idx - 1].dtype == ast.arg.dtype, "dtype mismatch"
+            buf = self.to_underlying(inputs[ast.arg.idx - 1])
             for mop, arg in ast.arg.st.to_movement_ops():
                 buf = self.fxn_for_op[mop](buf, arg)
             return self.from_underlying(buf)
@@ -150,9 +146,13 @@ class Interpreted:
         return ret
 
 
+# --teenygrad--
+
+
 class FlopCounter:
     def __init__(self, tup: tuple[tuple[int, ...], DType, int]) -> None:
         super().__init__()
+        self.shape, self.dtype, self.flops = tup
         self._buf = self
 
     def consume_flops(self):
@@ -222,12 +222,6 @@ class BasicBatchExecutor:
     def exec(self, jit_cache: list[tuple[ta.Any, ta.Any, ta.Any]], updatable_entries):
         for prg, pargs, variables in jit_cache:
             prg(pargs, variables, jit=True)
-
-    def recalc_stat(self, jit_cache: list[tuple[ta.Any, ta.Any, ta.Any]]):
-        for prg, _, variables in jit_cache:
-            GlobalCounters.kernel_count += 1
-            GlobalCounters.global_ops += sym_infer(prg.op_estimate, variables)
-            GlobalCounters.global_mem += prg.mem_estimate
 
 
 class ASTRunner:
@@ -398,6 +392,10 @@ class Compiled:
         ).build(self.runtime, self.batch_exec)
 
     def exec_ast(self, ast: LazyOp, output, inputs, var_vals, **kwargs):
+        # if DEBUG >= 4:
+        #  from .helpers import print_tree
+        #  print_tree(ast)
+
         # check if we can reuse the output buffer
         # if it's aliased, don't use it
         # NOTE: this is pretty wrong actually, who knows where else this buffer is used?
@@ -405,7 +403,7 @@ class Compiled:
         if output.realized:
             for i, a in enumerate(inputs):
                 # TODO: if this is contiguous it's fine
-                if a.realized == output.realized:
+                if a == output.realized:
                     if any(
                             not x.arg.st.contiguous
                             for x in ast.get_lazyops()
@@ -419,24 +417,19 @@ class Compiled:
             output.realized = self.buffer(
                 prod((s if isinstance(s, int) else s.max for s in output.shape)),
                 output.dtype,
-                **kwargs
+                **kwargs,
             )
         else:
             from .jit import CacheCollector
+
             CacheCollector._mark_output_buffer(output.output_buffer)
 
-        # all the rawbuffers
-        rawbuffers = [output.realized] + [x.realized for x in inputs]
-        key = (ast, tuple(var_vals.keys())) if var_vals else ast  # TODO: remove var_vals so the key can just be the AST
+        from .codegen.linearizer import Linearizer
+
+        k = Linearizer(ast, self.linearizer_opts, var_vals)
 
         # compilation time
         def get_program():
-            from .codegen.linearizer import Linearizer
-            k = Linearizer(ast, self.linearizer_opts, var_vals)
-            assert (
-                k.info.dtype == output.dtype,
-            ), f"linearizer must match dtype. linearizer wants {k.info.dtype} but buffer is {output.dtype}"
-
             from .codegen.search import kernel_optimize
 
             if getenv("KOPT"):
@@ -444,22 +437,21 @@ class Compiled:
                     k,
                     lambda: Linearizer(ast, self.linearizer_opts, var_vals),
                     self.to_program,
-                    rawbuffers,
-                    key,
+                    [output.realized] + inputs,
                 )
             elif not getenv("NOOPT"):
                 k.hand_coded_optimizations()
             return self.to_program(k)
 
-        if getenv("ENABLE_METHOD_CACHE", 1):
-            if key not in self.method_cache:
-                self.method_cache[key] = get_program()
-            prg = self.method_cache[key]
+        if hasattr(k, "key") and getenv("ENABLE_METHOD_CACHE", 1):
+            if k.key not in self.method_cache:
+                self.method_cache[k.key] = get_program()
+            prg = self.method_cache[k.key]
         else:
             prg = get_program()
 
         if prg.name == getenv("PRINT_PRG", ""):
             print(prg.prg)
 
-        prg.exec(rawbuffers, var_vals=var_vals)
+        prg.exec([output.realized] + inputs, var_vals=var_vals)
         return output.realized

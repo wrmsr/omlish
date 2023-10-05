@@ -2,9 +2,8 @@ SHELL:=/bin/bash
 
 PROJECT:=omlish
 
-PYTHON_VERSION_11:=3.11.6
-PYTHON_VERSION_12:=3.12.0
-PYTHON_VERSION_13:=3.13-dev
+PYTHON_VERSION_11:=3.11.5
+PYTHON_VERSION_12:=3.12-dev
 PYTHON_VERSION_NOGIL:=nogil-3.12
 
 MAIN_SOURCES:=\
@@ -142,21 +141,6 @@ venv-12:
 .PHONY: test-12
 test-12: venv-12
 	_VENV_ROOT=.venv-12 \
-	_TEST_SOURCES="${PROJECT}" \
-	${MAKE} test
-
-# 13
-
-.PHONY: venv-13
-venv-13:
-	_VENV_ROOT=.venv-13 \
-	_PYTHON_VERSION=${PYTHON_VERSION_13} \
-	_REQUIREMENTS_TXT=requirements-dev.txt \
-	${MAKE} venv
-
-.PHONY: test-13
-test-13: venv-13
-	_VENV_ROOT=.venv-13 \
 	_TEST_SOURCES="${PROJECT}" \
 	${MAKE} test
 

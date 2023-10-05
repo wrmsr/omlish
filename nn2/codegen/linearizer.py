@@ -249,46 +249,49 @@ class Linearizer(OptimizedKernel):
         ),
     }
 
-    def global_load(self, i: int, idxs: ta.Sequence[Node], acc=None) -> list[UOp]:
+    def global_load(self, i: int, idxs: ta.Sequence[VariableOrNum], acc=None) -> list[UOp]:
         const = self.bufs[i].val if isinstance(self.bufs[i], ConstBuffer) else acc
 
-        def rename_var(v: VariableOrNum, expr: str):
-            return v if isinstance(v, NumNode) else Variable(expr, v.min, v.max)
-
-        amt, dim = 1, None
+        expanded_nodes = [idx.expand() for idx in idxs]
+        _idxs = [x[::-1] for x in itertools.product(*expanded_nodes[::-1])]
         upcast_dim = self.get_upcast_dim(i)
-        if len(upcast_dim) == 1 and len(float4_expand := idxs[upcast_dim[0]].expand()) in [4, 2]:
-            dim, amt = upcast_dim[0], len(float4_expand)
 
-        expand_vars = tuple(
-            [rename_var(idx.expand_idx(), f"_uidx{j}") for j, idx in enumerate(idxs)]
-        )
+        amt = 1
+        if len(upcast_dim) == 1 and len(expanded_nodes[upcast_dim[0]]) in [4, 2]:
+            dim, amt = upcast_dim[0], len(expanded_nodes[upcast_dim[0]])
+
+        # calculate expr_idxs using placeholder variables
         fake_idxs = [
-            idx.substitute({idx.expand_idx(): ev}) for idx, ev in zip(idxs, expand_vars)
+            idx if isinstance(idx, NumNode) else Variable(f"_uidx{i}", idx.min, idx.max)
+            for i, idx in enumerate(idxs)
         ]
-
-        if dim is not None:
-            g_idx, g_valid = self.sts[i].expr_idxs(
-                fake_idxs[:dim] + [float4_expand[0]] + fake_idxs[dim + 1 :]
-            )
-            if (g_idx // amt * amt).render() != g_idx.render():
-                (g_idx, g_valid), amt, dim = self.sts[i].expr_idxs(fake_idxs), 1, None
-        else:
-            g_idx, g_valid = self.sts[i].expr_idxs(fake_idxs)
-
-        localtype = (
-            dtypes.float32
-            if amt == 1
-            else dtypes._float4
-            if amt == 4
-            else dtypes._float2
-        )
-
-        e_idxs, e_valids = g_idx.expand(expand_vars), g_valid.expand(expand_vars)
+        g_idx, g_valid = self.sts[i].expr_idxs(fake_idxs)
 
         ret = []
         invalid_value = 0 if dtypes.is_int(self.bufs[i].dtype) else 0.0
-        for idx, valid, rep_idx in zip(e_idxs, e_valids, Node.iter_idxs(expand_vars)):
+        for _idx in _idxs:
+            substitute: dict[VariableOrNum, Node] = {
+                a: b for a, b in zip(fake_idxs, _idx) if isinstance(a, Variable)
+            }
+            if amt > 1:
+                float4_substitute = {
+                    **substitute,
+                    fake_idxs[dim]: expanded_nodes[dim][0],
+                }
+                idx, valid = g_idx.substitute(float4_substitute), g_valid.substitute(
+                    float4_substitute
+                )
+                localtype = dtypes._float4 if amt == 4 else dtypes._float2
+                if idx.render() != ((idx // amt) * amt).render():
+                    idx, valid = g_idx.substitute(substitute), g_valid.substitute(
+                        substitute
+                    )
+                    localtype = dtypes.float32
+            else:
+                idx, valid = g_idx.substitute(substitute), g_valid.substitute(
+                    substitute
+                )
+                localtype = dtypes.float32
             this_const, idx, valid = (
                 (invalid_value, Variable.num(0), Variable.num(1))
                 if valid.max == 0
@@ -358,14 +361,14 @@ class Linearizer(OptimizedKernel):
                     UOps.GEP,
                     dtypes.float32,
                     (self.load_cache[key],),
-                    rep_idx[dim],
+                    expanded_nodes[dim].index(_idx[dim]),
                 )
-                if dim is not None else
-                self.load_cache[key]
+                if localtype != dtypes.float
+                else self.load_cache[key]
             )
         return ret
 
-    def global_store(self, i: int, idxs: list[Node], store: list[UOp]) -> None:
+    def global_store(self, i: int, idxs: list[VariableOrNum], store: list[UOp]) -> None:
         buf_uop = self.buf_uops[i]
         assert buf_uop is not None, f"buffer {i} wasn't UOped"
 
@@ -415,6 +418,8 @@ class Linearizer(OptimizedKernel):
     kernel_cnt: ta.Final[ta.DefaultDict[str, int]] = collections.defaultdict(int)
 
     def linearize(self):
+        self.process()
+
         # global uop cache
         self.saved_exprs: dict[tuple, UOp] = dict()
 
