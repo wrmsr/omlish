@@ -77,7 +77,7 @@ class RawTorchBuffer(RawBuffer):
 
     @classmethod
     def fromCpu(cls, x):
-        buf = torch.from_numpy(x).requires_grad_(False).to(device)
+        buf = torch.from_numpy(x if all(s >= 0 for s in x.strides) else x.copy()).requires_grad_(False).to(device)
         return cls(prod(x.shape), type_map[buf.dtype], buf)
 
     def toCpu(self):

@@ -217,29 +217,6 @@ class TransformerBlock:
             cache_k.lazydata.var_vals[pos] = start_pos
             cache_v.lazydata.var_vals[pos] = start_pos
 
-            # get only the part of freqs_cis that we are using.
-            freqs_cis = freqs_cis.shrink(
-                (
-                    (0, freqs_cis.shape[0]),
-                    (pos, pos + seqlen),
-                    (0, freqs_cis.shape[2]),
-                    (0, freqs_cis.shape[3]),
-                    (0, freqs_cis.shape[4]),
-                )
-            )
-            freqs_cis.lazydata.var_vals[pos] = start_pos
-
-        else:
-            freqs_cis = freqs_cis.shrink(
-                (
-                    (0, freqs_cis.shape[0]),
-                    (start_pos, start_pos + seqlen),
-                    (0, freqs_cis.shape[2]),
-                    (0, freqs_cis.shape[3]),
-                    (0, freqs_cis.shape[4]),
-                )
-            )
-
         output, cache_k, cache_v = self.attention(
             self.attention_norm(x),
             cache_k,
@@ -320,6 +297,7 @@ class Transformer:
         if seqlen == 1 and JIT:
             pos = Variable("pos", 1, 1024)
 
+            # get only the part of freqs_cis that we are using.
             freqs_cis = self.freqs_cis.shrink(
                 (
                     (0, self.freqs_cis.shape[0]),
@@ -342,7 +320,7 @@ class Transformer:
                     cache_k,
                     cache_v,
                     start_pos=start_pos,
-                    freqs_cis=self.freqs_cis,
+                    freqs_cis=freqs_cis,
                     mask=None,
                     jit_ctx={pos: start_pos},
                 )
@@ -389,7 +367,7 @@ class Transformer:
                     cache_k,
                     cache_v,
                     start_pos=start_pos,
-                    freqs_cis=self.freqs_cis,
+                    freqs_cis=freqs_cis,
                     mask=mask,
                 )
 
