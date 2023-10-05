@@ -13,6 +13,6 @@ gprof2dot==2022.7.29
 mypy==1.5.1
 pipdeptree==2.13.0
 
-ipython==8.16.0
+ipython==8.16.1
 
 pgcli==3.5.0; python_version < '3.12'
