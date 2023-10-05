@@ -52,11 +52,11 @@ class _Device:
             return device_from_env
 
         for device in [
-            # "METAL",
-            # "CUDA",
-            # "OPENCL",
+            "METAL",
+            "CUDA",
+            "OPENCL",
 
-            "LLVM",
+            # "LLVM",
             # "CLANG",
             # "TORCH",
         ]:
