@@ -8,69 +8,72 @@ from ..codegen.linearizer import UOps
 from ..dtypes import dtypes
 
 
+LLVM_FAST_MATH_FLAGS = ('nsz', 'arcp', 'contract', 'afn', 'reassoc')  # All from fast math, but nnan and ninf
+
+
 code_for_op: ta.Final[dict[type[ops.LazyOp], ta.Callable]] = {
     ops.Neg: lambda builder, x: (
         builder.neg(x)
         if isinstance(x.type, ir.IntType) else
-        builder.fneg(x, flags=("fast",))
+        builder.fneg(x, flags=LLVM_FAST_MATH_FLAGS)
     ),
     ops.Exp2: lambda builder, x: (
         builder.call(
             builder._block.module.declare_intrinsic("llvm.exp2", [ir.FloatType()]),
             [x],
-            fastmath=("fast",),
+            fastmath=LLVM_FAST_MATH_FLAGS,
         )
     ),
     ops.Log2: lambda builder, x: (
         builder.call(
             builder._block.module.declare_intrinsic("llvm.log2", [ir.FloatType()]),
             [x],
-            fastmath=("fast",),
+            fastmath=LLVM_FAST_MATH_FLAGS,
         )
     ),
     ops.Sin: lambda builder, x: (
         builder.call(
             builder._block.module.declare_intrinsic("llvm.sin", [ir.FloatType()]),
             [x],
-            fastmath=("fast",),
+            fastmath=LLVM_FAST_MATH_FLAGS,
         )
     ),
     ops.Sqrt: lambda builder, x: (
         builder.call(
             builder._block.module.declare_intrinsic("llvm.sqrt", [ir.FloatType()]),
             [x],
-            fastmath=("fast",),
+            fastmath=LLVM_FAST_MATH_FLAGS,
         )
     ),
     ops.Add: lambda builder, x, y: (
         builder.add(x, y)
         if isinstance(x.type, ir.IntType) else
-        builder.fadd(x, y, flags=("fast",))
+        builder.fadd(x, y, flags=LLVM_FAST_MATH_FLAGS)
     ),
     ops.Sub: lambda builder, x, y: (
         builder.sub(x, y)
         if isinstance(x.type, ir.IntType) else
-        builder.fsub(x, y, flags=("fast",))
+        builder.fsub(x, y, flags=LLVM_FAST_MATH_FLAGS)
     ),
     ops.Mul: lambda builder, x, y: (
         builder.mul(x, y)
         if isinstance(x.type, ir.IntType) else
-        builder.fmul(x, y, flags=("fast",))
+        builder.fmul(x, y, flags=LLVM_FAST_MATH_FLAGS)
     ),
     ops.Div: lambda builder, x, y: (
         builder.sdiv(x, y)
         if isinstance(x.type, ir.IntType) else
-        builder.fdiv(x, y, flags=("fast",))
+        builder.fdiv(x, y, flags=LLVM_FAST_MATH_FLAGS)
     ),
     # TODO: this should be casted
     ops.CmpLt: lambda builder, x, y: (
         builder.zext(builder.icmp_signed("<", x, y), ir.IntType(32))
         if isinstance(x.type, ir.IntType) else
-        builder.uitofp(builder.fcmp_ordered("<", x, y, flags=("fast",)), ir.FloatType())
+        builder.uitofp(builder.fcmp_ordered("<", x, y, flags=LLVM_FAST_MATH_FLAGS), ir.FloatType())
     ),
     ops.Max2: lambda builder, x, y: (
         builder.select(
-            builder.fcmp_unordered(">", x, y, flags=("fast",)), x, y, flags=("fast",)
+            builder.fcmp_unordered(">", x, y, flags=LLVM_FAST_MATH_FLAGS), x, y, flags=LLVM_FAST_MATH_FLAGS
         )
     ),
     ops.Mod: lambda builder, x, y: (
@@ -78,17 +81,17 @@ code_for_op: ta.Final[dict[type[ops.LazyOp], ta.Callable]] = {
     ),
     ops.MulAcc: lambda builder, x, y, z: (
         builder.fadd(
-            builder.fmul(x, y, flags=("fast",)), z, flags=("fast",)
+            builder.fmul(x, y, flags=LLVM_FAST_MATH_FLAGS), z, flags=LLVM_FAST_MATH_FLAGS
         )
     ),
     ops.Where: lambda builder, x, y, z: (
         builder.select(
-            builder.fcmp_unordered("!=", x, ir.Constant(ir.FloatType(), 0), flags=("fast",))
+            builder.fcmp_unordered("!=", x, ir.Constant(ir.FloatType(), 0), flags=LLVM_FAST_MATH_FLAGS)
             if isinstance(x.type, ir.FloatType) else
             builder.trunc(x, ir.IntType(1)),
             y,
             z,
-            flags=("fast",),
+            flags=LLVM_FAST_MATH_FLAGS,
         )
     ),
 }
