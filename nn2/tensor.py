@@ -995,27 +995,40 @@ class Tensor:
             return ret if bias is None else ret.add(bias.reshape(1, -1, *[1] * len(HW)))
 
         # winograd conv 3 kernel f(4x4,3x3) see: http://arxiv.org/abs/1509.09308
+        # def apply_matrix(mat, t, dim=0):
+        #     return (
+        #         t
+        #         if dim == len(HW)
+        #         else Tensor.stack(
+        #             [
+        #                 apply_matrix(
+        #                     mat,
+        #                     sum(
+        #                         mat[i][j] * t[j]
+        #                         for j in range(len(mat[i]))
+        #                         if mat[i][j]
+        #                     ),
+        #                     dim=dim + 1,
+        #                 )
+        #                 for i in range(len(mat))
+        #             ]
+        #         )
+        #     )
+
         def apply_matrix(mat, t, dim=0):
-            return (
-                t
-                if dim == len(HW)
-                else Tensor.stack(
-                    [
-                        apply_matrix(
-                            mat,
-                            sum(
-                                mat[i][j] * t[j]
-                                for j in range(len(mat[i]))
-                                if mat[i][j]
-                            ),
-                            dim=dim + 1,
-                        )
-                        for i in range(len(mat))
-                    ]
+            if dim == len(HW):
+                return t
+            return Tensor.stack([
+                apply_matrix(
+                    mat,
+                    sum(mm * t[j] for j, mm in enumerate(m) if mm),
+                    dim=dim + 1,
                 )
-            )
+                for m in mat
+            ])
 
         HWI, HWO = (6,) * len(HW), (4,) * len(HW)  # F(4x4,3x3) winograd tiles
+
         winograd_Bt = [
             [4, 0, -5, 0, 1, 0],
             [0, -4, -4, 1, 1, 0],
@@ -1024,6 +1037,7 @@ class Tensor:
             [0, 2, -1, -2, 1, 0],
             [0, 4, 0, -5, 0, 1],
         ]
+
         winograd_G = [
             [1 / 4, 0, 0],
             [-1 / 6, -1 / 6, -1 / 6],
@@ -1032,6 +1046,7 @@ class Tensor:
             [1 / 24, -1 / 12, 1 / 6],
             [0, 0, 1],
         ]
+
         winograd_At = [
             [1, 1, 1, 1, 1, 0],
             [0, 1, -1, 2, -2, 0],
@@ -1056,9 +1071,11 @@ class Tensor:
         )._pool(
             HWI, HWO
         )  # (bs, cin_, tyx, HWI)
+
         d = d.permute(
             *range(len(d.shape) - len(HW), len(d.shape)), *range(len(d.shape) - len(HW))
         ).contiguous_backward()  # move HW to the front: # (HWI, bs, cin_, tyx)
+
         tyx = d.shape[-len(HWI):]  # dim of tiling
 
         g = weight.permute(
@@ -1072,6 +1089,7 @@ class Tensor:
             .contiguous()
             .reshape(*HWI, 1, groups, rcout, cin, *([1] * len(tyx)))
         )  # (HWI, groups * rcout, cin) -> (HWI, bs=1, groups, rcout, cin, tyx=(1,1))
+
         dfactors = (
             apply_matrix(winograd_Bt, d)
             .contiguous()
@@ -1088,6 +1106,7 @@ class Tensor:
                 *[i + o for i in range(len(HW)) for o in [len(ret.shape) - len(HW), 0]],
             ]
         )  # interleave tyx and HWO: (bs, groups, rcout, oy, HO, ox, WO)
+
         ret = ret.reshape(bs, cout, *[c * HWO[i] for i, c in enumerate(tyx)]).shrink(
             tuple((0, s) for s in [bs, cout, *oyx])
         )  # merge groups and rcout, tyx and HWO: (bs, groups, cout, *yx), shrink to final

@@ -7,6 +7,7 @@ import typing as ta
 from .devices import Device
 from .dtypes import DType
 from .dtypes import ImageDType
+from .execution import ASTRunner
 from .execution import BasicBatchExecutor
 from .helpers import DEBUG
 from .helpers import merge_dicts
@@ -173,7 +174,9 @@ class _CacheCollector:
 
         cached_rawbufs = [
             self.placeholders.get(weakref.ref(buf), buf)
-            if isinstance(buf, RawBuffer) and weakref.ref(buf) not in self.circular_signatures
+            if isinstance(prg, ASTRunner)
+            and isinstance(buf, RawBuffer)
+            and weakref.ref(buf) not in self.circular_signatures
             else buf
             for buf in rawbufs
         ]
@@ -230,7 +233,6 @@ class _CacheCollector:
             )
             if pool_idx == -1:
                 rawbuf_pool.append((buf.alloc_rawbuf(), []))
-                pool_idx = len(rawbuf_pool) - 1
             buf_map[buf] = rawbuf_pool[pool_idx][0]
             rawbuf_pool[pool_idx][1].append((start, end))
 
