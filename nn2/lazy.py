@@ -270,7 +270,6 @@ class LazyBuffer:
     def is_unrealized_const(self) -> bool:
         return not self.realized and (
                 isinstance(self.base.op, ops.LoadConst)
-                and isinstance(Device[self.device], Compiled)
         )
 
     @property
