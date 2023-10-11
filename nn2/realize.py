@@ -66,7 +66,7 @@ def _realize_custom(buffer: LazyBuffer) -> None:
 
 
 def _realize_from(buffer: LazyBuffer) -> None:
-    rawbuf = buffer.op.src[0].realize()
+    rawbuf = ta.cast(LazyBuffer, buffer.op.src[0]).contiguous().realize()
     assert rawbuf.realized, "realize failed?"
     if DEBUG >= 3:
         print(
@@ -115,32 +115,14 @@ def _realize_empty(buffer: LazyBuffer) -> None:
     )
 
 
-def _gen_rand(rng, shape, dt):
-    return rng.random(size=shape, dtype=np.float32).astype(dtype=dt, copy=False)
-
-
 def _realize_rand(buffer: LazyBuffer) -> None:
+    assert all_int(buffer.shape), "does not support symbolic shape"
+
     rng = np.random.default_rng(buffer.op.arg)
 
     buffer.realized = Device[buffer.device].buffer.fromCpu(
-        _gen_rand(rng, buffer.shape, buffer.dtype.np),
-        **buffer._device_extra_args()
-    )
-
-    # Jit support
-    from .jit import CacheCollector
-
-    CacheCollector.add(
-        lambda args, vars, jit: args[0]._copyin(_gen_rand(*args[1:])),
-        [buffer.realized, rng, buffer.shape, buffer.dtype.np],
-        {},
-    )
-
-
-def _realize_const(buffer: LazyBuffer) -> None:
-    buffer.realized = Device[buffer.device].buffer.fromCpu(
-        np.array(buffer.op.arg, dtype=buffer.dtype.np),
-        **buffer._device_extra_args()
+        rng.random(size=prod(buffer.shape), dtype=np.float32).astype(dtype=buffer.dtype.np, copy=False),
+        **buffer._device_extra_args(),
     )
 
 
@@ -150,5 +132,4 @@ LOAD_OPS_DISPATCHER: dict[type[ops.LoadOp], ta.Callable] = {
     ops.From: _realize_from,
     ops.Empty: _realize_empty,
     ops.Rand: _realize_rand,
-    ops.LoadConst: _realize_const,
 }

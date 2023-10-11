@@ -4,6 +4,7 @@ import time
 import typing as ta
 
 from omlish import dataclasses as dc
+import numpy as np
 
 from . import ops
 from .dtypes import DType
@@ -61,9 +62,12 @@ class Interpreted:
             context=None,
             **kwargs,
     ):
-        if isinstance(ast, ops.Mem) and ops.Mem not in self.fxn_for_op:
-            assert inputs[ast.arg.idx - 1].dtype == ast.arg.dtype, "dtype mismatch"
-            buf = self.to_underlying(inputs[ast.arg.idx - 1])
+        if isinstance(ast, ops.BufferOp) and type(ast) not in self.fxn_for_op:
+            if isinstance(ast, ops.Mem):
+                assert inputs[ast.arg.idx - 1].dtype == ast.arg.dtype, "dtype mismatch"
+                buf = self.to_underlying(inputs[ast.arg.idx - 1])
+            elif isinstance(ast, ops.Const):
+                buf = self.to_underlying(self.buffer.fromCpu(np.array(ast.arg.val, dtype=ast.arg.dtype.np)))
             for mop, arg in ast.arg.st.to_movement_ops():
                 buf = self.fxn_for_op[mop](buf, arg)
             return self.from_underlying(buf)
