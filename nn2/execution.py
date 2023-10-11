@@ -223,6 +223,12 @@ class BasicBatchExecutor:
         for prg, pargs, variables in jit_cache:
             prg(pargs, variables, jit=True)
 
+    def recalc_stat(self, jit_cache: list[tuple[ta.Any, ta.Any, ta.Any]]) -> None:
+        for prg, _, variables in jit_cache:
+            GlobalCounters.kernel_count += 1
+            GlobalCounters.global_ops += sym_infer(prg.op_estimate, variables)
+            GlobalCounters.global_mem += prg.mem_estimate
+
 
 class ASTRunner:
     def __init__(
