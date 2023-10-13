@@ -65,7 +65,6 @@ def kernel_optimize_search(
     def opt(x):
         try:
             k = create_k()
-            k.process()
             k.apply_auto_opt(x)
             prg = to_prg(k)
             first_tm = prg.exec(bufs, force_wait=True, optimizing=True)
@@ -119,7 +118,6 @@ global_db = None
 def kernel_optimize(k: Linearizer, create_k: ta.Callable[[], Linearizer], to_prg, bufs):
     global global_db
 
-    k.process()
     skey = str(k.key)
 
     if getenv("KOPT") == 2 and global_db is None:

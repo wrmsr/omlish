@@ -30,8 +30,10 @@ def run_schedule(schedule: list[tuple[LazyOp, LazyBuffer, tuple[LazyBuffer, ...]
             print_tree(op)
 
         if isinstance(op, ops.LoadOp):
-            LOAD_OPS_DISPATCHER[type(op)](out)
-            # TODO: why can't we delete these ops?
+            # confirm the LoadOps are contiguous and in order
+            for i, s in enumerate(op.src):
+                assert isinstance(s, LazyOp) and isinstance(s, ops.Mem) and s.arg.idx == i+1 and s.arg.st.contiguous, f"bad LoadOps src {i}: {s}"
+            LOAD_OPS_DISPATCHER[type(op)](out, *buffers)
         else:
             out.realized = Device[out.device].exec_ast(
                 op,
@@ -40,9 +42,9 @@ def run_schedule(schedule: list[tuple[LazyOp, LazyBuffer, tuple[LazyBuffer, ...]
                 var_vals=out.var_vals,
                 **out._device_extra_args(),
             )
-            del out.op
-            for v in out.views:
-                del v.op
+        del out.op
+        for v in out.views:
+            del v.op
 
         assert out.realized and isinstance(
             out.realized, Device[out.device].buffer
@@ -51,61 +53,7 @@ def run_schedule(schedule: list[tuple[LazyOp, LazyBuffer, tuple[LazyBuffer, ...]
         assert out.realized.dtype == out.dtype, "realized dtype is incorrect"
 
 
-def _realize_contiguous(buffer: LazyBuffer) -> None:
-    # this is just a copy now, if it's not a copy schedule will handle it
-    src = ta.cast(LazyBuffer, buffer.op.src[0])
-    buffer.realized = src.realized
-    assert (
-            buffer.dtype == src.dtype
-    ), f"contiguous dtype mismatch, expecting {buffer.dtype}, got {src.dtype}"
-
-
-def _realize_custom(buffer: LazyBuffer) -> None:
-    # this needs to immediately realize
-    buffer.realized = buffer.op.arg(buffer, *[x.realize() for x in buffer.op.src])
-
-
-def _realize_from(buffer: LazyBuffer) -> None:
-    rawbuf = ta.cast(LazyBuffer, buffer.op.src[0]).contiguous().realize()
-    assert rawbuf.realized, "realize failed?"
-    if DEBUG >= 3:
-        print(
-            f"*** copy {buffer.device} <- {rawbuf.device} size {rawbuf.realized.size} dtype {rawbuf.realized.dtype}"
-        )
-
-    # TODO: make this generic
-    if isinstance(rawbuf.realized, RawDiskBuffer) and issubclass(
-            Device[buffer.device].buffer, RawBufferMapped
-    ):
-        assert all_int(buffer.shape), "does not support symbolic shape"
-        buffer.realized = Device[buffer.device].buffer(
-            prod(buffer.shape),
-            buffer.dtype,
-            **buffer._device_extra_args()
-        )
-        rawbuf.prepare_transfer().readinto(
-            ta.cast(RawBufferMapped, buffer.realized)._buffer()
-        )
-
-    elif (
-            isinstance(rawbuf.realized, RawBufferTransfer)
-            and issubclass(Device[buffer.device].buffer, RawBufferTransfer)
-            and P2P >= 1
-    ):
-        buffer.realized = ta.cast(
-            RawBufferTransfer, Device[buffer.device].buffer
-        ).transfer(
-            rawbuf.realized,
-            buffer.shape,
-            buffer.dtype,
-            **buffer._device_extra_args()
-        )
-
-    else:
-        buffer.realized = Device[buffer.device].buffer.fromCpu(
-            rawbuf.toCpu(),
-            **buffer._device_extra_args()
-        )
+# *** zero op LoadOps ***
 
 
 def _realize_empty(buffer: LazyBuffer) -> None:
@@ -126,10 +74,51 @@ def _realize_rand(buffer: LazyBuffer) -> None:
     )
 
 
+# *** one op LoadOps ***
+
+
+def _realize_contiguous(buffer: LazyBuffer, src: LazyBuffer) -> None:
+    # this is just a copy now, if it's not a copy schedule will handle it
+    buffer.realized = src.realized
+    assert buffer.dtype == src.dtype, f"contiguous dtype mismatch, expecting {buffer.dtype}, got {src.dtype}"
+
+
+def _realize_from(buffer: LazyBuffer, src: LazyBuffer) -> None:
+    assert src.realized.size == buffer.st.size(), f"size mismatch on FROM {src.realized.size} != {buffer.st.size()}"
+    assert src.st.contiguous and buffer.st.contiguous, "all must be contiguous for from"
+    if DEBUG >= 3:
+        print(f"*** copy {buffer.device} <- {src.device} size {src.realized.size} dtype {src.realized.dtype}")
+    # TODO: make this generic
+    if isinstance(src.realized, RawDiskBuffer) and issubclass(Device[buffer.device].buffer, RawBufferMapped):
+        assert all_int(buffer.shape), "does not support symbolic shape"
+        buffer.realized = Device[buffer.device].buffer(prod(buffer.shape), buffer.dtype, **buffer._device_extra_args())
+        src.realized.readinto(ta.cast(RawBufferMapped, buffer.realized)._buffer())
+    elif (
+            isinstance(src.realized, RawBufferTransfer)
+            and issubclass(Device[buffer.device].buffer, RawBufferTransfer)
+            and P2P >= 1
+    ):
+        buffer.realized = ta.cast(RawBufferTransfer, Device[buffer.device].buffer).transfer(
+            src.realized,
+            buffer.shape,
+            buffer.dtype,
+            **buffer._device_extra_args(),
+        )
+    else:
+        # TODO: schedule this as FROM to go to CPU, and a FROM to go to device
+        buffer.realized = Device[buffer.device].buffer.fromCpu(src.realized.toCpu(), **buffer._device_extra_args())
+
+
+# *** n op LoadOps ***
+
+def _realize_custom(buffer: LazyBuffer, *inputs: LazyBuffer) -> None:
+    buffer.realized = buffer.op.arg(buffer, *inputs)
+
+
 LOAD_OPS_DISPATCHER: dict[type[ops.LoadOp], ta.Callable] = {
+    ops.Empty: _realize_empty,
+    ops.Rand: _realize_rand,
     ops.Contiguous: _realize_contiguous,
     ops.Custom: _realize_custom,
     ops.From: _realize_from,
-    ops.Empty: _realize_empty,
-    ops.Rand: _realize_rand,
 }
