@@ -262,11 +262,20 @@ class ASTRunner:
         self.display_name = display_name
         self.runtime_args = runtime_args if runtime_args is not None else {}
 
-    def build(self, runtime, batch_exec=BasicBatchExecutor):
-        self.clprg, self.batch_exec = (
-            runtime(self.name, self.prg, **self.runtime_args),
-            batch_exec,
+    @staticmethod
+    def from_linearizer(k, src: str):
+        return ASTRunner(
+            k.function_name,
+            src,
+            k.global_size, k.local_size,
+            op_estimate=k.info.flops,
+            mem_estimate=k.mem_estimate,
+            display_name=k.display_name,
+            runtime_args={"binary": False},
         )
+
+    def build(self, runtime, batch_exec=BasicBatchExecutor):
+        self.clprg, self.batch_exec = (runtime(self.name, self.prg, **self.runtime_args), batch_exec,)
         return self
 
     def exec(
@@ -378,28 +387,13 @@ class Compiled:
     def to_program(self, k):
         k.linearize()
 
-        src = self.renderer(k.function_name, k.uops)
-
-        if len(src) == 3:
-            return ASTRunner(
-                k.function_name,
-                src[0],
-                k.global_size,
-                src[1],
-                display_name=k.display_name,
-                runtime_args=src[2],
-            ).build(self.runtime)
-
-        return ASTRunner(
-            k.function_name,
-            src,
-            k.global_size,
-            k.local_size,
-            op_estimate=k.info.flops,
-            mem_estimate=k.mem_estimate,
-            display_name=k.display_name,
-            runtime_args={"binary": False},
-        ).build(self.runtime, self.batch_exec)
+        return ASTRunner.from_linearizer(
+            k,
+            self.renderer(k.function_name, k.uops)
+        ).build(
+            self.runtime,
+            self.batch_exec,
+        )
 
     def exec_ast(self, ast: LazyOp, output, inputs, var_vals, **kwargs):
         # if DEBUG >= 4:
