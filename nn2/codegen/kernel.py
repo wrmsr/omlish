@@ -113,12 +113,10 @@ class Kernel:
         self,
             ast: LazyOp,
             opts: ta.Optional[LinearizerOptions] = None,
-            var_vals=None
     ) -> None:
         super().__init__()
         self.opts = opts if opts else (ta.cast(Compiled, Device[Device.DEFAULT]).linearizer_opts if isinstance(Device[Device.DEFAULT], Compiled) else LinearizerOptions())
         self.ast = ast
-        self.var_vals = var_vals
 
         # fetch lazyop info
         self.info: FlopCounter = get_lazyop_info(ta.cast(LazyOp, self.ast))

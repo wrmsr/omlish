@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import functools
 import math
 import operator
 import sys
@@ -9,14 +10,10 @@ import weakref
 import numpy as np
 
 from . import ops
-from .devices import Device
 from .dtypes import DType
-from .dtypes import ImageDType
 from .dtypes import dtypes
-from .execution import Compiled
 from .execution import ConstBuffer
 from .execution import MemBuffer
-from .helpers import all_int
 from .helpers import dedup
 from .helpers import flatten
 from .helpers import getenv
@@ -170,6 +167,19 @@ def get_movementroot_contiguous(x: LazyBuffer) -> LazyBuffer:
             if issubclass(x.optype, ops.MovementOp) and x.st.contiguous
             else x
         )
+    )
+
+
+def var_vals_from_ast(ast: LazyOp) -> list[Variable]:
+    return dedup(
+        functools.reduce(
+            operator.add,
+            [
+                x.arg.st.var_vals()
+                for x in ast.get_lazyops()
+                if isinstance(x, ops.BufferOp)
+            ],
+        ),
     )
 
 

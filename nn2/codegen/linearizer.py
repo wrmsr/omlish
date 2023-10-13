@@ -20,6 +20,7 @@ from ..helpers import DEBUG
 from ..helpers import all_same
 from ..helpers import colored
 from ..helpers import prod
+from ..lazy import var_vals_from_ast
 from ..ops import LazyOp
 from ..shape.shapetracker import ShapeTracker
 from ..shape.symbolic import AndNode
@@ -425,20 +426,25 @@ class Linearizer(OptimizedKernel):
                     (),
                     (f"data{buf.idx}", buf.dtype),
                 )
-        if self.var_vals:
-            for var in sorted(set(self.var_vals), key=lambda k: k.key):
-                assert var.expr is not None
-                self.loop_uops[var.expr] = self.uop(
-                    UOps.DEFINE_GLOBAL, dtypes.int32, (), (var.expr, dtypes._arg_int32)
-                )
-        # define local buffers
-        for lb in self.local_alias.values():
-            self.buf_uops[self.bufs.index(lb)] = self.uop(
-                UOps.DEFINE_LOCAL,
-                PtrDType(dtypes.float32),
+
+        # add var vals
+        for var in sorted(var_vals_from_ast(self.ast), key=lambda k: k.key):
+            assert var.expr is not None
+            self.loop_uops[var.expr] = self.uop(
+                UOps.DEFINE_GLOBAL,
+                dtypes.int32,
                 (),
-                (lb.name, self.sts[self.bufs.index(lb)].size()),
+                (var.expr, dtypes._arg_int32),
             )
+            # define local buffers
+            for lb in self.local_alias.values():
+                self.buf_uops[self.bufs.index(lb)] = self.uop(
+                    UOps.DEFINE_LOCAL,
+                    PtrDType(dtypes.float32),
+                    (),
+                    (lb.name, self.sts[self.bufs.index(lb)].size()),
+                )
+
         # add a local buffer for multistage reduce. # TODO: use local alias
         if self.group_for_reduce:
             # TODO: the strides of this can be controlled
