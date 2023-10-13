@@ -82,18 +82,11 @@ class LazyOp(lang.Abstract):
         raise NotImplementedError
 
     @property
-    def children(self):
-        raise NotImplementedError
-
-    @property
-    def shape(self):
-        raise NotImplementedError
-
-    @property
     def realized(self):
         raise NotImplementedError
 
-    def realize(self):
+    @property
+    def children(self):
         raise NotImplementedError
 
     # movement ops
