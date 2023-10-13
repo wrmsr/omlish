@@ -18,6 +18,7 @@ class CStyleLanguage(ta.NamedTuple):
     kernel_prefix: str = ""
     buffer_prefix: str = ""
     buffer_suffix: str = ""
+    smem_align: str = ""
     smem_prefix: str = ""
     arg_int_prefix: str = ""
     barrier: str = ""
@@ -88,22 +89,6 @@ class CStyleLanguage(ta.NamedTuple):
             return f"read_imagef({buf_name}, smp, {idx})"
         if self.uses_vload and buf_dtype == dtypes.float16:
             return f"vload_half{'' if output_dtype.sz == 1 else str(output_dtype.sz)}(0, {buf_name}+{idx})"
-        # cast = f"({output_dtype.name})" if output_dtype != buf_dtype else ""
-        # if output_dtype.sz > 1:
-        #     return (
-        #         f"{cast}"
-        #         f"(*"
-        #         f"("
-        #         f"({self.smem_prefix if local else self.buffer_prefix}{buf_dtype.name}{output_dtype.sz}*)"
-        #         f"({buf_name}+{idx})"
-        #         f")"
-        #         f")"
-        #     )
-        # return (
-        #     f"{cast}(*({buf_name}+{idx}))"
-        #     if self.uses_ptr_arithmetic
-        #     else f"{cast}({buf_name}[{idx}])"
-        # )
         if output_dtype.sz > 1:
             out_val = f"*(({self.smem_prefix if local else self.buffer_prefix}{buf_dtype.name}{output_dtype.sz}*)({buf_name}+{idx}))"
         else:
@@ -111,8 +96,8 @@ class CStyleLanguage(ta.NamedTuple):
 
         return self.render_cast([out_val], output_dtype) if output_dtype != buf_dtype else out_val
 
-    def render_local(self, name: str, size: int):
-        return self.smem_prefix + f"float {name}[{size}];"
+    def render_local(self, name:str, size:int):
+        return self.smem_align + self.smem_prefix + f"float {name}[{size}];"
 
     def render_for(
         self, expr: str, _min: ta.Union[int, str], _max: ta.Union[int, str]
