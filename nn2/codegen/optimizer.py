@@ -6,6 +6,7 @@ import os
 
 from .. import ops
 from ..codegen.kernel import Kernel
+from ..codegen.kernel import LinearizerOptions
 from ..codegen.kernel import LocalBuffer
 from ..dtypes import ImageDType
 from ..dtypes import dtypes
@@ -18,10 +19,8 @@ from ..shape.view import View
 
 
 class OptimizedKernel(Kernel):
-    def process(self) -> None:
-        if hasattr(self, "sts"):
-            return  # already processed
-        super().process()
+    def __init__(self, ast: LazyOp, opts: ta.Optional[LinearizerOptions] = None, var_vals=None) -> None:
+        super().__init__(ast, opts, var_vals)
 
         # move all reduce axes to the end
         reduce = list(enumerate(zip(self.full_shape, self.sts[0].shape)))
@@ -257,8 +256,6 @@ class OptimizedKernel(Kernel):
                     self.upcast()
 
     def hand_coded_optimizations(self, use_tensor_cores=getenv("TC", 1)):
-        self.process()
-
         # if there's images in the earlybufs, we have to make an axis the 4 loading one
         self.required_optimizations(early_only=True)
 
@@ -392,13 +389,16 @@ class OptimizedKernel(Kernel):
                 for i, s in enumerate(buf1_strides)
                 if s == 0 and self.full_shape[i] % 8 == 0 and i < self.first_reduce
             ]
-            optim_conv2d = (
-                (self.shape_len - self.first_reduce) == 3
-                and self.full_shape[self.first_reduce + 1] % 2 == 1
-                and self.full_shape[self.first_reduce + 2] % 2 == 1
-                and max(self.full_shape[self.first_reduce + 1: self.first_reduce + 3])
-                < 21
-            )
+            # optim_conv2d = (
+            #     (self.shape_len - self.first_reduce) == 3
+            #     and self.full_shape[self.first_reduce + 1] % 2 == 1
+            #     and self.full_shape[self.first_reduce + 2] % 2 == 1
+            #     and max(self.full_shape[self.first_reduce + 1: self.first_reduce + 3])
+            #     < 21
+            # )
+            # enabling this gives wrong answers!! https://github.com/tinygrad/tinygrad/issues/1967
+            # TODO: WMMA must be a lot better before reenabling things like this
+            optim_conv2d = False
             if (
                 axis_buf0
                 and axis_buf1

@@ -37,7 +37,6 @@ sys.setrecursionlimit(10000)
 
 
 OPT = getenv("OPT", 2)
-LAZY = getenv("LAZY", 1)
 LAZYCACHE = getenv("LAZYCACHE", 1)
 
 # TODO: movement ops that only change shape are really nops. treat them as such
@@ -256,8 +255,6 @@ class LazyBuffer:
             base.views.add(self)
         else:
             assert st.contiguous, "unbased LazyBuffers must be contiguous"
-        if not LAZY:
-            self.realize()
 
     @property
     def var_vals_key(self):
@@ -339,8 +336,6 @@ class LazyBuffer:
             if not isinstance(self.op, ops.Contiguous)
             else ops.Nop(self.op.src)
         )
-        if isinstance(op, ops.LoadOp):
-            return [(self.op, self, ())]
 
         if issubclass(self.optype, ops.BinaryOp):
             op = _ast_binaryops(op, self.shape)
@@ -348,28 +343,18 @@ class LazyBuffer:
             op = _ast_reduceops(op)
 
         # HACK: image shape can be wrong, hot cast it back to a normal float
-        if isinstance(self.dtype, ImageDType) and (
-            prod(self.shape) != prod(self.dtype.shape)
-            or not any(self.shape[x] % 4 == 0 for x in self.st.unit_stride_axes())
+        if (
+                isinstance(self.dtype, ImageDType)
+                and (
+                    prod(self.shape) != prod(self.dtype.shape)
+                    or not any(self.shape[x] % 4 == 0 for x in self.st.unit_stride_axes())
+                )
         ):
             if isinstance(op, ops.Reshape):
-                op = ops.Reshape(
-                    (ops.Cast(op.src, (dtypes.float32, False)),),
-                    op.arg,
-                )
+                op = ops.Reshape((ops.Cast(op.src, (dtypes.float32, False)),), op.arg)
             else:
                 op = ops.Cast((op,), (dtypes.float32, False))
             self.dtype = dtypes.float32
-
-        # contiguous can be a copy. must do this after the image hack
-        if isinstance(self.op, ops.Contiguous):
-            src = ta.cast(LazyBuffer, self.op.src[0])
-            if (
-                src.st.contiguous
-                and src.st.size() == src.base.st.size()
-                and not src.is_unrealized_const()
-            ):
-                return src.schedule(seen) + [(self.op, self, ())]
 
         # realize the past and exec the AST
         ret = []
@@ -377,22 +362,20 @@ class LazyBuffer:
             ret += x.schedule(seen)
 
         # TODO: this belongs in the schedule in some way
-        self.var_vals = dict(
-            sorted(
-                merge_dicts([buf.var_vals for buf in op.buffers]).items(),
-                key=lambda kv: ta.cast(Variable, kv[0]).key,
-            )
+        self.var_vals = dict(sorted(
+            merge_dicts([self.var_vals] + [buf.var_vals for buf in op.buffers]).items(),
+            key=lambda kv: ta.cast(Variable, kv[0]).key),
         )
+
+        # contiguous can be a copy. must do this after the image hack
+        if isinstance(self.op, ops.Contiguous):
+            src = ta.cast(LazyBuffer, self.op.src[0])
+            if src.st.contiguous and src.st.size() == src.base.st.size() and not src.is_unrealized_const():
+                op = self.op
 
         # run the ast and log the op
         op, base_bufs = _replace_bufferops(op)
         return ret + [(op, self, tuple(base_bufs))]
-
-    def realize(self: LazyBuffer) -> LazyBuffer:
-        if not self.realized:
-            from .realize import run_schedule
-            run_schedule(self.schedule())
-        return self
 
     # *** creation/special ops ***
 
@@ -446,19 +429,6 @@ class LazyBuffer:
             {},
             RawNumpyBuffer.fromCpu(x),
         )
-
-    def prepare_transfer(self):
-        self_casted = (
-            self.e(ops.Cast, arg=(dtypes.from_np(self.dtype.np), False))
-            if dtypes.from_np(self.dtype.np) != self.dtype
-            else self
-        )
-        return self_casted.contiguous().realize().realized
-
-    def toCpu(self) -> np.ndarray:
-        assert self.dtype.np, f"{self.dtype} is not supported in toCpu"
-        assert all_int(self.shape), f"no toCpu if shape is symbolic, {self.shape=}"
-        return ta.cast(RawBuffer, self.prepare_transfer()).toCpu().reshape(self.shape)
 
     # *** elementwise ops ***
 

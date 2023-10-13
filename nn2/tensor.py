@@ -24,6 +24,7 @@ from .helpers import getenv
 from .helpers import make_pair
 from .helpers import prod
 from .lazy import LazyBuffer
+from .realize import run_schedule
 from .shape.symbolic import sint
 
 
@@ -62,7 +63,7 @@ class Tensor:
         self.requires_grad: ta.Optional[bool] = requires_grad
 
         # internal variables used for autograd graph construction
-        self._ctx: ta.Optional[Function] = None
+        self._ctx: ta.Optional[funcs.Function] = None
         if isinstance(data, LazyBuffer):
             assert (
                 dtype is None or dtype == data.dtype
@@ -95,7 +96,11 @@ class Tensor:
             data
             if data.device == device
             else LazyBuffer.loadop(
-                ops.From, data.shape, data.dtype, device, src=data
+                ops.From,
+                data.shape,
+                data.dtype,
+                device,
+                src=data.contiguous(),
             )
         )
 
@@ -120,8 +125,16 @@ class Tensor:
 
     # ***** data handlers ****
 
+    @staticmethod
+    def corealize(lst: ta.Iterable[Tensor]) -> None:
+        seen: ta.Set[LazyBuffer] = set()
+        sched = []
+        for t in lst:
+            sched += t.lazydata.schedule(seen)
+        run_schedule(sched)
+
     def realize(self) -> Tensor:
-        self.lazydata.realize()
+        run_schedule(self.lazydata.schedule())
         return self
 
     def assign(self, x) -> Tensor:
@@ -129,7 +142,7 @@ class Tensor:
         if self.device.startswith("DISK"):
             if x.__class__ is not Tensor:
                 x = Tensor(x, device="CPU", dtype=self.dtype)
-            self.lazydata.contiguous().realize().realized._copyin(x.numpy())
+            self.lazydata.contiguous().realize().lazydata.realized._copyin(x.numpy())
             return self
         if x.__class__ is not Tensor:
             x = Tensor(x, device=self.device, dtype=self.dtype)
@@ -148,11 +161,13 @@ class Tensor:
         self.lazydata = x.lazydata
         return self
 
-    def detach(self):
+    def detach(self) -> Tensor:
         return Tensor(self.lazydata, device=self.device, requires_grad=False)
 
     def numpy(self) -> np.ndarray:
-        return self.lazydata.toCpu()
+        assert all_int(self.shape), f"no numpy if shape is symbolic, {self.shape=}"
+        assert self.dtype.np is not None, f"no numpy dtype for {self.dtype}"
+        return self.detach().cast(dtypes.from_np(self.dtype.np)).contiguous().to('CPU').realize().lazydata.realized.toCpu().reshape(self.shape)
 
     # TODO: if things are realized this won't work
     def to_(self, device: str):
@@ -730,7 +745,7 @@ class Tensor:
 
     def _reduce(
         self,
-        fxn: type[Function],
+        fxn: type[funcs.Function],
         axis: ta.Optional[ta.Union[int, tuple[int, ...]]] = None,
         keepdim=False,
     ):
