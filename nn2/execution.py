@@ -443,6 +443,7 @@ class Compiled:
             from .codegen.linearizer import Linearizer
             k = Linearizer(ast, self.linearizer_opts, var_vals)
 
+            assert k.info.dtype == output.dtype, f"linearizer must match dtype. linearizer wants {k.info.dtype} but buffer is {output.dtype}"
             from .codegen.search import kernel_optimize
             if getenv("KOPT"):
                 kernel_optimize(

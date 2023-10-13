@@ -140,6 +140,7 @@ def get_single_root(root: LazyBuffer) -> LazyBuffer:
     return (
         get_single_root(ta.cast(LazyBuffer, root.op.src[0]))
         if getattr(root, "op", None) and len(root.op.src) == 1
+        and isinstance(root.op.src[0], LazyBuffer)
         else root
     )
 
@@ -341,20 +342,6 @@ class LazyBuffer:
             op = _ast_binaryops(op, self.shape)
         elif issubclass(self.optype, ops.ReduceOp):
             op = _ast_reduceops(op)
-
-        # HACK: image shape can be wrong, hot cast it back to a normal float
-        if (
-                isinstance(self.dtype, ImageDType)
-                and (
-                    prod(self.shape) != prod(self.dtype.shape)
-                    or not any(self.shape[x] % 4 == 0 for x in self.st.unit_stride_axes())
-                )
-        ):
-            if isinstance(op, ops.Reshape):
-                op = ops.Reshape((ops.Cast(op.src, (dtypes.float32, False)),), op.arg)
-            else:
-                op = ops.Cast((op,), (dtypes.float32, False))
-            self.dtype = dtypes.float32
 
         # realize the past and exec the AST
         ret = []

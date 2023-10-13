@@ -6,7 +6,12 @@ import numpy as np
 
 from . import ops
 from .devices import Device
+from .dtypes import ImageDType
+from .dtypes import dtypes
+from .execution import MemBuffer
+from .execution import get_lazyop_info
 from .helpers import DEBUG
+from .helpers import IMAGE
 from .helpers import all_int
 from .helpers import getenv
 from .helpers import prod
@@ -20,7 +25,61 @@ from .runtime.ops_disk import RawDiskBuffer
 P2P = getenv("P2P", 0)
 
 
+def fix_schedule_for_images(schedule: list[tuple[LazyOp, LazyBuffer, tuple[LazyBuffer, ...]]]):
+    # this is the fundamental fix, find unwritable or unreadable images and convert them to normal float32 (TODO: should it be float16?)
+    for op, out, buffers in schedule:
+        if (
+                isinstance(out.dtype, ImageDType)
+                and (
+                    prod(out.shape) != prod(out.dtype.shape)
+                    or not any(out.shape[x] % 4 == 0 for x in out.st.unit_stride_axes())
+                )
+        ):
+            out.dtype = dtypes.float32
+        bops = [x for x in op.get_lazyops() if isinstance(x, ops.Mem)]
+        for b in bops:
+            if (
+                    isinstance(buffers[b.arg.idx - 1].dtype, ImageDType)
+                    and (
+                        b.arg.st.real_offset() % 4 != 0
+                        or not any(b.arg.st.shape[x] % 4 == 0 for x in b.arg.st.unit_stride_axes())
+                    )
+            ):
+                buffers[b.arg.idx - 1].dtype = dtypes.float32
+
+    # fix the contiguous dtype, no cast required
+    for op, out, buffers in schedule:
+        if isinstance(op, ops.Contiguous) and out.dtype != buffers[0].dtype:
+            out.dtype = buffers[0].dtype = dtypes.float32
+
+    # now fix up the schedule to reflect the new dtypes
+    fixed_schedule = []
+    for op, out, buffers in schedule:
+        # fix input dtypes to match what they actually are
+        bops = [x for x in op.get_lazyops() if isinstance(x, ops.Mem)]
+        replacements = {}
+        for x in bops:
+            if x.arg.dtype != buffers[x.arg.idx - 1].dtype:
+                replacements[x] = ops.Mem((), MemBuffer(x.arg.idx, buffers[x.arg.idx - 1].dtype, x.arg.st))
+        if replacements:
+            op = op.map_buffers(replacements)
+
+        # fix the ops to create the output dtype
+        if not isinstance(op, ops.LoadOp):
+            info = get_lazyop_info(op)
+            if info.dtype != out.dtype:
+                op = ops.Cast((op,), (out.dtype, False))
+
+        # put this in the fixed schedule
+        fixed_schedule.append((op, out, buffers))
+    return fixed_schedule
+
+
 def run_schedule(schedule: list[tuple[LazyOp, LazyBuffer, tuple[LazyBuffer, ...]]]):
+    # HACK: images can be not usable due to shape
+    if IMAGE >= 2:
+        schedule = fix_schedule_for_images(schedule)
+
     # NOTE: if you for loop the schedule it's slow because nothing frees
     while len(schedule):
         op, out, buffers = schedule.pop(0)
