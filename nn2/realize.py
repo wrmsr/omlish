@@ -38,7 +38,7 @@ def run_schedule(schedule: list[tuple[LazyOp, LazyBuffer, tuple[LazyBuffer, ...]
             out.realized = Device[out.device].exec_ast(
                 op,
                 output=out,
-                inputs=[x.realized for x in buffers],
+                inputs=buffers,
                 var_vals=out.var_vals,
                 **out._device_extra_args(),
             )

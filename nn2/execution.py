@@ -65,7 +65,7 @@ class Interpreted:
         if isinstance(ast, ops.BufferOp) and type(ast) not in self.fxn_for_op:
             if isinstance(ast, ops.Mem):
                 assert inputs[ast.arg.idx - 1].dtype == ast.arg.dtype, "dtype mismatch"
-                buf = self.to_underlying(inputs[ast.arg.idx - 1])
+                buf = self.to_underlying(inputs[ast.arg.idx - 1].realized)
             elif isinstance(ast, ops.Const):
                 buf = self.to_underlying(self.buffer.fromCpu(np.array(ast.arg.val, dtype=ast.arg.dtype.np)))
             for mop, arg in ast.arg.st.to_movement_ops():
@@ -413,7 +413,7 @@ class Compiled:
         if output.realized:
             for i, a in enumerate(inputs):
                 # TODO: if this is contiguous it's fine
-                if a == output.realized:
+                if a.realized == output.realized:
                     if any(
                             not x.arg.st.contiguous
                             for x in ast.get_lazyops()
@@ -434,34 +434,38 @@ class Compiled:
 
             CacheCollector._mark_output_buffer(output.output_buffer)
 
-        from .codegen.linearizer import Linearizer
-
-        k = Linearizer(ast, self.linearizer_opts, var_vals)
+        # all the rawbuffers
+        rawbuffers = [output.realized] + [x.realized for x in inputs]
+        key = (ast, tuple(var_vals.keys())) if var_vals else ast  # TODO: remove var_vals so the key can just be the AST
 
         # compilation time
         def get_program():
-            from .codegen.search import kernel_optimize
+            from .codegen.linearizer import Linearizer
+            k = Linearizer(ast, self.linearizer_opts, var_vals)
 
+            from .codegen.search import kernel_optimize
             if getenv("KOPT"):
                 kernel_optimize(
                     k,
                     lambda: Linearizer(ast, self.linearizer_opts, var_vals),
                     self.to_program,
-                    [output.realized] + inputs,
+                    rawbuffers,
+                    key,
                 )
             elif not getenv("NOOPT"):
                 k.hand_coded_optimizations()
+
             return self.to_program(k)
 
-        if hasattr(k, "key") and getenv("ENABLE_METHOD_CACHE", 1):
-            if k.key not in self.method_cache:
-                self.method_cache[k.key] = get_program()
-            prg = self.method_cache[k.key]
+        if getenv("ENABLE_METHOD_CACHE", 1):
+            if key not in self.method_cache:
+                self.method_cache[key] = get_program()
+            prg = self.method_cache[key]
         else:
             prg = get_program()
 
-        if prg.name == getenv("PRINT_PRG", ""):
+        if prg.name == getenv("PRINT_PRG", ''):
             print(prg.prg)
 
-        prg.exec([output.realized] + inputs, var_vals=var_vals)
+        prg.exec(rawbuffers, var_vals=var_vals)
         return output.realized
