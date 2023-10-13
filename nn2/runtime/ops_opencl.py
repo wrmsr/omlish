@@ -268,6 +268,7 @@ renderer = functools.partial(
     CStyleLanguage(
         kernel_prefix="__kernel ",
         buffer_prefix="__global ",
+        smem_align="__attribute__ ((aligned (16))) ",
         smem_prefix="__local ",
         arg_int_prefix="const int",
         half_prekernel="#pragma OPENCL EXTENSION cl_khr_fp16 : enable",
