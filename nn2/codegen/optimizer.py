@@ -19,8 +19,8 @@ from ..shape.view import View
 
 
 class OptimizedKernel(Kernel):
-    def __init__(self, ast: LazyOp, opts: ta.Optional[LinearizerOptions] = None, var_vals=None) -> None:
-        super().__init__(ast, opts, var_vals)
+    def __init__(self, ast: LazyOp, opts: ta.Optional[LinearizerOptions] = None) -> None:
+        super().__init__(ast, opts)
 
         # move all reduce axes to the end
         reduce = list(enumerate(zip(self.full_shape, self.sts[0].shape)))

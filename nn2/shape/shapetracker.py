@@ -3,6 +3,7 @@ from __future__ import annotations
 import functools
 import typing as ta
 
+from omlish import collections as col
 from omlish import dataclasses as dc
 
 from .. import ops
@@ -123,6 +124,14 @@ class ShapeTracker:
     # this is the real size (ish)
     def size(self):
         return self.views[-1].size()
+
+    def var_vals(self) -> list[Variable]:
+        ret = []
+        for v in self.views:
+            for x in v.shape + v.strides + (v.offset,):
+                if isinstance(x, Node):
+                    ret += x.vars()
+        return col.unique(ret)
 
     def to_movement_ops(self) -> list[tuple[type[ops.MovementOp], tuple]]:
         to_apply: list[tuple[type[ops.MovementOp], tuple]] = []
