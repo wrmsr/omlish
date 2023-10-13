@@ -506,8 +506,17 @@ class OptimizedKernel(Kernel):
                 and isinstance(self.reduceop.src[0].src[1], ops.Mem)
         ):
             buf0 = self.bufs.index(ta.cast(LazyOp, self.reduceop.src[0].src[0]).arg)
+            buf1 = self.bufs.index(ta.cast(LazyOp, self.reduceop.src[0].src[1]).arg)
             buf0_strides = self.sts[buf0].real_strides()
-            if buf0_strides[self.first_reduce] == 1:
+            buf1_strides = self.sts[buf1].real_strides()
+            def has_expanded_axis(s, st): return any(x > 1 and y == 0 for x,y in zip(s,st))
+            if (
+                    buf0_strides[self.first_reduce] == 1
+                    and not (
+                        has_expanded_axis(self.sts[buf0].shape, buf0_strides)
+                        and has_expanded_axis(self.sts[buf1].shape, buf1_strides)
+                )
+            ):
                 for global_idx in range(self.global_dims):
                     if (
                             self.full_shape[self.first_reduce] % MV_THREADS_PER_ROW == 0
