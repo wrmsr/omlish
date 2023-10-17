@@ -13,6 +13,7 @@ from ..execution import FlopCounter
 from ..execution import MemBuffer
 from ..execution import get_lazyop_info
 from ..helpers import all_int
+from ..helpers import ansilen
 from ..helpers import colored
 from ..helpers import dedup
 from ..ops import LazyOp
@@ -155,6 +156,10 @@ class Kernel:
 
         self.global_size: ta.Optional[list[int]] = None
         self.local_size: ta.Optional[list[int]] = None
+
+    @property
+    def membufs(self) -> list[MemBuffer]:
+        return [x for x in self.bufs if isinstance(x, MemBuffer)]
 
     def has_variable_shape(self) -> bool:
         for b in self.bufs:
@@ -306,14 +311,16 @@ class Kernel:
         assert len(colors) == self.shape_len, "colors size mismatch"
         return colors
 
-    def colored_shape(self) -> str:
-        return " ".join(
+    def colored_shape(self, pad=None) -> str:
+        ret = ' '.join(
             colored(s, color)
-            for s, color in zip(
-                [f"{s:4d}" if isinstance(s, int) else s for s in self.full_shape],
+            for s,color in zip(
+                [f"{s:4d}"if isinstance(s, int) else s for s in self.full_shape],
                 self.colors(),
             )
         )
+        if pad: ret += ' '*(pad-ansilen(ret))
+        return ret
 
     def printbufs(self, prefix=""):
         for i, st in enumerate(self.sts):

@@ -50,6 +50,7 @@ torch_fxn_for_op: dict[type[ops.LazyOp], ta.Callable] = {
         ops.Sin: torch.sin,
         ops.Cast: lambda x, y: (x.view if y[1] else x.type)(next(k for k, v in type_map.items() if v == y[0])),
         ops.Max2: torch.maximum,
+        ops.Sub: lambda x,y: torch.logical_xor(x, y) if y.dtype is torch.bool else torch.sub(x, y),
         ops.CmpLt: lambda x, y: (x < y).type(torch.promote_types(x.dtype, y.dtype)),
         ops.Pad: lambda x, padding: torch.nn.functional.pad(x, [item for sublist in padding[::-1] for item in sublist]),  # noqa
         ops.MulAcc: einsum_mulacc(
