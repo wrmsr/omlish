@@ -2,16 +2,12 @@ from __future__ import annotations
 
 import typing as ta
 
-from omlish import dataclasses as dc
 import numpy as np
 
 from . import ops
 from .devices import Device
-from .dtypes import ImageDType
-from .dtypes import dtypes
-from .execution import MemBuffer
 from .execution import ScheduleItem
-from .execution import get_lazyop_info
+from .features.image import fix_schedule_for_images
 from .helpers import DEBUG
 from .helpers import IMAGE
 from .helpers import all_int
@@ -25,54 +21,6 @@ from .runtime.ops_disk import RawDiskBuffer
 
 
 P2P = getenv("P2P", 0)
-
-
-def fix_schedule_for_images(schedule: list[ScheduleItem]):
-    # this is the fundamental fix, find unwritable or unreadable images and convert them to normal float32 (TODO: should it be float16?)
-    for si in schedule:
-        if (
-                isinstance(si.out.dtype, ImageDType)
-                and (
-                    prod(si.out.shape) != prod(si.out.dtype.shape)
-                    or not any(si.out.shape[x] % 4 == 0 for x in si.out.st.unit_stride_axes())
-            )
-        ):
-            si.out.dtype = dtypes.float32
-        for b in si.ast.get_lazyops():
-            if not isinstance(b, ops.Mem):
-                continue
-            if (
-                isinstance(si.inputs[b.arg.idx - 1].dtype, ImageDType)
-                and (
-                    b.arg.st.real_offset() % 4 != 0
-                    or not any(b.arg.st.shape[x] % 4 == 0 for x in b.arg.st.unit_stride_axes())
-                )
-            ):
-                si.inputs[b.arg.idx - 1].dtype = dtypes.float32
-
-    # now fix up the schedule to reflect the new dtypes
-    fixed_schedule: list[ScheduleItem] = []
-    for si in schedule:
-        ast = si.ast
-        # fix input dtypes to match what they actually are
-        replacements = {}
-        for b in si.ast.get_lazyops():
-            if not isinstance(b, ops.Mem):
-                continue
-            if b.arg.dtype != si.inputs[b.arg.idx - 1].dtype:
-                replacements[b] = ops.Mem((), MemBuffer(b.arg.idx, si.inputs[b.arg.idx - 1].dtype, b.arg.st))
-        if replacements:
-            ast = ast.map_buffers(replacements)
-
-        # fix the ops to create the output dtype
-        if not isinstance(ast, ops.LoadOp):
-            info = get_lazyop_info(ast)
-            if info.dtype != si.out.dtype:
-                ast = ops.Cast((ast,), (si.out.dtype, False))
-
-        # put this in the fixed schedule
-        fixed_schedule.append(dc.replace(si, ast=ast))
-    return fixed_schedule
 
 
 # *** this is where things happen ***
