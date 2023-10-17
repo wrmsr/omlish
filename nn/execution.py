@@ -454,7 +454,8 @@ class Compiled:
                     ast,
                 )
             elif not getenv("NOOPT"):
-                k.hand_coded_optimizations()
+                if not k.apply_tensor_cores(getenv("TC", 1)):
+                    k.hand_coded_optimizations()
 
             return self.to_program(k)
 
