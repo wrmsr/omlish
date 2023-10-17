@@ -86,7 +86,7 @@ class WGSLLanguage(CStyleLanguage):
     def render_for(
         self, expr: str, _min: ta.Union[int, str], _max: ta.Union[int, str]
     ) -> str:
-        return f"for(var {expr} = {_min}; {expr} <= {_max}; {expr}++) {{"
+        return f"for(var {expr} = {_min}; {expr} < {_max}; {expr}++) {{"
 
     def render_conditional(self, cond: str, x: str, y: str) -> str:
         return f"select(f32({y}), {x}, bool({cond}))"

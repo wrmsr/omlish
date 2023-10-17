@@ -102,7 +102,7 @@ class CStyleLanguage(ta.NamedTuple):
     def render_for(
         self, expr: str, _min: ta.Union[int, str], _max: ta.Union[int, str]
     ) -> str:
-        return f"for (int {expr} = {_min}; {expr} <= {_max}; ++{expr}) {{"
+        return f"for (int {expr} = {_min}; {expr} < {_max}; ++{expr}) {{"
 
     def render_conditional(self, cond: str, x: str, y: str) -> str:
         return f"({cond})?({x}):{y}"

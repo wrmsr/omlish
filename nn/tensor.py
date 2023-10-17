@@ -594,6 +594,9 @@ class Tensor:
                 )
         return ret
 
+    def __setitem__(self, s, v):
+        return self.__getitem__(s).assign(v)
+
     # NOTE: using slice is discouraged and things should migrate to pad and shrink
     def slice(
         self, arg: ta.Sequence[ta.Optional[tuple[int, sint]]], value: float = 0
