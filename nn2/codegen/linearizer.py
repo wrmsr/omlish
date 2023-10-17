@@ -595,17 +595,13 @@ class Linearizer(OptimizedKernel):
                         locals_to_store[1][2]
                     ):
                         i = 0
-                        for y0, y1 in zip(
-                            locals_to_store[1][2][::2], locals_to_store[1][2][1::2]
-                        ):
-                            for x0, x1 in zip(
-                                locals_to_store[0][2][::2], locals_to_store[0][2][1::2]
-                            ):
+                        for y0, y1 in zip(locals_to_store[1][2][::2], locals_to_store[1][2][1::2]):
+                            for x0, x1 in zip(locals_to_store[0][2][::2], locals_to_store[0][2][1::2]):
                                 self.uop(
                                     UOps.WMMA,
                                     None,
                                     (x0, x1, y0, y1, acc[i], acc[i + 1]),
-                                    "METAL",
+                                    ("METAL",),
                                 )
                                 i += 2
                     else:
@@ -621,7 +617,7 @@ class Linearizer(OptimizedKernel):
                                     UOps.WMMA,
                                     None,
                                     (x0, x1, y0, y1, acc[i], acc[i + 1]),
-                                    "METAL",
+                                    ("METAL",),
                                 )
                 elif self.opts.device == "HIP":
                     i = 0
@@ -631,11 +627,11 @@ class Linearizer(OptimizedKernel):
                                 UOps.WMMA,
                                 None,
                                 tuple(
-                                    acc[i:i + 8]
-                                    + locals_to_store[0][2][x:x + 0x10]
+                                    locals_to_store[0][2][x:x + 0x10]
                                     + locals_to_store[1][2][y:y + 0x10]
+                                    + acc[i:i + 8]
                                 ),
-                                "HIP",
+                                ("HIP",),
                             )
                             i += 8
             else:
