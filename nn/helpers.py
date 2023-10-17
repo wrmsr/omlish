@@ -70,7 +70,7 @@ def make_pair(x: ta.Union[int, tuple[int, ...]], cnt=2) -> tuple[int, ...]:
     return (x,) * cnt if isinstance(x, int) else x
 
 
-def flatten(l: ta.Iterator):
+def flatten(l: ta.Iterable):
     return [item for sublist in l for item in sublist]
 
 
