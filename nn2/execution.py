@@ -444,7 +444,7 @@ class Compiled:
             k = Linearizer(ast, self.linearizer_opts)
 
             assert k.info.dtype == output.dtype, f"linearizer must match dtype. linearizer wants {k.info.dtype} but buffer is {output.dtype}"
-            from .codegen.search import kernel_optimize
+            from .features.kopt import kernel_optimize
             if getenv("KOPT"):
                 kernel_optimize(
                     k,

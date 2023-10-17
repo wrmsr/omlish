@@ -1658,8 +1658,8 @@ for device in Device._buffers:
 
 if IMAGE:
     # if IMAGE>0 we install these replacement functions in Tensor (hack!)
-    from .nn.image import image_conv2d
-    from .nn.image import image_dot
+    from .features.image import image_conv2d
+    from .features.image import image_dot
 
     setattr(Tensor, "conv2d", image_conv2d)
     setattr(Tensor, "dot", image_dot)

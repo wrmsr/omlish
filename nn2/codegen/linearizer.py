@@ -16,6 +16,7 @@ from ..dtypes import PtrDType
 from ..dtypes import dtypes
 from ..execution import ConstBuffer
 from ..execution import MemBuffer
+from ..features.image import to_image_idx
 from ..helpers import DEBUG
 from ..helpers import all_same
 from ..helpers import colored
@@ -54,125 +55,6 @@ class UOps(enum.Enum):
     WMMA = enum.auto()
     CAST = enum.auto()
     GEP = enum.auto()  # noqa: E702
-
-
-def to_image_idx(
-    base_shape: tuple[int, ...], idxy: Node, valid: Node
-) -> tuple[tuple[Node, Node], Node]:
-    # This part is substituting variables by just looking at single var LtNodes in valid
-    # Basically if var[0-5] < 3 -> var[0-2]
-    if valid.min == 0:
-        nodes: list = valid.nodes if isinstance(valid, AndNode) else [valid]
-        var_dict = {var: [var.min, var.max] for var in valid.vars()}
-
-        for nd in nodes:
-            var_range = var_dict[nd.vars()[0]]
-            if isinstance(nd.a, MulNode):
-                if nd.a.b < 0:
-                    var_range[0] = (nd.b // nd.a.b) + 1
-                elif nd.a.b > 0:
-                    var_range[1] = (
-                        (nd.b // nd.a.b) - 1 if nd.b % nd.a.b == 0 else nd.b // nd.a.b
-                    )
-            elif isinstance(nd.a, Variable):
-                var_range[1] = nd.b - 1
-        # We do not allow NumNode because it is constant
-        # TODO: Remove mx != mn
-        sub_dict: dict[ta.Union[Variable, NumNode], Node] = {
-            v: Variable(v.expr, mn, mx) for v, (mn, mx) in var_dict.items() if mx != mn
-        }
-        valid, idxy = valid.substitute(sub_dict), idxy.substitute(sub_dict)
-
-    idx, idy = (idxy // 4) % base_shape[1], (idxy // (4 * base_shape[1]))
-    idx_vars, idy_vars, val_vars = set(idx.vars()), set(idy.vars()), set(valid.vars())
-
-    # Simplify ModNode if possibe # test_padded_conv_transpose2d, Needs much more thinking
-    if valid.min == 0 and isinstance(idx, ModNode) and isinstance(idx.a, SumNode):
-        nodes = valid.nodes if isinstance(valid, AndNode) else [valid]
-        same_dict: dict[Node, list[tuple[int, Node]]] = {}
-        idx_nodes = idx.a.flat_components
-
-        for node in nodes:
-            if not isinstance(node, LtNode) or not isinstance(node.a, SumNode):
-                continue
-
-            nd_flat, nd_vars = node.a.flat_components, node.vars()
-
-            same = [
-                x
-                for x in idx_nodes
-                if (x.a if isinstance(x, MulNode) else x) in nd_vars
-            ]
-
-            if len(same) != len(nd_vars):
-                continue
-
-            first_b, second_b = (
-                nd_flat[0].b if isinstance(nd_flat[0], MulNode) else 1,
-                same[0].b if isinstance(same[0], MulNode) else 1,
-            )
-            k, same_sum = second_b // first_b, Variable.sum(same)
-
-            if k * (node.a) == same_sum:
-                same_dict[same_sum] = same_dict.get(same_sum, []) + [(k, node)]
-
-        for key in same_dict.keys():
-            # Same is sumnode because node.a is SumNode
-            same, mnn, mxn = key.flat_components, key.min, key.max  # type: ignore
-            for k, node in same_dict[key]:  # TODO: This part may need more thinking
-                if k < 0:
-                    mnn = (-k) * max(
-                        (-node.b) + 1,
-                        min(
-                            [-lal.b if isinstance(lal, MulNode) else 1 for lal in same]
-                        ),
-                    )
-                else:
-                    mxn = (node.b - 1) * k
-
-            fake_var = Variable("valid_fake", mnn, mxn)
-            total = (
-                Variable.sum([x for x in idx_nodes if x not in same]) + fake_var
-            ) % idx.b
-            idx = total.substitute({fake_var: key})
-            # TODO: If idx has no ModNode we may can remove the valid node, but removing it needs careful thinking
-
-    # Simplify SumNodes
-    # This part just removes valid nodes if node is exactly same as idx or idy
-    # idx = 3*a + b (+ 5), valid = 3*a + b < 10 # Valid will be removed as idx will go out of bounds
-    # Check for var intersection, removing valid can affect other index
-    if valid.min == 0 and not idx_vars.intersection(idy_vars):
-        nds = valid.nodes if isinstance(valid, AndNode) else [valid]
-        flats = [id.flat_components for id in (idx, idy) if isinstance(id, SumNode)]
-        sym_sums = [
-            Variable.sum([i for i in flat if not isinstance(i, NumNode)])
-            for flat in flats
-        ]
-        # AndNode always consists of LtNode
-        ones = [node for sym_sum in sym_sums for node in nds if (node.a == sym_sum) or (-(node.a) == sym_sum)]  # type: ignore   # noqa
-        valid = Variable.ands([i for i in nds if i not in ones])
-
-    # This is the slow part
-    # This part is for brute forcing all possible values of idx, idy and valid
-    # If valid is both 0 and 1 for the same (idx, idy) we can not delete the valid
-    if valid.min == 0 and not isinstance(idx, ModNode):
-        variables = tuple(val_vars | idy_vars | idx_vars)
-        val_infer, idx_infer, idy_infer = (
-            valid.expand(variables),
-            idx.expand(variables),
-            idy.expand(variables),
-        )
-        val_dict: dict[int, set[tuple[int, int]]] = {0: set(), 1: set()}
-
-        for v, x, y in zip(val_infer, idx_infer, idy_infer):
-            val_dict[v.min].add((x.min, y.min))
-
-        if not val_dict[1].intersection(val_dict[0]):
-            valid = NumNode(1)
-
-    if DEBUG >= 5:
-        print("to_image_idx", base_shape, idx.min, idx.max, idy.min, idy.max, idx, idy)
-    return (idx, idy), valid
 
 
 class UOp(ta.NamedTuple):
