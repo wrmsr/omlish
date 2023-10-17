@@ -59,6 +59,9 @@ class Node:
     def substitute(self, var_vals: dict[VariableOrNum, Node]) -> Node:
         raise RuntimeError(self.__class__.__name__)
 
+    def unbind(self) -> tuple[Node, ta.Optional[int]]:
+        return self.substitute({v: v.unbind()[0] for v in self.vars() if v.val is not None}), None
+
     @functools.cached_property
     def key(self) -> str:
         return self.render(ctx="DEBUG")
@@ -266,6 +269,16 @@ class Variable(Node):
         self.expr = expr
         self.min = nmin
         self.max = nmax
+        self.val: ta.Optional[int] = None
+
+    def bind(self, val):
+        assert self.val is None and self.min<=val<=self.max, f"cannot bind {val} to {self}"
+        self.val = val
+        return self
+
+    def unbind(self) -> tuple[Variable, int]:
+        assert self.val is not None, f"cannot unbind {self}"
+        return Variable(self.expr, self.min, self.max), self.val
 
     def vars(self):
         return [self]
@@ -281,6 +294,10 @@ class NumNode(Node):
         self.b: int = num
         self.min = num
         self.max = num
+
+    def bind(self, val):
+        assert self.b == val, f"cannot bind {val} to {self}"
+        return self
 
     def __eq__(self, other):
         return self.b == other
@@ -575,7 +592,7 @@ sint = ta.Union[Node, int]
 VariableOrNum = ta.Union[Variable, NumNode]
 
 render_python: dict[type, ta.Callable] = {
-    Variable: lambda self,ops,ctx: f"{self.expr}[{self.min}-{self.max}]" if ctx == "DEBUG" else (f"Variable('{self.expr}', {self.min}, {self.max})" if ctx == "REPR" else f"{self.expr}"),
+    Variable: lambda self, ops, ctx: f"{self.expr}[{self.min}-{self.max}{'=' + str(self.val) if self.val is not None else ''}]" if ctx == "DEBUG" else (f"Variable('{self.expr}', {self.min}, {self.max})" if ctx == "REPR" else f"{self.expr}"),  # noqa
     NumNode: lambda self, ops, ctx: f"{self.b}",
     MulNode: lambda self, ops, ctx: f"({self.a.render(ops,ctx)}*{sym_render(self.b,ops,ctx)})",
     DivNode: lambda self, ops, ctx: f"({self.a.render(ops,ctx)}//{self.b})",

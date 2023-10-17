@@ -5,7 +5,7 @@ from ..codegen.linearizer import Linearizer
 from ..helpers import DEBUG
 from ..helpers import getenv
 from ..helpers import prod
-from ..lazy import var_vals_from_ast
+from ..lazy import vars_from_ast
 
 
 def get_divisors(n, min_div=1, max_div=512):
@@ -137,7 +137,7 @@ def kernel_optimize(k: Linearizer, create_k: ta.Callable[[], Linearizer], to_prg
         # don't optimize variable shapes
         choice = "BASELINE"
     else:
-        var_vals = {k: k.min for k in var_vals_from_ast(k.ast)}
+        var_vals = {k: k.min for k in vars_from_ast(k.ast)}
 
         # get baseline
         def get_baseline():

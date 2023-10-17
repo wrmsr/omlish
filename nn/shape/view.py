@@ -1,14 +1,18 @@
 from __future__ import annotations
 
 import functools
+import operator
 import typing as ta
 
+from omlish import collections as col
 from omlish import dataclasses as dc
 
 from ..helpers import all_int
 from ..helpers import prod
 from ..shape.symbolic import Node
 from ..shape.symbolic import NumNode
+from ..shape.symbolic import Variable
+from ..shape.symbolic import VariableOrNum
 from ..shape.symbolic import is_sym_int
 from ..shape.symbolic import sint
 
@@ -61,6 +65,34 @@ class View:
                 if st != 0
             ]
         )
+
+    def vars(self) -> list[Variable]:
+        flatten_mask = tuple(x for m in self.mask for x in m) if self.mask is not None else tuple()
+        return col.unique(
+            functools.reduce(
+                operator.add,
+                [
+                    x.vars()
+                    for x in self.shape + self.strides + (self.offset,) + flatten_mask
+                    if isinstance(x, Node)
+                ],
+                [],
+            ),
+        )
+
+    def unbind(self) -> View:
+        unbound_vars: dict[VariableOrNum, Node] = {v: v.unbind()[0] for v in self.vars() if v.val is not None}
+        new_shape = tuple([s if isinstance(s, int) else s.substitute(unbound_vars) for s in self.shape])
+        new_strides = tuple([s if isinstance(s, int) else s.substitute(unbound_vars) for s in self.strides])
+        new_offset = self.offset if isinstance(self.offset, int) else self.offset.substitute(unbound_vars)
+        new_mask = tuple(
+            (
+                a if isinstance(a, int) else a.substitute(unbound_vars),
+                b if isinstance(b, int) else b.substitute(unbound_vars),
+            )
+            for (a, b) in self.mask
+        ) if self.mask is not None else None
+        return View.create(new_shape, new_strides, new_offset, new_mask)
 
     # MovementOps live here now
 
@@ -181,10 +213,13 @@ class View:
             is_sym_int(x) and x > 0 for x in new_shape
         ), f"shape must be symbolic ints and can't contain 0 or negative numbers {new_shape}"
 
-        # only check size for int shapes. we don't check symbolic here as long as the reshape itself can be done
-        assert (
-            prod(self.shape) == prod(new_shape) if all_int(self.shape + new_shape) else True
-        ), f"can't reshape {self.shape=} -> {new_shape=}"
+        # check for the same size
+        if all_int(self.shape):
+            if all_int(new_shape):
+                assert prod(self.shape) == prod(new_shape), f"size mismatched, can't reshape {self.shape=} -> {new_shape=}"
+            else:
+                assert all(isinstance(s, (int, Variable)) for s in new_shape), f"{self.shape=} -> {new_shape=} contains non (int, Variable) dim"
+                assert prod(self.shape) == prod([s if isinstance(s, int) else ta.cast(Variable,s).val for s in new_shape]), f"size mismatched, can't reshape {self.shape=} -> {new_shape=}"
 
         # after the asserts, it's okay to check contiguous
         if self.contiguous:
