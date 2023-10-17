@@ -18,6 +18,7 @@ from ..helpers import DEBUG
 from ..helpers import GlobalCounters
 from ..helpers import Timing
 from ..helpers import getenv
+from ..jit import JIT_SUPPORTED_DEVICE
 from ..jit import TinyJit
 from ..nn.nn import Embedding
 from ..nn.nn import Linear
@@ -34,7 +35,7 @@ np.set_printoptions(linewidth=200)
 
 CI = False
 
-JIT = getenv("JIT", 0 if CI else 1)
+JIT = getenv("JIT", 0 if CI else Device.DEFAULT in JIT_SUPPORTED_DEVICE)
 
 
 # https://github.com/facebookresearch/llama/blob/1076b9c51c77ad06e9d7ba8a4c6df775741732bd/llama/model.py#L47

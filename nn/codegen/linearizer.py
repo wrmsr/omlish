@@ -418,17 +418,14 @@ class Linearizer(OptimizedKernel):
                         UOps.LOOP,
                         dtypes.int32,
                         (
-                            self.const(x.min)
-                            if isinstance(x.min, int)
-                            else ta.cast(Variable, x.min).render(self.render_ops, self),
-                            self.const(x.max)
-                            if isinstance(x.max, int)
-                            else ta.cast(Variable, x.max).render(self.render_ops, self),
+                            self.const(x.min) if isinstance(x.min, int) else ta.cast(Node, x.min).render(self.render_ops, self),  # noqa
+                            self.const(x.max + 1) if isinstance(x.max, int) else ta.cast(Node, x.max + 1).render(self.render_ops, self),  # noqa
                         ),
                         cachable=False,
                     )
                     for x in xx
-                    if not isinstance(x, NumNode) and x.expr is not None
+                    if not isinstance(x, NumNode)
+                    and x.expr is not None
                 }
             )
 

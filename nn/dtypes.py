@@ -15,7 +15,7 @@ class DType(ta.NamedTuple):
     sz: int = 1
 
     def __repr__(self):
-        return f"dtypes.{self.name}"
+        return f"dtypes.{INVERSE_DTYPES_DICT[self]}"
 
 
 # dependent typing?
@@ -109,3 +109,5 @@ DTYPES_DICT = {
     for k, v in dtypes.__dict__.items()
     if not k.startswith("__") and not callable(v) and not v.__class__ == staticmethod
 }
+
+INVERSE_DTYPES_DICT = {v: k for k,v in DTYPES_DICT.items()}

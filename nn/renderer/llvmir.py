@@ -223,9 +223,9 @@ def uops_to_llvm_ir(function_name: str, uops: list[UOp]) -> str:
                 ir.IRBuilder(func.append_basic_block(f"loop_exit_{len(loop_blocks)}"))
             )
             bb[-2].cbranch(
-                bb[-2].icmp_unsigned(">", idx_p1, lvars[vin[0].vin[1]]),
-                bb[-1]._block,
+                bb[-2].icmp_unsigned("<", idx_p1, lvars[vin[0].vin[1]]),
                 block._block,
+                bb[-1]._block,
             )
         if uop == UOps.DEFINE_GLOBAL:
             lvars[u] = func.args[buf_index[args[0]]]

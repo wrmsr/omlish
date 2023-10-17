@@ -31,5 +31,6 @@
 /gen/
 /profiles/
 /target/
+/weights/
 antlr-*.jar
 test-*.xml

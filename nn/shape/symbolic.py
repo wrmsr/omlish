@@ -68,6 +68,9 @@ class Node:
         return hash(self.key)
 
     def __repr__(self):
+        return self.render(ctx="REPR")
+
+    def __str__(self):
         return "<" + self.key + ">"
 
     def __hash__(self):
@@ -563,7 +566,7 @@ def sym_infer(a: ta.Union[Node, int], var_vals: dict[Variable, int]) -> int:
     if isinstance(a, int):
         return a
     ret = a.substitute({k: Variable.num(v) for k, v in var_vals.items()})
-    assert isinstance(ret, NumNode)
+    assert isinstance(ret, NumNode), f"sym_infer didn't produce NumNode from {a} with {var_vals}"
     return ret.b
 
 
@@ -572,9 +575,7 @@ sint = ta.Union[Node, int]
 VariableOrNum = ta.Union[Variable, NumNode]
 
 render_python: dict[type, ta.Callable] = {
-    Variable: lambda self, ops, ctx: f"{self.expr}[{self.min}-{self.max}]"
-    if ctx == "DEBUG"
-    else f"{self.expr}",
+    Variable: lambda self,ops,ctx: f"{self.expr}[{self.min}-{self.max}]" if ctx == "DEBUG" else (f"Variable('{self.expr}', {self.min}, {self.max})" if ctx == "REPR" else f"{self.expr}"),
     NumNode: lambda self, ops, ctx: f"{self.b}",
     MulNode: lambda self, ops, ctx: f"({self.a.render(ops,ctx)}*{sym_render(self.b,ops,ctx)})",
     DivNode: lambda self, ops, ctx: f"({self.a.render(ops,ctx)}//{self.b})",
