@@ -1583,6 +1583,12 @@ class Tensor:
             self @ key.transpose(-2, -1) / math.sqrt(self.shape[-1]) + attn_mask
         ).softmax(-1).dropout(dropout_p) @ value
 
+    def binary_crossentropy(self, y: Tensor) -> Tensor:
+        return (-y * self.log() - (1 - y) * (1 - self).log()).mean()
+
+    def binary_crossentropy_logits(self, y: Tensor) -> Tensor:
+        return (self.maximum(0) - y * self + (1 + self.abs().__neg__().exp()).log()).mean()
+
     def sparse_categorical_crossentropy(self, Y, ignore_index=-1) -> Tensor:
         loss_mask = Y != ignore_index
         y_counter = (
