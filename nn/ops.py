@@ -1,357 +1,294 @@
 """
-TODO:
- - identity eq? identity cols?
+NOTE: MOD, CMPLT don't have to be implemented on vectors, just scalars
+NOTE: rdna3 only has RECIP and not DIV. DIV and POW are on the chopping block
 """
-import abc
-import typing as ta
-import weakref
+from __future__ import annotations
 
-from omlish import check
-from omlish import dataclasses as dc
+import typing as ta
+
 from omlish import lang
 
-from .dims import Shape as _Shape
-from .dims import Stride as _Stride
-from .dtypes import Dtype as _Dtype
-from .lazy import Lazy
-from .scalars import SCALAR_TYPES
-from .scalars import Scalar
-
 if ta.TYPE_CHECKING:
-    from . import buffers
-else:
-    buffers = lang.proxy_import('.buffers', __package__)
+    from .lazy import LazyBuffer
 
 
-#
+class LazyOp(lang.Abstract):
+    src: tuple[ta.Union[LazyOp, LazyBuffer], ...]
+    arg: ta.Any
+    buffers: tuple[LazyBuffer, ...]
 
+    def __init__(
+            self,
+            src: tuple[ta.Union[LazyOp, LazyBuffer], ...],
+            arg: ta.Any = None,
+    ) -> None:
+        super().__init__()
 
-@dc.dataclass(frozen=True)
-class Op(Lazy, lang.Abstract):
+        self.src = src
+        self.arg = arg
+        self.buffers = ()
+
+        # NOTE: the linearizer's key function maps the buffers to ints, and LOCAL_BUFFER is used. we don't care about
+        # buffers in these cases
+        try:
+            for x in src:
+                self.buffers += x.buffers
+        except AttributeError:
+            self.buffers = ()
+
+    def __repr__(self) -> str:
+        return f"{type(self).__name__}(src={self.src}, arg={self.arg})"
+
+    def __eq__(self, __value: object) -> bool:
+        return (
+            isinstance(__value, LazyOp)
+            and type(self) is type(__value)
+            and self.src == __value.src
+            and self.arg == __value.arg
+        )
+
+    def __hash__(self) -> int:
+        return hash((type(self), self.src, self.arg))
+
     @property
-    @abc.abstractmethod
-    def srcs(self) -> ta.Sequence[Lazy]:
+    def key(self):
+        return (
+            type(self),
+            tuple(map(lambda x: getattr(x, "key", x), self.src)),
+            getattr(self.arg, "key", self.arg),
+        )
+
+    def map_buffers(
+            self,
+            real_srcs: ta.Mapping[LazyBuffer, ta.Union[LazyBuffer, LazyOp]]
+    ) -> LazyOp:
+        return type(self)(
+            tuple([y.map_buffers(real_srcs) for y in self.src]), self.arg
+        )
+
+    def get_lazyops(self) -> list[LazyOp]:
+        return [self] + [item for x in self.src for item in x.get_lazyops()]
+
+    def replace_with_movement_ops(
+            self,
+            ops: list[tuple[type[MovementOp], tuple[ta.Any, ...]]]
+    ) -> "LazyBuffer":
+        assert isinstance(self, (BinaryOp, UnaryOp, TernaryOp))
+        srcs = [z.replace_with_movement_ops(ops) for z in self.src]
+        return srcs[0].e(type(self), *srcs[1:], arg=self.arg)  # type: ignore
+
+    @property
+    def st(self):
         raise NotImplementedError
 
     @property
-    def args(self) -> ta.Sequence[ta.Any]:
-        return []
-
-    @property
-    def buffers(self) -> ta.Iterator['buffers.Buffer']:
-        for s in self.srcs:
-            if isinstance(s, Op):
-                yield from s.buffers
-            elif isinstance(s, buffers.Buffer):
-                yield s
-
-    @property
-    def ops(self) -> ta.Iterator['Op']:
-        yield self
-        for s in self.srcs:
-            if isinstance(s, Op):
-                yield from s.ops
-
-
-#
-
-
-@dc.dataclass(frozen=True)
-class UnaryOp(Op, lang.Abstract):
-    x: Lazy = dc.field(coerce=check.of_isinstance(Lazy))
-
-    @property
-    def srcs(self) -> ta.Sequence[Lazy]:
-        return [self.x]
-
-
-@dc.dataclass(frozen=True)
-class Nop(UnaryOp):
-    pass
-
-
-@dc.dataclass(frozen=True)
-class Exp2(UnaryOp):
-    pass
-
-
-@dc.dataclass(frozen=True)
-class Log2(UnaryOp):
-    pass
-
-
-@dc.dataclass(frozen=True)
-class Cast(UnaryOp):
-    dtype: _Dtype
-
-    @property
-    def args(self) -> ta.Sequence[ta.Any]:
-        return [self.dtype]
-
-
-@dc.dataclass(frozen=True)
-class Sin(UnaryOp):
-    pass
-
-
-@dc.dataclass(frozen=True)
-class Sqrt(UnaryOp):
-    pass
-
-
-@dc.dataclass(frozen=True)
-class Recip(UnaryOp):
-    pass
-
-
-@dc.dataclass(frozen=True)
-class Neg(UnaryOp):
-    pass
-
-
-#
-
-
-@dc.dataclass(frozen=True)
-class BinaryOp(Op, lang.Abstract):
-    x: Lazy = dc.field(coerce=check.of_isinstance(Lazy))
-    y: Lazy = dc.field(coerce=check.of_isinstance(Lazy))
-
-    @property
-    def srcs(self) -> ta.Sequence[Lazy]:
-        return [self.x, self.y]
-
-
-@dc.dataclass(frozen=True)
-class Add(BinaryOp):
-    pass
-
-
-@dc.dataclass(frozen=True)
-class Sub(BinaryOp):
-    pass
-
-
-@dc.dataclass(frozen=True)
-class Mul(BinaryOp):
-    pass
-
-
-@dc.dataclass(frozen=True)
-class Div(BinaryOp):
-    pass
-
-
-@dc.dataclass(frozen=True)
-class Maximum(BinaryOp):  # BinaryOps.MAX
-    pass
-
-
-@dc.dataclass(frozen=True)
-class Mod(BinaryOp):
-    pass
-
-
-@dc.dataclass(frozen=True)
-class CmpLt(BinaryOp):
-    pass
-
-
-#
-
-
-@dc.dataclass(frozen=True)
-class ReduceOp(Op, lang.Abstract):
-    x: Lazy = dc.field(coerce=check.of_isinstance(Lazy))
-
-    new_shape: _Shape = dc.field(coerce=check.of_isinstance(_Shape))
-
-    @property
-    def srcs(self) -> ta.Sequence[Lazy]:
-        return [self.x]
-
-    @property
-    def args(self) -> ta.Sequence[ta.Any]:
-        return [self.new_shape]
-
-
-@dc.dataclass(frozen=True)
-class Sum(ReduceOp):
-    pass
-
-
-@dc.dataclass(frozen=True)
-class Max(ReduceOp):
-    pass
-
-
-#
-
-
-@dc.dataclass(frozen=True)
-class TernaryOp(Op, lang.Abstract):
-    pass
-
-
-@dc.dataclass(frozen=True)
-class MulAcc(TernaryOp):
-    x: Lazy = dc.field(coerce=check.of_isinstance(Lazy))
-
-    new_shape: _Shape = dc.field(coerce=check.of_isinstance(_Shape))
-
-    @property
-    def srcs(self) -> ta.Sequence[Lazy]:
-        return [self.x]
-
-    @property
-    def args(self) -> ta.Sequence[ta.Any]:
-        return [self.new_shape]
-
-
-@dc.dataclass(frozen=True)
-class Where(TernaryOp):
-    x: Lazy
-    y: Lazy
-    z: Lazy
-
-    @property
-    def srcs(self) -> ta.Sequence[Lazy]:
-        return [self.x, self.y, self.z]
-
-
-#
-
-
-@dc.dataclass(frozen=True)
-class MovementOp(Op, lang.Abstract):
-    x: Lazy = dc.field(coerce=check.of_isinstance(Lazy))
-
-    @property
-    def srcs(self) -> ta.Sequence[Lazy]:
-        return [self.x]
-
-    @property
-    @abc.abstractmethod
-    def arg(self) -> ta.Any:
+    def realized(self):
         raise NotImplementedError
 
     @property
-    def args(self) -> ta.Sequence[ta.Any]:
-        return [self.arg]
+    def children(self):
+        raise NotImplementedError
+
+    # movement ops
+    def reshape(self, _):
+        raise NotImplementedError
+
+    def pad(self, _):
+        raise NotImplementedError
+
+    def expand(self, _):
+        raise NotImplementedError
+
+    def permute(self, _):
+        raise NotImplementedError
+
+    def shrink(self, _):
+        raise NotImplementedError
+
+    def stride(self, _):
+        raise NotImplementedError
 
 
-@dc.dataclass(frozen=True)
-class Reshape(MovementOp):
-    new_shape: _Shape = dc.field(coerce=check.of_isinstance(_Shape))
-
-    @property
-    def arg(self) -> _Shape:
-        return self.new_shape
+##
 
 
-@dc.dataclass(frozen=True)
-class Permute(MovementOp):
-    axes: ta.Sequence[int]
-
-    @property
-    def arg(self) -> ta.Sequence[int]:
-        return self.axes
-
-
-@dc.dataclass(frozen=True)
-class Expand(MovementOp):
-    new_shape: _Shape = dc.field(coerce=check.of_isinstance(_Shape))
-
-    @property
-    def arg(self) -> _Shape:
-        return self.new_shape
-
-
-@dc.dataclass(frozen=True)
-class Pad(MovementOp):
-    padding: ta.Sequence[ta.Tuple[int, int]]
-
-    @property
-    def arg(self) -> ta.Sequence[ta.Tuple[int, int]]:
-        return self.padding
-
-
-@dc.dataclass(frozen=True)
-class Shrink(MovementOp):
-    bounds: ta.Sequence[ta.Tuple[int, int]]  # (l, r) per dim
-
-    @property
-    def arg(self) -> ta.Sequence[ta.Tuple[int, int]]:
-        return self.bounds
-
-
-@dc.dataclass(frozen=True)
-class Restride(MovementOp):  # MovementOps.STRIDE
-    stride: _Stride
-
-    @property
-    def arg(self) -> _Stride:
-        return self.stride
-
-
-#
-
-
-@dc.dataclass(frozen=True)
-class LoadOp(Op, lang.Abstract):
-    @property
-    def srcs(self) -> ta.Sequence[Lazy]:
-        return []
-
-
-@dc.dataclass(frozen=True)
-class Empty(LoadOp):
+class UnaryOp(LazyOp, lang.Abstract):
     pass
 
 
-@dc.dataclass(frozen=True)
-class Rand(LoadOp):
-    seed: int
-
-    @property
-    def args(self) -> ta.Sequence[ta.Any]:
-        return [self.seed]
+class Nop(UnaryOp, lang.Final):
+    pass
 
 
-@dc.dataclass(frozen=True)
-class Const(LoadOp):
-    c: Scalar = dc.field(check=lambda c: isinstance(c, SCALAR_TYPES))
-
-    @property
-    def args(self) -> ta.Sequence[ta.Any]:
-        return [self.c]
+class Exp2(UnaryOp, lang.Final):
+    pass
 
 
-@dc.dataclass(frozen=True)
-class From(LoadOp):
-    buf: ta.Union['buffers.Buffer', weakref.ReferenceType['buffers.Buffer']] = dc.field(  # noqa
-        check=lambda o: isinstance(o, (buffers.Buffer, weakref.ref)),
-    )
-
-    @property
-    def srcs(self) -> ta.Sequence[Lazy]:
-        return[self.buf() if isinstance(self.buf, weakref.ref) else self.buf]
-
-    @property
-    def args(self) -> ta.Sequence[ta.Any]:
-        return []
+class Log2(UnaryOp, lang.Final):
+    pass
 
 
-@dc.dataclass(frozen=True)
-class Contiguous(LoadOp):
-    buf: ta.Union['buffers.Buffer', weakref.ReferenceType['buffers.Buffer']] = dc.field(  # noqa
-        check=lambda o: isinstance(o, (buffers.Buffer, weakref.ref)),
-    )
+class Cast(UnaryOp, lang.Final):
+    pass
 
-    @property
-    def srcs(self) -> ta.Sequence[Lazy]:
-        return[self.buf() if isinstance(self.buf, weakref.ref) else self.buf]
 
-    @property
-    def args(self) -> ta.Sequence[ta.Any]:
-        return []
+class Sin(UnaryOp, lang.Final):
+    pass
+
+
+class Sqrt(UnaryOp, lang.Final):
+    pass
+
+
+class Recip(UnaryOp, lang.Final):
+    pass
+
+
+class Neg(UnaryOp, lang.Final):
+    pass
+
+
+##
+
+
+class BinaryOp(LazyOp, lang.Abstract):
+    pass
+
+
+class Add(BinaryOp, lang.Final):
+    pass
+
+
+class Sub(BinaryOp, lang.Final):
+    pass
+
+
+class Mul(BinaryOp, lang.Final):
+    pass
+
+
+class Div(BinaryOp, lang.Final):
+    pass
+
+
+class Max2(BinaryOp, lang.Final):
+    pass
+
+
+class Mod(BinaryOp, lang.Final):
+    pass
+
+
+class CmpLt(BinaryOp, lang.Final):
+    pass
+
+
+##
+
+
+class TernaryOp(LazyOp, lang.Abstract):
+    pass
+
+
+class MulAcc(TernaryOp, lang.Final):
+    pass
+
+
+class Where(TernaryOp, lang.Final):
+    pass
+
+
+##
+
+
+class ReduceOp(LazyOp, lang.Abstract):
+    pass
+
+
+class Sum(ReduceOp, lang.Final):
+    pass
+
+
+class Max(ReduceOp, lang.Final):
+    pass
+
+
+##
+
+
+class BufferOp(LazyOp, lang.Abstract):
+    pass
+
+
+class Mem(BufferOp, lang.Final):
+    pass
+
+
+class Const(BufferOp, lang.Final):
+    pass
+
+
+##
+
+
+class MovementOp(LazyOp, lang.Abstract):
+    pass
+
+
+class Reshape(MovementOp, lang.Final):
+    pass
+
+
+class Permute(MovementOp, lang.Final):
+    pass
+
+
+class Expand(MovementOp, lang.Final):
+    pass
+
+
+class Pad(MovementOp, lang.Final):
+    pass
+
+
+class Shrink(MovementOp, lang.Final):
+    pass
+
+
+class Restride(MovementOp, lang.Final):
+    pass
+
+
+class AsStrided(MovementOp, lang.Final):
+    pass
+
+
+##
+
+
+class LoadOp(LazyOp, lang.Abstract):
+    pass
+
+
+class Empty(LoadOp, lang.Final):
+    pass
+
+
+class Rand(LoadOp, lang.Final):
+    pass
+
+
+class LoadConst(LoadOp, lang.Final):
+    pass
+
+
+class From(LoadOp, lang.Final):
+    pass
+
+
+class Contiguous(LoadOp, lang.Final):
+    pass
+
+
+class Custom(LoadOp, lang.Final):
+    pass

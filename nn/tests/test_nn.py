@@ -1,212 +1,452 @@
-import typing as ta
+import unittest
 
-from omlish import check
-from omlish import lang
 import numpy as np
 import pytest
+import torch
 
-if ta.TYPE_CHECKING:
-    import torch
-else:
-    torch = lang.proxy_import('torch')
-
-from ..numpy import NumpyValue
-from ..optimizers import Sgd
+from ..devices import Device
+from ..helpers import getenv
+from ..jit import TinyJit
+from ..nn.conv import Conv1d
+from ..nn.conv import Conv2d
+from ..nn.conv import ConvTranspose1d
+from ..nn.conv import ConvTranspose2d
+from ..nn.nn import BatchNorm2d
+from ..nn.nn import Embedding
+from ..nn.nn import GroupNorm
+from ..nn.nn import InstanceNorm
+from ..nn.nn import LayerNorm
+from ..nn.nn import LayerNorm2d
+from ..nn.nn import Linear
 from ..tensor import Tensor
 
 
-##
+pytestmark = [pytest.mark.exclude_cuda]
 
 
-def test_nn():
-    print()
+class TestNN(unittest.TestCase):
+    def test_sparse_cat_cross_entropy(self):
+        input = torch.randn(3, 5)
+        target = torch.empty(3, dtype=torch.long).random_(5)
+        loss_fun = torch.nn.CrossEntropyLoss(reduction="mean")
+        loss = loss_fun(input, target)
 
-    xa = np.asarray([1., 2.], dtype=np.float32)
-    ya = np.asarray([3., 4.], dtype=np.float32)
-    print(xa)
-    print(ya)
+        input_tiny = Tensor(input.detach().numpy())
+        taret_tiny = Tensor(target.detach().numpy())
+        loss_tiny = input_tiny.sparse_categorical_crossentropy(taret_tiny)
 
-    xt = Tensor(xa)  # noqa
-    yt = Tensor(ya)  # noqa
-
-    zt = xt * yt  # noqa
-
-    zt.realize()
-
-    za = zt.numpy()
-    print(za)
-
-    # za = zt.realized().to_cpu()
-    # print(za)
-
-
-def test_mul_backward():
-    xt = Tensor(np.asarray([1., 2.], dtype=np.float32), requires_grad=True)
-    yt = Tensor(np.asarray([3., 4.], dtype=np.float32), requires_grad=True)
-
-    zt = (xt * yt).sum()
-    zt.backward()
-
-    print(zt.numpy())
-    print(xt.get_grad().numpy())
-    print(yt.get_grad().numpy())
-
-
-def torch_test(vs: ta.Sequence[NumpyValue], fn: ta.Callable) -> None:
-    def to_np(t: ta.Union[Tensor, torch.Tensor]) -> NumpyValue:
-        if isinstance(t, Tensor):
-            return t.numpy()
-        if isinstance(t, torch.Tensor):
-            return t.detach().numpy()
-        raise TypeError(t)
-
-    def cmp_ts(our_t: Tensor, tor_t: torch.Tensor) -> None:
-        print(to_np(check.isinstance(our_t, Tensor)))
-        print(to_np(check.isinstance(tor_t, torch.Tensor)))
-        print()
-
-    print()
-
-    our_ts = [Tensor(v, requires_grad=True) for v in vs]
-    tor_ts = [torch.tensor(v, requires_grad=True) for v in vs]
-
-    our_res = check.isinstance(fn(*our_ts), Tensor)
-    tor_res = check.isinstance(fn(*tor_ts), torch.Tensor)
-    cmp_ts(our_res, tor_res)
-
-    our_g = (our_res + 1).square().mean()
-    tor_g = (tor_res + 1).square().mean()  # noqa
-    cmp_ts(our_g, tor_g)
-
-    our_g.backward()
-    tor_g.backward()
-
-    for t in our_ts:
-        t.get_grad().realize()
-
-    for i, (our_t, tor_t) in enumerate(zip(our_ts, tor_ts)):
-        our_tg = our_t.get_grad()
-        tor_tg = check.not_none(tor_t.grad)
-        cmp_ts(our_tg, tor_tg)
-
-
-def test_mul_2():
-    torch_test([
-        np.asarray([1., 2.], dtype=np.float32),
-        np.asarray([3., 4.], dtype=np.float32),
-    ], lambda l, r: l * r)
-
-
-##
-
-
-np.random.seed(1337)
-
-x_init = np.random.randn(1, 4).astype(np.float32)
-w_init = np.random.randn(4, 4).astype(np.float32)
-m_init = np.random.randn(1, 4).astype(np.float32)
-
-
-class TinyNet:
-
-    def __init__(self, tensor: ta.Callable) -> None:
-        super().__init__()
-
-        self.x = tensor(x_init.copy(), requires_grad=True)
-        self.w = tensor(w_init.copy(), requires_grad=True)
-        self.m = tensor(m_init.copy())
-
-    def forward(self):
-        out = self.x.matmul(self.w).relu()
-        out = out.log_softmax(1)
-        out = out.mul(self.m).add(self.m).sum()
-        return out
-
-
-def step(tensor, optim, steps=1, **kwargs):
-    net = TinyNet(tensor)
-    optim = optim([net.x, net.w], **kwargs)
-    for _ in range(steps):
-        out = net.forward()
-        print(f'out: {out.detach().numpy()}')
-        optim.zero_grad()
-        out.backward()
-        optim.step()
-    return net.x.detach().numpy(), net.w.detach().numpy()
-
-
-def _test_optim(
-        our_optim,
-        tor_optim,
-        steps,
-        opts,
-        atol,
-        rtol
-):
-    for x, y in zip(
-            step(
-                Tensor,
-                our_optim,
-                steps,
-                config=our_optim.Config(**opts),
-            ),
-            step(
-                torch.tensor,
-                tor_optim,
-                steps,
-                **opts,
-            ),
-    ):
-        np.testing.assert_allclose(x, y, atol=atol, rtol=rtol)
-
-
-def _test_sgd(steps, opts, atol, rtol):
-    _test_optim(Sgd, torch.optim.SGD, steps, opts, atol, rtol)
-
-
-def test_sgd():
-    _test_sgd(3, {'lr': 0.001}, 1e-6, 0)
-
-
-def test_simple_mul():
-    x = Tensor(1)
-    y = Tensor(2)
-    z = x + y
-    n = z.numpy()
-    print(n)
-
-
-@pytest.mark.skip_unless_alone()
-def test_dot():
-    xt = Tensor(np.asarray([1., 2.], dtype=np.float32), requires_grad=True)
-    yt = Tensor(np.asarray([3., 4.], dtype=np.float32), requires_grad=True)
-    zt = (xt * yt).sum()
-    zt.backward()
-
-    from .. import dot
-
-    dot.open_dot(zt)
-    dot.open_dot(zt.get_grad())
-    dot.open_dot(xt.get_grad())
-    dot.open_dot(yt.get_grad())
-
-
-def test_matmul():
-    shps = [64, (64, 99)]
-    np.random.seed(0)
-    a = -0.5
-    b = 3
-    ts = [
-        torch.tensor(
-            (np.random.random(size=x) + a) * b,
-            requires_grad=True,
-            dtype=torch.float32,
+        np.testing.assert_allclose(
+            loss_tiny.numpy(), loss.detach().numpy(), atol=1e-5, rtol=1e-6
         )
-        for x in shps
-    ]
 
-    tst = [Tensor(x.detach().numpy(), requires_grad=True) for x in ts]
-    x, y = tst
-    ret: Tensor = x.matmul(y).realize()
+    def test_batchnorm2d(self, training=False):
+        szs = [4, 8, 16, 32]
+        for sz in szs:
+            # create in tinygrad
+            Tensor.training = training
+            bn = BatchNorm2d(sz, eps=1e-5, track_running_stats=training)
+            bn.weight = Tensor.randn(sz)
+            bn.bias = Tensor.randn(sz)
+            bn.running_mean = Tensor.randn(sz)
+            bn.running_var = Tensor.randn(sz)
+            bn.running_var.numpy()[bn.running_var.numpy() < 0] = 0
 
-    print(ret.numpy())
+            # create in torch
+            with torch.no_grad():
+                tbn = torch.nn.BatchNorm2d(sz).eval()
+                tbn.training = training
+                tbn.weight[:] = torch.tensor(bn.weight.numpy())
+                tbn.bias[:] = torch.tensor(bn.bias.numpy())
+                tbn.running_mean[:] = torch.tensor(bn.running_mean.numpy())
+                tbn.running_var[:] = torch.tensor(bn.running_var.numpy())
+
+            np.testing.assert_allclose(
+                bn.running_mean.numpy(),
+                tbn.running_mean.detach().numpy(),
+                rtol=1e-5,
+                atol=1e-6,
+            )
+            np.testing.assert_allclose(
+                bn.running_var.numpy(),
+                tbn.running_var.detach().numpy(),
+                rtol=1e-5,
+                atol=1e-6,
+            )
+
+            # trial
+            inn = Tensor.randn(2, sz, 3, 3)
+
+            # in tinygrad
+            outt = bn(inn)
+
+            # in torch
+            toutt = tbn(torch.tensor(inn.numpy()))
+
+            # close
+            np.testing.assert_allclose(
+                outt.numpy(), toutt.detach().numpy(), rtol=5e-4, atol=1e-6
+            )
+
+            np.testing.assert_allclose(
+                bn.running_mean.numpy(),
+                tbn.running_mean.detach().numpy(),
+                rtol=1e-5,
+                atol=1e-6,
+            )
+
+            np.testing.assert_allclose(
+                bn.running_var.numpy(),
+                tbn.running_var.detach().numpy(),
+                rtol=1e-5,
+                atol=1e-6,
+            )
+
+    def test_batchnorm2d_training(self):
+        self.test_batchnorm2d(True)
+
+    def test_linear(self):
+        def _test_linear(x):
+            # create in tinygrad
+            model = Linear(in_dim, out_dim)
+            z = model(x)
+
+            # create in torch
+            with torch.no_grad():
+                torch_layer = torch.nn.Linear(in_dim, out_dim).eval()
+                torch_layer.weight[:] = torch.tensor(
+                    model.weight.numpy(), dtype=torch.float32
+                )
+                torch_layer.bias[:] = torch.tensor(
+                    model.bias.numpy(), dtype=torch.float32
+                )
+                torch_x = torch.tensor(x.numpy(), dtype=torch.float32)
+                torch_z = torch_layer(torch_x)
+
+            # test
+            np.testing.assert_allclose(
+                z.numpy(), torch_z.detach().numpy(), atol=5e-4, rtol=1e-5
+            )
+
+        BS, T, in_dim, out_dim = 4, 2, 8, 16
+        _test_linear(Tensor.randn(BS, in_dim))
+        _test_linear(Tensor.randn(BS, T, in_dim))  # test with more dims
+
+    def test_conv1d(self):
+        BS, C1, W = 4, 16, 224
+        C2, K, S, P = 64, 7, 2, 1
+
+        # create in tinygrad
+        layer = Conv1d(C1, C2, kernel_size=K, stride=S, padding=P)
+
+        # create in torch
+        with torch.no_grad():
+            torch_layer = torch.nn.Conv1d(
+                C1, C2, kernel_size=K, stride=S, padding=P
+            ).eval()
+            torch_layer.weight[:] = torch.tensor(
+                layer.weight.numpy(), dtype=torch.float32
+            )
+            torch_layer.bias[:] = torch.tensor(layer.bias.numpy(), dtype=torch.float32)
+
+        # test
+        x = Tensor.uniform(BS, C1, W)
+        z = layer(x)
+        torch_x = torch.tensor(x.numpy())
+        torch_z = torch_layer(torch_x)
+        np.testing.assert_allclose(
+            z.numpy(), torch_z.detach().numpy(), atol=5e-4, rtol=1e-5
+        )
+
+    def test_conv2d(self):
+        BS, C1, H, W = 4, 16, 224, 224
+        C2, K, S, P = 64, 7, 2, 1
+
+        # create in tinygrad
+        layer = Conv2d(C1, C2, kernel_size=K, stride=S, padding=P)
+
+        # create in torch
+        with torch.no_grad():
+            torch_layer = torch.nn.Conv2d(
+                C1, C2, kernel_size=K, stride=S, padding=P
+            ).eval()
+            torch_layer.weight[:] = torch.tensor(
+                layer.weight.numpy(), dtype=torch.float32
+            )
+            torch_layer.bias[:] = torch.tensor(layer.bias.numpy(), dtype=torch.float32)
+
+        # test
+        x = Tensor.uniform(BS, C1, H, W)
+        z = layer(x)
+        torch_x = torch.tensor(x.numpy())
+        torch_z = torch_layer(torch_x)
+        np.testing.assert_allclose(
+            z.numpy(), torch_z.detach().numpy(), atol=5e-4, rtol=1e-5
+        )
+
+    @unittest.skipIf(
+        Device.DEFAULT != "TORCH", "Takes too long to compile for Compiled backends"
+    )
+    def test_conv2d_winograd(self):
+        BS, C1, H, W = 2, 8, 16, 16
+        C2, K, S, P = 8, 3, 1, 1
+
+        Tensor.wino = True
+
+        # create in tinygrad
+        layer = Conv2d(C1, C2, kernel_size=K, stride=S, padding=P)
+        layer.weight.requires_grad = True
+        layer.bias.requires_grad = True
+
+        # create in torch
+        torch_layer = torch.nn.Conv2d(C1, C2, kernel_size=K, stride=S, padding=P).eval()
+        torch_layer.weight = torch.nn.Parameter(
+            torch.tensor(layer.weight.numpy(), dtype=torch.float32)
+        )
+        torch_layer.bias = torch.nn.Parameter(
+            torch.tensor(layer.bias.numpy(), dtype=torch.float32)
+        )
+
+        # test
+        x = Tensor.uniform(BS, C1, H, W, requires_grad=True)
+        z = layer(x)
+        torch_x = torch.tensor(x.numpy(), requires_grad=True)
+        torch_z = torch_layer(torch_x)
+        np.testing.assert_allclose(
+            z.numpy(), torch_z.detach().numpy(), atol=5e-4, rtol=1e-5
+        )
+
+        m = z.mean()
+        m.backward()
+        gw = layer.weight.grad.realize()
+        gb = layer.bias.grad.realize()
+        gx = x.grad.realize()
+
+        torch_z.mean().backward()
+        np.testing.assert_allclose(
+            gw.numpy(), torch_layer.weight.grad.numpy(), atol=5e-4, rtol=1e-5
+        )
+        np.testing.assert_allclose(
+            gb.numpy(), torch_layer.bias.grad.numpy(), atol=5e-4, rtol=1e-5
+        )
+        np.testing.assert_allclose(
+            gx.numpy(), torch_x.grad.numpy(), atol=5e-4, rtol=1e-5
+        )
+
+        Tensor.wino = False
+
+    @unittest.skipIf(
+        getenv("CI", "") != "" and Device.DEFAULT == "WEBGPU",
+        "runs out of memory in CI",
+    )
+    def test_conv_transpose1d(self):
+        BS, C1, W = 4, 16, 224
+        C2, K, S, P = 64, 7, 2, 1
+
+        # create in tinygrad
+        layer = ConvTranspose1d(C1, C2, kernel_size=K, stride=S, padding=P)
+
+        # create in torch
+        with torch.no_grad():
+            torch_layer = torch.nn.ConvTranspose1d(
+                C1, C2, kernel_size=K, stride=S, padding=P
+            ).eval()
+            torch_layer.weight[:] = torch.tensor(
+                layer.weight.numpy(), dtype=torch.float32
+            )
+            torch_layer.bias[:] = torch.tensor(layer.bias.numpy(), dtype=torch.float32)
+
+        # test
+        x = Tensor.uniform(BS, C1, W)
+        z = layer(x)
+        torch_x = torch.tensor(x.numpy())
+        torch_z = torch_layer(torch_x)
+        np.testing.assert_allclose(
+            z.numpy(), torch_z.detach().numpy(), atol=5e-4, rtol=1e-5
+        )
+
+    @unittest.skipIf(
+        getenv("CI", "") != "" and Device.DEFAULT == "WEBGPU",
+        "runs out of memory in CI",
+    )
+    def test_conv_transpose2d(self):
+        BS, C1, H, W = 4, 16, 224, 224
+        C2, K, S, P = 64, 7, 2, 1
+
+        # create in tinygrad
+        layer = ConvTranspose2d(C1, C2, kernel_size=K, stride=S, padding=P)
+
+        # create in torch
+        with torch.no_grad():
+            torch_layer = torch.nn.ConvTranspose2d(
+                C1, C2, kernel_size=K, stride=S, padding=P
+            ).eval()
+            torch_layer.weight[:] = torch.tensor(
+                layer.weight.numpy(), dtype=torch.float32
+            )
+            torch_layer.bias[:] = torch.tensor(layer.bias.numpy(), dtype=torch.float32)
+
+        # test
+        x = Tensor.uniform(BS, C1, H, W)
+        z = layer(x)
+        torch_x = torch.tensor(x.numpy())
+        torch_z = torch_layer(torch_x)
+        np.testing.assert_allclose(
+            z.numpy(), torch_z.detach().numpy(), atol=5e-4, rtol=1e-5
+        )
+
+    def test_groupnorm(self):
+        BS, H, W, C, G = 20, 10, 10, 6, 3
+
+        # create in tinygrad
+        layer = GroupNorm(G, C)
+
+        # create in torch
+        with torch.no_grad():
+            torch_layer = torch.nn.GroupNorm(G, C).eval()
+            torch_layer.weight[:] = torch.tensor(
+                layer.weight.numpy(), dtype=torch.float32
+            )
+            torch_layer.bias[:] = torch.tensor(layer.bias.numpy(), dtype=torch.float32)
+
+        # test
+        x = Tensor.randn(BS, C, H, W)
+        z = layer(x)
+        torch_x = torch.tensor(x.numpy())
+        torch_z = torch_layer(torch_x)
+        np.testing.assert_allclose(
+            z.numpy(), torch_z.detach().numpy(), atol=5e-3, rtol=5e-3
+        )
+
+    def test_layernorm(self):
+        N, C, H, W = 20, 5, 10, 10
+
+        # create in tinygrad
+        layer = LayerNorm([H, W])
+
+        # create in torch
+        with torch.no_grad():
+            torch_layer = torch.nn.LayerNorm([H, W]).eval()
+            torch_layer.weight[:] = torch.tensor(
+                layer.weight.numpy(), dtype=torch.float32
+            )
+            torch_layer.bias[:] = torch.tensor(layer.bias.numpy(), dtype=torch.float32)
+
+        # test
+        x = Tensor.randn(N, C, H, W)
+        z = layer(x)
+        torch_x = torch.tensor(x.numpy())
+        torch_z = torch_layer(torch_x)
+        np.testing.assert_allclose(
+            z.numpy(), torch_z.detach().numpy(), atol=5e-3, rtol=5e-3
+        )
+
+    def test_layernorm_2d(self):
+        N, C, H, W = 20, 5, 10, 10
+
+        # create in tinygrad
+        layer = LayerNorm2d(C)
+
+        # create in torch
+        with torch.no_grad():
+            torch_layer = torch.nn.LayerNorm([C]).eval()
+            torch_layer.weight[:] = torch.tensor(
+                layer.weight.numpy(), dtype=torch.float32
+            )
+            torch_layer.bias[:] = torch.tensor(layer.bias.numpy(), dtype=torch.float32)
+
+        # test
+        x = Tensor.randn(N, C, H, W)
+        z = layer(x)  # noqa
+        torch_x = torch.tensor(x.numpy())
+        torch_z = torch_layer(torch_x.permute(0, 2, 3, 1)).permute(0, 3, 1, 2)  # noqa
+
+    def test_instancenorm_2d(self):
+        N, C, H, W = 20, 5, 10, 10
+
+        # create in tinygrad
+        layer = InstanceNorm(C)
+
+        # create in torch
+        with torch.no_grad():
+            torch_layer = torch.nn.InstanceNorm2d(C, affine=True).eval()
+            torch_layer.weight[:] = torch.tensor(
+                layer.weight.numpy(), dtype=torch.float32
+            )
+            torch_layer.bias[:] = torch.tensor(layer.bias.numpy(), dtype=torch.float32)
+
+        # test
+        x = Tensor.randn(N, C, H, W)
+        z = layer(x)
+        torch_x = torch.tensor(x.numpy())
+        torch_z = torch_layer(torch_x)
+        np.testing.assert_allclose(
+            z.numpy(), torch_z.detach().numpy(), atol=5e-3, rtol=5e-3
+        )
+        np.testing.assert_allclose(
+            z.numpy(), torch_z.detach().numpy(), atol=5e-3, rtol=5e-3
+        )
+
+    def test_instancenorm_3d(self):
+        N, C, D, H, W = 20, 5, 3, 10, 10
+
+        # create in tinygrad
+        layer = InstanceNorm(C)
+
+        # create in torch
+        with torch.no_grad():
+            torch_layer = torch.nn.InstanceNorm3d(C, affine=True).eval()
+            torch_layer.weight[:] = torch.tensor(
+                layer.weight.numpy(), dtype=torch.float32
+            )
+            torch_layer.bias[:] = torch.tensor(layer.bias.numpy(), dtype=torch.float32)
+
+        # test
+        x = Tensor.randn(N, C, D, H, W)
+        z = layer(x)
+        torch_x = torch.tensor(x.numpy())
+        torch_z = torch_layer(torch_x)
+        np.testing.assert_allclose(
+            z.numpy(), torch_z.detach().numpy(), atol=5e-3, rtol=5e-3
+        )
+        np.testing.assert_allclose(
+            z.numpy(), torch_z.detach().numpy(), atol=5e-3, rtol=5e-3
+        )
+
+    def test_embedding(self):
+        B, T, C, VS = 4, 10, 20, 28
+
+        # create in tinygrad
+        layer = Embedding(VS, C)
+
+        with torch.no_grad():
+            torch_layer = torch.nn.Embedding(VS, C).eval()
+            torch_layer.weight[:] = torch.tensor(
+                layer.weight.numpy(), dtype=torch.float32
+            )
+
+        # test
+        x = Tensor(np.random.randint(0, VS, (B, T)).astype(np.float32))
+        z = layer(x)
+        torch_x = torch.tensor(x.numpy().astype(np.int32))
+        torch_z = torch_layer(torch_x)
+        np.testing.assert_allclose(
+            z.numpy(), torch_z.detach().numpy(), atol=1e-8, rtol=1e-8
+        )
+
+        # test with jit enabled
+        @TinyJit
+        def layer_jit(x):
+            return layer(x).realize()
+
+        for _ in range(3):
+            x = Tensor(np.random.randint(0, VS, (B, T)).astype(np.float32))
+            z = layer_jit(x)
+            torch_x = torch.tensor(x.numpy().astype(np.int32))
+            torch_z = torch_layer(torch_x)
+            np.testing.assert_allclose(
+                z.numpy(), torch_z.detach().numpy(), atol=1e-8, rtol=1e-8
+            )
+
+
+if __name__ == "__main__":
+    unittest.main()
