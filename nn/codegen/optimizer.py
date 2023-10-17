@@ -24,12 +24,16 @@ from ..shape.view import strides_for_shape
 
 class OptOps(enum.Enum):
     UPCAST = enum.auto()
+    UNROLL = enum.auto()
     LOCAL = enum.auto()
     GROUP = enum.auto()
     GROUPTOP = enum.auto()
 
+    def __lt__(self, x: 'OptOps'):
+        return self.value < x.value
 
-@dc.dataclass(frozen=True)
+
+@dc.dataclass(frozen=True, order=True)
 class Opt:
     op: OptOps
     axis: int
@@ -493,37 +497,25 @@ class OptimizedKernel(Kernel):
 
     def apply_opt(self, opt: Opt):
         self.applied_opts.append(opt)
-        assert self.full_shape[opt.axis] % opt.amt == 0, "no longer valid shift"
+        axis = opt.axis + (self.first_reduce if opt.op == OptOps.UNROLL else 0)
+        assert self.full_shape[axis] % opt.amt == 0, "no longer valid shift"
         if opt.op == OptOps.LOCAL:  # cyan
-            assert opt.axis < (self.first_reduce - self.local_dims), "can't local a local or reduce"
-            self.shift_to(
-                opt.axis,
-                opt.amt,
-                insert_before=self.first_reduce,
-            )
+            assert axis < (self.first_reduce - self.local_dims), "can't local a local or reduce"
+            self.shift_to(axis, opt.amt, insert_before=self.first_reduce)
             self.local_dims += 1
         elif opt.op == OptOps.GROUP:  # green
-            self.shift_to(
-                opt.axis,
-                opt.amt,
-                insert_before=self.first_reduce + len(self.group_for_reduce),
-            )
+            self.shift_to(axis, opt.amt, insert_before=self.first_reduce + len(self.group_for_reduce))
             self.group_for_reduce.append(opt.amt)
         elif opt.op == OptOps.GROUPTOP:  # green
-            self.shift_to(
-                opt.axis,
-                opt.amt,
-                top=True,
-                insert_before=self.first_reduce + len(self.group_for_reduce),
-            )
+            self.shift_to(axis, opt.amt, top=True, insert_before=self.first_reduce + len(self.group_for_reduce))
             self.group_for_reduce.append(opt.amt)
-        elif opt.op == OptOps.UPCAST:  # yellow (or purple if it's a reduce axis)
-            assert opt.axis < self.shape_len - self.upcasted, "can't upcasted already upcasted"
-            self.shift_to(
-                opt.axis,
-                opt.amt,
-                insert_before=None if opt.axis < self.first_reduce else len(self.full_unupcasted_shape),
-            )
+        elif opt.op == OptOps.UNROLL:  # purple
+            assert axis < self.shape_len - self.upcasted, "can't upcasted already upcasted"
+            self.shift_to(axis, opt.amt, insert_before=len(self.full_unupcasted_shape))
+            self.upcast()
+        elif opt.op == OptOps.UPCAST:  # yellow
+            assert axis < self.first_reduce, "upcast is for non-reduce"
+            self.shift_to(axis, opt.amt, insert_before=None)
             self.upcast()
         self.simplify_ones()
 
@@ -540,7 +532,10 @@ class OptimizedKernel(Kernel):
                     all(x < (self.shape_len - self.upcasted) for x in unit_stride_axes_mul_4)
                         and unit_stride_axes_mul_4[0] not in self.upcast_in_mid_reduce_axes
                 ):
-                    self.apply_opt(Opt(OptOps.UPCAST, unit_stride_axes_mul_4[0], 4))
+                    if unit_stride_axes_mul_4[0] < self.first_reduce:
+                        self.apply_opt(Opt(OptOps.UPCAST, unit_stride_axes_mul_4[0], 4))
+                    else:
+                        self.apply_opt(Opt(OptOps.UNROLL, unit_stride_axes_mul_4[0]-self.first_reduce, 4))
 
     def hand_coded_optimizations(self):
         # if there's images in the earlybufs, we have to make an axis the 4 loading one
@@ -719,7 +714,7 @@ class OptimizedKernel(Kernel):
         ):
             # NOTE: cannot loop unroll symbolic axis
             if (s := self.full_unupcasted_shape[-1]) <= 32 and isinstance(s, int):
-                self.apply_opt(Opt(OptOps.UPCAST, len(self.full_unupcasted_shape)-1, s))
+                self.apply_opt(Opt(OptOps.UNROLL, len(self.full_unupcasted_shape)-1-self.first_reduce, s))
                 # if it's small, upcast a second reduce dimension too
                 if (
                         self.first_reduce < (self.shape_len-self.upcasted)
@@ -727,11 +722,11 @@ class OptimizedKernel(Kernel):
                         and (s2:=self.full_unupcasted_shape[-1]) <= 3
                         and isinstance(s2, int)
                 ):
-                    self.apply_opt(Opt(OptOps.UPCAST, len(self.full_unupcasted_shape)-1, s2))
+                    self.apply_opt(Opt(OptOps.UNROLL, len(self.full_unupcasted_shape)-1-self.first_reduce, s2))
             else:
                 for splits in [4]:
                     if self.full_unupcasted_shape[-1] % splits == 0:
-                        self.apply_opt(Opt(OptOps.UPCAST, len(self.full_unupcasted_shape)-1, splits))
+                        self.apply_opt(Opt(OptOps.UNROLL, len(self.full_unupcasted_shape)-1-self.first_reduce, splits))
                         break
 
         # if nothing at all is upcasted and it's easy to, do an upcast
