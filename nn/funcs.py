@@ -1,15 +1,15 @@
-import abc
+from __future__ import annotations
+
 import math
 import typing as ta
 
-from omlish import check
 from omlish import lang
 
 from . import ops
-from .buffers import Buffer
-from .devices import Device
-from .dims import Shape
-
+from .dtypes import DType
+from .helpers import argsort
+from .lazy import LazyBuffer
+from .shape.symbolic import sint
 
 if ta.TYPE_CHECKING:
     from . import tensor
@@ -17,339 +17,377 @@ else:
     tensor = lang.proxy_import('.tensor', __package__)
 
 
-class Func(lang.Abstract):
+##
 
-    def __init__(self, device: Device, *parents: 'tensor.Tensor') -> None:
+
+# An instantiation of the Function is the Context
+class Function:
+    def __init__(self, device: str, *tensors: tensor.Tensor) -> None:
         super().__init__()
+        self.device = device
+        self.needs_input_grad = [t.requires_grad for t in tensors]
+        self.requires_grad = (
+            True if any(self.needs_input_grad) else
+            None if None in self.needs_input_grad else
+            False
+        )
+        if self.requires_grad:
+            self.parents = tensors
 
-        self._device = check.isinstance(device, Device)
-        self._parents = tuple(check.isinstance(p, tensor.Tensor) for p in parents)
-
-        self._needs_input_grad = tuple(t.requires_grad for t in parents)
-
-        self._requires_grad: ta.Optional[bool] = None
-        if any(self._needs_input_grad):
-            self._requires_grad = True
-        elif not any(x is None for x in self._needs_input_grad):
-            self._requires_grad = False
-
-    @property
-    def device(self) -> Device:
-        return self._device
-
-    @property
-    def parents(self) -> ta.Sequence['tensor.Tensor']:
-        return self._parents
-
-    @property
-    def needs_input_grad(self) -> ta.Sequence[ta.Optional[bool]]:
-        return self._needs_input_grad
-
-    @property
-    def requires_grad(self) -> ta.Optional[bool]:
-        return self._requires_grad
-
-    @abc.abstractmethod
     def forward(self, *args, **kwargs):
-        raise NotImplementedError
+        raise NotImplementedError(f"forward not implemented for {type(self)}")
 
     def backward(self, *args, **kwargs):
-        raise TypeError(f'backward not implemented for {type(self)}')
+        raise RuntimeError(f"backward not implemented for {type(self)}")
 
     @classmethod
-    def apply(cls: ta.Type['Func'], *args: 'tensor.Tensor', **kwargs: ta.Any) -> 'tensor.Tensor':
-        func = cls(args[0].device, *args)
+    def apply(fxn: type[Function], *x: tensor.Tensor, **kwargs) -> tensor.Tensor:
+        ctx = fxn(x[0].device, *x)
         ret = tensor.Tensor(
-            func.forward(*[t.data for t in args], **kwargs),
-            device=func.device,
-            requires_grad=func.requires_grad,
-            func=func,
+            ctx.forward(*[t.lazydata for t in x], **kwargs),
+            device=ctx.device,
+            requires_grad=ctx.requires_grad,
         )
+        if ctx.requires_grad and not tensor.Tensor.no_grad:
+            ret._ctx = ctx  # used by autograd engine
         return ret
 
 
 ##
 
 
-class Add(Func):
-    _x: Buffer
-    _y: Buffer
-
-    def forward(self, x: Buffer, y: Buffer) -> Buffer:
-        self._x = x
-        self._y = y
-        return x.binary_op(ops.Add, y)
-
-    def backward(self, grad_output: Buffer) -> ta.Tuple[ta.Optional[Buffer], ta.Optional[Buffer]]:
-        return (
-            grad_output if self._needs_input_grad[0] else None,
-            grad_output if self._needs_input_grad[1] else None,
-        )
-
-
-class Sub(Func):
-
-    def forward(self, x: Buffer, y: Buffer) -> Buffer:
-        return x.binary_op(ops.Sub, y)
-
-    def backward(self, grad_output: Buffer) -> ta.Tuple[ta.Optional[Buffer], ta.Optional[Buffer]]:
-        return (
-            grad_output if self._needs_input_grad[0] else None,
-            grad_output.unary_op(ops.Neg) if self._needs_input_grad[1] else None,
-        )
-
-
-class Mul(Func):
-    _x: Buffer
-    _y: Buffer
-
-    def forward(self, x: Buffer, y: Buffer) -> Buffer:
-        self._x = x
-        self._y = y
-        return x.binary_op(ops.Mul, y)
-
-    def backward(self, grad_output: Buffer) -> ta.Tuple[ta.Optional[Buffer], ta.Optional[Buffer]]:
-        return (
-            self._y.binary_op(ops.Mul, grad_output) if self._needs_input_grad[0] else None,
-            self._x.binary_op(ops.Mul, grad_output) if self._needs_input_grad[1] else None,
-        )
-
-
-class Div(Func):
-    _x: Buffer
-    _y: Buffer
-
-    def forward(self, x: Buffer, y: Buffer) -> Buffer:
-        self._x = x
-        self._y = y
-        return x.binary_op(ops.Div, y)
-
-    def backward(self, grad_output: Buffer) -> ta.Tuple[ta.Optional[Buffer], ta.Optional[Buffer]]:
-        return (
-            grad_output.binary_op(ops.Div, self._y) if self._needs_input_grad[0] else None,
-            (
-                grad_output
-                .unary_op(ops.Neg)
-                .binary_op(ops.Mul, self._x)
-                .binary_op(ops.Div, self._y.binary_op(ops.Mul, self._y))
-            ) if self._needs_input_grad[1] else None
-        )
-
-
-class Less(Func):
-
-    def forward(self, x: Buffer, y: Buffer) -> Buffer:
-        return x.binary_op(ops.CmpLt, y)
-
-
-##
-
-
-class Expand(Func):
-    _input_shape: Shape
-
-    def forward(self, x: Buffer, shape: Shape) -> Buffer:
-        self._input_shape = x.shape
-        return x.movement_op(ops.Expand, shape)
-
-    def backward(self, grad_output: Buffer) -> Buffer:
-        return grad_output.reduce_op(ops.Sum, self._input_shape)
-
-
-class Reshape(Func):
-    _input_shape: Shape
-
-    def forward(self, x: Buffer, shape: Shape) -> Buffer:
-        self._input_shape = x.shape
-        return x.movement_op(ops.Reshape, shape)
-
-    def backward(self, grad_output: Buffer) -> Buffer:
-        return grad_output.movement_op(ops.Reshape, self._input_shape)
-
-
-class Sum(Func):
-    _input_shape: Shape
-
-    def forward(self, x: Buffer, shape: Shape) -> Buffer:
-        self._input_shape = x.shape
-        return x.reduce_op(ops.Sum, shape)
-
-    def backward(self, grad_output: Buffer) -> Buffer:
-        return grad_output.movement_op(ops.Expand, self._input_shape)
-
-
-class Contiguous(Func):
-
-    def forward(self, x: Buffer) -> Buffer:
+class Contiguous(Function):
+    def forward(self, x: LazyBuffer) -> LazyBuffer:
         return x.contiguous()
 
-    def backward(self, grad_output: Buffer) -> Buffer:
+    def backward(self, grad_output: LazyBuffer) -> LazyBuffer:
         return grad_output
 
 
-class Permute(Func):
-    _input_order: ta.Sequence[int]
+class ContiguousBackward(Function):
+    def forward(self, x: LazyBuffer) -> LazyBuffer:
+        return x
 
-    def forward(self, x: Buffer, order: ta.Sequence[int]) -> Buffer:
-        self._input_order = order
-        return x.movement_op(ops.Permute, order)
-
-    def backward(self, grad_output: Buffer) -> Buffer:
-        output_order = tuple(t[0] for t in sorted(enumerate(self._input_order), key=lambda t: t[1]))
-        return grad_output.movement_op(ops.Permute, output_order)
+    def backward(self, grad_output: LazyBuffer) -> LazyBuffer:
+        return grad_output.contiguous()
 
 
-class Relu(Func):
-    _ret: Buffer
+class Cast(Function):
+    _input_dtype: LazyBuffer
+    _bitcast: bool
 
-    def forward(self, x: Buffer) -> Buffer:
-        self._ret = x.binary_op(ops.Maximum, x.const_like(0))
-        return self._ret
+    def forward(self, x: LazyBuffer, dtype: DType, bitcast: bool = False) -> LazyBuffer:
+        self._input_dtype = x.dtype
+        self._bitcast = bitcast
+        return x.e(ops.Cast, arg=(dtype, bitcast))
 
-    def backward(self, grad_output: Buffer) -> Buffer:
-        mask = self._ret.const_like(0).binary_op(ops.CmpLt, self._ret)
-        return mask.binary_op(ops.Mul, grad_output)
-
-
-##
+    def backward(self, grad_output: LazyBuffer) -> LazyBuffer:
+        return grad_output.e(ops.Cast, arg=(self._input_dtype, self._bitcast))
 
 
-class Log(Func):
-    _x: Buffer
+# UnaryOps
 
-    _mult: ta.Final[float] = math.log(2)
 
-    def forward(self, x: Buffer) -> Buffer:
+class Zero(Function):
+    def forward(self, x: LazyBuffer) -> LazyBuffer:
+        return x.const(0)
+
+    def backward(self, grad: LazyBuffer) -> LazyBuffer:
+        return grad.const(0)
+
+
+class Neg(Function):
+    def forward(self, x: LazyBuffer) -> LazyBuffer:
+        return x.e(ops.Neg)
+
+    def backward(self, grad: LazyBuffer) -> LazyBuffer:
+        return grad.e(ops.Neg)
+
+
+class Sin(Function):
+    _x: LazyBuffer
+
+    def forward(self, x: LazyBuffer) -> LazyBuffer:
         self._x = x
-        return x.unary_op(ops.Log2).binary_op(ops.Mul, x.const_like(self._mult))
+        return x.e(ops.Sin)
 
-    def backward(self, grad_output: Buffer) -> Buffer:
-        return grad_output.binary_op(ops.Div, self._x)
-
-
-class Exp(Func):
-    _ret: Buffer
-
-    _mult: ta.Final[float] = 1 / math.log(2)
-
-    def forward(self, x: Buffer) -> Buffer:
-        self._ret = x.binary_op(ops.Mul, x.const_like(self._mult)).unary_op(ops.Exp2)
-        return self._ret
-
-    def backward(self, grad_output: Buffer) -> Buffer:
-        return self._ret.binary_op(ops.Mul, grad_output)
-
-
-class Sqrt(Func):
-    _ret: Buffer
-
-    def forward(self, x: Buffer) -> Buffer:
-        self._ret = x.unary_op(ops.Sqrt)
-        return self._ret
-
-    def backward(self, grad_output: Buffer) -> Buffer:
-        return grad_output.binary_op(ops.Div, self._ret.binary_op(ops.Mul, self._ret.const_like(2)))
-
-
-class Sin(Func):
-    _x: Buffer
-
-    def forward(self, x: Buffer) -> Buffer:
-        self._x = x
-        return x.unary_op(ops.Sin)
-
-    def backward(self, grad: Buffer) -> Buffer:
+    def backward(self, grad: LazyBuffer) -> LazyBuffer:
         return (
-            self._x.const_like(math.pi / 2)
-            .binary_op(ops.Sub, self._x)
-            .unary_op(ops.Sin)
-            .binary_op(ops.Mul, grad)
+            self._x.const(math.pi / 2)
+            .e(ops.Sub, self._x)
+            .e(ops.Sin)
+            .e(ops.Mul, grad)
         )
 
 
-class Sigmoid(Func):
-    _ret: Buffer
+# NOTE: maximum(x, 0) behaves differently where x=0
+class Relu(Function):
+    _ret: LazyBuffer
 
-    _mult: ta.Final[float] = -1 / math.log(2)
-
-    def forward(self, x: Buffer) -> Buffer:
-        self._ret = x.const_like(
-            1,
-        ).binary_op(
-            ops.Div,
-            x.const_like(1).binary_op(
-                ops.Add,
-                x.binary_op(
-                    ops.Mul,
-                    x.const_like(self._mult),
-                ).unary_op(ops.Exp2)))  # noqa
+    def forward(self, x: LazyBuffer) -> LazyBuffer:
+        self._ret = x.e(ops.Max2, x.const(0))
         return self._ret
 
-    def backward(self, grad_output: Buffer) -> Buffer:
-        return self._ret.binary_op(
-            ops.Mul,
-            self._ret.const_like(1).binary_op(
-                ops.Sub,
-                self._ret,
-            ),
-        ).binary_op(
-            ops.Mul,
-            grad_output,
+    def backward(self, grad_output: LazyBuffer) -> LazyBuffer:
+        return (
+            self._ret.const(0).e(ops.CmpLt, self._ret).e(ops.Mul, grad_output)
         )
 
 
-class Max(Func):
-    _x: Buffer
-    _ret: Buffer
+class Log(Function):
+    _x: LazyBuffer
 
-    def forward(self, x: Buffer, shape: Shape) -> Buffer:
+    def forward(self, x: LazyBuffer) -> LazyBuffer:
         self._x = x
-        self._ret = x.reduce_op(ops.Max, shape)
+        return x.e(ops.Log2).e(ops.Mul, x.const(math.log(2)))
+
+    def backward(self, grad_output: LazyBuffer) -> LazyBuffer:
+        return grad_output.e(ops.Div, self._x)
+
+
+class Exp(Function):
+    _ret: LazyBuffer
+
+    def forward(self, x: LazyBuffer) -> LazyBuffer:
+        self._ret = x.e(ops.Mul, x.const(1 / math.log(2))).e(ops.Exp2)
         return self._ret
 
-    def backward(self, grad_output: Buffer) -> Buffer:
-        # 1s in locations where the max was chosen (can be two locations)
-        max_is_1s = self._x.const_like(1) \
-            .binary_op(ops.Sub, self._x.binary_op(ops.CmpLt, self._ret.movement_op(ops.Expand, self._x.shape)))
-
-        # sum of locations, averaged
-        div = max_is_1s \
-            .reduce_op(ops.Sum, grad_output.shape) \
-            .movement_op(ops.Expand, self._x.shape)
-
-        max_is_amount = max_is_1s \
-            .binary_op(ops.Div, div)
-
-        grad_output_expanded = grad_output.movement_op(ops.Expand, self._x.shape)
-        return max_is_amount.binary_op(ops.Mul, grad_output_expanded)
+    def backward(self, grad_output: LazyBuffer) -> LazyBuffer:
+        return self._ret.e(ops.Mul, grad_output)
 
 
-class Neg(Func):
+class Sqrt(Function):
+    _ret: LazyBuffer
 
-    def forward(self, x: Buffer) -> Buffer:
-        return x.unary_op(ops.Neg)
+    def forward(self, x: LazyBuffer) -> LazyBuffer:
+        self._ret = x.e(ops.Sqrt)
+        return self._ret
 
-    def backward(self, grad: Buffer) -> Buffer:
-        return grad.unary_op(ops.Neg)
+    def backward(self, grad_output: LazyBuffer) -> LazyBuffer:
+        return grad_output.e(
+            ops.Div, self._ret.e(ops.Mul, self._ret.const(2))
+        )
 
 
-##
+# NOTE: the implicit derivative of sigmoid is not stable
+# https://towardsdatascience.com/derivative-of-the-sigmoid-function-536880cf918e
+# TODO: have the backend automatically find this
+class Sigmoid(Function):
+    _ret: LazyBuffer
+
+    def forward(self, x: LazyBuffer) -> LazyBuffer:
+        self._ret = x.const(1).e(
+            ops.Div,
+            x.const(1).e(
+                ops.Add,
+                x.e(ops.Mul, x.const(-1 / math.log(2))).e(ops.Exp2),
+            ),
+        )
+        return self._ret
+
+    def backward(self, grad_output: LazyBuffer) -> LazyBuffer:
+        return self._ret.e(
+            ops.Mul, self._ret.const(1).e(ops.Sub, self._ret)
+        ).e(ops.Mul, grad_output)
 
 
-class Where(Func):
-    _x: Buffer
-    _y: Buffer
-    _z: Buffer
+# BinaryOps
 
-    def forward(self, x: Buffer, y: Buffer, z: Buffer) -> Buffer:
+
+class Less(Function):
+    def forward(self, x: LazyBuffer, y: LazyBuffer) -> LazyBuffer:
+        return x.e(ops.CmpLt, y)
+
+
+class Add(Function):
+    def forward(self, x: LazyBuffer, y: LazyBuffer) -> LazyBuffer:
+        return x.e(ops.Add, y)
+
+    def backward(
+        self, grad_output: LazyBuffer
+    ) -> tuple[ta.Optional[LazyBuffer], ta.Optional[LazyBuffer]]:
+        return (
+            grad_output if self.needs_input_grad[0] else None,
+            grad_output if self.needs_input_grad[1] else None,
+        )
+
+
+class Sub(Function):
+    def forward(self, x: LazyBuffer, y: LazyBuffer) -> LazyBuffer:
+        return x.e(ops.Sub, y)
+
+    def backward(
+        self, grad_output: LazyBuffer
+    ) -> tuple[ta.Optional[LazyBuffer], ta.Optional[LazyBuffer]]:
+        return (
+            grad_output if self.needs_input_grad[0] else None,
+            grad_output.e(ops.Neg) if self.needs_input_grad[1] else None,
+        )
+
+
+class Mul(Function):
+    _x: LazyBuffer
+    _y: LazyBuffer
+
+    def forward(self, x: LazyBuffer, y: LazyBuffer) -> LazyBuffer:
         self._x = x
         self._y = y
-        self._z = z
-        return x.ternary_op(ops.Where, y, z)
+        return x.e(ops.Mul, y)
 
-    def backward(self, grad_output: Buffer) -> ta.Tuple[ta.Optional[Buffer], ta.Optional[Buffer], ta.Optional[Buffer]]:
+    def backward(
+        self, grad_output: LazyBuffer
+    ) -> tuple[ta.Optional[LazyBuffer], ta.Optional[LazyBuffer]]:
+        return (
+            self._y.e(ops.Mul, grad_output) if self.needs_input_grad[0] else None,
+            self._x.e(ops.Mul, grad_output) if self.needs_input_grad[1] else None,
+        )
+
+
+class Div(Function):
+    _x: LazyBuffer
+    _y: LazyBuffer
+
+    def forward(self, x: LazyBuffer, y: LazyBuffer) -> LazyBuffer:
+        self._x = x
+        self._y = y
+        return x.e(ops.Div, y)
+
+    def backward(
+        self, grad_output: LazyBuffer
+    ) -> tuple[ta.Optional[LazyBuffer], ta.Optional[LazyBuffer]]:
+        return (
+            grad_output.e(ops.Div, self._y) if self.needs_input_grad[0] else None,
+            grad_output.e(ops.Neg)
+            .e(ops.Mul, self._x)
+            .e(ops.Div, self._y.e(ops.Mul, self._y))
+            if self.needs_input_grad[1]
+            else None,
+        )
+
+
+# TernaryOps
+
+
+class Where(Function):
+    _x: LazyBuffer
+
+    def forward(self, x: LazyBuffer, y: LazyBuffer, z: LazyBuffer) -> LazyBuffer:
+        self._x = x
+        return x.e(ops.Where, y, z)
+
+    def backward(
+        self, grad_output: LazyBuffer
+    ) -> tuple[None, ta.Optional[LazyBuffer], ta.Optional[LazyBuffer]]:
         return (
             None,
-            self._x.ternary_op(ops.Where, grad_output, self._x.const_like(0)) if self._needs_input_grad[1] else None,
-            self._x.ternary_op(ops.Where, self._x.const_like(0), grad_output) if self._needs_input_grad[2] else None,
+            self._x.e(ops.Where, grad_output, grad_output.const(0)) if self.needs_input_grad[1] else None,
+            self._x.e(ops.Where, grad_output.const(0), grad_output) if self.needs_input_grad[2] else None,
         )
+
+
+# ReduceOps
+
+
+class Sum(Function):
+    _input_shape: tuple[sint, ...]
+
+    def forward(self, x: LazyBuffer, new_shape: tuple[int, ...]) -> LazyBuffer:
+        self._input_shape = x.shape
+        return x.r(ops.Sum, new_shape)
+
+    def backward(self, grad_output: LazyBuffer) -> LazyBuffer:
+        return grad_output.expand(self._input_shape)
+
+
+class Max(Function):
+    _x: LazyBuffer
+    _ret: LazyBuffer
+
+    def forward(self, x: LazyBuffer, new_shape: tuple[int, ...]) -> LazyBuffer:
+        self._x = x
+        self._ret = x.r(ops.Max, new_shape)
+        return self._ret
+
+    def backward(self, grad_output: LazyBuffer) -> LazyBuffer:
+        # 1s in locations where the max was chosen (can be two locations)
+        max_is_1s = self._x.const(1.0).e(
+            ops.Sub, self._x.e(ops.CmpLt, self._ret.expand(self._x.shape))
+        )
+        div = max_is_1s.r(ops.Sum, grad_output.shape).expand(self._x.shape)
+        return max_is_1s.e(ops.Div, div).e(
+            ops.Mul, grad_output.expand(self._x.shape)
+        )
+
+
+# MovementOps
+
+
+# NOTE: this is sum in reverse
+class Expand(Function):
+    _input_shape: tuple[sint, ...]
+
+    def forward(self, x: LazyBuffer, shape: tuple[int, ...]) -> LazyBuffer:
+        self._input_shape = x.shape
+        return x.expand(shape)
+
+    def backward(self, grad_output: LazyBuffer) -> LazyBuffer:
+        return grad_output.r(ops.Sum, self._input_shape)
+
+
+class Reshape(Function):
+    _input_shape: tuple[sint, ...]
+
+    def forward(self, x: LazyBuffer, shape: tuple[int, ...]) -> LazyBuffer:
+        self._input_shape = x.shape
+        return x.reshape(shape)
+
+    def backward(self, grad_output: LazyBuffer) -> LazyBuffer:
+        return grad_output.reshape(self._input_shape)
+
+
+class Permute(Function):
+    _input_order: tuple[int, ...]
+
+    def forward(self, x: LazyBuffer, order: tuple[int, ...]) -> LazyBuffer:
+        self._input_order = order
+        return x.permute(order)
+
+    def backward(self, grad_output: LazyBuffer) -> LazyBuffer:
+        return grad_output.permute(argsort(self._input_order))
+
+
+class Pad(Function):
+    _narg: tuple[tuple[sint, sint], ...]
+
+    def forward(self, x: LazyBuffer, arg: tuple[tuple[int, int], ...]) -> LazyBuffer:
+        self._narg = tuple([(p[0], s + p[0]) for s, p in zip(x.shape, arg)])
+        return x.pad(arg)
+
+    def backward(self, grad_output: LazyBuffer) -> LazyBuffer:
+        return grad_output.shrink(self._narg)
+
+
+class Shrink(Function):
+    _narg: tuple[tuple[sint, sint], ...]
+
+    def forward(self, x: LazyBuffer, arg: tuple[tuple[sint, sint], ...]) -> LazyBuffer:
+        self._narg = tuple([(p[0], s - p[1]) for s, p in zip(x.shape, arg)])
+        return x.shrink(arg)
+
+    def backward(self, grad_output: LazyBuffer) -> LazyBuffer:
+        assert all(
+            isinstance(x[0], int) and isinstance(x[1], int) for x in self._narg
+        ), "symbolic shrink does not support backward"
+        # need this cast because mypy cannot narrow the type even with assert
+        return grad_output.pad(ta.cast(tuple[tuple[int, int], ...], self._narg))
+
+
+class Flip(Function):
+    _arg: tuple[int, ...]
+
+    def forward(self, x: LazyBuffer, axis: tuple[int, ...]) -> LazyBuffer:
+        self._arg = tuple([-1 if i in set(axis) else 1 for i in range(len(x.shape))])
+        return x.stride(self._arg)
+
+    def backward(self, grad_output: LazyBuffer) -> LazyBuffer:
+        return grad_output.stride(self._arg)
