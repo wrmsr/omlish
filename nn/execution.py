@@ -43,7 +43,7 @@ class ScheduleItem:
     ast: LazyOp
     out: LazyBuffer
     inputs: tuple[LazyBuffer, ...]
-    # TODO: move var_vals here
+    var_vals: dict[Variable, int]
 
 
 # **************** for Interpreted Buffers ****************
@@ -389,7 +389,7 @@ class Compiled:
         self.runtime = runtime
         self.synchronize = synchronize
         self.batch_exec = batch_exec
-        self.method_cache: dict[ta.Any, ASTRunner] = {}
+        self.method_cache: dict[LazyOp, ASTRunner] = {}
 
     def to_program(self, k):
         k.linearize()
@@ -438,6 +438,11 @@ class Compiled:
         # all the rawbuffers
         rawbuffers = [output.realized] + [x.realized for x in inputs]
 
+        # extract real vars used in ast
+        from .lazy import vars_from_ast
+        ast_vars = vars_from_ast(ast)
+        assert all(v.val is None for v in ast_vars), f"ast contains bound Variable {ast_vars}"
+
         # compilation time
         def get_program():
             from .codegen.linearizer import Linearizer
@@ -469,11 +474,8 @@ class Compiled:
         if prg.name == getenv("PRINT_PRG", ''):
             print(prg.prg)
 
-        # extract real var vals
-        from .lazy import var_vals_from_ast
-        real_var_vals = var_vals_from_ast(ast)
         prg.exec(
             rawbuffers,
-            var_vals={k: var_vals[k] for k in real_var_vals},
+            var_vals={k: var_vals[k] for k in ast_vars},
         )
         return output.realized

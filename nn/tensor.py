@@ -69,10 +69,9 @@ class Tensor:
                 dtype is None or dtype == data.dtype
             ), "dtype doesn't match, and casting isn't supported"
         elif isinstance(data, (int, float)):
-            self.lazydata = LazyBuffer.loadop(
+            data = LazyBuffer.loadop(
                 ops.LoadConst, tuple(), dtype or Tensor.default_type, device, data
             )
-            return
         elif data.__class__ is list:
             assert (
                 dtype is None or dtype.np is not None
@@ -84,25 +83,15 @@ class Tensor:
             assert (
                 dtype is None or dtype.np is not None
             ), f"{dtype} doesn't have a numpy dtype"
-            data = LazyBuffer.fromCpu(
-                data.astype(dtype.np)
-                if dtype is not None and dtype.np is not None
-                else data
-            )
+            if data.shape == ():
+                data = LazyBuffer.loadop(ops.LoadConst, tuple(), dtype or dtypes.from_np(data.dtype), device, data.item())
+            else:
+                data = LazyBuffer.fromCpu(data.astype(dtype.np) if dtype is not None and dtype.np is not None else data)
         else:
             raise RuntimeError(f"can't create Tensor from {data}")
 
-        self.lazydata = (
-            data
-            if data.device == device
-            else LazyBuffer.loadop(
-                ops.From,
-                data.shape,
-                data.dtype,
-                device,
-                src=data.contiguous(),
-            )
-        )
+        # data is a LazyBuffer, but it might be on the wrong device
+        self.lazydata = data if data.device == device else data.copy_to_device(device)
 
     def __repr__(self):
         return f"<Tensor {self.lazydata!r} on {self.device} with grad {(self.grad.lazydata if self.grad else None)!r}>"

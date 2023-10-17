@@ -21,7 +21,7 @@ from ..helpers import DEBUG
 from ..helpers import all_same
 from ..helpers import colored
 from ..helpers import prod
-from ..lazy import var_vals_from_ast
+from ..lazy import vars_from_ast
 from ..ops import LazyOp
 from ..shape.shapetracker import ShapeTracker
 from ..shape.symbolic import AndNode
@@ -310,7 +310,7 @@ class Linearizer(OptimizedKernel):
                 )
 
         # add var vals
-        for var in sorted(var_vals_from_ast(self.ast), key=lambda k: k.key):
+        for var in sorted(vars_from_ast(self.ast), key=lambda k: k.key):
             assert var.expr is not None
             self.loop_uops[var.expr] = self.uop(
                 UOps.DEFINE_GLOBAL,

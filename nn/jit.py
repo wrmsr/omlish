@@ -62,7 +62,7 @@ class TinyJit:
                 var_vals: dict[Variable, int] = kwargs["jit_ctx"]
             except KeyError:
                 var_vals = merge_dicts(
-                    [arg.lazydata.var_vals for arg in args if arg.__class__ is Tensor]
+                    [arg.lazydata.st.var_vals for arg in args if arg.__class__ is Tensor]
                 )
             if len(var_vals) > 1:
                 var_vals = dict(sorted(var_vals.items(), key=lambda kv: kv[0].key))
@@ -77,9 +77,7 @@ class TinyJit:
                 # NOTE: if we pass jit_ctx instead of using reshape to update the var_vals, we cannot compare the
                 # shapetracker directly
                 if "jit_ctx" not in kwargs:
-                    assert (
-                        input_rawbuffers[input_name][1].views == expected_st.views
-                    ), f"ShapeTracker.views mismatch in JIT, {input_rawbuffers[input_name][1].views} != {expected_st.views}"  # noqa
+                    assert input_rawbuffers[input_name][1].unbind() == expected_st, f"ShapeTracker mismatch in JIT, {input_rawbuffers[input_name][1].unbind()} != {expected_st}"
                 self.jit_cache[j][1][i] = input_rawbuffers[input_name][0]
             for j in self.updatable_entries.keys():
                 for k in self.jit_cache[j][2].keys():
@@ -106,11 +104,7 @@ class TinyJit:
             ):  # type: tuple[int, tuple[ta.Callable, list[ta.Optional[RawBuffer]], dict[Variable, int]]]
                 for i, a in enumerate(cache[1]):
                     if a in [v[0] for v in input_rawbuffers.values()]:
-                        self.input_replace[(j_, i)] = [
-                            (k, v[1], v[0].dtype)
-                            for k, v in input_rawbuffers.items()
-                            if v[0] == a
-                        ][0]
+                        self.input_replace[(j_,i)] = [(k, v[1].unbind(), v[0].dtype) for k,v in input_rawbuffers.items() if v[0] == a][0]
                         self.updatable_entries[j_].append(i)
                 for i in range(len(cache[2])):
                     self.updatable_entries[j_].append(len(cache[1]) + i)

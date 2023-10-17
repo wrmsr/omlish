@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import contextlib
 import functools
+import hashlib
 import operator
 import os
 import pathlib
@@ -231,6 +232,25 @@ def print_tree(tensor: Tensor):
             ]
         )
     )
+
+
+def fetch(url):
+    if url.startswith("/") or url.startswith("."):
+        with open(url, "rb") as f:
+            return f.read()
+    fp = temp_file(hashlib.md5(url.encode('utf-8')).hexdigest())
+    download_file(url, fp, skip_if_exists=not getenv("NOCACHE"))
+    with open(fp, "rb") as f:
+        return f.read()
+
+
+def fetch_as_file(url):
+    if url.startswith("/") or url.startswith("."):
+        with open(url, "rb") as f:
+            return f.read()
+    fp = temp_file(hashlib.md5(url.encode('utf-8')).hexdigest())
+    download_file(url, fp, skip_if_exists=not getenv("NOCACHE"))
+    return fp
 
 
 def download_file(url, fp, skip_if_exists=True):

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import functools
+import operator
 import typing as ta
 
 from omlish import collections as col
@@ -125,13 +126,20 @@ class ShapeTracker:
     def size(self):
         return self.views[-1].size()
 
-    def var_vals(self) -> list[Variable]:
-        ret = []
-        for v in self.views:
-            for x in v.shape + v.strides + (v.offset,):
-                if isinstance(x, Node):
-                    ret += x.vars()
-        return col.unique(ret)
+    def vars(self) -> list[Variable]:
+        return col.unique(functools.reduce(operator.add, [v.vars() for v in self.views], []))
+
+    @property
+    def var_vals(self) -> dict[Variable, int]:
+        ret: dict[Variable, int] = {}
+        for v in self.vars():
+            var, val = v.unbind()
+            assert var not in ret or ret[var] == val, f"{var} has conflicted values {val} and {ret[var]}"
+            ret[var] = val
+        return ret
+
+    def unbind(self) -> ShapeTracker:
+        return ShapeTracker(tuple(v.unbind() for v in self.views))
 
     def to_movement_ops(self) -> list[tuple[type[ops.MovementOp], tuple]]:
         to_apply: list[tuple[type[ops.MovementOp], tuple]] = []

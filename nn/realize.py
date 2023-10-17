@@ -49,7 +49,7 @@ def run_schedule(schedule: list[ScheduleItem]):
                 si.ast,
                 output=si.out,
                 inputs=si.inputs,
-                var_vals=si.out.var_vals,
+                var_vals=si.var_vals,
                 **si.out._device_extra_args(),
             )
         del si.out.op
@@ -82,12 +82,6 @@ def _realize_rand(buffer: LazyBuffer) -> None:
 
 
 # *** one op LoadOps ***
-
-
-def _realize_contiguous(buffer: LazyBuffer, src: LazyBuffer) -> None:
-    # this is just a copy now, if it's not a copy schedule will handle it
-    buffer.realized = src.realized
-    assert buffer.dtype == src.dtype, f"contiguous dtype mismatch, expecting {buffer.dtype}, got {src.dtype}"
 
 
 def _realize_from(buffer: LazyBuffer, src: LazyBuffer) -> None:
@@ -125,7 +119,6 @@ def _realize_custom(buffer: LazyBuffer, *inputs: LazyBuffer) -> None:
 LOAD_OPS_DISPATCHER: dict[type[ops.LoadOp], ta.Callable] = {
     ops.Empty: _realize_empty,
     ops.Rand: _realize_rand,
-    ops.Contiguous: _realize_contiguous,
     ops.Custom: _realize_custom,
     ops.From: _realize_from,
 }

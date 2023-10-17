@@ -37,26 +37,27 @@ def safe_load(fn: ta.Union[Tensor, str]) -> dict[str, Tensor]:
         else Tensor.empty(os.stat(fn).st_size, dtype=dtypes.uint8, device=f"disk:{fn}")
     )
     json_len = t[0:1].cast(dtypes.int64).numpy()[0]
-    metadata = json.loads(t[8:8 + json_len].numpy().tobytes())
+    headers = json.loads(t[8:8 + json_len].numpy().tobytes())
     return {
         k: t[8 + json_len + v["data_offsets"][0]:]
         .cast(safe_dtypes[v["dtype"]])[: prod(v["shape"])]
         .reshape(v["shape"])
-        for k, v in metadata.items()
+        for k, v in headers.items()
         if k != "__metadata__"
     }
 
 
-def safe_save(tensors: dict[str, Tensor], fn: str):
-    metadata, offset = {}, 0
+def safe_save(tensors: dict[str, Tensor], fn: str, metadata: ta.Optional[dict[str, Any]] = None):
+    headers, offset = {}, 0
+    if metadata: headers['__metadata__'] = metadata
     for k, v in tensors.items():
-        metadata[k] = {
-            "dtype": inverse_safe_dtypes[v.dtype],
-            "shape": list(v.shape),
-            "data_offsets": [offset, offset + v.nbytes()],
+        headers[k] = {
+            'dtype': inverse_safe_dtypes[v.dtype],
+            'shape': list(v.shape),
+            'data_offsets': [offset, offset + v.nbytes()],
         }
         offset += v.nbytes()
-    j = json.dumps(metadata, separators=(",", ":"))
+    j = json.dumps(headers, separators=(',', ':'))
     j += "\x20" * ((8 - len(j) % 8) % 8)
     pathlib.Path(fn).unlink(missing_ok=True)
     t = Tensor.empty(8 + len(j) + offset, dtype=dtypes.uint8, device=f"disk:{fn}")

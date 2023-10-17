@@ -17,7 +17,9 @@ from ..helpers import getenv
 from ..helpers import prod
 from ..ops import LazyOp
 from ..shape.shapetracker import ShapeTracker
+from ..shape.shapetracker import get_contraction
 from ..shape.view import View
+from ..shape.view import strides_for_shape
 
 
 class OptOps(enum.Enum):
@@ -115,6 +117,19 @@ class OptimizedKernel(Kernel):
             x.real_strides() for x in self.sts
         ]
 
+        # if it's an image, insert fake strides such that this fusion doesn't happen across image axes
+        if self.bufs[0].dtype.name.startswith('image'):
+            base_shape = self.bufs[0].dtype.shape
+            if shape_idx_groups := get_contraction(self.output_shape, base_shape):
+                special_strides: tuple[int, ...] = tuple()
+                for i, g in enumerate(shape_idx_groups):
+                    shape_piece = tuple(self.output_shape[x] for x in g)
+                    assert prod(shape_piece) == base_shape[i], f"get_contraction was wrong? {shape_piece} != {base_shape[i]}"
+                    special_strides += strides_for_shape(shape_piece)
+                # adding the fake image shape
+                shapes.append(self.output_shape)
+                strides.append(special_strides)
+
         # merge dimensions if we can, multi get_shape_strides
         # TODO: does this always preserve the reduce dimension, NO
         # TODO: move this into shapetracker, with tests!
@@ -143,7 +158,7 @@ class OptimizedKernel(Kernel):
                     rets[j].append((shapes[j][i], strides[j][i]))
 
         # do the reshapes
-        for i, x in enumerate(rets):
+        for i, x in enumerate(rets[:len(self.sts)]):
             self.sts[i] = self.sts[i].reshape(tuple([y[0] for y in x]))
 
     # ******************** GPU simplifiers ********************
@@ -623,22 +638,6 @@ class OptimizedKernel(Kernel):
 
         # simplify (sets first_reduce)
         self.simplify_ones()
-
-        # use more opencl indexing if the output buffer is an image and we have room
-        if (
-            self.bufs[0].dtype.name.startswith("image")
-            and self.first_reduce + len(self.group_for_reduce) < 3
-        ):
-            base_shape = self.bufs[0].dtype.shape
-            if (base_shape[0] * base_shape[1]) % self.sts[0].shape[0] == 0 and self.sts[
-                0
-            ].shape[0] // base_shape[0] != 0:
-                if DEBUG >= 4:
-                    print("split opencl", base_shape, self.sts[0].shape)
-                self.reshape_and_permute(
-                    lambda x: [base_shape[0], x[0] // base_shape[0]] + list(x[1:]), None
-                )
-                self.simplify_ones()
 
         # no more opt if we are grouping
         if self.group_for_reduce:
