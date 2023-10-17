@@ -277,3 +277,18 @@ def download_file(url, fp, skip_if_exists=True):
             progress_bar.update(f.write(chunk))
         f.close()
         pathlib.Path(f.name).rename(fp)
+
+
+# *** compiled cache decorator ***
+
+
+def cache_compiled(func):
+    def wrapper(self, prg: str, *args, **kwargs) -> bytes:
+        cache_path = pathlib.Path(f"{tempfile.gettempdir()}/tinygrad_cc_{hashlib.sha256(prg.encode()).hexdigest()}")
+        output_file = pathlib.Path(tempfile.mktemp())
+        if not cache_path.exists():
+            output_file.write_bytes(func(self, prg, *args, **kwargs))
+            output_file.rename(cache_path)
+        return cache_path.read_bytes()
+
+    return wrapper
