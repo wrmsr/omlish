@@ -64,7 +64,7 @@ class _Device:
                 if self[device]:
                     return device
             except Exception as e:  # noqa
-                breakpoint()
+                # breakpoint()
                 pass
 
         return "CPU"

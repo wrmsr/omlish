@@ -5,6 +5,7 @@ from ..codegen.linearizer import Linearizer
 from ..helpers import DEBUG
 from ..helpers import getenv
 from ..helpers import prod
+from ..lazy import var_vals_from_ast
 
 
 def get_divisors(n, min_div=1, max_div=512):
@@ -58,7 +59,12 @@ def kernel_optimize_opts(k: Linearizer):
 
 
 def kernel_optimize_search(
-    k: Linearizer, create_k: ta.Callable[[], Linearizer], to_prg, baseline, bufs
+        k: Linearizer,
+        create_k: ta.Callable[[], Linearizer],
+        to_prg,
+        baseline,
+        bufs,
+        var_vals,
 ):
     import nevergrad as ng
 
@@ -67,14 +73,14 @@ def kernel_optimize_search(
             k = create_k()
             k.apply_auto_opt(x)
             prg = to_prg(k)
-            first_tm = prg.exec(bufs, force_wait=True, optimizing=True)
+            first_tm = prg.exec(bufs, var_vals, force_wait=True, optimizing=True)
             if baseline * 5 < first_tm * 1000:
                 return first_tm * 1000  # very slow
             tm = (
                 min(
                     [first_tm]
                     + [
-                        prg.exec(bufs, force_wait=True, optimizing=True)
+                        prg.exec(bufs, var_vals, force_wait=True, optimizing=True)
                         for _ in range(2)
                     ]
                 )
@@ -131,6 +137,8 @@ def kernel_optimize(k: Linearizer, create_k: ta.Callable[[], Linearizer], to_prg
         # don't optimize variable shapes
         choice = "BASELINE"
     else:
+        var_vals = {k: k.min for k in var_vals_from_ast(k.ast)}
+
         # get baseline
         def get_baseline():
             k = create_k()
@@ -138,12 +146,12 @@ def kernel_optimize(k: Linearizer, create_k: ta.Callable[[], Linearizer], to_prg
             prg = to_prg(k)
             return (
                 min(
-                    [prg.exec(bufs, force_wait=True, optimizing=True) for _ in range(5)]
+                    [prg.exec(bufs, var_vals, force_wait=True, optimizing=True) for _ in range(5)]
                 )
                 * 1000
             )
 
-        choice = kernel_optimize_search(k, create_k, to_prg, get_baseline(), bufs)
+        choice = kernel_optimize_search(k, create_k, to_prg, get_baseline(), bufs, var_vals)
         if global_db is not None:
             global_db[skey] = choice
             global_db.sync()
