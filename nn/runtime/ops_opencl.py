@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import pathlib
-import functools
 import typing as ta
 
 import numpy as np
@@ -15,8 +14,7 @@ from ..helpers import OSX
 from ..helpers import fromimport
 from ..helpers import getenv
 from ..helpers import prod
-from ..renderer.cstyle import CStyleLanguage
-from ..renderer.cstyle import uops_to_cstyle
+from ..renderer.opencl import OpenCLRenderer
 from ..runtime.lib import LruAllocator
 from ..runtime.lib import RawBufferCopyInOut
 from ..runtime.lib import RawBufferTransfer
@@ -263,20 +261,10 @@ class ClProgram:
         return None
 
 
-renderer = functools.partial(
-    uops_to_cstyle,
-    CStyleLanguage(
-        kernel_prefix="__kernel ",
-        buffer_prefix="__global ",
-        smem_align="__attribute__ ((aligned (16))) ",
-        smem_prefix="__local ",
-        arg_int_prefix="const int",
-        half_prekernel="#pragma OPENCL EXTENSION cl_khr_fp16 : enable",
-        barrier="barrier(CLK_LOCAL_MEM_FENCE);",
-        float4="(float4)",
-        gid=[f"get_group_id({i})" for i in range(3)],
-        lid=[f"get_local_id({i})" for i in range(3)],
-        uses_vload=True,
-    ),
+OpenClBuffer = Compiled(
+    ClBuffer,
+    LinearizerOptions(),
+    OpenCLRenderer,
+    ClProgram,
+    CL.synchronize,
 )
-OpenClBuffer = Compiled(ClBuffer, LinearizerOptions(), renderer, ClProgram, CL.synchronize)

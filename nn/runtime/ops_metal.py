@@ -1,7 +1,6 @@
 import os
 import subprocess
 import pathlib
-import functools
 import ctypes
 import typing as ta
 
@@ -18,8 +17,7 @@ from ..execution import Compiled
 from ..helpers import DEBUG
 from ..helpers import getenv
 from ..helpers import prod
-from ..renderer.cstyle import CStyleLanguage
-from ..renderer.cstyle import uops_to_cstyle
+from ..renderer.metal import MetalRenderer
 from ..runtime.lib import LruAllocator
 from ..runtime.lib import RawBufferMapped
 
@@ -189,29 +187,10 @@ class MetalProgram:
         METAL.mtl_buffers_in_flight.append(command_buffer)
 
 
-renderer = functools.partial(
-    uops_to_cstyle,
-    CStyleLanguage(
-        kernel_prefix="#include <metal_stdlib>\nusing namespace metal;\nkernel ",
-        buffer_prefix="device ",
-        smem_prefix="threadgroup ",
-        arg_int_prefix="constant int&",
-        barrier="threadgroup_barrier(mem_flags::mem_threadgroup);",
-        float4="float4",
-        uses_ptr_arithmetic=True,
-        gid=[f"gid.{chr(120+i)}" for i in range(3)],
-        lid=[f"lid.{chr(120+i)}" for i in range(3)],
-        extra_args=[
-            "uint3 gid [[threadgroup_position_in_grid]]",
-            "uint3 lid [[thread_position_in_threadgroup]]",
-        ],
-    ),
-)
-
 MetalBuffer = Compiled(
     RawMetalBuffer,
     LinearizerOptions(device="METAL"),
-    renderer,
+    MetalRenderer,
     MetalProgram,
     METAL.synchronize,
     MetalBatchExecutor,
