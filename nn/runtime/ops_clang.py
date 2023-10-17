@@ -1,18 +1,19 @@
 import ctypes
 import functools
-import hashlib
-import os
+import pathlib
 import platform
 import struct
 import subprocess
 import tempfile
 import time
+import typing as ta
 
 import numpy as np
 
 from ..codegen.kernel import LinearizerOptions
 from ..execution import Compiled
 from ..helpers import DEBUG
+from ..helpers import cache_compiled
 from ..helpers import fromimport
 from ..helpers import getenv
 from ..renderer.cstyle import CStyleLanguage
@@ -72,66 +73,35 @@ def emulate_ext_calls(fn, uc, address, size, user_data):
 class ClangProgram:
     def __init__(self, name: str, prg: str, binary: bool = False) -> None:
         super().__init__()
+        if binary and DEBUG >= 5:
+            print(prg)
+        self.prg: ta.Any = self.compile(prg if binary else CLANG_PROGRAM_HEADER + prg, binary)
+
         # TODO: is there a way to not write this to disk?
         # A: it seems there isn't
         #  https://stackoverflow.com/questions/28053328/ctypes-cdll-load-library-from-memory-rather-than-file
         # because ctypes.CDLL() calls dlopen (POSIX) or LoadLibrary (Windows) which require a file
-        fn = f"{tempfile.gettempdir()}/clang_{hashlib.md5(prg.encode('utf-8')).hexdigest()}.{args['ext']}"
-        if binary and DEBUG >= 5:
-            print(prg)
-        if not os.path.exists(fn):
-            tmp = f"{fn}.{os.getpid()}.tmp"
-            if not binary:
-                prg = CLANG_PROGRAM_HEADER + prg
-                subprocess.check_output(
-                    args=(
-                        "clang -shared -O2 -Wall -Werror -x c "
-                        + args["cflags"]
-                        + " - -o "
-                        + tmp
-                    ).split(),
-                    input=prg.encode("utf-8"),
-                )
-                os.rename(tmp, fn)
-            else:
-                if CI and ARM64:
-                    prg = prg.split("\n")  # type: ignore
-                    self.varsize = align(int(prg[0].split(" ")[1]))
-                    self.ext_calls = {
-                        (i * 4 + ADDRESS): ins.split(" ")[1:]
-                        for i, ins in enumerate(
-                            filter(lambda ins: ins[:4] != "loop", prg[6:-3])
-                        )
-                        if ins[:2] == "bl"
-                    }
-                    prg = "\n".join(
-                        ["nop" if ins[:2] == "bl" else ins for ins in prg[6:-3]]
-                        + ["\n"]
-                    )
-                    subprocess.check_output(
-                        args=("aarch64-linux-gnu-as -o " + tmp).split(),
-                        input=prg.encode("utf-8"),
-                    )
-                    subprocess.check_output(
-                        args=(
-                            "aarch64-linux-gnu-objcopy -O binary --only-section=.text "
-                            + tmp
-                            + " "
-                            + fn
-                            + ".bin"
-                        ).split()
-                    )
-                    with open(fn + ".bin", "rb") as f:
-                        self.prg = f.read()
-                    return
-                subprocess.check_output(
-                    args=("as -o" + tmp).split(), input=prg.encode("utf-8")
-                )
-                subprocess.check_output(
-                    args=("clang -lm -shared " + tmp + " -o" + fn).split()
-                )
-        self.lib = ctypes.CDLL(fn)
-        self.fxn = self.lib[name]
+        if not (CI and ARM64):
+            cached_file_path = pathlib.Path(tempfile.mktemp())
+            cached_file_path.write_bytes(self.prg)
+            self.fxn: ta.Any = ctypes.CDLL(str(cached_file_path))[name]
+
+    @cache_compiled
+    def compile(self, prg, binary) -> bytes:
+        output_file, temp_file = pathlib.Path(tempfile.mktemp()), pathlib.Path(tempfile.mktemp())
+        if not binary:
+            subprocess.check_output(args=('clang -shared -O2 -Wall -Werror -x c '+args['cflags']+' - -o '+str(output_file)).split(), input=prg.encode('utf-8'))
+        elif CI and ARM64:
+            prg = prg.split('\n') # type: ignore
+            self.varsize = align(int(prg[0].split(" ")[1]))
+            self.ext_calls = {(i*4+ADDRESS):ins.split(" ")[1:] for i, ins in enumerate(filter(lambda ins: ins[:4] != 'loop', prg[6:-3])) if ins[:2] == 'bl'}
+            prg = "\n".join(['nop' if ins[:2] == 'bl' else ins for ins in prg[6:-3]] + ['\n'])
+            subprocess.check_output(args=('aarch64-linux-gnu-as -o '+str(temp_file)).split(), input=prg.encode('utf-8'))
+            subprocess.check_output(args=('aarch64-linux-gnu-objcopy -O binary --only-section=.text '+str(temp_file)+' '+str(output_file)).split())
+        else:
+            subprocess.check_output(args=('as -o' + str(temp_file)).split(), input=prg.encode('utf-8'))
+            subprocess.check_output(args=('clang -lm -shared '+str(temp_file)+' -o'+str(output_file)).split())
+        return output_file.read_bytes()
 
     def __call__(self, global_size, local_size, *args, wait=False):
         if wait:
