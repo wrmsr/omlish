@@ -15,8 +15,12 @@ from .helpers import colored
 from .helpers import getenv
 from .helpers import prod
 from .ops import LazyOp
+from .runtime.lib import RawBuffer
+from .shape.symbolic import Variable
+from .shape.symbolic import sym_infer
 
 if ta.TYPE_CHECKING:
+    from .lazy import LazyBuffer
     from .shape.shapetracker import ShapeTracker
 
 
@@ -32,6 +36,14 @@ class ConstBuffer:
     val: ta.Any
     dtype: DType
     st: ShapeTracker
+
+
+@dc.dataclass(frozen=True)
+class ScheduleItem:
+    ast: LazyOp
+    out: LazyBuffer
+    inputs: tuple[LazyBuffer, ...]
+    # TODO: move var_vals here
 
 
 # **************** for Interpreted Buffers ****************
@@ -212,11 +224,6 @@ def get_lazyop_info(ast: LazyOp) -> FlopCounter:
 
 
 # **************** for Compiled Buffers ****************
-
-
-from .runtime.lib import RawBuffer  # noqa
-from .shape.symbolic import Variable  # noqa
-from .shape.symbolic import sym_infer  # noqa
 
 
 class BasicBatchExecutor:

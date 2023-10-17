@@ -14,6 +14,7 @@ from .dtypes import DType
 from .dtypes import dtypes
 from .execution import ConstBuffer
 from .execution import MemBuffer
+from .execution import ScheduleItem
 from .helpers import dedup
 from .helpers import flatten
 from .helpers import getenv
@@ -179,6 +180,7 @@ def var_vals_from_ast(ast: LazyOp) -> list[Variable]:
                 for x in ast.get_lazyops()
                 if isinstance(x, ops.BufferOp)
             ],
+            [],
         ),
     )
 
@@ -333,7 +335,7 @@ class LazyBuffer:
 
     def schedule(
         self, seen=None
-    ) -> list[tuple[LazyOp, LazyBuffer, tuple[LazyBuffer, ...]]]:
+    ) -> list[ScheduleItem]:
         if seen is None:
             seen = set()
         if self in seen or self.realized or self.is_unrealized_const():
@@ -372,7 +374,7 @@ class LazyBuffer:
 
         # run the ast and log the op
         op, base_bufs = _replace_bufferops(op)
-        return ret + [(op, self, tuple(base_bufs))]
+        return ret + [ScheduleItem(op, self, tuple(base_bufs))]
 
     # *** creation/special ops ***
 

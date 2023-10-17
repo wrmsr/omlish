@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import typing as ta
 
+from omlish import dataclasses as dc
 import numpy as np
 
 from . import ops
@@ -9,6 +10,7 @@ from .devices import Device
 from .dtypes import ImageDType
 from .dtypes import dtypes
 from .execution import MemBuffer
+from .execution import ScheduleItem
 from .execution import get_lazyop_info
 from .helpers import DEBUG
 from .helpers import IMAGE
@@ -25,91 +27,89 @@ from .runtime.ops_disk import RawDiskBuffer
 P2P = getenv("P2P", 0)
 
 
-def fix_schedule_for_images(schedule: list[tuple[LazyOp, LazyBuffer, tuple[LazyBuffer, ...]]]):
+def fix_schedule_for_images(schedule: list[ScheduleItem]):
     # this is the fundamental fix, find unwritable or unreadable images and convert them to normal float32 (TODO: should it be float16?)
-    for op, out, buffers in schedule:
+    for si in schedule:
         if (
-                isinstance(out.dtype, ImageDType)
+                isinstance(si.out.dtype, ImageDType)
                 and (
-                    prod(out.shape) != prod(out.dtype.shape)
-                    or not any(out.shape[x] % 4 == 0 for x in out.st.unit_stride_axes())
-                )
+                    prod(si.out.shape) != prod(si.out.dtype.shape)
+                    or not any(si.out.shape[x] % 4 == 0 for x in si.out.st.unit_stride_axes())
+            )
         ):
-            out.dtype = dtypes.float32
-        bops = [x for x in op.get_lazyops() if isinstance(x, ops.Mem)]
-        for b in bops:
+            si.out.dtype = dtypes.float32
+        for b in si.ast.get_lazyops():
+            if not isinstance(b, ops.Mem):
+                continue
             if (
-                    isinstance(buffers[b.arg.idx - 1].dtype, ImageDType)
-                    and (
-                        b.arg.st.real_offset() % 4 != 0
-                        or not any(b.arg.st.shape[x] % 4 == 0 for x in b.arg.st.unit_stride_axes())
-                    )
+                isinstance(si.inputs[b.arg.idx - 1].dtype, ImageDType)
+                and (
+                    b.arg.st.real_offset() % 4 != 0
+                    or not any(b.arg.st.shape[x] % 4 == 0 for x in b.arg.st.unit_stride_axes())
+                )
             ):
-                buffers[b.arg.idx - 1].dtype = dtypes.float32
-
-    # fix the contiguous dtype, no cast required
-    for op, out, buffers in schedule:
-        if isinstance(op, ops.Contiguous) and out.dtype != buffers[0].dtype:
-            out.dtype = buffers[0].dtype = dtypes.float32
+                si.inputs[b.arg.idx - 1].dtype = dtypes.float32
 
     # now fix up the schedule to reflect the new dtypes
-    fixed_schedule = []
-    for op, out, buffers in schedule:
+    fixed_schedule: list[ScheduleItem] = []
+    for si in schedule:
+        ast = si.ast
         # fix input dtypes to match what they actually are
-        bops = [x for x in op.get_lazyops() if isinstance(x, ops.Mem)]
         replacements = {}
-        for x in bops:
-            if x.arg.dtype != buffers[x.arg.idx - 1].dtype:
-                replacements[x] = ops.Mem((), MemBuffer(x.arg.idx, buffers[x.arg.idx - 1].dtype, x.arg.st))
+        for b in si.ast.get_lazyops():
+            if not isinstance(b, ops.Mem):
+                continue
+            if b.arg.dtype != si.inputs[b.arg.idx - 1].dtype:
+                replacements[b] = ops.Mem((), MemBuffer(b.arg.idx, si.inputs[b.arg.idx - 1].dtype, b.arg.st))
         if replacements:
-            op = op.map_buffers(replacements)
+            ast = ast.map_buffers(replacements)
 
         # fix the ops to create the output dtype
-        if not isinstance(op, ops.LoadOp):
-            info = get_lazyop_info(op)
-            if info.dtype != out.dtype:
-                op = ops.Cast((op,), (out.dtype, False))
+        if not isinstance(ast, ops.LoadOp):
+            info = get_lazyop_info(ast)
+            if info.dtype != si.out.dtype:
+                ast = ops.Cast((ast,), (si.out.dtype, False))
 
         # put this in the fixed schedule
-        fixed_schedule.append((op, out, buffers))
+        fixed_schedule.append(dc.replace(si, ast=ast))
     return fixed_schedule
 
 
-def run_schedule(schedule: list[tuple[LazyOp, LazyBuffer, tuple[LazyBuffer, ...]]]):
+# *** this is where things happen ***
+
+def run_schedule(schedule: list[ScheduleItem]):
     # HACK: images can be not usable due to shape
     if IMAGE >= 2:
         schedule = fix_schedule_for_images(schedule)
 
     # NOTE: if you for loop the schedule it's slow because nothing frees
     while len(schedule):
-        op, out, buffers = schedule.pop(0)
-        # log_schedule_item(op, out, buffers)
-        if DEBUG >= 3:
-            from .helpers import print_tree
-            print_tree(op)
-
-        if isinstance(op, ops.LoadOp):
+        si = schedule.pop(0)
+        # log_schedule_item(si)
+        assert all(x.realized for x in si.inputs), "can't run schedule, some inputs aren't realized"
+        # if DEBUG >= 3:
+        #     print_tree(si.ast)
+        if isinstance(si.ast, ops.LoadOp):
             # confirm the LoadOps are contiguous and in order
-            for i, s in enumerate(op.src):
-                assert isinstance(s, LazyOp) and isinstance(s, ops.Mem) and s.arg.idx == i+1 and s.arg.st.contiguous, f"bad LoadOps src {i}: {s}"
-            LOAD_OPS_DISPATCHER[type(op)](out, *buffers)
+            for i, s in enumerate(si.ast.src):
+                assert (
+                    isinstance(s, LazyOp) and isinstance(s, ops.Mem) and s.arg.idx == i + 1 and s.arg.st.contiguous
+                ), f"bad LoadOps src {i}: {s}"
+            LOAD_OPS_DISPATCHER[type(si.ast)](si.out, *si.inputs)
         else:
-            out.realized = Device[out.device].exec_ast(
-                op,
-                output=out,
-                inputs=buffers,
-                var_vals=out.var_vals,
-                **out._device_extra_args(),
+            si.out.realized = Device[si.out.device].exec_ast(
+                si.ast,
+                output=si.out,
+                inputs=si.inputs,
+                var_vals=si.out.var_vals,
+                **si.out._device_extra_args(),
             )
-        del out.op
-        for v in out.views:
-            del v.op
-
-        assert out.realized and isinstance(
-            out.realized, Device[out.device].buffer
-        ), f"device mismatch on realized got {type(out.realized)} expected {out.device}"
-
-        assert out.realized.dtype == out.dtype, "realized dtype is incorrect"
+        del si.out.op
+        for v in si.out.views: del v.op
+        assert (
+            si.out.realized and isinstance(si.out.realized, Device[si.out.device].buffer)
+        ), f"device mismatch on realized got {type(si.out.realized)} expected {si.out.device}"
+        assert si.out.realized.dtype == si.out.dtype, "realized dtype is incorrect"
 
 
 # *** zero op LoadOps ***
