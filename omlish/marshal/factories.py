@@ -73,7 +73,7 @@ class RecursiveTypeFactory(Factory[R, C, rfl.Type]):
     def __init__(
             self,
             f: Factory[R, C, rfl.Type],
-            prx: ta.Callable[[], ta.Tuple[ta.Optional[R], ta.Callable[[ta.Optional[R]], None]]],
+            prx: ta.Callable[[], tuple[ta.Optional[R], ta.Callable[[ta.Optional[R]], None]]],
     ) -> None:
         super().__init__()
         self._f = f

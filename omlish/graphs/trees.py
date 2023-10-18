@@ -131,13 +131,13 @@ class BasicTreeAnalysis(ta.Generic[NodeT]):
             cls,
             src: ta.Union[
                 ta.Mapping[NodeT, ta.Optional[NodeT]],
-                ta.Iterable[ta.Tuple[NodeT, ta.Optional[NodeT]]],
+                ta.Iterable[tuple[NodeT, ta.Optional[NodeT]]],
             ],
             *,
             identity: bool = False,
             **kwargs
     ) -> 'BasicTreeAnalysis[NodeT]':
-        pairs: ta.Sequence[ta.Tuple[NodeT, NodeT]]
+        pairs: ta.Sequence[tuple[NodeT, NodeT]]
         if isinstance(src, ta.Mapping):
             pairs = list(src.items())  # type: ignore
         elif isinstance(src, ta.Iterable):
@@ -168,13 +168,13 @@ class BasicTreeAnalysis(ta.Generic[NodeT]):
             cls,
             src: ta.Union[
                 ta.Mapping[NodeT, ta.Iterable[NodeT]],
-                ta.Iterable[ta.Tuple[NodeT, ta.Iterable[NodeT]]],
+                ta.Iterable[tuple[NodeT, ta.Iterable[NodeT]]],
             ],
             *,
             identity: bool = False,
             **kwargs
     ) -> 'BasicTreeAnalysis[NodeT]':
-        pairs: ta.Sequence[ta.Tuple[NodeT, ta.Sequence[NodeT]]]
+        pairs: ta.Sequence[tuple[NodeT, ta.Sequence[NodeT]]]
         if isinstance(src, ta.Mapping):
             pairs = list(src.items())  # type: ignore
         elif isinstance(src, ta.Iterable):

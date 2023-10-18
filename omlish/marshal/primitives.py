@@ -10,7 +10,7 @@ from .factories import TypeMapFactory
 from .values import Value
 
 
-PRIMITIVE_TYPES: ta.Tuple[type, ...] = (
+PRIMITIVE_TYPES: tuple[type, ...] = (
     bool,
     int,
     float,

@@ -37,12 +37,12 @@ class IdentityKeyDict(ta.MutableMapping[K, V]):
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__()
-        self._dict: dict[int, ta.Tuple[K, V]] = {}
+        self._dict: dict[int, tuple[K, V]] = {}
         for k, v in yield_dict_init(*args, **kwargs):
             self[k] = v
 
     @property
-    def debug(self) -> ta.Sequence[ta.Tuple[K, V]]:
+    def debug(self) -> ta.Sequence[tuple[K, V]]:
         return list(self.items())
 
     def __repr__(self) -> str:

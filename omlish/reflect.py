@@ -40,10 +40,10 @@ class Union(ta.NamedTuple):
 
 class Generic(ta.NamedTuple):
     cls: ta.Any
-    args: ta.Tuple[Type, ...]
+    args: tuple[Type, ...]
 
 
-TYPES: ta.Tuple[type, ...] = (
+TYPES: tuple[type, ...] = (
     type,
     Union,
     Generic,

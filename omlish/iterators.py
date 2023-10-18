@@ -137,7 +137,7 @@ class RetainIterator(ta.Iterator[T]):
         return item
 
 
-def unzip(it: ta.Iterable[T], width: ta.Optional[int] = None) -> ta.List:
+def unzip(it: ta.Iterable[T], width: ta.Optional[int] = None) -> list:
     if width is None:
         if not isinstance(it, PeekIterator):
             it = PeekIterator(iter(it))

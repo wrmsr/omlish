@@ -180,13 +180,13 @@ def abs_set_of_or_none(
 
 
 def map(
-        src: ta.Union[ta.Mapping[K, V], ta.Iterable[ta.Tuple[K, V]]],
+        src: ta.Union[ta.Mapping[K, V], ta.Iterable[tuple[K, V]]],
 ) -> ta.Mapping[K, V]:
     return FrozenDict(src)
 
 
 def optional_map(
-        src: ta.Optional[ta.Union[ta.Mapping[K, V], ta.Iterable[ta.Tuple[K, V]]]],
+        src: ta.Optional[ta.Union[ta.Mapping[K, V], ta.Iterable[tuple[K, V]]]],
 ) -> ta.Optional[ta.Mapping[K, V]]:
     if src is None:
         return None
@@ -195,7 +195,7 @@ def optional_map(
 
 
 def map_or_none(
-        src: ta.Optional[ta.Union[ta.Mapping[K, V], ta.Iterable[ta.Tuple[K, V]]]],
+        src: ta.Optional[ta.Union[ta.Mapping[K, V], ta.Iterable[tuple[K, V]]]],
 ) -> ta.Optional[ta.Mapping[K, V]]:
     ret = optional_map(src)
     if ret:
@@ -208,7 +208,7 @@ def map_of(
         key_fn: ta.Union[ta.Callable[[K], K2], tuple],
         value_fn: ta.Union[ta.Callable[[V], V2], tuple],
 ) -> ta.Callable[
-    [ta.Union[ta.Mapping[K, V], ta.Iterable[ta.Tuple[K, V]]]],
+    [ta.Union[ta.Mapping[K, V], ta.Iterable[tuple[K, V]]]],
     ta.Mapping[K2, V2],
 ]:
     def inner(src):
@@ -223,7 +223,7 @@ def optional_map_of(
         key_fn: ta.Union[ta.Callable[[K], K2], tuple],
         value_fn: ta.Union[ta.Callable[[V], V2], tuple],
 ) -> ta.Callable[
-    [ta.Optional[ta.Union[ta.Mapping[K, V], ta.Iterable[ta.Tuple[K, V]]]]],
+    [ta.Optional[ta.Union[ta.Mapping[K, V], ta.Iterable[tuple[K, V]]]]],
     ta.Optional[ta.Mapping[K2, V2]],
 ]:
     def inner(src):
@@ -241,7 +241,7 @@ def map_of_or_none(
         key_fn: ta.Union[ta.Callable[[K], K2], tuple],
         value_fn: ta.Union[ta.Callable[[V], V2], tuple],
 ) -> ta.Callable[
-    [ta.Optional[ta.Union[ta.Mapping[K, V], ta.Iterable[ta.Tuple[K, V]]]]],
+    [ta.Optional[ta.Union[ta.Mapping[K, V], ta.Iterable[tuple[K, V]]]]],
     ta.Optional[ta.Mapping[K2, V2]],
 ]:
     def inner(src):

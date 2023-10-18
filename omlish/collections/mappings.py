@@ -33,7 +33,7 @@ def guarded_map_update(
     return dst
 
 
-def yield_dict_init(*args, **kwargs) -> ta.Iterable[ta.Tuple[ta.Any, ta.Any]]:
+def yield_dict_init(*args, **kwargs) -> ta.Iterable[tuple[ta.Any, ta.Any]]:
     if len(args) > 1:
         raise TypeError
     if args:

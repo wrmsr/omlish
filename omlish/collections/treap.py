@@ -103,7 +103,7 @@ def split(
         n: ta.Optional[TreapNode[T]],
         v: T,
         c: Comparer[T],
-) -> ta.Tuple[
+) -> tuple[
     ta.Optional[TreapNode[T]],
     ta.Optional[TreapNode[T]],
     ta.Optional[TreapNode[T]],
