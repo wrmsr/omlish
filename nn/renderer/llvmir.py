@@ -153,7 +153,7 @@ def cast(bb, val, input_type, output_type):
     )
 
 
-def uops_to_llvm_ir(function_name: str, uops: list[UOp]) -> str:
+def uops_to_llvm_ir(function_name: str, uops: list[UOp]) -> tuple[str, dict]:
     # all llvm stuff goes into a module
     module = ir.Module(name=__file__)
 
@@ -271,4 +271,4 @@ def uops_to_llvm_ir(function_name: str, uops: list[UOp]) -> str:
             lvars[u] = code_for_op[args](bb[-1], *[lvars[x] for x in vin])
 
     bb[-1].ret_void()
-    return str(module)
+    return str(module), {"binary":False}

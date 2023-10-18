@@ -415,9 +415,16 @@ class Compiled:
     def to_program(self, k):
         k.linearize()
 
-        return ASTRunner.from_linearizer(
-            k,
-            self.renderer(k.function_name, k.uops)
+        src, runtime_args = self.renderer(k.function_name, k.uops)
+        return ASTRunner(
+            k.function_name,
+            src,
+            k.global_size,
+            k.local_size,
+            op_estimate=k.info.flops,
+            mem_estimate=k.mem_estimate,
+            display_name=k.display_name,
+            runtime_args=runtime_args
         ).build(
             self.runtime,
             self.batch_exec,

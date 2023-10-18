@@ -177,7 +177,7 @@ class CStyleLanguage(ta.NamedTuple):
         )
 
 
-def uops_to_cstyle(lang: CStyleLanguage, function_name: str, uops: list[UOp]) -> str:
+def uops_to_cstyle(lang: CStyleLanguage, function_name: str, uops: list[UOp]) -> tuple[str, dict]:
     local_size: list[int] = []
     kernel, prekernel, bufs = [], [], []
     # pend_close = None
@@ -322,4 +322,4 @@ def uops_to_cstyle(lang: CStyleLanguage, function_name: str, uops: list[UOp]) ->
         else:
             raise RuntimeError(f"failed to render {uop}")
 
-    return lang.render_kernel(function_name, kernel, bufs, local_size, prekernel)
+    return lang.render_kernel(function_name, kernel, bufs, local_size, prekernel), {"binary":False}

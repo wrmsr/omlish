@@ -135,7 +135,7 @@ else:
 
 
 class CUDAProgram:
-    def __init__(self, name: str, prg: str, binary=False, shared=0):
+    def __init__(self, name: str, prg: str, binary=False, shared=0, local_size_override=None):
         print(prg)
         print()
         if not binary:
@@ -158,6 +158,7 @@ class CUDAProgram:
         # TODO: name is wrong, so we get it from the ptx using hacks
         self.prg = cuda.module_from_buffer(prg.encode('utf-8')).get_function(prg.split(".visible .entry ")[1].split("(")[0])
         self.shared = shared
+        self.local_size_override = local_size_override
 
     def __call__(self, global_size, local_size, *args, wait=False):
         if wait:
@@ -170,7 +171,7 @@ class CUDAProgram:
                 x
                 for x in args
             ],
-            block=tuple(local_size),
+            block=tuple(local_size if self.local_size_override is None else self.local_size_override),
             grid=tuple(global_size),
             shared=self.shared,
         )
