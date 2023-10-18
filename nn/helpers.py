@@ -156,7 +156,7 @@ class ContextVar:
         return self.value < x
 
 
-DEBUG, IMAGE = ContextVar("DEBUG", 0), ContextVar("IMAGE", 0)
+DEBUG, IMAGE, BEAM = ContextVar("DEBUG", 0), ContextVar("IMAGE", 0), ContextVar("BEAM", 0)
 GRAPH, PRUNEGRAPH, GRAPHPATH = (
     getenv("GRAPH", 0),
     getenv("PRUNEGRAPH", 0),

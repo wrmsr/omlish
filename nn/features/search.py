@@ -42,9 +42,10 @@ def time_linearizer(
         max_global_size=65536,
         cnt=3,
         should_copy=True,
+        disable_cache=False,
 ) -> float:
     key = str((lin.ast, lin.applied_opts))
-    if should_copy and logtm is not None and key in logtm:
+    if should_copy and not disable_cache and logtm is not None and key in logtm:
         return min(logtm[key])  # pylint: disable=E1135 # NOTE: we check should_copy since this may have side effects
     if should_copy:
         lin = lin.copy() # TODO: remove the need for this
@@ -65,7 +66,11 @@ def time_linearizer(
         else:
             factor = 1
         # TODO: this is super broken for var_vals
+        # TODO: this is copied from prg.__call__
         global_size, local_size = prg.launch_dims(var_vals)
+        if local_size is None:
+            local_size = prg.optimize_local_size(global_size, rawbufs)
+            global_size = [g // l if g % l == 0 else g / l for g, l in zip(global_size, local_size)]
         tms = [prg.clprg(global_size, local_size, *rawbufs, *var_vals.values(), wait=True) * factor for _ in range(cnt)]
         prg.global_size = real_global_size
     except Exception:
@@ -126,5 +131,5 @@ def beam_search(lin, rawbufs, amt):
         best_tm = opts[0][1]
         beam = [x[0] for x in opts[:amt]]
         if DEBUG >= 1:
-            print(f"{opts[0][1] * 1e3:10.2f} ms from {len(opts):3d} actions", beam[0].colored_shape())
+            print(f"{opts[0][1]*1e6:12.2f} us from {len(opts):3d} actions", beam[0].colored_shape())
     return beam[0]
