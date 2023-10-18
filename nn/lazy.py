@@ -46,6 +46,8 @@ MERGE_ONE_REDUCE_INTO_ELEMENTWISE = OPT >= 2
 SHUFFLE_PAD_OPS = OPT >= 2
 PUSH_PERMUTES = OPT >= 3
 PUSH_CONTIGUOUS = OPT >= 3
+PUSH_RESHAPES = OPT >= 4
+
 
 # **** ast fixing functions ****
 
@@ -576,16 +578,16 @@ class LazyBuffer:
         arg: ta.Union[tuple[sint, ...], tuple[tuple[sint, sint], ...]],
     ) -> LazyBuffer:
         if (
-            SHUFFLE_MOVEMENT_OPS
-            and issubclass(self.optype, ops.BinaryOp)
-            and not self.realized
-            and (
-                op in {ops.Shrink, ops.Restride, ops.Permute}
-                or (op == ops.Reshape and isinstance(self.op, ops.UnaryOp))
-            )
-            and not self.children
+                SHUFFLE_MOVEMENT_OPS
+                and not self.realized
+                and issubclass(self.optype, ops.BinaryOp)
+                and not self.children
         ):
-            return self.op.replace_with_movement_ops([(op, arg)])
+            if (
+                    op in {ops.Shrink, ops.Restride, ops.Permute}
+                    or (op == ops.Reshape and (isinstance(self.op, ops.UnaryOp) or PUSH_RESHAPES))
+            ):
+                return self.op.replace_with_movement_ops([(op, arg)])
 
         if REMOVE_MOVEMENT_NOPS and not self.realized and st.contiguous:
             # MovementOps aren't stacked any more, they each have one parent, find the root
@@ -667,7 +669,7 @@ class LazyBuffer:
             # move permutes before reshapes if we can
             if (
                 PUSH_PERMUTES
-                and isinstance(self.op == ops.Reshape)
+                and isinstance(self.op, ops.Reshape)
                 and isinstance(self.op.src[0], LazyBuffer)
             ):
                 if shape_idx_groups := get_contraction(
@@ -740,8 +742,8 @@ def _push_movement_ops(srcs: tuple[LazyBuffer, ...]) -> tuple[LazyBuffer, ...]:
             and issubclass(bx.optype, ops.BinaryOp)
             and len(bx.children) <= 1
             and (
-                all(x[0] is not ops.Pad for x in mops)
-                or all(type(x) not in UNSAFE_PAD_OPS for x in bx.op.get_lazyops())
+                all(y[0] is not ops.Pad for y in mops)
+                or all(type(y) not in UNSAFE_PAD_OPS for y in bx.op.get_lazyops())
             )
         ):
             new_srcs.append(bx.op.replace_with_movement_ops(mops[::-1]))
