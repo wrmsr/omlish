@@ -30,6 +30,16 @@ class ImageDType(DType):
     def __repr__(self):
         return f"dtypes.{self.name}({self.shape})"
 
+    # TODO: fix this to not need these
+    def __hash__(self):
+        return hash((super().__hash__(), self.shape))
+
+    def __eq__(self, x):
+        return super().__eq__(x) and self.shape == x.shape
+
+    def __ne__(self, x):
+        return super().__ne__(x) or self.shape != x.shape
+
 
 class PtrDType(DType):
     def __new__(cls, dt: DType):
