@@ -525,21 +525,16 @@ class SumNode(RedNode):
                 else:
                     new_sum.append(x)
             lhs = Node.sum(new_sum)
-            if isinstance(lhs, SumNode):
-                muls, others = partition(
-                    lhs.nodes,
-                    lambda x: isinstance(x, MulNode) and x.b > 0 and x.max >= b,
-                )
-                if muls:
-                    # NOTE: gcd in python 3.8 takes exactly 2 args
-                    mul_gcd = muls[0].b
-                    for x in muls[1:]:
-                        mul_gcd = math.gcd(mul_gcd, x.b)  # type: ignore  # mypy cannot tell x.b is int here
-                    if b % mul_gcd == 0:
-                        all_others = Variable.sum(others)
-                        if all_others.min >= 0 and all_others.max < mul_gcd:
-                            # TODO: should we divide both by mul_gcd here?
-                            lhs = Variable.sum(muls)
+            nodes = lhs.nodes if isinstance(lhs, SumNode) else [lhs]
+            muls, others = partition(nodes, lambda x: isinstance(x, MulNode) and x.b > 0 and x.max >= b)
+            if muls:
+                # NOTE: gcd in python 3.8 takes exactly 2 args
+                mul_gcd = b
+                for x in muls:
+                    mul_gcd = math.gcd(mul_gcd, x.b)  # type: ignore  # mypy cannot tell x.b is int here
+                all_others = Variable.sum(others)
+                if all_others.min >= 0 and all_others.max < mul_gcd:
+                    lhs, b = Variable.sum([mul // mul_gcd for mul in muls]), b // mul_gcd
         return Node.__lt__(lhs, b)
 
     def substitute(self, var_vals: dict[VariableOrNum, Node]) -> Node:
@@ -585,7 +580,7 @@ def sym_render(a: ta.Union[Node, int], ops=None, ctx=None) -> str:
 
 
 def sym_infer(a: ta.Union[Node, int], var_vals: dict[Variable, int]) -> int:
-    if isinstance(a, int):
+    if isinstance(a, (int, float)):
         return a
     ret = a.substitute({k: Variable.num(v) for k, v in var_vals.items()})
     assert isinstance(ret, NumNode), f"sym_infer didn't produce NumNode from {a} with {var_vals}"

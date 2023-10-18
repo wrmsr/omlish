@@ -244,7 +244,7 @@ class ClProgram:
 
         e = self.clprgs[cl_bufs[0].device](
             CL.cl_queue[cl_bufs[0].device],
-            [g * l for g, l in zip(global_size, local_size)]
+            [int(g * l) for g, l in zip(global_size, local_size)]
             if local_size is not None
             else global_size,
             local_size,

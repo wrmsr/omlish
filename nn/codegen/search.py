@@ -6,6 +6,7 @@ from ..codegen.linearizer import Linearizer
 from ..codegen.optimizer import Opt
 from ..codegen.optimizer import OptOps
 from ..devices import Device
+from ..dtypes import ImageDType
 from ..execution import Compiled
 from ..execution import MemBuffer
 from ..helpers import flatten
@@ -74,7 +75,10 @@ def bufs_from_lin(lin: Linearizer) -> list[RawBuffer]:
     for x in lin.membufs: bufsts[x.idx].append(x)
     rawbufs: list[ta.Optional[RawBuffer]] = [None] * len(bufsts)
     for k, lx in bufsts.items():
-        rawbufs[k] = device.buffer(max(y.st.size() for y in lx), lx[0].dtype)
+        rawbufs[k] = device.buffer(
+            prod(lx[0].dtype.shape) if isinstance(lx[0].dtype, ImageDType) else max(y.st.size() for y in lx),
+            lx[0].dtype,
+        )
     assert all(r is not None for r in rawbufs)
     return ta.cast(list[RawBuffer], rawbufs)
 
