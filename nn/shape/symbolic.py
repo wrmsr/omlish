@@ -409,6 +409,11 @@ class DivNode(OpNode):
 
 
 class ModNode(OpNode):
+    def __mod__(self, b: ta.Union[Node, int]):
+        if isinstance(b, Node) or isinstance(self.b, Node):
+            return Node.__mod__(self, b)
+        return self.a % b if math.gcd(self.b, b) == b else Node.__mod__(self, b)
+
     def __floordiv__(self, b: ta.Union[Node, int], factoring_allowed=True):
         if self.b % b == 0:
             return (self.a // b) % (self.b // b)  # put the div inside mod
