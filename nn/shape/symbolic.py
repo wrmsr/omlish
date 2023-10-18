@@ -361,10 +361,11 @@ class LtNode(OpNode):
 
 
 class MulNode(OpNode):
-    def __mod__(self, b: ta.Union[Node, int]):
-        if isinstance(b, Node) or isinstance(self.b, Node):
-            return Node.__mod__(self, b)
-        return self.a % b if math.gcd(self.b, b) == b else Node.__mod__(self, b)
+    def __lt__(self, b: ta.Union[Node, int]):
+        if isinstance(b, Node) or isinstance(self.b, Node) or self.b == -1:
+            return Node.__lt__(self, b)
+        sgn = 1 if self.b > 0 else -1
+        return Node.__lt__(self.a*sgn, (b + abs(self.b) - 1)//abs(self.b))
 
     def __mul__(self, b: ta.Union[Node, int]):
         return self.a * (self.b * b)  # two muls in one mul
