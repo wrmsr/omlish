@@ -57,19 +57,19 @@ class SortedCollection(lang.Abstract, ta.Collection[T]):
 class SortedMapping(ta.Mapping[K, V]):
 
     @abc.abstractmethod
-    def items(self) -> ta.Iterator[ta.Tuple[K, V]]:  # type: ignore
+    def items(self) -> ta.Iterator[tuple[K, V]]:  # type: ignore
         raise NotImplementedError
 
     @abc.abstractmethod
-    def ritems(self) -> ta.Iterator[ta.Tuple[K, V]]:
+    def ritems(self) -> ta.Iterator[tuple[K, V]]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def itemsfrom(self, key: K) -> ta.Iterator[ta.Tuple[K, V]]:
+    def itemsfrom(self, key: K) -> ta.Iterator[tuple[K, V]]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def ritemsfrom(self, key: K) -> ta.Iterator[ta.Tuple[K, V]]:
+    def ritemsfrom(self, key: K) -> ta.Iterator[tuple[K, V]]:
         raise NotImplementedError
 
 
@@ -80,7 +80,7 @@ class SortedMutableMapping(ta.MutableMapping[K, V], SortedMapping[K, V]):
 class SortedListDict(SortedMutableMapping[K, V]):
 
     @staticmethod
-    def _item_comparator(a: ta.Tuple[K, V], b: ta.Tuple[K, V]) -> int:
+    def _item_comparator(a: tuple[K, V], b: tuple[K, V]) -> int:
         return SortedCollection.default_comparator(a[0], b[0])
 
     def __init__(self, impl: SortedCollection, *args, **kwargs) -> None:
@@ -113,14 +113,14 @@ class SortedListDict(SortedMutableMapping[K, V]):
         for k, v in self._impl:
             yield k
 
-    def items(self) -> ta.Iterator[ta.Tuple[K, V]]:  # type: ignore
+    def items(self) -> ta.Iterator[tuple[K, V]]:  # type: ignore
         yield from self._impl.iter()
 
-    def ritems(self) -> ta.Iterator[ta.Tuple[K, V]]:
+    def ritems(self) -> ta.Iterator[tuple[K, V]]:
         yield from self._impl.riter()
 
-    def itemsfrom(self, key: K) -> ta.Iterator[ta.Tuple[K, V]]:
+    def itemsfrom(self, key: K) -> ta.Iterator[tuple[K, V]]:
         yield from self._impl.iter((key, None))
 
-    def ritemsfrom(self, key: K) -> ta.Iterator[ta.Tuple[K, V]]:
+    def ritemsfrom(self, key: K) -> ta.Iterator[tuple[K, V]]:
         yield from self._impl.riter((key, None))

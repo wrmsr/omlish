@@ -57,13 +57,13 @@ def _unpack_isinstance_spec(spec: ta.Any) -> tuple:
     return spec
 
 
-def isinstance(v: ta.Any, spec: ta.Union[ta.Type[T], ta.Tuple], msg: Message = None) -> T:  # noqa
+def isinstance(v: ta.Any, spec: ta.Union[ta.Type[T], tuple], msg: Message = None) -> T:  # noqa
     if not _isinstance(v, _unpack_isinstance_spec(spec)):
         _raise(TypeError, 'Must be instance', msg, v, spec)
     return v
 
 
-def of_isinstance(spec: ta.Union[ta.Type[T], ta.Tuple], msg: Message = None) -> ta.Callable[[ta.Any], T]:
+def of_isinstance(spec: ta.Union[ta.Type[T], tuple], msg: Message = None) -> ta.Callable[[ta.Any], T]:
     def inner(v):
         return isinstance(v, _unpack_isinstance_spec(spec), msg)
 

@@ -21,7 +21,7 @@ from .utils import create_fn
 MISSING = dc.MISSING
 
 
-def fields_in_init_order(fields: ta.Sequence[dc.Field]) -> ta.Tuple[ta.Sequence[dc.Field], ta.Sequence[dc.Field]]:
+def fields_in_init_order(fields: ta.Sequence[dc.Field]) -> tuple[ta.Sequence[dc.Field], ta.Sequence[dc.Field]]:
     return (
         tuple(f for f in fields if f.init and not f.kw_only),
         tuple(f for f in fields if f.init and f.kw_only),

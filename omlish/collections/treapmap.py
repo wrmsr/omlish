@@ -33,8 +33,8 @@ class TreapMap(PersistentMap[K, V]):
     def __init__(
             self,
             *,
-            _n: ta.Optional[treap.TreapNode[ta.Tuple[K, V]]],
-            _c: treap.Comparer[ta.Tuple[K, V]],
+            _n: ta.Optional[treap.TreapNode[tuple[K, V]]],
+            _c: treap.Comparer[tuple[K, V]],
     ) -> None:
         super().__init__()
 
@@ -65,7 +65,7 @@ class TreapMap(PersistentMap[K, V]):
             raise KeyError(item)
         return n.value
 
-    def __iter__(self) -> ta.Iterator[ta.Tuple[K, V]]:
+    def __iter__(self) -> ta.Iterator[tuple[K, V]]:
         i = self.iterate()
         while i.has_next():
             yield i.next()
@@ -104,7 +104,7 @@ class TreapMap(PersistentMap[K, V]):
             return self
 
 
-def new_treap_map(cmp: ta.Callable[[ta.Tuple[K, V], ta.Tuple[K, V]], int]) -> PersistentMap[K, V]:
+def new_treap_map(cmp: ta.Callable[[tuple[K, V], tuple[K, V]], int]) -> PersistentMap[K, V]:
     return TreapMap(_n=None, _c=cmp)
 
 
@@ -114,8 +114,8 @@ class TreapMapIterator(ta.Generic[K, V]):
     def __init__(
             self,
             *,
-            _st: list[treap.TreapNode[ta.Tuple[K, V]]],
-            _n: ta.Optional[treap.TreapNode[ta.Tuple[K, V]]],
+            _st: list[treap.TreapNode[tuple[K, V]]],
+            _n: ta.Optional[treap.TreapNode[tuple[K, V]]],
             _b: bool,
     ) -> None:
         super().__init__()
@@ -127,7 +127,7 @@ class TreapMapIterator(ta.Generic[K, V]):
     def has_next(self) -> bool:
         return self._n is not None
 
-    def next(self) -> ta.Tuple[K, V]:
+    def next(self) -> tuple[K, V]:
         n = self._n
         if n is None:
             raise StopIteration

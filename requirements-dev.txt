@@ -8,11 +8,12 @@ pytest-xdist==3.3.1
 flake8==6.1.0
 flake8-pyproject==1.2.3
 
-black==23.9.1
+black==23.10.0
 gprof2dot==2022.7.29
-mypy==1.5.1
+mypy==1.6.1
 pipdeptree==2.13.0
 
 ipython==8.16.1
 
+mycli==1.27.0; python_version < '3.12'
 pgcli==3.5.0; python_version < '3.12'

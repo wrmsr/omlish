@@ -20,7 +20,7 @@ class PersistentMap(ta.Generic[K, V], abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def __iter__(self) -> ta.Iterator[ta.Tuple[K, V]]:
+    def __iter__(self) -> ta.Iterator[tuple[K, V]]:
         raise NotImplementedError
 
     @abc.abstractmethod

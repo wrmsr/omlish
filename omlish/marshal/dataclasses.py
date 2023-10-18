@@ -24,7 +24,7 @@ class Field:
 
 @dc.dataclass(frozen=True)
 class DataclassMarshaler(Marshaler):
-    flds: ta.Sequence[ta.Tuple[str, Marshaler, str]]
+    flds: ta.Sequence[tuple[str, Marshaler, str]]
 
     def marshal(self, ctx: MarshalContext, o: ta.Any) -> Value:
         return {k: m.marshal(ctx, getattr(o, a)) for a, m, k in self.flds}
@@ -33,7 +33,7 @@ class DataclassMarshaler(Marshaler):
 class DataclassMarshalerFactory(MarshalerFactory):
     def __call__(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Optional[Marshaler]:
         if isinstance(rty, type) and dc.is_dataclass(rty):
-            flds: list[ta.Tuple[str, Marshaler, str]] = []
+            flds: list[tuple[str, Marshaler, str]] = []
             th = ta.get_type_hints(rty)
             for fld in dc.fields(rty):
                 fty = th[fld.name]
@@ -50,7 +50,7 @@ class DataclassMarshalerFactory(MarshalerFactory):
 @dc.dataclass(frozen=True)
 class DataclassUnmarshaler(Unmarshaler):
     cls: type
-    flds: ta.Sequence[ta.Tuple[str, Unmarshaler, str]]
+    flds: ta.Sequence[tuple[str, Unmarshaler, str]]
 
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any:
         ma = check.isinstance(v, collections.abc.Mapping)
@@ -60,7 +60,7 @@ class DataclassUnmarshaler(Unmarshaler):
 class DataclassUnmarshalerFactory(UnmarshalerFactory):
     def __call__(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Optional[Unmarshaler]:
         if isinstance(rty, type) and dc.is_dataclass(rty):
-            flds: list[ta.Tuple[str, Unmarshaler, str]] = []
+            flds: list[tuple[str, Unmarshaler, str]] = []
             th = ta.get_type_hints(rty)
             for fld in dc.fields(rty):
                 fty = th[fld.name]

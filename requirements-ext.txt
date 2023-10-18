@@ -4,15 +4,15 @@
 ### nn
 
 matplotlib==3.8.0
-numpy==1.26.0
+numpy==1.26.1
 
-huggingface_hub==0.17.3
+huggingface_hub==0.18.0
 
 ##
 
-llvmlite==0.41.0
+llvmlite==0.41.1
 
-pyopencl==2023.1.2
+pyopencl==2023.1.4
 
 pycuda==2022.2.2; sys_platform != 'darwin'
 
@@ -26,11 +26,13 @@ pyobjc-framework-metal==10.0; sys_platform == 'darwin'
 pandas==2.1.1
 
 opencv-python==4.8.1.78
-pillow==10.0.1
+pillow==10.1.0
 
 onnx==1.14.1
 
 sentencepiece==0.1.99
+
+tiktoken==0.5.1
 
 ##
 
@@ -45,7 +47,7 @@ torchvision==0.16.0
 
 networkx==3.1
 
-nevergrad==0.14.0
+nevergrad==1.0.0
 
 unicorn==2.0.1.post1
 
@@ -59,15 +61,15 @@ google-cloud-compute==1.14.1
 
 ### hn
 
-selectolax==0.3.16
+selectolax==0.3.17
 
 soco==0.29.1
 
 sounddevice==0.4.6
-vosk==0.3.44
+vosk==0.3.45
 
-bellows==0.36.5
-zigpy==0.57.2
+bellows==0.36.6
+zigpy==0.58.1
 
 # python-openzwave
 zwave-js-server-python==0.52.1

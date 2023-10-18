@@ -43,7 +43,7 @@ STANDARD_LOG_FORMAT_PARTS = [
 ]
 
 
-def build_log_format(parts: ta.Iterable[ta.Tuple[str, str]]) -> str:
+def build_log_format(parts: ta.Iterable[tuple[str, str]]) -> str:
     return ' '.join(v for k, v in parts)
 
 
