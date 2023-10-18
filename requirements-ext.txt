@@ -66,7 +66,7 @@ selectolax==0.3.17
 soco==0.29.1
 
 sounddevice==0.4.6
-vosk==0.3.45
+# vosk==0.3.45
 
 bellows==0.36.6
 zigpy==0.58.1
