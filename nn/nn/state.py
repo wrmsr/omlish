@@ -47,7 +47,7 @@ def safe_load(fn: ta.Union[Tensor, str]) -> dict[str, Tensor]:
     }
 
 
-def safe_save(tensors: dict[str, Tensor], fn: str, metadata: ta.Optional[dict[str, Any]] = None):
+def safe_save(tensors: dict[str, Tensor], fn: str, metadata: ta.Optional[dict[str, ta.Any]] = None):
     headers, offset = {}, 0
     if metadata: headers['__metadata__'] = metadata
     for k, v in tensors.items():
