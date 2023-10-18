@@ -6,7 +6,7 @@ import itertools
 import math
 import typing as ta
 
-from ..helpers import partition
+from omlish import collections as col
 
 
 # NOTE: Python has different behavior for negative mod and floor div than c
@@ -527,7 +527,7 @@ class SumNode(RedNode):
                     new_sum.append(x)
             lhs = Node.sum(new_sum)
             nodes = lhs.nodes if isinstance(lhs, SumNode) else [lhs]
-            muls, others = partition(nodes, lambda x: isinstance(x, MulNode) and x.b > 0 and x.max >= b)
+            muls, others = col.partition(nodes, lambda x: isinstance(x, MulNode) and x.b > 0 and x.max >= b)
             if muls:
                 # NOTE: gcd in python 3.8 takes exactly 2 args
                 mul_gcd = b

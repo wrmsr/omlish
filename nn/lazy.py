@@ -16,7 +16,6 @@ from .dtypes import dtypes
 from .execution import ConstBuffer
 from .execution import MemBuffer
 from .execution import ScheduleItem
-from .helpers import dedup
 from .helpers import flatten
 from .helpers import getenv
 from .helpers import merge_dicts
@@ -121,7 +120,7 @@ def _ast_binaryops(op: LazyOp, shape: tuple[sint, ...]) -> LazyOp:
 
 def _replace_bufferops(op: LazyOp) -> tuple[LazyOp, list[LazyBuffer]]:
     replacements: dict[LazyBuffer, LazyOp] = {}
-    base_bufs = dedup([x.base for x in op.buffers if not x.is_unrealized_const()])
+    base_bufs = col.unique([x.base for x in op.buffers if not x.is_unrealized_const()])
     for x in op.buffers:
         st = x.st.simplify().unbind()
         if x.base in base_bufs:
@@ -174,7 +173,7 @@ def get_movementroot_contiguous(x: LazyBuffer) -> LazyBuffer:
 
 
 def vars_from_ast(ast: LazyOp) -> list[Variable]:
-    return dedup(
+    return col.unique(
         functools.reduce(
             operator.add,
             [

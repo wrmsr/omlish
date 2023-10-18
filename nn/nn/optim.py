@@ -1,4 +1,5 @@
-from ..helpers import dedup
+from omlish import collections as col
+
 from ..tensor import Tensor
 
 
@@ -11,8 +12,8 @@ class Optimizer:
             if x.requires_grad is None:
                 x.requires_grad = True
 
-        self.params: list[Tensor] = dedup([x for x in params if x.requires_grad])
-        self.buffers: list[Tensor] = dedup(
+        self.params: list[Tensor] = col.unique([x for x in params if x.requires_grad])
+        self.buffers: list[Tensor] = col.unique(
             [x for x in params if not x.requires_grad]
         )  # buffers are still realized
         self.lr = Tensor([lr], requires_grad=False).contiguous()

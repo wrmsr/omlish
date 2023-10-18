@@ -2,7 +2,9 @@ import copy
 import itertools
 import typing as ta
 
+from omlish import collections as col
 from omlish import dataclasses as dc
+
 from .. import ops
 from ..devices import Device
 from ..dtypes import DType
@@ -15,7 +17,6 @@ from ..execution import get_lazyop_info
 from ..helpers import all_int
 from ..helpers import ansilen
 from ..helpers import colored
-from ..helpers import dedup
 from ..ops import LazyOp
 from ..shape.shapetracker import ShapeTracker
 from ..shape.symbolic import sint
@@ -124,13 +125,13 @@ class Kernel:
 
         # there's only allowed to be one reduceop
         reduceops = [x for x in self.ast.get_lazyops() if isinstance(x, ops.ReduceOp)]
-        assert len(dedup(reduceops)) <= 1, "max one reduce op in an ast"
+        assert len(col.unique(reduceops)) <= 1, "max one reduce op in an ast"
         self.reduceop = reduceops[0] if reduceops else None
 
         # create new shapetrackers inside this kernel, we will permute them
         self.bufs = [
             MemBuffer(0, self.info.dtype, ShapeTracker.from_shape(self.info.shape))
-        ] + dedup([x.arg for x in self.ast.get_lazyops() if isinstance(x, ops.BufferOp)])
+        ] + col.unique([x.arg for x in self.ast.get_lazyops() if isinstance(x, ops.BufferOp)])
         self.sts: list[ShapeTracker] = [x.st for x in self.bufs]
 
         self.mem_estimate: int = sum(x.dtype.itemsize * x.st.size() for x in self.bufs)
