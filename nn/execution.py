@@ -469,15 +469,9 @@ class Compiled:
             k = Linearizer(ast, self.linearizer_opts)
 
             assert k.info.dtype == output.dtype, f"linearizer must match dtype. linearizer wants {k.info.dtype} but buffer is {output.dtype}"
-            from .features.kopt import kernel_optimize
-            if getenv("KOPT"):
-                kernel_optimize(
-                    k,
-                    lambda: Linearizer(ast, self.linearizer_opts),
-                    self.to_program,
-                    rawbuffers,
-                    ast,
-                )
+            if getenv("BEAM"):
+                from .features.search import beam_search
+                k = beam_search(k, rawbuffers, getenv("BEAM"))
             elif not getenv("NOOPT"):
                 if not k.apply_tensor_cores(getenv("TC", 1)):
                     k.hand_coded_optimizations()
