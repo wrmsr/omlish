@@ -42,6 +42,7 @@ VariableOrNum = ta.Union[Variable, NumNode, Node]
 # bottom ones are asm only
 class UOps(enum.Enum):
     LOOP = enum.auto()
+    IF = enum.auto()
     END = enum.auto()
     SPECIAL = enum.auto()  # loops can be global, local, or other # noqa: E702
     DEFINE_GLOBAL = enum.auto()
@@ -470,6 +471,7 @@ class Linearizer(OptimizedKernel):
         loaded_buffers = {}
         acc = []
         self.load_cache: dict[str, UOp] = {}
+        if_gate: Optional[UOp] = None
 
         # reduce op
         fake_reduce_idxs = []
@@ -673,7 +675,10 @@ class Linearizer(OptimizedKernel):
                     acc,
                 )  # store accumulators
                 self.uop(UOps.BARRIER, None, (), cachable=False)
-                end_loop(loop_local_idxs)
+                end_loop(loop_local_idxs)  # TODO: this is ending too much, should only end what's in the if?
+                if self.opts.has_local:
+                    if_cond: UOp = Variable.ands([x < 1 for x in local_idxs[self.local_dims:]]).render(self.render_ops, self)
+                    if_gate = self.uop(UOps.IF, None, (if_cond,), cachable=False)
 
                 # create new late reduce local loops and replace local_idxs that have been used
                 end_local_idxs = [
@@ -756,6 +761,8 @@ class Linearizer(OptimizedKernel):
         )
 
         # end the global (and maybe local) loop
+        if if_gate:
+            self.uop(UOps.END, None, (if_gate,))
         end_loop(
             loop_global_idxs + loop_local_idxs
             if not self.group_for_reduce
