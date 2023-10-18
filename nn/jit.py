@@ -10,11 +10,13 @@ from .dtypes import ImageDType
 from .execution import ASTRunner
 from .execution import BasicBatchExecutor
 from .helpers import DEBUG
+from .helpers import getenv
 from .helpers import merge_dicts
 from .runtime.lib import RawBuffer
 from .shape.shapetracker import ShapeTracker
 from .shape.symbolic import Variable
 from .tensor import Tensor
+
 
 JIT_SUPPORTED_DEVICE = ["OPENCL", "CLANG", "METAL", "CUDA", "HIP", "WEBGPU", "LLVM"]
 
@@ -242,13 +244,14 @@ class _CacheCollector:
         return all(en < start or end < st for st, en in usages)
 
     def _can_substitute(self, buf, with_buf):
-        return buf._device == with_buf._device and (
-            buf.size * buf.dtype.itemsize <= with_buf.size * with_buf.dtype.itemsize
-            if not isinstance(buf.dtype, ImageDType)
-            and not isinstance(with_buf.dtype, ImageDType)
-            else buf.size == with_buf.size
-            and buf.dtype == with_buf.dtype
-            and buf.dtype.shape == with_buf.dtype.shape
+        if getenv("NO_BUFFER_REUSE"): return False
+        return (
+            buf._device == with_buf._device
+            and (
+                buf.size * buf.dtype.itemsize <= with_buf.size * with_buf.dtype.itemsize
+                if not isinstance(buf.dtype, ImageDType) and not isinstance( with_buf.dtype, ImageDType) else
+                buf.size == with_buf.size and buf.dtype == with_buf.dtype and buf.dtype.shape == with_buf.dtype.shape
+            )
         )
 
     def _mark_output_buffer(self, output_buffer):

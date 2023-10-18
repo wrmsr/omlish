@@ -358,7 +358,7 @@ class ASTRunner:
                 local_size,
                 *rawbufs,
                 *var_vals.values(),
-                wait=force_wait or DEBUG >= 1,
+                wait=force_wait or DEBUG >= 2,
         ):
             GlobalCounters.time_sum_s += et
 

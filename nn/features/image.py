@@ -45,7 +45,7 @@ def image_dot(self, w):
     cx = self.permute(order=order).reshape(shape=(bs // groups, groups * cin, -1, 1))
     # groups*cout x cin x H, W
     cw = w.permute(order=worder).reshape(shape=(groups * cout, cin, 1, 1))
-    return cx.conv2d(cw, groups=groups).reshape(shape=out_shape_t).permute(order=order)
+    return image_conv2d(cx, cw, groups=groups).reshape(shape=out_shape_t).permute(order=order)
 
 
 def image_conv2d(self, weight, bias=None, groups=1, stride=1, dilation=1, padding=0):
@@ -160,7 +160,7 @@ def image_conv2d(self, weight, bias=None, groups=1, stride=1, dilation=1, paddin
 
 def fix_schedule_for_images(schedule: list[ScheduleItem]):
     # this is the fundamental fix, find unwritable or unreadable images and convert them to normal float32 (TODO: should it be float16?)
-    for si in schedule:
+    for i, si in enumerate(schedule):
         if (
             isinstance(si.out.dtype, ImageDType)
             and (
@@ -168,6 +168,8 @@ def fix_schedule_for_images(schedule: list[ScheduleItem]):
                 or not any(si.out.shape[x] % 4 == 0 for x in si.out.st.unit_stride_axes())
             )
         ):
+            if DEBUG >= 1:
+                print(f"{i:3d}: rewrite output, output shape {prod(si.out.shape)}, image dtype {si.out.dtype} prod {prod(si.out.dtype.shape)}")
             si.out.dtype = dtypes.float32
         for b in si.ast.get_lazyops():
             if not isinstance(b, ops.Mem):
@@ -179,11 +181,13 @@ def fix_schedule_for_images(schedule: list[ScheduleItem]):
                     or not any(b.arg.st.shape[x] % 4 == 0 for x in b.arg.st.unit_stride_axes())
                 )
             ):
+                if DEBUG >= 1:
+                    print(f"{i:3d}: rewrite input, image dtype {si.inputs[b.arg.idx - 1].dtype}")
                 si.inputs[b.arg.idx - 1].dtype = dtypes.float32
 
     # now fix up the schedule to reflect the new dtypes
     fixed_schedule: list[ScheduleItem] = []
-    for si in schedule:
+    for i, si in enumerate(schedule):
         ast = si.ast
         # fix input dtypes to match what they actually are
         replacements = {}
@@ -199,6 +203,8 @@ def fix_schedule_for_images(schedule: list[ScheduleItem]):
         if not isinstance(ast, ops.LoadOp):
             info = get_lazyop_info(ast)
             if info.dtype != si.out.dtype:
+                if DEBUG >= 3:
+                    print(f"{i:3d}: info.dtype {info.dtype} != {si.out.dtype} -> {si.out.dtype}")
                 ast = ops.Cast((ast,), (si.out.dtype, False))
 
         # put this in the fixed schedule

@@ -20,7 +20,6 @@ from .helpers import dedup
 from .helpers import flatten
 from .helpers import getenv
 from .helpers import merge_dicts
-from .helpers import partition
 from .helpers import prod
 from .ops import LazyOp
 from .runtime.lib import RawBuffer

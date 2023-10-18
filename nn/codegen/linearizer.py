@@ -364,7 +364,7 @@ class Linearizer(OptimizedKernel):
             )
 
         # print
-        if DEBUG >= 3:
+        if DEBUG >= 4:
             self.printbufs()
 
         # kernel name (before late upcast)
