@@ -10,6 +10,7 @@ import numpy as np
 
 from . import ops
 from .dtypes import DType
+from .helpers import BEAM
 from .helpers import DEBUG
 from .helpers import GlobalCounters
 from .helpers import ansilen
@@ -469,13 +470,31 @@ class Compiled:
             k = Linearizer(ast, self.linearizer_opts)
 
             assert k.info.dtype == output.dtype, f"linearizer must match dtype. linearizer wants {k.info.dtype} but buffer is {output.dtype}"
-            if getenv("BEAM"):
-                from .features.search import beam_search
-                k = beam_search(k, rawbuffers, getenv("BEAM"))
-            elif not getenv("NOOPT"):
-                if not k.apply_tensor_cores(getenv("TC", 1)):
-                    k.hand_coded_optimizations()
+            if not getenv("NOOPT"):
+                if not k.apply_tensor_cores(getenv("TC", 1)): k.hand_coded_optimizations()
+                if BEAM:
+                    kb = Linearizer(ast, self.linearizer_opts)
+                    kb.required_optimizations()
+                    kb.dont_use_locals = bool(getenv("NOLOCALS"))
+                    from .features.search import beam_search, time_linearizer
+                    kb = beam_search(kb, rawbuffers, BEAM.value)
+                    baseline = time_linearizer(
+                        k,
+                        rawbuffers,
+                        allow_test_size=False,
+                        disable_cache=True
+                    )
+                    beamtime = time_linearizer(
+                        kb,
+                        rawbuffers,
+                        allow_test_size=False,
+                        disable_cache=True,
+                    )
 
+                    if beamtime < baseline:
+                        if DEBUG >= 1: print(
+                            f"beam search {beamtime * 1e6:<12.2f} beat baseline {baseline * 1e6:<12.2f} by {baseline / beamtime:.2f}x")
+                        k = kb
             return self.to_program(k)
 
         if getenv("ENABLE_METHOD_CACHE", 1):
