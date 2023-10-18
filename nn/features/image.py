@@ -9,6 +9,7 @@ from ..execution import MemBuffer
 from ..execution import get_lazyop_info
 from ..helpers import DEBUG
 from ..helpers import IMAGE
+from ..helpers import flatten
 from ..helpers import getenv
 from ..helpers import prod
 from ..lazy import ScheduleItem
@@ -73,24 +74,18 @@ def image_conv2d(self, weight, bias=None, groups=1, stride=1, dilation=1, paddin
         w = w.slice(tuple((0, rcout) if i == 1 else (0, s) for i, s in enumerate(w.shape)))
 
     # packed (note: flipping bs and iy would make the auto-padding work)
-    x = x.permute(0, 2, 3, 1).reshape(bs * iy, ix * groups * cin // 4, 4)
+    x = x.permute(0, 2, 3, 1)
     cin_last = iy == 1 and ix == 1
     if cin == 1:
-        w = w.reshape(cout // 4, 4, H * W).permute(0, 2, 1)
+        w = w.reshape(cout // 4, 4, H, W).permute(0, 2, 3, 1)
     elif cin_last:
-        w = w.\
-            reshape(cout // 4, 4, cin // 4, 4, H, W).\
-            permute(0, 4, 2, 5, 1, 3).\
-            reshape(cout // 4, H * cin // 4 * W * 4, 4)
+        w = w.reshape(cout // 4, 4, cin // 4, 4, H, W).permute(0, 4, 2, 5, 1, 3)
     else:
-        w = w.\
-            reshape(cout // 4, 4, cin // 4, 4, H, W).\
-            permute(0, 4, 2, 5, 3, 1).\
-            reshape(cout // 4, H * cin // 4 * W * 4, 4)
+        w = w.reshape(cout // 4, 4, cin // 4, 4, H, W).permute(0, 4, 2, 5, 3, 1)
 
     # contiguous creates the image, and early realize static weights (TODO: test for the static weight)
     if IMAGE >= 2:
-        x, w = x.cast(base_image_type(x.shape)), w.cast(base_image_type(w.shape))
+        x, w = x.cast(base_image_type((bs * iy, ix * groups * cin // 4, 4))), w.cast(base_image_type((cout // 4, H * W * cin, 4)))
     x, w = x.contiguous(), w.contiguous()
     if getenv("PREREALIZE", 1) and get_single_root(w.lazydata).realized:
         w.realize()
@@ -135,14 +130,10 @@ def image_conv2d(self, weight, bias=None, groups=1, stride=1, dilation=1, paddin
     w = w.reshape((1, 1, 1, *cout_expand, rcin_hi, rcin_lo, H, W)).expand(x.shape)
 
     # the conv! (+ the bias)
-    ret = (x * w).cast(dtypes.float32).sum((-4, -3, -2, -1))
-
-    # reshape to image and cast back to image
-    ret = ret.reshape(bs * oy, ox * cout // 4, 4)
+    ret = x * w
     if IMAGE >= 2:
-        ret = ret.cast(base_image_type(ret.shape))
-    if IMAGE >= 3:
-        ret = ret.contiguous()
+        ret = ret.cast(base_image_type((bs * oy, ox * cout // 4, 4)))
+    ret = ret.sum((-4, -3, -2, -1))
 
     # undo hack for non multiples of 4 on C.rcout
     if added_output_channels != 0:
@@ -160,6 +151,7 @@ def image_conv2d(self, weight, bias=None, groups=1, stride=1, dilation=1, paddin
 
 def fix_schedule_for_images(schedule: list[ScheduleItem]):
     # this is the fundamental fix, find unwritable or unreadable images and convert them to normal float32 (TODO: should it be float16?)
+    replace_inputs = {}
     for i, si in enumerate(schedule):
         if (
             isinstance(si.out.dtype, ImageDType)
@@ -174,6 +166,7 @@ def fix_schedule_for_images(schedule: list[ScheduleItem]):
         for b in si.ast.get_lazyops():
             if not isinstance(b, ops.Mem):
                 continue
+            # TODO: unit_stride axes will fail if there's a mask, even if the mask is divisble by four. this is too aggressive
             if (
                 isinstance(si.inputs[b.arg.idx - 1].dtype, ImageDType)
                 and (
@@ -182,20 +175,32 @@ def fix_schedule_for_images(schedule: list[ScheduleItem]):
                 )
             ):
                 if DEBUG >= 1:
-                    print(f"{i:3d}: rewrite input, image dtype {si.inputs[b.arg.idx - 1].dtype}")
-                si.inputs[b.arg.idx - 1].dtype = dtypes.float32
+                    print(f"{i:3d}: rewrite input, image dtype {si.inputs[b.arg.idx - 1].dtype}, {b.arg.st.views}")
+                if si.inputs[b.arg.idx - 1].realized:
+                    # have to copy it
+                    replace_inputs[si.inputs[b.arg.idx - 1]] = si.inputs[b.arg.idx - 1].cast(dtypes.float32)
+                else:
+                    # change it before it's created
+                    si.inputs[b.arg.idx - 1].dtype = dtypes.float32
 
     # now fix up the schedule to reflect the new dtypes
     fixed_schedule: list[ScheduleItem] = []
     for i, si in enumerate(schedule):
         ast = si.ast
+        inputs = si.inputs
+
+        # replace inputs with casted versions
+        if any(x in replace_inputs for x in inputs):
+            fixed_schedule += flatten([replace_inputs[x].schedule() for x in inputs if x in replace_inputs])
+            inputs = tuple(replace_inputs.get(x, x) for x in inputs)
+
         # fix input dtypes to match what they actually are
         replacements = {}
         for b in si.ast.get_lazyops():
             if not isinstance(b, ops.Mem):
                 continue
-            if b.arg.dtype != si.inputs[b.arg.idx - 1].dtype:
-                replacements[b] = ops.Mem((), MemBuffer(b.arg.idx, si.inputs[b.arg.idx - 1].dtype, b.arg.st))
+            if b.arg.dtype != inputs[b.arg.idx - 1].dtype:
+                replacements[b] = ops.Mem((), MemBuffer(b.arg.idx, inputs[b.arg.idx - 1].dtype, b.arg.st))
         if replacements:
             ast = ast.map_buffers(replacements)
 
@@ -208,7 +213,7 @@ def fix_schedule_for_images(schedule: list[ScheduleItem]):
                 ast = ops.Cast((ast,), (si.out.dtype, False))
 
         # put this in the fixed schedule
-        fixed_schedule.append(dc.replace(si, ast=ast))
+        fixed_schedule.append(dc.replace(si, ast=ast, inputs=inputs))
     return fixed_schedule
 
 
@@ -228,6 +233,8 @@ def to_image_idx(base_shape: tuple[int, ...], idxy: Node, valid: Node) -> tuple[
             assert isinstance(node, LtNode)
             node_flat, node_vars = node.a.flat_components if isinstance(node.a, SumNode) else [node.a], node.vars()
             same_sym = [i for (i, var) in idxy_flat_var if var in node_vars]
+            if len(same_sym) == 0:
+                continue
             first, second = sorted(same_sym)[0], sorted(node_flat)[0]
             f_b = 1 if isinstance(first, Variable) else first.b
             s_b = 1 if isinstance(second, Variable) else second.b
@@ -262,6 +269,6 @@ def to_image_idx(base_shape: tuple[int, ...], idxy: Node, valid: Node) -> tuple[
                 ones.append(node)
         valid = Variable.ands([i for i in nodes if i not in ones])
 
-    if DEBUG >= 5:
-        print("to_image_idx", base_shape, idx.min, idx.max, idy.min, idy.max, idx, idy)
+    if DEBUG>=5:
+        print("to_image_idx", base_shape, idx.min, idx.max, idy.min, idy.max, idx, idy, valid)
     return (idx, idy), valid

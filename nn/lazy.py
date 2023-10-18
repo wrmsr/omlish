@@ -458,6 +458,9 @@ class LazyBuffer:
             RawNumpyBuffer.fromCpu(x),
         )
 
+    def cast(self, dtype: DType, bitcast: bool = False):
+        return self.e(ops.Cast, arg=(dtype, bitcast))
+
     # *** elementwise ops ***
 
     def e(
@@ -649,7 +652,7 @@ class LazyBuffer:
         if not self.realized and issubclass(self.optype, ops.Permute):
             return self.op.src[0].permute(tuple([self.op.arg[i] for i in arg]))
 
-        if not self.realized:
+        if SHUFFLE_MOVEMENT_OPS and not self.realized:
             if PUSH_PERMUTES and isinstance(self.op, ops.ReduceOp):
                 # reduceops have one buffer input, permute it
                 narg = tuple([self.op.arg[a] for a in arg])
