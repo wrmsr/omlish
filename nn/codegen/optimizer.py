@@ -496,6 +496,7 @@ class OptimizedKernel(Kernel):
                 and self.reduceop
                 and isinstance(self.reduceop, ops.Sum)
                 and len(self.full_shape) >= 2
+                and self.opts.has_shared
                 and isinstance(self.reduceop.src[0], LazyOp)
                 and isinstance(self.reduceop.src[0], ops.Mul)
                 and isinstance(self.reduceop.src[0].src[0], ops.Mem)
