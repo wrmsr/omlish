@@ -15,5 +15,8 @@ pipdeptree==2.13.0
 
 ipython==8.16.1
 
+pg8000==1.30.2
+pymysql==1.1.0
+
 mycli==1.27.0; python_version < '3.12'
 pgcli==3.5.0; python_version < '3.12'
