@@ -109,6 +109,8 @@ def unwrap(x):
 class MetalProgram:
     def __init__(self, name: str, prg: str, binary: bool = False) -> None:
         super().__init__()
+        print(prg)
+        print()
         if METAL_XCODE:
             air = subprocess.check_output(
                 [

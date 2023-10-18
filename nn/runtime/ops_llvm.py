@@ -60,6 +60,8 @@ class LLVM:
 class LlvmProgram:
     def __init__(self, name: str, prg: str, binary=False) -> None:
         super().__init__()
+        print(prg)
+        print()
         self.mod = llvm.parse_assembly(prg)
         self.mod.verify()
         LLVM().optimizer.run(self.mod)

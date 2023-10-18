@@ -73,6 +73,8 @@ def emulate_ext_calls(fn, uc, address, size, user_data):
 class ClangProgram:
     def __init__(self, name: str, prg: str, binary: bool = False) -> None:
         super().__init__()
+        print(prg)
+        print()
         if binary and DEBUG >= 5:
             print(prg)
         self.prg: ta.Any = self.compile(prg if binary else CLANG_PROGRAM_HEADER + prg, binary)

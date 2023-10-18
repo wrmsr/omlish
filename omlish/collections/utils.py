@@ -29,7 +29,7 @@ def toposort(data: ta.Mapping[T, ta.AbstractSet[T]]) -> ta.Iterator[set[T]]:
     return mut_toposort({k: set(v) for k, v in data.items()})
 
 
-def partition(items: ta.Iterable[T], pred: ta.Callable[[T], bool]) -> ta.Tuple[list[T], list[T]]:
+def partition(items: ta.Iterable[T], pred: ta.Callable[[T], bool]) -> tuple[list[T], list[T]]:
     t: list[T] = []
     f: list[T] = []
     for e in items:
@@ -52,7 +52,7 @@ def unique(it: ta.Iterable[T], *, identity: bool = False) -> list[T]:
     return ret
 
 
-def unique_dict(items: ta.Iterable[ta.Tuple[K, V]], *, identity: bool = False) -> ta.MutableMapping[K, V]:
+def unique_dict(items: ta.Iterable[tuple[K, V]], *, identity: bool = False) -> ta.MutableMapping[K, V]:
     dct: ta.MutableMapping[K, V] = IdentityKeyDict() if identity else {}  # type: ignore
     for k, v in items:
         if k in dct:
@@ -79,5 +79,5 @@ def all_not_equal(it: ta.Iterable[T]) -> bool:
     return True
 
 
-def key_cmp(fn: ta.Callable[[K, K], int]) -> ta.Callable[[ta.Tuple[K, V], ta.Tuple[K, V]], int]:
+def key_cmp(fn: ta.Callable[[K, K], int]) -> ta.Callable[[tuple[K, V], tuple[K, V]], int]:
     return lambda t0, t1: fn(t0[0], t1[0])

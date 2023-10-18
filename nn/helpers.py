@@ -32,10 +32,6 @@ def prod(x: ta.Iterable[T]) -> ta.Union[T, int]:
 OSX = platform.system() == "Darwin"
 
 
-def dedup(x):
-    return list(dict.fromkeys(x))  # retains list order
-
-
 def argfix(*x):
     return tuple(x[0]) if x and x[0].__class__ in (tuple, list) else x
 
@@ -95,14 +91,6 @@ def merge_dicts(ds: ta.Iterable[dict]) -> dict:
     return {k: v for d in ds for k, v in d.items()}
 
 
-def partition(lst, fxn):
-    a: list[ta.Any] = []
-    b: list[ta.Any] = []
-    for s in lst:
-        (a if fxn(s) else b).append(s)
-    return a, b
-
-
 @functools.lru_cache(maxsize=None)
 def getenv(key, default=0):
     return type(default)(os.getenv(key, default))
@@ -127,9 +115,7 @@ class Context(contextlib.ContextDecorator):
 
     def __exit__(self, *args):
         for k in Context.stack.pop():
-            ContextVar._cache[k].value = Context.stack[-1].get(
-                k, ContextVar._cache[k].value
-            )
+            ContextVar._cache[k].value = Context.stack[-1].get(k, ContextVar._cache[k].value)
 
 
 class ContextVar:
@@ -156,12 +142,11 @@ class ContextVar:
         return self.value < x
 
 
-DEBUG, IMAGE, BEAM = ContextVar("DEBUG", 0), ContextVar("IMAGE", 0), ContextVar("BEAM", 0)
-GRAPH, PRUNEGRAPH, GRAPHPATH = (
-    getenv("GRAPH", 0),
-    getenv("PRUNEGRAPH", 0),
-    getenv("GRAPHPATH", "/tmp/net"),
-)
+DEBUG = ContextVar("DEBUG", 0)
+IMAGE = ContextVar("IMAGE", 0)
+BEAM = ContextVar("BEAM", 0)
+
+GRAPH = getenv("GRAPH", 0)
 
 
 class Timing(contextlib.ContextDecorator):
