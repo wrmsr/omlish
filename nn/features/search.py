@@ -1,6 +1,5 @@
 import collections
 import typing as ta
-import copy
 
 from ..codegen.linearizer import Linearizer
 from ..codegen.optimizer import Opt
@@ -9,6 +8,7 @@ from ..devices import Device
 from ..dtypes import ImageDType
 from ..execution import Compiled
 from ..execution import MemBuffer
+from ..helpers import DEBUG
 from ..helpers import flatten
 from ..helpers import getenv
 from ..helpers import prod
@@ -30,7 +30,8 @@ actions += [
 device: Compiled = ta.cast(Compiled, Device[Device.DEFAULT])
 
 
-logtm = open(getenv("LOGTM", ""),"a") if getenv("LOGTM", "") else None
+import shelve
+logtm = shelve.open(getenv("LOGTM", "")) if getenv("LOGTM", "") else None
 
 
 # returns time in seconds
@@ -42,12 +43,15 @@ def time_linearizer(
         cnt=3,
         should_copy=True,
 ) -> float:
+    key = str((lin.ast, lin.applied_opts))
+    if should_copy and logtm is not None and key in logtm:
+        return min(logtm[key])  # pylint: disable=E1135 # NOTE: we check should_copy since this may have side effects
     if should_copy:
-        lin = copy.deepcopy(lin)  # TODO: remove the need for this
+        lin = lin.copy() # TODO: remove the need for this
     var_vals = {k: k.min for k in vars_from_ast(lin.ast)}
     try:
         lin.linearize()
-        prg = device.to_program(lin)
+        prg = ta.cast(Compiled, Device[Device.DEFAULT]).to_program(lin)
         real_global_size = prg.global_size[:]
         if allow_test_size:
             test_global_size = prg.global_size[:]
@@ -60,12 +64,14 @@ def time_linearizer(
             prg.global_size = test_global_size
         else:
             factor = 1
-        tms = [prg(rawbufs, var_vals, force_wait=True) * factor for _ in range(cnt)]
+        # TODO: this is super broken for var_vals
+        global_size, local_size = prg.launch_dims(var_vals)
+        tms = [prg.clprg(global_size, local_size, *rawbufs, *var_vals.values(), wait=True) * factor for _ in range(cnt)]
         prg.global_size = real_global_size
     except Exception:
         tms = [float('inf')]
-    if logtm:
-        logtm.write(str((lin.ast, lin.applied_opts, tms)) + "\n")
+    if logtm is not None:
+        logtm[key] = tms
     return min(tms)
 
 
@@ -75,7 +81,7 @@ def bufs_from_lin(lin: Linearizer) -> list[RawBuffer]:
     for x in lin.membufs: bufsts[x.idx].append(x)
     rawbufs: list[ta.Optional[RawBuffer]] = [None] * len(bufsts)
     for k, lx in bufsts.items():
-        rawbufs[k] = device.buffer(
+        rawbufs[k] = ta.cast(Compiled, Device[Device.DEFAULT]).buffer(
             prod(lx[0].dtype.shape) if isinstance(lx[0].dtype, ImageDType) else max(y.st.size() for y in lx),
             lx[0].dtype,
         )
@@ -84,14 +90,14 @@ def bufs_from_lin(lin: Linearizer) -> list[RawBuffer]:
 
 
 # get dictionary of all possible actions
-def get_linearizer_actions(lin: Linearizer) -> dict[int, Linearizer]:
-    acted_lins = {0: copy.deepcopy(lin)}
+def get_linearizer_actions(lin: Linearizer, include_0=True) -> dict[int, Linearizer]:
+    acted_lins = {0: lin.copy()} if include_0 else {}
     for i, a in enumerate(actions):
         if a.axis >= lin.shape_len:
             continue
         if lin.full_shape[a.axis] == a.amt and Opt(a.op, a.axis, 0) in actions:
             continue
-        lin2 = copy.deepcopy(lin)
+        lin2 = lin.copy()
         try:
             lin2.apply_opt(a)
             up, lcl = 1, 1
@@ -106,3 +112,19 @@ def get_linearizer_actions(lin: Linearizer) -> dict[int, Linearizer]:
         except Exception:
             pass
     return acted_lins
+
+
+def beam_search(lin, rawbufs, amt):
+    best_tm = float('inf')
+    beam: list[Linearizer] = [lin]
+    while 1:
+        acted_lins = flatten([get_linearizer_actions(lin, include_0=False).values() for lin in beam])
+        timed_lins = [(v, time_linearizer(v, rawbufs)) for v in acted_lins]
+        opts = sorted(timed_lins, key=lambda x: x[1])
+        if len(opts) == 0 or best_tm <= opts[0][1]:
+            break  # we didn't get faster
+        best_tm = opts[0][1]
+        beam = [x[0] for x in opts[:amt]]
+        if DEBUG >= 1:
+            print(f"{opts[0][1] * 1e3:10.2f} ms from {len(opts):3d} actions", beam[0].colored_shape())
+    return beam[0]

@@ -1,3 +1,4 @@
+import copy
 import itertools
 import typing as ta
 
@@ -156,6 +157,9 @@ class Kernel:
 
         self.global_size: ta.Optional[list[int]] = None
         self.local_size: ta.Optional[list[int]] = None
+
+    def copy(self):
+        return copy.deepcopy(self)
 
     @property
     def membufs(self) -> list[MemBuffer]:
