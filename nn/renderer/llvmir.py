@@ -197,6 +197,7 @@ def uops_to_llvm_ir(function_name: str, uops: list[UOp]) -> tuple[str, dict]:
 
     for u in uops:
         uop, dtype, vin, args, _ = u
+
         if uop == UOps.LOOP:
             bb.append(
                 ir.IRBuilder(func.append_basic_block(f"loop_body_{len(loop_blocks)}"))
@@ -213,7 +214,8 @@ def uops_to_llvm_ir(function_name: str, uops: list[UOp]) -> tuple[str, dict]:
             lvars[u] = bb[-1].phi(ir.IntType(32), name=f"loop{len(loop_blocks)}")
             lvars[u].add_incoming(lvars[vin[0]], bb[-2]._block)
             loop_blocks.append((bb[-1], phis))
-        if uop == UOps.END:
+
+        elif uop == UOps.END:
             block, phis = loop_blocks.pop()
             idx_p1 = bb[-1].add(lvars[vin[0]], ir.Constant(ir.IntType(32), 1))
             lvars[vin[0]].add_incoming(idx_p1, bb[-1]._block)
@@ -227,14 +229,18 @@ def uops_to_llvm_ir(function_name: str, uops: list[UOp]) -> tuple[str, dict]:
                 block._block,
                 bb[-1]._block,
             )
-        if uop == UOps.DEFINE_GLOBAL:
+
+        elif uop == UOps.DEFINE_GLOBAL:
             lvars[u] = func.args[buf_index[args[0]]]
-        if uop == UOps.DEFINE_ACC:
+
+        elif uop == UOps.DEFINE_ACC:
             lvars[u] = ir.Constant(dtype_to_llvm_dtype[dtype], args)
             reduce_phis.append(u)
-        if uop == UOps.SPECIAL:
+
+        elif uop == UOps.SPECIAL:
             lvars[u] = lvars[args.expr]
-        if uop == UOps.CONST:
+
+        elif uop == UOps.CONST:
             value = (
                 int(args)
                 if dtypes.is_int(dtype)
@@ -243,7 +249,8 @@ def uops_to_llvm_ir(function_name: str, uops: list[UOp]) -> tuple[str, dict]:
                 else args
             )
             lvars[u] = ir.Constant(dtype_to_llvm_dtype[dtype], value)
-        if uop == UOps.LOAD:
+
+        elif uop == UOps.LOAD:
             assert dtype is not None
             if len(vin) > 2:
                 gate = bb[-1].trunc(lvars[vin[2]], ir.IntType(1))
@@ -259,17 +266,20 @@ def uops_to_llvm_ir(function_name: str, uops: list[UOp]) -> tuple[str, dict]:
                 )
                 val = cast(bb, val, vin[0].dtype, dtype)
             lvars[u] = val
-        if uop == UOps.PHI:
+
+        elif uop == UOps.PHI:
             lvars[u] = lvars[vin[1]]
             # PHI UOps can link to other PHI Uops, backtrace this to DEFINE_ACC
             backward = vin[0]
             while backward.uop == UOps.PHI:
                 backward = backward.vin[0]
             lvars[backward] = lvars[u]
-        if uop == UOps.STORE:
+
+        elif uop == UOps.STORE:
             element = cast(bb, lvars[vin[2]], vin[2].dtype, vin[0].dtype)
             bb[-1].store(element, bb[-1].gep(lvars[vin[0]], [lvars[vin[1]]], inbounds=True))
-        if uop == UOps.ALU:
+
+        elif uop == UOps.ALU:
             lvars[u] = code_for_op[args](bb[-1], *[lvars[x] for x in vin])
 
     bb[-1].ret_void()
