@@ -434,31 +434,38 @@ class OptimizedKernel(Kernel):
         amt = opt.amt if opt.amt != 0 else self.full_shape[axis]
         assert self.full_shape[axis] % amt == 0, "no longer valid shift"
         assert isinstance(amt, int) and amt != 1, "shift of amt 1 or Node is meaningless"
+
         if opt.op == OptOps.LOCAL:  # cyan
             assert axis < self.first_reduce, "can't local a reduce"
             self.shift_to(axis, amt, insert_before=self.first_reduce)
             self.local_dims += 1
+
         elif opt.op == OptOps.LASTLOCAL:  # cyan
             assert axis < self.first_reduce, "can't local a reduce"
             self.shift_to(axis, amt, insert_before=self.first_reduce - self.local_dims)
             self.local_dims += 1
             # TOOD: include exclude_local_upcast here
+
         elif opt.op == OptOps.GROUP:  # green
             self.shift_to(axis, amt, insert_before=self.first_reduce + len(self.group_for_reduce))
             self.group_for_reduce.append(amt)
+
         elif opt.op == OptOps.GROUPTOP:  # green
             self.shift_to(axis, amt, top=True, insert_before=self.first_reduce + len(self.group_for_reduce))
             self.group_for_reduce.append(amt)
+
         elif opt.op == OptOps.UNROLL:  # purple
             assert axis < self.shape_len - self.upcasted, "can't upcasted already upcasted"
             assert amt <= 32, "don't unroll more than 32"
             self.shift_to(axis, amt, insert_before=len(self.full_unupcasted_shape))
             self.upcast()
+
         elif opt.op == OptOps.UPCAST:  # yellow
             assert axis < self.first_reduce, "upcast is for non-reduce"
             assert amt <= 8, "don't upcast more than 8"
             self.shift_to(axis, amt, insert_before=None)
             self.upcast()
+
         return self.simplify_ones()
 
     def required_optimizations(self, early_only=False):
@@ -669,6 +676,7 @@ class OptimizedKernel(Kernel):
                         and isinstance(s2, int)
                 ):
                     self.apply_opt(Opt(OptOps.UNROLL, len(self.full_unupcasted_shape)-1-self.first_reduce, 0))
+
             else:
                 for splits in [4]:
                     if self.full_unupcasted_shape[-1] % splits == 0:
@@ -690,18 +698,22 @@ class OptimizedKernel(Kernel):
         if self.opts.has_local:
             if getenv("NOLOCALS") and self.local_dims == 0 and not self.group_for_reduce:
                 self.dont_use_locals = True
+
             else:
                 # prioritize making expand axes local
                 local_axis_ranking = [
                     (any(self.sts[buf_index].views[-1].strides[axis] == 0 for buf_index in range(len(self.sts))), axis)
                     for axis in range(len(self.full_shape[:self.first_reduce]))
                 ]
+
                 to_local: list[tuple[int, int]] = []
+
                 for _, axis in sorted(local_axis_ranking, key=lambda x: (-x[0], -x[1])):
                     local_size = prod(sz for _, sz in to_local)
                     local_sz: ta.Optional[int] = next((x for x in ([32] * (axis == 0) + [16, 8, 4, 3, 2]) if self.full_shape[axis] % x == 0 and local_size * x <= 128), None)
                     if local_sz is not None:
                         to_local.append((axis, local_sz))
+
                 deleted_shape = 0
                 for axis, local_sz in sorted(to_local[:3]):
                     axis = axis - deleted_shape
