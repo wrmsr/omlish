@@ -171,7 +171,7 @@ class LayerNorm:
 
 
 class LayerNorm2d(LayerNorm):
-    def __call__(self, x):
+    def __call__(self, x: Tensor):
         return super().__call__(x.permute(0, 2, 3, 1)).permute(0, 3, 1, 2)
 
 

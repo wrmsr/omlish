@@ -7,6 +7,7 @@ import math
 import typing as ta
 
 from omlish import collections as col
+from omlish import dispatch
 
 
 # NOTE: Python has different behavior for negative mod and floor div than c
@@ -451,12 +452,8 @@ class SumNode(RedNode):
         fully_divided: list[Node] = []
         rest: list[Node] = []
         if isinstance(b, SumNode):
-            nu_num = sum(
-                node.b for node in self.flat_components if node.__class__ is NumNode
-            )
-            de_num = sum(
-                node.b for node in b.flat_components if node.__class__ is NumNode
-            )
+            nu_num = sum(node.b for node in self.flat_components if node.__class__ is NumNode)
+            de_num = sum(node.b for node in b.flat_components if node.__class__ is NumNode)
             if nu_num > 0 and de_num and (d := nu_num // de_num) > 0:
                 return NumNode(d) + (self - b * d) // b
         if isinstance(b, Node):
@@ -600,10 +597,70 @@ VariableOrNum = ta.Union[Variable, NumNode]
 render_python: dict[type, ta.Callable] = {
     Variable: lambda self, ops, ctx: f"{self.expr}[{self.min}-{self.max}{'=' + str(self.val) if self.val is not None else ''}]" if ctx == "DEBUG" else (f"Variable('{self.expr}', {self.min}, {self.max})" if ctx == "REPR" else f"{self.expr}"),  # noqa
     NumNode: lambda self, ops, ctx: f"{self.b}",
-    MulNode: lambda self, ops, ctx: f"({self.a.render(ops,ctx)}*{sym_render(self.b,ops,ctx)})",
-    DivNode: lambda self, ops, ctx: f"({self.a.render(ops,ctx)}//{self.b})",
-    ModNode: lambda self, ops, ctx: f"({self.a.render(ops,ctx)}%{self.b})",
-    LtNode: lambda self, ops, ctx: f"({self.a.render(ops,ctx)}<{sym_render(self.b,ops,ctx)})",
-    SumNode: lambda self, ops, ctx: f"({'+'.join(sorted([x.render(ops,ctx) for x in self.nodes]))})",
-    AndNode: lambda self, ops, ctx: f"({' and '.join(sorted([x.render(ops,ctx) for x in self.nodes]))})",
+    MulNode: lambda self, ops, ctx: f"({self.a.render(ops, ctx)}*{sym_render(self.b, ops, ctx)})",
+    DivNode: lambda self, ops, ctx: f"({self.a.render(ops, ctx)}//{self.b})",
+    ModNode: lambda self, ops, ctx: f"({self.a.render(ops, ctx)}%{self.b})",
+    LtNode: lambda self, ops, ctx: f"({self.a.render(ops, ctx)}<{sym_render(self.b, ops, ctx)})",
+    SumNode: lambda self, ops, ctx: f"({'+'.join(sorted([x.render(ops, ctx) for x in self.nodes]))})",
+    AndNode: lambda self, ops, ctx: f"({' and '.join(sorted([x.render(ops, ctx) for x in self.nodes]))})",
 }
+
+
+##
+
+
+class NodeRenderer:
+
+    @dispatch.method
+    def render(self, n: sint) -> str:
+        raise TypeError(n)
+
+    @render.register
+    def render_int(self, n: int) -> str:
+        return str(n)
+
+    @render.register
+    def render_variable(self, n: Variable) -> str:
+        return f"{n.expr}"
+
+    @render.register
+    def render_num(self, n: NumNode) -> str:
+        return f"{n.b}"
+
+    @render.register
+    def render_mul(self, n: MulNode) -> str:
+        return f"({self.render(n.a)}*{self.render(n.b)})"
+
+    @render.register
+    def render_div(self, n: DivNode) -> str:
+        return f"({self.render(n.a)}//{n.b})"
+
+    @render.register
+    def render_mod(self, n: ModNode) -> str:
+        return f"({self.render(n.a)}%{n.b})"
+
+    @render.register
+    def render_lt(self, n: LtNode) -> str:
+        return f"({self.render(n.a)}<{self.render(n.b)})"
+
+    @render.register
+    def render_sum(self, n: SumNode) -> str:
+        return f"({'+'.join(sorted([self.render(x) for x in n.nodes]))})"
+
+    @render.register
+    def render_and(self, n: AndNode) -> str:
+        return f"({' and '.join(sorted([self.render(x) for x in n.nodes]))})"
+
+
+class DebugNodeRenderer(NodeRenderer):
+
+    @NodeRenderer.render.register
+    def render_variable(self, n: Variable) -> str:
+        return f"{n.expr}[{n.min}-{n.max}{'=' + str(n.val) if n.val is not None else ''}]"
+
+
+class ReprNodeRenderer(NodeRenderer):
+
+    @NodeRenderer.render.register
+    def render_variable(self, n: Variable) -> str:
+        return f"Variable('{n.expr}', {n.min}, {n.max})"

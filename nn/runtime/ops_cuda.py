@@ -88,7 +88,7 @@ if getenv("CUDACPU", 0) == 1:
                 self.start = time.perf_counter()
 
             def time_till(self, other):
-                return self.start - other.start
+                return other.start - self.start
 
             def synchronize(self):
                 pass
