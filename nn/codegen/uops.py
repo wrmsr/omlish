@@ -3,6 +3,8 @@ from __future__ import annotations
 import typing as ta
 import enum
 
+from omlish import dataclasses as dc
+
 from ..dtypes import DType
 
 
@@ -26,7 +28,8 @@ class UOps(enum.Enum):
     GEP = enum.auto()  # noqa: E702
 
 
-class UOp(ta.NamedTuple):
+@dc.dataclass(frozen=True)
+class UOp:
     uop: UOps
     dtype: ta.Optional[DType]
     vin: tuple[UOp, ...]

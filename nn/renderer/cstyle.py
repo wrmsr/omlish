@@ -201,143 +201,141 @@ def uops_to_cstyle(lang: CStyleLanguage, function_name: str, uops: list[UOp]) ->
             child_count[v] += 1
 
     for u in uops:
-        uop, dtype, vin, args, _ = u
-
-        if uop == UOps.LOOP:
-            kk(lang.render_for(ssa(u, "ridx"), r[vin[0]], r[vin[1]]))
+        if u.uop == UOps.LOOP:
+            kk(lang.render_for(ssa(u, "ridx"), r[u.vin[0]], r[u.vin[1]]))
             depth += 1
 
-        elif uop == UOps.IF:
-            kk(lang.render_if(r[vin[0]]))
+        elif u.uop == UOps.IF:
+            kk(lang.render_if(r[u.vin[0]]))
             depth += 1
 
-        elif uop == UOps.BARRIER:
+        elif u.uop == UOps.BARRIER:
             kk(lang.barrier)
 
-        elif uop == UOps.END:
+        elif u.uop == UOps.END:
             depth -= 1
             kk("}")
 
-        elif uop == UOps.WMMA:
-            if args[0] == "METAL":
+        elif u.uop == UOps.WMMA:
+            if u.arg[0] == "METAL":
                 # ((lidx2*32)+(lidx3*4)+(lidx4*16)+(lidx5*8)+(lidx6*2))
                 kk("{ simdgroup_float8x8 a,b,c;")
-                kk(f"a.thread_elements()[0] = {r[vin[0]]}; a.thread_elements()[1] = {r[vin[1]]};")
-                kk(f"b.thread_elements()[0] = {r[vin[2]]}; b.thread_elements()[1] = {r[vin[3]]};")
-                kk(f"c.thread_elements()[0] = {r[vin[4]]}; c.thread_elements()[1] = {r[vin[5]]};")
+                kk(f"a.thread_elements()[0] = {r[u.vin[0]]}; a.thread_elements()[1] = {r[u.vin[1]]};")
+                kk(f"b.thread_elements()[0] = {r[u.vin[2]]}; b.thread_elements()[1] = {r[u.vin[3]]};")
+                kk(f"c.thread_elements()[0] = {r[u.vin[4]]}; c.thread_elements()[1] = {r[u.vin[5]]};")
                 kk("simdgroup_multiply_accumulate(c, a, b, c);")
-                kk(f"{r[vin[4]]} = c.thread_elements()[0]; {r[vin[5]]} = c.thread_elements()[1]; }}")
-            elif args[0] == "HIP":
+                kk(f"{r[u.vin[4]]} = c.thread_elements()[0]; {r[u.vin[5]]} = c.thread_elements()[1]; }}")
+            elif u.arg[0] == "HIP":
                 kk("{")
-                kk(f"half16 a_frag = {{ {','.join(['(half)'+r[x] for x in vin[0:16]])} }};")
-                kk(f"half16 b_frag = {{ {','.join(['(half)'+r[x] for x in vin[16:32]])} }};")
-                kk(f"float8 c_frag = {{ {','.join([r[x] for x in vin[32:]])} }};")
+                kk(f"half16 a_frag = {{ {','.join(['(half)'+r[x] for x in u.vin[0:16]])} }};")
+                kk(f"half16 b_frag = {{ {','.join(['(half)'+r[x] for x in u.vin[16:32]])} }};")
+                kk(f"float8 c_frag = {{ {','.join([r[x] for x in u.vin[32:]])} }};")
                 kk("c_frag = __builtin_amdgcn_wmma_f32_16x16x16_f16_w32(a_frag, b_frag, c_frag);")
                 for i in range(8):
-                    kk(f"{r[vin[32+i]]} = c_frag[{i}];")
+                    kk(f"{r[u.vin[32+i]]} = c_frag[{i}];")
                 kk("}")
             else:
-                raise NotImplementedError(f"WMMA not implemented for {args}")
+                raise NotImplementedError(f"WMMA not implemented for {u.arg}")
 
-        elif uop == UOps.ALU:
-            assert dtype is not None
+        elif u.uop == UOps.ALU:
+            assert u.dtype is not None
             # remove parens if ALU types are the same. TODO: can do more here
             if (
-                vin[0].uop == UOps.ALU
-                and vin[0].arg == args
-                and args in {ops.Add, ops.Sub, ops.Mul}
+                u.vin[0].uop == UOps.ALU
+                and u.vin[0].arg == u.arg
+                and u.arg in {ops.Add, ops.Sub, ops.Mul}
             ):
-                val = lang.code_for_op[args](
-                    strip_parens(r[vin[0]]), *[r[x] for x in vin[1:]]
+                val = lang.code_for_op[u.arg](
+                    strip_parens(r[u.vin[0]]), *[r[x] for x in u.vin[1:]]
                 )
             else:
-                val = lang.code_for_op[args](*[r[x] for x in vin])
+                val = lang.code_for_op[u.arg](*[r[x] for x in u.vin])
             assert child_count[u] != 0, f"childless ALU op found {u}"
-            if child_count[u] <= 1 or dtypes.is_int(dtype):  # fix index rendering issue
+            if child_count[u] <= 1 or dtypes.is_int(u.dtype):  # fix index rendering issue
                 r[u] = val
             else:
                 kk(
-                    f"{lang.generic_var_prefix if lang.generic_var_prefix else dtype.name} {ssa(u,'alu')} = {val};"
+                    f"{lang.generic_var_prefix if lang.generic_var_prefix else u.dtype.name} {ssa(u,'alu')} = {val};"
                 )
 
-        elif uop == UOps.DEFINE_ACC:
-            assert dtype is not None
+        elif u.uop == UOps.DEFINE_ACC:
+            assert u.dtype is not None
             kk(
-                f"{lang.generic_var_prefix if lang.generic_var_prefix else dtype.name} "
-                f"{ssa(u,'acc')} = {lang.render_const(args, dtype)};"
+                f"{lang.generic_var_prefix if lang.generic_var_prefix else u.dtype.name} "
+                f"{ssa(u,'acc')} = {lang.render_const(u.arg, u.dtype)};"
             )
 
-        elif uop == UOps.SPECIAL:
-            xid = lang.gid if args[1].startswith("g") else (lang.xid if args[1].startswith("i") else lang.lid)
-            kk(f"{lang.size_prefix} {args[1]} = {xid[args[0]]}; /* {args[2]} */")
-            if args[1].startswith("l"):
-                local_size.append(args[2])
-            r[u] = args[1]
+        elif u.uop == UOps.SPECIAL:
+            xid = lang.gid if u.arg[1].startswith("g") else (lang.xid if u.arg[1].startswith("i") else lang.lid)
+            kk(f"{lang.size_prefix} {u.arg[1]} = {xid[u.arg[0]]}; /* {u.arg[2]} */")
+            if u.arg[1].startswith("l"):
+                local_size.append(u.arg[2])
+            r[u] = u.arg[1]
 
-        elif uop == UOps.CONST:
+        elif u.uop == UOps.CONST:
             r[u] = (
-                lang.render_const(args, dtype)
-                if args >= 0
-                else f"({lang.render_const(args, dtype)})"
+                lang.render_const(u.arg, u.dtype)
+                if u.arg >= 0
+                else f"({lang.render_const(u.arg, u.dtype)})"
             )
 
-        elif uop == UOps.LOAD:
-            assert dtype is not None
+        elif u.uop == UOps.LOAD:
+            assert u.dtype is not None
             val = lang.render_load(
-                dtype,
-                r[vin[0]],
-                vin[0].dtype,
-                strip_parens(r[vin[1]]),
-                vin[0].uop == UOps.DEFINE_LOCAL,
+                u.dtype,
+                r[u.vin[0]],
+                u.vin[0].dtype,
+                strip_parens(r[u.vin[1]]),
+                u.vin[0].uop == UOps.DEFINE_LOCAL,
             )
-            if len(vin) > 2:
-                val = lang.render_conditional(r[vin[2]], val, r[vin[3]])
+            if len(u.vin) > 2:
+                val = lang.render_conditional(r[u.vin[2]], val, r[u.vin[3]])
             kk(
-                f"{lang.generic_var_prefix if lang.generic_var_prefix else dtype.name} {ssa(u,'val')} = {val};"
+                f"{lang.generic_var_prefix if lang.generic_var_prefix else u.dtype.name} {ssa(u,'val')} = {val};"
             )
 
-        elif uop == UOps.PHI:
-            kk(f"{r[vin[0]]} = {r[vin[1]]};")
-            r[u] = r[vin[0]]
+        elif u.uop == UOps.PHI:
+            kk(f"{r[u.vin[0]]} = {r[u.vin[1]]};")
+            r[u] = r[u.vin[0]]
 
-        elif uop == UOps.STORE:
-            assert vin[0].dtype is not None and vin[2].dtype is not None
+        elif u.uop == UOps.STORE:
+            assert u.vin[0].dtype is not None and u.vin[2].dtype is not None
             kk(
                 lang.render_store(
-                    r[vin[0]],
-                    vin[0].dtype,
-                    r[vin[2]],
-                    vin[2].dtype,
-                    strip_parens(r[vin[1]]),
-                    vin[0].uop == UOps.DEFINE_LOCAL,
+                    r[u.vin[0]],
+                    u.vin[0].dtype,
+                    r[u.vin[2]],
+                    u.vin[2].dtype,
+                    strip_parens(r[u.vin[1]]),
+                    u.vin[0].uop == UOps.DEFINE_LOCAL,
                 ),
             )
 
-        elif uop == UOps.CAST and dtype is not None and dtype.sz > 1:
-            val = lang.render_cast([r[x] for x in vin], dtype)
+        elif u.uop == UOps.CAST and u.dtype is not None and u.dtype.sz > 1:
+            val = lang.render_cast([r[x] for x in u.vin], u.dtype)
             if child_count[u] <= 1:
                 r[u] = val
             else:
                 kk(
-                    f"{lang.generic_var_prefix if lang.generic_var_prefix else dtype.name} "
+                    f"{lang.generic_var_prefix if lang.generic_var_prefix else u.dtype.name} "
                     f"{ssa(u,'cast')} = {val};"
                 )
 
-        elif uop == UOps.DEFINE_LOCAL:
+        elif u.uop == UOps.DEFINE_LOCAL:
             if lang.external_local_bufs:
-                prekernel.append(lang.render_local(args[0], args[1]))
+                prekernel.append(lang.render_local(u.arg[0], u.arg[1]))
             else:
-                kk(lang.render_local(args[0], args[1]))
-            r[u] = args[0]
+                kk(lang.render_local(u.arg[0], u.arg[1]))
+            r[u] = u.arg[0]
 
-        elif uop == UOps.DEFINE_GLOBAL:
-            bufs.append(args)
-            r[u] = args[0]
+        elif u.uop == UOps.DEFINE_GLOBAL:
+            bufs.append(u.arg)
+            r[u] = u.arg[0]
 
-        elif uop == UOps.GEP:
-            r[u] = f"({r[vin[0]]}).{'xyzw'[args]}"
+        elif u.uop == UOps.GEP:
+            r[u] = f"({r[u.vin[0]]}).{'xyzw'[u.arg]}"
 
         else:
-            raise RuntimeError(f"failed to render {uop}")
+            raise RuntimeError(f"failed to render {u.uop}")
 
     return lang.render_kernel(function_name, kernel, bufs, local_size, prekernel), {"binary":False}
