@@ -36,81 +36,81 @@ class UOp(lang.Abstract):
 # bottom ones are asm only
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, eq=False)
 class Loop(UOp, lang.Final):
     pass
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, eq=False)
 class If(UOp, lang.Final):
     pass
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, eq=False)
 class End(UOp, lang.Final):
     pass
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, eq=False)
 class Special(UOp, lang.Final):
     pass
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, eq=False)
 class DefineGlobal(UOp, lang.Final):
     pass
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, eq=False)
 class DefineLocal(UOp, lang.Final):
     pass
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, eq=False)
 class DefineAcc(UOp, lang.Final):
     pass
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, eq=False)
 class Load(UOp, lang.Final):
     pass
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, eq=False)
 class Store(UOp, lang.Final):
     pass
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, eq=False)
 class Const(UOp, lang.Final):
     pass
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, eq=False)
 class Barrier(UOp, lang.Final):
     pass
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, eq=False)
 class Phi(UOp, lang.Final):
     pass
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, eq=False)
 class Alu(UOp, lang.Final):
     pass
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, eq=False)
 class Wmma(UOp, lang.Final):
     pass
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, eq=False)
 class Cast(UOp, lang.Final):
     pass
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, eq=False)
 class Gep(UOp, lang.Final):
     pass
