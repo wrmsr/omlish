@@ -5,7 +5,6 @@ import itertools
 import math
 import functools
 import collections
-import enum
 
 from .. import ops as ops_
 from ..codegen.kernel import LocalBuffer
@@ -34,54 +33,11 @@ from ..shape.symbolic import NumNode
 from ..shape.symbolic import SumNode
 from ..shape.symbolic import Variable
 from ..shape.symbolic import sym_rename
+from .uops import UOp
+from .uops import UOps
 
 
 VariableOrNum = ta.Union[Variable, NumNode, Node]
-
-
-# bottom ones are asm only
-class UOps(enum.Enum):
-    LOOP = enum.auto()
-    IF = enum.auto()
-    END = enum.auto()
-    SPECIAL = enum.auto()  # loops can be global, local, or other # noqa: E702
-    DEFINE_GLOBAL = enum.auto()
-    DEFINE_LOCAL = enum.auto()
-    DEFINE_ACC = enum.auto()  # this defines buffers # noqa: E702
-    LOAD = enum.auto()
-    STORE = enum.auto()
-    CONST = enum.auto()
-    BARRIER = enum.auto()  # noqa: E702
-    PHI = enum.auto()
-    ALU = enum.auto()
-    WMMA = enum.auto()
-    CAST = enum.auto()
-    GEP = enum.auto()  # noqa: E702
-
-
-class UOp(ta.NamedTuple):
-    uop: UOps
-    dtype: ta.Optional[DType]
-    vin: tuple[UOp, ...]
-    arg: ta.Any
-
-    def __repr__(self):
-        return (
-            f"{self.num:4d} "
-            f"{str(self.uop):20s}: "
-            f"{str(self.dtype) if self.dtype is not None else '':25s} "
-            f"{str([x.num for x in self.vin]):32s} "
-            f"{self.arg}"
-        )
-
-    # UOps are unique
-    num: int
-
-    def __hash__(self):
-        return self.num
-
-    def __eq__(self, x):
-        return self.num == x.num
 
 
 def get_grouped_dims(prefix, start_dim, local_dims, maxdim: int = 0):
