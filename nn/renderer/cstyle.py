@@ -3,8 +3,8 @@ import math
 import typing as ta
 
 from .. import ops
-from ..codegen.linearizer import UOp
-from ..codegen.linearizer import UOps
+from ..codegen.uops import UOp
+from ..codegen.uops import UOps
 from ..dtypes import DType
 from ..dtypes import ImageDType
 from ..dtypes import dtypes

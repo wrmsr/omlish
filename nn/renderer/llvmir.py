@@ -3,8 +3,8 @@ import typing as ta
 from llvmlite import ir  # type: ignore
 
 from .. import ops
-from ..codegen.linearizer import UOp
-from ..codegen.linearizer import UOps
+from ..codegen.uops import UOp
+from ..codegen.uops import UOps
 from ..dtypes import dtypes
 
 

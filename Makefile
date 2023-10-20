@@ -110,6 +110,10 @@ test: venv
 .PHONY: test-all
 test-all: test
 
+.PHONY: test-nn
+test-nn: venv
+	$(PYTHON) -mpytest -n8 nn
+
 
 ### Alts
 
