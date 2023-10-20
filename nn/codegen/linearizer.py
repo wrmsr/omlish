@@ -52,6 +52,7 @@ class UOps(enum.Enum):
     STORE = enum.auto()
     CONST = enum.auto()
     BARRIER = enum.auto()  # noqa: E702
+    PHI = enum.auto()
     ALU = enum.auto()
     WMMA = enum.auto()
     CAST = enum.auto()
@@ -109,6 +110,7 @@ class Linearizer(OptimizedKernel):
         )
         return self.uop(UOps.ALU, dtype, (a, render_b), op)
 
+    # NOTE: the consts have to be be cached for deduping of downstream uops to work
     def const(self, b: ta.Union[int, float], dtype=dtypes.int32) -> UOp:
         return self.uop(UOps.CONST, dtype, tuple(), b)
 
@@ -672,7 +674,8 @@ class Linearizer(OptimizedKernel):
                 # run early AST (with reduce)
                 self.ast_parse(
                     self.reduceop,
-                    [acc[off] for off in self.acc_offsets(self.full_buf_index)],
+                    acc,
+                    self.acc_offsets(self.full_buf_index),
                     loaded_buffers,
                     do_reduce=True,
                 )
@@ -747,9 +750,10 @@ class Linearizer(OptimizedKernel):
                 )
 
                 # there's no AST here (and there's no shape for the reduce LazyOp)
-                self.ast_parse(
+                self.ast_parse(  # type: ignore
                     type(self.reduceop)(("LOCAL_BUFFER",)),
-                    [acc[off] for off in self.acc_offsets(-1)],
+                    acc,
+                    self.acc_offsets(-1),
                     loaded_buffers,
                     do_reduce=True,
                 )
@@ -770,7 +774,7 @@ class Linearizer(OptimizedKernel):
         )
 
         # run late AST
-        val = self.ast_parse(self.ast, acc, loaded_buffers)
+        val = self.ast_parse(self.ast, acc, None, loaded_buffers)
 
         # store
         self.global_store(
@@ -819,8 +823,8 @@ class Linearizer(OptimizedKernel):
         cachable=True,
     ) -> UOp:
         key = (uop, dtype, vin, arg)
-        if uop == UOps.STORE and len(vin) == 2 and vin[0] == vin[1]:
-            return vin[0]  # self store is noop
+        if uop == UOps.PHI and len(vin) == 2 and vin[0] == vin[1]:
+            return vin[0]  # self phi is noop
         if (
             uop == UOps.CAST
             and all(x.uop == UOps.GEP for x in vin)
@@ -880,14 +884,15 @@ class Linearizer(OptimizedKernel):
             self.saved_exprs[key] = self.uops[-1]
         return self.uops[-1]
 
-    def ast_parse(self, x, acc, loaded_buffers, do_reduce=False) -> list[UOp]:
+    def ast_parse(self, x, acc, offs, loaded_buffers, do_reduce=False) -> list[UOp]:
         if not isinstance(x, LazyOp):
             return loaded_buffers[x]  # for LOCAL_BUFFER
         if isinstance(x, ops_.BufferOp):
             return loaded_buffers[x.arg]
         if isinstance(x, (ops_.Nop, ops_.Cast)):
-            return self.ast_parse(x.src[0], acc, loaded_buffers)  # cast isn't an ALU op
+            return self.ast_parse(x.src[0], acc, offs, loaded_buffers)  # cast isn't an ALU op
         if isinstance(x, ops_.ReduceOp) and not do_reduce:
+            assert offs is None, "not available if we aren't doing reduce"
             return acc
         # MULACC fusion. TODO: this is copied from Interpreted
         if (
@@ -901,31 +906,19 @@ class Linearizer(OptimizedKernel):
             and isinstance(x.src[0].src[0], ops_.Mul)
         ):
             x = ops_.MulAcc(x.src[0].src[0].src, x.arg)
-        values = [self.ast_parse(v, acc, loaded_buffers) for v in x.src]
+        values = [self.ast_parse(v, acc, offs, loaded_buffers) for v in x.src]
         ops = {
             ops_.Sum: ops_.Add,
             ops_.Max: ops_.Max2,
             ops_.MulAcc: ops_.MulAcc,
         }
         if type(x) in ops:
-            ret = [
-                (
-                    idx,
-                    self.uop(
-                        UOps.STORE,
-                        dtypes.float32,
-                        (
-                            val[-1],
-                            self.uop(
-                                UOps.ALU, dtypes.float32, val, ops[type(x)], cachable=False
-                            ),
-                        ),
-                    ),
-                )
-                for idx, val in zip(
-                    [[i] for i in range(len(values[0]))], zip(*values, acc)
-                )
-            ]
+            ret = []
+            for idx, val, off in zip([[i] for i in range(len(values[0]))], zip(*values), offs):
+                new_val = self.uop(UOps.ALU, dtypes.float32, val + (acc[off],), ops[type(x)])
+                # NOTE: we could apply the phi node to only the last change, but this breaks CLANG with nested max(x,y)
+                acc[off] = self.uop(UOps.PHI, dtypes.float32, (acc[off], new_val))
+                ret.append((idx, acc[off]))
         else:
             ret = [
                 (idx, self.uop(UOps.ALU, dtypes.float32, val, type(x)))
