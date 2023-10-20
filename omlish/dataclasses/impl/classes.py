@@ -208,20 +208,24 @@ class ClassProcessor:
             raise ValueError('eq must be true if order is true')
 
     def _check_frozen_bases(self) -> None:
+        all_frozen_bases = None
         any_frozen_base = False
         has_dataclass_bases = False
         for b in self._cls.__mro__[-1:0:-1]:
             base_fields = getattr(b, FIELDS_ATTR, None)
             if base_fields is not None:
                 has_dataclass_bases = True
-                if getattr(b, PARAMS_ATTR).frozen:
-                    any_frozen_base = True
+                if all_frozen_bases is None:
+                    all_frozen_bases = True
+                current_frozen = getattr(b, PARAMS_ATTR).frozen
+                all_frozen_bases = all_frozen_bases and current_frozen
+                any_frozen_base = any_frozen_base or current_frozen
 
         if has_dataclass_bases:
             if any_frozen_base and not self._params.frozen:
                 raise TypeError('cannot inherit non-frozen dataclass from a frozen one')
 
-            if not any_frozen_base and self._params.frozen:
+            if all_frozen_bases is False and self._params.frozen:
                 raise TypeError('cannot inherit frozen dataclass from a non-frozen one')
 
     @cached.property
