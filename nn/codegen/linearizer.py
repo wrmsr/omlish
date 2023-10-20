@@ -285,6 +285,7 @@ class Linearizer(OptimizedKernel):
                 (),
                 (var.expr, dtypes._arg_int32),
             )
+
             # define local buffers
             for lb in self.local_alias.values():
                 self.buf_uops[self.bufs.index(lb)] = self.uop(
@@ -360,6 +361,7 @@ class Linearizer(OptimizedKernel):
             self.full_shape[: self.global_dims],
             3 if self.opts.has_local else 0,
         )
+
         local_idxs, loop_local_idxs = get_grouped_dims(
             "lidx",
             self.global_dims,
@@ -368,10 +370,12 @@ class Linearizer(OptimizedKernel):
             ],
             3 if self.opts.has_local else 0,
         )
+
         full_upcast_idxs = [
             Variable(None, 0, s - 1)
             for s in self.full_shape[self.shape_len - self.upcasted:]
         ]
+
         upcast_idxs = [
             Variable(None, 0, s - 1)
             for s in self.output_shape[self.shape_len - self.upcasted:]
