@@ -22,7 +22,7 @@ PRIMITIVE_TYPES: tuple[type, ...] = (
 class PrimitiveMarshalerUnmarshaler(Marshaler, Unmarshaler):
     def marshal(self, ctx: MarshalContext, o: ta.Any) -> Value:
         if isinstance(o, PRIMITIVE_TYPES):
-            return o
+            return o  # type: ignore
         raise TypeError(o)
 
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any:

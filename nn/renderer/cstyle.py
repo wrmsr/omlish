@@ -202,17 +202,22 @@ def uops_to_cstyle(lang: CStyleLanguage, function_name: str, uops: list[UOp]) ->
 
     for u in uops:
         uop, dtype, vin, args, _ = u
+
         if uop == UOps.LOOP:
             kk(lang.render_for(ssa(u, "ridx"), r[vin[0]], r[vin[1]]))
             depth += 1
+
         elif uop == UOps.IF:
             kk(lang.render_if(r[vin[0]]))
             depth += 1
+
         elif uop == UOps.BARRIER:
             kk(lang.barrier)
+
         elif uop == UOps.END:
             depth -= 1
             kk("}")
+
         elif uop == UOps.WMMA:
             if args[0] == "METAL":
                 # ((lidx2*32)+(lidx3*4)+(lidx4*16)+(lidx5*8)+(lidx6*2))
@@ -233,6 +238,7 @@ def uops_to_cstyle(lang: CStyleLanguage, function_name: str, uops: list[UOp]) ->
                 kk("}")
             else:
                 raise NotImplementedError(f"WMMA not implemented for {args}")
+
         elif uop == UOps.ALU:
             assert dtype is not None
             # remove parens if ALU types are the same. TODO: can do more here
@@ -253,24 +259,28 @@ def uops_to_cstyle(lang: CStyleLanguage, function_name: str, uops: list[UOp]) ->
                 kk(
                     f"{lang.generic_var_prefix if lang.generic_var_prefix else dtype.name} {ssa(u,'alu')} = {val};"
                 )
+
         elif uop == UOps.DEFINE_ACC:
             assert dtype is not None
             kk(
                 f"{lang.generic_var_prefix if lang.generic_var_prefix else dtype.name} "
                 f"{ssa(u,'acc')} = {lang.render_const(args, dtype)};"
             )
+
         elif uop == UOps.SPECIAL:
             xid = lang.gid if args[1].startswith("g") else (lang.xid if args[1].startswith("i") else lang.lid)
             kk(f"{lang.size_prefix} {args[1]} = {xid[args[0]]}; /* {args[2]} */")
             if args[1].startswith("l"):
                 local_size.append(args[2])
             r[u] = args[1]
+
         elif uop == UOps.CONST:
             r[u] = (
                 lang.render_const(args, dtype)
                 if args >= 0
                 else f"({lang.render_const(args, dtype)})"
             )
+
         elif uop == UOps.LOAD:
             assert dtype is not None
             val = lang.render_load(
@@ -285,9 +295,11 @@ def uops_to_cstyle(lang: CStyleLanguage, function_name: str, uops: list[UOp]) ->
             kk(
                 f"{lang.generic_var_prefix if lang.generic_var_prefix else dtype.name} {ssa(u,'val')} = {val};"
             )
+
         elif uop == UOps.PHI:
             kk(f"{r[vin[0]]} = {r[vin[1]]};")
             r[u] = r[vin[0]]
+
         elif uop == UOps.STORE:
             assert vin[0].dtype is not None and vin[2].dtype is not None
             kk(
@@ -300,6 +312,7 @@ def uops_to_cstyle(lang: CStyleLanguage, function_name: str, uops: list[UOp]) ->
                     vin[0].uop == UOps.DEFINE_LOCAL,
                 ),
             )
+
         elif uop == UOps.CAST and dtype is not None and dtype.sz > 1:
             val = lang.render_cast([r[x] for x in vin], dtype)
             if child_count[u] <= 1:
@@ -309,17 +322,21 @@ def uops_to_cstyle(lang: CStyleLanguage, function_name: str, uops: list[UOp]) ->
                     f"{lang.generic_var_prefix if lang.generic_var_prefix else dtype.name} "
                     f"{ssa(u,'cast')} = {val};"
                 )
+
         elif uop == UOps.DEFINE_LOCAL:
             if lang.external_local_bufs:
                 prekernel.append(lang.render_local(args[0], args[1]))
             else:
                 kk(lang.render_local(args[0], args[1]))
             r[u] = args[0]
+
         elif uop == UOps.DEFINE_GLOBAL:
             bufs.append(args)
             r[u] = args[0]
+
         elif uop == UOps.GEP:
             r[u] = f"({r[vin[0]]}).{'xyzw'[args]}"
+
         else:
             raise RuntimeError(f"failed to render {uop}")
 
