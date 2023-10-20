@@ -1,36 +1,15 @@
 from __future__ import annotations
 
 import typing as ta
-import enum
 
 from omlish import dataclasses as dc
+from omlish import lang
 
 from ..dtypes import DType
 
 
-# bottom ones are asm only
-class UOps(enum.Enum):
-    LOOP = enum.auto()
-    IF = enum.auto()
-    END = enum.auto()
-    SPECIAL = enum.auto()  # loops can be global, local, or other # noqa: E702
-    DEFINE_GLOBAL = enum.auto()
-    DEFINE_LOCAL = enum.auto()
-    DEFINE_ACC = enum.auto()  # this defines buffers # noqa: E702
-    LOAD = enum.auto()
-    STORE = enum.auto()
-    CONST = enum.auto()
-    BARRIER = enum.auto()  # noqa: E702
-    PHI = enum.auto()
-    ALU = enum.auto()
-    WMMA = enum.auto()
-    CAST = enum.auto()
-    GEP = enum.auto()  # noqa: E702
-
-
 @dc.dataclass(frozen=True)
-class UOp:
-    uop: UOps
+class UOp(lang.Abstract):
     dtype: ta.Optional[DType]
     vin: tuple[UOp, ...]
     arg: ta.Any
@@ -38,7 +17,7 @@ class UOp:
     def __repr__(self):
         return (
             f"{self.num:4d} "
-            f"{str(self.uop):20s}: "
+            f"{str(type(self).__name__):20s}: "
             f"{str(self.dtype) if self.dtype is not None else '':25s} "
             f"{str([x.num for x in self.vin]):32s} "
             f"{self.arg}"
@@ -52,3 +31,86 @@ class UOp:
 
     def __eq__(self, x):
         return self.num == x.num
+
+
+# bottom ones are asm only
+
+
+@dc.dataclass(frozen=True)
+class Loop(UOp, lang.Final):
+    pass
+
+
+@dc.dataclass(frozen=True)
+class If(UOp, lang.Final):
+    pass
+
+
+@dc.dataclass(frozen=True)
+class End(UOp, lang.Final):
+    pass
+
+
+@dc.dataclass(frozen=True)
+class Special(UOp, lang.Final):
+    pass
+
+
+@dc.dataclass(frozen=True)
+class DefineGlobal(UOp, lang.Final):
+    pass
+
+
+@dc.dataclass(frozen=True)
+class DefineLocal(UOp, lang.Final):
+    pass
+
+
+@dc.dataclass(frozen=True)
+class DefineAcc(UOp, lang.Final):
+    pass
+
+
+@dc.dataclass(frozen=True)
+class Load(UOp, lang.Final):
+    pass
+
+
+@dc.dataclass(frozen=True)
+class Store(UOp, lang.Final):
+    pass
+
+
+@dc.dataclass(frozen=True)
+class Const(UOp, lang.Final):
+    pass
+
+
+@dc.dataclass(frozen=True)
+class Barrier(UOp, lang.Final):
+    pass
+
+
+@dc.dataclass(frozen=True)
+class Phi(UOp, lang.Final):
+    pass
+
+
+@dc.dataclass(frozen=True)
+class Alu(UOp, lang.Final):
+    pass
+
+
+@dc.dataclass(frozen=True)
+class Wmma(UOp, lang.Final):
+    pass
+
+
+@dc.dataclass(frozen=True)
+class Cast(UOp, lang.Final):
+    pass
+
+
+@dc.dataclass(frozen=True)
+class Gep(UOp, lang.Final):
+    pass
