@@ -196,9 +196,7 @@ def uops_to_llvm_ir(function_name: str, uops: list[UOp]) -> tuple[str, dict]:
             lvars[bufname] = bb[-1].sext(func.args[buf_index[bufname]], ir.IntType(32))
 
     for u in uops:
-        uop, dtype, vin, args, _ = u
-
-        if uop == UOps.LOOP:
+        if u.uop == UOps.LOOP:
             bb.append(
                 ir.IRBuilder(func.append_basic_block(f"loop_body_{len(loop_blocks)}"))
             )
@@ -212,75 +210,75 @@ def uops_to_llvm_ir(function_name: str, uops: list[UOp]) -> tuple[str, dict]:
                 phis.append((rp, lvars[rp]))
 
             lvars[u] = bb[-1].phi(ir.IntType(32), name=f"loop{len(loop_blocks)}")
-            lvars[u].add_incoming(lvars[vin[0]], bb[-2]._block)
+            lvars[u].add_incoming(lvars[u.vin[0]], bb[-2]._block)
             loop_blocks.append((bb[-1], phis))
 
-        elif uop == UOps.END:
+        elif u.uop == UOps.END:
             block, phis = loop_blocks.pop()
-            idx_p1 = bb[-1].add(lvars[vin[0]], ir.Constant(ir.IntType(32), 1))
-            lvars[vin[0]].add_incoming(idx_p1, bb[-1]._block)
+            idx_p1 = bb[-1].add(lvars[u.vin[0]], ir.Constant(ir.IntType(32), 1))
+            lvars[u.vin[0]].add_incoming(idx_p1, bb[-1]._block)
             for n, phi in phis:
                 phi.add_incoming(lvars[n], bb[-1]._block)
             bb.append(
                 ir.IRBuilder(func.append_basic_block(f"loop_exit_{len(loop_blocks)}"))
             )
             bb[-2].cbranch(
-                bb[-2].icmp_unsigned("<", idx_p1, lvars[vin[0].vin[1]]),
+                bb[-2].icmp_unsigned("<", idx_p1, lvars[u.vin[0].vin[1]]),
                 block._block,
                 bb[-1]._block,
             )
 
-        elif uop == UOps.DEFINE_GLOBAL:
-            lvars[u] = func.args[buf_index[args[0]]]
+        elif u.uop == UOps.DEFINE_GLOBAL:
+            lvars[u] = func.args[buf_index[u.arg[0]]]
 
-        elif uop == UOps.DEFINE_ACC:
-            lvars[u] = ir.Constant(dtype_to_llvm_dtype[dtype], args)
+        elif u.uop == UOps.DEFINE_ACC:
+            lvars[u] = ir.Constant(dtype_to_llvm_dtype[u.dtype], u.arg)
             reduce_phis.append(u)
 
-        elif uop == UOps.SPECIAL:
-            lvars[u] = lvars[args.expr]
+        elif u.uop == UOps.SPECIAL:
+            lvars[u] = lvars[u.arg.expr]
 
-        elif uop == UOps.CONST:
+        elif u.uop == UOps.CONST:
             value = (
-                int(args)
-                if dtypes.is_int(dtype)
-                else bool(args)
-                if dtype == dtypes.bool
-                else args
+                int(u.arg)
+                if dtypes.is_int(u.dtype)
+                else bool(u.arg)
+                if u.dtype == dtypes.bool
+                else u.arg
             )
-            lvars[u] = ir.Constant(dtype_to_llvm_dtype[dtype], value)
+            lvars[u] = ir.Constant(dtype_to_llvm_dtype[u.dtype], value)
 
-        elif uop == UOps.LOAD:
-            assert dtype is not None
-            if len(vin) > 2:
-                gate = bb[-1].trunc(lvars[vin[2]], ir.IntType(1))
+        elif u.uop == UOps.LOAD:
+            assert u.dtype is not None
+            if len(u.vin) > 2:
+                gate = bb[-1].trunc(lvars[u.vin[2]], ir.IntType(1))
                 aug_idx = bb[-1].select(
-                    gate, lvars[vin[1]], ir.Constant(ir.IntType(32), 0)
+                    gate, lvars[u.vin[1]], ir.Constant(ir.IntType(32), 0)
                 )
-                val = bb[-1].load(bb[-1].gep(lvars[vin[0]], [aug_idx], inbounds=True))
-                val = cast(bb, val, vin[0].dtype, dtype)
-                val = bb[-1].select(gate, val, lvars[vin[3]])
+                val = bb[-1].load(bb[-1].gep(lvars[u.vin[0]], [aug_idx], inbounds=True))
+                val = cast(bb, val, u.vin[0].dtype, u.dtype)
+                val = bb[-1].select(gate, val, lvars[u.vin[3]])
             else:
                 val = bb[-1].load(
-                    bb[-1].gep(lvars[vin[0]], [lvars[vin[1]]], inbounds=True)
+                    bb[-1].gep(lvars[u.vin[0]], [lvars[u.vin[1]]], inbounds=True)
                 )
-                val = cast(bb, val, vin[0].dtype, dtype)
+                val = cast(bb, val, u.vin[0].dtype, u.dtype)
             lvars[u] = val
 
-        elif uop == UOps.PHI:
-            lvars[u] = lvars[vin[1]]
+        elif u.uop == UOps.PHI:
+            lvars[u] = lvars[u.vin[1]]
             # PHI UOps can link to other PHI Uops, backtrace this to DEFINE_ACC
-            backward = vin[0]
+            backward = u.vin[0]
             while backward.uop == UOps.PHI:
                 backward = backward.vin[0]
             lvars[backward] = lvars[u]
 
-        elif uop == UOps.STORE:
-            element = cast(bb, lvars[vin[2]], vin[2].dtype, vin[0].dtype)
-            bb[-1].store(element, bb[-1].gep(lvars[vin[0]], [lvars[vin[1]]], inbounds=True))
+        elif u.uop == UOps.STORE:
+            element = cast(bb, lvars[u.vin[2]], u.vin[2].dtype, u.vin[0].dtype)
+            bb[-1].store(element, bb[-1].gep(lvars[u.vin[0]], [lvars[u.vin[1]]], inbounds=True))
 
-        elif uop == UOps.ALU:
-            lvars[u] = code_for_op[args](bb[-1], *[lvars[x] for x in vin])
+        elif u.uop == UOps.ALU:
+            lvars[u] = code_for_op[u.arg](bb[-1], *[lvars[x] for x in u.vin])
 
     bb[-1].ret_void()
     return str(module), {"binary":False}
