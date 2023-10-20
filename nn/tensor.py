@@ -64,14 +64,17 @@ class Tensor:
 
         # internal variables used for autograd graph construction
         self._ctx: ta.Optional[funcs.Function] = None
+
         if isinstance(data, LazyBuffer):
             assert (
                 dtype is None or dtype == data.dtype
             ), "dtype doesn't match, and casting isn't supported"
+
         elif isinstance(data, (int, float)):
             data = LazyBuffer.loadop(
                 ops.LoadConst, tuple(), dtype or Tensor.default_type, device, data
             )
+
         elif data.__class__ is list:
             assert (
                 dtype is None or dtype.np is not None
@@ -79,6 +82,7 @@ class Tensor:
             data = LazyBuffer.fromCpu(
                 np.array(data, dtype=(dtype or Tensor.default_type).np)
             )
+
         elif isinstance(data, np.ndarray):
             assert (
                 dtype is None or dtype.np is not None
@@ -87,6 +91,7 @@ class Tensor:
                 data = LazyBuffer.loadop(ops.LoadConst, tuple(), dtype or dtypes.from_np(data.dtype), device, data.item())
             else:
                 data = LazyBuffer.fromCpu(data.astype(dtype.np) if dtype is not None and dtype.np is not None else data)
+
         else:
             raise RuntimeError(f"can't create Tensor from {data}")
 
@@ -133,20 +138,25 @@ class Tensor:
                 x = Tensor(x, device="CPU", dtype=self.dtype)
             self.lazydata.contiguous().realize().lazydata.realized._copyin(x.numpy())
             return self
+
         if x.__class__ is not Tensor:
             x = Tensor(x, device=self.device, dtype=self.dtype)
+
         assert (
             self.shape == x.shape and self.device == x.device
         ), f"assign shape mismatch {self.shape} != {x.shape} or device mismatch {self.device} != {x.device}"
         assert not x.requires_grad  # self requires_grad is okay?
+
         if DEBUG >= 4:
             print(f"assign {self.lazydata} <- {x.lazydata}")
+
         if (
             self.dtype == x.dtype
             and self.lazydata.realized is not None
             and not getenv("DISALLOW_ASSIGN")
         ):
             x.lazydata.output_buffer = self.lazydata.realized
+
         self.lazydata = x.lazydata
         return self
 
@@ -829,40 +839,35 @@ class Tensor:
             self.shape[0:-len(k_)],
             self.shape[-len(k_):],
         )
+
         if any(k > s for k, s in zip(k_, s_)) or any(d != 1 for d in d_):
             o_ = [(i - d * (k - 1) - 1) // s + 1 for i, d, k, s in zip(i_, d_, k_, s_)]
-            e_ = [
-                math.ceil(k * (i + d) / i) for k, i, d in zip(k_, i_, d_)
-            ]  # expands such that we don't need padding
+            e_ = [math.ceil(k * (i + d) / i) for k, i, d in zip(k_, i_, d_)]  # expands such that we don't need padding
+
             xup = (
                 self.reshape(*prefix, *flatten((1, i) for i in i_))
                 .expand(*prefix, *flatten((e, i) for e, i in zip(e_, i_)))
                 .reshape(*prefix, *[e * i for e, i in zip(e_, i_)])
             )
+
             # slide by dilation
-            xup = xup.slice(
-                slc_prefix + [(0, k * (i + d)) for k, i, d in zip(k_, i_, d_)]
-            )
+            xup = xup.slice(slc_prefix + [(0, k * (i + d)) for k, i, d in zip(k_, i_, d_)])
             xup = xup.reshape(
                 *prefix, *flatten((k, i + d) for k, i, d in zip(k_, i_, d_))
             )
-            xup = xup.slice(
-                slc_prefix
-                + flatten(((0, k), (0, o * s)) for k, o, s in zip(k_, o_, s_))
-            )
+            xup = xup.slice(slc_prefix+ flatten(((0, k), (0, o * s)) for k, o, s in zip(k_, o_, s_)))
+
             # handle stride, and permute to move reduce to the end
-            xup = xup.reshape(
-                *prefix, *flatten((k, o, s) for k, o, s in zip(k_, o_, s_))
-            )
-            xup = xup.slice(
-                slc_prefix + flatten(((0, k), (0, o), (0, 1)) for k, o in zip(k_, o_))
-            )
+            xup = xup.reshape(*prefix, *flatten((k, o, s) for k, o, s in zip(k_, o_, s_)))
+            xup = xup.slice(slc_prefix + flatten(((0, k), (0, o), (0, 1)) for k, o in zip(k_, o_)))
             xup = xup.reshape(*prefix, *flatten((k, o) for k, o in zip(k_, o_)))
+
             return xup.permute(
                 *range(len(prefix)),
                 *[len(prefix) + i * 2 + 1 for i in range(len(k_))],
                 *[len(prefix) + i * 2 for i in range(len(k_))],
             )
+
         # TODO: once the shapetracker can optimize well, remove this alternative implementation. or not if the CPU
         #  implementation doesn't use ShapeTracker
         o_ = [(i + (s - k)) // s for i, s, k in zip(i_, s_, k_)]
@@ -1369,13 +1374,16 @@ class Tensor:
                 return self
             if x == 0.5:
                 return self.sqrt()
+
         if not isinstance(x, Tensor) and reverse and x > 0:
             return self.mul(math.log(x)).exp()
+
         ar = (
             self.abs().log().mul(x).exp()
             if not reverse or isinstance(x, Tensor)
             else self.mul(math.log(abs(x))).exp()
         )
+
         # correct sign of negative numbers raised to a power (cos has a period of 2pi so we use it here to get the
         # oddness of the power)
         sign = (
@@ -1385,6 +1393,7 @@ class Tensor:
             if not reverse
             else (self * math.pi).cos()
         )
+
         # we only need to correct the sign if the base is negative
         base_sign = (
             (
@@ -1396,6 +1405,7 @@ class Tensor:
             )
             - 1
         ) / -2
+
         # we need 0 to be positive so we need to correct base_sign when the base is 0
         base_sign = base_sign - (
             1.5
@@ -1410,6 +1420,7 @@ class Tensor:
                 )
             )
         )
+
         # inject nan if the base is negative and the power is not an integer
         to_nan = (
             ((x - x.trunc()) * 1e10).abs().clip(0, 1)
@@ -1418,6 +1429,7 @@ class Tensor:
             if not reverse
             else ((self - self.trunc()) * 1e10).abs().clip(0, 1)
         ) * base_sign
+
         inject_nan = (
             ((((-to_nan) * 2) + 1)).log().add(1)
             if isinstance(to_nan, Tensor)
@@ -1425,6 +1437,7 @@ class Tensor:
             if not to_nan
             else float("nan")
         )
+
         return ar.mul(sign * base_sign + (1 - base_sign)).mul(inject_nan)
 
     def matmul(self, x: Tensor, reverse=False) -> Tensor:
