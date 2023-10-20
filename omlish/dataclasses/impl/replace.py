@@ -21,12 +21,12 @@ def _replace(obj, /, **changes):
 
         if not f.init:
             if f.name in changes:
-                raise ValueError(f'field {f.name} is declared with init=False, it cannot be specified with replace()')
+                raise TypeError(f'field {f.name} is declared with init=False, it cannot be specified with replace()')
             continue
 
         if f.name not in changes:
             if ft is FieldType.INIT and f.default is MISSING:
-                raise ValueError(f'InitVar {f.name!r} must be specified with replace()')
+                raise TypeError(f'InitVar {f.name!r} must be specified with replace()')
             changes[f.name] = getattr(obj, f.name)
 
     return obj.__class__(**changes)
