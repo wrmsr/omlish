@@ -34,6 +34,8 @@ sentencepiece==0.1.99
 
 tiktoken==0.5.1
 
+transformers==4.34.1
+
 ##
 
 torch==2.1.0

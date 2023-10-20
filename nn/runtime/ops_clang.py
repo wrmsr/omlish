@@ -90,8 +90,10 @@ class ClangProgram:
 
     @cache_compiled
     def compile(self, prg, binary) -> bytes:
-        with tempfile.NamedTemporaryFile(delete=True) as output_file, tempfile.NamedTemporaryFile(
-                delete=True) as temp_file:
+        with (
+            tempfile.NamedTemporaryFile(delete=True) as output_file,
+            tempfile.NamedTemporaryFile(delete=True) as temp_file
+        ):
             if not binary:
                 subprocess.check_output(args=('clang -shared -O2 -Wall -Werror -x c ' + args['cflags'] + ' - -o ' + str(output_file.name)).split(), input=prg.encode('utf-8'))
             elif CI and ARM64:
