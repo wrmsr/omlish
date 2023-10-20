@@ -3,8 +3,7 @@ import typing as ta
 from llvmlite import ir  # type: ignore
 
 from .. import ops
-from ..codegen.uops import UOp
-from ..codegen.uops import UOps
+from ..codegen import uops as uo
 from ..dtypes import dtypes
 
 
@@ -153,13 +152,13 @@ def cast(bb, val, input_type, output_type):
     )
 
 
-def uops_to_llvm_ir(function_name: str, uops: list[UOp]) -> tuple[str, dict]:
+def uops_to_llvm_ir(function_name: str, uops: list[uo.UOp]) -> tuple[str, dict]:
     # all llvm stuff goes into a module
     module = ir.Module(name=__file__)
 
     # extract global buffers
     buf_to_dtype = {
-        args[0]: args[1] for uop, _, _, args, _ in uops if uop == UOps.DEFINE_GLOBAL
+        u.arg[0]: u.arg[1] for u in uops if isinstance(u, uo.DefineGlobal)
     }
     buf_index = {x: i for i, x in enumerate(buf_to_dtype.keys())}
 
@@ -189,14 +188,14 @@ def uops_to_llvm_ir(function_name: str, uops: list[UOp]) -> tuple[str, dict]:
     loop_blocks: list = []
     reduce_phis: list = []
     # TODO: newvar probably shouldn't be optional
-    lvars: dict[ta.Optional[UOp], ta.Any] = {}  # this Any is an llvm type
+    lvars: dict[ta.Optional[uo.UOp], ta.Any] = {}  # this Any is an llvm type
 
     for bufname, dtype in buf_to_dtype.items():
         if dtype == dtypes._arg_int32:
             lvars[bufname] = bb[-1].sext(func.args[buf_index[bufname]], ir.IntType(32))
 
     for u in uops:
-        if u.uop == UOps.LOOP:
+        if isinstance(u, uo.Loop):
             bb.append(
                 ir.IRBuilder(func.append_basic_block(f"loop_body_{len(loop_blocks)}"))
             )
@@ -213,7 +212,7 @@ def uops_to_llvm_ir(function_name: str, uops: list[UOp]) -> tuple[str, dict]:
             lvars[u].add_incoming(lvars[u.vin[0]], bb[-2]._block)
             loop_blocks.append((bb[-1], phis))
 
-        elif u.uop == UOps.END:
+        elif isinstance(u, uo.End):
             block, phis = loop_blocks.pop()
             idx_p1 = bb[-1].add(lvars[u.vin[0]], ir.Constant(ir.IntType(32), 1))
             lvars[u.vin[0]].add_incoming(idx_p1, bb[-1]._block)
@@ -228,17 +227,17 @@ def uops_to_llvm_ir(function_name: str, uops: list[UOp]) -> tuple[str, dict]:
                 bb[-1]._block,
             )
 
-        elif u.uop == UOps.DEFINE_GLOBAL:
+        elif isinstance(u, uo.DefineGlobal):
             lvars[u] = func.args[buf_index[u.arg[0]]]
 
-        elif u.uop == UOps.DEFINE_ACC:
+        elif isinstance(u, uo.DefineAcc):
             lvars[u] = ir.Constant(dtype_to_llvm_dtype[u.dtype], u.arg)
             reduce_phis.append(u)
 
-        elif u.uop == UOps.SPECIAL:
+        elif isinstance(u, uo.Special):
             lvars[u] = lvars[u.arg.expr]
 
-        elif u.uop == UOps.CONST:
+        elif isinstance(u, uo.Const):
             value = (
                 int(u.arg)
                 if dtypes.is_int(u.dtype)
@@ -248,7 +247,7 @@ def uops_to_llvm_ir(function_name: str, uops: list[UOp]) -> tuple[str, dict]:
             )
             lvars[u] = ir.Constant(dtype_to_llvm_dtype[u.dtype], value)
 
-        elif u.uop == UOps.LOAD:
+        elif isinstance(u, uo.Load):
             assert u.dtype is not None
             if len(u.vin) > 2:
                 gate = bb[-1].trunc(lvars[u.vin[2]], ir.IntType(1))
@@ -265,19 +264,19 @@ def uops_to_llvm_ir(function_name: str, uops: list[UOp]) -> tuple[str, dict]:
                 val = cast(bb, val, u.vin[0].dtype, u.dtype)
             lvars[u] = val
 
-        elif u.uop == UOps.PHI:
+        elif isinstance(u, uo.Phi):
             lvars[u] = lvars[u.vin[1]]
             # PHI UOps can link to other PHI Uops, backtrace this to DEFINE_ACC
             backward = u.vin[0]
-            while backward.uop == UOps.PHI:
+            while isinstance(backward, uo.Phi):
                 backward = backward.vin[0]
             lvars[backward] = lvars[u]
 
-        elif u.uop == UOps.STORE:
+        elif isinstance(u, uo.Store):
             element = cast(bb, lvars[u.vin[2]], u.vin[2].dtype, u.vin[0].dtype)
             bb[-1].store(element, bb[-1].gep(lvars[u.vin[0]], [lvars[u.vin[1]]], inbounds=True))
 
-        elif u.uop == UOps.ALU:
+        elif isinstance(u, uo.Alu):
             lvars[u] = code_for_op[u.arg](bb[-1], *[lvars[x] for x in u.vin])
 
     bb[-1].ret_void()
