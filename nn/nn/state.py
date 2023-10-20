@@ -73,19 +73,26 @@ def safe_save(tensors: dict[str, Tensor], fn: str, metadata: ta.Optional[dict[st
 def get_state_dict(obj, prefix: str = "", tensor_type=Tensor) -> dict[str, Tensor]:
     if isinstance(obj, tensor_type):
         return {prefix.strip("."): obj}
+
     if hasattr(obj, "_asdict"):
         return get_state_dict(obj._asdict(), prefix, tensor_type)  # namedtuple
+
     if isinstance(obj, collections.OrderedDict):
         return get_state_dict(dict(obj), prefix, tensor_type)
+
     if hasattr(obj, "__dict__"):
         return get_state_dict(obj.__dict__, prefix, tensor_type)
+
     state_dict = {}
+
     if isinstance(obj, (list, tuple)):
         for i, x in enumerate(obj):
             state_dict.update(get_state_dict(x, f"{prefix}{str(i)}.", tensor_type))
+
     elif isinstance(obj, dict):
         for k, v in obj.items():
             state_dict.update(get_state_dict(v, f"{prefix}{str(k)}.", tensor_type))
+
     return state_dict
 
 
@@ -99,15 +106,15 @@ def load_state_dict(model, state_dict, strict=True):
         lambda et_ns: f", {GlobalCounters.mem_used/1e9:.2f} GB loaded at {GlobalCounters.mem_used/et_ns:.2f} GB/s",
     ):
         model_state_dict = get_state_dict(model)
+
         if DEBUG >= 1 and len(state_dict) > len(model_state_dict):
             print(
                 "WARNING: unused weights in state_dict",
                 sorted(list(state_dict.keys() - model_state_dict.keys())),
             )
+
         for k, v in (t := tqdm.tqdm(model_state_dict.items(), disable=False)):
-            t.set_description(
-                f"ram used: {GlobalCounters.mem_used/1e9:5.2f} GB, {k:50s}"
-            )
+            t.set_description(f"ram used: {GlobalCounters.mem_used/1e9:5.2f} GB, {k:50s}")
             if k not in state_dict and not strict:
                 if DEBUG >= 1:
                     print(f"WARNING: not loading {k}")
@@ -137,6 +144,7 @@ def torch_load(fn: str):
         lens[storage[2]] = storage[4] * storage[1].itemsize
         if storage[2] not in offsets:
             return None
+
         byte_offset = offsets[storage[2]] + storage_offset * storage[1].itemsize
         ret = t[byte_offset:byte_offset + prod(size)].cast(storage[1])
         # convert bfloat16 -> float16 using LLVM for Llama 2
@@ -202,6 +210,7 @@ def torch_load(fn: str):
                 if DEBUG >= 2:
                     print(f"WARNING: returning Dummy for {module} {name}")
                 return Dummy
+
             return (
                 intercept[name]
                 if module_root == "torch"

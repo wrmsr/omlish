@@ -33,10 +33,13 @@ def run_schedule(schedule: list[ScheduleItem]):
     # NOTE: if you for loop the schedule it's slow because nothing frees
     while len(schedule):
         si = schedule.pop(0)
+
         # log_schedule_item(si)
+
         assert all(x.realized for x in si.inputs), "can't run schedule, some inputs aren't realized"
         # if DEBUG >= 3:
         #     print_tree(si.ast)
+
         if isinstance(si.ast, ops.LoadOp):
             # confirm the LoadOps are contiguous and in order
             for i, s in enumerate(si.ast.src):
@@ -44,6 +47,7 @@ def run_schedule(schedule: list[ScheduleItem]):
                     isinstance(s, LazyOp) and isinstance(s, ops.Mem) and s.arg.idx == i + 1 and s.arg.st.contiguous
                 ), f"bad LoadOps src {i}: {s}"
             LOAD_OPS_DISPATCHER[type(si.ast)](si.out, *si.inputs)
+
         else:
             si.out.realized = Device[si.out.device].exec_ast(
                 si.ast,
@@ -52,8 +56,11 @@ def run_schedule(schedule: list[ScheduleItem]):
                 var_vals=si.var_vals,
                 **si.out._device_extra_args(),
             )
+
         del si.out.op
-        for v in si.out.views: del v.op
+        for v in si.out.views:
+            del v.op
+
         assert (
             si.out.realized and isinstance(si.out.realized, Device[si.out.device].buffer)
         ), f"device mismatch on realized got {type(si.out.realized)} expected {si.out.device}"
@@ -87,13 +94,16 @@ def _realize_rand(buffer: LazyBuffer) -> None:
 def _realize_from(buffer: LazyBuffer, src: LazyBuffer) -> None:
     assert src.realized.size == buffer.st.size(), f"size mismatch on FROM {src.realized.size} != {buffer.st.size()}"
     assert src.st.contiguous and buffer.st.contiguous, "all must be contiguous for from"
+
     if DEBUG >= 3:
         print(f"*** copy {buffer.device} <- {src.device} size {src.realized.size} dtype {src.realized.dtype}")
+
     # TODO: make this generic
     if isinstance(src.realized, RawDiskBuffer) and issubclass(Device[buffer.device].buffer, RawBufferMapped):
         assert all_int(buffer.shape), "does not support symbolic shape"
         buffer.realized = Device[buffer.device].buffer(prod(buffer.shape), buffer.dtype, **buffer._device_extra_args())
         src.realized.readinto(ta.cast(RawBufferMapped, buffer.realized)._buffer())
+
     elif (
             isinstance(src.realized, RawBufferTransfer)
             and issubclass(Device[buffer.device].buffer, RawBufferTransfer)
@@ -105,6 +115,7 @@ def _realize_from(buffer: LazyBuffer, src: LazyBuffer) -> None:
             buffer.dtype,
             **buffer._device_extra_args(),
         )
+
     else:
         # TODO: schedule this as FROM to go to CPU, and a FROM to go to device
         buffer.realized = Device[buffer.device].buffer.fromCpu(src.realized.toCpu(), **buffer._device_extra_args())

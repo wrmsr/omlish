@@ -83,8 +83,10 @@ class Interpreted:
                 buf = self.to_underlying(inputs[ast.arg.idx - 1].realized)
             elif isinstance(ast, ops.Const):
                 buf = self.to_underlying(self.buffer.fromCpu(np.array(ast.arg.val, dtype=ast.arg.dtype.np)))
+
             for mop, arg in ast.arg.st.to_movement_ops():
                 buf = self.fxn_for_op[mop](buf, arg)
+
             return self.from_underlying(buf)
 
         if (
@@ -478,19 +480,24 @@ class Compiled:
 
             assert k.info.dtype == output.dtype, f"linearizer must match dtype. linearizer wants {k.info.dtype} but buffer is {output.dtype}"
             if not getenv("NOOPT"):
-                if not k.apply_tensor_cores(getenv("TC", 1)): k.hand_coded_optimizations()
+                if not k.apply_tensor_cores(getenv("TC", 1)):
+                    k.hand_coded_optimizations()
+
                 if BEAM:
                     kb = Linearizer(ast, self.linearizer_opts)
                     kb.required_optimizations()
                     kb.dont_use_locals = bool(getenv("NOLOCALS"))
+
                     from .features.search import beam_search, time_linearizer
                     kb = beam_search(kb, rawbuffers, BEAM.value)
+
                     baseline = time_linearizer(
                         k,
                         rawbuffers,
                         allow_test_size=False,
                         disable_cache=True
                     )
+
                     beamtime = time_linearizer(
                         kb,
                         rawbuffers,
@@ -502,6 +509,7 @@ class Compiled:
                         if DEBUG >= 1: print(
                             f"beam search {beamtime * 1e6:<12.2f} beat baseline {baseline * 1e6:<12.2f} by {baseline / beamtime:.2f}x")
                         k = kb
+
             return self.to_program(k)
 
         if getenv("ENABLE_METHOD_CACHE", 1):
