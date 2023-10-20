@@ -61,7 +61,7 @@ class Conv2d:
             Tensor.uniform(out_channels, low=-bound, high=bound) if bias else None
         )
 
-    def __call__(self, x):
+    def __call__(self, x: Tensor):
         return x.conv2d(
             self.weight,
             self.bias,
@@ -126,7 +126,7 @@ class ConvTranspose2d(Conv2d):
         )
         self.output_padding = output_padding
 
-    def __call__(self, x):
+    def __call__(self, x: Tensor):
         return x.conv_transpose2d(
             self.weight,
             self.bias,

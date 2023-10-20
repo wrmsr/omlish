@@ -41,7 +41,8 @@ torchvision==0.16.0
 
 ##
 
-# librosa==0.10.0.post2  # FIXME: -> >numba -> >numpy
+# librosa==0.10.1  # FIXME: -> >numba -> >numpy
+# pyaudio==0.2.13
 
 ## tinygrad
 

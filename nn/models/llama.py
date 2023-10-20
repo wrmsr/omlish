@@ -2,6 +2,8 @@
 # pip3 install sentencepiece pyobjc-framework-Metal pyobjc-framework-Cocoa pyobjc-framework-libdispatch
 # import typeguard.importhook
 # typeguard.importhook.install_import_hook('tinygrad')
+
+hf.snapshot_download('huggyllama/llama-13b')
 """
 
 import argparse
@@ -42,9 +44,9 @@ JIT = getenv("JIT", 0 if CI else int(Device.DEFAULT in JIT_SUPPORTED_DEVICE))
 def precompute_freqs_cis(dim: int, end: int, theta: float = 10000.0):
     freqs = 1.0 / (theta ** (Tensor.arange(0, dim, 2)[: (dim // 2)] / dim))
     freqs = Tensor.arange(end).unsqueeze(dim=1) * freqs.unsqueeze(dim=0)
-    return Tensor.stack([Tensor.cos(freqs), Tensor.sin(freqs)], dim=-1).reshape(
-        1, end, 1, dim // 2, 2
-    )
+    return Tensor.\
+        stack([Tensor.cos(freqs), Tensor.sin(freqs)], dim=-1).\
+        reshape(1, end, 1, dim // 2, 2)
 
 
 # (a+i*b) * (c+i*d) = (ac-bd) + i*(ad+bc)
@@ -92,7 +94,13 @@ class RMSNorm:
 
 
 class Attention:
-    def __init__(self, dim, n_heads, n_kv_heads, linear=Linear) -> None:
+    def __init__(
+            self,
+            dim,
+            n_heads,
+            n_kv_heads,
+            linear=Linear,
+    ) -> None:
         super().__init__()
         self.n_heads = n_heads
         self.n_kv_heads = n_kv_heads if n_kv_heads is not None else n_heads
@@ -129,10 +137,10 @@ class Attention:
         else:
             assert cache_k is not None and cache_v is not None, "no cache"
             assert (
-                start_pos
-                == sym_infer(cache_k.shape[1], cache_k.lazydata.var_vals)
-                == sym_infer(cache_v.shape[1], cache_v.lazydata.var_vals)
-            ), f"cache has wrong shape, not ({start_pos} == {sym_infer(cache_k.shape[1], cache_k.lazydata.var_vals)} == {sym_infer(cache_v.shape[1], cache_v.lazydata.var_vals)})"  # noqa
+                start_pos ==
+                (cache_k.shape[1].val if isinstance(cache_k.shape[1], Variable) else cache_k.shape[1]) ==
+                (cache_v.shape[1].val if isinstance(cache_v.shape[1], Variable) else cache_v.shape[1])
+            ), f"cache has wrong shape, {start_pos=}, {cache_k.shape[1]=}, {cache_v.shape[1]=}"
             assert (
                 seqlen == xk.shape[1] and seqlen == xv.shape[1]
             ), "seqlen is wrong shape?!?"
@@ -155,7 +163,12 @@ class Attention:
 
 class FeedForward:
     def __init__(
-        self, dim, hidden_dim, multiple_of, linear=Linear, ffn_dim_multiplier=None
+            self,
+            dim,
+            hidden_dim,
+            multiple_of,
+            linear=Linear,
+            ffn_dim_multiplier=None,
     ) -> None:
         super().__init__()
 
@@ -266,9 +279,7 @@ class Transformer:
         self.norm = RMSNorm(dim, norm_eps)
         self.tok_embeddings = Embedding(vocab_size, dim)
         self.output = linear(dim, vocab_size, bias=False)
-        self.freqs_cis = precompute_freqs_cis(
-            dim // n_heads, max_seq_len * 2, rope_theta
-        )
+        self.freqs_cis = precompute_freqs_cis(dim // n_heads, max_seq_len * 2, rope_theta)
         self.norm_output = lambda x: self.output(self.norm(x))
 
         self.tok_embeddings_jitted = TinyJit(lambda x: self.tok_embeddings(x).realize())
@@ -370,6 +381,7 @@ class Transformer:
 
 
 # **** files and arguments ****
+
 MODEL_PARAMS = {
     "1": {
         "7B": {
@@ -580,6 +592,7 @@ MODEL_PARAMS = {
 
 
 # **** helper functions ****
+
 def concat_weights(models):
     def convert(name) -> Tensor:
         disk_tensors = [model[name] for model in models]
@@ -648,7 +661,12 @@ def convert_from_huggingface(weights, model):
 
 
 class AbsmaxQuantizedLinear:
-    def __init__(self, in_features, out_features, bias=False) -> None:
+    def __init__(
+            self,
+            in_features,
+            out_features,
+            bias=False,
+    ) -> None:
         super().__init__()
         assert not bias
         self.weight = Tensor.ones(out_features, in_features, dtype=dtypes.int8)
@@ -792,7 +810,10 @@ if __name__ == "__main__":
     parser.add_argument(
         "--size",
         type=str,
-        default="13B",
+        default=
+                # "13B"
+                "7B"
+        ,
         help="Size of model to use [7B, 13B, 30B, 65B] for Gen 1, [7B, 13B, 70B] for Gen 2, [7B, 13B, 34B] for Code LLaMA",  # noqa
     )
     parser.add_argument(
@@ -804,7 +825,11 @@ if __name__ == "__main__":
     parser.add_argument(
         "--model",
         type=pathlib.Path,
-        default=pathlib.Path.home() / ".cache/huggingface/hub/models--huggyllama--llama-13b/snapshots/bf57045473f207bb1de1ed035ace226f4d9f9bba/model.safetensors.index.json",  # noqa
+        default=pathlib.Path.home() /
+                # ".cache/huggingface/hub/models--huggyllama--llama-13b/snapshots/bf57045473f207bb1de1ed035ace226f4d9f9bba/model.safetensors.index.json"  # noqa
+                ".cache/huggingface/hub/models--huggyllama--llama-7b/snapshots/8416d3fefb0cb3ff5775a7b13c1692d10ff1aa16/model.safetensors.index.json"
+        # noqa
+        ,
         help="Folder with the original weights to load, or single .index.json, .safetensors or .bin file",
     )
 
