@@ -46,9 +46,7 @@ class View:
         offset: sint = 0,
         mask: ta.Optional[tuple[tuple[sint, sint], ...]] = None,
     ):
-        strides = (
-            filter_strides(shape, strides) if strides else strides_for_shape(shape)
-        )
+        strides = filter_strides(shape, strides) if strides else strides_for_shape(shape)
         contiguous = (
             offset == 0
             and mask is None
@@ -58,13 +56,11 @@ class View:
 
     @functools.lru_cache(maxsize=None)  # pylint: disable=method-cache-max-size-none
     def size(self):
-        return prod(
-            [
-                s.max if isinstance(s, Node) else s
-                for s, st in zip(self.shape, self.strides)
-                if st != 0
-            ]
-        )
+        return prod([
+            s.max if isinstance(s, Node) else s
+            for s, st in zip(self.shape, self.strides)
+            if st != 0
+        ])
 
     def vars(self) -> list[Variable]:
         flatten_mask = tuple(x for m in self.mask for x in m) if self.mask is not None else tuple()
@@ -183,12 +179,8 @@ class View:
             isinstance(x, int) and x != 0 for x in mul
         ), f"invalid stride {mul} for {self.shape}"
         strides = tuple([z * m for z, m in zip(self.strides, mul)])
-        new_shape = tuple(
-            [(s + (abs(m) - 1)) // abs(m) for s, m in zip(self.shape, mul)]
-        )
-        offset = sum(
-            [(s - 1) * z for s, z, m in zip(self.shape, self.strides, mul) if m < 0]
-        )
+        new_shape = tuple([(s + (abs(m) - 1)) // abs(m) for s, m in zip(self.shape, mul)])
+        offset = sum([(s - 1) * z for s, z, m in zip(self.shape, self.strides, mul) if m < 0])
         mask = (
             tuple(
                 [
@@ -228,12 +220,8 @@ class View:
         # check if this is adding or removing 1s (only)
         # NOTE: this is optional, but removes most calls to (expensive!) merge_views (with mask, not optional)
         if [x for x in self.shape if x != 1] == [x for x in new_shape if x != 1]:
-            new_strides: list[sint] = [
-                y for x, y in zip(self.shape, self.strides) if x != 1
-            ]
-            new_strides_tuple: tuple[sint, ...] = tuple(
-                [0 if x == 1 else new_strides.pop(0) for x in new_shape]
-            )
+            new_strides: list[sint] = [y for x, y in zip(self.shape, self.strides) if x != 1]
+            new_strides_tuple: tuple[sint, ...] = tuple([0 if x == 1 else new_strides.pop(0) for x in new_shape])
             new_mask_tuple: ta.Optional[tuple[tuple[sint, sint], ...]] = None
             if self.mask:
                 for x, y in zip(self.shape, self.mask):
@@ -241,12 +229,8 @@ class View:
                         new_mask_tuple = ((0, 0),) * len(new_shape)
                         break
                 else:
-                    new_mask: list[tuple[sint, sint]] = [
-                        y for x, y in zip(self.shape, self.mask) if x != 1
-                    ]
-                    new_mask_tuple = tuple(
-                        [(0, 1) if x == 1 else new_mask.pop(0) for x in new_shape]
-                    )
+                    new_mask: list[tuple[sint, sint]] = [y for x, y in zip(self.shape, self.mask) if x != 1]
+                    new_mask_tuple = tuple([(0, 1) if x == 1 else new_mask.pop(0) for x in new_shape])
             return View.create(
                 new_shape, new_strides_tuple, self.offset, new_mask_tuple
             )
