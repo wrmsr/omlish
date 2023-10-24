@@ -15,9 +15,11 @@ from tqdm import tqdm
 
 from ..devices import Device
 from ..dtypes import dtypes
+from ..helpers import Context
 from ..helpers import GlobalCounters
 from ..helpers import Timing
 from ..helpers import download_file
+from ..helpers import getenv
 from ..jit import TinyJit
 from ..nn.conv import Conv2d
 from ..nn.nn import Embedding
@@ -796,19 +798,20 @@ if __name__ == "__main__":
         Tensor._seed = args.seed
     latent = Tensor.randn(1, 4, 64, 64)
 
-    # this is diffusion
-    for index, timestep in (t := tqdm(list(enumerate(timesteps))[::-1])):
-        GlobalCounters.reset()
-        t.set_description("%3d %3d" % (index, timestep))
-        with Timing(
-            "step in ",
-            enabled=args.timing,
-            on_exit=lambda _: f", using {GlobalCounters.mem_used/1e9:.2f} GB",
-        ):
-            latent = do_step(latent, Tensor([timestep]), Tensor([index]), Tensor([args.guidance]))
-            if args.timing:
-                Device[Device.DEFAULT].synchronize()
-    del do_step
+    with Context(BEAM=getenv("LATEBEAM")):
+        # this is diffusion
+        for index, timestep in (t := tqdm(list(enumerate(timesteps))[::-1])):
+            GlobalCounters.reset()
+            t.set_description("%3d %3d" % (index, timestep))
+            with Timing(
+                "step in ",
+                enabled=args.timing,
+                on_exit=lambda _: f", using {GlobalCounters.mem_used/1e9:.2f} GB",
+            ):
+                latent = do_step(latent, Tensor([timestep]), Tensor([index]), Tensor([args.guidance]))
+                if args.timing:
+                    Device[Device.DEFAULT].synchronize()
+        del do_step
 
     # upsample latent space to image with autoencoder
     x = model.first_stage_model.post_quant_conv(1 / 0.18215 * latent)
