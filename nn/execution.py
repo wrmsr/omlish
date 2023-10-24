@@ -139,7 +139,7 @@ class Interpreted:
                     f"*** {'exec' if created_context else '    '} "
                     f"{GlobalCounters.mem_used/1e9:5.2f} GB "
                     f"{(time.perf_counter()-st)*1e3:7.2f} ms "
-                    f"op: {type(ast):20s} "
+                    f"op: {type(ast).__name__:20s} "
                     f"out({ret.dtype.name}): "
                     f"{str(ret._buf.shape) if hasattr(ret._buf, 'shape') else str(len(ret._buf)):30s} "
                     f"in({len(srcs)}):"
