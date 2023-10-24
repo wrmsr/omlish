@@ -3,7 +3,6 @@ import unittest
 import numpy as np
 import torch
 
-from ...devices import Device
 from ...tensor import Tensor
 
 

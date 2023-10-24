@@ -136,16 +136,16 @@ else:
 
 class CUDAProgram:
     def __init__(self, name: str, prg: str, binary=False, shared=0, local_size_override=None):
-        print(prg)
-        print()
         if not binary:
             try:
                 prg = cuda_compile(prg, target="ptx", no_extern_c=True, options=['-Wno-deprecated-gpu-targets']).decode('utf-8')
             except cuda.CompileError as e:
                 if DEBUG >= 3: print("FAILED TO BUILD", prg)
                 raise e
+
         if DEBUG >= 5:
             print(pretty_ptx(prg))
+
         if DEBUG >= 6:
             try:
                 fn = (pathlib.Path(tempfile.gettempdir()) / f"tinycuda_{hashlib.md5(prg.encode('utf-8')).hexdigest()}").as_posix()
@@ -155,6 +155,7 @@ class CUDAProgram:
                 print(subprocess.check_output(['nvdisasm', fn]).decode('utf-8'))
             except Exception as e:
                 print("failed to generate SASS", str(e))
+
         # TODO: name is wrong, so we get it from the ptx using hacks
         self.prg = cuda.module_from_buffer(prg.encode('utf-8')).get_function(prg.split(".visible .entry ")[1].split("(")[0])
         self.shared = shared
@@ -164,6 +165,7 @@ class CUDAProgram:
         if wait:
             start, end = cuda.Event(), cuda.Event()
             start.record()
+
         self.prg(
             *[
                 x._buf if isinstance(x, RawCUDABuffer) else
@@ -175,6 +177,7 @@ class CUDAProgram:
             grid=tuple(global_size),
             shared=self.shared,
         )
+
         if wait:
             end.record()
             end.synchronize()

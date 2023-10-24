@@ -85,9 +85,7 @@ def merge_views(vm2: View, vm1: View) -> ta.Optional[View]:
     strides = mst.real_strides()
     if None in strides:
         return None
-    return View.create(
-        vm1.shape, ta.cast(tuple[sint, ...], strides), mst.real_offset(), vm1.mask
-    )
+    return View.create(vm1.shape, ta.cast(tuple[sint, ...], strides), mst.real_offset(), vm1.mask)
 
 
 @functools.lru_cache(maxsize=None)
@@ -145,9 +143,8 @@ class ShapeTracker:
         to_apply: list[tuple[type[ops.MovementOp], tuple]] = []
         for v in self.views:
             real_shape = tuple(y - x for x, y in v.mask) if v.mask else v.shape
-            real_offset = v.offset + (
-                sum(x * st for (x, _), st in zip(v.mask, v.strides)) if v.mask else 0
-            )
+            real_offset = v.offset + (sum(x * st for (x, _), st in zip(v.mask, v.strides)) if v.mask else 0)
+
             # first, we apply the offset
             # then, we make it the correct shape
             # then, we apply permutations
@@ -162,27 +159,31 @@ class ShapeTracker:
                     ),
                 )
             )
+
             # then, we apply pre expand pads
             if v.mask is not None:
                 pre_expand_pads = tuple(
                     (x, s - y) if st != 0 else (0, 0)
                     for (x, y), s, st in zip(v.mask, v.shape, v.strides)
                 )
+
                 post_expand_pads = tuple(
                     (x, s - y) if st == 0 else (0, 0)
                     for (x, y), s, st in zip(v.mask, v.shape, v.strides)
                 )
+
                 if any(x != (0, 0) for x in pre_expand_pads):
                     to_apply.append((ops.Pad, pre_expand_pads))
-                    real_shape = tuple(
-                        x + s[0] + s[1] for x, s in zip(real_shape, pre_expand_pads)
-                    )
+                    real_shape = tuple(x + s[0] + s[1] for x, s in zip(real_shape, pre_expand_pads))
+
             # then, we do any expands
             if any(s != 1 and st == 0 for s, st in zip(real_shape, v.strides)):
                 to_apply.append((ops.Expand, real_shape))
+
             # lastly, we apply post expand pads
             if v.mask is not None and any(x != (0, 0) for x in post_expand_pads):
                 to_apply.append((ops.Pad, post_expand_pads))
+
         return to_apply
 
     # these are multiview strides, value is None if it's not a simple strided dimension
