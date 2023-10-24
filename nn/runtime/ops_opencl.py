@@ -123,7 +123,7 @@ class ClBuffer(RawBufferCopyInOut, RawBufferTransfer):
         self.event = cl.enqueue_copy(
             CL.cl_queue[self._buf.device],
             self._buf,
-            np.require(x, requirements="C"),
+            np.require(x, requirements=['C', 'A']),
             is_blocking=False,
         )
 

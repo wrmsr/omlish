@@ -9,6 +9,8 @@ from ..dtypes import ImageDType
 from ..execution import Compiled
 from ..execution import MemBuffer
 from ..helpers import DEBUG
+from ..helpers import diskcache_get
+from ..helpers import diskcache_put
 from ..helpers import flatten
 from ..helpers import getenv
 from ..helpers import prod
@@ -31,10 +33,6 @@ actions += [
 device: Compiled = ta.cast(Compiled, Device[Device.DEFAULT])
 
 
-import shelve
-logtm = shelve.open(getenv("LOGTM", "")) if getenv("LOGTM", "") else None
-
-
 # returns time in seconds
 def time_linearizer(
         lin: Linearizer,
@@ -45,9 +43,14 @@ def time_linearizer(
         should_copy=True,
         disable_cache=False,
 ) -> float:
-    key = str((lin.ast, lin.applied_opts))
-    if should_copy and not disable_cache and logtm is not None and key in logtm:
-        return min(logtm[key])  # pylint: disable=E1135 # NOTE: we check should_copy since this may have side effects
+    key = {
+        "ast": str(lin.ast),
+        "opts": str(lin.applied_opts),
+        "allow_test_size": allow_test_size,
+        "max_global_size": max_global_size,
+    }
+    if should_copy and not disable_cache and (val := diskcache_get("time_linearizer", key)) is not None:
+        return min(val)
     if should_copy:
         lin = lin.copy() # TODO: remove the need for this
     var_vals = {k: k.min for k in vars_from_ast(lin.ast)}
@@ -76,9 +79,7 @@ def time_linearizer(
         prg.global_size = real_global_size
     except Exception:
         tms = [float('inf')]
-    if logtm is not None:
-        logtm[key] = tms
-    return min(tms)
+    return min(diskcache_put("time_linearizer", key, tms))
 
 
 # get (scrap) buffers for timing the linearizer
@@ -120,8 +121,13 @@ def get_linearizer_actions(lin: Linearizer, include_0=True) -> dict[int, Lineari
     return acted_lins
 
 
-def beam_search(lin, rawbufs, amt):
-    best_tm = float('inf')
+def beam_search(lin: Linearizer, rawbufs, amt: int) -> Linearizer:
+    key = {"ast": str(lin.ast), "amt": amt}
+    if (val := diskcache_get("beam_search", key)) is not None and not getenv("IGNORE_BEAM_CACHE"):
+        ret = lin.copy()
+        for o in val: ret.apply_opt(o)
+        return ret
+    best_tm = time_linearizer(lin, rawbufs)  # handle the case where no actions make it faster
     beam: list[Linearizer] = [lin]
     while 1:
         acted_lins = flatten([get_linearizer_actions(lin, include_0=False).values() for lin in beam])
@@ -131,6 +137,7 @@ def beam_search(lin, rawbufs, amt):
             break  # we didn't get faster
         best_tm = opts[0][1]
         beam = [x[0] for x in opts[:amt]]
-        if DEBUG >= 1:
+        if DEBUG >= 2:
             print(f"{opts[0][1]*1e6:12.2f} us from {len(opts):3d} actions", beam[0].colored_shape())
+    diskcache_put("beam_search", key, beam[0].applied_opts)
     return beam[0]

@@ -319,11 +319,11 @@ class Kernel:
         assert len(colors) == self.shape_len, "colors size mismatch"
         return colors
 
-    def colored_shape(self, pad=None) -> str:
+    def colored_shape(self, pad=None, dense=False) -> str:
         ret = ' '.join(
             colored(s, color)
             for s,color in zip(
-                [f"{s:4d}"if isinstance(s, int) else s for s in self.full_shape],
+                [f"{s:4d}"if isinstance(s, int) and not dense else s for s in self.full_shape],
                 self.colors(),
             )
         )

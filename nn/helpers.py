@@ -6,8 +6,10 @@ import hashlib
 import operator
 import os
 import pathlib
+import pickle
 import platform
 import re
+import sqlite3
 import tempfile
 import time
 import typing as ta
@@ -277,3 +279,70 @@ def cache_compiled(func):
         return cache_path.read_bytes()
 
     return wrapper
+
+
+# *** universal database cache ***
+
+
+CACHEDB = getenv("CACHEDB", "/tmp/tinygrad_cache")
+VERSION = 2
+
+_db_connection = None
+
+
+def db_connection():
+    global _db_connection
+    if _db_connection is None:
+        _db_connection = sqlite3.connect(CACHEDB)
+        if DEBUG >= 3:
+            _db_connection.set_trace_callback(print)
+        if diskcache_get("meta", "version") != VERSION:
+            print("cache is out of date, clearing it")
+            os.unlink(CACHEDB)
+            _db_connection = sqlite3.connect(CACHEDB)
+            if DEBUG >= 3:
+                _db_connection.set_trace_callback(print)
+            diskcache_put("meta", "version", VERSION)
+    return _db_connection
+
+
+def diskcache_get(table: str, key: ta.Union[dict, str, int]) -> ta.Any:
+    if isinstance(key, (str, int)): key = {"key": key}
+    try:
+        res = db_connection().cursor().execute(
+            f"SELECT val FROM {table} WHERE {' AND '.join([f'{x}=?' for x in key.keys()])}",
+            tuple(key.values()),
+        )
+    except sqlite3.OperationalError:
+        return None  # table doesn't exist
+    if (val := res.fetchone()) is not None:
+        return pickle.loads(val[0])
+    return None
+
+
+_db_tables = set()
+
+
+def diskcache_put(table: str, key: ta.Union[dict, str, int], val: ta.Any):
+    if isinstance(key, (str, int)):
+        key = {"key": key}
+    conn = db_connection()
+    cur = conn.cursor()
+    if table not in _db_tables:
+        TYPES = {
+            str: "text",
+            bool: "integer",
+            int: "integer",
+            float: "numeric",
+            bytes: "blob",
+        }
+        ltypes = ', '.join(f"{k} {TYPES[type(key[k])]}" for k in key.keys())
+        cur.execute(f"CREATE TABLE IF NOT EXISTS {table} ({ltypes}, val blob, PRIMARY KEY ({', '.join(key.keys())}))")
+        _db_tables.add(table)
+    cur.execute(
+        f"REPLACE INTO {table} ({', '.join(key.keys())}, val) VALUES ({', '.join(['?'] * len(key.keys()))}, ?)",
+        tuple(key.values()) + (pickle.dumps(val),),
+    )
+    conn.commit()
+    cur.close()
+    return val

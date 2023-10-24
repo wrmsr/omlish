@@ -244,7 +244,7 @@ class OptimizedKernel(Kernel):
     # ******************** high level optimizers ********************
 
     # TODO: unify this
-    def apply_tensor_cores(self, use_tensor_cores=1):
+    def apply_tensor_cores(self, use_tensor_cores=1) -> bool:
         # should use HIP tensor cores?
         if (
             use_tensor_cores != 0
