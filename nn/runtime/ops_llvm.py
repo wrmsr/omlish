@@ -87,7 +87,11 @@ class LlvmProgram:
 
 LlvmBuffer = Compiled(
     RawMallocBuffer,
-    LinearizerOptions(supports_float4=False, has_local=False),
+    LinearizerOptions(
+        supports_float4=False,
+        has_local=False,
+        has_shared=False,
+    ),
     uops_to_llvm_ir,
     LlvmProgram,
 )
