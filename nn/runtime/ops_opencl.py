@@ -174,9 +174,6 @@ class ClProgram:
     def __init__(self, name: str, prg: str, binary=False, argdtypes=None, options=None) -> None:
         super().__init__()
 
-        print(prg)
-        print()
-
         self.name = name
 
         self.clprograms = [
