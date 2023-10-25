@@ -1,5 +1,5 @@
-greenlet==3.0.0; python_version < '3.12' and implementation_name != 'nogil'
-httptools==0.6.0; python_version < '3.12' and implementation_name != 'nogil'
+greenlet==3.0.1; python_version < '3.12' and implementation_name != 'nogil'
+httptools==0.6.1; python_version < '3.12' and implementation_name != 'nogil'
 pyyaml==6.0.1
 sqlalchemy==2.0.22
 wrapt==1.15.0

@@ -6,7 +6,7 @@
 matplotlib==3.8.0
 numpy==1.26.1
 
-huggingface_hub==0.18.0
+huggingface_hub>=0.17.0
 
 ##
 
@@ -48,7 +48,7 @@ torchvision==0.16.0
 
 ## tinygrad
 
-networkx==3.1
+networkx==3.2
 
 nevergrad==1.0.0
 
@@ -57,7 +57,7 @@ unicorn==2.0.1.post1
 
 ### infra
 
-boto3>=1.28.57
+boto3>=1.28.70
 
 google-cloud-compute==1.14.1
 
@@ -71,8 +71,8 @@ soco==0.29.1
 sounddevice==0.4.6
 # vosk==0.3.45
 
-bellows==0.36.6
-zigpy==0.58.1
+bellows==0.36.8
+zigpy==0.59.0
 
 # python-openzwave
-zwave-js-server-python==0.52.1
+zwave-js-server-python==0.53.1
