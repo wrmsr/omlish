@@ -6,49 +6,29 @@ from __future__ import annotations
 
 import typing as ta
 
+from omlish import dataclasses as dc
 from omlish import lang
 
 if ta.TYPE_CHECKING:
     from .lazy import LazyBuffer
 
 
+@dc.dataclass(frozen=True)
 class LazyOp(lang.Abstract):
     src: tuple[ta.Union[LazyOp, LazyBuffer], ...]
-    arg: ta.Any
-    buffers: tuple[LazyBuffer, ...]
+    arg: ta.Any = None
 
-    def __init__(
-            self,
-            src: tuple[ta.Union[LazyOp, LazyBuffer], ...],
-            arg: ta.Any = None,
-    ) -> None:
-        super().__init__()
-
-        self.src = src
-        self.arg = arg
-        self.buffers = ()
-
-        # NOTE: the linearizer's key function maps the buffers to ints, and LOCAL_BUFFER is used. we don't care about
-        # buffers in these cases
+    @property
+    def buffers(self):
+        buffers: tuple[ta.Union[LazyOp, LazyBuffer], ...] = ()
         try:
-            for x in src:
-                self.buffers += x.buffers
+            # NOTE: the linearizer's key function maps the buffers to ints, and LOCAL_BUFFER is used. we don't care
+            # about buffers in these cases
+            for x in self.src:
+                buffers += x.buffers
         except AttributeError:
-            self.buffers = ()
-
-    def __repr__(self) -> str:
-        return f"{type(self).__name__}(src={self.src}, arg={self.arg})"
-
-    def __eq__(self, __value: object) -> bool:
-        return (
-            isinstance(__value, LazyOp)
-            and type(self) is type(__value)
-            and self.src == __value.src
-            and self.arg == __value.arg
-        )
-
-    def __hash__(self) -> int:
-        return hash((type(self), self.src, self.arg))
+            buffers = ()
+        return buffers
 
     @property
     def key(self):
@@ -112,38 +92,47 @@ class LazyOp(lang.Abstract):
 ##
 
 
+@dc.dataclass(frozen=True)
 class UnaryOp(LazyOp, lang.Abstract):
     pass
 
 
+@dc.dataclass(frozen=True)
 class Nop(UnaryOp, lang.Final):
     pass
 
 
+@dc.dataclass(frozen=True)
 class Exp2(UnaryOp, lang.Final):
     pass
 
 
+@dc.dataclass(frozen=True)
 class Log2(UnaryOp, lang.Final):
     pass
 
 
+@dc.dataclass(frozen=True)
 class Cast(UnaryOp, lang.Final):
     pass
 
 
+@dc.dataclass(frozen=True)
 class Sin(UnaryOp, lang.Final):
     pass
 
 
+@dc.dataclass(frozen=True)
 class Sqrt(UnaryOp, lang.Final):
     pass
 
 
+@dc.dataclass(frozen=True)
 class Recip(UnaryOp, lang.Final):
     pass
 
 
+@dc.dataclass(frozen=True)
 class Neg(UnaryOp, lang.Final):
     pass
 
@@ -151,34 +140,42 @@ class Neg(UnaryOp, lang.Final):
 ##
 
 
+@dc.dataclass(frozen=True)
 class BinaryOp(LazyOp, lang.Abstract):
     pass
 
 
+@dc.dataclass(frozen=True)
 class Add(BinaryOp, lang.Final):
     pass
 
 
+@dc.dataclass(frozen=True)
 class Sub(BinaryOp, lang.Final):
     pass
 
 
+@dc.dataclass(frozen=True)
 class Mul(BinaryOp, lang.Final):
     pass
 
 
+@dc.dataclass(frozen=True)
 class Div(BinaryOp, lang.Final):
     pass
 
 
+@dc.dataclass(frozen=True)
 class Max2(BinaryOp, lang.Final):
     pass
 
 
+@dc.dataclass(frozen=True)
 class Mod(BinaryOp, lang.Final):
     pass
 
 
+@dc.dataclass(frozen=True)
 class CmpLt(BinaryOp, lang.Final):
     pass
 
@@ -186,14 +183,17 @@ class CmpLt(BinaryOp, lang.Final):
 ##
 
 
+@dc.dataclass(frozen=True)
 class TernaryOp(LazyOp, lang.Abstract):
     pass
 
 
+@dc.dataclass(frozen=True)
 class MulAcc(TernaryOp, lang.Final):
     pass
 
 
+@dc.dataclass(frozen=True)
 class Where(TernaryOp, lang.Final):
     pass
 
@@ -201,14 +201,17 @@ class Where(TernaryOp, lang.Final):
 ##
 
 
+@dc.dataclass(frozen=True)
 class ReduceOp(LazyOp, lang.Abstract):
     pass
 
 
+@dc.dataclass(frozen=True)
 class Sum(ReduceOp, lang.Final):
     pass
 
 
+@dc.dataclass(frozen=True)
 class Max(ReduceOp, lang.Final):
     pass
 
@@ -216,14 +219,17 @@ class Max(ReduceOp, lang.Final):
 ##
 
 
+@dc.dataclass(frozen=True)
 class BufferOp(LazyOp, lang.Abstract):
     pass
 
 
+@dc.dataclass(frozen=True)
 class Mem(BufferOp, lang.Final):
     pass
 
 
+@dc.dataclass(frozen=True)
 class Const(BufferOp, lang.Final):
     pass
 
@@ -231,34 +237,42 @@ class Const(BufferOp, lang.Final):
 ##
 
 
+@dc.dataclass(frozen=True)
 class MovementOp(LazyOp, lang.Abstract):
     pass
 
 
+@dc.dataclass(frozen=True)
 class Reshape(MovementOp, lang.Final):
     pass
 
 
+@dc.dataclass(frozen=True)
 class Permute(MovementOp, lang.Final):
     pass
 
 
+@dc.dataclass(frozen=True)
 class Expand(MovementOp, lang.Final):
     pass
 
 
+@dc.dataclass(frozen=True)
 class Pad(MovementOp, lang.Final):
     pass
 
 
+@dc.dataclass(frozen=True)
 class Shrink(MovementOp, lang.Final):
     pass
 
 
+@dc.dataclass(frozen=True)
 class Restride(MovementOp, lang.Final):
     pass
 
 
+@dc.dataclass(frozen=True)
 class AsStrided(MovementOp, lang.Final):
     pass
 
@@ -266,29 +280,36 @@ class AsStrided(MovementOp, lang.Final):
 ##
 
 
+@dc.dataclass(frozen=True)
 class LoadOp(LazyOp, lang.Abstract):
     pass
 
 
+@dc.dataclass(frozen=True)
 class Empty(LoadOp, lang.Final):
     pass
 
 
+@dc.dataclass(frozen=True)
 class Rand(LoadOp, lang.Final):
     pass
 
 
+@dc.dataclass(frozen=True)
 class LoadConst(LoadOp, lang.Final):
     pass
 
 
+@dc.dataclass(frozen=True)
 class From(LoadOp, lang.Final):
     pass
 
 
+@dc.dataclass(frozen=True)
 class Contiguous(LoadOp, lang.Final):
     pass
 
 
+@dc.dataclass(frozen=True)
 class Custom(LoadOp, lang.Final):
     pass
