@@ -16,6 +16,7 @@ from .dtypes import dtypes
 from .execution import ConstBuffer
 from .execution import MemBuffer
 from .execution import ScheduleItem
+from .helpers import all_int
 from .helpers import flatten
 from .helpers import getenv
 from .helpers import merge_dicts
@@ -540,21 +541,19 @@ class LazyBuffer:
 
     def r(self: LazyBuffer, op: type[ops.ReduceOp], new_shape: tuple[sint, ...]) -> LazyBuffer:
         if (
-            any(not isinstance(s, int) for s in self.shape)
-            or prod(self.shape) // prod(new_shape) < 32768
+                not all_int(self.shape)
+                or prod(self.shape) // prod(new_shape) < getenv("REDUCEOP_SPLIT_THRESHOLD", 32768)
         ):
-            # The amount of work should be big enough to take the benefit of "2 kernels" approach.
-            return self._reduce_op(op, new_shape)
+            return self._reduce_op(op, new_shape)  # The amount of work should be big enough to take the benefit of "2 kernels" approach.
 
         heuristic, divisor, dim_to_split = max(
             ((divisor := math.gcd(256, old)) / (stride or math.inf), divisor, i)
             for i, (old, new, stride) in enumerate(zip(self.shape, new_shape, self.st.real_strides()))
             if old != new
         )
+
         if divisor < 16 or heuristic < 0.1:
-            return self._reduce_op(
-                op, new_shape
-            )  # Choose largest divisor (>=16) to split on, penalize large strides.
+            return self._reduce_op(op, new_shape)  # Choose largest divisor (>=16) to split on, penalize large strides.
 
         def splitted_shape(dim_aft_div):
             return (
