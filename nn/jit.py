@@ -43,7 +43,7 @@ class TinyJit:
         return functools.partial(self.__call__, obj)
 
     def __call__(self, *args, **kwargs) -> ta.Any:
-        if Device.DEFAULT not in JIT_SUPPORTED_DEVICE:
+        if Device.DEFAULT.split(":")[0] not in JIT_SUPPORTED_DEVICE:
             return self.fxn(*args, **kwargs)  # only jit on supported device
 
         # NOTE: this cast is needed since although we know realize will create a ".realized" RawBuffer, the type checke
