@@ -13,13 +13,12 @@ from ..renderer.wgsl import WGSLLanguage
 from .lib import LruAllocator
 from .lib import RawBufferCopyIn
 
-
 wgpu_device = get_default_device()
 
 
 class WebGPUProgram:
     def __init__(self, name: str, prg: str, binary=False):
-        self.name,self.prg = name,wgpu_device.create_shader_module(code=prg)
+        self.name, self.prg = name, wgpu_device.create_shader_module(code=prg)
 
     def __call__(self, global_size, local_size, *bufs, wait=False):
         # assert len(bufs) <= 8, "WEBGPU only supports 8 buffers"
@@ -57,7 +56,7 @@ class WebGPUProgram:
         command_encoder = wgpu_device.create_command_encoder()
         compute_pass = command_encoder.begin_compute_pass()
         compute_pass.set_pipeline(compute_pipeline)
-        compute_pass.set_bind_group(0, bind_group, [], 0, 999999) # last 2 not used
+        compute_pass.set_bind_group(0, bind_group, [], 0, 999999)  # last 2 not used
         compute_pass.dispatch_workgroups(*global_size)  # x y z
         compute_pass.end()
         wgpu_device.queue.submit([command_encoder.finish()])
@@ -66,12 +65,12 @@ class WebGPUProgram:
 class RawWebGPUAllocator(LruAllocator):
     def _do_alloc(self, size, dtype, device, **kwargs):
         return wgpu_device.create_buffer(
-            size=size*dtype.itemsize,
+            size=size * dtype.itemsize,
             usage=wgpu.BufferUsage.STORAGE | wgpu.BufferUsage.COPY_DST | wgpu.BufferUsage.COPY_SRC,
         )
 
     def _cached_bufkey(self, size, dtype, device):
-        return device, size*dtype.itemsize  # Buffers of the same length could be reused, no matter what dtype.
+        return device, size * dtype.itemsize  # Buffers of the same length could be reused, no matter what dtype.
 
 
 WebGPUAlloc = RawWebGPUAllocator(wgpu_device.limits['max_buffer_size'])
@@ -88,7 +87,7 @@ class RawWebGPUBuffer(RawBufferCopyIn):
         ], f"dtype {dtype} not supported on WEBGPU"
         super().__init__(size, dtype, allocator=WebGPUAlloc)
 
-    def _copyin(self, x:np.ndarray):
+    def _copyin(self, x: np.ndarray):
         wgpu_device.queue.write_buffer(self._buf, 0, np.ascontiguousarray(x))
 
     def toCPU(self) -> np.ndarray:
@@ -99,7 +98,6 @@ class RawWebGPUBuffer(RawBufferCopyIn):
 
 
 renderer = functools.partial(uops_to_cstyle, WGSLLanguage())
-
 
 WebGpuBuffer = Compiled(
     RawWebGPUBuffer,
