@@ -79,8 +79,7 @@ def render_cast(x: str, dtype: DType):
 
 
 def define_scalar(local_size, dtype, args):
-    if len(
-        local_size) > 0:
+    if len(local_size) > 0:
         return f"tl.full(({','.join([str(next_power_of_2(x)) for x in local_size])},),{render_const(args)}, dtype={triton_dtypes[dtype]})"
     return render_const(args)
 
@@ -88,7 +87,7 @@ def define_scalar(local_size, dtype, args):
 def uops_to_triton(function_name: str, uops: list[uo.UOp]):
     local_size: list[int] = []
     depth = 1
-    signatures, dims, bufs, kernel, valid = [], [], [], [], []    # type: ignore
+    signatures, dims, bufs, kernel, valid = [], [], [], [], []  # type: ignore
 
     c: ta.DefaultDict[str, int] = collections.defaultdict(int)
     r: dict[uo.UOp, str] = {}
@@ -201,7 +200,8 @@ def uops_to_triton(function_name: str, uops: list[uo.UOp]):
     if DEBUG >= 4:
         print(prg)
     getlines = linecache.getlines
-    linecache.getlines = lambda filename, module_globals=None: prg.splitlines(keepends=True) if "<triton>" == filename else getlines(filename, module_globals)
+    linecache.getlines = lambda filename, module_globals=None: \
+        prg.splitlines(keepends=True) if "<triton>" == filename else getlines(filename, module_globals)
     exec(compile(prg, "<triton>", "exec"), globals())  # pylint: disable=W0122\
     compiled = triton_compile(
         globals()[function_name],
