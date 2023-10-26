@@ -207,15 +207,35 @@ struct __align__(8) half4 {
     ),
 )
 
-CUDABuffer = Compiled(
-    RawCUDABuffer,
-    LinearizerOptions(
-        supports_float4=True,
-        supports_float4_alu=False,
-        global_max=[65535, 65535, 2147483647],
-        local_max=[64, 1024, 1024],
-    ),
-    renderer,
-    CUDAProgram,
-    cuda.Context.synchronize,
-)
+
+if getenv("TRITON") == 1:
+    from ..renderer.triton import uops_to_triton
+    renderer = uops_to_triton
+
+    CUDABuffer = Compiled(
+        RawCUDABuffer,
+        LinearizerOptions(
+            supports_float4=False,
+            supports_float4_alu=False,
+            global_max = [65535, 65535, 2147483647],
+            local_max = [64, 1024, 1024],
+            has_shared=False,
+        ),
+        renderer,
+        CUDAProgram,
+        cuda.Context.synchronize,
+    )
+
+else:
+    CUDABuffer = Compiled(
+        RawCUDABuffer,
+        LinearizerOptions(
+            supports_float4=True,
+            supports_float4_alu=False,
+            global_max=[65535, 65535, 2147483647],
+            local_max=[64, 1024, 1024],
+        ),
+        renderer,
+        CUDAProgram,
+        cuda.Context.synchronize,
+    )
