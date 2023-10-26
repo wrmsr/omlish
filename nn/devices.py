@@ -59,11 +59,13 @@ class _Device:
             # "LLVM",
             # "CLANG",
             # "TORCH",
+            # "WEBGPU",
         ]:
             try:
                 if self[device]:
                     return device
             except Exception as e:  # noqa
+                breakpoint()
                 pass
 
         return "CPU"
