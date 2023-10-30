@@ -3,7 +3,6 @@ import time
 import re
 import hashlib
 import tempfile
-import functools
 import pathlib
 import typing as ta
 
@@ -11,12 +10,13 @@ from pycuda.compiler import compile as cuda_compile  # type: ignore
 import numpy as np
 
 from ..codegen.kernel import LinearizerOptions
+from ..execution import ASTRunner
+from ..execution import Compiled
+from ..execution import GraphBatchExecutor
 from ..helpers import DEBUG
 from ..helpers import colored
 from ..helpers import getenv
-from ..execution import Compiled
-from ..renderer.cstyle import CStyleLanguage
-from ..renderer.cstyle import uops_to_cstyle
+from ..renderer.cuda import CUDARenderer
 from ..runtime.lib import LruAllocator
 from ..runtime.lib import RawBufferCopyInOut
 from ..runtime.lib import RawMallocBuffer
@@ -134,6 +134,65 @@ else:
             cuda.memcpy_dtoh(x, self._buf)  # type: ignore
 
 
+class CUDAGraph(GraphBatchExecutor):
+    def __init__(self, jit_cache: list[tuple[ta.Any, ta.Any, ta.Any]]) -> None:
+        super().__init__(jit_cache)
+        self.jc_info: list[ta.Any] = []
+
+        # Check if CUDAGraph could run the given jit_cache.
+        if (
+                DEBUG > 0
+                or getenv("CUDACPU")
+                or not all(isinstance(prg, ASTRunner) and isinstance(prg.clprg, CUDAProgram) for prg, _, _ in jit_cache)
+        ):
+            return  # Only CUDAProgram can be captured.
+
+        self.split_into_graphs(jit_cache)
+
+    def create_graph(self, jit_cache: list[tuple[ta.Any, ta.Any, ta.Any]]):
+        try:
+            graph, graph_node = cuda.Graph(), None  # type: ignore
+
+            for prg, pargs, variables in jit_cache:
+                global_size, local_size = prg.launch_dims(variables)
+                cuda_args = [
+                    x._buf if isinstance(x, RawCUDABuffer) else np.int32(x)
+                    for x in [*pargs, *variables.values()]
+                ]
+                graph_node = graph.add_kernel_node(
+                    *cuda_args,
+                    block=tuple(local_size),
+                    grid=tuple(global_size),
+                    func=prg.clprg.prg,
+                    dependencies=[graph_node] if graph_node else [],
+                )
+                self.jc_info.append(graph_node)
+
+            self.graphs.append((graph.instantiate(), graph))
+
+        except Exception as e:
+            # CudaGraph might not be suported with the installed version of pycuda.
+            if DEBUG >= 3:
+                print(f"Error creating CUDAGraph: {e}")
+
+    def update_node(self, instid, jcid, prg, pargs, variables, updated_args=None):
+        global_size, local_size = prg.launch_dims(variables)
+        cuda_args = [
+            x._buf if isinstance(x, RawCUDABuffer) else np.int32(x)
+            for x in [*pargs, *variables.values()]
+        ]
+        self.graphs[instid][0].kernel_node_set_params(
+            *cuda_args,
+            block=tuple(local_size),
+            grid=tuple(global_size),
+            func=prg.clprg.prg,
+            kernel_node=self.jc_info[jcid],
+        )
+
+    def exec_instance(self, instid):
+        self.graphs[instid][0].launch()
+
+
 class CUDAProgram:
     def __init__(self, name: str, prg: str, binary=False, shared=0, local_size_override=None):
         if not binary:
@@ -184,33 +243,9 @@ class CUDAProgram:
             return start.time_till(end) * 1e-3
 
 
-renderer = functools.partial(
-    uops_to_cstyle,
-    CStyleLanguage(
-        kernel_prefix="__global__ ",
-        smem_prefix="__shared__ ",
-        smem_prefix_for_cast=False,
-        arg_int_prefix="const int",
-        barrier="__syncthreads();",
-        float4="make_float4",
-        gid=[f'blockIdx.{chr(120 + i)}' for i in range(3)],
-        lid=[f'threadIdx.{chr(120 + i)}' for i in range(3)],
-        xid=[f'(blockIdx.{chr(120 + i)}*blockDim.{chr(120 + i)}+threadIdx.{chr(120 + i)})' for i in range(3)],
-        half_prekernel="""
-#include <cuda_fp16.h>
-struct __align__(8) half4 {
-  half2 x, y;
-  __device__ __forceinline__ explicit half4(const float4& a): x(make_half2(__float2half(a.x), __float2half(a.y))), y(make_half2(__float2half(a.z),__float2half(a.w))) {}
-  __device__ __forceinline__ explicit operator float4() const {return make_float4(__half2float(x.x), __half2float(x.y), __half2float(y.x), __half2float(y.y)); }
-};
-        """,
-    ),
-)
-
-
 if getenv("TRITON") == 1:
     from ..renderer.triton import uops_to_triton
-    renderer = uops_to_triton
+    TritonRenderer = uops_to_triton
 
     CUDABuffer = Compiled(
         RawCUDABuffer,
@@ -221,7 +256,7 @@ if getenv("TRITON") == 1:
             local_max = [64, 1024, 1024],
             has_shared=False,
         ),
-        renderer,
+        TritonRenderer,
         CUDAProgram,
         cuda.Context.synchronize,
     )
@@ -235,7 +270,8 @@ else:
             global_max=[65535, 65535, 2147483647],
             local_max=[64, 1024, 1024],
         ),
-        renderer,
+        CUDARenderer,
         CUDAProgram,
         cuda.Context.synchronize,
+        CUDAGraph,
     )

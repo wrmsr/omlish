@@ -18,6 +18,9 @@ class LazyOp(lang.Abstract):
     src: tuple[ta.Union[LazyOp, LazyBuffer], ...]
     arg: ta.Any = None
 
+    def __repr__(self):
+        return f"LazyOp(op={type(self).__name__}, src={self.src}, arg={self.arg})"
+
     @property
     def buffers(self):
         buffers: tuple[ta.Union[LazyOp, LazyBuffer], ...] = ()
