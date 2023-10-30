@@ -8,6 +8,7 @@ from ..devices import Device
 from ..dtypes import ImageDType
 from ..execution import Compiled
 from ..execution import MemBuffer
+from ..helpers import CACHELEVEL
 from ..helpers import DEBUG
 from ..helpers import diskcache_get
 from ..helpers import diskcache_put
@@ -20,13 +21,11 @@ from ..runtime.lib import RawBuffer
 
 actions = flatten([[Opt(op=OptOps.UPCAST, axis=axis, amt=amt) for amt in [0, 2, 3, 4, 7]] for axis in range(6)])
 actions += flatten([[Opt(op=OptOps.UNROLL, axis=axis, amt=amt) for amt in [0, 4]] for axis in range(4)])
-actions += flatten([[Opt(op=OptOps.LOCAL, axis=axis, amt=amt) for amt in [2, 3, 4, 8, 16]] for axis in range(5)])
+actions += flatten([[Opt(op=OptOps.LOCAL, axis=axis, amt=amt) for amt in [2, 3, 4, 8, 13, 16, 29]] for axis in range(5)])
+actions += flatten([[Opt(op=OptOps.GROUPTOP, axis=axis, amt=amt) for amt in [13, 16, 29, 32, 256]] for axis in range(3)])
 actions += [
     Opt(op=OptOps.LOCAL, axis=0, amt=32),
     Opt(op=OptOps.GROUP, axis=0, amt=4), Opt(op=OptOps.GROUP, axis=0, amt=8), Opt(op=OptOps.GROUP, axis=1, amt=8),
-    Opt(op=OptOps.GROUPTOP, axis=0, amt=16), Opt(op=OptOps.GROUPTOP, axis=0, amt=256),
-    Opt(op=OptOps.GROUPTOP, axis=1, amt=16), Opt(op=OptOps.GROUPTOP, axis=1, amt=256),
-    Opt(op=OptOps.GROUPTOP, axis=2, amt=16), Opt(op=OptOps.GROUPTOP, axis=2, amt=256),
     Opt(op=OptOps.UPCASTMID, axis=1, amt=4),
 ]
 
@@ -49,7 +48,7 @@ def time_linearizer(
         "allow_test_size": allow_test_size,
         "max_global_size": max_global_size,
     }
-    if should_copy and not disable_cache and (val := diskcache_get("time_linearizer", key)) is not None:
+    if should_copy and not disable_cache and CACHELEVEL >= 2 and (val := diskcache_get("time_linearizer", key)) is not None:
         return min(val)
     if should_copy:
         lin = lin.copy() # TODO: remove the need for this
@@ -79,7 +78,9 @@ def time_linearizer(
         prg.global_size = real_global_size
     except Exception:
         tms = [float('inf')]
-    return min(diskcache_put("time_linearizer", key, tms))
+    if CACHELEVEL >= 2:
+        diskcache_put("time_linearizer", key, tms)
+    return min(tms)
 
 
 # get (scrap) buffers for timing the linearizer
@@ -121,23 +122,61 @@ def get_linearizer_actions(lin: Linearizer, include_0=True) -> dict[int, Lineari
     return acted_lins
 
 
-def beam_search(lin: Linearizer, rawbufs, amt: int) -> Linearizer:
-    key = {"ast": str(lin.ast), "amt": amt}
-    if (val := diskcache_get("beam_search", key)) is not None and not getenv("IGNORE_BEAM_CACHE"):
+def beam_search(lin: Linearizer, rawbufs, amt: int, allow_test_size=True, dont_use_locals=False) -> Linearizer:
+    key = {"ast": str(lin.ast), "amt": amt, "allow_test_size": allow_test_size, "dont_use_locals": dont_use_locals}
+    if dont_use_locals:
+        lin.dont_use_locals = True
+
+    if (val := diskcache_get("beam_search", key)) is not None and not getenv("IGNORE_BEAM_CACHE") and CACHELEVEL >= 1:
         ret = lin.copy()
-        for o in val: ret.apply_opt(o)
+        for o in val[len(lin.applied_opts):]:
+            ret.apply_opt(o)
         return ret
-    best_tm = time_linearizer(lin, rawbufs)  # handle the case where no actions make it faster
-    beam: list[Linearizer] = [lin]
+
+    # init the BEAM with the base linearizer
+    beam: list[tuple[Linearizer, float]] = [(lin, time_linearizer(lin, rawbufs, allow_test_size=allow_test_size))]
+
+    # NOTE: real uops use a weird compare method that's only valid inside a linearizer
+    def tuplize_uops(uops):
+        return tuple([(x.uop, x.dtype, tuple(x.num for x in x.vin), x.arg) for x in uops])
+
+    seen_uops = {tuplize_uops(lin.copy().linearize().uops): tuple(lin.applied_opts)}
+
     while 1:
-        acted_lins = flatten([get_linearizer_actions(lin, include_0=False).values() for lin in beam])
-        timed_lins = [(v, time_linearizer(v, rawbufs)) for v in acted_lins]
+        acted_lins = lins = flatten([get_linearizer_actions(lin, include_0=False).values() for lin, _ in beam])
+
+        # dedup with uops (TODO: double linearize not needed)
+        acted_lins_dedup = []
+        for lin in acted_lins:
+            tuops = tuplize_uops(lin.copy().linearize().uops)
+            if tuops in seen_uops:
+                # print(seen_uops[tuops], lin.applied_opts)
+                continue
+            seen_uops[tuops] = tuple(lin.applied_opts)
+            acted_lins_dedup.append(lin)
+        acted_lins = acted_lins_dedup
+
+        # time linearizers
+        timed_lins: list[tuple[Linearizer, float]] = [
+            (v, time_linearizer(v, rawbufs, allow_test_size=allow_test_size))
+            for v in acted_lins
+        ]
         opts = sorted(timed_lins, key=lambda x: x[1])
-        if len(opts) == 0 or best_tm <= opts[0][1]:
+        if len(opts) == 0 or beam[0][1] <= opts[0][1]:
             break  # we didn't get faster
-        best_tm = opts[0][1]
-        beam = [x[0] for x in opts[:amt]]
+
+        # keep the BEAM best
+        beam = opts[:amt]
         if DEBUG >= 2:
-            print(f"{opts[0][1]*1e6:12.2f} us from {len(opts):3d} actions", beam[0].colored_shape())
-    diskcache_put("beam_search", key, beam[0].applied_opts)
-    return beam[0]
+            print(
+                f"{opts[0][1] * 1e6:12.2f} us "
+                f"from {len(lins):3d} -> "
+                f"{len(opts):3d} actions",
+                beam[0][0].colored_shape(),
+            )
+
+    if CACHELEVEL >= 1:
+        diskcache_put("beam_search", key, beam[0][0].applied_opts)
+    if DEBUG >= 2:
+        print(beam[0][0].applied_opts)
+    return beam[0][0]

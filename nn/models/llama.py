@@ -75,11 +75,10 @@ def repeat_kv(x: Tensor, n_rep: int) -> Tensor:
     bs, seqlen, n_kv_heads, head_dim = x.shape
     if n_rep == 1:
         return x
-    return (
-        x[:, :, :, None, :]
-        .expand(bs, seqlen, n_kv_heads, n_rep, head_dim)
+    return x\
+        .reshape(bs, seqlen, n_kv_heads, 1, head_dim)\
+        .expand(bs, seqlen, n_kv_heads, n_rep, head_dim)\
         .reshape(bs, seqlen, n_kv_heads * n_rep, head_dim)
-    )
 
 
 class RMSNorm:
@@ -536,12 +535,12 @@ MODEL_PARAMS = {
             "args": {
                 "dim": 5120,
                 "n_layers": 40,
-                "n_headvocab_sizes": 40,
+                "n_heads": 40,
                 "multiple_of": 256,
                 "ffn_dim_multiplier": 1.0,
                 "norm_eps": 1e-5,
                 "rope_theta": 1000000,
-                "vocab_size": 32000,
+                "vocab_size": 32016,
             },
             "files": 2,
         },
@@ -555,7 +554,7 @@ MODEL_PARAMS = {
                 "ffn_dim_multiplier": 1.0,
                 "norm_eps": 1e-5,
                 "rope_theta": 1000000,
-                "vocab_size": 32016,
+                "vocab_size": 32000,
             },
             "files": 4,
         },
@@ -706,9 +705,8 @@ class LLaMa:
 
         sp_model = SentencePieceProcessor(model_file=str(tokenizer_path))
         assert (
-            sp_model.vocab_size()
-            == MODEL_PARAMS[model_gen][model_size]["args"]["vocab_size"]
-        )
+                sp_model.vocab_size() == MODEL_PARAMS[model_gen][model_size]["args"]["vocab_size"]
+        ), f"{sp_model.vocab_size()=} not equal to {MODEL_PARAMS[model_gen][model_size]['args']['vocab_size']}"
 
         params = MODEL_PARAMS[model_gen][model_size]
 
