@@ -365,7 +365,7 @@ class OptimizedKernel(Kernel):
 
         assert self.full_shape[axis] % amt == 0, "no longer valid shift"
         assert isinstance(amt, int) and amt != 1, "shift of amt 1 or Node is meaningless"
-        assert not self.dont_use_locals or opt.op not in {OptOps.LOCAL, OptOps.GROUPTOP, OptOps.UPCASTMID}, "not using locals"
+        assert not self.dont_use_locals or opt.op not in {OptOps.LOCAL, OptOps.LASTLOCAL, OptOps.GROUP, OptOps.GROUPTOP, OptOps.UPCASTMID}, "not using locals"
 
         if opt.op == OptOps.LOCAL:  # cyan
             assert axis < self.first_reduce, "can't local a reduce"
@@ -436,7 +436,9 @@ class OptimizedKernel(Kernel):
         self.required_optimizations(early_only=True)
 
         # should use matvec - TODO: adjust/tune based on the wide vs tall/large vs small mat
-        MV_BLOCKSIZE, MV_THREADS_PER_ROW, MV_ROWS_PER_THREAD = getenv("MV_BLOCKSIZE", 4), getenv("MV_THREADS_PER_ROW", 8), getenv("MV_ROWS_PER_THREAD", 4)
+        MV_BLOCKSIZE = getenv("MV_BLOCKSIZE", 5)
+        MV_THREADS_PER_ROW = getenv("MV_THREADS_PER_ROW", 8)
+        MV_ROWS_PER_THREAD = getenv("MV_ROWS_PER_THREAD", 4)
         if (
                 self.opts.has_local
                 and getenv("MV",1) != 0
