@@ -100,7 +100,7 @@ def get_parameters(obj) -> list[Tensor]:
     return list(get_state_dict(obj).values())
 
 
-def load_state_dict(model, state_dict, strict=True):
+def load_state_dict(model, state_dict, strict=True, verbose=False):
     with Timing(
         "loaded weights in ",
         lambda et_ns: f", {GlobalCounters.mem_used/1e9:.2f} GB loaded at {GlobalCounters.mem_used/et_ns:.2f} GB/s",
@@ -113,7 +113,7 @@ def load_state_dict(model, state_dict, strict=True):
                 sorted(list(state_dict.keys() - model_state_dict.keys())),
             )
 
-        for k, v in (t := tqdm.tqdm(model_state_dict.items(), disable=False)):
+        for k, v in (t := tqdm.tqdm(model_state_dict.items(), disable=not verbose)):
             t.set_description(f"ram used: {GlobalCounters.mem_used/1e9:5.2f} GB, {k:50s}")
             if k not in state_dict and not strict:
                 if DEBUG >= 1:
