@@ -1,5 +1,9 @@
 -r requirements.txt
 
+build==1.0.3
+twine==4.0.2
+wheel==0.41.3
+
 pytest==7.4.3
 pytest-benchmark==4.0.0
 pytest-clarity==1.0.1
@@ -13,10 +17,10 @@ gprof2dot==2022.7.29
 mypy==1.6.1
 pipdeptree==2.13.0
 
-ipython==8.16.1
+ipython==8.17.1
 
 pg8000==1.30.2
 pymysql==1.1.0
 
 mycli==1.27.0; python_version < '3.12'
-pgcli==3.5.0; python_version < '3.12'
+pgcli==4.0.0; python_version < '3.12'
