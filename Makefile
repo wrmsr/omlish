@@ -25,12 +25,14 @@ clean-venv:
 
 .PHONY: clean
 clean: clean-venv
-	-rm -rf ${PROJECT}.egg-info
-	-rm -rf *.sock
-	-rm -rf .mypy_cache
-	-rm -rf .pytest_cache
-	-rm -rf build
-	-rm -rf dist
+	-rm -rf \
+		${PROJECT}.egg-info \
+		*.sock \
+		.benchmarks \
+		.mypy_cache \
+		.pytest_cache \
+		build \
+		dist \
 
 
 ### Venv
