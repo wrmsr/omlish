@@ -29,6 +29,7 @@ opencv-python==4.8.1.78
 pillow==10.1.0
 
 onnx==1.15.0
+onnx2torch==1.5.13
 
 sentencepiece==0.1.99
 tiktoken==0.5.1
