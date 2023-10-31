@@ -26,6 +26,8 @@ triton_dtypes = {
     dtypes.int64: "tl.int64",
     dtypes.uint32: "tl.uint32",
     dtypes.uint64: "tl.uint64",
+    dtypes.int16: "tl.int16",
+    dtypes.uint16: "tl.uint16",
 }
 
 signature_dtypes = {
@@ -40,6 +42,8 @@ signature_dtypes = {
     dtypes.int64: "*i64",
     dtypes.uint32: "*u32",
     dtypes.uint64: "*u64",
+    dtypes.int16: "*i16",
+    dtypes.uint16: "*u16",
 }
 
 

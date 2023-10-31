@@ -43,7 +43,7 @@ CLANG_PROGRAM_HEADER = """
 #define int64 long
 #define half __fp16
 #define uchar unsigned char
-#define bool uchar
+#include <stdbool.h>
 """.lstrip()
 
 ADDRESS = 0x10000
