@@ -12,8 +12,8 @@ MAIN_SOURCES:=\
 
 ALL_SOURCES:=\
 	${MAIN_SOURCES} \
+	ha \
 	nn \
-	hn \
 	x \
 
 

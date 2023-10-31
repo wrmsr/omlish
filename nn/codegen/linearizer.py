@@ -480,7 +480,7 @@ class Linearizer(OptimizedKernel):
             )
 
             if self.tensor_core:
-                def calc_tc_idxs(local_size: int, aliases: List[List[int]]):
+                def calc_tc_idxs(local_size: int, aliases: list[list[int]]):
                     replace_idxs = []
                     for alias in aliases:
                         full_var, full_var_sz = Variable.num(0), 1

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import abc
 import collections
 import itertools
 import math
@@ -8,6 +9,7 @@ import time
 import typing as ta
 
 from omlish import dataclasses as dc
+from omlish import lang
 import numpy as np
 
 from . import ops
@@ -25,8 +27,9 @@ from .shape.symbolic import Variable
 from .shape.symbolic import sym_infer
 
 if ta.TYPE_CHECKING:
-    from .lazy import LazyBuffer
+    from .codegen.linearizer import Linearizer
     from .shape.shapetracker import ShapeTracker
+    from .lazy import LazyBuffer
 
 
 @dc.dataclass(frozen=True)
@@ -54,7 +57,22 @@ class ScheduleItem:
 # **************** for Interpreted Buffers ****************
 
 
-class Interpreted:
+class ASTExecutor(lang.Abstract):
+
+    @abc.abstractmethod
+    def exec_ast(
+            self,
+            ast: LazyOp,
+            output=None,
+            inputs=None,
+            var_vals=None,
+            context=None,
+            **kwargs,
+    ) -> ta.Any:
+        raise NotImplementedError
+
+
+class Interpreted(ASTExecutor):
     def __init__(
             self,
             buffer,
@@ -172,6 +190,13 @@ class Interpreted:
 # --teenygrad--
 
 
+@dc.dataclass(frozen=True)
+class OpInfo:
+    shape: tuple[int, ...]
+    dtype: DType
+    flops: int
+
+
 class FlopCounter:
     def __init__(self, tup: tuple[tuple[int, ...], DType, int]) -> None:
         super().__init__()
@@ -226,8 +251,9 @@ shape_fxn_for_op: dict[type[LazyOp], ta.Callable] = {
 InterpretedFlopCounter = Interpreted(FlopCounter, shape_fxn_for_op, lambda x: x)
 
 
-def get_lazyop_info(ast: LazyOp) -> FlopCounter:
-    return InterpretedFlopCounter.exec_ast(ast)
+def get_lazyop_info(ast: LazyOp) -> OpInfo:
+    fc = InterpretedFlopCounter.exec_ast(ast)
+    return OpInfo(fc.shape, fc.dtype, fc.flops)
 
 
 # **************** for Compiled Buffers ****************
@@ -438,7 +464,7 @@ class ASTRunner:
         return et
 
 
-class Compiled:
+class Compiled(ASTExecutor):
     def __init__(
             self,
             buffer: type[RawBuffer],
@@ -457,7 +483,7 @@ class Compiled:
         self.batch_exec = batch_exec
         self.method_cache: dict[LazyOp, ASTRunner] = {}
 
-    def to_program(self, k):
+    def to_program(self, k: Linearizer) -> ASTRunner:
         k.linearize()
 
         src, runtime_args = self.renderer(k.function_name, k.uops)
