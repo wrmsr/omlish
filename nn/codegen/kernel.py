@@ -11,7 +11,7 @@ from ..dtypes import DType
 from ..dtypes import ImageDType
 from ..dtypes import dtypes
 from ..execution import Compiled
-from ..execution import FlopCounter
+from ..execution import OpInfo
 from ..execution import MemBuffer
 from ..execution import get_lazyop_info
 from ..helpers import all_int
@@ -126,7 +126,7 @@ class Kernel:
         self.ast = ast
 
         # fetch lazyop info
-        self.info: FlopCounter = get_lazyop_info(ta.cast(LazyOp, self.ast))
+        self.info: OpInfo = get_lazyop_info(ta.cast(LazyOp, self.ast))
 
         # there's only allowed to be one reduceop
         reduceops = [x for x in self.ast.get_lazyops() if isinstance(x, ops.ReduceOp)]
