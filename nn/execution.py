@@ -8,7 +8,9 @@ import random
 import time
 import typing as ta
 
+from omlish import collections as col
 from omlish import dataclasses as dc
+from omlish import dispatch
 from omlish import lang
 import numpy as np
 
@@ -192,9 +194,58 @@ class Interpreted(ASTExecutor):
 
 @dc.dataclass(frozen=True)
 class OpInfo:
+    op: ops.Op
+
     shape: tuple[int, ...]
     dtype: DType
     flops: int
+
+
+class OpAnalyzer:
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._dct: ta.MutableMapping[ta.Any, OpInfo] = col.IdentityKeyDict()
+
+    def analyze(self, x: ta.Any) -> OpInfo:
+        try:
+            return self._dct[x]
+        except KeyError:
+            ret = self._dct[x] = self._analyze(x)
+            return ret
+
+    @dispatch.method
+    def _analyze(self, op: ops.LazyOp) -> OpInfo:
+        raise TypeError(op)
+
+    @_analyze.register
+    def _analyze_buffer_op(self, op: ops.BufferOp) -> OpInfo:
+        return OpInfo(op, op.arg.st.shape, op.arg.dtype, 0)
+
+    @_analyze.register
+    def _analyze_cast(self, op: ops.Cast) -> OpInfo:
+        xi = self.analyze(op.src[0])
+        return OpInfo(op, xi.shape,  op.arg[0], xi.flops)
+
+    @_analyze.register
+    def _analyze_unary_op(self, op: ops.UnaryOp) -> OpInfo:
+        xi = self.analyze(op.src[0])
+        return OpInfo(op, xi.shape, xi.dtype, xi.flops + prod(xi.shape))
+
+    @_analyze.register
+    def _analyze_binary_op(self, op: ops.BinaryOp) -> OpInfo:
+        xi, yi = map(self.analyze, op.src)
+        return OpInfo(op, xi.shape, max(xi.dtype, yi.dtype), xi.flops + yi.flops + prod(xi.shape))
+
+    @_analyze.register
+    def _analyze_reduce_op(self, op: ops.ReduceOp) -> OpInfo:
+        xi = self.analyze(op.src[0])
+        return OpInfo(op, op.arg, xi.dtype, xi.flops + prod(xi.shape))
+
+    @_analyze.register
+    def _analyze_where(self, op: ops.Where) -> OpInfo:
+        xi, yi, zi = map(self.analyze, op.src)
+        return OpInfo(op, xi.shape, yi.dtype, xi.flops + yi.flops + zi.flops + prod(xi.shape))
 
 
 class FlopCounter:
@@ -252,8 +303,11 @@ InterpretedFlopCounter = Interpreted(FlopCounter, shape_fxn_for_op, lambda x: x)
 
 
 def get_lazyop_info(ast: LazyOp) -> OpInfo:
+    oi = OpAnalyzer().analyze(ast)
     fc = InterpretedFlopCounter.exec_ast(ast)
-    return OpInfo(fc.shape, fc.dtype, fc.flops)
+    if oi.shape != fc.shape or oi.dtype != fc.dtype or oi.flops != fc.flops:
+        breakpoint()
+    return OpInfo(ast, fc.shape, fc.dtype, fc.flops)
 
 
 # **************** for Compiled Buffers ****************
