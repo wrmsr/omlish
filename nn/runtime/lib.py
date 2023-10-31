@@ -106,6 +106,8 @@ class RawMallocBuffer(RawBufferMapped):
                     dtypes.uint32: ctypes.c_uint32,
                     dtypes.int64: ctypes.c_int64,
                     dtypes.uint64: ctypes.c_uint64,
+                    dtypes.int16: ctypes.c_int16,
+                    dtypes.uint16: ctypes.c_uint16,
                 }[dtype]
                 * size
             )(),

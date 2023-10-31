@@ -106,6 +106,10 @@ dtype_to_llvm_dtype = {
     dtypes.int64: ir.IntType(64),
     dtypes.int32: ir.IntType(32),
     dtypes._arg_int32: ir.IntType(32),
+    dtypes.int16:ir.IntType(16),
+    dtypes.uint16:ir.IntType(16),
+    dtypes.uint32:ir.IntType(32),
+    dtypes.uint64:ir.IntType(64),
 }
 
 
