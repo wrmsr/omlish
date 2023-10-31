@@ -38,32 +38,39 @@ class ClAllocator(LruAllocator):
             assert size == prod(
                 dtype.shape
             ), f"image size mismatch {size} != {dtype.shape}"
+
             fmt = cl.ImageFormat(
                 cl.channel_order.RGBA,
                 {2: cl.channel_type.HALF_FLOAT, 4: cl.channel_type.FLOAT}[
                     dtype.itemsize
                 ],
             )
+
             buf = cl.Image(
                 CL.cl_ctxs[int(device)],
                 cl.mem_flags.READ_WRITE,
                 fmt,
                 shape=(dtype.shape[1], dtype.shape[0]),
             )
+
         else:
             buf = cl.Buffer(
                 CL.cl_ctxs[int(device)], cl.mem_flags.READ_WRITE, size * dtype.itemsize
             )
+
         setattr(
             buf, "device", int(device)
         )  # device is tracked on the underlying buffer
+
         return buf
 
 
 class _CL:
     def __init__(self) -> None:
         super().__init__()
+
         cl_platforms = cl.get_platforms()
+
         platform_devices: list[list[cl.Device]] = [
             y
             for y in (
@@ -72,11 +79,13 @@ class _CL:
             )
             if y
         ]
+
         self.devices = [
             device
             for device in platform_devices[getenv("CL_PLATFORM", 0)]
             if device.name not in getenv("CL_EXCLUDE", "").split(",")
         ]
+
         self.cl_platform = self.devices[0].platform
 
     def post_init(self, device=None):
@@ -85,10 +94,12 @@ class _CL:
             if device is None
             else [cl.Context(devices=[self.devices[device]])]
         )
+
         if DEBUG >= 1:
             print(
                 f"using devices: {[ctx.devices[0].hashable_model_and_version_identifier for ctx in self.cl_ctxs]}"
             )
+
         self.cl_queue: list[cl.CommandQueue] = [
             cl.CommandQueue(
                 ctx,
@@ -97,6 +108,7 @@ class _CL:
             )
             for ctx in self.cl_ctxs
         ]
+
         self.cl_allocator = ClAllocator(
             CL.cl_ctxs[0].devices[0].get_info(cl.device_info.GLOBAL_MEM_SIZE)
         )
@@ -131,12 +143,16 @@ class ClBuffer(RawBufferCopyInOut, RawBufferTransfer):
         assert not self.dtype.name.startswith(
             "image"
         ), f"can't copyout images {self.dtype}"
+
+        CL.cl_allocator.ensure_has_free_space(self.size, self.dtype, self._device)
+
         buf = cl.Buffer(
             CL.cl_ctxs[self._buf.device],
             cl.mem_flags.WRITE_ONLY | cl.mem_flags.USE_HOST_PTR,
             0,
             hostbuf=x.data,
         )
+
         mapped, event = cl.enqueue_map_buffer(
             CL.cl_queue[self._buf.device],
             buf,
@@ -146,6 +162,7 @@ class ClBuffer(RawBufferCopyInOut, RawBufferTransfer):
             dtype=self.dtype.np,
             is_blocking=False,
         )
+
         with mapped.base:
             cl.enqueue_copy(
                 CL.cl_queue[self._buf.device],
@@ -182,9 +199,7 @@ class ClProgram:
         ]
 
         try:
-            self._clprgs = [
-                clprogram.build(options=options) for clprogram in self.clprograms
-            ]
+            self._clprgs = [clprogram.build(options=options) for clprogram in self.clprograms]
         except cl.RuntimeError as e:
             if DEBUG >= 3:
                 print("FAILED TO BUILD", prg)
@@ -195,6 +210,7 @@ class ClProgram:
         if DEBUG >= 5 and not OSX:
             if "Adreno" in CL.cl_ctxs[0].devices[0].name:
                 fromimport("disassemblers.adreno", "disasm")(self.binary())
+
             elif CL.cl_ctxs[0].devices[0].name.startswith("gfx"):
                 asm = early_exec(
                     ([ROCM_LLVM_PATH / "llvm-objdump", "-d", "-"], self.binary())
@@ -208,6 +224,7 @@ class ClProgram:
                         ]
                     )
                 )
+
             else:
                 # print the PTX for NVIDIA. TODO: probably broken for everything else
                 print(self.binary().decode("utf-8"))
