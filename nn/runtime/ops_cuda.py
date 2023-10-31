@@ -24,6 +24,7 @@ from ..runtime.lib import RawMallocBuffer
 
 import os
 
+
 os.environ['PATH'] = f"/usr/local/cuda-12.2/bin:{os.environ.get('PATH', '')}"
 os.environ['CUDA_ROOT'] = '/usr/local/cuda-12.2/'
 

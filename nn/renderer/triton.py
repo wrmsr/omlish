@@ -1,8 +1,11 @@
 import collections
+import hashlib
 import linecache
 import math
 import re
+import sys
 import textwrap
+import types
 import typing as ta
 
 from triton.compiler import compile as triton_compile  # type: ignore
@@ -203,21 +206,27 @@ def uops_to_triton(function_name: str, uops: list[uo.UOp]):
 
     if DEBUG >= 4:
         print(prg)
-    getlines = linecache.getlines
-    linecache.getlines = lambda filename, module_globals=None: \
-        prg.splitlines(keepends=True) if "<triton>" == filename else getlines(filename, module_globals)
-    exec(compile(prg, "<triton>", "exec"), globals())  # pylint: disable=W0122\
+
+    mod = types.ModuleType(mod_name := f"triton_{hashlib.sha1(prg.encode('utf-8')).hexdigest()}")
+    mod.__file__ = mod_name
+    sys.modules[mod_name] = mod
+    linecache.cache[mod_name] = (len(prg.encode('utf-8')), None, prg.splitlines(keepends=True), mod_name)
+    exec(compile(prg, mod_name, "exec"), mod.__dict__)  # pylint: disable=W0122
+
     compiled = triton_compile(
-        globals()[function_name],
+        mod.__dict__[function_name],
         signature=",".join(signatures),
         device_type="cuda",
         debug=False,
         cc=(35 if getenv("CUDACPU", 0) else None),
     )
+
     prg = remove_single_scalar_curly_braces(compiled.asm["ptx"].split(".file")[0].split(".visible .func")[0])
+
     max_local_size = [int(x) for x in prg.split(".maxntid ")[1].split("\n")[0].split(", ")]
     for i in range(len(local_size)):
         local_size[i] = min(local_size[i], max_local_size[i])
+
     return prg, {
         "binary": True,
         "shared": compiled.metadata["shared"],
