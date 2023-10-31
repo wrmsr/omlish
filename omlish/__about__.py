@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
-__title__ = 'omlish'
+__name__ = 'omlish'
 __version__ = '0.0.0.dev0'
 __description__ = 'omlish'
 __author__ = 'wrmsr'
 __url__ = 'https://github.com/wrmsr/omlish'
 __license__ = 'BSD'
-
-__python_requires__ = '>=3.9'
 
 __classifiers__ = [
     'License :: OSI Approved :: BSD License',
