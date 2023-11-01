@@ -212,6 +212,11 @@ class OpAnalyzer:
             return self._dct[x]
         except KeyError:
             ret = self._dct[x] = self._analyze(x)
+            fc = InterpretedFlopCounter.exec_ast(x)
+            if ret.shape != fc.shape or ret.dtype != fc.dtype or ret.flops != fc.flops:
+                breakpoint()
+                InterpretedFlopCounter.exec_ast(x)
+                raise ValueError
             return ret
 
     @dispatch.method
@@ -259,6 +264,16 @@ class FlopCounter:
         return ret
 
 
+def _barf_bin(self, y):
+    scf = self.consume_flops()
+    ycf = y.consume_flops()
+    breakpoint()
+    return (
+        self.shape,
+        max(self.dtype, y.dtype),
+        scf + ycf + prod(self.shape),
+    )
+
 shape_fxn_for_op: dict[type[LazyOp], ta.Callable] = {
     ops.Mem: lambda arg: (arg.st.shape, arg.dtype, 0),
     ops.Const: lambda arg: (arg.st.shape, arg.dtype, 0),
@@ -277,11 +292,7 @@ shape_fxn_for_op: dict[type[LazyOp], ta.Callable] = {
         if op != ops.Cast
     },
     **{
-        op: lambda self, y: (
-            self.shape,
-            max(self.dtype, y.dtype),
-            self.consume_flops() + y.consume_flops() + prod(self.shape),
-        )
+        op: _barf_bin
         for op in ops.BinaryOp.__subclasses__()
     },
     **{

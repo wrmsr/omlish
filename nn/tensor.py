@@ -1177,6 +1177,9 @@ class Tensor:
     def exp(self):
         return funcs.Exp.apply(self)
 
+    def exp2(self):
+        return funcs.Exp.apply(self * math.log(2))
+
     def relu(self):
         return funcs.Relu.apply(self)
 
@@ -1327,42 +1330,55 @@ class Tensor:
             y = y.expand(shape_ret)
         return (x, y)
 
+    def _to_float(self, x: ta.Union[Tensor, float]):
+        if (
+                isinstance(x, Tensor)
+                and not x.lazydata.realized
+                and isinstance(x.lazydata.op, ops.LoadConst)
+                and not x.requires_grad
+                and x.lazydata.st.contiguous
+                and self._broadcasted(x)[0].shape == self.shape
+        ):
+            return x.lazydata.op.arg
+        else:
+            return x
+
     def add(self, x: ta.Union[Tensor, float], reverse=False) -> Tensor:
-        return (
-            funcs.Add.apply(*self._broadcasted(x, reverse))
-            if x.__class__ is Tensor or x
-            else self
-        )
+        x = self._to_float(x)
+        if x.__class__ is Tensor or x:
+            return funcs.Add.apply(*self._broadcasted(x, reverse))
+        else:
+            return self
 
     def sub(self, x: ta.Union[Tensor, float], reverse=False) -> Tensor:
-        return (
-            funcs.Sub.apply(*self._broadcasted(x, reverse))
-            if x.__class__ is Tensor or x
-            else (-self if reverse else self)
-        )
+        x = self._to_float(x)
+        if x.__class__ is Tensor or x:
+            return funcs.Sub.apply(*self._broadcasted(x, reverse))
+        elif reverse:
+            return -self
+        else:
+            return self
 
     def mul(self, x: ta.Union[Tensor, float], reverse=False) -> Tensor:
+        x = self._to_float(x)
         if x.__class__ is not Tensor and x == 0.0:
             return funcs.Zero.apply(self)
         if x.__class__ is not Tensor and x == -1.0:
             return -self
-        return (
-            funcs.Mul.apply(*self._broadcasted(x, reverse))
-            if x.__class__ is Tensor or x != 1.0
-            else self
-        )
+        if x.__class__ is Tensor or x != 1.0:
+            return funcs.Mul.apply(*self._broadcasted(x, reverse))
+        else:
+            return self
 
     def div(self, x: ta.Union[Tensor, float], reverse=False) -> Tensor:
-        return (
-            funcs.Div.apply(*self._broadcasted(x, reverse))
-            if x.__class__ is Tensor
-            or reverse
-            or not x
-            or not dtypes.is_float(self.dtype)
-            else self.mul(1 / x)
-        )
+        x = self._to_float(x)
+        if x.__class__ is Tensor or reverse or not x or not dtypes.is_float(self.dtype):
+            return funcs.Div.apply(*self._broadcasted(x, reverse))
+        else:
+            return self.mul(1 / x)
 
     def pow(self, x: ta.Union[Tensor, float], reverse=False) -> Tensor:
+        x = self._to_float(x)
         if x.__class__ is not Tensor and not reverse:
             # simple pow identities
             if x < 0:
