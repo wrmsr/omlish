@@ -4,10 +4,11 @@ import os
 import typing as ta
 
 from onnx.helper import tensor_dtype_to_np_dtype
-from onnx.onnx_pb import TensorProto
+from onnx.onnx_pb import TensorProto  # noqa
 import numpy as np
 
 from .. import ops
+from ..dtypes import ImageDType
 from ..dtypes import dtypes
 from ..helpers import prod
 from ..tensor import Tensor
@@ -26,7 +27,10 @@ def Neg(input: Tensor):
 
 
 def Add(input: Tensor, other: Tensor, broadcast=None):
-    return input + other if input.dtype == dtypes.float else (input + other).cast(input.dtype)
+    if input.dtype == dtypes.float or isinstance(input.dtype, ImageDType):
+        return input + other
+    else:
+        return (input + other).cast(input.dtype)
 
 
 def Sub(input: ta.Union[Tensor, ta.Any], other: Tensor):
@@ -34,21 +38,22 @@ def Sub(input: ta.Union[Tensor, ta.Any], other: Tensor):
 
 
 def Mul(input: Tensor, other: Tensor):
-    return (input * other) if input.dtype == dtypes.float else (input * other).cast(input.dtype)
+    if input.dtype == dtypes.float or isinstance(input.dtype, ImageDType):
+        return input * other
+    else:
+        return (input * other).cast(input.dtype)
 
 
 # in openpilot, due to SHUFFLE_PAD_OPS issues, we are spending an extra kernel
 def Div(input: Tensor, other: Tensor):
-    return input / other if input.dtype == dtypes.float else input.div(other).floor()
+    if input.dtype == dtypes.float or isinstance(input.dtype, ImageDType):
+        return input / other
+    else:
+        return input.div(other).floor()
 
 
 def Pow(input: Tensor, other: Tensor):
-    # TODO: can we do this more generically?
-    if not other.lazydata.realized and isinstance(other.lazydata.op, ops.LoadConst) and other.lazydata.st.contiguous:
-        other = other.lazydata.op.arg
-    else:
-        other = other.float()
-    return (input.float() ** other).cast(input.dtype)
+    return (input.float() ** other.float()).cast(input.dtype)
 
 
 def Reciprocal(input: Tensor):
