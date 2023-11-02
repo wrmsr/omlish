@@ -16,6 +16,7 @@ from ..runtime.ops_cpu import einsum_mulacc
 device = torch.device(
     "cuda:0" if torch.cuda.is_available() else ("mps" if getenv("MPS", 0) else "cpu")
 )
+
 type_map = {
     torch.float64: dtypes.float64,
     torch.float16: dtypes.float16,
@@ -26,6 +27,7 @@ type_map = {
     torch.uint8: dtypes.uint8,
     torch.bool: dtypes.bool,
 }
+
 inverse_type_map = {v: k for k, v in type_map.items()}
 
 

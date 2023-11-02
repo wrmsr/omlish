@@ -9,14 +9,14 @@ from ..dtypes import DType
 from ..dtypes import dtypes
 from ..execution import Compiled
 from ..renderer.cstyle import uops_to_cstyle
-from ..renderer.wgsl import WGSLLanguage
+from ..renderer.wgsl import WgslLanguage
 from .lib import LruAllocator
 from .lib import RawBufferCopyIn
 
 wgpu_device = get_default_device()
 
 
-class WebGPUProgram:
+class WebGpuProgram:
     def __init__(self, name: str, prg: str):
         self.name, self.prg = name, wgpu_device.create_shader_module(code=prg)
 
@@ -62,7 +62,7 @@ class WebGPUProgram:
         wgpu_device.queue.submit([command_encoder.finish()])
 
 
-class RawWebGPUAllocator(LruAllocator):
+class RawWebGpuAllocator(LruAllocator):
     def _do_alloc(self, size, dtype, device, **kwargs):
         return wgpu_device.create_buffer(
             size=size * dtype.itemsize,
@@ -73,10 +73,10 @@ class RawWebGPUAllocator(LruAllocator):
         return device, size * dtype.itemsize  # Buffers of the same length could be reused, no matter what dtype.
 
 
-WebGPUAlloc = RawWebGPUAllocator(wgpu_device.limits['max_buffer_size'])
+WebGpuAlloc = RawWebGpuAllocator(wgpu_device.limits['max_buffer_size'])
 
 
-class RawWebGPUBuffer(RawBufferCopyIn):
+class RawWebGpuBuffer(RawBufferCopyIn):
     def __init__(self, size: int, dtype: DType):
         assert dtype not in [
             dtypes.int8,
@@ -85,7 +85,7 @@ class RawWebGPUBuffer(RawBufferCopyIn):
             dtypes.uint64,
             dtypes.double,
         ], f"dtype {dtype} not supported on WEBGPU"
-        super().__init__(size, dtype, allocator=WebGPUAlloc)
+        super().__init__(size, dtype, allocator=WebGpuAlloc)
 
     def _copyin(self, x: np.ndarray):
         wgpu_device.queue.write_buffer(self._buf, 0, np.ascontiguousarray(x))
@@ -97,10 +97,10 @@ class RawWebGPUBuffer(RawBufferCopyIn):
         )  # type: ignore
 
 
-renderer = functools.partial(uops_to_cstyle, WGSLLanguage())
+renderer = functools.partial(uops_to_cstyle, WgslLanguage())
 
 WebGpuBuffer = Compiled(
-    RawWebGPUBuffer,
+    RawWebGpuBuffer,
     LinearizerOptions(
         supports_float4=False,
         local_max=[256, 256, 64],
@@ -108,5 +108,5 @@ WebGpuBuffer = Compiled(
     ),
     renderer,
     lambda x: x,
-    WebGPUProgram,
+    WebGpuProgram,
 )
