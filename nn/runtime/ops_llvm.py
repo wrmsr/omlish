@@ -8,10 +8,13 @@ import llvmlite.binding as llvm
 from ..codegen.kernel import LinearizerOptions
 from ..execution import Compiled
 from ..helpers import DEBUG
-from ..helpers import cache_compiled
+from ..helpers import diskcache
 from ..helpers import getenv
 from ..renderer.llvmir import uops_to_llvm_ir
 from ..runtime.lib import RawMallocBuffer
+
+
+LLVMOPT = bool(getenv("LLVMOPT"))
 
 
 class LLVM:
@@ -35,7 +38,7 @@ class LLVM:
         LLVM.target_machine.add_analysis_passes(LLVM.optimizer)
 
         # TODO: this makes compile times so much faster
-        if getenv("LLVMOPT"):
+        if LLVMOPT:
             llvm.set_option(
                 str(), "-force-vector-interleave=4"
             )  # this makes sum the same speed as torch, it also doubles the (slow) conv speed
@@ -57,21 +60,22 @@ class LLVM:
         LLVM.engine = llvm.create_mcjit_compiler(backing_mod, LLVM.target_machine)
 
 
-class LlvmProgram:
-    def __init__(self, name: str, prg: str, binary=False) -> None:
-        self.prg = prg if binary else self.compile(prg)
-        LLVM().engine.add_object_file(llvm.object_file.ObjectFileRef.from_data(self.prg))
-        self.fxn = LLVM.engine.get_function_address(name)
+@diskcache
+def compile_llvm(prg, llvmopt=LLVMOPT) -> bytes:
+    mod = llvm.parse_assembly(prg)
+    mod.verify()
+    LLVM().optimizer.run(mod)
+    if DEBUG >= 5:
+        print(LLVM.target_machine.emit_assembly(mod))
+    # FIXME: LLVM.engine.remove_module(self.mod)
+    return LLVM.target_machine.emit_object(mod)
 
-    @cache_compiled
-    def compile(self, prg) -> bytes:
-        mod = llvm.parse_assembly(prg)
-        mod.verify()
-        LLVM().optimizer.run(mod)
-        if DEBUG >= 5:
-            print(LLVM.target_machine.emit_assembly(mod))
-        # FIXME: LLVM.engine.remove_module(self.mod)
-        return LLVM.target_machine.emit_object(mod)
+
+class LlvmProgram:
+    def __init__(self, name: str, lib: bytes) -> None:
+        super().__init__()
+        LLVM().engine.add_object_file(llvm.object_file.ObjectFileRef.from_data(lib))
+        self.fxn = LLVM.engine.get_function_address(name)
 
     def __call__(self, unused_global_size, unused_local_size, *bufs, wait=False):
         cfunc = ct.CFUNCTYPE(ctypes.c_int, *[ctypes.c_void_p for _ in bufs])(self.fxn)
@@ -90,5 +94,6 @@ LlvmBuffer = Compiled(
         has_shared=False,
     ),
     uops_to_llvm_ir,
+    compile_llvm,
     LlvmProgram,
 )

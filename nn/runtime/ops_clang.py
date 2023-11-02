@@ -9,7 +9,7 @@ import typing as ta
 
 from ..codegen.kernel import LinearizerOptions
 from ..execution import Compiled
-from ..helpers import cache_compiled
+from ..helpers import diskcache
 from ..renderer.cstyle import CStyleLanguage
 from ..renderer.cstyle import uops_to_cstyle
 from ..runtime.lib import RawMallocBuffer
@@ -31,34 +31,30 @@ CLANG_PROGRAM_HEADER = """
 """
 
 
-class ClangProgram:
-    def __init__(self, name: str, prg: str, binary=False):
-        self.prg: bytes = prg if binary else self.compile(CLANG_PROGRAM_HEADER + prg)
+@diskcache
+def compile_clang(prg: str, header: str = CLANG_PROGRAM_HEADER) -> bytes:
+    # TODO: remove file write. sadly clang doesn't like the use of /dev/stdout here
+    with tempfile.NamedTemporaryFile(delete=True) as output_file:
+        subprocess.check_output(
+            args=(
+                    'clang '
+                    '-shared '
+                    '-O2 '
+                    '-Wall '
+                    '-Werror '
+                    '-x c ' + args['cflags'] +
+                    ' - '
+                    '-o ' + str(output_file.name)).split(),
+            input=(header + prg).encode('utf-8'))
+        return pathlib.Path(output_file.name).read_bytes()
 
+
+class ClangProgram:
+    def __init__(self, name: str, prg: str) -> None:
         # write to disk so we can load it
         with tempfile.NamedTemporaryFile(delete=True) as cached_file_path:
-            pathlib.Path(cached_file_path.name).write_bytes(self.prg)
+            pathlib.Path(cached_file_path.name).write_bytes(prg)
             self.fxn: ta.Any = ctypes.CDLL(str(cached_file_path.name))[name]
-
-    @cache_compiled
-    def compile(self, prg) -> bytes:
-        # TODO: sadly clang doesn't like the use of /dev/stdout here
-        with tempfile.NamedTemporaryFile(delete=True) as output_file:
-            subprocess.check_output(
-                args=(
-                        'clang '
-                        '-shared '
-                        '-O2 '
-                        '-Wall '
-                        '-Werror '
-                        '-x c '
-                        + args['cflags'] +
-                        ' - -o '
-                        + str(output_file.name)
-                ).split(),
-                input=prg.encode('utf-8'),
-            )
-            return pathlib.Path(output_file.name).read_bytes()
 
     def __call__(self, unused_global_size, unused_local_size, *args, wait=False):
         if wait:
@@ -84,5 +80,6 @@ ClangBuffer = Compiled(
         has_local=False,
     ),
     renderer,
+    compile_clang,
     ClangProgram,
 )
