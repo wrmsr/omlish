@@ -228,7 +228,6 @@ def uops_to_triton(function_name: str, uops: list[uo.UOp]):
         local_size[i] = min(local_size[i], max_local_size[i])
 
     return prg, {
-        "binary": True,
         "shared": compiled.metadata["shared"],
         "local_size_override": local_size + [1] * (3 - len(local_size)),
     }

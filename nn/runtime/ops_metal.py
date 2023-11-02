@@ -16,7 +16,7 @@ from ..execution import ASTRunner
 from ..execution import BasicBatchExecutor
 from ..execution import Compiled
 from ..helpers import DEBUG
-from ..helpers import cache_compiled
+from ..helpers import diskcache
 from ..helpers import getenv
 from ..helpers import prod
 from ..renderer.metal import MetalRenderer
@@ -105,9 +105,43 @@ def unwrap(x):
     return ret
 
 
+@diskcache
+def compile_metal(prg, use_xcode=bool(getenv("METAL_XCODE"))) -> bytes:
+    if use_xcode:
+        # NOTE: if you run llvm-dis on "air" you can see the llvm bytecode
+        air = subprocess.check_output(
+            [
+                'xcrun',
+                '-sdk', 'macosx',
+                'metal',
+                '-x', 'metal',
+                '-c', '-',
+                '-o', '-',
+            ],
+            input=prg.encode('utf-8'),
+        )
+        return subprocess.check_output(
+            [
+                'xcrun',
+                '-sdk', 'macosx',
+                'metallib',
+                '-',
+                '-o', '-',
+            ],
+            input=air,
+        )
+
+    options = Metal.MTLCompileOptions.alloc().init()
+    library = unwrap(METAL.device.newLibraryWithSource_options_error_(prg, options, None))
+
+    # TODO: avoid file write here?
+    with tempfile.NamedTemporaryFile(delete=True) as output_file:
+        library.serializeToURL_error_(Cocoa.NSURL.URLWithString_(f"file://{output_file.name}"), None)
+        return pathlib.Path(output_file.name).read_bytes()
+
+
 class MetalProgram:
-    def __init__(self, name: str, prg: str, binary: bool = False) -> None:
-        lib = prg if binary else self.compile(prg)
+    def __init__(self, name: str, lib: bytes) -> None:
         data = libdispatch.dispatch_data_create(lib, len(lib), None, None)
         self.library = unwrap(METAL.device.newLibraryWithData_error_(data, None))
         self.fxn = self.library.newFunctionWithName_(name)
@@ -120,40 +154,6 @@ class MetalProgram:
                     f"python3 compiler_explorer.py {shader.name}"
                 )
         self.pipeline_state = unwrap(METAL.device.newComputePipelineStateWithFunction_error_(self.fxn, None))
-
-    @cache_compiled
-    def compile(self, prg) -> bytes:
-        if getenv("METAL_XCODE"):
-            # NOTE: if you run llvm-dis on "air" you can see the llvm bytecode
-            air = subprocess.check_output(
-                [
-                    'xcrun',
-                    '-sdk', 'macosx',
-                    'metal',
-                    '-x', 'metal',
-                    '-c', '-',
-                    '-o', '-',
-                ],
-                input=prg.encode('utf-8'),
-            )
-            return subprocess.check_output(
-                [
-                    'xcrun',
-                    '-sdk', 'macosx',
-                    'metallib',
-                    '-',
-                    '-o', '-',
-                ],
-                input=air,
-            )
-
-        options = Metal.MTLCompileOptions.alloc().init()
-        library = unwrap(METAL.device.newLibraryWithSource_options_error_(prg, options, None))
-
-        # TODO: avoid file write here?
-        with tempfile.NamedTemporaryFile(delete=True) as output_file:
-            library.serializeToURL_error_(Cocoa.NSURL.URLWithString_(f"file://{output_file.name}"), None)
-            return pathlib.Path(output_file.name).read_bytes()
 
     def __call__(self, global_size, local_size, *bufs, wait=False):
         assert (
@@ -186,6 +186,7 @@ MetalBuffer = Compiled(
     RawMetalBuffer,
     LinearizerOptions(device="METAL"),
     MetalRenderer,
+    compile_metal,
     MetalProgram,
     METAL.synchronize,
     MetalBatchExecutor,

@@ -285,4 +285,4 @@ def uops_to_llvm_ir(function_name: str, uops: list[uo.UOp]) -> tuple[str, dict]:
             lvars[u] = code_for_op[u.arg](bb[-1], *[lvars[x] for x in u.vin])
 
     bb[-1].ret_void()
-    return str(module), {"binary":False}
+    return str(module), {}
