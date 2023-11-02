@@ -271,12 +271,14 @@ def download_file(url, fp, skip_if_exists=True):
 
 def cache_compiled(func):
     def wrapper(self, prg: str, *args, **kwargs) -> bytes:
-        cache_path = pathlib.Path(f"{tempfile.gettempdir()}/omlish_nn_cc_{hashlib.sha256(prg.encode()).hexdigest()}")
-        output_file = pathlib.Path(tempfile.mktemp())
-        if not cache_path.exists():
-            output_file.write_bytes(func(self, prg, *args, **kwargs))
-            output_file.rename(cache_path)
-        return cache_path.read_bytes()
+        if getenv("DISABLE_COMPILER_CACHE"):
+            return func
+
+        def wrapper(self, prg: str, *args, **kwargs) -> bytes:
+            table, key = f"compiler_cache_{type(self).__name__}", hashlib.sha256(prg.encode()).hexdigest()
+            if (ret := diskcache_get(table, key)):
+                return ret
+            return diskcache_put(table, key, func(self, prg, *args, **kwargs))
 
     return wrapper
 

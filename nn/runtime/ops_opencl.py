@@ -198,12 +198,7 @@ class ClProgram:
             if binary else cl.Program(ctx, prg) for ctx in CL.cl_ctxs
         ]
 
-        try:
-            self._clprgs = [clprogram.build(options=options) for clprogram in self.clprograms]
-        except cl.RuntimeError as e:
-            if DEBUG >= 3:
-                print("FAILED TO BUILD", prg)
-            raise e
+        self._clprgs = [clprogram.build(options=options) for clprogram in self.clprograms]
 
         self.clprgs = [clprg.__getattr__(name) for clprg in self._clprgs]
 
