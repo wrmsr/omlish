@@ -3,7 +3,7 @@
 
 ### nn
 
-matplotlib==3.8.0
+matplotlib==3.8.1
 numpy==1.26.1
 
 huggingface_hub>=0.17.0
@@ -33,7 +33,7 @@ onnx2torch==1.5.13
 
 sentencepiece==0.1.99
 tiktoken==0.5.1
-transformers==4.34.1
+transformers==4.35.0
 
 ##
 
@@ -72,7 +72,7 @@ git+https://github.com/huggingface/peft.git
 
 ### infra
 
-boto3>=1.28.74
+boto3>=1.28.77
 
 google-cloud-compute==1.14.1
 
