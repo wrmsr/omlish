@@ -51,7 +51,7 @@ class ClAllocator(LruAllocator):
             )
 
             buf = cl.Image(
-                CL.cl_ctxs[int(device)],
+                Cl.cl_ctxs[int(device)],
                 cl.mem_flags.READ_WRITE,
                 fmt,
                 shape=(dtype.shape[1], dtype.shape[0]),
@@ -59,7 +59,7 @@ class ClAllocator(LruAllocator):
 
         else:
             buf = cl.Buffer(
-                CL.cl_ctxs[int(device)], cl.mem_flags.READ_WRITE, size * dtype.itemsize
+                Cl.cl_ctxs[int(device)], cl.mem_flags.READ_WRITE, size * dtype.itemsize
             )
 
         setattr(
@@ -69,7 +69,7 @@ class ClAllocator(LruAllocator):
         return buf
 
 
-class _CL:
+class _Cl:
     def __init__(self) -> None:
         super().__init__()
 
@@ -114,7 +114,7 @@ class _CL:
         ]
 
         self.cl_allocator = ClAllocator(
-            CL.cl_ctxs[0].devices[0].get_info(cl.device_info.GLOBAL_MEM_SIZE)
+            Cl.cl_ctxs[0].devices[0].get_info(cl.device_info.GLOBAL_MEM_SIZE)
         )
 
     def synchronize(self):
@@ -122,22 +122,22 @@ class _CL:
             q.finish()
 
 
-CL = _CL()
+Cl = _Cl()
 
 if not getenv("DELAYED_RUNTIME_INIT", False):
-    CL.post_init()
+    Cl.post_init()
 
 
 class ClBuffer(RawBufferCopyInOut, RawBufferTransfer):
     def __init__(self, size, dtype, device="0") -> None:
-        super().__init__(size, dtype, allocator=CL.cl_allocator, **{"device": device})
+        super().__init__(size, dtype, allocator=Cl.cl_allocator, **{"device": device})
 
     def _copyin(self, x: np.ndarray):
         assert not self.dtype.name.startswith(
             "image"
         ), f"can't copyin images {self.dtype}"
         self.event = cl.enqueue_copy(
-            CL.cl_queue[self._buf.device],
+            Cl.cl_queue[self._buf.device],
             self._buf,
             np.require(x, requirements=['C', 'A']),
             is_blocking=False,
@@ -148,17 +148,17 @@ class ClBuffer(RawBufferCopyInOut, RawBufferTransfer):
             "image"
         ), f"can't copyout images {self.dtype}"
 
-        CL.cl_allocator.ensure_has_free_space(self.size, self.dtype, self._device)
+        Cl.cl_allocator.ensure_has_free_space(self.size, self.dtype, self._device)
 
         buf = cl.Buffer(
-            CL.cl_ctxs[self._buf.device],
+            Cl.cl_ctxs[self._buf.device],
             cl.mem_flags.WRITE_ONLY | cl.mem_flags.USE_HOST_PTR,
             0,
             hostbuf=x.data,
         )
 
         mapped, event = cl.enqueue_map_buffer(
-            CL.cl_queue[self._buf.device],
+            Cl.cl_queue[self._buf.device],
             buf,
             cl.map_flags.WRITE,
             0,
@@ -169,7 +169,7 @@ class ClBuffer(RawBufferCopyInOut, RawBufferTransfer):
 
         with mapped.base:
             cl.enqueue_copy(
-                CL.cl_queue[self._buf.device],
+                Cl.cl_queue[self._buf.device],
                 mapped,
                 self._buf,
                 is_blocking=True,
@@ -177,10 +177,10 @@ class ClBuffer(RawBufferCopyInOut, RawBufferTransfer):
             )
 
     def _transfer(self, x):
-        if "gfx" in CL.cl_ctxs[x._buf.device].devices[0].name:
+        if "gfx" in Cl.cl_ctxs[x._buf.device].devices[0].name:
             cl.enqueue_copy_buffer_p2p_amd(
-                CL.cl_platform,
-                CL.cl_queue[x._buf.device],
+                Cl.cl_platform,
+                Cl.cl_queue[x._buf.device],
                 x._buf,
                 self._buf,
                 x.size * x.dtype.itemsize,
@@ -193,7 +193,7 @@ class ClBuffer(RawBufferCopyInOut, RawBufferTransfer):
 
 @diskcache
 def compile_opencl(prg:str) -> bytes:
-    clprg = cl.Program(CL.cl_ctxs[0], prg)
+    clprg = cl.Program(Cl.cl_ctxs[0], prg)
     clprg.build()
     return clprg.get_info(cl.program_info.BINARIES)[0]
 
@@ -203,17 +203,17 @@ class ClProgram:
         super().__init__()
 
         self.name = name
-        self.clprograms = [cl.Program(ctx, ctx.devices, [prg] * len(ctx.devices)) for ctx in CL.cl_ctxs]  # type: ignore
+        self.clprograms = [cl.Program(ctx, ctx.devices, [prg] * len(ctx.devices)) for ctx in Cl.cl_ctxs]  # type: ignore
 
         self._clprgs = [clprogram.build(options=options) for clprogram in self.clprograms]
 
         self.clprgs = [clprg.__getattr__(name) for clprg in self._clprgs]
 
         if DEBUG >= 5 and not OSX:
-            if "Adreno" in CL.cl_ctxs[0].devices[0].name:
+            if "Adreno" in Cl.cl_ctxs[0].devices[0].name:
                 fromimport("disassemblers.adreno", "disasm")(prg)
 
-            elif CL.cl_ctxs[0].devices[0].name.startswith("gfx"):
+            elif Cl.cl_ctxs[0].devices[0].name.startswith("gfx"):
                 asm = early_exec(
                     ([ROCM_LLVM_PATH / "llvm-objdump", "-d", "-"], prg)
                 )
@@ -241,7 +241,7 @@ class ClProgram:
 
     @staticmethod
     def max_work_group_size():
-        return CL.cl_ctxs[0].devices[0].max_work_group_size
+        return Cl.cl_ctxs[0].devices[0].max_work_group_size
 
     def __call__(self, global_size, local_size, *bufs, wait=False) -> ta.Optional[float]:
         if not hasattr(self, "argdtypes"):
@@ -259,7 +259,7 @@ class ClProgram:
                 cl_bufs.append(x)
 
         e = self.clprgs[cl_bufs[0].device](
-            CL.cl_queue[cl_bufs[0].device],
+            Cl.cl_queue[cl_bufs[0].device],
             [int(g * l) for g, l in zip(global_size, local_size)]
             if local_size is not None
             else global_size,
@@ -283,5 +283,5 @@ OpenClBuffer = Compiled(
     OpenCLRenderer,
     compile_opencl,
     ClProgram,
-    CL.synchronize,
+    Cl.synchronize,
 )

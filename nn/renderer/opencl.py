@@ -12,7 +12,7 @@ type_map = {
 }
 
 
-class OpenCLLanguage(CStyleLanguage):
+class OpenClLanguage(CStyleLanguage):
     kernel_prefix = "__kernel "
     buffer_prefix = "__global "
     smem_align = "__attribute__ ((aligned (16))) "
@@ -27,4 +27,4 @@ class OpenCLLanguage(CStyleLanguage):
     uses_vload=True
 
 
-OpenCLRenderer = functools.partial(uops_to_cstyle, OpenCLLanguage())
+OpenCLRenderer = functools.partial(uops_to_cstyle, OpenClLanguage())
