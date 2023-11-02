@@ -32,7 +32,7 @@ OSX_TIMING_RATIO = (
 ROCM_LLVM_PATH = pathlib.Path("/opt/rocm/llvm/bin")
 # ROCM_LLVM_PATH = pathlib.Path(__file__).parents[3] / "extra/rocm/build/llvm-project/bin"
 if DEBUG >= 5:
-    early_exec = fromimport("extra.helpers", "enable_early_exec")()
+    from ..helpers import enable_early_exec as early_exec
 
 
 class ClAllocator(LruAllocator):

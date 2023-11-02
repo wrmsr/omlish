@@ -45,7 +45,8 @@ def compile_clang(prg: str, header: str = CLANG_PROGRAM_HEADER) -> bytes:
                     '-x c ' + args['cflags'] +
                     ' - '
                     '-o ' + str(output_file.name)).split(),
-            input=(header + prg).encode('utf-8'))
+            input=(header + prg).encode('utf-8'),
+        )
         return pathlib.Path(output_file.name).read_bytes()
 
 
