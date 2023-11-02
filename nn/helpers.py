@@ -3,6 +3,7 @@ from __future__ import annotations
 import contextlib
 import functools
 import hashlib
+import multiprocessing
 import operator
 import os
 import pathlib
@@ -10,6 +11,7 @@ import pickle
 import platform
 import re
 import sqlite3
+import subprocess
 import tempfile
 import time
 import typing as ta
@@ -294,7 +296,8 @@ def db_connection():
 
 
 def diskcache_get(table: str, key: ta.Union[dict, str, int]) -> ta.Any:
-    if isinstance(key, (str, int)): key = {"key": key}
+    if isinstance(key, (str, int)):
+        key = {"key": key}
     try:
         res = db_connection().cursor().execute(
             f"SELECT val FROM {table} WHERE {' AND '.join([f'{x}=?' for x in key.keys()])}",
@@ -344,3 +347,33 @@ def diskcache(func):
 
     setattr(wrapper, "__wrapped__", func)
     return wrapper
+
+
+##
+
+
+def _early_exec_process(qin, qout):
+    while True:
+        path, inp = qin.get()
+        try:
+            qout.put(subprocess.check_output(path, input=inp))
+        except Exception as e:
+            qout.put(e)
+
+
+def enable_early_exec():
+    qin: multiprocessing.Queue = multiprocessing.Queue()
+    qout: multiprocessing.Queue = multiprocessing.Queue()
+    p = multiprocessing.Process(target=_early_exec_process, args=(qin, qout))
+    p.daemon = True
+    p.start()
+
+    def early_exec(x):
+        qin.put(x)
+        ret = qout.get()
+        if isinstance(ret, Exception):
+            raise ret
+        else:
+            return ret
+
+    return early_exec

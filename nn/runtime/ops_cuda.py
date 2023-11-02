@@ -17,7 +17,7 @@ from ..helpers import DEBUG
 from ..helpers import colored
 from ..helpers import diskcache
 from ..helpers import getenv
-from ..renderer.cuda import CUDARenderer
+from ..renderer.cuda import CudaRenderer
 from ..runtime.lib import LruAllocator
 from ..runtime.lib import RawBufferCopyInOut
 from ..runtime.lib import RawMallocBuffer
@@ -110,24 +110,24 @@ if getenv("CUDACPU", 0) == 1:
     import pycuda.driver  # type: ignore
 
     pycuda.driver.Context = context
-    RawCUDABuffer = RawMallocBuffer
+    RawCudaBuffer = RawMallocBuffer
 
 else:
     import pycuda.autoprimaryctx  # type: ignore # pylint: disable=unused-import # noqa: F401
     import pycuda.driver as cuda  # type: ignore
 
-    class CUDAAllocator(LruAllocator):
+    class CudaAllocator(LruAllocator):
         def _do_alloc(self, size, dtype, device, **kwargs):
             return cuda.mem_alloc(size * dtype.itemsize)  # type: ignore
 
         def _cached_bufkey(self, size, dtype, device):
             return (device, size * dtype.itemsize)  # Buffers of the same length could be reused, no matter what dtype.
 
-    CUDAAlloc = CUDAAllocator(pycuda.driver.Context.get_device().total_memory())
+    CudaAlloc = CudaAllocator(pycuda.driver.Context.get_device().total_memory())
 
-    class RawCUDABuffer(RawBufferCopyInOut):  # type: ignore
+    class RawCudaBuffer(RawBufferCopyInOut):  # type: ignore
         def __init__(self, size, dtype):
-            super().__init__(size, dtype, allocator=CUDAAlloc)
+            super().__init__(size, dtype, allocator=CudaAlloc)
 
         def _copyin(self, x: np.ndarray, stream: ta.Optional[cuda.Stream] = None):
             cuda.memcpy_htod_async(self._buf, x.ravel(), stream)  # type: ignore
@@ -136,7 +136,7 @@ else:
             cuda.memcpy_dtoh(x, self._buf)  # type: ignore
 
 
-class CUDAGraph(GraphBatchExecutor):
+class CudaGraph(GraphBatchExecutor):
     def __init__(self, jit_cache: list[tuple[ta.Any, ta.Any, ta.Any]]) -> None:
         super().__init__(jit_cache)
         self.jc_info: list[ta.Any] = []
@@ -145,7 +145,7 @@ class CUDAGraph(GraphBatchExecutor):
         if (
                 DEBUG > 0
                 or getenv("CUDACPU")
-                or not all(isinstance(prg, ASTRunner) and isinstance(prg.clprg, CUDAProgram) for prg, _, _ in jit_cache)
+                or not all(isinstance(prg, ASTRunner) and isinstance(prg.clprg, CudaProgram) for prg, _, _ in jit_cache)
         ):
             return  # Only CUDAProgram can be captured.
 
@@ -158,7 +158,7 @@ class CUDAGraph(GraphBatchExecutor):
             for prg, pargs, variables in jit_cache:
                 global_size, local_size = prg.launch_dims(variables)
                 cuda_args = [
-                    x._buf if isinstance(x, RawCUDABuffer) else np.int32(x)
+                    x._buf if isinstance(x, RawCudaBuffer) else np.int32(x)
                     for x in [*pargs, *variables.values()]
                 ]
                 graph_node = graph.add_kernel_node(
@@ -175,12 +175,12 @@ class CUDAGraph(GraphBatchExecutor):
         except Exception as e:
             # CudaGraph might not be suported with the installed version of pycuda.
             if DEBUG >= 3:
-                print(f"Error creating CUDAGraph: {e}")
+                print(f"Error creating CudaGraph: {e}")
 
     def update_node(self, instid, jcid, prg, pargs, variables, updated_args=None):
         global_size, local_size = prg.launch_dims(variables)
         cuda_args = [
-            x._buf if isinstance(x, RawCUDABuffer) else np.int32(x)
+            x._buf if isinstance(x, RawCudaBuffer) else np.int32(x)
             for x in [*pargs, *variables.values()]
         ]
         self.graphs[instid][0].kernel_node_set_params(
@@ -197,10 +197,17 @@ class CUDAGraph(GraphBatchExecutor):
 
 @diskcache
 def compile_cuda(prg) -> bytes:
-    return cuda_compile(prg, target="ptx", no_extern_c=True, options=['-Wno-deprecated-gpu-targets'])
+    return cuda_compile(
+        prg,
+        target="ptx",
+        no_extern_c=True,
+        options=[
+            '-Wno-deprecated-gpu-targets',
+        ],
+    )
 
 
-class CUDAProgram:
+class CudaProgram:
     def __init__(self, name: str, _prg: str, shared=0, local_size_override=None) -> None:
         super().__init__()
 
@@ -231,7 +238,7 @@ class CUDAProgram:
 
         self.prg(
             *[
-                x._buf if isinstance(x, RawCUDABuffer) else
+                x._buf if isinstance(x, RawCudaBuffer) else
                 np.int32(x) if (isinstance(x, int) and not getenv("CUDACPU")) else
                 x
                 for x in args
@@ -250,8 +257,8 @@ class CUDAProgram:
 if getenv("TRITON") == 1:
     from ..renderer.triton import uops_to_triton
 
-    CUDABuffer = Compiled(
-        RawCUDABuffer,
+    CudaBuffer = Compiled(
+        RawCudaBuffer,
         LinearizerOptions(
             supports_float4=False,
             supports_float4_alu=False,
@@ -261,22 +268,22 @@ if getenv("TRITON") == 1:
         ),
         uops_to_triton,
         lambda x: x.encode('utf-8'),
-        CUDAProgram,
+        CudaProgram,
         cuda.Context.synchronize,
     )
 
 else:
-    CUDABuffer = Compiled(
-        RawCUDABuffer,
+    CudaBuffer = Compiled(
+        RawCudaBuffer,
         LinearizerOptions(
             supports_float4=True,
             supports_float4_alu=False,
             global_max=[65535, 65535, 2147483647],
             local_max=[64, 1024, 1024],
         ),
-        CUDARenderer,
+        CudaRenderer,
         compile_cuda,
-        CUDAProgram,
+        CudaProgram,
         cuda.Context.synchronize,
-        CUDAGraph,
+        CudaGraph,
     )

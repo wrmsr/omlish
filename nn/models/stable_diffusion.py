@@ -819,7 +819,7 @@ if __name__ == "__main__":
 
     # make image correct size and scale
     x = (x + 1.0) / 2.0
-    x = (x.reshape(3,512,512).permute(1,2,0).clip(0,1)*255)
+    x = (x.reshape(3, 512, 512).permute(1, 2, 0).clip(0, 1) * 255)
     if Device.DEFAULT != "WEBGPU":
         x = x.cast(dtypes.uint8)
     print(x.shape)
@@ -827,6 +827,7 @@ if __name__ == "__main__":
     # save image
     from PIL import Image
     import numpy as np
+
     im = Image.fromarray(x.numpy().astype(np.uint8, copy=False))
     print(f"saving {args.out}")
     im.save(args.out)

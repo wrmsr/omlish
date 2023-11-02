@@ -4,7 +4,7 @@ from .cstyle import CStyleLanguage
 from .cstyle import uops_to_cstyle
 
 
-class CUDALanguage(CStyleLanguage):
+class CudaLanguage(CStyleLanguage):
     kernel_prefix = "__global__ "
     smem_prefix = "__shared__ "
     smem_prefix_for_cast = False
@@ -26,4 +26,4 @@ class CUDALanguage(CStyleLanguage):
     """  # if not getenv("PTX") else fromimport("tinygrad.renderer.assembly_ptx", "uops_to_ptx_asm") # assembly_ptx currently isn't supported
 
 
-CUDARenderer = functools.partial(uops_to_cstyle, CUDALanguage())
+CudaRenderer = functools.partial(uops_to_cstyle, CudaLanguage())
