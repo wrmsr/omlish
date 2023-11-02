@@ -348,15 +348,22 @@ class ASTRunner:
             runtime_args={"binary": False},
         )
 
-    def optimize_local_size(self, global_size, rawbufs) -> list[int]:
+    def optimize_local_size(self, global_size: list[int], rawbufs: list[RawBuffer]) -> list[int]:
         assert self.global_size is not None, "needs a global size to optimize local size"
+        test_rawbuffers = [type(rawbufs[0])(rawbufs[0].size, rawbufs[0].dtype), *rawbufs[1:]] \
+            if rawbufs[0] in rawbufs[1:] else rawbufs
         MAX_WORKGROUP = self.clprg.max_work_group_size() if hasattr(self.clprg, 'max_work_group_size') else 1024
         local_dims = [[x for x in set([sz, 1, 2, 4, 8, 16, 32, 64, 128, 256, MAX_WORKGROUP]) if x <= sz] for sz in global_size]
         local_sizes = [list(x) for x in itertools.product(*local_dims) if prod(x) <= MAX_WORKGROUP] * 2  # try each valid size twice
 
         def try_exec(local_size):
             try:
-                return self.clprg([g // l if g % l == 0 else g / l for g, l in zip(global_size, local_size)], local_size, *rawbufs, wait=True)
+                return self.clprg(
+                    [g // l if g % l == 0 else g / l for g, l in zip(global_size, local_size)],
+                    local_size,
+                    *test_rawbuffers,
+                    wait=True,
+                )
             except Exception:
                 return float('inf')
 
@@ -415,6 +422,7 @@ class ASTRunner:
         global_size, local_size = self.launch_dims(var_vals)
 
         if global_size is not None and local_size is None:
+            # TODO: this is copied from get_program
             local_size = self.local_size = self.optimize_local_size(global_size, rawbufs)
             global_size = self.global_size = [g // l if g % l == 0 else g / l for g, l in zip(global_size, local_size)]
 
@@ -552,58 +560,52 @@ class Compiled(ASTExecutor):
                 if BEAM >= 1 and not vars_from_ast(ast):
                     lins = [(("tc" if used_tensor_cores else "hc"), k)]
 
-                    # allocate a scratch buffer if output buffer is also input
-                    test_rawbuffers = [self.buffer(rawbuffers[0].size, rawbuffers[0].dtype), *rawbuffers[1:]] \
-                        if rawbuffers[0] in rawbuffers[1:] else rawbuffers
+                # allocate a scratch buffer if output buffer is also input
+                test_rawbuffers = [type(rawbuffers[0])(rawbuffers[0].size, rawbuffers[0].dtype), *rawbuffers[1:]] \
+                    if rawbuffers[0] in rawbuffers[1:] else rawbuffers
+                kb = Linearizer(ast, self.linearizer_opts)
+                kb.required_optimizations()
+                from .features.search import beam_search
+                from .features.search import time_linearizer
 
-                    kb = Linearizer(ast, self.linearizer_opts)
-                    kb.required_optimizations()
+                lins.append((
+                    f"beam{BEAM.value}",
+                    beam_search(
+                        kb,
+                        test_rawbuffers,
+                        BEAM.value,
+                        bool(getenv("BEAM_ESTIMATE", 1)),
+                    ),
+                ))
 
-                    from .features.search import beam_search
-                    from .features.search import time_linearizer
-
-                    if not bool(getenv("NOLOCALS")) or getenv("NOLOCALS") >= 2:
-                        lins.append((
-                            f"beam{BEAM.value}",
-                            beam_search(
-                                kb,
+                if used_tensor_cores:
+                    lins.append(("hc", Linearizer(ast, self.linearizer_opts)))
+                    lins[-1][1].hand_coded_optimizations()
+                timed = sorted(
+                    [
+                        (
+                            nm,
+                            tk,
+                            time_linearizer(
+                                tk,
                                 test_rawbuffers,
-                                BEAM.value,
-                                bool(getenv("BEAM_ESTIMATE", 1)),
+                                allow_test_size=False,
+                                disable_cache=True,
+                                clear_l2=True,
                             ),
-                        ))
-
-                    if bool(getenv("NOLOCALS")):
-                        lins.append((
-                            f"beam{BEAM.value}n",
-                            beam_search(
-                                kb.copy(),
-                                test_rawbuffers,
-                                BEAM.value,
-                                bool(getenv("BEAM_ESTIMATE", 1)),
-                                dont_use_locals=True,
-                            ),
-                        ))
-
-                    if used_tensor_cores:
-                        lins.append(("hc", Linearizer(ast, self.linearizer_opts)))
-                        lins[-1][1].hand_coded_optimizations()
-
-                    timed = sorted(
-                        [
-                            (nm, tk, time_linearizer(tk, test_rawbuffers, allow_test_size=False, disable_cache=True))
-                            for nm, tk in lins
-                        ],
-                        key=lambda x: x[2],
-                    )
-
-                    if DEBUG >= 1:
-                        print("  <  ".join(
-                            f"{nm:6s} : {lin.colored_shape(30, dense=True)} : {tm * 1e6:8.2f} us"
-                            for nm, lin, tm in timed)
                         )
+                        for nm, tk in lins
+                    ],
+                    key=lambda x: x[2],
+                )
 
-                    k = timed[0][1]
+                if DEBUG >= 1:
+                    print("  <  ".join(
+                        f"{nm:6s} : {lin.colored_shape(30, dense=True)} : {tm * 1e6:8.2f} us"
+                        for nm, lin, tm in timed
+                    ))
+
+                k = timed[0][1]
 
             return self.to_program(k)
 
