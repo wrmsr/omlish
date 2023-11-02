@@ -271,7 +271,7 @@ def download_file(url, fp, skip_if_exists=True):
 
 def cache_compiled(func):
     def wrapper(self, prg: str, *args, **kwargs) -> bytes:
-        cache_path = pathlib.Path(f"{tempfile.gettempdir()}/tinygrad_cc_{hashlib.sha256(prg.encode()).hexdigest()}")
+        cache_path = pathlib.Path(f"{tempfile.gettempdir()}/omlish_nn_cc_{hashlib.sha256(prg.encode()).hexdigest()}")
         output_file = pathlib.Path(tempfile.mktemp())
         if not cache_path.exists():
             output_file.write_bytes(func(self, prg, *args, **kwargs))
@@ -284,7 +284,7 @@ def cache_compiled(func):
 # *** universal database cache ***
 
 
-CACHEDB = getenv("CACHEDB", "/tmp/tinygrad_cache")
+CACHEDB = getenv("CACHEDB", "/tmp/omlish_nn_cache")
 CACHELEVEL = getenv("CACHELEVEL", 2)
 
 VERSION = 5
