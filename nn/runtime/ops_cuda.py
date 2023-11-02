@@ -46,7 +46,8 @@ def arch():
 
 
 if getenv("CUDACPU", 0) == 1:
-    import ctypes, ctypes.util
+    import ctypes
+    import ctypes.util
 
     lib = ctypes.CDLL(ctypes.util.find_library("gpuocelot"))
     lib.ptx_run.argtypes = [
@@ -196,7 +197,7 @@ class CudaGraph(GraphBatchExecutor):
 
 
 @diskcache
-def compile_cuda(prg) -> bytes:
+def compile_cuda(prg: str) -> bytes:
     return cuda_compile(
         prg,
         target="ptx",

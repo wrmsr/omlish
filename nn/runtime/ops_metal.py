@@ -106,7 +106,7 @@ def unwrap(x):
 
 
 @diskcache
-def compile_metal(prg, use_xcode=bool(getenv("METAL_XCODE"))) -> bytes:
+def compile_metal(prg: str, use_xcode: bool = bool(getenv("METAL_XCODE"))) -> bytes:
     if use_xcode:
         # NOTE: if you run llvm-dis on "air" you can see the llvm bytecode
         air = subprocess.check_output(
