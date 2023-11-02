@@ -8,7 +8,7 @@ import random
 import time
 import typing as ta
 
-from omlish import collections as col
+from omlish import collections as col  # noqa
 from omlish import dataclasses as dc
 from omlish import dispatch
 from omlish import lang
@@ -155,7 +155,7 @@ class Interpreted(ASTExecutor):
                 )
             )  # Do manual casting of ret if it does not match the required output dtype.
 
-        if DEBUG >= 5 or (self.buffer != FlopCounter and DEBUG >= 3):
+        if DEBUG >= 3:
             print(
                 (
                     f"*** {'exec' if created_context else '    '} "
@@ -205,18 +205,14 @@ class OpAnalyzer:
     def __init__(self) -> None:
         super().__init__()
 
-        self._dct: ta.MutableMapping[ta.Any, OpInfo] = col.IdentityKeyDict()
+        self._dct: ta.MutableMapping[ta.Any, OpInfo] = {}  # col.IdentityKeyDict()
 
     def analyze(self, x: ta.Any) -> OpInfo:
         try:
             return self._dct[x]
         except KeyError:
-            ret = self._dct[x] = self._analyze(x)
-            fc = InterpretedFlopCounter.exec_ast(x)
-            if ret.shape != fc.shape or ret.dtype != fc.dtype or ret.flops != fc.flops:
-                breakpoint()
-                InterpretedFlopCounter.exec_ast(x)
-                raise ValueError
+            ret = self._analyze(x)
+            self._dct[x] = dc.replace(ret, flops=0)
             return ret
 
     @dispatch.method
@@ -253,72 +249,8 @@ class OpAnalyzer:
         return OpInfo(op, xi.shape, yi.dtype, xi.flops + yi.flops + zi.flops + prod(xi.shape))
 
 
-class FlopCounter:
-    def __init__(self, tup: tuple[tuple[int, ...], DType, int]) -> None:
-        super().__init__()
-        self.shape, self.dtype, self.flops = tup
-        self._buf = self
-
-    def consume_flops(self):
-        self.flops, ret = 0, self.flops
-        return ret
-
-
-def _barf_bin(self, y):
-    scf = self.consume_flops()
-    ycf = y.consume_flops()
-    breakpoint()
-    return (
-        self.shape,
-        max(self.dtype, y.dtype),
-        scf + ycf + prod(self.shape),
-    )
-
-shape_fxn_for_op: dict[type[LazyOp], ta.Callable] = {
-    ops.Mem: lambda arg: (arg.st.shape, arg.dtype, 0),
-    ops.Const: lambda arg: (arg.st.shape, arg.dtype, 0),
-    ops.Cast: lambda self, arg: (
-        self.shape,
-        arg[0],
-        self.consume_flops(),
-    ),  # cast uses no flops
-    **{
-        op: lambda self: (
-            self.shape,
-            self.dtype,
-            self.consume_flops() + prod(self.shape),
-        )
-        for op in ops.UnaryOp.__subclasses__()
-        if op != ops.Cast
-    },
-    **{
-        op: _barf_bin
-        for op in ops.BinaryOp.__subclasses__()
-    },
-    **{
-        op: lambda self, new_shape: (
-            new_shape,
-            self.dtype,
-            self.consume_flops() + prod(self.shape),
-        )
-        for op in ops.ReduceOp.__subclasses__()
-    },
-    ops.Where: lambda self, y, z: (
-        self.shape,
-        y.dtype,
-        self.consume_flops() + y.consume_flops() + z.consume_flops() + prod(self.shape),
-    ),
-}
-
-InterpretedFlopCounter = Interpreted(FlopCounter, shape_fxn_for_op, lambda x: x)
-
-
 def get_lazyop_info(ast: LazyOp) -> OpInfo:
-    oi = OpAnalyzer().analyze(ast)
-    fc = InterpretedFlopCounter.exec_ast(ast)
-    if oi.shape != fc.shape or oi.dtype != fc.dtype or oi.flops != fc.flops:
-        breakpoint()
-    return OpInfo(ast, fc.shape, fc.dtype, fc.flops)
+    return OpAnalyzer().analyze(ast)
 
 
 # **************** for Compiled Buffers ****************
