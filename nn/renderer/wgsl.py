@@ -16,7 +16,7 @@ type_map = {
 }
 
 
-class WGSLLanguage(CStyleLanguage):
+class WgslLanguage(CStyleLanguage):
     gid = [f"i32(gindex.{'xyz'[x]})" for x in range(3)]
     lid = [f"i32(lindex.{'xyz'[x]})" for x in range(3)]
     size_prefix = "let"
