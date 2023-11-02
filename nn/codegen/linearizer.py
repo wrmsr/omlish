@@ -7,8 +7,8 @@ import functools
 import collections
 
 from .. import ops as ops_
+from ..codegen.kernel import Kernel
 from ..codegen.kernel import LocalBuffer
-from ..codegen.optimizer import OptimizedKernel
 from ..dtypes import DType
 from ..dtypes import ImageDType
 from ..dtypes import PtrDType
@@ -58,7 +58,7 @@ def get_grouped_dims(prefix, start_dim, local_dims, maxdim: int = 0):
     return local_idxs, [x for x in loop_local_idxs if not isinstance(x, NumNode)]
 
 
-class Linearizer(OptimizedKernel):
+class Linearizer(Kernel):
     def uop_alu_idx(self, a: uo.UOp, b, ops, ctx: Linearizer, op, dtype=dtypes.int32):
         render_b: uo.UOp = ta.cast(
             uo.UOp, (NumNode(b) if not isinstance(b, Node) else b).render(ops, ctx)
@@ -91,7 +91,8 @@ class Linearizer(OptimizedKernel):
     }
 
     def global_load(self, i: int, idxs: ta.Sequence[Node], acc=None) -> list[uo.UOp]:
-        const = self.bufs[i].val if isinstance(self.bufs[i], ConstBuffer) else acc
+        buf = self.bufs[i]
+        const = buf.val if isinstance(buf, ConstBuffer) else acc
 
         def rename_var(v: VariableOrNum, expr: str):
             return v if isinstance(v, NumNode) else Variable(expr, v.min, v.max)
@@ -114,7 +115,7 @@ class Linearizer(OptimizedKernel):
 
         e_idxs, e_valids = g_idx.expand(expand_vars), g_valid.expand(expand_vars)
         ret = []
-        invalid_value = 0 if dtypes.is_int(self.bufs[i].dtype) else 0.0
+        invalid_value = 0 if dtypes.is_int(buf.dtype) else 0.0
         for idx, valid, rep_idx in zip(e_idxs, e_valids, Node.iter_idxs(expand_vars)):
             this_const, idx, valid = (
                 (invalid_value, Variable.num(0), Variable.num(1))
@@ -125,7 +126,7 @@ class Linearizer(OptimizedKernel):
             key = (
                 f"{acc}"
                 f"{localtype}"
-                f"{this_const if this_const is not None and acc is None else (self.bufs[i].idx if isinstance(self.bufs[i], MemBuffer) else self.bufs[i].name)}"  # noqa
+                f"{this_const if this_const is not None and acc is None else (buf.idx if isinstance(buf, MemBuffer) else ta.cast(LocalBuffer, buf).name)}"
                 f"{idx.render()}"
                 f"{valid.render()}"
             )
@@ -155,8 +156,8 @@ class Linearizer(OptimizedKernel):
                 else:
                     buf_uop = self.buf_uops[i]
                     assert buf_uop is not None, f"buffer {i} wasn't UOped"
-                    if isinstance(self.bufs[i].dtype, ImageDType):
-                        idx, valid = to_image_idx(self.bufs[i].dtype.shape, idx, valid)
+                    if isinstance(buf.dtype, ImageDType):
+                        idx, valid = to_image_idx(buf.dtype.shape, idx, valid)
                         rendered_idx = self.uop(
                             uo.Cast,
                             dtypes._int2,
@@ -200,6 +201,7 @@ class Linearizer(OptimizedKernel):
         return ret
 
     def global_store(self, i: int, idxs: list[Node], store: list[uo.UOp]) -> None:
+        buf = self.bufs[i]
         buf_uop = self.buf_uops[i]
         assert buf_uop is not None, f"buffer {i} wasn't UOped"
 
@@ -237,8 +239,8 @@ class Linearizer(OptimizedKernel):
 
         for idx, var in store_offset.items():
             idx, valid = self.sts[i].expr_idxs(idx)
-            if isinstance(self.bufs[i].dtype, ImageDType):
-                idx, valid = to_image_idx(self.bufs[i].dtype.shape, idx, valid)
+            if isinstance(buf.dtype, ImageDType):
+                idx, valid = to_image_idx(buf.dtype.shape, idx, valid)
                 rendered_idx = self.uop(
                     uo.Cast,
                     dtypes._int2,
@@ -251,6 +253,15 @@ class Linearizer(OptimizedKernel):
     kernel_cnt: ta.Final[ta.DefaultDict[str, int]] = collections.defaultdict(int)
 
     def linearize(self):
+        # no new opts and we already ran? skip relinearizing
+        if self.applied_opts == self.applied_opts_cache:
+            return self
+
+        # save backups
+        sts_backup = self.sts[:]
+        gfr_backup = self.group_for_reduce[:], self.upcasted
+        upc_backup = self.upcasted
+
         # global uop cache
         self.saved_exprs: dict[tuple, uo.UOp] = dict()
 
@@ -405,6 +416,10 @@ class Linearizer(OptimizedKernel):
                     loop_uop = self.loop_uops[x.expr]
                     if isinstance(loop_uop, uo.Loop):
                         self.uop(uo.End, None, (loop_uop,))
+
+        # set global/local size
+        self.global_size: ta.Optional[list[int]] = None
+        self.local_size: ta.Optional[list[int]] = None
 
         if self.dont_use_locals:
             self.global_size = [x.max + 1 for x in loop_global_idxs][::-1]
@@ -663,13 +678,13 @@ class Linearizer(OptimizedKernel):
                 render_loop(end_local_idxs)
 
                 # load localbufs
-                loaded_buffers["LOCAL_BUFFER"] = self.global_load(
-                    -1, fake_global_idxs + local_idxs + fake_reduce_idxs + upcast_idxs
+                loaded_buffers[self.bufs[-1]] = self.global_load(
+                    -1, fake_global_idxs + local_idxs + fake_reduce_idxs + upcast_idxs,
                 )
 
                 # there's no AST here (and there's no shape for the reduce LazyOp)
-                self.ast_parse(  # type: ignore
-                    type(self.reduceop)(("LOCAL_BUFFER",)),
+                self.ast_parse(
+                    type(self.reduceop)((self.bufs[-1],)),
                     acc,
                     self.acc_offsets(-1),
                     loaded_buffers,
@@ -735,6 +750,13 @@ class Linearizer(OptimizedKernel):
 
             self.uops = nu
 
+        # restore backups
+        self.sts = sts_backup
+        self.group_for_reduce = gfr_backup
+        self.upcasted = upc_backup
+
+        # set cache and return
+        self.applied_opts_cache = self.applied_opts[:]
         return self
 
     def uop(

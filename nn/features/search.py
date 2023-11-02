@@ -1,9 +1,9 @@
 import collections
 import typing as ta
 
+from ..codegen.kernel import Opt
+from ..codegen.kernel import OptOps
 from ..codegen.linearizer import Linearizer
-from ..codegen.optimizer import Opt
-from ..codegen.optimizer import OptOps
 from ..devices import Device
 from ..dtypes import ImageDType
 from ..execution import Compiled
@@ -39,7 +39,6 @@ def time_linearizer(
         allow_test_size=True,
         max_global_size=65536,
         cnt=3,
-        should_copy=True,
         disable_cache=False,
 ) -> float:
     key = {
@@ -48,10 +47,8 @@ def time_linearizer(
         "allow_test_size": allow_test_size,
         "max_global_size": max_global_size,
     }
-    if should_copy and not disable_cache and CACHELEVEL >= 2 and (val := diskcache_get("time_linearizer", key)) is not None:
+    if not disable_cache and CACHELEVEL >= 2 and (val := diskcache_get("time_linearizer", key)) is not None:
         return min(val)
-    if should_copy:
-        lin = lin.copy() # TODO: remove the need for this
     var_vals = {k: k.min for k in vars_from_ast(lin.ast)}
     try:
         lin.linearize()
@@ -86,7 +83,8 @@ def time_linearizer(
 # get (scrap) buffers for timing the linearizer
 def bufs_from_lin(lin: Linearizer) -> list[RawBuffer]:
     bufsts: ta.DefaultDict[int, list[MemBuffer]] = collections.defaultdict(list)
-    for x in lin.membufs: bufsts[x.idx].append(x)
+    for x in lin.membufs:
+        bufsts[x.idx].append(x)
     rawbufs: list[ta.Optional[RawBuffer]] = [None] * len(bufsts)
     for k, lx in bufsts.items():
         rawbufs[k] = ta.cast(Compiled, Device[Device.DEFAULT]).buffer(
@@ -99,7 +97,7 @@ def bufs_from_lin(lin: Linearizer) -> list[RawBuffer]:
 
 # get dictionary of all possible actions
 def get_linearizer_actions(lin: Linearizer, include_0=True) -> dict[int, Linearizer]:
-    acted_lins = {0: lin.copy()} if include_0 else {}
+    acted_lins = {0: lin} if include_0 else {}
     for i, a in enumerate(actions):
         if a.axis >= lin.shape_len:
             continue
@@ -140,7 +138,7 @@ def beam_search(lin: Linearizer, rawbufs, amt: int, allow_test_size=True, dont_u
     def tuplize_uops(uops):
         return tuple([(x.uop, x.dtype, tuple(x.num for x in x.vin), x.arg) for x in uops])
 
-    seen_uops = {tuplize_uops(lin.copy().linearize().uops): tuple(lin.applied_opts)}
+    seen_uops = {tuplize_uops(lin.linearize().uops): tuple(lin.applied_opts)}
 
     while 1:
         acted_lins = lins = flatten([get_linearizer_actions(lin, include_0=False).values() for lin, _ in beam])
@@ -148,7 +146,7 @@ def beam_search(lin: Linearizer, rawbufs, amt: int, allow_test_size=True, dont_u
         # dedup with uops (TODO: double linearize not needed)
         acted_lins_dedup = []
         for lin in acted_lins:
-            tuops = tuplize_uops(lin.copy().linearize().uops)
+            tuops = tuplize_uops(lin.linearize().uops)
             if tuops in seen_uops:
                 # print(seen_uops[tuops], lin.applied_opts)
                 continue
