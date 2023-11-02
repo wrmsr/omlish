@@ -9,6 +9,7 @@ from ..dtypes import ImageDType
 from ..execution import Compiled
 from ..execution import MemBuffer
 from ..helpers import CACHELEVEL
+from ..helpers import Context
 from ..helpers import DEBUG
 from ..helpers import diskcache_get
 from ..helpers import diskcache_put
@@ -17,6 +18,7 @@ from ..helpers import getenv
 from ..helpers import prod
 from ..lazy import vars_from_ast
 from ..runtime.lib import RawBuffer
+from ..tensor import Tensor
 
 
 actions = flatten([[Opt(op=OptOps.UPCAST, axis=axis, amt=amt) for amt in [0, 2, 3, 4, 7]] for axis in range(6)])
@@ -27,6 +29,7 @@ actions += [
     Opt(op=OptOps.LOCAL, axis=0, amt=32),
     Opt(op=OptOps.GROUP, axis=0, amt=4), Opt(op=OptOps.GROUP, axis=0, amt=8), Opt(op=OptOps.GROUP, axis=1, amt=8),
     Opt(op=OptOps.UPCASTMID, axis=1, amt=4),
+    Opt(op=OptOps.NOLOCALS),
 ]
 
 device: Compiled = ta.cast(Compiled, Device[Device.DEFAULT])
@@ -40,6 +43,7 @@ def time_linearizer(
         max_global_size=65536,
         cnt=3,
         disable_cache=False,
+        clear_l2=False,
 ) -> float:
     key = {
         "ast": str(lin.ast),
@@ -71,7 +75,13 @@ def time_linearizer(
         if global_size is not None and local_size is None:
             local_size = prg.optimize_local_size(global_size, rawbufs)
             global_size = [g // l if g % l == 0 else g / l for g, l in zip(global_size, local_size)]
-        tms = [prg.clprg(global_size, local_size, *rawbufs, *var_vals.values(), wait=True) * factor for _ in range(cnt)]
+        tms = []
+        for _ in range(cnt):
+            if clear_l2:
+                # TODO: this is too small for many L2 caches
+                with Context(DEBUG=0):
+                    Tensor.rand(1024, 1024).realize()
+            tms.append(prg.clprg(global_size, local_size, *rawbufs, *var_vals.values(), wait=True)*factor)
         prg.global_size = real_global_size
     except Exception:
         tms = [float('inf')]
@@ -97,12 +107,11 @@ def bufs_from_lin(lin: Linearizer) -> list[RawBuffer]:
 
 # get dictionary of all possible actions
 def get_linearizer_actions(lin: Linearizer, include_0=True) -> dict[int, Linearizer]:
-    breakpoint()
     acted_lins = {0: lin} if include_0 else {}
     for i, a in enumerate(actions):
-        if a.axis >= lin.shape_len:
+        if a.axis is not None and a.axis >= lin.shape_len:
             continue
-        if lin.full_shape[a.axis] == a.amt and Opt(a.op, a.axis, 0) in actions:
+        if a.axis is not None and lin.full_shape[a.axis] == a.amt and Opt(a.op, a.axis, 0) in actions:
             continue
         lin2 = lin.copy()
         try:
@@ -116,15 +125,13 @@ def get_linearizer_actions(lin: Linearizer, include_0=True) -> dict[int, Lineari
             if up > 256 or lcl > 256:
                 continue
             acted_lins[i + 1] = lin2
-        except Exception:
+        except Exception as e:  # noqa
             pass
     return acted_lins
 
 
-def beam_search(lin: Linearizer, rawbufs, amt: int, allow_test_size=True, dont_use_locals=False) -> Linearizer:
-    key = {"ast": str(lin.ast), "amt": amt, "allow_test_size": allow_test_size, "dont_use_locals": dont_use_locals}
-    if dont_use_locals:
-        lin.dont_use_locals = True
+def beam_search(lin: Linearizer, rawbufs, amt: int, allow_test_size=True) -> Linearizer:
+    key = {"ast": str(lin.ast), "amt": amt, "allow_test_size": allow_test_size}
 
     if (val := diskcache_get("beam_search", key)) is not None and not getenv("IGNORE_BEAM_CACHE") and CACHELEVEL >= 1:
         ret = lin.copy()
@@ -176,6 +183,6 @@ def beam_search(lin: Linearizer, rawbufs, amt: int, allow_test_size=True, dont_u
 
     if CACHELEVEL >= 1:
         diskcache_put("beam_search", key, beam[0][0].applied_opts)
-    if DEBUG >= 2:
+    if DEBUG >= 3:
         print(beam[0][0].applied_opts)
     return beam[0][0]
