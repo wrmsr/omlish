@@ -270,15 +270,14 @@ def download_file(url, fp, skip_if_exists=True):
 
 
 def cache_compiled(func):
-    def wrapper(self, prg: str, *args, **kwargs) -> bytes:
-        if getenv("DISABLE_COMPILER_CACHE"):
-            return func
+    if getenv("DISABLE_COMPILER_CACHE"):
+        return func
 
-        def wrapper(self, prg: str, *args, **kwargs) -> bytes:
-            table, key = f"compiler_cache_{type(self).__name__}", hashlib.sha256(prg.encode()).hexdigest()
-            if (ret := diskcache_get(table, key)):
-                return ret
-            return diskcache_put(table, key, func(self, prg, *args, **kwargs))
+    def wrapper(self, prg: str, *args, **kwargs) -> bytes:
+        table, key = f"compiler_cache_{type(self).__name__}", hashlib.sha256(prg.encode()).hexdigest()
+        if (ret := diskcache_get(table, key)):
+            return ret
+        return diskcache_put(table, key, func(self, prg, *args, **kwargs))
 
     return wrapper
 
