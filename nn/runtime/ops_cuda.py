@@ -14,8 +14,8 @@ from ..execution import ASTRunner
 from ..execution import Compiled
 from ..execution import GraphBatchExecutor
 from ..helpers import DEBUG
-from ..helpers import cache_compiled
 from ..helpers import colored
+from ..helpers import diskcache
 from ..helpers import getenv
 from ..renderer.cuda import CUDARenderer
 from ..runtime.lib import LruAllocator
@@ -195,10 +195,16 @@ class CUDAGraph(GraphBatchExecutor):
         self.graphs[instid][0].launch()
 
 
+@diskcache
+def compile_cuda(prg) -> bytes:
+    return cuda_compile(prg, target="ptx", no_extern_c=True, options=['-Wno-deprecated-gpu-targets'])
+
+
 class CUDAProgram:
-    def __init__(self, name: str, prg: str, binary=False, shared=0, local_size_override=None):
-        if not binary:
-            prg = self.compile(prg).decode('utf-8')
+    def __init__(self, name: str, _prg: str, shared=0, local_size_override=None) -> None:
+        super().__init__()
+
+        prg = _prg.decode('utf-8')
 
         if DEBUG >= 5:
             print(pretty_ptx(prg))
@@ -217,10 +223,6 @@ class CUDAProgram:
         self.prg = cuda.module_from_buffer(prg.encode('utf-8')).get_function(prg.split(".visible .entry ")[1].split("(")[0])
         self.shared = shared
         self.local_size_override = local_size_override
-
-    @cache_compiled
-    def compile(self, prg) -> bytes:
-        return cuda_compile(prg, target="ptx", no_extern_c=True, options=['-Wno-deprecated-gpu-targets'])
 
     def __call__(self, global_size, local_size, *args, wait=False):
         if wait:
@@ -247,7 +249,6 @@ class CUDAProgram:
 
 if getenv("TRITON") == 1:
     from ..renderer.triton import uops_to_triton
-    TritonRenderer = uops_to_triton
 
     CUDABuffer = Compiled(
         RawCUDABuffer,
@@ -258,7 +259,8 @@ if getenv("TRITON") == 1:
             local_max = [64, 1024, 1024],
             has_shared=False,
         ),
-        TritonRenderer,
+        uops_to_triton,
+        lambda x: x.encode('utf-8'),
         CUDAProgram,
         cuda.Context.synchronize,
     )
@@ -273,6 +275,7 @@ else:
             local_max=[64, 1024, 1024],
         ),
         CUDARenderer,
+        compile_cuda,
         CUDAProgram,
         cuda.Context.synchronize,
         CUDAGraph,

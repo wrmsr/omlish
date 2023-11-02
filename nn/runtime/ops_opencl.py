@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import pathlib
+import os
 import typing as ta
+
+os.environ['PYOPENCL_NO_CACHE'] = '1'
 
 import numpy as np
 import pyopencl as cl
@@ -11,6 +14,7 @@ from ..dtypes import ImageDType
 from ..execution import Compiled
 from ..helpers import DEBUG
 from ..helpers import OSX
+from ..helpers import diskcache
 from ..helpers import fromimport
 from ..helpers import getenv
 from ..helpers import prod
@@ -187,16 +191,19 @@ class ClBuffer(RawBufferCopyInOut, RawBufferTransfer):
             )
 
 
+@diskcache
+def compile_opencl(prg:str) -> bytes:
+    clprg = cl.Program(CL.cl_ctxs[0], prg)
+    clprg.build()
+    return clprg.get_info(cl.program_info.BINARIES)[0]
+
+
 class ClProgram:
-    def __init__(self, name: str, prg: str, binary=False, argdtypes=None, options=None) -> None:
+    def __init__(self, name: str, prg: bytes, argdtypes=None, options=None) -> None:
         super().__init__()
 
         self.name = name
-
-        self.clprograms = [
-            cl.Program(ctx, ctx.devices, [prg] * len(ctx.devices))
-            if binary else cl.Program(ctx, prg) for ctx in CL.cl_ctxs
-        ]
+        self.clprograms = [cl.Program(ctx, ctx.devices, [prg] * len(ctx.devices)) for ctx in CL.cl_ctxs]  # type: ignore
 
         self._clprgs = [clprogram.build(options=options) for clprogram in self.clprograms]
 
@@ -204,11 +211,11 @@ class ClProgram:
 
         if DEBUG >= 5 and not OSX:
             if "Adreno" in CL.cl_ctxs[0].devices[0].name:
-                fromimport("disassemblers.adreno", "disasm")(self.binary())
+                fromimport("disassemblers.adreno", "disasm")(prg)
 
             elif CL.cl_ctxs[0].devices[0].name.startswith("gfx"):
                 asm = early_exec(
-                    ([ROCM_LLVM_PATH / "llvm-objdump", "-d", "-"], self.binary())
+                    ([ROCM_LLVM_PATH / "llvm-objdump", "-d", "-"], prg)
                 )
                 print(
                     "\n".join(
@@ -222,13 +229,10 @@ class ClProgram:
 
             else:
                 # print the PTX for NVIDIA. TODO: probably broken for everything else
-                print(self.binary().decode("utf-8"))
+                print(prg.decode("utf-8"))
 
         if argdtypes is not None:
             self.set_argdtypes(argdtypes)
-
-    def binary(self):
-        return self.clprograms[0].get_info(cl.program_info.BINARIES)[0]
 
     def set_argdtypes(self, argdtypes):
         self.argdtypes, _ = argdtypes, [
@@ -277,6 +281,7 @@ OpenClBuffer = Compiled(
     ClBuffer,
     LinearizerOptions(),
     OpenCLRenderer,
+    compile_opencl,
     ClProgram,
     CL.synchronize,
 )

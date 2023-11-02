@@ -17,7 +17,7 @@ wgpu_device = get_default_device()
 
 
 class WebGPUProgram:
-    def __init__(self, name: str, prg: str, binary=False):
+    def __init__(self, name: str, prg: str):
         self.name, self.prg = name, wgpu_device.create_shader_module(code=prg)
 
     def __call__(self, global_size, local_size, *bufs, wait=False):
@@ -107,5 +107,6 @@ WebGpuBuffer = Compiled(
         global_max=[65535, 65535, 65535],
     ),
     renderer,
+    lambda x: x,
     WebGPUProgram,
 )

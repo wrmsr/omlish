@@ -315,8 +315,8 @@ class GraphBatchExecutor(BasicBatchExecutor):
 class ASTRunner:
     def __init__(
             self,
-            name,
-            prg,
+            name: str,
+            prg: str,
             global_size: ta.Optional[list[int]] = None,
             local_size: ta.Optional[list[int]] = None,
             op_estimate=0,
@@ -325,11 +325,7 @@ class ASTRunner:
             runtime_args: ta.Optional[dict] = None,
     ) -> None:
         super().__init__()
-        if DEBUG >= 4 and (
-                runtime_args is None
-                or "binary" not in runtime_args
-                or not runtime_args["binary"]
-        ):
+        if DEBUG >= 4:
             print(prg)
         self.name = name
         self.prg = prg
@@ -366,8 +362,9 @@ class ASTRunner:
 
         return min([(try_exec(local_size), local_size) for local_size in random.sample(local_sizes, len(local_sizes))])[1]
 
-    def build(self, runtime, batch_exec=BasicBatchExecutor):
-        self.clprg, self.batch_exec = (runtime(self.name, self.prg, **self.runtime_args), batch_exec,)
+    def build(self, compiler, runtime, batch_exec=BasicBatchExecutor):
+        self.lib = compiler.__wrapped__(self.prg) if getenv("DISABLE_COMPILER_CACHE") else compiler(self.prg)
+        self.clprg, self.batch_exec = runtime(self.name, self.lib, **self.runtime_args), batch_exec
         return self
 
     def exec(
@@ -467,6 +464,7 @@ class Compiled(ASTExecutor):
             buffer: type[RawBuffer],
             linearizer_opts,
             renderer,
+            compiler,
             runtime,
             synchronize=lambda: None,
             batch_exec=BasicBatchExecutor,
@@ -476,6 +474,7 @@ class Compiled(ASTExecutor):
         self.linearizer_opts = linearizer_opts
         self.renderer = renderer
         self.runtime = runtime
+        self.compiler = compiler
         self.synchronize = synchronize
         self.batch_exec = batch_exec
         self.method_cache: dict[LazyOp, ASTRunner] = {}
@@ -494,6 +493,7 @@ class Compiled(ASTExecutor):
             display_name=k.display_name,
             runtime_args=runtime_args
         ).build(
+            self.compiler,
             self.runtime,
             self.batch_exec,
         )
