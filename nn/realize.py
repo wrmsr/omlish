@@ -37,8 +37,10 @@ def run_schedule(schedule: list[ScheduleItem]):
         # log_schedule_item(si)
 
         assert all(x.realized for x in si.inputs), "can't run schedule, some inputs aren't realized"
-        # if DEBUG >= 3:
-        #     print_tree(si.ast)
+
+        if DEBUG >= 3:
+            from .lazy import print_tree
+            print_tree(si.ast)
 
         if isinstance(si.ast, ops.LoadOp):
             # confirm the LoadOps are contiguous and in order
