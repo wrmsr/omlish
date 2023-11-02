@@ -3,6 +3,8 @@ from . import (  # noqa
     pycharm,
     repeat,
     skips,
+    spacing,
+    timeout_debug,
 )
 from ._registry import ALL
 
