@@ -763,3 +763,27 @@ MOVEMENT_OPS_DISPATCHER: dict[type[ops.MovementOp], ta.Callable] = {
     ops.Restride: LazyBuffer.stride,
 }
 
+
+##
+
+
+def _tree(x: ta.Union[LazyOp, LazyBuffer], prefix: str = "") -> list[str]:
+    if isinstance(x, LazyBuffer):
+        if x.realized:
+            return [f"━━ realized {x.dtype.name} {x.shape}"]
+        return _tree(x.op, "LB ")
+
+    if isinstance(x, LazyOp):
+        if len(x.src) == 0:
+            return [f"━━ {prefix}{type(x).__name__} {x.arg if x.arg else ''}"]
+        lines = [f"━┳ {prefix}{type(x).__name__} {x.arg if x.arg else ''}"]
+        childs = [_tree(c) for c in x.src[:]]
+        for c in childs[:-1]:
+            lines += [f" ┣{c[0]}"] + [f" ┃{l}" for l in c[1:]]
+        return lines + [" ┗" + childs[-1][0]] + ["  " + l for l in childs[-1][1:]]
+
+    raise TypeError(x)
+
+
+def print_tree(x: ta.Union[LazyOp, LazyBuffer]) -> None:
+    print("\n".join([f"{str(i).rjust(3)} {s}" for i, s in enumerate(_tree(x))]))

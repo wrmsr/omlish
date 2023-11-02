@@ -31,6 +31,7 @@ OSX_TIMING_RATIO = (
 # TODO: if you fork and exit the child process after creating anything with cl on AMD, it hangs on e.wait()
 ROCM_LLVM_PATH = pathlib.Path("/opt/rocm/llvm/bin")
 # ROCM_LLVM_PATH = pathlib.Path(__file__).parents[3] / "extra/rocm/build/llvm-project/bin"
+
 if DEBUG >= 5:
     from ..helpers import enable_early_exec as early_exec
 
@@ -218,13 +219,11 @@ class ClProgram:
                     ([ROCM_LLVM_PATH / "llvm-objdump", "-d", "-"], prg)
                 )
                 print(
-                    "\n".join(
-                        [
-                            x
-                            for x in asm.decode("utf-8").split("\n")
-                            if "s_code_end" not in x
-                        ]
-                    )
+                    "\n".join([
+                        x
+                        for x in asm.decode("utf-8").split("\n")
+                        if "s_code_end" not in x
+                    ])
                 )
 
             else:
@@ -235,9 +234,9 @@ class ClProgram:
             self.set_argdtypes(argdtypes)
 
     def set_argdtypes(self, argdtypes):
-        self.argdtypes, _ = argdtypes, [
-            clprg.set_scalar_arg_dtypes(argdtypes) for clprg in self.clprgs
-        ]
+        self.argdtypes = argdtypes
+        for clprg in self.clprgs:
+            clprg.set_scalar_arg_dtypes(argdtypes)
 
     @staticmethod
     def max_work_group_size():
@@ -245,9 +244,10 @@ class ClProgram:
 
     def __call__(self, global_size, local_size, *bufs, wait=False) -> ta.Optional[float]:
         if not hasattr(self, "argdtypes"):
-            self.set_argdtypes(
-                tuple(None if x.__class__ is ClBuffer else np.int32 for x in bufs)
-            )
+            self.set_argdtypes(tuple(
+                None if x.__class__ is ClBuffer else np.int32
+                for x in bufs
+            ))
 
         cl_bufs, wait_for = [], []
         for x in bufs:
