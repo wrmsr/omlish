@@ -324,8 +324,6 @@ class LazyBuffer:
         if self in seen or self.realized or self.is_unrealized_const():
             return []
         seen.add(self)
-        # if issubclass(self.optype, ops.MovementOp):
-        #     return self.base.schedule(seen)
         if self.base != self:
             return self.base.schedule(seen)
 

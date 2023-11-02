@@ -4,7 +4,6 @@ from . import (  # noqa
     repeat,
     skips,
     spacing,
-    timeout_debug,
 )
 from ._registry import ALL
 
