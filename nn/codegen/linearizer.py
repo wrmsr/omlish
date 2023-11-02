@@ -259,7 +259,7 @@ class Linearizer(Kernel):
 
         # save backups
         sts_backup = self.sts[:]
-        gfr_backup = self.group_for_reduce[:], self.upcasted
+        gfr_backup = self.group_for_reduce[:]
         upc_backup = self.upcasted
 
         # global uop cache

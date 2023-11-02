@@ -97,6 +97,7 @@ def bufs_from_lin(lin: Linearizer) -> list[RawBuffer]:
 
 # get dictionary of all possible actions
 def get_linearizer_actions(lin: Linearizer, include_0=True) -> dict[int, Linearizer]:
+    breakpoint()
     acted_lins = {0: lin} if include_0 else {}
     for i, a in enumerate(actions):
         if a.axis >= lin.shape_len:
@@ -136,7 +137,7 @@ def beam_search(lin: Linearizer, rawbufs, amt: int, allow_test_size=True, dont_u
 
     # NOTE: real uops use a weird compare method that's only valid inside a linearizer
     def tuplize_uops(uops):
-        return tuple([(x.uop, x.dtype, tuple(x.num for x in x.vin), x.arg) for x in uops])
+        return tuple([(type(x), x.dtype, tuple(x.num for x in x.vin), x.arg) for x in uops])
 
     seen_uops = {tuplize_uops(lin.linearize().uops): tuple(lin.applied_opts)}
 
