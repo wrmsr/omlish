@@ -131,7 +131,11 @@ def get_linearizer_actions(lin: Linearizer, include_0=True) -> dict[int, Lineari
 
 
 def beam_search(lin: Linearizer, rawbufs, amt: int, allow_test_size=True) -> Linearizer:
-    key = {"ast": str(lin.ast), "amt": amt, "allow_test_size": allow_test_size}
+    key = {
+        "ast": str(lin.ast),
+        "amt": amt,
+        "allow_test_size": allow_test_size,
+    }
 
     if (
             (val := diskcache_get("beam_search", key)) is not None
