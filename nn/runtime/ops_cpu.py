@@ -18,6 +18,7 @@ def shape_to_axis(
 
 
 base_fxn_for_op: dict[type[ops.LazyOp], ta.Callable] = {
+    ops.Mem: lambda x: x._buf,
     ops.Neg: operator.neg,
     ops.Add: operator.add,
     ops.Sub: operator.sub,
@@ -86,6 +87,7 @@ def einsum_mulacc(einsum, get_strides, expand):
 numpy_fxn_for_op: dict[type[ops.LazyOp], ta.Callable] = {
     **base_fxn_for_op,
     **{
+        ops.Const: lambda val, dtype: np.array(val, dtype=dtype.np),
         ops.Nop: lambda x: np.require(x, requirements="C"),
         ops.Exp2: np.exp2,
         ops.Log2: np.log2,

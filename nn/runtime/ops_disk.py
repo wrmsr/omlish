@@ -84,10 +84,12 @@ class RawDiskBuffer(RawBufferMapped):
 
 
 disk_fxn_for_op: dict[type[ops.LazyOp], ta.Callable] = {
+    ops.Mem: lambda x: x,
     ops.Nop: lambda x: x,
     ops.Cast: RawDiskBuffer.cast,
     ops.AsStrided: RawDiskBuffer.as_strided,
 }
+
 DiskBuffer = Interpreted(
     RawDiskBuffer,
     disk_fxn_for_op,

@@ -2,17 +2,16 @@ from __future__ import annotations
 
 import abc
 import collections
+import functools
 import itertools
 import math
 import random
-import time
 import typing as ta
 
 from omlish import collections as col  # noqa
 from omlish import dataclasses as dc
 from omlish import dispatch
 from omlish import lang
-import numpy as np
 
 from . import ops
 from .dtypes import DType
@@ -74,6 +73,62 @@ class ASTExecutor(lang.Abstract):
         raise NotImplementedError
 
 
+@functools.lru_cache(None)
+def interpret_ast(device: Interpreted, ast: LazyOp) -> ta.Callable:
+    tglob: dict[str, ta.Any] = {}
+    lines: list[str] = []
+    f = device.fxn_for_op
+
+    @functools.lru_cache(None)
+    def gstr(x: ta.Any, nm=None) -> str:
+        ret = str(nm).replace(".", "_") if nm else f"m{len(tglob):04d}"
+        tglob[ret] = x
+        return ret
+
+    @functools.lru_cache(None)
+    def _interpret_ast(ast: LazyOp) -> str:
+        if (
+                ops.MulAcc in f
+                and isinstance(ast, ops.Sum)
+                and isinstance(ast.src[0], LazyOp)
+                and isinstance(ast.src[0], ops.Mul)
+        ):
+            ast = ops.MulAcc(ast.src[0].src, ast.arg)
+
+        if ops.AsStrided in f and isinstance(ast, ops.BufferOp):
+            if isinstance(ast, ops.Const):
+                tmp = f"{gstr(f[type(ast)], type(ast).__name__)}({gstr(ast.arg.val)}, {gstr(ast.arg.dtype)})"
+            else:
+                tmp = f"{gstr(f[type(ast)], type(ast).__name__)}(inputs[{ast.arg.idx - 1}])"
+            for mop, arg in ast.arg.st.to_movement_ops():
+                tmp = f"{gstr(f[mop], mop.__name__)}({tmp}, {gstr(arg)})"
+        else:
+            inp = [_interpret_ast(src) for src in ast.src]
+            tmp = f"{gstr(f[type(ast)], type(ast).__name__)}({', '.join(inp + ([gstr(ast.arg)] if ast.arg else []))})"
+
+        ret = f"a{len(lines)}"
+        lines.append(f"  {ret} = {tmp}")
+        return ret
+
+    ret = _interpret_ast(ast)
+    src = '\n'.join(
+        ['def run(inputs):'] +
+        lines +
+        [
+            f"  return {gstr(device.from_underlying, 'from_underlying')}({ret})"
+            if device.from_underlying else
+            f"  return {ret}"
+        ]
+    )
+
+    if DEBUG >= 4:
+        print(functools.reduce(lambda x, y: (x.replace(y[0], str(y[1])) if y[0][0:2] == "m0" else x), tglob.items(), src))
+
+    exec(compile(src, "<ast>", "exec"), tglob)  # pylint: disable=exec-used
+
+    return tglob['run']
+
+
 class Interpreted(ASTExecutor):
     def __init__(
             self,
@@ -86,102 +141,19 @@ class Interpreted(ASTExecutor):
         self.buffer = buffer
         self.fxn_for_op = fxn_for_op
         self.to_underlying = to_underlying
-        self.from_underlying = buffer if from_underlying is None else from_underlying
+        self.from_underlying = from_underlying
         self.synchronize = lambda: None
         self.codegen = None
 
-    def exec_ast(
-            self,
-            ast: LazyOp,
-            output=None,
-            inputs=None,
-            var_vals=None,
-            context=None,
-            **kwargs,
-    ):
-        if isinstance(ast, ops.BufferOp) and type(ast) not in self.fxn_for_op:
-            if isinstance(ast, ops.Mem):
-                assert inputs[ast.arg.idx - 1].dtype == ast.arg.dtype, "dtype mismatch"
-                buf = self.to_underlying(inputs[ast.arg.idx - 1].realized)
-            elif isinstance(ast, ops.Const):
-                buf = self.to_underlying(self.buffer.fromCpu(np.array(ast.arg.val, dtype=ast.arg.dtype.np)))
+    def exec_ast(self, ast: LazyOp, output=None, inputs=None, var_vals=None, context=None, **kwargs):
+        ret = interpret_ast(self, ast)([x.realized for x in inputs] if inputs else None)
 
-            for mop, arg in ast.arg.st.to_movement_ops():
-                buf = self.fxn_for_op[mop](buf, arg)
+        if output is not None and ret.dtype != output.dtype and ops.Cast in self.fxn_for_op:
+            # Do manual casting of ret if it does not match the required output dtype.
+            ret = self.from_underlying(self.fxn_for_op[ops.Cast](self.to_underlying(ret), (output.dtype, False)))
 
-            return self.from_underlying(buf)
-
-        if (
-                ops.MulAcc in self.fxn_for_op
-                and isinstance(ast, ops.Sum)
-                and isinstance(ast.src[0], LazyOp)
-                and isinstance(ast.src[0], ops.Mul)
-        ):
-            ast = ops.MulAcc(ast.src[0].src, ast.arg)
-
-        created_context = context is None
-
-        if context is None:
-            context = dict()
-
-        if not created_context and ast in context:
-            return context[ast]
-
-        srcs = [
-            self.exec_ast(ta.cast(LazyOp, x), inputs=inputs, context=context, **kwargs)
-            for x in ast.src
-        ]
-
-        if DEBUG >= 3:
-            st = time.perf_counter()
-
-        ret = self.from_underlying(
-            self.fxn_for_op[type(ast)](
-                *(
-                    [self.to_underlying(x) for x in srcs] +
-                    ([ast.arg] if ast.arg is not None else [])
-                )
-            )
-        )
-
-        if (
-                output is not None
-                and ret.dtype != output.dtype
-                and ops.Cast in self.fxn_for_op
-        ):
-            ret = self.from_underlying(
-                self.fxn_for_op[ops.Cast](
-                    self.to_underlying(ret), (output.dtype, False)
-                )
-            )  # Do manual casting of ret if it does not match the required output dtype.
-
-        if DEBUG >= 3:
-            print(
-                (
-                    f"*** {'exec' if created_context else '    '} "
-                    f"{GlobalCounters.mem_used/1e9:5.2f} GB "
-                    f"{(time.perf_counter()-st)*1e3:7.2f} ms "
-                    f"op: {type(ast).__name__:20s} "
-                    f"out({ret.dtype.name}): "
-                    f"{str(ret._buf.shape) if hasattr(ret._buf, 'shape') else str(len(ret._buf)):30s} "
-                    f"in({len(srcs)}):"
-                ),
-                list(
-                    set(
-                        x._buf.shape if hasattr(x._buf, "shape") else len(x._buf)
-                        for x in srcs
-                    )
-                ),
-                ast.arg if ast.arg is not None else "",
-            )
-
-        if not created_context:
-            context[ast] = ret
-
+        # TODO: is this used?
         if output is not None and output.output_buffer is not None:
-            # TODO: does this check have any meaning anymore?
-            # It fails on things like batchnorm initted with zeros
-            # assert output.output_buffer.size == ret.size, f"size mismatch, {output.output_buffer.size} != {ret.size}"
             assert output.output_buffer.dtype == ret.dtype
             output.output_buffer._buf = ret._buf
             return output.output_buffer
@@ -203,7 +175,7 @@ class OpInfo:
 
     @property
     def mem_estimate(self) -> int:
-        return sum(self.mem.values())
+        return sum(self.mem.values()) + self.dtype.itemsize * prod(self.shape)
 
 
 class OpAnalyzer:

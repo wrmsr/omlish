@@ -153,7 +153,7 @@ class ShapeTracker:
                 (
                     ops.AsStrided,
                     (
-                        [s if st != 0 else 1 for s, st in zip(real_shape, v.strides)],
+                        tuple(s if st != 0 else 1 for s, st in zip(real_shape, v.strides)),
                         v.strides,
                         real_offset,
                     ),

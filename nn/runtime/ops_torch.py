@@ -1,5 +1,6 @@
 import typing as ta
 
+import numpy as np
 import torch
 
 from .. import ops
@@ -45,6 +46,9 @@ def as_strided(x, arg):
 torch_fxn_for_op: dict[type[ops.LazyOp], ta.Callable] = {
     **base_fxn_for_op,
     **{
+        # TODO: torch.tensor should work here
+        # BufferOps.CONST: lambda val, dtype: torch.tensor(val, dtype=inverse_type_map[dtype]),
+        ops.Const: lambda val, dtype: torch.from_numpy(np.array(val, dtype=dtype.np)),
         ops.Nop: lambda x: x.contiguous(),
         ops.Sqrt: lambda x: x.sqrt(),
         ops.Exp2: lambda x: x.exp2(),
