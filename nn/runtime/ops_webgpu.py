@@ -20,7 +20,13 @@ class WebGpuProgram:
     def __init__(self, name: str, prg: str):
         self.name, self.prg = name, wgpu_device.create_shader_module(code=prg)
 
-    def __call__(self, global_size, local_size, *bufs, wait=False):
+    def __call__(
+            self,
+            *bufs,
+            global_size,
+            local_size,
+            wait=False,
+    ):
         # assert len(bufs) <= 8, "WEBGPU only supports 8 buffers"
         binding_layouts = [
             {
@@ -102,6 +108,7 @@ renderer = functools.partial(uops_to_cstyle, WgslLanguage())
 WebGpuBuffer = Compiled(
     RawWebGpuBuffer,
     LinearizerOptions(
+        device="WEBGPU",
         supports_float4=False,
         local_max=[256, 256, 64],
         global_max=[65535, 65535, 65535],

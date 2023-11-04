@@ -229,5 +229,5 @@ def uops_to_triton(function_name: str, uops: list[uo.UOp]):
 
     return prg, {
         "shared": compiled.metadata["shared"],
-        "local_size_override": local_size + [1] * (3 - len(local_size)),
+        "local_size": local_size + [1] * (3 - len(local_size)),
     }
