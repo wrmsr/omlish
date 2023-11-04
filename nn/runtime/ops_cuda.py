@@ -209,7 +209,7 @@ def compile_cuda(prg: str) -> bytes:
 
 
 class CudaProgram:
-    def __init__(self, name: str, _prg: str, shared=0, local_size_override=None) -> None:
+    def __init__(self, name: str, _prg: str) -> None:
         super().__init__()
 
         prg = _prg.decode('utf-8')
@@ -229,10 +229,15 @@ class CudaProgram:
 
         # TODO: name is wrong, so we get it from the ptx using hacks
         self.prg = cuda.module_from_buffer(prg.encode('utf-8')).get_function(prg.split(".visible .entry ")[1].split("(")[0])
-        self.shared = shared
-        self.local_size_override = local_size_override
 
-    def __call__(self, global_size, local_size, *args, wait=False):
+    def __call__(
+            self,
+            *args,
+            global_size: tuple[int, int, int],
+            local_size: tuple[int, int, int],
+            shared: int = 0,
+            wait=False,
+    ):
         if wait:
             start, end = cuda.Event(), cuda.Event()
             start.record()
@@ -244,9 +249,9 @@ class CudaProgram:
                 x
                 for x in args
             ],
-            block=tuple(local_size if self.local_size_override is None else self.local_size_override),
+            block=tuple(local_size),
             grid=tuple(global_size),
-            shared=self.shared,
+            shared=shared,
         )
 
         if wait:

@@ -242,7 +242,13 @@ class ClProgram:
     def max_work_group_size():
         return CL.cl_ctxs[0].devices[0].max_work_group_size
 
-    def __call__(self, global_size, local_size, *bufs, wait=False) -> ta.Optional[float]:
+    def __call__(
+            self,
+            *bufs,
+            global_size: tuple[int, int, int],
+            local_size: ta.Optional[tuple[int, int, int]] = None,
+            wait=False,
+    ) -> ta.Optional[float]:
         if not hasattr(self, "argdtypes"):
             self.set_argdtypes(tuple(
                 None if x.__class__ is ClBuffer else np.int32

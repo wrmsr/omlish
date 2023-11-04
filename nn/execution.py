@@ -352,7 +352,7 @@ class ASTRunner:
 
     def build(self, compiler, runtime, batch_exec=BasicBatchExecutor):
         self.lib = compiler.__wrapped__(self.prg) if getenv("DISABLE_COMPILER_CACHE") else compiler(self.prg)
-        self.clprg, self.batch_exec = runtime(self.name, self.lib, **self.runtime_args), batch_exec
+        self.clprg, self.batch_exec = runtime(self.name, self.lib), batch_exec
         return self
 
     def exec(
@@ -407,12 +407,16 @@ class ASTRunner:
             local_size = self.local_size = self.optimize_local_size(global_size, rawbufs)
             global_size = self.global_size = [g // l if g % l == 0 else g / l for g, l in zip(global_size, local_size)]
 
+        lra = self.runtime_args.copy()
+        if global_size:
+            lra['global_size'] = global_size
+        if local_size and 'local_size' not in lra:
+            lra['local_size'] = local_size
         if et := self.clprg(
-                global_size,
-                local_size,
                 *rawbufs,
                 *var_vals.values(),
-                wait=force_wait or DEBUG >= 2,
+                **lra,
+                wait=force_wait or DEBUG>=2,
         ):
             GlobalCounters.time_sum_s += et
 

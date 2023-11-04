@@ -30,19 +30,24 @@ safe_dtypes = {
 inverse_safe_dtypes = {v: k for k, v in safe_dtypes.items()}
 
 
-def safe_load(fn: ta.Union[Tensor, str]) -> dict[str, Tensor]:
-    t = (
-        fn
-        if isinstance(fn, Tensor)
-        else Tensor.empty(os.stat(fn).st_size, dtype=dtypes.uint8, device=f"disk:{fn}")
-    )
+def safe_load_metadata(fn: ta.Union[Tensor, str]) -> tuple[Tensor, int, ta.Any]:
+    if isinstance(fn, Tensor):
+        t = fn
+    else:
+        t = Tensor.empty(
+            os.stat(fn).st_size,
+            dtype=dtypes.uint8,
+            device=f"disk:{fn}",
+        )
     json_len = t[0:1].cast(dtypes.int64).numpy()[0]
-    headers = json.loads(t[8:8 + json_len].numpy().tobytes())
+    return (t, json_len, json.loads(t[8:8 + json_len].numpy().tobytes()))
+
+
+def safe_load(fn: ta.Union[Tensor, str]) -> dict[str, Tensor]:
+    t, json_len, metadata = safe_load_metadata(fn)
     return {
-        k: t[8 + json_len + v["data_offsets"][0]:]
-        .cast(safe_dtypes[v["dtype"]])[: prod(v["shape"])]
-        .reshape(v["shape"])
-        for k, v in headers.items()
+        k: t[8 + json_len + v['data_offsets'][0]:].cast(safe_dtypes[v['dtype']])[:prod(v['shape'])].reshape(v['shape'])
+        for k, v in metadata.items()
         if k != "__metadata__"
     }
 
