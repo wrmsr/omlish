@@ -69,7 +69,7 @@ def _ast_reduceops(op: LazyOp) -> LazyOp:
 # this supports late merging an upstream Reduce op and even an Elementwise op above that
 def _ast_binaryops(op: LazyOp, shape: tuple[sint, ...]) -> LazyOp:
     real_srcs: dict[LazyBuffer, ta.Optional[ta.Union[LazyOp, LazyBuffer]]] = {
-        x: None for x in op.buffers
+        x: None for x in op.buffers()
     }
 
     # NOTE: contiguous does not always mean the same size with SHRINK. this is still mergeable but requires more thought
@@ -95,7 +95,7 @@ def _ast_binaryops(op: LazyOp, shape: tuple[sint, ...]) -> LazyOp:
 
         real_srcs[psrc[0]] = top
         real_srcs.update(
-            {x: x for x in top.buffers}
+            {x: x for x in top.buffers()}
         )  # the reduce op buffers are not modified
 
         # if the ReduceOp is followed by a reshape, we push this reshape before all the ElementwiseOp inputs
@@ -121,8 +121,8 @@ def _ast_binaryops(op: LazyOp, shape: tuple[sint, ...]) -> LazyOp:
 
 def _replace_bufferops(op: LazyOp) -> tuple[LazyOp, list[LazyBuffer]]:
     replacements: dict[LazyBuffer, LazyOp] = {}
-    base_bufs = col.unique([x.base for x in op.buffers if not x.is_unrealized_const()])
-    for x in op.buffers:
+    base_bufs = col.unique([x.base for x in op.buffers() if not x.is_unrealized_const()])
+    for x in op.buffers():
         st = x.st.simplify().unbind()
         if x.base in base_bufs:
             replacements[x] = ops.Mem((), MemBuffer(base_bufs.index(x.base) + 1, x.dtype, st))
@@ -212,7 +212,7 @@ def create_lazybuffer(
         weakref.ref(base) if base else None,
     )
     if wop in lazycache:
-        for x in op.buffers:
+        for x in op.buffers():
             x.children.add(lazycache[wop])
         return lazycache[wop]
 
@@ -256,7 +256,7 @@ class LazyBuffer:
         # NOTE: op should be read only after construction of LazyBuffer. it is now with schedule
         self.op: LazyOp = op
         self.optype = type(op)
-        for x in op.buffers:
+        for x in op.buffers():
             x.children.add(self)
         assert (
             not isinstance(op, ops.MovementOp) or (base is not None and not issubclass(base.optype, ops.MovementOp))
@@ -306,7 +306,6 @@ class LazyBuffer:
     def _device_extra_args(self) -> dict[str, str]:
         return {"device": self.device.split(":", 1)[1]} if ":" in self.device else {}
 
-    @property
     def buffers(self) -> tuple[LazyBuffer, ...]:
         return (self,)
 
@@ -341,13 +340,13 @@ class LazyBuffer:
 
         # schedule the AST
         ret = []
-        for x in op.buffers:
+        for x in op.buffers():
             ret += x.schedule(seen)
 
         var_vals = dict(sorted(
             merge_dicts(
                 [self.st.var_vals] +
-                [buf.st.var_vals for buf in op.buffers]
+                [buf.st.var_vals for buf in op.buffers()]
             ).items(),
             key=lambda kv: ta.cast(Variable, kv[0]).key),
         )

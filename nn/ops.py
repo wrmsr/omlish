@@ -21,14 +21,13 @@ class LazyOp(lang.Abstract):
     def __repr__(self):
         return f"LazyOp(op={type(self).__name__}, src={self.src}, arg={self.arg})"
 
-    @property
     def buffers(self):
         buffers: tuple[ta.Union[LazyOp, LazyBuffer], ...] = ()
         try:
             # NOTE: the linearizer's key function maps the buffers to ints, and LOCAL_BUFFER is used. we don't care
             # about buffers in these cases
             for x in self.src:
-                buffers += x.buffers
+                buffers += x.buffers()
         except AttributeError:
             buffers = ()
         return buffers
