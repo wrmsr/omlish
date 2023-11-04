@@ -340,10 +340,6 @@ class Linearizer(Kernel):
                 )
             )
 
-        # print
-        if DEBUG >= 4:
-            self.printbufs()
-
         # kernel name (before late upcast)
         self.function_name = ("r_" if self.reduceop else "E_") + "_".join(
             [str(x) if isinstance(x, int) else sym_rename(x) for x in self.full_shape]

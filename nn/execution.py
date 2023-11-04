@@ -199,6 +199,11 @@ class OpInfo:
     shape: tuple[int, ...]
     dtype: DType
     flops: int
+    mem: dict[int, int]
+
+    @property
+    def mem_estimate(self) -> int:
+        return sum(self.mem.values())
 
 
 class OpAnalyzer:
@@ -220,33 +225,37 @@ class OpAnalyzer:
         raise TypeError(op)
 
     @_analyze.register
-    def _analyze_buffer_op(self, op: ops.BufferOp) -> OpInfo:
-        return OpInfo(op, op.arg.st.shape, op.arg.dtype, 0)
+    def _analyze_mem(self, op: ops.Mem) -> OpInfo:
+        return OpInfo(op, op.arg.st.shape, op.arg.dtype, 0, {op.arg.idx: op.arg.dtype.itemsize * op.arg.st.size()})
+
+    @_analyze.register
+    def _analyze_const(self, op: ops.Const) -> OpInfo:
+        return OpInfo(op, op.arg.st.shape, op.arg.dtype, 0, {})
 
     @_analyze.register
     def _analyze_cast(self, op: ops.Cast) -> OpInfo:
         xi = self.analyze(op.src[0])
-        return OpInfo(op, xi.shape,  op.arg[0], xi.flops)
+        return OpInfo(op, xi.shape,  op.arg[0], xi.flops, xi.mem)
 
     @_analyze.register
     def _analyze_unary_op(self, op: ops.UnaryOp) -> OpInfo:
         xi = self.analyze(op.src[0])
-        return OpInfo(op, xi.shape, xi.dtype, xi.flops + prod(xi.shape))
+        return OpInfo(op, xi.shape, xi.dtype, xi.flops + prod(xi.shape), xi.mem)
 
     @_analyze.register
     def _analyze_binary_op(self, op: ops.BinaryOp) -> OpInfo:
         xi, yi = map(self.analyze, op.src)
-        return OpInfo(op, xi.shape, max(xi.dtype, yi.dtype), xi.flops + yi.flops + prod(xi.shape))
+        return OpInfo(op, xi.shape, max(xi.dtype, yi.dtype), xi.flops + yi.flops + prod(xi.shape), {**xi.mem, **yi.mem})
 
     @_analyze.register
     def _analyze_reduce_op(self, op: ops.ReduceOp) -> OpInfo:
         xi = self.analyze(op.src[0])
-        return OpInfo(op, op.arg, xi.dtype, xi.flops + prod(xi.shape))
+        return OpInfo(op, op.arg, xi.dtype, xi.flops + prod(xi.shape), xi.mem)
 
     @_analyze.register
     def _analyze_where(self, op: ops.Where) -> OpInfo:
         xi, yi, zi = map(self.analyze, op.src)
-        return OpInfo(op, xi.shape, yi.dtype, xi.flops + yi.flops + zi.flops + prod(xi.shape))
+        return OpInfo(op, xi.shape, yi.dtype, xi.flops + yi.flops + zi.flops + prod(xi.shape), {**xi.mem, **yi.mem, **zi.mem})
 
 
 def get_lazyop_info(ast: LazyOp) -> OpInfo:
@@ -343,7 +352,7 @@ class ASTRunner:
             src,
             k.global_size, k.local_size,
             op_estimate=k.info.flops,
-            mem_estimate=k.mem_estimate,
+            mem_estimate=k.info.mem_estimate,
             display_name=k.display_name,
             runtime_args={"binary": False},
         )
@@ -497,7 +506,7 @@ class Compiled(ASTExecutor):
             k.global_size,
             k.local_size,
             op_estimate=k.info.flops,
-            mem_estimate=k.mem_estimate,
+            mem_estimate=k.info.mem_estimate,
             display_name=k.display_name,
             runtime_args=runtime_args
         ).build(

@@ -62,8 +62,12 @@ def colored(st, color, background=False):
     )  # replace the termcolor library with one line
 
 
+def ansistrip(s):
+    return re.sub('\x1b\\[(K|.*?m)', '', s)
+
+
 def ansilen(s):
-    return len(re.sub("\x1b\\[(K|.*?m)", "", s))
+    return len(ansistrip(s))
 
 
 def make_pair(x: ta.Union[int, tuple[int, ...]], cnt=2) -> tuple[int, ...]:
