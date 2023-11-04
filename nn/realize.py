@@ -46,7 +46,10 @@ def run_schedule(schedule: list[ScheduleItem]):
             # confirm the LoadOps are contiguous and in order
             for i, s in enumerate(si.ast.src):
                 assert (
-                    isinstance(s, LazyOp) and isinstance(s, ops.Mem) and s.arg.idx == i + 1 and s.arg.st.contiguous
+                    isinstance(s, LazyOp)
+                    and isinstance(s, ops.Mem)
+                    and s.arg.idx == i + 1
+                    and s.arg.st.contiguous
                 ), f"bad LoadOps src {i}: {s}"
             LOAD_OPS_DISPATCHER[type(si.ast)](si.out, *si.inputs)
 

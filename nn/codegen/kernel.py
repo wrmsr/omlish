@@ -507,7 +507,7 @@ class Kernel:
             next_idx = (i + 1) % dims
             while new_shape[i] > max_size[i]:
                 new_shape[i] = new_shape[i] // 2
-                if (new_shape[next_idx] <= max_size[next_idx]):
+                if new_shape[next_idx] <= max_size[next_idx]:
                     new_shape[next_idx] = new_shape[next_idx] * 2
                 else:
                     next_idx = (next_idx + 1) % dims
