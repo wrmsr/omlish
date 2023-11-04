@@ -169,12 +169,6 @@ class Kernel:
             MemBuffer(0, self.info.dtype, ShapeTracker.from_shape(self.info.shape))
         ] + col.unique([x.arg for x in self.ast.get_lazyops() if isinstance(x, ops.BufferOp)])
 
-        # extract things from the buffers
-        self.mem_estimate: int = sum(
-            x.dtype.itemsize * x.st.size()
-            for x in ta.cast(list[ta.Union[MemBuffer, ConstBuffer]], self.bufs)
-        )
-
         # get earlybufs, before the one reduce op
         self.earlybufs = (
             [x.arg for x in self.reduceop.get_lazyops() if isinstance(x, ops.BufferOp)]
@@ -220,7 +214,6 @@ class Kernel:
         ret.info = self.info
         ret.reduceop = self.reduceop
         ret.bufs = self.bufs[:]
-        ret.mem_estimate = self.mem_estimate
         ret.earlybufs = self.earlybufs
         ret.full_buf_index = self.full_buf_index
         ret.sts = self.sts[:]
@@ -404,11 +397,6 @@ class Kernel:
         if pad:
             ret += ' '*(pad-ansilen(ret))
         return ret
-
-    def printbufs(self, prefix=""):
-        for i, st in enumerate(self.sts):
-            print(prefix, f"{i:3d} {str(self.bufs[i]):47s}", st.views)
-        print(self.colored_shape())
 
     # ******************** base simplifiers ********************
 
