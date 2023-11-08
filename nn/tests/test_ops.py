@@ -7,8 +7,10 @@ import torch
 
 from ..devices import Device
 from ..dtypes import dtypes
+from ..helpers import Context
 from ..helpers import DEBUG
 from ..helpers import IMAGE
+from ..helpers import NOOPT
 from ..helpers import getenv
 from ..tensor import Tensor
 
@@ -1663,6 +1665,11 @@ class TestOps(unittest.TestCase):
             atol=1e-4,
             grad_rtol=1e-5,
         )
+
+    def test_simple_conv2d_noopt(self):
+        # useful with IMAGE enabled
+        with Context(NOOPT=1):
+            self.test_simple_conv2d()
 
     @unittest.skipIf(IMAGE > 0, "no conv3d on images")
     def test_simple_conv3d(self):

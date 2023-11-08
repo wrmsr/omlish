@@ -16,6 +16,7 @@ from .dtypes import DType
 from .helpers import BEAM
 from .helpers import DEBUG
 from .helpers import GlobalCounters
+from .helpers import NOOPT
 from .helpers import ansilen
 from .helpers import colored
 from .helpers import getenv
@@ -520,7 +521,7 @@ class Compiled(ASTExecutor):
             k = Linearizer(ast, self.linearizer_opts)
 
             assert k.info.dtype == output.dtype, f"linearizer must match dtype. linearizer wants {k.info.dtype} but buffer is {output.dtype}"
-            if not getenv("NOOPT"):
+            if not NOOPT:
                 if not (used_tensor_cores := k.apply_tensor_cores(getenv("TC", 1))):
                     k.hand_coded_optimizations()
 
@@ -573,6 +574,8 @@ class Compiled(ASTExecutor):
                         ))
 
                     k = timed[0][1]
+            else:
+                k.required_optimizations()
 
             return self.to_program(k)
 
