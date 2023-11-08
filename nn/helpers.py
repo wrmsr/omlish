@@ -247,10 +247,8 @@ def download_file(url, fp, skip_if_exists=True):
 # *** universal database cache ***
 
 
-CACHEDB: str = getenv(
-    "CACHEDB",
-    os.path.expanduser("~/Library/Caches/tinygrad/cache.db" if OSX else "~/.cache/tinygrad/cache.db")
-)
+_cache_dir: str = getenv("XDG_CACHE_HOME", os.path.expanduser("~/Library/Caches" if OSX else "~/.cache"))
+CACHEDB: str = getenv("CACHEDB", os.path.join(_cache_dir, "tinygrad", "cache.db"))
 CACHELEVEL = getenv("CACHELEVEL", 2)
 
 VERSION = 6
@@ -263,24 +261,28 @@ def db_connection():
     if _db_connection is None:
         os.makedirs(CACHEDB.rsplit("/", 1)[0], exist_ok=True)
         _db_connection = sqlite3.connect(CACHEDB)
-        if DEBUG >= 5:
+        if DEBUG >= 7:
             _db_connection.set_trace_callback(print)
         if diskcache_get("meta", "version") != VERSION:
             print("cache is out of date, clearing it")
             del _db_connection
             os.unlink(CACHEDB)
             _db_connection = sqlite3.connect(CACHEDB)
-            if DEBUG >= 5:
+            if DEBUG >= 7:
                 _db_connection.set_trace_callback(print)
             diskcache_put("meta", "version", VERSION)
     return _db_connection
 
 
 def diskcache_get(table: str, key: ta.Union[dict, str, int]) -> ta.Any:
+    if CACHELEVEL == 0:
+        return None
     if isinstance(key, (str, int)):
         key = {"key": key}
+    conn = db_connection()
+    cur = conn.cursor()
     try:
-        res = db_connection().cursor().execute(
+        res = cur.cursor().execute(
             f"SELECT val FROM {table} WHERE {' AND '.join([f'{x}=?' for x in key.keys()])}",
             tuple(key.values()),
         )
@@ -295,6 +297,8 @@ _db_tables = set()
 
 
 def diskcache_put(table: str, key: ta.Union[dict, str, int], val: ta.Any):
+    if CACHELEVEL == 0:
+        return val
     if isinstance(key, (str, int)):
         key = {"key": key}
     conn = db_connection()
