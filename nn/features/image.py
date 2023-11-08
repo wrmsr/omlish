@@ -163,16 +163,14 @@ def fix_schedule_for_images(schedule: list[ScheduleItem]):
             if DEBUG >= 1:
                 print(f"{i:3d}: rewrite output, output shape {prod(si.out.shape)}, image dtype {si.out.dtype} prod {prod(si.out.dtype.shape)}")
             si.out.dtype = dtypes.float32
+
         for b in si.ast.get_lazyops():
             if not isinstance(b, ops.Mem):
                 continue
-            # TODO: unit_stride axes will fail if there's a mask, even if the mask is divisble by four. this is too aggressive
+
             if (
-                isinstance(si.inputs[b.arg.idx - 1].dtype, ImageDType)
-                and (
-                    b.arg.st.real_offset() % 4 != 0
-                    or not any(b.arg.st.shape[x] % 4 == 0 for x in b.arg.st.unit_stride_axes())
-                )
+                    isinstance(si.inputs[b.arg.idx - 1].dtype, ImageDType)
+                    and not any(b.arg.st.shape[x] % 4 == 0 for x in b.arg.st.unit_stride_axes())
             ):
                 if DEBUG >= 1:
                     print(f"{i:3d}: rewrite input, image dtype {si.inputs[b.arg.idx - 1].dtype}, {b.arg.st.views}")

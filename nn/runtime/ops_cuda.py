@@ -10,9 +10,7 @@ from pycuda.compiler import compile as cuda_compile  # type: ignore
 import numpy as np
 
 from ..codegen.kernel import LinearizerOptions
-from ..execution import ASTRunner
 from ..execution import Compiled
-from ..execution import GraphBatchExecutor
 from ..helpers import DEBUG
 from ..helpers import colored
 from ..helpers import diskcache
@@ -137,65 +135,6 @@ else:
             cuda.memcpy_dtoh(x, self._buf)  # type: ignore
 
 
-class CudaGraph(GraphBatchExecutor):
-    def __init__(self, jit_cache: list[tuple[ta.Any, ta.Any, ta.Any]]) -> None:
-        super().__init__(jit_cache)
-        self.jc_info: list[ta.Any] = []
-
-        # Check if CUDAGraph could run the given jit_cache.
-        if (
-                DEBUG > 0
-                or getenv("CUDACPU")
-                or not all(isinstance(prg, ASTRunner) and isinstance(prg.clprg, CudaProgram) for prg, _, _ in jit_cache)
-        ):
-            return  # Only CUDAProgram can be captured.
-
-        self.split_into_graphs(jit_cache)
-
-    def create_graph(self, jit_cache: list[tuple[ta.Any, ta.Any, ta.Any]]):
-        try:
-            graph, graph_node = cuda.Graph(), None  # type: ignore
-
-            for prg, pargs, variables in jit_cache:
-                global_size, local_size = prg.launch_dims(variables)
-                cuda_args = [
-                    x._buf if isinstance(x, RawCudaBuffer) else np.int32(x)
-                    for x in [*pargs, *variables.values()]
-                ]
-                graph_node = graph.add_kernel_node(
-                    *cuda_args,
-                    block=tuple(local_size),
-                    grid=tuple(global_size),
-                    func=prg.clprg.prg,
-                    dependencies=[graph_node] if graph_node else [],
-                )
-                self.jc_info.append(graph_node)
-
-            self.graphs.append((graph.instantiate(), graph))
-
-        except Exception as e:
-            # CudaGraph might not be suported with the installed version of pycuda.
-            if DEBUG >= 3:
-                print(f"Error creating CudaGraph: {e}")
-
-    def update_node(self, instid, jcid, prg, pargs, variables, updated_args=None):
-        global_size, local_size = prg.launch_dims(variables)
-        cuda_args = [
-            x._buf if isinstance(x, RawCudaBuffer) else np.int32(x)
-            for x in [*pargs, *variables.values()]
-        ]
-        self.graphs[instid][0].kernel_node_set_params(
-            *cuda_args,
-            block=tuple(local_size),
-            grid=tuple(global_size),
-            func=prg.clprg.prg,
-            kernel_node=self.jc_info[jcid],
-        )
-
-    def exec_instance(self, instid):
-        self.graphs[instid][0].launch()
-
-
 @diskcache
 def compile_cuda(prg: str) -> bytes:
     return cuda_compile(
@@ -291,5 +230,4 @@ else:
         compile_cuda,
         CudaProgram,
         cuda.Context.synchronize,
-        CudaGraph,
     )

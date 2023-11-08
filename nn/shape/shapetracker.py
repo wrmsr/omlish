@@ -11,7 +11,6 @@ from .. import ops
 from ..helpers import prod, DEBUG
 from ..shape.symbolic import MulNode
 from ..shape.symbolic import Node
-from ..shape.symbolic import NumNode
 from ..shape.symbolic import SumNode
 from ..shape.symbolic import Variable
 from ..shape.symbolic import sint
@@ -81,11 +80,13 @@ def expr_idxs(view: View, idxs) -> Node:
 def merge_views(vm2: View, vm1: View) -> ta.Optional[View]:
     if vm2.mask:
         return None  # this isn't supported yet
+    if vm1.offset != 0:
+        return None  # this isn't supported yet
     mst = ShapeTracker((vm2, vm1))
     strides = mst.real_strides()
     if None in strides:
         return None
-    return View.create(vm1.shape, ta.cast(tuple[sint, ...], strides), mst.real_offset(), vm1.mask)
+    return View.create(vm1.shape, ta.cast(tuple[sint, ...], strides), vm2.offset, vm1.mask)
 
 
 @functools.lru_cache(maxsize=None)
@@ -185,12 +186,6 @@ class ShapeTracker:
                 to_apply.append((ops.Pad, post_expand_pads))
 
         return to_apply
-
-    # these are multiview strides, value is None if it's not a simple strided dimension
-    # TODO: this can be shared code between simplify and merge_views
-    def real_offset(self) -> sint:
-        real_offset, _ = self.expr_node(Variable("zero", 0, 0))
-        return real_offset.b if isinstance(real_offset, NumNode) else real_offset
 
     # NOTE: if a stride is not always valid, it will be None
     def real_strides(self, ignore_valid=False) -> tuple[ta.Optional[sint], ...]:

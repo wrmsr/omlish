@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 import abc
-import collections
 import functools
-import math
 import typing as ta
 
 from omlish import collections as col  # noqa
@@ -242,62 +240,6 @@ def get_lazyop_info(ast: LazyOp) -> OpInfo:
 # **************** for Compiled Buffers ****************
 
 
-class BasicBatchExecutor:
-    def __init__(self, jit_cache: list[tuple[ta.Any, ta.Any, ta.Any]]) -> None:
-        super().__init__()
-
-    def exec(self, jit_cache: list[tuple[ta.Any, ta.Any, ta.Any]], updatable_entries):
-        for prg, pargs, variables in jit_cache:
-            prg(pargs, variables, jit=True)
-
-    def recalc_stat(self, jit_cache: list[tuple[ta.Any, ta.Any, ta.Any]]) -> None:
-        for prg, _, variables in jit_cache:
-            GlobalCounters.kernel_count += 1
-            GlobalCounters.global_ops += sym_infer(prg.op_estimate, variables)
-            GlobalCounters.global_mem += prg.mem_estimate
-
-
-class GraphBatchExecutor(BasicBatchExecutor):
-    def __init__(self, jit_cache: list[tuple[ta.Any, ta.Any, ta.Any]]) -> None:
-        super().__init__(jit_cache)
-        self.graphs: list[ta.Any] = []
-
-    def split_into_graphs(self, jit_cache: list[tuple[ta.Any, ta.Any, ta.Any]]):
-        # Splitting the JIT cache into batches to enable parallel execution (cpu+gpu). Batch sizes follow a logarithmic
-        # pattern: 4, 4, 8, 16, 32, and so on.
-        # This helps push tasks to the GPU while the CPU updates the next graph.
-        for i in range(2, max(math.ceil(math.log2(len(jit_cache))), 2) + 1):
-            self.create_graph(jit_cache[(1 << (i - 1) if i > 2 else 0):(1 << i)])
-
-    def exec(self, jit_cache: list[tuple[ta.Any, ta.Any, ta.Any]], updatable_entries):
-        if not self.graphs:
-            return super().exec(jit_cache, updatable_entries)  # No graph is created, switch to basic executor.
-        update_keys_per_batch = collections.defaultdict(list)
-        for j in updatable_entries.keys():
-            update_keys_per_batch[max(0, math.ceil(math.log2(j + 1)) - 2)].append(j)
-        for instid in range(len(self.graphs)):
-            for jcid in update_keys_per_batch[instid]:
-                self.update_node(
-                    instid,
-                    jcid,
-                    jit_cache[jcid][0],
-                    jit_cache[jcid][1],
-                    jit_cache[jcid][2],
-                    updated_args=updatable_entries[jcid],
-                )
-            self.exec_instance(instid)
-        super().recalc_stat(jit_cache)
-
-    def create_graph(self, jit_cache: list[tuple[ta.Any, ta.Any, ta.Any]]):
-        raise NotImplementedError("must be implemented")
-
-    def update_node(self, instid, jcid, prg, pargs, variables, updated_args=None):
-        raise NotImplementedError("must be implemented")
-
-    def exec_instance(self, instid):
-        raise NotImplementedError("must be implemented")
-
-
 class ASTRunner:
     def __init__(
             self,
@@ -334,9 +276,9 @@ class ASTRunner:
             runtime_args={"binary": False},
         )
 
-    def build(self, compiler, runtime, batch_exec=BasicBatchExecutor):
+    def build(self, compiler, runtime):
         self.lib = compiler.__wrapped__(self.prg) if getenv("DISABLE_COMPILER_CACHE") else compiler(self.prg)
-        self.clprg, self.batch_exec = runtime(self.name, self.lib), batch_exec
+        self.clprg = runtime(self.name, self.lib)
         return self
 
     def exec(
@@ -404,6 +346,7 @@ class ASTRunner:
             GlobalCounters.time_sum_s += et
 
         op_estimate = sym_infer(self.op_estimate, var_vals)
+        mem_estimate = sym_infer(self.mem_estimate, var_vals)
 
         if DEBUG >= 2:
             print(
@@ -422,14 +365,14 @@ class ASTRunner:
                         f"tm "
                         f"{et*1e6:9.2f}us/{GlobalCounters.time_sum_s*1e3:9.2f}ms "
                         f"({op_estimate/((et or 1e-20)*1e9):8.2f} GFLOPS, "
-                        f"{self.mem_estimate/((et or 1e-20)*1e9):7.2f} GB/s)"
+                        f"{mem_estimate/((et or 1e-20)*1e9):7.2f} GB/s)"
                     )
                 )
             )
 
         GlobalCounters.kernel_count += 1
         GlobalCounters.global_ops += op_estimate
-        GlobalCounters.global_mem += self.mem_estimate
+        GlobalCounters.global_mem += mem_estimate
 
         return et
 
@@ -443,7 +386,6 @@ class Compiled(ASTExecutor):
             compiler,
             runtime,
             synchronize=lambda: None,
-            batch_exec=BasicBatchExecutor,
     ) -> None:
         super().__init__()
         self.buffer = buffer
@@ -452,7 +394,6 @@ class Compiled(ASTExecutor):
         self.runtime = runtime
         self.compiler = compiler
         self.synchronize = synchronize
-        self.batch_exec = batch_exec
         self.method_cache: dict[LazyOp, ASTRunner] = {}
 
     def to_program(self, k: Linearizer) -> ASTRunner:
@@ -471,7 +412,6 @@ class Compiled(ASTExecutor):
         ).build(
             self.compiler,
             self.runtime,
-            self.batch_exec,
         )
 
     def exec_ast(self, ast: LazyOp, output, inputs, var_vals, **kwargs):
@@ -502,10 +442,6 @@ class Compiled(ASTExecutor):
                 output.dtype,
                 **kwargs,
             )
-        else:
-            from .jit import CacheCollector
-
-            CacheCollector._mark_output_buffer(output.output_buffer)
 
         # all the rawbuffers
         rawbuffers = [output.realized] + [x.realized for x in inputs]

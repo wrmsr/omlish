@@ -287,7 +287,7 @@ class Linearizer(Kernel):
                 )
 
         # add var vals
-        for var in sorted(vars_from_ast(self.ast), key=lambda k: k.key):
+        for var in vars_from_ast(self.ast):
             assert var.expr is not None
             self.loop_uops[var.expr] = self.uop(
                 uo.DefineGlobal,
