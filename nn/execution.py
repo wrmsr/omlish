@@ -76,13 +76,11 @@ class Interpreted(ASTExecutor):
             self,
             buffer,
             fxn_for_op: dict[type[LazyOp], ta.Callable],
-            to_underlying=lambda x: x._buf,
             from_underlying=None,
     ) -> None:
         super().__init__()
         self.buffer = buffer
         self.fxn_for_op = fxn_for_op
-        self.to_underlying = to_underlying
         self.from_underlying = from_underlying
         self.synchronize = lambda: None
         self.codegen = None
@@ -147,7 +145,6 @@ class Interpreted(ASTExecutor):
             output=None,
             inputs=None,
             var_vals=None,
-            context=None,
             **kwargs,
     ):
         if ast not in self.method_cache:
@@ -157,7 +154,7 @@ class Interpreted(ASTExecutor):
 
         if output is not None and ret.dtype != output.dtype and ops.Cast in self.fxn_for_op:
             # Do manual casting of ret if it does not match the required output dtype.
-            ret = self.from_underlying(self.fxn_for_op[ops.Cast](self.to_underlying(ret), (output.dtype, False)))
+            ret = self.from_underlying(self.fxn_for_op[ops.Cast](self.fxn_for_op[ops.Mem](ret), (output.dtype, False)))
 
         # TODO: is this used?
         if output is not None and output.output_buffer is not None:
@@ -346,12 +343,10 @@ class ASTRunner:
             rawbufs,
             var_vals: ta.Optional[dict[Variable, int]] = None,
             force_wait=False,
-            optimizing=False,
     ) -> ta.Optional[float]:
         from .jit import CacheCollector
 
-        if not optimizing:
-            CacheCollector.add(self, rawbufs, var_vals if var_vals is not None else {})
+        CacheCollector.add(self, rawbufs, var_vals if var_vals is not None else {})
 
         return self(rawbufs, var_vals, force_wait=force_wait)
 

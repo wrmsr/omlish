@@ -136,7 +136,7 @@ def compile_metal(prg: str, use_xcode: bool = bool(getenv("METAL_XCODE"))) -> by
 
     # TODO: avoid file write here?
     with tempfile.NamedTemporaryFile(delete=True) as output_file:
-        library.serializeToURL_error_(Cocoa.NSURL.URLWithString_(f"file://{output_file.name}"), None)
+        unwrap(library.serializeToURL_error_(Cocoa.NSURL.URLWithString_(f"file://{output_file.name}"), None))
         return pathlib.Path(output_file.name).read_bytes()
 
 
