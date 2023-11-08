@@ -103,7 +103,7 @@ class Interpreted(ASTExecutor):
                     ops.MulAcc in f
                     and isinstance(ast, ops.Sum)
                     and isinstance(ast.src[0], LazyOp)
-                    and isinstance(ast.src[0].op, ops.Mul)
+                    and isinstance(ast.src[0], ops.Mul)
             ):
                 ast = ops.MulAcc(ast.src[0].src, ast.arg)
 
