@@ -153,6 +153,7 @@ class ContextVar:
 DEBUG = ContextVar("DEBUG", 0)
 IMAGE = ContextVar("IMAGE", 0)
 BEAM = ContextVar("BEAM", 0)
+NOOPT = ContextVar("NOOPT", 0)
 
 GRAPH = getenv("GRAPH", 0)
 
