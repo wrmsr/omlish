@@ -12,8 +12,6 @@ import libdispatch  # noqa
 from ..codegen.kernel import LinearizerOptions
 from ..dtypes import DType
 from ..dtypes import dtypes
-from ..execution import ASTRunner
-from ..execution import BasicBatchExecutor
 from ..execution import Compiled
 from ..helpers import DEBUG
 from ..helpers import diskcache
@@ -68,35 +66,6 @@ class RawMetalBuffer(RawBufferMapped):
     def _buffer(self):
         METAL.synchronize()
         return self._buf.contents().as_buffer(self._buf.length())
-
-
-class MetalBatchExecutor(BasicBatchExecutor):
-    def __init__(self, jit_cache: list[tuple[ta.Any, ta.Any, ta.Any]]) -> None:
-        self.use_basic_executor = (DEBUG > 0 or not all(isinstance(prg, ASTRunner) and isinstance(prg.clprg, MetalProgram) for prg, _, _ in jit_cache))
-
-    def __do_exec(self, jit_cache: list[tuple[ta.Any, ta.Any, ta.Any]]) -> None:
-        if len(jit_cache) == 0:
-            return
-        command_buffer = METAL.mtl_queue.commandBufferWithUnretainedReferences()
-        encoder = command_buffer.computeCommandEncoder()
-        for prg, pargs, variables in jit_cache:
-            global_size, local_size = prg.launch_dims(variables)
-            encoder.setComputePipelineState_(prg.clprg.pipeline_state)
-            for i, a in enumerate(pargs):
-                encoder.setBuffer_offset_atIndex_(a._buf, 0, i)
-            for i, a in enumerate(variables.values()):
-                encoder.setBytes_length_atIndex_((arg := ctypes.c_int32(a)), ctypes.sizeof(arg), len(pargs) + i)
-            encoder.dispatchThreadgroups_threadsPerThreadgroup_(Metal.MTLSize(*global_size), Metal.MTLSize(*local_size))
-        encoder.endEncoding()
-        command_buffer.commit()
-        METAL.mtl_buffers_in_flight.append(command_buffer)
-
-    def exec(self, jit_cache: list[tuple[ta.Any, ta.Any, ta.Any]], updatable_entries):
-        if self.use_basic_executor:
-            return super().exec(jit_cache, updatable_entries)  # No graph is created switch to basic executor.
-        for i in range((len(jit_cache) + 127) // 128):
-            self.__do_exec(jit_cache[128 * i:128 * (i + 1)])  # Run in batches with size 128.
-        super().recalc_stat(jit_cache)
 
 
 def unwrap(x):
@@ -195,5 +164,4 @@ MetalBuffer = Compiled(
     compile_metal,
     MetalProgram,
     METAL.synchronize,
-    MetalBatchExecutor,
 )
