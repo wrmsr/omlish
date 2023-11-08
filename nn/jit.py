@@ -33,8 +33,6 @@ class TinyJit:
         # (kernel_number, buffer_number) -> (input_name, expected_shapetracker, expected_type)
         self.input_replace: dict[tuple[int, int], tuple[ta.Union[int, str], ShapeTracker, DType]] = {}
 
-        self.batch_executor: ta.Any = None
-
         # (kernel_number) -> list(argument id). These are buffers from input + variables.
         self.updatable_entries: dict[int, list[int]] = collections.defaultdict(list)
 
@@ -122,8 +120,6 @@ class TinyJit:
 
                 for i in range(len(cache[2])):
                     self.updatable_entries[j_].append(len(cache[1]) + i)
-                # the JIT can optimize local
-                # if prg.local_size is None: prg.local_size = prg.optimize_local_size(args, preserve_output=True)
 
             assert set([x[0] for x in self.input_replace.values()]) == set(
                 input_rawbuffers.keys()

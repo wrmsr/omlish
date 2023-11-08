@@ -93,6 +93,5 @@ disk_fxn_for_op: dict[type[ops.LazyOp], ta.Callable] = {
 DiskBuffer = Interpreted(
     RawDiskBuffer,
     disk_fxn_for_op,
-    to_underlying=lambda x: x,
     from_underlying=lambda x: x,
 )
