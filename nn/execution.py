@@ -3,9 +3,7 @@ from __future__ import annotations
 import abc
 import collections
 import functools
-import itertools
 import math
-import random
 import typing as ta
 
 from omlish import collections as col  # noqa
@@ -73,62 +71,6 @@ class ASTExecutor(lang.Abstract):
         raise NotImplementedError
 
 
-@functools.lru_cache(None)
-def interpret_ast(device: Interpreted, ast: LazyOp) -> ta.Callable:
-    tglob: dict[str, ta.Any] = {}
-    lines: list[str] = []
-    f = device.fxn_for_op
-
-    @functools.lru_cache(None)
-    def gstr(x: ta.Any, nm=None) -> str:
-        ret = str(nm).replace(".", "_") if nm else f"m{len(tglob):04d}"
-        tglob[ret] = x
-        return ret
-
-    @functools.lru_cache(None)
-    def _interpret_ast(ast: LazyOp) -> str:
-        if (
-                ops.MulAcc in f
-                and isinstance(ast, ops.Sum)
-                and isinstance(ast.src[0], LazyOp)
-                and isinstance(ast.src[0], ops.Mul)
-        ):
-            ast = ops.MulAcc(ast.src[0].src, ast.arg)
-
-        if ops.AsStrided in f and isinstance(ast, ops.BufferOp):
-            if isinstance(ast, ops.Const):
-                tmp = f"{gstr(f[type(ast)], type(ast).__name__)}({gstr(ast.arg.val)}, {gstr(ast.arg.dtype)})"
-            else:
-                tmp = f"{gstr(f[type(ast)], type(ast).__name__)}(inputs[{ast.arg.idx - 1}])"
-            for mop, arg in ast.arg.st.to_movement_ops():
-                tmp = f"{gstr(f[mop], mop.__name__)}({tmp}, {gstr(arg)})"
-        else:
-            inp = [_interpret_ast(src) for src in ast.src]
-            tmp = f"{gstr(f[type(ast)], type(ast).__name__)}({', '.join(inp + ([gstr(ast.arg)] if ast.arg else []))})"
-
-        ret = f"a{len(lines)}"
-        lines.append(f"  {ret} = {tmp}")
-        return ret
-
-    ret = _interpret_ast(ast)
-    src = '\n'.join(
-        ['def run(inputs):'] +
-        lines +
-        [
-            f"  return {gstr(device.from_underlying, 'from_underlying')}({ret})"
-            if device.from_underlying else
-            f"  return {ret}"
-        ]
-    )
-
-    if DEBUG >= 4:
-        print(functools.reduce(lambda x, y: (x.replace(y[0], str(y[1])) if y[0][0:2] == "m0" else x), tglob.items(), src))
-
-    exec(compile(src, "<ast>", "exec"), tglob)  # pylint: disable=exec-used
-
-    return tglob['run']
-
-
 class Interpreted(ASTExecutor):
     def __init__(
             self,
@@ -144,9 +86,74 @@ class Interpreted(ASTExecutor):
         self.from_underlying = from_underlying
         self.synchronize = lambda: None
         self.codegen = None
+        self.method_cache: dict[LazyOp, ta.Callable] = {}
 
-    def exec_ast(self, ast: LazyOp, output=None, inputs=None, var_vals=None, context=None, **kwargs):
-        ret = interpret_ast(self, ast)([x.realized for x in inputs] if inputs else None)
+    def interpret_ast(self: Interpreted, ast: LazyOp) -> ta.Callable:
+        tglob: dict[str, ta.Any] = {}
+        lines: list[str] = []
+        f = self.fxn_for_op
+
+        @functools.lru_cache(None)
+        def gstr(x: ta.Any, nm=None) -> str:
+            ret = str(nm).replace(".", "_") if nm else f"m{len(tglob):04d}"
+            tglob[ret] = x
+            return ret
+
+        @functools.lru_cache(None)
+        def _interpret_ast(ast: LazyOp) -> str:
+            if (
+                    ops.MulAcc in f
+                    and isinstance(ast, ops.Sum)
+                    and isinstance(ast.src[0], LazyOp)
+                    and isinstance(ast.src[0].op, ops.Mul)
+            ):
+                ast = ops.MulAcc(ast.src[0].src, ast.arg)
+
+            if ops.AsStrided in f and isinstance(ast, ops.BufferOp):
+                if isinstance(ast, ops.Const):
+                    tmp = f"{gstr(f[type(ast)], type(ast).__name__)}({gstr(ast.arg.val)}, {gstr(ast.arg.dtype)})"
+                else:
+                    tmp = f"{gstr(f[type(ast)], type(ast).__name__)}(inputs[{ast.arg.idx - 1}])"
+                for mop, arg in ast.arg.st.to_movement_ops():
+                    tmp = f"{gstr(f[mop], mop.__name__)}({tmp}, {gstr(arg)})"
+            else:
+                inp = [_interpret_ast(src) for src in ast.src]
+                tmp = f"{gstr(f[type(ast)], type(ast).__name__)}({', '.join(inp + ([gstr(ast.arg)] if ast.arg else []))})"
+
+            ret = f"a{len(lines)}"
+            lines.append(f"  {ret} = {tmp}")
+            return ret
+
+        ret = _interpret_ast(ast)
+        src = '\n'.join(
+            ['def run(inputs):'] +
+            lines +
+            [
+                f"  return {gstr(self.from_underlying, 'from_underlying')}({ret})"
+                if self.from_underlying else
+                f"  return {ret}"
+            ]
+        )
+
+        if DEBUG >= 4: print(
+            functools.reduce(lambda x, y: (x.replace(y[0], str(y[1])) if y[0][0:2] == "m0" else x), tglob.items(), src))
+
+        exec(compile(src, "<ast>", "exec"), tglob)  # pylint: disable=exec-used
+        return tglob['run']
+
+    def exec_ast(
+            self,
+            ast: LazyOp,
+            output=None,
+            inputs=None,
+            var_vals=None,
+            context=None,
+            **kwargs,
+    ):
+        if ast not in self.method_cache:
+            self.method_cache[ast] = self.interpret_ast(ast)
+
+        ret = self.method_cache[ast]([x.realized for x in inputs] if inputs else None)
 
         if output is not None and ret.dtype != output.dtype and ops.Cast in self.fxn_for_op:
             # Do manual casting of ret if it does not match the required output dtype.
@@ -166,7 +173,7 @@ class Interpreted(ASTExecutor):
 
 @dc.dataclass(frozen=True)
 class OpInfo:
-    op: ops.Op
+    op: LazyOp
 
     shape: tuple[int, ...]
     dtype: DType
@@ -329,27 +336,6 @@ class ASTRunner:
             runtime_args={"binary": False},
         )
 
-    def optimize_local_size(self, global_size: list[int], rawbufs: list[RawBuffer]) -> list[int]:
-        assert self.global_size is not None, "needs a global size to optimize local size"
-        test_rawbuffers = [type(rawbufs[0])(rawbufs[0].size, rawbufs[0].dtype), *rawbufs[1:]] \
-            if rawbufs[0] in rawbufs[1:] else rawbufs
-        MAX_WORKGROUP = self.clprg.max_work_group_size() if hasattr(self.clprg, 'max_work_group_size') else 1024
-        local_dims = [[x for x in set([sz, 1, 2, 4, 8, 16, 32, 64, 128, 256, MAX_WORKGROUP]) if x <= sz] for sz in global_size]
-        local_sizes = [list(x) for x in itertools.product(*local_dims) if prod(x) <= MAX_WORKGROUP] * 2  # try each valid size twice
-
-        def try_exec(local_size):
-            try:
-                return self.clprg(
-                    [g // l if g % l == 0 else g / l for g, l in zip(global_size, local_size)],
-                    local_size,
-                    *test_rawbuffers,
-                    wait=True,
-                )
-            except Exception:
-                return float('inf')
-
-        return min([(try_exec(local_size), local_size) for local_size in random.sample(local_sizes, len(local_sizes))])[1]
-
     def build(self, compiler, runtime, batch_exec=BasicBatchExecutor):
         self.lib = compiler.__wrapped__(self.prg) if getenv("DISABLE_COMPILER_CACHE") else compiler(self.prg)
         self.clprg, self.batch_exec = runtime(self.name, self.lib), batch_exec
@@ -404,7 +390,8 @@ class ASTRunner:
 
         if global_size is not None and local_size is None:
             # TODO: this is copied from get_program
-            local_size = self.local_size = self.optimize_local_size(global_size, rawbufs)
+            from .features.search import optimize_local_size
+            local_size = self.local_size = optimize_local_size(self.clprg, global_size, rawbufs)
             global_size = self.global_size = [g // l if g % l == 0 else g / l for g, l in zip(global_size, local_size)]
 
         lra = self.runtime_args.copy()

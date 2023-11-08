@@ -1,4 +1,6 @@
 import collections
+import itertools
+import random
 import typing as ta
 
 from ..codegen.kernel import Opt
@@ -205,3 +207,43 @@ def beam_search(lin: Linearizer, rawbufs, amt: int, allow_test_size=True) -> Lin
     if DEBUG >= 3:
         print(beam[0][0].applied_opts)
     return beam[0][0]
+
+
+def optimize_local_size(
+        clprg: ta.Callable,
+        global_size: list[int],
+        rawbufs: list[RawBuffer],
+) -> list[int]:
+    test_rawbuffers = [type(rawbufs[0])(rawbufs[0].size, rawbufs[0].dtype), *rawbufs[1:]] \
+        if rawbufs[0] in rawbufs[1:] else rawbufs
+    MAX_WORKGROUP = clprg.max_work_group_size() if hasattr(clprg, 'max_work_group_size') else 1024
+    local_dims = [
+        [x for x in {sz, 1, 2, 4, 8, 16, 32, 64, 128, 256, MAX_WORKGROUP} if x <= sz]
+        for sz in global_size
+    ]
+
+    # try each valid size twice
+    local_sizes = [
+        list(x)
+        for x in itertools.product(*local_dims)
+        if prod(x) <= MAX_WORKGROUP
+    ] * 2
+
+    def try_exec(local_size):
+        try:
+            return clprg(
+                *test_rawbuffers,
+                global_size=[
+                    g // l if g % l == 0 else g / l
+                    for g, l in zip(global_size, local_size)
+                ],
+                local_size=local_size,
+                wait=True,
+            )
+        except Exception:
+            return float('inf')
+
+    return min([
+        (try_exec(local_size), local_size)
+        for local_size in random.sample(local_sizes, len(local_sizes))
+    ])[1]
