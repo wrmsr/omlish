@@ -911,7 +911,7 @@ def Dropout(data: Tensor, ratio=0.5, training_mode=False, seed=None):
         return data, Tensor.ones(*data.shape, dtype=dtypes.bool)  # if mask is requested as output it will contain all True's.
 
     rng = np.random.RandomState(seed)
-    ratio = ratio.lazydata.realize().toCPU()[0] if isinstance(ratio, Tensor) else ratio
+    ratio = ratio.lazydata.realize().toCpu()[0] if isinstance(ratio, Tensor) else ratio
     mask = Tensor((rng.random(data.shape) >= ratio), requires_grad=False, device=data.device)
     return data * mask * (1 / (1.0 - ratio)), mask
 

@@ -76,15 +76,18 @@ class RawBufferMapped(RawBufferCopyIn):
         raise NotImplementedError("must be implemented")
 
     # NOTE: this metadata prevents the backing buffer from being freed. hack can be removed with PEP688
-    def toCpu(self) -> np.ndarray:
-        return np.frombuffer(
+    def buffer_view(self) -> np.ndarray:
+        return np.frombuffer(  # type: ignore
             self._buffer(),
             dtype=np.dtype(self.dtype.np, metadata={"backing": self}),
             count=self.size,
         )
 
+    def toCpu(self) -> np.ndarray:
+        return self.buffer_view().copy()  # Need a copy, since jit will write to the same buffer.
+
     def _copyin(self, x: np.ndarray) -> None:
-        np.copyto(self.toCpu(), x.reshape(-1))
+        np.copyto(self.buffer_view(), x.reshape(-1))
 
 
 # this one is simple enough that i moved it out of the runtimes
