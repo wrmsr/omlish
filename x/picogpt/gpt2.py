@@ -1,3 +1,5 @@
+import os.path
+
 import numpy as np
 
 
@@ -94,8 +96,16 @@ def generate(inputs, params, n_head, n_tokens_to_generate):
     return inputs[len(inputs) - n_tokens_to_generate :]  # only return generated ids
 
 
-def main(prompt: str, n_tokens_to_generate: int = 40, model_size: str = "124M", models_dir: str = "models"):
+def main(
+        prompt: str,
+        n_tokens_to_generate: int = 40,
+        model_size: str = "124M",
+        models_dir: str = "",
+):
     from .utils import load_encoder_hparams_and_params
+
+    if not models_dir:
+        models_dir = os.path.join(os.path.split(__file__)[0], 'models')
 
     # load encoder, hparams, and params from the released open-ai gpt-2 files
     encoder, hparams, params = load_encoder_hparams_and_params(model_size, models_dir)
