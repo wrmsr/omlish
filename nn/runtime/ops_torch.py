@@ -48,7 +48,7 @@ torch_fxn_for_op: dict[type[ops.LazyOp], ta.Callable] = {
     **{
         # TODO: torch.tensor should work here
         # BufferOps.CONST: lambda val, dtype: torch.tensor(val, dtype=inverse_type_map[dtype]),
-        ops.Const: lambda val, dtype: torch.from_numpy(np.array(val, dtype=dtype.np)),
+        ops.Const: lambda val, dtype: torch.from_numpy(np.array(val, dtype=dtype.np)).requires_grad_(False).to(device),
         ops.Nop: lambda x: x.contiguous(),
         ops.Sqrt: lambda x: x.sqrt(),
         ops.Exp2: lambda x: x.exp2(),
@@ -79,7 +79,7 @@ class RawTorchBuffer(RawBuffer):
             size,
             dtype,
             buf
-            if buf is not None else torch.empty([size], dtype=inverse_type_map[dtype]),
+            if buf is not None else torch.empty([size], device=device, dtype=inverse_type_map[dtype]),
         )
 
     @classmethod
