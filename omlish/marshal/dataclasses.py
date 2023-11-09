@@ -6,6 +6,7 @@ import collections.abc
 import enum
 import typing as ta
 
+from .. import cached
 from .. import check
 from .. import collections as col
 from .. import dataclasses as dc
@@ -32,6 +33,8 @@ class FieldNaming(Option, enum.Enum):
 @dc.dataclass(frozen=True)
 class DataclassMetadata:
     field_naming: FieldNaming | None = None
+
+    unknown_field: str | None = None
 
 
 @dc.dataclass(frozen=True)
@@ -146,37 +149,31 @@ class DataclassMarshalerFactory(MarshalerFactory):
 @dc.dataclass(frozen=True)
 class DataclassUnmarshaler(Unmarshaler):
     cls: type
-    fields: ta.Sequence[tuple[FieldInfo, Unmarshaler]]
+    fields_by_unmarshal_name: ta.Mapping[str, tuple[FieldInfo, Unmarshaler]]
 
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any:
         ma = check.isinstance(v, collections.abc.Mapping)
-
         kw = {}
-        for fi, u in self.fields:
-            mv: Value = None
-            seen = None
-            for un in fi.unmarshal_names:
-                try:
-                    cv = ma[un]  # type: ignore
-                except KeyError:
-                    continue
-                if seen:
-                    raise KeyError(f'Duplicate keys for field {fi.field.name!r}: {seen!r}, {un!r}')
-                mv = cv  # type: ignore
-                seen = un
-
-            if seen:
-                kw[fi.field.name] = u.unmarshal(ctx, mv)
-
+        for k, mv in ma.items():
+            try:
+                fi, u = self.fields_by_unmarshal_name[k]
+            except KeyError:
+                continue
+            if fi.field.name in kw:
+                raise KeyError(f'Duplicate keys for field {fi.field.name!r}: {k!r}')
+            kw[fi.field.name] = u.unmarshal(ctx, mv)
         return self.cls(**kw)
 
 
 class DataclassUnmarshalerFactory(UnmarshalerFactory):
     def __call__(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Optional[Unmarshaler]:
         if isinstance(rty, type) and dc.is_dataclass(rty):
-            fields = [
-                (fi, _make_field_obj(ctx, fi.type, fi.metadata.unmarshaler, fi.metadata.unmarshaler_factory))
-                for fi in get_field_infos(rty, ctx.options)
-            ]
-            return DataclassUnmarshaler(rty, fields)
+            d: dict[str, tuple[FieldInfo, Unmarshaler]] = {}
+            for fi in get_field_infos(rty, ctx.options):
+                tup = (fi, _make_field_obj(ctx, fi.type, fi.metadata.unmarshaler, fi.metadata.unmarshaler_factory))
+                for un in fi.unmarshal_names:
+                    if un in d:
+                        raise KeyError(f'Duplicate fields for name {un!r}: {fi.field.name!r}, {d[un][0].field.name!r}')
+                    d[un] = tup
+            return DataclassUnmarshaler(rty, d)
         return None
