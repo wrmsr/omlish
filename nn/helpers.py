@@ -16,6 +16,8 @@ import tempfile
 import time
 import typing as ta
 
+from omlish import check
+from omlish import typing as ota
 import tqdm
 
 if ta.TYPE_CHECKING:  # TODO: remove this and import TypeGuard from typing once minimum python supported version is 3.10
@@ -247,80 +249,125 @@ def download_file(url, fp, skip_if_exists=True):
 # *** universal database cache ***
 
 
-_cache_dir: str = getenv("XDG_CACHE_HOME", os.path.expanduser("~/Library/Caches" if OSX else "~/.cache"))
-CACHEDB: str = getenv("CACHEDB", os.path.join(_cache_dir, "tinygrad", "cache.db"))
 CACHELEVEL = getenv("CACHELEVEL", 2)
 
-VERSION = 6
 
-_db_connection = None
+class DiskCache:
 
+    DEFAULT_DIR: str = getenv("XDG_CACHE_HOME", os.path.expanduser("~/Library/Caches" if OSX else "~/.cache"))
+    DEFAULT_PATH: str = getenv("CACHEDB", os.path.abspath(os.path.join(DEFAULT_DIR, "tinygrad", "cache.db")))
 
-def db_connection():
-    global _db_connection
-    if _db_connection is None:
-        os.makedirs(CACHEDB.rsplit("/", 1)[0], exist_ok=True)
-        _db_connection = sqlite3.connect(CACHEDB)
+    VERSION = 6
+
+    def __init__(
+            self,
+            path: ta.Optional[str] = None,
+    ) -> None:
+        super().__init__()
+
+        if path is None:
+            path = self.DEFAULT_PATH
+
+        self._path = check.non_empty_str(path)
+
+        self._conn: ta.Optional[ota.DBAPIConnection] = None
+        self._tables: ta.Set[str] = set()
+
+    def close(self) -> None:
+        if self._conn is not None:
+            self._conn.close()
+            self._conn = None
+
+    def conn(self):
+        if self._conn is not None:
+            return self._conn
+
+        os.makedirs(self._path.rsplit(os.sep, 1)[0], exist_ok=True)
+
+        self._conn = sqlite3.connect(self._path)
         if DEBUG >= 7:
-            _db_connection.set_trace_callback(print)
-        if diskcache_get("meta", "version") != VERSION:
+            self._conn.set_trace_callback(print)
+
+        if self.get("meta", "version") != self.VERSION:
             print("cache is out of date, clearing it")
-            del _db_connection
-            os.unlink(CACHEDB)
-            _db_connection = sqlite3.connect(CACHEDB)
+            self._conn.close()
+            os.unlink(self._path)
+
+            self._conn = sqlite3.connect(self._path)
             if DEBUG >= 7:
-                _db_connection.set_trace_callback(print)
-            diskcache_put("meta", "version", VERSION)
-    return _db_connection
+                self._conn.set_trace_callback(print)
 
+            self.put("meta", "version", self.VERSION)
 
-def diskcache_get(table: str, key: ta.Union[dict, str, int]) -> ta.Any:
-    if CACHELEVEL == 0:
+        return self._conn
+
+    def get(self, table: str, key: ta.Union[dict, str, int]) -> ta.Any:
+        if CACHELEVEL == 0:
+            return None
+
+        if isinstance(key, (str, int)):
+            key = {"key": key}
+
+        conn = self.conn()
+        cur = conn.cursor()
+        try:
+            res = cur.execute(
+                f"SELECT val FROM {table} WHERE {' AND '.join([f'{x}=?' for x in key.keys()])}",
+                tuple(key.values()),
+            )
+        except sqlite3.OperationalError:
+            return None  # table doesn't exist
+
+        if (val := res.fetchone()) is not None:
+            return pickle.loads(val[0])
+
         return None
-    if isinstance(key, (str, int)):
-        key = {"key": key}
-    conn = db_connection()
-    cur = conn.cursor()
-    try:
-        res = cur.execute(
-            f"SELECT val FROM {table} WHERE {' AND '.join([f'{x}=?' for x in key.keys()])}",
-            tuple(key.values()),
+
+    _TYPES: ta.Final[ta.Mapping[type, str]] = {
+        str: "text",
+        bool: "integer",
+        int: "integer",
+        float: "numeric",
+        bytes: "blob",
+    }
+
+    def put(self, table: str, key: ta.Union[dict, str, int], val: T) -> T:
+        if CACHELEVEL == 0:
+            return val
+
+        if isinstance(key, (str, int)):
+            key = {"key": key}
+
+        conn = self.conn()
+        cur = conn.cursor()
+
+        if table not in self._tables:
+            ltypes = ', '.join(f"{k} {self._TYPES[type(key[k])]}" for k in key.keys())
+            cur.execute(
+                f"CREATE TABLE IF NOT EXISTS {table} ("
+                f"    {ltypes}, "
+                f"    val blob, "
+                f"    PRIMARY KEY ({', '.join(key.keys())})"
+                f")"
+            )
+            self._tables.add(table)
+
+        cur.execute(
+            f"REPLACE INTO {table} "
+            f"({', '.join(key.keys())}, val) "
+            f"VALUES ({', '.join(['?'] * len(key.keys()))}, ?)",
+            tuple(key.values()) + (pickle.dumps(val),),
         )
-    except sqlite3.OperationalError:
-        return None  # table doesn't exist
-    if (val := res.fetchone()) is not None:
-        return pickle.loads(val[0])
-    return None
 
-
-_db_tables = set()
-
-
-def diskcache_put(table: str, key: ta.Union[dict, str, int], val: ta.Any):
-    if CACHELEVEL == 0:
+        conn.commit()
+        cur.close()
         return val
-    if isinstance(key, (str, int)):
-        key = {"key": key}
-    conn = db_connection()
-    cur = conn.cursor()
-    if table not in _db_tables:
-        TYPES = {
-            str: "text",
-            bool: "integer",
-            int: "integer",
-            float: "numeric",
-            bytes: "blob",
-        }
-        ltypes = ', '.join(f"{k} {TYPES[type(key[k])]}" for k in key.keys())
-        cur.execute(f"CREATE TABLE IF NOT EXISTS {table} ({ltypes}, val blob, PRIMARY KEY ({', '.join(key.keys())}))")
-        _db_tables.add(table)
-    cur.execute(
-        f"REPLACE INTO {table} ({', '.join(key.keys())}, val) VALUES ({', '.join(['?'] * len(key.keys()))}, ?)",
-        tuple(key.values()) + (pickle.dumps(val),),
-    )
-    conn.commit()
-    cur.close()
-    return val
+
+
+_DISK_CACHE = DiskCache()
+
+diskcache_get = _DISK_CACHE.get
+diskcache_put = _DISK_CACHE.put
 
 
 def diskcache(func):
