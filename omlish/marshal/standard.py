@@ -6,8 +6,8 @@ from .base64 import BASE64_MARSHALER_FACTORY
 from .base64 import BASE64_UNMARSHALER_FACTORY
 from .dataclasses import DataclassMarshalerFactory
 from .dataclasses import DataclassUnmarshalerFactory
-from .datetimes import DatetimeMarshalerFactory
-from .datetimes import DatetimeUnmarshalerFactory
+from .datetimes import DATETIME_MARSHALER_FACTORY
+from .datetimes import DATETIME_UNMARSHALER_FACTORY
 from .enums import EnumMarshalerFactory
 from .enums import EnumUnmarshalerFactory
 from .factories import CompositeFactory
@@ -32,7 +32,7 @@ STANDARD_MARSHALER_FACTORIES: list[MarshalerFactory] = [
     EnumMarshalerFactory(),
     UUID_MARSHALER_FACTORY,
     BASE64_MARSHALER_FACTORY,
-    DatetimeMarshalerFactory(),
+    DATETIME_MARSHALER_FACTORY,
     IterableMarshalerFactory(),
 ]
 
@@ -57,7 +57,7 @@ STANDARD_UNMARSHALER_FACTORIES: list[UnmarshalerFactory] = [
     EnumUnmarshalerFactory(),
     UUID_UNMARSHALER_FACTORY,
     BASE64_UNMARSHALER_FACTORY,
-    DatetimeUnmarshalerFactory(),
+    DATETIME_UNMARSHALER_FACTORY,
     IterableUnmarshalerFactory(),
 ]
 
