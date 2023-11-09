@@ -123,7 +123,7 @@ class ShapeTracker:
 
     # this is the real size (ish)
     def size(self):
-        return self.views[-1].size()
+        return 0 if prod(self.shape) == 0 else self.expr_idxs()[0].max + 1
 
     def vars(self) -> list[Variable]:
         return col.unique(functools.reduce(operator.add, [v.vars() for v in self.views], []))
