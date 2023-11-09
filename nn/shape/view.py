@@ -54,14 +54,6 @@ class View:
         )
         return View(shape, strides, offset, mask, contiguous)
 
-    @functools.lru_cache(maxsize=None)  # pylint: disable=method-cache-max-size-none
-    def size(self):
-        return prod([
-            s.max if isinstance(s, Node) else s
-            for s, st in zip(self.shape, self.strides)
-            if st != 0
-        ])
-
     def vars(self) -> list[Variable]:
         flatten_mask = tuple(x for m in self.mask for x in m) if self.mask is not None else tuple()
         return col.unique(

@@ -252,7 +252,8 @@ def uops_to_cstyle(lang: CStyleLanguage, function_name: str, uops: list[uo.UOp])
             else:
                 val = lang.code_for_op[u.arg](*[r[x] for x in u.vin])
             assert child_count[u] != 0, f"childless ALU op found {u}"
-            if child_count[u] <= 1 or dtypes.is_int(u.dtype):  # fix index rendering issue
+            # fix index rendering issue. fix clang nested max macro issue
+            if (child_count[u] <= 1 or dtypes.is_int(u.dtype)) and u.arg != ops.Max2:
                 r[u] = val
             else:
                 kk(

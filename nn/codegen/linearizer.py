@@ -388,23 +388,23 @@ class Linearizer(Kernel):
         ]
 
         # global and local loops
-        def render_loop(xx: list[Variable]):
-            self.loop_uops.update(
-                {
-                    x.expr: self.uop(
-                        uo.Loop,
-                        dtypes.int32,
-                        (
-                            self.const(x.min) if isinstance(x.min, int) else ta.cast(Node, x.min).render(self.render_ops, self),  # noqa
-                            self.const(x.max + 1) if isinstance(x.max, int) else ta.cast(Node, x.max + 1).render(self.render_ops, self),  # noqa
-                        ),
-                        cachable=False,
-                    )
-                    for x in xx
-                    if not isinstance(x, NumNode)
-                    and x.expr is not None
-                }
-            )
+        def render_loop(xx: list[Variable]) -> tuple[uo.UOp, ...]:
+            new_loops = {
+                x.expr: self.uop(
+                    uo.Loop,
+                    dtypes.int32,
+                    (
+                        self.const(x.min) if isinstance(x.min, int) else ta.cast(Node, x.min).render(self.render_ops, self),  # noqa
+                        self.const(x.max + 1) if isinstance(x.max, int) else ta.cast(Node, x.max + 1).render(self.render_ops, self),  # noqa
+                    ),
+                    cachable=False,
+                )
+                for x in xx
+                if not isinstance(x, NumNode)
+                and x.expr is not None
+            }
+            self.loop_uops.update(new_loops)
+            return tuple(new_loops.values())
 
         def end_loop(xx: list[Variable]):
             for x in xx[::-1]:
@@ -515,7 +515,7 @@ class Linearizer(Kernel):
                     upcast_idxs[n] = replace_acc_idxs[len(self.tensor_core.threads) + n]
 
             # reduce loop
-            render_loop(reduce_idxs)
+            loop_ctx = render_loop(reduce_idxs)
 
             # barrier for fast GEMM
             if self.tensor_core:
@@ -562,6 +562,7 @@ class Linearizer(Kernel):
                 for y in range(by):
                     for x in range(bx):
                         for j in range(acc_reds):
+                            # TODO: make this a proper op with PHI node
                             self.uop(
                                 uo.Wmma,
                                 None,
@@ -606,6 +607,7 @@ class Linearizer(Kernel):
                     self.acc_offsets(self.full_buf_index),
                     loaded_buffers,
                     do_reduce=True,
+                    loop_ctx=loop_ctx,
                 )
 
             # end the reduce loop
@@ -671,7 +673,7 @@ class Linearizer(Kernel):
                 )
 
                 # late reduce loop
-                render_loop(end_local_idxs)
+                loop_ctx = render_loop(end_local_idxs)
 
                 # load localbufs
                 loaded_buffers[self.bufs[-1]] = self.global_load(
@@ -685,6 +687,7 @@ class Linearizer(Kernel):
                     self.acc_offsets(-1),
                     loaded_buffers,
                     do_reduce=True,
+                    loop_ctx=loop_ctx,
                 )
 
                 # end the late reduce loop
@@ -839,7 +842,7 @@ class Linearizer(Kernel):
 
         return self.uops[-1]
 
-    def ast_parse(self, x, acc, offs, loaded_buffers, do_reduce=False) -> list[uo.UOp]:
+    def ast_parse(self, x, acc, offs, loaded_buffers, do_reduce=False, loop_ctx=()) -> list[uo.UOp]:
         if not isinstance(x, LazyOp):
             return loaded_buffers[x]  # for LOCAL_BUFFER
 
@@ -867,7 +870,16 @@ class Linearizer(Kernel):
         ):
             x = ops_.MulAcc(x.src[0].src[0].src, x.arg)
 
-        values = [self.ast_parse(v, acc, offs, loaded_buffers) for v in x.src]
+        values = [
+            self.ast_parse(
+                v,
+                acc,
+                offs,
+                loaded_buffers,
+                loop_ctx=loop_ctx,
+            )
+            for v in x.src
+        ]
 
         ops = {
             ops_.Sum: ops_.Add,
@@ -876,11 +888,13 @@ class Linearizer(Kernel):
         }
         if type(x) in ops:
             ret = []
+            input_acc = acc[:]
             for idx, val, off in zip([[i] for i in range(len(values[0]))], zip(*values), offs):
-                new_val = self.uop(uo.Alu, dtypes.float32, val + (acc[off],), ops[type(x)])
-                # NOTE: we could apply the phi node to only the last change, but this breaks CLANG with nested max(x,y)
-                acc[off] = self.uop(uo.Phi, dtypes.float32, (acc[off], new_val))
+                acc[off] = self.uop(uo.Alu, dtypes.float32, val + (acc[off],), ops[type(x)])
                 ret.append((idx, acc[off]))
+            for off in range(len(acc)):
+                if input_acc[off] != acc[off]:
+                    acc[off] = self.uop(uo.Phi, dtypes.float32, (input_acc[off], acc[off]) + tuple(loop_ctx))
 
         else:
             ret = [
