@@ -29,22 +29,25 @@ class PsItem(lang.Final):
     status: str
 
 
-def test_docker():
+def cli_ps() -> list[PsItem]:
     p = subprocess.Popen(
         ['docker', 'ps', '--format', '{{json .}}'],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
-    o, e = p.communicate()
+
+    o, _ = p.communicate()
     check.equal(p.returncode, 0)
-    print(o)
-    print(e)
 
-    d = json.loads(o.decode('utf-8'))
-    print(d)
+    ret: list[PsItem] = []
+    for l in o.decode('utf-8').splitlines():
+        d = json.loads(o.decode('utf-8'))
+        pi = msh.unmarshal(d, PsItem)
+        ret.append(pi)
 
-    pi = msh.unmarshal(d, PsItem)
+    return ret
 
-    print(pi)
 
-    print(json.dumps_pretty(msh.marshal(pi)))
+def test_docker():
+    pis = cli_ps()
+    print(json.dumps_pretty(msh.marshal(pis, list[PsItem])))
