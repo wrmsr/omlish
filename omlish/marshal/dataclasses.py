@@ -38,12 +38,10 @@ class Field:
 class FieldInfo:
     field: dc.Field
     type: ta.Any
-    metadata: Field | None
+    metadata: Field
 
     marshal_name: str
-
-    unmarshal_name: str
-    unmarshal_alts: ta.AbstractSet[str]
+    unmarshal_names: ta.Sequence[str]
 
 
 def get_field_infos(ty: type, opts: col.TypeMap[Option] = col.TypeMap()) -> ta.Sequence[FieldInfo]:
@@ -54,12 +52,10 @@ def get_field_infos(ty: type, opts: col.TypeMap[Option] = col.TypeMap()) -> ta.S
         kw = dict(
             field=field,
             type=type_hints[field.name],
-            metadata=None,
+            metadata=Field(),
 
             marshal_name=field.name,
-
-            unmarshal_name=field.name,
-            unmarshal_alts=frozenset(),
+            unmarshal_names=[field.name],
         )
 
         if (metadata := field.metadata.get(Field)) is not None:
@@ -68,14 +64,20 @@ def get_field_infos(ty: type, opts: col.TypeMap[Option] = col.TypeMap()) -> ta.S
             if metadata.name is not None:
                 kw.update(
                     marshal_name=metadata.name,
-
-                    unmarshal_name=metadata.name,
-                    unmarshal_alts=frozenset(metadata.alts or ()),
+                    unmarshal_names=col.unique([metadata.name, *(metadata.alts or ())]),
                 )
 
         ret.append(FieldInfo(**kw))
 
     return ret
+
+
+def _make_field_obj(ctx, ty, obj, fac):
+    if obj is not None:
+        return obj
+    if fac is not None:
+        return fac(ctx, ty)
+    return ctx.make(ty)
 
 
 ##
@@ -96,7 +98,7 @@ class DataclassMarshalerFactory(MarshalerFactory):
     def __call__(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Optional[Marshaler]:
         if isinstance(rty, type) and dc.is_dataclass(rty):
             fields = [
-                (fi, ctx.make(fi.type))
+                (fi, _make_field_obj(ctx, fi.type, fi.metadata.marshaler, fi.metadata.marshaler_factory))
                 for fi in get_field_infos(rty, ctx.options)
             ]
             return DataclassMarshaler(fields)
@@ -113,17 +115,32 @@ class DataclassUnmarshaler(Unmarshaler):
 
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any:
         ma = check.isinstance(v, collections.abc.Mapping)
-        return self.cls(**{  # type: ignore
-            fi.field.name: u.unmarshal(ctx, ma[fi.unmarshal_name])
-            for fi, u in self.fields
-        })
+
+        kw = {}
+        for fi, u in self.fields:
+            mv: Value = None
+            seen = None
+            for un in fi.unmarshal_names:
+                try:
+                    cv = ma[un]  # type: ignore
+                except KeyError:
+                    continue
+                if seen:
+                    raise KeyError(f'Duplicate keys for field {fi.field.name!r}: {seen!r}, {un!r}')
+                mv = cv  # type: ignore
+                seen = un
+
+            if seen:
+                kw[fi.field.name] = u.unmarshal(ctx, mv)
+
+        return self.cls(**kw)
 
 
 class DataclassUnmarshalerFactory(UnmarshalerFactory):
     def __call__(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Optional[Unmarshaler]:
         if isinstance(rty, type) and dc.is_dataclass(rty):
             fields = [
-                (fi, ctx.make(fi.type))
+                (fi, _make_field_obj(ctx, fi.type, fi.metadata.unmarshaler, fi.metadata.unmarshaler_factory))
                 for fi in get_field_infos(rty, ctx.options)
             ]
             return DataclassUnmarshaler(rty, fields)

@@ -93,8 +93,7 @@ class FuncUnmarshaler(Unmarshaler):
 ##
 
 
-@dc.dataclass(frozen=True)
-class Option(lang.Abstract):
+class Option:
     pass
 
 
