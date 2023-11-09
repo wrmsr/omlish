@@ -138,7 +138,7 @@ def _replace_bufferops(op: LazyOp) -> tuple[LazyOp, list[LazyBuffer]]:
 
 def get_single_root(root: LazyBuffer) -> LazyBuffer:
     return (
-        get_single_root(ta.cast(LazyBuffer, root.op.src[0]))
+        get_single_root(root.op.src[0])
         if getattr(root, "op", None) and len(root.op.src) == 1
         and isinstance(root.op.src[0], LazyBuffer)
         else root

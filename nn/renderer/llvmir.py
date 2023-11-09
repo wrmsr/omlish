@@ -162,9 +162,7 @@ def uops_to_llvm_ir(function_name: str, uops: list[uo.UOp]) -> tuple[str, dict]:
     module = ir.Module(name=__file__)
 
     # extract global buffers
-    buf_to_dtype = {
-        u.arg[0]: u.arg[1] for u in uops if isinstance(u, uo.DefineGlobal)
-    }
+    buf_to_dtype = {u.arg[0]: u.arg[1] for u in uops if isinstance(u, uo.DefineGlobal)}
     buf_index = {x: i for i, x in enumerate(buf_to_dtype.keys())}
 
     # create llvm function

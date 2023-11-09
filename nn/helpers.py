@@ -282,7 +282,7 @@ def diskcache_get(table: str, key: ta.Union[dict, str, int]) -> ta.Any:
     conn = db_connection()
     cur = conn.cursor()
     try:
-        res = cur.cursor().execute(
+        res = cur.execute(
             f"SELECT val FROM {table} WHERE {' AND '.join([f'{x}=?' for x in key.keys()])}",
             tuple(key.values()),
         )

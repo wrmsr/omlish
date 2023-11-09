@@ -157,7 +157,7 @@ class Kernel:
         self.ast = ast
 
         # fetch lazyop info
-        self.info: OpInfo = get_lazyop_info(ta.cast(LazyOp, self.ast))
+        self.info: OpInfo = get_lazyop_info(self.ast)
 
         # there's only allowed to be one reduceop
         reduceops = [x for x in self.ast.get_lazyops() if isinstance(x, ops.ReduceOp)]
@@ -805,8 +805,8 @@ class Kernel:
                 and isinstance(self.reduceop.src[0].src[0], ops.Mem)
                 and isinstance(self.reduceop.src[0].src[1], ops.Mem)
         ):
-            buf0 = self.bufs.index(ta.cast(LazyOp, self.reduceop.src[0].src[0]).arg)
-            buf1 = self.bufs.index(ta.cast(LazyOp, self.reduceop.src[0].src[1]).arg)
+            buf0 = self.bufs.index(self.reduceop.src[0].src[0].arg)
+            buf1 = self.bufs.index(self.reduceop.src[0].src[1].arg)
             buf0_strides = self.sts[buf0].real_strides()
             buf1_strides = self.sts[buf1].real_strides()
 
