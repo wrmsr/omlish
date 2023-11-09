@@ -10,8 +10,12 @@ from .. import marshal as msh
 
 @dc.dataclass(frozen=True)
 class PsItem(lang.Final):
-    command: str = dc.field(metadata={msh.Field: msh.Field('Command')})
-    created_at: datetime.datetime = dc.field(metadata={msh.Field: msh.Field('CreatedAt')})
+    dc.metadata(msh.DataclassMetadata(
+        field_naming=msh.FieldNaming.CAMEL,
+    ))
+
+    command: str
+    created_at: datetime.datetime
 
 
 def test_docker():

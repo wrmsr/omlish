@@ -3,11 +3,13 @@ TODO:
  - cfg naming
 """
 import collections.abc
-import dataclasses as dc
+import enum
 import typing as ta
 
 from .. import check
 from .. import collections as col
+from .. import dataclasses as dc
+from .. import lang
 from .. import reflect as rfl
 from .base import MarshalContext
 from .base import Marshaler
@@ -22,8 +24,18 @@ from .values import Value
 ##
 
 
+class FieldNaming(Option, enum.Enum):
+    SNAKE = 'snake'
+    CAMEL = 'camel'
+
+
 @dc.dataclass(frozen=True)
-class Field:
+class DataclassMetadata:
+    field_naming: FieldNaming | None = None
+
+
+@dc.dataclass(frozen=True)
+class FieldMetadata:
     name: str | None = None
     alts: ta.Iterable[str] | None = None
 
@@ -34,37 +46,60 @@ class Field:
     unmarshaler_factory: UnmarshalerFactory | None = None
 
 
+##
+
+
 @dc.dataclass(frozen=True)
 class FieldInfo:
     field: dc.Field
     type: ta.Any
-    metadata: Field
+    metadata: FieldMetadata
 
     marshal_name: str
     unmarshal_names: ta.Sequence[str]
 
 
+def name_field(n: str, e: FieldNaming) -> str:
+    if e is FieldNaming.SNAKE:
+        return lang.snake_case(n)
+    if e is FieldNaming.CAMEL:
+        return lang.camel_case(n)
+    raise ValueError(e)
+
+
 def get_field_infos(ty: type, opts: col.TypeMap[Option] = col.TypeMap()) -> ta.Sequence[FieldInfo]:
+    dc_md = check.optional_single(
+        e
+        for e in dc.get_merged_metadata(ty).get(dc.UserMetadata, [])
+        if isinstance(e, DataclassMetadata)
+    ) or DataclassMetadata()
+    dc_naming = dc_md.field_naming or opts.get(FieldNaming)
+
     type_hints = ta.get_type_hints(ty)
 
     ret: list[FieldInfo] = []
     for field in dc.fields(ty):
+        if (f_naming := field.metadata.get(FieldNaming, dc_naming)) is not None:
+            um_name = name_field(field.name, f_naming)
+        else:
+            um_name = field.name
+
         kw = dict(
             field=field,
             type=type_hints[field.name],
-            metadata=Field(),
+            metadata=FieldMetadata(),
 
-            marshal_name=field.name,
-            unmarshal_names=[field.name],
+            marshal_name=um_name,
+            unmarshal_names=[um_name],
         )
 
-        if (metadata := field.metadata.get(Field)) is not None:
-            kw.update(metadata=metadata)
+        if (fmd := field.metadata.get(FieldMetadata)) is not None:
+            kw.update(metadata=fmd)
 
-            if metadata.name is not None:
+            if fmd.name is not None:
                 kw.update(
-                    marshal_name=metadata.name,
-                    unmarshal_names=col.unique([metadata.name, *(metadata.alts or ())]),
+                    marshal_name=fmd.name,
+                    unmarshal_names=col.unique([fmd.name, *(fmd.alts or ())]),
                 )
 
         ret.append(FieldInfo(**kw))
