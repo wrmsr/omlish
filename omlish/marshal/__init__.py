@@ -24,6 +24,11 @@ from .dataclasses import (  # noqa
     FieldMetadata,
 )
 
+from .global_ import (  # noqa
+    marshal,
+    unmarshal,
+)
+
 from .registries import (  # noqa
     Registry,
 )

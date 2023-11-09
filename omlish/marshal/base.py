@@ -75,7 +75,7 @@ UnmarshalerFactory = Factory[Unmarshaler, 'UnmarshalContext', rfl.Type]
 
 
 @dc.dataclass(frozen=True)
-class FuncMarshaler(Marshaler):
+class FuncMarshaler(Marshaler, lang.Final):
     fn: ta.Callable[['MarshalContext', ta.Any], Value]
 
     def marshal(self, ctx: 'MarshalContext', o: ta.Any) -> Value:
@@ -83,7 +83,7 @@ class FuncMarshaler(Marshaler):
 
 
 @dc.dataclass(frozen=True)
-class FuncUnmarshaler(Unmarshaler):
+class FuncUnmarshaler(Unmarshaler, lang.Final):
     fn: ta.Callable[['UnmarshalContext', Value], ta.Any]
 
     def unmarshal(self, ctx: 'UnmarshalContext', v: Value) -> ta.Any:
@@ -107,7 +107,7 @@ class BaseContext(lang.Abstract):
 
 
 @dc.dataclass(frozen=True)
-class MarshalContext(BaseContext):
+class MarshalContext(BaseContext, lang.Final):
     factory: ta.Optional[MarshalerFactory] = None
 
     def make(self, o: ta.Any) -> Marshaler:
@@ -118,7 +118,7 @@ class MarshalContext(BaseContext):
 
 
 @dc.dataclass(frozen=True)
-class UnmarshalContext(BaseContext):
+class UnmarshalContext(BaseContext, lang.Final):
     factory: ta.Optional[UnmarshalerFactory] = None
 
     def make(self, o: ta.Any) -> Unmarshaler:
@@ -136,7 +136,7 @@ class _ProxyMarshaler(_Proxy[Marshaler], Marshaler):
         return self._obj.marshal(ctx, o)
 
 
-class RecursiveMarshalerFactory(RecursiveTypeFactory[Marshaler, MarshalContext]):
+class RecursiveMarshalerFactory(RecursiveTypeFactory[Marshaler, MarshalContext], lang.Final):
     def __init__(self, f: MarshalerFactory) -> None:
         super().__init__(f, _ProxyMarshaler._new)  # noqa
 
@@ -146,7 +146,7 @@ class _ProxyUnmarshaler(_Proxy[Unmarshaler], Unmarshaler):
         return self._obj.unmarshal(ctx, v)
 
 
-class RecursiveUnmarshalerFactory(RecursiveTypeFactory[Unmarshaler, UnmarshalContext]):
+class RecursiveUnmarshalerFactory(RecursiveTypeFactory[Unmarshaler, UnmarshalContext], lang.Final):
     def __init__(self, f: UnmarshalerFactory) -> None:
         super().__init__(f, _ProxyUnmarshaler._new)  # noqa
 
@@ -155,7 +155,7 @@ class RecursiveUnmarshalerFactory(RecursiveTypeFactory[Unmarshaler, UnmarshalCon
 
 
 @dc.dataclass(frozen=True)
-class SetType(RegistryItem):
+class SetType(RegistryItem, lang.Final):
     marshaler: ta.Optional[Marshaler] = None
     marshaler_factory: ta.Optional[MarshalerFactory] = None
 
