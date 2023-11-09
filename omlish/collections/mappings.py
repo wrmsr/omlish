@@ -48,19 +48,49 @@ def yield_dict_init(*args, **kwargs) -> ta.Iterable[tuple[ta.Any, ta.Any]]:
         yield (k, v)
 
 
-class ItemSeqTypeMap(ta.Generic[T]):
+class TypeMap(ta.Generic[T]):
 
-    def __init__(self, items: ta.Iterable[T], *, weak: bool = False) -> None:
+    def __init__(self, items: ta.Iterable[T] = ()) -> None:
+        super().__init__()
+
+        self._items = list(items)
+        dct: dict[type, ta.Any] = {}
+        for item in items:
+            if (ty := type(item)) in dct:
+                raise ValueError(ty)
+            dct[ty] = item
+        self._dct = dct
+
+    @property
+    def items(self) -> ta.Sequence[T]:
+        return self._items
+
+    def __len__(self) -> int:
+        return len(self._items)
+
+    def __iter__(self) -> ta.Iterable[T]:
+        return iter(self._items)
+
+    def get(self, ty: type[T]) -> ta.Optional[T]:
+        return self._dct.get(ty)
+
+    def __getitem__(self, ty: type[T]) -> ta.Sequence[T]:
+        return self._dct[ty]
+
+
+class TypeMultiMap(ta.Generic[V]):
+
+    def __init__(self, items: ta.Iterable[V] = (), *, weak: bool = False) -> None:
         super().__init__()
 
         self._items = list(items)
         self._weak = bool(weak)
 
-        self._cache: ta.MutableMapping[ta.Type[T], ta.Sequence[T]] = \
+        self._cache: ta.MutableMapping[type, ta.Sequence[V]] = \
             weakref.WeakKeyDictionary() if weak else {}  # type: ignore
 
     @property
-    def items(self) -> ta.Sequence[T]:
+    def items(self) -> ta.Sequence[V]:
         return self._items
 
     @property
@@ -70,18 +100,18 @@ class ItemSeqTypeMap(ta.Generic[T]):
     def __len__(self) -> int:
         return len(self._items)
 
-    def __iter__(self) -> ta.Iterable[T]:
+    def __iter__(self) -> ta.Iterable[V]:
         return iter(self._items)
 
-    def __getitem__(self, cls: ta.Type[T]) -> ta.Sequence[T]:
+    def __getitem__(self, ty: type[T]) -> ta.Sequence[T]:
         try:
-            return self._cache[cls]
+            return self._cache[ty]
         except KeyError:
             ret = []
             for item in self._items:
-                if isinstance(item, cls):
+                if isinstance(item, ty):
                     ret.append(item)
-            self._cache[cls] = ret
+            self._cache[ty] = ret
             return ret
 
 

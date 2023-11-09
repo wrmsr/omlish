@@ -55,7 +55,7 @@ class ScheduleItem:
 # **************** for Interpreted Buffers ****************
 
 
-class ASTExecutor(lang.Abstract):
+class AstExecutor(lang.Abstract):
 
     @abc.abstractmethod
     def exec_ast(
@@ -70,7 +70,7 @@ class ASTExecutor(lang.Abstract):
         raise NotImplementedError
 
 
-class Interpreted(ASTExecutor):
+class Interpreted(AstExecutor):
     def __init__(
             self,
             buffer,
@@ -240,7 +240,7 @@ def get_lazyop_info(ast: LazyOp) -> OpInfo:
 # **************** for Compiled Buffers ****************
 
 
-class ASTRunner:
+class AstRunner:
     def __init__(
             self,
             name: str,
@@ -266,7 +266,7 @@ class ASTRunner:
 
     @staticmethod
     def from_linearizer(k, src: str):
-        return ASTRunner(
+        return AstRunner(
             k.function_name,
             src,
             k.global_size, k.local_size,
@@ -377,7 +377,7 @@ class ASTRunner:
         return et
 
 
-class Compiled(ASTExecutor):
+class Compiled(AstExecutor):
     def __init__(
             self,
             buffer: type[RawBuffer],
@@ -394,13 +394,13 @@ class Compiled(ASTExecutor):
         self.runtime = runtime
         self.compiler = compiler
         self.synchronize = synchronize
-        self.method_cache: dict[LazyOp, ASTRunner] = {}
+        self.method_cache: dict[LazyOp, AstRunner] = {}
 
-    def to_program(self, k: Linearizer) -> ASTRunner:
+    def to_program(self, k: Linearizer) -> AstRunner:
         k.linearize()
 
         src, runtime_args = self.renderer(k.function_name, k.uops)
-        return ASTRunner(
+        return AstRunner(
             k.function_name,
             src,
             k.global_size,

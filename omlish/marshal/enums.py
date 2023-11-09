@@ -15,7 +15,7 @@ from .values import Value
 
 @dc.dataclass(frozen=True)
 class EnumMarshaler(Marshaler):
-    ty: ta.Type[enum.Enum]
+    ty: type[enum.Enum]
 
     def marshal(self, ctx: MarshalContext, o: ta.Any) -> Value:
         return o.name
@@ -30,7 +30,7 @@ class EnumMarshalerFactory(MarshalerFactory):
 
 @dc.dataclass(frozen=True)
 class EnumUnmarshaler(Unmarshaler):
-    ty: ta.Type[enum.Enum]
+    ty: type[enum.Enum]
 
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any:
         return self.ty[check.isinstance(v, str)]

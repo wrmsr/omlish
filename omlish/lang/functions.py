@@ -27,7 +27,7 @@ def raise_(o: BaseException) -> ta.NoReturn:
 
 
 def try_(
-        exc: ta.Union[ta.Type[Exception], ta.Iterable[ta.Type[Exception]]] = Exception,
+        exc: ta.Union[type[Exception], ta.Iterable[type[Exception]]] = Exception,
         default: ta.Optional[T] = None,
 ) -> ta.Callable[..., T]:
     def outer(fn):

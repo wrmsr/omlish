@@ -49,9 +49,9 @@ class Var(ta.Generic[T]):
 
     def __init__(
             self,
-            default: ta.Union[T, ta.Type[MISSING]] = MISSING,  # type: ignore
+            default: ta.Union[type[MISSING]] = MISSING,  # type: ignore
             *,
-            new: ta.Union[ta.Callable[[], T], ta.Type[MISSING]] = MISSING,
+            new: ta.Union[ta.Callable[[], T], type[MISSING]] = MISSING,
             validate: ta.Optional[ta.Callable[[T], None]] = None,
     ) -> None:
         super().__init__()
@@ -60,7 +60,7 @@ class Var(ta.Generic[T]):
             raise TypeError('Cannot set both default and new')
         elif default is not MISSING:
             new = lambda: default  # type: ignore
-        self._new: ta.Union[ta.Type[MISSING], ta.Callable[[], T]] = new
+        self._new: ta.Union[type[MISSING], ta.Callable[[], T]] = new
         self._validate = validate
         self._bindings_by_frame: ta.MutableMapping[types.FrameType, ta.MutableMapping[int, Binding]] = weakref.WeakValueDictionary()  # noqa
 

@@ -19,13 +19,28 @@ DATE_FORMATS = [
 
 
 TIME_FORMATS = [
-    '%H:%M:%S.%f',
-    '%H:%M:%S',
-    '%H:%M',
+    ' '.join([tp, *tz])
+    for tp in [
+        '%H:%M:%S.%f',
+        '%H:%M:%S',
+        '%H:%M',
+    ]
+    for tz in [
+        [],
+        ['%z'],
+        ['%Z'],
+        ['%z', '%Z'],
+        ['%Z', '%z'],
+    ]
 ]
 
+SEPS = ['T', ' ']
+
 DATETIME_FORMATS = [
-    'T'.join([DATE_FORMATS[0], TIME_FORMATS[0]])
+    s.join([df, tf])
+    for s in SEPS
+    for df in DATE_FORMATS
+    for tf in TIME_FORMATS
 ]
 
 
