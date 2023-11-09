@@ -154,6 +154,19 @@ def single(obj: ta.Iterable[T], message: Message = None) -> T:
         return value
 
 
+def optional_single(obj: ta.Iterable[T], message: Message = None) -> ta.Optional[T]:
+    it = iter(obj)
+    try:
+        value = next(it)
+    except StopIteration:
+        return None
+    try:
+        next(it)
+    except StopIteration:
+        return value  # noqa
+    _raise(ValueError, 'Must be empty or single', message, obj)
+
+
 ##
 
 

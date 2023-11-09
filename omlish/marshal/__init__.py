@@ -19,7 +19,9 @@ from .base import (  # noqa
 )
 
 from .dataclasses import (  # noqa
-    Field,
+    FieldNaming,
+    DataclassMetadata,
+    FieldMetadata,
 )
 
 from .registries import (  # noqa

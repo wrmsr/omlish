@@ -10,7 +10,7 @@ Metadata: ta.TypeAlias = ta.Mapping[ta.Any, ta.Any]
 
 EMPTY_METADATA: Metadata = types.MappingProxyType({})
 
-_CLASS_MERGED_KEYS: set = set()
+_CLASS_MERGED_KEYS: set[str] = set()
 CLASS_MERGED_KEYS: ta.AbstractSet = _CLASS_MERGED_KEYS
 
 
@@ -33,8 +33,21 @@ def get_merged_metadata(obj: ta.Any) -> Metadata:
     return dct
 
 
-def _add_cls_md(k, v):
+def _append_cls_md(k, v):
     lang.get_caller_cls_dct(1).setdefault(METADATA_ATTR, {}).setdefault(k, []).append(v)
+
+
+##
+
+
+@_class_merged
+class UserMetadata(lang.Marker):
+    pass
+
+
+@lang.cls_dct_fn()
+def metadata(cls_dct, *args) -> None:
+    cls_dct.setdefault(METADATA_ATTR, {}).setdefault(UserMetadata, []).extend(args)
 
 
 ##
@@ -46,7 +59,7 @@ class Check(lang.Marker):
 
 
 def check(fn: ta.Union[ta.Callable[..., bool], staticmethod]) -> None:
-    _add_cls_md(Check, fn)
+    _append_cls_md(Check, fn)
 
 
 ##
@@ -58,4 +71,4 @@ class Init(lang.Marker):
 
 
 def init(fn: ta.Callable[..., None]) -> None:
-    _add_cls_md(Init, fn)
+    _append_cls_md(Init, fn)

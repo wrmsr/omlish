@@ -61,6 +61,11 @@ from .impl.metaclass import (  # noqa
 )
 
 from .impl.metadata import (  # noqa
+    get_merged_metadata,
+
+    UserMetadata,
+    metadata,
+
     Check,
     check,
 

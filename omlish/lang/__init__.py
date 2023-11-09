@@ -46,5 +46,5 @@ from .objects import arg_repr  # noqa
 from .objects import attr_repr  # noqa
 from .objects import new_type  # noqa
 from .objects import super_meta  # noqa
-from .strings import to_camel  # noqa
-from .strings import to_snake  # noqa
+from .strings import camel_case  # noqa
+from .strings import snake_case  # noqa
