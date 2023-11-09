@@ -20,7 +20,7 @@ _callable = callable
 ##
 
 
-def _default_exception_factory(exc_cls: ta.Type[Exception], *args, **kwargs) -> Exception:
+def _default_exception_factory(exc_cls: type[Exception], *args, **kwargs) -> Exception:
     return exc_cls(*args, **kwargs)  # noqa
 
 
@@ -28,7 +28,7 @@ _EXCEPTION_FACTORY = _default_exception_factory
 
 
 def _raise(
-        exception_type: ta.Type[Exception],
+        exception_type: type[Exception],
         default_message: str,
         message: Message,
         *args: ta.Any,
@@ -57,26 +57,26 @@ def _unpack_isinstance_spec(spec: ta.Any) -> tuple:
     return spec
 
 
-def isinstance(v: ta.Any, spec: ta.Union[ta.Type[T], tuple], msg: Message = None) -> T:  # noqa
+def isinstance(v: ta.Any, spec: ta.Union[type[T], tuple], msg: Message = None) -> T:  # noqa
     if not _isinstance(v, _unpack_isinstance_spec(spec)):
         _raise(TypeError, 'Must be instance', msg, v, spec)
     return v
 
 
-def of_isinstance(spec: ta.Union[ta.Type[T], tuple], msg: Message = None) -> ta.Callable[[ta.Any], T]:
+def of_isinstance(spec: ta.Union[type[T], tuple], msg: Message = None) -> ta.Callable[[ta.Any], T]:
     def inner(v):
         return isinstance(v, _unpack_isinstance_spec(spec), msg)
 
     return inner
 
 
-def cast(v: ta.Any, cls: ta.Type[T], msg: Message = None) -> T:  # noqa
+def cast(v: ta.Any, cls: type[T], msg: Message = None) -> T:  # noqa
     if not _isinstance(v, cls):
         _raise(TypeError, 'Must be instance', msg, v, cls)
     return v
 
 
-def of_cast(cls: ta.Type[T], msg: Message = None) -> ta.Callable[[T], T]:
+def of_cast(cls: type[T], msg: Message = None) -> ta.Callable[[T], T]:
     def inner(v):
         return isinstance(v, cls, msg)
 
@@ -99,13 +99,13 @@ def of_not_isinstance(spec: ta.Any, msg: Message = None) -> ta.Callable[[T], T]:
 ##
 
 
-def issubclass(v: ta.Type[T], spec: ta.Any, msg: Message = None) -> ta.Type[T]:  # noqa
+def issubclass(v: type[T], spec: ta.Any, msg: Message = None) -> type[T]:  # noqa
     if not _issubclass(v, spec):
         _raise(TypeError, 'Must be subclass', msg, v, spec)
     return v
 
 
-def not_issubclass(v: ta.Type[T], spec: ta.Any, msg: Message = None) -> ta.Type[T]:  # noqa
+def not_issubclass(v: type[T], spec: ta.Any, msg: Message = None) -> type[T]:  # noqa
     if _issubclass(v, spec):
         _raise(TypeError, 'Must not be subclass', msg, v, spec)
     return v

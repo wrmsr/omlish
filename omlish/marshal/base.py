@@ -40,6 +40,8 @@ import dataclasses as dc
 import typing as ta
 
 from .. import check
+from .. import collections as col
+from .. import lang
 from .. import reflect as rfl
 from .exceptions import UnhandledTypeException
 from .factories import Factory
@@ -53,13 +55,13 @@ from .values import Value
 ##
 
 
-class Marshaler(abc.ABC):
+class Marshaler(lang.Abstract):
     @abc.abstractmethod
     def marshal(self, ctx: 'MarshalContext', o: ta.Any) -> Value:
         raise NotImplementedError
 
 
-class Unmarshaler(abc.ABC):
+class Unmarshaler(lang.Abstract):
     @abc.abstractmethod
     def unmarshal(self, ctx: 'UnmarshalContext', v: Value) -> ta.Any:
         raise NotImplementedError
@@ -92,8 +94,17 @@ class FuncUnmarshaler(Unmarshaler):
 
 
 @dc.dataclass(frozen=True)
-class BaseContext(abc.ABC):
+class Option(lang.Abstract):
+    pass
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class BaseContext(lang.Abstract):
     registry: Registry
+    options: col.TypeMap[Option] = col.TypeMap()
 
 
 @dc.dataclass(frozen=True)

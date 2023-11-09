@@ -214,7 +214,7 @@ class BasicTreeAnalysis(ta.Generic[NodeT]):
     def _node_sets_by_type(self) -> ta.MutableMapping[type, ta.AbstractSet[NodeT]]:
         return weakref.WeakKeyDictionary()
 
-    def get_node_type_set(self, ty: ta.Type[T]) -> ta.AbstractSet[T]:
+    def get_node_type_set(self, ty: type[T]) -> ta.AbstractSet[T]:
         try:
             return self._node_sets_by_type[ty]  # type: ignore
         except KeyError:
@@ -232,7 +232,7 @@ class BasicTreeAnalysis(ta.Generic[NodeT]):
     def get_lineage(self, node: NodeT) -> col.IndexedSeq[NodeT]:
         return self._idx_seq_fac(reversed([node, *self.iter_ancestors(node)]))
 
-    def get_first_parent_of_type(self, node: NodeT, ty: ta.Type[T]) -> ta.Optional[T]:
+    def get_first_parent_of_type(self, node: NodeT, ty: type[T]) -> ta.Optional[T]:
         for cur in self.iter_ancestors(node):
             if isinstance(cur, ty):
                 return cur
