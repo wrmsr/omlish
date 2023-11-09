@@ -17,7 +17,6 @@ DATE_FORMATS = [
     '%Y-%m-%d',
 ]
 
-
 TIME_FORMATS = [
     ' '.join([tp, *tz])
     for tp in [
@@ -25,13 +24,13 @@ TIME_FORMATS = [
         '%H:%M:%S',
         '%H:%M',
     ]
-    for tz in [
+    for tz in ta.cast(list[list[str]], [
         [],
         ['%z'],
         ['%Z'],
         ['%z', '%Z'],
         ['%Z', '%z'],
-    ]
+    ])
 ]
 
 SEPS = ['T', ' ']
