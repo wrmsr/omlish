@@ -49,7 +49,7 @@ class Var(ta.Generic[T]):
 
     def __init__(
             self,
-            default: ta.Union[type[MISSING]] = MISSING,  # type: ignore
+            default: ta.Union[type[MISSING], T] = MISSING,  # type: ignore
             *,
             new: ta.Union[ta.Callable[[], T], type[MISSING]] = MISSING,
             validate: ta.Optional[ta.Callable[[T], None]] = None,

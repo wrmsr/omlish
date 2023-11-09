@@ -66,7 +66,7 @@ def test_var():
 
 
 def test_cm():
-    v = dyn.Var(420)
+    v: dyn.Var[int] = dyn.Var(420)
 
     @dyn.contextmanager
     def cm():
