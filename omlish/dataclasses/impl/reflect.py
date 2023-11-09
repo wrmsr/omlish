@@ -18,14 +18,14 @@ TypeT = ta.TypeVar('TypeT', bound=type, covariant=True)
 
 class ClassInfo(ta.Generic[TypeT]):
 
-    def __init__(self, cls: ta.Type[TypeT]) -> None:
+    def __init__(self, cls: type[TypeT]) -> None:
         check.isinstance(cls, type)
         check.arg(dc.is_dataclass(cls))
         super().__init__()
         self._cls = cls
 
     @property
-    def cls(self) -> ta.Type[TypeT]:
+    def cls(self) -> type[TypeT]:
         return self._cls
 
     @cached.property

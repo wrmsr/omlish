@@ -18,7 +18,7 @@ RegistryItemT = ta.TypeVar('RegistryItemT', bound=RegistryItem)
 class _TypeRegistry:
     rty: rfl.Type
     items: list[RegistryItem] = dc.field(default_factory=list)
-    item_lists_by_ty: dict[ta.Type[RegistryItem], list[RegistryItem]] = dc.field(default_factory=dict)
+    item_lists_by_ty: dict[type[RegistryItem], list[RegistryItem]] = dc.field(default_factory=dict)
 
     def add(self, *items: RegistryItem) -> None:
         for i in items:
@@ -48,7 +48,7 @@ class Registry:
         except KeyError:
             return ()
 
-    def get_of(self, rty: rfl.Type, item_ty: ta.Type[RegistryItemT]) -> ta.Sequence[RegistryItemT]:
+    def get_of(self, rty: rfl.Type, item_ty: type[RegistryItemT]) -> ta.Sequence[RegistryItemT]:
         check.isinstance(rty, rfl.TYPES)
         try:
             sr = self._dct[rty]

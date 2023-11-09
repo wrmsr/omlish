@@ -5,9 +5,9 @@ import typing as ta
 from ..base import MarshalContext
 from ..base import UnmarshalContext
 from ..registries import Registry
-from .foox import Foox
 from ..standard import new_standard_marshaler_factory
 from ..standard import new_standard_unmarshaler_factory
+from .foox import Foox
 
 
 class E(enum.Enum):
