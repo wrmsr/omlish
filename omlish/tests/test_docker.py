@@ -47,7 +47,12 @@ class PsItem(lang.Final):
 
 
 def cli_ps() -> list[PsItem]:
-    o = cli_cmd(['docker', 'ps', '--format', '{{json .}}'])
+    o = cli_cmd([
+        'docker',
+        'ps',
+        '--no-trunc',
+        '--format', '{{json .}}',
+    ])
 
     ret: list[PsItem] = []
     for l in o.decode().splitlines():

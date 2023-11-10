@@ -2,6 +2,18 @@ version: '3'
 
 services:
 
+  omlish-mysql:
+    image: 'mysql:8'
+    restart: 'unless-stopped'
+    environment:
+      MYSQL_USER: 'omlish'
+      MYSQL_PASSWORD: 'omlish'
+      MYSQL_ROOT_PASSWORD: 'omlish'
+    expose:
+      - '3306'
+    ports:
+      - '34230:3306'
+
   omlish-postgres:
     image: 'postgres:15.3'
     restart: 'unless-stopped'
