@@ -4,6 +4,8 @@ import typing as ta
 
 from ..base import MarshalContext
 from ..base import UnmarshalContext
+from ..global_ import marshal
+from ..global_ import unmarshal
 from ..registries import Registry
 from ..standard import new_standard_marshaler_factory
 from ..standard import new_standard_unmarshaler_factory
@@ -51,4 +53,8 @@ def test_marshal():
         print(uobj)
     print()
 
-    print(uc.make(ta.Any).unmarshal(420))
+    print(uc.make(ta.Any).unmarshal(uc, 420))
+
+
+def test_marshal2():
+    print(marshal([4, 20]))

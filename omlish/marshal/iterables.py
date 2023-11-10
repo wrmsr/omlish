@@ -28,15 +28,20 @@ class IterableMarshalerFactory(MarshalerFactory):
             if (e := ctx.make(check.single(rty.args))) is None:
                 return None  # type: ignore
             return IterableMarshaler(e)
+        if rty is list:
+            if (e := ctx.make(ta.Any)) is None:
+                return None  # type: ignore
+            return IterableMarshaler(e)
         return None
 
 
 @dc.dataclass(frozen=True)
 class IterableUnmarshaler(Unmarshaler):
+    ctor: ta.Callable[[ta.Iterable[ta.Any]], ta.Iterable]
     e: Unmarshaler
 
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Iterable:
-        return list(map(functools.partial(self.e.unmarshal, ctx), check.isinstance(v, collections.abc.Iterable)))
+        return self.ctor(map(functools.partial(self.e.unmarshal, ctx), check.isinstance(v, collections.abc.Iterable)))
 
 
 class IterableUnmarshalerFactory(UnmarshalerFactory):
@@ -44,5 +49,5 @@ class IterableUnmarshalerFactory(UnmarshalerFactory):
         if isinstance(rty, rfl.Generic) and rty.cls is list:
             if (e := ctx.make(check.single(rty.args))) is None:
                 return None  # type: ignore
-            return IterableUnmarshaler(e)
+            return IterableUnmarshaler(list, e)
         return None
