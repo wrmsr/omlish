@@ -50,3 +50,5 @@ def test_marshal():
         uobj = uc.make(type(obj)).unmarshal(uc, mobj)
         print(uobj)
     print()
+
+    print(uc.make(ta.Any).unmarshal(420))

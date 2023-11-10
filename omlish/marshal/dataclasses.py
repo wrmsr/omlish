@@ -70,12 +70,16 @@ def name_field(n: str, e: FieldNaming) -> str:
     raise ValueError(e)
 
 
-def get_field_infos(ty: type, opts: col.TypeMap[Option] = col.TypeMap()) -> ta.Sequence[FieldInfo]:
-    dc_md = check.optional_single(
+def get_dataclass_metadata(ty: type) -> DataclassMetadata:
+    return check.optional_single(
         e
         for e in dc.get_merged_metadata(ty).get(dc.UserMetadata, [])
         if isinstance(e, DataclassMetadata)
     ) or DataclassMetadata()
+
+
+def get_field_infos(ty: type, opts: col.TypeMap[Option] = col.TypeMap()) -> ta.Sequence[FieldInfo]:
+    dc_md = get_dataclass_metadata(ty)
     dc_naming = dc_md.field_naming or opts.get(FieldNaming)
 
     type_hints = ta.get_type_hints(ty)
@@ -150,14 +154,19 @@ class DataclassMarshalerFactory(MarshalerFactory):
 class DataclassUnmarshaler(Unmarshaler):
     cls: type
     fields_by_unmarshal_name: ta.Mapping[str, tuple[FieldInfo, Unmarshaler]]
+    unknown_field: str | None = None
 
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any:
         ma = check.isinstance(v, collections.abc.Mapping)
+        u = {} if self.unknown_field is not None else None
         kw = {}
         for k, mv in ma.items():
             try:
                 fi, u = self.fields_by_unmarshal_name[k]
             except KeyError:
+                # FIXME:
+                # if u is not None:
+                #     u[k] =
                 continue
             if fi.field.name in kw:
                 raise KeyError(f'Duplicate keys for field {fi.field.name!r}: {k!r}')
@@ -168,6 +177,7 @@ class DataclassUnmarshaler(Unmarshaler):
 class DataclassUnmarshalerFactory(UnmarshalerFactory):
     def __call__(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Optional[Unmarshaler]:
         if isinstance(rty, type) and dc.is_dataclass(rty):
+            dc_md = get_dataclass_metadata(rty)
             d: dict[str, tuple[FieldInfo, Unmarshaler]] = {}
             for fi in get_field_infos(rty, ctx.options):
                 tup = (fi, _make_field_obj(ctx, fi.type, fi.metadata.unmarshaler, fi.metadata.unmarshaler_factory))
