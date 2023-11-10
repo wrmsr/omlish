@@ -1,5 +1,6 @@
 import datetime
 import subprocess
+import typing as ta
 
 from .. import check
 from .. import dataclasses as dc
@@ -24,6 +25,7 @@ def cli_cmd(*args) -> bytes:
 class PsItem(lang.Final):
     dc.metadata(msh.DataclassMetadata(
         field_naming=msh.FieldNaming.CAMEL,
+        unknown_field='x',
     ))
 
     command: str
@@ -40,6 +42,8 @@ class PsItem(lang.Final):
     size: str
     state: str
     status: str
+
+    x: ta.Mapping[str, ta.Any] | None = None
 
 
 def cli_ps() -> list[PsItem]:
@@ -58,10 +62,13 @@ def cli_ps() -> list[PsItem]:
 class Inspect(lang.Final):
     dc.metadata(msh.DataclassMetadata(
         field_naming=msh.FieldNaming.CAMEL,
+        unknown_field='x',
     ))
 
     id: str
     created: datetime.datetime
+
+    x: ta.Mapping[str, ta.Any] | None = None
 
 
 def cli_inspect(ids: list[str]) -> list[Inspect]:
@@ -72,6 +79,7 @@ def cli_inspect(ids: list[str]) -> list[Inspect]:
 def test_docker():
     pis = cli_ps()
     print(json.dumps_pretty(msh.marshal(pis, list[PsItem])))
+    print(json.dumps_pretty(msh.marshal(pis)))
 
     iis = cli_inspect([pi.id for pi in pis])
     print(json.dumps_pretty(msh.marshal(iis, list[Inspect])))
