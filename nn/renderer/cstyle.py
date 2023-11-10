@@ -57,6 +57,10 @@ class CStyleLanguage(ta.NamedTuple):
             return f"({var_dtype.name})({x[0]})"
         assert len(x) == var_dtype.sz, f"cast is wrong size {len(x)} != {var_dtype.sz}"
         assert self.float4 is not None, "cast is not supported on this platform"
+        if var_dtype == dtypes._half16:
+            return f"{{{','.join(f'(half){x}' for x in x)}}}"
+        if var_dtype == dtypes._float8:
+            return f"{{{','.join(x)}}}"
         if var_dtype == dtypes._float4:
             return f"{self.float4}({','.join(x)})"
         if var_dtype == dtypes._float2:
@@ -216,24 +220,21 @@ def uops_to_cstyle(lang: CStyleLanguage, function_name: str, uops: list[uo.UOp])
             kk("}")
 
         elif isinstance(u, uo.Wmma):
+            assert u.dtype == dtypes._float2, "output dtype of METAL TC is _float2"
             if u.arg[0] == "METAL":
                 # ((lidx2*32)+(lidx3*4)+(lidx4*16)+(lidx5*8)+(lidx6*2))
+                output = ssa(u, 'wmma')
+                kk(f"{lang.generic_var_prefix if lang.generic_var_prefix else u.dtype.name} {output};")
                 kk("{ simdgroup_float8x8 a,b,c;")
                 kk(f"a.thread_elements()[0] = {r[u.vin[0]]}; a.thread_elements()[1] = {r[u.vin[1]]};")
                 kk(f"b.thread_elements()[0] = {r[u.vin[2]]}; b.thread_elements()[1] = {r[u.vin[3]]};")
                 kk(f"c.thread_elements()[0] = {r[u.vin[4]]}; c.thread_elements()[1] = {r[u.vin[5]]};")
                 kk("simdgroup_multiply_accumulate(c, a, b, c);")
-                kk(f"{r[u.vin[4]]} = c.thread_elements()[0]; {r[u.vin[5]]} = c.thread_elements()[1]; }}")
+                kk(f"{output}.x = c.thread_elements()[0]; {output}.y = c.thread_elements()[1]; }}")
 
             elif u.arg[0] == "HIP":
-                kk("{")
-                kk(f"half16 a_frag = {{ {','.join(['(half)'+r[x] for x in u.vin[0:16]])} }};")
-                kk(f"half16 b_frag = {{ {','.join(['(half)'+r[x] for x in u.vin[16:32]])} }};")
-                kk(f"float8 c_frag = {{ {','.join([r[x] for x in u.vin[32:]])} }};")
-                kk("c_frag = __builtin_amdgcn_wmma_f32_16x16x16_f16_w32(a_frag, b_frag, c_frag);")
-                for i in range(8):
-                    kk(f"{r[u.vin[32+i]]} = c_frag[{i}];")
-                kk("}")
+                assert u.dtype == dtypes._float8, "output dtype of HIP TC is _float8"
+                kk(f"{lang.generic_var_prefix if lang.generic_var_prefix else u.dtype.name} {ssa(u, 'wmma')} = __builtin_amdgcn_wmma_f32_16x16x16_f16_w32({r[u.vin[0]]}, {r[u.vin[1]]}, {r[u.vin[2]]});")
 
             else:
                 raise NotImplementedError(f"WMMA not implemented for {u.arg}")
@@ -335,6 +336,10 @@ def uops_to_cstyle(lang: CStyleLanguage, function_name: str, uops: list[uo.UOp])
             r[u] = u.arg[0]
 
         elif isinstance(u, uo.Gep):
+            if ta.cast(DType, u.vin[0].dtype).sz > 4:
+                r[u] = f"({r[u.vin[0]]})[{u.arg}]"  # this is correct for HIP
+            else:
+                r[u] = f"({r[u.vin[0]]}).{'xyzw'[u.arg]}"
             r[u] = f"({r[u.vin[0]]}).{'xyzw'[u.arg]}"
 
         else:
