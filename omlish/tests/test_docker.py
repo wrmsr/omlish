@@ -25,7 +25,7 @@ def cli_cmd(*args) -> bytes:
 class PsItem(lang.Final):
     dc.metadata(msh.DataclassMetadata(
         field_naming=msh.FieldNaming.CAMEL,
-        unknown_field='x',
+        # unknown_field='x',
     ))
 
     command: str
@@ -43,7 +43,7 @@ class PsItem(lang.Final):
     state: str
     status: str
 
-    x: ta.Mapping[str, ta.Any] | None = None
+    # x: ta.Mapping[str, ta.Any] | None = None
 
 
 def cli_ps() -> list[PsItem]:
@@ -62,13 +62,13 @@ def cli_ps() -> list[PsItem]:
 class Inspect(lang.Final):
     dc.metadata(msh.DataclassMetadata(
         field_naming=msh.FieldNaming.CAMEL,
-        unknown_field='x',
+        # unknown_field='x',
     ))
 
     id: str
     created: datetime.datetime
 
-    x: ta.Mapping[str, ta.Any] | None = None
+    # x: ta.Mapping[str, ta.Any] | None = None
 
 
 def cli_inspect(ids: list[str]) -> list[Inspect]:
