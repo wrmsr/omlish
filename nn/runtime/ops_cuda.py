@@ -116,13 +116,19 @@ else:
     import pycuda.driver as cuda  # type: ignore
 
     class CudaAllocator(LruAllocator):
+        def __init__(self):
+            super().__init__(self._get_cur_free_space(None))
+
         def _do_alloc(self, size, dtype, device, **kwargs):
             return cuda.mem_alloc(size * dtype.itemsize)  # type: ignore
 
         def _cached_bufkey(self, size, dtype, device):
             return (device, size * dtype.itemsize)  # Buffers of the same length could be reused, no matter what dtype.
 
-    CudaAlloc = CudaAllocator(pycuda.driver.Context.get_device().total_memory())
+        def _get_cur_free_space(self, device):
+            return cuda.mem_get_info()[0]  # type: ignore
+
+    CudaAlloc = CudaAllocator()  # type: ignore
 
     class RawCudaBuffer(RawBufferCopyInOut):  # type: ignore
         def __init__(self, size, dtype):
