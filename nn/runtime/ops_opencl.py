@@ -149,7 +149,7 @@ class ClBuffer(RawBufferCopyInOut, RawBufferTransfer):
             "image"
         ), f"can't copyout images {self.dtype}"
 
-        CL.cl_allocator.ensure_has_free_space(self.size, self.dtype, self._device)
+        CL.cl_allocator.ensure_has_free_space(self.size * self.dtype.itemsize, self._device)
 
         buf = cl.Buffer(
             CL.cl_ctxs[self._buf.device],
