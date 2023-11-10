@@ -52,7 +52,6 @@ class DatetimeMarshaler(Marshaler):
         return o.strftime(self.fmt)
 
 
-
 @dc.dataclass(frozen=True)
 class DatetimeUnmarshaler(Unmarshaler):
     fmts: ta.Sequence[str]

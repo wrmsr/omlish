@@ -16,6 +16,8 @@ from .factories import CompositeFactory
 from .factories import TypeCacheFactory
 from .iterables import IterableMarshalerFactory
 from .iterables import IterableUnmarshalerFactory
+from .mappings import MappingMarshalerFactory
+from .mappings import MappingUnmarshalerFactory
 from .optionals import OptionalMarshalerFactory
 from .optionals import OptionalUnmarshalerFactory
 from .primitives import PRIMITIVE_MARSHALER_FACTORY
@@ -35,6 +37,7 @@ STANDARD_MARSHALER_FACTORIES: list[MarshalerFactory] = [
     UUID_MARSHALER_FACTORY,
     BASE64_MARSHALER_FACTORY,
     DATETIME_MARSHALER_FACTORY,
+    MappingMarshalerFactory(),
     IterableMarshalerFactory(),
     ANY_MARSHALER_FACTORY,
 ]
@@ -61,6 +64,7 @@ STANDARD_UNMARSHALER_FACTORIES: list[UnmarshalerFactory] = [
     UUID_UNMARSHALER_FACTORY,
     BASE64_UNMARSHALER_FACTORY,
     DATETIME_UNMARSHALER_FACTORY,
+    MappingUnmarshalerFactory(),
     IterableUnmarshalerFactory(),
     ANY_UNMARSHALER_FACTORY,
 ]
