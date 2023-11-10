@@ -1,3 +1,5 @@
+from .any import ANY_MARSHALER_FACTORY
+from .any import ANY_UNMARSHALER_FACTORY
 from .base import MarshalerFactory
 from .base import RecursiveMarshalerFactory
 from .base import RecursiveUnmarshalerFactory
@@ -34,6 +36,7 @@ STANDARD_MARSHALER_FACTORIES: list[MarshalerFactory] = [
     BASE64_MARSHALER_FACTORY,
     DATETIME_MARSHALER_FACTORY,
     IterableMarshalerFactory(),
+    ANY_MARSHALER_FACTORY,
 ]
 
 
@@ -59,6 +62,7 @@ STANDARD_UNMARSHALER_FACTORIES: list[UnmarshalerFactory] = [
     BASE64_UNMARSHALER_FACTORY,
     DATETIME_UNMARSHALER_FACTORY,
     IterableUnmarshalerFactory(),
+    ANY_UNMARSHALER_FACTORY,
 ]
 
 
