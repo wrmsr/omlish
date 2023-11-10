@@ -23,6 +23,7 @@ type_map = {
     torch.float16: dtypes.float16,
     torch.float32: dtypes.float32,
     torch.int8: dtypes.int8,
+    torch.int16: dtypes.int16,
     torch.int32: dtypes.int32,
     torch.int64: dtypes.int64,
     torch.uint8: dtypes.uint8,
