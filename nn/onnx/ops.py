@@ -1,15 +1,16 @@
 import functools
+import io
 import math
 import os
 import typing as ta
 
 from onnx.helper import tensor_dtype_to_np_dtype
-from onnx.onnx_pb import TensorProto  # noqa
+from onnx import TensorProto
 import numpy as np
 
-from .. import ops
 from ..dtypes import ImageDType
 from ..dtypes import dtypes
+from ..helpers import flatten
 from ..helpers import prod
 from ..tensor import Tensor
 from .onnx import safe_numpy
@@ -212,6 +213,10 @@ def HardSigmoid(input: Tensor, alpha=0.2, beta=0.5):
 
 def HardSwish(input: Tensor):
     return input * HardSigmoid(input, 1 / 6, 0.5)
+
+
+def Gelu(x: Tensor, approximate=None):
+    return x.gelu() if approximate == "tanh" else 0.5 * x * (1 + Erf(x / math.sqrt(2)))
 
 
 def Celu(X: Tensor, alpha=1.0):
@@ -599,38 +604,53 @@ def _padding(
         strides=None,
         kernel_shape=None,
         dilations=None,
+        ceil_mode=0,
 ):
     if auto_pad != "NOTSET":
-        pads = _auto_pad(X, auto_pad, strides, kernel_shape, dilations)
+        pads = _auto_pad(X, auto_pad, strides, kernel_shape, dilations, ceil_mode)
     if pads is None:
         return X
     pads = _format_padding(pads, ndims=len(X.shape), axes=axes)
     return X.pad(tuple(pads), value=constant_value)
 
 
-def _auto_pad(X, auto_pad, strides, kernel_shape, dilations):
-    strides = [strides] * len(kernel_shape) if isinstance(strides, int) else strides if strides else [1] * len(kernel_shape)
+# TODO works but hacky and messy, think of cleaner way to do this
+def _auto_pad(
+        X: Tensor,
+        auto_pad,
+        strides,
+        kernel_shape,
+        dilations,
+        ceil_mode=0,
+):
+    strides = [strides] * len(kernel_shape) if isinstance(strides, int) else \
+        strides if strides else \
+        [1] * len(kernel_shape)
+
     dilations = [1] * len(kernel_shape) if dilations == 1 else dilations
-    pad_shape = [
-        (math.ceil(sh / st) - 1) * st + ((ks - 1) * di + 1) - sh
-        for sh, st, ks, di in zip(X.shape[-len(strides):], strides, kernel_shape, dilations)
-    ]
-    if auto_pad == "SAME_UPPER":
-        return [
-            pad_shape[0] // 2,
-            pad_shape[1] // 2,
-            pad_shape[0] - pad_shape[0] // 2,
-            pad_shape[1] - pad_shape[1] // 2,
+
+    if auto_pad == "SAME_UPPER" or auto_pad == "SAME_LOWER":
+        pad_shape = [
+            (math.ceil(sh / st) - 1) * st + ((ks - 1) * di + 1) - sh
+            for sh, st, ks, di in zip(X.shape[-len(kernel_shape):], strides, kernel_shape, dilations)
         ]
-    elif auto_pad == "SAME_LOWER":
-        return [
-            pad_shape[0] - pad_shape[0] // 2,
-            pad_shape[1] - pad_shape[1] // 2,
-            pad_shape[0] // 2,
-            pad_shape[1] // 2,
+        pad_shape = flatten([[sh // 2, sh - sh // 2] for sh in pad_shape])
+        return pad_shape[::2] + pad_shape[1::2] if auto_pad == "SAME_UPPER" else pad_shape[1::2] + pad_shape[::2]
+
+    elif auto_pad == "VALID":
+        out_spatial_shape = [
+            math.ceil((sh - ((ker - 1) * dil + 1)) / st) + 1 if ceil_mode else math.floor((sh - ((ker - 1) * dil + 1)) / st) + 1
+            for sh, st, ker, dil in zip(X.shape[-len(kernel_shape):], strides, kernel_shape, dilations)
         ]
+        pad_shape = [
+            (osh - 1) * st + ((ks - 1) * dil + 1) - ish
+            for osh, st, ks, dil, ish in zip(out_spatial_shape, strides, kernel_shape, dilations, X.shape[-len(kernel_shape):])
+        ]
+        pad_shape = flatten([[sh // 2, sh - sh // 2] for sh in pad_shape])
+        return pad_shape[::2] + pad_shape[1::2]
+
     else:
-        raise NotImplementedError(f"auto_pad={auto_pad} not implemented, yet")
+        raise NotImplementedError(f"auto_pad={auto_pad} not implemented")
 
 
 def Pad(
@@ -738,7 +758,7 @@ def AveragePool(
     if dilations != 1:
         raise NotImplementedError(f"dilations != 1 not supported, dilations:{dilations}")
 
-    pixel_axes = tuple(range(len(X.shape)))[-2:]
+    pixel_axes = tuple(range(len(X.shape)))[-len(kernel_shape):]
 
     if ceil_mode:
         auto_pad = "SAME_UPPER"
@@ -780,18 +800,17 @@ def MaxPool(
         storage_order=0,
         strides=1,
 ):
-    if ceil_mode:
-        auto_pad = "SAME_UPPER"
-
+    if ceil_mode and auto_pad == "NOTSET":
+        auto_pad = "VALID"
     ret = _padding(
         X,
         pads,
-        auto_pad,
-        constant_value=-np.inf,
+        auto_pad, constant_value=float("-inf"),
         axes=tuple(range(len(X.shape)))[-len(kernel_shape):],
         strides=strides,
         kernel_shape=kernel_shape,
         dilations=dilations,
+        ceil_mode=ceil_mode,
     )
     ret = ret.max_pool2d(kernel_shape, stride=strides, dilation=dilations)
     ret_len, X_len = ret.numel(), X.numel()
@@ -1030,6 +1049,7 @@ def Round(X: Tensor):
     return _round(X, 0.5, "round_to_even")
 
 
+# TODO clean this up, it's taking the longest in CI
 def Resize(
         X: Tensor,
         roi=None,
@@ -1223,23 +1243,74 @@ def Upsample(X, scales, mode):
 
 
 # Needs work
-def IsInf(x, detect_negative=1, detect_positive=1):
+def IsInf(x: Tensor, detect_negative=1, detect_positive=1):
     ret = (x == float("inf")) * detect_positive + (x == float("-inf")) * detect_negative + Tensor.zeros(*x.shape)
     return ret.cast(dtypes.bool)
 
 
-# Needs work
-def DequantizeLinear(x: Tensor, x_scale: Tensor, x_zero_point=0, axis=1):
+def DequantizeLinear(x: Tensor, x_scale: Tensor, x_zero_point: ta.Union[Tensor, int] = 0, axis=1):
     axis = axis + x.ndim if axis < 0 else axis
+    x = x.cast(dtypes.float)
+    if x_zero_point.__class__ is Tensor: x_zero_point.cast(dtypes.float)
     x_sc = x_scale.reshape(*[1] * axis, *x_scale.shape, *[1] * (x.ndim - axis - x_scale.ndim))
     x_zer = x_zero_point.reshape(*[1] * axis, *x_scale.shape, *[1] * (x.ndim - axis - x_scale.ndim)) if isinstance(
         x_zero_point, Tensor) else x_zero_point
-    return (x - x_zer) * x_sc
+    return ((x - x_zer) * x_sc).cast(x_scale.dtype)
 
 
 # Needs work
-def IsNaN(x):
+def IsNaN(x: Tensor):
     return (x < float("-inf")).cast(dtypes.bool)
+
+
+# copied from https://github.com/onnx/onnx/blob/main/onnx/reference/ops/op_image_decoder.py
+# without importing PIL we'll have to manually decode a bunch of image formats like PNG, JPEG, WebP, etc
+def ImageDecoder(encoded_stream: Tensor, pixel_format="RGB"):
+    try:
+        import PIL.Image
+    except ImportError as e:
+        raise ImportError("Pillow must be installed to use the reference implementation of the ImageDecoder operator") from e
+    img = PIL.Image.open(io.BytesIO(safe_numpy(encoded_stream).tobytes()))
+    if pixel_format == "BGR":
+        return Tensor(np.array(img))[:, :, ::-1]
+    elif pixel_format == "RGB":
+        return Tensor(np.array(img))
+    elif pixel_format == "Grayscale":
+        img = img.convert("L")
+        decoded = Tensor(np.array(img))
+        return decoded.unsqueeze(-1)  # (H, W) to (H, W, 1)
+    else:
+        raise ValueError(f"pixel_format={pixel_format!r} is not supported.")
+
+
+def AffineGrid(theta: Tensor, size: Tensor, align_corners=0):
+    _, _, *data_sz = safe_numpy(size).tolist()
+    size_zeros, original_grid = Tensor.zeros(data_sz), Tensor.ones(data_sz)
+    stackable = [original_grid]
+    for dim, dim_sz in enumerate(data_sz):
+        a = Tensor.arange(-1, 1.0001, 2 / (dim_sz - 1)) if align_corners == 1 else Tensor.arange(-1 + 1 / dim_sz, 1, 2 / dim_sz)
+        if dim == 0:
+            stackable = [a.reshape(dim_sz, *[1] * (len(data_sz) - 1)) + size_zeros, *stackable]
+        elif dim == 1:
+            stackable = [a.reshape(1, dim_sz, *[1] * (len(data_sz) - 2)) + size_zeros, *stackable]
+        else:
+            stackable = [a.reshape(1, dim_sz) + size_zeros, *stackable]
+    original_grid = Tensor.stack(stackable, dim=len(data_sz))
+    if original_grid.ndim == 3:
+        N, dim_2d, dim_homo = theta.shape
+        assert dim_2d == 2 and dim_homo == 3
+        H, W, dim_homo = original_grid.shape
+        assert dim_homo == 3
+        original_grid = original_grid.reshape(H * W, dim_homo).transpose()
+        return theta.matmul(original_grid).permute(0, 2, 1).reshape(N, H, W, dim_2d)
+    else:
+        assert original_grid.ndim == 4
+        N, dim_3d, dim_homo = theta.shape
+        assert dim_3d == 3 and dim_homo == 4
+        D, H, W, dim_homo = original_grid.shape
+        assert dim_homo == 4
+        original_grid = original_grid.reshape(D * H * W, dim_homo).transpose()
+        return theta.matmul(original_grid).permute(0, 2, 1).reshape(N, D, H, W, dim_3d)
 
 
 # **************** com.microsoft Ops ****************
