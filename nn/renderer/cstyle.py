@@ -128,6 +128,7 @@ class CStyleLanguage(ta.NamedTuple):
             if any(isinstance(dtype, ImageDType) for _, dtype in bufs)
             else ""
         )
+
         buftypes = [
             (
                 name,
@@ -143,6 +144,7 @@ class CStyleLanguage(ta.NamedTuple):
             )
             for i, (name, dtype) in enumerate(bufs)
         ]
+
         prg = "".join(
             [
                 f"{self.kernel_prefix}void "
@@ -152,8 +154,10 @@ class CStyleLanguage(ta.NamedTuple):
             + [") {\n" + tmp]
             + ["\n".join(kernel), "\n}"]
         )
+
         if self.half_prekernel and any(dtype == dtypes.float16 for _, dtype in bufs):
             prg = "".join([f"{self.half_prekernel}", "\n", prg])
+
         return prg
 
     # returns a str statement that does the store
@@ -169,10 +173,13 @@ class CStyleLanguage(ta.NamedTuple):
         if isinstance(buf_dtype, ImageDType):
             assert var_dtype == dtypes._float4, "images must be float4"
             return f"write_imagef({buf_name}, {idx}, {var_name});"
-        if self.uses_vload and buf_dtype == dtypes.float16:
+
+        if self.uses_vload and buf_dtype == dtypes.float16 and var_dtype != dtypes.float16:
             return f"vstore_half{'' if var_dtype.sz == 1 else str(var_dtype.sz)}({var_name}, 0, {buf_name}+{idx});"
+
         if var_dtype.sz > 1:
             return f"*(({self.smem_prefix if local and self.smem_prefix_for_cast else self.buffer_prefix}{buf_dtype.name}{var_dtype.sz}*)({buf_name}+{idx})) = ({buf_dtype.name}{var_dtype.sz}){var_name};"
+
         return (
             f"*({buf_name}+{idx}) = {var_name};"
             if self.uses_ptr_arithmetic
@@ -234,13 +241,18 @@ def uops_to_cstyle(lang: CStyleLanguage, function_name: str, uops: list[uo.UOp])
 
             elif u.arg[0] == "HIP":
                 assert u.dtype == dtypes._float8, "output dtype of HIP TC is _float8"
-                kk(f"{lang.generic_var_prefix if lang.generic_var_prefix else u.dtype.name} {ssa(u, 'wmma')} = __builtin_amdgcn_wmma_f32_16x16x16_f16_w32({r[u.vin[0]]}, {r[u.vin[1]]}, {r[u.vin[2]]});")
+                kk(
+                    f"{lang.generic_var_prefix if lang.generic_var_prefix else u.dtype.name} "
+                    f"{ssa(u, 'wmma')} = "
+                    f"__builtin_amdgcn_wmma_f32_16x16x16_f16_w32({r[u.vin[0]]}, {r[u.vin[1]]}, {r[u.vin[2]]});"
+                )
 
             else:
                 raise NotImplementedError(f"WMMA not implemented for {u.arg}")
 
         elif isinstance(u, uo.Alu):
             assert u.dtype is not None
+
             # remove parens if ALU types are the same. TODO: can do more here
             if (
                 isinstance(u.vin[0], uo.Alu)
@@ -250,15 +262,25 @@ def uops_to_cstyle(lang: CStyleLanguage, function_name: str, uops: list[uo.UOp])
                 val = lang.code_for_op[u.arg](
                     strip_parens(r[u.vin[0]]), *[r[x] for x in u.vin[1:]]
                 )
+
+            elif u.arg == ops.Max2:
+                val = lang.code_for_op[u.arg](*[
+                    lang.render_cast([r[x]], u.dtype) if x.dtype != u.dtype else r[x]
+                    for x in u.vin
+                ])
+
             else:
                 val = lang.code_for_op[u.arg](*[r[x] for x in u.vin])
+
             assert child_count[u] != 0, f"childless ALU op found {u}"
+
             # fix index rendering issue. fix clang nested max macro issue
             if (child_count[u] <= 1 or dtypes.is_int(u.dtype)) and u.arg != ops.Max2:
                 r[u] = val
             else:
                 kk(
-                    f"{lang.generic_var_prefix if lang.generic_var_prefix else u.dtype.name} {ssa(u,'alu')} = {val};"
+                    f"{lang.generic_var_prefix if lang.generic_var_prefix else u.dtype.name} "
+                    f"{ssa(u,'alu')} = {val};"
                 )
 
         elif isinstance(u, uo.DefineAcc):
@@ -315,7 +337,7 @@ def uops_to_cstyle(lang: CStyleLanguage, function_name: str, uops: list[uo.UOp])
                 ),
             )
 
-        elif isinstance(u, uo.Cast) and u.dtype is not None and u.dtype.sz > 1:
+        elif isinstance(u, uo.Cast) and u.dtype is not None:
             val = lang.render_cast([r[x] for x in u.vin], u.dtype)
             if child_count[u] <= 1:
                 r[u] = val
