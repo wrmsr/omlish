@@ -19,7 +19,6 @@ def shape_to_axis(
 
 base_fxn_for_op: dict[type[ops.LazyOp], ta.Callable] = {
     ops.Mem: lambda x: x._buf,
-    ops.Neg: operator.neg,
     ops.Add: operator.add,
     ops.Sub: operator.sub,
     ops.Mul: operator.mul,
@@ -93,6 +92,7 @@ numpy_fxn_for_op: dict[type[ops.LazyOp], ta.Callable] = {
         ops.Log2: np.log2,
         ops.Sin: np.sin,
         ops.Cast: lambda x, y: x.view(y[0].np) if y[1] else x.astype(y[0].np, copy=False),
+        ops.Neg: lambda x: np.logical_not(x) if x.dtype == np.bool_ else np.negative(x),
         ops.Max2: np.maximum,
         ops.CmpLt: lambda x, y: (x < y).astype(np.promote_types(x.dtype, y.dtype)),
         ops.Add: lambda x, y: np.add(*match_types(x, y)),

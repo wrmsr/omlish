@@ -81,7 +81,7 @@ def get_run_onnx(onnx_model: ModelProto):
                 raise Exception(f"unknown attr: {attr}, {type_proto}")
 
     def buffer_parse(inp: TensorProto) -> Tensor:
-        if inp.data_type in (1, 10, 6, 7):
+        if inp.data_type in (1, 10, 6, 7, 5):
             # TODO: this is shared with below
             if len(inp.float_data) > 0:
                 ret = Tensor(np.array(inp.float_data, dtype=np.float32).reshape(inp.dims), requires_grad=False)
@@ -116,7 +116,7 @@ def get_run_onnx(onnx_model: ModelProto):
         elif a.type == AttributeProto.STRINGS:
             return tuple(x.decode("utf-8") for x in a.strings)
         elif a.type == AttributeProto.GRAPH:
-            raise Exception(f"graph not implemented: {a.g}")
+            raise Exception(f"graph not implemented: {a.g}\n likely an OP requiring control flow")
         else:
             raise Exception(f"can't parse {a.type} {a}")
 
@@ -200,8 +200,9 @@ def get_run_onnx(onnx_model: ModelProto):
             if debug >= 1:
                 print(f"{num}: op {n.op_type} shape {[x.shape if isinstance(x, Tensor) else x for x in inp]} opt {opt}")
 
-            # some ops live here because they require some local variables
-            if n.op_type == "Split":  # have to use n.output for cases when num_outputs is absent
+            # NOTE some ops live here because they require access to some local variables
+            # have to use n.output for cases when num_outputs is absent
+            if n.op_type == "Split":
                 axis = opt.get("axis", 0)
                 split = None if len(inp) == 1 else [int(x) for x in safe_numpy(inp[1])]
                 if split is None:
@@ -216,7 +217,8 @@ def get_run_onnx(onnx_model: ModelProto):
                     i = i + s
                 ret = tuple(ret)
 
-            elif n.op_type == "Slice":  # need to check onnx_model_version
+            # need to check onnx_model_version
+            elif n.op_type == "Slice":
                 if onnx_model_version < 10:
                     axes, ends, starts, steps = list(opt.get("axes", range(inp[0].ndim))), list(opt["ends"]), list(opt["starts"]), [1] * inp[0].ndim
                 else:
@@ -241,12 +243,14 @@ def get_run_onnx(onnx_model: ModelProto):
                 else:
                     ret = inp[0].__getitem__(tuple([slice(s, e, st) for s, e, st in arg]))
 
-            elif n.op_type == "Gradient":  # need to call backward on intermediate_tensors
+            # need to call backward on intermediate_tensors
+            elif n.op_type == "Gradient":
                 assert len(opt["xs"]) == len(inp), f"len(opt['xs']):{len(opt['xs'])}, len(inp):{len(inp)} output and input has to match"
                 y = opt["y"]
                 intermediate_tensors[y].backward()
                 ret = tuple([t.grad for t in inp])
 
+            # ops.py
             elif hasattr(onnx_ops, n.op_type):
                 fxn = getattr(onnx_ops, n.op_type)
                 if isinstance(fxn, dict):

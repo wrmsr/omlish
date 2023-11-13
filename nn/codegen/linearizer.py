@@ -65,7 +65,7 @@ class Linearizer(Kernel):
         )
         return self.uop(uo.Alu, dtype, (a, render_b), op)
 
-    # NOTE: the consts have to be be cached for deduping of downstream uops to work
+    # NOTE: the consts have to be cached for deduping of downstream uops to work
     def const(self, b: ta.Union[int, float], dtype=dtypes.int32, insert_before=None) -> uo.UOp:
         return self.uop(uo.Const, dtype, tuple(), b, insert_before=insert_before)
 
