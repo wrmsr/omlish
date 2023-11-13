@@ -395,19 +395,20 @@ class Tensor:
         )
 
     def shrink(self, arg: tuple[ta.Optional[tuple[sint, sint]], ...]) -> Tensor:
-        return (
-            funcs.Shrink.apply(self, arg=tuple(x if x else (0, s) for x, s in zip(arg, self.shape)))
-            if any(x != (0, s) for x, s in zip(arg, self.shape)) else
-            self
-        )
+        if any(x is not None and x != (0, s) for x, s in zip(arg, self.shape)):
+            return funcs.Shrink.apply(self, arg=tuple(x if x is not None else (0, s) for x, s in zip(arg, self.shape)))
+        else:
+            return self
 
-    def pad(self, arg: tuple[tuple[int, int], ...], value: float = 0) -> Tensor:
-        ret = funcs.Pad.apply(self, arg=arg) if any(x != (0, 0) for x in arg) else self
-        return (
-            ret
-            if 0 == value
-            else ret + funcs.Pad.apply(Tensor.ones_like(self), arg=arg).where(0, value)
-        )
+    def pad(self, arg: tuple[ta.Optional[tuple[int, int]], ...], value: float = 0.0) -> Tensor:
+        if any(x is not None and x != (0, 0) for x in arg):
+            ret = funcs.Pad.apply(self, arg=tuple(x if x is not None else (0, 0) for x in arg))
+        else:
+            ret = self
+        if 0 == value:
+            return ret
+        else:
+            return ret + funcs.Pad.apply(Tensor.ones_like(self), arg=arg).where(0, value)
 
     # ***** movement hlops *****
 

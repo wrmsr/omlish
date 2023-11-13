@@ -55,8 +55,8 @@ class Attention:
         values = self.cache_v.shrink((None, (0, start_pos), None, None)).cat(xv, dim=1)
 
         # update the cache
-        self.cache_k.assign(keys.pad(((0, 0), (0, MAX_CONTEXT - start_pos - seqlen), (0, 0), (0, 0))).contiguous()).realize()
-        self.cache_v.assign(values.pad(((0, 0), (0, MAX_CONTEXT - start_pos - seqlen), (0, 0), (0, 0))).contiguous()).realize()
+        self.cache_k.assign(keys.pad((None, (0, MAX_CONTEXT - start_pos - seqlen), None, None)).contiguous()).realize()
+        self.cache_v.assign(values.pad((None, (0, MAX_CONTEXT - start_pos - seqlen), None, None)).contiguous()).realize()
 
         xq = xq.transpose(1, 2)
         keys = keys.transpose(1, 2)
