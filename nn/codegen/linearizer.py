@@ -90,7 +90,13 @@ class Linearizer(Kernel):
         ),
     }
 
-    def global_load(self, i: int, idxs: ta.Sequence[Node], acc=None) -> list[uo.UOp]:
+    def global_load(
+            self,
+            i: int,
+            idxs: ta.Sequence[Node],
+            acc=None,
+            barrier: ta.Optional[uo.UOp] = None,
+    ) -> list[uo.UOp]:
         buf = self.bufs[i]
         const = buf.val if isinstance(buf, ConstBuffer) else acc
 
@@ -179,12 +185,14 @@ class Linearizer(Kernel):
                                 rendered_idx,
                                 valid_rendered,
                                 self.const(invalid_value, localtype),
-                            ),
+                            ) + ((barrier,) if barrier else ()),
                         )
 
                     else:
                         self.load_cache[key] = self.uop(
-                            uo.Load, localtype, (buf_uop, rendered_idx)
+                            uo.Load,
+                            localtype,
+                            (buf_uop, rendered_idx) + ((barrier,) if barrier else ()),
                         )
 
             ret.append(
@@ -200,7 +208,7 @@ class Linearizer(Kernel):
 
         return ret
 
-    def global_store(self, i: int, idxs: list[Node], store: list[uo.UOp]) -> None:
+    def global_store(self, i: int, idxs: list[Node], store: list[uo.UOp]) -> list[uo.UOp]:
         buf = self.bufs[i]
         buf_uop = self.buf_uops[i]
         assert buf_uop is not None, f"buffer {i} wasn't UOped"
@@ -237,6 +245,7 @@ class Linearizer(Kernel):
 
             store_offset = store_offset_new
 
+        stores = []
         for idx, var in store_offset.items():
             idx, valid = self.sts[i].expr_idxs(idx)
             if isinstance(buf.dtype, ImageDType):
@@ -248,7 +257,8 @@ class Linearizer(Kernel):
                 )
             else:
                 rendered_idx = idx.render(self.render_ops, self)
-            self.uop(uo.Store, None, (buf_uop, rendered_idx, var))
+            stores.append(self.uop(uo.Store, None, (buf_uop, rendered_idx, var)))
+        return stores
 
     kernel_cnt: ta.Final[ta.DefaultDict[str, int]] = collections.defaultdict(int)
 
@@ -462,7 +472,6 @@ class Linearizer(Kernel):
         loaded_buffers = {}
         acc = []
         self.load_cache: dict[str, uo.UOp] = {}
-        if_gate: ta.Optional[uo.UOp] = None
 
         fake_reduce_idxs: list[Variable] = []
         fake_reduce_idxs = []
@@ -625,18 +634,14 @@ class Linearizer(Kernel):
             # end the local loop, do the local reduce
             if self.group_for_reduce:
                 fake_global_idxs = [x * 0 for x in global_idxs]
-                self.global_store(
-                    -1,
-                    fake_global_idxs + local_idxs + fake_reduce_idxs + upcast_idxs,
-                    acc,
-                )  # store accumulators
+                stores = self.global_store(-1, fake_global_idxs + local_idxs + fake_reduce_idxs + upcast_idxs, acc)  # store accumulators
+                barrier = self.uop(uo.Barrier, None, tuple(stores), cachable=False)
 
-                self.uop(uo.Barrier, None, (), cachable=False)
                 if self.opts.has_local:
                     fake_idxs = [Variable.num(0)] * len(self.sts[-1].shape)
                     fake_idxs[self.global_dims + self.local_dims:self.global_dims + len(local_idxs)] = local_idxs[self.local_dims:]
                     if_cond: uo.UOp = (self.sts[-1].expr_idxs(fake_idxs)[0] < 1).render(self.render_ops, self)
-                    if_gate = self.uop(uo.If, None, (if_cond,), cachable=False)
+                    barrier = self.uop(uo.If, None, (if_cond, barrier), cachable=False)
 
                 # create new late reduce local loops and replace local_idxs that have been used
                 end_local_idxs = [
@@ -684,7 +689,9 @@ class Linearizer(Kernel):
 
                 # load localbufs
                 loaded_buffers[self.bufs[-1]] = self.global_load(
-                    -1, fake_global_idxs + local_idxs + fake_reduce_idxs + upcast_idxs,
+                    -1,
+                    fake_global_idxs + local_idxs + fake_reduce_idxs + upcast_idxs,
+                    barrier=barrier,
                 )
 
                 # there's no AST here (and there's no shape for the reduce LazyOp)
@@ -719,16 +726,10 @@ class Linearizer(Kernel):
             0, global_idxs + local_idxs + fake_reduce_idxs + upcast_idxs, val
         )
 
-        # end the global (and maybe local) loop
-        # end the if statement if we used it
-        if if_gate:
-            self.uop(uo.End, None, (if_gate,))
-
         # (recursively) remove childless uops
         # NOTE: DEFINE_GLOBAL should be removable, but we'd have to propagate that
         UOPS_W_SIDE_EFFECTS = {
             uo.Store,
-            uo.End,
             uo.Barrier,
             uo.DefineGlobal,
         }
@@ -762,6 +763,7 @@ class Linearizer(Kernel):
             return sorted(list(deps), key=lambda x: x.num)
 
         # add END of loops after the last thing that (recursively) depends on them
+        # and END any if statements
         for u in self.uops:
             if isinstance(u, uo.Loop):
                 last_phi = self.uops.index(get_recursive_deps(u)[-1])
@@ -769,6 +771,8 @@ class Linearizer(Kernel):
                 self.uops = self.uops[:last_phi + 1]
                 self.uop(uo.End, None, (u,), cachable=False)
                 self.uops += at_end
+            elif isinstance(u, uo.If):
+                self.uop(uo.End, None, (u,), cachable=False)
 
         # maybe graph the uops
         if DEBUG >= 5:
