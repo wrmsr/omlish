@@ -63,6 +63,12 @@ class Node:
     def unbind(self) -> tuple[Node, ta.Optional[int]]:
         return self.substitute({v: v.unbind()[0] for v in self.vars() if v.val is not None}), None
 
+    @property
+    def val(self):
+        ret = self.substitute({x: NumNode(x.val) for x in self.vars()})
+        assert isinstance(ret, NumNode), f"val must be NumNode, it's {ret}"
+        return ret.b
+
     @functools.cached_property
     def key(self) -> str:
         return self.render(ctx="DEBUG")
@@ -270,11 +276,16 @@ class Variable(Node):
         self.expr = expr
         self.min = nmin
         self.max = nmax
-        self.val: ta.Optional[int] = None
+        self._val: ta.Optional[int] = None
+
+    @property
+    def val(self):
+        assert self._val is not None, f"Variable isn't bound, can't access val of {self}"
+        return self._val
 
     def bind(self, val):
-        assert self.val is None and self.min<=val<=self.max, f"cannot bind {val} to {self}"
-        self.val = val
+        assert self._val is None and self.min <= val <= self.max, f"cannot bind {val} to {self}"
+        self._val = val
         return self
 
     def unbind(self) -> tuple[Variable, int]:
@@ -478,31 +489,26 @@ class SumNode(RedNode):
                     fully_divided.append(x // b)
                 else:
                     rest.append(x)
-                    _gcd = math.gcd(_gcd, x.b)
-                    if x.__class__ == MulNode and divisor == 1 and b % x.b == 0:
-                        divisor = x.b
+                    if isinstance(x.b, int):
+                        _gcd = math.gcd(_gcd, x.b)
+                        if x.__class__ == MulNode and divisor == 1 and b % x.b == 0:
+                            divisor = x.b
+                    else:
+                        _gcd = 1
             else:
                 rest.append(x)
                 _gcd = 1
         if _gcd > 1:
-            return Node.sum(fully_divided) + Node.sum(rest).__floordiv__(_gcd) // (
-                b // _gcd
-            )
+            return Node.sum(fully_divided) + Node.sum(rest).__floordiv__(_gcd) // (b // _gcd)
         if divisor > 1:
-            return Node.sum(fully_divided) + Node.sum(rest).__floordiv__(divisor) // (
-                b // divisor
-            )
+            return Node.sum(fully_divided) + Node.sum(rest).__floordiv__(divisor) // (b // divisor)
         return Node.sum(fully_divided) + Node.__floordiv__(Node.sum(rest), b)
 
     @functools.lru_cache(maxsize=None)  # pylint: disable=method-cache-max-size-none
     def __mod__(self, b: ta.Union[Node, int]):
         if isinstance(b, SumNode):
-            nu_num = sum(
-                node.b for node in self.flat_components if node.__class__ is NumNode
-            )
-            de_num = sum(
-                node.b for node in b.flat_components if node.__class__ is NumNode
-            )
+            nu_num = sum(node.b for node in self.flat_components if node.__class__ is NumNode)
+            de_num = sum(node.b for node in b.flat_components if node.__class__ is NumNode)
             if nu_num > 0 and de_num and (d := nu_num // de_num) > 0:
                 return (self - b * d) % b
         if isinstance(b, Node) and (b - self).min > 0:
@@ -595,7 +601,13 @@ sint = ta.Union[Node, int]
 VariableOrNum = ta.Union[Variable, NumNode]
 
 render_python: dict[type, ta.Callable] = {
-    Variable: lambda self, ops, ctx: f"{self.expr}[{self.min}-{self.max}{'=' + str(self.val) if self.val is not None else ''}]" if ctx == "DEBUG" else (f"Variable('{self.expr}', {self.min}, {self.max})" if ctx == "REPR" else f"{self.expr}"),  # noqa
+    Variable: lambda self, ops, ctx: (
+        f"{self.expr}[{self.min}-{self.max}{'=' + str(self.val) if self._val is not None else ''}]"
+        if ctx == "DEBUG" else
+        f"Variable('{self.expr}', {self.min}, {self.max})" + (f".bind({self.val})" if self._val is not None else '')
+        if ctx == "REPR" else
+        f"{self.expr}"
+    ),
     NumNode: lambda self, ops, ctx: f"{self.b}",
     MulNode: lambda self, ops, ctx: f"({self.a.render(ops, ctx)}*{sym_render(self.b, ops, ctx)})",
     DivNode: lambda self, ops, ctx: f"({self.a.render(ops, ctx)}//{self.b})",
@@ -656,11 +668,11 @@ class DebugNodeRenderer(NodeRenderer):
 
     @NodeRenderer.render.register
     def render_variable(self, n: Variable) -> str:
-        return f"{n.expr}[{n.min}-{n.max}{'=' + str(n.val) if n.val is not None else ''}]"
+        return f"{n.expr}[{n.min}-{n.max}{'=' + str(n.val) if n._val is not None else ''}]"
 
 
 class ReprNodeRenderer(NodeRenderer):
 
     @NodeRenderer.render.register
     def render_variable(self, n: Variable) -> str:
-        return f"Variable('{n.expr}', {n.min}, {n.max})"
+        return f"Variable('{n.expr}', {n.min}, {n.max})" + (f".bind({n.val})" if self._val is not None else '')

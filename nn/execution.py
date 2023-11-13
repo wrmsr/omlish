@@ -263,6 +263,7 @@ class AstRunner:
         self.mem_estimate = mem_estimate
         self.display_name = display_name
         self.runtime_args = runtime_args if runtime_args is not None else {}
+        self.vars: list[Variable] = []
 
     @staticmethod
     def from_linearizer(k, src: str):
@@ -337,6 +338,7 @@ class AstRunner:
             lra['global_size'] = global_size
         if local_size and 'local_size' not in lra:
             lra['local_size'] = local_size
+
         if et := self.clprg(
                 *rawbufs,
                 *var_vals.values(),
@@ -446,17 +448,21 @@ class Compiled(AstExecutor):
         # all the rawbuffers
         rawbuffers = [output.realized] + [x.realized for x in inputs]
 
-        # extract real vars used in ast
-        from .lazy import vars_from_ast
-        ast_vars = vars_from_ast(ast)
-        assert all(v.val is None for v in ast_vars), f"ast contains bound Variable {ast_vars}"
-
         # compilation time
         def get_program():
+            if DEBUG >= 3:
+                from .lazy import print_tree
+                print_tree(ast)
+
             from .codegen.linearizer import Linearizer
+            from .lazy import vars_from_ast
+
             k = Linearizer(ast, self.linearizer_opts)
 
-            assert k.info.dtype == output.dtype, f"linearizer must match dtype. linearizer wants {k.info.dtype} but buffer is {output.dtype}"
+            assert (
+                k.info.dtype == output.dtype
+            ), f"linearizer must match dtype. linearizer wants {k.info.dtype} but buffer is {output.dtype}"
+
             if not NOOPT:
                 if not (used_tensor_cores := k.apply_tensor_cores(getenv("TC", 1))):
                     k.hand_coded_optimizations()
@@ -513,7 +519,13 @@ class Compiled(AstExecutor):
             else:
                 k.required_optimizations()
 
-            return self.to_program(k)
+            prg = self.to_program(k)
+
+            # extract real vars used in ast
+            prg.vars = vars_from_ast(ast)
+            assert all(v._val is None for v in prg.vars), f"ast contains bound Variable {prg.vars}"
+
+            return prg
 
         if getenv("ENABLE_METHOD_CACHE", 1):
             if ast not in self.method_cache:
@@ -527,6 +539,6 @@ class Compiled(AstExecutor):
 
         prg.exec(
             rawbuffers,
-            var_vals={k: var_vals[k] for k in ast_vars},
+            var_vals={k: var_vals[k] for k in prg.vars},
         )
         return output.realized

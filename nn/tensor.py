@@ -394,11 +394,11 @@ class Tensor:
             axis=[x if x >= 0 else x + len(self.shape) for x in argfix(axis, *args)],
         )
 
-    def shrink(self, arg: tuple[tuple[sint, sint], ...]) -> Tensor:
+    def shrink(self, arg: tuple[ta.Optional[tuple[sint, sint]], ...]) -> Tensor:
         return (
-            funcs.Shrink.apply(self, arg=arg)
-            if any(x != (0, s) for x, s in zip(arg, self.shape))
-            else self
+            funcs.Shrink.apply(self, arg=tuple(x if x else (0, s) for x, s in zip(arg, self.shape)))
+            if any(x != (0, s) for x, s in zip(arg, self.shape)) else
+            self
         )
 
     def pad(self, arg: tuple[tuple[int, int], ...], value: float = 0) -> Tensor:
