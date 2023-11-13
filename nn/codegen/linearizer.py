@@ -17,7 +17,6 @@ from ..execution import ConstBuffer
 from ..execution import MemBuffer
 from ..features.image import to_image_idx
 from ..helpers import DEBUG
-from ..helpers import all_same
 from ..helpers import colored
 from ..helpers import prod
 from ..lazy import vars_from_ast
@@ -799,14 +798,6 @@ class Linearizer(Kernel):
         if uop == uo.Phi and len(vin) == 2 and vin[0] == vin[1]:
             return vin[0]  # self phi is noop
 
-        if (
-            uop == uo.Cast
-            and all(isinstance(x, uo.Gep) for x in vin)
-            and all_same([x.vin[0] for x in vin])
-            and all(x.arg == i for i, x in enumerate(vin))
-        ):
-            return vin[0].vin[0]
-
         if uop == uo.Gep and isinstance(vin[0], uo.Const):
             return self.const(vin[0].arg, dtype)
 
@@ -878,8 +869,14 @@ class Linearizer(Kernel):
         if isinstance(x, ops_.BufferOp):
             return loaded_buffers[x.arg]
 
-        if isinstance(x, (ops_.Nop, ops_.Cast)):
-            return self.ast_parse(x.src[0], acc, offs, loaded_buffers)  # cast isn't an ALU op
+        if isinstance(x, ops_.Nop):
+            return self.ast_parse(x.src[0], acc, offs, loaded_buffers)
+
+        if isinstance(x, ops_.Cast):
+            return [
+                self.uop(uo.Cast, x.arg[0], (u,), x.arg) if not isinstance(x.arg[0], ImageDType) else u
+                for u in self.ast_parse(x.src[0], acc, offs, loaded_buffers)
+            ]
 
         if isinstance(x, ops_.ReduceOp) and not do_reduce:
             assert offs is None, "not available if we aren't doing reduce"

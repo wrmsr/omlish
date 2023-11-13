@@ -185,6 +185,9 @@ def uops_to_triton(function_name: str, uops: list[uo.UOp]):
                 local_size.append(u.arg[2])
             r[u] = u.arg[1]
 
+        elif isinstance(u, uo.Cast) and u.dtype is not None:
+            r[u] = render_cast(r[u.vin[0]], u.dtype)
+
         else:
             raise TypeError(f"unimplemented: {u}")
 
