@@ -6,6 +6,7 @@ import math
 import functools
 import collections
 
+from . import uops as uo
 from .. import ops as ops_
 from ..codegen.kernel import Kernel
 from ..codegen.kernel import LocalBuffer
@@ -17,6 +18,7 @@ from ..execution import ConstBuffer
 from ..execution import MemBuffer
 from ..features.image import to_image_idx
 from ..helpers import DEBUG
+from ..helpers import all_same
 from ..helpers import colored
 from ..helpers import prod
 from ..lazy import vars_from_ast
@@ -32,7 +34,6 @@ from ..shape.symbolic import NumNode
 from ..shape.symbolic import SumNode
 from ..shape.symbolic import Variable
 from ..shape.symbolic import sym_rename
-from . import uops as uo
 
 
 VariableOrNum = ta.Union[Variable, NumNode, Node]
@@ -65,8 +66,8 @@ class Linearizer(Kernel):
         return self.uop(uo.Alu, dtype, (a, render_b), op)
 
     # NOTE: the consts have to be be cached for deduping of downstream uops to work
-    def const(self, b: ta.Union[int, float], dtype=dtypes.int32) -> uo.UOp:
-        return self.uop(uo.Const, dtype, tuple(), b)
+    def const(self, b: ta.Union[int, float], dtype=dtypes.int32, insert_before=None) -> uo.UOp:
+        return self.uop(uo.Const, dtype, tuple(), b, insert_before=insert_before)
 
     render_ops: ta.Any = {
         Variable: lambda self, ops, ctx: ctx.loop_uops[self.expr],
@@ -418,7 +419,6 @@ class Linearizer(Kernel):
         # set global/local size
         self.global_size: ta.Optional[list[int]] = None
         self.local_size: ta.Optional[list[int]] = None
-        global_loop_ctx: tuple[uo.UOp, ...] = tuple()
 
         if self.dont_use_locals:
             self.global_size = [x.max + 1 for x in loop_global_idxs][::-1]
@@ -463,9 +463,6 @@ class Linearizer(Kernel):
                     for i, x in enumerate(loop_local_idxs)
                 }
             )
-
-        else:
-            global_loop_ctx = render_loop(loop_global_idxs+loop_local_idxs)
 
         # parse AST
         loaded_buffers = {}
@@ -586,13 +583,13 @@ class Linearizer(Kernel):
                                 ),
                             )
                             for z in range(ta.cast(DType, ret.dtype).sz):
-                                acc[i+z] = self.uop(
+                                acc[i + z] = self.uop(
                                     uo.Phi,
                                     dtypes.float,
                                     (
                                         op3[z],
-                                        self.uop(uo.Gep, dtypes.float, (ret,), z)
-                                    ) + global_loop_ctx + loop_ctx,
+                                        self.uop(uo.Gep, dtypes.float, (ret,), z),
+                                    ) + loop_ctx,
                                 )
                         i += wmma_sz[2]
 
@@ -624,7 +621,7 @@ class Linearizer(Kernel):
                     self.acc_offsets(self.full_buf_index),
                     loaded_buffers,
                     do_reduce=True,
-                    loop_ctx=global_loop_ctx + loop_ctx,
+                    loop_ctx=loop_ctx,
                 )
 
             # end the reduce loop
@@ -725,6 +722,80 @@ class Linearizer(Kernel):
             0, global_idxs + local_idxs + fake_reduce_idxs + upcast_idxs, val
         )
 
+        # graph helper functions
+        def get_recursive_parents(x: list[uo.UOp]) -> list[uo.UOp]:
+            ret: set[uo.UOp] = set()
+            this_round: set[uo.UOp] = set(x)
+            while len(this_round):
+                ret = ret.union(this_round)
+                next_round: set[uo.UOp] = set()
+                for r in this_round:
+                    next_round = next_round.union(set(r.vin))
+                this_round = next_round
+            return list(ret)
+
+        def get_recursive_children(x: uo.UOp) -> list[uo.UOp]:
+            deps = set([x])
+            ssize = 0
+            while ssize != len(deps):
+                ssize = len(deps)
+                for u in self.uops:
+                    if len(deps.intersection([x for x in u.vin if not isinstance(x, uo.Phi)])):
+                        deps.add(u)
+            return sorted(list(deps), key=self.uops.index)  # get the last one
+
+        def replace_op(old: uo.UOp, new: uo.UOp):
+            for u in self.uops:
+                u.vin = tuple(new if x is old else x for x in u.vin)
+            self.uops.remove(old)
+
+        # uops optimization
+        changed_something = True
+        while changed_something:
+            changed_something = False
+            for u in self.uops:
+                if isinstance(u, uo.Phi) and len(u.vin) == 3:
+                    # if the parents of the PHI node don't have the LOOP in their parents, it can be folded
+                    # TODO: ADD becomes a MUL, MAX can just become nothing
+                    if (
+                            all(not isinstance(x, uo.Loop) for x in get_recursive_parents(list(u.vin[0:2])))
+                            and u.vin[1].arg == ops_.Add
+                    ):
+                        if DEBUG >= 4:
+                            print(f"removing PHI node {u}")
+
+                        del self.saved_exprs[(type(u), u.dtype, u.vin, u.arg)]
+
+                        # NOTE: assuming u.vin[2].vin[1] and u.vin[2].vin[0] have the same dtype
+                        loop_len = self.uop(
+                            uo.Alu,
+                            u.vin[2].vin[1].dtype,
+                            (u.vin[2].vin[1], u.vin[2].vin[0]),
+                            ops_.Sub,
+                            insert_before=self.uops.index(u),
+                        )
+
+                        if loop_len.dtype != u.dtype:
+                            loop_len = self.uop(
+                                uo.Cast,
+                                u.dtype,
+                                (loop_len,),
+                                insert_before=self.uops.index(u),
+                            )
+
+                        replace_op(
+                            u,
+                            self.uop(
+                                uo.Alu,
+                                u.dtype,
+                                (u.vin[1], loop_len),
+                                ops_.Mul,
+                                insert_before=self.uops.index(u),
+                            ),
+                        )
+
+                        changed_something = True
+
         # (recursively) remove childless uops
         # NOTE: DEFINE_GLOBAL should be removable, but we'd have to propagate that
         UOPS_W_SIDE_EFFECTS = {
@@ -750,33 +821,35 @@ class Linearizer(Kernel):
                 print(f"reduced UOp count from {len(self.uops)} to {len(nu)}")
 
             self.uops = nu
+            del nu
 
-        def get_recursive_deps(x: uo.UOp) -> list[uo.UOp]:
-            deps = set([x])
-            ssize = 0
-            while ssize != len(deps):
-                ssize = len(deps)
-                for u in self.uops:
-                    if len(deps.intersection([x for x in u.vin if not isinstance(x, uo.Phi)])):
-                        deps.add(u)
-            return sorted(list(deps), key=lambda x: x.num)
-
-        # add END of loops after the last thing that (recursively) depends on them
-        # and END any if statements
+        # add UOps.END
         for u in self.uops:
             if isinstance(u, uo.Loop):
-                last_phi = self.uops.index(get_recursive_deps(u)[-1])
-                at_end = self.uops[last_phi + 1:]
-                self.uops = self.uops[:last_phi + 1]
-                self.uop(uo.End, None, (u,), cachable=False)
-                self.uops += at_end
+                # add END of loops after the last thing that (recursively) depends on them
+                self.uop(
+                    uo.End,
+                    None,
+                    (u,),
+                    cachable=False,
+                    insert_before=self.uops.index(get_recursive_children(u)[-1]) + 1,
+                )
+
             elif isinstance(u, uo.If):
+                # END any if statements at the end of the uops
                 self.uop(uo.End, None, (u,), cachable=False)
 
         # maybe graph the uops
         if DEBUG >= 5:
             for u in self.uops:
-                print(u)
+                print(
+                    f"{self.uops.index(u):4d} "
+                    f"{str(type(u).__name__):20s}: "
+                    f"{str(u.dtype) if u.dtype is not None else '':25s} "
+                    f"{str([self.uops.index(x) for x in u.vin]):32s} "
+                    f"{u.arg}"
+                )
+
         # restore backups
         self.sts = sts_backup
         self.group_for_reduce = gfr_backup
@@ -787,80 +860,66 @@ class Linearizer(Kernel):
         return self
 
     def uop(
-        self,
-        uop: type[uo.UOp],
-        dtype: ta.Optional[DType],
-        vin: tuple[uo.UOp, ...],
-        arg: ta.Any = None,
-        cachable=True,
+            self,
+            uop: type[uo.UOp],
+            dtype: ta.Optional[DType],
+            vin: tuple[uo.UOp, ...],
+            arg: ta.Any = None,
+            cachable=True,
+            insert_before=None,
+            simplify=True,
     ) -> uo.UOp:
         key = (uop, dtype, vin, arg)
-        if uop == uo.Phi and len(vin) == 2 and vin[0] == vin[1]:
-            return vin[0]  # self phi is noop
+        if simplify:
+            if uop == uo.Phi and len(vin) == 2:
+                return vin[1]  # a phi without loops is a noop
 
-        if uop == uo.Gep and isinstance(vin[0], uo.Const):
-            return self.const(vin[0].arg, dtype)
+            if uop == uo.Gep and isinstance(vin[0], uo.Const):
+                return self.const(vin[0].arg, dtype, insert_before)
 
-        if uop == uo.Alu:
-            # rewrites. NOTE: the rewritten NEG op is still around...
-            if (
-                arg == ops_.Add
-                and isinstance(vin[1], uo.Alu)
-                and vin[1].arg == ops_.Neg
-            ):
-                return self.uop(
-                    uo.Alu,
-                    dtype,
-                    (vin[0], vin[1].vin[0]),
-                    ops_.Sub,
-                    cachable=cachable,
-                )
+            if uop == uo.Cast and all(isinstance(x, uo.Const) for x in vin) and all_same([x.arg for x in vin]):
+                return self.const(vin[0].arg, dtype, insert_before)
 
-            # constant folding
-            if arg == ops_.Neg and isinstance(vin[0], uo.Const):
-                return self.const(-vin[0].arg, dtype)
+            if uop == uo.Alu:
+                # rewrites. NOTE: the rewritten NEG op is still around...
+                if arg == ops_.Add and isinstance(vin[1], uo.Alu) and vin[1].arg == ops_.Neg:
+                    return self.uop(uo.Alu, dtype, (vin[0], vin[1].vin[0]), ops_.Sub, cachable=cachable, insert_before=insert_before)
 
-            # zero folding
-            for x in [0, 1]:
-                if (
-                    arg == ops_.Add
-                    and isinstance(vin[x], uo.Const)
-                    and vin[x].arg == 0.0
-                ):
-                    return vin[1 - x]
+                # constant folding
+                if arg == ops_.Neg and isinstance(vin[0], uo.Const):
+                    return self.const(-vin[0].arg, dtype, insert_before)
 
-                if (
-                    arg == ops_.Mul
-                    and isinstance(vin[x],  uo.Const)
-                    and vin[x].arg == 1.0
-                ):
-                    return vin[1 - x]
+                # zero folding
+                for x in [0, 1]:
+                    if arg == ops_.Add and isinstance(vin[x], uo.Const) and vin[x].arg == 0.0:
+                        return vin[1 - x]
 
-                if (
-                    arg == ops_.Mul
-                    and isinstance(vin[x], uo.Const)
-                    and vin[x].arg == 0.0
-                ):
-                    return vin[x]
+                    if arg == ops_.Mul and isinstance(vin[x], uo.Const) and vin[x].arg == 1.0:
+                        return vin[1 - x]
 
-            if arg == ops_.Sub and isinstance(vin[1], uo.Const) and vin[1].arg == 0.0:
-                return vin[0]
+                    if arg == ops_.Mul and isinstance(vin[x], uo.Const) and vin[x].arg == 0.0:
+                        return vin[x]
 
-            if arg == ops_.Div and isinstance(vin[1], uo.Const) and vin[1].arg == 1.0:
-                return vin[0]
+                if arg == ops_.Sub and isinstance(vin[1], uo.Const) and vin[1].arg == 0.0:
+                    return vin[0]
+
+                if arg == ops_.Div and isinstance(vin[1], uo.Const) and vin[1].arg == 1.0:
+                    return vin[0]
 
         if cachable and key in self.saved_exprs:
             return self.saved_exprs[key]
 
-        self.uops.append(uop(dtype, vin, arg, len(self.uops)))
+        ret = uop(dtype, vin, arg)
 
-        # if DEBUG >= 5:
-        #     print(self.uops[-1])
+        if insert_before is not None:
+            self.uops.insert(insert_before, ret)
+        else:
+            self.uops.append(ret)
 
         if cachable:
-            self.saved_exprs[key] = self.uops[-1]
+            self.saved_exprs[key] = ret
 
-        return self.uops[-1]
+        return ret
 
     def ast_parse(self, x, acc, offs, loaded_buffers, do_reduce=False, loop_ctx=()) -> list[uo.UOp]:
         if not isinstance(x, LazyOp):

@@ -3,6 +3,7 @@ import itertools
 import random
 import typing as ta
 
+from ..codegen import uops as uo
 from ..codegen.kernel import Opt
 from ..codegen.kernel import OptOps
 from ..codegen.linearizer import Linearizer
@@ -143,6 +144,13 @@ def get_linearizer_actions(lin: Linearizer, include_0=True) -> dict[int, Lineari
     return acted_lins
 
 
+def tuplize_uops(uops: list[uo.UOp]) -> tuple:
+    return tuple([
+        (type(x), x.dtype, tuple(uops.index(x) for x in x.vin), x.arg)
+        for x in uops
+    ])
+
+
 def beam_search(lin: Linearizer, rawbufs, amt: int, allow_test_size=True) -> Linearizer:
     key = {
         "ast": str(lin.ast),
@@ -162,10 +170,6 @@ def beam_search(lin: Linearizer, rawbufs, amt: int, allow_test_size=True) -> Lin
 
     # init the BEAM with the base linearizer
     beam: list[tuple[Linearizer, float]] = [(lin, time_linearizer(lin, rawbufs, allow_test_size=allow_test_size))]
-
-    # NOTE: real uops use a weird compare method that's only valid inside a linearizer
-    def tuplize_uops(uops):
-        return tuple([(type(x), x.dtype, tuple(x.num for x in x.vin), x.arg) for x in uops])
 
     seen_uops = {tuplize_uops(lin.linearize().uops): tuple(lin.applied_opts)}
 

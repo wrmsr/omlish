@@ -8,7 +8,7 @@ from omlish import lang
 from ..dtypes import DType
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, eq=False)
 class UOp(lang.Abstract):
     dtype: ta.Optional[DType]
     vin: tuple[UOp, ...]
@@ -16,21 +16,11 @@ class UOp(lang.Abstract):
 
     def __repr__(self):
         return (
-            f"{self.num:4d} "
             f"{str(type(self).__name__):20s}: "
             f"{str(self.dtype) if self.dtype is not None else '':25s} "
-            f"{str([x.num for x in self.vin]):32s} "
+            f"{str([type(x).__name__ for x in self.vin]):32s} "
             f"{self.arg}"
         )
-
-    # UOps are unique
-    num: int
-
-    def __hash__(self):
-        return self.num
-
-    def __eq__(self, x):
-        return self.num == x.num
 
 
 # bottom ones are asm only
