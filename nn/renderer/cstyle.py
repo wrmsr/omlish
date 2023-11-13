@@ -291,10 +291,11 @@ def uops_to_cstyle(lang: CStyleLanguage, function_name: str, uops: list[uo.UOp])
                 strip_parens(r[u.vin[1]]),
                 isinstance(u.vin[0], uo.DefineLocal),
             )
-            if len(u.vin) > 2:
+            if len(u.vin) > 3:
                 val = lang.render_conditional(r[u.vin[2]], val, r[u.vin[3]])
             kk(
-                f"{lang.generic_var_prefix if lang.generic_var_prefix else u.dtype.name} {ssa(u,'val')} = {val};"
+                f"{lang.generic_var_prefix if lang.generic_var_prefix else u.dtype.name} "
+                f"{ssa(u,'val')} = {val};"
             )
 
         elif isinstance(u, uo.Phi):
