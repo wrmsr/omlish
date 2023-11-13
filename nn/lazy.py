@@ -508,7 +508,7 @@ class LazyBuffer:
             # TODO: needs general merge limiting
             if (
                     out_device != "WEBGPU"
-                    or len(col.unique(x.base for _src in _srcs for x in _src.buffers if not x.is_unrealized_const())) < 7
+                    or len(col.unique(x.base for _src in _srcs for x in _src.buffers() if not x.is_unrealized_const())) < 7
             ):
                 srcs = _srcs  # type: ignore
 
