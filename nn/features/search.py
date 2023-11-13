@@ -76,7 +76,7 @@ def time_linearizer(
         # TODO: this is copied from prg.__call__
         global_size, local_size = prg.launch_dims(var_vals)
         if global_size is not None and local_size is None:
-            local_size = prg.optimize_local_size(global_size, rawbufs)
+            local_size = optimize_local_size(prg.clprg, global_size, rawbufs)
             global_size = [g // l if g % l == 0 else g / l for g, l in zip(global_size, local_size)]
         tms = []
         for _ in range(cnt):

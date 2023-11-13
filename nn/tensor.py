@@ -753,7 +753,7 @@ class Tensor:
         axis: ta.Optional[ta.Union[int, tuple[int, ...]]] = None,
         keepdim=False,
     ) -> Tensor:
-        axis_: list[int] = list(range(len(self.shape))) if axis is None else ([axis] if axis.__class__ is int else list(axis))  # type: ignore  # noqa
+        axis_: list[int] = list(range(len(self.shape))) if axis is None else ([axis] if isinstance(axis, int) else list(axis))  # type: ignore  # noqa
         axis_ = [x if x >= 0 else x + len(self.shape) for x in axis_]
         shape = [s for i, s in enumerate(self.shape) if i not in axis_]
         ret = fxn.apply(
