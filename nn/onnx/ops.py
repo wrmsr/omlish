@@ -607,39 +607,15 @@ def _padding(
         ceil_mode=0,
 ):
     if auto_pad != "NOTSET":
-        pads = _auto_pad(X, auto_pad, strides, kernel_shape, dilations, ceil_mode)
-    if pads is None:
-        return X
-    pads = _format_padding(pads, ndims=len(X.shape), axes=axes)
-    return X.pad(tuple(pads), value=constant_value)
+        pads = _auto_pad(X, auto_pad, strides, kernel_shape, dilations)
 
-
-# TODO works but hacky and messy, think of cleaner way to do this
-def _auto_pad(
-        X: Tensor,
-        auto_pad,
-        strides,
-        kernel_shape,
-        dilations,
-        ceil_mode=0,
-):
-    strides = [strides] * len(kernel_shape) if isinstance(strides, int) else \
-        strides if strides else \
-        [1] * len(kernel_shape)
-
-    dilations = [1] * len(kernel_shape) if dilations == 1 else dilations
-
-    if auto_pad == "SAME_UPPER" or auto_pad == "SAME_LOWER":
-        pad_shape = [
-            (math.ceil(sh / st) - 1) * st + ((ks - 1) * di + 1) - sh
-            for sh, st, ks, di in zip(X.shape[-len(kernel_shape):], strides, kernel_shape, dilations)
-        ]
-        pad_shape = flatten([[sh // 2, sh - sh // 2] for sh in pad_shape])
-        return pad_shape[::2] + pad_shape[1::2] if auto_pad == "SAME_UPPER" else pad_shape[1::2] + pad_shape[::2]
-
-    elif auto_pad == "VALID":
+    elif ceil_mode and auto_pad == "NOTSET":  # stupid ceil_mode case
+        if strides is not None:
+            strides = [strides] * len(kernel_shape) if isinstance(strides, int) else strides if strides else [1] * len(kernel_shape)
+        if dilations is not None:
+            dilations = [1] * len(kernel_shape) if dilations == 1 else dilations
         out_spatial_shape = [
-            math.ceil((sh - ((ker - 1) * dil + 1)) / st) + 1 if ceil_mode else math.floor((sh - ((ker - 1) * dil + 1)) / st) + 1
+            math.ceil((sh - dil * (ker - 1) - 1) / st + 1) if ceil_mode else math.floor((sh - dil * (ker - 1) - 1) / st + 1)
             for sh, st, ker, dil in zip(X.shape[-len(kernel_shape):], strides, kernel_shape, dilations)
         ]
         pad_shape = [
@@ -647,8 +623,29 @@ def _auto_pad(
             for osh, st, ks, dil, ish in zip(out_spatial_shape, strides, kernel_shape, dilations, X.shape[-len(kernel_shape):])
         ]
         pad_shape = flatten([[sh // 2, sh - sh // 2] for sh in pad_shape])
-        return pad_shape[::2] + pad_shape[1::2]
+        pads = pad_shape[::2] + pad_shape[1::2]
+    if pads is None:
+        return X
+    pads = _format_padding(pads, ndims=len(X.shape), axes=axes)
+    return X.pad(tuple(pads), value=constant_value)
 
+
+def _auto_pad(
+        X: Tensor,
+        auto_pad,
+        strides,
+        kernel_shape,
+        dilations,
+):
+    strides = [strides] * len(kernel_shape) if isinstance(strides, int) else strides if strides else [1] * len(kernel_shape)
+    dilations = [1] * len(kernel_shape) if dilations == 1 else dilations
+    if auto_pad == "SAME_UPPER" or auto_pad == "SAME_LOWER":
+        pad_shape = [
+            (math.ceil(sh / st) - 1) * st + ((ks - 1) * di + 1) - sh
+            for sh, st, ks, di in zip(X.shape[-len(kernel_shape):], strides, kernel_shape, dilations)
+        ]
+        pad_shape = flatten([[sh // 2, sh - sh // 2] for sh in pad_shape])
+        return pad_shape[::2] + pad_shape[1::2] if auto_pad == "SAME_UPPER" else pad_shape[1::2] + pad_shape[::2]
     else:
         raise NotImplementedError(f"auto_pad={auto_pad} not implemented")
 
@@ -755,27 +752,23 @@ def AveragePool(
         pads=None,
         strides=1,
 ):
-    if dilations != 1:
-        raise NotImplementedError(f"dilations != 1 not supported, dilations:{dilations}")
-
-    pixel_axes = tuple(range(len(X.shape)))[-len(kernel_shape):]
-
-    if ceil_mode:
-        auto_pad = "SAME_UPPER"
-
-    padding_included = _padding(
+    pixel_axes = tuple(range(len(X.shape)))[2:]
+    ret = _padding(
         X,
         pads,
         auto_pad,
         axes=pixel_axes,
         strides=strides,
         kernel_shape=kernel_shape,
-        dilations=dilations
-    ).avg_pool2d(kernel_shape, stride=strides)
-
+        dilations=dilations,
+        ceil_mode=ceil_mode,
+    ).avg_pool2d(
+        kernel_shape,
+        stride=strides,
+        dilation=dilations,
+    )
     if count_include_pad:
-        return padding_included
-
+        return ret
     else:
         div = _padding(
             Tensor.ones(*X.shape),
@@ -785,9 +778,13 @@ def AveragePool(
             strides=strides,
             kernel_shape=kernel_shape,
             dilations=dilations,
-        ).avg_pool2d(kernel_shape, stride=strides)
-
-        return padding_included / div
+            ceil_mode=ceil_mode,
+        ).avg_pool2d(
+            kernel_shape,
+            stride=strides,
+            dilation=dilations,
+        )
+        return ret / div
 
 
 def MaxPool(
@@ -800,13 +797,12 @@ def MaxPool(
         storage_order=0,
         strides=1,
 ):
-    if ceil_mode and auto_pad == "NOTSET":
-        auto_pad = "VALID"
     ret = _padding(
         X,
         pads,
-        auto_pad, constant_value=float("-inf"),
-        axes=tuple(range(len(X.shape)))[-len(kernel_shape):],
+        auto_pad,
+        constant_value=float("-inf"),
+        axes=tuple(range(len(X.shape)))[2:],
         strides=strides,
         kernel_shape=kernel_shape,
         dilations=dilations,
