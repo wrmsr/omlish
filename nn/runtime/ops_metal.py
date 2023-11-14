@@ -5,8 +5,9 @@ import ctypes
 import tempfile
 import typing as ta
 
-import Metal  # noqa
+from omlish import collections as col
 import Cocoa  # noqa
+import Metal  # noqa
 import libdispatch  # noqa
 
 from ..codegen.kernel import LinearizerOptions
@@ -17,9 +18,17 @@ from ..helpers import DEBUG
 from ..helpers import diskcache
 from ..helpers import getenv
 from ..helpers import prod
+from ..jit import BatchExecutor
+from ..jit import JitItem
 from ..renderer.metal import MetalRenderer
 from ..runtime.lib import LruAllocator
+from ..runtime.lib import RawBuffer
 from ..runtime.lib import RawBufferMapped
+from ..shape.symbolic import Node
+from ..shape.symbolic import Variable
+
+
+CI = False
 
 
 class MetalAllocator(LruAllocator):
@@ -100,7 +109,7 @@ def compile_metal(prg: str, use_xcode: bool = bool(getenv("METAL_XCODE"))) -> by
             input=air,
         )
 
-    options = Metal.MTLCompileOptions.alloc().init()
+    options = Metal.MTLCompileOptions.new()
     library = unwrap(METAL.device.newLibraryWithSource_options_error_(prg, options, None))
 
     # TODO: avoid file write here?
@@ -111,6 +120,7 @@ def compile_metal(prg: str, use_xcode: bool = bool(getenv("METAL_XCODE"))) -> by
 
 class MetalProgram:
     def __init__(self, name: str, lib: bytes) -> None:
+        super().__init__()
         data = libdispatch.dispatch_data_create(lib, len(lib), None, None)
         self.library = unwrap(METAL.device.newLibraryWithData_error_(data, None))
         self.fxn = self.library.newFunctionWithName_(name)
@@ -133,8 +143,14 @@ class MetalProgram:
     ):
         assert (
             prod(local_size) <= self.pipeline_state.maxTotalThreadsPerThreadgroup()
-        ), f"local size {local_size} bigger than {self.pipeline_state.maxTotalThreadsPerThreadgroup()} with exec width {self.pipeline_state.threadExecutionWidth()} memory length {self.pipeline_state.staticThreadgroupMemoryLength()}"  # noqa
+        ), (
+            f"local size {local_size} bigger than {self.pipeline_state.maxTotalThreadsPerThreadgroup()} "
+            f"with exec width {self.pipeline_state.threadExecutionWidth()} "
+            f"memory length {self.pipeline_state.staticThreadgroupMemoryLength()}"
+        )
+
         command_buffer = METAL.mtl_queue.commandBuffer()
+
         encoder = command_buffer.computeCommandEncoder()
         encoder.setComputePipelineState_(self.pipeline_state)
         for i, a in enumerate(bufs):
@@ -146,15 +162,141 @@ class MetalProgram:
                 )
             else:
                 raise RuntimeError(f"arg at index {i} has unsupported type {type(a)}")
-        encoder.dispatchThreadgroups_threadsPerThreadgroup_(
-            Metal.MTLSize(*global_size), Metal.MTLSize(*local_size)
-        )
+        encoder.dispatchThreadgroups_threadsPerThreadgroup_(Metal.MTLSize(*global_size), Metal.MTLSize(*local_size))
         encoder.endEncoding()
+
         command_buffer.commit()
+
         if wait:
             command_buffer.waitUntilCompleted()
             return command_buffer.GPUEndTime() - command_buffer.GPUStartTime()
+
         METAL.mtl_buffers_in_flight.append(command_buffer)
+
+
+class MetalBatchExecutor(BatchExecutor):
+    def __init__(
+            self,
+            jit_cache: list[JitItem],
+            input_rawbuffers: dict[ta.Union[int, str], RawBuffer],
+            var_vals: dict[Variable, int],
+    ) -> None:
+        super().__init__(jit_cache, input_rawbuffers, var_vals)
+
+        # create metal batch exec
+        icb_descriptor = Metal.MTLIndirectCommandBufferDescriptor.new()
+        icb_descriptor.setCommandTypes_(Metal.MTLIndirectCommandType(Metal.MTLIndirectCommandTypeConcurrentDispatch))
+        icb_descriptor.setInheritBuffers_(False)
+        icb_descriptor.setInheritPipelineState_(False)
+        icb_descriptor.setMaxKernelBufferBindCount_(31)
+
+        self.icb = METAL.device.newIndirectCommandBufferWithDescriptor_maxCommandCount_options_(
+            icb_descriptor,
+            len(self.jit_cache),
+            Metal.MTLResourceOptions(0),
+        )
+        assert self.icb is not None, "create indirect command buffer failed, does your system support this?"
+
+        self.int_buf = RawMetalBuffer(len(var_vals), dtypes.int32)
+        self.input_has_variable_dims: set[int] = set()
+
+        read_resources, write_resources = [], []
+        for j, ji in enumerate(self.jit_cache):
+            descriptor = Metal.MTLComputePipelineDescriptor.new()
+            descriptor.setComputeFunction_(ji.prg.clprg.fxn)
+            descriptor.setSupportIndirectCommandBuffers_(True)
+
+            pipeline_state = unwrap(METAL.device.newComputePipelineStateWithDescriptor_options_reflection_error_(
+                descriptor,
+                Metal.MTLPipelineOption(0),
+                None,
+                None,
+            ))
+
+            icb_command = self.icb.indirectComputeCommandAtIndex_(j)
+            icb_command.setComputePipelineState_(pipeline_state)
+            for i, b in enumerate(ji.rawbufs):
+                if b is not None:
+                    icb_command.setKernelBuffer_offset_atIndex_(b._buf, 0, i)
+                    if i == 0:
+                        write_resources.append(b._buf)
+                    else:
+                        read_resources.append(b._buf)
+
+            var_vals_keys = list(var_vals.keys())
+            for i, v in enumerate(getattr(ji.prg, "vars", [])):
+                icb_command.setKernelBuffer_offset_atIndex_(
+                    self.int_buf._buf,
+                    var_vals_keys.index(v) * 4,
+                    len(ji.rawbufs) + i,
+                )
+
+            global_size, local_size = ji.prg.launch_dims(var_vals)
+            assert ji.prg.global_size and ji.prg.local_size, "need global and local size to JIT"
+            if (
+                    any(isinstance(x, Node) for x in ji.prg.global_size)
+                    or any(isinstance(x, Node) for x in ji.prg.local_size)
+            ):
+                self.input_has_variable_dims.add(j)
+            else:
+                icb_command.concurrentDispatchThreadgroups_threadsPerThreadgroup_(
+                    Metal.MTLSize(*global_size),
+                    Metal.MTLSize(*local_size),
+                )
+            icb_command.setBarrier()
+
+        self.read_resources = col.unique(read_resources)
+        self.write_resources = col.unique(write_resources)
+        self.command_buffer: ta.Any = None
+        self.int_buf_view = self.int_buf.buffer_view()  # TODO: this is metal syncing when it doesn't need to
+
+    def __call__(
+            self,
+            input_rawbuffers: dict[ta.Union[int, str], RawBuffer],
+            var_vals: dict[Variable, int],
+            wait=False,
+    ):
+        # NOTE: you at least can't update the ints if this is running
+        if self.command_buffer is not None and self.command_buffer in METAL.mtl_buffers_in_flight:
+            self.command_buffer.waitUntilCompleted()
+
+        all_read_resources = self.read_resources + [x._buf for x in input_rawbuffers.values()]
+
+        for (j, i), input_name in self.input_replace.items():
+            self.icb.\
+                indirectComputeCommandAtIndex_(j).\
+                setKernelBuffer_offset_atIndex_(input_rawbuffers[input_name]._buf, 0, i)
+
+        for j in self.input_has_variable_dims:
+            global_size, local_size = self.jit_cache[j].prg.launch_dims(var_vals)
+            self.icb.\
+                indirectComputeCommandAtIndex_(j).\
+                concurrentDispatchThreadgroups_threadsPerThreadgroup_(Metal.MTLSize(*global_size), Metal.MTLSize(*local_size))  # noqa
+
+        self.int_buf_view[:] = list(var_vals.values())
+
+        command_buffer = METAL.mtl_queue.commandBuffer()
+
+        encoder = command_buffer.computeCommandEncoder()
+        encoder.executeCommandsInBuffer_withRange_(self.icb, Metal.MTLIndirectCommandBufferExecutionRangeMake(0, len(self.jit_cache)))
+        encoder.useResources_count_usage_(all_read_resources, len(all_read_resources), Metal.MTLResourceUsageRead)
+        encoder.useResources_count_usage_(self.write_resources, len(self.write_resources), Metal.MTLResourceUsageWrite)
+        encoder.endEncoding()
+
+        command_buffer.commit()
+
+        self.command_buffer = command_buffer
+
+        if wait:
+            command_buffer.waitUntilCompleted()
+            et = command_buffer.GPUEndTime() - command_buffer.GPUStartTime()
+        else:
+            METAL.mtl_buffers_in_flight.append(command_buffer)
+            et = None
+
+        super().update_stats(var_vals, et)
+
+        return et
 
 
 MetalBuffer = Compiled(
@@ -164,4 +306,5 @@ MetalBuffer = Compiled(
     compile_metal,
     MetalProgram,
     METAL.synchronize,
+    batch_executor=MetalBatchExecutor if not CI else BatchExecutor,
 )
