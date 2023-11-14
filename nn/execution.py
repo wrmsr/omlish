@@ -16,6 +16,7 @@ from .helpers import BEAM
 from .helpers import DEBUG
 from .helpers import GlobalCounters
 from .helpers import NOOPT
+from .helpers import all_int
 from .helpers import ansilen
 from .helpers import colored
 from .helpers import getenv
@@ -93,8 +94,10 @@ class BatchExecutor:
     ):
         for (j, i), input_name in self.input_replace.items():
             self.jit_cache[j].rawbufs[i] = input_rawbuffers[input_name]
+
         for ji in self.jit_cache:
             ji.prg(ta.cast(list[RawBuffer], ji.rawbufs), {v: var_vals[v] for v in getattr(ji.prg, "vars", [])}, jit=True)
+
         self.clear_jit_inputs()
 
     def update_stats(self, var_vals: dict[Variable, int], et: ta.Optional[float]):
@@ -408,7 +411,7 @@ class AstRunner:
 
         global_size, local_size = self.launch_dims(var_vals)
 
-        if global_size is not None and local_size is None:
+        if global_size is not None and local_size is None and all_int(self.global_size):  # type: ignore[arg-type]
             # TODO: this is copied from get_program
             from .features.search import optimize_local_size
             local_size = self.local_size = optimize_local_size(self.clprg, global_size, rawbufs)
@@ -516,7 +519,7 @@ class Compiled:
             if not (used_tensor_cores := k.apply_tensor_cores(getenv("TC", 1))):
                 k.hand_coded_optimizations()
 
-            if BEAM >= 1 and not vars_from_ast(ast):
+            if BEAM >= 1:
                 lins = [(("tc" if used_tensor_cores else "hc"), k)]
                 # allocate a scratch buffer if output buffer is also input
                 test_rawbuffers = [type(rawbuffers[0])(rawbuffers[0].size, rawbuffers[0].dtype), *rawbuffers[1:]] \
