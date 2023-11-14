@@ -1,9 +1,11 @@
 import collections
 import itertools
 import random
+import traceback
 import typing as ta
 
 from ..codegen import uops as uo
+from ..codegen.kernel import IllegalOptException
 from ..codegen.kernel import Opt
 from ..codegen.kernel import OptOps
 from ..codegen.linearizer import Linearizer
@@ -103,7 +105,6 @@ def time_linearizer(
 
     except Exception:
         if DEBUG >= 4:
-            import traceback
             traceback.print_exc()
             print("FAILED")
             print(lin.ast)
@@ -136,11 +137,13 @@ def bufs_from_lin(lin: Linearizer) -> list[RawBuffer]:
 # get dictionary of all possible actions
 def get_linearizer_actions(lin: Linearizer, include_0=True) -> dict[int, Linearizer]:
     acted_lins = {0: lin} if include_0 else {}
+
     for i, a in enumerate(actions):
         if a.axis is not None and a.axis >= lin.shape_len:
             continue
         if a.axis is not None and lin.full_shape[a.axis] == a.amt and Opt(a.op, a.axis, 0) in actions:
             continue
+
         lin2 = lin.copy()
         try:
             lin2.apply_opt(a)
@@ -153,8 +156,19 @@ def get_linearizer_actions(lin: Linearizer, include_0=True) -> dict[int, Lineari
             if up > 256 or lcl > 256:
                 continue
             acted_lins[i + 1] = lin2
-        except Exception as e:  # noqa
+
+        except IllegalOptException:
             pass
+
+        except Exception as e:  # noqa
+            if DEBUG >= 6:
+                traceback.print_exc()
+                print("OPT FAILED")
+                print(lin.ast)
+                print(lin.applied_opts)
+                print()
+            pass
+
     return acted_lins
 
 
@@ -234,7 +248,9 @@ def optimize_local_size(
 ) -> list[int]:
     test_rawbuffers = [type(rawbufs[0])(rawbufs[0].size, rawbufs[0].dtype), *rawbufs[1:]] \
         if rawbufs[0] in rawbufs[1:] else rawbufs
+
     MAX_WORKGROUP = clprg.max_work_group_size() if hasattr(clprg, 'max_work_group_size') else 1024
+
     local_dims = [
         [x for x in {sz, 1, 2, 4, 8, 16, 32, 64, 128, 256, MAX_WORKGROUP} if x <= sz]
         for sz in global_size

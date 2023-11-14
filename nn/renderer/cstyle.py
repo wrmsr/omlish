@@ -55,32 +55,42 @@ class CStyleLanguage(ta.NamedTuple):
     def render_cast(self, x: list[str], var_dtype: DType) -> str:
         if len(x) == 1:
             return f"({var_dtype.name})({x[0]})"
+
         assert len(x) == var_dtype.sz, f"cast is wrong size {len(x)} != {var_dtype.sz}"
         assert self.float4 is not None, "cast is not supported on this platform"
+
         if var_dtype == dtypes._half16:
             return f"{{{','.join(f'(half){x}' for x in x)}}}"
+
         if var_dtype == dtypes._float8:
             return f"{{{','.join(x)}}}"
+
         if var_dtype == dtypes._float4:
             return f"{self.float4}({','.join(x)})"
+
         if var_dtype == dtypes._float2:
             return f"{self.float4.replace('float4', 'float2')}({','.join(x)})"
+
         if var_dtype == dtypes._int2:
             return f"{self.float4.replace('float4', 'int2')}({','.join(x)})"
+
         raise NotImplementedError(f"no cast for {var_dtype}")
 
     # returns a str expression of the const with the given type
     def render_const(self, x: ta.Union[float, int], var_dtype) -> str:
         if math.isnan(x):
             val = "NAN"
+
         elif math.isinf(x):
             val = ("-" if x < 0 else "") + "INFINITY"
+
         else:
             val = (
                 f"{x}f"
                 if dtypes.is_float(var_dtype) and isinstance(x, float)
                 else f"{int(x)}"
             )
+
         return (
             self.render_cast([val] * var_dtype.sz, var_dtype)
             if var_dtype.sz > 1
@@ -92,8 +102,10 @@ class CStyleLanguage(ta.NamedTuple):
         if isinstance(buf_dtype, ImageDType):
             assert output_dtype == dtypes._float4, f"images must be float4, getting {output_dtype}"
             return f"read_imagef({buf_name}, smp, {idx})"
+
         if self.uses_vload and buf_dtype == dtypes.float16:
             return f"vload_half{'' if output_dtype.sz == 1 else str(output_dtype.sz)}(0, {buf_name}+{idx})"
+
         if output_dtype.sz > 1:
             out_val = f"*(({self.smem_prefix if local and self.smem_prefix_for_cast else self.buffer_prefix}{buf_dtype.name}{output_dtype.sz}*)({buf_name}+{idx}))"
         else:
