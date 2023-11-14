@@ -74,6 +74,14 @@ class TestSymbolic(unittest.TestCase):
         assert idx1 + idx2 == idx2 + idx1
         assert idx1 + idx2 != idx2
 
+    @unittest.skip("sym_truthy")
+    def test_truthy(self):
+        with self.assertRaises(TypeError):
+            bool(Variable("x", 0, 2))
+        assert sym_truthy(Variable("x", 0, 0) == Variable("y", 0, 0)).is_true
+        assert sym_truthy(Variable("x", 0, 0) == Variable("y", 0, 1)).is_unknown  # FIXME: :|
+        assert sym_truthy(Variable("x", 0, 2) == Variable("y", 3, 5)).is_false
+
     def test_factorize(self):
         a = Variable("a", 0, 8)
         self.helper_test_variable(a * 2 + a * 3, 0, 8 * 5, "(a*5)")
