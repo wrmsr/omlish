@@ -608,7 +608,7 @@ render_python: dict[type, ta.Callable] = {
         if ctx == "REPR" else
         f"{self.expr}"
     ),
-    NumNode: lambda self, ops, ctx: f"{self.b}",
+    NumNode: lambda self, ops, ctx: f"NumNode({self.b})" if ctx == "REPR" else f"{self.b}",
     MulNode: lambda self, ops, ctx: f"({self.a.render(ops, ctx)}*{sym_render(self.b, ops, ctx)})",
     DivNode: lambda self, ops, ctx: f"({self.a.render(ops, ctx)}//{self.b})",
     ModNode: lambda self, ops, ctx: f"({self.a.render(ops, ctx)}%{self.b})",
@@ -676,3 +676,7 @@ class ReprNodeRenderer(NodeRenderer):
     @NodeRenderer.render.register
     def render_variable(self, n: Variable) -> str:
         return f"Variable('{n.expr}', {n.min}, {n.max})" + (f".bind({n.val})" if self._val is not None else '')
+
+    @NodeRenderer.render.register
+    def render_num(self, n: Variable) -> str:
+        return f"NumNode({n.b})"
