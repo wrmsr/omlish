@@ -6,6 +6,8 @@ import math
 import functools
 import collections
 
+from omlish import dispatch
+
 from . import uops as uo
 from .. import ops as ops_
 from ..codegen.kernel import Kernel
@@ -59,36 +61,65 @@ def get_grouped_dims(prefix, start_dim, local_dims, maxdim: int = 0):
 
 
 class Linearizer(Kernel):
-    def uop_alu_idx(self, a: uo.UOp, b, ops, ctx: Linearizer, op, dtype=dtypes.int32):
-        render_b: uo.UOp = ta.cast(
-            uo.UOp, (NumNode(b) if not isinstance(b, Node) else b).render(ops, ctx)
-        )
+    def uop_alu_idx(self, a: uo.UOp, b, ren, op, dtype=dtypes.int32):
+        render_b: uo.UOp = ta.cast(uo.UOp, ren.render(NumNode(b) if not isinstance(b, Node) else b))
         return self.uop(uo.Alu, dtype, (a, render_b), op)
 
     # NOTE: the consts have to be cached for deduping of downstream uops to work
     def const(self, b: ta.Union[int, float], dtype=dtypes.int32, insert_before=None) -> uo.UOp:
         return self.uop(uo.Const, dtype, tuple(), b, insert_before=insert_before)
 
-    render_ops: ta.Any = {
-        Variable: lambda self, ops, ctx: ctx.loop_uops[self.expr],
-        NumNode: lambda self, ops, ctx: ctx.const(self.b),
-        MulNode: lambda self, ops, ctx: ctx.uop_alu_idx(self.a.render(ops, ctx), self.b, ops, ctx, ops_.Mul),
-        DivNode: lambda self, ops, ctx: ctx.uop_alu_idx(self.a.render(ops, ctx), self.b, ops, ctx, ops_.Div),
-        ModNode: lambda self, ops, ctx: ctx.uop_alu_idx(self.a.render(ops, ctx), self.b, ops, ctx, ops_.Mod),
-        LtNode: lambda self, ops, ctx: ctx.uop_alu_idx(self.a.render(ops, ctx), self.b, ops, ctx, ops_.CmpLt, dtype=dtypes.bool),  # noqa
-        SumNode: lambda self, ops, ctx: functools.reduce(
-            lambda a, b: ctx.uop_alu_idx(a, b, ops, ctx, ops_.Add),
-            self.nodes[1:],
-            self.nodes[0].render(ops, ctx),
-        ),
-        AndNode: lambda self, ops, ctx: functools.reduce(
-            lambda a, b: ctx.uop_alu_idx(
-                a, b, ops, ctx, ops_.Mul, dtype=dtypes.bool
-            ),
-            self.nodes[1:],
-            self.nodes[0].render(ops, ctx),
-        ),
-    }
+    def render(self, n: Node) -> uo.UOp:
+        return self.SymNodeRenderer(self).render(n)
+
+    class SymNodeRenderer:
+        def __init__(self, lin: Linearizer) -> None:
+            super().__init__()
+            self.lin = lin
+
+        @dispatch.method
+        def render(self, n: ta.Any) -> uo.UOp:
+            raise TypeError(n)
+
+        @render.register
+        def render_variable(self, n: Variable) -> uo.UOp:
+            return self.lin.loop_uops[n.expr]
+
+        @render.register
+        def render_num(self, n: NumNode) -> uo.UOp:
+            return self.lin.const(n.b)
+
+        @render.register
+        def render_mul(self, n: MulNode) -> uo.UOp:
+            return self.lin.uop_alu_idx(self.render(n.a), n.b, self, ops_.Mul)
+
+        @render.register
+        def render_div(self, n: DivNode) -> uo.UOp:
+            return self.lin.uop_alu_idx(self.render(n.a), n.b, self, ops_.Div)
+
+        @render.register
+        def render_mod(self, n: ModNode) -> uo.UOp:
+            return self.lin.uop_alu_idx(self.render(n.a), n.b, self, ops_.Mod)
+
+        @render.register
+        def render_lt(self, n: LtNode) -> uo.UOp:
+             return self.lin.uop_alu_idx(self.render(n.a), n.b, self, ops_.CmpLt, dtype=dtypes.bool)
+
+        @render.register
+        def render_sum(self, n: SumNode) -> uo.UOp:
+            return functools.reduce(
+                lambda a, b: self.lin.uop_alu_idx(a, b, self, ops_.Add),
+                n.nodes[1:],
+                self.render(n.nodes[0]),
+            )
+
+        @render.register
+        def render_and(self, n: AndNode) -> uo.UOp:
+            return functools.reduce(
+                lambda a, b: self.lin.uop_alu_idx(a, b, self, ops_.Mul, dtype=dtypes.bool),
+                n.nodes[1:],
+                self.render(n.nodes[0]),
+            )
 
     def global_load(
             self,
@@ -147,7 +178,7 @@ class Linearizer(Kernel):
                 elif this_const is not None:
                     self.load_cache[key] = self.const(this_const, localtype)
                     if valid.min == 0 and valid.max == 1:
-                        valid_rendered = valid.render(self.render_ops, self)
+                        valid_rendered = self.render(valid)
                         self.load_cache[key] = self.uop(
                             uo.Alu,
                             localtype,
@@ -168,15 +199,15 @@ class Linearizer(Kernel):
                             uo.Cast,
                             dtypes._int2,
                             (
-                                idx[0].render(self.render_ops, self),
-                                idx[1].render(self.render_ops, self),
+                                self.render(idx[0]),
+                                self.render(idx[1]),
                             ),
                         )
                     else:
-                        rendered_idx = idx.render(self.render_ops, self)
+                        rendered_idx = self.render(idx)
 
                     if valid.min == 0:
-                        valid_rendered = valid.render(self.render_ops, self)
+                        valid_rendered = self.render(valid)
                         self.load_cache[key] = self.uop(
                             uo.Load,
                             localtype,
@@ -253,10 +284,10 @@ class Linearizer(Kernel):
                 rendered_idx = self.uop(
                     uo.Cast,
                     dtypes._int2,
-                    tuple(x.render(self.render_ops, self) for x in idx),
+                    tuple(self.render(x) for x in idx),
                 )
             else:
-                rendered_idx = idx.render(self.render_ops, self)
+                rendered_idx = self.render(idx)
             stores.append(self.uop(uo.Store, None, (buf_uop, rendered_idx, var)))
         return stores
 
@@ -404,8 +435,8 @@ class Linearizer(Kernel):
                     uo.Loop,
                     dtypes.int32,
                     (
-                        self.const(x.min) if isinstance(x.min, int) else ta.cast(Node, x.min).render(self.render_ops, self),  # noqa
-                        self.const(x.max + 1) if isinstance(x.max, int) else ta.cast(Node, x.max + 1).render(self.render_ops, self),  # noqa
+                        self.const(x.min) if isinstance(x.min, int) else self.render(ta.cast(Node, x.min)),  # noqa
+                        self.const(x.max + 1) if isinstance(x.max, int) else self.render(ta.cast(Node, x.max + 1)),  # noqa
                     ),
                     cachable=False,
                 )
@@ -636,7 +667,7 @@ class Linearizer(Kernel):
                 if self.opts.has_local:
                     fake_idxs = [Variable.num(0)] * len(self.sts[-1].shape)
                     fake_idxs[self.global_dims + self.local_dims:self.global_dims + len(local_idxs)] = local_idxs[self.local_dims:]
-                    if_cond: uo.UOp = (self.sts[-1].expr_idxs(fake_idxs)[0] < 1).render(self.render_ops, self)
+                    if_cond: uo.UOp = self.render(self.sts[-1].expr_idxs(fake_idxs)[0] < 1)
                     barrier = self.uop(uo.If, None, (if_cond, barrier), cachable=False)
 
                 # create new late reduce local loops and replace local_idxs that have been used
