@@ -23,6 +23,7 @@ from ..jit import JIT_SUPPORTED_DEVICE
 from ..jit import TinyJit
 from ..nn.nn import Embedding
 from ..nn.nn import Linear
+from ..nn.state import get_parameters
 from ..nn.state import load_state_dict
 from ..nn.state import safe_load
 from ..nn.state import torch_load
@@ -853,6 +854,8 @@ After you are done speaking, output [EOS]. You are not Chad.
         quantize=args.quantize,
     )
 
+    param_count = sum(x.lazydata.st.size() for x in get_parameters(llama.model))
+
     if chatbot:
         # encode pre prompt
         toks = [llama.tokenizer.bos_id()] + llama.tokenizer.encode(pre_prompt)
@@ -908,7 +911,13 @@ After you are done speaking, output [EOS]. You are not Chad.
                     on_exit=(lambda et:
                         (f", {(GlobalCounters.time_sum_s - st) * 1e3:.2f} ms on GPU" if DEBUG >= 2 else "") +
                         f", {GlobalCounters.global_ops * 1e-9:.2f} GOPS, {GlobalCounters.global_mem * 1e-9:.2f} GB" +
-                        (f", {GlobalCounters.global_mem * 1e-9 / (GlobalCounters.time_sum_s - st):.2f} GB/s" if DEBUG >= 2 else "")
+                        (
+                            (
+                                f", {GlobalCounters.global_mem * 1e-9 / (GlobalCounters.time_sum_s - st):.2f} GB/s"
+                                f", param {param_count * 1e-9 * 2 / (GlobalCounters.time_sum_s - st):.2f} GB/s"
+                            )
+                            if DEBUG >= 2 else ""
+                        )
                     ) if DEBUG else None,
                     enabled=args.timing,
                 ):
