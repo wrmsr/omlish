@@ -150,7 +150,8 @@ class Linearizer(Kernel):
             g_idx, g_valid = self.sts[i].expr_idxs(fake_idxs)
         localtype = dtypes.float32 if amt == 1 else dtypes._float4 if amt == 4 else dtypes._float2
 
-        e_idxs, e_valids = g_idx.expand(expand_vars), g_valid.expand(expand_vars)
+        e_idxs = g_idx.expand(expand_vars)
+        e_valids = g_valid.expand(expand_vars)
         ret = []
         invalid_value = 0 if dtypes.is_int(buf.dtype) else 0.0
         for idx, valid, rep_idx in zip(e_idxs, e_valids, Node.iter_idxs(expand_vars)):
