@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import abc
 import functools
+import re
 import typing as ta
 
 from omlish import collections as col  # noqa
@@ -21,6 +22,7 @@ from .helpers import getenv
 from .helpers import prod
 from .ops import LazyOp
 from .runtime.lib import RawBuffer
+from .shape.symbolic import NumNode
 from .shape.symbolic import Variable
 from .shape.symbolic import sym_infer
 
@@ -50,6 +52,80 @@ class ScheduleItem:
     out: LazyBuffer
     inputs: tuple[LazyBuffer, ...]
     var_vals: dict[Variable, int]
+
+
+# **************** batch executor ****************
+
+
+@dc.dataclass(frozen=True)
+class JitItem:
+    prg: AstRunner
+    rawbufs: list[ta.Optional[RawBuffer]]
+
+
+class BatchExecutor:
+    def __init__(
+            self,
+            jit_cache: list[JitItem],
+            input_rawbuffers: dict[ta.Union[int, str], RawBuffer],
+            var_vals: dict[Variable, int],
+    ) -> None:
+        super().__init__()
+        self.jit_cache: list[JitItem] = jit_cache
+        self.input_replace: dict[tuple[int, int], ta.Union[int, str]] = {}
+        self.op_estimate = NumNode(0)
+        self.mem_estimate = NumNode(0)
+        for j, ji in enumerate(jit_cache):
+            if isinstance(ji.prg, AstRunner):  # TODO: this is just for world and needs to be refactored
+                self.op_estimate += ji.prg.op_estimate
+                self.mem_estimate += ji.prg.mem_estimate
+            for i, a in enumerate(ji.rawbufs):
+                if a in [v for v in input_rawbuffers.values()]:
+                    self.input_replace[(j, i)] = [k for k, v in input_rawbuffers.items() if v == a][0]
+        assert set(self.input_replace.values()) == set(input_rawbuffers.keys()), "some input tensors not found"
+        self.clear_jit_inputs()
+
+    def __call__(
+            self,
+            input_rawbuffers: dict[ta.Union[int, str], RawBuffer],
+            var_vals: dict[Variable, int],
+            wait=False,
+    ):
+        for (j, i), input_name in self.input_replace.items():
+            self.jit_cache[j].rawbufs[i] = input_rawbuffers[input_name]
+        for ji in self.jit_cache:
+            ji.prg(ta.cast(list[RawBuffer], ji.rawbufs), {v: var_vals[v] for v in getattr(ji.prg, "vars", [])}, jit=True)
+        self.clear_jit_inputs()
+
+    def update_stats(self, var_vals: dict[Variable, int], et: ta.Optional[float]):
+        # TODO: this is mostly copied from AstRunner
+        op_estimate = sym_infer(self.op_estimate, var_vals)
+        mem_estimate = sym_infer(self.mem_estimate, var_vals)
+        if DEBUG >= 2:
+            print(
+                f"{colored(f'*** {GlobalCounters.kernel_count:4d}', 'CYAN')}    "
+                f"kernels:{len(self.jit_cache):4d}  "
+                f"inputs:{len(self.input_replace):3d}   "
+                f"{' '.join([f'{k.expr}={v}' for k, v in var_vals.items()])[:50]:50s} "
+                f"OPs {int(op_estimate / 1e6):6d}M/{GlobalCounters.global_ops / 1e9:7.2f}G  "
+                f"mem {GlobalCounters.mem_used / 1e9:5.2f} GB "
+                + (
+                    str() if et is None else (
+                        f"tm {et * 1e6:9.2f}us/{GlobalCounters.time_sum_s * 1e3:9.2f}ms "
+                        f"({op_estimate / ((et or 1e-20) * 1e9):8.2f} GFLOPS, "
+                        f"{mem_estimate / ((et or 1e-20) * 1e9):7.2f} GB/s)"
+                    )
+                )
+            )
+        GlobalCounters.kernel_count += len(self.jit_cache)
+        GlobalCounters.global_ops += sym_infer(self.op_estimate, var_vals)
+        GlobalCounters.global_mem += sym_infer(self.mem_estimate, var_vals)
+        if et is not None:
+            GlobalCounters.time_sum_s += et
+
+    def clear_jit_inputs(self):
+        for (j, i) in self.input_replace.keys():
+            self.jit_cache[j].rawbufs[i] = None
 
 
 # **************** for Interpreted Buffers ****************
@@ -82,16 +158,21 @@ class Interpreted(AstExecutor):
         self.fxn_for_op = fxn_for_op
         self.from_underlying = from_underlying
         self.synchronize = lambda: None
+        self.batch_executor = BatchExecutor
         self.codegen = None
         self.method_cache: dict[LazyOp, ta.Callable] = {}
 
     def interpret_ast(self: Interpreted, ast: LazyOp) -> ta.Callable:
-        tglob: dict[str, ta.Any] = {}
+        tglob: dict[str, ta.Any] = {"Variable": Variable}
         lines: list[str] = []
         f = self.fxn_for_op
 
         @functools.lru_cache(None)
         def gstr(x: ta.Any, nm=None) -> str:
+            if 'Variable' in (str_arg := repr(x)) or 'NumNode' in str_arg:
+                str_arg = re.sub(r'Variable\(.*?\)', lambda m: f'var_vals[{str(m.group(0))}]', str_arg)
+                # TODO: (Variable - Variable) might create NumNode. can we remove it?
+                return re.sub(r'NumNode\((.*?)\)', r'\1', str_arg)
             ret = str(nm).replace(".", "_") if nm else f"m{len(tglob):04d}"
             tglob[ret] = x
             return ret
@@ -123,7 +204,7 @@ class Interpreted(AstExecutor):
 
         ret = _interpret_ast(ast)
         src = '\n'.join(
-            ['def run(inputs):'] +
+            ['def run(inputs, var_vals):'] +
             lines +
             [
                 f"  return {gstr(self.from_underlying, 'from_underlying')}({ret})"
@@ -149,7 +230,7 @@ class Interpreted(AstExecutor):
         if ast not in self.method_cache:
             self.method_cache[ast] = self.interpret_ast(ast)
 
-        ret = self.method_cache[ast]([x.realized for x in inputs] if inputs else None)
+        ret = self.method_cache[ast]([x.realized for x in inputs] if inputs else None, var_vals)
 
         if output is not None and ret.dtype != output.dtype and ops.Cast in self.fxn_for_op:
             # Do manual casting of ret if it does not match the required output dtype.
@@ -379,7 +460,7 @@ class AstRunner:
         return et
 
 
-class Compiled(AstExecutor):
+class Compiled:
     def __init__(
             self,
             buffer: type[RawBuffer],
@@ -388,19 +469,20 @@ class Compiled(AstExecutor):
             compiler,
             runtime,
             synchronize=lambda: None,
+            batch_executor=BatchExecutor,
     ) -> None:
         super().__init__()
         self.buffer = buffer
         self.linearizer_opts = linearizer_opts
         self.renderer = renderer
-        self.runtime = runtime
         self.compiler = compiler
+        self.runtime = runtime
         self.synchronize = synchronize
+        self.batch_executor = BatchExecutor if getenv("JIT") == 2 else batch_executor
         self.method_cache: dict[LazyOp, AstRunner] = {}
 
-    def to_program(self, k: Linearizer) -> AstRunner:
+    def to_program(self, k) -> AstRunner:
         k.linearize()
-
         src, runtime_args = self.renderer(k.function_name, k.uops)
         return AstRunner(
             k.function_name,
@@ -410,17 +492,100 @@ class Compiled(AstExecutor):
             op_estimate=k.info.flops,
             mem_estimate=k.info.mem_estimate,
             display_name=k.display_name,
-            runtime_args=runtime_args
+            runtime_args=runtime_args,
         ).build(
             self.compiler,
             self.runtime,
         )
 
-    def exec_ast(self, ast: LazyOp, output, inputs, var_vals, **kwargs):
-        # if DEBUG >= 4:
-        #  from .helpers import print_tree
-        #  print_tree(ast)
+    def get_optimized_program(self, ast: LazyOp, rawbuffers: list[RawBuffer]) -> AstRunner:
+        if DEBUG >= 3:
+            from .lazy import print_tree
+            print_tree(ast)
 
+        from .codegen.linearizer import Linearizer
+        from .lazy import vars_from_ast
+
+        k = Linearizer(ast, self.linearizer_opts)
+
+        assert (
+            k.info.dtype == rawbuffers[0].dtype
+        ), f"linearizer must match dtype. linearizer wants {k.info.dtype} but buffer is {rawbuffers[0].dtype}"
+
+        if not NOOPT:
+            if not (used_tensor_cores := k.apply_tensor_cores(getenv("TC", 1))):
+                k.hand_coded_optimizations()
+
+            if BEAM >= 1 and not vars_from_ast(ast):
+                lins = [(("tc" if used_tensor_cores else "hc"), k)]
+                # allocate a scratch buffer if output buffer is also input
+                test_rawbuffers = [type(rawbuffers[0])(rawbuffers[0].size, rawbuffers[0].dtype), *rawbuffers[1:]] \
+                    if rawbuffers[0] in rawbuffers[1:] else rawbuffers
+
+                kb = Linearizer(ast, self.linearizer_opts)
+                kb.required_optimizations()
+
+                from .features.search import beam_search, time_linearizer
+                lins.append((
+                    f"beam{BEAM.value}",
+                    beam_search(
+                        kb,
+                        test_rawbuffers,
+                        BEAM.value,
+                        bool(getenv("BEAM_ESTIMATE", 1)),
+                    ),
+                ))
+
+                if used_tensor_cores:
+                    lins.append(("hc", Linearizer(ast, self.linearizer_opts)))
+                    lins[-1][1].hand_coded_optimizations()
+
+                timed = sorted(
+                    [
+                        (
+                            nm,
+                            tk,
+                            time_linearizer(
+                                tk,
+                                test_rawbuffers,
+                                allow_test_size=False,
+                                disable_cache=True,
+                                clear_l2=True,
+                            ),
+                        )
+                        for nm, tk in lins
+                    ],
+                    key=lambda x: x[2],
+                )
+
+                if DEBUG >= 1:
+                    print("  <  ".join(
+                        f"{nm:6s} : {lin.colored_shape(30, dense=True)} : {tm * 1e6:8.2f} us"
+                        for nm, lin, tm in timed
+                    ))
+
+                k = timed[0][1]
+
+        else:
+            k.required_optimizations()
+
+        prg = self.to_program(k)
+
+        # extract real vars used in ast
+        prg.vars = vars_from_ast(ast)
+
+        assert all(v._val is None for v in prg.vars), f"ast contains bound Variable {prg.vars}"
+
+        return prg
+
+    def exec_ast(
+            self,
+            ast: LazyOp,
+            output,
+            inputs,
+            var_vals,
+            **kwargs,
+    ):
         # check if we can reuse the output buffer
         # if it's aliased, don't use it
         # NOTE: this is pretty wrong actually, who knows where else this buffer is used?
@@ -448,97 +613,16 @@ class Compiled(AstExecutor):
         # all the rawbuffers
         rawbuffers = [output.realized] + [x.realized for x in inputs]
 
-        # compilation time
-        def get_program():
-            if DEBUG >= 3:
-                from .lazy import print_tree
-                print_tree(ast)
-
-            from .codegen.linearizer import Linearizer
-            from .lazy import vars_from_ast
-
-            k = Linearizer(ast, self.linearizer_opts)
-
-            assert (
-                k.info.dtype == output.dtype
-            ), f"linearizer must match dtype. linearizer wants {k.info.dtype} but buffer is {output.dtype}"
-
-            if not NOOPT:
-                if not (used_tensor_cores := k.apply_tensor_cores(getenv("TC", 1))):
-                    k.hand_coded_optimizations()
-
-                if BEAM >= 1 and not vars_from_ast(ast):
-                    lins = [(("tc" if used_tensor_cores else "hc"), k)]
-
-                    # allocate a scratch buffer if output buffer is also input
-                    test_rawbuffers = [type(rawbuffers[0])(rawbuffers[0].size, rawbuffers[0].dtype), *rawbuffers[1:]] \
-                        if rawbuffers[0] in rawbuffers[1:] else rawbuffers
-                    kb = Linearizer(ast, self.linearizer_opts)
-                    kb.required_optimizations()
-                    from .features.search import beam_search
-                    from .features.search import time_linearizer
-
-                    lins.append((
-                        f"beam{BEAM.value}",
-                        beam_search(
-                            kb,
-                            test_rawbuffers,
-                            BEAM.value,
-                            bool(getenv("BEAM_ESTIMATE", 1)),
-                        ),
-                    ))
-
-                    if used_tensor_cores:
-                        lins.append(("hc", Linearizer(ast, self.linearizer_opts)))
-                        lins[-1][1].hand_coded_optimizations()
-                    timed = sorted(
-                        [
-                            (
-                                nm,
-                                tk,
-                                time_linearizer(
-                                    tk,
-                                    test_rawbuffers,
-                                    allow_test_size=False,
-                                    disable_cache=True,
-                                    clear_l2=True,
-                                ),
-                            )
-                            for nm, tk in lins
-                        ],
-                        key=lambda x: x[2],
-                    )
-
-                    if DEBUG >= 1:
-                        print("  <  ".join(
-                            f"{nm:6s} : {lin.colored_shape(30, dense=True)} : {tm * 1e6:8.2f} us"
-                            for nm, lin, tm in timed
-                        ))
-
-                    k = timed[0][1]
-            else:
-                k.required_optimizations()
-
-            prg = self.to_program(k)
-
-            # extract real vars used in ast
-            prg.vars = vars_from_ast(ast)
-            assert all(v._val is None for v in prg.vars), f"ast contains bound Variable {prg.vars}"
-
-            return prg
-
         if getenv("ENABLE_METHOD_CACHE", 1):
             if ast not in self.method_cache:
-                self.method_cache[ast] = get_program()
+                self.method_cache[ast] = self.get_optimized_program(ast, rawbuffers)
             prg = self.method_cache[ast]
         else:
-            prg = get_program()
+            prg = self.get_optimized_program(ast, rawbuffers)
 
         if prg.name == getenv("PRINT_PRG", ''):
             print(prg.prg)
 
-        prg.exec(
-            rawbuffers,
-            var_vals={k: var_vals[k] for k in prg.vars},
-        )
+        prg.exec(rawbuffers, var_vals={k: var_vals[k] for k in prg.vars})
+
         return output.realized
