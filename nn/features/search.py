@@ -14,6 +14,7 @@ from ..execution import MemBuffer
 from ..helpers import CACHELEVEL
 from ..helpers import Context
 from ..helpers import DEBUG
+from ..helpers import all_int
 from ..helpers import diskcache_get
 from ..helpers import diskcache_put
 from ..helpers import flatten
@@ -54,14 +55,20 @@ def time_linearizer(
         "allow_test_size": allow_test_size,
         "max_global_size": max_global_size,
     }
+
     if not disable_cache and CACHELEVEL >= 2 and (val := diskcache_get("time_linearizer", key)) is not None:
         return min(val)
-    var_vals = {k: k.min for k in vars_from_ast(lin.ast)}
+
+    # Set the midpoint value value for var_vals to optimize shapes.
+    var_vals = {k: (k.max + k.min) // 2 for k in vars_from_ast(lin.ast)}
+
     try:
         lin.linearize()
+
         prg = ta.cast(Compiled, Device[Device.DEFAULT]).to_program(lin)
         real_global_size = prg.global_size
-        if allow_test_size and prg.global_size:
+
+        if allow_test_size and prg.global_size and all_int(tuple(prg.global_size)):
             test_global_size = prg.global_size[:]
             while prod(test_global_size) > max_global_size:
                 for j in range(2, -1, -1):
@@ -72,12 +79,13 @@ def time_linearizer(
             prg.global_size = test_global_size
         else:
             factor = 1
-        # TODO: this is super broken for var_vals
+
         # TODO: this is copied from prg.__call__
         global_size, local_size = prg.launch_dims(var_vals)
-        if global_size is not None and local_size is None:
+        if global_size is not None and local_size is None and all_int(tuple(prg.global_size)):
             local_size = optimize_local_size(prg.clprg, global_size, rawbufs)
             global_size = [g // l if g % l == 0 else g / l for g, l in zip(global_size, local_size)]
+
         tms = []
         for _ in range(cnt):
             if clear_l2:
@@ -90,7 +98,9 @@ def time_linearizer(
             if local_size:
                 lra['local_size'] = local_size
             tms.append(prg.clprg(*rawbufs, *var_vals.values(), **lra, wait=True) * factor)
+
         prg.global_size = real_global_size
+
     except Exception:
         if DEBUG >= 4:
             import traceback
@@ -99,8 +109,10 @@ def time_linearizer(
             print(lin.ast)
             print(lin.applied_opts)
         tms = [float('inf')]
+
     if CACHELEVEL >= 2:
         diskcache_put("time_linearizer", key, tms)
+
     return min(tms)
 
 
@@ -109,12 +121,14 @@ def bufs_from_lin(lin: Linearizer) -> list[RawBuffer]:
     bufsts: ta.DefaultDict[int, list[MemBuffer]] = collections.defaultdict(list)
     for x in lin.membufs:
         bufsts[x.idx].append(x)
+
     rawbufs: list[ta.Optional[RawBuffer]] = [None] * len(bufsts)
     for k, lx in bufsts.items():
         rawbufs[k] = ta.cast(Compiled, Device[Device.DEFAULT]).buffer(
             prod(lx[0].dtype.shape) if isinstance(lx[0].dtype, ImageDType) else max(y.st.size() for y in lx),
             lx[0].dtype,
         )
+
     assert all(r is not None for r in rawbufs)
     return ta.cast(list[RawBuffer], rawbufs)
 
