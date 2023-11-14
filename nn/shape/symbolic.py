@@ -25,10 +25,19 @@ class Node:
     max: int
 
     def render(self, ops=None, ctx=None) -> ta.Any:
-        if ops is None:
-            ops = render_python
         assert self.__class__ in (Variable, NumNode) or self.min != self.max
-        return ops[type(self)](self, ops, ctx)
+        if ops is None:
+            if ctx == 'DEBUG':
+                cls = DebugNodeRenderer
+            elif ctx == 'REPR':
+                cls = ReprNodeRenderer
+            elif ctx is None:
+                cls = NodeRenderer
+            else:
+                raise ValueError(ctx)
+            return cls().render(self)
+        else:
+            return ops[type(self)](self, ops, ctx)
 
     def vars(self):
         return []
@@ -599,23 +608,6 @@ def sym_infer(a: ta.Union[Node, int], var_vals: dict[Variable, int]) -> int:
 # symbolic int
 sint = ta.Union[Node, int]
 VariableOrNum = ta.Union[Variable, NumNode]
-
-render_python: dict[type, ta.Callable] = {
-    Variable: lambda self, ops, ctx: (
-        f"{self.expr}[{self.min}-{self.max}{'=' + str(self.val) if self._val is not None else ''}]"
-        if ctx == "DEBUG" else
-        f"Variable('{self.expr}', {self.min}, {self.max})" + (f".bind({self.val})" if self._val is not None else '')
-        if ctx == "REPR" else
-        f"{self.expr}"
-    ),
-    NumNode: lambda self, ops, ctx: f"NumNode({self.b})" if ctx == "REPR" else f"{self.b}",
-    MulNode: lambda self, ops, ctx: f"({self.a.render(ops, ctx)}*{sym_render(self.b, ops, ctx)})",
-    DivNode: lambda self, ops, ctx: f"({self.a.render(ops, ctx)}//{self.b})",
-    ModNode: lambda self, ops, ctx: f"({self.a.render(ops, ctx)}%{self.b})",
-    LtNode: lambda self, ops, ctx: f"({self.a.render(ops, ctx)}<{sym_render(self.b, ops, ctx)})",
-    SumNode: lambda self, ops, ctx: f"({'+'.join(sorted([x.render(ops, ctx) for x in self.nodes]))})",
-    AndNode: lambda self, ops, ctx: f"({' and '.join(sorted([x.render(ops, ctx) for x in self.nodes]))})",
-}
 
 
 ##
