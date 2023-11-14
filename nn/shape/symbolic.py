@@ -19,6 +19,77 @@ def is_sym_int(x: ta.Any) -> bool:
     return isinstance(x, (int, Node))
 
 
+class sym_truthy:  # noqa
+    name: str
+
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        return self.name
+
+    def __new__(cls, v):  # noqa
+        if isinstance(v, NumNode):
+            v = v.b
+        if isinstance(v, int):
+            if v != 0:
+                return cls.TRUE
+            else:
+                return cls.FALSE
+        if isinstance(v, Node):
+            return cls.UNKNOWN
+        raise TypeError(v)
+
+    def __init__(self, _):
+        pass
+
+    def __bool__(self):
+        raise TypeError
+
+    def __hash__(self):
+        return hash(self.name)
+
+    def __eq__(self, o):
+        if not isinstance(o, sym_truthy):
+            raise TypeError(o)
+        return self is o
+
+    @classmethod
+    def _new(cls, name):
+        ret = object.__new__(cls)
+        ret.name = name
+        return ret
+
+    TRUE: ta.Final[sym_truthy]  # noqa
+    FALSE: ta.Final[sym_truthy]  # noqa
+    UNKNOWN: ta.Final[sym_truthy]  # noqa
+
+    @property
+    def is_true(self):
+        return self is sym_truthy.TRUE
+
+    @property
+    def is_not_true(self):
+        return self is not sym_truthy.TRUE
+
+    @property
+    def is_false(self):
+        return self is sym_truthy.FALSE
+
+    @property
+    def is_not_false(self):
+        return self is not sym_truthy.FALSE
+
+    @property
+    def is_unknown(self):
+        return self is sym_truthy.UNKNOWN
+
+
+sym_truthy.TRUE: ta.Final[sym_truthy] = sym_truthy._new('truthy.TRUE')  # noqa
+sym_truthy.FALSE: ta.Final[sym_truthy] = sym_truthy._new('truthy.FALSE')  # noqa
+sym_truthy.UNKNOWN: ta.Final[sym_truthy] = sym_truthy._new('truthy.UNKNOWN')  # noqa
+
+
 class Node:
     b: ta.Union[Node, int]
     min: int
@@ -95,8 +166,12 @@ class Node:
     def __hash__(self):
         return self.hash
 
-    def __bool__(self):
+    def eqz(self):
         return not (self.max == self.min == 0)
+
+    def __bool__(self):
+        raise TypeError  # FIXME
+        # return self.eqz()
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Node):
@@ -161,7 +236,7 @@ class Node:
                 return self // b.b
             if self == b:
                 return NumNode(1)
-            if (b - self).min > 0 and self.min >= 0:
+            if sym_truthy((b - self).min > 0).is_true and sym_truthy(self.min >= 0).is_true:
                 return NumNode(0)  # b - self simplifies the node
             raise RuntimeError(f"not supported: {self} // {b}")
         assert b != 0
@@ -192,7 +267,7 @@ class Node:
                 return self % b.b
             if self == b:
                 return NumNode(0)
-            if (b - self).min > 0 and self.min >= 0:
+            if sym_truthy((b - self).min > 0).is_not_false and sym_truthy(self.min >= 0).is_not_false:
                 return self  # b - self simplifies the node
             raise RuntimeError(f"not supported: {self} % {b}")
         assert b > 0
@@ -224,7 +299,7 @@ class Node:
 
     @staticmethod
     def sum(nodes: list[Node]) -> Node:
-        nodes = [x for x in nodes if x.max or x.min]
+        nodes = [x for x in nodes if sym_truthy(x.max).is_not_false or sym_truthy(x.min).is_not_false]
         if not nodes:
             return NumNode(0)
         if len(nodes) == 1:
@@ -258,7 +333,7 @@ class Node:
             return NumNode(1)
         if len(nodes) == 1:
             return nodes[0]
-        if any(not x for x in nodes):
+        if any(sym_truthy(x).is_false for x in nodes):
             return NumNode(0)
 
         # filter 1s
@@ -275,7 +350,7 @@ class Node:
 
 class Variable(Node):
     def __new__(cls, expr: ta.Optional[str], nmin: int, nmax: int):
-        assert nmin >= 0 and nmin <= nmax
+        assert sym_truthy(nmin >= 0).is_not_false and sym_truthy(nmin <= nmax).is_not_false
         if nmin == nmax:
             return NumNode(nmin)
         return super().__new__(cls)
@@ -332,7 +407,7 @@ class NumNode(Node):
 
 def create_node(ret: Node):
     assert (
-        ret.min <= ret.max
+        not sym_truthy(ret.min <= ret.max).is_false
     ), f"min greater than max! {ret.min} {ret.max} when creating {type(ret)} {ret}"
     if ret.min == ret.max:
         return NumNode(ret.min)
@@ -407,7 +482,7 @@ class MulNode(OpNode):
     def get_bounds(self) -> tuple[int, int]:
         return (
             (self.a.min * self.b, self.a.max * self.b)
-            if self.b >= 0
+            if sym_truthy(self.b >= 0).is_true
             else (self.a.max * self.b, self.a.min * self.b)
         )
 
@@ -667,8 +742,8 @@ class ReprNodeRenderer(NodeRenderer):
 
     @NodeRenderer.render.register
     def render_variable(self, n: Variable) -> str:
-        return f"Variable('{n.expr}', {n.min}, {n.max})" + (f".bind({n.val})" if self._val is not None else '')
+        return f"Variable('{n.expr}', {n.min}, {n.max})" + (f".bind({n.val})" if n._val is not None else '')
 
     @NodeRenderer.render.register
-    def render_num(self, n: Variable) -> str:
+    def render_num(self, n: NumNode) -> str:
         return f"NumNode({n.b})"
