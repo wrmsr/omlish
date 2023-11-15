@@ -126,6 +126,4 @@ def main(
 
 
 if __name__ == "__main__":
-    import fire
-
-    fire.Fire(main)
+    print(main("You are sick. How do you feel?"))
