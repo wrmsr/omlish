@@ -872,6 +872,8 @@ def _main():
 
     if not args.interactive:
         decode(latent)
+    else:
+        input()
 
 
 if __name__ == "__main__":
