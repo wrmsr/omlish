@@ -735,7 +735,7 @@ class StableDiffusion:
 # this is sd-v1-4.ckpt
 FILENAME = pathlib.Path(__file__).parents[2] / "weights/sd-v1-4.ckpt"
 
-if __name__ == "__main__":
+def _main():
     parser = argparse.ArgumentParser(
         description="Run Stable Diffusion",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -762,6 +762,7 @@ if __name__ == "__main__":
     parser.add_argument("--timing", action="store_true", help="Print timing per step")
     parser.add_argument("--seed", type=int, help="Set the random latent seed")
     parser.add_argument('--guidance', type=float, default=7.5, help="Prompt strength")
+    parser.add_argument('--interactive', action='store_true', help="Display interactive")
     args = parser.parse_args()
 
     Tensor.no_grad = True
@@ -807,6 +808,39 @@ if __name__ == "__main__":
     def run(model, *x):
         return model(*x).realize()
 
+    if args.interactive:
+        import matplotlib.pyplot as plt
+        plt.ion()
+        plt_img = None
+
+    def decode(latent):
+        # upsample latent space to image with autoencoder
+        x = model.decode(latent)
+        print(x.shape)
+
+        # save image
+        from PIL import Image
+        import numpy as np
+
+        im = Image.fromarray(x.numpy().astype(np.uint8, copy=False))
+
+        if args.interactive:
+            nonlocal plt_img
+            if plt_img is None:
+                plt_img = plt.imshow(im)
+            else:
+                plt_img.set_data(im)  # noqa
+            plt.draw()
+            plt.pause(0.001)
+
+        else:
+            print(f"saving {args.out}")
+            im.save(args.out)
+
+            # Open image.
+            if not args.noshow:
+                im.show()
+
     # this is diffusion
     with Context(BEAM=getenv("LATEBEAM")):
         # this is diffusion
@@ -831,19 +865,15 @@ if __name__ == "__main__":
                 )
                 if args.timing:
                     Device[Device.DEFAULT].synchronize()
+
+                if args.interactive:
+                    decode(latent)
         del run
 
-    # upsample latent space to image with autoencoder
-    x = model.decode(latent)
-    print(x.shape)
+    if not args.interactive:
+        decode(latent)
 
-    # save image
-    from PIL import Image
-    import numpy as np
 
-    im = Image.fromarray(x.numpy().astype(np.uint8, copy=False))
-    print(f"saving {args.out}")
-    im.save(args.out)
-    # Open image.
-    if not args.noshow:
-        im.show()
+if __name__ == "__main__":
+    _main()
+
