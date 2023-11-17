@@ -8,6 +8,7 @@ import typing as ta
 import weakref
 
 from omlish import collections as col
+from omlish import lang
 import numpy as np
 
 from . import ops
@@ -231,7 +232,7 @@ UNSAFE_PAD_OPS = {
 }
 
 
-class LazyBuffer:
+class LazyBuffer(lang.Final):
 
     def __init__(
         self,
@@ -251,8 +252,8 @@ class LazyBuffer:
         self._realized: ta.Optional[RawBuffer] = src
         self.output_buffer: ta.Optional[RawBuffer] = None  # TODO: do we really need this? or can we just use realized
         # TODO: does children have to be a ref count instead of a set? can a Buffer be a double child?
-        self.children: weakref.WeakSet = weakref.WeakSet()
-        self.views: weakref.WeakSet = weakref.WeakSet()
+        self.children: weakref.WeakSet[LazyBuffer] = weakref.WeakSet()
+        self.views: weakref.WeakSet[LazyBuffer] = weakref.WeakSet()
         # NOTE: op should be read only after construction of LazyBuffer. it is now with schedule
         self.op: LazyOp = op
         self.optype = type(op)
@@ -317,13 +318,13 @@ class LazyBuffer:
 
     # *** scheduling ***
 
-    def schedule(self, seen=None) -> list[ScheduleItem]:
+    def schedule(self, seen: ta.Optional[set[LazyBuffer]] = None) -> list[ScheduleItem]:
         if seen is None:
             seen = set()
         if self in seen or self.realized or self.is_unrealized_const():
             return []
         seen.add(self)
-        if self.base != self:
+        if self.base is not self:
             return self.base.schedule(seen)
 
         # rewrite unbased CONTIGUOUS into UnaryOps.NOOP
@@ -339,17 +340,11 @@ class LazyBuffer:
             op = _ast_reduceops(op)
 
         # schedule the AST
-        ret = []
+        ret: list[ScheduleItem] = []
         for x in op.buffers():
             ret += x.schedule(seen)
 
-        var_vals = dict(sorted(
-            merge_dicts(
-                [self.st.var_vals] +
-                [buf.st.var_vals for buf in op.buffers()]
-            ).items(),
-            key=lambda kv: ta.cast(Variable, kv[0]).key),
-        )
+        var_vals = merge_dicts([self.st.var_vals] + [buf.st.var_vals for buf in op.buffers()])
 
         # run the ast and log the op
         op, base_bufs = _replace_bufferops(op)
@@ -372,7 +367,7 @@ class LazyBuffer:
     def const(self, val: ta.Union[float, int]) -> LazyBuffer:
         # NOTE: dtypes.from_np(self.dtype.np) to deal with image types
         return (
-            self.loadop(
+            LazyBuffer.loadop(
                 ops.LoadConst,
                 tuple(),
                 dtypes.from_np(self.dtype.np),
@@ -415,7 +410,7 @@ class LazyBuffer:
             )
 
         # real contiguous, this will turn into a UnaryOps.NOOP
-        return self.loadop(
+        return LazyBuffer.loadop(
             ops.Contiguous,
             self.shape,
             self.dtype,
