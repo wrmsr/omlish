@@ -15,6 +15,7 @@ from ..dtypes import DType
 from ..dtypes import dtypes
 from ..execution import Compiled
 from ..execution import CompiledAstRunner
+from ..execution import update_stats
 from ..helpers import DEBUG
 from ..helpers import diskcache
 from ..helpers import getenv
@@ -301,7 +302,16 @@ class MetalBatchExecutor(BatchExecutor):
             METAL.mtl_buffers_in_flight.append(command_buffer)
             et = None
 
-        super().update_stats(var_vals, et)
+        update_stats(
+            f"<batched {len(self.jit_cache)}>",
+            self.op_estimate,
+            self.mem_estimate,
+            var_vals,
+            et,
+            buf_count=len(input_rawbuffers),
+            jit=True,
+            num_kernels=len(self.jit_cache),
+        )
 
         return et
 
