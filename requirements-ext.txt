@@ -3,7 +3,7 @@
 
 ### nn
 
-matplotlib==3.8.1
+matplotlib==3.8.2
 numpy==1.26.2
 
 huggingface_hub>=0.17.0
@@ -14,7 +14,7 @@ llvmlite==0.41.1
 
 pyopencl==2023.1.4
 
-pycuda==2022.2.2; sys_platform != 'darwin'
+pycuda==2023.1; sys_platform != 'darwin'
 
 pyobjc-core==10.0; sys_platform == 'darwin'
 pyobjc-framework-cocoa==10.0; sys_platform == 'darwin'
@@ -33,12 +33,12 @@ onnx2torch==1.5.13
 
 sentencepiece==0.1.99
 tiktoken==0.5.1
-transformers==4.35.1
+transformers==4.35.2
 
 ##
 
-torch==2.1.0
-torchvision==0.16.0
+torch==2.1.1
+torchvision==0.16.1
 
 ##
 
@@ -87,7 +87,7 @@ sounddevice==0.4.6
 # vosk==0.3.45
 
 bellows==0.36.8
-zigpy==0.59.0
+zigpy==0.60.0
 
 # python-openzwave
 zwave-js-server-python==0.54.0
