@@ -51,26 +51,17 @@ class RawDiskBuffer(RawBufferMapped):
         )
 
     def shrink(self, arg):
-        assert arg[1:] == tuple(
-            [(0, x) for x in self.shape[1:]]
+        assert (
+            len(arg) < 2 or arg[1:] == tuple([(0, x) for x in self.shape[1:]])
         ), f"can only slice the first dim of disk tensor {arg}"
-        offset = arg[0][0] * prod(self.shape[1:]) * self.dtype.itemsize
-        size = (arg[0][1] - arg[0][0]) * prod(self.shape[1:])
+        offset = arg[0][0] * (prod(self.shape[1:]) if len(arg) > 1 else 1) * self.dtype.itemsize
+        size = (arg[0][1] - arg[0][0]) * (prod(self.shape[1:]) if len(arg) > 1 else 1)
         return RawDiskBuffer(
             size,
             self.dtype,
             buf=self._buf,
             offset=self.offset + offset,
-            shape=(arg[0][1] - arg[0][0],) + self.shape[1:],
-        )
-
-    def as_strided(self, arg):
-        return RawDiskBuffer(
-            prod(arg[0]),
-            self.dtype,
-            buf=self._buf,
-            offset=self.offset + arg[2] * self.dtype.itemsize,
-            shape=arg[0],
+            shape=(arg[0][1] - arg[0][0],) + (self.shape[1:] if len(arg) > 1 else ()),
         )
 
     def _buffer(self):
@@ -87,7 +78,8 @@ disk_fxn_for_op: dict[type[ops.LazyOp], ta.Callable] = {
     ops.Mem: lambda x: x,
     ops.Nop: lambda x: x,
     ops.Cast: RawDiskBuffer.cast,
-    ops.AsStrided: RawDiskBuffer.as_strided,
+    ops.Shrink: RawDiskBuffer.shrink,
+    ops.Reshape: RawDiskBuffer.reshape,
 }
 
 

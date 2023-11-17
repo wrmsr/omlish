@@ -276,11 +276,6 @@ class Restride(MovementOp, lang.Final):
     pass
 
 
-@dc.dataclass(frozen=True)
-class AsStrided(MovementOp, lang.Final):
-    pass
-
-
 ##
 
 
