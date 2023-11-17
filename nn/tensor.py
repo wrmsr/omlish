@@ -445,7 +445,7 @@ class Tensor:
     #        - and following Tensors does not follow consecutively to the end of fancy indexing's dims
     def __getitem__(
         self, val
-    ):  # val: ta.Union[int, slice, Tensor, None, Ellipsis, tuple[ta.Union[int, slice, Tensor, None, Ellipsis], ...]]
+    ) -> Tensor:  # val: ta.Union[int, slice, Tensor, None, Ellipsis, tuple[ta.Union[int, slice, Tensor, None, Ellipsis], ...]]  # noqa
         def normalize_int(e, i, dim_sz):
             if -dim_sz <= e < dim_sz:
                 return e if e != -1 else dim_sz - 1
@@ -619,7 +619,7 @@ class Tensor:
             )
         )
 
-    def gather(self: Tensor, idx: Tensor, dim: int):
+    def gather(self: Tensor, idx: Tensor, dim: int) -> Tensor:
         assert idx.ndim == self.ndim, "self.ndim must equal idx.ndim"
         assert all(
             s >= i for s, i in zip(self.shape, idx.shape)
@@ -654,7 +654,7 @@ class Tensor:
             .transpose(ax1=0, ax2=dim)
         )
 
-    def cat(self, *args, dim=0):
+    def cat(self, *args, dim=0) -> Tensor:
         dim = (dim + len(self.shape)) if dim < 0 else dim
         assert all(
             len(y.shape) == len(self.shape)
@@ -675,13 +675,13 @@ class Tensor:
         )
 
     @staticmethod
-    def stack(tensors, dim=0):
+    def stack(tensors, dim=0) -> Tensor:
         first = tensors[0].unsqueeze(dim)
         unsqueezed_tensors = [tensor.unsqueeze(dim) for tensor in tensors[1:]]
         # checks for shapes and number of dimensions delegated to cat
         return first.cat(*unsqueezed_tensors, dim=dim)
 
-    def repeat(self, repeats):
+    def repeat(self, repeats) -> Tensor:
         base_shape = (1,) * (len(repeats) - self.ndim) + self.shape
         new_shape = [x for b in base_shape for x in [1, b]]
         expand_shape = [x for rs in zip(repeats, base_shape) for x in rs]
@@ -699,7 +699,7 @@ class Tensor:
         ]
         return [self[tuple(sl)] for sl in slice_params]
 
-    def squeeze(self, dim=None):
+    def squeeze(self, dim=None) -> Tensor:
         if dim is None:
             return (
                 self
@@ -728,7 +728,7 @@ class Tensor:
         return self.reshape(self.shape[:dim] + (1,) + self.shape[dim:])
 
     # (padding_left, padding_right, padding_top, padding_bottom)
-    def pad2d(self, padding: ta.Union[list[int], tuple[int, ...]], value: float = 0):
+    def pad2d(self, padding: ta.Union[list[int], tuple[int, ...]], value: float = 0) -> Tensor:
         slc = [
             (-p0, s + p1)
             for p0, p1, s in zip(padding[::2], padding[1::2], self.shape[::-1])
@@ -838,12 +838,12 @@ class Tensor:
 
     def _pool(
         self,
-        k_: tuple[int, ...],
+        k_: tuple[sint, ...],
         stride: ta.Union[tuple[int, ...], int] = 1,
         dilation: ta.Union[tuple[int, ...], int] = 1,
     ) -> Tensor:
         assert len(self.shape) >= len(k_), f"can't pool {self.shape} with {k_}"
-        assert all_int(self.shape), f"does not support symbolic shape {self.shape}"
+        assert all_int(self.shape) and all_int(k_), f"does not support symbolic {self.shape=}, {k_=}"
         s_, d_ = make_pair(stride, len(k_)), make_pair(dilation, len(k_))
         assert len(k_) == len(s_) and len(k_) == len(
             d_

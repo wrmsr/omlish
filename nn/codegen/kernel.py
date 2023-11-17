@@ -244,11 +244,11 @@ class Kernel:
     def membufs(self) -> list[MemBuffer]:
         return [x for x in self.bufs if isinstance(x, MemBuffer)]
 
-    def shape_offsets(self, i):
+    def shape_offsets(self, i: int):
         return (
             itertools.product(
                 *[
-                    list(range(s))
+                    list(range(ta.cast(int, s)))
                     for s in self.sts[i].shape[self.shape_len - self.upcasted:][::-1]
                 ]
             )
@@ -256,14 +256,14 @@ class Kernel:
             else [tuple()]
         )
 
-    def float4_axis(self, i):
+    def float4_axis(self, i: int):
         return [
             x - (self.shape_len - self.upcasted)
             for x in self.sts[i].unit_stride_axes()
             if x >= self.shape_len - self.upcasted and self.sts[i].shape[x] % 4 == 0
         ]
 
-    def upcasted_axis(self, i):
+    def upcasted_axis(self, i: int):
         return list(
             zip(
                 self.sts[i].shape[self.shape_len - self.upcasted:],
@@ -279,7 +279,7 @@ class Kernel:
         )
 
     # TODO: is there a better way to write this?
-    def acc_offsets(self, i) -> list[int]:
+    def acc_offsets(self, i: int) -> list[int]:
         if self.upcasted == 0:
             return [0]
         upcasted_i = self.upcasted_axis(i)
@@ -299,7 +299,7 @@ class Kernel:
             )
         ]
 
-    def get_upcast_dim(self, i) -> list[int]:
+    def get_upcast_dim(self, i: int) -> list[int]:
         should_upcast = self.opts.supports_float4 and (
             self.bufs[i].dtype in [dtypes.float32, dtypes.float16]
             or isinstance(self.bufs[i].dtype, ImageDType)

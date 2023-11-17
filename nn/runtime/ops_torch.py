@@ -44,6 +44,17 @@ def match_types(x, y, disallow_bool=False):
     return x.type(up), y.type(up)
 
 
+def as_strided(x, arg):
+    if any(i < 0 for i in arg[1]):
+        return torch.as_strided(
+            x.contiguous(),
+            arg[0],
+            tuple(abs(i) for i in arg[1]),
+            arg[2] + sum((s - 1) * a if a < 0 else 0 for (s, a) in zip(arg[0], arg[1])),
+        ).flip([i for i, a in enumerate(arg[1]) if a < 0])
+    return torch.as_strided(x.contiguous(), arg[0], arg[1], arg[2])
+
+
 torch_fxn_for_op: dict[type[ops.LazyOp], ta.Callable] = {
     **base_fxn_for_op,
     **{
@@ -73,6 +84,7 @@ torch_fxn_for_op: dict[type[ops.LazyOp], ta.Callable] = {
         ops.Restride: lambda x, arg: x[tuple(slice(None, None, abs(i)) for i in arg)].flip([i for i, a in enumerate(arg) if a < 0]),  # noqa
         ops.Expand: lambda x, arg: x.expand(arg),
         ops.Permute: lambda x, arg: x.permute(arg),
+        ops.AsStrided: as_strided,
     },
 }
 
