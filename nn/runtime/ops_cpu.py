@@ -147,6 +147,6 @@ CPUBuffer = Interpreted(
     functools.partial(
         interpret_ast,
         numpy_fxn_for_op,
-        RawNumpyBuffer.fromCPU,
+        RawNumpyBuffer.fromCpu,
     ),
 )

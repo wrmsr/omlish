@@ -157,7 +157,7 @@ class Interpreted:
             buffer: type[RawBuffer],
             compiler: ta.Callable[[LazyOp], ta.Callable],
     ) -> None:
-        super.__init__()
+        super().__init__()
         self.buffer = buffer
         self.compiler = compiler
         self.synchronize = lambda: None
