@@ -41,6 +41,7 @@ shm_fxn_for_op: dict[type[ops.LazyOp], ta.Callable] = {
     ops.Mem: lambda x: x,
     ops.Nop: lambda x: x,
     ops.Reshape: lambda x, _: x,
+    ops.AsStrided: lambda x,_:x,
 }
 
 

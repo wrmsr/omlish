@@ -105,6 +105,13 @@ numpy_fxn_for_op: dict[type[ops.LazyOp], ta.Callable] = {
         ops.Pad: np.pad,
         ops.Expand: np.broadcast_to,
         ops.Restride: lambda x, arg: x[tuple(slice(None, None, i) for i in arg)],
+        ops.AsStrided: lambda x, arg: np.ndarray(
+            arg[0],
+            buffer=np.require(x, requirements='C'),
+            dtype=x.dtype,
+            offset=arg[2] * x.dtype.itemsize,
+            strides=tuple(y * x.dtype.itemsize for y in arg[1]),
+        ),
         ops.MulAcc: einsum_mulacc(
             lambda s, a, b: np.einsum(s, *match_types(a.copy(), b.copy()), optimize=True),
             lambda x: x.strides,
