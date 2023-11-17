@@ -501,7 +501,7 @@ class Linearizer(Kernel):
 
         # parse AST
         loaded_buffers = {}
-        acc = []
+        acc: list[uo.UOp] = []
         self.load_cache: dict[str, uo.UOp] = {}
 
         fake_reduce_idxs: list[Variable] = []
@@ -599,7 +599,7 @@ class Linearizer(Kernel):
                             op2 = locals_to_store[1][2][(y + (j * by)) * wmma_sz[1]:(y + (j * by) + 1) * wmma_sz[1]]
                             op3 = acc[i:i + wmma_sz[2]]
                             if self.opts.device != "HIP":
-                                ops = tuple(op1+op2+op3)
+                                ops = tuple(op1 + op2 + op3)
                             else:
                                 ops = (
                                     self.uop(uo.Cast, dtypes._half16, tuple(op1)),
@@ -726,7 +726,7 @@ class Linearizer(Kernel):
 
                 # there's no AST here (and there's no shape for the reduce LazyOp)
                 self.ast_parse(
-                    type(self.reduceop)((self.bufs[-1],)),
+                    type(self.reduceop)((ops_.Mem((), self.bufs[-1]),)),
                     acc,
                     self.acc_offsets(-1),
                     loaded_buffers,
@@ -955,7 +955,15 @@ class Linearizer(Kernel):
 
         return ret
 
-    def ast_parse(self, x, acc, offs, loaded_buffers, do_reduce=False, loop_ctx=()) -> list[uo.UOp]:
+    def ast_parse(
+            self,
+            x: LazyOp,
+            acc: list[uo.UOp],
+            offs: ta.Optional[list[int]],
+            loaded_buffers: dict[ta.Union[MemBuffer, ConstBuffer, LocalBuffer], list[uo.UOp]],
+            do_reduce=False,
+            loop_ctx=tuple(),
+    ) -> list[uo.UOp]:
         if not isinstance(x, LazyOp):
             return loaded_buffers[x]  # for LOCAL_BUFFER
 
@@ -963,12 +971,12 @@ class Linearizer(Kernel):
             return loaded_buffers[x.arg]
 
         if isinstance(x, ops_.Nop):
-            return self.ast_parse(x.src[0], acc, offs, loaded_buffers)
+            return self.ast_parse(ta.cast(ops_.LazyOp, x.src[0]), acc, offs, loaded_buffers)
 
         if isinstance(x, ops_.Cast):
             return [
                 self.uop(uo.Cast, x.arg[0], (u,), x.arg) if not isinstance(x.arg[0], ImageDType) else u
-                for u in self.ast_parse(x.src[0], acc, offs, loaded_buffers)
+                for u in self.ast_parse(ta.cast(ops_.LazyOp, x.src[0]), acc, offs, loaded_buffers)
             ]
 
         if isinstance(x, ops_.ReduceOp) and not do_reduce:
@@ -991,7 +999,7 @@ class Linearizer(Kernel):
 
         values = [
             self.ast_parse(
-                v,
+                ta.cast(ops_.LazyOp, v),
                 acc,
                 offs,
                 loaded_buffers,
@@ -1008,9 +1016,14 @@ class Linearizer(Kernel):
         if type(x) in ops:
             ret = []
             input_acc = acc[:]
-            for idx, val, off in zip([[i] for i in range(len(values[0]))], zip(*values), offs):
+            for idx, val, off in zip(
+                    [[i] for i in range(len(values[0]))],
+                    zip(*values),
+                    ta.cast(list[int], offs),
+            ):
                 acc[off] = self.uop(uo.Alu, dtypes.float32, val + (acc[off],), ops[type(x)])
                 ret.append((idx, acc[off]))
+
             for off in range(len(acc)):
                 if input_acc[off] != acc[off]:
                     acc[off] = self.uop(uo.Phi, dtypes.float32, (input_acc[off], acc[off]) + tuple(loop_ctx))
@@ -1018,7 +1031,10 @@ class Linearizer(Kernel):
         else:
             ret = [
                 (idx, self.uop(uo.Alu, dtypes.float32, val, type(x)))
-                for idx, val in zip([[i] for i in range(len(values[0]))], zip(*values))
+                for idx, val in zip(
+                    [[i] for i in range(len(values[0]))],
+                    zip(*values),
+                )
             ]
 
         ordered_ret: list[ta.Optional[uo.UOp]] = [None] * len(values[0])

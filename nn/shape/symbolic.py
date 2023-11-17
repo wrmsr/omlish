@@ -146,12 +146,6 @@ class Node:
     def unbind(self) -> tuple[Node, ta.Optional[int]]:
         return self.substitute({v: v.unbind()[0] for v in self.vars() if v.val is not None}), None
 
-    @property
-    def val(self):
-        ret = self.substitute({x: NumNode(x.val) for x in self.vars()})
-        assert isinstance(ret, NumNode), f"val must be NumNode, it's {ret}"
-        return ret.b
-
     @functools.cached_property
     def key(self) -> str:
         return self.render(ctx="DEBUG")
