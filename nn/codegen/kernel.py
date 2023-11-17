@@ -286,7 +286,7 @@ class Kernel:
         )
 
     # TODO: is there a better way to write this?
-    def acc_offsets(self, i):
+    def acc_offsets(self, i) -> list[int]:
         if self.upcasted == 0:
             return [0]
         upcasted_i = self.upcasted_axis(i)
