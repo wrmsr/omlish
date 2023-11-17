@@ -55,7 +55,7 @@ nevergrad==1.0.0
 # triton-nightly; platform_machine == 'x86_64'
 triton==2.1.0; platform_machine == 'x86_64'
 
-wgpu==0.11.0
+wgpu==0.12.0
 
 ##
 
