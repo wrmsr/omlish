@@ -6,6 +6,8 @@ from __future__ import annotations
 
 import typing as ta
 
+from omlish import cached
+from omlish import collections as col
 from omlish import dataclasses as dc
 from omlish import lang
 
@@ -21,19 +23,19 @@ class LazyOp(lang.Abstract):
     def __repr__(self):
         return f"LazyOp(op={type(self).__name__}, src={self.src}, arg={self.arg})"
 
-    def buffers(self):
-        buffers: tuple[ta.Union[LazyOp, LazyBuffer], ...] = ()
-        try:
-            # NOTE: the linearizer's key function maps the buffers to ints, and LOCAL_BUFFER is used. we don't care
-            # about buffers in these cases
-            for x in self.src:
-                buffers += x.buffers()
-        except AttributeError:
-            buffers = ()
-        return buffers
+    @cached.nullary
+    def buffers(self) -> tuple[LazyBuffer, ...]:
+        return tuple(col.unique(b for x in self.src for b in x.buffers()))
 
-    @property
-    def key(self):
+    @cached.property
+    def hash(self) -> int:
+        return hash((type(self), self.src, self.arg))
+
+    def __hash__(self):
+        return self.hash
+
+    @cached.property
+    def key(self) -> tuple:
         return (
             type(self),
             tuple(map(lambda x: getattr(x, "key", x), self.src)),
