@@ -851,9 +851,26 @@ class TestOps(unittest.TestCase):
             a = Tensor(3.14)
             a.matmul(a)
 
+    def test_multinomial(self):
+        # NOTE: this is random, so it has a very large atol
+        helper_test_op(
+            [(1000,)],
+            lambda x: torch.multinomial(x.clip(0, 1), num_samples=1),
+            lambda x: Tensor.multinomial(x.clip(0, 1)), forward_only=True,
+            atol=1000.,
+        )
+
+    def test_small_cumsum(self):
+        helper_test_op(
+            [(10)],
+            lambda x: torch.cumsum(x, dim=0),
+            lambda x: Tensor.cumsum(x, axis=0),
+            atol=1e-6,
+        )
+
     def test_simple_cumsum(self):
         helper_test_op(
-            [(1024)],
+            [(1022)],
             lambda x: torch.cumsum(x, dim=0),
             lambda x: Tensor.cumsum(x, axis=0),
             atol=1e-6,

@@ -184,6 +184,7 @@ def beam_search(lin: Linearizer, rawbufs, amt: int, allow_test_size=True) -> Lin
         "ast": str(lin.ast),
         "amt": amt,
         "allow_test_size": allow_test_size,
+        "device": Device.DEFAULT,
     }
 
     if (

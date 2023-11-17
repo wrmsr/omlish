@@ -8,7 +8,9 @@ from omlish import collections as col
 from omlish import dataclasses as dc
 
 from .. import ops
-from ..helpers import prod, DEBUG
+from ..helpers import DEBUG
+from ..helpers import merge_dicts
+from ..helpers import prod
 from ..shape.symbolic import MulNode
 from ..shape.symbolic import Node
 from ..shape.symbolic import SumNode
@@ -78,13 +80,9 @@ def expr_idxs(view: View, idxs) -> Node:
 
 @functools.lru_cache(maxsize=None)
 def merge_views(vm2: View, vm1: View) -> ta.Optional[View]:
-    if vm2.mask:
+    if vm2.mask or vm1.offset != 0:
         return None  # this isn't supported yet
-    if vm1.offset != 0:
-        return None  # this isn't supported yet
-    mst = ShapeTracker((vm2, vm1))
-    strides = mst.real_strides()
-    if None in strides:
+    if None in (strides := ShapeTracker((vm2, vm1)).real_strides()):
         return None
     return View.create(vm1.shape, ta.cast(tuple[sint, ...], strides), vm2.offset, vm1.mask)
 
@@ -121,25 +119,20 @@ class ShapeTracker:
     def shape(self) -> tuple[sint, ...]:
         return self.views[-1].shape
 
-    # this is the real size (ish)
     def size(self):
-        return 0 if prod(self.shape) == 0 else self.expr_idxs()[0].max + 1
+        return 0 if (0 in self.shape) else self.expr_idxs()[0].max + 1
 
     def vars(self) -> list[Variable]:
         return col.unique(functools.reduce(operator.add, [v.vars() for v in self.views], []))
 
     @property
     def var_vals(self) -> dict[Variable, int]:
-        ret: dict[Variable, int] = {}
-        for v in self.vars():
-            var, val = v.unbind()
-            assert var not in ret or ret[var] == val, f"{var} has conflicted values {val} and {ret[var]}"
-            ret[var] = val
-        return ret
+        return merge_dicts([dict([v.unbind()]) for v in self.vars()])
 
     def unbind(self) -> ShapeTracker:
         return ShapeTracker(tuple(v.unbind() for v in self.views))
 
+    # TODO: this needs to go
     def to_movement_ops(self) -> list[tuple[type[ops.MovementOp], tuple]]:
         to_apply: list[tuple[type[ops.MovementOp], tuple]] = []
         for i, v in enumerate(self.views):
@@ -219,18 +212,15 @@ class ShapeTracker:
     def real_strides(self, ignore_valid=False) -> tuple[ta.Optional[sint], ...]:
         if len(self.views) == 1 and self.views[-1].mask is None:
             return self.views[-1].strides
-        idxs = [Variable(f"idx{i}", 0, s - 1) for i, s in enumerate(self.shape)]
+        idxs: list[Node] = [Variable(f"idx{i}", 0, s - 1) for i, s in enumerate(self.shape)]
         idx, valid = self.expr_idxs(idxs)
         ret: list[ta.Optional[sint]] = [None] * len(self.views[-1].shape)
         for this_dim in idx.nodes if isinstance(idx, SumNode) else [idx]:
-            if (
-                isinstance(this_dim, MulNode)
-                and isinstance(this_dim.a, Variable)
-                and this_dim.a in idxs
-            ):
-                ret[idxs.index(this_dim.a)] = this_dim.b
-            elif isinstance(this_dim, Variable) and this_dim in idxs:
-                ret[idxs.index(this_dim)] = 1
+            idx_maybe, stride_maybe = (this_dim.a, this_dim.b) if isinstance(this_dim, MulNode) else (this_dim, 1)
+            try:
+                ret[idxs.index(idx_maybe)] = stride_maybe
+            except ValueError:
+                pass
         idx_vars, valid_vars = idx.vars(), valid.vars()
         for i, tidx in enumerate(idxs):
             if tidx in valid_vars and not ignore_valid:
@@ -252,8 +242,7 @@ class ShapeTracker:
 
     def simplify(self) -> ShapeTracker:
         if len(self.views) >= 2:
-            new_view = merge_views(self.views[-2], self.views[-1])
-            if new_view:
+            if (new_view := merge_views(self.views[-2], self.views[-1])) is not None:
                 if DEBUG >= 4:
                     print(
                         f"st simplify : {self.views[-2]} + {self.views[-1]} = {new_view}"
@@ -299,8 +288,7 @@ class ShapeTracker:
         return ShapeTracker(self.views[0:-1] + (self.views[-1].stride(mul),))
 
     def reshape(self, new_shape: tuple[sint, ...]) -> ShapeTracker:
-        new_view = self.views[-1].reshape(new_shape)
-        if new_view is None:
+        if (new_view := self.views[-1].reshape(new_shape)) is None:
             extra_view = View.create(new_shape)
             # last chance to merge. TODO: move into View
             if (merged_view := merge_views(self.views[-1], extra_view)) is not None:
