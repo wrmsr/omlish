@@ -48,11 +48,11 @@ class Tensor:
     default_type: ta.ClassVar[DType] = dtypes.float32
 
     def __init__(
-        self,
-        data: ta.Union[int, float, list, LazyBuffer, np.ndarray],
-        device: ta.Optional[str] = None,
-        dtype: ta.Optional[DType] = None,
-        requires_grad: ta.Optional[bool] = None,
+            self,
+            data: ta.Union[None, int, float, list, LazyBuffer, np.ndarray],
+            device: ta.Optional[str] = None,
+            dtype: ta.Optional[DType] = None,
+            requires_grad: ta.Optional[bool] = None,
     ) -> None:
         super().__init__()
 
@@ -78,12 +78,12 @@ class Tensor:
                 ops.LoadConst, tuple(), dtype or Tensor.default_type, device, data
             )
 
-        elif data.__class__ is list:
+        elif data is None or data.__class__ is list:
             assert (
                 dtype is None or dtype.np is not None
             ), f"{dtype} doesn't have a numpy dtype"
             data = LazyBuffer.fromCpu(
-                np.array(data, dtype=(dtype or Tensor.default_type).np)
+                np.array([] if data is None else data, dtype=(dtype or Tensor.default_type).np),
             )
 
         elif isinstance(data, np.ndarray):
@@ -780,7 +780,7 @@ class Tensor:
     def mean(self, axis=None, keepdim=False):
         assert all_int(self.shape), "does not support symbolic shape"
         out = self.sum(axis=axis, keepdim=keepdim)
-        return out.mul(prod(out.shape) / prod(self.shape))
+        return out.mul(prod(out.shape) / prod(self.shape)) if 0 not in self.shape else out
 
     def std(self, axis=None, keepdim=False, correction=1):
         assert all_int(self.shape), "does not support symbolic shape"
@@ -1309,6 +1309,8 @@ class Tensor:
     ) -> tuple[Tensor, Tensor]:
         x: Tensor = self
         if not isinstance(y, Tensor):
+            if 0 in x.shape:
+                return x, x.full_like(y)
             y = Tensor(
                 y,
                 device=self.device,
@@ -1478,8 +1480,6 @@ class Tensor:
         return -((-self).maximum(-x))
 
     def where(self: Tensor, input_: ta.Union[Tensor, float], other: ta.Union[Tensor, float]):
-        if 0 in self.shape:
-            return self
         x_, y = self._broadcasted(input_)
         x, z = x_._broadcasted(other)
         return funcs.Where.apply(x, *y._broadcasted(z))
