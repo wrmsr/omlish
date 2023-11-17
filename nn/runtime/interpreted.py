@@ -47,7 +47,7 @@ def interpret_ast(
             else:
                 tmp = f"{gstr(fxn_for_op[type(ast)], type(ast).__name__)}(inputs[{ast.arg.idx - 1}])"
             for mop, arg in ast.arg.st.to_movement_ops():
-                tmp = f"{gstr(fxn_for_op[mop], mop)}({tmp}, {gstr(arg)})"
+                tmp = f"{gstr(fxn_for_op[mop], mop.__name__)}({tmp}, {gstr(arg)})"
         else:
             inp = [_interpret_ast(src) for src in ast.src]
             tmp = f"{gstr(fxn_for_op[type(ast)], type(ast).__name__)}({', '.join(inp + ([gstr(ast.arg)] if ast.arg else []))})"
