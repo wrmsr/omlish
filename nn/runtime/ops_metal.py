@@ -29,9 +29,6 @@ from ..shape.symbolic import Node
 from ..shape.symbolic import Variable
 
 
-CI = False
-
-
 class MetalAllocator(LruAllocator):
     def _do_alloc(self, size, dtype, device, **kwargs):
         return METAL.device.newBufferWithLength_options_(
@@ -53,6 +50,14 @@ class _METAL:
         super().__init__()
         self.mtl_buffers_in_flight: list[ta.Any] = []
         self.device = Metal.MTLCreateSystemDefaultDevice()
+        self.supports_icb = (
+            (
+                self.device.supportsFamily_(Metal.MTLGPUFamilyMac2)
+                or self.device.supportsFamily_(Metal.MTLGPUFamilyApple3)
+                or self.device.supportsFamily_(Metal.MTLGPUFamilyCommon2)
+            )
+            and self.device.argumentBuffersSupport() is Metal.MTLArgumentBuffersTier2
+        )
         self.mtl_queue = self.device.newCommandQueueWithMaxCommandBufferCount_(1024)
         self.allocator = MetalAllocator(
             self.device.dedicatedMemorySize() or self.device.sharedMemorySize()
@@ -308,5 +313,5 @@ MetalBuffer = Compiled(
     compile_metal,
     MetalProgram,
     METAL.synchronize,
-    batch_executor=MetalBatchExecutor if not CI else BatchExecutor,
+    batch_executor=MetalBatchExecutor if not METAL.supports_icb else BatchExecutor,
 )
