@@ -1,3 +1,4 @@
+import functools
 import typing as ta
 
 import numpy as np
@@ -12,6 +13,7 @@ from ..helpers import prod
 from ..runtime.lib import RawBuffer
 from ..runtime.ops_cpu import base_fxn_for_op
 from ..runtime.ops_cpu import einsum_mulacc
+from .interpreted import interpret_ast
 
 
 device = torch.device(
@@ -109,6 +111,9 @@ class RawTorchBuffer(RawBuffer):
 
 TorchBuffer = Interpreted(
     RawTorchBuffer,
-    torch_fxn_for_op,
-    from_underlying=lambda x: RawTorchBuffer(prod(x.shape), type_map[x.dtype], x),
+    functools.partial(
+        interpret_ast,
+        torch_fxn_for_op,
+        lambda x: RawTorchBuffer(prod(x.shape), type_map[x.dtype], x),
+    ),
 )

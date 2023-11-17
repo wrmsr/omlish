@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import abc
 import functools
-import re
 import typing as ta
 
 from omlish import collections as col  # noqa
@@ -96,7 +95,7 @@ class BatchExecutor:
             self.jit_cache[j].rawbufs[i] = input_rawbuffers[input_name]
 
         for ji in self.jit_cache:
-            ji.prg(ta.cast(list[RawBuffer], ji.rawbufs), {v: var_vals[v] for v in getattr(ji.prg, "vars", [])}, jit=True)
+            ji.prg(ta.cast(list[RawBuffer], ji.rawbufs), var_vals, jit=True)
 
         self.clear_jit_inputs()
 
@@ -149,82 +148,22 @@ class AstExecutor(lang.Abstract):
         raise NotImplementedError
 
 
-class Interpreted(AstExecutor):
+# **************** for Interpreted Buffers ****************
+
+
+class Interpreted:
     def __init__(
             self,
-            buffer,
-            fxn_for_op: dict[type[LazyOp], ta.Callable],
-            from_underlying=None,
+            buffer: type[RawBuffer],
+            compiler: ta.Callable[[LazyOp], ta.Callable],
     ) -> None:
-        super().__init__()
+        super.__init__()
         self.buffer = buffer
-        self.fxn_for_op = fxn_for_op
-        self.from_underlying = from_underlying
+        self.compiler = compiler
         self.synchronize = lambda: None
         self.batch_executor = BatchExecutor
         self.codegen = None
         self.method_cache: dict[LazyOp, ta.Callable] = {}
-
-    def interpret_ast(self: Interpreted, ast: LazyOp) -> ta.Callable:
-        if DEBUG >= 3:
-            from .lazy import print_tree
-            print_tree(ast)
-
-        tglob: dict[str, ta.Any] = {"Variable": Variable}
-        lines: list[str] = []
-        f = self.fxn_for_op
-
-        @functools.lru_cache(None)
-        def gstr(x: ta.Any, nm=None) -> str:
-            if 'Variable' in (str_arg := repr(x)) or 'NumNode' in str_arg:
-                str_arg = re.sub(r'Variable\(.*?\)', lambda m: f'var_vals[{str(m.group(0))}]', str_arg)
-                # TODO: (Variable - Variable) might create NumNode. can we remove it?
-                return re.sub(r'NumNode\((.*?)\)', r'\1', str_arg)
-            ret = str(nm).replace(".", "_") if nm else f"m{len(tglob):04d}"
-            tglob[ret] = x
-            return ret
-
-        @functools.lru_cache(None)
-        def _interpret_ast(ast: LazyOp) -> str:
-            if (
-                    ops.MulAcc in f
-                    and isinstance(ast, ops.Sum)
-                    and isinstance(ast.src[0], LazyOp)
-                    and isinstance(ast.src[0], ops.Mul)
-            ):
-                ast = ops.MulAcc(ast.src[0].src, ast.arg)
-
-            if ops.AsStrided in f and isinstance(ast, ops.BufferOp):
-                if isinstance(ast, ops.Const):
-                    tmp = f"{gstr(f[type(ast)], type(ast).__name__)}({gstr(ast.arg.val)}, {gstr(ast.arg.dtype)})"
-                else:
-                    tmp = f"{gstr(f[type(ast)], type(ast).__name__)}(inputs[{ast.arg.idx - 1}])"
-                for mop, arg in ast.arg.st.to_movement_ops():
-                    tmp = f"{gstr(f[mop], mop.__name__)}({tmp}, {gstr(arg)})"
-            else:
-                inp = [_interpret_ast(src) for src in ast.src]
-                tmp = f"{gstr(f[type(ast)], type(ast).__name__)}({', '.join(inp + ([gstr(ast.arg)] if ast.arg else []))})"
-
-            ret = f"a{len(lines)}"
-            lines.append(f"  {ret} = {tmp}")
-            return ret
-
-        ret = _interpret_ast(ast)
-        src = '\n'.join(
-            ['def run(inputs, var_vals):'] +
-            lines +
-            [f"  return {gstr(self.from_underlying, 'from_underlying')}({ret})"]
-        )
-
-        if DEBUG >= 4:
-            print(functools.reduce(
-                lambda x, y: (x.replace(y[0], str(y[1])) if y[0][0:2] == "m0" else x),
-                tglob.items(),
-                src,
-            ))
-
-        exec(compile(src, "<ast>", "exec"), tglob)  # pylint: disable=exec-used
-        return tglob['run']
 
     def exec_ast(
             self,
@@ -235,14 +174,14 @@ class Interpreted(AstExecutor):
             **kwargs,
     ):
         if ast not in self.method_cache:
-            self.method_cache[ast] = self.interpret_ast(ast)
-        ret = self.method_cache[ast]([x.realized for x in inputs] if inputs else None, var_vals)
-        assert ret.dtype == output.dtype, f"{ret.dtype} != {output.dtype}"
-        if output.output_buffer is not None:
-            assert output.output_buffer.dtype == ret.dtype
-            output.output_buffer._buf = ret._buf
-            return output.output_buffer
-        return ret
+            self.method_cache[ast] = self.compiler(ast)
+        output.realized = output.output_buffer  # NOTE: assuming this is the right size and dtype from assign
+        ret: RawBuffer = self.method_cache[ast]([x.realized for x in inputs] if inputs else None, var_vals)
+        assert output.dtype == ret.dtype, f"expected {output.dtype}, got {ret.dtype}"
+        if output.realized is not None:
+            output.realized._buf = ret._buf
+        else:
+            output.realized = ret
 
 
 # --teenygrad--
@@ -365,7 +304,7 @@ class AstRunner:
 
     def exec(
             self,
-            rawbufs,
+            rawbufs: list[RawBuffer],
             var_vals: ta.Optional[dict[Variable, int]] = None,
             force_wait=False,
     ) -> ta.Optional[float]:
@@ -405,6 +344,7 @@ class AstRunner:
     ) -> ta.Optional[float]:
         if var_vals is None:
             var_vals = {}
+        var_vals = {k: var_vals[k] for k in self.vars}  # filter the var_vals
 
         global_size, local_size = self.launch_dims(var_vals)
 
@@ -588,7 +528,8 @@ class Compiled:
     ):
         # check if we can reuse the output buffer
         # if it's aliased, don't use it
-        # NOTE: this is pretty wrong actually, who knows where else this buffer is used?
+        # TODO: this is pretty wrong actually, who knows where else this buffer is used?
+        # TODO: what if an assign is required? this silently is wrong
         output.realized = output.output_buffer
         if output.realized is not None:
             for i, a in enumerate(inputs):
@@ -615,16 +556,7 @@ class Compiled:
         # all the rawbuffers
         rawbuffers = [output.realized] + [x.realized for x in inputs]
 
-        if getenv("ENABLE_METHOD_CACHE", 1):
-            if ast not in self.method_cache:
-                self.method_cache[ast] = self.get_optimized_program(ast, rawbuffers)
-            prg = self.method_cache[ast]
-        else:
-            prg = self.get_optimized_program(ast, rawbuffers)
+        if ast not in self.method_cache:
+            self.method_cache[ast] = self.get_optimized_program(ast, rawbuffers)
 
-        if prg.name == getenv("PRINT_PRG", ''):
-            print(prg.prg)
-
-        prg.exec(rawbuffers, var_vals={k: var_vals[k] for k in prg.vars})
-
-        return output.realized
+        self.method_cache[ast].exec(rawbuffers, var_vals)
