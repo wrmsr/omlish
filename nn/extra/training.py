@@ -2,7 +2,11 @@ import numpy as np
 import tqdm
 
 from ..helpers import getenv
+from ..jit import TinyJit
 from ..tensor import Tensor
+
+
+CI = False
 
 
 def train(
@@ -17,29 +21,32 @@ def train(
         target_transform=lambda x: x,
         noloss=False,
 ):
+    @TinyJit
+    def train_step(x, y):
+        # network
+        out = model.forward(x) if hasattr(model, 'forward') else model(x)
+        loss = lossfn(out, y)
+        optim.zero_grad()
+        loss.backward()
+        if noloss:
+            del loss
+        optim.step()
+        if noloss:
+            return (None, None)
+        cat = out.argmax(axis=-1)
+        accuracy = (cat == y).mean()
+        return loss.realize(), accuracy.realize()
+
     with Tensor.train():
         losses, accuracies = [], []
-        for i in (t := tqdm.trange(steps, disable=getenv('CI', False))):
+        for i in (t := tqdm.trange(steps, disable=CI)):
             samp = np.random.randint(0, X_train.shape[0], size=(BS))
             x = Tensor(transform(X_train[samp]), requires_grad=False)
             y = Tensor(target_transform(Y_train[samp]))
-
-            # network
-            out = model.forward(x) if hasattr(model, 'forward') else model(x)
-
-            loss = lossfn(out, y)
-            optim.zero_grad()
-            loss.backward()
-            if noloss:
-                del loss
-            optim.step()
-
+            loss, accuracy = train_step(x, y)
             # printing
             if not noloss:
-                cat = out.argmax(axis=-1)
-                accuracy = (cat == y).mean().numpy()
-
-                loss = loss.detach().numpy()
+                loss, accuracy = loss.numpy(), accuracy.numpy()
                 losses.append(loss)
                 accuracies.append(accuracy)
                 t.set_description("loss %.2f accuracy %.2f" % (loss, accuracy))

@@ -166,6 +166,10 @@ class Interpreted(AstExecutor):
         self.method_cache: dict[LazyOp, ta.Callable] = {}
 
     def interpret_ast(self: Interpreted, ast: LazyOp) -> ta.Callable:
+        if DEBUG >= 3:
+            from .lazy import print_tree
+            print_tree(ast)
+
         tglob: dict[str, ta.Any] = {"Variable": Variable}
         lines: list[str] = []
         f = self.fxn_for_op
@@ -209,15 +213,15 @@ class Interpreted(AstExecutor):
         src = '\n'.join(
             ['def run(inputs, var_vals):'] +
             lines +
-            [
-                f"  return {gstr(self.from_underlying, 'from_underlying')}({ret})"
-                if self.from_underlying else
-                f"  return {ret}"
-            ]
+            [f"  return {gstr(self.from_underlying, 'from_underlying')}({ret})"]
         )
 
-        if DEBUG >= 4: print(
-            functools.reduce(lambda x, y: (x.replace(y[0], str(y[1])) if y[0][0:2] == "m0" else x), tglob.items(), src))
+        if DEBUG >= 4:
+            print(functools.reduce(
+                lambda x, y: (x.replace(y[0], str(y[1])) if y[0][0:2] == "m0" else x),
+                tglob.items(),
+                src,
+            ))
 
         exec(compile(src, "<ast>", "exec"), tglob)  # pylint: disable=exec-used
         return tglob['run']
@@ -225,26 +229,19 @@ class Interpreted(AstExecutor):
     def exec_ast(
             self,
             ast: LazyOp,
-            output=None,
-            inputs=None,
-            var_vals=None,
+            output: LazyBuffer,
+            inputs: tuple[LazyBuffer, ...],
+            var_vals: dict[Variable, int],
             **kwargs,
     ):
         if ast not in self.method_cache:
             self.method_cache[ast] = self.interpret_ast(ast)
-
         ret = self.method_cache[ast]([x.realized for x in inputs] if inputs else None, var_vals)
-
-        if output is not None and ret.dtype != output.dtype and ops.Cast in self.fxn_for_op:
-            # Do manual casting of ret if it does not match the required output dtype.
-            ret = self.from_underlying(self.fxn_for_op[ops.Cast](self.fxn_for_op[ops.Mem](ret), (output.dtype, False)))
-
-        # TODO: is this used?
-        if output is not None and output.output_buffer is not None:
+        assert ret.dtype == output.dtype, f"{ret.dtype} != {output.dtype}"
+        if output.output_buffer is not None:
             assert output.output_buffer.dtype == ret.dtype
             output.output_buffer._buf = ret._buf
             return output.output_buffer
-
         return ret
 
 

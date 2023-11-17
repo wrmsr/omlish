@@ -33,6 +33,17 @@ type_map = {
 inverse_type_map = {v: k for k, v in type_map.items()}
 
 
+def output_type(x, y):
+    return x.dtype if type_map[x.dtype].priority > type_map[y.dtype].priority else y.dtype
+
+
+def match_types(x, y, disallow_bool=False):
+    up = output_type(x, y)
+    if disallow_bool and up == torch.bool:
+        up = torch.float
+    return x.type(up), y.type(up)
+
+
 def as_strided(x, arg):
     if any(i < 0 for i in arg[1]):
         return torch.as_strided(
@@ -58,11 +69,14 @@ torch_fxn_for_op: dict[type[ops.LazyOp], ta.Callable] = {
         ops.Cast: lambda x, y: (x.view if y[1] else x.type)(next(k for k, v in type_map.items() if v == y[0])),
         ops.Neg: lambda x: torch.logical_not(x) if x.dtype is torch.bool else torch.neg(x),
         ops.Max2: torch.maximum,
-        ops.Sub: lambda x,y: torch.logical_xor(x, y) if y.dtype is torch.bool else torch.sub(x, y),
         ops.CmpLt: lambda x, y: (x < y).type(torch.promote_types(x.dtype, y.dtype)),
+        ops.Add: lambda x, y: torch.add(*match_types(x, y)).type(output_type(x, y)),
+        ops.Sub: lambda x, y: torch.sub(*match_types(x, y, disallow_bool=True)).type(output_type(x, y)),
+        ops.Mul: lambda x, y: torch.mul(*match_types(x, y)).type(output_type(x, y)),
+        ops.Div: lambda x, y: torch.div(*match_types(x, y)).type(torch.promote_types(x.dtype, y.dtype)),
         ops.Pad: lambda x, padding: torch.nn.functional.pad(x, [item for sublist in padding[::-1] for item in sublist]),  # noqa
         ops.MulAcc: einsum_mulacc(
-            lambda s, a, b: torch.einsum(s, a.float(), b.float()).type(torch.promote_types(a.dtype, b.dtype)),
+            lambda s, a, b: torch.einsum(s, a.float(), b.float()).type(output_type(a, b)),
             lambda x: x.stride(),
             lambda x, s: x.expand(s),
         ),
