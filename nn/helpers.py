@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import cProfile
 import contextlib
 import functools
 import hashlib
@@ -9,6 +10,7 @@ import os
 import pathlib
 import pickle
 import platform
+import pstats
 import re
 import sqlite3
 import subprocess
@@ -27,6 +29,7 @@ if ta.TYPE_CHECKING:  # TODO: remove this and import TypeGuard from typing once 
 
 
 T = ta.TypeVar("T")
+U = ta.TypeVar("U")
 
 
 # NOTE: it returns int 1 if x is empty regardless of the type of x
@@ -94,7 +97,11 @@ def strip_parens(fst):
     )
 
 
-def merge_dicts(ds: ta.Iterable[dict]) -> dict:
+def round_up(num, amt):
+    return num if num % amt == 0 else num + (amt - (num % amt))
+
+
+def merge_dicts(ds: ta.Iterable[dict[T, U]]) -> dict[T, U]:
     assert len(kvs := set([(k, v) for d in ds for k, v in d.items()])) == len(
         set(kv[0] for kv in kvs)
     ), f"cannot merge, {kvs} contains different values for the same key"
@@ -170,13 +177,31 @@ class Timing(contextlib.ContextDecorator):
     def __enter__(self):
         self.st = time.perf_counter_ns()
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, *exc):
         self.et = time.perf_counter_ns() - self.st
         if self.enabled:
             print(
                 f"{self.prefix}{self.et*1e-6:.2f} ms"
                 + (self.on_exit(self.et) if self.on_exit else "")
             )
+
+
+class Profiling(contextlib.ContextDecorator):
+    def __init__(self, enabled=True, sort='cumtime', frac=0.2) -> None:
+        super().__init__()
+        self.enabled = enabled
+        self.sort = sort
+        self.frac = frac
+
+    def __enter__(self):
+        self.pr = cProfile.Profile(timer=lambda: int(time.time() * 1e9), timeunit=1e-6)
+        if self.enabled:
+            self.pr.enable()
+
+    def __exit__(self, *exc):
+        if self.enabled:
+            self.pr.disable()
+            pstats.Stats(self.pr).strip_dirs().sort_stats(self.sort).print_stats(self.frac)
 
 
 class GlobalCounters:
@@ -257,7 +282,7 @@ class DiskCache:
     DEFAULT_DIR: str = getenv("XDG_CACHE_HOME", os.path.expanduser("~/Library/Caches" if OSX else "~/.cache"))
     DEFAULT_PATH: str = getenv("CACHEDB", os.path.abspath(os.path.join(DEFAULT_DIR, "tinygrad", "cache.db")))
 
-    VERSION = 6
+    VERSION = 7
 
     def __init__(
             self,

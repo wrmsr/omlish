@@ -18,7 +18,6 @@ from ..execution import MemBuffer
 from ..execution import OpInfo
 from ..execution import get_lazyop_info
 from ..helpers import DEBUG
-from ..helpers import all_int
 from ..helpers import ansilen
 from ..helpers import colored
 from ..helpers import getenv
@@ -244,12 +243,6 @@ class Kernel:
     @property
     def membufs(self) -> list[MemBuffer]:
         return [x for x in self.bufs if isinstance(x, MemBuffer)]
-
-    def has_variable_shape(self) -> bool:
-        for b in self.bufs:
-            if not isinstance(b, LocalBuffer) and not all_int(b.st.views[-1].shape):
-                return True
-        return False
 
     def shape_offsets(self, i):
         return (
