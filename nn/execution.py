@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import abc
-import functools
+import time
 import typing as ta
 
 from omlish import collections as col  # noqa
@@ -21,15 +21,17 @@ from .helpers import colored
 from .helpers import getenv
 from .helpers import prod
 from .ops import LazyOp
+from .runtime.interpreted import interpret_ast
 from .runtime.lib import RawBuffer
 from .shape.symbolic import NumNode
 from .shape.symbolic import Variable
 from .shape.symbolic import sym_infer
 
 if ta.TYPE_CHECKING:
+    from .codegen.kernel import LinearizerOptions
     from .codegen.linearizer import Linearizer
-    from .shape.shapetracker import ShapeTracker
     from .lazy import LazyBuffer
+    from .shape.shapetracker import ShapeTracker
 
 
 @dc.dataclass(frozen=True)
@@ -95,7 +97,7 @@ class BatchExecutor:
             self.jit_cache[j].rawbufs[i] = input_rawbuffers[input_name]
 
         for ji in self.jit_cache:
-            ji.prg(ta.cast(list[RawBuffer], ji.rawbufs), var_vals, jit=True)
+            ji.prg(ji.rawbufs, var_vals, jit=True)
 
         self.clear_jit_inputs()
 
@@ -130,6 +132,78 @@ class BatchExecutor:
             self.jit_cache[j].rawbufs[i] = None
 
 
+class AstRunner:
+    def __init__(self, ast: ta.Optional[LazyOp]) -> None:
+        super().__init__()
+        if ast is None:
+            self.op_estimate= 0
+            self.mem_estimate= 0
+            self.vars = []
+        else:
+            info = get_lazyop_info(ast)
+            self.op_estimate = info.flops
+            self.mem_estimate = info.mem_estimate
+            from .lazy import vars_from_ast
+            self.vars = vars_from_ast(ast)
+            assert all(v._val is None for v in self.vars), f"AstRunner contains bound Variable {self.vars}"
+
+    def exec(
+            self,
+            rawbufs: list[ta.Optional[RawBuffer]],
+            var_vals: ta.Optional[dict[Variable, int]] = None,
+            force_wait=False,
+    ) -> ta.Optional[float]:
+        from .jit import CacheCollector
+        et = self(rawbufs, var_vals, force_wait=force_wait)
+        CacheCollector.add(self, rawbufs, var_vals if var_vals is not None else {})
+        return et
+
+    def update_stats(
+            self,
+            name,
+            var_vals: ta.Optional[dict[Variable, int]],
+            et: ta.Optional[float],
+            buf_count,
+            lra,
+            jit,
+    ):
+        if var_vals is None:
+            var_vals = {}
+        op_estimate = sym_infer(self.op_estimate, var_vals)
+        mem_estimate = sym_infer(self.mem_estimate, var_vals)
+        if DEBUG >= 2:
+            print(
+                f"{colored(f'*** {GlobalCounters.kernel_count:4d}', 'magenta' if jit else None)} "
+                f"{name + ' ' * (37 - ansilen(name))} "
+                f"arg {buf_count:3d} "
+                f"sz {str(lra.get('global_size', '')):18s} {str(lra.get('local_size', '')):12s} "
+                f"OPs {int(op_estimate / 1e6):6d}M/{GlobalCounters.global_ops / 1e9:7.2f}G  "
+                f"mem {GlobalCounters.mem_used / 1e9:5.2f} GB " +
+                (
+                    str() if et is None else
+                    (
+                        f"tm {et * 1e6:9.2f}us/{GlobalCounters.time_sum_s * 1e3:9.2f}ms "
+                        f"("
+                        f"{op_estimate / ((et or 1e-20) * 1e9):8.2f} GFLOPS, "
+                        f"{mem_estimate / ((et or 1e-20) * 1e9):7.2f} GB/s"
+                        f")"
+                    )
+                )
+            )
+        GlobalCounters.kernel_count += 1
+        GlobalCounters.global_ops += op_estimate
+        GlobalCounters.global_mem += mem_estimate
+
+    def __call__(
+            self,
+            rawbufs: list[ta.Optional[RawBuffer]],
+            var_vals: ta.Optional[dict[Variable, int]] = None,
+            jit=False,
+            force_wait=False,
+    ) -> ta.Optional[float]:
+        raise NotImplementedError("override this")
+
+
 # **************** for Interpreted Buffers ****************
 
 
@@ -151,19 +225,46 @@ class AstExecutor(lang.Abstract):
 # **************** for Interpreted Buffers ****************
 
 
+class InterpretedAstRunner(AstRunner):
+    def __init__(self, ast: LazyOp, fxn: ta.Callable) -> None:
+        self.fxn = fxn
+        super().__init__(ast)
+
+    def __call__(
+            self,
+            rawbufs: list[ta.Optional[RawBuffer]],
+            var_vals: ta.Optional[dict[Variable, int]] = None,
+            jit=False,
+            force_wait=False,
+    ) -> float:
+        st = time.perf_counter()
+        ret: RawBuffer = self.fxn(rawbufs[1:], var_vals)
+        et = time.perf_counter() - st
+        self.update_stats(f"<interpreted {ret.size}>", var_vals, et, len(rawbufs), {}, jit)
+        if rawbufs[0] is not None:
+            assert rawbufs[0].dtype == ret.dtype
+            rawbufs[0].size = ret.size  # NOTE: for symbolic this can change
+            rawbufs[0]._buf = ret._buf
+        else:
+            rawbufs[0] = ret
+        return et
+
+
 class Interpreted:
     def __init__(
             self,
             buffer: type[RawBuffer],
-            compiler: ta.Callable[[LazyOp], ta.Callable],
+            fxn_for_op: dict[type[ops.LazyOp], ta.Callable],
+            from_underlying: ta.Optional[ta.Callable] = None,
     ) -> None:
         super().__init__()
         self.buffer = buffer
-        self.compiler = compiler
+        self.fxn_for_op = fxn_for_op
+        self.from_underlying = from_underlying
         self.synchronize = lambda: None
         self.batch_executor = BatchExecutor
         self.codegen = None
-        self.method_cache: dict[LazyOp, ta.Callable] = {}
+        self.method_cache: dict[LazyOp, InterpretedAstRunner] = {}
 
     def exec_ast(
             self,
@@ -174,14 +275,18 @@ class Interpreted:
             **kwargs,
     ):
         if ast not in self.method_cache:
-            self.method_cache[ast] = self.compiler(ast)
-        output.realized = output.output_buffer  # NOTE: assuming this is the right size and dtype from assign
-        ret: RawBuffer = self.method_cache[ast]([x.realized for x in inputs] if inputs else None, var_vals)
-        assert output.dtype == ret.dtype, f"expected {output.dtype}, got {ret.dtype}"
-        if output.realized is not None:
-            output.realized._buf = ret._buf
-        else:
-            output.realized = ret
+            self.method_cache[ast] = InterpretedAstRunner(
+                ast,
+                interpret_ast(
+                    self.fxn_for_op,
+                    self.from_underlying,
+                    ast,
+                ),
+            )
+        rawbufs = [output.realized if output.realized is not None else output.output_buffer] + \
+                  [x.realized for x in inputs]
+        self.method_cache[ast].exec(rawbufs, var_vals)
+        output.realized = rawbufs[0]
 
 
 # --teenygrad--
@@ -260,9 +365,10 @@ def get_lazyop_info(ast: LazyOp) -> OpInfo:
 # **************** for Compiled Buffers ****************
 
 
-class AstRunner:
+class CompiledAstRunner(AstRunner):
     def __init__(
             self,
+            ast: ta.Optional[LazyOp],
             name: str,
             prg: str,
             global_size: ta.Optional[list[int]] = None,
@@ -272,7 +378,6 @@ class AstRunner:
             display_name: ta.Optional[str] = None,
             runtime_args: ta.Optional[dict] = None,
     ) -> None:
-        super().__init__()
         if DEBUG >= 4:
             print(prg)
         self.name = name
@@ -283,61 +388,27 @@ class AstRunner:
         self.mem_estimate = mem_estimate
         self.display_name = display_name
         self.runtime_args = runtime_args if runtime_args is not None else {}
-        self.vars: list[Variable] = []
-
-    @staticmethod
-    def from_linearizer(k, src: str):
-        return AstRunner(
-            k.function_name,
-            src,
-            k.global_size, k.local_size,
-            op_estimate=k.info.flops,
-            mem_estimate=k.info.mem_estimate,
-            display_name=k.display_name,
-            runtime_args={"binary": False},
-        )
+        super().__init__(ast)
 
     def build(self, compiler, runtime):
         self.lib = compiler.__wrapped__(self.prg) if getenv("DISABLE_COMPILER_CACHE") else compiler(self.prg)
         self.clprg = runtime(self.name, self.lib)
         return self
 
-    def exec(
-            self,
-            rawbufs: list[RawBuffer],
-            var_vals: ta.Optional[dict[Variable, int]] = None,
-            force_wait=False,
-    ) -> ta.Optional[float]:
-        from .jit import CacheCollector
-
-        CacheCollector.add(self, rawbufs, var_vals if var_vals is not None else {})
-
-        return self(rawbufs, var_vals, force_wait=force_wait)
-
     def launch_dims(self, var_vals):
-        global_size = (
-            (
-                [sym_infer(sz, var_vals) for sz in self.global_size]
-                + [1] * (3 - len(self.global_size))
-            )
-            if self.global_size is not None
-            else self.global_size
-        )
-
-        local_size = (
-            (
-                [sym_infer(sz, var_vals) for sz in self.local_size] +
-                [1] * (3 - len(self.local_size))
-            )
-            if self.local_size is not None
-            else self.local_size
-        )
-
+        if self.global_size is not None:
+            global_size = ([sym_infer(sz, var_vals) for sz in self.global_size] + [1] * (3 - len(self.global_size)))
+        else:
+            global_size = self.global_size
+        if self.local_size is not None:
+            local_size = ([sym_infer(sz, var_vals) for sz in self.local_size] + [1] * (3 - len(self.local_size)))
+        else:
+            local_size = self.local_size
         return global_size, local_size
 
     def __call__(
             self,
-            rawbufs: list[RawBuffer],
+            rawbufs: list[ta.Optional[RawBuffer]],
             var_vals: ta.Optional[dict[Variable, int]] = None,
             jit=False,
             force_wait=False,
@@ -351,7 +422,7 @@ class AstRunner:
         if global_size is not None and local_size is None and all_int(self.global_size):  # type: ignore[arg-type]
             # TODO: this is copied from get_program
             from .features.search import optimize_local_size
-            local_size = self.local_size = optimize_local_size(self.clprg, global_size, rawbufs)
+            local_size = self.local_size = optimize_local_size(self.clprg, global_size, ta.cast(list[RawBuffer], rawbufs))
             global_size = self.global_size = [g // l if g % l == 0 else g / l for g, l in zip(global_size, local_size)]
 
         lra = self.runtime_args.copy()
@@ -364,38 +435,18 @@ class AstRunner:
                 *rawbufs,
                 *var_vals.values(),
                 **lra,
-                wait=force_wait or DEBUG>=2,
+                wait=force_wait or DEBUG >= 2,
         ):
             GlobalCounters.time_sum_s += et
 
-        op_estimate = sym_infer(self.op_estimate, var_vals)
-        mem_estimate = sym_infer(self.mem_estimate, var_vals)
-
-        if DEBUG >= 2:
-            print(
-                (
-                    f"{colored(f'*** {GlobalCounters.kernel_count:4d}', 'magenta' if jit else None)} "
-                    f"{(self.display_name+' '*(37-ansilen(self.display_name))) if self.display_name is not None else self.name:33s} "  # noqa
-                    f"arg {len(rawbufs):3d} "
-                    f"sz {str(global_size):18s} {str(local_size):12s} "
-                    f"OPs {int(op_estimate/1e6):6d}M/{GlobalCounters.global_ops/1e9:7.2f}G  "
-                    f"mem {GlobalCounters.mem_used/1e9:5.2f} GB "
-                )
-                + (
-                    str()
-                    if et is None
-                    else (
-                        f"tm "
-                        f"{et*1e6:9.2f}us/{GlobalCounters.time_sum_s*1e3:9.2f}ms "
-                        f"({op_estimate/((et or 1e-20)*1e9):8.2f} GFLOPS, "
-                        f"{mem_estimate/((et or 1e-20)*1e9):7.2f} GB/s)"
-                    )
-                )
-            )
-
-        GlobalCounters.kernel_count += 1
-        GlobalCounters.global_ops += op_estimate
-        GlobalCounters.global_mem += mem_estimate
+        self.update_stats(
+            self.display_name if self.display_name is not None else self.name,
+            var_vals,
+            et,
+            len(rawbufs),
+            lra,
+            jit,
+        )
 
         return et
 
@@ -404,7 +455,7 @@ class Compiled:
     def __init__(
             self,
             buffer: type[RawBuffer],
-            linearizer_opts,
+            linearizer_opts: LinearizerOptions,
             renderer,
             compiler,
             runtime,
@@ -419,18 +470,17 @@ class Compiled:
         self.runtime = runtime
         self.synchronize = synchronize
         self.batch_executor = BatchExecutor if getenv("JIT") == 2 else batch_executor
-        self.method_cache: dict[LazyOp, AstRunner] = {}
+        self.method_cache: dict[LazyOp, CompiledAstRunner] = {}
 
-    def to_program(self, k) -> AstRunner:
+    def to_program(self, k: Linearizer) -> CompiledAstRunner:
         k.linearize()
         src, runtime_args = self.renderer(k.function_name, k.uops)
-        return AstRunner(
+        return CompiledAstRunner(
+            k.ast,
             k.function_name,
             src,
             k.global_size,
             k.local_size,
-            op_estimate=k.info.flops,
-            mem_estimate=k.info.mem_estimate,
             display_name=k.display_name,
             runtime_args=runtime_args,
         ).build(
@@ -438,92 +488,12 @@ class Compiled:
             self.runtime,
         )
 
-    def get_optimized_program(self, ast: LazyOp, rawbuffers: list[RawBuffer]) -> AstRunner:
-        if DEBUG >= 3:
-            from .lazy import print_tree
-            print_tree(ast)
-
-        from .codegen.linearizer import Linearizer
-        from .lazy import vars_from_ast
-
-        k = Linearizer(ast, self.linearizer_opts)
-
-        assert (
-            k.info.dtype == rawbuffers[0].dtype
-        ), f"linearizer must match dtype. linearizer wants {k.info.dtype} but buffer is {rawbuffers[0].dtype}"
-
-        if not NOOPT:
-            if not (used_tensor_cores := k.apply_tensor_cores(getenv("TC", 1))):
-                k.hand_coded_optimizations()
-
-            if BEAM >= 1:
-                lins = [(("tc" if used_tensor_cores else "hc"), k)]
-                # allocate a scratch buffer if output buffer is also input
-                test_rawbuffers = [type(rawbuffers[0])(rawbuffers[0].size, rawbuffers[0].dtype), *rawbuffers[1:]] \
-                    if rawbuffers[0] in rawbuffers[1:] else rawbuffers
-
-                kb = Linearizer(ast, self.linearizer_opts)
-                kb.required_optimizations()
-
-                from .features.search import beam_search, time_linearizer
-                lins.append((
-                    f"beam{BEAM.value}",
-                    beam_search(
-                        kb,
-                        test_rawbuffers,
-                        BEAM.value,
-                        bool(getenv("BEAM_ESTIMATE", 1)),
-                    ),
-                ))
-
-                if used_tensor_cores:
-                    lins.append(("hc", Linearizer(ast, self.linearizer_opts)))
-                    lins[-1][1].hand_coded_optimizations()
-
-                timed = sorted(
-                    [
-                        (
-                            nm,
-                            tk,
-                            time_linearizer(
-                                tk,
-                                test_rawbuffers,
-                                allow_test_size=False,
-                                disable_cache=True,
-                                clear_l2=True,
-                            ),
-                        )
-                        for nm, tk in lins
-                    ],
-                    key=lambda x: x[2],
-                )
-
-                if DEBUG >= 1:
-                    print("  <  ".join(
-                        f"{nm:6s} : {lin.colored_shape(30, dense=True)} : {tm * 1e6:8.2f} us"
-                        for nm, lin, tm in timed
-                    ))
-
-                k = timed[0][1]
-
-        else:
-            k.required_optimizations()
-
-        prg = self.to_program(k)
-
-        # extract real vars used in ast
-        prg.vars = vars_from_ast(ast)
-
-        assert all(v._val is None for v in prg.vars), f"ast contains bound Variable {prg.vars}"
-
-        return prg
-
     def exec_ast(
             self,
             ast: LazyOp,
-            output,
-            inputs,
-            var_vals,
+            output: LazyBuffer,
+            inputs: tuple[LazyBuffer, ...],
+            var_vals: dict[Variable, int],
             **kwargs,
     ):
         # check if we can reuse the output buffer
@@ -538,7 +508,8 @@ class Compiled:
                     if any(
                             not x.arg.st.contiguous
                             for x in ast.get_lazyops()
-                            if isinstance(x, ops.Mem) and x.arg.idx == i + 1
+                            if isinstance(x, ops.Mem)
+                               and x.arg.idx == i + 1
                     ):
                         output.realized = None
                         break
@@ -557,6 +528,83 @@ class Compiled:
         rawbuffers = [output.realized] + [x.realized for x in inputs]
 
         if ast not in self.method_cache:
-            self.method_cache[ast] = self.get_optimized_program(ast, rawbuffers)
+            self.method_cache[ast] = get_optimized_program(self.linearizer_opts, self.to_program, ast, rawbuffers)
 
         self.method_cache[ast].exec(rawbuffers, var_vals)
+
+
+def get_optimized_program(
+        linearizer_opts: LinearizerOptions,
+        to_program,
+        ast: LazyOp,
+        rawbuffers: list[RawBuffer],
+) -> CompiledAstRunner:
+    if DEBUG >= 3:
+        from .lazy import print_tree
+        print_tree(ast)
+
+    from .codegen.linearizer import Linearizer
+
+    k = Linearizer(ast, linearizer_opts)
+
+    assert (
+        k.info.dtype == rawbuffers[0].dtype
+    ), f"linearizer must match dtype. linearizer wants {k.info.dtype} but buffer is {rawbuffers[0].dtype}"
+
+    if not NOOPT:
+        if not (used_tensor_cores := k.apply_tensor_cores(getenv("TC", 1))):
+            k.hand_coded_optimizations()
+
+        if BEAM >= 1:
+            lins = [(("tc" if used_tensor_cores else "hc"), k)]
+            # allocate a scratch buffer if output buffer is also input
+            test_rawbuffers = [type(rawbuffers[0])(rawbuffers[0].size, rawbuffers[0].dtype), *rawbuffers[1:]] \
+                if rawbuffers[0] in rawbuffers[1:] else rawbuffers
+
+            kb = Linearizer(ast, linearizer_opts)
+            kb.required_optimizations()
+
+            from .features.search import beam_search, time_linearizer
+            lins.append((
+                f"beam{BEAM.value}",
+                beam_search(
+                    kb,
+                    test_rawbuffers,
+                    BEAM.value,
+                    bool(getenv("BEAM_ESTIMATE", 1)),
+                ),
+            ))
+
+            if used_tensor_cores:
+                lins.append(("hc", Linearizer(ast, linearizer_opts)))
+                lins[-1][1].hand_coded_optimizations()
+
+            timed = sorted(
+                [
+                    (
+                        nm,
+                        tk,
+                        time_linearizer(
+                            tk,
+                            test_rawbuffers,
+                            allow_test_size=False,
+                            disable_cache=True,
+                            clear_l2=True,
+                        ),
+                    )
+                    for nm, tk in lins
+                ],
+                key=lambda x: x[2],
+            )
+
+            if DEBUG >= 1:
+                print("  <  ".join(
+                    f"{nm:6s} : {lin.colored_shape(30, dense=True)} : {tm * 1e6:8.2f} us"
+                    for nm, lin, tm in timed
+                ))
+
+            k = timed[0][1]
+    else:
+        k.required_optimizations()
+
+    return to_program(k)

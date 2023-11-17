@@ -1,4 +1,3 @@
-import functools
 import mmap
 import os
 import typing as ta
@@ -13,7 +12,6 @@ from ..dtypes import DType
 from ..execution import Interpreted
 from ..helpers import OSX
 from ..runtime.lib import RawBufferMapped
-from .interpreted import interpret_ast
 
 
 class RawShmBuffer(RawBufferMapped):
@@ -49,9 +47,5 @@ shm_fxn_for_op: dict[type[ops.LazyOp], ta.Callable] = {
 
 ShmBuffer = Interpreted(
     RawShmBuffer,
-    functools.partial(
-        interpret_ast,
-        shm_fxn_for_op,
-        None,
-    ),
+    shm_fxn_for_op,
 )

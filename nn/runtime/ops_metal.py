@@ -14,6 +14,7 @@ from ..codegen.kernel import LinearizerOptions
 from ..dtypes import DType
 from ..dtypes import dtypes
 from ..execution import Compiled
+from ..execution import CompiledAstRunner
 from ..helpers import DEBUG
 from ..helpers import diskcache
 from ..helpers import getenv
@@ -202,8 +203,9 @@ class MetalBatchExecutor(BatchExecutor):
 
         read_resources, write_resources = [], []
         for j, ji in enumerate(self.jit_cache):
+            prg: CompiledAstRunner = ta.cast(CompiledAstRunner, ji.prg)
             descriptor = Metal.MTLComputePipelineDescriptor.new()
-            descriptor.setComputeFunction_(ji.prg.clprg.fxn)
+            descriptor.setComputeFunction_(prg.clprg.fxn)
             descriptor.setSupportIndirectCommandBuffers_(True)
 
             pipeline_state = unwrap(METAL.device.newComputePipelineStateWithDescriptor_options_reflection_error_(
@@ -224,18 +226,18 @@ class MetalBatchExecutor(BatchExecutor):
                         read_resources.append(b._buf)
 
             var_vals_keys = list(var_vals.keys())
-            for i, v in enumerate(getattr(ji.prg, "vars", [])):
+            for i, v in enumerate(prg.vars):
                 icb_command.setKernelBuffer_offset_atIndex_(
                     self.int_buf._buf,
                     var_vals_keys.index(v) * 4,
                     len(ji.rawbufs) + i,
                 )
 
-            global_size, local_size = ji.prg.launch_dims(var_vals)
-            assert ji.prg.global_size and ji.prg.local_size, "need global and local size to JIT"
+            global_size, local_size = prg.launch_dims(var_vals)
+            assert prg.global_size and prg.local_size, "need global and local size to JIT"
             if (
-                    any(isinstance(x, Node) for x in ji.prg.global_size)
-                    or any(isinstance(x, Node) for x in ji.prg.local_size)
+                    any(isinstance(x, Node) for x in prg.global_size)
+                    or any(isinstance(x, Node) for x in prg.local_size)
             ):
                 self.input_has_variable_dims.add(j)
             else:
@@ -268,7 +270,7 @@ class MetalBatchExecutor(BatchExecutor):
                 setKernelBuffer_offset_atIndex_(input_rawbuffers[input_name]._buf, 0, i)
 
         for j in self.input_has_variable_dims:
-            global_size, local_size = self.jit_cache[j].prg.launch_dims(var_vals)
+            global_size, local_size = ta.cast(CompiledAstRunner, self.jit_cache[j].prg).launch_dims(var_vals)
             self.icb.\
                 indirectComputeCommandAtIndex_(j).\
                 concurrentDispatchThreadgroups_threadsPerThreadgroup_(Metal.MTLSize(*global_size), Metal.MTLSize(*local_size))  # noqa
