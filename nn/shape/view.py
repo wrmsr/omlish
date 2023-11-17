@@ -13,7 +13,6 @@ from ..shape.symbolic import Node
 from ..shape.symbolic import NumNode
 from ..shape.symbolic import Variable
 from ..shape.symbolic import VariableOrNum
-from ..shape.symbolic import is_sym_int
 from ..shape.symbolic import sint
 
 
@@ -132,9 +131,13 @@ class View:
     @functools.lru_cache(maxsize=None)  # pylint: disable=method-cache-max-size-none
     def expand(self, new_shape: tuple[sint, ...]) -> View:
         assert len(new_shape) == len(self.shape)
-        assert all(
-            is_sym_int(x) and (s == x or (s == 1 and st == 0))
-            for s, x, st in zip(self.shape, new_shape, self.strides)
+        if 0 in self.shape:
+            assert (
+                all((s == x == 0) or (s > 0 and (x % s) == 0) for s, x in zip(self.shape, new_shape))
+            ), f"can't expand {self.shape} into {new_shape}"
+            return View.create(new_shape)
+        assert (
+            all((s == x or (s == 1 and st == 0)) for s, x, st in zip(self.shape, new_shape, self.strides))
         ), f"can't expand {self.shape} into {new_shape}"
         # NOTE: can the mask ever be (0,0)?
         mask = (
@@ -193,9 +196,10 @@ class View:
         if self.shape == new_shape:
             return self
 
-        assert all(
-            is_sym_int(x) and x > 0 for x in new_shape
-        ), f"shape must be symbolic ints and can't contain 0 or negative numbers {new_shape}"
+        assert all(x >= 0 for x in new_shape), f"shape can't contain negative numbers {new_shape}"
+        if 0 in self.shape:
+            assert 0 in new_shape, f"cannot reshape 0 size to {new_shape}"
+            return View.create(new_shape)
 
         # check for the same size
         if all_int(self.shape):

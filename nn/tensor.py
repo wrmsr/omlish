@@ -366,7 +366,6 @@ class Tensor:
     # ***** movement funcs *****
     def reshape(self, shape, *args) -> Tensor:
         new_shape = argfix(shape, *args)
-        assert 0 not in new_shape, f"zeros not allowed in shape {new_shape}"
         return funcs.Reshape.apply(
             self,
             shape=tuple(
@@ -754,7 +753,15 @@ class Tensor:
     ) -> Tensor:
         axis_: list[int] = list(range(len(self.shape))) if axis is None else ([axis] if isinstance(axis, int) else list(axis))  # type: ignore  # noqa
         axis_ = [x if x >= 0 else x + len(self.shape) for x in axis_]
-        shape = [s for i, s in enumerate(self.shape) if i not in axis_]
+        shape = tuple(s for i, s in enumerate(self.shape) if i not in axis_)
+        if 0 in self.shape and 0 not in shape:
+            return Tensor.full(
+                tuple(1 if s == 0 else s for s in self.shape) if keepdim else shape,
+                {
+                    funcs.Sum: 0,
+                    funcs.Max: -float("inf"),
+                }[fxn],
+            )
         ret = fxn.apply(
             self,
             new_shape=tuple([1 if i in axis_ else s for i, s in enumerate(self.shape)]),
@@ -1471,6 +1478,8 @@ class Tensor:
         return -((-self).maximum(-x))
 
     def where(self: Tensor, input_: ta.Union[Tensor, float], other: ta.Union[Tensor, float]):
+        if 0 in self.shape:
+            return self
         x_, y = self._broadcasted(input_)
         x, z = x_._broadcasted(other)
         return funcs.Where.apply(x, *y._broadcasted(z))

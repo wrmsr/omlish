@@ -496,13 +496,15 @@ class Linearizer(Kernel):
                 }
             )
 
+        else:
+            render_loop(loop_global_idxs + loop_local_idxs)
+
         # parse AST
         loaded_buffers = {}
         acc = []
         self.load_cache: dict[str, uo.UOp] = {}
 
         fake_reduce_idxs: list[Variable] = []
-        fake_reduce_idxs = []
         if self.reduceop is not None:
             # define indexes
             reduce_idxs = [

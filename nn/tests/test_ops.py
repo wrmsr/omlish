@@ -2326,23 +2326,18 @@ class TestOps(unittest.TestCase):
         )
 
     def test_repeat(self):
-        x = Tensor.randn(45, 65, 3)
+        x = Tensor.randn(4, 6, 3)
         base_repeats = [2, 4, 3]
 
         for reps in [[], [4], [2, 1], [3, 2, 2]]:
             repeats = base_repeats + reps
-            helper_test_op(
-                [(45, 65, 3)], lambda x: x.repeat(*repeats), lambda x: x.repeat(repeats)
-            )
-            helper_test_op(
-                [()], lambda x: x.repeat(*repeats), lambda x: x.repeat(repeats)
-            )
+            helper_test_op([(4, 6, 3)], lambda x: x.repeat(*repeats), lambda x: x.repeat(repeats))
+            helper_test_op([()], lambda x: x.repeat(*repeats), lambda x: x.repeat(repeats))
 
         with self.assertRaises(AssertionError):
             x.repeat((2, 4))
 
-        with self.assertRaises(AssertionError):
-            x.repeat((2, 0, 4))
+        np.testing.assert_allclose(x.repeat((2, 0, 4)).numpy(), Tensor.zeros(8, 0, 12).numpy())
 
     def test_clip(self):
         helper_test_op(

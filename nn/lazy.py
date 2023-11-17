@@ -542,7 +542,8 @@ class LazyBuffer:
     def r(self: LazyBuffer, op: type[ops.ReduceOp], new_shape: tuple[sint, ...]) -> LazyBuffer:
         if (
                 not all_int(self.shape)
-                or prod(self.shape) // prod(new_shape) < getenv("REDUCEOP_SPLIT_THRESHOLD", 32768)
+                or (0 in self.shape)
+                or prod(self.shape) // prod(new_shape) < getenv( "REDUCEOP_SPLIT_THRESHOLD", 32768)
         ):
             return self._reduce_op(op, new_shape)  # The amount of work should be big enough to take the benefit of "2 kernels" approach.
 
