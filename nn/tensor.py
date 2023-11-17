@@ -487,7 +487,7 @@ class Tensor:
             else ((), (), ())
         )
         new_slice = tuple(
-            (s, e) if st > 0 else (e + 1, s + 1)
+            ((0, 0) if e < s else (s, e)) if st > 0 else ((0, 0) if e > s else (e+1, s+1))
             for s, e, st in zip(start, stop, strides)
         )
         sliced_tensor = self.shrink(new_slice).flip(

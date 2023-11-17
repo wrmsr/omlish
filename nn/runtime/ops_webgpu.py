@@ -1,6 +1,6 @@
 import functools
 
-from wgpu.utils._device import get_default_device  # type: ignore
+from wgpu.utils.device import get_default_device  # type: ignore
 import numpy as np
 import wgpu  # type: ignore
 
