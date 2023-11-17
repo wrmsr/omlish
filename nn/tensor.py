@@ -401,14 +401,13 @@ class Tensor:
             return self
 
     def pad(self, arg: tuple[ta.Optional[tuple[int, int]], ...], value: float = 0.0) -> Tensor:
-        if any(x is not None and x != (0, 0) for x in arg):
-            ret = funcs.Pad.apply(self, arg=tuple(x if x is not None else (0, 0) for x in arg))
-        else:
-            ret = self
+        if all(x is None or x == (0, 0) for x in arg):
+            return self
+        ret = funcs.Pad.apply(self, arg=(narg := tuple(x if x is not None else (0, 0) for x in arg)))
         if 0 == value:
             return ret
         else:
-            return ret + funcs.Pad.apply(Tensor.ones_like(self), arg=arg).where(0, value)
+            return ret + funcs.Pad.apply(Tensor.ones_like(self), arg=narg).where(0, value)
 
     # ***** movement hlops *****
 

@@ -1485,6 +1485,16 @@ class TestOps(unittest.TestCase):
             lambda x: torch.nn.functional.pad(x, (1, 2, 3, 4), value=float("-inf")),
             lambda x: x.pad(((3, 4), (1, 2)), value=float("-inf")),
         )
+        helper_test_op(
+            [(3, 3)],
+            lambda x: torch.nn.functional.pad(x, (0, 0, 3, 4), value=1),
+            lambda x: x.pad(((3, 4), None), value=1),
+        )
+        helper_test_op(
+            [(3, 3)],
+            lambda x: torch.nn.functional.pad(x, (0, 0, 0, 0), value=1),
+            lambda x: x.pad((None, None), value=1),
+        )
 
     def test_transpose(self):
         helper_test_op(
