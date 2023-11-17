@@ -19,9 +19,6 @@ from .shape.symbolic import Variable
 from .tensor import Tensor
 
 
-JIT_SUPPORTED_DEVICE = ["OPENCL", "CLANG", "METAL", "CUDA", "HIP", "WEBGPU", "LLVM"]
-
-
 class TinyJit:
     def __init__(self, fxn: ta.Callable) -> None:
         super().__init__()
@@ -46,9 +43,6 @@ class TinyJit:
         return functools.partial(self.__call__, obj)
 
     def __call__(self, *args, **kwargs) -> ta.Any:
-        if Device.DEFAULT.split(":")[0] not in JIT_SUPPORTED_DEVICE:
-            return self.fxn(*args, **kwargs)  # only jit on supported device
-
         # all inputs are realized
         input_tensors: dict[ta.Union[int, str], Tensor] = {
             ta.cast(ta.Union[int, str], k): v.realize()
