@@ -1,3 +1,4 @@
+import functools
 import typing as ta
 import operator
 
@@ -8,6 +9,7 @@ from ..dtypes import DType
 from ..dtypes import dtypes
 from ..execution import Interpreted
 from ..runtime.lib import RawBuffer
+from .interpreted import interpret_ast
 
 
 def shape_to_axis(
@@ -140,6 +142,11 @@ class RawNumpyBuffer(RawBuffer):
         return self._buf
 
 
-CpuBuffer = Interpreted(
-    RawNumpyBuffer, numpy_fxn_for_op, from_underlying=RawNumpyBuffer.fromCpu
+CPUBuffer = Interpreted(
+    RawNumpyBuffer,
+    functools.partial(
+        interpret_ast,
+        numpy_fxn_for_op,
+        RawNumpyBuffer.fromCPU,
+    ),
 )
