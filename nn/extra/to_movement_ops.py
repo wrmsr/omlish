@@ -3,12 +3,86 @@ import itertools
 from .. import ops
 from ..helpers import prod
 from ..shape.shapetracker import ShapeTracker
-from ..shape.view import View
+from ..shape.symbolic import Node
 from ..shape.symbolic import sym_infer
 
 
-inf = float('inf')
-nan = float('nan')
+# ShapeTracker to an equivalent series of MovementOps (https://github.com/tinygrad/tinygrad/pull/2216)
+def to_movement_ops(st: ShapeTracker) -> list[tuple[type[ops.MovementOp], tuple]]:
+    to_apply: list[tuple[type[ops.MovementOp], tuple]] = []
+    for i, v in enumerate(st.views):
+        real_shape = tuple(y - x for x, y in v.mask) if v.mask else v.shape
+
+        offset = v.offset + sum(st * (s - 1) for s, st in zip(real_shape, v.strides) if st < 0)
+        real_offset = offset + (sum(x * st for (x, _), st in zip(v.mask, v.strides)) if v.mask else 0)
+
+        real_real_shape = [s for s, st in zip(real_shape, v.strides) if st]
+        strides: list[Node | int] = [abs(st) if isinstance(st, int) else st for st in v.strides if st]
+
+        buffer_size = sum((s - 1) * st for s, st in zip(real_real_shape, strides)) + 1
+        if i:
+            buffer_size = prod(st.views[i - 1].shape) - real_offset
+
+        def sort_by_strides(shape, strides):
+            return (
+                sorted(zip(shape, strides), key=lambda k: (k[1], -k[0]), reverse=True),
+                sorted(range(len(strides)), key=lambda k: (strides[k], -real_real_shape[k]), reverse=True),
+            )
+
+        ordered_shape_strides, order = sort_by_strides(real_real_shape, strides)
+        to_apply.extend([(ops.Reshape, (-1,)), (ops.Shrink, ((real_offset, real_offset + buffer_size),))])
+
+        if strides:
+            if (ordered_shape_strides[0][0] * ordered_shape_strides[0][1]) - buffer_size > 0:
+                to_apply.append((ops.Pad, ((0, (ordered_shape_strides[0][0] * ordered_shape_strides[0][1]) - buffer_size),)))
+
+            for i, shape_stride in enumerate(ordered_shape_strides):
+                if (
+                        i < len(ordered_shape_strides) - 1
+                        and shape_stride[1] < ordered_shape_strides[i + 1][0] * ordered_shape_strides[i + 1][1]
+                ):
+                    remaining_buffer = ordered_shape_strides[i - 1][1] if i > 0 else buffer_size
+                    to_apply.append((ops.Expand, (shape_stride[0], *(s[0] for s in ordered_shape_strides[:i]), remaining_buffer)))
+                    to_apply.append((ops.Permute, (*range(1, i + 1), 0, i + 1)))
+                    to_apply.append((ops.Reshape, (*(s[0] for s in ordered_shape_strides[:i]), shape_stride[0] * remaining_buffer)))
+                    to_apply.append((ops.Pad, (*((0, 0) for _ in range(i)), (0, shape_stride[0] * shape_stride[1]))))
+                    to_apply.append((ops.Reshape, (*(s[0] for s in ordered_shape_strides[:i + 1]), remaining_buffer + shape_stride[1])))
+                    ordered_shape_strides[i] = (ordered_shape_strides[i][0], remaining_buffer + shape_stride[1])
+
+                else:
+                    to_apply.append((ops.Shrink, (
+                    *((0, s[0]) for s in ordered_shape_strides[:i]), (0, shape_stride[0] * shape_stride[1]))))
+                    to_apply.append((ops.Reshape, (*[s[0] for s in ordered_shape_strides[:i + 1]], shape_stride[1])))
+
+            to_apply.extend([
+                (ops.Shrink, (*[(0, s[0]) for s in ordered_shape_strides], (0, 1))),
+                (ops.Reshape, tuple(s[0] for s in ordered_shape_strides)),
+            ])
+
+            if order != list(range(len(order))): to_apply.append(
+                (ops.Permute, tuple(order.index(i) for i in range(len(strides)))))
+
+        to_apply.append((ops.Reshape, tuple(s if st else 1 for s, st in zip(real_shape, v.strides))))
+        if any(i < 0 for i in v.strides):
+            to_apply.append((ops.Restride, tuple(-1 if st < 0 else 1 for st in v.strides)))
+
+        # then, we apply pre expand pads
+        if v.mask is not None:
+            pre_expand_pads = tuple((x, s - y) if st != 0 else (0, 0) for (x, y), s, st in zip(v.mask, v.shape, v.strides))
+            post_expand_pads = tuple((x, s - y) if st == 0 else (0, 0) for (x, y), s, st in zip(v.mask, v.shape, v.strides))
+            if any(x != (0, 0) for x in pre_expand_pads):
+                to_apply.append((ops.Pad, pre_expand_pads))
+                real_shape = tuple(x + s[0] + s[1] for x, s in zip(real_shape, pre_expand_pads))
+
+        # then, we do any expands
+        if any(s != 1 and st == 0 for s, st in zip(real_shape, v.strides)):
+            to_apply.append((ops.Expand, real_shape))
+
+        # lastly, we apply post expand pads
+        if v.mask is not None and any(x != (0, 0) for x in post_expand_pads):
+            to_apply.append((ops.Pad, post_expand_pads))
+
+    return to_apply
 
 
 def get_real_view(shape, strides, offset, mask):
@@ -68,7 +142,7 @@ def test_rebuild(st: ShapeTracker):
         ),
     ))
 
-    for mop, arg in st.to_movement_ops():
+    for mop, arg in to_movement_ops(st):
         if mop is ops.Reshape:
             # shapetracker doesn't allow flattening with -1 but required for MovementOps.RESHAPE
             if arg == (-1,):

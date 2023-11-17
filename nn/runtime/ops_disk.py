@@ -64,6 +64,15 @@ class RawDiskBuffer(RawBufferMapped):
             shape=(arg[0][1] - arg[0][0],) + (self.shape[1:] if len(arg) > 1 else ()),
         )
 
+    def as_strided(self, arg):
+        return RawDiskBuffer(
+            prod(arg[0]),
+            self.dtype,
+            buf=self._buf,
+            offset=self.offset + arg[2] * self.dtype.itemsize,
+            shape=arg[0],
+        )
+
     def _buffer(self):
         return memoryview(self._buf[1])[
             self.offset:self.offset + self.size * self.dtype.itemsize
@@ -80,6 +89,7 @@ disk_fxn_for_op: dict[type[ops.LazyOp], ta.Callable] = {
     ops.Cast: RawDiskBuffer.cast,
     ops.Shrink: RawDiskBuffer.shrink,
     ops.Reshape: RawDiskBuffer.reshape,
+    ops.AsStrided: RawDiskBuffer.as_strided,
 }
 
 
