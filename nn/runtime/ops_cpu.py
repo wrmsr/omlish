@@ -24,7 +24,7 @@ base_fxn_for_op: dict[type[ops.LazyOp], ta.Callable] = {
     ops.Mul: operator.mul,
     ops.Div: operator.truediv,
     ops.Sum: lambda x, new_shape: (
-        x.sum(shape_to_axis(x.shape, new_shape), keepdims=True)
+        x.sum(shape_to_axis(x.shape, new_shape), dtype=x.dtype, keepdims=True)
         if tuple(x.shape) != tuple(new_shape) else
         x[:]
     ),
@@ -38,12 +38,13 @@ base_fxn_for_op: dict[type[ops.LazyOp], ta.Callable] = {
 }
 
 
+# TODO: this should be global infrastructure
+def output_type(x, y):
+    return x.dtype if dtypes.from_np(x.dtype).priority > dtypes.from_np(y.dtype).priority else y.dtype
+
+
 def match_types(x, y):
-    up = (
-        x.dtype
-        if dtypes.from_np(x.dtype).priority > dtypes.from_np(y.dtype).priority
-        else y.dtype
-    )
+    up = output_type(x, y)
     return x.astype(up, copy=False), y.astype(up, copy=False)
 
 
@@ -94,11 +95,11 @@ numpy_fxn_for_op: dict[type[ops.LazyOp], ta.Callable] = {
         ops.Cast: lambda x, y: x.view(y[0].np) if y[1] else x.astype(y[0].np, copy=False),
         ops.Neg: lambda x: np.logical_not(x) if x.dtype == np.bool_ else np.negative(x),
         ops.Max2: np.maximum,
-        ops.CmpLt: lambda x, y: (x < y).astype(np.promote_types(x.dtype, y.dtype)),
+        ops.CmpLt: lambda x, y: (x < y).astype(output_type(x, y)),
         ops.Add: lambda x, y: np.add(*match_types(x, y)),
         ops.Sub: lambda x, y: np.subtract(*match_types(x, y)),
         ops.Mul: lambda x, y: np.multiply(*match_types(x, y)),
-        ops.Div: lambda x, y: np.divide(*match_types(x, y)),
+        ops.Div: lambda x, y: np.divide(*match_types(x, y)).astype(output_type(x, y), copy=False),
         ops.Sqrt: np.sqrt,
         ops.Permute: lambda x, order: x.transpose(order),
         ops.Pad: np.pad,
@@ -122,8 +123,14 @@ numpy_fxn_for_op: dict[type[ops.LazyOp], ta.Callable] = {
 
 
 class RawNumpyBuffer(RawBuffer):
-    def __init__(self, size: int, dtype: DType, buf: ta.Optional[np.ndarray] = None) -> None:
-        super().__init__(size, dtype, buf if buf is not None else np.empty([size], dtype.np))
+    def __init__(
+            self,
+            size: int,
+            dtype: DType,
+            buf: ta.Optional[np.ndarray] = None,
+            allocator=lambda size, dtype: np.empty([size], dtype.np),
+    ) -> None:
+        super().__init__(size, dtype, buf, allocator)
 
     @classmethod
     def fromCpu(cls, x):

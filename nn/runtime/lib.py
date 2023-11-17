@@ -30,10 +30,10 @@ class RawBuffer:
         self._buf = (
             buf
             if buf is not None
-            else (allocator.alloc(size, dtype, **kwargs) if allocator else None)
+            else (allocator(size, dtype, **kwargs) if allocator else None)
         )  # If buf is provided, use it. Otherwise try to allocate from the allocator.
         self._memsz: int = size * dtype.itemsize
-        self._allocator = allocator
+        self._allocator = allocator if allocator and hasattr(allocator, 'free') else None
         self._device = kwargs.get("device", None)
         GlobalCounters.mem_used += self._memsz
 
@@ -193,7 +193,7 @@ class LruAllocator:
         self.buffer_info.pop(buf_to_free)
         self._do_free(buf_to_free)
 
-    def alloc(self, size, dtype, device="0", **kwargs):
+    def __call__(self, size, dtype, device="0", **kwargs):
         rawbufs = self.cached_buffers.get(
             self._cached_bufkey(size, dtype, device), None
         )
