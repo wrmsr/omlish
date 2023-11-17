@@ -50,7 +50,7 @@ def run_schedule(schedule: list[ScheduleItem]):
             LOAD_OPS_DISPATCHER[type(si.ast)](si.out, *si.inputs)
 
         else:
-            si.out.realized = Device[si.out.device].exec_ast(
+            Device[si.out.device].exec_ast(
                 si.ast,
                 output=si.out,
                 inputs=si.inputs,

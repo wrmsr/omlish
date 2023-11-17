@@ -1,3 +1,4 @@
+import functools
 import mmap
 import os
 import typing as ta
@@ -7,6 +8,7 @@ from ..dtypes import DType
 from ..execution import Interpreted
 from ..helpers import prod
 from ..runtime.lib import RawBufferMapped
+from .interpreted import interpret_ast
 
 
 class RawDiskBuffer(RawBufferMapped):
@@ -90,8 +92,12 @@ disk_fxn_for_op: dict[type[ops.LazyOp], ta.Callable] = {
     ops.AsStrided: RawDiskBuffer.as_strided,
 }
 
+
 DiskBuffer = Interpreted(
     RawDiskBuffer,
-    disk_fxn_for_op,
-    from_underlying=lambda x: x,
+    functools.partial(
+        interpret_ast,
+        disk_fxn_for_op,
+        None,
+    ),
 )
