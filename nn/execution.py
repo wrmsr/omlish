@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import abc
+import functools
+import re
 import time
 import typing as ta
 
@@ -21,7 +23,6 @@ from .helpers import colored
 from .helpers import getenv
 from .helpers import prod
 from .ops import LazyOp
-from .runtime.interpreted import interpret_ast
 from .runtime.lib import RawBuffer
 from .shape.symbolic import NumNode
 from .shape.symbolic import Variable
@@ -56,240 +57,7 @@ class ScheduleItem:
     var_vals: dict[Variable, int]
 
 
-# **************** batch executor ****************
-
-
-@dc.dataclass(frozen=True)
-class JitItem:
-    prg: AstRunner
-    rawbufs: list[ta.Optional[RawBuffer]]
-
-
-class BatchExecutor:
-    def __init__(
-            self,
-            jit_cache: list[JitItem],
-            input_rawbuffers: dict[ta.Union[int, str], RawBuffer],
-            var_vals: dict[Variable, int],
-    ) -> None:
-        super().__init__()
-        self.jit_cache: list[JitItem] = jit_cache
-        self.input_replace: dict[tuple[int, int], ta.Union[int, str]] = {}
-        self.op_estimate = NumNode(0)
-        self.mem_estimate = NumNode(0)
-        for j, ji in enumerate(jit_cache):
-            if isinstance(ji.prg, AstRunner):  # TODO: this is just for world and needs to be refactored
-                self.op_estimate += ji.prg.op_estimate
-                self.mem_estimate += ji.prg.mem_estimate
-            for i, a in enumerate(ji.rawbufs):
-                if a in [v for v in input_rawbuffers.values()]:
-                    self.input_replace[(j, i)] = [k for k, v in input_rawbuffers.items() if v == a][0]
-        assert set(self.input_replace.values()) == set(input_rawbuffers.keys()), "some input tensors not found"
-        self.clear_jit_inputs()
-
-    def __call__(
-            self,
-            input_rawbuffers: dict[ta.Union[int, str], RawBuffer],
-            var_vals: dict[Variable, int],
-            wait=False,
-    ):
-        for (j, i), input_name in self.input_replace.items():
-            self.jit_cache[j].rawbufs[i] = input_rawbuffers[input_name]
-
-        for ji in self.jit_cache:
-            ji.prg(ji.rawbufs, var_vals, jit=True)
-
-        self.clear_jit_inputs()
-
-    def update_stats(self, var_vals: dict[Variable, int], et: ta.Optional[float]):
-        # TODO: this is mostly copied from AstRunner
-        op_estimate = sym_infer(self.op_estimate, var_vals)
-        mem_estimate = sym_infer(self.mem_estimate, var_vals)
-        if DEBUG >= 2:
-            print(
-                f"{colored(f'*** {GlobalCounters.kernel_count:4d}', 'CYAN')}    "
-                f"kernels:{len(self.jit_cache):4d}  "
-                f"inputs:{len(self.input_replace):3d}   "
-                f"{' '.join([f'{k.expr}={v}' for k, v in var_vals.items()])[:50]:50s} "
-                f"OPs {int(op_estimate / 1e6):6d}M/{GlobalCounters.global_ops / 1e9:7.2f}G  "
-                f"mem {GlobalCounters.mem_used / 1e9:5.2f} GB "
-                + (
-                    str() if et is None else (
-                        f"tm {et * 1e6:9.2f}us/{GlobalCounters.time_sum_s * 1e3:9.2f}ms "
-                        f"({op_estimate / ((et or 1e-20) * 1e9):8.2f} GFLOPS, "
-                        f"{mem_estimate / ((et or 1e-20) * 1e9):7.2f} GB/s)"
-                    )
-                )
-            )
-        GlobalCounters.kernel_count += len(self.jit_cache)
-        GlobalCounters.global_ops += sym_infer(self.op_estimate, var_vals)
-        GlobalCounters.global_mem += sym_infer(self.mem_estimate, var_vals)
-        if et is not None:
-            GlobalCounters.time_sum_s += et
-
-    def clear_jit_inputs(self):
-        for (j, i) in self.input_replace.keys():
-            self.jit_cache[j].rawbufs[i] = None
-
-
-class AstRunner:
-    def __init__(self, ast: ta.Optional[LazyOp]) -> None:
-        super().__init__()
-        if ast is None:
-            self.op_estimate= 0
-            self.mem_estimate= 0
-            self.vars = []
-        else:
-            info = get_lazyop_info(ast)
-            self.op_estimate = info.flops
-            self.mem_estimate = info.mem_estimate
-            from .lazy import vars_from_ast
-            self.vars = vars_from_ast(ast)
-            assert all(v._val is None for v in self.vars), f"AstRunner contains bound Variable {self.vars}"
-
-    def exec(
-            self,
-            rawbufs: list[ta.Optional[RawBuffer]],
-            var_vals: ta.Optional[dict[Variable, int]] = None,
-            force_wait=False,
-    ) -> ta.Optional[float]:
-        from .jit import CacheCollector
-        et = self(rawbufs, var_vals, force_wait=force_wait)
-        CacheCollector.add(self, rawbufs, var_vals if var_vals is not None else {})
-        return et
-
-    def update_stats(
-            self,
-            name,
-            var_vals: ta.Optional[dict[Variable, int]],
-            et: ta.Optional[float],
-            buf_count,
-            lra,
-            jit,
-    ):
-        if var_vals is None:
-            var_vals = {}
-        op_estimate = sym_infer(self.op_estimate, var_vals)
-        mem_estimate = sym_infer(self.mem_estimate, var_vals)
-        if DEBUG >= 2:
-            print(
-                f"{colored(f'*** {GlobalCounters.kernel_count:4d}', 'magenta' if jit else None)} "
-                f"{name + ' ' * (37 - ansilen(name))} "
-                f"arg {buf_count:3d} "
-                f"sz {str(lra.get('global_size', '')):18s} {str(lra.get('local_size', '')):12s} "
-                f"OPs {int(op_estimate / 1e6):6d}M/{GlobalCounters.global_ops / 1e9:7.2f}G  "
-                f"mem {GlobalCounters.mem_used / 1e9:5.2f} GB " +
-                (
-                    str() if et is None else
-                    (
-                        f"tm {et * 1e6:9.2f}us/{GlobalCounters.time_sum_s * 1e3:9.2f}ms "
-                        f"("
-                        f"{op_estimate / ((et or 1e-20) * 1e9):8.2f} GFLOPS, "
-                        f"{mem_estimate / ((et or 1e-20) * 1e9):7.2f} GB/s"
-                        f")"
-                    )
-                )
-            )
-        GlobalCounters.kernel_count += 1
-        GlobalCounters.global_ops += op_estimate
-        GlobalCounters.global_mem += mem_estimate
-
-    def __call__(
-            self,
-            rawbufs: list[ta.Optional[RawBuffer]],
-            var_vals: ta.Optional[dict[Variable, int]] = None,
-            jit=False,
-            force_wait=False,
-    ) -> ta.Optional[float]:
-        raise NotImplementedError("override this")
-
-
-# **************** for Interpreted Buffers ****************
-
-
-class AstExecutor(lang.Abstract):
-
-    @abc.abstractmethod
-    def exec_ast(
-            self,
-            ast: LazyOp,
-            output=None,
-            inputs=None,
-            var_vals=None,
-            context=None,
-            **kwargs,
-    ) -> ta.Any:
-        raise NotImplementedError
-
-
-# **************** for Interpreted Buffers ****************
-
-
-class InterpretedAstRunner(AstRunner):
-    def __init__(self, ast: LazyOp, fxn: ta.Callable) -> None:
-        self.fxn = fxn
-        super().__init__(ast)
-
-    def __call__(
-            self,
-            rawbufs: list[ta.Optional[RawBuffer]],
-            var_vals: ta.Optional[dict[Variable, int]] = None,
-            jit=False,
-            force_wait=False,
-    ) -> float:
-        st = time.perf_counter()
-        ret: RawBuffer = self.fxn(rawbufs[1:], var_vals)
-        et = time.perf_counter() - st
-        self.update_stats(f"<interpreted {ret.size}>", var_vals, et, len(rawbufs), {}, jit)
-        if rawbufs[0] is not None:
-            assert rawbufs[0].dtype == ret.dtype
-            rawbufs[0].size = ret.size  # NOTE: for symbolic this can change
-            rawbufs[0]._buf = ret._buf
-        else:
-            rawbufs[0] = ret
-        return et
-
-
-class Interpreted:
-    def __init__(
-            self,
-            buffer: type[RawBuffer],
-            fxn_for_op: dict[type[ops.LazyOp], ta.Callable],
-            from_underlying: ta.Optional[ta.Callable] = None,
-    ) -> None:
-        super().__init__()
-        self.buffer = buffer
-        self.fxn_for_op = fxn_for_op
-        self.from_underlying = from_underlying
-        self.synchronize = lambda: None
-        self.batch_executor = BatchExecutor
-        self.codegen = None
-        self.method_cache: dict[LazyOp, InterpretedAstRunner] = {}
-
-    def exec_ast(
-            self,
-            ast: LazyOp,
-            output: LazyBuffer,
-            inputs: tuple[LazyBuffer, ...],
-            var_vals: dict[Variable, int],
-            **kwargs,
-    ):
-        if ast not in self.method_cache:
-            self.method_cache[ast] = InterpretedAstRunner(
-                ast,
-                interpret_ast(
-                    self.fxn_for_op,
-                    self.from_underlying,
-                    ast,
-                ),
-            )
-        rawbufs = [output.realized if output.realized is not None else output.output_buffer] + \
-                  [x.realized for x in inputs]
-        self.method_cache[ast].exec(rawbufs, var_vals)
-        output.realized = rawbufs[0]
-
-
-# --teenygrad--
+# **************** independent FlopCounter ****************
 
 
 @dc.dataclass(frozen=True)
@@ -362,6 +130,267 @@ def get_lazyop_info(ast: LazyOp) -> OpInfo:
     return OpAnalyzer().analyze(ast)
 
 
+# **************** GlobalCounters stats ****************
+
+
+def update_stats(
+        name,
+        op_estimate,
+        mem_estimate,
+        var_vals: ta.Optional[dict[Variable, int]],
+        et: ta.Optional[float],
+        buf_count,
+        jit=False,
+        num_kernels=1,
+        lra=None,
+):
+    if var_vals is None:
+        var_vals = {}
+
+    op_estimate, mem_estimate = sym_infer(op_estimate, var_vals), sym_infer(mem_estimate, var_vals)
+    if DEBUG >= 2:
+        print(
+            f"{colored(f'*** {GlobalCounters.kernel_count:4d}', ('magenta' if num_kernels == 1 else 'CYAN') if jit else None)} "
+            f"{name+' '*(37-ansilen(name))} "
+            f"arg {buf_count:3d} "
+            f"sz {str(lra.get('global_size', '') if lra else ''):18s} {str(lra.get('local_size', '') if lra else ''):12s} "
+            f"OPs {int(op_estimate/1e6):6d}M/{GlobalCounters.global_ops/1e9:7.2f}G  "
+            f"mem {GlobalCounters.mem_used/1e9:5.2f} GB " +
+            (
+                str() if et is None else
+                (
+                    f"tm {et*1e6:9.2f}us/{GlobalCounters.time_sum_s*1e3:9.2f}ms "
+                    f"({op_estimate/((et or 1e-20)*1e9):8.2f} GFLOPS, {mem_estimate/((et or 1e-20)*1e9):7.2f} GB/s)"
+                )
+            )
+        )
+
+    GlobalCounters.kernel_count += num_kernels
+    GlobalCounters.global_ops += op_estimate
+    GlobalCounters.global_mem += mem_estimate
+
+    if et is not None:
+        GlobalCounters.time_sum_s += et
+
+
+# **************** batch executor ****************
+
+
+@dc.dataclass(frozen=True)
+class JitItem:
+    prg: AstRunner
+    rawbufs: list[ta.Optional[RawBuffer]]
+
+
+class BatchExecutor:
+    def __init__(
+            self,
+            jit_cache: list[JitItem],
+            input_rawbuffers: dict[ta.Union[int, str], RawBuffer],
+            var_vals: dict[Variable, int],
+    ) -> None:
+        super().__init__()
+        self.jit_cache: list[JitItem] = jit_cache
+        self.input_replace: dict[tuple[int, int], ta.Union[int, str]] = {}
+        self.op_estimate = NumNode(0)
+        self.mem_estimate = NumNode(0)
+        for j, ji in enumerate(jit_cache):
+            if isinstance(ji.prg, AstRunner):  # TODO: this is just for world and needs to be refactored
+                self.op_estimate += ji.prg.op_estimate
+                self.mem_estimate += ji.prg.mem_estimate
+            for i, a in enumerate(ji.rawbufs):
+                if a in [v for v in input_rawbuffers.values()]:
+                    self.input_replace[(j, i)] = [k for k, v in input_rawbuffers.items() if v == a][0]
+        assert set(self.input_replace.values()) == set(input_rawbuffers.keys()), "some input tensors not found"
+        self.clear_jit_inputs()
+
+    def __call__(
+            self,
+            input_rawbuffers: dict[ta.Union[int, str], RawBuffer],
+            var_vals: dict[Variable, int],
+            wait=False,
+    ):
+        for (j, i), input_name in self.input_replace.items():
+            self.jit_cache[j].rawbufs[i] = input_rawbuffers[input_name]
+
+        for ji in self.jit_cache:
+            ji.prg(ji.rawbufs, var_vals, jit=True)
+
+        self.clear_jit_inputs()
+
+    def clear_jit_inputs(self):
+        for (j, i) in self.input_replace.keys():
+            self.jit_cache[j].rawbufs[i] = None
+
+
+class AstRunner:
+    def __init__(self, ast: ta.Optional[LazyOp]) -> None:
+        super().__init__()
+        if ast is None:
+            self.op_estimate= 0
+            self.mem_estimate= 0
+            self.vars = []
+        else:
+            info = get_lazyop_info(ast)
+            self.op_estimate = info.flops
+            self.mem_estimate = info.mem_estimate
+            from .lazy import vars_from_ast
+            self.vars = vars_from_ast(ast)
+            assert all(v._val is None for v in self.vars), f"AstRunner contains bound Variable {self.vars}"
+
+    def exec(
+            self,
+            rawbufs: list[ta.Optional[RawBuffer]],
+            var_vals: ta.Optional[dict[Variable, int]] = None,
+            force_wait=False,
+    ) -> ta.Optional[float]:
+        from .jit import CacheCollector
+        et = self(rawbufs, var_vals, force_wait=force_wait)
+        CacheCollector.add(self, rawbufs, var_vals if var_vals is not None else {})
+        return et
+
+    def __call__(
+            self,
+            rawbufs: list[ta.Optional[RawBuffer]],
+            var_vals: ta.Optional[dict[Variable, int]] = None,
+            jit=False,
+            force_wait=False,
+    ) -> ta.Optional[float]:
+        raise NotImplementedError("override this")
+
+
+# **************** for Interpreted Buffers ****************
+
+
+class InterpretedAstRunner(AstRunner):
+    def __init__(self, ast: LazyOp, fxn: ta.Callable) -> None:
+        self.fxn = fxn
+        super().__init__(ast)
+
+    def __call__(
+            self,
+            rawbufs: list[ta.Optional[RawBuffer]],
+            var_vals: ta.Optional[dict[Variable, int]] = None,
+            jit=False,
+            force_wait=False,
+    ) -> float:
+        st = time.perf_counter()
+        ret: RawBuffer = self.fxn(rawbufs[1:], var_vals)
+        et = time.perf_counter() - st
+        update_stats(f"<interpreted {ret.size}>", self.op_estimate, self.mem_estimate, var_vals, et, len(rawbufs), jit)
+        if rawbufs[0] is not None:
+            assert rawbufs[0].dtype == ret.dtype
+            rawbufs[0].size = ret.size  # NOTE: for symbolic this can change
+            rawbufs[0]._buf = ret._buf
+        else:
+            rawbufs[0] = ret
+        return et
+
+
+class Interpreted:
+    def __init__(
+            self,
+            buffer: type[RawBuffer],
+            fxn_for_op: dict[type[ops.LazyOp], ta.Callable],
+            from_underlying: ta.Optional[ta.Callable] = None,
+    ) -> None:
+        super().__init__()
+        self.buffer = buffer
+        self.fxn_for_op = fxn_for_op
+        self.from_underlying = from_underlying
+        self.synchronize = lambda: None
+        self.batch_executor = BatchExecutor
+        self.codegen = None
+        self.method_cache: dict[LazyOp, InterpretedAstRunner] = {}
+
+    def exec_ast(
+            self,
+            ast: LazyOp,
+            output: LazyBuffer,
+            inputs: tuple[LazyBuffer, ...],
+            var_vals: dict[Variable, int],
+            **kwargs,
+    ):
+        if ast not in self.method_cache:
+            self.method_cache[ast] = get_interpreted_fxn(
+                self.fxn_for_op,
+                self.from_underlying,
+                ast,
+            )
+        rawbufs = [output.realized if output.realized is not None else output.output_buffer] + \
+                  [x.realized for x in inputs]
+        self.method_cache[ast].exec(rawbufs, var_vals)
+        output.realized = rawbufs[0]
+
+
+def get_interpreted_fxn(
+        fxn_for_op: dict[type[ops.LazyOp], ta.Callable],
+        from_underlying: ta.Optional[ta.Callable],
+        ast: LazyOp,
+) -> InterpretedAstRunner:
+    if DEBUG >= 3:
+        from .lazy import print_tree
+        print_tree(ast)
+
+    tglob: dict[str, ta.Any] = {"Variable": Variable}
+    lines: list[str] = []
+
+    @functools.lru_cache(None)
+    def gstr(x: ta.Any, nm=None) -> str:
+        if ('Variable' in (str_arg := repr(x)) or 'NumNode' in str_arg):
+            str_arg = re.sub(r'Variable\(.*?\)', lambda m: f'var_vals[{str(m.group(0))}]', str_arg)
+            # TODO: (Variable - Variable) might create NumNode. can we remove it?
+            return re.sub(r'NumNode\((.*?)\)', r'\1', str_arg)
+
+        ret = str(nm).replace(".", "_") if nm else f"m{len(tglob):04d}"
+        tglob[ret] = x
+        return ret
+
+    @functools.lru_cache(None)
+    def _interpret_ast(ast: LazyOp) -> str:
+        if (
+                ops.MulAcc in fxn_for_op
+                and isinstance(ast, ops.Sum)
+                and isinstance(ast.src[0], LazyOp)
+                and isinstance(ast.src[0], ops.Mul)
+        ):
+            ast = ops.MulAcc(ast.src[0].src, ast.arg)
+
+        if isinstance(ast, ops.BufferOp):
+            if isinstance(ast, ops.Const):
+                tmp = f"{gstr(fxn_for_op[type(ast)], type(ast).__name__)}({gstr(ast.arg.val)}, {gstr(ast.arg.dtype)})"
+            else:
+                tmp = f"{gstr(fxn_for_op[type(ast)], type(ast).__name__)}(inputs[{ast.arg.idx - 1}])"
+            for mop, arg in ast.arg.st.to_movement_ops():
+                tmp = f"{gstr(fxn_for_op[mop], mop.__name__)}({tmp}, {gstr(arg)})"
+
+        else:
+            inp = [_interpret_ast(src) for src in ast.src]
+            tmp = f"{gstr(fxn_for_op[type(ast)], type(ast).__name__)}({', '.join(inp + ([gstr(ast.arg)] if ast.arg else []))})"
+
+        ret = f"a{len(lines)}"
+        lines.append(f"  {ret} = {tmp}")
+        return ret
+
+    ret = _interpret_ast(ast)
+    src = '\n'.join(
+        ['def run(inputs, var_vals):'] +
+        lines +
+        [
+            f"  return {gstr(from_underlying, 'from_underlying')}({ret})"
+            if from_underlying is not None else
+            f"  return {ret}"
+        ]
+    )
+
+    if DEBUG >= 4:
+        print(
+            functools.reduce(lambda x, y: (x.replace(y[0], str(y[1])) if y[0][0:2] == "m0" else x), tglob.items(), src))
+
+    exec(compile(src, "<ast>", "exec"), tglob)  # pylint: disable=exec-used
+    return InterpretedAstRunner(ast, tglob['run'])
+
+
 # **************** for Compiled Buffers ****************
 
 
@@ -431,21 +460,17 @@ class CompiledAstRunner(AstRunner):
         if local_size and 'local_size' not in lra:
             lra['local_size'] = local_size
 
-        if et := self.clprg(
-                *rawbufs,
-                *var_vals.values(),
-                **lra,
-                wait=force_wait or DEBUG >= 2,
-        ):
-            GlobalCounters.time_sum_s += et
+        et = self.clprg(*rawbufs, *var_vals.values(), **lra, wait=force_wait or DEBUG >= 2)
 
-        self.update_stats(
+        update_stats(
             self.display_name if self.display_name is not None else self.name,
+            self.op_estimate,
+            self.mem_estimate,
             var_vals,
             et,
             len(rawbufs),
-            lra,
             jit,
+            lra=lra,
         )
 
         return et
