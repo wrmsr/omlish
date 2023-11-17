@@ -87,23 +87,23 @@ class dtypes:
         return DTYPES_DICT
 
     bool: ta.Final[DType] = DType(0, 1, "bool", np.bool_)
-    float16: ta.Final[DType] = DType(8, 2, "half", np.float16)
+    float16: ta.Final[DType] = DType(9, 2, "half", np.float16)
     half = float16
-    float32: ta.Final[DType] = DType(9, 4, "float", np.float32)
+    float32: ta.Final[DType] = DType(10, 4, "float", np.float32)
     float = float32
-    float64: ta.Final[DType] = DType(10, 8, "double", np.float64)
+    float64: ta.Final[DType] = DType(11, 8, "double", np.float64)
     double = float64
-    int8: ta.Final[DType] = DType(0, 1, "char", np.int8)
-    int16: ta.Final[DType] = DType(2, 2, "short", np.int16)
-    int32: ta.Final[DType] = DType(4, 4, "int", np.int32)
-    int64: ta.Final[DType] = DType(6, 8, "long", np.int64)
-    uint8: ta.Final[DType] = DType(1, 1, "unsigned char", np.uint8)
-    uint16: ta.Final[DType] = DType(3, 2, "unsigned short", np.uint16)
-    uint32: ta.Final[DType] = DType(5, 4, "unsigned int", np.uint32)
-    uint64: ta.Final[DType] = DType(7, 8, "unsigned long", np.uint64)
+    int8: ta.Final[DType] = DType(1, 1, "char", np.int8)
+    int16: ta.Final[DType] = DType(3, 2, "short", np.int16)
+    int32: ta.Final[DType] = DType(5, 4, "int", np.int32)
+    int64: ta.Final[DType] = DType(7, 8, "long", np.int64)
+    uint8: ta.Final[DType] = DType(2, 1, "unsigned char", np.uint8)
+    uint16: ta.Final[DType] = DType(4, 2, "unsigned short", np.uint16)
+    uint32: ta.Final[DType] = DType(6, 4, "unsigned int", np.uint32)
+    uint64: ta.Final[DType] = DType(8, 8, "unsigned long", np.uint64)
 
     # NOTE: bfloat16 isn't supported in numpy
-    bfloat16: ta.Final[DType] = DType(0, 2, "__bf16", None)
+    bfloat16: ta.Final[DType] = DType(9, 2, "__bf16", None)
 
     # NOTE: these are internal dtypes, should probably check for that
     _int2: ta.Final[DType] = DType(2, 4 * 2, "int2", None, 2)
