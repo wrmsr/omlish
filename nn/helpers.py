@@ -59,7 +59,7 @@ def all_int(t: tuple[ta.Any, ...]) -> TypeGuard[tuple[int, ...]]:
     return all(isinstance(s, int) for s in t)
 
 
-def colored(st, color, background=False):
+def colored(st: str, color: ta.Optional[str], background=False) -> str:
     return (
         f"\u001b[{10*background+60*(color.upper() == color)+30+['black', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white'].index(color.lower())}m{st}\u001b[0m"  # noqa
         if color is not None
@@ -67,11 +67,11 @@ def colored(st, color, background=False):
     )  # replace the termcolor library with one line
 
 
-def ansistrip(s):
+def ansistrip(s: str) -> str:
     return re.sub('\x1b\\[(K|.*?m)', '', s)
 
 
-def ansilen(s):
+def ansilen(s: str) -> int:
     return len(ansistrip(s))
 
 
@@ -87,7 +87,7 @@ def fromimport(mod, frm):
     return getattr(__import__(mod, fromlist=[frm]), frm)
 
 
-def strip_parens(fst):
+def strip_parens(fst: str) -> str:
     return (
         fst[1:-1]
         if fst[0] == "("
@@ -236,6 +236,20 @@ def fetch(url):
         return f.read()
 
 
+# def fetch(url: str) -> pathlib.Path:
+#     fp = pathlib.Path(_cache_dir) / "tinygrad" / "downloads" / hashlib.md5(url.encode('utf-8')).hexdigest()
+#     if not fp.is_file():
+#         r = requests.get(url, stream=True, timeout=10)
+#         assert r.status_code == 200
+#         progress_bar = tqdm.tqdm(total=int(r.headers.get('content-length', 0)), unit='B', unit_scale=True, desc=url)
+#         (path := fp.parent).mkdir(parents=True, exist_ok=True)
+#         with tempfile.NamedTemporaryFile(dir=path, delete=False) as f:
+#             for chunk in r.iter_content(chunk_size=16384): progress_bar.update(f.write(chunk))
+#             f.close()
+#             pathlib.Path(f.name).rename(fp)
+#     return fp
+
+
 def fetch_as_file(url):
     if url.startswith("/") or url.startswith("."):
         with open(url, "rb") as f:
@@ -282,7 +296,7 @@ class DiskCache:
     DEFAULT_DIR: str = getenv("XDG_CACHE_HOME", os.path.expanduser("~/Library/Caches" if OSX else "~/.cache"))
     DEFAULT_PATH: str = getenv("CACHEDB", os.path.abspath(os.path.join(DEFAULT_DIR, "tinygrad", "cache.db")))
 
-    VERSION = 7
+    VERSION = 9
 
     def __init__(
             self,

@@ -156,7 +156,7 @@ class Linearizer(Kernel):
         invalid_value = 0 if dtypes.is_int(buf.dtype) else 0.0
         for idx, valid, rep_idx in zip(e_idxs, e_valids, Node.iter_idxs(expand_vars)):
             this_const, idx, valid = (
-                (invalid_value, Variable.num(0), Variable.num(1))
+                (invalid_value, NumNode(0), NumNode(1))
                 if valid.max == 0
                 else (const, idx, valid)
             )
@@ -527,7 +527,7 @@ class Linearizer(Kernel):
                 def calc_tc_idxs(local_size: int, aliases: list[list[int]]):
                     replace_idxs = []
                     for alias in aliases:
-                        full_var, full_var_sz = Variable.num(0), 1
+                        full_var, full_var_sz = NumNode(0), 1
                         if alias[0] != 0:
                             for i in alias:
                                 next_var = local_idxs[-i] if i > 0 else Variable(None, 0, local_size - 1)
@@ -668,7 +668,7 @@ class Linearizer(Kernel):
                 barrier = self.uop(uo.Barrier, None, tuple(stores), cachable=False)
 
                 if self.opts.has_local:
-                    fake_idxs = [Variable.num(0)] * len(self.sts[-1].shape)
+                    fake_idxs = [NumNode(0)] * len(self.sts[-1].shape)
                     fake_idxs[self.global_dims + self.local_dims:self.global_dims + len(local_idxs)] = local_idxs[self.local_dims:]
                     if_cond: uo.UOp = self.render(self.sts[-1].expr_idxs(fake_idxs)[0] < 1)
                     barrier = self.uop(uo.If, None, (if_cond, barrier), cachable=False)

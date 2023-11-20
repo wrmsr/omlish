@@ -56,6 +56,8 @@ def time_linearizer(
         "opts": str(lin.applied_opts),
         "allow_test_size": allow_test_size,
         "max_global_size": max_global_size,
+        "clear_l2": clear_l2,
+        "device": Device.DEFAULT,
     }
 
     if not disable_cache and CACHELEVEL >= 2 and (val := diskcache_get("time_linearizer", key)) is not None:

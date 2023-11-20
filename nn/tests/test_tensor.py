@@ -226,6 +226,7 @@ class TestTinygrad(unittest.TestCase):
         ), f"shape mismatch (Tensor.ones_like){a.shape} != (torch){b.shape}"
 
     def test_ndim(self):
+        assert Tensor(1).ndim == 0
         assert Tensor.randn(1).ndim == 1
         assert Tensor.randn(2, 2, 2).ndim == 3
         assert Tensor.randn(1, 1, 1, 1, 1, 1).ndim == 6
@@ -252,12 +253,18 @@ class TestTinygrad(unittest.TestCase):
         self.assertEqual(Tensor.zeros([10, 20, 40]).shape, (10, 20, 40))
         self.assertEqual(Tensor.ones([10, 20, 40]).shape, (10, 20, 40))
 
+        self.assertEqual(Tensor.rand(1, 10, 20).shape, (1, 10, 20))
+        self.assertEqual(Tensor.rand((10, 20, 40)).shape, (10, 20, 40))
+
+        self.assertEqual(Tensor.empty(1, 10, 20).shape, (1, 10, 20))
+        self.assertEqual(Tensor.empty((10, 20, 40)).shape, (10, 20, 40))
+
     def test_numel(self):
         assert Tensor.randn(10, 10).numel() == 100
         assert Tensor.randn(1, 2, 5).numel() == 10
         assert Tensor.randn(1, 1, 1, 1, 1, 1).numel() == 1
         assert Tensor([]).numel() == 0
-        # assert Tensor.randn(1,0,2,5) == 0 # TODO: fix empty tensors
+        assert Tensor.randn(1, 0, 2, 5).numel() == 0
 
     def test_element_size(self):
         for _, dtype in dtypes.fields().items():
@@ -273,8 +280,8 @@ class TestTinygrad(unittest.TestCase):
         x.dot(layer).mean().backward()
 
     def test_zerosized_tensors(self):
-        Tensor([]).realize()
-        Tensor([]).numpy()
+        np.testing.assert_equal(Tensor([]).numpy(), np.array([]))
+        np.testing.assert_equal(Tensor(None).numpy(), np.array([]))
 
     def test_tensor_ndarray_dtype(self):
         arr = np.array([1])  # where dtype is implicitly int64
@@ -304,10 +311,6 @@ class TestTinygrad(unittest.TestCase):
 
 
 class TestZeroShapeTensor(unittest.TestCase):
-    def test_from_empty(self):
-        np.testing.assert_equal(Tensor([]).numpy(), np.array([]))
-        np.testing.assert_equal(Tensor(None).numpy(), np.array([]))
-
     def test_shape_stride(self):
         t = Tensor.rand(3, 2, 0)
         assert t.shape == (3, 2, 0)

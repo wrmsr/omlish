@@ -225,7 +225,8 @@ def to_image_idx(base_shape: tuple[int, ...], idxy: Node, valid: Node) -> tuple[
     if valid.min == 0 and isinstance(idxy, SumNode):
         nodes = valid.nodes if isinstance(valid, AndNode) else [valid]
         val_dict: dict[Node, ta.Any] = {}
-        idxy_flat_var = [(i, i.vars()[0]) for i in idxy.flat_components if not isinstance(i, NumNode)]
+        # TODO: is this correct? should it check there's only one variable from each component?
+        idxy_flat_var = [(i, list(i.vars())[0]) for i in idxy.flat_components if not isinstance(i, NumNode)]
 
         for node in nodes:
             assert isinstance(node, LtNode)
