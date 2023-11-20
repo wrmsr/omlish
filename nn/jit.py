@@ -19,14 +19,19 @@ from .shape.symbolic import Variable
 from .tensor import Tensor
 
 
-class TinyJit:
-    def __init__(self, fxn: ta.Callable) -> None:
-        super().__init__()
+ReturnType = ta.TypeVar('ReturnType')
 
+
+class TinyJit:
+    def __init__(self, fxn: ta.Callable[..., ReturnType]) -> None:
+        super().__init__()
         self.fxn: ta.Callable = fxn
+        self.reset()
+
+    def reset(self) -> None:
         self.jit_fxn: ta.Optional[BatchExecutor] = None
         self.cnt: int = 0
-        self.ret: ta.Any = None
+        self.ret: ta.Optional[ReturnType] = None
         self.expected_vals: ta.Optional[tuple[Variable, ...]] = None
         self.expected_sts_dtype: ta.Optional[tuple[tuple[ShapeTracker, DType], ...]] = None
 
@@ -42,7 +47,7 @@ class TinyJit:
     def __get__(self, obj, objtype):
         return functools.partial(self.__call__, obj)
 
-    def __call__(self, *args, **kwargs) -> ta.Any:
+    def __call__(self, *args, **kwargs) -> ReturnType:
         # all inputs are realized
         input_tensors: dict[ta.Union[int, str], Tensor] = {
             ta.cast(ta.Union[int, str], k): v.realize()
@@ -56,7 +61,6 @@ class TinyJit:
             k: ta.cast(RawBuffer, v.lazydata.realized)
             for k, v in input_tensors.items()
         }
-        assert len(input_rawbuffers) != 0, "no inputs to JIT"
         assert len(set(input_rawbuffers.values())) == len(input_rawbuffers), "duplicate inputs to JIT"
 
         # get variables: they can either be in Tensors or passed in as arguments, and all must be bound. these are all global
@@ -68,7 +72,6 @@ class TinyJit:
 
         if self.cnt >= 2:
             assert self.expected_vals == expected_vals, "mismatch of var_vals"
-            assert self.expected_sts_dtype == expected_sts_dtype, "mismatch of sts"
             assert self.jit_fxn, "didn't get jitted?"
             self.jit_fxn(input_rawbuffers, var_vals, DEBUG >= 2)
 
@@ -89,7 +92,7 @@ class TinyJit:
             self.ret = self.fxn(*args, **kwargs)
 
         self.cnt += 1
-        return self.ret
+        return ta.cast(ReturnType, self.ret)
 
 
 class PlaceHolder:

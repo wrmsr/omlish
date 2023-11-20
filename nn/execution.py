@@ -229,7 +229,7 @@ class AstRunner:
         if ast is None:
             self.op_estimate= 0
             self.mem_estimate= 0
-            self.vars = []
+            self.vars = set()
         else:
             info = get_lazyop_info(ast)
             self.op_estimate = info.flops
@@ -613,7 +613,6 @@ def get_optimized_program(
                             tk,
                             test_rawbuffers,
                             allow_test_size=False,
-                            disable_cache=True,
                             clear_l2=True,
                         ),
                     )

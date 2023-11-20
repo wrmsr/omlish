@@ -74,6 +74,8 @@ torch_fxn_for_op: dict[type[ops.LazyOp], ta.Callable] = {
         ops.Sub: lambda x, y: torch.sub(*match_types(x, y, disallow_bool=True)).type(output_type(x, y)),
         ops.Mul: lambda x, y: torch.mul(*match_types(x, y)).type(output_type(x, y)),
         ops.Div: lambda x, y: torch.div(*match_types(x, y)).type(torch.promote_types(x.dtype, y.dtype)),
+        ops.AsStrided: as_strided,
+        ops.Expand: lambda x, arg: x.expand(arg),
         ops.Pad: lambda x, padding: torch.nn.functional.pad(x, [item for sublist in padding[::-1] for item in sublist]),  # noqa
         ops.MulAcc: einsum_mulacc(
             lambda s, a, b: torch.einsum(s, a.float(), b.float()).type(output_type(a, b)),
@@ -81,10 +83,6 @@ torch_fxn_for_op: dict[type[ops.LazyOp], ta.Callable] = {
             lambda x, s: x.expand(s),
         ),
         ops.Where: lambda x, y, z: torch.where(x != 0, y, z),
-        ops.Restride: lambda x, arg: x[tuple(slice(None, None, abs(i)) for i in arg)].flip([i for i, a in enumerate(arg) if a < 0]),  # noqa
-        ops.Expand: lambda x, arg: x.expand(arg),
-        ops.Permute: lambda x, arg: x.permute(arg),
-        ops.AsStrided: as_strided,
     },
 }
 

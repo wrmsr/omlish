@@ -174,17 +174,15 @@ def get_movementroot_contiguous(x: LazyBuffer) -> LazyBuffer:
     )
 
 
-def vars_from_ast(ast: LazyOp) -> list[Variable]:
-    return col.unique(
-        functools.reduce(
-            operator.add,
-            [
-                x.arg.st.vars()
-                for x in ast.get_lazyops()
-                if isinstance(x, ops.BufferOp)
-            ],
-            [],
-        ),
+def vars_from_ast(ast:LazyOp) -> set[Variable]:
+    return functools.reduce(
+        operator.or_,
+        [
+            x.arg.st.vars()
+            for x in ast.get_lazyops()
+            if isinstance(x, ops.BufferOp)
+        ],
+        set(),
     )
 
 
@@ -297,12 +295,6 @@ class LazyBuffer(lang.Final):
 
     def __repr__(self):
         return f"<LB {self.shape} {self.dtype} op={type(self.op).__name__ if hasattr(self, 'op') else self._realized} st={self.st}>"  # noqa
-
-    @property
-    def key(self):
-        if self.realized:
-            return (self.dtype, self.realized.key, self.st)
-        return (self.dtype, type(self.op), self.st)
 
     def _device_extra_args(self) -> dict[str, str]:
         return {"device": self.device.split(":", 1)[1]} if ":" in self.device else {}

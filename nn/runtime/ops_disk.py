@@ -2,11 +2,18 @@ import mmap
 import os
 import typing as ta
 
+try:
+    import _posixshmem
+except Exception:
+    pass
+
 from .. import ops
 from ..dtypes import DType
 from ..execution import Interpreted
+from ..helpers import OSX
 from ..helpers import prod
 from ..runtime.lib import RawBufferMapped
+from ..shape.view import strides_for_shape
 
 
 class RawDiskBuffer(RawBufferMapped):
@@ -26,10 +33,23 @@ class RawDiskBuffer(RawBufferMapped):
             device is not None or buf is not None
         ), "disk tensor needs a path or a buf"
         if device is not None:
-            f = open(device, "a+b")
-            if os.path.getsize(device) < size * dtype.itemsize:
-                os.ftruncate(f.fileno(), size * dtype.itemsize)
-            buf = [f, mmap.mmap(f.fileno(), size * dtype.itemsize), 1]
+            if str(device).startswith("shm:"):
+                if OSX:
+                    with open(f"/tmp/shm_{device[4:]}", "w+b") as f:
+                        f.truncate(size * dtype.itemsize)
+                        shm = mmap.mmap(f.fileno(), size * dtype.itemsize, flags=mmap.MAP_SHARED)
+                else:
+                    fd = _posixshmem.shm_open(device[4:], os.O_RDWR, 0o600)
+                    # TODO: these flags are somewhat platform specific, but python doesn't expose the ones we need
+                    shm = mmap.mmap(fd, size * dtype.itemsize, flags=mmap.MAP_SHARED | 0x2000 | 0x008000)
+                    shm.madvise(mmap.MADV_HUGEPAGE)  # type: ignore   # not on OSX
+                    os.close(fd)
+                buf = [None, shm, 1]
+            else:
+                f = open(device, "a+b")
+                if os.path.getsize(device) < size * dtype.itemsize:
+                    os.ftruncate(f.fileno(), size * dtype.itemsize)
+                buf = [f, mmap.mmap(f.fileno(), size * dtype.itemsize), 1]
         else:
             buf[2] += 1
         # NOTE: we don't call super since disk tensors don't use RAM
@@ -37,7 +57,7 @@ class RawDiskBuffer(RawBufferMapped):
 
     def __del__(self):
         self._buf[2] -= 1
-        if self._buf[2] == 0:
+        if self._buf[2] == 0 and self._buf[0] is not None:
             self._buf[0].close()
 
     def cast(self, arg: tuple[DType, bool]):
@@ -45,26 +65,8 @@ class RawDiskBuffer(RawBufferMapped):
             self.size, arg[0], buf=self._buf, shape=self.shape, offset=self.offset
         )
 
-    def reshape(self, arg):
-        return RawDiskBuffer(
-            self.size, self.dtype, buf=self._buf, shape=arg, offset=self.offset
-        )
-
-    def shrink(self, arg):
-        assert (
-            len(arg) < 2 or arg[1:] == tuple([(0, x) for x in self.shape[1:]])
-        ), f"can only slice the first dim of disk tensor {arg}"
-        offset = arg[0][0] * (prod(self.shape[1:]) if len(arg) > 1 else 1) * self.dtype.itemsize
-        size = (arg[0][1] - arg[0][0]) * (prod(self.shape[1:]) if len(arg) > 1 else 1)
-        return RawDiskBuffer(
-            size,
-            self.dtype,
-            buf=self._buf,
-            offset=self.offset + offset,
-            shape=(arg[0][1] - arg[0][0],) + (self.shape[1:] if len(arg) > 1 else ()),
-        )
-
     def as_strided(self, arg):
+        assert strides_for_shape(arg[0]) == arg[1], "disk tensors don't support strides"
         return RawDiskBuffer(
             prod(arg[0]),
             self.dtype,
@@ -78,17 +80,18 @@ class RawDiskBuffer(RawBufferMapped):
             self.offset:self.offset + self.size * self.dtype.itemsize
         ]
 
-    def readinto(self, buf):
-        self._buf[0].seek(self.offset)
-        self._buf[0].readinto(buf)
+    def readinto(self, buf: memoryview):
+        if self._buf[0] is not None:
+            self._buf[0].seek(self.offset)
+            self._buf[0].readinto(buf)
+        else:
+            buf.cast('B')[:] = self._buffer()
 
 
 disk_fxn_for_op: dict[type[ops.LazyOp], ta.Callable] = {
     ops.Mem: lambda x: x,
     ops.Nop: lambda x: x,
     ops.Cast: RawDiskBuffer.cast,
-    ops.Shrink: RawDiskBuffer.shrink,
-    ops.Reshape: RawDiskBuffer.reshape,
     ops.AsStrided: RawDiskBuffer.as_strided,
 }
 
