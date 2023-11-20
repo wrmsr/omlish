@@ -8,7 +8,7 @@ from ..tensor import Tensor
 class BatchNorm2d:
     def __init__(
             self,
-            sz,
+            sz: int,
             eps=1e-5,
             affine=True,
             track_running_stats=True,

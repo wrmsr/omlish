@@ -4,7 +4,6 @@ import functools
 import operator
 import typing as ta
 
-from omlish import collections as col
 from omlish import dataclasses as dc
 
 from .. import ops
@@ -13,6 +12,7 @@ from ..helpers import merge_dicts
 from ..helpers import prod
 from ..shape.symbolic import MulNode
 from ..shape.symbolic import Node
+from ..shape.symbolic import NumNode
 from ..shape.symbolic import SumNode
 from ..shape.symbolic import Variable
 from ..shape.symbolic import sint
@@ -35,7 +35,7 @@ def to_shape_strides(
     return tuple(ret)
 
 
-def expr_node_mask(view: View, idx, valid=None) -> Node:
+def expr_node_mask(view: View, idx: Node, valid: ta.Optional[Node] = None) -> Node:
     expr = [valid] if valid is not None else []
     if view.mask is not None:
         acc = 1
@@ -48,11 +48,11 @@ def expr_node_mask(view: View, idx, valid=None) -> Node:
 
 
 # generate an expression if you have a single idx variable
-def expr_node(view: View, idx=None) -> Node:
+def expr_node(view: View, idx: ta.Optional[Node] = None) -> Node:
     if idx is None:
         idx = Variable("idx", 0, prod(view.shape) - 1)
     ret: list[Node] = (
-        [Variable.num(view.offset) if isinstance(view.offset, int) else view.offset]
+        [NumNode(view.offset) if isinstance(view.offset, int) else view.offset]
         if view.offset
         else []
     )
@@ -64,12 +64,12 @@ def expr_node(view: View, idx=None) -> Node:
 
 
 # generate an expression if you have a variable or expression for each index
-def expr_idxs(view: View, idxs) -> Node:
+def expr_idxs(view: View, idxs: tuple[Node, ...]) -> Node:
     assert len(idxs) == len(
         view.shape
     ), f"need an idx for all dimensions {idxs} vs {view.shape}"
     return Variable.sum(
-        [Variable.num(view.offset) if isinstance(view.offset, int) else view.offset]
+        [NumNode(view.offset) if isinstance(view.offset, int) else view.offset]
         + [
             idx * st
             for idx, sh, st in zip(idxs, view.shape, view.strides)
@@ -88,7 +88,7 @@ def merge_views(vm2: View, vm1: View) -> ta.Optional[View]:
 
 
 @functools.lru_cache(maxsize=None)
-def idxs_to_idx(shape: tuple[int, ...], idxs) -> Node:
+def idxs_to_idx(shape: tuple[int, ...], idxs: tuple[Node, ...]) -> Node:
     assert len(idxs) == len(shape), "need an idx for all dimensions"
     acc = 1
     ret = []
@@ -122,8 +122,8 @@ class ShapeTracker:
     def size(self):
         return 0 if (0 in self.shape) else self.expr_idxs()[0].max + 1
 
-    def vars(self) -> list[Variable]:
-        return col.unique(functools.reduce(operator.add, [v.vars() for v in self.views], []))
+    def vars(self) -> set[Variable]:
+        return functools.reduce(operator.or_, [v.vars() for v in self.views], set())
 
     @property
     def var_vals(self) -> dict[Variable, int]:
@@ -150,6 +150,8 @@ class ShapeTracker:
                     real_shape = tuple(x + s[0] + s[1] for x, s in zip(real_shape, pre_expand_pads))
 
             # then, we do any expands
+            # NOTE: this is a good idea even without masks, since torch doesn't support negative strides and has to make
+            # a copy
             if any(s != 1 and st == 0 for s, st in zip(real_shape, v.strides)):
                 to_apply.append((ops.Expand, real_shape))
 
@@ -183,10 +185,10 @@ class ShapeTracker:
     def unit_stride_axes(self, ignore_valid=False) -> list[int]:
         return [i for i, st in enumerate(self.real_strides(ignore_valid)) if st == 1]
 
-    def _expr_idx(self, idx, valid) -> tuple[Node, Node]:
+    def _expr_idx(self, idx: Node, valid: Node) -> tuple[Node, Node]:
         for v in reversed(self.views[0:-1]):
             if valid.max == 0:
-                return Variable.num(-1), valid
+                return NumNode(-1), valid
             valid = expr_node_mask(v, idx, valid)
             idx = expr_node(v, idx)
         return idx, valid
@@ -201,7 +203,7 @@ class ShapeTracker:
                 return ShapeTracker(self.views[:-2] + (new_view,)).simplify()
         return self
 
-    def expr_idxs(self, idxs=None):
+    def expr_idxs(self, idxs: ta.Optional[ta.Iterable[Node]] = None):
         if idxs is None:
             idxs = [Variable(f"idx{i}", 0, s - 1) for i, s in enumerate(self.shape)]
         idx = expr_idxs(self.views[-1], tuple(idxs))
@@ -210,16 +212,14 @@ class ShapeTracker:
         )
         return self._expr_idx(idx, valid)
 
-    def expr_node(self, idx="idx"):
-        if idx.__class__ is str:
+    def expr_node(self, idx: ta.Union[Node, str] = 'idx'):
+        if isinstance(idx, str):
             idx = Variable(idx, 0, prod(self.shape) - 1)
-        return self._expr_idx(
-            expr_node(self.views[-1], idx), expr_node_mask(self.views[-1], idx)
-        )
+        return self._expr_idx(expr_node(self.views[-1], idx), expr_node_mask(self.views[-1], idx))
 
-    def axis_is_masked(self, axis) -> bool:
+    def axis_is_masked(self, axis: int) -> bool:
         _, valid = self.expr_idxs()
-        return f"idx{axis}" in [v.expr for v in valid.vars()]
+        return f'idx{axis}' in [v.expr for v in valid.vars()]
 
     # *** under this line are the movement ops ***
 

@@ -33,8 +33,6 @@ base_fxn_for_op: dict[type[ops.LazyOp], ta.Callable] = {
         if tuple(x.shape) != tuple(new_shape) else
         x[:]
     ),
-    ops.Reshape: lambda x, arg: x.reshape(arg),
-    ops.Shrink: lambda x, arg: x[tuple(slice(p[0], p[1], None) for p in arg)],
 }
 
 
@@ -101,10 +99,8 @@ numpy_fxn_for_op: dict[type[ops.LazyOp], ta.Callable] = {
         ops.Mul: lambda x, y: np.multiply(*match_types(x, y)),
         ops.Div: lambda x, y: np.divide(*match_types(x, y)).astype(output_type(x, y), copy=False),
         ops.Sqrt: np.sqrt,
-        ops.Permute: lambda x, order: x.transpose(order),
         ops.Pad: np.pad,
         ops.Expand: np.broadcast_to,
-        ops.Restride: lambda x, arg: x[tuple(slice(None, None, i) for i in arg)],
         ops.AsStrided: lambda x, arg: np.ndarray(
             arg[0],
             buffer=np.require(x, requirements='C'),

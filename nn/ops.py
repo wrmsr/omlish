@@ -34,14 +34,6 @@ class LazyOp(lang.Abstract):
     def __hash__(self):
         return self.hash
 
-    @cached.property
-    def key(self) -> tuple:
-        return (
-            type(self),
-            tuple(map(lambda x: getattr(x, "key", x), self.src)),
-            getattr(self.arg, "key", self.arg),
-        )
-
     def map_buffers(
             self,
             real_srcs: ta.Mapping[LazyBuffer, ta.Union[LazyBuffer, LazyOp]]

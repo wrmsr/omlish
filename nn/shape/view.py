@@ -4,7 +4,6 @@ import functools
 import operator
 import typing as ta
 
-from omlish import collections as col
 from omlish import dataclasses as dc
 
 from ..helpers import all_int
@@ -53,18 +52,16 @@ class View:
         )
         return View(shape, strides, offset, mask, contiguous)
 
-    def vars(self) -> list[Variable]:
+    def vars(self) -> set[Variable]:
         flatten_mask = tuple(x for m in self.mask for x in m) if self.mask is not None else tuple()
-        return col.unique(
-            functools.reduce(
-                operator.add,
-                [
-                    x.vars()
-                    for x in self.shape + self.strides + (self.offset,) + flatten_mask
-                    if isinstance(x, Node)
-                ],
-                [],
-            ),
+        return functools.reduce(
+            operator.or_,
+            [
+                x.vars()
+                for x in self.shape + self.strides + (self.offset,) + flatten_mask
+                if isinstance(x, Node)
+            ],
+            set(),
         )
 
     def unbind(self) -> View:
