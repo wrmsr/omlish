@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import functools
-import operator
 import typing as ta
 
 from omlish import dataclasses as dc
@@ -123,7 +122,7 @@ class ShapeTracker:
         return 0 if (0 in self.shape) else self.expr_idxs()[0].max + 1
 
     def vars(self) -> set[Variable]:
-        return functools.reduce(operator.or_, [v.vars() for v in self.views], set())
+        return set.union(*[v.vars() for v in self.views], set())
 
     @property
     def var_vals(self) -> dict[Variable, int]:
