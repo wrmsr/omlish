@@ -1,6 +1,6 @@
 absl-py==2.0.0
 accelerate==0.24.1
-aiohttp==3.8.6
+aiohttp==3.9.0
 aiosignal==1.3.1
 aiosqlite==0.19.0
 annotated-types==0.6.0
@@ -10,14 +10,14 @@ asttokens==2.4.1
 async-timeout==4.0.3
 attrs==23.1.0
 bayesian-optimization==1.4.3
-bellows==0.36.8
+bellows==0.37.0
 bitsandbytes==0.41.2.post2
 black==23.11.0
-boto3==1.29.2
-botocore==1.32.3
+boto3==1.29.4
+botocore==1.32.4
 build==1.0.3
 cachetools==5.3.2
-certifi==2023.7.22
+certifi==2023.11.17
 cffi==1.16.0
 charset-normalizer==3.3.2
 cli-helpers==2.3.0
@@ -40,7 +40,7 @@ filelock==3.13.1
 flake8==6.1.0
 Flake8-pyproject==1.2.3
 flameprof==0.4
-fonttools==4.44.3
+fonttools==4.45.0
 frozenlist==1.4.0
 fsspec==2023.10.0
 google-api-core==2.14.0
@@ -67,7 +67,7 @@ jmespath==1.0.1
 joblib==1.3.2
 keyring==24.3.0
 kiwisolver==1.4.5
-litecli==1.9.0
+litecli==1.10.0
 llvmlite==0.41.1
 loralib==0.1.2
 lxml==4.9.3
@@ -87,7 +87,7 @@ mycli==1.27.0
 mypy==1.7.0
 mypy-extensions==1.0.0
 networkx==3.2.1
-nevergrad==1.0.0
+nevergrad==1.0.1
 nh3==0.2.14
 numpy==1.26.2
 nvidia-cublas-cu12==12.1.3.1
@@ -110,7 +110,7 @@ packaging==23.2
 pandas==2.1.3
 parso==0.8.3
 pathspec==0.11.2
-peft @ git+https://github.com/huggingface/peft.git@f1ecfa6ae6eba599ae89decbf47b339d8c9d39a3
+peft @ git+https://github.com/huggingface/peft.git@0ae52fece17a3514116815984444116b75d9c5ca
 pendulum==2.1.2
 pexpect==4.8.0
 pg8000==1.30.3
@@ -133,7 +133,7 @@ pure-pcapy3==1.0.1
 py-cpuinfo==9.0.0
 pyaes==1.6.1
 pyarrow==14.0.1
-pyasn1==0.5.0
+pyasn1==0.5.1
 pyasn1-modules==0.3.0
 pycodestyle==2.11.1
 pycparser==2.21
@@ -141,7 +141,7 @@ pycuda==2023.1
 pydantic==2.5.1
 pydantic_core==2.14.3
 pyflakes==3.1.0
-Pygments==2.16.1
+Pygments==2.17.1
 PyMySQL==1.1.0
 pyopencl==2023.1.4
 pyparsing==3.1.1
@@ -170,7 +170,7 @@ rsa==4.9
 s3transfer==0.7.0
 safetensors==0.4.0
 scikit-learn==1.3.2
-scipy==1.11.3
+scipy==1.11.4
 scramp==1.4.4
 SecretStorage==3.3.3
 selectolax==0.3.17
@@ -180,7 +180,7 @@ six==1.16.0
 soco==0.29.1
 sounddevice==0.4.6
 SQLAlchemy==2.0.23
-sqlglot==19.5.1
+sqlglot==19.6.0
 sqlparse==0.4.4
 stack-data==0.6.3
 sympy==1.12
@@ -201,13 +201,13 @@ typing_extensions==4.8.0
 tzdata==2023.3
 urllib3==2.0.7
 voluptuous==0.14.1
-wcwidth==0.2.10
+wcwidth==0.2.12
 Werkzeug==3.0.1
 wgpu==0.12.0
 wrapt==1.16.0
 xmltodict==0.13.0
 xxhash==3.4.1
-yarl==1.9.2
+yarl==1.9.3
 zigpy==0.60.0
 zipp==3.17.0
 zwave-js-server-python==0.54.0

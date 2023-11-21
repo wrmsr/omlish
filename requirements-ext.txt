@@ -49,7 +49,7 @@ torchvision==0.16.1
 
 networkx==3.2.1
 
-nevergrad==1.0.0
+nevergrad==1.0.1
 
 # --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/Triton-Nightly/pypi/simple/
 # triton-nightly; platform_machine == 'x86_64'
@@ -72,7 +72,7 @@ tensorboard==2.15.1
 
 ### infra
 
-boto3>=1.29.0
+boto3>=1.29.4
 
 google-cloud-compute==1.14.1
 
@@ -86,7 +86,7 @@ soco==0.29.1
 sounddevice==0.4.6
 # vosk==0.3.45
 
-bellows==0.36.8
+bellows==0.37.0
 zigpy==0.60.0
 
 # python-openzwave
