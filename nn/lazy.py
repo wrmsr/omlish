@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import functools
 import math
 import operator
 import sys
@@ -175,9 +174,8 @@ def get_movementroot_contiguous(x: LazyBuffer) -> LazyBuffer:
 
 
 def vars_from_ast(ast:LazyOp) -> set[Variable]:
-    return functools.reduce(
-        operator.or_,
-        [
+    return set.union(
+        *[
             x.arg.st.vars()
             for x in ast.get_lazyops()
             if isinstance(x, ops.BufferOp)

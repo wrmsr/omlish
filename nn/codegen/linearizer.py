@@ -329,7 +329,7 @@ class Linearizer(Kernel):
                 )
 
         # add var vals
-        for var in vars_from_ast(self.ast):
+        for var in sorted(vars_from_ast(self.ast)):
             assert var.expr is not None
             self.loop_uops[var.expr] = self.uop(
                 uo.DefineGlobal,
@@ -940,8 +940,13 @@ class Linearizer(Kernel):
                 if arg == ops_.Div and isinstance(vin[1], uo.Const) and vin[1].arg == 1.0:
                     return vin[0]
 
-        if cachable and key in self.saved_exprs:
-            return self.saved_exprs[key]
+        # When insert_before is set, need to check if the cached expr is valid with the given insert place.
+        if (
+                cachable
+                and (expr := self.saved_exprs.get(key, None)) is not None
+                and (insert_before is None or self.uops.index(expr) <= insert_before)
+        ):
+            return expr
 
         ret = uop(dtype, vin, arg)
 
