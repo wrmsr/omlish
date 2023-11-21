@@ -513,7 +513,7 @@ class RedNode(Node):
         self.nodes = nodes
 
     def vars(self) -> set[Variable]:
-        return functools.reduce(lambda l, x: l | x.vars(), self.nodes, set())
+        return set.union(*[x.vars() for x in self.nodes], set())
 
 
 class SumNode(RedNode):

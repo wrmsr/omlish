@@ -6,7 +6,6 @@ import tempfile
 import typing as ta
 
 from omlish import collections as col
-import Cocoa  # noqa
 import Metal  # noqa
 import libdispatch  # noqa
 
@@ -122,11 +121,7 @@ def compile_metal(prg: str, use_xcode: bool = bool(getenv("METAL_XCODE"))) -> by
 
     options = Metal.MTLCompileOptions.new()
     library = unwrap(METAL.device.newLibraryWithSource_options_error_(prg, options, None))
-
-    # TODO: avoid file write here?
-    with tempfile.NamedTemporaryFile(delete=True) as output_file:
-        unwrap(library.serializeToURL_error_(Cocoa.NSURL.URLWithString_(f"file://{output_file.name}"), None))
-        return pathlib.Path(output_file.name).read_bytes()
+    return library.libraryDataContents().bytes().tobytes()
 
 
 class MetalProgram:
@@ -235,7 +230,7 @@ class MetalBatchExecutor(BatchExecutor):
                     else:
                         read_resources.append(b._buf)
 
-            var_vals_keys = list(var_vals.keys())
+            var_vals_keys = sorted(var_vals.keys())
             for i, v in enumerate(prg.vars):
                 icb_command.setKernelBuffer_offset_atIndex_(
                     self.int_buf._buf,

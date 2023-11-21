@@ -274,6 +274,7 @@ class InterpretedAstRunner(AstRunner):
             jit=False,
             force_wait=False,
     ) -> float:
+        var_vals = {k: var_vals[k] for k in sorted(self.vars)} if var_vals is not None else {}
         st = time.perf_counter()
         ret: RawBuffer = self.fxn(rawbufs[1:], var_vals)
         et = time.perf_counter() - st
@@ -442,9 +443,8 @@ class CompiledAstRunner(AstRunner):
             jit=False,
             force_wait=False,
     ) -> ta.Optional[float]:
-        if var_vals is None:
-            var_vals = {}
-        var_vals = {k: var_vals[k] for k in self.vars}  # filter the var_vals
+        # filter the var_vals
+        var_vals = {k: var_vals[k] for k in sorted(self.vars)} if var_vals is not None else {}
 
         global_size, local_size = self.launch_dims(var_vals)
 
