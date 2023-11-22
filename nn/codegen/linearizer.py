@@ -294,7 +294,7 @@ class Linearizer(Kernel):
 
     kernel_cnt: ta.Final[ta.DefaultDict[str, int]] = collections.defaultdict(int)
 
-    def linearize(self):
+    def linearize(self) -> Linearizer:
         # no new opts and we already ran? skip relinearizing
         if self.applied_opts == self.applied_opts_cache:
             return self

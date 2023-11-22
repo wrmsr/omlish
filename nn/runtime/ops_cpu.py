@@ -132,7 +132,7 @@ class RawNumpyBuffer(RawBuffer):
     def fromCpu(cls, x):
         return cls(x.size, dtypes.from_np(x.dtype), x)
 
-    def toCpu(self):
+    def toCpu(self) -> np.ndarray:
         return self._buf
 
 

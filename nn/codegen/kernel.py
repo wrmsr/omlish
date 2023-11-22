@@ -71,8 +71,8 @@ class TensorCore:
     dtype_out: DType
     threads: list[tuple[int, int]]  # list of (TC dim,amt) that construct the warp thread structure
     upcast_dim: int  # which TC dim to upcast
-    # a list of [threads_1, ..., threads_n, upcast_1(unrolled), upcast_2(upcast)] defining the alias (-1 is upcast, 1-n
-    # is warp threads) for each TC dim
+    # a list of [threads_1, ..., threads_n, upcast_1(unrolled), upcast_2(upcast)]
+    #  defining the alias (-1 is upcast, 1-n is warp threads) for each TC dim
     thread_local_aliases: list[list[list[int]]]
     # in each thread, the number of elements stored in registers for each TC dim
     thread_local_sizes: list[int]
@@ -92,7 +92,11 @@ tensor_cores: dict[str, list[TensorCore]] = {
             upcast_dim=0,
             threads=[(0, 2), (1, 4), (0, 2), (1, 2)],
             thread_local_sizes=[2, 2, 2],
-            thread_local_aliases=[[[4], [0], [2], [0], [-1, 1, 3], [0]], [[0], [3], [0], [1], [2, 4], [-1]], [[4], [3], [2], [1], [0], [-1]]],
+            thread_local_aliases=[
+                [[4], [0], [2], [0], [-1, 1, 3], [0]],
+                [[0], [3], [0], [1], [2, 4], [-1]],
+                [[4], [3], [2], [1], [0], [-1]],
+            ],
             arch="arm64",
         ),
         TensorCore(
@@ -103,7 +107,11 @@ tensor_cores: dict[str, list[TensorCore]] = {
             upcast_dim=0,
             threads=[(0, 2), (1, 4), (0, 2), (1, 2)],
             thread_local_sizes=[2, 2, 2],
-            thread_local_aliases=[[[4], [0], [2], [0], [-1, 1, 3], [0]], [[0], [3], [0], [1], [2, 4], [-1]], [[4], [3], [2], [1], [0], [-1]]],
+            thread_local_aliases=[
+                [[4], [0], [2], [0], [-1, 1, 3], [0]],
+                [[0], [3], [0], [1], [2, 4], [-1]],
+                [[4], [3], [2], [1], [0], [-1]],
+            ],
             arch="arm64",
         ),
     ],
@@ -116,7 +124,11 @@ tensor_cores: dict[str, list[TensorCore]] = {
             upcast_dim=1,
             threads=[(0, 16), (1, 2)],
             thread_local_sizes=[16, 16, 8],
-            thread_local_aliases=[[[0], [0], [-1], [1]], [[0], [1], [-1], [0]], [[0], [1], [0], [2, -1]]],
+            thread_local_aliases=[
+                [[0], [0], [-1], [1]],
+                [[0], [1], [-1], [0]],
+                [[0], [1], [0], [2, -1]],
+            ],
         ),
         TensorCore(
             device="HIP",
@@ -126,7 +138,11 @@ tensor_cores: dict[str, list[TensorCore]] = {
             upcast_dim=1,
             threads=[(0, 16), (1, 2)],
             thread_local_sizes=[16, 16, 8],
-            thread_local_aliases=[[[0], [0], [-1], [1]], [[0], [1], [-1], [0]], [[0], [1], [0], [2, -1]]],
+            thread_local_aliases=[
+                [[0], [0], [-1], [1]],
+                [[0], [1], [-1], [0]],
+                [[0], [1], [0], [2, -1]],
+            ],
         ),
     ],
 }
@@ -161,7 +177,9 @@ class Kernel:
             opts: ta.Optional[LinearizerOptions] = None,
     ) -> None:
         super().__init__()
-        self.opts = opts if opts else (ta.cast(Compiled, Device[Device.DEFAULT]).linearizer_opts if isinstance(Device[Device.DEFAULT], Compiled) else LinearizerOptions())
+        self.opts = opts if opts else \
+            ta.cast(Compiled, Device[Device.DEFAULT]).linearizer_opts if isinstance(Device[Device.DEFAULT], Compiled) else \
+            LinearizerOptions()
         self.ast = ast
 
         # fetch lazyop info
@@ -173,9 +191,9 @@ class Kernel:
         self.reduceop = reduceops[0] if reduceops else None
 
         # create new shapetrackers inside this kernel, we will permute them
-        self.bufs: list[ta.Union[MemBuffer, ConstBuffer, LocalBuffer]] = [
-            MemBuffer(0, self.info.dtype, ShapeTracker.from_shape(self.info.shape))
-        ] + col.unique([x.arg for x in self.ast.get_lazyops() if isinstance(x, ops.BufferOp)])
+        self.bufs: list[ta.Union[MemBuffer, ConstBuffer, LocalBuffer]] = \
+            [MemBuffer(0, self.info.dtype, ShapeTracker.from_shape(self.info.shape))] + \
+            col.unique([x.arg for x in self.ast.get_lazyops() if isinstance(x, ops.BufferOp)])
 
         # get earlybufs, before the one reduce op
         self.earlybufs = (
@@ -419,10 +437,10 @@ class Kernel:
         assert self.full_shape[-1] != 1, "can't upcast a dimension with size 1"
         self.upcasted += 1
 
-        # axis : the axis to pull from
-        # amount : the amount to take
-        # top : if you want to pull that amount from the top
-        # insert_before : place to insert the new stuff
+    # axis : the axis to pull from
+    # amount : the amount to take
+    # top : if you want to pull that amount from the top
+    # insert_before : place to insert the new stuff
 
     def shift_to(self, axis, amount, top=False, insert_before=None):
         if insert_before is None:
