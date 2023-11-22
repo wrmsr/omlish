@@ -13,8 +13,8 @@ bayesian-optimization==1.4.3
 bellows==0.37.0
 bitsandbytes==0.41.2.post2
 black==23.11.0
-boto3==1.29.4
-botocore==1.32.4
+boto3==1.29.5
+botocore==1.32.5
 build==1.0.3
 cachetools==5.3.2
 certifi==2023.11.17
@@ -141,7 +141,7 @@ pycuda==2023.1
 pydantic==2.5.1
 pydantic_core==2.14.3
 pyflakes==3.1.0
-Pygments==2.17.1
+Pygments==2.17.2
 PyMySQL==1.1.0
 pyopencl==2023.1.4
 pyparsing==3.1.1
@@ -153,7 +153,7 @@ pytest==7.4.3
 pytest-benchmark==4.0.0
 pytest-clarity==1.0.1
 pytest-timeout==2.2.0
-pytest-xdist==3.4.0
+pytest-xdist==3.5.0
 python-dateutil==2.8.2
 pytools==2023.1.1
 pytz==2023.3.post1

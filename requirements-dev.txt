@@ -8,7 +8,7 @@ pytest==7.4.3
 pytest-benchmark==4.0.0
 pytest-clarity==1.0.1
 pytest-timeout==2.2.0
-pytest-xdist==3.4.0
+pytest-xdist==3.5.0
 
 flake8==6.1.0
 flake8-pyproject==1.2.3
