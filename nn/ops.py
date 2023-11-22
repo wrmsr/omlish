@@ -39,7 +39,8 @@ class LazyOp(lang.Abstract):
             real_srcs: ta.Mapping[LazyBuffer, ta.Union[LazyBuffer, LazyOp]]
     ) -> LazyOp:
         return type(self)(
-            tuple([y.map_buffers(real_srcs) for y in self.src]), self.arg
+            tuple(y.map_buffers(real_srcs) for y in self.src),
+            self.arg,
         )
 
     def get_lazyops(self) -> list[LazyOp]:
@@ -53,36 +54,36 @@ class LazyOp(lang.Abstract):
         srcs = [z.replace_with_movement_ops(ops) for z in self.src]
         return srcs[0].e(type(self), *srcs[1:], arg=self.arg)  # type: ignore
 
-    @property
-    def st(self):
-        raise NotImplementedError
-
-    @property
-    def realized(self):
-        raise NotImplementedError
-
-    @property
-    def children(self):
-        raise NotImplementedError
-
-    # movement ops
-    def reshape(self, _):
-        raise NotImplementedError
-
-    def pad(self, _):
-        raise NotImplementedError
-
-    def expand(self, _):
-        raise NotImplementedError
-
-    def permute(self, _):
-        raise NotImplementedError
-
-    def shrink(self, _):
-        raise NotImplementedError
-
-    def stride(self, _):
-        raise NotImplementedError
+    # @property
+    # def st(self):
+    #     raise NotImplementedError
+    #
+    # @property
+    # def realized(self):
+    #     raise NotImplementedError
+    #
+    # @property
+    # def children(self):
+    #     raise NotImplementedError
+    #
+    # # movement ops
+    # def reshape(self, _):
+    #     raise NotImplementedError
+    #
+    # def pad(self, _):
+    #     raise NotImplementedError
+    #
+    # def expand(self, _):
+    #     raise NotImplementedError
+    #
+    # def permute(self, _):
+    #     raise NotImplementedError
+    #
+    # def shrink(self, _):
+    #     raise NotImplementedError
+    #
+    # def stride(self, _):
+    #     raise NotImplementedError
 
 
 ##

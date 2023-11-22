@@ -411,6 +411,7 @@ class LazyBuffer(lang.Final):
     def contiguous(self: LazyBuffer) -> LazyBuffer:
         if not self.realized and isinstance(self.op, ops.LoadOp) and not isinstance(self.op, ops.LoadConst):
             return self  # all LoadOps are already contiguous (except CONST)
+
         if self.st.contiguous and self.st.size() == self.base.st.size() and not self.is_unrealized_const():
             # this will turn into nothing, it's based and a copy
             # TODO: based lazybuffers shouldn't take dtype or var_vals, same issue in movementops
@@ -421,6 +422,7 @@ class LazyBuffer(lang.Final):
                 self.dtype,
                 base=self.base,
             )
+
         # real contiguous, this will turn into a UnaryOps.NOOP
         return self.loadop(
             ops.Contiguous,

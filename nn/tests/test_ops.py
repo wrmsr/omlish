@@ -493,9 +493,7 @@ class TestOps(unittest.TestCase):
         helper_test_op([(45, 65), (45, 65), (45, 65)], lambda x, y, z: x + y + z)
 
     def test_add_simple(self):
-        helper_test_op(
-            [(256), (256)], lambda x, y: x + y, Tensor.add, forward_only=True
-        )
+        helper_test_op([256, 256], lambda x, y: x + y, Tensor.add, forward_only=True)
 
     def test_broadcasted_add(self):
         helper_test_op([(45, 65), (45, 1)], lambda x, y: x + y, lambda x, y: x + y)
