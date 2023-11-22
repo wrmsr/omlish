@@ -491,6 +491,20 @@ MODEL_PARAMS = {
             "files": 4,
         },
     },
+    "tiny": {
+        "1B": {
+            "args": {
+                "dim": 2048,
+                "n_layers": 22,
+                "n_heads": 32,
+                "n_kv_heads": 4,
+                "multiple_of": 256,
+                "norm_eps": 1e-05,
+                "vocab_size": 32000,
+            },
+            "files": 1,
+        }
+    }
 }
 
 
@@ -536,7 +550,10 @@ def load(fn: str):
         return torch_load(fn)
 
 
-def convert_from_huggingface(weights, model):
+def convert_from_huggingface(weights, model: Transformer, n_heads: int, n_kv_heads: int):
+    def permute(v: Tensor, n_heads: int):
+        return v.reshape(n_heads, 2, v.shape[0] // n_heads // 2, v.shape[1]).transpose(1, 2).reshape(*v.shape[:2])
+
     keymap = {
         "model.embed_tokens.weight": "tok_embeddings.weight",
         **{
@@ -560,7 +577,20 @@ def convert_from_huggingface(weights, model):
         "model.norm.weight": "norm.weight",
         "lm_head.weight": "output.weight",
     }
-    return {keymap[k]: v for k, v in weights.items() if ".rotary_emb." not in k}
+
+    sd = {}
+    for k, v in weights.items():
+        if ".rotary_emb." in k:
+            continue
+        v = v.to(Device.DEFAULT)
+        if "model.layers" in k:
+            if "q_proj" in k:
+                v = permute(v, n_heads)
+            elif "k_proj" in k:
+                v = permute(v, n_kv_heads)
+        sd[keymap[k]] = v
+    return sd
+
 
 
 class AbsmaxQuantizedLinear:
@@ -614,11 +644,11 @@ class LLaMa:
 
         params = MODEL_PARAMS[model_gen][model_size]
 
-        model = (
-            Transformer(**params["args"], linear=AbsmaxQuantizedLinear)
-            if quantize
-            else Transformer(**params["args"])
-        )
+        model_args = params["args"]
+        if quantize:
+            model = Transformer(**model_args, linear=AbsmaxQuantizedLinear)
+        else:
+            model = Transformer(**params["args"])
 
         if model_path.is_dir():
             weights = concat_weights(
@@ -634,7 +664,7 @@ class LLaMa:
             weights = load(str(model_path))
 
         if "model.embed_tokens.weight" in weights:
-            weights = convert_from_huggingface(weights, model)
+            weights = convert_from_huggingface(weights, model, model_args["n_heads"], model_args["n_kv_heads"])
 
         if quantize:
             weights = AbsmaxQuantizedLinear.quantize(weights)
@@ -710,16 +740,13 @@ if __name__ == "__main__":
         "--profile", action="store_true", help="Output profile data to out.prof"
     )
     parser.add_argument(
-        "--size",
-        type=str,
-        default=
-                # "13B"
-                "7B"
-        ,
-        help="Size of model to use [7B, 13B, 30B, 65B] for Gen 1, [7B, 13B, 70B] for Gen 2, [7B, 13B, 34B] for Code LLaMA",  # noqa
+        "--gen", default="1", help=f"""Generation of the model to use {list(MODEL_PARAMS.keys())}""",
     )
     parser.add_argument(
-        "--gen", default="1", help="Generation of the model to use ['1', '2', 'code']"
+        "--size",
+        type=str,
+        default=None,
+        help=f"""Size of model to use {", ".join([f"{list(v.keys())} for gen '{k}'" for k, v in MODEL_PARAMS.items()])}""",
     )
     parser.add_argument(
         "--quantize", action="store_true", help="Quantize the weights to int8 in memory"
@@ -736,6 +763,10 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
+    if args.gen not in MODEL_PARAMS:
+        raise ValueError("Invalid model generation")
+    if args.size is None:
+        args.size = list(MODEL_PARAMS[args.gen].items())[0][0]
     chatbot = args.prompt == None
 
     # *** prompt engineers work here ****
@@ -837,7 +868,7 @@ After you are done speaking, output [EOS]. You are not Chad.
 
     # *** prompt engineers stop here ****
 
-    LLAMA_SUFFIX = {"1": "", "2": "-2", "code": "-code"}[args.gen]
+    LLAMA_SUFFIX = {"1": "", "2": "-2", "code": "-code", "tiny": "-tiny"}[args.gen]
     MODEL_PATH = (
         args.model
         or pathlib.Path(__file__).parents[2] / f"weights/LLaMA{LLAMA_SUFFIX}/{args.size}"
