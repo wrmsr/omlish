@@ -148,7 +148,7 @@ class Linearizer(Kernel):
                 (g_idx, g_valid), amt, dim = self.sts[i].expr_idxs(fake_idxs), 1, None
         else:
             g_idx, g_valid = self.sts[i].expr_idxs(fake_idxs)
-        localtype = dtypes.float32 if amt == 1 else dtypes._float4 if amt == 4 else dtypes._float2
+        localtype = dtypes.float32 if amt == 1 else dtypes.float.vec(amt)
 
         e_idxs = g_idx.expand(expand_vars)
         e_valids = g_valid.expand(expand_vars)
@@ -198,7 +198,7 @@ class Linearizer(Kernel):
                         idx, valid = to_image_idx(buf.dtype.shape, idx, valid)
                         rendered_idx = self.uop(
                             uo.Cast,
-                            dtypes._int2,
+                            dtypes.int.vec(2),
                             (
                                 self.render(idx[0]),
                                 self.render(idx[1]),
@@ -230,7 +230,7 @@ class Linearizer(Kernel):
             ret.append(
                 self.uop(
                     uo.Gep,
-                    dtypes.float32,
+                    localtype.scalar(),
                     (self.load_cache[key],),
                     rep_idx[dim],
                 )
@@ -271,7 +271,7 @@ class Linearizer(Kernel):
                 assert valid.min == 1, "stores are always valid"
                 store_offset_new[k] = self.uop(
                     uo.Cast,
-                    dtypes._float4 if amt == 4 else dtypes._float2,
+                    dtypes.float.vec(amt),
                     tuple(out_tokens),
                 )
 
@@ -284,7 +284,7 @@ class Linearizer(Kernel):
                 idx, valid = to_image_idx(buf.dtype.shape, idx, valid)
                 rendered_idx = self.uop(
                     uo.Cast,
-                    dtypes._int2,
+                    dtypes.int.vec(2),
                     tuple(self.render(x) for x in idx),
                 )
             else:
@@ -602,13 +602,13 @@ class Linearizer(Kernel):
                                 ops = tuple(op1 + op2 + op3)
                             else:
                                 ops = (
-                                    self.uop(uo.Cast, dtypes._half16, tuple(op1)),
-                                    self.uop(uo.Cast, dtypes._half16, tuple(op2)),
-                                    self.uop(uo.Cast, dtypes._float8, tuple(op3)),
+                                    self.uop(uo.Cast, dtypes.half.vec(16), tuple(op1)),
+                                    self.uop(uo.Cast, dtypes.half.vec(16), tuple(op2)),
+                                    self.uop(uo.Cast, dtypes.float.vec(8), tuple(op3)),
                                 )
                             ret = self.uop(
                                 uo.Wmma,
-                                dtypes._float2 if wmma_sz[2] == 2 else dtypes._float8,
+                                dtypes.float.vec(2) if wmma_sz[2] == 2 else dtypes.float.vec(8),
                                 ops,
                                 (
                                     self.opts.device,

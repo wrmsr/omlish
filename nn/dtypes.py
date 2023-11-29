@@ -15,7 +15,17 @@ class DType(ta.NamedTuple):
     sz: int = 1
 
     def __repr__(self):
-        return f"dtypes.{INVERSE_DTYPES_DICT[self]}"
+        if self.sz == 1:
+            return f"dtypes.{INVERSE_DTYPES_DICT[self]}"
+        else:
+            return f"dtypes._{INVERSE_DTYPES_DICT[self.scalar()]}{self.sz}"
+
+    def vec(self, sz: int):
+        assert sz > 1 and self.sz == 1, f"can't vectorize {self} with size {sz}"
+        return DType(self.priority, self.itemsize * sz, self.name + str(sz), None, sz)
+
+    def scalar(self):
+        return DTYPES_DICT[self.name[:-len(str(self.sz))]] if self.sz > 1 else self
 
 
 # dependent typing?
@@ -69,9 +79,9 @@ class dtypes:
             dtypes.float16,
             dtypes.float32,
             dtypes.float64,
-            dtypes._half4,
-            dtypes._float2,
-            dtypes._float4,
+            dtypes.half.vec(4),
+            dtypes.float.vec(2),
+            dtypes.float.vec(4),
         )
 
     @staticmethod
@@ -96,6 +106,7 @@ class dtypes:
     int8: ta.Final[DType] = DType(1, 1, "char", np.int8)
     int16: ta.Final[DType] = DType(3, 2, "short", np.int16)
     int32: ta.Final[DType] = DType(5, 4, "int", np.int32)
+    int = int32
     int64: ta.Final[DType] = DType(7, 8, "long", np.int64)
     uint8: ta.Final[DType] = DType(2, 1, "unsigned char", np.uint8)
     uint16: ta.Final[DType] = DType(4, 2, "unsigned short", np.uint16)
@@ -106,12 +117,6 @@ class dtypes:
     bfloat16: ta.Final[DType] = DType(9, 2, "__bf16", None)
 
     # NOTE: these are internal dtypes, should probably check for that
-    _int2: ta.Final[DType] = DType(2, 4 * 2, "int2", None, 2)
-    _half4: ta.Final[DType] = DType(0, 2 * 4, "half4", None, 4)
-    _half16: ta.Final[DType] = DType(0, 2 * 16, "half16", None, 16)
-    _float2: ta.Final[DType] = DType(4, 4 * 2, "float2", None, 2)
-    _float4: ta.Final[DType] = DType(4, 4 * 4, "float4", None, 4)
-    _float8: ta.Final[DType] = DType(4, 4 * 8, "float8", None, 8)
     _arg_int32: ta.Final[DType] = DType(2, 4, "_arg_int32", None)
 
     # NOTE: these are image dtypes
