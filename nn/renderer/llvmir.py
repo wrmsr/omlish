@@ -290,7 +290,15 @@ def uops_to_llvm_ir(function_name: str, uops: list[uo.UOp]) -> tuple[str, dict]:
 
         elif isinstance(u, uo.Store):
             element = cast(bb, lvars[u.vin[2]], u.vin[2].dtype, u.vin[0].dtype)
-            bb[-1].store(element, bb[-1].gep(lvars[u.vin[0]], [lvars[u.vin[1]]], inbounds=True))
+
+            def store_op():
+                bb[-1].store(element, bb[-1].gep(lvars[u.vin[0]], [lvars[u.vin[1]]], inbounds=True))
+
+            if len(u.vin) > 3:
+                with bb[-1].if_then(bb[-1].trunc(lvars[u.vin[3]], ir.IntType(1))):
+                    store_op()
+            else:
+                store_op()
 
         elif isinstance(u, uo.Alu):
             lvars[u] = cast(
