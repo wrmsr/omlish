@@ -332,6 +332,8 @@ def uops_to_cstyle(lang: CStyleLanguage, function_name: str, uops: list[uo.UOp])
 
         elif isinstance(u, uo.Store):
             assert u.vin[0].dtype is not None and u.vin[2].dtype is not None
+            if len(u.vin) > 3:
+                kk(lang.render_if(r[u.vin[3]]))
             kk(
                 lang.render_store(
                     r[u.vin[0]],
@@ -342,6 +344,8 @@ def uops_to_cstyle(lang: CStyleLanguage, function_name: str, uops: list[uo.UOp])
                     isinstance(u.vin[0], uo.DefineLocal),
                 ),
             )
+            if len(u.vin) > 3:
+                kk("}")
 
         elif isinstance(u, uo.Cast) and u.dtype is not None:
             val = lang.render_cast([r[x] for x in u.vin], u.dtype)

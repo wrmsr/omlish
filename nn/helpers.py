@@ -301,7 +301,7 @@ class DiskCache:
     DEFAULT_DIR: str = getenv("XDG_CACHE_HOME", os.path.expanduser("~/Library/Caches" if OSX else "~/.cache"))
     DEFAULT_PATH: str = getenv("CACHEDB", os.path.abspath(os.path.join(DEFAULT_DIR, "tinygrad", "cache.db")))
 
-    VERSION = 9
+    VERSION = 10
 
     def __init__(
             self,
