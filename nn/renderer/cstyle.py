@@ -59,22 +59,16 @@ class CStyleLanguage(ta.NamedTuple):
         assert len(x) == var_dtype.sz, f"cast is wrong size {len(x)} != {var_dtype.sz}"
         assert self.float4 is not None, "cast is not supported on this platform"
 
-        if var_dtype == dtypes._half16:
+        if var_dtype == dtypes.half.vec(16):
             return f"{{{','.join(f'(half){x}' for x in x)}}}"
 
-        if var_dtype == dtypes._float8:
+        if var_dtype == dtypes.float.vec(8):
             return f"{{{','.join(x)}}}"
 
-        if var_dtype == dtypes._float4:
-            return f"{self.float4}({','.join(x)})"
-
-        if var_dtype == dtypes._float2:
-            return f"{self.float4.replace('float4', 'float2')}({','.join(x)})"
-
-        if var_dtype == dtypes._int2:
-            return f"{self.float4.replace('float4', 'int2')}({','.join(x)})"
-
-        raise NotImplementedError(f"no cast for {var_dtype}")
+        return (
+            f"{self.float4.replace('float4', var_dtype.name)}"
+            f"({','.join(f'(half){x}' if var_dtype.scalar() == dtypes.half else x for x in x)})"
+        )
 
     # returns a str expression of the const with the given type
     def render_const(self, x: ta.Union[float, int], var_dtype) -> str:
@@ -100,7 +94,7 @@ class CStyleLanguage(ta.NamedTuple):
     # returns a str expression of the loaded value with the output type
     def render_load(self, output_dtype, buf_name, buf_dtype, idx, local=False) -> str:
         if isinstance(buf_dtype, ImageDType):
-            assert output_dtype == dtypes._float4, f"images must be float4, getting {output_dtype}"
+            assert output_dtype == dtypes.float.vec(4), f"images must be float4, getting {output_dtype}"
             return f"read_imagef({buf_name}, smp, {idx})"
 
         if self.uses_vload and buf_dtype == dtypes.float16:
@@ -183,7 +177,7 @@ class CStyleLanguage(ta.NamedTuple):
         local=False,
     ) -> str:
         if isinstance(buf_dtype, ImageDType):
-            assert var_dtype == dtypes._float4, "images must be float4"
+            assert var_dtype == dtypes.float.vec(4), "images must be float4"
             return f"write_imagef({buf_name}, {idx}, {var_name});"
 
         if self.uses_vload and buf_dtype == dtypes.float16 and var_dtype != dtypes.float16:
@@ -239,7 +233,7 @@ def uops_to_cstyle(lang: CStyleLanguage, function_name: str, uops: list[uo.UOp])
             kk("}")
 
         elif isinstance(u, uo.Wmma):
-            assert u.dtype == dtypes._float2, "output dtype of METAL TC is _float2"
+            assert u.dtype == dtypes.float.vec(2), "output dtype of METAL TC is _float2"
             if u.arg[0] == "METAL":
                 # ((lidx2*32)+(lidx3*4)+(lidx4*16)+(lidx5*8)+(lidx6*2))
                 output = ssa(u, 'wmma')
@@ -252,7 +246,7 @@ def uops_to_cstyle(lang: CStyleLanguage, function_name: str, uops: list[uo.UOp])
                 kk(f"{output}.x = c.thread_elements()[0]; {output}.y = c.thread_elements()[1]; }}")
 
             elif u.arg[0] == "HIP":
-                assert u.dtype == dtypes._float8, "output dtype of HIP TC is _float8"
+                assert u.dtype == dtypes.float.vec(8), "output dtype of HIP TC is _float8"
                 kk(
                     f"{lang.generic_var_prefix if lang.generic_var_prefix else u.dtype.name} "
                     f"{ssa(u, 'wmma')} = "
