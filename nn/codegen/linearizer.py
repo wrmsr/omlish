@@ -5,6 +5,7 @@ import itertools
 import math
 import functools
 import collections
+import operator
 
 from omlish import dispatch
 
@@ -171,7 +172,6 @@ class Linearizer(Kernel):
 
             if key not in self.load_cache:
                 if acc is not None:
-                    assert valid.min == 1
                     self.load_cache[key] = self.uop(
                         uo.DefineAcc, localtype, (), this_const, cachable=False
                     )
@@ -268,7 +268,6 @@ class Linearizer(Kernel):
                 assert (
                     idx.render() == ((idx // amt) * amt).render()
                 ), "float4 stores are always aligned"
-                assert valid.min == 1, "stores are always valid"
                 store_offset_new[k] = self.uop(
                     uo.Cast,
                     dtypes.float.vec(amt),
@@ -289,7 +288,10 @@ class Linearizer(Kernel):
                 )
             else:
                 rendered_idx = self.render(idx)
-            stores.append(self.uop(uo.Store, None, (buf_uop, rendered_idx, var)))
+            if valid.min == 1:
+                stores.append(self.uop(uo.Store, None, (buf_uop, rendered_idx, var)))
+            else:
+                stores.append(self.uop(uo.Store, None, (buf_uop, rendered_idx, var, self.render(valid))))
         return stores
 
     kernel_cnt: ta.Final[ta.DefaultDict[str, int]] = collections.defaultdict(int)
@@ -782,6 +784,24 @@ class Linearizer(Kernel):
             for u in self.uops:
                 u.vin = tuple(new if x is old else x for x in u.vin)
             self.uops.remove(old)
+
+        # fix loop scope, push CONST and ALU upward out of loop if it does not depend on the loop
+        loop_stack: list[list[uo.UOp]] = [[]]
+        for u in self.uops:
+            if not loop_stack[-1]:
+                loop_stack[-1].append(u)
+            elif isinstance(u, uo.Loop):
+                loop_stack.append([u])
+            elif not isinstance(u, (uo.Const, uo.Alu)):
+                loop_stack[-1].append(u)
+            else:
+                parents = get_recursive_parents([u])
+                for i in reversed(range(len(loop_stack))):
+                    # check backwards and put the uop in the first encounter with some dependency
+                    if any(x in parents for x in loop_stack[i]) or i == 0:
+                        loop_stack[i].append(u)
+                        break
+        self.uops = functools.reduce(operator.__add__, loop_stack, [])
 
         # uops optimization
         changed_something = True

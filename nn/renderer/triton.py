@@ -168,7 +168,14 @@ def uops_to_triton(function_name: str, uops: list[uo.UOp]):
 
         elif isinstance(u, uo.Store):
             assert not isinstance(u.dtype, ImageDType), "unimplemented: image store"
-            kk(f"tl.store({r[u.vin[0]]} + {r[u.vin[1]]}, {r[u.vin[2]].replace('//', '/')}, mask = {render_valid(valid)}) ")
+            kk(
+                f"{'if ' + r[u.vin[3]] + ': ' if len(u.vin) > 3 else ''}"
+                f"tl.store("
+                f"{r[u.vin[0]]} + {r[u.vin[1]]}, "
+                f"{r[u.vin[2]].replace('//', '/')},"
+                f" mask = {render_valid(valid)}"
+                f") "
+            )
 
         elif isinstance(u, uo.DefineGlobal):
             bufs.append(u.arg)

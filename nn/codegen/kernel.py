@@ -22,6 +22,8 @@ from ..helpers import ansilen
 from ..helpers import colored
 from ..helpers import getenv
 from ..helpers import prod
+from ..helpers import round_up
+from ..lazy import vars_from_ast
 from ..ops import LazyOp
 from ..shape.shapetracker import ShapeTracker
 from ..shape.shapetracker import get_contraction
@@ -39,6 +41,7 @@ class OptOps(enum.Enum):
     GROUP = enum.auto()
     GROUPTOP = enum.auto()
     NOLOCALS = enum.auto()
+    PADTO = enum.auto()
 
     def __lt__(self, x: 'OptOps'):
         return self.value < x.value
@@ -731,7 +734,9 @@ class Kernel:
             assert_opt(axis < len(self.full_shape), "shift axis out of range")
             amt = opt.amt if opt.amt != 0 else self.full_shape[axis]
             assert_opt(self.full_shape[axis] % amt == 0, "no longer valid shift")
-            assert_opt(isinstance(amt, int) and amt != 1, "shift of amt 1 or Node is meaningless")
+            assert_opt(isinstance(amt, int) and amt != 1, "shift/padto of amt 1 or Node is meaningless")
+            if opt.op != OptOps.PADTO:
+                assert_opt(self.full_shape[axis] % amt == 0, "no longer valid shift")
         else:
             amt = -1
 
@@ -788,6 +793,19 @@ class Kernel:
             assert_opt(self.local_dims == 0 and len(self.group_for_reduce) == 0, "can't have no locals with locals")
             assert_opt(not self.dont_use_locals, "already not using locals")
             self.dont_use_locals = True
+
+        elif opt.op == OptOps.PADTO:
+            assert_opt(not vars_from_ast(self.ast), "does not work with symbolic shape")
+            assert_opt(all(not isinstance(op, ops.Max) for op in self.ast.get_lazyops()), "cannot pad with MAX")
+            padded = False
+            for i, st in enumerate(self.sts):
+                if self.sts[i].shape[axis] != 1:
+                    assert self.sts[i].shape[axis] > amt // 2, "pad adds more than double the work"
+                    if (ru := round_up(self.sts[i].shape[axis], amt) - self.sts[i].shape[axis]):
+                        # pad right seems to be faster
+                        self.sts[i] = st.pad(((0, 0),) * axis + ((0, ru),) + ((0, 0),) * (len(st.shape) - axis - 1))
+                        padded = True
+            assert_opt(padded, "nothing was padded")
 
         return self.simplify_ones()
 
