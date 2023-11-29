@@ -50,7 +50,7 @@ class Tensor:
 
     def __init__(
             self,
-            data: ta.Union[None, int, float, list, LazyBuffer, np.ndarray],
+            data: ta.Union[None, int, float, list, LazyBuffer, np.ndarray, bytes],
             device: ta.Optional[str] = None,
             dtype: ta.Optional[DType] = None,
             requires_grad: ta.Optional[bool] = None,
@@ -86,6 +86,9 @@ class Tensor:
             data = LazyBuffer.fromCpu(
                 np.array([] if data is None else data, dtype=(dtype or Tensor.default_type).np),
             )
+
+        elif isinstance(data, bytes):
+            data = LazyBuffer.fromCpu(np.frombuffer(data, np.uint8))
 
         elif isinstance(data, np.ndarray):
             assert (
@@ -172,11 +175,22 @@ class Tensor:
         assert self.dtype.np is not None, f"no numpy dtype for {self.dtype}"
         return self.detach().cast(dtypes.from_np(self.dtype.np)).contiguous().to('CPU').realize().lazydata.realized.toCpu().reshape(self.shape)
 
-    def to(self, device: str) -> Tensor:
+
+    def to(self, device: ta.Optional[str]) -> Tensor:
+        if device is None or device == self.device:
+            return self
         ret = Tensor(self.lazydata, device)
         if self.grad:
             ret.grad = self.grad.to(device)
         return ret
+
+    def to_(self, device: ta.Optional[str]) -> None:
+        if device is None or device == self.device:
+            return
+        if self.grad:
+            self.grad = self.grad.to_(device)
+        _ret = Tensor(self.lazydata, device)
+        self.lazydata = _ret.lazydata
 
     # ***** creation llop entrypoint *****
 
@@ -686,7 +700,7 @@ class Tensor:
         final_shape = [r * s for r, s in zip(repeats, base_shape)]
         return self.reshape(new_shape).expand(expand_shape).reshape(final_shape)
 
-    def chunk(self, num: int, dim: int) -> list[Tensor]:
+    def chunk(self, num: int, dim: int = 0) -> list[Tensor]:
         assert all_int(self.shape), f"does not support symbolic shape {self.shape}"
         dim, step = dim + self.ndim if dim < 0 else dim, math.ceil(
             self.shape[dim] / num

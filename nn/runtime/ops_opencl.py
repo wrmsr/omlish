@@ -30,7 +30,6 @@ OSX_TIMING_RATIO = (
 
 # TODO: if you fork and exit the child process after creating anything with cl on AMD, it hangs on e.wait()
 ROCM_LLVM_PATH = pathlib.Path("/opt/rocm/llvm/bin")
-# ROCM_LLVM_PATH = pathlib.Path(__file__).parents[3] / "extra/rocm/build/llvm-project/bin"
 
 if DEBUG >= 5:
     from ..helpers import enable_early_exec as early_exec
@@ -133,6 +132,9 @@ class ClBuffer(RawBufferCopyInOut, RawBufferTransfer):
     def __init__(self, size, dtype, device="0") -> None:
         super().__init__(size, dtype, allocator=CL.cl_allocator, **{"device": device})
 
+    def _clear_event(self, _):
+        del self.event
+
     def _copyin(self, x: np.ndarray):
         assert not self.dtype.name.startswith(
             "image"
@@ -143,6 +145,7 @@ class ClBuffer(RawBufferCopyInOut, RawBufferTransfer):
             np.require(x, requirements=['C', 'A']),
             is_blocking=False,
         )
+        self.event.set_callback(cl.command_execution_status.COMPLETE, self._clear_event)
 
     def _copyout(self, x: np.ndarray):
         assert not self.dtype.name.startswith(
@@ -174,7 +177,7 @@ class ClBuffer(RawBufferCopyInOut, RawBufferTransfer):
                 mapped,
                 self._buf,
                 is_blocking=True,
-                wait_for=[event] + ([self.event] if hasattr(self, "event") else []),
+                wait_for=[event] + ([evt] if (evt:=getattr(self, "event", None)) else []),
             )
 
     def _transfer(self, x):
@@ -259,8 +262,8 @@ class ClProgram:
         for x in bufs:
             if x.__class__ is ClBuffer:
                 cl_bufs.append(x._buf)
-                if hasattr(x, "event"):
-                    wait_for.append(x.event)
+                if (event := getattr(x, "event", None)):
+                    wait_for.append(event)
             else:
                 cl_bufs.append(x)
 

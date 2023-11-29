@@ -552,7 +552,7 @@ class Compiled:
         # all the rawbuffers
         rawbuffers = [output.realized] + [x.realized for x in inputs]
 
-        if ast not in self.method_cache:
+        if ast not in self.method_cache or getenv("DISABLE_METHOD_CACHE"):
             self.method_cache[ast] = get_optimized_program(self.linearizer_opts, self.to_program, ast, rawbuffers)
 
         self.method_cache[ast].exec(rawbuffers, var_vals)

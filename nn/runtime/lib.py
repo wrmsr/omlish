@@ -46,10 +46,6 @@ class RawBuffer:
     def __repr__(self):
         return f"buffer<{self.size}, {self.dtype}, {id(self)}>"
 
-    @property
-    def key(self):
-        return (self.size, self.dtype)
-
     # NOTE: this interface allows for 0 copy
     @classmethod
     def fromCpu(cls: type[_T], x: np.ndarray) -> _T:
@@ -135,7 +131,7 @@ class RawBufferCopyInOut(RawBufferCopyIn):
 
 
 class RawBufferTransfer(RawBuffer):
-    def _transfer(self, x) -> None:
+    def _transfer(self, x: RawBuffer) -> None:
         raise NotImplementedError("must be implemented")
 
     @classmethod
