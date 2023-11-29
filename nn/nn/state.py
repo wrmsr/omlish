@@ -3,6 +3,8 @@ import json
 import os
 import pathlib
 import pickle
+import struct
+import tarfile
 import typing as ta
 import zipfile
 
@@ -15,6 +17,7 @@ from ..helpers import GlobalCounters
 from ..helpers import Timing
 from ..helpers import argsort
 from ..helpers import prod
+from ..helpers import unwrap
 from ..shape.view import strides_for_shape
 from ..tensor import Tensor
 
@@ -133,16 +136,16 @@ def load_state_dict(model, state_dict, strict=True, verbose=False):
 def torch_load(fn: str):
     t = Tensor.empty(os.stat(fn).st_size, dtype=dtypes.uint8, device=f"disk:{fn}")
 
-    offsets: dict[str, int] = {}
-    lens: dict[str, int] = {}
+    offsets: dict[ta.Union[str, int], int] = {}
+    lens: dict[ta.Union[str, int], int] = {}
 
     def _rebuild_tensor_v2(
         storage,
         storage_offset,
         size,
         stride,
-        requires_grad,
-        backward_hooks,
+        requires_grad=None,
+        backward_hooks=None,
         metadata=None,
     ):
         # print(storage, storage_offset, size, stride, requires_grad, backward_hooks, metadata)
@@ -190,6 +193,12 @@ def torch_load(fn: str):
 
         return ret.reshape(size)
 
+    class Parameter:
+        def __setstate__(self, state):
+            self.tensor = state[0]
+
+    deserialized_objects: dict[str, ta.Any] = {}
+
     intercept = {
         "HalfStorage": dtypes.float16,
         "FloatStorage": dtypes.float32,
@@ -197,13 +206,16 @@ def torch_load(fn: str):
         "IntStorage": dtypes.int32,
         "LongStorage": dtypes.int64,
         "_rebuild_tensor_v2": _rebuild_tensor_v2,
+        "FloatTensor": None,
+        "Parameter": Parameter,
     }
-    whitelist = {
+
+    whitelist = {  # NOTE: this is not for security, only speed
         "torch",
         "collections",
         "numpy",
         "_codecs",
-    }  # NOTE: this is not for security, only speed
+    }
 
     class Dummy:
         pass
@@ -223,7 +235,7 @@ def torch_load(fn: str):
             )
 
         def persistent_load(self, pid):
-            return pid
+            return deserialized_objects[pid] if pid in deserialized_objects else pid
 
     if tuple(t[0:2].numpy()) == (0x50, 0x4B):
         myzip = zipfile.ZipFile(fn, "r")
@@ -234,6 +246,37 @@ def torch_load(fn: str):
                     offsets[n.split("/")[-1]] = myfile._orig_compress_start  # type: ignore
         with myzip.open(f"{base_name}/data.pkl") as myfile:
             return TorchPickle(myfile).load()
+
+    elif bytes(t[0:0xe].numpy()) == b"././@PaxHeader":  # TODO: is this how you detect a tarfile?
+        with tarfile.open(fn, "r") as tar:
+            storages_offset = tar.getmember('storages').offset_data
+            f = unwrap(tar.extractfile('storages'))
+            for i in range(TorchPickle(f).load()):  # num_storages
+                (key, _, storage_type) = TorchPickle(f).load()
+                sz = struct.unpack('<q', f.read(8))[0]
+                offsets[key] = storages_offset + f.tell()
+                f.seek(sz * storage_type.itemsize, 1)
+            f = unwrap(tar.extractfile('tensors'))
+            for _ in range(TorchPickle(f).load()):  # num_tensors
+                (key, storage_id, _) = TorchPickle(f).load()
+                ndim = struct.unpack('<i', f.read(4))[0]
+                f.read(4)
+                size = struct.unpack(f'<{ndim}q', f.read(8 * ndim))
+                stride = struct.unpack(f'<{ndim}q', f.read(8 * ndim))
+                storage_offset = struct.unpack('<q', f.read(8))[0]
+                deserialized_objects[str(key)] = _rebuild_tensor_v2(
+                    (
+                        None,
+                        storage_type,
+                        storage_id,
+                        None,
+                        -1,
+                    ),
+                    storage_offset,
+                    size,
+                    stride,
+                )
+
     else:
         with open(fn, "rb") as f:
             pkl = TorchPickle(f)

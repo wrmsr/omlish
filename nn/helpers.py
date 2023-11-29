@@ -108,6 +108,11 @@ def merge_dicts(ds: ta.Iterable[dict[T, U]]) -> dict[T, U]:
     return {k: v for d in ds for k, v in d.items()}
 
 
+def unwrap(x: ta.Optional[T]) -> T:
+    assert x is not None
+    return x
+
+
 @functools.lru_cache(maxsize=None)
 def getenv(key, default=0):
     return type(default)(os.getenv(key, default))

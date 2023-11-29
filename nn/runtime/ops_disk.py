@@ -16,6 +16,10 @@ from ..runtime.lib import RawBufferMapped
 from ..shape.view import strides_for_shape
 
 
+MAP_LOCKED = 0x2000
+MAP_POPULATE = 0x008000
+
+
 class RawDiskBuffer(RawBufferMapped):
     def __init__(
         self,
@@ -41,7 +45,7 @@ class RawDiskBuffer(RawBufferMapped):
                 else:
                     fd = _posixshmem.shm_open(device[4:], os.O_RDWR, 0o600)
                     # TODO: these flags are somewhat platform specific, but python doesn't expose the ones we need
-                    shm = mmap.mmap(fd, size * dtype.itemsize, flags=mmap.MAP_SHARED | 0x2000 | 0x008000)
+                    shm = mmap.mmap(fd, size * dtype.itemsize, flags=mmap.MAP_SHARED |  MAP_LOCKED | MAP_POPULATE)
                     shm.madvise(mmap.MADV_HUGEPAGE)  # type: ignore   # not on OSX
                     os.close(fd)
                 buf = [None, shm, 1]

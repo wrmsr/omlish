@@ -14,6 +14,7 @@ from .helpers import all_int
 from .helpers import getenv
 from .helpers import prod
 from .lazy import LazyBuffer
+from .lazy import print_tree
 from .ops import LazyOp
 from .runtime.lib import RawBufferMapped
 from .runtime.lib import RawBufferTransfer
@@ -50,6 +51,9 @@ def run_schedule(schedule: list[ScheduleItem]):
             LOAD_OPS_DISPATCHER[type(si.ast)](si.out, *si.inputs)
 
         else:
+            assert (
+                all(si.out.device == x.device for x in si.inputs)
+            ), f"all devices must be the same, {si.out.device} != {[x.device for x in si.inputs]} {print_tree(si.ast) or ''}"
             Device[si.out.device].exec_ast(
                 si.ast,
                 output=si.out,
