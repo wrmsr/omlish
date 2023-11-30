@@ -17,7 +17,6 @@ pyopencl==2023.1.4
 pycuda==2023.1; sys_platform != 'darwin'
 
 pyobjc-core==10.0; sys_platform == 'darwin'
-pyobjc-framework-cocoa==10.0; sys_platform == 'darwin'
 pyobjc-framework-libdispatch==10.0; sys_platform == 'darwin'
 pyobjc-framework-metal==10.0; sys_platform == 'darwin'
 

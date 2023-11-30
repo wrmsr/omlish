@@ -229,7 +229,7 @@ class MetalGraph:
                     else:
                         read_resources.append(b._buf)
 
-            var_vals_keys = sorted(var_vals.keys())
+            var_vals_keys = list(var_vals.keys())
             for i, v in enumerate(prg.vars):
                 icb_command.setKernelBuffer_offset_atIndex_(
                     self.int_buf._buf,
