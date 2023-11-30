@@ -13,6 +13,7 @@ import platform
 import pstats
 import re
 import sqlite3
+import string
 import subprocess
 import tempfile
 import time
@@ -123,6 +124,14 @@ def get_child(obj, key):
         else:
             obj = getattr(obj, k)
     return obj
+
+
+@functools.lru_cache(maxsize=None)
+def to_function_name(s: str):
+    return ''.join([
+        c if c in (string.ascii_letters + string.digits + '_') else f'{ord(c):02X}'
+        for c in ansistrip(s)
+    ])
 
 
 @functools.lru_cache(maxsize=None)

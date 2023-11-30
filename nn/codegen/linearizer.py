@@ -24,6 +24,7 @@ from ..helpers import DEBUG
 from ..helpers import all_same
 from ..helpers import colored
 from ..helpers import prod
+from ..helpers import to_function_name
 from ..lazy import vars_from_ast
 from ..ops import LazyOp
 from ..shape.shapetracker import ShapeTracker
@@ -36,7 +37,6 @@ from ..shape.symbolic import Node
 from ..shape.symbolic import NumNode
 from ..shape.symbolic import SumNode
 from ..shape.symbolic import Variable
-from ..shape.symbolic import sym_rename
 
 
 VariableOrNum = ta.Union[Variable, NumNode, Node]
@@ -385,24 +385,13 @@ class Linearizer(Kernel):
             )
 
         # kernel name (before late upcast)
-        self.function_name = ("r_" if self.reduceop else "E_") + "_".join(
-            [str(x) if isinstance(x, int) else sym_rename(x) for x in self.full_shape]
-        )
-        self.display_name = ("r_" if self.reduceop else "E_") + colored(
-            "_", "BLACK"
-        ).join([colored(str(x), c) for x, c in zip(self.full_shape, self.colors())])
+        self.name = ("r_" if self.reduceop else "E_") + \
+            colored('_', 'BLACK').join([colored(str(x), c) for x, c in zip(self.full_shape, self.colors())])
 
         # name the function something unique
-        Linearizer.kernel_cnt[self.function_name] += 1
-        suffix = (
-            f"{'n'+str(Linearizer.kernel_cnt[self.function_name]-1)}"
-            if Linearizer.kernel_cnt[self.function_name] > 1
-            else ""
-        )
-        (
-            self.function_name,
-            self.display_name,
-        ) = self.function_name + suffix, self.display_name + colored(suffix, "BLACK")
+        Linearizer.kernel_cnt[(function_name := to_function_name(self.name))] += 1
+        suffix = f"{'n' + str(Linearizer.kernel_cnt[function_name] - 1)}" if Linearizer.kernel_cnt[function_name] > 1 else ""
+        self.name = self.name + colored(suffix, 'BLACK')
 
         # define indexes
         global_idxs, loop_global_idxs = get_grouped_dims(
@@ -473,8 +462,6 @@ class Linearizer(Kernel):
         elif self.opts.has_local:
             self.global_size = [x.max + 1 for x in loop_global_idxs][::-1]
             self.local_size = [x.max + 1 for x in loop_local_idxs][::-1]
-            self.global_size += [1] * (3 - len(self.global_size))
-            self.local_size += [1] * (3 - len(self.local_size))
             self.loop_uops.update(
                 {
                     x.expr: self.uop(

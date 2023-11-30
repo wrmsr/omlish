@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import abc
 import functools
 import re
 import time
@@ -9,7 +8,6 @@ import typing as ta
 from omlish import collections as col  # noqa
 from omlish import dataclasses as dc
 from omlish import dispatch
-from omlish import lang
 
 from . import ops
 from .dtypes import DType
@@ -22,9 +20,9 @@ from .helpers import ansilen
 from .helpers import colored
 from .helpers import getenv
 from .helpers import prod
+from .helpers import to_function_name
 from .ops import LazyOp
 from .runtime.lib import RawBuffer
-from .shape.symbolic import NumNode
 from .shape.symbolic import Variable
 from .shape.symbolic import sint
 from .shape.symbolic import sym_infer
@@ -346,21 +344,20 @@ class CompiledAstRunner(JitRunner):
             prg: str,
             global_size: ta.Optional[list[int]] = None,
             local_size: ta.Optional[list[int]] = None,
-            op_estimate=0,
-            mem_estimate=0,
-            display_name: ta.Optional[str] = None,
             runtime_args: ta.Optional[dict] = None,
     ) -> None:
         super().__init__()
         if DEBUG >= 4:
             print(prg)
+        if global_size is not None:
+            global_size = global_size + [1] * (3 - len(global_size))
+        if local_size is not None:
+            local_size = local_size + [1] * (3 - len(local_size))
         self.name = name
+        self.display_name = to_function_name(name)
         self.prg = prg
         self.global_size = global_size
         self.local_size = local_size
-        self.op_estimate = op_estimate
-        self.mem_estimate = mem_estimate
-        self.display_name = display_name
         self.runtime_args = runtime_args if runtime_args is not None else {}
         self.vars: list[Variable] = []
         if ast:
@@ -378,11 +375,11 @@ class CompiledAstRunner(JitRunner):
 
     def launch_dims(self, var_vals):
         if self.global_size is not None:
-            global_size = ([sym_infer(sz, var_vals) for sz in self.global_size] + [1] * (3 - len(self.global_size)))
+            global_size = [sym_infer(sz, var_vals) for sz in self.global_size]
         else:
             global_size = self.global_size
         if self.local_size is not None:
-            local_size = ([sym_infer(sz, var_vals) for sz in self.local_size] + [1] * (3 - len(self.local_size)))
+            local_size = [sym_infer(sz, var_vals) for sz in self.local_size]
         else:
             local_size = self.local_size
         return global_size, local_size
@@ -411,7 +408,7 @@ class CompiledAstRunner(JitRunner):
         et = self.clprg(*rawbufs, *[var_vals[k] for k in self.vars], **lra, wait=wait or DEBUG >= 2)
 
         update_stats(
-            self.display_name if self.display_name is not None else self.name,
+            self.display_name,
             self.op_estimate,
             self.mem_estimate,
             var_vals,
@@ -447,15 +444,14 @@ class Compiled:
 
     def to_program(self, k: Linearizer) -> CompiledAstRunner:
         k.linearize()
-        src, runtime_args = self.renderer(k.function_name, k.uops)
+        src, runtime_args = self.renderer(to_function_name(k.name), k.uops)
         return CompiledAstRunner(
             k.ast,
-            k.function_name,
+            k.name,
             src,
             k.global_size,
             k.local_size,
-            display_name=k.display_name,
-            runtime_args=runtime_args,
+            runtime_args,
         ).build(
             self.compiler,
             self.runtime,
