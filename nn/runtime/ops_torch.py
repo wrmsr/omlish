@@ -33,6 +33,25 @@ type_map = {
 inverse_type_map = {v: k for k, v in type_map.items()}
 
 
+class RawTorchBuffer(RawBuffer):
+    def __init__(
+            self,
+            size: int,
+            dtype: DType,
+            buf: ta.Optional[torch.Tensor] = None,
+            allocator=lambda size, dtype: torch.empty([size], device=device, dtype=inverse_type_map[dtype]),
+    ) -> None:
+        super().__init__(size, dtype, buf, allocator)
+
+    @classmethod
+    def fromCpu(cls, x):
+        buf = torch.from_numpy(x if all(s >= 0 for s in x.strides) else x.copy()).requires_grad_(False).to(device)
+        return cls(prod(x.shape), type_map[buf.dtype], buf)
+
+    def toCpu(self):
+        return self._buf.cpu().numpy()
+
+
 def output_type(x, y):
     return x.dtype if type_map[x.dtype].priority > type_map[y.dtype].priority else y.dtype
 
@@ -61,6 +80,7 @@ torch_fxn_for_op: dict[type[ops.LazyOp], ta.Callable] = {
         # TODO: torch.tensor should work here
         # BufferOps.CONST: lambda val, dtype: torch.tensor(val, dtype=inverse_type_map[dtype]),
         ops.Const: lambda val, dtype: torch.from_numpy(np.array(val, dtype=dtype.np)).requires_grad_(False).to(device),
+        ops.FromUnderlying: lambda x: RawTorchBuffer(prod(x.shape), type_map[x.dtype], x),
         ops.Nop: lambda x: x.contiguous(),
         ops.Sqrt: lambda x: x.sqrt(),
         ops.Exp2: lambda x: x.exp2(),
@@ -87,26 +107,7 @@ torch_fxn_for_op: dict[type[ops.LazyOp], ta.Callable] = {
 }
 
 
-class RawTorchBuffer(RawBuffer):
-    def __init__(self, size: int, dtype: DType, buf: ta.Optional[torch.Tensor] = None) -> None:
-        super().__init__(
-            size,
-            dtype,
-            buf
-            if buf is not None else torch.empty([size], device=device, dtype=inverse_type_map[dtype]),
-        )
-
-    @classmethod
-    def fromCpu(cls, x):
-        buf = torch.from_numpy(x if all(s >= 0 for s in x.strides) else x.copy()).requires_grad_(False).to(device)
-        return cls(prod(x.shape), type_map[buf.dtype], buf)
-
-    def toCpu(self):
-        return self._buf.cpu().numpy()
-
-
 TorchBuffer = Interpreted(
     RawTorchBuffer,
     torch_fxn_for_op,
-    lambda x: RawTorchBuffer(prod(x.shape), type_map[x.dtype], x),
 )
