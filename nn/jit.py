@@ -103,7 +103,7 @@ class TinyJit:
             for (j, i), input_idx in self.input_replace.items():
                 self.jit_cache[j].rawbufs[i] = input_rawbuffers[input_idx]
             for ji in self.jit_cache:
-                ji.prg(ta.cast(list[RawBuffer], ji.rawbufs), var_vals, jit=True)
+                ji.prg(ta.cast(list[RawBuffer], ji.rawbufs), var_vals, wait=DEBUG >= 2, jit=True)
 
         elif self.cnt == 1:
             # jit capture

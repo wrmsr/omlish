@@ -17,7 +17,7 @@ from ..tensor import Tensor
 def show_labels(prediction, confidence=0.5, num_classes=80):
     coco_labels = fetch(
         "https://raw.githubusercontent.com/pjreddie/darknet/master/data/coco.names"
-    )
+    ).read_bytes()
     coco_labels = coco_labels.decode("utf-8").split("\n")
     prediction = prediction.detach().numpy()
     conf_mask = prediction[:, :, 4] > confidence
@@ -50,7 +50,7 @@ def add_boxes(img, prediction):
         return img
     coco_labels = fetch(
         "https://raw.githubusercontent.com/pjreddie/darknet/master/data/coco.names"
-    )
+    ).read_bytes()
     coco_labels = coco_labels.decode("utf-8").split("\n")
     height, width = img.shape[0:2]
     scale_factor = 608 / width
@@ -436,7 +436,7 @@ if __name__ == "__main__":
     model = Darknet(
         fetch(
             "https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/yolov3.cfg"
-        )
+        ).read_bytes()
     )
     print("Loading weights file (237MB). This might take a while…")
     model.load_weights("https://pjreddie.com/media/files/yolov3.weights")
@@ -460,7 +460,7 @@ if __name__ == "__main__":
         cap.release()
         cv2.destroyAllWindows()
     elif url.startswith("http"):
-        img_stream = io.BytesIO(fetch(url))
+        img_stream = io.BytesIO(fetch(url).read_bytes())
         img = cv2.imdecode(np.frombuffer(img_stream.read(), np.uint8), 1)
     else:
         img = cv2.imread(url)

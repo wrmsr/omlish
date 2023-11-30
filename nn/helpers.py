@@ -17,6 +17,7 @@ import subprocess
 import tempfile
 import time
 import typing as ta
+import urllib.request
 
 from omlish import check
 from omlish import typing as ota
@@ -111,6 +112,17 @@ def merge_dicts(ds: ta.Iterable[dict[T, U]]) -> dict[T, U]:
 def unwrap(x: ta.Optional[T]) -> T:
     assert x is not None
     return x
+
+
+def get_child(obj, key):
+    for k in key.split('.'):
+        if k.isnumeric():
+            obj = obj[int(k)]
+        elif isinstance(obj, dict):
+            obj = obj[k]
+        else:
+            obj = getattr(obj, k)
+    return obj
 
 
 @functools.lru_cache(maxsize=None)
@@ -231,63 +243,26 @@ def temp_file(x: str) -> str:
     return (pathlib.Path(tempfile.gettempdir()) / x).as_posix()
 
 
-def fetch(url):
-    if url.startswith("/") or url.startswith("."):
-        with open(url, "rb") as f:
-            return f.read()
-    fp = temp_file(hashlib.md5(url.encode('utf-8')).hexdigest())
-    download_file(url, fp, skip_if_exists=not getenv("NOCACHE"))
-    with open(fp, "rb") as f:
-        return f.read()
-
-
-# def fetch(url: str) -> pathlib.Path:
-#     fp = pathlib.Path(_cache_dir) / "tinygrad" / "downloads" / hashlib.md5(url.encode('utf-8')).hexdigest()
-#     if not fp.is_file():
-#         r = requests.get(url, stream=True, timeout=10)
-#         assert r.status_code == 200
-#         progress_bar = tqdm.tqdm(total=int(r.headers.get('content-length', 0)), unit='B', unit_scale=True, desc=url)
-#         (path := fp.parent).mkdir(parents=True, exist_ok=True)
-#         with tempfile.NamedTemporaryFile(dir=path, delete=False) as f:
-#             for chunk in r.iter_content(chunk_size=16384): progress_bar.update(f.write(chunk))
-#             f.close()
-#             pathlib.Path(f.name).rename(fp)
-#     return fp
-
-
-def fetch_as_file(url):
-    if url.startswith("/") or url.startswith("."):
-        with open(url, "rb") as f:
-            return f.read()
-    fp = temp_file(hashlib.md5(url.encode('utf-8')).hexdigest())
-    download_file(url, fp, skip_if_exists=not getenv("NOCACHE"))
+def fetch(
+        url: str,
+        name: ta.Optional[str] = None,
+        allow_caching=not getenv("DISABLE_HTTP_CACHE"),
+) -> pathlib.Path:
+    fp = pathlib.Path(DiskCache.DEFAULT_DIR) / "tinygrad" / "downloads" / (name if name else hashlib.md5(url.encode('utf-8')).hexdigest())
+    if not fp.is_file() or not allow_caching:
+        with urllib.request.urlopen(url, timeout=10) as r:
+            assert r.status == 200
+            total_length = int(r.headers.get('content-length', 0))
+            progress_bar = tqdm(total=total_length, unit='B', unit_scale=True, desc=url)
+            (path := fp.parent).mkdir(parents=True, exist_ok=True)
+            with tempfile.NamedTemporaryFile(dir=path, delete=False) as f:
+                while chunk := r.read(16384):
+                    progress_bar.update(f.write(chunk))
+                f.close()
+                if (file_size := os.stat(f.name).st_size) < total_length:
+                    raise RuntimeError(f"fetch size incomplete, {file_size} < {total_length}")
+                pathlib.Path(f.name).rename(fp)
     return fp
-
-
-def download_file(url, fp, skip_if_exists=True):
-    import requests
-
-    if skip_if_exists and pathlib.Path(fp).is_file() and pathlib.Path(fp).stat().st_size > 0:
-        return
-
-    r = requests.get(url, stream=True, timeout=10)
-
-    assert r.status_code == 200
-
-    progress_bar = tqdm.tqdm(
-        total=int(r.headers.get("content-length", 0)),
-        unit="B",
-        unit_scale=True,
-        desc=url,
-    )
-
-    (path := pathlib.Path(fp).parent).mkdir(parents=True, exist_ok=True)
-
-    with tempfile.NamedTemporaryFile(dir=path, delete=False) as f:
-        for chunk in r.iter_content(chunk_size=16384):
-            progress_bar.update(f.write(chunk))
-        f.close()
-        pathlib.Path(f.name).rename(fp)
 
 
 # *** universal database cache ***

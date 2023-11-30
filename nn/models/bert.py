@@ -1,6 +1,6 @@
 import pathlib
 
-from ..helpers import download_file
+from ..helpers import fetch
 from ..nn.nn import Embedding
 from ..nn.nn import LayerNorm
 from ..nn.nn import Linear
@@ -47,9 +47,9 @@ class BertForQuestionAnswering:
 
     def load_from_pretrained(self):
         fn = pathlib.Path(__file__).parents[1] / "weights/bert_for_qa.pt"
-        download_file("https://zenodo.org/record/3733896/files/model.pytorch?download=1", fn)
+        fetch("https://zenodo.org/record/3733896/files/model.pytorch?download=1", fn)
         fn_vocab = pathlib.Path(__file__).parents[1] / "weights/bert_vocab.txt"
-        download_file("https://zenodo.org/record/3733896/files/vocab.txt?download=1", fn_vocab)
+        fetch("https://zenodo.org/record/3733896/files/vocab.txt?download=1", fn_vocab)
 
         import torch
         with open(fn, "rb") as f:
