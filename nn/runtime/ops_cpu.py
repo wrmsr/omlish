@@ -35,25 +35,6 @@ def shape_to_axis(
     return tuple(i for i, (a, b) in enumerate(zip(old_shape, new_shape)) if a != b)
 
 
-base_fxn_for_op: dict[type[ops.LazyOp], ta.Callable] = {
-    ops.Mem: lambda x: x._buf,
-    ops.Add: operator.add,
-    ops.Sub: operator.sub,
-    ops.Mul: operator.mul,
-    ops.Div: operator.truediv,
-    ops.Sum: lambda x, new_shape: (
-        x.sum(shape_to_axis(x.shape, new_shape), dtype=x.dtype, keepdims=True)
-        if tuple(x.shape) != tuple(new_shape) else
-        x[:]
-    ),
-    ops.Max: lambda x, new_shape: (
-        (x.amax if hasattr(x, "amax") else x.max)(shape_to_axis(x.shape, new_shape), keepdims=True)
-        if tuple(x.shape) != tuple(new_shape) else
-        x[:]
-    ),
-}
-
-
 # TODO: this should be global infrastructure
 def output_type(x, y):
     return x.dtype if dtypes.from_np(x.dtype).priority > dtypes.from_np(y.dtype).priority else y.dtype
@@ -101,39 +82,39 @@ def einsum_mulacc(einsum, get_strides, expand):
 
 
 numpy_fxn_for_op: dict[type[ops.LazyOp], ta.Callable] = {
-    **base_fxn_for_op,
-    **{
-        ops.Const: lambda val, dtype: np.array(val, dtype=dtype.np),
-        ops.FromUnderlying: RawNumpyBuffer.fromCpu,
-        ops.Nop: lambda x: np.require(x, requirements="C"),
-        ops.Exp2: np.exp2,
-        ops.Log2: np.log2,
-        ops.Sin: np.sin,
-        ops.Cast: lambda x, y: x.view(y[0].np) if y[1] else x.astype(y[0].np, copy=False),
-        ops.Neg: lambda x: np.logical_not(x) if x.dtype == np.bool_ else np.negative(x),
-        ops.Max2: np.maximum,
-        ops.CmpLt: lambda x, y: (x < y).astype(output_type(x, y)),
-        ops.Add: lambda x, y: np.add(*match_types(x, y)),
-        ops.Sub: lambda x, y: np.subtract(*match_types(x, y)),
-        ops.Mul: lambda x, y: np.multiply(*match_types(x, y)),
-        ops.Div: lambda x, y: np.divide(*match_types(x, y)).astype(output_type(x, y), copy=False),
-        ops.Sqrt: np.sqrt,
-        ops.Pad: np.pad,
-        ops.Expand: np.broadcast_to,
-        ops.AsStrided: lambda x, arg: np.ndarray(
-            arg[0],
-            buffer=np.require(x, requirements='C'),
-            dtype=x.dtype,
-            offset=arg[2] * x.dtype.itemsize,
-            strides=tuple(y * x.dtype.itemsize for y in arg[1]),
-        ),
-        ops.MulAcc: einsum_mulacc(
-            lambda s, a, b: np.einsum(s, *match_types(a.copy(), b.copy()), optimize=True),
-            lambda x: x.strides,
-            np.broadcast_to,
-        ),
-        ops.Where: np.where,
-    },
+    ops.Mem: lambda x: x._buf,
+    ops.Const: lambda val, dtype: np.array(val, dtype=dtype.np),
+    ops.FromUnderlying: RawNumpyBuffer.fromCpu,
+    ops.Nop: lambda x: np.require(x, requirements="C"),
+    ops.Exp2: np.exp2,
+    ops.Log2: np.log2,
+    ops.Sin: np.sin,
+    ops.Cast: lambda x, y: x.view(y[0].np) if y[1] else x.astype(y[0].np, copy=False),
+    ops.Neg: lambda x: np.logical_not(x) if x.dtype == np.bool_ else np.negative(x),
+    ops.Max2: np.maximum,
+    ops.CmpLt: lambda x, y: (x < y).astype(output_type(x, y)),
+    ops.Add: lambda x, y: np.add(*match_types(x, y)),
+    ops.Sub: lambda x, y: np.subtract(*match_types(x, y)),
+    ops.Mul: lambda x, y: np.multiply(*match_types(x, y)),
+    ops.Div: lambda x, y: np.divide(*match_types(x, y)).astype(output_type(x, y), copy=False),
+    ops.Sqrt: np.sqrt,
+    ops.Pad: np.pad,
+    ops.Expand: np.broadcast_to,
+    ops.Sum: lambda x, new_shape: x.sum(shape_to_axis(x.shape, new_shape), dtype=x.dtype, keepdims=True) if x.shape != new_shape else x,
+    ops.Max: lambda x, new_shape: x.max(shape_to_axis(x.shape, new_shape), keepdims=True) if x.shape != new_shape else x,
+    ops.AsStrided: lambda x, arg: np.ndarray(
+        arg[0],
+        buffer=np.require(x, requirements='C'),
+        dtype=x.dtype,
+        offset=arg[2] * x.dtype.itemsize,
+        strides=tuple(y * x.dtype.itemsize for y in arg[1]),
+    ),
+    ops.MulAcc: einsum_mulacc(
+        lambda s, a, b: np.einsum(s, *match_types(a.copy(), b.copy()), optimize=True),
+        lambda x: x.strides,
+        np.broadcast_to,
+    ),
+    ops.Where: np.where,
 }
 
 

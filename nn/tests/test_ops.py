@@ -289,6 +289,9 @@ class TestOps(unittest.TestCase):
             [], lambda: torch.arange(256), lambda: Tensor.arange(256), forward_only=True
         )
 
+    def test_sum_fake(self):
+        helper_test_op([(256, 1)], lambda x: x.sum(axis=1))
+
     def test_sum_collapse(self):
         helper_test_op(
             [],

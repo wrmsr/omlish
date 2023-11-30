@@ -10,8 +10,8 @@ from ..execution import Interpreted
 from ..helpers import getenv
 from ..helpers import prod
 from ..runtime.lib import RawBuffer
-from ..runtime.ops_cpu import base_fxn_for_op
 from ..runtime.ops_cpu import einsum_mulacc
+from ..runtime.ops_cpu import shape_to_axis
 
 
 device = torch.device(
@@ -75,35 +75,35 @@ def as_strided(x, arg):
 
 
 torch_fxn_for_op: dict[type[ops.LazyOp], ta.Callable] = {
-    **base_fxn_for_op,
-    **{
-        # TODO: torch.tensor should work here
-        # BufferOps.CONST: lambda val, dtype: torch.tensor(val, dtype=inverse_type_map[dtype]),
-        ops.Const: lambda val, dtype: torch.from_numpy(np.array(val, dtype=dtype.np)).requires_grad_(False).to(device),
-        ops.FromUnderlying: lambda x: RawTorchBuffer(prod(x.shape), type_map[x.dtype], x),
-        ops.Nop: lambda x: x.contiguous(),
-        ops.Sqrt: lambda x: x.sqrt(),
-        ops.Exp2: lambda x: x.exp2(),
-        ops.Log2: lambda x: x.log2(),
-        ops.Sin: torch.sin,
-        ops.Cast: lambda x, y: (x.view if y[1] else x.type)(next(k for k, v in type_map.items() if v == y[0])),
-        ops.Neg: lambda x: torch.logical_not(x) if x.dtype is torch.bool else torch.neg(x),
-        ops.Max2: torch.maximum,
-        ops.CmpLt: lambda x, y: (x < y).type(torch.promote_types(x.dtype, y.dtype)),
-        ops.Add: lambda x, y: torch.add(*match_types(x, y)).type(output_type(x, y)),
-        ops.Sub: lambda x, y: torch.sub(*match_types(x, y, disallow_bool=True)).type(output_type(x, y)),
-        ops.Mul: lambda x, y: torch.mul(*match_types(x, y)).type(output_type(x, y)),
-        ops.Div: lambda x, y: torch.div(*match_types(x, y)).type(torch.promote_types(x.dtype, y.dtype)),
-        ops.AsStrided: as_strided,
-        ops.Expand: lambda x, arg: x.expand(arg),
-        ops.Pad: lambda x, padding: torch.nn.functional.pad(x, [item for sublist in padding[::-1] for item in sublist]),  # noqa
-        ops.MulAcc: einsum_mulacc(
-            lambda s, a, b: torch.einsum(s, a.float(), b.float()).type(output_type(a, b)),
-            lambda x: x.stride(),
-            lambda x, s: x.expand(s),
-        ),
-        ops.Where: lambda x, y, z: torch.where(x != 0, y, z),
-    },
+    # TODO: torch.tensor should work here. it doesn't due to "overflow" in uint8
+    # BufferOps.CONST: lambda val, dtype: torch.tensor(val, dtype=inverse_type_map[dtype]),
+    ops.Const: lambda val, dtype: torch.from_numpy(np.array(val, dtype=dtype.np)).requires_grad_(False).to(device),
+    ops.Mem: lambda x: x._buf,
+    ops.FromUnderlying: lambda x: RawTorchBuffer(prod(x.shape), type_map[x.dtype], x),
+    ops.Nop: lambda x: x.contiguous(),
+    ops.Sqrt: lambda x: x.sqrt(),
+    ops.Exp2: lambda x: x.exp2(),
+    ops.Log2: lambda x: x.log2(),
+    ops.Sin: torch.sin,
+    ops.Cast: lambda x, y: (x.view if y[1] else x.type)(next(k for k, v in type_map.items() if v == y[0])),
+    ops.Neg: lambda x: torch.logical_not(x) if x.dtype is torch.bool else torch.neg(x),
+    ops.Max2: torch.maximum,
+    ops.CmpLt: lambda x, y: (x < y).type(torch.promote_types(x.dtype, y.dtype)),
+    ops.Add: lambda x, y: torch.add(*match_types(x, y)).type(output_type(x, y)),
+    ops.Sub: lambda x, y: torch.sub(*match_types(x, y, disallow_bool=True)).type(output_type(x, y)),
+    ops.Mul: lambda x, y: torch.mul(*match_types(x, y)).type(output_type(x, y)),
+    ops.Div: lambda x, y: torch.div(*match_types(x, y)).type(torch.promote_types(x.dtype, y.dtype)),
+    ops.Sum: lambda x, new_shape: x.sum(shape_to_axis(x.shape, new_shape), dtype=x.dtype, keepdims=True) if x.shape != new_shape else x,
+    ops.Max: lambda x, new_shape: x.amax(shape_to_axis(x.shape, new_shape), keepdims=True) if x.shape != new_shape else x,
+    ops.AsStrided: as_strided,
+    ops.Expand: lambda x, arg: x.expand(arg),
+    ops.Pad: lambda x, padding: torch.nn.functional.pad(x, [item for sublist in padding[::-1] for item in sublist]),  # noqa
+    ops.MulAcc: einsum_mulacc(
+        lambda s, a, b: torch.einsum(s, a.float(), b.float()).type(output_type(a, b)),
+        lambda x: x.stride(),
+        lambda x, s: x.expand(s),
+    ),
+    ops.Where: lambda x, y, z: torch.where(x != 0, y, z),
 }
 
 
