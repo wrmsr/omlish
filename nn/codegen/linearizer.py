@@ -926,6 +926,9 @@ class Linearizer(Kernel):
                 if arg == ops_.Neg and isinstance(vin[0], uo.Const):
                     return self.const(-vin[0].arg, dtype, insert_before)
 
+                if arg == ops_.Where and vin[1] == vin[2]:
+                    return vin[1]  # a conditional with the same results either way is a noop
+
                 # zero folding
                 for x in [0, 1]:
                     if arg == ops_.Add and isinstance(vin[x], uo.Const) and vin[x].arg == 0.0:

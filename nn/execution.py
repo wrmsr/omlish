@@ -224,7 +224,7 @@ class InterpretedAstRunner(JitRunner):
         ret: RawBuffer = self.fxn(rawbufs[1:], var_vals)
         et = time.perf_counter() - st
         update_stats(f"<interpreted {ret.size}>", self.op_estimate, self.mem_estimate, var_vals, et, len(rawbufs), jit)
-        assert getattr(rawbufs[0], 'dtype', ret.dtype) == ret.dtype
+        assert rawbufs[0].dtype == ret.dtype, f"dtype mismatch in Interpreted, {rawbufs[0].dtype=} != {ret.dtype=}"
         rawbufs[0].dtype = ret.dtype
         rawbufs[0].size = ret.size
         rawbufs[0]._buf = ret._buf
@@ -249,13 +249,12 @@ class Interpreted:
     def allocate_output(self, ast: LazyOp, output: LazyBuffer, inputs: tuple[LazyBuffer, ...]):
         output.realized = output.output_buffer if output.output_buffer is not None else self.buffer.__new__(self.buffer)
 
-    def get_runner(self, ast: LazyOp, rawbuffers: list[RawBuffer]) -> InterpretedAstRunner:
-        if ast not in self.method_cache or getenv("DISABLE_METHOD_CACHE"):
-            self.method_cache[ast] = get_interpreted_fxn(self.fxn_for_op, ast)
-        return self.method_cache[ast]
+    @functools.lru_cache(None)    # pylint: disable=method-cache-max-size-none
+    def get_runner(self, ast: LazyOp) -> InterpretedAstRunner:
+        return _get_interpreted_fxn(self.fxn_for_op, ast)
 
 
-def get_interpreted_fxn(
+def _get_interpreted_fxn(
         fxn_for_op: dict[type[ops.LazyOp], ta.Callable],
         ast: LazyOp,
 ) -> InterpretedAstRunner:
@@ -432,7 +431,6 @@ class Compiled:
         self.runtime = runtime
         self.synchronize = synchronize
         self.graph = graph
-        self.method_cache: dict[LazyOp, CompiledAstRunner] = {}
 
     def to_program(self, k: Linearizer) -> CompiledAstRunner:
         k.linearize()
@@ -449,45 +447,14 @@ class Compiled:
             self.runtime,
         )
 
-    def allocate_output(self, ast: LazyOp, output: LazyBuffer, inputs: tuple[LazyBuffer, ...]):
-        # check if we can reuse the output buffer
-        # if it's aliased, don't use it
-        # TODO: this is pretty wrong actually, who knows where else this buffer is used?
-        # TODO: what if an assign is required? this silently is wrong
-        # TODO: this logic just doesn't belong here
-        output.realized = output.output_buffer
-        if output.realized is not None:
-            for i, a in enumerate(inputs):
-                # TODO: if this is contiguous it's fine
-                if a.realized == output.realized:
-                    if any(
-                            not x.arg.st.contiguous
-                            for x in ast.get_lazyops()
-                            if isinstance(x, ops.Mem)
-                               and x.arg.idx == i + 1
-                    ):
-                        output.realized = None
-                        break
-
-        # we don't have an output buffer, we have to create it, and create to max size if it has symbolic shape
-        if output.realized is None:
-            output.realized = self.buffer(
-                prod((s if isinstance(s, int) else s.max for s in output.shape)),
-                output.dtype,
-                **output._device_extra_args(),
-            )
-
-    # TODO: the rawbuffers are only used for optimization, they should be removed and optimizer should realloc
-    def get_runner(self, ast: LazyOp, rawbuffers: list[RawBuffer]) -> CompiledAstRunner:
-        if ast not in self.method_cache or getenv("DISABLE_METHOD_CACHE"):
-            self.method_cache[ast] = self.to_program(get_optimized_linearizer(ast, self.linearizer_opts, rawbuffers))
-        return self.method_cache[ast]
+    @functools.lru_cache(None)  # pylint: disable=method-cache-max-size-none
+    def get_runner(self, ast: LazyOp) -> CompiledAstRunner:
+        return self.to_program(_get_optimized_linearizer(self.linearizer_opts, ast))
 
 
-def get_optimized_linearizer(
-        ast: LazyOp,
+def _get_optimized_linearizer(
         linearizer_opts: LinearizerOptions,
-        rawbuffers: list[RawBuffer],
+        ast: LazyOp,
 ) -> Linearizer:
     if DEBUG >= 3:
         from .lazy import print_tree
@@ -497,24 +464,20 @@ def get_optimized_linearizer(
 
     k = Linearizer(ast, linearizer_opts)
 
-    assert (
-        k.info.dtype == rawbuffers[0].dtype
-    ), f"linearizer must match dtype. linearizer wants {k.info.dtype} but buffer is {rawbuffers[0].dtype}"
-
     if not NOOPT:
         if not (used_tensor_cores := k.apply_tensor_cores(getenv("TC", 1))):
             k.hand_coded_optimizations()
 
         if BEAM >= 1:
             lins = [(("tc" if used_tensor_cores else "hc"), k)]
-            # allocate a scratch buffer if output buffer is also input
-            test_rawbuffers = [type(rawbuffers[0])(rawbuffers[0].size, rawbuffers[0].dtype), *rawbuffers[1:]] \
-                if rawbuffers[0] in rawbuffers[1:] else rawbuffers
 
             kb = Linearizer(ast, linearizer_opts)
             kb.required_optimizations()
 
-            from .features.search import beam_search, time_linearizer
+            from .features.search import beam_search, time_linearizer, bufs_from_lin
+            # TODO: this shouldn't use Device.DEFAULT, it should get the device from the LinearizerOptions
+            test_rawbuffers = bufs_from_lin(kb)  # allocate scratch buffers for optimization
+
             lins.append((
                 f"beam{BEAM.value}",
                 beam_search(
