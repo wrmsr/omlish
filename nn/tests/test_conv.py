@@ -3,10 +3,8 @@ import unittest
 import numpy as np
 import pytest
 
-from ..devices import Device
-from ..nn.conv import Conv2d
+from ..tensor import Device
 from ..tensor import Tensor
-
 
 pytestmark = [pytest.mark.exclude_cuda]
 
@@ -24,7 +22,7 @@ class TestConv(unittest.TestCase):
     def test_simple_rand(self):
         x = Tensor.rand(1, 12, 128, 256)
         w = Tensor.rand(32, 12, 3, 3)
-        ret = x.conv2d(w, stride=(2, 2), padding=(1, 1)).numpy()  # noqa
+        x.conv2d(w, stride=(2, 2), padding=(1, 1)).numpy()
 
     def test_many_simple(self):
         x = Tensor(np.arange(8 * 2 * 8).reshape(1, 8, 2, 8).astype(np.float32))
@@ -83,6 +81,7 @@ class TestConv(unittest.TestCase):
     )
     def test_two_overlapping_binops_no_rerun_wino(self):
         Tensor.no_grad = True
+        old_wino = Tensor.wino
         Tensor.wino = True
         x = Tensor.randn(1, 4, 16, 16)
         w = Tensor.randn(6, 4, 3, 3)
@@ -94,7 +93,7 @@ class TestConv(unittest.TestCase):
             np.where(out.numpy() > 0, out.numpy(), (np.exp(out.numpy()) - 1)),
             atol=1e-5,
         )
-        Tensor.wino = False
+        Tensor.wino = old_wino
         Tensor.no_grad = False
 
     def test_first_three(self):
@@ -125,25 +124,26 @@ class TestConv(unittest.TestCase):
 
         w = Tensor.rand(32, 1, 3, 3)
         x = x.conv2d(w, padding=(1, 1), groups=32)
-        out = x.numpy()  # noqa
+        x.numpy()
         Tensor.no_grad = False
 
     def test_reduce_relu(self):
         Tensor.no_grad = True
         x = Tensor.rand(1, 12, 128, 256)
         x = x.sum(keepdim=True).relu()
-        out = x.numpy()  # noqa
+        x.numpy()
         Tensor.no_grad = False
 
     def test_bias(self):
         Tensor.no_grad = True
+        from ..nn import Conv2d
 
         x = Tensor.rand(1, 12, 128, 256)
         c = Conv2d(12, 32, 3)
         x = c(x).relu()
         w = Tensor.uniform(32, 1, 3, 3)
         x = x.conv2d(w, groups=32)
-        out = x.numpy()  # noqa
+        x.numpy()
         Tensor.no_grad = False
 
     def test_multiadd(self):

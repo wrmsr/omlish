@@ -1,31 +1,29 @@
-"""
-https://arxiv.org/pdf/2112.10752.pdf
-https://github.com/ekagra-ranjan/huggingface-blog/blob/main/stable_diffusion.md
-"""
+# https://arxiv.org/pdf/2112.10752.pdf
+# https://github.com/ekagra-ranjan/huggingface-blog/blob/main/stable_diffusion.md
 import argparse
-import collections
-import functools
 import gzip
 import math
-import pathlib
 import re
 import tempfile
+from collections import namedtuple
+from functools import lru_cache
+from pathlib import Path
 
 from tqdm import tqdm
 
-from ..devices import Device
-from ..dtypes import dtypes
+from .. import Device
 from ..helpers import Context
 from ..helpers import GlobalCounters
 from ..helpers import Timing
+from ..helpers import dtypes
 from ..helpers import fetch
 from ..helpers import getenv
 from ..jit import TinyJit
-from ..nn.conv import Conv2d
-from ..nn.nn import Embedding
-from ..nn.nn import GroupNorm
-from ..nn.nn import LayerNorm
-from ..nn.nn import Linear
+from ..nn import Conv2d
+from ..nn import Embedding
+from ..nn import GroupNorm
+from ..nn import LayerNorm
+from ..nn import Linear
 from ..nn.state import get_state_dict
 from ..nn.state import load_state_dict
 from ..nn.state import torch_load
@@ -33,8 +31,7 @@ from ..tensor import Tensor
 
 
 class AttnBlock:
-    def __init__(self, in_channels) -> None:
-        super().__init__()
+    def __init__(self, in_channels):
         self.norm = GroupNorm(32, in_channels)
         self.q = Conv2d(in_channels, in_channels, 1)
         self.k = Conv2d(in_channels, in_channels, 1)
@@ -58,8 +55,7 @@ class AttnBlock:
 
 
 class ResnetBlock:
-    def __init__(self, in_channels, out_channels=None) -> None:
-        super().__init__()
+    def __init__(self, in_channels, out_channels=None):
         self.norm1 = GroupNorm(32, in_channels)
         self.conv1 = Conv2d(in_channels, out_channels, 3, padding=1)
         self.norm2 = GroupNorm(32, out_channels)
@@ -77,8 +73,7 @@ class ResnetBlock:
 
 
 class Mid:
-    def __init__(self, block_in) -> None:
-        super().__init__()
+    def __init__(self, block_in):
         self.block_1 = ResnetBlock(block_in, block_in)
         self.attn_1 = AttnBlock(block_in)
         self.block_2 = ResnetBlock(block_in, block_in)
@@ -88,8 +83,7 @@ class Mid:
 
 
 class Decoder:
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self):
         sz = [(128, 256), (256, 512), (512, 512), (512, 512)]
         self.conv_in = Conv2d(4, 512, 3, padding=1)
         self.mid = Mid(512)
@@ -135,8 +129,7 @@ class Decoder:
 
 
 class Encoder:
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self):
         sz = [(128, 128), (128, 256), (256, 512), (512, 512)]
         self.conv_in = Conv2d(3, 128, 3, padding=1)
 
@@ -168,8 +161,7 @@ class Encoder:
 
 
 class AutoencoderKL:
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self):
         self.encoder = Encoder()
         self.decoder = Decoder()
         self.quant_conv = Conv2d(8, 8, 1)
@@ -186,8 +178,7 @@ class AutoencoderKL:
 
 # not to be confused with ResnetBlock
 class ResBlock:
-    def __init__(self, channels, emb_channels, out_channels) -> None:
-        super().__init__()
+    def __init__(self, channels, emb_channels, out_channels):
         self.in_layers = [
             GroupNorm(32, channels),
             Tensor.silu,
@@ -216,8 +207,7 @@ class ResBlock:
 
 
 class CrossAttention:
-    def __init__(self, query_dim, context_dim, n_heads, d_head) -> None:
-        super().__init__()
+    def __init__(self, query_dim, context_dim, n_heads, d_head):
         self.to_q = Linear(query_dim, n_heads * d_head, bias=False)
         self.to_k = Linear(context_dim, n_heads * d_head, bias=False)
         self.to_v = Linear(context_dim, n_heads * d_head, bias=False)
@@ -238,8 +228,7 @@ class CrossAttention:
 
 
 class GEGLU:
-    def __init__(self, dim_in, dim_out) -> None:
-        super().__init__()
+    def __init__(self, dim_in, dim_out):
         self.proj = Linear(dim_in, dim_out * 2)
         self.dim_out = dim_out
 
@@ -249,8 +238,7 @@ class GEGLU:
 
 
 class FeedForward:
-    def __init__(self, dim, mult=4) -> None:
-        super().__init__()
+    def __init__(self, dim, mult=4):
         self.net = [
             GEGLU(dim, dim * mult),
             lambda x: x,  # needed for weights loading code to work
@@ -262,8 +250,7 @@ class FeedForward:
 
 
 class BasicTransformerBlock:
-    def __init__(self, dim, context_dim, n_heads, d_head) -> None:
-        super().__init__()
+    def __init__(self, dim, context_dim, n_heads, d_head):
         self.attn1 = CrossAttention(dim, dim, n_heads, d_head)
         self.ff = FeedForward(dim)
         self.attn2 = CrossAttention(dim, context_dim, n_heads, d_head)
@@ -279,8 +266,7 @@ class BasicTransformerBlock:
 
 
 class SpatialTransformer:
-    def __init__(self, channels, context_dim, n_heads, d_head) -> None:
-        super().__init__()
+    def __init__(self, channels, context_dim, n_heads, d_head):
         self.norm = GroupNorm(32, channels)
         assert channels == n_heads * d_head
         self.proj_in = Conv2d(channels, n_heads * d_head, 1)
@@ -303,8 +289,7 @@ class SpatialTransformer:
 
 
 class Downsample:
-    def __init__(self, channels) -> None:
-        super().__init__()
+    def __init__(self, channels):
         self.op = Conv2d(channels, channels, 3, stride=2, padding=1)
 
     def __call__(self, x):
@@ -312,8 +297,7 @@ class Downsample:
 
 
 class Upsample:
-    def __init__(self, channels) -> None:
-        super().__init__()
+    def __init__(self, channels):
         self.conv = Conv2d(channels, channels, 3, padding=1)
 
     def __call__(self, x):
@@ -334,8 +318,7 @@ def timestep_embedding(timesteps, dim, max_period=10000):
 
 
 class UNetModel:
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self):
         self.time_embed = [
             Linear(320, 1280),
             Tensor.silu,
@@ -419,8 +402,7 @@ class UNetModel:
 
 
 class CLIPMLP:
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self):
         self.fc1 = Linear(768, 3072)
         self.fc2 = Linear(3072, 768)
 
@@ -432,8 +414,7 @@ class CLIPMLP:
 
 
 class CLIPAttention:
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self):
         self.embed_dim = 768
         self.num_heads = 12
         self.head_dim = self.embed_dim // self.num_heads
@@ -444,20 +425,25 @@ class CLIPAttention:
 
     def __call__(self, hidden_states, causal_attention_mask):
         bsz, tgt_len, embed_dim = hidden_states.shape
-        q = self.q_proj(hidden_states)
-        k = self.k_proj(hidden_states)
-        v = self.v_proj(hidden_states)
+        q, k, v = (
+            self.q_proj(hidden_states),
+            self.k_proj(hidden_states),
+            self.v_proj(hidden_states),
+        )
         q, k, v = [
             x.reshape(bsz, tgt_len, self.num_heads, self.head_dim).transpose(1, 2)
             for x in (q, k, v)
         ]
-        attn_output = Tensor.scaled_dot_product_attention(q, k, v, attn_mask=causal_attention_mask)
-        return self.out_proj(attn_output.transpose(1, 2).reshape(bsz, tgt_len, embed_dim))
+        attn_output = Tensor.scaled_dot_product_attention(
+            q, k, v, attn_mask=causal_attention_mask
+        )
+        return self.out_proj(
+            attn_output.transpose(1, 2).reshape(bsz, tgt_len, embed_dim)
+        )
 
 
 class CLIPEncoderLayer:
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self):
         self.self_attn = CLIPAttention()
         self.layer_norm1 = LayerNorm(768)
         self.mlp = CLIPMLP()
@@ -478,8 +464,7 @@ class CLIPEncoderLayer:
 
 
 class CLIPEncoder:
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self):
         self.layers = [CLIPEncoderLayer() for i in range(12)]
 
     def __call__(self, hidden_states, causal_attention_mask):
@@ -489,8 +474,7 @@ class CLIPEncoder:
 
 
 class CLIPTextEmbeddings:
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self):
         self.token_embedding = Embedding(49408, 768)
         self.position_embedding = Embedding(77, 768)
 
@@ -499,8 +483,7 @@ class CLIPTextEmbeddings:
 
 
 class CLIPTextTransformer:
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self):
         self.embeddings = CLIPTextEmbeddings()
         self.encoder = CLIPEncoder()
         self.final_layer_norm = LayerNorm(768)
@@ -512,7 +495,7 @@ class CLIPTextTransformer:
 
 
 # Clip tokenizer, taken from https://github.com/openai/CLIP/blob/main/clip/simple_tokenizer.py (MIT license)
-@functools.lru_cache()
+@lru_cache()
 def default_bpe():
     return fetch(
         "https://github.com/openai/CLIP/raw/main/clip/bpe_simple_vocab_16e6.txt.gz",
@@ -565,11 +548,10 @@ def bytes_to_unicode():
 
 
 class ClipTokenizer:
-    def __init__(self, bpe_path: str = default_bpe()) -> None:
-        super().__init__()
+    def __init__(self, bpe_path: str = default_bpe()):
         self.byte_encoder = bytes_to_unicode()
         merges = gzip.open(bpe_path).read().decode("utf-8").split("\n")
-        merges = merges[1:49152 - 256 - 2 + 1]
+        merges = merges[1 : 49152 - 256 - 2 + 1]
         merges = [tuple(merge.split()) for merge in merges]
         vocab = list(bytes_to_unicode().values())
         vocab = vocab + [v + "</w>" for v in vocab]
@@ -642,15 +624,14 @@ class ClipTokenizer:
 
 
 class StableDiffusion:
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self):
         self.alphas_cumprod = Tensor.empty(1000)
-        self.model = collections.namedtuple("DiffusionModel", ["diffusion_model"])(
+        self.model = namedtuple("DiffusionModel", ["diffusion_model"])(
             diffusion_model=UNetModel()
         )
         self.first_stage_model = AutoencoderKL()
-        self.cond_stage_model = collections.namedtuple("CondStageModel", ["transformer"])(
-            transformer=collections.namedtuple("Transformer", ["text_model"])(
+        self.cond_stage_model = namedtuple("CondStageModel", ["transformer"])(
+            transformer=namedtuple("Transformer", ["text_model"])(
                 text_model=CLIPTextTransformer()
             )
         )
@@ -658,24 +639,24 @@ class StableDiffusion:
     def get_x_prev_and_pred_x0(self, x, e_t, a_t, a_prev):
         temperature = 1
         sigma_t = 0
-        sqrt_one_minus_at = (1-a_t).sqrt()
-        #print(a_t, a_prev, sigma_t, sqrt_one_minus_at)
+        sqrt_one_minus_at = (1 - a_t).sqrt()
+        # print(a_t, a_prev, sigma_t, sqrt_one_minus_at)
 
         pred_x0 = (x - sqrt_one_minus_at * e_t) / a_t.sqrt()
 
         # direction pointing to x_t
-        dir_xt = (1. - a_prev - sigma_t**2).sqrt() * e_t
+        dir_xt = (1.0 - a_prev - sigma_t**2).sqrt() * e_t
 
         x_prev = a_prev.sqrt() * pred_x0 + dir_xt
         return x_prev, pred_x0
 
     def get_model_output(
-            self,
-            unconditional_context,
-            context,
-            latent,
-            timestep,
-            unconditional_guidance_scale,
+        self,
+        unconditional_context,
+        context,
+        latent,
+        timestep,
+        unconditional_guidance_scale,
     ):
         # put into diffuser
         latents = self.model.diffusion_model(
@@ -685,7 +666,9 @@ class StableDiffusion:
         )
         unconditional_latent, latent = latents[0:1], latents[1:2]
 
-        e_t = unconditional_latent + unconditional_guidance_scale * (latent - unconditional_latent)
+        e_t = unconditional_latent + unconditional_guidance_scale * (
+            latent - unconditional_latent
+        )
         return e_t
 
     def decode(self, x):
@@ -698,16 +681,18 @@ class StableDiffusion:
         return x.cast(dtypes.uint8) if Device.DEFAULT != "WEBGPU" else x
 
     def __call__(
-            self,
-            unconditional_context,
-            context,
-            latent,
-            timestep,
-            alphas,
-            alphas_prev,
-            guidance,
+        self,
+        unconditional_context,
+        context,
+        latent,
+        timestep,
+        alphas,
+        alphas_prev,
+        guidance,
     ):
-        e_t = self.get_model_output(unconditional_context, context, latent, timestep, guidance)
+        e_t = self.get_model_output(
+            unconditional_context, context, latent, timestep, guidance
+        )
         x_prev, _ = self.get_x_prev_and_pred_x0(latent, e_t, alphas, alphas_prev)
         # e_t_next = get_model_output(x_prev)
         # e_t_prime = (e_t + e_t_next) / 2
@@ -731,7 +716,7 @@ class StableDiffusion:
 # ** ldm.modules.encoders.modules.FrozenCLIPEmbedder
 # cond_stage_model.transformer.text_model
 
-def _main():
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Run Stable Diffusion",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -748,7 +733,7 @@ def _main():
     parser.add_argument(
         "--out",
         type=str,
-        default=pathlib.Path(tempfile.gettempdir()) / "rendered.png",
+        default=Path(tempfile.gettempdir()) / "rendered.png",
         help="Output filename",
     )
     parser.add_argument("--noshow", action="store_true", help="Don't show the image")
@@ -757,8 +742,7 @@ def _main():
     )
     parser.add_argument("--timing", action="store_true", help="Print timing per step")
     parser.add_argument("--seed", type=int, help="Set the random latent seed")
-    parser.add_argument('--guidance', type=float, default=7.5, help="Prompt strength")
-    parser.add_argument('--interactive', action='store_true', help="Display interactive")
+    parser.add_argument("--guidance", type=float, default=7.5, help="Prompt strength")
     args = parser.parse_args()
 
     Tensor.no_grad = True
@@ -769,10 +753,10 @@ def _main():
         model,
         torch_load(
             fetch(
-                'https://huggingface.co/CompVis/stable-diffusion-v-1-4-original/resolve/main/sd-v1-4.ckpt',
-                'sd-v1-4.ckpt',
+                "https://huggingface.co/CompVis/stable-diffusion-v-1-4-original/resolve/main/sd-v1-4.ckpt",
+                "sd-v1-4.ckpt",
             )
-        )['state_dict'],
+        )["state_dict"],
         strict=False,
     )
 
@@ -809,49 +793,15 @@ def _main():
     def run(model, *x):
         return model(*x).realize()
 
-    if args.interactive:
-        import matplotlib.pyplot as plt
-        plt.ion()
-        plt_img = None
-
-    def decode(latent):
-        # upsample latent space to image with autoencoder
-        x = model.decode(latent)
-        print(x.shape)
-
-        # save image
-        from PIL import Image
-        import numpy as np
-
-        im = Image.fromarray(x.numpy().astype(np.uint8, copy=False))
-
-        if args.interactive:
-            nonlocal plt_img
-            if plt_img is None:
-                plt_img = plt.imshow(im)
-            else:
-                plt_img.set_data(im)  # noqa
-            plt.draw()
-            plt.pause(0.001)
-
-        else:
-            print(f"saving {args.out}")
-            im.save(args.out)
-
-            # Open image.
-            if not args.noshow:
-                im.show()
-
     # this is diffusion
     with Context(BEAM=getenv("LATEBEAM")):
-        # this is diffusion
         for index, timestep in (t := tqdm(list(enumerate(timesteps))[::-1])):
             GlobalCounters.reset()
             t.set_description("%3d %3d" % (index, timestep))
             with Timing(
-                    "step in ",
-                    enabled=args.timing,
-                    on_exit=lambda _: f", using {GlobalCounters.mem_used / 1e9:.2f} GB",
+                "step in ",
+                enabled=args.timing,
+                on_exit=lambda _: f", using {GlobalCounters.mem_used/1e9:.2f} GB",
             ):
                 tid = Tensor([index])
                 latent = run(
@@ -866,17 +816,19 @@ def _main():
                 )
                 if args.timing:
                     Device[Device.DEFAULT].synchronize()
-
-                if args.interactive:
-                    decode(latent)
         del run
 
-    if not args.interactive:
-        decode(latent)
-    else:
-        input()
+    # upsample latent space to image with autoencoder
+    x = model.decode(latent)
+    print(x.shape)
 
+    # save image
+    from PIL import Image
+    import numpy as np
 
-if __name__ == "__main__":
-    _main()
-
+    im = Image.fromarray(x.numpy().astype(np.uint8, copy=False))
+    print(f"saving {args.out}")
+    im.save(args.out)
+    # Open image.
+    if not args.noshow:
+        im.show()

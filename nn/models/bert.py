@@ -1,36 +1,25 @@
-import pathlib
+from pathlib import Path
 
 from ..helpers import fetch
-from ..nn.nn import Embedding
-from ..nn.nn import LayerNorm
-from ..nn.nn import Linear
+from ..helpers import get_child
+from ..nn import Embedding
+from ..nn import LayerNorm
+from ..nn import Linear
 from ..tensor import Tensor
-
-
-def get_child(parent, key):
-    obj = parent
-    for k in key.split('.'):
-        if k.isnumeric():
-            obj = obj[int(k)]
-        elif isinstance(obj, dict):
-            obj = obj[k]
-        else:
-            obj = getattr(obj, k)
-    return obj
 
 
 class BertForQuestionAnswering:
     def __init__(
-            self,
-            hidden_size=1024,
-            intermediate_size=4096,
-            max_position_embeddings=512,
-            num_attention_heads=16,
-            num_hidden_layers=24,
-            type_vocab_size=2,
-            vocab_size=30522,
-            attention_probs_dropout_prob=0.1,
-            hidden_dropout_prob=0.1,
+        self,
+        hidden_size=1024,
+        intermediate_size=4096,
+        max_position_embeddings=512,
+        num_attention_heads=16,
+        num_hidden_layers=24,
+        type_vocab_size=2,
+        vocab_size=30522,
+        attention_probs_dropout_prob=0.1,
+        hidden_dropout_prob=0.1,
     ):
         self.bert = Bert(
             hidden_size,
@@ -46,12 +35,13 @@ class BertForQuestionAnswering:
         self.qa_outputs = Linear(hidden_size, 2)
 
     def load_from_pretrained(self):
-        fn = pathlib.Path(__file__).parents[1] / "weights/bert_for_qa.pt"
+        fn = Path(__file__).parents[1] / "weights/bert_for_qa.pt"
         fetch("https://zenodo.org/record/3733896/files/model.pytorch?download=1", fn)
-        fn_vocab = pathlib.Path(__file__).parents[1] / "weights/bert_vocab.txt"
+        fn_vocab = Path(__file__).parents[1] / "weights/bert_vocab.txt"
         fetch("https://zenodo.org/record/3733896/files/vocab.txt?download=1", fn_vocab)
 
         import torch
+
         with open(fn, "rb") as f:
             state_dict = torch.load(f, map_location="cpu")
 
@@ -62,7 +52,9 @@ class BertForQuestionAnswering:
                 continue  # skip pooler
             get_child(self, k).assign(v.numpy()).realize()
 
-    def __call__(self, input_ids: Tensor, attention_mask: Tensor, token_type_ids: Tensor):
+    def __call__(
+        self, input_ids: Tensor, attention_mask: Tensor, token_type_ids: Tensor
+    ):
         sequence_output = self.bert(input_ids, attention_mask, token_type_ids)
         logits = self.qa_outputs(sequence_output)
         start_logits, end_logits = logits.chunk(2, dim=-1)
@@ -74,16 +66,16 @@ class BertForQuestionAnswering:
 
 class Bert:
     def __init__(
-            self,
-            hidden_size,
-            intermediate_size,
-            max_position_embeddings,
-            num_attention_heads,
-            num_hidden_layers,
-            type_vocab_size,
-            vocab_size,
-            attention_probs_dropout_prob,
-            hidden_dropout_prob,
+        self,
+        hidden_size,
+        intermediate_size,
+        max_position_embeddings,
+        num_attention_heads,
+        num_hidden_layers,
+        type_vocab_size,
+        vocab_size,
+        attention_probs_dropout_prob,
+        hidden_dropout_prob,
     ):
         self.embeddings = BertEmbeddings(
             hidden_size,
@@ -113,12 +105,12 @@ class Bert:
 
 class BertEmbeddings:
     def __init__(
-            self,
-            hidden_size,
-            max_position_embeddings,
-            type_vocab_size,
-            vocab_size,
-            hidden_dropout_prob,
+        self,
+        hidden_size,
+        max_position_embeddings,
+        type_vocab_size,
+        vocab_size,
+        hidden_dropout_prob,
     ):
         self.word_embeddings = Embedding(vocab_size, hidden_size)
         self.position_embeddings = Embedding(max_position_embeddings, hidden_size)
@@ -130,7 +122,11 @@ class BertEmbeddings:
         input_shape = input_ids.shape
         seq_length = input_shape[1]
 
-        position_ids = Tensor.arange(seq_length, requires_grad=False).unsqueeze(0).expand(*input_shape)
+        position_ids = (
+            Tensor.arange(seq_length, requires_grad=False)
+            .unsqueeze(0)
+            .expand(*input_shape)
+        )
         words_embeddings = self.word_embeddings(input_ids)
         position_embeddings = self.position_embeddings(position_ids)
         token_type_embeddings = self.token_type_embeddings(token_type_ids)
@@ -143,13 +139,13 @@ class BertEmbeddings:
 
 class BertEncoder:
     def __init__(
-            self,
-            hidden_size,
-            intermediate_size,
-            num_attention_heads,
-            num_hidden_layers,
-            attention_probs_dropout_prob,
-            hidden_dropout_prob,
+        self,
+        hidden_size,
+        intermediate_size,
+        num_attention_heads,
+        num_hidden_layers,
+        attention_probs_dropout_prob,
+        hidden_dropout_prob,
     ):
         self.layer = [
             BertLayer(
@@ -170,12 +166,12 @@ class BertEncoder:
 
 class BertLayer:
     def __init__(
-            self,
-            hidden_size,
-            intermediate_size,
-            num_attention_heads,
-            attention_probs_dropout_prob,
-            hidden_dropout_prob,
+        self,
+        hidden_size,
+        intermediate_size,
+        num_attention_heads,
+        attention_probs_dropout_prob,
+        hidden_dropout_prob,
     ):
         self.attention = BertAttention(
             hidden_size,
@@ -209,18 +205,15 @@ class BertOutput:
 # approximation of the error function
 def erf(x):
     t = (1 + 0.3275911 * x.abs()).reciprocal()
-    return (
-        x.sign() * (
-            1 - (
-                (
-                    (
-                        (
-                            1.061405429 * t + -1.453152027
-                        ) * t + 1.421413741
-                    ) * t + -0.284496736
-                ) * t + 0.254829592
-            ) * t * (-(x.square())).exp()
+    return x.sign() * (
+        1
+        - (
+            (((1.061405429 * t + -1.453152027) * t + 1.421413741) * t + -0.284496736)
+            * t
+            + 0.254829592
         )
+        * t
+        * (-(x.square())).exp()
     )
 
 
@@ -236,16 +229,14 @@ class BertIntermediate:
 
 class BertAttention:
     def __init__(
-            self,
-            hidden_size,
-            num_attention_heads,
-            attention_probs_dropout_prob,
-            hidden_dropout_prob,
+        self,
+        hidden_size,
+        num_attention_heads,
+        attention_probs_dropout_prob,
+        hidden_dropout_prob,
     ):
         self.self = BertSelfAttention(
-            hidden_size,
-            num_attention_heads,
-            attention_probs_dropout_prob,
+            hidden_size, num_attention_heads, attention_probs_dropout_prob
         )
         self.output = BertSelfOutput(hidden_size, hidden_dropout_prob)
 
@@ -277,20 +268,20 @@ class BertSelfAttention:
         value_layer = self.transpose_for_scores(mixed_value_layer)
 
         context_layer = Tensor.scaled_dot_product_attention(
-            query_layer,
-            key_layer,
-            value_layer,
-            attention_mask,
-            self.dropout,
+            query_layer, key_layer, value_layer, attention_mask, self.dropout
         )
 
         context_layer = context_layer.transpose(1, 2)
-        context_layer = context_layer.reshape(context_layer.shape[0], context_layer.shape[1], self.all_head_size)
+        context_layer = context_layer.reshape(
+            context_layer.shape[0], context_layer.shape[1], self.all_head_size
+        )
 
         return context_layer
 
     def transpose_for_scores(self, x):
-        x = x.reshape(x.shape[0], x.shape[1], self.num_attention_heads, self.attention_head_size)
+        x = x.reshape(
+            x.shape[0], x.shape[1], self.num_attention_heads, self.attention_head_size
+        )
         return x.transpose(1, 2)
 
 

@@ -5,30 +5,21 @@ import platform
 import subprocess
 import tempfile
 import time
-import typing as ta
+from typing import Any
 
 from ..codegen.kernel import LinearizerOptions
-from ..execution import Compiled
+from ..device import Compiled
 from ..helpers import diskcache
 from ..renderer.cstyle import CStyleLanguage
 from ..renderer.cstyle import uops_to_cstyle
 from ..runtime.lib import RawMallocBuffer
 
-
 args = {
-    'Linux': {'cflags': '-lm -fPIC --rtlib=compiler-rt ', 'ext': 'so'},
-    'Darwin': {'cflags': '-lm -fPIC --rtlib=compiler-rt ', 'ext': 'dylib'}
+    "Linux": {"cflags": "-lm -fPIC --rtlib=compiler-rt ", "ext": "so"},
+    "Darwin": {"cflags": "-lm -fPIC --rtlib=compiler-rt ", "ext": "dylib"},
 }[platform.system()]
 
-
-CLANG_PROGRAM_HEADER = """
-#include <math.h>
-#define max(x,y) ((x>y)?x:y)
-#define int64 long
-#define half __fp16
-#define uchar unsigned char
-#include <stdbool.h>
-"""
+CLANG_PROGRAM_HEADER = "#include <math.h>\n#define max(x,y) ((x>y)?x:y)\n#define int64 long\n#define half __fp16\n#define uchar unsigned char\n#include <stdbool.h>\n"
 
 
 @diskcache
@@ -37,25 +28,22 @@ def compile_clang(prg: str, header: str = CLANG_PROGRAM_HEADER) -> bytes:
     with tempfile.NamedTemporaryFile(delete=True) as output_file:
         subprocess.check_output(
             args=(
-                    'clang '
-                    '-shared '
-                    '-O2 '
-                    '-Wall '
-                    '-Werror '
-                    '-x c ' + args['cflags'] +
-                    ' - '
-                    '-o ' + str(output_file.name)).split(),
-            input=(header + prg).encode('utf-8'),
+                "clang -shared -O2 -Wall -Werror -x c "
+                + args["cflags"]
+                + " - -o "
+                + str(output_file.name)
+            ).split(),
+            input=(header + prg).encode("utf-8"),
         )
         return pathlib.Path(output_file.name).read_bytes()
 
 
 class ClangProgram:
-    def __init__(self, name: str, prg: str) -> None:
+    def __init__(self, name: str, prg: bytes):
         # write to disk so we can load it
         with tempfile.NamedTemporaryFile(delete=True) as cached_file_path:
             pathlib.Path(cached_file_path.name).write_bytes(prg)
-            self.fxn: ta.Any = ctypes.CDLL(str(cached_file_path.name))[name]
+            self.fxn: Any = ctypes.CDLL(str(cached_file_path.name))[name]
 
     def __call__(self, *args, wait=False):
         if wait:
@@ -67,19 +55,11 @@ class ClangProgram:
 
 renderer = functools.partial(
     uops_to_cstyle,
-    CStyleLanguage(
-        buffer_suffix=" restrict",
-        arg_int_prefix="const int",
-    ),
+    CStyleLanguage(buffer_suffix=" restrict", arg_int_prefix="const int"),
 )
-
-
-ClangBuffer = Compiled(
+ClangDevice = Compiled(
     RawMallocBuffer,
-    LinearizerOptions(
-        supports_float4=False,
-        has_local=False,
-    ),
+    LinearizerOptions(supports_float4=False, has_local=False),
     renderer,
     compile_clang,
     ClangProgram,

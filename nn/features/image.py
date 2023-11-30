@@ -1,24 +1,12 @@
-import typing as ta
+from typing import Any
+from typing import Dict
+from typing import Tuple
 
-from omlish import dataclasses as dc
-
-from .. import ops
-from ..dtypes import ImageDType
-from ..dtypes import dtypes
-from ..execution import MemBuffer
-from ..execution import get_lazyop_info
 from ..helpers import DEBUG
 from ..helpers import IMAGE
-from ..helpers import flatten
+from ..helpers import dtypes
 from ..helpers import getenv
 from ..helpers import prod
-from ..lazy import ScheduleItem
-from ..shape.symbolic import AndNode
-from ..shape.symbolic import LtNode
-from ..shape.symbolic import Node
-from ..shape.symbolic import NumNode
-from ..shape.symbolic import SumNode
-from ..shape.symbolic import Variable
 
 
 # *** image Tensor function replacements ***
@@ -27,15 +15,20 @@ from ..shape.symbolic import Variable
 def image_dot(self, w):
     # NOTE: we use a 1x1 conv2d to do the matmul. mxk @ kxn = (1,k,m,1).conv2d(n,k,1,1)
     n1, n2 = len(self.shape), len(w.shape)
-    assert n1 != 0 and n2 != 0, f"both arguments to matmul need to be at least 1D, but they are {n1}D and {n2}D"
+    assert (
+        n1 != 0 and n2 != 0
+    ), f"both arguments to matmul need to be at least 1D, but they are {n1}D and {n2}D"
     assert (
         self.shape[-1] == w.shape[-min(n2, 2)]
-    ), f"Input Tensor shapes {self.shape} and {w.shape} cannot be multiplied ({self.shape[-1]} != {w.shape[-min(n2, 2)]})"  # noqa
+    ), f"Input Tensor shapes {self.shape} and {w.shape} cannot be multiplied ({self.shape[-1]} != {w.shape[-min(n2, 2)]})"
     bs, groups = prod(self.shape[0:-2]), prod(w.shape[0:-2])
     cin, cout = w.shape[-2], w.shape[-1]
     out_shape_t = self.shape[0:-2] + (cout, -1)
     if len(self.shape) > 1:
-        order = tuple(range(len(self.shape) - 2)) + (len(self.shape) - 1, len(self.shape) - 2)
+        order = tuple(range(len(self.shape) - 2)) + (
+            len(self.shape) - 1,
+            len(self.shape) - 2,
+        )
     else:
         order, out_shape_t = (0,), (cout,)
     worder = tuple(range(len(w.shape) - 2)) + (len(w.shape) - 1, len(w.shape) - 2)
@@ -45,7 +38,11 @@ def image_dot(self, w):
     cx = self.permute(order=order).reshape(shape=(bs // groups, groups * cin, -1, 1))
     # groups*cout x cin x H, W
     cw = w.permute(order=worder).reshape(shape=(groups * cout, cin, 1, 1))
-    return image_conv2d(cx, cw, groups=groups).reshape(shape=out_shape_t).permute(order=order)
+    return (
+        image_conv2d(cx, cw, groups=groups)
+        .reshape(shape=out_shape_t)
+        .permute(order=order)
+    )
 
 
 def image_conv2d(self, weight, bias=None, groups=1, stride=1, dilation=1, padding=0):
@@ -59,8 +56,18 @@ def image_conv2d(self, weight, bias=None, groups=1, stride=1, dilation=1, paddin
     if cin % 4 != 0 and not (cin == 1 and groups % 4 == 0):
         x = x.reshape(bs, groups, cin, iy, ix)  # do this always?
         added_input_channels = 4 - (cin % 4)
-        w = w.pad(tuple((0, added_input_channels) if i == 2 else (0, 0) for i in range(len(w.shape))))
-        x = x.pad(tuple((0, added_input_channels) if i == 2 else (0, 0) for i in range(len(x.shape))))
+        w = w.pad(
+            tuple(
+                (0, added_input_channels) if i == 2 else (0, 0)
+                for i in range(len(w.shape))
+            )
+        )
+        x = x.pad(
+            tuple(
+                (0, added_input_channels) if i == 2 else (0, 0)
+                for i in range(len(x.shape))
+            )
+        )
         cin = cin + added_input_channels
         x = x.reshape(bs, groups * cin, iy, ix)
 
@@ -70,7 +77,9 @@ def image_conv2d(self, weight, bias=None, groups=1, stride=1, dilation=1, paddin
         added_output_channels = 4 - (rcout % 4)
         rcout += added_output_channels
         cout = groups * rcout
-        w = w.slice(tuple((0, rcout) if i == 1 else (0, s) for i, s in enumerate(w.shape)))
+        w = w.slice(
+            tuple((0, rcout) if i == 1 else (0, s) for i, s in enumerate(w.shape))
+        )
 
     # packed (note: flipping bs and iy would make the auto-padding work)
     x = x.permute(0, 2, 3, 1)
@@ -84,7 +93,9 @@ def image_conv2d(self, weight, bias=None, groups=1, stride=1, dilation=1, paddin
 
     # contiguous creates the image, and early realize static weights (TODO: test for the static weight)
     if IMAGE >= 2:
-        x, w = x.cast(base_image_type((bs * iy, ix * groups * cin // 4, 4))), w.cast(base_image_type((cout // 4, H * W * cin, 4)))
+        x, w = x.cast(base_image_type((bs * iy, ix * groups * cin // 4, 4))), w.cast(
+            base_image_type((cout // 4, H * W * cin, 4))
+        )
     x, w = x.contiguous(), w.contiguous()
 
     # expand out
@@ -102,24 +113,34 @@ def image_conv2d(self, weight, bias=None, groups=1, stride=1, dilation=1, paddin
         w = w.reshape(cout // 4, H, rcin_hi, W, rcin_lo, 4).permute(0, 1, 2, 3, 5, 4)
 
     # padding
-    padding_ = [padding] * 4 if isinstance(padding, int) else (padding if len(padding) == 4 else [padding[1], padding[1], padding[0], padding[0]])  # noqa
-    x = x.slice((
-        None,
-        (-padding_[2], x.shape[1] + padding_[3]),
-        (-padding_[0], x.shape[2] + padding_[1]),
-        None,
-        None,
-        None,
-    ))
+    padding_ = (
+        [padding] * 4
+        if isinstance(padding, int)
+        else (
+            padding
+            if len(padding) == 4
+            else [padding[1], padding[1], padding[0], padding[0]]
+        )
+    )
+    x = x.slice(
+        (
+            None,
+            (-padding_[2], x.shape[1] + padding_[3]),
+            (-padding_[0], x.shape[2] + padding_[1]),
+            None,
+            None,
+            None,
+        )
+    )
 
     # prepare input
-    x = x.\
-        permute(0, 3, 4, 5, 1, 2).\
-        _pool((H, W), stride, dilation)  # -> (bs, groups, rcin_hi, rcin_lo, oy, ox, H, W)
+    x = x.permute(0, 3, 4, 5, 1, 2)._pool(
+        (H, W), stride, dilation
+    )  # -> (bs, groups, rcin_hi, rcin_lo, oy, ox, H, W)
     oy, ox = x.shape[4:6]
-    x = x.\
-        permute(0, 4, 5, 1, 2, 3, 6, 7).\
-        reshape(bs, oy, ox, *cout_expand[0:2], 1, 1, rcin_hi, rcin_lo, H, W)
+    x = x.permute(0, 4, 5, 1, 2, 3, 6, 7).reshape(
+        bs, oy, ox, *cout_expand[0:2], 1, 1, rcin_hi, rcin_lo, H, W
+    )
     x = x.expand(bs, oy, ox, *cout_expand, rcin_hi, rcin_lo, H, W)
 
     # prepare weights
@@ -134,7 +155,9 @@ def image_conv2d(self, weight, bias=None, groups=1, stride=1, dilation=1, paddin
 
     # undo hack for non multiples of 4 on C.rcout
     if added_output_channels != 0:
-        ret = ret.reshape(bs, oy, ox, groups, rcout)[:, :, :, :, :-added_output_channels]
+        ret = ret.reshape(bs, oy, ox, groups, rcout)[
+            :, :, :, :, :-added_output_channels
+        ]
         rcout -= added_output_channels
         cout = groups * rcout
 
@@ -143,91 +166,33 @@ def image_conv2d(self, weight, bias=None, groups=1, stride=1, dilation=1, paddin
     return ret if bias is None else ret.add(bias.reshape(1, -1, 1, 1))
 
 
-# *** schedules with images need to be fixed to be valid ***
-
-
-def fix_schedule_for_images(schedule: list[ScheduleItem]):
-    # this is the fundamental fix, find unwritable or unreadable images and convert them to normal float32 (TODO: should it be float16?)
-    replace_inputs = {}
-    for i, si in enumerate(schedule):
-        if (
-            isinstance(si.out.dtype, ImageDType)
-            and (
-                prod(si.out.shape) != prod(si.out.dtype.shape)
-                or not any(si.out.shape[x] % 4 == 0 for x in si.out.st.unit_stride_axes())
-            )
-        ):
-            if DEBUG >= 1:
-                print(f"{i:3d}: rewrite output, output shape {prod(si.out.shape)}, image dtype {si.out.dtype} prod {prod(si.out.dtype.shape)}")
-            si.out.dtype = dtypes.float32
-
-        for b in si.ast.get_lazyops():
-            if not isinstance(b, ops.Mem):
-                continue
-
-            if (
-                    isinstance(si.inputs[b.arg.idx - 1].dtype, ImageDType)
-                    and not any(b.arg.st.shape[x] % 4 == 0 for x in b.arg.st.unit_stride_axes())
-            ):
-                if DEBUG >= 1:
-                    print(f"{i:3d}: rewrite input, image dtype {si.inputs[b.arg.idx - 1].dtype}, {b.arg.st.views}")
-                if si.inputs[b.arg.idx - 1].realized:
-                    # have to copy it
-                    replace_inputs[si.inputs[b.arg.idx - 1]] = si.inputs[b.arg.idx - 1].cast(dtypes.float32)
-                else:
-                    # change it before it's created
-                    si.inputs[b.arg.idx - 1].dtype = dtypes.float32
-
-    # now fix up the schedule to reflect the new dtypes
-    fixed_schedule: list[ScheduleItem] = []
-    for i, si in enumerate(schedule):
-        ast = si.ast
-        inputs = si.inputs
-
-        # replace inputs with casted versions
-        if any(x in replace_inputs for x in inputs):
-            fixed_schedule += flatten([replace_inputs[x].schedule() for x in inputs if x in replace_inputs])
-            inputs = tuple(replace_inputs.get(x, x) for x in inputs)
-
-        # fix input dtypes to match what they actually are
-        replacements = {}
-        for b in si.ast.get_lazyops():
-            if not isinstance(b, ops.Mem):
-                continue
-            if b.arg.dtype != inputs[b.arg.idx - 1].dtype:
-                replacements[b] = ops.Mem((), MemBuffer(b.arg.idx, inputs[b.arg.idx - 1].dtype, b.arg.st))
-        if replacements:
-            ast = ast.map_buffers(replacements)
-
-        # fix the ops to create the output dtype
-        if not isinstance(ast, ops.LoadOp):
-            info = get_lazyop_info(ast)
-            if info.dtype != si.out.dtype:
-                if DEBUG >= 3:
-                    print(f"{i:3d}: info.dtype {info.dtype} != {si.out.dtype} -> {si.out.dtype}")
-                ast = ops.Cast((ast,), (si.out.dtype, False))
-
-        # put this in the fixed schedule
-        fixed_schedule.append(dc.replace(si, ast=ast, inputs=inputs))
-    return fixed_schedule
-
-
 # *** images have weird indexing requirements ***
 
+from ..shape.symbolic import Node, AndNode, Variable, NumNode, SumNode, LtNode
 
-def to_image_idx(base_shape: tuple[int, ...], idxy: Node, valid: Node) -> tuple[tuple[Node, Node], Node]:
+
+def to_image_idx(
+    base_shape: Tuple[int, ...], idxy: Node, valid: Node
+) -> Tuple[Tuple[Node, Node], Node]:
     idx = (idxy // 4) % base_shape[1]
-    idy = (idxy // (4 * base_shape[1]))
+    idy = idxy // (4 * base_shape[1])
 
     if valid.min == 0 and isinstance(idxy, SumNode):
         nodes = valid.nodes if isinstance(valid, AndNode) else [valid]
-        val_dict: dict[Node, ta.Any] = {}
+        val_dict: Dict[Node, Any] = {}
         # TODO: is this correct? should it check there's only one variable from each component?
-        idxy_flat_var = [(i, list(i.vars())[0]) for i in idxy.flat_components if not isinstance(i, NumNode)]
+        idxy_flat_var = [
+            (i, list(i.vars())[0])
+            for i in idxy.flat_components
+            if not isinstance(i, NumNode)
+        ]
 
         for node in nodes:
             assert isinstance(node, LtNode)
-            node_flat, node_vars = node.a.flat_components if isinstance(node.a, SumNode) else [node.a], node.vars()
+            node_flat, node_vars = (
+                node.a.flat_components if isinstance(node.a, SumNode) else [node.a],
+                node.vars(),
+            )
             same_sym = [i for (i, var) in idxy_flat_var if var in node_vars]
             if len(same_sym) == 0:
                 continue
@@ -242,12 +207,14 @@ def to_image_idx(base_shape: tuple[int, ...], idxy: Node, valid: Node) -> tuple[
 
         fakes = {}
         for cnt, (key_node, (mnn, mxn, multip)) in enumerate(val_dict.items()):
+            if mnn > mxn:
+                return (idx, idy), valid  # TODO: why is this happening?
             fake_var = Variable("fake_" + str(cnt), mnn, mxn)
             fakes[fake_var] = key_node
             idxy += multip * (fake_var - key_node)
 
         idx = (idxy // 4) % base_shape[1]
-        idy = (idxy // (4 * base_shape[1]))
+        idy = idxy // (4 * base_shape[1])
 
         fake_rep = {fake: node for fake, node in fakes.items()}
 
@@ -257,14 +224,23 @@ def to_image_idx(base_shape: tuple[int, ...], idxy: Node, valid: Node) -> tuple[
         idy_vars, idx_vars, ones = set(idy.vars()), set(idx.vars()), []
         for node in nodes:
             node_vars = set(node.vars())
-            # There is simplified NumNode which can not go outside the bounds
             if not node_vars & (idx_vars | idy_vars):
-                continue
+                continue  # There is simplified NumNode which can not go outside the bounds
             # NOTE: Why does only idy is problematic? and not the idx
             if idy_vars == node_vars or idy_vars & node_vars == set():
                 ones.append(node)
         valid = Variable.ands([i for i in nodes if i not in ones])
 
-    if DEBUG>=5:
-        print("to_image_idx", base_shape, idx.min, idx.max, idy.min, idy.max, idx, idy, valid)
+    if DEBUG >= 5:
+        print(
+            "to_image_idx",
+            base_shape,
+            idx.min,
+            idx.max,
+            idy.min,
+            idy.max,
+            idx,
+            idy,
+            valid,
+        )
     return (idx, idy), valid

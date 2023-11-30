@@ -1,37 +1,49 @@
-import typing as ta
-import operator
+from typing import Callable
+from typing import Dict
+from typing import Optional
+from typing import Tuple
 
 import numpy as np
-
-from .. import ops
-from ..dtypes import DType
-from ..dtypes import dtypes
-from ..execution import Interpreted
+from ..device import Interpreted
+from ..helpers import DType
+from ..helpers import dtypes
+from ..ops import BinaryOps
+from ..ops import BufferOps
+from ..ops import MovementOps
+from ..ops import Op
+from ..ops import ReduceOps
+from ..ops import TernaryOps
+from ..ops import UnaryOps
 from ..runtime.lib import RawBuffer
 
 
 class RawNumpyBuffer(RawBuffer):
-    def __init__(self, size: int, dtype: DType, buf: ta.Optional[np.ndarray] = None) -> None:
+    def __init__(self, size: int, dtype: DType, buf: Optional[np.ndarray] = None):
         super().__init__(size, dtype, buf)
 
-    @classmethod
-    def fromCpu(cls, x):
-        return cls(x.size, dtypes.from_np(x.dtype), x)
+    def _copyin(self, x):
+        self.size, self.dtype, self._buf = x.size, dtypes.from_np(x.dtype), x
 
-    def toCpu(self):
-        return self._buf if self._buf is not None else np.empty([self.size], self.dtype.np)
+    def toCPU(self):
+        return (
+            self._buf if self._buf is not None else np.empty([self.size], self.dtype.np)
+        )
 
 
 def shape_to_axis(
-    old_shape: tuple[int, ...], new_shape: tuple[int, ...]
-) -> tuple[int, ...]:
+    old_shape: Tuple[int, ...], new_shape: Tuple[int, ...]
+) -> Tuple[int, ...]:
     assert len(old_shape) == len(new_shape), "reduce shapes must have same dimensions"
     return tuple(i for i, (a, b) in enumerate(zip(old_shape, new_shape)) if a != b)
 
 
 # TODO: this should be global infrastructure
 def output_type(x, y):
-    return x.dtype if dtypes.from_np(x.dtype).priority > dtypes.from_np(y.dtype).priority else y.dtype
+    return (
+        x.dtype
+        if dtypes.from_np(x.dtype).priority > dtypes.from_np(y.dtype).priority
+        else y.dtype
+    )
 
 
 def match_types(x, y):
@@ -75,44 +87,54 @@ def einsum_mulacc(einsum, get_strides, expand):
     return mulacc
 
 
-numpy_fxn_for_op: dict[type[ops.LazyOp], ta.Callable] = {
-    ops.Mem: lambda x: x.toCpu(),
-    ops.Const: lambda val, dtype: np.array(val, dtype=dtype.np),
-    ops.FromUnderlying: RawNumpyBuffer.fromCpu,
-    ops.Nop: lambda x: np.require(x, requirements="C"),
-    ops.Exp2: np.exp2,
-    ops.Log2: np.log2,
-    ops.Sin: np.sin,
-    ops.Cast: lambda x, y: x.view(y[0].np) if y[1] else x.astype(y[0].np, copy=False),
-    ops.Neg: lambda x: np.logical_not(x) if x.dtype == np.bool_ else np.negative(x),
-    ops.Max2: np.maximum,
-    ops.CmpLt: lambda x, y: (x < y).astype(output_type(x, y)),
-    ops.Add: lambda x, y: np.add(*match_types(x, y)),
-    ops.Sub: lambda x, y: np.subtract(*match_types(x, y)),
-    ops.Mul: lambda x, y: np.multiply(*match_types(x, y)),
-    ops.Div: lambda x, y: np.divide(*match_types(x, y)).astype(output_type(x, y), copy=False),
-    ops.Sqrt: np.sqrt,
-    ops.Pad: np.pad,
-    ops.Expand: np.broadcast_to,
-    ops.Sum: lambda x, new_shape: x.sum(shape_to_axis(x.shape, new_shape), dtype=x.dtype, keepdims=True) if x.shape != new_shape else x,
-    ops.Max: lambda x, new_shape: x.max(shape_to_axis(x.shape, new_shape), keepdims=True) if x.shape != new_shape else x,
-    ops.AsStrided: lambda x, arg: np.ndarray(
+numpy_fxn_for_op: Dict[Op, Callable] = {
+    BufferOps.LOAD: lambda x: x.toCPU(),
+    BufferOps.CONST: lambda val, dtype: np.array(val, dtype=dtype.np),
+    BufferOps.STORE: RawNumpyBuffer.fromCPU,
+    UnaryOps.NOOP: lambda x: np.require(x, requirements="C"),
+    UnaryOps.EXP2: np.exp2,
+    UnaryOps.LOG2: np.log2,
+    UnaryOps.SIN: np.sin,
+    UnaryOps.CAST: lambda x, y: x.view(y[0].np)
+    if y[1]
+    else x.astype(y[0].np, copy=False),
+    UnaryOps.NEG: lambda x: np.logical_not(x)
+    if x.dtype == np.bool_
+    else np.negative(x),
+    BinaryOps.MAX: np.maximum,
+    BinaryOps.CMPLT: lambda x, y: (x < y).astype(output_type(x, y)),
+    BinaryOps.ADD: lambda x, y: np.add(*match_types(x, y)),
+    BinaryOps.SUB: lambda x, y: np.subtract(*match_types(x, y)),
+    BinaryOps.MUL: lambda x, y: np.multiply(*match_types(x, y)),
+    BinaryOps.DIV: lambda x, y: np.divide(*match_types(x, y)).astype(
+        output_type(x, y), copy=False
+    ),
+    UnaryOps.SQRT: np.sqrt,
+    ReduceOps.SUM: lambda x, new_shape: x.sum(
+        shape_to_axis(x.shape, new_shape), dtype=x.dtype, keepdims=True
+    )
+    if x.shape != new_shape
+    else x,
+    ReduceOps.MAX: lambda x, new_shape: x.max(
+        shape_to_axis(x.shape, new_shape), keepdims=True
+    )
+    if x.shape != new_shape
+    else x,
+    MovementOps.AS_STRIDED: lambda x, arg: np.ndarray(
         arg[0],
-        buffer=np.require(x, requirements='C'),
+        buffer=np.require(x, requirements="C"),
         dtype=x.dtype,
         offset=arg[2] * x.dtype.itemsize,
         strides=tuple(y * x.dtype.itemsize for y in arg[1]),
     ),
-    ops.MulAcc: einsum_mulacc(
+    MovementOps.PAD: np.pad,
+    MovementOps.EXPAND: np.broadcast_to,
+    TernaryOps.MULACC: einsum_mulacc(
         lambda s, a, b: np.einsum(s, *match_types(a.copy(), b.copy()), optimize=True),
         lambda x: x.strides,
         np.broadcast_to,
     ),
-    ops.Where: np.where,
+    TernaryOps.WHERE: np.where,
 }
 
-
-CpuBuffer = Interpreted(
-    RawNumpyBuffer,
-    numpy_fxn_for_op,
-)
+CPUDevice = Interpreted(RawNumpyBuffer, numpy_fxn_for_op)

@@ -1,30 +1,27 @@
 import numpy as np
-import tqdm
+from tqdm import trange
 
-from ..helpers import getenv
+from ..helpers import CI
 from ..jit import TinyJit
 from ..tensor import Tensor
 
 
-CI = False
-
-
 def train(
-        model,
-        X_train,
-        Y_train,
-        optim,
-        steps,
-        BS=128,
-        lossfn=lambda out, y: out.sparse_categorical_crossentropy(y),
-        transform=lambda x: x,
-        target_transform=lambda x: x,
-        noloss=False,
+    model,
+    X_train,
+    Y_train,
+    optim,
+    steps,
+    BS=128,
+    lossfn=lambda out, y: out.sparse_categorical_crossentropy(y),
+    transform=lambda x: x,
+    target_transform=lambda x: x,
+    noloss=False,
 ):
     @TinyJit
     def train_step(x, y):
         # network
-        out = model.forward(x) if hasattr(model, 'forward') else model(x)
+        out = model.forward(x) if hasattr(model, "forward") else model(x)
         loss = lossfn(out, y)
         optim.zero_grad()
         loss.backward()
@@ -39,7 +36,7 @@ def train(
 
     with Tensor.train():
         losses, accuracies = [], []
-        for i in (t := tqdm.trange(steps, disable=CI)):
+        for i in (t := trange(steps, disable=CI)):
             samp = np.random.randint(0, X_train.shape[0], size=(BS))
             x = Tensor(transform(X_train[samp]), requires_grad=False)
             y = Tensor(target_transform(Y_train[samp]))
@@ -54,23 +51,23 @@ def train(
 
 
 def evaluate(
-        model,
-        X_test,
-        Y_test,
-        num_classes=None,
-        BS=128,
-        return_predict=False,
-        transform=lambda x: x,
-        target_transform=lambda y: y,
+    model,
+    X_test,
+    Y_test,
+    num_classes=None,
+    BS=128,
+    return_predict=False,
+    transform=lambda x: x,
+    target_transform=lambda y: y,
 ):
     Tensor.training = False
 
     def numpy_eval(Y_test, num_classes):
         Y_test_preds_out = np.zeros(list(Y_test.shape) + [num_classes])
-        for i in tqdm.trange((len(Y_test) - 1) // BS + 1, disable=getenv('CI', False)):
-            x = Tensor(transform(X_test[i * BS:(i + 1) * BS]))
-            out = model.forward(x) if hasattr(model, 'forward') else model(x)
-            Y_test_preds_out[i * BS:(i + 1) * BS] = out.numpy()
+        for i in trange((len(Y_test) - 1) // BS + 1, disable=CI):
+            x = Tensor(transform(X_test[i * BS : (i + 1) * BS]))
+            out = model.forward(x) if hasattr(model, "forward") else model(x)
+            Y_test_preds_out[i * BS : (i + 1) * BS] = out.numpy()
         Y_test_preds = np.argmax(Y_test_preds_out, axis=-1)
         Y_test = target_transform(Y_test)
         return (Y_test == Y_test_preds).mean(), Y_test_preds

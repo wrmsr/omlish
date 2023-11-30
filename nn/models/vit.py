@@ -1,17 +1,12 @@
 import numpy as np
 
+from ..helpers import fetch
+from ..models.transformer import TransformerBlock
 from ..tensor import Tensor
-from .transformer import TransformerBlock
 
 
 class ViT:
-    def __init__(
-            self,
-            layers=12,
-            embed_dim=192,
-            num_heads=3,
-    ) -> None:
-        super().__init__()
+    def __init__(self, layers=12, embed_dim=192, num_heads=3):
         self.embedding = (Tensor.uniform(embed_dim, 3, 16, 16), Tensor.zeros(embed_dim))
         self.embed_dim = embed_dim
         self.cls = Tensor.ones(1, 1, embed_dim)
@@ -42,15 +37,12 @@ class ViT:
         x = x.layernorm().linear(*self.encoder_norm)
         return x[:, 0].linear(*self.head)
 
-    def load_from_pretrained(self):
-        from ..helpers import fetch
-
+    def load_from_pretrained(m):
         # https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/vision_transformer.py
-        base_url = "https://storage.googleapis.com/vit_models/augreg"
-        if self.embed_dim == 192:
-            url = base_url + "/Ti_16-i21k-300ep-lr_0.001-aug_none-wd_0.03-do_0.0-sd_0.0--imagenet2012-steps_20k-lr_0.03-res_224.npz"
-        elif self.embed_dim == 768:
-            url = base_url + "/B_16-i21k-300ep-lr_0.001-aug_medium1-wd_0.1-do_0.0-sd_0.0--imagenet2012-steps_20k-lr_0.01-res_224.npz"
+        if m.embed_dim == 192:
+            url = "https://storage.googleapis.com/vit_models/augreg/Ti_16-i21k-300ep-lr_0.001-aug_none-wd_0.03-do_0.0-sd_0.0--imagenet2012-steps_20k-lr_0.03-res_224.npz"
+        elif m.embed_dim == 768:
+            url = "https://storage.googleapis.com/vit_models/augreg/B_16-i21k-300ep-lr_0.001-aug_medium1-wd_0.1-do_0.0-sd_0.0--imagenet2012-steps_20k-lr_0.01-res_224.npz"
         else:
             raise Exception("no pretrained weights for configuration")
         dat = np.load(fetch(url))
@@ -58,33 +50,80 @@ class ViT:
         # for x in dat.keys():
         #  print(x, dat[x].shape, dat[x].dtype)
 
-        self.embedding[0].assign(np.transpose(dat['embedding/kernel'], (3, 2, 0, 1)))
-        self.embedding[1].assign(dat['embedding/bias'])
+        m.embedding[0].assign(np.transpose(dat["embedding/kernel"], (3, 2, 0, 1)))
+        m.embedding[1].assign(dat["embedding/bias"])
 
-        self.cls.assign(dat['cls'])
+        m.cls.assign(dat["cls"])
 
-        self.head[0].assign(dat['head/kernel'])
-        self.head[1].assign(dat['head/bias'])
+        m.head[0].assign(dat["head/kernel"])
+        m.head[1].assign(dat["head/bias"])
 
-        self.pos_embedding.assign(dat['Transformer/posembed_input/pos_embedding'])
-        self.encoder_norm[0].assign(dat['Transformer/encoder_norm/scale'])
-        self.encoder_norm[1].assign(dat['Transformer/encoder_norm/bias'])
+        m.pos_embedding.assign(dat["Transformer/posembed_input/pos_embedding"])
+        m.encoder_norm[0].assign(dat["Transformer/encoder_norm/scale"])
+        m.encoder_norm[1].assign(dat["Transformer/encoder_norm/bias"])
 
         for i in range(12):
-            pfx = f'Transformer/encoderblock_{i}'
-            self.tbs[i].query[0].assign(dat[f'{pfx}/MultiHeadDotProductAttention_1/query/kernel'].reshape(self.embed_dim, self.embed_dim))
-            self.tbs[i].query[1].assign(dat[f'{pfx}/MultiHeadDotProductAttention_1/query/bias'].reshape(self.embed_dim))
-            self.tbs[i].key[0].assign(dat[f'{pfx}/MultiHeadDotProductAttention_1/key/kernel'].reshape(self.embed_dim, self.embed_dim))
-            self.tbs[i].key[1].assign(dat[f'{pfx}/MultiHeadDotProductAttention_1/key/bias'].reshape(self.embed_dim))
-            self.tbs[i].value[0].assign(dat[f'{pfx}/MultiHeadDotProductAttention_1/value/kernel'].reshape(self.embed_dim, self.embed_dim))
-            self.tbs[i].value[1].assign(dat[f'{pfx}/MultiHeadDotProductAttention_1/value/bias'].reshape(self.embed_dim))
-            self.tbs[i].out[0].assign(dat[f'{pfx}/MultiHeadDotProductAttention_1/out/kernel'].reshape(self.embed_dim, self.embed_dim))
-            self.tbs[i].out[1].assign(dat[f'{pfx}/MultiHeadDotProductAttention_1/out/bias'].reshape(self.embed_dim))
-            self.tbs[i].ff1[0].assign(dat[f'{pfx}/MlpBlock_3/Dense_0/kernel'])
-            self.tbs[i].ff1[1].assign(dat[f'{pfx}/MlpBlock_3/Dense_0/bias'])
-            self.tbs[i].ff2[0].assign(dat[f'{pfx}/MlpBlock_3/Dense_1/kernel'])
-            self.tbs[i].ff2[1].assign(dat[f'{pfx}/MlpBlock_3/Dense_1/bias'])
-            self.tbs[i].ln1[0].assign(dat[f'{pfx}/LayerNorm_0/scale'])
-            self.tbs[i].ln1[1].assign(dat[f'{pfx}/LayerNorm_0/bias'])
-            self.tbs[i].ln2[0].assign(dat[f'{pfx}/LayerNorm_2/scale'])
-            self.tbs[i].ln2[1].assign(dat[f'{pfx}/LayerNorm_2/bias'])
+            m.tbs[i].query[0].assign(
+                dat[
+                    f"Transformer/encoderblock_{i}/MultiHeadDotProductAttention_1/query/kernel"
+                ].reshape(m.embed_dim, m.embed_dim)
+            )
+            m.tbs[i].query[1].assign(
+                dat[
+                    f"Transformer/encoderblock_{i}/MultiHeadDotProductAttention_1/query/bias"
+                ].reshape(m.embed_dim)
+            )
+            m.tbs[i].key[0].assign(
+                dat[
+                    f"Transformer/encoderblock_{i}/MultiHeadDotProductAttention_1/key/kernel"
+                ].reshape(m.embed_dim, m.embed_dim)
+            )
+            m.tbs[i].key[1].assign(
+                dat[
+                    f"Transformer/encoderblock_{i}/MultiHeadDotProductAttention_1/key/bias"
+                ].reshape(m.embed_dim)
+            )
+            m.tbs[i].value[0].assign(
+                dat[
+                    f"Transformer/encoderblock_{i}/MultiHeadDotProductAttention_1/value/kernel"
+                ].reshape(m.embed_dim, m.embed_dim)
+            )
+            m.tbs[i].value[1].assign(
+                dat[
+                    f"Transformer/encoderblock_{i}/MultiHeadDotProductAttention_1/value/bias"
+                ].reshape(m.embed_dim)
+            )
+            m.tbs[i].out[0].assign(
+                dat[
+                    f"Transformer/encoderblock_{i}/MultiHeadDotProductAttention_1/out/kernel"
+                ].reshape(m.embed_dim, m.embed_dim)
+            )
+            m.tbs[i].out[1].assign(
+                dat[
+                    f"Transformer/encoderblock_{i}/MultiHeadDotProductAttention_1/out/bias"
+                ].reshape(m.embed_dim)
+            )
+            m.tbs[i].ff1[0].assign(
+                dat[f"Transformer/encoderblock_{i}/MlpBlock_3/Dense_0/kernel"]
+            )
+            m.tbs[i].ff1[1].assign(
+                dat[f"Transformer/encoderblock_{i}/MlpBlock_3/Dense_0/bias"]
+            )
+            m.tbs[i].ff2[0].assign(
+                dat[f"Transformer/encoderblock_{i}/MlpBlock_3/Dense_1/kernel"]
+            )
+            m.tbs[i].ff2[1].assign(
+                dat[f"Transformer/encoderblock_{i}/MlpBlock_3/Dense_1/bias"]
+            )
+            m.tbs[i].ln1[0].assign(
+                dat[f"Transformer/encoderblock_{i}/LayerNorm_0/scale"]
+            )
+            m.tbs[i].ln1[1].assign(
+                dat[f"Transformer/encoderblock_{i}/LayerNorm_0/bias"]
+            )
+            m.tbs[i].ln2[0].assign(
+                dat[f"Transformer/encoderblock_{i}/LayerNorm_2/scale"]
+            )
+            m.tbs[i].ln2[1].assign(
+                dat[f"Transformer/encoderblock_{i}/LayerNorm_2/bias"]
+            )
