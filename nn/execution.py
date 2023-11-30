@@ -44,7 +44,7 @@ class MemBuffer:
 
 @dc.dataclass(frozen=True)
 class ConstBuffer:
-    val: ta.Any
+    val: int | float
     dtype: DType
     st: ShapeTracker
 
@@ -186,36 +186,28 @@ class BatchExecutor:
     def __init__(
             self,
             jit_cache: list[JitItem],
-            input_rawbuffers: dict[ta.Union[int, str], RawBuffer],
+            input_rawbuffers: list[RawBuffer],
             var_vals: dict[Variable, int],
-    ) -> None:
+    ):
         super().__init__()
         self.jit_cache: list[JitItem] = jit_cache
-        self.input_replace: dict[tuple[int, int], ta.Union[int, str]] = {}
-        self.op_estimate = NumNode(0)
-        self.mem_estimate = NumNode(0)
+        self.input_replace: dict[tuple[int, int], int] = {}
+        self.op_estimate, self.mem_estimate = NumNode(0), NumNode(0)
         for j, ji in enumerate(jit_cache):
             if isinstance(ji.prg, AstRunner):  # TODO: this is just for world and needs to be refactored
                 self.op_estimate += ji.prg.op_estimate
                 self.mem_estimate += ji.prg.mem_estimate
             for i, a in enumerate(ji.rawbufs):
-                if a in [v for v in input_rawbuffers.values()]:
-                    self.input_replace[(j, i)] = [k for k, v in input_rawbuffers.items() if v == a][0]
-        assert set(self.input_replace.values()) == set(input_rawbuffers.keys()), "some input tensors not found"
+                if a in input_rawbuffers:
+                    self.input_replace[(j, i)] = input_rawbuffers.index(a)
+        assert len(set(self.input_replace.values())) == len(input_rawbuffers), "some input tensors not found"
         self.clear_jit_inputs()
 
-    def __call__(
-            self,
-            input_rawbuffers: dict[ta.Union[int, str], RawBuffer],
-            var_vals: dict[Variable, int],
-            wait=False,
-    ):
-        for (j, i), input_name in self.input_replace.items():
-            self.jit_cache[j].rawbufs[i] = input_rawbuffers[input_name]
-
+    def __call__(self, input_rawbuffers: list[RawBuffer], var_vals: dict[Variable, int], wait=False):
+        for (j, i), input_idx in self.input_replace.items():
+            self.jit_cache[j].rawbufs[i] = input_rawbuffers[input_idx]
         for ji in self.jit_cache:
             ji.prg(ji.rawbufs, var_vals, jit=True)
-
         self.clear_jit_inputs()
 
     def clear_jit_inputs(self):

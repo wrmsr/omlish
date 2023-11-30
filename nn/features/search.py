@@ -1,6 +1,7 @@
 import collections
 import itertools
 import random
+import time
 import traceback
 import typing as ta
 
@@ -16,7 +17,9 @@ from ..execution import MemBuffer
 from ..helpers import CACHELEVEL
 from ..helpers import Context
 from ..helpers import DEBUG
+from ..helpers import Timing
 from ..helpers import all_int
+from ..helpers import colored
 from ..helpers import diskcache_get
 from ..helpers import diskcache_put
 from ..helpers import flatten
@@ -36,8 +39,9 @@ actions += [
     Opt(op=OptOps.LOCAL, axis=0, amt=32),
     Opt(op=OptOps.GROUP, axis=0, amt=4), Opt(op=OptOps.GROUP, axis=0, amt=8), Opt(op=OptOps.GROUP, axis=1, amt=8),
     Opt(op=OptOps.UPCASTMID, axis=1, amt=4),
-    Opt(op=OptOps.NOLOCALS),
 ]
+if getenv("NOLOCALS"):
+    actions += [Opt(op=OptOps.NOLOCALS)]
 
 device: Compiled = ta.cast(Compiled, Device[Device.DEFAULT])
 
@@ -205,37 +209,53 @@ def beam_search(lin: Linearizer, rawbufs, amt: int, allow_test_size=True) -> Lin
 
     seen_uops = {tuplize_uops(lin.linearize().uops): tuple(lin.applied_opts)}
 
-    while 1:
-        acted_lins = lins = flatten([get_linearizer_actions(lin, include_0=False).values() for lin, _ in beam])
+    exiting, st = False, time.perf_counter()
+    while not exiting:
+        with Timing("linearize:  ", enabled=DEBUG >= 3):
+            acted_lins = flatten([
+                get_linearizer_actions(lin, include_0=False).values()
+                for lin, _ in beam
+            ])
 
-        # dedup with uops (TODO: double linearize not needed)
-        acted_lins_dedup = []
-        for lin in acted_lins:
-            tuops = tuplize_uops(lin.linearize().uops)
-            if tuops in seen_uops:
-                # print(seen_uops[tuops], lin.applied_opts)
-                continue
-            seen_uops[tuops] = tuple(lin.applied_opts)
-            acted_lins_dedup.append(lin)
-        acted_lins = acted_lins_dedup
+            # linearize all
+            for x in acted_lins:
+                x.linearize()
 
-        # time linearizers
-        timed_lins: list[tuple[Linearizer, float]] = [
-            (v, time_linearizer(v, rawbufs, allow_test_size=allow_test_size))
-            for v in acted_lins
-        ]
-        opts = sorted(timed_lins, key=lambda x: x[1])
-        if len(opts) == 0 or beam[0][1] <= opts[0][1]:
-            break  # we didn't get faster
+            # dedup with uops
+            acted_lins_dedup = []
+            for lin in acted_lins:
+                tuops = tuplize_uops(lin.uops)
+                if tuops in seen_uops:
+                    continue
+                seen_uops[tuops] = tuple(lin.applied_opts)
+                acted_lins_dedup.append(lin)
 
-        # keep the BEAM best
-        beam = opts[:amt]
+        with Timing("compile:    ", enabled=DEBUG >= 3):
+            # time linearizers
+            timed_lins: list[tuple[Linearizer, float]] = [
+                (
+                    v,
+                    time_linearizer(
+                        v,
+                        rawbufs,
+                        allow_test_size=allow_test_size,
+                    ),
+                )
+                for v in acted_lins_dedup
+            ]
+            opts = sorted(timed_lins, key=lambda x: x[1])
+
+        # done
+        exiting = len(opts) == 0 or beam[0][1] <= opts[0][1]
+        if not exiting:
+            beam = opts[:amt]
+
         if DEBUG >= 2:
             print(
-                f"{opts[0][1] * 1e6:12.2f} us "
-                f"from {len(lins):3d} -> "
-                f"{len(opts):3d} actions",
-                beam[0][0].colored_shape(),
+                f"{time.perf_counter() - st:7.2f}s:",
+                colored(f"{beam[0][1] * 1e6:12.2f} us", "green" if exiting else None),
+                f"from {len(acted_lins):3d} -> {len(opts):3d} actions",
+                beam[0][0].colored_shape()
             )
 
     if CACHELEVEL >= 1:

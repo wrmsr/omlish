@@ -759,18 +759,11 @@ class Linearizer(Kernel):
         )
 
         # graph helper functions
-        def get_recursive_parents(x: list[uo.UOp]) -> list[uo.UOp]:
-            ret: set[uo.UOp] = set()
-            this_round: set[uo.UOp] = set(x)
-            while len(this_round):
-                ret = ret.union(this_round)
-                next_round: set[uo.UOp] = set()
-                for r in this_round:
-                    next_round = next_round.union(set(r.vin))
-                this_round = next_round
-            return list(ret)
+        @functools.lru_cache(None)
+        def get_recursive_parents(x: uo.UOp) -> set[uo.UOp]:
+            return set.union(set(x.vin), *[get_recursive_parents(p) for p in x.vin])
 
-        def get_recursive_children(x: uo.UOp) -> list[uo.UOp]:
+        def get_recursive_children(x: uo.UOp) -> set[uo.UOp]:
             deps = set([x])
             ssize = 0
             while ssize != len(deps):
@@ -778,7 +771,7 @@ class Linearizer(Kernel):
                 for u in self.uops:
                     if len(deps.intersection([x for x in u.vin if not isinstance(x, uo.Phi)])):
                         deps.add(u)
-            return sorted(list(deps), key=self.uops.index)  # get the last one
+            return deps
 
         def replace_op(old: uo.UOp, new: uo.UOp):
             for u in self.uops:
@@ -795,7 +788,7 @@ class Linearizer(Kernel):
             elif not isinstance(u, (uo.Const, uo.Alu)):
                 loop_stack[-1].append(u)
             else:
-                parents = get_recursive_parents([u])
+                parents = get_recursive_parents(u)
                 for i in reversed(range(len(loop_stack))):
                     # check backwards and put the uop in the first encounter with some dependency
                     if any(x in parents for x in loop_stack[i]) or i == 0:
@@ -812,7 +805,10 @@ class Linearizer(Kernel):
                     # if the parents of the PHI node don't have the LOOP in their parents, it can be folded
                     # TODO: ADD becomes a MUL, MAX can just become nothing
                     if (
-                            all(not isinstance(x, uo.Loop) for x in get_recursive_parents(list(u.vin[0:2])))
+                            all(
+                                not isinstance(x, uo.Loop)
+                                for x in get_recursive_parents(type(u)(u.dtype, u.vin[0:2], u.arg))
+                            )
                             and u.vin[1].arg == ops_.Add
                     ):
                         if DEBUG >= 4:
@@ -886,7 +882,7 @@ class Linearizer(Kernel):
                     None,
                     (u,),
                     cachable=False,
-                    insert_before=self.uops.index(get_recursive_children(u)[-1]) + 1,
+                    insert_before=self.uops.index(sorted(list(get_recursive_children(u)), key=self.uops.index)[-1]) + 1,
                 )
 
             elif isinstance(u, uo.If):
