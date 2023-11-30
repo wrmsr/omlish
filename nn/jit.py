@@ -34,13 +34,14 @@ class TinyJit:
         self.ret: ta.Optional[ReturnType] = None
         self.expected_vals: ta.Optional[tuple[Variable, ...]] = None
         self.expected_sts_dtype: ta.Optional[tuple[tuple[ShapeTracker, DType], ...]] = None
+        self.expected_name_sts_dtype: ta.Optional[tuple[tuple[ta.Union[int, str], ShapeTracker, DType], ...]] = None
 
     @property
     def jit_cache(self) -> list[JitItem]:
         return self.jit_fxn.jit_cache if self.jit_fxn else []
 
     @property
-    def input_replace(self) -> dict[tuple[int, int], ta.Union[int, str]]:
+    def input_replace(self) -> dict[tuple[int, int], int]:
         return self.jit_fxn.input_replace if self.jit_fxn else {}
 
     # add support for instance methods
@@ -54,14 +55,11 @@ class TinyJit:
             for k, v in itertools.chain(enumerate(args), kwargs.items())
             if v.__class__ is Tensor
         }
-        expected_sts_dtype = tuple([(v.lazydata.st.unbind(), v.dtype) for v in input_tensors.values()])
+        expected_name_sts_dtype = tuple([(k, v.lazydata.st.unbind(), v.dtype) for k, v in input_tensors.items()])
 
         # get rawbuffers
-        input_rawbuffers: dict[ta.Union[int, str], RawBuffer] = {
-            k: ta.cast(RawBuffer, v.lazydata.realized)
-            for k, v in input_tensors.items()
-        }
-        assert len(set(input_rawbuffers.values())) == len(input_rawbuffers), "duplicate inputs to JIT"
+        input_rawbuffers: list[RawBuffer] = [ta.cast(RawBuffer, v.lazydata.realized) for v in input_tensors.values()]
+        assert len(set(input_rawbuffers)) == len(input_rawbuffers), "duplicate inputs to JIT"
 
         # get variables: they can either be in Tensors or passed in as arguments, and all must be bound. these are all global
         var_vals: dict[Variable, int] = merge_dicts(
@@ -72,11 +70,15 @@ class TinyJit:
 
         if self.cnt >= 2:
             assert self.expected_vals == expected_vals, "mismatch of var_vals"
+            assert (
+                    self.expected_name_sts_dtype == expected_name_sts_dtype
+            ), f"mismatch of sts, expected {self.expected_name_sts_dtype} got {expected_name_sts_dtype}"
             assert self.jit_fxn, "didn't get jitted?"
             self.jit_fxn(input_rawbuffers, var_vals, DEBUG >= 2)
 
         elif self.cnt == 1:
-            self.expected_vals, self.expected_sts_dtype = expected_vals, expected_sts_dtype
+            self.expected_vals = expected_vals
+            self.expected_name_sts_dtype = expected_name_sts_dtype
 
             CacheCollector.start(var_vals)
             self.ret = self.fxn(*args, **kwargs)
