@@ -231,6 +231,11 @@ class Const(BufferOp, lang.Final):
     pass
 
 
+@dc.dataclass(frozen=True)
+class FromUnderlying(BufferOp, lang.Final):
+    pass
+
+
 ##
 
 

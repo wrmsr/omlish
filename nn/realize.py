@@ -16,9 +16,6 @@ from .helpers import prod
 from .lazy import LazyBuffer
 from .lazy import print_tree
 from .ops import LazyOp
-from .runtime.lib import RawBufferMapped
-from .runtime.lib import RawBufferTransfer
-from .runtime.ops_disk import RawDiskBuffer
 
 
 P2P = getenv("P2P", 0)
@@ -103,27 +100,12 @@ def _realize_from(buffer: LazyBuffer, src: LazyBuffer) -> None:
     if DEBUG >= 3:
         print(f"*** copy {buffer.device} <- {src.device} size {src.realized.size} dtype {src.realized.dtype}")
 
-    # TODO: make this generic
-    if isinstance(src.realized, RawDiskBuffer) and issubclass(Device[buffer.device].buffer, RawBufferMapped):
-        assert all_int(buffer.shape), "does not support symbolic shape"
-        buffer.realized = Device[buffer.device].buffer(prod(buffer.shape), buffer.dtype, **buffer._device_extra_args())
-        src.realized.readinto(ta.cast(RawBufferMapped, buffer.realized)._buffer())
-
-    elif (
-            isinstance(src.realized, RawBufferTransfer)
-            and issubclass(Device[buffer.device].buffer, RawBufferTransfer)
-            and P2P >= 1
-    ):
-        buffer.realized = ta.cast(RawBufferTransfer, Device[buffer.device].buffer).transfer(
-            src.realized,
-            buffer.shape,
-            buffer.dtype,
-            **buffer._device_extra_args(),
-        )
-
-    else:
-        # TODO: schedule this as FROM to go to CPU, and a FROM to go to device
-        buffer.realized = Device[buffer.device].buffer.fromCpu(src.realized.toCpu(), **buffer._device_extra_args())
+    buffer.realized = Device[buffer.device].buffer.fromBuffer(
+        src.realized,
+        buffer.shape,
+        buffer.dtype,
+        **buffer._device_extra_args(),
+    )
 
 
 # *** n op LoadOps ***
