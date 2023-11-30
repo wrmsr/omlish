@@ -1244,7 +1244,7 @@ class Tensor:
 
     # ***** funcs (unary) *****
 
-    def __neg__(self):
+    def neg(self):
         return funcs.Neg.apply(self)
 
     def contiguous(self):
@@ -1334,6 +1334,21 @@ class Tensor:
 
     def tanh(self):
         return 2.0 * ((2.0 * self).sigmoid()) - 1.0
+
+    def sinh(self):
+        return (self.exp() - self.neg().exp()) / 2
+
+    def cosh(self):
+        return (self.exp() + self.neg().exp()) / 2
+
+    def atanh(self):
+        return ((1 + self) / (1 - self)).log() / 2
+
+    def asinh(self):
+        return (self + (self.square() + 1).sqrt()).log()
+
+    def acosh(self):
+        return (self + (self.square() - 1).sqrt()).log()
 
     def hardtanh(self, min_val=-1, max_val=1):
         return self.clip(min_val, max_val)
@@ -1541,7 +1556,10 @@ class Tensor:
         x, z = x_._broadcasted(other)
         return funcs.Where.apply(x, *y._broadcasted(z))
 
-    # ***** binary op wrappers (18 wasted lines to make the typechecker happy) *****
+    # ***** op wrappers (wasted lines to make the typechecker happy) *****
+
+    def __neg__(self) -> Tensor:
+        return self.neg()
 
     def __add__(self, x) -> Tensor:
         return self.add(x)
