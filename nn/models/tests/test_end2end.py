@@ -1,20 +1,18 @@
 import unittest
 
-from torch import nn
 import numpy as np
 import torch
+from torch import nn
 
-from ...datasets.mnist import fetch_mnist
+from ...datasets import fetch_mnist
+from ...helpers import CI
+from ...nn import BatchNorm2d
+from ...nn import Conv2d
+from ...nn import Linear
 from ...nn import optim
-from ...nn.conv import Conv2d
-from ...nn.nn import BatchNorm2d
-from ...nn.nn import Linear
 from ...nn.state import get_parameters
 from ...nn.state import get_state_dict
 from ...tensor import Tensor
-
-
-CI = False
 
 
 def compare_tiny_torch(model, model_torch, X, Y):
@@ -26,8 +24,8 @@ def compare_tiny_torch(model, model_torch, X, Y):
                 print(f"initting {k} from torch")
             model_state_dict[k].assign(Tensor(v.detach().numpy())).realize()
 
-        optimizer = optim.SGD(get_parameters(model), lr=0.01)
-        optimizer_torch = torch.optim.SGD(model_torch.parameters(), lr=0.01)
+        optimizer = optim.SGD(get_parameters(model), lr=0.001)
+        optimizer_torch = torch.optim.SGD(model_torch.parameters(), lr=0.001)
 
         Xt = torch.Tensor(X.numpy())
         np.testing.assert_allclose(X.numpy(), Xt.detach().numpy())
@@ -44,9 +42,7 @@ def compare_tiny_torch(model, model_torch, X, Y):
 
         # assert losses match
         np.testing.assert_allclose(
-            loss.realize().numpy(),
-            loss_torch.detach().numpy(),
-            atol=1e-4,
+            loss.realize().numpy(), loss_torch.detach().numpy(), atol=1e-4
         )
 
         # zero and backward
@@ -60,12 +56,7 @@ def compare_tiny_torch(model, model_torch, X, Y):
             gt = v.grad.detach().numpy()
             if not CI:
                 print("testing grads", k)
-            np.testing.assert_allclose(
-                g,
-                gt,
-                atol=1e-3,
-                err_msg=f'grad mismatch {k}',
-            )
+            np.testing.assert_allclose(g, gt, atol=1e-3, err_msg=f"grad mismatch {k}")
 
         # take the steps
         optimizer.step()
@@ -79,12 +70,12 @@ def compare_tiny_torch(model, model_torch, X, Y):
                 model_state_dict[k].numpy(),
                 v.detach().numpy(),
                 atol=1e-3,
-                err_msg=f'weight mismatch {k}',
+                err_msg=f"weight mismatch {k}",
             )
 
 
 def get_mnist_data():
-    X_train, Y_train, X_test, Y_test = fetch_mnist()
+    _X_train, _Y_train, X_test, Y_test = fetch_mnist()
     BS = 32
     num_classes = 10
     X = Tensor(X_test[0:BS].astype(np.float32))
@@ -97,6 +88,9 @@ class TestEnd2End(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.X, cls.Y = get_mnist_data()
+
+    def setUp(self):
+        torch.manual_seed(123)
 
     def test_linear_mnist(self):
         class LinTiny:
@@ -128,7 +122,10 @@ class TestEnd2End(unittest.TestCase):
 
             def __call__(self, x):
                 return self.l2(
-                    self.bn1(self.l1(x).reshape(x.shape[0], -1, 1, 1)).reshape(x.shape[0], -1).relu()).log_softmax(-1)
+                    self.bn1(self.l1(x).reshape(x.shape[0], -1, 1, 1))
+                    .reshape(x.shape[0], -1)
+                    .relu()
+                ).log_softmax(-1)
 
         class LinTorch(nn.Module):
             def __init__(self):
@@ -139,7 +136,10 @@ class TestEnd2End(unittest.TestCase):
 
             def forward(self, x):
                 return self.l2(
-                    self.bn1(self.l1(x).reshape(x.shape[0], -1, 1, 1)).reshape(x.shape[0], -1).relu()).log_softmax(-1)
+                    self.bn1(self.l1(x).reshape(x.shape[0], -1, 1, 1))
+                    .reshape(x.shape[0], -1)
+                    .relu()
+                ).log_softmax(-1)
 
         compare_tiny_torch(LinTiny(), LinTorch(), self.X, self.Y)
 
@@ -158,7 +158,9 @@ class TestEnd2End(unittest.TestCase):
         class LinTiny:
             def __init__(self):
                 self.l1 = Conv2d(K, K, 1, bias=False)
-                self.bn1 = BatchNorm2d(K, affine=False, track_running_stats=False, eps=eps)
+                self.bn1 = BatchNorm2d(
+                    K, affine=False, track_running_stats=False, eps=eps
+                )
 
             def __call__(self, x):
                 return self.bn1(self.l1(x))
@@ -167,14 +169,16 @@ class TestEnd2End(unittest.TestCase):
             def __init__(self):
                 super().__init__()
                 self.l1 = nn.Conv2d(K, K, 1, bias=False)
-                self.bn1 = nn.BatchNorm2d(K, affine=False, track_running_stats=False, eps=eps)
+                self.bn1 = nn.BatchNorm2d(
+                    K, affine=False, track_running_stats=False, eps=eps
+                )
 
             def forward(self, x):
                 return self.bn1(self.l1(x))
 
         model_torch = LinTorch()
         with torch.no_grad():
-            model_torch.l1.weight[:] = 1.
+            model_torch.l1.weight[:] = 1.0
         compare_tiny_torch(LinTiny(), model_torch, X, Y)
 
     def test_conv_mnist(self):
@@ -190,7 +194,10 @@ class TestEnd2End(unittest.TestCase):
 
             def __call__(self, x):
                 return self.l1(
-                    self.bn2(self.c2(self.bn1(self.c1(x)).relu())).relu().reshape(x.shape[0], -1)).log_softmax(-1)
+                    self.bn2(self.c2(self.bn1(self.c1(x)).relu()))
+                    .relu()
+                    .reshape(x.shape[0], -1)
+                ).log_softmax(-1)
 
         class LinTorch(nn.Module):
             def __init__(self, has_batchnorm=False):
@@ -204,7 +211,11 @@ class TestEnd2End(unittest.TestCase):
                     self.bn1, self.bn2 = lambda x: x, lambda x: x
 
             def forward(self, x):
-                return self.l1(self.bn2(self.c2(self.bn1(self.c1(x)).relu())).relu().reshape(x.shape[0], -1)).log_softmax(-1)  # noqa
+                return self.l1(
+                    self.bn2(self.c2(self.bn1(self.c1(x)).relu()))
+                    .relu()
+                    .reshape(x.shape[0], -1)
+                ).log_softmax(-1)
 
         for has_batchnorm in [False, True]:
             with self.subTest(has_batchnorm=has_batchnorm):

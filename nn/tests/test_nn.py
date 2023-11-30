@@ -1,25 +1,25 @@
+#!/usr/bin/env python
 import unittest
 
 import numpy as np
 import pytest
 import torch
 
-from ..devices import Device
-from ..helpers import getenv
+from ..helpers import CI
 from ..jit import TinyJit
-from ..nn.conv import Conv1d
-from ..nn.conv import Conv2d
-from ..nn.conv import ConvTranspose1d
-from ..nn.conv import ConvTranspose2d
-from ..nn.nn import BatchNorm2d
-from ..nn.nn import Embedding
-from ..nn.nn import GroupNorm
-from ..nn.nn import InstanceNorm
-from ..nn.nn import LayerNorm
-from ..nn.nn import LayerNorm2d
-from ..nn.nn import Linear
+from ..nn import BatchNorm2d
+from ..nn import Conv1d
+from ..nn import Conv2d
+from ..nn import ConvTranspose1d
+from ..nn import ConvTranspose2d
+from ..nn import Embedding
+from ..nn import GroupNorm
+from ..nn import InstanceNorm
+from ..nn import LayerNorm
+from ..nn import LayerNorm2d
+from ..nn import Linear
+from ..tensor import Device
 from ..tensor import Tensor
-
 
 pytestmark = [pytest.mark.exclude_cuda]
 
@@ -132,7 +132,7 @@ class TestNN(unittest.TestCase):
         _test_linear(Tensor.randn(BS, T, in_dim))  # test with more dims
 
     def test_conv1d(self):
-        BS, C1, W = 4, 16, 224
+        BS, C1, W = 4, 16, 224 // 4
         C2, K, S, P = 64, 7, 2, 1
 
         # create in tinygrad
@@ -158,7 +158,7 @@ class TestNN(unittest.TestCase):
         )
 
     def test_conv2d(self):
-        BS, C1, H, W = 4, 16, 224, 224
+        BS, C1, H, W = 4, 16, 224 // 4, 224 // 4
         C2, K, S, P = 64, 7, 2, 1
 
         # create in tinygrad
@@ -190,6 +190,7 @@ class TestNN(unittest.TestCase):
         BS, C1, H, W = 2, 8, 16, 16
         C2, K, S, P = 8, 3, 1, 1
 
+        old_wino = Tensor.wino
         Tensor.wino = True
 
         # create in tinygrad
@@ -232,14 +233,11 @@ class TestNN(unittest.TestCase):
             gx.numpy(), torch_x.grad.numpy(), atol=5e-4, rtol=1e-5
         )
 
-        Tensor.wino = False
+        Tensor.wino = old_wino
 
-    @unittest.skipIf(
-        getenv("CI", "") != "" and Device.DEFAULT == "WEBGPU",
-        "runs out of memory in CI",
-    )
+    @unittest.skipIf(CI and Device.DEFAULT == "WEBGPU", "runs out of memory in CI")
     def test_conv_transpose1d(self):
-        BS, C1, W = 4, 16, 224
+        BS, C1, W = 4, 16, 224 // 4
         C2, K, S, P = 64, 7, 2, 1
 
         # create in tinygrad
@@ -264,12 +262,9 @@ class TestNN(unittest.TestCase):
             z.numpy(), torch_z.detach().numpy(), atol=5e-4, rtol=1e-5
         )
 
-    @unittest.skipIf(
-        getenv("CI", "") != "" and Device.DEFAULT == "WEBGPU",
-        "runs out of memory in CI",
-    )
+    @unittest.skipIf(CI and Device.DEFAULT == "WEBGPU", "runs out of memory in CI")
     def test_conv_transpose2d(self):
-        BS, C1, H, W = 4, 16, 224, 224
+        BS, C1, H, W = 4, 16, 224 // 4, 224 // 4
         C2, K, S, P = 64, 7, 2, 1
 
         # create in tinygrad
@@ -356,9 +351,12 @@ class TestNN(unittest.TestCase):
 
         # test
         x = Tensor.randn(N, C, H, W)
-        z = layer(x)  # noqa
+        z = layer(x)
         torch_x = torch.tensor(x.numpy())
-        torch_z = torch_layer(torch_x.permute(0, 2, 3, 1)).permute(0, 3, 1, 2)  # noqa
+        torch_z = torch_layer(torch_x.permute(0, 2, 3, 1)).permute(0, 3, 1, 2)
+        np.testing.assert_allclose(
+            z.numpy(), torch_z.detach().numpy(), atol=5e-3, rtol=5e-3
+        )
 
     def test_instancenorm_2d(self):
         N, C, H, W = 20, 5, 10, 10
@@ -382,9 +380,6 @@ class TestNN(unittest.TestCase):
         np.testing.assert_allclose(
             z.numpy(), torch_z.detach().numpy(), atol=5e-3, rtol=5e-3
         )
-        np.testing.assert_allclose(
-            z.numpy(), torch_z.detach().numpy(), atol=5e-3, rtol=5e-3
-        )
 
     def test_instancenorm_3d(self):
         N, C, D, H, W = 20, 5, 3, 10, 10
@@ -405,9 +400,6 @@ class TestNN(unittest.TestCase):
         z = layer(x)
         torch_x = torch.tensor(x.numpy())
         torch_z = torch_layer(torch_x)
-        np.testing.assert_allclose(
-            z.numpy(), torch_z.detach().numpy(), atol=5e-3, rtol=5e-3
-        )
         np.testing.assert_allclose(
             z.numpy(), torch_z.detach().numpy(), atol=5e-3, rtol=5e-3
         )

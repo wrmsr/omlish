@@ -1,18 +1,14 @@
 import functools
 
-from ..dtypes import dtypes
-from .cstyle import CStyleLanguage
-from .cstyle import uops_to_cstyle
+from ..helpers import dtypes
+from ..ops import TernaryOps
+from ..renderer.cstyle import CStyleLanguage
+from ..renderer.cstyle import uops_to_cstyle
+
+type_map = {dtypes.uint8: "uchar", dtypes.uint32: "uint", dtypes.uint64: "ulong"}
 
 
-type_map = {
-    dtypes.uint8: "uchar",
-    dtypes.uint32: "uint",
-    dtypes.uint64: "ulong",
-}
-
-
-class OpenClLanguage(CStyleLanguage):
+class OpenCLLanguage(CStyleLanguage):
     kernel_prefix = "__kernel "
     buffer_prefix = "__global "
     smem_align = "__attribute__ ((aligned (16))) "
@@ -21,10 +17,15 @@ class OpenClLanguage(CStyleLanguage):
     half_prekernel = "#pragma OPENCL EXTENSION cl_khr_fp16 : enable"
     barrier = "barrier(CLK_LOCAL_MEM_FENCE);"
     float4 = "(float4)"
-    xid = [f'get_global_id({i})' for i in range(3)]
-    gid = [f'get_group_id({i})' for i in range(3)]
-    lid = [f'get_local_id({i})' for i in range(3)]
-    uses_vload=True
+    gid = [f"get_group_id({i})" for i in range(3)]
+    lid = [f"get_local_id({i})" for i in range(3)]
+    xid = [f"get_global_id({i})" for i in range(3)]
+    uses_vload = True
+    # NOTE: mad is used so the loads aren't reordered into the math on 845
+    code_for_op = {
+        **CStyleLanguage().code_for_op,
+        TernaryOps.MULACC: lambda a, b, c: f"mad({a},{b},{c})",
+    }
 
 
-OpenCLRenderer = functools.partial(uops_to_cstyle, OpenClLanguage())
+OpenCLRenderer = functools.partial(uops_to_cstyle, OpenCLLanguage())

@@ -1,63 +1,53 @@
 import functools
 
-from wgpu.utils.device import get_default_device  # type: ignore
 import numpy as np
-import wgpu  # type: ignore
-
+import wgpu
 from ..codegen.kernel import LinearizerOptions
-from ..dtypes import DType
-from ..dtypes import dtypes
-from ..execution import Compiled
+from ..device import Compiled
+from ..helpers import DType
+from ..helpers import dtypes
 from ..renderer.cstyle import uops_to_cstyle
-from ..renderer.wgsl import WgslLanguage
-from .lib import LruAllocator
-from .lib import RawBufferCopyIn
+from ..renderer.wgsl import WGSLLanguage
+from ..runtime.lib import LRUAllocator
+from ..runtime.lib import RawBuffer
+from wgpu.utils.device import get_default_device
 
 wgpu_device = get_default_device()
 
 
-class WebGpuProgram:
+class WebGPUProgram:
     def __init__(self, name: str, prg: str):
         self.name, self.prg = name, wgpu_device.create_shader_module(code=prg)
 
-    def __call__(
-            self,
-            *bufs,
-            global_size,
-            local_size,
-            wait=False,
-    ):
-        # assert len(bufs) <= 8, "WEBGPU only supports 8 buffers"
+    def __call__(self, *bufs, global_size, local_size, wait=False):
+        assert len(bufs) <= 8, "WEBGPU only supports 8 buffers"
         binding_layouts = [
             {
                 "binding": i,
                 "visibility": wgpu.ShaderStage.COMPUTE,
-                "buffer": {
-                    "type": wgpu.BufferBindingType.storage,
-                }
+                "buffer": {"type": wgpu.BufferBindingType.storage},
             }
             for i in range(len(bufs))
         ]
         bindings = [
             {
                 "binding": i,
-                "resource": {
-                    "buffer": x._buf,
-                    "offset": 0,
-                    "size": x._buf.size,
-                }
+                "resource": {"buffer": x._buf, "offset": 0, "size": x._buf.size},
             }
             for i, x in enumerate(bufs)
         ]
-        bind_group_layout = wgpu_device.create_bind_group_layout(entries=binding_layouts)
-        pipeline_layout = wgpu_device.create_pipeline_layout(bind_group_layouts=[bind_group_layout])
-        bind_group = wgpu_device.create_bind_group(layout=bind_group_layout, entries=bindings)
+        bind_group_layout = wgpu_device.create_bind_group_layout(
+            entries=binding_layouts
+        )
+        pipeline_layout = wgpu_device.create_pipeline_layout(
+            bind_group_layouts=[bind_group_layout]
+        )
+        bind_group = wgpu_device.create_bind_group(
+            layout=bind_group_layout, entries=bindings
+        )
         compute_pipeline = wgpu_device.create_compute_pipeline(
             layout=pipeline_layout,
-            compute={
-                "module": self.prg,
-                "entry_point": self.name,
-            },
+            compute={"module": self.prg, "entry_point": self.name},
         )
         command_encoder = wgpu_device.create_command_encoder()
         compute_pass = command_encoder.begin_compute_pass()
@@ -68,21 +58,26 @@ class WebGpuProgram:
         wgpu_device.queue.submit([command_encoder.finish()])
 
 
-class RawWebGpuAllocator(LruAllocator):
+class RawWebGPUAllocator(LRUAllocator):
     def _do_alloc(self, size, dtype, device, **kwargs):
         return wgpu_device.create_buffer(
             size=size * dtype.itemsize,
-            usage=wgpu.BufferUsage.STORAGE | wgpu.BufferUsage.COPY_DST | wgpu.BufferUsage.COPY_SRC,
+            usage=wgpu.BufferUsage.STORAGE
+            | wgpu.BufferUsage.COPY_DST
+            | wgpu.BufferUsage.COPY_SRC,
         )
 
     def _cached_bufkey(self, size, dtype, device):
-        return device, size * dtype.itemsize  # Buffers of the same length could be reused, no matter what dtype.
+        return (
+            device,
+            size * dtype.itemsize,
+        )  # Buffers of the same length could be reused, no matter what dtype.
 
 
-WebGpuAlloc = RawWebGpuAllocator(wgpu_device.limits['max_buffer_size'])
+WebGPUAlloc = RawWebGPUAllocator(wgpu_device.limits["max_buffer_size"])
 
 
-class RawWebGpuBuffer(RawBufferCopyIn):
+class RawWebGPUBuffer(RawBuffer):
     def __init__(self, size: int, dtype: DType):
         assert dtype not in [
             dtypes.int8,
@@ -91,22 +86,18 @@ class RawWebGpuBuffer(RawBufferCopyIn):
             dtypes.uint64,
             dtypes.double,
         ], f"dtype {dtype} not supported on WEBGPU"
-        super().__init__(size, dtype, allocator=WebGpuAlloc)
+        super().__init__(size, dtype, allocator=WebGPUAlloc)
 
     def _copyin(self, x: np.ndarray):
         wgpu_device.queue.write_buffer(self._buf, 0, np.ascontiguousarray(x))
 
-    def toCpu(self) -> np.ndarray:
-        return np.frombuffer(
-            wgpu_device.queue.read_buffer(self._buf, 0),
-            dtype=np.dtype(self.dtype.np, metadata={"backing": self}),
-        )  # type: ignore
+    def toCPU(self) -> np.ndarray:
+        return np.frombuffer(wgpu_device.queue.read_buffer(self._buf, 0), dtype=np.dtype(self.dtype.np, metadata={"backing": self}))  # type: ignore
 
 
-renderer = functools.partial(uops_to_cstyle, WgslLanguage())
-
-WebGpuBuffer = Compiled(
-    RawWebGpuBuffer,
+renderer = functools.partial(uops_to_cstyle, WGSLLanguage())
+WebGpuDevice = Compiled(
+    RawWebGPUBuffer,
     LinearizerOptions(
         device="WEBGPU",
         supports_float4=False,
@@ -115,5 +106,5 @@ WebGpuBuffer = Compiled(
     ),
     renderer,
     lambda x: x,
-    WebGpuProgram,
+    WebGPUProgram,
 )

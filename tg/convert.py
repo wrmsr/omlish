@@ -13,7 +13,7 @@ from tinygrad.shape.shapetracker import ShapeTracker as TgShapeTracker
 
 from nn import ops
 from nn.buffers import Buffer
-from nn.devices import Device
+from nn.device import Device
 from nn.dims import Shape
 from nn.dims import Stride
 from nn.dtypes import Dtype

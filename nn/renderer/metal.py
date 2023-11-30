@@ -1,7 +1,7 @@
 import functools
 
-from .cstyle import CStyleLanguage
-from .cstyle import uops_to_cstyle
+from ..renderer.cstyle import CStyleLanguage
+from ..renderer.cstyle import uops_to_cstyle
 
 
 class MetalLanguage(CStyleLanguage):
@@ -11,10 +11,13 @@ class MetalLanguage(CStyleLanguage):
     arg_int_prefix = "constant int&"
     barrier = "threadgroup_barrier(mem_flags::mem_threadgroup);"
     float4 = "float4"
-    uses_ptr_arithmetic=True
+    uses_ptr_arithmetic = True
     gid = [f"gid.{chr(120+i)}" for i in range(3)]
     lid = [f"lid.{chr(120+i)}" for i in range(3)]
-    extra_args = ['uint3 gid [[threadgroup_position_in_grid]]', 'uint3 lid [[thread_position_in_threadgroup]]']
+    extra_args = [
+        "uint3 gid [[threadgroup_position_in_grid]]",
+        "uint3 lid [[thread_position_in_threadgroup]]",
+    ]
 
 
 MetalRenderer = functools.partial(uops_to_cstyle, MetalLanguage())
