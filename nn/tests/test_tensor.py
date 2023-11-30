@@ -1,17 +1,17 @@
 import copy
+import mmap
 import unittest
 
 import numpy as np
 import torch
+from extra.gradcheck import gradcheck
+from extra.gradcheck import jacobian
+from extra.gradcheck import numerical_jacobian
 
-from ..devices import Device
-from ..dtypes import dtypes
-from ..gradcheck import gradcheck
-from ..gradcheck import jacobian
-from ..gradcheck import numerical_jacobian
-from ..helpers import temp_file
+from ..helpers import dtypes
+from ..helpers import temp
+from ..tensor import Device
 from ..tensor import Tensor
-
 
 x_init = np.random.randn(1, 3).astype(np.float32)
 U_init = np.random.randn(3, 3).astype(np.float32)
@@ -122,14 +122,18 @@ class TestTinygrad(unittest.TestCase):
 
         torch_x = torch.tensor(x, requires_grad=True)
         torch_W = torch.tensor(W, requires_grad=True)
-        torch_func = lambda x: torch.nn.functional.log_softmax(
-            x.matmul(torch_W).relu(), dim=1
-        )
+
+        def torch_func(x):
+            return torch.nn.functional.log_softmax(x.matmul(torch_W).relu(), dim=1)
+
         PJ = torch.autograd.functional.jacobian(torch_func, torch_x).squeeze().numpy()
 
         tiny_x = Tensor(x, requires_grad=True)
         tiny_W = Tensor(W, requires_grad=True)
-        tiny_func = lambda x: x.dot(tiny_W).relu().log_softmax()
+
+        def tiny_func(x):
+            return x.dot(tiny_W).relu().log_softmax()
+
         J = jacobian(tiny_func, tiny_x)
         NJ = numerical_jacobian(tiny_func, tiny_x)
 
@@ -142,7 +146,9 @@ class TestTinygrad(unittest.TestCase):
 
         tiny_x = Tensor(x, requires_grad=True)
         tiny_W = Tensor(W, requires_grad=True)
-        tiny_func = lambda x: x.dot(tiny_W).relu().log_softmax()
+
+        def tiny_func(x):
+            return x.dot(tiny_W).relu().log_softmax()
 
         self.assertTrue(gradcheck(tiny_func, tiny_x, eps=1e-3))
 
@@ -170,7 +176,7 @@ class TestTinygrad(unittest.TestCase):
         original_rand, Tensor.rand = Tensor.rand, Tensor.zeros
         try:
             self.assertNotIn(np.inf, Tensor.randn(16).numpy())
-        except Exception:  # noqa
+        except:
             raise
         finally:
             Tensor.rand = original_rand
@@ -304,10 +310,25 @@ class TestTinygrad(unittest.TestCase):
         np.testing.assert_allclose(x.numpy(), np.ones((3, 3, 3)))
 
     def test_copy_from_disk(self):
-        t = Tensor.randn(30, device="CPU").to(f"disk:{temp_file('test_copy_from_disk')}")
+        t = Tensor.randn(30, device="CPU").to(f"disk:{temp('test_copy_from_disk')}")
         a = t[10:20]
         dev = a.to(Device.DEFAULT)
         np.testing.assert_allclose(a.numpy(), dev.numpy())
+
+    # Regression test for https://github.com/tinygrad/tinygrad/issues/1751
+    def test_copy_from_numpy_unaligned(self):
+        # 2**15 is the minimum for repro
+        arr = np.random.randn(2**15).astype(dtypes.float.np)
+        fn = temp("test_copy_from_numpy_unaligned")
+        with open(fn, "wb") as f:
+            f.write(b"t" + arr.tobytes())
+        with open(fn, "a+b") as f:
+            memview = memoryview(mmap.mmap(f.fileno(), arr.nbytes + 1))
+        ua_arr = np.frombuffer(memview[1:], dtype=arr.dtype, count=arr.shape[0])
+        np.testing.assert_allclose(arr, ua_arr)
+        assert not ua_arr.flags.aligned
+        # force device copy - to() is opt'd away - Tensor(dev)/1 is ignored
+        np.testing.assert_allclose(ua_arr, (Tensor(ua_arr) / Tensor(1)).numpy())
 
 
 class TestZeroShapeTensor(unittest.TestCase):
@@ -406,7 +427,7 @@ class TestZeroShapeTensor(unittest.TestCase):
         assert ab.shape == (3, 2, 0)
         np.testing.assert_equal(ab.numpy(), a.numpy() * b.numpy())
 
-        mask = (Tensor.rand(3, 2, 0) > 0.5)
+        mask = Tensor.rand(3, 2, 0) > 0.5
         assert mask.shape == (3, 2, 0)
         c = mask.where(a, b)
         assert c.shape == (3, 2, 0)
@@ -424,7 +445,9 @@ class TestZeroShapeTensor(unittest.TestCase):
 
         a = Tensor.ones(3, 2, 0).sum(axis=2, keepdim=True)
         assert a.shape == (3, 2, 1)
-        np.testing.assert_equal(a.numpy(), np.sum(np.zeros((3, 2, 0)), axis=2, keepdims=True))
+        np.testing.assert_equal(
+            a.numpy(), np.sum(np.zeros((3, 2, 0)), axis=2, keepdims=True)
+        )
 
     def test_reduce_default(self):
         np.testing.assert_equal(Tensor([]).max().numpy(), -float("inf"))
