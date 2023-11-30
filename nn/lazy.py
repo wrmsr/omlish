@@ -203,10 +203,14 @@ def create_lazybuffer(
         weakref.ref(op),
         weakref.ref(base) if base else None,
     )
-    if wop in lazycache:
+    try:
+        l = lazycache[wop]
+    except KeyError:
+        pass
+    else:
         for x in op.buffers():
-            x.children.add(lazycache[wop])
-        return lazycache[wop]
+            x.children.add(l)
+        return l
 
     lazycache[wop] = ret = LazyBuffer(
         device, st, op, dtype, base=base
