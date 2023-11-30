@@ -36,13 +36,17 @@ np.set_printoptions(linewidth=200)
 
 CI = False
 
-MAX_CONTEXT = 1024
+MAX_CONTEXT = getenv("MAX_CONTEXT", 4096)
+
 JIT = getenv("JIT", 0 if CI else 1)
+
+
+###
 
 
 # https://github.com/facebookresearch/llama/blob/1076b9c51c77ad06e9d7ba8a4c6df775741732bd/llama/model.py#L47
 def precompute_freqs_cis(dim: int, end: int, theta: float = 10000.0) -> Tensor:
-    freqs = 1.0 / (theta ** (Tensor.arange(0, dim, 2)[: (dim // 2)] / dim))
+    freqs = 1.0 / (theta ** (Tensor.arange(0, dim, 2)[:(dim // 2)] / dim))
     freqs = Tensor.arange(end).unsqueeze(dim=1) * freqs.unsqueeze(dim=0)
     return Tensor.\
         stack([Tensor.cos(freqs), Tensor.sin(freqs)], dim=-1).\
@@ -64,8 +68,7 @@ def apply_rotary_emb(xq, xk, freqs_cis) -> tuple[Tensor, Tensor]:
     xq = xq.reshape(*xq.shape[0:-1], -1, 2)
     xk = xk.reshape(*xk.shape[0:-1], -1, 2)
     assert len(xq.shape) == 5 and len(xk.shape) == 5 and len(freqs_cis.shape) == 5
-    c = freqs_cis[:, : xq.shape[1], :, :, 0:1]
-    d = freqs_cis[:, : xq.shape[1], :, :, 1:2]
+    c, d = freqs_cis[:, :xq.shape[1], :, :, 0:1], freqs_cis[:, :xq.shape[1], :, :, 1:2]
     xq_out = complex_mult(xq, c, d)
     xk_out = complex_mult(xk, c, d)
     return xq_out.flatten(3), xk_out.flatten(3)
@@ -75,15 +78,14 @@ def repeat_kv(x: Tensor, n_rep: int) -> Tensor:
     bs, seqlen, n_kv_heads, head_dim = x.shape
     if n_rep == 1:
         return x
-    return x\
-        .reshape(bs, seqlen, n_kv_heads, 1, head_dim)\
-        .expand(bs, seqlen, n_kv_heads, n_rep, head_dim)\
-        .reshape(bs, seqlen, n_kv_heads * n_rep, head_dim)
+    return x.\
+        reshape(bs, seqlen, n_kv_heads, 1, head_dim).\
+        expand(bs, seqlen, n_kv_heads, n_rep, head_dim).\
+        reshape(bs, seqlen, n_kv_heads * n_rep, head_dim)
 
 
 class RMSNorm:
-    def __init__(self, dim, eps=1e-6) -> None:
-        super().__init__()
+    def __init__(self, dim, eps=1e-6):
         self.eps = eps
         self.weight = Tensor.ones(dim)
 
@@ -93,18 +95,12 @@ class RMSNorm:
 
 
 class Attention:
-    def __init__(
-            self,
-            dim,
-            n_heads,
-            n_kv_heads,
-            linear=Linear,
-    ) -> None:
-        super().__init__()
+    def __init__(self, dim, n_heads, n_kv_heads, max_context, linear=Linear):
         self.n_heads = n_heads
         self.n_kv_heads = n_kv_heads if n_kv_heads is not None else n_heads
         self.head_dim = dim // n_heads
         self.n_rep = self.n_heads // self.n_kv_heads
+        self.max_context = max_context
 
         self.wq = linear(dim, self.n_heads * self.head_dim, bias=False)
         self.wk = linear(dim, self.n_kv_heads * self.head_dim, bias=False)
@@ -112,70 +108,45 @@ class Attention:
         self.wo = linear(self.n_heads * self.head_dim, dim, bias=False)
 
     def __call__(
-        self,
-        x: Tensor,
-        start_pos: ta.Union[Variable, int],
-        freqs_cis: Tensor,
-        mask: ta.Optional[Tensor],
-        jit_ctx: ta.Optional[dict[Variable, int]] = None,
+            self,
+            x: Tensor,
+            start_pos: ta.Union[Variable, int],
+            freqs_cis: Tensor,
+            mask: ta.Optional[Tensor],
     ) -> Tensor:
-        xq = self.wq(x)
-        xk = self.wk(x)
-        xv = self.wv(x)
-
+        xq, xk, xv = self.wq(x), self.wk(x), self.wv(x)
         xq = xq.reshape(xq.shape[0], xq.shape[1], self.n_heads, self.head_dim)
         xk = xk.reshape(xk.shape[0], xk.shape[1], self.n_kv_heads, self.head_dim)
         xv = xv.reshape(xv.shape[0], xv.shape[1], self.n_kv_heads, self.head_dim)
-
         xq, xk = apply_rotary_emb(xq, xk, freqs_cis=freqs_cis)
-
         bsz, seqlen, n_heads, head_dim = xq.shape
 
         # create kv cache
         if not hasattr(self, "cache_k"):
-            self.cache_k = Tensor.zeros(bsz, MAX_CONTEXT, self.n_kv_heads, self.head_dim)
-            self.cache_v = Tensor.zeros(bsz, MAX_CONTEXT, self.n_kv_heads, self.head_dim)
+            self.cache_k, = Tensor.zeros(bsz, self.max_context, self.n_kv_heads, self.head_dim)
+            self.cache_v = Tensor.zeros(bsz, self.max_context, self.n_kv_heads, self.head_dim)
 
         keys = self.cache_k.shrink((None, (0, start_pos), None, None)).cat(xk, dim=1)
         values = self.cache_v.shrink((None, (0, start_pos), None, None)).cat(xv, dim=1)
 
         # update the cache
-        self.cache_k.assign(keys.pad((None, (0, MAX_CONTEXT - start_pos - seqlen), None, None)).contiguous()).realize()
-        self.cache_v.assign(values.pad((None, (0, MAX_CONTEXT - start_pos - seqlen), None, None)).contiguous()).realize()
+        self.cache_k.assign(keys.pad((None, (0, self.max_context - start_pos - seqlen), None, None)).contiguous()).realize()
+        self.cache_v.assign(values.pad((None, (0, self.max_context - start_pos - seqlen), None, None)).contiguous()).realize()
 
-        keys = repeat_kv(keys, self.n_rep)
-        values = repeat_kv(values, self.n_rep)
+        keys, values = repeat_kv(keys, self.n_rep), repeat_kv(values, self.n_rep)
 
         xq = xq.transpose(1, 2)
         keys = keys.transpose(1, 2)
         values = values.transpose(1, 2)
-
-        attn = xq.scaled_dot_product_attention(keys, values, mask). \
-            transpose(1, 2). \
+        attn = xq.\
+            scaled_dot_product_attention(keys, values, mask).\
+            transpose(1, 2).\
             reshape(bsz, seqlen, -1)
-
         return self.wo(attn)
 
 
 class FeedForward:
-    def __init__(
-            self,
-            dim,
-            hidden_dim,
-            multiple_of,
-            linear=Linear,
-            ffn_dim_multiplier=None,
-    ) -> None:
-        super().__init__()
-
-        # TODO: what is this?
-        hidden_dim = int(2 * hidden_dim / 3)
-
-        # custom dim factor multiplier
-        if ffn_dim_multiplier is not None:
-            hidden_dim = int(ffn_dim_multiplier * hidden_dim)
-        hidden_dim = multiple_of * ((hidden_dim + multiple_of - 1) // multiple_of)
-
+    def __init__(self, dim, hidden_dim, linear=Linear):
         self.w1 = linear(dim, hidden_dim, bias=False)
         self.w2 = linear(hidden_dim, dim, bias=False)
         self.w3 = linear(dim, hidden_dim, bias=False)
@@ -186,18 +157,17 @@ class FeedForward:
 
 class TransformerBlock:
     def __init__(
-        self,
-        dim,
-        multiple_of,
-        n_heads,
-        n_kv_heads,
-        norm_eps,
-        linear=Linear,
-        ffn_dim_multiplier=None,
-    ) -> None:
-        super().__init__()
-        self.attention = Attention(dim, n_heads, n_kv_heads, linear)
-        self.feed_forward = FeedForward(dim, 4 * dim, multiple_of, linear, ffn_dim_multiplier)
+            self,
+            dim: int,
+            hidden_dim: int,
+            n_heads: int,
+            n_kv_heads: int,
+            norm_eps: float,
+            max_context: int,
+            linear=Linear,
+    ):
+        self.attention = Attention(dim, n_heads, n_kv_heads, max_context, linear)
+        self.feed_forward = FeedForward(dim, hidden_dim, linear)
         self.attention_norm = RMSNorm(dim, norm_eps)
         self.ffn_norm = RMSNorm(dim, norm_eps)
 
@@ -214,73 +184,113 @@ class TransformerBlock:
 
 class Transformer:
     def __init__(
-        self,
-        dim,
-        multiple_of,
-        n_heads,
-        n_layers,
-        norm_eps,
-        vocab_size,
-        linear=Linear,
-        max_batch_size=32,
-        max_seq_len=1024,
-        ffn_dim_multiplier=None,
-        n_kv_heads=None,
-        rope_theta=10000,
-    ) -> None:
-        super().__init__()
+            self,
+            dim: int,
+            hidden_dim: int,
+            n_heads: int,
+            n_layers: int,
+            norm_eps: float,
+            vocab_size,
+            linear=Linear,
+            n_kv_heads=None,
+            rope_theta=10000,
+            max_context=1024,
+            jit=True,
+    ):
         self.layers = [
             TransformerBlock(
                 dim,
-                multiple_of,
+                hidden_dim,
                 n_heads,
                 n_kv_heads,
                 norm_eps,
+                max_context,
                 linear,
-                ffn_dim_multiplier,
             )
             for _ in range(n_layers)
         ]
         self.norm = RMSNorm(dim, norm_eps)
         self.tok_embeddings = Embedding(vocab_size, dim)
         self.output = linear(dim, vocab_size, bias=False)
-        self.freqs_cis = precompute_freqs_cis(dim // n_heads, max_seq_len * 2, rope_theta)
-        self.forward_jit = TinyJit(self.forward)
+        self.max_context = max_context
+        self.freqs_cis = precompute_freqs_cis(dim // n_heads, self.max_context * 2, rope_theta)
+        self.forward_jit = TinyJit(self.forward) if jit else None
 
-    def forward(
-            self,
-            tokens: Tensor,
-            start_pos: ta.Union[Variable, int],
-            temperature: float = 0.0,
-    ):
+    def forward(self, tokens: Tensor, start_pos: ta.Union[Variable, int], temperature: float = 0.0):
         _bsz, seqlen = tokens.shape
         freqs_cis = self.freqs_cis.shrink((None, (start_pos, start_pos + seqlen), None, None, None))
+
         if seqlen > 1:
-            mask = Tensor.full(
-                (1, 1, seqlen, start_pos + seqlen),
-                float("-inf"),
-                dtype=dtypes.float32,
-            ).triu(start_pos + 1).realize()
+            mask = Tensor.\
+                full((1, 1, seqlen, start_pos + seqlen), float("-inf"), dtype=dtypes.float32).\
+                triu(start_pos + 1).realize()
         else:
             mask = None
 
         h = self.tok_embeddings(tokens)
         for layer in self.layers:
             h = layer(h, start_pos, freqs_cis, mask)
-
         logits = self.output(self.norm(h))
         return (logits[:, -1, :] / (temperature + 1e-10)).softmax().flatten().realize()
 
-    def __call__(
-            self,
-            tokens: Tensor,
-            start_pos: Variable,
-            temperature: float = 0.0,
-    ):
-        if tokens.shape[0:2] == (1, 1) and JIT:
+    def __call__(self, tokens: Tensor, start_pos: Variable, temperature: float = 0.0):
+        # TODO: better way to handle the first call v.s. the rest?
+        if tokens.shape[0:2] == (1, 1) and self.forward_jit:
             assert start_pos > 0
-            return self.forward_jit(tokens, Variable("start_pos", 1, MAX_CONTEXT).bind(start_pos), temperature)
+            return self.forward_jit(
+                tokens,
+                Variable("start_pos", 1, self.max_context).bind(start_pos),
+                temperature,
+            )
         return self.forward(tokens, start_pos, temperature)
+
+
+# *** helpers ***
+
+
+def convert_from_huggingface(weights: dict[str, Tensor], model: Transformer, n_heads: int, n_kv_heads: int):
+    def permute(v: Tensor, n_heads: int):
+        return v.\
+            reshape(n_heads, 2, v.shape[0] // n_heads // 2, v.shape[1]).\
+            transpose(1, 2).reshape(*v.shape[:2])
+
+    keymap = {
+        "model.embed_tokens.weight": "tok_embeddings.weight",
+        **{
+            f"model.layers.{l}.input_layernorm.weight": f"layers.{l}.attention_norm.weight"
+            for l in range(len(model.layers))
+        },
+        **{
+            f"model.layers.{l}.self_attn.{x}_proj.weight": f"layers.{l}.attention.w{x}.weight"
+            for x in ["q", "k", "v", "o"] for l in range(len(model.layers))
+        },
+        **{
+            f"model.layers.{l}.post_attention_layernorm.weight": f"layers.{l}.ffn_norm.weight"
+            for l in range(len(model.layers))
+        },
+        **{
+            f"model.layers.{l}.mlp.{x}_proj.weight": f"layers.{l}.feed_forward.w{y}.weight"
+            for x, y in {"gate": "1", "down": "2", "up": "3"}.items()
+            for l in range(len(model.layers))
+        },
+        "model.norm.weight": "norm.weight",
+        "lm_head.weight": "output.weight",
+    }
+    sd = {}
+    for k, v in weights.items():
+        if ".rotary_emb." in k:
+            continue
+        v = v.to(Device.DEFAULT)
+        if "model.layers" in k:
+            if "q_proj" in k:
+                v = permute(v, n_heads)
+            elif "k_proj" in k:
+                v = permute(v, n_kv_heads)
+        sd[keymap[k]] = v
+    return sd
+
+
+###
 
 
 # **** files and arguments ****
@@ -508,6 +518,24 @@ MODEL_PARAMS = {
 }
 
 
+# fix up MODEL_PARAMS to have hidden_dim
+for model_gen in MODEL_PARAMS.values():
+    for model_type in model_gen.values():
+        model_args = model_type['args']
+        hidden_dim = model_args['dim'] * 4
+        multiple_of = model_args['multiple_of']
+        # TODO: what is this?
+        hidden_dim = int(2 * hidden_dim / 3)
+        # custom dim factor multiplier
+        ffn_dim_multiplier = getattr(model_args, 'ffn_dim_multiplier', None)
+        if ffn_dim_multiplier is not None:
+            hidden_dim = int(ffn_dim_multiplier * hidden_dim)
+            del model_args['ffn_dim_multiplier']
+        hidden_dim = multiple_of * ((hidden_dim + multiple_of - 1) // multiple_of)
+        model_args['hidden_dim'] = hidden_dim
+        del model_args['multiple_of']
+
+
 # **** helper functions ****
 
 def concat_weights(models):
@@ -646,9 +674,9 @@ class LLaMa:
 
         model_args = params["args"]
         if quantize:
-            model = Transformer(**model_args, linear=AbsmaxQuantizedLinear)
+            model = Transformer(**model_args, linear=AbsmaxQuantizedLinear, max_context=MAX_CONTEXT)
         else:
-            model = Transformer(**params["args"])
+            model = Transformer(**params["args"], max_context=MAX_CONTEXT)
 
         if model_path.is_dir():
             weights = concat_weights(

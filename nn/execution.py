@@ -172,7 +172,7 @@ def update_stats(
         GlobalCounters.time_sum_s += et
 
 
-# **************** shared AST runner ****************
+# **************** shared Runner that can go in the JIT ****************
 
 
 class JitRunner:
@@ -246,21 +246,13 @@ class Interpreted:
         self.graph = None
         self.method_cache: dict[LazyOp, InterpretedAstRunner] = {}
 
-    def exec_ast(
-            self,
-            ast: LazyOp,
-            output: LazyBuffer,
-            inputs: tuple[LazyBuffer, ...],
-            var_vals: dict[Variable, int],
-            **kwargs,
-    ):
-        if ast not in self.method_cache:
+    def allocate_output(self, ast: LazyOp, output: LazyBuffer, inputs: tuple[LazyBuffer, ...]):
+        output.realized = output.output_buffer if output.output_buffer is not None else self.buffer.__new__(self.buffer)
+
+    def get_runner(self, ast: LazyOp, rawbuffers: list[RawBuffer]) -> InterpretedAstRunner:
+        if ast not in self.method_cache or getenv("DISABLE_METHOD_CACHE"):
             self.method_cache[ast] = get_interpreted_fxn(self.fxn_for_op, ast)
-        if output.output_buffer is not None:
-            output.realized = output.output_buffer
-        else:
-            output.realized = self.buffer.__new__(self.buffer)
-        self.method_cache[ast].exec([output.realized] + [x.realized for x in inputs], var_vals)
+        return self.method_cache[ast]
 
 
 def get_interpreted_fxn(
@@ -457,18 +449,12 @@ class Compiled:
             self.runtime,
         )
 
-    def exec_ast(
-            self,
-            ast: LazyOp,
-            output: LazyBuffer,
-            inputs: tuple[LazyBuffer, ...],
-            var_vals: dict[Variable, int],
-            **kwargs,
-    ):
+    def allocate_output(self, ast: LazyOp, output: LazyBuffer, inputs: tuple[LazyBuffer, ...]):
         # check if we can reuse the output buffer
         # if it's aliased, don't use it
         # TODO: this is pretty wrong actually, who knows where else this buffer is used?
         # TODO: what if an assign is required? this silently is wrong
+        # TODO: this logic just doesn't belong here
         output.realized = output.output_buffer
         if output.realized is not None:
             for i, a in enumerate(inputs):
@@ -488,26 +474,21 @@ class Compiled:
             output.realized = self.buffer(
                 prod((s if isinstance(s, int) else s.max for s in output.shape)),
                 output.dtype,
-                **kwargs,
+                **output._device_extra_args(),
             )
-            if output.realized.size == 0:
-                return output.realized
 
-        # all the rawbuffers
-        rawbuffers = [output.realized] + [x.realized for x in inputs]
-
+    # TODO: the rawbuffers are only used for optimization, they should be removed and optimizer should realloc
+    def get_runner(self, ast: LazyOp, rawbuffers: list[RawBuffer]) -> CompiledAstRunner:
         if ast not in self.method_cache or getenv("DISABLE_METHOD_CACHE"):
-            self.method_cache[ast] = get_optimized_program(self.linearizer_opts, self.to_program, ast, rawbuffers)
+            self.method_cache[ast] = self.to_program(get_optimized_linearizer(ast, self.linearizer_opts, rawbuffers))
+        return self.method_cache[ast]
 
-        self.method_cache[ast].exec(rawbuffers, var_vals)
 
-
-def get_optimized_program(
-        linearizer_opts: LinearizerOptions,
-        to_program,
+def get_optimized_linearizer(
         ast: LazyOp,
+        linearizer_opts: LinearizerOptions,
         rawbuffers: list[RawBuffer],
-) -> CompiledAstRunner:
+) -> Linearizer:
     if DEBUG >= 3:
         from .lazy import print_tree
         print_tree(ast)
@@ -575,4 +556,4 @@ def get_optimized_program(
     else:
         k.required_optimizations()
 
-    return to_program(k)
+    return k
