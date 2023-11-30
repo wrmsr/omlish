@@ -10,6 +10,24 @@ from ..execution import Interpreted
 from ..runtime.lib import RawBuffer
 
 
+class RawNumpyBuffer(RawBuffer):
+    def __init__(
+            self,
+            size: int,
+            dtype: DType,
+            buf: ta.Optional[np.ndarray] = None,
+            allocator=lambda size, dtype: np.empty([size], dtype.np),
+    ) -> None:
+        super().__init__(size, dtype, buf, allocator)
+
+    @classmethod
+    def fromCpu(cls, x):
+        return cls(x.size, dtypes.from_np(x.dtype), x)
+
+    def toCpu(self):
+        return self._buf
+
+
 def shape_to_axis(
     old_shape: tuple[int, ...], new_shape: tuple[int, ...]
 ) -> tuple[int, ...]:
@@ -86,6 +104,7 @@ numpy_fxn_for_op: dict[type[ops.LazyOp], ta.Callable] = {
     **base_fxn_for_op,
     **{
         ops.Const: lambda val, dtype: np.array(val, dtype=dtype.np),
+        ops.FromUnderlying: RawNumpyBuffer.fromCpu,
         ops.Nop: lambda x: np.require(x, requirements="C"),
         ops.Exp2: np.exp2,
         ops.Log2: np.log2,
@@ -118,26 +137,7 @@ numpy_fxn_for_op: dict[type[ops.LazyOp], ta.Callable] = {
 }
 
 
-class RawNumpyBuffer(RawBuffer):
-    def __init__(
-            self,
-            size: int,
-            dtype: DType,
-            buf: ta.Optional[np.ndarray] = None,
-            allocator=lambda size, dtype: np.empty([size], dtype.np),
-    ) -> None:
-        super().__init__(size, dtype, buf, allocator)
-
-    @classmethod
-    def fromCpu(cls, x):
-        return cls(x.size, dtypes.from_np(x.dtype), x)
-
-    def toCpu(self) -> np.ndarray:
-        return self._buf
-
-
-CPUBuffer = Interpreted(
+CpuBuffer = Interpreted(
     RawNumpyBuffer,
     numpy_fxn_for_op,
-    RawNumpyBuffer.fromCpu,
 )

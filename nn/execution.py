@@ -26,6 +26,7 @@ from .ops import LazyOp
 from .runtime.lib import RawBuffer
 from .shape.symbolic import NumNode
 from .shape.symbolic import Variable
+from .shape.symbolic import sint
 from .shape.symbolic import sym_infer
 
 if ta.TYPE_CHECKING:
@@ -134,9 +135,9 @@ def get_lazyop_info(ast: LazyOp) -> OpInfo:
 
 
 def update_stats(
-        name,
-        op_estimate,
-        mem_estimate,
+        name: str,
+        op_estimate: sint,
+        mem_estimate: sint,
         var_vals: ta.Optional[dict[Variable, int]],
         et: ta.Optional[float],
         buf_count,
@@ -173,80 +174,32 @@ def update_stats(
         GlobalCounters.time_sum_s += et
 
 
-# **************** batch executor ****************
+# **************** shared AST runner ****************
 
 
-@dc.dataclass(frozen=True)
-class JitItem:
-    prg: AstRunner
-    rawbufs: list[ta.Optional[RawBuffer]]
-
-
-class BatchExecutor:
-    def __init__(
-            self,
-            jit_cache: list[JitItem],
-            input_rawbuffers: list[RawBuffer],
-            var_vals: dict[Variable, int],
-    ):
+class JitRunner:
+    def __init__(self) -> None:
         super().__init__()
-        self.jit_cache: list[JitItem] = jit_cache
-        self.input_replace: dict[tuple[int, int], int] = {}
-        self.op_estimate, self.mem_estimate = NumNode(0), NumNode(0)
-        for j, ji in enumerate(jit_cache):
-            if isinstance(ji.prg, AstRunner):  # TODO: this is just for world and needs to be refactored
-                self.op_estimate += ji.prg.op_estimate
-                self.mem_estimate += ji.prg.mem_estimate
-            for i, a in enumerate(ji.rawbufs):
-                if a in input_rawbuffers:
-                    self.input_replace[(j, i)] = input_rawbuffers.index(a)
-        assert len(set(self.input_replace.values())) == len(input_rawbuffers), "some input tensors not found"
-        self.clear_jit_inputs()
-
-    def __call__(self, input_rawbuffers: list[RawBuffer], var_vals: dict[Variable, int], wait=False):
-        for (j, i), input_idx in self.input_replace.items():
-            self.jit_cache[j].rawbufs[i] = input_rawbuffers[input_idx]
-        for ji in self.jit_cache:
-            ji.prg(ji.rawbufs, var_vals, jit=True)
-        self.clear_jit_inputs()
-
-    def clear_jit_inputs(self):
-        for (j, i) in self.input_replace.keys():
-            self.jit_cache[j].rawbufs[i] = None
-
-
-class AstRunner:
-    def __init__(self, ast: ta.Optional[LazyOp]) -> None:
-        super().__init__()
-        if ast is None:
-            self.op_estimate= 0
-            self.mem_estimate= 0
-            self.vars = set()
-        else:
-            info = get_lazyop_info(ast)
-            self.op_estimate = info.flops
-            self.mem_estimate = info.mem_estimate
-            from .lazy import vars_from_ast
-            self.vars = vars_from_ast(ast)
-            assert all(v._val is None for v in self.vars), f"AstRunner contains bound Variable {self.vars}"
+        self.op_estimate = 0
+        self.mem_estimate = 0
 
     def exec(
             self,
-            rawbufs: list[ta.Optional[RawBuffer]],
+            rawbufs: list[RawBuffer],
             var_vals: ta.Optional[dict[Variable, int]] = None,
-            force_wait=False,
     ) -> ta.Optional[float]:
+        var_vals = var_vals if var_vals is not None else {}
         from .jit import CacheCollector
-        et = self(rawbufs, var_vals, force_wait=force_wait)
-        CacheCollector.add(self, rawbufs, var_vals if var_vals is not None else {})
+        et = self(rawbufs, var_vals)
+        CacheCollector.add(self, rawbufs, var_vals)
         return et
 
     def __call__(
             self,
-            rawbufs: list[ta.Optional[RawBuffer]],
-            var_vals: ta.Optional[dict[Variable, int]] = None,
+            rawbufs: list[RawBuffer],
+            var_vals: dict[Variable, int],
+            wait=False,
             jit=False,
-            force_wait=False,
     ) -> ta.Optional[float]:
         raise NotImplementedError("override this")
 
@@ -254,29 +207,31 @@ class AstRunner:
 # **************** for Interpreted Buffers ****************
 
 
-class InterpretedAstRunner(AstRunner):
+class InterpretedAstRunner(JitRunner):
     def __init__(self, ast: LazyOp, fxn: ta.Callable) -> None:
+        super().__init__()
         self.fxn = fxn
-        super().__init__(ast)
+        info = get_lazyop_info(ast)
+        self.op_estimate = info.flops
+        self.mem_estimate = info.mem_estimate
 
     def __call__(
             self,
-            rawbufs: list[ta.Optional[RawBuffer]],
-            var_vals: ta.Optional[dict[Variable, int]] = None,
+            rawbufs: list[RawBuffer],
+            var_vals: dict[Variable, int],
+            wait=False,
             jit=False,
-            force_wait=False,
     ) -> float:
         var_vals = {k: var_vals[k] for k in sorted(self.vars)} if var_vals is not None else {}
         st = time.perf_counter()
         ret: RawBuffer = self.fxn(rawbufs[1:], var_vals)
         et = time.perf_counter() - st
         update_stats(f"<interpreted {ret.size}>", self.op_estimate, self.mem_estimate, var_vals, et, len(rawbufs), jit)
-        if rawbufs[0] is not None:
-            assert rawbufs[0].dtype == ret.dtype
-            rawbufs[0].size = ret.size  # NOTE: for symbolic this can change
-            rawbufs[0]._buf = ret._buf
-        else:
-            rawbufs[0] = ret
+        assert getattr(rawbufs[0], 'dtype', ret.dtype) == ret.dtype
+        rawbufs[0].dtype = ret.dtype
+        rawbufs[0].size = ret.size
+        rawbufs[0]._buf = ret._buf
+        rawbufs[0].offset = ret.offset
         return et
 
 
@@ -285,15 +240,13 @@ class Interpreted:
             self,
             buffer: type[RawBuffer],
             fxn_for_op: dict[type[ops.LazyOp], ta.Callable],
-            from_underlying: ta.Optional[ta.Callable] = None,
     ) -> None:
         super().__init__()
         self.buffer = buffer
         self.fxn_for_op = fxn_for_op
-        self.from_underlying = from_underlying
         self.synchronize = lambda: None
-        self.batch_executor = BatchExecutor
         self.codegen = None
+        self.graph = None
         self.method_cache: dict[LazyOp, InterpretedAstRunner] = {}
 
     def exec_ast(
@@ -305,20 +258,17 @@ class Interpreted:
             **kwargs,
     ):
         if ast not in self.method_cache:
-            self.method_cache[ast] = get_interpreted_fxn(
-                self.fxn_for_op,
-                self.from_underlying,
-                ast,
-            )
+            self.method_cache[ast] = get_interpreted_fxn(self.fxn_for_op, ast)
         rawbufs = [output.realized if output.realized is not None else output.output_buffer] + \
                   [x.realized for x in inputs]
+        if rawbufs[0] is None:
+            rawbufs[0] = self.buffer.__new__(self.buffer)
         self.method_cache[ast].exec(rawbufs, var_vals)
         output.realized = rawbufs[0]
 
 
 def get_interpreted_fxn(
         fxn_for_op: dict[type[ops.LazyOp], ta.Callable],
-        from_underlying: ta.Optional[ta.Callable],
         ast: LazyOp,
 ) -> InterpretedAstRunner:
     if DEBUG >= 3:
@@ -370,8 +320,8 @@ def get_interpreted_fxn(
         ['def run(inputs, var_vals):'] +
         lines +
         [
-            f"  return {gstr(from_underlying, 'from_underlying')}({ret})"
-            if from_underlying is not None else
+            f"  return {gstr(fxn_for_op[ops.FromUnderlying], ops.FromUnderlying.__name__)}({ret})"
+            if ops.FromUnderlying in fxn_for_op else
             f"  return {ret}"
         ]
     )
@@ -387,7 +337,7 @@ def get_interpreted_fxn(
 # **************** for Compiled Buffers ****************
 
 
-class CompiledAstRunner(AstRunner):
+class CompiledAstRunner(JitRunner):
     def __init__(
             self,
             ast: ta.Optional[LazyOp],
@@ -400,6 +350,7 @@ class CompiledAstRunner(AstRunner):
             display_name: ta.Optional[str] = None,
             runtime_args: ta.Optional[dict] = None,
     ) -> None:
+        super().__init__()
         if DEBUG >= 4:
             print(prg)
         self.name = name
@@ -410,7 +361,14 @@ class CompiledAstRunner(AstRunner):
         self.mem_estimate = mem_estimate
         self.display_name = display_name
         self.runtime_args = runtime_args if runtime_args is not None else {}
-        super().__init__(ast)
+        self.vars: set[Variable] = set()
+        if ast:
+            info = get_lazyop_info(ast)
+            self.op_estimate = info.flops
+            self.mem_estimate = info.mem_estimate
+            from .lazy import vars_from_ast
+            self.vars = vars_from_ast(ast)
+            assert all(v._val is None for v in self.vars), f"ASTRunner contains bound Variable {self.vars}"
 
     def build(self, compiler, runtime):
         self.lib = compiler.__wrapped__(self.prg) if getenv("DISABLE_COMPILER_CACHE") else compiler(self.prg)
@@ -430,20 +388,20 @@ class CompiledAstRunner(AstRunner):
 
     def __call__(
             self,
-            rawbufs: list[ta.Optional[RawBuffer]],
-            var_vals: ta.Optional[dict[Variable, int]] = None,
+            rawbufs: list[RawBuffer],
+            var_vals: dict[Variable, int],
+            wait=False,
             jit=False,
-            force_wait=False,
     ) -> ta.Optional[float]:
         # filter the var_vals
-        var_vals = {k: var_vals[k] for k in sorted(self.vars)} if var_vals is not None else {}
+        var_vals = {k: var_vals[k] for k in sorted(self.vars)}
 
         global_size, local_size = self.launch_dims(var_vals)
 
         if global_size is not None and local_size is None and all_int(self.global_size):  # type: ignore[arg-type]
             # TODO: this is copied from get_program
             from .features.search import optimize_local_size
-            local_size = self.local_size = optimize_local_size(self.clprg, global_size, ta.cast(list[RawBuffer], rawbufs))
+            local_size = self.local_size = optimize_local_size(self.clprg, global_size, rawbufs)
             global_size = self.global_size = [g // l if g % l == 0 else g / l for g, l in zip(global_size, local_size)]
 
         lra = self.runtime_args.copy()
@@ -452,7 +410,7 @@ class CompiledAstRunner(AstRunner):
         if local_size and 'local_size' not in lra:
             lra['local_size'] = local_size
 
-        et = self.clprg(*rawbufs, *var_vals.values(), **lra, wait=force_wait or DEBUG >= 2)
+        et = self.clprg(*rawbufs, *var_vals.values(), **lra, wait=wait or DEBUG >= 2)
 
         update_stats(
             self.display_name if self.display_name is not None else self.name,
@@ -477,7 +435,7 @@ class Compiled:
             compiler,
             runtime,
             synchronize=lambda: None,
-            batch_executor=BatchExecutor,
+            graph=None,
     ) -> None:
         super().__init__()
         self.buffer = buffer
@@ -486,7 +444,7 @@ class Compiled:
         self.compiler = compiler
         self.runtime = runtime
         self.synchronize = synchronize
-        self.batch_executor = BatchExecutor if getenv("JIT") == 2 else batch_executor
+        self.graph = graph
         self.method_cache: dict[LazyOp, CompiledAstRunner] = {}
 
     def to_program(self, k: Linearizer) -> CompiledAstRunner:

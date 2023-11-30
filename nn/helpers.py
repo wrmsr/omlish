@@ -97,8 +97,8 @@ def strip_parens(fst: str) -> str:
     )
 
 
-def round_up(num, amt):
-    return num if num % amt == 0 else num + (amt - (num % amt))
+def round_up(num, amt: int):
+    return (num + amt - 1) // amt * amt
 
 
 def merge_dicts(ds: ta.Iterable[dict[T, U]]) -> dict[T, U]:
@@ -114,7 +114,7 @@ def unwrap(x: ta.Optional[T]) -> T:
 
 
 @functools.lru_cache(maxsize=None)
-def getenv(key, default=0):
+def getenv(key: str, default=0):
     return type(default)(os.getenv(key, default))
 
 
@@ -270,7 +270,7 @@ def download_file(url, fp, skip_if_exists=True):
     if skip_if_exists and pathlib.Path(fp).is_file() and pathlib.Path(fp).stat().st_size > 0:
         return
 
-    r = requests.get(url, stream=True)
+    r = requests.get(url, stream=True, timeout=10)
 
     assert r.status_code == 200
 

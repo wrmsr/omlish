@@ -2,21 +2,54 @@ from __future__ import annotations
 
 import functools
 import itertools
+import operator
 import typing as ta
 import weakref
 
+from omlish import dataclasses as dc
+
 from .devices import Device
 from .dtypes import DType
-from .execution import AstRunner
-from .execution import BatchExecutor
-from .execution import JitItem
+from .execution import JitRunner
 from .helpers import DEBUG
 from .helpers import getenv
 from .helpers import merge_dicts
 from .runtime.lib import RawBuffer
 from .shape.shapetracker import ShapeTracker
+from .shape.symbolic import Node
+from .shape.symbolic import NumNode
 from .shape.symbolic import Variable
 from .tensor import Tensor
+
+
+@dc.dataclass(frozen=True)
+class JitItem:
+    prg: JitRunner
+    rawbufs: list[ta.Optional[RawBuffer]]
+
+
+def get_jit_stats(jit_cache: list[JitItem]) -> tuple[Node, Node]:
+    return (
+        functools.reduce(operator.__add__, [ji.prg.op_estimate for ji in jit_cache], NumNode(0)),
+        functools.reduce(operator.__add__, [ji.prg.mem_estimate for ji in jit_cache], NumNode(0)),
+    )
+
+
+def get_input_replace(
+        jit_cache: list[JitItem],
+        input_rawbuffers: list[RawBuffer],
+) -> dict[tuple[int, int], int]:
+    input_replace: dict[tuple[int, int], int] = {}
+    for j, ji in enumerate(jit_cache):
+        for i, a in enumerate(ji.rawbufs):
+            if a in input_rawbuffers:
+                input_replace[(j, i)] = input_rawbuffers.index(a)
+    assert len(set(input_replace.values())) == len(input_rawbuffers), "some input tensors not found"
+    return input_replace
+
+
+class GraphException(Exception):
+    pass
 
 
 ReturnType = ta.TypeVar('ReturnType')
@@ -29,20 +62,13 @@ class TinyJit:
         self.reset()
 
     def reset(self) -> None:
-        self.jit_fxn: ta.Optional[BatchExecutor] = None
+        self.jit_cache: list[JitItem] = []
+        self.input_replace: dict[tuple[int, int], int] = {}
         self.cnt: int = 0
         self.ret: ta.Optional[ReturnType] = None
         self.expected_vals: ta.Optional[tuple[Variable, ...]] = None
         self.expected_sts_dtype: ta.Optional[tuple[tuple[ShapeTracker, DType], ...]] = None
         self.expected_name_sts_dtype: ta.Optional[tuple[tuple[ta.Union[int, str], ShapeTracker, DType], ...]] = None
-
-    @property
-    def jit_cache(self) -> list[JitItem]:
-        return self.jit_fxn.jit_cache if self.jit_fxn else []
-
-    @property
-    def input_replace(self) -> dict[tuple[int, int], int]:
-        return self.jit_fxn.input_replace if self.jit_fxn else {}
 
     # add support for instance methods
     def __get__(self, obj, objtype):
@@ -69,29 +95,54 @@ class TinyJit:
         expected_vals = tuple(var_vals.keys())
 
         if self.cnt >= 2:
+            # jit exec
             assert self.expected_vals == expected_vals, "mismatch of var_vals"
             assert (
                     self.expected_name_sts_dtype == expected_name_sts_dtype
             ), f"mismatch of sts, expected {self.expected_name_sts_dtype} got {expected_name_sts_dtype}"
-            assert self.jit_fxn, "didn't get jitted?"
-            self.jit_fxn(input_rawbuffers, var_vals, DEBUG >= 2)
+            for (j, i), input_idx in self.input_replace.items():
+                self.jit_cache[j].rawbufs[i] = input_rawbuffers[input_idx]
+            for ji in self.jit_cache:
+                ji.prg(ta.cast(list[RawBuffer], ji.rawbufs), var_vals, jit=True)
 
         elif self.cnt == 1:
+            # jit capture
             self.expected_vals = expected_vals
             self.expected_name_sts_dtype = expected_name_sts_dtype
 
             CacheCollector.start(var_vals)
             self.ret = self.fxn(*args, **kwargs)
-            jit_cache = CacheCollector.finish()
-            assert len(jit_cache) != 0, "didn't JIT anything!"
+            self.jit_cache = CacheCollector.finish()
+            assert len(self.jit_cache) != 0, "didn't JIT anything!"
             if DEBUG >= 1:
-                print(f"JIT captured {len(jit_cache)} kernels with {len(input_rawbuffers)} inputs")
+                print(f"JIT captured {len(self.jit_cache)} kernels with {len(input_rawbuffers)} inputs")
 
-            alt_batch_exec = Device[Device.DEFAULT].batch_executor
-            self.jit_fxn = (BatchExecutor if alt_batch_exec is None or getenv("JIT") == 2 else alt_batch_exec)(jit_cache, input_rawbuffers, var_vals)
+            # if your Device supports it, condense the items into a graph executor
+            if (make_graph := Device[Device.DEFAULT].graph) and getenv("JIT") != 2:
+                try:
+                    self.jit_cache = [
+                        JitItem(
+                            make_graph(
+                                self.jit_cache,
+                                input_rawbuffers,
+                                var_vals,
+                            ),
+                            ta.cast(list[ta.Optional[RawBuffer]], input_rawbuffers),
+                        )
+                    ]
+                except GraphException as e:
+                    if DEBUG >= 1:
+                        print(f"graph create failed {e}")
+
+            self.input_replace = get_input_replace(self.jit_cache, input_rawbuffers)
 
         elif self.cnt == 0:
+            # jit ignore
             self.ret = self.fxn(*args, **kwargs)
+
+        # clear jit inputs
+        for (j, i) in self.input_replace.keys():
+            self.jit_cache[j].rawbufs[i] = None
 
         self.cnt += 1
         return ta.cast(ReturnType, self.ret)
@@ -132,7 +183,7 @@ class PlaceHolder:
 class _CacheCollector:
     def __init__(self) -> None:
         super().__init__()
-        self.cache: ta.Optional[list[tuple[AstRunner, list[ta.Union[RawBuffer, PlaceHolder]]]]] = None
+        self.cache: ta.Optional[list[tuple[JitRunner, list[ta.Union[RawBuffer, PlaceHolder]]]]] = None
 
     def start(self, var_vals: ta.Optional[dict[Variable, int]] = None):
         self.cache = []
@@ -148,7 +199,7 @@ class _CacheCollector:
         self.cache.append((
             prg,
             [
-                self.placeholders.get(x, x) if isinstance(prg, AstRunner) and isinstance(x, RawBuffer) else x
+                self.placeholders.get(x, x) if isinstance(x, RawBuffer) else x
                 for x in rawbufs
             ],
         ))

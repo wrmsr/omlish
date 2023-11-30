@@ -23,9 +23,9 @@ def filter_strides(shape: tuple[int, ...], strides: tuple[int, ...]) -> tuple[in
 @functools.lru_cache(maxsize=None)
 def strides_for_shape(shape: tuple[int, ...]) -> tuple[int, ...]:
     strides = [1] if shape else []
-    for d in shape[::-1][:-1]:
-        strides = [d * strides[0]] + strides
-    return filter_strides(shape, tuple(strides))
+    for d in reversed(shape[1:]):
+        strides.append(d * strides[-1])
+    return filter_strides(shape, tuple(reversed(strides)))
 
 
 @dc.dataclass(frozen=True)
@@ -46,9 +46,9 @@ class View:
     ):
         strides = filter_strides(shape, strides) if strides else strides_for_shape(shape)
         contiguous = (
-            offset == 0
-            and mask is None
-            and all(s1 == s2 for s1, s2 in zip(strides, strides_for_shape(shape)))
+                offset == 0
+                and mask is None
+                and strides == strides_for_shape(shape)
         )
         return View(shape, strides, offset, mask, contiguous)
 

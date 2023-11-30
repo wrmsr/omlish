@@ -100,7 +100,7 @@ class Tensor:
                 data = LazyBuffer.fromCpu(data.astype(dtype.np) if dtype is not None and dtype.np is not None else data)
 
         else:
-            raise RuntimeError(f"can't create Tensor from {data}")
+            raise RuntimeError(f"can't create Tensor from {data} with type {type(data)}")
 
         # data is a LazyBuffer, but it might be on the wrong device
         self.lazydata = data if data.device == device else data.copy_to_device(device)
@@ -1209,6 +1209,39 @@ class Tensor:
 
         return fix(ret) + fix(base_add)
 
+    @staticmethod
+    def _tri(r: int, c: int, k: int = 0, **kwargs) -> Tensor:
+        return (
+                Tensor.arange(r, **kwargs).unsqueeze(1).expand(r, c) <=
+                Tensor.arange(-k, c - k, **kwargs).unsqueeze(0).expand(r, c)
+        )
+
+    def triu(self, k: int = 0) -> Tensor:
+        assert all_int(self.shape), f"does not support symbolic shape {self.shape}"
+        return Tensor._tri(
+            self.shape[-2],
+            self.shape[-1],
+            k=k,
+            dtype=self.dtype,
+            device=self.device,
+        ).where(
+            self,
+            Tensor.zeros_like(self),
+        )
+
+    def tril(self, k: int = 0) -> Tensor:
+        assert all_int(self.shape), f"does not support symbolic shape {self.shape}"
+        return Tensor._tri(
+            self.shape[-2],
+            self.shape[-1],
+            k=k + 1,
+            dtype=self.dtype,
+            device=self.device,
+        ).where(
+            Tensor.zeros_like(self),
+            self,
+        )
+
     # ***** funcs (unary) *****
 
     def __neg__(self):
@@ -1253,29 +1286,8 @@ class Tensor:
     def tan(self):
         return self.sin() / self.cos()
 
-    @staticmethod
-    def _tri(r: int, c: int, k: int = 0, **kwargs) -> Tensor:
-        return Tensor.arange(r, **kwargs).unsqueeze(1).expand(r, c) <= Tensor.arange(
-            -k, c - k, **kwargs
-        ).unsqueeze(0).expand(r, c)
-
-    def triu(self, k: int = 0) -> Tensor:
-        assert all_int(self.shape), f"does not support symbolic shape {self.shape}"
-        return Tensor._tri(
-            self.shape[-2], self.shape[-1], k=k, dtype=self.dtype, device=self.device
-        ).where(self, Tensor.zeros_like(self))
-
-    def tril(self, k: int = 0) -> Tensor:
-        assert all_int(self.shape), f"does not support symbolic shape {self.shape}"
-        return Tensor._tri(
-            self.shape[-2],
-            self.shape[-1],
-            k=k + 1,
-            dtype=self.dtype,
-            device=self.device,
-        ).where(Tensor.zeros_like(self), self)
-
     # ***** math functions (unary) *****
+
     def trunc(self: Tensor) -> Tensor:
         return self.cast(dtypes.int32).contiguous().cast(self.dtype)
 
@@ -1301,6 +1313,7 @@ class Tensor:
         return 1.0 / self
 
     # ***** activation functions (unary) *****
+
     def elu(self, alpha=1.0):
         return self.relu() - alpha * (1 - self.exp()).relu()
 
@@ -1387,13 +1400,12 @@ class Tensor:
     def _to_float(self, x: ta.Union[Tensor, float]):
         if (
                 isinstance(x, Tensor)
-                and not x.lazydata.realized
-                and isinstance(x.lazydata.op, ops.LoadConst)
+                and x.lazydata.is_unrealized_const()
                 and not x.requires_grad
                 and x.lazydata.st.contiguous
                 and self._broadcasted(x)[0].shape == self.shape
         ):
-            return x.lazydata.op.arg
+            return x.lazydata.base.op.arg
         else:
             return x
 
@@ -1531,7 +1543,6 @@ class Tensor:
 
     # ***** binary op wrappers (18 wasted lines to make the typechecker happy) *****
 
-    # NOTE: __pow__ and friends are broken in mypyc with the ** operator
     def __add__(self, x) -> Tensor:
         return self.add(x)
 

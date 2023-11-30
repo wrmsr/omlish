@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import collections
 import ctypes
 import typing as ta
@@ -8,6 +10,7 @@ from ..dtypes import DType
 from ..dtypes import ImageDType
 from ..dtypes import dtypes
 from ..helpers import GlobalCounters
+from ..helpers import getenv
 from ..helpers import prod
 
 
@@ -27,6 +30,7 @@ class RawBuffer:
 
         self.size: int = size
         self.dtype: DType = dtype
+        self.offset: int = 0  # TODO: this is very unsupported, only in disk
         self._buf = (
             buf
             if buf is not None
@@ -50,6 +54,10 @@ class RawBuffer:
     @classmethod
     def fromCpu(cls: type[_T], x: np.ndarray) -> _T:
         raise NotImplementedError("must be implemented")
+
+    @classmethod
+    def fromBuffer(cls, src: RawBuffer, shape: tuple, dtype: DType, **kwargs):
+        return cls.fromCpu(src.toCpu(), **kwargs)
 
     def toCpu(self) -> np.ndarray:
         raise NotImplementedError("must be implemented")
@@ -84,6 +92,13 @@ class RawBufferMapped(RawBufferCopyIn):
 
     def _copyin(self, x: np.ndarray) -> None:
         np.copyto(self.buffer_view(), x.reshape(-1))
+
+    @classmethod
+    def fromBuffer(cls, src, shape, dtype, **kwargs):
+        from .ops_disk import RawDiskBuffer
+        if isinstance(src, RawDiskBuffer):
+            return src.transfer(cls, shape, dtype, **kwargs)
+        return ta.cast(RawBufferMapped, cls.fromCpu(src.toCpu(), **kwargs))
 
 
 ctypes_map = {
@@ -139,6 +154,12 @@ class RawBufferTransfer(RawBuffer):
         ret = cls(prod(shape), dtype, **kwargs)
         ret._transfer(x)
         return ret
+
+    @classmethod
+    def fromBuffer(cls, src, shape, dtype, **kwargs):
+        if isinstance(src, RawBufferTransfer) and getenv("P2P", 0) >= 1:
+            return cls.transfer(src, cls.size, cls.dtype, **kwargs)
+        return cls.fromCPU(src.toCPU(), **kwargs)
 
 
 class LruAllocator:

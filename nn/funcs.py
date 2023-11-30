@@ -20,7 +20,6 @@ else:
 ##
 
 
-# An instantiation of the Function is the Context
 class Function:
     def __init__(self, device: str, *tensors: tensor.Tensor) -> None:
         super().__init__()

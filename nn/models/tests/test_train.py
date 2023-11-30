@@ -43,7 +43,7 @@ class TestTrain(unittest.TestCase):
     #     Y = np.zeros((BS), dtype=np.int32)
     #     train_one_step(model, X, Y)
 
-    @unittest.skipIf(Device.DEFAULT == "WEBGPU", "too many buffers for webgpu")
+    @unittest.skipIf(Device.DEFAULT in ["METAL", "WEBGPU"], "too many buffers for webgpu and metal")
     def test_vit(self):
         from ...models.vit import ViT
 

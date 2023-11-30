@@ -19,8 +19,10 @@ from ..helpers import DEBUG
 from ..helpers import diskcache
 from ..helpers import getenv
 from ..helpers import prod
-from ..jit import BatchExecutor
+from ..jit import GraphException
 from ..jit import JitItem
+from ..jit import get_input_replace
+from ..jit import get_jit_stats
 from ..renderer.metal import MetalRenderer
 from ..runtime.lib import LruAllocator
 from ..runtime.lib import RawBuffer
@@ -54,14 +56,6 @@ class _METAL:
         super().__init__()
         self.mtl_buffers_in_flight: list[ta.Any] = []
         self.device = Metal.MTLCreateSystemDefaultDevice()
-        self.supports_icb = (
-            (
-                self.device.supportsFamily_(Metal.MTLGPUFamilyMac2)
-                or self.device.supportsFamily_(Metal.MTLGPUFamilyApple3)
-                or self.device.supportsFamily_(Metal.MTLGPUFamilyCommon2)
-            )
-            and self.device.argumentBuffersSupport() is Metal.MTLArgumentBuffersTier2
-        )
         self.mtl_queue = self.device.newCommandQueueWithMaxCommandBufferCount_(1024)
         self.allocator = MetalAllocator(
             self.device.dedicatedMemorySize() or self.device.sharedMemorySize()
@@ -146,7 +140,7 @@ class MetalProgram:
             global_size: tuple[int, int, int],
             local_size: tuple[int, int, int],
             wait=False,
-    ):
+    ) -> None:
         assert (
             prod(local_size) <= self.pipeline_state.maxTotalThreadsPerThreadgroup()
         ), (
@@ -180,14 +174,18 @@ class MetalProgram:
         METAL.mtl_buffers_in_flight.append(command_buffer)
 
 
-class MetalBatchExecutor(BatchExecutor):
+class MetalGraph:
     def __init__(
             self,
             jit_cache: list[JitItem],
             input_rawbuffers: list[RawBuffer],
             var_vals: dict[Variable, int],
     ) -> None:
-        super().__init__(jit_cache, input_rawbuffers, var_vals)
+        super().__init__()
+
+        self.jit_cache = jit_cache
+        self.input_replace = get_input_replace(jit_cache, input_rawbuffers)
+        self.op_estimate, self.mem_estimate = get_jit_stats(jit_cache)
 
         # create metal batch exec
         icb_descriptor = Metal.MTLIndirectCommandBufferDescriptor.new()
@@ -201,7 +199,8 @@ class MetalBatchExecutor(BatchExecutor):
             len(self.jit_cache),
             Metal.MTLResourceOptions(0),
         )
-        assert self.icb is not None, "create indirect command buffer failed, does your system support this?"
+        if self.icb is None:
+            raise GraphException("create indirect command buffer failed, does your system support this?")
 
         self.int_buf = RawMetalBuffer(len(var_vals), dtypes.int32)
         self.input_has_variable_dims: set[int] = set()
@@ -262,6 +261,7 @@ class MetalBatchExecutor(BatchExecutor):
             input_rawbuffers: list[RawBuffer],
             var_vals: dict[Variable, int],
             wait=False,
+            jit=False,
     ):
         # NOTE: you at least can't update the ints if this is running
         if self.command_buffer is not None and self.command_buffer in METAL.mtl_buffers_in_flight:
@@ -308,7 +308,7 @@ class MetalBatchExecutor(BatchExecutor):
             var_vals,
             et,
             buf_count=len(input_rawbuffers),
-            jit=True,
+            jit=jit,
             num_kernels=len(self.jit_cache),
         )
 
@@ -322,5 +322,5 @@ MetalBuffer = Compiled(
     compile_metal,
     MetalProgram,
     METAL.synchronize,
-    batch_executor=MetalBatchExecutor if not METAL.supports_icb else BatchExecutor,
+    graph=MetalGraph,
 )
