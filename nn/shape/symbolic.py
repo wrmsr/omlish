@@ -642,11 +642,6 @@ def create_rednode(typ: type[RedNode], nodes: list[Node]):
     return create_node(ret)
 
 
-@functools.lru_cache(maxsize=None)
-def sym_rename(s) -> str:
-    return f"s{sym_rename.cache_info().currsize}"
-
-
 def sym_render(a: sint, ops=None, ctx=None) -> str:
     return str(a) if isinstance(a, int) else a.render(ops, ctx)
 
