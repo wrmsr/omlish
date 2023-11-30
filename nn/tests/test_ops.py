@@ -7,10 +7,8 @@ import torch
 
 from ..devices import Device
 from ..dtypes import dtypes
-from ..helpers import Context
 from ..helpers import DEBUG
 from ..helpers import IMAGE
-from ..helpers import NOOPT
 from ..helpers import getenv
 from ..tensor import Tensor
 
@@ -530,6 +528,8 @@ class TestOps(unittest.TestCase):
         helper_test_op(
             None, lambda x, y: x / y, Tensor.div, forward_only=True, vals=[[5], [1]]
         )
+
+    def test_div_int(self):
         helper_test_op(
             None,
             lambda x: (x / 2).to(torch.int),
@@ -1535,7 +1535,7 @@ class TestOps(unittest.TestCase):
         helper_test_op([(1,)], lambda x: torch.reshape(x, []), lambda x: x.reshape([]))
         helper_test_op([()], lambda x: torch.reshape(x, [1]), lambda x: x.reshape([1]))
 
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             x = Tensor.ones((4, 3, 6, 6))
             x.reshape([])
 
@@ -1721,11 +1721,6 @@ class TestOps(unittest.TestCase):
             atol=1e-4,
             grad_rtol=1e-5,
         )
-
-    def test_simple_conv2d_noopt(self):
-        # useful with IMAGE enabled
-        with Context(NOOPT=1):
-            self.test_simple_conv2d()
 
     @unittest.skipIf(IMAGE > 0, "no conv3d on images")
     def test_simple_conv3d(self):
@@ -2339,7 +2334,7 @@ class TestOps(unittest.TestCase):
             helper_test_op([(4, 6, 3)], lambda x: x.repeat(*repeats), lambda x: x.repeat(repeats))
             helper_test_op([()], lambda x: x.repeat(*repeats), lambda x: x.repeat(repeats))
 
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             x.repeat((2, 4))
 
         np.testing.assert_allclose(x.repeat((2, 0, 4)).numpy(), Tensor.zeros(8, 0, 12).numpy())

@@ -22,12 +22,12 @@ from ..helpers import prod
 from ..jit import GraphException
 from ..jit import JitItem
 from ..jit import get_input_replace
+from ..jit import get_jc_idxs_with_updatable_launch_dims
 from ..jit import get_jit_stats
 from ..renderer.metal import MetalRenderer
 from ..runtime.lib import LruAllocator
 from ..runtime.lib import RawBuffer
 from ..runtime.lib import RawBufferMapped
-from ..shape.symbolic import Node
 from ..shape.symbolic import Variable
 
 
@@ -186,6 +186,7 @@ class MetalGraph:
         self.jit_cache = jit_cache
         self.input_replace = get_input_replace(jit_cache, input_rawbuffers)
         self.op_estimate, self.mem_estimate = get_jit_stats(jit_cache)
+        self.jc_idx_with_updatable_launch_dims = get_jc_idxs_with_updatable_launch_dims(jit_cache)
 
         # create metal batch exec
         icb_descriptor = Metal.MTLIndirectCommandBufferDescriptor.new()
@@ -203,7 +204,6 @@ class MetalGraph:
             raise GraphException("create indirect command buffer failed, does your system support this?")
 
         self.int_buf = RawMetalBuffer(len(var_vals), dtypes.int32)
-        self.input_has_variable_dims: set[int] = set()
 
         read_resources, write_resources = [], []
         for j, ji in enumerate(self.jit_cache):
@@ -237,14 +237,8 @@ class MetalGraph:
                     len(ji.rawbufs) + i,
                 )
 
-            global_size, local_size = prg.launch_dims(var_vals)
-            assert prg.global_size and prg.local_size, "need global and local size to JIT"
-            if (
-                    any(isinstance(x, Node) for x in prg.global_size)
-                    or any(isinstance(x, Node) for x in prg.local_size)
-            ):
-                self.input_has_variable_dims.add(j)
-            else:
+            if j not in self.jc_idx_with_updatable_launch_dims:
+                global_size, local_size = prg.launch_dims(var_vals)
                 icb_command.concurrentDispatchThreadgroups_threadsPerThreadgroup_(
                     Metal.MTLSize(*global_size),
                     Metal.MTLSize(*local_size),
@@ -274,7 +268,7 @@ class MetalGraph:
                 indirectComputeCommandAtIndex_(j).\
                 setKernelBuffer_offset_atIndex_(input_rawbuffers[input_idx]._buf, 0, i)
 
-        for j in self.input_has_variable_dims:
+        for j in self.jc_idx_with_updatable_launch_dims:
             global_size, local_size = ta.cast(CompiledAstRunner, self.jit_cache[j].prg).launch_dims(var_vals)
             self.icb.\
                 indirectComputeCommandAtIndex_(j).\

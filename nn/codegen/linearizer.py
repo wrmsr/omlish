@@ -5,7 +5,6 @@ import itertools
 import math
 import functools
 import collections
-import operator
 
 from omlish import dispatch
 
@@ -23,6 +22,7 @@ from ..features.image import to_image_idx
 from ..helpers import DEBUG
 from ..helpers import all_same
 from ..helpers import colored
+from ..helpers import flatten
 from ..helpers import prod
 from ..helpers import to_function_name
 from ..lazy import vars_from_ast
@@ -781,7 +781,7 @@ class Linearizer(Kernel):
                     if any(x in parents for x in loop_stack[i]) or i == 0:
                         loop_stack[i].append(u)
                         break
-        self.uops = functools.reduce(operator.__add__, loop_stack, [])
+        self.uops = flatten(loop_stack)
 
         # uops optimization
         changed_something = True
@@ -1022,37 +1022,14 @@ class Linearizer(Kernel):
             ops_.MulAcc: ops_.MulAcc,
         }
         if type(x) in ops:
-            ret = []
+            ret: list[uo.UOp] = []
             input_acc = acc[:]
-            for idx, val, off in zip(
-                    [[i] for i in range(len(values[0]))],
-                    zip(*values),
-                    ta.cast(list[int], offs),
-            ):
+            for val, off in zip(zip(*values), ta.cast(list[int], offs)):
                 acc[off] = self.uop(uo.Alu, dtypes.float32, val + (acc[off],), ops[type(x)])
-                ret.append((idx, acc[off]))
-
+                ret.append(acc[off])
             for off in range(len(acc)):
                 if input_acc[off] != acc[off]:
                     acc[off] = self.uop(uo.Phi, dtypes.float32, (input_acc[off], acc[off]) + tuple(loop_ctx))
-
         else:
-            ret = [
-                (idx, self.uop(uo.Alu, dtypes.float32, val, type(x)))
-                for idx, val in zip(
-                    [[i] for i in range(len(values[0]))],
-                    zip(*values),
-                )
-            ]
-
-        ordered_ret: list[ta.Optional[uo.UOp]] = [None] * len(values[0])
-
-        # scatter
-        for i, j in ret:
-            for k in i:
-                ordered_ret[k] = j
-        assert all(
-            isinstance(x, uo.UOp) for x in ordered_ret
-        ), "some tokens didn't get scattered?"
-
-        return ta.cast(list[uo.UOp], ordered_ret)
+            ret = [self.uop(uo.Alu, dtypes.float32, val, type(x)) for val in zip(*values)]
+        return ret
