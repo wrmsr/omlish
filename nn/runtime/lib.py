@@ -37,7 +37,7 @@ class RawBuffer:
             else (allocator(size, dtype, **kwargs) if allocator else None)
         )  # If buf is provided, use it. Otherwise try to allocate from the allocator.
         self._memsz: int = size * dtype.itemsize
-        self._allocator = allocator if allocator and hasattr(allocator, 'free') else None
+        self._allocator = allocator
         self._device = kwargs.get("device", None)
         GlobalCounters.mem_used += self._memsz
 

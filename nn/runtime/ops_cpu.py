@@ -11,21 +11,15 @@ from ..runtime.lib import RawBuffer
 
 
 class RawNumpyBuffer(RawBuffer):
-    def __init__(
-            self,
-            size: int,
-            dtype: DType,
-            buf: ta.Optional[np.ndarray] = None,
-            allocator=lambda size, dtype: np.empty([size], dtype.np),
-    ) -> None:
-        super().__init__(size, dtype, buf, allocator)
+    def __init__(self, size: int, dtype: DType, buf: ta.Optional[np.ndarray] = None) -> None:
+        super().__init__(size, dtype, buf)
 
     @classmethod
     def fromCpu(cls, x):
         return cls(x.size, dtypes.from_np(x.dtype), x)
 
     def toCpu(self):
-        return self._buf
+        return self._buf if self._buf is not None else np.empty([self.size], self.dtype.np)
 
 
 def shape_to_axis(
@@ -82,7 +76,7 @@ def einsum_mulacc(einsum, get_strides, expand):
 
 
 numpy_fxn_for_op: dict[type[ops.LazyOp], ta.Callable] = {
-    ops.Mem: lambda x: x._buf,
+    ops.Mem: lambda x: x.toCpu(),
     ops.Const: lambda val, dtype: np.array(val, dtype=dtype.np),
     ops.FromUnderlying: RawNumpyBuffer.fromCpu,
     ops.Nop: lambda x: np.require(x, requirements="C"),
