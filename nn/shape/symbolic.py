@@ -234,7 +234,8 @@ class Node:
                 return self // b.b
             if self == b:
                 return NumNode(1)
-            if sym_truthy((b - self).min > 0).is_true and sym_truthy(self.min >= 0).is_true:
+            if (b - self).min > 0 and self.min >= 0:  # FIXME
+            # if sym_truthy((b - self).min > 0).is_true and sym_truthy(self.min >= 0).is_true:
                 return NumNode(0)  # b - self simplifies the node
             raise RuntimeError(f"not supported: {self} // {b}")
         assert b != 0
