@@ -222,7 +222,6 @@ class InterpretedAstRunner(JitRunner):
             wait=False,
             jit=False,
     ) -> float:
-        var_vals = {k: var_vals[k] for k in sorted(self.vars)} if var_vals is not None else {}
         st = time.perf_counter()
         ret: RawBuffer = self.fxn(rawbufs[1:], var_vals)
         et = time.perf_counter() - st
@@ -259,12 +258,11 @@ class Interpreted:
     ):
         if ast not in self.method_cache:
             self.method_cache[ast] = get_interpreted_fxn(self.fxn_for_op, ast)
-        rawbufs = [output.realized if output.realized is not None else output.output_buffer] + \
-                  [x.realized for x in inputs]
-        if rawbufs[0] is None:
-            rawbufs[0] = self.buffer.__new__(self.buffer)
-        self.method_cache[ast].exec(rawbufs, var_vals)
-        output.realized = rawbufs[0]
+        if output.output_buffer is not None:
+            output.realized = output.output_buffer
+        else:
+            output.realized = self.buffer.__new__(self.buffer)
+        self.method_cache[ast].exec([output.realized] + [x.realized for x in inputs], var_vals)
 
 
 def get_interpreted_fxn(
@@ -361,7 +359,7 @@ class CompiledAstRunner(JitRunner):
         self.mem_estimate = mem_estimate
         self.display_name = display_name
         self.runtime_args = runtime_args if runtime_args is not None else {}
-        self.vars: set[Variable] = set()
+        self.vars: list[Variable] = []
         if ast:
             info = get_lazyop_info(ast)
             self.op_estimate = info.flops
@@ -393,9 +391,6 @@ class CompiledAstRunner(JitRunner):
             wait=False,
             jit=False,
     ) -> ta.Optional[float]:
-        # filter the var_vals
-        var_vals = {k: var_vals[k] for k in sorted(self.vars)}
-
         global_size, local_size = self.launch_dims(var_vals)
 
         if global_size is not None and local_size is None and all_int(self.global_size):  # type: ignore[arg-type]
@@ -410,7 +405,7 @@ class CompiledAstRunner(JitRunner):
         if local_size and 'local_size' not in lra:
             lra['local_size'] = local_size
 
-        et = self.clprg(*rawbufs, *var_vals.values(), **lra, wait=wait or DEBUG >= 2)
+        et = self.clprg(*rawbufs, *[var_vals[k] for k in self.vars], **lra, wait=wait or DEBUG >= 2)
 
         update_stats(
             self.display_name if self.display_name is not None else self.name,
