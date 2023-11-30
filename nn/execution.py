@@ -306,8 +306,11 @@ def get_interpreted_fxn(
                 tmp = f"{gstr(fxn_for_op[mop], mop.__name__)}({tmp}, {gstr(arg)})"
 
         else:
-            inp = [_interpret_ast(src) for src in ast.src]
-            tmp = f"{gstr(fxn_for_op[type(ast)], type(ast).__name__)}({', '.join(inp + ([gstr(ast.arg)] if ast.arg else []))})"
+            tmp = (
+                f"{gstr(fxn_for_op[type(ast)], type(ast).__name__)}("
+                f"{', '.join([_interpret_ast(src) for src in ast.src] + ([gstr(ast.arg)] if ast.arg else []))}"
+                f")"
+            )
 
         ret = f"a{len(lines)}"
         lines.append(f"  {ret} = {tmp}")

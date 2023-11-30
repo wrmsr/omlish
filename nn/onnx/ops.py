@@ -16,6 +16,38 @@ from ..tensor import Tensor
 from .onnx import safe_numpy
 
 
+tensor_methods = {
+    "Neg",
+    "Reciprocal",
+    "Sqrt",
+    "Sign",
+    "Abs",
+    "Exp",
+    "Log",
+    "Mish",
+    "Sin",
+    "Cos",
+    "Tan",
+    "Relu",
+    "Sigmoid",
+    "Tanh",
+    "MatMul",
+    "Floor",
+    "Ceil",
+    "Tanh",
+    "Softplus",
+    "HardSwish",
+    "Where",
+    "Mul",
+    "Sinh",
+    "Cosh",
+    "Softsign",
+    "Asinh",
+    "Acosh",
+    "Atanh",
+}
+
+
 # **************** Free Ops ****************
 
 
@@ -47,6 +79,7 @@ def Mul(input: Tensor, other: Tensor):
 
 # in openpilot, due to SHUFFLE_PAD_OPS issues, we are spending an extra kernel
 def Div(input: Tensor, other: Tensor):
+    # TODO: this has dtype issues
     if input.dtype == dtypes.float or isinstance(input.dtype, ImageDType):
         return input / other
     else:
@@ -54,71 +87,8 @@ def Div(input: Tensor, other: Tensor):
 
 
 def Pow(input: Tensor, other: Tensor):
+    # TODO: this has dtype issues
     return (input.float() ** other.float()).cast(input.dtype)
-
-
-def Reciprocal(input: Tensor):
-    return input.reciprocal()
-
-
-def Sqrt(input: Tensor):
-    return input.sqrt()
-
-
-def Sign(input: Tensor):
-    return input.sign()
-
-
-def Abs(input: Tensor):
-    return input.abs()
-
-
-def Exp(input: Tensor):
-    return input.exp()
-
-
-def Log(input: Tensor):
-    return input.log()
-
-
-def Mish(input: Tensor):
-    return input.mish()
-
-
-def Sin(x: Tensor):
-    return x.sin()
-
-
-def Cos(x: Tensor):
-    return x.cos()
-
-
-def Tan(x: Tensor):
-    return x.tan()
-
-
-def Relu(input: Tensor):
-    return input.relu()
-
-
-def Sigmoid(input: Tensor):
-    return input.sigmoid()
-
-
-def Tanh(input: Tensor):
-    return input.tanh()
-
-
-def MatMul(input: Tensor, other: Tensor):
-    return input.matmul(other)
-
-
-def Floor(x: Tensor):
-    return x.floor()
-
-
-def Ceil(x: Tensor):
-    return x.ceil()
 
 
 def Less(x: Tensor, y: Tensor):
@@ -157,10 +127,6 @@ def Mean(*data_0):
     return functools.reduce(Tensor.__add__, data_0) / len(data_0)
 
 
-def Where(condition: Tensor, X: Tensor, Y: Tensor):
-    return condition.where(X, Y).cast(X.dtype)
-
-
 def Cast(input: Tensor, to):
     return input.cast(dtypes.from_np(tensor_dtype_to_np_dtype(to)))
 
@@ -191,44 +157,20 @@ def Constant(
         raise NotImplementedError(f'value_string or value_strings not implemented for Constant op')
 
 
-def Softsign(input: Tensor):
-    return input / (1 + input.abs())
-
-
-def Cosh(x):
-    return (math.e ** x + math.e ** -x) / 2
-
-
-def Sinh(x):
-    return (math.e ** x - math.e ** -x) / 2
-
-
-def Tanh(x):
-    return x.tanh()
-
-
 def HardSigmoid(input: Tensor, alpha=0.2, beta=0.5):
     return (alpha * input + beta).clip(0, 1)
-
-
-def HardSwish(input: Tensor):
-    return input * HardSigmoid(input, 1 / 6, 0.5)
 
 
 def Gelu(x: Tensor, approximate=None):
     return x.gelu() if approximate == "tanh" else 0.5 * x * (1 + Erf(x / math.sqrt(2)))
 
 
-def Celu(X: Tensor, alpha=1.0):
-    return X.relu() - (-alpha * (X / alpha).exp() + 1).relu()
+def Celu(x: Tensor, alpha=1.0):
+    return x.celu(alpha)
 
 
 def Selu(X: Tensor, alpha=1.67326319217681884765625, gamma=1.05070102214813232421875):
     return gamma * (X.relu() - (-alpha * X.exp() + alpha).relu())
-
-
-def Softplus(X: Tensor):
-    return X.softplus()
 
 
 def PRelu(X: Tensor, slope: Tensor):
@@ -361,28 +303,24 @@ def Shrink(input: Tensor, bias=0.0, lambd=0.5):
     return (input < -lambd) * (input + bias) + (input > lambd) * (input - bias)
 
 
-def And(x: Tensor, y: Tensor): return Where((x == y), x, Tensor.zeros(*x.shape)).cast(dtypes.bool)
+def And(x: Tensor, y: Tensor):
+    return (x == y).where(x, Tensor.zeros(*x.shape)).cast(dtypes.bool)
 
 
-def Or(x: Tensor, y: Tensor): return Where((x == y), x, Tensor.ones(*x.shape)).cast(dtypes.bool)
+def Or(x: Tensor, y: Tensor):
+    return (x == y).where(x, Tensor.ones(*x.shape)).cast(dtypes.bool)
 
 
-def Xor(x: Tensor, y: Tensor): return Where((x == y), Tensor.zeros(*x.shape), Tensor.ones(*x.shape)).cast(dtypes.bool)
+def Xor(x: Tensor, y: Tensor):
+    return (x == y).where(Tensor.zeros(*x.shape), Tensor.ones(*x.shape)).cast(dtypes.bool)
 
 
-def Not(x: Tensor): return Where((x == 1), Tensor.zeros(*x.shape), Tensor.ones(*x.shape)).cast(dtypes.bool)
+def Not(x: Tensor):
+    return (x == 1).where(Tensor.zeros(*x.shape), Tensor.ones(*x.shape)).cast(dtypes.bool)
 
 
-def Asin(x): return Atan(x / Tensor.sqrt(1 - x * x))
-
-
-def Asinh(x): return Tensor.log(x + Tensor.sqrt(x * x + 1))
-
-
-def Acosh(x): return Tensor.log(x + Tensor.sqrt(x * x - 1))
-
-
-def Atanh(x): return 0.5 * Tensor.log((1 + x) / (1 - x))
+def Asin(x):
+    return Atan(x / Tensor.sqrt(1 - x * x))
 
 
 def Acos(x: Tensor):
@@ -401,8 +339,7 @@ def Atan(y: Tensor):
     t1 = (t3 < t1).where(t3, t1)
     t3 = t1 / t0
     t4 = t3 * t3
-    t0 = ((((
-                        -0.013480470 * t4 + 0.057477314) * t4 - 0.121239071) * t4 + 0.195635925) * t4 - 0.332994597) * t4 + 0.999995630
+    t0 = ((((-0.013480470 * t4 + 0.057477314) * t4 - 0.121239071) * t4 + 0.195635925) * t4 - 0.332994597) * t4 + 0.999995630
     t3 = t0 * t3
     t3 = (y.abs() > x.abs()).where(1.570796327 - t3, t3)
     return (y < 0).where(-t3, t3)
@@ -414,7 +351,8 @@ def Trilu(x: Tensor, k: ta.Union[Tensor, int] = 0, upper=1):
 
 
 def Squeeze(input: Tensor, axes):
-    if isinstance(axes, Tensor): axes = safe_numpy(axes)
+    if isinstance(axes, Tensor):
+        axes = safe_numpy(axes)
     axes = [int(x) if x >= 0 else int(x + input.ndim) for x in axes]
     return input.reshape([s for i, s in enumerate(input.shape) if i not in axes])
 

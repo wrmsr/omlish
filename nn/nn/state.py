@@ -184,7 +184,7 @@ def torch_load(fn: str):
             assert tuple(
                 [shape_strides[i][1] for i in argsort(permute_indexes)]
             ) == strides_for_shape(intermediate_shape), "nonpermutable strides"
-            if DEBUG >= 2:
+            if DEBUG >= 3:
                 print(
                     f"WARNING: this torch load is slow. CPU to permute {intermediate_shape} with {permute_indexes}"
                 )
