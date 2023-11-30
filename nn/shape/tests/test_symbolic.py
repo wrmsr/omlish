@@ -2,6 +2,7 @@ import unittest
 
 from ..symbolic import LtNode
 from ..symbolic import MulNode
+from ..symbolic import Node
 from ..symbolic import NumNode
 from ..symbolic import SumNode
 from ..symbolic import Variable
@@ -443,6 +444,14 @@ class TestSymbolicSymbolicOps(unittest.TestCase):
         # same when comparing with a constant
         assert sym_truthy(a < 3).is_not_false and (a < 3).min == 0 and (a < 3).max == 1
         assert sym_truthy(a > 3).is_not_false and (a > 3).min == 0 and (a > 3).max == 1
+
+    def test_sumnode_mulnode_lt(self):
+        a = Variable("a", 1, 2)
+        b = Variable("b", 1, 2)
+        c = Variable("c", 1, 2)
+        x = SumNode([MulNode(a, b), c])
+        with self.assertRaises(AssertionError):
+            lt3 = (x < 3)
 
     def test_num_node_mul_node(self):
         a = Variable("a", 1, 5)
