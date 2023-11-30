@@ -51,13 +51,13 @@ def run_schedule(schedule: list[ScheduleItem]):
             assert (
                 all(si.out.device == x.device for x in si.inputs)
             ), f"all devices must be the same, {si.out.device} != {[x.device for x in si.inputs]} {print_tree(si.ast) or ''}"
-            Device[si.out.device].exec_ast(
-                si.ast,
-                output=si.out,
-                inputs=si.inputs,
-                var_vals=si.var_vals,
-                **si.out._device_extra_args(),
-            )
+            # TODO: allocate_output should be at the top of this function for global memory management
+            Device[si.out.device].allocate_output(si.ast, si.out, si.inputs)
+            # TODO: should this be handled here? it probably just shouldn't be in the schedule
+            if not hasattr(si.out.realized, 'size') or si.out.realized.size != 0:
+                rawbuffers = [si.out.realized] + [x.realized for x in si.inputs]
+                # TODO: remove rawbuffers from get_runner, optimizer should reallocate them
+                Device[si.out.device].get_runner(si.ast, rawbuffers).exec(rawbuffers, si.var_vals)
 
         del si.out.op
         for v in si.out.views:

@@ -88,7 +88,8 @@ class RawBufferMapped(RawBufferCopyIn):
         )
 
     def toCpu(self) -> np.ndarray:
-        return self.buffer_view().copy()  # Need a copy, since jit will write to the same buffer.
+        # Need a copy (for now), since jit will write to the same buffer.
+        return self.buffer_view().astype(self.dtype.np, copy=True)
 
     def _copyin(self, x: np.ndarray) -> None:
         np.copyto(self.buffer_view(), x.reshape(-1))
