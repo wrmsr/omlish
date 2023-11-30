@@ -10,8 +10,10 @@ from omlish import dataclasses as dc
 
 from .devices import Device
 from .dtypes import DType
+from .execution import CompiledAstRunner
 from .execution import JitRunner
 from .helpers import DEBUG
+from .helpers import all_int
 from .helpers import getenv
 from .helpers import merge_dicts
 from .runtime.lib import RawBuffer
@@ -47,6 +49,26 @@ def get_input_replace(
     assert len(set(input_replace.values())) == len(input_rawbuffers), "some input tensors not found"
     return input_replace
 
+
+def get_jc_idxs_with_updatable_launch_dims(jit_cache: list[JitItem]) -> list[int]:
+    return [
+        j
+        for j, ji in enumerate(jit_cache)
+        if isinstance(ji.prg, CompiledAstRunner)
+        and (
+            (ji.prg.global_size and not all_int(tuple(ji.prg.global_size)))
+            or (ji.prg.local_size and not all_int(tuple(ji.prg.local_size)))
+        )
+    ]
+
+
+def get_jc_idxs_with_updatable_var_vals(jit_cache: list[JitItem]) -> list[int]:
+    return [
+        j
+        for j, ji in enumerate(jit_cache)
+        if isinstance(ji.prg, CompiledAstRunner)
+        and ji.prg.vars
+    ]
 
 class GraphException(Exception):
     pass

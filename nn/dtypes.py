@@ -9,9 +9,7 @@ class DType(ta.NamedTuple):
     priority: int  # this determines when things get upcasted
     itemsize: int
     name: str
-    np: ta.Optional[
-        type
-    ]  # TODO: someday this will be removed with the "remove numpy" project
+    np: ta.Optional[type]  # TODO: someday this will be removed with the "remove numpy" project
     sz: int = 1
 
     def __repr__(self):

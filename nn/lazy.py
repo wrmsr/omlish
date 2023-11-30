@@ -264,9 +264,10 @@ class LazyBuffer(lang.Final):
         return self._base if self._base is not None else self
 
     def is_unrealized_const(self) -> bool:
-        return not self.realized and (
-                isinstance(self.base.op, ops.LoadConst)
-        )
+        return not self.realized and isinstance(self.base.op, ops.LoadConst)
+
+    def is_unrealized_contiguous_const(self):
+        return self.is_unrealized_const() and self.st.contiguous
 
     @property
     def realized(self):

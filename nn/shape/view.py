@@ -127,7 +127,8 @@ class View:
 
     @functools.lru_cache(maxsize=None)  # pylint: disable=method-cache-max-size-none
     def expand(self, new_shape: tuple[sint, ...]) -> View:
-        assert len(new_shape) == len(self.shape)
+        if len(new_shape) != len(self.shape):
+            raise ValueError(f"expand arg {new_shape=} must have same number of dimensions as shape {self.shape=}")
         if 0 in self.shape:
             assert (
                 all((s == x == 0) or (s > 0 and (x % s) == 0) for s, x in zip(self.shape, new_shape))
@@ -203,9 +204,8 @@ class View:
             assert (
                 all(isinstance(s, (int, Variable)) for s in new_shape)
             ), f"{self.shape=} -> {new_shape=} contains non (int, Variable) dim"
-            assert (
-                prod(self.shape) == prod([s if isinstance(s, int) else ta.cast(Variable, s).val for s in new_shape])
-            ), f"size mismatched, can't reshape {self.shape=} -> {new_shape=}"
+            if prod(self.shape) != prod([s if isinstance(s, int) else ta.cast(Variable, s).val for s in new_shape]):
+                raise ValueError(f"size mismatched, can't reshape {self.shape=} -> {new_shape=}")
 
         # after the asserts, it's okay to check contiguous
         if self.contiguous:
