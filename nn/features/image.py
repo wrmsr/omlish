@@ -13,7 +13,6 @@ from ..helpers import flatten
 from ..helpers import getenv
 from ..helpers import prod
 from ..lazy import ScheduleItem
-from ..lazy import get_single_root
 from ..shape.symbolic import AndNode
 from ..shape.symbolic import LtNode
 from ..shape.symbolic import Node
@@ -87,8 +86,6 @@ def image_conv2d(self, weight, bias=None, groups=1, stride=1, dilation=1, paddin
     if IMAGE >= 2:
         x, w = x.cast(base_image_type((bs * iy, ix * groups * cin // 4, 4))), w.cast(base_image_type((cout // 4, H * W * cin, 4)))
     x, w = x.contiguous(), w.contiguous()
-    if getenv("PREREALIZE", 1) and get_single_root(w.lazydata).realized:
-        w.realize()
 
     # expand out
     rcin_hi, rcin_lo = cin // 4 if cin >= 4 else 1, 4 if cin >= 4 else 1

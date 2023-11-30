@@ -184,7 +184,7 @@ class MetalBatchExecutor(BatchExecutor):
     def __init__(
             self,
             jit_cache: list[JitItem],
-            input_rawbuffers: dict[ta.Union[int, str], RawBuffer],
+            input_rawbuffers: list[RawBuffer],
             var_vals: dict[Variable, int],
     ) -> None:
         super().__init__(jit_cache, input_rawbuffers, var_vals)
@@ -259,7 +259,7 @@ class MetalBatchExecutor(BatchExecutor):
 
     def __call__(
             self,
-            input_rawbuffers: dict[ta.Union[int, str], RawBuffer],
+            input_rawbuffers: list[RawBuffer],
             var_vals: dict[Variable, int],
             wait=False,
     ):
@@ -267,12 +267,12 @@ class MetalBatchExecutor(BatchExecutor):
         if self.command_buffer is not None and self.command_buffer in METAL.mtl_buffers_in_flight:
             self.command_buffer.waitUntilCompleted()
 
-        all_read_resources = self.read_resources + [x._buf for x in input_rawbuffers.values()]
+        all_read_resources = self.read_resources + [x._buf for x in input_rawbuffers]
 
-        for (j, i), input_name in self.input_replace.items():
+        for (j, i), input_idx in self.input_replace.items():
             self.icb.\
                 indirectComputeCommandAtIndex_(j).\
-                setKernelBuffer_offset_atIndex_(input_rawbuffers[input_name]._buf, 0, i)
+                setKernelBuffer_offset_atIndex_(input_rawbuffers[input_idx]._buf, 0, i)
 
         for j in self.input_has_variable_dims:
             global_size, local_size = ta.cast(CompiledAstRunner, self.jit_cache[j].prg).launch_dims(var_vals)
