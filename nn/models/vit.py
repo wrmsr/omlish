@@ -1,5 +1,3 @@
-import io
-
 import numpy as np
 
 from ..tensor import Tensor
@@ -55,7 +53,7 @@ class ViT:
             url = base_url + "/B_16-i21k-300ep-lr_0.001-aug_medium1-wd_0.1-do_0.0-sd_0.0--imagenet2012-steps_20k-lr_0.01-res_224.npz"
         else:
             raise Exception("no pretrained weights for configuration")
-        dat = np.load(io.BytesIO(fetch(url)))
+        dat = np.load(fetch(url))
 
         # for x in dat.keys():
         #  print(x, dat[x].shape, dat[x].dtype)

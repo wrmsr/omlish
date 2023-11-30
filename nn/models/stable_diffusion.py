@@ -18,7 +18,7 @@ from ..dtypes import dtypes
 from ..helpers import Context
 from ..helpers import GlobalCounters
 from ..helpers import Timing
-from ..helpers import download_file
+from ..helpers import fetch
 from ..helpers import getenv
 from ..jit import TinyJit
 from ..nn.conv import Conv2d
@@ -514,11 +514,10 @@ class CLIPTextTransformer:
 # Clip tokenizer, taken from https://github.com/openai/CLIP/blob/main/clip/simple_tokenizer.py (MIT license)
 @functools.lru_cache()
 def default_bpe():
-    fn = pathlib.Path(__file__).parents[2] / "weights/bpe_simple_vocab_16e6.txt.gz"
-    download_file(
-        "https://github.com/openai/CLIP/raw/main/clip/bpe_simple_vocab_16e6.txt.gz", fn
+    return fetch(
+        "https://github.com/openai/CLIP/raw/main/clip/bpe_simple_vocab_16e6.txt.gz",
+        "bpe_simple_vocab_16e6.txt.gz",
     )
-    return fn
 
 
 def get_pairs(word):
@@ -732,9 +731,6 @@ class StableDiffusion:
 # ** ldm.modules.encoders.modules.FrozenCLIPEmbedder
 # cond_stage_model.transformer.text_model
 
-# this is sd-v1-4.ckpt
-FILENAME = pathlib.Path(__file__).parents[2] / "weights/sd-v1-4.ckpt"
-
 def _main():
     parser = argparse.ArgumentParser(
         description="Run Stable Diffusion",
@@ -769,11 +765,16 @@ def _main():
     model = StableDiffusion()
 
     # load in weights
-    download_file(
-        "https://huggingface.co/CompVis/stable-diffusion-v-1-4-original/resolve/main/sd-v1-4.ckpt",
-        FILENAME,
+    load_state_dict(
+        model,
+        torch_load(
+            fetch(
+                'https://huggingface.co/CompVis/stable-diffusion-v-1-4-original/resolve/main/sd-v1-4.ckpt',
+                'sd-v1-4.ckpt',
+            )
+        )['state_dict'],
+        strict=False,
     )
-    load_state_dict(model, torch_load(FILENAME)["state_dict"], strict=False)
 
     if args.fp16:
         for l in get_state_dict(model).values():

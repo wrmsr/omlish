@@ -57,18 +57,8 @@ class CStyleLanguage(ta.NamedTuple):
             return f"({var_dtype.name})({x[0]})"
 
         assert len(x) == var_dtype.sz, f"cast is wrong size {len(x)} != {var_dtype.sz}"
-        assert self.float4 is not None, "cast is not supported on this platform"
-
-        if var_dtype == dtypes.half.vec(16):
-            return f"{{{','.join(f'(half){x}' for x in x)}}}"
-
-        if var_dtype == dtypes.float.vec(8):
-            return f"{{{','.join(x)}}}"
-
-        return (
-            f"{self.float4.replace('float4', var_dtype.name)}"
-            f"({','.join(f'(half){x}' if var_dtype.scalar() == dtypes.half else x for x in x)})"
-        )
+        assert self.float4 is not None, "vectorized cast is not supported on this platform"
+        return f"{self.float4.replace('float4', var_dtype.name)}({','.join(x)})"
 
     # returns a str expression of the const with the given type
     def render_const(self, x: ta.Union[float, int], var_dtype) -> str:
@@ -107,11 +97,11 @@ class CStyleLanguage(ta.NamedTuple):
 
         return self.render_cast([out_val], output_dtype) if output_dtype != buf_dtype else out_val
 
-    def render_local(self, name:str, size:int):
+    def render_local(self, name: str, size: int):
         return self.smem_align + self.smem_prefix + f"float {name}[{size}];"
 
     def render_for(
-        self, expr: str, _min: ta.Union[int, str], _max: ta.Union[int, str]
+            self, expr: str, _min: ta.Union[int, str], _max: ta.Union[int, str]
     ) -> str:
         return f"for (int {expr} = {_min}; {expr} < {_max}; ++{expr}) {{"
 
@@ -122,12 +112,12 @@ class CStyleLanguage(ta.NamedTuple):
         return f"({cond})?({x}):{y}"
 
     def render_kernel(
-        self,
-        function_name: str,
-        kernel: list[str],
-        bufs: list[tuple[str, DType]],
-        local_size: list[int],
-        prekernel: list[str],
+            self,
+            function_name: str,
+            kernel: list[str],
+            bufs: list[tuple[str, DType]],
+            local_size: list[int],
+            prekernel: list[str],
     ) -> str:
         tmp = (
             "const sampler_t smp = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP | CLK_FILTER_NEAREST;\n"
@@ -143,10 +133,10 @@ class CStyleLanguage(ta.NamedTuple):
                 else self.arg_int_prefix
                 if dtype == dtypes._arg_int32
                 else ("const " if i > 0 else "")
-                + self.buffer_prefix
-                + dtype.name
-                + "*"
-                + self.buffer_suffix,
+                     + self.buffer_prefix
+                     + dtype.name
+                     + "*"
+                     + self.buffer_suffix,
             )
             for i, (name, dtype) in enumerate(bufs)
         ]
@@ -168,13 +158,13 @@ class CStyleLanguage(ta.NamedTuple):
 
     # returns a str statement that does the store
     def render_store(
-        self,
-        buf_name: str,
-        buf_dtype: DType,
-        var_name: str,
-        var_dtype: DType,
-        idx: str,
-        local=False,
+            self,
+            buf_name: str,
+            buf_dtype: DType,
+            var_name: str,
+            var_dtype: DType,
+            idx: str,
+            local=False,
     ) -> str:
         if isinstance(buf_dtype, ImageDType):
             assert var_dtype == dtypes.float.vec(4), "images must be float4"
@@ -208,7 +198,7 @@ def uops_to_cstyle(lang: CStyleLanguage, function_name: str, uops: list[uo.UOp])
     def ssa(u, prefix="t"):
         nonlocal c, r
         c[prefix] += 1
-        r[u] = f"{prefix}{c[prefix]-1}"
+        r[u] = f"{prefix}{c[prefix] - 1}"
         return r[u]
 
     child_count: ta.DefaultDict[uo.UOp, int] = collections.defaultdict(int)
@@ -261,9 +251,9 @@ def uops_to_cstyle(lang: CStyleLanguage, function_name: str, uops: list[uo.UOp])
 
             # remove parens if ALU types are the same. TODO: can do more here
             if (
-                isinstance(u.vin[0], uo.Alu)
-                and u.vin[0].arg == u.arg
-                and u.arg in {ops.Add, ops.Sub, ops.Mul}
+                    isinstance(u.vin[0], uo.Alu)
+                    and u.vin[0].arg == u.arg
+                    and u.arg in {ops.Add, ops.Sub, ops.Mul}
             ):
                 val = lang.code_for_op[u.arg](
                     strip_parens(r[u.vin[0]]), *[r[x] for x in u.vin[1:]]
@@ -286,14 +276,14 @@ def uops_to_cstyle(lang: CStyleLanguage, function_name: str, uops: list[uo.UOp])
             else:
                 kk(
                     f"{lang.generic_var_prefix if lang.generic_var_prefix else u.dtype.name} "
-                    f"{ssa(u,'alu')} = {val};"
+                    f"{ssa(u, 'alu')} = {val};"
                 )
 
         elif isinstance(u, uo.DefineAcc):
             assert u.dtype is not None
             kk(
                 f"{lang.generic_var_prefix if lang.generic_var_prefix else u.dtype.name} "
-                f"{ssa(u,'acc')} = {lang.render_const(u.arg, u.dtype)};"
+                f"{ssa(u, 'acc')} = {lang.render_const(u.arg, u.dtype)};"
             )
 
         elif isinstance(u, uo.Special):
@@ -323,7 +313,7 @@ def uops_to_cstyle(lang: CStyleLanguage, function_name: str, uops: list[uo.UOp])
                 val = lang.render_conditional(r[u.vin[2]], val, r[u.vin[3]])
             kk(
                 f"{lang.generic_var_prefix if lang.generic_var_prefix else u.dtype.name} "
-                f"{ssa(u,'val')} = {val};"
+                f"{ssa(u, 'val')} = {val};"
             )
 
         elif isinstance(u, uo.Phi):
@@ -354,7 +344,7 @@ def uops_to_cstyle(lang: CStyleLanguage, function_name: str, uops: list[uo.UOp])
             else:
                 kk(
                     f"{lang.generic_var_prefix if lang.generic_var_prefix else u.dtype.name} "
-                    f"{ssa(u,'cast')} = {val};"
+                    f"{ssa(u, 'cast')} = {val};"
                 )
 
         elif isinstance(u, uo.DefineLocal):
