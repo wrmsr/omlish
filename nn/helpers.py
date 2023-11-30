@@ -253,7 +253,7 @@ def fetch(
         with urllib.request.urlopen(url, timeout=10) as r:
             assert r.status == 200
             total_length = int(r.headers.get('content-length', 0))
-            progress_bar = tqdm(total=total_length, unit='B', unit_scale=True, desc=url)
+            progress_bar = tqdm.tqdm(total=total_length, unit='B', unit_scale=True, desc=url)
             (path := fp.parent).mkdir(parents=True, exist_ok=True)
             with tempfile.NamedTemporaryFile(dir=path, delete=False) as f:
                 while chunk := r.read(16384):

@@ -32,8 +32,7 @@ np.random.seed(1337)
 
 class TestOnnxModel(unittest.TestCase):
     def test_benchmark_openpilot_model(self):
-        dat = fetch(OPENPILOT_MODEL)
-        onnx_model = onnx.load(io.BytesIO(dat))
+        onnx_model = onnx.load(fetch(OPENPILOT_MODEL))
         run_onnx = get_run_onnx(onnx_model)
 
         def get_inputs():
@@ -83,8 +82,7 @@ class TestOnnxModel(unittest.TestCase):
             ps.print_stats(30)
 
     def test_openpilot_model(self):
-        dat = fetch(OPENPILOT_MODEL)
-        onnx_model = onnx.load(io.BytesIO(dat))
+        onnx_model = onnx.load(fetch(OPENPILOT_MODEL))
         run_onnx = get_run_onnx(onnx_model)
         print("got run_onnx")
         inputs = {

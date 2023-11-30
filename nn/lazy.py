@@ -164,14 +164,18 @@ def get_movementroot_contiguous(x: LazyBuffer) -> LazyBuffer:
     )
 
 
-def vars_from_ast(ast:LazyOp) -> set[Variable]:
-    return set.union(
-        *[
-            x.arg.st.vars()
-            for x in ast.get_lazyops()
-            if isinstance(x, ops.BufferOp)
-        ],
-        set(),
+# NOTE: this is the canonical order
+def vars_from_ast(ast: LazyOp) -> list[Variable]:
+    return sorted(
+        set.union(
+            *[
+                x.arg.st.vars()
+                for x in ast.get_lazyops()
+                if isinstance(x, ops.BufferOp)
+            ],
+            set(),
+        ),
+        key=lambda x: str(x.expr),
     )
 
 
