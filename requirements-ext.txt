@@ -58,6 +58,8 @@ triton==2.1.0; platform_machine == 'x86_64'
 
 wgpu==0.13.1
 
+hypothesis==6.92.0
+
 ##
 
 datasets==2.15.0
