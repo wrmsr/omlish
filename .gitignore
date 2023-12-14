@@ -20,6 +20,7 @@
 .env
 /*.egg-info/
 /.cache/
+/.hypothesis/
 /.ipynb_checkpoints/
 /.mypy_cache/
 /.pytest_cache/
