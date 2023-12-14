@@ -6,8 +6,8 @@ import unittest
 import numpy as np
 import onnx
 import pytest
-from extra.onnx import get_run_onnx
 
+from ....extra.onnx import get_run_onnx
 from ....helpers import CI
 from ....helpers import fetch
 from ....helpers import temp

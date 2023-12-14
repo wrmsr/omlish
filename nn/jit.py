@@ -95,9 +95,7 @@ class TinyJit(Generic[ReturnType]):
         self.cnt: int = 0
         self.ret: Optional[ReturnType] = None
         self.expected_vals: Optional[Tuple[Variable, ...]] = None
-        self.expected_name_sts_dtype: Optional[
-            Tuple[Tuple[Union[int, str], ShapeTracker, DType], ...]
-        ] = None
+        self.expected_name_sts_dtype: Optional[Tuple[Tuple[Union[int, str], ShapeTracker, DType], ...]] = None
 
     # add support for instance methods
     def __get__(self, obj, objtype):
@@ -255,9 +253,7 @@ class PlaceHolder:
 
 class _CacheCollector:
     def __init__(self):
-        self.cache: Optional[
-            List[Tuple[JITRunner, List[Union[Buffer, PlaceHolder]]]]
-        ] = None
+        self.cache: Optional[List[Tuple[JITRunner, List[Union[Buffer, PlaceHolder]]]]] = None
 
     def start(self, var_vals: Optional[Dict[Variable, int]] = None):
         self.cache = []

@@ -28,7 +28,7 @@ def set_equal_weights(mdl, torch_mdl):
 
 class TestBert(unittest.TestCase):
     def test_questions(self):
-        from extra.models.bert import BertForQuestionAnswering
+        from ....extra.models.bert import BertForQuestionAnswering
         from transformers import (
             BertForQuestionAnswering as TorchBertForQuestionAnswering,
         )

@@ -9,7 +9,7 @@ from io import StringIO
 from contextlib import redirect_stdout
 from ... import Tensor, nn, Device, dtypes
 from ...helpers import Timing, colored, getenv, fetch
-from extra.models.llama import Transformer, convert_from_huggingface
+from ..models.llama import Transformer, convert_from_huggingface
 from sentencepiece import SentencePieceProcessor
 
 
