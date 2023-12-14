@@ -1,14 +1,13 @@
 import pathlib
 import unittest
 
-from examples.whisper import init_whisper
-from examples.whisper import load_file_waveform
-from examples.whisper import transcribe_file
-from examples.whisper import transcribe_waveform
-
-from ... import Device
+from .... import Device
 from ....helpers import CI
 from ....helpers import fetch
+from ...examples.whisper import init_whisper
+from ...examples.whisper import load_file_waveform
+from ...examples.whisper import transcribe_file
+from ...examples.whisper import transcribe_waveform
 
 # Audio generated with the command on MacOS:
 # say "Could you please let me out of the box?" --file-format=WAVE  --data-format=LEUI8@16000 -o test

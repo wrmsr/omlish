@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 import numpy as np
 from PIL import Image
-from extra.datasets import fetch_mnist
-from extra.models.resnet import ResNet
-from extra.training import evaluate
-from extra.training import train
 
+from ..datasets import fetch_mnist
+from ..models.resnet import ResNet
+from ..training import evaluate
+from ..training import train
 from ...helpers import getenv
 from ...nn import optim
 from ...nn.state import get_parameters

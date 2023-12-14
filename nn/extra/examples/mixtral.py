@@ -2,10 +2,10 @@ import argparse
 import functools
 import os
 
-from extra.models.llama import FeedForward
-from extra.models.llama import Transformer
 from tqdm import tqdm
 
+from ..models.llama import FeedForward
+from ..models.llama import Transformer
 from ... import Device
 from ... import GlobalCounters
 from ... import Tensor

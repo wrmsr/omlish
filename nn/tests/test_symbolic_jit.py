@@ -1,12 +1,12 @@
 import unittest
 
 import numpy as np
-from test.helpers import assert_jit_cache_len
 
 from ..helpers import getenv
 from ..jit import TinyJit
 from ..shape.symbolic import Variable
 from ..tensor import Tensor
+from .helpers import assert_jit_cache_len
 
 
 @unittest.skipIf(getenv("ARM64") or getenv("PTX"), "ARM64 and PTX are not supported")

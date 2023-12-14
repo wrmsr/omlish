@@ -2,10 +2,10 @@
 import random
 
 import numpy as np
-from extra.models.transformer import Transformer
-from extra.training import evaluate
-from extra.training import train
 
+from ..models.transformer import Transformer
+from ..training import evaluate
+from ..training import train
 from ...nn.optim import Adam
 from ...nn.state import get_parameters
 

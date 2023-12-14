@@ -4,10 +4,10 @@ from multiprocessing import Process
 from multiprocessing import Queue
 
 import numpy as np
-from extra.datasets import fetch_cifar
-from extra.models.efficientnet import EfficientNet
 from tqdm import trange
 
+from ..datasets import fetch_cifar
+from ..models.efficientnet import EfficientNet
 from ...helpers import getenv
 from ...nn import optim
 from ...nn.state import get_parameters
@@ -51,7 +51,7 @@ if __name__ == "__main__":
     print(f"training with batch size {BS} for {steps} steps")
 
     if IMAGENET:
-        from extra.datasets.imagenet import fetch_batch
+        from ..datasets.imagenet import fetch_batch
 
         def loader(q):
             while 1:

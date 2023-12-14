@@ -4,8 +4,6 @@ from pathlib import Path
 
 import math
 import numpy as np
-from extra.models.resnet import ResNet
-from extra.models.retinanet import nms as _box_nms
 
 from ... import nn
 from ...helpers import dtypes
@@ -13,6 +11,8 @@ from ...helpers import fetch
 from ...helpers import get_child
 from ...nn.state import torch_load
 from ...tensor import Tensor
+from .resnet import ResNet
+from .retinanet import nms as _box_nms
 
 USE_NP_GATHER = os.getenv("FULL_TINYGRAD", "0") == "0"
 

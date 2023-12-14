@@ -3,9 +3,9 @@ import os
 from pathlib import Path
 
 import onnx
-from extra.onnx import get_run_onnx
 from ultralytics import YOLO
 
+from ..onnx import get_run_onnx
 from ...tensor import Tensor
 
 os.chdir("/tmp")

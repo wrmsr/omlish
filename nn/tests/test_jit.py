@@ -3,12 +3,12 @@ import functools
 import unittest
 
 import numpy as np
-from test.helpers import assert_jit_cache_len
 
 from ..device import Device
 from ..helpers import CI
 from ..jit import TinyJit
 from ..tensor import Tensor
+from .helpers import assert_jit_cache_len
 
 
 class TestJit(unittest.TestCase):

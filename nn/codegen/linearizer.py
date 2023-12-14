@@ -1064,8 +1064,8 @@ class Linearizer(Kernel):
                         dtype,
                         (vin[0], vin[1].vin[0]),
                         BinaryOps.SUB,
-                        cachable=cachable,
-                        insert_before=insert_before,
+                        cachable,
+                        insert_before,
                     )
                 # constant folding
                 if arg == UnaryOps.NEG and vin[0].uop == UOps.CONST:
@@ -1108,17 +1108,17 @@ class Linearizer(Kernel):
                     return vin[0]
 
         # When insert_before is set, need to check if the cached expr is valid with the given insert place.
+        if insert_before is None:
+            insert_before = len(self.uops)
+        # check if the cached expr is valid with the given insert place.
         if (
-            cachable
-            and (expr := self.saved_exprs.get(key, None)) is not None
-            and (insert_before is None or self.uops.index(expr) <= insert_before)
+                cachable
+                and (expr := self.saved_exprs.get(key, None)) is not None
+                and self.uops.index(expr) <= insert_before
         ):
             return expr
         ret = UOp(uop, dtype, vin, arg)
-        if insert_before is not None:
-            self.uops.insert(insert_before, ret)
-        else:
-            self.uops.append(ret)
+        self.uops.insert(insert_before, ret)
         if cachable:
             self.saved_exprs[key] = ret
         return ret

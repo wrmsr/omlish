@@ -155,7 +155,7 @@ class TestDTypeALU(unittest.TestCase):
     @unittest.skipIf(
         (Device.DEFAULT in ["GPU", "LLVM"] and CI) or getenv("CUDACPU"), ""
     )
-    @given(ht.float32, st.sampled_from(unary_operations))
+    @given(ht.float16, st.sampled_from(unary_operations))
     def test_float16_unary(self, a, op):
         universal_test_unary(a, dtypes.float16, op)
 

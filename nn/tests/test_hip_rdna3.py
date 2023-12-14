@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 import unittest
 
-from examples.beautiful_mnist import Model as MNIST
-from examples.hlb_cifar10 import SpeedyResNet
-
 from .. import Device
 from .. import Tensor
+from ..extra.examples.beautiful_mnist import Model as MNIST
+from ..extra.examples.hlb_cifar10 import SpeedyResNet
 from ..helpers import dtypes
 
 

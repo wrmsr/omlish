@@ -9,7 +9,6 @@ from typing import Union
 
 import math
 import numpy as np
-from extra.onnx import safe_numpy
 from onnx import TensorProto
 from onnx.helper import tensor_dtype_to_np_dtype
 
@@ -18,6 +17,7 @@ from ..helpers import dtypes
 from ..helpers import flatten
 from ..helpers import prod
 from ..tensor import Tensor
+from .onnx import safe_numpy
 
 tensor_methods = {
     "Neg",
@@ -33,7 +33,6 @@ tensor_methods = {
     "Tan",
     "Relu",
     "Sigmoid",
-    "Tanh",
     "MatMul",
     "Floor",
     "Ceil",
@@ -44,10 +43,12 @@ tensor_methods = {
     "Mul",
     "Sinh",
     "Cosh",
+    "Tanh",
     "Softsign",
     "Asinh",
     "Acosh",
     "Atanh",
+    "Elu",
 }
 
 # **************** Free Ops ****************
@@ -171,7 +172,7 @@ def PRelu(X: Tensor, slope: Tensor):
     slope = (
         slope[0] if slope.shape[-1] != X.shape[-1] else slope
     )  # HACK OnnxBackendPyTorchConvertedModelTest HAS WEIRD SLOPE WHERE IT'S [0.25, 0.25, 0.25] FOR ANY X.SHAPE
-    return X.clip(0, float("inf")) + X.clip(float("-inf"), 0) * slope
+    return (X > 0).where(X, X * slope)
 
 
 def LeakyRelu(X: Tensor, alpha=0.01):
@@ -179,7 +180,7 @@ def LeakyRelu(X: Tensor, alpha=0.01):
 
 
 def ThresholdedRelu(X: Tensor, alpha=1.0):
-    return (X - alpha).relu() + (X - alpha).relu().sign() * alpha
+    return (X > alpha).where(X, 0)
 
 
 def Softmax_1(input: Tensor, axis=1):
@@ -256,11 +257,11 @@ def GlobalMaxPool(X: Tensor):
     return X.max(axis=tuple(range(2, len(X.shape))), keepdim=True)
 
 
-def OptionalHasElement(x: Tensor = None):
+def OptionalHasElement(x: Optional[Tensor] = None):
     return Tensor(x is not None and x.numel() > 0, dtype=dtypes.bool)
 
 
-def OptionalGetElement(x: Tensor = None):
+def OptionalGetElement(x: Optional[Tensor] = None):
     return x if x is not None else Tensor([], dtype=dtypes.float32)
 
 
@@ -302,23 +303,19 @@ def Shrink(input: Tensor, bias=0.0, lambd=0.5):
 
 
 def And(x: Tensor, y: Tensor):
-    return (x == y).where(x, Tensor.zeros(*x.shape)).cast(dtypes.bool)
+    return (x == y).where(x, 0).cast(dtypes.bool)
 
 
 def Or(x: Tensor, y: Tensor):
-    return (x == y).where(x, Tensor.ones(*x.shape)).cast(dtypes.bool)
+    return (x == y).where(x, 1).cast(dtypes.bool)
 
 
 def Xor(x: Tensor, y: Tensor):
-    return (
-        (x == y).where(Tensor.zeros(*x.shape), Tensor.ones(*x.shape)).cast(dtypes.bool)
-    )
+    return (x == y).where(0, 1).cast(dtypes.bool)
 
 
 def Not(x: Tensor):
-    return (
-        (x == 1).where(Tensor.zeros(*x.shape), Tensor.ones(*x.shape)).cast(dtypes.bool)
-    )
+    return (x == 1).where(0, 1).cast(dtypes.bool)
 
 
 def Asin(x):
@@ -354,7 +351,7 @@ def Atan(y: Tensor):
 
 def Trilu(x: Tensor, k: Union[Tensor, int] = 0, upper=1):
     k = (
-        int(k.numpy().item()) if k != 0 else 0
+        int(k.numpy().item()) if isinstance(k, Tensor) else 0
     )  # onnx passes k as a tensor int64 with one element, default is 0
     return x.triu(k) if upper else x.tril(k)
 
@@ -400,10 +397,6 @@ def ArgMin(x, axis=0, keepdims=1, select_last_index=0):
     return ArgMax(-x, axis=axis, keepdims=keepdims, select_last_index=select_last_index)
 
 
-def Elu(input: Tensor, alpha=1.0):
-    return input.elu(alpha=alpha)
-
-
 def Concat(*inputs: List[Tensor], axis):
     return inputs[0].cat(*inputs[1:], dim=axis)
 
@@ -415,6 +408,7 @@ def Transpose(input: Tensor, perm=None):
 
 
 # NOTE: since we only have one type, this is valid!
+# TODO: fix this with dtypes
 def CastLike(input, target_type):
     assert isinstance(target_type, Tensor), "can only CastLike Tensor"
     return input

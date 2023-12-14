@@ -352,7 +352,7 @@ class TestSchedule(unittest.TestCase):
         check_schedule(x, 3)
 
     def test_resnet_block(self):
-        from extra.models.resnet import BasicBlock
+        from ..extra.models.resnet import BasicBlock
 
         Tensor.training = False
         bb = BasicBlock(64, 64)

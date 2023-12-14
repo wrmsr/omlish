@@ -3,13 +3,13 @@ import unittest
 
 import numpy as np
 import pytest
-from extra.models.convnext import ConvNeXt
-from extra.models.efficientnet import EfficientNet
-from extra.models.resnet import ResNet18
-from extra.models.transformer import Transformer
-from extra.models.vit import ViT
-from extra.training import train
 
+from ....extra.models.convnext import ConvNeXt
+from ....extra.models.efficientnet import EfficientNet
+from ....extra.models.resnet import ResNet18
+from ....extra.models.transformer import Transformer
+from ....extra.models.vit import ViT
+from ....extra.training import train
 from ....helpers import getenv
 from ....nn import optim
 from ....nn.state import get_parameters
@@ -35,7 +35,7 @@ def train_one_step(model, X, Y):
 
 def check_gc():
     if Device.DEFAULT == "GPU":
-        from extra.introspection import print_objects
+        from ....extra.introspection import print_objects
 
         assert print_objects() == 0
 

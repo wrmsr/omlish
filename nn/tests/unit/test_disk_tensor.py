@@ -136,7 +136,7 @@ class TestSafetensors(unittest.TestCase):
                 )
 
     def test_efficientnet_safetensors(self):
-        from extra.models.efficientnet import EfficientNet
+        from ...extra.models.efficientnet import EfficientNet
 
         model = EfficientNet(0)
         state_dict = get_state_dict(model)

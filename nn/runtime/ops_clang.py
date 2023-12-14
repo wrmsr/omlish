@@ -44,7 +44,7 @@ class ClangProgram:
 
 renderer = functools.partial(
     uops_to_cstyle,
-    CStyleLanguage(buffer_suffix=" restrict", arg_int_prefix="const int"),
+    CStyleLanguage(buffer_suffix=" restrict"),
 )
 ClangDevice = Compiled(
     MallocAllocator,

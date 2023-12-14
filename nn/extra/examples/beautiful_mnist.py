@@ -2,9 +2,9 @@
 from typing import Callable
 from typing import List
 
-from extra.datasets import fetch_mnist
 from tqdm import trange
 
+from ..datasets import fetch_mnist
 from ... import GlobalCounters
 from ... import Tensor
 from ... import TinyJit

@@ -2,8 +2,8 @@ import ast
 
 import numpy as np
 from PIL import Image
-from extra.models.vit import ViT
 
+from ..models.vit import ViT
 from ...helpers import fetch
 from ...helpers import getenv
 from ...tensor import Tensor

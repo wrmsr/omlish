@@ -2,11 +2,11 @@ from pathlib import Path
 
 import numpy as np
 import torch
-from extra.datasets import fetch_mnist
 from torchvision.utils import make_grid
 from torchvision.utils import save_image
 from tqdm import trange
 
+from ..datasets import fetch_mnist
 from ...nn import optim
 from ...nn.state import get_parameters
 from ...tensor import Tensor

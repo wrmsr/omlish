@@ -2,9 +2,9 @@ import unittest
 
 import numpy as np
 import torch
-from extra.datasets import fetch_mnist
 from torch import nn
 
+from ....extra.datasets import fetch_mnist
 from ....helpers import CI
 from ....nn import BatchNorm2d
 from ....nn import Conv2d

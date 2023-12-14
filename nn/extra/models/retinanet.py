@@ -377,7 +377,7 @@ class FPN:
 
 
 if __name__ == "__main__":
-    from extra.models.resnet import ResNeXt50_32X4D
+    from .resnet import ResNeXt50_32X4D
 
     backbone = ResNeXt50_32X4D()
     retina = RetinaNet(backbone)

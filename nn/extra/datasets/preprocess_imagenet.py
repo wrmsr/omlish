@@ -1,7 +1,6 @@
-from extra.datasets.imagenet import iterate
-
 from ...helpers import dtypes
 from ...tensor import Tensor
+from .imagenet import iterate
 
 if __name__ == "__main__":
     # sz = len(get_val_files())

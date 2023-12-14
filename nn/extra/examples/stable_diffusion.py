@@ -2,13 +2,13 @@
 # https://github.com/ekagra-ranjan/huggingface-blog/blob/main/stable_diffusion.md
 import argparse
 import gzip
-import math
 import re
 import tempfile
 from collections import namedtuple
 from functools import lru_cache
 from pathlib import Path
 
+import math
 from tqdm import tqdm
 
 from ... import Device

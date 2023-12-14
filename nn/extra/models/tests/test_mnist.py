@@ -3,10 +3,10 @@ import unittest
 
 import numpy as np
 import pytest
-from extra.datasets import fetch_mnist
-from extra.training import evaluate
-from extra.training import train
 
+from ....extra.datasets import fetch_mnist
+from ....extra.training import evaluate
+from ....extra.training import train
 from ....nn import BatchNorm2d
 from ....nn import optim
 from ....nn.state import get_parameters

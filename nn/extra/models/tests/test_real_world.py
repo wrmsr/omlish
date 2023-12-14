@@ -2,16 +2,9 @@ import time
 import unittest
 
 import numpy as np
-from examples.gpt2 import MODEL_PARAMS as GPT2_MODEL_PARAMS
-from examples.gpt2 import Transformer as GPT2Transformer
-from examples.hlb_cifar10 import SpeedyResNet
-from examples.llama import MODEL_PARAMS as LLAMA_MODEL_PARAMS
-from examples.llama import Transformer as LLaMaTransformer
-from examples.stable_diffusion import UNetModel
-from test.helpers import derandomize_model
 
-from ... import Device
-from ... import GlobalCounters
+from .... import Device
+from .... import GlobalCounters
 from ....helpers import CI
 from ....helpers import dtypes
 from ....jit import TinyJit
@@ -19,6 +12,13 @@ from ....nn import optim
 from ....nn.state import get_parameters
 from ....shape.symbolic import Variable
 from ....tensor import Tensor
+from ....tests.helpers import derandomize_model
+from ...examples.gpt2 import MODEL_PARAMS as GPT2_MODEL_PARAMS
+from ...examples.gpt2 import Transformer as GPT2Transformer
+from ...examples.hlb_cifar10 import SpeedyResNet
+from ...examples.llama import MODEL_PARAMS as LLAMA_MODEL_PARAMS
+from ...examples.llama import Transformer as LLaMaTransformer
+from ...examples.stable_diffusion import UNetModel
 
 
 def helper_test(
