@@ -3,8 +3,8 @@ import unittest
 
 import numpy as np
 import torch
-from extra.models.rnnt import LSTM
 
+from ....extra.models.rnnt import LSTM
 from ....tensor import Tensor
 
 

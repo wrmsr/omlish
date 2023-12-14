@@ -16,7 +16,7 @@ from ... import Device
 from ...tensor import Tensor
 from ...nn.state import safe_load, torch_load, load_state_dict, get_parameters
 from ...helpers import GlobalCounters
-from extra.models.llama import Transformer, convert_from_huggingface
+from ..models.llama import Transformer, convert_from_huggingface
 from sentencepiece import SentencePieceProcessor
 
 MAX_CONTEXT = getenv("MAX_CONTEXT", 4096)

@@ -1,8 +1,6 @@
 import argparse
 import json
 import logging
-import math
-import numpy as np
 import re
 import sys
 import time
@@ -11,6 +9,8 @@ from functools import reduce
 from pathlib import Path
 from typing import List
 
+import math
+import numpy as np
 from phonemizer.backend import EspeakBackend
 from phonemizer.phonemize import _phonemize
 from phonemizer.phonemize import default_separator

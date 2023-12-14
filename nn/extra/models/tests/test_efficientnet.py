@@ -4,10 +4,10 @@ import unittest
 
 import numpy as np
 from PIL import Image
-from extra.models.efficientnet import EfficientNet
-from extra.models.resnet import ResNet50
-from extra.models.vit import ViT
 
+from ....extra.models.efficientnet import EfficientNet
+from ....extra.models.resnet import ResNet50
+from ....extra.models.vit import ViT
 from ....helpers import getenv
 from ....tensor import Tensor
 

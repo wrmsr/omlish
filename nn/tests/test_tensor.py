@@ -4,10 +4,10 @@ import unittest
 import mmap
 import numpy as np
 import torch
-from extra.gradcheck import gradcheck
-from extra.gradcheck import jacobian
-from extra.gradcheck import numerical_jacobian
 
+from ..extra.gradcheck import gradcheck
+from ..extra.gradcheck import jacobian
+from ..extra.gradcheck import numerical_jacobian
 from ..helpers import dtypes
 from ..helpers import temp
 from ..tensor import Device

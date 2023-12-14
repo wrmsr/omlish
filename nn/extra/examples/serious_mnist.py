@@ -3,11 +3,11 @@
 import sys
 
 import numpy as np
-from extra.augment import augment_img
-from extra.datasets import fetch_mnist
-from extra.training import evaluate
-from extra.training import train
 
+from ..augment import augment_img
+from ..datasets import fetch_mnist
+from ..training import evaluate
+from ..training import train
 from ...helpers import getenv
 from ...nn import BatchNorm2d
 from ...nn import optim

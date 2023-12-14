@@ -3,9 +3,6 @@ import random
 import sys
 
 import numpy
-from examples.vgg7_helpers.waifu2x import Vgg7
-from examples.vgg7_helpers.waifu2x import image_load
-from examples.vgg7_helpers.waifu2x import image_save
 
 from ...nn.optim import SGD
 from ...nn.state import get_state_dict
@@ -13,6 +10,9 @@ from ...nn.state import load_state_dict
 from ...nn.state import safe_load
 from ...nn.state import safe_save
 from ...tensor import Tensor
+from .vgg7_helpers.waifu2x import Vgg7
+from .vgg7_helpers.waifu2x import image_load
+from .vgg7_helpers.waifu2x import image_save
 
 # amount of context erased by model
 CONTEXT = 7

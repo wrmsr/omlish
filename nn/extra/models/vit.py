@@ -1,8 +1,8 @@
 import numpy as np
-from extra.models.transformer import TransformerBlock
 
 from ...helpers import fetch
 from ...tensor import Tensor
+from .transformer import TransformerBlock
 
 
 class ViT:

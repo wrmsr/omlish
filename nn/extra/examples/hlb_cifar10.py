@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 # setup for distributed
-from extra import dist
+# from extra import dist
 
 from ...helpers import dtypes
 from ...helpers import getenv
 
-if __name__ == "__main__":
-    if getenv("DIST"):
-        dist.preinit()
-        from extra.dist import collectives
+# if __name__ == "__main__":
+#     if getenv("DIST"):
+#         dist.preinit()
+#         from ..dist import collectives
+
+dist = None
 
 # tinygrad implementation of https://github.com/tysam-code/hlb-CIFAR10/blob/main/main.py
 # https://myrtle.ai/learn/how-to-train-your-resnet-8-bag-of-tricks/
@@ -16,7 +18,7 @@ if __name__ == "__main__":
 import random, time
 import numpy as np
 from typing import Any, Dict, Optional, SupportsIndex, Type, Union
-from extra.datasets import fetch_cifar, cifar_mean, cifar_std
+from ..datasets import fetch_cifar, cifar_mean, cifar_std
 from ... import nn
 from ...nn.state import get_state_dict
 from ...nn import optim
@@ -24,7 +26,7 @@ from ... import Device
 from ...tensor import Tensor
 from ...helpers import GlobalCounters
 from ...shape.symbolic import Node
-from extra.lr_scheduler import OneCycleLR
+from ..lr_scheduler import OneCycleLR
 from ...jit import TinyJit
 
 BS, EVAL_BS, STEPS = getenv("BS", 512), getenv("EVAL_BS", 500), getenv("STEPS", 1000)
@@ -318,7 +320,7 @@ def train_cifar():
     set_seed(hyp["seed"])
 
     # this import needs to be done here because this is running in a subprocess
-    from extra.dist import OOB
+    from ..dist import OOB
 
     assert OOB is not None or not getenv("DIST"), "OOB should be initialized"
     rank, world_size = getenv("RANK"), getenv("WORLD_SIZE", 1)

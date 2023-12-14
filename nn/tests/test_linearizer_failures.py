@@ -1,8 +1,6 @@
 # ruff: noqa: E501
 import unittest
 
-from test.external.fuzz_linearizer import run_linearizer
-
 from .. import Device
 from ..codegen.linearizer import Linearizer
 from ..features.search import Opt
@@ -10,7 +8,6 @@ from ..features.search import OptOps
 from ..helpers import CI
 from ..helpers import OSX
 from ..helpers import dtypes
-# stuff needed to unpack a kernel
 from ..ops import BinaryOps
 from ..ops import BufferOps
 from ..ops import ConstBuffer
@@ -21,6 +18,8 @@ from ..ops import UnaryOps
 from ..ops import get_lazyop_info
 from ..shape.shapetracker import ShapeTracker
 from ..shape.view import View
+from .external.fuzz_linearizer import run_linearizer
+
 
 inf, nan = float("inf"), float("nan")
 
