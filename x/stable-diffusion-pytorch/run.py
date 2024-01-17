@@ -11,7 +11,9 @@ prompts = [prompt]
 uncond_prompt = ""  # @param { type: "string" }
 uncond_prompts = [uncond_prompt] if uncond_prompt else None
 
-input_images = None
+# input_images = None
+from PIL import Image
+input_images = [Image.open('in.png')]
 
 strength = 0.8  # @param { type:"slider", min: 0, max: 1, step: 0.01 }
 
