@@ -57,8 +57,9 @@ def _main() -> None:
     height = 512
     width = 512
 
-    mode = 'sd'
+    # mode = 'sd'
     # mode = 'pca'
+    mode = 'clip'
 
     if mode == 'pca':
         def prep_img(img):
@@ -83,9 +84,9 @@ def _main() -> None:
     elif mode == 'sd':
         import torch
         torch.no_grad().__enter__()
+
         device = 'mps'
-        from stable_diffusion_pytorch import model_loader
-        encoder = model_loader.load_encoder(device)
+
         from stable_diffusion_pytorch import util
 
         def prep_img_t(img):
@@ -93,6 +94,9 @@ def _main() -> None:
             img_t = util.rescale(img_t, (0, 255), (-1, 1))
             img_t = img_t.permute(2, 0, 1)
             return img_t
+
+        from stable_diffusion_pytorch import model_loader
+        encoder = model_loader.load_encoder(device)
 
         def embed(imgs: list[Image]) -> list[Embedding]:
             embs = []
@@ -104,6 +108,30 @@ def _main() -> None:
                 inp = torch.stack(img_ts, axis=0)
                 emb = encoder(inp.to(device), noise.to(device))
                 embs.extend([e.flatten().cpu().detach().numpy() for e in emb])
+            return embs
+
+    elif mode == 'clip':
+        import torch
+        torch.no_grad().__enter__()
+
+        from transformers import CLIPProcessor, CLIPModel
+        model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
+        processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
+
+        from stable_diffusion_pytorch import util
+
+        def prep_img_t(img):
+            img_t = torch.tensor(prep_img(img), dtype=torch.float32)
+            img_t = util.rescale(img_t, (0, 255), (-1, 1))
+            img_t = img_t.permute(2, 0, 1)
+            return img_t
+
+        def embed(imgs: list[Image]) -> list[Embedding]:
+            embs = []
+            for img in imgs:
+                inputs = processor(images=img, return_tensors="pt", padding=True)
+                outputs = model(**inputs)
+                embs.append(outputs.image_embeds)
             return embs
 
     else:
