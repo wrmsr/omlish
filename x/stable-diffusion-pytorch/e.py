@@ -1,11 +1,12 @@
-import pprint
+import math
+import os.path
 import typing as ta
 
 import numpy as np
 import sklearn.neighbors
 
 
-Embedding: ta.TypeAlias = ta.Sequence[float]
+Embedding: ta.TypeAlias = np.ndarray
 
 
 class VecStore:
@@ -16,7 +17,7 @@ class VecStore:
         super().__init__()
         self._embed = embed
 
-        self._neighbors = sklearn.neighbors.NearestNeighbors(metric='minkowski')
+        self._neighbors = sklearn.neighbors.NearestNeighbors(metric='cosine')
 
         self._embeddings: list[Embedding] = []
         self._items: list[ta.Any] = []
@@ -24,32 +25,74 @@ class VecStore:
         self._embeddings_np: ta.Any = np.asarray([])
 
     def _compute(self) -> None:
-        self._embeddings_np = np.asarray(self._embeddings)
+        self._embeddings_np = np.stack(self._embeddings, axis=0)
         self._neighbors.fit(self._embeddings_np)
 
     def add_items(self, items: ta.Iterable[ta.Any]) -> None:
         items = list(items)
+        embs = self._embed(items)
         self._items.extend(items)
-        self._embeddings.extend(map(self._embed, items))
+        self._embeddings.extend(embs)
         self._compute()
 
     def search(self, query: ta.Any, k: int = 1) -> list[tuple[ta.Any, float]]:
-        query_embedding = self._embed(query)
+        query_embedding = self._embed([query])[0]
         neigh_dists, neigh_idxs = self._neighbors.kneighbors([query_embedding], n_neighbors=k)
         return [(self._items[idx], dist) for idx, dist in zip(neigh_idxs[0], neigh_dists[0])]
 
 
 def _main() -> None:
-    vs = VecStore(lambda s: [float(len(s))])
+    from PIL import Image
+    images: list[Image] = []
+    max_images = 50
+    img_dir = os.path.expanduser('~/Downloads/yelp/photos')
+    for fn in sorted(os.listdir(img_dir)):
+        if not fn.endswith('.jpg'):
+            continue
+        print(fn)
+        images.append(Image.open(os.path.join(img_dir, fn)))
+        if len(images) >= max_images:
+            break
 
-    vs.add_items([
-        'hi',
-        'there',
-        'this is dumb',
-        'yes',
-    ])
+    import torch
+    with torch.no_grad():
+        device = 'mps'
+        from stable_diffusion_pytorch import model_loader
+        encoder = model_loader.load_encoder(device)
+        height = 512
+        width = 512
+        from stable_diffusion_pytorch import util
 
-    pprint.pprint(vs.search('barf', 3))
+        def prep_img(img):
+            img = img.resize((width, height))
+            img = np.array(img)
+            img = img[:, :, :3]
+            img_t = torch.tensor(img, dtype=torch.float32)
+            img_t = util.rescale(img_t, (0, 255), (-1, 1))
+            img_t = img_t.permute(2, 0, 1)
+            return img_t
+
+        def embed(imgs: list[Image]) -> list[Embedding]:
+            embs = []
+            bs = 8
+            noise = torch.Tensor(np.zeros((bs, 4, height // 8, width // 8))).to(device)
+            for n in range(math.ceil(len(imgs) / bs)):
+                b = imgs[n * bs:(n + 1) * bs]
+                img_ts = [prep_img(img) for img in b]
+                inp = torch.stack(img_ts, axis=0)
+                emb = encoder(inp.to(device), noise.to(device))
+                embs.extend([e.flatten().cpu().detach().numpy() for e in emb])
+            return embs
+
+        vs = VecStore(embed)
+        vs.add_items(images[1:])
+
+        q = images[0]
+        res = vs.search(q, 3)
+        q.save('q.png')
+        for i, (r, d) in enumerate(res):
+            print(d)
+            r.save(f'r{i}.png')
 
 
 if __name__ == '__main__':
