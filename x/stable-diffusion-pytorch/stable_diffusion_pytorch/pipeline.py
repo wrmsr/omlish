@@ -149,6 +149,7 @@ def generate(
 
                 input_image = input_image.resize((width, height))
                 input_image = np.array(input_image)
+                input_image = input_image[:, :, :3]
                 input_image = torch.tensor(input_image, dtype=torch.float32)
                 input_image = util.rescale(input_image, (0, 255), (-1, 1))
                 processed_input_images.append(input_image)
