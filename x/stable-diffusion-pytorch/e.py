@@ -44,7 +44,7 @@ class VecStore:
 def _main() -> None:
     from PIL import Image
     images: list[Image] = []
-    max_images = 50
+    max_images = 500
     img_dir = os.path.expanduser('~/Downloads/yelp/photos')
     for fn in sorted(os.listdir(img_dir)):
         if not fn.endswith('.jpg'):
@@ -54,20 +54,42 @@ def _main() -> None:
         if len(images) >= max_images:
             break
 
-    import torch
-    with torch.no_grad():
-        device = 'mps'
-        from stable_diffusion_pytorch import model_loader
-        encoder = model_loader.load_encoder(device)
-        height = 512
-        width = 512
-        from stable_diffusion_pytorch import util
+    height = 512
+    width = 512
 
+    mode = 'sd'
+    # mode = 'pca'
+
+    if mode == 'pca':
         def prep_img(img):
             img = img.resize((width, height))
             img = np.array(img)
-            img = img[:, :, :3]
-            img_t = torch.tensor(img, dtype=torch.float32)
+            return img[:, :, :3]
+
+        def prep_img_t(img):
+            img = prep_img(img)
+            img = np.mean(img, axis=2)
+            img = img.reshape(-1)
+            return img
+
+        from sklearn.decomposition import PCA
+        p_imgs = np.stack([prep_img_t(img) for img in images])
+        pca = PCA(n_components=384)
+        pca.fit(p_imgs)
+
+        def embed(imgs: list[Image]) -> list[Embedding]:
+            return list(pca.transform([prep_img_t(i) for i in imgs]))
+
+    elif mode == 'sd':
+        import torch
+        torch.no_grad().__enter__()
+        device = 'mps'
+        from stable_diffusion_pytorch import model_loader
+        encoder = model_loader.load_encoder(device)
+        from stable_diffusion_pytorch import util
+
+        def prep_img_t(img):
+            img_t = torch.tensor(prep_img(img), dtype=torch.float32)
             img_t = util.rescale(img_t, (0, 255), (-1, 1))
             img_t = img_t.permute(2, 0, 1)
             return img_t
@@ -78,21 +100,24 @@ def _main() -> None:
             noise = torch.Tensor(np.zeros((bs, 4, height // 8, width // 8))).to(device)
             for n in range(math.ceil(len(imgs) / bs)):
                 b = imgs[n * bs:(n + 1) * bs]
-                img_ts = [prep_img(img) for img in b]
+                img_ts = [prep_img_t(img) for img in b]
                 inp = torch.stack(img_ts, axis=0)
                 emb = encoder(inp.to(device), noise.to(device))
                 embs.extend([e.flatten().cpu().detach().numpy() for e in emb])
             return embs
 
-        vs = VecStore(embed)
-        vs.add_items(images[1:])
+    else:
+        raise ValueError(mode)
 
-        q = images[0]
-        res = vs.search(q, 3)
-        q.save('q.png')
-        for i, (r, d) in enumerate(res):
-            print(d)
-            r.save(f'r{i}.png')
+    vs = VecStore(embed)
+    vs.add_items(images[1:])
+
+    q = images[0]
+    res = vs.search(q, 3)
+    q.save('q.png')
+    for i, (r, d) in enumerate(res):
+        print(d)
+        r.save(f'r{i}.png')
 
 
 if __name__ == '__main__':
