@@ -13,13 +13,13 @@ pytest-xdist==3.5.0
 flake8==6.1.0
 flake8-pyproject==1.2.3
 
-black==23.12.1
+black==24.1.1
 flameprof==0.4
 gprof2dot==2022.7.29
 mypy==1.8.0
 pipdeptree==2.13.2
 
-ipython==8.20.0
+ipython==8.21.0
 
 pg8000==1.30.4
 pymysql==1.1.0
