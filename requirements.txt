@@ -3,3 +3,6 @@ httptools==0.6.1; implementation_name != 'nogil'
 pyyaml==6.0.1
 sqlalchemy==2.0.27
 wrapt>=1.14.1
+
+# opt:
+# ujson==5.9.0
