@@ -94,34 +94,34 @@ class MovieReqs:
         pairs_set = set(pairs)
         return pairs_set
 
-    # @cached.nullary
-    # def embedding_model(self, embedding_size=50):
-    #     link = keras.Input(name='link', shape=(1,))
-    #     movie = keras.Input(name='movie', shape=(1,))
-    #     link_embedding = keras.layers.Embedding(
-    #         name='link_embedding',
-    #         input_dim=len(top_links),
-    #         output_dim=embedding_size,
-    #     )(link)
-    #     movie_embedding = keras.layers.Embedding(
-    #         name='movie_embedding',
-    #         input_dim=len(movie_to_idx),
-    #         output_dim=embedding_size,
-    #     )(movie)
-    #     dot = keras.layers.Dot(
-    #         name='dot_product',
-    #         normalize=True,
-    #         axes=2,
-    #     )([link_embedding, movie_embedding])
-    #     merged = keras.layers.Reshape((1,))(dot)
-    #     model = keras.Model(inputs=[link, movie], outputs=[merged])
-    #     model.compile(optimizer='nadam', loss='mse')
-    #     return model
+    @cached.nullary
+    def embedding_model(self, embedding_size=50) -> keras.Model:
+        link = keras.Input(name='link', shape=(1,))
+        movie = keras.Input(name='movie', shape=(1,))
+        link_embedding = keras.layers.Embedding(
+            name='link_embedding',
+            input_dim=len(self.top_links()),
+            output_dim=embedding_size,
+        )(link)
+        movie_embedding = keras.layers.Embedding(
+            name='movie_embedding',
+            input_dim=len(self.movie_to_idx()),
+            output_dim=embedding_size,
+        )(movie)
+        dot = keras.layers.Dot(
+            name='dot_product',
+            normalize=True,
+            axes=2,
+        )([link_embedding, movie_embedding])
+        merged = keras.layers.Reshape((1,))(dot)
+        model = keras.Model(inputs=[link, movie], outputs=[merged])
+        model.compile(optimizer='nadam', loss='mse')
+        return model
 
 
 def _main() -> None:
     mr = MovieReqs()
-    print(len(mr.pairs_set()))
+    print(mr.embedding_model().summary())
 
 
 if __name__ == '__main__':
