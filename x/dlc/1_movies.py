@@ -8,6 +8,7 @@ from omlish import cached
 from omlish import dataclasses as dc
 import keras
 import numpy as np
+import sklearn.svm
 import ujson as json
 
 
@@ -154,6 +155,35 @@ def _main() -> None:
             print(c, mr.top_links()[c], dists[c])
 
     pp.pprint(similar_links('George Lucas'))
+
+    ##
+
+    best = [
+        'Star Wars: The Force Awakens',
+        'The Martian (film)',
+        'Tangerine (film)',
+        'Straight Outta Compton (film)',
+        'Brooklyn (film)',
+        'Carol (film)',
+        'Spotlight (film)',
+    ]
+    worst = [
+        'American Ultra',
+        'The Cobbler (2014 film)',
+        'Entourage (film)',
+        'Fantastic Four (2015 film)',
+        'Get Hard',
+        'Hot Pursuit (2015 film)',
+        'Mortdecai (film)',
+        'Serena (2014 film)',
+        'Vacation (2015 film)',
+    ]
+    y = np.asarray([1 for _ in best] + [0 for _ in worst])
+    X = np.asarray([normalized_movies[mr.movie_to_idx()[movie]] for movie in best + worst])
+    pp.pprint(X.shape)
+
+    clf = sklearn.svm.SVC(kernel='linear')
+    clf.fit(X, y)
 
 
 if __name__ == '__main__':
