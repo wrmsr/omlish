@@ -185,6 +185,33 @@ def _main() -> None:
     clf = sklearn.svm.SVC(kernel='linear')
     clf.fit(X, y)
 
+    ##
+
+    estimated_movie_ratings = clf.decision_function(normalized_movies)
+    best = np.argsort(estimated_movie_ratings)
+    print('best:')
+    for c in reversed(best[-5:]):
+        print(c, mr.movies()[c].name, estimated_movie_ratings[c])
+
+    print('worst:')
+    for c in best[:5]:
+        print(c, mr.movies()[c].name, estimated_movie_ratings[c])
+
+    ##
+
+    rotten_y = np.asarray([float(movie.rat_pct[:-1]) / 100 for movie in mr.movies() if movie.rat_pct])
+    rotten_X = np.asarray([normalized_movies[mr.movie_to_idx()[movie.name]] for movie in mr.movies() if movie.rat_pct])
+
+    TRAINING_CUT_OFF = int(len(rotten_X) * 0.8)
+    regr = sklearn.linear_model.LinearRegression()
+    regr.fit(rotten_X[:TRAINING_CUT_OFF], rotten_y[:TRAINING_CUT_OFF])
+
+    error = (regr.predict(rotten_X[TRAINING_CUT_OFF:]) - rotten_y[TRAINING_CUT_OFF:])
+    print('mean square error %2.2f' % np.mean(error ** 2))
+
+    error = (np.mean(rotten_y[:TRAINING_CUT_OFF]) - rotten_y[TRAINING_CUT_OFF:])
+    print('mean square error %2.2f' % np.mean(error ** 2))
+
 
 if __name__ == '__main__':
     _main()
