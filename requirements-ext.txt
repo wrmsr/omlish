@@ -3,8 +3,8 @@
 
 ### nn
 
-matplotlib==3.8.2
-numpy==1.26.3
+matplotlib==3.8.3
+numpy==1.26.4
 
 huggingface_hub>=0.17.0
 
@@ -15,8 +15,6 @@ llvmlite==0.42.0
 # pyopencl==2023.1.4
 
 # pycuda==2023.1; sys_platform != 'darwin'
-
-# gpuctypes==0.3.0
 
 pyobjc-core==10.1; sys_platform == 'darwin'
 pyobjc-framework-libdispatch==10.1; sys_platform == 'darwin'
@@ -33,8 +31,8 @@ onnx==1.15.0
 onnx2torch==1.5.13
 
 sentencepiece==0.1.99
-tiktoken==0.5.2
-transformers==4.37.1
+tiktoken==0.6.0
+transformers==4.37.2
 
 ##
 
@@ -56,13 +54,13 @@ nevergrad==1.0.1
 # triton-nightly; platform_machine == 'x86_64'
 triton==2.2.0; platform_machine == 'x86_64'
 
-wgpu==0.13.2
+wgpu==0.14.1
 
-hypothesis==6.97.4
+hypothesis==6.98.6
 
 ##
 
-datasets==2.16.1
+datasets==2.17.0
 
 bitsandbytes==0.42.0
 loralib==0.1.2
@@ -70,18 +68,18 @@ loralib==0.1.2
 # peft==0.5.0
 git+https://github.com/huggingface/peft.git
 
-tensorboard==2.15.1
+tensorboard==2.16.1
 
 scikit-learn==1.4.0
-simsimd==3.7.4
+simsimd==3.7.7
 
 ##
 
-ipykernel==6.29.0
-ipywidgets==8.1.1
+ipykernel==6.29.2
+ipywidgets==8.1.2
 jupyter-console==6.6.3
-nbconvert==7.14.2
-notebook==7.0.7
+nbconvert==7.16.0
+notebook==7.1.0
 qtconsole==5.5.1
 
 scikit-image==0.22.0
@@ -91,7 +89,7 @@ scikit-image==0.22.0
 
 boto3>=1.29.5
 
-google-cloud-compute==1.15.0
+google-cloud-compute==1.16.1
 
 
 ### hn
@@ -103,8 +101,8 @@ soco==0.30.2
 sounddevice==0.4.6
 # vosk==0.3.45
 
-bellows==0.37.6
-zigpy==0.61.0
+bellows==0.38.0
+zigpy==0.62.3
 
 # python-openzwave
 zwave-js-server-python==0.55.3
