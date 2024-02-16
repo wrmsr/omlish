@@ -1,5 +1,5 @@
 import collections
-import json
+import os.path
 import random
 import typing as ta
 
@@ -7,6 +7,7 @@ from omlish import cached
 from omlish import dataclasses as dc
 import keras
 import numpy as np
+import ujson as json
 
 
 @dc.dataclass(frozen=True)
@@ -98,22 +99,30 @@ class MovieReqs:
             np.random.shuffle(batch)
             yield {'link': batch[:, 0], 'movie': batch[:, 1]}, batch[:, 2]
 
+    @cached.nullary
+    def trained_model(self) -> keras.Model:
+        fp = '../../.cache/1_movies.keras'
+        if os.path.exists(fp):
+            return keras.models.load_model(fp)
+
+        model = self.make_embedding_model()
+        random.seed(5)
+        positive_samples_per_batch = 512
+        model.fit(
+            self.batchify(positive_samples=positive_samples_per_batch, negative_ratio=10),
+            epochs=2,  # 15,
+            steps_per_epoch=len(self.pairs()) // positive_samples_per_batch,
+            verbose=2
+        )
+
+        model.save(fp)
+        return model
+
 
 def _main() -> None:
     mr = MovieReqs()
 
-    model = mr.make_embedding_model()
-
-    random.seed(5)
-
-    positive_samples_per_batch = 512
-
-    model.fit_generator(
-        mr.batchify(positive_samples=positive_samples_per_batch, negative_ratio=10),
-        epochs=15,
-        steps_per_epoch=len(mr.pairs()) // positive_samples_per_batch,
-        verbose=2
-    )
+    print(mr.trained_model().summary())
 
 
 if __name__ == '__main__':
