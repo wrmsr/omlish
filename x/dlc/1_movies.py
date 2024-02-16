@@ -1,5 +1,6 @@
 import collections
 import os.path
+import pprint as pp
 import random
 import typing as ta
 
@@ -122,7 +123,37 @@ class MovieReqs:
 def _main() -> None:
     mr = MovieReqs()
 
-    print(mr.trained_model().summary())
+    model = mr.trained_model()
+
+    ##
+
+    movie = model.get_layer('movie_embedding')
+    movie_weights = movie.get_weights()[0]
+    movie_lengths = np.linalg.norm(movie_weights, axis=1)
+    normalized_movies = (movie_weights.T / movie_lengths).T
+
+    def similar_movies(movie):
+        dists = np.dot(normalized_movies, normalized_movies[mr.movie_to_idx()[movie]])
+        closest = np.argsort(dists)[-10:]
+        for c in reversed(closest):
+            print(c, mr.movies()[c].name, dists[c])
+
+    pp.pprint(similar_movies('Rogue One'))
+
+    ##
+
+    link = model.get_layer('link_embedding')
+    link_weights = link.get_weights()[0]
+    link_lengths = np.linalg.norm(link_weights, axis=1)
+    normalized_links = (link_weights.T / link_lengths).T
+
+    def similar_links(link):
+        dists = np.dot(normalized_links, normalized_links[mr.link_to_idx()[link]])
+        closest = np.argsort(dists)[-10:]
+        for c in reversed(closest):
+            print(c, mr.top_links()[c], dists[c])
+
+    pp.pprint(similar_links('George Lucas'))
 
 
 if __name__ == '__main__':
