@@ -3,6 +3,7 @@ import json
 import typing as ta
 
 from omlish import cached
+from omlish import dataclasses as dc
 import keras
 
 
@@ -10,7 +11,7 @@ class MovieReqs:
     @cached.nullary
     def movies(self) -> ta.Sequence[ta.Any]:
         movies = []
-        with open('../data/wp_movies_10k.ndjson', 'r') as f:
+        with open('../../../../DOsinga/deep_learning_cookbook/data/wp_movies_10k.ndjson', 'r') as f:
             for l in f.readlines():
                 movies.append(json.loads(l))
         return movies
@@ -60,7 +61,8 @@ class MovieReqs:
 
 
 def _main() -> None:
-    pass
+    mr = MovieReqs()
+    print(len(mr.movies()))
 
 
 if __name__ == '__main__':
