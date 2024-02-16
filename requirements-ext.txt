@@ -84,6 +84,18 @@ qtconsole==5.5.1
 
 scikit-image==0.22.0
 
+## dlc
+
+bs4
+gensim
+geopandas
+gutenberg
+# h5py
+keras
+mwparserfromhell
+nltk
+tensorflow
+
 
 ### infra
 
