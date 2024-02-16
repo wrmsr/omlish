@@ -1,5 +1,5 @@
 greenlet==3.0.3; implementation_name != 'nogil'
 httptools==0.6.1; implementation_name != 'nogil'
 pyyaml==6.0.1
-sqlalchemy==2.0.25
+sqlalchemy==2.0.27
 wrapt==1.16.0
