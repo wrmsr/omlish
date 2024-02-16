@@ -110,7 +110,7 @@ class MovieReqs:
         positive_samples_per_batch = 512
         model.fit(
             self.batchify(positive_samples=positive_samples_per_batch, negative_ratio=10),
-            epochs=2,  # 15,
+            epochs=15,
             steps_per_epoch=len(self.pairs()) // positive_samples_per_batch,
             verbose=2
         )
