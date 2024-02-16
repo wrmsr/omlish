@@ -70,8 +70,8 @@ class MovieReqs:
     @cached.nullary
     def top_links(self) -> ta.Sequence[str]:
         link_counts = collections.Counter()
-        for m in self.movies():
-            link_counts.update(m.links)
+        for movie in self.movies():
+            link_counts.update(movie.links)
         return [link for link, c in link_counts.items() if c >= 3]
 
     @cached.nullary
@@ -80,14 +80,14 @@ class MovieReqs:
 
     @cached.nullary
     def movie_to_idx(self) -> ta.Mapping[str, int]:
-        return {movie[0]: idx for idx, movie in enumerate(self.movies())}
+        return {movie.name: idx for idx, movie in enumerate(self.movies())}
 
     @cached.nullary
     def pairs_set(self) -> ta.AbstractSet[tuple[int, int]]:
         pairs = []
         for movie in self.movies():
             pairs.extend(
-                (self.link_to_idx()[link], self.movie_to_idx()[movie[0]])
+                (self.link_to_idx()[link], self.movie_to_idx()[movie.name])
                 for link in movie.links
                 if link in self.link_to_idx()
             )
@@ -121,7 +121,7 @@ class MovieReqs:
 
 def _main() -> None:
     mr = MovieReqs()
-    print(len(mr.pairs_set))
+    print(len(mr.pairs_set()))
 
 
 if __name__ == '__main__':
