@@ -1,7 +1,10 @@
+import typing as ta
+
+from omlish import cached
 import tinygrad
 
 
-def _main():
+def _main() -> None:
     pass
 
 
