@@ -214,9 +214,9 @@ def _main() -> None:
 
     ##
 
-    def gross(movie: Movie) -> float:
+    def gross(movie: Movie) -> float | None:
         v = movie.dct.get('gross')
-        if not v or not ' ' in v:
+        if not v or ' ' not in v:
             return None
         v, unit = v.split(' ', 1)
         unit = unit.lower()
