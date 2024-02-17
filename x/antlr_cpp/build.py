@@ -5,6 +5,7 @@
 
 import os.path
 import subprocess
+import typing as ta
 
 from omlish import cached
 
@@ -48,6 +49,25 @@ def _git_clone_subtree(
         cwd=rd,
     )
     subprocess.check_call(['git', 'checkout'], cwd=rd)
+
+
+def _find_dirs(base_path: str, predicate: ta.Callable[[str], bool] = lambda _: True) -> ta.Sequence[str]:
+    return sorted(
+        os.path.join(dp, dn)
+        for dp, dns, fns in os.walk(base_path)
+        for dn in dns
+        if predicate(dn)
+    )
+
+
+def _find_files(base_path: str, predicate: ta.Callable[[str], bool] = lambda _: True) -> ta.Sequence[str]:
+    return sorted(
+        os.path.join(dp, fn)
+        for dp, dns, fns in os.walk(base_path)
+        for fn in fns
+        if predicate(fn)
+    )
+
 
 
 class Builder:
@@ -118,6 +138,18 @@ def _main() -> None:
     print(builder.pybind_dir())
     builder.process_g4('Chat.g4', 'Chat')
 
+    rt_src_dir = os.path.abspath(os.path.join(builder.build_dir(), 'antlr4/runtime/Cpp/runtime/src'))
+    rt_src_files = _find_files(rt_src_dir, lambda fn: fn.endswith('.cpp'))
+    for src_file in rt_src_files:
+        subprocess.check_call(
+            [
+                'clang++',
+                '-c', os.path.basename(src_file),
+                '-I', rt_src_dir,
+                '-std=c++17',
+            ],
+            cwd=os.path.dirname(src_file),
+        )
 
 if __name__ == '__main__':
     _main()
