@@ -1,8 +1,3 @@
-# git clone -n --depth=1 --filter=tree:0 -b 4.13.1 --single-branch https://github.com/antlr/antlr4
-# cd antlr4
-# git sparse-checkout set --no-cone runtime/Cpp/runtime/src
-# git checkout
-
 import itertools
 import os.path
 import subprocess
@@ -52,7 +47,10 @@ def _git_clone_subtree(
     subprocess.check_call(['git', 'checkout'], cwd=rd)
 
 
-def _find_dirs(base_path: str, predicate: ta.Callable[[str], bool] = lambda _: True) -> ta.Sequence[str]:
+def _find_dirs(
+        base_path: str,
+        predicate: ta.Callable[[str], bool] = lambda _: True,
+) -> ta.Sequence[str]:
     return sorted(
         os.path.join(dp, dn)
         for dp, dns, fns in os.walk(base_path)
@@ -61,14 +59,16 @@ def _find_dirs(base_path: str, predicate: ta.Callable[[str], bool] = lambda _: T
     )
 
 
-def _find_files(base_path: str, predicate: ta.Callable[[str], bool] = lambda _: True) -> ta.Sequence[str]:
+def _find_files(
+        base_path: str,
+        predicate: ta.Callable[[str], bool] = lambda _: True,
+) -> ta.Sequence[str]:
     return sorted(
         os.path.join(dp, fn)
         for dp, dns, fns in os.walk(base_path)
         for fn in fns
         if predicate(fn)
     )
-
 
 
 class Builder:
@@ -132,7 +132,10 @@ class Builder:
         return d
 
 
-def _compile_src_file(src_file: str, inc_dirs: ta.Sequence[str] = ()) -> str:
+def _compile_src_file(
+        src_file: str,
+        inc_dirs: ta.Sequence[str] = (),
+) -> str:
     obj_file = os.path.join(os.path.dirname(src_file), src_file.rpartition('.')[0] + '.o')
     if not os.path.exists(obj_file):
         subprocess.check_call(
@@ -147,6 +150,18 @@ def _compile_src_file(src_file: str, inc_dirs: ta.Sequence[str] = ()) -> str:
     return obj_file
 
 
+def _compile_src_dir(
+        src_dir: str,
+        inc_dirs: ta.Sequence[str] = (),
+        file_ext: str = '.cpp',
+) -> ta.Sequence[str]:
+    obj_files = []
+    rt_src_files = _find_files(src_dir, lambda fn: fn.endswith(file_ext))
+    for src_file in rt_src_files:
+        obj_files.append(_compile_src_file(src_file, [src_dir, *inc_dirs]))
+    return obj_files
+
+
 def _main() -> None:
     builder = Builder()
 
@@ -155,14 +170,10 @@ def _main() -> None:
     obj_files = []
 
     rt_src_dir = os.path.abspath(os.path.join(builder.build_dir(), 'antlr4/runtime/Cpp/runtime/src'))
-    rt_src_files = _find_files(rt_src_dir, lambda fn: fn.endswith('.cpp'))
-    for src_file in rt_src_files:
-        obj_files.append(_compile_src_file(src_file, [rt_src_dir]))
+    obj_files.extend(_compile_src_dir(rt_src_dir))
 
     prs_src_dir = os.path.abspath(os.path.join(builder.build_dir(), 'Chat'))
-    prs_src_files = _find_files(prs_src_dir, lambda fn: fn.endswith('.cpp'))
-    for src_file in prs_src_files:
-        obj_files.append(_compile_src_file(src_file, [rt_src_dir, prs_src_dir]))
+    obj_files.extend(_compile_src_dir(prs_src_dir, [rt_src_dir]))
 
     inc_dirs = [rt_src_dir, prs_src_dir]
     src_file = os.path.join(os.path.dirname(builder.build_dir()), 'chat.cc')
