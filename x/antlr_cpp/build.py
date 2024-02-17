@@ -144,6 +144,7 @@ def _compile_src_file(src_file: str, inc_dirs: ta.Sequence[str] = ()) -> str:
             ],
             cwd=os.path.dirname(src_file),
         )
+    return obj_file
 
 
 def _main() -> None:
@@ -166,6 +167,7 @@ def _main() -> None:
     inc_dirs = [rt_src_dir, prs_src_dir]
     src_file = os.path.join(os.path.dirname(builder.build_dir()), 'chat.cc')
     obj_file = os.path.join(builder.build_dir(), os.path.basename(src_file).rpartition('.')[0] + '.o')
+    obj_files.append(obj_file)
     subprocess.check_call(
         [
             'clang++',
@@ -175,6 +177,18 @@ def _main() -> None:
             '-o', obj_file,
         ],
         cwd=os.path.dirname(src_file),
+    )
+
+    bin_dir = os.path.join(builder.build_dir(), 'bin')
+    if not os.path.exists(bin_dir):
+        os.mkdir(bin_dir)
+    subprocess.check_call(
+        [
+            'clang++',
+            '-std=c++17',
+            *obj_files,
+            '-o', os.path.join(bin_dir, 'chat'),
+        ],
     )
 
 
