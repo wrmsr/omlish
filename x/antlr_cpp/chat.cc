@@ -1,4 +1,4 @@
-#include "parser/ChatVisitor.h"
+#include "ChatVisitor.h"
 
 using namespace std;
 using namespace antlr4;
