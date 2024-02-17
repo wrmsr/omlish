@@ -165,12 +165,14 @@ def _main() -> None:
 
     inc_dirs = [rt_src_dir, prs_src_dir]
     src_file = os.path.join(os.path.dirname(builder.build_dir()), 'chat.cc')
+    obj_file = os.path.join(builder.build_dir(), os.path.basename(src_file).rpartition('.')[0] + '.o')
     subprocess.check_call(
         [
             'clang++',
             '-c', os.path.basename(src_file),
             *itertools.chain.from_iterable(('-I', inc_dir) for inc_dir in inc_dirs),
             '-std=c++17',
+            '-o', obj_file,
         ],
         cwd=os.path.dirname(src_file),
     )
