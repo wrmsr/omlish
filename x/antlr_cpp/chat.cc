@@ -14,23 +14,29 @@ using namespace antlr4;
 
 class ChatVisitorImpl : public ChatVisitor {
 public:
-    std::any visitChat(ChatParser::ChatContext *context) { return visitChildren(context); }
+    virtual std::any visitChildren(tree::ParseTree *node) override {
+        // std::cout << node->toString() << std::endl;
+        std::cout << node->toStringTree() << std::endl;
+        return ChatVisitor::visitChildren(node);
+    }
 
-    std::any visitLine(ChatParser::LineContext *context) { return visitChildren(context); };
+    virtual std::any visitChat(ChatParser::ChatContext *context) override { return visitChildren(context); }
 
-    std::any visitName(ChatParser::NameContext *context) { return visitChildren(context); };
+    virtual std::any visitLine(ChatParser::LineContext *context) override { return visitChildren(context); };
 
-    std::any visitCommand(ChatParser::CommandContext *context) { return visitChildren(context); };
+    virtual std::any visitName(ChatParser::NameContext *context) override { return visitChildren(context); };
 
-    std::any visitMessage(ChatParser::MessageContext *context) { return visitChildren(context); };
+    virtual std::any visitCommand(ChatParser::CommandContext *context) override { return visitChildren(context); };
 
-    std::any visitEmoticon(ChatParser::EmoticonContext *context) { return visitChildren(context); };
+    virtual std::any visitMessage(ChatParser::MessageContext *context) override { return visitChildren(context); };
 
-    std::any visitLink(ChatParser::LinkContext *context) { return visitChildren(context); };
+    virtual std::any visitEmoticon(ChatParser::EmoticonContext *context) override { return visitChildren(context); };
 
-    std::any visitColor(ChatParser::ColorContext *context) { return visitChildren(context); };
+    virtual std::any visitLink(ChatParser::LinkContext *context) override { return visitChildren(context); };
 
-    std::any visitMention(ChatParser::MentionContext *context) { return visitChildren(context); };
+    virtual std::any visitColor(ChatParser::ColorContext *context) override { return visitChildren(context); };
+
+    virtual std::any visitMention(ChatParser::MentionContext *context) override { return visitChildren(context); };
 };
 
 int main(int argc, const char* argv[]) {
