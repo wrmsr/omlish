@@ -148,9 +148,7 @@ def _compile_src_file(src_file: str, inc_dirs: ta.Sequence[str] = ()) -> str:
 
 def _main() -> None:
     builder = Builder()
-    builder.antlr_jar_path()
-    print(builder.runtime_dir())
-    print(builder.pybind_dir())
+
     builder.process_g4('Chat.g4', 'Chat')
 
     obj_files = []
