@@ -1,3 +1,7 @@
+/*
+https://tomassetti.me/getting-started-antlr-cpp/
+https://github.com/gabriele-tomassetti/antlr-cpp/blob/master/ImageVisitor.cpp
+*/
 #include <iostream>
 
 #include "antlr4-runtime.h"
