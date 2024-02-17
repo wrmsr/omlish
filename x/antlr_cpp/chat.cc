@@ -1,3 +1,4 @@
+#include "ChatLexer.h"
 #include "ChatVisitor.h"
 
 using namespace std;
@@ -11,9 +12,10 @@ int main(int argc, const char* argv[]) {
     ChatLexer lexer(&input);
     CommonTokenStream tokens(&lexer);
     ChatParser parser(&tokens);
-    ChatParser::FileContext* tree = parser.file();
+    ChatParser::FileContext* tree = parser.chat();
     ChatVisitor visitor;
-    Chat chat = std::any_cast<Chat>(visitor.visitFile(tree));
+    visitor.visitChat(tree);
+    // Chat chat = std::any_cast<Chat>(visitor.visitFile(tree));
     // scene.draw();
     return 0;
 }
