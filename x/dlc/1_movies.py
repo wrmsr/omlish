@@ -220,7 +220,7 @@ def _main() -> None:
             return None
         v, unit = v.split(' ', 1)
         unit = unit.lower()
-        if not unit in ('million', 'billion'):
+        if unit not in ('million', 'billion'):
             return None
         if not v.startswith('$'):
             return None
