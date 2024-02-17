@@ -70,6 +70,20 @@ class Builder:
             ])
         return fp
 
+    def process_g4(self, g4_path: str, dir_name: str) -> None:
+        d = os.path.join(self.build_dir(), dir_name)
+        if not os.path.exists(d):
+            subprocess.check_call(
+                [
+                    'java',
+                    '-jar', self.antlr_jar_path(),
+                    '-Dlanguage=Cpp',
+                    '-visitor',
+                    '-o', d,
+                    g4_path,
+                ],
+            )
+
     @cached.nullary
     def runtime_dir(self) -> str:
         d = os.path.join(self.build_dir(), 'antlr4')
@@ -102,6 +116,7 @@ def _main() -> None:
     builder.antlr_jar_path()
     print(builder.runtime_dir())
     print(builder.pybind_dir())
+    builder.process_g4('Chat.g4', 'Chat')
 
 
 if __name__ == '__main__':
