@@ -3,6 +3,7 @@
 # git sparse-checkout set --no-cone runtime/Cpp/runtime/src
 # git checkout
 
+import itertools
 import os.path
 import subprocess
 import typing as ta
@@ -11,7 +12,7 @@ from omlish import cached
 
 
 ANTLR_VERSION = '4.13.1'
-PYBIND_VERSION='2.11.1'
+PYBIND_VERSION = '2.11.1'
 
 
 def _git_clone_subtree(
@@ -131,6 +132,20 @@ class Builder:
         return d
 
 
+def _compile_src_file(src_file: str, inc_dirs: ta.Sequence[str] = ()) -> str:
+    obj_file = os.path.join(os.path.dirname(src_file), src_file.rpartition('.')[0] + '.o')
+    if not os.path.exists(obj_file):
+        subprocess.check_call(
+            [
+                'clang++',
+                '-c', os.path.basename(src_file),
+                *itertools.chain.from_iterable(('-I', inc_dir) for inc_dir in inc_dirs),
+                '-std=c++17',
+            ],
+            cwd=os.path.dirname(src_file),
+        )
+
+
 def _main() -> None:
     builder = Builder()
     builder.antlr_jar_path()
@@ -138,22 +153,30 @@ def _main() -> None:
     print(builder.pybind_dir())
     builder.process_g4('Chat.g4', 'Chat')
 
+    obj_files = []
+
     rt_src_dir = os.path.abspath(os.path.join(builder.build_dir(), 'antlr4/runtime/Cpp/runtime/src'))
     rt_src_files = _find_files(rt_src_dir, lambda fn: fn.endswith('.cpp'))
-    rt_obj_files = []
     for src_file in rt_src_files:
-        obj_file = os.path.join(os.path.dirname(src_file), src_file.rpartition('.')[0] + '.o')
-        rt_obj_files.append(obj_file)
-        if not os.path.exists(obj_file):
-            subprocess.check_call(
-                [
-                    'clang++',
-                    '-c', os.path.basename(src_file),
-                    '-I', rt_src_dir,
-                    '-std=c++17',
-                ],
-                cwd=os.path.dirname(src_file),
-            )
+        obj_files.append(_compile_src_file(src_file, [rt_src_dir]))
+
+    prs_src_dir = os.path.abspath(os.path.join(builder.build_dir(), 'Chat'))
+    prs_src_files = _find_files(prs_src_dir, lambda fn: fn.endswith('.cpp'))
+    for src_file in prs_src_files:
+        obj_files.append(_compile_src_file(src_file, [rt_src_dir, prs_src_dir]))
+
+    inc_dirs = [rt_src_dir, prs_src_dir]
+    src_file = os.path.join(os.path.dirname(builder.build_dir()), 'chat.cc')
+    subprocess.check_call(
+        [
+            'clang++',
+            '-c', os.path.basename(src_file),
+            *itertools.chain.from_iterable(('-I', inc_dir) for inc_dir in inc_dirs),
+            '-std=c++17',
+        ],
+        cwd=os.path.dirname(src_file),
+    )
+
 
 if __name__ == '__main__':
     _main()
