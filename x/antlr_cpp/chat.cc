@@ -8,6 +8,27 @@
 using namespace std;
 using namespace antlr4;
 
+class ChatVisitorImpl : public ChatVisitor {
+public:
+    std::any visitChat(ChatParser::ChatContext *context) { return visitChildren(context); }
+
+    std::any visitLine(ChatParser::LineContext *context) { return visitChildren(context); };
+
+    std::any visitName(ChatParser::NameContext *context) { return visitChildren(context); };
+
+    std::any visitCommand(ChatParser::CommandContext *context) { return visitChildren(context); };
+
+    std::any visitMessage(ChatParser::MessageContext *context) { return visitChildren(context); };
+
+    std::any visitEmoticon(ChatParser::EmoticonContext *context) { return visitChildren(context); };
+
+    std::any visitLink(ChatParser::LinkContext *context) { return visitChildren(context); };
+
+    std::any visitColor(ChatParser::ColorContext *context) { return visitChildren(context); };
+
+    std::any visitMention(ChatParser::MentionContext *context) { return visitChildren(context); };
+};
+
 int main(int argc, const char* argv[]) {
     std::ifstream stream;
     stream.open("test.chat");
@@ -16,8 +37,8 @@ int main(int argc, const char* argv[]) {
     ChatLexer lexer(&input);
     CommonTokenStream tokens(&lexer);
     ChatParser parser(&tokens);
-    ChatParser::FileContext* tree = parser.chat();
-    ChatVisitor visitor;
+    ChatParser::ChatContext* tree = parser.chat();
+    ChatVisitorImpl visitor;
     visitor.visitChat(tree);
     // Chat chat = std::any_cast<Chat>(visitor.visitFile(tree));
     // scene.draw();
