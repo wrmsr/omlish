@@ -212,6 +212,49 @@ def _main() -> None:
     error = (np.mean(rotten_y[:TRAINING_CUT_OFF]) - rotten_y[TRAINING_CUT_OFF:])
     print('mean square error %2.2f' % np.mean(error ** 2))
 
+    ##
+
+    def gross(movie: Movie) -> float:
+        v = movie.dct.get('gross')
+        if not v or not ' ' in v:
+            return None
+        v, unit = v.split(' ', 1)
+        unit = unit.lower()
+        if not unit in ('million', 'billion'):
+            return None
+        if not v.startswith('$'):
+            return None
+        try:
+            v = float(v[1:])
+        except ValueError:
+            return None
+        if unit == 'billion':
+            v *= 1000
+        return v
+
+    movie_gross = [gross(m) for m in mr.movies()]
+    movie_gross = np.asarray([gr for gr in movie_gross if gr is not None])
+    highest = np.argsort(movie_gross)[-10:]
+    for c in reversed(highest):
+        print(c, mr.movies()[c].name, movie_gross[c])
+
+    ##
+
+    gross_y = np.asarray([gr for gr in movie_gross if gr])
+    gross_X = np.asarray([normalized_movies[mr.movie_to_idx()[movie.name]] for movie, gr in zip(mr.movies(), movie_gross) if gr])
+
+    TRAINING_CUT_OFF = int(len(gross_X) * 0.8)
+    regr = sklearn.linear_model.LinearRegression()
+    regr.fit(gross_X[:TRAINING_CUT_OFF], gross_y[:TRAINING_CUT_OFF])
+
+    ##
+
+    error = (regr.predict(gross_X[TRAINING_CUT_OFF:]) - gross_y[TRAINING_CUT_OFF:])
+    print('mean square error %2.2f' % np.mean(error ** 2))
+
+    error = (np.mean(gross_y[:TRAINING_CUT_OFF]) - gross_y[TRAINING_CUT_OFF:])
+    print('mean square error %2.2f' % np.mean(error ** 2))
+
 
 if __name__ == '__main__':
     _main()
