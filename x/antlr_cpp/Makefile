@@ -1,8 +1,3 @@
-# git clone -n --depth=1 --filter=tree:0 -b 4.13.1 --single-branch https://github.com/antlr/antlr4
-# cd antlr4
-# git sparse-checkout set --no-cone runtime/Cpp/runtime/src
-# git checkout
-
 SHELL:=/bin/bash
 
 ANTLR_VERSION=4.13.1
