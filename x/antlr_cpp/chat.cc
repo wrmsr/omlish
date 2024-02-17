@@ -8,12 +8,12 @@ int main(int argc, const char* argv[]) {
     stream.open("test.chat");
     
     ANTLRInputStream input(stream);
-    SceneLexer lexer(&input);
+    ChatLexer lexer(&input);
     CommonTokenStream tokens(&lexer);
-    SceneParser parser(&tokens);    
-    SceneParser::FileContext* tree = parser.file();
-    ImageVisitor visitor;
-    Scene scene = std::any_cast<Scene>(visitor.visitFile(tree));
-    scene.draw();
+    ChatParser parser(&tokens);
+    ChatParser::FileContext* tree = parser.file();
+    ChatVisitor visitor;
+    Chat chat = std::any_cast<Chat>(visitor.visitFile(tree));
+    // scene.draw();
     return 0;
 }
