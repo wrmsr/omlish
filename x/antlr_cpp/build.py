@@ -140,16 +140,20 @@ def _main() -> None:
 
     rt_src_dir = os.path.abspath(os.path.join(builder.build_dir(), 'antlr4/runtime/Cpp/runtime/src'))
     rt_src_files = _find_files(rt_src_dir, lambda fn: fn.endswith('.cpp'))
+    rt_obj_files = []
     for src_file in rt_src_files:
-        subprocess.check_call(
-            [
-                'clang++',
-                '-c', os.path.basename(src_file),
-                '-I', rt_src_dir,
-                '-std=c++17',
-            ],
-            cwd=os.path.dirname(src_file),
-        )
+        obj_file = os.path.join(os.path.dirname(src_file), src_file.rpartition('.')[0] + '.o')
+        rt_obj_files.append(obj_file)
+        if not os.path.exists(obj_file):
+            subprocess.check_call(
+                [
+                    'clang++',
+                    '-c', os.path.basename(src_file),
+                    '-I', rt_src_dir,
+                    '-std=c++17',
+                ],
+                cwd=os.path.dirname(src_file),
+            )
 
 if __name__ == '__main__':
     _main()
