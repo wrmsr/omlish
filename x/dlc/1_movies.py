@@ -11,6 +11,8 @@ import numpy as np
 import sklearn.svm
 import ujson as json
 
+from torch import nn
+
 
 @dc.dataclass(frozen=True)
 class Movie:
@@ -60,6 +62,26 @@ class MovieReqs:
     def pairs_set(self) -> ta.AbstractSet[tuple[int, int]]:
         pairs_set = set(self.pairs())
         return pairs_set
+
+    # class TorchEmbeddingModel(nn.Module):
+    #     def __init__(self, num_links: int, num_movies: int, embedding_size: int) -> None:
+    #         super().__init__()
+    #
+    #         self.link_embedding = nn.Embedding(
+    #             embedding_size,
+    #             num_links,
+    #         )
+    #         self.movie_embedding = nn.Embedding(
+    #             embedding_size,
+    #             num_movies,
+    #         )
+    #
+    #     def forward(self, link, movie):
+    #         le = self.link_embedding.forward(link)
+    #         me = self.link_embedding.forward(movie)
+    #         dot = le @ me
+    #         merged = dot.reshape((1,))
+    #         return merged
 
     def make_embedding_model(self, embedding_size=50) -> keras.Model:
         link = keras.Input(name='link', shape=(1,))
