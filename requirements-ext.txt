@@ -22,7 +22,7 @@ pyobjc-framework-metal==10.1; sys_platform == 'darwin'
 
 ##
 
-pandas==2.2.0
+pandas==2.2.1
 
 opencv-python==4.9.0.80
 pillow==10.2.0
@@ -30,14 +30,14 @@ pillow==10.2.0
 onnx==1.15.0
 onnx2torch==1.5.13
 
-sentencepiece==0.1.99
+sentencepiece==0.2.0
 tiktoken==0.6.0
-transformers==4.37.2
+transformers==4.38.2
 
 ##
 
-torch==2.2.0
-torchvision==0.17.0
+torch==2.2.1
+torchvision==0.17.1
 
 ##
 
@@ -49,7 +49,7 @@ librosa==0.10.1
 
 networkx==3.2.1
 
-nevergrad==1.0.1
+nevergrad==1.0.2
 
 # --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/Triton-Nightly/pypi/simple/
 # triton-nightly; platform_machine == 'x86_64'
@@ -57,11 +57,11 @@ triton==2.2.0; platform_machine == 'x86_64'
 
 wgpu==0.14.1
 
-hypothesis==6.98.6
+hypothesis==6.98.17
 
 ##
 
-datasets==2.17.0
+datasets==2.18.0
 
 bitsandbytes==0.42.0
 loralib==0.1.2
@@ -71,16 +71,16 @@ git+https://github.com/huggingface/peft.git
 
 tensorboard>=2.15.1
 
-scikit-learn==1.4.0
-simsimd==3.7.7
+scikit-learn==1.4.1.post1
+simsimd==3.9.0
 
 ##
 
-ipykernel==6.29.2
+ipykernel==6.29.3
 ipywidgets==8.1.2
 jupyter-console==6.6.3
-nbconvert==7.16.0
-notebook==7.1.0
+nbconvert==7.16.2
+notebook==7.1.1
 qtconsole==5.5.1
 
 scikit-image==0.22.0
@@ -102,7 +102,7 @@ tensorflow==2.15.0
 
 boto3>=1.29.5
 
-google-cloud-compute==1.16.1
+google-cloud-compute==1.17.0
 
 
 ### hn
@@ -114,8 +114,8 @@ soco==0.30.2
 sounddevice==0.4.6
 # vosk==0.3.45
 
-bellows==0.38.0
-zigpy==0.62.3
+bellows==0.38.1
+zigpy==0.63.4
 
 # python-openzwave
 zwave-js-server-python==0.55.3
