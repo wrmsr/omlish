@@ -1,10 +1,10 @@
 -r requirements.txt
 
-build==1.0.3
+build==1.1.1
 twine==5.0.0
 wheel==0.42.0
 
-pytest==8.0.0
+pytest==8.0.2
 pytest-benchmark==4.0.0
 pytest-clarity==1.0.1
 pytest-timeout==2.2.0
@@ -17,11 +17,11 @@ black==24.2.0
 flameprof==0.4
 gprof2dot==2022.7.29
 mypy==1.8.0
-pipdeptree==2.14.0
+pipdeptree==2.16.1
 
-ipython==8.21.0
+ipython==8.22.2
 
-pg8000==1.30.4
+pg8000==1.30.5
 pymysql==1.1.0
 
 litecli==1.10.0; python_version < '3.12'
