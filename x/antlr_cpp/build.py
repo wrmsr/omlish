@@ -1,6 +1,7 @@
 import itertools
 import os.path
 import subprocess
+import sysconfig
 import typing as ta
 
 from omlish import cached
@@ -146,8 +147,6 @@ def _compile_src_file(
                 '-c', os.path.basename(src_file),
                 *itertools.chain.from_iterable(('-I', inc_dir) for inc_dir in inc_dirs),
                 '-std=c++17',
-                '-fPIC',
-                '-shared',
             ],
             cwd=os.path.dirname(src_file),
         )
@@ -182,10 +181,19 @@ def _main() -> None:
     rt_src_dir = os.path.abspath(os.path.join(builder.build_dir(), 'antlr4/runtime/Cpp/runtime/src'))
     obj_files.extend(_compile_src_dir(rt_src_dir))
 
+    pb_inc_dir = os.path.abspath(os.path.join(builder.pybind_dir(), 'include'))
+
     prs_src_dir = os.path.abspath(os.path.join(builder.build_dir(), 'Chat'))
     obj_files.extend(_compile_src_dir(prs_src_dir, [rt_src_dir]))
 
-    inc_dirs = [rt_src_dir, prs_src_dir]
+    py_inc_dir = sysconfig.get_paths()['include']
+
+    inc_dirs = [
+        rt_src_dir,
+        pb_inc_dir,
+        prs_src_dir,
+        py_inc_dir,
+    ]
     src_file = os.path.join(os.path.dirname(builder.build_dir()), 'chat.cc')
     obj_file = os.path.join(builder.build_dir(), os.path.basename(src_file).rpartition('.')[0] + '.o')
     obj_files.append(obj_file)
@@ -207,8 +215,12 @@ def _main() -> None:
         [
             'clang++',
             '-std=c++17',
+            '-fPIC',
+            '-shared',
+            '-undefined', 'dynamic_lookup',
+            '-Wl,-no_fixup_chains',
             *obj_files,
-            '-o', os.path.join(bin_dir, 'chat'),
+            '-o', os.path.join(bin_dir, 'chat.so'),
         ],
     )
 
