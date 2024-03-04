@@ -70,7 +70,6 @@ class MovieReqs:
             output_dim=embedding_size,
         )(link)
         movie_embedding = keras.layers.Embedding(
-
             name='movie_embedding',
             input_dim=len(self.movie_to_idx()),
             output_dim=embedding_size,

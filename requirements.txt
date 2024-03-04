@@ -4,5 +4,31 @@ pyyaml==6.0.1
 sqlalchemy==2.0.28
 wrapt>=1.14.1
 
-# opt:
-# ujson==5.9.0
+## compress:
+# lz4
+# zstd
+
+## db:
+# kazoo
+# mysql-connector-python
+# pg8000
+# psycopg2
+# pyhive
+# pymemcache
+# pymongo
+# pymysql
+# redis
+
+## diag:
+# psutil
+
+## serde:
+# cbor
+# msgpack
+# orjson
+# toml
+ujson==5.9.0
+
+## misc
+# billiard
+# python-dateutil

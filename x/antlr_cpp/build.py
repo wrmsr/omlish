@@ -141,9 +141,13 @@ def _compile_src_file(
         subprocess.check_call(
             [
                 'clang++',
+                # '-O3',
+                # '-Wall',
                 '-c', os.path.basename(src_file),
                 *itertools.chain.from_iterable(('-I', inc_dir) for inc_dir in inc_dirs),
                 '-std=c++17',
+                '-fPIC',
+                '-shared',
             ],
             cwd=os.path.dirname(src_file),
         )
@@ -164,6 +168,12 @@ def _compile_src_dir(
 
 def _main() -> None:
     builder = Builder()
+
+    if not os.path.exists(build_dir := builder.build_dir()):
+        os.mkdir(build_dir)
+
+    builder.runtime_dir()
+    builder.pybind_dir()
 
     builder.process_g4('Chat.g4', 'Chat')
 
