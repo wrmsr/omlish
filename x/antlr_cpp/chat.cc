@@ -4,6 +4,8 @@ https://github.com/gabriele-tomassetti/antlr-cpp/blob/master/ImageVisitor.cpp
 */
 #include <iostream>
 
+#include <pybind11/pybind11.h>
+
 #include "antlr4-runtime.h"
 
 #include "ChatLexer.h"
@@ -40,10 +42,10 @@ public:
     // virtual std::any visitMention(ChatParser::MentionContext *context) override { return visitChildren(context); };
 };
 
-int main(int argc, const char* argv[]) {
+int add(int i, int j) {
     std::ifstream stream;
     stream.open("test.chat");
-    
+
     ANTLRInputStream input(stream);
     ChatLexer lexer(&input);
     CommonTokenStream tokens(&lexer);
@@ -53,5 +55,28 @@ int main(int argc, const char* argv[]) {
     visitor.visitChat(tree);
     // Chat chat = std::any_cast<Chat>(visitor.visitFile(tree));
     // scene.draw();
-    return 0;
+
+    return i + j;
 }
+
+PYBIND11_MODULE(example, m) {
+    m.doc() = "pybind11 example plugin"; // optional module docstring
+
+    m.def("add", &add, "A function that adds two numbers");
+}
+
+//int main(int argc, const char* argv[]) {
+//    std::ifstream stream;
+//    stream.open("test.chat");
+//
+//    ANTLRInputStream input(stream);
+//    ChatLexer lexer(&input);
+//    CommonTokenStream tokens(&lexer);
+//    ChatParser parser(&tokens);
+//    ChatParser::ChatContext* tree = parser.chat();
+//    ChatVisitorImpl visitor;
+//    visitor.visitChat(tree);
+//    // Chat chat = std::any_cast<Chat>(visitor.visitFile(tree));
+//    // scene.draw();
+//    return 0;
+//}
