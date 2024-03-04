@@ -67,8 +67,8 @@ optimizer = optim.SGD(model.parameters(), lr=0.001)
 
 for epoch in range(10):
     total_loss = 0
-    for context, target in ngrams:
 
+    for context, target in ngrams:
         # Step 1. Prepare the inputs to be passed to the model (i.e, turn the words
         # into integer indices and wrap them in tensors)
         context_idxs = torch.tensor([word_to_ix[w] for w in context], dtype=torch.long)
@@ -92,6 +92,7 @@ for epoch in range(10):
 
         # Get the Python number from a 1-element Tensor by calling tensor.item()
         total_loss += loss.item()
+
     losses.append(total_loss)
 
 print(losses)  # The loss decreased every iteration over the training data!
