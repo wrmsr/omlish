@@ -40,6 +40,8 @@ torch==2.2.1
 torchtext==0.17.1
 torchvision==0.17.1
 
+portalocker==2.8.2
+
 ##
 
 numba==0.59.0
