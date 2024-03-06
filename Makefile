@@ -1,5 +1,3 @@
-## FIXME:
-## BERKELEYDB_DIR=$(brew --prefix 'berkeley-db@4') .venv/bin/pip install bsddb3
 SHELL:=/bin/bash
 
 PROJECT:=omlish
