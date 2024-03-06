@@ -99,8 +99,8 @@ def _main() -> None:
 
         return total_loss.item() / count, acc.item() / count
 
-    # while True:
-    #     train_epoch(net, train_loader, lr=1, epoch_size=25000)
+    while True:
+        train_epoch(net, train_loader, lr=1, epoch_size=25000)
 
     ##
 
@@ -130,6 +130,9 @@ def _main() -> None:
 
     net = EmbedClassifier(vocab_size, 32, len(classes)).to(device)
 
+    def all_to(device, *ts):
+        return [t.to(device) for t in ts]
+
     def train_epoch_emb(
             net,
             dataloader,
@@ -145,12 +148,8 @@ def _main() -> None:
 
         total_loss, acc, count, i = 0, 0, 0, 0
         for labels, text, off in dataloader:
-            labels = labels.to(device)
-            text = text.to(device)
-            off = off.to(device)
-
             optimizer.zero_grad()
-            labels, text, off = labels.to(device), text.to(device), off.to(device)
+            labels, text, off = all_to(device, labels, text, off)
             out = net(text, off)
             loss = loss_fn(out, labels)  # cross_entropy(out,labels)
             loss.backward()
