@@ -1,5 +1,6 @@
 import collections
 
+import numpy as np
 import torch
 import torchtext
 
@@ -99,8 +100,8 @@ def _main() -> None:
 
         return total_loss.item() / count, acc.item() / count
 
-    while True:
-        train_epoch(net, train_loader, lr=1, epoch_size=25000)
+    # while True:
+    #     train_epoch(net, train_loader, lr=1, epoch_size=25000)
 
     ##
 
@@ -168,8 +169,27 @@ def _main() -> None:
 
         return total_loss.item() / count, acc.item() / count
 
-    while True:
+    for _ in range(4):
         train_epoch_emb(net, train_loader, lr=4, epoch_size=25000)
+
+    # net.eval()
+    #
+    # print(net)
+    #
+    # word_weights = net.embedding.weight.data
+    #
+    # words = vocab.get_itos()
+    #
+    # word_lengths = np.linalg.norm(word_weights, axis=1)
+    # normalized_words = (word_weights.T / word_lengths).T
+    #
+    # def similar_words(word):
+    #     dists = np.dot(normalized_words, normalized_words[stoi[word]])
+    #     closest = np.argsort(dists)[-10:]
+    #     for c in reversed(closest):
+    #         print(c, words[c], dists[c])
+    #
+    # print(similar_words('cat'))
 
 
 if __name__ == '__main__':
