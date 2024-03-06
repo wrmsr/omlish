@@ -4,6 +4,13 @@ Interval:
     ssize_t b;
 
 
+IntStream:
+
+
+CharStream : IntStream:
+    string getText(const Interval &interval);
+
+
 Token:
     string getText();
     size_t getType();
