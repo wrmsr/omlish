@@ -9,9 +9,8 @@ from omlish import dataclasses as dc
 import keras
 import numpy as np
 import sklearn.svm
+import torch
 import ujson as json
-
-from torch import nn
 
 
 @dc.dataclass(frozen=True)
@@ -63,27 +62,58 @@ class MovieReqs:
         pairs_set = set(self.pairs())
         return pairs_set
 
-    # class TorchEmbeddingModel(nn.Module):
-    #     def __init__(self, num_links: int, num_movies: int, embedding_size: int) -> None:
-    #         super().__init__()
-    #
-    #         self.link_embedding = nn.Embedding(
-    #             embedding_size,
-    #             num_links,
-    #         )
-    #         self.movie_embedding = nn.Embedding(
-    #             embedding_size,
-    #             num_movies,
-    #         )
-    #
-    #     def forward(self, link, movie):
-    #         le = self.link_embedding.forward(link)
-    #         me = self.link_embedding.forward(movie)
-    #         dot = le @ me
-    #         merged = dot.reshape((1,))
-    #         return merged
+    class TorchEmbeddingModel(torch.nn.Module):
+        def __init__(self, *, num_links: int, num_movies: int, embedding_size: int) -> None:
+            super().__init__()
+
+            self.link_embedding = torch.nn.Embedding(
+                embedding_size,
+                num_links,
+            )
+            self.movie_embedding = torch.nn.Embedding(
+                embedding_size,
+                num_movies,
+            )
+
+        def forward(self, link, movie):
+            le = self.link_embedding.forward(link)
+            me = self.movie_embedding.forward(movie)
+            dot = le @ me
+            merged = dot.reshape((1,))
+            return merged
+
+    def make_torch_embedding_model(self, embedding_size=50):
+        return MovieReqs.TorchEmbeddingModel(
+            num_links=len(self.top_links()),
+            num_movies=len(self.movie_to_idx()),
+            embedding_size=embedding_size,
+        )
 
     def make_embedding_model(self, embedding_size=50) -> keras.Model:
+        """
+        __________________________________________________________________________________________________
+         Layer (type)                Output Shape                 Param #   Connected to
+        ==================================================================================================
+         link (InputLayer)           [(None, 1)]                  0         []
+
+         movie (InputLayer)          [(None, 1)]                  0         []
+
+         link_embedding (Embedding)  (None, 1, 50)                3345650   ['link[0][0]']
+
+         movie_embedding (Embedding  (None, 1, 50)                500000    ['movie[0][0]']
+         )
+
+         dot_product (Dot)           (None, 1, 1)                 0         ['link_embedding[0][0]',
+                                                                             'movie_embedding[0][0]']
+
+         reshape (Reshape)           (None, 1)                    0         ['dot_product[0][0]']
+
+        ==================================================================================================
+        Total params: 3845650 (14.67 MB)
+        Trainable params: 3845650 (14.67 MB)
+        Non-trainable params: 0 (0.00 Byte)
+        __________________________________________________________________________________________________
+        """
         link = keras.Input(name='link', shape=(1,))
         movie = keras.Input(name='movie', shape=(1,))
         link_embedding = keras.layers.Embedding(
@@ -108,7 +138,7 @@ class MovieReqs:
 
     def batchify(self, positive_samples=50, negative_ratio=10) -> ta.Iterator:
         batch_size = positive_samples * (1 + negative_ratio)
-        batch = np.zeros((batch_size, 3))
+        batch = np.zeros((batch_size, 3), dtype=int)
         while True:
             for idx, (link_id, movie_id) in enumerate(random.sample(self.pairs(), positive_samples)):
                 batch[idx, :] = (link_id, movie_id, 1)
@@ -124,21 +154,65 @@ class MovieReqs:
 
     @cached.nullary
     def trained_model(self) -> keras.Model:
-        fp = '../../.cache/1_movies.keras'
-        if os.path.exists(fp):
-            return keras.models.load_model(fp)
+        # fp = '../../.cache/1_movies.keras'
+        # if os.path.exists(fp):
+        #     return keras.models.load_model(fp)
 
         model = self.make_embedding_model()
         random.seed(5)
         positive_samples_per_batch = 512
+        batches = self.batchify(positive_samples=positive_samples_per_batch, negative_ratio=10)
+
+        net = self.make_torch_embedding_model()
+
+        lr = 0.01
+        report_freq = 200
+        epoch_size = 25000
+
+        optimizer = torch.optim.Adam(net.parameters(), lr=lr)
+        loss_fn = torch.nn.MSELoss()
+
+        net.train()
+
+        total_loss = torch.tensor(0.)
+        acc = torch.tensor(0)
+        count = 0
+        i = 0
+
+        for batch_dct, labels in batches:
+            link = torch.tensor(batch_dct['link'], dtype=torch.int32)
+            movie = torch.tensor(batch_dct['movie'], dtype=torch.int32)
+            labels = torch.tensor(labels, dtype=torch.int32)
+
+            optimizer.zero_grad()
+
+            out = net(link, movie)
+
+            loss = loss_fn(out, labels)  # cross_entropy(out,labels)
+            loss.backward()
+
+            optimizer.step()
+
+            total_loss += loss
+            _, predicted = torch.max(out, 1)
+            acc += (predicted == labels).sum()
+            count += len(labels)
+
+            i += 1
+            if i % report_freq == 0:
+                print(f"{count}: acc={acc.item() / count}")
+
+            if epoch_size and count > epoch_size:
+                break
+
         model.fit(
-            self.batchify(positive_samples=positive_samples_per_batch, negative_ratio=10),
+            batches,
             epochs=15,
             steps_per_epoch=len(self.pairs()) // positive_samples_per_batch,
             verbose=2
         )
 
-        model.save(fp)
+        # model.save(fp)
         return model
 
 
