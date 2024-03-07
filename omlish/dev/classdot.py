@@ -5,7 +5,7 @@ TODO:
 """
 import typing as ta
 
-from ...graphs import dot
+from ..graphs import dot
 
 
 def gen_class_dot(roots: ta.Iterable[type]) -> dot.Graph:
@@ -32,10 +32,10 @@ def gen_class_dot(roots: ta.Iterable[type]) -> dot.Graph:
     return dot.Graph(stmts)
 
 
-def _main():
+def _main() -> None:
     import sys
 
-    from ... import lang
+    from .. import lang
 
     roots = []
     for spec in sys.argv[1:]:
