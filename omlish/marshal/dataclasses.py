@@ -6,7 +6,6 @@ import collections.abc
 import enum
 import typing as ta
 
-from .. import cached
 from .. import check
 from .. import collections as col
 from .. import dataclasses as dc
