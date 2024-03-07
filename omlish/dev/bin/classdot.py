@@ -46,7 +46,7 @@ def _main():
         return
 
     scd = gen_class_dot(roots)
-    dot.open_dot(dot.render(scd))
+    dot.open_dot(dot.render(scd), sleep_s=1.)
 
 
 if __name__ == '__main__':
