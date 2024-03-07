@@ -10,6 +10,7 @@ import keras
 import numpy as np
 import sklearn.svm
 import torch
+import torch.nn.functional as F
 import ujson as json
 
 
@@ -79,8 +80,10 @@ class MovieReqs:
         def forward(self, link, movie):
             le = self.link_embedding.forward(link)
             me = self.movie_embedding.forward(movie)
+            le = F.normalize(le, dim=-1)
+            me = F.normalize(me, dim=-1)
             dot = torch.bmm(le.view(-1, 1, self.embedding_size), me.view(-1, self.embedding_size, 1))
-            merged = dot.reshape((1,))
+            merged = dot.reshape(-1)
             return merged
 
     def make_torch_embedding_model(self, embedding_size=50):
@@ -183,7 +186,7 @@ class MovieReqs:
         net = self.make_torch_embedding_model()
 
         lr = 0.01
-        report_freq = 200
+        report_freq = 5
         epoch_size = 25000
 
         optimizer = torch.optim.Adam(net.parameters(), lr=lr)
@@ -196,31 +199,30 @@ class MovieReqs:
         count = 0
         i = 0
 
-        for batch_dct, labels in batches:
-            link = torch.tensor(batch_dct['link'], dtype=torch.int32)
-            movie = torch.tensor(batch_dct['movie'], dtype=torch.int32)
-            labels = torch.tensor(labels, dtype=torch.int32)
+        while True:
+            for batch_dct, labels in batches:
+                link = torch.tensor(batch_dct['link'], dtype=torch.int32)
+                movie = torch.tensor(batch_dct['movie'], dtype=torch.int32)
+                labels = torch.tensor(labels, dtype=torch.float32)
 
-            optimizer.zero_grad()
+                optimizer.zero_grad()
 
-            out = net(link, movie)
+                out = net(link, movie)
 
-            loss = loss_fn(out, labels)  # cross_entropy(out,labels)
-            loss.backward()
+                loss = loss_fn(out, labels)  # cross_entropy(out,labels)
+                loss.backward()
 
-            optimizer.step()
+                optimizer.step()
 
-            total_loss += loss
-            _, predicted = torch.max(out, 1)
-            acc += (predicted == labels).sum()
-            count += len(labels)
+                total_loss += loss
+                count += len(labels)
 
-            i += 1
-            if i % report_freq == 0:
-                print(f"{count}: acc={acc.item() / count}")
+                i += 1
+                if i % report_freq == 0:
+                    print(f"{count}: loss={loss}")
 
-            if epoch_size and count > epoch_size:
-                break
+                if epoch_size and count > epoch_size:
+                    break
 
         model.fit(
             batches,
