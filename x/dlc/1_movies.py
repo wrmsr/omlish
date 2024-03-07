@@ -79,7 +79,7 @@ class MovieReqs:
         def forward(self, link, movie):
             le = self.link_embedding.forward(link)
             me = self.movie_embedding.forward(movie)
-            dot = torch.bmm(le.view(-1, 1, self.embedding_size), me.view(-1, self.embedding_size50, 1))
+            dot = torch.bmm(le.view(-1, 1, self.embedding_size), me.view(-1, self.embedding_size, 1))
             merged = dot.reshape((1,))
             return merged
 
