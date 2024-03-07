@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# @standalone
 import contextlib
 import os
 import signal
