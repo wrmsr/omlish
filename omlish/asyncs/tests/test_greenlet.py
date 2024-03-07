@@ -7,8 +7,6 @@ import asyncio
 import functools
 import greenlet
 
-import pytest
-
 
 def test_greenlet():
     def test1():
@@ -30,17 +28,6 @@ def test_greenlet():
     gr2 = greenlet.greenlet(test2)
     gr1.switch()
     assert done == 2
-
-
-@pytest.fixture()
-def event_loop():
-    old_loop = asyncio.get_event_loop()
-    new_loop = asyncio.get_event_loop()
-    try:
-        yield new_loop
-    finally:
-        new_loop.close()
-        asyncio.set_event_loop(old_loop)
 
 
 def test_bridge(event_loop):
@@ -74,4 +61,4 @@ def test_bridge(event_loop):
         )
         assert rs == [4, 4]
 
-    event_loop.run_until_complete(main())
+    event_loop.run_until_complete(main())  # noqa
