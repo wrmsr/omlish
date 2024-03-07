@@ -72,8 +72,11 @@ def _main():
     np.random.shuffle(x)
     np.random.shuffle(y)
 
-    print(m_k([x, y]).numpy())
-    print(m_t(torch.tensor(x, dtype=torch.int32), torch.tensor(y, dtype=torch.int32)).detach().numpy())
+    def dump_weights():
+        print(m_k([x, y]).numpy())
+        print(m_t(torch.tensor(x, dtype=torch.int32), torch.tensor(y, dtype=torch.int32)).detach().numpy())
+    
+    dump_weights()
 
     m_k.fit(
         (x, y),
@@ -89,10 +92,12 @@ def _main():
     m_t.train()
     optimizer.zero_grad()
     out = m_t(torch.tensor(x, dtype=torch.int32), torch.tensor(y, dtype=torch.int32))
-    loss = loss_fn(out, l)
+    loss = loss_fn(out, torch.tensor(l, dtype=torch.float32))
     loss.backward()
     optimizer.step()
     print(loss)
+
+    dump_weights()
 
 
 if __name__ == '__main__':
