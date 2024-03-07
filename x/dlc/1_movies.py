@@ -66,19 +66,20 @@ class MovieReqs:
         def __init__(self, *, num_links: int, num_movies: int, embedding_size: int) -> None:
             super().__init__()
 
+            self.embedding_size = embedding_size
             self.link_embedding = torch.nn.Embedding(
-                embedding_size,
                 num_links,
+                embedding_size,
             )
             self.movie_embedding = torch.nn.Embedding(
-                embedding_size,
                 num_movies,
+                embedding_size,
             )
 
         def forward(self, link, movie):
             le = self.link_embedding.forward(link)
             me = self.movie_embedding.forward(movie)
-            dot = le @ me
+            dot = torch.bmm(le.view(-1, 1, self.embedding_size), me.view(-1, self.embedding_size50, 1))
             merged = dot.reshape((1,))
             return merged
 
@@ -101,7 +102,7 @@ class MovieReqs:
          link_embedding (Embedding)  (None, 1, 50)                3345650   ['link[0][0]']
 
          movie_embedding (Embedding  (None, 1, 50)                500000    ['movie[0][0]']
-         )
+
 
          dot_product (Dot)           (None, 1, 1)                 0         ['link_embedding[0][0]',
                                                                              'movie_embedding[0][0]']
@@ -159,6 +160,22 @@ class MovieReqs:
         #     return keras.models.load_model(fp)
 
         model = self.make_embedding_model()
+
+        # import tensorflow as tf
+        # tf.keras.utils.plot_model(
+        #     model,
+        #     to_file='model.png',
+        #     show_shapes=True,
+        #     show_dtype=True,
+        #     show_layer_names=True,
+        #     rankdir='TB',
+        #     expand_nested=True,
+        #     dpi=96,
+        #     layer_range=None,
+        #     show_layer_activations=True,
+        #     show_trainable=True
+        # )
+
         random.seed(5)
         positive_samples_per_batch = 512
         batches = self.batchify(positive_samples=positive_samples_per_batch, negative_ratio=10)
