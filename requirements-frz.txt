@@ -217,6 +217,7 @@ pyproject_hooks==1.0.0
 pyserial==3.5
 pyserial-asyncio==0.6
 pytest==8.0.2
+pytest-asyncio==0.23.5
 pytest-benchmark==4.0.0
 pytest-clarity==1.0.1
 pytest-timeout==2.2.0
