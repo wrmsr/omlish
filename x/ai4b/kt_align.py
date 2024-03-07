@@ -38,8 +38,8 @@ class TorchModel(torch.nn.Module):
         self.y_e = torch.nn.Embedding(n_y, n_e)
 
     def forward(self, x, y):
-        x_e = self.link_embedding.forward(x)
-        y_e = self.movie_embedding.forward(y)
+        x_e = self.x_e.forward(x)
+        y_e = self.y_e.forward(y)
         x_e = F.normalize(x_e, dim=-1)
         y_e = F.normalize(y_e, dim=-1)
         dot = torch.bmm(
@@ -63,6 +63,16 @@ def _main():
 
     m_t.x_e.weight.data[:] = torch.Tensor(ew_x)
     m_t.y_e.weight.data[:] = torch.Tensor(ew_y)
+
+    x = np.arange(8)
+    y = np.arange(8)
+
+    np.random.seed(0)
+    np.random.shuffle(x)
+    np.random.shuffle(y)
+
+    print(m_k([x, y]))
+    print(m_t(torch.Tensor(x), torch.Tensor(y)))
 
 
 if __name__ == '__main__':
