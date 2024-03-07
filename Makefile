@@ -99,20 +99,13 @@ mypy: venv
 
 ### Test
 
-DEFAULT_TEST_SOURCES:=${ALL_SOURCES}
+DEFAULT_TEST_SOURCES:=${MAIN_SOURCES}
 
 TEST_SOURCES:=$$(echo "$${_TEST_SOURCES:-${DEFAULT_TEST_SOURCES}}")
 
 .PHONY: test
 test: venv
 	$(PYTHON) -mpytest $(TEST_SOURCES)
-
-.PHONY: test-all
-test-all: test
-
-.PHONY: test-nn
-test-nn: venv
-	$(PYTHON) -mpytest -n8 nn
 
 
 ### Alts
