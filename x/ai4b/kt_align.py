@@ -78,26 +78,32 @@ def _main():
     
     dump_weights()
 
-    m_k.fit(
-        (x, y),
-        l,
-        epochs=1,
-        steps_per_epoch=1,
-        verbose=2
-    )
+    def step_k():
+        m_k.fit(
+            (x, y),
+            l,
+            epochs=1,
+            steps_per_epoch=1,
+            verbose=2
+        )
 
     lr = 0.001
-    optimizer = torch.optim.NAdam(m_t.parameters(), lr=lr)
+    optimizer = torch.optim.NAdam(m_t.parameters(), lr=lr, eps=1e-7)
     loss_fn = torch.nn.MSELoss()
-    m_t.train()
-    optimizer.zero_grad()
-    out = m_t(torch.tensor(x, dtype=torch.int32), torch.tensor(y, dtype=torch.int32))
-    loss = loss_fn(out, torch.tensor(l, dtype=torch.float32))
-    loss.backward()
-    optimizer.step()
-    print(loss)
 
-    dump_weights()
+    def step_t():
+        m_t.train()
+        optimizer.zero_grad()
+        out = m_t(torch.tensor(x, dtype=torch.int32), torch.tensor(y, dtype=torch.int32))
+        loss = loss_fn(out, torch.tensor(l, dtype=torch.float32))
+        loss.backward()
+        optimizer.step()
+        print(loss)
+
+    for _ in range(2):
+        step_k()
+        step_t()
+        dump_weights()
 
 
 if __name__ == '__main__':
