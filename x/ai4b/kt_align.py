@@ -64,15 +64,15 @@ def _main():
     m_t.x_e.weight.data[:] = torch.Tensor(ew_x)
     m_t.y_e.weight.data[:] = torch.Tensor(ew_y)
 
-    x = np.arange(8)
-    y = np.arange(8)
+    x = np.arange(8, dtype=int)
+    y = np.arange(8, dtype=int)
 
     np.random.seed(0)
     np.random.shuffle(x)
     np.random.shuffle(y)
 
     print(m_k([x, y]))
-    print(m_t(torch.Tensor(x), torch.Tensor(y)))
+    print(m_t(torch.tensor(x, dtype=torch.int32), torch.tensor(y, dtype=torch.int32)))
 
 
 if __name__ == '__main__':
