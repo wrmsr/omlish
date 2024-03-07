@@ -72,7 +72,7 @@ def _main():
     np.random.shuffle(y)
 
     print(m_k([x, y]))
-    print(m_t(torch.tensor(x, dtype=torch.int32), torch.tensor(y, dtype=torch.int32)))
+    print(m_t(torch.tensor(x, dtype=torch.int32), torch.tensor(y, dtype=torch.int32)).numpy)
 
 
 if __name__ == '__main__':
