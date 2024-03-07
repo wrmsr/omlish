@@ -1,5 +1,6 @@
 import collections
 import functools
+import itertools
 import typing as ta
 
 
@@ -164,3 +165,20 @@ def unzip(it: ta.Iterable[T], width: ta.Optional[int] = None) -> list:
 
     its.extend(PrefetchIterator(functools.partial(next_fn, idx)) for idx in range(width))
     return its
+
+
+def take(n: int, iterable: ta.Iterable[T]) -> list[T]:
+    return list(itertools.islice(iterable, n))
+
+
+def chunk(n: int, iterable: ta.Iterable[T], strict: bool = False) -> ta.Iterator[list[T]]:
+    iterator = iter(functools.partial(take, n, iter(iterable)), [])
+    if strict:
+        def ret():
+            for chunk in iterator:
+                if len(chunk) != n:
+                    raise ValueError('iterable is not divisible by n.')
+                yield chunk
+        return iter(ret())
+    else:
+        return iterator
