@@ -183,46 +183,46 @@ class MovieReqs:
         positive_samples_per_batch = 512
         batches = self.batchify(positive_samples=positive_samples_per_batch, negative_ratio=10)
 
-        net = self.make_torch_embedding_model()
-
-        lr = 0.01
-        report_freq = 5
-        epoch_size = 25000
-
-        optimizer = torch.optim.Adam(net.parameters(), lr=lr)
-        loss_fn = torch.nn.MSELoss()
-
-        net.train()
-
-        total_loss = torch.tensor(0.)
-        acc = torch.tensor(0)
-        count = 0
-        i = 0
-
-        while True:
-            for batch_dct, labels in batches:
-                link = torch.tensor(batch_dct['link'], dtype=torch.int32)
-                movie = torch.tensor(batch_dct['movie'], dtype=torch.int32)
-                labels = torch.tensor(labels, dtype=torch.float32)
-
-                optimizer.zero_grad()
-
-                out = net(link, movie)
-
-                loss = loss_fn(out, labels)  # cross_entropy(out,labels)
-                loss.backward()
-
-                optimizer.step()
-
-                total_loss += loss
-                count += len(labels)
-
-                i += 1
-                if i % report_freq == 0:
-                    print(f"{count}: loss={loss}")
-
-                if epoch_size and count > epoch_size:
-                    break
+        # net = self.make_torch_embedding_model()
+        #
+        # lr = 0.01
+        # report_freq = 5
+        # epoch_size = 25000
+        #
+        # optimizer = torch.optim.Adam(net.parameters(), lr=lr)
+        # loss_fn = torch.nn.MSELoss()
+        #
+        # net.train()
+        #
+        # total_loss = torch.tensor(0.)
+        # acc = torch.tensor(0)
+        # count = 0
+        # i = 0
+        #
+        # while True:
+        #     for batch_dct, labels in batches:
+        #         link = torch.tensor(batch_dct['link'], dtype=torch.int32)
+        #         movie = torch.tensor(batch_dct['movie'], dtype=torch.int32)
+        #         labels = torch.tensor(labels, dtype=torch.float32)
+        #
+        #         optimizer.zero_grad()
+        #
+        #         out = net(link, movie)
+        #
+        #         loss = loss_fn(out, labels)  # cross_entropy(out,labels)
+        #         loss.backward()
+        #
+        #         optimizer.step()
+        #
+        #         total_loss += loss
+        #         count += len(labels)
+        #
+        #         i += 1
+        #         if i % report_freq == 0:
+        #             print(f"{count}: loss={loss}")
+        #
+        #         if epoch_size and count > epoch_size:
+        #             break
 
         model.fit(
             batches,

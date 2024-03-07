@@ -66,6 +66,7 @@ def _main():
 
     x = np.arange(8, dtype=int)
     y = np.arange(8, dtype=int)
+    l = np.asarray([1, -1] * 4)
 
     np.random.seed(0)
     np.random.shuffle(x)
@@ -73,6 +74,25 @@ def _main():
 
     print(m_k([x, y]).numpy())
     print(m_t(torch.tensor(x, dtype=torch.int32), torch.tensor(y, dtype=torch.int32)).detach().numpy())
+
+    m_k.fit(
+        (x, y),
+        l,
+        epochs=1,
+        steps_per_epoch=1,
+        verbose=2
+    )
+
+    lr = 0.001
+    optimizer = torch.optim.NAdam(m_t.parameters(), lr=lr)
+    loss_fn = torch.nn.MSELoss()
+    m_t.train()
+    optimizer.zero_grad()
+    out = m_t(torch.tensor(x, dtype=torch.int32), torch.tensor(y, dtype=torch.int32))
+    loss = loss_fn(out, l)
+    loss.backward()
+    optimizer.step()
+    print(loss)
 
 
 if __name__ == '__main__':
