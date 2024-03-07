@@ -71,8 +71,8 @@ def _main():
     np.random.shuffle(x)
     np.random.shuffle(y)
 
-    print(m_k([x, y]))
-    print(m_t(torch.tensor(x, dtype=torch.int32), torch.tensor(y, dtype=torch.int32)).numpy)
+    print(m_k([x, y]).numpy())
+    print(m_t(torch.tensor(x, dtype=torch.int32), torch.tensor(y, dtype=torch.int32)).detach().numpy())
 
 
 if __name__ == '__main__':
