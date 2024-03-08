@@ -89,6 +89,8 @@ qtconsole==5.5.1
 
 scikit-image==0.22.0
 
+fairscale==0.4.13
+
 ## dlc
 
 ## FIXME:
