@@ -1,7 +1,7 @@
 """
 TODO:
  - vendor
-  - ../.venv/bin/pip index versions antlr4-python3-runtime -> "antlr4-python3-runtime (4.13.1)"
+  - pip index versions antlr4-python3-runtime -> "antlr4-python3-runtime (4.13.1)"
   - pip download antlr4-python3-runtime==4.13.1
   - unzip *.whl
   - https://github.com/antlr/antlr4/raw/4.13.1/LICENSE.txt
@@ -13,6 +13,7 @@ import logging
 import os.path
 import subprocess
 import shutil
+import sys
 import re
 import typing as ta
 
@@ -26,7 +27,10 @@ from omlish import cached
 log = logging.getLogger(__name__)
 
 
-ANTLR_VERSION = '4.8'
+ANTLR_VERSION = '4.13.1'
+
+ANTLR_RUNTIME_PACKAGE = 'antlr4-python3-runtime'
+ANTLR_GITHUB_REPO = 'antlr/antlr4'
 
 
 def _build():
@@ -166,6 +170,22 @@ class Cli(ap.Cli):
             with open(ip, 'w') as f:
                 f.write('\n'.join(sorted(init_lines)))
                 f.write('\n')
+
+    @ap.command()
+    def latest(self) -> None:
+        o, _ = subprocess.Popen(
+            [
+                sys.executable,
+                '-m', 'pip',
+                'index', 'versions',
+                ANTLR_RUNTIME_PACKAGE,
+            ],
+            stdout=subprocess.PIPE,
+        ).communicate()
+        tl = o.decode().splitlines()[0]
+        m = re.fullmatch(rf'{ANTLR_RUNTIME_PACKAGE} \((?P<version>[^)]+)\)', tl)
+        v = m.groupdict()['version']
+        print(v)
 
 
 def main():
