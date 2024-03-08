@@ -5,21 +5,21 @@ twine==5.0.0
 wheel==0.42.0
 
 pytest==8.0.2
-pytest-asyncio==0.23.5
+pytest-asyncio==0.23.5.post1
 pytest-benchmark==4.0.0
 pytest-clarity==1.0.1
-pytest-timeout==2.2.0
+pytest-timeout==2.3.1
 pytest-xdist==3.5.0
 
 flake8==6.1.0
 flake8-pyproject==1.2.3
 
 black==24.2.0
-mypy==1.8.0
+mypy==1.9.0
 pipdeptree==2.16.1
 
 gprof2dot==2022.7.29
-guppy3==3.1.4
+guppy3==3.1.4.post1
 objgraph==3.6.1
 
 httpie==3.2.2

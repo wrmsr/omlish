@@ -116,7 +116,7 @@ google-cloud-compute==1.18.0
 
 ### hn
 
-selectolax==0.3.17
+selectolax==0.3.20
 
 soco==0.30.2
 
@@ -124,7 +124,7 @@ sounddevice==0.4.6
 # vosk==0.3.45
 
 bellows==0.38.1
-zigpy==0.63.4
+zigpy==0.63.5
 
 # python-openzwave
 zwave-js-server-python==0.55.3
