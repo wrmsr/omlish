@@ -94,7 +94,7 @@ def _main() -> None:
     model.fit_generator(
         data_generator(training_text, char_to_idx, batch_size=BATCH_SIZE, chunk_size=CHUNK_SIZE),
         epochs=40,
-        callbacks=[early,],
+        # callbacks=[early,],
         steps_per_epoch=2 * len(training_text) / (BATCH_SIZE * CHUNK_SIZE),
         verbose=2
     )
