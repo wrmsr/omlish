@@ -1,3 +1,12 @@
+"""
+TODO:
+ - vendor
+  - ../.venv/bin/pip index versions antlr4-python3-runtime -> "antlr4-python3-runtime (4.13.1)"
+  - pip download antlr4-python3-runtime==4.13.1
+  - unzip *.whl
+  - https://github.com/antlr/antlr4/raw/4.13.1/LICENSE.txt
+  - ... antlr4 ...
+"""
 import concurrent.futures as cf
 import contextlib
 import logging
