@@ -121,8 +121,7 @@ class SimpleBrokenModel(nn.Module):
 
     def forward(self, idx, targets=None):
         x = self.embedding(idx)
-        a = self.linear(x)
-        logits = F.softmax(a, dim=-1)
+        logits = self.linear(x)
 
         if targets is not None:
             loss = F.cross_entropy(logits.view(-1, self.config['vocab_size']), targets.view(-1))
@@ -185,4 +184,4 @@ def train(model, optimizer, scheduler=None, config=MASTER_CONFIG, print_logs=Fal
     return pd.DataFrame(losses).plot()
 
 
-train(model, optimizer)
+train(model, optimizer, print_logs=True)
