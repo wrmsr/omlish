@@ -202,3 +202,4 @@ def generate(model, config=MASTER_CONFIG, max_new_tokens=30):
     return [decode(x) for x in idx.tolist()]
 
 print(generate(model))
+
