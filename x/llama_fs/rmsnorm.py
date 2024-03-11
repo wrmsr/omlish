@@ -27,6 +27,13 @@ def test():
 
     m = RMSNorm((config['context_window'], config['d_model']))
     g = m(batch)
+    assert g.shape == (config['batch_size'], config['context_window'], config['d_model'])
+
+    from extra.models.llama import RMSNorm as TgRMSNorm
+    import tinygrad as tg
+    tgm = TgRMSNorm(config['d_model'])
+    tgg = tgm(tg.Tensor(batch.numpy())).numpy()
+    assert torch.allclose(g, tgg)
 
     # scaled_batch.var(dim=(1,2))
     assert torch.linalg.norm(torch.arange(5).float()) == (torch.arange(5).float() ** 2).sum() ** .5
