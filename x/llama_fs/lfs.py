@@ -2,84 +2,38 @@
 https://github.com/bkitano/llama-from-scratch/blob/main/llama.ipynb
 """
 from pprint import pprint
-import torch
+import time
+
+from matplotlib import pyplot as plt
 from torch import nn
 from torch.nn import functional as F
 import numpy as np
-from matplotlib import pyplot as plt
-import time
 import pandas as pd
+import torch
 
-
-##
-
-
-lines = open('./input.txt', 'r').read()
-
-vocab = sorted(list(set(lines)))
-itos = {i:ch for i, ch in enumerate(vocab)}
-stoi = {ch:i for i, ch in enumerate(vocab)}
-
-print(lines[:30])
-
-
-##
-
-
-# simple tokenization by characters
-def encode(s):
-    return [stoi[ch] for ch in s]
-
-def decode(l):
-    return ''.join([itos[i] for i in l])
-
-print('vocab size:', len(vocab))
-print(decode(encode("hello")))
+from .data import vocab
+from .data import dataset
+from .data import get_batches
+from .data import decode
+from .data import encode
 
 
 ##
 
 
 MASTER_CONFIG = {
-    "vocab_size": len(vocab),
+    "vocab_size": len(vocab()),
+    'batch_size': 8,
+    'context_window': 16
 }
 
 
-##
-
-
-dataset = torch.tensor(encode(lines), dtype=torch.int8)
-print(dataset.shape)
-
-
-##
-
-
-def get_batches(data, split, batch_size, context_window, config=MASTER_CONFIG):
-    train = data[:int(.8 * len(data))]
-    val = data[int(.8 * len(data)): int(.9 * len(data))]
-    test = data[int(.9 * len(data)):]
-
-    batch_data = train
-    if split == 'val':
-        batch_data = val
-
-    if split == 'test':
-        batch_data = test
-
-    # pick random starting points
-    ix = torch.randint(0, batch_data.size(0) - context_window - 1, (batch_size,))
-    x = torch.stack([batch_data[i:i + context_window] for i in ix]).long()
-    y = torch.stack([batch_data[i + 1:i + context_window + 1] for i in ix]).long()
-    return x, y
-
-
-MASTER_CONFIG.update({
-    'batch_size': 8,
-    'context_window': 16
-})
-
-xs, ys = get_batches(dataset, 'train', MASTER_CONFIG['batch_size'], MASTER_CONFIG['context_window'])
+xs, ys = get_batches(
+    dataset(),
+    'train',
+    MASTER_CONFIG['batch_size'],
+    MASTER_CONFIG['context_window'],
+)
 
 pprint([(decode(xs[i].tolist()), decode(ys[i].tolist())) for i in range(len(xs))])
 
@@ -94,7 +48,12 @@ def evaluate_loss(model, config=MASTER_CONFIG):
     for split in ["train", "val"]:
         losses = []
         for _ in range(10):
-            xb, yb = get_batches(dataset, split, config['batch_size'], config['context_window'])
+            xb, yb = get_batches(
+                dataset(),
+                split,
+                config['batch_size'],
+                config['context_window'],
+            )
             _, loss = model(xb, yb)
             losses.append(loss.item())
         out[split] = np.mean(losses)
@@ -133,8 +92,15 @@ class SimpleBrokenModel(nn.Module):
 MASTER_CONFIG.update({
     'd_model': 128,
 })
+
 model = SimpleBrokenModel(MASTER_CONFIG)
-xs, ys = get_batches(dataset, 'train', MASTER_CONFIG['batch_size'], MASTER_CONFIG['context_window'])
+
+xs, ys = get_batches(
+    dataset(),
+    'train',
+    MASTER_CONFIG['batch_size'],
+    MASTER_CONFIG['context_window'],
+)
 
 logits, loss = model(xs, ys)
 
@@ -147,6 +113,7 @@ MASTER_CONFIG.update({
     'log_interval': 10,
     'batch_size': 32,
 })
+
 model = SimpleBrokenModel(MASTER_CONFIG)
 
 optimizer = torch.optim.Adam(
@@ -160,7 +127,13 @@ def train(model, optimizer, scheduler=None, config=MASTER_CONFIG, print_logs=Fal
     for epoch in range(config['epochs']):
         optimizer.zero_grad()
 
-        xs, ys = get_batches(dataset, 'train', config['batch_size'], config['context_window'])
+        xs, ys = get_batches(
+            dataset(),
+            'train',
+            config['batch_size'],
+            config['context_window'],
+        )
+
         logits, loss = model(xs, targets=ys)
         loss.backward()
         optimizer.step()
@@ -174,7 +147,11 @@ def train(model, optimizer, scheduler=None, config=MASTER_CONFIG, print_logs=Fal
             losses += [x]
             if print_logs:
                 print(
-                    f"Epoch {epoch} | val loss {x['val']:.3f} | Time {batch_time:.3f} | ETA in seconds {batch_time * (config['epochs'] - epoch) / config['log_interval'] :.3f}")
+                    f"Epoch {epoch} | "
+                    f"val loss {x['val']:.3f} | "
+                    f"Time {batch_time:.3f} | "
+                    f"ETA in seconds {batch_time * (config['epochs'] - epoch) / config['log_interval'] :.3f}"
+                )
             start_time = time.time()
 
             if scheduler:
@@ -202,4 +179,7 @@ def generate(model, config=MASTER_CONFIG, max_new_tokens=30):
     return [decode(x) for x in idx.tolist()]
 
 print(generate(model))
+
+
+##
 
