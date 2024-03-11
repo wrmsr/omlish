@@ -15,7 +15,7 @@ from .data import vocab
 from .data import dataset
 from .data import get_batches
 from .data import decode
-from .data import encode
+from .train import train
 
 
 ##
@@ -36,29 +36,6 @@ xs, ys = get_batches(
 )
 
 pprint([(decode(xs[i].tolist()), decode(ys[i].tolist())) for i in range(len(xs))])
-
-
-##
-
-
-@torch.no_grad()  # don't compute gradients for this function
-def evaluate_loss(model, config=MASTER_CONFIG):
-    out = {}
-    model.eval()
-    for split in ["train", "val"]:
-        losses = []
-        for _ in range(10):
-            xb, yb = get_batches(
-                dataset(),
-                split,
-                config['batch_size'],
-                config['context_window'],
-            )
-            _, loss = model(xb, yb)
-            losses.append(loss.item())
-        out[split] = np.mean(losses)
-    model.train()
-    return out
 
 
 ##
@@ -121,47 +98,8 @@ optimizer = torch.optim.Adam(
 )
 
 
-def train(model, optimizer, scheduler=None, config=MASTER_CONFIG, print_logs=False):
-    losses = []
-    start_time = time.time()
-    for epoch in range(config['epochs']):
-        optimizer.zero_grad()
 
-        xs, ys = get_batches(
-            dataset(),
-            'train',
-            config['batch_size'],
-            config['context_window'],
-        )
-
-        logits, loss = model(xs, targets=ys)
-        loss.backward()
-        optimizer.step()
-
-        if scheduler:
-            scheduler.step()
-
-        if epoch % config['log_interval'] == 0:
-            batch_time = time.time() - start_time
-            x = evaluate_loss(model)
-            losses += [x]
-            if print_logs:
-                print(
-                    f"Epoch {epoch} | "
-                    f"val loss {x['val']:.3f} | "
-                    f"Time {batch_time:.3f} | "
-                    f"ETA in seconds {batch_time * (config['epochs'] - epoch) / config['log_interval'] :.3f}"
-                )
-            start_time = time.time()
-
-            if scheduler:
-                print("lr: ", scheduler.get_lr())
-
-    print("validation loss: ", losses[-1]['val'])
-    return pd.DataFrame(losses).plot()
-
-
-train(model, optimizer, print_logs=True)
+train(model, optimizer, config=MASTER_CONFIG, print_logs=True)
 
 
 ##
