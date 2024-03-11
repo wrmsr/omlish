@@ -38,7 +38,7 @@ def dataset() -> torch.Tensor:
     return torch.tensor(encode(lines()), dtype=torch.int8)
 
 
-def get_batches(data, split, batch_size, context_window):
+def get_batches(data, split, config):
     train = data[:int(.8 * len(data))]
     val = data[int(.8 * len(data)): int(.9 * len(data))]
     test = data[int(.9 * len(data)):]
@@ -51,7 +51,7 @@ def get_batches(data, split, batch_size, context_window):
         batch_data = test
 
     # pick random starting points
-    ix = torch.randint(0, batch_data.size(0) - context_window - 1, (batch_size,))
-    x = torch.stack([batch_data[i:i + context_window] for i in ix]).long()
-    y = torch.stack([batch_data[i + 1:i + context_window + 1] for i in ix]).long()
+    ix = torch.randint(0, batch_data.size(0) - config['context_window'] - 1, (config['batch_size'],))
+    x = torch.stack([batch_data[i:i + config['context_window']] for i in ix]).long()
+    y = torch.stack([batch_data[i + 1:i + config['context_window'] + 1] for i in ix]).long()
     return x, y
