@@ -67,7 +67,7 @@ hypothesis==6.99.3
 
 datasets==2.18.0
 
-bitsandbytes==0.43.0
+bitsandbytes>=0.42.0
 loralib==0.1.2
 
 # peft==0.5.0
