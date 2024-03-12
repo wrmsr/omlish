@@ -58,7 +58,7 @@ def _main() -> None:
                 prev = lstm
         dense = TimeDistributed(Dense(num_chars, name='dense', activation='softmax'))(prev)
         model = Model(inputs=[input], outputs=[dense])
-        optimizer = RMSprop(lr=0.01)
+        optimizer = RMSprop(learning_rate=0.01)
         model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
         return model
 
@@ -91,11 +91,11 @@ def _main() -> None:
     )
 
     BATCH_SIZE = 256
-    model.fit_generator(
+    model.fit(
         data_generator(training_text, char_to_idx, batch_size=BATCH_SIZE, chunk_size=CHUNK_SIZE),
         epochs=40,
         callbacks=[early,],
-        steps_per_epoch=2 * len(training_text) / (BATCH_SIZE * CHUNK_SIZE),
+        steps_per_epoch=int(2 * len(training_text) / (BATCH_SIZE * CHUNK_SIZE)),
         verbose=2
     )
 
