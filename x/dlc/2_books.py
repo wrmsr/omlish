@@ -58,7 +58,7 @@ def _main() -> None:
                 prev = lstm
         dense = TimeDistributed(Dense(num_chars, name='dense', activation='softmax'))(prev)
         model = Model(inputs=[input], outputs=[dense])
-        optimizer = RMSprop(learning_rate=0.01)
+        optimizer = RMSprop(lr=0.01)
         model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
         return model
 
