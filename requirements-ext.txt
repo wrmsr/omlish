@@ -103,7 +103,7 @@ gensim==4.3.2
 geopandas==0.14.3
 gutenberg==0.8.2
 # h5py
-keras>=2.15.0
+keras==2.15.0
 mwparserfromhell==0.6.6
 nltk==3.8.1
 tensorflow==2.16.1
