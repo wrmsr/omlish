@@ -73,8 +73,6 @@ loralib==0.1.2
 # peft==0.5.0
 git+https://github.com/huggingface/peft.git
 
-tensorboard==2.16.2
-
 scikit-learn==1.4.1.post1
 simsimd==3.9.0
 
@@ -106,7 +104,8 @@ gutenberg==0.8.2
 keras==2.15.0
 mwparserfromhell==0.6.6
 nltk==3.8.1
-tensorflow==2.16.1
+tensorflow==2.15.1
+tensorboard==2.15.2
 
 # git+git://github.com/flier/pyfasthash
 
