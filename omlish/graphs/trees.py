@@ -55,7 +55,7 @@ class BasicTreeAnalysis(ta.Generic[NodeT]):
 
         self._set_fac: ta.Callable[..., ta.MutableSet[NodeT]] = col.IdentitySet if identity else set
         self._dict_fac: ta.Callable[..., ta.MutableMapping[NodeT, ta.Any]] = col.IdentityKeyDict if identity else dict
-        self._idx_seq_fac: ta.Callable[..., col.IndexedSeq[NodeT]] = functools.partial(col.IndexedSeq, identity=identity)  # type: ignore  # noqa
+        self._idx_seq_fac: ta.Callable[..., col.IndexedSeq[NodeT]] = functools.partial(col.IndexedSeq, identity=identity)  # noqa
 
         def walk(cur: NodeT, parent: ta.Optional[NodeT]) -> None:
             check.not_none(cur)
@@ -87,7 +87,7 @@ class BasicTreeAnalysis(ta.Generic[NodeT]):
 
         walk(root, None)
 
-        self._nodes = self._idx_seq_fac(nodes)
+        self._nodes = self._idx_seq_fac(nodes)  # type: ignore
         self._node_set: ta.AbstractSet[NodeT] = node_set
         self._children_by_node: ta.Mapping[ta.Optional[NodeT], col.IndexedSeq[NodeT]] = self._dict_fac(  # type: ignore
             [(n, self._idx_seq_fac(cs)) for n, cs in children_by_node.items()])

@@ -21,21 +21,25 @@ CallableT = ta.TypeVar('CallableT', bound=ta.Callable)
 
 
 def async_once(fn: CallableT) -> CallableT:
+    future = None
+
     @functools.wraps(fn)
     async def inner(*args, **kwargs):
         nonlocal future
         if not future:
             future = asyncio.create_task(fn(*args, **kwargs))
         return await future
-    future = None
+
     return ta.cast(CallableT, inner)
 
 
 def sync_await(fn: ta.Callable[..., T], *args, **kwargs) -> T:
+    ret = missing = object()
+
     async def gate():
         nonlocal ret
         ret = await fn(*args, **kwargs)
-    ret = missing = object()
+
     cr = gate()
     with contextlib.closing(cr):
         try:
@@ -44,6 +48,7 @@ def sync_await(fn: ta.Callable[..., T], *args, **kwargs) -> T:
             pass
         if ret is missing or cr.cr_await is not None or cr.cr_running:
             raise TypeError('Not terminated')
+
     return ta.cast(T, ret)
 
 

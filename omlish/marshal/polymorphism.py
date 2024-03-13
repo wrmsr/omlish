@@ -46,6 +46,7 @@ class Polymorphism:
                 by_tag[a] = i
 
 
+@dc.dataclass(frozen=True)
 class PolymorphismMarshaler(Marshaler):
     m: ta.Mapping[type, tuple[str, Marshaler]]
 
@@ -53,11 +54,16 @@ class PolymorphismMarshaler(Marshaler):
         raise NotImplementedError
 
 
+@dc.dataclass(frozen=True)
 class PolymorphismMarshalerFactory(MarshalerFactory):
+    p: Polymorphism
+
     def __call__(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Optional[Marshaler]:
+        # if rty
         raise NotImplementedError
 
 
+@dc.dataclass(frozen=True)
 class PolymorphismUnmarshaler(Unmarshaler):
     m: ta.Mapping[str, Unmarshaler]
 
@@ -65,6 +71,9 @@ class PolymorphismUnmarshaler(Unmarshaler):
         raise NotImplementedError
 
 
+@dc.dataclass(frozen=True)
 class PolymorphismUnmarshalerFactory(UnmarshalerFactory):
+    p: Polymorphism
+
     def __call__(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Optional[Unmarshaler]:
         raise NotImplementedError
