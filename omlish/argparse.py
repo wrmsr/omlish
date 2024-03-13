@@ -53,7 +53,7 @@ class Arg:
     def __get__(self, instance, owner=None):
         if instance is None:
             return self
-        return getattr(instance.args, self.dest)
+        return getattr(instance.args, self.dest)  # type: ignore
 
 
 def arg(*args, **kwargs) -> Arg:
@@ -128,7 +128,7 @@ class _AnnotationBox:
 
     def __init__(self, annotations: ta.Mapping[str, ta.Any]) -> None:
         super().__init__()
-        self.__annotations__ = annotations
+        self.__annotations__ = annotations  # type: ignore
 
 
 class _CliMeta(type):
@@ -143,7 +143,7 @@ class _CliMeta(type):
         objs = {}
         mro = c3.merge([list(b.__mro__) for b in bases])
         for bns in [bcls.__dict__ for bcls in reversed(mro)] + [namespace]:
-            bseen = set()
+            bseen = set()  # type: ignore
             for k, v in bns.items():
                 if isinstance(v, (Command, Arg)):
                     check.not_in(v, bseen)
@@ -181,7 +181,7 @@ class _CliMeta(type):
                     if 'dest' in obj.kwargs:
                         obj.dest = obj.kwargs['dest']
                     else:
-                        obj.dest = obj.kwargs['dest'] = name
+                        obj.dest = obj.kwargs['dest'] = name  # type: ignore
                 parser.add_argument(*obj.args, **obj.kwargs)
 
             else:

@@ -8,11 +8,11 @@ import types
 
 _NoneType = types.NoneType  # type: ignore
 
-_NONE_TYPE_FROZENSET: ta.FrozenSet['Type'] = frozenset([_NoneType])  # type: ignore
+_NONE_TYPE_FROZENSET: ta.FrozenSet['Type'] = frozenset([_NoneType])
 
 
 _GenericAlias = ta._GenericAlias  # type: ignore  # noqa
-_UnionGenericAlias = ta._UnionGenericAlias  # type: ignore  # noqa
+_UnionGenericAlias = ta._UnionGenericAlias   # type: ignore  # noqa
 
 
 Type = ta.Union[
@@ -78,7 +78,7 @@ KNOWN_GENERICS: ta.AbstractSet[type] = frozenset([
 
 def isinstance_of(rfl: Type) -> ta.Callable[[ta.Any], bool]:
     if isinstance(rfl, type):
-        return lambda o: isinstance(o, rfl)  # type: ignore
+        return lambda o: isinstance(o, rfl)
 
     if isinstance(rfl, Union):
         fns = [isinstance_of(a) for a in rfl.args]
@@ -87,10 +87,10 @@ def isinstance_of(rfl: Type) -> ta.Callable[[ta.Any], bool]:
     if isinstance(rfl, Generic):
         if rfl.cls in (collections.abc.Sequence, collections.abc.Set):
             [efn] = map(isinstance_of, rfl.args)
-            return lambda o: isinstance(o, rfl.cls) and all(efn(e) for e in o)  # type: ignore
+            return lambda o: isinstance(o, rfl.cls) and all(efn(e) for e in o)
 
         if rfl.cls == collections.abc.Mapping:
             kfn, vfn = map(isinstance_of, rfl.args)
-            return lambda o: isinstance(o, rfl.cls) and all(kfn(k) and vfn(v) for k, v in o.items())  # type: ignore
+            return lambda o: isinstance(o, rfl.cls) and all(kfn(k) and vfn(v) for k, v in o.items())
 
     raise TypeError(rfl)
