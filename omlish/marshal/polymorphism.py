@@ -77,8 +77,9 @@ class PolymorphismMarshalerFactory(MarshalerFactory):
     p: Polymorphism
 
     def __call__(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Optional[Marshaler]:
-        # if rty
-        raise NotImplementedError
+        if (p := self.p.by_ty.get(rty)) is not None:
+            return PolymorphismMarshaler(p)
+        return None
 
 
 @dc.dataclass(frozen=True)
