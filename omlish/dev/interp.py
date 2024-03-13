@@ -28,7 +28,7 @@ def _check_not_none(v: ta.Optional[T]) -> T:
     return v
 
 
-DEFAULT_CMD_TRY_EXCEPTIONS: ta.AbstractSet[ta.Type[Exception]] = frozenset([
+DEFAULT_CMD_TRY_EXCEPTIONS: ta.AbstractSet[type[Exception]] = frozenset([
     FileNotFoundError,
 ])
 
@@ -46,7 +46,7 @@ def _cmd(
 
     env = {**os.environ, **(env or {})}
 
-    es = (Exception,)
+    es: tuple[type[Exception]] = (Exception,)
     if isinstance(try_, bool):
         if try_:
             es = tuple(DEFAULT_CMD_TRY_EXCEPTIONS)

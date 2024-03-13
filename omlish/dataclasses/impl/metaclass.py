@@ -2,6 +2,7 @@ import abc
 import typing as ta
 
 from ... import lang
+from .api import field
 
 if ta.TYPE_CHECKING:
     from . import api
@@ -27,6 +28,7 @@ class DataMeta(abc.ABCMeta):
         return api.dataclass(cls, **kwargs)
 
 
+@ta.dataclass_transform(field_specifiers=(field,))
 class Data(metaclass=DataMeta):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
