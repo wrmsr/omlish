@@ -70,6 +70,7 @@ def test_polymorphism():
         [
             poly.Impl(PS0, 's0'),
             poly.Impl(PS1, 's1'),
+            poly.Impl(PS2, 's2'),
         ],
     )
 
