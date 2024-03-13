@@ -44,6 +44,24 @@ class Polymorphism:
             by_tag[i.tag] = i
             for a in i.alts:
                 by_tag[a] = i
+        self._by_ty = by_ty
+        self._by_tag = by_tag
+
+    @property
+    def ty(self) -> type:
+        return self._ty
+
+    @property
+    def impls(self) -> ta.Sequence[Impl]:
+        return self._impls
+
+    @property
+    def by_ty(self) -> ta.Mapping[type, Impl]:
+        return self._by_ty
+
+    @property
+    def by_tag(self) -> ta.Mapping[str, Impl]:
+        return self._by_tag
 
 
 @dc.dataclass(frozen=True)
