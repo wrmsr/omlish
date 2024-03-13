@@ -1,5 +1,6 @@
 import os.path
 import subprocess
+import tempfile
 
 
 def clone_subtree(
@@ -14,17 +15,22 @@ def clone_subtree(
     if not bool(branch_name) ^ bool(rev):
         raise ValueError('must set branch_name or rev')
 
+    git_opts = [
+        '-c', 'advice.detachedHead=false',
+    ]
+
     subprocess.check_call(
         [
             'git',
+            *git_opts,
             'clone',
             '-n',
             '--depth=1',
             '--filter=tree:0',
             *(['-b', branch_name] if branch_name else []),
             '--single-branch',
-            '-o', repo_dir,
             repo_url,
+            repo_dir,
         ],
         cwd=base_dir,
     )
@@ -33,6 +39,7 @@ def clone_subtree(
     subprocess.check_call(
         [
             'git',
+            *git_opts,
             'sparse-checkout',
             'set',
             '--no-cone',
@@ -44,6 +51,7 @@ def clone_subtree(
     subprocess.check_call(
         [
             'git',
+            *git_opts,
             'checkout',
             *([rev] if rev else []),
         ],
@@ -51,12 +59,29 @@ def clone_subtree(
     )
 
 
-if __name__ == '__main__':
+def get_local_git_subtree_path(
+        *,
+        repo_url: str,
+        rev: str,
+        repo_subtree: str,
+) -> str:
+    tmp_path = tempfile.mkdtemp()
     clone_subtree(
-        base_dir=os.getcwd(),
-        repo_url='https://github.com/wrmsr/deep_learning_cookbook',
-        repo_dir='deep_learning_cookbook',
-        repo_subtree='data/wp_movies_10k.ndjson',
-        branch_name='master',
-        # rev='138a99b09ffa3a728d261e461440f029e512ac93',
+        base_dir=tmp_path,
+        repo_url=repo_url,
+        repo_dir='repo',
+        repo_subtree=repo_subtree,
+        rev=rev,
     )
+    local_path = os.path.join(tmp_path, 'repo', repo_subtree)
+    if not os.path.exists(local_path):
+        raise RuntimeError(local_path)
+    return local_path
+
+
+if __name__ == '__main__':
+    print(get_local_git_subtree_path(
+        repo_url='https://github.com/wrmsr/deep_learning_cookbook',
+        repo_subtree='data/wp_movies_10k.ndjson',
+        rev='138a99b09ffa3a728d261e461440f029e512ac93',
+    ))
