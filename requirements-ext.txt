@@ -38,7 +38,7 @@ transformers==4.38.2
 
 torch==2.2.1
 torchinfo==1.8.0
-#torchtext==0.17.1
+torchtext==0.17.1; python_version < '3.12'
 torchvision==0.17.1
 
 portalocker==2.8.2
