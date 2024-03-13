@@ -2,6 +2,7 @@ import dataclasses as dc
 import enum
 import typing as ta
 
+from .. import polymorphism as poly
 from ..base import MarshalContext
 from ..base import UnmarshalContext
 from ..global_ import marshal
@@ -58,3 +59,28 @@ def test_marshal():
 
 def test_marshal2():
     print(marshal([4, 20]))
+
+
+@dc.dataclass(frozen=True)
+class PB:
+    a: str
+
+
+@dc.dataclass(frozen=True)
+class PS0(PB):
+    b: str
+
+
+@dc.dataclass(frozen=True)
+class PS1(PB):
+    b: int
+
+
+def test_polymorphism():
+    p = poly.Polymorphism(
+        PB,
+        [
+            poly.Impl(PS0, 's0'),
+            poly.Impl(PS1, 's1'),
+        ],
+    )
