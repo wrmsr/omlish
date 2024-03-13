@@ -69,7 +69,8 @@ class PolymorphismMarshaler(Marshaler):
     m: ta.Mapping[type, tuple[str, Marshaler]]
 
     def marshal(self, ctx: MarshalContext, o: ta.Optional[ta.Any]) -> Value:
-        raise NotImplementedError
+        tag, m = self.m[type(o)]
+        return {tag: m.marshal(ctx, o)}
 
 
 @dc.dataclass(frozen=True)
