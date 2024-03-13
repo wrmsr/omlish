@@ -4,9 +4,11 @@ TODO:
   - cfg: unless prefixed with _ or abstract
  - auto-name
 """
+import collections.abc
 import dataclasses as dc
 import typing as ta
 
+from .. import check
 from .. import reflect as rfl
 from .base import MarshalContext
 from .base import Marshaler
@@ -91,7 +93,10 @@ class PolymorphismUnmarshaler(Unmarshaler):
     m: ta.Mapping[str, Unmarshaler]
 
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Optional[ta.Any]:
-        raise NotImplementedError
+        ma = check.isinstance(v, collections.abc.Mapping)
+        [(tag, iv)] = ma.items()
+        u = self.m[tag]
+        return u.unmarshal(ctx, iv)
 
 
 @dc.dataclass(frozen=True)
