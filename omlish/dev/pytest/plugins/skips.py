@@ -14,13 +14,13 @@ class SkipsPlugin:
     def pytest_collection_modifyitems(self, session, items):
         dct: dict[str, set[str]] = {}
         for arg in session.config.args:
-            fspath, parts = resolve_collection_argument(
+            ca = resolve_collection_argument(
                 session.config.invocation_params.dir,
                 arg,
                 as_pypath=session.config.option.pyargs,
             )
-            if fspath.is_file():
-                dct.setdefault(fspath.as_posix(), set()).update(parts)
+            if ca.path.is_file():
+                dct.setdefault(ca.path.as_posix(), set()).update(ca.parts)
 
         skip = pytest.mark.skip(reason='skipped (not specified alone)')
         for item in items:
