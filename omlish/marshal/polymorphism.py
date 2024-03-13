@@ -77,8 +77,11 @@ class PolymorphismMarshalerFactory(MarshalerFactory):
     p: Polymorphism
 
     def __call__(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Optional[Marshaler]:
-        if (p := self.p.by_ty.get(rty)) is not None:
-            return PolymorphismMarshaler(p)
+        if rty is self.p.ty:
+            return PolymorphismMarshaler({
+                i.ty: (i.tag, ctx.make(i.ty))
+                for i in self.p.impls
+            })
         return None
 
 
@@ -95,4 +98,11 @@ class PolymorphismUnmarshalerFactory(UnmarshalerFactory):
     p: Polymorphism
 
     def __call__(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Optional[Unmarshaler]:
-        raise NotImplementedError
+        if rty is self.p.ty:
+            return PolymorphismUnmarshaler({
+                t: u
+                for i in self.p.impls
+                for u in [ctx.make(i.ty)]
+                for t in [i.tag, *i.alts]
+            })
+        return None
