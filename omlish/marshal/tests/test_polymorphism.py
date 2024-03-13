@@ -84,7 +84,7 @@ def test_polymorphism():
         )
     )
 
-    umf: UnmarshalFactory = TypeCacheFactory(  # noqa
+    uf: UnmarshalFactory = TypeCacheFactory(  # noqa
         RecursiveUnmarshalerFactory(
             CompositeFactory(
                 PolymorphismUnmarshalerFactory(p),
@@ -94,10 +94,14 @@ def test_polymorphism():
         )
     )
 
-    p = PS2('0', PS1('1', 420))
+    o = PS2('0', PS1('1', 420))
 
     reg = Registry()
 
     mc = MarshalContext(registry=reg, factory=mf)
-    v = mc.make(PB).marshal(mc, p)
+    v = mc.make(PB).marshal(mc, o)
     print(v)
+
+    uc = UnmarshalContext(registry=reg, factory=uf)
+    o2 = uc.make(PB).unmarshal(uc, v)
+    print(o2)
