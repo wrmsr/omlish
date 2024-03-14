@@ -1,5 +1,7 @@
 """
 https://github.com/databrickslabs/dolly
+
+https://huggingface.co/databricks/dolly-v2-3b/blob/main/instruct_pipeline.py
 """
 import torch
 import transformers
