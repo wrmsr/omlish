@@ -76,6 +76,8 @@ git+https://github.com/huggingface/peft.git
 scikit-learn==1.4.1.post1
 simsimd==3.9.0
 
+spacy==3.7.4
+
 ##
 
 ipykernel==6.29.3
