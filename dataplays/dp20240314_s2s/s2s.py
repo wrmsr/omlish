@@ -42,14 +42,21 @@ def _main():
 
     train, val, test = data = datasets.Multi30k()
 
-    def gen_vocab(idx, tokenizer, *its, min_freq=10, specials=('', '', '', ''), take: int | None = None):
+    def gen_vocab(
+            idx,
+            tokenizer,
+            *its,
+            min_freq=10,
+            specials=(),  # ('', '', '', ''),
+            take: int | None = None,
+    ):
         counter = collections.Counter()
         tups = (tup for it in its for tup in it)
         if take is not None:
             tups = iterables.take(take, tups)
         for tup in tups:
-            counter.update(tokenizer(tup[idx]))
-        return torchtext.vocab.Vocab(counter, min_freq=min_freq, specials=specials)
+            counter.update(t.text for t in tokenizer(tup[idx]))
+        return torchtext.vocab.vocab(counter, min_freq=min_freq, specials=specials)
 
     de_vocab = gen_vocab(0, de_tok, *data, take=1_000)
     en_vocab = gen_vocab(1, en_tok, *data, take=1_000)
