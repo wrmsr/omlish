@@ -4,6 +4,9 @@ https://github.com/nitarshan/sequence-to-sequence-learning/tree/master
 
 python -mspacy download en_core_web_sm
 python -mspacy download de_core_news_sm
+
+./python -c "from torchtext.vocab import FastText; FastText('en')"
+./python -c "from torchtext.vocab import FastText; FastText('de')"
 """
 import collections
 import itertools
