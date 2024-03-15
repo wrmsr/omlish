@@ -109,3 +109,95 @@ xb = x_train[0:bs]  # a mini-batch from x
 preds = model(xb)  # predictions
 print(preds[0])
 print(preds.shape)
+
+###############################################################################
+# As you see, the ``preds`` tensor contains not only the tensor values, but also a
+# gradient function. We'll use this later to do backprop.
+#
+# Let's implement negative log-likelihood to use as the loss function
+# (again, we can just use standard Python):
+
+def nll(input, target):
+    return -input[range(target.shape[0]), target].mean()
+
+loss_func = nll
+
+###############################################################################
+# Let's check our loss with our random model, so we can see if we improve
+# after a backprop pass later.
+
+yb = y_train[0:bs]
+print(loss_func(preds, yb))
+
+# Let's also implement a function to calculate the accuracy of our model.
+# For each prediction, if the index with the largest value matches the
+# target value, then the prediction was correct.
+
+def accuracy(out, yb):
+    preds = torch.argmax(out, dim=1)
+    return (preds == yb).float().mean()
+
+###############################################################################
+# Let's check the accuracy of our random model, so we can see if our
+# accuracy improves as our loss improves.
+
+print(accuracy(preds, yb))
+
+###############################################################################
+# We can now run a training loop.  For each iteration, we will:
+#
+# - select a mini-batch of data (of size ``bs``)
+# - use the model to make predictions
+# - calculate the loss
+# - ``loss.backward()`` updates the gradients of the model, in this case, ``weights``
+#   and ``bias``.
+#
+# We now use these gradients to update the weights and bias.  We do this
+# within the ``torch.no_grad()`` context manager, because we do not want these
+# actions to be recorded for our next calculation of the gradient.  You can read
+# more about how PyTorch's Autograd records operations
+# `here <https://pytorch.org/docs/stable/notes/autograd.html>`_.
+#
+# We then set the
+# gradients to zero, so that we are ready for the next loop.
+# Otherwise, our gradients would record a running tally of all the operations
+# that had happened (i.e. ``loss.backward()`` *adds* the gradients to whatever is
+# already stored, rather than replacing them).
+#
+# .. tip:: You can use the standard python debugger to step through PyTorch
+#    code, allowing you to check the various variable values at each step.
+#    Uncomment ``set_trace()`` below to try it out.
+#
+
+lr = 0.5  # learning rate
+epochs = 2  # how many epochs to train for
+
+for epoch in range(epochs):
+    for i in range((n - 1) // bs + 1):
+        #         set_trace()
+        start_i = i * bs
+        end_i = start_i + bs
+        xb = x_train[start_i:end_i]
+        yb = y_train[start_i:end_i]
+        pred = model(xb)
+        loss = loss_func(pred, yb)
+
+        loss.backward()
+        with torch.no_grad():
+            weights -= weights.grad * lr
+            bias -= bias.grad * lr
+            weights.grad.zero_()
+            bias.grad.zero_()
+
+    print(loss)
+
+###############################################################################
+# That's it: we've created and trained a minimal neural network (in this case, a
+# logistic regression, since we have no hidden layers) entirely from scratch!
+#
+# Let's check the loss and accuracy and compare those to what we got
+# earlier. We expect that the loss will have decreased and accuracy to
+# have increased, and they have.
+
+print(loss_func(model(xb), yb))
+print(accuracy(model(xb), yb))
