@@ -25,6 +25,7 @@
 /.mypy_cache/
 /.pytest_cache/
 /.tox/
+/.vector_cache
 /.venv*/
 /MANIFEST
 /build/

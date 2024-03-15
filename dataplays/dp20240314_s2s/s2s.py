@@ -64,29 +64,30 @@ def _main():
     de_vocab = gen_vocab(0, de_tok, *data, take=1_000)
     en_vocab = gen_vocab(1, en_tok, *data, take=1_000)
 
-    DE = data.Field(
-        tokenize=tokenizer(de_tok),
-        eos_token="<eos>",
-        include_lengths=True,
-        batch_first=True,
-    )
-    EN = data.Field(
-        tokenize=tokenizer(en_tok),
-        init_token="<sos>",
-        eos_token="<eos>",
-        include_lengths=True,
-        batch_first=True,
-    )
+    # DE = data.Field(
+    #     tokenize=tokenizer(de_tok),
+    #     eos_token="<eos>",
+    #     include_lengths=True,
+    #     batch_first=True,
+    # )
+    # EN = data.Field(
+    #     tokenize=tokenizer(en_tok),
+    #     init_token="<sos>",
+    #     eos_token="<eos>",
+    #     include_lengths=True,
+    #     batch_first=True,
+    # )
+    #
+    # # train, val, test = datasets.Multi30k.splits(exts=('.de', '.en'), fields=(DE, EN))
+    # print((len(train), len(val), len(test)))
+    #
+    # # Optionally use pretrained word vectors from FastText
+    # DE.build_vocab(train.src, vectors=FastText('de') if use_pretrained_embeddings else None)
+    # EN.build_vocab(train.trg, vectors=FastText('en') if use_pretrained_embeddings else None)
 
-    # train, val, test = datasets.Multi30k.splits(exts=('.de', '.en'), fields=(DE, EN))
-    print((len(train), len(val), len(test)))
+    # de_vocab = DE.vocab
+    # en_vocab = EN.vocab
 
-    # Optionally use pretrained word vectors from FastText
-    DE.build_vocab(train.src, vectors=FastText('de') if use_pretrained_embeddings else None)
-    EN.build_vocab(train.trg, vectors=FastText('en') if use_pretrained_embeddings else None)
-
-    de_vocab = DE.vocab
-    en_vocab = EN.vocab
     print((len(de_vocab), len(en_vocab)))
 
     # Bi-directional 2 layer encoder, standard 4 layer decoder
@@ -124,24 +125,41 @@ def _main():
     model = Seq2Seq(de_vocab, en_vocab)
     if cuda:
         model.cuda()
+
     # Masked loss function (loss from padding not computed)
     trg_mask = torch.ones(len(en_vocab))
-    trg_mask[en_vocab.stoi["<pad>"]] = 0
+    if (pad_idx := en_vocab.get_stoi().get("<pad>")) is not None:
+        trg_mask[pad_idx] = 0
     if cuda:
         trg_mask = trg_mask.cuda()
     criterion = nn.NLLLoss(weight=trg_mask)
+
     # Optimizer and learning rate scheduler
     optimizer = optim.Adam(model.parameters(), lr=5e-4)
     scheduler = optim.lr_scheduler.StepLR(optimizer, 15)
+
     # Iterators for training and examples
     train_iter = data.BucketIterator(train, batch_size=64, sort_key=lambda ex: len(ex.src), sort_within_batch=True)
     examples = iter(data.BucketIterator(val, batch_size=1, train=False, shuffle=True, repeat=True))
 
+    from torch.utils.data import DataLoader
+    from torch.nn.utils.rnn import pad_sequence
+
+    def collate_batch(batch):
+        label_list, text_list = [], []
+        for (_label, _text) in batch:
+            label_list.append(label_transform(_label))
+            processed_text = torch.tensor(text_transform(_text))
+            text_list.append(processed_text)
+        return torch.tensor(label_list), pad_sequence(text_list, padding_value=3.0)
+
+    train_iter = DataLoader(train, batch_size=64, shuffle=True, collate_fn=collate_batch)
+
     # Helper functions
     def compare_prediction(src_sen, trg_sen, pred_sen):
-        print(">", ' '.join([de_vocab.itos[num] for num in src_sen.data[0]]))
-        print("=", ' '.join([en_vocab.itos[num] for num in trg_sen.data[0]]))
-        print("<", ' '.join([en_vocab.itos[num[0]] for num in pred_sen]))
+        print(">", ' '.join([de_vocab.get_itos()[num] for num in src_sen.data[0]]))
+        print("=", ' '.join([en_vocab.get_itos()[num] for num in trg_sen.data[0]]))
+        print("<", ' '.join([en_vocab.get_itos()[num[0]] for num in pred_sen]))
 
     def batch_forward(batch):
         src_sen = batch.src[0]
