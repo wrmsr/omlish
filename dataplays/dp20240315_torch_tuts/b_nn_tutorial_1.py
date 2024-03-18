@@ -174,7 +174,7 @@ epochs = 2  # how many epochs to train for
 
 for epoch in range(epochs):
     for i in range((n - 1) // bs + 1):
-        #         set_trace()
+        # set_trace()
         start_i = i * bs
         end_i = start_i + bs
         xb = x_train[start_i:end_i]
