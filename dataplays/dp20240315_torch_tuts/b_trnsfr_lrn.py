@@ -102,7 +102,7 @@ class Tutorial:
     def __init__(self):
         super().__init__()
 
-        self.device = torch.device("mps")
+        self.device = torch.device("cuda") if torch.cuda.is_available() else torch.device('mps')
 
     def load_data(self):
         self.data_dir = 'data/hymenoptera_data'
@@ -171,7 +171,7 @@ class Tutorial:
                         scheduler.step()
 
                     epoch_loss = running_loss / self.dataset_sizes[phase]
-                    epoch_acc = running_corrects.double() / self.dataset_sizes[phase]
+                    epoch_acc = running_corrects.type(torch.float32) / self.dataset_sizes[phase]
 
                     print(f'{phase} Loss: {epoch_loss:.4f} Acc: {epoch_acc:.4f}')
 
@@ -234,6 +234,7 @@ def _main():
 
     model_ft = models.resnet18(weights='IMAGENET1K_V1')
     num_ftrs = model_ft.fc.in_features
+
     # Here the size of each output sample is set to 2.
     # Alternatively, it can be generalized to ``nn.Linear(num_ftrs, len(class_names))``.
     model_ft.fc = nn.Linear(num_ftrs, 2)
@@ -273,27 +274,16 @@ def _main():
 
     model_conv = tut.train_model(model_conv, criterion, optimizer_conv, exp_lr_scheduler, num_epochs=25)
 
-    ######################################################################
-    #
-
     tut.visualize_model(model_conv)
 
     plt.ioff()
     plt.show()
 
-
-    ######################################################################
-    # Inference on custom images
-    # --------------------------
-    #
-    # Use the trained model to make predictions on custom images and visualize
-    # the predicted class labels along with the images.
-    #
-
-
     visualize_model_predictions(
         model_conv,
-        img_path='data/hymenoptera_data/val/bees/72100438_73de9f17af.jpg'
+        'data/hymenoptera_data/val/bees/72100438_73de9f17af.jpg',
+        tut.class_names,
+        tut.device,
     )
 
     plt.ioff()
