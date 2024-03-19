@@ -78,15 +78,27 @@ def _main():
     loss_func = nn.NLLLoss()
     optimizer = torch.optim.SGD(model.parameters(), lr=0.001)
 
+    contexts = torch.tensor(
+        [[word_to_ix[w] for w in context] for context, target in data],
+        dtype=torch.long,
+        device=dev,
+    )
+    targets = torch.tensor(
+        [word_to_ix[target] for contexct, target in data],
+        dtype=torch.long,
+        device=dev,
+    )
+
     bs = 2048
     for epoch in range(4):
         total_loss = 0
         n = math.ceil(len(data) / bs)
         for i in range(n):
-            contexts, targets = zip(*data[i * bs:(i + 1) * bs])
+            context_batch = contexts[i * bs:(i + 1) * bs]
+            target_batch = targets[i * bs:(i + 1) * bs]
             model.zero_grad()
-            log_probs = model(torch.tensor([[word_to_ix[w] for w in context] for context in contexts], dtype=torch.long, device=dev))
-            loss = loss_func(log_probs, torch.tensor([word_to_ix[target] for target in targets], dtype=torch.long, device=dev))
+            log_probs = model(context_batch)
+            loss = loss_func(log_probs, target_batch)
             loss.backward()
             optimizer.step()
             total_loss += loss.item()
