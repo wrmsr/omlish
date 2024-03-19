@@ -1,6 +1,7 @@
 """
 Author: Robert Guthrie
 """
+import collections
 import math
 import os
 import re
@@ -46,12 +47,16 @@ def load_raw_text() -> list[str]:
 
 @dc.dataclass(frozen=True)
 class Data:
-    raw_text: str
+    raw_text: ta.Sequence[str]
     context_size: int = 2
 
     @cached.property
     def vocab(self) -> ta.AbstractSet[str]:
         return set(self.raw_text)
+
+    @cached.property
+    def word_counts(self) -> ta.Mapping[str, int]:
+        return collections.Counter(self.raw_text)
 
     @cached.property
     def words(self) -> ta.Sequence[str]:
