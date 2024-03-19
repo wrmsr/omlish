@@ -41,7 +41,7 @@ def load_raw_text() -> list[str]:
 
     s = shakespeare.split('\nTHE END', 1)[-1]
     s = s.lower()
-    s = re.sub(r'[,\.!:;]+', '', s)
+    s = re.sub(r'[,\.\?!:;]+', '', s)
     return s.split()
 
 
@@ -95,28 +95,31 @@ class CBOW(nn.Module):
         return x
 
 
-def train_model(d: Data) -> nn.Module:
-    CONTEXT_SIZE = 2  # 2 words to the left, 2 to the right
-
+def train_model(
+        d: Data,
+        *,
+        epochs: int = 20,
+        context_size: int = 2,
+        batch_size: int = 2048,
+        embedding_dim: int = 32,
+        hidden_dim: int = 256
+) -> nn.Module:
     data = []
-    for i in range(CONTEXT_SIZE, len(d.raw_text) - CONTEXT_SIZE):
+    for i in range(context_size, len(d.raw_text) - context_size):
         context = (
-                [d.raw_text[i - j - 1] for j in range(CONTEXT_SIZE)] +
-                [d.raw_text[i + j + 1] for j in range(CONTEXT_SIZE)]
+                [d.raw_text[i - j - 1] for j in range(context_size)] +
+                [d.raw_text[i + j + 1] for j in range(context_size)]
         )
         target = d.raw_text[i]
         data.append((context, target))
-
-    EMBEDDING_DIM = 32
-    HIDDEN_DIM = 256
 
     dev = torch.device('cuda') if torch.cuda.is_available() else torch.device('mps')
 
     model = CBOW(
         d.vocab_size,
-        EMBEDDING_DIM,
-        CONTEXT_SIZE,
-        HIDDEN_DIM,
+        embedding_dim,
+        context_size,
+        hidden_dim,
     ).to(dev)
 
     loss_func = nn.NLLLoss()
@@ -133,8 +136,8 @@ def train_model(d: Data) -> nn.Module:
         device=dev,
     )
 
-    bs = 2048
-    for epoch in range(4):
+    bs = batch_size
+    for epoch in range(epochs):
         total_loss = 0
         n = math.ceil(len(data) / bs)
         for i in range(n):
