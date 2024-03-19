@@ -3,6 +3,7 @@ Author: Robert Guthrie
 """
 import math
 import os
+import re
 import typing as ta
 
 from omlish import cached
@@ -37,7 +38,10 @@ def load_raw_text() -> list[str]:
 
     shakespeare = gutenberg.cleanup.strip_headers(gutenberg.acquire.load_etext(100))
 
-    return shakespeare.split('\nTHE END', 1)[-1].lower().split()
+    s = shakespeare.split('\nTHE END', 1)[-1]
+    s = s.lower()
+    s = re.sub(r'[,\.!:;]+', '', s)
+    return s.split()
 
 
 @dc.dataclass(frozen=True)
