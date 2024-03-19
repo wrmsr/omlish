@@ -51,8 +51,10 @@ def _main():
         target = raw_text[i]
         data.append((context, target))
 
-    EMBEDDING_DIM = 64
-    HIDDEN_DIM = 1024
+    EMBEDDING_DIM = 32
+    HIDDEN_DIM = 256
+
+    dev = torch.device('cuda') if torch.cuda.is_available() else torch.device('mps')
 
     class CBOW(nn.Module):
 
@@ -71,20 +73,20 @@ def _main():
             x = F.log_softmax(x, 1)
             return x
 
-    model = CBOW()
+    model = CBOW().to(dev)
 
     loss_func = nn.NLLLoss()
     optimizer = torch.optim.SGD(model.parameters(), lr=0.001)
 
-    bs = 1024
+    bs = 2048
     for epoch in range(4):
         total_loss = 0
         n = math.ceil(len(data) / bs)
         for i in range(n):
             contexts, targets = zip(*data[i * bs:(i + 1) * bs])
             model.zero_grad()
-            log_probs = model(torch.tensor([[word_to_ix[w] for w in context] for context in contexts], dtype=torch.long))
-            loss = loss_func(log_probs, torch.tensor([word_to_ix[target] for target in targets], dtype=torch.long))
+            log_probs = model(torch.tensor([[word_to_ix[w] for w in context] for context in contexts], dtype=torch.long, device=dev))
+            loss = loss_func(log_probs, torch.tensor([word_to_ix[target] for target in targets], dtype=torch.long, device=dev))
             loss.backward()
             optimizer.step()
             total_loss += loss.item()
