@@ -20,6 +20,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torch.utils.data
 
 os.environ['GUTENBERG_MIRROR'] = 'http://mirrors.xmission.com/gutenberg/'
 
@@ -107,7 +108,8 @@ def train_model(
         context_size: int = 2,
         batch_size: int = 2048,
         embedding_dim: int = 32,
-        hidden_dim: int = 256
+        hidden_dim: int = 256,
+        lr: float = 0.001,
 ) -> nn.Module:
     data = []
     for i in range(context_size, len(d.raw_text) - context_size):
@@ -128,7 +130,7 @@ def train_model(
     ).to(dev)
 
     loss_func = nn.NLLLoss()
-    optimizer = torch.optim.SGD(model.parameters(), lr=0.001)
+    optimizer = torch.optim.SGD(model.parameters(), lr=lr)
 
     contexts = torch.tensor(
         [[d.word_to_idx[w] for w in context] for context, target in data],
@@ -141,13 +143,13 @@ def train_model(
         device=dev,
     )
 
-    bs = batch_size
+    ds = torch.utils.data.TensorDataset(contexts, targets)
+    dl = torch.utils.data.DataLoader(ds, batch_size=batch_size, shuffle=True)
+
     for epoch in range(epochs):
         total_loss = 0
-        n = math.ceil(len(data) / bs)
-        for i in range(n):
-            context_batch = contexts[i * bs:(i + 1) * bs]
-            target_batch = targets[i * bs:(i + 1) * bs]
+        n = math.ceil(len(data) / batch_size)
+        for i, (context_batch, target_batch) in enumerate(dl):
             model.zero_grad()
             log_probs = model(context_batch)
             loss = loss_func(log_probs, target_batch)
