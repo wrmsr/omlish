@@ -1,6 +1,8 @@
 """
 Author: Robert Guthrie
 """
+import math
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -45,7 +47,7 @@ def _main():
 
         def forward(self, inputs):
             x = self.embedding(inputs)
-            x = x.view(1, -1)
+            x = x.view(inputs.shape[0], -1)
             x = self.linear1(x)
             x = F.relu(x)
             x = self.linear2(x)
@@ -57,12 +59,14 @@ def _main():
     loss_func = nn.NLLLoss()
     optimizer = torch.optim.SGD(model.parameters(), lr=0.001)
 
+    bs = 32
     for epoch in range(100):
         total_loss = 0
-        for context, target in data:
+        for i in range(math.ceil(len(data) / bs)):
+            contexts, targets = zip(*data[i * bs:(i + 1) * bs])
             model.zero_grad()
-            log_probs = model(torch.tensor([word_to_ix[w] for w in context], dtype=torch.long))
-            loss = loss_func(log_probs, torch.tensor([word_to_ix[target]], dtype=torch.long))
+            log_probs = model(torch.tensor([[word_to_ix[w] for w in context] for context in contexts], dtype=torch.long))
+            loss = loss_func(log_probs, torch.tensor([word_to_ix[target] for target in targets], dtype=torch.long))
             loss.backward()
             optimizer.step()
             total_loss += loss.item()
