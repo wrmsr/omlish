@@ -183,7 +183,7 @@ def _main():
 
     data = Data(raw_text)
 
-    model = train_model(d)
+    model = train_model(data)
 
     similar_words = build_similar_word_finder(data, model)
 
