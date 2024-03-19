@@ -1,5 +1,10 @@
 """
 Author: Robert Guthrie
+
+from dataplays.dp20240315_torch_tuts import b_nlp_word_emb_cbow_shakespeare as cbow
+data = cbow.Data(cbow.load_raw_text())
+model = cbow.train_model(data)
+similar_words = cbow.build_similar_word_finder(data, model)
 """
 import collections
 import math
@@ -41,7 +46,7 @@ def load_raw_text() -> list[str]:
 
     s = shakespeare.split('\nTHE END', 1)[-1]
     s = s.lower()
-    s = re.sub(r'[,\.\?!:;_"0-9]+', '', s)
+    s = re.sub(r'[^a-z\- \t\n]+', '', s)
     return s.split()
 
 
