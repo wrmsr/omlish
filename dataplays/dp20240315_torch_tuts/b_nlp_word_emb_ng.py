@@ -110,7 +110,7 @@ def _main():
         for c in reversed(closest):
             print((c, words[c], dists[c]))
 
-    # similar_words("beauty")
+    similar_words("beauty")
 
 
 if __name__ == '__main__':
