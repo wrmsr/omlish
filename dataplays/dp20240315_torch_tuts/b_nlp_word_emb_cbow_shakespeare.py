@@ -41,7 +41,7 @@ def load_raw_text() -> list[str]:
 
     s = shakespeare.split('\nTHE END', 1)[-1]
     s = s.lower()
-    s = re.sub(r'[,\.\?!:;]+', '', s)
+    s = re.sub(r'[,\.\?!:;_"0-9]+', '', s)
     return s.split()
 
 
@@ -155,6 +155,20 @@ def train_model(
     return model
 
 
+def build_similar_word_finder(data, model):
+    word_weights = model.embedding.weight.detach().cpu().numpy()
+    word_lengths = np.linalg.norm(word_weights, axis=1)
+    normalized_words = (word_weights.T / word_lengths).T
+
+    def similar_words(word):
+        dists = np.dot(normalized_words, normalized_words[data.word_to_idx[word]])
+        closest = np.argsort(dists)[-10:]
+        for c in reversed(closest):
+            print((c, data.words[c], dists[c]))
+
+    return similar_words
+
+
 def _main():
     torch.manual_seed(1)
 
@@ -167,25 +181,11 @@ def _main():
 
     raw_text = load_raw_text()
 
-    d = Data(raw_text)
+    data = Data(raw_text)
 
     model = train_model(d)
 
-    # def make_context_vector(context):
-    #     idxs = [word_to_idx[w] for w in context]
-    #     return torch.tensor(idxs, dtype=torch.long)
-    #
-    # make_context_vector(data[0][0])  # example
-
-    word_weights = model.embedding.weight.detach().cpu().numpy()
-    word_lengths = np.linalg.norm(word_weights, axis=1)
-    normalized_words = (word_weights.T / word_lengths).T
-
-    def similar_words(word):
-        dists = np.dot(normalized_words, normalized_words[d.word_to_idx[word]])
-        closest = np.argsort(dists)[-10:]
-        for c in reversed(closest):
-            print((c, d.words[c], dists[c]))
+    similar_words = build_similar_word_finder(data, model)
 
     # similar_words("process")
     similar_words("mated")
