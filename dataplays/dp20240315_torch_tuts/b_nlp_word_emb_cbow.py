@@ -3,6 +3,7 @@ Author: Robert Guthrie
 """
 import math
 
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -21,9 +22,10 @@ def _main():
     we conjure the spirits of the computer with our spells.""".split()
 
     vocab = set(raw_text)
+    words = sorted(vocab)
     vocab_size = len(vocab)
 
-    word_to_ix = {word: i for i, word in enumerate(sorted(vocab))}
+    word_to_ix = {word: i for i, word in enumerate(words)}
     data = []
     for i in range(CONTEXT_SIZE, len(raw_text) - CONTEXT_SIZE):
         context = (
@@ -72,11 +74,23 @@ def _main():
             total_loss += loss.item()
         print(total_loss)
 
-    def make_context_vector(context):
-        idxs = [word_to_ix[w] for w in context]
-        return torch.tensor(idxs, dtype=torch.long)
+    # def make_context_vector(context):
+    #     idxs = [word_to_ix[w] for w in context]
+    #     return torch.tensor(idxs, dtype=torch.long)
+    #
+    # make_context_vector(data[0][0])  # example
 
-    make_context_vector(data[0][0])  # example
+    word_weights = model.embedding.weight.detach().numpy()
+    word_lengths = np.linalg.norm(word_weights, axis=1)
+    normalized_words = (word_weights.T / word_lengths).T
+
+    def similar_words(word):
+        dists = np.dot(normalized_words, normalized_words[word_to_ix[word]])
+        closest = np.argsort(dists)[-10:]
+        for c in reversed(closest):
+            print((c, words[c], dists[c]))
+
+    similar_words("processes")
 
 
 if __name__ == '__main__':
