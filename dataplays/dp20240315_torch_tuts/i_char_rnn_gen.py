@@ -256,14 +256,15 @@ def _main():
         n_letters,
     )
 
-    always_train = True
+    model_path: str | None = None
+    # model_path = 'i_char_rnn_gen.pth'
 
-    model_path = 'i_char_rnn_gen.pth'
-    if (not always_train) and os.path.exists(model_path):
+    if model_path and os.path.exists(model_path):
         rnn.load_state_dict(torch.load(model_path))
     else:
         train_model(rnn, data)
-        torch.save(rnn.state_dict(), model_path)
+        if model_path:
+            torch.save(rnn.state_dict(), model_path)
 
     def print_samples(category, start_letters='ABC'):
         print((category, start_letters))
