@@ -3,6 +3,7 @@ import collections.abc
 import dataclasses as dc
 import inspect
 import itertools
+import reprlib
 import sys
 import typing as ta
 
@@ -21,7 +22,6 @@ from .internals import PARAMS_ATTR
 from .internals import POST_INIT_NAME
 from .internals import Params
 from .internals import is_kw_only
-from .internals import recursive_repr
 from .internals import tuple_str
 from .metadata import METADATA_ATTR
 from .metadata import get_merged_metadata
@@ -54,7 +54,7 @@ def repr_fn(
         ],
         globals=globals,
     )
-    return recursive_repr(fn)
+    return reprlib.recursive_repr()(fn)
 
 
 def frozen_get_del_attr(
@@ -128,8 +128,10 @@ def _dataclass_setstate(self, state):
 
 def _get_slots(cls):
     sl = cls.__dict__.get('__slots__')
+    # A class which does not define __slots__ at all is equivalent
+    # to a class defining __slots__ = ('__dict__', '__weakref__')
     if sl is None:
-        return
+        yield from ('__dict__', '__weakref__')
     elif isinstance(sl, str):
         yield sl
     elif not hasattr(sl, '__next__'):
