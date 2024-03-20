@@ -115,7 +115,7 @@ tensorboard==2.15.2
 
 ### infra
 
-boto3>=1.34.61
+boto3>=1.34.67
 
 google-cloud-compute==1.18.0
 

@@ -5,7 +5,7 @@
 import glob
 import io
 import math
-import os
+import os.path
 import random
 import string
 import time
@@ -15,8 +15,6 @@ import unicodedata
 from omlish import cached
 from omlish import dataclasses as dc
 from omlish import lang
-
-import matplotlib.pyplot as plt
 
 import torch
 import torch.nn as nn
@@ -153,50 +151,57 @@ def format_time_since(since: float) -> str:
     return '%dm %ds' % (m, s)
 
 
-def train_model():
-    data = load_data()
+def train_step(
+        rnn: RNN,
+        category_tensor: torch.Tensor,
+        input_line_tensor: torch.Tensor,
+        target_line_tensor: torch.Tensor,
+        criterion: ta.Callable[..., float],
+        learning_rate: float,
+):
+    target_line_tensor.unsqueeze_(-1)
+    hidden = rnn.init_hidden()
 
-    rnn = RNN(
-        data.n_categories,
-        n_letters,
-        128,
-        n_letters,
-    )
+    rnn.zero_grad()
 
-    criterion = nn.NLLLoss()
+    loss = torch.Tensor([0])  # you can also just simply use ``loss = 0``
 
-    learning_rate = 0.0005
+    for i in range(input_line_tensor.size(0)):
+        output, hidden = rnn(category_tensor, input_line_tensor[i], hidden)
+        l = criterion(output, target_line_tensor[i])
+        loss += l
 
-    def train_once(category_tensor, input_line_tensor, target_line_tensor):
-        target_line_tensor.unsqueeze_(-1)
-        hidden = rnn.init_hidden()
+    loss.backward()
 
-        rnn.zero_grad()
+    for p in rnn.parameters():
+        p.data.add_(p.grad.data, alpha=-learning_rate)
 
-        loss = torch.Tensor([0])  # you can also just simply use ``loss = 0``
+    return output, loss.item() / input_line_tensor.size(0)  # noqa
 
-        for i in range(input_line_tensor.size(0)):
-            output, hidden = rnn(category_tensor, input_line_tensor[i], hidden)
-            l = criterion(output, target_line_tensor[i])
-            loss += l
 
-        loss.backward()
-
-        for p in rnn.parameters():
-            p.data.add_(p.grad.data, alpha=-learning_rate)
-
-        return output, loss.item() / input_line_tensor.size(0)
-
-    n_iters = 100000
-    print_every = 5000
-    plot_every = 500
+def train_model(
+        rnn: RNN,
+        data: Data,
+        *,
+        show_plot: bool = False,
+        n_iters: int = 100000,
+        print_every: int = 5000,
+        plot_every: int = 500,
+        criterion: ta.Callable[..., float] = nn.NLLLoss(),
+        learning_rate: float = 0.0005,
+) -> None:
     all_losses = []
     total_loss = 0  # Reset every ``plot_every`` ``iters``
 
     start = time.time()
 
     for iter in range(1, n_iters + 1):
-        output, loss = train_once(*random_training_example(data))
+        output, loss = train_step(
+            rnn,
+            *random_training_example(data),
+            criterion,
+            learning_rate,
+        )
         total_loss += loss
 
         if iter % print_every == 0:
@@ -206,44 +211,70 @@ def train_model():
             all_losses.append(total_loss / plot_every)
             total_loss = 0
 
-    plt.figure()
-    plt.plot(all_losses)
+    if show_plot:
+        import matplotlib.pyplot as plt
 
-    max_length = 20
+        plt.figure()
+        plt.plot(all_losses)
 
-    def sample(category, start_letter='A'):
-        with torch.no_grad():  # no need to track history in sampling
-            category_tensor = make_category_tensor(category)
-            input = make_input_tensor(start_letter)
-            hidden = rnn.init_hidden()
 
-            output_name = start_letter
+def sample(
+        rnn: RNN,
+        data: Data,
+        category: str,
+        start_letter: str = 'A',
+        max_length: int = 20,
+) -> str:
+    with torch.no_grad():  # no need to track history in sampling
+        category_tensor = make_category_tensor(data, category)
+        input = make_input_tensor(start_letter)
+        hidden = rnn.init_hidden()
 
-            for i in range(max_length):
-                output, hidden = rnn(category_tensor, input[0], hidden)
-                topv, topi = output.topk(1)
-                topi = topi[0][0]
-                if topi == n_letters - 1:
-                    break
-                else:
-                    letter = all_letters[topi]
-                    output_name += letter
-                input = make_input_tensor(letter)
+        output_name = start_letter
 
-            return output_name
+        for i in range(max_length):
+            output, hidden = rnn(category_tensor, input[0], hidden)
+            topv, topi = output.topk(1)
+            topi = topi[0][0]
+            if topi == n_letters - 1:
+                break
+            else:
+                letter = all_letters[topi]
+                output_name += letter
+            input = make_input_tensor(letter)
+
+        return output_name
+
+
+def _main():
+    data = load_data()
+
+    rnn = RNN(
+        data.n_categories,
+        n_letters,
+        128,
+        n_letters,
+    )
+
+    always_train = True
+
+    model_path = 'i_char_rnn_gen.pth'
+    if (not always_train) and os.path.exists(model_path):
+        rnn.load_state_dict(torch.load(model_path))
+    else:
+        train_model(rnn, data)
+        torch.save(rnn.state_dict(), model_path)
 
     def print_samples(category, start_letters='ABC'):
+        print((category, start_letters))
         for start_letter in start_letters:
-            print(sample(category, start_letter))
+            print(sample(rnn, data, category, start_letter))
+        print()
 
     print_samples('Russian', 'RUS')
     print_samples('German', 'GER')
     print_samples('Spanish', 'SPA')
     print_samples('Chinese', 'CHI')
-
-
-def _main():
-    train_model()
 
 
 if __name__ == '__main__':
