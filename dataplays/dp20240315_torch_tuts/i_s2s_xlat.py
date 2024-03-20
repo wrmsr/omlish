@@ -265,7 +265,7 @@ def filter_pairs(pairs):
 # -  Make word lists from sentences in pairs
 #
 
-def prepareData(lang1, lang2, reverse=False):
+def prepare_data(lang1, lang2, reverse=False):
     input_lang, output_lang, pairs = read_langs(lang1, lang2, reverse)
     print("Read %s sentence pairs" % len(pairs))
     pairs = filter_pairs(pairs)
@@ -280,7 +280,7 @@ def prepareData(lang1, lang2, reverse=False):
     return input_lang, output_lang, pairs
 
 
-input_lang, output_lang, pairs = prepareData('eng', 'fra', True)
+input_lang, output_lang, pairs = prepare_data('eng', 'fra', True)
 print(random.choice(pairs))
 
 
@@ -563,7 +563,7 @@ def tensor_from_sentence(lang, sentence):
 
 
 def get_dataloader(batch_size):
-    input_lang, output_lang, pairs = prepareData('eng', 'fra', True)
+    input_lang, output_lang, pairs = prepare_data('eng', 'fra', True)
 
     n = len(pairs)
     input_ids = np.zeros((n, MAX_LENGTH), dtype=np.int32)
@@ -801,6 +801,9 @@ encoder = EncoderRNN(input_lang.n_words, hidden_size).to(device)
 decoder = AttnDecoderRNN(hidden_size, output_lang.n_words).to(device)
 
 train(train_dataloader, encoder, decoder, 80, print_every=5, plot_every=5)
+
+torch.save(encoder.state_dict(), 'i_s2s_xlat_enc.pth')
+torch.save(decoder.state_dict(), 'i_s2s_xlat_dec.pth')
 
 ######################################################################
 #
