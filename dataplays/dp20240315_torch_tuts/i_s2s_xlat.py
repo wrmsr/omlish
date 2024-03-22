@@ -78,12 +78,13 @@ models, respectively.
 
 **Requirements**
 """
+import io
+import math
+import os.path
 import random
 import re
-import io
-import unicodedata
 import time
-import math
+import unicodedata
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker
@@ -800,10 +801,20 @@ input_lang, output_lang, train_dataloader = get_dataloader(batch_size)
 encoder = EncoderRNN(input_lang.n_words, hidden_size).to(device)
 decoder = AttnDecoderRNN(hidden_size, output_lang.n_words).to(device)
 
-train(train_dataloader, encoder, decoder, 80, print_every=5, plot_every=5)
+enc_file_path = 'i_s2s_xlat_enc.pth'
+dec_file_path = 'i_s2s_xlat_dec.pth'
 
-torch.save(encoder.state_dict(), 'i_s2s_xlat_enc.pth')
-torch.save(decoder.state_dict(), 'i_s2s_xlat_dec.pth')
+if os.path.exists(enc_file_path):
+    assert os.path.exists(dec_file_path)
+
+    encoder.load_state_dict(torch.load(enc_file_path, map_location=device))
+    decoder.load_state_dict(torch.load(dec_file_path, map_location=device))
+
+else:
+    train(train_dataloader, encoder, decoder, 80, print_every=5, plot_every=5)
+
+    torch.save(encoder.state_dict(), enc_file_path)
+    torch.save(decoder.state_dict(), dec_file_path)
 
 ######################################################################
 #
