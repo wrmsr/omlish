@@ -68,8 +68,6 @@ def normalize_string(s: str) -> str:
 
 
 def read_langs(lang1: str, lang2: str, reverse: bool = False) -> tuple[Lang, Lang, list[Pair]]:
-    print("Reading lines...")
-
     # Read the file and split into lines
     with io.open('data/%s-%s.txt' % (lang1, lang2), encoding='utf-8') as f:
         lines = f.read().strip().split('\n')
@@ -113,16 +111,13 @@ def filter_pairs(pairs: ta.Iterable[Pair]) -> list[Pair]:
 
 def prepare_data(lang1: str, lang2: str, reverse: bool = False) -> tuple[Lang, Lang, list[Pair]]:
     input_lang, output_lang, pairs = read_langs(lang1, lang2, reverse)
-    print("Read %s sentence pairs" % len(pairs))
+
     pairs = filter_pairs(pairs)
-    print("Trimmed to %s sentence pairs" % len(pairs))
-    print("Counting words...")
+
     for pair in pairs:
         input_lang.add_sentence(pair[0])
         output_lang.add_sentence(pair[1])
-    print("Counted words:")
-    print(input_lang.name, input_lang.n_words)
-    print(output_lang.name, output_lang.n_words)
+
     return input_lang, output_lang, pairs
 
 
@@ -307,7 +302,7 @@ def build_dataloader(
 
 
 def train_epoch(
-        dataloader,
+        dataloader: torch.utils.data.DataLoader,
         encoder,
         decoder,
         encoder_optimizer,
@@ -360,7 +355,7 @@ def train(
         learning_rate: float = 0.001,
         print_every: int = 100,
         plot_every: int = 100,
-):
+) -> None:
     start = time.time()
     plot_losses = []
     print_loss_total = 0  # Reset every print_every
@@ -390,17 +385,6 @@ def train(
             plot_losses.append(plot_loss_avg)
             plot_loss_total = 0
 
-    show_plot(plot_losses)
-
-
-def show_plot(points):
-    plt.figure()
-    fig, ax = plt.subplots()
-    # this locator puts ticks at regular intervals
-    loc = matplotlib.ticker.MultipleLocator(base=0.2)
-    ax.yaxis.set_major_locator(loc)
-    plt.plot(points)
-
 
 def evaluate(encoder, decoder, sentence, input_lang, output_lang):
     with torch.no_grad():
@@ -418,6 +402,7 @@ def evaluate(encoder, decoder, sentence, input_lang, output_lang):
                 decoded_words.append('<EOS>')
                 break
             decoded_words.append(output_lang.index2word[idx.item()])
+
     return decoded_words, decoder_attn
 
 
@@ -453,10 +438,13 @@ def evaluate_and_show_attention(input_lang, output_lang, encoder, decoder, input
     output_words, attentions = evaluate(encoder, decoder, input_sentence, input_lang, output_lang)
     print('input =', input_sentence)
     print('output =', ' '.join(output_words))
-    show_attention(input_sentence, output_words, attentions[0, :len(output_words), :])
+    if attentions is not None:
+        show_attention(input_sentence, output_words, attentions[0, :len(output_words), :])
 
 
 def _main():
+    plt.ion()  # interactive mode
+
     hidden_size = 128
     batch_size = 32
 
@@ -465,14 +453,23 @@ def _main():
     train_dataloader = build_dataloader(input_lang, output_lang, pairs, batch_size)
 
     encoder = EncoderRNN(input_lang.n_words, hidden_size).to(device)
-    decoder = AttnDecoderRNN(hidden_size, output_lang.n_words).to(device)
 
-    enc_file_path = 'i_s2s_xlat_enc.pth'
-    dec_file_path = 'i_s2s_xlat_dec.pth'
+    use_attn: bool = False
+    load_files: bool = True
+    save_files: bool = False
+
+    if use_attn:
+        decoder = AttnDecoderRNN(hidden_size, output_lang.n_words).to(device)
+    else:
+        decoder = DecoderRNN(hidden_size, output_lang.n_words).to(device)
+
+    file_suff = 'attn' if use_attn else 'dumb'
+    enc_file_path = f'i_s2s_xlat_{file_suff}_enc.pth'
+    dec_file_path = f'i_s2s_xlat_{file_suff}_dec.pth'
 
     plt.switch_backend('agg')
 
-    if os.path.exists(enc_file_path):
+    if load_files and os.path.exists(enc_file_path):
         assert os.path.exists(dec_file_path)
 
         encoder.load_state_dict(torch.load(enc_file_path, map_location=device))
@@ -481,8 +478,9 @@ def _main():
     else:
         train(train_dataloader, encoder, decoder, 80, print_every=5, plot_every=5)
 
-        torch.save(encoder.state_dict(), enc_file_path)
-        torch.save(decoder.state_dict(), dec_file_path)
+        if save_files:
+            torch.save(encoder.state_dict(), enc_file_path)
+            torch.save(decoder.state_dict(), dec_file_path)
 
     encoder.eval()
     decoder.eval()
