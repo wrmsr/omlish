@@ -20,6 +20,13 @@ import torch.optim
 import torch.utils.data
 
 
+Pair: ta.TypeAlias = tuple[str, str]
+Tensor: ta.TypeAlias = torch.Tensor
+
+
+## Data
+
+
 class Lang:
     def __init__(self, name: str) -> None:
         super().__init__()
@@ -60,7 +67,7 @@ def normalize_string(s: str) -> str:
     return s.strip()
 
 
-def read_langs(lang1: str, lang2: str, reverse: bool = False) -> tuple[Lang, Lang, list[tuple[str, str]]]:
+def read_langs(lang1: str, lang2: str, reverse: bool = False) -> tuple[Lang, Lang, list[Pair]]:
     print("Reading lines...")
 
     # Read the file and split into lines
@@ -68,7 +75,7 @@ def read_langs(lang1: str, lang2: str, reverse: bool = False) -> tuple[Lang, Lan
         lines = f.read().strip().split('\n')
 
     # Split every line into pairs and normalize
-    pairs = ta.cast(list[tuple[str, str]], [tuple(normalize_string(s) for s in l.split('\t')) for l in lines])
+    pairs = ta.cast(list[Pair], [tuple(normalize_string(s) for s in l.split('\t')) for l in lines])
 
     # Reverse pairs, make Lang instances
     if reverse:
@@ -94,17 +101,17 @@ eng_prefixes = (
 )
 
 
-def filter_pair(p):
+def filter_pair(p: Pair) -> bool:
     return len(p[0].split(' ')) < MAX_LENGTH and \
         len(p[1].split(' ')) < MAX_LENGTH and \
         p[1].startswith(eng_prefixes)
 
 
-def filter_pairs(pairs):
+def filter_pairs(pairs: ta.Iterable[Pair]) -> list[Pair]:
     return [pair for pair in pairs if filter_pair(pair)]
 
 
-def prepare_data(lang1, lang2, reverse=False):
+def prepare_data(lang1: str, lang2: str, reverse: bool = False) -> tuple[Lang, Lang, list[Pair]]:
     input_lang, output_lang, pairs = read_langs(lang1, lang2, reverse)
     print("Read %s sentence pairs" % len(pairs))
     pairs = filter_pairs(pairs)
@@ -119,8 +126,7 @@ def prepare_data(lang1, lang2, reverse=False):
     return input_lang, output_lang, pairs
 
 
-input_lang, output_lang, pairs = prepare_data('eng', 'fra', True)
-print(random.choice(pairs))
+## Models
 
 
 SOS_token = 0
@@ -131,7 +137,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "mps")
 
 
 class EncoderRNN(nn.Module):
-    def __init__(self, input_size, hidden_size, dropout_p=0.1):
+    def __init__(self, input_size: int, hidden_size: int, dropout_p: float = 0.1) -> None:
         super().__init__()
         self.hidden_size = hidden_size
 
@@ -139,22 +145,27 @@ class EncoderRNN(nn.Module):
         self.gru = nn.GRU(hidden_size, hidden_size, batch_first=True)
         self.dropout = nn.Dropout(dropout_p)
 
-    def forward(self, input):
+    def forward(self, input: Tensor) -> tuple[Tensor, Tensor]:  # output, hidden
         embedded = self.dropout(self.embedding(input))
         output, hidden = self.gru(embedded)
         return output, hidden
 
 
 class DecoderRNN(nn.Module):
-    def __init__(self, hidden_size, output_size):
+    def __init__(self, hidden_size: int, output_size: int) -> None:
         super().__init__()
         self.embedding = nn.Embedding(output_size, hidden_size)
         self.gru = nn.GRU(hidden_size, hidden_size, batch_first=True)
         self.out = nn.Linear(hidden_size, output_size)
 
-    def forward(self, encoder_outputs, encoder_hidden, target_tensor=None):
+    def forward(
+            self,
+            encoder_outputs: Tensor,
+            encoder_hidden: Tensor,
+            target_tensor: Tensor | None = None,
+    ) -> tuple[Tensor, Tensor, Tensor | None]:  # outputs, hidden, None
         batch_size = encoder_outputs.size(0)
-        decoder_input = torch.empty(batch_size, 1, dtype=torch.long, device=device).fill_(SOS_token)
+        decoder_input = torch.empty(batch_size, 1, dtype=torch.long, device=encoder_hidden.device).fill_(SOS_token)
         decoder_hidden = encoder_hidden
         decoder_outputs = []
 
@@ -174,7 +185,7 @@ class DecoderRNN(nn.Module):
         decoder_outputs = F.log_softmax(decoder_outputs, dim=-1)
         return decoder_outputs, decoder_hidden, None  # We return `None` for consistency in the training loop
 
-    def forward_step(self, input, hidden):
+    def forward_step(self, input: Tensor, hidden: Tensor) -> tuple[Tensor, Tensor]:
         output = self.embedding(input)
         output = F.relu(output)
         output, hidden = self.gru(output, hidden)
@@ -183,13 +194,13 @@ class DecoderRNN(nn.Module):
 
 
 class BahdanauAttention(nn.Module):
-    def __init__(self, hidden_size):
+    def __init__(self, hidden_size: int) -> None:
         super().__init__()
         self.Wa = nn.Linear(hidden_size, hidden_size)
         self.Ua = nn.Linear(hidden_size, hidden_size)
         self.Va = nn.Linear(hidden_size, 1)
 
-    def forward(self, query, keys):
+    def forward(self, query: Tensor, keys: Tensor) -> tuple[Tensor, Tensor]:
         scores = self.Va(torch.tanh(self.Wa(query) + self.Ua(keys)))
         scores = scores.squeeze(2).unsqueeze(1)
 
@@ -200,7 +211,7 @@ class BahdanauAttention(nn.Module):
 
 
 class AttnDecoderRNN(nn.Module):
-    def __init__(self, hidden_size, output_size, dropout_p=0.1):
+    def __init__(self, hidden_size: int, output_size: int, dropout_p: float = 0.1) -> None:
         super().__init__()
         self.embedding = nn.Embedding(output_size, hidden_size)
         self.attention = BahdanauAttention(hidden_size)
@@ -208,9 +219,14 @@ class AttnDecoderRNN(nn.Module):
         self.out = nn.Linear(hidden_size, output_size)
         self.dropout = nn.Dropout(dropout_p)
 
-    def forward(self, encoder_outputs, encoder_hidden, target_tensor=None):
+    def forward(
+            self,
+            encoder_outputs: Tensor,
+            encoder_hidden: Tensor,
+            target_tensor: Tensor | None = None,
+    ) -> tuple[Tensor, Tensor, Tensor]:  # output, hidden, attention
         batch_size = encoder_outputs.size(0)
-        decoder_input = torch.empty(batch_size, 1, dtype=torch.long, device=device).fill_(SOS_token)
+        decoder_input = torch.empty(batch_size, 1, dtype=torch.long, device=encoder_hidden.device).fill_(SOS_token)
         decoder_hidden = encoder_hidden
         decoder_outputs = []
         attentions = []
@@ -236,7 +252,7 @@ class AttnDecoderRNN(nn.Module):
 
         return decoder_outputs, decoder_hidden, attentions
 
-    def forward_step(self, input, hidden, encoder_outputs):
+    def forward_step(self, input: Tensor, hidden: Tensor, encoder_outputs: Tensor) -> tuple[Tensor, Tensor, Tensor]:
         embedded = self.dropout(self.embedding(input))
 
         query = hidden.permute(1, 0, 2)
@@ -249,19 +265,25 @@ class AttnDecoderRNN(nn.Module):
         return output, hidden, attn_weights
 
 
-def indexes_from_sentence(lang, sentence):
+## Execution
+
+
+def indexes_from_sentence(lang: Lang, sentence: str) -> list[int]:
     return [lang.word2index[word] for word in sentence.split(' ')]
 
 
-def tensor_from_sentence(lang, sentence):
+def tensor_from_sentence(lang: Lang, sentence: str) -> Tensor:
     indexes = indexes_from_sentence(lang, sentence)
     indexes.append(EOS_token)
     return torch.tensor(indexes, dtype=torch.long, device=device).view(1, -1)
 
 
-def get_dataloader(batch_size):
-    input_lang, output_lang, pairs = prepare_data('eng', 'fra', True)
-
+def build_dataloader(
+        input_lang: Lang,
+        output_lang: Lang,
+        pairs: ta.Sequence[Pair],
+        batch_size: int,
+) -> torch.utils.data.DataLoader:
     n = len(pairs)
     input_ids = np.zeros((n, MAX_LENGTH), dtype=np.int32)
     target_ids = np.zeros((n, MAX_LENGTH), dtype=np.int32)
@@ -281,7 +303,7 @@ def get_dataloader(batch_size):
 
     train_sampler = torch.utils.data.RandomSampler(train_data)
     train_dataloader = torch.utils.data.DataLoader(train_data, sampler=train_sampler, batch_size=batch_size)
-    return input_lang, output_lang, train_dataloader
+    return train_dataloader
 
 
 def train_epoch(
@@ -316,13 +338,13 @@ def train_epoch(
     return total_loss / len(dataloader)
 
 
-def format_minutes(s):
+def format_minutes(s: float) -> str:
     m = math.floor(s / 60)
     s -= m * 60
     return '%dm %ds' % (m, s)
 
 
-def format_time_since(since, percent):
+def format_time_since(since: float, percent: float) -> str:
     now = time.time()
     s = now - since
     es = s / (percent)
@@ -331,13 +353,13 @@ def format_time_since(since, percent):
 
 
 def train(
-        train_dataloader,
+        train_dataloader: torch.utils.data.DataLoader,
         encoder,
         decoder,
-        n_epochs,
-        learning_rate=0.001,
-        print_every=100,
-        plot_every=100,
+        n_epochs: int,
+        learning_rate: float = 0.001,
+        print_every: int = 100,
+        plot_every: int = 100,
 ):
     start = time.time()
     plot_losses = []
@@ -356,8 +378,12 @@ def train(
         if epoch % print_every == 0:
             print_loss_avg = print_loss_total / print_every
             print_loss_total = 0
-            print('%s (%d %d%%) %.4f' % (format_time_since(start, epoch / n_epochs),
-                                         epoch, epoch / n_epochs * 100, print_loss_avg))
+            print('%s (%d %d%%) %.4f' % (
+                format_time_since(start, epoch / n_epochs),
+                epoch,
+                epoch / n_epochs * 100,
+                print_loss_avg,
+            ))
 
         if epoch % plot_every == 0:
             plot_loss_avg = plot_loss_total / plot_every
@@ -365,9 +391,6 @@ def train(
             plot_loss_total = 0
 
     show_plot(plot_losses)
-
-
-plt.switch_backend('agg')
 
 
 def show_plot(points):
@@ -398,7 +421,7 @@ def evaluate(encoder, decoder, sentence, input_lang, output_lang):
     return decoded_words, decoder_attn
 
 
-def evaluate_randomly(encoder, decoder, n=10):
+def evaluate_randomly(input_lang, output_lang, pairs, encoder, decoder, n=10):
     for i in range(n):
         pair = random.choice(pairs)
         print('>', pair[0])
@@ -407,36 +430,6 @@ def evaluate_randomly(encoder, decoder, n=10):
         output_sentence = ' '.join(output_words)
         print('<', output_sentence)
         print('')
-
-
-hidden_size = 128
-batch_size = 32
-
-input_lang, output_lang, train_dataloader = get_dataloader(batch_size)
-
-encoder = EncoderRNN(input_lang.n_words, hidden_size).to(device)
-decoder = AttnDecoderRNN(hidden_size, output_lang.n_words).to(device)
-
-enc_file_path = 'i_s2s_xlat_enc.pth'
-dec_file_path = 'i_s2s_xlat_dec.pth'
-
-
-if os.path.exists(enc_file_path):
-    assert os.path.exists(dec_file_path)
-
-    encoder.load_state_dict(torch.load(enc_file_path, map_location=device))
-    decoder.load_state_dict(torch.load(dec_file_path, map_location=device))
-
-else:
-    train(train_dataloader, encoder, decoder, 80, print_every=5, plot_every=5)
-
-    torch.save(encoder.state_dict(), enc_file_path)
-    torch.save(decoder.state_dict(), dec_file_path)
-
-
-encoder.eval()
-decoder.eval()
-evaluate_randomly(encoder, decoder)
 
 
 def show_attention(input_sentence, output_words, attentions):
@@ -456,15 +449,53 @@ def show_attention(input_sentence, output_words, attentions):
     plt.show()
 
 
-def evaluate_and_show_attention(input_sentence):
+def evaluate_and_show_attention(input_lang, output_lang, encoder, decoder, input_sentence):
     output_words, attentions = evaluate(encoder, decoder, input_sentence, input_lang, output_lang)
     print('input =', input_sentence)
     print('output =', ' '.join(output_words))
     show_attention(input_sentence, output_words, attentions[0, :len(output_words), :])
 
 
-evaluate_and_show_attention('il n est pas aussi grand que son pere')
-evaluate_and_show_attention('je suis trop fatigue pour conduire')
-evaluate_and_show_attention('je suis desole si c est une question idiote')
-evaluate_and_show_attention('je suis reellement fiere de vous')
+def _main():
+    hidden_size = 128
+    batch_size = 32
 
+    input_lang, output_lang, pairs = prepare_data('eng', 'fra', True)
+
+    train_dataloader = build_dataloader(input_lang, output_lang, pairs, batch_size)
+
+    encoder = EncoderRNN(input_lang.n_words, hidden_size).to(device)
+    decoder = AttnDecoderRNN(hidden_size, output_lang.n_words).to(device)
+
+    enc_file_path = 'i_s2s_xlat_enc.pth'
+    dec_file_path = 'i_s2s_xlat_dec.pth'
+
+    plt.switch_backend('agg')
+
+    if os.path.exists(enc_file_path):
+        assert os.path.exists(dec_file_path)
+
+        encoder.load_state_dict(torch.load(enc_file_path, map_location=device))
+        decoder.load_state_dict(torch.load(dec_file_path, map_location=device))
+
+    else:
+        train(train_dataloader, encoder, decoder, 80, print_every=5, plot_every=5)
+
+        torch.save(encoder.state_dict(), enc_file_path)
+        torch.save(decoder.state_dict(), dec_file_path)
+
+    encoder.eval()
+    decoder.eval()
+    evaluate_randomly(input_lang, output_lang, pairs, encoder, decoder)
+
+    for s in [
+        'il n est pas aussi grand que son pere',
+        'je suis trop fatigue pour conduire',
+        'je suis desole si c est une question idiote',
+        'je suis reellement fiere de vous',
+    ]:
+        evaluate_and_show_attention(input_lang, output_lang, encoder, decoder, s)
+
+
+if __name__ == '__main__':
+    _main()
