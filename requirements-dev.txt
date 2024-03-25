@@ -16,7 +16,7 @@ flake8-pyproject==1.2.3
 
 black==24.3.0
 mypy==1.9.0
-pipdeptree==2.16.1
+pipdeptree==2.16.2
 
 gprof2dot==2022.7.29
 guppy3==3.1.4.post1
@@ -28,6 +28,6 @@ ipython==8.22.2
 pg8000==1.30.5
 pymysql==1.1.0
 
-litecli==1.10.0; python_version < '3.12'
+litecli==1.10.1; python_version < '3.12'
 mycli==1.27.0; python_version < '3.12'
 pgcli==4.0.1; python_version < '3.12'

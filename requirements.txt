@@ -1,7 +1,7 @@
 greenlet==3.0.3; implementation_name != 'nogil'
 httptools==0.6.1; implementation_name != 'nogil'
 pyyaml==6.0.1
-sqlalchemy==2.0.28
+sqlalchemy==2.0.29
 wrapt>=1.14.1
 
 ## compress:
