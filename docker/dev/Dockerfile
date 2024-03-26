@@ -181,13 +181,15 @@ COPY .versions /root/
 
 ## python
 
-RUN ( \
+RUN \
+    --mount=target=/home/root/.pyenv_cache,type=cache,sharing=locked \
+( \
     git clone 'https://github.com/pyenv/pyenv' "$HOME/.pyenv" && \
     grep '^PYTHON_' /root/.versions | while read L ; do \
         K=$(echo "$L" | cut -d= -f1 | cut -d_ -f2-) && \
         echo "Installing python $K" && \
         V=$(echo "$L" | cut -d= -f2) && \
-        "$HOME/.pyenv/bin/pyenv" install -s "$V" ; \
+        PYTHON_BUILD_CACHE_PATH="$HOME/.pyenv_cache" "$HOME/.pyenv/bin/pyenv" install -s "$V" ; \
     done \
 )
 
