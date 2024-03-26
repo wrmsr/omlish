@@ -62,6 +62,7 @@ RUN \
         pkg-config \
         postgresql-client \
         protobuf-compiler \
+        ruby \
         silversearcher-ag \
         socat \
         software-properties-common \
@@ -97,26 +98,45 @@ RUN \
         uuid-dev \
         zlib1g-dev \
 \
+        x11-apps \
+\
 )
 
-# RUN ( \
-#     export DEBIAN_FRONTEND=noninteractive && \
-# \
-#     apt-get install -y \
-# \
-#         firefox \
-# \
-# )
+
+## firefox
+
+RUN \
+    --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
+    --mount=target=/var/cache/apt,type=cache,sharing=locked \
+( \
+    add-apt-repository ppa:mozillateam/ppa && \
+    echo "\
+Package: * \n\
+Pin: release o=LP-PPA-mozillateam \n\
+Pin-Priority: 1001 \n\
+\n\
+Package: firefox \n\
+Pin: version 1:1snap1-0ubuntu2 \n\
+Pin-Priority: -1 \n\
+" | sudo tee /etc/apt/preferences.d/mozilla-firefox && \
+    apt-get update && \
+    apt-get install -y firefox && \
+    echo 'Unattended-Upgrade::Allowed-Origins:: "LP-PPA-mozillateam:${distro_codename}";' | \
+    sudo tee /etc/apt/apt.conf.d/51unattended-upgrades-firefox \
+)
 
 
 ## docker
 
-RUN ( \
+RUN \
+    --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
+    --mount=target=/var/cache/apt,type=cache,sharing=locked \
+( \
     mkdir -p /etc/apt/keyrings && \
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
     echo \
-      "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-      $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null && \
+        "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+        $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null && \
     apt-get update && \
     apt-get install -y docker-ce-cli \
 )
@@ -124,7 +144,10 @@ RUN ( \
 
 ## jdk
 
-RUN ( \
+RUN \
+    --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
+    --mount=target=/var/cache/apt,type=cache,sharing=locked \
+( \
     add-apt-repository ppa:openjdk-r/ppa && \
     apt-get update && \
     apt-get install -y \
@@ -160,7 +183,7 @@ COPY .versions /root/
 
 RUN ( \
     git clone 'https://github.com/pyenv/pyenv' "$HOME/.pyenv" && \
-    grep '^PYTHON_' .versions | while read L ; do \
+    grep '^PYTHON_' /root/.versions | while read L ; do \
         K=$(echo "$L" | cut -d= -f1 | cut -d_ -f2-) && \
         echo "Installing python $K" && \
         V=$(echo "$L" | cut -d= -f2) && \
@@ -184,6 +207,7 @@ COPY \
     docker/dev/.gdbinit \
     docker/dev/.tmux.conf \
     docker/dev/.vimrc \
+    docker/dev/xu \
 \
     /root/
 

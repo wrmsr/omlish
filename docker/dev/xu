@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+set -e
+
+if [ "$EUID" -ne 0 ] ; then
+    echo "run as root"
+    exit 1
+fi
+
+if [ "$#" == "0" ]; then
+    echo "run with username"
+    exit 1
+fi
+
+U="$1"
+shift
+
+if ! id "$U" &> /dev/null ; then
+    useradd -m "$U"
+fi
+
+declare -a FS=(
+    ".gdbinit"
+    ".tmux.conf"
+    ".vimrc"
+    ".Xauthority"
+)
+
+for F in ${FS[@]}; do
+    if [ -f "$HOME/$F" ] && [ ! -f "/home/$U/$F" ] ; then
+        cp "$HOME/$F" "/home/$U/$F"
+        chown "$U" "/home/$U/$F"
+        chgrp "$U" "/home/$U/$F"
+    fi
+done
+
+if [ -f "$HOME/.Xauthority" ] ; then
+    cp "$HOME/.Xauthority" "/home/$U/.Xauthority"
+    chown "$U" "/home/$U/.Xauthority"
+    chgrp "$U" "/home/$U/.Xauthority"
+fi
+
+if [ "$#" != "0" ]; then
+    exec sudo -u "$U" bash --login -c "$*"
+fi

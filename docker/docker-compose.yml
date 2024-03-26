@@ -21,17 +21,21 @@ services:
       - 'omlish-mysql'
       - 'omlish-postgres'
     expose:
+      - '22'
       - '8000'
     ports:
-      - '33220:8000'
+      - '35220:8000'
+      - '35221:22'
 
   omlish-dev-amd64:
     <<: *_dev
     platform: 'linux/x86_64'
     expose:
+      - '22'
       - '8000'
     ports:
-      - '35220:8000'
+      - '35222:8000'
+      - '35223:22'
 
   omlish-mysql:
     image: 'mysql:8'
@@ -43,7 +47,7 @@ services:
     expose:
       - '3306'
     ports:
-      - '35221:3306'
+      - '35224:3306'
 
   omlish-postgres:
     image: 'postgres:16'
@@ -54,4 +58,4 @@ services:
     expose:
       - '5432'
     ports:
-      - '35222:5432'
+      - '35225:5432'
