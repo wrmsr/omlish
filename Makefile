@@ -2,17 +2,24 @@ SHELL:=/bin/bash
 
 PROJECT:=omlish
 
-PYTHON_VERSION_11:=3.11.8
-PYTHON_VERSION_12:=3.12.2
-PYTHON_VERSION_13:=3.13-dev
-PYTHON_VERSION_NOGIL:=nogil-3.12
-
 MAIN_SOURCES:=\
 	${PROJECT} \
 
 ALL_SOURCES:=\
 	${MAIN_SOURCES} \
 	x \
+
+
+### Versions
+
+define get-version
+$$(grep '^$(1)=' .versions | cut -d= -f2)
+endef
+
+PYTHON_VERSION_11:=$(call get-version,'PYTHON_11')
+PYTHON_VERSION_12:=$(call get-version,'PYTHON_12')
+PYTHON_VERSION_13:=$(call get-version,'PYTHON_13')
+PYTHON_VERSION_NOGIL:=$(call get-version,'PYTHON_NOGIL')
 
 
 ### Clean
@@ -60,8 +67,15 @@ venv:
 		$(PYENV_BIN) install -s $(PYENV_INSTALL_OPTS) $(PYTHON_VERSION) && \
 		"$(PYENV_ROOT)/versions/$(PYTHON_VERSION)$(PYENV_VERSION_SUFFIX)/bin/python" -mvenv $(VENV_OPTS) $(VENV_ROOT) && \
 		$(PYTHON) -mpip install --upgrade pip setuptools wheel && \
-		$(PYTHON) -mpip install -r ${REQUIREMENTS_TXT} ; \
+		$(PYTHON) -mpip install -r ${REQUIREMENTS_TXT} && \
+		export ABS_PYTHON=$$($(PYTHON) -c 'import sys; print(sys.executable)') && \
+		(cd tinygrad && "$$ABS_PYTHON" -mpip install -e .) ; \
 	fi
+
+.PHONY: vx
+vx:
+	export ABS_PYTHON=$$($(PYTHON) -c 'import sys; print(sys.executable)') && \
+	(cd tinygrad && "$$ABS_PYTHON" -mpip install -e .) ; \
 
 
 ### Deps
@@ -184,14 +198,34 @@ docker-stop:
 .PHONY: docker-reup
 docker-reup: docker-stop
 	${DOCKER_COMPOSE} rm -f
+	${DOCKER_COMPOSE} build omlish-dev
 	${DOCKER_COMPOSE} up
 
 .PHONY: docker-invalidate
 docker-invalidate:
 	date +%s > docker/.dockertimestamp
 
+.PHONY: docker-enable-ptrace
+docker-enable-ptrace:
+	docker run --platform linux/x86_64 --privileged -it ubuntu sh -c 'echo 0 > /proc/sys/kernel/yama/ptrace_scope'
+
 
 ### Utils
+
+.PHONY: my-repl
+my-repl: venv
+	F=$$(mktemp) ; \
+	echo -e "\n\
+import yaml \n\
+with open('docker/docker-compose.yml', 'r') as f: \n\
+    dct = yaml.safe_load(f.read()) \n\
+cfg = dct['services']['$(PROJECT)-mysql'] \n\
+print('MY_USER=' + cfg['environment']['MYSQL_USER']) \n\
+print('MY_PASSWORD=' + cfg['environment']['MYSQL_PASSWORD']) \n\
+print('MY_PORT=' + cfg['ports'][0].split(':')[0]) \n\
+" >> $$F ; \
+	export $$(.venv/bin/python "$$F" | xargs) && \
+	MYSQL_PWD="$$MY_PASSWORD" .venv/bin/mycli --user "$$MY_USER" --host localhost --port "$$MY_PORT"
 
 .PHONY: pg-repl
 pg-repl: venv

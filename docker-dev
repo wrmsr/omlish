@@ -1,0 +1,23 @@
+#!/bin/bash
+set -e
+
+if [ -t 1 ] ; then
+    TTY_ENV_ARGS="-e LINES=$(tput lines) -e COLUMNS=$(tput cols)"
+else
+    TTY_ENV_ARGS=""
+fi
+
+DOCKER_CONTAINER="docker-omlish-dev-1"
+if ! [ $# -eq 0 ] ; then
+    if [ "$1" == "--amd64" ] ; then
+        DOCKER_CONTAINER="docker-omlish-dev-amd64-1"
+        shift
+    fi
+fi
+
+docker exec \
+    $TTY_ENV_ARGS \
+    --privileged \
+    --detach-keys 'ctrl-o,ctrl-d' \
+    -it "$DOCKER_CONTAINER" \
+    $*
