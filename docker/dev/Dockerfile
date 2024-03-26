@@ -53,7 +53,6 @@ RUN ( \
         pkg-config \
         postgresql-client \
         protobuf-compiler \
-        python3 \
         silversearcher-ag \
         socat \
         software-properties-common \
@@ -131,12 +130,13 @@ COPY .versions /root/
 ## python
 
 RUN ( \
-    PYTHON_VERSIONS=$(grep '^PYTHON_' /root/.versions | cut -d= -f2) && \
-    \
     git clone 'https://github.com/pyenv/pyenv' "$HOME/.pyenv" && \
-    (for V in "$PYTHON_VERSIONS" ; do \
+    grep '^PYTHON_' .versions | while read L ; do \
+        K=$(echo "$L" | cut -d= -f1 | cut -d_ -f2-) && \
+        echo "Installing python $K" && \
+        V=$(echo "$L" | cut -d= -f2) && \
         "$HOME/.pyenv/bin/pyenv" install -s "$V" ; \
-    done) \
+    done \
 )
 
 
