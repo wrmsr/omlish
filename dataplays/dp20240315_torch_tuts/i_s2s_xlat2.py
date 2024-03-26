@@ -1,6 +1,7 @@
 """
 **Author**: `Sean Robertson <https://github.com/spro>`_
 """
+import abc
 import io
 import math
 import os.path
@@ -128,9 +129,6 @@ SOS_token = 0
 EOS_token = 1
 
 
-device = torch.device("cuda" if torch.cuda.is_available() else "mps")
-
-
 class EncoderRNN(nn.Module):
     def __init__(self, input_size: int, hidden_size: int, dropout_p: float = 0.1) -> None:
         super().__init__()
@@ -146,7 +144,18 @@ class EncoderRNN(nn.Module):
         return output, hidden
 
 
-class DecoderRNN(nn.Module):
+class DecoderRNN(abc.ABC):
+    @abc.abstractmethod
+    def __call__(
+            self,
+            encoder_outputs: Tensor,
+            encoder_hidden: Tensor,
+            target_tensor: Tensor | None = None,
+    ) -> tuple[Tensor, Tensor, Tensor | None]:  # outputs, hidden, None
+        raise NotImplemented
+
+
+class DumbDecoderRNN(nn.Module, DecoderRNN):
     def __init__(self, hidden_size: int, output_size: int) -> None:
         super().__init__()
         self.embedding = nn.Embedding(output_size, hidden_size)
@@ -205,7 +214,7 @@ class BahdanauAttention(nn.Module):
         return context, weights
 
 
-class AttnDecoderRNN(nn.Module):
+class AttnDecoderRNN(DecoderRNN, nn.Module):
     def __init__(self, hidden_size: int, output_size: int, dropout_p: float = 0.1) -> None:
         super().__init__()
         self.embedding = nn.Embedding(output_size, hidden_size)
@@ -267,7 +276,7 @@ def indexes_from_sentence(lang: Lang, sentence: str) -> list[int]:
     return [lang.word2index[word] for word in sentence.split(' ')]
 
 
-def tensor_from_sentence(lang: Lang, sentence: str) -> Tensor:
+def tensor_from_sentence(lang: Lang, sentence: str, device: torch.device) -> Tensor:
     indexes = indexes_from_sentence(lang, sentence)
     indexes.append(EOS_token)
     return torch.tensor(indexes, dtype=torch.long, device=device).view(1, -1)
@@ -278,6 +287,7 @@ def build_dataloader(
         output_lang: Lang,
         pairs: ta.Sequence[Pair],
         batch_size: int,
+        device: torch.device,
 ) -> torch.utils.data.DataLoader:
     n = len(pairs)
     input_ids = np.zeros((n, MAX_LENGTH), dtype=np.int32)
@@ -303,8 +313,8 @@ def build_dataloader(
 
 def train_epoch(
         dataloader: torch.utils.data.DataLoader,
-        encoder,
-        decoder,
+        encoder: EncoderRNN,
+        decoder: DecoderRNN,
         encoder_optimizer,
         decoder_optimizer,
         criterion,
@@ -349,8 +359,8 @@ def format_time_since(since: float, percent: float) -> str:
 
 def train(
         train_dataloader: torch.utils.data.DataLoader,
-        encoder,
-        decoder,
+        encoder: EncoderRNN,
+        decoder: DecoderRNN,
         n_epochs: int,
         learning_rate: float = 0.001,
         print_every: int = 100,
@@ -366,7 +376,14 @@ def train(
     criterion = nn.NLLLoss()
 
     for epoch in range(1, n_epochs + 1):
-        loss = train_epoch(train_dataloader, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion)
+        loss = train_epoch(
+            train_dataloader,
+            encoder,
+            decoder,
+            encoder_optimizer,
+            decoder_optimizer,
+            criterion,
+        )
         print_loss_total += loss
         plot_loss_total += loss
 
@@ -386,9 +403,16 @@ def train(
             plot_loss_total = 0
 
 
-def evaluate(encoder, decoder, sentence, input_lang, output_lang):
+def evaluate(
+        encoder: EncoderRNN,
+        decoder: DecoderRNN,
+        sentence: str,
+        input_lang: Lang,
+        output_lang: Lang,
+        device: torch.device,
+) -> tuple[Tensor, Tensor]:
     with torch.no_grad():
-        input_tensor = tensor_from_sentence(input_lang, sentence)
+        input_tensor = tensor_from_sentence(input_lang, sentence, device)
 
         encoder_outputs, encoder_hidden = encoder(input_tensor)
         decoder_outputs, decoder_hidden, decoder_attn = decoder(encoder_outputs, encoder_hidden)
@@ -406,18 +430,26 @@ def evaluate(encoder, decoder, sentence, input_lang, output_lang):
     return decoded_words, decoder_attn
 
 
-def evaluate_randomly(input_lang, output_lang, pairs, encoder, decoder, n=10):
+def evaluate_randomly(
+        input_lang: Lang,
+        output_lang: Lang,
+        pairs: ta.Sequence[Pair],
+        encoder: EncoderRNN,
+        decoder: DecoderRNN,
+        device: torch.device,
+        n: int = 10,
+) -> None:
     for i in range(n):
         pair = random.choice(pairs)
         print('>', pair[0])
         print('=', pair[1])
-        output_words, _ = evaluate(encoder, decoder, pair[0], input_lang, output_lang)
+        output_words, _ = evaluate(encoder, decoder, pair[0], input_lang, output_lang, device)
         output_sentence = ' '.join(output_words)
         print('<', output_sentence)
         print('')
 
 
-def show_attention(input_sentence, output_words, attentions):
+def show_attention(input_sentence: str, output_words: str, attentions: torch.tensor) -> None:
     fig = plt.figure()
     ax = fig.add_subplot(111)
     cax = ax.matshow(attentions.cpu().numpy(), cmap='bone')
@@ -434,15 +466,33 @@ def show_attention(input_sentence, output_words, attentions):
     plt.show()
 
 
-def evaluate_and_show_attention(input_lang, output_lang, encoder, decoder, input_sentence):
-    output_words, attentions = evaluate(encoder, decoder, input_sentence, input_lang, output_lang)
+def evaluate_and_show_attention(
+        input_lang: Lang,
+        output_lang: Lang,
+        encoder: EncoderRNN,
+        decoder: DecoderRNN,
+        input_sentence: str,
+        device: torch.device,
+):
+    output_words, attentions = evaluate(
+        encoder,
+        decoder,
+        input_sentence,
+        input_lang,
+        output_lang,
+        device,
+    )
     print('input =', input_sentence)
     print('output =', ' '.join(output_words))
     if attentions is not None:
-        show_attention(input_sentence, output_words, attentions[0, :len(output_words), :])
+        show_attention(
+            input_sentence,
+            output_words,
+            attentions[0, :len(output_words), :],
+        )
 
 
-def _main():
+def _main() -> None:
     plt.ion()  # interactive mode
 
     hidden_size = 128
@@ -450,18 +500,20 @@ def _main():
 
     input_lang, output_lang, pairs = prepare_data('eng', 'fra', True)
 
-    train_dataloader = build_dataloader(input_lang, output_lang, pairs, batch_size)
+    device = torch.device("cuda" if torch.cuda.is_available() else "mps")
+
+    train_dataloader = build_dataloader(input_lang, output_lang, pairs, batch_size, device)
 
     encoder = EncoderRNN(input_lang.n_words, hidden_size).to(device)
 
     use_attn: bool = False
     load_files: bool = True
-    save_files: bool = False
+    save_files: bool = True
 
     if use_attn:
         decoder = AttnDecoderRNN(hidden_size, output_lang.n_words).to(device)
     else:
-        decoder = DecoderRNN(hidden_size, output_lang.n_words).to(device)
+        decoder = DumbDecoderRNN(hidden_size, output_lang.n_words).to(device)
 
     file_suff = 'attn' if use_attn else 'dumb'
     enc_file_path = f'i_s2s_xlat_{file_suff}_enc.pth'
@@ -484,7 +536,7 @@ def _main():
 
     encoder.eval()
     decoder.eval()
-    evaluate_randomly(input_lang, output_lang, pairs, encoder, decoder)
+    evaluate_randomly(input_lang, output_lang, pairs, encoder, decoder, device)
 
     for s in [
         'il n est pas aussi grand que son pere',
@@ -492,7 +544,7 @@ def _main():
         'je suis desole si c est une question idiote',
         'je suis reellement fiere de vous',
     ]:
-        evaluate_and_show_attention(input_lang, output_lang, encoder, decoder, s)
+        evaluate_and_show_attention(input_lang, output_lang, encoder, decoder, s, device)
 
 
 if __name__ == '__main__':
