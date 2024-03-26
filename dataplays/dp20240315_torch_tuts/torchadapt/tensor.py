@@ -204,11 +204,8 @@ arcsinh_() -> Tensor
 arctan() -> Tensor
 arctan2(other) -> Tensor
 arctan2_
-arctan_
 arctan_() -> Tensor
-arctanh
 arctanh() -> Tensor
-arctanh_
 arctanh_(other) -> Tensor
 argmax(dim=None, keepdim=False) -> LongTensor
 argmin(dim=None, keepdim=False) -> LongTensor
@@ -223,16 +220,10 @@ asin_() -> Tensor
 asinh() -> Tensor
 asinh_() -> Tensor
 atan() -> Tensor
-atan2
 atan2(other) -> Tensor
-atan2_
 atan2_(other) -> Tensor
-atan2_(other) -> Tensor
-atan_
 atan_() -> Tensor
-atanh
 atanh() -> Tensor
-atanh_
 atanh_(other) -> Tensor
 backward
 baddbmm(batch1, batch2, *, beta=1, alpha=1) -> Tensor
@@ -593,41 +584,23 @@ pow(exponent) -> Tensor
 pow_(exponent) -> Tensor
 prelu
 prod(dim=None, keepdim=False, dtype=None) -> Tensor
-put
 put(input, index, source, accumulate=False) -> Tensor
-put_
 put_(index, source, accumulate=False) -> Tensor
-q_per_channel_axis
 q_per_channel_axis() -> int
-q_per_channel_scales
 q_per_channel_scales() -> Tensor
-q_per_channel_zero_points
 q_per_channel_zero_points() -> Tensor
-q_scale
 q_scale() -> float
-q_zero_point
 q_zero_point() -> int
-qr
 qr(some=True) -> (Tensor, Tensor)
-qscheme
 qscheme() -> torch.qscheme
-quantile
 quantile(q, dim=None, keepdim=False, *, interpolation='linear') -> Tensor
-rad2deg
 rad2deg() -> Tensor
-rad2deg_
 rad2deg_() -> Tensor
-random_
 random_(from=0, to=None, *, generator=None) -> Tensor
-ravel
 ravel() -> Tensor
 real
-real
-reciprocal
 reciprocal() -> Tensor
-reciprocal_
 reciprocal_() -> Tensor
-record_stream
 record_stream(stream)
 refine_names
 register_hook
@@ -635,287 +608,154 @@ register_post_accumulate_grad_hook
 reinforce
 relu
 relu_
-remainder
 remainder(divisor) -> Tensor
-remainder_
 remainder_(divisor) -> Tensor
-rename
 rename_
-renorm
 renorm(p, dim, maxnorm) -> Tensor
-renorm_
 renorm_(p, dim, maxnorm) -> Tensor
-repeat
 repeat(*sizes) -> Tensor
-repeat_interleave
 repeat_interleave(repeats, dim=None, *, output_size=None) -> Tensor
 requires_grad
-requires_grad
-requires_grad_
 requires_grad_(requires_grad=True) -> Tensor
-reshape
 reshape(*shape) -> Tensor
-reshape_as
 reshape_as(other) -> Tensor
-resize
 resize_
 resize_(*sizes, memory_format=torch.contiguous_format) -> Tensor
 resize_as
-resize_as_
 resize_as_(tensor, memory_format=torch.contiguous_format) -> Tensor
 resize_as_sparse_
-resolve_conj
 resolve_conj() -> Tensor
-resolve_neg
 resolve_neg() -> Tensor
-retain_grad
 retain_grad() -> None
 retains_grad
-retains_grad
-roll
 roll(shifts, dims) -> Tensor
-rot90
 rot90(k, dims) -> Tensor
-round
 round(decimals=0) -> Tensor
-round_
 round_(decimals=0) -> Tensor
 row_indices
-rsqrt
 rsqrt() -> Tensor
-rsqrt_
 rsqrt_() -> Tensor
-scatter
 scatter(dim, index, src) -> Tensor
-scatter_
 scatter_(dim, index, src, reduce=None) -> Tensor
-scatter_add
 scatter_add(dim, index, src) -> Tensor
-scatter_add_
 scatter_add_(dim, index, src) -> Tensor
-scatter_reduce
 scatter_reduce(dim, index, src, reduce, *, include_self=True) -> Tensor
-scatter_reduce_
 scatter_reduce_(dim, index, src, reduce, *, include_self=True) -> Tensor
-select
 select(dim, index) -> Tensor
-select_scatter
 select_scatter(src, dim, index) -> Tensor
-set_
 set_(source=None, storage_offset=0, size=None, stride=None) -> Tensor
-sgn
 sgn() -> Tensor
-sgn_
 sgn_() -> Tensor
-shape
 shape() -> torch.Size
 share_memory_
-short
 short(memory_format=torch.preserve_format) -> Tensor
-sigmoid
 sigmoid() -> Tensor
-sigmoid_
 sigmoid_() -> Tensor
-sign
 sign() -> Tensor
-sign_
 sign_() -> Tensor
-signbit
 signbit() -> Tensor
-sin
 sin() -> Tensor
-sin_
 sin_() -> Tensor
-sinc
 sinc() -> Tensor
-sinc_
 sinc_() -> Tensor
-sinh
 sinh() -> Tensor
-sinh_
 sinh_() -> Tensor
-size
 size(dim=None) -> torch.Size or int
-slice_scatter
 slice_scatter(src, dim=0, start=None, end=None, step=1) -> Tensor
-slogdet
 slogdet() -> (Tensor, Tensor)
-smm
 smm(mat) -> Tensor
-softmax
 softmax(dim) -> Tensor
 solve
-sort
 sort(dim=-1, descending=False) -> (Tensor, LongTensor)
-sparse_dim
 sparse_dim() -> int
-sparse_mask
 sparse_mask(mask) -> Tensor
-sparse_resize_
 sparse_resize_(size, sparse_dim, dense_dim) -> Tensor
-sparse_resize_and_clear_
 sparse_resize_and_clear_(size, sparse_dim, dense_dim) -> Tensor
 split
 split_with_sizes
-sqrt
 sqrt() -> Tensor
-sqrt_
 sqrt_() -> Tensor
-square
 square() -> Tensor
-square_
 square_() -> Tensor
-squeeze
 squeeze(dim=None) -> Tensor
-squeeze_
 squeeze_(dim=None) -> Tensor
-sspaddmm
 sspaddmm(mat1, mat2, *, beta=1, alpha=1) -> Tensor
-std
 std(dim=None, *, correction=1, keepdim=False) -> Tensor
-stft
 stft(frame_length, hop, fft_size=None, return_onesided=True, window=None, pad_end=0) -> Tensor
 storage
-storage_offset
 storage_offset() -> int
 storage_type
-stride
 stride(dim) -> tuple or int
-sub
 sub(other, *, alpha=1) -> Tensor
-sub_
 sub_(other, *, alpha=1) -> Tensor
-subtract
 subtract(other, *, alpha=1) -> Tensor
-subtract_
 subtract_(other, *, alpha=1) -> Tensor
-sum
 sum(dim=None, keepdim=False, dtype=None) -> Tensor
-sum_to_size
 sum_to_size(*size) -> Tensor
-svd
 svd(some=True, compute_uv=True) -> (Tensor, Tensor, Tensor)
-swapaxes
 swapaxes(axis0, axis1) -> Tensor
-swapaxes_
 swapaxes_(axis0, axis1) -> Tensor
-swapdims
 swapdims(dim0, dim1) -> Tensor
-swapdims_
 swapdims_(dim0, dim1) -> Tensor
 symeig
-t
 t() -> Tensor
-t_
 t_() -> Tensor
-take
 take(indices) -> Tensor
-take_along_dim
 take_along_dim(indices, dim) -> Tensor
-tan
 tan() -> Tensor
-tan_
 tan_() -> Tensor
-tanh
 tanh() -> Tensor
-tanh_
 tanh_() -> Tensor
-tensor_split
 tensor_split(indices_or_sections, dim=0) -> List of Tensors
-tile
 tile(dims) -> Tensor
-to
 to(*args, **kwargs) -> Tensor
-to_dense
 to_dense(dtype=None, *, masked_grad=True) -> Tensor
-to_mkldnn
 to_mkldnn() -> Tensor
-to_padded_tensor
 to_padded_tensor(padding, output_size=None) -> Tensor
-to_sparse
 to_sparse(sparseDims) -> Tensor
-to_sparse_bsc
 to_sparse_bsc(blocksize, dense_dim) -> Tensor
-to_sparse_bsr
 to_sparse_bsr(blocksize, dense_dim) -> Tensor
 to_sparse_coo
-to_sparse_csc
 to_sparse_csc() -> Tensor
-to_sparse_csr
 to_sparse_csr(dense_dim=None) -> Tensor
-tolist
 tolist() -> list or number
-topk
 topk(k, dim=None, largest=True, sorted=True) -> (Tensor, LongTensor)
-trace
 trace() -> Tensor
-transpose
 transpose(dim0, dim1) -> Tensor
-transpose_
 transpose_(dim0, dim1) -> Tensor
-triangular_solve
 triangular_solve(A, upper=True, transpose=False, unitriangular=False) -> (Tensor, Tensor)
-tril
 tril(diagonal=0) -> Tensor
-tril_
 tril_(diagonal=0) -> Tensor
-triu
 triu(diagonal=0) -> Tensor
-triu_
 triu_(diagonal=0) -> Tensor
-true_divide
 true_divide(value) -> Tensor
-true_divide_
 true_divide_(value) -> Tensor
-trunc
 trunc() -> Tensor
-trunc_
 trunc_() -> Tensor
-type
 type(dtype=None, non_blocking=False, **kwargs) -> str or Tensor
-type_as
 type_as(tensor) -> Tensor
-unbind
 unbind(dim=0) -> seq
 unflatten
-unfold
 unfold(dimension, size, step) -> Tensor
-uniform_
 uniform_(from=0, to=1, *, generator=None) -> Tensor
 unique
 unique_consecutive
-unsafe_chunk
 unsafe_chunk(chunks, dim=0) -> List of Tensors
-unsafe_split
 unsafe_split(split_size, dim=0) -> List of Tensors
 unsafe_split_with_sizes
-unsqueeze
 unsqueeze(dim) -> Tensor
-unsqueeze_
 unsqueeze_(dim) -> Tensor
-untyped_storage
 untyped_storage() -> torch.UntypedStorage
-values
 values() -> Tensor
-var
 var(dim=None, *, correction=1, keepdim=False) -> Tensor
-vdot
 vdot(other) -> Tensor
-view
 view(*shape) -> Tensor
-view_as
 view_as(other) -> Tensor
 volatile
-vsplit
 vsplit(split_size_or_sections) -> List of Tensors
-where
 where(condition, y) -> Tensor
-xlogy
 xlogy(other) -> Tensor
-xlogy_
 xlogy_(other) -> Tensor
-xpu
 xpu(device=None, non_blocking=False, memory_format=torch.preserve_format) -> Tensor
-zero_
 zero_() -> Tensor
 """
