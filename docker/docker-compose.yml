@@ -2,6 +2,37 @@ version: '3'
 
 services:
 
+  omlish-dev: &_dev
+    build:
+      context: '../'
+      dockerfile: 'docker/dev/Dockerfile'
+    restart: 'unless-stopped'
+    cap_add:
+      - 'SYS_PTRACE'
+    security_opt:
+      - 'apparmor:unconfined'
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock'
+      - '..:/omlish'
+    depends_on:
+      - 'omlish-mysql'
+      - 'omlish-postgres'
+    links:
+      - 'omlish-mysql'
+      - 'omlish-postgres'
+    expose:
+      - '8000'
+    ports:
+      - '33220:8000'
+
+  omlish-dev-amd64:
+    <<: *_dev
+    platform: 'linux/x86_64'
+    expose:
+      - '8000'
+    ports:
+      - '35220:8000'
+
   omlish-mysql:
     image: 'mysql:8'
     restart: 'unless-stopped'
@@ -12,7 +43,7 @@ services:
     expose:
       - '3306'
     ports:
-      - '34230:3306'
+      - '35221:3306'
 
   omlish-postgres:
     image: 'postgres:16'
@@ -23,4 +54,4 @@ services:
     expose:
       - '5432'
     ports:
-      - '34231:5432'
+      - '35222:5432'
