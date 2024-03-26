@@ -235,7 +235,7 @@ class BahdanauAttention(nn.Module):
         return context, weights
 
 
-class AttnDecoderRNN(DecoderRNN, nn.Module):
+class AttnDecoderRNN(nn.Module, DecoderRNN):
     def __init__(self, hidden_size: int, output_size: int, dropout_p: float = 0.1) -> None:
         super().__init__()
         self.embedding = nn.Embedding(output_size, hidden_size)
@@ -464,7 +464,16 @@ def evaluate_randomly(
         pair = random.choice(pairs)
         print('>', pair[0])
         print('=', pair[1])
-        output_words, _ = evaluate(encoder, decoder, pair[0], input_lang, output_lang, device)
+
+        output_words, _ = evaluate(
+            encoder,
+            decoder,
+            pair[0],
+            input_lang,
+            output_lang,
+            device,
+        )
+
         output_sentence = ' '.join(output_words)
         print('<', output_sentence)
         print('')
@@ -519,7 +528,7 @@ def evaluate_and_show_attention(
         )
 
 
-PLOT = False
+PLOT = True
 
 
 def _main() -> None:
@@ -537,7 +546,7 @@ def _main() -> None:
 
     encoder = EncoderRNN(input_lang.n_words, hidden_size).to(device)
 
-    use_attn: bool = False
+    use_attn: bool = True
     load_files: bool = True
     save_files: bool = True
 
@@ -550,8 +559,8 @@ def _main() -> None:
     enc_file_path = f'i_s2s_xlat_{file_suff}_enc.pth'
     dec_file_path = f'i_s2s_xlat_{file_suff}_dec.pth'
 
-    if PLOT:
-        plt.switch_backend('agg')
+    # if PLOT:
+    #     plt.switch_backend('agg')
 
     if load_files and os.path.exists(enc_file_path):
         assert os.path.exists(dec_file_path)
@@ -568,7 +577,8 @@ def _main() -> None:
 
     encoder.eval()
     decoder.eval()
-    evaluate_randomly(input_lang, output_lang, pairs, encoder, decoder, device)
+
+    # evaluate_randomly(input_lang, output_lang, pairs, encoder, decoder, device)
 
     for s in [
         'il n est pas aussi grand que son pere',

@@ -1,0 +1,10 @@
+*.sock
+.cache
+.git
+.idea
+.venv
+bin
+build
+
+!.git/HEAD
+!.git/refs
