@@ -519,7 +519,7 @@ def evaluate_and_show_attention(
         )
 
 
-PLOT = False
+PLOT = True
 
 
 def _main() -> None:
