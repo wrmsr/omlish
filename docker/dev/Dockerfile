@@ -4,7 +4,12 @@ COPY docker/.dockertimestamp /
 
 ## deps
 
-RUN ( \
+RUN \
+    --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
+    --mount=target=/var/cache/apt,type=cache,sharing=locked \
+( \
+    rm -f /etc/apt/apt.conf.d/docker-clean && \
+\
     export DEBIAN_FRONTEND=noninteractive && \
     apt-get update && \
     apt-get upgrade -y && \
@@ -15,6 +20,7 @@ RUN ( \
         apt-transport-https \
         aria2 \
         bison \
+        bmon \
         build-essential \
         ca-certificates \
         clang \
@@ -23,11 +29,13 @@ RUN ( \
         cvs \
         dnsutils \
         dumb-init \
+        emacs \
         flex \
         gcc \
         gdb \
         git \
         gnupg \
+        gnupg-agent \
         graphviz \
         htop \
         iputils-ping \
@@ -49,6 +57,7 @@ RUN ( \
         netcat \
         nodejs \
         npm \
+        openssh-server \
         perl \
         pkg-config \
         postgresql-client \
@@ -90,6 +99,15 @@ RUN ( \
 \
 )
 
+# RUN ( \
+#     export DEBIAN_FRONTEND=noninteractive && \
+# \
+#     apt-get install -y \
+# \
+#         firefox \
+# \
+# )
+
 
 ## docker
 
@@ -122,6 +140,17 @@ RUN ( \
 )
 
 
+# rustup
+
+RUN ( \
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && \
+    echo "\
+source ~/.cargo/env \n\
+\n\
+" >> ~/.bashrc \
+)
+
+
 ## versions
 
 COPY .versions /root/
@@ -141,6 +170,14 @@ RUN ( \
 
 
 ## config
+
+RUN ( \
+    sed -i 's/^#*PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
+    sed -i 's/^#X11UseLocalhost yes/X11UseLocalhost no/' /etc/ssh/sshd_config && \
+    sed -i 's/^# Ciphers and keying/Ciphers chacha20-poly1305@openssh.com/' /etc/ssh/sshd_config && \
+    sed -i 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' /etc/pam.d/sshd && \
+    mkdir /var/run/sshd \
+)
 
 COPY \
 \
