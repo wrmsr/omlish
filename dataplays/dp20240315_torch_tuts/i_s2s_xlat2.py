@@ -5,14 +5,22 @@ import abc
 import io
 import math
 import os.path
+import pickle
 import random
 import re
 import time
 import typing as ta
 import unicodedata
 
-import matplotlib.pyplot as plt
-import matplotlib.ticker
+from omlish import lang
+
+if ta.TYPE_CHECKING:
+    import matplotlib.pyplot as plt
+    import matplotlib.ticker as matplotlib_ticker
+else:
+    plt = lang.proxy_import('matplotlib.pyplot')
+    matplotlib_ticker = lang.proxy_import('matplotlib.ticker')
+
 import numpy as np
 import torch
 import torch.nn as nn
@@ -111,6 +119,11 @@ def filter_pairs(pairs: ta.Iterable[Pair]) -> list[Pair]:
 
 
 def prepare_data(lang1: str, lang2: str, reverse: bool = False) -> tuple[Lang, Lang, list[Pair]]:
+    pkl_file_path = f'i_s2s_xlat2_data_{lang1}_{lang2}{"_rev" if reverse else ""}.pkl'
+    if os.path.exists(pkl_file_path):
+        with open(pkl_file_path, 'rb') as f:
+            return pickle.load(f)
+
     input_lang, output_lang, pairs = read_langs(lang1, lang2, reverse)
 
     pairs = filter_pairs(pairs)
@@ -119,7 +132,12 @@ def prepare_data(lang1: str, lang2: str, reverse: bool = False) -> tuple[Lang, L
         input_lang.add_sentence(pair[0])
         output_lang.add_sentence(pair[1])
 
-    return input_lang, output_lang, pairs
+    tup = input_lang, output_lang, pairs
+
+    with open(pkl_file_path, 'wb') as f:
+        pickle.dump(tup, f)
+
+    return tup
 
 
 ## Models
@@ -137,6 +155,9 @@ class EncoderRNN(nn.Module):
         self.embedding = nn.Embedding(input_size, hidden_size)
         self.gru = nn.GRU(hidden_size, hidden_size, batch_first=True)
         self.dropout = nn.Dropout(dropout_p)
+
+    def __call__(self, input: Tensor) -> tuple[Tensor, Tensor]:  # output, hidden
+        return super().__call__(input)
 
     def forward(self, input: Tensor) -> tuple[Tensor, Tensor]:  # output, hidden
         embedded = self.dropout(self.embedding(input))
@@ -315,9 +336,9 @@ def train_epoch(
         dataloader: torch.utils.data.DataLoader,
         encoder: EncoderRNN,
         decoder: DecoderRNN,
-        encoder_optimizer,
-        decoder_optimizer,
-        criterion,
+        encoder_optimizer: torch.optim.Optimizer,
+        decoder_optimizer: torch.optim.Optimizer,
+        criterion: ta.Callable[..., Tensor],
 ):
     total_loss = 0
     for data in dataloader:
@@ -410,7 +431,7 @@ def evaluate(
         input_lang: Lang,
         output_lang: Lang,
         device: torch.device,
-) -> tuple[Tensor, Tensor]:
+) -> tuple[list[str], Tensor | None]:
     with torch.no_grad():
         input_tensor = tensor_from_sentence(input_lang, sentence, device)
 
@@ -449,7 +470,11 @@ def evaluate_randomly(
         print('')
 
 
-def show_attention(input_sentence: str, output_words: str, attentions: torch.tensor) -> None:
+def show_attention(
+        input_sentence: str,
+        output_words: list[str],
+        attentions: torch.tensor,
+) -> None:
     fig = plt.figure()
     ax = fig.add_subplot(111)
     cax = ax.matshow(attentions.cpu().numpy(), cmap='bone')
@@ -460,8 +485,8 @@ def show_attention(input_sentence: str, output_words: str, attentions: torch.ten
     ax.set_yticklabels([''] + output_words)
 
     # Show label at every tick
-    ax.xaxis.set_major_locator(matplotlib.ticker.MultipleLocator(1))
-    ax.yaxis.set_major_locator(matplotlib.ticker.MultipleLocator(1))
+    ax.xaxis.set_major_locator(matplotlib_ticker.MultipleLocator(1))
+    ax.yaxis.set_major_locator(matplotlib_ticker.MultipleLocator(1))
 
     plt.show()
 
@@ -473,7 +498,7 @@ def evaluate_and_show_attention(
         decoder: DecoderRNN,
         input_sentence: str,
         device: torch.device,
-):
+) -> None:
     output_words, attentions = evaluate(
         encoder,
         decoder,
@@ -482,9 +507,11 @@ def evaluate_and_show_attention(
         output_lang,
         device,
     )
+
     print('input =', input_sentence)
     print('output =', ' '.join(output_words))
-    if attentions is not None:
+
+    if PLOT and attentions is not None:
         show_attention(
             input_sentence,
             output_words,
@@ -492,8 +519,12 @@ def evaluate_and_show_attention(
         )
 
 
+PLOT = False
+
+
 def _main() -> None:
-    plt.ion()  # interactive mode
+    if PLOT:
+        plt.ion()  # interactive mode
 
     hidden_size = 128
     batch_size = 32
@@ -519,7 +550,8 @@ def _main() -> None:
     enc_file_path = f'i_s2s_xlat_{file_suff}_enc.pth'
     dec_file_path = f'i_s2s_xlat_{file_suff}_dec.pth'
 
-    plt.switch_backend('agg')
+    if PLOT:
+        plt.switch_backend('agg')
 
     if load_files and os.path.exists(enc_file_path):
         assert os.path.exists(dec_file_path)
@@ -548,4 +580,12 @@ def _main() -> None:
 
 
 if __name__ == '__main__':
+    # FIXME: https://stackoverflow.com/questions/53890693/cprofile-causes-pickling-error-when-running-multiprocessing-python-code
+    import cProfile
+    import sys
+    if sys.modules['__main__'].__file__ == cProfile.__file__:
+        import i_s2s_xlat2
+        globals().update(vars(i_s2s_xlat2))  # Replaces current contents with newly imported stuff
+        sys.modules['__main__'] = i_s2s_xlat2  # Ensures pickle lookups on __main__ find matching version
+
     _main()
