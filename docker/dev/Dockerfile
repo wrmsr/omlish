@@ -209,6 +209,8 @@ RUN ( \
     mkdir /var/run/sshd \
 )
 
+RUN touch /root/.Xauthority
+
 COPY \
 \
     docker/dev/.gdbinit \
