@@ -1,15 +1,19 @@
 import struct
 
-from omlish import lang
-
 import PIL.Image
 import PIL.ImageDraw
+import keras.callbacks
 import keras.layers as kl
 import keras.models as km
 import keras.preprocessing.image
 import keras.utils
 import numpy as np
 import sklearn.model_selection
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+from omlish import lang
 
 
 DATA_URL = 'https://storage.googleapis.com/quickdraw_dataset/full/binary/'
@@ -42,6 +46,47 @@ def load_icons(path, train_size=0.85):
     return sklearn.model_selection.train_test_split(x, train_size=train_size)
 
 
+class TorchAutoencoder(nn.Module):
+    class InLayer(nn.Module):
+        def __init__(self, channels: int) -> None:
+            super().__init__()
+            self.left = nn.Conv2d(channels, (3, 3), activation='relu', padding='same')
+            self.right = nn.Conv2d(channels, (2, 2), activation='relu', padding='same')
+
+        def forward(self, x):
+            left = self.left(x)
+            right = self.right(x)
+            conc = torch.concat(left, right)
+            x = F.max_pool2d(conc, (2, 2), padding='same')
+            return x
+
+    class OutLayer(nn.Module):
+        def __init__(self, channels: int) -> None:
+            super().__init__()
+            self.conv = nn.Conv2d(channels, (3, 3), activation='relu', padding='same')
+
+        def forward(self, x):
+            x = self.conv(x)
+            x = F.upsample(x, (2, 2))
+            return x
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.ins = [TorchAutoencoder.InLayer(2 ** (i + 1)) for i in range(4)]
+        self.dense = nn.Linear(32, 32)
+        self.outs = [TorchAutoencoder.OutLayer(2 ** (4 - i)) for i in range(4)]
+        self.decode = nn.Conv2d(1, (3, 3), activation='sigmoid', padding='same')
+
+    def forward(self, x):
+        for l in self.ins:
+            x = l(x)
+        x = self.dense(x)
+        for l in self.outs:
+            x = l(x)
+        x = self.decode(x)
+        return x
+
+
 def create_autoencoder():
     input_img = kl.Input(shape=(32, 32, 1))
 
@@ -71,8 +116,20 @@ def _main() -> None:
     x_train, x_test = load_icons(get_data_path())
     print((x_train.shape, x_test.shape))
 
+    tn = TorchAutoencoder()
+
     autoencoder = create_autoencoder()
     autoencoder.summary()
+
+    autoencoder.fit(
+        x_train,
+        x_train,
+        epochs=100,
+        batch_size=128,
+        shuffle=True,
+        validation_data=(x_test, x_test),
+        callbacks=[keras.callbacks.TensorBoard(log_dir='/tmp/autoencoder')],
+    )
 
 
 if __name__ == '__main__':
