@@ -21,6 +21,7 @@ RUN \
         aria2 \
         bison \
         bmon \
+        btop \
         build-essential \
         ca-certificates \
         clang \
@@ -182,14 +183,18 @@ COPY .versions /root/
 ## python
 
 RUN \
-    --mount=target=/home/root/.pyenv_cache,type=cache,sharing=locked \
+    --mount=target=/root/.pyenv_cache,type=cache,sharing=locked \
 ( \
-    git clone 'https://github.com/pyenv/pyenv' "$HOME/.pyenv" && \
+    git clone 'https://github.com/pyenv/pyenv' "/root/.pyenv" && \
     grep '^PYTHON_' /root/.versions | while read L ; do \
         K=$(echo "$L" | cut -d= -f1 | cut -d_ -f2-) && \
+        case $K in \
+            11|12) true ;; \
+            *) continue ;; \
+        esac && \
         echo "Installing python $K" && \
         V=$(echo "$L" | cut -d= -f2) && \
-        PYTHON_BUILD_CACHE_PATH="$HOME/.pyenv_cache" "$HOME/.pyenv/bin/pyenv" install -s "$V" ; \
+        PYTHON_BUILD_CACHE_PATH="/root/.pyenv_cache" "/root/.pyenv/bin/pyenv" install -s "$V" ; \
     done \
 )
 
