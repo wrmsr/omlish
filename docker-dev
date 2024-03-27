@@ -7,12 +7,23 @@ else
     TTY_ENV_ARGS=""
 fi
 
-DOCKER_CONTAINER="docker-omlish-dev-1"
+TARGET_CONTAINER="omlish-dev"
 if ! [ $# -eq 0 ] ; then
     if [ "$1" == "--amd64" ] ; then
-        DOCKER_CONTAINER="docker-omlish-dev-amd64-1"
+        TARGET_CONTAINER="$TARGET_CONTAINER-amd64"
         shift
     fi
+fi
+for SEP in - _ ; do
+    DOCKER_CONTAINER="docker""$SEP""$TARGET_CONTAINER""$SEP""1"
+    if docker container inspect "$DOCKER_CONTAINER" >/dev/null 2>/dev/null ; then
+        break
+    fi
+    unset DOCKER_CONTAINER
+done
+if [ -z "$DOCKER_CONTAINER" ] ; then
+    echo "$TARGET_CONTAINER not running" 1>&2
+    exit 1
 fi
 
 docker exec \
