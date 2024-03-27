@@ -192,7 +192,7 @@ RUN \
             11|12) true ;; \
             *) continue ;; \
         esac && \
-        echo "Installing python $K" && \
+        echo "Installing Python $K" && \
         V=$(echo "$L" | cut -d= -f2) && \
         PYTHON_BUILD_CACHE_PATH="/root/.pyenv_cache" "/root/.pyenv/bin/pyenv" install -s "$V" ; \
     done \
