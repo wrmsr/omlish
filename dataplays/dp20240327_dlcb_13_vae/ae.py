@@ -1,6 +1,7 @@
 import io
 import os.path
 import struct
+import time
 
 import PIL.Image
 import PIL.ImageDraw
@@ -200,14 +201,27 @@ def show_generates(autoencoder, x_test, cols=25, rand=True) -> None:
     img.show()
 
 
+LOCAL_DIR = os.path.dirname(__file__)
+
+
 def _main() -> None:
-    autoencoder = create_autoencoder()
+    in_model_path = None
+    out_model_path = os.path.join(LOCAL_DIR, f'ae_{time.time()}.keras')
+
+    show_generates_every = 0
+
+    ##
+
+    if in_model_path:
+        autoencoder = km.load_model(in_model_path)
+    else:
+        autoencoder = create_autoencoder()
     autoencoder.summary()
 
     tn = TorchAutoencoder()
 
-    x_train_fp = os.path.join(os.path.dirname(__file__), 'ae_x_train.npy')
-    x_test_fp = os.path.join(os.path.dirname(__file__), 'ae_x_test.npy')
+    x_train_fp = os.path.join(LOCAL_DIR, 'ae_x_train.npy')
+    x_test_fp = os.path.join(LOCAL_DIR, 'ae_x_test.npy')
     if os.path.exists(x_train_fp):
         assert os.path.exists(x_test_fp)
         x_train = np.load(x_train_fp)
@@ -219,6 +233,15 @@ def _main() -> None:
     print((x_train.shape, x_test.shape))
 
     print(tn(torch.tensor(x_train[0]).reshape(1, 1, 32, 32)).detach().numpy())
+
+    class SaveModelCallback(keras.callbacks.Callback):
+        def __init__(self, n, out_path):
+            super().__init__()
+            self.out_path = out_path
+            self.n = n
+        def on_epoch_end(self, epoch, logs=None):
+            if epoch % self.n == 0:
+                autoencoder.save(self.out_path)
 
     class ShowGenerationsCallback(keras.callbacks.Callback):
         def __init__(self, n):
@@ -237,7 +260,8 @@ def _main() -> None:
         validation_data=(x_test, x_test),
         callbacks=[
             keras.callbacks.TensorBoard(log_dir='/tmp/autoencoder'),
-            ShowGenerationsCallback(5),
+            *([ShowGenerationsCallback(show_generates_every)] if show_generates_every else []),
+            *([SaveModelCallback(10, out_model_path)] if out_model_path else []),
         ],
     )
 
