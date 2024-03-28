@@ -135,11 +135,11 @@ class TorchAutoencoder(nn.Module):
         self.dense = nn.Linear(64, 32)
         self.outs = [
             TorchAutoencoder.OutLayer(32, 32),
-            TorchAutoencoder.OutLayer(16, 16),
-            TorchAutoencoder.OutLayer(8, 8),
-            TorchAutoencoder.OutLayer(4, 4),
+            TorchAutoencoder.OutLayer(32, 16),
+            TorchAutoencoder.OutLayer(16, 8),
+            TorchAutoencoder.OutLayer(8, 4),
         ]
-        self.decode = nn.Conv2d(2, 1, kernel_size=(3, 3), padding='same')
+        self.decode = nn.Conv2d(4, 1, kernel_size=(3, 3), padding='same')
 
     def forward(self, x):
         for l in self.ins:
