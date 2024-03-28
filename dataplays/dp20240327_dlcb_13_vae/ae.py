@@ -51,6 +51,7 @@ class TorchAutoencoder(nn.Module):
     class InLayer(nn.Module):
         def __init__(self, channels: int) -> None:
             super().__init__()
+            self.channels = channels
             self.left = nn.Conv2d(channels // 4, channels, kernel_size=(3, 3), padding='same')
             self.right = nn.Conv2d(channels // 4, channels, kernel_size=(2, 2), padding='same')
 
@@ -58,12 +59,13 @@ class TorchAutoencoder(nn.Module):
             left = F.relu(self.left(x))
             right = F.relu(self.right(x))
             conc = torch.concat([left, right], dim=1)
-            x = F.max_pool2d(conc, (2, 2), padding='same')
+            x = F.max_pool2d(conc, (2, 2))
             return x
 
     class OutLayer(nn.Module):
         def __init__(self, channels: int) -> None:
             super().__init__()
+            self.channels = channels
             self.conv = nn.Conv2d(channels, channels // 4, kernel_size=(3, 3), padding='same')
 
         def forward(self, x):
