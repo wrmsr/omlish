@@ -48,31 +48,45 @@ def load_icons(path, train_size=0.85):
 
 """
  input_1 (InputLayer)        [(None, 32, 32, 1)]          0         []                            
+ 
+n=0 ic=1 oc=4
  conv2d (Conv2D)             (None, 32, 32, 4)            40        ['input_1[0][0]']             
  conv2d_1 (Conv2D)           (None, 32, 32, 4)            20        ['input_1[0][0]']             
  concatenate (Concatenate)   (None, 32, 32, 8)            0         ['conv2d[0][0]','conv2d_1[0][0]']            
  max_pooling2d (MaxPooling2  (None, 16, 16, 8)            0         ['concatenate[0][0]']         
+ 
+n=1 ic=8 oc=16
  conv2d_2 (Conv2D)           (None, 16, 16, 8)            584       ['max_pooling2d[0][0]']       
  conv2d_3 (Conv2D)           (None, 16, 16, 8)            264       ['max_pooling2d[0][0]']       
  concatenate_1 (Concatenate  (None, 16, 16, 16)           0         ['conv2d_2[0][0]','conv2d_3[0][0]']            
  max_pooling2d_1 (MaxPoolin  (None, 8, 8, 16)             0         ['concatenate_1[0][0]']       
+ 
+n=2 ic=16 oc=32
  conv2d_4 (Conv2D)           (None, 8, 8, 16)             2320      ['max_pooling2d_1[0][0]']     
  conv2d_5 (Conv2D)           (None, 8, 8, 16)             1040      ['max_pooling2d_1[0][0]']     
  concatenate_2 (Concatenate  (None, 8, 8, 32)             0         ['conv2d_4[0][0]','conv2d_5[0][0]']            
  max_pooling2d_2 (MaxPoolin  (None, 4, 4, 32)             0         ['concatenate_2[0][0]']       
+ 
+n=4 ic=32
  conv2d_6 (Conv2D)           (None, 4, 4, 32)             9248      ['max_pooling2d_2[0][0]']     
  conv2d_7 (Conv2D)           (None, 4, 4, 32)             4128      ['max_pooling2d_2[0][0]']     
  concatenate_3 (Concatenate  (None, 4, 4, 64)             0         ['conv2d_6[0][0]','conv2d_7[0][0]']            
  max_pooling2d_3 (MaxPoolin  (None, 2, 2, 64)             0         ['concatenate_3[0][0]']       
+ 
  dense (Dense)               (None, 2, 2, 32)             2080      ['max_pooling2d_3[0][0]']     
+ 
  conv2d_8 (Conv2D)           (None, 2, 2, 32)             9248      ['dense[0][0]']               
  up_sampling2d (UpSampling2  (None, 4, 4, 32)             0         ['conv2d_8[0][0]']            
+ 
  conv2d_9 (Conv2D)           (None, 4, 4, 16)             4624      ['up_sampling2d[0][0]']       
  up_sampling2d_1 (UpSamplin  (None, 8, 8, 16)             0         ['conv2d_9[0][0]']            
+ 
  conv2d_10 (Conv2D)          (None, 8, 8, 8)              1160      ['up_sampling2d_1[0][0]']     
  up_sampling2d_2 (UpSamplin  (None, 16, 16, 8)            0         ['conv2d_10[0][0]']           
+ 
  conv2d_11 (Conv2D)          (None, 16, 16, 4)            292       ['up_sampling2d_2[0][0]']     
  up_sampling2d_3 (UpSamplin  (None, 32, 32, 4)            0         ['conv2d_11[0][0]']           
+ 
  conv2d_12 (Conv2D)          (None, 32, 32, 1)            37        ['up_sampling2d_3[0][0]']     
 
 n=0 ic=1 oc=4
@@ -133,21 +147,21 @@ class TorchAutoencoder(nn.Module):
 def create_autoencoder():
     input_img = kl.Input(shape=(32, 32, 1))
 
-    channels = 2
+    filters = 2
     x = input_img
     for i in range(4):
-        channels *= 2
-        left = kl.Conv2D(channels, (3, 3), activation='relu', padding='same')(x)
-        right = kl.Conv2D(channels, (2, 2), activation='relu', padding='same')(x)
+        filters *= 2
+        left = kl.Conv2D(filters, (3, 3), activation='relu', padding='same')(x)
+        right = kl.Conv2D(filters, (2, 2), activation='relu', padding='same')(x)
         conc = kl.Concatenate()([left, right])
         x = kl.MaxPooling2D((2, 2), padding='same')(conc)
 
-    x = kl.Dense(channels)(x)
+    x = kl.Dense(filters)(x)
 
     for i in range(4):
-        x = kl.Conv2D(channels, (3, 3), activation='relu', padding='same')(x)
+        x = kl.Conv2D(filters, (3, 3), activation='relu', padding='same')(x)
         x = kl.UpSampling2D((2, 2))(x)
-        channels //= 2
+        filters //= 2
     decoded = kl.Conv2D(1, (3, 3), activation='sigmoid', padding='same')(x)
 
     autoencoder = km.Model(input_img, decoded)
