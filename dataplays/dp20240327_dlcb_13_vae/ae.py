@@ -49,25 +49,25 @@ def load_icons(path, train_size=0.85):
 """
  input_1 (InputLayer)        [(None, 32, 32, 1)]          0         []                            
  
-n=0 ic=1 oc=4
+n=0 f=4  ic=1  oc=4
  conv2d (Conv2D)             (None, 32, 32, 4)            40        ['input_1[0][0]']             
  conv2d_1 (Conv2D)           (None, 32, 32, 4)            20        ['input_1[0][0]']             
  concatenate (Concatenate)   (None, 32, 32, 8)            0         ['conv2d[0][0]','conv2d_1[0][0]']            
  max_pooling2d (MaxPooling2  (None, 16, 16, 8)            0         ['concatenate[0][0]']         
  
-n=1 ic=8 oc=16
+n=1 f=8  ic=8  oc=16
  conv2d_2 (Conv2D)           (None, 16, 16, 8)            584       ['max_pooling2d[0][0]']       
  conv2d_3 (Conv2D)           (None, 16, 16, 8)            264       ['max_pooling2d[0][0]']       
  concatenate_1 (Concatenate  (None, 16, 16, 16)           0         ['conv2d_2[0][0]','conv2d_3[0][0]']            
  max_pooling2d_1 (MaxPoolin  (None, 8, 8, 16)             0         ['concatenate_1[0][0]']       
  
-n=2 ic=16 oc=32
+n=2 f=16 ic=32
  conv2d_4 (Conv2D)           (None, 8, 8, 16)             2320      ['max_pooling2d_1[0][0]']     
  conv2d_5 (Conv2D)           (None, 8, 8, 16)             1040      ['max_pooling2d_1[0][0]']     
  concatenate_2 (Concatenate  (None, 8, 8, 32)             0         ['conv2d_4[0][0]','conv2d_5[0][0]']            
  max_pooling2d_2 (MaxPoolin  (None, 4, 4, 32)             0         ['concatenate_2[0][0]']       
  
-n=4 ic=32
+n=3 f=32
  conv2d_6 (Conv2D)           (None, 4, 4, 32)             9248      ['max_pooling2d_2[0][0]']     
  conv2d_7 (Conv2D)           (None, 4, 4, 32)             4128      ['max_pooling2d_2[0][0]']     
  concatenate_3 (Concatenate  (None, 4, 4, 64)             0         ['conv2d_6[0][0]','conv2d_7[0][0]']            
