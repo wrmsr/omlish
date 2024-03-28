@@ -228,8 +228,8 @@ def _main() -> None:
     autoencoder.fit(
         x_train,
         x_train,
-        epochs=3,
-        batch_size=128,
+        epochs=1_000,
+        batch_size=256,
         shuffle=True,
         validation_data=(x_test, x_test),
         callbacks=[
