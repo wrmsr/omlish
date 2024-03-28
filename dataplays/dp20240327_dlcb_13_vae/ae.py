@@ -1,3 +1,4 @@
+import os.path
 import struct
 
 import PIL.Image
@@ -50,32 +51,32 @@ class TorchAutoencoder(nn.Module):
     class InLayer(nn.Module):
         def __init__(self, channels: int) -> None:
             super().__init__()
-            self.left = nn.Conv2d(channels, (3, 3), activation='relu', padding='same')
-            self.right = nn.Conv2d(channels, (2, 2), activation='relu', padding='same')
+            self.left = nn.Conv2d(channels // 4, channels, kernel_size=(3, 3), padding='same')
+            self.right = nn.Conv2d(channels // 4, channels, kernel_size=(2, 2), padding='same')
 
         def forward(self, x):
-            left = self.left(x)
-            right = self.right(x)
-            conc = torch.concat(left, right)
+            left = nn.ReLU(self.left(x))
+            right = nn.ReLU(self.right(x))
+            conc = torch.concat([left, right])
             x = F.max_pool2d(conc, (2, 2), padding='same')
             return x
 
     class OutLayer(nn.Module):
         def __init__(self, channels: int) -> None:
             super().__init__()
-            self.conv = nn.Conv2d(channels, (3, 3), activation='relu', padding='same')
+            self.conv = nn.Conv2d(channels, channels // 4, kernel_size=(3, 3), padding='same')
 
         def forward(self, x):
-            x = self.conv(x)
+            x = nn.ReLU(self.conv(x))
             x = F.upsample(x, (2, 2))
             return x
 
     def __init__(self) -> None:
         super().__init__()
-        self.ins = [TorchAutoencoder.InLayer(2 ** (i + 1)) for i in range(4)]
+        self.ins = [TorchAutoencoder.InLayer(2 ** (i + 2)) for i in range(4)]
         self.dense = nn.Linear(32, 32)
-        self.outs = [TorchAutoencoder.OutLayer(2 ** (4 - i)) for i in range(4)]
-        self.decode = nn.Conv2d(1, (3, 3), activation='sigmoid', padding='same')
+        self.outs = [TorchAutoencoder.OutLayer(2 ** (5 - i)) for i in range(4)]
+        self.decode = nn.Conv2d(4, 1, kernel_size=(3, 3), padding='same')
 
     def forward(self, x):
         for l in self.ins:
@@ -83,7 +84,7 @@ class TorchAutoencoder(nn.Module):
         x = self.dense(x)
         for l in self.outs:
             x = l(x)
-        x = self.decode(x)
+        x = F.sigmoid(self.decode(x))
         return x
 
 
@@ -113,13 +114,24 @@ def create_autoencoder():
 
 
 def _main() -> None:
-    x_train, x_test = load_icons(get_data_path())
-    print((x_train.shape, x_test.shape))
+    autoencoder = create_autoencoder()
+    autoencoder.summary()
 
     tn = TorchAutoencoder()
 
-    autoencoder = create_autoencoder()
-    autoencoder.summary()
+    x_train_fp = os.path.join(os.path.dirname(__file__), 'ae_x_train.npy')
+    x_test_fp = os.path.join(os.path.dirname(__file__), 'ae_x_test.npy')
+    if os.path.exists(x_train_fp):
+        assert os.path.exists(x_test_fp)
+        x_train = np.load(x_train_fp)
+        x_test = np.load(x_test_fp)
+    else:
+        x_train, x_test = load_icons(get_data_path())
+        np.save(x_train_fp, x_train)
+        np.save(x_test_fp, x_test)
+    print((x_train.shape, x_test.shape))
+
+    tn(x_train[0])
 
     autoencoder.fit(
         x_train,
