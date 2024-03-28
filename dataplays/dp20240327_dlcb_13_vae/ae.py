@@ -89,8 +89,8 @@ n=4 ic=32
  
  conv2d_12 (Conv2D)          (None, 32, 32, 1)            37        ['up_sampling2d_3[0][0]']     
 
-n=0 f=4 ic=1 oc=4
-n=1 f=8 ic=8 oc=16
+n=0 f=4  ic=1  oc=4
+n=1 f=8  ic=8  oc=16
 n=2 f=16 ic=32
 n=3 f=32
 
