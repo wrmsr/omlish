@@ -1,3 +1,4 @@
+import io
 import os.path
 import struct
 
@@ -176,6 +177,26 @@ def create_autoencoder():
     return autoencoder
 
 
+def show_generates(autoencoder, x_test, cols=25) -> None:
+    idx = np.random.randint(x_test.shape[0], size=cols)
+    sample = x_test[idx]
+    decoded_imgs = autoencoder.predict(sample)
+
+    def decode_img(tile, factor=1.0):
+        tile = tile.reshape(tile.shape[:-1])
+        tile = np.clip(tile * 255, 0, 255)
+        return PIL.Image.fromarray(tile)
+
+    overview = PIL.Image.new('RGB', (cols * 32, 64 + 20), (128, 128, 128))
+    for idx in range(cols):
+        overview.paste(decode_img(sample[idx]), (idx * 32, 5))
+        overview.paste(decode_img(decoded_imgs[idx]), (idx * 32, 42))
+    f = io.BytesIO()
+    overview.save(f, 'png')
+    img = PIL.Image.open(io.BytesIO(f.getvalue()))
+    img.show()
+
+
 def _main() -> None:
     autoencoder = create_autoencoder()
     autoencoder.summary()
@@ -196,14 +217,25 @@ def _main() -> None:
 
     print(tn(torch.tensor(x_train[0]).reshape(1, 1, 32, 32)).detach().numpy())
 
+    class ShowGenerationsCallback(keras.callbacks.Callback):
+        def __init__(self, n):
+            super().__init__()
+            self.n = n
+        def on_epoch_end(self, epoch, logs=None):
+            if epoch % self.n == 0:
+                show_generates(autoencoder, x_test)
+
     autoencoder.fit(
         x_train,
         x_train,
-        epochs=100,
+        epochs=3,
         batch_size=128,
         shuffle=True,
         validation_data=(x_test, x_test),
-        callbacks=[keras.callbacks.TensorBoard(log_dir='/tmp/autoencoder')],
+        callbacks=[
+            keras.callbacks.TensorBoard(log_dir='/tmp/autoencoder'),
+            ShowGenerationsCallback(5),
+        ],
     )
 
 
