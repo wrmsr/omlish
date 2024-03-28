@@ -102,12 +102,8 @@ n=3 f=4
 
 class TorchAutoencoder(nn.Module):
     class InLayer(nn.Module):
-        def __init__(self, n: int) -> None:
+        def __init__(self, ic: int, oc: int) -> None:
             super().__init__()
-            self.n = n
-            ic = 2 ** (5 - n)
-            oc = 2 ** (4 - n)
-            print((ic, oc))
             self.left = nn.Conv2d(ic, oc, kernel_size=(3, 3), padding='same')
             self.right = nn.Conv2d(ic, oc, kernel_size=(2, 2), padding='same')
 
@@ -119,12 +115,8 @@ class TorchAutoencoder(nn.Module):
             return x
 
     class OutLayer(nn.Module):
-        def __init__(self, n: int) -> None:
+        def __init__(self, ic: int, oc: int) -> None:
             super().__init__()
-            self.n = n
-            ic = 2 ** (4 - n)
-            oc = 2 ** (5 - n)
-            print((ic, oc))
             self.conv = nn.Conv2d(ic, oc, kernel_size=(3, 3), padding='same')
 
         def forward(self, x):
@@ -134,10 +126,20 @@ class TorchAutoencoder(nn.Module):
 
     def __init__(self) -> None:
         super().__init__()
-        self.ins = [TorchAutoencoder.InLayer(n) for n in range(4)]
-        self.dense = nn.Linear(32, 32)
-        self.outs = [TorchAutoencoder.OutLayer(n) for n in range(4)]
-        self.decode = nn.Conv2d(4, 1, kernel_size=(3, 3), padding='same')
+        self.ins = [
+            TorchAutoencoder.InLayer(1, 4),
+            TorchAutoencoder.InLayer(8, 16),
+            TorchAutoencoder.InLayer(16, 32),
+            TorchAutoencoder.InLayer(32, 64),
+        ]
+        self.dense = nn.Linear(64, 32)
+        self.outs = [
+            TorchAutoencoder.OutLayer(32, 16),
+            TorchAutoencoder.OutLayer(16, 8),
+            TorchAutoencoder.OutLayer(8, 4),
+            TorchAutoencoder.OutLayer(4, 2),
+        ]
+        self.decode = nn.Conv2d(2, 1, kernel_size=(3, 3), padding='same')
 
     def forward(self, x):
         for l in self.ins:
