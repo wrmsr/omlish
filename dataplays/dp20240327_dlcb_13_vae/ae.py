@@ -177,8 +177,11 @@ def create_autoencoder():
     return autoencoder
 
 
-def show_generates(autoencoder, x_test, cols=25) -> None:
-    idx = np.random.randint(x_test.shape[0], size=cols)
+def show_generates(autoencoder, x_test, cols=25, rand=True) -> None:
+    if rand:
+        idx = np.random.randint(x_test.shape[0], size=cols)
+    else:
+        idx = range(cols)
     sample = x_test[idx]
     decoded_imgs = autoencoder.predict(sample)
 
@@ -223,7 +226,7 @@ def _main() -> None:
             self.n = n
         def on_epoch_end(self, epoch, logs=None):
             if epoch % self.n == 0:
-                show_generates(autoencoder, x_test)
+                show_generates(autoencoder, x_test, rand=False)
 
     autoencoder.fit(
         x_train,
