@@ -121,7 +121,7 @@ class TorchAutoencoder(nn.Module):
 
         def forward(self, x):
             x = F.relu(self.conv(x))
-            x = F.upsample(x, (2, 2))
+            x = F.upsample(x, scale_factor=2)
             return x
 
     def __init__(self) -> None:
