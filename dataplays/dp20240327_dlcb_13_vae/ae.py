@@ -49,11 +49,13 @@ def load_icons(path, train_size=0.85):
 
 class TorchAutoencoder(nn.Module):
     class InLayer(nn.Module):
-        def __init__(self, channels: int) -> None:
+        def __init__(self, n: int) -> None:
             super().__init__()
-            self.channels = channels
-            self.left = nn.Conv2d(channels // 4, channels, kernel_size=(3, 3), padding='same')
-            self.right = nn.Conv2d(channels // 4, channels, kernel_size=(2, 2), padding='same')
+            self.n = n
+            ic = 2 ** (5 - n)
+            oc = 2 ** (n + 2)
+            self.left = nn.Conv2d(ic, oc, kernel_size=(3, 3), padding='same')
+            self.right = nn.Conv2d(ic, oc, kernel_size=(2, 2), padding='same')
 
         def forward(self, x):
             left = F.relu(self.left(x))
@@ -63,10 +65,12 @@ class TorchAutoencoder(nn.Module):
             return x
 
     class OutLayer(nn.Module):
-        def __init__(self, channels: int) -> None:
+        def __init__(self, n: int) -> None:
             super().__init__()
-            self.channels = channels
-            self.conv = nn.Conv2d(channels, channels // 4, kernel_size=(3, 3), padding='same')
+            self.n = n
+            ic = 2 ** (n + 2)
+            oc = 2 ** (5 - n)
+            self.conv = nn.Conv2d(ic, oc, kernel_size=(3, 3), padding='same')
 
         def forward(self, x):
             x = F.relu(self.conv(x))
@@ -75,9 +79,9 @@ class TorchAutoencoder(nn.Module):
 
     def __init__(self) -> None:
         super().__init__()
-        self.ins = [TorchAutoencoder.InLayer(2 ** (i + 2)) for i in range(4)]
+        self.ins = [TorchAutoencoder.InLayer(n) for n in range(4)]
         self.dense = nn.Linear(32, 32)
-        self.outs = [TorchAutoencoder.OutLayer(2 ** (5 - i)) for i in range(4)]
+        self.outs = [TorchAutoencoder.OutLayer(n) for n in range(4)]
         self.decode = nn.Conv2d(4, 1, kernel_size=(3, 3), padding='same')
 
     def forward(self, x):
