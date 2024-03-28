@@ -55,9 +55,9 @@ class TorchAutoencoder(nn.Module):
             self.right = nn.Conv2d(channels // 4, channels, kernel_size=(2, 2), padding='same')
 
         def forward(self, x):
-            left = nn.ReLU(self.left(x))
-            right = nn.ReLU(self.right(x))
-            conc = torch.concat([left, right])
+            left = F.relu(self.left(x))
+            right = F.relu(self.right(x))
+            conc = torch.concat([left, right], dim=1)
             x = F.max_pool2d(conc, (2, 2), padding='same')
             return x
 
@@ -67,7 +67,7 @@ class TorchAutoencoder(nn.Module):
             self.conv = nn.Conv2d(channels, channels // 4, kernel_size=(3, 3), padding='same')
 
         def forward(self, x):
-            x = nn.ReLU(self.conv(x))
+            x = F.relu(self.conv(x))
             x = F.upsample(x, (2, 2))
             return x
 
@@ -131,7 +131,7 @@ def _main() -> None:
         np.save(x_test_fp, x_test)
     print((x_train.shape, x_test.shape))
 
-    tn(x_train[0])
+    print(tn(torch.tensor(x_train[0]).reshape(1, 1, 32, 32)).detach().numpy())
 
     autoencoder.fit(
         x_train,
