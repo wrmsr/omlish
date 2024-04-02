@@ -1,6 +1,6 @@
 -r requirements.txt
 
-build==1.1.1
+build==1.2.1
 twine==5.0.0
 wheel==0.43.0
 
@@ -23,11 +23,11 @@ guppy3==3.1.4.post1
 objgraph==3.6.1
 
 httpie==3.2.2
-ipython==8.22.2
+ipython==8.23.0
 
-pg8000==1.30.5
+pg8000==1.31.1
 pymysql==1.1.0
 
 litecli==1.10.1; python_version < '3.12'
-mycli==1.27.0; python_version < '3.12'
+mycli==1.27.1; python_version < '3.12'
 pgcli==4.0.1; python_version < '3.12'
