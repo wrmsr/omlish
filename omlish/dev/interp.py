@@ -292,7 +292,7 @@ class MacResolver(PyenvResolver):
     def _has_brew(self) -> bool:
         return shutil.which('brew') is not None
 
-    _PYENV_BREW_DEPS = [
+    _PYENV_BREW_DEPS: ta.Sequence[str] = [
         'openssl',
         'readline',
         'sqlite3',
