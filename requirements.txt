@@ -1,5 +1,5 @@
-greenlet==3.0.3; implementation_name != 'nogil'
-httptools==0.6.1; implementation_name != 'nogil'
+greenlet==3.0.3; python_version < '3.13'
+httptools==0.6.1; python_version < '3.13'
 pyyaml==6.0.1
 sqlalchemy==2.0.29
 wrapt>=1.14.1
@@ -31,4 +31,5 @@ ujson==5.9.0
 
 ## misc
 # billiard
+# numpy
 # python-dateutil

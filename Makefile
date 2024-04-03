@@ -19,6 +19,7 @@ endef
 PYTHON_VERSION_11:=$(call get-version,'PYTHON_11')
 PYTHON_VERSION_12:=$(call get-version,'PYTHON_12')
 PYTHON_VERSION_13:=$(call get-version,'PYTHON_13')
+PYTHON_VERSION_DEV:=$(call get-version,'PYTHON_DEV')
 
 
 ### Clean
@@ -167,6 +168,21 @@ venv-13:
 .PHONY: test-13
 test-13: venv-13
 	_VENV_ROOT=.venv-13 \
+	_TEST_SOURCES="${PROJECT}" \
+	${MAKE} test
+
+# dev
+
+.PHONY: venv-dev
+venv-dev:
+	_VENV_ROOT=.venv-dev \
+	_PYTHON_VERSION=${PYTHON_VERSION_DEV} \
+	_REQUIREMENTS_TXT=requirements-dev.txt \
+	${MAKE} venv
+
+.PHONY: test-dev
+test-dev: venv-dev
+	_VENV_ROOT=.venv-dev \
 	_TEST_SOURCES="${PROJECT}" \
 	${MAKE} test
 
