@@ -259,7 +259,7 @@ rfc3986-validator==0.1.1
 rich==13.7.1
 rpds-py==0.18.0
 rsa==4.9
-rubicon-objc==0.4.7
+rubicon-objc==0.4.8
 s3transfer==0.10.1
 safetensors==0.4.2
 scikit-image==0.22.0
@@ -305,7 +305,7 @@ tifffile==2024.2.12
 tiktoken==0.6.0
 time-machine==2.14.1
 tinycss2==1.2.1
--e git+https://github.com/tinygrad/tinygrad@e879e16c485e501e107cd5be6cd82f1d261453f3#egg=tinygrad&subdirectory=../../tinygrad
+-e git+https://github.com/tinygrad/tinygrad@406cb5fd90dae48c66e1ec4ca23b5b37b4b6fb3f#egg=tinygrad&subdirectory=../../tinygrad
 tokenizers==0.15.2
 torch==2.2.2
 torchinfo==1.8.0
