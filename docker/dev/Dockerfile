@@ -134,7 +134,7 @@ RUN \
     --mount=target=/var/cache/apt,type=cache,sharing=locked \
 ( \
     mkdir -p /etc/apt/keyrings && \
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
+    curl -fsSL 'https://download.docker.com/linux/ubuntu/gpg' | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
     echo \
         "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
         $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null && \
@@ -167,7 +167,7 @@ RUN ( \
 # rustup
 
 RUN ( \
-    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && \
+    curl --proto '=https' --tlsv1.2 -sSf 'https://sh.rustup.rs' | sh -s -- -y && \
     echo "\
 source ~/.cargo/env \n\
 \n\
@@ -185,7 +185,7 @@ COPY .versions /root/
 RUN \
     --mount=target=/root/.pyenv_cache,type=cache,sharing=locked \
 ( \
-    git clone 'https://github.com/pyenv/pyenv' "/root/.pyenv" && \
+    git clone 'https://github.com/pyenv/pyenv' /root/.pyenv && \
     grep '^PYTHON_' /root/.versions | while read L ; do \
         K=$(echo "$L" | cut -d= -f1 | cut -d_ -f2-) && \
         case $K in \
@@ -194,7 +194,7 @@ RUN \
         esac && \
         echo "Installing Python $K" && \
         V=$(echo "$L" | cut -d= -f2) && \
-        PYTHON_BUILD_CACHE_PATH="/root/.pyenv_cache" "/root/.pyenv/bin/pyenv" install -s "$V" ; \
+        PYTHON_BUILD_CACHE_PATH=/root/.pyenv_cache /root/.pyenv/bin/pyenv install -s "$V" ; \
     done \
 )
 
