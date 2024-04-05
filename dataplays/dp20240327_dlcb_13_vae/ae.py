@@ -230,28 +230,22 @@ def _main() -> None:
             raise ValueError((d, s))
         d.set_(s)
 
+    def set_torch_conv(t, k):
+        set_torch_data(t.weight, torch.tensor(k.weights[0].numpy()).permute(3, 2, 0, 1))
+        set_torch_data(t.bias, torch.tensor(k.weights[1].numpy()))
+
+    def set_torch_dense(t, k):
+        set_torch_data(t.weight, torch.tensor(k.weights[0].numpy()).permute(1, 0))
+        set_torch_data(t.bias, torch.tensor(k.weights[1].numpy()))
+
     with torch.no_grad():
         for i, j in enumerate([1, 5, 9, 13]):
-            ti = tn.ins[i]
-            kl = autoencoder.layers[j]
-            kr = autoencoder.layers[j+1]
-            set_torch_data(ti.left.weight, torch.tensor(kl.weights[0].numpy()).permute(3, 2, 0, 1))
-            set_torch_data(ti.left.bias, torch.tensor(kl.weights[1].numpy()))
-            set_torch_data(ti.right.weight, torch.tensor(kr.weights[0].numpy()).permute(3, 2, 0, 1))
-            set_torch_data(ti.right.bias, torch.tensor(kr.weights[1].numpy()))
-        td = tn.dense
-        kd = autoencoder.layers[17]
-        set_torch_data(td.weight, torch.tensor(kd.weights[0].numpy()).permute(1, 0))
-        set_torch_data(td.bias, torch.tensor(kd.weights[1].numpy()))
+            set_torch_conv(tn.ins[i].left, autoencoder.layers[j])
+            set_torch_conv(tn.ins[i].right, autoencoder.layers[j+1])
+        set_torch_dense(tn.dense, autoencoder.layers[17])
         for i, j in enumerate([18, 20, 22, 24]):
-            to = tn.outs[i]
-            ko = autoencoder.layers[j]
-            set_torch_data(to.conv.weight, torch.tensor(ko.weights[0].numpy()).permute(3, 2, 0, 1))
-            set_torch_data(to.conv.bias, torch.tensor(ko.weights[1].numpy()))
-        te = tn.decode
-        ke = autoencoder.layers[26]
-        set_torch_data(te.weight, torch.tensor(ke.weights[0].numpy()))
-        set_torch_data(te.bias, torch.tensor(ke.weights[1].numpy()))
+            set_torch_conv(tn.outs[i].conv, autoencoder.layers[j])
+        set_torch_conv(tn.decode, autoencoder.layers[26])
 
     x_train_fp = os.path.join(LOCAL_DIR, 'ae_x_train.npy')
     x_test_fp = os.path.join(LOCAL_DIR, 'ae_x_test.npy')
