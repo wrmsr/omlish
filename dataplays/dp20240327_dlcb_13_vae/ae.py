@@ -225,6 +225,29 @@ def _main() -> None:
 
     tn = TorchAutoencoder()
 
+    with torch.no_grad():
+        for i, j in enumerate([1, 5, 9, 13]):
+            ti = tn.ins[i]
+            kl = autoencoder.layers[j]
+            kr = autoencoder.layers[j+1]
+            ti.left.weight.set_(torch.tensor(kl.weights[0].numpy()).permute(3, 2, 0, 1))
+            ti.left.bias.set_(torch.tensor(kl.weights[1].numpy()))
+            ti.right.weight.set_(torch.tensor(kr.weights[0].numpy()).permute(3, 2, 0, 1))
+            ti.right.bias.set_(torch.tensor(kr.weights[1].numpy()))
+        td = tn.dense
+        kd = autoencoder.layers[17]
+        td.weight.set_(torch.tensor(kd.weights[0].numpy()))
+        td.bias.set_(torch.tensor(kd.weights[1].numpy()))
+        for i, j in enumerate([18, 20, 22, 24]):
+            to = tn.outs[i]
+            ko = autoencoder.layers[j]
+            to.conv.weight.set_(torch.tensor(ko.weights[0].numpy()).permute(3, 2, 0, 1))
+            to.conv.bias.set_(torch.tensor(ko.weights[1].numpy()))
+        te = tn.decode
+        ke = autoencoder.layers[26]
+        te.weight.set_(torch.tensor(ke.weights[0].numpy()))
+        te.bias.set_(torch.tensor(ke.weights[1].numpy()))
+
     x_train_fp = os.path.join(LOCAL_DIR, 'ae_x_train.npy')
     x_test_fp = os.path.join(LOCAL_DIR, 'ae_x_test.npy')
     if os.path.exists(x_train_fp):
