@@ -29,5 +29,5 @@ pg8000==1.31.1
 pymysql==1.1.0
 
 litecli==1.10.1; python_version < '3.13'
-mycli==1.27.1; python_version < '3.13'
+mycli==1.27.2; python_version < '3.13'
 pgcli==4.0.1; python_version < '3.13'
