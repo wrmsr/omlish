@@ -61,22 +61,22 @@ PYENV_BIN:=$$(sh -c "if [ -f '$${HOME}/.pyenv/bin/pyenv' ] ; then echo '$${HOME}
 PYENV_INSTALL_OPTS:=$$(echo "$${_PYENV_INSTALL_OPTS:-${DEFAULT_PYENV_INSTALL_OPTS}}")
 PYENV_VERSION_SUFFIX:=$$(echo "$${_PYENV_VERSION_SUFFIX:-${DEFAULT_PYENV_VERSION_SUFFIX}}")
 
-.PHONY: venv
-venv:
+.PHONY: _venv
+_venv:
 	if [ ! -d $(VENV_ROOT) ] ; then \
 		$(PYENV_BIN) install -s $(PYENV_INSTALL_OPTS) $(PYTHON_VERSION) && \
 		"$(PYENV_ROOT)/versions/$(PYTHON_VERSION)$(PYENV_VERSION_SUFFIX)/bin/python" -mvenv $(VENV_OPTS) $(VENV_ROOT) && \
 		$(PYTHON) -mpip install --upgrade pip setuptools wheel && \
-		$(PYTHON) -mpip install -r ${REQUIREMENTS_TXT} && \
-		export ABS_PYTHON=$$($(PYTHON) -c 'import sys; print(sys.executable)') && \
-		(cd tinygrad && "$$ABS_PYTHON" -mpip install -e .) ; \
+		$(PYTHON) -mpip install -r ${REQUIREMENTS_TXT} ; \
 	fi
 
-.PHONY: vx
-vx:
-	export ABS_PYTHON=$$($(PYTHON) -c 'import sys; print(sys.executable)') && \
-	(cd tinygrad && "$$ABS_PYTHON" -mpip install -e .) ; \
+.PHONY: venv
+venv: _venv tg
 
+.PHONY: tg
+tg:
+	export ABS_PYTHON=$$($(PYTHON) -c 'import sys; print(sys.executable)') && \
+	(cd tinygrad && "$$ABS_PYTHON" -mpip install -e .)
 
 ### Deps
 
@@ -117,9 +117,12 @@ DEFAULT_TEST_SOURCES:=${MAIN_SOURCES}
 
 TEST_SOURCES:=$$(echo "$${_TEST_SOURCES:-${DEFAULT_TEST_SOURCES}}")
 
-.PHONY: test
-test: venv
+.PHONY: _test
+_test: _venv
 	$(PYTHON) -mpytest $(TEST_SOURCES)
+
+.PHONY: test
+test: _test
 
 
 ### Alts
@@ -133,13 +136,13 @@ venv-debug:
 	_PYENV_INSTALL_OPTS=-g \
 	_PYENV_VERSION_SUFFIX=-debug \
 	_REQUIREMENTS_TXT=requirements-dev.txt \
-	${MAKE} venv
+	${MAKE} _venv
 
 .PHONY: test-debug
 test-debug: venv-debug
 	_VENV_ROOT=.venv-debug \
 	_TEST_SOURCES="${PROJECT}" \
-	${MAKE} test
+	${MAKE} _test
 
 # 12
 
@@ -148,13 +151,13 @@ venv-12:
 	_VENV_ROOT=.venv-12 \
 	_PYTHON_VERSION=${PYTHON_VERSION_12} \
 	_REQUIREMENTS_TXT=requirements-dev.txt \
-	${MAKE} venv
+	${MAKE} _venv
 
 .PHONY: test-12
 test-12: venv-12
 	_VENV_ROOT=.venv-12 \
 	_TEST_SOURCES="${PROJECT}" \
-	${MAKE} test
+	${MAKE} _test
 
 # 13
 
@@ -163,13 +166,13 @@ venv-13:
 	_VENV_ROOT=.venv-13 \
 	_PYTHON_VERSION=${PYTHON_VERSION_13} \
 	_REQUIREMENTS_TXT=requirements-dev.txt \
-	${MAKE} venv
+	${MAKE} _venv
 
 .PHONY: test-13
 test-13: venv-13
 	_VENV_ROOT=.venv-13 \
 	_TEST_SOURCES="${PROJECT}" \
-	${MAKE} test
+	${MAKE} _test
 
 # dev
 
@@ -178,13 +181,13 @@ venv-dev:
 	_VENV_ROOT=.venv-dev \
 	_PYTHON_VERSION=${PYTHON_VERSION_DEV} \
 	_REQUIREMENTS_TXT=requirements-dev.txt \
-	${MAKE} venv
+	${MAKE} _venv
 
 .PHONY: test-dev
 test-dev: venv-dev
 	_VENV_ROOT=.venv-dev \
 	_TEST_SOURCES="${PROJECT}" \
-	${MAKE} test
+	${MAKE} _test
 
 
 ### Docker
