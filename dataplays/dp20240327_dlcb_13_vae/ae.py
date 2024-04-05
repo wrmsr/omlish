@@ -205,10 +205,15 @@ LOCAL_DIR = os.path.dirname(__file__)
 
 
 def _main() -> None:
-    in_model_path = None
-    out_model_path = os.path.join(LOCAL_DIR, f'ae_{time.time()}.keras')
+    # in_model_path = None
+    in_model_path = os.path.join(LOCAL_DIR, 'ae_1711652835.5188153.keras')
 
-    show_generates_every = 0
+    # out_model_path = os.path.join(LOCAL_DIR, f'ae_{time.time()}.keras')
+    out_model_path = None
+
+    show_generates_every = 1
+
+    epochs = 0
 
     ##
 
@@ -251,19 +256,23 @@ def _main() -> None:
             if epoch % self.n == 0:
                 show_generates(autoencoder, x_test, rand=False)
 
-    autoencoder.fit(
-        x_train,
-        x_train,
-        epochs=1_000,
-        batch_size=256,
-        shuffle=True,
-        validation_data=(x_test, x_test),
-        callbacks=[
-            keras.callbacks.TensorBoard(log_dir='/tmp/autoencoder'),
-            *([ShowGenerationsCallback(show_generates_every)] if show_generates_every else []),
-            *([SaveModelCallback(10, out_model_path)] if out_model_path else []),
-        ],
-    )
+    if show_generates_every:
+        show_generates(autoencoder, x_test, rand=False)
+
+    if epochs:
+        autoencoder.fit(
+            x_train,
+            x_train,
+            epochs=epochs,
+            batch_size=256,
+            shuffle=True,
+            validation_data=(x_test, x_test),
+            callbacks=[
+                keras.callbacks.TensorBoard(log_dir='/tmp/autoencoder'),
+                *([ShowGenerationsCallback(show_generates_every)] if show_generates_every else []),
+                *([SaveModelCallback(10, out_model_path)] if out_model_path else []),
+            ],
+        )
 
 
 if __name__ == '__main__':
