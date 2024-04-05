@@ -178,14 +178,7 @@ def create_autoencoder():
     return autoencoder
 
 
-def show_generates(autoencoder, x_test, cols=25, rand=True) -> None:
-    if rand:
-        idx = np.random.randint(x_test.shape[0], size=cols)
-    else:
-        idx = range(cols)
-    sample = x_test[idx]
-    decoded_imgs = autoencoder.predict(sample)
-
+def show_decoded_imgs(sample, decoded_imgs, cols):
     def decode_img(tile, factor=1.0):
         tile = tile.reshape(tile.shape[:-1])
         tile = np.clip(tile * 255, 0, 255)
@@ -199,6 +192,19 @@ def show_generates(autoencoder, x_test, cols=25, rand=True) -> None:
     overview.save(f, 'png')
     img = PIL.Image.open(io.BytesIO(f.getvalue()))
     img.show()
+
+def show_generates(autoencoder, tn, x_test, cols=25, rand=True) -> None:
+    if rand:
+        idx = np.random.randint(x_test.shape[0], size=cols)
+    else:
+        idx = range(cols)
+    sample = x_test[idx]
+
+    decoded_imgs = autoencoder.predict(sample)
+    show_decoded_imgs(sample, decoded_imgs, cols)
+
+    t_decoded_imgs = tn(torch.tensor(sample).permute(0, 3, 1, 2)).permute(0, 2, 3, 1).cpu().detach().numpy()
+    show_decoded_imgs(sample, t_decoded_imgs, cols)
 
 
 LOCAL_DIR = os.path.dirname(__file__)
@@ -276,10 +282,10 @@ def _main() -> None:
             self.n = n
         def on_epoch_end(self, epoch, logs=None):
             if epoch % self.n == 0:
-                show_generates(autoencoder, x_test, rand=False)
+                show_generates(autoencoder, tn, x_test, rand=False)
 
     if show_generates_every:
-        show_generates(autoencoder, x_test, rand=False)
+        show_generates(autoencoder, tn, x_test, rand=False)
 
     if epochs:
         autoencoder.fit(
