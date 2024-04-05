@@ -272,6 +272,7 @@ def _main() -> None:
             super().__init__()
             self.out_path = out_path
             self.n = n
+
         def on_epoch_end(self, epoch, logs=None):
             if epoch % self.n == 0:
                 autoencoder.save(self.out_path)
@@ -280,6 +281,7 @@ def _main() -> None:
         def __init__(self, n):
             super().__init__()
             self.n = n
+
         def on_epoch_end(self, epoch, logs=None):
             if epoch % self.n == 0:
                 show_generates(autoencoder, tn, x_test, rand=False)
