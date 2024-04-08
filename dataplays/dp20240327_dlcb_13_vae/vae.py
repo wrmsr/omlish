@@ -10,25 +10,27 @@ from keras import backend as K
 from keras.datasets import mnist
 from keras.utils import to_categorical
 from keras.callbacks import EarlyStopping
-from keras.optimizers import Adam
+from keras.optimizers.legacy import Adam
 
 from io import BytesIO
 import PIL
 
 
 def _main() -> None:
+    # https://github.com/keras-team/keras/issues/16066#issuecomment-1172622846
+    from tensorflow.python.framework.ops import disable_eager_execution
+    disable_eager_execution()
+
     ds = torchvision.datasets.MNIST(
         root=os.path.join(os.path.dirname(__file__), 'data'),
         download=True,
     )
     print(ds)
 
-
     def prepare(images, labels):
         images = images.astype('float32') / 255
         n, w, h = images.shape
         return images.reshape((n, w * h)), to_categorical(labels)
-
 
     train, test = mnist.load_data()
     x_train, y_train = prepare(*train)
