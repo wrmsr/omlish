@@ -99,6 +99,39 @@ def VariationalAutoEncoder(batch_size, latent_space_depth, num_pixels):
     return auto_encoder, decoder
 
 
+"""
+__________________________________________________________________________________________________
+ Layer (type)                Output Shape                 Param #   Connected to                  
+==================================================================================================
+ input_3 (InputLayer)        [(None, 784)]                0         []                            
+                                                                                                  
+ label (InputLayer)          [(None, 10)]                 0         []                            
+                                                                                                  
+ inputs (Concatenate)        (None, 794)                  0         ['input_3[0][0]',             
+                                                                     'label[0][0]']               
+                                                                                                  
+ encoder_hidden (Dense)      (None, 512)                  407040    ['inputs[0][0]']              
+                                                                                                  
+ dense_5 (Dense)             (None, 2)                    1026      ['encoder_hidden[0][0]']      
+                                                                                                  
+ dense_6 (Dense)             (None, 2)                    1026      ['encoder_hidden[0][0]']      
+                                                                                                  
+ lambda_1 (Lambda)           (250, 2)                     0         ['dense_5[0][0]',             
+                                                                     'dense_6[0][0]']             
+                                                                                                  
+ concatenate (Concatenate)   (250, 12)                    0         ['lambda_1[0][0]',            
+                                                                     'label[0][0]']               
+                                                                                                  
+ dense_7 (Dense)             multiple                     6656      ['concatenate[0][0]']         
+                                                                                                  
+ dense_8 (Dense)             multiple                     402192    ['dense_7[1][0]']             
+                                                                                                  
+==================================================================================================
+Total params: 817940 (3.12 MB)
+Trainable params: 817940 (3.12 MB)
+Non-trainable params: 0 (0.00 Byte)
+__________________________________________________________________________________________________
+"""
 def ConditionalVariationalAutoEncoder(batch_size, latent_space_depth, num_pixels, num_labels):
     pixels = Input(shape=(num_pixels,))
     label = Input(shape=(num_labels,), name='label')
@@ -149,10 +182,14 @@ def _main() -> None:
     from tensorflow.python.framework.ops import disable_eager_execution
     disable_eager_execution()
 
+    ##
+
     # ds = torchvision.datasets.MNIST(
     #     root=os.path.join(os.path.dirname(__file__), 'data'),
     #     download=True,
     # )
+
+    ##
 
     train, test = mnist.load_data()
     x_train, y_train = prepare(*train)
@@ -162,12 +199,16 @@ def _main() -> None:
     batch_size = 250
     latent_space_depth = 2
 
+    ##
+
     auto_encoder, decoder = VariationalAutoEncoder(
         batch_size,
         latent_space_depth,
         x_train.shape[1],
     )
     auto_encoder.summary()
+
+    ##
 
     auto_encoder.fit(
         x_train,
@@ -178,9 +219,13 @@ def _main() -> None:
         validation_data=(x_test, x_test),
     )
 
+    ##
+
     random_number = np.asarray([[np.random.normal() for _ in range(latent_space_depth)]])
 
-    decode_img(decoder.predict(random_number).reshape(img_width, img_height)).resize((56, 56))
+    decode_img(decoder.predict(random_number).reshape(img_width, img_height)).resize((56, 56)).show()
+
+    ##
 
     num_cells = 10
 
@@ -202,6 +247,10 @@ def _main() -> None:
             img = decode_img(decoded.reshape(img_width, img_height))
             overview.paste(img, (x * (img_width + 4) + 6, y * (img_height + 4) + 6))
 
+    overview.show()
+
+    ##
+
     cond_auto_encoder, cond_decoder = ConditionalVariationalAutoEncoder(
         batch_size,
         latent_space_depth,
@@ -210,14 +259,81 @@ def _main() -> None:
     )
     cond_auto_encoder.summary()
 
+    ##
+
     cond_auto_encoder.fit(
         [x_train, y_train],
         x_train,
         verbose=1,
         batch_size=batch_size,
         epochs=50,
-        validation_data = ([x_test, y_test], x_test),
+        validation_data=([x_test, y_test], x_test),
     )
+
+    ##
+
+    number_4 = np.zeros((1, latent_space_depth + y_train.shape[1]))
+    number_4[:, 4 + latent_space_depth] = 1
+    decode_img(cond_decoder.predict(number_4).reshape(
+        img_width, img_height)).resize((56, 56)).show()
+
+    ##
+
+    number_8_3 = np.zeros((1, latent_space_depth + y_train.shape[1]))
+    number_8_3[:, 8 + latent_space_depth] = 0.5
+    number_8_3[:, 3 + latent_space_depth] = 0.5
+    decode_img(cond_decoder.predict(number_8_3).reshape(
+        img_width, img_height)).resize((56, 56)).show()
+
+    ##
+
+    digits = [3, 0, 8, 9]
+    num_cells = 10
+
+    overview = PIL.Image.new(
+        'RGB',
+        (
+            num_cells * (img_width + 4) + 8,
+            num_cells * (img_height + 4) + 8,
+        ),
+        (128, 128, 128),
+    )
+
+    vec = np.zeros((1, latent_space_depth + y_train.shape[1]))
+    for x in range(num_cells):
+        x1 = [x / (num_cells - 1), 1 - x / (num_cells - 1)]
+        for y in range(num_cells):
+            y1 = [y / (num_cells - 1), 1 - y / (num_cells - 1)]
+            for idx, dig in enumerate(digits):
+                vec[:, dig + latent_space_depth] = x1[idx % 2] * y1[idx // 2]
+            decoded = cond_decoder.predict(vec)
+            img = decode_img(decoded.reshape(img_width, img_height))
+            overview.paste(img, (x * (img_width + 4) + 6, y * (img_height + 4) + 6))
+
+    overview.show()
+
+    ##
+
+    num_cells = 10
+
+    overview = PIL.Image.new(
+        'RGB',
+        (
+            num_cells * (img_width + 4) + 8,
+            num_cells * (img_height + 4) + 8,
+        ),
+        (128, 128, 128),
+    )
+
+    for x in range(num_cells):
+        vec = np.zeros((1, latent_space_depth + y_train.shape[1]))
+        vec[:, x + latent_space_depth] = 1
+        for y in range(num_cells):
+            vec[:, 1] = 3 * y / (num_cells - 1) - 1.5
+            decoded = cond_decoder.predict(vec)
+            img = decode_img(decoded.reshape(img_width, img_height))
+            overview.paste(img, (x * (img_width + 4) + 6, y * (img_height + 4) + 6))
+    overview.show()
 
 
 if __name__ == '__main__':
