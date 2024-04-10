@@ -1,9 +1,8 @@
 import torch
-from models import BaseVAE
+from .base import BaseVAE
 from torch import nn
 from torch.nn import functional as F
-
-from .types_ import *
+from torch import Tensor
 
 
 class FactorVAE(BaseVAE):
@@ -11,7 +10,7 @@ class FactorVAE(BaseVAE):
     def __init__(self,
                  in_channels: int,
                  latent_dim: int,
-                 hidden_dims: List = None,
+                 hidden_dims: list = None,
                  gamma: float = 40.,
                  **kwargs) -> None:
         super(FactorVAE, self).__init__()
@@ -86,7 +85,7 @@ class FactorVAE(BaseVAE):
                                            nn.Linear(1000, 2))
         self.D_z_reserve = None
 
-    def encode(self, input: Tensor) -> List[Tensor]:
+    def encode(self, input: Tensor) -> list[Tensor]:
         """
         Encodes the input by passing through the encoder network
         and returns the latent codes.
@@ -128,7 +127,7 @@ class FactorVAE(BaseVAE):
         eps = torch.randn_like(std)
         return eps * std + mu
 
-    def forward(self, input: Tensor, **kwargs) -> List[Tensor]:
+    def forward(self, input: Tensor, **kwargs) -> list[Tensor]:
         mu, log_var = self.encode(input)
         z = self.reparameterize(mu, log_var)
         return [self.decode(z), input, mu, log_var, z]
