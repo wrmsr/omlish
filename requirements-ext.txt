@@ -94,6 +94,10 @@ fairscale==0.4.13
 
 accelerate==0.29.2
 
+pytorch-lightning==2.2.1
+
+torchsummary==1.5.1
+
 ## dlc
 
 ## FIXME:
