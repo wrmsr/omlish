@@ -1,5 +1,6 @@
-import torch
 import unittest
+
+import torch
 from models import BetaTCVAE
 from torchsummary import summary
 
@@ -8,7 +9,7 @@ class TestBetaTCVAE(unittest.TestCase):
 
     def setUp(self) -> None:
         # self.model2 = VAE(3, 10)
-        self.model = BetaTCVAE(3, 64, anneal_steps= 100)
+        self.model = BetaTCVAE(3, 64, anneal_steps=100)
 
     def test_summary(self):
         print(summary(self.model, (3, 64, 64), device='cpu'))
@@ -25,7 +26,7 @@ class TestBetaTCVAE(unittest.TestCase):
         x = torch.randn(16, 3, 64, 64)
 
         result = self.model(x)
-        loss = self.model.loss_function(*result, M_N = 0.005)
+        loss = self.model.loss_function(*result, M_N=0.005)
         print(loss)
 
     def test_sample(self):

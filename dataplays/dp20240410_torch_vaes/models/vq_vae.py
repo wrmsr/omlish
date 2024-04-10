@@ -2,13 +2,16 @@ import torch
 from models import BaseVAE
 from torch import nn
 from torch.nn import functional as F
+
 from .types_ import *
+
 
 class VectorQuantizer(nn.Module):
     """
     Reference:
     [1] https://github.com/deepmind/sonnet/blob/v2/sonnet/src/nets/vqvae.py
     """
+
     def __init__(self,
                  num_embeddings: int,
                  embedding_dim: int,
@@ -53,6 +56,7 @@ class VectorQuantizer(nn.Module):
         quantized_latents = latents + (quantized_latents - latents).detach()
 
         return quantized_latents.permute(0, 3, 1, 2).contiguous(), vq_loss  # [B x D x H x W]
+
 
 class ResidualLayer(nn.Module):
 
@@ -208,7 +212,7 @@ class VQVAE(BaseVAE):
         loss = recons_loss + vq_loss
         return {'loss': loss,
                 'Reconstruction_Loss': recons_loss,
-                'VQ_Loss':vq_loss}
+                'VQ_Loss': vq_loss}
 
     def sample(self,
                num_samples: int,

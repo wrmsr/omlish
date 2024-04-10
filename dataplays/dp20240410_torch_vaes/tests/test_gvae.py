@@ -1,5 +1,6 @@
-import torch
 import unittest
+
+import torch
 from models import GammaVAE
 from torchsummary import summary
 
@@ -26,14 +27,12 @@ class TestGammaVAE(unittest.TestCase):
         x = torch.randn(16, 3, 64, 64)
 
         result = self.model(x)
-        loss = self.model.loss_function(*result, M_N = 0.005)
+        loss = self.model.loss_function(*result, M_N=0.005)
         print(loss)
 
     def test_sample(self):
         self.model.cuda()
         y = self.model.sample(144, 0)
-
-
 
 
 if __name__ == '__main__':

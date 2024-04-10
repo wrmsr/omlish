@@ -1,13 +1,13 @@
 model_params:
   name: 'LVAE'
   in_channels: 3
-  latent_dims: [4,8,16,32,128]
-  hidden_dims: [32, 64,128, 256, 512]
+  latent_dims: [ 4,8,16,32,128 ]
+  hidden_dims: [ 32, 64,128, 256, 512 ]
 
 data_params:
   data_path: "Data/"
   train_batch_size: 64
-  val_batch_size:  64
+  val_batch_size: 64
   patch_size: 64
   num_workers: 4
 
@@ -20,7 +20,7 @@ exp_params:
   manual_seed: 1265
 
 trainer_params:
-  gpus: [1]
+  gpus: [ 1 ]
   max_epochs: 10
 
 logging_params:

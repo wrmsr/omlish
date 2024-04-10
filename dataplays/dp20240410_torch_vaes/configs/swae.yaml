@@ -10,7 +10,7 @@ model_params:
 data_params:
   data_path: "Data/"
   train_batch_size: 64
-  val_batch_size:  64
+  val_batch_size: 64
   patch_size: 64
   num_workers: 4
 
@@ -23,7 +23,7 @@ exp_params:
   manual_seed: 1265
 
 trainer_params:
-  gpus: [1]
+  gpus: [ 1 ]
   max_epochs: 10
 
 logging_params:

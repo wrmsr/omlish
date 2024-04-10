@@ -1,10 +1,11 @@
 import torch
+import torch.nn.init as init
 from models import BaseVAE
 from torch import nn
 from torch.distributions import Gamma
 from torch.nn import functional as F
+
 from .types_ import *
-import torch.nn.init as init
 
 
 class GammaVAE(BaseVAE):
@@ -128,7 +129,7 @@ class GammaVAE(BaseVAE):
         z_hat = Gamma(alpha_ + self.B, torch.ones_like(alpha_)).sample()
 
         # Compute the eps ~ N(0,1) that produces z_hat
-        eps = self.inv_h_func(alpha + self.B , z_hat)
+        eps = self.inv_h_func(alpha + self.B, z_hat)
         z = self.h_func(alpha + self.B, eps)
 
         # When beta != 1, scale by beta
@@ -142,7 +143,7 @@ class GammaVAE(BaseVAE):
         :return: (Tensor)
         """
 
-        z = (alpha - 1./3.) * (1 + eps / torch.sqrt(9. * alpha - 3.))**3
+        z = (alpha - 1. / 3.) * (1 + eps / torch.sqrt(9. * alpha - 3.)) ** 3
         return z
 
     def inv_h_func(self, alpha: Tensor, z: Tensor) -> Tensor:
@@ -152,7 +153,7 @@ class GammaVAE(BaseVAE):
         :param z: (Tensor)
         :return: (Tensor)
         """
-        eps = torch.sqrt(9. * alpha - 3.) * ((z / (alpha - 1./3.))**(1. / 3.) - 1.)
+        eps = torch.sqrt(9. * alpha - 3.) * ((z / (alpha - 1. / 3.)) ** (1. / 3.) - 1.)
         return eps
 
     def forward(self, input: Tensor, **kwargs) -> Tensor:
@@ -191,11 +192,10 @@ class GammaVAE(BaseVAE):
 
         curr_device = input.device
         kld_weight = kwargs['M_N']  # Account for the minibatch samples from the dataset
-        recons_loss = torch.mean(F.mse_loss(recons, input, reduction = 'none'), dim = (1,2,3))
+        recons_loss = torch.mean(F.mse_loss(recons, input, reduction='none'), dim=(1, 2, 3))
 
         # https://stats.stackexchange.com/questions/11646/kullback-leibler-divergence-between-two-gamma-distributions
         # alpha = 1./ alpha
-
 
         self.prior_alpha = self.prior_alpha.to(curr_device)
         self.prior_beta = self.prior_beta.to(curr_device)
@@ -207,12 +207,12 @@ class GammaVAE(BaseVAE):
         # kld_loss = torch.sum(kld_loss, dim=1)
 
         loss = recons_loss + kld_loss
-        loss = torch.mean(loss, dim = 0)
+        loss = torch.mean(loss, dim=0)
         # print(loss, recons_loss, kld_loss)
-        return {'loss': loss} #, 'Reconstruction_Loss': recons_loss, 'KLD': -kld_loss}
+        return {'loss': loss}  # , 'Reconstruction_Loss': recons_loss, 'KLD': -kld_loss}
 
     def sample(self,
-               num_samples:int,
+               num_samples: int,
                current_device: int, **kwargs) -> Tensor:
         """
         Samples from the latent space and return the corresponding
@@ -235,6 +235,7 @@ class GammaVAE(BaseVAE):
         """
 
         return self.forward(x)[0]
+
 
 def init_(m):
     if isinstance(m, (nn.Linear, nn.Conv2d)):

@@ -1,5 +1,6 @@
-import torch
 import unittest
+
+import torch
 from models import FactorVAE
 from torchsummary import summary
 
@@ -26,22 +27,20 @@ class TestFAE(unittest.TestCase):
 
     def test_loss(self):
         x = torch.randn(16, 3, 64, 64)
-        x2 = torch.randn(16,3, 64, 64)
+        x2 = torch.randn(16, 3, 64, 64)
 
         result = self.model(x)
-        loss = self.model.loss_function(*result, M_N = 0.005, optimizer_idx=0, secondary_input=x2)
-        loss = self.model.loss_function(*result, M_N = 0.005, optimizer_idx=1, secondary_input=x2)
+        loss = self.model.loss_function(*result, M_N=0.005, optimizer_idx=0, secondary_input=x2)
+        loss = self.model.loss_function(*result, M_N=0.005, optimizer_idx=1, secondary_input=x2)
         print(loss)
 
     def test_optim(self):
-        optim1 = torch.optim.Adam(self.model.parameters(), lr = 0.001)
-        optim2 = torch.optim.Adam(self.model.discrminator.parameters(), lr = 0.001)
+        optim1 = torch.optim.Adam(self.model.parameters(), lr=0.001)
+        optim2 = torch.optim.Adam(self.model.discrminator.parameters(), lr=0.001)
 
     def test_sample(self):
         self.model.cuda()
         y = self.model.sample(144, 0)
-
-
 
 
 if __name__ == '__main__':
