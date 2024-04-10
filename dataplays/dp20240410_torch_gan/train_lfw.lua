@@ -68,7 +68,8 @@ if opt.network == '' then
   ----------------------------------------------------------------------
   -- define D network to train
   model_D = nn.Sequential()
-  model_D:add(cudnn.SpatialConvolution(3, 32, 5, 5, 1, 1, 2, 2))
+  --                                   nInputPlane, nOutputPlane, kW, kH, dW, dH, padW, padH, groups(or 1)
+  model_D:add(cudnn.SpatialConvolution(3,           32,           5,  5,  1,  1,  2,    2))
   model_D:add(cudnn.SpatialMaxPooling(2,2))
   model_D:add(cudnn.ReLU(true))
   model_D:add(nn.SpatialDropout(0.2))
