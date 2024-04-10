@@ -2,6 +2,7 @@ import torch
 from models import BaseVAE
 from torch import nn
 from torch.nn import functional as F
+
 from .types_ import *
 
 
@@ -12,7 +13,7 @@ class HVAE(BaseVAE):
                  latent1_dim: int,
                  latent2_dim: int,
                  hidden_dims: List = None,
-                 img_size:int = 64,
+                 img_size: int = 64,
                  pseudo_input_size: int = 128,
                  **kwargs) -> None:
         super(HVAE, self).__init__()
@@ -31,37 +32,37 @@ class HVAE(BaseVAE):
             modules.append(
                 nn.Sequential(
                     nn.Conv2d(channels, out_channels=h_dim,
-                              kernel_size= 3, stride= 2, padding  = 1),
+                              kernel_size=3, stride=2, padding=1),
                     nn.BatchNorm2d(h_dim),
                     nn.LeakyReLU())
             )
             channels = h_dim
 
         self.encoder_z2_layers = nn.Sequential(*modules)
-        self.fc_z2_mu = nn.Linear(hidden_dims[-1]*4, latent2_dim)
-        self.fc_z2_var = nn.Linear(hidden_dims[-1]*4, latent2_dim)
+        self.fc_z2_mu = nn.Linear(hidden_dims[-1] * 4, latent2_dim)
+        self.fc_z2_var = nn.Linear(hidden_dims[-1] * 4, latent2_dim)
         # ========================================================================#
         # Build z1 Encoder
         self.embed_z2_code = nn.Linear(latent2_dim, img_size * img_size)
         self.embed_data = nn.Conv2d(in_channels, in_channels, kernel_size=1)
 
         modules = []
-        channels = in_channels + 1 # One more channel for the latent code
+        channels = in_channels + 1  # One more channel for the latent code
         for h_dim in hidden_dims:
             modules.append(
                 nn.Sequential(
                     nn.Conv2d(channels, out_channels=h_dim,
-                              kernel_size= 3, stride= 2, padding  = 1),
+                              kernel_size=3, stride=2, padding=1),
                     nn.BatchNorm2d(h_dim),
                     nn.LeakyReLU())
             )
             channels = h_dim
 
         self.encoder_z1_layers = nn.Sequential(*modules)
-        self.fc_z1_mu = nn.Linear(hidden_dims[-1]*4, latent1_dim)
-        self.fc_z1_var = nn.Linear(hidden_dims[-1]*4, latent1_dim)
+        self.fc_z1_mu = nn.Linear(hidden_dims[-1] * 4, latent1_dim)
+        self.fc_z1_var = nn.Linear(hidden_dims[-1] * 4, latent1_dim)
 
-        #========================================================================#
+        # ========================================================================#
         # Build z2 Decoder
         self.recons_z1_mu = nn.Linear(latent2_dim, latent1_dim)
         self.recons_z1_log_var = nn.Linear(latent2_dim, latent1_dim)
@@ -79,29 +80,27 @@ class HVAE(BaseVAE):
                     nn.ConvTranspose2d(hidden_dims[i],
                                        hidden_dims[i + 1],
                                        kernel_size=3,
-                                       stride = 2,
+                                       stride=2,
                                        padding=1,
                                        output_padding=1),
                     nn.BatchNorm2d(hidden_dims[i + 1]),
                     nn.LeakyReLU())
             )
 
-
-
         self.decoder = nn.Sequential(*modules)
 
         self.final_layer = nn.Sequential(
-                            nn.ConvTranspose2d(hidden_dims[-1],
-                                               hidden_dims[-1],
-                                               kernel_size=3,
-                                               stride=2,
-                                               padding=1,
-                                               output_padding=1),
-                            nn.BatchNorm2d(hidden_dims[-1]),
-                            nn.LeakyReLU(),
-                            nn.Conv2d(hidden_dims[-1], out_channels= 3,
-                                      kernel_size= 3, padding= 1),
-                            nn.Tanh())
+            nn.ConvTranspose2d(hidden_dims[-1],
+                               hidden_dims[-1],
+                               kernel_size=3,
+                               stride=2,
+                               padding=1,
+                               output_padding=1),
+            nn.BatchNorm2d(hidden_dims[-1]),
+            nn.LeakyReLU(),
+            nn.Conv2d(hidden_dims[-1], out_channels=3,
+                      kernel_size=3, padding=1),
+            nn.Tanh())
 
         # ========================================================================#
         # Pesudo Input for the Vamp-Prior
@@ -183,11 +182,11 @@ class HVAE(BaseVAE):
         result = result.view(-1, 512, 2, 2)
         recons = self.decode(result)
 
-        return  [recons,
-                 input,
-                 z1_mu, z1_log_var,
-                 z2_mu, z2_log_var,
-                 z1, z2]
+        return [recons,
+                input,
+                z1_mu, z1_log_var,
+                z2_mu, z2_log_var,
+                z1, z2]
 
     def loss_function(self,
                       *args,
@@ -201,7 +200,7 @@ class HVAE(BaseVAE):
         z2_mu = args[4]
         z2_log_var = args[5]
 
-        z1= args[6]
+        z1 = args[6]
         z2 = args[7]
 
         # Reconstruct (decode) z2 into z1
@@ -209,28 +208,27 @@ class HVAE(BaseVAE):
         z1_p_mu = self.recons_z1_mu(z2)
         z1_p_log_var = self.recons_z1_log_var(z2)
 
+        kld_weight = kwargs['M_N']  # Account for the minibatch samples from the dataset
+        recons_loss = F.mse_loss(recons, input)
 
-        kld_weight = kwargs['M_N'] # Account for the minibatch samples from the dataset
-        recons_loss =F.mse_loss(recons, input)
-
-        z1_kld = torch.mean(-0.5 * torch.sum(1 + z1_log_var - z1_mu ** 2 - z1_log_var.exp(), dim = 1),
-                            dim = 0)
-        z2_kld = torch.mean(-0.5 * torch.sum(1 + z2_log_var - z2_mu ** 2 - z2_log_var.exp(), dim = 1),
-                            dim = 0)
+        z1_kld = torch.mean(-0.5 * torch.sum(1 + z1_log_var - z1_mu ** 2 - z1_log_var.exp(), dim=1),
+                            dim=0)
+        z2_kld = torch.mean(-0.5 * torch.sum(1 + z2_log_var - z2_mu ** 2 - z2_log_var.exp(), dim=1),
+                            dim=0)
 
         z1_p_kld = torch.mean(-0.5 * torch.sum(1 + z1_p_log_var - (z1 - z1_p_mu) ** 2 - z1_p_log_var.exp(),
-                                               dim = 1),
-                            dim = 0)
+                                               dim=1),
+                              dim=0)
 
-        z2_p_kld = torch.mean(-0.5*(z2**2), dim = 0)
+        z2_p_kld = torch.mean(-0.5 * (z2 ** 2), dim=0)
 
         kld_loss = -(z1_p_kld - z1_kld - z2_kld)
         loss = recons_loss + kld_weight * kld_loss
         # print(z2_p_kld)
 
-        return {'loss': loss, 'Reconstruction Loss':recons_loss, 'KLD':-kld_loss}
+        return {'loss': loss, 'Reconstruction Loss': recons_loss, 'KLD': -kld_loss}
 
-    def sample(self, batch_size:int, current_device: int, **kwargs) -> Tensor:
+    def sample(self, batch_size: int, current_device: int, **kwargs) -> Tensor:
         z2 = torch.randn(batch_size,
                          self.latent2_dim)
 

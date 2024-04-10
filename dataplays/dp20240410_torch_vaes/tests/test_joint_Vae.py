@@ -1,5 +1,6 @@
-import torch
 import unittest
+
+import torch
 from models import JointVAE
 from torchsummary import summary
 
@@ -24,9 +25,8 @@ class TestVAE(unittest.TestCase):
         x = torch.randn(128, 3, 64, 64)
 
         result = self.model(x)
-        loss = self.model.loss_function(*result, M_N = 0.005, batch_idx=5)
+        loss = self.model.loss_function(*result, M_N=0.005, batch_idx=5)
         print(loss)
-
 
     def test_sample(self):
         self.model.cuda()

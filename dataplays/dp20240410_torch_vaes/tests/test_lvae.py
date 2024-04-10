@@ -1,5 +1,6 @@
-import torch
 import unittest
+
+import torch
 from models import LVAE
 from torchsummary import summary
 
@@ -8,7 +9,7 @@ class TestLVAE(unittest.TestCase):
 
     def setUp(self) -> None:
         # self.model2 = VAE(3, 10)
-        self.model = LVAE(3, [4,8,16,32,128], hidden_dims=[32, 64,128, 256, 512])
+        self.model = LVAE(3, [4, 8, 16, 32, 128], hidden_dims=[32, 64, 128, 256, 512])
 
     def test_summary(self):
         print(summary(self.model, (3, 64, 64), device='cpu'))
@@ -25,7 +26,7 @@ class TestLVAE(unittest.TestCase):
         x = torch.randn(16, 3, 64, 64)
 
         result = self.model(x)
-        loss = self.model.loss_function(*result, M_N = 0.005)
+        loss = self.model.loss_function(*result, M_N=0.005)
         print(loss)
 
     def test_sample(self):
