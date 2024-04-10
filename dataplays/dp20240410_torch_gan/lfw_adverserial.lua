@@ -31,16 +31,16 @@ function rmsprop(opfunc, x, config, state)
         -- only opdate when optimize is true
         
         
-	if config.numUpdates < 10 then
-	      io.write(" ", lr/50.0, " ")
-	      x:addcdiv(-lr/50.0, dfdx, state.tmp)
-	elseif config.numUpdates < 30 then
-	    io.write(" ", lr/5.0, " ")
-	    x:addcdiv(-lr /5.0, dfdx, state.tmp)
-	else 
-	  io.write(" ", lr, " ")
-	  x:addcdiv(-lr, dfdx, state.tmp)
-	end
+    if config.numUpdates < 10 then
+          io.write(" ", lr/50.0, " ")
+          x:addcdiv(-lr/50.0, dfdx, state.tmp)
+    elseif config.numUpdates < 30 then
+        io.write(" ", lr/5.0, " ")
+        x:addcdiv(-lr /5.0, dfdx, state.tmp)
+    else
+      io.write(" ", lr, " ")
+      x:addcdiv(-lr, dfdx, state.tmp)
+    end
     end
     config.numUpdates = config.numUpdates +1
   
@@ -64,38 +64,38 @@ function adam(opfunc, x, config, state)
     -- (1) evaluate f(x) and df/dx
     local fx, dfdx = opfunc(x)
     if config.optimize == true then
-	    -- Initialization
-	    state.t = state.t or 0
-	    -- Exponential moving average of gradient values
-	    state.m = state.m or x.new(dfdx:size()):zero()
-	    -- Exponential moving average of squared gradient values
-	    state.v = state.v or x.new(dfdx:size()):zero()
-	    -- A tmp tensor to hold the sqrt(v) + epsilon
-	    state.denom = state.denom or x.new(dfdx:size()):zero()
+        -- Initialization
+        state.t = state.t or 0
+        -- Exponential moving average of gradient values
+        state.m = state.m or x.new(dfdx:size()):zero()
+        -- Exponential moving average of squared gradient values
+        state.v = state.v or x.new(dfdx:size()):zero()
+        -- A tmp tensor to hold the sqrt(v) + epsilon
+        state.denom = state.denom or x.new(dfdx:size()):zero()
 
-	    state.t = state.t + 1
-	    
-	    -- Decay the first and second moment running average coefficient
-	    state.m:mul(beta1):add(1-beta1, dfdx)
-	    state.v:mul(beta2):addcmul(1-beta2, dfdx, dfdx)
+        state.t = state.t + 1
 
-	    state.denom:copy(state.v):sqrt():add(epsilon)
+        -- Decay the first and second moment running average coefficient
+        state.m:mul(beta1):add(1-beta1, dfdx)
+        state.v:mul(beta2):addcmul(1-beta2, dfdx, dfdx)
 
-	    local biasCorrection1 = 1 - beta1^state.t
-	    local biasCorrection2 = 1 - beta2^state.t
-	    
-		local fac = 1
-		if config.numUpdates < 10 then
-		    fac = 50.0
-		elseif config.numUpdates < 30 then
-		    fac = 5.0
-		else 
-		    fac = 1.0
-		end
-		io.write(" ", lr/fac, " ")
+        state.denom:copy(state.v):sqrt():add(epsilon)
+
+        local biasCorrection1 = 1 - beta1^state.t
+        local biasCorrection2 = 1 - beta2^state.t
+
+        local fac = 1
+        if config.numUpdates < 10 then
+            fac = 50.0
+        elseif config.numUpdates < 30 then
+            fac = 5.0
+        else
+            fac = 1.0
+        end
+        io.write(" ", lr/fac, " ")
         local stepSize = (lr/fac) * math.sqrt(biasCorrection2)/biasCorrection1
-	    -- (2) update x
-	    x:addcdiv(-stepSize, state.m, state.denom)
+        -- (2) update x
+        x:addcdiv(-stepSize, state.m, state.denom)
     end
     config.numUpdates = config.numUpdates +1
     -- return x*, f(x) before optimization
