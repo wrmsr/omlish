@@ -2,6 +2,7 @@ import torch
 from models import BaseVAE
 from torch import nn
 from torch.nn import functional as F
+
 from .types_ import *
 
 
@@ -38,7 +39,7 @@ class InfoVAE(BaseVAE):
             modules.append(
                 nn.Sequential(
                     nn.Conv2d(in_channels, out_channels=h_dim,
-                              kernel_size= 3, stride= 2, padding  = 1),
+                              kernel_size=3, stride=2, padding=1),
                     nn.BatchNorm2d(h_dim),
                     nn.LeakyReLU())
             )
@@ -61,29 +62,27 @@ class InfoVAE(BaseVAE):
                     nn.ConvTranspose2d(hidden_dims[i],
                                        hidden_dims[i + 1],
                                        kernel_size=3,
-                                       stride = 2,
+                                       stride=2,
                                        padding=1,
                                        output_padding=1),
                     nn.BatchNorm2d(hidden_dims[i + 1]),
                     nn.LeakyReLU())
             )
 
-
-
         self.decoder = nn.Sequential(*modules)
 
         self.final_layer = nn.Sequential(
-                            nn.ConvTranspose2d(hidden_dims[-1],
-                                               hidden_dims[-1],
-                                               kernel_size=3,
-                                               stride=2,
-                                               padding=1,
-                                               output_padding=1),
-                            nn.BatchNorm2d(hidden_dims[-1]),
-                            nn.LeakyReLU(),
-                            nn.Conv2d(hidden_dims[-1], out_channels= 3,
-                                      kernel_size= 3, padding= 1),
-                            nn.Tanh())
+            nn.ConvTranspose2d(hidden_dims[-1],
+                               hidden_dims[-1],
+                               kernel_size=3,
+                               stride=2,
+                               padding=1,
+                               output_padding=1),
+            nn.BatchNorm2d(hidden_dims[-1]),
+            nn.LeakyReLU(),
+            nn.Conv2d(hidden_dims[-1], out_channels=3,
+                      kernel_size=3, padding=1),
+            nn.Tanh())
 
     def encode(self, input: Tensor) -> List[Tensor]:
         """
@@ -123,7 +122,7 @@ class InfoVAE(BaseVAE):
     def forward(self, input: Tensor, **kwargs) -> List[Tensor]:
         mu, log_var = self.encode(input)
         z = self.reparameterize(mu, log_var)
-        return  [self.decode(z), input, z, mu, log_var]
+        return [self.decode(z), input, z, mu, log_var]
 
     def loss_function(self,
                       *args,
@@ -135,17 +134,17 @@ class InfoVAE(BaseVAE):
         log_var = args[4]
 
         batch_size = input.size(0)
-        bias_corr = batch_size *  (batch_size - 1)
+        bias_corr = batch_size * (batch_size - 1)
         kld_weight = kwargs['M_N']  # Account for the minibatch samples from the dataset
 
-        recons_loss =F.mse_loss(recons, input)
+        recons_loss = F.mse_loss(recons, input)
         mmd_loss = self.compute_mmd(z)
         kld_loss = torch.mean(-0.5 * torch.sum(1 + log_var - mu ** 2 - log_var.exp(), dim=1), dim=0)
 
         loss = self.beta * recons_loss + \
                (1. - self.alpha) * kld_weight * kld_loss + \
-               (self.alpha + self.reg_weight - 1.)/bias_corr * mmd_loss
-        return {'loss': loss, 'Reconstruction_Loss':recons_loss, 'MMD': mmd_loss, 'KLD':-kld_loss}
+               (self.alpha + self.reg_weight - 1.) / bias_corr * mmd_loss
+        return {'loss': loss, 'Reconstruction_Loss': recons_loss, 'MMD': mmd_loss, 'KLD': -kld_loss}
 
     def compute_kernel(self,
                        x1: Tensor,
@@ -154,8 +153,8 @@ class InfoVAE(BaseVAE):
         D = x1.size(1)
         N = x1.size(0)
 
-        x1 = x1.unsqueeze(-2) # Make it into a column tensor
-        x2 = x2.unsqueeze(-3) # Make it into a row tensor
+        x1 = x1.unsqueeze(-2)  # Make it into a column tensor
+        x2 = x2.unsqueeze(-3)  # Make it into a row tensor
 
         """
         Usually the below lines are not required, especially in our case,
@@ -173,7 +172,6 @@ class InfoVAE(BaseVAE):
             raise ValueError('Undefined kernel type.')
 
         return result
-
 
     def compute_rbf(self,
                     x1: Tensor,
@@ -193,9 +191,9 @@ class InfoVAE(BaseVAE):
         return result
 
     def compute_inv_mult_quad(self,
-                               x1: Tensor,
-                               x2: Tensor,
-                               eps: float = 1e-7) -> Tensor:
+                              x1: Tensor,
+                              x2: Tensor,
+                              eps: float = 1e-7) -> Tensor:
         """
         Computes the Inverse Multi-Quadratics Kernel between x1 and x2,
         given by
@@ -208,7 +206,7 @@ class InfoVAE(BaseVAE):
         """
         z_dim = x2.size(-1)
         C = 2 * z_dim * self.z_var
-        kernel = C / (eps + C + (x1 - x2).pow(2).sum(dim = -1))
+        kernel = C / (eps + C + (x1 - x2).pow(2).sum(dim=-1))
 
         # Exclude diagonal elements
         result = kernel.sum() - kernel.diag().sum()
@@ -229,7 +227,7 @@ class InfoVAE(BaseVAE):
         return mmd
 
     def sample(self,
-               num_samples:int,
+               num_samples: int,
                current_device: int, **kwargs) -> Tensor:
         """
         Samples from the latent space and return the corresponding

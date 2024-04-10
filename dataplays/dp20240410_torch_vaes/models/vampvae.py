@@ -2,6 +2,7 @@ import torch
 from models import BaseVAE
 from torch import nn
 from torch.nn import functional as F
+
 from .types_ import *
 
 
@@ -27,16 +28,15 @@ class VampVAE(BaseVAE):
             modules.append(
                 nn.Sequential(
                     nn.Conv2d(in_channels, out_channels=h_dim,
-                              kernel_size= 3, stride= 2, padding  = 1),
+                              kernel_size=3, stride=2, padding=1),
                     nn.BatchNorm2d(h_dim),
                     nn.LeakyReLU())
             )
             in_channels = h_dim
 
         self.encoder = nn.Sequential(*modules)
-        self.fc_mu = nn.Linear(hidden_dims[-1]*4, latent_dim)
-        self.fc_var = nn.Linear(hidden_dims[-1]*4, latent_dim)
-
+        self.fc_mu = nn.Linear(hidden_dims[-1] * 4, latent_dim)
+        self.fc_var = nn.Linear(hidden_dims[-1] * 4, latent_dim)
 
         # Build Decoder
         modules = []
@@ -51,33 +51,31 @@ class VampVAE(BaseVAE):
                     nn.ConvTranspose2d(hidden_dims[i],
                                        hidden_dims[i + 1],
                                        kernel_size=3,
-                                       stride = 2,
+                                       stride=2,
                                        padding=1,
                                        output_padding=1),
                     nn.BatchNorm2d(hidden_dims[i + 1]),
                     nn.LeakyReLU())
             )
 
-
-
         self.decoder = nn.Sequential(*modules)
 
         self.final_layer = nn.Sequential(
-                            nn.ConvTranspose2d(hidden_dims[-1],
-                                               hidden_dims[-1],
-                                               kernel_size=3,
-                                               stride=2,
-                                               padding=1,
-                                               output_padding=1),
-                            nn.BatchNorm2d(hidden_dims[-1]),
-                            nn.LeakyReLU(),
-                            nn.Conv2d(hidden_dims[-1], out_channels= 3,
-                                      kernel_size= 3, padding= 1),
-                            nn.Tanh())
+            nn.ConvTranspose2d(hidden_dims[-1],
+                               hidden_dims[-1],
+                               kernel_size=3,
+                               stride=2,
+                               padding=1,
+                               output_padding=1),
+            nn.BatchNorm2d(hidden_dims[-1]),
+            nn.LeakyReLU(),
+            nn.Conv2d(hidden_dims[-1], out_channels=3,
+                      kernel_size=3, padding=1),
+            nn.Tanh())
 
-        self.pseudo_input = torch.eye(self.num_components, requires_grad= False)
+        self.pseudo_input = torch.eye(self.num_components, requires_grad=False)
         self.embed_pseudo = nn.Sequential(nn.Linear(self.num_components, 12288),
-                                          nn.Hardtanh(0.0, 1.0)) # 3x64x64 = 12288
+                                          nn.Hardtanh(0.0, 1.0))  # 3x64x64 = 12288
 
     def encode(self, input: Tensor) -> List[Tensor]:
         """
@@ -118,7 +116,7 @@ class VampVAE(BaseVAE):
     def forward(self, input: Tensor, **kwargs) -> List[Tensor]:
         mu, log_var = self.encode(input)
         z = self.reparameterize(mu, log_var)
-        return  [self.decode(z), input, mu, log_var, z]
+        return [self.decode(z), input, mu, log_var, z]
 
     def loss_function(self,
                       *args,
@@ -129,12 +127,12 @@ class VampVAE(BaseVAE):
         log_var = args[3]
         z = args[4]
 
-        kld_weight = kwargs['M_N'] # Account for the minibatch samples from the dataset
-        recons_loss =F.mse_loss(recons, input)
+        kld_weight = kwargs['M_N']  # Account for the minibatch samples from the dataset
+        recons_loss = F.mse_loss(recons, input)
 
-        E_log_q_z = torch.mean(torch.sum(-0.5 * (log_var + (z - mu) ** 2)/ log_var.exp(),
-                                         dim = 1),
-                               dim = 0)
+        E_log_q_z = torch.mean(torch.sum(-0.5 * (log_var + (z - mu) ** 2) / log_var.exp(),
+                                         dim=1),
+                               dim=0)
 
         # Original Prior
         # E_log_p_z = torch.mean(torch.sum(-0.5 * (z ** 2), dim = 1), dim = 0)
@@ -152,23 +150,22 @@ class VampVAE(BaseVAE):
         prior_log_var = prior_log_var.unsqueeze(0)
 
         E_log_p_z = torch.sum(-0.5 *
-                              (prior_log_var + (z_expand - prior_mu) ** 2)/ prior_log_var.exp(),
-                              dim = 2) - torch.log(torch.tensor(self.num_components).float())
+                              (prior_log_var + (z_expand - prior_mu) ** 2) / prior_log_var.exp(),
+                              dim=2) - torch.log(torch.tensor(self.num_components).float())
 
-                               # dim = 0)
-        E_log_p_z = torch.logsumexp(E_log_p_z, dim = 1)
-        E_log_p_z = torch.mean(E_log_p_z, dim = 0)
+        # dim = 0)
+        E_log_p_z = torch.logsumexp(E_log_p_z, dim=1)
+        E_log_p_z = torch.mean(E_log_p_z, dim=0)
 
         # KLD = E_q log q - E_q log p
         kld_loss = -(E_log_p_z - E_log_q_z)
         # print(E_log_p_z, E_log_q_z)
 
-
         loss = recons_loss + kld_weight * kld_loss
-        return {'loss': loss, 'Reconstruction_Loss':recons_loss, 'KLD':-kld_loss}
+        return {'loss': loss, 'Reconstruction_Loss': recons_loss, 'KLD': -kld_loss}
 
     def sample(self,
-               num_samples:int,
+               num_samples: int,
                current_device: int, **kwargs) -> Tensor:
         """
         Samples from the latent space and return the corresponding

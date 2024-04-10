@@ -4,13 +4,13 @@ model_params:
   latent_dim: 10
   anneal_steps: 10000
   alpha: 1.
-  beta:  6.
+  beta: 6.
   gamma: 1.
 
 data_params:
   data_path: "Data/"
   train_batch_size: 64
-  val_batch_size:  64
+  val_batch_size: 64
   patch_size: 64
   num_workers: 4
 
@@ -23,7 +23,7 @@ exp_params:
   manual_seed: 1265
 
 trainer_params:
-  gpus: [1]
+  gpus: [ 1 ]
   max_epochs: 10
 
 logging_params:

@@ -1,13 +1,14 @@
+import math
 import torch
 from models import BaseVAE
 from torch import nn
 from torch.nn import functional as F
+
 from .types_ import *
-import math
 
 
 class BetaTCVAE(BaseVAE):
-    num_iter = 0 # Global static variable to keep track of iterations
+    num_iter = 0  # Global static variable to keep track of iterations
 
     def __init__(self,
                  in_channels: int,
@@ -15,7 +16,7 @@ class BetaTCVAE(BaseVAE):
                  hidden_dims: List = None,
                  anneal_steps: int = 200,
                  alpha: float = 1.,
-                 beta: float =  6.,
+                 beta: float = 6.,
                  gamma: float = 1.,
                  **kwargs) -> None:
         super(BetaTCVAE, self).__init__()
@@ -36,22 +37,21 @@ class BetaTCVAE(BaseVAE):
             modules.append(
                 nn.Sequential(
                     nn.Conv2d(in_channels, out_channels=h_dim,
-                              kernel_size= 4, stride= 2, padding  = 1),
+                              kernel_size=4, stride=2, padding=1),
                     nn.LeakyReLU())
             )
             in_channels = h_dim
 
         self.encoder = nn.Sequential(*modules)
 
-        self.fc = nn.Linear(hidden_dims[-1]*16, 256)
+        self.fc = nn.Linear(hidden_dims[-1] * 16, 256)
         self.fc_mu = nn.Linear(256, latent_dim)
         self.fc_var = nn.Linear(256, latent_dim)
-
 
         # Build Decoder
         modules = []
 
-        self.decoder_input = nn.Linear(latent_dim, 256 *  2)
+        self.decoder_input = nn.Linear(latent_dim, 256 * 2)
 
         hidden_dims.reverse()
 
@@ -61,7 +61,7 @@ class BetaTCVAE(BaseVAE):
                     nn.ConvTranspose2d(hidden_dims[i],
                                        hidden_dims[i + 1],
                                        kernel_size=3,
-                                       stride = 2,
+                                       stride=2,
                                        padding=1,
                                        output_padding=1),
                     nn.LeakyReLU())
@@ -70,16 +70,16 @@ class BetaTCVAE(BaseVAE):
         self.decoder = nn.Sequential(*modules)
 
         self.final_layer = nn.Sequential(
-                            nn.ConvTranspose2d(hidden_dims[-1],
-                                               hidden_dims[-1],
-                                               kernel_size=3,
-                                               stride=2,
-                                               padding=1,
-                                               output_padding=1),
-                            nn.LeakyReLU(),
-                            nn.Conv2d(hidden_dims[-1], out_channels= 3,
-                                      kernel_size= 3, padding= 1),
-                            nn.Tanh())
+            nn.ConvTranspose2d(hidden_dims[-1],
+                               hidden_dims[-1],
+                               kernel_size=3,
+                               stride=2,
+                               padding=1,
+                               output_padding=1),
+            nn.LeakyReLU(),
+            nn.Conv2d(hidden_dims[-1], out_channels=3,
+                      kernel_size=3, padding=1),
+            nn.Tanh())
 
     def encode(self, input: Tensor) -> List[Tensor]:
         """
@@ -127,7 +127,7 @@ class BetaTCVAE(BaseVAE):
     def forward(self, input: Tensor, **kwargs) -> List[Tensor]:
         mu, log_var = self.encode(input)
         z = self.reparameterize(mu, log_var)
-        return  [self.decode(z), input, mu, log_var, z]
+        return [self.decode(z), input, mu, log_var, z]
 
     def log_density_gaussian(self, x: Tensor, mu: Tensor, logvar: Tensor):
         """
@@ -151,21 +151,21 @@ class BetaTCVAE(BaseVAE):
         :param kwargs:
         :return:
         """
-            
+
         recons = args[0]
         input = args[1]
         mu = args[2]
         log_var = args[3]
         z = args[4]
 
-        weight = 1 #kwargs['M_N']  # Account for the minibatch samples from the dataset
+        weight = 1  # kwargs['M_N']  # Account for the minibatch samples from the dataset
 
-        recons_loss =F.mse_loss(recons, input, reduction='sum')
+        recons_loss = F.mse_loss(recons, input, reduction='sum')
 
-        log_q_zx = self.log_density_gaussian(z, mu, log_var).sum(dim = 1)
+        log_q_zx = self.log_density_gaussian(z, mu, log_var).sum(dim=1)
 
         zeros = torch.zeros_like(z)
-        log_p_z = self.log_density_gaussian(z, zeros, zeros).sum(dim = 1)
+        log_p_z = self.log_density_gaussian(z, zeros, zeros).sum(dim=1)
 
         batch_size, latent_dim = z.shape
         mat_log_q_z = self.log_density_gaussian(z.view(batch_size, 1, latent_dim),
@@ -174,9 +174,9 @@ class BetaTCVAE(BaseVAE):
 
         # Reference
         # [1] https://github.com/YannDubs/disentangling-vae/blob/535bbd2e9aeb5a200663a4f82f1d34e084c4ba8d/disvae/utils/math.py#L54
-        dataset_size = (1 / kwargs['M_N']) * batch_size # dataset size
+        dataset_size = (1 / kwargs['M_N']) * batch_size  # dataset size
         strat_weight = (dataset_size - batch_size + 1) / (dataset_size * (batch_size - 1))
-        importance_weights = torch.Tensor(batch_size, batch_size).fill_(1 / (batch_size -1)).to(input.device)
+        importance_weights = torch.Tensor(batch_size, batch_size).fill_(1 / (batch_size - 1)).to(input.device)
         importance_weights.view(-1)[::batch_size] = 1 / dataset_size
         importance_weights.view(-1)[1::batch_size] = strat_weight
         importance_weights[batch_size - 2, 0] = strat_weight
@@ -187,7 +187,7 @@ class BetaTCVAE(BaseVAE):
         log_q_z = torch.logsumexp(mat_log_q_z.sum(2), dim=1, keepdim=False)
         log_prod_q_z = torch.logsumexp(mat_log_q_z, dim=1, keepdim=False).sum(1)
 
-        mi_loss  = (log_q_zx - log_q_z).mean()
+        mi_loss = (log_q_zx - log_q_z).mean()
         tc_loss = (log_q_z - log_prod_q_z).mean()
         kld_loss = (log_prod_q_z - log_p_z).mean()
 
@@ -199,19 +199,19 @@ class BetaTCVAE(BaseVAE):
         else:
             anneal_rate = 1.
 
-        loss = recons_loss/batch_size + \
+        loss = recons_loss / batch_size + \
                self.alpha * mi_loss + \
                weight * (self.beta * tc_loss +
                          anneal_rate * self.gamma * kld_loss)
-        
+
         return {'loss': loss,
-                'Reconstruction_Loss':recons_loss,
-                'KLD':kld_loss,
-                'TC_Loss':tc_loss,
-                'MI_Loss':mi_loss}
+                'Reconstruction_Loss': recons_loss,
+                'KLD': kld_loss,
+                'TC_Loss': tc_loss,
+                'MI_Loss': mi_loss}
 
     def sample(self,
-               num_samples:int,
+               num_samples: int,
                current_device: int, **kwargs) -> Tensor:
         """
         Samples from the latent space and return the corresponding

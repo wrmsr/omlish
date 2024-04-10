@@ -1,31 +1,30 @@
-from .types_ import *
+import abc
+
+from torch import Tensor
 from torch import nn
-from abc import abstractmethod
+
 
 class BaseVAE(nn.Module):
-    
+
     def __init__(self) -> None:
         super(BaseVAE, self).__init__()
 
-    def encode(self, input: Tensor) -> List[Tensor]:
+    def encode(self, input: Tensor) -> list[Tensor]:
         raise NotImplementedError
 
-    def decode(self, input: Tensor) -> Any:
+    def decode(self, input: Tensor) -> ta.Any:
         raise NotImplementedError
 
-    def sample(self, batch_size:int, current_device: int, **kwargs) -> Tensor:
+    def sample(self, batch_size: int, current_device: int, **kwargs) -> Tensor:
         raise NotImplementedError
 
     def generate(self, x: Tensor, **kwargs) -> Tensor:
         raise NotImplementedError
 
-    @abstractmethod
+    @abc.abstractmethod
     def forward(self, *inputs: Tensor) -> Tensor:
         pass
 
-    @abstractmethod
-    def loss_function(self, *inputs: Any, **kwargs) -> Tensor:
+    @abc.abstractmethod
+    def loss_function(self, *inputs: ta.Any, **kwargs) -> Tensor:
         pass
-
-
-

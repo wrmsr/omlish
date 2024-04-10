@@ -2,6 +2,7 @@ import torch
 from models import BaseVAE
 from torch import nn
 from torch.nn import functional as F
+
 from .types_ import *
 
 
@@ -27,16 +28,15 @@ class IWAE(BaseVAE):
             modules.append(
                 nn.Sequential(
                     nn.Conv2d(in_channels, out_channels=h_dim,
-                              kernel_size= 3, stride= 2, padding  = 1),
+                              kernel_size=3, stride=2, padding=1),
                     nn.BatchNorm2d(h_dim),
                     nn.LeakyReLU())
             )
             in_channels = h_dim
 
         self.encoder = nn.Sequential(*modules)
-        self.fc_mu = nn.Linear(hidden_dims[-1]*4, latent_dim)
-        self.fc_var = nn.Linear(hidden_dims[-1]*4, latent_dim)
-
+        self.fc_mu = nn.Linear(hidden_dims[-1] * 4, latent_dim)
+        self.fc_var = nn.Linear(hidden_dims[-1] * 4, latent_dim)
 
         # Build Decoder
         modules = []
@@ -51,29 +51,27 @@ class IWAE(BaseVAE):
                     nn.ConvTranspose2d(hidden_dims[i],
                                        hidden_dims[i + 1],
                                        kernel_size=3,
-                                       stride = 2,
+                                       stride=2,
                                        padding=1,
                                        output_padding=1),
                     nn.BatchNorm2d(hidden_dims[i + 1]),
                     nn.LeakyReLU())
             )
 
-
-
         self.decoder = nn.Sequential(*modules)
 
         self.final_layer = nn.Sequential(
-                            nn.ConvTranspose2d(hidden_dims[-1],
-                                               hidden_dims[-1],
-                                               kernel_size=3,
-                                               stride=2,
-                                               padding=1,
-                                               output_padding=1),
-                            nn.BatchNorm2d(hidden_dims[-1]),
-                            nn.LeakyReLU(),
-                            nn.Conv2d(hidden_dims[-1], out_channels= 3,
-                                      kernel_size= 3, padding= 1),
-                            nn.Tanh())
+            nn.ConvTranspose2d(hidden_dims[-1],
+                               hidden_dims[-1],
+                               kernel_size=3,
+                               stride=2,
+                               padding=1,
+                               output_padding=1),
+            nn.BatchNorm2d(hidden_dims[-1]),
+            nn.LeakyReLU(),
+            nn.Conv2d(hidden_dims[-1], out_channels=3,
+                      kernel_size=3, padding=1),
+            nn.Tanh())
 
     def encode(self, input: Tensor) -> List[Tensor]:
         """
@@ -100,12 +98,12 @@ class IWAE(BaseVAE):
         :return: (Tensor) [B x S x C x H x W]
         """
         B, _, _ = z.size()
-        z = z.view(-1, self.latent_dim) #[BS x D]
+        z = z.view(-1, self.latent_dim)  # [BS x D]
         result = self.decoder_input(z)
         result = result.view(-1, 512, 2, 2)
         result = self.decoder(result)
-        result = self.final_layer(result) #[BS x C x H x W ]
-        result = result.view([B, -1, result.size(1), result.size(2), result.size(3)]) #[B x S x C x H x W]
+        result = self.final_layer(result)  # [BS x C x H x W ]
+        result = result.view([B, -1, result.size(1), result.size(2), result.size(3)])  # [B x S x C x H x W]
         return result
 
     def reparameterize(self, mu: Tensor, logvar: Tensor) -> Tensor:
@@ -120,11 +118,11 @@ class IWAE(BaseVAE):
 
     def forward(self, input: Tensor, **kwargs) -> List[Tensor]:
         mu, log_var = self.encode(input)
-        mu = mu.repeat(self.num_samples, 1, 1).permute(1, 0, 2) # [B x S x D]
-        log_var = log_var.repeat(self.num_samples, 1, 1).permute(1, 0, 2) # [B x S x D]
-        z= self.reparameterize(mu, log_var) # [B x S x D]
-        eps = (z - mu) / log_var # Prior samples
-        return  [self.decode(z), input, mu, log_var, z, eps]
+        mu = mu.repeat(self.num_samples, 1, 1).permute(1, 0, 2)  # [B x S x D]
+        log_var = log_var.repeat(self.num_samples, 1, 1).permute(1, 0, 2)  # [B x S x D]
+        z = self.reparameterize(mu, log_var)  # [B x S x D]
+        eps = (z - mu) / log_var  # Prior samples
+        return [self.decode(z), input, mu, log_var, z, eps]
 
     def loss_function(self,
                       *args,
@@ -142,25 +140,25 @@ class IWAE(BaseVAE):
         z = args[4]
         eps = args[5]
 
-        input = input.repeat(self.num_samples, 1, 1, 1, 1).permute(1, 0, 2, 3, 4) #[B x S x C x H x W]
+        input = input.repeat(self.num_samples, 1, 1, 1, 1).permute(1, 0, 2, 3, 4)  # [B x S x C x H x W]
 
-        kld_weight = kwargs['M_N'] # Account for the minibatch samples from the dataset
+        kld_weight = kwargs['M_N']  # Account for the minibatch samples from the dataset
 
-        log_p_x_z = ((recons - input) ** 2).flatten(2).mean(-1) # Reconstruction Loss [B x S]
-        kld_loss = -0.5 * torch.sum(1 + log_var - mu ** 2 - log_var.exp(), dim=2) ## [B x S]
+        log_p_x_z = ((recons - input) ** 2).flatten(2).mean(-1)  # Reconstruction Loss [B x S]
+        kld_loss = -0.5 * torch.sum(1 + log_var - mu ** 2 - log_var.exp(), dim=2)  ## [B x S]
         # Get importance weights
-        log_weight = (log_p_x_z + kld_weight * kld_loss) #.detach().data
+        log_weight = (log_p_x_z + kld_weight * kld_loss)  # .detach().data
 
         # Rescale the weights (along the sample dim) to lie in [0, 1] and sum to 1
-        weight = F.softmax(log_weight, dim = -1)
+        weight = F.softmax(log_weight, dim=-1)
         # kld_loss = torch.mean(kld_loss, dim = 0)
 
-        loss = torch.mean(torch.sum(weight * log_weight, dim=-1), dim = 0)
+        loss = torch.mean(torch.sum(weight * log_weight, dim=-1), dim=0)
 
-        return {'loss': loss, 'Reconstruction_Loss':log_p_x_z.mean(), 'KLD':-kld_loss.mean()}
+        return {'loss': loss, 'Reconstruction_Loss': log_p_x_z.mean(), 'KLD': -kld_loss.mean()}
 
     def sample(self,
-               num_samples:int,
+               num_samples: int,
                current_device: int, **kwargs) -> Tensor:
         """
         Samples from the latent space and return the corresponding

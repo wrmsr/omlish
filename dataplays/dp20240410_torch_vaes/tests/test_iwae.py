@@ -1,5 +1,6 @@
-import torch
 import unittest
+
+import torch
 from models import IWAE
 from torchsummary import summary
 
@@ -24,7 +25,7 @@ class TestIWAE(unittest.TestCase):
         x = torch.randn(16, 3, 64, 64)
 
         result = self.model(x)
-        loss = self.model.loss_function(*result, M_N = 0.005)
+        loss = self.model.loss_function(*result, M_N=0.005)
         print(loss)
 
     def test_sample(self):

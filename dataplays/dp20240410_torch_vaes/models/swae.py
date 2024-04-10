@@ -1,8 +1,9 @@
 import torch
 from models import BaseVAE
+from torch import distributions as dist
 from torch import nn
 from torch.nn import functional as F
-from torch import distributions as dist
+
 from .types_ import *
 
 
@@ -13,10 +14,10 @@ class SWAE(BaseVAE):
                  latent_dim: int,
                  hidden_dims: List = None,
                  reg_weight: int = 100,
-                 wasserstein_deg: float= 2.,
+                 wasserstein_deg: float = 2.,
                  num_projections: int = 50,
                  projection_dist: str = 'normal',
-                    **kwargs) -> None:
+                 **kwargs) -> None:
         super(SWAE, self).__init__()
 
         self.latent_dim = latent_dim
@@ -34,15 +35,14 @@ class SWAE(BaseVAE):
             modules.append(
                 nn.Sequential(
                     nn.Conv2d(in_channels, out_channels=h_dim,
-                              kernel_size= 3, stride= 2, padding  = 1),
+                              kernel_size=3, stride=2, padding=1),
                     nn.BatchNorm2d(h_dim),
                     nn.LeakyReLU())
             )
             in_channels = h_dim
 
         self.encoder = nn.Sequential(*modules)
-        self.fc_z = nn.Linear(hidden_dims[-1]*4, latent_dim)
-
+        self.fc_z = nn.Linear(hidden_dims[-1] * 4, latent_dim)
 
         # Build Decoder
         modules = []
@@ -57,29 +57,27 @@ class SWAE(BaseVAE):
                     nn.ConvTranspose2d(hidden_dims[i],
                                        hidden_dims[i + 1],
                                        kernel_size=3,
-                                       stride = 2,
+                                       stride=2,
                                        padding=1,
                                        output_padding=1),
                     nn.BatchNorm2d(hidden_dims[i + 1]),
                     nn.LeakyReLU())
             )
 
-
-
         self.decoder = nn.Sequential(*modules)
 
         self.final_layer = nn.Sequential(
-                            nn.ConvTranspose2d(hidden_dims[-1],
-                                               hidden_dims[-1],
-                                               kernel_size=3,
-                                               stride=2,
-                                               padding=1,
-                                               output_padding=1),
-                            nn.BatchNorm2d(hidden_dims[-1]),
-                            nn.LeakyReLU(),
-                            nn.Conv2d(hidden_dims[-1], out_channels= 3,
-                                      kernel_size= 3, padding= 1),
-                            nn.Tanh())
+            nn.ConvTranspose2d(hidden_dims[-1],
+                               hidden_dims[-1],
+                               kernel_size=3,
+                               stride=2,
+                               padding=1,
+                               output_padding=1),
+            nn.BatchNorm2d(hidden_dims[-1]),
+            nn.LeakyReLU(),
+            nn.Conv2d(hidden_dims[-1], out_channels=3,
+                      kernel_size=3, padding=1),
+            nn.Tanh())
 
     def encode(self, input: Tensor) -> Tensor:
         """
@@ -105,7 +103,7 @@ class SWAE(BaseVAE):
 
     def forward(self, input: Tensor, **kwargs) -> List[Tensor]:
         z = self.encode(input)
-        return  [self.decode(z), input, z]
+        return [self.decode(z), input, z]
 
     def loss_function(self,
                       *args,
@@ -115,7 +113,7 @@ class SWAE(BaseVAE):
         z = args[2]
 
         batch_size = input.size(0)
-        bias_corr = batch_size *  (batch_size - 1)
+        bias_corr = batch_size * (batch_size - 1)
         reg_weight = self.reg_weight / bias_corr
 
         recons_loss_l2 = F.mse_loss(recons, input)
@@ -124,7 +122,7 @@ class SWAE(BaseVAE):
         swd_loss = self.compute_swd(z, self.p, reg_weight)
 
         loss = recons_loss_l2 + recons_loss_l1 + swd_loss
-        return {'loss': loss, 'Reconstruction_Loss':(recons_loss_l2 + recons_loss_l1), 'SWD': swd_loss}
+        return {'loss': loss, 'Reconstruction_Loss': (recons_loss_l2 + recons_loss_l1), 'SWD': swd_loss}
 
     def get_random_projections(self, latent_dim: int, num_samples: int) -> Tensor:
         """
@@ -144,9 +142,8 @@ class SWAE(BaseVAE):
         else:
             raise ValueError('Unknown projection distribution.')
 
-        rand_proj = rand_samples / rand_samples.norm(dim=1).view(-1,1)
-        return rand_proj # [S x D]
-
+        rand_proj = rand_samples / rand_samples.norm(dim=1).view(-1, 1)
+        return rand_proj  # [S x D]
 
     def compute_swd(self,
                     z: Tensor,
@@ -162,14 +159,14 @@ class SWAE(BaseVAE):
         :param reg_weight:
         :return:
         """
-        prior_z = torch.randn_like(z) # [N x D]
+        prior_z = torch.randn_like(z)  # [N x D]
         device = z.device
 
         proj_matrix = self.get_random_projections(self.latent_dim,
-                                                  num_samples=self.num_projections).transpose(0,1).to(device)
+                                                  num_samples=self.num_projections).transpose(0, 1).to(device)
 
-        latent_projections = z.matmul(proj_matrix) # [N x S]
-        prior_projections = prior_z.matmul(proj_matrix) # [N x S]
+        latent_projections = z.matmul(proj_matrix)  # [N x S]
+        prior_projections = prior_z.matmul(proj_matrix)  # [N x S]
 
         # The Wasserstein distance is computed by sorting the two projections
         # across the batches and computing their element-wise l2 distance
@@ -179,7 +176,7 @@ class SWAE(BaseVAE):
         return reg_weight * w_dist.mean()
 
     def sample(self,
-               num_samples:int,
+               num_samples: int,
                current_device: int, **kwargs) -> Tensor:
         """
         Samples from the latent space and return the corresponding
