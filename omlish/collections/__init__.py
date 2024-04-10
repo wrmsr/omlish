@@ -48,6 +48,7 @@ from .unmodifiable import UnmodifiableSequence  # noqa
 from .unmodifiable import UnmodifiableSet  # noqa
 from .utils import all_equal  # noqa
 from .utils import all_not_equal  # noqa
+from .utils import indexes  # noqa
 from .utils import key_cmp  # noqa
 from .utils import mut_toposort  # noqa
 from .utils import partition  # noqa
