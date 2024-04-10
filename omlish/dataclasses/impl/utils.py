@@ -40,6 +40,7 @@ def create_fn(
     return ns['__create_fn__'](**locals)
 
 
+# TODO: https://github.com/python/cpython/commit/8945b7ff55b87d11c747af2dad0e3e4d631e62d6
 class FuncBuilder:
     def __init__(self, globals: Namespace) -> None:
         super().__init__()
