@@ -22,6 +22,10 @@ class Maybe(abc.ABC, ta.Generic[T]):
         raise NotImplementedError
 
     @abc.abstractmethod
+    def __call__(self) -> T:
+        raise NotImplementedError
+
+    @abc.abstractmethod
     def __iter__(self) -> ta.Iterator[T]:
         raise NotImplementedError
 
@@ -68,6 +72,8 @@ class _Maybe(Maybe[T], tuple):
         if not self:
             raise ValueNotPresentException
         return self[0]
+
+    __call__ = must
 
     def __iter__(self) -> ta.Iterator[T]:
         raise TypeError
