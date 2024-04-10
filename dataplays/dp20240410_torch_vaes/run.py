@@ -24,7 +24,10 @@ if __name__ == '__main__':
         except yaml.YAMLError as exc:
             print(exc)
 
-    data = VAEDataset(**config["data_params"], pin_memory=len(config['trainer_params']['gpus']) != 0)
+    data = VAEDataset(
+        **config["data_params"],
+        pin_memory=len(config['trainer_params']['gpus']) != 0,
+    )
     data.setup()
 
     tb_logger = TensorBoardLogger(
@@ -41,20 +44,27 @@ if __name__ == '__main__':
     model = vae_models[config['model_params']['name']](**config['model_params'])
     experiment = VAEXperiment(model, config['exp_params'])
 
-    # from pytorch_lightning.plugins import DDPPlugin
-    # runner = Trainer(logger=tb_logger,
-    #                  callbacks=[
-    #                      LearningRateMonitor(),
-    #                      ModelCheckpoint(save_top_k=2,
-    #                                      dirpath=os.path.join(tb_logger.log_dir, "checkpoints"),
-    #                                      monitor="val_loss",
-    #                                      save_last=True),
-    #                  ],
-    #                  strategy=DDPPlugin(find_unused_parameters=False),
-    #                  **config['trainer_params'])
-    #
-    # Path(f"{tb_logger.log_dir}/Samples").mkdir(exist_ok=True, parents=True)
-    # Path(f"{tb_logger.log_dir}/Reconstructions").mkdir(exist_ok=True, parents=True)
-    #
-    # print(f"======= Training {config['model_params']['name']} =======")
-    # runner.fit(experiment, datamodule=data)
+    from pytorch_lightning.strategies import DDPStrategy
+    runner = Trainer(
+        logger=tb_logger,
+        callbacks=[
+            LearningRateMonitor(),
+            ModelCheckpoint(
+                save_top_k=2,
+                dirpath=os.path.join(tb_logger.log_dir, "checkpoints"),
+                monitor="val_loss",
+                save_last=True,
+            ),
+        ],
+        # strategy=DDPStrategy(
+        #     accelerator='cpu',
+        #     find_unused_parameters=False,
+        # ),
+        **{k: v for k, v in config['trainer_params'].items() if k not in {'gpus'}},
+    )
+
+    Path(f"{tb_logger.log_dir}/Samples").mkdir(exist_ok=True, parents=True)
+    Path(f"{tb_logger.log_dir}/Reconstructions").mkdir(exist_ok=True, parents=True)
+
+    print(f"======= Training {config['model_params']['name']} =======")
+    runner.fit(experiment, datamodule=data)
