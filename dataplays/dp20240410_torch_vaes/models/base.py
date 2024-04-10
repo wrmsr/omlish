@@ -1,4 +1,5 @@
 import abc
+import typing as ta
 
 from torch import Tensor
 from torch import nn

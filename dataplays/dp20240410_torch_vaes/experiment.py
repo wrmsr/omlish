@@ -5,7 +5,6 @@ import torchvision.utils as vutils
 from torch import optim
 
 from models import BaseVAE
-from models.types_ import *
 
 
 class VAEXperiment(pl.LightningModule):

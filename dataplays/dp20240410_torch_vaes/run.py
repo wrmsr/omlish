@@ -8,11 +8,12 @@ from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
 from pytorch_lightning.loggers import TensorBoardLogger
 
 from dataset import VAEDataset
-from experiment import VAEXperiment
-from models import *
+# from models import *
 
 
 if __name__ == '__main__':
+    os.chdir(os.path.dirname(__file__))
+
     parser = argparse.ArgumentParser(description='Generic runner for VAE models')
     parser.add_argument('--config', '-c', dest="filename", metavar='FILE', help='path to the config file', default='configs/vae.yaml')
 
@@ -23,6 +24,9 @@ if __name__ == '__main__':
         except yaml.YAMLError as exc:
             print(exc)
 
+    data = VAEDataset(**config["data_params"], pin_memory=len(config['trainer_params']['gpus']) != 0)
+    data.setup()
+
     tb_logger = TensorBoardLogger(
         save_dir=config['logging_params']['save_dir'],
         name=config['model_params']['name'],
@@ -32,11 +36,9 @@ if __name__ == '__main__':
     # from pytorch_lightning.utilities.seed import seed_everything
     # seed_everything(config['exp_params']['manual_seed'], True)
 
+    from experiment import VAEXperiment
     model = vae_models[config['model_params']['name']](**config['model_params'])
     experiment = VAEXperiment(model, config['exp_params'])
-
-    data = VAEDataset(**config["data_params"], pin_memory=len(config['trainer_params']['gpus']) != 0)
-    data.setup()
 
     # from pytorch_lightning.plugins import DDPPlugin
     # runner = Trainer(logger=tb_logger,
