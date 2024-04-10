@@ -1,3 +1,4 @@
+import textwrap
 import types
 import typing as ta
 
@@ -81,14 +82,15 @@ class FuncBuilder:
 
         if return_type.present:
             self.locals[f'__dataclass_{name}_return_type__'] = return_type()
-            return_annotation = f'->__dataclass_{name}_return_type__'
+            return_annotation = f' -> __dataclass_{name}_return_type__'
         else:
             return_annotation = ''
-        args = ','.join(args)
-        body = '\n'.join(body)
+        args = ', '.join(args)
+        body = textwrap.indent('\n'.join(body), '    ')
 
         # Compute the text of the entire function, add it to the text we're generating.
-        self.src.append(f'{" {decorator}\n" if decorator else ""} def {name}({args}){return_annotation}:\n{body}')
+        deco_str = "  {decorator}\n" if decorator else ""
+        self.src.append(f'{deco_str}  def {name}({args}){return_annotation}:\n{body}')
 
     def add_fns_to_class(self, cls: type) -> None:
         # The source to all of the functions we're generating.
@@ -108,15 +110,15 @@ class FuncBuilder:
         # bodies of the functions we're defining.  Here's a greatly simplified
         # version:
         # def __create_fn__():
-        #  def __init__(self, x, y):
-        #   self.x = x
-        #   self.y = y
-        #  @recursive_repr
-        #  def __repr__(self):
-        #   return f'cls(x={self.x!r},y={self.y!r})'
+        #   def __init__(self, x, y):
+        #     self.x = x
+        #     self.y = y
+        #   @recursive_repr
+        #   def __repr__(self):
+        #     return f'cls(x={self.x!r},y={self.y!r})'
         # return __init__,__repr__
 
-        txt = f'def __create_fn__({local_vars}):\n{fns_src}\n return {return_names}'
+        txt = f'def __create_fn__({local_vars}):\n{fns_src}\n  return {return_names}'
         ns = {}
         exec(txt, self.globals, ns)  # type: ignore
         fns = ns['__create_fn__'](**self.locals)
@@ -132,7 +134,7 @@ class FuncBuilder:
                 # See if it's an error to overwrite this particular function.
                 if already_exists and (msg_extra := self.overwrite_errors.get(name)):
                     error_msg = (f'Cannot overwrite attribute {fn.__name__} in class {cls.__name__}')
-                    if not msg_extra is True:
+                    if not msg_extra:
                         error_msg = f'{error_msg} {msg_extra}'
 
                     raise TypeError(error_msg)
