@@ -1,10 +1,9 @@
 import torch
-from models import BaseVAE
+from .base import BaseVAE
 from torch import nn
 from torch.nn import functional as F
 from torchvision.models import vgg19_bn
-
-from .types_ import *
+from torch import Tensor
 
 
 class DFCVAE(BaseVAE):
@@ -12,7 +11,7 @@ class DFCVAE(BaseVAE):
     def __init__(self,
                  in_channels: int,
                  latent_dim: int,
-                 hidden_dims: List = None,
+                 hidden_dims: list = None,
                  alpha: float = 1,
                  beta: float = 0.5,
                  **kwargs) -> None:
@@ -84,7 +83,7 @@ class DFCVAE(BaseVAE):
 
         self.feature_network.eval()
 
-    def encode(self, input: Tensor) -> List[Tensor]:
+    def encode(self, input: Tensor) -> list[Tensor]:
         """
         Encodes the input by passing through the encoder network
         and returns the latent codes.
@@ -126,7 +125,7 @@ class DFCVAE(BaseVAE):
         eps = torch.randn_like(std)
         return eps * std + mu
 
-    def forward(self, input: Tensor, **kwargs) -> List[Tensor]:
+    def forward(self, input: Tensor, **kwargs) -> list[Tensor]:
         mu, log_var = self.encode(input)
         z = self.reparameterize(mu, log_var)
         recons = self.decode(z)
@@ -138,13 +137,13 @@ class DFCVAE(BaseVAE):
 
     def extract_features(self,
                          input: Tensor,
-                         feature_layers: List = None) -> List[Tensor]:
+                         feature_layers: list = None) -> list[Tensor]:
         """
         Extracts the features from the pretrained model
         at the layers indicated by feature_layers.
         :param input: (Tensor) [B x C x H x W]
-        :param feature_layers: List of string of IDs
-        :return: List of the extracted features
+        :param feature_layers: list of string of IDs
+        :return: list of the extracted features
         """
         if feature_layers is None:
             feature_layers = ['14', '24', '34', '43']

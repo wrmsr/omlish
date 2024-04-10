@@ -2,11 +2,10 @@ import typing as ta
 
 import torch
 from math import exp
-from models import BaseVAE
+from .base import BaseVAE
 from torch import nn
 from torch.nn import functional as F
-
-from .types_ import *
+from torch import Tensor
 
 
 class MSSIMVAE(BaseVAE):
@@ -14,7 +13,7 @@ class MSSIMVAE(BaseVAE):
     def __init__(self,
                  in_channels: int,
                  latent_dim: int,
-                 hidden_dims: List = None,
+                 hidden_dims: list = None,
                  window_size: int = 11,
                  size_average: bool = True,
                  **kwargs) -> None:
@@ -81,7 +80,7 @@ class MSSIMVAE(BaseVAE):
                                 window_size,
                                 size_average)
 
-    def encode(self, input: Tensor) -> List[Tensor]:
+    def encode(self, input: Tensor) -> list[Tensor]:
         """
         Encodes the input by passing through the encoder network
         and returns the latent codes.
@@ -123,7 +122,7 @@ class MSSIMVAE(BaseVAE):
         eps = torch.randn_like(std)
         return eps * std + mu
 
-    def forward(self, input: Tensor, **kwargs) -> List[Tensor]:
+    def forward(self, input: Tensor, **kwargs) -> list[Tensor]:
         mu, log_var = self.encode(input)
         z = self.reparameterize(mu, log_var)
         return [self.decode(z), input, mu, log_var]

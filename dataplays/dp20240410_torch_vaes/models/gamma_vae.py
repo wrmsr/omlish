@@ -1,11 +1,10 @@
 import torch
 import torch.nn.init as init
-from models import BaseVAE
+from .base import BaseVAE
 from torch import nn
 from torch.distributions import Gamma
 from torch.nn import functional as F
-
-from .types_ import *
+from torch import Tensor
 
 
 class GammaVAE(BaseVAE):
@@ -13,7 +12,7 @@ class GammaVAE(BaseVAE):
     def __init__(self,
                  in_channels: int,
                  latent_dim: int,
-                 hidden_dims: List = None,
+                 hidden_dims: list = None,
                  gamma_shape: float = 8.,
                  prior_shape: float = 2.0,
                  prior_rate: float = 1.,
@@ -90,7 +89,7 @@ class GammaVAE(BaseVAE):
             for m in self._modules[block]:
                 init_(m)
 
-    def encode(self, input: Tensor) -> List[Tensor]:
+    def encode(self, input: Tensor) -> list[Tensor]:
         """
         Encodes the input by passing through the encoder network
         and returns the latent codes.

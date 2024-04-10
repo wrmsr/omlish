@@ -1,9 +1,8 @@
 import torch
-from models import BaseVAE
+from .base import BaseVAE
 from torch import nn
 from torch.nn import functional as F
-
-from .types_ import *
+from torch import Tensor
 
 
 class MIWAE(BaseVAE):
@@ -11,7 +10,7 @@ class MIWAE(BaseVAE):
     def __init__(self,
                  in_channels: int,
                  latent_dim: int,
-                 hidden_dims: List = None,
+                 hidden_dims: list = None,
                  num_samples: int = 5,
                  num_estimates: int = 5,
                  **kwargs) -> None:
@@ -75,7 +74,7 @@ class MIWAE(BaseVAE):
                       kernel_size=3, padding=1),
             nn.Tanh())
 
-    def encode(self, input: Tensor) -> List[Tensor]:
+    def encode(self, input: Tensor) -> list[Tensor]:
         """
         Encodes the input by passing through the encoder network
         and returns the latent codes.
@@ -118,7 +117,7 @@ class MIWAE(BaseVAE):
         eps = torch.randn_like(std)
         return eps * std + mu
 
-    def forward(self, input: Tensor, **kwargs) -> List[Tensor]:
+    def forward(self, input: Tensor, **kwargs) -> list[Tensor]:
         mu, log_var = self.encode(input)
         mu = mu.repeat(self.num_estimates, self.num_samples, 1, 1).permute(2, 0, 1, 3)  # [B x M x S x D]
         log_var = log_var.repeat(self.num_estimates, self.num_samples, 1, 1).permute(2, 0, 1, 3)  # [B x M x S x D]

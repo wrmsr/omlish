@@ -1,8 +1,7 @@
 import torch
-from models import BaseVAE
+from .base import BaseVAE
 from torch import nn
-
-from .types_ import *
+from torch import Tensor
 
 
 class LogCoshVAE(BaseVAE):
@@ -10,7 +9,7 @@ class LogCoshVAE(BaseVAE):
     def __init__(self,
                  in_channels: int,
                  latent_dim: int,
-                 hidden_dims: List = None,
+                 hidden_dims: list = None,
                  alpha: float = 100.,
                  beta: float = 10.,
                  **kwargs) -> None:
@@ -74,7 +73,7 @@ class LogCoshVAE(BaseVAE):
                       kernel_size=3, padding=1),
             nn.Tanh())
 
-    def encode(self, input: Tensor) -> List[Tensor]:
+    def encode(self, input: Tensor) -> list[Tensor]:
         """
         Encodes the input by passing through the encoder network
         and returns the latent codes.
@@ -116,7 +115,7 @@ class LogCoshVAE(BaseVAE):
         eps = torch.randn_like(std)
         return eps * std + mu
 
-    def forward(self, input: Tensor, **kwargs) -> List[Tensor]:
+    def forward(self, input: Tensor, **kwargs) -> list[Tensor]:
         mu, log_var = self.encode(input)
         z = self.reparameterize(mu, log_var)
         return [self.decode(z), input, mu, log_var]

@@ -1,9 +1,10 @@
+import typing as ta
+
 import torch
-from models import BaseVAE
+from .base import BaseVAE
 from torch import nn
 from torch.nn import functional as F
-
-from .types_ import *
+from torch import Tensor
 
 
 class VectorQuantizer(nn.Module):
@@ -80,7 +81,7 @@ class VQVAE(BaseVAE):
                  in_channels: int,
                  embedding_dim: int,
                  num_embeddings: int,
-                 hidden_dims: List = None,
+                 hidden_dims: list = None,
                  beta: float = 0.25,
                  img_size: int = 64,
                  **kwargs) -> None:
@@ -169,7 +170,7 @@ class VQVAE(BaseVAE):
 
         self.decoder = nn.Sequential(*modules)
 
-    def encode(self, input: Tensor) -> List[Tensor]:
+    def encode(self, input: Tensor) -> list[Tensor]:
         """
         Encodes the input by passing through the encoder network
         and returns the latent codes.
@@ -190,7 +191,7 @@ class VQVAE(BaseVAE):
         result = self.decoder(z)
         return result
 
-    def forward(self, input: Tensor, **kwargs) -> List[Tensor]:
+    def forward(self, input: Tensor, **kwargs) -> list[Tensor]:
         encoding = self.encode(input)[0]
         quantized_inputs, vq_loss = self.vq_layer(encoding)
         return [self.decode(quantized_inputs), input, vq_loss]
@@ -216,7 +217,7 @@ class VQVAE(BaseVAE):
 
     def sample(self,
                num_samples: int,
-               current_device: Union[int, str], **kwargs) -> Tensor:
+               current_device: ta.Union[int, str], **kwargs) -> Tensor:
         raise Warning('VQVAE sampler is not implemented.')
 
     def generate(self, x: Tensor, **kwargs) -> Tensor:

@@ -1,9 +1,8 @@
 import torch
-from models import BaseVAE
+from .base import BaseVAE
 from torch import nn
 from torch.nn import functional as F
-
-from .types_ import *
+from torch import Tensor
 
 
 class HVAE(BaseVAE):
@@ -12,7 +11,7 @@ class HVAE(BaseVAE):
                  in_channels: int,
                  latent1_dim: int,
                  latent2_dim: int,
-                 hidden_dims: List = None,
+                 hidden_dims: list = None,
                  img_size: int = 64,
                  pseudo_input_size: int = 128,
                  **kwargs) -> None:
@@ -111,7 +110,7 @@ class HVAE(BaseVAE):
         # self.pseudo_layer = nn.Conv2d(1, out_channels=in_channels,
         #                              kernel_size=3, stride=2, padding=1)
 
-    def encode_z2(self, input: Tensor) -> List[Tensor]:
+    def encode_z2(self, input: Tensor) -> list[Tensor]:
         """
         Encodes the input by passing through the encoder network
         and returns the latent codes.
@@ -128,7 +127,7 @@ class HVAE(BaseVAE):
 
         return [z2_mu, z2_log_var]
 
-    def encode_z1(self, input: Tensor, z2: Tensor) -> List[Tensor]:
+    def encode_z1(self, input: Tensor, z2: Tensor) -> list[Tensor]:
         x = self.embed_data(input)
         z2 = self.embed_z2_code(z2)
         z2 = z2.view(-1, self.img_size, self.img_size).unsqueeze(1)
@@ -141,7 +140,7 @@ class HVAE(BaseVAE):
 
         return [z1_mu, z1_log_var]
 
-    def encode(self, input: Tensor) -> List[Tensor]:
+    def encode(self, input: Tensor) -> list[Tensor]:
         z2_mu, z2_log_var = self.encode_z2(input)
         z2 = self.reparameterize(z2_mu, z2_log_var)
 
@@ -166,7 +165,7 @@ class HVAE(BaseVAE):
         eps = torch.randn_like(std)
         return eps * std + mu
 
-    def forward(self, input: Tensor, **kwargs) -> List[Tensor]:
+    def forward(self, input: Tensor, **kwargs) -> list[Tensor]:
 
         # Encode the input into the latent codes z1 and z2
         # z2 ~q(z2 | x)
