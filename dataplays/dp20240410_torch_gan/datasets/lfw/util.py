@@ -2,7 +2,6 @@ import gzip
 import hashlib
 import os
 import struct
-import sys
 import tarfile
 import urllib
 import zipfile
@@ -31,10 +30,7 @@ def download(url, target_dir, filename=None):
     if filename is None:
         filename = url_filename(url)
     filepath = os.path.join(target_dir, filename)
-    if sys.version_info[0] > 2:
-        urllib.request.urlretrieve(url, filepath)
-    else:
-        urllib.urlretrieve(url, filepath)
+    urllib.request.urlretrieve(url, filepath)
     return filepath
 
 
