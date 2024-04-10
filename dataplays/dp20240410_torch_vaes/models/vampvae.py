@@ -1,9 +1,8 @@
 import torch
-from models import BaseVAE
+from .base import BaseVAE
 from torch import nn
 from torch.nn import functional as F
-
-from .types_ import *
+from torch import Tensor
 
 
 class VampVAE(BaseVAE):
@@ -11,7 +10,7 @@ class VampVAE(BaseVAE):
     def __init__(self,
                  in_channels: int,
                  latent_dim: int,
-                 hidden_dims: List = None,
+                 hidden_dims: list = None,
                  num_components: int = 50,
                  **kwargs) -> None:
         super(VampVAE, self).__init__()
@@ -77,7 +76,7 @@ class VampVAE(BaseVAE):
         self.embed_pseudo = nn.Sequential(nn.Linear(self.num_components, 12288),
                                           nn.Hardtanh(0.0, 1.0))  # 3x64x64 = 12288
 
-    def encode(self, input: Tensor) -> List[Tensor]:
+    def encode(self, input: Tensor) -> list[Tensor]:
         """
         Encodes the input by passing through the encoder network
         and returns the latent codes.
@@ -113,7 +112,7 @@ class VampVAE(BaseVAE):
         eps = torch.randn_like(std)
         return eps * std + mu
 
-    def forward(self, input: Tensor, **kwargs) -> List[Tensor]:
+    def forward(self, input: Tensor, **kwargs) -> list[Tensor]:
         mu, log_var = self.encode(input)
         z = self.reparameterize(mu, log_var)
         return [self.decode(z), input, mu, log_var, z]

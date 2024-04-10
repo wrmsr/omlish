@@ -3,6 +3,7 @@ import os
 import pytorch_lightning as pl
 import torchvision.utils as vutils
 from torch import optim
+from torch import Tensor
 
 from models import BaseVAE
 

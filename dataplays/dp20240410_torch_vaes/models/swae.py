@@ -1,10 +1,9 @@
 import torch
-from models import BaseVAE
+from .base import BaseVAE
 from torch import distributions as dist
 from torch import nn
 from torch.nn import functional as F
-
-from .types_ import *
+from torch import Tensor
 
 
 class SWAE(BaseVAE):
@@ -12,7 +11,7 @@ class SWAE(BaseVAE):
     def __init__(self,
                  in_channels: int,
                  latent_dim: int,
-                 hidden_dims: List = None,
+                 hidden_dims: list = None,
                  reg_weight: int = 100,
                  wasserstein_deg: float = 2.,
                  num_projections: int = 50,
@@ -101,7 +100,7 @@ class SWAE(BaseVAE):
         result = self.final_layer(result)
         return result
 
-    def forward(self, input: Tensor, **kwargs) -> List[Tensor]:
+    def forward(self, input: Tensor, **kwargs) -> list[Tensor]:
         z = self.encode(input)
         return [self.decode(z), input, z]
 

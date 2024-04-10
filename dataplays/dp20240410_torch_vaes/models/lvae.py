@@ -1,10 +1,9 @@
 import torch
 from math import floor
-from models import BaseVAE
+from .base import BaseVAE
 from torch import nn
 from torch.nn import functional as F
-
-from .types_ import *
+from torch import Tensor
 
 
 def conv_out_shape(img_size):
@@ -67,8 +66,8 @@ class LVAE(BaseVAE):
 
     def __init__(self,
                  in_channels: int,
-                 latent_dims: List,
-                 hidden_dims: List,
+                 latent_dims: list,
+                 hidden_dims: list,
                  **kwargs) -> None:
         super(LVAE, self).__init__()
 
@@ -135,7 +134,7 @@ class LVAE(BaseVAE):
             nn.Tanh())
         hidden_dims.reverse()
 
-    def encode(self, input: Tensor) -> List[Tensor]:
+    def encode(self, input: Tensor) -> list[Tensor]:
         """
         Encodes the input by passing through the encoder network
         and returns the latent codes.
@@ -152,7 +151,7 @@ class LVAE(BaseVAE):
 
         return post_params
 
-    def decode(self, z: Tensor, post_params: List) -> Tuple:
+    def decode(self, z: Tensor, post_params: list) -> tuple:
         """
         Maps the given latent codes
         onto the image space.
@@ -178,7 +177,7 @@ class LVAE(BaseVAE):
                     mu_1: Tensor,
                     mu_2: Tensor,
                     log_var_1: Tensor,
-                    log_var_2: Tensor) -> List:
+                    log_var_2: Tensor) -> list:
 
         p_1 = 1. / (log_var_1.exp() + 1e-7)
         p_2 = 1. / (log_var_2.exp() + 1e-7)
@@ -187,7 +186,7 @@ class LVAE(BaseVAE):
         log_var = torch.log(1. / (p_1 + p_2))
         return [mu, log_var]
 
-    def compute_kl_divergence(self, z: Tensor, q_params: Tuple, p_params: Tuple):
+    def compute_kl_divergence(self, z: Tensor, q_params: tuple, p_params: tuple):
         mu_q, log_var_q = q_params
         mu_p, log_var_p = p_params
         #
@@ -210,7 +209,7 @@ class LVAE(BaseVAE):
         eps = torch.randn_like(std)
         return eps * std + mu
 
-    def forward(self, input: Tensor, **kwargs) -> List[Tensor]:
+    def forward(self, input: Tensor, **kwargs) -> list[Tensor]:
         post_params = self.encode(input)
         mu, log_var = post_params.pop()
         z = self.reparameterize(mu, log_var)

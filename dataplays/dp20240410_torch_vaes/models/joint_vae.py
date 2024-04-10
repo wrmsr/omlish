@@ -1,10 +1,9 @@
 import numpy as np
 import torch
-from models import BaseVAE
+from .base import BaseVAE
 from torch import nn
 from torch.nn import functional as F
-
-from .types_ import *
+from torch import Tensor
 
 
 class JointVAE(BaseVAE):
@@ -22,7 +21,7 @@ class JointVAE(BaseVAE):
                  categorical_max_capacity: float = 25.,
                  categorical_gamma: float = 30.,
                  categorical_num_iter: int = 25000,
-                 hidden_dims: List = None,
+                 hidden_dims: list = None,
                  temperature: float = 0.5,
                  anneal_rate: float = 3e-5,
                  anneal_interval: int = 100,  # every 100 batches
@@ -108,7 +107,7 @@ class JointVAE(BaseVAE):
         self.sampling_dist = torch.distributions.OneHotCategorical(
             1. / categorical_dim * torch.ones((self.categorical_dim, 1)))
 
-    def encode(self, input: Tensor) -> List[Tensor]:
+    def encode(self, input: Tensor) -> list[Tensor]:
         """
         Encodes the input by passing through the encoder network
         and returns the latent codes.
@@ -166,7 +165,7 @@ class JointVAE(BaseVAE):
 
         return torch.cat([z, s], dim=1)
 
-    def forward(self, input: Tensor, **kwargs) -> List[Tensor]:
+    def forward(self, input: Tensor, **kwargs) -> list[Tensor]:
         mu, log_var, q = self.encode(input)
         z = self.reparameterize(mu, log_var, q)
         return [self.decode(z), input, q, mu, log_var]

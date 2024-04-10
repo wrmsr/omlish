@@ -37,6 +37,7 @@ if __name__ == '__main__':
     # seed_everything(config['exp_params']['manual_seed'], True)
 
     from experiment import VAEXperiment
+    from models import vae_models
     model = vae_models[config['model_params']['name']](**config['model_params'])
     experiment = VAEXperiment(model, config['exp_params'])
 

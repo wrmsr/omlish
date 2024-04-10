@@ -1,9 +1,8 @@
 import torch
-from models import BaseVAE
+from .base import BaseVAE
 from torch import nn
 from torch.nn import functional as F
-
-from .types_ import *
+from torch import Tensor
 
 
 class WAE_MMD(BaseVAE):
@@ -11,7 +10,7 @@ class WAE_MMD(BaseVAE):
     def __init__(self,
                  in_channels: int,
                  latent_dim: int,
-                 hidden_dims: List = None,
+                 hidden_dims: list = None,
                  reg_weight: int = 100,
                  kernel_type: str = 'imq',
                  latent_var: float = 2.,
@@ -98,7 +97,7 @@ class WAE_MMD(BaseVAE):
         result = self.final_layer(result)
         return result
 
-    def forward(self, input: Tensor, **kwargs) -> List[Tensor]:
+    def forward(self, input: Tensor, **kwargs) -> list[Tensor]:
         z = self.encode(input)
         return [self.decode(z), input, z]
 

@@ -1,9 +1,8 @@
 import torch
-from models import BaseVAE
+from .base import BaseVAE
 from torch import nn
 from torch.nn import functional as F
-
-from .types_ import *
+from torch import Tensor
 
 
 class ConditionalVAE(BaseVAE):
@@ -12,7 +11,7 @@ class ConditionalVAE(BaseVAE):
                  in_channels: int,
                  num_classes: int,
                  latent_dim: int,
-                 hidden_dims: List = None,
+                 hidden_dims: list = None,
                  img_size: int = 64,
                  **kwargs) -> None:
         super(ConditionalVAE, self).__init__()
@@ -78,7 +77,7 @@ class ConditionalVAE(BaseVAE):
                       kernel_size=3, padding=1),
             nn.Tanh())
 
-    def encode(self, input: Tensor) -> List[Tensor]:
+    def encode(self, input: Tensor) -> list[Tensor]:
         """
         Encodes the input by passing through the encoder network
         and returns the latent codes.
@@ -114,7 +113,7 @@ class ConditionalVAE(BaseVAE):
         eps = torch.randn_like(std)
         return eps * std + mu
 
-    def forward(self, input: Tensor, **kwargs) -> List[Tensor]:
+    def forward(self, input: Tensor, **kwargs) -> list[Tensor]:
         y = kwargs['labels'].float()
         embedded_class = self.embed_class(y)
         embedded_class = embedded_class.view(-1, self.img_size, self.img_size).unsqueeze(1)
