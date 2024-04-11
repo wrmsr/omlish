@@ -56,7 +56,7 @@ class VAE(nn.Module):
         self.reconstruct_pixels = nn.Linear(hidden_dim, num_pixels)  # , activation='sigmoid')
 
     def sample_z(self, z_mean: torch.Tensor, z_log_var: torch.Tensor) -> torch.Tensor:
-        eps = torch.empty(self.batch_size, self.latent_space_depth).normal_(mean=0., stddev=1.)
+        eps = torch.empty(z_mean.shape[0], self.latent_space_depth).normal_(mean=0., stddev=1.)
         return z_mean + (z_log_var / 2).exp() * eps
 
     def kl_loss(self, z_log_var: torch.Tensor, z_mean: torch.Tensor) -> torch.Tensor:
