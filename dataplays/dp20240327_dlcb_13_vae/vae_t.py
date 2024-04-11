@@ -120,7 +120,7 @@ def _main() -> None:
 
     ##
 
-    lr = 0.001
+    lr = .001
     epochs = 100
 
     opt = torch.optim.Adam(vae.parameters(), lr=lr)
