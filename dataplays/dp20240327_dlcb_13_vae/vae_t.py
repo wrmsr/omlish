@@ -49,11 +49,15 @@ class VAE(nn.Module):
         self.decoder_hidden = nn.Linear(latent_space_depth, hidden_dim)  # , activation='relu')
         self.reconstruct_pixels = nn.Linear(hidden_dim, num_pixels)  # , activation='sigmoid')
 
-    def kl_loss(self, y_true: torch.Tensor, y_pred: torch.Tensor) -> torch.Tensor:
-        return (0.5 * K.sum(z_log_var.exp() + K.square(z_mean) - 1 - z_log_var, axis=1))
+    def sample_z(self, z_mean: torch.Tensor, z_log_var: torch.Tensor) -> torch.Tensor:
+        eps = torch.empty(self.batch_size, self.latent_space_depth).normal_(mean=0., stddev=1.)
+        return z_mean + (z_log_var / 2).exp() * eps
+
+    def kl_loss(self, z_log_var: torch.Tensor, z_mean: torch.Tensor) -> torch.Tensor:
+        return (.5 * (z_log_var.exp() + z_mean.square() - 1 - z_log_var).sum(1))
 
     def reconstruction_loss(self, y_true: torch.Tensor, y_pred: torch.Tensor) -> torch.Tensor:
-        return K.sum(K.binary_crossentropy(y_true, y_pred), axis=-1)
+        return F.binary_cross_entropy(y_true, y_pred).sum(-1)
 
     def total_loss(self, y_true: torch.Tensor, y_pred: torch.Tensor) -> torch.Tensor:
         return self.kl_loss(y_true, y_pred) + self.reconstruction_loss(y_true, y_pred)
