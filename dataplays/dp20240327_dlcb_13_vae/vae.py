@@ -127,8 +127,8 @@ def _main() -> None:
     out_model_path = None
 
     # https://github.com/keras-team/keras/issues/16066#issuecomment-1172622846
-    from tensorflow.python.framework.ops import disable_eager_execution
-    disable_eager_execution()
+    from tensorflow.python.framework.ops import disable_eager_execution  # noqa
+    # disable_eager_execution()
 
     ##
 
