@@ -101,7 +101,7 @@ def _main() -> None:
 
     batch_size = 250
 
-    train_ds = torch.utils.data.TensorDataset(*map(torch.tensor, x_train))
+    train_ds = torch.utils.data.TensorDataset(torch.tensor(x_train))
     train_dl = torch.utils.data.DataLoader(train_ds, batch_size=batch_size, shuffle=True)
 
     latent_space_depth = 2
@@ -120,7 +120,7 @@ def _main() -> None:
 
     vae.train()
     for epoch in range(epochs):
-        for pixels in train_dl:
+        for [pixels] in train_dl:
             outputs, loss = vae(pixels)
             loss.backward()
             opt.step()
