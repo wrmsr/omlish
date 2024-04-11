@@ -66,12 +66,15 @@ def VariationalAutoEncoder(batch_size, latent_space_depth, num_pixels):
     z_log_var = Dense(latent_space_depth, activation='linear')(encoder_hidden)
 
     def KL_loss(y_true, y_pred):
+        breakpoint()
         return (0.5 * K.sum(K.exp(z_log_var) + K.square(z_mean) - 1 - z_log_var, axis=1))
 
     def reconstruction_loss(y_true, y_pred):
+        breakpoint()
         return K.sum(K.binary_crossentropy(y_true, y_pred), axis=-1)
 
     def total_loss(y_true, y_pred):
+        breakpoint()
         return KL_loss(y_true, y_pred) + reconstruction_loss(y_true, y_pred)
 
     z = Lambda(
@@ -99,6 +102,18 @@ def VariationalAutoEncoder(batch_size, latent_space_depth, num_pixels):
     )
 
     return auto_encoder, decoder
+
+
+def calc_KL_loss(z_log_var, z_mean):
+    return (0.5 * K.sum(K.exp(z_log_var) + K.square(z_mean) - 1 - z_log_var, axis=1))
+
+
+def calc_reconstruction_loss(y_true, y_pred):
+    return K.sum(K.binary_crossentropy(y_true, y_pred), axis=-1)
+
+
+def calc_total_loss(y_true, y_pred, z_log_var, z_mean):
+    return calc_KL_loss(z_log_var, z_mean) + calc_reconstruction_loss(y_true, y_pred)
 
 
 LOCAL_DIR = os.path.dirname(__file__)

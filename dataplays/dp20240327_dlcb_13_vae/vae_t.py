@@ -1,6 +1,6 @@
-import functools
 import os.path  # noqa
 import time
+import typing as ta
 
 import PIL
 import numpy as np
@@ -60,28 +60,35 @@ class VAE(nn.Module):
         return z_mean + (z_log_var / 2).exp() * eps
 
     def kl_loss(self, z_log_var: torch.Tensor, z_mean: torch.Tensor) -> torch.Tensor:
-        return (.5 * (z_log_var.exp() + z_mean.square() - 1 - z_log_var).sum(1))
+        return .5 * (z_log_var.exp() + z_mean.square() - 1 - z_log_var).sum(1)
 
     def reconstruction_loss(self, y_true: torch.Tensor, y_pred: torch.Tensor) -> torch.Tensor:
-        return F.binary_cross_entropy(y_true, y_pred).sum(-1)
+        return F.binary_cross_entropy(y_true, y_pred, reduction='none').sum(-1)
 
     def total_loss(self, y_true: torch.Tensor, y_pred: torch.Tensor) -> torch.Tensor:
         return self.kl_loss(y_true, y_pred) + self.reconstruction_loss(y_true, y_pred)
 
-    def forward(self, pixels: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
-        encoder_hidden = F.relu(self.encoder_hidden(pixels))
+    class Forward(ta.NamedTuple):
+        outputs: torch.Tensor  # (bs, np)
+        losses: torch.Tensor  # (bs,)
 
-        z_mean = self.z_mean(encoder_hidden)
-        z_log_var = self.z_mean(encoder_hidden)
+    def forward(
+            self,
+            pixels: torch.Tensor,  # (bs, np)
+    ) -> Forward:
+        encoder_hidden = F.relu(self.encoder_hidden(pixels))  # (bs, hd)
 
-        z = self.sample_z(z_mean, z_log_var)
+        z_mean = self.z_mean(encoder_hidden)  # (bs, lsd)
+        z_log_var = self.z_mean(encoder_hidden)  # (bs, lsd)
 
-        hidden = F.relu(self.decoder_hidden(z))
-        outputs = F.sigmoid(self.reconstruct_pixels(hidden))
+        z = self.sample_z(z_mean, z_log_var)  # (bs, lsd)
 
-        total_losses = self.total_loss(pixels, outputs)
+        hidden = F.relu(self.decoder_hidden(z))  # (bs, hd)
+        outputs = F.sigmoid(self.reconstruct_pixels(hidden))  # (bs, np)
 
-        return outputs, total_losses
+        losses = self.total_loss(pixels, outputs)  # (bs,)
+
+        return VAE.Forward(outputs, losses)
 
     def decode(self, decoder_in: torch.Tensor) -> torch.Tensor:
         hidden = F.relu(self.decoder_hidden(decoder_in))
