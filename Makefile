@@ -61,17 +61,24 @@ PYENV_BIN:=$$(sh -c "if [ -f '$${HOME}/.pyenv/bin/pyenv' ] ; then echo '$${HOME}
 PYENV_INSTALL_OPTS:=$$(echo "$${_PYENV_INSTALL_OPTS:-${DEFAULT_PYENV_INSTALL_OPTS}}")
 PYENV_VERSION_SUFFIX:=$$(echo "$${_PYENV_VERSION_SUFFIX:-${DEFAULT_PYENV_VERSION_SUFFIX}}")
 
+.PHONY: _venv_
+_venv_:
+	$(PYENV_BIN) install -s $(PYENV_INSTALL_OPTS) $(PYTHON_VERSION) && \
+	"$(PYENV_ROOT)/versions/$(PYTHON_VERSION)$(PYENV_VERSION_SUFFIX)/bin/python" -mvenv $(VENV_OPTS) $(VENV_ROOT) && \
+	$(PYTHON) -mpip install --upgrade pip setuptools wheel && \
+	$(PYTHON) -mpip install -r ${REQUIREMENTS_TXT}
+
 .PHONY: _venv
 _venv:
 	if [ ! -d $(VENV_ROOT) ] ; then \
-		$(PYENV_BIN) install -s $(PYENV_INSTALL_OPTS) $(PYTHON_VERSION) && \
-		"$(PYENV_ROOT)/versions/$(PYTHON_VERSION)$(PYENV_VERSION_SUFFIX)/bin/python" -mvenv $(VENV_OPTS) $(VENV_ROOT) && \
-		$(PYTHON) -mpip install --upgrade pip setuptools wheel && \
-		$(PYTHON) -mpip install -r ${REQUIREMENTS_TXT} ; \
+		${MAKE} _venv_ ; \
 	fi
 
 .PHONY: venv
-venv: _venv tg
+venv:
+	if [ ! -d $(VENV_ROOT) ] ; then \
+		${MAKE} _venv_ tg ; \
+	fi
 
 .PHONY: tg
 tg:
