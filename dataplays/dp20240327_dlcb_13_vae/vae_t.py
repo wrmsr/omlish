@@ -122,7 +122,7 @@ def _main() -> None:
     for epoch in range(epochs):
         for [pixels] in train_dl:
             outputs, loss = vae(pixels)
-            loss.sum().backward()
+            loss.mean().backward()
             opt.step()
             opt.zero_grad()
 
