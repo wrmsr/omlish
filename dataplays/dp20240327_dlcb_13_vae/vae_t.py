@@ -14,6 +14,9 @@ import keras.callbacks
 import keras.models as km
 import numpy as np
 import torchvision.datasets  # noqa
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
 
 
 def prepare(images, labels):
@@ -33,7 +36,30 @@ def decode_img(a):
     return PIL.Image.fromarray(a)
 
 
-"""
+class VAE(nn.Module):
+    def __init__(self, latent_space_depth: int, num_pixels: int, hidden_dim: int = 512) -> None:
+        super().__init__()
+        self.latent_space_depth = latent_space_depth
+        self.num_pixels = num_pixels
+        self.hidden_dim = hidden_dim
+
+        self.encoder_hidden = nn.Linear(num_pixels, hidden_dim)  # , activation='relu')(pixels)
+        self.z_mean = nn.Linear(hidden_dim, latent_space_depth)  # , activation='linear')(encoder_hidden)
+        self.z_log_var = nn.Linear(hidden_dim, latent_space_depth)  # , activation='linear')(encoder_hidden)
+        self.decoder_hidden = nn.Linear(latent_space_depth, hidden_dim)  # , activation='relu')
+        self.reconstruct_pixels = nn.Linear(hidden_dim, num_pixels)  # , activation='sigmoid')
+
+    def kl_loss(self, y_true: torch.Tensor, y_pred: torch.Tensor) -> torch.Tensor:
+        return (0.5 * K.sum(z_log_var.exp() + K.square(z_mean) - 1 - z_log_var, axis=1))
+
+    def reconstruction_loss(self, y_true: torch.Tensor, y_pred: torch.Tensor) -> torch.Tensor:
+        return K.sum(K.binary_crossentropy(y_true, y_pred), axis=-1)
+
+    def total_loss(self, y_true: torch.Tensor, y_pred: torch.Tensor) -> torch.Tensor:
+        return self.kl_loss(y_true, y_pred) + self.reconstruction_loss(y_true, y_pred)
+
+
+    """
 __________________________________________________________________________________________________
  Layer (type)                Output Shape                 Param #   Connected to                  
 ==================================================================================================
