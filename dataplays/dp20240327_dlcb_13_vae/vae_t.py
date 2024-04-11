@@ -113,7 +113,7 @@ def _main() -> None:
 
     ##
 
-    lr = 0.1
+    lr = 0.001
     epochs = 100
 
     opt = torch.optim.Adam(vae.parameters(), lr=lr)
@@ -122,7 +122,7 @@ def _main() -> None:
     for epoch in range(epochs):
         for [pixels] in train_dl:
             outputs, loss = vae(pixels)
-            loss.backward()
+            loss.sum().backward()
             opt.step()
             opt.zero_grad()
 
