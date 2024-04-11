@@ -133,7 +133,22 @@ def _main():
             print("\tEpoch", epoch + 1, "\tAverage Loss: ", overall_loss / (batch_idx * batch_size))
         return overall_loss
 
-    train(model, optimizer, epochs=50, device=device)
+    in_model_path = None
+    in_model_path = os.path.join(LOCAL_DIR, 'model.pth')
+
+    out_model_path = None
+    out_model_path = os.path.join(LOCAL_DIR, 'model2.pth')
+
+    epochs = 50
+
+    if in_model_path and os.path.exists(in_model_path):
+        model.load_state_dict(torch.load(in_model_path, map_location=device))
+
+    if epochs:
+        train(model, optimizer, epochs=epochs, device=device)
+
+    if out_model_path:
+        torch.save(model.state_dict(), out_model_path)
 
     ##
 
