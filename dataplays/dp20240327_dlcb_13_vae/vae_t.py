@@ -2,21 +2,31 @@ import functools
 import os.path  # noqa
 import time
 
-from keras import backend as K
-from keras.callbacks import EarlyStopping
-from keras.datasets import mnist
-from keras.layers import Input, Dense, Lambda
-from keras.models import Model
-from keras.optimizers.legacy import Adam  # https://stackoverflow.com/a/75596562
-from keras.utils import to_categorical
 import PIL
-import keras.callbacks
-import keras.models as km
 import numpy as np
-import torchvision.datasets  # noqa
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torchvision.datasets  # noqa
+
+
+def to_categorical(y, num_classes=None, dtype="float32"):
+    y = np.array(y, dtype="int")
+    input_shape = y.shape
+
+    if input_shape and input_shape[-1] == 1 and len(input_shape) > 1:
+        input_shape = tuple(input_shape[:-1])
+
+    y = y.reshape(-1)
+    if not num_classes:
+        num_classes = np.max(y) + 1
+
+    n = y.shape[0]
+    categorical = np.zeros((n, num_classes), dtype=dtype)
+    categorical[np.arange(n), y] = 1
+    output_shape = input_shape + (num_classes,)
+    categorical = np.reshape(categorical, output_shape)
+    return categorical
 
 
 def prepare(images, labels):
@@ -25,18 +35,13 @@ def prepare(images, labels):
     return images.reshape((n, w * h)), to_categorical(labels)
 
 
-def sample_z(batch_size, latent_space_depth, args):
-    z_mean, z_log_var = args
-    eps = K.random_normal(shape=(batch_size, latent_space_depth), mean=0., stddev=1.)
-    return z_mean + K.exp(z_log_var / 2) * eps
-
-
 def decode_img(a):
     a = np.clip(a * 256, 0, 255).astype('uint8')
     return PIL.Image.fromarray(a)
 
 
 class VAE(nn.Module):
+
     def __init__(self, latent_space_depth: int, num_pixels: int, hidden_dim: int = 512) -> None:
         super().__init__()
         self.latent_space_depth = latent_space_depth
@@ -62,101 +67,32 @@ class VAE(nn.Module):
     def total_loss(self, y_true: torch.Tensor, y_pred: torch.Tensor) -> torch.Tensor:
         return self.kl_loss(y_true, y_pred) + self.reconstruction_loss(y_true, y_pred)
 
+    def forward(self, pixels: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+        encoder_hidden = F.relu(self.encoder_hidden(pixels))
 
-    """
-__________________________________________________________________________________________________
- Layer (type)                Output Shape                 Param #   Connected to                  
-==================================================================================================
- input_1 (InputLayer)        [(None, 784)]                0         []                            
+        z_mean = self.z_mean(encoder_hidden)
+        z_log_var = self.z_mean(encoder_hidden)
 
- dense (Dense)               (None, 512)                  401920    ['input_1[0][0]']             
+        z = self.sample_z(z_mean, z_log_var)
 
- dense_1 (Dense)             (None, 2)                    1026      ['dense[0][0]']               
+        hidden = F.relu(self.decoder_hidden(z))
+        outputs = F.sigmoid(self.reconstruct_pixels(hidden))
 
- dense_2 (Dense)             (None, 2)                    1026      ['dense[0][0]']               
+        total_loss = self.total_loss(pixels, outputs)
 
- lambda (Lambda)             (250, 2)                     0         ['dense_1[0][0]',             
-                                                                     'dense_2[0][0]']             
+        return outputs, total_loss
 
- dense_3 (Dense)             multiple                     1536      ['lambda[0][0]']              
-
- dense_4 (Dense)             multiple                     402192    ['dense_3[1][0]']             
-
-==================================================================================================
-Total params: 807700 (3.08 MB)
-Trainable params: 807700 (3.08 MB)
-Non-trainable params: 0 (0.00 Byte)
-__________________________________________________________________________________________________
-"""
-def VariationalAutoEncoder(batch_size, latent_space_depth, num_pixels):
-    pixels = Input(shape=(num_pixels,))
-    encoder_hidden = Dense(512, activation='relu')(pixels)
-
-    z_mean = Dense(latent_space_depth, activation='linear')(encoder_hidden)
-    z_log_var = Dense(latent_space_depth, activation='linear')(encoder_hidden)
-
-    def KL_loss(y_true, y_pred):
-        breakpoint()
-        return (0.5 * K.sum(K.exp(z_log_var) + K.square(z_mean) - 1 - z_log_var, axis=1))
-
-    def reconstruction_loss(y_true, y_pred):
-        breakpoint()
-        return K.sum(K.binary_crossentropy(y_true, y_pred), axis=-1)
-
-    def total_loss(y_true, y_pred):
-        breakpoint()
-        return KL_loss(y_true, y_pred) + reconstruction_loss(y_true, y_pred)
-
-    z = Lambda(
-        functools.partial(sample_z, batch_size, latent_space_depth),
-        output_shape=(latent_space_depth,),
-    )([z_mean, z_log_var])
-
-    decoder_hidden = Dense(512, activation='relu')
-
-    reconstruct_pixels = Dense(num_pixels, activation='sigmoid')
-
-    decoder_in = Input(shape=(latent_space_depth,))
-    hidden = decoder_hidden(decoder_in)
-    decoder_out = reconstruct_pixels(hidden)
-    decoder = Model(decoder_in, decoder_out)
-
-    hidden = decoder_hidden(z)
-    outputs = reconstruct_pixels(hidden)
-    auto_encoder = Model(pixels, outputs)
-
-    auto_encoder.compile(
-        optimizer=Adam(lr=0.001),
-        loss=total_loss,
-        metrics=[KL_loss, reconstruction_loss],
-    )
-
-    return auto_encoder, decoder
+    def decode(self, decoder_in: torch.Tensor) -> torch.Tensor:
+        hidden = F.relu(self.decoder_hidden(decoder_in))
+        decoder_out = F.sigmoid(self.reconstruct_pixels(hidden))
+        return decoder_out
 
 
 LOCAL_DIR = os.path.dirname(__file__)
 
 
 def _main() -> None:
-    in_model_path = None
-    # in_model_path = os.path.join(LOCAL_DIR, 'vae_1711652835.5188153')
-
-    # out_model_path = os.path.join(LOCAL_DIR, f'vae_{time.time()}')
-    out_model_path = None
-
-    # https://github.com/keras-team/keras/issues/16066#issuecomment-1172622846
-    from tensorflow.python.framework.ops import disable_eager_execution
-    disable_eager_execution()
-
-    ##
-
-    # ds = torchvision.datasets.MNIST(
-    #     root=os.path.join(os.path.dirname(__file__), 'data'),
-    #     download=True,
-    # )
-
-    ##
-
+    from keras.datasets import mnist
     train, test = mnist.load_data()
     x_train, y_train = prepare(*train)
     x_test, y_test = prepare(*test)
@@ -164,20 +100,36 @@ def _main() -> None:
 
     batch_size = 250
     latent_space_depth = 2
+    num_pixels = x_train.shape[1]
 
     ##
 
-    auto_encoder, decoder = VariationalAutoEncoder(
-        batch_size,
-        latent_space_depth,
-        x_train.shape[1],
-    )
-    if in_model_path and os.path.exists(in_model_path + '_e.keras'):
-        auto_encoder.load_weights(in_model_path + '_e.keras')
-        decoder.load_weights(in_model_path + '_d.keras')
-    auto_encoder.summary()
+    vae = VAE(latent_space_depth, num_pixels)
 
     ##
+
+    def set_torch_data(d, s):
+        if d.shape != s.shape:
+            raise ValueError((d, s))
+        d.set_(s)
+
+    def set_torch_dense(t, k):
+        set_torch_data(t.weight, torch.tensor(k.weights[0].numpy()).permute(1, 0))
+        set_torch_data(t.bias, torch.tensor(k.weights[1].numpy()))
+
+
+    def set_tm_data():
+        for n in [
+            'encoder_hidden',
+            'z_mean',
+            'z_log_var',
+            'decoder_hidden',
+            'reconstruct_pixels',
+        ]:
+            set_torch_dense(
+                getattr(tm, n),
+                auto_encoder.get_layer(n),
+            )
 
     class SaveModelCallback(keras.callbacks.Callback):
         def __init__(self, n, out_path):
@@ -187,8 +139,9 @@ def _main() -> None:
 
         def on_epoch_end(self, epoch, logs=None):
             if epoch % self.n == 0:
-                auto_encoder.save(self.out_path + '_e.keras')
-                decoder.save(self.out_path + '_d.keras')
+                set_tm_data()
+                # auto_encoder.save(self.out_path + '_e.keras')
+                # decoder.save(self.out_path + '_d.keras')
 
     auto_encoder.fit(
         x_train,
