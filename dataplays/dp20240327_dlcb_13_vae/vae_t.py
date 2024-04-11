@@ -79,9 +79,9 @@ class VAE(nn.Module):
         hidden = F.relu(self.decoder_hidden(z))
         outputs = F.sigmoid(self.reconstruct_pixels(hidden))
 
-        total_loss = self.total_loss(pixels, outputs)
+        total_losses = self.total_loss(pixels, outputs)
 
-        return outputs, total_loss
+        return outputs, total_losses
 
     def decode(self, decoder_in: torch.Tensor) -> torch.Tensor:
         hidden = F.relu(self.decoder_hidden(decoder_in))
@@ -120,9 +120,11 @@ def _main() -> None:
 
     vae.train()
     for epoch in range(epochs):
-        for [pixels] in train_dl:
-            outputs, loss = vae(pixels)
-            loss.mean().backward()
+        for nb, [pixels] in enumerate(train_dl):
+            outputs, losses = vae(pixels)
+            total_loss = losses.mean()
+            print((epoch, nb, total_loss.item()))
+            total_loss.backward()
             opt.step()
             opt.zero_grad()
 
