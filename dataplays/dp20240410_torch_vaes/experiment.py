@@ -10,10 +10,12 @@ from models import BaseVAE
 
 class VAEXperiment(pl.LightningModule):
 
-    def __init__(self,
-                 vae_model: BaseVAE,
-                 params: dict) -> None:
-        super(VAEXperiment, self).__init__()
+    def __init__(
+            self,
+            vae_model: BaseVAE,
+            params: dict,
+    ) -> None:
+        super().__init__()
 
         self.model = vae_model
         self.params = params
@@ -21,7 +23,7 @@ class VAEXperiment(pl.LightningModule):
         self.hold_graph = False
         try:
             self.hold_graph = self.params['retain_first_backpass']
-        except:
+        except Exception:
             pass
 
     def forward(self, input: Tensor, **kwargs) -> Tensor:
@@ -76,60 +78,80 @@ class VAEXperiment(pl.LightningModule):
         test_input = test_input.to(self.curr_device)
         test_label = test_label.to(self.curr_device)
 
-        #         test_input, test_label = batch
+        # test_input, test_label = batch
         recons = self.model.generate(test_input, labels=test_label)
-        vutils.save_image(recons.data,
-                          os.path.join(self.logger.log_dir,
-                                       "Reconstructions",
-                                       f"recons_{self.logger.name}_Epoch_{self.current_epoch}.png"),
-                          normalize=True,
-                          nrow=12)
+        vutils.save_image(
+            recons.data,
+            os.path.join(
+                self.logger.log_dir,
+                "Reconstructions",
+                f"recons_{self.logger.name}_Epoch_{self.current_epoch}.png",
+            ),
+            normalize=True,
+            nrow=12,
+        )
 
         try:
-            samples = self.model.sample(144,
-                                        self.curr_device,
-                                        labels=test_label)
-            vutils.save_image(samples.cpu().data,
-                              os.path.join(self.logger.log_dir,
-                                           "Samples",
-                                           f"{self.logger.name}_Epoch_{self.current_epoch}.png"),
-                              normalize=True,
-                              nrow=12)
+            samples = self.model.sample(
+                144,
+                self.curr_device,
+                labels=test_label,
+            )
+            vutils.save_image(
+                samples.cpu().data,
+                os.path.join(
+                    self.logger.log_dir,
+                    "Samples",
+                    f"{self.logger.name}_Epoch_{self.current_epoch}.png",
+                ),
+                normalize=True,
+                nrow=12,
+            )
         except Warning:
             pass
 
     def configure_optimizers(self):
-
         optims = []
         scheds = []
 
-        optimizer = optim.Adam(self.model.parameters(),
-                               lr=self.params['LR'],
-                               weight_decay=self.params['weight_decay'])
+        optimizer = optim.Adam(
+            self.model.parameters(),
+            lr=self.params['LR'],
+            weight_decay=self.params['weight_decay'],
+        )
         optims.append(optimizer)
+
         # Check if more than 1 optimizer is required (Used for adversarial training)
         try:
             if self.params['LR_2'] is not None:
-                optimizer2 = optim.Adam(getattr(self.model, self.params['submodel']).parameters(),
-                                        lr=self.params['LR_2'])
+                optimizer2 = optim.Adam(
+                    getattr(self.model, self.params['submodel']).parameters(),
+                    lr=self.params['LR_2'],
+                )
                 optims.append(optimizer2)
         except Exception:
             pass
 
         try:
             if self.params['scheduler_gamma'] is not None:
-                scheduler = optim.lr_scheduler.ExponentialLR(optims[0],
-                                                             gamma=self.params['scheduler_gamma'])
+                scheduler = optim.lr_scheduler.ExponentialLR(
+                    optims[0],
+                    gamma=self.params['scheduler_gamma'],
+                )
                 scheds.append(scheduler)
 
                 # Check if another scheduler is required for the second optimizer
                 try:
                     if self.params['scheduler_gamma_2'] is not None:
-                        scheduler2 = optim.lr_scheduler.ExponentialLR(optims[1],
-                                                                      gamma=self.params['scheduler_gamma_2'])
+                        scheduler2 = optim.lr_scheduler.ExponentialLR(
+                            optims[1],
+                            gamma=self.params['scheduler_gamma_2'],
+                        )
                         scheds.append(scheduler2)
-                except:
+                except Exception:
                     pass
+
                 return optims, scheds
+
         except Exception:
             return optims
