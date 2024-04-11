@@ -8,7 +8,7 @@ from torch import nn
 class BaseVAE(nn.Module):
 
     def __init__(self) -> None:
-        super(BaseVAE, self).__init__()
+        super().__init__()
 
     def encode(self, input: Tensor) -> list[Tensor]:
         raise NotImplementedError
