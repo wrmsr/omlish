@@ -15,7 +15,14 @@ if __name__ == '__main__':
     os.chdir(os.path.dirname(__file__))
 
     parser = argparse.ArgumentParser(description='Generic runner for VAE models')
-    parser.add_argument('--config', '-c', dest="filename", metavar='FILE', help='path to the config file', default='configs/vae.yaml')
+    parser.add_argument(
+        '--config',
+        '-c',
+        dest="filename",
+        metavar='FILE',
+        help='path to the config file',
+        default='configs/vae.yaml',
+    )
 
     args = parser.parse_args()
     with open(args.filename, 'r') as file:
@@ -44,7 +51,7 @@ if __name__ == '__main__':
     model = vae_models[config['model_params']['name']](**config['model_params'])
     experiment = VAEXperiment(model, config['exp_params'])
 
-    from pytorch_lightning.strategies import DDPStrategy
+    from pytorch_lightning.strategies import DDPStrategy  # noqa
     runner = Trainer(
         logger=tb_logger,
         callbacks=[

@@ -7,12 +7,14 @@ from torch import Tensor
 
 class VanillaVAE(BaseVAE):
 
-    def __init__(self,
-                 in_channels: int,
-                 latent_dim: int,
-                 hidden_dims: list = None,
-                 **kwargs) -> None:
-        super(VanillaVAE, self).__init__()
+    def __init__(
+            self,
+            in_channels: int,
+            latent_dim: int,
+            hidden_dims: list = None,
+            **kwargs,
+    ) -> None:
+        super().__init__()
 
         self.latent_dim = latent_dim
 
@@ -24,8 +26,13 @@ class VanillaVAE(BaseVAE):
         for h_dim in hidden_dims:
             modules.append(
                 nn.Sequential(
-                    nn.Conv2d(in_channels, out_channels=h_dim,
-                              kernel_size=3, stride=2, padding=1),
+                    nn.Conv2d(
+                        in_channels,
+                        out_channels=h_dim,
+                        kernel_size=3,
+                        stride=2,
+                        padding=1,
+                    ),
                     nn.BatchNorm2d(h_dim),
                     nn.LeakyReLU())
             )
@@ -45,12 +52,14 @@ class VanillaVAE(BaseVAE):
         for i in range(len(hidden_dims) - 1):
             modules.append(
                 nn.Sequential(
-                    nn.ConvTranspose2d(hidden_dims[i],
-                                       hidden_dims[i + 1],
-                                       kernel_size=3,
-                                       stride=2,
-                                       padding=1,
-                                       output_padding=1),
+                    nn.ConvTranspose2d(
+                        hidden_dims[i],
+                        hidden_dims[i + 1],
+                        kernel_size=3,
+                        stride=2,
+                        padding=1,
+                        output_padding=1,
+                    ),
                     nn.BatchNorm2d(hidden_dims[i + 1]),
                     nn.LeakyReLU())
             )
@@ -58,16 +67,22 @@ class VanillaVAE(BaseVAE):
         self.decoder = nn.Sequential(*modules)
 
         self.final_layer = nn.Sequential(
-            nn.ConvTranspose2d(hidden_dims[-1],
-                               hidden_dims[-1],
-                               kernel_size=3,
-                               stride=2,
-                               padding=1,
-                               output_padding=1),
+            nn.ConvTranspose2d(
+                hidden_dims[-1],
+                hidden_dims[-1],
+                kernel_size=3,
+                stride=2,
+                padding=1,
+                output_padding=1,
+            ),
             nn.BatchNorm2d(hidden_dims[-1]),
             nn.LeakyReLU(),
-            nn.Conv2d(hidden_dims[-1], out_channels=3,
-                      kernel_size=3, padding=1),
+            nn.Conv2d(
+                hidden_dims[-1],
+                out_channels=3,
+                kernel_size=3,
+                padding=1,
+            ),
             nn.Tanh())
 
     def encode(self, input: Tensor) -> list[Tensor]:
@@ -117,9 +132,7 @@ class VanillaVAE(BaseVAE):
         z = self.reparameterize(mu, log_var)
         return [self.decode(z), input, mu, log_var]
 
-    def loss_function(self,
-                      *args,
-                      **kwargs) -> dict:
+    def loss_function(self, *args, **kwargs) -> dict:
         """
         Computes the VAE loss function.
         KL(N(\mu, \sigma), N(0, 1)) = \log \frac{1}{\sigma} + \frac{\sigma^2 + \mu^2}{2} - \frac{1}{2}
@@ -140,9 +153,12 @@ class VanillaVAE(BaseVAE):
         loss = recons_loss + kld_weight * kld_loss
         return {'loss': loss, 'Reconstruction_Loss': recons_loss.detach(), 'KLD': -kld_loss.detach()}
 
-    def sample(self,
-               num_samples: int,
-               current_device: int, **kwargs) -> Tensor:
+    def sample(
+            self,
+            num_samples: int,
+            current_device: int,
+            **kwargs,
+    ) -> Tensor:
         """
         Samples from the latent space and return the corresponding
         image space map.
@@ -150,8 +166,7 @@ class VanillaVAE(BaseVAE):
         :param current_device: (Int) Device to run the model
         :return: (Tensor)
         """
-        z = torch.randn(num_samples,
-                        self.latent_dim)
+        z = torch.randn(num_samples, self.latent_dim)
 
         z = z.to(current_device)
 
