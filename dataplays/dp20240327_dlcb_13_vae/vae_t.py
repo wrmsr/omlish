@@ -7,6 +7,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torch.utils.data
 import torchvision.datasets  # noqa
 
 
@@ -99,6 +100,10 @@ def _main() -> None:
     img_width, img_height = train[0].shape[1:]
 
     batch_size = 250
+
+    train_ds = torch.utils.data.TensorDataset(*map(torch.tensor, x_train))
+    train_dl = torch.utils.data.DataLoader(train_ds, batch_size=batch_size, shuffle=True)
+
     latent_space_depth = 2
     num_pixels = x_train.shape[1]
 
@@ -108,82 +113,60 @@ def _main() -> None:
 
     ##
 
-    def set_torch_data(d, s):
-        if d.shape != s.shape:
-            raise ValueError((d, s))
-        d.set_(s)
+    lr = 0.1
+    epochs = 100
 
-    def set_torch_dense(t, k):
-        set_torch_data(t.weight, torch.tensor(k.weights[0].numpy()).permute(1, 0))
-        set_torch_data(t.bias, torch.tensor(k.weights[1].numpy()))
+    opt = torch.optim.Adam(vae.parameters(), lr=lr)
 
+    vae.train()
+    for epoch in range(epochs):
+        for pixels in train_dl:
+            outputs, loss = vae(pixels)
+            loss.backward()
+            opt.step()
+            opt.zero_grad()
 
-    def set_tm_data():
-        for n in [
-            'encoder_hidden',
-            'z_mean',
-            'z_log_var',
-            'decoder_hidden',
-            'reconstruct_pixels',
-        ]:
-            set_torch_dense(
-                getattr(tm, n),
-                auto_encoder.get_layer(n),
-            )
-
-    class SaveModelCallback(keras.callbacks.Callback):
-        def __init__(self, n, out_path):
-            super().__init__()
-            self.out_path = out_path
-            self.n = n
-
-        def on_epoch_end(self, epoch, logs=None):
-            if epoch % self.n == 0:
-                set_tm_data()
-                # auto_encoder.save(self.out_path + '_e.keras')
-                # decoder.save(self.out_path + '_d.keras')
-
-    auto_encoder.fit(
-        x_train,
-        x_train,
-        verbose=1,
-        batch_size=batch_size,
-        epochs=100,
-        validation_data=(x_test, x_test),
-        callbacks=[
-            *([SaveModelCallback(10, out_model_path)] if out_model_path else []),
-        ]
-    )
-
-    ##
-
-    random_number = np.asarray([[np.random.normal() for _ in range(latent_space_depth)]])
-
-    decode_img(decoder.predict(random_number).reshape(img_width, img_height)).resize((56, 56)).show()
-
-    ##
-
-    num_cells = 10
-
-    overview = PIL.Image.new(
-        'RGB',
-        (
-            num_cells * (img_width + 4) + 8,
-            num_cells * (img_height + 4) + 8,
-        ),
-        (128, 128, 128),
-    )
-
-    vec = np.zeros((1, latent_space_depth))
-    for x in range(num_cells):
-        vec[:, 0] = (x * 3) / (num_cells - 1) - 1.5
-        for y in range(num_cells):
-            vec[:, 1] = (y * 3) / (num_cells - 1) - 1.5
-            decoded = decoder.predict(vec)
-            img = decode_img(decoded.reshape(img_width, img_height))
-            overview.paste(img, (x * (img_width + 4) + 6, y * (img_height + 4) + 6))
-
-    overview.show()
+    # auto_encoder.fit(
+    #     x_train,
+    #     x_train,
+    #     verbose=1,
+    #     batch_size=batch_size,
+    #     epochs=100,
+    #     validation_data=(x_test, x_test),
+    #     callbacks=[
+    #         *([SaveModelCallback(10, out_model_path)] if out_model_path else []),
+    #     ]
+    # )
+    #
+    # ##
+    #
+    # random_number = np.asarray([[np.random.normal() for _ in range(latent_space_depth)]])
+    #
+    # decode_img(decoder.predict(random_number).reshape(img_width, img_height)).resize((56, 56)).show()
+    #
+    # ##
+    #
+    # num_cells = 10
+    #
+    # overview = PIL.Image.new(
+    #     'RGB',
+    #     (
+    #         num_cells * (img_width + 4) + 8,
+    #         num_cells * (img_height + 4) + 8,
+    #     ),
+    #     (128, 128, 128),
+    # )
+    #
+    # vec = np.zeros((1, latent_space_depth))
+    # for x in range(num_cells):
+    #     vec[:, 0] = (x * 3) / (num_cells - 1) - 1.5
+    #     for y in range(num_cells):
+    #         vec[:, 1] = (y * 3) / (num_cells - 1) - 1.5
+    #         decoded = decoder.predict(vec)
+    #         img = decode_img(decoded.reshape(img_width, img_height))
+    #         overview.paste(img, (x * (img_width + 4) + 6, y * (img_height + 4) + 6))
+    #
+    # overview.show()
 
 
 if __name__ == '__main__':
