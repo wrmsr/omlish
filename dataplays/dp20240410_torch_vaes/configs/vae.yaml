@@ -26,4 +26,3 @@ trainer_params:
 logging_params:
   save_dir: "logs/"
   name: "VanillaVAE"
-  
