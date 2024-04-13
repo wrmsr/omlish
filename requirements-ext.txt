@@ -98,6 +98,8 @@ pytorch-lightning==2.2.1
 
 torchsummary==1.5.1
 
+ftfy==6.2.0
+
 ## dlc
 
 ## FIXME:
