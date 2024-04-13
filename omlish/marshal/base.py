@@ -34,6 +34,41 @@ Jackson:
  - USE_BASE_TYPE_AS_DEFAULT_IMPL
  - USE_STATIC_TYPING
  - BLOCK_UNSAFE_POLYMORPHIC_BASE_TYPES
+
+https://github.com/yukinarit/pyserde
+ - datatypes
+  - typing.Union
+  - typing.NewType for primitive types
+  - typing.Any
+  - typing.Literal
+  - typing.Generic
+  - typing.ClassVar
+ - dataclasses.InitVar
+ - Enum and IntEnum
+ - pathlib.Path
+ - decimal.Decimal
+ - uuid.UUID
+ - datetime.date, datetime.time, datetime.datetime
+ - ipaddress
+ - numpy types
+ - Class Attributes
+ - Field Attributes
+ - Decorators
+ - Type Check
+ - Union Representation
+ - Forward reference
+ - PEP563 Postponed Evaluation of Annotations
+ - PEP585 Type Hinting Generics In Standard Collections
+ - PEP604 Allow writing union types as X | Y
+ - PEP681 Data Class Transform
+ - Case Conversion
+ - Rename
+ - Alias
+ - Skip (de)serialization (skip, skip_if, skip_if_false, skip_if_default)
+ - Custom field (de)serializer
+ - Custom class (de)serializer
+ - Custom global (de)serializer
+ - Flatten
 """
 import abc
 import dataclasses as dc
