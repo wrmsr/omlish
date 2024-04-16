@@ -7,7 +7,6 @@ DCGAN Tutorial
 
 """
 
-
 ######################################################################
 # Introduction
 # ------------
@@ -112,13 +111,8 @@ DCGAN Tutorial
 # will be explained in the coming sections.
 #
 
-#%matplotlib inline
-import argparse
-import os
-import random
-import torch
+# %matplotlib inline
 import torch.nn as nn
-import torch.nn.parallel
 import torch.optim as optim
 import torch.utils.data
 import torchvision.datasets as dset
@@ -129,14 +123,28 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from IPython.display import HTML
 
+import os.path
+import random
+
+import matplotlib.animation as animation
+import matplotlib.pyplot as plt
+import numpy as np
+import torch.nn as nn
+import torch.optim as optim
+import torch.utils.data
+import torchvision.datasets as dset
+import torchvision.transforms as transforms
+import torchvision.utils as vutils
+from IPython.display import HTML
+
+
 # Set random seed for reproducibility
 manualSeed = 999
-#manualSeed = random.randint(1, 10000) # use if you want new results
+# manualSeed = random.randint(1, 10000) # use if you want new results
 print("Random Seed: ", manualSeed)
 random.seed(manualSeed)
 torch.manual_seed(manualSeed)
-torch.use_deterministic_algorithms(True) # Needed for reproducible results
-
+torch.use_deterministic_algorithms(True)  # Needed for reproducible results
 
 ######################################################################
 # Inputs
@@ -175,7 +183,7 @@ torch.use_deterministic_algorithms(True) # Needed for reproducible results
 #
 
 # Root directory for dataset
-dataroot = "data/celeba"
+dataroot = os.path.join(os.path.dirname(__file__), "data/celeba")
 
 # Number of workers for dataloader
 workers = 2
@@ -257,14 +265,15 @@ if __name__ == '__main__':
                                              shuffle=True, num_workers=workers)
 
     # Decide which device we want to run on
-    device = torch.device("cuda:0" if (torch.cuda.is_available() and ngpu > 0) else "cpu")
+    device = torch.device("cuda:0" if (torch.cuda.is_available() and ngpu > 0) else "mps")
 
     # Plot some training images
     real_batch = next(iter(dataloader))
-    plt.figure(figsize=(8,8))
+    plt.figure(figsize=(8, 8))
     plt.axis("off")
     plt.title("Training Images")
-    plt.imshow(np.transpose(vutils.make_grid(real_batch[0].to(device)[:64], padding=2, normalize=True).cpu(),(1,2,0)))
+    plt.imshow(
+        np.transpose(vutils.make_grid(real_batch[0].to(device)[:64], padding=2, normalize=True).cpu(), (1, 2, 0)))
     plt.show()
 
 
@@ -334,7 +343,7 @@ if __name__ == '__main__':
             self.ngpu = ngpu
             self.main = nn.Sequential(
                 # input is Z, going into a convolution
-                nn.ConvTranspose2d( nz, ngf * 8, 4, 1, 0, bias=False),
+                nn.ConvTranspose2d(nz, ngf * 8, 4, 1, 0, bias=False),
                 nn.BatchNorm2d(ngf * 8),
                 nn.ReLU(True),
                 # state size. ``(ngf*8) x 4 x 4``
@@ -342,15 +351,15 @@ if __name__ == '__main__':
                 nn.BatchNorm2d(ngf * 4),
                 nn.ReLU(True),
                 # state size. ``(ngf*4) x 8 x 8``
-                nn.ConvTranspose2d( ngf * 4, ngf * 2, 4, 2, 1, bias=False),
+                nn.ConvTranspose2d(ngf * 4, ngf * 2, 4, 2, 1, bias=False),
                 nn.BatchNorm2d(ngf * 2),
                 nn.ReLU(True),
                 # state size. ``(ngf*2) x 16 x 16``
-                nn.ConvTranspose2d( ngf * 2, ngf, 4, 2, 1, bias=False),
+                nn.ConvTranspose2d(ngf * 2, ngf, 4, 2, 1, bias=False),
                 nn.BatchNorm2d(ngf),
                 nn.ReLU(True),
                 # state size. ``(ngf) x 32 x 32``
-                nn.ConvTranspose2d( ngf, nc, 4, 2, 1, bias=False),
+                nn.ConvTranspose2d(ngf, nc, 4, 2, 1, bias=False),
                 nn.Tanh()
                 # state size. ``(nc) x 64 x 64``
             )
@@ -450,7 +459,6 @@ if __name__ == '__main__':
     # Print the model
     print(netD)
 
-
     ######################################################################
     # Loss Functions and Optimizers
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -498,7 +506,6 @@ if __name__ == '__main__':
     # Setup Adam optimizers for both G and D
     optimizerD = optim.Adam(netD.parameters(), lr=lr, betas=(beta1, 0.999))
     optimizerG = optim.Adam(netG.parameters(), lr=lr, betas=(beta1, 0.999))
-
 
     ######################################################################
     # Training
@@ -645,13 +652,12 @@ if __name__ == '__main__':
             D_losses.append(errD.item())
 
             # Check how the generator is doing by saving G's output on fixed_noise
-            if (iters % 500 == 0) or ((epoch == num_epochs-1) and (i == len(dataloader)-1)):
+            if (iters % 500 == 0) or ((epoch == num_epochs - 1) and (i == len(dataloader) - 1)):
                 with torch.no_grad():
                     fake = netG(fixed_noise).detach().cpu()
                 img_list.append(vutils.make_grid(fake, padding=2, normalize=True))
 
             iters += 1
-
 
     ######################################################################
     # Results
@@ -668,15 +674,14 @@ if __name__ == '__main__':
     # Below is a plot of D & G’s losses versus training iterations.
     #
 
-    plt.figure(figsize=(10,5))
+    plt.figure(figsize=(10, 5))
     plt.title("Generator and Discriminator Loss During Training")
-    plt.plot(G_losses,label="G")
-    plt.plot(D_losses,label="D")
+    plt.plot(G_losses, label="G")
+    plt.plot(D_losses, label="D")
     plt.xlabel("iterations")
     plt.ylabel("Loss")
     plt.legend()
     plt.show()
-
 
     ######################################################################
     # **Visualization of G’s progression**
@@ -687,14 +692,13 @@ if __name__ == '__main__':
     # animation.
     #
 
-    #%%capture
-    fig = plt.figure(figsize=(8,8))
+    # %%capture
+    fig = plt.figure(figsize=(8, 8))
     plt.axis("off")
-    ims = [[plt.imshow(np.transpose(i,(1,2,0)), animated=True)] for i in img_list]
+    ims = [[plt.imshow(np.transpose(i, (1, 2, 0)), animated=True)] for i in img_list]
     ani = animation.ArtistAnimation(fig, ims, interval=1000, repeat_delay=1000, blit=True)
 
     HTML(ani.to_jshtml())
-
 
     ######################################################################
     # **Real Images vs. Fake Images**
@@ -707,19 +711,19 @@ if __name__ == '__main__':
     real_batch = next(iter(dataloader))
 
     # Plot the real images
-    plt.figure(figsize=(15,15))
-    plt.subplot(1,2,1)
+    plt.figure(figsize=(15, 15))
+    plt.subplot(1, 2, 1)
     plt.axis("off")
     plt.title("Real Images")
-    plt.imshow(np.transpose(vutils.make_grid(real_batch[0].to(device)[:64], padding=5, normalize=True).cpu(),(1,2,0)))
+    plt.imshow(
+        np.transpose(vutils.make_grid(real_batch[0].to(device)[:64], padding=5, normalize=True).cpu(), (1, 2, 0)))
 
     # Plot the fake images from the last epoch
-    plt.subplot(1,2,2)
+    plt.subplot(1, 2, 2)
     plt.axis("off")
     plt.title("Fake Images")
-    plt.imshow(np.transpose(img_list[-1],(1,2,0)))
+    plt.imshow(np.transpose(img_list[-1], (1, 2, 0)))
     plt.show()
-
 
     ######################################################################
     # Where to Go Next
@@ -736,4 +740,3 @@ if __name__ == '__main__':
     # -  Create GANs that generate
     #    `music <https://www.deepmind.com/blog/wavenet-a-generative-model-for-raw-audio/>`__
     #
-
