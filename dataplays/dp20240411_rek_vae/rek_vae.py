@@ -65,7 +65,7 @@ LOCAL_DIR = os.path.dirname(__file__)
 
 
 def _main():
-    # create a transofrm to apply to each datapoint
+    # create a transform to apply to each datapoint
     transform = transforms.Compose([transforms.ToTensor()])
 
     # download the MNIST datasets
