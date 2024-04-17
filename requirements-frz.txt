@@ -1,6 +1,6 @@
 absl-py==2.1.0
-accelerate==0.29.2
-aiohttp==3.9.4
+accelerate==0.29.3
+aiohttp==3.9.5
 aiosignal==1.3.1
 aiosqlite==0.20.0
 alembic==1.13.1
@@ -19,7 +19,7 @@ async-timeout==4.0.3
 attrs==23.2.0
 audioread==3.0.1
 Babel==2.14.0
-backports.tarfile==1.0.0
+backports.tarfile==1.1.0
 bayesian-optimization==1.4.3
 beautifulsoup4==4.12.3
 bellows==0.38.1
@@ -27,8 +27,8 @@ bitsandbytes==0.42.0
 black==24.4.0
 bleach==6.1.0
 blis==0.7.11
-boto3==1.34.84
-botocore==1.34.84
+boto3==1.34.85
+botocore==1.34.85
 bs4==0.0.2
 bsddb3==6.2.9
 build==1.2.1
@@ -147,7 +147,7 @@ Markdown==3.6
 markdown-it-py==3.0.0
 MarkupSafe==2.1.5
 matplotlib==3.8.4
-matplotlib-inline==0.1.6
+matplotlib-inline==0.1.7
 mccabe==0.7.0
 mdurl==0.1.2
 mistune==3.0.2
@@ -170,7 +170,7 @@ networkx==3.3
 nevergrad==1.0.2
 nh3==0.2.17
 nltk==3.8.1
-notebook==7.1.2
+notebook==7.1.3
 notebook_shim==0.2.4
 numba==0.59.1
 numpy==1.26.4
@@ -186,7 +186,7 @@ pandas==2.2.2
 pandocfilters==1.5.1
 parso==0.8.4
 pathspec==0.12.1
-peft @ git+https://github.com/huggingface/peft.git@c8974c5880b28a913e35f050e82402e34d181c63
+peft @ git+https://github.com/huggingface/peft.git@ed865e2812bd4bf3946292430525d0825b0fab7e
 pendulum==3.0.0
 pexpect==4.9.0
 pg8000==1.31.1
@@ -242,17 +242,17 @@ pytest-timeout==2.3.1
 pytest-xdist==3.5.0
 python-dateutil==2.9.0.post0
 python-json-logger==2.0.7
-pytorch-lightning==2.2.1
+pytorch-lightning==2.2.2
 pytz==2024.1
 PyYAML==6.0.1
-pyzmq==25.1.2
+pyzmq==26.0.0
 qtconsole==5.5.1
 QtPy==2.4.1
 rdflib==4.2.2
 rdflib-sqlalchemy==0.5.3
 readme_renderer==43.0
 referencing==0.34.0
-regex==2023.12.25
+regex==2024.4.16
 requests==2.31.0
 requests-oauthlib==2.0.0
 requests-toolbelt==1.0.0
@@ -265,7 +265,7 @@ rpds-py==0.18.0
 rsa==4.9
 rubicon-objc==0.4.8
 s3transfer==0.10.1
-safetensors==0.4.2
+safetensors==0.4.3
 scikit-image==0.23.1
 scikit-learn==1.4.2
 scipy==1.13.0
@@ -274,7 +274,7 @@ selectolax==0.3.21
 Send2Trash==1.8.3
 sentencepiece==0.2.0
 setproctitle==1.3.3
-shapely==2.0.3
+shapely==2.0.4
 simsimd==4.3.1
 six==1.16.0
 smart-open==6.4.0
@@ -309,7 +309,7 @@ tifffile==2024.2.12
 tiktoken==0.6.0
 time-machine==2.14.1
 tinycss2==1.2.1
--e git+https://github.com/tinygrad/tinygrad@50e780a588ab598f2a56d23aa0ebab0c760f2140#egg=tinygrad&subdirectory=../../tinygrad
+-e git+https://github.com/tinygrad/tinygrad@f75020a9039be218056200343f4432c4cb859b13#egg=tinygrad&subdirectory=../../tinygrad
 tokenizers==0.15.2
 torch==2.2.2
 torchinfo==1.8.0
