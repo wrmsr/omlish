@@ -33,6 +33,9 @@ Pair: ta.TypeAlias = tuple[str, str]
 Tensor: ta.TypeAlias = torch.Tensor
 
 
+BASE_DIR = os.path.dirname(__file__)
+
+
 ## Data
 
 
@@ -119,7 +122,7 @@ def filter_pairs(pairs: ta.Iterable[Pair]) -> list[Pair]:
 
 
 def prepare_data(lang1: str, lang2: str, reverse: bool = False) -> tuple[Lang, Lang, list[Pair]]:
-    pkl_file_path = f'i_s2s_xlat2_data_{lang1}_{lang2}{"_rev" if reverse else ""}.pkl'
+    pkl_file_path = os.path.join(BASE_DIR, f'i_s2s_xlat2_data_{lang1}_{lang2}{"_rev" if reverse else ""}.pkl')
     if os.path.exists(pkl_file_path):
         with open(pkl_file_path, 'rb') as f:
             return pickle.load(f)
@@ -225,12 +228,16 @@ class BahdanauAttention(nn.Module):
         self.Ua = nn.Linear(hidden_size, hidden_size)  # keys
         self.Va = nn.Linear(hidden_size, 1)
 
-    def forward(self, query: Tensor, keys: Tensor) -> tuple[Tensor, Tensor]:
-        scores = self.Va(torch.tanh(self.Wa(query) + self.Ua(keys)))
-        scores = scores.squeeze(2).unsqueeze(1)
+    def forward(
+            self,
+            query: Tensor,  # (B, 1, 128)
+            keys: Tensor,  # (B, 10, 128)
+    ) -> tuple[Tensor, Tensor]:
+        scores = self.Va(torch.tanh(self.Wa(query) + self.Ua(keys)))  # (B, 10, 1)
+        scores = scores.squeeze(2).unsqueeze(1)  # (B, 1, 10)
 
-        weights = F.softmax(scores, dim=-1)
-        context = torch.bmm(weights, keys)
+        weights = F.softmax(scores, dim=-1)  # (B, 1, 10)
+        context = torch.bmm(weights, keys)  # (B, 1, 128)
 
         return context, weights
 
@@ -246,10 +253,14 @@ class AttnDecoderRNN(nn.Module, DecoderRNN):
 
     def forward(
             self,
-            encoder_outputs: Tensor,
-            encoder_hidden: Tensor,
+            encoder_outputs: Tensor,  # (B, 10, 128)
+            encoder_hidden: Tensor,  # (1, B, 128)
             target_tensor: Tensor | None = None,
-    ) -> tuple[Tensor, Tensor, Tensor]:  # output, hidden, attention
+    ) -> tuple[
+        Tensor,  # output: (B, 10, 2991)
+        Tensor,  # hidden: (1, B, 128)
+        Tensor,  # attention: (B, 10, 10)
+    ]:
         batch_size = encoder_outputs.size(0)
         decoder_input = torch.empty(batch_size, 1, dtype=torch.long, device=encoder_hidden.device).fill_(SOS_token)
         decoder_hidden = encoder_hidden
@@ -277,15 +288,24 @@ class AttnDecoderRNN(nn.Module, DecoderRNN):
 
         return decoder_outputs, decoder_hidden, attentions
 
-    def forward_step(self, input: Tensor, hidden: Tensor, encoder_outputs: Tensor) -> tuple[Tensor, Tensor, Tensor]:
-        embedded = self.dropout(self.embedding(input))
+    def forward_step(
+            self,
+            input: Tensor,  # (B, 1)
+            hidden: Tensor,  # (1, B, 128)
+            encoder_outputs: Tensor,  # (B, 10, 128)
+    ) -> tuple[
+        Tensor,  # output: (B, 1, 2991)
+        Tensor,  # hidden: (1, B, 128)
+        Tensor,  # attn_weights: (B, 1, 10)
+    ]:
+        embedded = self.dropout(self.embedding(input))  # (B, 1, 128)
 
-        query = hidden.permute(1, 0, 2)
-        context, attn_weights = self.attention(query, encoder_outputs)
-        input_gru = torch.cat((embedded, context), dim=2)
+        query = hidden.permute(1, 0, 2)  # (B, 1, 128)
+        context, attn_weights = self.attention(query, encoder_outputs)  # (B, 1, 128), (B, 1, 10)
+        input_gru = torch.cat((embedded, context), dim=2)  # (B, 1, 256)
 
-        output, hidden = self.gru(input_gru, hidden)
-        output = self.out(output)
+        output, hidden = self.gru(input_gru, hidden)  # (B, 1, 128), (1, B, 128)
+        output = self.out(output)  # (B, 1, 2991)
 
         return output, hidden, attn_weights
 
@@ -547,8 +567,8 @@ def _main() -> None:
     encoder = EncoderRNN(input_lang.n_words, hidden_size).to(device)
 
     use_attn: bool = True
-    load_files: bool = True
-    save_files: bool = True
+    load_files: bool = False
+    save_files: bool = False
 
     if use_attn:
         decoder = AttnDecoderRNN(hidden_size, output_lang.n_words).to(device)
@@ -556,8 +576,8 @@ def _main() -> None:
         decoder = DumbDecoderRNN(hidden_size, output_lang.n_words).to(device)
 
     file_suff = 'attn' if use_attn else 'dumb'
-    enc_file_path = f'i_s2s_xlat_{file_suff}_enc.pth'
-    dec_file_path = f'i_s2s_xlat_{file_suff}_dec.pth'
+    enc_file_path = os.path.join(BASE_DIR, f'i_s2s_xlat_{file_suff}_enc.pth')
+    dec_file_path = os.path.join(BASE_DIR, f'i_s2s_xlat_{file_suff}_dec.pth')
 
     # if PLOT:
     #     plt.switch_backend('agg')
