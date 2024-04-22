@@ -1,3 +1,6 @@
+"""
+--problem wmt32k --output_dir ./output --data_dir ./wmt32k_data
+"""
 import argparse
 import os
 import time
@@ -35,8 +38,7 @@ def summarize_train(
             norm = torch.norm(param.grad.data.view(-1))
             writer.add_scalar('gradient_norm/' + name, norm, global_step)
 
-    writer.add_scalar('input_stats/batch_size',
-                      targets.size(0), global_step)
+    writer.add_scalar('input_stats/batch_size', targets.size(0), global_step)
 
     if inputs is not None:
         writer.add_scalar('input_stats/input_length', inputs.size(1), global_step)
