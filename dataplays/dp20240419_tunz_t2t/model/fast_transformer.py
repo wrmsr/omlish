@@ -15,6 +15,7 @@ from .transformer import FeedForwardNetwork
 
 # from tcop.masked_softmax import MaskedSoftmax
 # https://github.com/tunz/tcop-pytorch/blob/fe5dada36964085850d5a50405498c193fb5c426/tcop/masked_softmax.py
+# -> git+https://github.com/wrmsr/tcop-pytorch/tree/deb0a2deb4ef998d89c33c2f1d618df64bb206a4
 
 
 ##
