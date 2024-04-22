@@ -5,7 +5,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from ..utils import utils
-from .transformer import FeedForwardNetwork
+from .common import FeedForwardNetwork, initialize_weight
+
 
 # pylint: disable=arguments-differ
 
@@ -19,12 +20,6 @@ from .transformer import FeedForwardNetwork
 
 
 ##
-
-
-def initialize_weight(x):
-    nn.init.xavier_uniform_(x.weight)
-    if x.bias is not None:
-        nn.init.constant_(x.bias, 0)
 
 
 class MultiHeadAttention(nn.Module):
@@ -45,8 +40,7 @@ class MultiHeadAttention(nn.Module):
 
         self.att_dropout = nn.Dropout(dropout_rate)
 
-        self.output_layer = nn.Linear(head_size * att_size, hidden_size,
-                                      bias=False)
+        self.output_layer = nn.Linear(head_size * att_size, hidden_size, bias=False)
         initialize_weight(self.output_layer)
 
     def forward(self, q, k, v, mask, cache=None):
@@ -74,9 +68,9 @@ class MultiHeadAttention(nn.Module):
         # Scaled Dot-Product Attention.
         # Attention(Q, K, V) = softmax((QK^T)/sqrt(d_k))V
         x = torch.matmul(q, k)  # [b, h, q_len, k_len]
-
         # x = MaskedSoftmax.apply(x, mask, self.scale)
         x.masked_fill_(mask.unsqueeze(1), self.scale)
+
         x = torch.softmax(x, dim=3)
 
         x = self.att_dropout(x)
@@ -155,7 +149,10 @@ class Encoder(nn.Module):
     def __init__(self, hidden_size, filter_size, dropout_rate, n_layers):
         super().__init__()
 
-        encoders = [EncoderLayer(hidden_size, filter_size, dropout_rate) for _ in range(n_layers)]
+        encoders = [
+            EncoderLayer(hidden_size, filter_size, dropout_rate)
+            for _ in range(n_layers)
+        ]
         self.layers = nn.ModuleList(encoders)
 
         self.last_norm = nn.LayerNorm(hidden_size, eps=1e-6)
@@ -171,7 +168,10 @@ class Decoder(nn.Module):
     def __init__(self, hidden_size, filter_size, dropout_rate, n_layers):
         super().__init__()
 
-        decoders = [DecoderLayer(hidden_size, filter_size, dropout_rate) for _ in range(n_layers)]
+        decoders = [
+            DecoderLayer(hidden_size, filter_size, dropout_rate)
+            for _ in range(n_layers)
+        ]
         self.layers = nn.ModuleList(decoders)
 
         self.last_norm = nn.LayerNorm(hidden_size, eps=1e-6)
@@ -184,7 +184,13 @@ class Decoder(nn.Module):
                 if i not in cache:
                     cache[i] = {}
                 layer_cache = cache[i]
-            decoder_output = dec_layer(decoder_output, enc_output, t_self_mask, i_mask, layer_cache)
+            decoder_output = dec_layer(
+                decoder_output,
+                enc_output,
+                t_self_mask,
+                i_mask,
+                layer_cache,
+            )
         return self.last_norm(decoder_output)
 
 
@@ -211,9 +217,18 @@ class FastTransformer(nn.Module):
         self.trg_pad_idx = trg_pad_idx
 
         self.t_vocab_embedding = nn.Embedding(t_vocab_size, hidden_size)
-        nn.init.normal_(self.t_vocab_embedding.weight, mean=0, std=hidden_size**-0.5)
+        nn.init.normal_(
+            self.t_vocab_embedding.weight,
+            mean=0,
+            std=hidden_size**-0.5,
+        )
         self.t_emb_dropout = nn.Dropout(dropout_rate)
-        self.decoder = Decoder(hidden_size, filter_size, dropout_rate, n_layers)
+        self.decoder = Decoder(
+            hidden_size,
+            filter_size,
+            dropout_rate,
+            n_layers,
+        )
 
         if has_inputs:
             if not share_target_embedding:
@@ -224,7 +239,12 @@ class FastTransformer(nn.Module):
 
             self.i_emb_dropout = nn.Dropout(dropout_rate)
 
-            self.encoder = Encoder(hidden_size, filter_size, dropout_rate, n_layers)
+            self.encoder = Encoder(
+                hidden_size,
+                filter_size,
+                dropout_rate,
+                n_layers,
+            )
 
         # For positional encoding
         num_timescales = self.hidden_size // 2
@@ -262,7 +282,15 @@ class FastTransformer(nn.Module):
         i_mask = i_mask.size(2) - i_mask.sum(dim=2, dtype=torch.int32)
         return self.encoder(input_embedded, i_mask)
 
-    def decode(self, targets, enc_output, i_mask, t_self_mask, t_mask, cache=None):
+    def decode(
+            self,
+            targets,
+            enc_output,
+            i_mask,
+            t_self_mask,
+            t_mask,
+            cache=None,
+    ):
         # target embedding
         target_embedded = self.t_vocab_embedding(targets)
         target_embedded.masked_fill_(t_mask.squeeze(1).unsqueeze(-1), 0)
@@ -279,9 +307,19 @@ class FastTransformer(nn.Module):
         if i_mask is not None:
             i_mask = i_mask.size(2) - i_mask.sum(dim=2, dtype=torch.int32)
         t_self_mask = t_self_mask.size(2) - t_self_mask.sum(dim=2, dtype=torch.int32)
-        decoder_output = self.decoder(target_embedded, enc_output, i_mask, t_self_mask, cache)
+
+        decoder_output = self.decoder(
+            target_embedded,
+            enc_output,
+            i_mask,
+            t_self_mask,
+            cache,
+        )
         # linear
-        output = torch.matmul(decoder_output, self.t_vocab_embedding.weight.transpose(0, 1))
+        output = torch.matmul(
+            decoder_output,
+            self.t_vocab_embedding.weight.transpose(0, 1),
+        )
 
         return output
 
