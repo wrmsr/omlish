@@ -175,7 +175,14 @@ def main():
         os.makedirs(opt.data_dir)
 
     train_data, validation_data, i_vocab_size, t_vocab_size, opt = \
-        problem.prepare(opt.problem, opt.data_dir, opt.max_length, opt.batch_size, device, opt)
+        problem.prepare(
+            opt.problem,
+            opt.data_dir,
+            opt.max_length,
+            opt.batch_size,
+            device,
+            opt,
+        )
     if i_vocab_size is not None:
         print("# of vocabs (input):", i_vocab_size)
     print("# of vocabs (target):", t_vocab_size)
