@@ -11,15 +11,16 @@ Author: Lilian Weng (lilian.wengweng@gmail.com)
         http://lilianweng.github.io/lil-log
         Oct 2018
 """
-import numpy as np
-import tensorflow as tf
-import tensorflow.contrib as tc
 import json
 import os
 
-from utils import BaseModelMixin, REPO_ROOT
+import numpy as np
+import tensorflow as tf
+import tensorflow.contrib as tc
 from nltk.translate.bleu_score import corpus_bleu, SmoothingFunction
+
 from data import recover_sentence, START_ID, PAD_ID
+from utils import BaseModelMixin, REPO_ROOT
 
 
 class Transformer(BaseModelMixin):

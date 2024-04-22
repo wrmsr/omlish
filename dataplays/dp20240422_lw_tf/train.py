@@ -5,10 +5,11 @@ Author: Lilian Weng (lilian.wengweng@gmail.com)
         Oct 2018
 """
 
-import click
 import time
 
+import click
 from baselines import logger
+
 from data import *
 from transformer import *
 from utils import print_trainable_variables
