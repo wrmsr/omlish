@@ -5,13 +5,13 @@ import argparse
 import os
 import time
 
-import torch
 # from tensorboardX import SummaryWriter
 from tqdm import tqdm
+import torch
 
 from .dataset import problem
-from .utils.optimizer import LRScheduler
 from .utils import utils
+from .utils.optimizer import LRScheduler
 
 
 def summarize_train(

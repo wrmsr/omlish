@@ -5,7 +5,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from ..utils import utils
-from .common import FeedForwardNetwork, initialize_weight
+from .common import FeedForwardNetwork
+from .common import initialize_weight
 
 
 # pylint: disable=arguments-differ
