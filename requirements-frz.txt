@@ -54,11 +54,13 @@ cryptography==42.0.5
 cycler==0.12.1
 cymem==2.0.8
 datasets==2.18.0
+de-core-news-sm @ https://github.com/explosion/spacy-models/releases/download/de_core_news_sm-3.7.0/de_core_news_sm-3.7.0-py3-none-any.whl#sha256=d88c737eb7eb766f730f6a2dcb99dfcdb81623e1e0d89a9c638a2182ac19c52e
 debugpy==1.8.1
 decorator==5.1.1
 defusedxml==0.7.1
 dill==0.3.8
 docutils==0.21.1
+en-core-web-sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1-py3-none-any.whl#sha256=86cc141f63942d4b2c5fcee06630fd6f904788d2f0ab005cce45aadb8fb73889
 evaluate==0.4.1
 execnet==2.1.1
 executing==2.0.1
@@ -309,7 +311,7 @@ tifffile==2024.4.18
 tiktoken==0.6.0
 time-machine==2.14.1
 tinycss2==1.2.1
--e git+https://github.com/tinygrad/tinygrad@2094b3b3279aaf1bdad0de8b28655eb9f86924a2#egg=tinygrad&subdirectory=../../tinygrad
+-e git+https://github.com/tinygrad/tinygrad@e6227bdb15a15481c974b6be9d099c14e6259a67#egg=tinygrad&subdirectory=../../tinygrad
 tokenizers==0.19.1
 torch==2.2.2
 torchinfo==1.8.0
