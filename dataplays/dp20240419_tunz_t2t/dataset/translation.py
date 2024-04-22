@@ -6,7 +6,7 @@ import pickle
 import re
 
 import torch
-from torchtext import data
+from torchtext_0_3_1 import data
 import spacy
 from tqdm import tqdm
 
@@ -64,7 +64,7 @@ def read_examples(paths, exts, fields, data_dir, mode, filter_pred, num_shard):
     return examples, data_paths
 
 
-class WMT32k:  # (data.Dataset):
+class WMT32k(data.Dataset):
     urls = ['http://data.statmt.org/wmt18/translation-task/'
             'training-parallel-nc-v13.tgz',
             'http://www.statmt.org/wmt13/training-parallel-commoncrawl.tgz',
