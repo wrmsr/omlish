@@ -69,8 +69,7 @@ class LM1b(data.Dataset):
         filter_pred = kwargs['filter_pred']
 
         expected_dir = os.path.join(root, cls.name)
-        path = (expected_dir if os.path.exists(expected_dir)
-                else cls.download(root))
+        path = expected_dir if os.path.exists(expected_dir) else cls.download(root)
 
         lm_data_dir = "1-billion-word-language-modeling-benchmark-r13output"
 
@@ -127,13 +126,15 @@ def build_vocabs(trg_field, data_paths):
             trg_counter.update(x.trg)
 
     specials = list(OrderedDict.fromkeys(
-        tok for tok in [trg_field.unk_token,
-                        trg_field.pad_token,
-                        trg_field.init_token,
-                        trg_field.eos_token]
-        if tok is not None))
-    trg_field.vocab = trg_field.vocab_cls(trg_counter, specials=specials,
-                                          min_freq=300)
+        tok for tok in [
+            trg_field.unk_token,
+            trg_field.pad_token,
+            trg_field.init_token,
+            trg_field.eos_token
+        ]
+        if tok is not None
+    ))
+    trg_field.vocab = trg_field.vocab_cls(trg_counter, specials=specials, min_freq=300)
 
 
 def prepare(max_length, batch_size, device, opt, data_dir):
@@ -155,8 +156,13 @@ def prepare(max_length, batch_size, device, opt, data_dir):
         train = LM1b(examples_train, fields, filter_pred=filter_pred)
         val = LM1b(examples_val, fields, filter_pred=filter_pred)
     else:
-        trg_field = data.Field(tokenize=split_tokenizer, batch_first=True,
-                               pad_token=pad, lower=True, eos_token='<eos>')
+        trg_field = data.Field(
+            tokenize=split_tokenizer,
+            batch_first=True,
+            pad_token=pad,
+            lower=True,
+            eos_token='<eos>',
+        )
 
         print("Loading data... (this may take a while)")
         train, val, data_paths = \

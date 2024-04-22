@@ -82,7 +82,7 @@ class MultiHeadAttention(nn.Module):
         # Attention(Q, K, V) = softmax((QK^T)/sqrt(d_k))V
         q.mul_(self.scale)
         x = torch.matmul(q, k)  # [b, h, q_len, k_len]
-        x.masked_fill_(mask.unsqueeze(1), -1e9)
+        x.masked_fill_(mask.unsqueeze(1).type(torch.bool), -1e9)
         x = torch.softmax(x, dim=3)
         x = self.att_dropout(x)
         x = x.matmul(v)  # [b, h, q_len, attn]
