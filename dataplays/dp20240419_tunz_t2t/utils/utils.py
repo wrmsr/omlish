@@ -12,7 +12,8 @@ def get_loss(pred, ans, vocab_size, label_smoothing, pad):
     low_confidence = (1.0 - confidence) / float(vocab_size - 1)
     normalizing = -(
         confidence * math.log(confidence) + float(vocab_size - 1) *
-        low_confidence * math.log(low_confidence + 1e-20))
+        low_confidence * math.log(low_confidence + 1e-20)
+    )
 
     one_hot = torch.zeros_like(pred).scatter_(1, ans.unsqueeze(1), 1)
     one_hot = one_hot * confidence + (1 - one_hot) * low_confidence
@@ -58,8 +59,7 @@ def create_pad_mask(t, pad):
 
 def create_trg_self_mask(target_len, device=None):
     # Prevent leftward information flow in self-attention.
-    ones = torch.ones(target_len, target_len, dtype=torch.uint8,
-                      device=device)
+    ones = torch.ones(target_len, target_len, dtype=torch.uint8, device=device)
     t_self_mask = torch.triu(ones, diagonal=1).unsqueeze(0)
 
     return t_self_mask

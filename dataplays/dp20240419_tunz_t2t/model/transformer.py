@@ -17,7 +17,7 @@ def initialize_weight(x):
 
 class FeedForwardNetwork(nn.Module):
     def __init__(self, hidden_size, filter_size, dropout_rate):
-        super(FeedForwardNetwork, self).__init__()
+        super().__init__()
 
         self.layer1 = nn.Linear(hidden_size, filter_size)
         self.relu = nn.ReLU()
@@ -37,7 +37,7 @@ class FeedForwardNetwork(nn.Module):
 
 class MultiHeadAttention(nn.Module):
     def __init__(self, hidden_size, dropout_rate, head_size=8):
-        super(MultiHeadAttention, self).__init__()
+        super().__init__()
 
         self.head_size = head_size
 
@@ -99,7 +99,7 @@ class MultiHeadAttention(nn.Module):
 
 class EncoderLayer(nn.Module):
     def __init__(self, hidden_size, filter_size, dropout_rate):
-        super(EncoderLayer, self).__init__()
+        super().__init__()
 
         self.self_attention_norm = nn.LayerNorm(hidden_size, eps=1e-6)
         self.self_attention = MultiHeadAttention(hidden_size, dropout_rate)
@@ -124,7 +124,7 @@ class EncoderLayer(nn.Module):
 
 class DecoderLayer(nn.Module):
     def __init__(self, hidden_size, filter_size, dropout_rate):
-        super(DecoderLayer, self).__init__()
+        super().__init__()
 
         self.self_attention_norm = nn.LayerNorm(hidden_size, eps=1e-6)
         self.self_attention = MultiHeadAttention(hidden_size, dropout_rate)
@@ -160,7 +160,7 @@ class DecoderLayer(nn.Module):
 
 class Encoder(nn.Module):
     def __init__(self, hidden_size, filter_size, dropout_rate, n_layers):
-        super(Encoder, self).__init__()
+        super().__init__()
 
         encoders = [EncoderLayer(hidden_size, filter_size, dropout_rate)
                     for _ in range(n_layers)]
@@ -177,10 +177,12 @@ class Encoder(nn.Module):
 
 class Decoder(nn.Module):
     def __init__(self, hidden_size, filter_size, dropout_rate, n_layers):
-        super(Decoder, self).__init__()
+        super().__init__()
 
-        decoders = [DecoderLayer(hidden_size, filter_size, dropout_rate)
-                    for _ in range(n_layers)]
+        decoders = [
+            DecoderLayer(hidden_size, filter_size, dropout_rate)
+            for _ in range(n_layers)
+        ]
         self.layers = nn.ModuleList(decoders)
 
         self.last_norm = nn.LayerNorm(hidden_size, eps=1e-6)
@@ -193,22 +195,31 @@ class Decoder(nn.Module):
                 if i not in cache:
                     cache[i] = {}
                 layer_cache = cache[i]
-            decoder_output = dec_layer(decoder_output, enc_output,
-                                       t_self_mask, i_mask, layer_cache)
+            decoder_output = dec_layer(
+                decoder_output,
+                enc_output,
+                t_self_mask,
+                i_mask,
+                layer_cache,
+            )
         return self.last_norm(decoder_output)
 
 
 class Transformer(nn.Module):
-    def __init__(self, i_vocab_size, t_vocab_size,
-                 n_layers=6,
-                 hidden_size=512,
-                 filter_size=2048,
-                 dropout_rate=0.1,
-                 share_target_embedding=True,
-                 has_inputs=True,
-                 src_pad_idx=None,
-                 trg_pad_idx=None):
-        super(Transformer, self).__init__()
+    def __init__(
+            self,
+            i_vocab_size,
+            t_vocab_size,
+            n_layers=6,
+            hidden_size=512,
+            filter_size=2048,
+            dropout_rate=0.1,
+            share_target_embedding=True,
+            has_inputs=True,
+            src_pad_idx=None,
+            trg_pad_idx=None,
+    ):
+        super().__init__()
 
         self.hidden_size = hidden_size
         self.emb_scale = hidden_size ** 0.5
@@ -217,25 +228,34 @@ class Transformer(nn.Module):
         self.trg_pad_idx = trg_pad_idx
 
         self.t_vocab_embedding = nn.Embedding(t_vocab_size, hidden_size)
-        nn.init.normal_(self.t_vocab_embedding.weight, mean=0,
-                        std=hidden_size**-0.5)
+        nn.init.normal_(
+            self.t_vocab_embedding.weight,
+            mean=0,
+            std=hidden_size**-0.5,
+        )
         self.t_emb_dropout = nn.Dropout(dropout_rate)
-        self.decoder = Decoder(hidden_size, filter_size,
-                               dropout_rate, n_layers)
+        self.decoder = Decoder(
+            hidden_size,
+            filter_size,
+            dropout_rate,
+            n_layers,
+        )
 
         if has_inputs:
             if not share_target_embedding:
-                self.i_vocab_embedding = nn.Embedding(i_vocab_size,
-                                                      hidden_size)
-                nn.init.normal_(self.i_vocab_embedding.weight, mean=0,
-                                std=hidden_size**-0.5)
+                self.i_vocab_embedding = nn.Embedding(i_vocab_size, hidden_size)
+                nn.init.normal_(self.i_vocab_embedding.weight, mean=0, std=hidden_size**-0.5)
             else:
                 self.i_vocab_embedding = self.t_vocab_embedding
 
             self.i_emb_dropout = nn.Dropout(dropout_rate)
 
-            self.encoder = Encoder(hidden_size, filter_size,
-                                   dropout_rate, n_layers)
+            self.encoder = Encoder(
+                hidden_size,
+                filter_size,
+                dropout_rate,
+                n_layers,
+            )
 
         # For positional encoding
         num_timescales = self.hidden_size // 2
@@ -243,10 +263,12 @@ class Transformer(nn.Module):
         min_timescale = 1.0
         log_timescale_increment = (
             math.log(float(max_timescale) / float(min_timescale)) /
-            max(num_timescales - 1, 1))
+            max(num_timescales - 1, 1)
+        )
         inv_timescales = min_timescale * torch.exp(
             torch.arange(num_timescales, dtype=torch.float32) *
-            -log_timescale_increment)
+            -log_timescale_increment,
+        )
         self.register_buffer('inv_timescales', inv_timescales)
 
     def forward(self, inputs, targets):
@@ -271,8 +293,15 @@ class Transformer(nn.Module):
 
         return self.encoder(input_embedded, i_mask)
 
-    def decode(self, targets, enc_output, i_mask, t_self_mask, t_mask,
-               cache=None):
+    def decode(
+            self,
+            targets,
+            enc_output,
+            i_mask,
+            t_self_mask,
+            t_mask,
+            cache=None,
+    ):
         # target embedding
         target_embedded = self.t_vocab_embedding(targets)
         target_embedded.masked_fill_(t_mask.squeeze(1).unsqueeze(-1), 0)
@@ -286,21 +315,26 @@ class Transformer(nn.Module):
         target_embedded = self.t_emb_dropout(target_embedded)
 
         # decoder
-        decoder_output = self.decoder(target_embedded, enc_output, i_mask,
-                                      t_self_mask, cache)
+        decoder_output = self.decoder(
+            target_embedded,
+            enc_output,
+            i_mask,
+            t_self_mask,
+            cache,
+        )
         # linear
-        output = torch.matmul(decoder_output,
-                              self.t_vocab_embedding.weight.transpose(0, 1))
+        output = torch.matmul(
+            decoder_output,
+            self.t_vocab_embedding.weight.transpose(0, 1),
+        )
 
         return output
 
     def get_position_encoding(self, x):
         max_length = x.size()[1]
-        position = torch.arange(max_length, dtype=torch.float32,
-                                device=x.device)
+        position = torch.arange(max_length, dtype=torch.float32, device=x.device)
         scaled_time = position.unsqueeze(1) * self.inv_timescales.unsqueeze(0)
-        signal = torch.cat([torch.sin(scaled_time), torch.cos(scaled_time)],
-                           dim=1)
+        signal = torch.cat([torch.sin(scaled_time), torch.cos(scaled_time)], dim=1)
         signal = F.pad(signal, (0, 0, 0, self.hidden_size % 2))
         signal = signal.view(1, max_length, self.hidden_size)
         return signal

@@ -3,11 +3,16 @@ import torch.optim as optim
 
 class LRScheduler:
     def __init__(self, parameters, hidden_size, warmup, step=0):
+        super().__init__()
         self.constant = 2.0 * (hidden_size ** -0.5)
         self.cur_step = step
         self.warmup = warmup
-        self.optimizer = optim.Adam(parameters, lr=self.learning_rate(),
-                                    betas=(0.9, 0.997), eps=1e-09)
+        self.optimizer = optim.Adam(
+            parameters,
+            lr=self.learning_rate(),
+            betas=(0.9, 0.997),
+            eps=1e-09,
+        )
 
     def step(self):
         self.cur_step += 1

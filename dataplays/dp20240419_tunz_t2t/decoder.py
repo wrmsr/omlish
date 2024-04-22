@@ -68,8 +68,7 @@ def main():
     pads = pads.unsqueeze(-1)
 
     # We'll find a target sequence by beam search.
-    scores_history = [torch.zeros((beam_size,), dtype=torch.float,
-                                  device=device)]
+    scores_history = [torch.zeros((beam_size,), dtype=torch.float, device=device)]
     indices_history = []
     cache = {}
 
@@ -81,8 +80,7 @@ def main():
     # Encoding inputs.
     if args.translate:
         start_time = time.time()
-        enc_output, src_mask = encode_inputs(sentence, model, src_data,
-                                             beam_size, device)
+        enc_output, src_mask = encode_inputs(sentence, model, src_data, beam_size, device)
         targets = pads
         start_idx = 0
     else:
@@ -103,8 +101,7 @@ def main():
                                                      device=targets.device)
 
             t_mask = utils.create_pad_mask(targets, trg_data['pad_idx'])
-            pred = model.decode(targets, enc_output, src_mask,
-                                t_self_mask, t_mask, cache)
+            pred = model.decode(targets, enc_output, src_mask, t_self_mask, t_mask, cache)
             pred = pred[:, idx].squeeze(1)
             vocab_size = pred.size(1)
 
