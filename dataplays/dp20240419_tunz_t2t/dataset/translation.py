@@ -93,12 +93,26 @@ class WMT32k(data.Dataset):
                        'training/europarl-v7.de-en']
         train_files = map(lambda x: os.path.join(path, x), train_files)
         train_examples, data_paths = \
-            read_examples(train_files, exts, fields, data_dir, 'train',
-                          filter_pred, 100)
+            read_examples(
+                train_files,
+                exts,
+                fields,
+                data_dir,
+                'train',
+                filter_pred,
+                100,
+            )
 
         val_files = [os.path.join(path, 'dev/newstest2013')]
-        val_examples, _ = read_examples(val_files, exts, fields, data_dir,
-                                        'val', filter_pred, 1)
+        val_examples, _ = read_examples(
+            val_files,
+            exts,
+            fields,
+            data_dir,
+            'val',
+            filter_pred,
+            1,
+        )
 
         train_data = cls(train_examples, fields, **kwargs)
         val_data = cls(val_examples, fields, **kwargs)
@@ -119,15 +133,23 @@ def build_vocabs(src_field, trg_field, data_paths):
             trg_counter.update(x.trg)
 
     specials = list(OrderedDict.fromkeys(
-        tok for tok in [src_field.unk_token,
-                        src_field.pad_token,
-                        src_field.init_token,
-                        src_field.eos_token]
+        tok for tok in [
+            src_field.unk_token,
+            src_field.pad_token,
+            src_field.init_token,
+            src_field.eos_token,
+        ]
         if tok is not None))
-    src_field.vocab = src_field.vocab_cls(src_counter, specials=specials,
-                                          min_freq=50)
-    trg_field.vocab = trg_field.vocab_cls(trg_counter, specials=specials,
-                                          min_freq=50)
+    src_field.vocab = src_field.vocab_cls(
+        src_counter,
+        specials=specials,
+        min_freq=50,
+    )
+    trg_field.vocab = trg_field.vocab_cls(
+        trg_counter,
+        specials=specials,
+        min_freq=50,
+    )
 
 
 def prepare(max_length, batch_size, device, opt, data_dir):
@@ -150,17 +172,29 @@ def prepare(max_length, batch_size, device, opt, data_dir):
         train = WMT32k(examples_train, fields, filter_pred=filter_pred)
         val = WMT32k(examples_val, fields, filter_pred=filter_pred)
     else:
-        src_field = data.Field(tokenize=tokenize_de, batch_first=True,
-                               pad_token=pad, lower=True, eos_token='<eos>')
-        trg_field = data.Field(tokenize=tokenize_en, batch_first=True,
-                               pad_token=pad, lower=True, eos_token='<eos>')
+        src_field = data.Field(
+            tokenize=tokenize_de,
+            batch_first=True,
+            pad_token=pad,
+            lower=True,
+            eos_token='<eos>',
+        )
+        trg_field = data.Field(
+            tokenize=tokenize_en,
+            batch_first=True,
+            pad_token=pad,
+            lower=True,
+            eos_token='<eos>',
+        )
 
         print("Loading data... (this may take a while)")
         train, val, data_paths = \
-            WMT32k.splits(exts=('.de', '.en'),
-                          fields=(src_field, trg_field),
-                          data_dir=data_dir,
-                          filter_pred=filter_pred)
+            WMT32k.splits(
+                exts=('.de', '.en'),
+                fields=(src_field, trg_field),
+                data_dir=data_dir,
+                filter_pred=filter_pred,
+            )
 
         print("Building vocabs... (this may take a while)")
         build_vocabs(src_field, trg_field, data_paths)
@@ -172,7 +206,8 @@ def prepare(max_length, batch_size, device, opt, data_dir):
         batch_size=batch_size,
         device=device,
         max_length=max_length,
-        example_length_fn=len_of_example)
+        example_length_fn=len_of_example,
+    )
 
     opt.src_vocab_size = len(src_field.vocab)
     opt.trg_vocab_size = len(trg_field.vocab)
@@ -180,9 +215,19 @@ def prepare(max_length, batch_size, device, opt, data_dir):
     opt.trg_pad_idx = trg_field.vocab.stoi[pad]
 
     if not load_preprocessed:
-        torch.save({'pad_idx': opt.src_pad_idx, 'field': src_field},
-                   data_dir + '/source.pt')
-        torch.save({'pad_idx': opt.trg_pad_idx, 'field': trg_field},
-                   data_dir + '/target.pt')
+        torch.save(
+            {
+                'pad_idx': opt.src_pad_idx,
+                'field': src_field,
+            },
+            data_dir + '/source.pt',
+        )
+        torch.save(
+            {
+                'pad_idx': opt.trg_pad_idx,
+                'field': trg_field,
+            },
+            data_dir + '/target.pt',
+        )
 
     return train_iter, val_iter, opt

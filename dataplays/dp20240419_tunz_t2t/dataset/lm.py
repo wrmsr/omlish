@@ -50,8 +50,10 @@ def read_examples(paths, fields, data_dir, mode, filter_pred, num_shard):
 
 
 class LM1b(data.Dataset):
-    urls = ["http://www.statmt.org/lm-benchmark/"
-            "1-billion-word-language-modeling-benchmark-r13output.tar.gz"]
+    urls = [
+        "http://www.statmt.org/lm-benchmark/"
+        "1-billion-word-language-modeling-benchmark-r13output.tar.gz",
+    ]
     name = 'lm1b'
     dirname = ''
 
@@ -73,23 +75,40 @@ class LM1b(data.Dataset):
         lm_data_dir = "1-billion-word-language-modeling-benchmark-r13output"
 
         train_files = [
-            os.path.join(path,
-                         lm_data_dir,
-                         "training-monolingual.tokenized.shuffled",
-                         "news.en-%05d-of-00100" % i) for i in range(1, 100)
+            os.path.join(
+                path,
+                lm_data_dir,
+                "training-monolingual.tokenized.shuffled",
+                "news.en-%05d-of-00100" % i
+            )
+            for i in range(1, 100)
         ]
         train_examples, data_paths = \
-            read_examples(train_files, fields, data_dir, 'train',
-                          filter_pred, 100)
+            read_examples(
+                train_files,
+                fields,
+                data_dir,
+                'train',
+                filter_pred,
+                100,
+            )
 
         val_files = [
-            os.path.join(path,
-                         lm_data_dir,
-                         "heldout-monolingual.tokenized.shuffled",
-                         "news.en.heldout-00000-of-00050")
+            os.path.join(
+                path,
+                lm_data_dir,
+                "heldout-monolingual.tokenized.shuffled",
+                "news.en.heldout-00000-of-00050"
+            )
         ]
-        val_examples, _ = read_examples(val_files, fields, data_dir,
-                                        'val', filter_pred, 1)
+        val_examples, _ = read_examples(
+            val_files,
+            fields,
+            data_dir,
+            'val',
+            filter_pred,
+            1,
+        )
 
         train_data = cls(train_examples, fields, **kwargs)
         val_data = cls(val_examples, fields, **kwargs)
@@ -141,9 +160,11 @@ def prepare(max_length, batch_size, device, opt, data_dir):
 
         print("Loading data... (this may take a while)")
         train, val, data_paths = \
-            LM1b.splits(fields=(trg_field,),
-                        data_dir=data_dir,
-                        filter_pred=filter_pred)
+            LM1b.splits(
+                fields=(trg_field,),
+                data_dir=data_dir,
+                filter_pred=filter_pred,
+            )
         # fields = [('trg', trg_field)]
         # data_paths = glob.glob(data_dir + '/examples-train-*.pt')
         # examples_train = torch.load(data_paths[0])
@@ -161,7 +182,8 @@ def prepare(max_length, batch_size, device, opt, data_dir):
         batch_size=batch_size,
         device=device,
         max_length=max_length,
-        example_length_fn=len_of_example)
+        example_length_fn=len_of_example,
+    )
 
     opt.src_vocab_size = None
     opt.trg_vocab_size = len(trg_field.vocab)
@@ -170,7 +192,12 @@ def prepare(max_length, batch_size, device, opt, data_dir):
     opt.has_inputs = False
 
     if not load_preprocessed:
-        torch.save({'pad_idx': opt.trg_pad_idx, 'field': trg_field},
-                   data_dir + '/target.pt')
+        torch.save(
+            {
+                'pad_idx': opt.trg_pad_idx,
+                'field': trg_field,
+            },
+            data_dir + '/target.pt',
+        )
 
     return train_iter, val_iter, opt

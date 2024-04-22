@@ -6,8 +6,14 @@ from tqdm import tqdm
 
 
 class BucketByLengthIterator(Iterator):
-    def __init__(self, *args, max_length=None, example_length_fn=None,
-                 data_paths=None, **kwargs):
+    def __init__(
+            self,
+            *args,
+            max_length=None,
+            example_length_fn=None,
+            data_paths=None,
+            **kwargs,
+    ):
         batch_size = kwargs['batch_size']
 
         self.boundaries = self._bucket_boundaries(max_length)
@@ -45,8 +51,12 @@ class BucketByLengthIterator(Iterator):
                 yield self.buckets[idx]
                 self.buckets[idx] = []
 
-    def _bucket_boundaries(self, max_length, min_length=8,
-                           length_bucket_step=1.1):
+    def _bucket_boundaries(
+            self,
+            max_length,
+            min_length=8,
+            length_bucket_step=1.1,
+    ):
         x = min_length
         boundaries = []
         while x < max_length:
