@@ -27,10 +27,10 @@ class FeedForwardNetwork(nn.Module):
 
     def forward(
             self,
-            x: Tensor,
-    ) -> Tensor:
-        x = self.layer1(x)
+            x: Tensor,  # (bs, seq_len, hidden_size)
+    ) -> Tensor:  # (bs, seq_len, hidden_size)
+        x = self.layer1(x)  # (bs, seq_len, filter_size)
         x = self.relu(x)
         x = self.dropout(x)
-        x = self.layer2(x)
+        x = self.layer2(x)  # (bs, seq_len, hidden_size)
         return x

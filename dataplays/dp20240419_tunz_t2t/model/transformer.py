@@ -43,7 +43,7 @@ class MultiHeadAttention(nn.Module):
             self,
             hidden_size: int,
             dropout_rate: float,
-            head_size: int = 8,
+            head_size: int = 8,  # num_heads, really
     ) -> None:
         super().__init__()
 
@@ -66,12 +66,12 @@ class MultiHeadAttention(nn.Module):
 
     def forward(
             self,
-            q: Tensor,
-            k: Tensor,
-            v: Tensor,
-            mask: Tensor,
+            q: Tensor,  # (bs, seq_len, hidden_size)
+            k: Tensor,  # (bs, seq_len, hidden_size)
+            v: Tensor,  # (bs, seq_len, hidden_size)
+            mask: Tensor,  # (1, seq_len, seq_len)
             cache: Tensor | None = None,
-    ) -> Tensor:
+    ) -> Tensor:  # (bs, seq_len, hidden_size)
         orig_q_size = q.size()
 
         d_k = self.att_size
@@ -79,35 +79,35 @@ class MultiHeadAttention(nn.Module):
         batch_size = q.size(0)
 
         # head_i = Attention(Q(W^Q)_i, K(W^K)_i, V(W^V)_i)
-        q = self.linear_q(q).view(batch_size, -1, self.head_size, d_k)
+        q = self.linear_q(q).view(batch_size, -1, self.head_size, d_k)  # (bs, seq_len, head_size, att_size)
         if cache is not None and 'encdec_k' in cache:
             k, v = cache['encdec_k'], cache['encdec_v']
         else:
-            k = self.linear_k(k).view(batch_size, -1, self.head_size, d_k)
-            v = self.linear_v(v).view(batch_size, -1, self.head_size, d_v)
-
+            k = self.linear_k(k).view(batch_size, -1, self.head_size, d_k)  # (bs, seq_len, head_size, att_size)
+            v = self.linear_v(v).view(batch_size, -1, self.head_size, d_v)  # (bs, seq_len, head_size, att_size)
+            # (bs, seq_len, head_size, att_size)
             if cache is not None:
                 cache['encdec_k'], cache['encdec_v'] = k, v
 
-        q = q.transpose(1, 2)                  # [b, h, q_len, d_k]
-        v = v.transpose(1, 2)                  # [b, h, v_len, d_v]
-        k = k.transpose(1, 2).transpose(2, 3)  # [b, h, d_k, k_len]
+        q = q.transpose(1, 2)                  # [b, h, q_len, d_k]  # (bs, head_size, seq_len, att_size)
+        v = v.transpose(1, 2)                  # [b, h, v_len, d_v]  # (bs, head_size, seq_len, att_size)
+        k = k.transpose(1, 2).transpose(2, 3)  # [b, h, d_k, k_len]  # (bs, head_size, att_size, seq_len)
 
         # Scaled Dot-Product Attention.
         # Attention(Q, K, V) = softmax((QK^T)/sqrt(d_k))V
         q.mul_(self.scale)
-        x = torch.matmul(q, k)  # [b, h, q_len, k_len]
+        x = torch.matmul(q, k)  # [b, h, q_len, k_len]  # (bs, head_size, seq_len, seq_len)
         x.masked_fill_(mask.unsqueeze(1).type(torch.bool), -1e9)
 
         x = torch.softmax(x, dim=3)
 
         x = self.att_dropout(x)
-        x = x.matmul(v)  # [b, h, q_len, attn]
+        x = x.matmul(v)  # [b, h, q_len, attn]  # (bs, head_size, seq_len, att_size)
 
-        x = x.transpose(1, 2).contiguous()  # [b, q_len, h, attn]
-        x = x.view(batch_size, -1, self.head_size * d_v)
+        x = x.transpose(1, 2).contiguous()  # [b, q_len, h, attn]  # (bs, seq_len, head_size, att_size)
+        x = x.view(batch_size, -1, self.head_size * d_v)  # (bs, seq_len, hidden_size)
 
-        x = self.output_layer(x)
+        x = self.output_layer(x)  # (bs, seq_len, hidden_size)
 
         assert x.size() == orig_q_size
         return x
@@ -132,9 +132,9 @@ class EncoderLayer(nn.Module):
 
     def forward(
             self,
-            x: Tensor,
-            mask: Tensor,
-    ) -> Tensor:
+            x: Tensor,  # (bs, seq_len, hidden_size)
+            mask: Tensor,  # (bs, 1, seq_len)
+    ) -> Tensor:  # (bs, seq_len, hidden_size)
         y = self.self_attention_norm(x)
         y = self.self_attention(y, y, y, mask)
         y = self.self_attention_dropout(y)
@@ -214,8 +214,8 @@ class Encoder(nn.Module):
 
     def forward(
             self,
-            inputs: Tensor,
-            mask: Tensor,
+            inputs: Tensor,  # (bs, seq_len, hidden_size)
+            mask: Tensor,  # (bs, 1, seq_len)
     ) -> Tensor:
         encoder_output = inputs
         for enc_layer in self.layers:
