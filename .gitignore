@@ -37,5 +37,6 @@
 /profiles/
 /target/
 /weights/
+/wmt32k_data/
 antlr-*.jar
 test-*.xml
