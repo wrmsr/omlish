@@ -5,7 +5,7 @@ import os
 import pickle
 
 import torch
-from torchtext import data
+from torchtext_0_3_1 import data
 from tqdm import tqdm
 
 from . import common
