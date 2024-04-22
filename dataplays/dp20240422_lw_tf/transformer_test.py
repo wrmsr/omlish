@@ -8,9 +8,9 @@ import shutil
 import numpy as np
 import tensorflow as tf
 
-from data import DatasetManager, PAD_ID
-from transformer import Transformer
-from utils import print_trainable_variables
+from .data import DatasetManager, PAD_ID
+from .transformer import Transformer
+from .utils import print_trainable_variables
 
 
 class TransformerTest(tf.test.TestCase):
