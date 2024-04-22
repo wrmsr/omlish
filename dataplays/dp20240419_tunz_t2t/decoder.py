@@ -61,7 +61,7 @@ def main():
     trg_data = torch.load(args.data_dir + '/target.pt')
 
     # Load a saved model.
-    device = torch.device('cpu' if args.no_cuda or not torch.cuda.is_available() else 'cuda')
+    device = torch.device('mps' if args.no_cuda or not torch.cuda.is_available() else 'cuda')
     model = utils.load_checkpoint(args.model_dir, device)
 
     pads = torch.tensor([trg_data['pad_idx']] * beam_size, device=device)

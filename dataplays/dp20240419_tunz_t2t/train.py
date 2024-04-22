@@ -167,7 +167,7 @@ def main():
     parser.add_argument('--summary_grad', action='store_true')
     opt = parser.parse_args()
 
-    device = torch.device('cpu' if opt.no_cuda or not torch.cuda.is_available() else 'cuda')
+    device = torch.device('mps' if opt.no_cuda or not torch.cuda.is_available() else 'cuda')
 
     if not os.path.exists(opt.output_dir + '/last/models'):
         os.makedirs(opt.output_dir + '/last/models')
