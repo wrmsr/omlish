@@ -46,8 +46,7 @@ def read_examples(paths, exts, fields, data_dir, mode, filter_pred, num_shard):
                 if src_line == '' or trg_line == '':
                     continue
 
-                example = data.Example.fromlist(
-                    [src_line, trg_line], fields)
+                example = data.Example.fromlist([src_line, trg_line], fields)
                 if not filter_pred(example):
                     continue
 
@@ -65,11 +64,13 @@ def read_examples(paths, exts, fields, data_dir, mode, filter_pred, num_shard):
 
 
 class WMT32k(data.Dataset):
-    urls = ['http://data.statmt.org/wmt18/translation-task/'
-            'training-parallel-nc-v13.tgz',
-            'http://www.statmt.org/wmt13/training-parallel-commoncrawl.tgz',
-            'http://www.statmt.org/wmt13/training-parallel-europarl-v7.tgz',
-            'http://data.statmt.org/wmt17/translation-task/dev.tgz']
+    urls = [
+        'http://data.statmt.org/wmt18/translation-task/'
+        'training-parallel-nc-v13.tgz',
+        'http://www.statmt.org/wmt13/training-parallel-commoncrawl.tgz',
+        'http://www.statmt.org/wmt13/training-parallel-europarl-v7.tgz',
+        'http://data.statmt.org/wmt17/translation-task/dev.tgz',
+    ]
     name = 'wmt32k'
     dirname = ''
 

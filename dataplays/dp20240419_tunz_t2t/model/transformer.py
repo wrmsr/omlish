@@ -53,8 +53,7 @@ class MultiHeadAttention(nn.Module):
 
         self.att_dropout = nn.Dropout(dropout_rate)
 
-        self.output_layer = nn.Linear(head_size * att_size, hidden_size,
-                                      bias=False)
+        self.output_layer = nn.Linear(head_size * att_size, hidden_size, bias=False)
         initialize_weight(self.output_layer)
 
     def forward(self, q, k, v, mask, cache=None):
@@ -146,8 +145,7 @@ class DecoderLayer(nn.Module):
 
         if enc_output is not None:
             y = self.enc_dec_attention_norm(x)
-            y = self.enc_dec_attention(y, enc_output, enc_output, i_mask,
-                                       cache)
+            y = self.enc_dec_attention(y, enc_output, enc_output, i_mask, cache)
             y = self.enc_dec_attention_dropout(y)
             x = x + y
 
@@ -162,8 +160,10 @@ class Encoder(nn.Module):
     def __init__(self, hidden_size, filter_size, dropout_rate, n_layers):
         super().__init__()
 
-        encoders = [EncoderLayer(hidden_size, filter_size, dropout_rate)
-                    for _ in range(n_layers)]
+        encoders = [
+            EncoderLayer(hidden_size, filter_size, dropout_rate)
+            for _ in range(n_layers)
+        ]
         self.layers = nn.ModuleList(encoders)
 
         self.last_norm = nn.LayerNorm(hidden_size, eps=1e-6)
@@ -279,8 +279,7 @@ class Transformer(nn.Module):
 
         t_mask = utils.create_pad_mask(targets, self.trg_pad_idx)
         target_size = targets.size()[1]
-        t_self_mask = utils.create_trg_self_mask(target_size,
-                                                 device=targets.device)
+        t_self_mask = utils.create_trg_self_mask(target_size, device=targets.device)
         return self.decode(targets, enc_output, i_mask, t_self_mask, t_mask)
 
     def encode(self, inputs, i_mask):
