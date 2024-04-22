@@ -1,11 +1,11 @@
 import pickle
 
 import torch
-from torchtext.legacy.data import Iterator
+# from torchtext.legacy.data import Iterator
 from tqdm import tqdm
 
 
-class BucketByLengthIterator(Iterator):
+class BucketByLengthIterator:  # (Iterator):
     def __init__(
             self,
             *args,
