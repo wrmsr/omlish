@@ -14,8 +14,8 @@ from . import common
 
 # pylint: disable=arguments-differ
 
-spacy_de = spacy.load('de')
-spacy_en = spacy.load('en')
+spacy_de = spacy.load('de_core_news_sm')
+spacy_en = spacy.load('en_core_web_sm')
 
 url = re.compile('(<url>.*</url>)')
 
@@ -64,7 +64,7 @@ def read_examples(paths, exts, fields, data_dir, mode, filter_pred, num_shard):
     return examples, data_paths
 
 
-class WMT32k(data.Dataset):
+class WMT32k:  # (data.Dataset):
     urls = ['http://data.statmt.org/wmt18/translation-task/'
             'training-parallel-nc-v13.tgz',
             'http://www.statmt.org/wmt13/training-parallel-commoncrawl.tgz',
@@ -85,12 +85,13 @@ class WMT32k(data.Dataset):
         filter_pred = kwargs['filter_pred']
 
         expected_dir = os.path.join(root, cls.name)
-        path = (expected_dir if os.path.exists(expected_dir)
-                else cls.download(root))
+        path = expected_dir if os.path.exists(expected_dir) else cls.download(root)
 
-        train_files = ['training-parallel-nc-v13/news-commentary-v13.de-en',
-                       'commoncrawl.de-en',
-                       'training/europarl-v7.de-en']
+        train_files = [
+            'training-parallel-nc-v13/news-commentary-v13.de-en',
+            'commoncrawl.de-en',
+            'training/europarl-v7.de-en',
+        ]
         train_files = map(lambda x: os.path.join(path, x), train_files)
         train_examples, data_paths = \
             read_examples(
