@@ -14,11 +14,11 @@ from .common import initialize_weight
 
 
 def simple_sdpa(
-        q: Tensor,
-        k: Tensor,
-        mask: Tensor,
+        q: Tensor,  # (bs, head_size, seq_len, att_size)
+        k: Tensor,  # (bs, head_size, att_size, seq_len)
+        mask: Tensor,  # (bs, 1, seq_len)
         scale: float,
-) -> Tensor:
+) -> Tensor:  # (bs, head_size, seq_len, seq_len)
     # Scaled Dot-Product Attention.
     # Attention(Q, K, V) = softmax((QK^T)/sqrt(d_k))V
     q.mul_(scale)
@@ -37,7 +37,7 @@ def fast_sdpa(q, k, mask, scale):
 
 
 class MultiHeadAttention(nn.Module):
-    sdpa = classmethod(simple_sdpa)  # noqa
+    sdpa = staticmethod(simple_sdpa)
 
     def __init__(
             self,
@@ -93,11 +93,7 @@ class MultiHeadAttention(nn.Module):
         v = v.transpose(1, 2)                  # [b, h, v_len, d_v]  # (bs, head_size, seq_len, att_size)
         k = k.transpose(1, 2).transpose(2, 3)  # [b, h, d_k, k_len]  # (bs, head_size, att_size, seq_len)
 
-        # Scaled Dot-Product Attention.
-        # Attention(Q, K, V) = softmax((QK^T)/sqrt(d_k))V
-        q.mul_(self.scale)
-        x = torch.matmul(q, k)  # [b, h, q_len, k_len]  # (bs, head_size, seq_len, seq_len)
-        x.masked_fill_(mask.unsqueeze(1).type(torch.bool), -1e9)
+        x = self.sdpa(q, k, mask, self.scale)
 
         x = torch.softmax(x, dim=3)
 
@@ -170,14 +166,14 @@ class DecoderLayer(nn.Module):
 
     def forward(
             self,
-            x: Tensor,
-            enc_output: Tensor,
-            self_mask: Tensor,
-            i_mask: Tensor,
-            cache: Tensor,
-    ) -> Tensor:
-        y = self.self_attention_norm(x)
-        y = self.self_attention(y, y, y, self_mask)
+            x: Tensor,  # (bs, seq_len, hidden_size)
+            enc_output: Tensor,  # (bs, seq_len, hidden_size)
+            self_mask: Tensor,  # (1, seq_len, seq_len)
+            i_mask: Tensor,  # (bs, 1, seq_len)
+            cache: Tensor | None,
+    ) -> Tensor:  # (bs, seq_len, hidden_size)
+        y = self.self_attention_norm(x)  # (bs, seq_len, hidden_size)
+        y = self.self_attention(y, y, y, self_mask)  # (bs, seq_len, hidden_size)
         y = self.self_attention_dropout(y)
         x = x + y
 
@@ -243,12 +239,12 @@ class Decoder(nn.Module):
 
     def forward(
             self,
-            targets: Tensor,
-            enc_output: Tensor,
-            i_mask: Tensor,
-            t_self_mask: Tensor,
+            targets: Tensor,  # (bs, seq_len, hidden_size)
+            enc_output: Tensor,  # (bs, seq_len, hidden_size)
+            i_mask: Tensor,  # (bs, 1, seq_len)
+            t_self_mask: Tensor,  # (1, seq_len, seq_len)
             cache: Tensor | None,
-    ) -> Tensor:
+    ) -> Tensor:  # (bs, seq_len, hidden_size)
         decoder_output = targets
         for i, dec_layer in enumerate(self.layers):
             layer_cache = None
@@ -336,26 +332,26 @@ class Transformer(nn.Module):
 
     def forward(
             self,
-            inputs: Tensor,
-            targets: Tensor,
-    ) -> Tensor:
+            inputs: Tensor,  # (bs, seq_len)
+            targets: Tensor,  # (bs, seq_len)
+    ) -> Tensor:  # (bs, seq_len, num_tok)
         enc_output, i_mask = None, None
         if self.has_inputs:
             i_mask = utils.create_pad_mask(inputs, self.src_pad_idx)
-            enc_output = self.encode(inputs, i_mask)
+            enc_output = self.encode(inputs, i_mask)  # (bs, seq_len, hidden_size)
 
-        t_mask = utils.create_pad_mask(targets, self.trg_pad_idx)
+        t_mask = utils.create_pad_mask(targets, self.trg_pad_idx)  # (bs, 1, seq_len)
         target_size = targets.size()[1]
-        t_self_mask = utils.create_trg_self_mask(target_size, device=targets.device)
+        t_self_mask = utils.create_trg_self_mask(target_size, device=targets.device)  # (1, seq_len, seq_len)
         return self.decode(targets, enc_output, i_mask, t_self_mask, t_mask)
 
     def encode(
             self,
-            inputs: Tensor,
-            i_mask: Tensor,
-    ) -> Tensor:
+            inputs: Tensor,  # (bs, seq_len)
+            i_mask: Tensor,  # (bs, 1, seq_len)
+    ) -> Tensor:  # (bs, seq_len, hidden_size)
         # Input embedding
-        input_embedded = self.i_vocab_embedding(inputs)
+        input_embedded = self.i_vocab_embedding(inputs)  # (bs, seq_len, hidden_size)
         input_embedded.masked_fill_(i_mask.squeeze(1).unsqueeze(-1), 0)
         input_embedded *= self.emb_scale
         input_embedded += self.get_position_encoding(inputs)
@@ -367,20 +363,20 @@ class Transformer(nn.Module):
 
     def decode(
             self,
-            targets: Tensor,
-            enc_output: Tensor,
-            i_mask: Tensor,
-            t_self_mask: Tensor,
-            t_mask: Tensor,
+            targets: Tensor,  # (bs, seq_len)
+            enc_output: Tensor,  # (bs, seq_len, hidden_size)
+            i_mask: Tensor,  # bs, 1, seq_len)
+            t_self_mask: Tensor,  # (1, seq_len, seq_len)
+            t_mask: Tensor,  # (bs, 1, seq_len)
             cache: Tensor | None = None,
-    ) -> Tensor:
+    ) -> Tensor:  # (bs, seq_len, num_tok)
         # target embedding
-        target_embedded = self.t_vocab_embedding(targets)
+        target_embedded = self.t_vocab_embedding(targets)  # (bs, seq_len, hidden_size)
         target_embedded.masked_fill_(t_mask.squeeze(1).unsqueeze(-1), 0)
 
         # Shifting
-        target_embedded = target_embedded[:, :-1]
-        target_embedded = F.pad(target_embedded, (0, 0, 1, 0))
+        target_embedded = target_embedded[:, :-1]  # (bs, seq_len - 1, hidden_size)
+        target_embedded = F.pad(target_embedded, (0, 0, 1, 0))  # (bs, seq_len, hidden_size)
 
         target_embedded *= self.emb_scale
         target_embedded += self.get_position_encoding(targets)
@@ -392,7 +388,7 @@ class Transformer(nn.Module):
                 i_mask = i_mask.size(2) - i_mask.sum(dim=2, dtype=torch.int32)
             t_self_mask = t_self_mask.size(2) - t_self_mask.sum(dim=2, dtype=torch.int32)
 
-        decoder_output = self.decoder(
+        decoder_output = self.decoder(  # (bs, seq_len, hidden_size)
             target_embedded,
             enc_output,
             i_mask,
@@ -400,7 +396,7 @@ class Transformer(nn.Module):
             cache,
         )
         # linear
-        output = torch.matmul(
+        output = torch.matmul(  # (bs, seq_len, num_tok)
             decoder_output,
             self.t_vocab_embedding.weight.transpose(0, 1),
         )
@@ -409,8 +405,8 @@ class Transformer(nn.Module):
 
     def get_position_encoding(
             self,
-            x: Tensor,
-    ) -> Tensor:
+            x: Tensor,  # (bs, seq_len)
+    ) -> Tensor:  # (1, seq_len, hidden_size)
         max_length = x.size()[1]
         position = torch.arange(max_length, dtype=torch.float32, device=x.device)
         scaled_time = position.unsqueeze(1) * self.inv_timescales.unsqueeze(0)
