@@ -9,8 +9,8 @@ import click
 import numpy as np
 from nltk.translate.bleu_score import corpus_bleu
 
-from data import DatasetManager, recover_sentence, PAD_ID
-from transformer import Transformer
+from .data import DatasetManager, recover_sentence, PAD_ID
+from .transformer import Transformer
 
 
 @click.command()

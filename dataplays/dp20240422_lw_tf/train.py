@@ -10,9 +10,9 @@ import time
 import click
 from baselines import logger
 
-from data import *
-from transformer import *
-from utils import print_trainable_variables
+from .data import *
+from .transformer import *
+from .utils import print_trainable_variables
 
 
 @click.command()
