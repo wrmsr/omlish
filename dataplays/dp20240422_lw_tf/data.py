@@ -5,10 +5,12 @@ Author: Lilian Weng (lilian.wengweng@gmail.com)
 """
 
 import os
+import random
 import sys
 import urllib.parse
+
 import numpy as np
-import random
+
 
 # IDs of special characters.
 PAD_ID = 0

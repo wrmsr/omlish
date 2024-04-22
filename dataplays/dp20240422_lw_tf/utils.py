@@ -1,8 +1,9 @@
 import os
 
 import tensorflow as tf
-from baselines.common.tf_util import display_var_info
 from baselines.common.console_util import colorize
+from baselines.common.tf_util import display_var_info
+
 
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__)))
 

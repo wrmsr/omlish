@@ -4,6 +4,7 @@ Author: Lilian Weng (lilian.wengweng@gmail.com)
         Oct 2018
 """
 import shutil
+
 import numpy as np
 import tensorflow as tf
 

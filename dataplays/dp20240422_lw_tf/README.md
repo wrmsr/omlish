@@ -1,18 +1,21 @@
 # Transformer
+
 Implementation of the *Transformer* model in the paper:
 
-> Ashish Vaswani, et al. ["Attention is all you need."](http://papers.nips.cc/paper/7181-attention-is-all-you-need.pdf) NIPS 2017.
+> Ashish Vaswani, et al. ["Attention is all you need."](http://papers.nips.cc/paper/7181-attention-is-all-you-need.pdf)
+> NIPS 2017.
 
 ![Transformer model](https://lilianweng.github.io/lil-log/assets/images/transformer.png)
 
 Check my blog post on attention and transformer:
+
 * [Attention? Attention!](https://lilianweng.github.io/lil-log/2018/06/24/attention-attention.html)
 
 Implementations that helped me:
+
 * https://github.com/Kyubyong/transformer/
 * https://github.com/tensorflow/tensor2tensor/blob/master/tensor2tensor/models/transformer.py
 * http://nlp.seas.harvard.edu/2018/04/01/attention.html
-
 
 ### Setup
 
@@ -55,10 +58,11 @@ Let's say, the model is saved in folder `transformer-wmt14-seq20-d512-head8-1541
 ```bash
 $ python eval.py transformer-wmt14-seq20-d512-head8-1541573730
 ```
+
 With the default config, this implementation gets BLEU ~ 20 on wmt14 test set.
 
-
 ### Implementation Notes
+
 \[WIP\] A couple of tricking points in the implementation.
 
 * How to construct the mask correctly?
