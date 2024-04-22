@@ -1,7 +1,7 @@
 import pickle
 
 import torch
-from torchtext.data import Iterator
+from torchtext.legacy.data import Iterator
 from tqdm import tqdm
 
 
@@ -17,7 +17,7 @@ class BucketByLengthIterator(Iterator):
         self.data_path_idx = 0
         self.buckets = [[] for _ in range(len(self.boundaries)+1)]
 
-        super(BucketByLengthIterator, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def create_batches(self):
         self.batches = self._bucket_by_seq_length(self.data())
