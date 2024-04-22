@@ -6,9 +6,9 @@ import torch
 # from tensorboardX import SummaryWriter
 from tqdm import tqdm
 
-from dataset import problem
-from utils.optimizer import LRScheduler
-from utils import utils
+from .dataset import problem
+from .utils.optimizer import LRScheduler
+from .utils import utils
 
 
 def summarize_train(
@@ -167,7 +167,7 @@ def main():
     parser.add_argument('--summary_grad', action='store_true')
     opt = parser.parse_args()
 
-    device = torch.device('cpu' if opt.no_cuda else 'cuda')
+    device = torch.device('cpu' if opt.no_cuda or not torch.cuda.is_available() else 'cuda')
 
     if not os.path.exists(opt.output_dir + '/last/models'):
         os.makedirs(opt.output_dir + '/last/models')
@@ -188,10 +188,10 @@ def main():
     print("# of vocabs (target):", t_vocab_size)
 
     if opt.model == 'transformer':
-        from model.transformer import Transformer
+        from .model.transformer import Transformer
         model_fn = Transformer
     elif opt.model == 'fast_transformer':
-        from model.fast_transformer import FastTransformer
+        from .model.fast_transformer import FastTransformer
         model_fn = FastTransformer
 
     if os.path.exists(opt.output_dir + '/last/models/last_model.pt'):
