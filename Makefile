@@ -54,7 +54,7 @@ VENV_OPTS:=$$(echo "$${_VENV_OPTS:-${DEFAULT_VENV_OPTS}}")
 VENV_ROOT:=$$(echo "$${_VENV_ROOT:-${DEFAULT_VENV_ROOT}}")
 REQUIREMENTS_TXT:=$$(echo "$${_REQUIREMENTS_TXT:-${DEFAULT_REQUIREMENTS_TXT}}")
 
-_PYTHONPATH=${PYTHONPATH}:.:external
+_PYTHONPATH=${PYTHONPATH}:.:external:tinygrad
 PYTHON:=PYTHONPATH="$(_PYTHONPATH)" $$(echo "$(VENV_ROOT)/bin/python")
 
 PYENV_ROOT:=$$(sh -c "if [ -z '$${PYENV_ROOT}' ] ; then echo '$${HOME}/.pyenv' ; else echo '$${PYENV_ROOT%/}' ; fi")
