@@ -34,6 +34,7 @@
 /cython_debug/
 /dist/
 /gen/
+/output/
 /profiles/
 /target/
 /weights/
