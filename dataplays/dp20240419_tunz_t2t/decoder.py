@@ -49,7 +49,7 @@ def main():
     parser.add_argument('--max_length', type=int, default=100)
     parser.add_argument('--beam_size', type=int, default=4)
     parser.add_argument('--alpha', type=float, default=0.6)
-    parser.add_argument('--no_cuda', action='store_true')
+    parser.add_argument('--no_accel', action='store_true')
     parser.add_argument('--translate', action='store_true')
     args = parser.parse_args()
 
@@ -61,7 +61,9 @@ def main():
     trg_data = torch.load(args.data_dir + '/target.pt')
 
     # Load a saved model.
-    device = torch.device('mps' if args.no_cuda or not torch.cuda.is_available() else 'cuda')
+    from . import config
+    device = config.get_device(args.no_accel)
+
     model = utils.load_checkpoint(args.model_dir, device)
 
     pads = torch.tensor([trg_data['pad_idx']] * beam_size, device=device)

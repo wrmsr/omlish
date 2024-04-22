@@ -162,12 +162,13 @@ def main():
     parser.add_argument('--model', type=str, default='transformer')
     parser.add_argument('--output_dir', type=str, default='./output')
     parser.add_argument('--data_dir', type=str, default='./data')
-    parser.add_argument('--no_cuda', action='store_true')
+    parser.add_argument('--no_accel', action='store_true')
     parser.add_argument('--parallel', action='store_true')
     parser.add_argument('--summary_grad', action='store_true')
     opt = parser.parse_args()
 
-    device = torch.device('mps' if opt.no_cuda or not torch.cuda.is_available() else 'cuda')
+    from . import config
+    device = config.get_device(opt.no_accel)
 
     if not os.path.exists(opt.output_dir + '/last/models'):
         os.makedirs(opt.output_dir + '/last/models')
