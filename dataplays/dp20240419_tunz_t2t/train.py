@@ -82,8 +82,7 @@ def train(
         pred = pred.view(-1, pred.size(-1))
         ans = targets.view(-1)
 
-        loss = utils.get_loss(pred, ans, t_vocab_size,
-                              label_smoothing, opt.trg_pad_idx)
+        loss = utils.get_loss(pred, ans, t_vocab_size, label_smoothing, opt.trg_pad_idx)
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
@@ -136,8 +135,7 @@ def validation(
 
             pred = pred.view(-1, pred.size(-1))
             ans = targets.view(-1)
-            loss = utils.get_loss(pred, ans, t_vocab_size, 0,
-                                  opt.trg_pad_idx)
+            loss = utils.get_loss(pred, ans, t_vocab_size, 0, opt.trg_pad_idx)
         total_loss += loss.item() * len(batch)
         total_cnt += len(batch)
 
@@ -177,8 +175,7 @@ def main():
         os.makedirs(opt.data_dir)
 
     train_data, validation_data, i_vocab_size, t_vocab_size, opt = \
-        problem.prepare(opt.problem, opt.data_dir, opt.max_length,
-                        opt.batch_size, device, opt)
+        problem.prepare(opt.problem, opt.data_dir, opt.max_length, opt.batch_size, device, opt)
     if i_vocab_size is not None:
         print("# of vocabs (input):", i_vocab_size)
     print("# of vocabs (target):", t_vocab_size)
@@ -219,7 +216,10 @@ def main():
 
     optimizer = LRScheduler(
         filter(lambda x: x.requires_grad, model.parameters()),
-        opt.hidden_size, opt.warmup, step=global_step)
+        opt.hidden_size,
+        opt.warmup,
+        step=global_step,
+    )
 
     # writer = SummaryWriter(opt.output_dir + '/last')
     # val_writer = SummaryWriter(opt.output_dir + '/last/val')
