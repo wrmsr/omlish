@@ -19,7 +19,7 @@ async-timeout==4.0.3
 attrs==23.2.0
 audioread==3.0.1
 Babel==2.14.0
-backports.tarfile==1.1.0
+backports.tarfile==1.1.1
 bayesian-optimization==1.4.3
 beautifulsoup4==4.12.3
 bellows==0.38.1
@@ -27,8 +27,8 @@ bitsandbytes==0.42.0
 black==24.4.0
 bleach==6.1.0
 blis==0.7.11
-boto3==1.34.87
-botocore==1.34.87
+boto3==1.34.89
+botocore==1.34.89
 bs4==0.0.2
 bsddb3==6.2.9
 build==1.2.1
@@ -54,13 +54,11 @@ cryptography==42.0.5
 cycler==0.12.1
 cymem==2.0.8
 datasets==2.18.0
-de-core-news-sm @ https://github.com/explosion/spacy-models/releases/download/de_core_news_sm-3.7.0/de_core_news_sm-3.7.0-py3-none-any.whl#sha256=d88c737eb7eb766f730f6a2dcb99dfcdb81623e1e0d89a9c638a2182ac19c52e
 debugpy==1.8.1
 decorator==5.1.1
 defusedxml==0.7.1
 dill==0.3.8
 docutils==0.21.1
-en-core-web-sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1-py3-none-any.whl#sha256=86cc141f63942d4b2c5fcee06630fd6f904788d2f0ab005cce45aadb8fb73889
 evaluate==0.4.1
 execnet==2.1.1
 executing==2.0.1
@@ -102,7 +100,7 @@ huggingface-hub==0.22.2
 hypothesis==6.100.1
 idna==3.7
 ifaddr==0.2.0
-imageio==2.34.0
+imageio==2.34.1
 importlib_metadata==7.1.0
 iniconfig==2.0.0
 ipykernel==6.29.4
@@ -130,7 +128,7 @@ jupyter_server==2.14.0
 jupyter_server_terminals==0.5.3
 jupyterlab==4.1.6
 jupyterlab_pygments==0.3.0
-jupyterlab_server==2.26.0
+jupyterlab_server==2.27.1
 jupyterlab_widgets==3.0.10
 keras==2.15.0
 keyring==25.1.0
@@ -197,8 +195,8 @@ pgspecial==2.1.1
 pillow==10.3.0
 pipdeptree==2.18.1
 pkginfo==1.10.0
-platformdirs==4.2.0
-pluggy==1.4.0
+platformdirs==4.2.1
+pluggy==1.5.0
 pooch==1.8.1
 portalocker==2.8.2
 pprintpp==0.4.0
@@ -214,14 +212,14 @@ pure-eval==0.2.2
 pure-pcapy3==1.0.1
 py-cpuinfo==9.0.0
 pyaes==1.6.1
-pyarrow==15.0.2
+pyarrow==16.0.0
 pyarrow-hotfix==0.6
 pyasn1==0.6.0
 pyasn1_modules==0.4.0
 pycodestyle==2.11.1
 pycparser==2.22
-pydantic==2.7.0
-pydantic_core==2.18.1
+pydantic==2.7.1
+pydantic_core==2.18.2
 pyflakes==3.1.0
 Pygments==2.17.2
 PyMySQL==1.1.0
@@ -268,7 +266,7 @@ rsa==4.9
 rubicon-objc==0.4.8
 s3transfer==0.10.1
 safetensors==0.4.3
-scikit-image==0.23.1
+scikit-image==0.23.2
 scikit-learn==1.4.2
 scipy==1.13.0
 scramp==1.4.5
@@ -292,7 +290,7 @@ spacy-legacy==3.0.12
 spacy-loggers==1.0.5
 SPARQLWrapper==1.8.5
 SQLAlchemy==2.0.29
-sqlglot==23.10.0
+sqlglot==23.11.2
 sqlparse==0.4.4
 srsly==2.4.8
 stack-data==0.6.3
@@ -310,8 +308,8 @@ threadpoolctl==3.4.0
 tifffile==2024.4.18
 tiktoken==0.6.0
 time-machine==2.14.1
-tinycss2==1.2.1
--e git+https://github.com/tinygrad/tinygrad@e6227bdb15a15481c974b6be9d099c14e6259a67#egg=tinygrad&subdirectory=../../tinygrad
+tinycss2==1.3.0
+-e git+https://github.com/tinygrad/tinygrad@3a48773f1a8e12a6c767fc7774b8f20766172ed6#egg=tinygrad&subdirectory=../../tinygrad
 tokenizers==0.19.1
 torch==2.2.2
 torchinfo==1.8.0
