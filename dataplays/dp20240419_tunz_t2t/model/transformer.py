@@ -85,7 +85,6 @@ class MultiHeadAttention(nn.Module):
         else:
             k = self.linear_k(k).view(batch_size, -1, self.head_size, d_k)  # (bs, seq_len, head_size, att_size)
             v = self.linear_v(v).view(batch_size, -1, self.head_size, d_v)  # (bs, seq_len, head_size, att_size)
-            # (bs, seq_len, head_size, att_size)
             if cache is not None:
                 cache['encdec_k'], cache['encdec_v'] = k, v
 
@@ -167,7 +166,7 @@ class DecoderLayer(nn.Module):
     def forward(
             self,
             x: Tensor,  # (bs, seq_len, hidden_size)
-            enc_output: Tensor,  # (bs, seq_len, hidden_size)
+            enc_output: Tensor | None,  # (bs, seq_len, hidden_size)
             self_mask: Tensor,  # (1, seq_len, seq_len)
             i_mask: Tensor,  # (bs, 1, seq_len)
             cache: Tensor | None,
@@ -240,7 +239,7 @@ class Decoder(nn.Module):
     def forward(
             self,
             targets: Tensor,  # (bs, seq_len, hidden_size)
-            enc_output: Tensor,  # (bs, seq_len, hidden_size)
+            enc_output: Tensor | None,  # (bs, seq_len, hidden_size)
             i_mask: Tensor,  # (bs, 1, seq_len)
             t_self_mask: Tensor,  # (1, seq_len, seq_len)
             cache: Tensor | None,
