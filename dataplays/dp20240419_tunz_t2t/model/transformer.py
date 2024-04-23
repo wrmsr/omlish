@@ -321,12 +321,10 @@ class Transformer(nn.Module):
         max_timescale = 10000.0
         min_timescale = 1.0
         log_timescale_increment = (
-            math.log(float(max_timescale) / float(min_timescale)) /
-            max(num_timescales - 1, 1)
+            math.log(float(max_timescale) / float(min_timescale)) / max(num_timescales - 1, 1)
         )
         inv_timescales = min_timescale * torch.exp(
-            torch.arange(num_timescales, dtype=torch.float32) *
-            -log_timescale_increment,
+            torch.arange(num_timescales, dtype=torch.float32) * -log_timescale_increment
         )
         self.register_buffer('inv_timescales', inv_timescales)
 
