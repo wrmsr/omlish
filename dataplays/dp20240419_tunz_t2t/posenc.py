@@ -14,21 +14,14 @@ def get_posenc_tunz(
         max_timescale: float = 10000.0,
         min_timescale: float = 1.0,
 ) -> Tensor:
-    position = torch.arange(max_length).unsqueeze(1)
+    position = torch.arange(max_length).unsqueeze(1)  # (8, 1)
 
-    num_timescales = hidden_size // 2
-    log_timescale_increment = math.log(max_timescale / min_timescale) / max(num_timescales - 1, 1)
-    inv_timescales = min_timescale * torch.exp(torch.arange(num_timescales) * -log_timescale_increment)
-    scaled_time = position * inv_timescales.unsqueeze(0)
-    signal = torch.cat([torch.sin(scaled_time), torch.cos(scaled_time)], dim=1)
+    num_timescales = hidden_size // 2  # = 3
+    log_timescale_increment = math.log(max_timescale / min_timescale) / max(num_timescales - 1, 1)  # = 4.6051
+    inv_timescales = min_timescale * torch.exp(torch.arange(num_timescales) * -log_timescale_increment)  # (3,)
+    scaled_time = position * inv_timescales.unsqueeze(0)  # (8, 3)
+    signal = torch.cat([torch.sin(scaled_time), torch.cos(scaled_time)], dim=1)  # (8, 6)
     signal = F.pad(signal, (0, 0, 0, hidden_size % 2))
-
-    # !!!
-    # pe = torch.zeros(max_length, hidden_size)
-    # pe[:, 0::2] = signal[:, :num_timescales]
-    # pe[:, 1::2] = signal[:, num_timescales:]
-    # signal = pe
-
     return signal
 
 
@@ -42,7 +35,12 @@ def get_posenc_harv(
     position = torch.arange(0, max_length).unsqueeze(1)
 
     # https://nlp.seas.harvard.edu/2018/04/01/attention.html
-    log_timescale_increment = math.log(max_timescale / min_timescale) / hidden_size
+
+    # num_timescales = hidden_size // 2
+    # log_timescale_increment = math.log(max_timescale / min_timescale) / max(num_timescales - 1, 1)
+
+    log_timescale_increment = math.log(max_timescale) / hidden_size
+
     div_term = min_timescale * torch.exp(torch.arange(0, hidden_size, 2) * -log_timescale_increment)
     pe = torch.zeros(max_length, hidden_size)
     pe[:, 0::2] = torch.sin(position * div_term)
