@@ -57,14 +57,14 @@ def main():
 
     beam_size = args.beam_size
 
-    # Load fields.
-    if args.translate:
-        src_data = torch.load(args.data_dir + '/source.pt')
-    trg_data = torch.load(args.data_dir + '/target.pt')
-
     # Load a saved model.
     from . import config
     device = config.get_device(args.no_accel)
+
+    # Load fields.
+    if args.translate:
+        src_data = torch.load(args.data_dir + '/source.pt', device)
+    trg_data = torch.load(args.data_dir + '/target.pt', device)
 
     model = utils.load_checkpoint(args.model_dir, device)
 
