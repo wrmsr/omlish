@@ -362,7 +362,7 @@ class Transformer(nn.Module):
             self,
             targets: Tensor,  # (bs, seq_len)
             enc_output: Tensor,  # (bs, seq_len, hidden_size)
-            i_mask: Tensor,  # bs, 1, seq_len)
+            i_mask: Tensor,  # (bs, 1, seq_len)
             t_self_mask: Tensor,  # (1, seq_len, seq_len)
             t_mask: Tensor,  # (bs, 1, seq_len)
             cache: Tensor | None = None,
@@ -392,6 +392,7 @@ class Transformer(nn.Module):
             t_self_mask,
             cache,
         )
+
         # linear
         output = torch.matmul(  # (bs, seq_len, num_tok)
             decoder_output,
