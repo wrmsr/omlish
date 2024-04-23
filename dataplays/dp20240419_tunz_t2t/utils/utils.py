@@ -43,13 +43,13 @@ def save_checkpoint(model, filepath, global_step, is_best):
 
 def load_checkpoint(model_path, device, is_eval=True):
     if is_eval:
-        model = torch.load(model_path + '/best_model.pt')
+        model = torch.load(model_path + '/best_model.pt', device)
         model.eval()
-        return model.to(device=device)
+        return model
 
-    model = torch.load(model_path + '/last_model.pt')
-    global_step = torch.load(model_path + '/global_step.pt')
-    return model.to(device=device), global_step
+    model = torch.load(model_path + '/last_model.pt', device)
+    global_step = torch.load(model_path + '/global_step.pt', device)
+    return model, global_step
 
 
 def create_pad_mask(t, pad):
