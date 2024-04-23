@@ -28,7 +28,7 @@ def simple_sdpa(
 
 
 def fast_sdpa(q, k, mask, scale):
-    # from tcop.masked_softmax import MaskedSoftmax
+    from tcop.masked_softmax import MaskedSoftmax  # noqa
     # https://github.com/tunz/tcop-pytorch/blob/fe5dada36964085850d5a50405498c193fb5c426/tcop/masked_softmax.py
     # -> git+https://github.com/wrmsr/tcop-pytorch/tree/deb0a2deb4ef998d89c33c2f1d618df64bb206a4
     x = torch.matmul(q, k)  # [b, h, q_len, k_len]

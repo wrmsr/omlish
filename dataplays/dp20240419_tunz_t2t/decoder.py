@@ -23,7 +23,7 @@ def encode_inputs(sentence, model, src_data, beam_size, device):
 
 
 def update_targets(targets, best_indices, idx, vocab_size):
-    best_tensor_indices = torch.div(best_indices, vocab_size)
+    best_tensor_indices = best_indices // vocab_size
     best_token_indices = torch.fmod(best_indices, vocab_size)
     new_batch = torch.index_select(targets, 0, best_tensor_indices)
     new_batch[:, idx] = best_token_indices
@@ -52,6 +52,7 @@ def main():
     parser.add_argument('--alpha', type=float, default=0.6)
     parser.add_argument('--no_accel', action='store_true')
     parser.add_argument('--translate', action='store_true')
+    parser.add_argument('input', nargs='?')
     args = parser.parse_args()
 
     beam_size = args.beam_size
@@ -78,7 +79,7 @@ def main():
     eos_idx = trg_data['field'].vocab.stoi[trg_data['field'].eos_token]
 
     if args.translate:
-        sentence = input('Source? ')
+        sentence = args.input or input('Source? ')
 
     # Encoding inputs.
     if args.translate:
@@ -88,7 +89,7 @@ def main():
         start_idx = 0
     else:
         enc_output, src_mask = None, None
-        sentence = input('Target? ').split()
+        sentence = args.input or input('Target? ').split()
         for idx, _ in enumerate(sentence):
             sentence[idx] = trg_data['field'].vocab.stoi[sentence[idx]]
         sentence.append(trg_data['pad_idx'])
