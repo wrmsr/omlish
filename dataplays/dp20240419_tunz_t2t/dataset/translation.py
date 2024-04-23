@@ -9,23 +9,42 @@ import torch
 from torchtext_0_3_1 import data
 import spacy
 from tqdm import tqdm
+from omlish import lang
 
 from . import common
 
 # pylint: disable=arguments-differ
 
-spacy_de = spacy.load('de_core_news_sm')
-spacy_en = spacy.load('en_core_web_sm')
+
+@lang.cached_nullary
+def load_spacy_model(name):
+    try:
+        return spacy.load(name)
+    except IOError as e:
+        pass
+
+    from spacy.cli.download import download
+    download(name)
+    return spacy.load(name)
+
+
+def spacy_de():
+    return load_spacy_model('de_core_news_sm')
+
+
+def spacy_en():
+    return load_spacy_model('en_core_web_sm')
+
 
 url = re.compile('(<url>.*</url>)')
 
 
 def tokenize_de(text):
-    return [tok.text for tok in spacy_de.tokenizer(url.sub('@URL@', text))]
+    return [tok.text for tok in spacy_de().tokenizer(url.sub('@URL@', text))]
 
 
 def tokenize_en(text):
-    return [tok.text for tok in spacy_en.tokenizer(url.sub('@URL@', text))]
+    return [tok.text for tok in spacy_en().tokenizer(url.sub('@URL@', text))]
 
 
 def read_examples(paths, exts, fields, data_dir, mode, filter_pred, num_shard):
@@ -40,8 +59,7 @@ def read_examples(paths, exts, fields, data_dir, mode, filter_pred, num_shard):
 
         with io.open(src_path, mode='r', encoding='utf-8') as src_file, \
                 io.open(trg_path, mode='r', encoding='utf-8') as trg_file:
-            for src_line, trg_line in tqdm(zip(src_file, trg_file),
-                                           ascii=True):
+            for src_line, trg_line in tqdm(zip(src_file, trg_file), ascii=True):
                 src_line, trg_line = src_line.strip(), trg_line.strip()
                 if src_line == '' or trg_line == '':
                     continue
