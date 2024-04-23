@@ -13,10 +13,10 @@ from omlish import lang
 
 from . import common
 
+
 # pylint: disable=arguments-differ
 
 
-@lang.cached_nullary
 def load_spacy_model(name):
     try:
         return spacy.load(name)
@@ -28,15 +28,17 @@ def load_spacy_model(name):
     return spacy.load(name)
 
 
+@lang.cached_nullary
 def spacy_de():
     return load_spacy_model('de_core_news_sm')
 
 
+@lang.cached_nullary
 def spacy_en():
     return load_spacy_model('en_core_web_sm')
 
 
-url = re.compile('(<url>.*</url>)')
+url = re.compile(r'(<url>.*</url>)')
 
 
 def tokenize_de(text):
