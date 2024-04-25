@@ -22,13 +22,13 @@ Babel==2.14.0
 backports.tarfile==1.1.1
 bayesian-optimization==1.4.3
 beautifulsoup4==4.12.3
-bellows==0.38.1
+bellows==0.38.2
 bitsandbytes==0.42.0
-black==24.4.0
+black==24.4.1
 bleach==6.1.0
 blis==0.7.11
-boto3==1.34.89
-botocore==1.34.89
+boto3==1.34.91
+botocore==1.34.91
 bs4==0.0.2
 bsddb3==6.2.9
 build==1.2.1
@@ -53,12 +53,12 @@ crccheck==1.3.0
 cryptography==42.0.5
 cycler==0.12.1
 cymem==2.0.8
-datasets==2.18.0
+datasets==2.19.0
 debugpy==1.8.1
 decorator==5.1.1
 defusedxml==0.7.1
 dill==0.3.8
-docutils==0.21.1
+docutils==0.21.2
 evaluate==0.4.1
 execnet==2.1.1
 executing==2.0.1
@@ -72,7 +72,7 @@ flatbuffers==24.3.25
 fonttools==4.51.0
 fqdn==1.5.1
 frozenlist==1.4.1
-fsspec==2024.2.0
+fsspec==2024.3.1
 ftfy==6.2.0
 future==1.0.0
 gast==0.5.4
@@ -133,7 +133,8 @@ jupyterlab_widgets==3.0.10
 keras==2.15.0
 keyring==25.1.0
 kiwisolver==1.4.5
-langcodes==3.3.0
+langcodes==3.4.0
+language_data==1.2.0
 lazy_loader==0.4
 libclang==18.1.1
 librosa==0.10.1
@@ -143,6 +144,7 @@ llvmlite==0.42.0
 loralib==0.1.2
 lxml==5.2.1
 Mako==1.3.3
+marisa-trie==1.1.0
 Markdown==3.6
 markdown-it-py==3.0.0
 MarkupSafe==2.1.5
@@ -160,7 +162,7 @@ multiprocess==0.70.16
 murmurhash==1.0.10
 mwparserfromhell==0.6.6
 mycli==1.27.2
-mypy==1.9.0
+mypy==1.10.0
 mypy-extensions==1.0.0
 nbclient==0.10.0
 nbconvert==7.16.3
@@ -186,7 +188,7 @@ pandas==2.2.2
 pandocfilters==1.5.1
 parso==0.8.4
 pathspec==0.12.1
-peft @ git+https://github.com/huggingface/peft.git@5a4b9cade64bac8afdff5006ee9dd815c90b5469
+peft @ git+https://github.com/huggingface/peft.git@f0d3c6b8923cf3e64032de1211420f135031094d
 pendulum==3.0.0
 pexpect==4.9.0
 pg8000==1.31.1
@@ -242,7 +244,7 @@ pytest-timeout==2.3.1
 pytest-xdist==3.5.0
 python-dateutil==2.9.0.post0
 python-json-logger==2.0.7
-pytorch-lightning==2.2.2
+pytorch-lightning==2.2.3
 pytz==2024.1
 PyYAML==6.0.1
 pyzmq==26.0.2
@@ -251,7 +253,7 @@ QtPy==2.4.1
 rdflib==4.2.2
 rdflib-sqlalchemy==0.5.3
 readme_renderer==43.0
-referencing==0.34.0
+referencing==0.35.0
 regex==2024.4.16
 requests==2.31.0
 requests-oauthlib==2.0.0
@@ -290,7 +292,7 @@ spacy-legacy==3.0.12
 spacy-loggers==1.0.5
 SPARQLWrapper==1.8.5
 SQLAlchemy==2.0.29
-sqlglot==23.11.2
+sqlglot==23.12.0
 sqlparse==0.4.4
 srsly==2.4.8
 stack-data==0.6.3
@@ -305,22 +307,22 @@ termcolor==2.4.0
 terminado==0.18.1
 thinc==8.2.3
 threadpoolctl==3.4.0
-tifffile==2024.4.18
+tifffile==2024.4.24
 tiktoken==0.6.0
 time-machine==2.14.1
 tinycss2==1.3.0
--e git+https://github.com/tinygrad/tinygrad@3a48773f1a8e12a6c767fc7774b8f20766172ed6#egg=tinygrad&subdirectory=../../tinygrad
+-e git+https://github.com/tinygrad/tinygrad@6f792b727b2d80edb939c8208ee92baef027a734#egg=tinygrad&subdirectory=../../tinygrad
 tokenizers==0.19.1
-torch==2.2.2
+torch==2.3.0
 torchinfo==1.8.0
 torchmetrics==1.3.2
 torchsummary==1.5.1
-torchtext==0.17.2
-torchvision==0.17.2
+torchtext==0.18.0
+torchvision==0.18.0
 tornado==6.4
 tqdm==4.66.2
 traitlets==5.14.3
-transformers==4.40.0
+transformers==4.40.1
 twine==5.0.0
 typer==0.9.4
 types-python-dateutil==2.9.0.20240316
@@ -335,7 +337,7 @@ wcwidth==0.2.13
 weasel==0.3.4
 webcolors==1.13
 webencodings==0.5.1
-websocket-client==1.7.0
+websocket-client==1.8.0
 Werkzeug==3.0.2
 wgpu==0.15.1
 widgetsnbextension==4.0.10
@@ -343,6 +345,6 @@ wrapt==1.14.1
 xmltodict==0.13.0
 xxhash==3.4.1
 yarl==1.9.4
-zigpy==0.63.5
+zigpy==0.64.0
 zipp==3.18.1
 zwave-js-server-python==0.55.3
