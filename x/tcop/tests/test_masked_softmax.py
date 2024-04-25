@@ -8,12 +8,21 @@ from tcop.masked_softmax import MaskedSoftmax
 class TestMaskedSoftmax(unittest.TestCase):
 
     def test_forward(self):
-        inputs = torch.tensor([[0.1, 0.2, 0.3],
-                               [0.2, 0.3, 0.4],
-                               [-0.3, -0.4, -0.5]])
-        mask = torch.tensor([[0, 0, 0],
-                             [0, 0, 0],
-                             [0, 0, 0]], dtype=torch.float)
+        inputs = torch.tensor(
+            [
+                [0.1, 0.2, 0.3],
+                [0.2, 0.3, 0.4],
+                [-0.3, -0.4, -0.5],
+            ],
+        )
+        mask = torch.tensor(
+            [
+                [0, 0, 0],
+                [0, 0, 0],
+                [0, 0, 0],
+            ],
+            dtype=torch.float,
+        )
 
         inputs = inputs.view(1, 1, 3, 3).cuda()
         mask = mask.view(1, 3, 3).cuda()
@@ -53,15 +62,29 @@ class TestMaskedSoftmax(unittest.TestCase):
             # self.assertTrue((output == expected).all())
 
     def test_forward_mask(self):
-        inputs = torch.tensor([[0.1, 0.2, 0.3],
-                               [-0.2, -0.3, -0.4],
-                               [0.5, 0.4, 0.3]])
-        mask = torch.tensor([[0, 1, 1],
-                             [0, 0, 1],
-                             [0, 0, 0]], dtype=torch.float)
-        k = torch.tensor([[0.5, 2, 4],
-                          [-0.2, -1, -0.4],
-                          [0.5, 0.3, 0.3]])
+        inputs = torch.tensor(
+            [
+                [0.1, 0.2, 0.3],
+                [-0.2, -0.3, -0.4],
+                [0.5, 0.4, 0.3],
+            ],
+
+        )
+        mask = torch.tensor(
+            [
+                [0, 1, 1],
+                [0, 0, 1],
+                [0, 0, 0],
+            ],
+            dtype=torch.float,
+        )
+        k = torch.tensor(
+            [
+                [0.5, 2, 4],
+                [-0.2, -1, -0.4],
+                [0.5, 0.3, 0.3],
+            ],
+        )
 
         inputs = inputs.view(1, 1, 3, 3).cuda()
         mask = mask.view(1, 3, 3).cuda()
@@ -121,18 +144,37 @@ class TestMaskedSoftmax(unittest.TestCase):
         self._forward_test(inputs, mask, None, scale)
 
     def test_backward(self):
-        inputs1 = torch.tensor([[0.3, 0.2, 0.1],
-                                [0.2, 0.3, 0.4],
-                                [0.3, 0.4, 0.5]], requires_grad=True)
-        inputs2 = torch.tensor([[0.3, 0.2, 0.1],
-                                [0.2, 0.3, 0.4],
-                                [0.3, 0.4, 0.5]], requires_grad=True)
-        mask = torch.tensor([[0, 1, 1],
-                             [0, 0, 1],
-                             [0, 0, 0]], dtype=torch.float)
-        k = torch.tensor([[0.5, 2, 4],
-                          [-0.2, -1, -0.4],
-                          [0.5, 0.3, 0.3]], requires_grad=True)
+        inputs1 = torch.tensor(
+            [
+                [0.3, 0.2, 0.1],
+                [0.2, 0.3, 0.4],
+                [0.3, 0.4, 0.5],
+            ],
+            requires_grad=True,
+        )
+        inputs2 = torch.tensor(
+            [
+                [0.3, 0.2, 0.1],
+                [0.2, 0.3, 0.4],
+                [0.3, 0.4, 0.5],
+            ],
+            requires_grad=True,
+        )
+        mask = torch.tensor(
+            [
+                [0, 1, 1],
+                [0, 0, 1],
+                [0, 0, 0],
+            ],
+            dtype=torch.float,
+        )
+        k = torch.tensor(
+            [[0.5, 2, 4],
+             [-0.2, -1, -0.4],
+             [0.5, 0.3, 0.3],
+             ],
+            requires_grad=True,
+        )
 
         inputs1_cuda = inputs1.view(1, 1, 3, 3).cuda()
         inputs2_cuda = inputs2.view(1, 1, 3, 3).cuda()
