@@ -12,24 +12,11 @@ from torch.cuda.amp import autocast
 from torch.nn import Module
 
 
-# helper functions
-
-def exists(val):
-    return val is not None
-
-
-def default(val, d):
-    return val if exists(val) else d
-
-
 # broadcat, as tortoise-tts was using it
-
 def broadcat(tensors, dim=-1):
     broadcasted_tensors = broadcast_tensors(*tensors)
     return torch.cat(broadcasted_tensors, dim=dim)
 
-
-# rotary embedding helper functions
 
 def rotate_half(x):
     x = rearrange(x, '... (d r) -> ... d r', r=2)
@@ -47,26 +34,22 @@ def apply_rotary_emb(freqs, t, start_index=0, scale=1., seq_dim=-2):
     rot_dim = freqs.shape[-1]
     end_index = start_index + rot_dim
 
-    assert rot_dim <= t.shape[
-        -1], f'feature dimension {t.shape[-1]} is not of sufficient size to rotate in all the positions {rot_dim}'
+    assert rot_dim <= t.shape[-1], \
+        f'feature dimension {t.shape[-1]} is not of sufficient size to rotate in all the positions {rot_dim}'
 
     t_left, t, t_right = t[..., :start_index], t[..., start_index:end_index], t[..., end_index:]
     t = (t * freqs.cos() * scale) + (rotate_half(t) * freqs.sin() * scale)
     return torch.cat((t_left, t, t_right), dim=-1)
 
 
-# learned rotation helpers
-
 def apply_learned_rotations(rotations, t, start_index=0, freq_ranges=None):
-    if exists(freq_ranges):
+    if freq_ranges is not None:
         rotations = einsum('..., f -> ... f', rotations, freq_ranges)
         rotations = rearrange(rotations, '... r f -> ... (r f)')
 
     rotations = repeat(rotations, '... n -> ... (n r)', r=2)
     return apply_rotary_emb(rotations, t, start_index=start_index)
 
-
-# classes
 
 class RotaryEmbedding(Module):
     def __init__(
@@ -90,15 +73,15 @@ class RotaryEmbedding(Module):
             cache_if_possible=True,
     ):
         super().__init__()
+
         # proposed by reddit user bloc97, to rescale rotary embeddings to longer sequence length without fine-tuning
         # has some connection to NTK literature
         # https://www.reddit.com/r/LocalLLaMA/comments/14lz7j5/ntkaware_scaled_rope_allows_llama_models_to_have/
-
         theta *= theta_rescale_factor ** (dim / (dim - 2))
 
         self.freqs_for = freqs_for
 
-        if exists(custom_freqs):
+        if custom_freqs is not None:
             freqs = custom_freqs
         elif freqs_for == 'lang':
             freqs = 1. / (theta ** (torch.arange(0, dim, 2)[:(dim // 2)].float() / dim))
@@ -117,21 +100,17 @@ class RotaryEmbedding(Module):
         self.learned_freq = learned_freq
 
         # dummy for device
-
         self.tmp_store('dummy', torch.tensor(0))
 
         # default sequence dimension
-
         self.seq_before_head_dim = seq_before_head_dim
         self.default_seq_dim = -3 if seq_before_head_dim else -2
 
         # interpolation factors
-
         assert interpolate_factor >= 1.
         self.interpolate_factor = interpolate_factor
 
         # xpos
-
         self.use_xpos = use_xpos
         if not use_xpos:
             self.tmp_store('scale', None)
@@ -152,7 +131,7 @@ class RotaryEmbedding(Module):
         return (torch.arange(seq_len, device=device, dtype=dtype) + offset) / self.interpolate_factor
 
     def rotate_queries_or_keys(self, t, seq_dim=None, offset=0, freq_seq_len=None):
-        seq_dim = default(seq_dim, self.default_seq_dim)
+        seq_dim = seq_dim if seq_dim is not None else self.default_seq_dim
 
         assert (
             not self.use_xpos,
@@ -162,12 +141,20 @@ class RotaryEmbedding(Module):
 
         device, dtype, seq_len = t.device, t.dtype, t.shape[seq_dim]
 
-        if exists(freq_seq_len):
+        if freq_seq_len is not None:
             assert freq_seq_len >= seq_len
             seq_len = freq_seq_len
 
-        freqs = self.forward(self.get_seq_pos(seq_len, device=device, dtype=dtype, offset=offset), seq_len=seq_len,
-                             offset=offset)
+        freqs = self.forward(
+            self.get_seq_pos(
+                seq_len,
+                device=device,
+                dtype=dtype,
+                offset=offset,
+            ),
+            seq_len=seq_len,
+            offset=offset,
+        )
 
         if seq_dim == -3:
             freqs = rearrange(freqs, 'n d -> n 1 d')
@@ -175,7 +162,7 @@ class RotaryEmbedding(Module):
         return apply_rotary_emb(freqs, t, seq_dim=seq_dim)
 
     def rotate_queries_with_cached_keys(self, q, k, seq_dim=None, offset=0):
-        seq_dim = default(seq_dim, self.default_seq_dim)
+        seq_dim = seq_dim if seq_dim is not None else self.default_seq_dim
 
         q_len, k_len = q.shape[seq_dim], k.shape[seq_dim]
         assert q_len <= k_len
@@ -188,7 +175,7 @@ class RotaryEmbedding(Module):
         return rotated_q, rotated_k
 
     def rotate_queries_and_keys(self, q, k, seq_dim=None):
-        seq_dim = default(seq_dim, self.default_seq_dim)
+        seq_dim = seq_dim if seq_dim is not None else self.default_seq_dim
 
         assert self.use_xpos
         device, dtype, seq_len = q.device, q.dtype, q.shape[seq_dim]
@@ -220,12 +207,12 @@ class RotaryEmbedding(Module):
 
         should_cache = (
                 self.cache_if_possible and
-                exists(seq_len)
+                seq_len is not None
         )
 
         if (
                 should_cache and
-                exists(self.cached_scales) and
+                self.cached_scales is not None and
                 (seq_len + offset) <= self.cached_scales.shape[0]
         ):
             return self.cached_scales[offset:(offset + seq_len)]
@@ -272,13 +259,13 @@ class RotaryEmbedding(Module):
         should_cache = (
                 self.cache_if_possible and
                 not self.learned_freq and
-                exists(seq_len) and
+                seq_len is not None and
                 self.freqs_for != 'pixel'
         )
 
         if (
                 should_cache and
-                exists(self.cached_freqs) and
+                self.cached_freqs is not None and
                 (offset + seq_len) <= self.cached_freqs.shape[0]
         ):
             return self.cached_freqs[offset:(offset + seq_len)].detach()
