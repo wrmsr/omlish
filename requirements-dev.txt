@@ -14,8 +14,8 @@ pytest-xdist==3.5.0
 flake8==6.1.0
 flake8-pyproject==1.2.3
 
-black==24.4.0
-mypy==1.9.0
+black==24.4.1
+mypy==1.10.0
 pipdeptree==2.18.1
 
 gprof2dot==2022.7.29
