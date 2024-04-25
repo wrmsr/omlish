@@ -54,11 +54,13 @@ cryptography==42.0.5
 cycler==0.12.1
 cymem==2.0.8
 datasets==2.19.0
+de-core-news-sm @ https://github.com/explosion/spacy-models/releases/download/de_core_news_sm-3.7.0/de_core_news_sm-3.7.0-py3-none-any.whl#sha256=d88c737eb7eb766f730f6a2dcb99dfcdb81623e1e0d89a9c638a2182ac19c52e
 debugpy==1.8.1
 decorator==5.1.1
 defusedxml==0.7.1
 dill==0.3.8
 docutils==0.21.2
+einops==0.7.0
 evaluate==0.4.1
 execnet==2.1.1
 executing==2.0.1
