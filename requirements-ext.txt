@@ -118,6 +118,8 @@ nltk==3.8.1
 tensorflow>=2.15.1  # tensorflow 2.16.1 depends on keras>=3.0.0
 tensorboard==2.15.2
 
+einops==0.7.0
+
 # git+git://github.com/flier/pyfasthash
 
 
