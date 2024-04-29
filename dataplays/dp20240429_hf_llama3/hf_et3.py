@@ -22,24 +22,24 @@ def _main():
     else:
         et_nd = np.load(et_nd_fp)
 
-    # et_lengths = np.linalg.norm(et_nd, axis=1)
-    # normalized_ets = (et_lengths.T / et_lengths).T
-    normalized_ets = et_nd
-
     tokenizer = transformers.AutoTokenizer.from_pretrained(
         model_name,
         use_fast=True,
     )
 
-    test_word = 'person'
-    _, tok_id = tokenizer.encode(test_word)
-    print(tok_id)
+    test_word = 'horse'
+    n = 100
 
-    dists = np.dot(normalized_ets, normalized_ets[tok_id])
-    closest = np.argsort(dists)[-100:]
-    for c in reversed(closest):
+    _, tok_id = tokenizer.encode(test_word)
+    print((float('inf'), tok_id, test_word))
+
+    dists = np.dot(et_nd, et_nd[tok_id])
+    closest = np.argsort(dists)[::-1]
+    if closest[0] != tok_id:
+        raise ValueError((tok_id, closest[0]))
+    for c in closest[1:1 + n]:
         out_word = tokenizer.decode([c])
-        print(out_word)
+        print((dists[c], c, out_word))
 
 
 if __name__ == '__main__':
