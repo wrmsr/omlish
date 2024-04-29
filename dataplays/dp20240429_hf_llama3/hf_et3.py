@@ -22,13 +22,9 @@ def _main():
     else:
         et_nd = np.load(et_nd_fp)
 
-    # def similar_movies(movie):
-    #     dists = np.dot(normalized_movies, normalized_movies[mr.movie_to_idx()[movie]])
-    #     closest = np.argsort(dists)[-10:]
-    #     for c in reversed(closest):
-    #         print(c, mr.movies()[c].name, dists[c])
-    #
-    # pp.pprint(similar_movies('Rogue One'))
+    # et_lengths = np.linalg.norm(et_nd, axis=1)
+    # normalized_ets = (et_lengths.T / et_lengths).T
+    normalized_ets = et_nd
 
     tokenizer = transformers.AutoTokenizer.from_pretrained(
         model_name,
@@ -39,8 +35,11 @@ def _main():
     _, tok_id = tokenizer.encode(test_word)
     print(tok_id)
 
-    out_word = tokenizer.decode([tok_id])
-    print(out_word)
+    dists = np.dot(normalized_ets, normalized_ets[tok_id])
+    closest = np.argsort(dists)[-100:]
+    for c in reversed(closest):
+        out_word = tokenizer.decode([c])
+        print(out_word)
 
 
 if __name__ == '__main__':
