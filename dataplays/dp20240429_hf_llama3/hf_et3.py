@@ -35,6 +35,13 @@ def _main():
         use_fast=True,
     )
 
+    test_word = 'person'
+    _, tok_id = tokenizer.encode(test_word)
+    print(tok_id)
+
+    out_word = tokenizer.decode([tok_id])
+    print(out_word)
+
 
 if __name__ == '__main__':
     _main()
