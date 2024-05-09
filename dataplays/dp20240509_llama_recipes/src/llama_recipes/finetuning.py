@@ -1,6 +1,7 @@
 # Copyright (c) Meta Platforms, Inc. and affiliates.
 # This software may be used and distributed according to the terms of the Llama 2 Community License Agreement.
 """
+PYTHONPATH=dataplays/dp20240509_llama_recipes/src/ ./python -m llama_recipes.finetuning
 --use_peft --peft_method lora --model_name huggyllama/llama-7b --output_dir output/llama_recipes_finetuning
 """
 
@@ -164,6 +165,9 @@ def main(**kwargs):
                                             sharding_group_size=fsdp_config.sharding_group_size)
         print("HSDP device mesh is ready")
 
+    # train_device = None
+    # train_device = 'cpu'
+
     # setting up FSDP if enable_fsdp is enabled
     if train_config.enable_fsdp:
         if not train_config.use_peft and train_config.freeze_layers:
@@ -195,12 +199,15 @@ def main(**kwargs):
         if fsdp_config.fsdp_activation_checkpointing:
             apply_fsdp_checkpointing(model)
     elif not train_config.quantization and not train_config.enable_fsdp:
-        if is_xpu_available():
-            model.to("xpu:0")
-        elif torch.cuda.is_available():
-            model.to("cuda")
-        elif torch.backends.mps.is_available():
-            model.to('mps')
+        if train_device != 'cpu':
+            if is_xpu_available():
+                model.to("xpu:0")
+            elif torch.cuda.is_available():
+                model.to("cuda")
+            elif torch.backends.mps.is_available():
+                model.to('mps')
+            else:
+                model.to('cpu')
 
     dataset_config = generate_dataset_config(train_config, kwargs)
 
@@ -281,6 +288,7 @@ def main(**kwargs):
         local_rank if train_config.enable_fsdp else None,
         rank if train_config.enable_fsdp else None,
         wandb_run,
+        train_device,
     )
     if not train_config.enable_fsdp or rank == 0:
         [print(f'Key: {k}, Value: {v}') for k, v in results.items()]
