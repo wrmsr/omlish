@@ -1,5 +1,8 @@
 # Copyright (c) Meta Platforms, Inc. and affiliates.
 # This software may be used and distributed according to the terms of the Llama 2 Community License Agreement.
+"""
+--use_peft --peft_method lora --model_name huggyllama/llama-7b --output_dir output/llama_recipes_finetuning
+"""
 
 import os
 
@@ -23,22 +26,22 @@ from transformers import (
 )
 from transformers.models.llama.modeling_llama import LlamaDecoderLayer
 
-from llama_recipes.configs import fsdp_config as FSDP_CONFIG
-from llama_recipes.configs import train_config as TRAIN_CONFIG
-from llama_recipes.data.concatenator import ConcatDataset
-from llama_recipes.policies import AnyPrecisionAdamW, apply_fsdp_checkpointing
+from .configs import fsdp_config as FSDP_CONFIG
+from .configs import train_config as TRAIN_CONFIG
+from .data.concatenator import ConcatDataset
+from .policies import AnyPrecisionAdamW, apply_fsdp_checkpointing
 
-from llama_recipes.utils import fsdp_auto_wrap_policy
-from llama_recipes.utils.config_utils import (
+from .utils import fsdp_auto_wrap_policy
+from .utils.config_utils import (
     update_config,
     generate_peft_config,
     generate_dataset_config,
     get_dataloader_kwargs,
 )
-from llama_recipes.utils.dataset_utils import get_preprocessed_dataset
+from .utils.dataset_utils import get_preprocessed_dataset
 
-from llama_recipes.utils.fsdp_utils import hsdp_device_mesh
-from llama_recipes.utils.train_utils import (
+from .utils.fsdp_utils import hsdp_device_mesh
+from .utils.train_utils import (
     train,
     freeze_transformer_layers,
     setup,
