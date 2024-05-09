@@ -3,11 +3,11 @@
 
 import functools
 
-from transformers.models.llama.modeling_llama import LlamaDecoderLayer
 from torch.distributed.fsdp.wrap import (
     transformer_auto_wrap_policy,
     size_based_auto_wrap_policy,
 )
+from transformers.models.llama.modeling_llama import LlamaDecoderLayer
 
 
 def get_size_policy(min_params=1e8):

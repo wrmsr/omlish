@@ -8,13 +8,13 @@
 from __future__ import annotations
 
 import logging
-
 import time
 from abc import ABC, abstractmethod
 from typing import Callable
 
 import openai
 from typing_extensions import override
+
 
 NUM_LLM_RETRIES = 10
 MAX_TOKENS = 1000
@@ -60,11 +60,11 @@ class LLM(ABC):
         return self.query(system_prompt + "\n" + prompt)
 
     def _query_with_retries(
-        self,
-        func: Callable[..., str],
-        *args: str,
-        retries: int = NUM_LLM_RETRIES,
-        backoff_factor: float = 0.5,
+            self,
+            func: Callable[..., str],
+            *args: str,
+            retries: int = NUM_LLM_RETRIES,
+            backoff_factor: float = 0.5,
     ) -> str:
         last_exception = None
         for retry in range(retries):
@@ -72,7 +72,7 @@ class LLM(ABC):
                 return func(*args)
             except Exception as exception:
                 last_exception = exception
-                sleep_time = backoff_factor * (2**retry)
+                sleep_time = backoff_factor * (2 ** retry)
                 time.sleep(sleep_time)
                 LOG.debug(
                     f"LLM Query failed with error: {exception}. Sleeping for {sleep_time} seconds..."
@@ -85,7 +85,7 @@ class LLM(ABC):
         return self._query_with_retries(self.query, prompt)
 
     def query_with_system_prompt_with_retries(
-        self, system_prompt: str, prompt: str
+            self, system_prompt: str, prompt: str
     ) -> str:
         return self._query_with_retries(
             self.query_with_system_prompt, system_prompt, prompt
@@ -158,6 +158,7 @@ class ANYSCALE(LLM):
             "HuggingFaceH4/zephyr-7b-beta",
         ]
 
+
 class OctoAI(LLM):
     """Accessing OctoAI"""
 
@@ -174,7 +175,8 @@ class OctoAI(LLM):
         response = self.client.chat.completions.create(
             model=self.model,
             messages=[
-                {"role": "system", "content": "You are a helpful assistant. Keep your responses limited to one short paragraph if possible."},
+                {"role": "system",
+                 "content": "You are a helpful assistant. Keep your responses limited to one short paragraph if possible."},
                 {"role": "user", "content": prompt},
             ],
             max_tokens=MAX_TOKENS,

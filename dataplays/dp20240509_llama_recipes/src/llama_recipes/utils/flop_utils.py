@@ -1,5 +1,6 @@
-from typing import Any, Dict, List, Optional, Union
 import time
+from typing import Any, Dict, List, Optional, Union
+
 import torch
 from torch.utils.flop_counter import FlopCounterMode
 
@@ -24,13 +25,13 @@ class FlopMeasure(FlopCounterMode):
     """
 
     def __init__(
-        self,
-        mods: Optional[Union[torch.nn.Module, List[torch.nn.Module]]] = None,
-        depth: int = 2,
-        display: bool = True,
-        custom_mapping: Dict[Any, Any] = None,
-        rank=None,
-        warmup_step: int = 3,
+            self,
+            mods: Optional[Union[torch.nn.Module, List[torch.nn.Module]]] = None,
+            depth: int = 2,
+            display: bool = True,
+            custom_mapping: Dict[Any, Any] = None,
+            rank=None,
+            warmup_step: int = 3,
     ):
         super().__init__(mods, depth, display, custom_mapping)
         self.rank = rank
@@ -46,20 +47,25 @@ class FlopMeasure(FlopCounterMode):
             self.start_time = time.time()
         elif self.warmup_step == -1 and self.start_time != 0 and self.end_time == 0:
             self.end_time = time.time()
+
     def __enter__(self):
         if self.warmup_step == 0:
             self.start_time = time.time()
         super().__enter__()
         return self
+
     def is_done(self):
         return self.warmup_step == -1
+
     def get_total_flops(self):
         return super().get_total_flops()
+
     def get_flops_per_sec(self):
         if self.start_time == 0 or self.end_time == 0:
             print("Warning: flop count did not finish correctly")
             return 0
-        return super().get_total_flops()/ (self.end_time - self.start_time)
+        return super().get_total_flops() / (self.end_time - self.start_time)
+
     def get_table(self, depth=2):
         return super().get_table(depth)
 

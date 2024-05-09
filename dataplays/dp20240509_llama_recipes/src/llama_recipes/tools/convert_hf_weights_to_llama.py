@@ -10,6 +10,7 @@ import torch
 from tqdm import tqdm
 from transformers import LlamaForCausalLM  # @manual
 
+
 NUM_SHARDS = {
     "7B": 1,
     "13B": 2,
@@ -32,7 +33,7 @@ def write_model(model_path, model_size, output_base_path):
     dims_per_head = dim // n_heads
     base = 10000.0
     inv_freq = (
-        1.0 / (base ** (torch.arange(0, dims_per_head, 2).float() / dims_per_head))
+            1.0 / (base ** (torch.arange(0, dims_per_head, 2).float() / dims_per_head))
     ).to(dtype)
 
     if "n_kv_heads" in params:
@@ -145,9 +146,9 @@ def write_model(model_path, model_size, output_base_path):
 
 
 def main(
-    model_path: str,
-    model_size: str,
-    output_dir: str,
+        model_path: str,
+        model_size: str,
+        output_dir: str,
 ):
     """Convert llama weights from huggingface format to consolidated format.
     params:

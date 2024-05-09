@@ -69,8 +69,8 @@ class TrainingExample:
 
 
 def create_formatted_finetuning_examples(
-    training_examples: Sequence[TrainingExample],
-    formatter_configs: FormatterConfigs,
+        training_examples: Sequence[TrainingExample],
+        formatter_configs: FormatterConfigs,
 ) -> List[str]:
     """
     This formatter takes consumer-provided training examples and converts them to
@@ -120,15 +120,15 @@ def create_formatted_finetuning_examples(
 
 
 def _verify_formatter_configs(
-    formatter_configs: FormatterConfigs,
+        formatter_configs: FormatterConfigs,
 ) -> None:
     if (
-        formatter_configs.augmentation_configs.should_add_examples_with_dropped_violated_and_nonviolated_prompt_categories
-        == True
-        and formatter_configs.llama_guard_generation_configs.explanation_position
-        is not None
-        and formatter_configs.augmentation_configs.explanation_for_augmentation_with_dropped_violated_and_nonviolated_prompt_categories
-        is None
+            formatter_configs.augmentation_configs.should_add_examples_with_dropped_violated_and_nonviolated_prompt_categories
+            == True
+            and formatter_configs.llama_guard_generation_configs.explanation_position
+            is not None
+            and formatter_configs.augmentation_configs.explanation_for_augmentation_with_dropped_violated_and_nonviolated_prompt_categories
+            is None
     ):
         raise ValueError(
             """The configuration setup requires you to specify
@@ -140,9 +140,9 @@ def _verify_formatter_configs(
 
 
 def _create_formatted_finetuning_example(
-    training_example: TrainingExample,
-    formatter_configs: FormatterConfigs,
-    category_indices_to_include_in_llama_guard_prompt: List[int],
+        training_example: TrainingExample,
+        formatter_configs: FormatterConfigs,
+        category_indices_to_include_in_llama_guard_prompt: List[int],
 ) -> str:
     if formatter_configs.llama_guard_prompt_configs.should_shuffle_category_codes:
         random.shuffle(category_indices_to_include_in_llama_guard_prompt)
@@ -167,15 +167,15 @@ def _create_formatted_finetuning_example(
 
 
 def _create_llama_guard_prompt(
-    training_example: TrainingExample,
-    category_indices_to_include: List[int],
-    formatter_configs: FormatterConfigs,
+        training_example: TrainingExample,
+        category_indices_to_include: List[int],
+        formatter_configs: FormatterConfigs,
 ) -> str:
     full_guidelines_text = ""
 
     for (
-        rewritten_category_index_for_current_prompt,
-        original_category_index,
+            rewritten_category_index_for_current_prompt,
+            original_category_index,
     ) in enumerate(category_indices_to_include):
         category = formatter_configs.guidelines.categories[original_category_index]
 
@@ -187,7 +187,7 @@ def _create_llama_guard_prompt(
         full_guidelines_text += f"{newline_for_every_category_after_first}{formatter_configs.guidelines.category_code_prefix}{rewritten_category_index_for_current_prompt + 1}: {category.name}. "
 
         if (
-            formatter_configs.llama_guard_prompt_configs.should_include_category_descriptions
+                formatter_configs.llama_guard_prompt_configs.should_include_category_descriptions
         ):
             full_guidelines_text += f"\n{category.description}"
 
@@ -218,15 +218,15 @@ def _serialize_conversation(conversation: Dict[str, str]) -> str:
 
 
 def _create_llama_guard_generation(
-    training_example: TrainingExample,
-    category_indices_included_in_llama_guard_prompt: List[int],
-    formatter_configs: FormatterConfigs,
+        training_example: TrainingExample,
+        category_indices_included_in_llama_guard_prompt: List[int],
+        formatter_configs: FormatterConfigs,
 ) -> str:
     to_return = training_example.label
 
     if (
-        training_example.label == "unsafe"
-        and formatter_configs.llama_guard_generation_configs.should_list_violated_codes
+            training_example.label == "unsafe"
+            and formatter_configs.llama_guard_generation_configs.should_list_violated_codes
     ):
         violated_category_indices = set(
             _convert_category_codes_to_indices(
@@ -266,13 +266,13 @@ def _create_llama_guard_generation(
 
 
 def _get_map_of_original_category_indices_to_rewritten_category_codes(
-    formatter_configs: FormatterConfigs,
-    category_indices_included_in_llama_guard_prompt: List[int],
+        formatter_configs: FormatterConfigs,
+        category_indices_included_in_llama_guard_prompt: List[int],
 ) -> Dict[int, str]:
     to_return = {}
 
     for rewritten_category_index, original_category_index in enumerate(
-        category_indices_included_in_llama_guard_prompt
+            category_indices_included_in_llama_guard_prompt
     ):
         to_return[
             original_category_index
@@ -284,10 +284,10 @@ def _get_map_of_original_category_indices_to_rewritten_category_codes(
 
 
 def _maybe_add_data_augmentations_for_example(
-    training_example: TrainingExample,
-    formatted_examples_being_built: List[str],
-    indices_of_all_categories: range,
-    formatter_configs: FormatterConfigs,
+        training_example: TrainingExample,
+        formatted_examples_being_built: List[str],
+        indices_of_all_categories: range,
+        formatter_configs: FormatterConfigs,
 ) -> None:
     violated_category_indices = _convert_category_codes_to_indices(
         training_example.violated_category_codes,
@@ -317,7 +317,7 @@ def _maybe_add_data_augmentations_for_example(
 
 
 def _convert_category_codes_to_indices(
-    codes: List[str], formatter_configs: FormatterConfigs
+        codes: List[str], formatter_configs: FormatterConfigs
 ) -> List[int]:
     # Category codes start at 1, but indices start at 0, so we subtract 1
     return [
@@ -327,11 +327,11 @@ def _convert_category_codes_to_indices(
 
 
 def _maybe_add_example_with_dropped_nonviolated_prompt_categories(
-    training_example: TrainingExample,
-    formatted_examples_being_built: List[str],
-    indices_of_all_categories: range,
-    nonviolated_category_indices: List[int],
-    formatter_configs: FormatterConfigs,
+        training_example: TrainingExample,
+        formatted_examples_being_built: List[str],
+        indices_of_all_categories: range,
+        nonviolated_category_indices: List[int],
+        formatter_configs: FormatterConfigs,
 ) -> None:
     """
     If a prompt+response pair does not violate certain categories, we can augment
@@ -340,7 +340,7 @@ def _maybe_add_example_with_dropped_nonviolated_prompt_categories(
     the llama guard prompt at inference time without any additional finetuning.
     """
     if (
-        not formatter_configs.augmentation_configs.should_add_examples_with_dropped_nonviolated_prompt_categories
+            not formatter_configs.augmentation_configs.should_add_examples_with_dropped_nonviolated_prompt_categories
     ):
         return
 
@@ -367,20 +367,20 @@ def _maybe_add_example_with_dropped_nonviolated_prompt_categories(
 
 
 def _maybe_add_example_with_dropped_violated_and_nonviolated_prompt_categories(
-    training_example: TrainingExample,
-    formatted_examples_being_built: List[str],
-    indices_of_all_categories: range,
-    violated_category_indices: List[int],
-    nonviolated_category_indices: List[int],
-    formatter_configs: FormatterConfigs,
+        training_example: TrainingExample,
+        formatted_examples_being_built: List[str],
+        indices_of_all_categories: range,
+        violated_category_indices: List[int],
+        nonviolated_category_indices: List[int],
+        formatter_configs: FormatterConfigs,
 ) -> None:
     """
     Same as in _maybe_add_example_with_dropped_nonviolated_prompt_categories but we
     also drop all of the violated categories from the llama guard prompt.
     """
     if (
-        training_example.label == "safe"
-        or not formatter_configs.augmentation_configs.should_add_examples_with_dropped_violated_and_nonviolated_prompt_categories
+            training_example.label == "safe"
+            or not formatter_configs.augmentation_configs.should_add_examples_with_dropped_violated_and_nonviolated_prompt_categories
     ):
         return
 
@@ -390,9 +390,9 @@ def _maybe_add_example_with_dropped_violated_and_nonviolated_prompt_categories(
     )
 
     set_of_retained_category_indices = (
-        set(indices_of_all_categories)
-        - set(violated_category_indices)
-        - set(random_nonviolated_category_indices_to_drop)
+            set(indices_of_all_categories)
+            - set(violated_category_indices)
+            - set(random_nonviolated_category_indices_to_drop)
     )
 
     training_example_copy = copy.deepcopy(training_example)

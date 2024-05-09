@@ -15,16 +15,16 @@ from torch.optim.optimizer import Optimizer
 
 class AnyPrecisionAdamW(Optimizer):
     def __init__(
-        self,
-        params,
-        lr=1e-3,
-        betas=(0.9, 0.999),
-        eps=1e-8,
-        weight_decay=0.0,
-        use_kahan_summation=False,
-        momentum_dtype=torch.bfloat16,
-        variance_dtype=torch.bfloat16,
-        compensation_buffer_dtype=torch.bfloat16,
+            self,
+            params,
+            lr=1e-3,
+            betas=(0.9, 0.999),
+            eps=1e-8,
+            weight_decay=0.0,
+            use_kahan_summation=False,
+            momentum_dtype=torch.bfloat16,
+            variance_dtype=torch.bfloat16,
+            compensation_buffer_dtype=torch.bfloat16,
     ):
         """
         Args:
@@ -151,12 +151,12 @@ class AnyPrecisionAdamW(Optimizer):
                 exp_avg_sq.mul_(beta2).addcmul_(grad, grad, value=1 - beta2)
 
                 # adjust using bias1
-                bias_correction1 = 1 - beta1**step
+                bias_correction1 = 1 - beta1 ** step
 
                 step_size = lr / bias_correction1
 
                 # adjust using bias2
-                denom_correction = (1 - beta2**step) ** 0.5  # avoids math import
+                denom_correction = (1 - beta2 ** step) ** 0.5  # avoids math import
 
                 centered_variance = (exp_avg_sq.sqrt() / denom_correction).add_(
                     eps, alpha=1
