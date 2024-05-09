@@ -14,9 +14,9 @@ pytest-xdist==3.6.1
 flake8==6.1.0
 flake8-pyproject==1.2.3
 
-black==24.4.1
+black==24.4.2
 mypy==1.10.0
-pipdeptree==2.19.1
+pipdeptree==2.20.0
 
 gprof2dot==2022.7.29
 guppy3==3.1.4.post1; python_version < '3.13'
