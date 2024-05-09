@@ -13,3 +13,38 @@ openssl rand -rand /dev/urandom 128 > barf.key
 openssl enc -in secret.txt -out secret.txt.enc -e -aes256 -pbkdf2 -kfile barf.key
 openssl aes-256-cbc -d -pbkdf2 -in secret.txt.enc -out secret3.txt -kfile barf.key
 """
+import abc
+
+
+class Secrets(abc.ABC):
+    @abc.abstractmethod
+    def generate_key(self) -> bytes:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def encrypt(self, data: bytes, key: bytes) -> bytes:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def decrypt(self, data: bytes, key: bytes) -> bytes:
+        raise NotImplementedError
+
+
+class OpensslShellSecrets(Secrets):
+
+    def generate_key(self) -> bytes:
+        raise NotImplementedError
+
+    def encrypt(self, data: bytes, key: bytes) -> bytes:
+        raise NotImplementedError
+
+    def decrypt(self, data: bytes, key: bytes) -> bytes:
+        raise NotImplementedError
+
+
+def _main() -> None:
+    pass
+
+
+if __name__ == '__main__':
+    _main()
