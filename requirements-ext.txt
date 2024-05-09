@@ -60,7 +60,7 @@ nevergrad==1.0.2
 
 # --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/Triton-Nightly/pypi/simple/
 # triton-nightly; platform_machine == 'x86_64'
-triton==2.2.0; platform_machine == 'x86_64'
+triton==2.3.0; platform_machine == 'x86_64'
 
 wgpu==0.15.1
 
