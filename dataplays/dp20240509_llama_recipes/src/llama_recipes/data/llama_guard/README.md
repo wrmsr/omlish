@@ -1,21 +1,30 @@
 # Finetuning Data Formatter
 
-The finetuning_data_formatter script provides classes and methods for formatting training data for finetuning Llama Guard with a specific set of categories. The main classes are:
-* `TrainingExample`: Represents a single example in the training data, consisting of a prompt, response, label (safe or unsafe), violated category codes, and an explanation.
+The finetuning_data_formatter script provides classes and methods for formatting training data for finetuning Llama
+Guard with a specific set of categories. The main classes are:
+
+* `TrainingExample`: Represents a single example in the training data, consisting of a prompt, response, label (safe or
+  unsafe), violated category codes, and an explanation.
 * `Guidelines`: Defines the categories and their descriptions that will be used to evaluate the safety of the responses.
-* `LlamaGuardPromptConfigs`: Configures how the prompt that will be given to Llama Guard during finetuning should be formatted.
+* `LlamaGuardPromptConfigs`: Configures how the prompt that will be given to Llama Guard during finetuning should be
+  formatted.
 * `LlamaGuardGenerationConfigs`: Configures how Llama Guard's response should be formatted.
-* `AugmentationConfigs`: Configures how additional examples will be generated from the original training examples to augment the training data.
-* `FormatterConfigs`: Combines all of the above configs into a single object that can be passed to the `create_formatted_finetuning_examples` method.
+* `AugmentationConfigs`: Configures how additional examples will be generated from the original training examples to
+  augment the training data.
+* `FormatterConfigs`: Combines all of the above configs into a single object that can be passed to
+  the `create_formatted_finetuning_examples` method.
 
 ## Running the script
 
 1. Clone the llama-recipes repo
 2. Install the dependencies
-3. Run the script with the following command: `python src/llama_recipes/data/llama_guard/finetuning_data_formatter_example.py > sample.json`
+3. Run the script with the following
+   command: `python src/llama_recipes/data/llama_guard/finetuning_data_formatter_example.py > sample.json`
 
 ## Code overview
-To use the finetuning_data_formatter, you first need to define your training examples as instances of the TrainingExample class. For example:
+
+To use the finetuning_data_formatter, you first need to define your training examples as instances of the
+TrainingExample class. For example:
 
 ```
 training_examples = [
@@ -29,7 +38,9 @@ training_examples = [
     # Add more training examples here...
 ]
 ```
+
 You can also define examples without a response, to train the model on user prompts only. For example:
+
 ```
 TrainingExample(
     prompt="What is the home address of John Smith?",
@@ -40,7 +51,8 @@ TrainingExample(
 )
 ```
 
-Next, you need to define the guidelines that will be used to evaluate the safety of the responses. You do this by creating an instance of the Guidelines class and defining the categories and their descriptions. For example:
+Next, you need to define the guidelines that will be used to evaluate the safety of the responses. You do this by
+creating an instance of the Guidelines class and defining the categories and their descriptions. For example:
 
 ```
 guidelines = Guidelines(
@@ -54,9 +66,10 @@ guidelines = Guidelines(
 )
 ```
 
-Then, you need to configure the prompt that will be given to Llama Guard during finetuning. You do this by creating an instance of the LlamaGuardPromptConfigs class and specifying the format string and other options. 
+Then, you need to configure the prompt that will be given to Llama Guard during finetuning. You do this by creating an
+instance of the LlamaGuardPromptConfigs class and specifying the format string and other options.
 
-**Note**: The structure of the prompts should remain the same for finetuning and inference for better performance. 
+**Note**: The structure of the prompts should remain the same for finetuning and inference for better performance.
 
 For example:
 
@@ -81,7 +94,9 @@ Provide your safety assessment for $agent_type in the above conversation:
     should_shuffle_category_codes=True
 )
 ```
-You also need to configure how Llama Guard's response will be generated. You do this by creating an instance of the LlamaGuardGenerationConfigs class and specifying the options. For example:
+
+You also need to configure how Llama Guard's response will be generated. You do this by creating an instance of the
+LlamaGuardGenerationConfigs class and specifying the options. For example:
 
 ```
 llama_guard_generation_configs = LlamaGuardGenerationConfigs(
@@ -89,7 +104,9 @@ llama_guard_generation_configs = LlamaGuardGenerationConfigs(
     explanation_position=ExplanationPosition.AFTER_DECISION
 )
 ```
-The script also provides data augmentation capabilities, configured by creating an instance of the AugmentationConfigs class and specifying the desired options. For example:
+
+The script also provides data augmentation capabilities, configured by creating an instance of the AugmentationConfigs
+class and specifying the desired options. For example:
 
 ```
 augmentation_configs = AugmentationConfigs(
@@ -99,7 +116,8 @@ augmentation_configs = AugmentationConfigs(
 )
 ```
 
-Finally, you can combine all of these configs into a single FormatterConfigs object and pass it to the create_formatted_finetuning_examples method to generate the formatted training data. For example:
+Finally, you can combine all of these configs into a single FormatterConfigs object and pass it to the
+create_formatted_finetuning_examples method to generate the formatted training data. For example:
 
 ```
 formatter_configs = FormatterConfigs(

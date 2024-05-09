@@ -5,17 +5,17 @@
 # For download and preparation see: recipes/ft_datasets/grammar_dataset/grammar_dataset_process.ipynb
 
 
-from datasets import load_dataset
 from pathlib import Path
 
+from datasets import load_dataset
 from torch.utils.data import Dataset
 
 
 class grammar(Dataset):
     def __init__(
-        self,
-        tokenizer,
-        csv_name=None,
+            self,
+            tokenizer,
+            csv_name=None,
     ):
 
         try:
@@ -25,7 +25,8 @@ class grammar(Dataset):
                 delimiter=",",
             )
         except Exception as e:
-            print("Loading of grammar dataset failed! Please see recipes/ft_datasets/grammar_dataset/grammar_dataset_process.ipynb for details on how to download the dataset.")
+            print(
+                "Loading of grammar dataset failed! Please see recipes/ft_datasets/grammar_dataset/grammar_dataset_process.ipynb for details on how to download the dataset.")
             raise e
 
         # self.dataset = load_dataset("wikihow", "all", data_dir="data/", split=type_path)
@@ -64,7 +65,7 @@ class grammar(Dataset):
 
 
 def get_dataset(
-    dataset_config, tokenizer, csv_name=None
+        dataset_config, tokenizer, csv_name=None
 ):
     """cover function for handling loading the working dataset"""
     """dataset loading"""

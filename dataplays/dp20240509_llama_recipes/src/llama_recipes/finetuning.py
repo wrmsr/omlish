@@ -4,19 +4,19 @@
 --use_peft --peft_method lora --model_name huggyllama/llama-7b --output_dir output/llama_recipes_finetuning
 """
 
-import os
-
 import dataclasses
-import fire
+import os
 import random
+
+import fire
 import torch
 import torch.optim as optim
+from accelerate.utils import is_xpu_available
 from peft import get_peft_model, prepare_model_for_kbit_training
 from torch.distributed.fsdp import (
     FullyShardedDataParallel as FSDP,
     ShardingStrategy
 )
-
 from torch.distributed.fsdp.fully_sharded_data_parallel import CPUOffload
 from torch.optim.lr_scheduler import StepLR
 from transformers import (
@@ -30,7 +30,6 @@ from .configs import fsdp_config as FSDP_CONFIG
 from .configs import train_config as TRAIN_CONFIG
 from .data.concatenator import ConcatDataset
 from .policies import AnyPrecisionAdamW, apply_fsdp_checkpointing
-
 from .utils import fsdp_auto_wrap_policy
 from .utils.config_utils import (
     update_config,
@@ -39,8 +38,6 @@ from .utils.config_utils import (
     get_dataloader_kwargs,
 )
 from .utils.dataset_utils import get_preprocessed_dataset
-
-from .utils.fsdp_utils import hsdp_device_mesh
 from .utils.train_utils import (
     train,
     freeze_transformer_layers,
@@ -50,7 +47,7 @@ from .utils.train_utils import (
     print_model_size,
     get_policies,
 )
-from accelerate.utils import is_xpu_available
+
 
 def setup_wandb(train_config, fsdp_config, **kwargs):
     try:
@@ -98,7 +95,7 @@ def main(**kwargs):
     wandb_run = None
 
     if train_config.use_wandb:
-        if not train_config.enable_fsdp or rank==0:
+        if not train_config.enable_fsdp or rank == 0:
             wandb_run = setup_wandb(train_config, fsdp_config, **kwargs)
 
     # Load the pre-trained model and setup its configuration
@@ -134,7 +131,8 @@ def main(**kwargs):
         )
 
     # Load the tokenizer and add special tokens
-    tokenizer = AutoTokenizer.from_pretrained(train_config.model_name if train_config.tokenizer_name is None else train_config.tokenizer_name)
+    tokenizer = AutoTokenizer.from_pretrained(
+        train_config.model_name if train_config.tokenizer_name is None else train_config.tokenizer_name)
     tokenizer.pad_token_id = tokenizer.eos_token_id
 
     # If there is a mismatch between tokenizer vocab size and embedding matrix, 
@@ -160,13 +158,13 @@ def main(**kwargs):
         if wandb_run:
             wandb_run.config.update(peft_config)
 
-
     hsdp_device_mesh = None
     if fsdp_config.hsdp and fsdp_config.sharding_strategy == ShardingStrategy.HYBRID_SHARD:
-        hsdp_device_mesh = hsdp_device_mesh(replica_group_size=fsdp_config.replica_group_size, sharding_group_size=fsdp_config.sharding_group_size)
+        hsdp_device_mesh = hsdp_device_mesh(replica_group_size=fsdp_config.replica_group_size,
+                                            sharding_group_size=fsdp_config.sharding_group_size)
         print("HSDP device mesh is ready")
 
-    #setting up FSDP if enable_fsdp is enabled
+    # setting up FSDP if enable_fsdp is enabled
     if train_config.enable_fsdp:
         if not train_config.use_peft and train_config.freeze_layers:
 
@@ -183,7 +181,7 @@ def main(**kwargs):
 
         model = FSDP(
             model,
-            auto_wrap_policy= my_auto_wrapping_policy if train_config.use_peft else wrapping_policy,
+            auto_wrap_policy=my_auto_wrapping_policy if train_config.use_peft else wrapping_policy,
             cpu_offload=CPUOffload(offload_params=True) if fsdp_config.fsdp_cpu_offload else None,
             mixed_precision=mixed_precision_policy if not fsdp_config.pure_bf16 else None,
             sharding_strategy=fsdp_config.sharding_strategy,
@@ -201,10 +199,12 @@ def main(**kwargs):
             model.to("xpu:0")
         elif torch.cuda.is_available():
             model.to("cuda")
+        elif torch.backends.mps.is_available():
+            model.to('mps')
 
     dataset_config = generate_dataset_config(train_config, kwargs)
 
-     # Load and preprocess the dataset for training and validation
+    # Load and preprocess the dataset for training and validation
     dataset_train = get_preprocessed_dataset(
         tokenizer,
         dataset_config,
@@ -220,7 +220,7 @@ def main(**kwargs):
         split="test",
     )
     if not train_config.enable_fsdp or rank == 0:
-            print(f"--> Validation Set Length = {len(dataset_val)}")
+        print(f"--> Validation Set Length = {len(dataset_val)}")
 
     if train_config.batching_strategy == "packing":
         dataset_train = ConcatDataset(dataset_train, chunk_size=train_config.context_length)
@@ -282,11 +282,12 @@ def main(**kwargs):
         rank if train_config.enable_fsdp else None,
         wandb_run,
     )
-    if not train_config.enable_fsdp or rank==0:
+    if not train_config.enable_fsdp or rank == 0:
         [print(f'Key: {k}, Value: {v}') for k, v in results.items()]
         if train_config.use_wandb:
-            for k,v in results.items():
+            for k, v in results.items():
                 wandb_run.summary[k] = v
+
 
 if __name__ == "__main__":
     fire.Fire(main)

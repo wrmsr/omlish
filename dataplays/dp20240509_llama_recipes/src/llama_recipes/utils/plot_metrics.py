@@ -1,14 +1,16 @@
 # Copyright (c) Meta Platforms, Inc. and affiliates.
 # This software may be used and distributed according to the terms of the Llama 2 Community License Agreement.
 
-import json
-import matplotlib.pyplot as plt
 import argparse
+import json
 import os
+
+import matplotlib.pyplot as plt
+
 
 def plot_metric(data, metric_name, x_label, y_label, title, colors):
     plt.figure(figsize=(7, 6))
-    
+
     plt.plot(data[f'train_epoch_{metric_name}'], label=f'Train Epoch {metric_name.capitalize()}', color=colors[0])
     plt.plot(data[f'val_epoch_{metric_name}'], label=f'Validation Epoch {metric_name.capitalize()}', color=colors[1])
     plt.xlabel(x_label)
@@ -16,6 +18,7 @@ def plot_metric(data, metric_name, x_label, y_label, title, colors):
     plt.title(f'Train and Validation Epoch {title}')
     plt.legend()
     plt.tight_layout()
+
 
 def plot_single_metric_by_step(data, metric_name, x_label, y_label, title, color):
     plt.plot(data[f'{metric_name}'], label=f'{title}', color=color)
@@ -25,16 +28,19 @@ def plot_single_metric_by_step(data, metric_name, x_label, y_label, title, color
     plt.legend()
     plt.tight_layout()
 
+
 def plot_metrics_by_step(data, metric_name, x_label, y_label, colors):
     plt.figure(figsize=(14, 6))
 
     plt.subplot(1, 2, 1)
-    plot_single_metric_by_step(data, f'train_step_{metric_name}', x_label, y_label, f'Train Step {metric_name.capitalize()}', colors[0])
+    plot_single_metric_by_step(data, f'train_step_{metric_name}', x_label, y_label,
+                               f'Train Step {metric_name.capitalize()}', colors[0])
     plt.subplot(1, 2, 2)
-    plot_single_metric_by_step(data, f'val_step_{metric_name}', x_label, y_label, f'Validation Step {metric_name.capitalize()}', colors[1])
+    plot_single_metric_by_step(data, f'val_step_{metric_name}', x_label, y_label,
+                               f'Validation Step {metric_name.capitalize()}', colors[1])
     plt.tight_layout()
 
-    
+
 def plot_metrics(file_path):
     if not os.path.exists(file_path):
         print(f"File {file_path} does not exist.")
@@ -65,7 +71,8 @@ def plot_metrics(file_path):
     plot_metrics_by_step(data, 'perplexity', 'Step', 'Loss', ['g', 'm'])
     plt.savefig(os.path.join(directory, f"{filename_prefix}_train_and_validation_perplexity_by_step.png"))
     plt.close()
-    
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Plot metrics from JSON file.')
     parser.add_argument('--file_path', required=True, type=str, help='Path to the metrics JSON file.')
