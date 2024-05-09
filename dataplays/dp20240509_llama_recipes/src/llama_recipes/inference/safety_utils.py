@@ -158,7 +158,7 @@ class LlamaGuardSafetyChecker(object):
 
     def __init__(self):
         from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
-        from llama_recipes.inference.prompt_format_utils import build_default_prompt, create_conversation, LlamaGuardVersion
+        from .prompt_format_utils import build_default_prompt, create_conversation, LlamaGuardVersion
 
         model_id = "meta-llama/LlamaGuard-7b"
 
