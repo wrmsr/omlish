@@ -6,9 +6,9 @@
 matplotlib==3.8.4
 numpy==1.26.4
 
-huggingface_hub==0.22.2
+huggingface_hub==0.23.0
 evaluate==0.4.1
-datasets==2.19.0
+datasets==2.19.1
 
 ##
 
@@ -35,7 +35,7 @@ onnx2torch==1.5.13
 
 sentencepiece==0.2.0
 tiktoken==0.6.0
-transformers==4.40.1
+transformers==4.40.2
 
 ##
 
@@ -64,7 +64,7 @@ triton==2.2.0; platform_machine == 'x86_64'
 
 wgpu==0.15.1
 
-hypothesis==6.100.2
+hypothesis==6.100.5
 
 ##
 
@@ -94,7 +94,7 @@ qtconsole==5.5.1
 
 fairscale==0.4.13
 
-accelerate==0.29.3
+accelerate==0.30.0
 
 pytorch-lightning==2.2.3
 
@@ -120,14 +120,14 @@ nltk==3.8.1
 tensorflow>=2.15.1  # tensorflow 2.16.1 depends on keras>=3.0.0
 tensorboard==2.15.2
 
-einops==0.7.0
+einops==0.8.0
 
 # git+git://github.com/flier/pyfasthash
 
 
 ### infra
 
-boto3>=1.34.94
+boto3>=1.34.101
 
 google-cloud-compute==1.18.0
 
@@ -136,12 +136,12 @@ google-cloud-compute==1.18.0
 
 selectolax==0.3.21
 
-soco==0.30.3
+soco==0.30.4
 
 sounddevice==0.4.6
 # vosk==0.3.45
 
-bellows==0.38.2
+bellows==0.38.4
 zigpy==0.64.0
 
 # python-openzwave
