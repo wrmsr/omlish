@@ -14,6 +14,10 @@ openssl enc -in secret.txt -out secret.txt.enc -e -aes256 -pbkdf2 -kfile barf.ke
 openssl aes-256-cbc -d -pbkdf2 -in secret.txt.enc -out secret3.txt -kfile barf.key
 """
 import abc
+import subprocess  # noqa
+import typing as ta  # noqa
+
+from omlish import check
 
 
 class Secrets(abc.ABC):
@@ -31,9 +35,26 @@ class Secrets(abc.ABC):
 
 
 class OpensslShellSecrets(Secrets):
+    _cmd: ta.Sequence[str] = ['openssl']
+    _timeout: float = 5.
 
-    def generate_key(self) -> bytes:
-        raise NotImplementedError
+    def generate_key(self, sz: int = 128) -> bytes:
+        check.arg(sz > 0)
+        ret = subprocess.run(
+            [
+                *self._cmd,
+                'rand',
+                '-rand',
+                '/dev/urandom',
+                str(sz),
+            ],
+            stdout=subprocess.PIPE,
+            timeout=self._timeout,
+            check=True,
+        )
+        out = ret.stdout
+        check.equal(len(out), sz)
+        return out
 
     def encrypt(self, data: bytes, key: bytes) -> bytes:
         raise NotImplementedError
@@ -43,7 +64,7 @@ class OpensslShellSecrets(Secrets):
 
 
 def _main() -> None:
-    pass
+    OpensslShellSecrets().generate_key()
 
 
 if __name__ == '__main__':
