@@ -23,6 +23,7 @@ PROMPT_DICT = {
     ),
 }
 
+
 class InstructionDataset(Dataset):
     def __init__(self, dataset_config, tokenizer, partition="train"):
         self.ann = json.load(open(dataset_config.data_path))
@@ -38,7 +39,6 @@ class InstructionDataset(Dataset):
 
     def __getitem__(self, index):
         IGNORE_INDEX = -100  # The default setting in CrossEntropyLoss
-
 
         ann = self.ann[index]
         if ann.get("input", "") == "":
@@ -64,5 +64,5 @@ class InstructionDataset(Dataset):
         return {
             "input_ids": example.tolist(),
             "labels": labels.tolist(),
-            "attention_mask":example_mask.tolist(),
+            "attention_mask": example_mask.tolist(),
         }
