@@ -21,11 +21,11 @@ from transformers import LlamaTokenizer
 import json
 
 
-from llama_recipes.model_checkpointing import save_model_checkpoint, save_model_and_optimizer_sharded, save_optimizer_checkpoint
-from llama_recipes.policies import fpSixteen,bfSixteen, get_llama_wrapper
-from llama_recipes.utils.memory_utils import MemoryTrace
+from ..model_checkpointing import save_model_checkpoint, save_model_and_optimizer_sharded, save_optimizer_checkpoint
+from ..policies import fpSixteen,bfSixteen, get_llama_wrapper
+from .memory_utils import MemoryTrace
 from accelerate.utils import is_xpu_available, is_ccl_available
-from llama_recipes.utils.flop_utils import FlopMeasure
+from .flop_utils import FlopMeasure
 def set_tokenizer_params(tokenizer: LlamaTokenizer):
     tokenizer.pad_token_id = 0
     tokenizer.padding_side = "left"
