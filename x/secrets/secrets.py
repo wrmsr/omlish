@@ -76,7 +76,7 @@ class OpensslShellSecrets(Secrets):
                     '-pbkdf2',
                     '-kfile', kf.name,
                 ],
-                stdin=subprocess.PIPE,
+                input=data,
                 stdout=subprocess.PIPE,
                 timeout=self._timeout,
                 check=True,
@@ -85,11 +85,41 @@ class OpensslShellSecrets(Secrets):
             return out
 
     def decrypt(self, data: bytes, key: bytes) -> bytes:
-        raise NotImplementedError
+        with tempfile.NamedTemporaryFile() as kf:
+            kf.write(key)
+            kf.flush()
+            ret = subprocess.run(
+                [
+                    *self._cmd,
+                    'aes-256-cbc',
+                    '-d',
+                    '-pbkdf2',
+                    '-in', '-',
+                    '-out', '-',
+                    '-kfile', kf.name,
+                ],
+                input=data,
+                stdout=subprocess.PIPE,
+                timeout=self._timeout,
+                check=True,
+            )
+            out = ret.stdout
+            return out
 
 
 def _main() -> None:
-    OpensslShellSecrets().encrypt(b'hi there', b'abcdefg')
+    sec = OpensslShellSecrets()
+
+    key = sec.generate_key()
+    print(repr(key))
+
+    raw = b'hi there'
+    enc = sec.encrypt(raw, key)
+    print(repr(enc))
+
+    dec = sec.decrypt(enc, key)
+    print(repr(dec))
+
     # OpensslShellSecrets().generate_key()
     #
     # r0, w0 = os.pipe()
