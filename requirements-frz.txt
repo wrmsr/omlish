@@ -1,5 +1,5 @@
 absl-py==2.1.0
-accelerate==0.30.0
+accelerate==0.30.1
 aiohttp==3.9.5
 aiosignal==1.3.1
 aiosqlite==0.20.0
@@ -27,8 +27,8 @@ bitsandbytes==0.42.0
 black==24.4.2
 bleach==6.1.0
 blis==0.7.11
-boto3==1.34.101
-botocore==1.34.101
+boto3==1.34.104
+botocore==1.34.104
 bs4==0.0.2
 bsddb3==6.2.9
 build==1.2.1
@@ -99,7 +99,7 @@ httpie==3.2.2
 httptools==0.6.1
 httpx==0.27.0
 huggingface-hub==0.23.0
-hypothesis==6.100.5
+hypothesis==6.102.1
 idna==3.7
 ifaddr==0.2.0
 imageio==2.34.1
@@ -133,7 +133,7 @@ jupyterlab_pygments==0.3.0
 jupyterlab_server==2.27.1
 jupyterlab_widgets==3.0.10
 keras==2.15.0
-keyring==25.2.0
+keyring==25.2.1
 kiwisolver==1.4.5
 langcodes==3.4.0
 language_data==1.2.0
@@ -141,10 +141,10 @@ lazy_loader==0.4
 libclang==18.1.1
 librosa==0.10.1
 lightning-utilities==0.11.2
-litecli==1.10.1
+litecli==1.11.0
 llvmlite==0.42.0
 loralib==0.1.2
-lxml==5.2.1
+lxml==5.2.2
 Mako==1.3.3
 marisa-trie==1.1.1
 Markdown==3.6
@@ -190,11 +190,10 @@ pandas==2.2.2
 pandocfilters==1.5.1
 parso==0.8.4
 pathspec==0.12.1
-peft @ git+https://github.com/huggingface/peft.git@d8fec400c7b26c191830bef5f53ea0f23daf0443
-pendulum==3.0.0
+peft @ git+https://github.com/huggingface/peft.git@2558dd872dbacd29f6b60668bfee54b594bcbd7f
 pexpect==4.9.0
 pg8000==1.31.2
-pgcli==4.0.1
+pgcli==4.1.0
 pgspecial==2.1.1
 pillow==10.3.0
 pipdeptree==2.20.0
@@ -211,7 +210,7 @@ prompt-toolkit==3.0.43
 proto-plus==1.23.0
 protobuf==4.25.3
 psutil==5.9.8
-psycopg==3.1.18
+psycopg==3.1.19
 ptyprocess==0.7.0
 pure-eval==0.2.2
 pure-pcapy3==1.0.1
@@ -257,7 +256,7 @@ rdflib==4.2.2
 rdflib-sqlalchemy==0.5.3
 readme_renderer==43.0
 referencing==0.35.1
-regex==2024.4.28
+regex==2024.5.10
 requests==2.31.0
 requests-oauthlib==2.0.0
 requests-toolbelt==1.0.0
@@ -295,7 +294,7 @@ spacy-legacy==3.0.12
 spacy-loggers==1.0.5
 SPARQLWrapper==1.8.5
 SQLAlchemy==2.0.30
-sqlglot==23.14.0
+sqlglot==23.15.8
 sqlparse==0.4.4
 srsly==2.4.8
 stack-data==0.6.3
@@ -310,11 +309,10 @@ termcolor==2.4.0
 terminado==0.18.1
 thinc==8.2.3
 threadpoolctl==3.5.0
-tifffile==2024.5.3
+tifffile==2024.5.10
 tiktoken==0.6.0
-time-machine==2.14.1
 tinycss2==1.3.0
--e git+https://github.com/tinygrad/tinygrad@047c7f3e5b7c7dffe3d48b4065562aa77ae6f864#egg=tinygrad&subdirectory=../../tinygrad
+-e git+https://github.com/tinygrad/tinygrad@f7d08bd454f5c644f3baed0731f0dbfabb93bdaf#egg=tinygrad&subdirectory=../../tinygrad
 tokenizers==0.19.1
 torch==2.3.0
 torchinfo==1.8.0
@@ -350,4 +348,4 @@ xxhash==3.4.1
 yarl==1.9.4
 zigpy==0.64.0
 zipp==3.18.1
-zwave-js-server-python==0.55.4
+zwave-js-server-python==0.56.0
