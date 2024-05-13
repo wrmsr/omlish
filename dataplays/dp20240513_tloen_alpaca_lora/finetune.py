@@ -1,4 +1,11 @@
-import os
+"""
+.venv/bin/python finetune.py \
+  --base_model 'huggyllama/llama-7b' \
+  --base_model 'baffo32/decapoda-research-llama-7B-hf' \
+  --data_path 'yahma/alpaca-cleaned' \
+  --output_dir './lora-alpaca'
+"""
+import os.path
 import sys
 from typing import List
 
@@ -22,7 +29,7 @@ from peft import (
 )
 from transformers import LlamaForCausalLM, LlamaTokenizer
 
-from utils.prompter import Prompter
+from .utils.prompter import Prompter
 
 
 def train(
@@ -57,6 +64,8 @@ def train(
     resume_from_checkpoint: str = None,  # either training checkpoint or final adapter
     prompt_template_name: str = "alpaca",  # The prompt template to use, will default to alpaca.
 ):
+    os.chdir(os.path.dirname(__file__))
+
     if int(os.environ.get("LOCAL_RANK", 0)) == 0:
         print(
             f"Training Alpaca-LoRA model with params:\n"
@@ -111,7 +120,7 @@ def train(
 
     model = LlamaForCausalLM.from_pretrained(
         base_model,
-        load_in_8bit=True,
+        **(dict(load_in_8bit=True) if torch.cuda.is_available() else {}),
         torch_dtype=torch.float16,
         device_map=device_map,
     )
@@ -239,7 +248,7 @@ def train(
             warmup_steps=100,
             num_train_epochs=num_epochs,
             learning_rate=learning_rate,
-            fp16=True,
+            **(dict(fp16=True) if torch.cuda.is_available() else {}),
             logging_steps=10,
             optim="adamw_torch",
             evaluation_strategy="steps" if val_set_size > 0 else "no",
