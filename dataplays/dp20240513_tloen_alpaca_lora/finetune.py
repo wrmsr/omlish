@@ -1,6 +1,7 @@
 """
-.venv/bin/python finetune.py \
   --base_model 'huggyllama/llama-7b' \
+
+.venv/bin/python -m dataplays.dp20240513_tloen_alpaca_lora.finetune \
   --base_model 'baffo32/decapoda-research-llama-7B-hf' \
   --data_path 'yahma/alpaca-cleaned' \
   --output_dir './lora-alpaca'
