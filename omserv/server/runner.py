@@ -32,6 +32,7 @@ import typing as ta
 import weakref
 
 import aiohttp.web as aweb
+from omlish import check
 from omlish import dataclasses as dc
 
 
@@ -216,14 +217,14 @@ async def _run_app(
     ) -> None:
         # Wait for pending tasks for a given time limit.
         t = asyncio.current_task()
-        assert t is not None
+        check.not_none(t)
         starting_tasks.add(t)
         with suppress(asyncio.TimeoutError):
             await asyncio.wait_for(_wait(starting_tasks), timeout=shutdown_timeout)
 
     async def _wait(exclude: 'weakref.WeakSet[asyncio.Task[object]]') -> None:
         t = asyncio.current_task()
-        assert t is not None
+        check.not_none(t)
         exclude.add(t)
         while tasks := asyncio.all_tasks().difference(exclude):
             await asyncio.wait(tasks)
