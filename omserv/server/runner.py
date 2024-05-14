@@ -32,6 +32,7 @@ import typing as ta
 import weakref
 
 import aiohttp.web as aweb
+from omlish import dataclasses as dc
 
 
 try:
@@ -93,97 +94,98 @@ def _cancel_tasks(
             })
 
 
-def make_sites(
-        runner: aweb.AppRunner,
-        *,
-        host: ta.Optional[ta.Union[str, aweb.HostSequence]] = None,
-        port: ta.Optional[int] = None,
-        path: ta.Union[os.PathLike, ta.Iterable[os.PathLike], None] = None,
-        sock: ta.Optional[ta.Union[socket.socket, ta.Iterable[socket.socket]]] = None,
-        ssl_context: ta.Optional[SSLContext] = None,
-        backlog: int = 128,
-        reuse_address: ta.Optional[bool] = None,
-        reuse_port: ta.Optional[bool] = None,
-) -> list[aweb.BaseSite]:
+@dc.dataclass(frozen=True)
+class SitesConfig:
+    host: ta.Optional[ta.Union[str, aweb.HostSequence]] = None
+    port: ta.Optional[int] = None
+    path: ta.Union[os.PathLike, ta.Iterable[os.PathLike], None] = None
+    sock: ta.Optional[ta.Union[socket.socket, ta.Iterable[socket.socket]]] = None
+    ssl_context: ta.Optional[SSLContext] = None
+    backlog: int = 128
+    reuse_address: ta.Optional[bool] = None
+    reuse_port: ta.Optional[bool] = None
+
+
+def make_sites(runner: aweb.AppRunner, cfg: SitesConfig) -> list[aweb.BaseSite]:
     sites: list[aweb.BaseSite] = []
 
-    if host is not None:
-        if isinstance(host, (str, bytes, bytearray, memoryview)):
+    if cfg.host is not None:
+        if isinstance(cfg.host, (str, bytes, bytearray, memoryview)):
             sites.append(
                 aweb.TCPSite(
                     runner,
-                    host,
-                    port,
-                    ssl_context=ssl_context,
-                    backlog=backlog,
-                    reuse_address=reuse_address,
-                    reuse_port=reuse_port,
+                    cfg.host,
+                    cfg.port,
+                    ssl_context=cfg.ssl_context,
+                    backlog=cfg.backlog,
+                    reuse_address=cfg.reuse_address,
+                    reuse_port=cfg.reuse_port,
                 )
             )
         else:
-            for h in host:
+            for h in cfg.host:
                 sites.append(
                     aweb.TCPSite(
                         runner,
                         h,
-                        port,
-                        ssl_context=ssl_context,
-                        backlog=backlog,
-                        reuse_address=reuse_address,
-                        reuse_port=reuse_port,
+                        cfg.port,
+                        ssl_context=cfg.ssl_context,
+                        backlog=cfg.backlog,
+                        reuse_address=cfg.reuse_address,
+                        reuse_port=cfg.reuse_port,
                     )
                 )
-    elif path is None and sock is None or port is not None:
+    elif cfg.path is None and cfg.sock is None or cfg.port is not None:
         sites.append(
             aweb.TCPSite(
                 runner,
-                port=port,
-                ssl_context=ssl_context,
-                backlog=backlog,
-                reuse_address=reuse_address,
-                reuse_port=reuse_port,
+                port=cfg.port,
+                ssl_context=cfg.ssl_context,
+                backlog=cfg.backlog,
+                reuse_address=cfg.reuse_address,
+                reuse_port=cfg.reuse_port,
             )
         )
 
-    if path is not None:
-        if isinstance(path, (str, os.PathLike)):
+    if cfg.path is not None:
+        if isinstance(cfg.path, (str, os.PathLike)):
             sites.append(
                 aweb.UnixSite(
                     runner,
-                    path,
-                    ssl_context=ssl_context,
-                    backlog=backlog,
+                    cfg.path,
+                    ssl_context=cfg.ssl_context,
+                    backlog=cfg.backlog,
                 )
             )
         else:
-            for p in path:
+            for p in cfg.path:
                 sites.append(
                     aweb.UnixSite(
                         runner,
                         p,
-                        ssl_context=ssl_context,
-                        backlog=backlog,
+                        ssl_context=cfg.ssl_context,
+                        backlog=cfg.backlog,
                     )
                 )
 
-    if sock is not None:
-        if not isinstance(sock, collections.abc.Iterable):
+    if cfg.sock is not None:
+        if not isinstance(cfg.sock, collections.abc.Iterable):
             sites.append(
                 aweb.SockSite(
                     runner,
-                    sock,
-                    ssl_context=ssl_context,
-                    backlog=backlog,
+                    cfg.sock,
+                    ssl_context=cfg.ssl_context,
+                    backlog=cfg.backlog,
                 )
             )
         else:
-            for s in sock:
+            for s in cfg.sock:
                 sites.append(
                     aweb.SockSite(
                         runner,
                         s,
-                        ssl_context=ssl_context,
-                        backlog=backlog,
+                        ssl_context=cfg.ssl_context,
+                        backlog=cfg.backlog,
                     )
                 )
 
@@ -193,14 +195,7 @@ def make_sites(
 async def _run_app(
         app: ta.Union[aweb.Application, ta.Awaitable[aweb.Application]],
         *,
-        host: ta.Optional[ta.Union[str, aweb.HostSequence]] = None,
-        port: ta.Optional[int] = None,
-        path: ta.Union[os.PathLike, ta.Iterable[os.PathLike], None] = None,
-        sock: ta.Optional[ta.Union[socket.socket, ta.Iterable[socket.socket]]] = None,
-        ssl_context: ta.Optional[SSLContext] = None,
-        backlog: int = 128,
-        reuse_address: ta.Optional[bool] = None,
-        reuse_port: ta.Optional[bool] = None,
+        sites_cfg: SitesConfig = SitesConfig(),
 
         shutdown_timeout: float = 60.0,
         keepalive_timeout: float = 75.0,
@@ -253,17 +248,7 @@ async def _run_app(
     runner.shutdown_callback = functools.partial(wait, starting_tasks, shutdown_timeout)
 
     try:
-        sites = make_sites(
-            runner,
-            host=host,
-            port=port,
-            path=path,
-            sock=sock,
-            ssl_context=ssl_context,
-            backlog=backlog,
-            reuse_address=reuse_address,
-            reuse_port=reuse_port,
-        )
+        sites = make_sites(runner, sites_cfg)
 
         for site in sites:
             await site.start()
@@ -286,14 +271,7 @@ async def _run_app(
 def run_app(
         app: ta.Union[aweb.Application, ta.Awaitable[aweb.Application]],
         *,
-        host: ta.Optional[ta.Union[str, aweb.HostSequence]] = None,
-        port: ta.Optional[int] = None,
-        path: ta.Union[os.PathLike, ta.Iterable[os.PathLike], None] = None,
-        sock: ta.Optional[ta.Union[socket.socket, ta.Iterable[socket.socket]]] = None,
-        ssl_context: ta.Optional[SSLContext] = None,
-        backlog: int = 128,
-        reuse_address: ta.Optional[bool] = None,
-        reuse_port: ta.Optional[bool] = None,
+        sites_cfg: SitesConfig = SitesConfig(),
 
         shutdown_timeout: float = 60.0,
         keepalive_timeout: float = 75.0,
@@ -320,14 +298,7 @@ def run_app(
         _run_app(
             app,
 
-            host=host,
-            port=port,
-            path=path,
-            sock=sock,
-            ssl_context=ssl_context,
-            backlog=backlog,
-            reuse_address=reuse_address,
-            reuse_port=reuse_port,
+            sites_cfg=sites_cfg,
 
             shutdown_timeout=shutdown_timeout,
             keepalive_timeout=keepalive_timeout,
