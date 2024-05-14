@@ -7,6 +7,7 @@ MAIN_SOURCES:=\
 
 ALL_SOURCES:=\
 	${MAIN_SOURCES} \
+	omserv \
 	x \
 
 
