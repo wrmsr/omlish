@@ -30,6 +30,23 @@ async def _a_main() -> None:
         result = await conn.run('echo "Hello!"', check=True)
         print(result.stdout, end='')
 
+    async with asyncssh.connect(
+            cfg['lambdalabs_ssh_host'],
+            username=cfg['lambdalabs_ssh_user'],
+            client_keys=[cfg['lambdalabs_ssh_key_file']],
+            known_hosts=None,
+    ) as conn:
+        result = await conn.run('echo "Hello!"', check=True)
+        print(result.stdout, end='')
+
+    async with asyncssh.connect(
+            cfg['runpod_ssh_host'],
+            username=cfg['runpod_ssh_user'],
+            client_keys=[cfg['runpod_ssh_key_file']],
+    ) as conn:
+        result = await conn.run('echo "Hello!"', check=True)
+        print(result.stdout, end='')
+
 
 if __name__ == '__main__':
     asyncio.run(_a_main())
