@@ -25,30 +25,28 @@ class HelloHandler(Handler):
         return aweb.Response(text="Hello, World!")
 
 
-# async def _a_main() -> None:
-#     app = aweb.Application()
-#     app.add_routes([aweb.get('/', HelloHandler())])
-#
-#     aweb.run_app(app)
-#
-#     loop = asyncio.get_event_loop()
-#     runner = aweb.AppRunner(app)
-#     await runner.setup()
-#     site = aweb.TCPSite(runner)
-#     await site.start()
-#     await asyncio.Event().wait()
-#
-#
-# if __name__ == '__main__':
-#     asyncio.run(_a_main())
+async def _a_main() -> None:
+    app = aweb.Application()
+    app.add_routes([aweb.get('/', HelloHandler())])
+
+    aweb.run_app(app)
+
+    loop = asyncio.get_event_loop()
+    runner = aweb.AppRunner(app)
+    await runner.setup()
+    site = aweb.TCPSite(runner)
+    await site.start()
+    await asyncio.Event().wait()
 
 
 def _main() -> None:
     app = aweb.Application()
     app.add_routes([aweb.get('/', HelloHandler())])
 
-    aweb.run_app(app)
+    from .runner import run_app
+    run_app(app)
 
 
 if __name__ == '__main__':
+    # asyncio.run(_a_main())
     _main()
