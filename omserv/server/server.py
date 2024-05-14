@@ -29,8 +29,6 @@ async def _a_main() -> None:
     app = aweb.Application()
     app.add_routes([aweb.get('/', HelloHandler())])
 
-    aweb.run_app(app)
-
     loop = asyncio.get_event_loop()
     runner = aweb.AppRunner(app)
     await runner.setup()
@@ -48,5 +46,5 @@ def _main() -> None:
 
 
 if __name__ == '__main__':
-    # asyncio.run(_a_main())
-    _main()
+    asyncio.run(_a_main())
+    # _main()
