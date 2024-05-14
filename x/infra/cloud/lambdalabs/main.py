@@ -1,5 +1,7 @@
 """
 https://cloud.lambdalabs.com/api/v1/docs
+
+https://docs.lambdalabs.com/on-demand-cloud/cloud-api
 """
 
 
