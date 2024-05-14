@@ -207,7 +207,8 @@ async def _run_app(
         handler_cancellation: bool = False,
 ) -> None:
     async def wait(
-            starting_tasks: "weakref.WeakSet[asyncio.Task[object]]", shutdown_timeout: float
+            starting_tasks: "weakref.WeakSet[asyncio.Task[object]]",
+            shutdown_timeout: float,
     ) -> None:
         # Wait for pending tasks for a given time limit.
         t = asyncio.current_task()
