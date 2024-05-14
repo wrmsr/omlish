@@ -26,6 +26,9 @@ async def _a_main() -> None:
 
     print(cfg)
 
+    # asyncssh.set_log_level('DEBUG')
+    # asyncssh.set_debug_level(3)
+
     async with asyncssh.connect(
             cfg['ec2_ssh_host'],
             username=cfg['ec2_ssh_user'],
@@ -43,13 +46,11 @@ async def _a_main() -> None:
         result = await conn.run('echo "Hello!"', check=True)
         print(result.stdout, end='')
 
-    asyncssh.set_log_level('DEBUG')
     async with asyncssh.connect(
             cfg['runpod_ssh_host'],
             username=cfg['runpod_ssh_user'],
+            port=cfg['runpod_ssh_port'],
             client_keys=[cfg['runpod_ssh_key_file']],
-            request_pty=False,
-            # request_pty='force',
     ) as conn:
         result = await conn.run('echo "Hello!"', check=True)
         print(result.stdout, end='')
