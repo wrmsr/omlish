@@ -5,6 +5,10 @@
   --base_model 'baffo32/decapoda-research-llama-7B-hf' \
   --data_path 'yahma/alpaca-cleaned' \
   --output_dir './lora-alpaca'
+
+3090: 2:33:40<12:46:16, 47.45s/it
+A100: ~^
+4090: 00:32<10:22:18, 32.11s/it
 """
 import os.path
 import sys
