@@ -72,7 +72,7 @@ class suppress(contextlib.AbstractContextManager):
 
 
 def _cancel_tasks(
-        to_cancel: set["asyncio.Task[ta.Any]"],
+        to_cancel: set['asyncio.Task[ta.Any]'],
         loop: asyncio.AbstractEventLoop,
 ) -> None:
     if not to_cancel:
@@ -88,9 +88,9 @@ def _cancel_tasks(
             continue
         if task.exception() is not None:
             loop.call_exception_handler({
-                "message": "unhandled exception during asyncio.run() shutdown",
-                "exception": task.exception(),
-                "task": task,
+                'message': 'unhandled exception during asyncio.run() shutdown',
+                'exception': task.exception(),
+                'task': task,
             })
 
 
@@ -211,7 +211,7 @@ async def _run_app(
         runner_cfg: RunnerConfig = RunnerConfig(),
 ) -> None:
     async def wait(
-            starting_tasks: "weakref.WeakSet[asyncio.Task[object]]",
+            starting_tasks: 'weakref.WeakSet[asyncio.Task[object]]',
             shutdown_timeout: float,
     ) -> None:
         # Wait for pending tasks for a given time limit.
@@ -221,7 +221,7 @@ async def _run_app(
         with suppress(asyncio.TimeoutError):
             await asyncio.wait_for(_wait(starting_tasks), timeout=shutdown_timeout)
 
-    async def _wait(exclude: "weakref.WeakSet[asyncio.Task[object]]") -> None:
+    async def _wait(exclude: 'weakref.WeakSet[asyncio.Task[object]]') -> None:
         t = asyncio.current_task()
         assert t is not None
         exclude.add(t)
@@ -249,7 +249,7 @@ async def _run_app(
     # On shutdown we want to avoid waiting on tasks which run forever. It's very likely that all tasks which run forever
     # will have been created by the time we have completed the application startup (in runner.setup()), so we just
     # record all running tasks here and exclude them later.
-    starting_tasks: "weakref.WeakSet[asyncio.Task[object]]" = weakref.WeakSet(asyncio.all_tasks())
+    starting_tasks: 'weakref.WeakSet[asyncio.Task[object]]' = weakref.WeakSet(asyncio.all_tasks())
     runner.shutdown_callback = functools.partial(wait, starting_tasks, runner_cfg.shutdown_timeout)
 
     try:
@@ -261,8 +261,8 @@ async def _run_app(
         if print:  # pragma: no branch
             names = sorted(str(s.name) for s in runner.sites)
             print(
-                "======== Running on {} ========\n"
-                "(Press CTRL+C to quit)".format(", ".join(names))
+                '======== Running on {} ========\n'
+                '(Press CTRL+C to quit)'.format(', '.join(names))
             )
 
         # sleep forever by 1 hour intervals,
@@ -285,7 +285,7 @@ def run_app(
         loop = asyncio.new_event_loop()
 
     # Configure if and only if in debugging mode and using the default logger
-    if loop.get_debug() and runner_cfg.access_log and runner_cfg.access_log.name == "aiohttp.access":
+    if loop.get_debug() and runner_cfg.access_log and runner_cfg.access_log.name == 'aiohttp.access':
         if runner_cfg.access_log.level == logging.NOTSET:
             runner_cfg.access_log.setLevel(logging.DEBUG)
         if not runner_cfg.access_log.hasHandlers():
