@@ -192,19 +192,23 @@ def make_sites(runner: aweb.AppRunner, cfg: SitesConfig) -> list[aweb.BaseSite]:
     return sites
 
 
+@dc.dataclass(frozen=True)
+class RunnerConfig:
+    shutdown_timeout: float = 60.0
+    keepalive_timeout: float = 75.0
+    print: ta.Optional[ta.Callable[..., None]] = print
+    access_log_class: type[aweb.AbstractAccessLogger] = aweb.AccessLogger
+    access_log_format: str = aweb.AccessLogger.LOG_FORMAT
+    access_log: ta.Optional[logging.Logger] = aweb.access_logger
+    handle_signals: bool = True
+    handler_cancellation: bool = False
+
+
 async def _run_app(
         app: ta.Union[aweb.Application, ta.Awaitable[aweb.Application]],
         *,
         sites_cfg: SitesConfig = SitesConfig(),
-
-        shutdown_timeout: float = 60.0,
-        keepalive_timeout: float = 75.0,
-        print: ta.Optional[ta.Callable[..., None]] = print,
-        access_log_class: type[aweb.AbstractAccessLogger] = aweb.AccessLogger,
-        access_log_format: str = aweb.AccessLogger.LOG_FORMAT,
-        access_log: ta.Optional[logging.Logger] = aweb.access_logger,
-        handle_signals: bool = True,
-        handler_cancellation: bool = False,
+        runner_cfg: RunnerConfig = RunnerConfig(),
 ) -> None:
     async def wait(
             starting_tasks: "weakref.WeakSet[asyncio.Task[object]]",
@@ -232,13 +236,13 @@ async def _run_app(
 
     runner = aweb.AppRunner(
         app,
-        handle_signals=handle_signals,
-        access_log_class=access_log_class,
-        access_log_format=access_log_format,
-        access_log=access_log,
-        keepalive_timeout=keepalive_timeout,
-        shutdown_timeout=shutdown_timeout,
-        handler_cancellation=handler_cancellation,
+        handle_signals=runner_cfg.handle_signals,
+        access_log_class=runner_cfg.access_log_class,
+        access_log_format=runner_cfg.access_log_format,
+        access_log=runner_cfg.access_log,
+        keepalive_timeout=runner_cfg.keepalive_timeout,
+        shutdown_timeout=runner_cfg.shutdown_timeout,
+        handler_cancellation=runner_cfg.handler_cancellation,
     )
 
     await runner.setup()
@@ -246,7 +250,7 @@ async def _run_app(
     # will have been created by the time we have completed the application startup (in runner.setup()), so we just
     # record all running tasks here and exclude them later.
     starting_tasks: "weakref.WeakSet[asyncio.Task[object]]" = weakref.WeakSet(asyncio.all_tasks())
-    runner.shutdown_callback = functools.partial(wait, starting_tasks, shutdown_timeout)
+    runner.shutdown_callback = functools.partial(wait, starting_tasks, runner_cfg.shutdown_timeout)
 
     try:
         sites = make_sites(runner, sites_cfg)
@@ -273,15 +277,7 @@ def run_app(
         app: ta.Union[aweb.Application, ta.Awaitable[aweb.Application]],
         *,
         sites_cfg: SitesConfig = SitesConfig(),
-
-        shutdown_timeout: float = 60.0,
-        keepalive_timeout: float = 75.0,
-        print: ta.Optional[ta.Callable[..., None]] = print,
-        access_log_class: type[aweb.AbstractAccessLogger] = aweb.AccessLogger,
-        access_log_format: str = aweb.AccessLogger.LOG_FORMAT,
-        access_log: ta.Optional[logging.Logger] = aweb.access_logger,
-        handle_signals: bool = True,
-        handler_cancellation: bool = False,
+        runner_cfg: RunnerConfig = RunnerConfig(),
         loop: ta.Optional[asyncio.AbstractEventLoop] = None,
 ) -> None:
     """Run an app locally"""
@@ -289,26 +285,17 @@ def run_app(
         loop = asyncio.new_event_loop()
 
     # Configure if and only if in debugging mode and using the default logger
-    if loop.get_debug() and access_log and access_log.name == "aiohttp.access":
-        if access_log.level == logging.NOTSET:
-            access_log.setLevel(logging.DEBUG)
-        if not access_log.hasHandlers():
-            access_log.addHandler(logging.StreamHandler())
+    if loop.get_debug() and runner_cfg.access_log and runner_cfg.access_log.name == "aiohttp.access":
+        if runner_cfg.access_log.level == logging.NOTSET:
+            runner_cfg.access_log.setLevel(logging.DEBUG)
+        if not runner_cfg.access_log.hasHandlers():
+            runner_cfg.access_log.addHandler(logging.StreamHandler())
 
     main_task = loop.create_task(
         _run_app(
             app,
-
             sites_cfg=sites_cfg,
-
-            shutdown_timeout=shutdown_timeout,
-            keepalive_timeout=keepalive_timeout,
-            print=print,
-            access_log_class=access_log_class,
-            access_log_format=access_log_format,
-            access_log=access_log,
-            handle_signals=handle_signals,
-            handler_cancellation=handler_cancellation,
+            runner_cfg=runner_cfg,
         )
     )
 
