@@ -13,6 +13,8 @@ import asyncio  # noqa
 
 import aiohttp.web as aweb
 
+from . import runner
+
 
 class Handler(abc.ABC):
     @abc.abstractmethod
@@ -29,22 +31,16 @@ async def _a_main() -> None:
     app = aweb.Application()
     app.add_routes([aweb.get('/', HelloHandler())])
 
-    loop = asyncio.get_event_loop()
-    runner = aweb.AppRunner(app)
-    await runner.setup()
-    site = aweb.TCPSite(runner)
-    await site.start()
-    await asyncio.Event().wait()
+    await runner.a_run_app(app)
 
 
 def _main() -> None:
     app = aweb.Application()
     app.add_routes([aweb.get('/', HelloHandler())])
 
-    from .runner import run_app
-    run_app(app)
+    runner.run_app(app)
 
 
 if __name__ == '__main__':
-    # asyncio.run(_a_main())
-    _main()
+    asyncio.run(_a_main())
+    # _main()
