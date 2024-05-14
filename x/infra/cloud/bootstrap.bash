@@ -1,14 +1,18 @@
 #!/usr/bin/env bash
 
 # apt-cache policy | grep 'origin archive.lambdalabs.com'
+# echo "$RUNPOD_POD_ID"
 
 export DEBIAN_FRONTEND=noninteractive && \
 apt-get update && \
 apt-get install -y \
         \
         btop \
+        less \
         mosh \
+        ncdu \
         nvtop \
+        silversearcher-ag \
         tmux \
         vim \
         \
