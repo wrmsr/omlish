@@ -3,8 +3,8 @@
 # apt-cache policy | grep 'origin archive.lambdalabs.com'
 
 export DEBIAN_FRONTEND=noninteractive && \
-sudo apt-get update && \
-sudo apt-get install -y \
+apt-get update && \
+apt-get install -y \
         \
         btop \
         mosh \
@@ -56,6 +56,12 @@ cd ~
 # tmux -2
 
 git clone https://github.com/pyenv/pyenv .pyenv
-git clone https://github.com/wrmsr/omlish
 
-cd omlish && make venv
+git clone https://github.com/wrmsr/omlish && \
+cd omlish && \
+git submodule update --init
+
+make venv
+
+# btop --utf-force
+# nvtop
