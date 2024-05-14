@@ -21,13 +21,13 @@ SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSE
 WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
-import collections.abc
 import asyncio
-import functools
-import socket
+import collections.abc
 import contextlib
-import os
+import functools
 import logging
+import os
+import socket
 import typing as ta
 import weakref
 
@@ -40,59 +40,6 @@ try:
     from ssl import SSLContext
 except ImportError:
     SSLContext = object  # type: ignore[misc,assignment]
-
-
-class suppress(contextlib.AbstractContextManager):
-    """
-    Context manager to suppress specified exceptions
-
-    After the exception is suppressed, execution proceeds with the next
-    statement following the with statement.
-
-         with suppress(FileNotFoundError):
-             os.remove(somefile)
-         # Execution still resumes here if the file was already removed
-    """
-
-    def __init__(self, *exceptions):
-        super().__init__()
-        self._exceptions = exceptions
-
-    def __enter__(self):
-        pass
-
-    def __exit__(self, exctype, excinst, exctb):
-        # Unlike isinstance and issubclass, CPython exception handling currently only looks at the concrete type
-        # hierarchy (ignoring the instance and subclass checking hooks). While Guido considers that a bug rather than a
-        # feature, it's a fairly hard one to fix due to various internal implementation details. suppress provides the
-        # simpler issubclass based semantics, rather than trying to exactly reproduce the limitations of the CPython
-        # interpreter.
-        #
-        # See http://bugs.python.org/issue12029 for more details
-        return exctype is not None and issubclass(exctype, self._exceptions)
-
-
-def _cancel_tasks(
-        to_cancel: set['asyncio.Task[ta.Any]'],
-        loop: asyncio.AbstractEventLoop,
-) -> None:
-    if not to_cancel:
-        return
-
-    for task in to_cancel:
-        task.cancel()
-
-    loop.run_until_complete(asyncio.gather(*to_cancel, return_exceptions=True))
-
-    for task in to_cancel:
-        if task.cancelled():
-            continue
-        if task.exception() is not None:
-            loop.call_exception_handler({
-                'message': 'unhandled exception during asyncio.run() shutdown',
-                'exception': task.exception(),
-                'task': task,
-            })
 
 
 @dc.dataclass(frozen=True)
@@ -205,7 +152,7 @@ class RunnerConfig:
     handler_cancellation: bool = False
 
 
-async def _run_app(
+async def a_run_app(
         app: ta.Union[aweb.Application, ta.Awaitable[aweb.Application]],
         *,
         sites_cfg: SitesConfig = SitesConfig(),
@@ -247,6 +194,7 @@ async def _run_app(
     )
 
     await runner.setup()
+
     # On shutdown we want to avoid waiting on tasks which run forever. It's very likely that all tasks which run forever
     # will have been created by the time we have completed the application startup (in runner.setup()), so we just
     # record all running tasks here and exclude them later.
@@ -274,16 +222,14 @@ async def _run_app(
         await runner.cleanup()
 
 
-def run_app(
-        app: ta.Union[aweb.Application, ta.Awaitable[aweb.Application]],
-        *,
-        sites_cfg: SitesConfig = SitesConfig(),
-        runner_cfg: RunnerConfig = RunnerConfig(),
+def configure_loop_logger(
         loop: ta.Optional[asyncio.AbstractEventLoop] = None,
+        runner_cfg: RunnerConfig = RunnerConfig(),
 ) -> None:
-    """Run an app locally"""
     if loop is None:
-        loop = asyncio.new_event_loop()
+        loop = asyncio.get_event_loop()
+    if loop is None:
+        return
 
     # Configure if and only if in debugging mode and using the default logger
     if loop.get_debug() and runner_cfg.access_log and runner_cfg.access_log.name == 'aiohttp.access':
@@ -292,8 +238,74 @@ def run_app(
         if not runner_cfg.access_log.hasHandlers():
             runner_cfg.access_log.addHandler(logging.StreamHandler())
 
+
+class suppress(contextlib.AbstractContextManager):
+    """
+    Context manager to suppress specified exceptions
+
+    After the exception is suppressed, execution proceeds with the next
+    statement following the with statement.
+
+         with suppress(FileNotFoundError):
+             os.remove(somefile)
+         # Execution still resumes here if the file was already removed
+    """
+
+    def __init__(self, *exceptions):
+        super().__init__()
+        self._exceptions = exceptions
+
+    def __enter__(self):
+        pass
+
+    def __exit__(self, exctype, excinst, exctb):
+        # Unlike isinstance and issubclass, CPython exception handling currently only looks at the concrete type
+        # hierarchy (ignoring the instance and subclass checking hooks). While Guido considers that a bug rather than a
+        # feature, it's a fairly hard one to fix due to various internal implementation details. suppress provides the
+        # simpler issubclass based semantics, rather than trying to exactly reproduce the limitations of the CPython
+        # interpreter.
+        #
+        # See http://bugs.python.org/issue12029 for more details
+        return exctype is not None and issubclass(exctype, self._exceptions)
+
+
+def _cancel_tasks(
+        to_cancel: set['asyncio.Task[ta.Any]'],
+        loop: asyncio.AbstractEventLoop,
+) -> None:
+    if not to_cancel:
+        return
+
+    for task in to_cancel:
+        task.cancel()
+
+    loop.run_until_complete(asyncio.gather(*to_cancel, return_exceptions=True))
+
+    for task in to_cancel:
+        if task.cancelled():
+            continue
+        if task.exception() is not None:
+            loop.call_exception_handler({
+                'message': 'unhandled exception during asyncio.run() shutdown',
+                'exception': task.exception(),
+                'task': task,
+            })
+
+
+def run_app(
+        app: ta.Union[aweb.Application, ta.Awaitable[aweb.Application]],
+        *,
+        sites_cfg: SitesConfig = SitesConfig(),
+        runner_cfg: RunnerConfig = RunnerConfig(),
+        loop: ta.Optional[asyncio.AbstractEventLoop] = None,
+) -> None:
+    if loop is None:
+        loop = asyncio.new_event_loop()
+
+    configure_loop_logger(loop, runner_cfg)
+
     main_task = loop.create_task(
-        _run_app(
+        a_run_app(
             app,
             sites_cfg=sites_cfg,
             runner_cfg=runner_cfg,
