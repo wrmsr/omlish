@@ -1,7 +1,7 @@
 greenlet==3.0.3; python_version < '3.13'
 httptools==0.6.1; python_version < '3.13'
 pyyaml==6.0.1
-sqlalchemy==2.0.30
+sqlalchemy[asyncio]==2.0.30
 wrapt>=1.14.1
 
 ## compress:
