@@ -46,5 +46,5 @@ def _main() -> None:
 
 
 if __name__ == '__main__':
-    asyncio.run(_a_main())
-    # _main()
+    # asyncio.run(_a_main())
+    _main()
