@@ -15,8 +15,12 @@ import asyncio
 import asyncssh
 import yaml
 
+from omlish import logs
+
 
 async def _a_main() -> None:
+    logs.configure_standard_logging()
+
     with open('secrets.yml', 'r') as f:
         cfg = yaml.safe_load(f)
 
@@ -39,10 +43,13 @@ async def _a_main() -> None:
         result = await conn.run('echo "Hello!"', check=True)
         print(result.stdout, end='')
 
+    asyncssh.set_log_level('DEBUG')
     async with asyncssh.connect(
             cfg['runpod_ssh_host'],
             username=cfg['runpod_ssh_user'],
             client_keys=[cfg['runpod_ssh_key_file']],
+            request_pty=False,
+            # request_pty='force',
     ) as conn:
         result = await conn.run('echo "Hello!"', check=True)
         print(result.stdout, end='')
