@@ -41,7 +41,8 @@ except ImportError:
 
 
 class suppress(contextlib.AbstractContextManager):
-    """Context manager to suppress specified exceptions
+    """
+    Context manager to suppress specified exceptions
 
     After the exception is suppressed, execution proceeds with the next
     statement following the with statement.
@@ -52,26 +53,26 @@ class suppress(contextlib.AbstractContextManager):
     """
 
     def __init__(self, *exceptions):
+        super().__init__()
         self._exceptions = exceptions
 
     def __enter__(self):
         pass
 
     def __exit__(self, exctype, excinst, exctb):
-        # Unlike isinstance and issubclass, CPython exception handling
-        # currently only looks at the concrete type hierarchy (ignoring
-        # the instance and subclass checking hooks). While Guido considers
-        # that a bug rather than a feature, it's a fairly hard one to fix
-        # due to various internal implementation details. suppress provides
-        # the simpler issubclass based semantics, rather than trying to
-        # exactly reproduce the limitations of the CPython interpreter.
+        # Unlike isinstance and issubclass, CPython exception handling currently only looks at the concrete type
+        # hierarchy (ignoring the instance and subclass checking hooks). While Guido considers that a bug rather than a
+        # feature, it's a fairly hard one to fix due to various internal implementation details. suppress provides the
+        # simpler issubclass based semantics, rather than trying to exactly reproduce the limitations of the CPython
+        # interpreter.
         #
         # See http://bugs.python.org/issue12029 for more details
         return exctype is not None and issubclass(exctype, self._exceptions)
 
 
 def _cancel_tasks(
-        to_cancel: set["asyncio.Task[ta.Any]"], loop: asyncio.AbstractEventLoop
+        to_cancel: set["asyncio.Task[ta.Any]"],
+        loop: asyncio.AbstractEventLoop,
 ) -> None:
     if not to_cancel:
         return
@@ -85,13 +86,108 @@ def _cancel_tasks(
         if task.cancelled():
             continue
         if task.exception() is not None:
-            loop.call_exception_handler(
-                {
-                    "message": "unhandled exception during asyncio.run() shutdown",
-                    "exception": task.exception(),
-                    "task": task,
-                }
+            loop.call_exception_handler({
+                "message": "unhandled exception during asyncio.run() shutdown",
+                "exception": task.exception(),
+                "task": task,
+            })
+
+
+def make_sites(
+        runner: aweb.AppRunner,
+        *,
+        host: ta.Optional[ta.Union[str, aweb.HostSequence]] = None,
+        port: ta.Optional[int] = None,
+        path: ta.Union[os.PathLike, ta.Iterable[os.PathLike], None] = None,
+        sock: ta.Optional[ta.Union[socket.socket, ta.Iterable[socket.socket]]] = None,
+        ssl_context: ta.Optional[SSLContext] = None,
+        backlog: int = 128,
+        reuse_address: ta.Optional[bool] = None,
+        reuse_port: ta.Optional[bool] = None,
+) -> list[aweb.BaseSite]:
+    sites: list[aweb.BaseSite] = []
+
+    if host is not None:
+        if isinstance(host, (str, bytes, bytearray, memoryview)):
+            sites.append(
+                aweb.TCPSite(
+                    runner,
+                    host,
+                    port,
+                    ssl_context=ssl_context,
+                    backlog=backlog,
+                    reuse_address=reuse_address,
+                    reuse_port=reuse_port,
+                )
             )
+        else:
+            for h in host:
+                sites.append(
+                    aweb.TCPSite(
+                        runner,
+                        h,
+                        port,
+                        ssl_context=ssl_context,
+                        backlog=backlog,
+                        reuse_address=reuse_address,
+                        reuse_port=reuse_port,
+                    )
+                )
+    elif path is None and sock is None or port is not None:
+        sites.append(
+            aweb.TCPSite(
+                runner,
+                port=port,
+                ssl_context=ssl_context,
+                backlog=backlog,
+                reuse_address=reuse_address,
+                reuse_port=reuse_port,
+            )
+        )
+
+    if path is not None:
+        if isinstance(path, (str, os.PathLike)):
+            sites.append(
+                aweb.UnixSite(
+                    runner,
+                    path,
+                    ssl_context=ssl_context,
+                    backlog=backlog,
+                )
+            )
+        else:
+            for p in path:
+                sites.append(
+                    aweb.UnixSite(
+                        runner,
+                        p,
+                        ssl_context=ssl_context,
+                        backlog=backlog,
+                    )
+                )
+
+    if sock is not None:
+        if not isinstance(sock, collections.abc.Iterable):
+            sites.append(
+                aweb.SockSite(
+                    runner,
+                    sock,
+                    ssl_context=ssl_context,
+                    backlog=backlog,
+                )
+            )
+        else:
+            for s in sock:
+                sites.append(
+                    aweb.SockSite(
+                        runner,
+                        s,
+                        ssl_context=ssl_context,
+                        backlog=backlog,
+                    )
+                )
+
+    return sites
 
 
 async def _run_app(
@@ -101,17 +197,18 @@ async def _run_app(
         port: ta.Optional[int] = None,
         path: ta.Union[os.PathLike, ta.Iterable[os.PathLike], None] = None,
         sock: ta.Optional[ta.Union[socket.socket, ta.Iterable[socket.socket]]] = None,
+        ssl_context: ta.Optional[SSLContext] = None,
+        backlog: int = 128,
+        reuse_address: ta.Optional[bool] = None,
+        reuse_port: ta.Optional[bool] = None,
+
         shutdown_timeout: float = 60.0,
         keepalive_timeout: float = 75.0,
-        ssl_context: ta.Optional[SSLContext] = None,
         print: ta.Optional[ta.Callable[..., None]] = print,
-        backlog: int = 128,
         access_log_class: type[aweb.AbstractAccessLogger] = aweb.AccessLogger,
         access_log_format: str = aweb.AccessLogger.LOG_FORMAT,
         access_log: ta.Optional[logging.Logger] = aweb.access_logger,
         handle_signals: bool = True,
-        reuse_address: ta.Optional[bool] = None,
-        reuse_port: ta.Optional[bool] = None,
         handler_cancellation: bool = False,
 ) -> None:
     async def wait(
@@ -149,95 +246,25 @@ async def _run_app(
     )
 
     await runner.setup()
-    # On shutdown we want to avoid waiting on tasks which run forever.
-    # It's very likely that all tasks which run forever will have been created by
-    # the time we have completed the application startup (in runner.setup()),
-    # so we just record all running tasks here and exclude them later.
+    # On shutdown we want to avoid waiting on tasks which run forever. It's very likely that all tasks which run forever
+    # will have been created by the time we have completed the application startup (in runner.setup()), so we just
+    # record all running tasks here and exclude them later.
     starting_tasks: "weakref.WeakSet[asyncio.Task[object]]" = weakref.WeakSet(asyncio.all_tasks())
     runner.shutdown_callback = functools.partial(wait, starting_tasks, shutdown_timeout)
 
-    sites: list[aweb.BaseSite] = []
-
     try:
-        if host is not None:
-            if isinstance(host, (str, bytes, bytearray, memoryview)):
-                sites.append(
-                    aweb.TCPSite(
-                        runner,
-                        host,
-                        port,
-                        ssl_context=ssl_context,
-                        backlog=backlog,
-                        reuse_address=reuse_address,
-                        reuse_port=reuse_port,
-                    )
-                )
-            else:
-                for h in host:
-                    sites.append(
-                        aweb.TCPSite(
-                            runner,
-                            h,
-                            port,
-                            ssl_context=ssl_context,
-                            backlog=backlog,
-                            reuse_address=reuse_address,
-                            reuse_port=reuse_port,
-                        )
-                    )
-        elif path is None and sock is None or port is not None:
-            sites.append(
-                aweb.TCPSite(
-                    runner,
-                    port=port,
-                    ssl_context=ssl_context,
-                    backlog=backlog,
-                    reuse_address=reuse_address,
-                    reuse_port=reuse_port,
-                )
-            )
+        sites = make_sites(
+            runner,
+            host=host,
+            port=port,
+            path=path,
+            sock=sock,
+            ssl_context=ssl_context,
+            backlog=backlog,
+            reuse_address=reuse_address,
+            reuse_port=reuse_port,
+        )
 
-        if path is not None:
-            if isinstance(path, (str, os.PathLike)):
-                sites.append(
-                    aweb.UnixSite(
-                        runner,
-                        path,
-                        ssl_context=ssl_context,
-                        backlog=backlog,
-                    )
-                )
-            else:
-                for p in path:
-                    sites.append(
-                        aweb.UnixSite(
-                            runner,
-                            p,
-                            ssl_context=ssl_context,
-                            backlog=backlog,
-                        )
-                    )
-
-        if sock is not None:
-            if not isinstance(sock, collections.abc.Iterable):
-                sites.append(
-                    aweb.SockSite(
-                        runner,
-                        sock,
-                        ssl_context=ssl_context,
-                        backlog=backlog,
-                    )
-                )
-            else:
-                for s in sock:
-                    sites.append(
-                        aweb.SockSite(
-                            runner,
-                            s,
-                            ssl_context=ssl_context,
-                            backlog=backlog,
-                        )
-                    )
         for site in sites:
             await site.start()
 
@@ -251,6 +278,7 @@ async def _run_app(
         # sleep forever by 1 hour intervals,
         while True:
             await asyncio.sleep(3600)
+
     finally:
         await runner.cleanup()
 
@@ -262,17 +290,18 @@ def run_app(
         port: ta.Optional[int] = None,
         path: ta.Union[os.PathLike, ta.Iterable[os.PathLike], None] = None,
         sock: ta.Optional[ta.Union[socket.socket, ta.Iterable[socket.socket]]] = None,
+        ssl_context: ta.Optional[SSLContext] = None,
+        backlog: int = 128,
+        reuse_address: ta.Optional[bool] = None,
+        reuse_port: ta.Optional[bool] = None,
+
         shutdown_timeout: float = 60.0,
         keepalive_timeout: float = 75.0,
-        ssl_context: ta.Optional[SSLContext] = None,
         print: ta.Optional[ta.Callable[..., None]] = print,
-        backlog: int = 128,
         access_log_class: type[aweb.AbstractAccessLogger] = aweb.AccessLogger,
         access_log_format: str = aweb.AccessLogger.LOG_FORMAT,
         access_log: ta.Optional[logging.Logger] = aweb.access_logger,
         handle_signals: bool = True,
-        reuse_address: ta.Optional[bool] = None,
-        reuse_port: ta.Optional[bool] = None,
         handler_cancellation: bool = False,
         loop: ta.Optional[asyncio.AbstractEventLoop] = None,
 ) -> None:
@@ -290,21 +319,23 @@ def run_app(
     main_task = loop.create_task(
         _run_app(
             app,
+
             host=host,
             port=port,
             path=path,
             sock=sock,
+            ssl_context=ssl_context,
+            backlog=backlog,
+            reuse_address=reuse_address,
+            reuse_port=reuse_port,
+
             shutdown_timeout=shutdown_timeout,
             keepalive_timeout=keepalive_timeout,
-            ssl_context=ssl_context,
             print=print,
-            backlog=backlog,
             access_log_class=access_log_class,
             access_log_format=access_log_format,
             access_log=access_log,
             handle_signals=handle_signals,
-            reuse_address=reuse_address,
-            reuse_port=reuse_port,
             handler_cancellation=handler_cancellation,
         )
     )
