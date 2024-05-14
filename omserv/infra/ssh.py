@@ -13,16 +13,16 @@ asyncssh[bcrypt,fido2,gssapi,libnacl,pkcs11,pyOpenSSL]
 import asyncio
 
 import asyncssh
-import yaml
 
 from omlish import logs
+
+from ..secrets import load_secrets
 
 
 async def _a_main() -> None:
     logs.configure_standard_logging()
 
-    with open('secrets.yml', 'r') as f:
-        cfg = yaml.safe_load(f)
+    cfg = load_secrets()
 
     print(cfg)
 
