@@ -31,7 +31,7 @@ import socket
 import typing as ta
 import weakref
 
-import aiohttp.web as aweb
+import aiohttp.web as aw
 from omlish import check
 from omlish import dataclasses as dc
 
@@ -44,7 +44,7 @@ except ImportError:
 
 @dc.dataclass(frozen=True)
 class SitesConfig:
-    host: ta.Optional[ta.Union[str, aweb.HostSequence]] = None
+    host: ta.Optional[ta.Union[str, aw.HostSequence]] = None
     port: ta.Optional[int] = None
     path: ta.Union[os.PathLike, ta.Iterable[os.PathLike], None] = None
     sock: ta.Optional[ta.Union[socket.socket, ta.Iterable[socket.socket]]] = None
@@ -54,13 +54,13 @@ class SitesConfig:
     reuse_port: ta.Optional[bool] = None
 
 
-def make_sites(runner: aweb.AppRunner, cfg: SitesConfig) -> list[aweb.BaseSite]:
-    sites: list[aweb.BaseSite] = []
+def make_sites(runner: aw.AppRunner, cfg: SitesConfig) -> list[aw.BaseSite]:
+    sites: list[aw.BaseSite] = []
 
     if cfg.host is not None:
         if isinstance(cfg.host, (str, bytes, bytearray, memoryview)):
             sites.append(
-                aweb.TCPSite(
+                aw.TCPSite(
                     runner,
                     cfg.host,
                     cfg.port,
@@ -73,7 +73,7 @@ def make_sites(runner: aweb.AppRunner, cfg: SitesConfig) -> list[aweb.BaseSite]:
         else:
             for h in cfg.host:
                 sites.append(
-                    aweb.TCPSite(
+                    aw.TCPSite(
                         runner,
                         h,
                         cfg.port,
@@ -85,7 +85,7 @@ def make_sites(runner: aweb.AppRunner, cfg: SitesConfig) -> list[aweb.BaseSite]:
                 )
     elif cfg.path is None and cfg.sock is None or cfg.port is not None:
         sites.append(
-            aweb.TCPSite(
+            aw.TCPSite(
                 runner,
                 port=cfg.port,
                 ssl_context=cfg.ssl_context,
@@ -98,7 +98,7 @@ def make_sites(runner: aweb.AppRunner, cfg: SitesConfig) -> list[aweb.BaseSite]:
     if cfg.path is not None:
         if isinstance(cfg.path, (str, os.PathLike)):
             sites.append(
-                aweb.UnixSite(
+                aw.UnixSite(
                     runner,
                     cfg.path,
                     ssl_context=cfg.ssl_context,
@@ -108,7 +108,7 @@ def make_sites(runner: aweb.AppRunner, cfg: SitesConfig) -> list[aweb.BaseSite]:
         else:
             for p in cfg.path:
                 sites.append(
-                    aweb.UnixSite(
+                    aw.UnixSite(
                         runner,
                         p,
                         ssl_context=cfg.ssl_context,
@@ -119,7 +119,7 @@ def make_sites(runner: aweb.AppRunner, cfg: SitesConfig) -> list[aweb.BaseSite]:
     if cfg.sock is not None:
         if not isinstance(cfg.sock, collections.abc.Iterable):
             sites.append(
-                aweb.SockSite(
+                aw.SockSite(
                     runner,
                     cfg.sock,
                     ssl_context=cfg.ssl_context,
@@ -129,7 +129,7 @@ def make_sites(runner: aweb.AppRunner, cfg: SitesConfig) -> list[aweb.BaseSite]:
         else:
             for s in cfg.sock:
                 sites.append(
-                    aweb.SockSite(
+                    aw.SockSite(
                         runner,
                         s,
                         ssl_context=cfg.ssl_context,
@@ -145,15 +145,15 @@ class RunnerConfig:
     shutdown_timeout: float = 60.0
     keepalive_timeout: float = 75.0
     print: ta.Optional[ta.Callable[..., None]] = print
-    access_log_class: type[aweb.AbstractAccessLogger] = aweb.AccessLogger
-    access_log_format: str = aweb.AccessLogger.LOG_FORMAT
-    access_log: ta.Optional[logging.Logger] = aweb.access_logger
+    access_log_class: type[aw.AbstractAccessLogger] = aw.AccessLogger
+    access_log_format: str = aw.AccessLogger.LOG_FORMAT
+    access_log: ta.Optional[logging.Logger] = aw.access_logger
     handle_signals: bool = True
     handler_cancellation: bool = False
 
 
 async def a_run_app(
-        app: ta.Union[aweb.Application, ta.Awaitable[aweb.Application]],
+        app: ta.Union[aw.Application, ta.Awaitable[aw.Application]],
         *,
         sites_cfg: SitesConfig = SitesConfig(),
         runner_cfg: RunnerConfig = RunnerConfig(),
@@ -180,9 +180,9 @@ async def a_run_app(
     if asyncio.iscoroutine(app):
         app = await app
 
-    app = ta.cast(aweb.Application, app)
+    app = ta.cast(aw.Application, app)
 
-    runner = aweb.AppRunner(
+    runner = aw.AppRunner(
         app,
         handle_signals=runner_cfg.handle_signals,
         access_log_class=runner_cfg.access_log_class,
@@ -293,7 +293,7 @@ def _cancel_tasks(
 
 
 def run_app(
-        app: ta.Union[aweb.Application, ta.Awaitable[aweb.Application]],
+        app: ta.Union[aw.Application, ta.Awaitable[aw.Application]],
         *,
         sites_cfg: SitesConfig = SitesConfig(),
         runner_cfg: RunnerConfig = RunnerConfig(),
@@ -315,7 +315,7 @@ def run_app(
     try:
         asyncio.set_event_loop(loop)
         loop.run_until_complete(main_task)
-    except (aweb.GracefulExit, KeyboardInterrupt):  # pragma: no cover
+    except (aw.GracefulExit, KeyboardInterrupt):  # pragma: no cover
         pass
     finally:
         _cancel_tasks({main_task}, loop)
