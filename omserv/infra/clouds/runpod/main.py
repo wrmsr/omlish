@@ -17,6 +17,8 @@ curl --request POST \
   --data '{"query": "mutation { podStop(input: { id: \"ballsballsballs\" } ) } { id }" }'
 """
 import asyncio
+import io
+import typing as ta
 
 import aiohttp
 
@@ -29,51 +31,81 @@ async def _a_main() -> None:
     cfg = load_secrets()
     api_key = cfg['runpod_api_key']
 
+    pod_schema = [
+        # 'lowestBidPriceToResume',
+        # 'aiApiId',
+        # 'apiKey',
+        # 'consumerUserId',
+        # 'containerDiskInGb',
+        # 'containerRegistryAuthId',
+        # 'costMultiplier',
+        # 'costPerHr',
+        # 'adjustedCostPerHr',
+        # 'desiredStatus',
+        # 'dockerArgs',
+        # 'dockerId',
+        # 'env',
+        # 'gpuCount',
+        # 'gpuPowerLimitPercent',
+        # 'gpus',
+        'id',
+        'imageName',
+        # 'lastStatusChange',
+        # 'locked',
+        # 'machineId',
+        # 'memoryInGb',
+        # 'name',
+        # 'podType',
+        'port',
+        'ports',
+        # 'registry',
+        # 'templateId',
+        # 'uptimeSeconds',
+        # 'vcpuCount',
+        # 'version',
+        # 'volumeEncrypted',
+        # 'volumeInGb',
+        # 'volumeKey',
+        # 'volumeMountPath',
+        ('runtime', [
+            ('ports', [
+                'ip',
+                'isIpPublic',
+                'privatePort',
+                'publicPort',
+                'type',
+            ]),
+        ]),
+        # 'machine',
+        # 'latestTelemetry',
+        # 'endpoint',
+        # 'networkVolume',
+        # 'savingsPlans',
+    ]
+
+    def render_gql_schema(o: ta.Any, out: ta.TextIO) -> None:
+        match o:
+            case str(n):
+                out.write(n)
+            case list(l):
+                out.write('{ ')
+                for e in l:
+                    render_gql_schema(e, out)
+                    out.write(' ')
+                out.write('}')
+            case (n, c):
+                out.write(n)
+                out.write(' ')
+                render_gql_schema(c, out)
+            case _:
+                raise TypeError(o)
+
+    out = io.StringIO()
+    render_gql_schema(pod_schema, out)
+    pod_cols = out.getvalue()
+
     async with aiohttp.ClientSession() as session:
-        cols = [
-            # 'lowestBidPriceToResume',
-            # 'aiApiId',
-            # 'apiKey',
-            # 'consumerUserId',
-            # 'containerDiskInGb',
-            # 'containerRegistryAuthId',
-            # 'costMultiplier',
-            # 'costPerHr',
-            # 'adjustedCostPerHr',
-            # 'desiredStatus',
-            # 'dockerArgs',
-            # 'dockerId',
-            # 'env',
-            # 'gpuCount',
-            # 'gpuPowerLimitPercent',
-            # 'gpus',
-            'id',
-            'imageName',
-            # 'lastStatusChange',
-            # 'locked',
-            # 'machineId',
-            # 'memoryInGb',
-            # 'name',
-            # 'podType',
-            'port',
-            'ports',
-            # 'registry',
-            # 'templateId',
-            # 'uptimeSeconds',
-            # 'vcpuCount',
-            # 'version',
-            # 'volumeEncrypted',
-            # 'volumeInGb',
-            # 'volumeKey',
-            # 'volumeMountPath',
-            # 'runtime',
-            # 'machine',
-            # 'latestTelemetry',
-            # 'endpoint',
-            # 'networkVolume',
-            # 'savingsPlans',
-        ]
-        query = 'query Pods { myself { pods { ' + ' '.join(cols) + ' } } }'
+        query = 'query Pods { myself { pods ' + pod_cols + ' } }'
 
         async with session.post(
                 f'https://api.runpod.io/graphql?api_key={api_key}',
