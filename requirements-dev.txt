@@ -41,4 +41,6 @@ aiomysql==0.2.0
 aiopg==1.4.0
 aiosqlite==0.20.0
 
+asyncssh==2.14.2
+
 pytest-aiohttp==1.0.5
