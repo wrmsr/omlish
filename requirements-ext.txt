@@ -7,7 +7,7 @@ matplotlib==3.8.4
 numpy==1.26.4
 
 huggingface_hub==0.23.0
-evaluate==0.4.1
+evaluate==0.4.2
 datasets==2.19.1
 
 ##
@@ -34,7 +34,7 @@ onnx==1.15.0
 onnx2torch==1.5.13
 
 sentencepiece==0.2.0
-tiktoken==0.6.0
+tiktoken==0.7.0
 transformers==4.40.2
 
 ##
@@ -64,7 +64,7 @@ triton==2.3.0; platform_machine == 'x86_64'
 
 wgpu==0.15.1  # FIXME: no 3.11
 
-hypothesis==6.102.1
+hypothesis==6.102.4
 
 ##
 
@@ -81,7 +81,7 @@ simsimd==4.3.1
 
 spacy==3.7.4
 
-regex==2024.5.10
+regex==2024.5.15
 
 ##
 
@@ -127,7 +127,7 @@ einops==0.8.0
 
 ### infra
 
-boto3>=1.34.104
+boto3>=1.34.106
 
 google-cloud-compute==1.18.0
 

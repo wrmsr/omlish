@@ -37,4 +37,8 @@ pgcli==4.1.0; python_version < '3.13'
 
 aiohttp==3.9.5
 
+aiomysql==0.2.0
+aiopg==1.4.0
+aiosqlite==0.20.0
+
 pytest-aiohttp==1.0.5
