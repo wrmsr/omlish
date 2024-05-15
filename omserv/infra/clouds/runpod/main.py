@@ -54,20 +54,26 @@ async def _a_main() -> None:
         # 'locked',
         # 'machineId',
         # 'memoryInGb',
-        # 'name',
-        # 'podType',
+        'name',
+        'podType',
         'port',
         'ports',
         # 'registry',
         # 'templateId',
-        # 'uptimeSeconds',
-        # 'vcpuCount',
+        'uptimeSeconds',
+        'vcpuCount',
         # 'version',
         # 'volumeEncrypted',
         # 'volumeInGb',
         # 'volumeKey',
         # 'volumeMountPath',
         ('runtime', [
+            # 'container'
+            ('gpus', [
+                'id',
+                'gpuUtilPercent',
+                'memoryUtilPercent',
+            ]),
             ('ports', [
                 'ip',
                 'isIpPublic',
@@ -75,6 +81,7 @@ async def _a_main() -> None:
                 'publicPort',
                 'type',
             ]),
+            # 'uptimeInSeconds'
         ]),
         # 'machine',
         # 'latestTelemetry',
