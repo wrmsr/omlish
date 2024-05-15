@@ -1,4 +1,6 @@
 """
+** ssh port at root@.ip:.publicPort under runtime.ports[] where type=tcp and privatePort=22 **
+
 https://graphql-spec.runpod.io/
 
 curl -s --request POST \
