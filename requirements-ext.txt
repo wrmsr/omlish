@@ -109,7 +109,9 @@ fire==0.6.0
 ## FIXME:
 ## BERKELEYDB_DIR=$(brew --prefix 'berkeley-db@4') .venv/bin/pip install bsddb3
 
-bs4
+bs4==0.0.2
+beautifulsoup==4.12.3
+
 gensim==4.3.2
 geopandas==0.14.4
 gutenberg==0.8.2
