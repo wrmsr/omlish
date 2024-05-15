@@ -1,5 +1,5 @@
 def camel_case(name: str) -> str:
-    return ''.join(map(str.capitalize, name.split('_')))
+    return ''.join(map(str.capitalize, name.split('_')))  # noqa
 
 
 def snake_case(name: str) -> str:
