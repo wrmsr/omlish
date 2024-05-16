@@ -100,6 +100,35 @@ class SshSubprocessCommandRunner(CommandRunner):
         return await self._lcr.run_command(lcmd)
 
 
+class AsyncsshSshCommandRunner(CommandRunner):
+    def __init__(
+            self,
+            cfg: SshConfig,
+    ) -> None:
+        super().__init__()
+        self._cfg = check.isinstance(cfg, SshConfig)
+
+    async def run_command(self, cmd: CommandRunner.Command) -> CommandRunner.Result:
+        async with asyncssh.connect(
+                self._cfg.host,
+                **(dict(port=int(self._cfg.port)) if self._cfg.port is not None else {}),
+                **(dict(username=self._cfg.username) if self._cfg.username is not None else {}),
+                **(dict(password=self._cfg.password) if self._cfg.password is not None else {}),
+                **(dict(client_keys=[self._cfg.key_file_path]) if self._cfg.key_file_path is not None else {}),
+        ) as conn:
+            proc = await conn.create_process(cmd.args[0])  # FIXME: args lol
+
+            check = False
+            timeout = None
+            res = await proc.wait(check, timeout)
+
+        return CommandRunner.Result(
+            rc=res.returncode,
+            out=res.stdout,  # FIXME: this is str not bytes
+            err=res.stderr,
+        )
+
+
 async def _a_main() -> None:
     cmd = CommandRunner.Command(
         ['ls', '-al'],
@@ -117,9 +146,13 @@ async def _a_main() -> None:
         key_file_path=cfg['ec2_ssh_key_file'],
     )
 
-    rc = await SshSubprocessCommandRunner(sc).run_command(cmd)
-    check.equal(rc.rc, 0)
-    print(rc.out.decode())
+    for scr in [
+        SshSubprocessCommandRunner(sc),
+        AsyncsshSshCommandRunner(sc),
+    ]:
+        rc = await scr.run_command(cmd)
+        check.equal(rc.rc, 0)
+        print(rc.out.decode())
 
 
 if __name__ == '__main__':
