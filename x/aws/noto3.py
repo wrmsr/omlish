@@ -128,7 +128,6 @@ def _main() -> None:
         data=request.body,
         headers=dict(request.headers),
     )
-
     import urllib.parse
     with urllib.request.urlopen(req) as f:
         print(f.read().decode('utf-8'))
