@@ -8,6 +8,8 @@ apt-get update && \
 apt-get install -y \
         \
         btop \
+        git \
+        jq \
         less \
         mosh \
         ncdu \

@@ -1,3 +1,6 @@
+"""
+https://docs.aws.amazon.com/vpc-lattice/latest/ug/sigv4-authenticated-requests.html
+"""
 import configparser
 import io
 import os.path
@@ -86,14 +89,23 @@ def _main() -> None:
     # http, parsed_response = ec2_client._make_request(operation_model, request_dict, request_context)
     # print(parsed_response)
 
-    endpoint = ec2_client._endpoint
+    endpoint = ec2_client._endpoint  # noqa
     context = request_dict['context']
     request = endpoint.create_request(request_dict, operation_model)
-    success_response, exception = endpoint._get_response(
-        request, operation_model, context
-    )
-    print((success_response, exception))
 
+    import urllib.request
+    req = urllib.request.Request(
+        request.url,
+        data=request.body.encode('utf-8'),
+        headers=dict(request.headers),
+    )
+
+    # import urllib.parse
+    # with urllib.request.urlopen(req) as f:
+    #     print(f.read().decode('utf-8'))
+
+    success_response, exception = endpoint._get_response(request, operation_model, context)
+    print((success_response, exception))
 
     # if http.status_code >= 300:
     #     error_info = parsed_response.get("Error", {})
