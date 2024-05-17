@@ -105,6 +105,7 @@ class Final(Abstract):
 
 ##
 
+
 class SealedException(TypeError):
 
     def __init__(self, _type) -> None:
@@ -170,7 +171,6 @@ class _Namespace(Final):
 
 
 Namespace: type = _Namespace()  # type: ignore
-#
 
 
 ##
