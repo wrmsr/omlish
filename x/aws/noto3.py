@@ -123,6 +123,17 @@ def _main() -> None:
     signer.add_auth(request)
     print(request.headers)
 
+    import urllib.request
+    req = urllib.request.Request(
+        request.url,
+        data=request.body,
+        headers=dict(request.headers),
+    )
+
+    import urllib.parse
+    with urllib.request.urlopen(req) as f:
+        print(f.read().decode('utf-8'))
+
 
 if __name__ == '__main__':
     _main()
