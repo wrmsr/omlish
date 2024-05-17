@@ -3,7 +3,7 @@
 
 ### nn
 
-matplotlib==3.8.4
+matplotlib==3.9.0
 numpy==1.26.4
 
 huggingface_hub==0.23.0
@@ -30,12 +30,9 @@ pyarrow==16.1.0
 opencv-python==4.9.0.80
 pillow==10.3.0
 
-onnx==1.15.0
-onnx2torch==1.5.13
-
 sentencepiece==0.2.0
 tiktoken==0.7.0
-transformers==4.40.2
+transformers==4.41.0
 
 ##
 
@@ -89,7 +86,7 @@ ipykernel==6.29.4
 ipywidgets==8.1.2
 jupyter-console==6.6.3
 nbconvert==7.16.4
-notebook==7.1.3
+notebook==7.2.0
 qtconsole==5.5.1
 
 fairscale==0.4.13
@@ -110,17 +107,34 @@ fire==0.6.0
 ## BERKELEYDB_DIR=$(brew --prefix 'berkeley-db@4') .venv/bin/pip install bsddb3
 
 bs4==0.0.2
-beautifulsoup==4.12.3
+beautifulsoup4==4.12.3
 
 gensim==4.3.2
 geopandas==0.14.4
 gutenberg==0.8.2
 # h5py
-keras==2.15.0
 mwparserfromhell==0.6.6
 nltk==3.8.1
-tensorflow>=2.15.1  # tensorflow 2.16.1 depends on keras>=3.0.0
-tensorboard==2.15.2
+
+### problematic
+
+keras==2.15.0; python_version < '3.12'
+tensorflow>=2.15.1; python_version < '3.12'  # tensorflow 2.16.1 depends on keras>=3.0.0
+tensorboard==2.15.2; python_version < '3.12'
+
+onnx==1.15.0; python_version < '3.12'
+onnx2torch==1.5.13; python_version < '3.12'
+
+#
+
+keras; python_version > '3.12'
+tensorflow; python_version >= '3.12'
+tensorboard; python_version >= '3.12'
+
+onnx; python_version >= '3.12'
+onnx2torch; python_version >= '3.12'
+
+###
 
 einops==0.8.0
 
@@ -129,9 +143,9 @@ einops==0.8.0
 
 ### infra
 
-boto3>=1.34.106
+boto3>=1.34.107
 
-google-cloud-compute==1.18.0
+google-cloud-compute==1.19.0
 
 
 ### hn

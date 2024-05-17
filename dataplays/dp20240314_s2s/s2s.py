@@ -30,6 +30,17 @@ from torchtext import data, datasets
 from torchtext.vocab import FastText
 
 
+def load_spacy_model(name):
+    try:
+        return spacy.load(name)
+    except IOError as e:
+        pass
+
+    from spacy.cli.download import download
+    download(name)
+    return spacy.load(name)
+
+
 def _main():
     # Configuration
     # writer = SummaryWriter()
@@ -40,8 +51,8 @@ def _main():
     def tokenizer(lang):
         return lambda text: [token.text for token in lang.tokenizer(text)]
 
-    de_tok = spacy.load('de_core_news_sm')
-    en_tok = spacy.load('en_core_web_sm')
+    de_tok = load_spacy_model('de_core_news_sm')
+    en_tok = load_spacy_model('en_core_web_sm')
 
     train, val, test = data = datasets.Multi30k()
 
