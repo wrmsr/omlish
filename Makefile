@@ -91,7 +91,8 @@ tg:
 
 .PHONY: dep-freze
 dep-freeze: venv
-	$(PYTHON) -mpip freeze > requirements-frz.txt
+	$(PYTHON) -mpip freeze > requirements-frz.txt && \
+	sed -i '' '/^-e git\+https:\/\/github.com\/tinygrad\/tinygrad/d' requirements-frz.txt
 
 .PHONY: dep-unfreeze
 dep-unfreeze: venv
@@ -159,7 +160,7 @@ test-debug: venv-debug
 venv-12:
 	_VENV_ROOT=.venv-12 \
 	_PYTHON_VERSION=${PYTHON_VERSION_12} \
-	_REQUIREMENTS_TXT=requirements-dev.txt \
+	_REQUIREMENTS_TXT=requirements-ext.txt \
 	${MAKE} _venv
 
 .PHONY: test-12
