@@ -1,20 +1,23 @@
 from __future__ import annotations
 
 import math
+import os.path
 import sys
 import time
-from typing import TypeVar, Generic, Optional
+import typing as ta
 
 import numpy as np
 
-from config import ModelArgs
-from tokenizer import Tokenizer
-from utils import load_parameters
-
-Shape = TypeVar("Shape")
+from .config import ModelArgs
+from .tokenizer import Tokenizer
+from .utils import load_parameters
 
 
-class Array(np.ndarray, Generic[Shape]): ...
+Shape = ta.TypeVar("Shape")
+
+
+class Array(np.ndarray, ta.Generic[Shape]):
+    ...
 
 
 def softmax(x):
@@ -26,8 +29,12 @@ def silu(x):
     return x * (1 / (1 + np.exp(-x)))
 
 
-def apply_rotary_emb(xq: Array["B, L or 1, QHN,  HD"], xk: Array["B, L or 1, KVHN, HD"],
-                     freqs_cos: Array["L or 1, HD//2"], freqs_sin: Array["L or 1, HD//2"]):
+def apply_rotary_emb(
+        xq: Array["B, L or 1, QHN,  HD"],
+        xk: Array["B, L or 1, KVHN, HD"],
+        freqs_cos: Array["L or 1, HD//2"],
+        freqs_sin: Array["L or 1, HD//2"],
+):
     xqri: Array["B, L or 1, QHN,  HD//2, 2"] = xq.reshape(xq.shape[:-1] + (-1, 2))
     xkri: Array["B, L or 1, KVHN, HD//2, 2"] = xk.reshape(xk.shape[:-1] + (-1, 2))
 
@@ -67,7 +74,12 @@ def repeat_kv(x: Array["B, L, KVHN, HD"], n_rep: int):
 
 
 class FeedForward:
-    def __init__(self, up_weight: Array["FD, D"], gate_weight: Array["FD, D"], down_weight: Array["D, FD"]):
+    def __init__(
+            self,
+            up_weight: Array["FD, D"],
+            gate_weight: Array["FD, D"],
+            down_weight: Array["D, FD"],
+    ):
         self.up_weight = up_weight.T
         self.gate_weight = gate_weight.T
         self.down_weight = down_weight.T
@@ -93,8 +105,14 @@ class RMSNorm:
 
 
 class Attention:
-    def __init__(self, q_weight: Array["D, D"], k_weight: Array["D, D"], v_weight: Array["D, D"],
-                 o_weight: Array["D, D"], args: ModelArgs):
+    def __init__(
+            self,
+            q_weight: Array["D, D"],
+            k_weight: Array["D, D"],
+            v_weight: Array["D, D"],
+            o_weight: Array["D, D"],
+            args: ModelArgs,
+    ):
         self.n_kv_heads = args.n_heads if args.n_kv_heads is None else args.n_kv_heads
         assert args.n_heads % self.n_kv_heads == 0
         self.n_local_heads = args.n_heads
@@ -110,8 +128,14 @@ class Attention:
         self.cache_k = np.zeros((args.max_batch_size, args.max_seq_len, self.n_local_kv_heads, self.head_dim))
         self.cache_v = np.zeros((args.max_batch_size, args.max_seq_len, self.n_local_kv_heads, self.head_dim))
 
-    def __call__(self, x: Array["B, L or 1, D"], start_pos: int, mask: Optional[Array["L, L"]],
-                 freqs_cos: Array["L or 1, HD//2"], freqs_sin: Array["L or 1, HD//2"]):
+    def __call__(
+            self,
+            x: Array["B, L or 1, D"],
+            start_pos: int,
+            mask: ta.Optional[Array["L, L"]],
+            freqs_cos: Array["L or 1, HD//2"],
+            freqs_sin: Array["L or 1, HD//2"],
+    ):
         B, L, _ = x.shape
 
         # QKV
@@ -264,8 +288,10 @@ class Llama:
 if __name__ == '__main__':
     args = ModelArgs()
 
-    tokenizer = Tokenizer("./tokenizer.model.np")
-    model = Llama("./stories15M.model.npz", args)
+    base_dir = os.path.dirname(__file__)
+
+    tokenizer = Tokenizer(os.path.join(base_dir, "./tokenizer.model.np"))
+    model = Llama(os.path.join(base_dir, "./stories15M.model.npz"), args)
 
     if len(sys.argv) == 1:
         prompt = "I have a dream"
