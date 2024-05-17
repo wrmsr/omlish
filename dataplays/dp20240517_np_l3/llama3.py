@@ -285,7 +285,7 @@ class Llama:
             yield next_id
 
 
-if __name__ == '__main__':
+def _main():
     args = ModelArgs()
 
     base_dir = os.path.dirname(__file__)
@@ -311,3 +311,7 @@ if __name__ == '__main__':
         sys.stdout.flush()
     elapsed = time.time() - start
     print(f"\n\nToken count: {L}, elapsed: {elapsed:.2f}s, {round(L / elapsed)} tokens/s")
+
+
+if __name__ == '__main__':
+    _main()
