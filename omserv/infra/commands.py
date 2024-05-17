@@ -5,12 +5,12 @@ TODO:
 """
 import abc
 import asyncio
+import shlex
 import typing as ta
 
 from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
-from omlish import logs
 
 if ta.TYPE_CHECKING:
     import asyncssh
@@ -109,14 +109,17 @@ class AsyncsshSshCommandRunner(CommandRunner):
         self._cfg = check.isinstance(cfg, SshConfig)
 
     async def run_command(self, cmd: CommandRunner.Command) -> CommandRunner.Result:
+        arg = ' '.join(map(shlex.quote, cmd.args))
+
         async with asyncssh.connect(
                 self._cfg.host,
+                encoding=None,
                 **(dict(port=int(self._cfg.port)) if self._cfg.port is not None else {}),
                 **(dict(username=self._cfg.username) if self._cfg.username is not None else {}),
                 **(dict(password=self._cfg.password) if self._cfg.password is not None else {}),
                 **(dict(client_keys=[self._cfg.key_file_path]) if self._cfg.key_file_path is not None else {}),
         ) as conn:
-            proc = await conn.create_process(cmd.args[0])  # FIXME: args lol
+            proc = await conn.create_process(arg)
 
             check = False
             timeout = None
@@ -124,7 +127,7 @@ class AsyncsshSshCommandRunner(CommandRunner):
 
         return CommandRunner.Result(
             rc=res.returncode,
-            out=res.stdout,  # FIXME: this is str not bytes
+            out=res.stdout,
             err=res.stderr,
         )
 
