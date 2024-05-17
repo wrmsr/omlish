@@ -121,7 +121,6 @@ def _main() -> None:
     )
 
     signer.add_auth(request)
-    print(request.headers)
 
     import urllib.request
     req = urllib.request.Request(
