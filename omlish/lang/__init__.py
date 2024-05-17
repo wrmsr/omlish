@@ -16,6 +16,7 @@ from .clsdct import ClassDctFn  # noqa
 from .clsdct import cls_dct_fn  # noqa
 from .clsdct import get_caller_cls_dct  # noqa
 from .clsdct import is_possibly_cls_dct  # noqa
+from .contextmanagers import ContextManaged  # noqa
 from .contextmanagers import defer  # noqa
 from .descriptors import AccessForbiddenException  # noqa
 from .descriptors import access_forbidden  # noqa
@@ -48,3 +49,5 @@ from .objects import new_type  # noqa
 from .objects import super_meta  # noqa
 from .strings import camel_case  # noqa
 from .strings import snake_case  # noqa
+from .types import BytesLike  # noqa
+from .types import protocol_check  # noqa
