@@ -5,8 +5,6 @@ aiomysql
 aiopg
 aiosqlite
 
-aiobotocore
-
 aiorwlock
 """
 import abc
