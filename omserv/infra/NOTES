@@ -1,0 +1,2 @@
+lambdalabs:
+sudo systemctl disable nvidia-fabricmanager.service && sudo systemctl reset-failed

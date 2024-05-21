@@ -34,3 +34,7 @@ https://stackoverflow.com/questions/57399323/cant-read-logger-message-thru-socat
 https://meaningfulengineer.com/ssh-logging-on-linux/
     MESSAGE=log-me-$RANDOM
     echo "<1>$MESSAGE" | socat -t 0 - /dev/log
+
+https://www.freedesktop.org/software/systemd/man/latest/systemd.journal-fields.html
+
+https://github.com/wrmsr/nginx-udplog-module
