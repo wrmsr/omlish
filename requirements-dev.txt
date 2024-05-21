@@ -16,7 +16,7 @@ flake8-pyproject==1.2.3
 
 black==24.4.2
 mypy==1.10.0
-pipdeptree==2.20.0
+pipdeptree==2.21.0
 
 gprof2dot==2022.7.29
 guppy3==3.1.4.post1; python_version < '3.13'
@@ -26,7 +26,7 @@ httpie==3.2.2
 ipython==8.24.0
 
 pg8000==1.31.2
-pymysql==1.1.0
+pymysql==1.1.1
 
 litecli==1.11.0; python_version < '3.13'
 mycli==1.27.2; python_version < '3.13'
@@ -44,3 +44,6 @@ aiosqlite==0.20.0
 asyncssh==2.14.2
 
 pytest-aiohttp==1.0.5
+
+trio==0.25.1
+trio-asyncio==0.15.0
