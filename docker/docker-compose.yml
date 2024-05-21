@@ -59,3 +59,13 @@ services:
       - '5432'
     ports:
       - '35225:5432'
+
+  omlish-s3:
+    image: 'adobe/s3mock:3.8.0'
+    restart: 'unless-stopped'
+    expose:
+      - '9090'
+      - '9191'
+    ports:
+      - '35226:9090'
+      - '35227:9191'
