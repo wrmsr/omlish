@@ -2,8 +2,8 @@ import typing as ta
 
 from .config import Config
 from .events import ServerEvent
-from .h11_ import H11Protocol
-from .h11_ import H2ProtocolAssumedError
+from .h11 import H11Protocol
+from .h11 import H2ProtocolAssumedError
 from .taskgroups import TaskGroup
 from .types import AppWrapper
 from .workercontext import WorkerContext
