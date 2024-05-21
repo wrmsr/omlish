@@ -1,0 +1,36 @@
+echo -e  "MESSAGE=Hello\nFOO=BAR\nMY_ID=12345\n" |socat  - UNIX-SENDTO:/run/systemd/journal/socket
+
+journalctl -b -o json-pretty
+
+https://stackoverflow.com/questions/25049667/how-to-generate-a-json-log-from-nginx
+log_format json_combined escape=json
+  '{'
+    '"time_local":"$time_local",'
+    '"remote_addr":"$remote_addr",'
+    '"remote_user":"$remote_user",'
+    '"request":"$request",'
+    '"status": "$status",'
+    '"body_bytes_sent":"$body_bytes_sent",'
+    '"request_time":"$request_time",'
+    '"http_referrer":"$http_referer",'
+    '"http_user_agent":"$http_user_agent"'
+  '}';
+
+https://discourse.nixos.org/t/nginx-logging-to-journald/2005/5
+    error_log syslog:server=unix:/dev/log;
+    access_log syslog:server=unix:/dev/log combined_host;
+--
+    error_log stderr;
+    access_log syslog:server=unix:/dev/log combined;
+
+https://github.com/saymedia/journald-cloudwatch-logs
+
+https://github.com/mosquito/cysystemd
+
+https://docs.docker.com/config/containers/logging/journald/
+
+https://stackoverflow.com/questions/57399323/cant-read-logger-message-thru-socat-u-unix-recv-dev-log-ignoreeof-because-t
+
+https://meaningfulengineer.com/ssh-logging-on-linux/
+    MESSAGE=log-me-$RANDOM
+    echo "<1>$MESSAGE" | socat -t 0 - /dev/log
