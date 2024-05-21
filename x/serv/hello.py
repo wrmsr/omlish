@@ -1,4 +1,5 @@
 import asyncio
+import time
 
 from .config import Config
 from .serving import serve
@@ -29,7 +30,7 @@ async def hello_app(scope, recv, send):
 
             await send({
                 'type': 'http.response.body',
-                'body': b'Hello, world!',
+                'body': f'Hello, world! The time is {time.time()}'.encode('utf-8'),
             })
 
         case _:
