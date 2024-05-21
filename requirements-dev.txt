@@ -45,5 +45,7 @@ asyncssh==2.14.2
 
 pytest-aiohttp==1.0.5
 
-trio==0.25.1
-trio-asyncio==0.15.0
+# trio==0.25.1
+# trio-asyncio==0.15.0
+
+anyio==4.3.0
