@@ -24,18 +24,37 @@ class CommandRunner(lang.Abstract):
         out: bytes
         err: bytes
 
+        def check(self: ta.Self) -> ta.Self:
+            if self.rc != 0:
+                raise CommandRunner.ReturnCodeException(self)
+            return self
+
+    class ReturnCodeException(Exception):
+        def __init__(self, result: 'CommandRunner.Result') -> None:
+            super().__init__(f'Bad return code: {result.rc}', result)
+            self.result = result
+
     @abc.abstractmethod
     async def run_command(self, cmd: Command) -> Result:
         raise NotImplementedError
 
 
 class LocalCommandRunner(CommandRunner):
+    @dc.dataclass(frozen=True)
+    class Config:
+        cwd: ta.Optional[str] = None
+
+    def __init__(self, cfg: Config = Config()) -> None:
+        super().__init__()
+        self._cfg = check.isinstance(cfg, LocalCommandRunner.Config)
+
     async def run_command(self, cmd: CommandRunner.Command) -> CommandRunner.Result:
         proc = await asyncio.create_subprocess_exec(
             *cmd.args,
             stdin=cmd.in_,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
+            **(dict(cwd=self._cfg.cwd) if self._cfg.cwd is not None else {}),
         )
 
         out, err = await proc.communicate()
