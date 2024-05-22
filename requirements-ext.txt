@@ -93,7 +93,7 @@ fairscale==0.4.13
 
 accelerate==0.30.1
 
-pytorch-lightning==2.2.4
+pytorch-lightning==2.2.5
 
 torchsummary==1.5.1
 
@@ -143,7 +143,7 @@ einops==0.8.0
 
 ### infra
 
-boto3>=1.34.109
+boto3>=1.34.110
 
 google-cloud-compute==1.19.0
 
