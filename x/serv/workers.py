@@ -50,8 +50,8 @@ SLEEP_TIME = 0.100
 
 
 async def _serve_one_listener(
-        listener,
-        handler_nursery,
+        listener: anyio.abc.SocketListener,
+        handler_nursery: anyio.abc.TaskGroup,
         handler,
 ) -> ta.NoReturn:
     async with listener:
@@ -76,10 +76,10 @@ async def _serve_one_listener(
 
 async def serve_listeners(
         handler,
-        listeners,
+        listeners: ta.Iterable[anyio.abc.SocketListener],
         *,
-        handler_nursery=None,
-        task_status=anyio.TASK_STATUS_IGNORED,
+        handler_nursery: ta.Optional[anyio.abc.TaskGroup] = None,
+        task_status: anyio.abc.TaskStatus[ta.Iterable[anyio.abc.SocketListener]] = anyio.TASK_STATUS_IGNORED,
 ) -> ta.NoReturn:
     async with anyio.create_task_group() as nursery:
         if handler_nursery is None:
@@ -129,7 +129,8 @@ async def worker_serve(
         *,
         sockets: ta.Optional[Sockets] = None,
         shutdown_trigger: ta.Optional[ta.Callable[..., ta.Awaitable[None]]] = None,
-        task_status: anyio.abc.TaskStatus[None] = anyio.TASK_STATUS_IGNORED,
+        handle_shutdown_signals: bool = False,
+        task_status: anyio.abc.TaskStatus[ta.Sequence[str]] = anyio.TASK_STATUS_IGNORED,
 ) -> None:
     lifespan = Lifespan(app, config)
     max_requests = None
@@ -138,7 +139,7 @@ async def worker_serve(
     context = WorkerContext(max_requests)
 
     async with anyio.create_task_group() as lifespan_nursery:
-        if shutdown_trigger is None:
+        if shutdown_trigger is None and handle_shutdown_signals:
             shutdown_trigger = await _install_signal_handler(lifespan_nursery)
 
         await lifespan_nursery.start(lifespan.handle_lifespan)
