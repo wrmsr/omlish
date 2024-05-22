@@ -75,7 +75,7 @@ async def _serve_one_listener(
 
 
 async def serve_listeners(
-        handler,
+        handler: ta.Callable[[anyio.abc.SocketStream], ta.Awaitable],
         listeners: ta.Iterable[anyio.abc.SocketListener],
         *,
         handler_nursery: ta.Optional[anyio.abc.TaskGroup] = None,
