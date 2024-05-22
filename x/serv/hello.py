@@ -1,5 +1,6 @@
 import time
 
+from omlish import logs
 import anyio
 
 from .config import Config
@@ -39,13 +40,19 @@ async def hello_app(scope, recv, send):
 
 
 def _main():
+    logs.configure_standard_logging()
+
     cfg = Config()
 
-    backend = 'asyncio'
-    # backend = 'trio'
+    # backend = 'asyncio'
+    backend = 'trio'
 
     async def _a_main():
-        await serve(hello_app, cfg)
+        await serve(
+            hello_app,
+            cfg,
+            handle_shutdown_signals=True,  # (backend != 'trio'),
+        )
 
     anyio.run(_a_main, backend=backend)
 
