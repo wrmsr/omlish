@@ -95,9 +95,7 @@ async def serve_listeners(
 
 async def _install_signal_handler(
         tg: anyio.abc.TaskGroup,
-        *,
-        task_status: anyio.abc.TaskStatus[ta.Optional[ta.Callable[..., ta.Awaitable[None]]]] = anyio.TASK_STATUS_IGNORED,
-) -> None:
+) -> ta.Optional[ta.Callable[..., ta.Awaitable[None]]]:
     signal_event = anyio.Event()
 
     sigs = [
@@ -107,7 +105,6 @@ async def _install_signal_handler(
     ]
 
     if not sigs:
-        task_status.started()
         return
 
     async def _handler(*, task_status=anyio.TASK_STATUS_IGNORED):
@@ -123,7 +120,7 @@ async def _install_signal_handler(
                 return
 
     await tg.start(_handler)
-    task_status.started(signal_event.wait)
+    return signal_event.wait
 
 
 async def worker_serve(
