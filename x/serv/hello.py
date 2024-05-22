@@ -1,3 +1,7 @@
+"""
+curl -v localhost:8000
+curl -v --http2 localhost:8000
+"""
 import time
 
 from omlish import logs
