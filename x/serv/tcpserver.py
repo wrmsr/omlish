@@ -136,7 +136,7 @@ class TCPServer:
     async def _start_idle(self) -> None:
         async with self.idle_lock:
             if self._idle_handle is None:
-                self._idle_handle = await self._task_spawner._nursery.start(self._run_idle)
+                self._idle_handle = await self._task_spawner._task_group.start(self._run_idle)
 
     async def _stop_idle(self) -> None:
         async with self.idle_lock:
