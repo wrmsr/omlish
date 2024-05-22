@@ -11,7 +11,7 @@ from .events import InformationalResponse
 from .events import Request
 from .events import Response
 from .events import StreamClosed
-from .taskgroups import TaskGroup
+from .taskspawner import TaskSpawner
 from .types import ASGISendEvent
 from .types import AppWrapper
 from .types import WaitableEvent
@@ -73,7 +73,7 @@ class HTTPStream:
             app: AppWrapper,
             config: Config,
             context: WorkerContext,
-            task_group: TaskGroup,
+            task_spawner: TaskSpawner,
             client: ta.Optional[tuple[str, int]],
             server: ta.Optional[tuple[str, int]],
             send: ta.Callable[[WaitableEvent], ta.Awaitable[None]],
@@ -93,7 +93,7 @@ class HTTPStream:
         self.start_time: float
         self.state = ASGIHTTPState.REQUEST
         self.stream_id = stream_id
-        self.task_group = task_group
+        self.task_spawner = task_spawner
 
     @property
     def idle(self) -> bool:
@@ -126,7 +126,7 @@ class HTTPStream:
                 self.scope["extensions"]["http.response.early_hint"] = {}
 
             if True:  # valid_server_name(self.config, event):
-                self.app_put = await self.task_group.spawn_app(
+                self.app_put = await self.task_spawner.spawn_app(
                     self.app, self.config, self.scope, self.app_send
                 )
             else:

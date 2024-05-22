@@ -10,7 +10,7 @@ from .events import ServerEvent
 from .events import Updated
 from .protocols import ProtocolWrapper
 from .sockets import parse_socket_addr
-from .taskgroups import TaskGroup
+from .taskspawner import TaskSpawner
 from .types import AppWrapper
 from .workercontext import WorkerContext
 
@@ -54,13 +54,13 @@ class TCPServer:
             client = parse_socket_addr(socket.family, socket.getpeername())
             server = parse_socket_addr(socket.family, socket.getsockname())
 
-            async with TaskGroup() as task_group:
-                self._task_group = task_group
+            async with TaskSpawner() as task_spawner:
+                self._task_spawner = task_spawner
                 self.protocol = ProtocolWrapper(
                     self.app,
                     self.config,
                     self.context,
-                    task_group,
+                    task_spawner,
                     client,
                     server,
                     self.protocol_send,
@@ -100,6 +100,7 @@ class TCPServer:
                 with anyio.fail_after(self.config.read_timeout or math.inf):
                     data = await self.stream.receive(MAX_RECV)
             except (
+                    anyio.EndOfStream,
                     anyio.ClosedResourceError,
                     anyio.BrokenResourceError,
                     TimeoutError,
@@ -135,7 +136,7 @@ class TCPServer:
     async def _start_idle(self) -> None:
         async with self.idle_lock:
             if self._idle_handle is None:
-                self._idle_handle = await self._task_group._nursery.start(self._run_idle)
+                self._idle_handle = await self._task_spawner._nursery.start(self._run_idle)
 
     async def _stop_idle(self) -> None:
         async with self.idle_lock:

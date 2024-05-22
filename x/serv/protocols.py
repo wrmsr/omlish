@@ -4,7 +4,7 @@ from .config import Config
 from .events import ServerEvent
 from .h11 import H11Protocol
 from .h11 import H2ProtocolAssumedError
-from .taskgroups import TaskGroup
+from .taskspawner import TaskSpawner
 from .types import AppWrapper
 from .workercontext import WorkerContext
 
@@ -15,7 +15,7 @@ class ProtocolWrapper:
             app: AppWrapper,
             config: Config,
             context: WorkerContext,
-            task_group: TaskGroup,
+            task_spawner: TaskSpawner,
             client: ta.Optional[tuple[str, int]],
             server: ta.Optional[tuple[str, int]],
             send: ta.Callable[[ServerEvent], ta.Awaitable[None]],
@@ -24,7 +24,7 @@ class ProtocolWrapper:
         self.app = app
         self.config = config
         self.context = context
-        self.task_group = task_group
+        self.task_spawner = task_spawner
         self.client = client
         self.server = server
         self.send = send
@@ -32,7 +32,7 @@ class ProtocolWrapper:
             self.app,
             self.config,
             self.context,
-            self.task_group,
+            self.task_spawner,
             self.client,
             self.server,
             self.send,

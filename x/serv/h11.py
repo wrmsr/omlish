@@ -20,7 +20,7 @@ from .events import ServerEvent
 from .events import StreamClosed
 from .events import Updated
 from .httpstream import HTTPStream
-from .taskgroups import TaskGroup
+from .taskspawner import TaskSpawner
 from .types import AppWrapper
 from .workercontext import WorkerContext
 
@@ -78,7 +78,7 @@ class H11Protocol:
             app: AppWrapper,
             config: Config,
             context: WorkerContext,
-            task_group: TaskGroup,
+            task_spawner: TaskSpawner,
             client: ta.Optional[tuple[str, int]],
             server: ta.Optional[tuple[str, int]],
             send: ta.Callable[[ServerEvent], ta.Awaitable[None]],
@@ -95,7 +95,7 @@ class H11Protocol:
         self.send = send
         self.server = server
         self.stream: ta.Optional[HTTPStream] = None
-        self.task_group = task_group
+        self.task_spawner = task_spawner
 
     async def initiate(self) -> None:
         pass
@@ -198,7 +198,7 @@ class H11Protocol:
                 self.app,
                 self.config,
                 self.context,
-                self.task_group,
+                self.task_spawner,
                 self.client,
                 self.server,
                 self.stream_send,
