@@ -1,4 +1,3 @@
-import asyncio
 import typing as ta
 
 
@@ -71,7 +70,6 @@ def wrap_app(
 ##
 
 
-# FIXME: rename to WaitableEvent
 class WaitableEvent(ta.Protocol):
     def __init__(self) -> None:
         pass
@@ -87,21 +85,3 @@ class WaitableEvent(ta.Protocol):
 
     def is_set(self) -> bool:
         pass
-
-
-class WaitableEventWrapper:
-    def __init__(self) -> None:
-        super().__init__()
-        self._event = asyncio.Event()
-
-    async def clear(self) -> None:
-        self._event.clear()
-
-    async def wait(self) -> None:
-        await self._event.wait()
-
-    async def set(self) -> None:
-        self._event.set()
-
-    def is_set(self) -> bool:
-        return self._event.is_set()

@@ -1,8 +1,26 @@
-import asyncio
 import typing as ta
 
+import anyio
+
 from .types import WaitableEvent
-from .types import WaitableEventWrapper
+
+
+class WaitableEventWrapper:
+    def __init__(self) -> None:
+        super().__init__()
+        self._event = anyio.Event()
+
+    async def clear(self) -> None:
+        self._event = anyio.Event()
+
+    async def wait(self) -> None:
+        await self._event.wait()
+
+    async def set(self) -> None:
+        self._event.set()
+
+    def is_set(self) -> bool:
+        return self._event.is_set()
 
 
 class WorkerContext:
@@ -25,11 +43,11 @@ class WorkerContext:
 
     @staticmethod
     async def sleep(wait: ta.Union[float, int]) -> None:
-        return await asyncio.sleep(wait)
+        return await anyio.sleep(wait)
 
     @staticmethod
     def time() -> float:
-        return asyncio.get_event_loop().time()
+        return anyio.current_time()
 
 
 class ShutdownError(Exception):
