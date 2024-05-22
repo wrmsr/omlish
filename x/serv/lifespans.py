@@ -3,6 +3,8 @@ import typing as ta
 
 import anyio
 import anyio.abc
+import anyio.from_thread
+import anyio.to_thread
 
 from .config import Config
 from .types import ASGIReceiveEvent
@@ -55,8 +57,8 @@ class Lifespan:
                 scope,
                 self.asgi_receive,
                 self.asgi_send,
-                None,  # trio.to_thread.run_sync,  # FIXME
-                None,  # trio.from_thread.run,  # FIXME
+                anyio.to_thread.run_sync,
+                anyio.from_thread.run,
             )
         except LifespanFailureError:
             # Lifespan failures should crash the server

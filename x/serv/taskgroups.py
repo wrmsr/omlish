@@ -4,6 +4,8 @@ import typing as ta
 
 import anyio
 import anyio.abc
+import anyio.from_thread
+import anyio.to_thread
 
 from .config import Config
 from .types import ASGIReceiveCallable
@@ -63,8 +65,8 @@ class TaskGroup:
             scope,
             app_receive_channel.receive,
             send,
-            None,  # trio.to_thread.run_sync,
-            None,  # trio.from_thread.run,
+            anyio.to_thread.run_sync,
+            anyio.from_thread.run,
         )
         return app_send_channel.send
 
