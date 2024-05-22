@@ -39,7 +39,10 @@ ACCEPT_CAPACITY_ERRNOS = {
 }
 
 
-async def _run_handler(stream, handler) -> None:
+async def _run_handler(
+        stream: anyio.abc.SocketStream,
+        handler: ta.Callable[[anyio.abc.SocketStream], ta.Awaitable],
+) -> None:
     try:
         await handler(stream)
     finally:
@@ -52,7 +55,7 @@ SLEEP_TIME = 0.100
 async def _serve_one_listener(
         listener: anyio.abc.SocketListener,
         handler_nursery: anyio.abc.TaskGroup,
-        handler,
+        handler: ta.Callable[[anyio.abc.SocketStream], ta.Awaitable],
 ) -> ta.NoReturn:
     async with listener:
         while True:
