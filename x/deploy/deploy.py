@@ -1,14 +1,14 @@
 """
-mkdir barf
-cd barf
 git init
 git remote add local ~/src/wrmsr/omlish/.git
 git fetch --depth=1 local master
 git remote add origin https://github.com/wrmsr/omlish
 git fetch --depth=1 origin master
 git checkout origin/master
+
 """
 import asyncio
+import itertools
 import os.path
 import shlex
 import tempfile
@@ -28,29 +28,30 @@ async def _a_main():
         cwd=cwd,
     ))
 
-    res = await cr.run_command(cr.Command([
-        'git', 'clone',
-        '--depth', '1',
-        'https://github.com/wrmsr/omlish',
-    ]))
-    res.check()
+    clone_script = [
+        ['git', 'init'],
+        ['git', 'remote', 'add', 'local', os.path.expanduser('~/src/wrmsr/omlish/.git'), ],
+        ['git', 'fetch', '--depth=1', 'local', 'master', ],
+        ['git', 'remote', 'add', 'origin', 'https://github.com/wrmsr/omlish'],
+        ['git', 'fetch', '--depth=1', 'origin', 'master'],
+        ['git', 'checkout', 'origin/master'],
+
+        ['git', 'submodule', 'update', '--init'],
+        ['make', 'venv'],
+    ]
 
     res = await cr.run_command(cr.Command([
-        'sh', '-c', ' '.join([
-            shlex.join([
-                'cd', 'omlish',
-            ]),
-            '&&',
-            shlex.join([
-                'git', 'submodule',
-                'update',
-                '--init',
-            ]),
-            '&&',
-            shlex.join([
-                'make', 'venv',
-            ]),
-        ]),
+        'sh', '-c', ' '.join(itertools.chain.from_iterable(
+            [
+                *(['&&'] if i > 0 else []),
+                shlex.join(l)
+            ]
+            for i, l in enumerate([
+                ['mkdir', 'omlish'],
+                ['cd', 'omlish'],
+                *clone_script,
+            ])
+        )),
     ]))
     res.check()
 
