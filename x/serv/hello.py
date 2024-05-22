@@ -42,19 +42,26 @@ async def hello_app(scope, recv, send):
 def _main():
     logs.configure_standard_logging()
 
-    cfg = Config()
+    cfg = Config(
+        workers=2,
+    )
 
-    # backend = 'asyncio'
-    backend = 'trio'
+    backend = 'asyncio'
+    # backend = 'trio'
 
-    async def _a_main():
-        await serve(
-            hello_app,
-            cfg,
-            handle_shutdown_signals=True,  # (backend != 'trio'),
-        )
+    if cfg.workers > 1:
+        from .multiprocess import serve_multiprocess
+        serve_multiprocess(hello_app, cfg)
 
-    anyio.run(_a_main, backend=backend)
+    else:
+        async def _a_main():
+            await serve(
+                hello_app,
+                cfg,
+                handle_shutdown_signals=True,  # (backend != 'trio'),
+            )
+
+        anyio.run(_a_main, backend=backend)
 
 
 if __name__ == '__main__':
