@@ -92,6 +92,40 @@ async def serve_listeners(
 
     raise RuntimeError('unreachable')
 
+
+async def _install_signal_handler(
+        tg: anyio.abc.TaskGroup,
+        *,
+        task_status: anyio.abc.TaskStatus[ta.Optional[ta.Callable[..., ta.Awaitable[None]]]] = anyio.TASK_STATUS_IGNORED,
+) -> None:
+    signal_event = anyio.Event()
+
+    sigs = [
+        getattr(signal, signal_name)
+        for signal_name in {"SIGINT", "SIGTERM", "SIGBREAK"}
+        if hasattr(signal, signal_name)
+    ]
+
+    if not sigs:
+        task_status.started()
+        return
+
+    async def _handler(*, task_status=anyio.TASK_STATUS_IGNORED):
+        with anyio.open_signal_receiver(signal.SIGINT, signal.SIGTERM) as signals:
+            task_status.started()
+            async for signum in signals:
+                if signum == signal.SIGINT:
+                    print('Ctrl+C pressed!')
+                else:
+                    print('Terminated!')
+
+                signal_event.set()
+                return
+
+    await tg.start(_handler)
+    task_status.started(signal_event.wait)
+
+
 async def worker_serve(
         app: AppWrapper,
         config: Config,
@@ -100,22 +134,6 @@ async def worker_serve(
         shutdown_trigger: ta.Optional[ta.Callable[..., ta.Awaitable[None]]] = None,
         task_status: anyio.abc.TaskStatus[None] = anyio.TASK_STATUS_IGNORED,
 ) -> None:
-    # if shutdown_trigger is None:
-    #     signal_event = asyncio.Event()
-    #
-    #     def _signal_handler(*_: ta.Any) -> None:  # noqa: N803
-    #         signal_event.set()
-    #
-    #     for signal_name in {"SIGINT", "SIGTERM", "SIGBREAK"}:
-    #         if hasattr(signal, signal_name):
-    #             try:
-    #                 loop.add_signal_handler(getattr(signal, signal_name), _signal_handler)
-    #             except NotImplementedError:
-    #                 # Add signal handler may not be implemented on Windows
-    #                 signal.signal(getattr(signal, signal_name), _signal_handler)
-    #
-    #     shutdown_trigger = signal_event.wait
-
     lifespan = Lifespan(app, config)
     max_requests = None
     if config.max_requests is not None:
@@ -123,6 +141,9 @@ async def worker_serve(
     context = WorkerContext(max_requests)
 
     async with anyio.create_task_group() as lifespan_nursery:
+        if shutdown_trigger is None:
+            shutdown_trigger = await _install_signal_handler(lifespan_nursery)
+
         await lifespan_nursery.start(lifespan.handle_lifespan)
         await lifespan.wait_for_startup()
 
