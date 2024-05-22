@@ -1,13 +1,28 @@
+"""
+mkdir barf
+cd barf
+git init
+git remote add local ~/src/wrmsr/omlish/.git
+git fetch --depth=1 local master
+git remote add origin https://github.com/wrmsr/omlish
+git fetch --depth=1 origin master
+git checkout origin/master
+"""
 import asyncio
+import os.path
 import shlex
 import tempfile
 
+from omlish import check
 from omserv.infra import cmds
 
 
 async def _a_main():
     cwd = tempfile.mkdtemp()
     print(cwd)
+
+    bootstrap_git_path = os.path.join(os.getcwd(), '.git')
+    check.state(os.path.isdir(bootstrap_git_path))
 
     cr: cmds.CommandRunner = cmds.LocalCommandRunner(cmds.LocalCommandRunner.Config(
         cwd=cwd,
