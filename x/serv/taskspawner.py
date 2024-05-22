@@ -47,8 +47,8 @@ async def _handle(
 class TaskSpawner:
     def __init__(self) -> None:
         super().__init__()
-        self._nursery: ta.Optional[ta.Any] = None
-        self._nursery_manager: ta.Optional[anyio.abc.TaskGroup] = None
+        self._task_group: ta.Optional[ta.Any] = None
+        self._task_group_manager: ta.Optional[anyio.abc.TaskGroup] = None
 
     async def spawn_app(
             self,
@@ -58,7 +58,7 @@ class TaskSpawner:
             send: ta.Callable[[ta.Optional[ASGISendEvent]], ta.Awaitable[None]],
     ) -> ta.Callable[[ASGIReceiveEvent], ta.Awaitable[None]]:
         app_send_channel, app_receive_channel = anyio.create_memory_object_stream[bytes](config.max_app_queue_size)
-        self._nursery.start_soon(
+        self._task_group.start_soon(
             _handle,
             app,
             config,
@@ -71,14 +71,14 @@ class TaskSpawner:
         return app_send_channel.send
 
     def spawn(self, func: ta.Callable, *args: ta.Any) -> None:
-        self._nursery.start_soon(func, *args)
+        self._task_group.start_soon(func, *args)
 
     async def __aenter__(self) -> anyio.abc.TaskGroup:
-        self._nursery_manager = anyio.create_task_group()
-        self._nursery = await self._nursery_manager.__aenter__()
+        self._task_group_manager = anyio.create_task_group()
+        self._task_group = await self._task_group_manager.__aenter__()
         return self
 
     async def __aexit__(self, exc_type: type, exc_value: BaseException, tb: types.TracebackType) -> None:
-        await self._nursery_manager.__aexit__(exc_type, exc_value, tb)
-        self._nursery_manager = None
-        self._nursery = None
+        await self._task_group_manager.__aexit__(exc_type, exc_value, tb)
+        self._task_group_manager = None
+        self._task_group = None

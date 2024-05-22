@@ -54,7 +54,7 @@ SLEEP_TIME = 0.100
 
 async def _serve_one_listener(
         listener: anyio.abc.SocketListener,
-        handler_nursery: anyio.abc.TaskGroup,
+        handler_task_group: anyio.abc.TaskGroup,
         handler: ta.Callable[[anyio.abc.SocketStream], ta.Awaitable],
 ) -> ta.NoReturn:
     async with listener:
@@ -74,21 +74,21 @@ async def _serve_one_listener(
                 else:
                     raise
             else:
-                handler_nursery.start_soon(_run_handler, stream, handler)
+                handler_task_group.start_soon(_run_handler, stream, handler)
 
 
 async def serve_listeners(
         handler: ta.Callable[[anyio.abc.SocketStream], ta.Awaitable],
         listeners: ta.Iterable[anyio.abc.SocketListener],
         *,
-        handler_nursery: ta.Optional[anyio.abc.TaskGroup] = None,
+        handler_task_group: ta.Optional[anyio.abc.TaskGroup] = None,
         task_status: anyio.abc.TaskStatus[ta.Iterable[anyio.abc.SocketListener]] = anyio.TASK_STATUS_IGNORED,
 ) -> ta.NoReturn:
-    async with anyio.create_task_group() as nursery:
-        if handler_nursery is None:
-            handler_nursery = nursery
+    async with anyio.create_task_group() as task_group:
+        if handler_task_group is None:
+            handler_task_group = task_group
         for listener in listeners:
-            nursery.start_soon(_serve_one_listener, listener, handler_nursery, handler)
+            task_group.start_soon(_serve_one_listener, listener, handler_task_group, handler)
         # The listeners are already queueing connections when we're called, but we wait until the end to call started()
         # just in case we get an error or whatever.
         task_status.started(listeners)
@@ -141,14 +141,14 @@ async def worker_serve(
         max_requests = config.max_requests + random.randint(0, config.max_requests_jitter)
     context = WorkerContext(max_requests)
 
-    async with anyio.create_task_group() as lifespan_nursery:
+    async with anyio.create_task_group() as lifespan_task_group:
         if shutdown_trigger is None and handle_shutdown_signals:
-            shutdown_trigger = await _install_signal_handler(lifespan_nursery)
+            shutdown_trigger = await _install_signal_handler(lifespan_task_group)
 
-        await lifespan_nursery.start(lifespan.handle_lifespan)
+        await lifespan_task_group.start(lifespan.handle_lifespan)
         await lifespan.wait_for_startup()
 
-        async with anyio.create_task_group() as server_nursery:
+        async with anyio.create_task_group() as server_task_group:
             if sockets is None:
                 sockets = create_sockets(config)
                 for sock in sockets.insecure_sockets:
@@ -167,17 +167,17 @@ async def worker_serve(
 
             task_status.started(binds)
             try:
-                async with anyio.create_task_group() as nursery:
+                async with anyio.create_task_group() as task_group:
                     if shutdown_trigger is not None:
-                        nursery.start_soon(raise_shutdown, shutdown_trigger)
-                    nursery.start_soon(raise_shutdown, context.terminate.wait)
+                        task_group.start_soon(raise_shutdown, shutdown_trigger)
+                    task_group.start_soon(raise_shutdown, context.terminate.wait)
 
-                    nursery.start_soon(
+                    task_group.start_soon(
                         functools.partial(
                             serve_listeners,
                             functools.partial(TCPServer, app, config, context),
                             listeners,
-                            handler_nursery=server_nursery,
+                            handler_task_group=server_task_group,
                         ),
                     )
 
@@ -188,7 +188,7 @@ async def worker_serve(
                     raise other_errors
             finally:
                 await context.terminated.set()
-                server_nursery.cancel_scope.deadline = anyio.current_time() + config.graceful_timeout
+                server_task_group.cancel_scope.deadline = anyio.current_time() + config.graceful_timeout
 
         await lifespan.wait_for_shutdown()
-        lifespan_nursery.cancel_scope.cancel()
+        lifespan_task_group.cancel_scope.cancel()
