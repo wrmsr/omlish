@@ -1,4 +1,5 @@
 import logging
+import typing as ta
 
 import anyio
 import anyio.abc
@@ -40,7 +41,9 @@ class Lifespan:
         self.supported = True
 
     async def handle_lifespan(
-            self, *, task_status: anyio.abc.TaskStatus[None] = anyio.TASK_STATUS_IGNORED,
+            self,
+            *,
+            task_status: anyio.abc.TaskStatus[ta.Any] = anyio.TASK_STATUS_IGNORED,
     ) -> None:
         task_status.started()
         scope: LifespanScope = {
@@ -52,8 +55,8 @@ class Lifespan:
                 scope,
                 self.asgi_receive,
                 self.asgi_send,
-                None,  # trio.to_thread.run_sync,
-                None,  # trio.from_thread.run,
+                None,  # trio.to_thread.run_sync,  # FIXME
+                None,  # trio.from_thread.run,  # FIXME
             )
         except LifespanFailureError:
             # Lifespan failures should crash the server
@@ -61,13 +64,9 @@ class Lifespan:
         except Exception:
             self.supported = False
             if not self.startup.is_set():
-                log.warning(
-                    "ASGI Framework Lifespan error, continuing without Lifespan support"
-                )
+                log.warning("ASGI Framework Lifespan error, continuing without Lifespan support")
             elif not self.shutdown.is_set():
-                log.exception(
-                    "ASGI Framework Lifespan error, shutdown without Lifespan support"
-                )
+                log.exception("ASGI Framework Lifespan error, shutdown without Lifespan support")
             else:
                 log.exception("ASGI Framework Lifespan errored after shutdown.")
         finally:

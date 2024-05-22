@@ -1,4 +1,6 @@
-import asyncio
+import errno
+import logging
+import math
 import typing as ta
 
 from .config import Config
@@ -12,43 +14,177 @@ from .taskgroups import TaskGroup
 from .types import AppWrapper
 from .workercontext import WorkerContext
 
+import anyio
+import anyio.abc
+
+
+log = logging.getLogger(__name__)
+
 
 MAX_RECV = 2 ** 16
+
+
+# class TCPServer:
+#     def __init__(
+#             self,
+#             app: AppWrapper,
+#             loop: asyncio.AbstractEventLoop,
+#             config: Config,
+#             context: WorkerContext,
+#             reader: asyncio.StreamReader,
+#             writer: asyncio.StreamWriter,
+#     ) -> None:
+#         super().__init__()
+#         self.app = app
+#         self.config = config
+#         self.context = context
+#         self.loop = loop
+#         self.protocol: ProtocolWrapper
+#         self.reader = reader
+#         self.writer = writer
+#         self.send_lock = asyncio.Lock()
+#         self.idle_lock = asyncio.Lock()
+#
+#         self._idle_handle: ta.Optional[asyncio.Task] = None
+#
+#     def __await__(self) -> ta.Generator[ta.Any, None, None]:
+#         return self.run().__await__()
+#
+#     async def run(self) -> None:
+#         socket = self.writer.get_extra_info("socket")
+#         try:
+#             client = parse_socket_addr(socket.family, socket.getpeername())
+#             server = parse_socket_addr(socket.family, socket.getsockname())
+#
+#             async with TaskGroup(self.loop) as task_group:
+#                 self.protocol = ProtocolWrapper(
+#                     self.app,
+#                     self.config,
+#                     self.context,
+#                     task_group,
+#                     client,
+#                     server,
+#                     self.protocol_send,
+#                 )
+#                 await self.protocol.initiate()
+#                 await self._start_idle()
+#                 await self._read_data()
+#         except OSError:
+#             pass
+#         finally:
+#             await self._close()
+#
+#     async def protocol_send(self, event: ServerEvent) -> None:
+#         if isinstance(event, RawData):
+#             async with self.send_lock:
+#                 try:
+#                     self.writer.write(event.data)
+#                     await self.writer.drain()
+#                 except (ConnectionError, RuntimeError):
+#                     await self.protocol.handle(Closed())
+#         elif isinstance(event, Closed):
+#             await self._close()
+#         elif isinstance(event, Updated):
+#             if event.idle:
+#                 await self._start_idle()
+#             else:
+#                 await self._stop_idle()
+#
+#     async def _read_data(self) -> None:
+#         while not self.reader.at_eof():
+#             try:
+#                 data = await asyncio.wait_for(self.reader.read(MAX_RECV), self.config.read_timeout)
+#             except (
+#                     ConnectionError,
+#                     OSError,
+#                     asyncio.TimeoutError,
+#                     TimeoutError,
+#             ):
+#                 break
+#             else:
+#                 await self.protocol.handle(RawData(data))
+#
+#         await self.protocol.handle(Closed())
+#
+#     async def _close(self) -> None:
+#         try:
+#             self.writer.write_eof()
+#         except (NotImplementedError, OSError, RuntimeError):
+#             pass  # Likely SSL connection
+#
+#         try:
+#             self.writer.close()
+#             await self.writer.wait_closed()
+#         except (
+#                 BrokenPipeError,
+#                 ConnectionAbortedError,
+#                 ConnectionResetError,
+#                 RuntimeError,
+#                 asyncio.CancelledError,
+#         ):
+#             pass  # Already closed
+#         finally:
+#             await self._stop_idle()
+#
+#     async def _initiate_server_close(self) -> None:
+#         await self.protocol.handle(Closed())
+#         self.writer.close()
+#
+#     async def _start_idle(self) -> None:
+#         async with self.idle_lock:
+#             if self._idle_handle is None:
+#                 self._idle_handle = self.loop.create_task(self._run_idle())
+#
+#     async def _stop_idle(self) -> None:
+#         async with self.idle_lock:
+#             if self._idle_handle is not None:
+#                 self._idle_handle.cancel()
+#                 try:
+#                     await self._idle_handle
+#                 except asyncio.CancelledError:
+#                     pass
+#             self._idle_handle = None
+#
+#     async def _run_idle(self) -> None:
+#         try:
+#             await asyncio.wait_for(self.context.terminated.wait(), self.config.keep_alive_timeout)
+#         except asyncio.TimeoutError:
+#             pass
+#         await asyncio.shield(self._initiate_server_close())
 
 
 class TCPServer:
     def __init__(
             self,
             app: AppWrapper,
-            loop: asyncio.AbstractEventLoop,
             config: Config,
             context: WorkerContext,
-            reader: asyncio.StreamReader,
-            writer: asyncio.StreamWriter,
+            stream: anyio.abc.SocketStream,
     ) -> None:
         super().__init__()
+
         self.app = app
         self.config = config
         self.context = context
-        self.loop = loop
         self.protocol: ProtocolWrapper
-        self.reader = reader
-        self.writer = writer
-        self.send_lock = asyncio.Lock()
-        self.idle_lock = asyncio.Lock()
+        self.send_lock = anyio.Lock()
+        self.idle_lock = anyio.Lock()
+        self.stream = stream
 
-        self._idle_handle: ta.Optional[asyncio.Task] = None
+        self._idle_handle: ta.Optional[anyio.abc.CancelScope] = None
 
     def __await__(self) -> ta.Generator[ta.Any, None, None]:
         return self.run().__await__()
 
     async def run(self) -> None:
-        socket = self.writer.get_extra_info("socket")
+        socket = self.stream._raw_socket
+
         try:
             client = parse_socket_addr(socket.family, socket.getpeername())
             server = parse_socket_addr(socket.family, socket.getsockname())
 
-            async with TaskGroup(self.loop) as task_group:
+            async with TaskGroup() as task_group:
+                self._task_group = task_group
                 self.protocol = ProtocolWrapper(
                     self.app,
                     self.config,
@@ -61,8 +197,11 @@ class TCPServer:
                 await self.protocol.initiate()
                 await self._start_idle()
                 await self._read_data()
-        except OSError:
+        except* OSError:
             pass
+        except* Exception as eg:
+            for e in eg.exceptions:
+                log.exception("Internal hypercorn error", exc_info=e)
         finally:
             await self._close()
 
@@ -70,12 +209,14 @@ class TCPServer:
         if isinstance(event, RawData):
             async with self.send_lock:
                 try:
-                    self.writer.write(event.data)
-                    await self.writer.drain()
-                except (ConnectionError, RuntimeError):
+                    with anyio.CancelScope() as cancel_scope:
+                        cancel_scope.shield = True
+                        await self.stream.send(event.data)
+                except (anyio.BrokenResourceError, anyio.ClosedResourceError):
                     await self.protocol.handle(Closed())
         elif isinstance(event, Closed):
             await self._close()
+            await self.protocol.handle(Closed())
         elif isinstance(event, Updated):
             if event.idle:
                 await self._start_idle()
@@ -83,63 +224,63 @@ class TCPServer:
                 await self._stop_idle()
 
     async def _read_data(self) -> None:
-        while not self.reader.at_eof():
+        while True:
             try:
-                data = await asyncio.wait_for(self.reader.read(MAX_RECV), self.config.read_timeout)
+                with anyio.fail_after(self.config.read_timeout or math.inf):
+                    data = await self.stream.receive(MAX_RECV)
             except (
-                    ConnectionError,
-                    OSError,
-                    asyncio.TimeoutError,
+                    anyio.ClosedResourceError,
+                    anyio.BrokenResourceError,
                     TimeoutError,
             ):
                 break
             else:
                 await self.protocol.handle(RawData(data))
-
+                if data == b"":
+                    break
         await self.protocol.handle(Closed())
 
     async def _close(self) -> None:
         try:
-            self.writer.write_eof()
-        except (NotImplementedError, OSError, RuntimeError):
-            pass  # Likely SSL connection
-
-        try:
-            self.writer.close()
-            await self.writer.wait_closed()
+            await self.stream.send_eof()
+        except OSError as e:
+            if e.errno != errno.EBADF:
+                raise
         except (
-                BrokenPipeError,
-                ConnectionAbortedError,
-                ConnectionResetError,
-                RuntimeError,
-                asyncio.CancelledError,
+                anyio.BrokenResourceError,
+                AttributeError,
+                anyio.BusyResourceError,
+                anyio.ClosedResourceError,
         ):
-            pass  # Already closed
-        finally:
-            await self._stop_idle()
+            # They're already gone, nothing to do
+            # Or it is a SSL stream
+            pass
+        await self.stream.aclose()
 
     async def _initiate_server_close(self) -> None:
         await self.protocol.handle(Closed())
-        self.writer.close()
+        await self.stream.aclose()
 
     async def _start_idle(self) -> None:
         async with self.idle_lock:
             if self._idle_handle is None:
-                self._idle_handle = self.loop.create_task(self._run_idle())
+                self._idle_handle = await self._task_group._nursery.start(self._run_idle)
 
     async def _stop_idle(self) -> None:
         async with self.idle_lock:
             if self._idle_handle is not None:
                 self._idle_handle.cancel()
-                try:
-                    await self._idle_handle
-                except asyncio.CancelledError:
-                    pass
             self._idle_handle = None
 
-    async def _run_idle(self) -> None:
-        try:
-            await asyncio.wait_for(self.context.terminated.wait(), self.config.keep_alive_timeout)
-        except asyncio.TimeoutError:
-            pass
-        await asyncio.shield(self._initiate_server_close())
+    async def _run_idle(
+            self,
+            task_status: anyio.abc.TaskStatus[ta.Any] = anyio.TASK_STATUS_IGNORED,
+    ) -> None:
+        cancel_scope = anyio.CancelScope()
+        task_status.started(cancel_scope)
+        with cancel_scope:
+            with anyio.move_on_after(self.config.keep_alive_timeout):
+                await self.context.terminated.wait()
+
+            cancel_scope.shield = True
+            await self._initiate_server_close()
