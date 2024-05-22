@@ -1,5 +1,6 @@
-import asyncio
 import time
+
+import anyio
 
 from .config import Config
 from .serving import serve
@@ -40,9 +41,13 @@ async def hello_app(scope, recv, send):
 def _main():
     cfg = Config()
 
-    async def _asyncio_main():
+    backend = 'asyncio'
+    # backend = 'trio'
+
+    async def _a_main():
         await serve(hello_app, cfg)
-    asyncio.run(_asyncio_main())
+
+    anyio.run(_a_main, backend=backend)
 
 
 if __name__ == '__main__':
