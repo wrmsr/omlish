@@ -2,6 +2,7 @@
 TODO:
  - timeout
  - stream in/out/err
+ - *sessions*
 """
 import abc
 import asyncio
