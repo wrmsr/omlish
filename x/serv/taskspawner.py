@@ -44,7 +44,7 @@ async def _handle(
         await send(None)
 
 
-class TaskGroup:
+class TaskSpawner:
     def __init__(self) -> None:
         super().__init__()
         self._nursery: ta.Optional[ta.Any] = None
