@@ -1,6 +1,7 @@
 import asyncio
-
+import shlex
 import tempfile
+
 from omserv.infra import cmds
 
 
@@ -13,14 +14,30 @@ async def _a_main():
     ))
 
     res = await cr.run_command(cr.Command([
-        'git',
-        'clone',
+        'git', 'clone',
         '--depth', '1',
         'https://github.com/wrmsr/omlish',
     ]))
     res.check()
 
-    print(res.out.decode())
+    res = await cr.run_command(cr.Command([
+        'sh', '-c', ' '.join([
+            shlex.join([
+                'cd', 'omlish',
+            ]),
+            '&&',
+            shlex.join([
+                'git', 'submodule',
+                'update',
+                '--init',
+            ]),
+            '&&',
+            shlex.join([
+                'make', 'venv',
+            ]),
+        ]),
+    ]))
+    res.check()
 
 
 if __name__ == '__main__':
