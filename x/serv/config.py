@@ -3,6 +3,7 @@ import typing as ta
 
 
 BYTES = 1
+OCTETS = 1
 SECONDS = 1.0
 
 
@@ -35,6 +36,10 @@ class Config:
 
     h11_max_incomplete_size: int = 16 * 1024 * BYTES
     h11_pass_raw_headers: bool = False
+
+    h2_max_concurrent_streams: int = 100
+    h2_max_header_list_size: int = 2 ** 16
+    h2_max_inbound_frame_size: int = 2 ** 14 * OCTETS
 
     include_date_header: bool = True
     include_server_header: bool = True

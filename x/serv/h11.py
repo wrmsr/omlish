@@ -1,7 +1,5 @@
 import itertools
-import time
 import typing as ta
-import wsgiref.handlers
 
 import h11
 
@@ -19,6 +17,7 @@ from .events import Response
 from .events import ServerEvent
 from .events import StreamClosed
 from .events import Updated
+from .headers import response_headers
 from .httpstream import HTTPStream
 from .taskspawner import TaskSpawner
 from .types import AppWrapper
@@ -57,19 +56,6 @@ class H2ProtocolAssumedError(Exception):
     def __init__(self, data: bytes) -> None:
         super().__init__()
         self.data = data
-
-
-def response_headers(config: Config, protocol: str) -> list[tuple[bytes, bytes]]:
-    headers = []
-    if config.include_date_header:
-        headers.append((b"date", wsgiref.handlers.format_date_time(time.time()).encode("ascii")))
-    if config.include_server_header:
-        headers.append((b"server", f"hypercorn-{protocol}".encode("ascii")))
-
-    for alt_svc_header in config.alt_svc_headers:
-        headers.append((b"alt-svc", alt_svc_header.encode()))
-
-    return headers
 
 
 class H11Protocol:
@@ -280,11 +266,9 @@ class H11Protocol:
             elif sanitised_name in {"content-length", "transfer-encoding"}:
                 has_body = True
 
-        # h2c Upgrade requests with a body are a pain as the body must
-        # be fully recieved in HTTP/1.1 before the upgrade response
-        # and HTTP/2 takes over, so Hypercorn ignores the upgrade and
-        # responds in HTTP/1.1. Use a preflight OPTIONS request to
-        # initiate the upgrade if really required (or just use h2).
+        # h2c Upgrade requests with a body are a pain as the body must be fully recieved in HTTP/1.1 before the upgrade
+        # response and HTTP/2 takes over, so Hypercorn ignores the upgrade and responds in HTTP/1.1. Use a preflight
+        # OPTIONS request to initiate the upgrade if really required (or just use h2).
         if upgrade_value.lower() == "h2c" and not has_body:
             await self._send_h11_event(
                 h11.InformationalResponse(

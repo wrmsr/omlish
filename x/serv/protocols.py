@@ -1,9 +1,12 @@
 import typing as ta
 
 from .config import Config
+from .events import RawData
 from .events import ServerEvent
 from .h11 import H11Protocol
+from .h11 import H2CProtocolRequiredError
 from .h11 import H2ProtocolAssumedError
+from .h2 import H2Protocol
 from .taskspawner import TaskSpawner
 from .types import AppWrapper
 from .workercontext import WorkerContext
@@ -19,6 +22,7 @@ class ProtocolWrapper:
             client: ta.Optional[tuple[str, int]],
             server: ta.Optional[tuple[str, int]],
             send: ta.Callable[[ServerEvent], ta.Awaitable[None]],
+            alpn_protocol: ta.Optional[str] = None,
     ) -> None:
         super().__init__()
         self.app = app
@@ -28,15 +32,26 @@ class ProtocolWrapper:
         self.client = client
         self.server = server
         self.send = send
-        self.protocol = H11Protocol(
-            self.app,
-            self.config,
-            self.context,
-            self.task_spawner,
-            self.client,
-            self.server,
-            self.send,
-        )
+        if alpn_protocol == "h2":
+            self.protocol = H2Protocol(
+                self.app,
+                self.config,
+                self.context,
+                self.task_spawner,
+                self.client,
+                self.server,
+                self.send,
+            )
+        else:
+            self.protocol = H11Protocol(
+                self.app,
+                self.config,
+                self.context,
+                self.task_spawner,
+                self.client,
+                self.server,
+                self.send,
+            )
 
     async def initiate(self) -> None:
         return await self.protocol.initiate()
@@ -44,5 +59,31 @@ class ProtocolWrapper:
     async def handle(self, event: ServerEvent) -> None:
         try:
             return await self.protocol.handle(event)
-        except H2ProtocolAssumedError as error:  # noqa
-            raise
+
+        except H2ProtocolAssumedError as error:
+            self.protocol = H2Protocol(
+                self.app,
+                self.config,
+                self.context,
+                self.task_spawner,
+                self.client,
+                self.server,
+                self.send,
+            )
+            await self.protocol.initiate()
+            if error.data != b"":
+                return await self.protocol.handle(RawData(data=error.data))
+
+        except H2CProtocolRequiredError as error:
+            self.protocol = H2Protocol(
+                self.app,
+                self.config,
+                self.context,
+                self.task_spawner,
+                self.client,
+                self.server,
+                self.send,
+            )
+            await self.protocol.initiate(error.headers, error.settings)
+            if error.data != b"":
+                return await self.protocol.handle(RawData(data=error.data))
