@@ -5,7 +5,6 @@ git fetch --depth=1 local master
 git remote add origin https://github.com/wrmsr/omlish
 git fetch --depth=1 origin master
 git checkout origin/master
-
 """
 import asyncio
 import itertools
