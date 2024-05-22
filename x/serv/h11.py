@@ -289,8 +289,11 @@ class H11Protocol:
             await self._send_h11_event(
                 h11.InformationalResponse(
                     status_code=101,
-                    headers=response_headers(self.config, "h11")
-                            + [(b"connection", b"upgrade"), (b"upgrade", b"h2c")],
+                    headers=[
+                        *response_headers(self.config, "h11"),
+                        (b"connection", b"upgrade"),
+                        (b"upgrade", b"h2c"),
+                    ],
                 )
             )
             raise H2CProtocolRequiredError(self.connection.trailing_data[0], event)

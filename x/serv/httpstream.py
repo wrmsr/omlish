@@ -8,17 +8,18 @@ from .config import Config
 from .events import Body
 from .events import EndBody
 from .events import InformationalResponse
+from .events import ProtocolEvent
 from .events import Request
 from .events import Response
 from .events import StreamClosed
 from .taskspawner import TaskSpawner
 from .types import ASGISendEvent
 from .types import AppWrapper
-from .types import WaitableEvent
 from .types import HTTPResponseStartEvent
 from .types import HTTPScope
 from .types import Scope
 from .types import UnexpectedMessageError
+from .types import WaitableEvent
 from .workercontext import WorkerContext
 
 
@@ -76,7 +77,7 @@ class HTTPStream:
             task_spawner: TaskSpawner,
             client: ta.Optional[tuple[str, int]],
             server: ta.Optional[tuple[str, int]],
-            send: ta.Callable[[WaitableEvent], ta.Awaitable[None]],
+            send: ta.Callable[[ProtocolEvent], ta.Awaitable[None]],
             stream_id: int,
     ) -> None:
         super().__init__()
@@ -99,7 +100,7 @@ class HTTPStream:
     def idle(self) -> bool:
         return False
 
-    async def handle(self, event: WaitableEvent) -> None:
+    async def handle(self, event: ProtocolEvent) -> None:
         if self.closed:
             return
         elif isinstance(event, Request):
