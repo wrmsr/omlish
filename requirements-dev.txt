@@ -51,3 +51,6 @@ pytest-aiohttp==1.0.5
 anyio==4.3.0
 
 h11==0.14.0
+
+h2==4.1.0
+priority==2.0.0
