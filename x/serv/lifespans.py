@@ -1,7 +1,7 @@
-import asyncio
-import functools
 import logging
-import typing as ta
+
+import anyio
+import anyio.abc
 
 from .config import Config
 from .types import ASGIReceiveEvent
@@ -28,44 +28,37 @@ class LifespanFailureError(Exception):
 
 
 class Lifespan:
-    def __init__(self, app: AppWrapper, config: Config, loop: asyncio.AbstractEventLoop) -> None:
+    def __init__(self, app: AppWrapper, config: Config) -> None:
         super().__init__()
         self.app = app
         self.config = config
-        self.startup = asyncio.Event()
-        self.shutdown = asyncio.Event()
-        self.app_queue: asyncio.Queue = asyncio.Queue(config.max_app_queue_size)  # TODO: anyio.create_memory_object_stream  # noqa
+        self.startup = anyio.Event()
+        self.shutdown = anyio.Event()
+        self.app_send_channel, self.app_receive_channel = anyio.create_memory_object_stream[bytes](
+            config.max_app_queue_size
+        )
         self.supported = True
-        self.loop = loop
 
-        # This mimics the Trio nursery.start task_status and is
-        # required to ensure the support has been checked before
-        # waiting on timeouts.
-        self._started = asyncio.Event()
-
-    async def handle_lifespan(self) -> None:
-        self._started.set()
+    async def handle_lifespan(
+            self, *, task_status: anyio.abc.TaskStatus[None] = anyio.TASK_STATUS_IGNORED,
+    ) -> None:
+        task_status.started()
         scope: LifespanScope = {
             "type": "lifespan",
             "asgi": {"spec_version": "2.0", "version": "3.0"},
         }
-
-        def _call_soon(func: ta.Callable, *args: ta.Any) -> ta.Any:
-            future = asyncio.run_coroutine_threadsafe(func(*args), self.loop)
-            return future.result()
-
         try:
             await self.app(
                 scope,
                 self.asgi_receive,
                 self.asgi_send,
-                functools.partial(self.loop.run_in_executor, None),
-                _call_soon,
+                None,  # trio.to_thread.run_sync,
+                None,  # trio.from_thread.run,
             )
         except LifespanFailureError:
             # Lifespan failures should crash the server
             raise
-        except Exception as e:  # noqa
+        except Exception:
             self.supported = False
             if not self.startup.is_set():
                 log.warning(
@@ -80,31 +73,33 @@ class Lifespan:
         finally:
             self.startup.set()
             self.shutdown.set()
+            await self.app_send_channel.aclose()
+            await self.app_receive_channel.aclose()
 
     async def wait_for_startup(self) -> None:
-        await self._started.wait()
         if not self.supported:
             return
 
-        await self.app_queue.put({"type": "lifespan.startup"})
+        await self.app_send_channel.send({"type": "lifespan.startup"})
         try:
-            await asyncio.wait_for(self.startup.wait(), timeout=self.config.startup_timeout)
-        except asyncio.TimeoutError as error:
+            with anyio.fail_after(self.config.startup_timeout):
+                await self.startup.wait()
+        except TimeoutError as error:
             raise LifespanTimeoutError("startup") from error
 
     async def wait_for_shutdown(self) -> None:
-        await self._started.wait()
         if not self.supported:
             return
 
-        await self.app_queue.put({"type": "lifespan.shutdown"})
+        await self.app_send_channel.send({"type": "lifespan.shutdown"})
         try:
-            await asyncio.wait_for(self.shutdown.wait(), timeout=self.config.shutdown_timeout)
-        except asyncio.TimeoutError as error:
-            raise LifespanTimeoutError("shutdown") from error
+            with anyio.fail_after(self.config.shutdown_timeout):
+                await self.shutdown.wait()
+        except TimeoutError as error:
+            raise LifespanTimeoutError("startup") from error
 
     async def asgi_receive(self) -> ASGIReceiveEvent:
-        return await self.app_queue.get()
+        return await self.app_receive_channel.receive()
 
     async def asgi_send(self, message: ASGISendEvent) -> None:
         if message["type"] == "lifespan.startup.complete":
@@ -112,11 +107,8 @@ class Lifespan:
         elif message["type"] == "lifespan.shutdown.complete":
             self.shutdown.set()
         elif message["type"] == "lifespan.startup.failed":
-            self.startup.set()
             raise LifespanFailureError("startup", message.get("message", ""))
         elif message["type"] == "lifespan.shutdown.failed":
-            self.shutdown.set()
             raise LifespanFailureError("shutdown", message.get("message", ""))
         else:
             raise UnexpectedMessageError(message["type"])
-
