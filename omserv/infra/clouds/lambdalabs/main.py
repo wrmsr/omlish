@@ -17,7 +17,7 @@ async def _a_main() -> None:
     cfg = load_secrets()
 
     async with aiohttp.ClientSession(
-        auth=aiohttp.BasicAuth(cfg['lambdalabs_api_key']),
+        auth=aiohttp.BasicAuth(cfg['lambda_labs_api_key']),
     ) as session:
         async with session.get('https://cloud.lambdalabs.com/api/v1/instances') as resp:
             print(resp.status)
