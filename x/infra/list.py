@@ -1,4 +1,10 @@
 """
+TODO:
+ - async
+ - 'things' not just servers ('resources'?) - s3 buckets, db servers, etc
+ - ssh
+  - keys
+
 unique server ids:
  aws:{region_name}:{instance_id}
  runpod:{id}
@@ -61,32 +67,28 @@ def get_aws_servers() -> list[Server]:
 @dc.dataclass(frozen=True)
 class GcpServer(Server):
     id: str
-    region: str
+    zone: str
 
 
 def get_gcp_servers() -> list[GcpServer]:
+    cfg = _get_secrets()
+    from google.oauth2 import service_account
     credentials = service_account.Credentials.from_service_account_info(cfg['gcp_oauth2'])
-
+    from google.cloud import compute_v1
     instance_client = compute_v1.InstancesClient(credentials=credentials)
     request = compute_v1.AggregatedListInstancesRequest()
     request.project = cfg['gcp_project_id']
-    # Use the `max_results` parameter to limit the number of results that the API returns per response page.
     request.max_results = 50
-
-    agg_list = instance_client.aggregated_list(request=request)
-
-    all_instances = defaultdict(list)
-    print("Instances found:")
-    # Despite using the `max_results` parameter, you don't need to handle the pagination
-    # yourself. The returned `AggregatedListPager` object handles pagination
-    # automatically, returning separated pages as you iterate over the results.
-    for zone, response in agg_list:
-        if response.instances:
-            all_instances[zone].extend(response.instances)
-            print(f" {zone}:")
-            for instance in response.instances:
-                print(f" - {instance.name} ({instance.machine_type})")
-    print(all_instances)
+    out = []
+    for zone, response in instance_client.aggregated_list(request=request):
+        for instance in (response.instances or []):
+            ip = check.single([ac.nat_i_p for ni in instance.network_interfaces for ac in ni.access_configs if ac.nat_i_p])  # noqa
+            out.append(GcpServer(
+                host=ip,
+                id=instance.name,
+                zone=zone,
+            ))
+    return out
 
 
 ##
@@ -180,6 +182,7 @@ def get_digital_ocean_servers() -> list[DigitalOceanServer]:
 def _main() -> None:
     svrs = [
         *get_aws_servers(),
+        *get_gcp_servers(),
         *get_runpod_servers(),
         *get_lambda_labs_servers(),
         *get_digital_ocean_servers(),

@@ -1,5 +1,4 @@
 from collections import defaultdict
-from collections.abc import Iterable
 
 from google.oauth2 import service_account
 from google.cloud import compute_v1
