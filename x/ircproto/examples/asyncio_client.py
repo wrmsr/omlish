@@ -4,11 +4,9 @@ from ..connection import IRCClientConnection
 from ..constants import RPL_MYINFO
 from ..events import Reply, Error, Join
 
+from omserv.secrets import load_secrets
 
-try:
-    from asyncio import get_event_loop, Protocol
-except ImportError:
-    from trollius import get_event_loop, Protocol
+from asyncio import get_event_loop, Protocol
 
 
 class MessageSendProtocol(Protocol):
@@ -59,15 +57,29 @@ class MessageSendProtocol(Protocol):
             self.transport.write(output)
 
 
-parser = ArgumentParser(description='A sample IRC client')
-parser.add_argument('host', help='address of irc server (foo.bar.baz or foo.bar.baz:port)')
-parser.add_argument('nickname', help='nickname to register as')
-parser.add_argument('channel', help='channel to join once registered')
-parser.add_argument('message', help='message to send once joined')
-args = parser.parse_args()
-host, _, port = args.host.partition(':')
+def _main():
+    # parser = ArgumentParser(description='A sample IRC client')
+    # parser.add_argument('host', help='address of irc server (foo.bar.baz or foo.bar.baz:port)')
+    # parser.add_argument('nickname', help='nickname to register as')
+    # parser.add_argument('channel', help='channel to join once registered')
+    # parser.add_argument('message', help='message to send once joined')
+    # args = parser.parse_args()
+    # host, _, port = args.host.partition(':')
 
-loop = get_event_loop()
-protocol = MessageSendProtocol(args.nickname, args.channel, args.message)
-loop.run_until_complete(loop.create_connection(lambda: protocol, host, int(port or 6667)))
-loop.run_forever()
+    cfg = load_secrets()
+    host = cfg['irc_host']
+    port = cfg['irc_port']
+    channel = cfg['irc_channel']
+    nickname = cfg['irc_nick']
+    message = 'barf'
+
+    loop = get_event_loop()
+    protocol = MessageSendProtocol(nickname, channel, message)
+    import ssl
+    sc = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
+    loop.run_until_complete(loop.create_connection(lambda: protocol, host, int(port or 6667), ssl=sc))
+    loop.run_forever()
+
+
+if __name__ == '__main__':
+    _main()
