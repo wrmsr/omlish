@@ -1,3 +1,6 @@
+import io
+import time
+
 import boto3
 import botocore.client
 
@@ -28,7 +31,14 @@ def _main():
         s3.head_bucket(Bucket=bucket)
     except botocore.client.ClientError:
         s3.create_bucket(Bucket=bucket)
-    s3.put_object(Bucket=bucket, Key='afile', Body=b'hi')
+
+    # s3.put_object(Bucket=bucket, Key='afile', Body=b'hi')
+
+    buf = io.BytesIO()
+    buf.write(f'hi: {time.time()}'.encode('utf-8'))
+    buf.seek(0)
+    s3.upload_fileobj(buf, bucket, 'afile')
+
     print(s3.get_object(Bucket=bucket, Key='afile')['Body'].read())
 
 
