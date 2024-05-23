@@ -47,8 +47,14 @@ class AwsServer(Server):
 
 
 def get_aws_servers() -> list[Server]:
+    cfg = _get_secrets()
     import boto3
-    ec2 = boto3.client('ec2')
+    session = boto3.Session(
+        aws_access_key_id=cfg['aws_access_key_id'],
+        aws_secret_access_key=cfg['aws_secret_access_key'],
+        region_name=cfg['aws_region'],
+    )
+    ec2 = session.client('ec2')
     resp = ec2.describe_instances()
     out = []
     for res in resp.get('Reservations', []):
