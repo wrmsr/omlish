@@ -9,14 +9,23 @@ from omlish import lang
 from omserv.secrets import load_secrets
 
 
+##
+
+
 @lang.cached_nullary
 def _get_secrets() -> dict[str, ta.Any]:
     return load_secrets()
 
 
+##
+
+
 @dc.dataclass(frozen=True)
 class Server:
     host: str
+
+
+##
 
 
 @dc.dataclass(frozen=True)
@@ -29,15 +38,18 @@ def get_aws_servers() -> list[Server]:
     import boto3
     ec2 = boto3.client('ec2')
     resp = ec2.describe_instances()
-    lst = []
+    out = []
     for res in resp.get('Reservations', []):
         for inst in res.get('Instances', []):
-            lst.append(AwsServer(
+            out.append(AwsServer(
                 host=inst['PublicIpAddress'],
                 id=inst['InstanceId'],
                 region=ec2.meta.region_name,
             ))
-    return lst
+    return out
+
+
+##
 
 
 @dc.dataclass(frozen=True)
@@ -57,20 +69,51 @@ def get_runpod_servers() -> list[RunpodServer]:
         },
     )
     dct = json.loads(resp.data.decode('utf-8')).get('data', {}).get('myself', {})
-    lst = []
+    out = []
     for pod in dct.get('pods', []):
         ssh = check.single([p for p in pod['runtime']['ports'] if p['isIpPublic'] and p['privatePort'] == 22])
-        lst.append(RunpodServer(
+        out.append(RunpodServer(
             host=f'{ssh["ip"]}:{ssh["publicPort"]}',
             id=pod['id'],
         ))
-    return lst
+    return out
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class LambdaLabsServer(Server):
+    id: str
+
+
+def get_lambda_labs_servers() -> list[LambdaLabsServer]:
+    api_key = _get_secrets()['lambda_labs_api_key']
+    resp = urllib3.request(
+        'GET',
+        'https://cloud.lambdalabs.com/api/v1/instances',
+        headers=urllib3.make_headers(
+            basic_auth=f'{api_key}:',
+        ),
+    )
+    insts = json.loads(resp.data.decode('utf-8')).get('data', {})
+    out = []
+    for inst in insts:
+        out.append(LambdaLabsServer(
+            host=inst['ip'],
+            id=inst['id'],
+        ))
+    return out
+
+
+##
 
 
 def _main() -> None:
     svrs = [
         *get_aws_servers(),
         *get_runpod_servers(),
+        *get_lambda_labs_servers(),
     ]
 
     pprint.pprint(svrs)
