@@ -2,7 +2,7 @@
 .cache
 .git
 .idea
-.venv
+.venv*
 bin
 build
 
