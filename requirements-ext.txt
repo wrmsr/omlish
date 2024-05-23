@@ -164,4 +164,7 @@ zigpy==0.64.0
 # python-openzwave
 zwave-js-server-python==0.56.0
 
+##
+
 python-telegram-bot==21.2
+discord.py==2.3.2
