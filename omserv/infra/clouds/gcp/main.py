@@ -1,6 +1,7 @@
 from collections import defaultdict
 from collections.abc import Iterable
 
+from google.oauth2 import service_account
 from google.cloud import compute_v1
 
 from ....secrets import load_secrets
@@ -9,7 +10,9 @@ from ....secrets import load_secrets
 def _main() -> None:
     cfg = load_secrets()
 
-    instance_client = compute_v1.InstancesClient()
+    credentials = service_account.Credentials.from_service_account_info(cfg['gcp_oauth2'])
+
+    instance_client = compute_v1.InstancesClient(credentials=credentials)
     request = compute_v1.AggregatedListInstancesRequest()
     request.project = cfg['gcp_project_id']
     # Use the `max_results` parameter to limit the number of results that the API returns per response page.
