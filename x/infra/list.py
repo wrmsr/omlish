@@ -1,3 +1,9 @@
+"""
+unique server ids:
+ aws:{region_name}:{instance_id}
+ runpod:{id}
+ lambda_labs:{id}
+"""
 import json
 import pprint
 import typing as ta
@@ -109,11 +115,40 @@ def get_lambda_labs_servers() -> list[LambdaLabsServer]:
 ##
 
 
+@dc.dataclass(frozen=True)
+class DigitalOceanServer(Server):
+    id: str
+
+
+def get_digital_ocean_servers() -> list[DigitalOceanServer]:
+    api_key = _get_secrets()['digital_ocean_api_key']
+    resp = urllib3.request(
+        'GET',
+        'https://api.digitalocean.com/v2/droplets',
+        headers={
+            'Authorization': f'Bearer {api_key}'
+        }
+    )
+    droplets = json.loads(resp.data.decode('utf-8')).get('droplets', [])
+    out = []
+    for droplet in droplets:
+        net = check.single([n for n in droplet['networks']['v4'] if n['type'] == 'public'])
+        out.append(DigitalOceanServer(
+            host=net['ip_address'],
+            id=droplet['id'],
+        ))
+    return out
+
+
+##
+
+
 def _main() -> None:
     svrs = [
         *get_aws_servers(),
         *get_runpod_servers(),
         *get_lambda_labs_servers(),
+        *get_digital_ocean_servers(),
     ]
 
     pprint.pprint(svrs)
