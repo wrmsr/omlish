@@ -5,6 +5,11 @@ git fetch --depth=1 local master
 git remote add origin https://github.com/wrmsr/omlish
 git fetch --depth=1 origin master
 git checkout origin/master
+
+{base_path}/{deploys}/
+  current ->
+  previous ->
+  20240522T120000_{rev}
 """
 import asyncio
 import itertools
