@@ -37,7 +37,7 @@ def _main():
     buf = io.BytesIO()
     buf.write(f'hi: {time.time()}'.encode('utf-8'))
     buf.seek(0)
-    s3.upload_fileobj(buf, bucket, 'afile')
+    s3.upload_fileobj(Fileobj=buf, Bucket=bucket, Key='afile')
 
     print(s3.get_object(Bucket=bucket, Key='afile')['Body'].read())
 
