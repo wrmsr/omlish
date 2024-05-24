@@ -47,7 +47,7 @@ def _main():
     logs.configure_standard_logging()
 
     cfg = Config(
-        workers=2,
+        # workers=2,
     )
 
     backend = 'asyncio'

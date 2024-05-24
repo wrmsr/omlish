@@ -51,7 +51,7 @@ def _multiprocess_serve(
             sockets=sockets,
             shutdown_trigger=shutdown_trigger,
         ),
-        backend='trio',
+        # backend='trio',
     )
 
 
