@@ -22,7 +22,7 @@ def _main():
         endpoint_url=f'http://localhost:{port}',
         # aws_access_key_id=cfg['access_key'],
         # aws_secret_access_key=cfg['secret_key'],
-        config=botocore.client.Config(signature_version='s3v4'),
+        # config=botocore.client.Config(signature_version='s3v4'),
         region_name='us-east-1',
     )
 
