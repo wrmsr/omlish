@@ -4,7 +4,7 @@ import pytest
 import trio
 from trio.testing import wait_all_tasks_blocked
 
-from trio_util import AsyncValue, compose_values
+from .. import AsyncValue, compose_values
 
 async def test_compose_values(nursery):
     async_x = AsyncValue(42)

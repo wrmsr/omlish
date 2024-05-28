@@ -2,7 +2,7 @@ import trio
 
 from mock import AsyncMock  # type: ignore[attr-defined]
 
-from trio_util import move_on_when, run_and_cancelling
+from .. import move_on_when, run_and_cancelling
 
 
 async def test_move_on_when(autojump_clock):

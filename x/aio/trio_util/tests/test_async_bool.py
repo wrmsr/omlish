@@ -1,4 +1,4 @@
-from trio_util import AsyncBool
+from .. import AsyncBool
 
 
 async def test_async_bool():

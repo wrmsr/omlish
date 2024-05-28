@@ -2,7 +2,7 @@ from functools import partial
 
 import trio
 
-from trio_util import wait_all, wait_any
+from .. import wait_all, wait_any
 
 
 async def test_all(nursery, autojump_clock):

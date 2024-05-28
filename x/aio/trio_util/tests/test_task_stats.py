@@ -2,7 +2,7 @@ import logging
 
 import trio
 
-from trio_util import TaskStats
+from .. import TaskStats
 
 
 def test_task_stats(caplog, autojump_clock):

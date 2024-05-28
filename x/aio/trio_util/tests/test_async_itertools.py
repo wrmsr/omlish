@@ -2,7 +2,7 @@ from itertools import zip_longest
 
 import trio
 
-from trio_util import azip, azip_longest
+from .. import azip, azip_longest
 
 
 async def periodic_iter(it):

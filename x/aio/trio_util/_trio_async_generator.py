@@ -1,9 +1,8 @@
 import functools
 import sys
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, aclosing
 
 import trio
-from async_generator import aclosing
 
 
 def trio_async_generator(wrapped):

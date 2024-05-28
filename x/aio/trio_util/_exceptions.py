@@ -1,5 +1,5 @@
 from collections import defaultdict
-from contextlib import _GeneratorContextManager
+from contextlib import _GeneratorContextManager  # noqa
 from functools import wraps
 from inspect import iscoroutinefunction
 from typing import Type, Dict, List
@@ -41,7 +41,7 @@ def _async_friendly_contextmanager(func):
 def defer_to_cancelled(*args: Type[Exception]):
     """Context manager which defers MultiError exceptions to Cancelled.
 
-    In the scope of this context manager, any raised trio.MultiError exception
+    In the scope of this context manager, any raised ExceptionGroup exception
     which is a combination of the given exception types and trio.Cancelled
     will have the exception types filtered, leaving only a Cancelled exception.
 
@@ -76,7 +76,7 @@ def multi_error_defer_to(*privileged_types: Type[BaseException],
                          propagate_multi_error=True,
                          strict=True):
     """
-    Defer a trio.MultiError exception to a single, privileged exception
+    Defer a ExceptionGroup exception to a single, privileged exception
 
     In the scope of this context manager, a raised MultiError will be coalesced
     into a single exception with the highest privilege if the following
@@ -135,7 +135,7 @@ def multi_error_defer_to(*privileged_types: Type[BaseException],
                     # not in privileged list
                     if propagate_multi_error:
                         raise
-                    raise RuntimeError('Unhandled trio.MultiError') from root_multi_error
+                    raise RuntimeError('Unhandled ExceptionGroup') from root_multi_error
                 errors_by_repr[repr(e)] = e
         # group the resulting errors by index in the privileged type list
         # priority_index -> exception_object
@@ -150,5 +150,5 @@ def multi_error_defer_to(*privileged_types: Type[BaseException],
             # multiple unique exception objects at the same priority
             if propagate_multi_error:
                 raise
-            raise RuntimeError('Unhandled trio.MultiError') from root_multi_error
+            raise RuntimeError('Unhandled ExceptionGroup') from root_multi_error
         raise priority_errors[0]
