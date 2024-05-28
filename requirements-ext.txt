@@ -6,7 +6,7 @@
 matplotlib==3.9.0
 numpy==1.26.4
 
-huggingface_hub==0.23.1
+huggingface_hub==0.23.2
 evaluate==0.4.2
 datasets==2.19.1
 
@@ -18,9 +18,9 @@ llvmlite==0.42.0
 
 # pycuda==2023.1; sys_platform != 'darwin'
 
-pyobjc-core==10.2; sys_platform == 'darwin'
-pyobjc-framework-libdispatch==10.2; sys_platform == 'darwin'
-pyobjc-framework-metal==10.2; sys_platform == 'darwin'
+pyobjc-core==10.3; sys_platform == 'darwin'
+pyobjc-framework-libdispatch==10.3; sys_platform == 'darwin'
+pyobjc-framework-metal==10.3; sys_platform == 'darwin'
 
 ##
 
@@ -32,7 +32,7 @@ pillow==10.3.0
 
 sentencepiece==0.2.0
 tiktoken==0.7.0
-transformers==4.41.0
+transformers==4.41.1
 
 ##
 
@@ -144,7 +144,7 @@ einops==0.8.0
 
 ### infra
 
-boto3>=1.34.112
+boto3>=1.34.114
 
 google-cloud-compute==1.19.0
 
@@ -158,7 +158,7 @@ soco==0.30.4
 sounddevice==0.4.6
 # vosk==0.3.45
 
-bellows==0.38.4
+bellows==0.39.0
 zigpy==0.64.0
 
 # python-openzwave
