@@ -121,14 +121,14 @@ def multi_error_defer_to(*privileged_types: Type[BaseException],
     """
     try:
         yield
-    except trio.MultiError as root_multi_error:
+    except BaseExceptionGroup as root_multi_error:
         # flatten the exceptions in the MultiError, grouping by repr()
         multi_errors = [root_multi_error]
         errors_by_repr = {}  # exception_repr -> exception_object
         while multi_errors:
             multi_error = multi_errors.pop()
             for e in multi_error.exceptions:
-                if isinstance(e, trio.MultiError):
+                if isinstance(e, BaseExceptionGroup):
                     multi_errors.append(e)
                     continue
                 if not isinstance(e, privileged_types):
