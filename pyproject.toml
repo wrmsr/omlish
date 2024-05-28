@@ -36,7 +36,7 @@ exclude = [
 
 [tool.pytest.ini_options]
 addopts = "-v --tb=short"
-asyncio_mode = "auto"
+#asyncio_mode = "auto"
 junit_family = "xunit2"
 
 
