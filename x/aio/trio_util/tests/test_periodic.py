@@ -1,6 +1,6 @@
 import trio
 
-from trio_util import periodic
+from .. import periodic
 
 async def test_periodic(autojump_clock):
     count = 0

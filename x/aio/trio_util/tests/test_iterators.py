@@ -1,7 +1,7 @@
 import pytest
 import trio
 
-from trio_util import iter_move_on_after, iter_fail_after
+from .. import iter_move_on_after, iter_fail_after
 
 
 async def _generator(*durations):

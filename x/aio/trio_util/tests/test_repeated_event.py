@@ -2,7 +2,7 @@ import pytest
 import trio
 from trio.testing import wait_all_tasks_blocked
 
-from trio_util import RepeatedEvent
+from .. import RepeatedEvent
 
 
 async def test_repeated_event_wait(nursery, autojump_clock):
