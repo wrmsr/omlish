@@ -5,7 +5,7 @@ import trio
 
 import logbook
 
-from pytest_trio.enable_trio_mode import *
+from pytest_trio.enable_trio_mode import *  # noqa
 
 
 @pytest.fixture
