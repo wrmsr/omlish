@@ -41,7 +41,7 @@ from typing import Any
 
 import tenacity
 import trio
-import trio_util
+from .. import trio_util
 from logbook import Logger
 
 
