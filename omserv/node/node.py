@@ -3,6 +3,8 @@ import asyncio
 import sqlalchemy as sa
 import sqlalchemy.ext.asyncio
 
+from omlish import check
+
 from ..secrets import load_secrets  # noqa
 
 
@@ -26,22 +28,31 @@ async def _a_main() -> None:
 
     engine = sa.ext.asyncio.create_async_engine(f'postgresql+asyncpg://{user}:{password}@{host}:{port}', echo=True)
 
-    async with engine.begin() as conn:
-        await conn.run_sync(meta.create_all)
-
-        await conn.execute(
-            t1.insert(), [
-                {'name': 'home node'},
-            ]
-        )
+    node_name = 'home node'
 
     async with engine.connect() as conn:
-        result = await conn.execute(
-            sa.select(t1)
-            # .where(t1.c.name == 'some name 1')
-        )
+        async with conn.begin() as txn:
+            await conn.run_sync(meta.drop_all)
 
-        print(result.fetchall())
+            await conn.run_sync(meta.create_all)
+
+            await conn.begin()
+
+            result = await conn.execute(sa.select(t1).where(t1.c.name == node_name))
+            result_rows = result.fetchall()
+
+            if len(result_rows) > 0:
+                node_row = check.single(result_rows)
+                node_id = node_row['id']
+            else:
+                result = await conn.execute(t1.insert(), [{'name': 'home node'}])
+                node_id = check.single(result.inserted_primary_key)
+
+            result = await conn.execute(sa.select(sa.func.pg_advisory_lock(sa.column('id'))).select_from(t1))
+            print(result.fetchall())
+
+            result = await conn.execute(sa.select(t1))
+            print(result.fetchall())
 
     await engine.dispose()
 
