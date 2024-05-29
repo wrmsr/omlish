@@ -12,7 +12,6 @@ Email:        <fdrake@acm.org>
 import functools
 import os
 import pathlib
-import re
 import sys
 import sysconfig
 
