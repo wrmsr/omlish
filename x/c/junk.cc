@@ -164,7 +164,7 @@ static PyTypeObject CustomType = {
 
 static PyObject * junk(PyObject *self, PyObject *args)
 {
-    return Py_BuildValue("k", 421);
+    return Py_BuildValue("k", 422);
 }
 
 
