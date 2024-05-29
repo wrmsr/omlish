@@ -143,7 +143,7 @@ class Manager:
 
     disable: Level
 
-    def getLogger(self, name: str) -> ta.Optional['Logger']: ...
+    def getLogger(self, name: str) -> 'Logger': ...
 
     def setLoggerClass(self, klass: type['Logger']) -> None: ...
 
@@ -153,6 +153,14 @@ class Manager:
 ##
 
 
+Caller: ta.TypeAlias = tuple[
+    str,  # filename
+    int,  # lineno
+    str,  # name
+    str,  # formatted
+]
+
+
 class Logger(Filterer):
     name: str
     level: Level
@@ -160,6 +168,8 @@ class Logger(Filterer):
     propagate: bool
     handlers: list[Handler]
     disabled: bool
+
+    manager: Manager
 
     def setLevel(self, level: Level) -> None: ...
 
@@ -173,6 +183,38 @@ class Logger(Filterer):
     def fatal(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> None: ...
 
     def log(self, level: Level, msg: str, *args: ta.Any, **kwargs: ta.Any) -> None: ...
+
+    def findCaller(self, stack_info: bool = False, stacklevel: int = 1) -> Caller: ...  #
+
+    def makeRecord(
+            self,
+            name,
+            level,
+            fn,
+            lno,
+            msg,
+            args,
+            exc_info,
+            func: str | None = None,
+            extra: ta.Mapping[str, ta.Any] | None = None,
+            sinfo: str | None = None,
+    ) -> LogRecord: ...
+
+    def handle(self, record: LogRecord) -> None: ...
+
+    def addHandler(self, hdlr: Handler) -> None: ...
+
+    def removeHandler(self, hdlr: Handler) -> None: ...
+
+    def hasHandlers(self) -> bool: ...
+
+    def callHandlers(self, record: LogRecord) -> None: ...
+
+    def getEffectiveLevel(self) -> Level: ...
+
+    def isEnabledFor(self, level: Level) -> bool: ...
+
+    def getChild(self, suffix: str) -> 'Logger': ...
 
 
 ##
