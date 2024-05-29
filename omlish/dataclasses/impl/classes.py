@@ -134,7 +134,6 @@ def _get_slots(cls):
         # that works correctly for both Python classes and C extension types. Extension types don't use `__slots__` for
         # slot creation
         case None:
-            yield from ('__dict__', '__weakref__')
             slots = []
             if getattr(cls, '__weakrefoffset__', -1) != 0:
                 slots.append('__weakref__')
