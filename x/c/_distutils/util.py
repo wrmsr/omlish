@@ -29,14 +29,6 @@ def get_host_platform():
     # even with older Python versions when distutils was split out.
     # Now it delegates to stdlib sysconfig, but maintains compatibility.
 
-    if sys.version_info < (3, 9):
-        if os.name == "posix" and hasattr(os, 'uname'):
-            osname, host, release, version, machine = os.uname()
-            if osname[:3] == "aix":
-                from .py38compat import aix_platform
-
-                return aix_platform(osname, version, release)
-
     return sysconfig.get_platform()
 
 

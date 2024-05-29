@@ -5,7 +5,6 @@ import os.path
 
 from ._functools import splat
 from .errors import DistutilsFileError
-from .py39compat import zip_strict
 
 
 def _newer(source, target):
@@ -38,7 +37,7 @@ def newer_pairwise(sources, targets, newer=newer):
     targets) where source is newer than target, according to the semantics
     of 'newer()'.
     """
-    newer_pairs = filter(splat(newer), zip_strict(sources, targets))
+    newer_pairs = filter(splat(newer), zip(sources, targets, strict=True))
     return tuple(map(list, zip(*newer_pairs))) or ([], [])
 
 

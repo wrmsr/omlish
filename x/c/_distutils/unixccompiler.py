@@ -22,7 +22,6 @@ import shlex
 import sys
 
 from . import sysconfig
-from .compat import consolidate_linker_args
 from ._log import log
 from ._macos_compat import compiler_fixup
 from .modified import newer
@@ -103,6 +102,18 @@ def _linker_params(linker_cmd, compiler_cmd):
     c_len = len(compiler_cmd)
     pivot = c_len if linker_cmd[:c_len] == compiler_cmd else 1
     return linker_cmd[pivot:]
+
+
+def consolidate_linker_args(args: list[str]) -> str | list[str]:
+    """
+    Ensure the return value is a string for backward compatibility.
+
+    Retain until at least 2024-04-31. See pypa/distutils#246
+    """
+
+    if not all(arg.startswith('-Wl,') for arg in args):
+        return args
+    return '-Wl,' + ','.join(arg.removeprefix('-Wl,') for arg in args)
 
 
 class UnixCCompiler(CCompiler):
