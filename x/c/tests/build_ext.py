@@ -47,21 +47,13 @@ from omlish import check
 from omlish import cached
 from omlish import lang
 
-import distutils as du
-import distutils.ccompiler
-import distutils.core
-import distutils.dep_util
-import distutils.errors
-import distutils.sysconfig
-import distutils.util
-
-# import setuptools._distutils as du  # noqa
-# import setuptools._distutils.ccompiler  # noqa
-# import setuptools._distutils.core  # noqa
-# import setuptools._distutils.dep_util  # noqa
-# import setuptools._distutils.errors  # noqa
-# import setuptools._distutils.sysconfig  # noqa
-# import setuptools._distutils.util  # noqa
+import x.c._distutils as du
+import x.c._distutils.ccompiler
+import x.c._distutils.core
+import x.c._distutils.dep_util
+import x.c._distutils.errors
+import x.c._distutils.sysconfig
+import x.c._distutils.util
 
 
 log = logging.getLogger(__name__)

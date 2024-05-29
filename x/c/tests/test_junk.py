@@ -40,4 +40,4 @@ def test_junk():
     import junk  # type: ignore  # noqa
 
     print(junk.abctok())
-    assert junk.junk() == 421
+    assert junk.junk() == 422
