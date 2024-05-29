@@ -20,7 +20,7 @@ async def a_run_app(app: ta.Any, **kwargs: ta.Any) -> None:
     main_task = asyncio.get_event_loop().create_task(aw._run_app(app, **kwargs))  # noqa
     try:
         await main_task
-    except (aw.GracefulExit, KeyboardInterrupt):  # pragma: no cover
+    except (aw.GracefulExit, KeyboardInterrupt):
         pass
     finally:
         main_task.cancel()
