@@ -396,7 +396,7 @@ def parse_makefile(fn, g=None):  # noqa: C901
     optional dictionary is passed in as the second argument, it is
     used instead of a new dictionary.
     """
-    from distutils.text_file import TextFile
+    from .text_file import TextFile
 
     fp = TextFile(
         fn, strip_comments=1, skip_blanks=1, join_lines=1, errors="surrogateescape"

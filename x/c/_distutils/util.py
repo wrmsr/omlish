@@ -69,7 +69,7 @@ def get_macosx_target_ver_from_syscfg():
     Returns the version as a string or None if can't obtain one. Cached."""
     global _syscfg_macosx_ver
     if _syscfg_macosx_ver is None:
-        from distutils import sysconfig
+        from . import sysconfig
 
         ver = sysconfig.get_config_var(MACOSX_VERSION_VAR) or ''
         if ver:

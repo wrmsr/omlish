@@ -47,7 +47,7 @@ def spawn(cmd, search_path=1, verbose=0, dry_run=0, env=None):  # noqa: C901
     env = env if env is not None else dict(os.environ)
 
     if sys.platform == 'darwin':
-        from distutils.util import MACOSX_VERSION_VAR, get_macosx_target_ver
+        from .util import MACOSX_VERSION_VAR, get_macosx_target_ver
 
         macosx_target_ver = get_macosx_target_ver()
         if macosx_target_ver:

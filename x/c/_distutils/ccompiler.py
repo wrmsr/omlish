@@ -10,7 +10,7 @@ import warnings
 
 from ._itertools import always_iterable
 from ._log import log
-from ._modified import newer_group
+from .modified import newer_group
 from .dir_util import mkpath
 from .errors import (
     CompileError,
@@ -1026,7 +1026,7 @@ int main (int argc, char **argv) {
         log.debug(msg)
 
     def debug_print(self, msg):
-        from distutils.debug import DEBUG
+        from .debug import DEBUG
 
         if DEBUG:
             print(msg)
@@ -1108,21 +1108,21 @@ compiler_class = {
 }
 
 
-def show_compilers():
-    """Print list of available compilers (used by the "--help-compiler"
-    options to "build", "build_ext", "build_clib").
-    """
-    # XXX this "knows" that the compiler option it's describing is
-    # "--compiler", which just happens to be the case for the three
-    # commands that use it.
-    from distutils.fancy_getopt import FancyGetopt
-
-    compilers = []
-    for compiler in compiler_class.keys():
-        compilers.append(("compiler=" + compiler, None, compiler_class[compiler][2]))
-    compilers.sort()
-    pretty_printer = FancyGetopt(compilers)
-    pretty_printer.print_help("List of available compilers:")
+# def show_compilers():
+#     """Print list of available compilers (used by the "--help-compiler"
+#     options to "build", "build_ext", "build_clib").
+#     """
+#     # XXX this "knows" that the compiler option it's describing is
+#     # "--compiler", which just happens to be the case for the three
+#     # commands that use it.
+#     from .fancy_getopt import FancyGetopt
+#
+#     compilers = []
+#     for compiler in compiler_class.keys():
+#         compilers.append(("compiler=" + compiler, None, compiler_class[compiler][2]))
+#     compilers.sort()
+#     pretty_printer = FancyGetopt(compilers)
+#     pretty_printer.print_help("List of available compilers:")
 
 
 def new_compiler(plat=None, compiler=None, verbose=0, dry_run=0, force=0):
