@@ -168,3 +168,7 @@ zwave-js-server-python==0.56.0
 
 python-telegram-bot==21.2
 discord.py==2.3.2
+
+##
+
+logbook==1.7.0.post0
