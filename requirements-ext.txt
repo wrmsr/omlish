@@ -59,9 +59,9 @@ nevergrad==1.0.2
 # triton-nightly; platform_machine == 'x86_64'
 triton==2.3.0; platform_machine == 'x86_64'
 
-wgpu==0.15.1  # FIXME: no 3.11
+wgpu==0.15.2
 
-hypothesis==6.102.6
+hypothesis==6.103.0
 
 ##
 
@@ -119,12 +119,12 @@ nltk==3.8.1
 
 ### problematic
 
-keras==2.15.0; python_version < '3.12'
-tensorflow>=2.15.1; python_version < '3.12'  # tensorflow 2.16.1 depends on keras>=3.0.0
-tensorboard==2.15.2; python_version < '3.12'
+# keras==2.15.0; python_version < '3.12'
+# tensorflow>=2.15.1; python_version < '3.12'  # tensorflow 2.16.1 depends on keras>=3.0.0
+# tensorboard==2.15.2; python_version < '3.12'
 
-onnx==1.15.0; python_version < '3.12'
-onnx2torch==1.5.13; python_version < '3.12'
+# onnx==1.15.0; python_version < '3.12'
+# onnx2torch==1.5.13; python_version < '3.12'
 
 #
 
@@ -155,7 +155,7 @@ selectolax==0.3.21
 
 soco==0.30.4
 
-sounddevice==0.4.6
+sounddevice==0.4.7
 # vosk==0.3.45
 
 bellows==0.39.0
