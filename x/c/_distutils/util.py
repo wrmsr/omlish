@@ -176,9 +176,6 @@ def split_quoted(s):
     return words
 
 
-# split_quoted ()
-
-
 def execute(func, args, msg=None, verbose=0, dry_run=0):
     """Perform some action that affects the outside world (eg.  by
     writing to the filesystem).  Such actions are special because they

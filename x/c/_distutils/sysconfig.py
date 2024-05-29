@@ -60,24 +60,6 @@ def _is_parent(dir_a, dir_b):
     return os.path.normcase(dir_a).startswith(os.path.normcase(dir_b))
 
 
-if os.name == 'nt':
-
-    @pass_none
-    def _fix_pcbuild(d):
-        # In a venv, sys._home will be inside BASE_PREFIX rather than PREFIX.
-        prefixes = PREFIX, BASE_PREFIX
-        matched = (
-            prefix
-            for prefix in prefixes
-            if _is_parent(d, os.path.join(prefix, "PCbuild"))
-        )
-        return next(matched, d)
-
-
-    project_base = _fix_pcbuild(project_base)
-    _sys_home = _fix_pcbuild(_sys_home)
-
-
 def _python_build():
     if _sys_home:
         return _is_python_source_dir(_sys_home)
@@ -254,11 +236,6 @@ def get_python_lib(plat_specific=0, standard_lib=0, prefix=None):
         implementation = 'pypy' if IS_PYPY else 'python'
         libpython = os.path.join(prefix, libdir, implementation + get_python_version())
         return _posix_lib(standard_lib, libpython, early_prefix, prefix)
-    elif os.name == "nt":
-        if standard_lib:
-            return os.path.join(prefix, "Lib")
-        else:
-            return os.path.join(prefix, "Lib", "site-packages")
     else:
         raise DistutilsPlatformError(
             "I don't know where Python installs its library "
