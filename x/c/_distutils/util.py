@@ -83,14 +83,14 @@ def get_macosx_target_ver():
         # values, specifically LDSHARED which can use
         # '-undefined dynamic_lookup' which only works on >= 10.3.
         if (
-            syscfg_ver
-            and split_version(syscfg_ver) >= [10, 3]
-            and split_version(env_ver) < [10, 3]
+                syscfg_ver
+                and split_version(syscfg_ver) >= [10, 3]
+                and split_version(env_ver) < [10, 3]
         ):
             my_msg = (
-                '$' + MACOSX_VERSION_VAR + ' mismatch: '
-                f'now "{env_ver}" but "{syscfg_ver}" during configure; '
-                'must use 10.3 or later'
+                    '$' + MACOSX_VERSION_VAR + ' mismatch: '
+                                               f'now "{env_ver}" but "{syscfg_ver}" during configure; '
+                                               'must use 10.3 or later'
             )
             raise DistutilsPlatformError(my_msg)
         return env_ver
@@ -151,7 +151,7 @@ def split_quoted(s):
         elif s[end] == '\\':
             # preserve whatever is being escaped;
             # will become part of the current word
-            s = s[:end] + s[end + 1 :]
+            s = s[:end] + s[end + 1:]
             pos = end + 1
 
         else:
@@ -166,7 +166,7 @@ def split_quoted(s):
                 raise ValueError("bad string (mismatched %s quotes?)" % s[end])
 
             (beg, end) = m.span()
-            s = s[:beg] + s[beg + 1 : end - 1] + s[end:]
+            s = s[:beg] + s[beg + 1: end - 1] + s[end:]
             pos = m.end() - 2
 
         if pos >= len(s):

@@ -21,12 +21,13 @@ import re
 import shlex
 import sys
 
+from ._macos_compat import compiler_fixup
+from .ccompiler import CCompiler, gen_lib_options, gen_preprocess_options
 from .. import sysconfig
 from .._log import log
-from ._macos_compat import compiler_fixup
-from ..modified import newer
-from .ccompiler import CCompiler, gen_lib_options, gen_preprocess_options
 from ..errors import CompileError, DistutilsExecError, LibError, LinkError
+from ..modified import newer
+
 
 # XXX Things not currently handled:
 #   * optimization/debug/warning flags; we just use whatever's in Python's
@@ -157,13 +158,13 @@ class UnixCCompiler(CCompiler):
         exe_extension = ".exe"
 
     def preprocess(
-        self,
-        source,
-        output_file=None,
-        macros=None,
-        include_dirs=None,
-        extra_preargs=None,
-        extra_postargs=None,
+            self,
+            source,
+            output_file=None,
+            macros=None,
+            include_dirs=None,
+            extra_preargs=None,
+            extra_postargs=None,
     ):
         fixed_args = self._fix_compile_args(None, macros, include_dirs)
         ignore, macros, include_dirs = fixed_args
@@ -201,7 +202,7 @@ class UnixCCompiler(CCompiler):
             raise CompileError(msg)
 
     def create_static_lib(
-        self, objects, output_libname, output_dir=None, debug=0, target_lang=None
+            self, objects, output_libname, output_dir=None, debug=0, target_lang=None
     ):
         objects, output_dir = self._fix_object_args(objects, output_dir)
 
@@ -225,20 +226,20 @@ class UnixCCompiler(CCompiler):
             log.debug("skipping %s (up-to-date)", output_filename)
 
     def link(
-        self,
-        target_desc,
-        objects,
-        output_filename,
-        output_dir=None,
-        libraries=None,
-        library_dirs=None,
-        runtime_library_dirs=None,
-        export_symbols=None,
-        debug=0,
-        extra_preargs=None,
-        extra_postargs=None,
-        build_temp=None,
-        target_lang=None,
+            self,
+            target_desc,
+            objects,
+            output_filename,
+            output_dir=None,
+            libraries=None,
+            library_dirs=None,
+            runtime_library_dirs=None,
+            export_symbols=None,
+            debug=0,
+            extra_preargs=None,
+            extra_postargs=None,
+            build_temp=None,
+            target_lang=None,
     ):
         objects, output_dir = self._fix_object_args(objects, output_dir)
         fixed_args = self._fix_lib_args(libraries, library_dirs, runtime_library_dirs)
@@ -363,12 +364,12 @@ class UnixCCompiler(CCompiler):
         match = re.search(r'-isysroot\s*(\S+)', cflags)
 
         apply_root = (
-            sys.platform == 'darwin'
-            and match
-            and (
-                dir.startswith('/System/')
-                or (dir.startswith('/usr/') and not dir.startswith('/usr/local/'))
-            )
+                sys.platform == 'darwin'
+                and match
+                and (
+                        dir.startswith('/System/')
+                        or (dir.startswith('/usr/') and not dir.startswith('/usr/local/'))
+                )
         )
 
         return os.path.join(match.group(1), dir[1:]) if apply_root else dir
