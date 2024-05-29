@@ -238,3 +238,17 @@ print('PG_PORT=' + cfg['ports'][0].split(':')[0]) \n\
 " >> $$F ; \
 	export $$(.venv/bin/python "$$F" | xargs) && \
 	PGPASSWORD="$$PG_PASSWORD" .venv/bin/pgcli --user "$$PG_USER" --host localhost --port "$$PG_PORT"
+
+.PHONY: secret-pg-repl
+secret-pg-repl: venv
+	F=$$(mktemp) ; \
+	echo -e "\n\
+import yaml \n\
+with open('secrets.yml', 'r') as f: \n\
+    dct = yaml.safe_load(f.read()) \n\
+print('PG_HOST=' + dct['postgres_host']) \n\
+print('PG_USER=' + dct['postgres_user']) \n\
+print('PG_PASSWORD=' + dct['postgres_pass']) \n\
+" >> $$F ; \
+	export $$(.venv/bin/python "$$F" | xargs) && \
+	PGPASSWORD="$$PG_PASSWORD" .venv/bin/pgcli --user "$$PG_USER" --host "$$PG_HOST"
