@@ -28,19 +28,6 @@ def get_host_platform():
     return sysconfig.get_platform()
 
 
-def get_platform():
-    if os.name == 'nt':
-        TARGET_TO_PLAT = {
-            'x86': 'win32',
-            'x64': 'win-amd64',
-            'arm': 'win-arm32',
-            'arm64': 'win-arm64',
-        }
-        target = os.environ.get('VSCMD_ARG_TGT_ARCH')
-        return TARGET_TO_PLAT.get(target) or get_host_platform()
-    return get_host_platform()
-
-
 if sys.platform == 'darwin':
     _syscfg_macosx_ver = None  # cache the version pulled from sysconfig
 MACOSX_VERSION_VAR = 'MACOSX_DEPLOYMENT_TARGET'

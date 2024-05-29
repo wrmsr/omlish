@@ -112,7 +112,7 @@ class BuildExt:
 
     @cached.property
     def plat_name(self) -> str:
-        return self._opts.plat_name or du.util.get_platform()
+        return self._opts.plat_name or du.util.get_host_platform()
 
     @cached.property
     def plat_specifier(self) -> str:
@@ -218,9 +218,6 @@ class BuildExt:
         )
 
         du.sysconfig.customize_compiler(cc)
-
-        if os.name == 'nt' and self.plat_name != du.util.get_platform():
-            cc.initialize(self.plat_name)  # type: ignore  # noqa
 
         cc.set_include_dirs(list(self.cdirs.include))
 
