@@ -298,6 +298,7 @@ class ClassProcessor:
         init = InitBuilder(
             self._params,
             self._params12,
+            self._params_extras,
             self._merged_metadata,
             self._fields(),
             has_post_init,

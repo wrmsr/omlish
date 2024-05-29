@@ -6,6 +6,7 @@ from ... import lang
 from .exceptions import CheckException
 from .fields import field_init
 from .fields import field_type
+from .fields import has_default
 from .internals import FieldType
 from .internals import HAS_DEFAULT_FACTORY
 from .internals import POST_INIT_NAME
@@ -14,6 +15,7 @@ from .metadata import Check
 from .metadata import Init
 from .metadata import Metadata
 from .params import Params12
+from .params import ParamsExtras
 from .utils import Namespace
 from .utils import create_fn
 
@@ -21,31 +23,32 @@ from .utils import create_fn
 MISSING = dc.MISSING
 
 
-def fields_in_init_order(fields: ta.Sequence[dc.Field]) -> tuple[ta.Sequence[dc.Field], ta.Sequence[dc.Field]]:
-    return (
-        tuple(f for f in fields if f.init and not f.kw_only),
-        tuple(f for f in fields if f.init and f.kw_only),
-    )
-
-
 class InitFields(ta.NamedTuple):
     all: ta.Sequence[dc.Field]
+    ordered: ta.Sequence[dc.Field]
     std: ta.Sequence[dc.Field]
     kw_only: ta.Sequence[dc.Field]
 
 
-def get_init_fields(fields: ta.Iterable[dc.Field]) -> InitFields:
+def get_init_fields(fields: ta.Iterable[dc.Field], *, reorder: bool = False) -> InitFields:
     all_init_fields = [f for f in fields if field_type(f) in (FieldType.INSTANCE, FieldType.INIT)]
-    std_init_fields, kw_only_init_fields = fields_in_init_order(all_init_fields)
+    ordered_init_fields = list(all_init_fields)
+    if reorder:
+        ordered_init_fields.sort(key=lambda f: (has_default(f), not f.kw_only))
+    std_init_fields, kw_only_init_fields = (
+        tuple(f1 for f1 in ordered_init_fields if f1.init and not f1.kw_only),
+        tuple(f1 for f1 in ordered_init_fields if f1.init and f1.kw_only),
+    )
     return InitFields(
         all=all_init_fields,
+        ordered=ordered_init_fields,
         std=std_init_fields,
         kw_only=kw_only_init_fields,
     )
 
 
 def init_param(f: dc.Field) -> str:
-    if f.default is MISSING and f.default_factory is MISSING:
+    if not has_default(f):
         default = ''
     elif f.default is not MISSING:
         default = f' = __dataclass_dflt_{f.name}__'
@@ -60,6 +63,7 @@ class InitBuilder:
             self,
             params: Params,
             params12: Params12,
+            params_extras: ParamsExtras,
             merged_metadata: Metadata,
             fields: ta.Mapping[str, dc.Field],
             has_post_init: bool,
@@ -71,6 +75,7 @@ class InitBuilder:
         self._params = params
         self._params12 = params12
         self._merged_metadata = merged_metadata
+        self._params_extras = params_extras
         self._fields = fields
         self._has_post_init = has_post_init
         self._self_name = self_name
@@ -78,12 +83,12 @@ class InitBuilder:
 
     @lang.cached_nullary
     def build(self) -> ta.Callable:
-        ifs = get_init_fields(self._fields.values())
+        ifs = get_init_fields(self._fields.values(), reorder=self._params_extras.reorder)
 
         seen_default = None
         for f in ifs.std:
             if f.init:
-                if not (f.default is MISSING and f.default_factory is MISSING):
+                if has_default(f):
                     seen_default = f
                 elif seen_default:
                     raise TypeError(f'non-default argument {f.name!r} follows default argument {seen_default.name!r}')

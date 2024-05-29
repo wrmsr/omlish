@@ -25,6 +25,10 @@ def field_type(f: dc.Field) -> FieldType:
         return FieldType.INSTANCE
 
 
+def has_default(f: dc.Field) -> bool:
+    return not (f.default is MISSING and f.default_factory is MISSING)
+
+
 def preprocess_field(
         cls: type,
         a_name: str,

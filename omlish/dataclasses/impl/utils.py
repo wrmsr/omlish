@@ -107,9 +107,8 @@ class FuncBuilder:
         else:
             return_names = f'({",".join(self.names)},)'
 
-        # txt is the entire function we're going to execute, including the
-        # bodies of the functions we're defining.  Here's a greatly simplified
-        # version:
+        # txt is the entire function we're going to execute, including the bodies of the functions we're defining.
+        # Here's a greatly simplified version:
         # def __create_fn__():
         #   def __init__(self, x, y):
         #     self.x = x
