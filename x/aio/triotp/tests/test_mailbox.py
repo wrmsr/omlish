@@ -2,6 +2,7 @@ import pytest
 
 from .. import mailbox
 import trio
+from omlish.dev.pytest import assert_raises_star
 
 
 class Producer:
@@ -62,7 +63,7 @@ async def test_receive_on_timeout(mailbox_env):
 async def test_receive_too_slow(mailbox_env):
     consumer = Consumer("pytest", timeout=0.01, with_on_timeout=False)
 
-    with pytest.raises(trio.TooSlowError):
+    with assert_raises_star(trio.TooSlowError):
         async with trio.open_nursery() as nursery:
             await nursery.start(consumer)
 
@@ -98,7 +99,7 @@ async def test_register(mailbox_env):
     with pytest.raises(mailbox.MailboxDoesNotExist):
         mailbox.register("not-found", "pytest")
 
-    with pytest.raises(mailbox.NameAlreadyExist):
+    with assert_raises_star(mailbox.NameAlreadyExist):
         async with trio.open_nursery() as nursery:
             await nursery.start(consumer)
             await nursery.start(consumer)
@@ -108,7 +109,7 @@ async def test_unregister(mailbox_env):
     consumer = Consumer("pytest")
     producer = Producer("pytest")
 
-    with pytest.raises(mailbox.MailboxDoesNotExist):
+    with assert_raises_star(mailbox.MailboxDoesNotExist):
         async with trio.open_nursery() as nursery:
             await nursery.start(consumer)
 

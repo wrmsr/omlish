@@ -7,7 +7,7 @@ import trio
 from trio.testing import assert_checkpoints, wait_all_tasks_blocked
 
 from .. import AsyncValue
-from trio_util._async_value import _ValueWrapper
+from .._async_value import _ValueWrapper
 
 
 async def test_async_value(nursery):

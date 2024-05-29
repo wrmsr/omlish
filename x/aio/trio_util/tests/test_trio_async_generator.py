@@ -2,7 +2,7 @@ from math import inf
 
 import trio
 
-from trio_util._trio_async_generator import trio_async_generator
+from .._trio_async_generator import trio_async_generator
 
 # pylint: disable=not-async-context-manager
 
