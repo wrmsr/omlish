@@ -1,3 +1,4 @@
+import contextlib
 import sys
 import typing as ta
 
@@ -17,3 +18,15 @@ def skip_if_python_version_less_than(num: ta.Sequence[int]):
 def skip_if_not_single():
     # [resolve_collection_argument(a) for a in session.config.args]
     raise NotImplementedError
+
+
+@contextlib.contextmanager
+def assert_raises_star(et):
+    num_caught = 0
+    try:
+        yield
+    except* et as eg:
+        num_caught += 1
+    assert num_caught > 0
+
+
