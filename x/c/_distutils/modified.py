@@ -1,9 +1,7 @@
 """Timestamp comparison of files and groups of files."""
 
-import functools
 import os.path
 
-from ._functools import splat
 from .errors import DistutilsFileError
 
 
@@ -26,19 +24,6 @@ def newer(source, target):
         raise DistutilsFileError("file '%s' does not exist" % os.path.abspath(source))
 
     return _newer(source, target)
-
-
-def newer_pairwise(sources, targets, newer=newer):
-    """
-    Filter filenames where sources are newer than targets.
-
-    Walk two filename iterables in parallel, testing if each source is newer
-    than its corresponding target.  Returns a pair of lists (sources,
-    targets) where source is newer than target, according to the semantics
-    of 'newer()'.
-    """
-    newer_pairs = filter(splat(newer), zip(sources, targets, strict=True))
-    return tuple(map(list, zip(*newer_pairs))) or ([], [])
 
 
 def newer_group(sources, target, missing='error'):
@@ -66,6 +51,3 @@ def newer_group(sources, target, missing='error'):
         missing_as_newer(source) or _newer(source, target)
         for source in filter(ignored, sources)
     )
-
-
-newer_pairwise_group = functools.partial(newer_pairwise, newer=newer_group)
