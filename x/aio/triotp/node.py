@@ -31,7 +31,7 @@ import sys
 from typing import Optional
 
 import trio
-from logbook import StreamHandler, NullHandler
+from logging import StreamHandler, NullHandler
 
 from . import mailbox, application, logging
 
@@ -59,8 +59,8 @@ def run(
     if logformat is not None:
         handler.format_string = logformat
 
-    with handler.applicationbound():
-        trio.run(_start, apps)
+    # with handler.applicationbound():  # FIXME
+    trio.run(_start, apps)
 
 
 async def _start(apps: list[application.app_spec]) -> None:

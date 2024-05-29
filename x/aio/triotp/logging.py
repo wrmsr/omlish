@@ -6,8 +6,7 @@ handler.
 """
 
 from enum import Enum, auto
-
-import logbook
+import logging
 
 
 class LogLevel(Enum):
@@ -29,10 +28,10 @@ class LogLevel(Enum):
         :returns: Logbook log level
         """
 
-        return logbook.lookup_level(self.name)
+        return logging.getLevelNamesMapping[self.name]
 
 
-def getLogger(name: str) -> logbook.Logger:
+def getLogger(name: str) -> logging.Logger:
     """
     Get a logger by name.
 
@@ -40,4 +39,4 @@ def getLogger(name: str) -> logbook.Logger:
     :returns: Logbook Logger instance
     """
 
-    return logbook.Logger(name)
+    return logging.getLogger(name)
