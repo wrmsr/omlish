@@ -138,6 +138,46 @@ class StreamHandler(Handler):
 ##
 
 
+class Manager:
+    root: 'Logger'
+
+    disable: Level
+
+    def getLogger(self, name: str) -> ta.Optional['Logger']: ...
+
+    def setLoggerClass(self, klass: type['Logger']) -> None: ...
+
+    def setLogRecordFactory(self, factory: ta.Callable[..., LogRecord]) -> None: ...  # UNREFERENCED?
+
+
+##
+
+
+class Logger(Filterer):
+    name: str
+    level: Level
+    parent: ta.Optional['Logger']
+    propagate: bool
+    handlers: list[Handler]
+    disabled: bool
+
+    def setLevel(self, level: Level) -> None: ...
+
+    def debug(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> None: ...
+    def info(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> None: ...
+    def warning(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> None: ...
+    def warn(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> None: ...
+    def error(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> None: ...
+    def exception(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> None: ...
+    def critical(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> None: ...
+    def fatal(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> None: ...
+
+    def log(self, level: Level, msg: str, *args: ta.Any, **kwargs: ta.Any) -> None: ...
+
+
+##
+
+
 def _main():
     logs.configure_standard_logging(logging.INFO)
     try:
