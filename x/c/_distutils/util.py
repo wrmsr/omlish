@@ -4,18 +4,14 @@ Miscellaneous utility functions -- anything that doesn't fit into
 one of the other *util.py modules.
 """
 
-import functools
-import importlib.util
 import os
 import re
 import string
-import subprocess
 import sys
 import sysconfig
 
 from ._log import log
 from .errors import DistutilsPlatformError
-from .spawn import spawn
 
 
 def get_host_platform():
@@ -104,125 +100,6 @@ def get_macosx_target_ver():
 def split_version(s):
     """Convert a dot-separated string into a list of numbers for comparisons"""
     return [int(n) for n in s.split('.')]
-
-
-def convert_path(pathname):
-    """Return 'pathname' as a name that will work on the native filesystem,
-    i.e. split it on '/' and put it back together again using the current
-    directory separator.  Needed because filenames in the setup script are
-    always supplied in Unix style, and have to be converted to the local
-    convention before we can actually use them in the filesystem.  Raises
-    ValueError on non-Unix-ish systems if 'pathname' either starts or
-    ends with a slash.
-    """
-    if os.sep == '/':
-        return pathname
-    if not pathname:
-        return pathname
-    if pathname[0] == '/':
-        raise ValueError("path '%s' cannot be absolute" % pathname)
-    if pathname[-1] == '/':
-        raise ValueError("path '%s' cannot end with '/'" % pathname)
-
-    paths = pathname.split('/')
-    while '.' in paths:
-        paths.remove('.')
-    if not paths:
-        return os.curdir
-    return os.path.join(*paths)
-
-
-# convert_path ()
-
-
-def change_root(new_root, pathname):
-    """Return 'pathname' with 'new_root' prepended.  If 'pathname' is
-    relative, this is equivalent to "os.path.join(new_root,pathname)".
-    Otherwise, it requires making 'pathname' relative and then joining the
-    two, which is tricky on DOS/Windows and Mac OS.
-    """
-    if os.name == 'posix':
-        if not os.path.isabs(pathname):
-            return os.path.join(new_root, pathname)
-        else:
-            return os.path.join(new_root, pathname[1:])
-
-    elif os.name == 'nt':
-        (drive, path) = os.path.splitdrive(pathname)
-        if path[0] == '\\':
-            path = path[1:]
-        return os.path.join(new_root, path)
-
-    raise DistutilsPlatformError(f"nothing known about platform '{os.name}'")
-
-
-@functools.lru_cache
-def check_environ():
-    """Ensure that 'os.environ' has all the environment variables we
-    guarantee that users can use in config files, command-line options,
-    etc.  Currently this includes:
-      HOME - user's home directory (Unix only)
-      PLAT - description of the current platform, including hardware
-             and OS (see 'get_platform()')
-    """
-    if os.name == 'posix' and 'HOME' not in os.environ:
-        try:
-            import pwd
-
-            os.environ['HOME'] = pwd.getpwuid(os.getuid())[5]
-        except (ImportError, KeyError):
-            # bpo-10496: if the current user identifier doesn't exist in the
-            # password database, do nothing
-            pass
-
-    if 'PLAT' not in os.environ:
-        os.environ['PLAT'] = get_platform()
-
-
-def subst_vars(s, local_vars):
-    """
-    Perform variable substitution on 'string'.
-    Variables are indicated by format-style braces ("{var}").
-    Variable is substituted by the value found in the 'local_vars'
-    dictionary or in 'os.environ' if it's not in 'local_vars'.
-    'os.environ' is first checked/augmented to guarantee that it contains
-    certain values: see 'check_environ()'.  Raise ValueError for any
-    variables not found in either 'local_vars' or 'os.environ'.
-    """
-    check_environ()
-    lookup = dict(os.environ)
-    lookup.update((name, str(value)) for name, value in local_vars.items())
-    try:
-        return _subst_compat(s).format_map(lookup)
-    except KeyError as var:
-        raise ValueError(f"invalid variable {var}")
-
-
-def _subst_compat(s):
-    """
-    Replace shell/Perl-style variable substitution with
-    format-style. For compatibility.
-    """
-
-    def _subst(match):
-        return f'{{{match.group(1)}}}'
-
-    repl = re.sub(r'\$([a-zA-Z_][a-zA-Z_0-9]*)', _subst, s)
-    if repl != s:
-        import warnings
-
-        warnings.warn(
-            "shell/Perl-style substitutions are deprecated",
-            DeprecationWarning,
-        )
-    return repl
-
-
-def grok_environment_error(exc, prefix="error: "):
-    # Function kept for backward compatibility.
-    # Used to try clever things with EnvironmentErrors,
-    # but nowadays str(exception) produces good messages.
-    return prefix + str(exc)
 
 
 # Needed by 'split_quoted()'
@@ -319,34 +196,3 @@ def execute(func, args, msg=None, verbose=0, dry_run=0):
     log.info(msg)
     if not dry_run:
         func(*args)
-
-
-def strtobool(val):
-    """Convert a string representation of truth to true (1) or false (0).
-
-    True values are 'y', 'yes', 't', 'true', 'on', and '1'; false values
-    are 'n', 'no', 'f', 'false', 'off', and '0'.  Raises ValueError if
-    'val' is anything else.
-    """
-    val = val.lower()
-    if val in ('y', 'yes', 't', 'true', 'on', '1'):
-        return 1
-    elif val in ('n', 'no', 'f', 'false', 'off', '0'):
-        return 0
-    else:
-        raise ValueError(f"invalid truth value {val!r}")
-
-
-def rfc822_escape(header):
-    """Return a version of the string escaped for inclusion in an
-    RFC-822 header, by ensuring there are 8 spaces space after each newline.
-    """
-    indent = 8 * " "
-    lines = header.splitlines(keepends=True)
-
-    # Emulate the behaviour of `str.split`
-    # (the terminal line break in `splitlines` does not result in an extra line):
-    ends_in_newline = lines and lines[-1].splitlines()[0] != lines[-1]
-    suffix = indent if ends_in_newline else ""
-
-    return indent.join(lines) + suffix
