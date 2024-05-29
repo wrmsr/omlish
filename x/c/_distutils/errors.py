@@ -22,50 +22,10 @@ class DistutilsModuleError(DistutilsError):
     pass
 
 
-class DistutilsClassError(DistutilsError):
-    """Some command class (or possibly distribution class, if anyone
-    feels a need to subclass Distribution) is found not to be holding
-    up its end of the bargain, ie. implementing some part of the
-    "command "interface."""
-
-    pass
-
-
-class DistutilsGetoptError(DistutilsError):
-    """The option table provided to 'fancy_getopt()' is bogus."""
-
-    pass
-
-
-class DistutilsArgError(DistutilsError):
-    """Raised by fancy_getopt in response to getopt.error -- ie. an
-    error in the command line usage."""
-
-    pass
-
-
 class DistutilsFileError(DistutilsError):
     """Any problems in the filesystem: expected file not found, etc.
     Typically this is for problems that we detect before OSError
     could be raised."""
-
-    pass
-
-
-class DistutilsOptionError(DistutilsError):
-    """Syntactic/semantic errors in command options, such as use of
-    mutually conflicting options, or inconsistent options,
-    badly-spelled values, etc.  No distinction is made between option
-    values originating in the setup script, the command line, config
-    files, or what-have-you -- but if we *know* something originated in
-    the setup script, we'll raise DistutilsSetupError instead."""
-
-    pass
-
-
-class DistutilsSetupError(DistutilsError):
-    """For errors that can be definitely blamed on the setup script,
-    such as invalid keyword arguments to 'setup()'."""
 
     pass
 
@@ -90,14 +50,6 @@ class DistutilsInternalError(DistutilsError):
     should never be seen if the code is working!)."""
 
     pass
-
-
-class DistutilsTemplateError(DistutilsError):
-    """Syntax error in a file list template."""
-
-
-class DistutilsByteCompileError(DistutilsError):
-    """Byte compile error."""
 
 
 # Exception classes used by the CCompiler implementation classes

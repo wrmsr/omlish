@@ -14,7 +14,7 @@ import sys
 import sysconfig
 
 from ._log import log
-from .errors import DistutilsByteCompileError, DistutilsPlatformError
+from .errors import DistutilsPlatformError
 from .spawn import spawn
 
 
