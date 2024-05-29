@@ -45,6 +45,8 @@ class PycharmPlugin:
             debugger = pydevd.get_global_debugger()
 
         pydevd_tracing.SetTrace(None)
+
         debugger.stop_on_unhandled_exception(thread, frame, frames_by_id, exception)
+        # debugger.handle_post_mortem_stop(thread, frame, frames_by_id, exception)
 
         return report

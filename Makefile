@@ -17,6 +17,7 @@ define get-version
 $$(grep '^$(1)=' .versions | cut -d= -f2)
 endef
 
+PYTHON_VERSION_11:=$(call get-version,'PYTHON_11')
 PYTHON_VERSION_12:=$(call get-version,'PYTHON_12')
 PYTHON_VERSION_13:=$(call get-version,'PYTHON_13')
 PYTHON_VERSION_DEV:=$(call get-version,'PYTHON_DEV')
@@ -42,7 +43,7 @@ clean: clean-venv
 
 ### Venv
 
-DEFAULT_PYTHON_VERSION:=${PYTHON_VERSION_12}
+DEFAULT_PYTHON_VERSION:=${PYTHON_VERSION_11}
 DEFAULT_PYENV_INSTALL_OPTS:=
 DEFAULT_PYENV_VERSION_SUFFIX:=
 DEFAULT_VENV_OPTS:=  # --copies
@@ -150,6 +151,21 @@ venv-debug:
 .PHONY: test-debug
 test-debug: venv-debug
 	_VENV_ROOT=.venv-debug \
+	_TEST_SOURCES="${PROJECT}" \
+	${MAKE} _test
+
+# 12
+
+.PHONY: venv-12
+venv-12:
+	_VENV_ROOT=.venv-12 \
+	_PYTHON_VERSION=${PYTHON_VERSION_12} \
+	_REQUIREMENTS_TXT=requirements-dev.txt \
+	${MAKE} _venv
+
+.PHONY: test-12
+test-12: venv-12
+	_VENV_ROOT=.venv-12 \
 	_TEST_SOURCES="${PROJECT}" \
 	${MAKE} _test
 
