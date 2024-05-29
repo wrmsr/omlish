@@ -5,6 +5,7 @@ modules in setup scripts."""
 
 import warnings
 
+
 # This class is really only used by the "build_ext" command, so it might
 # make sense to put it in distutils.command.build_ext.  However, that
 # module is already big enough, and I want to make this class a bit more
@@ -84,24 +85,24 @@ class Extension:
     # When adding arguments to this constructor, be sure to update
     # setup_keywords in core.py.
     def __init__(
-        self,
-        name,
-        sources,
-        include_dirs=None,
-        define_macros=None,
-        undef_macros=None,
-        library_dirs=None,
-        libraries=None,
-        runtime_library_dirs=None,
-        extra_objects=None,
-        extra_compile_args=None,
-        extra_link_args=None,
-        export_symbols=None,
-        swig_opts=None,
-        depends=None,
-        language=None,
-        optional=None,
-        **kw,  # To catch unknown keywords
+            self,
+            name,
+            sources,
+            include_dirs=None,
+            define_macros=None,
+            undef_macros=None,
+            library_dirs=None,
+            libraries=None,
+            runtime_library_dirs=None,
+            extra_objects=None,
+            extra_compile_args=None,
+            extra_link_args=None,
+            export_symbols=None,
+            swig_opts=None,
+            depends=None,
+            language=None,
+            optional=None,
+            **kw,  # To catch unknown keywords
     ):
         if not isinstance(name, str):
             raise AssertionError("'name' must be a string")

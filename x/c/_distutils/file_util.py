@@ -8,6 +8,7 @@ import os
 from ._log import log
 from .errors import DistutilsFileError
 
+
 # XXX I suspect this is Unix-specific -- need porting help!
 def move_file(src, dst, verbose=1, dry_run=0):  # noqa: C901
     """Move a file 'src' to 'dst'.  If 'dst' is a directory, the file will

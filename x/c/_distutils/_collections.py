@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-import collections
 import functools
-import itertools
 import operator
 from collections.abc import Mapping
 from typing import Any
@@ -91,10 +89,10 @@ class RangeMap(dict):
     """
 
     def __init__(
-        self,
-        source,
-        sort_params: Mapping[str, Any] = {},
-        key_match_comparator=operator.le,
+            self,
+            source,
+            sort_params: Mapping[str, Any] = {},
+            key_match_comparator=operator.le,
     ):
         dict.__init__(self, source)
         self.sort_params = sort_params

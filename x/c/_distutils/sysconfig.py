@@ -18,6 +18,7 @@ import sysconfig
 from ._functools import pass_none
 from .errors import DistutilsPlatformError
 
+
 IS_PYPY = '__pypy__' in sys.builtin_module_names
 
 # These are needed in a couple of spots, so just compute them once.
@@ -72,6 +73,7 @@ if os.name == 'nt':
         )
         return next(matched, d)
 
+
     project_base = _fix_pcbuild(project_base)
     _sys_home = _fix_pcbuild(_sys_home)
 
@@ -83,7 +85,6 @@ def _python_build():
 
 
 python_build = _python_build()
-
 
 # Calculate the build qualifier flags if they are defined.  Adding the flags
 # to the include and lib directories only makes sense for an installation, not
@@ -141,9 +142,9 @@ def _get_python_inc_posix(prefix, spec_prefix, plat_specific):
     if IS_PYPY and sys.version_info < (3, 8):
         return os.path.join(prefix, 'include')
     return (
-        _get_python_inc_posix_python(plat_specific)
-        or _extant(_get_python_inc_from_config(plat_specific, spec_prefix))
-        or _get_python_inc_posix_prefix(prefix)
+            _get_python_inc_posix_python(plat_specific)
+            or _extant(_get_python_inc_from_config(plat_specific, spec_prefix))
+            or _get_python_inc_posix_prefix(prefix)
     )
 
 
@@ -196,9 +197,9 @@ def _get_python_inc_nt(prefix, spec_prefix, plat_specific):
     if python_build:
         # Include both include dirs to ensure we can find pyconfig.h
         return (
-            os.path.join(prefix, "include")
-            + os.path.pathsep
-            + os.path.dirname(sysconfig.get_config_h_filename())
+                os.path.join(prefix, "include")
+                + os.path.pathsep
+                + os.path.dirname(sysconfig.get_config_h_filename())
         )
     return os.path.join(prefix, "include")
 
@@ -317,7 +318,7 @@ def customize_compiler(compiler):  # noqa: C901
             if 'LDSHARED' not in os.environ and ldshared.startswith(cc):
                 # If CC is overridden, use that as the default
                 #       command for LDSHARED as well
-                ldshared = newcc + ldshared[len(cc) :]
+                ldshared = newcc + ldshared[len(cc):]
             cc = newcc
         if 'CXX' in os.environ:
             cxx = os.environ['CXX']

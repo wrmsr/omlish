@@ -10,7 +10,6 @@ import warnings
 
 from .._itertools import always_iterable
 from .._log import log
-from ..modified import newer_group
 from ..dir_util import mkpath
 from ..errors import (
     CompileError,
@@ -20,6 +19,7 @@ from ..errors import (
     UnknownFileError,
 )
 from ..file_util import move_file
+from ..modified import newer_group
 from ..spawn import spawn
 from ..util import execute, split_quoted
 
@@ -194,12 +194,12 @@ class CCompiler:
         """
         for defn in definitions:
             if not (
-                isinstance(defn, tuple)
-                and (
-                    len(defn) in (1, 2)
-                    and (isinstance(defn[1], str) or defn[1] is None)
-                )
-                and isinstance(defn[0], str)
+                    isinstance(defn, tuple)
+                    and (
+                            len(defn) in (1, 2)
+                            and (isinstance(defn[1], str) or defn[1] is None)
+                    )
+                    and isinstance(defn[0], str)
             ):
                 raise TypeError(
                     ("invalid macro definition '%s': " % defn)
@@ -461,7 +461,7 @@ class CCompiler:
             runtime_library_dirs = list(self.runtime_library_dirs)
         elif isinstance(runtime_library_dirs, (list, tuple)):
             runtime_library_dirs = list(runtime_library_dirs) + (
-                self.runtime_library_dirs or []
+                    self.runtime_library_dirs or []
             )
         else:
             raise TypeError(
@@ -507,13 +507,13 @@ class CCompiler:
     # (must be implemented by subclasses)
 
     def preprocess(
-        self,
-        source,
-        output_file=None,
-        macros=None,
-        include_dirs=None,
-        extra_preargs=None,
-        extra_postargs=None,
+            self,
+            source,
+            output_file=None,
+            macros=None,
+            include_dirs=None,
+            extra_preargs=None,
+            extra_postargs=None,
     ):
         """Preprocess a single C/C++ source file, named in 'source'.
         Output will be written to file named 'output_file', or stdout if
@@ -527,15 +527,15 @@ class CCompiler:
         pass
 
     def compile(
-        self,
-        sources,
-        output_dir=None,
-        macros=None,
-        include_dirs=None,
-        debug=0,
-        extra_preargs=None,
-        extra_postargs=None,
-        depends=None,
+            self,
+            sources,
+            output_dir=None,
+            macros=None,
+            include_dirs=None,
+            debug=0,
+            extra_preargs=None,
+            extra_postargs=None,
+            depends=None,
     ):
         """Compile one or more source files.
 
@@ -609,7 +609,7 @@ class CCompiler:
         pass
 
     def create_static_lib(
-        self, objects, output_libname, output_dir=None, debug=0, target_lang=None
+            self, objects, output_libname, output_dir=None, debug=0, target_lang=None
     ):
         """Link a bunch of stuff together to create a static library file.
         The "bunch of stuff" consists of the list of object files supplied
@@ -641,20 +641,20 @@ class CCompiler:
     EXECUTABLE = "executable"
 
     def link(
-        self,
-        target_desc,
-        objects,
-        output_filename,
-        output_dir=None,
-        libraries=None,
-        library_dirs=None,
-        runtime_library_dirs=None,
-        export_symbols=None,
-        debug=0,
-        extra_preargs=None,
-        extra_postargs=None,
-        build_temp=None,
-        target_lang=None,
+            self,
+            target_desc,
+            objects,
+            output_filename,
+            output_dir=None,
+            libraries=None,
+            library_dirs=None,
+            runtime_library_dirs=None,
+            export_symbols=None,
+            debug=0,
+            extra_preargs=None,
+            extra_postargs=None,
+            build_temp=None,
+            target_lang=None,
     ):
         """Link a bunch of stuff together to create an executable or
         shared library file.
@@ -704,19 +704,19 @@ class CCompiler:
     # Old 'link_*()' methods, rewritten to use the new 'link()' method.
 
     def link_shared_lib(
-        self,
-        objects,
-        output_libname,
-        output_dir=None,
-        libraries=None,
-        library_dirs=None,
-        runtime_library_dirs=None,
-        export_symbols=None,
-        debug=0,
-        extra_preargs=None,
-        extra_postargs=None,
-        build_temp=None,
-        target_lang=None,
+            self,
+            objects,
+            output_libname,
+            output_dir=None,
+            libraries=None,
+            library_dirs=None,
+            runtime_library_dirs=None,
+            export_symbols=None,
+            debug=0,
+            extra_preargs=None,
+            extra_postargs=None,
+            build_temp=None,
+            target_lang=None,
     ):
         self.link(
             CCompiler.SHARED_LIBRARY,
@@ -735,19 +735,19 @@ class CCompiler:
         )
 
     def link_shared_object(
-        self,
-        objects,
-        output_filename,
-        output_dir=None,
-        libraries=None,
-        library_dirs=None,
-        runtime_library_dirs=None,
-        export_symbols=None,
-        debug=0,
-        extra_preargs=None,
-        extra_postargs=None,
-        build_temp=None,
-        target_lang=None,
+            self,
+            objects,
+            output_filename,
+            output_dir=None,
+            libraries=None,
+            library_dirs=None,
+            runtime_library_dirs=None,
+            export_symbols=None,
+            debug=0,
+            extra_preargs=None,
+            extra_postargs=None,
+            build_temp=None,
+            target_lang=None,
     ):
         self.link(
             CCompiler.SHARED_OBJECT,
@@ -766,17 +766,17 @@ class CCompiler:
         )
 
     def link_executable(
-        self,
-        objects,
-        output_progname,
-        output_dir=None,
-        libraries=None,
-        library_dirs=None,
-        runtime_library_dirs=None,
-        debug=0,
-        extra_preargs=None,
-        extra_postargs=None,
-        target_lang=None,
+            self,
+            objects,
+            output_progname,
+            output_dir=None,
+            libraries=None,
+            library_dirs=None,
+            runtime_library_dirs=None,
+            debug=0,
+            extra_preargs=None,
+            extra_postargs=None,
+            target_lang=None,
     ):
         self.link(
             CCompiler.EXECUTABLE,
@@ -818,12 +818,12 @@ class CCompiler:
         raise NotImplementedError
 
     def has_function(  # noqa: C901
-        self,
-        funcname,
-        includes=None,
-        include_dirs=None,
-        libraries=None,
-        library_dirs=None,
+            self,
+            funcname,
+            includes=None,
+            include_dirs=None,
+            libraries=None,
+            library_dirs=None,
     ):
         """Return a boolean indicating whether funcname is provided as
         a symbol on the current platform.  The optional arguments can
@@ -985,7 +985,7 @@ int main (int argc, char **argv) {
         # Chop off the drive
         no_drive = os.path.splitdrive(base)[1]
         # If abs, chop off leading /
-        return no_drive[os.path.isabs(no_drive) :]
+        return no_drive[os.path.isabs(no_drive):]
 
     def shared_object_filename(self, basename, strip_dir=0, output_dir=''):
         assert output_dir is not None
@@ -1000,11 +1000,11 @@ int main (int argc, char **argv) {
         return os.path.join(output_dir, basename + (self.exe_extension or ''))
 
     def library_filename(
-        self,
-        libname,
-        lib_type='static',
-        strip_dir=0,
-        output_dir='',  # or 'shared'
+            self,
+            libname,
+            lib_type='static',
+            strip_dir=0,
+            output_dir='',  # or 'shared'
     ):
         assert output_dir is not None
         expected = '"static", "shared", "dylib", "xcode_stub"'
@@ -1056,10 +1056,8 @@ _default_compilers = (
     # on a cygwin built python we can use gcc like an ordinary UNIXish
     # compiler
     ('cygwin.*', 'unix'),
-    ('zos', 'zos'),
     # OS name mappings
     ('posix', 'unix'),
-    ('nt', 'msvc'),
 )
 
 
@@ -1079,8 +1077,8 @@ def get_default_compiler(osname=None, platform=None):
         platform = sys.platform
     for pattern, compiler in _default_compilers:
         if (
-            re.match(pattern, platform) is not None
-            or re.match(pattern, osname) is not None
+                re.match(pattern, platform) is not None
+                or re.match(pattern, osname) is not None
         ):
             return compiler
     # Default to Unix compiler
@@ -1092,19 +1090,6 @@ def get_default_compiler(osname=None, platform=None):
 # is assumed to be in the 'distutils' package.)
 compiler_class = {
     'unix': ('unixccompiler', 'UnixCCompiler', "standard UNIX-style compiler"),
-    'msvc': ('_msvccompiler', 'MSVCCompiler', "Microsoft Visual C++"),
-    'cygwin': (
-        'cygwinccompiler',
-        'CygwinCCompiler',
-        "Cygwin port of GNU C Compiler for Win32",
-    ),
-    'mingw32': (
-        'cygwinccompiler',
-        'Mingw32CCompiler',
-        "Mingw32 port of GNU C Compiler for Win32",
-    ),
-    'bcpp': ('bcppcompiler', 'BCPPCompiler', "Borland C++ Compiler"),
-    'zos': ('zosccompiler', 'zOSCCompiler', 'IBM XL C/C++ Compilers'),
 }
 
 
