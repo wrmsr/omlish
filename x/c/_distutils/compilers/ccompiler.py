@@ -8,20 +8,20 @@ import re
 import sys
 import warnings
 
-from ._itertools import always_iterable
-from ._log import log
-from .modified import newer_group
-from .dir_util import mkpath
-from .errors import (
+from .._itertools import always_iterable
+from .._log import log
+from ..modified import newer_group
+from ..dir_util import mkpath
+from ..errors import (
     CompileError,
     DistutilsModuleError,
     DistutilsPlatformError,
     LinkError,
     UnknownFileError,
 )
-from .file_util import move_file
-from .spawn import spawn
-from .util import execute, split_quoted
+from ..file_util import move_file
+from ..spawn import spawn
+from ..util import execute, split_quoted
 
 
 class CCompiler:
@@ -1026,7 +1026,7 @@ int main (int argc, char **argv) {
         log.debug(msg)
 
     def debug_print(self, msg):
-        from .debug import DEBUG
+        from ..debug import DEBUG
 
         if DEBUG:
             print(msg)
@@ -1151,7 +1151,7 @@ def new_compiler(plat=None, compiler=None, verbose=0, dry_run=0, force=0):
         raise DistutilsPlatformError(msg)
 
     try:
-        module_name = "distutils." + module_name
+        module_name = __package__ + "." + module_name
         __import__(module_name)
         module = sys.modules[module_name]
         klass = vars(module)[class_name]

@@ -48,9 +48,9 @@ from omlish import cached
 from omlish import lang
 
 import x.c._distutils as du
-import x.c._distutils.ccompiler
-import x.c._distutils.core
+import x.c._distutils.compilers.ccompiler
 import x.c._distutils.errors
+import x.c._distutils.extension
 import x.c._distutils.modified
 import x.c._distutils.sysconfig
 import x.c._distutils.util
@@ -209,8 +209,8 @@ class BuildExt:
     #
 
     @lang.cached_nullary
-    def get_compiler(self) -> du.ccompiler.CCompiler:
-        cc = du.ccompiler.new_compiler(
+    def get_compiler(self) -> du.compilers.ccompiler.CCompiler:
+        cc = du.compilers.ccompiler.new_compiler(
             compiler=self._opts.compiler,
             verbose=int(self._opts.verbose),
             dry_run=int(self._opts.dry_run),
@@ -304,7 +304,7 @@ class BuildExt:
 
     #
 
-    def get_export_symbols(self, ext: du.core.Extension) -> ta.Sequence[str]:
+    def get_export_symbols(self, ext: du.extension.Extension) -> ta.Sequence[str]:
         suffix = '_' + ext.name.split('.')[-1]
         try:
             # Unicode module name support as defined in PEP-489
@@ -318,7 +318,7 @@ class BuildExt:
             ext.export_symbols.append(initfunc_name)
         return ext.export_symbols
 
-    def get_libraries(self, ext: du.core.Extension) -> ta.Sequence[str]:
+    def get_libraries(self, ext: du.extension.Extension) -> ta.Sequence[str]:
         if sys.platform == 'win32':
             from distutils._msvccompiler import MSVCCompiler  # noqa
 
@@ -351,12 +351,12 @@ class BuildExt:
 
     #
 
-    def build_extension(self, ext: du.core.Extension) -> ta.Sequence[str]:
+    def build_extension(self, ext: du.extension.Extension) -> ta.Sequence[str]:
         with self._filter_build_errors(ext):
             return self._build_extension(ext)
 
     @contextlib.contextmanager
-    def _filter_build_errors(self, ext: du.core.Extension) -> ta.Iterator[None]:
+    def _filter_build_errors(self, ext: du.extension.Extension) -> ta.Iterator[None]:
         try:
             yield
         except (
@@ -368,7 +368,7 @@ class BuildExt:
                 raise
             log.warning('building extension "%s" failed: %s' % (ext.name, e))
 
-    def _build_extension(self, ext: du.core.Extension) -> ta.Sequence[str]:
+    def _build_extension(self, ext: du.extension.Extension) -> ta.Sequence[str]:
         sources = ext.sources
         sources = sorted(sources)
 
