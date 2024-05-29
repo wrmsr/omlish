@@ -130,7 +130,7 @@ def copy_tree(  # noqa: C901
     (the default), the destination of the symlink will be copied.
     'update' and 'verbose' are the same as for 'copy_file'.
     """
-    from distutils.file_util import copy_file
+    from .file_util import copy_file
 
     if not dry_run and not os.path.isdir(src):
         raise DistutilsFileError("cannot copy tree '%s': not a directory" % src)

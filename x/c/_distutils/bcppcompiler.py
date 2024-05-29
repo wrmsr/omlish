@@ -15,7 +15,7 @@ import os
 import warnings
 
 from ._log import log
-from ._modified import newer
+from .modified import newer
 from .ccompiler import CCompiler, gen_preprocess_options
 from .errors import (
     CompileError,

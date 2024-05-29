@@ -45,7 +45,7 @@ class FileList:
         """Print 'msg' to stdout if the global DEBUG (taken from the
         DISTUTILS_DEBUG environment variable) flag is true.
         """
-        from distutils.debug import DEBUG
+        from .debug import DEBUG
 
         if DEBUG:
             print(msg)

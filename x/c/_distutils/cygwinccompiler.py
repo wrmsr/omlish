@@ -315,7 +315,7 @@ def check_config_h():
     # XXX since this function also checks sys.version, it's not strictly a
     # "pyconfig.h" check -- should probably be renamed...
 
-    from distutils import sysconfig
+    from . import sysconfig
 
     # if sys.version contains GCC then python was compiled with GCC, and the
     # pyconfig.h file should be OK

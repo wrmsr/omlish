@@ -50,8 +50,8 @@ from omlish import lang
 import x.c._distutils as du
 import x.c._distutils.ccompiler
 import x.c._distutils.core
-import x.c._distutils.dep_util
 import x.c._distutils.errors
+import x.c._distutils.modified
 import x.c._distutils.sysconfig
 import x.c._distutils.util
 
@@ -374,7 +374,7 @@ class BuildExt:
 
         ext_path = self.get_ext_fullpath(ext.name)
         depends = sources + ext.depends
-        if not (self._opts.force or du.dep_util.newer_group(depends, ext_path, 'newer')):
+        if not (self._opts.force or du.modified.newer_group(depends, ext_path, 'newer')):
             log.debug('skipping "%s" extension (up-to-date)', ext.name)
             return []
         else:
