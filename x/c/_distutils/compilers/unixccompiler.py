@@ -23,7 +23,7 @@ import sys
 
 from .. import sysconfig
 from .._log import log
-from .._macos_compat import compiler_fixup
+from ._macos_compat import compiler_fixup
 from ..modified import newer
 from .ccompiler import CCompiler, gen_lib_options, gen_preprocess_options
 from ..errors import CompileError, DistutilsExecError, LibError, LinkError

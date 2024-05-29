@@ -18,11 +18,11 @@ def test_junk():
         os.remove(f)
 
     import x.c._distutils as du
-    import x.c._distutils.core
+    import x.c._distutils.extension
 
     ##
 
-    ext = du.core.Extension(
+    ext = du.extension.Extension(
         'junk',
         sources=[os.path.abspath(os.path.join(here, '../junk.cc'))],
         extra_compile_args=['-std=c++14'],
