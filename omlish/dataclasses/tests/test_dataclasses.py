@@ -185,3 +185,19 @@ def test_abc():
     assert d5.p == 'p'
     d5.p = 'p5'
     assert d5.p == 'p5'
+
+
+def test_reorder():
+    @dc.dataclass()
+    class A:
+        x: int
+        y: int = 3
+
+    @dc.dataclass(reorder=True)
+    class B(A):
+        z: int
+
+    b = B(1, 2)
+    assert b.x == 1
+    assert b.z == 2
+    assert b.y == 3
