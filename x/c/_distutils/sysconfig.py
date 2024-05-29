@@ -16,7 +16,6 @@ import re
 import sys
 import sysconfig
 
-from . import py39compat
 from ._functools import pass_none
 from .errors import DistutilsPlatformError
 
@@ -538,7 +537,6 @@ def get_config_vars(*args):
     global _config_vars
     if _config_vars is None:
         _config_vars = sysconfig.get_config_vars().copy()
-        py39compat.add_ext_suffix(_config_vars)
 
     return [_config_vars.get(name) for name in args] if args else _config_vars
 
