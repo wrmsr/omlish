@@ -146,18 +146,18 @@ static PyMethodDef Custom_methods[] = {
 static PyTypeObject CustomType = {
     PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "junk.Custom",
-    .tp_doc = PyDoc_STR("Custom objects"),
     .tp_basicsize = sizeof(CustomObject),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_GC,
-    .tp_new = Custom_new,
-    .tp_init = (initproc) Custom_init,
     .tp_dealloc = (destructor) Custom_dealloc,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_GC,
+    .tp_doc = PyDoc_STR("Custom objects"),
     .tp_traverse = (traverseproc) Custom_traverse,
     .tp_clear = (inquiry) Custom_clear,
-    .tp_members = Custom_members,
     .tp_methods = Custom_methods,
+    .tp_members = Custom_members,
     .tp_getset = Custom_getsetters,
+    .tp_init = (initproc) Custom_init,
+    .tp_new = Custom_new,
 };
 
 //
