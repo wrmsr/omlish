@@ -2,6 +2,7 @@ import pytest
 
 from .. import supervisor
 import trio
+from omlish.dev.pytest import assert_raises_star
 
 
 class SampleData:
@@ -52,7 +53,7 @@ async def test_automatic_restart_permanent(max_restarts, log_handler):
 async def test_automatic_restart_crash(max_restarts, strategy, log_handler):
     test_data = SampleData()
 
-    with pytest.raises(RuntimeError):
+    with assert_raises_star(RuntimeError):
         async with trio.open_nursery() as nursery:
             children = [
                 supervisor.child_spec(
