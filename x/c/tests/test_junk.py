@@ -17,8 +17,8 @@ def test_junk():
     for f in glob.glob(os.path.join(here, '*.so')):
         os.remove(f)
 
-    import distutils as du
-    import distutils.core
+    import x.c._distutils as du
+    import x.c._distutils.core
 
     ##
 
