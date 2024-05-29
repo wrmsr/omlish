@@ -12,9 +12,9 @@ import os
 import sys
 import warnings
 
-from ._log import log
+from .._log import log
 from .ccompiler import CCompiler, gen_lib_options
-from .errors import (
+from ..errors import (
     CompileError,
     DistutilsExecError,
     DistutilsPlatformError,

@@ -19,16 +19,16 @@ import sys
 import warnings
 import winreg
 
-from ._log import log
+from .._log import log
 from .ccompiler import CCompiler, gen_lib_options
-from .errors import (
+from ..errors import (
     CompileError,
     DistutilsExecError,
     DistutilsPlatformError,
     LibError,
     LinkError,
 )
-from .util import get_platform
+from ..util import get_platform
 
 warnings.warn(
     "msvc9compiler is deprecated and slated to be removed "

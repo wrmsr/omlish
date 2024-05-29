@@ -15,16 +15,16 @@ import sys
 import warnings
 from subprocess import check_output
 
-from ._collections import RangeMap
-from .errors import (
+from .._collections import RangeMap
+from ..errors import (
     CCompilerError,
     CompileError,
     DistutilsExecError,
     DistutilsPlatformError,
 )
-from .file_util import write_file
+from ..file_util import write_file
 from .unixccompiler import UnixCCompiler
-from .version import LooseVersion, suppress_known_deprecation
+from ..version import LooseVersion, suppress_known_deprecation
 
 _msvcr_lookup = RangeMap.left(
     {
@@ -315,7 +315,7 @@ def check_config_h():
     # XXX since this function also checks sys.version, it's not strictly a
     # "pyconfig.h" check -- should probably be renamed...
 
-    from . import sysconfig
+    from .. import sysconfig
 
     # if sys.version contains GCC then python was compiled with GCC, and the
     # pyconfig.h file should be OK

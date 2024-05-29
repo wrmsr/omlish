@@ -13,8 +13,8 @@ IBM z/OS XL C/C++
 
 import os
 
-from . import sysconfig
-from .errors import CompileError, DistutilsExecError
+from .. import sysconfig
+from ..errors import CompileError, DistutilsExecError
 from .unixccompiler import UnixCCompiler
 
 _cc_args = {
