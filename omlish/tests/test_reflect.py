@@ -89,11 +89,11 @@ def test_extended_reflect_type():
             for b in rfl.get_original_bases(cty):
                 rec(b)
 
+    import pprint
+
+    from .. import c3
+
     for ty in [
-        list,
-        ta.List,
-        list[int],
-        ta.List[int],
         A,
         A[str],
         B,
@@ -106,5 +106,12 @@ def test_extended_reflect_type():
         G,
         G[int, str],
     ]:
-        rec(ty)
+        # rec(ty)
+        # print()
+        mro = c3.mro(
+            rfl.type_(ty),
+            get_bases=rfl.get_reflected_bases,
+            is_subclass=lambda l, r: issubclass(rfl.get_concrete_type(l), rfl.get_concrete_type(r)),
+        )
+        pprint.pprint(mro)
         print()
