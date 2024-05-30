@@ -12,6 +12,7 @@ import inspect
 import io
 import pickle
 import sys
+import textwrap
 import traceback
 import types
 import typing  # Needed for the string "typing.ClassVar[int]" to work as an annotation.
@@ -3625,13 +3626,19 @@ class TestSlots(unittest.TestCase):
         self.assertTrue(A.__weakref__)
         A()
 
-        @dataclass(slots=True, weakref_slot=True)
-        class B[T2]:
-            pass
+        if sys.version_info >= (3, 12):
+            exec(
+                textwrap.dedent("""
+                @dataclass(slots=True, weakref_slot=True)
+                class B[T2]:
+                    pass
 
-        self.assertEqual(B.__slots__, ('__weakref__',))
-        self.assertTrue(B.__weakref__)
-        B()
+                self.assertEqual(B.__slots__, ('__weakref__',))
+                self.assertTrue(B.__weakref__)
+                B()
+                """),
+                {**globals(), **locals()},
+            )
 
     def test_dataclass_derived_generic_from_base(self):
         T = typing.TypeVar('T')
@@ -3654,13 +3661,19 @@ class TestSlots(unittest.TestCase):
         self.assertTrue(C2.__weakref__)
         C2()
 
-        @dataclass(slots=True, weakref_slot=True)
-        class D[T2](RawBase):
-            pass
+        if sys.version_info >= (3, 12):
+            exec(
+                textwrap.dedent("""
+                @dataclass(slots=True, weakref_slot=True)
+                class D[T2](RawBase):
+                    pass
 
-        self.assertEqual(D.__slots__, ())
-        self.assertTrue(D.__weakref__)
-        D()
+                self.assertEqual(D.__slots__, ())
+                self.assertTrue(D.__weakref__)
+                D()
+                """),
+                {**globals(), **locals()},
+            )
 
     def test_dataclass_derived_generic_from_slotted_base(self):
         T = typing.TypeVar('T')
@@ -3684,15 +3697,21 @@ class TestSlots(unittest.TestCase):
         self.assertTrue(E2.__weakref__)
         E2()
 
-        @dataclass(slots=True, weakref_slot=True)
-        class F[T2](WithSlots):
-            pass
+        if sys.version_info >= (3, 12):
+            exec(
+                textwrap.dedent("""
+                @dataclass(slots=True, weakref_slot=True)
+                class F[T2](WithSlots):
+                    pass
 
-        self.assertEqual(F.__slots__, ('__weakref__',))
-        self.assertTrue(F.__weakref__)
-        F()
+                self.assertEqual(F.__slots__, ('__weakref__',))
+                self.assertTrue(F.__weakref__)
+                F()
+                """),
+                {**globals(), **locals()},
+            )
 
-    def test_dataclass_derived_generic_from_slotted_base(self):
+    def test_dataclass_derived_generic_from_weakref_slotted_base(self):
         T = typing.TypeVar('T')
 
         class WithWeakrefSlot:
@@ -3714,13 +3733,19 @@ class TestSlots(unittest.TestCase):
         self.assertTrue(G2.__weakref__)
         G2()
 
-        @dataclass(slots=True, weakref_slot=True)
-        class H[T2](WithWeakrefSlot):
-            pass
+        if sys.version_info >= (3, 12):
+            exec(
+                textwrap.dedent("""
+                @dataclass(slots=True, weakref_slot=True)
+                class H[T2](WithWeakrefSlot):
+                    pass
 
-        self.assertEqual(H.__slots__, ())
-        self.assertTrue(H.__weakref__)
-        H()
+                self.assertEqual(H.__slots__, ())
+                self.assertTrue(H.__weakref__)
+                H()
+                """),
+                {**globals(), **locals()},
+            )
 
     def test_dataclass_slot_dict(self):
         class WithDictSlot:
