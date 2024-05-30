@@ -77,17 +77,23 @@ def test_extended_reflect_type():
 
     print()
 
-    def rec(o):
-        rty = rfl.type_(o)
+    def rec(obj):
+        rty = rfl.type_(obj)
         print(rty)
         if isinstance(rty, type):
-            for b in rfl.get_original_bases(o):
+            for b in rfl.get_original_bases(obj):
                 rec(b)
         elif isinstance(rty, rfl.Generic):
             for b in rfl.get_original_bases(rty.cls):
                 rec(b)
+        else:
+            raise TypeError(obj)
 
     for ty in [
+        list,
+        ta.List,
+        list[int],
+        ta.List[int],
         A,
         A[str],
         B,
