@@ -44,5 +44,3 @@ class Config:
     include_date_header: bool = True
     include_server_header: bool = True
     alt_svc_headers: list[str] = dc.field(default_factory=lambda: [])
-
-    workers: int = 1
