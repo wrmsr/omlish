@@ -47,13 +47,13 @@ from omlish import check
 from omlish import cached
 from omlish import lang
 
-import x.c._distutils as du
-import x.c._distutils.compilers.ccompiler
-import x.c._distutils.errors
-import x.c._distutils.extension
-import x.c._distutils.modified
-import x.c._distutils.sysconfig
-import x.c._distutils.util
+from . import _distutils as du
+from ._distutils.compilers import ccompiler as _  # noqa
+from ._distutils import errors as _  # noqa
+from ._distutils import extension as _  # noqa
+from ._distutils import modified as _  # noqa
+from ._distutils import sysconfig as _  # noqa
+from ._distutils import util as _  # noqa
 
 
 log = logging.getLogger(__name__)
