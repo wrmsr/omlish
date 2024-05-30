@@ -21,7 +21,7 @@ _UnionGenericAlias = ta._UnionGenericAlias   # type: ignore  # noqa
 
 class _Special(ta.NamedTuple):
     name: str
-    special: _SpecialGenericAlias
+    alias: _SpecialGenericAlias
     origin: type
     nparams: int
 
@@ -38,6 +38,7 @@ _KNOWN_SPECIALS = [
 ]
 
 _KNOWN_SPECIALS_BY_NAME = {s.name: s for s in _KNOWN_SPECIALS}
+_KNOWN_SPECIALS_BY_ALIAS = {s.alias: s for s in _KNOWN_SPECIALS}
 _KNOWN_SPECIALS_BY_ORIGIN = {s.origin: s for s in _KNOWN_SPECIALS}
 
 _KNOWN_SPECIAL_TYPE_VARS = tuple(
@@ -156,6 +157,10 @@ def type_(obj: ta.Any) -> Type:
 
     if isinstance(obj, ta.TypeVar):
         return obj
+
+    if isinstance(obj, _SpecialGenericAlias):
+        if (ks := _KNOWN_SPECIALS_BY_ALIAS.get(obj)) is not None:
+            raise NotImplementedError
 
     raise TypeError(obj)
 
