@@ -1,10 +1,14 @@
 import abc
 import dataclasses as _dc
+import typing as ta
 
 import pytest
 
 from ... import dataclasses as dc
 from ... import lang
+
+
+T = ta.TypeVar('T')
 
 
 def test_simple():
@@ -201,3 +205,11 @@ def test_reorder():
     assert b.x == 1
     assert b.z == 2
     assert b.y == 3
+
+
+def test_generics():
+    @dc.dataclass()
+    class Box(ta.Generic[T]):
+        v: T
+
+    assert Box[int](5).v == 5
