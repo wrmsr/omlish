@@ -6,6 +6,7 @@ import pytest
 
 from ... import dataclasses as dc
 from ... import lang
+from ... import reflect as rfl  # noqa
 
 
 T = ta.TypeVar('T')
@@ -212,10 +213,14 @@ def test_generics():
     class Box(ta.Generic[T]):
         v: T
 
+    rty0 = rfl.type_(Box[int])
+
     assert Box[int](5).v == 5
 
     @dc.dataclass()
     class IntBox(Box[int]):
         pass
+
+    rty1 = rfl.type_(IntBox)
 
     assert IntBox(5).v == 5
