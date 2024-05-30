@@ -7,8 +7,8 @@ import time
 from omlish import logs
 import anyio
 
-from .config import Config
-from .serving import serve
+from ..config import Config
+from ..serving import serve
 
 
 async def hello_app(scope, recv, send):
@@ -54,7 +54,7 @@ def _main():
     # backend = 'trio'
 
     if cfg.workers > 1:
-        from .multiprocess import serve_multiprocess
+        from ..multiprocess import serve_multiprocess
         serve_multiprocess(hello_app, cfg)
 
     else:
