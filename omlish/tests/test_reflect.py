@@ -85,14 +85,9 @@ def test_extended_reflect_type():
     def rec(obj):
         rty = rfl.type_(obj)
         print(rty)
-        if isinstance(rty, type):
-            for b in rfl.get_original_bases(obj):
+        if (cty := rfl.get_concrete_type(rty)) is not None:
+            for b in rfl.get_original_bases(cty):
                 rec(b)
-        elif isinstance(rty, rfl.Generic):
-            for b in rfl.get_original_bases(rty.cls):
-                rec(b)
-        else:
-            raise TypeError(obj)
 
     for ty in [
         list,

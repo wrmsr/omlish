@@ -177,6 +177,16 @@ def types_equivalent(l: Type, r: Type) -> bool:
     return l == r
 
 
+def get_concrete_type(ty: Type) -> ta.Optional[type]:
+    if isinstance(ty, type):
+        return ty
+    if isinstance(ty, Generic):
+        return ty.cls
+    if isinstance(ty, (Union, ta.TypeVar)):
+        return None
+    raise TypeError(ty)
+
+
 ##
 
 
