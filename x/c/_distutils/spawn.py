@@ -11,14 +11,13 @@ import os
 import subprocess
 import sys
 
-from .debug import DEBUG
 from .errors import DistutilsExecError
 
 
 log = logging.getLogger(__name__)
 
 
-def spawn(cmd, search_path=1, verbose=0, dry_run=0, env=None):  # noqa: C901
+def spawn(cmd, search_path=1, verbose=0, dry_run=0, env=None, debug=False):  # noqa: C901
     """Run another program, specified as a command list 'cmd', in a new process.
 
     'cmd' is just the argument list for the new process, ie.
@@ -61,12 +60,12 @@ def spawn(cmd, search_path=1, verbose=0, dry_run=0, env=None):  # noqa: C901
         proc.wait()
         exitcode = proc.returncode
     except OSError as exc:
-        if not DEBUG:
+        if not debug:
             cmd = cmd[0]
         raise DistutilsExecError(f"command {cmd!r} failed: {exc.args[-1]}") from exc
 
     if exitcode:
-        if not DEBUG:
+        if not debug:
             cmd = cmd[0]
         raise DistutilsExecError(f"command {cmd!r} failed with exit code {exitcode}")
 
