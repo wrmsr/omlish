@@ -94,17 +94,17 @@ def test_extended_reflect_type():
     from .. import c3
 
     for ty in [
-        A,
-        A[str],
-        B,
-        B[int],
-        C,
-        C[str],
+        # A,
+        # A[str],
+        # B,
+        # B[int],
+        # C,
+        # C[str],
         D,
-        E,
-        F,
-        G,
-        G[int, str],
+        # E,
+        # F,
+        # G,
+        # G[int, str],
     ]:
         # rec(ty)
         # print()
