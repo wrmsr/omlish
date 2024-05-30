@@ -9,7 +9,6 @@ import re
 import sys
 import warnings
 
-from .._itertools import always_iterable
 from ..dir_util import mkpath
 from ..errors import (
     CompileError,
