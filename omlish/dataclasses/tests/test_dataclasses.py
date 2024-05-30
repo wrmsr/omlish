@@ -213,3 +213,9 @@ def test_generics():
         v: T
 
     assert Box[int](5).v == 5
+
+    @dc.dataclass()
+    class IntBox(Box[int]):
+        pass
+
+    assert IntBox(5).v == 5
