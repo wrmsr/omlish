@@ -26,13 +26,14 @@ except ImportError:
 
 
 def get_params(obj: ta.Any) -> tuple[ta.TypeVar, ...]:
-    if isinstance(obj, type) and issubclass(obj, ta.Generic) and obj is not ta.Generic:
-        return obj.__parameters__  # noqa
+    if isinstance(obj, type) and issubclass(obj, ta.Generic):
+        return obj.__dict__.get('__parameters__', ())  # noqa
     raise TypeError(obj)
 
 
 Type = ta.Union[
     type,
+    ta.TypeVar,
     'Union',
     'Generic',
 ]
@@ -58,6 +59,15 @@ class Generic(ta.NamedTuple):
     cls: ta.Any
     args: tuple[Type, ...]
     params: tuple[ta.TypeVar, ...]
+    obj: ta.Any
+
+    def __repr__(self):
+        return (
+            f'{self.__class__.__name__}('
+            f'cls={self.cls!r}, '
+            f'args={self.args!r}, '
+            f'params={self.params!r})'
+        )
 
 
 TYPES: tuple[type, ...] = (
@@ -85,12 +95,24 @@ def type_(obj: ta.Any) -> Type:
         if len(args) != len(params):
             raise TypeError(f'Mismatched {args=} and {params=} for {obj=}')
         return Generic(
-            type_(origin),
+            origin,
             tuple(type_(a) for a in args),
             params,
+            obj,
         )
 
-    if isinstance(obj, (type, ta.TypeVar)):
+    if isinstance(obj, type):
+        if issubclass(obj, ta.Generic):
+            params = get_params(obj)
+            return Generic(
+                obj,
+                params,
+                params,
+                obj,
+            )
+        return obj
+
+    if isinstance(obj, ta.TypeVar):
         return obj
 
     raise TypeError(obj)
