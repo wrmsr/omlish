@@ -187,6 +187,12 @@ def get_concrete_type(ty: Type) -> ta.Optional[type]:
     raise TypeError(ty)
 
 
+def get_reflected_bases(ty: Type) -> tuple[Type, ...]:
+    if (cty := get_concrete_type(ty)) is not None:
+        return tuple(type_(b) for b in get_original_bases(cty))
+    return ()
+
+
 ##
 
 
