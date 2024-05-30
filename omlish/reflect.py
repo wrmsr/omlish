@@ -5,6 +5,8 @@ import collections.abc
 import typing as ta
 import types
 
+from . import c3
+
 
 _NoneType = types.NoneType  # type: ignore
 
@@ -122,7 +124,7 @@ TYPES: tuple[type, ...] = (
 
 
 def type_(obj: ta.Any) -> Type:
-    if isinstance(obj, (Union, Generic)):
+    if isinstance(obj, (Union, Generic, ta.TypeVar)):
         return obj
 
     if type(obj) is _UnionGenericAlias:
@@ -155,9 +157,6 @@ def type_(obj: ta.Any) -> Type:
             )
         return obj
 
-    if isinstance(obj, ta.TypeVar):
-        return obj
-
     if isinstance(obj, _SpecialGenericAlias):
         if (ks := _KNOWN_SPECIALS_BY_ALIAS.get(obj)) is not None:
             params = _KNOWN_SPECIAL_TYPE_VARS[:ks.nparams]
@@ -169,6 +168,9 @@ def type_(obj: ta.Any) -> Type:
             )
 
     raise TypeError(obj)
+
+
+##
 
 
 def types_equivalent(l: Type, r: Type) -> bool:
@@ -204,6 +206,14 @@ def get_reflected_bases(ty: Type) -> tuple[Type, ...]:
         rpl = _get_type_var_replacements(ty)
         return tuple(_replace_type_vars(type_(b), rpl) for b in get_original_bases(cty))
     return ()
+
+
+def generic_mro(obj: ta.Any) -> list[Type]:
+    return c3.mro(
+        type_(obj),
+        get_bases=get_reflected_bases,
+        is_subclass=lambda l, r: issubclass(get_concrete_type(l), get_concrete_type(r)),
+    )
 
 
 ##
