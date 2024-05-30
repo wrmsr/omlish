@@ -56,7 +56,23 @@ def test_extended_reflect_type():
     class D(C[str], B[int]):
         pass
 
+    class E(A[int]):
+        pass
+
+    class F(A):
+        pass
+
     print()
+
+    def rec(o):
+        rty = rfl.type_(o)
+        print(rty)
+        if isinstance(rty, type):
+            for b in rfl.get_original_bases(o):
+                rec(b)
+        elif isinstance(rty, rfl.Generic):
+            for b in rfl.get_original_bases(rty.cls):
+                rec(b)
 
     for ty in [
         A,
@@ -66,7 +82,8 @@ def test_extended_reflect_type():
         C,
         C[str],
         D,
+        E,
+        F,
     ]:
-        print(ty)
-        print(rfl.type_(ty))
+        rec(ty)
         print()
