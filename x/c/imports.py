@@ -8,7 +8,6 @@ import shutil
 import sys
 
 from . import _distutils as du
-from .build_ext import BuildExt
 
 
 class MyLoader(importlib.abc.Loader):
@@ -20,14 +19,14 @@ class MyLoader(importlib.abc.Loader):
         self._path = path
 
     def load_module(self, fullname):
-        ext = du.extension.Extension(
+        ext = du.Extension(
             self._fullname,
             sources=[self._path],
             extra_compile_args=['-std=c++14'],
             undef_macros=['BARF'],
         )
 
-        cmd_obj = BuildExt(BuildExt.Options(
+        cmd_obj = du.BuildExt(du.BuildExt.Options(
             inplace=True,
             debug=True,
         ))

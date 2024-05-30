@@ -47,14 +47,19 @@ from omlish import check
 from omlish import cached
 from omlish import lang
 
-from . import _distutils as du
+from . import compilers
+from . import errors
+from . import extension
+from . import modified
+from . import sysconfig
+from . import util
 
 
 log = logging.getLogger(__name__)
 
 
 def _get_str_config_var(name: str) -> str:
-    return check.isinstance(du.sysconfig.get_config_var(name), str)
+    return check.isinstance(sysconfig.get_config_var(name), str)
 
 
 class BuildExt:
@@ -106,7 +111,7 @@ class BuildExt:
 
     @cached.property
     def plat_name(self) -> str:
-        return self._opts.plat_name or du.util.get_host_platform()
+        return self._opts.plat_name or util.get_host_platform()
 
     @cached.property
     def plat_specifier(self) -> str:
@@ -143,12 +148,12 @@ class BuildExt:
         library_dirs = list(self._opts.library_dirs or [])
         rpath = list(self._opts.rpath or [])
 
-        plat_py_include = du.sysconfig.get_python_inc(plat_specific=1)  # type: ignore  # noqa
+        plat_py_include = sysconfig.get_python_inc(plat_specific=1)  # type: ignore  # noqa
 
         if sys.exec_prefix != sys.base_exec_prefix:
             include_dirs.append(os.path.join(sys.exec_prefix, 'include'))
 
-        py_include = du.sysconfig.get_python_inc()
+        py_include = sysconfig.get_python_inc()
         include_dirs.extend(py_include.split(os.path.pathsep))
         if plat_py_include != py_include:
             include_dirs.extend(plat_py_include.split(os.path.pathsep))
@@ -158,7 +163,7 @@ class BuildExt:
             if sys.base_exec_prefix != sys.prefix:  # Issue 16116
                 library_dirs.append(os.path.join(sys.base_exec_prefix, 'libs'))
 
-            include_dirs.append(os.path.dirname(du.sysconfig.get_config_h_filename()))
+            include_dirs.append(os.path.dirname(sysconfig.get_config_h_filename()))
             _sys_home = getattr(sys, '_home', None)
             if _sys_home:
                 library_dirs.append(_sys_home)
@@ -174,12 +179,12 @@ class BuildExt:
 
         if sys.platform[:6] == 'cygwin':
             if sys.executable.startswith(os.path.join(sys.exec_prefix, 'bin')):
-                library_dirs.append(os.path.join(sys.prefix, 'lib', 'python' + du.sysconfig.get_python_version(), 'config'))  # noqa
+                library_dirs.append(os.path.join(sys.prefix, 'lib', 'python' + sysconfig.get_python_version(), 'config'))  # noqa
             else:
                 library_dirs.append('.')
 
-        if (du.sysconfig.get_config_var('Py_ENABLE_SHARED')):
-            if not du.sysconfig.python_build:  # noqa
+        if (sysconfig.get_config_var('Py_ENABLE_SHARED')):
+            if not sysconfig.python_build:  # noqa
                 library_dirs.append(_get_str_config_var('LIBDIR'))
             else:
                 library_dirs.append('.')
@@ -203,15 +208,15 @@ class BuildExt:
     #
 
     @lang.cached_nullary
-    def get_compiler(self) -> du.compilers.ccompiler.CCompiler:
-        cc = du.compilers.ccompiler.new_compiler(
+    def get_compiler(self) -> compilers.ccompiler.CCompiler:
+        cc = compilers.ccompiler.new_compiler(
             compiler=self._opts.compiler,
             verbose=int(self._opts.verbose),
             dry_run=int(self._opts.dry_run),
             force=int(self._opts.force),
         )
 
-        du.sysconfig.customize_compiler(cc)
+        sysconfig.customize_compiler(cc)
 
         cc.set_include_dirs(list(self.cdirs.include))
 
@@ -244,7 +249,7 @@ class BuildExt:
 
         if not self._opts.inplace:
             filename = os.path.join(*modpath[:-1] + [filename])
-            return os.path.join(self.build_lib, filename)
+            return os.path.join(self.build_lib, filename)  # noqa
 
         package = '.'.join(modpath[0:-1])
         package_dir = os.path.abspath(self.get_package_dir(package))
@@ -257,7 +262,7 @@ class BuildExt:
         package_dir = self._opts.package_dir
         if package_dir is None:
             if path:
-                return os.path.join(*path)
+                return os.path.join(*path)  # noqa
             else:
                 return ''
 
@@ -270,7 +275,7 @@ class BuildExt:
                 del path[-1]
             else:
                 tail.insert(0, pdir)
-                return os.path.join(*tail)
+                return os.path.join(*tail)  # noqa
 
         else:
             pdir = package_dir.get('')  # type: ignore
@@ -278,7 +283,7 @@ class BuildExt:
                 tail.insert(0, pdir)
 
             if tail:
-                return os.path.join(*tail)
+                return os.path.join(*tail)  # noqa
             else:
                 return ''
 
@@ -291,11 +296,11 @@ class BuildExt:
     def get_ext_filename(self, ext_name: str) -> str:
         ext_path = ext_name.split('.')
         ext_suffix = _get_str_config_var('EXT_SUFFIX')
-        return os.path.join(*ext_path) + ext_suffix
+        return os.path.join(*ext_path) + ext_suffix  # noqa
 
     #
 
-    def get_export_symbols(self, ext: du.extension.Extension) -> ta.Sequence[str]:
+    def get_export_symbols(self, ext: extension.Extension) -> ta.Sequence[str]:
         suffix = '_' + ext.name.split('.')[-1]
         try:
             # Unicode module name support as defined in PEP-489
@@ -309,7 +314,7 @@ class BuildExt:
             ext.export_symbols.append(initfunc_name)
         return ext.export_symbols
 
-    def get_libraries(self, ext: du.extension.Extension) -> ta.Sequence[str]:
+    def get_libraries(self, ext: extension.Extension) -> ta.Sequence[str]:
         if sys.platform == 'win32':
             from distutils._msvccompiler import MSVCCompiler  # noqa
 
@@ -322,16 +327,16 @@ class BuildExt:
 
         else:
             link_libpython = False
-            if du.sysconfig.get_config_var('Py_ENABLE_SHARED'):
+            if sysconfig.get_config_var('Py_ENABLE_SHARED'):
                 if hasattr(sys, 'getandroidapilevel'):
                     link_libpython = True
                 elif sys.platform == 'cygwin':
                     link_libpython = True
                 elif '_PYTHON_HOST_PLATFORM' in os.environ:
                     # We are cross-compiling for one of the relevant platforms
-                    if du.sysconfig.get_config_var('ANDROID_API_LEVEL') != 0:
+                    if sysconfig.get_config_var('ANDROID_API_LEVEL') != 0:
                         link_libpython = True
-                    elif du.sysconfig.get_config_var('MACHDEP') == 'cygwin':
+                    elif sysconfig.get_config_var('MACHDEP') == 'cygwin':
                         link_libpython = True
 
             if link_libpython:
@@ -342,30 +347,30 @@ class BuildExt:
 
     #
 
-    def build_extension(self, ext: du.extension.Extension) -> ta.Sequence[str]:
+    def build_extension(self, ext: extension.Extension) -> ta.Sequence[str]:
         with self._filter_build_errors(ext):
             return self._build_extension(ext)
 
     @contextlib.contextmanager
-    def _filter_build_errors(self, ext: du.extension.Extension) -> ta.Iterator[None]:
+    def _filter_build_errors(self, ext: extension.Extension) -> ta.Iterator[None]:
         try:
             yield
         except (
-                du.errors.CCompilerError,
-                du.errors.CompileError,
-                du.errors.DistutilsError,
+                errors.CCompilerError,
+                errors.CompileError,
+                errors.DistutilsError,
         ) as e:
             if not ext.optional:
                 raise
             log.warning('building extension "%s" failed: %s' % (ext.name, e))
 
-    def _build_extension(self, ext: du.extension.Extension) -> ta.Sequence[str]:
+    def _build_extension(self, ext: extension.Extension) -> ta.Sequence[str]:
         sources = ext.sources
         sources = sorted(sources)
 
         ext_path = self.get_ext_fullpath(ext.name)
         depends = sources + ext.depends
-        if not (self._opts.force or du.modified.newer_group(depends, ext_path, 'newer')):
+        if not (self._opts.force or modified.newer_group(depends, ext_path, 'newer')):
             log.debug('skipping "%s" extension (up-to-date)', ext.name)
             return []
         else:

@@ -18,19 +18,17 @@ def test_junk():
         os.remove(f)
 
     import x.c._distutils as du
-    import x.c._distutils.extension
 
     ##
 
-    ext = du.extension.Extension(
+    ext = du.Extension(
         'junk',
         sources=[os.path.abspath(os.path.join(here, '../junk.cc'))],
         extra_compile_args=['-std=c++14'],
         undef_macros=['BARF'],
     )
 
-    from ..build_ext import BuildExt
-    cmd_obj = BuildExt(BuildExt.Options(
+    cmd_obj = du.BuildExt(BuildExt.Options(
         inplace=True,
         debug=True,
     ))
