@@ -171,6 +171,12 @@ def type_(obj: ta.Any) -> Type:
     raise TypeError(obj)
 
 
+def types_equivalent(l: Type, r: Type) -> bool:
+    if isinstance(l, Generic) and isinstance(r, Generic):
+        return l.cls == r.cls and l.args == r.args
+    return l == r
+
+
 ##
 
 
