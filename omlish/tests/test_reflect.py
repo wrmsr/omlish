@@ -71,6 +71,10 @@ def test_extended_reflect_type():
     class F(A):
         pass
 
+    class G(ta.Generic[T, U]):
+        a: T
+        b: U
+
     print()
 
     def rec(o):
@@ -93,6 +97,8 @@ def test_extended_reflect_type():
         D,
         E,
         F,
+        G,
+        G[int, str],
     ]:
         rec(ty)
         print()
