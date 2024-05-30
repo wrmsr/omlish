@@ -8,14 +8,10 @@ _0, _1, _2, _3 = rfl._KNOWN_SPECIAL_TYPE_VARS[:4]  # noqa
 
 
 def test_simple_reflect_type():
-    def a(rty, cls, args, params):
-        assert rty.cls == cls
-        assert rty.args == args
-        assert rty.params == params
-
     assert rfl.type_(int) == int
     assert rfl.type_(ta.Union[int, float]) == rfl.Union(frozenset([int, float]))
     assert rfl.type_(ta.Optional[int]) == rfl.Union(frozenset([int, type(None)]))
+
     assert rfl.type_(ta.Sequence[int]) == rfl.Generic(collections.abc.Sequence, (int,), (_0,), ta.Sequence[int])
     assert rfl.type_(ta.Mapping[int, str]) == rfl.Generic(collections.abc.Mapping, (int, str), (_0, _1), ta.Mapping[int, str])
     assert rfl.type_(ta.Mapping[int, ta.Optional[str]]) == rfl.Generic(collections.abc.Mapping, (int, rfl.Union(frozenset([str, type(None)]))), (_0, _1), ta.Mapping[int, ta.Optional[str]])  # noqa
@@ -104,6 +100,8 @@ def test_extended_reflect_type():
         F,
         G,
         G[int, str],
+        C[B[int]],
+        C[C[int]],
     ]:
         print(ty)
         pprint.pprint(rfl.generic_mro(ty))
