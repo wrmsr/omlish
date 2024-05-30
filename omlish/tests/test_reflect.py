@@ -26,6 +26,11 @@ def test_simple_reflect_type():
     assert rfl.type_(set[int]) == rfl.Generic(set, (int,), (_0,), set[int])
     assert rfl.type_(dict[int, str]) == rfl.Generic(dict, (int, str), (_0, _1), dict[int, str])
 
+    assert rfl.type_(list) == list
+    assert rfl.type_(ta.List) == rfl.Generic(list, (_0,), (_0,), ta.List)
+    assert rfl.type_(list[int]) == rfl.Generic(list, (int,), (_0,), list[int])
+    assert rfl.type_(ta.List[int]) == rfl.Generic(list, (int,), (_0,), ta.List[int])
+
 
 def test_simple_isinstance_of():
     assert rfl.isinstance_of(rfl.type_(int))(420)
