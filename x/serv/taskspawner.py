@@ -73,12 +73,12 @@ class TaskSpawner:
     def spawn(self, func: ta.Callable, *args: ta.Any) -> None:
         self._task_group.start_soon(func, *args)
 
-    async def __aenter__(self) -> anyio.abc.TaskGroup:
+    async def __aenter__(self: ta.Self) -> ta.Self:
         self._task_group_manager = anyio.create_task_group()
         self._task_group = await self._task_group_manager.__aenter__()
         return self
 
-    async def __aexit__(self, exc_type: type, exc_value: BaseException, tb: types.TracebackType) -> None:
+    async def __aexit__(self, exc_type: type[BaseException], exc_value: BaseException, tb: types.TracebackType) -> None:
         await self._task_group_manager.__aexit__(exc_type, exc_value, tb)
         self._task_group_manager = None
         self._task_group = None

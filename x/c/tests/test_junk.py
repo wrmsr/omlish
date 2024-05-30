@@ -29,11 +29,10 @@ def test_junk():
         undef_macros=['BARF'],
     )
 
-    from .build_ext import BuildExt
+    from ..build_ext import BuildExt
     cmd_obj = BuildExt(BuildExt.Options(
         inplace=True,
         debug=True,
-        verbose=True,
     ))
     cmd_obj.build_extension(ext)
 

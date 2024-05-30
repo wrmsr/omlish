@@ -101,7 +101,7 @@ def repr_socket_addr(family: int, address: tuple) -> str:
 
 def parse_socket_addr(family: int, address: tuple) -> ta.Optional[tuple[str, int]]:
     if family == socket.AF_INET:
-        return address
+        return address  # type: ignore
     elif family == socket.AF_INET6:
         return (address[0], address[1])
     else:
