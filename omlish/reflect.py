@@ -19,6 +19,36 @@ _UnionGenericAlias = ta._UnionGenericAlias   # type: ignore  # noqa
 ##
 
 
+class _Special(ta.NamedTuple):
+    name: str
+    special: _SpecialGenericAlias
+    origin: type
+    nparams: int
+
+
+_KNOWN_SPECIALS = [
+    _Special(
+        v._name,  # noqa
+        v,
+        v.__origin__,
+        v._nparams,  # noqa
+    )
+    for v in ta.__dict__.values()
+    if isinstance(v, _SpecialGenericAlias)
+]
+
+_KNOWN_SPECIALS_BY_NAME = {s.name: s for s in _KNOWN_SPECIALS}
+_KNOWN_SPECIALS_BY_ORIGIN = {s.origin: s for s in _KNOWN_SPECIALS}
+
+_KNOWN_SPECIAL_TYPE_VARS = tuple(
+    ta.TypeVar(f'_{i}')  # noqa
+    for i in range(max(s.nparams for s in _KNOWN_SPECIALS) + 1)
+)
+
+
+##
+
+
 try:
     from types import get_original_bases
 except ImportError:
@@ -30,32 +60,14 @@ except ImportError:
 
 
 def get_params(obj: ta.Any) -> tuple[ta.TypeVar, ...]:
-    if isinstance(obj, type) and issubclass(obj, ta.Generic):
-        return obj.__dict__.get('__parameters__', ())  # noqa
+    if isinstance(obj, type):
+        if issubclass(obj, ta.Generic):
+            return obj.__dict__.get('__parameters__', ())  # noqa
+
+        if (ks := _KNOWN_SPECIALS_BY_ORIGIN.get(obj)) is not None:
+            return _KNOWN_SPECIAL_TYPE_VARS[:ks.nparams]
+
     raise TypeError(obj)
-
-
-##
-
-
-class _Special(ta.NamedTuple):
-    name: str
-    special: _SpecialGenericAlias
-    origin: type
-
-
-_KNOWN_SPECIALS = [
-    _Special(
-        v._name,  # noqa
-        v,
-        v.__origin__,
-    )
-    for v in ta.__dict__.values()
-    if isinstance(v, _SpecialGenericAlias)
-]
-
-_KNOWN_SPECIALS_BY_NAME = {s.name: s for s in _KNOWN_SPECIALS}
-_KNOWN_SPECIALS_BY_ORIGIN = {s.origin: s for s in _KNOWN_SPECIALS}
 
 
 ##
