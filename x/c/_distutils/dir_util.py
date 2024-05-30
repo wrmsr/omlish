@@ -3,10 +3,13 @@
 Utility functions for manipulating directories and directory trees."""
 
 import errno
+import logging
 import os
 
-from ._log import log
 from .errors import DistutilsFileError, DistutilsInternalError
+
+
+log = logging.getLogger(__name__)
 
 
 # cache for by mkpath() -- in addition to cheapening redundant calls,
