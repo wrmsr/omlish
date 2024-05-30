@@ -4,7 +4,7 @@ import typing as ta
 from .. import reflect as rfl
 
 
-def test_reflect_type():
+def test_simple_reflect_type():
     assert rfl.type_(int) == int
     assert rfl.type_(ta.Union[int, float]) == rfl.Union(frozenset([int, float]))
     assert rfl.type_(ta.Optional[int]) == rfl.Union(frozenset([int, type(None)]))
@@ -18,7 +18,7 @@ def test_reflect_type():
     assert rfl.type_(dict[int, str]) == rfl.Generic(dict, (int, str))
 
 
-def test_isinstance_of():
+def test_simple_isinstance_of():
     assert rfl.isinstance_of(rfl.type_(int))(420)
     assert not rfl.isinstance_of(rfl.type_(int))('420')
 
@@ -36,3 +36,37 @@ def test_isinstance_of():
     assert not rfl.isinstance_of(rfl.type_(ta.Mapping[int, str]))({420: 421})
     assert rfl.isinstance_of(rfl.type_(ta.Mapping[int, ta.AbstractSet[str]]))({420: {'421'}})
     assert not rfl.isinstance_of(rfl.type_(ta.Mapping[int, ta.AbstractSet[str]]))({420: [421]})
+
+
+T = ta.TypeVar('T')
+U = ta.TypeVar('U')
+V = ta.TypeVar('V')
+
+
+def test_extended_reflect_type():
+    class A(ta.Generic[T]):
+        a: T
+
+    class B(ta.Generic[T]):
+        b: T
+
+    class C(A[U]):
+        pass
+
+    class D(C[str], B[int]):
+        pass
+
+    print()
+
+    for ty in [
+        A,
+        A[str],
+        B,
+        B[int],
+        C,
+        C[str],
+        D,
+    ]:
+        print(ty)
+        print(rfl.type_(ty))
+        print()

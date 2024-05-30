@@ -30,6 +30,7 @@ def _create_sockets(
     sockets: list[socket.socket] = []
     for bind in binds:
         binding: ta.Any = None
+
         if bind.startswith("unix:"):
             sock = socket.socket(socket.AF_UNIX, type_)
             binding = bind[5:]
@@ -38,11 +39,13 @@ def _create_sockets(
                     os.remove(binding)
             except FileNotFoundError:
                 pass
+
         elif bind.startswith("fd://"):
             sock = socket.socket(fileno=int(bind[5:]))
             actual_type = sock.getsockopt(socket.SOL_SOCKET, socket.SO_TYPE)
             if actual_type != type_:
                 raise SocketTypeError(type_, actual_type)
+
         else:
             bind = bind.replace("[", "").replace("]", "")
             try:
@@ -69,8 +72,10 @@ def _create_sockets(
                 os.chown(binding, config.user, config.group)
             if config.umask is not None:
                 os.umask(current_umask)
+
         elif bind.startswith("fd://"):
             pass
+
         else:
             sock.bind(binding)
 
@@ -80,6 +85,7 @@ def _create_sockets(
         except AttributeError:
             pass
         sockets.append(sock)
+
     return sockets
 
 

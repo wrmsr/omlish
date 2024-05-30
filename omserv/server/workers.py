@@ -160,7 +160,7 @@ async def worker_serve(
             binds = []
 
             for sock in sockets.insecure_sockets:
-                listeners.append(anyio._core._eventloop.get_async_backend().create_tcp_listener(sock))
+                listeners.append(anyio._core._eventloop.get_async_backend().create_tcp_listener(sock))  # noqa
                 bind = repr_socket_addr(sock.family, sock.getsockname())
                 binds.append(f"http://{bind}")
                 log.info(f"Running on http://{bind} (CTRL + C to quit)")

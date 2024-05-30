@@ -15,6 +15,22 @@ _GenericAlias = ta._GenericAlias  # type: ignore  # noqa
 _UnionGenericAlias = ta._UnionGenericAlias   # type: ignore  # noqa
 
 
+try:
+    from types import get_original_bases
+except ImportError:
+    def get_original_bases(cls, /):
+        try:
+            return cls.__dict__.get('__orig_bases__', cls.__bases__)
+        except AttributeError:
+            raise TypeError(f'Expected an instance of type, not {type(cls).__name__!r}') from None
+
+
+def get_params(obj: ta.Any) -> tuple[ta.TypeVar, ...]:
+    if isinstance(obj, type) and issubclass(obj, ta.Generic):
+        return obj.__parameters__  # noqa
+    raise TypeError(obj)
+
+
 Type = ta.Union[
     type,
     'Union',
@@ -41,6 +57,7 @@ class Union(ta.NamedTuple):
 class Generic(ta.NamedTuple):
     cls: ta.Any
     args: tuple[Type, ...]
+    params: tuple[ta.TypeVar, ...]
 
 
 TYPES: tuple[type, ...] = (
@@ -58,7 +75,16 @@ def type_(obj: ta.Any) -> Type:
         return Union(frozenset(type_(a) for a in ta.get_args(obj)))
 
     if type(obj) is _GenericAlias or type(obj) is ta.GenericAlias:  # type: ignore  # noqa
-        return Generic(type_(ta.get_origin(obj)), tuple(type_(a) for a in ta.get_args(obj)))
+        origin = ta.get_origin(obj)
+        args = ta.get_args(obj)
+        params = get_params(origin)
+        if len(args) != len(params):
+            raise TypeError(f'Mismatched {args=} and {params=} for {obj=}')
+        return Generic(
+            type_(origin),
+            tuple(type_(a) for a in args),
+            params,
+        )
 
     if isinstance(obj, type):
         return obj
