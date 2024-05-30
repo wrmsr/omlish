@@ -48,12 +48,6 @@ from omlish import cached
 from omlish import lang
 
 from . import _distutils as du
-from ._distutils.compilers import ccompiler as _  # noqa
-from ._distutils import errors as _  # noqa
-from ._distutils import extension as _  # noqa
-from ._distutils import modified as _  # noqa
-from ._distutils import sysconfig as _  # noqa
-from ._distutils import util as _  # noqa
 
 
 log = logging.getLogger(__name__)

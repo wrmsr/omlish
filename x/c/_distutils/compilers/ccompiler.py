@@ -1093,8 +1093,6 @@ compiler_class = {
     'unix': ('unixccompiler', 'UnixCCompiler', "standard UNIX-style compiler"),
 }
 
-from . import unixccompiler as _  # noqa
-
 
 # def show_compilers():
 #     """Print list of available compilers (used by the "--help-compiler"
