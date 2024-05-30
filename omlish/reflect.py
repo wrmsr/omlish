@@ -12,7 +12,11 @@ _NONE_TYPE_FROZENSET: ta.FrozenSet['Type'] = frozenset([_NoneType])
 
 
 _GenericAlias = ta._GenericAlias  # type: ignore  # noqa
+_SpecialGenericAlias = ta._SpecialGenericAlias  # type: ignore  # noqa
 _UnionGenericAlias = ta._UnionGenericAlias   # type: ignore  # noqa
+
+
+##
 
 
 try:
@@ -29,6 +33,32 @@ def get_params(obj: ta.Any) -> tuple[ta.TypeVar, ...]:
     if isinstance(obj, type) and issubclass(obj, ta.Generic):
         return obj.__dict__.get('__parameters__', ())  # noqa
     raise TypeError(obj)
+
+
+##
+
+
+class _Special(ta.NamedTuple):
+    name: str
+    special: _SpecialGenericAlias
+    origin: type
+
+
+_KNOWN_SPECIALS = [
+    _Special(
+        v._name,  # noqa
+        v,
+        v.__origin__,
+    )
+    for v in ta.__dict__.values()
+    if isinstance(v, _SpecialGenericAlias)
+]
+
+_KNOWN_SPECIALS_BY_NAME = {s.name: s for s in _KNOWN_SPECIALS}
+_KNOWN_SPECIALS_BY_ORIGIN = {s.origin: s for s in _KNOWN_SPECIALS}
+
+
+##
 
 
 Type = ta.Union[
