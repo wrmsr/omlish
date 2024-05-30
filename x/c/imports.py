@@ -1,12 +1,13 @@
+import glob
 import imp
 import importlib
 import importlib.abc
 import importlib.machinery
 import os.path
+import shutil
 import sys
 
 from . import _distutils as du
-from ._distutils import extension as _  # noqa
 from .build_ext import BuildExt
 
 
@@ -46,6 +47,12 @@ def install():
 
 
 def _main():
+    here = os.path.join(os.path.dirname(__file__))
+    if os.path.exists(bdir := os.path.join(here, 'build')):
+        shutil.rmtree(bdir)
+    for f in glob.glob(os.path.join(here, '*.so')):
+        os.remove(f)
+
     install()
 
     from . import junk  # noqa
