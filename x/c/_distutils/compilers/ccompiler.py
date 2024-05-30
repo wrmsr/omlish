@@ -3,13 +3,13 @@
 Contains CCompiler, an abstract base class that defines the interface
 for the Distutils compiler abstraction model."""
 
+import logging
 import os
 import re
 import sys
 import warnings
 
 from .._itertools import always_iterable
-from .._log import log
 from ..dir_util import mkpath
 from ..errors import (
     CompileError,
@@ -22,7 +22,10 @@ from ..file_util import move_file
 from ..modified import newer_group
 from ..spawn import spawn
 from ..util import execute, split_quoted
-from .options import gen_lib_options, gen_preprocess_options
+from .options import gen_preprocess_options
+
+
+log = logging.getLogger(__name__)
 
 
 class CCompiler:

@@ -4,14 +4,17 @@ Miscellaneous utility functions -- anything that doesn't fit into
 one of the other *util.py modules.
 """
 
+import logging
 import os
 import re
 import string
 import sys
 import sysconfig
 
-from ._log import log
 from .errors import DistutilsPlatformError
+
+
+log = logging.getLogger(__name__)
 
 
 def get_host_platform():

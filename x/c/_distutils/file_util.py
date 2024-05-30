@@ -3,10 +3,13 @@
 Utility functions for operating on single files.
 """
 
+import logging
 import os
 
-from ._log import log
 from .errors import DistutilsFileError
+
+
+log = logging.getLogger(__name__)
 
 
 # for generating verbose output in 'copy_file()'

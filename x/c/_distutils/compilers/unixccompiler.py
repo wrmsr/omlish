@@ -16,6 +16,7 @@ the "typical" Unix-style command-line C compiler:
 from __future__ import annotations
 
 import itertools
+import logging
 import os
 import re
 import shlex
@@ -25,9 +26,11 @@ from ._macos_compat import compiler_fixup
 from .options import gen_lib_options, gen_preprocess_options
 from .ccompiler import CCompiler
 from .. import sysconfig
-from .._log import log
 from ..errors import CompileError, DistutilsExecError, LibError, LinkError
 from ..modified import newer
+
+
+log = logging.getLogger(__name__)
 
 
 # XXX Things not currently handled:
