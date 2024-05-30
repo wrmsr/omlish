@@ -99,7 +99,7 @@ class Union(ta.NamedTuple):
 
 
 class Generic(ta.NamedTuple):
-    cls: ta.Any
+    cls: type
     args: tuple[Type, ...]
     params: tuple[ta.TypeVar, ...]
     obj: ta.Any
@@ -160,7 +160,13 @@ def type_(obj: ta.Any) -> Type:
 
     if isinstance(obj, _SpecialGenericAlias):
         if (ks := _KNOWN_SPECIALS_BY_ALIAS.get(obj)) is not None:
-            raise NotImplementedError
+            params = _KNOWN_SPECIAL_TYPE_VARS[:ks.nparams]
+            return Generic(
+                ks.origin,
+                params,
+                params,
+                obj,
+            )
 
     raise TypeError(obj)
 
