@@ -107,7 +107,7 @@ class Generic(ta.NamedTuple):
     def __repr__(self):
         return (
             f'{self.__class__.__name__}('
-            f'cls={self.cls!r}, '
+            f'cls={self.cls.__name__}, '
             f'args={self.args!r}, '
             f'params={self.params!r})'
         )
@@ -187,9 +187,22 @@ def get_concrete_type(ty: Type) -> ta.Optional[type]:
     raise TypeError(ty)
 
 
+def _get_type_var_replacements(ty: Type) -> ta.Mapping[ta.TypeVar, Type]:
+    if isinstance(ty, Generic):
+        return dict(zip(ty.params, ty.args))
+    return {}
+
+
+def _replace_type_vars(ty: Type, rpl: ta.Mapping[ta.TypeVar, Type]) -> Type:
+    if isinstance(ty, Generic):
+        return ty._replace(args=tuple(rpl.get(a, a) for a in ty.args))
+    return ty
+
+
 def get_reflected_bases(ty: Type) -> tuple[Type, ...]:
     if (cty := get_concrete_type(ty)) is not None:
-        return tuple(type_(b) for b in get_original_bases(cty))
+        rpl = _get_type_var_replacements(ty)
+        return tuple(_replace_type_vars(type_(b), rpl) for b in get_original_bases(cty))
     return ()
 
 
