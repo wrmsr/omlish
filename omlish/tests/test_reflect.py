@@ -106,5 +106,6 @@ def test_extended_reflect_type():
         G,
         G[int, str],
     ]:
+        print(ty)
         pprint.pprint(rfl.generic_mro(ty))
         print()
