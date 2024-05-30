@@ -59,16 +59,16 @@ pytest-trio==0.8.0
 aiomysql==0.2.0
 aiosqlite==0.20.0
 
-asyncpg==0.29.0
+asyncpg==0.29.0; python_version < '3.13'  # greenlet
 
-asyncssh==2.14.2
+asyncssh==2.14.2; python_version < '3.13'  # cffi
 
 # trial
 #
-trio-asyncio==0.15.0
+trio-asyncio==0.15.0; python_version < '3.13'  # greenlet
 
 # don't use, just for hacking
 #
-aiohttp==3.9.5
+aiohttp==3.9.5; python_version < '3.13'  # greenlet
 
-pytest-aiohttp==1.0.5
+pytest-aiohttp==1.0.5; python_version < '3.13'  # aiohttp
