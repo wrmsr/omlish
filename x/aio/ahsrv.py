@@ -5,6 +5,17 @@ import typing as ta
 import aiohttp.web as aw
 
 
+ticks = 0
+
+
+async def ticker(sleep_s: float = 1.) -> None:
+    global ticks
+    while True:
+        await asyncio.sleep(sleep_s)
+        ticks += 1
+        print(f'ticked {ticks=}')
+
+
 class Handler(abc.ABC):
     @abc.abstractmethod
     async def __call__(self, request: aw.Request) -> aw.StreamResponse:
@@ -13,7 +24,7 @@ class Handler(abc.ABC):
 
 class HelloHandler(Handler):
     async def __call__(self, request: aw.Request) -> aw.StreamResponse:
-        return aw.Response(text='Hello, World!')
+        return aw.Response(text=f'Hello, World! {ticks=}')
 
 
 async def a_run_app(app: ta.Any, **kwargs: ta.Any) -> None:
@@ -30,7 +41,10 @@ async def _a_main() -> None:
     app = aw.Application()
     app.add_routes([aw.get('/', HelloHandler())])
 
-    await a_run_app(app)
+    await asyncio.gather(
+        ticker(),
+        a_run_app(app),
+    )
 
 
 if __name__ == '__main__':
