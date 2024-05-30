@@ -6,27 +6,27 @@ import h2.events
 import h2.exceptions
 import priority
 
-from .config import Config
-from .events import Body
-from .events import Closed
-from .events import Data
-from .events import EndBody
-from .events import EndData
-from .events import InformationalResponse
-from .events import ProtocolEvent
-from .events import RawData
-from .events import Request
-from .events import Response
-from .events import ServerEvent
-from .events import StreamClosed
-from .events import Updated
-from .headers import filter_pseudo_headers
-from .headers import response_headers
-from .httpstream import HTTPStream
-from .taskspawner import TaskSpawner
-from .types import AppWrapper
-from .types import WaitableEvent
-from .workercontext import WorkerContext
+from ..config import Config
+from ..events import Body
+from ..events import Closed
+from ..events import Data
+from ..events import EndBody
+from ..events import EndData
+from ..events import InformationalResponse
+from ..events import ProtocolEvent
+from ..events import RawData
+from ..events import Request
+from ..events import Response
+from ..events import ServerEvent
+from ..events import StreamClosed
+from ..events import Updated
+from ..headers import filter_pseudo_headers
+from ..headers import response_headers
+from ..httpstream import HTTPStream
+from ..taskspawner import TaskSpawner
+from ..types import AppWrapper
+from ..types import WaitableEvent
+from ..workercontext import WorkerContext
 
 
 BUFFER_HIGH_WATER = 2 * 2**14  # Twice the default max frame size (two frames worth)
