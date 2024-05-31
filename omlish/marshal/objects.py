@@ -93,6 +93,7 @@ class ObjectUnmarshaler(Unmarshaler):
 
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any:
         ma = check.isinstance(v, collections.abc.Mapping)
+        u: ta.Any
         u = {} if self.unknown_field is not None else None
         kw = {}
         for k, mv in ma.items():
