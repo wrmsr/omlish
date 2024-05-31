@@ -13,7 +13,7 @@ def test_simple_reflect_type():
     assert rfl.type_(ta.Optional[int]) == rfl.Union(frozenset([int, type(None)]))
 
     assert rfl.type_(ta.Sequence[int]) == rfl.Generic(collections.abc.Sequence, (int,), (_0,), ta.Sequence[int])
-    assert rfl.type_(ta.Mapping[int, str]) == rfl.Generic(collections.abc.Mapping, (int, str), (_0, _1), ta.Mapping[int, str])
+    assert rfl.type_(ta.Mapping[int, str]) == rfl.Generic(collections.abc.Mapping, (int, str), (_0, _1), ta.Mapping[int, str])  # noqa
     assert rfl.type_(ta.Mapping[int, ta.Optional[str]]) == rfl.Generic(collections.abc.Mapping, (int, rfl.Union(frozenset([str, type(None)]))), (_0, _1), ta.Mapping[int, ta.Optional[str]])  # noqa
     assert rfl.type_(ta.Mapping[int, ta.Sequence[ta.Optional[str]]]) == rfl.Generic(collections.abc.Mapping, (int, rfl.Generic(collections.abc.Sequence, (rfl.Union(frozenset([str, type(None)])),), (_0,), ta.Sequence[ta.Optional[str]])), (_0, _1), ta.Mapping[int, ta.Sequence[ta.Optional[str]]])  # noqa
 
@@ -77,16 +77,7 @@ def test_extended_reflect_type():
 
     print()
 
-    def rec(obj):
-        rty = rfl.type_(obj)
-        print(rty)
-        if (cty := rfl.get_concrete_type(rty)) is not None:
-            for b in rfl.get_original_bases(cty):
-                rec(b)
-
     import pprint
-
-    from .. import c3
 
     for ty in [
         A,

@@ -27,19 +27,19 @@ def snake_case(name: str) -> str:
 
 def is_dunder(name: str) -> bool:
     return (
-            name[:2] == name[-2:] == '__' and
-            name[2:3] != '_' and
-            name[-3:-2] != '_' and
-            len(name) > 4
+        name[:2] == name[-2:] == '__' and
+        name[2:3] != '_' and
+        name[-3:-2] != '_' and
+        len(name) > 4
     )
 
 
 def is_sunder(name: str) -> bool:
     return (
-            name[0] == name[-1] == '_' and
-            name[1:2] != '_' and
-            name[-2:-1] != '_' and
-            len(name) > 2
+        name[0] == name[-1] == '_' and
+        name[1:2] != '_' and
+        name[-2:-1] != '_' and
+        len(name) > 2
     )
 
 
