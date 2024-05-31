@@ -1,5 +1,6 @@
 import importlib
 import string
+import typing as ta
 
 
 class ResolvableClassNameError(NameError):
@@ -29,12 +30,14 @@ def get_fqcn_cls(fqcn: str, *, nocheck: bool = False) -> type:
     pos = next(i for i, p in enumerate(parts) if p[0].isupper())
     mps, qps = parts[:pos], parts[pos:]
     mod = importlib.import_module('.'.join(mps))
-    o = mod
+    o: ta.Any = mod
     for qp in qps:
         o = getattr(o, qp)
         if not isinstance(o, type):
             raise TypeError(o)
     cls = o
+    if not isinstance(cls, type):
+        raise TypeError(cls)
     if not nocheck:
         if not get_cls_fqcn(cls, nocheck=True) == fqcn:
             raise ResolvableClassNameError(cls, fqcn)

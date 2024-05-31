@@ -7,6 +7,7 @@ from .classes import FinalException  # noqa
 from .classes import LazySingleton  # noqa
 from .classes import Marker  # noqa
 from .classes import Namespace  # noqa
+from .classes import NoBool  # noqa
 from .classes import NotInstantiable  # noqa
 from .classes import NotPicklable  # noqa
 from .classes import PackageSealed  # noqa
@@ -20,6 +21,7 @@ from .classes import is_abstract # noqa
 from .classes import is_abstract_class # noqa
 from .classes import is_abstract_method # noqa
 from .classes import make_abstract  # noqa
+from .classes import no_bool  # noqa
 from .classes import virtual_check  # noqa
 from .clsdct import ClassDctFn  # noqa
 from .clsdct import cls_dct_fn  # noqa
@@ -80,6 +82,7 @@ from .maybes import Maybe  # noqa
 from .maybes import empty  # noqa
 from .maybes import just  # noqa
 from .maybes import maybe  # noqa
+from .objects import SimpleProxy  # noqa
 from .objects import arg_repr  # noqa
 from .objects import attr_repr  # noqa
 from .objects import new_type  # noqa

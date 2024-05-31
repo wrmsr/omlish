@@ -109,10 +109,10 @@ def _is_char_in_spec(spec: _CharSpec, c: str) -> bool:
     if len(c) != 1:
         raise ValueError(c)
     return (
-            unicodedata.category(c) in spec.cats or
-            c in spec.chars or
-            unicodedata.category(unicodedata.normalize('NFKC', c)) in spec.cats or
-            unicodedata.normalize('NFKC', c) in spec.chars
+        unicodedata.category(c) in spec.cats or
+        c in spec.chars or
+        unicodedata.category(unicodedata.normalize('NFKC', c)) in spec.cats or
+        unicodedata.normalize('NFKC', c) in spec.chars
     )
 
 

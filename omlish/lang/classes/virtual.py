@@ -64,7 +64,15 @@ class _VirtualMeta(abc.ABCMeta):
 
         namespace.update(_make_not_instantiable())
 
-        kls = super().__new__(abc.ABCMeta, name, tuple(b for b in bases if b is not Virtual), namespace)
+        kls = ta.cast(
+            type,
+            super().__new__(
+                abc.ABCMeta,
+                name,
+                tuple(b for b in bases if b is not Virtual),
+                namespace,
+            ),
+        )
         return kls
 
 

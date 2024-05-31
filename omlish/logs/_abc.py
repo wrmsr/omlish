@@ -185,17 +185,17 @@ class Logger(Filterer):
     def findCaller(self, stack_info: bool = False, stacklevel: int = 1) -> Caller: ...  #
 
     def makeRecord(
-            self,
-            name,
-            level,
-            fn,
-            lno,
-            msg,
-            args,
-            exc_info,
-            func: str | None = None,
-            extra: ta.Mapping[str, ta.Any] | None = None,
-            sinfo: str | None = None,
+        self,
+        name,
+        level,
+        fn,
+        lno,
+        msg,
+        args,
+        exc_info,
+        func: str | None = None,
+        extra: ta.Mapping[str, ta.Any] | None = None,
+        sinfo: str | None = None,
     ) -> LogRecord: ...
 
     def handle(self, record: LogRecord) -> None: ...

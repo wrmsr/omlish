@@ -1,3 +1,4 @@
+import functools
 import typing as ta
 
 from .abstract import Abstract
@@ -100,3 +101,37 @@ class NotPicklable:
 
     def __setstate__(self, state) -> ta.NoReturn:
         raise TypeError
+
+
+##
+
+
+class NoBool:
+
+    def __bool__(self) -> bool:
+        raise TypeError
+
+
+class _NoBoolDescriptor:
+
+    def __init__(self, fn, instance=None, owner=None) -> None:
+        super().__init__()
+        self._fn = fn
+        self._instance = instance
+        self._owner = owner
+        functools.update_wrapper(self, fn)
+
+    def __bool__(self) -> bool:
+        raise TypeError
+
+    def __get__(self, instance, owner=None):
+        if instance is self._instance and owner is self._owner:
+            return self
+        return _NoBoolDescriptor(self._fn.__get__(instance, owner), instance, owner)
+
+    def __call__(self, *args, **kwargs):
+        return self._fn(*args, **kwargs)
+
+
+def no_bool(fn):
+    return _NoBoolDescriptor(fn)

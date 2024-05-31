@@ -86,8 +86,7 @@ class TypeMultiMap(ta.Generic[V]):
         self._items = list(items)
         self._weak = bool(weak)
 
-        self._cache: ta.MutableMapping[type, ta.Any] = \
-            weakref.WeakKeyDictionary() if weak else {}  # type: ignore
+        self._cache: ta.MutableMapping[type, ta.Any] = weakref.WeakKeyDictionary()
 
     @property
     def items(self) -> ta.Sequence[V]:

@@ -13,9 +13,9 @@ def make_abstract(obj: T) -> T:
         return ta.cast(T, abc.abstractmethod(obj))
     elif isinstance(obj, property):
         return ta.cast(T, property(
-            abc.abstractmethod(obj.fget) if obj.fget is not None else None,  # type: ignore
-            abc.abstractmethod(obj.fset) if obj.fset is not None else None,  # type: ignore
-            abc.abstractmethod(obj.fdel) if obj.fdel is not None else None,  # type: ignore
+            abc.abstractmethod(obj.fget) if obj.fget is not None else None,
+            abc.abstractmethod(obj.fset) if obj.fset is not None else None,
+            abc.abstractmethod(obj.fdel) if obj.fdel is not None else None,
         ))
     elif isinstance(obj, (classmethod, staticmethod)):
         return ta.cast(T, type(obj)(abc.abstractmethod(obj.__func__)))
