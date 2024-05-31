@@ -34,6 +34,7 @@ def async_once(fn: CallableT) -> CallableT:
 
 
 def sync_await(fn: ta.Callable[..., T], *args, **kwargs) -> T:
+    ret: ta.Any
     ret = missing = object()
 
     async def gate():
