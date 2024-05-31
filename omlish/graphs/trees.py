@@ -149,7 +149,7 @@ class BasicTreeAnalysis(ta.Generic[NodeT]):
 
         root = check.single([n for n, p in pairs if p is None])  # noqa
 
-        children_by_node: ta.MutableMapping[NodeT, ta.MutableSequence[NodeT]] = col.IdentityKeyDict() if identity else {}  # type: ignore  # noqa
+        children_by_node: ta.MutableMapping[NodeT, ta.MutableSequence[NodeT]] = col.IdentityKeyDict() if identity else {}  # noqa
         for n, _ in pairs:
             children_by_node[n] = []
         for n, p in pairs:
@@ -184,8 +184,8 @@ class BasicTreeAnalysis(ta.Generic[NodeT]):
 
         pairs = [(check.not_none(n), [check.not_none(c) for c in cs]) for n, cs in pairs]
 
-        children_by_node: ta.MutableMapping[NodeT, ta.Sequence[NodeT]] = col.IdentityKeyDict() if identity else {}  # type: ignore  # noqa
-        parents_by_node: ta.MutableMapping[NodeT, NodeT] = col.IdentityKeyDict() if identity else {}  # type: ignore
+        children_by_node: ta.MutableMapping[NodeT, ta.Sequence[NodeT]] = col.IdentityKeyDict() if identity else {}
+        parents_by_node: ta.MutableMapping[NodeT, NodeT] = col.IdentityKeyDict() if identity else {}
         for n, cs in pairs:
             check.not_in(n, children_by_node)
             children_by_node[n] = cs
