@@ -37,7 +37,7 @@ class LogRecord:
 ##
 
 
-class Formatter:
+class Formatter(ta.Protocol):
     default_time_format: ta.ClassVar[str]
     default_msec_format: ta.ClassVar[str]
 
@@ -54,8 +54,7 @@ class Formatter:
     def format(self, record: LogRecord) -> str: ...
 
 
-class BufferingFormatter:
-
+class BufferingFormatter(ta.Protocol):
     def formatHeader(self, records: ta.Sequence[LogRecord]) -> str: ...
 
     def formatFooter(self, records: ta.Sequence[LogRecord]) -> str: ...
@@ -66,11 +65,11 @@ class BufferingFormatter:
 ##
 
 
-class Filter:
+class Filter(ta.Protocol):
     def filter(self, record: LogRecord) -> bool: ...
 
 
-class Filterer:
+class Filterer(ta.Protocol):
     def addFilter(self, filter: Filter) -> None: ...
 
     def removeFilter(self, filter: Filter) -> None: ...
@@ -81,7 +80,7 @@ class Filterer:
 ##
 
 
-class Handler:
+class Handler(ta.Protocol):
     level: Level
 
     def get_name(self) -> str: ...
@@ -136,7 +135,7 @@ class StreamHandler(Handler):
 ##
 
 
-class Manager:
+class Manager(ta.Protocol):
     root: 'Logger'
 
     disable: Level
@@ -218,7 +217,7 @@ class Logger(Filterer):
 ##
 
 
-class LoggerAdapter:
+class LoggerAdapter(ta.Protocol):
     logger: Logger
     extra: ta.Mapping[str, ta.Any]
 
