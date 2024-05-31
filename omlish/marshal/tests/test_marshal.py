@@ -2,11 +2,8 @@ import dataclasses as dc
 import enum
 import typing as ta
 
-from .. import polymorphism as poly
 from ..base import MarshalContext
 from ..base import UnmarshalContext
-from ..global_ import marshal
-from ..global_ import unmarshal
 from ..registries import Registry
 from ..standard import new_standard_marshaler_factory
 from ..standard import new_standard_unmarshaler_factory
