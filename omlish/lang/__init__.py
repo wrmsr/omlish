@@ -85,6 +85,15 @@ from .objects import attr_repr  # noqa
 from .objects import new_type  # noqa
 from .objects import super_meta  # noqa
 from .strings import camel_case  # noqa
+from .strings import indent_lines  # noqa
+from .strings import is_dunder  # noqa
+from .strings import is_ident  # noqa
+from .strings import is_ident_cont  # noqa
+from .strings import is_ident_start  # noqa
+from .strings import is_sunder  # noqa
+from .strings import prefix_lines  # noqa
 from .strings import snake_case  # noqa
-from .types import BytesLike  # noqa
-from .types import protocol_check  # noqa
+from .typing import BytesLike  # noqa
+from .typing import protocol_check  # noqa
+from .typing import typed_lambda  # noqa
+from .typing import typed_partial  # noqa
