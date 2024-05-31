@@ -53,7 +53,7 @@ _KNOWN_SPECIAL_TYPE_VARS = tuple(
 
 
 try:
-    from types import get_original_bases
+    from types import get_original_bases  # type: ignore
 except ImportError:
     def get_original_bases(cls, /):
         try:
@@ -64,7 +64,7 @@ except ImportError:
 
 def get_params(obj: ta.Any) -> tuple[ta.TypeVar, ...]:
     if isinstance(obj, type):
-        if issubclass(obj, ta.Generic):
+        if issubclass(obj, ta.Generic):  # type: ignore
             return obj.__dict__.get('__parameters__', ())  # noqa
 
         if (ks := _KNOWN_SPECIALS_BY_ORIGIN.get(obj)) is not None:
@@ -147,7 +147,7 @@ def type_(obj: ta.Any) -> Type:
         )
 
     if isinstance(obj, type):
-        if issubclass(obj, ta.Generic):
+        if issubclass(obj, ta.Generic):  # type: ignore
             params = get_params(obj)
             return Generic(
                 obj,
@@ -197,7 +197,7 @@ def get_type_var_replacements(ty: Type) -> ta.Mapping[ta.TypeVar, Type]:
 
 def replace_type_vars(ty: Type, rpl: ta.Mapping[ta.TypeVar, Type]) -> Type:
     if isinstance(ty, Generic):
-        return ty._replace(args=tuple(rpl.get(a, a) for a in ty.args))
+        return ty._replace(args=tuple(rpl.get(a, a) if isinstance(a, ta.TypeVar) else a for a in ty.args))
     return ty
 
 
