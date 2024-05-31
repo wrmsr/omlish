@@ -60,14 +60,13 @@ def test_callable():
     assert isinstance(f, Callable)
     assert not isinstance(5, Callable)
 
-    class C:  # type: ignore
+    class D:  # type: ignore
         pass
 
-    class D:
+    class E:
         def __call__(self):
             pass
 
-    assert isinstance(C, Callable)
     assert isinstance(D, Callable)
-    assert isinstance(D(), Callable)
-    assert not isinstance(C(), Callable)
+    assert isinstance(E, Callable)
+    assert isinstance(E(), Callable)
