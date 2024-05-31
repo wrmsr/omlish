@@ -87,31 +87,38 @@ class ClassProcessor:
     def _cls_annotations(self) -> dict[str, ta.Any]:
         return inspect.get_annotations(self._cls)
 
+    class _ProcessedFields(ta.NamedTuple):
+        fields: dict[str, dc.Field]
+        field_owners: dict[str, type]
+
     @lang.cached_nullary
-    def _process_fields(self) -> dict[str, dc.Field]:
+    def _process_fields(self) -> _ProcessedFields:
         fields: dict[str, dc.Field] = {}
+        field_owners: dict[str, type] = {}
 
         for b in self._cls.__mro__[-1:0:-1]:
             base_fields = getattr(b, FIELDS_ATTR, None)
             if base_fields is not None:
                 for f in base_fields.values():
                     fields[f.name] = f
+                    field_owners[f.name] = b
 
         cls_fields: list[dc.Field] = []
 
         kw_only = self._params12.kw_only
         kw_only_seen = False
-        for name, type in self._cls_annotations.items():
-            if is_kw_only(self._cls, type):
+        for name, ann in self._cls_annotations.items():
+            if is_kw_only(self._cls, ann):
                 if kw_only_seen:
                     raise TypeError(f'{name!r} is KW_ONLY, but KW_ONLY has already been specified')
                 kw_only_seen = True
                 kw_only = True
             else:
-                cls_fields.append(preprocess_field(self._cls, name, type, kw_only))
+                cls_fields.append(preprocess_field(self._cls, name, ann, kw_only))
 
         for f in cls_fields:
             fields[f.name] = f
+            field_owners[f.name] = self._cls
             if isinstance(getattr(self._cls, f.name, None), dc.Field):
                 if f.default is MISSING:
                     delattr(self._cls, f.name)
@@ -122,15 +129,19 @@ class ClassProcessor:
             if isinstance(value, dc.Field) and name not in self._cls_annotations:
                 raise TypeError(f'{name!r} is a field but has no type annotation')
 
-        return fields
+        return ClassProcessor._ProcessedFields(fields, field_owners)
 
     @lang.cached_nullary
     def _fields(self) -> dict[str, dc.Field]:
-        return self._process_fields()
+        return self._process_fields().fields
+
+    @lang.cached_nullary
+    def _field_owners(self) -> dict[str, type]:
+        return self._process_fields().field_owners
 
     @lang.cached_nullary
     def _field_list(self) -> ta.Sequence[dc.Field]:
-        return [f for f in self._process_fields().values() if field_type(f) is FieldType.INSTANCE]
+        return [f for f in self._fields().values() if field_type(f) is FieldType.INSTANCE]
 
     def _process_init(self) -> None:
         if not self._params.init:
