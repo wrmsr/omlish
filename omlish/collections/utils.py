@@ -44,7 +44,7 @@ def unique(it: ta.Iterable[T], *, identity: bool = False) -> list[T]:
     if isinstance(it, str):
         raise TypeError(it)
     ret: list[T] = []
-    seen: ta.MutableSet[T] = IdentitySet() if identity else set()  # type: ignore
+    seen: ta.MutableSet[T] = IdentitySet() if identity else set()
     for e in it:
         if e not in seen:
             seen.add(e)
@@ -53,7 +53,7 @@ def unique(it: ta.Iterable[T], *, identity: bool = False) -> list[T]:
 
 
 def unique_dict(items: ta.Iterable[tuple[K, V]], *, identity: bool = False) -> ta.MutableMapping[K, V]:
-    dct: ta.MutableMapping[K, V] = IdentityKeyDict() if identity else {}  # type: ignore
+    dct: ta.MutableMapping[K, V] = IdentityKeyDict() if identity else {}
     for k, v in items:
         if k in dct:
             raise KeyError(k)

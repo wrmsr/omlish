@@ -60,7 +60,7 @@ def test_callable():
     assert isinstance(f, Callable)
     assert not isinstance(5, Callable)
 
-    class D:  # type: ignore
+    class D:
         pass
 
     class E:

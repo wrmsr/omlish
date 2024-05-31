@@ -163,7 +163,7 @@ class ContextWrapped:
 
         self._fn = fn
         self._cm = cm
-        self._name = None
+        self._name: str | None = None
 
         functools.update_wrapper(self, fn)
 
@@ -190,7 +190,7 @@ class ContextWrapped:
         elif hasattr(cm, '__enter__'):
             pass
         elif callable(cm):
-            cm = cm.__get__(instance, owner)  # noqa
+            cm = cm.__get__(instance, owner)
         else:
             raise TypeError(cm)
         ret = type(self)(fn, cm)

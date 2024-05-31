@@ -39,7 +39,7 @@ def sync_await(fn: ta.Callable[..., T], *args, **kwargs) -> T:
 
     async def gate():
         nonlocal ret
-        ret = await fn(*args, **kwargs)
+        ret = await fn(*args, **kwargs)  # type: ignore
 
     cr = gate()
     with contextlib.closing(cr):
@@ -63,7 +63,7 @@ def sync_list(fn: ta.Callable[..., ta.AsyncIterator[T]], *args, **kwargs) -> ta.
     sync_await(inner)
     if not isinstance(lst, list):
         raise TypeError(lst)
-    return lst  # type: ignore
+    return lst
 
 
 async def async_list(fn: ta.Callable[..., ta.AsyncIterator[T]], *args, **kwargs) -> ta.List[T]:
@@ -100,7 +100,7 @@ class ImmediateExecutor(cf.Executor):
         self._immediate_exceptions = immediate_exceptions
 
     def submit(self, fn, *args, **kwargs):
-        future = cf.Future()
+        future: ta.Any = cf.Future()
         try:
             result = fn(*args, **kwargs)
             future.set_result(result)
@@ -200,7 +200,7 @@ def await_dependent_futures(
         fn: set(dependencies) for fn, dependencies in dependency_sets_by_fn.items()
     }
     root_fns = {fn for fn, deps in remaining_dep_sets_by_fn.items() if not deps}
-    fns_by_fut = {fut: fn for fn in root_fns for fut in [executor.submit(fn)] if fut is not None}  # type: ignore
+    fns_by_fut = {fut: fn for fn in root_fns for fut in [executor.submit(fn)] if fut is not None}
 
     def cancel():
         for cancel_fut in fns_by_fut:
