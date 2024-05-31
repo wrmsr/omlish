@@ -7,6 +7,9 @@ import typing as ta
 from .cached import cached_nullary
 
 
+##
+
+
 def lazy_import(name: str, package: ta.Optional[str] = None) -> ta.Callable[[], ta.Any]:
     return cached_nullary(functools.partial(importlib.import_module, name, package=package))
 
@@ -23,6 +26,9 @@ def proxy_import(name: str, package: ta.Optional[str] = None) -> types.ModuleTyp
     lmod = types.ModuleType(name)
     lmod.__getattr__ = __getattr__  # type: ignore
     return lmod
+
+
+##
 
 
 _pkg_resources = lazy_import('pkg_resources')
