@@ -18,10 +18,10 @@ from .base import (  # noqa
     SetType,
 )
 
-from .dataclasses import (  # noqa
-    FieldNaming,
-    DataclassMetadata,
+from .objects import (  # noqa
     FieldMetadata,
+    FieldNaming,
+    ObjectMetadata,
 )
 
 from .global_ import (  # noqa
