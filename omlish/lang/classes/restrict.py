@@ -1,0 +1,102 @@
+import typing as ta
+
+from .abstract import Abstract
+from .abstract import is_abstract
+
+
+##
+
+
+class FinalException(TypeError):
+
+    def __init__(self, _type: ta.Type) -> None:
+        super().__init__()
+
+        self._type = _type
+
+    def __repr__(self) -> str:
+        return f'{type(self).__name__}({self._type})'
+
+
+class Final(Abstract):
+    __slots__ = ()
+
+    def __init_subclass__(cls, **kwargs) -> None:
+        super().__init_subclass__(**kwargs)
+
+        abstracts: set[ta.Any] = set()
+        for base in cls.__bases__:
+            if base is Abstract:
+                raise FinalException(base)
+            elif base is Final:
+                continue
+            elif Final in base.__mro__:
+                raise FinalException(base)
+            else:
+                abstracts.update(getattr(base, '__abstractmethods__', []))
+
+        for a in abstracts:
+            try:
+                v = cls.__dict__[a]
+            except KeyError:
+                raise FinalException(a)
+            if is_abstract(v):
+                raise FinalException(a)
+
+
+##
+
+
+class SealedException(TypeError):
+
+    def __init__(self, _type) -> None:
+        super().__init__()
+
+        self._type = _type
+
+    def __repr__(self) -> str:
+        return f'{type(self).__name__}({self._type})'
+
+
+class Sealed:
+    __slots__ = ()
+
+    def __init_subclass__(cls, **kwargs) -> None:
+        for base in cls.__bases__:
+            if base is not Abstract:
+                if Sealed in base.__bases__:
+                    if cls.__module__ != base.__module__:
+                        raise SealedException(base)
+        super().__init_subclass__(**kwargs)
+
+
+class PackageSealed:
+    __slots__ = ()
+
+    def __init_subclass__(cls, **kwargs) -> None:
+        for base in cls.__bases__:
+            if base is not Abstract:
+                if PackageSealed in base.__bases__:
+                    if cls.__module__.split('.')[:-1] != base.__module__.split('.')[:-1]:
+                        raise SealedException(base)
+        super().__init_subclass__(**kwargs)
+
+
+##
+
+
+class NotInstantiable(Abstract):
+    __slots__ = ()
+
+    def __new__(cls, *args, **kwargs) -> ta.NoReturn:
+        raise TypeError
+
+
+class NotPicklable:
+    __slots__ = ()
+
+    def __getstate__(self) -> ta.NoReturn:
+        raise TypeError
+
+    def __setstate__(self, state) -> ta.NoReturn:
+        raise TypeError
