@@ -4,7 +4,7 @@ from ..iterables import prodrange
 
 def test_peek():
     it = range(4)
-    v, it = peek(it)
+    v, it = peek(it)  # type: ignore
     assert v == 0
     assert list(it) == [0, 1, 2, 3]
 
