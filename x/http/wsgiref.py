@@ -4,10 +4,11 @@ import threading
 import typing as ta
 import wsgiref.simple_server
 
+from omlish.http.types import App
+from omlish.http.types import Environ
+
 from .bind import Binder
 from .bind import ClientAddress
-from .types import App
-from .types import Environ
 from .wsgi import WsgiServer
 
 

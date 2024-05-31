@@ -5,10 +5,10 @@ from .. import lang
 
 
 AppT = ta.TypeVar('AppT', bound='App')
-Environ = dict[str, ta.Any]
-StartResponse = ta.Callable[[str, list[tuple[str, str]]], ta.Callable[[lang.BytesLike], None]]
-RawApp = ta.Callable[[Environ, StartResponse], ta.Iterable[lang.BytesLike]]
-AppLike = ta.Union['App', RawApp]
+Environ: ta.TypeAlias = dict[str, ta.Any]
+StartResponse: ta.TypeAlias = ta.Callable[[str, list[tuple[str, str]]], ta.Callable[[lang.BytesLike], None]]
+RawApp: ta.TypeAlias = ta.Callable[[Environ, StartResponse], ta.Iterable[lang.BytesLike]]
+AppLike: ta.TypeAlias = ta.Union['App', RawApp]
 BadRequestExceptionT = ta.TypeVar('BadRequestExceptionT', bound='BadRequestException')
 
 
