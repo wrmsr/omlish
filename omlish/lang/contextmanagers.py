@@ -178,8 +178,8 @@ class ContextWrapped:
     def __get__(self, instance, owner=None):
         if instance is None and owner is None:
             return self
-        fn = self._fn.__get__(instance, owner)
-        cm = self._cm
+        fn = self._fn.__get__(instance, owner)  # noqa
+        cm: ta.Any = self._cm
         if isinstance(self._cm, str):
             if instance is not None:
                 cm = getattr(instance, cm)
@@ -190,7 +190,7 @@ class ContextWrapped:
         elif hasattr(cm, '__enter__'):
             pass
         elif callable(cm):
-            cm = cm.__get__(instance, owner)
+            cm = cm.__get__(instance, owner)  # noqa
         else:
             raise TypeError(cm)
         ret = type(self)(fn, cm)
@@ -207,7 +207,7 @@ class ContextWrapped:
         cm = self._cm
         if not hasattr(cm, '__enter__') and callable(cm):
             cm = cm(*args, **kwargs)
-        with cm:
+        with cm:  # type: ignore
             return self._fn(*args, **kwargs)
 
 
@@ -215,5 +215,3 @@ def context_wrapped(cm):  # ContextWrappable -> ta.Callable[[CallableT], Callabl
     def inner(fn):
         return ContextWrapped(fn, cm)
     return inner
-
-

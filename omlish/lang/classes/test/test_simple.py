@@ -6,7 +6,6 @@ from ..simple import Marker
 from ..simple import Singleton
 
 
-
 def test_marker():
     class M(Marker):
         pass
