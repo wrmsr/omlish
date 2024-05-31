@@ -5,11 +5,13 @@ from .abstract import is_abstract_method # noqa
 from .abstract import make_abstract  # noqa
 from .restrict import Final  # noqa
 from .restrict import FinalException  # noqa
+from .restrict import NoBool  # noqa
 from .restrict import NotInstantiable  # noqa
 from .restrict import NotPicklable  # noqa
 from .restrict import PackageSealed  # noqa
 from .restrict import Sealed  # noqa
 from .restrict import SealedException  # noqa
+from .restrict import no_bool  # noqa
 from .simple import LazySingleton  # noqa
 from .simple import Marker  # noqa
 from .simple import Namespace  # noqa
