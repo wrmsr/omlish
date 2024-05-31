@@ -1,9 +1,7 @@
 import collections.abc
 import dataclasses as dc
-import functools
 import typing as ta
 
-from .. import check
 from .. import reflect as rfl
 from .base import MarshalContext
 from .base import Marshaler

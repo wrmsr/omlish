@@ -95,7 +95,7 @@ class DataclassMarshalerFactory(MarshalerFactory):
 class DataclassUnmarshalerFactory(UnmarshalerFactory):
     def __call__(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Optional[Unmarshaler]:
         if isinstance(rty, type) and dc.is_dataclass(rty):
-            dc_md = get_dataclass_metadata(rty)
+            dc_md = get_dataclass_metadata(rty)  # noqa
             d: dict[str, tuple[FieldInfo, Unmarshaler]] = {}
             for fi in get_field_infos(rty, ctx.options):
                 tup = (fi, _make_field_obj(ctx, fi.type, fi.metadata.unmarshaler, fi.metadata.unmarshaler_factory))

@@ -3,7 +3,6 @@ import datetime
 import typing as ta
 
 from .. import check
-from .. import reflect as rfl
 from .base import MarshalContext
 from .base import Marshaler
 from .base import MarshalerFactory
