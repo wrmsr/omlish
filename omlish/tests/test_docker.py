@@ -9,9 +9,9 @@ from .. import lang
 from .. import marshal as msh
 
 
-def cli_cmd(*args) -> bytes:
+def cli_cmd(args) -> bytes:
     p = subprocess.Popen(
-        *args,
+        args,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
@@ -23,7 +23,7 @@ def cli_cmd(*args) -> bytes:
 
 @dc.dataclass(frozen=True)
 class PsItem(lang.Final):
-    dc.metadata(msh.DataclassMetadata(
+    dc.metadata(msh.ObjectMetadata(
         field_naming=msh.FieldNaming.CAMEL,
         # unknown_field='x',
     ))
@@ -65,7 +65,7 @@ def cli_ps() -> list[PsItem]:
 
 @dc.dataclass(frozen=True)
 class Inspect(lang.Final):
-    dc.metadata(msh.DataclassMetadata(
+    dc.metadata(msh.ObjectMetadata(
         field_naming=msh.FieldNaming.CAMEL,
         unknown_field='x',
     ))

@@ -66,6 +66,6 @@ def test_no_bool():
     class C(NoBool):
         pass
 
-    assert C
+    assert C  # type: ignore
     with pytest.raises(TypeError):
         bool(C())

@@ -198,11 +198,11 @@ def test_reorder():
         x: int
         y: int = 3
 
-    @dc.dataclass(reorder=True)
+    @dc.dataclass(reorder=True)  # type: ignore
     class B(A):
-        z: int
+        z: int  # type: ignore
 
-    b = B(1, 2)
+    b = B(1, 2)  # type: ignore
     assert b.x == 1
     assert b.z == 2
     assert b.y == 3

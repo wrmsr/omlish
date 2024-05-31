@@ -14,7 +14,7 @@ def test_virtual():
             raise NotImplementedError
 
     with pytest.raises(TypeError):
-        P()
+        P()  # type: ignore
 
     class A:
         def f(self):
@@ -39,7 +39,7 @@ def test_virtual():
         class D(P):
             pass
 
-        D()
+        D()  # type: ignore
 
     virtual_check(P)(A)
     with pytest.raises(TypeError):
@@ -60,7 +60,7 @@ def test_callable():
     assert isinstance(f, Callable)
     assert not isinstance(5, Callable)
 
-    class C:  # noqa
+    class C:  # type: ignore
         pass
 
     class D:
@@ -69,5 +69,5 @@ def test_callable():
 
     assert isinstance(C, Callable)
     assert isinstance(D, Callable)
-    assert not isinstance(C(), Callable)
     assert isinstance(D(), Callable)
+    assert not isinstance(C(), Callable)
