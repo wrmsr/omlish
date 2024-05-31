@@ -51,13 +51,13 @@ class _VirtualMeta(abc.ABCMeta):
 
         def __subclasshook__(cls, subclass):
             if cls is not kls:
-                return super(kls, cls).__subclasshook__(subclass)
+                return super(kls, cls).__subclasshook__(subclass)  # type: ignore
             if get_missing_reqs(subclass):
                 return False
             if user_subclasshook is not None:
                 ret = user_subclasshook(cls, subclass)
             else:
-                ret = super(kls, cls).__subclasshook__(subclass)
+                ret = super(kls, cls).__subclasshook__(subclass)  # type: ignore
             return True if ret is NotImplemented else ret
 
         namespace['__subclasshook__'] = classmethod(__subclasshook__)

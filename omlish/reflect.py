@@ -201,7 +201,7 @@ def replace_type_vars(ty: Type, rpl: ta.Mapping[ta.TypeVar, Type]) -> Type:
     return ty
 
 
-def get_reflected_bases(ty: Type) -> tuple[Type, ...]:
+def get_generic_bases(ty: Type) -> tuple[Type, ...]:
     if (cty := get_concrete_type(ty)) is not None:
         rpl = get_type_var_replacements(ty)
         return tuple(replace_type_vars(type_(b), rpl) for b in get_original_bases(cty))
@@ -211,8 +211,8 @@ def get_reflected_bases(ty: Type) -> tuple[Type, ...]:
 def generic_mro(obj: ta.Any) -> list[Type]:
     mro = c3.mro(
         type_(obj),
-        get_bases=get_reflected_bases,
-        is_subclass=lambda l, r: issubclass(get_concrete_type(l), get_concrete_type(r)),
+        get_bases=get_generic_bases,
+        is_subclass=lambda l, r: issubclass(get_concrete_type(l), get_concrete_type(r)),  # type: ignore
     )
     return [ty for ty in mro if get_concrete_type(ty) is not ta.Generic]
 

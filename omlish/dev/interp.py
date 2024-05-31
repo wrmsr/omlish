@@ -46,7 +46,7 @@ def _cmd(
 
     env = {**os.environ, **(env or {})}
 
-    es: tuple[type[Exception]] = (Exception,)
+    es: tuple[type[Exception], ...] = (Exception,)
     if isinstance(try_, bool):
         if try_:
             es = tuple(DEFAULT_CMD_TRY_EXCEPTIONS)

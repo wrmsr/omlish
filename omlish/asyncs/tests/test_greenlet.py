@@ -9,6 +9,8 @@ import greenlet
 
 
 def test_greenlet():
+    done = 0
+
     def test1():
         gr2.switch()
         gr2.switch()
@@ -23,7 +25,6 @@ def test_greenlet():
         done += 1
         gr1.switch()
 
-    done = 0
     gr1 = greenlet.greenlet(test1)
     gr2 = greenlet.greenlet(test2)
     gr1.switch()
