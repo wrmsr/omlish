@@ -35,6 +35,8 @@ pgcli==4.1.0; python_version < '3.13'
 
 ##
 
+cython==3.0.10
+
 # required
 #
 anyio==4.4.0
