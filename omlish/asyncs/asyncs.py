@@ -54,10 +54,12 @@ def sync_await(fn: ta.Callable[..., T], *args, **kwargs) -> T:
 
 
 def sync_list(fn: ta.Callable[..., ta.AsyncIterator[T]], *args, **kwargs) -> ta.List[T]:
+    lst = None
+
     async def inner():
         nonlocal lst
         lst = [v async for v in fn(*args, **kwargs)]
-    lst = None
+
     sync_await(inner)
     if not isinstance(lst, list):
         raise TypeError(lst)
