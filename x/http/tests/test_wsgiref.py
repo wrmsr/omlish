@@ -5,11 +5,12 @@ import typing as ta
 
 import requests
 
+from omlish.http import consts as consts_
+from omlish.dev.testing import run_with_timeout
+
 from .. import bind as bind_
-from .. import consts as consts_
 from .. import wsgi as wsgi_
 from .. import wsgiref as wsgiref_
-from ...dev.testing import run_with_timeout
 
 
 def test_inline_http():

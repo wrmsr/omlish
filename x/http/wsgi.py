@@ -6,12 +6,13 @@ import socket as sock
 import threading
 import typing as ta
 
-from .. import cached
-from .. import check
-from .. import dataclasses as dc
-from .. import lang
+from omlish import cached
+from omlish import check
+from omlish import dataclasses as dc
+from omlish import lang
+from omlish.http.types import App
+
 from .bind import Binder
-from .types import App
 
 
 log = logging.getLogger(__name__)
