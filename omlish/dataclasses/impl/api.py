@@ -6,7 +6,6 @@ import types
 import typing as ta
 
 from ... import check as check_
-from .classes import process_class
 from .internals import PARAMS_ATTR
 from .internals import Params
 from .metadata import METADATA_ATTR
@@ -14,6 +13,7 @@ from .metadata import Metadata
 from .params import FieldExtras
 from .params import Params12
 from .params import ParamsExtras
+from .process import process_class
 
 
 MISSING = dc.MISSING
