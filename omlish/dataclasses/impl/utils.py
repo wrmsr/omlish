@@ -119,7 +119,7 @@ class FuncBuilder:
         # return __init__,__repr__
 
         txt = f'def __create_fn__({local_vars}):\n{fns_src}\n  return {return_names}'
-        ns = {}
+        ns: dict[str, ta.Any] = {}
         exec(txt, self.globals, ns)  # type: ignore
         fns = ns['__create_fn__'](**self.locals)
 

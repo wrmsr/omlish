@@ -158,7 +158,7 @@ Caller: ta.TypeAlias = tuple[
 ]
 
 
-class Logger(Filterer):
+class Logger(Filterer, ta.Protocol):
     name: str
     level: Level
     parent: ta.Optional['Logger']
