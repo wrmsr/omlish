@@ -23,7 +23,7 @@ _UnionGenericAlias = ta._UnionGenericAlias   # type: ignore  # noqa
 
 class _Special(ta.NamedTuple):
     name: str
-    alias: _SpecialGenericAlias
+    alias: _SpecialGenericAlias  # type: ignore
     origin: type
     nparams: int
 
