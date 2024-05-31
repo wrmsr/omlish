@@ -38,7 +38,7 @@ def test_singletons():
         foo_init_calls = 0
         foo2_init_calls = 0
 
-        class Foo(bcls):
+        class Foo(bcls):  # type: ignore
             def __init__(self):
                 super().__init__()
                 nonlocal foo_init_calls

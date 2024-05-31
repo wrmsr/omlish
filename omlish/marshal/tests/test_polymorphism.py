@@ -2,18 +2,20 @@ import dataclasses as dc
 
 from .. import polymorphism as poly
 from ..base import MarshalContext
-from ..base import UnmarshalContext
-from ..registries import Registry
+from ..base import MarshalerFactory
 from ..base import RecursiveMarshalerFactory
 from ..base import RecursiveUnmarshalerFactory
+from ..base import UnmarshalContext
+from ..base import UnmarshalerFactory
 from ..dataclasses import DataclassMarshalerFactory
 from ..dataclasses import DataclassUnmarshalerFactory
 from ..factories import CompositeFactory
 from ..factories import TypeCacheFactory
+from ..polymorphism import PolymorphismMarshalerFactory
+from ..polymorphism import PolymorphismUnmarshalerFactory
 from ..primitives import PRIMITIVE_MARSHALER_FACTORY
 from ..primitives import PRIMITIVE_UNMARSHALER_FACTORY
-from ..polymorphism import PolymorphismUnmarshalerFactory
-from ..polymorphism import PolymorphismMarshalerFactory
+from ..registries import Registry
 
 
 @dc.dataclass(frozen=True)
@@ -46,7 +48,7 @@ def test_polymorphism():
         ],
     )
 
-    mf: MarshalFactory = TypeCacheFactory(  # noqa
+    mf: MarshalerFactory = TypeCacheFactory(
         RecursiveMarshalerFactory(
             CompositeFactory(
                 PolymorphismMarshalerFactory(p),
@@ -56,7 +58,7 @@ def test_polymorphism():
         )
     )
 
-    uf: UnmarshalFactory = TypeCacheFactory(  # noqa
+    uf: UnmarshalerFactory = TypeCacheFactory(
         RecursiveUnmarshalerFactory(
             CompositeFactory(
                 PolymorphismUnmarshalerFactory(p),
