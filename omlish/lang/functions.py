@@ -1,10 +1,25 @@
 import functools
+import time
 import typing as ta
 
 from .descriptors import is_method_descriptor
 
 
 T = ta.TypeVar('T')
+
+
+def is_lambda(f: ta.Any) -> bool:
+    l = lambda: 0
+    return isinstance(f, type(l)) and f.__name__ == l.__name__
+
+
+def maybe_call(obj: ta.Any, att: str, *args, default: ta.Any = None, **kwargs) -> ta.Any:
+    try:
+        fn = getattr(obj, att)
+    except AttributeError:
+        return default
+    else:
+        return fn(*args, **kwargs)
 
 
 def unwrap_func(fn: ta.Callable) -> ta.Callable:
@@ -75,3 +90,34 @@ def is_not_none(o: ta.Any) -> bool:
 
 def cmp(l: ta.Any, r: ta.Any) -> int:
     return int(l > r) - int(l < r)
+
+
+class VoidException(Exception):
+    pass
+
+
+class Void:
+
+    def __new__(cls, *args, **kwargs):
+        raise VoidException
+
+    def __init_subclass__(cls, **kwargs):
+        raise VoidException
+
+
+def void(*args, **kwargs) -> ta.NoReturn:
+    raise VoidException
+
+
+class TimeoutException(Exception):
+    pass
+
+
+def ticking_timeout(s: ta.Union[int, float, None]) -> ta.Callable[[], None]:
+    if s is None:
+        return lambda: None
+    def tick():  # noqa
+        if time.time() >= deadline:
+            raise TimeoutException
+    deadline = time.time() + s
+    return tick
