@@ -228,3 +228,8 @@ def test_generics():
     info = dc.reflect(IntBox)
     print(info.field_owners)
     print(info.mro_type_args)
+
+
+def test_confer_frozen():
+    class A(dc.Frozen):
+        x: int

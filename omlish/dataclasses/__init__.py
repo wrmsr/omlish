@@ -58,6 +58,7 @@ from .impl.exceptions import (  # noqa
 from .impl.metaclass import (  # noqa
     DataMeta,
     Data,
+    Frozen,
 )
 
 from .impl.metadata import (  # noqa
