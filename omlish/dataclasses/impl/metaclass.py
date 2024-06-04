@@ -1,13 +1,8 @@
 import abc
-import typing as ta
 
 from ... import lang
+from .api import dataclass
 from .api import field  # noqa
-
-if ta.TYPE_CHECKING:
-    from . import api
-else:
-    api = lang.proxy_import('.api', __package__)
 
 
 class DataMeta(abc.ABCMeta):
@@ -25,7 +20,7 @@ class DataMeta(abc.ABCMeta):
             bases,
             namespace,
         )
-        return api.dataclass(cls, **kwargs)
+        return dataclass(cls, **kwargs)
 
 
 # @ta.dataclass_transform(field_specifiers=(field,))  # FIXME: ctor
