@@ -251,3 +251,13 @@ def test_box():
 
     br = dc.reflect(Username)
     print(br.mro_type_args)
+
+
+def test_check_type():
+    @dc.dataclass(frozen=True)
+    class C:
+        x: int = dc.field(check_type=True)  # type: ignore
+
+    assert C(5).x == 5
+    with pytest.raises(TypeError):
+        C('5')  # type: ignore

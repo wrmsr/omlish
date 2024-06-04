@@ -107,6 +107,14 @@ def field_init(
         locals[cn] = fx.check
         lines.append(f'if not {cn}({f.name}): raise __dataclass_CheckException__')
 
+    if fx.check_type:
+        cn = f'__dataclass_check_type__{f.name}__'
+        locals[cn] = f.type
+        lines.append(
+            f'if not __dataclass_builtins_isinstance__({f.name}, {cn}): '
+            f'raise __dataclass_builtins_TypeError__({f.name}, {cn})'
+        )
+
     value: str | None = None
     if f.default_factory is not MISSING:
         if f.init:
