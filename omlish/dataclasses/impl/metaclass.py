@@ -1,5 +1,6 @@
 import abc
 import collections
+import dataclasses as dc
 import typing as ta
 
 from ... import lang
@@ -8,6 +9,9 @@ from .api import field  # noqa
 from .params import MetaclassParams
 from .params import get_metaclass_params
 from .params import get_params
+
+
+T = ta.TypeVar('T')
 
 
 def confer_kwarg(out: dict[str, ta.Any], k: str, v: ta.Any) -> None:
@@ -24,6 +28,8 @@ def confer_kwargs(
 ) -> dict[str, ta.Any]:
     out: dict[str, ta.Any] = {}
     for base in bases:
+        if not dc.is_dataclass(base):
+            continue
         if not (bmp := get_metaclass_params(base)).confer:
             continue
         for ck in bmp.confer:
@@ -92,3 +98,7 @@ class Data(metaclass=DataMeta):
 
 class Frozen(Data, frozen=True, confer=frozenset(['frozen', 'confer'])):
     pass
+
+
+class Box(Frozen, ta.Generic[T]):
+    v: T
