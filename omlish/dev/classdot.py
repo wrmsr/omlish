@@ -12,7 +12,7 @@ def gen_class_dot(roots: ta.Iterable[type]) -> dot.Graph:
     roots = set(roots)
     root_tup = tuple(roots)
 
-    stmts = []
+    stmts: list[dot.Stmt] = []
     stmts.append(dot.RawStmt('rankdir=LR;'))
 
     todo = set(roots)

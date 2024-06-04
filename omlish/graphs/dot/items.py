@@ -12,13 +12,11 @@ from ... import dataclasses as dc
 from ... import lang
 
 
-@dc.dataclass(frozen=True)
-class Item(lang.Abstract, lang.Sealed):
+class Item(dc.Data, lang.Abstract, lang.Sealed, frozen=True):
     pass
 
 
-@dc.dataclass(frozen=True)
-class Value(Item, lang.Abstract):
+class Value(Item, lang.Abstract, frozen=True):
 
     @classmethod
     def of(cls, obj: ta.Union['Value', str, ta.Sequence]) -> 'Value':
@@ -32,8 +30,7 @@ class Value(Item, lang.Abstract):
             raise TypeError(obj)
 
 
-@dc.dataclass(frozen=True)
-class Raw(Value):
+class Raw(Value, frozen=True):
     raw: str
 
     @classmethod
@@ -46,8 +43,7 @@ class Raw(Value):
             raise TypeError(obj)
 
 
-@dc.dataclass(frozen=True)
-class Text(Value):
+class Text(Value, frozen=True):
     text: str
 
     @classmethod
@@ -60,8 +56,7 @@ class Text(Value):
             raise TypeError(obj)
 
 
-@dc.dataclass(frozen=True)
-class Cell(Item):
+class Cell(Item, frozen=True):
     value: Value
 
     @classmethod
@@ -72,8 +67,7 @@ class Cell(Item):
             return Cell(Value.of(obj))
 
 
-@dc.dataclass(frozen=True)
-class Row(Item):
+class Row(Item, frozen=True):
     cells: ta.Sequence[Cell] = dc.xfield(coerce=col.seq)
 
     @classmethod
@@ -88,8 +82,7 @@ class Row(Item):
             raise TypeError(obj)
 
 
-@dc.dataclass(frozen=True)
-class Table(Value):
+class Table(Value, frozen=True):
     rows: ta.Sequence[Row] = dc.xfield(coerce=col.seq)
 
     @classmethod
@@ -104,8 +97,7 @@ class Table(Value):
             raise TypeError(obj)
 
 
-@dc.dataclass(frozen=True)
-class Id(Item):
+class Id(Item, frozen=True):
     id: str
 
     @classmethod
@@ -118,8 +110,7 @@ class Id(Item):
             raise TypeError(obj)
 
 
-@dc.dataclass(frozen=True)
-class Attrs(Item):
+class Attrs(Item, frozen=True):
     attrs: ta.Mapping[str, Value] = dc.field(
         coerce=lambda o: col.frozendict(
             (check.not_empty(check.isinstance(k, str)), Value.of(v))  # type: ignore
@@ -137,13 +128,11 @@ class Attrs(Item):
             raise TypeError(obj)
 
 
-@dc.dataclass(frozen=True)
-class Stmt(Item, lang.Abstract):
+class Stmt(Item, lang.Abstract, frozen=True):
     pass
 
 
-@dc.dataclass(frozen=True)
-class RawStmt(Stmt):
+class RawStmt(Stmt, frozen=True):
     raw: str
 
     @classmethod
@@ -156,21 +145,18 @@ class RawStmt(Stmt):
             raise TypeError(obj)
 
 
-@dc.dataclass(frozen=True)
-class Edge(Stmt):
+class Edge(Stmt, frozen=True):
     left: Id = dc.xfield(coerce=Id.of)
     right: Id = dc.xfield(coerce=Id.of)
     attrs: Attrs = dc.xfield(default=Attrs({}), coerce=Attrs.of)
 
 
-@dc.dataclass(frozen=True)
-class Node(Stmt):
+class Node(Stmt, frozen=True):
     id: Id = dc.xfield(coerce=Id.of)
     attrs: Attrs = dc.xfield(default=Attrs({}), coerce=Attrs.of)
 
 
-@dc.dataclass(frozen=True)
-class Graph(Item):
+class Graph(Item, frozen=True):
     stmts: ta.Sequence[Stmt] = dc.xfield(coerce=col.seq)
 
     id: Id = dc.xfield(default=Id('G'), kw_only=True)

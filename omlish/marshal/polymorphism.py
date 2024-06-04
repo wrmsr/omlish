@@ -95,8 +95,8 @@ class PolymorphismUnmarshaler(Unmarshaler):
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Optional[ta.Any]:
         ma = check.isinstance(v, collections.abc.Mapping)
         [(tag, iv)] = ma.items()
-        u = self.m[tag]
-        return u.unmarshal(ctx, iv)
+        u = self.m[tag]  # type: ignore
+        return u.unmarshal(ctx, iv)  # type: ignore
 
 
 @dc.dataclass(frozen=True)

@@ -21,5 +21,5 @@ class AnyMarshalerUnmarshaler(Marshaler, Unmarshaler):
 
 ANY_MARSHALER_UNMARSHALER = AnyMarshalerUnmarshaler()
 
-ANY_MARSHALER_FACTORY: MarshalerFactory = TypeMapFactory({ta.Any: ANY_MARSHALER_UNMARSHALER})
-ANY_UNMARSHALER_FACTORY: UnmarshalerFactory = TypeMapFactory({ta.Any: ANY_MARSHALER_UNMARSHALER})
+ANY_MARSHALER_FACTORY: MarshalerFactory = TypeMapFactory({ta.Any: ANY_MARSHALER_UNMARSHALER})  # type: ignore
+ANY_UNMARSHALER_FACTORY: UnmarshalerFactory = TypeMapFactory({ta.Any: ANY_MARSHALER_UNMARSHALER})  # type: ignore

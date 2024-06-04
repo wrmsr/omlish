@@ -8,6 +8,7 @@ from .items import Node  # noqa
 from .items import Raw  # noqa
 from .items import RawStmt  # noqa
 from .items import Row  # noqa
+from .items import Stmt  # noqa
 from .items import Table  # noqa
 from .items import Text  # noqa
 from .rendering import Renderer  # noqa

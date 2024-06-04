@@ -238,10 +238,10 @@ def isinstance_of(rfl: Type) -> ta.Callable[[ta.Any], bool]:
     if isinstance(rfl, Generic):
         if rfl.cls in (collections.abc.Sequence, collections.abc.Set):
             [efn] = map(isinstance_of, rfl.args)
-            return lambda o: isinstance(o, rfl.cls) and all(efn(e) for e in o)
+            return lambda o: isinstance(o, rfl.cls) and all(efn(e) for e in o)  # type: ignore
 
         if rfl.cls == collections.abc.Mapping:
             kfn, vfn = map(isinstance_of, rfl.args)
-            return lambda o: isinstance(o, rfl.cls) and all(kfn(k) and vfn(v) for k, v in o.items())
+            return lambda o: isinstance(o, rfl.cls) and all(kfn(k) and vfn(v) for k, v in o.items())  # type: ignore
 
     raise TypeError(rfl)
