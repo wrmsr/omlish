@@ -1,10 +1,30 @@
 import abc
 import collections
+import typing as ta
 
 from ... import lang
 from .api import dataclass
 from .api import field  # noqa
 from .params import MetaclassParams
+from .params import get_metaclass_params
+
+
+def confer_kwargs(
+        bases: ta.Sequence[type],
+        kwargs: ta.Mapping[str, ta.Any],
+) -> dict[str, ta.Any]:
+    out: dict[str, ta.Any] = {}
+    for base in bases:
+        if not (bmp := get_metaclass_params(base)).confer:
+            continue
+        for ck in bmp.confer:
+            if ck == 'frozen':
+                raise NotImplementedError
+            elif ck == 'confer':
+                raise NotImplementedError
+            else:
+                raise KeyError(ck)
+    return out
 
 
 class DataMeta(abc.ABCMeta):
@@ -15,7 +35,7 @@ class DataMeta(abc.ABCMeta):
             namespace,
             *,
 
-            confer=frozenset(),
+            # confer=frozenset(),
 
             metadata=None,
             **kwargs
@@ -28,8 +48,11 @@ class DataMeta(abc.ABCMeta):
             namespace,
         )
 
+        ckw = confer_kwargs(bases, kwargs)
+        nkw = {**kwargs, **ckw}
+
         mcp = MetaclassParams(
-            confer=confer,
+            confer=nkw.pop('confer', frozenset()),
         )
 
         mmd = {
@@ -40,7 +63,7 @@ class DataMeta(abc.ABCMeta):
         else:
             metadata = mmd
 
-        return dataclass(cls, metadata=metadata, **kwargs)
+        return dataclass(cls, metadata=metadata, **nkw)
 
 
 # @ta.dataclass_transform(field_specifiers=(field,))  # FIXME: ctor
@@ -58,5 +81,5 @@ class Data(metaclass=DataMeta):
             spi(*args, **kwargs)
 
 
-class Frozen(Data, frozen=True, confer=frozenset(['frozen'])):
+class Frozen(Data, frozen=True, confer=frozenset(['frozen', 'confer'])):
     pass
