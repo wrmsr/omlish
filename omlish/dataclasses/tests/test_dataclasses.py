@@ -242,3 +242,12 @@ def test_confer_frozen():
 
     with pytest.raises(AttributeError):
         B(2, 3).x = 3
+
+
+def test_box():
+    class Username(dc.Box[str]): pass
+
+    print(Username('foo'))
+
+    br = dc.reflect(Username)
+    print(br.mro_type_args)
