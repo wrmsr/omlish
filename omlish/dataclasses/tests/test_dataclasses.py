@@ -233,3 +233,12 @@ def test_generics():
 def test_confer_frozen():
     class A(dc.Frozen):
         x: int
+
+    with pytest.raises(AttributeError):
+        A(2).x = 3
+
+    class B(A):
+        y: int
+
+    with pytest.raises(AttributeError):
+        B(2, 3).x = 3

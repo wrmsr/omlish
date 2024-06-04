@@ -7,6 +7,15 @@ from .api import dataclass
 from .api import field  # noqa
 from .params import MetaclassParams
 from .params import get_metaclass_params
+from .params import get_params
+
+
+def confer_kwarg(out: dict[str, ta.Any], k: str, v: ta.Any) -> None:
+    if k in out:
+        if out[k] != v:
+            raise ValueError
+    else:
+        out[k] = v
 
 
 def confer_kwargs(
@@ -19,9 +28,9 @@ def confer_kwargs(
             continue
         for ck in bmp.confer:
             if ck == 'frozen':
-                raise NotImplementedError
+                confer_kwarg(out, 'frozen', get_params(base).frozen)
             elif ck == 'confer':
-                raise NotImplementedError
+                confer_kwarg(out, 'confer', bmp.confer)
             else:
                 raise KeyError(ck)
     return out
