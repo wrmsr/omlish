@@ -32,7 +32,7 @@ pillow==10.3.0
 
 sentencepiece==0.2.0
 tiktoken==0.7.0
-transformers==4.41.1
+transformers==4.41.2
 
 ##
 
@@ -144,7 +144,7 @@ einops==0.8.0
 
 ### infra
 
-boto3>=1.34.114
+boto3>=1.34.119
 
 google-cloud-compute==1.19.0
 
