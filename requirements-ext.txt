@@ -139,6 +139,8 @@ onnx2torch; python_version >= '3.12'
 
 einops==0.8.0
 
+blobfile==2.1.1
+
 # git+git://github.com/flier/pyfasthash
 
 
