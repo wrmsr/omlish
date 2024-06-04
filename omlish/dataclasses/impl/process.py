@@ -35,6 +35,11 @@ from .utils import Namespace
 from .utils import create_fn
 from .utils import set_new_attribute
 
+if ta.TYPE_CHECKING:
+    from . import metaclass
+else:
+    metaclass = lang.proxy_import('.metaclass', __package__)
+
 
 MISSING = dc.MISSING
 
@@ -63,10 +68,13 @@ class ClassProcessor:
             raise ValueError('eq must be true if order is true')
 
     def _check_frozen_bases(self) -> None:
+        mc_base = getattr(metaclass, 'Data', None)
         all_frozen_bases = None
         any_frozen_base = False
         has_dataclass_bases = False
         for b in self._cls.__mro__[-1:0:-1]:
+            if b is mc_base:
+                continue
             base_fields = getattr(b, FIELDS_ATTR, None)
             if base_fields is not None:
                 has_dataclass_bases = True

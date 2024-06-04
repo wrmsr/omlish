@@ -94,7 +94,7 @@ def command(
         *args: Arg,
         name: ta.Optional[str] = None,
         parent: ta.Optional[Command] = None,
-) -> ta.Callable[[CommandFn], Command]:
+) -> ta.Any:  # ta.Callable[[CommandFn], Command]:  # FIXME
     for arg in args:
         check.isinstance(arg, Arg)
     check.isinstance(name, (str, None))
