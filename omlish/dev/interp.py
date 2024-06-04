@@ -318,8 +318,8 @@ class MacResolver(PyenvResolver):
         if pfx is None:
             return PyenvInstallOpts.new()
 
-        tcl_tk_prefix = _cmd(['brew', '--prefix', 'tcl-tk'])
-        tcl_tk_ver_str = _cmd(['brew', 'ls', '--versions', 'tcl-tk'])
+        tcl_tk_prefix = ta.cast(str, _cmd(['brew', '--prefix', 'tcl-tk']))
+        tcl_tk_ver_str = ta.cast(str, _cmd(['brew', 'ls', '--versions', 'tcl-tk']))
         tcl_tk_ver = '.'.join(tcl_tk_ver_str.split()[1].split('.')[:2])
 
         return PyenvInstallOpts.new(conf_opts=[
@@ -329,7 +329,7 @@ class MacResolver(PyenvResolver):
 
     @cached_property
     def _brew_ssl_pio(self) -> PyenvInstallOpts:
-        pkg_config_path = _cmd(['brew', '--prefix', 'openssl'])
+        pkg_config_path = ta.cast(str, _cmd(['brew', '--prefix', 'openssl']))
         if 'PKG_CONFIG_PATH' in os.environ:
             pkg_config_path += ':' + os.environ['PKG_CONFIG_PATH']
         return PyenvInstallOpts.new(env={'PKG_CONFIG_PATH': pkg_config_path})

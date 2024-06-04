@@ -199,7 +199,7 @@ def test_reorder():
         y: int = 3
 
     @dc.dataclass(reorder=True)  # type: ignore
-    class B(A):
+    class B(A):  # noqa
         z: int  # type: ignore
 
     b = B(1, 2)  # type: ignore
@@ -224,3 +224,7 @@ def test_generics():
     rty1 = rfl.type_(IntBox)  # noqa
 
     assert IntBox(5).v == 5
+
+    info = dc.reflect(IntBox)
+    print(info.field_owners)
+    print(info.mro_type_args)

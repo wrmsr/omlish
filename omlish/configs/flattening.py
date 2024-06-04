@@ -133,7 +133,7 @@ class Flattening:
                     yield part
 
         for fk, v in flattened.items():
-            node = root
+            node: Flattening.UnflattenNode = root
             fks = list(split_keys(fk))
             for key, nkey in zip(fks, fks[1:]):
                 if isinstance(nkey, str):

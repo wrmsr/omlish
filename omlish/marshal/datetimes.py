@@ -87,4 +87,4 @@ class IsoDatetimeMarshalerUnmarshaler(Marshaler, Unmarshaler):
         return o.isoformat()
 
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> datetime.datetime:
-        return datetime.datetime.fromisoformat(v)
+        return datetime.datetime.fromisoformat(v)  # type: ignore
