@@ -115,7 +115,6 @@ def get_params12(obj: ta.Any) -> Params12:
 @dc.dataclass(frozen=True)
 class ParamsExtras(lang.Final):
     reorder: bool = False
-    confer: ta.FrozenSet[str] = frozenset()
 
 
 DEFAULT_PARAMS_EXTRAS = ParamsExtras()
@@ -127,3 +126,23 @@ def get_params_extras(obj: ta.Any) -> ParamsExtras:
 
     md = pcls.__dict__.get(METADATA_ATTR, EMPTY_METADATA)
     return md.get(ParamsExtras, DEFAULT_PARAMS_EXTRAS)
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class MetaclassParams:
+    confer: frozenset[str] = frozenset()
+
+
+DEFAULT_METACLASS_PARAMS = MetaclassParams()
+
+
+def get_metaclass_params(obj: ta.Any) -> MetaclassParams:
+    if (pcls := get_params_cls(obj)) is None:
+        raise TypeError(pcls)
+
+    md = pcls.__dict__.get(METADATA_ATTR, EMPTY_METADATA)
+    return md.get(MetaclassParams, DEFAULT_METACLASS_PARAMS)
+
