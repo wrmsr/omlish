@@ -34,6 +34,7 @@ def field(
 
         coerce: ta.Optional[ta.Callable[[ta.Any], ta.Any]] = None,
         check: ta.Optional[ta.Callable[[ta.Any], bool]] = None,
+        check_type: ta.Optional[bool] = None,
         override: bool = False,
 ):  # -> dc.Field
     if default is not MISSING and default_factory is not MISSING:
@@ -42,6 +43,7 @@ def field(
     fx = FieldExtras(
         coerce=coerce,
         check=check,
+        check_type=check_type,
         override=override,
     )
 
