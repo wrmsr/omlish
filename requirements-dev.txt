@@ -4,7 +4,7 @@ build==1.2.1
 twine==5.0.0
 wheel==0.43.0
 
-pytest==8.2.1
+pytest==8.2.2
 pytest-asyncio==0.23.7
 pytest-benchmark==4.0.0
 pytest-clarity==1.0.1
@@ -16,14 +16,14 @@ flake8-pyproject==1.2.3
 
 black==24.4.2
 mypy==1.10.0
-pipdeptree==2.21.0
+pipdeptree==2.22.0
 
 gprof2dot==2022.7.29
 guppy3==3.1.4.post1; python_version < '3.13'
 objgraph==3.6.1
 
 httpie==3.2.2
-ipython==8.24.0
+ipython==8.25.0
 
 pg8000==1.31.2
 pymysql==1.1.1
