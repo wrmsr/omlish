@@ -27,6 +27,7 @@ from .internals import is_kw_only
 from .internals import tuple_str
 from .metadata import METADATA_ATTR
 from .metadata import get_merged_metadata
+from .params import Params12
 from .params import ParamsExtras
 from .params import get_field_extras
 from .params import get_params12
@@ -50,18 +51,18 @@ class ClassProcessor:
 
         self._cls = check.isinstance(cls, type)
 
-        self._params = check.isinstance(self._cls.__dict__[PARAMS_ATTR], Params)  # type: ignore
         self._cls_metadata = check.isinstance(self._cls.__dict__[METADATA_ATTR], collections.abc.Mapping)
-        self._params12 = get_params12(self._cls)
-        self._params_extras = check.isinstance(self._cls_metadata[ParamsExtras], ParamsExtras)  # type: ignore  # noqa
         self._merged_metadata = get_merged_metadata(self._cls)
 
-    @cached.property
-    def _globals(self) -> Namespace:
-        if self._cls.__module__ in sys.modules:
-            return sys.modules[self._cls.__module__].__dict__
-        else:
-            return {}
+        self._params: Params
+        self._params12: Params12
+        self._params_extras: ParamsExtras
+
+    @lang.cached_nullary
+    def _prepare_params(self) -> None:
+        self._params = check.isinstance(self._cls.__dict__[PARAMS_ATTR], Params)  # type: ignore
+        self._params12 = get_params12(self._cls)
+        self._params_extras = check.isinstance(self._cls_metadata[ParamsExtras], ParamsExtras)  # type: ignore  # noqa
 
     def _check_params(self) -> None:
         if self._params.order and not self._params.eq:
@@ -150,6 +151,13 @@ class ClassProcessor:
     @lang.cached_nullary
     def _field_list(self) -> ta.Sequence[dc.Field]:
         return [f for f in self._fields().values() if field_type(f) is FieldType.INSTANCE]
+
+    @cached.property
+    def _globals(self) -> Namespace:
+        if self._cls.__module__ in sys.modules:
+            return sys.modules[self._cls.__module__].__dict__
+        else:
+            return {}
 
     def _process_init(self) -> None:
         if not self._params.init:
@@ -309,6 +317,8 @@ class ClassProcessor:
 
     @lang.cached_nullary
     def process(self) -> type:
+        self._prepare_params()
+
         self._check_params()
         self._check_frozen_bases()
 

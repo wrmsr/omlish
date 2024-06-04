@@ -115,6 +115,7 @@ def get_params12(obj: ta.Any) -> Params12:
 @dc.dataclass(frozen=True)
 class ParamsExtras(lang.Final):
     reorder: bool = False
+    confer: ta.FrozenSet[str] = frozenset()
 
 
 DEFAULT_PARAMS_EXTRAS = ParamsExtras()
