@@ -98,7 +98,7 @@ class ObjectUnmarshaler(Unmarshaler):
         kw = {}
         for k, mv in ma.items():
             try:
-                fi, u = self.fields_by_unmarshal_name[k]
+                fi, u = self.fields_by_unmarshal_name[k]  # type: ignore
             except KeyError:
                 # FIXME:
                 # if u is not None:

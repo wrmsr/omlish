@@ -30,8 +30,8 @@ def test_dot():
 
     print_and_open(items.Graph(
         [
-            items.Node('a', {'shape': 'box'}),  # type: ignore
-            items.Node('b', {'label': [['a', 'b'], ['c', 'd']]}),  # type: ignore
-            items.Edge('a', 'b'),  # type: ignore
+            items.Node('a', {'shape': 'box'}),
+            items.Node('b', {'label': [['a', 'b'], ['c', 'd']]}),
+            items.Edge('a', 'b'),
         ],
     ))
