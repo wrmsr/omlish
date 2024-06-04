@@ -145,4 +145,3 @@ def get_metaclass_params(obj: ta.Any) -> MetaclassParams:
 
     md = pcls.__dict__.get(METADATA_ATTR, EMPTY_METADATA)
     return md.get(MetaclassParams, DEFAULT_METACLASS_PARAMS)
-

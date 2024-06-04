@@ -68,7 +68,7 @@ class DataMeta(abc.ABCMeta):
             MetaclassParams: mcp,
         }
         if metadata is not None:
-            metadata = collections.ChainMap(mmd, metadata)  # type: ignore
+            metadata = collections.ChainMap(mmd, metadata)
         else:
             metadata = mmd
 
