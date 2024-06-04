@@ -90,19 +90,16 @@ class ClassProcessor:
 
     class _ProcessedFields(ta.NamedTuple):
         fields: dict[str, dc.Field]
-        field_owners: dict[str, type]
 
     @lang.cached_nullary
     def _process_fields(self) -> _ProcessedFields:
         fields: dict[str, dc.Field] = {}
-        field_owners: dict[str, type] = {}
 
         for b in self._cls.__mro__[-1:0:-1]:
             base_fields = getattr(b, FIELDS_ATTR, None)
             if base_fields is not None:
                 for f in base_fields.values():
                     fields[f.name] = f
-                    field_owners[f.name] = b
 
         cls_fields: list[dc.Field] = []
 
@@ -119,7 +116,6 @@ class ClassProcessor:
 
         for f in cls_fields:
             fields[f.name] = f
-            field_owners[f.name] = self._cls
             if isinstance(getattr(self._cls, f.name, None), dc.Field):
                 if f.default is MISSING:
                     delattr(self._cls, f.name)
@@ -130,15 +126,11 @@ class ClassProcessor:
             if isinstance(value, dc.Field) and name not in self._cls_annotations:
                 raise TypeError(f'{name!r} is a field but has no type annotation')
 
-        return ClassProcessor._ProcessedFields(fields, field_owners)
+        return ClassProcessor._ProcessedFields(fields)
 
     @lang.cached_nullary
     def _fields(self) -> dict[str, dc.Field]:
         return self._process_fields().fields
-
-    @lang.cached_nullary
-    def _field_owners(self) -> dict[str, type]:
-        return self._process_fields().field_owners
 
     @lang.cached_nullary
     def _field_list(self) -> ta.Sequence[dc.Field]:
