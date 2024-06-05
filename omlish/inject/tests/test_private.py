@@ -28,7 +28,9 @@ def expose(arg: ta.Any) -> inj.Binding:
 
 def process_private_bindings(bs: inj.Bindings) -> inj.Bindings:
     def process_private(p: _PrivateBindings):
-        raise NotImplementedError
+        for b in p.bs.bindings():
+            if b.key == _EXPOSED_ARRAY_KEY:
+                
 
     for b in bs.bindings():
         if b.key == _PRIVATE_ARRAY_KEY:
