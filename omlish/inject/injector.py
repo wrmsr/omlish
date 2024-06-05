@@ -17,6 +17,7 @@ from .inspect import build_kwarg_keys
 from .keys import as_key
 from .types import Bindings
 from .types import Injector
+from .types import Key
 
 
 class _Injector(Injector, lang.Final):
@@ -27,20 +28,35 @@ class _Injector(Injector, lang.Final):
         self._p: ta.Optional[Injector] = check.isinstance(p, (Injector, None))
 
         self._pfm = {k: v.provider_fn() for k, v in build_provider_map(bs).items()}
+        self._reqs: list[_Injector._Request] = []
+
+    class _Request:
+        def __init__(self, injector: '_Injector', key: Key) -> None:
+            super().__init__()
+            self._injector = injector
+            self._key = key
+
+        def __enter__(self: ta.Self) -> ta.Self:
+            self._injector._reqs.append(self)
+            return self
+
+        def __exit__(self, *exc) -> None:
+            check.is_(self._injector._reqs.pop(), self)
 
     def try_provide(self, key: ta.Any) -> lang.Maybe[ta.Any]:
         key = as_key(key)
 
-        fn = self._pfm.get(key)
-        if fn is not None:
-            return lang.just(fn(self))
+        with _Injector._Request(self, key):
+            fn = self._pfm.get(key)
+            if fn is not None:
+                return lang.just(fn(self))
 
-        if self._p is not None:
-            pv = self._p.try_provide(key)
-            if pv is not None:
-                return lang.empty()
+            if self._p is not None:
+                pv = self._p.try_provide(key)
+                if pv is not None:
+                    return lang.empty()
 
-        return lang.empty()
+            return lang.empty()
 
     def provide(self, key: ta.Any) -> ta.Any:
         v = self.try_provide(key)
