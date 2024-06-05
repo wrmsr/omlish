@@ -248,15 +248,11 @@ def test_confer_frozen():
 def test_box():
     class Thing(dc.Box[list[str]]): pass
 
-    print(Thing('foo'))
-
-    br = dc.reflect(Thing)
-    print(br.mro_type_args)
+    assert Thing('foo').v == 'foo'
 
     sig = inspect.signature(Thing)
-    print(sig)
 
-    print(br.replaced_field_types)
+    assert sig.parameters['v'].annotation == list[str]
 
 
 def test_check_type():
