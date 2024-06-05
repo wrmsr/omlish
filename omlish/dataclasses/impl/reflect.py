@@ -119,6 +119,8 @@ class ClassInfo:
     def field_owners(self) -> ta.Mapping[str, type]:
         return self._find_fields().field_owners
 
+    ##
+
     @cached.property
     def generic_mro(self) -> ta.Sequence[rfl.Type]:
         return rfl.generic_mro(self._cls)
@@ -128,17 +130,7 @@ class ClassInfo:
         return col.unique_dict((check.not_none(rfl.get_concrete_type(g)), g) for g in self.generic_mro)
 
     @cached.property
-    def mro_type_args(self) -> ta.Mapping[type, ta.Mapping[ta.TypeVar, rfl.Type]]:
-        ret: dict[type, ta.Mapping[ta.TypeVar, rfl.Type]] = {}
-        for bt in self.generic_mro:
-            if isinstance(bt, rfl.Generic):
-                if bt.cls in ret:
-                    raise TypeError(f'duplicate generic mro entry: {bt!r}')
-                ret[bt.cls] = rfl.get_type_var_replacements(bt)
-        return ret
-
-    @cached.property
-    def replaced_field_types(self) -> ta.Mapping[str, rfl.Type]:
+    def generic_replaced_field_types(self) -> ta.Mapping[str, rfl.Type]:
         ret: dict[str, ta.Any] = {}
         for f in self.fields.values():
             fo = self.field_owners[f.name]
@@ -150,8 +142,8 @@ class ClassInfo:
         return ret
 
     @cached.property
-    def replaced_field_annotations(self) -> ta.Mapping[str, ta.Any]:
-        return {k: rfl.to_annotation(v) for k, v in self.replaced_field_types.items()}
+    def generic_replaced_field_annotations(self) -> ta.Mapping[str, ta.Any]:
+        return {k: rfl.to_annotation(v) for k, v in self.generic_replaced_field_types.items()}
 
 
 def reflect(obj: ta.Any) -> ClassInfo:
