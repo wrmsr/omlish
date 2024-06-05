@@ -26,5 +26,3 @@ def create_eager_injector(nxt: ta.Callable[[Bindings], Injector], bs: Bindings) 
         for e in eags.must():
             i.provide(e.key)
     return i
-
-
