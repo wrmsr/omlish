@@ -29,6 +29,7 @@ class ClassInfo:
 
     def __init__(self, cls: type, *, _constructing: bool = False) -> None:
         check.isinstance(cls, type)
+        self._constructing = _constructing
         if not _constructing:
             check.arg(dc.is_dataclass(cls))
         super().__init__()
@@ -83,6 +84,9 @@ class ClassInfo:
 
     @lang.cached_nullary
     def _find_fields(self) -> _FoundFields:
+        if self._constructing:
+            check.in_(FIELDS_ATTR, self._cls.__dict__)
+
         fields: dict[str, dc.Field] = {}
         field_owners: dict[str, type] = {}
 
