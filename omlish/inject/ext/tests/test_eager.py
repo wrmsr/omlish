@@ -1,13 +1,6 @@
-import typing as ta
-
-from ... import inject as inj  # noqa
-
-
-class _Eager(ta.NamedTuple):
-    key: inj.Key
-
-
-_EAGER_ARRAY_KEY = inj.array(_Eager)
+from .... import inject as inj
+from ..eager import create_eager_injector
+from ..eager import eager
 
 
 def test_eager():
@@ -18,10 +11,15 @@ def test_eager():
         num_calls += 1
         return num_calls
 
-    i = inj.create_injector(inj.bind(
+    bs = inj.bind(
         inj.singleton(provide_barf),
-    ))
+        eager(int),
+    )
 
+    i = create_eager_injector(inj.create_injector, bs)
+
+    assert num_calls == 1
     assert i.provide(int) == 1
+    assert num_calls == 1
     assert i.provide(int) == 1
     assert num_calls == 1
