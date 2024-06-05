@@ -50,15 +50,13 @@ class ClassProcessor:
         super().__init__()
 
         self._cls = check.isinstance(cls, type)
+        self._info = info = ClassInfo(cls, _constructing=True)
 
-        self._params = check.isinstance(self._cls.__dict__[PARAMS_ATTR], Params)  # type: ignore
-        self._cls_metadata = check.isinstance(self._cls.__dict__[METADATA_ATTR], collections.abc.Mapping)
-        self._params12 = get_params12(self._cls)
-        self._params_extras = check.isinstance(self._cls_metadata[ParamsExtras], ParamsExtras)  # type: ignore  # noqa
-        self._merged_metadata = get_merged_metadata(self._cls)
+        check.is_(check.isinstance(self._cls.__dict__[PARAMS_ATTR], Params), info.params)
+        check.is_(check.isinstance(info.cls_metadata[ParamsExtras], ParamsExtras), info.params_extras)
 
     def _check_params(self) -> None:
-        if self._params.order and not self._params.eq:
+        if self._info.params.order and not self._info.params.eq:
             raise ValueError('eq must be true if order is true')
 
     def _check_frozen_bases(self) -> None:
@@ -79,15 +77,11 @@ class ClassProcessor:
                 any_frozen_base = any_frozen_base or current_frozen
 
         if has_dataclass_bases:
-            if any_frozen_base and not self._params.frozen:
+            if any_frozen_base and not self._info.params.frozen:
                 raise TypeError('cannot inherit non-frozen dataclass from a frozen one')
 
-            if all_frozen_bases is False and self._params.frozen:
+            if all_frozen_bases is False and self._info.params.frozen:
                 raise TypeError('cannot inherit frozen dataclass from a non-frozen one')
-
-    @cached.property
-    def _cls_annotations(self) -> dict[str, ta.Any]:
-        return inspect.get_annotations(self._cls)
 
     class _ProcessedFields(ta.NamedTuple):
         fields: dict[str, dc.Field]
@@ -104,9 +98,9 @@ class ClassProcessor:
 
         cls_fields: list[dc.Field] = []
 
-        kw_only = self._params12.kw_only
+        kw_only = self._info.params12.kw_only
         kw_only_seen = False
-        for name, ann in self._cls_annotations.items():
+        for name, ann in self._info.cls_annotations.items():
             if is_kw_only(self._cls, ann):
                 if kw_only_seen:
                     raise TypeError(f'{name!r} is KW_ONLY, but KW_ONLY has already been specified')
@@ -124,7 +118,7 @@ class ClassProcessor:
                     setattr(self._cls, f.name, f.default)
 
         for name, value in self._cls.__dict__.items():
-            if isinstance(value, dc.Field) and name not in self._cls_annotations:
+            if isinstance(value, dc.Field) and name not in self._info.cls_annotations:
                 raise TypeError(f'{name!r} is a field but has no type annotation')
 
         return ClassProcessor._ProcessedFields(fields)
@@ -137,15 +131,8 @@ class ClassProcessor:
     def _field_list(self) -> ta.Sequence[dc.Field]:
         return [f for f in self._fields().values() if field_type(f) is FieldType.INSTANCE]
 
-    @cached.property
-    def _globals(self) -> Namespace:
-        if self._cls.__module__ in sys.modules:
-            return sys.modules[self._cls.__module__].__dict__
-        else:
-            return {}
-
     def _process_init(self) -> None:
-        if not self._params.init:
+        if not self._info.params.init:
             return
 
         has_post_init = hasattr(self._cls, POST_INIT_NAME)
@@ -156,7 +143,7 @@ class ClassProcessor:
             self._fields(),
             has_post_init,
             self_name,
-            self._globals,
+            self._info.globals,
         ).build()
         set_new_attribute(
             self._cls,
@@ -170,7 +157,7 @@ class ClassProcessor:
             if not fx.override:
                 continue
 
-            if self._params12.slots:
+            if self._info.params12.slots:
                 raise TypeError
 
             self_name = '__dataclass_self__' if 'self' in self._fields() else 'self'
@@ -179,17 +166,17 @@ class ClassProcessor:
                 f.name,
                 (self_name,),
                 [f'return {self_name}.__dict__[{f.name!r}]'],
-                globals=self._globals,
+                globals=self._info.globals,
                 return_type=lang.just(f.type),
             )
             prop = property(getter)
 
-            if not self._params.frozen:
+            if not self._info.params.frozen:
                 setter = create_fn(
                     f.name,
                     (self_name, f'{f.name}: __dataclass_type_{f.name}__'),
-                    [field_assign(self._params.frozen, f.name, f.name, self_name, fx.override)],
-                    globals=self._globals,
+                    [field_assign(self._info.params.frozen, f.name, f.name, self_name, fx.override)],
+                    globals=self._info.globals,
                     locals={f'__dataclass_type_{f.name}__': f.type},
                     return_type=lang.just(None),
                 )
@@ -202,14 +189,14 @@ class ClassProcessor:
             )
 
     def _process_repr(self) -> None:
-        if not self._params.repr:
+        if not self._info.params.repr:
             return
 
         flds = [f for f in self._field_list() if f.repr]
-        set_new_attribute(self._cls, '__repr__', repr_fn(flds, self._globals))
+        set_new_attribute(self._cls, '__repr__', repr_fn(flds, self._info.globals))
 
     def _process_eq(self) -> None:
-        if not self._params.eq:
+        if not self._info.params.eq:
             return
 
         # flds = [f for f in self._field_list() if f.compare]
@@ -226,11 +213,11 @@ class ClassProcessor:
             f' return {field_comparisons}',
             f'return NotImplemented',
         ]
-        func = create_fn('__eq__', ('self', 'other'), body, globals=self._globals)
+        func = create_fn('__eq__', ('self', 'other'), body, globals=self._info.globals)
         set_new_attribute(self._cls, '__eq__', func)
 
     def _process_order(self) -> None:
-        if not self._params.order:
+        if not self._info.params.order:
             return
 
         flds = [f for f in self._field_list() if f.compare]
@@ -242,17 +229,17 @@ class ClassProcessor:
             ('__gt__', '>'),
             ('__ge__', '>='),
         ]:
-            if set_new_attribute(self._cls, name, cmp_fn(name, op, self_tuple, other_tuple, globals=self._globals)):
+            if set_new_attribute(self._cls, name, cmp_fn(name, op, self_tuple, other_tuple, globals=self._info.globals)):  # noqa
                 raise TypeError(
                     f'Cannot overwrite attribute {name} in class {self._cls.__name__}. '
                     f'Consider using functools.total_ordering'
                 )
 
     def _process_frozen(self) -> None:
-        if not self._params.frozen:
+        if not self._info.params.frozen:
             return
 
-        for fn in frozen_get_del_attr(self._cls, self._field_list(), self._globals):
+        for fn in frozen_get_del_attr(self._cls, self._field_list(), self._info.globals):
             if set_new_attribute(self._cls, fn.__name__, fn):
                 raise TypeError(f'Cannot overwrite attribute {fn.__name__} in class {self._cls.__name__}')
 
@@ -261,13 +248,13 @@ class ClassProcessor:
         has_explicit_hash = not (class_hash is dc.MISSING or (class_hash is None and '__eq__' in self._cls.__dict__))
 
         hash_action = HASH_ACTIONS[(
-            bool(self._params.unsafe_hash),
-            bool(self._params.eq),
-            bool(self._params.frozen),
+            bool(self._info.params.unsafe_hash),
+            bool(self._info.params.eq),
+            bool(self._info.params.frozen),
             has_explicit_hash,
         )]
         if hash_action:
-            self._cls.__hash__ = hash_action(self._cls, self._field_list(), self._globals)  # type: ignore
+            self._cls.__hash__ = hash_action(self._cls, self._field_list(), self._info.globals)  # type: ignore
 
     def _process_doc(self) -> None:
         if getattr(self._cls, '__doc__'):
@@ -280,7 +267,7 @@ class ClassProcessor:
         self._cls.__doc__ = (self._cls.__name__ + text_sig)
 
     def _process_match_args(self) -> None:
-        if not self._params12.match_args:
+        if not self._info.params12.match_args:
             return
 
         ifs = get_init_fields(self._fields().values())
@@ -291,11 +278,11 @@ class ClassProcessor:
 
     @lang.cached_nullary
     def _transform_slots(self) -> None:
-        if self._params12.weakref_slot and not self._params12.slots:
+        if self._info.params12.weakref_slot and not self._info.params12.slots:
             raise TypeError('weakref_slot is True but slots is False')
-        if not self._params12.slots:
+        if not self._info.params12.slots:
             return
-        self._cls = add_slots(self._cls, self._params.frozen, self._params12.weakref_slot)
+        self._cls = add_slots(self._cls, self._info.params.frozen, self._info.params12.weakref_slot)
 
     @lang.cached_nullary
     def process(self) -> type:

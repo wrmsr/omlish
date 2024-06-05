@@ -27,9 +27,10 @@ MISSING = dc.MISSING
 
 class ClassInfo:
 
-    def __init__(self, cls: type) -> None:
+    def __init__(self, cls: type, *, _constructing: bool = False) -> None:
         check.isinstance(cls, type)
-        check.arg(dc.is_dataclass(cls))
+        if not _constructing:
+            check.arg(dc.is_dataclass(cls))
         super().__init__()
         self._cls: type = cls
 
