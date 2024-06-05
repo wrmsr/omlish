@@ -139,8 +139,11 @@ class ClassInfo:
 
     @cached.property
     def replaced_field_types(self) -> ta.Mapping[str, rfl.Type]:
-        print(self.generic_mro_lookup)
-        raise NotImplementedError
+        ret: dict[str, rfl.Type] = {}
+        for f in self.fields.values():
+            fo = self.field_owners[f.name]
+            go = self.generic_mro_lookup[fo]
+            raise NotImplementedError
 
 
 def reflect(obj: ta.Any) -> ClassInfo:
