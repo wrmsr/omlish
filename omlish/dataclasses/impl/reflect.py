@@ -10,8 +10,10 @@ from ... import reflect as rfl
 from .internals import FIELDS_ATTR
 from .internals import Params
 from .internals import is_kw_only
+from .metadata import METADATA_ATTR
 from .metadata import Metadata
 from .metadata import get_merged_metadata
+from .params import PARAMS_ATTR
 from .params import Params12
 from .params import ParamsExtras
 from .params import get_params
@@ -43,12 +45,16 @@ class ClassInfo:
             return {}
 
     @cached.property
-    def annotations(self) -> dict[str, ta.Any]:
+    def cls_annotations(self) -> dict[str, ta.Any]:
         return inspect.get_annotations(self._cls)
 
     @cached.property
     def params(self) -> Params:
         return get_params(self._cls)
+
+    @cached.property
+    def cls_params(self) -> Params | None:
+        return self._cls.__dict__.get(PARAMS_ATTR)
 
     @cached.property
     def params12(self) -> Params12:
@@ -57,6 +63,14 @@ class ClassInfo:
     @cached.property
     def params_extras(self) -> ParamsExtras:
         return get_params_extras(self._cls)
+
+    @cached.property
+    def cls_params_extras(self) -> ParamsExtras:
+        return (self.cls_metadata or {}).get(ParamsExtras)
+
+    @cached.property
+    def cls_metadata(self) -> Metadata | None:
+        return self._cls.__dict__.get(METADATA_ATTR)
 
     @cached.property
     def merged_metadata(self) -> Metadata:
@@ -79,7 +93,7 @@ class ClassInfo:
                     field_owners[f.name] = b
 
         cls_fields = getattr(self._cls, FIELDS_ATTR)
-        for name, ann in self.annotations.items():
+        for name, ann in self.cls_annotations.items():
             if is_kw_only(self._cls, ann):
                 continue
             fields[name] = cls_fields[name]
