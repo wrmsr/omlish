@@ -191,6 +191,20 @@ def equal(v: T, *os: ta.Any, msg: Message = None) -> T:
     return v
 
 
+def is_(v: T, *os: ta.Any, msg: Message = None) -> T:
+    for o in os:
+        if o is not v:
+            _raise(ValueError, 'Must be the same', msg, v, os)
+    return v
+
+
+def is_not(v: T, *os: ta.Any, msg: Message = None) -> T:
+    for o in os:
+        if o is v:
+            _raise(ValueError, 'Must not be the same', msg, v, os)
+    return v
+
+
 def callable(v: T, msg: Message = None) -> T:
     if not _callable(v):
         _raise(TypeError, 'Must be callable', msg, v)
