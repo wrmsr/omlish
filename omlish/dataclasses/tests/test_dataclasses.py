@@ -1,5 +1,6 @@
 import abc
 import dataclasses as _dc
+import inspect
 import typing as ta
 
 import pytest
@@ -251,6 +252,9 @@ def test_box():
 
     br = dc.reflect(Username)
     print(br.mro_type_args)
+
+    sig = inspect.signature(Username)
+    print(sig)
 
 
 def test_check_type():
