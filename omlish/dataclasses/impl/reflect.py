@@ -8,7 +8,9 @@ from ... import check
 from ... import collections as col
 from ... import lang
 from ... import reflect as rfl
+from .fields import field_type
 from .internals import FIELDS_ATTR
+from .internals import FieldType
 from .internals import Params
 from .internals import is_kw_only
 from .metadata import METADATA_ATTR
@@ -114,6 +116,10 @@ class ClassInfo:
     @cached.property
     def fields(self) -> ta.Mapping[str, dc.Field]:
         return self._find_fields().fields
+
+    @cached.property
+    def instance_fields(self) -> ta.Sequence[dc.Field]:
+        return [f for f in self.fields.values() if field_type(f) is FieldType.INSTANCE]
 
     @cached.property
     def field_owners(self) -> ta.Mapping[str, type]:
