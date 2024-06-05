@@ -52,16 +52,20 @@ async def await_any_idx(*fns: ta.Callable[..., ta.Awaitable]) -> tuple[int, ta.A
 async def printer(stop: AwaitableEvent, name: str, delay_s: float):
     i = 0
     while not stop.is_set():
-        idx, _ = await await_any_idx(
-            functools.partial(trio.sleep, delay_s),
-            functools.partial(stop.wait),
-        )
+        # idx, _ = await await_any_idx(
+        #     functools.partial(trio.sleep, delay_s),
+        #     functools.partial(stop.wait),
+        # )
+        # if idx == 1:
+        #     print(f'{name} stopped')
+        #     break
 
-        if idx == 1:
+        with trio.move_on_after(delay_s):
+            await stop.wait()
             print(f'{name} stopped')
             break
 
-        print(f'{name} {i}')
+        print(f'{name} {i}')  # noqa
         i += 1
 
 
