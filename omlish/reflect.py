@@ -127,10 +127,12 @@ def type_(obj: ta.Any) -> Type:
     if isinstance(obj, (Union, Generic, ta.TypeVar)):
         return obj
 
-    if type(obj) is _UnionGenericAlias:
+    oty = type(obj)
+
+    if oty is _UnionGenericAlias or oty is types.UnionType:
         return Union(frozenset(type_(a) for a in ta.get_args(obj)))
 
-    if type(obj) is _GenericAlias or type(obj) is ta.GenericAlias:  # type: ignore  # noqa
+    if oty is _GenericAlias or oty is ta.GenericAlias:  # type: ignore  # noqa
         origin = ta.get_origin(obj)
         args = ta.get_args(obj)
         if origin is ta.Generic:

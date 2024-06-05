@@ -27,6 +27,10 @@ def test_simple_reflect_type():
     assert rfl.type_(ta.List[int]) == rfl.Generic(list, (int,), (_0,), ta.List[int])
 
 
+def test_new_unions():
+    assert rfl.type_(int | None) == rfl.Union(frozenset([int, type(None)]))
+
+
 def test_simple_isinstance_of():
     assert rfl.isinstance_of(rfl.type_(int))(420)
     assert not rfl.isinstance_of(rfl.type_(int))('420')
