@@ -4,6 +4,11 @@ import typing as ta
 from .. import reflect as rfl
 
 
+K = ta.TypeVar('K')
+V = ta.TypeVar('V')
+T = ta.TypeVar('T')
+U = ta.TypeVar('U')
+
 _0, _1, _2, _3 = rfl._KNOWN_SPECIAL_TYPE_VARS[:4]  # noqa
 
 
@@ -31,6 +36,11 @@ def test_new_unions():
     assert rfl.type_(int | None) == rfl.Union(frozenset([int, type(None)]))
 
 
+def test_partial_generics():
+    bt = rfl.type_(ta.Mapping[int, V])
+    print(bt)
+
+
 def test_simple_isinstance_of():
     assert rfl.isinstance_of(rfl.type_(int))(420)
     assert not rfl.isinstance_of(rfl.type_(int))('420')
@@ -49,11 +59,6 @@ def test_simple_isinstance_of():
     assert not rfl.isinstance_of(rfl.type_(ta.Mapping[int, str]))({420: 421})
     assert rfl.isinstance_of(rfl.type_(ta.Mapping[int, ta.AbstractSet[str]]))({420: {'421'}})
     assert not rfl.isinstance_of(rfl.type_(ta.Mapping[int, ta.AbstractSet[str]]))({420: [421]})
-
-
-T = ta.TypeVar('T')
-U = ta.TypeVar('U')
-V = ta.TypeVar('V')
 
 
 def test_extended_reflect_type():
