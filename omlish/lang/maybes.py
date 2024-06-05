@@ -120,17 +120,17 @@ class _Maybe(Maybe[T], tuple):
 
 
 def just(v: T) -> Maybe[T]:
-    return tuple.__new__(_Maybe, (v,))
+    return tuple.__new__(_Maybe, (v,))  # noqa
 
 
 _empty = tuple.__new__(_Maybe, ())
 
 
 def empty() -> Maybe[T]:
-    return _empty
+    return _empty  # noqa
 
 
 def maybe(o: ta.Optional[T]) -> Maybe[T]:
     if o is None:
-        return _empty
+        return _empty  # noqa
     return just(o)
