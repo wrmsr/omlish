@@ -86,8 +86,8 @@ class InitBuilder:
 
         locals: dict[str, ta.Any] = {}
 
-        if self._info.params_extras.generic_fields:
-            get_fty = lambda f: self._info.replaced_field_annotations[f.name]
+        if self._info.params_extras.generic_init:
+            get_fty = lambda f: self._info.generic_replaced_field_annotations[f.name]
         else:
             get_fty = lambda f: f.type
         locals.update({f'__dataclass_type_{f.name}__': get_fty(f) for f in ifs.all})
