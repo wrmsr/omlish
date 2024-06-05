@@ -196,9 +196,16 @@ def get_type_var_replacements(ty: Type) -> ta.Mapping[ta.TypeVar, Type]:
 
 
 def replace_type_vars(ty: Type, rpl: ta.Mapping[ta.TypeVar, Type]) -> Type:
+    if isinstance(ty, type):
+        return ty
     if isinstance(ty, Generic):
-        return ty._replace(args=tuple(rpl.get(a, a) if isinstance(a, ta.TypeVar) else a for a in ty.args))
-    return ty
+        # FIXME: update obj..
+        return ty._replace(args=tuple(replace_type_vars(a, rpl) for a in ty.args))
+    if isinstance(ty, Union):
+        return Union(frozenset(replace_type_vars(e, rpl) for e in ty.args))
+    if isinstance(ty, ta.TypeVar):
+        return rpl.get(ty, ty)
+    raise TypeError(ty)
 
 
 def get_generic_bases(ty: Type) -> tuple[Type, ...]:
