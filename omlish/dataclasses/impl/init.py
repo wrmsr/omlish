@@ -10,12 +10,9 @@ from .fields import has_default
 from .internals import FieldType
 from .internals import HAS_DEFAULT_FACTORY
 from .internals import POST_INIT_NAME
-from .internals import Params
 from .metadata import Check
 from .metadata import Init
-from .metadata import Metadata
-from .params import Params12
-from .params import ParamsExtras
+from .reflect import ClassInfo
 from .utils import Namespace
 from .utils import create_fn
 
@@ -61,10 +58,7 @@ class InitBuilder:
 
     def __init__(
             self,
-            params: Params,
-            params12: Params12,
-            params_extras: ParamsExtras,
-            merged_metadata: Metadata,
+            info: ClassInfo,
             fields: ta.Mapping[str, dc.Field],
             has_post_init: bool,
             self_name: str,
@@ -72,10 +66,7 @@ class InitBuilder:
     ) -> None:
         super().__init__()
 
-        self._params = params
-        self._params12 = params12
-        self._merged_metadata = merged_metadata
-        self._params_extras = params_extras
+        self._info = info
         self._fields = fields
         self._has_post_init = has_post_init
         self._self_name = self_name
@@ -83,7 +74,7 @@ class InitBuilder:
 
     @lang.cached_nullary
     def build(self) -> ta.Callable:
-        ifs = get_init_fields(self._fields.values(), reorder=self._params_extras.reorder)
+        ifs = get_init_fields(self._fields.values(), reorder=self._info.params_extras.reorder)
 
         seen_default = None
         for f in ifs.std:
@@ -106,10 +97,10 @@ class InitBuilder:
         for f in ifs.all:
             f_lines = field_init(
                 f,
-                self._params.frozen,
+                self._info.params.frozen,
                 locals,
                 self._self_name,
-                self._params12.slots,
+                self._info.params12.slots,
             )
 
             if f_lines:
@@ -119,7 +110,7 @@ class InitBuilder:
             params_str = ','.join(f.name for f in ifs.all if field_type(f) is FieldType.INIT)
             body_lines.append(f'{self._self_name}.{POST_INIT_NAME}({params_str})')
 
-        for i, fn in enumerate(self._merged_metadata.get(Check, [])):
+        for i, fn in enumerate(self._info.merged_metadata.get(Check, [])):
             if isinstance(fn, staticmethod):
                 fn = fn.__func__
             cn = f'__dataclass_check_{i}__'
@@ -128,7 +119,7 @@ class InitBuilder:
             cas = ', '.join(p.name for p in csig.parameters.values())
             body_lines.append(f'if not {cn}({cas}): raise __dataclass_CheckException__')
 
-        for i, fn in enumerate(self._merged_metadata.get(Init, [])):
+        for i, fn in enumerate(self._info.merged_metadata.get(Init, [])):
             cn = f'__dataclass_init_{i}__'
             locals[cn] = fn
             body_lines.append(f'{cn}({self._self_name})')

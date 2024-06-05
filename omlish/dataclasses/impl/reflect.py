@@ -22,19 +22,17 @@ from .utils import Namespace
 
 MISSING = dc.MISSING
 
-TypeT = ta.TypeVar('TypeT', bound=type, covariant=True)
 
+class ClassInfo:
 
-class ClassInfo(ta.Generic[TypeT]):
-
-    def __init__(self, cls: type[TypeT]) -> None:
+    def __init__(self, cls: type) -> None:
         check.isinstance(cls, type)
         check.arg(dc.is_dataclass(cls))
         super().__init__()
         self._cls: type = cls
 
     @property
-    def cls(self) -> type[TypeT]:
+    def cls(self) -> type:
         return self._cls  # noqa
 
     @cached.property
