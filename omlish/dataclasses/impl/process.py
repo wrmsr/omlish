@@ -30,6 +30,7 @@ from .metadata import get_merged_metadata
 from .params import ParamsExtras
 from .params import get_field_extras
 from .params import get_params12
+from .reflect import ClassInfo
 from .replace import _replace
 from .utils import Namespace
 from .utils import create_fn
@@ -151,10 +152,7 @@ class ClassProcessor:
         self_name = '__dataclass_self__' if 'self' in self._fields() else 'self'
 
         init = InitBuilder(
-            self._params,
-            self._params12,
-            self._params_extras,
-            self._merged_metadata,
+            ClassInfo(self._cls),
             self._fields(),
             has_post_init,
             self_name,
