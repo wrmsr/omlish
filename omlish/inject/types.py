@@ -9,7 +9,7 @@ from .. import lang
 
 
 @dc.dataclass(frozen=True)
-class Key:
+class Key(lang.Final):
     cls: type
     arr: bool = False
     tag: ta.Any = None
@@ -36,7 +36,7 @@ class Provider(abc.ABC):
 
 
 @dc.dataclass(frozen=True)
-class Binding:
+class Binding(lang.Final):
     key: Key
     provider: Provider
 
