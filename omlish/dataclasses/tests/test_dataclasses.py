@@ -246,14 +246,14 @@ def test_confer_frozen():
 
 
 def test_box():
-    class Username(dc.Box[str]): pass
+    class Thing(dc.Box[list[str]]): pass
 
-    print(Username('foo'))
+    print(Thing('foo'))
 
-    br = dc.reflect(Username)
+    br = dc.reflect(Thing)
     print(br.mro_type_args)
 
-    sig = inspect.signature(Username)
+    sig = inspect.signature(Thing)
     print(sig)
 
     print(br.replaced_field_types)
