@@ -73,7 +73,7 @@ def get_params(obj: ta.Any) -> tuple[ta.TypeVar, ...]:
     oty = type(obj)
 
     if oty is _GenericAlias or oty is ta.GenericAlias:  # type: ignore  # noqa
-        return get_params(ta.get_origin(obj))
+        return obj.__dict__.get('__parameters__', ())  # noqa
 
     raise TypeError(obj)
 
@@ -216,7 +216,8 @@ def replace_type_vars(
             args = tuple(rec(a) for a in cur.args)
             obj = cur.obj
             if update_aliases:
-                obj = cur.obj[*[rpl[p] for p in get_params(obj)]]
+                if (ops := get_params(obj)):
+                    obj = cur.obj[*[rpl[p] for p in ops]]
             return cur._replace(args=args, obj=obj)
         if isinstance(cur, Union):
             return Union(frozenset(rec(e) for e in cur.args))

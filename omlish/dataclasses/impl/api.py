@@ -81,6 +81,7 @@ def dataclass(
         metadata=None,
 
         reorder=False,
+        generic_init=False,
 ):
     def wrap(cls):
         pkw = dict(
@@ -101,6 +102,7 @@ def dataclass(
         mmd: dict = {
             ParamsExtras: ParamsExtras(
                 reorder=reorder,
+                generic_init=generic_init,
             ),
         }
 
@@ -148,6 +150,7 @@ def make_dataclass(
         module=None,
 
         reorder=False,
+        generic_init=False,
 ):
     if namespace is None:
         namespace = {}
@@ -208,4 +211,5 @@ def make_dataclass(
         weakref_slot=weakref_slot,
 
         reorder=reorder,
+        generic_init=generic_init,
     )
