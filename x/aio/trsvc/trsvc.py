@@ -4,7 +4,9 @@ https://trio.readthedocs.io/en/latest/reference-core.html#custom-supervisors
 import functools  # noqa
 import typing as ta
 
+from omlish import lang  # noqa
 import trio
+
 from .. import trio_util as tu  # noqa
 
 
@@ -26,52 +28,54 @@ from .. import trio_util as tu  # noqa
 #     return winner
 
 
-async def await_as(rv, fn, *args, **kwargs):
-    await fn(*args, **kwargs)
-    return rv
-
-
 class AwaitableEvent(ta.Protocol):
     def is_set(self) -> bool: ...
     def set(self) -> None: ...
     async def wait(self) -> None: ...
 
 
-async def printer0(stop: AwaitableEvent):
+async def await_any_idx(*fns: ta.Callable[..., ta.Awaitable]) -> tuple[int, ta.Any]:
+    ret: list[tuple[int, ta.Any]] = []
+
+    async def await_to(i, fn, *args, **kwargs):
+        v = await fn(*args, **kwargs)
+        ret.append((i, v))
+
+    await tu.wait_any(*[
+        functools.partial(await_to, i, fn)
+        for i, fn in enumerate(fns)
+    ])
+
+    return ret[0]
+
+
+async def printer(stop: AwaitableEvent, name: str, delay_s: float):
+    i = 0
     while not stop.is_set():
-        idx = await tu.wait_any(
-            functools.partial(await_as, 0, trio.sleep, .3),
-            functools.partial(await_as, 1, stop.wait),
+        idx, _ = await await_any_idx(
+            functools.partial(trio.sleep, delay_s),
+            functools.partial(stop.wait),
         )
+
         if idx == 1:
-            print('printer0 stopped')
+            print(f'{name} stopped')
             break
-        print('printer0')
+
+        print(f'{name} {i}')
+        i += 1
 
 
-async def printer1(stop: AwaitableEvent):
-    while not stop.is_set():
-        idx = await tu.wait_any(
-            functools.partial(await_as, 0, trio.sleep, .5),
-            functools.partial(await_as, 1, stop.wait),
-        )
-        if idx == 1:
-            print('printer1 stopped')
-            break
-        print('printer1')
-
-
-async def stopper(stop: AwaitableEvent):
-    await trio.sleep(5)
+async def stopper(stop: AwaitableEvent, delay_s: float):
+    await trio.sleep(delay_s)
     stop.set()
 
 
 async def _a_main():
     stop = trio.Event()
     async with trio.open_nursery() as nursery:
-        nursery.start_soon(printer0, stop)
-        nursery.start_soon(printer1, stop)
-        nursery.start_soon(stopper, stop)
+        nursery.start_soon(printer, stop, 'printer0', 10.)
+        nursery.start_soon(printer, stop, 'printer1', 1.3)
+        nursery.start_soon(stopper, stop, 5.)
 
 
 if __name__ == '__main__':
