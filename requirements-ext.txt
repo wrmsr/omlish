@@ -6,9 +6,9 @@
 matplotlib==3.9.0
 numpy==1.26.4
 
-huggingface_hub==0.23.2
+huggingface_hub==0.23.3
 evaluate==0.4.2
-datasets==2.19.1
+datasets==2.19.2
 
 ##
 
@@ -27,7 +27,7 @@ pyobjc-framework-metal==10.3; sys_platform == 'darwin'
 pandas==2.2.2
 pyarrow==16.1.0
 
-opencv-python==4.9.0.80
+opencv-python==4.10.0.82
 pillow==10.3.0
 
 sentencepiece==0.2.0
@@ -36,10 +36,10 @@ transformers==4.41.2
 
 ##
 
-torch==2.3.0
+torch==2.3.1
 torchinfo==1.8.0
 torchtext==0.18.0; python_version < '3.12'
-torchvision==0.18.0
+torchvision==0.18.1
 
 portalocker==2.8.2
 
