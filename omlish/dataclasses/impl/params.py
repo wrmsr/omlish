@@ -116,7 +116,7 @@ def get_params12(obj: ta.Any) -> Params12:
 @dc.dataclass(frozen=True)
 class ParamsExtras(lang.Final):
     reorder: bool = False
-    generic_fields: bool = False
+    generic_fields: bool = True
 
 
 DEFAULT_PARAMS_EXTRAS = ParamsExtras()
