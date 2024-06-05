@@ -87,6 +87,10 @@ tg:
 	export ABS_PYTHON=$$($(PYTHON) -c 'import sys; print(sys.executable)') && \
 	(cd tinygrad && "$$ABS_PYTHON" -mpip install -e .)
 
+.PHONY: tg-update
+tg-update:
+	(cd tinygrad && git pull origin master)
+
 ### Deps
 
 .PHONY: dep-freze
