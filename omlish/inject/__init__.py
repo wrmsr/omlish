@@ -1,3 +1,6 @@
+"""
+~> https://github.com/google/guice/commit/70248eafa90cd70a68b293763e53f6aec656e73c
+"""
 from .bindings import as_  # noqa
 from .bindings import bind  # noqa
 from .bindings import override  # noqa
