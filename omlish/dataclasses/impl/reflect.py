@@ -146,7 +146,8 @@ class ClassInfo:
             tvr = rfl.get_type_var_replacements(go)
             fty = rfl.type_(f.type)
             rty = rfl.replace_type_vars(fty, tvr, update_aliases=True)
-            raise NotImplementedError
+            ret[f.name] = rty.obj if isinstance(rty, rfl.Generic) else rty
+        return ret
 
 
 def reflect(obj: ta.Any) -> ClassInfo:
