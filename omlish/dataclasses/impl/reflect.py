@@ -139,15 +139,19 @@ class ClassInfo:
 
     @cached.property
     def replaced_field_types(self) -> ta.Mapping[str, rfl.Type]:
-        ret: dict[str, rfl.Type] = {}
+        ret: dict[str, ta.Any] = {}
         for f in self.fields.values():
             fo = self.field_owners[f.name]
             go = self.generic_mro_lookup[fo]
             tvr = rfl.get_type_var_replacements(go)
             fty = rfl.type_(f.type)
             rty = rfl.replace_type_vars(fty, tvr, update_aliases=True)
-            ret[f.name] = rty.obj if isinstance(rty, rfl.Generic) else rty
+            ret[f.name] = rty
         return ret
+
+    @cached.property
+    def replaced_field_annotations(self) -> ta.Mapping[str, ta.Any]:
+        return {k: rfl.to_annotation(v) for k, v in self.replaced_field_types.items()}
 
 
 def reflect(obj: ta.Any) -> ClassInfo:
