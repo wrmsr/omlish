@@ -37,8 +37,8 @@ def test_new_unions():
 
 
 def test_partial_generics():
-    bt = rfl.type_(ta.Mapping[int, V])
-    print(bt)
+    bt = rfl.type_(ta.Mapping[int, V])  # type: ignore
+    print(bt)  # noqa
 
 
 def test_simple_isinstance_of():

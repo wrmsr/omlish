@@ -33,8 +33,10 @@ def confer_kwargs(
         if not (bmp := get_metaclass_params(base)).confer:
             continue
         for ck in bmp.confer:
-            if ck == 'frozen':
-                confer_kwarg(out, 'frozen', get_params(base).frozen)
+            if ck in kwargs:
+                continue
+            if ck in ('frozen', 'generic_init'):
+                confer_kwarg(out, ck, get_params(base).frozen)
             elif ck == 'confer':
                 confer_kwarg(out, 'confer', bmp.confer)
             else:
@@ -96,9 +98,25 @@ class Data(metaclass=DataMeta):
             spi(*args, **kwargs)
 
 
-class Frozen(Data, frozen=True, confer=frozenset(['frozen', 'confer'])):
+class Frozen(
+    Data,
+    frozen=True,
+    confer=frozenset([
+        'frozen',
+        'confer',
+    ]),
+):
     pass
 
 
-class Box(Frozen, ta.Generic[T]):
+class Box(
+    Frozen,
+    ta.Generic[T],
+    generic_init=True,
+    confer=frozenset([
+        'frozen',
+        'generic_init',
+        'confer',
+    ]),
+):
     v: T
