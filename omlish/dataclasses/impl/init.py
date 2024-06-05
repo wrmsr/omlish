@@ -84,10 +84,13 @@ class InitBuilder:
                 elif seen_default:
                     raise TypeError(f'non-default argument {f.name!r} follows default argument {seen_default.name!r}')
 
-        locals: dict[str, ta.Any] = {
-            f'__dataclass_type_{f.name}__': self._info.replaced_field_annotations[f.name]
-            for f in ifs.all
-        }
+        locals: dict[str, ta.Any] = {}
+
+        if self._info.params_extras.generic_fields:
+            get_fty = lambda f: self._info.replaced_field_annotations[f.name]
+        else:
+            get_fty = lambda f: f.type
+        locals.update({f'__dataclass_type_{f.name}__': get_fty(f) for f in ifs.all})
 
         locals.update({
             '__dataclass_HAS_DEFAULT_FACTORY__': HAS_DEFAULT_FACTORY,
