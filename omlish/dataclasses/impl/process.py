@@ -76,11 +76,8 @@ class ClassProcessor:
             if all_frozen_bases is False and self._info.params.frozen:
                 raise TypeError('cannot inherit frozen dataclass from a non-frozen one')
 
-    class _ProcessedFields(ta.NamedTuple):
-        fields: dict[str, dc.Field]
-
     @lang.cached_nullary
-    def _process_fields(self) -> _ProcessedFields:
+    def _process_fields(self) -> None:
         fields: dict[str, dc.Field] = {}
 
         for b in self._cls.__mro__[-1:0:-1]:
@@ -114,11 +111,12 @@ class ClassProcessor:
             if isinstance(value, dc.Field) and name not in self._info.cls_annotations:
                 raise TypeError(f'{name!r} is a field but has no type annotation')
 
-        return ClassProcessor._ProcessedFields(fields)
+        setattr(self._cls, FIELDS_ATTR, fields)
 
     @lang.cached_nullary
-    def _fields(self) -> dict[str, dc.Field]:
-        return self._process_fields().fields
+    def _fields(self) -> ta.Mapping[str, dc.Field]:
+        self._process_fields()
+        return self._info.fields
 
     @lang.cached_nullary
     def _field_list(self) -> ta.Sequence[dc.Field]:
@@ -283,7 +281,6 @@ class ClassProcessor:
         self._check_frozen_bases()
 
         self._process_fields()
-        setattr(self._cls, FIELDS_ATTR, self._fields())
 
         self._process_init()
         self._process_overrides()
