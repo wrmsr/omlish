@@ -256,6 +256,8 @@ def test_box():
     sig = inspect.signature(Username)
     print(sig)
 
+    print(br.replaced_field_types)
+
 
 def test_check_type():
     @dc.dataclass(frozen=True)
