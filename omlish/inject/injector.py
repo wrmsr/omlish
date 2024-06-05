@@ -18,7 +18,7 @@ from .types import Bindings
 from .types import Injector
 
 
-class _Injector(Injector):
+class _Injector(Injector, lang.Final):
     def __init__(self, bs: Bindings, p: ta.Optional[Injector] = None) -> None:
         super().__init__()
 
