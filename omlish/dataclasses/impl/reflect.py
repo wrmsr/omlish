@@ -143,6 +143,9 @@ class ClassInfo:
         for f in self.fields.values():
             fo = self.field_owners[f.name]
             go = self.generic_mro_lookup[fo]
+            tvr = rfl.get_type_var_replacements(go)
+            fty = rfl.type_(f.type)
+            rty = rfl.replace_type_vars(fty, tvr, update_aliases=True)
             raise NotImplementedError
 
 
