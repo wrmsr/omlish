@@ -65,7 +65,7 @@ class ClassInfo:
         return get_params_extras(self._cls)
 
     @cached.property
-    def cls_params_extras(self) -> ParamsExtras:
+    def cls_params_extras(self) -> ParamsExtras | None:
         return (self.cls_metadata or {}).get(ParamsExtras)
 
     @cached.property
