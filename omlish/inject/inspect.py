@@ -2,7 +2,6 @@
 TODO:
  - cache kwarg_keys
  - tag annotations
- - defaults
 """
 import inspect
 import typing as ta

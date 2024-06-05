@@ -4,33 +4,33 @@ from ... import check
 from ... import inject as inj  # noqa
 
 
-class _PrivateBindings(ta.NamedTuple):
+class _Private(ta.NamedTuple):
     bs: inj.Bindings
 
 
-_PRIVATE_ARRAY_KEY = inj.array(_PrivateBindings)
+_PRIVATE_ARRAY_KEY = inj.array(_Private)
 
 
 def private(*args: ta.Any) -> inj.Binding:
-    return inj.as_(_PRIVATE_ARRAY_KEY, _PrivateBindings(inj.bind(*args)))
+    return inj.as_(_PRIVATE_ARRAY_KEY, _Private(inj.bind(*args)))
 
 
-class _ExposedKey(ta.NamedTuple):
+class _Exposed(ta.NamedTuple):
     key: inj.Key
 
 
-_EXPOSED_ARRAY_KEY = inj.array(_ExposedKey)
+_EXPOSED_ARRAY_KEY = inj.array(_Exposed)
 
 
 def expose(arg: ta.Any) -> inj.Binding:
-    return inj.as_(_EXPOSED_ARRAY_KEY, _ExposedKey(inj.as_key(arg)))
+    return inj.as_(_EXPOSED_ARRAY_KEY, _Exposed(inj.as_key(arg)))
 
 
 def process_private_bindings(bs: inj.Bindings) -> inj.Bindings:
-    def process_private(p: _PrivateBindings):
+    def process_private(p: _Private):
         for b in p.bs.bindings():
             if b.key == _EXPOSED_ARRAY_KEY:
-                
+                raise NotImplementedError
 
     for b in bs.bindings():
         if b.key == _PRIVATE_ARRAY_KEY:
