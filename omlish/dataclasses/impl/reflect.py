@@ -5,6 +5,7 @@ import typing as ta
 
 from ... import cached
 from ... import check
+from ... import collections as col
 from ... import lang
 from ... import reflect as rfl
 from .internals import FIELDS_ATTR
@@ -50,6 +51,8 @@ class ClassInfo:
     def cls_annotations(self) -> dict[str, ta.Any]:
         return inspect.get_annotations(self._cls)
 
+    ##
+
     @cached.property
     def params(self) -> Params:
         return get_params(self._cls)
@@ -77,6 +80,8 @@ class ClassInfo:
     @cached.property
     def merged_metadata(self) -> Metadata:
         return get_merged_metadata(self._cls)
+
+    ##
 
     class _FoundFields(ta.NamedTuple):
         fields: dict[str, dc.Field]
@@ -119,6 +124,10 @@ class ClassInfo:
         return rfl.generic_mro(self._cls)
 
     @cached.property
+    def generic_mro_lookup(self) -> ta.Mapping[type, rfl.Type]:
+        return col.unique_dict((check.not_none(rfl.get_concrete_type(g)), g) for g in self.generic_mro)
+
+    @cached.property
     def mro_type_args(self) -> ta.Mapping[type, ta.Mapping[ta.TypeVar, rfl.Type]]:
         ret: dict[type, ta.Mapping[ta.TypeVar, rfl.Type]] = {}
         for bt in self.generic_mro:
@@ -127,6 +136,11 @@ class ClassInfo:
                     raise TypeError(f'duplicate generic mro entry: {bt!r}')
                 ret[bt.cls] = rfl.get_type_var_replacements(bt)
         return ret
+
+    @cached.property
+    def replaced_field_types(self) -> ta.Mapping[str, rfl.Type]:
+        print(self.generic_mro_lookup)
+        raise NotImplementedError
 
 
 def reflect(obj: ta.Any) -> ClassInfo:
