@@ -1,11 +1,8 @@
 import abc
-import collections.abc
 import dataclasses as dc
 import inspect
-import sys
 import typing as ta
 
-from ... import cached
 from ... import check
 from ... import lang
 from .classes import add_slots
@@ -25,14 +22,10 @@ from .internals import POST_INIT_NAME
 from .internals import Params
 from .internals import is_kw_only
 from .internals import tuple_str
-from .metadata import METADATA_ATTR
-from .metadata import get_merged_metadata
 from .params import ParamsExtras
 from .params import get_field_extras
-from .params import get_params12
 from .reflect import ClassInfo
 from .replace import _replace
-from .utils import Namespace
 from .utils import create_fn
 from .utils import set_new_attribute
 
@@ -53,7 +46,7 @@ class ClassProcessor:
         self._info = info = ClassInfo(cls, _constructing=True)
 
         check.is_(check.isinstance(self._cls.__dict__[PARAMS_ATTR], Params), info.params)
-        check.is_(check.isinstance(info.cls_metadata[ParamsExtras], ParamsExtras), info.params_extras)
+        check.is_(check.isinstance(check.not_none(info.cls_metadata)[ParamsExtras], ParamsExtras), info.params_extras)  # noqa
 
     def _check_params(self) -> None:
         if self._info.params.order and not self._info.params.eq:
