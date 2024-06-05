@@ -10,12 +10,10 @@ from .classes import cmp_fn
 from .classes import frozen_get_del_attr
 from .classes import repr_fn
 from .fields import field_assign
-from .fields import field_type
 from .fields import preprocess_field
 from .init import InitBuilder
 from .init import get_init_fields
 from .internals import FIELDS_ATTR
-from .internals import FieldType
 from .internals import HASH_ACTIONS
 from .internals import PARAMS_ATTR
 from .internals import POST_INIT_NAME
@@ -114,25 +112,16 @@ class ClassProcessor:
 
         setattr(self._cls, FIELDS_ATTR, fields)
 
-    @lang.cached_nullary
-    def _fields(self) -> ta.Mapping[str, dc.Field]:
-        self._process_fields()
-        return self._info.fields
-
-    @lang.cached_nullary
-    def _field_list(self) -> ta.Sequence[dc.Field]:
-        return [f for f in self._fields().values() if field_type(f) is FieldType.INSTANCE]
-
     def _process_init(self) -> None:
         if not self._info.params.init:
             return
 
         has_post_init = hasattr(self._cls, POST_INIT_NAME)
-        self_name = '__dataclass_self__' if 'self' in self._fields() else 'self'
+        self_name = '__dataclass_self__' if 'self' in self._info.fields else 'self'
 
         init = InitBuilder(
             ClassInfo(self._cls),
-            self._fields(),
+            self._info.fields,
             has_post_init,
             self_name,
             self._info.globals,
@@ -144,7 +133,7 @@ class ClassProcessor:
         )
 
     def _process_overrides(self) -> None:
-        for f in self._field_list():
+        for f in self._info.instance_fields:
             fx = get_field_extras(f)
             if not fx.override:
                 continue
@@ -152,7 +141,7 @@ class ClassProcessor:
             if self._info.params12.slots:
                 raise TypeError
 
-            self_name = '__dataclass_self__' if 'self' in self._fields() else 'self'
+            self_name = '__dataclass_self__' if 'self' in self._info.fields else 'self'
 
             getter = create_fn(
                 f.name,
@@ -184,18 +173,18 @@ class ClassProcessor:
         if not self._info.params.repr:
             return
 
-        flds = [f for f in self._field_list() if f.repr]
+        flds = [f for f in self._info.instance_fields if f.repr]
         set_new_attribute(self._cls, '__repr__', repr_fn(flds, self._info.globals))
 
     def _process_eq(self) -> None:
         if not self._info.params.eq:
             return
 
-        # flds = [f for f in self._field_list() if f.compare]
+        # flds = [f for f in self._info.instance_fields if f.compare]
         # self_tuple = tuple_str('self', flds)
         # other_tuple = tuple_str('other', flds)
         # set_new_attribute(cls, '__eq__', _cmp_fn('__eq__', '==', self_tuple, other_tuple, globals=globals))
-        cmp_fields = (field for field in self._field_list() if field.compare)
+        cmp_fields = (field for field in self._info.instance_fields if field.compare)
         terms = [f'self.{field.name} == other.{field.name}' for field in cmp_fields]
         field_comparisons = ' and '.join(terms) or 'True'
         body = [
@@ -212,7 +201,7 @@ class ClassProcessor:
         if not self._info.params.order:
             return
 
-        flds = [f for f in self._field_list() if f.compare]
+        flds = [f for f in self._info.instance_fields if f.compare]
         self_tuple = tuple_str('self', flds)
         other_tuple = tuple_str('other', flds)
         for name, op in [
@@ -231,7 +220,7 @@ class ClassProcessor:
         if not self._info.params.frozen:
             return
 
-        for fn in frozen_get_del_attr(self._cls, self._field_list(), self._info.globals):
+        for fn in frozen_get_del_attr(self._cls, self._info.instance_fields, self._info.globals):
             if set_new_attribute(self._cls, fn.__name__, fn):
                 raise TypeError(f'Cannot overwrite attribute {fn.__name__} in class {self._cls.__name__}')
 
@@ -246,7 +235,7 @@ class ClassProcessor:
             has_explicit_hash,
         )]
         if hash_action:
-            self._cls.__hash__ = hash_action(self._cls, self._field_list(), self._info.globals)  # type: ignore
+            self._cls.__hash__ = hash_action(self._cls, self._info.instance_fields, self._info.globals)  # type: ignore
 
     def _process_doc(self) -> None:
         if getattr(self._cls, '__doc__'):
@@ -262,7 +251,7 @@ class ClassProcessor:
         if not self._info.params12.match_args:
             return
 
-        ifs = get_init_fields(self._fields().values())
+        ifs = get_init_fields(self._info.fields.values())
         set_new_attribute(self._cls, '__match_args__', tuple(f.name for f in ifs.std))
 
     def _process_replace(self) -> None:
