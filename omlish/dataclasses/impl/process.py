@@ -45,7 +45,8 @@ class ClassProcessor:
         self._cls = check.isinstance(cls, type)
         self._info = info = ClassInfo(cls, _constructing=True)
 
-        check.is_(check.isinstance(self._cls.__dict__[PARAMS_ATTR], Params), info.params)
+        check.not_in(FIELDS_ATTR, cls.__dict__)
+        check.is_(check.isinstance(cls.__dict__[PARAMS_ATTR], Params), info.params)
         check.is_(check.isinstance(check.not_none(info.cls_metadata)[ParamsExtras], ParamsExtras), info.params_extras)  # noqa
 
     def _check_params(self) -> None:
