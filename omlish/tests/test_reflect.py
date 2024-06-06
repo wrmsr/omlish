@@ -41,16 +41,16 @@ def test_partial_generics():
     print()
 
     for ty in [
-        ta.Mapping[int, V],
-        ta.Mapping[K, int],
-        ta.Mapping[int, ta.Set[V]],
+        ta.Mapping[int, V],  # type: ignore
+        ta.Mapping[K, int],  # type: ignore
+        ta.Mapping[int, ta.Set[V]],  # type: ignore
     ]:
         print(ty)
 
         bt = rfl.type_(ty)
         print(bt)
 
-        class B(ty[T]):
+        class B(ty[T]):  # type: ignore
             pass
 
         class C(B[str]):
