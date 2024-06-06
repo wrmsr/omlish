@@ -13,7 +13,7 @@ from .. import check
 from .. import lang
 from .bindings import build_provider_map
 from .exceptions import UnboundKeyException
-from .inspect import build_kwarg_keys
+from .inspect import build_kwarg_target
 from .keys import as_key
 from .types import Bindings
 from .types import Injector
@@ -65,10 +65,10 @@ class _Injector(Injector, lang.Final):
         raise UnboundKeyException(key)
 
     def provide_kwargs(self, obj: ta.Any) -> ta.Mapping[str, ta.Any]:
-        kd = build_kwarg_keys(obj)
+        kt = build_kwarg_target(obj)
         ret: dict[str, ta.Any] = {}
-        for n, k in kd.items():
-            ret[n] = self.provide(k)
+        for kw in kt.kwargs:
+            ret[kw.name] = self.provide(kw.key)
         return ret
 
     def inject(self, obj: ta.Any) -> ta.Any:

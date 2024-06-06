@@ -28,26 +28,32 @@ def signature(obj: ta.Any) -> inspect.Signature:
 
 
 class Kwarg(ta.NamedTuple):
+    name: str
     key: Key
     has_default: bool
 
 
-class Target(ta.NamedTuple):
+class KwargTarget(ta.NamedTuple):
     obj: ta.Any
-    kwargs: ta.Mapping[str, Kwarg]
+    kwargs: ta.Sequence[Kwarg]
 
 
-def build_kwarg_keys(
+def build_kwarg_target(
         obj: ta.Any,
         *,
         skip_args: int = 0,
         skip_kwargs: ta.Optional[ta.Iterable[ta.Any]] = None,
-) -> ta.Mapping[str, Key]:
+) -> KwargTarget:
     sig = signature(obj)
 
     seen: set[Key] = set(map(as_key, skip_kwargs)) if skip_kwargs is not None else set()
-    kd: dict[str, Key] = {}
+    kws: list[Kwarg] = []
     for p in list(sig.parameters.values())[skip_args:]:
+        if p.annotation is inspect.Signature.empty:
+            if p.default is not inspect.Parameter.empty:
+                raise KeyError(f'{obj}, {p.name}')
+            continue
+
         k = as_key(p.annotation)
 
         if k in seen:
@@ -56,6 +62,13 @@ def build_kwarg_keys(
 
         if p.kind not in (inspect.Parameter.POSITIONAL_OR_KEYWORD, inspect.Parameter.KEYWORD_ONLY):
             raise TypeError(sig)
-        kd[p.name] = k
+        kws.append(Kwarg(
+            p.name,
+            k,
+            p.default is not inspect.Parameter.empty,
+        ))
 
-    return kd
+    return KwargTarget(
+        obj,
+        kws,
+    )

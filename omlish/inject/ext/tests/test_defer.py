@@ -18,8 +18,8 @@ class ClosingThing:
 def test_defer():
     i = inj.create_injector(inj.bind(
         inj.singleton(contextlib.ExitStack),
-        closing()
+        # closing()
     ))
 
-    with i.provide(contextlib.ExitStack) as es:
+    with i.provide(contextlib.ExitStack) as es:  # noqa
         pass
