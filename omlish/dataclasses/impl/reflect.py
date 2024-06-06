@@ -2,6 +2,7 @@ import dataclasses as dc
 import inspect
 import sys
 import typing as ta
+import weakref
 
 from ... import cached
 from ... import check
@@ -100,8 +101,7 @@ class ClassInfo:
         for b in self._cls.__mro__[-1:0:-1]:
             base_fields = getattr(b, FIELDS_ATTR, None)
             if base_fields is not None:
-                # FIXME: cache all infos lol
-                for name in inspect.get_annotations(b):
+                for name in reflect(b).cls_annotations:
                     try:
                         f = base_fields[name]
                     except KeyError:
@@ -134,7 +134,7 @@ class ClassInfo:
 
     @cached.property
     def generic_mro(self) -> ta.Sequence[rfl.Type]:
-        return rfl.generic_mro(self._cls)
+        return rfl.generic_mro(self._cls, update_aliases=True)
 
     @cached.property
     def generic_mro_lookup(self) -> ta.Mapping[type, rfl.Type]:
@@ -157,6 +157,13 @@ class ClassInfo:
         return {k: rfl.to_annotation(v) for k, v in self.generic_replaced_field_types.items()}
 
 
+_CLASS_INFO_CACHE: ta.MutableMapping[type, ClassInfo] = weakref.WeakKeyDictionary()
+
+
 def reflect(obj: ta.Any) -> ClassInfo:
     cls = obj if isinstance(obj, type) else type(obj)
-    return ClassInfo(cls)
+    try:
+        return _CLASS_INFO_CACHE[cls]
+    except KeyError:
+        _CLASS_INFO_CACHE[cls] = info = ClassInfo(cls)
+        return info
