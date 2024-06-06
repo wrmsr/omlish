@@ -29,7 +29,7 @@ def as_binding(o: ta.Any) -> Binding:
     if isinstance(o, _BindingGen):
         return o._gen_binding()  # noqa
     if isinstance(o, Provider):
-        return Binding(Key(o.provided_cls(lambda _: lang.raise_(TypeError(o)))), o)
+        return Binding(Key(o.provided_cls(lambda _: lang.raise_(TypeError(o)))), o)  # noqa
     if isinstance(o, _ProviderGen):
         return as_binding(o._gen_provider())  # noqa
     if isinstance(o, type):
@@ -69,7 +69,14 @@ class _Bindings(Bindings):
 
 
 def bind(*args: ta.Any) -> Bindings:
-    return _Bindings(as_bindings(args))
+    bs: list[Binding] = []
+    ps: list[Bindings] = []
+    for a in args:
+        if isinstance(a, Bindings):
+            ps.append(a)
+        elif a is not None:
+            bs.append(as_binding(a))
+    return _Bindings(bs=bs, ps=ps)
 
 
 ##
