@@ -1,3 +1,7 @@
+"""
+TODO:
+ - more cache-recursive reuse - fields, mro, etc
+"""
 import dataclasses as dc
 import inspect
 import sys
