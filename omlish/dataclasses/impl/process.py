@@ -36,6 +36,185 @@ else:
 MISSING = dc.MISSING
 
 
+class Processor(lang.Abstract):
+    def __init__(self, info: ClassInfo) -> None:
+        super().__init__()
+        self._cls = info.cls
+        self._info = info
+
+    @lang.cached_nullary
+    def process(self) -> None:
+        self._process()
+
+    def _process(self) -> None:
+        raise NotImplementedError
+
+
+class InitProcessor(Processor):
+    def _process(self) -> None:
+        if not self._info.params.init:
+            return
+
+        has_post_init = hasattr(self._cls, POST_INIT_NAME)
+        self_name = '__dataclass_self__' if 'self' in self._info.fields else 'self'
+
+        init = InitBuilder(
+            ClassInfo(self._cls),
+            self._info.fields,
+            has_post_init,
+            self_name,
+            self._info.globals,
+        ).build()
+        set_new_attribute(
+            self._cls,
+            '__init__',
+            init,
+        )
+
+
+class OverridesProcessor(Processor):
+    def _process(self) -> None:
+        for f in self._info.instance_fields:
+            fx = get_field_extras(f)
+            if not fx.override:
+                continue
+
+            if self._info.params12.slots:
+                raise TypeError
+
+            self_name = '__dataclass_self__' if 'self' in self._info.fields else 'self'
+
+            getter = create_fn(
+                f.name,
+                (self_name,),
+                [f'return {self_name}.__dict__[{f.name!r}]'],
+                globals=self._info.globals,
+                return_type=lang.just(f.type),
+            )
+            prop = property(getter)
+
+            if not self._info.params.frozen:
+                setter = create_fn(
+                    f.name,
+                    (self_name, f'{f.name}: __dataclass_type_{f.name}__'),
+                    [field_assign(self._info.params.frozen, f.name, f.name, self_name, fx.override)],
+                    globals=self._info.globals,
+                    locals={f'__dataclass_type_{f.name}__': f.type},
+                    return_type=lang.just(None),
+                )
+                prop = prop.setter(setter)
+
+            set_new_attribute(
+                self._cls,
+                f.name,
+                prop,
+            )
+
+
+class ReprProcessor(Processor):
+    def _process(self) -> None:
+        if not self._info.params.repr:
+            return
+
+        flds = [f for f in self._info.instance_fields if f.repr]
+        set_new_attribute(self._cls, '__repr__', repr_fn(flds, self._info.globals))
+
+
+class EqProcessor(Processor):
+    def _process(self) -> None:
+        if not self._info.params.eq:
+            return
+
+        # flds = [f for f in self._info.instance_fields if f.compare]
+        # self_tuple = tuple_str('self', flds)
+        # other_tuple = tuple_str('other', flds)
+        # set_new_attribute(cls, '__eq__', _cmp_fn('__eq__', '==', self_tuple, other_tuple, globals=globals))
+        cmp_fields = (field for field in self._info.instance_fields if field.compare)
+        terms = [f'self.{field.name} == other.{field.name}' for field in cmp_fields]
+        field_comparisons = ' and '.join(terms) or 'True'
+        body = [
+            f'if self is other:',
+            f' return True',
+            f'if other.__class__ is self.__class__:',
+            f' return {field_comparisons}',
+            f'return NotImplemented',
+        ]
+        func = create_fn('__eq__', ('self', 'other'), body, globals=self._info.globals)
+        set_new_attribute(self._cls, '__eq__', func)
+
+
+class OrderProcessor(Processor):
+    def _process(self) -> None:
+        if not self._info.params.order:
+            return
+
+        flds = [f for f in self._info.instance_fields if f.compare]
+        self_tuple = tuple_str('self', flds)
+        other_tuple = tuple_str('other', flds)
+        for name, op in [
+            ('__lt__', '<'),
+            ('__le__', '<='),
+            ('__gt__', '>'),
+            ('__ge__', '>='),
+        ]:
+            if set_new_attribute(self._cls, name, cmp_fn(name, op, self_tuple, other_tuple, globals=self._info.globals)):  # noqa
+                raise TypeError(
+                    f'Cannot overwrite attribute {name} in class {self._cls.__name__}. '
+                    f'Consider using functools.total_ordering'
+                )
+
+
+class FrozenProcessor(Processor):
+    def _process(self) -> None:
+        if not self._info.params.frozen:
+            return
+
+        for fn in frozen_get_del_attr(self._cls, self._info.instance_fields, self._info.globals):
+            if set_new_attribute(self._cls, fn.__name__, fn):
+                raise TypeError(f'Cannot overwrite attribute {fn.__name__} in class {self._cls.__name__}')
+
+
+class HashProcessor(Processor):
+    def _process(self) -> None:
+        class_hash = self._cls.__dict__.get('__hash__', dc.MISSING)
+        has_explicit_hash = not (class_hash is dc.MISSING or (class_hash is None and '__eq__' in self._cls.__dict__))
+
+        hash_action = HASH_ACTIONS[(
+            bool(self._info.params.unsafe_hash),
+            bool(self._info.params.eq),
+            bool(self._info.params.frozen),
+            has_explicit_hash,
+        )]
+        if hash_action:
+            self._cls.__hash__ = hash_action(self._cls, self._info.instance_fields, self._info.globals)  # type: ignore
+
+
+class DocProcessor(Processor):
+    def _process(self) -> None:
+        if getattr(self._cls, '__doc__'):
+            return
+
+        try:
+            text_sig = str(inspect.signature(self._cls)).replace(' -> None', '')
+        except (TypeError, ValueError):
+            text_sig = ''
+        self._cls.__doc__ = (self._cls.__name__ + text_sig)
+
+
+class MatchArgsProcessor(Processor):
+    def _process(self) -> None:
+        if not self._info.params12.match_args:
+            return
+
+        ifs = get_init_fields(self._info.fields.values())
+        set_new_attribute(self._cls, '__match_args__', tuple(f.name for f in ifs.std))
+
+
+class ReplaceProcessor(Processor):
+    def _process(self) -> None:
+        set_new_attribute(self._cls, '__replace__', _replace)
+
+
 class ClassProcessor:
     def __init__(self, cls: type) -> None:
         super().__init__()
@@ -112,151 +291,6 @@ class ClassProcessor:
 
         setattr(self._cls, FIELDS_ATTR, fields)
 
-    def _process_init(self) -> None:
-        if not self._info.params.init:
-            return
-
-        has_post_init = hasattr(self._cls, POST_INIT_NAME)
-        self_name = '__dataclass_self__' if 'self' in self._info.fields else 'self'
-
-        init = InitBuilder(
-            ClassInfo(self._cls),
-            self._info.fields,
-            has_post_init,
-            self_name,
-            self._info.globals,
-        ).build()
-        set_new_attribute(
-            self._cls,
-            '__init__',
-            init,
-        )
-
-    def _process_overrides(self) -> None:
-        for f in self._info.instance_fields:
-            fx = get_field_extras(f)
-            if not fx.override:
-                continue
-
-            if self._info.params12.slots:
-                raise TypeError
-
-            self_name = '__dataclass_self__' if 'self' in self._info.fields else 'self'
-
-            getter = create_fn(
-                f.name,
-                (self_name,),
-                [f'return {self_name}.__dict__[{f.name!r}]'],
-                globals=self._info.globals,
-                return_type=lang.just(f.type),
-            )
-            prop = property(getter)
-
-            if not self._info.params.frozen:
-                setter = create_fn(
-                    f.name,
-                    (self_name, f'{f.name}: __dataclass_type_{f.name}__'),
-                    [field_assign(self._info.params.frozen, f.name, f.name, self_name, fx.override)],
-                    globals=self._info.globals,
-                    locals={f'__dataclass_type_{f.name}__': f.type},
-                    return_type=lang.just(None),
-                )
-                prop = prop.setter(setter)
-
-            set_new_attribute(
-                self._cls,
-                f.name,
-                prop,
-            )
-
-    def _process_repr(self) -> None:
-        if not self._info.params.repr:
-            return
-
-        flds = [f for f in self._info.instance_fields if f.repr]
-        set_new_attribute(self._cls, '__repr__', repr_fn(flds, self._info.globals))
-
-    def _process_eq(self) -> None:
-        if not self._info.params.eq:
-            return
-
-        # flds = [f for f in self._info.instance_fields if f.compare]
-        # self_tuple = tuple_str('self', flds)
-        # other_tuple = tuple_str('other', flds)
-        # set_new_attribute(cls, '__eq__', _cmp_fn('__eq__', '==', self_tuple, other_tuple, globals=globals))
-        cmp_fields = (field for field in self._info.instance_fields if field.compare)
-        terms = [f'self.{field.name} == other.{field.name}' for field in cmp_fields]
-        field_comparisons = ' and '.join(terms) or 'True'
-        body = [
-            f'if self is other:',
-            f' return True',
-            f'if other.__class__ is self.__class__:',
-            f' return {field_comparisons}',
-            f'return NotImplemented',
-        ]
-        func = create_fn('__eq__', ('self', 'other'), body, globals=self._info.globals)
-        set_new_attribute(self._cls, '__eq__', func)
-
-    def _process_order(self) -> None:
-        if not self._info.params.order:
-            return
-
-        flds = [f for f in self._info.instance_fields if f.compare]
-        self_tuple = tuple_str('self', flds)
-        other_tuple = tuple_str('other', flds)
-        for name, op in [
-            ('__lt__', '<'),
-            ('__le__', '<='),
-            ('__gt__', '>'),
-            ('__ge__', '>='),
-        ]:
-            if set_new_attribute(self._cls, name, cmp_fn(name, op, self_tuple, other_tuple, globals=self._info.globals)):  # noqa
-                raise TypeError(
-                    f'Cannot overwrite attribute {name} in class {self._cls.__name__}. '
-                    f'Consider using functools.total_ordering'
-                )
-
-    def _process_frozen(self) -> None:
-        if not self._info.params.frozen:
-            return
-
-        for fn in frozen_get_del_attr(self._cls, self._info.instance_fields, self._info.globals):
-            if set_new_attribute(self._cls, fn.__name__, fn):
-                raise TypeError(f'Cannot overwrite attribute {fn.__name__} in class {self._cls.__name__}')
-
-    def _process_hash(self) -> None:
-        class_hash = self._cls.__dict__.get('__hash__', dc.MISSING)
-        has_explicit_hash = not (class_hash is dc.MISSING or (class_hash is None and '__eq__' in self._cls.__dict__))
-
-        hash_action = HASH_ACTIONS[(
-            bool(self._info.params.unsafe_hash),
-            bool(self._info.params.eq),
-            bool(self._info.params.frozen),
-            has_explicit_hash,
-        )]
-        if hash_action:
-            self._cls.__hash__ = hash_action(self._cls, self._info.instance_fields, self._info.globals)  # type: ignore
-
-    def _process_doc(self) -> None:
-        if getattr(self._cls, '__doc__'):
-            return
-
-        try:
-            text_sig = str(inspect.signature(self._cls)).replace(' -> None', '')
-        except (TypeError, ValueError):
-            text_sig = ''
-        self._cls.__doc__ = (self._cls.__name__ + text_sig)
-
-    def _process_match_args(self) -> None:
-        if not self._info.params12.match_args:
-            return
-
-        ifs = get_init_fields(self._info.fields.values())
-        set_new_attribute(self._cls, '__match_args__', tuple(f.name for f in ifs.std))
-
-    def _process_replace(self) -> None:
-        set_new_attribute(self._cls, '__replace__', _replace)
-
     @lang.cached_nullary
     def _transform_slots(self) -> None:
         if self._info.params12.weakref_slot and not self._info.params12.slots:
@@ -272,16 +306,20 @@ class ClassProcessor:
 
         self._process_fields()
 
-        self._process_init()
-        self._process_overrides()
-        self._process_repr()
-        self._process_eq()
-        self._process_order()
-        self._process_frozen()
-        self._process_hash()
-        self._process_doc()
-        self._process_match_args()
-        self._process_replace()
+        pcls: type[Processor]
+        for pcls in [
+            InitProcessor,
+            OverridesProcessor,
+            ReprProcessor,
+            EqProcessor,
+            OrderProcessor,
+            FrozenProcessor,
+            HashProcessor,
+            DocProcessor,
+            MatchArgsProcessor,
+            ReplaceProcessor,
+        ]:
+            pcls(self._info).process()
 
         self._transform_slots()
 
