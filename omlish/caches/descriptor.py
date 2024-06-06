@@ -139,9 +139,9 @@ class _CacheDescriptor:
             if owner is None:
                 raise TypeError
             try:
-                cache = self._by_class[owner]
+                cache = self._by_class[owner]  # type: ignore
             except KeyError:
-                cache = self._by_class[owner] = new_cache(**self._kwargs)
+                cache = self._by_class[owner] = new_cache(**self._kwargs)  # type: ignore
 
         elif self._scope == Scope.INSTANCE:
             if instance is not None:
