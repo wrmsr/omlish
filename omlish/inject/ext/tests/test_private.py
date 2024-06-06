@@ -60,7 +60,7 @@ def process_private_bindings(bs: Bindings) -> Bindings:
     raise NotImplementedError
 
 
-@pytest.mark.skip('fixme')
+# @pytest.mark.skip('fixme')
 def test_private():
     bs = bind(
         private(
