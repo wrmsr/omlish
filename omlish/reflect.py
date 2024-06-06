@@ -233,11 +233,7 @@ def replace_type_vars(
         if isinstance(cur, Union):
             return Union(frozenset(rec(e) for e in cur.args))
         if isinstance(cur, ta.TypeVar):
-            try:
-                return rpl[cur]
-            except Exception as e:
-                breakpoint()
-                raise
+            return rpl[cur]
         raise TypeError(cur)
     return rec(ty)
 
@@ -258,6 +254,9 @@ def get_generic_bases(ty: Type, **kwargs: ta.Any) -> tuple[Type, ...]:
         ret: list[Type] = []
         for b in get_original_bases(cty):
             bty = type_(b)
+            if isinstance(bty, Generic) and isinstance(b, type):
+                # FIXME: throws away relative types, but can't use original vars as they're class-contextual
+                bty = type_(b[*((ta.Any,) * len(bty.params))])  # type: ignore
             rty = replace_type_vars(bty, rpl, **kwargs)
             ret.append(rty)
         return tuple(ret)
