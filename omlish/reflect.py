@@ -1,5 +1,9 @@
 """
 TODO:
+ - uniform collection isinstance - items() for mappings, iter() for other
+ - also check instance type in isinstance not just items lol
+ - ta.Generic in mro causing trouble - omit? no longer 1:1
+ - cache this shit, esp generic_mro shit
 """
 import collections.abc
 import typing as ta
@@ -229,7 +233,11 @@ def replace_type_vars(
         if isinstance(cur, Union):
             return Union(frozenset(rec(e) for e in cur.args))
         if isinstance(cur, ta.TypeVar):
-            return rpl[cur]
+            try:
+                return rpl[cur]
+            except Exception as e:
+                breakpoint()
+                raise
         raise TypeError(cur)
     return rec(ty)
 
@@ -247,7 +255,12 @@ def to_annotation(ty: Type) -> ta.Any:
 def get_generic_bases(ty: Type, **kwargs: ta.Any) -> tuple[Type, ...]:
     if (cty := get_concrete_type(ty)) is not None:
         rpl = get_type_var_replacements(ty)
-        return tuple(replace_type_vars(type_(b), rpl, **kwargs) for b in get_original_bases(cty))
+        ret: list[Type] = []
+        for b in get_original_bases(cty):
+            bty = type_(b)
+            rty = replace_type_vars(bty, rpl, **kwargs)
+            ret.append(rty)
+        return tuple(ret)
     return ()
 
 
