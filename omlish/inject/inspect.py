@@ -27,6 +27,16 @@ def signature(obj: ta.Any) -> inspect.Signature:
     return sig
 
 
+class Kwarg(ta.NamedTuple):
+    key: Key
+    has_default: bool
+
+
+class Target(ta.NamedTuple):
+    obj: ta.Any
+    kwargs: ta.Mapping[str, Kwarg]
+
+
 def build_kwarg_keys(
         obj: ta.Any,
         *,
