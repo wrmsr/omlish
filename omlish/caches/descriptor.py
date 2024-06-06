@@ -155,7 +155,7 @@ class _CacheDescriptor:
         else:
             raise TypeError
 
-        fn = self._build(self._fn.__get__(instance, owner), cache)
+        fn = self._build(self._fn.__get__(instance, owner), cache)  # noqa
 
         if self._scope == Scope.CLASS:
             setattr(owner, self._name, fn)  # type: ignore
