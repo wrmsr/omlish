@@ -46,10 +46,12 @@ def test_weak_keys():
     c[k] = 1
     assert c[k] == 1
     assert len(c) == 1
+    assert list(c) == [k]
     kref = weakref.ref(K)  # noqa
     del k
     gc.collect()
     assert len(c) == 0
+    assert list(c) == []
 
 
 def test_weak_values():
