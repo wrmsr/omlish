@@ -1,3 +1,7 @@
+"""
+TODO:
+ - try_weak .. allow non-weakrefable keys to just fall through and not cache
+"""
 import enum
 import functools
 import typing as ta
@@ -77,7 +81,7 @@ class _CacheDescriptor:
             fn: ta.Callable,
             scope: Scope,
             typed: bool,
-            **kwargs
+            **kwargs: ta.Any
     ) -> None:
         super().__init__()
 
