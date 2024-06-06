@@ -6,6 +6,7 @@ TODO:
  - defaults
  - private
  - circular proxies
+ - cache inspect on providers
 """
 import typing as ta
 

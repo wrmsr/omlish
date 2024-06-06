@@ -2,6 +2,7 @@ import typing as ta
 
 import pytest  # noqa
 
+from .... import dataclasses as dc
 from ...bindings import as_
 from ...bindings import as_key
 from ...bindings import bind
@@ -10,6 +11,7 @@ from ...keys import array
 from ...types import Binding
 from ...types import Bindings
 from ...types import Key
+from ...types import Provider
 
 
 class _Private(ta.NamedTuple):
@@ -34,6 +36,14 @@ def expose(arg: ta.Any) -> Binding:
     return as_(_EXPOSED_ARRAY_KEY, _Exposed(as_key(arg)))
 
 
+@dc.dataclass(frozen=True)
+class ExposedPrivateProvider(Provider):
+    def provided_cls(self, rec: ta.Callable[[Key], type]) -> type:
+        return self.p.provided_cls(rec)
+
+    def provider_fn(self) -> ProviderFn:
+
+
 def process_private_bindings(bs: Bindings) -> Bindings:
     def process_private(p: _Private):
         for b in p.bs.bindings():
@@ -47,7 +57,7 @@ def process_private_bindings(bs: Bindings) -> Bindings:
     raise NotImplementedError
 
 
-@pytest.mark.skip('fixme')
+# @pytest.mark.skip('fixme')
 def test_private():
     bs = bind(
         private(
