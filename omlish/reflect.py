@@ -206,7 +206,6 @@ def replace_type_vars(
         ty: Type,
         rpl: ta.Mapping[ta.TypeVar, Type],
         *,
-        strict: bool = False,
         update_aliases: bool = False,
 ) -> Type:
     def rec(cur):
@@ -214,18 +213,17 @@ def replace_type_vars(
             return cur
         if isinstance(cur, Generic):
             args = tuple(rec(a) for a in cur.args)
-            obj = cur.obj
             if update_aliases:
+                obj = cur.obj
                 if (ops := get_params(obj)):
                     obj = cur.obj[*[rpl[p] for p in ops]]
+            else:
+                obj = None
             return cur._replace(args=args, obj=obj)
         if isinstance(cur, Union):
             return Union(frozenset(rec(e) for e in cur.args))
         if isinstance(cur, ta.TypeVar):
-            if strict:
-                return rpl[cur]
-            else:
-                return rpl.get(cur, cur)
+            return rpl[cur]
         raise TypeError(cur)
     return rec(ty)
 
@@ -240,17 +238,17 @@ def to_annotation(ty: Type) -> ta.Any:
     raise TypeError(ty)
 
 
-def get_generic_bases(ty: Type) -> tuple[Type, ...]:
+def get_generic_bases(ty: Type, **kwargs: ta.Any) -> tuple[Type, ...]:
     if (cty := get_concrete_type(ty)) is not None:
         rpl = get_type_var_replacements(ty)
-        return tuple(replace_type_vars(type_(b), rpl) for b in get_original_bases(cty))
+        return tuple(replace_type_vars(type_(b), rpl, **kwargs) for b in get_original_bases(cty))
     return ()
 
 
-def generic_mro(obj: ta.Any) -> list[Type]:
+def generic_mro(obj: ta.Any, **kwargs: ta.Any) -> list[Type]:
     mro = c3.mro(
         type_(obj),
-        get_bases=get_generic_bases,
+        get_bases=lambda t: get_generic_bases(t, **kwargs),
         is_subclass=lambda l, r: issubclass(get_concrete_type(l), get_concrete_type(r)),  # type: ignore
     )
     return [ty for ty in mro if get_concrete_type(ty) is not ta.Generic]
