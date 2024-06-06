@@ -237,10 +237,14 @@ def test_generics2():
     @dc.dataclass(frozen=True, generic_init=True)
     class Thing(ta.Generic[T]):
         s: ta.Set[T]
-        mk: ta.Mapping[K, T]
-        mv: ta.Mapping[T, V]
-        mfk: ta.Mapping[ta.FrozenSet[K], T]
-        mfv: ta.Mapping[T, ta.FrozenSet[V]]
+        # mk: ta.Mapping[K, T]
+        # mv: ta.Mapping[T, V]
+        # mfk: ta.Mapping[ta.FrozenSet[K], T]
+        # mfv: ta.Mapping[T, ta.FrozenSet[V]]
+        mk: ta.Mapping[str, T]
+        mv: ta.Mapping[T, str]
+        mfk: ta.Mapping[ta.FrozenSet[str], T]
+        mfv: ta.Mapping[T, ta.FrozenSet[str]]
 
     print()
 

@@ -100,7 +100,12 @@ class ClassInfo:
         for b in self._cls.__mro__[-1:0:-1]:
             base_fields = getattr(b, FIELDS_ATTR, None)
             if base_fields is not None:
-                for f in base_fields.values():
+                # FIXME: cache all infos lol
+                for name in inspect.get_annotations(b):
+                    try:
+                        f = base_fields[name]
+                    except KeyError:
+                        continue
                     fields[f.name] = f
                     field_owners[f.name] = b
 

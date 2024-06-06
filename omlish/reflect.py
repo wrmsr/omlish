@@ -107,8 +107,9 @@ class Union(ta.NamedTuple):
 
 class Generic(ta.NamedTuple):
     cls: type
-    args: tuple[Type, ...]
-    params: tuple[ta.TypeVar, ...]
+    args: tuple[Type, ...]             # map[int, V] = (int, V) | map[T, T] = (T, T)
+    params: tuple[ta.TypeVar, ...]     # map[int, V] = (_0, _1) | map[T, T] = (_0, _1)
+    # params2: tuple[ta.TypeVar, ...]  # map[int, V] = (V,)     | map[T, T] = (T,)
     obj: ta.Any
 
     def __repr__(self):
@@ -223,7 +224,11 @@ def replace_type_vars(
         if isinstance(cur, Union):
             return Union(frozenset(rec(e) for e in cur.args))
         if isinstance(cur, ta.TypeVar):
-            return rpl[cur]
+            try:
+                return rpl[cur]
+            except Exception as e:
+                breakpoint()
+                raise
         raise TypeError(cur)
     return rec(ty)
 
