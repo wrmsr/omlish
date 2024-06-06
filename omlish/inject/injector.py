@@ -68,7 +68,13 @@ class _Injector(Injector, lang.Final):
         kt = build_kwarg_target(obj)
         ret: dict[str, ta.Any] = {}
         for kw in kt.kwargs:
-            ret[kw.name] = self.provide(kw.key)
+            if kw.has_default:
+                if not (mv := self.try_provide(kw.key)).present:
+                    continue
+                v = mv.must()
+            else:
+                v = self.provide(kw.key)
+            ret[kw.name] = v
         return ret
 
     def inject(self, obj: ta.Any) -> ta.Any:
