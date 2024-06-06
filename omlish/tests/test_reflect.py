@@ -1,4 +1,5 @@
 import collections.abc
+import pprint  # noqa
 import typing as ta
 
 from .. import reflect as rfl
@@ -37,8 +38,31 @@ def test_new_unions():
 
 
 def test_partial_generics():
-    bt = rfl.type_(ta.Mapping[int, V])  # type: ignore
-    print(bt)  # noqa
+    print()
+
+    for ty in [
+        ta.Mapping[int, V],
+        ta.Mapping[K, int],
+        ta.Mapping[int, ta.Set[V]],
+    ]:
+        print(ty)
+
+        bt = rfl.type_(ty)
+        print(bt)
+
+        class B(ty[T]):
+            pass
+
+        class C(B[str]):
+            pass
+
+        ct = rfl.type_(C)
+        print(ct)
+
+        cm = rfl.generic_mro(C)
+        pprint.pprint(cm)
+
+        print()
 
 
 def test_simple_isinstance_of():
