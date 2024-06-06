@@ -38,3 +38,7 @@ https://meaningfulengineer.com/ssh-logging-on-linux/
 https://www.freedesktop.org/software/systemd/man/latest/systemd.journal-fields.html
 
 https://github.com/wrmsr/nginx-udplog-module
+
+
+https://www.structlog.org/en/stable/
+https://github.com/hynek/structlog/tree/main/src/structlog
