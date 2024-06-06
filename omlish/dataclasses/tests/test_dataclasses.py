@@ -1,6 +1,7 @@
 import abc
 import dataclasses as _dc
 import inspect
+import pprint  # noqa
 import typing as ta
 
 import pytest
@@ -11,6 +12,8 @@ from ... import reflect as rfl  # noqa
 
 
 T = ta.TypeVar('T')
+K = ta.TypeVar('K')
+V = ta.TypeVar('V')
 
 
 def test_simple():
@@ -228,6 +231,36 @@ def test_generics():
 
     info = dc.reflect(IntBox)
     print(info.field_owners)
+
+
+def test_generics2():
+    @dc.dataclass(frozen=True, generic_init=True)
+    class Thing(ta.Generic[T]):
+        s: ta.Set[T]
+        mk: ta.Mapping[K, T]
+        mv: ta.Mapping[T, V]
+        mfk: ta.Mapping[ta.FrozenSet[K], T]
+        mfv: ta.Mapping[T, ta.FrozenSet[V]]
+
+    print()
+
+    pprint.pprint(dict(inspect.signature(Thing).parameters))
+
+    @dc.dataclass(frozen=True, generic_init=True)
+    class IntThing(Thing[int]):
+        pass
+
+    pprint.pprint(dict(inspect.signature(IntThing).parameters))
+
+    @dc.dataclass(frozen=True, generic_init=True)
+    class Thing2(Thing[K]):
+        pass
+
+    @dc.dataclass(frozen=True, generic_init=True)
+    class IntThing2(Thing2[int]):
+        pass
+
+    pprint.pprint(dict(inspect.signature(IntThing2).parameters))
 
 
 def test_confer_frozen():
