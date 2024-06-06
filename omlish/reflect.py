@@ -217,18 +217,19 @@ def replace_type_vars(
             if update_aliases:
                 obj = cur.obj
                 if (ops := get_params(obj)):
-                    obj = cur.obj[*[rpl[p] for p in ops]]
+                    nargs = [to_annotation(rpl[p]) for p in ops]
+                    if ta.get_origin(obj) is ta.Generic:
+                        # FIXME: None? filter_typing_generic in get_generic_bases?
+                        pass
+                    else:
+                        obj = cur.obj[*nargs]
             else:
                 obj = None
             return cur._replace(args=args, obj=obj)
         if isinstance(cur, Union):
             return Union(frozenset(rec(e) for e in cur.args))
         if isinstance(cur, ta.TypeVar):
-            try:
-                return rpl[cur]
-            except Exception as e:
-                breakpoint()
-                raise
+            return rpl[cur]
         raise TypeError(cur)
     return rec(ty)
 
