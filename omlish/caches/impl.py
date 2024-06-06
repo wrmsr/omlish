@@ -299,7 +299,7 @@ class CacheImpl(Cache[K, V]):
             if value is None:
                 fail()
 
-        return link, value
+        return link, value  # type: ignore
 
     def __getitem__(self, key: K) -> V:
         with self._lock():
@@ -454,7 +454,15 @@ class CacheImpl(Cache[K, V]):
 
             link = self._root.ins_prev
             while link is not self._root:
-                yield link.key
+                key = link.key
+                if self._weak_keys:
+                    if key is not None:
+                        key = key()
+                    if key is not None:
+                        yield key
+                else:
+                    yield key  # type: ignore
+
                 next = link.ins_prev
                 if next is link:
                     raise ValueError
