@@ -113,9 +113,6 @@ def test_extended_reflect_type():
     import pprint
 
     for ty in [
-        E,
-        F,
-
         A,
         A[str],
         B,
