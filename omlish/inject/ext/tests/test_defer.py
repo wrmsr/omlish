@@ -21,5 +21,5 @@ def test_defer():
         # closing()
     ))
 
-    with i.provide(contextlib.ExitStack) as es:  # noqa
+    with i[contextlib.ExitStack] as es:  # noqa
         pass
