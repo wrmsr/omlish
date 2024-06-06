@@ -207,6 +207,16 @@ def get_type_var_replacements(ty: Type) -> ta.Mapping[ta.TypeVar, Type]:
     return {}
 
 
+def to_annotation(ty: Type) -> ta.Any:
+    if isinstance(ty, Generic):
+        return ty.obj if ty.obj is not None else ty.cls
+    if isinstance(ty, Union):
+        return ta.Union[*tuple(to_annotation(e) for e in ty.args)]
+    if isinstance(ty, (type, ta.TypeVar)):
+        return ty
+    raise TypeError(ty)
+
+
 def replace_type_vars(
         ty: Type,
         rpl: ta.Mapping[ta.TypeVar, Type],
@@ -236,16 +246,6 @@ def replace_type_vars(
             return rpl[cur]
         raise TypeError(cur)
     return rec(ty)
-
-
-def to_annotation(ty: Type) -> ta.Any:
-    if isinstance(ty, Generic):
-        return ty.obj if ty.obj is not None else ty.cls
-    if isinstance(ty, Union):
-        return ta.Union[*tuple(to_annotation(e) for e in ty.args)]
-    if isinstance(ty, (type, ta.TypeVar)):
-        return ty
-    raise TypeError(ty)
 
 
 def get_generic_bases(ty: Type, **kwargs: ta.Any) -> tuple[Type, ...]:
