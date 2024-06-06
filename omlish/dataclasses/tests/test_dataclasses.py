@@ -234,7 +234,7 @@ def test_generics():
 
 
 def test_generics2():
-    @dc.dataclass(frozen=True, generic_init=True)
+    @dc.dataclass(frozen=True, generic_init=True)  # type: ignore
     class Thing(ta.Generic[T]):
         s: ta.Set[T]
         # mk: ta.Mapping[K, T]
@@ -250,17 +250,17 @@ def test_generics2():
 
     pprint.pprint(dict(inspect.signature(Thing).parameters))
 
-    @dc.dataclass(frozen=True, generic_init=True)
+    @dc.dataclass(frozen=True, generic_init=True)  # type: ignore
     class IntThing(Thing[int]):
         pass
 
     pprint.pprint(dict(inspect.signature(IntThing).parameters))
 
-    @dc.dataclass(frozen=True, generic_init=True)
+    @dc.dataclass(frozen=True, generic_init=True)  # type: ignore
     class Thing2(Thing[K]):
         pass
 
-    @dc.dataclass(frozen=True, generic_init=True)
+    @dc.dataclass(frozen=True, generic_init=True)  # type: ignore
     class IntThing2(Thing2[int]):
         pass
 
