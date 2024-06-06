@@ -138,7 +138,7 @@ class ClassInfo:
 
     @cached.property
     def generic_mro(self) -> ta.Sequence[rfl.Type]:
-        return rfl.generic_mro(self._cls, update_aliases=True)
+        return rfl.ALIAS_UPDATING_GENERIC_SUBSTITUTION.generic_mro(self._cls)
 
     @cached.property
     def generic_mro_lookup(self) -> ta.Mapping[type, rfl.Type]:

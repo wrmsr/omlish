@@ -4,6 +4,7 @@ TODO:
  - also check instance type in isinstance not just items lol
  - ta.Generic in mro causing trouble - omit? no longer 1:1
  - cache this shit, esp generic_mro shit
+  - cache __hash__ in Generic/Union
 """
 import collections.abc
 import typing as ta
@@ -245,31 +246,49 @@ def replace_type_vars(
         if isinstance(cur, ta.TypeVar):
             return rpl[cur]
         raise TypeError(cur)
+
     return rec(ty)
 
 
-def get_generic_bases(ty: Type, **kwargs: ta.Any) -> tuple[Type, ...]:
-    if (cty := get_concrete_type(ty)) is not None:
-        rpl = get_type_var_replacements(ty)
-        ret: list[Type] = []
-        for b in get_original_bases(cty):
-            bty = type_(b)
-            if isinstance(bty, Generic) and isinstance(b, type):
-                # FIXME: throws away relative types, but can't use original vars as they're class-contextual
-                bty = type_(b[*((ta.Any,) * len(bty.params))])  # type: ignore
-            rty = replace_type_vars(bty, rpl, **kwargs)
-            ret.append(rty)
-        return tuple(ret)
-    return ()
+class GenericSubstitution:
+    def __init__(
+            self,
+            *,
+            update_aliases: bool = False,
+    ) -> None:
+        super().__init__()
+
+        self._update_aliases = update_aliases
+
+    def get_generic_bases(self, ty: Type) -> tuple[Type, ...]:
+        if (cty := get_concrete_type(ty)) is not None:
+            rpl = get_type_var_replacements(ty)
+            ret: list[Type] = []
+            for b in get_original_bases(cty):
+                bty = type_(b)
+                if isinstance(bty, Generic) and isinstance(b, type):
+                    # FIXME: throws away relative types, but can't use original vars as they're class-contextual
+                    bty = type_(b[*((ta.Any,) * len(bty.params))])  # type: ignore
+                rty = replace_type_vars(bty, rpl, update_aliases=self._update_aliases)
+                ret.append(rty)
+            return tuple(ret)
+        return ()
+
+    def generic_mro(self, obj: ta.Any) -> list[Type]:
+        mro = c3.mro(
+            type_(obj),
+            get_bases=lambda t: self.get_generic_bases(t),
+            is_subclass=lambda l, r: issubclass(get_concrete_type(l), get_concrete_type(r)),  # type: ignore
+        )
+        return [ty for ty in mro if get_concrete_type(ty) is not ta.Generic]
 
 
-def generic_mro(obj: ta.Any, **kwargs: ta.Any) -> list[Type]:
-    mro = c3.mro(
-        type_(obj),
-        get_bases=lambda t: get_generic_bases(t, **kwargs),
-        is_subclass=lambda l, r: issubclass(get_concrete_type(l), get_concrete_type(r)),  # type: ignore
-    )
-    return [ty for ty in mro if get_concrete_type(ty) is not ta.Generic]
+DEFAULT_GENERIC_SUBSTITUTION = GenericSubstitution()
+
+get_generic_bases = DEFAULT_GENERIC_SUBSTITUTION.get_generic_bases
+generic_mro = DEFAULT_GENERIC_SUBSTITUTION.generic_mro
+
+ALIAS_UPDATING_GENERIC_SUBSTITUTION = GenericSubstitution(update_aliases=True)
 
 
 ##
