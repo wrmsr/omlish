@@ -29,7 +29,9 @@ from .clsdct import get_caller_cls_dct  # noqa
 from .clsdct import is_possibly_cls_dct  # noqa
 from .contextmanagers import ContextManaged  # noqa
 from .contextmanagers import ContextWrapped  # noqa
+from .contextmanagers import DefaultLockable  # noqa
 from .contextmanagers import ExitStacked  # noqa
+from .contextmanagers import Lockable  # noqa
 from .contextmanagers import NOP_CONTEXT_MANAGED  # noqa
 from .contextmanagers import NOP_CONTEXT_MANAGER  # noqa
 from .contextmanagers import NopContextManaged  # noqa
@@ -38,6 +40,7 @@ from .contextmanagers import attr_setting  # noqa
 from .contextmanagers import breakpoint_on_exception  # noqa
 from .contextmanagers import context_var_setting  # noqa
 from .contextmanagers import context_wrapped  # noqa
+from .contextmanagers import default_lock  # noqa
 from .contextmanagers import defer  # noqa
 from .contextmanagers import disposing  # noqa
 from .contextmanagers import maybe_managing  # noqa

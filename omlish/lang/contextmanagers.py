@@ -1,6 +1,7 @@
 import contextlib
 import contextvars
 import functools
+import threading
 import types
 import typing as ta
 
@@ -215,3 +216,26 @@ def context_wrapped(cm):  # ContextWrappable -> ta.Callable[[CallableT], Callabl
     def inner(fn):
         return ContextWrapped(fn, cm)
     return inner
+
+
+##
+
+
+Lockable = ta.Callable[[], ta.ContextManager]
+DefaultLockable = ta.Union[None, bool, Lockable, ta.ContextManager]
+
+
+def default_lock(value: DefaultLockable, default: DefaultLockable) -> Lockable:
+    if value is None:
+        value = default
+    if value is True:
+        lock = threading.RLock()
+        return lambda: lock
+    elif value is False or value is None:
+        return NOP_CONTEXT_MANAGER
+    elif callable(value):
+        return value
+    elif isinstance(value, ta.ContextManager):
+        return lambda: value
+    else:
+        raise TypeError(value)
