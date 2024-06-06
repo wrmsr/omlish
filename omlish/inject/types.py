@@ -5,12 +5,15 @@ from .. import dataclasses as dc
 from .. import lang
 
 
+T = ta.TypeVar('T')
+
+
 ##
 
 
 @dc.dataclass(frozen=True)
-class Key(lang.Final):
-    cls: type
+class Key(lang.Final, ta.Generic[T]):
+    cls: type[T]
     arr: bool = False
     tag: ta.Any = None
 
@@ -90,3 +93,9 @@ class Injector(abc.ABC):
     @abc.abstractmethod
     def inject(self, obj: ta.Any) -> ta.Any:
         raise NotImplementedError
+
+    def __getitem__(
+            self,
+            target: ta.Union[Key[T], type[T]],
+    ) -> T:
+        return self.provide(target)
