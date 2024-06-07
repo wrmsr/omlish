@@ -4,6 +4,7 @@ import typing as ta
 import pytest  # noqa
 
 from .... import check
+from .... import lang
 from .... import dataclasses as dc
 from ...bindings import as_
 from ...bindings import as_key
@@ -100,11 +101,11 @@ def test_private():
             expose(int),
         ),
         private(
-            'hi',
+            lang.typed_lambda(str, f=float)(lambda f: f'{f}!'),
             12.3,
             expose(str),
         ),
     )
     i = create_injector(bs)
     assert i.provide(int) == 420
-    assert i.provide(str) == 'hi'
+    assert i.provide(str) == '12.3!'
