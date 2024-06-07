@@ -23,18 +23,21 @@ def protocol_check(proto: type) -> ta.Callable[[Ty], Ty]:
 ##
 
 
+_MISSING = object()
+
+
 def _update_wrapper_no_anns(wrapper, wrapped):
     functools.update_wrapper(wrapper, wrapped, assigned=list(set(functools.WRAPPER_ASSIGNMENTS) - {'__annotations__'}))
     return wrapper
 
 
-def typed_lambda(**kw):
+def typed_lambda(ret=_MISSING, **kw):
     def inner(fn):
         ns = {}
         ns['__fn'] = fn
         proto = ['def __lam(']
         call = ['return __fn(']
-        pkw = {k: v for k, v in kw.items() if k != 'return'}
+        pkw = {k: v for k, v in kw.items()}
         for i, (n, t) in enumerate(pkw.items()):
             if i:
                 call.append(', ')
@@ -44,8 +47,8 @@ def typed_lambda(**kw):
             proto.append(f', {n}: __ann_{n}')
             call.append(f'{n}={n}')
         proto.append(')')
-        if 'return' in kw:
-            ns['__ann_return'] = kw['return']
+        if ret is not _MISSING:
+            ns['__ann_return'] = ret
             proto.append(f' -> __ann_return')
         proto.append(':')
         call.append(')')
@@ -66,5 +69,5 @@ def typed_partial(fn, **kw):
             raise NameError(k)
     th = ta.get_type_hints(fn)
     inner = _update_wrapper_no_anns(lambda **lkw: fn(**lkw, **kw), fn)
-    lam = typed_lambda(**{n: h for n, h in th.items() if n not in kw})(inner)
+    lam = typed_lambda(th.pop('return', _MISSING), **{n: h for n, h in th.items() if n not in kw})(inner)
     return _update_wrapper_no_anns(lam, fn)
