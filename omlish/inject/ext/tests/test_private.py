@@ -15,17 +15,6 @@ from ...types import Provider
 from ...types import ProviderFn
 
 
-class _Private(ta.NamedTuple):
-    bs: Bindings
-
-
-_PRIVATE_ARRAY_KEY = array(_Private)
-
-
-def private(*args: ta.Any) -> Binding:
-    return as_(_PRIVATE_ARRAY_KEY, _Private(bind(*args)))
-
-
 class _Exposed(ta.NamedTuple):
     key: Key
 
@@ -43,14 +32,26 @@ class ExposedPrivateProvider(Provider):
         # return self.p.provided_cls(rec)
         raise NotImplementedError
 
+    def required_keys(self) -> frozenset[Key | None]:
+        raise NotImplementedError
+
+    def children(self) -> ta.Iterable[Provider]:
+        raise NotImplementedError
+
     def provider_fn(self) -> ProviderFn:
         raise NotImplementedError
 
 
-@dc.dataclass(frozen=True)
-class PrivateBindings(Bindings):
+@dc.dataclass(frozen=True, eq=False)
+class _PrivateBindings(Bindings):
+    pbs: Bindings
+
     def bindings(self) -> ta.Iterator[Binding]:
         raise NotImplementedError
+
+
+def private(*args: ta.Any) -> Bindings:
+    return _PrivateBindings(bind(*args))
 
 
 def process_private_bindings(bs: Bindings) -> Bindings:
