@@ -49,9 +49,9 @@ class IterableUnmarshalerFactory(UnmarshalerFactory):
         if isinstance(rty, rfl.Generic) and issubclass(rty.cls, collections.abc.Iterable):
             if (e := ctx.make(check.single(rty.args))) is None:
                 return None  # type: ignore
-            return IterableUnmarshaler(rty.cls, e)
+            return IterableUnmarshaler(rty.cls, e)  # noqa
         if isinstance(rty, type) and issubclass(rty, collections.abc.Iterable):
             if (e := ctx.make(ta.Any)) is None:
                 return None  # type: ignore
-            return IterableUnmarshaler(rty, e)
+            return IterableUnmarshaler(rty, e)  # noqa
         return None

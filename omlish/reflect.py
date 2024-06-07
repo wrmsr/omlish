@@ -11,7 +11,7 @@ import typing as ta
 import types
 
 from . import c3
-from . import caches
+from .collections import cache
 
 
 _NoneType = types.NoneType  # type: ignore
@@ -263,8 +263,8 @@ class GenericSubstitution:
         self._update_aliases = update_aliases
 
         if cache_size > 0:
-            self.get_generic_bases = caches.cache(weak_keys=True, max_size=cache_size)(self.get_generic_bases)  # type: ignore  # noqa
-            self.generic_mro = caches.cache(weak_keys=True, max_size=cache_size)(self.generic_mro)  # type: ignore
+            self.get_generic_bases = cache.cache(weak_keys=True, max_size=cache_size)(self.get_generic_bases)  # type: ignore  # noqa
+            self.generic_mro = cache.cache(weak_keys=True, max_size=cache_size)(self.generic_mro)  # type: ignore
 
     def get_generic_bases(self, ty: Type) -> tuple[Type, ...]:
         if (cty := get_concrete_type(ty)) is not None:
