@@ -1,9 +1,5 @@
 _IGNORE = object()
 
-
-##
-
-
 _property = property
 
 
@@ -42,44 +38,6 @@ class Property:
         if instance.__dict__[self._name] == value:
             return
         raise TypeError(self._name)
-
-
-##
-
-
-class Nullary:
-    def __init__(self, fn, *, name=None):
-        super().__init__()
-        self._fn = fn
-        self._name = name
-        self._value = _IGNORE
-
-    def __set_name__(self, owner, name):
-        if self._name is None:
-            self._name = name
-
-    def __get__(self, instance, owner=None):
-        if instance is None:
-            return self
-        if self._name is None:
-            raise TypeError(self)
-        ret = instance.__dict__[self._name] = type(self)(self._fn.__get__(instance, owner), name=self._name)
-        return ret
-
-    def __call__(self, *args, **kwargs):
-        if self._value is not _IGNORE:
-            return self._value
-        val = self._fn(*args, **kwargs)
-        if val is _IGNORE:
-            return None
-        self._value = val
-        return val
-
-
-nullary = Nullary
-
-
-##
 
 
 # Last
