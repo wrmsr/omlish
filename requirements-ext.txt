@@ -92,7 +92,7 @@ qtconsole==5.5.1
 
 fairscale==0.4.13
 
-accelerate==0.30.1
+accelerate==0.31.0
 
 pytorch-lightning==2.2.5
 
@@ -146,7 +146,7 @@ blobfile==2.1.1
 
 ### infra
 
-boto3>=1.34.119
+boto3>=1.34.121
 
 google-cloud-compute==1.19.0
 
@@ -168,7 +168,7 @@ zwave-js-server-python==0.56.0
 
 ##
 
-python-telegram-bot==21.2
+python-telegram-bot==21.3
 discord.py==2.3.2
 
 ##
