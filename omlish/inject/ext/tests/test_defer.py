@@ -11,12 +11,18 @@ from ...types import Provider
 from ...types import ProviderFn
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, eq=False)
 class ClosingProvider(Provider):
     p: Provider
 
     def provided_cls(self, rec: ta.Callable[[Key], type]) -> type:
         return self.p.provided_cls(rec)
+
+    def required_keys(self) -> frozenset[Key | None]:
+        return self.p.required_keys()
+
+    def children(self) -> ta.Iterable[Provider]:
+        return (self.p,)
 
     def provider_fn(self) -> ProviderFn:
         def pfn(i: Injector) -> ta.Any:

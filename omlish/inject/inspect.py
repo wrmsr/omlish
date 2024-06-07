@@ -48,17 +48,17 @@ class Kwarg(ta.NamedTuple):
     has_default: bool
 
 
-class KwargTarget(ta.NamedTuple):
+class KwargsTarget(ta.NamedTuple):
     obj: ta.Any
     kwargs: ta.Sequence[Kwarg]
 
 
-def build_kwarg_target(
+def build_kwargs_target(
         obj: ta.Any,
         *,
         skip_args: int = 0,
         skip_kwargs: ta.Optional[ta.Iterable[ta.Any]] = None,
-) -> KwargTarget:
+) -> KwargsTarget:
     sig = signature(obj)
     tags = _tags.get(obj)
 
@@ -86,7 +86,7 @@ def build_kwarg_target(
             p.default is not inspect.Parameter.empty,
         ))
 
-    return KwargTarget(
+    return KwargsTarget(
         obj,
         kws,
     )
