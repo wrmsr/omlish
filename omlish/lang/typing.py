@@ -69,5 +69,6 @@ def typed_partial(fn, **kw):
             raise NameError(k)
     th = ta.get_type_hints(fn)
     inner = _update_wrapper_no_anns(lambda **lkw: fn(**lkw, **kw), fn)
-    lam = typed_lambda(th.pop('return', _MISSING), **{n: h for n, h in th.items() if n not in kw})(inner)
+    ret = th.pop('return', _MISSING)
+    lam = typed_lambda(ret, **{n: h for n, h in th.items() if n not in kw})(inner)
     return _update_wrapper_no_anns(lam, fn)
