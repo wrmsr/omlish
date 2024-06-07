@@ -1,6 +1,5 @@
-import contextlib
-
 from .... import inject as inj
+from ..defer import create_defer_injector
 from ..defer import closing
 
 
@@ -10,12 +9,8 @@ class ClosingThing:
 
 
 def test_defer():
-    i = inj.create_injector(inj.bind(
-        inj.singleton(contextlib.ExitStack),
+    with create_defer_injector(inj.bind(
         closing(ClosingThing),
-    ))
-
-    print()
-    with i[contextlib.ExitStack] as es:  # noqa
+    )) as i:
         print(i[ClosingThing])
         print(i[ClosingThing])
