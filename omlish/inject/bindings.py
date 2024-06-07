@@ -55,8 +55,8 @@ def as_(k: ta.Any, p: ta.Any) -> Binding:
 ##
 
 
-@dc.dataclass(frozen=True)
-class _Bindings(Bindings):
+@dc.dataclass(frozen=True, eq=False)
+class _SimpleBindings(Bindings):
     bs: ta.Optional[ta.Sequence[Binding]] = None
     ps: ta.Optional[ta.Sequence[Bindings]] = None
 
@@ -76,13 +76,13 @@ def bind(*args: ta.Any) -> Bindings:
             ps.append(a)
         elif a is not None:
             bs.append(as_binding(a))
-    return _Bindings(bs=bs, ps=ps)
+    return _SimpleBindings(bs=bs, ps=ps)
 
 
 ##
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, eq=False)
 class _Overrides(Bindings):
     p: Bindings
     m: ta.Mapping[Key, Binding]
