@@ -1,3 +1,4 @@
+import itertools
 import typing as ta
 
 import pytest  # noqa
@@ -8,11 +9,36 @@ from ...bindings import as_key
 from ...bindings import bind
 from ...injector import create_injector
 from ...keys import array
+from ...providers import const
 from ...types import Binding
 from ...types import Bindings
+from ...types import Injector
 from ...types import Key
 from ...types import Provider
 from ...types import ProviderFn
+
+
+_ANONYMOUS_PRIVATE_SCOPE_COUNT = itertools.count()
+
+PrivateScopeName = ta.NewType('PrivateScopeName', str)
+
+
+class PrivateScopeProvider(Provider):
+    bs: Bindings
+
+    def provided_cls(self, rec: ta.Callable[[Key], type]) -> type:
+        raise NotImplementedError
+
+    def required_keys(self) -> frozenset[Key | None]:
+        raise NotImplementedError
+
+    def children(self) -> ta.Iterable[Provider]:
+        raise NotImplementedError
+
+    def provider_fn(self) -> ProviderFn:
+        def pfn(i: Injector) -> ta.Any:
+            return i.provide(self.k)
+        return pfn
 
 
 class _Exposed(ta.NamedTuple):
@@ -28,6 +54,7 @@ def expose(arg: ta.Any) -> Binding:
 
 @dc.dataclass(frozen=True)
 class ExposedPrivateProvider(Provider):
+
     def provided_cls(self, rec: ta.Callable[[Key], type]) -> type:
         # return self.p.provided_cls(rec)
         raise NotImplementedError
@@ -39,7 +66,9 @@ class ExposedPrivateProvider(Provider):
         raise NotImplementedError
 
     def provider_fn(self) -> ProviderFn:
-        raise NotImplementedError
+        def pfn(i: Injector) -> ta.Any:
+            return i.provide(self.k)
+        return pfn
 
 
 @dc.dataclass(frozen=True, eq=False)
@@ -50,8 +79,15 @@ class _PrivateBindings(Bindings):
         raise NotImplementedError
 
 
-def private(*args: ta.Any) -> Bindings:
-    return _PrivateBindings(bind(*args))
+def private(*args: ta.Any, name: str | None = None) -> Bindings:
+    if name is None:
+        name = f'anon-{next(_ANONYMOUS_PRIVATE_SCOPE_COUNT)}'
+    bs = bind(*args)
+    ebs: list[Binding] = []
+    for b in bs.bindings():
+        if b.key == _EXPOSED_ARRAY_KEY:
+            ebs.append()
+    return _PrivateBindings()
 
 
 # def process_private_bindings(bs: Bindings) -> Bindings:
