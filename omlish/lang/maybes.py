@@ -97,7 +97,7 @@ class _Maybe(Maybe[T], tuple):
             value = mapper(self[0])
             if value is not None:
                 return just(value)
-        return _empty
+        return _empty  # noqa
 
     def flat_map(self, mapper: ta.Callable[[T], Maybe[U]]) -> Maybe[U]:
         if self:
@@ -105,7 +105,7 @@ class _Maybe(Maybe[T], tuple):
             if not isinstance(value, Maybe):
                 raise TypeError(value)
             return value
-        return _empty
+        return _empty  # noqa
 
     def or_else(self, other: T) -> Maybe[T]:
         return self if self else just(other)
