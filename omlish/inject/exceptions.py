@@ -4,7 +4,7 @@ from .. import dataclasses as dc
 from .types import Key
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass()
 class KeyException(Exception):
     key: Key
 
@@ -12,11 +12,11 @@ class KeyException(Exception):
     name: ta.Optional[str] = None
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass()
 class UnboundKeyException(KeyException):
     pass
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass()
 class DuplicateKeyException(KeyException):
     pass
