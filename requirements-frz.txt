@@ -1,4 +1,4 @@
-accelerate==0.30.1
+accelerate==0.31.0
 aiohttp==3.9.5
 aiomysql==0.2.0
 aiosignal==1.3.1
@@ -29,8 +29,8 @@ black==24.4.2
 bleach==6.1.0
 blis==0.7.11
 blobfile==2.1.1
-boto3==1.34.120
-botocore==1.34.120
+boto3==1.34.121
+botocore==1.34.121
 bs4==0.0.2
 bsddb3==6.2.9
 build==1.2.1
@@ -83,7 +83,7 @@ future==1.0.0
 gensim==4.3.2
 geopandas==0.14.4
 google-api-core==2.19.0
-google-auth==2.29.0
+google-auth==2.30.0
 google-cloud-compute==1.19.0
 googleapis-common-protos==1.63.1
 gprof2dot==2024.6.6
@@ -186,7 +186,7 @@ pandas==2.2.2
 pandocfilters==1.5.1
 parso==0.8.4
 pathspec==0.12.1
-peft @ git+https://github.com/huggingface/peft.git@03798a9143c90d796a0bee8f43863668d084381f
+peft @ git+https://github.com/huggingface/peft.git@0b40d1a304fc4d7d10baef14f913baff533dc2dc
 pexpect==4.9.0
 pg8000==1.31.2
 pgcli==4.1.0
@@ -196,7 +196,7 @@ pipdeptree==2.22.0
 pkginfo==1.11.0
 platformdirs==4.2.2
 pluggy==1.5.0
-pooch==1.8.1
+pooch==1.8.2
 portalocker==2.8.2
 pprintpp==0.4.0
 preshed==3.0.9
@@ -245,7 +245,7 @@ pytest-trio==0.8.0
 pytest-xdist==3.6.1
 python-dateutil==2.9.0.post0
 python-json-logger==2.0.7
-python-telegram-bot==21.2
+python-telegram-bot==21.3
 pytorch-lightning==2.2.5
 pytz==2024.1
 PyYAML==6.0.1
@@ -293,7 +293,7 @@ spacy-legacy==3.0.12
 spacy-loggers==1.0.5
 SPARQLWrapper==1.8.5
 SQLAlchemy==2.0.30
-sqlglot==25.0.2
+sqlglot==25.0.3
 sqlparse==0.4.4
 srsly==2.4.8
 stack-data==0.6.3
@@ -314,7 +314,7 @@ torchmetrics==1.4.0.post0
 torchsummary==1.5.1
 torchtext==0.18.0
 torchvision==0.18.1
-tornado==6.4
+tornado==6.4.1
 tqdm==4.66.4
 traitlets==5.14.3
 transformers==4.41.2
