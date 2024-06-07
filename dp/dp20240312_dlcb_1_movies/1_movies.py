@@ -6,6 +6,7 @@ import typing as ta
 
 from omlish import cached
 from omlish import dataclasses as dc
+from omlish import lang
 import keras
 import numpy as np
 import sklearn.svm
@@ -24,7 +25,7 @@ class Movie:
 
 
 class MovieReqs:
-    @cached.nullary
+    @lang.cached_nullary
     def movies(self) -> ta.Sequence[Movie]:
         movies = []
         # https://github.com/wrmsr/deep_learning_cookbook/blob/138a99b09ffa3a728d261e461440f029e512ac93/data/wp_movies_10k.ndjson
@@ -33,22 +34,22 @@ class MovieReqs:
                 movies.append(Movie(*json.loads(l)))
         return movies
 
-    @cached.nullary
+    @lang.cached_nullary
     def top_links(self) -> ta.Sequence[str]:
         link_counts = collections.Counter()
         for movie in self.movies():
             link_counts.update(movie.links)
         return [link for link, c in link_counts.items() if c >= 3]
 
-    @cached.nullary
+    @lang.cached_nullary
     def link_to_idx(self) -> ta.Mapping[str, int]:
         return {link: idx for idx, link in enumerate(self.top_links())}
 
-    @cached.nullary
+    @lang.cached_nullary
     def movie_to_idx(self) -> ta.Mapping[str, int]:
         return {movie.name: idx for idx, movie in enumerate(self.movies())}
 
-    @cached.nullary
+    @lang.cached_nullary
     def pairs(self) -> ta.Sequence[tuple[int, int]]:
         pairs = []
         for movie in self.movies():
@@ -59,7 +60,7 @@ class MovieReqs:
             )
         return pairs
 
-    @cached.nullary
+    @lang.cached_nullary
     def pairs_set(self) -> ta.AbstractSet[tuple[int, int]]:
         pairs_set = set(self.pairs())
         return pairs_set
@@ -157,7 +158,7 @@ class MovieReqs:
             np.random.shuffle(batch)
             yield {'link': batch[:, 0], 'movie': batch[:, 1]}, batch[:, 2]
 
-    @cached.nullary
+    @lang.cached_nullary
     def trained_model(self) -> keras.Model:
         # fp = '../../.cache/1_movies.keras'
         # if os.path.exists(fp):
