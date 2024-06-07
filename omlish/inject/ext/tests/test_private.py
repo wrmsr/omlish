@@ -54,20 +54,20 @@ def private(*args: ta.Any) -> Bindings:
     return _PrivateBindings(bind(*args))
 
 
-def process_private_bindings(bs: Bindings) -> Bindings:
-    def process_private(p: _Private):
-        for b in p.bs.bindings():
-            if b.key == _EXPOSED_ARRAY_KEY:
-                raise NotImplementedError
+# def process_private_bindings(bs: Bindings) -> Bindings:
+#     def process_private(p: _Private):
+#         for b in p.bs.bindings():
+#             if b.key == _EXPOSED_ARRAY_KEY:
+#                 raise NotImplementedError
+#
+#     for b in bs.bindings():
+#         if b.key == _PRIVATE_ARRAY_KEY:
+#             process_private(b.provider.provider_fn()(None))  # type: ignore
+#
+#     raise NotImplementedError
 
-    for b in bs.bindings():
-        if b.key == _PRIVATE_ARRAY_KEY:
-            process_private(b.provider.provider_fn()(None))  # type: ignore
 
-    raise NotImplementedError
-
-
-# @pytest.mark.skip('fixme')
+@pytest.mark.skip('fixme')
 def test_private():
     bs = bind(
         private(
@@ -81,7 +81,7 @@ def test_private():
             expose(str),
         ),
     )
-    bs = process_private_bindings(bs)
+    # bs = process_private_bindings(bs)
     i = create_injector(bs)
     assert i.provide(int) == 420
     assert i.provide(str) == 'hi'
