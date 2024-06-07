@@ -11,6 +11,7 @@ from ...bindings import bind
 from ...injector import create_injector
 from ...keys import array
 from ...providers import ConstProvider
+from ...providers import SingletonProvider
 from ...types import Binding
 from ...types import Bindings
 from ...types import Injector
@@ -30,18 +31,18 @@ class PrivateScopeProvider(Provider):
     bs: Bindings
 
     def provided_cls(self, rec: ta.Callable[[Key], type]) -> type:
-        raise NotImplementedError
+        return Injector
 
     def required_keys(self) -> frozenset[Key | None]:
         raise NotImplementedError
 
     def children(self) -> ta.Iterable[Provider]:
-        raise NotImplementedError
+        for b in self.bs.bindings():
+            yield b.provider
 
     def provider_fn(self) -> ProviderFn:
         def pfn(i: Injector) -> ta.Any:
-            # return i.provide(self.k)
-            raise NotImplementedError
+            return create_injector(self.bs, i)
         return pfn
 
 
@@ -62,19 +63,18 @@ class ExposedPrivateProvider(Provider):
     k: Key
 
     def provided_cls(self, rec: ta.Callable[[Key], type]) -> type:
-        # return self.p.provided_cls(rec)
-        raise NotImplementedError
+        return self.k.cls
 
     def required_keys(self) -> frozenset[Key | None]:
         raise NotImplementedError
 
     def children(self) -> ta.Iterable[Provider]:
-        raise NotImplementedError
+        return ()
 
     def provider_fn(self) -> ProviderFn:
         def pfn(i: Injector) -> ta.Any:
-            # return i.provide(self.k)
-            raise NotImplementedError
+            pi = i.provide(Key(Injector, tag=self.psn))
+            return pi.provide(self.k)
         return pfn
 
 
@@ -83,7 +83,7 @@ def private(*args: ta.Any, name: str | None = None) -> Bindings:
         name = f'anon-{next(_ANONYMOUS_PRIVATE_SCOPE_COUNT)}'
     psn = PrivateScopeName(name)
     pbs = bind(*args, Binding(Key(PrivateScopeName), ConstProvider(PrivateScopeName, psn)))
-    ebs: list[Binding] = [Binding(Key(PrivateScopeProvider, tag=psn), PrivateScopeProvider(psn, pbs))]
+    ebs: list[Binding] = [Binding(Key(Injector, tag=psn), SingletonProvider(PrivateScopeProvider(psn, pbs)))]  # noqa
     for b in pbs.bindings():
         if b.key == _EXPOSED_ARRAY_KEY:
             ek = check.isinstance(check.isinstance(b.provider, ConstProvider).v, _Exposed).key
