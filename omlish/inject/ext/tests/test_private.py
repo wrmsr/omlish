@@ -47,6 +47,12 @@ class ExposedPrivateProvider(Provider):
         raise NotImplementedError
 
 
+@dc.dataclass(frozen=True)
+class PrivateBindings(Bindings):
+    def bindings(self) -> ta.Iterator[Binding]:
+        raise NotImplementedError
+
+
 def process_private_bindings(bs: Bindings) -> Bindings:
     def process_private(p: _Private):
         for b in p.bs.bindings():
