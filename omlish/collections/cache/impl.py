@@ -14,7 +14,7 @@ import time
 import typing as ta
 import weakref
 
-from .. import lang
+from ... import lang
 from .types import Cache
 from .types import Eviction
 from .types import OverweightException
@@ -52,7 +52,7 @@ class CacheImpl(Cache[K, V]):
 
     try:
         if not ta.TYPE_CHECKING:
-            from .._ext.cy.caches import CacheLink as Link
+            from ..._ext.cy.collections.cache import CacheLink as Link
         else:
             raise ImportError
 
