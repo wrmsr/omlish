@@ -14,12 +14,12 @@ from .. import check
 from .. import lang
 from .bindings import build_provider_map
 from .exceptions import UnboundKeyException
-from .inspect import KwargsTarget
 from .inspect import build_kwargs_target
 from .keys import as_key
 from .types import Bindings
 from .types import Injector
 from .types import Key
+from .types import KwargsTarget
 
 
 class _Injector(Injector, lang.Final):
