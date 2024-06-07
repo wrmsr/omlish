@@ -97,7 +97,7 @@ class CtorProvider(Provider):
 
 def ctor(cls: type) -> Provider:
     check.isinstance(cls, type)
-    kt = build_kwargs_target(fn)
+    kt = build_kwargs_target(cls)
     return CtorProvider(cls, kt)
 
 
