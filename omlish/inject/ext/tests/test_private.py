@@ -1,8 +1,6 @@
 import itertools
 import typing as ta
 
-import pytest  # noqa
-
 from .... import check
 from .... import lang
 from .... import dataclasses as dc
@@ -92,7 +90,11 @@ def private(*args: ta.Any, name: str | None = None) -> Bindings:
     return bind(*ebs)
 
 
-# @pytest.mark.skip('fixme')
+@dc.dataclass(frozen=True)
+class Foo:
+    s: str
+
+
 def test_private():
     bs = bind(
         private(
@@ -101,11 +103,12 @@ def test_private():
             expose(int),
         ),
         private(
-            lang.typed_lambda(str, f=float)(lambda f: f'{f}!'),
+            lang.typed_lambda(str, f=float, foo=Foo)(lambda f, foo: f'{f}! {foo.s}'),
             12.3,
             expose(str),
         ),
+        Foo('foo'),
     )
     i = create_injector(bs)
     assert i.provide(int) == 420
-    assert i.provide(str) == '12.3!'
+    assert i.provide(str) == '12.3! foo'
