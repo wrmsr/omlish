@@ -4,7 +4,7 @@ import subprocess
 import sysconfig
 import typing as ta
 
-from omlish import cached
+from omlish import lang
 
 
 ANTLR_VERSION = '4.13.1'
@@ -74,11 +74,11 @@ def _find_files(
 
 class Builder:
 
-    @cached.nullary
+    @lang.cached_nullary
     def build_dir(self) -> str:
         return os.path.join(os.path.dirname(__file__), 'build')
 
-    @cached.nullary
+    @lang.cached_nullary
     def antlr_jar_path(self) -> str:
         fn = f'antlr-{ANTLR_VERSION}-complete.jar'
         fp = os.path.abspath(os.path.join(self.build_dir(), fn))
@@ -106,7 +106,7 @@ class Builder:
                 ],
             )
 
-    @cached.nullary
+    @lang.cached_nullary
     def runtime_dir(self) -> str:
         d = os.path.join(self.build_dir(), 'antlr4')
         if not os.path.exists(d):
@@ -119,7 +119,7 @@ class Builder:
             )
         return d
 
-    @cached.nullary
+    @lang.cached_nullary
     def pybind_dir(self) -> str:
         d = os.path.join(self.build_dir(), 'pybind11')
         if not os.path.exists(d):
