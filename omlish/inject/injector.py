@@ -56,7 +56,7 @@ class _Injector(Injector, lang.Final):
             if self._p is not None:
                 pv = self._p.try_provide(key)
                 if pv is not None:
-                    return lang.empty()
+                    return pv
 
             return lang.empty()
 
