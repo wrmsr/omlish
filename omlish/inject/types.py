@@ -34,6 +34,14 @@ class Provider(abc.ABC):
     def provider_fn(self) -> ProviderFn:
         raise NotImplementedError
 
+    @abc.abstractmethod
+    def required_keys(self) -> frozenset[Key | None]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def children(self) -> ta.Iterable['Provider']:
+        raise NotImplementedError
+
 
 ##
 
