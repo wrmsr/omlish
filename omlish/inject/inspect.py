@@ -11,6 +11,8 @@ from .exceptions import DuplicateKeyException
 from .keys import as_key
 from .keys import tag
 from .types import Key
+from .types import Kwarg
+from .types import KwargsTarget
 
 
 P = ta.ParamSpec('P')
@@ -40,17 +42,6 @@ def tags(**kwargs: ta.Any) -> ta.Callable[[ta.Callable[P, R]], ta.Callable[P, R]
         _tags[obj] = kwargs
         return obj
     return inner
-
-
-class Kwarg(ta.NamedTuple):
-    name: str
-    key: Key
-    has_default: bool
-
-
-class KwargsTarget(ta.NamedTuple):
-    obj: ta.Any
-    kwargs: ta.Sequence[Kwarg]
 
 
 def build_kwargs_target(

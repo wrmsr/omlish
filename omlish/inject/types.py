@@ -31,15 +31,15 @@ class Provider(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def provider_fn(self) -> ProviderFn:
-        raise NotImplementedError
-
-    @abc.abstractmethod
     def required_keys(self) -> frozenset[Key | None]:
         raise NotImplementedError
 
     @abc.abstractmethod
     def children(self) -> ta.Iterable['Provider']:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def provider_fn(self) -> ProviderFn:
         raise NotImplementedError
 
 
@@ -85,6 +85,20 @@ class _BindingGen(abc.ABC):
 ##
 
 
+class Kwarg(ta.NamedTuple):
+    name: str
+    key: Key
+    has_default: bool
+
+
+class KwargsTarget(ta.NamedTuple):
+    obj: ta.Any
+    kwargs: ta.Sequence[Kwarg]
+
+
+##
+
+
 class Injector(abc.ABC):
     @abc.abstractmethod
     def try_provide(self, key: ta.Any) -> lang.Maybe[ta.Any]:
@@ -95,7 +109,7 @@ class Injector(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def provide_kwargs(self, obj: ta.Any) -> ta.Mapping[str, ta.Any]:
+    def provide_kwargs(self, kt: KwargsTarget) -> ta.Mapping[str, ta.Any]:
         raise NotImplementedError
 
     @abc.abstractmethod
