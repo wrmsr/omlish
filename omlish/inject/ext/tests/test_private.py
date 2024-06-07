@@ -24,6 +24,7 @@ _ANONYMOUS_PRIVATE_SCOPE_COUNT = itertools.count()
 PrivateScopeName = ta.NewType('PrivateScopeName', str)
 
 
+@dc.dataclass(frozen=True, eq=False)
 class PrivateScopeProvider(Provider):
     psn: PrivateScopeName
     bs: Bindings
@@ -39,7 +40,8 @@ class PrivateScopeProvider(Provider):
 
     def provider_fn(self) -> ProviderFn:
         def pfn(i: Injector) -> ta.Any:
-            return i.provide(self.k)
+            # return i.provide(self.k)
+            raise NotImplementedError
         return pfn
 
 
@@ -54,7 +56,7 @@ def expose(arg: ta.Any) -> Binding:
     return as_(_EXPOSED_ARRAY_KEY, _Exposed(as_key(arg)))
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, eq=False)
 class ExposedPrivateProvider(Provider):
     psn: PrivateScopeName
     k: Key
@@ -71,7 +73,8 @@ class ExposedPrivateProvider(Provider):
 
     def provider_fn(self) -> ProviderFn:
         def pfn(i: Injector) -> ta.Any:
-            return i.provide(self.k)
+            # return i.provide(self.k)
+            raise NotImplementedError
         return pfn
 
 
@@ -79,7 +82,7 @@ def private(*args: ta.Any, name: str | None = None) -> Bindings:
     if name is None:
         name = f'anon-{next(_ANONYMOUS_PRIVATE_SCOPE_COUNT)}'
     psn = PrivateScopeName(name)
-    pbs = bind(*args, Binding(Key(PrivateScopeName), ConstProvider(psn)))
+    pbs = bind(*args, Binding(Key(PrivateScopeName), ConstProvider(PrivateScopeName, psn)))
     ebs: list[Binding] = [Binding(Key(PrivateScopeProvider, tag=psn), PrivateScopeProvider(psn, pbs))]
     for b in pbs.bindings():
         if b.key == _EXPOSED_ARRAY_KEY:
