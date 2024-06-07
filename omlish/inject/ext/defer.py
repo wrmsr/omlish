@@ -2,9 +2,11 @@ import contextlib
 import typing as ta
 
 from ... import dataclasses as dc
-from ... import inject as inj
 from ... import lang
+from ..bindings import bind
+from ..injector import create_injector
 from ..providers import as_provider
+from ..providers import singleton
 from ..types import Bindings
 from ..types import Injector
 from ..types import Key
@@ -35,15 +37,15 @@ class ClosingProvider(Provider):
         return pfn
 
 
-def closing(obj: ta.Any) -> inj.Provider:
+def closing(obj: ta.Any) -> Provider:
     return ClosingProvider(as_provider(obj))
 
 
 @contextlib.contextmanager
 def create_defer_injector(bs: Bindings, p: ta.Optional[Injector] = None) -> ta.Generator[Injector, None, None]:
-    i = inj.create_injector(inj.bind(
+    i = create_injector(bind(
         bs,
-        inj.singleton(contextlib.ExitStack),
+        singleton(contextlib.ExitStack),
     ), p)
     with i[contextlib.ExitStack]:
         yield i
