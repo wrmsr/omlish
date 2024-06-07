@@ -3,13 +3,14 @@ import typing as ta
 
 import pytest  # noqa
 
+from .... import check
 from .... import dataclasses as dc
 from ...bindings import as_
 from ...bindings import as_key
 from ...bindings import bind
 from ...injector import create_injector
 from ...keys import array
-from ...providers import const
+from ...providers import ConstProvider
 from ...types import Binding
 from ...types import Bindings
 from ...types import Injector
@@ -24,6 +25,7 @@ PrivateScopeName = ta.NewType('PrivateScopeName', str)
 
 
 class PrivateScopeProvider(Provider):
+    psn: PrivateScopeName
     bs: Bindings
 
     def provided_cls(self, rec: ta.Callable[[Key], type]) -> type:
@@ -54,6 +56,8 @@ def expose(arg: ta.Any) -> Binding:
 
 @dc.dataclass(frozen=True)
 class ExposedPrivateProvider(Provider):
+    psn: PrivateScopeName
+    k: Key
 
     def provided_cls(self, rec: ta.Callable[[Key], type]) -> type:
         # return self.p.provided_cls(rec)
@@ -71,39 +75,20 @@ class ExposedPrivateProvider(Provider):
         return pfn
 
 
-@dc.dataclass(frozen=True, eq=False)
-class _PrivateBindings(Bindings):
-    pbs: Bindings
-
-    def bindings(self) -> ta.Iterator[Binding]:
-        raise NotImplementedError
-
-
 def private(*args: ta.Any, name: str | None = None) -> Bindings:
     if name is None:
         name = f'anon-{next(_ANONYMOUS_PRIVATE_SCOPE_COUNT)}'
-    bs = bind(*args)
-    ebs: list[Binding] = []
-    for b in bs.bindings():
+    psn = PrivateScopeName(name)
+    pbs = bind(*args, Binding(Key(PrivateScopeName), ConstProvider(psn)))
+    ebs: list[Binding] = [Binding(Key(PrivateScopeProvider, tag=psn), PrivateScopeProvider(psn, pbs))]
+    for b in pbs.bindings():
         if b.key == _EXPOSED_ARRAY_KEY:
-            ebs.append()
-    return _PrivateBindings()
+            ek = check.isinstance(check.isinstance(b.provider, ConstProvider).v, _Exposed).key
+            ebs.append(Binding(ek, ExposedPrivateProvider(psn, ek)))
+    return bind(*ebs)
 
 
-# def process_private_bindings(bs: Bindings) -> Bindings:
-#     def process_private(p: _Private):
-#         for b in p.bs.bindings():
-#             if b.key == _EXPOSED_ARRAY_KEY:
-#                 raise NotImplementedError
-#
-#     for b in bs.bindings():
-#         if b.key == _PRIVATE_ARRAY_KEY:
-#             process_private(b.provider.provider_fn()(None))  # type: ignore
-#
-#     raise NotImplementedError
-
-
-@pytest.mark.skip('fixme')
+# @pytest.mark.skip('fixme')
 def test_private():
     bs = bind(
         private(
@@ -117,7 +102,6 @@ def test_private():
             expose(str),
         ),
     )
-    # bs = process_private_bindings(bs)
     i = create_injector(bs)
     assert i.provide(int) == 420
     assert i.provide(str) == 'hi'
