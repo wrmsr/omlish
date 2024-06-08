@@ -5,6 +5,8 @@ from .. import check
 from .dispatch import Dispatcher
 from .dispatch import get_impl_func_cls_set
 
+# from ._dispatch import new_function_wrapper
+
 
 def function(func):
     disp = Dispatcher()  # type: ignore
@@ -20,6 +22,8 @@ def function(func):
         if (impl := disp_dispatch(type(args[0]))) is not None:
             return impl(*args, **kwargs)
         raise RuntimeError(f'No dispatch: {type(args[0])}')
+
+    # wrapper = functools.wraps(func)(new_function_wrapper(func_name, disp_dispatch))
 
     def register(impl, cls=None):
         check.callable(impl)
