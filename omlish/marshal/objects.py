@@ -52,7 +52,7 @@ class FieldMetadata:
 
 @dc.dataclass(frozen=True)
 class FieldInfo:
-    field: dc.Field
+    name: str
     type: ta.Any
     metadata: FieldMetadata
 
@@ -77,7 +77,7 @@ class ObjectMarshaler(Marshaler):
 
     def marshal(self, ctx: MarshalContext, o: ta.Any) -> Value:
         return {
-            fi.marshal_name: m.marshal(ctx, getattr(o, fi.field.name))
+            fi.marshal_name: m.marshal(ctx, getattr(o, fi.name))
             for fi, m in self.fields
         }
 
@@ -104,7 +104,7 @@ class ObjectUnmarshaler(Unmarshaler):
                 # if u is not None:
                 #     u[k] =
                 continue
-            if fi.field.name in kw:
-                raise KeyError(f'Duplicate keys for field {fi.field.name!r}: {k!r}')
-            kw[fi.field.name] = u.unmarshal(ctx, mv)
+            if fi.name in kw:
+                raise KeyError(f'Duplicate keys for field {fi.name!r}: {k!r}')
+            kw[fi.name] = u.unmarshal(ctx, mv)
         return self.cls(**kw)
