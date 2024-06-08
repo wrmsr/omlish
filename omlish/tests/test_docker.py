@@ -46,6 +46,7 @@ class PsItem(lang.Final):
 
     # x: ta.Mapping[str, ta.Any] | None = None
 
+
 class Port(ta.NamedTuple):
     ip: str
     from_port: int
@@ -58,7 +59,7 @@ _PORT_PAT = re.compile(r'(?P<ip>[^:]+):(?P<from_port>\d+)->(?P<to_port>\d+)/(?P<
 
 def parse_port(s: str) -> Port:
     # '0.0.0.0:35221->22/tcp, 0.0.0.0:35220->8000/tcp'
-    m = _PORT_PAT.fullmatch(s)
+    m = check.not_none(_PORT_PAT.fullmatch(s))
     return Port(
         m.group('ip'),
         int(m.group('from_port')),
