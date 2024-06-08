@@ -14,11 +14,11 @@ def function(func):
     disp_dispatch = disp.dispatch
 
     @functools.wraps(func)
-    def wrapper(*args, **kw):
+    def wrapper(*args, **kwargs):
         if not args:
             raise TypeError(f'{func_name} requires at least 1 positional argument')
         if (impl := disp_dispatch(type(args[0]))) is not None:
-            return impl(*args, **kw)
+            return impl(*args, **kwargs)
         raise RuntimeError(f'No dispatch: {type(args[0])}')
 
     def register(impl, cls=None):

@@ -111,8 +111,11 @@ class Method:
         type_ = type
         getattr_ = getattr
         base_func = self._func
+        func_name = getattr(base_func, '__name__', 'singledispatch method')
 
         def __call__(self, *args, **kwargs):  # noqa
+            if not args:
+                raise TypeError(f'{func_name} requires at least 1 positional argument')
             if (impl_att := dispatch(type_(args[0]))) is not None:
                 fn = getattr_(self, impl_att)
                 return fn(*args, **kwargs)
