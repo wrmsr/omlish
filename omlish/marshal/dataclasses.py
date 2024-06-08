@@ -45,7 +45,7 @@ def get_field_infos(ty: type, opts: col.TypeMap[Option] = col.TypeMap()) -> ta.S
             um_name = field.name
 
         kw = dict(
-            field=field,
+            name=field.name,
             type=type_hints[field.name],
             metadata=FieldMetadata(),
 
@@ -101,7 +101,7 @@ class DataclassUnmarshalerFactory(UnmarshalerFactory):
                 tup = (fi, _make_field_obj(ctx, fi.type, fi.metadata.unmarshaler, fi.metadata.unmarshaler_factory))
                 for un in fi.unmarshal_names:
                     if un in d:
-                        raise KeyError(f'Duplicate fields for name {un!r}: {fi.field.name!r}, {d[un][0].field.name!r}')
+                        raise KeyError(f'Duplicate fields for name {un!r}: {fi.name!r}, {d[un][0].name!r}')
                     d[un] = tup
             return ObjectUnmarshaler(rty, d)
         return None
