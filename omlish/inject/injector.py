@@ -6,7 +6,9 @@ TODO:
  - defaults
  - private
  - circular proxies
- - cache inspect on providers
+ - listeners
+ - cache provider_map, make provider_fn lazy? don't need to hit every elem every new injector
+ - elem abstraction?
 """
 import typing as ta
 
