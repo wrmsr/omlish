@@ -208,9 +208,9 @@ class CacheImpl(Cache[K, V]):
             except Exception:
                 log.exception('Removal listener raised exception')
 
-        link.key = link.value = None
         self._size -= 1
         self._weight -= link.weight
+        link.key = link.value = None
         link.unlinked = True
 
     def _kill(self, link: Link) -> None:
