@@ -11,9 +11,12 @@ T = ta.TypeVar('T')
 ##
 
 
+Cls = type | ta.NewType
+
+
 @dc.dataclass(frozen=True)
 class Key(lang.Final, ta.Generic[T]):
-    cls: type[T]
+    cls: type[T] | ta.NewType
     arr: bool = False
     tag: ta.Any = None
 
@@ -27,7 +30,7 @@ ProviderFnMap = ta.Mapping[Key, ProviderFn]
 
 class Provider(abc.ABC):
     @abc.abstractmethod
-    def provided_cls(self, rec: ta.Callable[[Key], type]) -> type:
+    def provided_cls(self, rec: ta.Callable[[Key], Cls]) -> Cls:
         raise NotImplementedError
 
     @abc.abstractmethod

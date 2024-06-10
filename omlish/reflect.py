@@ -150,7 +150,7 @@ def type_(obj: ta.Any) -> Type:
     if oty is _UnionGenericAlias or oty is types.UnionType:
         return Union(frozenset(type_(a) for a in ta.get_args(obj)))
 
-    if isinstance(obj, ta.NewType):  # type: ignore
+    if isinstance(obj, ta.NewType):  # noqa
         return NewType(oty)
 
     if oty is _GenericAlias or oty is ta.GenericAlias:  # type: ignore  # noqa
