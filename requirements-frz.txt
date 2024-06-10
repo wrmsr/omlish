@@ -29,8 +29,8 @@ black==24.4.2
 bleach==6.1.0
 blis==0.7.11
 blobfile==2.1.1
-boto3==1.34.121
-botocore==1.34.121
+boto3==1.34.123
+botocore==1.34.123
 bs4==0.0.2
 bsddb3==6.2.9
 build==1.2.1
@@ -120,7 +120,7 @@ Jinja2==3.1.4
 jmespath==1.0.1
 joblib==1.4.2
 json5==0.9.25
-jsonpointer==2.4
+jsonpointer==3.0.0
 jsonschema==4.22.0
 jsonschema-specifications==2023.12.1
 jupyter-console==6.6.3
@@ -130,7 +130,7 @@ jupyter_client==8.6.2
 jupyter_core==5.7.2
 jupyter_server==2.14.1
 jupyter_server_terminals==0.5.3
-jupyterlab==4.2.1
+jupyterlab==4.2.2
 jupyterlab_pygments==0.3.0
 jupyterlab_server==2.27.2
 jupyterlab_widgets==3.0.11
@@ -155,7 +155,7 @@ matplotlib-inline==0.1.7
 mccabe==0.7.0
 mdurl==0.1.2
 mistune==3.0.2
-more-itertools==10.2.0
+more-itertools==10.3.0
 mpmath==1.3.0
 msgpack==1.0.8
 multidict==6.0.5
@@ -181,19 +181,19 @@ objgraph==3.6.1
 opencv-python==4.10.0.82
 outcome==1.3.0.post0
 overrides==7.7.0
-packaging==24.0
+packaging==24.1
 pandas==2.2.2
 pandocfilters==1.5.1
 parso==0.8.4
 pathspec==0.12.1
-peft @ git+https://github.com/huggingface/peft.git@0b40d1a304fc4d7d10baef14f913baff533dc2dc
+peft @ git+https://github.com/huggingface/peft.git@7b1c08d2b5e13d3c99b7d6ee83eab90e1216d4ba
 pexpect==4.9.0
 pg8000==1.31.2
 pgcli==4.1.0
 pgspecial==2.1.2
 pillow==10.3.0
 pipdeptree==2.22.0
-pkginfo==1.11.0
+pkginfo==1.11.1
 platformdirs==4.2.2
 pluggy==1.5.0
 pooch==1.8.2
@@ -202,7 +202,7 @@ pprintpp==0.4.0
 preshed==3.0.9
 priority==2.0.0
 prometheus_client==0.20.0
-prompt_toolkit==3.0.46
+prompt_toolkit==3.0.47
 proto-plus==1.23.0
 protobuf==4.25.3
 psutil==5.9.8
@@ -323,7 +323,7 @@ trio_asyncio==0.15.0
 twine==5.0.0
 typer==0.12.3
 types-python-dateutil==2.9.0.20240316
-typing_extensions==4.12.1
+typing_extensions==4.12.2
 tzdata==2024.1
 ujson==5.10.0
 uri-template==1.3.0
