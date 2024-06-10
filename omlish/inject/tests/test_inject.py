@@ -81,11 +81,11 @@ def test_override():
     assert i1.provide(str) == 'abc'
 
 
-def test_arrays():
+def test_multis():
     bs = inj.bind(
-        inj.as_(inj.array(int), 420),
-        inj.as_(inj.array(int), 421),
+        inj.as_(inj.multi(int), 420),
+        inj.as_(inj.multi(int), 421),
     )
     i = inj.create_injector(bs)
-    p = i.provide(inj.array(int))
+    p = i.provide(inj.multi(int))
     print(p)
