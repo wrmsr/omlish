@@ -26,24 +26,19 @@ from .types import KwargsTarget
 
 
 class _Injector(Injector, lang.Final):
-    def __init__(self, bs: Bindings, p: ta.Optional[Injector] = None) -> None:
+    def __init__(self, bs: Bindings, p: ta.Optional['_Injector'] = None) -> None:
         super().__init__()
 
         self._bs = check.isinstance(bs, Bindings)
-        self._p: ta.Optional[_Injector] = check.isinstance(p, (Injector, None))
-        self._cs: weakref.WeakSet[Injector] = weakref.WeakSet()
-        self._root: Injector = p.root if p is not None else p
+        self._p: ta.Optional[_Injector] = check.isinstance(p, (_Injector, None))
+        self._cs: weakref.WeakSet[_Injector] | None = None
+        self._root: _Injector = p._root if p is not None else self
 
         self._pfm = {k: v.provider_fn() for k, v in build_provider_map(bs).items()}
         self.__cur_req: _Injector._Request | None = None
 
-    @property
-    def parent(self) -> Injector | None:
-        return self._p
-
-    @property
-    def root(self) -> Injector:
-        return self._root
+    def create_child(self, bs: Bindings) -> Injector:
+        return _Injector(bs, self)
 
     class _Request:
         def __init__(self, injector: '_Injector') -> None:
@@ -115,5 +110,5 @@ class _Injector(Injector, lang.Final):
         return obj(**kws)
 
 
-def create_injector(bs: Bindings, p: ta.Optional[Injector] = None) -> Injector:
-    return _Injector(bs, p)
+def create_injector(bs: Bindings) -> Injector:
+    return _Injector(bs)
