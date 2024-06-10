@@ -26,7 +26,7 @@ def cli_cmd(args) -> bytes:
 class PsItem(lang.Final):
     dc.metadata(msh.ObjectMetadata(
         field_naming=msh.FieldNaming.CAMEL,
-        # unknown_field='x',
+        unknown_field='x',
     ))
 
     command: str
@@ -44,7 +44,7 @@ class PsItem(lang.Final):
     state: str
     status: str
 
-    # x: ta.Mapping[str, ta.Any] | None = None
+    x: ta.Mapping[str, ta.Any] | None = None
 
 
 class Port(ta.NamedTuple):
