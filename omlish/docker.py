@@ -1,3 +1,7 @@
+"""
+TODO:
+ - merged compose configs: https://github.com/wrmsr/bane/blob/27647abdcfb323b73e6982a5c318c7029496b203/core/dev/docker/compose.go#L38
+"""  # noqa
 import datetime
 import re
 import subprocess
@@ -8,6 +12,11 @@ from . import dataclasses as dc
 from . import json
 from . import lang
 from . import marshal as msh
+
+if ta.TYPE_CHECKING:
+    import yaml  # type: ignore
+else:
+    yaml = lang.proxy_import('yaml')
 
 
 def cli_cmd(args) -> bytes:
@@ -101,3 +110,29 @@ class Inspect(lang.Final):
 def cli_inspect(ids: list[str]) -> list[Inspect]:
     o = cli_cmd(['docker', 'inspect', *ids])
     return msh.unmarshal(json.loads(o.decode()), list[Inspect])
+
+
+class ComposeConfig:
+    def __init__(
+            self,
+            prefix: str,
+            *,
+            compose_path: str | None = None,
+    ) -> None:
+        super().__init__()
+
+        self._prefix = prefix
+        self._compose_path = compose_path
+
+    @lang.cached_nullary
+    def get_config(self) -> ta.Mapping[str, ta.Any]:
+        with open(check.not_none(self._compose_path), 'r') as f:
+            buf = f.read()
+        dct = yaml.safe_load(buf)
+
+        ret = {}
+        for n, c in dct['services'].items():
+            check.state(n.startswith(self._prefix))
+            ret[n[len(self._prefix):]] = c
+
+        return ret
