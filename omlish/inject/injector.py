@@ -10,6 +10,7 @@ TODO:
 """
 import contextlib
 import typing as ta
+import weakref
 
 from .. import check
 from .. import lang
@@ -29,10 +30,20 @@ class _Injector(Injector, lang.Final):
         super().__init__()
 
         self._bs = check.isinstance(bs, Bindings)
-        self._p: ta.Optional[Injector] = check.isinstance(p, (Injector, None))
+        self._p: ta.Optional[_Injector] = check.isinstance(p, (Injector, None))
+        self._cs: weakref.WeakSet[Injector] = weakref.WeakSet()
+        self._root: Injector = p.root if p is not None else p
 
         self._pfm = {k: v.provider_fn() for k, v in build_provider_map(bs).items()}
         self.__cur_req: _Injector._Request | None = None
+
+    @property
+    def parent(self) -> Injector | None:
+        return self._p
+
+    @property
+    def root(self) -> Injector:
+        return self._root
 
     class _Request:
         def __init__(self, injector: '_Injector') -> None:
