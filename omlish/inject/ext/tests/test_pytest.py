@@ -8,6 +8,7 @@ import pytest
 from ...bindings import bind
 from ...injector import create_injector
 from ...types import Bindings
+from ...types import Key
 
 
 class PytestScope(enum.Enum):
@@ -20,6 +21,8 @@ class PytestScope(enum.Enum):
 
 _HARNESS_BINDINGS: list[Bindings] = []
 _ACTIVE_HARNESSES: set['Harness'] = set()
+
+T = ta.TypeVar('T')
 
 
 class Harness:
@@ -37,6 +40,12 @@ class Harness:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         _ACTIVE_HARNESSES.remove(self)
+
+    def __getitem__(
+            self,
+            target: ta.Union[Key[T], type[T]],
+    ) -> T:
+        return self._inj[target]
 
     @contextlib.contextmanager
     def pytest_scope_manager(
@@ -81,4 +90,5 @@ class HarnessPlugin:
 
 
 def test_pytest():
-    pass
+    h = Harness(bind())
+    assert h[Harness] is h
