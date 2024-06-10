@@ -16,7 +16,7 @@ def as_key(o: ta.Any) -> Key:
         return o
     if isinstance(o, _KeyGen):
         return o._gen_key()  # noqa
-    if isinstance(o, type):
+    if isinstance(o, (type, ta.NewType)):  # noqa
         return Key(o)
     raise TypeError(o)
 

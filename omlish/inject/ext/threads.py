@@ -6,6 +6,7 @@ from ..providers import SingletonProvider
 from ..providers import as_provider
 from ..providers import ctor
 from ..types import Binding
+from ..types import Cls
 from ..types import Injector
 from ..types import Key
 from ..types import Provider
@@ -25,7 +26,7 @@ _THREAD_LOCALS_KEY = Key(_ThreadLocals)
 class ThreadLocalProvider(Provider):
     p: Provider
 
-    def provided_cls(self, rec: ta.Callable[[Key], type]) -> type:
+    def provided_cls(self, rec: ta.Callable[[Key], Cls]) -> Cls:
         return self.p.provided_cls(rec)
 
     def required_keys(self) -> frozenset[Key | None]:

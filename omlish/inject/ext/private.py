@@ -14,6 +14,7 @@ from ..providers import ConstProvider
 from ..providers import SingletonProvider
 from ..types import Binding
 from ..types import Bindings
+from ..types import Cls
 from ..types import Injector
 from ..types import Key
 from ..types import Provider
@@ -30,7 +31,7 @@ class PrivateScopeProvider(Provider):
     psn: PrivateScopeName
     bs: Bindings
 
-    def provided_cls(self, rec: ta.Callable[[Key], type]) -> type:
+    def provided_cls(self, rec: ta.Callable[[Key], Cls]) -> Cls:
         return Injector
 
     @lang.cached_nullary
@@ -68,7 +69,7 @@ class ExposedPrivateProvider(Provider):
     def pik(self) -> Key:
         return Key(Injector, tag=self.psn)
 
-    def provided_cls(self, rec: ta.Callable[[Key], type]) -> type:
+    def provided_cls(self, rec: ta.Callable[[Key], Cls]) -> Cls:
         return self.k.cls
 
     def required_keys(self) -> frozenset[Key | None]:

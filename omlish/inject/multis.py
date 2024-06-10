@@ -3,6 +3,7 @@ import typing as ta
 from .. import dataclasses as dc
 from .. import lang
 from .providers import Provider
+from .types import Cls
 from .types import Injector
 from .types import Key
 from .types import ProviderFn
@@ -15,12 +16,12 @@ _ILLEGAL_MULTI_TYPES = (str, bytes, bytearray)
 
 @dc.dataclass(frozen=True, eq=False)
 class MultiProvider(Provider):
-    ty: type
+    ty: Cls
     ps: ta.Sequence[Provider]
 
-    sty: type
+    sty: Cls
 
-    def provided_cls(self, rec: ta.Callable[[Key], type]) -> type:
+    def provided_cls(self, rec: ta.Callable[[Key], Cls]) -> Cls:
         return self.sty
 
     @lang.cached_nullary
@@ -45,7 +46,7 @@ class MultiProvider(Provider):
         return pfn
 
 
-def multi_provider(cls: type, *ps: Provider) -> MultiProvider:
+def multi_provider(cls: Cls, *ps: Provider) -> MultiProvider:
     return MultiProvider(
         cls,
         ps,

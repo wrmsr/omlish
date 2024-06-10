@@ -89,3 +89,14 @@ def test_multis():
     i = inj.create_injector(bs)
     p = i.provide(inj.multi(int))
     print(p)
+
+
+def test_newtypes():
+    Username = ta.NewType('Username', str)
+    Password = ta.NewType('Password', str)
+    i = inj.create_injector(inj.bind(
+        inj.as_(Username, 'public'),
+        inj.as_(Password, 'secret'),
+    ))
+    assert i[Username] == 'public'
+    assert i[Password] == 'secret'
