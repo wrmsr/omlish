@@ -1,8 +1,11 @@
 import abc
 import typing as ta  # noqa
 
+import pytest
+
 from ... import dataclasses as dc
 from ... import inject as inj
+from ... import lang
 
 
 def test_inject():
@@ -100,3 +103,12 @@ def test_newtypes():
     ))
     assert i[Username] == 'public'
     assert i[Password] == 'secret'
+
+
+def test_cycles():
+    i = inj.create_injector(inj.bind(
+        lang.typed_lambda(float, x=int)(lambda x: float(x)),
+        lang.typed_lambda(int, x=float)(lambda x: int(x)),
+    ))
+    with pytest.raises(inj.CyclicDependencyException):
+        i[int]  # noqa

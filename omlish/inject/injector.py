@@ -14,11 +14,13 @@ import typing as ta
 from .. import check
 from .. import lang
 from .bindings import build_provider_map
+from .exceptions import CyclicDependencyException
 from .exceptions import UnboundKeyException
 from .inspect import build_kwargs_target
 from .keys import as_key
 from .types import Bindings
 from .types import Injector
+from .types import Key
 from .types import KwargsTarget
 
 
@@ -36,6 +38,12 @@ class _Injector(Injector, lang.Final):
         def __init__(self, injector: '_Injector') -> None:
             super().__init__()
             self._injector = injector
+            self._seen_keys: set[Key] = set()
+
+        def handle_key(self, key: Key) -> None:
+            if key in self._seen_keys:
+                raise CyclicDependencyException(key)
+            self._seen_keys.add(key)
 
         def __enter__(self: ta.Self) -> ta.Self:
             return self
@@ -59,6 +67,8 @@ class _Injector(Injector, lang.Final):
         key = as_key(key)
 
         with self._current_request() as cr:
+            cr.handle_key(key)
+
             fn = self._pfm.get(key)
             if fn is not None:
                 return lang.just(fn(self))

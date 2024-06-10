@@ -4,12 +4,13 @@
 from .bindings import as_  # noqa
 from .bindings import bind  # noqa
 from .bindings import override  # noqa
+from .exceptions import CyclicDependencyException  # noqa
 from .exceptions import DuplicateKeyException  # noqa
 from .exceptions import KeyException  # noqa
 from .exceptions import UnboundKeyException  # noqa
 from .injector import create_injector  # noqa
-from .keys import multi  # noqa
 from .keys import as_key  # noqa
+from .keys import multi  # noqa
 from .keys import tag  # noqa
 from .providers import const  # noqa
 from .providers import ctor  # noqa
