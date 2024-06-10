@@ -74,12 +74,19 @@ def name_field(n: str, e: FieldNaming) -> str:
 @dc.dataclass(frozen=True)
 class ObjectMarshaler(Marshaler):
     fields: ta.Sequence[tuple[FieldInfo, Marshaler]]
+    unknown_field: str | None = None
 
     def marshal(self, ctx: MarshalContext, o: ta.Any) -> Value:
-        return {
+        ret = {
             fi.marshal_name: m.marshal(ctx, getattr(o, fi.name))
             for fi, m in self.fields
         }
+        if self.unknown_field is not None:
+            if (ukf := getattr(o, self.unknown_field)):
+                if (dks := set(ret) & set(ukf)):
+                    raise KeyError(f'Unknown field keys duplicate fields: {dks!r}')
+            ret.update(ukf)  # FIXME: marshal?
+        return ret
 
 
 ##
@@ -94,17 +101,21 @@ class ObjectUnmarshaler(Unmarshaler):
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any:
         ma = check.isinstance(v, collections.abc.Mapping)
         u: ta.Any
-        u = {} if self.unknown_field is not None else None
-        kw = {}
+        kw: dict[str, ta.Any] = {}
+        ukf: dict[str, ta.Any] | None = None
+        if self.unknown_field is not None:
+            kw[self.unknown_field] = ukf = {}
         for k, mv in ma.items():
+            ks = check.isinstance(k, str)
             try:
-                fi, u = self.fields_by_unmarshal_name[k]  # type: ignore
+                fi, u = self.fields_by_unmarshal_name[ks]
             except KeyError:
-                # FIXME:
-                # if u is not None:
-                #     u[k] =
-                continue
+                if ukf is not None:
+                    ukf[ks] = mv  # FIXME: unmarshal?
+                    continue
+                else:
+                    raise
             if fi.name in kw:
-                raise KeyError(f'Duplicate keys for field {fi.name!r}: {k!r}')
+                raise KeyError(f'Duplicate keys for field {fi.name!r}: {ks!r}')
             kw[fi.name] = u.unmarshal(ctx, mv)
         return self.cls(**kw)
