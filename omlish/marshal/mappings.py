@@ -20,8 +20,8 @@ class MappingMarshaler(Marshaler):
 
     def marshal(self, ctx: MarshalContext, o: ta.Mapping) -> Value:
         return {
-            self.ke.marshal(ctx, k): self.ve.marshal(ctx, v)
-            for k, v in check.isinstance(o, collections.abc.Mapping).items()
+            self.ke.marshal(ctx, uk): self.ve.marshal(ctx, uv)
+            for uk, uv in check.isinstance(o, collections.abc.Mapping).items()
         }
 
 
@@ -47,8 +47,8 @@ class MappingUnmarshaler(Unmarshaler):
 
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Mapping:
         dct: dict = {}
-        for k, v in check.isinstance(v, collections.abc.Mapping).items():
-            dct[self.ke.unmarshal(ctx, k)] = self.ve.unmarshal(ctx, v)
+        for mk, mv in check.isinstance(v, collections.abc.Mapping).items():
+            dct[self.ke.unmarshal(ctx, mk)] = self.ve.unmarshal(ctx, mv)  # type: ignore
         return self.ctor(dct)
 
 
