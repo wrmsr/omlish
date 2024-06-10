@@ -37,8 +37,14 @@ class _Injector(Injector, lang.Final):
         self._pfm = {k: v.provider_fn() for k, v in build_provider_map(bs).items()}
         self.__cur_req: _Injector._Request | None = None
 
+    _root: '_Injector'
+
     def create_child(self, bs: Bindings) -> Injector:
-        return _Injector(bs, self)
+        c = _Injector(bs, self)
+        if self._cs is None:
+            self._cs = weakref.WeakSet()
+        self._cs.add(c)
+        return c
 
     class _Request:
         def __init__(self, injector: '_Injector') -> None:
