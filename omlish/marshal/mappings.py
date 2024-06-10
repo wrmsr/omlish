@@ -2,6 +2,7 @@ import collections.abc
 import dataclasses as dc
 import typing as ta
 
+from .. import check
 from .. import reflect as rfl
 from .base import MarshalContext
 from .base import Marshaler
@@ -18,8 +19,10 @@ class MappingMarshaler(Marshaler):
     ve: Marshaler
 
     def marshal(self, ctx: MarshalContext, o: ta.Mapping) -> Value:
-        # return list(map(functools.partial(self.e.marshal, ctx), o))
-        raise NotImplementedError
+        return {
+            self.ke.marshal(ctx, k): self.ve.marshal(ctx, v)
+            for k, v in check.isinstance(o, collections.abc.Mapping).items()
+        }
 
 
 class MappingMarshalerFactory(MarshalerFactory):
@@ -43,8 +46,10 @@ class MappingUnmarshaler(Unmarshaler):
     ve: Unmarshaler
 
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Mapping:
-        # return self.ctor(map(functools.partial(self.e.unmarshal, ctx), check.isinstance(v, collections.abc.Mapping)))
-        raise NotImplementedError
+        dct: dict = {}
+        for k, v in check.isinstance(v, collections.abc.Mapping).items():
+            dct[self.ke.unmarshal(ctx, k)] = self.ve.unmarshal(ctx, v)
+        return self.ctor(dct)
 
 
 class MappingUnmarshalerFactory(UnmarshalerFactory):
