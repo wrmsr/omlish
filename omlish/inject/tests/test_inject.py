@@ -83,8 +83,8 @@ def test_override():
 
 def test_multis():
     bs = inj.bind(
-        inj.as_(inj.multi(int), 420),
-        inj.as_(inj.multi(int), 421),
+        inj.as_(inj.multi(int), [420]),
+        inj.as_(inj.multi(int), [421]),
     )
     i = inj.create_injector(bs)
     p = i.provide(inj.multi(int))

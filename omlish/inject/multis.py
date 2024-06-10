@@ -10,6 +10,8 @@ from .types import ProviderFn
 
 T = ta.TypeVar('T')
 
+_ILLEGAL_MULTI_TYPES = (str, bytes, bytearray)
+
 
 @dc.dataclass(frozen=True, eq=False)
 class MultiProvider(Provider):
@@ -35,7 +37,9 @@ class MultiProvider(Provider):
             rv = []
             for ep in ps:
                 o = ep(i)
-                rv.append(o)
+                if isinstance(o, _ILLEGAL_MULTI_TYPES):
+                    raise TypeError(o)
+                rv.extend(o)
             return rv
 
         return pfn
