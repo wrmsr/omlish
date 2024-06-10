@@ -9,6 +9,7 @@ from .inspect import signature
 from .keys import as_key
 from .types import Binding
 from .types import Bindings
+from .types import Cls
 from .types import Injector
 from .types import Key
 from .types import Provider
@@ -40,11 +41,11 @@ def as_provider(o: ta.Any) -> Provider:
 
 @dc.dataclass(frozen=True, eq=False)
 class FnProvider(Provider):
-    cls: type
+    cls: Cls
     fn: ta.Any
     kt: KwargsTarget
 
-    def provided_cls(self, rec: ta.Callable[[Key], type]) -> type:
+    def provided_cls(self, rec: ta.Callable[[Key], Cls]) -> Cls:
         return self.cls
 
     @lang.cached_nullary
@@ -75,10 +76,10 @@ def fn(fn: ta.Any, cls: ta.Optional[type] = None) -> Provider:
 
 @dc.dataclass(frozen=True, eq=False)
 class CtorProvider(Provider):
-    cls: type
+    cls: Cls
     kt: KwargsTarget
 
-    def provided_cls(self, rec: ta.Callable[[Key], type]) -> type:
+    def provided_cls(self, rec: ta.Callable[[Key], Cls]) -> Cls:
         return self.cls
 
     @lang.cached_nullary
@@ -106,10 +107,10 @@ def ctor(cls: type) -> Provider:
 
 @dc.dataclass(frozen=True, eq=False)
 class ConstProvider(Provider):
-    cls: type
+    cls: Cls
     v: ta.Any
 
-    def provided_cls(self, rec: ta.Callable[[Key], type]) -> type:
+    def provided_cls(self, rec: ta.Callable[[Key], Cls]) -> Cls:
         return self.cls
 
     def required_keys(self) -> frozenset[Key | None]:
@@ -122,7 +123,7 @@ class ConstProvider(Provider):
         return lambda _: self.v
 
 
-def const(v: ta.Any, cls: ta.Optional[type] = None) -> Provider:
+def const(v: ta.Any, cls: ta.Optional[Cls] = None) -> Provider:
     if cls is None:
         cls = type(v)
     return ConstProvider(cls, v)
@@ -135,7 +136,7 @@ def const(v: ta.Any, cls: ta.Optional[type] = None) -> Provider:
 class SingletonProvider(Provider):
     p: Provider
 
-    def provided_cls(self, rec: ta.Callable[[Key], type]) -> type:
+    def provided_cls(self, rec: ta.Callable[[Key], Cls]) -> Cls:
         return self.p.provided_cls(rec)
 
     def required_keys(self) -> frozenset[Key | None]:
@@ -168,7 +169,7 @@ def singleton(p: ta.Any) -> Provider:
 class LinkProvider(Provider):
     k: Key
 
-    def provided_cls(self, rec: ta.Callable[[Key], type]) -> type:
+    def provided_cls(self, rec: ta.Callable[[Key], Cls]) -> Cls:
         return rec(self.k)
 
     def required_keys(self) -> frozenset[Key | None]:
