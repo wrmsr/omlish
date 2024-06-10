@@ -43,10 +43,10 @@ def closing(obj: ta.Any) -> Provider:
 
 
 @contextlib.contextmanager
-def create_defer_injector(bs: Bindings, p: ta.Optional[Injector] = None) -> ta.Generator[Injector, None, None]:
+def create_defer_injector(bs: Bindings) -> ta.Generator[Injector, None, None]:
     i = create_injector(bind(
         bs,
         singleton(contextlib.ExitStack),
-    ), p)
+    ))
     with i[contextlib.ExitStack]:
         yield i

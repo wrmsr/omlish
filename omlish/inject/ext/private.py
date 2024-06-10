@@ -8,7 +8,6 @@ from ... import lang
 from ..bindings import as_
 from ..bindings import as_key
 from ..bindings import bind
-from ..injector import create_injector
 from ..keys import multi
 from ..providers import ConstProvider
 from ..providers import SingletonProvider
@@ -44,7 +43,7 @@ class PrivateScopeProvider(Provider):
 
     def provider_fn(self) -> ProviderFn:
         def pfn(i: Injector) -> ta.Any:
-            return create_injector(self.bs, i)
+            return i.create_child(self.bs)
         return pfn
 
 
