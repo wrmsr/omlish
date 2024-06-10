@@ -81,11 +81,15 @@ def _make_field_obj(ctx, ty, obj, fac):
 class DataclassMarshalerFactory(MarshalerFactory):
     def __call__(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Optional[Marshaler]:
         if isinstance(rty, type) and dc.is_dataclass(rty):
+            dc_md = get_dataclass_metadata(rty)
             fields = [
                 (fi, _make_field_obj(ctx, fi.type, fi.metadata.marshaler, fi.metadata.marshaler_factory))
                 for fi in get_field_infos(rty, ctx.options)
             ]
-            return ObjectMarshaler(fields)
+            return ObjectMarshaler(
+                fields,
+                unknown_field=dc_md.unknown_field,
+            )
         return None
 
 
@@ -95,7 +99,7 @@ class DataclassMarshalerFactory(MarshalerFactory):
 class DataclassUnmarshalerFactory(UnmarshalerFactory):
     def __call__(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Optional[Unmarshaler]:
         if isinstance(rty, type) and dc.is_dataclass(rty):
-            dc_md = get_dataclass_metadata(rty)  # noqa
+            dc_md = get_dataclass_metadata(rty)
             d: dict[str, tuple[FieldInfo, Unmarshaler]] = {}
             for fi in get_field_infos(rty, ctx.options):
                 tup = (fi, _make_field_obj(ctx, fi.type, fi.metadata.unmarshaler, fi.metadata.unmarshaler_factory))
@@ -103,5 +107,9 @@ class DataclassUnmarshalerFactory(UnmarshalerFactory):
                     if un in d:
                         raise KeyError(f'Duplicate fields for name {un!r}: {fi.name!r}, {d[un][0].name!r}')
                     d[un] = tup
-            return ObjectUnmarshaler(rty, d)
+            return ObjectUnmarshaler(
+                rty,
+                d,
+                unknown_field=dc_md.unknown_field,
+            )
         return None
