@@ -103,6 +103,16 @@ class KwargsTarget(ta.NamedTuple):
 
 
 class Injector(abc.ABC):
+    @property
+    @abc.abstractmethod
+    def parent(self) -> ta.Union['Injector', None]:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def root(self) -> 'Injector':
+        raise NotImplementedError
+
     @abc.abstractmethod
     def try_provide(self, key: ta.Any) -> lang.Maybe[ta.Any]:
         raise NotImplementedError
