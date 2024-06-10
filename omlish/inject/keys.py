@@ -24,7 +24,7 @@ def as_key(o: ta.Any) -> Key:
 ##
 
 
-def array(o: ta.Any) -> Key:
+def multi(o: ta.Any) -> Key:
     return dc.replace(as_key(o), arr=True)
 
 

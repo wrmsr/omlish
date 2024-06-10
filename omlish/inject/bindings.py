@@ -3,7 +3,7 @@ import typing as ta
 from .. import check
 from .. import dataclasses as dc
 from .. import lang
-from .arrays import array_provider
+from .multis import multi_provider
 from .exceptions import DuplicateKeyException
 from .keys import as_key
 from .providers import ConstProvider
@@ -117,6 +117,6 @@ def build_provider_map(bs: Bindings) -> ta.Mapping[Key, Provider]:
             pm[b.key] = b.provider
     if am:
         for k, aps in am.items():
-            pm[k] = array_provider(k.cls, *aps)
+            pm[k] = multi_provider(k.cls, *aps)
 
     return pm

@@ -12,7 +12,7 @@ T = ta.TypeVar('T')
 
 
 @dc.dataclass(frozen=True, eq=False)
-class ArrayProvider(Provider):
+class MultiProvider(Provider):
     ty: type
     ps: ta.Sequence[Provider]
 
@@ -41,8 +41,8 @@ class ArrayProvider(Provider):
         return pfn
 
 
-def array_provider(cls: type, *ps: Provider) -> ArrayProvider:
-    return ArrayProvider(
+def multi_provider(cls: type, *ps: Provider) -> MultiProvider:
+    return MultiProvider(
         cls,
         ps,
         # FIXME:

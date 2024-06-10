@@ -9,7 +9,7 @@ from ..bindings import as_
 from ..bindings import as_key
 from ..bindings import bind
 from ..injector import create_injector
-from ..keys import array
+from ..keys import multi
 from ..providers import ConstProvider
 from ..providers import SingletonProvider
 from ..types import Binding
@@ -51,11 +51,11 @@ class _Exposed(ta.NamedTuple):
     key: Key
 
 
-_EXPOSED_ARRAY_KEY = array(_Exposed)
+_EXPOSED_MULTI_KEY = multi(_Exposed)
 
 
 def expose(arg: ta.Any) -> Binding:
-    return as_(_EXPOSED_ARRAY_KEY, _Exposed(as_key(arg)))
+    return as_(_EXPOSED_MULTI_KEY, _Exposed(as_key(arg)))
 
 
 @dc.dataclass(frozen=True, eq=False)
@@ -90,7 +90,7 @@ def private(*args: ta.Any, name: str | None = None) -> Bindings:
     pbs = bind(*args, Binding(Key(PrivateScopeName), ConstProvider(PrivateScopeName, psn)))
     ebs: list[Binding] = [Binding(Key(Injector, tag=psn), SingletonProvider(PrivateScopeProvider(psn, pbs)))]  # noqa
     for b in pbs.bindings():
-        if b.key == _EXPOSED_ARRAY_KEY:
+        if b.key == _EXPOSED_MULTI_KEY:
             ek = check.isinstance(check.isinstance(b.provider, ConstProvider).v, _Exposed).key
             ebs.append(Binding(ek, ExposedPrivateProvider(psn, ek)))
     return bind(*ebs)
