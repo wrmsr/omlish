@@ -1,12 +1,9 @@
 """
 TODO:
  - unify reflect with marshal - fix type anns (ta.Seq is not a `type`)
- - eager
- - defer
- - defaults
- - private
  - circular proxies
  - listeners
+ - scopes
  - cache provider_map, make provider_fn lazy? don't need to hit every elem every new injector
  - elem abstraction?
 """
