@@ -103,14 +103,8 @@ class KwargsTarget(ta.NamedTuple):
 
 
 class Injector(abc.ABC):
-    @property
     @abc.abstractmethod
-    def parent(self) -> ta.Union['Injector', None]:
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def root(self) -> 'Injector':
+    def create_child(self, bs: Bindings) -> 'Injector':
         raise NotImplementedError
 
     @abc.abstractmethod
