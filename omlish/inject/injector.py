@@ -1,5 +1,6 @@
 """
 TODO:
+ - ** thread/async/gener/greenlet/* safety ** - dyn?
  - unify reflect with marshal - fix type anns (ta.Seq is not a `type`)
  - circular proxies
  - listeners
@@ -7,6 +8,7 @@ TODO:
  - cache provider_map, make provider_fn lazy? don't need to hit every elem every new injector
  - elem abstraction?
 """
+import contextlib
 import typing as ta
 
 from .. import check
@@ -17,7 +19,6 @@ from .inspect import build_kwargs_target
 from .keys import as_key
 from .types import Bindings
 from .types import Injector
-from .types import Key
 from .types import KwargsTarget
 
 
@@ -29,25 +30,35 @@ class _Injector(Injector, lang.Final):
         self._p: ta.Optional[Injector] = check.isinstance(p, (Injector, None))
 
         self._pfm = {k: v.provider_fn() for k, v in build_provider_map(bs).items()}
-        self._reqs: list[_Injector._Request] = []
+        self.__cur_req: _Injector._Request | None = None
 
     class _Request:
-        def __init__(self, injector: '_Injector', key: Key) -> None:
+        def __init__(self, injector: '_Injector') -> None:
             super().__init__()
             self._injector = injector
-            self._key = key
 
         def __enter__(self: ta.Self) -> ta.Self:
-            self._injector._reqs.append(self)
             return self
 
         def __exit__(self, *exc) -> None:
-            check.is_(self._injector._reqs.pop(), self)
+            pass
+
+    @contextlib.contextmanager
+    def _current_request(self) -> ta.Generator[_Request, None, None]:
+        if (cr := self.__cur_req) is not None:
+            yield cr
+            return
+        with self._Request(self) as cr:
+            try:
+                self.__cur_req = cr
+                yield cr
+            finally:
+                self.__cur_req = None
 
     def try_provide(self, key: ta.Any) -> lang.Maybe[ta.Any]:
         key = as_key(key)
 
-        with _Injector._Request(self, key):
+        with self._current_request() as cr:
             fn = self._pfm.get(key)
             if fn is not None:
                 return lang.just(fn(self))
