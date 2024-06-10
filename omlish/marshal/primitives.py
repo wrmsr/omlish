@@ -16,6 +16,7 @@ PRIMITIVE_TYPES: tuple[type, ...] = (
     float,
     str,
     bytes,
+    type(None),
 )
 
 
