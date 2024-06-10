@@ -47,7 +47,8 @@ class PrivateScopeProvider(Provider):
         return pfn
 
 
-class _Exposed(ta.NamedTuple):
+@dc.dataclass(frozen=True)
+class _Exposed:
     key: Key
 
 
