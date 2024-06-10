@@ -17,13 +17,9 @@ POST_INIT_NAME = dc._POST_INIT_NAME  # type: ignore  # noqa
 
 Params = dc._DataclassParams  # type: ignore  # noqa
 
-HASH_ACTIONS = dc._hash_action  # type: ignore  # noqa
-
 
 ##
 
-
-tuple_str = dc._tuple_str  # type: ignore  # noqa
 
 is_dataclass_instance = dc._is_dataclass_instance  # type: ignore  # noqa
 
