@@ -1,3 +1,4 @@
+import dataclasses as dc
 import textwrap
 import types
 import typing as ta
@@ -152,3 +153,15 @@ def set_new_attribute(cls: type, name: str, value: ta.Any) -> bool:
     set_qualname(cls, value)
     setattr(cls, name, value)
     return False
+
+
+def tuple_str(obj_name: str, fields: ta.Iterable[dc.Field]) -> str:
+    # Return a string representing each field of obj_name as a tuple member.  So, if fields is ['x', 'y'] and obj_name
+    # is "self", return "(self.x,self.y)".
+
+    # Special case for the 0-tuple.
+    if not fields:
+        return '()'
+
+    # Note the trailing comma, needed if this turns out to be a 1-tuple.
+    return f'({",".join([f"{obj_name}.{f.name}" for f in fields])},)'

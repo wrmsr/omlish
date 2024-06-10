@@ -12,9 +12,11 @@ from .internals import HAS_DEFAULT_FACTORY
 from .internals import POST_INIT_NAME
 from .metadata import Check
 from .metadata import Init
+from .processing import Processor
 from .reflect import ClassInfo
 from .utils import Namespace
 from .utils import create_fn
+from .utils import set_new_attribute
 
 
 MISSING = dc.MISSING
@@ -146,4 +148,26 @@ class InitBuilder:
             locals=locals,
             globals=self._globals,
             return_type=lang.just(None),
+        )
+
+
+class InitProcessor(Processor):
+    def _process(self) -> None:
+        if not self._info.params.init:
+            return
+
+        has_post_init = hasattr(self._cls, POST_INIT_NAME)
+        self_name = '__dataclass_self__' if 'self' in self._info.fields else 'self'
+
+        init = InitBuilder(
+            ClassInfo(self._cls),
+            self._info.fields,
+            has_post_init,
+            self_name,
+            self._info.globals,
+        ).build()
+        set_new_attribute(
+            self._cls,
+            '__init__',
+            init,
         )
