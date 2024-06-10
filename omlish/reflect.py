@@ -90,6 +90,7 @@ def get_params(obj: ta.Any) -> tuple[ta.TypeVar, ...]:
 Type = ta.Union[
     type,
     ta.TypeVar,
+    'NewType',
     'Union',
     'Generic',
 ]
@@ -127,22 +128,30 @@ class Generic(ta.NamedTuple):
         )
 
 
+class NewType(ta.NamedTuple):
+    obj: ta.Any
+
+
 TYPES: tuple[type, ...] = (
     type,
     ta.TypeVar,
     Union,
     Generic,
+    NewType,
 )
 
 
 def type_(obj: ta.Any) -> Type:
-    if isinstance(obj, (Union, Generic, ta.TypeVar)):
+    if isinstance(obj, (Union, Generic, ta.TypeVar, NewType)):  # noqa
         return obj
 
     oty = type(obj)
 
     if oty is _UnionGenericAlias or oty is types.UnionType:
         return Union(frozenset(type_(a) for a in ta.get_args(obj)))
+
+    if isinstance(obj, ta.NewType):  # type: ignore
+        return NewType(oty)
 
     if oty is _GenericAlias or oty is ta.GenericAlias:  # type: ignore  # noqa
         origin = ta.get_origin(obj)
@@ -193,11 +202,17 @@ def types_equivalent(l: Type, r: Type) -> bool:
     return l == r
 
 
+def get_underlying(nt: NewType) -> Type:
+    return type_(nt.obj.__supertype__)  # noqa
+
+
 def get_concrete_type(ty: Type) -> ta.Optional[type]:
     if isinstance(ty, type):
         return ty
     if isinstance(ty, Generic):
         return ty.cls
+    if isinstance(ty, NewType):
+        return get_concrete_type(get_underlying(ty))
     if isinstance(ty, (Union, ta.TypeVar)):
         return None
     raise TypeError(ty)
@@ -214,7 +229,7 @@ def to_annotation(ty: Type) -> ta.Any:
         return ty.obj if ty.obj is not None else ty.cls
     if isinstance(ty, Union):
         return ta.Union[*tuple(to_annotation(e) for e in ty.args)]
-    if isinstance(ty, (type, ta.TypeVar)):
+    if isinstance(ty, (type, ta.TypeVar, NewType)):
         return ty
     raise TypeError(ty)
 
@@ -227,6 +242,8 @@ def replace_type_vars(
 ) -> Type:
     def rec(cur):
         if isinstance(cur, type):
+            return cur
+        if isinstance(cur, NewType):
             return cur
         if isinstance(cur, Generic):
             args = tuple(rec(a) for a in cur.args)
@@ -310,6 +327,9 @@ KNOWN_GENERICS: ta.AbstractSet[type] = frozenset([
 def isinstance_of(rfl: Type) -> ta.Callable[[ta.Any], bool]:
     if isinstance(rfl, type):
         return lambda o: isinstance(o, rfl)
+
+    if isinstance(rfl, NewType):
+        return isinstance_of(get_underlying(rfl))
 
     if isinstance(rfl, Union):
         fns = [isinstance_of(a) for a in rfl.args]

@@ -130,3 +130,8 @@ def test_extended_reflect_type():
         print(ty)
         pprint.pprint(rfl.generic_mro(ty))
         print()
+
+
+def test_newtype():
+    Username = ta.NewType('Username', str)
+    print(rfl.type_(Username))
