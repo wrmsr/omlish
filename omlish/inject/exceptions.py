@@ -20,3 +20,8 @@ class UnboundKeyException(KeyException):
 @dc.dataclass()
 class DuplicateKeyException(KeyException):
     pass
+
+
+@dc.dataclass()
+class CyclicDependencyException(KeyException):
+    pass
