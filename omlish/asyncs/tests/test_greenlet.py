@@ -5,10 +5,14 @@ TODO:
 """
 import asyncio
 import functools
-import greenlet
+
+from ...dev.pytest import skip_if_cant_import
 
 
+@skip_if_cant_import('greenlet')
 def test_greenlet():
+    import greenlet
+
     done = 0
 
     def test1():
@@ -31,7 +35,10 @@ def test_greenlet():
     assert done == 2
 
 
+@skip_if_cant_import('greenlet')
 def test_bridge(event_loop):
+    import greenlet
+
     l = []
 
     async def gl_async(fn, *args, **kwargs):
