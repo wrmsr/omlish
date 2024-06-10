@@ -112,3 +112,8 @@ def test_cycles():
     ))
     with pytest.raises(inj.CyclicDependencyException):
         i[int]  # noqa
+
+
+def test_provide_injector():
+    i = inj.create_injector(inj.bind())
+    assert i[inj.Injector] is i

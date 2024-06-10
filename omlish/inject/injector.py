@@ -14,27 +14,36 @@ import weakref
 
 from .. import check
 from .. import lang
+from .bindings import bind
 from .bindings import build_provider_map
 from .exceptions import CyclicDependencyException
 from .exceptions import UnboundKeyException
 from .inspect import build_kwargs_target
 from .keys import as_key
+from .providers import const
+from .types import Binding
 from .types import Bindings
 from .types import Injector
 from .types import Key
 from .types import KwargsTarget
 
 
+_INJECTOR_KEY = Key(Injector)
+
+
 class _Injector(Injector, lang.Final):
     def __init__(self, bs: Bindings, p: ta.Optional['_Injector'] = None) -> None:
         super().__init__()
 
-        self._bs = check.isinstance(bs, Bindings)
+        self._bs = bind(
+            Binding(_INJECTOR_KEY, const(self)),
+            check.isinstance(bs, Bindings),
+        )
         self._p: ta.Optional[_Injector] = check.isinstance(p, (_Injector, None))
         self._cs: weakref.WeakSet[_Injector] | None = None
         self._root: _Injector = p._root if p is not None else self
 
-        self._pfm = {k: v.provider_fn() for k, v in build_provider_map(bs).items()}
+        self._pfm = {k: v.provider_fn() for k, v in build_provider_map(self._bs).items()}
         self.__cur_req: _Injector._Request | None = None
 
     _root: '_Injector'
@@ -68,6 +77,7 @@ class _Injector(Injector, lang.Final):
         if (cr := self.__cur_req) is not None:
             yield cr
             return
+
         with self._Request(self) as cr:
             try:
                 self.__cur_req = cr
