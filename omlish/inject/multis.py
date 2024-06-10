@@ -19,10 +19,10 @@ class MultiProvider(Provider):
     ty: Cls
     ps: ta.Sequence[Provider]
 
-    sty: Cls
+    scls: Cls
 
     def provided_cls(self, rec: ta.Callable[[Key], Cls]) -> Cls:
-        return self.sty
+        return self.scls
 
     @lang.cached_nullary
     def required_keys(self) -> frozenset[Key | None]:
