@@ -35,12 +35,12 @@ def test_private():
 def test_private_multi():
     bs = bind(
         private(
-            as_(multi(str), 'hi'),
+            as_(multi(str), ['hi']),
             12.3,
             expose(multi(str)),
         ),
         private(
-            as_(multi(str), lang.typed_lambda(str, f=float, foo=Foo)(lambda f, foo: f'{f}! {foo.s}')),
+            as_(multi(str), lang.typed_lambda(f=float, foo=Foo)(lambda f, foo: [f'{f}! {foo.s}'])),
             32.1,
             expose(multi(str)),
         ),
