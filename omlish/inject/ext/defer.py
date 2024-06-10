@@ -8,6 +8,7 @@ from ..injector import create_injector
 from ..providers import as_provider
 from ..providers import singleton
 from ..types import Bindings
+from ..types import Cls
 from ..types import Injector
 from ..types import Key
 from ..types import Provider
@@ -18,7 +19,7 @@ from ..types import ProviderFn
 class ClosingProvider(Provider):
     p: Provider
 
-    def provided_cls(self, rec: ta.Callable[[Key], type]) -> type:
+    def provided_cls(self, rec: ta.Callable[[Key], Cls]) -> Cls:
         return self.p.provided_cls(rec)
 
     def required_keys(self) -> frozenset[Key | None]:
