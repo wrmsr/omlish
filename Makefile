@@ -203,6 +203,26 @@ test-dev: venv-dev
 	_TEST_SOURCES="${PROJECT}" \
 	${MAKE} _test
 
+# docker
+
+.PHONY: venv-docker
+venv-docker:
+	./docker-dev make _venv-docker
+
+.PHONY: _venv-docker
+_venv-docker:
+	_VENV_ROOT=.venv-docker \
+	${MAKE} _venv
+
+.PHONY: test-docker
+test-docker:
+	./docker-dev make _test-docker
+
+.PHONY: _test-docker
+_test-docker: venv-docker
+	_VENV_ROOT=.venv-docker \
+	${MAKE} _test
+
 
 ### Docker
 
