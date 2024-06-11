@@ -25,7 +25,7 @@ def as_key(o: ta.Any) -> Key:
 
 
 def multi(o: ta.Any) -> Key:
-    return dc.replace(as_key(o), arr=True)
+    return dc.replace(as_key(o), multi=True)
 
 
 def tag(o: ta.Any, t: ta.Any) -> Key:
