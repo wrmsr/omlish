@@ -10,6 +10,7 @@ import typing as ta
 import pytest  # noqa
 
 from .... import dataclasses as dc
+from .... import lang
 from ...bindings import as_
 from ...bindings import as_key
 from ...bindings import bind
@@ -28,11 +29,15 @@ from ...types import Provider
 from ...types import ProviderFn
 
 
+class ScopeAlreadyOpenException(Exception):
+    pass
+
+
 class ScopeNotOpenException(Exception):
     pass
 
 
-class _SimpleScope:
+class _SimpleScope(lang.Final):
     @dc.dataclass(frozen=True)
     class State:
         seeds: dict[Key, ta.Any]
@@ -50,6 +55,14 @@ class _SimpleScope:
         if (st := self._state) is None:
             raise ScopeNotOpenException()
         return st
+
+    def open(self, seeds: ta.Mapping[Key, ta.Any]) -> None:
+        if self._state is not None:
+            raise ScopeAlreadyOpenException()
+        self._state = _SimpleScope.State(dict(seeds))
+
+    def close(self) -> None:
+        self._state = None
 
 
 _SIMPLE_SCOPE_KEY = Key(_SimpleScope)
@@ -136,4 +149,5 @@ def test_scopes():
         simple_scoped(420),
         bind_simple_scope(),
     ))
+    i[_SimpleScope].open({})
     assert i[int] == 420
