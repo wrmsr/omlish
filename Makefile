@@ -211,6 +211,11 @@ venv-docker:
 
 .PHONY: _venv-docker
 _venv-docker:
+	if [ $$(arch) == "aarch64" ] ; then \
+		export BERKELEYDB_LIBDIR=/usr/lib/aarch64-linux-gnu ; \
+		export BERKELEYDB_INCDIR=/usr/include ; \
+	fi && \
+	\
 	_VENV_ROOT=.venv-docker \
 	${MAKE} _venv
 

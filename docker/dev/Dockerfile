@@ -44,6 +44,7 @@ RUN \
         irssi \
         jq \
         less \
+        libdb-dev \
         llvm \
         lsb-release \
         lsof \
