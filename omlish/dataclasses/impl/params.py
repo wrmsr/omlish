@@ -116,6 +116,7 @@ def get_params12(obj: ta.Any) -> Params12:
 @dc.dataclass(frozen=True)
 class ParamsExtras(lang.Final):
     reorder: bool = False
+    cache_hash: bool = False
     generic_init: bool = False
 
 

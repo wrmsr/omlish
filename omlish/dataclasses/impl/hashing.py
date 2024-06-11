@@ -44,17 +44,18 @@ HASH_ACTIONS: ta.Mapping[tuple[bool, bool, bool, bool], HashAction | None] = {
 }
 
 
-def _hash_fn(fields, globals):
-    self_tuple = tuple_str('self', fields)
-    return create_fn(
-        '__hash__',
-        ('self',),
-        [f'return hash({self_tuple})'],
-        globals=globals,
-    )
-
-
 class HashProcessor(Processor):
+    def _build_hash_fn(self) -> ta.Callable:
+        flds = [f for f in self._info.instance_fields if (f.compare if f.hash is None else f.hash)]
+        self_tuple = tuple_str('self', flds)
+        hash_fn = create_fn(
+            '__hash__',
+            ('self',),
+            [f'return hash({self_tuple})'],
+            globals=self._info.globals,
+        )
+        return set_qualname(self._cls, hash_fn)  # noqa
+
     def _process(self) -> None:
         class_hash = self._cls.__dict__.get('__hash__', dc.MISSING)
         has_explicit_hash = not (class_hash is dc.MISSING or (class_hash is None and '__eq__' in self._cls.__dict__))
@@ -68,9 +69,7 @@ class HashProcessor(Processor):
             case HashAction.SET_NONE:
                 self._cls.__hash__ = None  # type: ignore
             case HashAction.ADD:
-                flds = [f for f in self._info.instance_fields if (f.compare if f.hash is None else f.hash)]
-                hash_fn = set_qualname(self._cls, _hash_fn(flds, self._info.globals))  # noqa
-                self._cls.__hash__ = hash_fn  # type: ignore
+                self._cls.__hash__ = self._build_hash_fn()  # type: ignore
             case HashAction.EXCEPTION:
                 raise TypeError(f'Cannot overwrite attribute __hash__ in class {self._cls.__name__}')
             case None:
