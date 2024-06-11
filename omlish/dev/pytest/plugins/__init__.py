@@ -6,6 +6,7 @@ from . import (  # noqa
     spacing,
 )
 from ._registry import ALL
+from ._registry import register
 
 
 def addhooks(pluginmanager):
