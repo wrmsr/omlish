@@ -301,14 +301,15 @@ def test_check_type():
         C('5')  # type: ignore
 
 
+class HashCounter:
+    n = 0
+
+    def __hash__(self):
+        self.n += 1
+        return id(self)
+
+
 def test_cache_hash():
-    class HashCounter:
-        n = 0
-
-        def __hash__(self):
-            self.n += 1
-            return id(self)
-
     @dc.dataclass(frozen=True)
     class NoCacheDc:
         c: HashCounter = dc.field(default_factory=HashCounter)
@@ -328,5 +329,17 @@ def test_cache_hash():
     assert o.c.n == 0
     hash(o)
     assert o.c.n == 1
+    hash(o)
+    assert o.c.n == 1
+
+
+def test_extra_params_deco():
+    @dc.dataclass(frozen=True)
+    @dc.extra_params(cache_hash=True)
+    class CacheDc:
+        c: HashCounter = dc.field(default_factory=HashCounter)
+
+    o = CacheDc()
+    hash(o)
     hash(o)
     assert o.c.n == 1
