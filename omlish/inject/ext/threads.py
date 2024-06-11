@@ -36,17 +36,18 @@ class ThreadLocalProvider(Provider):
         return (self.p,)
 
     def provider_fn(self) -> ProviderFn:
-        # FIXME: diff attr every time? cleanup??
-        attr = f'_{id(self)}'
         ipfn = self.p.provider_fn()
 
         def pfn(i: Injector) -> ta.Any:
             tls = i.provide(_THREAD_LOCALS_KEY).tls
             try:
-                return getattr(tls, attr)
+                values = tls.values
             except AttributeError:
-                v = ipfn(i)
-                setattr(tls, attr, v)
+                values = tls.values = {}
+            try:
+                return values[self]
+            except KeyError:
+                values[self] = v = ipfn(i)
                 return v
 
         return pfn

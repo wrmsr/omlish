@@ -17,7 +17,7 @@ from ...providers import as_provider
 from ...providers import ctor
 from ...types import Binding
 from ...types import Cls
-from ...types import Injector  # noqa
+from ...types import Injector
 from ...types import Key
 from ...types import Provider
 from ...types import ProviderFn
@@ -44,7 +44,11 @@ class SimpleScopedProvider(Provider):
         return (self.p,)
 
     def provider_fn(self) -> ProviderFn:
-        raise NotImplementedError
+        def pfn(i: Injector) -> ta.Any:
+            raise NotImplementedError
+
+        ufn = self.p.provider_fn()
+        return pfn
 
 
 def simple_scoped(p: ta.Any) -> Provider:
@@ -55,7 +59,7 @@ def bind_simple_scope() -> Binding:
     return Binding(_SIMPLE_SCOPE_KEY, SingletonProvider(ctor(_SimpleScope)))
 
 
-@pytest.mark.skip()
+# @pytest.mark.skip()
 def test_scopes():
     i = create_injector(bind(
         simple_scoped(420),

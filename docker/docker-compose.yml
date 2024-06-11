@@ -20,6 +20,7 @@ services:
     links:
       - 'omlish-mysql'
       - 'omlish-postgres'
+      - 'omlish-s3'
     expose:
       - '22'
       - '8000'
