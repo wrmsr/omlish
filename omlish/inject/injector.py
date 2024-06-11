@@ -66,12 +66,23 @@ class _Injector(Injector, lang.Final):
         def __init__(self, injector: '_Injector') -> None:
             super().__init__()
             self._injector = injector
+            self._provisions: dict[Key, ta.Any] = {}
             self._seen_keys: set[Key] = set()
 
-        def handle_key(self, key: Key) -> None:
+        def handle_key(self, key: Key) -> lang.Maybe:
+            try:
+                return lang.just(self._provisions[key])
+            except KeyError:
+                pass
             if key in self._seen_keys:
                 raise CyclicDependencyException(key)
             self._seen_keys.add(key)
+            return lang.empty()
+
+        def handle_provision(self, key: Key, v: ta.Any) -> None:
+            check.in_(key, self._seen_keys)
+            check.not_in(key, self._provisions)
+            self._provisions[key] = v
 
         def __enter__(self: ta.Self) -> ta.Self:
             return self
@@ -96,11 +107,14 @@ class _Injector(Injector, lang.Final):
         key = as_key(key)
 
         with self._current_request() as cr:
-            cr.handle_key(key)
+            if (rv := cr.handle_key(key)).present:
+                return rv
 
             fn = self._pfm.get(key)
             if fn is not None:
-                return lang.just(fn(self))
+                v = fn(self)
+                cr.handle_provision(key, v)
+                return lang.just(v)
 
             if self._p is not None:
                 pv = self._p.try_provide(key)

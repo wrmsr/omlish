@@ -109,7 +109,7 @@ def build_provider_map(bs: Bindings) -> ta.Mapping[Key, Provider]:
     pm: dict[Key, Provider] = {}
     am: dict[Key, list[Provider]] = {}
     for b in bs.bindings():
-        if b.key.arr:
+        if b.key.multi:
             am.setdefault(b.key, []).append(b.provider)
         else:
             if b.key in pm:

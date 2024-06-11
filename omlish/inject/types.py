@@ -18,8 +18,8 @@ Cls = type | ta.NewType
 @dc.extra_params(cache_hash=True)
 class Key(lang.Final, ta.Generic[T]):
     cls: type[T] | ta.NewType
-    arr: bool = False
-    tag: ta.Any = None
+    tag: ta.Any = dc.field(default=None, kw_only=True)
+    multi: bool = dc.field(default=False, kw_only=True)
 
 
 ##
