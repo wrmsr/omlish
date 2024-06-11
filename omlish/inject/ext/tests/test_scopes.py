@@ -5,6 +5,8 @@ TODO:
  - scope-eagers
  - in_(request_scope, ...)
 """
+
+
 class RequestScope:
     pass
 
