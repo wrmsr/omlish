@@ -5,8 +5,14 @@ TODO:
  - circular proxies
  - listeners
  - scopes
+  - child->parent scope providers - concept of 'active'
+  - multiple simultaneous active scopes of same type?
+   - 'singleton' scopes? ...
+  - scopes only managed by root injector?
  - cache provider_map, make provider_fn lazy? don't need to hit every elem every new injector
  - elem abstraction?
+ - config impl selector
+ - * optional defaults * - foo(ms: MyService | None = None): ...
 """
 import contextlib
 import typing as ta
