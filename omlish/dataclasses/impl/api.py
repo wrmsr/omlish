@@ -81,6 +81,7 @@ def dataclass(
         metadata=None,
 
         reorder=False,
+        cache_hash=False,
         generic_init=False,
 ):
     def wrap(cls):
@@ -102,6 +103,7 @@ def dataclass(
         mmd: dict = {
             ParamsExtras: ParamsExtras(
                 reorder=reorder,
+                cache_hash=cache_hash,
                 generic_init=generic_init,
             ),
         }
@@ -150,6 +152,7 @@ def make_dataclass(
         module=None,
 
         reorder=False,
+        cache_hash=False,
         generic_init=False,
 ):
     if namespace is None:
@@ -211,5 +214,6 @@ def make_dataclass(
         weakref_slot=weakref_slot,
 
         reorder=reorder,
+        cache_hash=cache_hash,
         generic_init=generic_init,
     )

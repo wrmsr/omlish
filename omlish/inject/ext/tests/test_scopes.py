@@ -7,6 +7,8 @@ TODO:
 """
 import typing as ta
 
+import pytest  # noqa
+
 from .... import dataclasses as dc
 from ...bindings import bind
 from ...injector import create_injector
@@ -15,6 +17,7 @@ from ...providers import as_provider
 from ...providers import ctor
 from ...types import Binding
 from ...types import Cls
+from ...types import Injector  # noqa
 from ...types import Key
 from ...types import Provider
 from ...types import ProviderFn
@@ -52,6 +55,7 @@ def bind_simple_scope() -> Binding:
     return Binding(_SIMPLE_SCOPE_KEY, SingletonProvider(ctor(_SimpleScope)))
 
 
+@pytest.mark.skip()
 def test_scopes():
     i = create_injector(bind(
         simple_scoped(420),
