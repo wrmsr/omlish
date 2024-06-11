@@ -1,4 +1,5 @@
-from .dev import pytest as ptu
+from .dev import pytest as ptu  # noqa
+from .inject.dev import pytest as pti  # noqa
 
 
 def pytest_addhooks(pluginmanager):
