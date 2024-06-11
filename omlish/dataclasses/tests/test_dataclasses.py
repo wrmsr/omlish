@@ -299,3 +299,34 @@ def test_check_type():
     assert C(5).x == 5
     with pytest.raises(TypeError):
         C('5')  # type: ignore
+
+
+def test_cache_hash():
+    class HashCounter:
+        n = 0
+
+        def __hash__(self):
+            self.n += 1
+            return id(self)
+
+    @dc.dataclass(frozen=True)
+    class NoCacheDc:
+        c: HashCounter = dc.field(default_factory=HashCounter)
+
+    o: ta.Any = NoCacheDc()
+    assert o.c.n == 0
+    hash(o)
+    assert o.c.n == 1
+    hash(o)
+    assert o.c.n == 2
+
+    @dc.dataclass(frozen=True, cache_hash=True)  # type: ignore
+    class CacheDc:
+        c: HashCounter = dc.field(default_factory=HashCounter)
+
+    o = CacheDc()
+    assert o.c.n == 0
+    hash(o)
+    assert o.c.n == 1
+    hash(o)
+    assert o.c.n == 1
