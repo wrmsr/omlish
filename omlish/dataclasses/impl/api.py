@@ -105,6 +105,7 @@ def dataclass(
         )
 
         dmd = cls.__dict__.get(METADATA_ATTR)
+
         epk = dict(dmd.get(_ExtraParamsKwargs, ()) if dmd is not None else ())
         epk.update(_strip_missing_values(dict(
             reorder=reorder,

@@ -15,6 +15,7 @@ Cls = type | ta.NewType
 
 
 @dc.dataclass(frozen=True)
+@dc.extra_params(cache_hash=True)
 class Key(lang.Final, ta.Generic[T]):
     cls: type[T] | ta.NewType
     arr: bool = False
@@ -50,6 +51,7 @@ class Provider(abc.ABC):
 
 
 @dc.dataclass(frozen=True)
+@dc.extra_params(cache_hash=True)
 class Binding(lang.Final):
     key: Key
     provider: Provider
