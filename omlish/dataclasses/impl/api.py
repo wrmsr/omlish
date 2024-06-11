@@ -226,5 +226,17 @@ def extra_params(
         generic_init=False,
 ):
     def inner(cls):
+        if PARAMS_ATTR in cls.__dict__:
+            raise TypeError(cls)
+        md = cls.__dict__.setdefault(METADATA_ATTR, {})
+        if ParamsExtras in md:
+            raise TypeError(cls)
+
+        md[ParamsExtras] = ParamsExtras(
+            reorder=reorder,
+            cache_hash=cache_hash,
+            generic_init=generic_init,
+        )
+
         return cls
     return inner
