@@ -5,6 +5,7 @@ import typing as ta
 from _pytest.fixtures import FixtureRequest  # noqa
 import pytest
 
+from ....dev import pytest as ptu
 from ...bindings import bind
 from ...injector import create_injector
 from ...types import Bindings
@@ -56,6 +57,7 @@ class Harness:
         yield
 
 
+@ptu.plugins.register
 class HarnessPlugin:
 
     @pytest.fixture(scope='session', autouse=True)
@@ -87,8 +89,3 @@ class HarnessPlugin:
     def _harness_scope_listener_function(self, harness, request):
         with harness.pytest_scope_manager(PytestScope.FUNCTION, request):
             yield
-
-
-def test_pytest():
-    h = Harness(bind())
-    assert h[Harness] is h
