@@ -45,13 +45,23 @@ HASH_ACTIONS: ta.Mapping[tuple[bool, bool, bool, bool], HashAction | None] = {
 
 
 class HashProcessor(Processor):
+    CACHED_HASH_ATTR = '__dataclass_hash__'
+
     def _build_hash_fn(self) -> ta.Callable:
         flds = [f for f in self._info.instance_fields if (f.compare if f.hash is None else f.hash)]
         self_tuple = tuple_str('self', flds)
+        if self._info.params_extras.cache_hash:
+            body = [
+                f'try: return self.{self.CACHED_HASH_ATTR}',
+                f'except AttributeError: object.__setattr__(self, {self.CACHED_HASH_ATTR!r}, h := hash({self_tuple}))',
+                f'return h',
+            ]
+        else:
+            body = [f'return hash({self_tuple})']
         hash_fn = create_fn(
             '__hash__',
             ('self',),
-            [f'return hash({self_tuple})'],
+            body,
             globals=self._info.globals,
         )
         return set_qualname(self._cls, hash_fn)  # noqa
