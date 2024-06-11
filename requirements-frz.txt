@@ -173,7 +173,7 @@ networkx==3.3
 nevergrad==1.0.2
 nh3==0.2.17
 nltk==3.8.1
-notebook==7.2.0
+notebook==7.2.1
 notebook_shim==0.2.4
 numba==0.59.1
 numpy==1.26.4
@@ -186,7 +186,7 @@ pandas==2.2.2
 pandocfilters==1.5.1
 parso==0.8.4
 pathspec==0.12.1
-peft @ git+https://github.com/huggingface/peft.git@7b1c08d2b5e13d3c99b7d6ee83eab90e1216d4ba
+peft @ git+https://github.com/huggingface/peft.git@47b3d7422ab391e9a98191d4c8d41c4ae13da963
 pexpect==4.9.0
 pg8000==1.31.2
 pgcli==4.1.0
@@ -224,10 +224,10 @@ pydantic_core==2.18.4
 pyflakes==3.1.0
 Pygments==2.18.0
 PyMySQL==1.1.1
-pyobjc-core==10.3
-pyobjc-framework-Cocoa==10.3
-pyobjc-framework-libdispatch==10.3
-pyobjc-framework-Metal==10.3
+pyobjc-core==10.3.1
+pyobjc-framework-Cocoa==10.3.1
+pyobjc-framework-libdispatch==10.3.1
+pyobjc-framework-Metal==10.3.1
 pyparsing==2.4.7
 pyperclip==1.8.2
 pyproj==3.6.1
