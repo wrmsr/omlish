@@ -14,6 +14,10 @@ TODO:
  - elem abstraction?
  - config impl selector
  - * optional defaults * - foo(ms: MyService | None = None): ...
+
+FIXME:
+ - just one request on root? bottleneck? cache?
+ - fn taking 2 of same type of arg bound unscoped should get 2 diff objs
 """
 import contextlib
 import typing as ta
