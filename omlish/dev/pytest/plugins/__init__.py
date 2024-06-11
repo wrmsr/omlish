@@ -5,8 +5,10 @@ from . import (  # noqa
     skips,
     spacing,
 )
-from ._registry import ALL
-from ._registry import register  # noqa
+from ._registry import (  # noqa
+    ALL,
+    register,
+)
 
 
 def addhooks(pluginmanager):
