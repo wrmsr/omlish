@@ -343,3 +343,13 @@ def test_extra_params_deco():
     hash(o)
     hash(o)
     assert o.c.n == 1
+
+
+def test_mypy():
+    @dc.dataclass(frozen=True)
+    class Foo:
+        i: int
+        f: float = dc.field(default=1.)
+
+    # Foo('hi')
+    # Foo(1, 'hi')
