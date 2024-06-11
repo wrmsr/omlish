@@ -61,11 +61,6 @@ class Harness:
 class HarnessPlugin:
 
     @pytest.fixture(scope='session', autouse=True)
-    def harness(self) -> ta.Generator[Harness, None, None]:
-        with Harness(bind(*_HARNESS_BINDINGS)) as harness:
-            yield harness
-
-    @pytest.fixture(scope='session', autouse=True)
     def _harness_scope_listener_session(self, harness, request):
         with harness.pytest_scope_manager(PytestScope.SESSION, request):
             yield
@@ -89,3 +84,9 @@ class HarnessPlugin:
     def _harness_scope_listener_function(self, harness, request):
         with harness.pytest_scope_manager(PytestScope.FUNCTION, request):
             yield
+
+
+@pytest.fixture(scope='session', autouse=True)
+def harness() -> ta.Generator[Harness, None, None]:
+    with Harness(bind(*_HARNESS_BINDINGS)) as harness:
+        yield harness
