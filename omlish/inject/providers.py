@@ -58,7 +58,6 @@ class FnProvider(Provider):
     def provider_fn(self) -> ProviderFn:
         def pfn(i: Injector) -> ta.Any:
             return i.inject(self.fn)
-
         return pfn
 
 
@@ -76,7 +75,7 @@ def fn(fn: ta.Any, cls: ta.Optional[type] = None) -> Provider:
 
 @dc.dataclass(frozen=True, eq=False)
 class CtorProvider(Provider):
-    cls: Cls
+    cls: type
     kt: KwargsTarget
 
     def provided_cls(self, rec: ta.Callable[[Key], Cls]) -> Cls:
@@ -92,7 +91,6 @@ class CtorProvider(Provider):
     def provider_fn(self) -> ProviderFn:
         def pfn(i: Injector) -> ta.Any:
             return i.inject(self.cls)
-
         return pfn
 
 
@@ -147,6 +145,7 @@ class SingletonProvider(Provider):
 
     def provider_fn(self) -> ProviderFn:
         v = not_set = object()
+        ufn = self.p.provider_fn()
 
         def pfn(i: Injector) -> ta.Any:
             nonlocal v
@@ -154,7 +153,6 @@ class SingletonProvider(Provider):
                 v = ufn(i)
             return v
 
-        ufn = self.p.provider_fn()
         return pfn
 
 
