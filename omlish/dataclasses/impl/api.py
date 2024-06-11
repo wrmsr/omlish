@@ -217,3 +217,14 @@ def make_dataclass(
         cache_hash=cache_hash,
         generic_init=generic_init,
     )
+
+
+def extra_params(
+        *,
+        reorder=False,
+        cache_hash=False,
+        generic_init=False,
+):
+    def inner(cls):
+        return cls
+    return inner
