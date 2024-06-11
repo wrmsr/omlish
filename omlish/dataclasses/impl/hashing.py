@@ -21,9 +21,6 @@ HASH_ACTIONS: ta.Mapping[tuple[bool, bool, bool, bool], HashAction | None] = {
     # |      +------------------------------- eq?
     # |      |      +------------------------ frozen?
     # |      |      |      +----------------  has-explicit-hash?
-    # |      |      |      |
-    # |      |      |      |
-    # |      |      |      |
     # v      v      v      v
     (False, False, False, False): None,
     (False, False, False, True): None,
