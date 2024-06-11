@@ -100,12 +100,17 @@ def dataclass(
             weakref_slot=weakref_slot,
         )
 
+        dmd = cls.__dict__.get(METADATA_ATTR)
+        if dmd is not None and (epex := dmd.get(ParamsExtras)) is not None:
+            raise NotImplementedError
+        pex = ParamsExtras(
+            reorder=reorder,
+            cache_hash=cache_hash,
+            generic_init=generic_init,
+        )
+
         mmd: dict = {
-            ParamsExtras: ParamsExtras(
-                reorder=reorder,
-                cache_hash=cache_hash,
-                generic_init=generic_init,
-            ),
+            ParamsExtras: pex,
         }
 
         if IS_12:
@@ -117,7 +122,7 @@ def dataclass(
         cmds = []
         if metadata is not None:
             cmds.append(check_.isinstance(metadata, collections.abc.Mapping))
-        if (dmd := cls.__dict__.get(METADATA_ATTR)) is not None:
+        if dmd is not None:
             cmds.append(dmd)
         if cmds:
             md = collections.ChainMap(md, *cmds)  # type: ignore
@@ -228,7 +233,11 @@ def extra_params(
     def inner(cls):
         if PARAMS_ATTR in cls.__dict__:
             raise TypeError(cls)
-        md = cls.__dict__.setdefault(METADATA_ATTR, {})
+        try:
+            md = cls.__dict__[METADATA_ATTR]
+        except KeyError:
+            md = {}
+            setattr(cls, METADATA_ATTR, md)
         if ParamsExtras in md:
             raise TypeError(cls)
 
