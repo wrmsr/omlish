@@ -8,6 +8,7 @@ TODO:
   - child->parent scope providers - concept of 'active'
   - multiple simultaneous active scopes of same type?
    - 'singleton' scopes? ...
+   - seeds
   - scopes only managed by root injector?
  - cache provider_map, make provider_fn lazy? don't need to hit every elem every new injector
  - elem abstraction?
