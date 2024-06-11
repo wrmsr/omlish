@@ -63,6 +63,10 @@ def field(
     )
 
 
+def _strip_missing_values(d):
+    return {k: v for k, v in d.items() if v is not MISSING}
+
+
 def dataclass(
         cls=None,
         /,
@@ -80,9 +84,9 @@ def dataclass(
 
         metadata=None,
 
-        reorder=False,
-        cache_hash=False,
-        generic_init=False,
+        reorder=MISSING,
+        cache_hash=MISSING,
+        generic_init=MISSING,
 ):
     def wrap(cls):
         pkw = dict(
@@ -101,13 +105,13 @@ def dataclass(
         )
 
         dmd = cls.__dict__.get(METADATA_ATTR)
-        if dmd is not None and (epex := dmd.get(ParamsExtras)) is not None:
-            raise NotImplementedError
-        pex = ParamsExtras(
+        epk = dict(dmd.get(_ExtraParamsKwargs, ()) if dmd is not None else ())
+        epk.update(_strip_missing_values(dict(
             reorder=reorder,
             cache_hash=cache_hash,
             generic_init=generic_init,
-        )
+        )))
+        pex = ParamsExtras(**epk)
 
         mmd: dict = {
             ParamsExtras: pex,
@@ -156,9 +160,9 @@ def make_dataclass(
         weakref_slot=False,
         module=None,
 
-        reorder=False,
-        cache_hash=False,
-        generic_init=False,
+        reorder=MISSING,
+        cache_hash=MISSING,
+        generic_init=MISSING,
 ):
     if namespace is None:
         namespace = {}
@@ -224,11 +228,15 @@ def make_dataclass(
     )
 
 
+class _ExtraParamsKwargs:
+    pass
+
+
 def extra_params(
         *,
-        reorder=False,
-        cache_hash=False,
-        generic_init=False,
+        reorder=MISSING,
+        cache_hash=MISSING,
+        generic_init=MISSING,
 ):
     def inner(cls):
         if PARAMS_ATTR in cls.__dict__:
@@ -238,14 +246,14 @@ def extra_params(
         except KeyError:
             md = {}
             setattr(cls, METADATA_ATTR, md)
-        if ParamsExtras in md:
+        if _ExtraParamsKwargs in md:
             raise TypeError(cls)
 
-        md[ParamsExtras] = ParamsExtras(
+        md[_ExtraParamsKwargs] = _strip_missing_values(dict(
             reorder=reorder,
             cache_hash=cache_hash,
             generic_init=generic_init,
-        )
+        ))
 
         return cls
     return inner

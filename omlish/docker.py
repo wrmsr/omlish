@@ -14,7 +14,7 @@ from . import lang
 from . import marshal as msh
 
 if ta.TYPE_CHECKING:
-    import yaml  # type: ignore
+    import yaml
 else:
     yaml = lang.proxy_import('yaml')
 
