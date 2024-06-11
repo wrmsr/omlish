@@ -15,7 +15,6 @@ from ...providers import as_provider
 from ...providers import ctor
 from ...types import Binding
 from ...types import Cls
-from ...types import Injector
 from ...types import Key
 from ...types import Provider
 from ...types import ProviderFn
