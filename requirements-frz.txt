@@ -323,6 +323,7 @@ trio_asyncio==0.15.0
 twine==5.0.0
 typer==0.12.3
 types-python-dateutil==2.9.0.20240316
+types-PyYAML==6.0.12.20240311
 typing_extensions==4.12.2
 tzdata==2024.1
 ujson==5.10.0
