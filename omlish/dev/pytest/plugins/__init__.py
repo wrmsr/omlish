@@ -6,7 +6,7 @@ from . import (  # noqa
     spacing,
 )
 from ._registry import ALL
-from ._registry import register
+from ._registry import register  # noqa
 
 
 def addhooks(pluginmanager):
@@ -14,4 +14,4 @@ def addhooks(pluginmanager):
 
     for plugin in ALL:
         if plugin not in present_types:
-            pluginmanager.register(plugin())
+            pluginmanager.register(plugin())  # noqa
