@@ -5,10 +5,10 @@ TODO:
 from _pytest.main import resolve_collection_argument  # noqa
 import pytest
 
-from ._registry import register_plugin
+from ._registry import register
 
 
-@register_plugin
+@register
 class SkipsPlugin:
 
     def pytest_collection_modifyitems(self, session, items):

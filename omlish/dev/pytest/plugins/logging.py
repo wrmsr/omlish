@@ -1,8 +1,8 @@
 from .... import logs
-from ._registry import register_plugin
+from ._registry import register
 
 
-@register_plugin
+@register
 class LoggingPlugin:
 
     def pytest_addoption(self, parser):

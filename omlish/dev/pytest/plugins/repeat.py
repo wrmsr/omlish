@@ -1,10 +1,10 @@
-from ._registry import register_plugin
+from ._registry import register
 
 
 PARAM_NAME = '__repeat'
 
 
-@register_plugin
+@register
 class RepeatPlugin:
 
     def pytest_addoption(self, parser):

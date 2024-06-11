@@ -1,7 +1,7 @@
-from ._registry import register_plugin
+from ._registry import register
 
 
-@register_plugin
+@register
 class SpacingPlugin:
 
     def pytest_addoption(self, parser):

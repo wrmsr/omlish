@@ -1,10 +1,10 @@
 import threading
 
 from ... import pydevd as opd
-from ._registry import register_plugin
+from ._registry import register
 
 
-@register_plugin
+@register
 class PycharmPlugin:
 
     def pytest_addoption(self, parser):
