@@ -177,9 +177,6 @@ static PyTypeObject CustomType = {
 
 //
 
-PyDoc_STRVAR(_junk_doc,
-             "Tools that operate on functions.");
-
 static PyObject * junk(PyObject *self, PyObject *args)
 {
     return Py_BuildValue("k", 422);
@@ -192,27 +189,59 @@ static PyObject * abctok(PyObject *self, PyObject *args)
     return PyObject_Vectorcall(abc_get_cache_token, NULL, 0, NULL);
 }
 
+//
 
-static PyMethodDef module_methods[] = {
-    {"junk", junk, METH_NOARGS, "junk"},
-    {"abctok", abctok, METH_NOARGS, "abctok"},
-    {NULL, NULL, 0, NULL}
-};
+PyDoc_STRVAR(_junk_doc,
+             "Tools that operate on functions.");
 
-
-static struct PyModuleDef module_def = {
-    .m_base = PyModuleDef_HEAD_INIT,
-    .m_name = "junk",
-    .m_doc = _junk_doc,
-    .m_size = -1,
-    .m_methods = module_methods
-};
-
-
-extern "C" {
-
-PyMODINIT_FUNC PyInit_junk(void)
+static int _junk_exec(PyObject *module)
 {
+    /*
+    _junk_state *state = get_junk_state(module);
+    state->kwd_mark = _PyObject_CallNoArgs((PyObject *)&PyBaseObject_Type);
+    if (state->kwd_mark == NULL) {
+        return -1;
+    }
+
+    state->partial_type = (PyTypeObject *)PyType_FromModuleAndSpec(module,
+                                                                   &partial_type_spec, NULL);
+    if (state->partial_type == NULL) {
+        return -1;
+    }
+    if (PyModule_AddType(module, state->partial_type) < 0) {
+        return -1;
+    }
+
+    PyObject *lru_cache_type = PyType_FromModuleAndSpec(module,
+                                                        &lru_cache_type_spec, NULL);
+    if (lru_cache_type == NULL) {
+        return -1;
+    }
+    if (PyModule_AddType(module, (PyTypeObject *)lru_cache_type) < 0) {
+        Py_DECREF(lru_cache_type);
+        return -1;
+    }
+    Py_DECREF(lru_cache_type);
+
+    state->keyobject_type = (PyTypeObject *)PyType_FromModuleAndSpec(module,
+                                                                     &keyobject_type_spec, NULL);
+    if (state->keyobject_type == NULL) {
+        return -1;
+    }
+    // keyobject_type is used only internally.
+    // So we don't expose it in module namespace.
+
+    state->lru_list_elem_type = (PyTypeObject *)PyType_FromModuleAndSpec(
+            module, &lru_list_elem_type_spec, NULL);
+    if (state->lru_list_elem_type == NULL) {
+        return -1;
+    }
+    // lru_list_elem is used only in _lru_cache_wrapper.
+    // So we don't expose it in module namespace.
+
+    return 0;
+     */
+
     if (PyType_Ready(&CustomType) < 0) {
         return NULL;
     }
@@ -244,6 +273,58 @@ PyMODINIT_FUNC PyInit_junk(void)
     }
 
     return m;
+}
+
+static int _junk_traverse(PyObject *module, visitproc visit, void *arg)
+{
+    _junk_state *state = get_junk_state(module);
+    // Py_VISIT(state->kwd_mark);
+    return 0;
+}
+
+static int
+_junk_clear(PyObject *module)
+{
+    _junk_state *state = get_junk_state(module);
+    // Py_CLEAR(state->kwd_mark);
+    return 0;
+}
+
+static void
+_junk_free(void *module)
+{
+    _junk_clear((PyObject *)module);
+}
+
+static PyMethodDef module_methods[] = {
+    {"junk", junk, METH_NOARGS, "junk"},
+    {"abctok", abctok, METH_NOARGS, "abctok"},
+    {NULL, NULL, 0, NULL}
+};
+
+static struct PyModuleDef_Slot _junk_slots[] = {
+        {Py_mod_exec, _junk_exec},
+        {0, NULL}
+};
+
+static struct PyModuleDef _junk_module = {
+    .m_base = PyModuleDef_HEAD_INIT,
+    .m_name = "junk",
+    .m_doc = _junk_doc,
+    .m_size = sizeof(_junk_state),
+    .m_methods = module_methods,
+    .m_slots = _junk_slots,
+    .m_traverse = _junk_traverse,
+    .m_clear = _junk_clear,
+    .m_free = _junk_free,
+};
+
+
+extern "C" {
+
+PyMODINIT_FUNC PyInit_junk(void)
+{
+    return PyModuleDef_Init(&_junk_module);
 }
 
 }
