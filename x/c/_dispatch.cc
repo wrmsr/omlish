@@ -4,6 +4,7 @@ TODO:
   - with func_name
  - pickle
  - vectorcall
+  - ** both dispatch AND each call **
  - repr
 */
 #define PY_SSIZE_T_CLEAN
@@ -56,6 +57,7 @@ typedef struct {
     PyObject *dispatch;
     PyObject *dict;
     PyObject *weakreflist;
+    vectorcallfunc vectorcall;
 } function_wrapper_object;
 
 static int function_wrapper_traverse(function_wrapper_object *self, visitproc visit, void *arg)
@@ -85,16 +87,18 @@ static void function_wrapper_dealloc(function_wrapper_object *self)
     Py_DECREF(tp);
 }
 
+static PyObject * function_wrapper_vectorcall(function_wrapper_object *self, PyObject *const *args, size_t nargsf, PyObject *kwnames);
+
 static PyObject * function_wrapper_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
     if (PyTuple_GET_SIZE(args) != 1) {
-        PyErr_SetString(PyExc_TypeError, "type 'function_wrapper' takes exactly one argument");
+        PyErr_SetString(PyExc_TypeError, "type 'function_wrapper' takes exactly one positional argument");
         return NULL;
     }
 
     PyObject *dispatch = PyTuple_GET_ITEM(args, 0);
     if (!PyCallable_Check(dispatch)) {
-        PyErr_SetString(PyExc_TypeError, "the first argument must be callable");
+        PyErr_SetString(PyExc_TypeError, "the argument must be callable");
         return NULL;
     }
 
@@ -105,6 +109,7 @@ static PyObject * function_wrapper_new(PyTypeObject *type, PyObject *args, PyObj
     }
 
     self->dispatch = Py_NewRef(dispatch);
+    self->vectorcall = (vectorcallfunc) function_wrapper_vectorcall;
 
     if (kwds != NULL) {
         self->dict = PyDict_Copy(kwds);
@@ -113,15 +118,7 @@ static PyObject * function_wrapper_new(PyTypeObject *type, PyObject *args, PyObj
     return (PyObject *) self;
 }
 
-static PyObject * function_wrapper_call(function_wrapper_object *self, PyObject *args, PyObject *kwargs) {
-    assert(PyCallable_Check(self->dispatch));
-
-    if (PyTuple_GET_SIZE(args) != 1) {
-        PyErr_SetString(PyExc_TypeError, "function_wrapper takes exactly one argument");
-        return NULL;
-    }
-
-    PyObject *arg = PyTuple_GET_ITEM(args, 0);
+static PyObject * function_wrapper_do_dispatch(function_wrapper_object *self, PyObject *arg) {
     PyTypeObject *arg_ty = Py_TYPE(arg);
 
     PyObject *disp_args;
@@ -134,6 +131,19 @@ static PyObject * function_wrapper_call(function_wrapper_object *self, PyObject 
 
     Py_DECREF(disp_args);
 
+    return disp_res;
+}
+
+static PyObject * function_wrapper_call(function_wrapper_object *self, PyObject *args, PyObject *kwargs) {
+    assert(PyCallable_Check(self->dispatch));
+
+    if (PyTuple_GET_SIZE(args) < 1) {
+        PyErr_SetString(PyExc_TypeError, "function_wrapper takes at least one positional argument");
+        return NULL;
+    }
+
+    PyObject *arg = PyTuple_GET_ITEM(args, 0);
+    PyObject *disp_res = function_wrapper_do_dispatch(self, arg);
     if (disp_res == NULL) {
         return NULL;
     }
@@ -147,13 +157,31 @@ static PyObject * function_wrapper_call(function_wrapper_object *self, PyObject 
 
 static PyObject * function_wrapper_vectorcall(function_wrapper_object *self, PyObject *const *args, size_t nargsf, PyObject *kwnames)
 {
-    return NULL;
+    assert(PyCallable_Check(self->dispatch));
+
+    if (PyVectorcall_NARGS(nargsf) < 1) {
+        PyErr_SetString(PyExc_TypeError, "function_wrapper takes at least one positional argument");
+        return NULL;
+    }
+
+    PyObject *arg = args[0];
+    PyObject *disp_res = function_wrapper_do_dispatch(self, arg);
+    if (disp_res == NULL) {
+        return NULL;
+    }
+
+    PyObject *res = PyObject_Vectorcall(disp_res, args, nargsf, kwnames);
+
+    Py_DECREF(disp_res);
+
+    return res;
 }
 
 static PyMemberDef function_wrapper_members[] = {
     {"dispatch", T_OBJECT, offsetof(function_wrapper_object, dispatch), READONLY},
     {"__weaklistoffset__", T_PYSSIZET, offsetof(function_wrapper_object, weakreflist), READONLY},
     {"__dictoffset__", T_PYSSIZET, offsetof(function_wrapper_object, dict), READONLY},
+    {"__vectorcalloffset__", T_PYSSIZET, offsetof(function_wrapper_object , vectorcall), READONLY},
     {NULL}
 };
 
@@ -184,7 +212,8 @@ static PyType_Spec function_wrapper_type_spec = {
         .basicsize = sizeof(function_wrapper_object),
         .itemsize = 0,
         .flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC |
-                 Py_TPFLAGS_BASETYPE | Py_TPFLAGS_IMMUTABLETYPE,
+                 Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_VECTORCALL |
+                 Py_TPFLAGS_IMMUTABLETYPE,
         .slots = function_wrapper_type_slots
 };
 
