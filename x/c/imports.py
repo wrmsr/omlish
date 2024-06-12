@@ -66,13 +66,17 @@ def _main():
 
     def barf(x: object) -> str:
         """hi i do barf"""
-        return 'barf str!'
+        return f'barf str! {x!r}'
+
+    print(os.getpid())
+    input()
 
     from . import _dispatch  # noqa
-    fw = functools.wraps(barf)(_dispatch.function_wrapper('foo'))
+    fw = functools.wraps(barf)(_dispatch.function_wrapper(barf))
 
     print(fw)
     print(fw.dispatch)
+    print(fw(10))
 
 
 if __name__ == '__main__':
