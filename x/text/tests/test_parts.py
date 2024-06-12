@@ -1,4 +1,4 @@
-from .. import rendering as r
+from .. import parts as r
 
 
 def test_rendering():
