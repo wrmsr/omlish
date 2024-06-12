@@ -143,6 +143,38 @@ class Dispatcher(ta.Generic[T]):
 ##
 
 
+class _Dispatcher(ta.Generic[T], abc.ABC):
+
+    @abc.abstractmethod
+    def register(self, impl: U, cls_col: ta.Iterable[type]) -> U:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def dispatch(self, cls: type) -> ta.Optional[T]:
+        raise NotImplementedError
+
+
+class _DispatchCache(ta.Protocol):
+    def remove(self, k: type) -> ta.Any: ...
+    def clear(self) -> None: ...
+    def get(self, k: type) -> ta.Any: ...  # Raises[KeyError]
+    def put(self, k: type, v: ta.Any) -> None: ...
+
+
+class _DefaultDispatchCache:
+    def remove(self, k: type) -> ta.Any:
+        raise NotImplementedError
+
+    def clear(self) -> None:
+        raise NotImplementedError
+
+    def get(self, k: type) -> ta.Any:
+        raise NotImplementedError
+
+    def put(self, k: type, v: ta.Any) -> None:
+        raise NotImplementedError
+
+
 # class _Dispatcher(ta.Generic[T]):
 #     def __init__(self) -> None:
 #         super().__init__()
