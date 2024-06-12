@@ -82,7 +82,7 @@ static PyObject * function_wrapper_new(PyTypeObject *type, PyObject *args, PyObj
         PyErr_SetString(PyExc_TypeError, "type 'function_wrapper' takes exactly one argument");
         return NULL;
     }
-    if (PyDict_GET_SIZE(kwds) != 0) {
+    if (kwds != NULL && PyDict_GET_SIZE(kwds) != 0) {
         PyErr_SetString(PyExc_TypeError, "type 'function_wrapper' takes exactly no keyword arguments");
         return NULL;
     }
