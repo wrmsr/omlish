@@ -12,6 +12,7 @@ T = ta.TypeVar('T')
 
 
 class DispatchCacheProtocol(ta.Protocol[T]):
+    def size(self) -> int: ...
     def prepare(self, cls: type) -> None: ...
     def clear(self) -> None: ...
     def put(self, cls: type, impl: T) -> None: ...
@@ -19,6 +20,7 @@ class DispatchCacheProtocol(ta.Protocol[T]):
 
 
 class DispatcherProtocol(ta.Protocol[T]):
+    def cache_size(self) -> int: ...
     def register(self, impl: T, cls_col: ta.Iterable[type]) -> T: ...
     def dispatch(self, cls: type) -> ta.Optional[T]: ...
 
@@ -43,6 +45,9 @@ class DispatchCache(DispatchCacheProtocol[T]):
         self._remove = remove
 
         self._token: ta.Any = None
+
+    def size(self) -> int:
+        return len(self._dct)
 
     def prepare(self, cls: type) -> None:
         if self._token is None and hasattr(cls, '__abstractmethods__'):
@@ -72,6 +77,9 @@ class Dispatcher(DispatcherProtocol[T]):
 
         self._impls_by_arg_cls: dict[type, T] = {}
         self._cache: DispatchCache[ta.Optional[T]] = DispatchCache()
+
+    def cache_size(self) -> int:
+        return self._cache.size()
 
     def register(self, impl: T, cls_col: ta.Iterable[type]) -> T:
         for cls in cls_col:
