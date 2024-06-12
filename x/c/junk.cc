@@ -7,6 +7,7 @@
 //
 
 typedef struct _junk_state {
+    PyTypeObject *Custom_type;
     PyObject *abc_get_cache_token;
 } _junk_state;
 
@@ -156,32 +157,43 @@ static PyMethodDef Custom_methods[] = {
     {NULL}
 };
 
-static PyType_Spec CustomType = {
-    .tp_name = "junk.Custom",
-    .tp_basicsize = sizeof(CustomObject),
-    .tp_itemsize = 0,
-    .tp_dealloc = (destructor) Custom_dealloc,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_GC,
-    .tp_doc = PyDoc_STR("Custom objects"),
-    .tp_traverse = (traverseproc) Custom_traverse,
-    .tp_clear = (inquiry) Custom_clear,
-    .tp_methods = Custom_methods,
-    .tp_members = Custom_members,
-    .tp_getset = Custom_getsetters,
-    .tp_init = (initproc) Custom_init,
-    .tp_new = Custom_new,
+static PyType_Slot Custom_type_slots[] = {
+        {Py_tp_doc, (void *) PyDoc_STR("Custom objects")},
+        {Py_tp_traverse, (void *) Custom_traverse},
+        {Py_tp_clear, (void *) Custom_clear},
+        {Py_tp_methods, Custom_methods},
+        {Py_tp_members, Custom_members},
+        {Py_tp_getset, Custom_getsetters},
+        {Py_tp_init, (void *) Custom_init},
+        {Py_tp_new, (void *) Custom_new},
+        {Py_tp_dealloc, (void *) Custom_dealloc},
+
+        // {Py_tp_getattro, PyObject_GenericGetAttr},
+        // {Py_tp_setattro, PyObject_GenericSetAttr},
+        // {Py_tp_free, PyObject_GC_Del},
+
+        {0, 0}
+};
+
+static PyType_Spec Custom_type_spec = {
+        .name = "functools.Custom",
+        .basicsize = sizeof(CustomObject),
+        .itemsize = 0,
+        .flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC |
+                 Py_TPFLAGS_BASETYPE | Py_TPFLAGS_IMMUTABLETYPE,
+        .slots = Custom_type_slots
 };
 
 //
 
 static PyObject * junk(PyObject *self, PyObject *args)
 {
-    return Py_BuildValue("k", 422);
+    return Py_BuildValue("k", 424);
 }
 
 static PyObject * abctok(PyObject *self, PyObject *args)
 {
-    return PyObject_Vectorcall(abc_get_cache_token, NULL, 0, NULL);
+    return PyObject_Vectorcall(get_junk_state(self)->abc_get_cache_token, NULL, 0, NULL);
 }
 
 //
@@ -191,88 +203,33 @@ PyDoc_STRVAR(_junk_doc,
 
 static int _junk_exec(PyObject *module)
 {
-    /*
     _junk_state *state = get_junk_state(module);
-    state->kwd_mark = _PyObject_CallNoArgs((PyObject *)&PyBaseObject_Type);
-    if (state->kwd_mark == NULL) {
-        return -1;
-    }
 
-    state->partial_type = (PyTypeObject *)PyType_FromModuleAndSpec(module,
-                                                                   &partial_type_spec, NULL);
-    if (state->partial_type == NULL) {
+    state->Custom_type = (PyTypeObject *)PyType_FromModuleAndSpec(module, &Custom_type_spec, NULL);
+    if (state->Custom_type == NULL) {
         return -1;
     }
-    if (PyModule_AddType(module, state->partial_type) < 0) {
+    if (PyModule_AddType(module, state->Custom_type) < 0) {
         return -1;
-    }
-
-    PyObject *lru_cache_type = PyType_FromModuleAndSpec(module,
-                                                        &lru_cache_type_spec, NULL);
-    if (lru_cache_type == NULL) {
-        return -1;
-    }
-    if (PyModule_AddType(module, (PyTypeObject *)lru_cache_type) < 0) {
-        Py_DECREF(lru_cache_type);
-        return -1;
-    }
-    Py_DECREF(lru_cache_type);
-
-    state->keyobject_type = (PyTypeObject *)PyType_FromModuleAndSpec(module,
-                                                                     &keyobject_type_spec, NULL);
-    if (state->keyobject_type == NULL) {
-        return -1;
-    }
-    // keyobject_type is used only internally.
-    // So we don't expose it in module namespace.
-
-    state->lru_list_elem_type = (PyTypeObject *)PyType_FromModuleAndSpec(
-            module, &lru_list_elem_type_spec, NULL);
-    if (state->lru_list_elem_type == NULL) {
-        return -1;
-    }
-    // lru_list_elem is used only in _lru_cache_wrapper.
-    // So we don't expose it in module namespace.
-
-    return 0;
-     */
-
-    if (PyType_Ready(&CustomType) < 0) {
-        return NULL;
     }
 
     PyObject *abc_module = PyImport_ImportModule("abc");
     if (abc_module == NULL) {
-        return NULL;
+        return -1;
     }
-    if ((abc_get_cache_token = PyObject_GetAttrString(abc_module, "get_cache_token")) == NULL) {
+    if ((state->abc_get_cache_token = PyObject_GetAttrString(abc_module, "get_cache_token")) == NULL) {
         Py_DECREF(abc_module);
-        return NULL;
+        return -1;
     }
     Py_DECREF(abc_module);
 
-    PyObject *m;
-
-    m = PyModule_Create(&module_def);
-    if (m == NULL) {
-        Py_DECREF(abc_get_cache_token);
-        return NULL;
-    }
-
-    Py_INCREF(&CustomType);
-    if (PyModule_AddObject(m, "Custom", (PyObject *) &CustomType) < 0) {
-        Py_DECREF(abc_get_cache_token);
-        Py_DECREF(&CustomType);
-        Py_DECREF(m);
-        return NULL;
-    }
-
-    return m;
+    return 0;
 }
 
 static int _junk_traverse(PyObject *module, visitproc visit, void *arg)
 {
     _junk_state *state = get_junk_state(module);
+    Py_VISIT(state->Custom_type);
     Py_VISIT(state->abc_get_cache_token);
     return 0;
 }
@@ -280,6 +237,7 @@ static int _junk_traverse(PyObject *module, visitproc visit, void *arg)
 static int _junk_clear(PyObject *module)
 {
     _junk_state *state = get_junk_state(module);
+    Py_CLEAR(state->Custom_type);
     Py_CLEAR(state->abc_get_cache_token);
     return 0;
 }
@@ -296,7 +254,7 @@ static PyMethodDef module_methods[] = {
 };
 
 static struct PyModuleDef_Slot _junk_slots[] = {
-        {Py_mod_exec, _junk_exec},
+        {Py_mod_exec, (void *) _junk_exec},
         {0, NULL}
 };
 
