@@ -7,17 +7,15 @@
 //
 
 typedef struct _junk_state {
-
+    PyObject *abc_get_cache_token;
 } _junk_state;
 
-static inline _junk_state *
-get_junk_state(PyObject *module)
+static inline _junk_state * get_junk_state(PyObject *module)
 {
     void *state = PyModule_GetState(module);
     assert(state != NULL);
     return (_junk_state *)state;
 }
-
 
 //
 
@@ -158,8 +156,7 @@ static PyMethodDef Custom_methods[] = {
     {NULL}
 };
 
-static PyTypeObject CustomType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
+static PyType_Spec CustomType = {
     .tp_name = "junk.Custom",
     .tp_basicsize = sizeof(CustomObject),
     .tp_itemsize = 0,
@@ -181,8 +178,6 @@ static PyObject * junk(PyObject *self, PyObject *args)
 {
     return Py_BuildValue("k", 422);
 }
-
-static PyObject *abc_get_cache_token = NULL;
 
 static PyObject * abctok(PyObject *self, PyObject *args)
 {
@@ -278,20 +273,18 @@ static int _junk_exec(PyObject *module)
 static int _junk_traverse(PyObject *module, visitproc visit, void *arg)
 {
     _junk_state *state = get_junk_state(module);
-    // Py_VISIT(state->kwd_mark);
+    Py_VISIT(state->abc_get_cache_token);
     return 0;
 }
 
-static int
-_junk_clear(PyObject *module)
+static int _junk_clear(PyObject *module)
 {
     _junk_state *state = get_junk_state(module);
-    // Py_CLEAR(state->kwd_mark);
+    Py_CLEAR(state->abc_get_cache_token);
     return 0;
 }
 
-static void
-_junk_free(void *module)
+static void _junk_free(void *module)
 {
     _junk_clear((PyObject *)module);
 }
