@@ -1,55 +1,23 @@
-/*
-clang,
--Wsign-compare,
--Wunreachable-code,
--DNDEBUG,
--g,
--fwrapv,
--O3,
--Wall
-
--g,
--UBARF,
--I$HOME/src/wrmsr/omlish/.venv/include,
--I$HOME/.pyenv/versions/3.11.8/include/python3.11,
--c
-
--std=c++14
-
-===
-
-clang++
--bundle
--undefined
-dynamic_lookup
--L/opt/homebrew/opt/ncurses/lib
--L/opt/homebrew/opt/readline/lib
--L/opt/homebrew/opt/readline/lib
--L$HOME/.pyenv/versions/3.11.8/lib
--Wl,-rpath,$HOME/.pyenv/versions/3.11.8/lib
--L/opt/homebrew/lib
--Wl,-rpath,/opt/homebrew/lib
--L/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib
--L/opt/homebrew/opt/ncurses/lib
--L/opt/homebrew/opt/readline/lib
--L/opt/homebrew/opt/readline/lib
--L$HOME/.pyenv/versions/3.11.8/lib
--Wl,-rpath,$HOME/.pyenv/versions/3.11.8/lib
--L/opt/homebrew/lib
--Wl,-rpath,/opt/homebrew/lib
--L/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib
-
--g
-build/temp.macosx-12.6-arm64-3.11$HOME/src/wrmsr/omlish/x/c/junk.o
--L$HOME/.pyenv/versions/3.11.8/lib
--o
-$HOME/src/wrmsr/omlish/x/c/junk.cpython-311-darwin.so
-*/
 #define PY_SSIZE_T_CLEAN
 #include "Python.h"
 #include "structmember.h"
 
 #include <unistd.h>
+
+//
+
+typedef struct _junk_state {
+
+} _junk_state;
+
+static inline _junk_state *
+get_junk_state(PyObject *module)
+{
+    void *state = PyModule_GetState(module);
+    assert(state != NULL);
+    return (_junk_state *)state;
+}
+
 
 //
 
@@ -209,11 +177,13 @@ static PyTypeObject CustomType = {
 
 //
 
+PyDoc_STRVAR(_junk_doc,
+             "Tools that operate on functions.");
+
 static PyObject * junk(PyObject *self, PyObject *args)
 {
     return Py_BuildValue("k", 422);
 }
-
 
 static PyObject *abc_get_cache_token = NULL;
 
@@ -233,7 +203,7 @@ static PyMethodDef module_methods[] = {
 static struct PyModuleDef module_def = {
     .m_base = PyModuleDef_HEAD_INIT,
     .m_name = "junk",
-    .m_doc = "junk extension",
+    .m_doc = _junk_doc,
     .m_size = -1,
     .m_methods = module_methods
 };
