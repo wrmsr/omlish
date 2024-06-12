@@ -4,19 +4,13 @@ import weakref
 
 from .. import c3
 from .. import check
+from .. import reflect as rfl
 
 
 T = ta.TypeVar('T')
 
 
 ##
-
-
-def is_union_type(cls: ta.Any) -> bool:
-    if hasattr(ta, 'UnionType'):
-        return ta.get_origin(cls) in {ta.Union, getattr(ta, 'UnionType')}
-    else:
-        return ta.get_origin(cls) in {ta.Union}
 
 
 _IMPL_FUNC_CLS_SET_CACHE: ta.MutableMapping[ta.Callable, ta.FrozenSet[type]] = weakref.WeakKeyDictionary()
@@ -33,7 +27,7 @@ def get_impl_func_cls_set(func: ta.Callable) -> ta.FrozenSet[type]:
         raise TypeError(f'Invalid impl func: {func!r}')
 
     _, cls = next(iter(ta.get_type_hints(func).items()))
-    if is_union_type(cls):
+    if rfl.is_union_type(cls):
         ret = frozenset(check.isinstance(arg, type) for arg in ta.get_args(cls))
     else:
         ret = frozenset([check.isinstance(cls, type)])
