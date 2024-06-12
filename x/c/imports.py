@@ -32,7 +32,7 @@ class CExtensionLoader(importlib.abc.Loader):
         ))
         cmd_obj.build_extension(ext)
 
-        so_path = os.path.join(os.path.dirname(self._path), 'junk.cpython-311-darwin.so')
+        so_path = os.path.join(os.path.dirname(self._path), fullname.rpartition('.')[2] + '.cpython-311-darwin.so')
         return imp.load_dynamic(self._fullname, so_path)
 
 
@@ -57,6 +57,9 @@ def _main():
     from . import junk  # noqa
     print(junk.junk())
     print(junk.abctok())
+
+    from . import _dispatch  # noqa
+    print(_dispatch.function_wrapper('foo'))
 
 
 if __name__ == '__main__':
