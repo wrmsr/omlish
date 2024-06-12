@@ -22,12 +22,16 @@ import re
 import shlex
 import sys
 
-from ._macos_compat import compiler_fixup
-from .options import gen_lib_options, gen_preprocess_options
-from .ccompiler import CCompiler
 from .. import sysconfig
-from ..errors import CompileError, DistutilsExecError, LibError, LinkError
+from ..errors import CompileError
+from ..errors import DistutilsExecError
+from ..errors import LibError
+from ..errors import LinkError
 from ..modified import newer
+from ._macos_compat import compiler_fixup
+from .ccompiler import CCompiler
+from .options import gen_lib_options
+from .options import gen_preprocess_options
 
 
 log = logging.getLogger(__name__)
