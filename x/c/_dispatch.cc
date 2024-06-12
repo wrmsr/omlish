@@ -75,25 +75,12 @@ static PyObject * function_wrapper_new(PyTypeObject *type, PyObject *args, PyObj
 
 static int function_wrapper_init(function_wrapper_object *self, PyObject *args, PyObject *kwds)
 {
-    static const char *kwlist[] = {"first", "last", "number", NULL};
-    PyObject *first = NULL, *last = NULL, *tmp;
+    static const char *kwlist[] = {"dispatch", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|UUi", (char **)kwlist, &first, &last, &self->number)) {
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", (char **)kwlist, &self->dispatch)) {
         return -1;
     }
 
-    if (first) {
-        tmp = self->first;
-        Py_INCREF(first);
-        self->first = first;
-        Py_DECREF(tmp);
-    }
-    if (last) {
-        tmp = self->last;
-        Py_INCREF(last);
-        self->last = last;
-        Py_DECREF(tmp);
-    }
     return 0;
 }
 
@@ -127,7 +114,7 @@ static PyType_Slot function_wrapper_type_slots[] = {
 };
 
 static PyType_Spec function_wrapper_type_spec = {
-        .name = "functools.function_wrapper",
+        .name = "_dispatch.function_wrapper",
         .basicsize = sizeof(function_wrapper_object),
         .itemsize = 0,
         .flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC |
