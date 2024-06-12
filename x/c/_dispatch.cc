@@ -124,7 +124,7 @@ static PyObject * function_wrapper_call(function_wrapper_object *self, PyObject 
     if ((disp_args = PyTuple_New(1)) == NULL) {
         return NULL;
     }
-    PyTuple_SET_ITEM(disp_args, 0, arg_ty);
+    PyTuple_SET_ITEM(disp_args, 0, Py_NewRef(arg_ty));
 
     PyObject *disp_res = PyObject_Call(self->dispatch, disp_args, NULL);
 
