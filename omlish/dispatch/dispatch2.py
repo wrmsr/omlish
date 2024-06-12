@@ -30,6 +30,9 @@ class Dispatcher(ta.Generic[T]):
 
         self._cache_token: ta.Any = None
 
+    def cache_size(self) -> int:
+        return len(self._dispatch_cache)
+
     def register(self, impl: T, cls_col: ta.Iterable[type]) -> T:
         for cls in cls_col:
             self._impls_by_arg_cls[cls] = impl
