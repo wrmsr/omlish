@@ -14,17 +14,6 @@ def function(func):
     disp.register(func, [object])
 
     func_name = getattr(func, '__name__', 'singledispatch function')
-    disp_dispatch = disp.dispatch
-
-    # @functools.wraps(func)
-    # def wrapper(*args, **kwargs):
-    #     if not args:
-    #         raise TypeError(f'{func_name} requires at least 1 positional argument')
-    #     if (impl := disp_dispatch(type(args[0]))) is not None:
-    #         return impl(*args, **kwargs)
-    #     raise RuntimeError(f'No dispatch: {type(args[0])}')
-
-    wrapper = functools.wraps(func)(function_wrapper(disp_dispatch))
 
     def register(impl, cls=None):
         check.callable(impl)
@@ -36,6 +25,24 @@ def function(func):
         disp.register(impl, cls_col)
         return impl
 
-    wrapper.register = register  # type: ignore
+    # disp_dispatch = disp.dispatch
+    #
+    # @functools.wraps(func)
+    # def wrapper(*args, **kwargs):
+    #     if not args:
+    #         raise TypeError(f'{func_name} requires at least 1 positional argument')
+    #     if (impl := disp_dispatch(type(args[0]))) is not None:
+    #         return impl(*args, **kwargs)
+    #     raise RuntimeError(f'No dispatch: {type(args[0])}')
+    # wrapper.register = register  # type: ignore
     # wrapper.dispatch = disp.dispatch  # type: ignore
+
+    wrapper = function_wrapper(
+        disp.dispatch,
+        **{k: getattr(func, k) for k in functools.WRAPPER_ASSIGNMENTS if hasattr(func, k)},
+        __wrapped__=func,
+        register=register,
+        dispatcher=disp,
+    )
+
     return wrapper
