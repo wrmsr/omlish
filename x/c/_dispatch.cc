@@ -1,5 +1,7 @@
 /*
 TODO:
+ - error handle no arg / no dispatched type (NULL / None)
+  - with func_name
  - pickle
  - vectorcall
  - repr
@@ -11,6 +13,8 @@ TODO:
 #include <unistd.h>
 
 //
+
+#define _MODULE_NAME "x.c._dispatch"
 
 //static struct PyModuleDef _dispatch_module;
 
@@ -87,10 +91,6 @@ static PyObject * function_wrapper_new(PyTypeObject *type, PyObject *args, PyObj
         PyErr_SetString(PyExc_TypeError, "type 'function_wrapper' takes exactly one argument");
         return NULL;
     }
-    if (kwds != NULL && PyDict_GET_SIZE(kwds) != 0) {
-        PyErr_SetString(PyExc_TypeError, "type 'function_wrapper' takes exactly no keyword arguments");
-        return NULL;
-    }
 
     PyObject *dispatch = PyTuple_GET_ITEM(args, 0);
     if (!PyCallable_Check(dispatch)) {
@@ -105,6 +105,10 @@ static PyObject * function_wrapper_new(PyTypeObject *type, PyObject *args, PyObj
     }
 
     self->dispatch = Py_NewRef(dispatch);
+
+    if (kwds != NULL) {
+        self->dict = PyDict_Copy(kwds);
+    }
 
     return (PyObject *) self;
 }
@@ -171,7 +175,7 @@ static PyType_Slot function_wrapper_type_slots[] = {
 };
 
 static PyType_Spec function_wrapper_type_spec = {
-        .name = "_dispatch.function_wrapper",
+        .name = _MODULE_NAME ".function_wrapper",
         .basicsize = sizeof(function_wrapper_object),
         .itemsize = 0,
         .flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC |
@@ -226,7 +230,7 @@ static struct PyModuleDef_Slot _dispatch_slots[] = {
 
 static struct PyModuleDef _dispatch_module = {
     .m_base = PyModuleDef_HEAD_INIT,
-    .m_name = "_dispatch",
+    .m_name = _MODULE_NAME,
     .m_size = sizeof(_dispatch_state),
     .m_methods = _dispatch_methods,
     .m_slots = _dispatch_slots,
