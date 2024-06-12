@@ -29,8 +29,8 @@ black==24.4.2
 bleach==6.1.0
 blis==0.7.11
 blobfile==2.1.1
-boto3==1.34.123
-botocore==1.34.123
+boto3==1.34.125
+botocore==1.34.125
 bs4==0.0.2
 bsddb3==6.2.9
 build==1.2.1
@@ -186,7 +186,7 @@ pandas==2.2.2
 pandocfilters==1.5.1
 parso==0.8.4
 pathspec==0.12.1
-peft @ git+https://github.com/huggingface/peft.git@47b3d7422ab391e9a98191d4c8d41c4ae13da963
+peft @ git+https://github.com/huggingface/peft.git@2f5360a7da22a236b5ad4c059572fff5321c867c
 pexpect==4.9.0
 pg8000==1.31.2
 pgcli==4.1.0
@@ -219,7 +219,7 @@ pyasn1_modules==0.4.0
 pycodestyle==2.11.1
 pycparser==2.22
 pycryptodomex==3.20.0
-pydantic==2.7.3
+pydantic==2.7.4
 pydantic_core==2.18.4
 pyflakes==3.1.0
 Pygments==2.18.0
@@ -293,7 +293,7 @@ spacy-legacy==3.0.12
 spacy-loggers==1.0.5
 SPARQLWrapper==1.8.5
 SQLAlchemy==2.0.30
-sqlglot==25.0.3
+sqlglot==25.1.0
 sqlparse==0.4.4
 srsly==2.4.8
 stack-data==0.6.3
