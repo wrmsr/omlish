@@ -1,3 +1,9 @@
+/*
+TODO:
+ - pickle
+ - vectorcall
+ - repr
+*/
 #define PY_SSIZE_T_CLEAN
 #include "Python.h"
 #include "structmember.h"
@@ -29,7 +35,6 @@ static inline _dispatch_state * get_dispatch_state(PyObject *module)
 //    }
 //    return get_dispatch_state(module);
 //}
-
 
 //
 
@@ -107,7 +112,32 @@ static PyObject * function_wrapper_new(PyTypeObject *type, PyObject *args, PyObj
 static PyObject * function_wrapper_call(function_wrapper_object *self, PyObject *args, PyObject *kwargs) {
     assert(PyCallable_Check(self->dispatch));
 
-    PyObject *res = PyObject_Call(self->dispatch, args, kwargs);
+    if (PyTuple_GET_SIZE(args) != 1) {
+        PyErr_SetString(PyExc_TypeError, "function_wrapper takes exactly one argument");
+        return NULL;
+    }
+
+    PyObject *arg = PyTuple_GET_ITEM(args, 0);
+    PyTypeObject *arg_ty = Py_TYPE(arg);
+
+    PyObject *disp_args;
+    if ((disp_args = PyTuple_New(1)) == NULL) {
+        return NULL;
+    }
+    PyTuple_SET_ITEM(disp_args, 0, arg_ty);
+
+    PyObject *disp_res = PyObject_Call(self->dispatch, disp_args, NULL);
+
+    Py_DECREF(disp_args);
+
+    if (disp_res == NULL) {
+        return NULL;
+    }
+
+    PyObject *res = PyObject_Call(disp_res, args, kwargs);
+
+    Py_DECREF(disp_res);
+
     return res;
 }
 
@@ -119,7 +149,7 @@ static PyMemberDef function_wrapper_members[] = {
 };
 
 static PyGetSetDef function_wrapper_getsetters[] = {
-        {"__dict__", PyObject_GenericGetDict, PyObject_GenericSetDict},
+    {"__dict__", PyObject_GenericGetDict, PyObject_GenericSetDict},
     {NULL}
 };
 
