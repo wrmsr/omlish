@@ -7,7 +7,6 @@ from .. import check
 
 
 T = ta.TypeVar('T')
-U = ta.TypeVar('U')
 
 
 ##
@@ -78,7 +77,7 @@ class Dispatcher(ta.Generic[T]):
         impls_by_arg_cls: dict[type, T] = {}
         self._impls_by_arg_cls = impls_by_arg_cls
 
-        dispatch_cache: dict[ta.Any, T] = {}
+        dispatch_cache: dict[ta.Any, ta.Optional[T]] = {}
         self._get_dispatch_cache = lambda: dispatch_cache
 
         def cache_remove(k, self_ref=weakref.ref(self)):
@@ -108,21 +107,22 @@ class Dispatcher(ta.Generic[T]):
                 pass
             del cls_ref
 
+            impl: T | None
             try:
                 impl = impls_by_arg_cls[cls]
             except KeyError:
-                impl = find_impl(cls, impls_by_arg_cls)  # type: ignore
+                impl = find_impl(cls, impls_by_arg_cls)
 
             dispatch_cache[weakref_ref_(cls, cache_remove)] = impl
             return impl
 
         self.dispatch = dispatch
 
-        def register(impl: U, cls_col: ta.Iterable[type]) -> U:
+        def register(impl: T, cls_col: ta.Iterable[type]) -> T:
             nonlocal cache_token
 
             for cls in cls_col:
-                impls_by_arg_cls[cls] = impl  # type: ignore
+                impls_by_arg_cls[cls] = impl
 
                 if cache_token is None and hasattr(cls, '__abstractmethods__'):
                     cache_token = abc.get_cache_token()
@@ -137,4 +137,4 @@ class Dispatcher(ta.Generic[T]):
 
     dispatch: ta.Callable[[type], ta.Optional[T]]
 
-    register: ta.Callable[[U, ta.Iterable[type]], U]
+    register: ta.Callable[[T, ta.Iterable[type]], T]
