@@ -54,12 +54,25 @@ def _main():
 
     install()
 
+    ##
+
     from . import junk  # noqa
     print(junk.junk())
     print(junk.abctok())
 
+    ##
+
+    import functools
+
+    def barf(x: object) -> str:
+        """hi i do barf"""
+        return 'barf str!'
+
     from . import _dispatch  # noqa
-    print(_dispatch.function_wrapper('foo'))
+    fw = functools.wraps(barf)(_dispatch.function_wrapper('foo'))
+
+    print(fw)
+    print(fw.dispatch)
 
 
 if __name__ == '__main__':
