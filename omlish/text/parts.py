@@ -27,40 +27,33 @@ def _check_part(o: PartT) -> PartT:
     return o
 
 
-@dc.dataclass(frozen=True)
-class DataPart(lang.Abstract):
+class DataPart(dc.Frozen, lang.Abstract):
     pass
 
 
-@dc.dataclass(frozen=True)
 class Wrap(DataPart, lang.Final):
-    part: Part = dc.field(coerce=_check_part)  # type: ignore
-    wrapper: ta.Tuple[str, str] = ('(', ')')
+    part: Part = dc.xfield(coerce=_check_part)
+    wrapper: tuple[str, str] = ('(', ')')
 
 
-@dc.dataclass(frozen=True)
 class List(DataPart, lang.Final):
-    parts: ta.Sequence[ta.Optional[Part]] = dc.field(coerce=col.seq_of(_check_part))  # type: ignore
+    parts: ta.Sequence[ta.Optional[Part]] = dc.xfield(coerce=col.seq_of(_check_part))
     delimiter: str = dc.field(default=',')  # FIXME: , check_type=str)
     trailer: bool = dc.field(default=False)  # FIXME: , check_type=bool)
 
 
-@dc.dataclass(frozen=True)
 class Concat(DataPart, lang.Final):
-    parts: ta.Sequence[Part] = dc.field(coerce=col.seq_of(_check_part))  # type: ignore
+    parts: ta.Sequence[Part] = dc.xfield(coerce=col.seq_of(_check_part))
 
 
-@dc.dataclass(frozen=True)
 class Block(DataPart, lang.Final):
-    parts: ta.Sequence[Part] = dc.field(coerce=col.seq_of(_check_part))  # type: ignore
+    parts: ta.Sequence[Part] = dc.xfield(coerce=col.seq_of(_check_part))
 
 
-@dc.dataclass(frozen=True)
 class Section(DataPart, lang.Final):
-    parts: ta.Sequence[Part] = dc.field(coerce=col.seq_of(_check_part))  # type: ignore
+    parts: ta.Sequence[Part] = dc.xfield(coerce=col.seq_of(_check_part))
 
 
-@dc.dataclass(frozen=True)
 class Meta(DataPart, lang.Final):
     node: ta.Any
 
