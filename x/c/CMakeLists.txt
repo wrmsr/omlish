@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.9)
 
 project(junk)
 
-add_library(junk SHARED
+add_library(junk MODULE
         junk.cc
 )
 
@@ -24,4 +24,13 @@ target_compile_options(junk PUBLIC
         -c
 
         -std=c++14
+)
+
+target_link_directories(junk PUBLIC
+        $ENV{HOME}/.pyenv/versions/3.11.8/lib
+)
+
+target_link_libraries(junk
+        -bundle
+        "-undefined dynamic_lookup"
 )
