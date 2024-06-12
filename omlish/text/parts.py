@@ -2,11 +2,11 @@ import collections.abc
 import io
 import typing as ta
 
-from omlish import check
-from omlish import collections as col
-from omlish import dataclasses as dc
-from omlish import dispatch
-from omlish import lang
+from .. import check
+from .. import collections as col
+from .. import dataclasses as dc
+from .. import dispatch
+from .. import lang
 
 
 T = ta.TypeVar('T')
@@ -14,6 +14,9 @@ T = ta.TypeVar('T')
 
 Part: ta.TypeAlias = ta.Union[str, ta.Sequence['Part'], 'DataPart']
 PartT = ta.TypeVar('PartT', bound=Part)
+
+
+##
 
 
 def _check_part(o: PartT) -> PartT:
@@ -27,6 +30,15 @@ def _check_part(o: PartT) -> PartT:
     return o
 
 
+def _check_optional_part(o: ta.Optional[PartT]) -> ta.Optional[PartT]:
+    if o is None:
+        return None
+    return _check_part(o)
+
+
+##
+
+
 class DataPart(dc.Frozen, lang.Abstract):
     pass
 
@@ -37,7 +49,7 @@ class Wrap(DataPart, lang.Final):
 
 
 class List(DataPart, lang.Final):
-    parts: ta.Sequence[ta.Optional[Part]] = dc.xfield(coerce=col.seq_of(_check_part))
+    parts: ta.Sequence[ta.Optional[Part]] = dc.xfield(coerce=col.seq_of(_check_optional_part))
     delimiter: str = dc.field(default=',')  # FIXME: , check_type=str)
     trailer: bool = dc.field(default=False)  # FIXME: , check_type=bool)
 
@@ -56,6 +68,9 @@ class Section(DataPart, lang.Final):
 
 class Meta(DataPart, lang.Final):
     node: ta.Any
+
+
+##
 
 
 class PartTransform:
@@ -96,6 +111,9 @@ class PartTransform:
         return part
 
 
+##
+
+
 class RemoveMetas(PartTransform):
 
     @PartTransform.__call__.register
@@ -104,6 +122,9 @@ class RemoveMetas(PartTransform):
 
 
 remove_metas = RemoveMetas()
+
+
+##
 
 
 def _drop_empties(it: ta.Iterable[T]) -> list[T]:
@@ -146,6 +167,9 @@ class CompactPart(PartTransform):
 
 
 compact_part = CompactPart()
+
+
+##
 
 
 class PartRenderer:
