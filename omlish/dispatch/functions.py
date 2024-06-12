@@ -5,8 +5,8 @@ from .. import check
 from .dispatch import Dispatcher
 from .dispatch import get_impl_func_cls_set
 
-# from ._dispatch import new_function_wrapper
-from x.c._dispatch import function_wrapper  # noqa
+
+USE_EXTENSION = True
 
 
 def function(func):
@@ -25,24 +25,27 @@ def function(func):
         disp.register(impl, cls_col)
         return impl
 
-    # disp_dispatch = disp.dispatch
-    #
-    # @functools.wraps(func)
-    # def wrapper(*args, **kwargs):
-    #     if not args:
-    #         raise TypeError(f'{func_name} requires at least 1 positional argument')
-    #     if (impl := disp_dispatch(type(args[0]))) is not None:
-    #         return impl(*args, **kwargs)
-    #     raise RuntimeError(f'No dispatch: {type(args[0])}')
-    # wrapper.register = register  # type: ignore
-    # wrapper.dispatch = disp.dispatch  # type: ignore
+    if not USE_EXTENSION:
+        disp_dispatch = disp.dispatch
 
-    wrapper = function_wrapper(
-        disp.dispatch,
-        **{k: getattr(func, k) for k in functools.WRAPPER_ASSIGNMENTS if hasattr(func, k)},
-        __wrapped__=func,
-        register=register,
-        dispatcher=disp,
-    )
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            if not args:
+                raise TypeError(f'{func_name} requires at least 1 positional argument')
+            if (impl := disp_dispatch(type(args[0]))) is not None:
+                return impl(*args, **kwargs)
+            raise RuntimeError(f'No dispatch: {type(args[0])}')
+        wrapper.register = register  # type: ignore
+        wrapper.dispatch = disp.dispatch  # type: ignore
+
+    else:
+        from x.c._dispatch import function_wrapper  # noqa
+        wrapper = function_wrapper(
+            disp.dispatch,
+            **{k: getattr(func, k) for k in functools.WRAPPER_ASSIGNMENTS if hasattr(func, k)},
+            __wrapped__=func,
+            register=register,
+            dispatcher=disp,
+        )
 
     return wrapper
