@@ -3,8 +3,6 @@ TODO:
  - error handle no arg / no dispatched type (NULL / None)
   - with func_name
  - pickle
- - vectorcall
-  - ** both dispatch AND each call **
  - repr
 */
 #define PY_SSIZE_T_CLEAN
@@ -121,15 +119,8 @@ static PyObject * function_wrapper_new(PyTypeObject *type, PyObject *args, PyObj
 static PyObject * function_wrapper_do_dispatch(function_wrapper_object *self, PyObject *arg) {
     PyTypeObject *arg_ty = Py_TYPE(arg);
 
-    PyObject *disp_args;
-    if ((disp_args = PyTuple_New(1)) == NULL) {
-        return NULL;
-    }
-    PyTuple_SET_ITEM(disp_args, 0, Py_NewRef(arg_ty));
-
-    PyObject *disp_res = PyObject_Call(self->dispatch, disp_args, NULL);
-
-    Py_DECREF(disp_args);
+    PyObject *args[2] = {NULL, (PyObject *) arg_ty};
+    PyObject *disp_res = PyObject_Vectorcall(self->dispatch, &args[1], 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
 
     return disp_res;
 }
