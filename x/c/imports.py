@@ -71,8 +71,11 @@ def _main():
     print(os.getpid())
     input()
 
+    def return_barf(ty):
+        return barf
+
     from . import _dispatch  # noqa
-    fw = functools.wraps(barf)(_dispatch.function_wrapper(barf))
+    fw = functools.wraps(barf)(_dispatch.function_wrapper(return_barf))
 
     print(fw)
     print(fw.dispatch)
