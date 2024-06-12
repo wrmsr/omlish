@@ -217,7 +217,6 @@ static PyObject * junk(PyObject *self, PyObject *args)
 
 static PyObject *abc_get_cache_token = NULL;
 
-
 static PyObject * abctok(PyObject *self, PyObject *args)
 {
     return PyObject_Vectorcall(abc_get_cache_token, NULL, 0, NULL);
@@ -232,11 +231,11 @@ static PyMethodDef module_methods[] = {
 
 
 static struct PyModuleDef module_def = {
-    PyModuleDef_HEAD_INIT,
-    "junk",
-    "junk extension",
-    -1,
-    module_methods
+    .m_base = PyModuleDef_HEAD_INIT,
+    .m_name = "junk",
+    .m_doc = "junk extension",
+    .m_size = -1,
+    .m_methods = module_methods
 };
 
 
