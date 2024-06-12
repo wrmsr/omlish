@@ -7,8 +7,13 @@ import typing as ta
 from omlish import lang
 
 
+ANTLR_REPO_URL = 'https://github.com/antlr/antlr4'
 ANTLR_VERSION = '4.13.1'
+
+PYBIND_REPO_URL = 'https://github.com/pybind/pybind11'
 PYBIND_VERSION = '2.11.1'
+
+# PYBIND_REPO_URL = 'https://github.com/google/pybind11k'  # TODO
 
 
 def _git_clone_subtree(
@@ -112,7 +117,7 @@ class Builder:
         if not os.path.exists(d):
             _git_clone_subtree(
                 base_dir=self.build_dir(),
-                repo_url='https://github.com/antlr/antlr4',
+                repo_url=ANTLR_REPO_URL,
                 branch_name=ANTLR_VERSION,
                 repo_dir='antlr4',
                 repo_subtree='runtime/Cpp/runtime/src',
@@ -125,7 +130,7 @@ class Builder:
         if not os.path.exists(d):
             _git_clone_subtree(
                 base_dir=self.build_dir(),
-                repo_url='https://github.com/pybind/pybind11',
+                repo_url=PYBIND_REPO_URL,
                 branch_name=f'v{PYBIND_VERSION}',
                 repo_dir='pybind11',
                 repo_subtree='include',
