@@ -30,6 +30,7 @@ class PycharmPlugin:
         frames = []
         while traceback:
             # FIXME: 3.12 DUPLICATE FRAME IDENTITIES!! prob same shit as greenlet/trio, need to 'pin'
+            # FIXME: uhh it happens in 3.11 too and that works lol
             frames.append(traceback.tb_frame)
             traceback = traceback.tb_next
 
