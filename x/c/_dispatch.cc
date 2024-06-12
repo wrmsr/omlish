@@ -37,22 +37,29 @@ typedef struct {
 
 static int function_wrapper_traverse(function_wrapper_object *self, visitproc visit, void *arg)
 {
+    Py_VISIT(Py_TYPE(self));
+    Py_VISIT(self->dispatch);
+    Py_VISIT(self->dict);
     return 0;
 }
 
 static int function_wrapper_clear(function_wrapper_object *self)
 {
+    Py_CLEAR(self->dispatch);
+    Py_CLEAR(self->dict);
     return 0;
 }
 
 static void function_wrapper_dealloc(function_wrapper_object *self)
 {
+    PyTypeObject *tp = Py_TYPE(self);
     PyObject_GC_UnTrack(self);
     if (self->weakreflist != NULL) {
         PyObject_ClearWeakRefs((PyObject *) self);
     }
     function_wrapper_clear(self);
-    Py_TYPE(self)->tp_free((PyObject *) self);
+    tp->tp_free((PyObject *) self);
+    Py_DECREF(tp);
 }
 
 static PyObject * function_wrapper_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
@@ -91,12 +98,14 @@ static int function_wrapper_init(function_wrapper_object *self, PyObject *args, 
 }
 
 static PyMemberDef function_wrapper_members[] = {
-    {"__weaklistoffset__", T_PYSSIZET, offsetof(function_wrapper_object , weakreflist), READONLY},
+    {"dispatch", T_OBJECT, offsetof(function_wrapper_object, dispatch), READONLY},
+    {"__weaklistoffset__", T_PYSSIZET, offsetof(function_wrapper_object, weakreflist), READONLY},
     {"__dictoffset__", T_PYSSIZET, offsetof(function_wrapper_object, dict), READONLY},
     {NULL}
 };
 
 static PyGetSetDef function_wrapper_getsetters[] = {
+        {"__dict__", PyObject_GenericGetDict, PyObject_GenericSetDict},
     {NULL}
 };
 
