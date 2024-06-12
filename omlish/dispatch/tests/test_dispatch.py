@@ -42,11 +42,11 @@ def test_weaks():
             assert disp.dispatch(B) == 'A'
 
     for _ in range(2):
-        assert len(disp._get_dispatch_cache()) == 2
+        assert disp.cache_size() == 2
         inner()
-        assert len(disp._get_dispatch_cache()) == 3
+        assert disp.cache_size() == 3
         gc.collect()
-        assert len(disp._get_dispatch_cache()) == 2
+        assert disp.cache_size() == 2
 
     for _ in range(10):
         inner()

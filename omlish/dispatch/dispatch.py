@@ -135,6 +135,9 @@ class Dispatcher(ta.Generic[T]):
     _get_cache_token: ta.Callable[[], int]
     _get_dispatch_cache: ta.Callable[[], ta.Any]
 
+    def cache_size(self) -> int:
+        return len(self._get_dispatch_cache())
+
     dispatch: ta.Callable[[type], ta.Optional[T]]
 
     register: ta.Callable[[T, ta.Iterable[type]], T]
