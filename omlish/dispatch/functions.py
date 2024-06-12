@@ -6,6 +6,7 @@ from .dispatch import Dispatcher
 from .dispatch import get_impl_func_cls_set
 
 # from ._dispatch import new_function_wrapper
+from x.c._dispatch import function_wrapper  # noqa
 
 
 def function(func):
@@ -15,15 +16,15 @@ def function(func):
     func_name = getattr(func, '__name__', 'singledispatch function')
     disp_dispatch = disp.dispatch
 
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        if not args:
-            raise TypeError(f'{func_name} requires at least 1 positional argument')
-        if (impl := disp_dispatch(type(args[0]))) is not None:
-            return impl(*args, **kwargs)
-        raise RuntimeError(f'No dispatch: {type(args[0])}')
+    # @functools.wraps(func)
+    # def wrapper(*args, **kwargs):
+    #     if not args:
+    #         raise TypeError(f'{func_name} requires at least 1 positional argument')
+    #     if (impl := disp_dispatch(type(args[0]))) is not None:
+    #         return impl(*args, **kwargs)
+    #     raise RuntimeError(f'No dispatch: {type(args[0])}')
 
-    # wrapper = functools.wraps(func)(new_function_wrapper(func_name, disp_dispatch))
+    wrapper = functools.wraps(func)(function_wrapper(disp_dispatch))
 
     def register(impl, cls=None):
         check.callable(impl)
@@ -36,5 +37,5 @@ def function(func):
         return impl
 
     wrapper.register = register  # type: ignore
-    wrapper.dispatch = disp.dispatch  # type: ignore
+    # wrapper.dispatch = disp.dispatch  # type: ignore
     return wrapper
