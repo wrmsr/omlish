@@ -37,10 +37,10 @@ class DelimitedEscaping:
     def escape_char(self) -> str:
         return self._escape_char
 
-    def escaped_chars(self) -> ta.FrozenSet[str]:
+    def escaped_chars(self) -> frozenset[str]:
         return self._escaped_chars
 
-    def all_escaped_chars(self) -> ta.FrozenSet[str]:
+    def all_escaped_chars(self) -> frozenset[str]:
         return self._all_escaped_chars
 
     def is_control_char(self, c: str) -> bool:
@@ -110,7 +110,7 @@ class DelimitedEscaping:
             raise TypeError(s)
         return self.delimit_many([s])
 
-    def undelimit(self, s: str) -> ta.List[str]:
+    def undelimit(self, s: str) -> list[str]:
         ret = []
         buf = io.StringIO()
         count = 0
