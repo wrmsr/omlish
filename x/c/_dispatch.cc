@@ -6,6 +6,10 @@
 
 //
 
+static struct PyModuleDef _dispatch_module;
+
+//
+
 typedef struct _dispatch_state {
     PyTypeObject *function_wrapper_type;
 } _dispatch_state;
@@ -16,6 +20,16 @@ static inline _dispatch_state * get_dispatch_state(PyObject *module)
     assert(state != NULL);
     return (_dispatch_state *)state;
 }
+
+static inline _dispatch_state * get_dispatch_state_by_type(PyTypeObject *type)
+{
+    PyObject *module = PyType_GetModuleByDef(type, &_dispatch_module);
+    if (module == NULL) {
+        return NULL;
+    }
+    return get_dispatch_state(module);
+}
+
 
 //
 
@@ -64,24 +78,37 @@ static void function_wrapper_dealloc(function_wrapper_object *self)
 
 static PyObject * function_wrapper_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
+    if (PyTuple_GET_SIZE(args) != 1) {
+        PyErr_SetString(PyExc_TypeError, "type 'function_wrapper' takes exactly one argument");
+        return NULL;
+    }
+    if (PyDict_GET_SIZE(kwds) != 0) {
+        PyErr_SetString(PyExc_TypeError, "type 'function_wrapper' takes exactly no keyword arguments");
+        return NULL;
+    }
+
+    PyObject *dispatch = PyTuple_GET_ITEM(args, 0);
+    if (!PyCallable_Check(dispatch)) {
+        PyErr_SetString(PyExc_TypeError, "the first argument must be callable");
+        return NULL;
+    }
+
     function_wrapper_object *self;
     self = (function_wrapper_object *) type->tp_alloc(type, 0);
     if (self == NULL) {
         return NULL;
     }
 
+    self->dispatch = Py_NewRef(dispatch);
+
     return (PyObject *) self;
 }
 
-static int function_wrapper_init(function_wrapper_object *self, PyObject *args, PyObject *kwds)
-{
-    static const char *kwlist[] = {"dispatch", NULL};
+static PyObject * function_wrapper_call(function_wrapper_object *self, PyObject *args, PyObject *kwargs) {
+    assert(PyCallable_Check(self->dispatch));
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", (char **)kwlist, &self->dispatch)) {
-        return -1;
-    }
-
-    return 0;
+    PyObject *res = PyObject_Call(self->dispatch, args, kwargs);
+    return res;
 }
 
 static PyMemberDef function_wrapper_members[] = {
@@ -106,9 +133,9 @@ static PyType_Slot function_wrapper_type_slots[] = {
         {Py_tp_methods, function_wrapper_methods},
         {Py_tp_members, function_wrapper_members},
         {Py_tp_getset, function_wrapper_getsetters},
-        {Py_tp_init, (void *) function_wrapper_init},
         {Py_tp_new, (void *) function_wrapper_new},
         {Py_tp_dealloc, (void *) function_wrapper_dealloc},
+        {Py_tp_call, function_wrapper_call},
 
         {0, 0}
 };
@@ -177,7 +204,6 @@ static struct PyModuleDef _dispatch_module = {
     .m_clear = _dispatch_clear,
     .m_free = _dispatch_free,
 };
-
 
 extern "C" {
 
