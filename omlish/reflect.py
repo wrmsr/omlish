@@ -11,7 +11,12 @@ import typing as ta
 import types
 
 from . import c3
-from .collections import cache
+from . import lang
+
+if ta.TYPE_CHECKING:
+    from .collections import cache
+else:
+    cache = lang.proxy_import('.collections.cache', __package__)
 
 
 _NoneType = types.NoneType  # type: ignore
@@ -82,6 +87,13 @@ def get_params(obj: ta.Any) -> tuple[ta.TypeVar, ...]:
         return obj.__dict__.get('__parameters__', ())  # noqa
 
     raise TypeError(obj)
+
+
+def is_union_type(cls: ta.Any) -> bool:
+    if hasattr(ta, 'UnionType'):
+        return ta.get_origin(cls) in {ta.Union, getattr(ta, 'UnionType')}
+    else:
+        return ta.get_origin(cls) in {ta.Union}
 
 
 ##
