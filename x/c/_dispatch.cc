@@ -145,6 +145,11 @@ static PyObject * function_wrapper_call(function_wrapper_object *self, PyObject 
     return res;
 }
 
+static PyObject * function_wrapper_vectorcall(function_wrapper_object *self, PyObject *const *args, size_t nargsf, PyObject *kwnames)
+{
+    return NULL;
+}
+
 static PyMemberDef function_wrapper_members[] = {
     {"dispatch", T_OBJECT, offsetof(function_wrapper_object, dispatch), READONLY},
     {"__weaklistoffset__", T_PYSSIZET, offsetof(function_wrapper_object, weakreflist), READONLY},
