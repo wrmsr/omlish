@@ -6,7 +6,7 @@ from .dispatch import Dispatcher
 from .dispatch import get_impl_func_cls_set
 
 
-USE_EXTENSION = False
+USE_EXTENSION = True
 
 
 def function(func):
