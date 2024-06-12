@@ -1,3 +1,21 @@
+/*
+clang,
+-Wsign-compare,
+-Wunreachable-code,
+-DNDEBUG,
+-g,
+-fwrapv,
+-O3,
+-Wall
+
+-g,
+-UBARF,
+-I/Users/spinlock/src/wrmsr/omlish/.venv/include,
+-I/Users/spinlock/.pyenv/versions/3.11.8/include/python3.11,
+-c
+
+-std=c++14
+*/
 #define PY_SSIZE_T_CLEAN
 #include "Python.h"
 #include "structmember.h"

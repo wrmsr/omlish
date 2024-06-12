@@ -10,7 +10,7 @@ import sys
 from . import _distutils as du
 
 
-class MyLoader(importlib.abc.Loader):
+class CExtensionLoader(importlib.abc.Loader):
 
     def __init__(self, fullname: str, path: str) -> None:
         super().__init__()
@@ -36,7 +36,7 @@ class MyLoader(importlib.abc.Loader):
         return imp.load_dynamic(self._fullname, so_path)
 
 
-loader_details = MyLoader, ['.c', '.cc', '.cpp', '.cxx']
+loader_details = (CExtensionLoader, ['.c', '.cc', '.cpp', '.cxx'])
 
 
 def install():

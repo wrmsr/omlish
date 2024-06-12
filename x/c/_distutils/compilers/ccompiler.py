@@ -10,17 +10,16 @@ import sys
 import warnings
 
 from ..dir_util import mkpath
-from ..errors import (
-    CompileError,
-    DistutilsModuleError,
-    DistutilsPlatformError,
-    LinkError,
-    UnknownFileError,
-)
+from ..errors import CompileError
+from ..errors import DistutilsModuleError
+from ..errors import DistutilsPlatformError
+from ..errors import LinkError
+from ..errors import UnknownFileError
 from ..file_util import move_file
 from ..modified import newer_group
 from ..spawn import spawn
-from ..util import execute, split_quoted
+from ..util import execute
+from ..util import split_quoted
 from .options import gen_preprocess_options
 
 
