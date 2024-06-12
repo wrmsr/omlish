@@ -131,7 +131,7 @@ static PyType_Slot function_wrapper_type_slots[] = {
         {Py_tp_traverse, (void *) function_wrapper_traverse},
         {Py_tp_clear, (void *) function_wrapper_clear},
         {Py_tp_methods, function_wrapper_methods},
-        {Py_tp_members, function_wrapper_members},
+        {Py_tp_members, (void *) function_wrapper_members},
         {Py_tp_getset, function_wrapper_getsetters},
         {Py_tp_new, (void *) function_wrapper_new},
         {Py_tp_dealloc, (void *) function_wrapper_dealloc},
