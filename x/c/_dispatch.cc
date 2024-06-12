@@ -7,7 +7,7 @@
 //
 
 typedef struct _dispatch_state {
-    PyTypeObject *Custom_type;
+    PyTypeObject *function_wrapper_type;
 } _dispatch_state;
 
 static inline _dispatch_state * get_dispatch_state(PyObject *module)
@@ -19,55 +19,54 @@ static inline _dispatch_state * get_dispatch_state(PyObject *module)
 
 //
 
+/*
+def wrapper(*args, **kwargs):
+    if not args:
+        raise TypeError(f'{func_name} requires at least 1 positional argument')
+    if (impl := disp_dispatch(type(args[0]))) is not None:
+        return impl(*args, **kwargs)
+    raise RuntimeError(f'No dispatch: {type(args[0])}')
+ */
+
 typedef struct {
     PyObject_HEAD
-    PyObject *first;
-    PyObject *last;
-    int number;
-} CustomObject;
+    PyObject *dispatch;
+    PyObject *dict;
+    PyObject *weakreflist;
+} function_wrapper_object;
 
-static int Custom_traverse(CustomObject *self, visitproc visit, void *arg)
+static int function_wrapper_traverse(function_wrapper_object *self, visitproc visit, void *arg)
 {
-    Py_VISIT(self->first);
-    Py_VISIT(self->last);
     return 0;
 }
 
-static int Custom_clear(CustomObject *self)
+static int function_wrapper_clear(function_wrapper_object *self)
 {
-    Py_CLEAR(self->first);
-    Py_CLEAR(self->last);
     return 0;
 }
 
-static void Custom_dealloc(CustomObject *self)
+static void function_wrapper_dealloc(function_wrapper_object *self)
 {
     PyObject_GC_UnTrack(self);
-    Custom_clear(self);
+    if (self->weakreflist != NULL) {
+        PyObject_ClearWeakRefs((PyObject *) self);
+    }
+    function_wrapper_clear(self);
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
-static PyObject * Custom_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+static PyObject * function_wrapper_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
-    CustomObject *self;
-    self = (CustomObject *) type->tp_alloc(type, 0);
-    if (self != NULL) {
-        self->first = PyUnicode_FromString("");
-        if (self->first == NULL) {
-            Py_DECREF(self);
-            return NULL;
-        }
-        self->last = PyUnicode_FromString("");
-        if (self->last == NULL) {
-            Py_DECREF(self);
-            return NULL;
-        }
-        self->number = 0;
+    function_wrapper_object *self;
+    self = (function_wrapper_object *) type->tp_alloc(type, 0);
+    if (self == NULL) {
+        return NULL;
     }
+
     return (PyObject *) self;
 }
 
-static int Custom_init(CustomObject *self, PyObject *args, PyObject *kwds)
+static int function_wrapper_init(function_wrapper_object *self, PyObject *args, PyObject *kwds)
 {
     static const char *kwlist[] = {"first", "last", "number", NULL};
     PyObject *first = NULL, *last = NULL, *tmp;
@@ -91,91 +90,40 @@ static int Custom_init(CustomObject *self, PyObject *args, PyObject *kwds)
     return 0;
 }
 
-static PyMemberDef Custom_members[] = {
-    {"number", T_INT, offsetof(CustomObject, number), 0, "custom number"},
+static PyMemberDef function_wrapper_members[] = {
+    {"__weaklistoffset__", T_PYSSIZET, offsetof(function_wrapper_object , weakreflist), READONLY},
+    {"__dictoffset__", T_PYSSIZET, offsetof(function_wrapper_object, dict), READONLY},
     {NULL}
 };
 
-static PyObject * Custom_getfirst(CustomObject *self, void *closure)
-{
-    Py_INCREF(self->first);
-    return self->first;
-}
-
-static int Custom_setfirst(CustomObject *self, PyObject *value, void *closure)
-{
-    if (value == NULL) {
-        PyErr_SetString(PyExc_TypeError, "Cannot delete the first attribute");
-        return -1;
-    }
-    if (!PyUnicode_Check(value)) {
-        PyErr_SetString(PyExc_TypeError, "The first attribute value must be a string");
-        return -1;
-    }
-    Py_INCREF(value);
-    Py_CLEAR(self->first);
-    self->first = value;
-    return 0;
-}
-
-static PyObject * Custom_getlast(CustomObject *self, void *closure)
-{
-    Py_INCREF(self->last);
-    return self->last;
-}
-
-static int Custom_setlast(CustomObject *self, PyObject *value, void *closure)
-{
-    if (value == NULL) {
-        PyErr_SetString(PyExc_TypeError, "Cannot delete the last attribute");
-        return -1;
-    }
-    if (!PyUnicode_Check(value)) {
-        PyErr_SetString(PyExc_TypeError, "The last attribute value must be a string");
-        return -1;
-    }
-    Py_INCREF(value);
-    Py_CLEAR(self->last);
-    self->last = value;
-    return 0;
-}
-
-static PyGetSetDef Custom_getsetters[] = {
-    {"first", (getter) Custom_getfirst, (setter) Custom_setfirst, "first name", NULL},
-    {"last", (getter) Custom_getlast, (setter) Custom_setlast, "last name", NULL},
+static PyGetSetDef function_wrapper_getsetters[] = {
     {NULL}
 };
 
-static PyObject * Custom_name(CustomObject *self, PyObject *Py_UNUSED(ignored))
-{
-    return PyUnicode_FromFormat("%S %S", self->first, self->last);
-}
-
-static PyMethodDef Custom_methods[] = {
-    {"name", (PyCFunction) Custom_name, METH_NOARGS, "Return the name, combining the first and last name"},
+static PyMethodDef function_wrapper_methods[] = {
     {NULL}
 };
 
-static PyType_Slot Custom_type_slots[] = {
-        {Py_tp_traverse, (void *) Custom_traverse},
-        {Py_tp_clear, (void *) Custom_clear},
-        {Py_tp_methods, Custom_methods},
-        {Py_tp_members, Custom_members},
-        {Py_tp_getset, Custom_getsetters},
-        {Py_tp_init, (void *) Custom_init},
-        {Py_tp_new, (void *) Custom_new},
-        {Py_tp_dealloc, (void *) Custom_dealloc},
+static PyType_Slot function_wrapper_type_slots[] = {
+        {Py_tp_traverse, (void *) function_wrapper_traverse},
+        {Py_tp_clear, (void *) function_wrapper_clear},
+        {Py_tp_methods, function_wrapper_methods},
+        {Py_tp_members, function_wrapper_members},
+        {Py_tp_getset, function_wrapper_getsetters},
+        {Py_tp_init, (void *) function_wrapper_init},
+        {Py_tp_new, (void *) function_wrapper_new},
+        {Py_tp_dealloc, (void *) function_wrapper_dealloc},
 
         {0, 0}
 };
 
-static PyType_Spec Custom_type_spec = {
-        .name = "functools.Custom",
-        .basicsize = sizeof(CustomObject),
+static PyType_Spec function_wrapper_type_spec = {
+        .name = "functools.function_wrapper",
+        .basicsize = sizeof(function_wrapper_object),
         .itemsize = 0,
         .flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC |
                  Py_TPFLAGS_BASETYPE | Py_TPFLAGS_IMMUTABLETYPE,
-        .slots = Custom_type_slots
+        .slots = function_wrapper_type_slots
 };
 
 //
@@ -184,11 +132,11 @@ static int _dispatch_exec(PyObject *module)
 {
     _dispatch_state *state = get_dispatch_state(module);
 
-    state->Custom_type = (PyTypeObject *)PyType_FromModuleAndSpec(module, &Custom_type_spec, NULL);
-    if (state->Custom_type == NULL) {
+    state->function_wrapper_type = (PyTypeObject *)PyType_FromModuleAndSpec(module, &function_wrapper_type_spec, NULL);
+    if (state->function_wrapper_type == NULL) {
         return -1;
     }
-    if (PyModule_AddType(module, state->Custom_type) < 0) {
+    if (PyModule_AddType(module, state->function_wrapper_type) < 0) {
         return -1;
     }
 
@@ -198,14 +146,14 @@ static int _dispatch_exec(PyObject *module)
 static int _dispatch_traverse(PyObject *module, visitproc visit, void *arg)
 {
     _dispatch_state *state = get_dispatch_state(module);
-    Py_VISIT(state->Custom_type);
+    Py_VISIT(state->function_wrapper_type);
     return 0;
 }
 
 static int _dispatch_clear(PyObject *module)
 {
     _dispatch_state *state = get_dispatch_state(module);
-    Py_CLEAR(state->Custom_type);
+    Py_CLEAR(state->function_wrapper_type);
     return 0;
 }
 
