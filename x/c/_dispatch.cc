@@ -6,7 +6,7 @@
 
 //
 
-static struct PyModuleDef _dispatch_module;
+//static struct PyModuleDef _dispatch_module;
 
 //
 
@@ -21,14 +21,14 @@ static inline _dispatch_state * get_dispatch_state(PyObject *module)
     return (_dispatch_state *)state;
 }
 
-static inline _dispatch_state * get_dispatch_state_by_type(PyTypeObject *type)
-{
-    PyObject *module = PyType_GetModuleByDef(type, &_dispatch_module);
-    if (module == NULL) {
-        return NULL;
-    }
-    return get_dispatch_state(module);
-}
+//static inline _dispatch_state * get_dispatch_state_by_type(PyTypeObject *type)
+//{
+//    PyObject *module = PyType_GetModuleByDef(type, &_dispatch_module);
+//    if (module == NULL) {
+//        return NULL;
+//    }
+//    return get_dispatch_state(module);
+//}
 
 
 //
