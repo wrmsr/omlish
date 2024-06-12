@@ -9,10 +9,10 @@ add_library(junk MODULE
 target_include_directories(junk PUBLIC
         ../../.venv/include
 
-        #$ENV{HOME}/.pyenv/versions/3.11.8/include/python3.11
+        $ENV{HOME}/.pyenv/versions/3.11.8/include/python3.11
 
-        $ENV{HOME}/src/python/cpython
-        $ENV{HOME}/src/python/cpython/include
+#        $ENV{HOME}/src/python/cpython
+#        $ENV{HOME}/src/python/cpython/include
 )
 
 target_compile_options(junk PUBLIC
@@ -29,11 +29,10 @@ target_compile_options(junk PUBLIC
 
         -std=c++14
 )
-
 target_link_directories(junk PUBLIC
-        # $ENV{HOME}/.pyenv/versions/3.11.8/lib
+         $ENV{HOME}/.pyenv/versions/3.11.8/lib
 
-        $ENV{HOME}/src/python/cpython
+#        $ENV{HOME}/src/python/cpython
 )
 
 target_link_libraries(junk
