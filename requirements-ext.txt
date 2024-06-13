@@ -12,7 +12,7 @@ datasets==2.19.2
 
 ##
 
-llvmlite==0.42.0
+llvmlite==0.43.0
 
 # pyopencl==2023.1.4
 
@@ -45,7 +45,7 @@ portalocker==2.8.2
 
 ##
 
-numba==0.59.1
+numba==0.60.0
 librosa==0.10.2.post1
 # pyaudio==0.2.13
 
@@ -94,7 +94,7 @@ fairscale==0.4.13
 
 accelerate==0.31.0
 
-pytorch-lightning==2.2.5
+pytorch-lightning==2.3.0
 
 torchsummary==1.5.1
 
@@ -146,7 +146,7 @@ blobfile==2.1.1
 
 ### infra
 
-boto3>=1.34.125
+boto3>=1.34.126
 
 google-cloud-compute==1.19.0
 
