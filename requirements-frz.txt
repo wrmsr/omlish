@@ -29,8 +29,8 @@ black==24.4.2
 bleach==6.1.0
 blis==0.7.11
 blobfile==2.1.1
-boto3==1.34.125
-botocore==1.34.125
+boto3==1.34.126
+botocore==1.34.126
 bs4==0.0.2
 bsddb3==6.2.9
 build==1.2.1
@@ -69,7 +69,7 @@ execnet==2.1.1
 executing==2.0.1
 fairscale==0.4.13
 fastjsonschema==2.19.1
-filelock==3.14.0
+filelock==3.15.1
 fiona==1.9.6
 fire==0.6.0
 flake8==6.1.0
@@ -142,7 +142,7 @@ lazy_loader==0.4
 librosa==0.10.2.post1
 lightning-utilities==0.11.2
 litecli==1.11.0
-llvmlite==0.42.0
+llvmlite==0.43.0
 Logbook==1.7.0.post0
 loralib==0.1.2
 lxml==4.9.4
@@ -175,7 +175,7 @@ nh3==0.2.17
 nltk==3.8.1
 notebook==7.2.1
 notebook_shim==0.2.4
-numba==0.59.1
+numba==0.60.0
 numpy==1.26.4
 objgraph==3.6.1
 opencv-python==4.10.0.82
@@ -186,7 +186,7 @@ pandas==2.2.2
 pandocfilters==1.5.1
 parso==0.8.4
 pathspec==0.12.1
-peft @ git+https://github.com/huggingface/peft.git@2f5360a7da22a236b5ad4c059572fff5321c867c
+peft @ git+https://github.com/huggingface/peft.git@efda766f51398b3b40dcb35c0befbad8b9d5579f
 pexpect==4.9.0
 pg8000==1.31.2
 pgcli==4.1.0
@@ -246,7 +246,7 @@ pytest-xdist==3.6.1
 python-dateutil==2.9.0.post0
 python-json-logger==2.0.7
 python-telegram-bot==21.3
-pytorch-lightning==2.2.5
+pytorch-lightning==2.3.0
 pytz==2024.1
 PyYAML==6.0.1
 pyzmq==26.0.3
