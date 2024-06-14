@@ -1,13 +1,16 @@
 """
+TODO:
+ - omnibus/jmespath
+
 https://nginx.org/en/docs/dev/development_guide.html
 https://nginx.org/en/docs/dev/development_guide.html#config_directives
 https://nginx.org/en/docs/example.html
 
 https://github.com/yandex/gixy
-
 """
 import typing as ta
 
+from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish.text.indent import IndentWriter
@@ -17,12 +20,30 @@ from omlish.text.indent import IndentWriter
 class Items(lang.Final):
     lst: list['Item']
 
+    @classmethod
+    def of(cls, obj: ta.Any) -> 'Items':
+        if isinstance(obj, Items):
+            return obj
+        return cls([Item.of(e) for e in check.isinstance(obj, list)])
+
 
 @dc.dataclass()
 class Item(lang.Final):
     name: str
     args: list[str] | None = None
     block: Items | None = None
+
+    @classmethod
+    def of(cls, obj: ta.Any) -> 'Item':
+        if isinstance(obj, Item):
+            return obj
+        args = check.isinstance(obj, tuple)
+        name, args = check.isinstance(args[0], str), args[1:]
+        if args and not isinstance(args[-1], str):
+            block, args = Items.of(args[-1]), args[:-1]
+        else:
+            block = None
+        return Item(name, list(check.isinstance(e, str) for e in args), block=block)
 
 
 def render(wr: IndentWriter, obj: ta.Any) -> None:
