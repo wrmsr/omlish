@@ -1,7 +1,8 @@
 """
 TODO:
  - cache kwarg_keys
- - tag annotations
+ - tag annotations? x: ta.Annotated[int, inj.Tag('foo')]
+ - tag decorator - @inj.tag(x='foo')
 """
 import inspect
 import typing as ta

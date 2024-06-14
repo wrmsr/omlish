@@ -11,13 +11,13 @@ from .base import Option
 from .base import UnmarshalContext
 from .base import Unmarshaler
 from .base import UnmarshalerFactory
+from .naming import Naming
+from .naming import translate_name
 from .objects import FieldInfo
 from .objects import FieldMetadata
-from .objects import FieldNaming
 from .objects import ObjectMarshaler
 from .objects import ObjectMetadata
 from .objects import ObjectUnmarshaler
-from .objects import name_field
 
 
 ##
@@ -33,14 +33,14 @@ def get_dataclass_metadata(ty: type) -> ObjectMetadata:
 
 def get_field_infos(ty: type, opts: col.TypeMap[Option] = col.TypeMap()) -> ta.Sequence[FieldInfo]:
     dc_md = get_dataclass_metadata(ty)
-    dc_naming = dc_md.field_naming or opts.get(FieldNaming)
+    dc_naming = dc_md.field_naming or opts.get(Naming)
 
     type_hints = ta.get_type_hints(ty)
 
     ret: list[FieldInfo] = []
     for field in dc.fields(ty):
-        if (f_naming := field.metadata.get(FieldNaming, dc_naming)) is not None:
-            um_name = name_field(field.name, f_naming)
+        if (f_naming := field.metadata.get(Naming, dc_naming)) is not None:
+            um_name = translate_name(field.name, f_naming)
         else:
             um_name = field.name
 
