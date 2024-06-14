@@ -1,28 +1,68 @@
 #!/usr/bin/env python3
 """Piku Micro-PaaS"""
-from collections import defaultdict, deque
+from collections import defaultdict
+from collections import deque
+from fcntl import F_GETFL
+from fcntl import F_SETFL
+from fcntl import fcntl
 from glob import glob
+from grp import getgrgid
 from importlib import import_module
 from json import loads
 from multiprocessing import cpu_count
-from os import chmod, getgid, getuid, symlink, unlink, remove, stat, listdir, environ, makedirs, O_NONBLOCK
-from os.path import abspath, basename, dirname, exists, getmtime, join, realpath, splitext, isdir
+from os import O_NONBLOCK
+from os import chmod
+from os import environ
+from os import getgid
+from os import getuid
+from os import listdir
+from os import makedirs
+from os import remove
+from os import stat
+from os import symlink
+from os import unlink
+from os.path import abspath
+from os.path import basename
+from os.path import dirname
+from os.path import exists
+from os.path import getmtime
+from os.path import isdir
+from os.path import join
+from os.path import realpath
+from os.path import splitext
 from pwd import getpwuid
-from re import sub, match
-from shutil import copyfile, rmtree, which
-from socket import socket, AF_INET, SOCK_STREAM
-from stat import S_IRUSR, S_IWUSR, S_IXUSR
-from subprocess import call, check_output, Popen, STDOUT
-from sys import argv, stdin, stdout, stderr, version_info, exit, path as sys_path
+from re import match
+from re import sub
+from shutil import copyfile
+from shutil import rmtree
+from shutil import which
+from socket import AF_INET
+from socket import SOCK_STREAM
+from socket import socket
+from stat import S_IRUSR
+from stat import S_IWUSR
+from stat import S_IXUSR
+from subprocess import Popen
+from subprocess import STDOUT
+from subprocess import call
+from subprocess import check_output
+from sys import argv
+from sys import exit
+from sys import path as sys_path
+from sys import stderr
+from sys import stdin
+from sys import stdout
+from sys import version_info
 from tempfile import NamedTemporaryFile
 from time import sleep
 from traceback import format_exc
 from urllib.request import urlopen
 
-from fcntl import fcntl, F_SETFL, F_GETFL
-from grp import getgrgid
-
-from click import argument, group, secho as echo, pass_context, CommandCollection
+from click import CommandCollection
+from click import argument
+from click import group
+from click import pass_context
+from click import secho as echo
 
 
 # === Make sure we can access all system binaries ===
