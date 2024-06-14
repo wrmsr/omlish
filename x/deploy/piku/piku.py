@@ -56,12 +56,25 @@ from click import secho as echo
 from .env import ACME_WWW
 from .env import APP_ROOT
 from .env import CACHE_ROOT
+from .env import DATA_ROOT
 from .env import ENV_ROOT
+from .env import GIT_ROOT
 from .env import LOG_ROOT
 from .env import NGINX_ROOT
+from .env import PIKU_PLUGIN_ROOT
+from .env import PIKU_RAW_SOURCE_URL
+from .env import PIKU_SCRIPT
+from .env import UWSGI_AVAILABLE
 from .env import UWSGI_ENABLED
+from .env import UWSGI_LOG_MAXSIZE
+from .env import UWSGI_ROOT
+from .nginx import spawn_app
+from .utils import check_requirements
+from .utils import exit_if_invalid
 from .utils import parse_procfile
 from .utils import parse_settings
+from .utils import sanitize_app_name
+from .utils import setup_authorized_keys
 from .utils import write_config
 
 
