@@ -18,7 +18,7 @@ from .env import APP_ROOT
 from .env import ENV_ROOT
 from .env import LOG_ROOT
 from .env import UWSGI_ENABLED
-from .nginx import spawn_app
+from .spawn import spawn_app
 from .utils import check_requirements
 from .utils import parse_procfile
 from .utils import parse_settings
