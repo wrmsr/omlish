@@ -65,7 +65,15 @@ def do_deploy(app, deltas={}, newrev=None):
             if exists(join(app_path, 'requirements.txt')) and found_app("Python"):
                 settings.update(deploy_python(app, deltas))
 
-            elif exists(join(app_path, 'package.json')) and found_app("Node") and (check_requirements(['nodejs', 'npm']) or check_requirements(['node', 'npm']) or check_requirements(['nodeenv'])):
+            elif (
+                exists(join(app_path, 'package.json')) and
+                found_app("Node") and
+                (
+                    check_requirements(['nodejs', 'npm']) or
+                    check_requirements(['node', 'npm']) or
+                    check_requirements(['nodeenv'])
+                )
+            ):
                 settings.update(deploy_node(app, deltas))
 
             elif 'release' in workers and 'web' in workers:
@@ -125,7 +133,12 @@ def deploy_node(app, deltas={}):
 
     version = env.get("NODE_VERSION")
     node_binary = join(virtualenv_path, "bin", "node")
-    installed = check_output("{} -v".format(node_binary), cwd=join(APP_ROOT, app), env=env, shell=True).decode("utf8").rstrip("\n") if exists(node_binary) else ""
+    installed = check_output(
+        "{} -v".format(node_binary),
+        cwd=join(APP_ROOT, app),
+        env=env,
+        shell=True,
+    ).decode("utf8").rstrip("\n") if exists(node_binary) else ""
 
     if version and check_requirements(['nodeenv']):
         if not installed.endswith(version):
@@ -134,7 +147,12 @@ def deploy_node(app, deltas={}):
                 echo("Warning: Can't update node with app running. Stop the app & retry.", fg='yellow')
             else:
                 echo("-----> Installing node version '{NODE_VERSION:s}' using nodeenv".format(**env), fg='green')
-                call("nodeenv --prebuilt --node={NODE_VERSION:s} --clean-src --force {VIRTUAL_ENV:s}".format(**env), cwd=virtualenv_path, env=env, shell=True)
+                call(
+                    "nodeenv --prebuilt --node={NODE_VERSION:s} --clean-src --force {VIRTUAL_ENV:s}".format(**env),
+                    cwd=virtualenv_path,
+                    env=env,
+                    shell=True,
+                )
         else:
             echo("-----> Node is installed at {}.".format(version))
 
@@ -144,7 +162,12 @@ def deploy_node(app, deltas={}):
             if not exists(node_modules_symlink):
                 symlink(node_path, node_modules_symlink)
             echo("-----> Running npm for '{}'".format(app), fg='green')
-            call('npm install --prefix {} --package-lock=false'.format(npm_prefix), cwd=join(APP_ROOT, app), env=env, shell=True)
+            call(
+                'npm install --prefix {} --package-lock=false'.format(npm_prefix),
+                cwd=join(APP_ROOT, app),
+                env=env,
+                shell=True,
+            )
     return spawn_app(app, deltas)
 
 
@@ -200,7 +223,8 @@ def do_stop(app):
         for c in config:
             remove(c)
     else:
-        echo("Error: app '{}' not deployed!".format(app), fg='red')  # TODO app could be already stopped. Need to able to tell the difference.
+        # TODO app could be already stopped. Need to able to tell the difference.
+        echo("Error: app '{}' not deployed!".format(app), fg='red')
 
 
 def do_restart(app):

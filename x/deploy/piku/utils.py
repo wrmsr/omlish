@@ -2,6 +2,7 @@ from collections import deque
 from os import chmod
 from os import environ
 from os import makedirs
+from os import stat
 from os.path import basename
 from os.path import dirname
 from os.path import exists
@@ -76,12 +77,17 @@ def setup_authorized_keys(ssh_fingerprint, script_path, pubkey):
         makedirs(dirname(authorized_keys))
     # Restrict features and force all SSH commands to go through our script
     with open(authorized_keys, 'a') as h:
-        h.write("""command="FINGERPRINT={ssh_fingerprint:s} NAME=default {script_path:s} $SSH_ORIGINAL_COMMAND",no-agent-forwarding,no-user-rc,no-X11-forwarding,no-port-forwarding {pubkey:s}\n""".format(**locals()))
+        h.write(
+            ''.join([
+                """command="FINGERPRINT={ssh_fingerprint:s} NAME=default {script_path:s} $SSH_ORIGINAL_COMMAND",""",
+                "no-agent-forwarding,no-user-rc,no-X11-forwarding,no-port-forwarding {pubkey:s}\n",
+            ]).format(**locals()),
+        )
     chmod(dirname(authorized_keys), S_IRUSR | S_IWUSR | S_IXUSR)
     chmod(authorized_keys, S_IRUSR | S_IWUSR)
 
 
-CRON_REGEXP = r"^((?:(?:\*\/)?\d+)|\*) ((?:(?:\*\/)?\d+)|\*) ((?:(?:\*\/)?\d+)|\*) ((?:(?:\*\/)?\d+)|\*) ((?:(?:\*\/)?\d+)|\*) (.*)$"
+CRON_REGEXP = r"^((?:(?:\*\/)?\d+)|\*) ((?:(?:\*\/)?\d+)|\*) ((?:(?:\*\/)?\d+)|\*) ((?:(?:\*\/)?\d+)|\*) ((?:(?:\*\/)?\d+)|\*) (.*)$"  # noqa
 
 
 def parse_procfile(filename):
