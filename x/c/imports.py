@@ -45,6 +45,18 @@ def install():
     importlib.invalidate_caches()
 
 
+##
+
+
+def barf(x: object) -> str:
+    """hi i do barf"""
+    return f'barf str! {x!r}'
+
+
+def return_barf(ty):
+    return barf
+
+
 def _main():
     here = os.path.join(os.path.dirname(__file__))
     if os.path.exists(bdir := os.path.join(here, 'build')):
@@ -64,15 +76,8 @@ def _main():
 
     import functools
 
-    def barf(x: object) -> str:
-        """hi i do barf"""
-        return f'barf str! {x!r}'
-
     print(os.getpid())
     input()
-
-    def return_barf(ty):
-        return barf
 
     from . import _dispatch  # noqa
     fw = functools.wraps(barf)(_dispatch.function_wrapper(return_barf))
@@ -80,6 +85,10 @@ def _main():
     print(fw)
     print(fw.dispatch)
     print(fw(10))
+
+    import weakref
+    fwr = weakref.ref(fw)
+    assert fwr() is fw
 
 
 if __name__ == '__main__':

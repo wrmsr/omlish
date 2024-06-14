@@ -1,0 +1,221 @@
+---
+- hosts: all
+  become: yes
+  vars:
+    homedir: /home/{{ piku_user | default('piku', true)}}/
+    user: "{{ piku_user | default('piku', true)}}"
+    ssh_user: "{{ lookup('env', 'SUDO_USER') | default('root') }}"
+  tasks:
+    - name: Add piku user
+      user:
+        name: "{{ user }}"
+        password: !
+        comment: PaaS access
+        group: www-data
+
+    - name: Creates directory
+      file:
+        path: "{{homedir}}/.ssh"
+        state: directory
+        mode: 0700
+        owner: "{{user}}"
+        group: www-data
+
+    - name: Check root authorized_keys exists
+      stat:
+        path: "~{{ssh_user}}/.ssh/authorized_keys"
+      register: stat_keys_result
+
+    - debug:
+        msg: "Warning: No authorized_keys for root found. You must add keys manually."
+      when: not stat_keys_result.stat.exists
+
+    - name: Copy authorized_keys from root
+      copy:
+        src: "~{{ssh_user}}/.ssh/authorized_keys"
+        dest: "/tmp/root_authorized_keys"
+        mode: 0600
+        owner: "{{user}}"
+        group: www-data
+      when: stat_keys_result.stat.exists
+
+    - name: Install Python (for old Ubuntu)
+      apt:
+        pkg: ["python"]
+        update_cache: true
+        state: present
+      ignore_errors: true
+
+    - name: Install Debian Packages
+      apt:
+        pkg: ['bc', 'git', 'sudo', 'cron', 'build-essential', 'libpcre3-dev', 'zlib1g-dev', 'python3', 'python3-pip', 'python3-click', 'python3-dev', 'python3-virtualenv', 'python3-setuptools', 'nginx', 'acl', 'uwsgi-core', 'uwsgi-plugin-python3', 'nodeenv']
+        update_cache: true
+        state: present
+
+    - shell: which uwsgi
+      register: uwsgi_location
+
+    - name: Create uwgsi symlink
+      file:
+        src: "{{uwsgi_location.stdout}}"
+        dest: /usr/local/bin/uwsgi-piku
+        owner: root
+        group: root
+        state: link
+
+    - name: Install uwsgi dist script
+      get_url:
+        url: https://raw.githubusercontent.com/piku/piku/master/uwsgi-piku.dist
+        dest: /etc/init.d/uwsgi-piku
+        mode: 0700
+
+    - name: Install uwsgi-piku dist script
+      shell: update-rc.d uwsgi-piku defaults
+      args:
+        creates: /etc/rc2.d/S01uwsgi-piku
+
+    - name: Install uwsgi-piku systemd script
+      get_url:
+        url: https://raw.githubusercontent.com/piku/piku/master/uwsgi-piku.service
+        dest: /etc/systemd/system/uwsgi-piku.service
+        mode: 0600
+
+    - name: Create piku ansible tmp dir
+      file:
+        path: ~piku/.ansible/tmp
+        mode: 0700
+        owner: piku
+        group: www-data
+        state: directory
+
+- hosts: all
+  become: yes
+  become_user: "{{ piku_user | default('piku', true)}}"
+  tasks:
+    - name: Fetch piku.py script
+      get_url:
+        url: https://raw.githubusercontent.com/piku/piku/master/piku.py
+        dest: ~/piku.py
+        mode: 0700
+
+    - name: Run piku setup
+      shell: python3 ~/piku.py setup
+      args:
+        creates: ~/.piku
+
+    - name: Ask piku to use SSH keys
+      shell: echo "{{item}}" > /tmp/id_rsa.pub && python3 ~/piku.py setup:ssh /tmp/id_rsa.pub && rm /tmp/id_rsa.pub
+      with_lines: " [ -f /tmp/root_authorized_keys ] && cat /tmp/root_authorized_keys || echo '' "
+      args:
+        creates: ~/.ssh/authorized_keys
+      when: stat_keys_result.stat.exists
+
+    - name: Delete temporary authorized keys file
+      file: path=/tmp/root_authorized_keys state=absent
+      when: stat_keys_result.stat.exists
+
+    - name: Check if acme.sh is already installed
+      stat:
+        path: ~/.acme.sh/acme.sh
+      register: acme_stat_result
+
+    - name: Download acme.sh
+      get_url:
+        url: https://raw.githubusercontent.com/Neilpang/acme.sh/master/acme.sh
+        dest: ~/acme.sh
+        mode: 0755
+      when: acme_stat_result.stat.exists == False
+      register: acme_installer
+
+    - name: Execute acme.sh installer
+      shell: ./acme.sh --install
+      args:
+        chdir: ~/
+        creates: ~/.acme.sh/acme.sh
+        executable: /bin/bash
+      when: acme_installer is defined
+
+    - name: Run a manual upgrade
+      shell: ./.acme.sh/acme.sh --upgrade
+      args:
+        chdir: ~/
+        executable: /bin/bash
+
+    - name: Set default CA to letsencrypt
+      shell: ./.acme.sh/acme.sh --set-default-ca --server letsencrypt
+      args:
+        chdir: ~/
+        executable: /bin/bash
+
+    - name: Remove acme.sh installer
+      file: path=~/acme.sh state=absent
+      when: acme_installer is defined
+
+    - name: Configure acme.sh to auto-upgrade
+      lineinfile:
+        path: ~/.acme.sh/account.conf
+        regexp: '^#AUTO_UPGRADE='
+        line: 'AUTO_UPGRADE="1"'
+
+- hosts: all
+  become: yes
+  tasks:
+
+    - name: Test if systemctl is present
+      shell: command -v systemctl
+      register: systemctl
+      ignore_errors: true
+
+    - name: Enable uwsgi-piku service
+      systemd:
+        name: uwsgi-piku
+        enabled: yes
+        state: started
+        masked: no
+      when: '"systemctl" in systemctl.stdout'
+      register: uwsgi_systemd
+
+    # https://github.com/ansible/ansible/issues/72451
+    - name: Actually enable uwsgi-piku service (bug workaround)
+      shell:
+        cmd: "systemctl enable uwsgi-piku.service"
+      when: '"systemctl" in systemctl.stdout and uwsgi_systemd.status.UnitFileState == "enabled-runtime"'
+
+    - name: Start uwsgi init script
+      service:
+        name: uwsgi-piku
+        enabled: yes
+        state: started
+      when: '"systemctl" not in systemctl.stdout'
+
+    - name: Get nginx default config
+      get_url:
+        url: https://raw.githubusercontent.com/piku/piku/master/nginx.default.dist
+        dest: /etc/nginx/sites-available/default
+        force: yes
+      register: nginx_config_installed
+
+    - name: Restart nginx service
+      service:
+        name: nginx
+        state: restarted
+      when: nginx_config_installed is changed
+
+    - name: Get systemd.path piku-nginx.path
+      get_url:
+        url: https://raw.githubusercontent.com/piku/piku/master/piku-nginx.path
+        dest: /etc/systemd/system/
+      register: piku_nginx_path_installed
+
+    - name: Get systemd.path piku-nginx.service
+      get_url:
+        url: https://raw.githubusercontent.com/piku/piku/master/piku-nginx.service
+        dest: /etc/systemd/system/
+      register: piku_nginx_service_installed
+
+    - name: Start piku-nginx.path
+      systemd:
+        name: piku-nginx.path
+        state: started
+        enabled: yes
+      when: ( piku_nginx_service_installed is changed ) and ( "systemctl" in systemctl.stdout )
