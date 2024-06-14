@@ -33,6 +33,7 @@ from .utils import get_free_port
 from .utils import parse_procfile
 from .utils import parse_settings
 from .utils import write_config
+from .uwsgi import spawn_worker
 
 
 # pylint: disable=anomalous-backslash-in-string
@@ -200,12 +201,16 @@ def spawn_app(app, deltas={}):
 
     # the Python virtualenv
     virtualenv_path = join(ENV_ROOT, app)
+
     # Settings shipped with the app
     env_file = join(APP_ROOT, app, 'ENV')
+
     # Custom overrides
     settings = join(ENV_ROOT, app, 'ENV')
+
     # Live settings
     live = join(ENV_ROOT, app, 'LIVE_ENV')
+
     # Scaling
     scaling = join(ENV_ROOT, app, 'SCALING')
 
@@ -306,11 +311,8 @@ def spawn_app(app, deltas={}):
                 if not exists(key) or not exists(issuefile):
                     echo("-----> getting letsencrypt certificate")
                     certlist = " ".join(["-d {}".format(d) for d in domains])
-                    call('{acme:s}/acme.sh --issue {certlist:s} -w {www:s} --server {root_ca:s}'.format(**locals()),
-                         shell=True)
-                    call(
-                        '{acme:s}/acme.sh --install-cert {certlist:s} --key-file {key:s} --fullchain-file {crt:s}'.format(
-                            **locals()), shell=True)
+                    call('{acme:s}/acme.sh --issue {certlist:s} -w {www:s} --server {root_ca:s}'.format(**locals()), shell=True)
+                    call('{acme:s}/acme.sh --install-cert {certlist:s} --key-file {key:s} --fullchain-file {crt:s}'.format(**locals()), shell=True)
                     if exists(join(ACME_ROOT, domain)) and not exists(join(ACME_WWW, app)):
                         symlink(join(ACME_ROOT, domain), join(ACME_WWW, app))
                     try:
@@ -324,8 +326,18 @@ def spawn_app(app, deltas={}):
             if not exists(key) or stat(crt).st_size == 0:
                 echo("-----> generating self-signed certificate")
                 call(
-                    'openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -subj "/C=US/ST=NY/L=New York/O=Piku/OU=Self-Signed/CN={domain:s}" -keyout {key:s} -out {crt:s}'.format(
-                        **locals()), shell=True)
+                    (
+                         'openssl req -new '
+                         '-newkey rsa:4096 '
+                         '-days 365 '
+                         '-nodes '
+                         '-x509 '
+                         '-subj "/C=US/ST=NY/L=New York/O=Piku/OU=Self-Signed/CN={domain:s}" '
+                         '-keyout {key:s} '
+                         '-out {crt:s}'
+                     ).format(**locals()),
+                     shell=True,
+                 )
 
             # restrict access to server from CloudFlare IP addresses
             acl = []
