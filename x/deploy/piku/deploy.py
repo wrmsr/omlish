@@ -40,16 +40,20 @@ def do_deploy(app, deltas={}, newrev=None):
     env = {'GIT_WORK_DIR': app_path}
     if exists(app_path):
         echo("-----> Deploying app '{}'".format(app), fg='green')
+
         call('git fetch --quiet', cwd=app_path, env=env, shell=True)
         if newrev:
             call('git reset --hard {}'.format(newrev), cwd=app_path, env=env, shell=True)
         call('git submodule init', cwd=app_path, env=env, shell=True)
         call('git submodule update', cwd=app_path, env=env, shell=True)
+
         if not exists(log_path):
             makedirs(log_path)
+
         workers = parse_procfile(procfile)
         if workers and len(workers) > 0:
             settings = {}
+
             if "preflight" in workers:
                 echo("-----> Running preflight.", fg='green')
                 retval = call(workers["preflight"], cwd=app_path, env=settings, shell=True)
@@ -57,18 +61,24 @@ def do_deploy(app, deltas={}, newrev=None):
                     echo("-----> Exiting due to preflight command error value: {}".format(retval))
                     exit(retval)
                 workers.pop("preflight", None)
+
             if exists(join(app_path, 'requirements.txt')) and found_app("Python"):
                 settings.update(deploy_python(app, deltas))
+
             elif exists(join(app_path, 'package.json')) and found_app("Node") and (check_requirements(['nodejs', 'npm']) or check_requirements(['node', 'npm']) or check_requirements(['nodeenv'])):
                 settings.update(deploy_node(app, deltas))
+
             elif 'release' in workers and 'web' in workers:
                 echo("-----> Generic app detected.", fg='green')
                 settings.update(deploy_identity(app, deltas))
+
             elif 'static' in workers:
                 echo("-----> Static app detected.", fg='green')
                 settings.update(deploy_identity(app, deltas))
+
             else:
                 echo("-----> Could not detect runtime!", fg='red')
+
             # TODO: detect other runtimes
             if "release" in workers:
                 echo("-----> Releasing", fg='green')
@@ -77,8 +87,10 @@ def do_deploy(app, deltas={}, newrev=None):
                     echo("-----> Exiting due to release command error value: {}".format(retval))
                     exit(retval)
                 workers.pop("release", None)
+
         else:
             echo("Error: Invalid Procfile for app '{}'.".format(app), fg='red')
+
     else:
         echo("Error: app '{}' not found.".format(app), fg='red')
 
