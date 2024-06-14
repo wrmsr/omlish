@@ -187,6 +187,269 @@ PIKU_INTERNAL_NGINX_UWSGI_SETTINGS = """
 """
 
 
+def setup_nginx(
+        app,
+        env,
+        workers,
+        app_path,
+):
+    # Hack to get around ClickCommand
+    env['NGINX_SERVER_NAME'] = env['NGINX_SERVER_NAME'].split(',')
+    env['NGINX_SERVER_NAME'] = ' '.join(env['NGINX_SERVER_NAME'])
+
+    nginx = command_output("nginx -V")
+    nginx_ssl = "443 ssl"
+    if "--with-http_v2_module" in nginx:
+        nginx_ssl += " http2"
+    elif "--with-http_spdy_module" in nginx and "nginx/1.6.2" not in nginx:  # avoid Raspbian bug
+        nginx_ssl += " spdy"
+    nginx_conf = join(NGINX_ROOT, "{}.conf".format(app))
+
+    env.update({  # lgtm [py/modification-of-default-value]
+        'NGINX_SSL': nginx_ssl,
+        'NGINX_ROOT': NGINX_ROOT,
+        'ACME_WWW': ACME_WWW,
+    })
+
+    # default to reverse proxying to the TCP port we picked
+    env['PIKU_INTERNAL_NGINX_UWSGI_SETTINGS'] = 'proxy_pass http://{BIND_ADDRESS:s}:{PORT:s};'.format(**env)
+    if 'wsgi' in workers:
+        sock = join(NGINX_ROOT, "{}.sock".format(app))
+        env['PIKU_INTERNAL_NGINX_UWSGI_SETTINGS'] = expandvars(PIKU_INTERNAL_NGINX_UWSGI_SETTINGS, env)
+        env['NGINX_SOCKET'] = env['BIND_ADDRESS'] = "unix://" + sock
+        if 'PORT' in env:
+            del env['PORT']
+    else:
+        env['NGINX_SOCKET'] = "{BIND_ADDRESS:s}:{PORT:s}".format(**env)
+        echo("-----> nginx will look for app '{}' on {}".format(app, env['NGINX_SOCKET']))
+
+    domains = env['NGINX_SERVER_NAME'].split()
+    domain = domains[0]
+    issuefile = join(ACME_ROOT, domain, "issued-" + "-".join(domains))
+    key, crt = [join(NGINX_ROOT, "{}.{}".format(app, x)) for x in ['key', 'crt']]
+    if exists(join(ACME_ROOT, "acme.sh")):
+        acme = ACME_ROOT
+        www = ACME_WWW
+        root_ca = ACME_ROOT_CA
+        # if this is the first run there will be no nginx conf yet
+        # create a basic conf stub just to serve the acme auth
+        if not exists(nginx_conf):
+            echo("-----> writing temporary nginx conf")
+            buffer = expandvars(NGINX_ACME_FIRSTRUN_TEMPLATE, env)
+            with open(nginx_conf, "w") as h:
+                h.write(buffer)
+        if not exists(key) or not exists(issuefile):
+            echo("-----> getting letsencrypt certificate")
+            certlist = " ".join(["-d {}".format(d) for d in domains])
+            call(
+                (
+                    '{acme:s}/acme.sh '
+                    '--issue {certlist:s} '
+                    '-w {www:s} '
+                    '--server {root_ca:s}'
+                ).format(**locals()),
+                shell=True,
+            )
+            call(
+                (
+                    '{acme:s}/acme.sh '
+                    '--install-cert {certlist:s} '
+                    '--key-file {key:s} '
+                    '--fullchain-file {crt:s}'
+                ).format(**locals()),
+                shell=True,
+            )
+            if exists(join(ACME_ROOT, domain)) and not exists(join(ACME_WWW, app)):
+                symlink(join(ACME_ROOT, domain), join(ACME_WWW, app))
+            try:
+                symlink("/dev/null", issuefile)
+            except Exception:
+                pass
+        else:
+            echo("-----> letsencrypt certificate already installed")
+
+    # fall back to creating self-signed certificate if acme failed
+    if not exists(key) or stat(crt).st_size == 0:
+        echo("-----> generating self-signed certificate")
+        call(
+            (
+                'openssl req -new '
+                '-newkey rsa:4096 '
+                '-days 365 '
+                '-nodes '
+                '-x509 '
+                '-subj "/C=US/ST=NY/L=New York/O=Piku/OU=Self-Signed/CN={domain:s}" '
+                '-keyout {key:s} '
+                '-out {crt:s}'
+            ).format(**locals()),
+            shell=True,
+        )
+
+    # restrict access to server from CloudFlare IP addresses
+    acl = []
+    if get_boolean(env.get('NGINX_CLOUDFLARE_ACL', 'false')):
+        try:
+            cf = loads(urlopen('https://api.cloudflare.com/client/v4/ips').read().decode("utf-8"))
+            if cf['success'] is True:
+                for i in cf['result']['ipv4_cidrs']:
+                    acl.append("allow {};".format(i))
+                if get_boolean(env.get('DISABLE_IPV6', 'false')):
+                    for i in cf['result']['ipv6_cidrs']:
+                        acl.append("allow {};".format(i))
+                # allow access from controlling machine
+                if 'SSH_CLIENT' in environ:
+                    remote_ip = environ['SSH_CLIENT'].split()[0]
+                    echo("-----> nginx ACL will include your IP ({})".format(remote_ip))
+                    acl.append("allow {};".format(remote_ip))
+                acl.extend(["allow 127.0.0.1;", "deny all;"])
+        except Exception:
+            cf = defaultdict()
+            echo("-----> Could not retrieve CloudFlare IP ranges: {}".format(format_exc()), fg="red")
+
+    env['NGINX_ACL'] = " ".join(acl)
+
+    env['PIKU_INTERNAL_NGINX_BLOCK_GIT'] = "" if env.get('NGINX_ALLOW_GIT_FOLDERS') else r"location ~ /\.git { deny all; }"
+
+    env['PIKU_INTERNAL_PROXY_CACHE_PATH'] = ''
+    env['PIKU_INTERNAL_NGINX_CACHE_MAPPINGS'] = ''
+
+    # Get a mapping of /prefix1,/prefix2
+    default_cache_path = join(CACHE_ROOT, app)
+    if not exists(default_cache_path):
+        makedirs(default_cache_path)
+
+    try:
+        cache_size = int(env.get('NGINX_CACHE_SIZE', '1'))
+    except Exception:
+        echo("=====> Invalid cache size, defaulting to 1GB")
+        cache_size = 1
+    cache_size = str(cache_size) + "g"
+
+    try:
+        cache_time_control = int(env.get('NGINX_CACHE_CONTROL', '3600'))
+    except Exception:
+        echo("=====> Invalid time for cache control, defaulting to 3600s")
+        cache_time_control = 3600
+    cache_time_control = str(cache_time_control)
+
+    try:
+        cache_time_content = int(env.get('NGINX_CACHE_TIME', '3600'))
+    except Exception:
+        echo("=====> Invalid cache time for content, defaulting to 3600s")
+        cache_time_content = 3600
+    cache_time_content = str(cache_time_content) + "s"
+
+    try:
+        cache_time_redirects = int(env.get('NGINX_CACHE_REDIRECTS', '3600'))
+    except Exception:
+        echo("=====> Invalid cache time for redirects, defaulting to 3600s")
+        cache_time_redirects = 3600
+    cache_time_redirects = str(cache_time_redirects) + "s"
+
+    try:
+        cache_time_any = int(env.get('NGINX_CACHE_ANY', '3600'))
+    except Exception:
+        echo("=====> Invalid cache expiry fallback, defaulting to 3600s")
+        cache_time_any = 3600
+    cache_time_any = str(cache_time_any) + "s"
+
+    try:
+        cache_time_expiry = int(env.get('NGINX_CACHE_EXPIRY', '86400'))
+    except Exception:
+        echo("=====> Invalid cache expiry, defaulting to 86400s")
+        cache_time_expiry = 86400
+    cache_time_expiry = str(cache_time_expiry) + "s"
+
+    cache_prefixes = env.get('NGINX_CACHE_PREFIXES', '')
+    cache_path = env.get('NGINX_CACHE_PATH', default_cache_path)
+
+    if not exists(cache_path):
+        echo("=====> Cache path {} does not exist, using default {}, be aware of disk usage.".format(cache_path, default_cache_path))
+        cache_path = env.get(default_cache_path)
+
+    if len(cache_prefixes):
+        prefixes = []  # this will turn into part of /(path1|path2|path3)
+        try:
+            items = cache_prefixes.split(',')
+            for item in items:
+                if item[0] == '/':
+                    prefixes.append(item[1:])
+                else:
+                    prefixes.append(item)
+            cache_prefixes = "|".join(prefixes)
+            echo("-----> nginx will cache /({}) prefixes up to {} or {} of disk space, with the following timings:".format(cache_prefixes, cache_time_expiry, cache_size))
+            echo("-----> nginx will cache content for {}.".format(cache_time_content))
+            echo("-----> nginx will cache redirects for {}.".format(cache_time_redirects))
+            echo("-----> nginx will cache everything else for {}.".format(cache_time_any))
+            echo("-----> nginx will send caching headers asking for {} seconds of public caching.".format(cache_time_control))
+            env['PIKU_INTERNAL_PROXY_CACHE_PATH'] = expandvars(PIKU_INTERNAL_PROXY_CACHE_PATH, locals())
+            env['PIKU_INTERNAL_NGINX_CACHE_MAPPINGS'] = expandvars(PIKU_INTERNAL_NGINX_CACHE_MAPPING, locals())
+            env['PIKU_INTERNAL_NGINX_CACHE_MAPPINGS'] = expandvars(env['PIKU_INTERNAL_NGINX_CACHE_MAPPINGS'], env)
+        except Exception as e:
+            echo("Error {} in cache path spec: should be /prefix1:[,/prefix2], ignoring.".format(e))
+            env['PIKU_INTERNAL_NGINX_CACHE_MAPPINGS'] = ''
+
+    env['PIKU_INTERNAL_NGINX_STATIC_MAPPINGS'] = ''
+
+    # Get a mapping of /prefix1:path1,/prefix2:path2
+    static_paths = env.get('NGINX_STATIC_PATHS', '')
+
+    # prepend static worker path if present
+    if 'static' in workers:
+        stripped = workers['static'].strip("/").rstrip("/")
+        static_paths = ("/" if stripped[0:1] == ":" else "/:") + (stripped if stripped else ".") + "/" + (
+            "," if static_paths else "") + static_paths
+    if len(static_paths):
+        try:
+            items = static_paths.split(',')
+            for item in items:
+                static_url, static_path = item.split(':')
+                if static_path[0] != '/':
+                    static_path = join(app_path, static_path).rstrip("/") + "/"
+                echo("-----> nginx will map {} to {}.".format(static_url, static_path))
+                env['PIKU_INTERNAL_NGINX_STATIC_MAPPINGS'] = env['PIKU_INTERNAL_NGINX_STATIC_MAPPINGS'] + expandvars(PIKU_INTERNAL_NGINX_STATIC_MAPPING, locals())
+        except Exception as e:
+            echo("Error {} in static path spec: should be /prefix1:path1[,/prefix2:path2], ignoring.".format(e))
+            env['PIKU_INTERNAL_NGINX_STATIC_MAPPINGS'] = ''
+
+    env['PIKU_INTERNAL_NGINX_CUSTOM_CLAUSES'] = expandvars(open(join(app_path, env["NGINX_INCLUDE_FILE"])).read(), env) if env.get("NGINX_INCLUDE_FILE") else ""
+    env['PIKU_INTERNAL_NGINX_PORTMAP'] = ""
+    if 'web' in workers or 'wsgi' in workers:
+        env['PIKU_INTERNAL_NGINX_PORTMAP'] = expandvars(NGINX_PORTMAP_FRAGMENT, env)
+    env['PIKU_INTERNAL_NGINX_COMMON'] = expandvars(NGINX_COMMON_FRAGMENT, env)
+
+    echo("-----> nginx will map app '{}' to hostname(s) '{}'".format(app, env['NGINX_SERVER_NAME']))
+    if get_boolean(env.get('NGINX_HTTPS_ONLY', 'false')):
+        buffer = expandvars(NGINX_HTTPS_ONLY_TEMPLATE, env)
+        echo("-----> nginx will redirect all requests to hostname(s) '{}' to HTTPS".format(env['NGINX_SERVER_NAME']))
+    else:
+        buffer = expandvars(NGINX_TEMPLATE, env)
+
+    # remove all references to IPv6 listeners (for enviroments where it's disabled)
+    if get_boolean(env.get('DISABLE_IPV6', 'false')):
+        buffer = '\n'.join([line for line in buffer.split('\n') if 'NGINX_IPV6' not in line])
+    # change any unecessary uWSGI specific directives to standard proxy ones
+    if 'wsgi' not in workers:
+        buffer = buffer.replace("uwsgi_", "proxy_")
+
+    # map Cloudflare connecting IP to REMOTE_ADDR
+    if get_boolean(env.get('NGINX_CLOUDFLARE_ACL', 'false')):
+        buffer = buffer.replace("REMOTE_ADDR $remote_addr", "REMOTE_ADDR $http_cf_connecting_ip")
+
+    with open(nginx_conf, "w") as h:
+        h.write(buffer)
+
+    # prevent broken config from breaking other deploys
+    try:
+        nginx_config_test = str(check_output("nginx -t 2>&1 | grep {}".format(app), env=environ, shell=True))
+    except Exception:
+        nginx_config_test = None
+    if nginx_config_test:
+        echo("Error: [nginx config] {}".format(nginx_config_test), fg='red')
+        echo("Warning: removing broken nginx config.", fg='yellow')
+        unlink(nginx_conf)
+
+
 def spawn_app(app, deltas={}):
     """Create all workers for an app"""
 
@@ -263,258 +526,12 @@ def spawn_app(app, deltas={}):
 
         # Set up nginx if we have NGINX_SERVER_NAME set
         if 'NGINX_SERVER_NAME' in env:
-            # Hack to get around ClickCommand
-            env['NGINX_SERVER_NAME'] = env['NGINX_SERVER_NAME'].split(',')
-            env['NGINX_SERVER_NAME'] = ' '.join(env['NGINX_SERVER_NAME'])
-
-            nginx = command_output("nginx -V")
-            nginx_ssl = "443 ssl"
-            if "--with-http_v2_module" in nginx:
-                nginx_ssl += " http2"
-            elif "--with-http_spdy_module" in nginx and "nginx/1.6.2" not in nginx:  # avoid Raspbian bug
-                nginx_ssl += " spdy"
-            nginx_conf = join(NGINX_ROOT, "{}.conf".format(app))
-
-            env.update({  # lgtm [py/modification-of-default-value]
-                'NGINX_SSL': nginx_ssl,
-                'NGINX_ROOT': NGINX_ROOT,
-                'ACME_WWW': ACME_WWW,
-            })
-
-            # default to reverse proxying to the TCP port we picked
-            env['PIKU_INTERNAL_NGINX_UWSGI_SETTINGS'] = 'proxy_pass http://{BIND_ADDRESS:s}:{PORT:s};'.format(**env)
-            if 'wsgi' in workers:
-                sock = join(NGINX_ROOT, "{}.sock".format(app))
-                env['PIKU_INTERNAL_NGINX_UWSGI_SETTINGS'] = expandvars(PIKU_INTERNAL_NGINX_UWSGI_SETTINGS, env)
-                env['NGINX_SOCKET'] = env['BIND_ADDRESS'] = "unix://" + sock
-                if 'PORT' in env:
-                    del env['PORT']
-            else:
-                env['NGINX_SOCKET'] = "{BIND_ADDRESS:s}:{PORT:s}".format(**env)
-                echo("-----> nginx will look for app '{}' on {}".format(app, env['NGINX_SOCKET']))
-
-            domains = env['NGINX_SERVER_NAME'].split()
-            domain = domains[0]
-            issuefile = join(ACME_ROOT, domain, "issued-" + "-".join(domains))
-            key, crt = [join(NGINX_ROOT, "{}.{}".format(app, x)) for x in ['key', 'crt']]
-            if exists(join(ACME_ROOT, "acme.sh")):
-                acme = ACME_ROOT
-                www = ACME_WWW
-                root_ca = ACME_ROOT_CA
-                # if this is the first run there will be no nginx conf yet
-                # create a basic conf stub just to serve the acme auth
-                if not exists(nginx_conf):
-                    echo("-----> writing temporary nginx conf")
-                    buffer = expandvars(NGINX_ACME_FIRSTRUN_TEMPLATE, env)
-                    with open(nginx_conf, "w") as h:
-                        h.write(buffer)
-                if not exists(key) or not exists(issuefile):
-                    echo("-----> getting letsencrypt certificate")
-                    certlist = " ".join(["-d {}".format(d) for d in domains])
-                    call(
-                        (
-                            '{acme:s}/acme.sh '
-                            '--issue {certlist:s} '
-                            '-w {www:s} '
-                            '--server {root_ca:s}'
-                        ).format(**locals()),
-                        shell=True,
-                    )
-                    call(
-                        (
-                            '{acme:s}/acme.sh '
-                            '--install-cert {certlist:s} '
-                            '--key-file {key:s} '
-                            '--fullchain-file {crt:s}'
-                        ).format(**locals()),
-                        shell=True,
-                    )
-                    if exists(join(ACME_ROOT, domain)) and not exists(join(ACME_WWW, app)):
-                        symlink(join(ACME_ROOT, domain), join(ACME_WWW, app))
-                    try:
-                        symlink("/dev/null", issuefile)
-                    except Exception:
-                        pass
-                else:
-                    echo("-----> letsencrypt certificate already installed")
-
-            # fall back to creating self-signed certificate if acme failed
-            if not exists(key) or stat(crt).st_size == 0:
-                echo("-----> generating self-signed certificate")
-                call(
-                    (
-                         'openssl req -new '
-                         '-newkey rsa:4096 '
-                         '-days 365 '
-                         '-nodes '
-                         '-x509 '
-                         '-subj "/C=US/ST=NY/L=New York/O=Piku/OU=Self-Signed/CN={domain:s}" '
-                         '-keyout {key:s} '
-                         '-out {crt:s}'
-                     ).format(**locals()),
-                     shell=True,
-                 )
-
-            # restrict access to server from CloudFlare IP addresses
-            acl = []
-            if get_boolean(env.get('NGINX_CLOUDFLARE_ACL', 'false')):
-                try:
-                    cf = loads(urlopen('https://api.cloudflare.com/client/v4/ips').read().decode("utf-8"))
-                    if cf['success'] is True:
-                        for i in cf['result']['ipv4_cidrs']:
-                            acl.append("allow {};".format(i))
-                        if get_boolean(env.get('DISABLE_IPV6', 'false')):
-                            for i in cf['result']['ipv6_cidrs']:
-                                acl.append("allow {};".format(i))
-                        # allow access from controlling machine
-                        if 'SSH_CLIENT' in environ:
-                            remote_ip = environ['SSH_CLIENT'].split()[0]
-                            echo("-----> nginx ACL will include your IP ({})".format(remote_ip))
-                            acl.append("allow {};".format(remote_ip))
-                        acl.extend(["allow 127.0.0.1;", "deny all;"])
-                except Exception:
-                    cf = defaultdict()
-                    echo("-----> Could not retrieve CloudFlare IP ranges: {}".format(format_exc()), fg="red")
-
-            env['NGINX_ACL'] = " ".join(acl)
-
-            env['PIKU_INTERNAL_NGINX_BLOCK_GIT'] = "" if env.get('NGINX_ALLOW_GIT_FOLDERS') else r"location ~ /\.git { deny all; }"
-
-            env['PIKU_INTERNAL_PROXY_CACHE_PATH'] = ''
-            env['PIKU_INTERNAL_NGINX_CACHE_MAPPINGS'] = ''
-
-            # Get a mapping of /prefix1,/prefix2
-            default_cache_path = join(CACHE_ROOT, app)
-            if not exists(default_cache_path):
-                makedirs(default_cache_path)
-            try:
-                cache_size = int(env.get('NGINX_CACHE_SIZE', '1'))
-            except Exception:
-                echo("=====> Invalid cache size, defaulting to 1GB")
-                cache_size = 1
-
-            cache_size = str(cache_size) + "g"
-            try:
-                cache_time_control = int(env.get('NGINX_CACHE_CONTROL', '3600'))
-            except Exception:
-                echo("=====> Invalid time for cache control, defaulting to 3600s")
-                cache_time_control = 3600
-
-            cache_time_control = str(cache_time_control)
-            try:
-                cache_time_content = int(env.get('NGINX_CACHE_TIME', '3600'))
-            except Exception:
-                echo("=====> Invalid cache time for content, defaulting to 3600s")
-                cache_time_content = 3600
-
-            cache_time_content = str(cache_time_content) + "s"
-            try:
-                cache_time_redirects = int(env.get('NGINX_CACHE_REDIRECTS', '3600'))
-            except Exception:
-                echo("=====> Invalid cache time for redirects, defaulting to 3600s")
-                cache_time_redirects = 3600
-
-            cache_time_redirects = str(cache_time_redirects) + "s"
-            try:
-                cache_time_any = int(env.get('NGINX_CACHE_ANY', '3600'))
-            except Exception:
-                echo("=====> Invalid cache expiry fallback, defaulting to 3600s")
-                cache_time_any = 3600
-
-            cache_time_any = str(cache_time_any) + "s"
-            try:
-                cache_time_expiry = int(env.get('NGINX_CACHE_EXPIRY', '86400'))
-            except Exception:
-                echo("=====> Invalid cache expiry, defaulting to 86400s")
-                cache_time_expiry = 86400
-
-            cache_time_expiry = str(cache_time_expiry) + "s"
-            cache_prefixes = env.get('NGINX_CACHE_PREFIXES', '')
-            cache_path = env.get('NGINX_CACHE_PATH', default_cache_path)
-
-            if not exists(cache_path):
-                echo("=====> Cache path {} does not exist, using default {}, be aware of disk usage.".format(cache_path, default_cache_path))
-                cache_path = env.get(default_cache_path)
-
-            if len(cache_prefixes):
-                prefixes = []  # this will turn into part of /(path1|path2|path3)
-                try:
-                    items = cache_prefixes.split(',')
-                    for item in items:
-                        if item[0] == '/':
-                            prefixes.append(item[1:])
-                        else:
-                            prefixes.append(item)
-                    cache_prefixes = "|".join(prefixes)
-                    echo("-----> nginx will cache /({}) prefixes up to {} or {} of disk space, with the following timings:".format(cache_prefixes, cache_time_expiry, cache_size))
-                    echo("-----> nginx will cache content for {}.".format(cache_time_content))
-                    echo("-----> nginx will cache redirects for {}.".format(cache_time_redirects))
-                    echo("-----> nginx will cache everything else for {}.".format(cache_time_any))
-                    echo("-----> nginx will send caching headers asking for {} seconds of public caching.".format(cache_time_control))
-                    env['PIKU_INTERNAL_PROXY_CACHE_PATH'] = expandvars(PIKU_INTERNAL_PROXY_CACHE_PATH, locals())
-                    env['PIKU_INTERNAL_NGINX_CACHE_MAPPINGS'] = expandvars(PIKU_INTERNAL_NGINX_CACHE_MAPPING, locals())
-                    env['PIKU_INTERNAL_NGINX_CACHE_MAPPINGS'] = expandvars(env['PIKU_INTERNAL_NGINX_CACHE_MAPPINGS'], env)
-                except Exception as e:
-                    echo("Error {} in cache path spec: should be /prefix1:[,/prefix2], ignoring.".format(e))
-                    env['PIKU_INTERNAL_NGINX_CACHE_MAPPINGS'] = ''
-
-            env['PIKU_INTERNAL_NGINX_STATIC_MAPPINGS'] = ''
-
-            # Get a mapping of /prefix1:path1,/prefix2:path2
-            static_paths = env.get('NGINX_STATIC_PATHS', '')
-
-            # prepend static worker path if present
-            if 'static' in workers:
-                stripped = workers['static'].strip("/").rstrip("/")
-                static_paths = ("/" if stripped[0:1] == ":" else "/:") + (stripped if stripped else ".") + "/" + ("," if static_paths else "") + static_paths
-            if len(static_paths):
-                try:
-                    items = static_paths.split(',')
-                    for item in items:
-                        static_url, static_path = item.split(':')
-                        if static_path[0] != '/':
-                            static_path = join(app_path, static_path).rstrip("/") + "/"
-                        echo("-----> nginx will map {} to {}.".format(static_url, static_path))
-                        env['PIKU_INTERNAL_NGINX_STATIC_MAPPINGS'] = env['PIKU_INTERNAL_NGINX_STATIC_MAPPINGS'] + expandvars(PIKU_INTERNAL_NGINX_STATIC_MAPPING, locals())
-                except Exception as e:
-                    echo("Error {} in static path spec: should be /prefix1:path1[,/prefix2:path2], ignoring.".format(e))
-                    env['PIKU_INTERNAL_NGINX_STATIC_MAPPINGS'] = ''
-
-            env['PIKU_INTERNAL_NGINX_CUSTOM_CLAUSES'] = expandvars(open(join(app_path, env["NGINX_INCLUDE_FILE"])).read(), env) if env.get("NGINX_INCLUDE_FILE") else ""
-            env['PIKU_INTERNAL_NGINX_PORTMAP'] = ""
-            if 'web' in workers or 'wsgi' in workers:
-                env['PIKU_INTERNAL_NGINX_PORTMAP'] = expandvars(NGINX_PORTMAP_FRAGMENT, env)
-            env['PIKU_INTERNAL_NGINX_COMMON'] = expandvars(NGINX_COMMON_FRAGMENT, env)
-
-            echo("-----> nginx will map app '{}' to hostname(s) '{}'".format(app, env['NGINX_SERVER_NAME']))
-            if get_boolean(env.get('NGINX_HTTPS_ONLY', 'false')):
-                buffer = expandvars(NGINX_HTTPS_ONLY_TEMPLATE, env)
-                echo("-----> nginx will redirect all requests to hostname(s) '{}' to HTTPS".format(env['NGINX_SERVER_NAME']))
-            else:
-                buffer = expandvars(NGINX_TEMPLATE, env)
-
-            # remove all references to IPv6 listeners (for enviroments where it's disabled)
-            if get_boolean(env.get('DISABLE_IPV6', 'false')):
-                buffer = '\n'.join([line for line in buffer.split('\n') if 'NGINX_IPV6' not in line])
-            # change any unecessary uWSGI specific directives to standard proxy ones
-            if 'wsgi' not in workers:
-                buffer = buffer.replace("uwsgi_", "proxy_")
-
-            # map Cloudflare connecting IP to REMOTE_ADDR
-            if get_boolean(env.get('NGINX_CLOUDFLARE_ACL', 'false')):
-                buffer = buffer.replace("REMOTE_ADDR $remote_addr", "REMOTE_ADDR $http_cf_connecting_ip")
-
-            with open(nginx_conf, "w") as h:
-                h.write(buffer)
-            # prevent broken config from breaking other deploys
-            try:
-                nginx_config_test = str(check_output("nginx -t 2>&1 | grep {}".format(app), env=environ, shell=True))
-            except Exception:
-                nginx_config_test = None
-            if nginx_config_test:
-                echo("Error: [nginx config] {}".format(nginx_config_test), fg='red')
-                echo("Warning: removing broken nginx config.", fg='yellow')
-                unlink(nginx_conf)
+            setup_nginx(
+                app,
+                env,
+                workers,
+                app_path,
+            )
 
     # Configured worker count
     if exists(scaling):
