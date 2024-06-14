@@ -69,12 +69,12 @@ def render(wr: IndentWriter, obj: ta.Any) -> None:
 
 
 def _main():
-    conf = Items([
-        Item('user', ['www', 'www']),
-        Item('worker_processes', ['2']),
-        Item('events', block=Items([
-            Item('worker_connections', ['2000']),
-        ])),
+    conf = Items.of([
+        ('user', 'www', 'www'),
+        ('worker_processes', '2'),
+        ('events', [
+            ('worker_connections', '2000'),
+        ]),
     ])
 
     wr = IndentWriter()
