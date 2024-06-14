@@ -1,23 +1,13 @@
 #!/usr/bin/env python3
-
-"Piku Micro-PaaS"
-
-try:
-    from sys import version_info
-    assert version_info >= (3, 7)
-except AssertionError:
-    exit("Piku requires Python 3.7 or above")
-
-from importlib import import_module
+"""Piku Micro-PaaS"""
 from collections import defaultdict, deque
-from fcntl import fcntl, F_SETFL, F_GETFL
 from glob import glob
+from importlib import import_module
 from json import loads
 from multiprocessing import cpu_count
 from os import chmod, getgid, getuid, symlink, unlink, remove, stat, listdir, environ, makedirs, O_NONBLOCK
 from os.path import abspath, basename, dirname, exists, getmtime, join, realpath, splitext, isdir
 from pwd import getpwuid
-from grp import getgrgid
 from re import sub, match
 from shutil import copyfile, rmtree, which
 from socket import socket, AF_INET, SOCK_STREAM
@@ -29,12 +19,17 @@ from time import sleep
 from traceback import format_exc
 from urllib.request import urlopen
 
+from fcntl import fcntl, F_SETFL, F_GETFL
+from grp import getgrgid
+
 from click import argument, group, secho as echo, pass_context, CommandCollection
+
 
 # === Make sure we can access all system binaries ===
 
 if 'sbin' not in environ['PATH']:
     environ['PATH'] = "/usr/local/sbin:/usr/sbin:/sbin:" + environ['PATH']
+
 
 # === Globals - all tweakable settings are here ===
 
@@ -57,6 +52,7 @@ UWSGI_LOG_MAXSIZE = '1048576'
 ACME_ROOT = environ.get('ACME_ROOT', join(environ['HOME'], '.acme.sh'))
 ACME_WWW = abspath(join(PIKU_ROOT, "acme"))
 ACME_ROOT_CA = environ.get('ACME_ROOT_CA', 'letsencrypt.org')
+
 
 # === Make sure we can access piku user-installed binaries === #
 
@@ -215,6 +211,7 @@ PIKU_INTERNAL_NGINX_UWSGI_SETTINGS = """
 
 CRON_REGEXP = r"^((?:(?:\*\/)?\d+)|\*) ((?:(?:\*\/)?\d+)|\*) ((?:(?:\*\/)?\d+)|\*) ((?:(?:\*\/)?\d+)|\*) ((?:(?:\*\/)?\d+)|\*) (.*)$"
 
+
 # === Utility functions ===
 
 
@@ -302,7 +299,7 @@ def parse_procfile(filename):
     if len(workers) == 0:
         return {}
     # WSGI trumps regular web workers
-    if 'wsgi' in workers or 'jwsgi' in workers or 'rwsgi' in workers:
+    if 'wsgi' in workers:
         if 'web' in workers:
             echo("Warning: found both 'wsgi' and 'web' workers, disabling 'web'", fg='yellow')
             del workers['web']
@@ -394,21 +391,8 @@ def do_deploy(app, deltas={}, newrev=None):
                 workers.pop("preflight", None)
             if exists(join(app_path, 'requirements.txt')) and found_app("Python"):
                 settings.update(deploy_python(app, deltas))
-            elif exists(join(app_path, 'Gemfile')) and found_app("Ruby Application") and check_requirements(['ruby', 'gem', 'bundle']):
-                settings.update(deploy_ruby(app, deltas))
-            elif exists(join(app_path, 'package.json')) and found_app("Node") and (
-                    check_requirements(['nodejs', 'npm']) or check_requirements(['node', 'npm']) or check_requirements(['nodeenv'])):
+            elif exists(join(app_path, 'package.json')) and found_app("Node") and (check_requirements(['nodejs', 'npm']) or check_requirements(['node', 'npm']) or check_requirements(['nodeenv'])):
                 settings.update(deploy_node(app, deltas))
-            elif exists(join(app_path, 'pom.xml')) and found_app("Java Maven") and check_requirements(['java', 'mvn']):
-                settings.update(deploy_java_maven(app, deltas))
-            elif exists(join(app_path, 'build.gradle')) and found_app("Java Gradle") and check_requirements(['java', 'gradle']):
-                settings.update(deploy_java_gradle(app, deltas))
-            elif (exists(join(app_path, 'Godeps')) or len(glob(join(app_path, '*.go')))) and found_app("Go") and check_requirements(['go']):
-                settings.update(deploy_go(app, deltas))
-            elif exists(join(app_path, 'deps.edn')) and found_app("Clojure CLI") and check_requirements(['java', 'clojure']):
-                settings.update(deploy_clojure_cli(app, deltas))
-            elif exists(join(app_path, 'project.clj')) and found_app("Clojure Lein") and check_requirements(['java', 'lein']):
-                settings.update(deploy_clojure_leiningen(app, deltas))
             elif 'release' in workers and 'web' in workers:
                 echo("-----> Generic app detected.", fg='green')
                 settings.update(deploy_identity(app, deltas))
@@ -429,163 +413,6 @@ def do_deploy(app, deltas={}, newrev=None):
             echo("Error: Invalid Procfile for app '{}'.".format(app), fg='red')
     else:
         echo("Error: app '{}' not found.".format(app), fg='red')
-
-
-def deploy_java_gradle(app, deltas={}):
-    """Deploy a Java application using Gradle"""
-    java_path = join(ENV_ROOT, app)
-    build_path = join(APP_ROOT, app, 'build')
-    env_file = join(APP_ROOT, app, 'ENV')
-
-    env = {
-        'VIRTUAL_ENV': java_path,
-        "PATH": ':'.join([join(java_path, "bin"), join(app, ".bin"), environ['PATH']])
-    }
-
-    if exists(env_file):
-        env.update(parse_settings(env_file, env))
-
-    if not exists(java_path):
-        makedirs(java_path)
-
-    if not exists(build_path):
-        echo("-----> Building Java Application")
-        call('gradle build', cwd=join(APP_ROOT, app), env=env, shell=True)
-
-    else:
-        echo("-----> Removing previous builds")
-        echo("-----> Rebuilding Java Application")
-        call('gradle clean build', cwd=join(APP_ROOT, app), env=env, shell=True)
-
-    return spawn_app(app, deltas)
-
-
-def deploy_java_maven(app, deltas={}):
-    """Deploy a Java application using Maven"""
-    # TODO: Use jenv to isolate Java Application environments
-
-    java_path = join(ENV_ROOT, app)
-    target_path = join(APP_ROOT, app, 'target')
-    env_file = join(APP_ROOT, app, 'ENV')
-
-    env = {
-        'VIRTUAL_ENV': java_path,
-        "PATH": ':'.join([join(java_path, "bin"), join(app, ".bin"), environ['PATH']])
-    }
-
-    if exists(env_file):
-        env.update(parse_settings(env_file, env))
-
-    if not exists(java_path):
-        makedirs(java_path)
-
-    if not exists(target_path):
-        echo("-----> Building Java Application")
-        call('mvn package', cwd=join(APP_ROOT, app), env=env, shell=True)
-
-    else:
-        echo("-----> Removing previous builds")
-        echo("-----> Rebuilding Java Application")
-        call('mvn clean package', cwd=join(APP_ROOT, app), env=env, shell=True)
-
-    return spawn_app(app, deltas)
-
-
-def deploy_clojure_cli(app, deltas={}):
-    """Deploy a Clojure Application"""
-
-    virtual = join(ENV_ROOT, app)
-    target_path = join(APP_ROOT, app, 'target')
-    env_file = join(APP_ROOT, app, 'ENV')
-
-    if not exists(target_path):
-        makedirs(virtual)
-    env = {
-        'VIRTUAL_ENV': virtual,
-        "PATH": ':'.join([join(virtual, "bin"), join(app, ".bin"), environ['PATH']]),
-        "CLJ_CONFIG": environ.get('CLJ_CONFIG', join(environ['HOME'], '.clojure')),
-    }
-    if exists(env_file):
-        env.update(parse_settings(env_file, env))
-    echo("-----> Building Clojure Application")
-    call('clojure -T:build release', cwd=join(APP_ROOT, app), env=env, shell=True)
-
-    return spawn_app(app, deltas)
-
-
-def deploy_clojure_leiningen(app, deltas={}):
-    """Deploy a Clojure Application"""
-
-    virtual = join(ENV_ROOT, app)
-    target_path = join(APP_ROOT, app, 'target')
-    env_file = join(APP_ROOT, app, 'ENV')
-
-    if not exists(target_path):
-        makedirs(virtual)
-    env = {
-        'VIRTUAL_ENV': virtual,
-        "PATH": ':'.join([join(virtual, "bin"), join(app, ".bin"), environ['PATH']]),
-        "LEIN_HOME": environ.get('LEIN_HOME', join(environ['HOME'], '.lein')),
-    }
-    if exists(env_file):
-        env.update(parse_settings(env_file, env))
-    echo("-----> Building Clojure Application")
-    call('lein clean', cwd=join(APP_ROOT, app), env=env, shell=True)
-    call('lein uberjar', cwd=join(APP_ROOT, app), env=env, shell=True)
-
-    return spawn_app(app, deltas)
-
-
-def deploy_ruby(app, deltas={}):
-    """Deploy a Ruby Application"""
-
-    virtual = join(ENV_ROOT, app)
-    env_file = join(APP_ROOT, app, 'ENV')
-
-    env = {
-        'VIRTUAL_ENV': virtual,
-        "PATH": ':'.join([join(virtual, "bin"), join(app, ".bin"), environ['PATH']]),
-    }
-    if exists(env_file):
-        env.update(parse_settings(env_file, env))
-
-    if not exists(virtual):
-        echo("-----> Building Ruby Application")
-        makedirs(virtual)
-        call('bundle config set --local path $VIRTUAL_ENV', cwd=join(APP_ROOT, app), env=env, shell=True)
-    else:
-        echo("------> Rebuilding Ruby Application")
-
-    call('bundle install', cwd=join(APP_ROOT, app), env=env, shell=True)
-
-    return spawn_app(app, deltas)
-
-
-def deploy_go(app, deltas={}):
-    """Deploy a Go application"""
-
-    go_path = join(ENV_ROOT, app)
-    deps = join(APP_ROOT, app, 'Godeps')
-
-    first_time = False
-    if not exists(go_path):
-        echo("-----> Creating GOPATH for '{}'".format(app), fg='green')
-        makedirs(go_path)
-        # copy across a pre-built GOPATH to save provisioning time
-        call('cp -a $HOME/gopath {}'.format(app), cwd=ENV_ROOT, shell=True)
-        first_time = True
-
-    if exists(deps):
-        if first_time or getmtime(deps) > getmtime(go_path):
-            echo("-----> Running godep for '{}'".format(app), fg='green')
-            env = {
-                'GOPATH': '$HOME/gopath',
-                'GOROOT': '$HOME/go',
-                'PATH': '$PATH:$HOME/go/bin',
-                'GO15VENDOREXPERIMENT': '1'
-            }
-            call('godep update ...', cwd=join(APP_ROOT, app), env=env, shell=True)
-    return spawn_app(app, deltas)
 
 
 def deploy_node(app, deltas={}):
@@ -618,8 +445,7 @@ def deploy_node(app, deltas={}):
 
     version = env.get("NODE_VERSION")
     node_binary = join(virtualenv_path, "bin", "node")
-    installed = check_output("{} -v".format(node_binary), cwd=join(APP_ROOT, app), env=env, shell=True).decode("utf8").rstrip(
-        "\n") if exists(node_binary) else ""
+    installed = check_output("{} -v".format(node_binary), cwd=join(APP_ROOT, app), env=env, shell=True).decode("utf8").rstrip("\n") if exists(node_binary) else ""
 
     if version and check_requirements(['nodeenv']):
         if not installed.endswith(version):
@@ -628,8 +454,7 @@ def deploy_node(app, deltas={}):
                 echo("Warning: Can't update node with app running. Stop the app & retry.", fg='yellow')
             else:
                 echo("-----> Installing node version '{NODE_VERSION:s}' using nodeenv".format(**env), fg='green')
-                call("nodeenv --prebuilt --node={NODE_VERSION:s} --clean-src --force {VIRTUAL_ENV:s}".format(**env),
-                     cwd=virtualenv_path, env=env, shell=True)
+                call("nodeenv --prebuilt --node={NODE_VERSION:s} --clean-src --force {VIRTUAL_ENV:s}".format(**env), cwd=virtualenv_path, env=env, shell=True)
         else:
             echo("-----> Node is installed at {}.".format(version))
 
@@ -741,7 +566,7 @@ def spawn_app(app, deltas={}):
     if exists(settings):
         env.update(parse_settings(settings, env))  # lgtm [py/modification-of-default-value]
 
-    if 'web' in workers or 'wsgi' in workers or 'jwsgi' in workers or 'static' in workers or 'rwsgi' in workers:
+    if 'web' in workers or 'wsgi' in workers or 'static' in workers:
         # Pick a port if none defined
         if 'PORT' not in env:
             env['PORT'] = str(get_free_port())
@@ -779,7 +604,7 @@ def spawn_app(app, deltas={}):
 
             # default to reverse proxying to the TCP port we picked
             env['PIKU_INTERNAL_NGINX_UWSGI_SETTINGS'] = 'proxy_pass http://{BIND_ADDRESS:s}:{PORT:s};'.format(**env)
-            if 'wsgi' in workers or 'jwsgi' in workers:
+            if 'wsgi' in workers:
                 sock = join(NGINX_ROOT, "{}.sock".format(app))
                 env['PIKU_INTERNAL_NGINX_UWSGI_SETTINGS'] = expandvars(PIKU_INTERNAL_NGINX_UWSGI_SETTINGS, env)
                 env['NGINX_SOCKET'] = env['BIND_ADDRESS'] = "unix://" + sock
@@ -807,9 +632,11 @@ def spawn_app(app, deltas={}):
                 if not exists(key) or not exists(issuefile):
                     echo("-----> getting letsencrypt certificate")
                     certlist = " ".join(["-d {}".format(d) for d in domains])
-                    call('{acme:s}/acme.sh --issue {certlist:s} -w {www:s} --server {root_ca:s}'.format(**locals()), shell=True)
-                    call('{acme:s}/acme.sh --install-cert {certlist:s} --key-file {key:s} --fullchain-file {crt:s}'.format(
-                        **locals()), shell=True)
+                    call('{acme:s}/acme.sh --issue {certlist:s} -w {www:s} --server {root_ca:s}'.format(**locals()),
+                         shell=True)
+                    call(
+                        '{acme:s}/acme.sh --install-cert {certlist:s} --key-file {key:s} --fullchain-file {crt:s}'.format(
+                            **locals()), shell=True)
                     if exists(join(ACME_ROOT, domain)) and not exists(join(ACME_WWW, app)):
                         symlink(join(ACME_ROOT, domain), join(ACME_WWW, app))
                     try:
@@ -914,12 +741,9 @@ def spawn_app(app, deltas={}):
                     echo("-----> nginx will cache redirects for {}.".format(cache_time_redirects))
                     echo("-----> nginx will cache everything else for {}.".format(cache_time_any))
                     echo("-----> nginx will send caching headers asking for {} seconds of public caching.".format(cache_time_control))
-                    env['PIKU_INTERNAL_PROXY_CACHE_PATH'] = expandvars(
-                        PIKU_INTERNAL_PROXY_CACHE_PATH, locals())
-                    env['PIKU_INTERNAL_NGINX_CACHE_MAPPINGS'] = expandvars(
-                        PIKU_INTERNAL_NGINX_CACHE_MAPPING, locals())
-                    env['PIKU_INTERNAL_NGINX_CACHE_MAPPINGS'] = expandvars(
-                        env['PIKU_INTERNAL_NGINX_CACHE_MAPPINGS'], env)
+                    env['PIKU_INTERNAL_PROXY_CACHE_PATH'] = expandvars(PIKU_INTERNAL_PROXY_CACHE_PATH, locals())
+                    env['PIKU_INTERNAL_NGINX_CACHE_MAPPINGS'] = expandvars(PIKU_INTERNAL_NGINX_CACHE_MAPPING, locals())
+                    env['PIKU_INTERNAL_NGINX_CACHE_MAPPINGS'] = expandvars(env['PIKU_INTERNAL_NGINX_CACHE_MAPPINGS'], env)
                 except Exception as e:
                     echo("Error {} in cache path spec: should be /prefix1:[,/prefix2], ignoring.".format(e))
                     env['PIKU_INTERNAL_NGINX_CACHE_MAPPINGS'] = ''
@@ -940,15 +764,14 @@ def spawn_app(app, deltas={}):
                         if static_path[0] != '/':
                             static_path = join(app_path, static_path).rstrip("/") + "/"
                         echo("-----> nginx will map {} to {}.".format(static_url, static_path))
-                        env['PIKU_INTERNAL_NGINX_STATIC_MAPPINGS'] = env['PIKU_INTERNAL_NGINX_STATIC_MAPPINGS'] + expandvars(
-                            PIKU_INTERNAL_NGINX_STATIC_MAPPING, locals())
+                        env['PIKU_INTERNAL_NGINX_STATIC_MAPPINGS'] = env['PIKU_INTERNAL_NGINX_STATIC_MAPPINGS'] + expandvars(PIKU_INTERNAL_NGINX_STATIC_MAPPING, locals())
                 except Exception as e:
                     echo("Error {} in static path spec: should be /prefix1:path1[,/prefix2:path2], ignoring.".format(e))
                     env['PIKU_INTERNAL_NGINX_STATIC_MAPPINGS'] = ''
 
             env['PIKU_INTERNAL_NGINX_CUSTOM_CLAUSES'] = expandvars(open(join(app_path, env["NGINX_INCLUDE_FILE"])).read(), env) if env.get("NGINX_INCLUDE_FILE") else ""
             env['PIKU_INTERNAL_NGINX_PORTMAP'] = ""
-            if 'web' in workers or 'wsgi' in workers or 'jwsgi' in workers or 'rwsgi' in workers:
+            if 'web' in workers or 'wsgi' in workers:
                 env['PIKU_INTERNAL_NGINX_PORTMAP'] = expandvars(NGINX_PORTMAP_FRAGMENT, env)
             env['PIKU_INTERNAL_NGINX_COMMON'] = expandvars(NGINX_COMMON_FRAGMENT, env)
 
@@ -963,7 +786,7 @@ def spawn_app(app, deltas={}):
             if get_boolean(env.get('DISABLE_IPV6', 'false')):
                 buffer = '\n'.join([line for line in buffer.split('\n') if 'NGINX_IPV6' not in line])
             # change any unecessary uWSGI specific directives to standard proxy ones
-            if 'wsgi' not in workers and 'jwsgi' not in workers:
+            if 'wsgi' not in workers:
                 buffer = buffer.replace("uwsgi_", "proxy_")
 
             # map Cloudflare connecting IP to REMOTE_ADDR
@@ -1082,24 +905,6 @@ def spawn_worker(app, kind, command, env, ordinal=1):
             ['cron', command.replace("*/", "-").replace("*", "-1")],
         ])
 
-    if kind == 'jwsgi':
-        settings.extend([
-            ('module', command),
-            ('threads', env.get('UWSGI_THREADS', '4')),
-            ('plugin', 'jvm'),
-            ('plugin', 'jwsgi')
-        ])
-
-    # could not come up with a better kind for ruby, web would work but that means loading the rack plugin in web.
-    if kind == 'rwsgi':
-        settings.extend([
-            ('module', command),
-            ('threads', env.get('UWSGI_THREADS', '4')),
-            ('plugin', 'rack'),
-            ('plugin', 'rbrequire'),
-            ('plugin', 'post-buffering')
-        ])
-
     python_version = int(env.get('PYTHON_VERSION', '3'))
 
     if kind == 'wsgi':
@@ -1108,40 +913,19 @@ def spawn_worker(app, kind, command, env, ordinal=1):
             ('threads', env.get('UWSGI_THREADS', '4')),
         ])
 
-        if python_version == 2:
-            settings.extend([
-                ('plugin', 'python'),
-            ])
-            if 'UWSGI_GEVENT' in env:
+        settings.extend([
+            ('plugin', 'python3'),
+        ])
+        if 'UWSGI_ASYNCIO' in env:
+            try:
+                tasks = int(env['UWSGI_ASYNCIO'])
                 settings.extend([
-                    ('plugin', 'gevent_python'),
-                    ('gevent', env['UWSGI_GEVENT']),
+                    ('plugin', 'asyncio_python3'),
+                    ('async', tasks),
                 ])
-            elif 'UWSGI_ASYNCIO' in env:
-                try:
-                    tasks = int(env['UWSGI_ASYNCIO'])
-                    settings.extend([
-                        ('plugin', 'asyncio_python'),
-                        ('async', tasks),
-                    ])
-                    echo("-----> uwsgi will support {} async tasks".format(tasks), fg='yellow')
-                except ValueError:
-                    echo("Error: malformed setting 'UWSGI_ASYNCIO', ignoring it.".format(), fg='red')
-
-        elif python_version == 3:
-            settings.extend([
-                ('plugin', 'python3'),
-            ])
-            if 'UWSGI_ASYNCIO' in env:
-                try:
-                    tasks = int(env['UWSGI_ASYNCIO'])
-                    settings.extend([
-                        ('plugin', 'asyncio_python3'),
-                        ('async', tasks),
-                    ])
-                    echo("-----> uwsgi will support {} async tasks".format(tasks), fg='yellow')
-                except ValueError:
-                    echo("Error: malformed setting 'UWSGI_ASYNCIO', ignoring it.".format(), fg='red')
+                echo("-----> uwsgi will support {} async tasks".format(tasks), fg='yellow')
+            except ValueError:
+                echo("Error: malformed setting 'UWSGI_ASYNCIO', ignoring it.".format(), fg='red')
 
         # If running under nginx, don't expose a port at all
         if 'NGINX_SERVER_NAME' in env:
@@ -1169,8 +953,7 @@ def spawn_worker(app, kind, command, env, ordinal=1):
         settings.append(('attach-daemon', command))
 
     if kind in ['wsgi', 'web']:
-        settings.append(('log-format',
-                         '%%(addr) - %%(user) [%%(ltime)] "%%(method) %%(uri) %%(proto)" %%(status) %%(size) "%%(referer)" "%%(uagent)" %%(msecs)ms'))
+        settings.append(('log-format', '%%(addr) - %%(user) [%%(ltime)] "%%(method) %%(uri) %%(proto)" %%(status) %%(size) "%%(referer)" "%%(uagent)" %%(msecs)ms'))
 
     # remove unnecessary variables from the env in nginx.ini
     for k in ['NGINX_ACL']:
@@ -1264,6 +1047,7 @@ def multi_tail(app, filenames, catch_up=20):
 
 # === CLI commands ===
 
+
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 
@@ -1280,6 +1064,7 @@ piku.rc = getattr(piku, "result_callback", None) or getattr(piku, "resultcallbac
 def cleanup(ctx):
     """Callback from command execution -- add debugging to taste"""
     pass
+
 
 # --- User commands ---
 
@@ -1503,7 +1288,8 @@ def cmd_run(app, cmd):
     for f in [stdout, stderr]:
         fl = fcntl(f, F_GETFL)
         fcntl(f, F_SETFL, fl | O_NONBLOCK)
-    p = Popen(' '.join(cmd), stdin=stdin, stdout=stdout, stderr=stderr, env=environ, cwd=join(APP_ROOT, app), shell=True)
+    p = Popen(' '.join(cmd), stdin=stdin, stdout=stdout, stderr=stderr, env=environ, cwd=join(APP_ROOT, app),
+              shell=True)
     p.communicate()
 
 
@@ -1524,7 +1310,8 @@ def cmd_setup():
     echo("Running in Python {}".format(".".join(map(str, version_info))))
 
     # Create required paths
-    for p in [APP_ROOT, CACHE_ROOT, DATA_ROOT, GIT_ROOT, ENV_ROOT, UWSGI_ROOT, UWSGI_AVAILABLE, UWSGI_ENABLED, LOG_ROOT, NGINX_ROOT]:
+    for p in [APP_ROOT, CACHE_ROOT, DATA_ROOT, GIT_ROOT, ENV_ROOT, UWSGI_ROOT, UWSGI_AVAILABLE, UWSGI_ENABLED, LOG_ROOT,
+              NGINX_ROOT]:
         if not exists(p):
             echo("Creating '{}'.".format(p), fg='green')
             makedirs(p)
@@ -1590,6 +1377,7 @@ def cmd_stop(app):
 
 # --- Internal commands ---
 
+
 @piku.command("git-hook")
 @argument('app')
 def cmd_git_hook(app):
@@ -1607,7 +1395,8 @@ def cmd_git_hook(app):
         if not exists(app_path):
             echo("-----> Creating app '{}'".format(app), fg='green')
             makedirs(app_path)
-            # The data directory may already exist, since this may be a full redeployment (we never delete data since it may be expensive to recreate)
+            # The data directory may already exist, since this may be a full redeployment (we never delete data since it
+            # may be expensive to recreate)
             if not exists(data_path):
                 makedirs(data_path)
             call("git clone --quiet {} {}".format(repo_path, app), cwd=APP_ROOT, shell=True)
