@@ -256,57 +256,6 @@ def do_restart(app):
     spawn_app(app)
 
 
-def multi_tail(app, filenames, catch_up=20):
-    """Tails multiple log files"""
-
-    # Seek helper
-    def peek(handle):
-        where = handle.tell()
-        line = handle.readline()
-        if not line:
-            handle.seek(where)
-            return None
-        return line
-
-    inodes = {}
-    files = {}
-    prefixes = {}
-
-    # Set up current state for each log file
-    for f in filenames:
-        prefixes[f] = splitext(basename(f))[0]
-        files[f] = open(f, "rt", encoding="utf-8", errors="ignore")
-        inodes[f] = stat(f).st_ino
-        files[f].seek(0, 2)
-
-    longest = max(map(len, prefixes.values()))
-
-    # Grab a little history (if any)
-    for f in filenames:
-        for line in deque(open(f, "rt", encoding="utf-8", errors="ignore"), catch_up):
-            yield "{} | {}".format(prefixes[f].ljust(longest), line)
-
-    while True:
-        updated = False
-        # Check for updates on every file
-        for f in filenames:
-            line = peek(files[f])
-            if line:
-                updated = True
-                yield "{} | {}".format(prefixes[f].ljust(longest), line)
-
-        if not updated:
-            sleep(1)
-            # Check if logs rotated
-            for f in filenames:
-                if exists(f):
-                    if stat(f).st_ino != inodes[f]:
-                        files[f] = open(f)
-                        inodes[f] = stat(f).st_ino
-                else:
-                    filenames.remove(f)
-
-
 # === CLI commands ===
 
 
