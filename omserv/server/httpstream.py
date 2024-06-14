@@ -19,7 +19,6 @@ from .types import HTTPResponseStartEvent
 from .types import HTTPScope
 from .types import Scope
 from .types import UnexpectedMessageError
-from .types import WaitableEvent
 from .workercontext import WorkerContext
 
 
