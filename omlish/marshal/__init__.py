@@ -18,15 +18,25 @@ from .base import (  # noqa
     SetType,
 )
 
-from .objects import (  # noqa
-    FieldMetadata,
-    FieldNaming,
-    ObjectMetadata,
+from .naming import (  # noqa
+    Naming,
+    translate_name,
 )
 
 from .global_ import (  # noqa
     marshal,
     unmarshal,
+)
+
+from .objects import (  # noqa
+    FieldMetadata,
+    ObjectMetadata,
+)
+
+from .polymorphism import (  # noqa
+    Impl,
+    Polymorphism,
+    polymorphism_from_subclasses,
 )
 
 from .registries import (  # noqa

@@ -4,33 +4,26 @@ TODO:
  - adapters for dataclasses / namedtuples / user objects (as confitured)
 """
 import collections.abc
-import enum
 import typing as ta
 
 from .. import check
 from .. import dataclasses as dc
-from .. import lang
 from .base import MarshalContext
 from .base import Marshaler
 from .base import MarshalerFactory
-from .base import Option
 from .base import UnmarshalContext
 from .base import Unmarshaler
 from .base import UnmarshalerFactory
+from .naming import Naming
 from .values import Value
 
 
 ##
 
 
-class FieldNaming(Option, enum.Enum):
-    SNAKE = 'snake'
-    CAMEL = 'camel'
-
-
 @dc.dataclass(frozen=True)
 class ObjectMetadata:
-    field_naming: FieldNaming | None = None
+    field_naming: Naming | None = None
 
     unknown_field: str | None = None
 
@@ -58,14 +51,6 @@ class FieldInfo:
 
     marshal_name: str
     unmarshal_names: ta.Sequence[str]
-
-
-def name_field(n: str, e: FieldNaming) -> str:
-    if e is FieldNaming.SNAKE:
-        return lang.snake_case(n)
-    if e is FieldNaming.CAMEL:
-        return lang.camel_case(n)
-    raise ValueError(e)
 
 
 ##

@@ -9,6 +9,7 @@ import dataclasses as dc
 import typing as ta
 
 from .. import check
+from .. import lang
 from .. import reflect as rfl
 from .base import MarshalContext
 from .base import Marshaler
@@ -16,7 +17,12 @@ from .base import MarshalerFactory
 from .base import UnmarshalContext
 from .base import Unmarshaler
 from .base import UnmarshalerFactory
+from .naming import Naming
+from .naming import translate_name
 from .values import Value
+
+
+##
 
 
 @dc.dataclass(frozen=True)
@@ -66,6 +72,30 @@ class Polymorphism:
         return self._by_tag
 
 
+def polymorphism_from_subclasses(ty: type, *, naming: Naming | None = None) -> Polymorphism:
+    dct: dict[str, Impl] = {}
+    seen: set[type] = set()
+    todo: list[type] = [ty]
+    while todo:
+        cur = todo.pop()
+        seen.add(cur)
+        if not lang.is_abstract_class(cur):
+            nam = cur.__name__
+            if naming is not None:
+                nam = translate_name(nam)
+            if nam in dct:
+                raise KeyError(f'Duplicate name: {nam}')
+            dct[nam] = Impl(
+                cur,
+                nam,
+            )
+        todo.extend(nxt for nxt in cur.__subclasses__() if nxt not in seen)
+    return Polymorphism(ty, dct.values())
+
+
+##
+
+
 @dc.dataclass(frozen=True)
 class PolymorphismMarshaler(Marshaler):
     m: ta.Mapping[type, tuple[str, Marshaler]]
@@ -86,6 +116,9 @@ class PolymorphismMarshalerFactory(MarshalerFactory):
                 for i in self.p.impls
             })
         return None
+
+
+##
 
 
 @dc.dataclass(frozen=True)
