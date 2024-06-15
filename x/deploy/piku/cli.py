@@ -316,8 +316,15 @@ def cmd_run(app, cmd):
     for f in [stdout, stderr]:
         fl = fcntl(f, F_GETFL)
         fcntl(f, F_SETFL, fl | O_NONBLOCK)
-    p = Popen(' '.join(cmd), stdin=stdin, stdout=stdout, stderr=stderr, env=environ, cwd=join(APP_ROOT, app),
-              shell=True)
+    p = Popen(
+        ' '.join(cmd),
+        stdin=stdin,
+        stdout=stdout,
+        stderr=stderr,
+        env=environ,
+        cwd=join(APP_ROOT, app),
+        shell=True,
+    )
     p.communicate()
 
 
@@ -338,8 +345,18 @@ def cmd_setup():
     echo("Running in Python {}".format(".".join(map(str, version_info))))
 
     # Create required paths
-    for p in [APP_ROOT, CACHE_ROOT, DATA_ROOT, GIT_ROOT, ENV_ROOT, UWSGI_ROOT, UWSGI_AVAILABLE, UWSGI_ENABLED, LOG_ROOT,
-              NGINX_ROOT]:
+    for p in [
+        APP_ROOT,
+        CACHE_ROOT,
+        DATA_ROOT,
+        GIT_ROOT,
+        ENV_ROOT,
+        UWSGI_ROOT,
+        UWSGI_AVAILABLE,
+        UWSGI_ENABLED,
+        LOG_ROOT,
+        NGINX_ROOT,
+    ]:
         if not exists(p):
             echo("Creating '{}'.".format(p), fg='green')
             makedirs(p)
