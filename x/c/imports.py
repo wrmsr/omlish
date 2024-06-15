@@ -93,16 +93,15 @@ def _main():
 
     print(fw)
     print(fw.dispatch)
-    print(fw(10))
+    assert fw(10) == 'barf str! 10'
 
     import weakref
     fwr = weakref.ref(fw)
     assert fwr() is fw
 
     import pickle
-    o = barf
-    o = pickle.loads(pickle.dumps(fw))
-    print(o)
+    upfw = pickle.loads(pickle.dumps(fw))
+    assert upfw(10) == 'barf str! 10'
 
 
 if __name__ == '__main__':

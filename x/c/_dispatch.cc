@@ -168,6 +168,40 @@ static PyObject * function_wrapper_vectorcall(function_wrapper_object *self, PyO
     return res;
 }
 
+static PyObject *
+function_wrapper_reduce(function_wrapper_object *self, PyObject *unused)
+{
+    return Py_BuildValue(
+            "O(O)(OO)",
+            Py_TYPE(self),
+            self->dispatch,
+            self->dispatch, self->dict ? self->dict : Py_None);
+}
+
+static PyObject *
+function_wrapper_setstate(function_wrapper_object *self, PyObject *state)
+{
+    PyObject *dispatch, *dict;
+
+    if (!PyTuple_Check(state) ||
+        !PyArg_ParseTuple(state, "OO", &dispatch, &dict) ||
+        !PyCallable_Check(dispatch))
+    {
+        PyErr_SetString(PyExc_TypeError, "invalid function_wrapper state");
+        return NULL;
+    }
+
+    if (dict == Py_None) {
+        dict = NULL;
+    } else {
+        Py_INCREF(dict);
+    }
+
+    Py_SETREF(self->dispatch, Py_NewRef(dispatch));
+    Py_XSETREF(self->dict, dict);
+    Py_RETURN_NONE;
+}
+
 static PyMemberDef function_wrapper_members[] = {
     {"dispatch", T_OBJECT, offsetof(function_wrapper_object, dispatch), READONLY},
     {"__weaklistoffset__", T_PYSSIZET, offsetof(function_wrapper_object, weakreflist), READONLY},
@@ -182,6 +216,8 @@ static PyGetSetDef function_wrapper_getsetters[] = {
 };
 
 static PyMethodDef function_wrapper_methods[] = {
+    {"__reduce__", (PyCFunction) function_wrapper_reduce, METH_NOARGS},
+    {"__setstate__", (PyCFunction) function_wrapper_setstate, METH_O},
     {NULL}
 };
 
@@ -194,7 +230,6 @@ static PyType_Slot function_wrapper_type_slots[] = {
         {Py_tp_new, (void *) function_wrapper_new},
         {Py_tp_dealloc, (void *) function_wrapper_dealloc},
         {Py_tp_call, (void *) function_wrapper_call},
-
         {0, 0}
 };
 
