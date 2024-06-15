@@ -31,6 +31,7 @@ RUN \
         dnsutils \
         dumb-init \
         emacs \
+        file \
         flex \
         gcc \
         gdb \
