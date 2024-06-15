@@ -27,6 +27,10 @@ from .clsdct import ClassDctFn  # noqa
 from .clsdct import cls_dct_fn  # noqa
 from .clsdct import get_caller_cls_dct  # noqa
 from .clsdct import is_possibly_cls_dct  # noqa
+from .cmp import Infinity  # noqa
+from .cmp import InfinityType  # noqa
+from .cmp import NegativeInfinity  # noqa
+from .cmp import NegativeInfinityType  # noqa
 from .contextmanagers import ContextManaged  # noqa
 from .contextmanagers import ContextWrapped  # noqa
 from .contextmanagers import DefaultLockable  # noqa
