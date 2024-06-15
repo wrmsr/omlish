@@ -1,16 +1,32 @@
 [build-system]
-requires = ["setuptools"]
+requires = [
+    "python_version>=3.11",
+    "setuptools>=70",
+    "setuptools_scm>=8",
+]
 build-backend = "setuptools.build_meta"
 
-# TODO:
-# [project]
-# name = "omlish"
-# author = "wrmsr"
-# url = "https://github.com/wrmsr/omlish"
+
+##
+
+[project]
+name = "omlish"
+author = "wrmsr"
+url = "https://github.com/wrmsr/omlish"
 # dynamic = ["version", "description", "classifiers"]
+
 # [tool.setuptools.dynamic]
-# version = {attr = "my_package.VERSION"}
+## version = {attr = "my_package.VERSION"}
 # readme = {file = ["README.rst", "USAGE.rst"]}
+
+
+##
+
+[tool.setuptools_scm]
+version_file = "omlish/_version.py"
+
+
+##
 
 [tool.mypy]
 ignore_missing_imports = true
@@ -33,6 +49,8 @@ exclude = [
     'omlish/dataclasses/tests/cpython/',
 ]
 
+
+##
 
 [tool.pytest.ini_options]
 addopts = "-v --tb=short"
