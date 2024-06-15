@@ -24,6 +24,7 @@ class CExtensionLoader(importlib.abc.Loader):
             self._fullname,
             sources=[self._path],
             extra_compile_args=['-std=c++14'],
+            extra_link_args=['-Wl,-no_fixup_chains'],
             undef_macros=['BARF'],
         )
 
