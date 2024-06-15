@@ -20,11 +20,15 @@ class CExtensionLoader(importlib.abc.Loader):
         self._path = path
 
     def load_module(self, fullname):
+        extra_link_args = []
+        if sys.platform == 'darwin':
+            extra_link_args.append('-Wl,-no_fixup_chains')
+
         ext = du.Extension(
             self._fullname,
             sources=[self._path],
             extra_compile_args=['-std=c++14'],
-            extra_link_args=['-Wl,-no_fixup_chains'],
+            extra_link_args=extra_link_args,
             undef_macros=['BARF'],
         )
 
