@@ -99,6 +99,11 @@ def _main():
     fwr = weakref.ref(fw)
     assert fwr() is fw
 
+    import pickle
+    o = barf
+    o = pickle.loads(pickle.dumps(fw))
+    print(o)
+
 
 if __name__ == '__main__':
     _main()
