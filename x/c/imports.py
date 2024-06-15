@@ -6,6 +6,7 @@ import importlib.machinery
 import os.path
 import shutil
 import sys
+import sysconfig
 
 from . import _distutils as du
 
@@ -32,7 +33,15 @@ class CExtensionLoader(importlib.abc.Loader):
         ))
         cmd_obj.build_extension(ext)
 
-        so_path = os.path.join(os.path.dirname(self._path), fullname.rpartition('.')[2] + '.cpython-311-darwin.so')
+        so_path = os.path.join(
+            os.path.dirname(self._path),
+            ''.join([
+                fullname.rpartition('.')[2],
+                '.',
+                sysconfig.get_config_var('SOABI'),
+                sysconfig.get_config_var('SHLIB_SUFFIX'),
+            ]),
+        )
         return imp.load_dynamic(self._fullname, so_path)
 
 
@@ -77,7 +86,7 @@ def _main():
     import functools
 
     print(os.getpid())
-    input()
+    # input()
 
     from . import _dispatch  # noqa
     fw = functools.wraps(barf)(_dispatch.function_wrapper(return_barf))
