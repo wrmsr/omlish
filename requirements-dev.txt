@@ -39,6 +39,10 @@ pgcli==4.1.0; python_version < '3.13'
 
 cython==3.0.10
 
+jinja2==3.1.4
+
+#clang
+
 # required
 #
 anyio==4.4.0
