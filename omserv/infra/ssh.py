@@ -93,11 +93,10 @@ class AsyncsshSshCommandRunner(CommandRunner):
                 **(dict(client_keys=[self._cfg.key_file_path]) if self._cfg.key_file_path is not None else {}),
                 known_hosts=None,
         ) as conn:
-            proc = await conn.create_process(arg)
-
-            check = False
-            timeout = None
-            res = await proc.wait(check, timeout)
+            async with await conn.create_process(arg) as proc:
+                check = False
+                timeout = None
+                res = await proc.wait(check, timeout)
 
         return CommandRunner.Result(
             rc=res.returncode,
