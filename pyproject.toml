@@ -13,11 +13,11 @@ build-backend = "setuptools.build_meta"
 name = "omlish"
 author = "wrmsr"
 url = "https://github.com/wrmsr/omlish"
-# dynamic = ["version", "description", "classifiers"]
+#dynamic = ["version", "description", "classifiers"]
 
-# [tool.setuptools.dynamic]
-## version = {attr = "my_package.VERSION"}
-# readme = {file = ["README.rst", "USAGE.rst"]}
+#[tool.setuptools.dynamic]
+##version = {attr = "my_package.VERSION"}
+#readme = {file = ["README.rst", "USAGE.rst"]}
 
 
 ##
