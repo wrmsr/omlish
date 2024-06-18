@@ -1,0 +1,57 @@
+# examples/meson/build.hancho
+from hancho import *
+
+config.build_tag = "debug"
+
+compile = Rule(
+  desc      = "Compiling {files_in} -> {files_out} ({build_tag})",
+  command   = "gcc {includes} {gcc_opts} {defines} {warnings} -c {files_in} -o {files_out}",
+  includes  = [
+    "-I."
+  ],
+  gcc_opts  = [
+    "{'-O3' if build_tag == 'release' else '-O0'}",
+    "-MMD",
+    "-fdiagnostics-color=always"
+  ],
+  defines   = [
+    "-D_FILE_OFFSET_BITS=64"
+  ],
+  warnings  = [
+    "-Wall",
+    "-Winvalid-pch"
+  ],
+  files_out = "{swap_ext(files_in, '.o')}",
+  depfile   = "{swap_ext(files_out, '.d')}",
+)
+
+link = Rule(
+  desc      = "Linking {files_out}",
+  command   = "gcc {files_in} -o {files_out} {link_opts}",
+  link_opts = [
+    "-Wl,--as-needed",
+    "-Wl,--no-undefined",
+    "-Wl,--start-group",
+    "{libs}",
+    "-Wl,--end-group",
+  ]
+)
+
+main_o = compile(
+  "main.c",
+  includes = [
+    compile.includes,
+    "{run_cmd('pkg-config gtk+-3.0 --cflags-only-I')}",
+  ],
+  gcc_opts = [
+    compile.gcc_opts,
+    "{run_cmd('pkg-config gtk+-3.0 --cflags-only-other')}",
+  ],
+)
+
+#main = link(main_o, "demo",
+#  libs = [
+#    link.libs,
+#    "{run_cmd('pkg-config gtk+-3.0 --libs')}"
+#  ],
+#)

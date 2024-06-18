@@ -1,0 +1,12 @@
+from hancho import *
+import os
+
+multiple_commands = Rule(
+  command = [
+    "echo foo > {files_out[0]}",
+    "echo bar > {files_out[1]}",
+    "echo baz > {files_out[2]}"
+  ]
+)
+
+multiple_commands(__file__, ["foo.txt", "bar.txt", "baz.txt"])

@@ -1,0 +1,9 @@
+# tutorial/tut0.hancho
+from hancho import *
+import os
+
+rule = Rule(
+  command = "g++ {files_in} -o {files_out}",
+)
+
+rule(["src/main.cpp", "src/util.cpp"], "tut0/app")

@@ -1,0 +1,16 @@
+# tutorial/tut1.hancho
+from hancho import *
+
+compile = Rule(
+  desc = "Compile {files_in} -> {files_out}",
+  command = "g++ -c {files_in} -o {files_out}",
+)
+
+link = Rule(
+  desc = "Link {files_in} -> {files_out}",
+  command = "g++ {files_in} -o {files_out}",
+)
+
+main_o = compile("src/main.cpp", "tut1/src/main.o")
+util_o = compile("src/util.cpp", "tut1/src/util.o")
+link([main_o, util_o], "tut1/app")

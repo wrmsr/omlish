@@ -1,0 +1,11 @@
+from hancho import *
+
+def sync_command(task):
+  Path(task.files_out[0]).touch()
+  return task.files_out
+
+rule = Rule(
+  command = sync_command
+)
+
+rule(__file__, "result.txt")

@@ -1,0 +1,6 @@
+# tutorial/tut3.hancho
+from hancho import *
+
+config.build_dir = "build/tut3"
+
+load("src/src.hancho")

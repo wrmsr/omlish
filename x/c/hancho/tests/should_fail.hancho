@@ -1,0 +1,9 @@
+# tests/should_fail.hancho
+from hancho import *
+
+should_fail = Rule(
+  desc    = "This task should fail",
+  command = "(exit 255)",
+)
+
+should_fail(__file__, "result.txt")

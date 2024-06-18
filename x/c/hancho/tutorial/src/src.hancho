@@ -1,0 +1,11 @@
+# tutorial/src/src.hancho
+from hancho import *
+import glob
+import os
+
+rules = load("../rules.hancho")
+
+if os.name == 'nt':
+  rules.c_binary(glob.glob("*.cpp"), "app.exe")
+else:
+  rules.c_binary(glob.glob("*.cpp"), "app")

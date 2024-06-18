@@ -1,0 +1,20 @@
+# hancho/examples/windows/build.hancho - Builds a trivial Win32 app.
+from hancho import *
+
+config.depformat = "msvc"
+
+compile = Rule(
+  desc      = "Compile {files_in} -> {files_out}",
+  command   = "cl.exe /nologo /c {files_in} /sourceDependencies {depfile} /Fo:{files_out} > NUL",
+  files_out = "{swap_ext(files_in, '.o')}",
+  depfile   = "{swap_ext(files_out, '.d')}",
+)
+
+link = Rule(
+  desc      = "Link {files_in} -> {files_out}",
+  command   = "link.exe /nologo {libs} {files_in} /out:{files_out} > NUL",
+  libs      = "user32.lib"
+)
+
+main_o = compile("src/main.cpp")
+link(main_o, "app.exe")
