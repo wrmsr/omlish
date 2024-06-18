@@ -1,6 +1,5 @@
 import contextlib
 import io
-import textwrap
 import typing as ta
 
 from .. import check
@@ -13,8 +12,8 @@ class IndentWriter:
     def __init__(
             self,
             *,
-            buf: io.StringIO = None,
-            indent: str = None,
+            buf: io.StringIO | None = None,
+            indent: str | None = None,
     ) -> None:
         super().__init__()
 

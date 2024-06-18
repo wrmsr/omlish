@@ -15,5 +15,3 @@ def translate_name(n: str, e: Naming) -> str:
     if e is Naming.CAMEL:
         return lang.camel_case(n)
     raise ValueError(e)
-
-
