@@ -72,7 +72,7 @@ class SimpleMetaDict(dict):
 ##
 
 
-_SINGLETON_INSTANCE_ATTR = '__Singleton_INSTANCE'
+_SINGLETON_INSTANCE_ATTR = '__singleton_instance__'
 _SINGLETON_LOCK = threading.RLock()
 
 
