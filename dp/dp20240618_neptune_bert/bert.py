@@ -6,41 +6,16 @@ https://colab.research.google.com/drive/13FjI_uXaw8JJGjzjVX3qKSLyW9p3b6OV?usp=sh
 This code is possible because of [Tae-Hwan Jung](https://github.com/graykode). I have just broken down the code and
 added few things here and here for better understanding.
 """
-import re
-import random
-
+import functools
 import math
+import random
+import re
 
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
 
-
-text = (
-    'Hello, how are you? I am Romeo.\n'
-    'Hello, Romeo My name is Juliet. Nice to meet you.\n'
-    'Nice meet you too. How are you today?\n'
-    'Great. My baseball team won the competition.\n'
-    'Oh Congratulations, Juliet\n'
-    'Thanks you Romeo'
-)
-
-sentences = re.sub("[.,!?\\-]", '', text.lower()).split('\n')  # filter '.', ',', '?', '!'
-word_list = list(set(" ".join(sentences).split()))
-word_dict = {'[PAD]': 0, '[CLS]': 1, '[SEP]': 2, '[MASK]': 3}
-
-for i, w in enumerate(word_list):
-    word_dict[w] = i + 4
-number_dict = {i: w for i, w in enumerate(word_dict)}
-vocab_size = len(word_dict)
-
-token_list = list()
-for sentence in sentences:
-    arr = [word_dict[s] for s in sentence.split()]
-    token_list.append(arr)
-
-print(token_list)
 
 maxlen = 30  # maximum of length
 batch_size = 6
@@ -53,7 +28,14 @@ d_k = d_v = 64  # dimension of K(=Q), V
 n_segments = 2
 
 
-def make_batch():
+def make_batch(
+        *,
+        sentences,
+        token_list,
+        word_dict,
+        vocab_size,
+        number_dict,
+):
     batch = []
     positive = negative = 0
     while positive != batch_size / 2 or negative != batch_size / 2:
@@ -115,15 +97,8 @@ def gelu(x):
     return x * 0.5 * (1.0 + torch.erf(x / math.sqrt(2.0)))
 
 
-batch = make_batch()
-
-input_ids, segment_ids, masked_tokens, masked_pos, isNext = map(torch.LongTensor, zip(*batch))
-
-print(get_attn_pad_mask(input_ids, input_ids)[0][0], input_ids[0])
-
-
 class Embedding(nn.Module):
-    def __init__(self):
+    def __init__(self, vocab_size):
         super(Embedding, self).__init__()
         self.tok_embed = nn.Embedding(vocab_size, d_model)  # token embedding
         self.pos_embed = nn.Embedding(maxlen, d_model)  # position embedding
@@ -148,20 +123,6 @@ class ScaledDotProductAttention(nn.Module):
         attn = nn.Softmax(dim=-1)(scores)
         context = torch.matmul(attn, V)
         return scores, context, attn
-
-
-emb = Embedding()
-embeds = emb(input_ids, segment_ids)
-
-attenM = get_attn_pad_mask(input_ids, input_ids)
-
-SDPA = ScaledDotProductAttention()(embeds, embeds, embeds, attenM)
-
-S, C, A = SDPA
-
-# print('Masks', masks[0][0])
-print()
-print('Scores: ', S[0][0], '\n\nAttention M: ', A[0][0])
 
 
 class MultiHeadAttention(nn.Module):
@@ -197,18 +158,6 @@ class MultiHeadAttention(nn.Module):
         return nn.LayerNorm(d_model)(output + residual), attn  # [batch_size x len_q x d_model]
 
 
-emb = Embedding()
-embeds = emb(input_ids, segment_ids)
-
-attenM = get_attn_pad_mask(input_ids, input_ids)
-
-MHA = MultiHeadAttention()(embeds, embeds, embeds, attenM)
-
-Output, A = MHA
-
-print(A[0][0])
-
-
 class PoswiseFeedForwardNet(nn.Module):
     def __init__(self):
         super(PoswiseFeedForwardNet, self).__init__()
@@ -227,16 +176,20 @@ class EncoderLayer(nn.Module):
         self.pos_ffn = PoswiseFeedForwardNet()
 
     def forward(self, enc_inputs, enc_self_attn_mask):
-        enc_outputs, attn = self.enc_self_attn(enc_inputs, enc_inputs, enc_inputs,
-                                               enc_self_attn_mask)  # enc_inputs to same Q,K,V
+        enc_outputs, attn = self.enc_self_attn(
+            enc_inputs,  # enc_inputs to same Q,K,V
+            enc_inputs,
+            enc_inputs,
+            enc_self_attn_mask,
+        )
         enc_outputs = self.pos_ffn(enc_outputs)  # enc_outputs: [batch_size x len_q x d_model]
         return enc_outputs, attn
 
 
 class BERT(nn.Module):
-    def __init__(self):
+    def __init__(self, vocab_size):
         super(BERT, self).__init__()
-        self.embedding = Embedding()
+        self.embedding = Embedding(vocab_size)
         self.layers = nn.ModuleList([EncoderLayer() for _ in range(n_layers)])
         self.fc = nn.Linear(d_model, d_model)
         self.activ1 = nn.Tanh()
@@ -270,35 +223,113 @@ class BERT(nn.Module):
         return logits_lm, logits_clsf
 
 
-model = BERT()
-criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.parameters(), lr=0.001)
+def _main():
+    text = (
+        'Hello, how are you? I am Romeo.\n'
+        'Hello, Romeo My name is Juliet. Nice to meet you.\n'
+        'Nice meet you too. How are you today?\n'
+        'Great. My baseball team won the competition.\n'
+        'Oh Congratulations, Juliet\n'
+        'Thanks you Romeo'
+    )
 
-batch = make_batch()
-input_ids, segment_ids, masked_tokens, masked_pos, isNext = map(torch.LongTensor, zip(*batch))
+    sentences = re.sub("[.,!?\\-]", '', text.lower()).split('\n')  # filter '.', ',', '?', '!'
+    word_list = list(set(" ".join(sentences).split()))
+    word_dict = {'[PAD]': 0, '[CLS]': 1, '[SEP]': 2, '[MASK]': 3}
 
-for epoch in range(10):
-    optimizer.zero_grad()
+    for i, w in enumerate(word_list):
+        word_dict[w] = i + 4
+    number_dict = {i: w for i, w in enumerate(word_dict)}
+    vocab_size = len(word_dict)
+
+    token_list = list()
+    for sentence in sentences:
+        arr = [word_dict[s] for s in sentence.split()]
+        token_list.append(arr)
+
+    print(token_list)
+
+    ##
+
+    do_make_batch = functools.partial(
+        make_batch,
+        sentences=sentences,
+        token_list=token_list,
+        word_dict=word_dict,
+        vocab_size=vocab_size,
+        number_dict=number_dict,
+    )
+
+    batch = do_make_batch()
+
+    input_ids, segment_ids, masked_tokens, masked_pos, isNext = map(torch.LongTensor, zip(*batch))
+
+    print(get_attn_pad_mask(input_ids, input_ids)[0][0], input_ids[0])
+
+    ##
+
+    emb = Embedding(vocab_size)
+    embeds = emb(input_ids, segment_ids)
+
+    attenM = get_attn_pad_mask(input_ids, input_ids)
+
+    SDPA = ScaledDotProductAttention()(embeds, embeds, embeds, attenM)
+
+    S, C, A = SDPA
+
+    # print('Masks', masks[0][0])
+    print()
+    print('Scores: ', S[0][0], '\n\nAttention M: ', A[0][0])
+
+    ##
+
+    emb = Embedding(vocab_size)
+    embeds = emb(input_ids, segment_ids)
+
+    attenM = get_attn_pad_mask(input_ids, input_ids)
+
+    MHA = MultiHeadAttention()(embeds, embeds, embeds, attenM)
+
+    Output, A = MHA
+
+    print(A[0][0])
+
+    ##
+
+    model = BERT(vocab_size)
+    criterion = nn.CrossEntropyLoss()
+    optimizer = optim.Adam(model.parameters(), lr=0.001)
+
+    batch = do_make_batch()
+    input_ids, segment_ids, masked_tokens, masked_pos, isNext = map(torch.LongTensor, zip(*batch))
+
+    for epoch in range(10):
+        optimizer.zero_grad()
+        logits_lm, logits_clsf = model(input_ids, segment_ids, masked_pos)
+        loss_lm = criterion(logits_lm.transpose(1, 2), masked_tokens)  # for masked LM
+        loss_lm = (loss_lm.float()).mean()
+        loss_clsf = criterion(logits_clsf, isNext)  # for sentence classification
+        loss = loss_lm + loss_clsf
+        if (epoch + 1) % 10 == 0:
+            print('Epoch:', '%04d' % (epoch + 1), 'cost =', '{:.6f}'.format(loss))
+        loss.backward()
+        optimizer.step()
+
+    # Predict mask tokens ans isNext
+    input_ids, segment_ids, masked_tokens, masked_pos, isNext = map(torch.LongTensor, zip(batch[0]))
+    print(text)
+    print([number_dict[w.item()] for w in input_ids[0] if number_dict[w.item()] != '[PAD]'])
+
     logits_lm, logits_clsf = model(input_ids, segment_ids, masked_pos)
-    loss_lm = criterion(logits_lm.transpose(1, 2), masked_tokens)  # for masked LM
-    loss_lm = (loss_lm.float()).mean()
-    loss_clsf = criterion(logits_clsf, isNext)  # for sentence classification
-    loss = loss_lm + loss_clsf
-    if (epoch + 1) % 10 == 0:
-        print('Epoch:', '%04d' % (epoch + 1), 'cost =', '{:.6f}'.format(loss))
-    loss.backward()
-    optimizer.step()
+    logits_lm = logits_lm.data.max(2)[1][0].data.numpy()
+    print('masked tokens list : ', [pos.item() for pos in masked_tokens[0] if pos.item() != 0])
+    print('predict masked tokens list : ', [pos for pos in logits_lm if pos != 0])
 
-# Predict mask tokens ans isNext
-input_ids, segment_ids, masked_tokens, masked_pos, isNext = map(torch.LongTensor, zip(batch[0]))
-print(text)
-print([number_dict[w.item()] for w in input_ids[0] if number_dict[w.item()] != '[PAD]'])
+    logits_clsf = logits_clsf.data.max(1)[1].data.numpy()[0]
+    print('isNext : ', True if isNext else False)
+    print('predict isNext : ', True if logits_clsf else False)
 
-logits_lm, logits_clsf = model(input_ids, segment_ids, masked_pos)
-logits_lm = logits_lm.data.max(2)[1][0].data.numpy()
-print('masked tokens list : ', [pos.item() for pos in masked_tokens[0] if pos.item() != 0])
-print('predict masked tokens list : ', [pos for pos in logits_lm if pos != 0])
 
-logits_clsf = logits_clsf.data.max(1)[1].data.numpy()[0]
-print('isNext : ', True if isNext else False)
-print('predict isNext : ', True if logits_clsf else False)
+if __name__ == '__main__':
+    _main()
+
