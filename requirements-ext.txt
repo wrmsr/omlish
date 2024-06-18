@@ -4,9 +4,9 @@
 ### nn
 
 matplotlib==3.9.0
-numpy==1.26.4
+numpy==2.0.0
 
-huggingface_hub==0.23.3
+huggingface_hub==0.23.4
 evaluate==0.4.2
 datasets==2.20.0
 
@@ -27,7 +27,7 @@ pyobjc-framework-metal==10.3.1; sys_platform == 'darwin'
 pandas==2.2.2
 pyarrow==16.1.0
 
-opencv-python==4.10.0.82
+opencv-python==4.10.0.84
 pillow==10.3.0
 
 sentencepiece==0.2.0
@@ -61,7 +61,7 @@ triton==2.3.1; platform_machine == 'x86_64'
 
 wgpu==0.15.2
 
-hypothesis==6.103.1
+hypothesis==6.103.2
 
 ##
 
@@ -146,7 +146,7 @@ blobfile==2.1.1
 
 ### infra
 
-boto3>=1.34.126
+boto3>=1.34.128
 
 google-cloud-compute==1.19.0
 
@@ -160,8 +160,8 @@ soco==0.30.4
 sounddevice==0.4.7
 # vosk==0.3.45
 
-bellows==0.39.0
-zigpy==0.64.0
+bellows==0.39.1
+zigpy==0.64.1
 
 # python-openzwave
 zwave-js-server-python==0.56.0
@@ -175,4 +175,4 @@ discord.py==2.3.2
 
 logbook==1.7.0.post0
 
-tenacity==8.3.0
+tenacity==8.4.1
