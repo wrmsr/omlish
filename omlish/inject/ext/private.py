@@ -20,14 +20,14 @@ from ..types import Provider
 from ..types import ProviderFn
 
 
-_ANONYMOUS_PRIVATE_SCOPE_COUNT = itertools.count()
+_ANONYMOUS_PRIVATE_BINDINGS_COUNT = itertools.count()
 
-PrivateScopeName = ta.NewType('PrivateScopeName', str)
+PrivateBindingsName = ta.NewType('PrivateBindingsName', str)
 
 
 @dc.dataclass(frozen=True, eq=False)
-class PrivateScopeProvider(Provider):
-    psn: PrivateScopeName
+class PrivateInjectorProvider(Provider):
+    pbn: PrivateBindingsName
     bs: Bindings
 
     def provided_cls(self, rec: ta.Callable[[Key], Cls]) -> Cls:
@@ -61,12 +61,12 @@ def expose(arg: ta.Any) -> Binding:
 
 @dc.dataclass(frozen=True, eq=False)
 class ExposedPrivateProvider(Provider):
-    psn: PrivateScopeName
+    pbn: PrivateBindingsName
     k: Key
 
     @cached.property
     def pik(self) -> Key:
-        return Key(Injector, tag=self.psn)
+        return Key(Injector, tag=self.pbn)
 
     def provided_cls(self, rec: ta.Callable[[Key], Cls]) -> Cls:
         return self.k.cls
@@ -86,12 +86,12 @@ class ExposedPrivateProvider(Provider):
 
 def private(*args: ta.Any, name: str | None = None) -> Bindings:
     if name is None:
-        name = f'anon-{next(_ANONYMOUS_PRIVATE_SCOPE_COUNT)}'
-    psn = PrivateScopeName(name)
-    pbs = bind(*args, Binding(Key(PrivateScopeName), ConstProvider(PrivateScopeName, psn)))
-    ebs: list[Binding] = [Binding(Key(Injector, tag=psn), SingletonProvider(PrivateScopeProvider(psn, pbs)))]  # noqa
+        name = f'anon-{next(_ANONYMOUS_PRIVATE_BINDINGS_COUNT)}'
+    pbn = PrivateBindingsName(name)
+    pbs = bind(*args, Binding(Key(PrivateBindingsName), ConstProvider(PrivateBindingsName, pbn)))
+    ebs: list[Binding] = [Binding(Key(Injector, tag=pbn), SingletonProvider(PrivateInjectorProvider(pbn, pbs)))]  # noqa
     for b in pbs.bindings():
         if b.key == _EXPOSED_MULTI_KEY:
             ek = check.isinstance(check.isinstance(b.provider, ConstProvider).v, _Exposed).key
-            ebs.append(Binding(ek, ExposedPrivateProvider(psn, ek)))
+            ebs.append(Binding(ek, ExposedPrivateProvider(pbn, ek)))
     return bind(*ebs)
