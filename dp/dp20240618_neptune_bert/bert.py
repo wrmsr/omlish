@@ -10,6 +10,7 @@ import functools
 import math
 import random
 import re
+import typing as ta
 
 import numpy as np
 import torch
@@ -20,7 +21,7 @@ import torch.optim as optim
 maxlen = 30  # maximum of length
 batch_size = 6
 max_pred = 5  # max tokens of prediction
-n_layers = 6  # number of Encoder of Encoder Layer
+n_layers = 6  # number of Encoder layers
 n_heads = 12  # number of heads in Multi-Head Attention
 d_model = 768  # Embedding Size
 d_ff = 768 * 4  # 4*d_model, FeedForward dimension
@@ -30,19 +31,19 @@ n_segments = 2
 
 def make_batch(
         *,
-        sentences,
-        token_list,
-        word_dict,
-        vocab_size,
-        number_dict,
-):
+        sentences: ta.Sequence[str],
+        token_list: ta.Sequence[ta.Sequence[int]],
+        word_dict: ta.Mapping[str, int],
+        vocab_size: int,
+        number_dict: ta.Mapping[int, str],
+) -> list[list[list[int]]]:
     batch = []
     positive = negative = 0
     while positive != batch_size / 2 or negative != batch_size / 2:
         tokens_a_index, tokens_b_index = random.randrange(len(sentences)), random.randrange(len(sentences))
         tokens_a, tokens_b = token_list[tokens_a_index], token_list[tokens_b_index]
 
-        input_ids = [word_dict['[CLS]']] + tokens_a + [word_dict['[SEP]']] + tokens_b + [word_dict['[SEP]']]
+        input_ids = [word_dict['[CLS]'], *tokens_a, word_dict['[SEP]'],  *tokens_b, word_dict['[SEP]']]
 
         segment_ids = [0] * (1 + len(tokens_a) + 1) + [1] * (len(tokens_b) + 1)
 
@@ -82,10 +83,14 @@ def make_batch(
         elif tokens_a_index + 1 != tokens_b_index and negative < batch_size / 2:
             batch.append([input_ids, segment_ids, masked_tokens, masked_pos, False])  # NotNext
             negative += 1
+
     return batch
 
 
-def get_attn_pad_mask(seq_q, seq_k):
+def get_attn_pad_mask(
+        seq_q: torch.Tensor,  # (bs, max_len)
+        seq_k: torch.Tensor,  # (bs, max_len)
+) -> torch.Tensor:  # (bs, max_len, max_len)
     batch_size, len_q = seq_q.size()
     batch_size, len_k = seq_k.size()
     # eq(zero) is PAD token
@@ -93,19 +98,23 @@ def get_attn_pad_mask(seq_q, seq_k):
     return pad_attn_mask.expand(batch_size, len_q, len_k)  # batch_size x len_q x len_k
 
 
-def gelu(x):
+def gelu(x: torch.tensor) -> torch.Tensor:
     return x * 0.5 * (1.0 + torch.erf(x / math.sqrt(2.0)))
 
 
 class Embedding(nn.Module):
-    def __init__(self, vocab_size):
-        super(Embedding, self).__init__()
+    def __init__(self, vocab_size: int) -> None:
+        super().__init__()
         self.tok_embed = nn.Embedding(vocab_size, d_model)  # token embedding
         self.pos_embed = nn.Embedding(maxlen, d_model)  # position embedding
         self.seg_embed = nn.Embedding(n_segments, d_model)  # segment(token type) embedding
         self.norm = nn.LayerNorm(d_model)
 
-    def forward(self, x, seg):
+    def forward(
+            self,
+            x: torch.Tensor,  # (bs, max_len)
+            seg: torch.Tensor,  # (bs, max_len)
+    ) -> torch.Tensor:  # (bs, max_len, d_model)
         seq_len = x.size(1)
         pos = torch.arange(seq_len, dtype=torch.long)
         pos = pos.unsqueeze(0).expand_as(x)  # (seq_len,) -> (batch_size, seq_len)
@@ -114,68 +123,89 @@ class Embedding(nn.Module):
 
 
 class ScaledDotProductAttention(nn.Module):
-    def __init__(self):
-        super(ScaledDotProductAttention, self).__init__()
-
-    def forward(self, Q, K, V, attn_mask):
-        scores = torch.matmul(Q, K.transpose(-1, -2)) / np.sqrt(d_k)  # [batch_size x n_heads x len_q(=len_k) x len_k(=len_q)]  # noqa
+    def forward(
+            self,
+            q: torch.Tensor,
+            k: torch.Tensor,
+            v: torch.Tensor,
+            attn_mask: torch.Tensor,
+    ) -> tuple[
+        torch.Tensor,
+        torch.Tensor,
+        torch.Tensor,
+    ]:
+        scores = torch.matmul(q, k.transpose(-1, -2)) / np.sqrt(d_k)  # (batch_size x n_heads x len_q(=len_k) x len_k(=len_q))  # noqa
         scores.masked_fill_(attn_mask, -1e9)  # Fills elements of self tensor with value where mask is one.
         attn = nn.Softmax(dim=-1)(scores)
-        context = torch.matmul(attn, V)
+        context = torch.matmul(attn, v)
         return scores, context, attn
 
 
 class MultiHeadAttention(nn.Module):
-    def __init__(self):
-        super(MultiHeadAttention, self).__init__()
-        self.W_Q = nn.Linear(d_model, d_k * n_heads)
-        self.W_K = nn.Linear(d_model, d_k * n_heads)
-        self.W_V = nn.Linear(d_model, d_v * n_heads)
+    def __init__(self) -> None:
+        super().__init__()
+        self.w_q = nn.Linear(d_model, d_k * n_heads)
+        self.w_k = nn.Linear(d_model, d_k * n_heads)
+        self.w_v = nn.Linear(d_model, d_v * n_heads)
 
     def forward(
             self,
-            Q,  # [batch_size x len_q x d_model]
-            K,  # [batch_size x len_k x d_model]
-            V,  # [batch_size x len_k x d_model]
-            attn_mask,
-    ):
-        residual, batch_size = Q, Q.size(0)
-        # (B, S, D) -proj-> (B, S, D) -split-> (B, S, H, W) -trans-> (B, H, S, W)
-        q_s = self.W_Q(Q).view(batch_size, -1, n_heads, d_k).transpose(1, 2)  # [batch_size x n_heads x len_q x d_k]
-        k_s = self.W_K(K).view(batch_size, -1, n_heads, d_k).transpose(1, 2)  # [batch_size x n_heads x len_k x d_k]
-        v_s = self.W_V(V).view(batch_size, -1, n_heads, d_v).transpose(1, 2)  # [batch_size x n_heads x len_k x d_v]
+            q: torch.Tensor,  # (batch_size x len_q x d_model)
+            k: torch.Tensor,  # (batch_size x len_k x d_model)
+            v: torch.Tensor,  # (batch_size x len_k x d_model)
+            attn_mask: torch.Tensor,
+    ) -> tuple[
+         torch.Tensor,
+         torch.Tensor,
+     ]:
+        residual, batch_size = q, q.size(0)
 
-        attn_mask = attn_mask.unsqueeze(1).repeat(1, n_heads, 1, 1)  # [batch_size x n_heads x len_q x len_k]
+        # (B, S, D) -proj-> (B, S, D) -split-> (B, S, H, W) -trans-> (B, H, S, W)
+        q_s = self.w_q(q).view(batch_size, -1, n_heads, d_k).transpose(1, 2)  # (batch_size x n_heads x len_q x d_k)
+        k_s = self.w_k(k).view(batch_size, -1, n_heads, d_k).transpose(1, 2)  # (batch_size x n_heads x len_k x d_k)
+        v_s = self.w_v(v).view(batch_size, -1, n_heads, d_v).transpose(1, 2)  # (batch_size x n_heads x len_k x d_v)
+
+        attn_mask = attn_mask.unsqueeze(1).repeat(1, n_heads, 1, 1)  # (batch_size x n_heads x len_q x len_k)
 
         (
             _,
-            context,  # [batch_size x n_heads x len_q x d_v]
-            attn,  # [batch_size x n_heads x len_q(=len_k) x len_k(=len_q)]
+            context,  # (batch_size x n_heads x len_q x d_v)
+            attn,  # (batch_size x n_heads x len_q(=len_k) x len_k(=len_q))
         ) = ScaledDotProductAttention()(q_s, k_s, v_s, attn_mask)
 
-        context = context.transpose(1, 2).contiguous().view(batch_size, -1, n_heads * d_v)  # [batch_size x len_q x n_heads * d_v]  # noqa
+        context = context.transpose(1, 2).contiguous().view(batch_size, -1, n_heads * d_v)  # (batch_size x len_q x n_heads * d_v)  # noqa
         output = nn.Linear(n_heads * d_v, d_model)(context)
-        return nn.LayerNorm(d_model)(output + residual), attn  # [batch_size x len_q x d_model]
+        return nn.LayerNorm(d_model)(output + residual), attn  # (batch_size x len_q x d_model)
 
 
 class PoswiseFeedForwardNet(nn.Module):
-    def __init__(self):
-        super(PoswiseFeedForwardNet, self).__init__()
+    def __init__(self) -> None:
+        super().__init__()
         self.fc1 = nn.Linear(d_model, d_ff)
         self.fc2 = nn.Linear(d_ff, d_model)
 
-    def forward(self, x):
+    def forward(
+            self,
+            x: torch.Tensor,
+    ) -> torch.Tensor:
         # (batch_size, len_seq, d_model) -> (batch_size, len_seq, d_ff) -> (batch_size, len_seq, d_model)
         return self.fc2(gelu(self.fc1(x)))
 
 
 class EncoderLayer(nn.Module):
-    def __init__(self):
-        super(EncoderLayer, self).__init__()
+    def __init__(self) -> None:
+        super().__init__()
         self.enc_self_attn = MultiHeadAttention()
         self.pos_ffn = PoswiseFeedForwardNet()
 
-    def forward(self, enc_inputs, enc_self_attn_mask):
+    def forward(
+            self,
+            enc_inputs: torch.Tensor,
+            enc_self_attn_mask: torch.Tensor,
+    ) -> tuple[
+        torch.Tensor,
+        torch.Tensor,
+    ]:
         enc_outputs, attn = self.enc_self_attn(
             enc_inputs,  # enc_inputs to same Q,K,V
             enc_inputs,
@@ -187,8 +217,8 @@ class EncoderLayer(nn.Module):
 
 
 class BERT(nn.Module):
-    def __init__(self, vocab_size):
-        super(BERT, self).__init__()
+    def __init__(self, vocab_size: int) -> None:
+        super().__init__()
         self.embedding = Embedding(vocab_size)
         self.layers = nn.ModuleList([EncoderLayer() for _ in range(n_layers)])
         self.fc = nn.Linear(d_model, d_model)
@@ -204,26 +234,39 @@ class BERT(nn.Module):
         self.decoder.weight = embed_weight
         self.decoder_bias = nn.Parameter(torch.zeros(n_vocab))
 
-    def forward(self, input_ids, segment_ids, masked_pos):
+    def forward(
+            self,
+            input_ids: torch.Tensor,
+            segment_ids: torch.Tensor,
+            masked_pos: torch.Tensor,
+    ) -> tuple[
+        torch.Tensor,
+        torch.Tensor,
+    ]:
         output = self.embedding(input_ids, segment_ids)
         enc_self_attn_mask = get_attn_pad_mask(input_ids, input_ids)
         for layer in self.layers:
-            output, enc_self_attn = layer(output, enc_self_attn_mask)
-        # output : [batch_size, len, d_model], attn : [batch_size, n_heads, d_mode, d_model]
-        # it will be decided by first token(CLS)
-        h_pooled = self.activ1(self.fc(output[:, 0]))  # [batch_size, d_model]
-        logits_clsf = self.classifier(h_pooled)  # [batch_size, 2]
+            (
+                output,  # (batch_size, len, d_model)
+                enc_self_attn,  # (batch_size, n_heads, d_mode, d_model)
+            ) = layer(output, enc_self_attn_mask)
 
-        masked_pos = masked_pos[:, :, None].expand(-1, -1, output.size(-1))  # [batch_size, max_pred, d_model]
+        # it will be decided by first token(CLS)
+        h_pooled = self.activ1(self.fc(output[:, 0]))  # (batch_size, d_model)
+        logits_clsf = self.classifier(h_pooled)  # (batch_size, 2)
+
+        masked_pos = masked_pos[:, :, None].expand(-1, -1, output.size(-1))  # (batch_size, max_pred, d_model)
+
         # get masked position from final output of transformer.
-        h_masked = torch.gather(output, 1, masked_pos)  # masking position [batch_size, max_pred, d_model]
+        h_masked = torch.gather(output, 1, masked_pos)  # masking position (batch_size, max_pred, d_model)
         h_masked = self.norm(self.activ2(self.linear(h_masked)))
-        logits_lm = self.decoder(h_masked) + self.decoder_bias  # [batch_size, max_pred, n_vocab]
+
+        logits_lm = self.decoder(h_masked) + self.decoder_bias  # (batch_size, max_pred, n_vocab)
 
         return logits_lm, logits_clsf
 
 
-def _main():
+def _main() -> None:
     text = (
         'Hello, how are you? I am Romeo.\n'
         'Hello, Romeo My name is Juliet. Nice to meet you.\n'
