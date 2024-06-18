@@ -170,8 +170,10 @@ class ScaledDotProductAttention(nn.Module):
         torch.Tensor,
         torch.Tensor,
     ]:
-        scores = torch.matmul(q, k.transpose(-1, -2)) / np.sqrt(self.config.d_k)  # (batch_size x n_heads x len_q(=len_k) x len_k(=len_q))  # noqa
+        # (batch_size x n_heads x len_q(=len_k) x len_k(=len_q))
+        scores = torch.matmul(q, k.transpose(-1, -2)) / np.sqrt(self.config.d_k)
         scores.masked_fill_(attn_mask, -1e9)  # Fills elements of self tensor with value where mask is one.
+
         attn = nn.Softmax(dim=-1)(scores)
         context = torch.matmul(attn, v)
         return scores, context, attn
@@ -202,7 +204,7 @@ class MultiHeadAttention(nn.Module):
         k_s = self.w_k(k).view(batch_size, -1, self.config.n_heads, self.config.d_k).transpose(1, 2)  # (batch_size x n_heads x len_k x d_k)  # noqa
         v_s = self.w_v(v).view(batch_size, -1, self.config.n_heads, self.config.d_v).transpose(1, 2)  # (batch_size x n_heads x len_k x d_v)  # noqa
 
-        attn_mask = attn_mask.unsqueeze(1).repeat(1, self.config.n_heads, 1, 1)  # (batch_size x n_heads x len_q x len_k)
+        attn_mask = attn_mask.unsqueeze(1).repeat(1, self.config.n_heads, 1, 1)  # (batch_size x n_heads x len_q x len_k)  # noqa
 
         (
             _,
@@ -210,9 +212,12 @@ class MultiHeadAttention(nn.Module):
             attn,  # (batch_size x n_heads x len_q(=len_k) x len_k(=len_q))
         ) = ScaledDotProductAttention(self.config)(q_s, k_s, v_s, attn_mask)
 
-        context = context.transpose(1, 2).contiguous().view(batch_size, -1, self.config.n_heads * self.config.d_v)  # (batch_size x len_q x n_heads * d_v)  # noqa
+        # (batch_size x len_q x n_heads * d_v)
+        context = context.transpose(1, 2).contiguous().view(batch_size, -1, self.config.n_heads * self.config.d_v)
+
         output = nn.Linear(self.config.n_heads * self.config.d_v, self.config.d_model)(context)
-        return nn.LayerNorm(self.config.d_model)(output + residual), attn  # (batch_size x len_q x d_model)
+        norm_output = nn.LayerNorm(self.config.d_model)(output + residual)  # (batch_size x len_q x d_model)
+        return norm_output, attn
 
 
 class PoswiseFeedForwardNet(nn.Module):
@@ -331,7 +336,7 @@ def _main() -> None:
 
     batch = do_make_batch()
 
-    input_ids, segment_ids, masked_tokens, masked_pos, isNext = map(torch.LongTensor, zip(*batch))
+    input_ids, segment_ids, masked_tokens, masked_pos, is_next = map(torch.LongTensor, zip(*batch))
 
     print(get_attn_pad_mask(input_ids, input_ids)[0][0], input_ids[0])
 
@@ -370,22 +375,22 @@ def _main() -> None:
     optimizer = optim.Adam(model.parameters(), lr=0.001)
 
     batch = do_make_batch()
-    input_ids, segment_ids, masked_tokens, masked_pos, isNext = map(torch.LongTensor, zip(*batch))
+    input_ids, segment_ids, masked_tokens, masked_pos, is_next = map(torch.LongTensor, zip(*batch))
 
     for epoch in range(10):
         optimizer.zero_grad()
         logits_lm, logits_clsf = model(input_ids, segment_ids, masked_pos)
         loss_lm = criterion(logits_lm.transpose(1, 2), masked_tokens)  # for masked LM
         loss_lm = (loss_lm.float()).mean()
-        loss_clsf = criterion(logits_clsf, isNext)  # for sentence classification
+        loss_clsf = criterion(logits_clsf, is_next)  # for sentence classification
         loss = loss_lm + loss_clsf
         if (epoch + 1) % 10 == 0:
             print('Epoch:', '%04d' % (epoch + 1), 'cost =', '{:.6f}'.format(loss))
         loss.backward()
         optimizer.step()
 
-    # Predict mask tokens ans isNext
-    input_ids, segment_ids, masked_tokens, masked_pos, isNext = map(torch.LongTensor, zip(batch[0]))
+    # Predict mask tokens ans is_next
+    input_ids, segment_ids, masked_tokens, masked_pos, is_next = map(torch.LongTensor, zip(batch[0]))
     print(text)
     print([corpus.number_dict[w.item()] for w in input_ids[0] if corpus.number_dict[w.item()] != '[PAD]'])
 
@@ -395,8 +400,8 @@ def _main() -> None:
     print('predict masked tokens list : ', [pos for pos in logits_lm if pos != 0])
 
     logits_clsf = logits_clsf.data.max(1)[1].data.numpy()[0]
-    print('isNext : ', True if isNext else False)
-    print('predict isNext : ', True if logits_clsf else False)
+    print('is_next : ', True if is_next else False)
+    print('predict is_next : ', True if logits_clsf else False)
 
 
 if __name__ == '__main__':
