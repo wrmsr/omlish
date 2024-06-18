@@ -6,6 +6,7 @@ https://colab.research.google.com/drive/13FjI_uXaw8JJGjzjVX3qKSLyW9p3b6OV?usp=sh
 This code is possible because of [Tae-Hwan Jung](https://github.com/graykode). I have just broken down the code and
 added few things here and here for better understanding.
 """
+import dataclasses as dc
 import functools
 import math
 import random
@@ -18,42 +19,73 @@ import torch.nn as nn
 import torch.optim as optim
 
 
-maxlen = 30  # maximum of length
-batch_size = 6
-max_pred = 5  # max tokens of prediction
-n_layers = 6  # number of Encoder layers
-n_heads = 12  # number of heads in Multi-Head Attention
-d_model = 768  # Embedding Size
-d_ff = 768 * 4  # 4*d_model, FeedForward dimension
-d_k = d_v = 64  # dimension of K(=Q), V
-n_segments = 2
+@dc.dataclass(frozen=True)
+class Config:
+    maxlen = 30  # maximum of length
+    batch_size = 6
+    max_pred = 5  # max tokens of prediction
+    n_layers = 6  # number of Encoder layers
+    n_heads = 12  # number of heads in Multi-Head Attention
+    d_model = 768  # Embedding Size
+    d_ff = 768 * 4  # 4*d_model, FeedForward dimension
+    d_k = d_v = 64  # dimension of K(=Q), V
+    n_segments = 2
+
+
+@dc.dataclass(frozen=True)
+class Corpus:
+    sentences: ta.Sequence[str]
+    token_list: ta.Sequence[ta.Sequence[int]]
+    word_dict: ta.Mapping[str, int]
+    vocab_size: int
+    number_dict: ta.Mapping[int, str]
+
+
+def build_corpus(text: str) -> Corpus:
+    sentences = re.sub("[.,!?\\-]", '', text.lower()).split('\n')  # filter '.', ',', '?', '!'
+    word_list = list(set(" ".join(sentences).split()))
+    word_dict = {'[PAD]': 0, '[CLS]': 1, '[SEP]': 2, '[MASK]': 3}
+
+    for i, w in enumerate(word_list):
+        word_dict[w] = i + 4
+    number_dict = {i: w for i, w in enumerate(word_dict)}
+    vocab_size = len(word_dict)
+
+    token_list = list()
+    for sentence in sentences:
+        arr = [word_dict[s] for s in sentence.split()]
+        token_list.append(arr)
+
+    return Corpus(
+        sentences=sentences,
+        token_list=token_list,
+        word_dict=word_dict,
+        vocab_size=vocab_size,
+        number_dict=number_dict,
+    )
 
 
 def make_batch(
-        *,
-        sentences: ta.Sequence[str],
-        token_list: ta.Sequence[ta.Sequence[int]],
-        word_dict: ta.Mapping[str, int],
-        vocab_size: int,
-        number_dict: ta.Mapping[int, str],
+        config: Config,
+        corpus: Corpus,
 ) -> list[list[list[int]]]:
     batch = []
     positive = negative = 0
-    while positive != batch_size / 2 or negative != batch_size / 2:
-        tokens_a_index, tokens_b_index = random.randrange(len(sentences)), random.randrange(len(sentences))
-        tokens_a, tokens_b = token_list[tokens_a_index], token_list[tokens_b_index]
+    while positive != config.batch_size / 2 or negative != config.batch_size / 2:
+        tokens_a_index, tokens_b_index = random.randrange(len(corpus.sentences)), random.randrange(len(corpus.sentences))
+        tokens_a, tokens_b = corpus.token_list[tokens_a_index], corpus.token_list[tokens_b_index]
 
-        input_ids = [word_dict['[CLS]'], *tokens_a, word_dict['[SEP]'],  *tokens_b, word_dict['[SEP]']]
+        input_ids = [corpus.word_dict['[CLS]'], *tokens_a, corpus.word_dict['[SEP]'],  *tokens_b, corpus.word_dict['[SEP]']]
 
         segment_ids = [0] * (1 + len(tokens_a) + 1) + [1] * (len(tokens_b) + 1)
 
         # MASK LM
-        n_pred = min(max_pred, max(1, int(round(len(input_ids) * 0.15))))  # 15 % of tokens in one sentence
+        n_pred = min(config.max_pred, max(1, int(round(len(input_ids) * 0.15))))  # 15 % of tokens in one sentence
 
         cand_maked_pos = [
             i
             for i, token in enumerate(input_ids)
-            if token != word_dict['[CLS]'] and token != word_dict['[SEP]']
+            if token != corpus.word_dict['[CLS]'] and token != corpus.word_dict['[SEP]']
         ]
         random.shuffle(cand_maked_pos)
         masked_tokens, masked_pos = [], []
@@ -61,26 +93,26 @@ def make_batch(
             masked_pos.append(pos)
             masked_tokens.append(input_ids[pos])
             if random.random() < 0.8:  # 80%
-                input_ids[pos] = word_dict['[MASK]']  # make mask
+                input_ids[pos] = corpus.word_dict['[MASK]']  # make mask
             elif random.random() < 0.5:  # 10%
-                index = random.randint(0, vocab_size - 1)  # random index in vocabulary
-                input_ids[pos] = word_dict[number_dict[index]]  # replace
+                index = random.randint(0, corpus.vocab_size - 1)  # random index in vocabulary
+                input_ids[pos] = corpus.word_dict[corpus.number_dict[index]]  # replace
 
         # Zero Paddings
-        n_pad = maxlen - len(input_ids)
+        n_pad = config.maxlen - len(input_ids)
         input_ids.extend([0] * n_pad)
         segment_ids.extend([0] * n_pad)
 
         # Zero Padding (100% - 15%) tokens
-        if max_pred > n_pred:
-            n_pad = max_pred - n_pred
+        if config.max_pred > n_pred:
+            n_pad = config.max_pred - n_pred
             masked_tokens.extend([0] * n_pad)
             masked_pos.extend([0] * n_pad)
 
-        if tokens_a_index + 1 == tokens_b_index and positive < batch_size / 2:
+        if tokens_a_index + 1 == tokens_b_index and positive < config.batch_size / 2:
             batch.append([input_ids, segment_ids, masked_tokens, masked_pos, True])  # IsNext
             positive += 1
-        elif tokens_a_index + 1 != tokens_b_index and negative < batch_size / 2:
+        elif tokens_a_index + 1 != tokens_b_index and negative < config.batch_size / 2:
             batch.append([input_ids, segment_ids, masked_tokens, masked_pos, False])  # NotNext
             negative += 1
 
@@ -103,12 +135,12 @@ def gelu(x: torch.tensor) -> torch.Tensor:
 
 
 class Embedding(nn.Module):
-    def __init__(self, vocab_size: int) -> None:
+    def __init__(self, config: Config, vocab_size: int) -> None:
         super().__init__()
-        self.tok_embed = nn.Embedding(vocab_size, d_model)  # token embedding
-        self.pos_embed = nn.Embedding(maxlen, d_model)  # position embedding
-        self.seg_embed = nn.Embedding(n_segments, d_model)  # segment(token type) embedding
-        self.norm = nn.LayerNorm(d_model)
+        self.tok_embed = nn.Embedding(vocab_size, config.d_model)  # token embedding
+        self.pos_embed = nn.Embedding(config.maxlen, config.d_model)  # position embedding
+        self.seg_embed = nn.Embedding(config.n_segments, config.d_model)  # segment(token type) embedding
+        self.norm = nn.LayerNorm(config.d_model)
 
     def forward(
             self,
@@ -123,6 +155,10 @@ class Embedding(nn.Module):
 
 
 class ScaledDotProductAttention(nn.Module):
+    def __init__(self, config: Config) -> None:
+        super().__init__()
+        self.config = config
+
     def forward(
             self,
             q: torch.Tensor,
@@ -134,7 +170,7 @@ class ScaledDotProductAttention(nn.Module):
         torch.Tensor,
         torch.Tensor,
     ]:
-        scores = torch.matmul(q, k.transpose(-1, -2)) / np.sqrt(d_k)  # (batch_size x n_heads x len_q(=len_k) x len_k(=len_q))  # noqa
+        scores = torch.matmul(q, k.transpose(-1, -2)) / np.sqrt(self.config.d_k)  # (batch_size x n_heads x len_q(=len_k) x len_k(=len_q))  # noqa
         scores.masked_fill_(attn_mask, -1e9)  # Fills elements of self tensor with value where mask is one.
         attn = nn.Softmax(dim=-1)(scores)
         context = torch.matmul(attn, v)
@@ -142,11 +178,12 @@ class ScaledDotProductAttention(nn.Module):
 
 
 class MultiHeadAttention(nn.Module):
-    def __init__(self) -> None:
+    def __init__(self, config: Config) -> None:
         super().__init__()
-        self.w_q = nn.Linear(d_model, d_k * n_heads)
-        self.w_k = nn.Linear(d_model, d_k * n_heads)
-        self.w_v = nn.Linear(d_model, d_v * n_heads)
+        self.config = config
+        self.w_q = nn.Linear(config.d_model, config.d_k * config.n_heads)
+        self.w_k = nn.Linear(config.d_model, config.d_k * config.n_heads)
+        self.w_v = nn.Linear(config.d_model, config.d_v * config.n_heads)
 
     def forward(
             self,
@@ -161,28 +198,28 @@ class MultiHeadAttention(nn.Module):
         residual, batch_size = q, q.size(0)
 
         # (B, S, D) -proj-> (B, S, D) -split-> (B, S, H, W) -trans-> (B, H, S, W)
-        q_s = self.w_q(q).view(batch_size, -1, n_heads, d_k).transpose(1, 2)  # (batch_size x n_heads x len_q x d_k)
-        k_s = self.w_k(k).view(batch_size, -1, n_heads, d_k).transpose(1, 2)  # (batch_size x n_heads x len_k x d_k)
-        v_s = self.w_v(v).view(batch_size, -1, n_heads, d_v).transpose(1, 2)  # (batch_size x n_heads x len_k x d_v)
+        q_s = self.w_q(q).view(batch_size, -1, self.config.n_heads, self.config.d_k).transpose(1, 2)  # (batch_size x n_heads x len_q x d_k)  # noqa
+        k_s = self.w_k(k).view(batch_size, -1, self.config.n_heads, self.config.d_k).transpose(1, 2)  # (batch_size x n_heads x len_k x d_k)  # noqa
+        v_s = self.w_v(v).view(batch_size, -1, self.config.n_heads, self.config.d_v).transpose(1, 2)  # (batch_size x n_heads x len_k x d_v)  # noqa
 
-        attn_mask = attn_mask.unsqueeze(1).repeat(1, n_heads, 1, 1)  # (batch_size x n_heads x len_q x len_k)
+        attn_mask = attn_mask.unsqueeze(1).repeat(1, self.config.n_heads, 1, 1)  # (batch_size x n_heads x len_q x len_k)
 
         (
             _,
             context,  # (batch_size x n_heads x len_q x d_v)
             attn,  # (batch_size x n_heads x len_q(=len_k) x len_k(=len_q))
-        ) = ScaledDotProductAttention()(q_s, k_s, v_s, attn_mask)
+        ) = ScaledDotProductAttention(self.config)(q_s, k_s, v_s, attn_mask)
 
-        context = context.transpose(1, 2).contiguous().view(batch_size, -1, n_heads * d_v)  # (batch_size x len_q x n_heads * d_v)  # noqa
-        output = nn.Linear(n_heads * d_v, d_model)(context)
-        return nn.LayerNorm(d_model)(output + residual), attn  # (batch_size x len_q x d_model)
+        context = context.transpose(1, 2).contiguous().view(batch_size, -1, self.config.n_heads * self.config.d_v)  # (batch_size x len_q x n_heads * d_v)  # noqa
+        output = nn.Linear(self.config.n_heads * self.config.d_v, self.config.d_model)(context)
+        return nn.LayerNorm(self.config.d_model)(output + residual), attn  # (batch_size x len_q x d_model)
 
 
 class PoswiseFeedForwardNet(nn.Module):
-    def __init__(self) -> None:
+    def __init__(self, config: Config) -> None:
         super().__init__()
-        self.fc1 = nn.Linear(d_model, d_ff)
-        self.fc2 = nn.Linear(d_ff, d_model)
+        self.fc1 = nn.Linear(config.d_model, config.d_ff)
+        self.fc2 = nn.Linear(config.d_ff, config.d_model)
 
     def forward(
             self,
@@ -193,10 +230,10 @@ class PoswiseFeedForwardNet(nn.Module):
 
 
 class EncoderLayer(nn.Module):
-    def __init__(self) -> None:
+    def __init__(self, config: Config) -> None:
         super().__init__()
-        self.enc_self_attn = MultiHeadAttention()
-        self.pos_ffn = PoswiseFeedForwardNet()
+        self.enc_self_attn = MultiHeadAttention(config)
+        self.pos_ffn = PoswiseFeedForwardNet(config)
 
     def forward(
             self,
@@ -217,16 +254,16 @@ class EncoderLayer(nn.Module):
 
 
 class BERT(nn.Module):
-    def __init__(self, vocab_size: int) -> None:
+    def __init__(self, config: Config, vocab_size: int) -> None:
         super().__init__()
-        self.embedding = Embedding(vocab_size)
-        self.layers = nn.ModuleList([EncoderLayer() for _ in range(n_layers)])
-        self.fc = nn.Linear(d_model, d_model)
+        self.embedding = Embedding(config, vocab_size)
+        self.layers = nn.ModuleList([EncoderLayer(config) for _ in range(config.n_layers)])
+        self.fc = nn.Linear(config.d_model, config.d_model)
         self.activ1 = nn.Tanh()
-        self.linear = nn.Linear(d_model, d_model)
+        self.linear = nn.Linear(config.d_model, config.d_model)
         self.activ2 = gelu
-        self.norm = nn.LayerNorm(d_model)
-        self.classifier = nn.Linear(d_model, 2)
+        self.norm = nn.LayerNorm(config.d_model)
+        self.classifier = nn.Linear(config.d_model, 2)
         # decoder is shared with embedding layer
         embed_weight = self.embedding.tok_embed.weight
         n_vocab, n_dim = embed_weight.size()
@@ -267,6 +304,10 @@ class BERT(nn.Module):
 
 
 def _main() -> None:
+    config = Config()
+
+    ##
+
     text = (
         'Hello, how are you? I am Romeo.\n'
         'Hello, Romeo My name is Juliet. Nice to meet you.\n'
@@ -276,31 +317,16 @@ def _main() -> None:
         'Thanks you Romeo'
     )
 
-    sentences = re.sub("[.,!?\\-]", '', text.lower()).split('\n')  # filter '.', ',', '?', '!'
-    word_list = list(set(" ".join(sentences).split()))
-    word_dict = {'[PAD]': 0, '[CLS]': 1, '[SEP]': 2, '[MASK]': 3}
+    corpus = build_corpus(text)
 
-    for i, w in enumerate(word_list):
-        word_dict[w] = i + 4
-    number_dict = {i: w for i, w in enumerate(word_dict)}
-    vocab_size = len(word_dict)
-
-    token_list = list()
-    for sentence in sentences:
-        arr = [word_dict[s] for s in sentence.split()]
-        token_list.append(arr)
-
-    print(token_list)
+    print(corpus.token_list)
 
     ##
 
     do_make_batch = functools.partial(
         make_batch,
-        sentences=sentences,
-        token_list=token_list,
-        word_dict=word_dict,
-        vocab_size=vocab_size,
-        number_dict=number_dict,
+        config,
+        corpus,
     )
 
     batch = do_make_batch()
@@ -311,12 +337,12 @@ def _main() -> None:
 
     ##
 
-    emb = Embedding(vocab_size)
+    emb = Embedding(config, corpus.vocab_size)
     embeds = emb(input_ids, segment_ids)
 
     attenM = get_attn_pad_mask(input_ids, input_ids)
 
-    SDPA = ScaledDotProductAttention()(embeds, embeds, embeds, attenM)
+    SDPA = ScaledDotProductAttention(config)(embeds, embeds, embeds, attenM)
 
     S, C, A = SDPA
 
@@ -326,12 +352,12 @@ def _main() -> None:
 
     ##
 
-    emb = Embedding(vocab_size)
+    emb = Embedding(config, corpus.vocab_size)
     embeds = emb(input_ids, segment_ids)
 
     attenM = get_attn_pad_mask(input_ids, input_ids)
 
-    MHA = MultiHeadAttention()(embeds, embeds, embeds, attenM)
+    MHA = MultiHeadAttention(config)(embeds, embeds, embeds, attenM)
 
     Output, A = MHA
 
@@ -339,7 +365,7 @@ def _main() -> None:
 
     ##
 
-    model = BERT(vocab_size)
+    model = BERT(config, corpus.vocab_size)
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=0.001)
 
@@ -361,7 +387,7 @@ def _main() -> None:
     # Predict mask tokens ans isNext
     input_ids, segment_ids, masked_tokens, masked_pos, isNext = map(torch.LongTensor, zip(batch[0]))
     print(text)
-    print([number_dict[w.item()] for w in input_ids[0] if number_dict[w.item()] != '[PAD]'])
+    print([corpus.number_dict[w.item()] for w in input_ids[0] if corpus.number_dict[w.item()] != '[PAD]'])
 
     logits_lm, logits_clsf = model(input_ids, segment_ids, masked_pos)
     logits_lm = logits_lm.data.max(2)[1][0].data.numpy()
