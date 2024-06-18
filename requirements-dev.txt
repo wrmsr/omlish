@@ -1,7 +1,7 @@
 -r requirements.txt
 
 build==1.2.1
-twine==5.0.0
+twine==5.1.0
 wheel==0.43.0
 
 pytest==8.2.2
@@ -18,7 +18,7 @@ types-pyyaml==6.0.12.20240311
 
 black==24.4.2
 mypy==1.10.0
-pipdeptree==2.22.0
+pipdeptree==2.23.0
 
 gprof2dot==2024.6.6
 guppy3==3.1.4.post1; python_version < '3.13'
@@ -40,6 +40,8 @@ pgcli==4.1.0; python_version < '3.13'
 cython==3.0.10
 
 jinja2==3.1.4
+
+lxml==4.9.4
 
 #clang
 
