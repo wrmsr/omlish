@@ -1,0 +1,21 @@
+from hancho import *
+import os
+
+if os.name == 'nt':
+  config.depformat = "msvc"
+  compile_command = "cl.exe /c {files_in} /sourceDependencies {depfile} /Fo:{files_out}"
+elif os.name == 'posix':
+  config.depformat = "gcc"
+  compile_command = "gcc -MMD -c {files_in} -o {files_out}"
+else:
+  compile_command = "<unknown OS>"
+
+compile_cpp = Rule(
+  command   = compile_command,
+  files_out = "{swap_ext(files_in, '.o')}",
+  depfile   = "{swap_ext(files_out, '.d')}",
+)
+
+touch_outputs = Rule(
+  command = "touch {files_out}"
+)

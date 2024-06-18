@@ -1,0 +1,19 @@
+# examples/hello_world/build.hancho
+from hancho import *
+import asyncio
+
+compile = Rule(
+  desc      = "Compile {files_in} -> {files_out}",
+  command   = "g++ -MMD -c {files_in} -o {files_out}",
+  files_out = "{swap_ext(files_in, '.o')}",
+  depfile   = "{swap_ext(files_out, '.d')}",
+)
+
+link = Rule(
+  desc    = "Link {files_in} -> {files_out}",
+  command = "g++ {files_in} -o {files_out}",
+)
+
+main_o = compile("main.cpp")
+util_o = compile("util.cpp")
+main_app = link([main_o, util_o], "app")

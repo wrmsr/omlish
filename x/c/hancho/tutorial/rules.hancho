@@ -1,0 +1,19 @@
+# tutorial/rules.hancho
+from hancho import *
+import os
+
+compile = Rule(
+  desc      = "Compile {files_in} -> {files_out}",
+  command   = "g++ -MMD -c {files_in} -o {files_out}",
+  files_out = "{swap_ext(files_in, '.o')}",
+  depfile   = "{swap_ext(files_out, '.d')}",
+)
+
+link = Rule(
+  desc      = "Link {files_in} -> {files_out}",
+  command   = "g++ {files_in} -o {files_out}",
+)
+
+def c_binary(files_in, files_out, **kwargs):
+  objs = [compile(file, **kwargs) for file in files_in]
+  return link(objs, files_out, **kwargs)
