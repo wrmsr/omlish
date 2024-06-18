@@ -34,7 +34,7 @@ def cli_cmd(args) -> bytes:
 @dc.dataclass(frozen=True)
 class PsItem(lang.Final):
     dc.metadata(msh.ObjectMetadata(
-        field_naming=msh.FieldNaming.CAMEL,
+        field_naming=msh.Naming.CAMEL,
         unknown_field='x',
     ))
 
@@ -97,7 +97,7 @@ def cli_ps() -> list[PsItem]:
 @dc.dataclass(frozen=True)
 class Inspect(lang.Final):
     dc.metadata(msh.ObjectMetadata(
-        field_naming=msh.FieldNaming.CAMEL,
+        field_naming=msh.Naming.CAMEL,
         unknown_field='x',
     ))
 

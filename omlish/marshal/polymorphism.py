@@ -82,7 +82,7 @@ def polymorphism_from_subclasses(ty: type, *, naming: Naming | None = None) -> P
         if not lang.is_abstract_class(cur):
             nam = cur.__name__
             if naming is not None:
-                nam = translate_name(nam)
+                nam = translate_name(nam, naming)
             if nam in dct:
                 raise KeyError(f'Duplicate name: {nam}')
             dct[nam] = Impl(
