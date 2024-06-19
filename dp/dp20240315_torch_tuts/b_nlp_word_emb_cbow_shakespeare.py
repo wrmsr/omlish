@@ -29,7 +29,7 @@ import gutenberg.cleanup
 import gutenberg._domain_model.exceptions as gutenbarg_exceptions
 
 
-@lang.cached_nullary
+@lang.cached_function
 def load_raw_text() -> list[str]:
     # raw_text = """We are about to study the idea of a computational process.
     # Computational processes are abstract beings that inhabit computers.

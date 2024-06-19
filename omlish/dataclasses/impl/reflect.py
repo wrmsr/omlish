@@ -94,7 +94,7 @@ class ClassInfo:
         fields: dict[str, dc.Field]
         field_owners: dict[str, type]
 
-    @lang.cached_nullary
+    @lang.cached_function
     def _find_fields(self) -> _FoundFields:
         if self._constructing:
             check.in_(FIELDS_ATTR, self._cls.__dict__)

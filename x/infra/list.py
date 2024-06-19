@@ -24,7 +24,7 @@ from omserv.secrets import load_secrets
 ##
 
 
-@lang.cached_nullary
+@lang.cached_function
 def _get_secrets() -> dict[str, ta.Any]:
     return load_secrets()
 

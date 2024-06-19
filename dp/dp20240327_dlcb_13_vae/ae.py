@@ -22,7 +22,7 @@ from omlish import lang
 DATA_URL = 'https://storage.googleapis.com/quickdraw_dataset/full/binary/'
 
 
-@lang.cached_nullary
+@lang.cached_function
 def get_data_path() -> str:
     return keras.utils.get_file('cat', DATA_URL + 'cat.bin')
 

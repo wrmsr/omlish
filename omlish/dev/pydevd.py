@@ -50,7 +50,7 @@ def forbid_debugger_call(hoist: int = 0) -> None:
         raise DebuggerCallForbiddenException
 
 
-@lang.cached_nullary
+@lang.cached_function
 def _pydevd() -> ta.Optional[types.ModuleType]:
     try:
         return __import__('pydevd')

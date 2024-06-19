@@ -52,7 +52,7 @@ class Data:
         return len(self.category_lines)
 
 
-@lang.cached_nullary
+@lang.cached_function
 def load_data() -> Data:
     category_lines = {}
     for filename in glob.glob('data/names/*.txt'):

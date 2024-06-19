@@ -33,7 +33,7 @@ class PrivateInjectorProvider(Provider):
     def provided_cls(self, rec: ta.Callable[[Key], Cls]) -> Cls:
         return Injector
 
-    @lang.cached_nullary
+    @lang.cached_function
     def required_keys(self) -> frozenset[Key | None]:
         return frozenset(k for b in self.bs.bindings() for k in b.provider.required_keys())
 

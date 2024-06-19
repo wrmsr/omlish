@@ -28,12 +28,12 @@ def load_spacy_model(name):
     return spacy.load(name)
 
 
-@lang.cached_nullary
+@lang.cached_function
 def spacy_de():
     return load_spacy_model('de_core_news_sm')
 
 
-@lang.cached_nullary
+@lang.cached_function
 def spacy_en():
     return load_spacy_model('en_core_web_sm')
 

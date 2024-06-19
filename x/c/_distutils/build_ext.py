@@ -207,7 +207,7 @@ class BuildExt:
 
     #
 
-    @lang.cached_nullary
+    @lang.cached_function
     def get_compiler(self) -> compilers.ccompiler.CCompiler:
         cc = compilers.ccompiler.new_compiler(
             compiler=self._opts.compiler,
