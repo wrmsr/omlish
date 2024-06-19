@@ -36,9 +36,18 @@ from .keys import (  # noqa
 )
 
 from .providers import (  # noqa
-
+    ConstProvider,
+    CtorProvider,
+    FnProvider,
+    LinkProvider,
+    Provider,
+    as_provider,
+    const,
+    ctor,
+    fn,
+    link,
 )
 
 from .types import (  # noqa
-
+    Cls,
 )
