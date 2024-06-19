@@ -86,7 +86,7 @@ class ConstProvider(Provider):
     v: ta.Any
     cls: Cls | None = None
 
-    def provided_cls(self) -> Cls:
+    def provided_cls(self) -> Cls | None:
         return self.cls
 
 

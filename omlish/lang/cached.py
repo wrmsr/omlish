@@ -6,6 +6,7 @@ from .functions import unwrap_func
 
 T = ta.TypeVar('T')
 
+_IGNORE = object()
 _MISSING = object()
 
 
@@ -84,3 +85,49 @@ def cached_nullary(fn):
         return _CachedNullary(fn, value_fn=unwrap_func(fn))
     scope = classmethod if isinstance(fn, classmethod) else None
     return _CachedNullaryDescriptor(fn, scope)
+
+
+##
+
+
+class _CachedProperty:
+    def __init__(self, fn, *, name=None, ignore_if=lambda _: False, clear_on_init=False):
+        super().__init__()
+        if isinstance(fn, property):
+            fn = fn.fget
+        self._fn = fn
+        self._ignore_if = ignore_if
+        self._name = name
+        self._clear_on_init = clear_on_init
+
+    def __set_name__(self, owner, name):
+        if self._name is None:
+            self._name = name
+
+    def __get__(self, instance, owner=None):
+        if instance is None:
+            return self
+        if self._name is None:
+            raise TypeError(self)
+        try:
+            return instance.__dict__[self._name]
+        except KeyError:
+            pass
+        value = self._fn.__get__(instance, owner)()
+        if value is _IGNORE:
+            return None
+        instance.__dict__[self._name] = value
+        return value
+
+    def __set__(self, instance, value):
+        if self._ignore_if(value):
+            return
+        if instance.__dict__[self._name] == value:
+            return
+        raise TypeError(self._name)
+
+
+def cached_property(fn=None, **kwargs):
+    if fn is None:
+        return functools.partial(cached_property, **kwargs)
+    return _CachedProperty(fn, **kwargs)
