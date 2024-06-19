@@ -23,16 +23,19 @@ class ProviderImpl(lang.Abstract):
 @dc.dataclass(frozen=True, eq=False)
 class CallableProviderImpl(ProviderImpl):
     p: Provider
+    fn: ta.Callable
 
     @property
     def provider(self) -> Provider:
         return self.p
 
     def provide(self, i: Injector) -> ta.Any:
-        raise NotImplementedError
+        return i.inject(self.fn)
 
 
 def make_provider_impl(p: Provider) -> ProviderImpl:
-    if isinstance(p, (CtorProvider, FnProvider)):
-        return CallableProviderImpl(p)
+    if isinstance(p, CtorProvider):
+        return CallableProviderImpl(p, p.cls)
+    if isinstance(p, FnProvider):
+        return CallableProviderImpl(p, p.fn)
     raise TypeError(p)
