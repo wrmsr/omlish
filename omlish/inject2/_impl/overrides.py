@@ -25,10 +25,6 @@ class OverriddenElements(Element):
     b: Elements
     o: Elements
 
-    def bindings(self) -> ta.Iterator[Binding]:
-        for b in self.p.bindings():
-            yield self.m.get(b.key, b)
-
 
 def override(p: Bindings, *a: ta.Any) -> Bindings:
     m: dict[Key, Binding] = {}
