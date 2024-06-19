@@ -1,19 +1,28 @@
+import abc
 import typing as ta
 
 from .. import check
 from .. import dataclasses as dc
 from .. import lang
+from .elements import Element
+from .elements import Elements
 from .impl.inspect import signature
+from .keys import Key
 from .keys import as_key
 from .types import Cls
-from .types import Element
-from .types import Elements
-from .types import Key
-from .types import Provider
 
 
 class _Missing(lang.NotInstantiable):
     pass
+
+
+##
+
+
+class Provider(lang.Abstract):
+    @abc.abstractmethod
+    def provided_cls(self) -> Cls | None:
+        raise NotImplementedError
 
 
 ##
