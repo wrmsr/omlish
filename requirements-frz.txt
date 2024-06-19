@@ -29,8 +29,8 @@ black==24.4.2
 bleach==6.1.0
 blis==0.7.11
 blobfile==2.1.1
-boto3==1.34.128
-botocore==1.34.128
+boto3==1.34.129
+botocore==1.34.129
 bs4==0.0.2
 bsddb3==6.2.9
 build==1.2.1
@@ -69,7 +69,7 @@ execnet==2.1.1
 executing==2.0.1
 fairscale==0.4.13
 fastjsonschema==2.20.0
-filelock==3.15.1
+filelock==3.15.3
 fiona==1.9.6
 fire==0.6.0
 flake8==6.1.0
@@ -186,7 +186,7 @@ pandas==2.2.2
 pandocfilters==1.5.1
 parso==0.8.4
 pathspec==0.12.1
-peft @ git+https://github.com/huggingface/peft.git@5194aef509eced3022afa59ea481331aa5112f15
+peft @ git+https://github.com/huggingface/peft.git@d37dde61e1572f41cb43705f25f2015cad89b4c1
 pexpect==4.9.0
 pg8000==1.31.2
 pgcli==4.1.0
@@ -203,9 +203,9 @@ preshed==3.0.9
 priority==2.0.0
 prometheus_client==0.20.0
 prompt_toolkit==3.0.47
-proto-plus==1.23.0
+proto-plus==1.24.0
 protobuf==4.25.3
-psutil==5.9.8
+psutil==6.0.0
 psycopg==3.1.19
 ptyprocess==0.7.0
 pure-eval==0.2.2
@@ -229,7 +229,7 @@ pyobjc-framework-Cocoa==10.3.1
 pyobjc-framework-libdispatch==10.3.1
 pyobjc-framework-Metal==10.3.1
 pyparsing==2.4.7
-pyperclip==1.8.2
+pyperclip==1.9.0
 pyproj==3.6.1
 pyproject_hooks==1.1.0
 pyserial==3.5
@@ -268,7 +268,7 @@ rsa==4.9
 rubicon-objc==0.4.9
 s3transfer==0.10.1
 safetensors==0.4.3
-scikit-image==0.23.2
+scikit-image==0.24.0
 scikit-learn==1.5.0
 scipy==1.13.1
 scramp==1.4.5
@@ -292,7 +292,7 @@ spacy==3.7.5
 spacy-legacy==3.0.12
 spacy-loggers==1.0.5
 SPARQLWrapper==1.8.5
-SQLAlchemy==2.0.30
+SQLAlchemy==2.0.31
 sqlglot==25.2.0
 sqlparse==0.4.4
 srsly==2.4.8
@@ -304,7 +304,7 @@ termcolor==2.4.0
 terminado==0.18.1
 thinc==8.2.4
 threadpoolctl==3.5.0
-tifffile==2024.5.22
+tifffile==2024.6.18
 tiktoken==0.7.0
 tinycss2==1.3.0
 tokenizers==0.19.1
