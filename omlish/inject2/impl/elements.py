@@ -7,7 +7,7 @@ from ..elements import Element
 from ..elements import Elements
 from ..exceptions import DuplicateKeyException
 from ..keys import Key
-from .providers import ProviderImpl
+from .bindings import BindingImpl
 from .providers import make_provider_impl
 
 
@@ -18,21 +18,20 @@ class ElementCollection(lang.Final):
         self._src = check.isinstance(src, Elements)
         self._es: ta.Sequence[Element] = list(src)
 
+    def _yield_element_bindings(self, e: Element) -> ta.Generator[BindingImpl, None, None]:
+        if isinstance(e, Binding):
+            p = make_provider_impl(e.provider)
+            yield BindingImpl(e.key, p, e)
+
+        else:
+            raise TypeError(e)
+
     @lang.cached_nullary
-    def provider_map(self) -> ta.Mapping[Key, ProviderImpl]:
-        pm: dict[Key, ProviderImpl] = {}
-
-        def rec(e: Element) -> None:
-            if isinstance(e, Binding):
-                if e.key in pm:
-                    raise DuplicateKeyException(e.key)
-                p = make_provider_impl(e.provider)
-                pm[e.key] = p
-
-            else:
-                raise TypeError(e)
-
+    def provider_map(self) -> ta.Mapping[Key, BindingImpl]:
+        pm: dict[Key, BindingImpl] = {}
         for e in self._es:
-            rec(e)
-
+            for b in self._yield_element_bindings(e):
+                if b.key in pm:
+                    raise DuplicateKeyException(b)
+                pm[b.key] = b
         return pm
