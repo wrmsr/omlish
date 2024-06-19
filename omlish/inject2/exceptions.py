@@ -1,7 +1,7 @@
 import typing as ta
 
 from .. import dataclasses as dc
-from .types import Key
+from .keys import Key
 
 
 @dc.dataclass()
