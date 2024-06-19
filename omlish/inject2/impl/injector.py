@@ -18,7 +18,7 @@ class InjectorImpl(Injector, lang.Final):
     def __init__(self, ec: ElementCollection, p: ta.Optional['InjectorImpl'] = None) -> None:
         super().__init__()
 
-        ec.provider_map()
+        ec.binding_map()
 
         self._ec = check.isinstance(ec, ElementCollection)
         self._p: ta.Optional[InjectorImpl] = check.isinstance(p, (InjectorImpl, None))
@@ -90,7 +90,7 @@ class InjectorImpl(Injector, lang.Final):
             if (rv := cr.handle_key(key)).present:
                 return rv
 
-            pi = self._ec.provider_map().get(key)
+            pi = self._ec.binding_map().get(key)
             if pi is not None:
                 v = pi.provider.provide(self)
                 cr.handle_provision(key, v)

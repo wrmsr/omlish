@@ -14,11 +14,13 @@ from .providers import make_provider_impl
 
 
 class ElementCollection(lang.Final):
-    def __init__(self, src: Elements) -> None:
+    def __init__(self, es: Elements) -> None:
         super().__init__()
 
-        self._src = check.isinstance(src, Elements)
-        self._es: ta.Sequence[Element] = list(src)
+        self._es = check.isinstance(es, Elements)
+
+    def _yield_elements_of_type(self, *tys: type) -> ta.Sequence[Element]:
+        return [e for e in self._es if isinstance(e, tys)]
 
     def _yield_element_bindings(self, e: Element) -> ta.Generator[BindingImpl, None, None]:
         if isinstance(e, Binding):
@@ -26,18 +28,15 @@ class ElementCollection(lang.Final):
             yield BindingImpl(e.key, p, e)
 
         elif isinstance(e, Overrides):
-            ovr = self._build_provider_map(e.ovr)
-            src = self._build_provider_map(e.src)
+            ovr = self._build_binding_map(e.ovr)
+            src = self._build_binding_map(e.src)
             for k, b in src.items():
                 try:
                     yield ovr[k]
                 except KeyError:
                     yield src[k]
 
-        else:
-            raise TypeError(e)
-
-    def _build_provider_map(self, es: ta.Iterable[Element]) -> ta.Mapping[Key, BindingImpl]:
+    def _build_binding_map(self, es: ta.Iterable[Element]) -> ta.Mapping[Key, BindingImpl]:
         pm: dict[Key, BindingImpl] = {}
         mm: dict[Key, list[BindingImpl]] = {}
         for e in es:
@@ -55,5 +54,5 @@ class ElementCollection(lang.Final):
         return pm
 
     @lang.cached_nullary
-    def provider_map(self) -> ta.Mapping[Key, BindingImpl]:
-        return self._build_provider_map(self._es)
+    def binding_map(self) -> ta.Mapping[Key, BindingImpl]:
+        return self._build_binding_map(self._es)
