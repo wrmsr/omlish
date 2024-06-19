@@ -55,8 +55,10 @@ def test_eager():
         inj.eager(inj.as_binding(f)),
     ])
 
-    ec = ElementCollection(es)
-    i = InjectorImpl(ec)
-    assert c == 1
-    assert i.provide(int) == 420
-    assert c == 2
+    for _ in range(2):
+        c = 0
+        ec = ElementCollection(es)
+        i = InjectorImpl(ec)
+        assert c == 1
+        assert i.provide(int) == 420
+        assert c == 2
