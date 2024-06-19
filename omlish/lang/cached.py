@@ -4,46 +4,54 @@ import typing as ta
 from .functions import unwrap_func
 
 
+P = ta.ParamSpec('P')
 T = ta.TypeVar('T')
 
 _IGNORE = object()
-_MISSING = object()
 
 
-class _CachedNullary(ta.Generic[T]):
+def _cache_key(*args, **kwargs):
+    return (args, tuple(sorted(kwargs.items())))
+
+
+class _CachedFunction(ta.Generic[T]):
 
     def __init__(
             self,
-            fn: ta.Callable[[], T],
+            fn: ta.Callable[P, T],
             *,
-            value: ta.Any = _MISSING,
-            value_fn: ta.Optional[ta.Callable[[], T]] = None,
+            values: dict | None = None,
+            value_fn: ta.Optional[ta.Callable[P, T]] = None,
     ) -> None:
         super().__init__()
 
         self._fn = fn
-        self._value = value
+        self._values = values if values is not None else {}
         self._value_fn = value_fn if value_fn is not None else fn
         functools.update_wrapper(self, fn)
 
     def reset(self) -> None:
-        self._value = _MISSING
+        self._values = {}
 
     def __bool__(self) -> bool:
         raise TypeError
 
-    def __call__(self) -> T:
-        if self._value is not _MISSING:
-            return self._value
-        value = self._value = self._value_fn()
+    def __call__(self, *args, **kwargs) -> T:
+        k = _cache_key(*args, **kwargs)
+        try:
+            return self._values[k]
+        except KeyError:
+            pass
+        value = self._value_fn(*args, **kwargs)
+        self._values[k] = value
         return value
 
 
-class _CachedNullaryDescriptor(_CachedNullary[T]):
+class _CachedFunctionDescriptor(_CachedFunction[T]):
 
     def __init__(
             self,
-            fn: ta.Callable[[], T],
+            fn: ta.Callable[P, T],
             scope: ta.Any,
             *,
             instance: ta.Any = None,
@@ -69,7 +77,7 @@ class _CachedNullaryDescriptor(_CachedNullary[T]):
             scope,
             instance=instance,
             owner=owner,
-            value=_MISSING if scope is classmethod else self._value,
+            # values=None if scope is classmethod else self._values,
             name=name,
             value_fn=fn.__get__(instance, owner),
         )
@@ -80,18 +88,30 @@ class _CachedNullaryDescriptor(_CachedNullary[T]):
         return bound
 
 
-def cached_nullary(fn):
+def cached_function(fn=None, **kwargs):
+    if fn is None:
+        return functools.partial(cached_function, **kwargs)
     if isinstance(fn, staticmethod):
-        return _CachedNullary(fn, value_fn=unwrap_func(fn))
+        return _CachedFunction(fn, value_fn=unwrap_func(fn), **kwargs)
     scope = classmethod if isinstance(fn, classmethod) else None
-    return _CachedNullaryDescriptor(fn, scope)
+    return _CachedFunctionDescriptor(fn, scope)
+
+
+cached_nullary = cached_function
 
 
 ##
 
 
 class _CachedProperty:
-    def __init__(self, fn, *, name=None, ignore_if=lambda _: False, clear_on_init=False):
+    def __init__(
+            self,
+            fn,
+            *,
+            name=None,
+            ignore_if=lambda _: False,
+            clear_on_init=False,
+    ):
         super().__init__()
         if isinstance(fn, property):
             fn = fn.fget
