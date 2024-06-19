@@ -117,6 +117,10 @@ class InjectorImpl(Injector, lang.Final):
         return ret
 
     def inject(self, obj: ta.Any) -> ta.Any:
-        kt = build_kwargs_target(obj)
+        if isinstance(obj, KwargsTarget):
+            obj, kt = obj.obj, obj
+        else:
+            kt = build_kwargs_target(obj)
         kws = self.provide_kwargs(kt)
+        # FIXME: still 'injecting' (as in has a req) if ctor needs and uses Injector
         return obj(**kws)
