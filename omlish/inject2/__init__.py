@@ -7,6 +7,10 @@ from .bindings import (  # noqa
     as_binding,
 )
 
+from .eager import (  # noqa
+    eager,
+)
+
 from .elements import (  # noqa
     Element,
     Elements,
