@@ -6,6 +6,7 @@ import typing as ta
 
 import pytest
 
+from ... import cached
 from ... import dataclasses as dc
 from ... import lang
 from ... import reflect as rfl  # noqa
@@ -353,3 +354,26 @@ def test_mypy():
 
     # Foo('hi')
     # Foo(1, 'hi')
+
+
+def test_cached_property():
+    c = 0
+
+    @dc.dataclass(frozen=True)
+    class Foo:
+        x: int
+
+        @cached.property
+        def y(self) -> int:
+            nonlocal c
+            c += 1
+            return self.x + 1
+
+    f = Foo(3)
+    assert f.x == 3
+    assert c == 0
+    for _ in range(2):
+        assert f.y == 4
+        assert c == 1
+    with pytest.raises(dc.FrozenInstanceError):
+        f.x = 5  # noqa
