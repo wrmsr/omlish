@@ -53,3 +53,4 @@ def multi_provider(cls: Cls, *ps: Provider) -> MultiProvider:
         # FIXME:
         ta.Sequence[cls],  # type: ignore
     )
+
