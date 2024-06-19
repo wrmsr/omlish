@@ -8,6 +8,7 @@ from ..inspect import KwargsTarget
 from ..providers import ConstProvider
 from ..providers import CtorProvider
 from ..providers import FnProvider
+from ..providers import LinkProvider
 from ..providers import Provider
 from .inspect import build_kwargs_target
 
@@ -24,7 +25,7 @@ class ProviderImpl(lang.Abstract):
 
 
 @dc.dataclass(frozen=True, eq=False)
-class CallableProviderImpl(ProviderImpl):
+class CallableProviderImpl(ProviderImpl, lang.Final):
     p: FnProvider | CtorProvider
     kt: KwargsTarget
 
@@ -37,7 +38,7 @@ class CallableProviderImpl(ProviderImpl):
 
 
 @dc.dataclass(frozen=True, eq=False)
-class ConstProviderImpl(ProviderImpl):
+class ConstProviderImpl(ProviderImpl, lang.Final):
     p: ConstProvider
 
     @property
@@ -48,6 +49,18 @@ class ConstProviderImpl(ProviderImpl):
         return self.p.v
 
 
+@dc.dataclass(frozen=True, eq=False)
+class LinkProviderImpl(ProviderImpl, lang.Final):
+    p: LinkProvider
+
+    @property
+    def provider(self) -> Provider:
+        return self.p
+
+    def provide(self, i: Injector) -> ta.Any:
+        return i.provide(self.p.k)
+
+
 def make_provider_impl(p: Provider) -> ProviderImpl:
     if isinstance(p, FnProvider):
         return CallableProviderImpl(p, build_kwargs_target(p.fn))
@@ -55,4 +68,6 @@ def make_provider_impl(p: Provider) -> ProviderImpl:
         return CallableProviderImpl(p, build_kwargs_target(p.cls))
     if isinstance(p, ConstProvider):
         return ConstProviderImpl(p)
+    if isinstance(p, LinkProvider):
+        return LinkProviderImpl(p)
     raise TypeError(p)
