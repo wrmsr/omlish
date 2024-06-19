@@ -15,4 +15,3 @@ class BindingImpl(lang.Final):
     provider: ProviderImpl
     # scope: ScopeTag
     binding: Binding | None = None
-

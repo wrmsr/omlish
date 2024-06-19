@@ -376,7 +376,7 @@ def test_cached_property():
         assert f.y == 4
         assert c == 1
     with pytest.raises(dc.FrozenInstanceError):
-        f.x = 5  # noqa
+        f.x = 5  # type: ignore  # noqa
 
 
 # def test_cached_init_property():
