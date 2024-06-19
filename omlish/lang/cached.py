@@ -2,6 +2,7 @@
 TODO:
  - integrate / expose with collections.cache
  - weakrefs (selectable by arg)
+ - locks
 """
 import functools
 import inspect
@@ -77,17 +78,19 @@ class _CachedFunction(ta.Generic[T]):
             self,
             fn: ta.Callable[P, T],
             *,
+            map_maker: ta.Callable[[], ta.MutableMapping] = dict,
             simple_key: bool = False,
-            values: dict | None = None,
-            value_fn: ta.Optional[ta.Callable[P, T]] = None,
             keyer: ta.Callable[..., tuple] | None = None,
+            values: ta.MutableMapping | None = None,
+            value_fn: ta.Optional[ta.Callable[P, T]] = None,
     ) -> None:
         super().__init__()
 
         self._fn = fn
         self._simple_key = simple_key
+        self._map_maker = map_maker
         self._keyer = keyer if keyer is not None else _make_cache_keyer(fn, simple=simple_key)
-        self._values = values if values is not None else {}
+        self._values = values if values is not None else map_maker()
         self._value_fn = value_fn if value_fn is not None else fn
         functools.update_wrapper(self, fn)
 
@@ -141,6 +144,7 @@ class _CachedFunctionDescriptor(_CachedFunction[T]):
             fn,
             scope,
             simple_key=self._simple_key,
+            map_maker=self._map_maker,
             instance=instance,
             owner=owner,
             name=name,
