@@ -18,3 +18,21 @@ def test_inject():
     i = InjectorImpl(ec)
     assert i.provide(int) == 420
     assert i.provide(str) == '420'
+
+
+def test_override():
+    es = inj.Elements([
+        inj.override(
+            inj.as_binding(421),
+            inj.as_binding(420),
+        ),
+        inj.as_binding(5.2),
+        inj.as_binding(lang.typed_lambda(str, i=int, f=float)(lambda i, f: f'{i}, {f}')),
+    ])
+
+    pprint.pprint(es)
+
+    ec = ElementCollection(es)
+    i = InjectorImpl(ec)
+    assert i.provide(int) == 421
+    assert i.provide(str) == '421, 5.2'
