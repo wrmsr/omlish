@@ -13,14 +13,18 @@ from .providers import MultiProviderImpl
 from .providers import make_provider_impl
 
 
+ElementT = ta.TypeVar('T', bound=Element)
+
+
 class ElementCollection(lang.Final):
     def __init__(self, es: Elements) -> None:
         super().__init__()
 
         self._es = check.isinstance(es, Elements)
 
-    def _yield_elements_of_type(self, *tys: type) -> ta.Sequence[Element]:
-        return [e for e in self._es if isinstance(e, tys)]
+    @lang.cached_function
+    def elements_of_type(self, *tys: type[ElementT]) -> ta.Sequence[ElementT]:
+        return tuple(e for e in self._es if isinstance(e, tys))
 
     def _yield_element_bindings(self, e: Element) -> ta.Generator[BindingImpl, None, None]:
         if isinstance(e, Binding):
