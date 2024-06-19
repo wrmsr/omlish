@@ -4,10 +4,12 @@ import typing as ta
 from ... import dataclasses as dc
 from ... import lang
 from ..injector import Injector
+from ..inspect import KwargsTarget
 from ..providers import ConstProvider
 from ..providers import CtorProvider
 from ..providers import FnProvider
 from ..providers import Provider
+from .inspect import build_kwargs_target
 
 
 class ProviderImpl(lang.Abstract):
@@ -24,14 +26,14 @@ class ProviderImpl(lang.Abstract):
 @dc.dataclass(frozen=True, eq=False)
 class CallableProviderImpl(ProviderImpl):
     p: FnProvider | CtorProvider
-    fn: ta.Callable
+    kt: KwargsTarget
 
     @property
     def provider(self) -> Provider:
         return self.p
 
     def provide(self, i: Injector) -> ta.Any:
-        return i.inject(self.fn)  # TODO: cache kwargs_target
+        return i.inject(self.kt)
 
 
 @dc.dataclass(frozen=True, eq=False)
@@ -48,9 +50,9 @@ class ConstProviderImpl(ProviderImpl):
 
 def make_provider_impl(p: Provider) -> ProviderImpl:
     if isinstance(p, FnProvider):
-        return CallableProviderImpl(p, p.fn)
+        return CallableProviderImpl(p, build_kwargs_target(p.fn))
     if isinstance(p, CtorProvider):
-        return CallableProviderImpl(p, p.cls)
+        return CallableProviderImpl(p, build_kwargs_target(p.cls))
     if isinstance(p, ConstProvider):
         return ConstProviderImpl(p)
     raise TypeError(p)
