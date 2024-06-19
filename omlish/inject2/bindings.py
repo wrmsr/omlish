@@ -30,9 +30,9 @@ class Binding(Element, lang.Final):
 
 def as_binding(o: ta.Any) -> Binding:
     check.not_none(o)
-    check.not_isinstance(o, (Element, Elements))
     if isinstance(o, Binding):
         return o
+    check.not_isinstance(o, (Element, Elements))
     if isinstance(o, Provider):
         return Binding(Key(check.not_none(o.provided_cls())), o)  # noqa
     if isinstance(o, type):
