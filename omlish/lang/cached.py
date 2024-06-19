@@ -1,3 +1,8 @@
+"""
+TODO:
+ - integrate / expose with collections.cache
+ - weakrefs (selectable by arg)
+"""
 import functools
 import inspect
 import typing as ta
@@ -159,7 +164,7 @@ def cached_function(fn=None, **kwargs):
     return _CachedFunctionDescriptor(fn, scope, **kwargs)
 
 
-cached_nullary = cached_function
+cached_function = cached_function
 
 
 ##

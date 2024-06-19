@@ -24,7 +24,7 @@ class MultiProvider(Provider):
     def provided_cls(self, rec: ta.Callable[[Key], Cls]) -> Cls:
         return self.scls
 
-    @lang.cached_nullary
+    @lang.cached_function
     def required_keys(self) -> frozenset[Key | None]:
         return frozenset(k for c in self.ps for k in c.required_keys())
 

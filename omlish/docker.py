@@ -124,7 +124,7 @@ class ComposeConfig:
         self._prefix = prefix
         self._compose_path = compose_path
 
-    @lang.cached_nullary
+    @lang.cached_function
     def get_config(self) -> ta.Mapping[str, ta.Any]:
         with open(check.not_none(self._compose_path), 'r') as f:
             buf = f.read()

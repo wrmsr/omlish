@@ -1,5 +1,5 @@
 from .cached import cached_function  # noqa
-from .cached import cached_nullary  # noqa
+from .cached import cached_function  # noqa
 from .cached import cached_property  # noqa
 from .classes import Abstract # noqa
 from .classes import Callable  # noqa

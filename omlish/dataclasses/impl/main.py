@@ -72,7 +72,7 @@ class MainProcessor:
             if all_frozen_bases is False and self._info.params.frozen:
                 raise TypeError('cannot inherit frozen dataclass from a non-frozen one')
 
-    @lang.cached_nullary
+    @lang.cached_function
     def _process_fields(self) -> None:
         fields: dict[str, dc.Field] = {}
 
@@ -109,7 +109,7 @@ class MainProcessor:
 
         setattr(self._cls, FIELDS_ATTR, fields)
 
-    @lang.cached_nullary
+    @lang.cached_function
     def _transform_slots(self) -> None:
         if self._info.params12.weakref_slot and not self._info.params12.slots:
             raise TypeError('weakref_slot is True but slots is False')
@@ -117,7 +117,7 @@ class MainProcessor:
             return
         self._cls = add_slots(self._cls, self._info.params.frozen, self._info.params12.weakref_slot)
 
-    @lang.cached_nullary
+    @lang.cached_function
     def process(self) -> type:
         self._check_params()
         self._check_frozen_bases()

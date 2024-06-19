@@ -53,6 +53,6 @@ class ElementCollection(lang.Final):
                 pm[k] = BindingImpl(k, mp)
         return pm
 
-    @lang.cached_nullary
+    @lang.cached_function
     def binding_map(self) -> ta.Mapping[Key, BindingImpl]:
         return self._build_binding_map(self._es)

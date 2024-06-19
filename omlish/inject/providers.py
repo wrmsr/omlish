@@ -48,7 +48,7 @@ class FnProvider(Provider):
     def provided_cls(self, rec: ta.Callable[[Key], Cls]) -> Cls:
         return self.cls
 
-    @lang.cached_nullary
+    @lang.cached_function
     def required_keys(self) -> frozenset[Key | None]:
         return frozenset(kw.key for kw in self.kt.kwargs)
 
@@ -81,7 +81,7 @@ class CtorProvider(Provider):
     def provided_cls(self, rec: ta.Callable[[Key], Cls]) -> Cls:
         return self.cls
 
-    @lang.cached_nullary
+    @lang.cached_function
     def required_keys(self) -> frozenset[Key | None]:
         return frozenset(kw.key for kw in self.kt.kwargs)
 

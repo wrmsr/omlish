@@ -4,14 +4,14 @@ import sys
 import types
 import typing as ta
 
-from .cached import cached_nullary
+from .cached import cached_function
 
 
 ##
 
 
 def lazy_import(name: str, package: ta.Optional[str] = None) -> ta.Callable[[], ta.Any]:
-    return cached_nullary(functools.partial(importlib.import_module, name, package=package))
+    return cached_function(functools.partial(importlib.import_module, name, package=package))
 
 
 def proxy_import(name: str, package: ta.Optional[str] = None) -> types.ModuleType:

@@ -74,7 +74,7 @@ class InitBuilder:
         self._self_name = self_name
         self._globals = globals
 
-    @lang.cached_nullary
+    @lang.cached_function
     def build(self) -> ta.Callable:
         ifs = get_init_fields(self._fields.values(), reorder=self._info.params_extras.reorder)
 
