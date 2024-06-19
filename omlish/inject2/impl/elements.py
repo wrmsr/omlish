@@ -21,10 +21,18 @@ class ElementCollection(lang.Final):
     @lang.cached_nullary
     def provider_map(self) -> ta.Mapping[Key, ProviderImpl]:
         pm: dict[Key, ProviderImpl] = {}
-        for e in self._es:
+
+        def rec(e: Element) -> None:
             if isinstance(e, Binding):
                 if e.key in pm:
                     raise DuplicateKeyException(e.key)
                 p = make_provider_impl(e.provider)
                 pm[e.key] = p
+
+            else:
+                raise TypeError(e)
+
+        for e in self._es:
+            rec(e)
+
         return pm
