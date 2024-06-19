@@ -9,7 +9,7 @@ wrapt>=1.14.1
 # zstd
 
 ## db:
-sqlalchemy[asyncio]==2.0.30; python_version < '3.13'
+sqlalchemy[asyncio]==2.0.31; python_version < '3.13'
 sqlalchemy==2.0.30; python_version >= '3.13'  # greenlet
 
 # kazoo
