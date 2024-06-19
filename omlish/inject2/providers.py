@@ -33,12 +33,12 @@ def as_provider(o: ta.Any) -> Provider:
     if isinstance(o, Provider):
         return o
     if isinstance(o, Key):
-        return LinkProvider(o)
+        return link(o)
     if isinstance(o, type):
         return ctor(o)
     if callable(o):
         return fn(o)
-    return ConstProvider(type(o), o)
+    return const(o)
 
 
 ##

@@ -1,5 +1,3 @@
-import pprint
-
 from ... import inject2 as inj
 from ... import lang
 from ..impl.elements import ElementCollection
@@ -11,8 +9,6 @@ def test_inject():
         inj.as_binding(420),
         inj.as_binding(lang.typed_lambda(str, i=int)(lambda i: str(i))),
     ])
-
-    pprint.pprint(es)
 
     ec = ElementCollection(es)
     i = InjectorImpl(ec)
@@ -30,9 +26,18 @@ def test_override():
         inj.as_binding(lang.typed_lambda(str, i=int, f=float)(lambda i, f: f'{i}, {f}')),
     ])
 
-    pprint.pprint(es)
-
     ec = ElementCollection(es)
     i = InjectorImpl(ec)
     assert i.provide(int) == 421
     assert i.provide(str) == '421, 5.2'
+
+
+def test_multi():
+    es = inj.Elements([
+        inj.as_(inj.multi(int), [420]),
+        inj.as_(inj.multi(int), [421]),
+    ])
+
+    ec = ElementCollection(es)
+    i = InjectorImpl(ec)
+    assert i.provide(inj.multi(int)) == [420, 421]
