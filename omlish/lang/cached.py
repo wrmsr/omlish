@@ -3,6 +3,7 @@ import inspect
 import typing as ta
 
 from .functions import unwrap_func
+from .functions import unwrap_func_with_partials
 
 
 P = ta.ParamSpec('P')
@@ -11,7 +12,14 @@ T = ta.TypeVar('T')
 _IGNORE = object()
 
 
-def _make_cache_keyer(fn, skip=0):
+def _simple_cache_key(*args, **kwargs):
+    return (args, tuple(sorted(kwargs.items())))
+
+
+def _make_cache_keyer(fn, *, simple=False, bound=False):
+    if simple:
+        return _simple_cache_key
+    fn, partials = unwrap_func_with_partials(fn)
     sig = inspect.signature(fn)
     ns = {}
     ps = []
@@ -19,7 +27,7 @@ def _make_cache_keyer(fn, skip=0):
     kwn = None
     render_pos_only_separator = False
     render_kw_only_separator = True
-    for p in list(sig.parameters.values())[skip:]:
+    for p in list(sig.parameters.values())[1 if bound else 0:]:
         formatted = p.name
         if p.default is not inspect.Parameter.empty:
             ns[p.name] = p.default
@@ -52,11 +60,10 @@ def _make_cache_keyer(fn, skip=0):
         f'    return ({", ".join(pns)}{kwa})\n'
     )
     exec(rendered, ns)
-    return ns['__func__']
-
-
-def _simple_cache_key(*args, **kwargs):
-    return (args, tuple(sorted(kwargs.items())))
+    kfn = ns['__func__']
+    for part in partials[::-1]:
+        kfn = functools.partial(kfn, *part.args, **part.keywords)
+    return kfn
 
 
 class _CachedFunction(ta.Generic[T]):
@@ -65,6 +72,7 @@ class _CachedFunction(ta.Generic[T]):
             self,
             fn: ta.Callable[P, T],
             *,
+            simple_key: bool = False,
             values: dict | None = None,
             value_fn: ta.Optional[ta.Callable[P, T]] = None,
             keyer: ta.Callable[..., tuple] | None = None,
@@ -72,7 +80,8 @@ class _CachedFunction(ta.Generic[T]):
         super().__init__()
 
         self._fn = fn
-        self._keyer = keyer if keyer is not None else _make_cache_keyer(fn)
+        self._simple_key = simple_key
+        self._keyer = keyer if keyer is not None else _make_cache_keyer(fn, simple=simple_key)
         self._values = values if values is not None else {}
         self._value_fn = value_fn if value_fn is not None else fn
         functools.update_wrapper(self, fn)
@@ -122,10 +131,11 @@ class _CachedFunctionDescriptor(_CachedFunction[T]):
         name = self._name
         bound_fn = fn.__get__(instance, owner)
         if self._bound_keyer is None:
-            self._bound_keyer = _make_cache_keyer(fn, 1)
+            self._bound_keyer = _make_cache_keyer(fn, simple=self._simple_key, bound=True)
         bound = self.__class__(
             fn,
             scope,
+            simple_key=self._simple_key,
             instance=instance,
             owner=owner,
             name=name,
@@ -146,7 +156,7 @@ def cached_function(fn=None, **kwargs):
     if isinstance(fn, staticmethod):
         return _CachedFunction(fn, value_fn=unwrap_func(fn), **kwargs)
     scope = classmethod if isinstance(fn, classmethod) else None
-    return _CachedFunctionDescriptor(fn, scope)
+    return _CachedFunctionDescriptor(fn, scope, **kwargs)
 
 
 cached_nullary = cached_function

@@ -23,18 +23,26 @@ def maybe_call(obj: ta.Any, att: str, *args, default: ta.Any = None, **kwargs) -
 
 
 def unwrap_func(fn: ta.Callable) -> ta.Callable:
+    fn, _ = unwrap_func_with_partials(fn)
+    return fn
+
+
+def unwrap_func_with_partials(fn: ta.Callable) -> tuple[ta.Callable, list[functools.partial]]:
+    ps = []
     while True:
         if is_method_descriptor(fn):
             fn = fn.__func__  # type: ignore
         elif isinstance(fn, functools.partial):
+            ps.append(fn)
             fn = fn.func
         else:
             nxt = getattr(fn, '__wrapped__', None)
             if not callable(nxt):
-                return fn
+                break
             elif nxt is fn:
                 raise TypeError(fn)
             fn = nxt
+    return fn, ps
 
 
 def raise_(o: BaseException) -> ta.NoReturn:
