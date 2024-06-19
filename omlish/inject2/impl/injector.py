@@ -28,7 +28,12 @@ class InjectorImpl(Injector, lang.Final):
 
         self.__cur_req: InjectorImpl._Request | None = None
 
+        self._instantiate_eagers()
+
     _root: 'InjectorImpl'
+
+    def _instantiate_eagers(self) -> None:
+        pass
 
     def create_child(self, ec: ElementCollection) -> Injector:
         c = InjectorImpl(ec, self)

@@ -41,3 +41,22 @@ def test_multi():
     ec = ElementCollection(es)
     i = InjectorImpl(ec)
     assert i.provide(inj.multi(int)) == [420, 421]
+
+
+def test_eager():
+    c = 0
+
+    def f() -> int:
+        nonlocal c
+        c += 1
+        return 420
+
+    es = inj.Elements(cs=[
+        inj.eager(inj.as_binding(f)),
+    ])
+
+    ec = ElementCollection(es)
+    i = InjectorImpl(ec)
+    assert c == 1
+    assert i.provide(int) == 420
+    assert c == 2
