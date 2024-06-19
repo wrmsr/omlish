@@ -40,7 +40,7 @@ def as_binding(o: ta.Any) -> Binding:
     if callable(o):
         return as_binding(fn(o))
     cls = type(o)
-    return Binding(Key(cls), const(cls, o))
+    return Binding(Key(cls), const(o, cls))
 
 
 def as_(k: ta.Any, p: ta.Any) -> Binding:
