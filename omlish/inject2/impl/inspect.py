@@ -8,12 +8,12 @@ import inspect
 import typing as ta
 import weakref
 
-from .exceptions import DuplicateKeyException
-from .keys import as_key
-from .keys import tag
-from .types import Key
-from .types import Kwarg
-from .types import KwargsTarget
+from ..exceptions import DuplicateKeyException
+from ..inspect import Kwarg
+from ..inspect import KwargsTarget
+from ..keys import Key
+from ..keys import as_key
+from ..keys import tag
 
 
 P = ta.ParamSpec('P')
