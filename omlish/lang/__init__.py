@@ -71,6 +71,7 @@ from .functions import recurse  # noqa
 from .functions import ticking_timeout  # noqa
 from .functions import try_  # noqa
 from .functions import unwrap_func  # noqa
+from .functions import unwrap_func_with_partials  # noqa
 from .functions import void  # noqa
 from .imports import import_all  # noqa
 from .imports import import_module  # noqa
