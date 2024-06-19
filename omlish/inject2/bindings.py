@@ -34,7 +34,7 @@ def as_binding(o: ta.Any) -> Binding:
         return o
     check.not_isinstance(o, (Element, Elements))
     if isinstance(o, Provider):
-        return Binding(Key(check.not_none(o.provided_cls())), o)  # noqa
+        return Binding(Key(check.not_none(o.provided_cls())), o)  # type: ignore  # noqa
     if isinstance(o, type):
         return as_binding(ctor(o))
     if callable(o):

@@ -1,3 +1,4 @@
+from ..cached import cached_property
 from ..cached import cached_nullary
 
 
@@ -91,3 +92,20 @@ def test_cached_nullary():
     assert c == 3
     assert ci2.i() == 'C.i(c2)'
     assert c == 3
+
+
+def test_property():
+    n = 0
+
+    class C:
+        @cached_property
+        def x(self) -> int:
+            nonlocal n
+            n += 1
+            return n
+
+    c = C()
+    assert c.x == 1
+    assert c.x == 1
+    assert C().x == 2
+    assert C().x == 3
