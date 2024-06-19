@@ -3,15 +3,15 @@ import typing as ta
 from .. import check
 from .. import dataclasses as dc
 from .. import lang
-from .keys import as_key
-from .providers import ConstProvider
-from .providers import Provider
-from .providers import as_provider
-from .providers import ctor as ctor_provider
-from .providers import fn as fn_provider
 from .elements import Element
 from .elements import Elements
 from .keys import Key
+from .keys import as_key
+from .providers import Provider
+from .providers import as_provider
+from .providers import const
+from .providers import ctor
+from .providers import fn
 
 
 ##
@@ -36,11 +36,11 @@ def as_binding(o: ta.Any) -> Binding:
     if isinstance(o, Provider):
         return Binding(Key(check.not_none(o.provided_cls())), o)  # noqa
     if isinstance(o, type):
-        return as_binding(ctor_provider(o))
+        return as_binding(ctor(o))
     if callable(o):
-        return as_binding(fn_provider(o))
+        return as_binding(fn(o))
     cls = type(o)
-    return Binding(Key(cls), ConstProvider(cls, o))
+    return Binding(Key(cls), const(cls, o))
 
 
 def as_(k: ta.Any, p: ta.Any) -> Binding:
