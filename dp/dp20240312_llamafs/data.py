@@ -5,22 +5,22 @@ import torch
 from omlish import lang
 
 
-@lang.cached_nullary
+@lang.cached_function
 def lines() -> str:
     return open('./input.txt', 'r').read()
 
 
-@lang.cached_nullary
+@lang.cached_function
 def vocab() -> list[str]:
     return sorted(list(set(lines())))
 
 
-@lang.cached_nullary
+@lang.cached_function
 def itos() -> dict[int, str]:
     return {i: ch for i, ch in enumerate(vocab())}
 
 
-@lang.cached_nullary
+@lang.cached_function
 def stoi() -> dict[str, int]:
     return {ch: i for i, ch in enumerate(vocab())}
 
@@ -33,7 +33,7 @@ def decode(l: list[int]) -> str:
     return ''.join([itos()[i] for i in l])
 
 
-@lang.cached_nullary
+@lang.cached_function
 def dataset() -> torch.Tensor:
     return torch.tensor(encode(lines()), dtype=torch.int8)
 

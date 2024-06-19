@@ -61,7 +61,7 @@ class Cli(ap.Cli):
     def work_path(self) -> str:
         return os.getcwd()
 
-    @lang.cached_nullary
+    @lang.cached_function
     def get_antlr_jar_path(self) -> str:
         fn = f'antlr-{ANTLR_VERSION}-complete.jar'
         fp = os.path.join(self.work_path, fn)

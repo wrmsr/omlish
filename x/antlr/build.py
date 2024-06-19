@@ -79,11 +79,11 @@ def _find_files(
 
 class Builder:
 
-    @lang.cached_nullary
+    @lang.cached_function
     def build_dir(self) -> str:
         return os.path.join(os.path.dirname(__file__), 'build')
 
-    @lang.cached_nullary
+    @lang.cached_function
     def antlr_jar_path(self) -> str:
         fn = f'antlr-{ANTLR_VERSION}-complete.jar'
         fp = os.path.abspath(os.path.join(self.build_dir(), fn))
@@ -111,7 +111,7 @@ class Builder:
                 ],
             )
 
-    @lang.cached_nullary
+    @lang.cached_function
     def runtime_dir(self) -> str:
         d = os.path.join(self.build_dir(), 'antlr4')
         if not os.path.exists(d):
@@ -124,7 +124,7 @@ class Builder:
             )
         return d
 
-    @lang.cached_nullary
+    @lang.cached_function
     def pybind_dir(self) -> str:
         d = os.path.join(self.build_dir(), 'pybind11')
         if not os.path.exists(d):
