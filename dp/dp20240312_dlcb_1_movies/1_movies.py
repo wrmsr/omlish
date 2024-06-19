@@ -25,7 +25,7 @@ class Movie:
 
 
 class MovieReqs:
-    @lang.cached_nullary
+    @lang.cached_function
     def movies(self) -> ta.Sequence[Movie]:
         movies = []
         # https://github.com/wrmsr/deep_learning_cookbook/blob/138a99b09ffa3a728d261e461440f029e512ac93/data/wp_movies_10k.ndjson
@@ -34,22 +34,22 @@ class MovieReqs:
                 movies.append(Movie(*json.loads(l)))
         return movies
 
-    @lang.cached_nullary
+    @lang.cached_function
     def top_links(self) -> ta.Sequence[str]:
         link_counts = collections.Counter()
         for movie in self.movies():
             link_counts.update(movie.links)
         return [link for link, c in link_counts.items() if c >= 3]
 
-    @lang.cached_nullary
+    @lang.cached_function
     def link_to_idx(self) -> ta.Mapping[str, int]:
         return {link: idx for idx, link in enumerate(self.top_links())}
 
-    @lang.cached_nullary
+    @lang.cached_function
     def movie_to_idx(self) -> ta.Mapping[str, int]:
         return {movie.name: idx for idx, movie in enumerate(self.movies())}
 
-    @lang.cached_nullary
+    @lang.cached_function
     def pairs(self) -> ta.Sequence[tuple[int, int]]:
         pairs = []
         for movie in self.movies():
@@ -60,7 +60,7 @@ class MovieReqs:
             )
         return pairs
 
-    @lang.cached_nullary
+    @lang.cached_function
     def pairs_set(self) -> ta.AbstractSet[tuple[int, int]]:
         pairs_set = set(self.pairs())
         return pairs_set
@@ -158,7 +158,7 @@ class MovieReqs:
             np.random.shuffle(batch)
             yield {'link': batch[:, 0], 'movie': batch[:, 1]}, batch[:, 2]
 
-    @lang.cached_nullary
+    @lang.cached_function
     def trained_model(self) -> keras.Model:
         # fp = '../../.cache/1_movies.keras'
         # if os.path.exists(fp):

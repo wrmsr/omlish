@@ -8,7 +8,7 @@ class Processor(lang.Abstract):
         self._cls = info.cls
         self._info = info
 
-    @lang.cached_nullary
+    @lang.cached_function
     def process(self) -> None:
         self._process()
 
