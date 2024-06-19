@@ -123,14 +123,3 @@ def test_property():
     assert c.x == 1
     assert C().x == 2
     assert C().x == 3
-
-
-def test_key_maker():
-    def f(x, /, y, *,  z, d=0, **k):
-        pass
-
-    import inspect
-
-    fn = f
-
-
