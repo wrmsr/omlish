@@ -3,9 +3,9 @@ import typing as ta
 from .. import check
 from .. import dataclasses as dc
 from .. import lang
-from .multis import multi_provider
 from .exceptions import DuplicateKeyException
 from .keys import as_key
+from .multis import multi_provider
 from .providers import ConstProvider
 from .providers import Provider
 from .providers import as_provider
@@ -13,9 +13,21 @@ from .providers import ctor as ctor_provider
 from .providers import fn as fn_provider
 from .types import Binding
 from .types import Bindings
+from .types import Element
+from .types import Elements
 from .types import Key
 from .types import _BindingGen
 from .types import _ProviderGen
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+@dc.extra_params(cache_hash=True)
+class Binding(Element, lang.Final):
+    key: Key
+    provider: Provider
 
 
 ##
