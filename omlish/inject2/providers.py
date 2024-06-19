@@ -93,7 +93,7 @@ class ConstProvider(Provider):
 def const(v: ta.Any, cls: ta.Optional[Cls] = _Missing) -> Provider:
     if cls is _Missing:
         cls = type(v)
-    return ConstProvider(cls, v)
+    return ConstProvider(v, cls)
 
 
 ##
