@@ -1,4 +1,5 @@
 import functools
+import inspect
 import typing as ta
 
 from .functions import unwrap_func
@@ -10,7 +11,51 @@ T = ta.TypeVar('T')
 _IGNORE = object()
 
 
-def _cache_key(*args, **kwargs):
+def _make_cache_keyer(fn, skip=0):
+    sig = inspect.signature(fn)
+    ns = {}
+    ps = []
+    pns = []
+    kwn = None
+    render_pos_only_separator = False
+    render_kw_only_separator = True
+    for p in list(sig.parameters.values())[skip:]:
+        formatted = p.name
+        if p.default is not inspect.Parameter.empty:
+            ns[p.name] = p.default
+            formatted = f'{formatted}={formatted}'
+        kind = p.kind
+        if kind == inspect.Parameter.VAR_POSITIONAL:
+            formatted = '*' + formatted
+        elif kind == inspect.Parameter.VAR_KEYWORD:
+            formatted = '**' + formatted
+        if kind == inspect.Parameter.POSITIONAL_ONLY:
+            render_pos_only_separator = True
+        elif render_pos_only_separator:
+            ps.append('/')
+            render_pos_only_separator = False
+        if kind == inspect.Parameter.VAR_POSITIONAL:
+            render_kw_only_separator = False
+        elif kind == inspect.Parameter.KEYWORD_ONLY and render_kw_only_separator:
+            ps.append('*')
+            render_kw_only_separator = False
+        ps.append(formatted)
+        if kind == inspect.Parameter.VAR_KEYWORD:
+            kwn = p.name
+        else:
+            pns.append(p.name)
+    if render_pos_only_separator:
+        ps.append('/')
+    kwa = f', __builtins__.tuple(__builtins__.sorted({kwn}.items()))' if kwn else ''
+    rendered = (
+        f'def __func__({", ".join(ps)}):\n'
+        f'    return ({", ".join(pns)}{kwa})\n'
+    )
+    exec(rendered, ns)
+    return ns['__func__']
+
+
+def _simple_cache_key(*args, **kwargs):
     return (args, tuple(sorted(kwargs.items())))
 
 
@@ -22,10 +67,12 @@ class _CachedFunction(ta.Generic[T]):
             *,
             values: dict | None = None,
             value_fn: ta.Optional[ta.Callable[P, T]] = None,
+            keyer: ta.Callable[..., tuple] | None = None,
     ) -> None:
         super().__init__()
 
         self._fn = fn
+        self._keyer = keyer if keyer is not None else _make_cache_keyer(fn)
         self._values = values if values is not None else {}
         self._value_fn = value_fn if value_fn is not None else fn
         functools.update_wrapper(self, fn)
@@ -37,7 +84,7 @@ class _CachedFunction(ta.Generic[T]):
         raise TypeError
 
     def __call__(self, *args, **kwargs) -> T:
-        k = _cache_key(*args, **kwargs)
+        k = self._keyer(*args, **kwargs)
         try:
             return self._values[k]
         except KeyError:
@@ -65,6 +112,7 @@ class _CachedFunctionDescriptor(_CachedFunction[T]):
         self._instance = instance
         self._owner = owner
         self._name = name if name is not None else unwrap_func(fn).__name__
+        self._bound_keyer = None
 
     def __get__(self, instance, owner=None):
         scope = self._scope
@@ -72,14 +120,18 @@ class _CachedFunctionDescriptor(_CachedFunction[T]):
             return self
         fn = self._fn
         name = self._name
+        bound_fn = fn.__get__(instance, owner)
+        if self._bound_keyer is None:
+            self._bound_keyer = _make_cache_keyer(fn, 1)
         bound = self.__class__(
             fn,
             scope,
             instance=instance,
             owner=owner,
-            # values=None if scope is classmethod else self._values,
             name=name,
-            value_fn=fn.__get__(instance, owner),
+            keyer=self._bound_keyer,
+            # values=None if scope is classmethod else self._values,
+            value_fn=bound_fn,
         )
         if scope is classmethod and owner is not None:
             setattr(owner, name, bound)
