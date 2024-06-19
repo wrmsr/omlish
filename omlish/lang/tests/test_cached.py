@@ -1,11 +1,11 @@
 from ..cached import cached_property
-from ..cached import cached_nullary
+from ..cached import cached_function
 
 
-def test_cached_nullary():
+def test_cached_function_nullary():
     c = 0
 
-    @cached_nullary
+    @cached_function
     def f():
         nonlocal c
         c += 1
@@ -28,21 +28,21 @@ def test_cached_nullary():
             super().__init__()
             self.iv = iv
 
-        @cached_nullary
+        @cached_function
         @staticmethod
         def s():
             nonlocal c
             c += 1
             return 'C.s'
 
-        @cached_nullary
+        @cached_function
         @classmethod
         def c(cls):
             nonlocal c
             c += 1
             return f'C.c({cls.cv})'
 
-        @cached_nullary
+        @cached_function
         def i(self):
             nonlocal c
             c += 1
@@ -92,6 +92,20 @@ def test_cached_nullary():
     assert c == 3
     assert ci2.i() == 'C.i(c2)'
     assert c == 3
+
+
+def test_cached_function():
+    c = 0
+
+    @cached_function
+    def f(x, y):
+        nonlocal c
+        c += 1
+        return x + y
+
+    for _ in range(2):
+        assert f(1, 2) == 3
+        assert c == 1
 
 
 def test_property():
