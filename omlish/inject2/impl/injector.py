@@ -4,6 +4,7 @@ import weakref
 
 from ... import check
 from ... import lang
+from ..eager import Eager
 from ..exceptions import CyclicDependencyException
 from ..exceptions import UnboundKeyException
 from ..injector import Injector
@@ -33,7 +34,8 @@ class InjectorImpl(Injector, lang.Final):
     _root: 'InjectorImpl'
 
     def _instantiate_eagers(self) -> None:
-        pass
+        for e in self._ec.elements_of_type(Eager):
+            self.provide(e.key)
 
     def create_child(self, ec: ElementCollection) -> Injector:
         c = InjectorImpl(ec, self)
