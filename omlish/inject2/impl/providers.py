@@ -16,7 +16,7 @@ from .inspect import build_kwargs_target
 class ProviderImpl(lang.Abstract):
     @property
     @abc.abstractmethod
-    def provider(self) -> Provider:
+    def providers(self) -> ta.Iterable[Provider]:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -30,8 +30,8 @@ class CallableProviderImpl(ProviderImpl, lang.Final):
     kt: KwargsTarget
 
     @property
-    def provider(self) -> Provider:
-        return self.p
+    def providers(self) -> ta.Iterable[Provider]:
+        return (self.p,)
 
     def provide(self, i: Injector) -> ta.Any:
         return i.inject(self.kt)
@@ -42,8 +42,8 @@ class ConstProviderImpl(ProviderImpl, lang.Final):
     p: ConstProvider
 
     @property
-    def provider(self) -> Provider:
-        return self.p
+    def providers(self) -> ta.Iterable[Provider]:
+        return (self.p,)
 
     def provide(self, i: Injector) -> ta.Any:
         return self.p.v
@@ -54,11 +54,33 @@ class LinkProviderImpl(ProviderImpl, lang.Final):
     p: LinkProvider
 
     @property
-    def provider(self) -> Provider:
-        return self.p
+    def providers(self) -> ta.Iterable[Provider]:
+        return (self.p,)
 
     def provide(self, i: Injector) -> ta.Any:
         return i.provide(self.p.k)
+
+
+_ILLEGAL_MULTI_TYPES = (str, bytes, bytearray)
+
+
+@dc.dataclass(frozen=True, eq=False)
+class MultiProviderImpl(ProviderImpl, lang.Final):
+    ps: ta.Sequence[ProviderImpl]
+
+    @property
+    def providers(self) -> ta.Iterable[Provider]:
+        for p in self.ps:
+            yield from p.providers
+
+    def provide(self, i: Injector) -> ta.Any:
+        rv = []
+        for ep in self.ps:
+            o = ep.provide(i)
+            if isinstance(o, _ILLEGAL_MULTI_TYPES):
+                raise TypeError(o)
+            rv.extend(o)
+        return rv
 
 
 def make_provider_impl(p: Provider) -> ProviderImpl:

@@ -9,6 +9,7 @@ from ..exceptions import DuplicateKeyException
 from ..keys import Key
 from ..overrides import Overrides
 from .bindings import BindingImpl
+from .providers import MultiProviderImpl
 from .providers import make_provider_impl
 
 
@@ -38,19 +39,21 @@ class ElementCollection(lang.Final):
 
     def _build_provider_map(self, es: ta.Iterable[Element]) -> ta.Mapping[Key, BindingImpl]:
         pm: dict[Key, BindingImpl] = {}
+        mm: dict[Key, list[BindingImpl]] = {}
         for e in es:
             for b in self._yield_element_bindings(e):
-                if b.key in pm:
-                    raise DuplicateKeyException(b.key)
-                pm[b.key] = b
+                if b.key.multi:
+                    mm.setdefault(b.key, []).append(b)
+                else:
+                    if b.key in pm:
+                        raise DuplicateKeyException(b.key)
+                    pm[b.key] = b
+        if mm:
+            for k, aps in mm.items():
+                mp = MultiProviderImpl([ap.provider for ap in aps])
+                pm[k] = BindingImpl(k, mp)
         return pm
 
     @lang.cached_nullary
     def provider_map(self) -> ta.Mapping[Key, BindingImpl]:
-        pm: dict[Key, BindingImpl] = {}
-        for e in self._es:
-            for b in self._yield_element_bindings(e):
-                if b.key in pm:
-                    raise DuplicateKeyException(b)
-                pm[b.key] = b
-        return pm
+        return self._build_provider_map(self._es)
