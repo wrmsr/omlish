@@ -87,7 +87,7 @@ class InjectorImpl(Injector, lang.Final):
 
             pi = self._ec.provider_map().get(key)
             if pi is not None:
-                v = pi.provide(self)
+                v = pi.provider.provide(self)
                 cr.handle_provision(key, v)
                 return lang.just(v)
 
