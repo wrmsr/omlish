@@ -30,7 +30,7 @@ class CallableProviderImpl(ProviderImpl):
         return self.p
 
     def provide(self, i: Injector) -> ta.Any:
-        return i.inject(self.fn)
+        return i.inject(self.fn)  # TODO: cache kwargs_target
 
 
 def make_provider_impl(p: Provider) -> ProviderImpl:
