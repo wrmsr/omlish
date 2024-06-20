@@ -57,6 +57,7 @@ from .scopes import (  # noqa
     Scope,
     Singleton,
     Thread,
+    Unscoped,
 )
 
 from .types import (  # noqa

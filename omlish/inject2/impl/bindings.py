@@ -2,6 +2,7 @@ from ... import dataclasses as dc
 from ... import lang
 from ..bindings import Binding
 from ..keys import Key
+from ..scopes import Scope
 from .providers import ProviderImpl
 
 
@@ -13,5 +14,5 @@ from .providers import ProviderImpl
 class BindingImpl(lang.Final):
     key: Key
     provider: ProviderImpl
-    scope: Scope | None = None
+    scope: Scope
     binding: Binding | None = None
