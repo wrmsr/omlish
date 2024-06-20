@@ -19,24 +19,24 @@ TODO:
 
 //
 
-typedef struct _dispatch_state {
+typedef struct _dispatch_module_state {
     PyTypeObject *function_wrapper_type;
-} _dispatch_state;
+} _dispatch_module_state;
 
-static inline _dispatch_state * get_dispatch_state(PyObject *module)
+static inline _dispatch_module_state * get_dispatch_module_state(PyObject *module)
 {
     void *state = PyModule_GetState(module);
     assert(state != NULL);
-    return (_dispatch_state *)state;
+    return (_dispatch_module_state *)state;
 }
 
-//static inline _dispatch_state * get_dispatch_state_by_type(PyTypeObject *type)
+//static inline _dispatch_module_state * get_dispatch_module_state_by_type(PyTypeObject *type)
 //{
-//    PyObject *module = PyType_GetModuleByDef(type, &_dispatch_module);
+//    PyObject *module = PyType_GetModuleByDef(type, &_dispatch_module_module);
 //    if (module == NULL) {
 //        return NULL;
 //    }
-//    return get_dispatch_state(module);
+//    return get_dispatch_module_state(module);
 //}
 
 //
@@ -245,9 +245,9 @@ static PyType_Spec function_wrapper_type_spec = {
 
 //
 
-static int _dispatch_exec(PyObject *module)
+static int _dispatch_module_exec(PyObject *module)
 {
-    _dispatch_state *state = get_dispatch_state(module);
+    _dispatch_module_state *state = get_dispatch_module_state(module);
 
     state->function_wrapper_type = (PyTypeObject *)PyType_FromModuleAndSpec(module, &function_wrapper_type_spec, NULL);
     if (state->function_wrapper_type == NULL) {
@@ -260,43 +260,43 @@ static int _dispatch_exec(PyObject *module)
     return 0;
 }
 
-static int _dispatch_traverse(PyObject *module, visitproc visit, void *arg)
+static int _dispatch_module_traverse(PyObject *module, visitproc visit, void *arg)
 {
-    _dispatch_state *state = get_dispatch_state(module);
+    _dispatch_module_state *state = get_dispatch_module_state(module);
     Py_VISIT(state->function_wrapper_type);
     return 0;
 }
 
-static int _dispatch_clear(PyObject *module)
+static int _dispatch_module_clear(PyObject *module)
 {
-    _dispatch_state *state = get_dispatch_state(module);
+    _dispatch_module_state *state = get_dispatch_module_state(module);
     Py_CLEAR(state->function_wrapper_type);
     return 0;
 }
 
-static void _dispatch_free(void *module)
+static void _dispatch_module_free(void *module)
 {
-    _dispatch_clear((PyObject *)module);
+    _dispatch_module_clear((PyObject *)module);
 }
 
-static PyMethodDef _dispatch_methods[] = {
+static PyMethodDef _dispatch_module_methods[] = {
     {NULL, NULL, 0, NULL}
 };
 
-static struct PyModuleDef_Slot _dispatch_slots[] = {
-        {Py_mod_exec, (void *) _dispatch_exec},
+static struct PyModuleDef_Slot _dispatch_module_slots[] = {
+        {Py_mod_exec, (void *) _dispatch_module_exec},
         {0, NULL}
 };
 
 static struct PyModuleDef _dispatch_module = {
     .m_base = PyModuleDef_HEAD_INIT,
     .m_name = _MODULE_NAME,
-    .m_size = sizeof(_dispatch_state),
-    .m_methods = _dispatch_methods,
-    .m_slots = _dispatch_slots,
-    .m_traverse = _dispatch_traverse,
-    .m_clear = _dispatch_clear,
-    .m_free = _dispatch_free,
+    .m_size = sizeof(_dispatch_module_state),
+    .m_methods = _dispatch_module_methods,
+    .m_slots = _dispatch_module_slots,
+    .m_traverse = _dispatch_module_traverse,
+    .m_clear = _dispatch_module_clear,
+    .m_free = _dispatch_module_free,
 };
 
 extern "C" {

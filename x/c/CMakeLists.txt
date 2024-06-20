@@ -60,3 +60,14 @@ target_include_directories(_dispatch PUBLIC ${JUNK_INCLUDE_DIRECTORIES})
 target_compile_options(_dispatch PUBLIC ${JUNK_COMPILE_OPTIONS})
 target_link_directories(_dispatch PUBLIC ${JUNK_LINK_DIRECTORIES})
 target_link_libraries(_dispatch ${JUNK_LINK_LIBRARIES})
+
+##
+
+add_library(_descriptor MODULE
+        _descriptor.cc
+)
+
+target_include_directories(_descriptor PUBLIC ${JUNK_INCLUDE_DIRECTORIES})
+target_compile_options(_descriptor PUBLIC ${JUNK_COMPILE_OPTIONS})
+target_link_directories(_descriptor PUBLIC ${JUNK_LINK_DIRECTORIES})
+target_link_libraries(_descriptor ${JUNK_LINK_LIBRARIES})
