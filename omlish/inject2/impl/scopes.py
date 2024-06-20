@@ -1,10 +1,12 @@
 import abc
+import threading
 import typing as ta
 
 from ... import lang
 from ..injector import Injector
 from ..scopes import Scope
 from ..scopes import Singleton
+from ..scopes import Thread
 from ..scopes import Unscoped
 from .bindings import BindingImpl
 
@@ -39,6 +41,31 @@ class SingletonImpl(ScopeImpl, lang.Final):
         return Singleton()
 
     def provide(self, binding: BindingImpl, injector: Injector) -> ta.Any:
+        try:
+            return self._dct[binding]
+        except KeyError:
+            pass
+        v = binding.provider.provide(injector)
+        self._dct[binding] = v
+        return v
+
+
+class ThreadImpl(ScopeImpl, lang.Final):
+    def __init__(self) -> None:
+        super().__init__()
+        self._local = threading.local()
+        self._dct: dict[BindingImpl, ta.Any] = {}
+
+    @property
+    def scope(self) -> Scope:
+        return Thread()
+
+    def provide(self, binding: BindingImpl, injector: Injector) -> ta.Any:
+        dct: dict[BindingImpl, ta.Any] = {}
+        try:
+            dct = self._local.dct
+        except AttributeError:
+            dct = self._local.dct = {}
         try:
             return self._dct[binding]
         except KeyError:
