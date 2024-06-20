@@ -6,6 +6,7 @@ TODO:
  - *unpack optional here*
 """
 import inspect
+import types
 import typing as ta
 import weakref
 
@@ -73,9 +74,9 @@ def build_kwargs_target(
                 not raw_optional and
                 isinstance(rf := rfl.type_(ann), rfl.Union) and
                 len(rf.args) == 2   # noqa
-                and type(None) in rf.args
+                and types.NoneType in rf.args
         ):
-            raise NotImplementedError
+            [ann] = [a for a in rf.args if a is not types.NoneType]
 
         k = as_key(ann)
         if tags is not None and (pt := tags.get(p.name)) is not None:

@@ -54,7 +54,7 @@ class ElementCollection(lang.Final):
     def _yield_element_bindings(self, e: Element) -> ta.Generator[BindingImpl, None, None]:
         if isinstance(e, Binding):
             p = make_provider_impl(e.provider)
-            yield BindingImpl(e.key, p, e)
+            yield BindingImpl(e.key, p, e.scope, e)
 
         elif isinstance(e, Overrides):
             ovr = self._build_binding_map(e.ovr)
@@ -79,7 +79,7 @@ class ElementCollection(lang.Final):
         if mm:
             for k, aps in mm.items():
                 mp = MultiProviderImpl([ap.provider for ap in aps])
-                pm[k] = BindingImpl(k, mp)
+                pm[k] = BindingImpl(k, mp)  # FIXME: SCOPING
         return pm
 
     ##
