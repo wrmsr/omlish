@@ -67,9 +67,9 @@ class ThreadImpl(ScopeImpl, lang.Final):
         except AttributeError:
             dct = self._local.dct = {}
         try:
-            return self._dct[binding]
+            return dct[binding]
         except KeyError:
             pass
         v = binding.provider.provide(injector)
-        self._dct[binding] = v
+        dct[binding] = v
         return v
