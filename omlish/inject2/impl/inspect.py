@@ -3,11 +3,13 @@ TODO:
  - cache kwarg_keys
  - tag annotations? x: ta.Annotated[int, inj.Tag('foo')]
  - tag decorator - @inj.tag(x='foo')
+ - *unpack optional here*
 """
 import inspect
 import typing as ta
 import weakref
 
+from ... import reflect as rfl
 from ..exceptions import DuplicateKeyException
 from ..inspect import Kwarg
 from ..inspect import KwargsTarget
@@ -50,6 +52,7 @@ def build_kwargs_target(
         *,
         skip_args: int = 0,
         skip_kwargs: ta.Optional[ta.Iterable[ta.Any]] = None,
+        raw_optional: bool = False,
 ) -> KwargsTarget:
     sig = signature(obj)
     tags = _tags.get(obj)
@@ -62,7 +65,19 @@ def build_kwargs_target(
                 raise KeyError(f'{obj}, {p.name}')
             continue
 
-        k = as_key(p.annotation)
+        if p.kind not in (inspect.Parameter.POSITIONAL_OR_KEYWORD, inspect.Parameter.KEYWORD_ONLY):
+            raise TypeError(sig)
+
+        ann = p.annotation
+        if (
+                not raw_optional and
+                isinstance(rf := rfl.type_(ann), rfl.Union) and
+                len(rf.args) == 2   # noqa
+                and type(None) in rf.args
+        ):
+            raise NotImplementedError
+
+        k = as_key(ann)
         if tags is not None and (pt := tags.get(p.name)) is not None:
             k = tag(k, pt)
 
@@ -70,8 +85,6 @@ def build_kwargs_target(
             raise DuplicateKeyException(k)
         seen.add(k)
 
-        if p.kind not in (inspect.Parameter.POSITIONAL_OR_KEYWORD, inspect.Parameter.KEYWORD_ONLY):
-            raise TypeError(sig)
         kws.append(Kwarg(
             p.name,
             k,
