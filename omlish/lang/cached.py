@@ -4,6 +4,7 @@ TODO:
  - weakrefs (selectable by arg)
  - locks
 """
+import dataclasses as dc
 import functools
 import inspect
 import typing as ta
@@ -73,13 +74,16 @@ def _make_cache_keyer(fn, *, simple=False, bound=False):
 
 
 class _CachedFunction(ta.Generic[T]):
+    @dc.dataclass(frozen=True)
+    class Opts:
+        map_maker: ta.Callable[[], ta.MutableMapping] = dict
+        simple_key: bool = False
 
     def __init__(
             self,
             fn: ta.Callable[P, T],
             *,
-            map_maker: ta.Callable[[], ta.MutableMapping] = dict,
-            simple_key: bool = False,
+            opts: Opts = Opts,
             keyer: ta.Callable[..., tuple] | None = None,
             values: ta.MutableMapping | None = None,
             value_fn: ta.Optional[ta.Callable[P, T]] = None,
@@ -87,10 +91,10 @@ class _CachedFunction(ta.Generic[T]):
         super().__init__()
 
         self._fn = fn
-        self._simple_key = simple_key
-        self._map_maker = map_maker
-        self._keyer = keyer if keyer is not None else _make_cache_keyer(fn, simple=simple_key)
-        self._values = values if values is not None else map_maker()
+        self._opts = opts
+        self._keyer = keyer if keyer is not None else _make_cache_keyer(fn, simple=opts.simple_key)
+
+        self._values = values if values is not None else opts.map_maker()
         self._value_fn = value_fn if value_fn is not None else fn
         functools.update_wrapper(self, fn)
 
@@ -139,12 +143,11 @@ class _CachedFunctionDescriptor(_CachedFunction[T]):
         name = self._name
         bound_fn = fn.__get__(instance, owner)
         if self._bound_keyer is None:
-            self._bound_keyer = _make_cache_keyer(fn, simple=self._simple_key, bound=True)
+            self._bound_keyer = _make_cache_keyer(fn, simple=self._opts.simple_key, bound=True)
         bound = self.__class__(
             fn,
             scope,
-            simple_key=self._simple_key,
-            map_maker=self._map_maker,
+            opts=self._opts,
             instance=instance,
             owner=owner,
             name=name,
