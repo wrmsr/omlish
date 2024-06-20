@@ -51,8 +51,9 @@ def test_eager():
         c += 1
         return 420
 
-    es = inj.Elements(cs=[
-        inj.eager(inj.as_binding(f)),
+    es = inj.Elements([
+        inj.as_binding(f),
+        inj.eager(int),
     ])
 
     for _ in range(2):
