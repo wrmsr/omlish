@@ -1,3 +1,13 @@
+"""
+Scopes in general:
+ - clearly some notion of 'activeness for a given request'
+
+Overrides + Scopes:
+ -
+
+Multi's + Scopes:
+ - scope on a multi vs each element?
+"""
 import typing as ta
 
 from ... import check
@@ -28,54 +38,39 @@ class ElementCollection(lang.Final):
 
     ##
 
-    def _yield_element_bindings2(self, e: Element) -> ta.Generator[list[Binding], None, None]:
-        if isinstance(e, Binding):
-            yield e
-
-        elif isinstance(e, Overrides):
-            ovr = self._build_binding_map2(e.ovr)
-            src = self._build_binding_map2(e.src)
-            for k, b in src.items():
-                try:
-                    yield ovr[k]
-                except KeyError:
-                    yield src[k]
-
-    def _build_binding_map2(self, es: ta.Iterable[Element]) -> dict[Key, list[Binding]]:
+    def _build_raw_binding_multimap(self, es: ta.Iterable[Element]) -> dict[Key, list[Binding]]:
         dct: dict[Key, list[Binding]] = {}
         for e in es:
-            for bs in self._yield_element_bindings2(e):
-                for b in bs:
-                    dct.setdefault(b.key, []).append(b)
+            if isinstance(e, Binding):
+                dct.setdefault(e.key, []).append(e)
+
+            elif isinstance(e, Overrides):
+                ovr = self._build_raw_binding_multimap(e.ovr)
+                src = self._build_raw_binding_multimap(e.src)
+                for k, b in src.items():
+                    try:
+                        bs = ovr[k]
+                    except KeyError:
+                        bs = src[k]
+                    dct.setdefault(k, []).extend(bs)
+
         return dct
 
-    ##
+    def _make_binding_impl(self, b: Binding) -> BindingImpl:
+        p = make_provider_impl(b.provider)
+        yield BindingImpl(b.key, p, b.scope, b)
 
-    def _yield_element_bindings(self, e: Element) -> ta.Generator[BindingImpl, None, None]:
-        if isinstance(e, Binding):
-            p = make_provider_impl(e.provider)
-            yield BindingImpl(e.key, p, e.scope, e)
-
-        elif isinstance(e, Overrides):
-            ovr = self._build_binding_map(e.ovr)
-            src = self._build_binding_map(e.src)
-            for k, b in src.items():
-                try:
-                    yield ovr[k]
-                except KeyError:
-                    yield src[k]
-
-    def _build_binding_map(self, es: ta.Iterable[Element]) -> ta.Mapping[Key, BindingImpl]:
+    def _build_binding_map(self, es: ta.Iterable[Element]) -> dict[Key, BindingImpl]:
         pm: dict[Key, BindingImpl] = {}
         mm: dict[Key, list[BindingImpl]] = {}
-        for e in es:
-            for b in self._yield_element_bindings(e):
-                if b.key.multi:
-                    mm.setdefault(b.key, []).append(b)
-                else:
-                    if b.key in pm:
-                        raise DuplicateKeyException(b.key)
-                    pm[b.key] = b
+        for k, bs in self._build_raw_binding_multimap(es).items():
+            bis = [self._make_binding_impl(b) for b in bs]
+            if k.multi:
+                mm.setdefault(k, []).extend(bis)
+            else:
+                if len(bis) > 1:
+                    raise DuplicateKeyException(k)
+                [pm[k]] = bis
         if mm:
             for k, aps in mm.items():
                 mp = MultiProviderImpl([ap.provider for ap in aps])
