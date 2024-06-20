@@ -13,5 +13,5 @@ from .providers import ProviderImpl
 class BindingImpl(lang.Final):
     key: Key
     provider: ProviderImpl
-    # scope: ScopeTag
+    scope: Scope | None = None
     binding: Binding | None = None
