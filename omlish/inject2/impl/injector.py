@@ -11,8 +11,11 @@ from ..injector import Injector
 from ..inspect import KwargsTarget
 from ..keys import Key
 from ..keys import as_key
+from ..scopes import Scope
 from .elements import ElementCollection
 from .inspect import build_kwargs_target
+from .scopes import ScopeImpl
+from .scopes import Singleton
 
 
 class InjectorImpl(Injector, lang.Final):
