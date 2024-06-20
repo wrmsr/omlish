@@ -5,6 +5,7 @@ from .bindings import (  # noqa
     Binding,
     as_,
     as_binding,
+    in_,
 )
 
 from .eager import (  # noqa
@@ -50,6 +51,12 @@ from .providers import (  # noqa
     ctor,
     fn,
     link,
+)
+
+from .scopes import (  # noqa
+    Scope,
+    Singleton,
+    Thread,
 )
 
 from .types import (  # noqa

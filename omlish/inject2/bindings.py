@@ -12,6 +12,7 @@ from .providers import as_provider
 from .providers import const
 from .providers import ctor
 from .providers import fn
+from .scopes import Scope
 
 
 ##
@@ -22,7 +23,7 @@ from .providers import fn
 class Binding(Element, lang.Final):
     key: Key
     provider: Provider
-    # scope: ScopeTag
+    scope: Scope | None = None
 
 
 ##
@@ -45,3 +46,7 @@ def as_binding(o: ta.Any) -> Binding:
 
 def as_(k: ta.Any, p: ta.Any) -> Binding:
     return Binding(as_key(k), as_provider(p))
+
+
+def in_(k: ta.Any, sc: Scope) -> Binding:
+    return dc.replace(as_binding(k), scope=check.isinstance(sc, Scope))

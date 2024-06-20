@@ -13,7 +13,7 @@ from .providers import MultiProviderImpl
 from .providers import make_provider_impl
 
 
-ElementT = ta.TypeVar('T', bound=Element)
+ElementT = ta.TypeVar('ElementT', bound=Element)
 
 
 class ElementCollection(lang.Final):
@@ -24,7 +24,7 @@ class ElementCollection(lang.Final):
 
     @lang.cached_function
     def elements_of_type(self, *tys: type[ElementT]) -> ta.Sequence[ElementT]:
-        return tuple(e for e in self._es if isinstance(e, tys))
+        return tuple(e for e in self._es if isinstance(e, tys))  # noqa
 
     def _yield_element_bindings(self, e: Element) -> ta.Generator[BindingImpl, None, None]:
         if isinstance(e, Binding):
