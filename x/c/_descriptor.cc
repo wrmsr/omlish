@@ -90,7 +90,7 @@ typedef struct {
     PyObject_HEAD
     PyObject *attr;
     PyObject *default_;
-    PyObject *frozen;
+    bool frozen;
     PyObject *name;
     PyObject *pre_set;
     PyObject *post_set;
@@ -102,7 +102,6 @@ static int field_descriptor_traverse(field_descriptor_object *self, visitproc vi
     Py_VISIT(Py_TYPE(self));
     Py_VISIT(self->attr);
     Py_VISIT(self->default_);
-    Py_VISIT(self->frozen);
     Py_VISIT(self->name);
     Py_VISIT(self->pre_set);
     Py_VISIT(self->post_set);
@@ -114,7 +113,6 @@ static int field_descriptor_clear(field_descriptor_object *self)
 {
     Py_CLEAR(self->attr);
     Py_CLEAR(self->default_);
-    Py_CLEAR(self->frozen);
     Py_CLEAR(self->name);
     Py_CLEAR(self->pre_set);
     Py_CLEAR(self->post_set);
@@ -133,14 +131,31 @@ static void field_descriptor_dealloc(field_descriptor_object *self)
 
 static PyObject * field_descriptor_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
-    if (PyTuple_GET_SIZE(args) != 1) {
-        PyErr_SetString(PyExc_TypeError, "type 'field_descriptor' takes exactly one positional argument");
+    PyObject *attr;      // : str
+    PyObject *default_;  // : ta.Any = dc.MISSING
+    bool frozen;         // = false
+    PyObject *name;      // : str | None = None
+    PyObject *pre_set;   // : ta.Callable[[ta.Any, ta.Any], ta.Any] | None = None,
+    PyObject *post_set;  // : ta.Callable[[ta.Any, ta.Any], None] | None = None,
+
+    static const char *kwlist[] = {"attr", "default", "frozen", "name", "pre_set", "post_set", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|$OpOOO", (char **) kwlist,
+                                     &attr, &default_, &frozen, &name, &pre_set, &post_set)) {
         return NULL;
     }
 
-    PyObject *dispatch = PyTuple_GET_ITEM(args, 0);
-    if (!PyCallable_Check(dispatch)) {
-        PyErr_SetString(PyExc_TypeError, "the argument must be callable");
+    if (!PyUnicode_Check(attr)) {
+        PyErr_SetString(PyExc_TypeError, "attr must be a string");
+        return NULL;
+    }
+
+    if (pre_set != NULL && !PyCallable_Check(pre_set)) {
+        PyErr_SetString(PyExc_TypeError, "pre_set must be callable");
+        return NULL;
+    }
+
+    if (post_set != NULL && !PyCallable_Check(post_set)) {
+        PyErr_SetString(PyExc_TypeError, "post_set must be callable");
         return NULL;
     }
 
@@ -150,13 +165,12 @@ static PyObject * field_descriptor_new(PyTypeObject *type, PyObject *args, PyObj
         return NULL;
     }
 
-    // self->attr
-    // self->default_
-    // self->frozen
-    // self->name
-    // self->pre_set
-    // self->post_set
-    // self->dict
+     self->attr = attr;
+     self->default_ = default_;
+     self->frozen = frozen;
+     self->name = name;
+     self->pre_set = pre_set;
+     self->post_set = post_set;
 
     if (kwds != NULL) {
         self->dict = PyDict_Copy(kwds);
