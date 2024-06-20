@@ -26,10 +26,35 @@ class ElementCollection(lang.Final):
     def elements_of_type(self, *tys: type[ElementT]) -> ta.Sequence[ElementT]:
         return tuple(e for e in self._es if isinstance(e, tys))  # noqa
 
+    ##
+
+    def _yield_element_bindings2(self, e: Element) -> ta.Generator[list[Binding], None, None]:
+        if isinstance(e, Binding):
+            yield e
+
+        elif isinstance(e, Overrides):
+            ovr = self._build_binding_map2(e.ovr)
+            src = self._build_binding_map2(e.src)
+            for k, b in src.items():
+                try:
+                    yield ovr[k]
+                except KeyError:
+                    yield src[k]
+
+    def _build_binding_map2(self, es: ta.Iterable[Element]) -> dict[Key, list[Binding]]:
+        dct: dict[Key, list[Binding]] = {}
+        for e in es:
+            for bs in self._yield_element_bindings2(e):
+                for b in bs:
+                    dct.setdefault(b.key, []).append(b)
+        return dct
+
+    ##
+
     def _yield_element_bindings(self, e: Element) -> ta.Generator[BindingImpl, None, None]:
         if isinstance(e, Binding):
             p = make_provider_impl(e.provider)
-            yield BindingImpl(e.key, p, e.scope, e)
+            yield BindingImpl(e.key, p, e)
 
         elif isinstance(e, Overrides):
             ovr = self._build_binding_map(e.ovr)
@@ -56,6 +81,8 @@ class ElementCollection(lang.Final):
                 mp = MultiProviderImpl([ap.provider for ap in aps])
                 pm[k] = BindingImpl(k, mp)
         return pm
+
+    ##
 
     @lang.cached_function
     def binding_map(self) -> ta.Mapping[Key, BindingImpl]:
