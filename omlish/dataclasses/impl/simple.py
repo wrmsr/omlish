@@ -1,9 +1,6 @@
 import inspect
 
 from ... import lang
-from .classes import cmp_fn
-from .classes import frozen_get_del_attr
-from .classes import repr_fn
 from .fields import field_assign
 from .init import get_init_fields
 from .params import get_field_extras
@@ -11,7 +8,6 @@ from .processing import Processor
 from .replace import _replace
 from .utils import create_fn
 from .utils import set_new_attribute
-from .utils import tuple_str
 
 
 class OverridesProcessor(Processor):
@@ -53,15 +49,6 @@ class OverridesProcessor(Processor):
             )
 
 
-class ReprProcessor(Processor):
-    def _process(self) -> None:
-        if not self._info.params.repr:
-            return
-
-        flds = [f for f in self._info.instance_fields if f.repr]
-        set_new_attribute(self._cls, '__repr__', repr_fn(flds, self._info.globals))
-
-
 class EqProcessor(Processor):
     def _process(self) -> None:
         if not self._info.params.eq:
@@ -83,37 +70,6 @@ class EqProcessor(Processor):
         ]
         func = create_fn('__eq__', ('self', 'other'), body, globals=self._info.globals)
         set_new_attribute(self._cls, '__eq__', func)
-
-
-class OrderProcessor(Processor):
-    def _process(self) -> None:
-        if not self._info.params.order:
-            return
-
-        flds = [f for f in self._info.instance_fields if f.compare]
-        self_tuple = tuple_str('self', flds)
-        other_tuple = tuple_str('other', flds)
-        for name, op in [
-            ('__lt__', '<'),
-            ('__le__', '<='),
-            ('__gt__', '>'),
-            ('__ge__', '>='),
-        ]:
-            if set_new_attribute(self._cls, name, cmp_fn(name, op, self_tuple, other_tuple, globals=self._info.globals)):  # noqa
-                raise TypeError(
-                    f'Cannot overwrite attribute {name} in class {self._cls.__name__}. '
-                    f'Consider using functools.total_ordering'
-                )
-
-
-class FrozenProcessor(Processor):
-    def _process(self) -> None:
-        if not self._info.params.frozen:
-            return
-
-        for fn in frozen_get_del_attr(self._cls, self._info.instance_fields, self._info.globals):
-            if set_new_attribute(self._cls, fn.__name__, fn):
-                raise TypeError(f'Cannot overwrite attribute {fn.__name__} in class {self._cls.__name__}')
 
 
 class DocProcessor(Processor):

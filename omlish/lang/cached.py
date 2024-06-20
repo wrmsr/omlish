@@ -83,7 +83,7 @@ class _CachedFunction(ta.Generic[T]):
             self,
             fn: ta.Callable[P, T],
             *,
-            opts: Opts = Opts,
+            opts: Opts = Opts(),
             keyer: ta.Callable[..., tuple] | None = None,
             values: ta.MutableMapping | None = None,
             value_fn: ta.Optional[ta.Callable[P, T]] = None,
