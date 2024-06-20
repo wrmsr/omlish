@@ -13,6 +13,7 @@ from .providers import const
 from .providers import ctor
 from .providers import fn
 from .scopes import Scope
+from .scopes import Unscoped
 
 
 ##
@@ -23,7 +24,7 @@ from .scopes import Scope
 class Binding(Element, lang.Final):
     key: Key
     provider: Provider
-    scope: Scope | None = None
+    scope: Scope = Unscoped()
 
 
 ##
