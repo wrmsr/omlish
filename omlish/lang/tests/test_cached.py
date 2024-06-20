@@ -123,3 +123,11 @@ def test_property():
     assert c.x == 1
     assert C().x == 2
     assert C().x == 3
+
+
+def test_collections_cache():
+    from ... import collections as col
+
+    @cached_function()
+    def f(x, y):
+        return x + y
