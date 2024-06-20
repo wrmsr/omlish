@@ -5,7 +5,8 @@ from .keys import Key
 
 
 class Scope(lang.Abstract):
-    pass
+    def __repr__(self) -> str:
+        return type(self).__name__
 
 
 class Unscoped(Scope, lang.Singleton, lang.Final):

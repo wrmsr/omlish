@@ -13,6 +13,7 @@ from .providers import const
 from .providers import ctor
 from .providers import fn
 from .scopes import Scope
+from .scopes import Singleton
 from .scopes import Unscoped
 
 
@@ -49,5 +50,9 @@ def as_(k: ta.Any, p: ta.Any) -> Binding:
     return Binding(as_key(k), as_provider(p))
 
 
-def in_(k: ta.Any, sc: Scope) -> Binding:
-    return dc.replace(as_binding(k), scope=check.isinstance(sc, Scope))
+def in_(b: ta.Any, sc: Scope) -> Binding:
+    return dc.replace(as_binding(b), scope=check.isinstance(sc, Scope))
+
+
+def singleton(b: ta.Any) -> Binding:
+    return in_(b, Singleton())
