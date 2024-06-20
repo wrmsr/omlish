@@ -108,6 +108,9 @@ def _main():
     upfw = pickle.loads(pickle.dumps(fw))
     assert upfw(10) == 'barf str! 10'
 
+    from . import _descriptor  # noqa
+    print(_descriptor.field_descriptor)
+
 
 if __name__ == '__main__':
     _main()
