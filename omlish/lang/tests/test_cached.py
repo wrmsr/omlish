@@ -1,3 +1,5 @@
+import functools
+
 from ..cached import cached_property
 from ..cached import cached_function
 
@@ -126,8 +128,33 @@ def test_property():
 
 
 def test_collections_cache():
-    from ... import collections as col
+    from ...collections import cache
 
-    @cached_function()
+    xys = []
+
+    @cached_function(map_maker=functools.partial(cache.new_cache, max_size=3))
     def f(x, y):
+        xys.append((x, y))
         return x + y
+
+    assert f(1, 2) == 3
+    assert xys == [(1, 2)]
+    assert f(1, 2) == 3
+    assert xys == [(1, 2)]
+    assert f(1, 3) == 4
+    assert xys == [(1, 2), (1, 3)]
+    assert f(1, 2) == 3
+    assert f(1, 3) == 4
+    assert xys == [(1, 2), (1, 3)]
+    assert f(2, 3) == 5
+    assert xys == [(1, 2), (1, 3), (2, 3)]
+    assert f(2, 3) == 5
+    assert f(1, 3) == 4
+    assert f(1, 2) == 3
+    assert xys == [(1, 2), (1, 3), (2, 3)]
+    assert f(2, 1) == 3
+    assert xys == [(1, 2), (1, 3), (2, 3), (2, 1)]
+    assert f(1, 2) == 3
+    assert xys == [(1, 2), (1, 3), (2, 3), (2, 1)]
+    assert f(2, 3) == 5
+    assert xys == [(1, 2), (1, 3), (2, 3), (2, 1), (2, 3)]
