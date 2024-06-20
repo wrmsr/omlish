@@ -165,10 +165,11 @@ class _CachedFunctionDescriptor(_CachedFunction[T]):
 def cached_function(fn=None, **kwargs):
     if fn is None:
         return functools.partial(cached_function, **kwargs)
+    opts = _CachedFunction.Opts(**kwargs)
     if isinstance(fn, staticmethod):
-        return _CachedFunction(fn, value_fn=unwrap_func(fn), **kwargs)
+        return _CachedFunction(fn, opts=opts, value_fn=unwrap_func(fn))
     scope = classmethod if isinstance(fn, classmethod) else None
-    return _CachedFunctionDescriptor(fn, scope, **kwargs)
+    return _CachedFunctionDescriptor(fn, scope, opts=opts)
 
 
 cached_function = cached_function
