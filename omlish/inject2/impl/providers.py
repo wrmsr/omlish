@@ -21,7 +21,7 @@ class ProviderImpl(lang.Abstract):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def provide(self, i: Injector) -> ta.Any:
+    def provide(self, injector: Injector) -> ta.Any:
         raise NotImplementedError
 
 
@@ -34,8 +34,8 @@ class CallableProviderImpl(ProviderImpl, lang.Final):
     def providers(self) -> ta.Iterable[Provider]:
         return (self.p,)
 
-    def provide(self, i: Injector) -> ta.Any:
-        return i.inject(self.kt)
+    def provide(self, injector: Injector) -> ta.Any:
+        return injector.inject(self.kt)
 
 
 @dc.dataclass(frozen=True, eq=False)
@@ -46,7 +46,7 @@ class ConstProviderImpl(ProviderImpl, lang.Final):
     def providers(self) -> ta.Iterable[Provider]:
         return (self.p,)
 
-    def provide(self, i: Injector) -> ta.Any:
+    def provide(self, injector: Injector) -> ta.Any:
         return self.p.v
 
 
@@ -58,8 +58,8 @@ class LinkProviderImpl(ProviderImpl, lang.Final):
     def providers(self) -> ta.Iterable[Provider]:
         return (self.p,)
 
-    def provide(self, i: Injector) -> ta.Any:
-        return i.provide(self.p.k)
+    def provide(self, injector: Injector) -> ta.Any:
+        return injector.provide(self.p.k)
 
 
 _ILLEGAL_MULTI_TYPES = (str, bytes, bytearray)
@@ -89,10 +89,10 @@ class MultiProviderImpl(ProviderImpl, lang.Final):
         for p in self.ps:
             yield from p.providers
 
-    def provide(self, i: Injector) -> ta.Any:
+    def provide(self, injector: Injector) -> ta.Any:
         rv = []
         for ep in self.ps:
-            o = ep.provide(i)
+            o = ep.provide(injector)
             if isinstance(o, _ILLEGAL_MULTI_TYPES):
                 raise TypeError(o)
             rv.extend(o)
