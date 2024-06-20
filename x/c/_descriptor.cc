@@ -13,7 +13,8 @@
 //
 
 typedef struct _descriptor_module_state {
-    PyTypeObject *function_wrapper_type;
+    PyObject *dataclasses_missing;
+    PyTypeObject *field_descriptor_type;
 } _descriptor_module_state;
 
 static inline _descriptor_module_state * get_descriptor_module_state(PyObject *module)
@@ -35,55 +36,105 @@ static inline _descriptor_module_state * get_descriptor_module_state(PyObject *m
 //
 
 /*
-def wrapper(*args, **kwargs):
-    if not args:
-        raise TypeError(f'{func_name} requires at least 1 positional argument')
-    if (impl := disp_dispatch(type(args[0]))) is not None:
-        return impl(*args, **kwargs)
-    raise RuntimeError(f'No dispatch: {type(args[0])}')
+class FieldDescriptor:
+
+    def __init__(
+            self,
+            attr: str,
+            *,
+            default: ta.Any = dc.MISSING,
+            frozen: bool = False,
+            name: str | None = None,
+            pre_set: ta.Callable[[ta.Any, ta.Any], ta.Any] | None = None,
+            post_set: ta.Callable[[ta.Any, ta.Any], None] | None = None,
+    ) -> None:
+        super().__init__()
+
+        self._attr = attr
+        self._default = default
+        self._frozen = frozen
+        self._name = name
+        self._pre_set = pre_set
+        self._post_set = post_set
+
+    def __set_name__(self, owner, name):
+        if self._name is None:
+            self._name = name
+
+    def __get__(self, instance, owner=None):
+        if instance is not None:
+            try:
+                return getattr(instance, self._attr)
+            except AttributeError:
+                pass
+        if self._default is not dc.MISSING:
+            return self._default
+        raise AttributeError(self._name)
+
+    def __set__(self, instance, value):
+        if self._frozen:
+            raise dc.FrozenInstanceError(f'cannot assign to field {self._name!r}')
+        if self._pre_set is not None:
+            value = self._pre_set(instance, value)
+        setattr(instance, self._attr, value)
+        if self._post_set is not None:
+            self._post_set(instance, value)
+
+    def __delete__(self, instance):
+        if self._frozen:
+            raise dc.FrozenInstanceError(f'cannot delete field {self._name!r}')
+        delattr(instance, self._attr)
  */
 
 typedef struct {
     PyObject_HEAD
-    PyObject *dispatch;
+    PyObject *attr;
+    PyObject *default_;
+    PyObject *frozen;
+    PyObject *name;
+    PyObject *pre_set;
+    PyObject *post_set;
     PyObject *dict;
-    PyObject *weakreflist;
-    vectorcallfunc vectorcall;
-} function_wrapper_object;
+} field_descriptor_object;
 
-static int function_wrapper_traverse(function_wrapper_object *self, visitproc visit, void *arg)
+static int field_descriptor_traverse(field_descriptor_object *self, visitproc visit, void *arg)
 {
     Py_VISIT(Py_TYPE(self));
-    Py_VISIT(self->dispatch);
+    Py_VISIT(self->attr);
+    Py_VISIT(self->default_);
+    Py_VISIT(self->frozen);
+    Py_VISIT(self->name);
+    Py_VISIT(self->pre_set);
+    Py_VISIT(self->post_set);
     Py_VISIT(self->dict);
     return 0;
 }
 
-static int function_wrapper_clear(function_wrapper_object *self)
+static int field_descriptor_clear(field_descriptor_object *self)
 {
-    Py_CLEAR(self->dispatch);
+    Py_CLEAR(self->attr);
+    Py_CLEAR(self->default_);
+    Py_CLEAR(self->frozen);
+    Py_CLEAR(self->name);
+    Py_CLEAR(self->pre_set);
+    Py_CLEAR(self->post_set);
     Py_CLEAR(self->dict);
     return 0;
 }
 
-static void function_wrapper_dealloc(function_wrapper_object *self)
+static void field_descriptor_dealloc(field_descriptor_object *self)
 {
     PyTypeObject *tp = Py_TYPE(self);
     PyObject_GC_UnTrack(self);
-    if (self->weakreflist != NULL) {
-        PyObject_ClearWeakRefs((PyObject *) self);
-    }
-    function_wrapper_clear(self);
+    field_descriptor_clear(self);
     tp->tp_free((PyObject *) self);
     Py_DECREF(tp);
 }
 
-static PyObject * function_wrapper_vectorcall(function_wrapper_object *self, PyObject *const *args, size_t nargsf, PyObject *kwnames);
-
-static PyObject * function_wrapper_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+static PyObject * field_descriptor_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
     if (PyTuple_GET_SIZE(args) != 1) {
-        PyErr_SetString(PyExc_TypeError, "type 'function_wrapper' takes exactly one positional argument");
+        PyErr_SetString(PyExc_TypeError, "type 'field_descriptor' takes exactly one positional argument");
         return NULL;
     }
 
@@ -93,14 +144,14 @@ static PyObject * function_wrapper_new(PyTypeObject *type, PyObject *args, PyObj
         return NULL;
     }
 
-    function_wrapper_object *self;
-    self = (function_wrapper_object *) type->tp_alloc(type, 0);
+    field_descriptor_object *self;
+    self = (field_descriptor_object *) type->tp_alloc(type, 0);
     if (self == NULL) {
         return NULL;
     }
 
     self->dispatch = Py_NewRef(dispatch);
-    self->vectorcall = (vectorcallfunc) function_wrapper_vectorcall;
+    self->vectorcall = (vectorcallfunc) field_descriptor_vectorcall;
 
     if (kwds != NULL) {
         self->dict = PyDict_Copy(kwds);
@@ -109,7 +160,7 @@ static PyObject * function_wrapper_new(PyTypeObject *type, PyObject *args, PyObj
     return (PyObject *) self;
 }
 
-static PyObject * function_wrapper_do_dispatch(function_wrapper_object *self, PyObject *arg) {
+static PyObject * field_descriptor_do_dispatch(field_descriptor_object *self, PyObject *arg) {
     PyTypeObject *arg_ty = Py_TYPE(arg);
 
     PyObject *args[2] = {NULL, (PyObject *) arg_ty};
@@ -118,16 +169,16 @@ static PyObject * function_wrapper_do_dispatch(function_wrapper_object *self, Py
     return disp_res;
 }
 
-static PyObject * function_wrapper_call(function_wrapper_object *self, PyObject *args, PyObject *kwargs) {
+static PyObject * field_descriptor_call(field_descriptor_object *self, PyObject *args, PyObject *kwargs) {
     assert(PyCallable_Check(self->dispatch));
 
     if (PyTuple_GET_SIZE(args) < 1) {
-        PyErr_SetString(PyExc_TypeError, "function_wrapper takes at least one positional argument");
+        PyErr_SetString(PyExc_TypeError, "field_descriptor takes at least one positional argument");
         return NULL;
     }
 
     PyObject *arg = PyTuple_GET_ITEM(args, 0);
-    PyObject *disp_res = function_wrapper_do_dispatch(self, arg);
+    PyObject *disp_res = field_descriptor_do_dispatch(self, arg);
     if (disp_res == NULL) {
         return NULL;
     }
@@ -139,101 +190,39 @@ static PyObject * function_wrapper_call(function_wrapper_object *self, PyObject 
     return res;
 }
 
-static PyObject * function_wrapper_vectorcall(function_wrapper_object *self, PyObject *const *args, size_t nargsf, PyObject *kwnames)
-{
-    assert(PyCallable_Check(self->dispatch));
-
-    if (PyVectorcall_NARGS(nargsf) < 1) {
-        PyErr_SetString(PyExc_TypeError, "function_wrapper takes at least one positional argument");
-        return NULL;
-    }
-
-    PyObject *arg = args[0];
-    PyObject *disp_res = function_wrapper_do_dispatch(self, arg);
-    if (disp_res == NULL) {
-        return NULL;
-    }
-
-    PyObject *res = PyObject_Vectorcall(disp_res, args, nargsf, kwnames);
-
-    Py_DECREF(disp_res);
-
-    return res;
-}
-
-static PyObject *
-function_wrapper_reduce(function_wrapper_object *self, PyObject *unused)
-{
-    return Py_BuildValue(
-            "O(O)(OO)",
-            Py_TYPE(self),
-            self->dispatch,
-            self->dispatch, self->dict ? self->dict : Py_None);
-}
-
-static PyObject *
-function_wrapper_setstate(function_wrapper_object *self, PyObject *state)
-{
-    PyObject *dispatch, *dict;
-
-    if (!PyTuple_Check(state) ||
-        !PyArg_ParseTuple(state, "OO", &dispatch, &dict) ||
-        !PyCallable_Check(dispatch))
-    {
-        PyErr_SetString(PyExc_TypeError, "invalid function_wrapper state");
-        return NULL;
-    }
-
-    if (dict == Py_None) {
-        dict = NULL;
-    } else {
-        Py_INCREF(dict);
-    }
-
-    Py_SETREF(self->dispatch, Py_NewRef(dispatch));
-    Py_XSETREF(self->dict, dict);
-    Py_RETURN_NONE;
-}
-
-static PyMemberDef function_wrapper_members[] = {
-    {"dispatch", T_OBJECT, offsetof(function_wrapper_object, dispatch), READONLY},
-    {"__weaklistoffset__", T_PYSSIZET, offsetof(function_wrapper_object, weakreflist), READONLY},
-    {"__dictoffset__", T_PYSSIZET, offsetof(function_wrapper_object, dict), READONLY},
-    {"__vectorcalloffset__", T_PYSSIZET, offsetof(function_wrapper_object , vectorcall), READONLY},
+static PyMemberDef field_descriptor_members[] = {
+    {"__dictoffset__", T_PYSSIZET, offsetof(field_descriptor_object, dict), READONLY},
     {NULL}
 };
 
-static PyGetSetDef function_wrapper_getsetters[] = {
+static PyGetSetDef field_descriptor_getsetters[] = {
     {"__dict__", PyObject_GenericGetDict, PyObject_GenericSetDict},
     {NULL}
 };
 
-static PyMethodDef function_wrapper_methods[] = {
-    {"__reduce__", (PyCFunction) function_wrapper_reduce, METH_NOARGS},
-    {"__setstate__", (PyCFunction) function_wrapper_setstate, METH_O},
+static PyMethodDef field_descriptor_methods[] = {
     {NULL}
 };
 
-static PyType_Slot function_wrapper_type_slots[] = {
-        {Py_tp_traverse, (void *) function_wrapper_traverse},
-        {Py_tp_clear, (void *) function_wrapper_clear},
-        {Py_tp_methods, function_wrapper_methods},
-        {Py_tp_members, function_wrapper_members},
-        {Py_tp_getset, function_wrapper_getsetters},
-        {Py_tp_new, (void *) function_wrapper_new},
-        {Py_tp_dealloc, (void *) function_wrapper_dealloc},
-        {Py_tp_call, (void *) function_wrapper_call},
+static PyType_Slot field_descriptor_type_slots[] = {
+        {Py_tp_traverse, (void *) field_descriptor_traverse},
+        {Py_tp_clear, (void *) field_descriptor_clear},
+        {Py_tp_methods, field_descriptor_methods},
+        {Py_tp_members, field_descriptor_members},
+        {Py_tp_getset, field_descriptor_getsetters},
+        {Py_tp_new, (void *) field_descriptor_new},
+        {Py_tp_dealloc, (void *) field_descriptor_dealloc},
+        {Py_tp_call, (void *) field_descriptor_call},
         {0, 0}
 };
 
-static PyType_Spec function_wrapper_type_spec = {
-        .name = _MODULE_NAME ".function_wrapper",
-        .basicsize = sizeof(function_wrapper_object),
+static PyType_Spec field_descriptor_type_spec = {
+        .name = _MODULE_NAME ".field_descriptor",
+        .basicsize = sizeof(field_descriptor_object),
         .itemsize = 0,
         .flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC |
-                 Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_VECTORCALL |
-                 Py_TPFLAGS_IMMUTABLETYPE,
-        .slots = function_wrapper_type_slots
+                 Py_TPFLAGS_BASETYPE | Py_TPFLAGS_IMMUTABLETYPE,
+        .slots = field_descriptor_type_slots
 };
 
 //
@@ -242,11 +231,21 @@ static int _descriptor_module_exec(PyObject *module)
 {
     _descriptor_module_state *state = get_descriptor_module_state(module);
 
-    state->function_wrapper_type = (PyTypeObject *)PyType_FromModuleAndSpec(module, &function_wrapper_type_spec, NULL);
-    if (state->function_wrapper_type == NULL) {
+    PyObject *dataclasses_module = PyImport_ImportModule("dataclasses");
+    if (dataclasses_module == NULL) {
         return -1;
     }
-    if (PyModule_AddType(module, state->function_wrapper_type) < 0) {
+    if ((state->dataclasses_missing = PyObject_GetAttrString(dataclasses_module, "MISSING")) == NULL) {
+        Py_DECREF(dataclasses_module);
+        return -1;
+    }
+    Py_DECREF(dataclasses_module);
+
+    state->field_descriptor_type = (PyTypeObject *)PyType_FromModuleAndSpec(module, &field_descriptor_type_spec, NULL);
+    if (state->field_descriptor_type == NULL) {
+        return -1;
+    }
+    if (PyModule_AddType(module, state->field_descriptor_type) < 0) {
         return -1;
     }
 
@@ -256,14 +255,16 @@ static int _descriptor_module_exec(PyObject *module)
 static int _descriptor_module_traverse(PyObject *module, visitproc visit, void *arg)
 {
     _descriptor_module_state *state = get_descriptor_module_state(module);
-    Py_VISIT(state->function_wrapper_type);
+    Py_VISIT(state->dataclasses_missing);
+    Py_VISIT(state->field_descriptor_type);
     return 0;
 }
 
 static int _descriptor_module_clear(PyObject *module)
 {
     _descriptor_module_state *state = get_descriptor_module_state(module);
-    Py_CLEAR(state->function_wrapper_type);
+    Py_CLEAR(state->dataclasses_missing);
+    Py_CLEAR(state->field_descriptor_type);
     return 0;
 }
 
