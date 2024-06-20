@@ -188,7 +188,22 @@ static PyObject *field_descriptor_descr_set(field_descriptor_object *self, PyObj
 }
 
 static PyObject *field_descriptor_set_name(field_descriptor_object *self, PyObject *args) {
-    return NULL;
+    if (PyTuple_GET_SIZE(args) < 1) {
+        PyErr_SetString(PyExc_TypeError, "__set_name__ takes at least 1 argument");
+        return NULL;
+    }
+
+    PyObject *name = PyTuple_GET_ITEM(args, 0);
+    if (!PyUnicode_Check(name)) {
+        PyErr_SetString(PyExc_TypeError, "name must be a string");
+        return NULL;
+    }
+
+    if (self->name == NULL) {
+        Py_XSETREF(self->name, Py_XNewRef(name));
+    }
+
+    Py_RETURN_NONE;
 }
 
 static PyMemberDef field_descriptor_members[] = {
