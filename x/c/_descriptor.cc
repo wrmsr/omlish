@@ -150,8 +150,13 @@ static PyObject * field_descriptor_new(PyTypeObject *type, PyObject *args, PyObj
         return NULL;
     }
 
-    self->dispatch = Py_NewRef(dispatch);
-    self->vectorcall = (vectorcallfunc) field_descriptor_vectorcall;
+    // self->attr
+    // self->default_
+    // self->frozen
+    // self->name
+    // self->pre_set
+    // self->post_set
+    // self->dict
 
     if (kwds != NULL) {
         self->dict = PyDict_Copy(kwds);
@@ -160,34 +165,16 @@ static PyObject * field_descriptor_new(PyTypeObject *type, PyObject *args, PyObj
     return (PyObject *) self;
 }
 
-static PyObject * field_descriptor_do_dispatch(field_descriptor_object *self, PyObject *arg) {
-    PyTypeObject *arg_ty = Py_TYPE(arg);
-
-    PyObject *args[2] = {NULL, (PyObject *) arg_ty};
-    PyObject *disp_res = PyObject_Vectorcall(self->dispatch, &args[1], 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
-
-    return disp_res;
+static PyObject *field_descriptor_descr_get(field_descriptor_object *self, PyObject *inst, PyTypeObject *type) {
+    return NULL;
 }
 
-static PyObject * field_descriptor_call(field_descriptor_object *self, PyObject *args, PyObject *kwargs) {
-    assert(PyCallable_Check(self->dispatch));
+static PyObject *field_descriptor_descr_set(field_descriptor_object *self, PyObject *inst, PyObject *value) {
+    return NULL;
+}
 
-    if (PyTuple_GET_SIZE(args) < 1) {
-        PyErr_SetString(PyExc_TypeError, "field_descriptor takes at least one positional argument");
-        return NULL;
-    }
-
-    PyObject *arg = PyTuple_GET_ITEM(args, 0);
-    PyObject *disp_res = field_descriptor_do_dispatch(self, arg);
-    if (disp_res == NULL) {
-        return NULL;
-    }
-
-    PyObject *res = PyObject_Call(disp_res, args, kwargs);
-
-    Py_DECREF(disp_res);
-
-    return res;
+static PyObject *field_descriptor_set_name(field_descriptor_object *self, PyObject *args) {
+    return NULL;
 }
 
 static PyMemberDef field_descriptor_members[] = {
@@ -201,6 +188,7 @@ static PyGetSetDef field_descriptor_getsetters[] = {
 };
 
 static PyMethodDef field_descriptor_methods[] = {
+    {"__set_name__", (PyCFunction) field_descriptor_set_name, METH_VARARGS, NULL},
     {NULL}
 };
 
@@ -212,7 +200,8 @@ static PyType_Slot field_descriptor_type_slots[] = {
         {Py_tp_getset, field_descriptor_getsetters},
         {Py_tp_new, (void *) field_descriptor_new},
         {Py_tp_dealloc, (void *) field_descriptor_dealloc},
-        {Py_tp_call, (void *) field_descriptor_call},
+        {Py_tp_descr_get, (void *) field_descriptor_descr_get},
+        {Py_tp_descr_set, (void *) field_descriptor_descr_set},
         {0, 0}
 };
 
@@ -221,7 +210,7 @@ static PyType_Spec field_descriptor_type_spec = {
         .basicsize = sizeof(field_descriptor_object),
         .itemsize = 0,
         .flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC |
-                 Py_TPFLAGS_BASETYPE | Py_TPFLAGS_IMMUTABLETYPE,
+                 Py_TPFLAGS_BASETYPE,
         .slots = field_descriptor_type_slots
 };
 
@@ -274,7 +263,7 @@ static void _descriptor_module_free(void *module)
 }
 
 static PyMethodDef _descriptor_module_methods[] = {
-    {NULL, NULL, 0, NULL}
+    {NULL}
 };
 
 static struct PyModuleDef_Slot _descriptor_module_slots[] = {
