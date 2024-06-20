@@ -8,6 +8,10 @@ class Scope(lang.Abstract):
     pass
 
 
+class Unscoped(Scope, lang.Singleton, lang.Final):
+    pass
+
+
 class Singleton(Scope, lang.Singleton, lang.Final):
     pass
 
