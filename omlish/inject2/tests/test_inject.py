@@ -1,3 +1,5 @@
+import typing as ta
+
 from ... import inject2 as inj
 from ... import lang
 from ..impl.elements import ElementCollection
@@ -63,3 +65,21 @@ def test_eager():
         assert c == 1
         assert i.provide(int) == 420
         assert c == 2
+
+
+def test_optional():
+    def f(i: int, f: ta.Optional[float] = None) -> str:
+        return f'{i=} {f=}'
+
+    es = inj.Elements([
+        inj.as_binding(420),
+        inj.as_binding(f),
+    ])
+    assert InjectorImpl(ElementCollection(es))[str] == 'i=420 f=None'
+
+    es = inj.Elements([
+        inj.as_binding(2.3),
+        *es,
+    ])
+    assert InjectorImpl(ElementCollection(es))[str] == 'i=420 f=2.3'
+
