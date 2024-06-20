@@ -15,7 +15,8 @@ from ..scopes import Scope
 from .elements import ElementCollection
 from .inspect import build_kwargs_target
 from .scopes import ScopeImpl
-from .scopes import Singleton
+from .scopes import SingletonImpl
+from .scopes import UnscopedImpl
 
 
 class InjectorImpl(Injector, lang.Final):
@@ -31,6 +32,10 @@ class InjectorImpl(Injector, lang.Final):
         self._root: InjectorImpl = p._root if p is not None else self
 
         self.__cur_req: InjectorImpl._Request | None = None
+
+        self._scopes: dict[Scope, ScopeImpl] = {
+            s.scope: s for s in (UnscopedImpl(), SingletonImpl())
+        }
 
         self._instantiate_eagers()
 
@@ -96,9 +101,10 @@ class InjectorImpl(Injector, lang.Final):
             if (rv := cr.handle_key(key)).present:
                 return rv
 
-            pi = self._ec.binding_map().get(key)
-            if pi is not None:
-                v = pi.provider.provide(self)
+            bi = self._ec.binding_map().get(key)
+            if bi is not None:
+                sc = self._scopes[bi.scope]
+                v = sc.provide(bi, self)
                 cr.handle_provision(key, v)
                 return lang.just(v)
 
