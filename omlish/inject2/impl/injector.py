@@ -42,7 +42,6 @@ class InjectorImpl(Injector, lang.Final):
     _root: 'InjectorImpl'
 
     def _instantiate_eagers(self) -> None:
-        self._ec.elements_of_type(Eager)
         for e in self._ec.elements_of_type(Eager):
             self.provide(e.key)
 
