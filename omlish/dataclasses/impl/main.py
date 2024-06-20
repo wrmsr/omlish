@@ -4,25 +4,25 @@ import typing as ta
 
 from ... import check
 from ... import lang
-from .classes import add_slots
 from .fields import preprocess_field
+from .frozen import FrozenProcessor
 from .hashing import HashProcessor
 from .init import InitProcessor
 from .internals import FIELDS_ATTR
 from .internals import PARAMS_ATTR
 from .internals import Params
 from .internals import is_kw_only
+from .order import OrderProcessor
 from .params import ParamsExtras
 from .processing import Processor
 from .reflect import ClassInfo
+from .repr import ReprProcessor
 from .simple import DocProcessor
 from .simple import EqProcessor
-from .simple import FrozenProcessor
 from .simple import MatchArgsProcessor
-from .simple import OrderProcessor
 from .simple import OverridesProcessor
 from .simple import ReplaceProcessor
-from .simple import ReprProcessor
+from .slots import add_slots
 
 if ta.TYPE_CHECKING:
     from . import metaclass
