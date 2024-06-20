@@ -206,12 +206,17 @@ static PyObject *field_descriptor_set_name(field_descriptor_object *self, PyObje
     Py_RETURN_NONE;
 }
 
+static PyObject * field_descriptor_attr_getter(field_descriptor_object *self, void *closure) {
+    return self->attr != NULL ? Py_NewRef(self->attr) : Py_NewRef(Py_None);
+}
+
 static PyMemberDef field_descriptor_members[] = {
     {"__dictoffset__", T_PYSSIZET, offsetof(field_descriptor_object, dict), READONLY},
     {NULL}
 };
 
 static PyGetSetDef field_descriptor_getsetters[] = {
+    {"attr", (getter) field_descriptor_attr_getter, NULL, NULL},
     {"__dict__", PyObject_GenericGetDict, PyObject_GenericSetDict},
     {NULL}
 };
