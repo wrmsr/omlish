@@ -1,6 +1,7 @@
 """
 TODO:
  - merged compose configs: https://github.com/wrmsr/bane/blob/27647abdcfb323b73e6982a5c318c7029496b203/core/dev/docker/compose.go#L38
+ - https://github.com/mag37/dockcheck/blob/3d122f2b868eb53a25a3014f0f6bd499390a3a29/dockcheck.sh
 """  # noqa
 import datetime
 import re
