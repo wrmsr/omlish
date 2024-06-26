@@ -2,16 +2,11 @@ from ... import inject2 as inj
 
 
 def test_scopes():
-    from ..impl.scopes import SeededScopeImpl
-
     ss = inj.SeededScope('hi')
-    ssi = SeededScopeImpl(ss)
-    ssk = inj.Key(SeededScopeImpl, tag=ss)
     i = inj.create_injector(inj.as_elements(
-        inj.Binding(ssk, inj.as_provider(ssi)),
+        inj.bind_scope(ss),
         inj.in_(420, ss),
     ))
-    assert i.provide(ssk) is ssi
     assert i[int] == 420
 
 

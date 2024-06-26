@@ -17,6 +17,16 @@ class Scope(lang.Abstract):
         return type(self).__name__
 
 
+@dc.dataclass(frozen=True)
+@dc.extra_params(cache_hash=True)
+class ScopeBinding(Element, lang.Final):
+    scope: Scope = dc.xfield(coerce=check.of_isinstance(Scope))
+
+
+def bind_scope(sc: Scope) -> Element:
+    return ScopeBinding(sc)
+
+
 def in_(b: ta.Any, sc: Scope) -> 'bindings_.Binding':
     return dc.replace(bindings_.as_binding(b), scope=check.isinstance(sc, Scope))
 
@@ -46,4 +56,4 @@ class ScopeSeed(Element, lang.Final):
 @dc.dataclass(frozen=True)
 @dc.extra_params(cache_hash=True)
 class SeededScope(Scope, lang.Final):
-    tag: ta.Any = dc.xfield(check=check.not_none)
+    tag: ta.Any = dc.xfield(coerce=check.not_none)

@@ -65,11 +65,13 @@ from .providers import (  # noqa
 
 from .scopes import (  # noqa
     Scope,
+    ScopeBinding,
     ScopeSeed,
     SeededScope,
     Singleton,
     Thread,
     Unscoped,
+    bind_scope,
     in_,
     singleton,
 )
