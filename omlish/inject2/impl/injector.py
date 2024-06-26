@@ -2,7 +2,10 @@
 TODO:
  - cache/export ElementCollections lol
  - scope bindings, auto in root
- - injector-internal / blacklisted bindings (Injector itself) without rebuilding ElementCollection
+ - injector-internal / blacklisted bindings (Injector itself, default scopes) without rebuilding ElementCollection
+ - config - proxies, etc
+  - config is probably shared with ElementCollection... but not 'bound', must be shared everywhere
+  - InjectorRoot object?
 """
 import contextlib
 import typing as ta

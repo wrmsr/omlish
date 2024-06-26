@@ -191,7 +191,7 @@ class ContextWrapped:
         elif hasattr(cm, '__enter__'):
             pass
         elif callable(cm):
-            cm = cm.__get__(instance, owner)
+            cm = cm.__get__(instance, owner)  # noqa
         else:
             raise TypeError(cm)
         ret = type(self)(fn, cm)
