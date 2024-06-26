@@ -1,5 +1,6 @@
 import typing as ta
 
+from ... import dataclasses as dc
 from ... import inject2 as inj
 from ... import lang
 from ..impl.elements import ElementCollection
@@ -82,3 +83,27 @@ def test_optional():
         *es,
     ])
     assert InjectorImpl(ElementCollection(es))[str] == 'i=420 f=2.3'
+
+
+@dc.dataclass(frozen=True)
+class Foo:
+    s: str
+
+
+def test_private():
+    bs = inj.Elements([
+        inj.private(inj.Elements([
+            inj.as_binding(420),
+            inj.as_binding(12.3),
+            inj.expose(int),
+        ])),
+        inj.private(inj.Elements([
+            inj.as_binding(lang.typed_lambda(str, f=float, foo=Foo)(lambda f, foo: f'{f}! {foo.s}')),
+            inj.as_binding(32.1),
+            inj.expose(str),
+        ])),
+        inj.as_binding(Foo('foo')),
+    ])
+    i = InjectorImpl(ElementCollection(bs))
+    assert i.provide(int) == 420
+    assert i.provide(str) == '32.1! foo'
