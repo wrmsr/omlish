@@ -39,7 +39,7 @@ class PrivateInjectorId(lang.Final):
 
 
 @dc.dataclass(eq=False)
-class PrivateInjectorProviderImpl(ProviderImpl):
+class PrivateInjectorProviderImpl(ProviderImpl, lang.Final):
     id: PrivateInjectorId
     ec: ElementCollection
 
@@ -55,7 +55,7 @@ class PrivateInjectorProviderImpl(ProviderImpl):
 
 
 @dc.dataclass(eq=False)
-class ExposedPrivateProviderImpl(ProviderImpl):
+class ExposedPrivateProviderImpl(ProviderImpl, lang.Final):
     pik: Key
     k: Key
 
