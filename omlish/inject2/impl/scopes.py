@@ -54,14 +54,13 @@ class ThreadImpl(ScopeImpl, lang.Final):
     def __init__(self) -> None:
         super().__init__()
         self._local = threading.local()
-        self._dct: dict[BindingImpl, ta.Any] = {}
 
     @property
     def scope(self) -> Scope:
         return Thread()
 
     def provide(self, binding: BindingImpl, injector: Injector) -> ta.Any:
-        dct: dict[BindingImpl, ta.Any] = {}
+        dct: dict[BindingImpl, ta.Any]
         try:
             dct = self._local.dct
         except AttributeError:
