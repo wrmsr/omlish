@@ -66,6 +66,8 @@ from .providers import (  # noqa
 
 from .scopes import (  # noqa
     Scope,
+    ScopeSeed,
+    SeededScope,
     Singleton,
     Thread,
     Unscoped,
