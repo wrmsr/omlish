@@ -21,11 +21,11 @@ class Thread(Scope, lang.Singleton, lang.Final):
     pass
 
 
-class SeededScope(Scope, lang.Abstract):
-    pass
-
-
 @dc.dataclass(frozen=True)
 @dc.extra_params(cache_hash=True)
 class ScopeSeed(Element, lang.Final):
     key: Key
+
+
+class SeededScope(Scope, lang.Abstract):
+    pass

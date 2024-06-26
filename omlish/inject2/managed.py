@@ -1,3 +1,7 @@
+"""
+TODO:
+ - proper ManagedProvider[Impl], DeferringProvider[Impl], closing (-> Deferring('close'))
+"""
 import contextlib
 import typing as ta
 
