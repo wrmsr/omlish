@@ -30,7 +30,7 @@ class ProviderImpl(lang.Abstract):
         raise NotImplementedError
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, eq=False)
 class InternalProvider(Provider):
     impl: ProviderImpl
 
@@ -112,15 +112,21 @@ class MultiProviderImpl(ProviderImpl, lang.Final):
         return rv
 
 
+PROVIDER_IMPLS_BY_PROVIDER: dict[type[Provider], ta.Callable[..., ProviderImpl]] = {
+    FnProvider: lambda p: CallableProviderImpl(p, build_kwargs_target(p.fn)),
+    CtorProvider: lambda p: CallableProviderImpl(p, build_kwargs_target(p.cls)),
+    ConstProvider: ConstProviderImpl,
+    LinkProvider: LinkProviderImpl,
+    InternalProvider: lambda p: p.impl,
+}
+
+
 def make_provider_impl(p: Provider) -> ProviderImpl:
-    if isinstance(p, FnProvider):
-        return CallableProviderImpl(p, build_kwargs_target(p.fn))
-    if isinstance(p, CtorProvider):
-        return CallableProviderImpl(p, build_kwargs_target(p.cls))
-    if isinstance(p, ConstProvider):
-        return ConstProviderImpl(p)
-    if isinstance(p, LinkProvider):
-        return LinkProviderImpl(p)
-    if isinstance(p, InternalProvider):
-        return p.impl
+    try:
+        fac = PROVIDER_IMPLS_BY_PROVIDER[type(p)]
+    except KeyError:
+        pass
+    else:
+        return fac(p)
+
     raise TypeError(p)
