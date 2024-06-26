@@ -1,3 +1,6 @@
+import typing as ta
+
+from .. import check
 from .. import dataclasses as dc
 from .. import lang
 from .elements import Element
@@ -27,5 +30,7 @@ class ScopeSeed(Element, lang.Final):
     key: Key
 
 
-class SeededScope(Scope, lang.Abstract):
-    pass
+@dc.dataclass(frozen=True)
+@dc.extra_params(cache_hash=True)
+class SeededScope(Scope, lang.Final):
+    tag: ta.Any = dc.field(validate=check.not_none)

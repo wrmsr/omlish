@@ -1,3 +1,7 @@
+"""
+TODO:
+ - SCOPED - eagers for EACH SCOPE
+"""
 import typing as ta
 
 from .. import dataclasses as dc

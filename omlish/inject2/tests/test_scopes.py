@@ -2,8 +2,8 @@ from ... import inject2 as inj
 
 
 def test_scopes():
-    foo = ScopeTag('foo')
-    i = create_injector(bind(
+    foo = inj.SeededScope('foo')
+    i = inj.create_injector(inj.as_elements(
         bind_scope(foo),
         scoped(foo, 420),
     ))
