@@ -1,3 +1,4 @@
+import abc
 import typing as ta
 
 from .. import check
@@ -47,6 +48,9 @@ class Thread(Scope, lang.Singleton, lang.Final):
     pass
 
 
+##
+
+
 @dc.dataclass(frozen=True)
 @dc.extra_params(cache_hash=True)
 class ScopeSeed(Element, lang.Final):
@@ -57,3 +61,12 @@ class ScopeSeed(Element, lang.Final):
 @dc.extra_params(cache_hash=True)
 class SeededScope(Scope, lang.Final):
     tag: ta.Any = dc.xfield(coerce=check.not_none)
+
+    class Manager(lang.Abstract):
+        @abc.abstractmethod
+        def __enter__(self, seeds: ta.Mapping[Key, ta.Any]) -> None:
+            raise NotImplementedError
+
+        @abc.abstractmethod
+        def __exit__(self, exc_type, exc_val, exc_tb):
+            raise NotImplementedError
