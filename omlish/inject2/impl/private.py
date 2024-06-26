@@ -5,7 +5,7 @@ TODO:
 import itertools
 import typing as ta
 
-from .. import Cls
+from ... import cached
 from ... import check
 from ... import dataclasses as dc
 from ... import lang
@@ -14,6 +14,7 @@ from ..keys import Key
 from ..private import Expose
 from ..private import Private
 from ..providers import Provider
+from ..types import Cls
 from .elements import ElementCollection
 from .injector import InjectorImpl
 from .providers import ProviderImpl
@@ -51,7 +52,7 @@ class PrivateInjectorProviderImpl(ProviderImpl):
 
 @dc.dataclass(frozen=True, eq=False)
 class ExposedPrivateProviderImpl(ProviderImpl):
-    id: PrivateInjectorId
+    pik: Key
     k: Key
 
     @property
@@ -59,7 +60,7 @@ class ExposedPrivateProviderImpl(ProviderImpl):
         return ()
 
     def provide(self, injector: Injector) -> ta.Any:
-        pi = injector.provide(Key(Injector, tag=self.id))
+        pi = injector.provide(self.pik)
         return pi.provide(self.k)
 
 
@@ -68,9 +69,9 @@ class ExposedPrivateProviderImpl(ProviderImpl):
 
 @dc.dataclass(frozen=True)
 @dc.extra_params(cache_hash=True)
-class ExposedPrivateProvider(Provider):
-    pid: PrivateInjectorId
-    k: Key
+class InternalProvider(Provider):
+    impl: ProviderImpl
+    cls: Cls
 
     def provided_cls(self) -> Cls | None:
         raise NotImplementedError
@@ -81,20 +82,31 @@ class PrivateInfo(lang.Final):
     owner: ElementCollection
     p: Private
 
-    @lang.cached_function
+    @cached.property
     def id(self) -> PrivateInjectorId:
         return PrivateInjectorId(next(_PRIVATE_COUNT))
 
-    @lang.cached_function
+    @cached.property
+    def pik(self) -> Key:
+        return Key(InjectorImpl, tag=self.id)
+
+    @cached.function
     def element_collection(self) -> ElementCollection:
         return ElementCollection(self.p.elements)
 
-    @lang.cached_function
+    ##
+
+    @cached.function
+    def private_provider_impl(self) -> PrivateInjectorProviderImpl:
+        return PrivateInjectorProviderImpl(self.id, self.element_collection())
+
+    @cached.function
     def exposed_provider_impls(self) -> ta.Mapping[Key, ExposedPrivateProviderImpl]:
         exs = self.element_collection().elements_of_type(Expose)
         raise NotImplementedError
 
-    @lang.cached_function
-    def exposed_providers(self) -> ta.Mapping[Key, ExposedPrivateProvider]:
+    @cached.function
+    def internal_providers(self) -> ta.Mapping[Key, InternalProvider]:
+        ppi = self.private_provider_impl()
         epis = self.exposed_provider_impls()
         raise NotImplementedError
