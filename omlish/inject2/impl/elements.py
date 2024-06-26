@@ -69,7 +69,7 @@ class ElementCollection(lang.Final):
             self,
             es: ta.Iterable[Element],
             out: dict[Key | None, list[Element]] | None = None,
-    ) -> dict[Key, list[Element]]:
+    ) -> dict[Key | None, list[Element]]:
         if out is None:
             out = {}
 
