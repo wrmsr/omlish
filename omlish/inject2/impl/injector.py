@@ -13,7 +13,7 @@ import weakref
 
 from ... import check
 from ... import lang
-from ..eager import Eager
+from ..eagers import Eager
 from ..elements import Elements
 from ..exceptions import CyclicDependencyException
 from ..exceptions import UnboundKeyException

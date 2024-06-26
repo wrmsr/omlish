@@ -10,7 +10,7 @@ from ... import check
 from ... import dataclasses as dc
 from ... import lang
 from ..bindings import Binding
-from ..eager import Eager
+from ..eagers import Eager
 from ..elements import Element
 from ..injector import Injector
 from ..keys import Key

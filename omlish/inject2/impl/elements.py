@@ -22,7 +22,7 @@ from ... import check
 from ... import collections as col
 from ... import lang
 from ..bindings import Binding
-from ..eager import Eager
+from ..eagers import Eager
 from ..elements import Element
 from ..elements import Elements
 from ..exceptions import DuplicateKeyException

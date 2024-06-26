@@ -8,7 +8,7 @@ from .bindings import (  # noqa
     in_,
 )
 
-from .eager import (  # noqa
+from .eagers import (  # noqa
     eager,
 )
 
