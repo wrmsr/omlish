@@ -1,6 +1,8 @@
 """
 TODO:
  - cache/export ElementCollections lol
+ - scope bindings, auto in root
+ - injector-internal / blacklisted bindings (Injector itself) without rebuilding ElementCollection
 """
 import contextlib
 import typing as ta
