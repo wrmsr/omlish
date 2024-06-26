@@ -23,12 +23,21 @@ from ..inspect import KwargsTarget
 from ..keys import Key
 from ..keys import as_key
 from ..scopes import Scope
+from ..scopes import ScopeBinding
+from ..scopes import Singleton
+from ..scopes import Thread
+from ..scopes import Unscoped
 from .elements import ElementCollection
 from .inspect import build_kwargs_target
 from .scopes import ScopeImpl
-from .scopes import SingletonScopeImpl
-from .scopes import ThreadScopeImpl
-from .scopes import UnscopedScopeImpl
+from .scopes import make_scope_impl
+
+
+DEFAULT_SCOPES: list[Scope] = [
+    Unscoped(),
+    Singleton(),
+    Thread(),
+]
 
 
 class InjectorImpl(Injector, lang.Final):
@@ -49,12 +58,12 @@ class InjectorImpl(Injector, lang.Final):
 
         self.__cur_req: InjectorImpl._Request | None = None
 
+        ss = [
+            *DEFAULT_SCOPES,
+            *[sb.scope for sb in ec.elements_of_type(ScopeBinding)],
+        ]
         self._scopes: dict[Scope, ScopeImpl] = {
-            s.scope: s for s in [
-                UnscopedScopeImpl(),
-                SingletonScopeImpl(),
-                ThreadScopeImpl(),
-            ]
+            s: make_scope_impl(s) for s in ss
         }
 
         self._instantiate_eagers()

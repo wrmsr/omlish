@@ -97,12 +97,12 @@ SCOPE_IMPLS_BY_SCOPE: dict[type[Scope], ta.Callable[..., ScopeImpl]] = {
 }
 
 
-def make_scope_impl(p: Scope) -> ScopeImpl:
+def make_scope_impl(s: Scope) -> ScopeImpl:
     try:
-        fac = SCOPE_IMPLS_BY_SCOPE[type(p)]
+        fac = SCOPE_IMPLS_BY_SCOPE[type(s)]
     except KeyError:
         pass
     else:
-        return fac(p)
+        return fac(s)
 
-    raise TypeError(p)
+    raise TypeError(s)
