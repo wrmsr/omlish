@@ -44,6 +44,11 @@ from .overrides import (  # noqa
     override,
 )
 
+from .private import (  # noqa
+    expose,
+    private,
+)
+
 from .providers import (  # noqa
     Provider,
     as_provider,
