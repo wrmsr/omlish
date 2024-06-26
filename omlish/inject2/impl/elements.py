@@ -30,6 +30,7 @@ from ..keys import Key
 from ..overrides import Overrides
 from ..private import Expose
 from ..private import Private
+from ..scopes import ScopeBinding
 from .bindings import BindingImpl
 from .providers import MultiProviderImpl
 from .providers import make_provider_impl
@@ -67,16 +68,19 @@ class ElementCollection(lang.Final):
     def _build_raw_element_multimap(
             self,
             es: ta.Iterable[Element],
-            out: dict[Key, list[Element]] | None = None,
+            out: dict[Key | None, list[Element]] | None = None,
     ) -> dict[Key, list[Element]]:
         if out is None:
             out = {}
 
-        def add(k: Key, *e: Element) -> None:
+        def add(k: Key | None, *e: Element) -> None:
             out.setdefault(k, []).extend(e)
 
         for e in es:
-            if isinstance(e, (Binding, Eager, Expose)):
+            if isinstance(e, ScopeBinding):
+                add(None, e)
+
+            elif isinstance(e, (Binding, Eager, Expose)):
                 add(e.key, e)
 
             elif isinstance(e, Private):
@@ -99,7 +103,7 @@ class ElementCollection(lang.Final):
         return out
 
     @lang.cached_function
-    def element_multimap(self) -> ta.Mapping[Key, ta.Sequence[Element]]:
+    def element_multimap(self) -> ta.Mapping[Key | None, ta.Sequence[Element]]:
         return self._build_raw_element_multimap(self._es)
 
     @lang.cached_function
@@ -119,10 +123,13 @@ class ElementCollection(lang.Final):
         else:
             raise TypeError(e)
 
-    def _build_binding_impl_map(self, em: ta.Mapping[Key, ta.Sequence[Element]]) -> dict[Key, BindingImpl]:
+    def _build_binding_impl_map(self, em: ta.Mapping[Key | None, ta.Sequence[Element]]) -> dict[Key, BindingImpl]:
         pm: dict[Key, BindingImpl] = {}
         mm: dict[Key, list[BindingImpl]] = {}
         for k, es in em.items():
+            if k is None:
+                continue
+
             bis = [bi for e in es for bi in self._make_binding_impls(e)]
             if k.multi:
                 mm.setdefault(k, []).extend(bis)
@@ -130,10 +137,12 @@ class ElementCollection(lang.Final):
                 if len(bis) > 1:
                     raise DuplicateKeyException(k)
                 [pm[k]] = bis
+
         if mm:
             for k, aps in mm.items():
                 mp = MultiProviderImpl([ap.provider for ap in aps])
                 pm[k] = BindingImpl(k, mp)  # FIXME: SCOPING
+
         return pm
 
     @lang.cached_function
