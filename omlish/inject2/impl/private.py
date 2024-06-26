@@ -10,10 +10,14 @@ from ... import dataclasses as dc
 from ... import lang
 from ..injector import Injector
 from ..keys import Key
+from ..private import Private
 from ..providers import Provider
 from .elements import ElementCollection
 from .injector import InjectorImpl
 from .providers import ProviderImpl
+
+if ta.TYPE_CHECKING:
+    from .elements import ElementCollection
 
 
 _PRIVATE_COUNT = itertools.count()
@@ -49,3 +53,17 @@ class ExposedPrivateProviderImpl(ProviderImpl):
     def provide(self, injector: Injector) -> ta.Any:
         pi = injector.provide(Key(Injector, tag=self.id))
         return pi.provide(self.k)
+
+
+@dc.dataclass(frozen=True)
+class PrivateInfo(lang.Final):
+    owner: ElementCollection
+    p: Private
+
+    @lang.cached_function
+    def element_collection(self) -> ElementCollection:
+        return ElementCollection(self.p.elements)
+
+    @lang.cached_function
+    def exposed_providers(self) -> ta.Mapping[Key, ExposedPrivateProviderImpl]:
+        raise NotImplementedError
