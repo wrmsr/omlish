@@ -75,4 +75,10 @@ class ThreadScopeImpl(ScopeImpl, lang.Final):
 
 
 class SeededScopeImpl(ScopeImpl):
-    pass
+
+    @property
+    def scope(self) -> Scope:
+        raise NotImplementedError
+
+    def provide(self, binding: BindingImpl, injector: Injector) -> ta.Any:
+        raise NotImplementedError

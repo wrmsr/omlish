@@ -5,7 +5,6 @@ from .bindings import (  # noqa
     Binding,
     as_,
     as_binding,
-    in_,
 )
 
 from .eagers import (  # noqa
@@ -71,6 +70,8 @@ from .scopes import (  # noqa
     Singleton,
     Thread,
     Unscoped,
+    in_,
+    singleton,
 )
 
 from .types import (  # noqa

@@ -5,12 +5,12 @@ TODO:
 import contextlib
 import typing as ta
 
-from .bindings import singleton
 from .eagers import eager
 from .elements import Elements
 from .elements import as_elements
 from .injector import Injector
 from .injector import create_injector
+from .scopes import singleton
 
 
 @contextlib.contextmanager
