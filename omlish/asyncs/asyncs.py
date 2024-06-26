@@ -53,7 +53,7 @@ def sync_await(fn: ta.Callable[..., T], *args, **kwargs) -> T:
     return ta.cast(T, ret)
 
 
-def sync_list(fn: ta.Callable[..., ta.AsyncIterator[T]], *args, **kwargs) -> ta.List[T]:
+def sync_list(fn: ta.Callable[..., ta.AsyncIterator[T]], *args, **kwargs) -> list[T]:
     lst = None
 
     async def inner():
@@ -66,7 +66,7 @@ def sync_list(fn: ta.Callable[..., ta.AsyncIterator[T]], *args, **kwargs) -> ta.
     return lst
 
 
-async def async_list(fn: ta.Callable[..., ta.AsyncIterator[T]], *args, **kwargs) -> ta.List[T]:
+async def async_list(fn: ta.Callable[..., ta.AsyncIterator[T]], *args, **kwargs) -> list[T]:
     return [v async for v in fn(*args, **kwargs)]
 
 
