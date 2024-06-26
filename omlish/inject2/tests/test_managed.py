@@ -20,7 +20,7 @@ class SomeManager:
 def test_managed():
     # with inj.create_managed_injector(inj.as_elements(
     #     inj.as_binding(420),
-    #     jank_managed(SomeManager),
+    #     inj.managed(SomeManager),
     # )) as i:
     #     assert i[int] == 420
     #     sm = i[SomeManager]

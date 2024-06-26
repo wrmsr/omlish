@@ -6,6 +6,7 @@ TODO:
  - config - proxies, etc
   - config is probably shared with ElementCollection... but not 'bound', must be shared everywhere
   - InjectorRoot object?
+ - ** eagers in any scope, on scope init/open
 """
 import contextlib
 import typing as ta
@@ -25,9 +26,9 @@ from ..scopes import Scope
 from .elements import ElementCollection
 from .inspect import build_kwargs_target
 from .scopes import ScopeImpl
-from .scopes import SingletonImpl
-from .scopes import ThreadImpl
-from .scopes import UnscopedImpl
+from .scopes import SingletonScopeImpl
+from .scopes import ThreadScopeImpl
+from .scopes import UnscopedScopeImpl
 
 
 class InjectorImpl(Injector, lang.Final):
@@ -50,9 +51,9 @@ class InjectorImpl(Injector, lang.Final):
 
         self._scopes: dict[Scope, ScopeImpl] = {
             s.scope: s for s in [
-                UnscopedImpl(),
-                SingletonImpl(),
-                ThreadImpl(),
+                UnscopedScopeImpl(),
+                SingletonScopeImpl(),
+                ThreadScopeImpl(),
             ]
         }
 
