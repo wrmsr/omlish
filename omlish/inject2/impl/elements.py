@@ -20,6 +20,7 @@ import typing as ta
 
 from ... import check
 from ... import collections as col
+from ... import dataclasses as dc
 from ... import lang
 from ..bindings import Binding
 from ..eager import Eager
@@ -44,17 +45,30 @@ class ElementCollection(lang.Final):
 
         self._es = check.isinstance(es, Elements)
 
-        self._private_ecs: ta.MutableMapping[Private, ElementCollection] = col.IdentityKeyDict()
+        self._private_infos: ta.MutableMapping[Private, ElementCollection._PrivateInfo] | None = None
 
     @lang.cached_function
-    def elements_of_type(self, *tys: type[ElementT]) -> ta.Sequence[ElementT]:
+    def shallow_elements_of_type(self, *tys: type[ElementT]) -> ta.Sequence[ElementT]:
         return tuple(e for e in self._es if isinstance(e, tys))  # noqa
 
-    def _get_private_element_collection(self, p: Private) -> 'ElementCollection':
+    ##
+
+    @dc.dataclass(frozen=True)
+    class _PrivateInfo(lang.Final):
+        ec: 'ElementCollection'
+        p: Private
+
+        @lang.cached_function
+        def element_collection(self) -> 'ElementCollection':
+            return ElementCollection(self.p.elements)
+
+    def _get_private_info(self, p: Private) -> _PrivateInfo:
+        if (pis := self._private_infos) is None:
+            self._private_infos = pis = col.IdentityKeyDict()
         try:
-            return self._private_ecs[p]
+            return pis[p]
         except KeyError:
-            self._private_ecs[p] = ec = ElementCollection(p.elements)
+            pis[p] = ec = ElementCollection._PrivateInfo(self, p)
             return ec
 
     ##
@@ -71,8 +85,11 @@ class ElementCollection(lang.Final):
             if isinstance(e, (Binding, Eager, Expose)):
                 dct.setdefault(e.key, []).append(e)
 
-            # elif isinstance(e, Private):
-            #     raise NotImplementedError
+            elif isinstance(e, Private):
+                pec = self._get_private_info(e).element_collection()
+                exs = pec.elements_of_type(Expose)
+                for ex in exs:
+                    raise NotImplementedError
 
             elif isinstance(e, Overrides):
                 ovr = self._build_raw_element_multimap(e.ovr)
@@ -87,8 +104,12 @@ class ElementCollection(lang.Final):
         return dct
 
     @lang.cached_function
-    def _raw_element_multimap(self) -> ta.Mapping[Key, ta.Sequence[Element]]:
+    def element_multimap(self) -> ta.Mapping[Key, ta.Sequence[Element]]:
         return self._build_raw_element_multimap(self._es)
+
+    @lang.cached_function
+    def elements_of_type(self, *tys: type[ElementT]) -> ta.Sequence[ElementT]:
+        return tuple(e for es in self.element_multimap().values() for e in es if isinstance(e, tys))  # noqa
 
     ##
 
@@ -111,4 +132,4 @@ class ElementCollection(lang.Final):
 
     @lang.cached_function
     def binding_map(self) -> ta.Mapping[Key, BindingImpl]:
-        return self._build_binding_map(self._raw_element_multimap())
+        return self._build_binding_map(self.element_multimap())
