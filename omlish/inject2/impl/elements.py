@@ -64,12 +64,6 @@ class ElementCollection(lang.Final):
 
     ##
 
-    def _make_binding_impl(self, b: Binding) -> BindingImpl:
-        p = make_provider_impl(b.provider)
-        return BindingImpl(b.key, p, b.scope, b)
-
-    ##
-
     def _build_raw_element_multimap(self, es: ta.Iterable[Element]) -> dict[Key, list[Element]]:
         dct: dict[Key, list[Element]] = {}
 
@@ -82,11 +76,8 @@ class ElementCollection(lang.Final):
 
             elif isinstance(e, Private):
                 pi = self._get_private_info(e)
-                add(pi.pik, pi.private_provider_impl())
-
-                eps = pi.exposed_providers()
-                for ex in eps:
-                    raise NotImplementedError
+                for k, ips in pi.internal_providers().items():
+                    add(k, *ips)
 
             elif isinstance(e, Overrides):
                 ovr = self._build_raw_element_multimap(e.ovr)
@@ -97,6 +88,9 @@ class ElementCollection(lang.Final):
                     except KeyError:
                         bs = src[k]
                     add(k, *bs)
+
+            else:
+                raise TypeError(e)
 
         return dct
 
@@ -110,11 +104,22 @@ class ElementCollection(lang.Final):
 
     ##
 
-    def _build_binding_map(self, bm: ta.Mapping[Key, ta.Sequence[Binding]]) -> dict[Key, BindingImpl]:
+    def _make_binding_impls(self, e: Element) -> ta.Iterable[BindingImpl]:
+        if isinstance(e, Binding):
+            p = make_provider_impl(e.provider)
+            return (BindingImpl(e.key, p, e.scope, e),)
+
+        elif isinstance(e, private_.InternalProvider):
+            raise NotImplementedError
+
+        else:
+            raise TypeError(e)
+
+    def _build_binding_impl_map(self, em: ta.Mapping[Key, ta.Sequence[Element]]) -> dict[Key, BindingImpl]:
         pm: dict[Key, BindingImpl] = {}
         mm: dict[Key, list[BindingImpl]] = {}
-        for k, bs in bm.items():
-            bis = [self._make_binding_impl(b) for b in bs]
+        for k, es in em.items():
+            bis = [bi for e in es for bi in self._make_binding_impls(e)]
             if k.multi:
                 mm.setdefault(k, []).extend(bis)
             else:
@@ -128,5 +133,5 @@ class ElementCollection(lang.Final):
         return pm
 
     @lang.cached_function
-    def binding_map(self) -> ta.Mapping[Key, BindingImpl]:
-        return self._build_binding_map(self.element_multimap())
+    def binding_impl_map(self) -> ta.Mapping[Key, BindingImpl]:
+        return self._build_binding_impl_map(self.element_multimap())
