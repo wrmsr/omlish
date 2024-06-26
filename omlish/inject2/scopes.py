@@ -26,5 +26,6 @@ class SeededScope(Scope, lang.Abstract):
 
 
 @dc.dataclass(frozen=True)
+@dc.extra_params(cache_hash=True)
 class ScopeSeed(Element, lang.Final):
     key: Key
