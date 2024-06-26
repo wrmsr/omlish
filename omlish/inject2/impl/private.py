@@ -16,9 +16,6 @@ from .elements import ElementCollection
 from .injector import InjectorImpl
 from .providers import ProviderImpl
 
-if ta.TYPE_CHECKING:
-    from .elements import ElementCollection
-
 
 _PRIVATE_COUNT = itertools.count()
 
