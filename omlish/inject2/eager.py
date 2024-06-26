@@ -8,6 +8,7 @@ from .keys import as_key
 
 
 @dc.dataclass(frozen=True)
+@dc.extra_params(cache_hash=True)
 class Eager(Element, lang.Final):
     key: Key
 

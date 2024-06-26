@@ -13,6 +13,7 @@ from .eager import (  # noqa
 )
 
 from .elements import (  # noqa
+    as_elements,
     Element,
     Elements,
 )
