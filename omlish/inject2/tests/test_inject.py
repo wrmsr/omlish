@@ -3,8 +3,6 @@ import typing as ta
 from ... import dataclasses as dc
 from ... import inject2 as inj
 from ... import lang
-from ..impl.elements import ElementCollection
-from ..impl.injector import InjectorImpl
 
 
 def test_inject():
@@ -13,8 +11,7 @@ def test_inject():
         inj.as_binding(lang.typed_lambda(str, i=int)(lambda i: str(i))),
     )
 
-    ec = ElementCollection(es)
-    i = InjectorImpl(ec)
+    i = inj.create_injector(es)
     assert i.provide(int) == 420
     assert i.provide(str) == '420'
 
@@ -29,8 +26,7 @@ def test_override():
         inj.as_binding(lang.typed_lambda(str, i=int, f=float)(lambda i, f: f'{i}, {f}')),
     )
 
-    ec = ElementCollection(es)
-    i = InjectorImpl(ec)
+    i = inj.create_injector(es)
     assert i.provide(int) == 421
     assert i.provide(str) == '421, 5.2'
 
@@ -41,8 +37,7 @@ def test_multi():
         inj.as_(inj.multi(int), [421]),
     )
 
-    ec = ElementCollection(es)
-    i = InjectorImpl(ec)
+    i = inj.create_injector(es)
     assert sorted(i.provide(inj.multi(int))) == [420, 421]
 
 
@@ -61,8 +56,7 @@ def test_eager():
 
     for _ in range(2):
         c = 0
-        ec = ElementCollection(es)
-        i = InjectorImpl(ec)
+        i = inj.create_injector(es)
         assert c == 1
         assert i.provide(int) == 420
         assert c == 2
@@ -76,13 +70,13 @@ def test_optional():
         inj.as_binding(420),
         inj.as_binding(f),
     )
-    assert InjectorImpl(ElementCollection(es))[str] == 'i=420 f=None'
+    assert inj.create_injector(es)[str] == 'i=420 f=None'
 
     es = inj.as_elements(
         inj.as_binding(2.3),
         *es,
     )
-    assert InjectorImpl(ElementCollection(es))[str] == 'i=420 f=2.3'
+    assert inj.create_injector(es)[str] == 'i=420 f=2.3'
 
 
 @dc.dataclass(frozen=True)
@@ -91,7 +85,7 @@ class Foo:
 
 
 def test_private():
-    bs = inj.as_elements(
+    es = inj.as_elements(
         inj.private(inj.as_elements(
             inj.as_binding(420),
             inj.as_binding(12.3),
@@ -104,6 +98,6 @@ def test_private():
         )),
         inj.as_binding(Foo('foo')),
     )
-    i = InjectorImpl(ElementCollection(bs))
+    i = inj.create_injector(es)
     assert i.provide(int) == 420
     assert i.provide(str) == '32.1! foo'

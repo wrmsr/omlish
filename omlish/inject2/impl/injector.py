@@ -1,3 +1,7 @@
+"""
+TODO:
+ - cache/export ElementCollections lol
+"""
 import contextlib
 import typing as ta
 import weakref
@@ -5,6 +9,7 @@ import weakref
 from ... import check
 from ... import lang
 from ..eager import Eager
+from ..elements import Elements
 from ..exceptions import CyclicDependencyException
 from ..exceptions import UnboundKeyException
 from ..injector import Injector
@@ -140,3 +145,7 @@ class InjectorImpl(Injector, lang.Final):
         kws = self.provide_kwargs(kt)
         # FIXME: still 'injecting' (as in has a req) if ctor needs and uses Injector
         return obj(**kws)
+
+
+def create_injector(es: Elements) -> Injector:
+    return InjectorImpl(ElementCollection(es))
