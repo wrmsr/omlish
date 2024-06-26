@@ -22,7 +22,7 @@ class ScopeImpl(lang.Abstract):
         raise NotImplementedError
 
 
-class UnscopedImpl(ScopeImpl, lang.Final):
+class UnscopedScopeImpl(ScopeImpl, lang.Final):
     @property
     def scope(self) -> Scope:
         return Unscoped()
@@ -31,7 +31,7 @@ class UnscopedImpl(ScopeImpl, lang.Final):
         return binding.provider.provide(injector)
 
 
-class SingletonImpl(ScopeImpl, lang.Final):
+class SingletonScopeImpl(ScopeImpl, lang.Final):
     def __init__(self) -> None:
         super().__init__()
         self._dct: dict[BindingImpl, ta.Any] = {}
@@ -50,7 +50,7 @@ class SingletonImpl(ScopeImpl, lang.Final):
         return v
 
 
-class ThreadImpl(ScopeImpl, lang.Final):
+class ThreadScopeImpl(ScopeImpl, lang.Final):
     def __init__(self) -> None:
         super().__init__()
         self._local = threading.local()
@@ -72,3 +72,7 @@ class ThreadImpl(ScopeImpl, lang.Final):
         v = binding.provider.provide(injector)
         dct[binding] = v
         return v
+
+
+class SeededScopeImpl(ScopeImpl):
+    pass
