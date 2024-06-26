@@ -2,9 +2,11 @@ import abc
 import threading
 import typing as ta
 
+from ... import check
 from ... import lang
 from ..injector import Injector
 from ..scopes import Scope
+from ..scopes import SeededScope
 from ..scopes import Singleton
 from ..scopes import Thread
 from ..scopes import Unscoped
@@ -24,7 +26,7 @@ class ScopeImpl(lang.Abstract):
 
 class UnscopedScopeImpl(ScopeImpl, lang.Final):
     @property
-    def scope(self) -> Scope:
+    def scope(self) -> Unscoped:
         return Unscoped()
 
     def provide(self, binding: BindingImpl, injector: Injector) -> ta.Any:
@@ -37,7 +39,7 @@ class SingletonScopeImpl(ScopeImpl, lang.Final):
         self._dct: dict[BindingImpl, ta.Any] = {}
 
     @property
-    def scope(self) -> Scope:
+    def scope(self) -> Singleton:
         return Singleton()
 
     def provide(self, binding: BindingImpl, injector: Injector) -> ta.Any:
@@ -56,7 +58,7 @@ class ThreadScopeImpl(ScopeImpl, lang.Final):
         self._local = threading.local()
 
     @property
-    def scope(self) -> Scope:
+    def scope(self) -> Thread:
         return Thread()
 
     def provide(self, binding: BindingImpl, injector: Injector) -> ta.Any:
@@ -75,10 +77,13 @@ class ThreadScopeImpl(ScopeImpl, lang.Final):
 
 
 class SeededScopeImpl(ScopeImpl):
+    def __init__(self, ss: SeededScope) -> None:
+        super().__init__()
+        self._ss = check.isinstance(ss, SeededScope)
 
     @property
-    def scope(self) -> Scope:
-        raise NotImplementedError
+    def scope(self) -> SeededScope:
+        return self._ss
 
     def provide(self, binding: BindingImpl, injector: Injector) -> ta.Any:
         raise NotImplementedError
