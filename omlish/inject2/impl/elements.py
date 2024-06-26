@@ -51,10 +51,6 @@ class ElementCollection(lang.Final):
 
         self._private_infos: ta.MutableMapping[Private, 'private_.PrivateInfo'] | None = None
 
-    @lang.cached_function
-    def shallow_elements_of_type(self, *tys: type[ElementT]) -> ta.Sequence[ElementT]:
-        return tuple(e for e in self._es if isinstance(e, tys))  # noqa
-
     ##
 
     def _get_private_info(self, p: Private) -> 'private_.PrivateInfo':
@@ -81,9 +77,9 @@ class ElementCollection(lang.Final):
                 dct.setdefault(e.key, []).append(e)
 
             elif isinstance(e, Private):
-                pec = self._get_private_info(e).element_collection()
-                exs = pec.elements_of_type(Expose)
-                for ex in exs:
+                pi = self._get_private_info(e)
+                eps = pi.exposed_providers()
+                for ex in eps:
                     raise NotImplementedError
 
             elif isinstance(e, Overrides):
