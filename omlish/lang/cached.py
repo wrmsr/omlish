@@ -7,6 +7,7 @@ TODO:
 import dataclasses as dc
 import functools
 import inspect
+import types
 import typing as ta
 
 from .functions import unwrap_func
@@ -19,22 +20,35 @@ T = ta.TypeVar('T')
 _IGNORE = object()
 
 
-def _simple_cache_key(*args, **kwargs):
+def _nullary_cache_keyer():
+    return ()
+
+
+def _simple_cache_keyer(*args, **kwargs):
     return (args, tuple(sorted(kwargs.items())))
 
 
 def _make_cache_keyer(fn, *, simple=False, bound=False):
     if simple:
-        return _simple_cache_key
+        return _simple_cache_keyer
+
     fn, partials = unwrap_func_with_partials(fn)
+
+    if inspect.isgeneratorfunction(fn) or inspect.iscoroutinefunction(fn):
+        raise TypeError(fn)
+
     sig = inspect.signature(fn)
+    sig_params = list(sig.parameters.values())[1 if bound else 0:]
+    if not sig_params:
+        return _nullary_cache_keyer
+
     ns = {}
-    ps = []
-    pns = []
-    kwn = None
+    src_params = []
+    src_vals = []
+    kwargs_name = None
     render_pos_only_separator = False
     render_kw_only_separator = True
-    for p in list(sig.parameters.values())[1 if bound else 0:]:
+    for p in sig_params:
         formatted = p.name
         if p.default is not inspect.Parameter.empty:
             ns[p.name] = p.default
@@ -47,29 +61,32 @@ def _make_cache_keyer(fn, *, simple=False, bound=False):
         if kind == inspect.Parameter.POSITIONAL_ONLY:
             render_pos_only_separator = True
         elif render_pos_only_separator:
-            ps.append('/')
+            src_params.append('/')
             render_pos_only_separator = False
         if kind == inspect.Parameter.VAR_POSITIONAL:
             render_kw_only_separator = False
         elif kind == inspect.Parameter.KEYWORD_ONLY and render_kw_only_separator:
-            ps.append('*')
+            src_params.append('*')
             render_kw_only_separator = False
-        ps.append(formatted)
+        src_params.append(formatted)
         if kind == inspect.Parameter.VAR_KEYWORD:
-            kwn = p.name
+            kwargs_name = p.name
         else:
-            pns.append(p.name)
+            src_vals.append(p.name)
     if render_pos_only_separator:
-        ps.append('/')
-    kwa = f', __builtins__.tuple(__builtins__.sorted({kwn}.items()))' if kwn else ''
+        src_params.append('/')
+
+    kwa = f', __builtins__.tuple(__builtins__.sorted({kwargs_name}.items()))' if kwargs_name else ''
     rendered = (
-        f'def __func__({", ".join(ps)}):\n'
-        f'    return ({", ".join(pns)}{kwa})\n'
+        f'def __func__({", ".join(src_params)}):\n'
+        f'    return ({", ".join(src_vals)}{kwa})\n'
     )
     exec(rendered, ns)
+
     kfn = ns['__func__']
     for part in partials[::-1]:
         kfn = functools.partial(kfn, *part.args, **part.keywords)
+
     return kfn
 
 
