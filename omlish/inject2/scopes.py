@@ -6,10 +6,19 @@ from .. import lang
 from .elements import Element
 from .keys import Key
 
+if ta.TYPE_CHECKING:
+    from . import bindings as bindings_
+else:
+    bindings_ = lang.proxy_import('.bindings', __package__)
+
 
 class Scope(lang.Abstract):
     def __repr__(self) -> str:
         return type(self).__name__
+
+
+def in_(b: ta.Any, sc: Scope) -> 'bindings_.Binding':
+    return dc.replace(bindings_.as_binding(b), scope=check.isinstance(sc, Scope))
 
 
 class Unscoped(Scope, lang.Singleton, lang.Final):
@@ -18,6 +27,10 @@ class Unscoped(Scope, lang.Singleton, lang.Final):
 
 class Singleton(Scope, lang.Singleton, lang.Final):
     pass
+
+
+def singleton(b: ta.Any) -> 'bindings_.Binding':
+    return in_(b, Singleton())
 
 
 class Thread(Scope, lang.Singleton, lang.Final):
@@ -33,4 +46,4 @@ class ScopeSeed(Element, lang.Final):
 @dc.dataclass(frozen=True)
 @dc.extra_params(cache_hash=True)
 class SeededScope(Scope, lang.Final):
-    tag: ta.Any = dc.field(validate=check.not_none)
+    tag: ta.Any = dc.xfield(check=check.not_none)
