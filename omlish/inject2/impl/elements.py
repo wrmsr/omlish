@@ -110,6 +110,7 @@ class ElementCollection(lang.Final):
             return (BindingImpl(e.key, p, e.scope, e),)
 
         elif isinstance(e, private_.InternalProvider):
+            return (BindingImpl(e.impl.key, e.impl, ))
             raise NotImplementedError
 
         elif isinstance(e, (Eager, Expose)):
