@@ -101,3 +101,10 @@ def test_private():
     i = inj.create_injector(es)
     assert i.provide(int) == 420
     assert i.provide(str) == '32.1! foo'
+
+
+def test_managed():
+    with inj.create_managed_injector(inj.as_elements(
+        inj.as_binding(420),
+    )) as i:
+        assert i[int] == 420

@@ -42,6 +42,10 @@ from .keys import (  # noqa
     tag,
 )
 
+from .managed import (  # noqa
+    create_managed_injector,
+)
+
 from .overrides import (  # noqa
     override,
 )
