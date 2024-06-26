@@ -72,12 +72,18 @@ class ElementCollection(lang.Final):
 
     def _build_raw_element_multimap(self, es: ta.Iterable[Element]) -> dict[Key, list[Element]]:
         dct: dict[Key, list[Element]] = {}
+
+        def add(k: Key, *e: Element) -> None:
+            dct.setdefault(k, []).extend(e)
+
         for e in es:
             if isinstance(e, (Binding, Eager, Expose)):
-                dct.setdefault(e.key, []).append(e)
+                add(e.key, e)
 
             elif isinstance(e, Private):
                 pi = self._get_private_info(e)
+                add(pi.pik, pi.private_provider_impl())
+
                 eps = pi.exposed_providers()
                 for ex in eps:
                     raise NotImplementedError
@@ -90,7 +96,7 @@ class ElementCollection(lang.Final):
                         bs = ovr[k]
                     except KeyError:
                         bs = src[k]
-                    dct.setdefault(k, []).extend(bs)
+                    add(k, *bs)
 
         return dct
 
