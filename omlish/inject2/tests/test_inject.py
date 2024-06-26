@@ -82,4 +82,3 @@ def test_optional():
         *es,
     ])
     assert InjectorImpl(ElementCollection(es))[str] == 'i=420 f=2.3'
-

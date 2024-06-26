@@ -58,7 +58,7 @@ class ElementCollection(lang.Final):
 
     def _make_binding_impl(self, b: Binding) -> BindingImpl:
         p = make_provider_impl(b.provider)
-        yield BindingImpl(b.key, p, b.scope, b)
+        return BindingImpl(b.key, p, b.scope, b)
 
     def _build_binding_map(self, es: ta.Iterable[Element]) -> dict[Key, BindingImpl]:
         pm: dict[Key, BindingImpl] = {}
