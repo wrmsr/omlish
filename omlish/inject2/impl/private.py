@@ -9,14 +9,18 @@ from ... import cached
 from ... import check
 from ... import dataclasses as dc
 from ... import lang
+from ..bindings import Binding
+from ..eager import Eager
+from ..elements import Element
 from ..injector import Injector
 from ..keys import Key
 from ..private import Expose
 from ..private import Private
 from ..providers import Provider
-from ..types import Cls
+from ..scopes import Singleton
 from .elements import ElementCollection
 from .injector import InjectorImpl
+from .providers import InternalProvider
 from .providers import ProviderImpl
 
 
@@ -38,11 +42,10 @@ class PrivateInjectorId(lang.Final):
 class PrivateInjectorProviderImpl(ProviderImpl):
     id: PrivateInjectorId
     ec: ElementCollection
-    ip: Provider | None = None
 
     @property
     def providers(self) -> ta.Iterable[Provider]:
-        return (check.not_none(self.ip),)
+        return ()
 
     def provide(self, injector: Injector) -> ta.Any:
         return InjectorImpl(self.ec, check.isinstance(injector, InjectorImpl))
@@ -55,11 +58,10 @@ class PrivateInjectorProviderImpl(ProviderImpl):
 class ExposedPrivateProviderImpl(ProviderImpl):
     pik: Key
     k: Key
-    ip: Provider | None = None
 
     @property
     def providers(self) -> ta.Iterable[Provider]:
-        return (check.not_none(self.ip),)
+        return ()
 
     def provide(self, injector: Injector) -> ta.Any:
         pi = injector.provide(self.pik)
@@ -67,16 +69,6 @@ class ExposedPrivateProviderImpl(ProviderImpl):
 
 
 ##
-
-
-@dc.dataclass(frozen=True)
-@dc.extra_params(cache_hash=True)
-class InternalProvider(Provider):
-    impl: ProviderImpl
-    cls: Cls
-
-    def provided_cls(self) -> Cls | None:
-        raise TypeError
 
 
 @dc.dataclass(frozen=True)
@@ -103,23 +95,15 @@ class PrivateInfo(lang.Final):
         return PrivateInjectorProviderImpl(self.id, self.element_collection())
 
     @cached.function
-    def exposed_provider_impls(self) -> ta.Mapping[Key, ta.Sequence[ExposedPrivateProviderImpl]]:
+    def exposed_provider_impls(self) -> ta.Sequence[ExposedPrivateProviderImpl]:
         exs = self.element_collection().elements_of_type(Expose)
-        dct: dict[Key, list[ExposedPrivateProviderImpl]] = {}
-        for ex in exs:
-            dct.setdefault(ex.key, []).append(ExposedPrivateProviderImpl(self.pik, ex.key))
-        return dct
+        return [ExposedPrivateProviderImpl(self.pik, ex.key) for ex in exs]
 
     @cached.function
-    def internal_providers(self) -> ta.Mapping[Key, list[InternalProvider]]:
-        def bind_ip(impl, cls):
-            check.none(impl.ip)
-            impl.ip = ip = InternalProvider(impl, cls)
-            return ip
-
-        dct: dict[Key, list[InternalProvider]] = {
-            self.pik: [bind_ip(self.private_provider_impl(), InjectorImpl)],
-        }
-        for k, epis in self.exposed_provider_impls().items():
-            dct.setdefault(k, []).extend(bind_ip(epi, k.cls) for epi in epis)
-        return dct
+    def owner_elements(self) -> ta.Iterable[Element]:
+        lst: list[Element] = [
+            Binding(self.pik, InternalProvider(self.private_provider_impl()), Singleton()),
+            Eager(self.pik),
+            *(Binding(ep.k, InternalProvider(ep)) for ep in self.exposed_provider_impls()),
+        ]
+        return lst

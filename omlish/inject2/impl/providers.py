@@ -5,6 +5,7 @@ TODO:
 import abc
 import typing as ta
 
+from .. import Cls
 from ... import check
 from ... import dataclasses as dc
 from ... import lang
@@ -27,6 +28,14 @@ class ProviderImpl(lang.Abstract):
     @abc.abstractmethod
     def provide(self, injector: Injector) -> ta.Any:
         raise NotImplementedError
+
+
+@dc.dataclass(frozen=True)
+class InternalProvider(Provider):
+    impl: ProviderImpl
+
+    def provided_cls(self) -> Cls | None:
+        raise TypeError
 
 
 @dc.dataclass(frozen=True, eq=False)
@@ -112,4 +121,6 @@ def make_provider_impl(p: Provider) -> ProviderImpl:
         return ConstProviderImpl(p)
     if isinstance(p, LinkProvider):
         return LinkProviderImpl(p)
+    if isinstance(p, InternalProvider):
+        return p.impl
     raise TypeError(p)
