@@ -20,7 +20,6 @@ import typing as ta
 
 from ... import check
 from ... import collections as col
-from ... import dataclasses as dc
 from ... import lang
 from ..bindings import Binding
 from ..eager import Eager
@@ -35,6 +34,11 @@ from .bindings import BindingImpl
 from .providers import MultiProviderImpl
 from .providers import make_provider_impl
 
+if ta.TYPE_CHECKING:
+    from . import private as private_
+else:
+    private_ = lang.proxy_import('.private', __package__)
+
 
 ElementT = ta.TypeVar('ElementT', bound=Element)
 
@@ -45,7 +49,7 @@ class ElementCollection(lang.Final):
 
         self._es = check.isinstance(es, Elements)
 
-        self._private_infos: ta.MutableMapping[Private, ElementCollection._PrivateInfo] | None = None
+        self._private_infos: ta.MutableMapping[Private, 'private_.PrivateInfo'] | None = None
 
     @lang.cached_function
     def shallow_elements_of_type(self, *tys: type[ElementT]) -> ta.Sequence[ElementT]:
@@ -53,22 +57,13 @@ class ElementCollection(lang.Final):
 
     ##
 
-    @dc.dataclass(frozen=True)
-    class _PrivateInfo(lang.Final):
-        ec: 'ElementCollection'
-        p: Private
-
-        @lang.cached_function
-        def element_collection(self) -> 'ElementCollection':
-            return ElementCollection(self.p.elements)
-
-    def _get_private_info(self, p: Private) -> _PrivateInfo:
+    def _get_private_info(self, p: Private) -> 'private_.PrivateInfo':
         if (pis := self._private_infos) is None:
             self._private_infos = pis = col.IdentityKeyDict()
         try:
             return pis[p]
         except KeyError:
-            pis[p] = ec = ElementCollection._PrivateInfo(self, p)
+            pis[p] = ec = private_.PrivateInfo(self, p)
             return ec
 
     ##
