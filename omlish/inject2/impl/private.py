@@ -34,14 +34,15 @@ class PrivateInjectorId(lang.Final):
 ##
 
 
-@dc.dataclass(frozen=True, eq=False)
+@dc.dataclass(eq=False)
 class PrivateInjectorProviderImpl(ProviderImpl):
     id: PrivateInjectorId
     ec: ElementCollection
+    ip: Provider | None = None
 
     @property
     def providers(self) -> ta.Iterable[Provider]:
-        return ()
+        return (check.not_none(self.ip),)
 
     def provide(self, injector: Injector) -> ta.Any:
         return InjectorImpl(self.ec, check.isinstance(injector, InjectorImpl))
@@ -50,14 +51,15 @@ class PrivateInjectorProviderImpl(ProviderImpl):
 ##
 
 
-@dc.dataclass(frozen=True, eq=False)
+@dc.dataclass(eq=False)
 class ExposedPrivateProviderImpl(ProviderImpl):
     pik: Key
     k: Key
+    ip: Provider | None = None
 
     @property
     def providers(self) -> ta.Iterable[Provider]:
-        return ()
+        return (check.not_none(self.ip),)
 
     def provide(self, injector: Injector) -> ta.Any:
         pi = injector.provide(self.pik)
@@ -101,12 +103,23 @@ class PrivateInfo(lang.Final):
         return PrivateInjectorProviderImpl(self.id, self.element_collection())
 
     @cached.function
-    def exposed_provider_impls(self) -> ta.Mapping[Key, ExposedPrivateProviderImpl]:
+    def exposed_provider_impls(self) -> ta.Mapping[Key, ta.Sequence[ExposedPrivateProviderImpl]]:
         exs = self.element_collection().elements_of_type(Expose)
-        raise NotImplementedError
+        dct: dict[Key, list[ExposedPrivateProviderImpl]] = {}
+        for ex in exs:
+            dct.setdefault(ex.key, []).append(ExposedPrivateProviderImpl(self.pik, ex.key))
+        return dct
 
     @cached.function
-    def internal_providers(self) -> ta.Mapping[Key, InternalProvider]:
-        ppi = self.private_provider_impl()
-        epis = self.exposed_provider_impls()
-        raise NotImplementedError
+    def internal_providers(self) -> ta.Mapping[Key, list[InternalProvider]]:
+        def bind_ip(impl, cls):
+            check.none(impl.ip)
+            impl.ip = ip = InternalProvider(impl, cls)
+            return ip
+
+        dct: dict[Key, list[InternalProvider]] = {
+            self.pik: [bind_ip(self.private_provider_impl(), InjectorImpl)],
+        }
+        for k, epis in self.exposed_provider_impls().items():
+            dct.setdefault(k, []).extend(bind_ip(epi, k.cls) for epi in epis)
+        return dct
