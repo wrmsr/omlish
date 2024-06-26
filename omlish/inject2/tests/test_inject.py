@@ -104,7 +104,23 @@ def test_private():
 
 
 def test_managed():
+    class SomeManager:
+        ec = 0
+        xc = 0
+
+        def __enter__(self):
+            self.ec += 1
+
+        def __exit__(self, exc_type, exc_val, exc_tb):
+            self.xc += 1
+
+    from ..managed import jank_managed
+
     with inj.create_managed_injector(inj.as_elements(
         inj.as_binding(420),
+        jank_managed(SomeManager),
     )) as i:
         assert i[int] == 420
+        sm = i[SomeManager]
+        assert (sm.ec, sm.xc) == (1, 0)
+    assert (sm.ec, sm.xc) == (1, 1)
