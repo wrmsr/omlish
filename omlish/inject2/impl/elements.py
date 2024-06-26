@@ -64,11 +64,16 @@ class ElementCollection(lang.Final):
 
     ##
 
-    def _build_raw_element_multimap(self, es: ta.Iterable[Element]) -> dict[Key, list[Element]]:
-        dct: dict[Key, list[Element]] = {}
+    def _build_raw_element_multimap(
+            self,
+            es: ta.Iterable[Element],
+            out: dict[Key, list[Element]] | None = None,
+    ) -> dict[Key, list[Element]]:
+        if out is None:
+            out = {}
 
         def add(k: Key, *e: Element) -> None:
-            dct.setdefault(k, []).extend(e)
+            out.setdefault(k, []).extend(e)
 
         for e in es:
             if isinstance(e, (Binding, Eager, Expose)):
@@ -76,8 +81,7 @@ class ElementCollection(lang.Final):
 
             elif isinstance(e, Private):
                 pi = self._get_private_info(e)
-                for k, ips in pi.internal_providers().items():
-                    add(k, *ips)
+                self._build_raw_element_multimap(pi.owner_elements(), out)
 
             elif isinstance(e, Overrides):
                 ovr = self._build_raw_element_multimap(e.ovr)
@@ -92,7 +96,7 @@ class ElementCollection(lang.Final):
             else:
                 raise TypeError(e)
 
-        return dct
+        return out
 
     @lang.cached_function
     def element_multimap(self) -> ta.Mapping[Key, ta.Sequence[Element]]:
@@ -108,10 +112,6 @@ class ElementCollection(lang.Final):
         if isinstance(e, Binding):
             p = make_provider_impl(e.provider)
             return (BindingImpl(e.key, p, e.scope, e),)
-
-        elif isinstance(e, private_.InternalProvider):
-            return (BindingImpl(e.impl.key, e.impl, ))
-            raise NotImplementedError
 
         elif isinstance(e, (Eager, Expose)):
             return ()
