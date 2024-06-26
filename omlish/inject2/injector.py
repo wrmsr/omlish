@@ -2,8 +2,11 @@ import abc
 import typing as ta
 
 from .. import lang
+from .elements import Elements
 from .inspect import KwargsTarget
 from .keys import Key
+
+_impl = lang.proxy_import('.impl.injector', __package__)
 
 
 T = ta.TypeVar('T')
@@ -31,3 +34,7 @@ class Injector(lang.Abstract):
             target: ta.Union[Key[T], type[T]],
     ) -> T:
         return self.provide(target)
+
+
+def create_injector(es: Elements) -> Injector:
+    return _impl.create_injector(es)

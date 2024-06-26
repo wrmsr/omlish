@@ -26,6 +26,7 @@ from .exceptions import (  # noqa
 )
 
 from .injector import (  # noqa
+    create_injector,
     Injector,
 )
 
