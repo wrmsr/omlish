@@ -10,6 +10,7 @@ from .keys import as_key
 
 
 @dc.dataclass(frozen=True)
+@dc.extra_params(cache_hash=True)
 class Expose(Element, lang.Final):
     key: Key
 
@@ -19,6 +20,7 @@ def expose(k: ta.Any) -> Element:
 
 
 @dc.dataclass(frozen=True)
+@dc.extra_params(cache_hash=True)
 class Private(Element, lang.Final):
     elements: Elements
 
