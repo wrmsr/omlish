@@ -90,6 +90,11 @@ class PrivateInfo(lang.Final):
         return ElementCollection(self.p.elements)
 
     @lang.cached_function
-    def exposed_providers(self) -> ta.Mapping[Key, ExposedPrivateProviderImpl]:
+    def exposed_provider_impls(self) -> ta.Mapping[Key, ExposedPrivateProviderImpl]:
         exs = self.element_collection().elements_of_type(Expose)
+        raise NotImplementedError
+
+    @lang.cached_function
+    def exposed_providers(self) -> ta.Mapping[Key, ExposedPrivateProvider]:
+        epis = self.exposed_provider_impls()
         raise NotImplementedError
