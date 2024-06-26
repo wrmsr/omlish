@@ -43,7 +43,7 @@ def test_multi():
 
     ec = ElementCollection(es)
     i = InjectorImpl(ec)
-    assert i.provide(inj.multi(int)) == [420, 421]
+    assert sorted(i.provide(inj.multi(int))) == [420, 421]
 
 
 def test_eager():
