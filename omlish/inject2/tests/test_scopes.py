@@ -1,16 +1,20 @@
-# from ... import inject2 as inj
-#
-#
-# def test_scopes():
-#     foo = inj.SeededScope('foo')
-#     i = inj.create_injector(inj.as_elements(
-#         bind_scope(foo),
-#         scoped(foo, 420),
-#     ))
-#     i.provide(foo._scope_key).open({})
-#     assert i[int] == 420
-#
-#
+from ... import inject2 as inj
+
+
+def test_scopes():
+    from ..impl.scopes import SeededScopeImpl
+
+    ss = inj.SeededScope('hi')
+    ssi = SeededScopeImpl(ss)
+    ssk = inj.Key(SeededScopeImpl, tag=ss)
+    i = inj.create_injector(inj.as_elements(
+        inj.Binding(ssk, inj.as_provider(ssi)),
+        inj.in_(420, ss),
+    ))
+    assert i.provide(ssk) is ssi
+    assert i[int] == 420
+
+
 # def test_scope_seed():
 #     foo = ScopeTag('foo')
 #     i = create_injector(bind(
