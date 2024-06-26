@@ -26,6 +26,7 @@ from .elements import ElementCollection
 from .inspect import build_kwargs_target
 from .scopes import ScopeImpl
 from .scopes import SingletonImpl
+from .scopes import ThreadImpl
 from .scopes import UnscopedImpl
 
 
@@ -33,10 +34,14 @@ class InjectorImpl(Injector, lang.Final):
     def __init__(self, ec: ElementCollection, p: ta.Optional['InjectorImpl'] = None) -> None:
         super().__init__()
 
-        ec.binding_impl_map()
-
         self._ec = check.isinstance(ec, ElementCollection)
         self._p: ta.Optional[InjectorImpl] = check.isinstance(p, (InjectorImpl, None))
+
+        self._internal_consts: dict[Key, ta.Any] = {
+            Key(Injector): self,
+        }
+
+        self._bim = ec.binding_impl_map()
 
         self._cs: weakref.WeakSet[InjectorImpl] | None = None
         self._root: InjectorImpl = p._root if p is not None else self
@@ -44,7 +49,11 @@ class InjectorImpl(Injector, lang.Final):
         self.__cur_req: InjectorImpl._Request | None = None
 
         self._scopes: dict[Scope, ScopeImpl] = {
-            s.scope: s for s in (UnscopedImpl(), SingletonImpl())
+            s.scope: s for s in [
+                UnscopedImpl(),
+                SingletonImpl(),
+                ThreadImpl(),
+            ]
         }
 
         self._instantiate_eagers()
@@ -107,10 +116,14 @@ class InjectorImpl(Injector, lang.Final):
         key = as_key(key)
 
         with self._current_request() as cr:
+            ic = self._internal_consts.get(key)
+            if ic is not None:
+                return lang.just(ic)
+
             if (rv := cr.handle_key(key)).present:
                 return rv
 
-            bi = self._ec.binding_impl_map().get(key)
+            bi = self._bim.get(key)
             if bi is not None:
                 sc = self._scopes[bi.scope]
                 v = sc.provide(bi, self)
