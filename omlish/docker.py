@@ -2,6 +2,17 @@
 TODO:
  - merged compose configs: https://github.com/wrmsr/bane/blob/27647abdcfb323b73e6982a5c318c7029496b203/core/dev/docker/compose.go#L38
  - https://github.com/mag37/dockcheck/blob/3d122f2b868eb53a25a3014f0f6bd499390a3a29/dockcheck.sh
+  - https://github.com/regclient/regclient
+  - https://stackoverflow.com/questions/71409458/how-to-download-docker-image-using-http-api-using-docker-hub-credentials
+  - https://stackoverflow.com/questions/55386202/how-can-i-use-the-docker-registry-api-to-pull-information-about-a-container-get
+  - https://ops.tips/blog/inspecting-docker-image-without-pull/
+  
+repo=library/nginx
+token=$(curl -s "https://auth.docker.io/token?service=registry.docker.io&scope=repository:${repo}:pull" | jq -r '.token')
+curl -H "Authorization: Bearer $token" -s "https://registry-1.docker.io/v2/${repo}/tags/list" | jq
+api="application/vnd.docker.distribution.manifest.v2+json"
+apil="application/vnd.docker.distribution.manifest.list.v2+json"
+curl -H "Accept: ${api}" -H "Accept: ${apil}" -H "Authorization: Bearer $token" -s "https://registry-1.docker.io/v2/${repo}/manifests/latest" | jq .
 """  # noqa
 import datetime
 import re
