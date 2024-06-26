@@ -112,7 +112,7 @@ class ElementCollection(lang.Final):
         elif isinstance(e, private_.InternalProvider):
             raise NotImplementedError
 
-        elif isinstance(e, Eager):
+        elif isinstance(e, (Eager, Expose)):
             return ()
 
         else:
