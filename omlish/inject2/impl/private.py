@@ -76,7 +76,7 @@ class InternalProvider(Provider):
     cls: Cls
 
     def provided_cls(self) -> Cls | None:
-        raise NotImplementedError
+        raise TypeError
 
 
 @dc.dataclass(frozen=True)
