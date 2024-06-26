@@ -29,8 +29,8 @@ PYTHON_VERSION_DEV:=$(call get-version,'PYTHON_DEV')
 clean-venv:
 	-rm -rf .venv*
 
-.PHONY: clean
-clean: clean-venv
+.PHONY: clean_
+clean_: clean-venv
 	-rm -rf \
 		${PROJECT}.egg-info \
 		*.sock \
