@@ -87,3 +87,22 @@ class SeededScopeImpl(ScopeImpl):
 
     def provide(self, binding: BindingImpl, injector: Injector) -> ta.Any:
         raise NotImplementedError
+
+
+SCOPE_IMPLS_BY_SCOPE: dict[type[Scope], ta.Callable[..., ScopeImpl]] = {
+    Unscoped: lambda _: UnscopedScopeImpl(),
+    Singleton: lambda _: SingletonScopeImpl(),
+    Thread: lambda _: ThreadScopeImpl(),
+    SeededScope: lambda s: SeededScopeImpl(s),
+}
+
+
+def make_scope_impl(p: Scope) -> ScopeImpl:
+    try:
+        fac = SCOPE_IMPLS_BY_SCOPE[type(p)]
+    except KeyError:
+        pass
+    else:
+        return fac(p)
+
+    raise TypeError(p)
