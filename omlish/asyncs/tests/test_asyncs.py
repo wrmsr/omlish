@@ -4,7 +4,7 @@ import time
 
 import pytest
 
-from ... import asyncs as asyncs_
+from ... import asyncs as ay
 from ... import iterators
 
 
@@ -31,6 +31,19 @@ async def test_simple():
     await main()
 
 
+def test_sync_await():
+    async def f1():
+        return 1
+
+    assert ay.sync_await(f1) == 1
+
+    async def f2():
+        await f1()
+        return 2
+
+    assert ay.sync_await(f2) == 2
+
+
 def test_await_futures():
     def fn() -> float:
         time.sleep(.2)
@@ -39,8 +52,8 @@ def test_await_futures():
     tp: concurrent.futures.Executor
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as tp:
         futures = [tp.submit(fn) for _ in range(10)]
-        assert not asyncs_.await_futures(futures, tick_fn=iter([True, False]).__next__)
-        assert asyncs_.await_futures(futures)
+        assert not ay.await_futures(futures, tick_fn=iter([True, False]).__next__)
+        assert ay.await_futures(futures)
 
     def pairs(l):
         return [set(p) for p in iterators.chunk(2, l)]
@@ -53,7 +66,7 @@ def test_syncable_iterable():
     async def f():
         return 1
 
-    @asyncs_.syncable_iterable
+    @ay.syncable_iterable
     async def g():
         yield await f()
 
