@@ -4,6 +4,7 @@ import typing as ta
 
 from ... import check
 from ... import lang
+from ..elements import Elements
 from ..injector import Injector
 from ..scopes import Scope
 from ..scopes import SeededScope
@@ -18,6 +19,9 @@ class ScopeImpl(lang.Abstract):
     @abc.abstractmethod
     def scope(self) -> Scope:
         raise NotImplementedError
+
+    def auto_elements(self) -> Elements | None:
+        return None
 
     @abc.abstractmethod
     def provide(self, binding: BindingImpl, injector: Injector) -> ta.Any:
