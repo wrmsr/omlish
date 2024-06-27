@@ -1,5 +1,5 @@
 from ... import dataclasses as dc
-from ... import inject2 as inj
+from ... import inject as inj
 from ... import lang
 
 

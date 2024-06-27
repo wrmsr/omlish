@@ -5,11 +5,8 @@ import typing as ta
 from _pytest.fixtures import FixtureRequest  # noqa
 import pytest
 
+from .... import inject as inj
 from ....dev import pytest as ptu
-from ...bindings import bind
-from ...injector import create_injector
-from ...types import Bindings
-from ...types import Key
 
 
 class PytestScope(enum.Enum):
@@ -20,20 +17,19 @@ class PytestScope(enum.Enum):
     FUNCTION = enum.auto()
 
 
-_HARNESS_BINDINGS: list[Bindings] = []
+_HARNESS_ELEMENTS_LIST: list[inj.Elements] = []
 _ACTIVE_HARNESSES: set['Harness'] = set()
 
 T = ta.TypeVar('T')
 
 
 class Harness:
-    def __init__(self, bs: Bindings) -> None:
+    def __init__(self, es: inj.Elements) -> None:
         super().__init__()
-        ebs = [
-            self,
-            bs,
-        ]
-        self._inj = create_injector(bind(*ebs))
+        self._inj = inj.create_injector(inj.as_elements(
+            inj.as_binding(self),
+            es,
+        ))
 
     def __enter__(self: ta.Self) -> ta.Self:
         _ACTIVE_HARNESSES.add(self)
@@ -44,7 +40,7 @@ class Harness:
 
     def __getitem__(
             self,
-            target: ta.Union[Key[T], type[T]],
+            target: ta.Union[inj.Key[T], type[T]],
     ) -> T:
         return self._inj[target]
 
@@ -88,5 +84,5 @@ class HarnessPlugin:
 
 @pytest.fixture(scope='session', autouse=True)
 def harness() -> ta.Generator[Harness, None, None]:
-    with Harness(bind(*_HARNESS_BINDINGS)) as harness:
+    with Harness(inj.as_elements(*_HARNESS_ELEMENTS_LIST)) as harness:
         yield harness

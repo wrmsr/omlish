@@ -1,7 +1,11 @@
 import typing as ta
 
 from .. import dataclasses as dc
-from .types import Key
+from .keys import Key
+from .types import Scope
+
+
+##
 
 
 @dc.dataclass()
@@ -24,4 +28,22 @@ class DuplicateKeyException(KeyException):
 
 @dc.dataclass()
 class CyclicDependencyException(KeyException):
+    pass
+
+
+##
+
+
+@dc.dataclass()
+class ScopeException(Exception):
+    scope: Scope
+
+
+@dc.dataclass()
+class ScopeAlreadyOpenException(ScopeException):
+    pass
+
+
+@dc.dataclass()
+class ScopeNotOpenException(ScopeException):
     pass
