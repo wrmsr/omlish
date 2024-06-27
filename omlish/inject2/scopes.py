@@ -50,11 +50,7 @@ class SeededScope(Scope, lang.Final):
 
     class Manager(lang.Abstract):
         @abc.abstractmethod
-        def __enter__(self, seeds: ta.Mapping[Key, ta.Any]) -> None:
-            raise NotImplementedError
-
-        @abc.abstractmethod
-        def __exit__(self, exc_type, exc_val, exc_tb):
+        def __call__(self, seeds: ta.Mapping[Key, ta.Any]) -> ta.ContextManager[None]:
             raise NotImplementedError
 
 
