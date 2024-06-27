@@ -1,7 +1,7 @@
 import contextlib
 
 from .. import dynamic as dyn
-from ..dev.pytest import skip_if_cant_import
+from ..testing.pytest import skip_if_cant_import
 
 
 def test_dyn():
