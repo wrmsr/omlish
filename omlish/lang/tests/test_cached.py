@@ -1,7 +1,9 @@
 import functools
+import time
 
-from ..cached import cached_property
+from ... import testing as tu
 from ..cached import cached_function
+from ..cached import cached_property
 
 
 def test_cached_function_nullary():
@@ -108,6 +110,31 @@ def test_cached_function():
     for _ in range(2):
         assert f(1, 2) == 3
         assert c == 1
+
+
+def test_cached_function_locked():
+    c = 0
+    e = 0
+
+    @cached_function(lock=True)
+    def f(x, y):
+        nonlocal c, e
+        c += 1
+        e += 1
+        # FIXME: lol
+        for _ in range(2):
+            time.sleep(.1)
+            assert e == 1
+        e -= 1
+        time.sleep(.1)
+        assert e == 0
+        return x + y
+
+    def do():
+        assert f(1, 2) == 3
+
+    tu.call_many_with_timeout([do for _ in range(2)])
+    assert c == 1
 
 
 def test_property():

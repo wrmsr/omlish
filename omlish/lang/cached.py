@@ -9,6 +9,8 @@ import functools
 import inspect
 import typing as ta
 
+from .contextmanagers import DefaultLockable
+from .contextmanagers import default_lock
 from .functions import unwrap_func
 from .functions import unwrap_func_with_partials
 
@@ -94,6 +96,7 @@ class _CachedFunction(ta.Generic[T]):
     class Opts:
         map_maker: ta.Callable[[], ta.MutableMapping] = dict
         simple_key: bool = False
+        lock: DefaultLockable = None
 
     def __init__(
             self,
@@ -110,6 +113,7 @@ class _CachedFunction(ta.Generic[T]):
         self._opts = opts
         self._keyer = keyer if keyer is not None else _make_cache_keyer(fn, simple=opts.simple_key)
 
+        self._lock = default_lock(opts.lock, False)() if opts.lock is not None else None
         self._values = values if values is not None else opts.map_maker()
         self._value_fn = value_fn if value_fn is not None else fn
         functools.update_wrapper(self, fn)
@@ -122,11 +126,24 @@ class _CachedFunction(ta.Generic[T]):
 
     def __call__(self, *args, **kwargs) -> T:
         k = self._keyer(*args, **kwargs)
+
         try:
             return self._values[k]
         except KeyError:
             pass
-        value = self._value_fn(*args, **kwargs)
+
+        if self._lock is not None:
+            with self._lock:
+                try:
+                    return self._values[k]
+                except KeyError:
+                    pass
+
+                value = self._value_fn(*args, **kwargs)
+
+        else:
+            value = self._value_fn(*args, **kwargs)
+
         self._values[k] = value
         return value
 
@@ -155,11 +172,13 @@ class _CachedFunctionDescriptor(_CachedFunction[T]):
         scope = self._scope
         if owner is self._owner and (instance is self._instance or scope is classmethod):
             return self
+
         fn = self._fn
         name = self._name
         bound_fn = fn.__get__(instance, owner)
         if self._bound_keyer is None:
             self._bound_keyer = _make_cache_keyer(fn, simple=self._opts.simple_key, bound=True)
+
         bound = self.__class__(
             fn,
             scope,
@@ -171,10 +190,12 @@ class _CachedFunctionDescriptor(_CachedFunction[T]):
             # values=None if scope is classmethod else self._values,
             value_fn=bound_fn,
         )
+
         if scope is classmethod and owner is not None:
             setattr(owner, name, bound)
         elif instance is not None:
             instance.__dict__[name] = bound
+
         return bound
 
 
@@ -220,10 +241,12 @@ class _CachedProperty:
             return self
         if self._name is None:
             raise TypeError(self)
+
         try:
             return instance.__dict__[self._name]
         except KeyError:
             pass
+
         value = self._fn.__get__(instance, owner)()
         if value is _IGNORE:
             return None
