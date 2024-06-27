@@ -2,6 +2,7 @@
 TODO:
  - inheritance
  - dynamic registration
+ - dynamic switching (skip docker if not running, skip online if not online, ...)
 """
 import typing as ta
 
