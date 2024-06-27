@@ -34,6 +34,7 @@ from ..scopes import ScopeBinding
 from .bindings import BindingImpl
 from .providers import MultiProviderImpl
 from .providers import make_provider_impl
+from .scopes import make_scope_impl
 
 if ta.TYPE_CHECKING:
     from . import private as private_
@@ -79,6 +80,9 @@ class ElementCollection(lang.Final):
         for e in es:
             if isinstance(e, ScopeBinding):
                 add(None, e)
+                sci = make_scope_impl(e.scope)
+                if (sae := sci.auto_elements()) is not None:
+                    self._build_raw_element_multimap(sae, out)
 
             elif isinstance(e, (Binding, Eager, Expose)):
                 add(e.key, e)
