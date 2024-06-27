@@ -2,7 +2,6 @@ import contextlib
 import enum
 import typing as ta
 
-from _pytest.fixtures import FixtureRequest  # noqa
 import pytest
 
 from .... import check
@@ -48,7 +47,7 @@ class Harness:
             *[
                 inj.as_elements(
                     inj.bind_scope(ss),
-                    inj.bind_scope_seed(ss, inj.Key(FixtureRequest, tag=pts)),
+                    inj.bind_scope_seed(ss, inj.Key(pytest.FixtureRequest, tag=pts)),
                 )
                 for pts, ss in _SCOPES_BY_PYTEST_SCOPE.items()
             ],
@@ -72,11 +71,11 @@ class Harness:
     def _pytest_scope_manager(
             self,
             pytest_scope: PytestScope,
-            request: FixtureRequest,
+            request: pytest.FixtureRequest,
     ) -> ta.Generator[None, None, None]:
         ss = _SCOPES_BY_PYTEST_SCOPE[pytest_scope]
         with inj.enter_seeded_scope(self._inj, ss, {
-            inj.Key(FixtureRequest, tag=pytest_scope): request,
+            inj.Key(pytest.FixtureRequest, tag=pytest_scope): request,
         }):
             yield
 
