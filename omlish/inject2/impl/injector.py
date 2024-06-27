@@ -14,6 +14,8 @@ import weakref
 
 from ... import check
 from ... import lang
+from ..bindings import Scope
+from ..bindings import Unscoped
 from ..eagers import Eager
 from ..elements import Elements
 from ..exceptions import CyclicDependencyException
@@ -22,11 +24,9 @@ from ..injector import Injector
 from ..inspect import KwargsTarget
 from ..keys import Key
 from ..keys import as_key
-from ..scopes import Scope
 from ..scopes import ScopeBinding
 from ..scopes import Singleton
 from ..scopes import Thread
-from ..scopes import Unscoped
 from .elements import ElementCollection
 from .inspect import build_kwargs_target
 from .scopes import ScopeImpl
