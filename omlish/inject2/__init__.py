@@ -3,6 +3,8 @@
 """
 from .bindings import (  # noqa
     Binding,
+    Scope,
+    Unscoped,
     as_,
     as_binding,
 )
@@ -64,13 +66,11 @@ from .providers import (  # noqa
 )
 
 from .scopes import (  # noqa
-    Scope,
     ScopeBinding,
     ScopeSeed,
     SeededScope,
     Singleton,
     Thread,
-    Unscoped,
     bind_scope,
     in_,
     singleton,

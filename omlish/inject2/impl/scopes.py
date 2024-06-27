@@ -4,17 +4,18 @@ import typing as ta
 
 from .. import Key
 from ... import check
+from ... import dataclasses as dc
 from ... import lang
 from ..bindings import Binding
+from ..bindings import Scope
+from ..bindings import Unscoped
 from ..elements import Elements
 from ..elements import as_elements
 from ..injector import Injector
 from ..providers import ctor
-from ..scopes import Scope
 from ..scopes import SeededScope
 from ..scopes import Singleton
 from ..scopes import Thread
-from ..scopes import Unscoped
 from .bindings import BindingImpl
 
 
@@ -88,10 +89,16 @@ class SeededScopeImpl(ScopeImpl):
     def __init__(self, ss: SeededScope) -> None:
         super().__init__()
         self._ss = check.isinstance(ss, SeededScope)
+        self._st: SeededScopeImpl.State | None = None
 
     @property
     def scope(self) -> SeededScope:
         return self._ss
+
+    @dc.dataclass(frozen=True)
+    class State:
+        seeds: dict[Key, ta.Any]
+        prvs: dict[BindingImpl, ta.Any] = dc.field(default_factory=dict)
 
     class Manager(SeededScope.Manager, lang.Final):
         def __init__(self, i: Injector) -> None:
