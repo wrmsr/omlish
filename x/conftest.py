@@ -1,4 +1,4 @@
-from omlish.dev import pytest as ptu
+from omlish.testing import pytest as ptu
 
 
 def pytest_addhooks(pluginmanager):

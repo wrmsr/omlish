@@ -2,7 +2,7 @@ import pytest
 
 from .. import mailbox
 import trio
-from omlish.dev.pytest import assert_raises_star
+from omlish.testing.pytest import assert_raises_star
 
 
 class Producer:

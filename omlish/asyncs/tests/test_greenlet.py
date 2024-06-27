@@ -6,7 +6,7 @@ TODO:
 import asyncio
 import functools
 
-from ...dev.pytest import skip_if_cant_import
+from ...testing.pytest import skip_if_cant_import
 
 
 @skip_if_cant_import('greenlet')
