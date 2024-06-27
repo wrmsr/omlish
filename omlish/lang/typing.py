@@ -63,12 +63,12 @@ def typed_lambda(ret=_MISSING, **kw):
     return inner
 
 
-def typed_partial(fn, **kw):
+def typed_partial(obj, **kw):
     for k in kw:
         if k.startswith('__'):
             raise NameError(k)
-    th = ta.get_type_hints(fn)
-    inner = _update_wrapper_no_anns(lambda **lkw: fn(**lkw, **kw), fn)
-    ret = th.pop('return', _MISSING)
-    lam = typed_lambda(ret, **{n: h for n, h in th.items() if n not in kw})(inner)
-    return _update_wrapper_no_anns(lam, fn)
+    sig = inspect.signature(obj)
+    inner = _update_wrapper_no_anns(lambda **lkw: obj(**lkw, **kw), obj)
+    ret = obj if isinstance(obj, type) else sig.return_annotation if sig.return_annotation is not inspect.Signature.empty else _MISSING
+    lam = typed_lambda(ret, **{n: p.annotation for n, p in sig.parameters.items() if n not in kw and p.annotation is not inspect.Signature.empty})(inner)
+    return _update_wrapper_no_anns(lam, obj)
