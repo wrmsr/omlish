@@ -1,4 +1,5 @@
 import abc
+import contextlib
 import threading
 import typing as ta
 
@@ -20,6 +21,11 @@ from ..scopes import Thread
 from .bindings import BindingImpl
 from .providers import PROVIDER_IMPLS_BY_PROVIDER
 from .providers import ProviderImpl
+
+if ta.TYPE_CHECKING:
+    from . import injector as injector_
+else:
+    injector_ = lang.proxy_import('.injector', __package__)
 
 
 class ScopeImpl(lang.Abstract):
@@ -121,14 +127,11 @@ class SeededScopeImpl(ScopeImpl):
     class Manager(SeededScope.Manager, lang.Final):
         def __init__(self, ss: SeededScope, i: Injector) -> None:
             super().__init__()
-            self._ss = ss
-            # self._ssi = i.provide(Key(SeededScopeImpl, tag=))
-            raise NotImplementedError
+            self._ss = check.isinstance(ss, SeededScope)
+            self._ssi = check.isinstance(check.isinstance(i, injector_.InjectorImpl)._scopes[self._ss], SeededScopeImpl)
 
-        def __enter__(self, seeds: ta.Mapping[Key, ta.Any]) -> None:
-            raise NotImplementedError
-
-        def __exit__(self, exc_type, exc_val, exc_tb):
+        @contextlib.contextmanager
+        def __call__(self, seeds: ta.Mapping[Key, ta.Any]):
             raise NotImplementedError
 
     def auto_elements(self) -> Elements:
