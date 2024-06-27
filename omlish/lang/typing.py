@@ -1,3 +1,8 @@
+"""
+TODO:
+ - typed_lambda is really kinda just 'annotate'
+ - TypedLambda / TypedPartial classes, picklable, reprs
+"""
 import functools
 import inspect
 import typing as ta
