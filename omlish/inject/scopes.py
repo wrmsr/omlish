@@ -1,4 +1,5 @@
 import abc
+import contextlib
 import typing as ta
 
 from .. import check
@@ -12,6 +13,11 @@ from .keys import as_key
 from .providers import Provider
 from .types import Cls
 from .types import Scope
+
+if ta.TYPE_CHECKING:
+    from . import injector as injector_
+else:
+    injector_ = lang.proxy_import('.injector', __package__)
 
 
 @dc.dataclass(frozen=True)
@@ -66,3 +72,13 @@ class ScopeSeededProvider(Provider):
 def bind_scope_seed(ss: SeededScope, k: ta.Any) -> Element:
     k = as_key(k)
     return Binding(k, ScopeSeededProvider(ss, k))
+
+
+@contextlib.contextmanager
+def enter_seeded_scope(
+        i: injector_.Injector,
+        ss: SeededScope,
+        keys: ta.Mapping[Key, ta.Any],
+) -> ta.Generator[None, None, None]:
+    with i.provide(Key(SeededScope.Manager, tag=ss))(**keys):
+        yield
