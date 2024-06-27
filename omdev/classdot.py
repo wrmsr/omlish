@@ -5,7 +5,7 @@ TODO:
 """
 import typing as ta
 
-from ..graphs import dot
+from omlish.graphs import dot
 
 
 def gen_class_dot(roots: ta.Iterable[type]) -> dot.Graph:
@@ -35,7 +35,7 @@ def gen_class_dot(roots: ta.Iterable[type]) -> dot.Graph:
 def _main() -> None:
     import sys
 
-    from .. import lang
+    from omlish import lang
 
     roots = []
     for spec in sys.argv[1:]:

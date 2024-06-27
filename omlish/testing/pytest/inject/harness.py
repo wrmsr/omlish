@@ -4,10 +4,10 @@ import typing as ta
 
 import pytest
 
+from .. import plugins
 from .... import check
-from .... import lang
 from .... import inject as inj
-from ....dev import pytest as ptu
+from .... import lang
 
 
 class PytestScope(enum.Enum):
@@ -80,7 +80,7 @@ class Harness:
             yield
 
 
-@ptu.plugins.register
+@plugins.register
 class HarnessPlugin:
 
     @pytest.fixture(scope='session', autouse=True)

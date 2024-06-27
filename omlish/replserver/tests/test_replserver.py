@@ -7,7 +7,7 @@ import time
 
 from .. import server as server_
 from ... import lang
-from ...dev.testing import run_with_timeout
+from ...testing import run_with_timeout
 
 
 def test_replserver():

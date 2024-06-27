@@ -4,6 +4,8 @@ PROJECT:=omlish
 
 MAIN_SOURCES:=\
 	${PROJECT} \
+	omdev \
+	omml \
 
 ALL_SOURCES:=\
 	${MAIN_SOURCES} \
