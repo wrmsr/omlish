@@ -5,6 +5,9 @@ TODO:
  - strongly typed Composite/Cached Marshaler/Unmarshaler factories - footgun
  - streaming? Start/EndObject, etc..
 
+https://github.com/python-attrs/cattrs:
+ *
+
 Jackson:
  - USE_ANNOTATIONS
  - AUTO_DETECT_CREATORS
