@@ -2,7 +2,7 @@ import pytest
 
 from .. import supervisor, dynamic_supervisor
 import trio
-from omlish.dev.pytest.helpers import assert_raises_star
+from omlish.testing.pytest.helpers import assert_raises_star
 
 
 class SampleData:

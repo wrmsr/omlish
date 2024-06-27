@@ -2,7 +2,7 @@ import pytest
 
 from ... import application, supervisor
 import trio
-from omlish.dev.pytest import assert_raises_star
+from omlish.testing.pytest import assert_raises_star
 
 from .sample import app_a, app_b
 
