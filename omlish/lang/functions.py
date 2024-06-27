@@ -96,10 +96,6 @@ def is_not_none(o: ta.Any) -> bool:
     return o is not None
 
 
-def cmp(l: ta.Any, r: ta.Any) -> int:
-    return int(l > r) - int(l < r)
-
-
 class VoidException(Exception):
     pass
 
