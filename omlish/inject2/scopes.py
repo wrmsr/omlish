@@ -1,7 +1,6 @@
 import abc
 import typing as ta
 
-from . import Cls
 from .. import check
 from .. import dataclasses as dc
 from .. import lang
@@ -12,6 +11,7 @@ from .elements import Element
 from .keys import Key
 from .keys import as_key
 from .providers import Provider
+from .types import Cls
 
 
 @dc.dataclass(frozen=True)
@@ -60,7 +60,7 @@ class SeededScope(Scope, lang.Final):
 
 @dc.dataclass(frozen=True, eq=False)
 class ScopeSeededProvider(Provider):
-    ss: SeededScope.Any = dc.xfield(coerce=check.of_isinstance(SeededScope))
+    ss: SeededScope = dc.xfield(coerce=check.of_isinstance(SeededScope))
     key: Key = dc.xfield(coerce=check.of_isinstance(Key))
 
     def provided_cls(self) -> Cls | None:
