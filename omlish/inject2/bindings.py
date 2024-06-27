@@ -12,18 +12,8 @@ from .providers import as_provider
 from .providers import const
 from .providers import ctor
 from .providers import fn
-
-
-##
-
-
-class Scope(lang.Abstract):
-    def __repr__(self) -> str:
-        return type(self).__name__
-
-
-class Unscoped(Scope, lang.Singleton, lang.Final):
-    pass
+from .types import Scope
+from .types import Unscoped
 
 
 ##
