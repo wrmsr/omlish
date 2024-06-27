@@ -68,4 +68,5 @@ class ScopeSeededProvider(Provider):
 
 
 def bind_scope_seed(ss: SeededScope, k: ta.Any) -> Element:
-    return Binding(k, ScopeSeededProvider(ss, as_key(k)))
+    k = as_key(k)
+    return Binding(k, ScopeSeededProvider(ss, k))

@@ -2,7 +2,7 @@ import abc
 import threading
 import typing as ta
 
-from .. import Key
+from .. import Key, Provider
 from ... import check
 from ... import dataclasses as dc
 from ... import lang
@@ -13,10 +13,13 @@ from ..elements import Elements
 from ..elements import as_elements
 from ..injector import Injector
 from ..providers import ctor
+from ..scopes import ScopeSeededProvider
 from ..scopes import SeededScope
 from ..scopes import Singleton
 from ..scopes import Thread
 from .bindings import BindingImpl
+from .providers import PROVIDER_IMPLS_BY_PROVIDER
+from .providers import ProviderImpl
 
 
 class ScopeImpl(lang.Abstract):
@@ -83,6 +86,21 @@ class ThreadScopeImpl(ScopeImpl, lang.Final):
         v = binding.provider.provide(injector)
         dct[binding] = v
         return v
+
+
+@dc.dataclass(frozen=True, eq=False)
+class ScopeSeededProviderImpl(ProviderImpl):
+    p: ScopeSeededProvider
+
+    @property
+    def providers(self) -> ta.Iterable[Provider]:
+        return (self.p,)
+
+    def provide(self, injector: Injector) -> ta.Any:
+        raise NotImplementedError
+
+
+PROVIDER_IMPLS_BY_PROVIDER[ScopeSeededProvider] = ScopeSeededProviderImpl
 
 
 class SeededScopeImpl(ScopeImpl):
