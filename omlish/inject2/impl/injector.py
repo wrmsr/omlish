@@ -74,6 +74,9 @@ class InjectorImpl(Injector, lang.Final):
         for e in self._ec.elements_of_type(Eager):
             self.provide(e.key)
 
+    def get_scope_impl(self, sc: Scope) -> ScopeImpl:
+        return self._scopes[sc]
+
     def create_child(self, ec: ElementCollection) -> Injector:
         c = InjectorImpl(ec, self)
         if self._cs is None:

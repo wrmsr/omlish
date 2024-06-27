@@ -106,7 +106,8 @@ class ScopeSeededProviderImpl(ProviderImpl):
         return (self.p,)
 
     def provide(self, injector: Injector) -> ta.Any:
-        ssi = check.isinstance(check.isinstance(injector, injector_.InjectorImpl)._scopes[self.p.ss], SeededScopeImpl)  # FIXME: get_scope public  # noqa
+        ii = check.isinstance(injector, injector_.InjectorImpl)
+        ssi = check.isinstance(ii.get_scope_impl(self.p.ss), SeededScopeImpl)
         return ssi.must_state().seeds[self.p.key]
 
 
@@ -122,6 +123,11 @@ class ScopeNotOpenException(Exception):
 
 
 class SeededScopeImpl(ScopeImpl):
+    @dc.dataclass(frozen=True)
+    class State:
+        seeds: dict[Key, ta.Any]
+        prvs: dict[BindingImpl, ta.Any] = dc.field(default_factory=dict)
+
     def __init__(self, ss: SeededScope) -> None:
         super().__init__()
         self._ss = check.isinstance(ss, SeededScope)
@@ -131,41 +137,29 @@ class SeededScopeImpl(ScopeImpl):
     def scope(self) -> SeededScope:
         return self._ss
 
-    @dc.dataclass(frozen=True)
-    class State:
-        seeds: dict[Key, ta.Any]
-        prvs: dict[BindingImpl, ta.Any] = dc.field(default_factory=dict)
-
-    @property
-    def state(self) -> ta.Optional['SeededScopeImpl.State']:
-        return self._st
-
     def must_state(self) -> 'SeededScopeImpl.State':
         if (st := self._st) is None:
             raise ScopeNotOpenException()
         return st
 
-    def open(self, seeds: ta.Mapping[Key, ta.Any]) -> None:
-        if self._st is not None:
-            raise ScopeAlreadyOpenException()
-        self._st = SeededScopeImpl.State(dict(seeds))
-
-    def close(self) -> None:
-        self._st = None
-
     class Manager(SeededScope.Manager, lang.Final):
         def __init__(self, ss: SeededScope, i: Injector) -> None:
             super().__init__()
             self._ss = check.isinstance(ss, SeededScope)
-            self._ssi = check.isinstance(check.isinstance(i, injector_.InjectorImpl)._scopes[self._ss], SeededScopeImpl)  # FIXME: get_scope public  # noqa
+            ii = check.isinstance(i, injector_.InjectorImpl)
+            self._ssi = check.isinstance(ii.get_scope_impl(self._ss), SeededScopeImpl)
 
         @contextlib.contextmanager
         def __call__(self, seeds: ta.Mapping[Key, ta.Any]) -> ta.Generator[None, None, None]:
             try:
-                self._ssi.open(seeds)
+                if self._ssi._st is not None:
+                    raise ScopeAlreadyOpenException()
+                self._ssi._st = SeededScopeImpl.State(dict(seeds))
                 yield
             finally:
-                self._ssi.close()
+                if self._ssi._st is None:
+                    raise ScopeNotOpenException()
+                self._ssi._st = None
 
     def auto_elements(self) -> Elements:
         return as_elements(
