@@ -73,6 +73,7 @@ from .scopes import (  # noqa
     Thread,
     bind_scope,
     bind_scope_seed,
+    enter_seeded_scope,
     in_,
     singleton,
 )

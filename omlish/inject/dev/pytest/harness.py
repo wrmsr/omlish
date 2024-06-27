@@ -5,6 +5,8 @@ import typing as ta
 from _pytest.fixtures import FixtureRequest  # noqa
 import pytest
 
+from .... import check
+from .... import lang
 from .... import inject as inj
 from ....dev import pytest as ptu
 
@@ -15,6 +17,21 @@ class PytestScope(enum.Enum):
     MODULE = enum.auto()
     CLASS = enum.auto()
     FUNCTION = enum.auto()
+
+
+class Scopes(lang.Namespace):
+    Session = inj.SeededScope(PytestScope.SESSION)
+    Package = inj.SeededScope(PytestScope.PACKAGE)
+    Module = inj.SeededScope(PytestScope.MODULE)
+    Class = inj.SeededScope(PytestScope.CLASS)
+    Function = inj.SeededScope(PytestScope.FUNCTION)
+
+
+_SCOPES_BY_PYTEST_SCOPE: ta.Mapping[PytestScope, inj.SeededScope] = {
+    check.isinstance(a.tag, PytestScope): a
+    for n, a in Scopes.__dict__.items()
+    if isinstance(a, inj.SeededScope)
+}
 
 
 _HARNESS_ELEMENTS_LIST: list[inj.Elements] = []
@@ -45,11 +62,12 @@ class Harness:
         return self._inj[target]
 
     @contextlib.contextmanager
-    def pytest_scope_manager(
+    def _pytest_scope_manager(
             self,
             pytest_scope: PytestScope,
             request: FixtureRequest,
     ) -> ta.Generator[None, None, None]:
+        sc = _SCOPES_BY_PYTEST_SCOPE[pytest_scope]
         yield
 
 
@@ -58,27 +76,27 @@ class HarnessPlugin:
 
     @pytest.fixture(scope='session', autouse=True)
     def _harness_scope_listener_session(self, harness, request):
-        with harness.pytest_scope_manager(PytestScope.SESSION, request):
+        with harness._pytest_scope_manager(PytestScope.SESSION, request):  # noqa
             yield
 
     @pytest.fixture(scope='package', autouse=True)
     def _harness_scope_listener_package(self, harness, request):
-        with harness.pytest_scope_manager(PytestScope.PACKAGE, request):
+        with harness._pytest_scope_manager(PytestScope.PACKAGE, request):  # noqa
             yield
 
     @pytest.fixture(scope='module', autouse=True)
     def _harness_scope_listener_module(self, harness, request):
-        with harness.pytest_scope_manager(PytestScope.MODULE, request):
+        with harness._pytest_scope_manager(PytestScope.MODULE, request):  # noqa
             yield
 
     @pytest.fixture(scope='class', autouse=True)
     def _harness_scope_listener_class(self, harness, request):
-        with harness.pytest_scope_manager(PytestScope.CLASS, request):
+        with harness._pytest_scope_manager(PytestScope.CLASS, request):  # noqa
             yield
 
     @pytest.fixture(scope='function', autouse=True)
     def _harness_scope_listener_function(self, harness, request):
-        with harness.pytest_scope_manager(PytestScope.FUNCTION, request):
+        with harness._pytest_scope_manager(PytestScope.FUNCTION, request):  # noqa
             yield
 
 
