@@ -2,10 +2,14 @@ import abc
 import threading
 import typing as ta
 
+from .. import Key
 from ... import check
 from ... import lang
+from ..bindings import Binding
 from ..elements import Elements
+from ..elements import as_elements
 from ..injector import Injector
+from ..providers import ctor
 from ..scopes import Scope
 from ..scopes import SeededScope
 from ..scopes import Singleton
@@ -88,6 +92,22 @@ class SeededScopeImpl(ScopeImpl):
     @property
     def scope(self) -> SeededScope:
         return self._ss
+
+    class Manager(SeededScope.Manager, lang.Final):
+        def __init__(self, i: Injector) -> None:
+            super().__init__()
+            raise NotImplementedError
+
+        def __enter__(self, seeds: ta.Mapping[Key, ta.Any]) -> None:
+            raise NotImplementedError
+
+        def __exit__(self, exc_type, exc_val, exc_tb):
+            raise NotImplementedError
+
+    def auto_elements(self) -> Elements:
+        return as_elements(
+            Binding(Key(SeededScope.Manager, tag=self._ss), ctor(SeededScopeImpl.Manager), scope=Singleton()),
+        )
 
     def provide(self, binding: BindingImpl, injector: Injector) -> ta.Any:
         raise NotImplementedError
