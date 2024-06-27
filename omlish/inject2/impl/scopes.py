@@ -128,7 +128,7 @@ class SeededScopeImpl(ScopeImpl):
         def __init__(self, ss: SeededScope, i: Injector) -> None:
             super().__init__()
             self._ss = check.isinstance(ss, SeededScope)
-            self._ssi = check.isinstance(check.isinstance(i, injector_.InjectorImpl)._scopes[self._ss], SeededScopeImpl)
+            self._ssi = check.isinstance(check.isinstance(i, injector_.InjectorImpl)._scopes[self._ss], SeededScopeImpl)  # FIXME: get_scope public  # noqa
 
         @contextlib.contextmanager
         def __call__(self, seeds: ta.Mapping[Key, ta.Any]):
@@ -136,7 +136,11 @@ class SeededScopeImpl(ScopeImpl):
 
     def auto_elements(self) -> Elements:
         return as_elements(
-            Binding(Key(SeededScope.Manager, tag=self._ss), fn(lang.typed_partial(SeededScopeImpl.Manager, ss=self._ss)), scope=Singleton()),
+            Binding(
+                Key(SeededScope.Manager, tag=self._ss),
+                fn(lang.typed_partial(SeededScopeImpl.Manager, ss=self._ss)),
+                scope=Singleton(),
+            ),
         )
 
     def provide(self, binding: BindingImpl, injector: Injector) -> ta.Any:

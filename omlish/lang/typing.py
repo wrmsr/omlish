@@ -69,6 +69,18 @@ def typed_partial(obj, **kw):
             raise NameError(k)
     sig = inspect.signature(obj)
     inner = _update_wrapper_no_anns(lambda **lkw: obj(**lkw, **kw), obj)
-    ret = obj if isinstance(obj, type) else sig.return_annotation if sig.return_annotation is not inspect.Signature.empty else _MISSING
-    lam = typed_lambda(ret, **{n: p.annotation for n, p in sig.parameters.items() if n not in kw and p.annotation is not inspect.Signature.empty})(inner)
+    ret = (
+        obj if isinstance(obj, type) else
+        sig.return_annotation if sig.return_annotation is not inspect.Signature.empty else
+        _MISSING
+    )
+    lam = typed_lambda(
+        ret,
+        **{
+            n: p.annotation
+            for n, p in sig.parameters.items()
+            if n not in kw
+            and p.annotation is not inspect.Signature.empty
+        }
+    )(inner)
     return _update_wrapper_no_anns(lam, obj)
