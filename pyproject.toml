@@ -56,7 +56,6 @@ exclude = [
 addopts = "-v --tb=short"
 #asyncio_mode = "auto"
 junit_family = "xunit2"
-durations = 5
 
 
 [tool.flake8]

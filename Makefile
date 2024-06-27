@@ -135,7 +135,10 @@ TEST_SOURCES:=$$(echo "$${_TEST_SOURCES:-${DEFAULT_TEST_SOURCES}}")
 
 .PHONY: _test
 _test: _venv
-	$(PYTHON) -mpytest $(TEST_SOURCES)
+	$(PYTHON) -mpytest \
+		$(TEST_SOURCES) \
+		--durations=5 --durations-min=1 \
+		--no-slow \
 
 .PHONY: test
 test: _test

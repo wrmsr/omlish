@@ -9,6 +9,7 @@ import pytest
 import transformers
 
 
+@pytest.mark.slow
 def test_hfds():
     ds_builder = hfds.load_dataset_builder("rotten_tomatoes")
     print(ds_builder.info.description)
@@ -26,6 +27,7 @@ def test_hfds():
         break
 
 
+@pytest.mark.slow
 def test_tokenize():
     dataset = hfds.load_dataset("rotten_tomatoes", split="train")
 
@@ -42,6 +44,7 @@ def test_tokenize():
     print(dataset[0]["text"])
 
 
+@pytest.mark.slow
 def test_audio():
     feature_extractor = transformers.AutoFeatureExtractor.from_pretrained("facebook/wav2vec2-base-960h")
     dataset = hfds.load_dataset("PolyAI/minds14", "en-US", split="train")
@@ -60,6 +63,7 @@ def test_audio():
     print(dataset[0]["audio"])
 
 
+@pytest.mark.slow
 def test_aug():
     # feature_extractor = transformers.AutoFeatureExtractor.from_pretrained("google/vit-base-patch16-224-in21k")
 
