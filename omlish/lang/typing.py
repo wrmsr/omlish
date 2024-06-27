@@ -2,6 +2,7 @@
 TODO:
  - typed_lambda is really kinda just 'annotate'
  - TypedLambda / TypedPartial classes, picklable, reprs
+  - probably need to gen types per inst
 """
 import functools
 import inspect
