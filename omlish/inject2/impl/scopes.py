@@ -12,7 +12,7 @@ from ..bindings import Unscoped
 from ..elements import Elements
 from ..elements import as_elements
 from ..injector import Injector
-from ..providers import ctor
+from ..providers import fn
 from ..scopes import ScopeSeededProvider
 from ..scopes import SeededScope
 from ..scopes import Singleton
@@ -119,8 +119,10 @@ class SeededScopeImpl(ScopeImpl):
         prvs: dict[BindingImpl, ta.Any] = dc.field(default_factory=dict)
 
     class Manager(SeededScope.Manager, lang.Final):
-        def __init__(self, i: Injector) -> None:
+        def __init__(self, ss: SeededScope, i: Injector) -> None:
             super().__init__()
+            self._ss = ss
+            # self._ssi = i.provide(Key(SeededScopeImpl, tag=))
             raise NotImplementedError
 
         def __enter__(self, seeds: ta.Mapping[Key, ta.Any]) -> None:
@@ -131,7 +133,7 @@ class SeededScopeImpl(ScopeImpl):
 
     def auto_elements(self) -> Elements:
         return as_elements(
-            Binding(Key(SeededScope.Manager, tag=self._ss), ctor(SeededScopeImpl.Manager), scope=Singleton()),
+            Binding(Key(SeededScope.Manager, tag=self._ss), fn(lang.typed_partial(SeededScopeImpl.Manager, ss=self._ss)), scope=Singleton()),
         )
 
     def provide(self, binding: BindingImpl, injector: Injector) -> ta.Any:
