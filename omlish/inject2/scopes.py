@@ -10,6 +10,7 @@ from .bindings import Scope
 from .bindings import as_binding
 from .elements import Element
 from .keys import Key
+from .keys import as_key
 from .providers import Provider
 
 
@@ -44,12 +45,6 @@ class Thread(Scope, lang.Singleton, lang.Final):
 
 @dc.dataclass(frozen=True)
 @dc.extra_params(cache_hash=True)
-class ScopeSeed(Element, lang.Final):
-    key: Key
-
-
-@dc.dataclass(frozen=True)
-@dc.extra_params(cache_hash=True)
 class SeededScope(Scope, lang.Final):
     tag: ta.Any = dc.xfield(coerce=check.not_none)
 
@@ -65,5 +60,12 @@ class SeededScope(Scope, lang.Final):
 
 @dc.dataclass(frozen=True, eq=False)
 class ScopeSeededProvider(Provider):
+    ss: SeededScope.Any = dc.xfield(coerce=check.of_isinstance(SeededScope))
+    key: Key = dc.xfield(coerce=check.of_isinstance(Key))
+
     def provided_cls(self) -> Cls | None:
-        raise NotImplementedError
+        return self.key.cls
+
+
+def bind_scope_seed(ss: SeededScope, k: ta.Any) -> Element:
+    return Binding(k, ScopeSeededProvider(ss, as_key(k)))

@@ -67,11 +67,11 @@ from .providers import (  # noqa
 
 from .scopes import (  # noqa
     ScopeBinding,
-    ScopeSeed,
     SeededScope,
     Singleton,
     Thread,
     bind_scope,
+    bind_scope_seed,
     in_,
     singleton,
 )
