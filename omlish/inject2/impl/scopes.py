@@ -3,21 +3,24 @@ import contextlib
 import threading
 import typing as ta
 
-from .. import Key, Provider
 from ... import check
 from ... import dataclasses as dc
 from ... import lang
 from ..bindings import Binding
-from ..bindings import Scope
-from ..bindings import Unscoped
 from ..elements import Elements
 from ..elements import as_elements
+from ..exceptions import ScopeAlreadyOpenException
+from ..exceptions import ScopeNotOpenException
 from ..injector import Injector
+from ..keys import Key
+from ..providers import Provider
 from ..providers import fn
 from ..scopes import ScopeSeededProvider
 from ..scopes import SeededScope
 from ..scopes import Singleton
 from ..scopes import Thread
+from ..types import Scope
+from ..types import Unscoped
 from .bindings import BindingImpl
 from .providers import PROVIDER_IMPLS_BY_PROVIDER
 from .providers import ProviderImpl
@@ -114,14 +117,6 @@ class ScopeSeededProviderImpl(ProviderImpl):
 PROVIDER_IMPLS_BY_PROVIDER[ScopeSeededProvider] = ScopeSeededProviderImpl
 
 
-class ScopeAlreadyOpenException(Exception):
-    pass
-
-
-class ScopeNotOpenException(Exception):
-    pass
-
-
 class SeededScopeImpl(ScopeImpl):
     @dc.dataclass(frozen=True)
     class State:
@@ -139,7 +134,7 @@ class SeededScopeImpl(ScopeImpl):
 
     def must_state(self) -> 'SeededScopeImpl.State':
         if (st := self._st) is None:
-            raise ScopeNotOpenException()
+            raise ScopeNotOpenException(self._ss)
         return st
 
     class Manager(SeededScope.Manager, lang.Final):
@@ -153,12 +148,12 @@ class SeededScopeImpl(ScopeImpl):
         def __call__(self, seeds: ta.Mapping[Key, ta.Any]) -> ta.Generator[None, None, None]:
             try:
                 if self._ssi._st is not None:
-                    raise ScopeAlreadyOpenException()
+                    raise ScopeAlreadyOpenException(self._ss)
                 self._ssi._st = SeededScopeImpl.State(dict(seeds))
                 yield
             finally:
                 if self._ssi._st is None:
-                    raise ScopeNotOpenException()
+                    raise ScopeNotOpenException(self._ss)
                 self._ssi._st = None
 
     def auto_elements(self) -> Elements:
@@ -179,6 +174,9 @@ class SeededScopeImpl(ScopeImpl):
         v = binding.provider.provide(injector)
         st.prvs[binding] = v
         return v
+
+
+##
 
 
 SCOPE_IMPLS_BY_SCOPE: dict[type[Scope], ta.Callable[..., ScopeImpl]] = {
