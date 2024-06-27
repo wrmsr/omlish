@@ -80,5 +80,5 @@ def enter_seeded_scope(
         ss: SeededScope,
         keys: ta.Mapping[Key, ta.Any],
 ) -> ta.Generator[None, None, None]:
-    with i.provide(Key(SeededScope.Manager, tag=ss))(**keys):
+    with i.provide(Key(SeededScope.Manager, tag=ss))(keys):
         yield
