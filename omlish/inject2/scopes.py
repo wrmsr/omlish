@@ -5,13 +5,13 @@ from .. import check
 from .. import dataclasses as dc
 from .. import lang
 from .bindings import Binding
-from .bindings import Scope
 from .bindings import as_binding
 from .elements import Element
 from .keys import Key
 from .keys import as_key
 from .providers import Provider
 from .types import Cls
+from .types import Scope
 
 
 @dc.dataclass(frozen=True)
