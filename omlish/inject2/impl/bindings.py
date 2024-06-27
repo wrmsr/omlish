@@ -1,9 +1,9 @@
 from ... import dataclasses as dc
 from ... import lang
 from ..bindings import Binding
-from ..bindings import Scope
-from ..bindings import Unscoped
 from ..keys import Key
+from ..types import Scope
+from ..types import Unscoped
 from .providers import ProviderImpl
 
 

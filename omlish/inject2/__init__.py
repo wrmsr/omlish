@@ -3,8 +3,6 @@
 """
 from .bindings import (  # noqa
     Binding,
-    Scope,
-    Unscoped,
     as_,
     as_binding,
 )
@@ -23,6 +21,9 @@ from .exceptions import (  # noqa
     CyclicDependencyException,
     DuplicateKeyException,
     KeyException,
+    ScopeAlreadyOpenException,
+    ScopeException,
+    ScopeNotOpenException,
     UnboundKeyException,
 )
 
@@ -78,4 +79,6 @@ from .scopes import (  # noqa
 
 from .types import (  # noqa
     Cls,
+    Scope,
+    Unscoped,
 )
