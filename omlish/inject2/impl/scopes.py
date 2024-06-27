@@ -94,6 +94,9 @@ class ThreadScopeImpl(ScopeImpl, lang.Final):
         return v
 
 
+##
+
+
 @dc.dataclass(frozen=True, eq=False)
 class ScopeSeededProviderImpl(ProviderImpl):
     p: ScopeSeededProvider
@@ -103,10 +106,19 @@ class ScopeSeededProviderImpl(ProviderImpl):
         return (self.p,)
 
     def provide(self, injector: Injector) -> ta.Any:
-        raise NotImplementedError
+        ssi = check.isinstance(check.isinstance(injector, injector_.InjectorImpl)._scopes[self.p.ss], SeededScopeImpl)  # FIXME: get_scope public  # noqa
+        return ssi.must_state().seeds[self.p.key]
 
 
 PROVIDER_IMPLS_BY_PROVIDER[ScopeSeededProvider] = ScopeSeededProviderImpl
+
+
+class ScopeAlreadyOpenException(Exception):
+    pass
+
+
+class ScopeNotOpenException(Exception):
+    pass
 
 
 class SeededScopeImpl(ScopeImpl):
@@ -124,6 +136,23 @@ class SeededScopeImpl(ScopeImpl):
         seeds: dict[Key, ta.Any]
         prvs: dict[BindingImpl, ta.Any] = dc.field(default_factory=dict)
 
+    @property
+    def state(self) -> ta.Optional['SeededScopeImpl.State']:
+        return self._st
+
+    def must_state(self) -> 'SeededScopeImpl.State':
+        if (st := self._st) is None:
+            raise ScopeNotOpenException()
+        return st
+
+    def open(self, seeds: ta.Mapping[Key, ta.Any]) -> None:
+        if self._st is not None:
+            raise ScopeAlreadyOpenException()
+        self._st = SeededScopeImpl.State(dict(seeds))
+
+    def close(self) -> None:
+        self._st = None
+
     class Manager(SeededScope.Manager, lang.Final):
         def __init__(self, ss: SeededScope, i: Injector) -> None:
             super().__init__()
@@ -131,8 +160,12 @@ class SeededScopeImpl(ScopeImpl):
             self._ssi = check.isinstance(check.isinstance(i, injector_.InjectorImpl)._scopes[self._ss], SeededScopeImpl)  # FIXME: get_scope public  # noqa
 
         @contextlib.contextmanager
-        def __call__(self, seeds: ta.Mapping[Key, ta.Any]):
-            raise NotImplementedError
+        def __call__(self, seeds: ta.Mapping[Key, ta.Any]) -> ta.Generator[None, None, None]:
+            try:
+                self._ssi.open(seeds)
+                yield
+            finally:
+                self._ssi.close()
 
     def auto_elements(self) -> Elements:
         return as_elements(
@@ -144,7 +177,14 @@ class SeededScopeImpl(ScopeImpl):
         )
 
     def provide(self, binding: BindingImpl, injector: Injector) -> ta.Any:
-        raise NotImplementedError
+        st = self.must_state()
+        try:
+            return st.prvs[binding]
+        except KeyError:
+            pass
+        v = binding.provider.provide(injector)
+        st.prvs[binding] = v
+        return v
 
 
 SCOPE_IMPLS_BY_SCOPE: dict[type[Scope], ta.Callable[..., ScopeImpl]] = {

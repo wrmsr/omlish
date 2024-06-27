@@ -12,3 +12,4 @@ def test_scopes():
         inj.as_key(float): 4.2,
     }):
         assert i[int] == 420
+        assert i[float] == 4.2
