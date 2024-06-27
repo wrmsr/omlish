@@ -7,7 +7,8 @@ def test_scopes():
         inj.bind_scope(ss),
         inj.in_(420, ss),
     ))
-    assert i[int] == 420
+    with i.provide(inj.Key(inj.SeededScope.Manager, tag=ss))({}):
+        assert i[int] == 420
 
 
 # def test_scope_seed():
