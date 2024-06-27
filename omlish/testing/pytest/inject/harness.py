@@ -10,6 +10,12 @@ from .... import inject as inj
 from .... import lang
 
 
+T = ta.TypeVar('T')
+
+
+##
+
+
 class PytestScope(enum.Enum):
     SESSION = enum.auto()
     PACKAGE = enum.auto()
@@ -33,16 +39,17 @@ _SCOPES_BY_PYTEST_SCOPE: ta.Mapping[PytestScope, inj.SeededScope] = {
 }
 
 
-_HARNESS_ELEMENTS_LIST: list[inj.Elements] = []
-_ACTIVE_HARNESSES: set['Harness'] = set()
+##
 
-T = ta.TypeVar('T')
+
+_ACTIVE_HARNESSES: set['Harness'] = set()
 
 
 class Harness:
     def __init__(self, es: inj.Elements) -> None:
         super().__init__()
-        self._inj = inj.create_injector(inj.as_elements(
+        self._orig_es = es
+        self._es = inj.as_elements(
             inj.as_binding(self),
             *[
                 inj.as_elements(
@@ -52,20 +59,48 @@ class Harness:
                 for pts, ss in _SCOPES_BY_PYTEST_SCOPE.items()
             ],
             es,
-        ))
+        )
+        self._inj: inj.Injector | None = None
 
-    def __enter__(self: ta.Self) -> ta.Self:
+    ##
+
+    @contextlib.contextmanager
+    def activate(self) -> ta.Generator[ta.Self, None, None]:
+        check.none(self._inj)
+        check.not_in(self, _ACTIVE_HARNESSES)
         _ACTIVE_HARNESSES.add(self)
-        return self
+        try:
+            with inj.create_managed_injector(self._es) as i:
+                self._inj = i
+                yield self
+        finally:
+            self._inj = None
+            _ACTIVE_HARNESSES.remove(self)
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        _ACTIVE_HARNESSES.remove(self)
+    ##
 
     def __getitem__(
             self,
             target: ta.Union[inj.Key[T], type[T]],
     ) -> T:
-        return self._inj[target]
+        return check.not_none(self._inj)[target]
+
+    def session(self) -> pytest.FixtureRequest:
+        return self[inj.Key(pytest.FixtureRequest, tag=PytestScope.SESSION)]
+
+    def package(self) -> pytest.FixtureRequest:
+        return self[inj.Key(pytest.FixtureRequest, tag=PytestScope.PACKAGE)]
+
+    def module(self) -> pytest.FixtureRequest:
+        return self[inj.Key(pytest.FixtureRequest, tag=PytestScope.MODULE)]
+
+    def class_(self) -> pytest.FixtureRequest:
+        return self[inj.Key(pytest.FixtureRequest, tag=PytestScope.CLASS)]
+
+    def function(self) -> pytest.FixtureRequest:
+        return self[inj.Key(pytest.FixtureRequest, tag=PytestScope.FUNCTION)]
+
+    ##
 
     @contextlib.contextmanager
     def _pytest_scope_manager(
@@ -74,10 +109,13 @@ class Harness:
             request: pytest.FixtureRequest,
     ) -> ta.Generator[None, None, None]:
         ss = _SCOPES_BY_PYTEST_SCOPE[pytest_scope]
-        with inj.enter_seeded_scope(self._inj, ss, {
+        with inj.enter_seeded_scope(check.not_none(self._inj), ss, {
             inj.Key(pytest.FixtureRequest, tag=pytest_scope): request,
         }):
             yield
+
+
+##
 
 
 @plugins.register
@@ -109,7 +147,13 @@ class HarnessPlugin:
             yield
 
 
+##
+
+
+_HARNESS_ELEMENTS_LIST: list[inj.Elements] = []
+
+
 @pytest.fixture(scope='session', autouse=True)
 def harness() -> ta.Generator[Harness, None, None]:
-    with Harness(inj.as_elements(*_HARNESS_ELEMENTS_LIST)) as harness:
-        yield harness
+    with Harness(inj.as_elements(*_HARNESS_ELEMENTS_LIST)).activate() as h:
+        yield h

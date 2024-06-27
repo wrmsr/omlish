@@ -48,7 +48,7 @@ class PrivateInjectorProviderImpl(ProviderImpl, lang.Final):
         return ()
 
     def provide(self, injector: Injector) -> ta.Any:
-        return InjectorImpl(self.ec, check.isinstance(injector, InjectorImpl))
+        return check.isinstance(injector, InjectorImpl).create_child(self.ec)
 
 
 ##
