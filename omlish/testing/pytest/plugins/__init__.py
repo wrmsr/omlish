@@ -4,6 +4,7 @@ from . import (  # noqa
     repeat,
     skips,
     spacing,
+    switches,
 )
 from ._registry import (  # noqa
     ALL,
