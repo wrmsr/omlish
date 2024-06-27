@@ -45,6 +45,13 @@ class Harness:
         super().__init__()
         self._inj = inj.create_injector(inj.as_elements(
             inj.as_binding(self),
+            *[
+                inj.as_elements(
+                    inj.bind_scope(ss),
+                    inj.bind_scope_seed(ss, inj.Key(FixtureRequest, tag=pts)),
+                )
+                for pts, ss in _SCOPES_BY_PYTEST_SCOPE.items()
+            ],
             es,
         ))
 
@@ -67,8 +74,11 @@ class Harness:
             pytest_scope: PytestScope,
             request: FixtureRequest,
     ) -> ta.Generator[None, None, None]:
-        sc = _SCOPES_BY_PYTEST_SCOPE[pytest_scope]
-        yield
+        ss = _SCOPES_BY_PYTEST_SCOPE[pytest_scope]
+        with inj.enter_seeded_scope(self._inj, ss, {
+            inj.Key(FixtureRequest, tag=pytest_scope): request,
+        }):
+            yield
 
 
 @ptu.plugins.register
