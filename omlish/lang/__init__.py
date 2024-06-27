@@ -32,6 +32,7 @@ from .cmp import Infinity  # noqa
 from .cmp import InfinityType  # noqa
 from .cmp import NegativeInfinity  # noqa
 from .cmp import NegativeInfinityType  # noqa
+from .cmp import cmp  # noqa
 from .contextmanagers import ContextManaged  # noqa
 from .contextmanagers import ContextWrapped  # noqa
 from .contextmanagers import DefaultLockable  # noqa
@@ -58,7 +59,6 @@ from .descriptors import access_forbidden  # noqa
 from .descriptors import is_method_descriptor  # noqa
 from .descriptors import unwrap_method_descriptors  # noqa
 from .functions import VoidException  # noqa
-from .functions import cmp  # noqa
 from .functions import constant  # noqa
 from .functions import identity  # noqa
 from .functions import is_lambda  # noqa
