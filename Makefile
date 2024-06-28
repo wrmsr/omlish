@@ -67,9 +67,9 @@ PYENV_VERSION_SUFFIX:=$$(echo "$${_PYENV_VERSION_SUFFIX:-${DEFAULT_PYENV_VERSION
 
 .PHONY: _venv_
 _venv_:
-	$(PYENV_BIN) install -s $(PYENV_INSTALL_OPTS) $(PYTHON_VERSION) && \
-	"$(PYENV_ROOT)/versions/$(PYTHON_VERSION)$(PYENV_VERSION_SUFFIX)/bin/python" -mvenv $(VENV_OPTS) $(VENV_ROOT) && \
-	$(PYTHON) -mpip install --upgrade pip setuptools wheel && \
+	$(PYENV_BIN) install -s $(PYENV_INSTALL_OPTS) $(PYTHON_VERSION)
+	"$(PYENV_ROOT)/versions/$(PYTHON_VERSION)$(PYENV_VERSION_SUFFIX)/bin/python" -mvenv $(VENV_OPTS) $(VENV_ROOT)
+	$(PYTHON) -mpip install --upgrade pip setuptools wheel
 	$(PYTHON) -mpip install -r ${REQUIREMENTS_TXT}
 
 .PHONY: _venv
@@ -97,7 +97,7 @@ tg-update:
 
 .PHONY: dep-freze
 dep-freeze: venv
-	$(PYTHON) -mpip freeze > requirements-frz.txt && \
+	$(PYTHON) -mpip freeze > requirements-frz.txt
 	sed -i '' '/^-e git\+https:\/\/github.com\/tinygrad\/tinygrad/d' requirements-frz.txt
 
 .PHONY: dep-unfreeze
@@ -133,9 +133,18 @@ DEFAULT_TEST_SOURCES:=${MAIN_SOURCES}
 
 TEST_SOURCES:=$$(echo "$${_TEST_SOURCES:-${DEFAULT_TEST_SOURCES}}")
 
+PYTEST_OPTS=
+PYTEST_JUNIT_XML_PATH:=$$(echo "$${OMLISH_JUNIT_XML_PATH}")
+
 .PHONY: _test
 _test: _venv
+	if [ ! -z "$(PYTEST_JUNIT_XML_PATH)" ] && [ -f "$(PYTEST_JUNIT_XML_PATH)" ] ; then \
+		rm "$(PYTEST_JUNIT_XML_PATH)" ; \
+	fi
+
 	$(PYTHON) -mpytest \
+		$(PYTEST_OPTS) \
+		--junitxml="$(PYTEST_JUNIT_XML_PATH)" \
 		$(TEST_SOURCES) \
 		--durations=5 --durations-min=1 \
 		--no-slow \
