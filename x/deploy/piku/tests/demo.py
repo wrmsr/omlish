@@ -52,10 +52,8 @@ def _main():
             'wget',
         ]
 
-        if not USE_DOCKERFILE:
-            sh('apt update')
-
         sh(
+            'apt update && '
             'DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt install -y tzdata && '
             f'DEBIAN_FRONTEND=noninteractive apt install -y {" ".join(deps)}'
         )
