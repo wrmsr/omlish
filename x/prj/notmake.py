@@ -111,7 +111,7 @@ def _read_versions_file(file_name: str = '.versions') -> ta.Mapping[str, str]:
         k: v
         for l in lines
         if (sl := l.split('#')[0].strip())
-        for k, _, v in [sl.partition('=')]
+        for k, _, v in (sl.partition('='),)
     }
 
 
