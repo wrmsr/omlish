@@ -115,8 +115,30 @@ def _read_versions_file(file_name: str = '.versions') -> ta.Mapping[str, str]:
     }
 
 
+_TEST_TOML = """
+[tool.notmake.venvs]
+all = { interp = "@11", requires = "requirements-dev.txt" }
+default = { interp = "@11", requires = "requirements-ext.txt"  }
+docker = { docker = "omlish-dev" }
+docker-amd64 = { docker = "omlish-dev-amd64" }
+debug = { interp = "@11,debug" }
+"12" = { interp = "@12" }
+"13" = { interp = "@13" }
+"""
+
+
+@cached_nullary
+def _load_toml() -> ta.Any:
+    try:
+        import tomllib as toml
+    except ImportError:
+        from pip._vendor import tomli as toml  # noqa
+    return toml.loads(_TEST_TOML)
+
+
 def _main(argv: ta.Optional[ta.Sequence[str]] = None) -> None:
     print(_read_versions_file())
+    print(_load_toml())
 
     ##
 
