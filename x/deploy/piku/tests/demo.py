@@ -17,7 +17,13 @@ def _main():
     # img_name = 'ubuntu:22.04'
     img_name = 'wrmsr/omlish-piku-demo'
 
-    ctr_id = subprocess.check_output(['docker', 'run', '-d', img_name, 'sleep', 'infinity']).decode().strip()
+    ctr_id = subprocess.check_output([
+        'docker', 'run',
+        '-d',
+        '--expose', '9080',
+        img_name,
+        'sleep', 'infinity'
+    ]).decode().strip()
     print(f'{ctr_id=}')
 
     try:
@@ -65,6 +71,10 @@ def _main():
         sh(
             'service ssh start && '
             'ssh -o StrictHostKeyChecking=accept-new piku@localhost'
+        )
+
+        sh(
+            'service nginx start'
         )
 
         sh(
