@@ -1,3 +1,7 @@
+"""
+TODO:
+ - Enum
+"""
 import abc
 import collections
 import dataclasses as dc
@@ -35,7 +39,7 @@ def confer_kwargs(
         for ck in bmp.confer:
             if ck in kwargs:
                 continue
-            if ck in ('frozen', 'generic_init'):
+            if ck in ('frozen', 'generic_init', 'kw_only'):
                 confer_kwarg(out, ck, get_params(base).frozen)
             elif ck == 'confer':
                 confer_kwarg(out, 'confer', bmp.confer)
