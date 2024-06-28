@@ -149,7 +149,6 @@ _test:
 		$(PYTEST_OPTS) \
 		--junitxml="$(PYTEST_JUNIT_XML_PATH)" \
 		$(TEST_SOURCES) \
-		--durations=5 --durations-min=1 \
 		--no-slow \
 
 .PHONY: test
