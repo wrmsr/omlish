@@ -64,7 +64,7 @@ class AppWrapper(ta.Protocol):
 def wrap_app(
         app: ASGIFramework,
 ) -> AppWrapper:
-    return ASGIWrapper(ta.cast(ASGIFramework, app))
+    return ASGIWrapper(app)
 
 
 ##
