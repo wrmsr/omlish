@@ -58,7 +58,9 @@ VENV_ROOT:=$$(echo "$${_VENV_ROOT:-${DEFAULT_VENV_ROOT}}")
 REQUIREMENTS_TXT:=$$(echo "$${_REQUIREMENTS_TXT:-${DEFAULT_REQUIREMENTS_TXT}}")
 
 _PYTHONPATH=${PYTHONPATH}:.:external:tinygrad
-PYTHON:=PYTHONPATH="$(_PYTHONPATH)" $$(echo "$(VENV_ROOT)/bin/python")
+DEFAULT_PYTHON_BIN:=$$(echo "$(VENV_ROOT)/bin/python")
+PYTHON_BIN:=$$(echo "$${_PYTHON_BIN:-${DEFAULT_PYTHON_BIN}}")
+PYTHON:=PYTHONPATH="$(_PYTHONPATH)" $(PYTHON_BIN)
 
 PYENV_ROOT:=$$(sh -c "if [ -z '$${PYENV_ROOT}' ] ; then echo '$${HOME}/.pyenv' ; else echo '$${PYENV_ROOT%/}' ; fi")
 PYENV_BIN:=$$(sh -c "if [ -f '$${HOME}/.pyenv/bin/pyenv' ] ; then echo '$${HOME}/.pyenv/bin/pyenv' ; else echo pyenv ; fi")
@@ -137,7 +139,7 @@ PYTEST_OPTS=
 PYTEST_JUNIT_XML_PATH:=$$(echo "$${OMLISH_JUNIT_XML_PATH}")
 
 .PHONY: _test
-_test: _venv
+_test:
 	if [ ! -z "$(PYTEST_JUNIT_XML_PATH)" ] && [ -f "$(PYTEST_JUNIT_XML_PATH)" ] ; then \
 		rm "$(PYTEST_JUNIT_XML_PATH)" ; \
 	fi
@@ -150,7 +152,7 @@ _test: _venv
 		--no-slow \
 
 .PHONY: test
-test: _test
+test: _venv _test
 
 
 ### Alts
@@ -170,7 +172,7 @@ venv-debug:
 test-debug: venv-debug
 	_VENV_ROOT=.venv-debug \
 	_TEST_SOURCES="${PROJECT}" \
-	${MAKE} _test
+	${MAKE} _venv _test
 
 # 12
 
@@ -185,7 +187,7 @@ venv-12:
 test-12: venv-12
 	_VENV_ROOT=.venv-12 \
 	_TEST_SOURCES="${PROJECT}" \
-	${MAKE} _test
+	${MAKE} _venv _test
 
 # 13
 
@@ -200,7 +202,7 @@ venv-13:
 test-13: venv-13
 	_VENV_ROOT=.venv-13 \
 	_TEST_SOURCES="${PROJECT}" \
-	${MAKE} _test
+	${MAKE} _venv _test
 
 # dev
 
@@ -215,7 +217,7 @@ venv-dev:
 test-dev: venv-dev
 	_VENV_ROOT=.venv-dev \
 	_TEST_SOURCES="${PROJECT}" \
-	${MAKE} _test
+	${MAKE} _venv _test
 
 # docker
 
@@ -242,7 +244,7 @@ test-docker:
 .PHONY: _test-docker
 _test-docker: venv-docker
 	_VENV_ROOT=.venv-docker \
-	${MAKE} _test
+	${MAKE} _venv _test
 
 
 ### Docker
@@ -290,8 +292,9 @@ ci: ci-images
 
 .PHONY: _ci
 _ci:
-	echo "hi"
-	true
+	_PYTHON_BIN=python \
+	_TEST_SOURCES="${PROJECT}" \
+	${MAKE} _test
 
 
 ### Utils
