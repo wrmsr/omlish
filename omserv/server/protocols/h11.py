@@ -161,7 +161,7 @@ class H11Protocol(Protocol):
                     await self.stream.handle(EndBody(stream_id=STREAM_ID))
                 elif isinstance(event, Data):
                     # WebSocket pass through
-                    await self.stream.handle(event)
+                    await self.stream.handle(event)  # type: ignore  # FIXME
 
     async def _create_stream(self, request: h11.Request) -> None:
         upgrade_value = ""
