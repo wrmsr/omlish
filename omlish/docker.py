@@ -16,6 +16,7 @@ curl -H "Accept: ${api}" -H "Accept: ${apil}" -H "Authorization: Bearer $token" 
 """  # noqa
 import datetime
 import re
+import shlex
 import subprocess
 import typing as ta
 
@@ -29,18 +30,6 @@ if ta.TYPE_CHECKING:
     import yaml
 else:
     yaml = lang.proxy_import('yaml')
-
-
-def cli_cmd(args) -> bytes:
-    p = subprocess.Popen(
-        args,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
-
-    o, _ = p.communicate()
-    check.equal(p.returncode, 0)
-    return o
 
 
 @dc.dataclass(frozen=True)
@@ -90,7 +79,7 @@ def parse_port(s: str) -> Port:
 
 
 def cli_ps() -> list[PsItem]:
-    o = cli_cmd([
+    o = subprocess.check_output([
         'docker',
         'ps',
         '--no-trunc',
@@ -120,7 +109,7 @@ class Inspect(lang.Final):
 
 
 def cli_inspect(ids: list[str]) -> list[Inspect]:
-    o = cli_cmd(['docker', 'inspect', *ids])
+    o = subprocess.check_output(['docker', 'inspect', *ids])
     return msh.unmarshal(json.loads(o.decode()), list[Inspect])
 
 
@@ -148,3 +137,13 @@ class ComposeConfig:
             ret[n[len(self._prefix):]] = c
 
         return ret
+
+
+def timebomb_payload(delay_s: int | float, name: str = 'omlish-timebomb') -> str:
+    return (
+        '('
+        f'echo {shlex.quote(name)} && '
+        f'sleep {delay_s:g} && '
+        'sh -c \'killall5 -9 -o $PPID -o $$ ; kill 1\''
+        ') &'
+    )
