@@ -314,16 +314,19 @@ class H2Protocol(Protocol):
             elif name == b":path":
                 raw_path = value
 
-        self.streams[request.stream_id] = HTTPStream(
-            self.app,
-            self.config,
-            self.context,
-            self.task_spawner,
-            self.client,
-            self.server,
-            self.stream_send,
-            request.stream_id,
-        )
+        if method == "CONNECT":
+            raise NotImplementedError
+        else:
+            self.streams[request.stream_id] = HTTPStream(
+                self.app,
+                self.config,
+                self.context,
+                self.task_spawner,
+                self.client,
+                self.server,
+                self.stream_send,
+                request.stream_id,
+            )
         self.stream_buffers[request.stream_id] = StreamBuffer(self.context.event_class)
         try:
             self.priority.insert_stream(request.stream_id)
