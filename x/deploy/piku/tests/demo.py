@@ -25,7 +25,7 @@ import time
 
 
 def _main():
-    ctr_id = subprocess.check_output(['docker', 'run', '-d', 'ubuntu', 'sleep', 'infinity']).decode().strip()
+    ctr_id = subprocess.check_output(['docker', 'run', '-d', 'ubuntu:22.04', 'sleep', 'infinity']).decode().strip()
     print(f'{ctr_id=}')
 
     try:
@@ -38,10 +38,22 @@ def _main():
         def sh(s):
             do('sh', '-c', s)
 
+        deps = [
+            'curl',
+            'git',
+            'nginx',
+            'openssh-server',
+            'openssl',
+            'python3',
+            'tmux',
+            'vim',
+            'wget',
+        ]
+
         sh(
             'apt update && '
             'DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt install -y tzdata && '
-            'apt install -y python3 git nginx curl openssl wget vim tmux openssh-server'
+            f'DEBIAN_FRONTEND=noninteractive apt install -y {" ".join(deps)}'
         )
 
         sh(
