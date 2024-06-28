@@ -1,21 +1,28 @@
 """
 TODO:
  - just use a Dockerfile lol
-
---
-
-docker build --tag 'wrmsr/omlish-piku-demo' -f x/deploy/piku/tests/Dockerfile x/deploy/piku/tests
-
-uwsgi-piku --ini ~piku/.piku/uwsgi/uwsgi.ini &
-curl localhost:9080
 """
+import os.path
 import subprocess
 import time
 
 
+USE_DOCKERFILE = True
+
+
 def _main():
-    # img_name = 'ubuntu:22.04'
-    img_name = 'wrmsr/omlish-piku-demo'
+    if USE_DOCKERFILE:
+        img_name = 'wrmsr/omlish-piku-demo'
+        cur_dir = os.path.dirname(__file__)
+        subprocess.check_call([
+            'docker', 'build',
+            '--tag', img_name,
+            '-f', os.path.join(cur_dir, 'Dockerfile'),
+            cur_dir,
+        ])
+
+    else:
+        img_name = 'ubuntu:22.04'
 
     ctr_id = subprocess.check_output([
         'docker', 'run',
