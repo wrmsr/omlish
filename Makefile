@@ -6,6 +6,7 @@ MAIN_SOURCES:=\
 	${PROJECT} \
 	omdev \
 	omml \
+	omserv \
 
 ALL_SOURCES:=\
 	${MAIN_SOURCES} \

@@ -31,7 +31,7 @@ async def _a_main() -> None:
     node_name = 'home node'
 
     async with engine.connect() as conn:
-        async with conn.begin() as txn:
+        async with conn.begin() as txn:  # noqa
             await conn.run_sync(meta.drop_all)
 
             await conn.run_sync(meta.create_all)
@@ -43,10 +43,10 @@ async def _a_main() -> None:
 
             if len(result_rows) > 0:
                 node_row = check.single(result_rows)
-                node_id = node_row['id']
+                node_id = node_row['id']  # noqa
             else:
                 result = await conn.execute(t1.insert(), [{'name': 'home node'}])
-                node_id = check.single(result.inserted_primary_key)
+                node_id = check.single(result.inserted_primary_key)  # noqa
 
             result = await conn.execute(sa.select(sa.func.pg_advisory_lock(sa.column('id'))).select_from(t1))
             print(result.fetchall())
