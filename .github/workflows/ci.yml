@@ -45,6 +45,7 @@ jobs:
       - name: 'Run tests'
         run: >
           OMLISH_CI_DOCKER_OPTS='-v ${{ github.workspace }}:/github/workspace'
+          OMLISH_JUNIT_XML_PATH=/github/workspace/test-results.xml
           make _ci
 
       - name: 'Docker cache save'
@@ -55,8 +56,8 @@ jobs:
           docker history wrmsr/omlish-ci | tail -n+2 | awk '{print $1}' | egrep -v '<missing>' |
             xargs docker save -o ~/.cache/docker/omlish-ci.tar wrmsr/omlish-ci
 
-      # - uses: 'ashley-taylor/junit-report-annotations-action@1.3'
-      #   if: 'always()'
-      #   with:
-      #     access-token: '${{ github.token }}'
-      #     path: 'test-results.xml'
+      - uses: 'ashley-taylor/junit-report-annotations-action@1.4'
+        if: 'always()'
+        with:
+          access-token: '${{ github.token }}'
+          path: 'test-results.xml'
