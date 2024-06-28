@@ -4,7 +4,6 @@
 **/.cache/
 **/.idea/
 **/.ipynb_checkpoints/
-**/.revision
 **/__pycache__/
 *.dylib
 *.exe
