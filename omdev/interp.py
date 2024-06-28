@@ -3,6 +3,7 @@
 TODO:
  - install (git clone) pyenv
  - https://github.com/asdf-vm/asdf support (instead of pyenv)
+ - free-threading https://github.com/pyenv/pyenv/commit/d660c5a84f6b03a94961eb0e49adb2b25cd091b1
 """
 import argparse
 import functools
