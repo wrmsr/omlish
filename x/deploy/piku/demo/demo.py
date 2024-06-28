@@ -91,6 +91,9 @@ def _main():
             'git push piku master'
         )
 
+        print()
+        print(ctr_id)
+        print()
         print('done - press enter to die')
         input()
 
