@@ -20,7 +20,7 @@ def _main():
     ctr_id = subprocess.check_output([
         'docker', 'run',
         '-d',
-        '--expose', '9080',
+        '-p', '9080:9080',
         img_name,
         'sleep', 'infinity'
     ]).decode().strip()
@@ -75,6 +75,10 @@ def _main():
 
         sh(
             'service nginx start'
+        )
+
+        sh(
+            'tmux new-session -d -s uwsgi-piku uwsgi-piku --ini ~piku/.piku/uwsgi/uwsgi.ini'
         )
 
         sh(
