@@ -1,5 +1,4 @@
 import functools
-import typing as ta
 
 
 class cached_nullary:
@@ -12,7 +11,8 @@ class cached_nullary:
             self._value = self._fn()
         return self._value
     def __get__(self, instance, owner):  # noqa
-        raise NotImplementedError
+        bound = instance.__dict__[self._fn.__name__] = self.__class__(self._fn.__get__(instance, owner))
+        return bound
 
 
 def _main():
