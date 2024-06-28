@@ -1,3 +1,7 @@
+# TODO:
+# - https://docs.docker.com/build/cache/backends/inline/
+# - https://stackoverflow.com/a/73750495
+
 name: Ci
 
 on:
@@ -12,7 +16,7 @@ jobs:
   test:
     runs-on: 'ubuntu-latest'
     steps:
-      - uses: 'actions/checkout@v2'
+      - uses: 'actions/checkout@v4.1.7'
 
       - uses: 'styfle/cancel-workflow-action@0.12.1'
         with:
@@ -46,7 +50,7 @@ jobs:
         run: >
           OMLISH_CI_DOCKER_OPTS='-v ${{ github.workspace }}:/github/workspace'
           OMLISH_JUNIT_XML_PATH=/github/workspace/test-results.xml
-          make _ci
+          make ci
 
       - name: 'Docker cache save'
         if: "steps.cache.outputs.cache-hit != 'true'"
@@ -56,8 +60,7 @@ jobs:
           docker history wrmsr/omlish-ci | tail -n+2 | awk '{print $1}' | egrep -v '<missing>' |
             xargs docker save -o ~/.cache/docker/omlish-ci.tar wrmsr/omlish-ci
 
-      - uses: 'ashley-taylor/junit-report-annotations-action@1.4'
+      - uses: 'mikepenz/action-junit-report@v4.3.1'
         if: 'always()'
         with:
-          access-token: '${{ github.token }}'
-          path: 'test-results.xml'
+          report_paths: 'test-results.xml'
