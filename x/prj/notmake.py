@@ -19,6 +19,15 @@ Configs:
  - python versions (or .versions file), aliased to venvs
  - requirements txt
  - docker-compose file
+
+==
+
+Venv:
+  interp
+  requires
+  docker[_container]
+
+test_srcs ?
 """
 import argparse
 import functools
@@ -94,7 +103,23 @@ def _build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+@cached_nullary
+def _read_versions_file(file_name: str = '.versions') -> ta.Mapping[str, str]:
+    with open(file_name, 'r') as f:
+        lines = f.readlines()
+    return {
+        k: v
+        for l in lines
+        if (sl := l.split('#')[0].strip())
+        for k, _, v in [sl.partition('=')]
+    }
+
+
 def _main(argv: ta.Optional[ta.Sequence[str]] = None) -> None:
+    print(_read_versions_file())
+
+    ##
+
     if sys.version_info < REQUIRED_PYTHON_VERSION:
         raise EnvironmentError(f'Requires python {REQUIRED_PYTHON_VERSION}, got {sys.version_info} from {sys.executable}')  # noqa
 
