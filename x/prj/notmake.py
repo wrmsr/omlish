@@ -8,6 +8,14 @@ Responsibilities:
  - tests
  - checks
  - ci
+
+Configs:
+ - project
+ - main_sources
+ - all_sources
+ - python versions (or .versions file), aliased to venvs
+ - requirements txt
+ - docker-compose file
 """
 import argparse
 import functools
