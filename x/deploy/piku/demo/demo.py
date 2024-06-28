@@ -1,9 +1,11 @@
 import os.path
 import subprocess
 
+from omlish.docker import timebomb_payload
+
 
 USE_DOCKERFILE = True
-TIMEBOMB_DELAY_S = 20 * 60
+TIMEBOMB_DELAY_S = 10  # 20 * 60
 
 
 def _main():
@@ -35,13 +37,7 @@ def _main():
                 'docker', 'exec',
                 '-id', ctr_id,
                 'sh', '-c',
-                (
-                    '('
-                    'echo i-am-a-timebomb && '
-                    f'sleep {TIMEBOMB_DELAY_S:g} && '
-                    f'sh -c \'killall5 -9 -o $PPID -o $$ ; kill 1\''
-                    f') &'
-                ),
+                timebomb_payload(TIMEBOMB_DELAY_S),
             ])
 
         def get(*args):
