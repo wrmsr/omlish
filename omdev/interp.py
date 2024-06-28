@@ -5,6 +5,7 @@ TODO:
  - https://github.com/asdf-vm/asdf support (instead of pyenv)
 """
 import argparse
+import functools
 import logging
 import os.path
 import shutil
@@ -19,7 +20,7 @@ T = ta.TypeVar('T')
 log = logging.getLogger(__name__)
 
 
-REQUIRED_PYTHON_VERSION = (3, 7)
+REQUIRED_PYTHON_VERSION = (3, 8)
 
 
 def _check_not_none(v: ta.Optional[T]) -> T:
@@ -66,26 +67,6 @@ def _cmd(
     out = buf.decode('utf-8').strip()
     log.debug(out)
     return out
-
-
-class cached_property:  # noqa
-    def __init__(self, fn, *, name=None) -> None:
-        super().__init__()
-        self._fn = fn
-        self._name = name
-
-    def __set_name__(self, owner, name):
-        if self._name is None:
-            self._name = name
-
-    def __get__(self, instance, owner=None):
-        if instance is not None:
-            if self._name is None:
-                raise NameError(self)
-            v = self._fn.__get__(instance, owner)()
-            setattr(instance, self._name, v)
-            return v
-        return self
 
 
 class Resolver:
@@ -207,7 +188,7 @@ class PyenvResolver(Resolver):
 
         self._pyenv_root_kw = pyenv_root
 
-    @cached_property
+    @functools.cached_property
     def _pyenv_root(self) -> ta.Optional[str]:
         if self._pyenv_root_kw is not None:
             return self._pyenv_root_kw
@@ -221,21 +202,21 @@ class PyenvResolver(Resolver):
 
         return None
 
-    @cached_property
+    @functools.cached_property
     def _pyenv_bin(self) -> str:
         return os.path.join(_check_not_none(self._pyenv_root), 'bin', 'pyenv')
 
-    @cached_property
+    @functools.cached_property
     def _pyenv_install_name(self) -> str:
         return self._version + ('-debug' if self._debug else '')
 
-    @cached_property
+    @functools.cached_property
     def _pyenv_install_path(self) -> str:
         return os.path.join(_check_not_none(self._pyenv_root), 'versions', self._pyenv_install_name)
 
     _pyenv_basic_pio: ta.ClassVar[PyenvInstallOpts] = PyenvInstallOpts.new(opts=['-s', '-v'])
 
-    @cached_property
+    @functools.cached_property
     def _pyenv_debug_pio(self) -> PyenvInstallOpts:
         if not self._debug:
             return PyenvInstallOpts.new()
@@ -288,7 +269,7 @@ class MacResolver(PyenvResolver):
 
     _framework_pio: ta.ClassVar[PyenvInstallOpts] = PyenvInstallOpts.new(conf_opts=['--enable-framework'])
 
-    @cached_property
+    @functools.cached_property
     def _has_brew(self) -> bool:
         return shutil.which('brew') is not None
 
@@ -299,7 +280,7 @@ class MacResolver(PyenvResolver):
         'zlib',
     ]
 
-    @cached_property
+    @functools.cached_property
     def _brew_deps_pio(self) -> PyenvInstallOpts:
         cflags = []
         ldflags = []
@@ -312,7 +293,7 @@ class MacResolver(PyenvResolver):
             ldflags=ldflags,
         )
 
-    @cached_property
+    @functools.cached_property
     def _brew_tcl_pio(self) -> PyenvInstallOpts:
         pfx = _cmd(['brew', '--prefix', 'tcl-tk'], try_=True)
         if pfx is None:
@@ -327,7 +308,7 @@ class MacResolver(PyenvResolver):
             f"--with-tcltk-libs='-L{tcl_tk_prefix}/lib -ltcl{tcl_tk_ver} -ltk{tcl_tk_ver}'",
         ])
 
-    @cached_property
+    @functools.cached_property
     def _brew_ssl_pio(self) -> PyenvInstallOpts:
         pkg_config_path = ta.cast(str, _cmd(['brew', '--prefix', 'openssl']))
         if 'PKG_CONFIG_PATH' in os.environ:
