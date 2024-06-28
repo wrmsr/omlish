@@ -17,6 +17,7 @@
 *.so
 *.sock
 *.swp
+*/_version.py
 .env
 /*.egg-info/
 /.cache/
