@@ -76,6 +76,7 @@ def _main():
         )
 
         sh(
+            'service cron start && '
             'service nginx start'
         )
 
