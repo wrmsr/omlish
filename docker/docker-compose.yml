@@ -36,6 +36,16 @@ services:
       - '35222:8000'
       - '35223:22'
 
+  omlish-ci:
+    build: '.'
+    image: 'wrmsr/omlish-ci:latest'
+    platform: 'linux/x86_64'
+    restart: 'no'
+    depends_on:
+      - 'omlish-mysql'
+    links:
+      - 'omlish-mysql'
+
   omlish-mysql:
     image: 'mysql:8.4.0'
     restart: 'unless-stopped'
