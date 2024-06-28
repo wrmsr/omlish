@@ -107,7 +107,7 @@ def repr_socket_addr(family: int, address: tuple) -> str:
 
 def parse_socket_addr(family: int, address: tuple) -> ta.Optional[tuple[str, int]]:
     if family == socket.AF_INET:
-        return address  # type: ignore
+        return address
     elif family == socket.AF_INET6:
         return (address[0], address[1])
     else:
@@ -117,7 +117,7 @@ def parse_socket_addr(family: int, address: tuple) -> ta.Optional[tuple[str, int
 def share_socket(sock: socket) -> socket:
     # Windows requires the socket be explicitly shared across
     # multiple workers (processes).
-    from socket import fromshare  # type: ignore
+    from socket import fromshare
 
-    sock_data = sock.share(os.getpid())  # type: ignore
+    sock_data = sock.share(os.getpid())
     return fromshare(sock_data)
