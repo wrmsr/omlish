@@ -34,7 +34,39 @@ def _check_not_none(v: ta.Optional[T]) -> T:
     return v
 
 
+class cached_nullary:
+    def __init__(self, fn):
+        self._fn = fn
+        self._value = self._missing = object()
+        functools.update_wrapper(self, fn)
+    def __call__(self, *args, **kwargs):  # noqa
+        if self._value is self._missing:
+            self._value = self._fn()
+        return self._value
+    def __get__(self, instance, owner):  # noqa
+        bound = instance.__dict__[self._fn.__name__] = self.__class__(self._fn.__get__(instance, owner))
+        return bound
+
+
 ##
+
+
+def _venv_cmd(args) -> None:
+    name = args.name
+
+    if os.path.exists(name):
+        if os.path.isfile(name):
+            raise Exception(f'{name} exists but is not a directory!')
+        return
+
+    interp = args.interp
+    if interp[0] == '@':
+        # interp_py = os.path.join(os.path.dirname(__file__), 'interp.py')
+        interp_py = os.path.join(os.path.dirname(__file__), '../../omdev/interp.py')
+        interp = subprocess.check_output([sys.executable, interp_py, 'resolve', interp[1:]]).decode().strip()
+        log.info(f'Using interpreter {interp}')
+
+    subprocess.check_output([interp, '-mvenv', name])
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -42,9 +74,11 @@ def _build_parser() -> argparse.ArgumentParser:
 
     subparsers = parser.add_subparsers()
 
-    parser_resolve = subparsers.add_parser('resolve')
-    parser_resolve.add_argument('version')
+    parser_resolve = subparsers.add_parser('venv')
+    parser_resolve.add_argument('name')
+    parser_resolve.add_argument('interp')
     parser_resolve.add_argument('--debug', action='store_true')
+    parser_resolve.set_defaults(func=_venv_cmd)
 
     return parser
 
