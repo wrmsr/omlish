@@ -210,6 +210,8 @@ test-dev: venv-dev
 
 # docker
 
+DOCKER_USER=wrmsr
+
 .PHONY: venv-docker
 venv-docker:
 	./docker-dev make _venv-docker
@@ -255,6 +257,32 @@ docker-invalidate:
 .PHONY: docker-enable-ptrace
 docker-enable-ptrace:
 	docker run --platform linux/x86_64 --privileged -it ubuntu sh -c 'echo 0 > /proc/sys/kernel/yama/ptrace_scope'
+
+
+### CI
+
+.PHONY: ci-images
+ci-images:
+	tar cvh \
+		--exclude "__pycache__" \
+		${MAIN_SOURCES} \
+		LICENSE \
+		Makefile \
+		docker \
+		pyproject.toml \
+		requirements-dev.txt \
+		requirements.txt \
+	| \
+		docker build --platform linux/x86_64 --tag "$(DOCKER_USER)/omlish-ci" -f "docker/ci/Dockerfile" -
+
+.PHONY: ci
+ci: ci-images
+	${DOCKER_COMPOSE} run --rm $$OMLISH_CI_DOCKER_OPTS omlish-ci
+
+.PHONY: _ci
+_ci:
+	echo "hi"
+	true
 
 
 ### Utils
