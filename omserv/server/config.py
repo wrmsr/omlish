@@ -22,6 +22,8 @@ class Config:
     startup_timeout = 60 * SECONDS
     shutdown_timeout = 60 * SECONDS
 
+    server_names: ta.Sequence[str] = ()
+
     max_requests: ta.Optional[int] = None
     max_requests_jitter: int = 0
 

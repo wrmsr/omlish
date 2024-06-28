@@ -12,6 +12,7 @@ from .events import ProtocolEvent
 from .events import Request
 from .events import Response
 from .events import StreamClosed
+from .requests import valid_server_name
 from .taskspawner import TaskSpawner
 from .types import ASGISendEvent
 from .types import AppWrapper
@@ -125,7 +126,7 @@ class HTTPStream:
             if event.http_version in EARLY_HINTS_VERSIONS:
                 self.scope["extensions"]["http.response.early_hint"] = {}
 
-            if True:  # valid_server_name(self.config, event):
+            if valid_server_name(self.config, event):
                 self.app_put = await self.task_spawner.spawn_app(
                     self.app, self.config, self.scope, self.app_send
                 )
