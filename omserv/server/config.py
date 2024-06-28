@@ -7,7 +7,7 @@ OCTETS = 1
 SECONDS = 1.0
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, kw_only=True)
 class Config:
     bind: list[str] = dc.field(default_factory=lambda: ["127.0.0.1:8000"])
 
