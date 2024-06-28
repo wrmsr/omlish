@@ -1,8 +1,12 @@
+"""
+docker exec -id ... sh -c \'(echo i-am-a-timebomb && sleep 60 && kill -9 1) &\'
+"""
 import os.path
 import subprocess
 
 
 USE_DOCKERFILE = True
+TIMEBOMB_DELAY_S = 60
 
 
 def _main():
@@ -29,6 +33,13 @@ def _main():
     print(f'{ctr_id=}')
 
     try:
+        if TIMEBOMB_DELAY_S:
+            subprocess.check_call([
+                'docker', 'exec',
+                '-id', ctr_id,
+                'sh', '-c', f'(echo i-am-a-timebomb && sleep {TIMEBOMB_DELAY_S:g} && kill -9 1) &',
+            ])
+
         def get(*args):
             subprocess.check_output(['docker', 'exec', '-i', ctr_id, *args])
 
