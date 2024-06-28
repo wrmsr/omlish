@@ -91,8 +91,8 @@ def _main():
             'git push piku master'
         )
 
-        print('done')
-        time.sleep(10)
+        print('done - press enter to die')
+        input()
 
     finally:
         subprocess.check_call(['docker', 'kill', '-sKILL', ctr_id])
