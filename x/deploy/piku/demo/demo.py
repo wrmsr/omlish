@@ -1,6 +1,5 @@
 import os.path
 import subprocess
-import time
 
 
 USE_DOCKERFILE = True
