@@ -136,9 +136,14 @@ def _load_toml() -> ta.Any:
     return toml.loads(_TEST_TOML)
 
 
+def _find_docker_container(name: str) -> str:
+    raise NotImplementedError
+
+
 def _main(argv: ta.Optional[ta.Sequence[str]] = None) -> None:
     print(_read_versions_file())
     print(_load_toml())
+    print(_find_docker_container('omlish-dev'))
 
     ##
 
