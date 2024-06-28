@@ -1,7 +1,6 @@
 """
 TODO:
  - https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html
- - enable lol
 """
 import os.path
 import sys

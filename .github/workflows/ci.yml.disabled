@@ -49,7 +49,7 @@ jobs:
       - name: 'Run tests'
         run: >
           OMLISH_CI_DOCKER_OPTS='-v ${{ github.workspace }}:/github/workspace'
-          OMLISH_JUNIT_XML_PATH=/github/workspace/test-results.xml
+          OMLISH_JUNIT_XML_PATH=${{ github.workspace }}/test-results.xml
           make ci
 
       - name: 'Docker cache save'
@@ -63,4 +63,4 @@ jobs:
       - uses: 'mikepenz/action-junit-report@v4.3.1'
         if: 'always()'
         with:
-          report_paths: 'test-results.xml'
+          report_paths: ${{ github.workspace }}/test-results.xml
