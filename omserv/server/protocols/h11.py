@@ -22,6 +22,7 @@ from ..httpstream import HTTPStream
 from ..taskspawner import TaskSpawner
 from ..types import AppWrapper
 from ..workercontext import WorkerContext
+from .types import Protocol
 
 
 H11SendableEvent: ta.TypeAlias = ta.Union[
@@ -58,7 +59,7 @@ class H2ProtocolAssumedError(Exception):
         self.data = data
 
 
-class H11Protocol:
+class H11Protocol(Protocol):
     def __init__(
             self,
             app: AppWrapper,
@@ -215,6 +216,8 @@ class H11Protocol:
             if self.connection.their_state != h11.ERROR:
                 raise
         else:
+            if data is None:
+                raise Exception('closed')  # FIXME
             await self.send(RawData(data=data))
 
     async def _send_error_response(self, status_code: int) -> None:

@@ -2,7 +2,6 @@ import errno
 import logging
 import functools
 import os
-import platform
 import random
 import signal  # noqa
 import typing as ta
@@ -15,7 +14,6 @@ from .lifespans import Lifespan
 from .sockets import Sockets
 from .sockets import create_sockets
 from .sockets import repr_socket_addr
-from .sockets import share_socket
 from .tcpserver import TCPServer
 from .types import AppWrapper
 from .workercontext import ShutdownError
@@ -108,7 +106,7 @@ async def _install_signal_handler(
     ]
 
     if not sigs:
-        return
+        return None
 
     async def _handler(*, task_status=anyio.TASK_STATUS_IGNORED):
         with anyio.open_signal_receiver(signal.SIGINT, signal.SIGTERM) as signals:
@@ -152,8 +150,6 @@ async def worker_serve(
             if sockets is None:
                 sockets = create_sockets(config)
                 for sock in sockets.insecure_sockets:
-                    if config.workers > 1 and platform.system() == "Windows":
-                        sock = share_socket(sock)
                     sock.listen(config.backlog)
 
             listeners = []

@@ -10,6 +10,7 @@ from .h11 import H11Protocol
 from .h11 import H2CProtocolRequiredError
 from .h11 import H2ProtocolAssumedError
 from .h2 import H2Protocol
+from .types import Protocol
 
 
 class ProtocolWrapper:
@@ -32,6 +33,7 @@ class ProtocolWrapper:
         self.client = client
         self.server = server
         self.send = send
+        self.protocol: Protocol
         if alpn_protocol == "h2":
             self.protocol = H2Protocol(
                 self.app,
