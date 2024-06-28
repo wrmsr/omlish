@@ -3,7 +3,7 @@ import subprocess
 
 
 USE_DOCKERFILE = True
-TIMEBOMB_DELAY_S = 20 * 60
+TIMEBOMB_DELAY_S = 10  # 20 * 60
 
 
 def _main():
@@ -36,11 +36,10 @@ def _main():
                 '-id', ctr_id,
                 'sh', '-c',
                 (
-                    f'('
-                    f'echo i-am-a-timebomb && '
+                    '('
+                    'echo i-am-a-timebomb && '
                     f'sleep {TIMEBOMB_DELAY_S:g} && '
-                    f'killall5 -9 -o $PPID -o $$ && '
-                    f'kill 1'
+                    f'sh -c \'killall5 -9 -o $PPID -o $$ && kill 1\''
                     f') &'
                 ),
             ])
