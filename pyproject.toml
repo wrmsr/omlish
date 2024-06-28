@@ -53,7 +53,14 @@ exclude = [
 ##
 
 [tool.pytest.ini_options]
-addopts = "-v --tb=short"
+addopts = [
+    "-v",
+    "--tb=short",
+    "--showlocals",
+    "--strict-markers",
+    "--durations=5",
+    "--durations-min=2",
+]
 asyncio_mode = "strict"
 junit_family = "xunit2"
 junit_duration_report = 'call'
