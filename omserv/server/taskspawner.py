@@ -2,6 +2,7 @@ import logging
 import types
 import typing as ta
 
+from omlish import check
 import anyio
 import anyio.abc
 import anyio.from_thread
@@ -58,7 +59,7 @@ class TaskSpawner:
             send: ta.Callable[[ta.Optional[ASGISendEvent]], ta.Awaitable[None]],
     ) -> ta.Callable[[ASGIReceiveEvent], ta.Awaitable[None]]:
         app_send_channel, app_receive_channel = anyio.create_memory_object_stream[bytes](config.max_app_queue_size)
-        self._task_group.start_soon(
+        check.not_none(self._task_group).start_soon(  # type: ignore  # FIXME
             _handle,
             app,
             config,
@@ -68,10 +69,10 @@ class TaskSpawner:
             anyio.to_thread.run_sync,
             anyio.from_thread.run,
         )
-        return app_send_channel.send
+        return app_send_channel.send  # type: ignore  # FIXME
 
     def spawn(self, func: ta.Callable, *args: ta.Any) -> None:
-        self._task_group.start_soon(func, *args)
+        check.not_none(self._task_group).start_soon(func, *args)  # type: ignore  # FIXME
 
     async def __aenter__(self: ta.Self) -> ta.Self:
         self._task_group_manager = anyio.create_task_group()
@@ -79,6 +80,6 @@ class TaskSpawner:
         return self
 
     async def __aexit__(self, exc_type: type[BaseException], exc_value: BaseException, tb: types.TracebackType) -> None:
-        await self._task_group_manager.__aexit__(exc_type, exc_value, tb)
+        await check.not_none(self._task_group_manager).__aexit__(exc_type, exc_value, tb)
         self._task_group_manager = None
         self._task_group = None

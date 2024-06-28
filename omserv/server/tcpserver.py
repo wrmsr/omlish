@@ -3,6 +3,10 @@ import logging
 import math
 import typing as ta
 
+from omlish import check
+import anyio
+import anyio.abc
+
 from .config import Config
 from .events import Closed
 from .events import RawData
@@ -13,9 +17,6 @@ from .sockets import parse_socket_addr
 from .taskspawner import TaskSpawner
 from .types import AppWrapper
 from .workercontext import WorkerContext
-
-import anyio
-import anyio.abc
 
 
 log = logging.getLogger(__name__)
@@ -136,7 +137,7 @@ class TCPServer:
     async def _start_idle(self) -> None:
         async with self.idle_lock:
             if self._idle_handle is None:
-                self._idle_handle = await self._task_spawner._task_group.start(self._run_idle)
+                self._idle_handle = await check.not_none(self._task_spawner._task_group).start(self._run_idle)  # type: ignore  # noqa
 
     async def _stop_idle(self) -> None:
         async with self.idle_lock:
