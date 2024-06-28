@@ -25,7 +25,7 @@ def _main():
         '-d',
         '-p', '9080:9080',
         img_name,
-        'sleep', 'infinity'
+        'sleep', 'infinity',
     ]).decode().strip()
     print(f'{ctr_id=}')
 
