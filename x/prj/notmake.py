@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 """
+TODO:
+ - import pip._vendor.tomli?
+
 Responsibilities:
  - pyenv (./interp)
  - venvs
