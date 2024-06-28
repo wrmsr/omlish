@@ -121,7 +121,7 @@ all = { interp = "@11", requires = "requirements-dev.txt" }
 default = { interp = "@11", requires = "requirements-ext.txt"  }
 docker = { docker = "omlish-dev" }
 docker-amd64 = { docker = "omlish-dev-amd64" }
-debug = { interp = "@11,debug" }
+debug = { interp = "@11-debug" }
 "12" = { interp = "@12" }
 "13" = { interp = "@13" }
 """
@@ -136,14 +136,15 @@ def _load_toml() -> ta.Any:
     return toml.loads(_TEST_TOML)
 
 
-def _find_docker_container(name: str) -> str:
-    raise NotImplementedError
+def _find_service_container(cfg_path: str, svc_name: str) -> str:
+    out = subprocess.check_output(['docker-compose', '-f', cfg_path, 'ps', '-q', svc_name])
+    return out.decode().strip()
 
 
 def _main(argv: ta.Optional[ta.Sequence[str]] = None) -> None:
     print(_read_versions_file())
     print(_load_toml())
-    print(_find_docker_container('omlish-dev'))
+    print(_find_service_container('docker/docker-compose.yml', 'omlish-dev'))
 
     ##
 
