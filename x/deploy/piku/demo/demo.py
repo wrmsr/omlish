@@ -39,7 +39,7 @@ def _main():
                     '('
                     'echo i-am-a-timebomb && '
                     f'sleep {TIMEBOMB_DELAY_S:g} && '
-                    f'sh -c \'killall5 -9 -o $PPID -o $$ && kill 1\''
+                    f'sh -c \'killall5 -9 -o $PPID -o $$ ; kill 1\''
                     f') &'
                 ),
             ])
