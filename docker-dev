@@ -7,22 +7,17 @@ else
     TTY_ENV_ARGS=""
 fi
 
-TARGET_CONTAINER="omlish-dev"
+SERVICE_NAME="omlish-dev"
 if ! [ $# -eq 0 ] ; then
     if [ "$1" == "--amd64" ] ; then
-        TARGET_CONTAINER="$TARGET_CONTAINER-amd64"
+        SERVICE_NAME="$SERVICE_NAME-amd64"
         shift
     fi
 fi
-for SEP in - _ ; do
-    DOCKER_CONTAINER="docker""$SEP""$TARGET_CONTAINER""$SEP""1"
-    if docker container inspect "$DOCKER_CONTAINER" >/dev/null 2>/dev/null ; then
-        break
-    fi
-    unset DOCKER_CONTAINER
-done
-if [ -z "$DOCKER_CONTAINER" ] ; then
-    echo "$TARGET_CONTAINER not running" 1>&2
+
+CONTAINER_ID=$(docker-compose -f 'docker/docker-compose.yml' ps -q "$SERVICE_NAME")
+if [ -z "$CONTAINER_ID" ] ; then
+    echo "$SERVICE_NAME not running" 1>&2
     exit 1
 fi
 
@@ -30,5 +25,5 @@ docker exec \
     $TTY_ENV_ARGS \
     --privileged \
     --detach-keys 'ctrl-o,ctrl-d' \
-    -it "$DOCKER_CONTAINER" \
+    -it "$CONTAINER_ID" \
     $*
