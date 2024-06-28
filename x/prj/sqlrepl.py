@@ -79,6 +79,7 @@ def _dbcli_or_fallback_exe(dbcli_mod: str, default_exe: str) -> ta.Sequence[str]
         return default_exe
     return [sys.executable, '-m', main_mod]
 
+
 def exec_mysql_cli(
         exe: ta.Sequence[str],
         spec: ServerSpec,
