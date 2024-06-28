@@ -63,6 +63,8 @@ wgpu==0.16.0
 
 hypothesis==6.104.1
 
+hexdump==3.3
+
 ##
 
 bitsandbytes>=0.42.0
