@@ -1,6 +1,3 @@
-"""
-docker exec -id ... sh -c \'(echo i-am-a-timebomb && sleep 60 && kill -9 1) &\'
-"""
 import os.path
 import subprocess
 
