@@ -77,7 +77,7 @@ class _VirtualMeta(abc.ABCMeta):
 
 
 class Virtual(metaclass=_VirtualMeta):
-    pass
+    """Like Protocol but supports more than just methods."""
 
 
 def virtual_check(virtual: type) -> ta.Callable[[Ty], Ty]:
