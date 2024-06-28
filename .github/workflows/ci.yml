@@ -1,0 +1,62 @@
+name: Ci
+
+on:
+  push:
+    branches:
+      - 'master'
+
+env:
+  IMAGE_NAME: 'omlish-ci'
+
+jobs:
+  test:
+    runs-on: 'ubuntu-latest'
+    steps:
+      - uses: 'actions/checkout@v2'
+
+      - uses: 'styfle/cancel-workflow-action@0.12.1'
+        with:
+          access_token: '${{ github.token }}'
+
+      - name: 'Cache'
+        uses: 'actions/cache@v4.0.2'
+        id: 'cache'
+        with:
+          path: '~/.cache'
+          key: >
+            omlish-ci-${{ github.ref }}-${{ hashFiles(
+              '.dockertimestamp',
+              'docker/ci/Dockerfile',
+              'requirements.txt',
+              'requirements-dev.txt'
+            ) }}
+          restore-keys: |
+            omlish-ci-${{ github.ref }}-
+            omlish-ci-
+
+      - name: 'Docker cache load'
+        run: >
+          tar -tvf ~/.cache/docker/omlish-ci.tar ||: ;
+          docker load -i ~/.cache/docker/omlish-ci.tar ||: ;
+          docker image history wrmsr/omlish-ci ||: ;
+
+      # - uses: 'mxschmitt/action-tmate@v2'
+
+      - name: 'Run tests'
+        run: >
+          OMLISH_CI_DOCKER_OPTS='-v ${{ github.workspace }}:/github/workspace'
+          make _ci
+
+      - name: 'Docker cache save'
+        if: "steps.cache.outputs.cache-hit != 'true'"
+        run: >
+          mkdir -p ~/.cache/docker/ &&
+          docker image history wrmsr/omlish-ci &&
+          docker history wrmsr/omlish-ci | tail -n+2 | awk '{print $1}' | egrep -v '<missing>' |
+            xargs docker save -o ~/.cache/docker/omlish-ci.tar wrmsr/omlish-ci
+
+      # - uses: 'ashley-taylor/junit-report-annotations-action@1.3'
+      #   if: 'always()'
+      #   with:
+      #     access-token: '${{ github.token }}'
+      #     path: 'test-results.xml'
