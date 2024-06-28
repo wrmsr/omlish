@@ -3,7 +3,7 @@ TODO:
  - cache/export ElementCollections lol
  - scope bindings, auto in root
  - injector-internal / blacklisted bindings (Injector itself, default scopes) without rebuilding ElementCollection
- - config - proxies, etc
+ - config - proxies, impl select, etc
   - config is probably shared with ElementCollection... but not 'bound', must be shared everywhere
   - InjectorRoot object?
  - ** eagers in any scope, on scope init/open
