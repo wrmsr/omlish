@@ -72,7 +72,7 @@ def serve_multiprocess(
         shutdown_event.set()
         active = False
 
-    processes: list[multiprocessing.process] = []
+    processes: list[multiprocessing.Process] = []
     while active:
         # Ignore SIGINT before creating the processes, so that they inherit the signal handling. This means that the
         # shutdown function controls the shutdown.
@@ -111,7 +111,7 @@ def serve_multiprocess(
 
 
 def _populate(
-        processes: list[multiprocessing.process],
+        processes: list[multiprocessing.Process],
         app: ASGIFramework,
         config: Config,
         worker_func: ta.Callable,
@@ -142,7 +142,7 @@ def _populate(
             time.sleep(0.1)
 
 
-def _join_exited(processes: list[multiprocessing.process]) -> int:
+def _join_exited(processes: list[multiprocessing.Process]) -> int:
     exitcode = 0
     for index in reversed(range(len(processes))):
         worker = processes[index]

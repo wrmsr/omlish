@@ -27,6 +27,7 @@ from ..taskspawner import TaskSpawner
 from ..types import AppWrapper
 from ..types import WaitableEvent
 from ..workercontext import WorkerContext
+from .types import Protocol
 
 
 BUFFER_HIGH_WATER = 2 * 2**14  # Twice the default max frame size (two frames worth)
@@ -81,7 +82,7 @@ class StreamBuffer:
         return data
 
 
-class H2Protocol:
+class H2Protocol(Protocol):
     def __init__(
         self,
         app: AppWrapper,

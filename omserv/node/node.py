@@ -43,7 +43,7 @@ async def _a_main() -> None:
 
             if len(result_rows) > 0:
                 node_row = check.single(result_rows)
-                node_id = node_row['id']  # noqa
+                node_id = node_row['id']  # type: ignore  # noqa
             else:
                 result = await conn.execute(t1.insert(), [{'name': 'home node'}])
                 node_id = check.single(result.inserted_primary_key)  # noqa

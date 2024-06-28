@@ -112,12 +112,3 @@ def parse_socket_addr(family: int, address: tuple) -> ta.Optional[tuple[str, int
         return (address[0], address[1])
     else:
         return None
-
-
-def share_socket(sock: socket) -> socket:
-    # Windows requires the socket be explicitly shared across
-    # multiple workers (processes).
-    from socket import fromshare
-
-    sock_data = sock.share(os.getpid())
-    return fromshare(sock_data)

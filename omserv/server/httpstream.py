@@ -58,7 +58,7 @@ class ResponseSummary(ta.TypedDict):
 
 
 def log_access(
-        config: Config, request: "Scope", response: "ResponseSummary", request_time: float
+        config: Config, request: "Scope", response: ta.Optional["ResponseSummary"], request_time: float
 ) -> None:
     # if self.access_logger is not None:
     #     self.access_logger.info(
@@ -216,7 +216,7 @@ class HTTPStream:
                     if self.state != ASGIHTTPState.CLOSED:
                         self.state = ASGIHTTPState.CLOSED
                         log_access(
-                            self.config, self.scope, self.response, time.time() - self.start_time
+                            self.config, self.scope, self.response, time.time() - self.start_time  # type: ignore  # FIXME  # noqa
                         )
                         await self.send(EndBody(stream_id=self.stream_id))
                         await self.send(StreamClosed(stream_id=self.stream_id))
