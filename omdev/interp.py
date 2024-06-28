@@ -23,6 +23,20 @@ log = logging.getLogger(__name__)
 REQUIRED_PYTHON_VERSION = (3, 8)
 
 
+class cached_nullary:
+    def __init__(self, fn):
+        self._fn = fn
+        self._value = self._missing = object()
+        functools.update_wrapper(self, fn)
+    def __call__(self, *args, **kwargs):  # noqa
+        if self._value is self._missing:
+            self._value = self._fn()
+        return self._value
+    def __get__(self, instance, owner):  # noqa
+        bound = instance.__dict__[self._fn.__name__] = self.__class__(self._fn.__get__(instance, owner))
+        return bound
+
+
 def _check_not_none(v: ta.Optional[T]) -> T:
     if v is None:
         raise ValueError
@@ -110,7 +124,6 @@ class Resolver:
             return sys.executable
         return None
 
-    @property
     def _resolvers(self) -> ta.Sequence[ta.Callable[[], ta.Optional[str]]]:
         return [
             self._resolve_which_python,
@@ -118,7 +131,7 @@ class Resolver:
         ]
 
     def resolve(self) -> ta.Optional[str]:
-        for fn in self._resolvers:
+        for fn in self._resolvers():
             p = fn()
             if p is not None:
                 return p
@@ -188,7 +201,7 @@ class PyenvResolver(Resolver):
 
         self._pyenv_root_kw = pyenv_root
 
-    @functools.cached_property
+    @cached_nullary
     def _pyenv_root(self) -> ta.Optional[str]:
         if self._pyenv_root_kw is not None:
             return self._pyenv_root_kw
@@ -202,41 +215,42 @@ class PyenvResolver(Resolver):
 
         return None
 
-    @functools.cached_property
+    @cached_nullary
     def _pyenv_bin(self) -> str:
-        return os.path.join(_check_not_none(self._pyenv_root), 'bin', 'pyenv')
+        return os.path.join(_check_not_none(self._pyenv_root()), 'bin', 'pyenv')
 
-    @functools.cached_property
+    @cached_nullary
     def _pyenv_install_name(self) -> str:
         return self._version + ('-debug' if self._debug else '')
 
-    @functools.cached_property
+    @cached_nullary
     def _pyenv_install_path(self) -> str:
-        return os.path.join(_check_not_none(self._pyenv_root), 'versions', self._pyenv_install_name)
+        return str(os.path.join(_check_not_none(self._pyenv_root()), 'versions', self._pyenv_install_name()))
 
-    _pyenv_basic_pio: ta.ClassVar[PyenvInstallOpts] = PyenvInstallOpts.new(opts=['-s', '-v'])
+    @cached_nullary
+    def _pyenv_basic_pio(self) -> PyenvInstallOpts:
+        return PyenvInstallOpts.new(opts=['-s', '-v'])
 
-    @functools.cached_property
+    @cached_nullary
     def _pyenv_debug_pio(self) -> PyenvInstallOpts:
         if not self._debug:
             return PyenvInstallOpts.new()
         return PyenvInstallOpts.new(opts=['-g'])
 
-    @property
     def _pyenv_pios(self) -> ta.Sequence[PyenvInstallOpts]:
         return [
-            self._pyenv_basic_pio,
-            self._pyenv_debug_pio,
+            self._pyenv_basic_pio(),
+            self._pyenv_debug_pio(),
         ]
 
     def _resolve_pyenv_existing_python(self) -> ta.Optional[str]:
-        bin_path = os.path.join(self._pyenv_install_path, 'bin', 'python')
+        bin_path = os.path.join(self._pyenv_install_path(), 'bin', 'python')
         if os.path.isfile(bin_path):
             return bin_path
         return None
 
     def _resolve_pyenv_install_python(self) -> ta.Optional[str]:
-        pio = PyenvInstallOpts.new().combine(*self._pyenv_pios)
+        pio = PyenvInstallOpts.new().combine(*self._pyenv_pios())
 
         env = dict(pio.env)
         for k, l in [
@@ -249,17 +263,16 @@ class PyenvResolver(Resolver):
                 v += ' ' + os.environ[k]
             env[k] = v
 
-        _cmd([self._pyenv_bin, 'install', *pio.opts, self._version], env=env)
+        _cmd([self._pyenv_bin(), 'install', *pio.opts, self._version], env=env)
 
-        bin_path = os.path.join(self._pyenv_install_path, 'bin', 'python')
+        bin_path = os.path.join(self._pyenv_install_path(), 'bin', 'python')
         if not os.path.isfile(bin_path):
             raise RuntimeError(f'Interpreter not found: {bin_path}')
         return bin_path
 
-    @property
     def _resolvers(self) -> ta.Sequence[ta.Callable[[], ta.Optional[str]]]:
         return [
-            *super()._resolvers,
+            *super()._resolvers(),
             self._resolve_pyenv_existing_python,
             self._resolve_pyenv_install_python,
         ]
@@ -267,9 +280,11 @@ class PyenvResolver(Resolver):
 
 class MacResolver(PyenvResolver):
 
-    _framework_pio: ta.ClassVar[PyenvInstallOpts] = PyenvInstallOpts.new(conf_opts=['--enable-framework'])
+    @cached_nullary
+    def _framework_pio(self) -> PyenvInstallOpts:
+        return PyenvInstallOpts.new(conf_opts=['--enable-framework'])
 
-    @functools.cached_property
+    @cached_nullary
     def _has_brew(self) -> bool:
         return shutil.which('brew') is not None
 
@@ -280,7 +295,7 @@ class MacResolver(PyenvResolver):
         'zlib',
     ]
 
-    @functools.cached_property
+    @cached_nullary
     def _brew_deps_pio(self) -> PyenvInstallOpts:
         cflags = []
         ldflags = []
@@ -293,7 +308,7 @@ class MacResolver(PyenvResolver):
             ldflags=ldflags,
         )
 
-    @functools.cached_property
+    @cached_nullary
     def _brew_tcl_pio(self) -> PyenvInstallOpts:
         pfx = _cmd(['brew', '--prefix', 'tcl-tk'], try_=True)
         if pfx is None:
@@ -308,30 +323,28 @@ class MacResolver(PyenvResolver):
             f"--with-tcltk-libs='-L{tcl_tk_prefix}/lib -ltcl{tcl_tk_ver} -ltk{tcl_tk_ver}'",
         ])
 
-    @functools.cached_property
+    @cached_nullary
     def _brew_ssl_pio(self) -> PyenvInstallOpts:
         pkg_config_path = ta.cast(str, _cmd(['brew', '--prefix', 'openssl']))
         if 'PKG_CONFIG_PATH' in os.environ:
             pkg_config_path += ':' + os.environ['PKG_CONFIG_PATH']
         return PyenvInstallOpts.new(env={'PKG_CONFIG_PATH': pkg_config_path})
 
-    @property
     def _pyenv_pios(self) -> ta.Sequence[PyenvInstallOpts]:
         return [
-            *super()._pyenv_pios,
-            self._framework_pio,
-            self._brew_deps_pio,
-            self._brew_tcl_pio,
-            self._brew_ssl_pio,
+            *super()._pyenv_pios(),
+            self._framework_pio(),
+            self._brew_deps_pio(),
+            self._brew_tcl_pio(),
+            self._brew_ssl_pio(),
         ]
 
 
 class LinuxResolver(PyenvResolver):
 
-    @property
     def _pyenv_pios(self) -> ta.Sequence[PyenvInstallOpts]:
         return [
-            *super()._pyenv_pios,
+            *super()._pyenv_pios(),
         ]
 
 
