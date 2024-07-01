@@ -1,30 +1,103 @@
-# import asyncio
-#
-# import h11
-# import pytest
-#
-# from ..config import Config
-# from ..tcpserver import TCPServer
-# from ..types import ASGIWrapper
-# from ..workercontext import WorkerContext
-# from .asyncio_helpers import MemoryReader
-# from .asyncio_helpers import MemoryWriter
-# from .sanity import SANITY_BODY
-# from .sanity import sanity_framework
-#
-#
+import asyncio
+import contextlib
+import socket
+
+import anyio
+import h11
+import httpx
+import pytest
+import trio
+from omlish import lang
+
+from ..config import Config
+from ..tcpserver import TCPServer
+from ..types import ASGIWrapper
+from ..workercontext import WorkerContext
+from ..workers import worker_serve
+from .sanity import SANITY_BODY
+from .sanity import sanity_framework
+
+
+def get_free_port(address: str = '') -> int:
+    """Find a free TCP port (entirely at random)"""
+
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.bind((address, 0))
+    port = s.getsockname()[1]
+    s.close()
+    return port
+
+
+def get_exception_chain(ex: BaseException) -> list[BaseException]:
+    ret: list[BaseException] = []
+    while ex is not None:
+        ret.append(ex)
+        ex = ex.__cause__
+    return ret
+
+
+@pytest.mark.asyncio
+# @pytest.mark.trio
+async def test_server_simple():
+    port = get_free_port()
+
+    async def inner():
+        async with contextlib.AsyncExitStack() as aes:
+            tt = lang.ticking_timeout(10.)
+            while True:
+                try:
+                    conn = await anyio.connect_tcp('127.0.0.1', port)
+                except (OSError, ConnectionRefusedError) as e:
+                    if not any(isinstance(ce, ConnectionRefusedError) for ce in get_exception_chain(e)):
+                        raise
+                else:
+                    await aes.enter_async_context(conn)
+                    break
+                await anyio.sleep(.1)
+                tt()
+
+            client = h11.Connection(h11.CLIENT)
+            await conn.send(client.send(
+                h11.Request(
+                    method="POST",
+                    target="/",
+                    headers=[
+                        (b"host", b"hypercorn"),
+                        (b"connection", b"close"),
+                        (b"content-length", b"%d" % len(SANITY_BODY)),
+                    ],
+                )
+            ))
+            await conn.send(client.send(h11.Data(data=SANITY_BODY)))  # type: ignore
+            await conn.send(client.send(h11.EndOfMessage()))  # type: ignore
+
+            buf = await conn.receive(1024)
+            print(buf)
+            await conn.aclose()
+
+    async with anyio.create_task_group() as tg:
+        # tg.start_soon(
+        #     worker_serve,
+        #     ASGIWrapper(sanity_framework),
+        #     Config(
+        #         bind=(f'127.0.0.1:{port}',)
+        #     ),
+        # )
+        tg.start_soon(inner)
+
+
 # @pytest.mark.asyncio
 # async def test_server_asyncio():
+#
 #     event_loop: asyncio.AbstractEventLoop = asyncio.get_running_loop()
 #
 #     server = TCPServer(
 #         ASGIWrapper(sanity_framework),
-#         event_loop,
 #         Config(),
 #         WorkerContext(None),
-#         MemoryReader(),  # type: ignore
-#         MemoryWriter(),  # type: ignore
+#         event_loop,
 #     )
+#
 #     task = event_loop.create_task(server.run())
 #     client = h11.Connection(h11.CLIENT)
 #     await server.reader.send(  # type: ignore

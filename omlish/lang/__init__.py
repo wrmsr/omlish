@@ -42,6 +42,7 @@ from .contextmanagers import NOP_CONTEXT_MANAGED  # noqa
 from .contextmanagers import NOP_CONTEXT_MANAGER  # noqa
 from .contextmanagers import NopContextManaged  # noqa
 from .contextmanagers import NopContextManager  # noqa
+from .contextmanagers import a_defer  # noqa
 from .contextmanagers import attr_setting  # noqa
 from .contextmanagers import breakpoint_on_exception  # noqa
 from .contextmanagers import context_var_setting  # noqa

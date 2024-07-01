@@ -58,6 +58,14 @@ def defer(fn: ta.Callable) -> ta.Iterator[ta.Callable]:
         fn()
 
 
+@contextlib.asynccontextmanager
+async def a_defer(fn: ta.Awaitable) -> ta.Iterator[ta.Callable]:
+    try:
+        yield fn
+    finally:
+        await fn
+
+
 @contextlib.contextmanager
 def maybe_managing(obj: T) -> ta.Iterator[T]:
     if isinstance(obj, ta.ContextManager):

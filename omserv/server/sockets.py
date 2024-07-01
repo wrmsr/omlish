@@ -24,7 +24,7 @@ class SocketTypeError(Exception):
 
 def _create_sockets(
         config: Config,
-        binds: list[str],
+        binds: ta.Sequence[str],
         type_: int = socket.SOCK_STREAM,
 ) -> list[socket.socket]:
     sockets: list[socket.socket] = []
