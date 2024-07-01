@@ -160,7 +160,7 @@ async def test_server_simple_trio():
     await _test_server_simple()
 
 
-async def _test_httpx_client():
+async def _test_httpx_client(use_http2):
     port = get_free_port()
     sev = anyio.Event()
 
@@ -171,7 +171,10 @@ async def _test_httpx_client():
             tt = lang.ticking_timeout(5.)
             while True:
                 try:
-                    async with httpx.AsyncClient() as client:
+                    async with httpx.AsyncClient(
+                        http1=not use_http2,
+                        http2=use_http2,
+                    ) as client:
                         resp = await client.post(f'http://127.0.0.1:{port}', content=SANITY_REQUEST_BODY)
                 except httpx.ConnectError as e:  # noqa
                     await anyio.sleep(.1)
@@ -195,12 +198,12 @@ async def _test_httpx_client():
 
 @pytest.mark.asyncio
 async def test_httpx_client_asyncio():
-    await _test_httpx_client()
+    await _test_httpx_client(True)
 
 
 @pytest.mark.trio
 async def test_httpx_client_trio():
-    await _test_httpx_client()
+    await _test_httpx_client(True)
 
 
 async def _test_curl(use_h2c: bool) -> None:
