@@ -18,7 +18,8 @@ import urllib3
 from omlish import dataclasses as dc
 from omlish import check
 from omlish import lang
-from omserv.secrets import load_secrets
+
+from ..secrets import load_secrets
 
 
 ##
