@@ -4,6 +4,7 @@ TODO:
  - h2c test - looks like httpx doesn't do that
   - https://github.com/encode/httpx/issues/503
   - https://python-hyper.org/projects/hyper-h2/en/stable/negotiating-http2.html
+ - generic pytest async loop switch...
 """
 import contextlib
 import functools
@@ -48,6 +49,13 @@ def get_exception_chain(ex: BaseException) -> list[BaseException]:
     return ret
 
 
+CONNECTION_REFUSED_EXCEPTION_TYPES: tuple[type[Exception], ...] = (OSError, ConnectionRefusedError)
+
+
+def is_connection_refused_exception(e: Exception) -> bool:
+    return any(isinstance(ce, ConnectionRefusedError) for ce in get_exception_chain(e))
+
+
 async def anyio_eof_to_empty(fn: ta.Callable[..., ta.Awaitable[T]], *args: ta.Any, **kwargs: ta.Any) -> T | bytes:
     try:
         return await fn(*args, **kwargs)
@@ -72,8 +80,8 @@ async def _test_server_simple():
             while True:
                 try:
                     conn = await anyio.connect_tcp('127.0.0.1', port)
-                except (OSError, ConnectionRefusedError) as e:
-                    if not any(isinstance(ce, ConnectionRefusedError) for ce in get_exception_chain(e)):
+                except CONNECTION_REFUSED_EXCEPTION_TYPES as e:
+                    if not is_connection_refused_exception(e):
                         raise
                 else:
                     await aes.enter_async_context(conn)
@@ -192,3 +200,48 @@ async def test_httpx_client_asyncio():
 @pytest.mark.trio
 async def test_httpx_client_trio():
     await _test_httpx_client()
+
+
+async def _test_curl():
+    port = get_free_port()
+    sev = anyio.Event()
+
+    async def inner():
+        async with contextlib.AsyncExitStack() as aes:
+            aes.enter_context(lang.defer(sev.set))
+
+            tt = lang.ticking_timeout(5.)
+            while True:
+                try:
+                    conn = await anyio.connect_tcp('127.0.0.1', port)
+                except CONNECTION_REFUSED_EXCEPTION_TYPES as e:
+                    if not is_connection_refused_exception(e):
+                        raise
+                else:
+                    await conn.aclose()
+
+                    break
+
+                await anyio.sleep(.1)
+                tt()
+
+    async with anyio.create_task_group() as tg:
+        tg.start_soon(functools.partial(
+            worker_serve,
+            ASGIWrapper(sanity_framework),
+            Config(
+                bind=(f'127.0.0.1:{port}',)
+            ),
+            shutdown_trigger=sev.wait,
+        ))
+        tg.start_soon(inner)
+
+
+@pytest.mark.asyncio
+async def test_curl_asyncio():
+    await _test_curl()
+
+
+@pytest.mark.trio
+async def test_curl_trio():
+    await _test_curl()
