@@ -23,7 +23,9 @@ from .. import headers
 from ..config import Config
 from ..types import ASGIWrapper
 from ..workers import worker_serve
-from .sanity import SANITY_BODY
+from .hello import hello_app
+from .sanity import SANITY_REQUEST_BODY
+from .sanity import SANITY_RESPONSE_BODY
 from .sanity import sanity_framework
 
 
@@ -97,11 +99,11 @@ async def _test_server_simple():
                     headers=[
                         (b'host', b'hypercorn'),
                         (b'connection', b'close'),
-                        (b'content-length', b'%d' % len(SANITY_BODY)),
+                        (b'content-length', b'%d' % len(SANITY_REQUEST_BODY)),
                     ],
                 )
             )))
-            await conn.send(client.send(h11.Data(data=SANITY_BODY)))  # type: ignore
+            await conn.send(client.send(h11.Data(data=SANITY_REQUEST_BODY)))  # type: ignore
             await conn.send(client.send(h11.EndOfMessage()))  # type: ignore
             # await conn.send_eof()
 
@@ -128,7 +130,7 @@ async def _test_server_simple():
                     http_version=b'1.1',
                     reason=b'',
                 ),
-                h11.Data(data=b'Hello & Goodbye'),
+                h11.Data(data=SANITY_RESPONSE_BODY),
                 h11.EndOfMessage(headers=[]),
             ]
 
@@ -170,7 +172,7 @@ async def _test_httpx_client():
             while True:
                 try:
                     async with httpx.AsyncClient() as client:
-                        resp = await client.post(f'http://127.0.0.1:{port}', content=SANITY_BODY)
+                        resp = await client.post(f'http://127.0.0.1:{port}', content=SANITY_REQUEST_BODY)
                 except httpx.ConnectError as e:  # noqa
                     await anyio.sleep(.1)
                     tt()
@@ -201,48 +203,127 @@ async def test_httpx_client_trio():
     await _test_httpx_client()
 
 
-# async def _test_curl():
-#     port = get_free_port()
-#     sev = anyio.Event()
-#
-#     async def inner():
-#         async with contextlib.AsyncExitStack() as aes:
-#             aes.enter_context(lang.defer(sev.set))
-#
-#             tt = lang.ticking_timeout(5.)
-#             while True:
-#                 tt()
-#                 try:
-#                     conn = await anyio.connect_tcp('127.0.0.1', port)
-#                 except CONNECTION_REFUSED_EXCEPTION_TYPES as e:
-#                     if not is_connection_refused_exception(e):
-#                         raise
-#                     await anyio.sleep(.1)
-#                     continue
-#                 await conn.aclose()
-#                 break
-#
-#             proc = await anyio.open_process([
-#                 'curl', '-v', '--http2', '-XPOST', f'http://localhost:{port}', '-d', str(SANITY_BODY),
-#             ])
-#
-#     async with anyio.create_task_group() as tg:
-#         tg.start_soon(functools.partial(
-#             worker_serve,
-#             ASGIWrapper(sanity_framework),
-#             Config(
-#                 bind=(f'127.0.0.1:{port}',)
-#             ),
-#             shutdown_trigger=sev.wait,
-#         ))
-#         tg.start_soon(inner)
-#
-#
-# @pytest.mark.asyncio
-# async def test_curl_asyncio():
-#     await _test_curl()
-#
-#
-# @pytest.mark.trio
-# async def test_curl_trio():
-#     await _test_curl()
+async def _test_curl(use_h2c: bool) -> None:
+    port = get_free_port()
+    sev = anyio.Event()
+
+    async def inner():
+        async with contextlib.AsyncExitStack() as aes:
+            aes.enter_context(lang.defer(sev.set))
+
+            tt = lang.ticking_timeout(5.)
+            while True:
+                tt()
+                try:
+                    conn = await anyio.connect_tcp('127.0.0.1', port)
+                except CONNECTION_REFUSED_EXCEPTION_TYPES as e:
+                    if not is_connection_refused_exception(e):
+                        raise
+                    await anyio.sleep(.1)
+                    continue
+                await conn.aclose()
+                break
+
+            async with await anyio.open_process([
+                'curl',
+                '-v',
+                *(('--http2',) if use_h2c else ()),
+                f'http://localhost:{port}',
+                '-d', SANITY_REQUEST_BODY.decode(),
+            ]) as proc:
+                await proc.wait()
+                assert proc.returncode == 0
+
+                out = await check.not_none(proc.stdout).receive()
+                assert out == SANITY_RESPONSE_BODY
+
+                err = await check.not_none(proc.stderr).receive()
+                err_lines = [l.strip() for l in err.decode().splitlines()]
+                assert '> Upgrade: h2c' in err_lines
+
+    async with anyio.create_task_group() as tg:
+        tg.start_soon(functools.partial(
+            worker_serve,
+            ASGIWrapper(sanity_framework),
+            Config(
+                bind=(f'127.0.0.1:{port}',)
+            ),
+            shutdown_trigger=sev.wait,
+        ))
+        tg.start_soon(inner)
+
+
+@pytest.mark.asyncio
+async def test_curl_asyncio():
+    await _test_curl(True)
+
+
+@pytest.mark.trio
+async def test_curl_trio():
+    await _test_curl(True)
+
+
+async def _test_curl_h2() -> None:
+    port = get_free_port()
+    sev = anyio.Event()
+
+    async def inner():
+        async with contextlib.AsyncExitStack() as aes:
+            aes.enter_context(lang.defer(sev.set))
+
+            tt = lang.ticking_timeout(5.)
+            while True:
+                tt()
+                try:
+                    conn = await anyio.connect_tcp('127.0.0.1', port)
+                except CONNECTION_REFUSED_EXCEPTION_TYPES as e:
+                    if not is_connection_refused_exception(e):
+                        raise
+                    await anyio.sleep(.1)
+                    continue
+                await conn.aclose()
+                break
+
+            async with await anyio.open_process([
+                'curl',
+                '-v',
+                '--http2',
+                f'http://localhost:{port}',
+            ]) as proc:
+                await proc.wait()
+                assert proc.returncode == 0
+
+                out = await check.not_none(proc.stdout).receive()
+                assert out.decode().startswith('Hello, world!')
+
+                err = await check.not_none(proc.stderr).receive()
+                err_lines = [l.strip() for l in err.decode().splitlines()]
+                for p in [
+                    '< upgrade: h2c',
+                    '* Received 101',
+                    '* Using HTTP2, server supports multiplexing',
+                    '* Connection state changed (HTTP/2 confirmed)',
+                    '< HTTP/2 200',
+                ]:
+                    assert p in err_lines
+
+    async with anyio.create_task_group() as tg:
+        tg.start_soon(functools.partial(
+            worker_serve,
+            ASGIWrapper(hello_app),
+            Config(
+                bind=(f'127.0.0.1:{port}',)
+            ),
+            shutdown_trigger=sev.wait,
+        ))
+        tg.start_soon(inner)
+
+
+@pytest.mark.asyncio
+async def test_curl_h2_asyncio():
+    await _test_curl_h2()
+
+
+@pytest.mark.trio
+async def test_curl_h2_trio():
+    await _test_curl_h2()
