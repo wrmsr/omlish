@@ -125,8 +125,7 @@ class TCPServer:
                 anyio.BusyResourceError,
                 anyio.ClosedResourceError,
         ):
-            # They're already gone, nothing to do
-            # Or it is a SSL stream
+            # They're already gone, nothing to do - or it is a SSL stream
             pass
         await self.stream.aclose()
 

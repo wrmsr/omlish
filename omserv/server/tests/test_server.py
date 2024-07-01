@@ -1,6 +1,7 @@
 import contextlib
 import functools
 import socket
+import typing as ta
 
 from omlish import check
 from omlish import lang
@@ -15,8 +16,11 @@ from .sanity import SANITY_BODY
 from .sanity import sanity_framework
 
 
+T = ta.TypeVar('T')
+
+
 def get_free_port(address: str = '') -> int:
-    '''Find a free TCP port (entirely at random)'''
+    """Find a free TCP port (entirely at random)"""
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind((address, 0))
@@ -34,8 +38,15 @@ def get_exception_chain(ex: BaseException) -> list[BaseException]:
     return ret
 
 
-@pytest.mark.asyncio
-# @pytest.mark.trio
+async def anyio_eof_to_empty(fn: ta.Callable[..., ta.Awaitable[T]], *args: ta.Any, **kwargs: ta.Any) -> T:
+    try:
+        return await fn(*args, **kwargs)
+    except anyio.EndOfStream:
+        return b''
+
+
+# @pytest.mark.asyncio
+@pytest.mark.trio
 async def test_server_simple():
     port = get_free_port()
     sev = anyio.Event()
@@ -71,12 +82,13 @@ async def test_server_simple():
             )))
             await conn.send(client.send(h11.Data(data=SANITY_BODY)))  # type: ignore
             await conn.send(client.send(h11.EndOfMessage()))  # type: ignore
+            # await conn.send_eof()
 
             events = []
             while True:
                 event = client.next_event()
                 if event == h11.NEED_DATA:
-                    data = await conn.receive()
+                    data = await anyio_eof_to_empty(conn.receive)
                     client.receive_data(data)
                 elif isinstance(event, h11.ConnectionClosed):
                     break
