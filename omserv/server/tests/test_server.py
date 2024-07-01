@@ -1,26 +1,21 @@
-import asyncio
 import contextlib
 import functools
 import socket
 
+from omlish import lang
 import anyio
 import h11
-import httpx
 import pytest
-import trio
-from omlish import lang
 
 from ..config import Config
-from ..tcpserver import TCPServer
 from ..types import ASGIWrapper
-from ..workercontext import WorkerContext
 from ..workers import worker_serve
 from .sanity import SANITY_BODY
 from .sanity import sanity_framework
 
 
 def get_free_port(address: str = '') -> int:
-    """Find a free TCP port (entirely at random)"""
+    '''Find a free TCP port (entirely at random)'''
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind((address, 0))
@@ -63,12 +58,12 @@ async def test_server_simple():
             client = h11.Connection(h11.CLIENT)
             await conn.send(client.send(
                 h11.Request(
-                    method="POST",
-                    target="/",
+                    method='POST',
+                    target='/',
                     headers=[
-                        (b"host", b"hypercorn"),
-                        (b"connection", b"close"),
-                        (b"content-length", b"%d" % len(SANITY_BODY)),
+                        (b'host', b'hypercorn'),
+                        (b'connection', b'close'),
+                        (b'content-length', b'%d' % len(SANITY_BODY)),
                     ],
                 )
             ))
@@ -90,15 +85,15 @@ async def test_server_simple():
                 h11.Response(
                     status_code=200,
                     headers=[
-                        (b"content-length", b"15"),
-                        (b"date", b"Thu, 01 Jan 1970 01:23:20 GMT"),
-                        (b"server", b"hypercorn-h11"),
-                        (b"connection", b"close"),
+                        (b'content-length', b'15'),
+                        (b'date', b'Thu, 01 Jan 1970 01:23:20 GMT'),
+                        (b'server', b'hypercorn-h11'),
+                        (b'connection', b'close'),
                     ],
-                    http_version=b"1.1",
-                    reason=b"",
+                    http_version=b'1.1',
+                    reason=b'',
                 ),
-                h11.Data(data=b"Hello & Goodbye"),
+                h11.Data(data=b'Hello & Goodbye'),
                 h11.EndOfMessage(headers=[]),
             ]
 
