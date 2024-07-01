@@ -9,6 +9,7 @@ import anyio
 import h11
 import pytest
 
+from .. import headers
 from ..config import Config
 from ..types import ASGIWrapper
 from ..workers import worker_serve
@@ -43,6 +44,11 @@ async def anyio_eof_to_empty(fn: ta.Callable[..., ta.Awaitable[T]], *args: ta.An
         return await fn(*args, **kwargs)
     except anyio.EndOfStream:
         return b''
+
+
+@pytest.fixture(autouse=True)
+def headers_time_patch(monkeypatch) -> None:
+    monkeypatch.setattr(headers, 'time', lambda: 5000)
 
 
 # @pytest.mark.asyncio
