@@ -29,7 +29,13 @@ async def _handle(
         call_soon: ta.Callable,
 ) -> None:
     try:
-        await app(scope, receive, send, sync_spawn, call_soon)
+        await app(
+            scope,
+            receive,
+            send,
+            sync_spawn,
+            call_soon,
+        )
     except anyio.get_cancelled_exc_class():
         raise
     except BaseExceptionGroup as error:
@@ -58,7 +64,7 @@ class TaskSpawner:
             scope: Scope,
             send: ta.Callable[[ta.Optional[ASGISendEvent]], ta.Awaitable[None]],
     ) -> ta.Callable[[ASGIReceiveEvent], ta.Awaitable[None]]:
-        app_send_channel, app_receive_channel = anyio.create_memory_object_stream[bytes](config.max_app_queue_size)
+        app_send_channel, app_receive_channel = anyio.create_memory_object_stream[ta.Any](config.max_app_queue_size)
         check.not_none(self._task_group).start_soon(  # type: ignore  # FIXME
             _handle,
             app,
