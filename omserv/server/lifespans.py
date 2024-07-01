@@ -60,10 +60,18 @@ class Lifespan:
                 anyio.to_thread.run_sync,
                 anyio.from_thread.run,
             )
-        except LifespanFailureError:
-            # Lifespan failures should crash the server
+        except (LifespanFailureError, anyio.get_cancelled_exc_class()):
             raise
-        except Exception:
+        except (BaseExceptionGroup, Exception) as error:
+            if isinstance(error, BaseExceptionGroup):
+                failure_error = error.subgroup(LifespanFailureError)
+                if failure_error is not None:
+                    # Lifespan failures should crash the server
+                    raise failure_error
+                reraise_error = error.subgroup((LifespanFailureError, anyio.get_cancelled_exc_class()))
+                if reraise_error is not None:
+                    raise reraise_error
+
             self.supported = False
             if not self.startup.is_set():
                 log.warning("ASGI Framework Lifespan error, continuing without Lifespan support")
