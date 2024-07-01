@@ -75,8 +75,32 @@ async def test_server_simple():
             await conn.send(client.send(h11.Data(data=SANITY_BODY)))  # type: ignore
             await conn.send(client.send(h11.EndOfMessage()))  # type: ignore
 
-            buf = await conn.receive(1024)
-            print(buf)
+            events = []
+            while True:
+                event = client.next_event()
+                if event == h11.NEED_DATA:
+                    data = await conn.receive()
+                    client.receive_data(data)
+                elif isinstance(event, h11.ConnectionClosed):
+                    break
+                else:
+                    events.append(event)
+
+            assert events == [
+                h11.Response(
+                    status_code=200,
+                    headers=[
+                        (b"content-length", b"15"),
+                        (b"date", b"Thu, 01 Jan 1970 01:23:20 GMT"),
+                        (b"server", b"hypercorn-h11"),
+                        (b"connection", b"close"),
+                    ],
+                    http_version=b"1.1",
+                    reason=b"",
+                ),
+                h11.Data(data=b"Hello & Goodbye"),
+                h11.EndOfMessage(headers=[]),
+            ]
 
             await conn.aclose()
 
@@ -90,67 +114,3 @@ async def test_server_simple():
             shutdown_trigger=sev.wait,
         ))
         tg.start_soon(inner)
-
-
-# @pytest.mark.asyncio
-# async def test_server_asyncio():
-#
-#     event_loop: asyncio.AbstractEventLoop = asyncio.get_running_loop()
-#
-#     server = TCPServer(
-#         ASGIWrapper(sanity_framework),
-#         Config(),
-#         WorkerContext(None),
-#         event_loop,
-#     )
-#
-#     task = event_loop.create_task(server.run())
-#     client = h11.Connection(h11.CLIENT)
-#     await server.reader.send(  # type: ignore
-#         client.send(
-#             h11.Request(
-#                 method="POST",
-#                 target="/",
-#                 headers=[
-#                     (b"host", b"hypercorn"),
-#                     (b"connection", b"close"),
-#                     (b"content-length", b"%d" % len(SANITY_BODY)),
-#                 ],
-#             )
-#         )
-#     )
-#     await server.reader.send(client.send(h11.Data(data=SANITY_BODY)))  # type: ignore
-#     await server.reader.send(client.send(h11.EndOfMessage()))  # type: ignore
-#     events = []
-#     while True:
-#         event = client.next_event()
-#         if event == h11.NEED_DATA:
-#             data = await server.writer.receive()  # type: ignore
-#             client.receive_data(data)
-#         elif isinstance(event, h11.ConnectionClosed):
-#             break
-#         else:
-#             events.append(event)
-#
-#     assert events == [
-#         h11.Response(
-#             status_code=200,
-#             headers=[
-#                 (b"content-length", b"15"),
-#                 (b"date", b"Thu, 01 Jan 1970 01:23:20 GMT"),
-#                 (b"server", b"hypercorn-h11"),
-#                 (b"connection", b"close"),
-#             ],
-#             http_version=b"1.1",
-#             reason=b"",
-#         ),
-#         h11.Data(data=b"Hello & Goodbye"),
-#         h11.EndOfMessage(headers=[]),
-#     ]
-#     server.reader.close()  # type: ignore
-#     await task
-#
-#
-# @pytest.mark.trio
-# async def test_server_trio():
-#     pass
