@@ -22,10 +22,10 @@ async def sanity_framework(
             break
 
         elif event['type'] == 'lifespan.startup':
-            await send({'type': 'lifspan.startup.complete'})
+            await send({'type': 'lifespan.startup.complete'})
 
         elif event['type'] == 'lifespan.shutdown':
-            await send({'type': 'lifspan.shutdown.complete'})
+            await send({'type': 'lifespan.shutdown.complete'})
 
         elif event['type'] == 'http.request' and event.get('more_body', False):
             body += event['body']
