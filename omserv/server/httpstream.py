@@ -105,6 +105,7 @@ class HTTPStream:
             return
         elif isinstance(event, Request):
             self.start_time = time.time()
+
             path, _, query_string = event.raw_path.partition(b"?")
             self.scope = {
                 "type": "http",
@@ -120,6 +121,7 @@ class HTTPStream:
                 "server": self.server,
                 "extensions": {},
             }
+
             if event.http_version in PUSH_VERSIONS:
                 self.scope["extensions"]["http.response.push"] = {}
 
@@ -138,8 +140,10 @@ class HTTPStream:
             await self.app_put(
                 {"type": "http.request", "body": bytes(event.data), "more_body": True}
             )
+
         elif isinstance(event, EndBody):
             await self.app_put({"type": "http.request", "body": b"", "more_body": False})
+
         elif isinstance(event, StreamClosed):
             self.closed = True
             if self.state != ASGIHTTPState.CLOSED:
@@ -154,9 +158,11 @@ class HTTPStream:
                 if self.state == ASGIHTTPState.REQUEST:
                     await self._send_error_response(500)
                 await self.send(StreamClosed(stream_id=self.stream_id))
+
         else:
             if message["type"] == "http.response.start" and self.state == ASGIHTTPState.REQUEST:
                 self.response = message
+
             elif (
                     message["type"] == "http.response.push"
                     and self.scope["http_version"] in PUSH_VERSIONS
@@ -177,6 +183,7 @@ class HTTPStream:
                         raw_path=message["path"].encode(),
                     )
                 )
+
             elif (
                     message["type"] == "http.response.early_hint"
                     and self.scope["http_version"] in EARLY_HINTS_VERSIONS
@@ -190,6 +197,7 @@ class HTTPStream:
                         status_code=103,
                     )
                 )
+
             elif message["type"] == "http.response.body" and self.state in {
                 ASGIHTTPState.REQUEST,
                 ASGIHTTPState.RESPONSE,
@@ -221,6 +229,7 @@ class HTTPStream:
                         )
                         await self.send(EndBody(stream_id=self.stream_id))
                         await self.send(StreamClosed(stream_id=self.stream_id))
+
             else:
                 raise UnexpectedMessageError(self.state, message["type"])
 
