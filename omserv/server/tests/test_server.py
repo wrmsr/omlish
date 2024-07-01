@@ -39,7 +39,7 @@ def get_exception_chain(ex: BaseException) -> list[BaseException]:
     return ret
 
 
-async def anyio_eof_to_empty(fn: ta.Callable[..., ta.Awaitable[T]], *args: ta.Any, **kwargs: ta.Any) -> T:
+async def anyio_eof_to_empty(fn: ta.Callable[..., ta.Awaitable[T]], *args: ta.Any, **kwargs: ta.Any) -> T | bytes:
     try:
         return await fn(*args, **kwargs)
     except anyio.EndOfStream:
