@@ -1,3 +1,10 @@
+"""
+TODO:
+ - assert no exceptions - hook (/fingers-crossed) log.exception lol
+ - h2c test - looks like httpx doesn't do that
+  - https://github.com/encode/httpx/issues/503
+  - https://python-hyper.org/projects/hyper-h2/en/stable/negotiating-http2.html
+"""
 import contextlib
 import functools
 import socket
@@ -7,6 +14,7 @@ from omlish import check
 from omlish import lang
 import anyio
 import h11
+import httpx
 import pytest
 import sniffio
 
@@ -140,3 +148,47 @@ async def test_server_simple_asyncio():
 async def test_server_simple_trio():
     assert sniffio.current_async_library() == 'trio'
     await _test_server_simple()
+
+
+async def _test_httpx_client():
+    port = get_free_port()
+    sev = anyio.Event()
+
+    async def inner():
+        async with contextlib.AsyncExitStack() as aes:
+            aes.enter_context(lang.defer(sev.set))
+
+            tt = lang.ticking_timeout(5.)
+            while True:
+                try:
+                    async with httpx.AsyncClient() as client:
+                        resp = await client.post(f'http://127.0.0.1:{port}', data=SANITY_BODY)
+                except httpx.ConnectError as e:
+                    pass
+                else:
+                    assert resp.status_code == 200
+                    break
+
+                await anyio.sleep(.1)
+                tt()
+
+    async with anyio.create_task_group() as tg:
+        tg.start_soon(functools.partial(
+            worker_serve,
+            ASGIWrapper(sanity_framework),
+            Config(
+                bind=(f'127.0.0.1:{port}',)
+            ),
+            shutdown_trigger=sev.wait,
+        ))
+        tg.start_soon(inner)
+
+
+@pytest.mark.asyncio
+async def test_httpx_client_asyncio():
+    await _test_httpx_client()
+
+
+@pytest.mark.trio
+async def test_httpx_client_trio():
+    await _test_httpx_client()
