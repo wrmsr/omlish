@@ -4,10 +4,14 @@ import wsgiref.handlers
 from .config import Config
 
 
+def _now() -> float:
+    return time.time()
+
+
 def response_headers(config: Config, protocol: str) -> list[tuple[bytes, bytes]]:
     headers = []
     if config.include_date_header:
-        headers.append((b'date', wsgiref.handlers.format_date_time(time.time()).encode('ascii')))
+        headers.append((b'date', wsgiref.handlers.format_date_time(_now()).encode('ascii')))
     if config.include_server_header:
         headers.append((b'server', f'hypercorn-{protocol}'.encode('ascii')))
 
