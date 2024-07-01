@@ -61,7 +61,7 @@ triton==2.3.1; platform_machine == 'x86_64'
 
 wgpu==0.16.0
 
-hypothesis==6.104.1
+hypothesis==6.104.2
 
 hexdump==3.3
 
@@ -148,7 +148,7 @@ blobfile==2.1.1
 
 ### infra
 
-boto3>=1.34.136
+boto3>=1.34.137
 
 google-cloud-compute==1.19.0
 
