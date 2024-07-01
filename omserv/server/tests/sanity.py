@@ -3,7 +3,8 @@ from ..types import ASGISendCallable
 from ..types import Scope
 
 
-SANITY_BODY = b'Hello Hypercorn'
+SANITY_REQUEST_BODY = b'Hello Hypercorn'
+SANITY_RESPONSE_BODY = b'Hello & Goodbye'
 
 
 async def sanity_framework(
@@ -32,8 +33,8 @@ async def sanity_framework(
 
         elif event['type'] == 'http.request' and not event.get('more_body', False):
             body += event['body']
-            assert body == SANITY_BODY
-            response = b'Hello & Goodbye'
+            assert body == SANITY_REQUEST_BODY
+            response = SANITY_RESPONSE_BODY
             content_length = len(response)
             await send(
                 {
@@ -46,5 +47,5 @@ async def sanity_framework(
             break
 
         elif event['type'] == 'websocket.receive':
-            assert event['bytes'] == SANITY_BODY
+            assert event['bytes'] == SANITY_REQUEST_BODY
             await send({'type': 'websocket.send', 'text': 'Hello & Goodbye'})
