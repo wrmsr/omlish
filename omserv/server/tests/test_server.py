@@ -8,6 +8,7 @@ from omlish import lang
 import anyio
 import h11
 import pytest
+import sniffio
 
 from .. import headers
 from ..config import Config
@@ -131,9 +132,11 @@ async def _test_server_simple():
 
 @pytest.mark.asyncio
 async def test_server_simple_asyncio():
+    assert sniffio.current_async_library() == 'asyncio'
     await _test_server_simple()
 
 
 @pytest.mark.trio
 async def test_server_simple_trio():
+    assert sniffio.current_async_library() == 'trio'
     await _test_server_simple()
