@@ -59,7 +59,7 @@ def defer(fn: ta.Callable) -> ta.Iterator[ta.Callable]:
 
 
 @contextlib.asynccontextmanager
-async def a_defer(fn: ta.Awaitable) -> ta.Iterator[ta.Callable]:
+async def a_defer(fn: ta.Awaitable) -> ta.AsyncIterator[ta.Awaitable]:
     try:
         yield fn
     finally:
