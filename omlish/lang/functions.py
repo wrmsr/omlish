@@ -113,7 +113,10 @@ def void(*args, **kwargs) -> ta.NoReturn:
     raise VoidException
 
 
-def ticking_timeout(s: ta.Union[int, float, None], ex: TimeoutError) -> ta.Callable[[], None]:
+def ticking_timeout(
+        s: int | float | None,
+        ex: type[BaseException] | BaseException = TimeoutError,
+) -> ta.Callable[[], None]:
     if s is None:
         return lambda: None
     def tick():  # noqa
