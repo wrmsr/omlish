@@ -75,7 +75,7 @@ class TaskSpawner:
             anyio.to_thread.run_sync,
             anyio.from_thread.run,
         )
-        return app_send_channel.send  # type: ignore  # FIXME
+        return app_send_channel.send
 
     def spawn(self, func: ta.Callable, *args: ta.Any) -> None:
         check.not_none(self._task_group).start_soon(func, *args)  # type: ignore  # FIXME
