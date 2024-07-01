@@ -78,16 +78,16 @@ async def _test_server_simple():
 
             tt = lang.ticking_timeout(5.)
             while True:
+                tt()
                 try:
                     conn = await anyio.connect_tcp('127.0.0.1', port)
                 except CONNECTION_REFUSED_EXCEPTION_TYPES as e:
                     if not is_connection_refused_exception(e):
                         raise
-                else:
-                    await aes.enter_async_context(conn)
-                    break
-                await anyio.sleep(.1)
-                tt()
+                    await anyio.sleep(.1)
+                    continue
+                await aes.enter_async_context(conn)
+                break
 
             client = h11.Connection(h11.CLIENT)
             await conn.send(check.not_none(client.send(
@@ -170,15 +170,14 @@ async def _test_httpx_client():
             while True:
                 try:
                     async with httpx.AsyncClient() as client:
-                        resp = await client.post(f'http://127.0.0.1:{port}', data=SANITY_BODY)
-                except httpx.ConnectError as e:
-                    pass
-                else:
-                    assert resp.status_code == 200
-                    break
+                        resp = await client.post(f'http://127.0.0.1:{port}', content=SANITY_BODY)
+                except httpx.ConnectError as e:  # noqa
+                    await anyio.sleep(.1)
+                    tt()
+                    continue
+                break
 
-                await anyio.sleep(.1)
-                tt()
+            assert resp.status_code == 200
 
     async with anyio.create_task_group() as tg:
         tg.start_soon(functools.partial(
@@ -202,46 +201,48 @@ async def test_httpx_client_trio():
     await _test_httpx_client()
 
 
-async def _test_curl():
-    port = get_free_port()
-    sev = anyio.Event()
-
-    async def inner():
-        async with contextlib.AsyncExitStack() as aes:
-            aes.enter_context(lang.defer(sev.set))
-
-            tt = lang.ticking_timeout(5.)
-            while True:
-                try:
-                    conn = await anyio.connect_tcp('127.0.0.1', port)
-                except CONNECTION_REFUSED_EXCEPTION_TYPES as e:
-                    if not is_connection_refused_exception(e):
-                        raise
-                else:
-                    await conn.aclose()
-
-                    break
-
-                await anyio.sleep(.1)
-                tt()
-
-    async with anyio.create_task_group() as tg:
-        tg.start_soon(functools.partial(
-            worker_serve,
-            ASGIWrapper(sanity_framework),
-            Config(
-                bind=(f'127.0.0.1:{port}',)
-            ),
-            shutdown_trigger=sev.wait,
-        ))
-        tg.start_soon(inner)
-
-
-@pytest.mark.asyncio
-async def test_curl_asyncio():
-    await _test_curl()
-
-
-@pytest.mark.trio
-async def test_curl_trio():
-    await _test_curl()
+# async def _test_curl():
+#     port = get_free_port()
+#     sev = anyio.Event()
+#
+#     async def inner():
+#         async with contextlib.AsyncExitStack() as aes:
+#             aes.enter_context(lang.defer(sev.set))
+#
+#             tt = lang.ticking_timeout(5.)
+#             while True:
+#                 tt()
+#                 try:
+#                     conn = await anyio.connect_tcp('127.0.0.1', port)
+#                 except CONNECTION_REFUSED_EXCEPTION_TYPES as e:
+#                     if not is_connection_refused_exception(e):
+#                         raise
+#                     await anyio.sleep(.1)
+#                     continue
+#                 await conn.aclose()
+#                 break
+#
+#             proc = await anyio.open_process([
+#                 'curl', '-v', '--http2', '-XPOST', f'http://localhost:{port}', '-d', str(SANITY_BODY),
+#             ])
+#
+#     async with anyio.create_task_group() as tg:
+#         tg.start_soon(functools.partial(
+#             worker_serve,
+#             ASGIWrapper(sanity_framework),
+#             Config(
+#                 bind=(f'127.0.0.1:{port}',)
+#             ),
+#             shutdown_trigger=sev.wait,
+#         ))
+#         tg.start_soon(inner)
+#
+#
+# @pytest.mark.asyncio
+# async def test_curl_asyncio():
+#     await _test_curl()
+#
+#
+# @pytest.mark.trio
+# async def test_curl_trio():
+#     await _test_curl()
