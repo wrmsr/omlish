@@ -2,6 +2,7 @@ import contextlib
 import functools
 import socket
 
+from omlish import check
 from omlish import lang
 import anyio
 import h11
@@ -25,10 +26,11 @@ def get_free_port(address: str = '') -> int:
 
 
 def get_exception_chain(ex: BaseException) -> list[BaseException]:
+    cur: BaseException | None = ex
     ret: list[BaseException] = []
-    while ex is not None:
-        ret.append(ex)
-        ex = ex.__cause__
+    while cur is not None:
+        ret.append(cur)
+        cur = cur.__cause__
     return ret
 
 
@@ -56,7 +58,7 @@ async def test_server_simple():
                 tt()
 
             client = h11.Connection(h11.CLIENT)
-            await conn.send(client.send(
+            await conn.send(check.not_none(client.send(
                 h11.Request(
                     method='POST',
                     target='/',
@@ -66,7 +68,7 @@ async def test_server_simple():
                         (b'content-length', b'%d' % len(SANITY_BODY)),
                     ],
                 )
-            ))
+            )))
             await conn.send(client.send(h11.Data(data=SANITY_BODY)))  # type: ignore
             await conn.send(client.send(h11.EndOfMessage()))  # type: ignore
 
