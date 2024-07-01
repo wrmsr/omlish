@@ -1,5 +1,6 @@
 import asyncio
 import contextlib
+import functools
 import socket
 
 import anyio
@@ -40,9 +41,12 @@ def get_exception_chain(ex: BaseException) -> list[BaseException]:
 # @pytest.mark.trio
 async def test_server_simple():
     port = get_free_port()
+    sev = anyio.Event()
 
     async def inner():
         async with contextlib.AsyncExitStack() as aes:
+            aes.enter_context(lang.defer(sev.set))
+
             tt = lang.ticking_timeout(5.)
             while True:
                 try:
@@ -73,16 +77,18 @@ async def test_server_simple():
 
             buf = await conn.receive(1024)
             print(buf)
+
             await conn.aclose()
 
     async with anyio.create_task_group() as tg:
-        tg.start_soon(
+        tg.start_soon(functools.partial(
             worker_serve,
             ASGIWrapper(sanity_framework),
             Config(
                 bind=(f'127.0.0.1:{port}',)
             ),
-        )
+            shutdown_trigger=sev.wait,
+        ))
         tg.start_soon(inner)
 
 
