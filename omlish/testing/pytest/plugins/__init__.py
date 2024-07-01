@@ -5,7 +5,6 @@ from . import (  # noqa
     skips,
     spacing,
     switches,
-    timeout_debug,
 )
 from ._registry import (  # noqa
     ALL,

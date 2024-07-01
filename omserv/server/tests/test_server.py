@@ -43,7 +43,7 @@ async def test_server_simple():
 
     async def inner():
         async with contextlib.AsyncExitStack() as aes:
-            tt = lang.ticking_timeout(10.)
+            tt = lang.ticking_timeout(5.)
             while True:
                 try:
                     conn = await anyio.connect_tcp('127.0.0.1', port)
@@ -76,13 +76,13 @@ async def test_server_simple():
             await conn.aclose()
 
     async with anyio.create_task_group() as tg:
-        # tg.start_soon(
-        #     worker_serve,
-        #     ASGIWrapper(sanity_framework),
-        #     Config(
-        #         bind=(f'127.0.0.1:{port}',)
-        #     ),
-        # )
+        tg.start_soon(
+            worker_serve,
+            ASGIWrapper(sanity_framework),
+            Config(
+                bind=(f'127.0.0.1:{port}',)
+            ),
+        )
         tg.start_soon(inner)
 
 
