@@ -51,9 +51,7 @@ def headers_time_patch(monkeypatch) -> None:
     monkeypatch.setattr(headers, '_now', lambda: 5000)
 
 
-# @pytest.mark.asyncio
-@pytest.mark.trio
-async def test_server_simple():
+async def _test_server_simple():
     port = get_free_port()
     sev = anyio.Event()
 
@@ -129,3 +127,13 @@ async def test_server_simple():
             shutdown_trigger=sev.wait,
         ))
         tg.start_soon(inner)
+
+
+@pytest.mark.asyncio
+async def test_server_simple_asyncio():
+    await _test_server_simple()
+
+
+@pytest.mark.trio
+async def test_server_simple_trio():
+    await _test_server_simple()
