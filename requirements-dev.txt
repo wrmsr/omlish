@@ -76,9 +76,3 @@ asyncssh==2.14.2; python_version < '3.13'  # cffi
 # trial
 #
 trio-asyncio==0.15.0; python_version < '3.13'  # greenlet
-
-# don't use, just for hacking
-#
-aiohttp==3.9.5; python_version < '3.13'  # greenlet
-
-pytest-aiohttp==1.0.5; python_version < '3.13'  # aiohttp
