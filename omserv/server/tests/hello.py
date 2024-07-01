@@ -2,6 +2,7 @@
 curl -v localhost:8000
 curl -v --http2 localhost:8000
 """
+import logging
 import time
 
 from omlish import logs
@@ -44,7 +45,7 @@ async def hello_app(scope, recv, send):
 
 
 def _main():
-    logs.configure_standard_logging()
+    logs.configure_standard_logging(logging.INFO)
 
     cfg = Config(
         # workers=2,
