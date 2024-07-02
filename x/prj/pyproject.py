@@ -151,9 +151,9 @@ def _find_service_container(cfg_path: str, svc_name: str) -> str:
 
 
 def _main(argv: ta.Optional[ta.Sequence[str]] = None) -> None:
-    print(_read_versions_file())
-    print(_load_toml(_TEST_TOML))
-    print(_find_service_container('docker/docker-compose.yml', 'omlish-dev'))
+    # print(_read_versions_file())
+    # print(_load_toml(_TEST_TOML))
+    # print(_find_service_container('docker/docker-compose.yml', 'omlish-dev'))
 
     ##
 
