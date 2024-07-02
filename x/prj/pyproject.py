@@ -141,6 +141,8 @@ def _build_venv_specs(cfgs: ta.Mapping[str, ta.Any]) -> ta.Mapping[str, VenvSpec
 
 class Venv:
     def __init__(self, spec: VenvSpec) -> None:
+        if spec.name == 'all':
+            raise Exception
         super().__init__()
         self._spec = spec
 
@@ -148,13 +150,28 @@ class Venv:
     def spec(self) -> VenvSpec:
         return self._spec
 
+    DIR_NAME_PREFIX = '.venv'
+    DIR_NAME_SEP = '-'
+
     @property
     def dir_name(self) -> str:
-        return f'.venv-{self._spec.name}'
+        if (n := self._spec.name) == 'default':
+            return self.DIR_NAME_PREFIX
+        return ''.join([self.DIR_NAME_PREFIX, self.DIR_NAME_SEP, n])
 
     @cached_nullary
     def interp_exe(self) -> str:
         return _get_interp_exe(self._spec.interp)
+
+    @cached_nullary
+    def create(self) -> bool:
+        if os.path.exists(dn := self.dir_name):
+            if not os.path.isdir(dn):
+                raise Exception(f'{dn} exists but is not a directory!')
+            return False
+
+        log.info(f'Using interpreter {(ie := self.interp_exe())}')
+        subprocess.check_output([ie, '-mvenv', dn])
 
 
 class Run:
@@ -190,21 +207,9 @@ class Run:
 
 
 def _venv_cmd(args) -> None:
-    name = args.name
-
-    if os.path.exists(name):
-        if os.path.isfile(name):
-            raise Exception(f'{name} exists but is not a directory!')
-        return
-
-    interp = args.interp
-    if interp[0] == '@':
-        # interp_py = os.path.join(os.path.dirname(__file__), 'interp.py')
-        interp_py = os.path.join(os.path.dirname(__file__), '../../omdev/scripts/interp.py')
-        interp = subprocess.check_output([sys.executable, interp_py, 'resolve', interp[1:]]).decode().strip()
-        log.info(f'Using interpreter {interp}')
-
-    subprocess.check_output([interp, '-mvenv', name])
+    Run(
+        docker_container=args._docker_container,  # noqa
+    ).venvs()[args.name].create()
 
 
 ##
@@ -218,8 +223,6 @@ def _build_parser() -> argparse.ArgumentParser:
 
     parser_resolve = subparsers.add_parser('venv')
     parser_resolve.add_argument('name')
-    parser_resolve.add_argument('interp')
-    parser_resolve.add_argument('--debug', action='store_true')
     parser_resolve.set_defaults(func=_venv_cmd)
 
     return parser
