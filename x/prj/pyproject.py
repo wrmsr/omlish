@@ -30,10 +30,12 @@ Configs:
 
 ==
 
-Venv:
-  interp
-  requires
-  docker[_container]
+
+@dc.dataclass()
+class VenvSpec:
+  interp: str | None = None
+  requires: list[str] | None = None
+  docker: str | None = None
 
 test_srcs ?
 """
@@ -124,7 +126,7 @@ def _read_versions_file(file_name: str = '.versions') -> ta.Mapping[str, str]:
 
 
 _TEST_TOML = """
-[tool.notmake.venvs]
+[tool.omlish.pyproject.venvs]
 all = { interp = "@11", requires = "requirements-dev.txt" }
 default = { interp = "@11", requires = "requirements-ext.txt"  }
 docker = { docker = "omlish-dev" }
@@ -135,13 +137,12 @@ debug = { interp = "@11-debug" }
 """
 
 
-@cached_nullary
-def _load_toml() -> ta.Any:
+def _toml_loads(s: str) -> ta.Any:
     try:
         import tomllib as toml
     except ImportError:
         from pip._vendor import tomli as toml  # noqa
-    return toml.loads(_TEST_TOML)
+    return toml.loads(s)
 
 
 def _find_service_container(cfg_path: str, svc_name: str) -> str:
@@ -151,7 +152,7 @@ def _find_service_container(cfg_path: str, svc_name: str) -> str:
 
 def _main(argv: ta.Optional[ta.Sequence[str]] = None) -> None:
     print(_read_versions_file())
-    print(_load_toml())
+    print(_load_toml(_TEST_TOML))
     print(_find_service_container('docker/docker-compose.yml', 'omlish-dev'))
 
     ##
