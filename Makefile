@@ -7,7 +7,7 @@ MAIN_SOURCES:=\
 	omdev \
 	omserv \
 
-ML_SORUCES:=\
+ML_SOURCES:=\
 	${MAIN_SOURCES} \
 	omml
 
