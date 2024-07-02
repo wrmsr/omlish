@@ -3,6 +3,7 @@
 TODO:
  - check / tests, src dir sets
  - ci
+ - build / package / publish
 
 lookit:
  - https://pdm-project.org/en/latest/
@@ -102,12 +103,31 @@ def _find_docker_service_container(cfg_path: str, svc_name: str) -> str:
 def _get_interp_exe(s: str, *, interp_script: str = INTERP_SCRIPT) -> str:
     if not s.startswith('@'):
         return s
+    dbg_sfx = '-debug'
+    if s.endswith(dbg_sfx):
+        s, dbg = s[:-len(dbg_sfx)], True
+    else:
+        dbg = False
     raw_vers = _read_versions_file()
     pfx = 'PYTHON_'
     vers = {k[len(pfx):].lower(): v for k, v in raw_vers.items() if k.startswith(pfx)}
     ver = vers[s[1:]]
-    exe = subprocess.check_output([sys.executable, interp_script, 'resolve', ver]).decode().strip()
+    exe = subprocess.check_output([
+        sys.executable,
+        interp_script,
+        'resolve',
+        *(['--debug'] if dbg else []),
+        ver,
+    ]).decode().strip()
     return exe
+
+
+@cached_nullary
+def _script_rel_path() -> str:
+    cwd = os.getcwd()
+    if not (f := __file__).startswith(cwd):
+        raise EnvironmentError(f'file {f} not in {cwd}')
+    return f[len(cwd):].lstrip(os.sep)
 
 
 ##
@@ -116,9 +136,9 @@ def _get_interp_exe(s: str, *, interp_script: str = INTERP_SCRIPT) -> str:
 @dc.dataclass()
 class VenvSpec:
     name: str
-    interp: str | None = None
-    requires: str | list[str] | None = None
-    docker: str | None = None
+    interp: ta.Optional[str] = None
+    requires: ta.Union[str, list[str], None] = None
+    docker: ta.Optional[str] = None
 
 
 def _build_venv_specs(cfgs: ta.Mapping[str, ta.Any]) -> ta.Mapping[str, VenvSpec]:
@@ -215,14 +235,6 @@ class Run:
 ##
 
 
-@cached_nullary
-def _script_rel_path() -> str:
-    cwd = os.getcwd()
-    if not (f := __file__).startswith(cwd):
-        raise EnvironmentError(f'file {f} not in {cwd}')
-    return f[len(cwd):].lstrip(os.sep)
-
-
 def _venv_cmd(args) -> None:
     venv = Run().venvs()[args.name]
     if (sd := venv.spec.docker) is not None and sd != (cd := args._docker_container):  # noqa
@@ -238,6 +250,7 @@ def _venv_cmd(args) -> None:
         return
 
     venv.create()
+    print(venv.exe())
 
 
 ##
