@@ -15,6 +15,7 @@ services:
     depends_on:
       - 'omlish-mysql'
       - 'omlish-postgres'
+      - 'omlish-s3'
     links:
       - 'omlish-mysql'
       - 'omlish-postgres'
@@ -42,9 +43,9 @@ services:
     platform: 'linux/x86_64'
     restart: 'no'
     depends_on:
-      - 'omlish-mysql'
+      - 'omlish-postgres'
     links:
-      - 'omlish-mysql'
+      - 'omlish-postgres'
 
   omlish-mysql:
     image: 'mysql:8.4.0'
