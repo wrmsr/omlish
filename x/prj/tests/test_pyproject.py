@@ -1,4 +1,7 @@
 import dataclasses as dc
+import os.path
+import subprocess
+import sys
 
 from .. import pyproject
 
@@ -14,8 +17,13 @@ class VenvSpec:
 def get_interp_exe(s: str) -> str:
     if not s.startswith('@'):
         return s
-    vers = pyproject._read_versions_file()  # noqa
-    raise NotImplementedError
+    raw_vers = pyproject._read_versions_file()  # noqa
+    pfx = 'PYTHON_'
+    vers = {k[len(pfx):].lower(): v for k, v in raw_vers.items() if k.startswith(pfx)}
+    ver = vers[s[1:]]
+    interp_script = 'omdev/scripts/interp.py'
+    exe = subprocess.check_output([sys.executable, interp_script, 'resolve', ver]).decode().strip()
+    return exe
 
 
 class Venv:
@@ -55,4 +63,4 @@ def test_specs():
     print(venv_specs)
 
     venvs = {n: Venv(vs) for n, vs in venv_specs.items()}
-    print(venvs['default'].interp_exe())
+    print(venvs['12'].interp_exe())
