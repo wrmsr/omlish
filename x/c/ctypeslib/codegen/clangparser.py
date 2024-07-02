@@ -7,13 +7,13 @@ import collections
 from clang.cindex import Index, TranslationUnit
 from clang.cindex import TypeKind
 
-from ctypeslib.codegen import cursorhandler
-from ctypeslib.codegen import typedesc
-from ctypeslib.codegen import typehandler
-from ctypeslib.codegen import util
-from ctypeslib.codegen.handler import DuplicateDefinitionException
-from ctypeslib.codegen.handler import InvalidDefinitionError
-from ctypeslib.codegen.handler import InvalidTranslationUnitException
+from . import cursorhandler
+from . import typedesc
+from . import typehandler
+from . import util
+from .handler import DuplicateDefinitionException
+from .handler import InvalidDefinitionError
+from .handler import InvalidTranslationUnitException
 
 log = logging.getLogger("clangparser")
 

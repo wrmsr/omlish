@@ -9,7 +9,7 @@ from collections.abc import Iterable
 import logging
 import re
 
-from ctypeslib.codegen import typedesc
+from . import typedesc
 
 log = logging.getLogger('utils')
 

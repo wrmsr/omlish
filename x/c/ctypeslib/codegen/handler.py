@@ -2,8 +2,8 @@
 
 from clang.cindex import CursorKind, TypeKind
 
-from ctypeslib.codegen import typedesc
-from ctypeslib.codegen.util import log_entity
+from . import typedesc
+from .util import log_entity
 
 import logging
 log = logging.getLogger('handler')

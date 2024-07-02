@@ -3,8 +3,8 @@ The configuration class that will modify the behavior of ctypeslib
 """
 import re
 
-from ctypeslib.library import Library
-from ctypeslib.codegen import typedesc
+from ..library import Library
+from . import typedesc
 
 
 class CodegenConfig:

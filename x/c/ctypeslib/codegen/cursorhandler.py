@@ -5,12 +5,12 @@ import re
 
 from clang.cindex import CursorKind, LinkageKind, TypeKind, TokenKind
 
-from ctypeslib.codegen import typedesc, util
-from ctypeslib.codegen.handler import ClangHandler
-from ctypeslib.codegen.handler import CursorKindException
-from ctypeslib.codegen.handler import DuplicateDefinitionException
-from ctypeslib.codegen.handler import InvalidDefinitionError
-from ctypeslib.codegen.util import log_entity
+from . import typedesc
+from .handler import ClangHandler
+from .handler import CursorKindException
+from .handler import DuplicateDefinitionException
+from .handler import InvalidDefinitionError
+from .util import log_entity
 
 log = logging.getLogger('cursorhandler')
 
