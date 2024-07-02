@@ -22,6 +22,10 @@ async def _ticker(delay_s: int | float = 3.) -> None:
 async def _a_main() -> None:
     logs.configure_standard_logging('INFO')
 
+    async def _killer(delay_s: int | float = 10.) -> None:  # noqa
+        await anyio.sleep(delay_s)
+        tg.cancel_scope.cancel()
+
     async with anyio.create_task_group() as tg:
         tg.start_soon(functools.partial(
             server.serve,
@@ -29,7 +33,10 @@ async def _a_main() -> None:
             server.Config(),
             handle_shutdown_signals=sniffio.current_async_library() != 'trio',
         ))
+
         tg.start_soon(_ticker)
+
+        # tg.start_soon(_killer)
 
 
 if __name__ == '__main__':
