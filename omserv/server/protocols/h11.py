@@ -146,16 +146,22 @@ class H11Protocol(Protocol):
                         status_code=event.status_code,
                     )
                 )
+
         elif isinstance(event, InformationalResponse):
             pass  # Ignore for HTTP/1
+
         elif isinstance(event, Body):
             await self._send_h11_event(h11.Data(data=event.data))
+
         elif isinstance(event, EndBody):
             await self._send_h11_event(h11.EndOfMessage())
+
         elif isinstance(event, Data):
             await self.send(RawData(data=event.data))
+
         elif isinstance(event, EndData):
             pass
+
         elif isinstance(event, StreamClosed):
             await self._maybe_recycle()
 
@@ -175,22 +181,29 @@ class H11Protocol(Protocol):
                     await self._send_error_response(error.error_status_hint)
                 await self.send(Closed())
                 break
+
             else:
                 if isinstance(event, h11.Request):
                     await self.send(Updated(idle=False))
                     await self._check_protocol(event)
                     await self._create_stream(event)
+
                 elif event is h11.PAUSED:
                     await self.can_read.clear()
                     await self.can_read.wait()
+
                 elif isinstance(event, h11.ConnectionClosed) or event is h11.NEED_DATA:
                     break
+
                 elif self.stream is None:
                     break
+
                 elif isinstance(event, h11.Data):
                     await self.stream.handle(Body(stream_id=STREAM_ID, data=event.data))
+
                 elif isinstance(event, h11.EndOfMessage):
                     await self.stream.handle(EndBody(stream_id=STREAM_ID))
+
                 elif isinstance(event, Data):
                     # WebSocket pass through
                     await self.stream.handle(event)

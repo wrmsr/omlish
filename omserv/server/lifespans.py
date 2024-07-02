@@ -79,6 +79,7 @@ class Lifespan:
                 log.exception("ASGI Framework Lifespan error, shutdown without Lifespan support")
             else:
                 log.exception("ASGI Framework Lifespan errored after shutdown.")
+
         finally:
             self.startup.set()
             self.shutdown.set()
@@ -113,11 +114,15 @@ class Lifespan:
     async def asgi_send(self, message: ASGISendEvent) -> None:
         if message["type"] == "lifespan.startup.complete":
             self.startup.set()
+
         elif message["type"] == "lifespan.shutdown.complete":
             self.shutdown.set()
+
         elif message["type"] == "lifespan.startup.failed":
             raise LifespanFailureError("startup", message.get("message", ""))
+
         elif message["type"] == "lifespan.shutdown.failed":
             raise LifespanFailureError("shutdown", message.get("message", ""))
+
         else:
             raise UnexpectedMessageError(message["type"])
