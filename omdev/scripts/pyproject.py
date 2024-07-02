@@ -61,6 +61,12 @@ log = logging.getLogger(__name__)
 REQUIRED_PYTHON_VERSION = (3, 8)
 
 
+INTERP_SCRIPT = 'omdev/scripts/interp.py'
+
+
+##
+
+
 def _check_not_none(v: ta.Optional[T]) -> T:
     if v is None:
         raise ValueError
@@ -121,14 +127,13 @@ def _find_docker_service_container(cfg_path: str, svc_name: str) -> str:
     return out.decode().strip()
 
 
-def _get_interp_exe(s: str) -> str:
+def _get_interp_exe(s: str, *, interp_script: str = INTERP_SCRIPT) -> str:
     if not s.startswith('@'):
         return s
     raw_vers = _read_versions_file()
     pfx = 'PYTHON_'
     vers = {k[len(pfx):].lower(): v for k, v in raw_vers.items() if k.startswith(pfx)}
     ver = vers[s[1:]]
-    interp_script = 'omdev/scripts/interp.py'
     exe = subprocess.check_output([sys.executable, interp_script, 'resolve', ver]).decode().strip()
     return exe
 
