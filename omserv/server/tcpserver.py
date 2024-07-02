@@ -74,7 +74,7 @@ class TCPServer:
             pass
         except* Exception as eg:
             for e in eg.exceptions:
-                log.exception("Internal hypercorn error", exc_info=e)
+                log.exception('Internal hypercorn error', exc_info=e)
         finally:
             await self._close()
 
@@ -110,7 +110,7 @@ class TCPServer:
                 break
             else:
                 await self.protocol.handle(RawData(data))
-                if data == b"":
+                if data == b'':
                     break
         await self.protocol.handle(Closed())
 
