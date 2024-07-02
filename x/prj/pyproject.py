@@ -44,6 +44,8 @@ import dataclasses as dc
 import functools
 import logging
 import os.path
+import shlex
+import shutil
 import subprocess
 import sys
 import typing as ta
@@ -82,11 +84,23 @@ class cached_nullary:
 
 
 def _toml_loads(s: str) -> ta.Any:
+    toml = None
     try:
         import tomllib as toml
     except ImportError:
-        from pip._vendor import tomli as toml  # noqa
-    return toml.loads(s)
+        try:
+            from pip._vendor import tomli as toml  # noqa
+        except ImportError:
+            pass
+    if toml is not None:
+        return toml.loads(s)
+
+    if shutil.which('toml2json') is None:
+        subprocess.check_call(['cargo', 'install', 'toml2json'])
+    jsonb = subprocess.check_output(['toml2json'], input=s.encode())
+
+    import json
+    return json.loads(jsonb.decode().strip())
 
 
 @cached_nullary
@@ -216,8 +230,16 @@ def _venv_cmd(args) -> None:
     venv = Run().venvs()[args.name]
     if (sd := venv.spec.docker) is not None and sd != (cd := args._docker_container):  # noqa
         ctr = _find_docker_service_container('docker/docker-compose.yml', sd)
-        subprocess.check_call(['docker', 'exec', '-it', ctr, 'python3', _script_rel_path(), *sys.argv[1:]])
+        script = ' '.join([
+            'python3',
+            shlex.quote(_script_rel_path()),
+            f'--_docker_container={shlex.quote(sd)}',
+            *map(shlex.quote, sys.argv[1:]),
+        ])
+        call_args = ['docker', 'exec', '-it', ctr, 'bash', '--login', '-c', script]
+        subprocess.check_call(call_args)
         return
+
     venv.create()
 
 
@@ -226,7 +248,7 @@ def _venv_cmd(args) -> None:
 
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
-    parser.add_argument('--_docker-container')
+    parser.add_argument('--_docker_container')
 
     subparsers = parser.add_subparsers()
 
