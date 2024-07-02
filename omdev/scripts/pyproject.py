@@ -295,6 +295,9 @@ def _venv_cmd(args) -> None:
     elif cmd == 'exe':
         print(venv.exe())
 
+    elif cmd == 'srcs':
+        print('\n'.join(venv.srcs()))
+
     elif cmd == 'test':
         raise NotImplementedError
 
