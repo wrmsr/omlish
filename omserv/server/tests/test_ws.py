@@ -49,9 +49,8 @@ async def _test_server_websocket():
                 break
 
             client = wsproto.WSConnection(wsproto.ConnectionType.CLIENT)
-            await conn.send(
-                client.send(wsproto.events.Request(host='hypercorn', target='/'))
-            )
+            await conn.send(client.send(wsproto.events.Request(host='hypercorn', target='/')))
+
             client.receive_data(await anyio_eof_to_empty(conn.receive))
             assert list(client.events()) == [
                 wsproto.events.AcceptConnection(
@@ -61,14 +60,17 @@ async def _test_server_websocket():
                     ]
                 )
             ]
+
             await conn.send(
                 client.send(wsproto.events.BytesMessage(data=SANITY_REQUEST_BODY))
             )
             client.receive_data(await anyio_eof_to_empty(conn.receive))
             assert list(client.events()) == [wsproto.events.TextMessage(data='Hello & Goodbye')]
+
             await conn.send(client.send(wsproto.events.CloseConnection(code=1000)))
             client.receive_data(await anyio_eof_to_empty(conn.receive))
             assert list(client.events()) == [wsproto.events.CloseConnection(code=1000, reason='')]
+
             # assert conn.is_closed
 
             await conn.aclose()
