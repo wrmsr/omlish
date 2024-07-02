@@ -62,9 +62,7 @@ async def _test_server_websocket():
                 )
             ]
 
-            await conn.send(
-                client.send(wsproto.events.BytesMessage(data=SANITY_REQUEST_BODY))
-            )
+            await conn.send(client.send(wsproto.events.BytesMessage(data=SANITY_REQUEST_BODY)))
             client.receive_data(await anyio_eof_to_empty(conn.receive))
             assert list(client.events()) == [wsproto.events.TextMessage(data='Hello & Goodbye')]
 

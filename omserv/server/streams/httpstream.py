@@ -110,9 +110,7 @@ class HTTPStream:
                 self.closed = True
 
         elif isinstance(event, Body):
-            await self.app_put(
-                {"type": "http.request", "body": bytes(event.data), "more_body": True}
-            )
+            await self.app_put({"type": "http.request", "body": bytes(event.data), "more_body": True})
 
         elif isinstance(event, EndBody):
             await self.app_put({"type": "http.request", "body": b"", "more_body": False})
