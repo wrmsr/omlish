@@ -24,6 +24,11 @@ LifespanScope: ta.TypeAlias = Scope
 
 HTTPResponseStartEvent: ta.TypeAlias = dict
 HTTPScope: ta.TypeAlias = Scope
+WebsocketScope: ta.TypeAlias = Scope
+
+WebsocketAcceptEvent: ta.TypeAlias = dict
+WebsocketResponseBodyEvent: ta.TypeAlias = dict
+WebsocketResponseStartEvent: ta.TypeAlias = dict
 
 
 ##
