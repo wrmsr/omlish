@@ -257,11 +257,14 @@ DOCKER_COMPOSE=docker-compose -f docker/docker-compose.yml
 docker-stop:
 	${DOCKER_COMPOSE} stop
 
+DOCKER_DEV_CONTAINERS=\
+	omlish-dev
+
 .PHONY: docker-reup
 docker-reup: docker-stop
 	${DOCKER_COMPOSE} rm -f
-	${DOCKER_COMPOSE} build omlish-dev
-	${DOCKER_COMPOSE} up
+	${DOCKER_COMPOSE} build ${DOCKER_DEV_CONTAINERS}
+	${DOCKER_COMPOSE} up --attach-dependencies ${DOCKER_DEV_CONTAINERS}
 
 .PHONY: docker-invalidate
 docker-invalidate:
