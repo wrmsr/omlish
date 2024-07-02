@@ -42,6 +42,7 @@ test_srcs ?
 import argparse
 import dataclasses as dc
 import functools
+import itertools
 import logging
 import os.path
 import shlex
@@ -84,7 +85,7 @@ class cached_nullary:
 
 
 def _toml_loads(s: str) -> ta.Any:
-    toml = None
+    toml: ta.Any = None
     try:
         import tomllib as toml
     except ImportError:
@@ -139,7 +140,7 @@ def _get_interp_exe(s: str) -> str:
 class VenvSpec:
     name: str
     interp: str | None = None
-    requires: list[str] | None = None
+    requires: str | list[str] | None = None
     docker: str | None = None
 
 
@@ -175,7 +176,14 @@ class Venv:
 
     @cached_nullary
     def interp_exe(self) -> str:
-        return _get_interp_exe(self._spec.interp)
+        return _get_interp_exe(_check_not_none(self._spec.interp))
+
+    @cached_nullary
+    def exe(self) -> str:
+        ve = os.path.join(self.dir_name, 'bin/python')
+        if not os.path.isfile(ve):
+            raise Exception(f'venv exe {ve} does not exist or is not a file!')
+        return ve
 
     @cached_nullary
     def create(self) -> bool:
@@ -185,14 +193,26 @@ class Venv:
             return False
 
         log.info(f'Using interpreter {(ie := self.interp_exe())}')
-        subprocess.check_call([ie, '-mvenv', dn])
+        subprocess.check_call([ie, '-m' 'venv', dn])
+
+        ve = self.exe()
+
+        if (sr := self._spec.requires):
+            subprocess.check_call([
+                ve,
+                '-m', 'pip',
+                'install',
+                *itertools.chain.from_iterable(['-r', r] for r in ([sr] if isinstance(sr, str) else sr)),
+            ])
+
+        return True
 
 
 class Run:
     def __init__(
             self,
             *,
-            raw_cfg: ta.Union[ta.Mapping[str, ta.Any], str] = None,
+            raw_cfg: ta.Union[ta.Mapping[str, ta.Any], str, None] = None,
     ) -> None:
         super().__init__()
 
