@@ -1,9 +1,11 @@
 import typing as ta
 
 import h2
+import h2.config
 import h2.connection
 import h2.events
 import h2.exceptions
+import h2.settings
 import priority
 
 from ..config import Config
@@ -27,6 +29,7 @@ from ..taskspawner import TaskSpawner
 from ..types import AppWrapper
 from ..types import WaitableEvent
 from ..workercontext import WorkerContext
+from ..wsstream import WSStream
 from .types import Protocol
 
 
@@ -118,7 +121,7 @@ class H2Protocol(Protocol):
         self.keep_alive_requests = 0
         self.send = send
         self.server = server
-        self.streams: dict[int, HTTPStream] = {}
+        self.streams: dict[int, HTTPStream | WSStream] = {}
         # The below are used by the sending task
         self.has_data = self.context.event_class()
         self.priority = priority.PriorityTree()
@@ -315,7 +318,16 @@ class H2Protocol(Protocol):
                 raw_path = value
 
         if method == "CONNECT":
-            raise NotImplementedError
+            self.streams[request.stream_id] = WSStream(
+                self.app,
+                self.config,
+                self.context,
+                self.task_spawner,
+                self.client,
+                self.server,
+                self.stream_send,
+                request.stream_id,
+            )
         else:
             self.streams[request.stream_id] = HTTPStream(
                 self.app,
