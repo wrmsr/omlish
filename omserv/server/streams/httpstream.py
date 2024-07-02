@@ -12,15 +12,17 @@ from ..events import ProtocolEvent
 from ..events import Request
 from ..events import Response
 from ..events import StreamClosed
-from ..requests import valid_server_name
 from ..taskspawner import TaskSpawner
 from ..types import ASGISendEvent
 from ..types import AppWrapper
 from ..types import HTTPResponseStartEvent
 from ..types import HTTPScope
-from ..types import Scope
 from ..types import UnexpectedMessageError
 from ..workercontext import WorkerContext
+from .utils import build_and_validate_headers
+from .utils import log_access
+from .utils import suppress_body
+from .utils import valid_server_name
 
 
 log = logging.getLogger(__name__)
@@ -37,35 +39,6 @@ class ASGIHTTPState(enum.Enum):
     REQUEST = enum.auto()
     RESPONSE = enum.auto()
     CLOSED = enum.auto()
-
-
-def build_and_validate_headers(headers: ta.Iterable[tuple[bytes, bytes]]) -> list[tuple[bytes, bytes]]:
-    # Validates that the header name and value are bytes
-    validated_headers: list[tuple[bytes, bytes]] = []
-    for name, value in headers:
-        if name[0] == b":"[0]:
-            raise ValueError("Pseudo headers are not valid")
-        validated_headers.append((bytes(name).strip(), bytes(value).strip()))
-    return validated_headers
-
-
-def suppress_body(method: str, status_code: int) -> bool:
-    return method == "HEAD" or 100 <= status_code < 200 or status_code in {204, 304}
-
-
-class ResponseSummary(ta.TypedDict):
-    status: int
-    headers: ta.Iterable[tuple[bytes, bytes]]
-
-
-def log_access(
-        config: Config, request: "Scope", response: ta.Optional["ResponseSummary"], request_time: float
-) -> None:
-    # if self.access_logger is not None:
-    #     self.access_logger.info(
-    #         self.access_log_format, self.atoms(request, response, request_time)
-    #     )
-    log.info(f'access: {request!r} {response!r}')
 
 
 class HTTPStream:
