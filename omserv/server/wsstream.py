@@ -5,6 +5,7 @@ import time
 import typing as ta
 import urllib.parse
 
+from omlish import check
 import wsproto as wsp
 import wsproto.events as wse
 import wsproto.extensions
@@ -92,7 +93,7 @@ class Handshake:
                 token.lower() == 'upgrade' for token in self.connection_tokens
             ):
                 return False
-            if self.upgrade.lower() != b'websocket':
+            if (self.upgrade or b'').lower() != b'websocket':
                 return False
 
         if self.version != wsp.handshake.WEBSOCKET_VERSION:
@@ -325,7 +326,7 @@ class WSStream:
                     break
 
                 if event.message_finished:
-                    await self.app_put(self.buffer.to_message())
+                    await check.not_none(self.app_put)(self.buffer.to_message())
                     self.buffer.clear()
 
             elif isinstance(event, wse.Ping):
@@ -388,9 +389,9 @@ class WSStream:
         if not message.get('more_body', False):
             self.state = ASGIWebsocketState.HTTPCLOSED
             await self.send(EndBody(stream_id=self.stream_id))
-            log_access(self.config, self.scope, self.response, time.time() - self.start_time)
+            log_access(self.config, self.scope, self.response, time.time() - self.start_time)  # type: ignore
 
     async def _send_pings(self) -> None:
         while not self.closed:
             await self._send_wsproto_event(wse.Ping())
-            await self.context.sleep(self.config.websocket_ping_interval)
+            await self.context.sleep(check.not_none(self.config.websocket_ping_interval))
