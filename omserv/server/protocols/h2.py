@@ -193,6 +193,7 @@ class H2Protocol(Protocol):
                 await self.send(Closed())
             else:
                 await self._handle_events(events)
+
         elif isinstance(event, Closed):
             self.closed = True
             stream_ids = list(self.streams.keys())
@@ -210,15 +211,18 @@ class H2Protocol(Protocol):
                     + response_headers(self.config, "h2"),
                 )
                 await self._flush()
+
             elif isinstance(event, (Body, Data)):
                 self.priority.unblock(event.stream_id)
                 await self.has_data.set()
                 await self.stream_buffers[event.stream_id].push(event.data)
+
             elif isinstance(event, (EndBody, EndData)):
                 self.stream_buffers[event.stream_id].set_complete()
                 self.priority.unblock(event.stream_id)
                 await self.has_data.set()
                 await self.stream_buffers[event.stream_id].drain()
+
             elif isinstance(event, StreamClosed):
                 await self._close_stream(event.stream_id)
                 idle = len(self.streams) == 0 or all(
@@ -228,8 +232,10 @@ class H2Protocol(Protocol):
                     self.connection.close_connection()
                     await self._flush()
                 await self.send(Updated(idle=idle))
+
             elif isinstance(event, Request):
                 await self._create_server_push(event.stream_id, event.raw_path, event.headers)
+
         except (
             BufferCompleteError,
             KeyError,
@@ -254,6 +260,7 @@ class H2Protocol(Protocol):
 
                 if self.keep_alive_requests > self.config.keep_alive_max_requests:
                     self.connection.close_connection()
+
             elif isinstance(event, h2.events.DataReceived):
                 await self.streams[event.stream_id].handle(
                     Body(stream_id=event.stream_id, data=event.data)
@@ -261,20 +268,27 @@ class H2Protocol(Protocol):
                 self.connection.acknowledge_received_data(
                     event.flow_controlled_length, event.stream_id
                 )
+
             elif isinstance(event, h2.events.StreamEnded):
                 await self.streams[event.stream_id].handle(EndBody(stream_id=event.stream_id))
+
             elif isinstance(event, h2.events.StreamReset):
                 await self._close_stream(event.stream_id)
                 await self._window_updated(event.stream_id)
+
             elif isinstance(event, h2.events.WindowUpdated):
                 await self._window_updated(event.stream_id)
+
             elif isinstance(event, h2.events.PriorityUpdated):
                 await self._priority_updated(event)
+
             elif isinstance(event, h2.events.RemoteSettingsChanged):
                 if h2.settings.SettingCodes.INITIAL_WINDOW_SIZE in event.changed_settings:
                     await self._window_updated(None)
+
             elif isinstance(event, h2.events.ConnectionTerminated):
                 await self.send(Closed())
+
         await self._flush()
 
     async def _flush(self) -> None:
