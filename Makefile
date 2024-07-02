@@ -270,10 +270,6 @@ docker-reup: docker-stop
 docker-invalidate:
 	date +%s > docker/.dockertimestamp
 
-.PHONY: docker-enable-ptrace
-docker-enable-ptrace:
-	docker run --platform linux/x86_64 --privileged -it ubuntu sh -c 'echo 0 > /proc/sys/kernel/yama/ptrace_scope'
-
 
 ### CI
 
@@ -306,44 +302,12 @@ _ci:
 
 .PHONY: my-repl
 my-repl: venv
-	F=$$(mktemp) ; \
-	echo -e "\n\
-import yaml \n\
-with open('docker/docker-compose.yml', 'r') as f: \n\
-    dct = yaml.safe_load(f.read()) \n\
-cfg = dct['services']['$(PROJECT)-mysql'] \n\
-print('MY_USER=' + cfg['environment']['MYSQL_USER']) \n\
-print('MY_PASSWORD=' + cfg['environment']['MYSQL_PASSWORD']) \n\
-print('MY_PORT=' + cfg['ports'][0].split(':')[0]) \n\
-" >> $$F ; \
-	export $$(.venv/bin/python "$$F" | xargs) && \
-	MYSQL_PWD="$$MY_PASSWORD" .venv/bin/mycli --user "$$MY_USER" --host localhost --port "$$MY_PORT"
+	${PYTHON} -m omdev.tools.sqlrepl repl mysql docker/docker-compose.yml:omlish-mysql
 
 .PHONY: pg-repl
 pg-repl: venv
-	F=$$(mktemp) ; \
-	echo -e "\n\
-import yaml \n\
-with open('docker/docker-compose.yml', 'r') as f: \n\
-    dct = yaml.safe_load(f.read()) \n\
-cfg = dct['services']['$(PROJECT)-postgres'] \n\
-print('PG_USER=' + cfg['environment']['POSTGRES_USER']) \n\
-print('PG_PASSWORD=' + cfg['environment']['POSTGRES_PASSWORD']) \n\
-print('PG_PORT=' + cfg['ports'][0].split(':')[0]) \n\
-" >> $$F ; \
-	export $$(.venv/bin/python "$$F" | xargs) && \
-	PGPASSWORD="$$PG_PASSWORD" .venv/bin/pgcli --user "$$PG_USER" --host localhost --port "$$PG_PORT"
+	${PYTHON} -m omdev.tools.sqlrepl repl postgres docker/docker-compose.yml:omlish-postgres
 
 .PHONY: secret-pg-repl
 secret-pg-repl: venv
-	F=$$(mktemp) ; \
-	echo -e "\n\
-import yaml \n\
-with open('secrets.yml', 'r') as f: \n\
-    dct = yaml.safe_load(f.read()) \n\
-print('PG_HOST=' + dct['postgres_host']) \n\
-print('PG_USER=' + dct['postgres_user']) \n\
-print('PG_PASSWORD=' + dct['postgres_pass']) \n\
-" >> $$F ; \
-	export $$(.venv/bin/python "$$F" | xargs) && \
-	PGPASSWORD="$$PG_PASSWORD" .venv/bin/pgcli --user "$$PG_USER" --host "$$PG_HOST"
+	${PYTHON} -m omdev.tools.sqlrepl repl postgres secrets.yml:postgres
