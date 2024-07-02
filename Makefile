@@ -298,7 +298,7 @@ ci: ci-images
 .PHONY: _ci
 _ci:
 	_PYTHON_BIN=python \
-	_TEST_SOURCES="${PROJECT}" \
+	_TEST_SOURCES="${MAIN_SOURCES}" \
 	${MAKE} _test
 
 
