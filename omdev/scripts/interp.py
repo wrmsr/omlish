@@ -27,6 +27,12 @@ REQUIRED_PYTHON_VERSION = (3, 8)
 ##
 
 
+def _check_not_none(v: ta.Optional[T]) -> T:
+    if v is None:
+        raise ValueError
+    return v
+
+
 class cached_nullary:
     def __init__(self, fn):
         self._fn = fn
@@ -39,12 +45,6 @@ class cached_nullary:
     def __get__(self, instance, owner):  # noqa
         bound = instance.__dict__[self._fn.__name__] = self.__class__(self._fn.__get__(instance, owner))
         return bound
-
-
-def _check_not_none(v: ta.Optional[T]) -> T:
-    if v is None:
-        raise ValueError
-    return v
 
 
 ##
