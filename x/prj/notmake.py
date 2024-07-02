@@ -3,6 +3,14 @@
 TODO:
  - import pip._vendor.tomli?
 
+lookit:
+ - https://pdm-project.org/en/latest/
+ - https://rye.astral.sh/philosophy/
+ - https://github.com/indygreg/python-build-standalone/blob/main/pythonbuild/cpython.py
+ - https://astral.sh/blog/uv
+ - https://github.com/jazzband/pip-tools
+
+
 Responsibilities:
  - pyenv (./interp)
  - venvs
