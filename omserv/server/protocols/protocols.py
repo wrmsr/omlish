@@ -34,7 +34,7 @@ class ProtocolWrapper:
         self.server = server
         self.send = send
         self.protocol: Protocol
-        if alpn_protocol == "h2":
+        if alpn_protocol == 'h2':
             self.protocol = H2Protocol(
                 self.app,
                 self.config,
@@ -73,7 +73,7 @@ class ProtocolWrapper:
                 self.send,
             )
             await self.protocol.initiate()
-            if error.data != b"":
+            if error.data != b'':
                 return await self.protocol.handle(RawData(data=error.data))
 
         except H2CProtocolRequiredError as error:
@@ -87,5 +87,5 @@ class ProtocolWrapper:
                 self.send,
             )
             await self.protocol.initiate(error.headers, error.settings)
-            if error.data != b"":
+            if error.data != b'':
                 return await self.protocol.handle(RawData(data=error.data))

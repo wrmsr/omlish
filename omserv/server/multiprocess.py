@@ -62,7 +62,7 @@ def serve_multiprocess(
     sockets = create_sockets(config)
 
     exitcode = 0
-    ctx = multiprocessing.get_context("spawn")
+    ctx = multiprocessing.get_context('spawn')
 
     active = True
     shutdown_event = ctx.Event()
@@ -88,7 +88,7 @@ def serve_multiprocess(
             ctx,
         )
 
-        for signal_name in {"SIGINT", "SIGTERM", "SIGBREAK"}:
+        for signal_name in {'SIGINT', 'SIGTERM', 'SIGBREAK'}:
             if hasattr(signal, signal_name):
                 signal.signal(getattr(signal, signal_name), shutdown)
 
@@ -123,10 +123,10 @@ def _populate(
         process = ctx.Process(  # type: ignore
             target=worker_func,
             kwargs={
-                "app": app,
-                "config": config,
-                "shutdown_event": shutdown_event,
-                "sockets": sockets,
+                'app': app,
+                'config': config,
+                'shutdown_event': shutdown_event,
+                'sockets': sockets,
             },
         )
         process.daemon = True
@@ -134,11 +134,11 @@ def _populate(
             process.start()
         except pickle.PicklingError as error:
             raise RuntimeError(
-                "Cannot pickle the config, see https://docs.python.org/3/library/pickle.html#pickle-picklable"
+                'Cannot pickle the config, see https://docs.python.org/3/library/pickle.html#pickle-picklable'
                 # noqa: E501
             ) from error
         processes.append(process)
-        if platform.system() == "Windows":
+        if platform.system() == 'Windows':
             time.sleep(0.1)
 
 

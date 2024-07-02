@@ -206,9 +206,9 @@ class H2Protocol(Protocol):
             if isinstance(event, (InformationalResponse, Response)):
                 self.connection.send_headers(
                     event.stream_id,
-                    [(b":status", b"%d" % event.status_code)]
+                    [(b':status', b'%d' % event.status_code)]
                     + event.headers
-                    + response_headers(self.config, "h2"),
+                    + response_headers(self.config, 'h2'),
                 )
                 await self._flush()
 
@@ -293,7 +293,7 @@ class H2Protocol(Protocol):
 
     async def _flush(self) -> None:
         data = self.connection.data_to_send()
-        if data != b"":
+        if data != b'':
             await self.send(RawData(data=data))
 
     async def _window_updated(self, stream_id: ta.Optional[int]) -> None:
@@ -326,12 +326,12 @@ class H2Protocol(Protocol):
 
     async def _create_stream(self, request: h2.events.RequestReceived) -> None:
         for name, value in request.headers:
-            if name == b":method":
-                method = value.decode("ascii").upper()
-            elif name == b":path":
+            if name == b':method':
+                method = value.decode('ascii').upper()
+            elif name == b':path':
                 raw_path = value
 
-        if method == "CONNECT":
+        if method == 'CONNECT':
             self.streams[request.stream_id] = WSStream(
                 self.app,
                 self.config,
@@ -366,7 +366,7 @@ class H2Protocol(Protocol):
             Request(
                 stream_id=request.stream_id,
                 headers=filter_pseudo_headers(request.headers),
-                http_version="2",
+                http_version='2',
                 method=method,
                 raw_path=raw_path,
             )
@@ -378,9 +378,9 @@ class H2Protocol(Protocol):
         self, stream_id: int, path: bytes, headers: list[tuple[bytes, bytes]]
     ) -> None:
         push_stream_id = self.connection.get_next_available_stream_id()
-        request_headers = [(b":method", b"GET"), (b":path", path)]
+        request_headers = [(b':method', b'GET'), (b':path', path)]
         request_headers.extend(headers)
-        request_headers.extend(response_headers(self.config, "h2"))
+        request_headers.extend(response_headers(self.config, 'h2'))
         try:
             self.connection.push_stream(
                 stream_id=stream_id,

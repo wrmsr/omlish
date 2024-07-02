@@ -193,7 +193,7 @@ class WSStream:
         self.scope: WebsocketScope
         self.send = send
         # RFC 8441 for HTTP/2 says use http or https, ASGI says ws or wss
-        self.scheme = "ws"  # #"wss" if ssl else "ws"
+        self.scheme = 'ws'  # #'wss' if ssl else 'ws'
         self.server = server
         self.start_time: float
         self.state = ASGIWebsocketState.HANDSHAKE

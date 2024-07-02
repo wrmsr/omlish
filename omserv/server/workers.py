@@ -62,7 +62,7 @@ async def _serve_one_listener(
             except OSError as exc:
                 if exc.errno in ACCEPT_CAPACITY_ERRNOS:
                     log.error(
-                        "accept returned %s (%s); retrying in %s seconds",
+                        'accept returned %s (%s); retrying in %s seconds',
                         errno.errorcode[exc.errno],
                         os.strerror(exc.errno),
                         SLEEP_TIME,
@@ -101,7 +101,7 @@ async def _install_signal_handler(
 
     sigs = [
         getattr(signal, signal_name)
-        for signal_name in {"SIGINT", "SIGTERM", "SIGBREAK"}
+        for signal_name in {'SIGINT', 'SIGTERM', 'SIGBREAK'}
         if hasattr(signal, signal_name)
     ]
 
@@ -158,8 +158,8 @@ async def worker_serve(
             for sock in sockets.insecure_sockets:
                 listeners.append(anyio._core._eventloop.get_async_backend().create_tcp_listener(sock))  # noqa
                 bind = repr_socket_addr(sock.family, sock.getsockname())
-                binds.append(f"http://{bind}")
-                log.info(f"Running on http://{bind} (CTRL + C to quit)")
+                binds.append(f'http://{bind}')
+                log.info(f'Running on http://{bind} (CTRL + C to quit)')
 
             task_status.started(binds)
             try:

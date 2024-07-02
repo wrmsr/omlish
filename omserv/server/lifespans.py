@@ -20,8 +20,8 @@ log = logging.getLogger(__name__)
 class LifespanTimeoutError(Exception):
     def __init__(self, stage: str) -> None:
         super().__init__(
-            f"Timeout whilst awaiting {stage}. Your application may not support the ASGI Lifespan "
-            f"protocol correctly, alternatively the {stage}_timeout configuration is incorrect."
+            f'Timeout whilst awaiting {stage}. Your application may not support the ASGI Lifespan '
+            f'protocol correctly, alternatively the {stage}_timeout configuration is incorrect.'
         )
 
 
@@ -49,9 +49,10 @@ class Lifespan:
     ) -> None:
         task_status.started()
         scope: LifespanScope = {
-            "type": "lifespan",
-            "asgi": {"spec_version": "2.0", "version": "3.0"},
+            'type': 'lifespan',
+            'asgi': {'spec_version': '2.0', 'version': '3.0'},
         }
+
         try:
             await self.app(
                 scope,
@@ -74,11 +75,11 @@ class Lifespan:
 
             self.supported = False
             if not self.startup.is_set():
-                log.warning("ASGI Framework Lifespan error, continuing without Lifespan support")
+                log.warning('ASGI Framework Lifespan error, continuing without Lifespan support')
             elif not self.shutdown.is_set():
-                log.exception("ASGI Framework Lifespan error, shutdown without Lifespan support")
+                log.exception('ASGI Framework Lifespan error, shutdown without Lifespan support')
             else:
-                log.exception("ASGI Framework Lifespan errored after shutdown.")
+                log.exception('ASGI Framework Lifespan errored after shutdown.')
 
         finally:
             self.startup.set()
@@ -90,39 +91,39 @@ class Lifespan:
         if not self.supported:
             return
 
-        await self.app_send_channel.send({"type": "lifespan.startup"})
+        await self.app_send_channel.send({'type': 'lifespan.startup'})
         try:
             with anyio.fail_after(self.config.startup_timeout):
                 await self.startup.wait()
         except TimeoutError as error:
-            raise LifespanTimeoutError("startup") from error
+            raise LifespanTimeoutError('startup') from error
 
     async def wait_for_shutdown(self) -> None:
         if not self.supported:
             return
 
-        await self.app_send_channel.send({"type": "lifespan.shutdown"})
+        await self.app_send_channel.send({'type': 'lifespan.shutdown'})
         try:
             with anyio.fail_after(self.config.shutdown_timeout):
                 await self.shutdown.wait()
         except TimeoutError as error:
-            raise LifespanTimeoutError("startup") from error
+            raise LifespanTimeoutError('startup') from error
 
     async def asgi_receive(self) -> ASGIReceiveEvent:
         return await self.app_receive_channel.receive()
 
     async def asgi_send(self, message: ASGISendEvent) -> None:
-        if message["type"] == "lifespan.startup.complete":
+        if message['type'] == 'lifespan.startup.complete':
             self.startup.set()
 
-        elif message["type"] == "lifespan.shutdown.complete":
+        elif message['type'] == 'lifespan.shutdown.complete':
             self.shutdown.set()
 
-        elif message["type"] == "lifespan.startup.failed":
-            raise LifespanFailureError("startup", message.get("message", ""))
+        elif message['type'] == 'lifespan.startup.failed':
+            raise LifespanFailureError('startup', message.get('message', ''))
 
-        elif message["type"] == "lifespan.shutdown.failed":
-            raise LifespanFailureError("shutdown", message.get("message", ""))
+        elif message['type'] == 'lifespan.shutdown.failed':
+            raise LifespanFailureError('shutdown', message.get('message', ''))
 
         else:
-            raise UnexpectedMessageError(message["type"])
+            raise UnexpectedMessageError(message['type'])
