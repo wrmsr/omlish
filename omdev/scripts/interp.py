@@ -24,6 +24,9 @@ log = logging.getLogger(__name__)
 REQUIRED_PYTHON_VERSION = (3, 8)
 
 
+##
+
+
 class cached_nullary:
     def __init__(self, fn):
         self._fn = fn
@@ -44,7 +47,10 @@ def _check_not_none(v: ta.Optional[T]) -> T:
     return v
 
 
-DEFAULT_CMD_TRY_EXCEPTIONS: ta.AbstractSet[type[Exception]] = frozenset([
+##
+
+
+DEFAULT_CMD_TRY_EXCEPTIONS: ta.AbstractSet[ta.Type[Exception]] = frozenset([
     FileNotFoundError,
 ])
 
@@ -62,7 +68,7 @@ def _cmd(
 
     env = {**os.environ, **(env or {})}
 
-    es: tuple[type[Exception], ...] = (Exception,)
+    es: tuple[ta.Type[Exception], ...] = (Exception,)
     if isinstance(try_, bool):
         if try_:
             es = tuple(DEFAULT_CMD_TRY_EXCEPTIONS)
@@ -82,6 +88,9 @@ def _cmd(
     out = buf.decode('utf-8').strip()
     log.debug(out)
     return out
+
+
+##
 
 
 class Resolver:
@@ -351,6 +360,9 @@ class LinuxResolver(PyenvResolver):
         ]
 
 
+##
+
+
 def _resolve_cmd(args) -> None:
     if sys.platform == 'darwin':
         resolver_cls = MacResolver
@@ -368,6 +380,9 @@ def _resolve_cmd(args) -> None:
     if resolved is None:
         raise RuntimeError(f'Failed to resolve python version: {args.version}')
     print(resolved)
+
+
+##
 
 
 def _build_parser() -> argparse.ArgumentParser:
