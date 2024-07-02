@@ -4,23 +4,23 @@ import time
 import typing as ta
 import urllib.parse
 
-from .config import Config
-from .events import Body
-from .events import EndBody
-from .events import InformationalResponse
-from .events import ProtocolEvent
-from .events import Request
-from .events import Response
-from .events import StreamClosed
-from .requests import valid_server_name
-from .taskspawner import TaskSpawner
-from .types import ASGISendEvent
-from .types import AppWrapper
-from .types import HTTPResponseStartEvent
-from .types import HTTPScope
-from .types import Scope
-from .types import UnexpectedMessageError
-from .workercontext import WorkerContext
+from ..config import Config
+from ..events import Body
+from ..events import EndBody
+from ..events import InformationalResponse
+from ..events import ProtocolEvent
+from ..events import Request
+from ..events import Response
+from ..events import StreamClosed
+from ..requests import valid_server_name
+from ..taskspawner import TaskSpawner
+from ..types import ASGISendEvent
+from ..types import AppWrapper
+from ..types import HTTPResponseStartEvent
+from ..types import HTTPScope
+from ..types import Scope
+from ..types import UnexpectedMessageError
+from ..workercontext import WorkerContext
 
 
 log = logging.getLogger(__name__)

@@ -18,11 +18,11 @@ from ..events import ServerEvent
 from ..events import StreamClosed
 from ..events import Updated
 from ..headers import response_headers
-from ..httpstream import HTTPStream
+from ..streams.httpstream import HTTPStream
+from ..streams.wsstream import WSStream
 from ..taskspawner import TaskSpawner
 from ..types import AppWrapper
 from ..workercontext import WorkerContext
-from ..wsstream import WSStream
 from .types import Protocol
 
 
