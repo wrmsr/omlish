@@ -173,7 +173,6 @@ class WSStream:
         config: Config,
         context: WorkerContext,
         task_spawner: TaskSpawner,
-        ssl: bool,
         client: ta.Optional[tuple[str, int]],
         server: ta.Optional[tuple[str, int]],
         send: ta.Callable[[ProtocolEvent], ta.Awaitable[None]],
@@ -193,7 +192,7 @@ class WSStream:
         self.scope: WebsocketScope
         self.send = send
         # RFC 8441 for HTTP/2 says use http or https, ASGI says ws or wss
-        self.scheme = 'wss' if ssl else 'ws'
+        self.scheme = "ws"  # #"wss" if ssl else "ws"
         self.server = server
         self.start_time: float
         self.state = ASGIWebsocketState.HANDSHAKE
@@ -221,8 +220,7 @@ class WSStream:
                 'path': urllib.parse.unquote(path.decode('ascii')),
                 'raw_path': path,
                 'query_string': query_string,
-                'root_path': self.config.root_path,
-                'headers': event.headers,
+                # 'root_path': self.config.root_path,
                 'client': self.client,
                 'server': self.server,
                 'subprotocols': self.handshake.subprotocols or [],
@@ -262,24 +260,30 @@ class WSStream:
             if self.state == ASGIWebsocketState.HANDSHAKE:
                 await self._send_error_response(500)
                 log_access(
-                    self.scope, {'status': 500, 'headers': []}, time.time() - self.start_time
+                    self.config, self.scope, {'status': 500, 'headers': []}, time.time() - self.start_time
                 )
+
             elif self.state == ASGIWebsocketState.CONNECTED:
                 await self._send_wsproto_event(wse.CloseConnection(code=wsp.frame_protocol.CloseReason.INTERNAL_ERROR))
+
             await self.send(StreamClosed(stream_id=self.stream_id))
+
         else:
             if message['type'] == 'websocket.accept' and self.state == ASGIWebsocketState.HANDSHAKE:
                 await self._accept(message)
+
             elif (
                 message['type'] == 'websocket.http.response.start'
                 and self.state == ASGIWebsocketState.HANDSHAKE
             ):
                 self.response = message
+
             elif message['type'] == 'websocket.http.response.body' and self.state in {
                 ASGIWebsocketState.HANDSHAKE,
                 ASGIWebsocketState.RESPONSE,
             }:
                 await self._send_rejection(message)
+
             elif message['type'] == 'websocket.send' and self.state == ASGIWebsocketState.CONNECTED:
                 event: wse.Event
                 if message.get('bytes') is not None:
@@ -289,11 +293,13 @@ class WSStream:
                 else:
                     event = wse.TextMessage(data=message['text'])
                 await self._send_wsproto_event(event)
+
             elif (
                 message['type'] == 'websocket.close' and self.state == ASGIWebsocketState.HANDSHAKE
             ):
                 self.state = ASGIWebsocketState.HTTPCLOSED
                 await self._send_error_response(403)
+
             elif message['type'] == 'websocket.close':
                 self.state = ASGIWebsocketState.CLOSED
                 await self._send_wsproto_event(
@@ -303,6 +309,7 @@ class WSStream:
                     )
                 )
                 await self.send(EndData(stream_id=self.stream_id))
+
             else:
                 raise UnexpectedMessageError(self.state, message['type'])
 
@@ -320,8 +327,10 @@ class WSStream:
                 if event.message_finished:
                     await self.app_put(self.buffer.to_message())
                     self.buffer.clear()
+
             elif isinstance(event, wse.Ping):
                 await self._send_wsproto_event(event.response())
+
             elif isinstance(event, wse.CloseConnection):
                 if self.connection.state == wsp.ConnectionState.REMOTE_CLOSING:
                     await self._send_wsproto_event(event.response())
@@ -337,7 +346,7 @@ class WSStream:
         )
         await self.send(EndBody(stream_id=self.stream_id))
         log_access(
-            self.scope, {'status': status_code, 'headers': []}, time.time() - self.start_time
+            self.config, self.scope, {'status': status_code, 'headers': []}, time.time() - self.start_time
         )
 
     async def _send_wsproto_event(self, event: wse.Event) -> None:
@@ -357,7 +366,7 @@ class WSStream:
             Response(stream_id=self.stream_id, status_code=status_code, headers=headers)
         )
         log_access(
-            self.scope, {'status': status_code, 'headers': []}, time.time() - self.start_time
+            self.config, self.scope, {'status': status_code, 'headers': []}, time.time() - self.start_time
         )
         if self.config.websocket_ping_interval is not None:
             self.task_spawner.spawn(self._send_pings)
@@ -379,7 +388,7 @@ class WSStream:
         if not message.get('more_body', False):
             self.state = ASGIWebsocketState.HTTPCLOSED
             await self.send(EndBody(stream_id=self.stream_id))
-            log_access(self.scope, self.response, time.time() - self.start_time)
+            log_access(self.config, self.scope, self.response, time.time() - self.start_time)
 
     async def _send_pings(self) -> None:
         while not self.closed:
