@@ -11,6 +11,27 @@ class VenvSpec:
     docker: str | None = None
 
 
+def get_interp_exe(s: str) -> str:
+    if not s.startswith('@'):
+        return s
+    vers = pyproject._read_versions_file()  # noqa
+    raise NotImplementedError
+
+
+class Venv:
+    def __init__(self, spec: VenvSpec) -> None:
+        super().__init__()
+        self._spec = spec
+
+    @property
+    def spec(self) -> VenvSpec:
+        return self._spec
+
+    @pyproject.cached_nullary
+    def interp_exe(self) -> str:
+        return get_interp_exe(self._spec.interp)
+
+
 _TEST_TOML = """
 [tool.omlish.pyproject.venvs]
 all = { interp = "@11", requires = "requirements-dev.txt" }
@@ -31,5 +52,7 @@ def test_specs():
         for n, vs in list(venv_specs.items()):
             vskw = {**avkw, **{k: v for k, v in dc.asdict(vs).items() if v is not None}}
             venv_specs[n] = VenvSpec(**vskw)
-
     print(venv_specs)
+
+    venvs = {n: Venv(vs) for n, vs in venv_specs.items()}
+    print(venvs['default'].interp_exe())
