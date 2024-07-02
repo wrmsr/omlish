@@ -171,7 +171,7 @@ class Venv:
             return False
 
         log.info(f'Using interpreter {(ie := self.interp_exe())}')
-        subprocess.check_output([ie, '-mvenv', dn])
+        subprocess.check_call([ie, '-mvenv', dn])
 
 
 class Run:
@@ -204,12 +204,20 @@ class Run:
 ##
 
 
+@cached_nullary
+def _script_rel_path() -> str:
+    cwd = os.getcwd()
+    if not (f := __file__).startswith(cwd):
+        raise EnvironmentError(f'file {f} not in {cwd}')
+    return f[len(cwd):].lstrip(os.sep)
+
+
 def _venv_cmd(args) -> None:
     venv = Run().venvs()[args.name]
     if (sd := venv.spec.docker) is not None and sd != (cd := args._docker_container):  # noqa
         ctr = _find_docker_service_container('docker/docker-compose.yml', sd)
-        print(ctr)
-        raise NotImplementedError
+        subprocess.check_call(['docker', 'exec', '-it', ctr, 'python3', _script_rel_path(), *sys.argv[1:]])
+        return
     venv.create()
 
 
