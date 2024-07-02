@@ -19,4 +19,4 @@ def test_specs():
     )
 
     venv = run.venvs()['12']
-    print(venv.interp_exe())
+    venv.create()
