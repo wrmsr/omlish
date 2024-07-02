@@ -178,12 +178,10 @@ class Run:
     def __init__(
             self,
             *,
-            docker_container: ta.Optional[str] = None,
             raw_cfg: ta.Union[ta.Mapping[str, ta.Any], str] = None,
     ) -> None:
         super().__init__()
 
-        self._docker_container = docker_container
         self._raw_cfg = raw_cfg
 
     @cached_nullary
@@ -207,9 +205,12 @@ class Run:
 
 
 def _venv_cmd(args) -> None:
-    Run(
-        docker_container=args._docker_container,  # noqa
-    ).venvs()[args.name].create()
+    venv = Run().venvs()[args.name]
+    if (sd := venv.spec.docker) is not None and sd != (cd := args._docker_container):  # noqa
+        ctr = _find_docker_service_container('docker/docker-compose.yml', sd)
+        print(ctr)
+        raise NotImplementedError
+    venv.create()
 
 
 ##
