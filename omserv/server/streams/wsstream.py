@@ -21,7 +21,6 @@ from ..events import ProtocolEvent
 from ..events import Request
 from ..events import Response
 from ..events import StreamClosed
-from ..requests import valid_server_name
 from ..taskspawner import TaskSpawner
 from ..types import ASGISendEvent
 from ..types import AppWrapper
@@ -31,9 +30,10 @@ from ..types import WebsocketResponseStartEvent
 from ..types import WebsocketScope
 from ..workercontext import WorkerContext
 from .httpstream import UnexpectedMessageError
-from .httpstream import build_and_validate_headers
-from .httpstream import log_access
-from .httpstream import suppress_body
+from .utils import build_and_validate_headers
+from .utils import log_access
+from .utils import suppress_body
+from .utils import valid_server_name
 
 
 log = logging.getLogger(__name__)
