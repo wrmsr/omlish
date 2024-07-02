@@ -2,6 +2,7 @@
 TODO:
  - def maybe(v: lang.Maybe[T])
 """
+import collections
 import typing as ta
 
 
@@ -139,7 +140,7 @@ def not_empty(v: SizedT, msg: Message = None) -> SizedT:
 
 
 def unique(it: ta.Iterable[T], msg: Message = None) -> ta.Iterable[T]:
-    dupes = [e for e, c in collections.Counter(it).items() if c > 1]  # type: ignore
+    dupes = [e for e, c in collections.Counter(it).items() if c > 1]
     if dupes:
         _raise(ValueError, 'Must be unique', msg, it, dupes)
     return it
