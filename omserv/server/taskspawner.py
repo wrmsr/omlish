@@ -54,8 +54,14 @@ async def _handle(
 class TaskSpawner:
     def __init__(self) -> None:
         super().__init__()
-        self._task_group: ta.Optional[ta.Any] = None
-        self._task_group_manager: ta.Optional[anyio.abc.TaskGroup] = None
+        self._task_group: ta.Optional[anyio.abc.TaskGroup] = None
+
+    async def start(
+            self,
+            func: ta.Callable[..., ta.Awaitable[ta.Any]],
+            *args: ta.Any,
+    ) -> anyio.CancelScope:
+        return await check.not_none(self._task_group).start(func, *args)
 
     async def spawn_app(
             self,
@@ -65,7 +71,7 @@ class TaskSpawner:
             send: ta.Callable[[ta.Optional[ASGISendEvent]], ta.Awaitable[None]],
     ) -> ta.Callable[[ASGIReceiveEvent], ta.Awaitable[None]]:
         app_send_channel, app_receive_channel = anyio.create_memory_object_stream[ta.Any](config.max_app_queue_size)
-        check.not_none(self._task_group).start_soon(  # type: ignore  # FIXME
+        check.not_none(self._task_group).start_soon(
             _handle,
             app,
             config,
@@ -78,14 +84,13 @@ class TaskSpawner:
         return app_send_channel.send
 
     def spawn(self, func: ta.Callable, *args: ta.Any) -> None:
-        check.not_none(self._task_group).start_soon(func, *args)  # type: ignore  # FIXME
+        check.not_none(self._task_group).start_soon(func, *args)
 
     async def __aenter__(self: ta.Self) -> ta.Self:
-        self._task_group_manager = anyio.create_task_group()
-        self._task_group = await self._task_group_manager.__aenter__()
+        self._task_group = anyio.create_task_group()
+        await self._task_group.__aenter__()
         return self
 
     async def __aexit__(self, exc_type: type[BaseException], exc_value: BaseException, tb: types.TracebackType) -> None:
-        await check.not_none(self._task_group_manager).__aexit__(exc_type, exc_value, tb)
-        self._task_group_manager = None
+        await check.not_none(self._task_group).__aexit__(exc_type, exc_value, tb)
         self._task_group = None

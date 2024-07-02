@@ -44,6 +44,7 @@ class TCPServer:
         self.stream = stream
 
         self._idle_handle: ta.Optional[anyio.abc.CancelScope] = None
+        self._task_spawner: ta.Optional[TaskSpawner] = None
 
     def __await__(self) -> ta.Generator[ta.Any, None, None]:
         return self.run().__await__()
@@ -136,7 +137,7 @@ class TCPServer:
     async def _start_idle(self) -> None:
         async with self.idle_lock:
             if self._idle_handle is None:
-                self._idle_handle = await check.not_none(self._task_spawner._task_group).start(self._run_idle)  # type: ignore  # noqa
+                self._idle_handle = await check.not_none(self._task_spawner).start(self._run_idle)
 
     async def _stop_idle(self) -> None:
         async with self.idle_lock:

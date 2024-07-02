@@ -25,6 +25,7 @@ from .sanity import SANITY_REQUEST_BODY
 from .sanity import SANITY_RESPONSE_BODY
 from .sanity import sanity_framework
 from .utils import CONNECTION_REFUSED_EXCEPTION_TYPES
+from .utils import TIMEOUT_S
 from .utils import anyio_eof_to_empty
 from .utils import get_free_port
 from .utils import headers_time_patch  # noqa
@@ -39,7 +40,7 @@ async def _test_server_simple():
         async with contextlib.AsyncExitStack() as aes:
             aes.enter_context(lang.defer(sev.set))
 
-            tt = lang.ticking_timeout(5.)
+            tt = lang.ticking_timeout(TIMEOUT_S)
             while True:
                 tt()
                 try:
@@ -175,7 +176,7 @@ async def _test_curl(use_h2c: bool) -> None:
         async with contextlib.AsyncExitStack() as aes:
             aes.enter_context(lang.defer(sev.set))
 
-            tt = lang.ticking_timeout(5.)
+            tt = lang.ticking_timeout(TIMEOUT_S)
             while True:
                 tt()
                 try:
@@ -235,7 +236,7 @@ async def _test_curl_h2() -> None:
         async with contextlib.AsyncExitStack() as aes:
             aes.enter_context(lang.defer(sev.set))
 
-            tt = lang.ticking_timeout(5.)
+            tt = lang.ticking_timeout(TIMEOUT_S)
             while True:
                 tt()
                 try:
