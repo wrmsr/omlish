@@ -40,6 +40,7 @@ class VenvSpec:
 test_srcs ?
 """
 import argparse
+import dataclasses as dc
 import functools
 import logging
 import os.path
@@ -81,6 +82,110 @@ class cached_nullary:
 ##
 
 
+def _toml_loads(s: str) -> ta.Any:
+    try:
+        import tomllib as toml
+    except ImportError:
+        from pip._vendor import tomli as toml  # noqa
+    return toml.loads(s)
+
+
+@cached_nullary
+def _read_versions_file(file_name: str = '.versions') -> ta.Mapping[str, str]:
+    with open(file_name, 'r') as f:
+        lines = f.readlines()
+    return {
+        k: v
+        for l in lines
+        if (sl := l.split('#')[0].strip())
+        for k, _, v in (sl.partition('='),)
+    }
+
+
+def _find_docker_service_container(cfg_path: str, svc_name: str) -> str:
+    out = subprocess.check_output(['docker-compose', '-f', cfg_path, 'ps', '-q', svc_name])
+    return out.decode().strip()
+
+
+def _get_interp_exe(s: str) -> str:
+    if not s.startswith('@'):
+        return s
+    raw_vers = _read_versions_file()
+    pfx = 'PYTHON_'
+    vers = {k[len(pfx):].lower(): v for k, v in raw_vers.items() if k.startswith(pfx)}
+    ver = vers[s[1:]]
+    interp_script = 'omdev/scripts/interp.py'
+    exe = subprocess.check_output([sys.executable, interp_script, 'resolve', ver]).decode().strip()
+    return exe
+
+
+##
+
+
+@dc.dataclass()
+class VenvSpec:
+    name: str
+    interp: str | None = None
+    requires: list[str] | None = None
+    docker: str | None = None
+
+
+def _build_venv_specs(cfgs: ta.Mapping[str, ta.Any]) -> ta.Mapping[str, VenvSpec]:
+    venv_specs = {n: VenvSpec(name=n, **vs) for n, vs in cfgs.items()}
+    if (all_venv_spec := venv_specs.pop('all')) is not None:
+        avkw = dc.asdict(all_venv_spec)
+        for n, vs in list(venv_specs.items()):
+            vskw = {**avkw, **{k: v for k, v in dc.asdict(vs).items() if v is not None}}
+            venv_specs[n] = VenvSpec(**vskw)
+    return venv_specs
+
+
+class Venv:
+    def __init__(self, spec: VenvSpec) -> None:
+        super().__init__()
+        self._spec = spec
+
+    @property
+    def spec(self) -> VenvSpec:
+        return self._spec
+
+    @cached_nullary
+    def interp_exe(self) -> str:
+        return _get_interp_exe(self._spec.interp)
+
+
+class Run:
+    def __init__(
+            self,
+            *,
+            docker_container: ta.Optional[str] = None,
+            raw_cfg: ta.Union[ta.Mapping[str, ta.Any], str] = None,
+    ) -> None:
+        super().__init__()
+
+        self._docker_container = docker_container
+        self._raw_cfg = raw_cfg
+
+    @cached_nullary
+    def raw_cfg(self) -> ta.Mapping[str, ta.Any]:
+        if self._raw_cfg is None:
+            with open('pyproject.toml', 'r') as f:
+                buf = f.read()
+        elif isinstance(self._raw_cfg, str):
+            buf = self._raw_cfg
+        else:
+            return self._raw_cfg
+        return _toml_loads(buf)
+
+    @cached_nullary
+    def venvs(self) -> ta.Mapping[str, Venv]:
+        venv_specs = _build_venv_specs(self.raw_cfg()['tool']['omlish']['pyproject']['venvs'])
+        return {n: Venv(vs) for n, vs in venv_specs.items()}
+
+
+##
+
+
 def _venv_cmd(args) -> None:
     name = args.name
 
@@ -99,6 +204,9 @@ def _venv_cmd(args) -> None:
     subprocess.check_output([interp, '-mvenv', name])
 
 
+##
+
+
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
 
@@ -113,50 +221,7 @@ def _build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-@cached_nullary
-def _read_versions_file(file_name: str = '.versions') -> ta.Mapping[str, str]:
-    with open(file_name, 'r') as f:
-        lines = f.readlines()
-    return {
-        k: v
-        for l in lines
-        if (sl := l.split('#')[0].strip())
-        for k, _, v in (sl.partition('='),)
-    }
-
-
-_TEST_TOML = """
-[tool.omlish.pyproject.venvs]
-all = { interp = "@11", requires = "requirements-dev.txt" }
-default = { interp = "@11", requires = "requirements-ext.txt"  }
-docker = { docker = "omlish-dev" }
-docker-amd64 = { docker = "omlish-dev-amd64" }
-debug = { interp = "@11-debug" }
-"12" = { interp = "@12" }
-"13" = { interp = "@13" }
-"""
-
-
-def _toml_loads(s: str) -> ta.Any:
-    try:
-        import tomllib as toml
-    except ImportError:
-        from pip._vendor import tomli as toml  # noqa
-    return toml.loads(s)
-
-
-def _find_service_container(cfg_path: str, svc_name: str) -> str:
-    out = subprocess.check_output(['docker-compose', '-f', cfg_path, 'ps', '-q', svc_name])
-    return out.decode().strip()
-
-
 def _main(argv: ta.Optional[ta.Sequence[str]] = None) -> None:
-    # print(_read_versions_file())
-    # print(_load_toml(_TEST_TOML))
-    # print(_find_service_container('docker/docker-compose.yml', 'omlish-dev'))
-
-    ##
-
     if sys.version_info < REQUIRED_PYTHON_VERSION:
         raise EnvironmentError(f'Requires python {REQUIRED_PYTHON_VERSION}, got {sys.version_info} from {sys.executable}')  # noqa
 
