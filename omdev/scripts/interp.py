@@ -91,6 +91,7 @@ class Resolver:
             version: str,
             *,
             debug: bool = False,
+            include_current_python: bool = False,
     ) -> None:
         if version is not None and not (isinstance(version, str) and version.strip()):
             raise ValueError(f'version: {version!r}')
@@ -101,6 +102,7 @@ class Resolver:
 
         self._version = version.strip()
         self._debug = debug
+        self._include_current_python = include_current_python
 
     def _get_python_ver(self, bin_path: str) -> ta.Optional[str]:
         s = _cmd([bin_path, '--version'], try_=True)
@@ -128,7 +130,7 @@ class Resolver:
     def _resolvers(self) -> ta.Sequence[ta.Callable[[], ta.Optional[str]]]:
         return [
             self._resolve_which_python,
-            self._resolve_current_python,
+            *((self._resolve_current_python,) if self._include_current_python else ()),
         ]
 
     def resolve(self) -> ta.Optional[str]:
