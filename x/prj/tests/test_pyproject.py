@@ -23,4 +23,5 @@ def test_specs():
         raw_cfg=_TEST_TOML,
     )
 
-    print(run.venvs()['12'].interp_exe())
+    venv = run.venvs()['12']
+    print(venv.interp_exe())

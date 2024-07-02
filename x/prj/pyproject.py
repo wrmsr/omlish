@@ -44,7 +44,6 @@ import dataclasses as dc
 import functools
 import logging
 import os.path
-import shutil
 import subprocess
 import sys
 import typing as ta
@@ -149,6 +148,10 @@ class Venv:
     def spec(self) -> VenvSpec:
         return self._spec
 
+    @property
+    def dir_name(self) -> str:
+        return f'.venv-{self._spec.name}'
+
     @cached_nullary
     def interp_exe(self) -> str:
         return _get_interp_exe(self._spec.interp)
@@ -209,6 +212,7 @@ def _venv_cmd(args) -> None:
 
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
+    parser.add_argument('--_docker-container')
 
     subparsers = parser.add_subparsers()
 
