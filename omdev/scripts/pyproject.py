@@ -137,7 +137,7 @@ def _script_rel_path() -> str:
 class VenvSpec:
     name: str
     interp: ta.Optional[str] = None
-    requires: ta.Union[str, list[str], None] = None
+    requires: ta.Union[str, ta.List[str], None] = None
     docker: ta.Optional[str] = None
 
 
