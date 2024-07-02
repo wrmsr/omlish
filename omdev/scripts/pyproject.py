@@ -132,12 +132,32 @@ def _script_rel_path() -> str:
 ##
 
 
+def _resolve_srcs(
+        lst: ta.Sequence[str],
+        aliases: ta.Mapping[str, ta.Sequence[str]],
+) -> ta.List[str]:
+    todo = list(reversed(lst))
+    out: ta.List[str] = []
+    seen: ta.Set[str] = set()
+    while todo:
+        cur = todo.pop()
+        if cur in seen:
+            continue
+        seen.add(cur)
+        if not cur.startswith('@'):
+            out.append(cur)
+            continue
+        raise NotImplementedError
+    return out
+
+
 @dc.dataclass()
 class VenvSpec:
     name: str
     interp: ta.Optional[str] = None
     requires: ta.Union[str, ta.List[str], None] = None
     docker: ta.Optional[str] = None
+    srcs: ta.Union[str, ta.List[str], None] = None
 
 
 def _build_venv_specs(cfgs: ta.Mapping[str, ta.Any]) -> ta.Mapping[str, VenvSpec]:
@@ -151,11 +171,17 @@ def _build_venv_specs(cfgs: ta.Mapping[str, ta.Any]) -> ta.Mapping[str, VenvSpec
 
 
 class Venv:
-    def __init__(self, spec: VenvSpec) -> None:
+    def __init__(
+            self,
+            spec: VenvSpec,
+            *,
+            src_aliases: ta.Optional[ta.Mapping[str, ta.Sequence[str]]] = None,
+    ) -> None:
         if spec.name == 'all':
             raise Exception
         super().__init__()
         self._spec = spec
+        self._src_aliases = src_aliases
 
     @property
     def spec(self) -> VenvSpec:
@@ -203,6 +229,10 @@ class Venv:
 
         return True
 
+    @cached_nullary
+    def srcs(self) -> ta.Sequence[str]:
+        return _resolve_srcs(self._spec.srcs or [], self._src_aliases or {})
+
 
 class Run:
     def __init__(
@@ -226,9 +256,17 @@ class Run:
         return _toml_loads(buf)
 
     @cached_nullary
+    def cfg(self) -> ta.Mapping[str, ta.Any]:
+        return self.raw_cfg()['tool']['omlish']['pyproject']
+
+    @cached_nullary
+    def src_aliases(self) -> ta.Mapping[str, ta.Sequence[str]]:
+        return self.cfg()['srcs']
+
+    @cached_nullary
     def venvs(self) -> ta.Mapping[str, Venv]:
-        venv_specs = _build_venv_specs(self.raw_cfg()['tool']['omlish']['pyproject']['venvs'])
-        return {n: Venv(vs) for n, vs in venv_specs.items()}
+        venv_specs = _build_venv_specs(self.cfg()['venvs'])
+        return {n: Venv(vs, src_aliases=self.src_aliases()) for n, vs in venv_specs.items()}
 
 
 ##
