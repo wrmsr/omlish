@@ -26,10 +26,14 @@ class Cli(ap.Cli):
             'debian',
             'nsenter',
             '-t', '1',
-            '-m',
-            '-u',
-            '-n',
-            '-i',
+            '-m',  # mount
+            '-u',  # uts
+            '-i',  # ipc
+            '-n',  # net
+            '-p',  # pid
+            '-C',  # cgroup
+            # '-U',  # user
+            '-T',  # time
             *self.args.args,
         )
 
