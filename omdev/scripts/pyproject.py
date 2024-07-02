@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
 TODO:
- - import pip._vendor.tomli?
+ - check / tests, src dir sets
+ - ci
 
 lookit:
  - https://pdm-project.org/en/latest/
@@ -9,35 +10,6 @@ lookit:
  - https://github.com/indygreg/python-build-standalone/blob/main/pythonbuild/cpython.py
  - https://astral.sh/blog/uv
  - https://github.com/jazzband/pip-tools
-
-
-Responsibilities:
- - pyenv (./interp)
- - venvs
- - deps
- - docker
- - tests
- - checks
- - ci
-
-Configs:
- - project
- - main_sources
- - all_sources
- - python versions (or .versions file), aliased to venvs
- - requirements txt
- - docker-compose file
-
-==
-
-
-@dc.dataclass()
-class VenvSpec:
-  interp: str | None = None
-  requires: list[str] | None = None
-  docker: str | None = None
-
-test_srcs ?
 """
 import argparse
 import dataclasses as dc
@@ -287,6 +259,10 @@ def _build_parser() -> argparse.ArgumentParser:
 def _main(argv: ta.Optional[ta.Sequence[str]] = None) -> None:
     if sys.version_info < REQUIRED_PYTHON_VERSION:
         raise EnvironmentError(f'Requires python {REQUIRED_PYTHON_VERSION}, got {sys.version_info} from {sys.executable}')  # noqa
+
+    # FIXME: -v
+    # logging.root.addHandler(logging.StreamHandler())
+    # logging.root.setLevel('INFO')
 
     parser = _build_parser()
     args = parser.parse_args(argv)
