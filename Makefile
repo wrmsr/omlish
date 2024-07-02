@@ -5,12 +5,14 @@ PROJECT:=omlish
 MAIN_SOURCES:=\
 	${PROJECT} \
 	omdev \
-	omml \
 	omserv \
 
-ALL_SOURCES:=\
+ML_SORUCES:=\
 	${MAIN_SOURCES} \
-	omserv \
+	omml
+
+ALL_SOURCES:=\
+	${ML_SOURCES} \
 	x \
 
 
@@ -186,7 +188,7 @@ venv-12:
 .PHONY: test-12
 test-12: venv-12
 	_VENV_ROOT=.venv-12 \
-	_TEST_SOURCES="${PROJECT}" \
+	_TEST_SOURCES="${MAIN_SOURCES}" \
 	${MAKE} _venv _test
 
 # 13
@@ -201,7 +203,7 @@ venv-13:
 .PHONY: test-13
 test-13: venv-13
 	_VENV_ROOT=.venv-13 \
-	_TEST_SOURCES="${PROJECT}" \
+	_TEST_SOURCES="${MAIN_SOURCES}" \
 	${MAKE} _venv _test
 
 # dev
