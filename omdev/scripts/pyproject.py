@@ -147,7 +147,7 @@ def _resolve_srcs(
         if not cur.startswith('@'):
             out.append(cur)
             continue
-        raise NotImplementedError
+        todo.extend(aliases[cur[1:]][::-1])
     return out
 
 
