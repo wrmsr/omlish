@@ -22,6 +22,7 @@ from ..httpstream import HTTPStream
 from ..taskspawner import TaskSpawner
 from ..types import AppWrapper
 from ..workercontext import WorkerContext
+from ..wsstream import WSStream
 from .types import Protocol
 
 
@@ -59,6 +60,37 @@ class H2ProtocolAssumedError(Exception):
         self.data = data
 
 
+class H11WSConnection:
+    # This class matches the h11 interface, and either passes data
+    # through without altering it (for Data, EndData) or sends h11
+    # events (Response, Body, EndBody).
+    our_state = None  # Prevents recycling the connection
+    they_are_waiting_for_100_continue = False
+    their_state = None
+    trailing_data = (b"", False)
+
+    def __init__(self, h11_connection: h11.Connection) -> None:
+        self.buffer = bytearray(h11_connection.trailing_data[0])
+        self.h11_connection = h11_connection
+
+    def receive_data(self, data: bytes) -> None:
+        self.buffer.extend(data)
+
+    def next_event(self) -> ta.Union[Data, type[h11.NEED_DATA]]:
+        if self.buffer:
+            event = Data(stream_id=STREAM_ID, data=bytes(self.buffer))
+            self.buffer = bytearray()
+            return event
+        else:
+            return h11.NEED_DATA
+
+    def send(self, event: H11SendableEvent) -> bytes:
+        return self.h11_connection.send(event)
+
+    def start_next_cycle(self) -> None:
+        pass
+
+
 class H11Protocol(Protocol):
     def __init__(
             self,
@@ -81,7 +113,7 @@ class H11Protocol(Protocol):
         self.keep_alive_requests = 0
         self.send = send
         self.server = server
-        self.stream: ta.Optional[HTTPStream] = None
+        self.stream: ta.Optional[ta.Union[HTTPStream, WSStream]] = None
         self.task_spawner = task_spawner
 
     async def initiate(self) -> None:
@@ -179,7 +211,17 @@ class H11Protocol(Protocol):
                 and upgrade_value.lower() == "websocket"
                 and request.method.decode("ascii").upper() == "GET"
         ):
-            raise NotImplementedError
+            self.stream = WSStream(
+                self.app,
+                self.config,
+                self.context,
+                self.task_spawner,
+                self.client,
+                self.server,
+                self.stream_send,
+                STREAM_ID,
+            )
+            self.connection = H11WSConnection(ta.cast(h11.Connection, self.connection))
         else:
             self.stream = HTTPStream(
                 self.app,
