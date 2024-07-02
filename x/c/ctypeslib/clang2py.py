@@ -15,11 +15,12 @@ import sys
 import tempfile
 import traceback
 
-import ctypeslib
-from ctypeslib import clang_version, clang_py_version
-from ctypeslib.codegen import config
-from ctypeslib.codegen.codegenerator import translate_files
-from ctypeslib.codegen.handler import InvalidTranslationUnitException
+from . import __clang_library_filename
+from . import __version__
+from . import clang_version, clang_py_version
+from .codegen import config
+from .codegen.codegenerator import translate_files
+from .codegen.handler import InvalidTranslationUnitException
 
 ################################################################
 windows_dll_names = """\
@@ -260,8 +261,8 @@ def _make_parser(cfg):
 
     def version_string():
         version = "versions - %(prog)s:" \
-                  f"{ctypeslib.__version__} python-clang:{clang_py_version()} clang:{clang_version()} " \
-                  f"clang_filename:{ctypeslib.__clang_library_filename}"  # pylint: disable=protected-access
+                  f"{__version__} python-clang:{clang_py_version()} clang:{clang_version()} " \
+                  f"clang_filename:{__clang_library_filename}"  # pylint: disable=protected-access
         return version
 
     parser.add_argument("-V", "--version", action="version", version=version_string())

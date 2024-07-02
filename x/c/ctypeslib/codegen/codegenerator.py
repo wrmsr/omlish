@@ -18,11 +18,11 @@ from io import StringIO
 
 from clang.cindex import TypeKind
 
-from ctypeslib.codegen import clangparser
-from ctypeslib.codegen import config
-from ctypeslib.codegen import typedesc
-from ctypeslib.codegen import util
-from ctypeslib.library import Library
+from . import clangparser
+from . import config
+from . import typedesc
+from . import util
+from ..library import Library
 
 log = logging.getLogger("codegen")
 

@@ -2,10 +2,10 @@
 
 from clang.cindex import TypeKind
 
-from ctypeslib.codegen import typedesc
-from ctypeslib.codegen.util import log_entity
-from ctypeslib.codegen.handler import ClangHandler
-from ctypeslib.codegen.handler import InvalidDefinitionError
+from . import typedesc
+from .util import log_entity
+from .handler import ClangHandler
+from .handler import InvalidDefinitionError
 
 import logging
 log = logging.getLogger('typehandler')
