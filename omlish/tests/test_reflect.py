@@ -14,7 +14,7 @@ _0, _1, _2, _3 = rfl._KNOWN_SPECIAL_TYPE_VARS[:4]  # noqa
 
 
 def test_simple_reflect_type():
-    assert rfl.type_(int) == int
+    assert rfl.type_(int) is int
     assert rfl.type_(ta.Union[int, float]) == rfl.Union(frozenset([int, float]))
     assert rfl.type_(ta.Optional[int]) == rfl.Union(frozenset([int, type(None)]))
 
@@ -27,7 +27,7 @@ def test_simple_reflect_type():
     assert rfl.type_(set[int]) == rfl.Generic(set, (int,), (_0,), set[int])
     assert rfl.type_(dict[int, str]) == rfl.Generic(dict, (int, str), (_0, _1), dict[int, str])
 
-    assert rfl.type_(list) == list
+    assert rfl.type_(list) is list
     assert rfl.type_(ta.List) == rfl.Generic(list, (_0,), (_0,), ta.List)
     assert rfl.type_(list[int]) == rfl.Generic(list, (int,), (_0,), list[int])
     assert rfl.type_(ta.List[int]) == rfl.Generic(list, (int,), (_0,), ta.List[int])
