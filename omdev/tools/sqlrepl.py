@@ -1,16 +1,13 @@
-#!/usr/bin/env python3
-"""
-Responsibilities:
- - docker-compose or secrets
- - dbcli where available, fallback on cli
-"""
-import argparse
 import dataclasses as dc
-import os
-import typing as ta
+import os.path
+import shutil
 import sys
+import typing as ta
 import urllib.parse
 
+from omlish import argparse as ap
+from omlish import check
+from omlish import logs
 import yaml
 
 
@@ -62,7 +59,7 @@ def spec_from_postgres_docker_compose(svc: ta.Mapping[str, ta.Any]) -> ServerSpe
     )
 
 
-def spec_from_secrets(cfg: ta.Mapping[str, ta.Any], prefix: str) -> ServerSpec:
+def spec_from_cfg(cfg: ta.Mapping[str, ta.Any], prefix: str) -> ServerSpec:
     return ServerSpec(
         host=cfg[prefix + '_host'],
         port=cfg.get(prefix + '_port'),
@@ -71,27 +68,39 @@ def spec_from_secrets(cfg: ta.Mapping[str, ta.Any], prefix: str) -> ServerSpec:
     )
 
 
-def _dbcli_or_fallback_exe(dbcli_mod: str, default_exe: str) -> ta.Sequence[str]:
-    main_mod = dbcli_mod + '.main'
-    try:
-        __import__(main_mod)
-    except ImportError:
-        return default_exe
-    return [sys.executable, '-m', main_mod]
+def _dbcli_or_fallback_exe(dbcli_mod: str | None, default_exe: str) -> tuple[ta.Sequence[str], bool]:
+    if dbcli_mod is not None:
+        main_mod = dbcli_mod + '.main'
+        try:
+            __import__(main_mod)
+        except ImportError:
+            pass
+        else:
+            return [sys.executable, '-m', main_mod], True
+    return [check.not_none(shutil.which(default_exe))], False
 
 
 def exec_mysql_cli(
-        exe: ta.Sequence[str],
         spec: ServerSpec,
         *extra_args: str,
+        exe: ta.Iterable[str] | None = None,
+        no_dbcli: bool = False,
 ) -> ta.NoReturn:
-    # args = [exe] if exe is not None else list(_dbcli_or_fallback_exe('mycli', 'mysql'))
-    args = list(exe)
+    if exe is not None:
+        args, is_dbcli = list(exe), False
+    else:
+        argsx, is_dbcli = _dbcli_or_fallback_exe(
+            'mycli' if not no_dbcli else None,
+            'mysql',
+        )
+        args = list(argsx)
     if spec.username:
         args.extend(['--user', spec.username])
     if spec.password:
         os.environ['MYSQL_PWD'] = spec.password
     args.extend(['--host', spec.host])
+    if not is_dbcli:
+        args.append('--protocol=TCP')
     if spec.port:
         args.extend(['--port', str(spec.port)])
     if spec.db:
@@ -101,12 +110,19 @@ def exec_mysql_cli(
 
 
 def exec_postgres_cli(
-        exe: ta.Sequence[str],
         spec: ServerSpec,
         *extra_args: str,
+        exe: ta.Iterable[str] | None = None,
+        no_dbcli: bool = False,
 ) -> ta.NoReturn:
-    # args = [exe] if exe is not None else list(_dbcli_or_fallback_exe('pgcli', 'psql'))
-    args = list(exe)
+    if exe is not None:
+        args, is_dbcli = list(exe), False
+    else:
+        argsx, is_dbcli = _dbcli_or_fallback_exe(
+            'pgcli' if not no_dbcli else None,
+            'psql',
+        )
+        args = list(argsx)
     if spec.username:
         args.extend(['--username', spec.username])
     if spec.password:
@@ -121,35 +137,40 @@ def exec_postgres_cli(
     os.execvp(args[0], args)
 
 
-def _main():
-    with open('docker/docker-compose.yml') as f:
-        dc_cfg = yaml.safe_load(f.read())
+class Cli(ap.Cli):
+    @ap.command(
+        ap.arg('--no-dbcli', action='store_true'),
+        ap.arg('dialect'),
+        ap.arg('target'),
+        ap.arg('args', nargs='*'),
+    )
+    def repl(self):
+        l, _, r = (target := self.args.target).partition(':')
+        _, lf = os.path.dirname(l), os.path.basename(l)
+        if not lf.endswith('.yml'):
+            raise Exception(f'unhandled target: {target=}')
+        with open(l) as f:
+            cfg = yaml.safe_load(f.read())
+        dialect = self.args.dialect
+        if lf == 'docker-compose.yml':
+            svc = cfg['services'][r]
+            if dialect == 'mysql':
+                spec = spec_from_mysql_docker_compose(svc)
+            elif dialect == 'postgres':
+                spec = spec_from_postgres_docker_compose(svc)
+            else:
+                raise Exception(f'unhandled dialect: {dialect=}')
+        else:
+            spec = spec_from_cfg(cfg, r)
 
-    print(dc_cfg)
-
-
-# def _build_parser() -> argparse.ArgumentParser:
-#     parser = argparse.ArgumentParser()
-#
-#     subparsers = parser.add_subparsers()
-#
-#     parser_resolve = subparsers.add_parser('venv')
-#     parser_resolve.add_argument('name')
-#     parser_resolve.add_argument('interp')
-#     parser_resolve.add_argument('--debug', action='store_true')
-#     parser_resolve.set_defaults(func=_venv_cmd)
-#
-#     return parser
-#
-#
-# def _main(argv: ta.Optional[ta.Sequence[str]] = None) -> None:
-#     parser = _build_parser()
-#     args = parser.parse_args(argv)
-#     if not getattr(args, 'func', None):
-#         parser.print_help()
-#     else:
-#         args.func(args)
+        if dialect == 'mysql':
+            exec_mysql_cli(spec, *self.args.args, no_dbcli=self.args.no_dbcli)
+        elif dialect == 'postgres':
+            exec_postgres_cli(spec, *self.args.args, no_dbcli=self.args.no_dbcli)
+        else:
+            raise Exception(f'unhandled dialect: {dialect=}')
 
 
 if __name__ == '__main__':
-    _main()
+    logs.configure_standard_logging('INFO')
+    Cli()()
