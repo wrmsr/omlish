@@ -1,6 +1,8 @@
 import functools
+import itertools
 import typing as ta
 
+from .. import check
 from .identity import IdentityKeyDict
 from .identity import IdentitySet
 
@@ -85,3 +87,24 @@ def key_cmp(fn: ta.Callable[[K, K], int]) -> ta.Callable[[tuple[K, V], tuple[K, 
 
 def indexes(it: ta.Iterable[T]) -> dict[T, int]:
     return {e: i for i, e in enumerate(it)}
+
+
+def mut_unify_sets(sets: ta.Iterable[set[T]]) -> list[set[T]]:
+    rem: list[set[T]] = list(sets)
+    ret: list[set[T]] = []
+    while rem:
+        cur = rem.pop()
+        while True:
+            moved = False
+            for i in range(len(rem) - 1, -1, -1):
+                if any(e in cur for e in rem[i]):
+                    cur.update(rem.pop(i))
+                    moved = True
+            if not moved:
+                break
+        ret.append(cur)
+    if ret:
+        all_ = set(itertools.chain.from_iterable(ret))
+        num = sum(map(len, ret))
+        check.equal(len(all_), num)
+    return ret
