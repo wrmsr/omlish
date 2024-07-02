@@ -31,7 +31,7 @@ def _create_sockets(
     for bind in binds:
         binding: ta.Any = None
 
-        if bind.startswith("unix:"):
+        if bind.startswith('unix:'):
             sock = socket.socket(socket.AF_UNIX, type_)
             binding = bind[5:]
             try:
@@ -40,20 +40,20 @@ def _create_sockets(
             except FileNotFoundError:
                 pass
 
-        elif bind.startswith("fd://"):
+        elif bind.startswith('fd://'):
             sock = socket.socket(fileno=int(bind[5:]))
             actual_type = sock.getsockopt(socket.SOL_SOCKET, socket.SO_TYPE)
             if actual_type != type_:
                 raise SocketTypeError(type_, actual_type)
 
         else:
-            bind = bind.replace("[", "").replace("]", "")
+            bind = bind.replace('[', '').replace(']', '')
             try:
-                value = bind.rsplit(":", 1)
+                value = bind.rsplit(':', 1)
                 host, port = value[0], int(value[1])
             except (ValueError, IndexError):
                 host, port = bind, 8000
-            sock = socket.socket(socket.AF_INET6 if ":" in host else socket.AF_INET, type_)
+            sock = socket.socket(socket.AF_INET6 if ':' in host else socket.AF_INET, type_)
             sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
             if config.workers > 1:
                 try:
@@ -64,7 +64,7 @@ def _create_sockets(
 
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-        if bind.startswith("unix:"):
+        if bind.startswith('unix:'):
             if config.umask is not None:
                 current_umask = os.umask(config.umask)
             sock.bind(binding)
@@ -73,7 +73,7 @@ def _create_sockets(
             if config.umask is not None:
                 os.umask(current_umask)
 
-        elif bind.startswith("fd://"):
+        elif bind.startswith('fd://'):
             pass
 
         else:
@@ -96,13 +96,13 @@ def create_sockets(config: Config) -> Sockets:
 
 def repr_socket_addr(family: int, address: tuple) -> str:
     if family == socket.AF_INET:
-        return f"{address[0]}:{address[1]}"
+        return f'{address[0]}:{address[1]}'
     elif family == socket.AF_INET6:
-        return f"[{address[0]}]:{address[1]}"
+        return f'[{address[0]}]:{address[1]}'
     elif family == socket.AF_UNIX:
-        return f"unix:{address}"
+        return f'unix:{address}'
     else:
-        return f"{address}"
+        return f'{address}'
 
 
 def parse_socket_addr(family: int, address: tuple) -> ta.Optional[tuple[str, int]]:

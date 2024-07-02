@@ -40,13 +40,13 @@ STREAM_ID = 1
 class H2CProtocolRequiredError(Exception):
     def __init__(self, data: bytes, request: h11.Request) -> None:
         super().__init__()
-        settings = ""
-        headers = [(b":method", request.method), (b":path", request.target)]
+        settings = ''
+        headers = [(b':method', request.method), (b':path', request.target)]
         for name, value in request.headers:
-            if name.lower() == b"http2-settings":
+            if name.lower() == b'http2-settings':
                 settings = value.decode()
-            elif name.lower() == b"host":
-                headers.append((b":authority", value))
+            elif name.lower() == b'host':
+                headers.append((b':authority', value))
             headers.append((name, value))
 
         self.data = data
@@ -67,7 +67,7 @@ class H11WSConnection:
     our_state = None  # Prevents recycling the connection
     they_are_waiting_for_100_continue = False
     their_state = None
-    trailing_data = (b"", False)
+    trailing_data = (b'', False)
 
     def __init__(self, h11_connection: h11.Connection) -> None:
         self.buffer = bytearray(h11_connection.trailing_data[0])
@@ -130,9 +130,9 @@ class H11Protocol(Protocol):
     async def stream_send(self, event: ProtocolEvent) -> None:
         if isinstance(event, Response):
             if event.status_code >= 200:
-                headers = list(itertools.chain(event.headers, response_headers(self.config, "h11")))
+                headers = list(itertools.chain(event.headers, response_headers(self.config, 'h11')))
                 if self.keep_alive_requests >= self.config.keep_alive_max_requests:
-                    headers.append((b"connection", b"close"))
+                    headers.append((b'connection', b'close'))
                 await self._send_h11_event(
                     h11.Response(
                         headers=headers,
@@ -142,7 +142,7 @@ class H11Protocol(Protocol):
             else:
                 await self._send_h11_event(
                     h11.InformationalResponse(
-                        headers=list(itertools.chain(event.headers, response_headers(self.config, "h11"))),
+                        headers=list(itertools.chain(event.headers, response_headers(self.config, 'h11'))),
                         status_code=event.status_code,
                     )
                 )
@@ -170,7 +170,7 @@ class H11Protocol(Protocol):
             if self.connection.they_are_waiting_for_100_continue:
                 await self._send_h11_event(
                     h11.InformationalResponse(
-                        status_code=100, headers=response_headers(self.config, "h11")
+                        status_code=100, headers=response_headers(self.config, 'h11')
                     )
                 )
 
@@ -209,20 +209,20 @@ class H11Protocol(Protocol):
                     await self.stream.handle(event)
 
     async def _create_stream(self, request: h11.Request) -> None:
-        upgrade_value = ""
-        connection_value = ""
+        upgrade_value = ''
+        connection_value = ''
         for name, value in request.headers:
-            sanitised_name = name.decode("latin1").strip().lower()
-            if sanitised_name == "upgrade":
-                upgrade_value = value.decode("latin1").strip()
-            elif sanitised_name == "connection":
-                connection_value = value.decode("latin1").strip()
+            sanitised_name = name.decode('latin1').strip().lower()
+            if sanitised_name == 'upgrade':
+                upgrade_value = value.decode('latin1').strip()
+            elif sanitised_name == 'connection':
+                connection_value = value.decode('latin1').strip()
 
-        connection_tokens = connection_value.lower().split(",")
+        connection_tokens = connection_value.lower().split(',')
         if (
-                any(token.strip() == "upgrade" for token in connection_tokens)
-                and upgrade_value.lower() == "websocket"
-                and request.method.decode("ascii").upper() == "GET"
+                any(token.strip() == 'upgrade' for token in connection_tokens)
+                and upgrade_value.lower() == 'websocket'
+                and request.method.decode('ascii').upper() == 'GET'
         ):
             self.stream = WSStream(
                 self.app,
@@ -257,7 +257,7 @@ class H11Protocol(Protocol):
                 stream_id=STREAM_ID,
                 headers=headers,
                 http_version=request.http_version.decode(),
-                method=request.method.decode("ascii").upper(),
+                method=request.method.decode('ascii').upper(),
                 raw_path=request.target,
             )
         )
@@ -281,8 +281,8 @@ class H11Protocol(Protocol):
                 status_code=status_code,
                 headers=list(
                     itertools.chain(
-                        [(b"content-length", b"0"), (b"connection", b"close")],
-                        response_headers(self.config, "h11"),
+                        [(b'content-length', b'0'), (b'connection', b'close')],
+                        response_headers(self.config, 'h11'),
                     )
                 ),
             )
@@ -315,31 +315,31 @@ class H11Protocol(Protocol):
             self.stream = None
 
     async def _check_protocol(self, event: h11.Request) -> None:
-        upgrade_value = ""
+        upgrade_value = ''
         has_body = False
         for name, value in event.headers:
-            sanitised_name = name.decode("latin1").strip().lower()
-            if sanitised_name == "upgrade":
-                upgrade_value = value.decode("latin1").strip()
-            elif sanitised_name in {"content-length", "transfer-encoding"}:
+            sanitised_name = name.decode('latin1').strip().lower()
+            if sanitised_name == 'upgrade':
+                upgrade_value = value.decode('latin1').strip()
+            elif sanitised_name in {'content-length', 'transfer-encoding'}:
                 has_body = True
 
         # h2c Upgrade requests with a body are a pain as the body must be fully recieved in HTTP/1.1 before the upgrade
         # response and HTTP/2 takes over, so Hypercorn ignores the upgrade and responds in HTTP/1.1. Use a preflight
         # OPTIONS request to initiate the upgrade if really required (or just use h2).
-        if upgrade_value.lower() == "h2c" and not has_body:
+        if upgrade_value.lower() == 'h2c' and not has_body:
             await self._send_h11_event(
                 h11.InformationalResponse(
                     status_code=101,
                     headers=[
-                        *response_headers(self.config, "h11"),
-                        (b"connection", b"upgrade"),
-                        (b"upgrade", b"h2c"),
+                        *response_headers(self.config, 'h11'),
+                        (b'connection', b'upgrade'),
+                        (b'upgrade', b'h2c'),
                     ],
                 )
             )
             raise H2CProtocolRequiredError(self.connection.trailing_data[0], event)
-        elif event.method == b"PRI" and event.target == b"*" and event.http_version == b"2.0":
+        elif event.method == b'PRI' and event.target == b'*' and event.http_version == b'2.0':
             raise H2ProtocolAssumedError(
-                b"PRI * HTTP/2.0\r\n\r\n" + self.connection.trailing_data[0]
+                b'PRI * HTTP/2.0\r\n\r\n' + self.connection.trailing_data[0]
             )
