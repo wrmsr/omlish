@@ -10,6 +10,9 @@ from .. import headers
 T = ta.TypeVar('T')
 
 
+TIMEOUT_S: int = 5
+
+
 def get_free_port(address: str = '') -> int:
     """Find a free TCP port (entirely at random)"""
 
