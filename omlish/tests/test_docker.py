@@ -1,8 +1,10 @@
+from .. import docker
 from .. import json
 from .. import marshal as msh
-from .. import docker
+from ..testing import pytest as ptu
 
 
+@ptu.skip_if_not_on_path('docker')
 def test_docker():
     pis = docker.cli_ps()
     print(json.dumps_pretty(msh.marshal(pis, list[docker.PsItem])))
