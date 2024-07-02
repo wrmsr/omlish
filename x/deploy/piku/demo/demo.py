@@ -5,7 +5,7 @@ from omlish.docker import timebomb_payload
 
 
 USE_DOCKERFILE = True
-TIMEBOMB_DELAY_S = 10  # 20 * 60
+TIMEBOMB_DELAY_S = 20 * 60
 
 
 def _main():
