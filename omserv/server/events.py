@@ -75,7 +75,7 @@ class InformationalResponse(ProtocolEvent):
 
     def __post_init__(self) -> None:
         if self.status_code >= 200 or self.status_code < 100:
-            raise ValueError(f"Status code must be 1XX not {self.status_code}")
+            raise ValueError(f'Status code must be 1XX not {self.status_code}')
 
 
 @dc.dataclass(frozen=True)

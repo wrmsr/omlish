@@ -41,12 +41,12 @@ async def _handle(
     except BaseExceptionGroup as error:
         _, other_errors = error.split(anyio.get_cancelled_exc_class())
         if other_errors is not None:
-            log.exception("Error in ASGI Framework")
+            log.exception('Error in ASGI Framework')
             await send(None)
         else:
             raise
     except Exception:
-        log.exception("Error in ASGI Framework")
+        log.exception('Error in ASGI Framework')
     finally:
         await send(None)
 

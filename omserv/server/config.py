@@ -9,7 +9,7 @@ SECONDS = 1.0
 
 @dc.dataclass(frozen=True, kw_only=True)
 class Config:
-    bind: ta.Sequence[str] = ("127.0.0.1:8000",)
+    bind: ta.Sequence[str] = ('127.0.0.1:8000',)
 
     umask: ta.Optional[int] = None
     user: ta.Optional[int] = None
