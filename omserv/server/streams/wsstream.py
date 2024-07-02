@@ -12,28 +12,28 @@ import wsproto.extensions
 import wsproto.frame_protocol
 import wsproto.utilities
 
-from .config import Config
-from .events import Body
-from .events import Data
-from .events import EndBody
-from .events import EndData
-from .events import ProtocolEvent
-from .events import Request
-from .events import Response
-from .events import StreamClosed
+from ..config import Config
+from ..events import Body
+from ..events import Data
+from ..events import EndBody
+from ..events import EndData
+from ..events import ProtocolEvent
+from ..events import Request
+from ..events import Response
+from ..events import StreamClosed
+from ..requests import valid_server_name
+from ..taskspawner import TaskSpawner
+from ..types import ASGISendEvent
+from ..types import AppWrapper
+from ..types import WebsocketAcceptEvent
+from ..types import WebsocketResponseBodyEvent
+from ..types import WebsocketResponseStartEvent
+from ..types import WebsocketScope
+from ..workercontext import WorkerContext
 from .httpstream import UnexpectedMessageError
 from .httpstream import build_and_validate_headers
 from .httpstream import log_access
 from .httpstream import suppress_body
-from .requests import valid_server_name
-from .taskspawner import TaskSpawner
-from .types import ASGISendEvent
-from .types import AppWrapper
-from .types import WebsocketAcceptEvent
-from .types import WebsocketResponseBodyEvent
-from .types import WebsocketResponseStartEvent
-from .types import WebsocketScope
-from .workercontext import WorkerContext
 
 
 log = logging.getLogger(__name__)

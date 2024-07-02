@@ -24,12 +24,12 @@ from ..events import StreamClosed
 from ..events import Updated
 from ..headers import filter_pseudo_headers
 from ..headers import response_headers
-from ..httpstream import HTTPStream
+from ..streams.httpstream import HTTPStream
+from ..streams.wsstream import WSStream
 from ..taskspawner import TaskSpawner
 from ..types import AppWrapper
 from ..types import WaitableEvent
 from ..workercontext import WorkerContext
-from ..wsstream import WSStream
 from .types import Protocol
 
 
