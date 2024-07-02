@@ -90,7 +90,7 @@ def _venv_cmd(args) -> None:
     interp = args.interp
     if interp[0] == '@':
         # interp_py = os.path.join(os.path.dirname(__file__), 'interp.py')
-        interp_py = os.path.join(os.path.dirname(__file__), '../../omdev/interp.py')
+        interp_py = os.path.join(os.path.dirname(__file__), '../../omdev/scripts/interp.py')
         interp = subprocess.check_output([sys.executable, interp_py, 'resolve', interp[1:]]).decode().strip()
         log.info(f'Using interpreter {interp}')
 
