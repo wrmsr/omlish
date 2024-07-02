@@ -84,7 +84,7 @@ class H11WSConnection:
         else:
             return h11.NEED_DATA
 
-    def send(self, event: H11SendableEvent) -> bytes:
+    def send(self, event: H11SendableEvent) -> ta.Optional[bytes]:
         return self.h11_connection.send(event)
 
     def start_next_cycle(self) -> None:
@@ -106,7 +106,7 @@ class H11Protocol(Protocol):
         self.can_read = context.event_class()
         self.client = client
         self.config = config
-        self.connection: h11.Connection = h11.Connection(
+        self.connection: h11.Connection | H11WSConnection = h11.Connection(
             h11.SERVER, max_incomplete_event_size=self.config.h11_max_incomplete_size
         )
         self.context = context
@@ -193,7 +193,7 @@ class H11Protocol(Protocol):
                     await self.stream.handle(EndBody(stream_id=STREAM_ID))
                 elif isinstance(event, Data):
                     # WebSocket pass through
-                    await self.stream.handle(event)  # type: ignore  # FIXME
+                    await self.stream.handle(event)
 
     async def _create_stream(self, request: h11.Request) -> None:
         upgrade_value = ""
@@ -239,7 +239,7 @@ class H11Protocol(Protocol):
         else:
             headers = list(request.headers)
 
-        await self.stream.handle(
+        await self.stream.handle(  # type: ignore
             Request(
                 stream_id=STREAM_ID,
                 headers=headers,
