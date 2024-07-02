@@ -1,3 +1,4 @@
+# flake8: noqa
 # from dataclasses import *
 # import dataclasses  # Needed for the string "dataclasses.InitVar[int]" to work as an annotation.
 
