@@ -287,7 +287,19 @@ def _venv_cmd(args) -> None:
         return
 
     venv.create()
-    print(venv.exe())
+
+    cmd = args.cmd
+    if not cmd:
+        pass
+
+    elif cmd == 'exe':
+        print(venv.exe())
+
+    elif cmd == 'test':
+        raise NotImplementedError
+
+    else:
+        raise Exception(f'unknown subcommand: {cmd}')
 
 
 ##
@@ -301,6 +313,7 @@ def _build_parser() -> argparse.ArgumentParser:
 
     parser_resolve = subparsers.add_parser('venv')
     parser_resolve.add_argument('name')
+    parser_resolve.add_argument('cmd', nargs='?')
     parser_resolve.set_defaults(func=_venv_cmd)
 
     return parser
