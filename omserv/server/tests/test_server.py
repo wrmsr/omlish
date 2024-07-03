@@ -59,7 +59,7 @@ async def _test_server_simple():
                     method='POST',
                     target='/',
                     headers=[
-                        (b'host', b'hypercorn'),
+                        (b'host', b'omlicorn'),
                         (b'connection', b'close'),
                         (b'content-length', b'%d' % len(SANITY_REQUEST_BODY)),
                     ],
@@ -86,7 +86,7 @@ async def _test_server_simple():
                     headers=[
                         (b'content-length', b'15'),
                         (b'date', b'Thu, 01 Jan 1970 01:23:20 GMT'),
-                        (b'server', b'hypercorn-h11'),
+                        (b'server', b'omlicorn-h11'),
                         (b'connection', b'close'),
                     ],
                     http_version=b'1.1',

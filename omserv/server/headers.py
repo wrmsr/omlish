@@ -13,7 +13,7 @@ def response_headers(config: Config, protocol: str) -> list[tuple[bytes, bytes]]
     if config.include_date_header:
         headers.append((b'date', wsgiref.handlers.format_date_time(_now()).encode('ascii')))
     if config.include_server_header:
-        headers.append((b'server', f'hypercorn-{protocol}'.encode('ascii')))
+        headers.append((b'server', f'omlicorn-{protocol}'.encode('ascii')))
 
     for alt_svc_header in config.alt_svc_headers:
         headers.append((b'alt-svc', alt_svc_header.encode()))

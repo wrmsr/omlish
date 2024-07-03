@@ -74,7 +74,7 @@ class TCPServer:
             pass
         except* Exception as eg:
             for e in eg.exceptions:
-                log.exception('Internal hypercorn error', exc_info=e)
+                log.exception('Internal omlicorn error', exc_info=e)
         finally:
             await self._close()
 
