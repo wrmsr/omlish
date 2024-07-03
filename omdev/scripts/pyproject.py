@@ -242,7 +242,7 @@ class Venv:
         _subprocess_check_call([
             ve,
             '-m', 'pip',
-            'install', '--upgrade',
+            'install', '-v', '--upgrade',
             'pip',
             'setuptools',
             'wheel',
@@ -252,7 +252,7 @@ class Venv:
             _subprocess_check_call([
                 ve,
                 '-m', 'pip',
-                'install',
+                'install', '-v',
                 *itertools.chain.from_iterable(['-r', r] for r in ([sr] if isinstance(sr, str) else sr)),
             ])
 
