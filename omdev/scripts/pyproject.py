@@ -43,6 +43,12 @@ def _check_not_none(v: ta.Optional[T]) -> T:
     return v
 
 
+def _check_not(v: ta.Any) -> None:
+    if v:
+        raise ValueError(v)
+    return v
+
+
 class cached_nullary:
     def __init__(self, fn):
         self._fn = fn
@@ -293,13 +299,27 @@ def _venv_cmd(args) -> None:
         pass
 
     elif cmd == 'exe':
+        _check_not(args.args)
         print(venv.exe())
 
+    elif cmd == 'exec':
+        sh = _check_not_none(shutil.which('bash'))
+        script = ' '.join(args.args)
+        if not script:
+            script = sh
+        os.execl(
+            (bash := _check_not_none(sh)),
+            bash,
+            '-c',
+            f'. {venv.dir_name}/bin/activate && ' + script,
+        )
+
     elif cmd == 'srcs':
+        _check_not(args.args)
         print('\n'.join(venv.srcs()))
 
     elif cmd == 'test':
-        raise NotImplementedError
+        subprocess.check_call([venv.exe(), '-m', 'pytest', *(args.args or []), *venv.srcs()])
 
     else:
         raise Exception(f'unknown subcommand: {cmd}')
@@ -317,6 +337,7 @@ def _build_parser() -> argparse.ArgumentParser:
     parser_resolve = subparsers.add_parser('venv')
     parser_resolve.add_argument('name')
     parser_resolve.add_argument('cmd', nargs='?')
+    parser_resolve.add_argument('args', nargs='*')
     parser_resolve.set_defaults(func=_venv_cmd)
 
     return parser
