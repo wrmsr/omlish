@@ -158,11 +158,12 @@ test-docker:
 
 .PHONY: venv-docker-amd64
 venv-docker-amd64:
-	VENV=docker-amd64 ${MAKE} venv
+	# VENV=docker-amd64 ${MAKE} venv  # FIXME
+	${PYPROJECT} venv docker-amd64
 
 .PHONY: test-docker-amd64
 test-docker-amd64:
-	VENV=docker ${MAKE} test
+	VENV=docker-amd64 ${MAKE} test
 
 
 ### Docker
