@@ -302,7 +302,7 @@ def _venv_cmd(args) -> None:
         _check_not(args.args)
         print(venv.exe())
 
-    elif cmd == 'exec':
+    elif cmd == 'run':
         sh = _check_not_none(shutil.which('bash'))
         script = ' '.join(args.args)
         if not script:
