@@ -1,7 +1,7 @@
 -r requirements.txt
 
 build==1.2.1
-twine==5.1.0
+twine==5.1.1
 wheel==0.43.0
 
 pytest==8.2.2
