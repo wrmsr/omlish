@@ -36,7 +36,7 @@ SOURCES:=$$(${PYPROJECT_VENV} srcs)
 venv:
 	${PYTHON} --version
 
-	if [ ${VENV} == "default" ] ; then \
+	if [ "${VENV}" == "default" ] ; then \
   		if ! $$(${PYTHON} -c 'import tinygrad') ; then \
   			${MAKE} tg ; \
 		fi ; \

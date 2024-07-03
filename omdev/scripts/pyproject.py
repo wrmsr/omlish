@@ -33,8 +33,6 @@ log = logging.getLogger(__name__)
 
 REQUIRED_PYTHON_VERSION = (3, 8)
 
-DEBUG = 1
-
 
 ##
 
@@ -66,14 +64,12 @@ class cached_nullary:
 
 
 def _subprocess_check_call(*args, **kwargs):
-    if DEBUG:
-        print((args, kwargs), file=sys.stderr)
+    log.info((args, kwargs), file=sys.stderr)
     return subprocess.check_call(*args, **kwargs)
 
 
 def _subprocess_check_output(*args, **kwargs):
-    if DEBUG:
-        print((args, kwargs), file=sys.stderr)
+    log.info((args, kwargs), file=sys.stderr)
     return subprocess.check_output(*args, **kwargs)
 
 
@@ -371,8 +367,8 @@ def _main(argv: ta.Optional[ta.Sequence[str]] = None) -> None:
         raise EnvironmentError(f'Requires python {REQUIRED_PYTHON_VERSION}, got {sys.version_info} from {sys.executable}')  # noqa
 
     # FIXME: -v
-    # logging.root.addHandler(logging.StreamHandler())
-    # logging.root.setLevel('INFO')
+    logging.root.addHandler(logging.StreamHandler())
+    logging.root.setLevel('INFO')
 
     parser = _build_parser()
     args = parser.parse_args(argv)
