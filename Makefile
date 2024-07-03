@@ -1,7 +1,5 @@
 SHELL:=/bin/bash
 
-PROJECT:=omlish
-
 
 ### Clean
 
