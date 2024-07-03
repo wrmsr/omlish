@@ -64,12 +64,12 @@ class cached_nullary:
 
 
 def _subprocess_check_call(*args, **kwargs):
-    log.info((args, kwargs), file=sys.stderr)
+    log.info((args, kwargs))
     return subprocess.check_call(*args, **kwargs)
 
 
 def _subprocess_check_output(*args, **kwargs):
-    log.info((args, kwargs), file=sys.stderr)
+    log.info((args, kwargs))
     return subprocess.check_output(*args, **kwargs)
 
 
