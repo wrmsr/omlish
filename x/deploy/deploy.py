@@ -18,7 +18,7 @@ import shlex
 import tempfile
 
 from omlish import check
-from omserv.infra import cmds
+from ..infra import cmds
 
 
 async def _a_main():

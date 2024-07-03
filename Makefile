@@ -151,6 +151,16 @@ venv-docker:
 test-docker:
 	VENV=docker ${MAKE} test
 
+# docker-amd64
+
+.PHONY: venv-docker-amd64
+venv-docker-amd64:
+	VENV=docker-amd64 ${MAKE} venv
+
+.PHONY: test-docker-amd64
+test-docker-amd64:
+	VENV=docker ${MAKE} test
+
 
 ### Docker
 
@@ -163,7 +173,8 @@ docker-stop:
 	${DOCKER_COMPOSE} stop
 
 DOCKER_DEV_CONTAINERS=\
-	omlish-dev
+	omlish-dev \
+	omlish-dev-amd64
 
 .PHONY: docker-reup
 docker-reup: docker-stop
@@ -190,7 +201,11 @@ ci-images:
 		requirements-dev.txt \
 		requirements.txt \
 	| \
-		docker build --platform linux/x86_64 --tag "${DOCKER_USER}/omlish-ci" -f "docker/ci/Dockerfile" -
+		docker build \
+			--platform linux/x86_64 \
+			--tag "${DOCKER_USER}/omlish-ci" \
+			-f "docker/ci/Dockerfile" \
+			-
 
 .PHONY: ci
 ci: ci-images
@@ -198,9 +213,7 @@ ci: ci-images
 
 .PHONY: _ci
 _ci:
-	_PYTHON_BIN=python \
-	_TEST_SOURCES="${SOURCES}" \
-	${MAKE} _test
+	python -mpytest omlish omdev omserv
 
 
 ### Utils

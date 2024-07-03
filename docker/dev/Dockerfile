@@ -170,7 +170,7 @@ RUN ( \
 
 RUN ( \
     curl --proto '=https' --tlsv1.2 -sSf 'https://sh.rustup.rs' | sh -s -- -y && \
-    echo "\
+    echo "\n\
 source ~/.cargo/env \n\
 \n\
 " >> ~/.bashrc \
@@ -202,6 +202,8 @@ RUN \
 
 
 ## config
+
+RUN ~/.cargo/bin/cargo install toml2json
 
 RUN ( \
     sed -i 's/^#*PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
