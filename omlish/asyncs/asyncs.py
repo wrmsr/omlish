@@ -8,7 +8,6 @@ TODO:
 
 https://github.com/sqlalchemy/sqlalchemy/blob/1e75c189da721395bc8c2d899c722a5b9a170404/lib/sqlalchemy/util/_concurrency_py3k.py#L83
 """
-import asyncio
 import concurrent.futures as cf
 import contextlib
 import functools
@@ -18,19 +17,6 @@ import typing as ta
 
 T = ta.TypeVar('T')
 CallableT = ta.TypeVar('CallableT', bound=ta.Callable)
-
-
-def async_once(fn: CallableT) -> CallableT:
-    future = None
-
-    @functools.wraps(fn)
-    async def inner(*args, **kwargs):
-        nonlocal future
-        if not future:
-            future = asyncio.create_task(fn(*args, **kwargs))
-        return await future
-
-    return ta.cast(CallableT, inner)
 
 
 def sync_await(fn: ta.Callable[..., T], *args, **kwargs) -> T:
