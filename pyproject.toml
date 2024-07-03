@@ -11,8 +11,8 @@ build-backend = 'setuptools.build_meta'
 
 [project]
 name = 'omlish'
-author = 'wrmsr'
-url = 'https://github.com/wrmsr/omlish'
+#author = 'wrmsr'
+#url = 'https://github.com/wrmsr/omlish'
 #dynamic = ['version', 'description', 'classifiers']
 
 #[tool.setuptools.dynamic]
