@@ -1,0 +1,4 @@
+graft omlish
+
+global-exclude **/tests/**
+global-exclude **/__pycache__/**
