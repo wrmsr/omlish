@@ -137,15 +137,14 @@ test-13:
 
 # docker
 
-# FIXME:
-# if [ $$(arch) == "aarch64" ] ; then \
-# 	export BERKELEYDB_LIBDIR=/usr/lib/aarch64-linux-gnu ; \
-# 	export BERKELEYDB_INCDIR=/usr/include ; \
-# fi && \
-
 .PHONY: venv-docker
 venv-docker:
-	VENV=docker ${MAKE} venv
+	if [ $$(arch) == "aarch64" ] ; then \
+		export BERKELEYDB_LIBDIR=/usr/lib/aarch64-linux-gnu ; \
+		export BERKELEYDB_INCDIR=/usr/include ; \
+	fi \
+	\
+	VENV=docker {PYPROJECT_VENV} venv
 
 .PHONY: test-docker
 test-docker:
