@@ -40,12 +40,12 @@ RUN echo "\
 #!/usr/bin/env bash \n\
 set -e \n\
  \n\
-if [ "x$SSH_PASSWORD" == "x" ] ; then \n\
-    echo "Must set SSH_PASSWORD" >&2 \n\
+if [ \"x\$SSH_PASSWORD\" == \"x\" ] ; then \n\
+    echo \"Must set SSH_PASSWORD\" >&2 \n\
     exit 1 \n\
 fi \n\
  \n\
-echo "root:$SSH_PASSWORD" | chpasswd \n\
+echo \"root:\$SSH_PASSWORD\" | chpasswd \n\
 /usr/sbin/sshd -D \n\
 " > /home/docker-entrypoint.sh
 RUN chmod a+x /home/docker-entrypoint.sh
