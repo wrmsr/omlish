@@ -2,19 +2,6 @@ SHELL:=/bin/bash
 
 PROJECT:=omlish
 
-MAIN_SOURCES:=\
-	${PROJECT} \
-	omdev \
-	omserv \
-
-ML_SOURCES:=\
-	${MAIN_SOURCES} \
-	omml
-
-ALL_SOURCES:=\
-	${ML_SOURCES} \
-	x \
-
 
 ### Clean
 
@@ -43,15 +30,21 @@ VENV?=default
 PYPROJECT_VENV=${PYPROJECT} venv ${VENV}
 
 PYTHON:=$$(${PYPROJECT_VENV} exe)
+SOURCES:=$$(${PYPROJECT_VENV} srcs)
 
 .PHONY: venv
 venv:
-	# FIXME: .venv-13/bin/python -c 'import tinygrad' -> ${MAKE} tg
 	${PYTHON} --version
+
+	if [ ${VENV} == "default" ] ; then \
+  		if ! $$(${PYTHON} -c 'import tinygrad') ; then \
+  			${MAKE} tg ; \
+		fi ; \
+	fi
 
 .PHONY: tg
 tg:
-	export ABS_PYTHON=$$($(PYTHON) -c 'import sys; print(sys.executable)') && \
+	export ABS_PYTHON=$$(${PYTHON} -c 'import sys; print(sys.executable)') && \
 	(cd tinygrad && "$$ABS_PYTHON" -mpip install -e .)
 
 .PHONY: tg-update
@@ -63,20 +56,20 @@ tg-update:
 
 .PHONY: dep-freeze
 dep-freeze: venv
-	$(PYTHON) -mpip freeze > requirements-frz.txt
+	${PYTHON} -mpip freeze > requirements-frz.txt
 	sed -i '' '/^-e git\+https:\/\/github.com\/tinygrad\/tinygrad/d' requirements-frz.txt
 
 .PHONY: dep-unfreeze
 dep-unfreeze: venv
-	$(PYTHON) -mpip install -r requirements-frz.txt
+	${PYTHON} -mpip install -r requirements-frz.txt
 
 .PHONY: dep-tree
 dep-tree: venv
-	$(PYTHON) -mpipdeptree
+	${PYTHON} -mpipdeptree
 
 .PHONY: dep-updates
 dep-updates: venv
-	$(PYTHON) -mpip list -o --format=columns
+	${PYTHON} -mpip list -o --format=columns
 
 
 ### Check
@@ -86,11 +79,11 @@ check: flake8 mypy
 
 .PHONY: flake8
 flake8: venv
-	$(PYTHON) -mflake8 ${MAIN_SOURCES}
+	${PYTHON} -mflake8 ${SOURCES}
 
 .PHONY: mypy
 mypy: venv
-	$(PYTHON) -mmypy --check-untyped-defs ${MAIN_SOURCES}
+	${PYTHON} -mmypy --check-untyped-defs ${SOURCES}
 
 
 ### Test
@@ -108,7 +101,7 @@ test:
 		test \
 		-- \
 		${PYTEST_OPTS} \
-		--junitxml="$(PYTEST_JUNIT_XML_PATH)" \
+		--junitxml="${PYTEST_JUNIT_XML_PATH}" \
 		--no-slow \
 
 
@@ -144,65 +137,26 @@ venv-13:
 test-13:
 	VENV=13 ${MAKE} test
 
-# dev
-
-# FIXME:
-# .PHONY: venv-dev
-# venv-dev:
-# 	_VENV_ROOT=.venv-dev \
-# 	_PYTHON_VERSION=${PYTHON_VERSION_DEV} \
-# 	_REQUIREMENTS_TXT=requirements-dev.txt \
-# 	${MAKE} _venv
-#
-# .PHONY: test-dev
-# test-dev: venv-dev
-# 	_VENV_ROOT=.venv-dev \
-# 	_TEST_SOURCES="${PROJECT}" \
-# 	${MAKE} _venv _test
-
 # docker
 
-DOCKER_USER=wrmsr
-
 # FIXME:
-# export BERKELEYDB_LIBDIR=/usr/lib/aarch64-linux-gnu
-# export BERKELEYDB_INCDIR=/usr/include
-
-.PHONY: venv-docker2
-venv-docker2:
-	VENV=docker ${MAKE} venv
-
-.PHONY: test-docker2
-test-docker2:
-	VENV=docker ${MAKE} test
-
-##
+# if [ $$(arch) == "aarch64" ] ; then \
+# 	export BERKELEYDB_LIBDIR=/usr/lib/aarch64-linux-gnu ; \
+# 	export BERKELEYDB_INCDIR=/usr/include ; \
+# fi && \
 
 .PHONY: venv-docker
 venv-docker:
-	./docker-dev make _venv-docker
-
-.PHONY: _venv-docker
-_venv-docker:
-	if [ $$(arch) == "aarch64" ] ; then \
-		export BERKELEYDB_LIBDIR=/usr/lib/aarch64-linux-gnu ; \
-		export BERKELEYDB_INCDIR=/usr/include ; \
-	fi && \
-	\
-	_VENV_ROOT=.venv-docker \
-	${MAKE} _venv
+	VENV=docker ${MAKE} venv
 
 .PHONY: test-docker
 test-docker:
-	./docker-dev make _test-docker
-
-.PHONY: _test-docker
-_test-docker: venv-docker
-	_VENV_ROOT=.venv-docker \
-	${MAKE} _venv _test
+	VENV=docker ${MAKE} test
 
 
 ### Docker
+
+DOCKER_USER=wrmsr
 
 DOCKER_COMPOSE=docker-compose -f docker/docker-compose.yml
 
@@ -230,7 +184,7 @@ docker-invalidate:
 ci-images:
 	tar cvh \
 		--exclude "__pycache__" \
-		${MAIN_SOURCES} \
+		${SOURCES} \
 		LICENSE \
 		Makefile \
 		docker \
@@ -238,7 +192,7 @@ ci-images:
 		requirements-dev.txt \
 		requirements.txt \
 	| \
-		docker build --platform linux/x86_64 --tag "$(DOCKER_USER)/omlish-ci" -f "docker/ci/Dockerfile" -
+		docker build --platform linux/x86_64 --tag "${DOCKER_USER}/omlish-ci" -f "docker/ci/Dockerfile" -
 
 .PHONY: ci
 ci: ci-images
@@ -247,7 +201,7 @@ ci: ci-images
 .PHONY: _ci
 _ci:
 	_PYTHON_BIN=python \
-	_TEST_SOURCES="${MAIN_SOURCES}" \
+	_TEST_SOURCES="${SOURCES}" \
 	${MAKE} _test
 
 
