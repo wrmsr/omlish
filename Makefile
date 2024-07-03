@@ -7,18 +7,23 @@ PROJECT:=omlish
 
 .PHONY: clean-venv
 clean-venv:
-	-rm -rf .venv*
+	-rm -rf \
+		.venv*
+
+.PHONY: clean-package
+clean-package:
+	-rm -rf \
+		*.egg-info \
+		build \
+		dist \
 
 .PHONY: _clean
-_clean: clean-venv
+_clean: clean-venv clean-package
 	-rm -rf \
-		${PROJECT}.egg-info \
 		*.sock \
 		.benchmarks \
 		.mypy_cache \
 		.pytest_cache \
-		build \
-		dist \
 
 
 ### Venv
@@ -214,6 +219,21 @@ ci: ci-images
 .PHONY: _ci
 _ci:
 	python -mpytest omlish omdev omserv
+
+
+### Package
+
+.PYTHON: package
+package: clean-package
+	${PYTHON} setup.py sdist
+
+
+### Publish
+
+.PHONY: publish
+publish: package
+	read -p "Press enter to publish"
+	.venv/bin/twine upload dist/*
 
 
 ### Utils
