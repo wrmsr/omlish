@@ -16,6 +16,20 @@ ALL_SOURCES:=\
 	x \
 
 
+### New
+
+PYPROJECT_PYTHON=python3
+PYPROJECT=${PYPROJECT_PYTHON} omdev/scripts/pyproject.py
+
+VENV?=default
+
+NEW_PYTHON:=$$(${PYPROJECT} venv ${VENV} exe)
+
+.PHONY: new_venv
+new_venv:
+	${NEW_PYTHON} --version
+
+
 ### Versions
 
 define get-version
