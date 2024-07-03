@@ -41,4 +41,9 @@ if __name__ == '__main__':
         classifiers=ABOUT['__classifiers__'],
 
         setup_requires=['setuptools'],
+
+        packages=st.find_packages(
+            include=[PROJECT, PROJECT + '.*'],
+            exclude=['tests', '*.tests', '*.tests.*'],
+        )
     )

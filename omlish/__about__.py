@@ -6,6 +6,8 @@ __author__ = 'wrmsr'
 __url__ = 'https://github.com/wrmsr/omlish'
 __license__ = 'BSD'
 
+__python_requires__ = '>=3.11'
+
 __classifiers__ = [
     'License :: OSI Approved :: BSD License',
 
