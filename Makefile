@@ -42,7 +42,7 @@ venv:
 
 .PHONY: tg
 tg:
-	export ABS_PYTHON=$$(${PYTHON} -c 'import sys; print(sys.executable)') && \
+	ABS_PYTHON=$$(${PYTHON} -c 'import sys; print(sys.executable)') && \
 	(cd tinygrad && "$$ABS_PYTHON" -mpip install -e .)
 
 .PHONY: tg-update
@@ -139,12 +139,13 @@ test-13:
 
 .PHONY: venv-docker
 venv-docker:
-	if [ $$(arch) == "aarch64" ] ; then \
+	if [ $$(arch) == "aarch64" ] || [ $$(arch) == "arm64" ]; then \
 		export BERKELEYDB_LIBDIR=/usr/lib/aarch64-linux-gnu ; \
 		export BERKELEYDB_INCDIR=/usr/include ; \
-	fi \
+		PYPROJECT_DOCKER_ENVS="-e BERKELEYDB_LIBDIR -e BERKELEYDB_INCDIR" ; \
+	fi ; \
 	\
-	VENV=docker {PYPROJECT_VENV} venv
+	${PYPROJECT} venv $$PYPROJECT_DOCKER_ENVS docker
 
 .PHONY: test-docker
 test-docker:
