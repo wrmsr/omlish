@@ -102,6 +102,8 @@ def _toml_loads(s: str) -> ta.Any:
 
 @cached_nullary
 def _read_versions_file(file_name: str = '.versions') -> ta.Mapping[str, str]:
+    if not os.path.exists(file_name):
+        return {}
     with open(file_name, 'r') as f:
         lines = f.readlines()
     return {
@@ -128,7 +130,7 @@ def _get_interp_exe(s: str, *, interp_script: ta.Optional[str] = None) -> str:
     raw_vers = _read_versions_file()
     pfx = 'PYTHON_'
     vers = {k[len(pfx):].lower(): v for k, v in raw_vers.items() if k.startswith(pfx)}
-    ver = vers[s[1:]]
+    ver = vers.get(s[1:], s[1:])
     if interp_script is None:
         interp_script = os.path.join(os.path.dirname(__file__), 'interp.py')
     exe = _subprocess_check_output([
