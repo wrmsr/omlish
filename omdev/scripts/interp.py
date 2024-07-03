@@ -47,13 +47,17 @@ class cached_nullary:
         return bound
 
 
+def _mask_env_kwarg(**kwargs):
+    return {**kwargs, **({'env': ...} if 'env' in kwargs else {})}
+
+
 def _subprocess_check_call(*args, **kwargs):
-    log.info((args, kwargs))
+    log.info((args, _mask_env_kwarg(kwargs)))
     return subprocess.check_call(*args, **kwargs)
 
 
 def _subprocess_check_output(*args, **kwargs):
-    log.info((args, kwargs))
+    log.info((args, _mask_env_kwarg(kwargs)))
     return subprocess.check_output(*args, **kwargs)
 
 
