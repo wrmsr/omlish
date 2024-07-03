@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Some environments don't refuse to support running modules rather than scripts, so this is just "python -m" functionality
+Some environments refuse to support running modules rather than scripts, so this is just "python -m" functionality
 exposed as a script.
 """
 import runpy

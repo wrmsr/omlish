@@ -36,10 +36,8 @@ SOURCES:=$$(${PYPROJECT_VENV} srcs)
 venv:
 	${PYTHON} --version
 
-	if [ "${VENV}" == "default" ] ; then \
-  		if ! $$(${PYTHON} -c 'import tinygrad') ; then \
-  			${MAKE} tg ; \
-		fi ; \
+	if [ "${VENV}" == "default" ] && ! $$(${PYTHON} -c 'import tinygrad.tensor') ; then \
+		${MAKE} tg ; \
 	fi
 
 .PHONY: tg
