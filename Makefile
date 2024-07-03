@@ -95,8 +95,11 @@ mypy: venv
 
 ### Test
 
-.PHONY: new_test
-new_test:
+PYTEST_OPTS=
+PYTEST_JUNIT_XML_PATH:=$$(echo "$${OMLISH_JUNIT_XML_PATH}")
+
+.PHONY: test
+test:
 	if [ ! -z "${PYTEST_JUNIT_XML_PATH}" ] && [ -f "${PYTEST_JUNIT_XML_PATH}" ] ; then \
 		rm "${PYTEST_JUNIT_XML_PATH}" ; \
 	fi
@@ -108,28 +111,6 @@ new_test:
 		--junitxml="$(PYTEST_JUNIT_XML_PATH)" \
 		--no-slow \
 
-DEFAULT_TEST_SOURCES:=${MAIN_SOURCES}
-
-TEST_SOURCES:=$$(echo "$${_TEST_SOURCES:-${DEFAULT_TEST_SOURCES}}")
-
-PYTEST_OPTS=
-PYTEST_JUNIT_XML_PATH:=$$(echo "$${OMLISH_JUNIT_XML_PATH}")
-
-.PHONY: _test
-_test:
-	if [ ! -z "$(PYTEST_JUNIT_XML_PATH)" ] && [ -f "$(PYTEST_JUNIT_XML_PATH)" ] ; then \
-		rm "$(PYTEST_JUNIT_XML_PATH)" ; \
-	fi
-
-	${PYTHON} -mpytest \
-		$(PYTEST_OPTS) \
-		--junitxml="$(PYTEST_JUNIT_XML_PATH)" \
-		$(TEST_SOURCES) \
-		--no-slow \
-
-.PHONY: test
-test: _venv _test
-
 
 ### Alts
 
@@ -137,67 +118,65 @@ test: _venv _test
 
 .PHONY: venv-debug
 venv-debug:
-	_VENV_ROOT=.venv-debug \
-	_PYTHON_VERSION=${DEFAULT_PYTHON_VERSION} \
-	_PYENV_INSTALL_OPTS=-g \
-	_PYENV_VERSION_SUFFIX=-debug \
-	_REQUIREMENTS_TXT=requirements-dev.txt \
-	${MAKE} _venv
+	VENV=debug ${MAKE} venv
 
 .PHONY: test-debug
-test-debug: venv-debug
-	_VENV_ROOT=.venv-debug \
-	_TEST_SOURCES="${PROJECT}" \
-	${MAKE} _venv _test
+test-debug:
+	VENV=debug ${MAKE} test
 
 # 12
 
 .PHONY: venv-12
 venv-12:
-	_VENV_ROOT=.venv-12 \
-	_PYTHON_VERSION=${PYTHON_VERSION_12} \
-	_REQUIREMENTS_TXT=requirements-dev.txt \
-	${MAKE} _venv
+	VENV=12 ${MAKE} venv
 
 .PHONY: test-12
-test-12: venv-12
-	_VENV_ROOT=.venv-12 \
-	_TEST_SOURCES="${MAIN_SOURCES}" \
-	${MAKE} _venv _test
+test-12:
+	VENV=12 ${MAKE} test
 
 # 13
 
 .PHONY: venv-13
 venv-13:
-	_VENV_ROOT=.venv-13 \
-	_PYTHON_VERSION=${PYTHON_VERSION_13} \
-	_REQUIREMENTS_TXT=requirements-dev.txt \
-	${MAKE} _venv
+	VENV=13 ${MAKE} venv
 
 .PHONY: test-13
-test-13: venv-13
-	_VENV_ROOT=.venv-13 \
-	_TEST_SOURCES="${MAIN_SOURCES}" \
-	${MAKE} _venv _test
+test-13:
+	VENV=13 ${MAKE} test
 
 # dev
 
-.PHONY: venv-dev
-venv-dev:
-	_VENV_ROOT=.venv-dev \
-	_PYTHON_VERSION=${PYTHON_VERSION_DEV} \
-	_REQUIREMENTS_TXT=requirements-dev.txt \
-	${MAKE} _venv
-
-.PHONY: test-dev
-test-dev: venv-dev
-	_VENV_ROOT=.venv-dev \
-	_TEST_SOURCES="${PROJECT}" \
-	${MAKE} _venv _test
+# FIXME:
+# .PHONY: venv-dev
+# venv-dev:
+# 	_VENV_ROOT=.venv-dev \
+# 	_PYTHON_VERSION=${PYTHON_VERSION_DEV} \
+# 	_REQUIREMENTS_TXT=requirements-dev.txt \
+# 	${MAKE} _venv
+#
+# .PHONY: test-dev
+# test-dev: venv-dev
+# 	_VENV_ROOT=.venv-dev \
+# 	_TEST_SOURCES="${PROJECT}" \
+# 	${MAKE} _venv _test
 
 # docker
 
 DOCKER_USER=wrmsr
+
+# FIXME:
+# export BERKELEYDB_LIBDIR=/usr/lib/aarch64-linux-gnu
+# export BERKELEYDB_INCDIR=/usr/include
+
+.PHONY: venv-docker2
+venv-docker2:
+	VENV=docker ${MAKE} venv
+
+.PHONY: test-docker2
+test-docker2:
+	VENV=docker ${MAKE} test
+
+##
 
 .PHONY: venv-docker
 venv-docker:
