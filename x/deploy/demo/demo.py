@@ -17,12 +17,15 @@ def _main():
         cur_dir,
     ])
 
+    ssh_password = 'foobar'
+
     ctr_id = subprocess.check_output([
         'docker', 'run',
         '-d',
+        '-e', f'SSH_PASSWORD={ssh_password}',
+        '-p', '9082:22',
         '-p', '9081:9081',
         img_name,
-        'sleep', 'infinity',
     ]).decode().strip()
     print(f'{ctr_id=}')
 
