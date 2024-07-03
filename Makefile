@@ -16,32 +16,6 @@ ALL_SOURCES:=\
 	x \
 
 
-### New
-
-PYPROJECT_PYTHON=python3
-PYPROJECT=${PYPROJECT_PYTHON} omdev/scripts/pyproject.py
-
-VENV?=default
-
-NEW_PYTHON:=$$(${PYPROJECT} venv ${VENV} exe)
-
-.PHONY: new_venv
-new_venv:
-	${NEW_PYTHON} --version
-
-
-### Versions
-
-define get-version
-$$(grep '^$(1)=' .versions | cut -d= -f2)
-endef
-
-PYTHON_VERSION_11:=$(call get-version,'PYTHON_11')
-PYTHON_VERSION_12:=$(call get-version,'PYTHON_12')
-PYTHON_VERSION_13:=$(call get-version,'PYTHON_13')
-PYTHON_VERSION_DEV:=$(call get-version,'PYTHON_DEV')
-
-
 ### Clean
 
 .PHONY: clean-venv
@@ -62,46 +36,18 @@ _clean: clean-venv
 
 ### Venv
 
-DEFAULT_PYTHON_VERSION:=${PYTHON_VERSION_11}
-DEFAULT_PYENV_INSTALL_OPTS:=
-DEFAULT_PYENV_VERSION_SUFFIX:=
-DEFAULT_VENV_OPTS:=  # --copies
-DEFAULT_VENV_ROOT:=.venv
-DEFAULT_REQUIREMENTS_TXT:=requirements-ext.txt
+PYPROJECT_PYTHON=python3
+PYPROJECT=${PYPROJECT_PYTHON} omdev/scripts/pyproject.py
 
-PYTHON_VERSION:=$$(echo "$${_PYTHON_VERSION:-${DEFAULT_PYTHON_VERSION}}")
-VENV_OPTS:=$$(echo "$${_VENV_OPTS:-${DEFAULT_VENV_OPTS}}")
-VENV_ROOT:=$$(echo "$${_VENV_ROOT:-${DEFAULT_VENV_ROOT}}")
-REQUIREMENTS_TXT:=$$(echo "$${_REQUIREMENTS_TXT:-${DEFAULT_REQUIREMENTS_TXT}}")
+VENV?=default
+PYPROJECT_VENV=${PYPROJECT} venv ${VENV}
 
-_PYTHONPATH=${PYTHONPATH}:.:external:tinygrad
-DEFAULT_PYTHON_BIN:=$$(echo "$(VENV_ROOT)/bin/python")
-PYTHON_BIN:=$$(echo "$${_PYTHON_BIN:-${DEFAULT_PYTHON_BIN}}")
-PYTHON:=PYTHONPATH="$(_PYTHONPATH)" $(PYTHON_BIN)
-
-PYENV_ROOT:=$$(sh -c "if [ -z '$${PYENV_ROOT}' ] ; then echo '$${HOME}/.pyenv' ; else echo '$${PYENV_ROOT%/}' ; fi")
-PYENV_BIN:=$$(sh -c "if [ -f '$${HOME}/.pyenv/bin/pyenv' ] ; then echo '$${HOME}/.pyenv/bin/pyenv' ; else echo pyenv ; fi")
-PYENV_INSTALL_OPTS:=$$(echo "$${_PYENV_INSTALL_OPTS:-${DEFAULT_PYENV_INSTALL_OPTS}}")
-PYENV_VERSION_SUFFIX:=$$(echo "$${_PYENV_VERSION_SUFFIX:-${DEFAULT_PYENV_VERSION_SUFFIX}}")
-
-.PHONY: _venv_
-_venv_:
-	$(PYENV_BIN) install -s $(PYENV_INSTALL_OPTS) $(PYTHON_VERSION)
-	"$(PYENV_ROOT)/versions/$(PYTHON_VERSION)$(PYENV_VERSION_SUFFIX)/bin/python" -mvenv $(VENV_OPTS) $(VENV_ROOT)
-	$(PYTHON) -mpip install --upgrade pip setuptools wheel
-	$(PYTHON) -mpip install -r ${REQUIREMENTS_TXT}
-
-.PHONY: _venv
-_venv:
-	if [ ! -d $(VENV_ROOT) ] ; then \
-		${MAKE} _venv_ ; \
-	fi
+PYTHON:=$$(${PYPROJECT_VENV} exe)
 
 .PHONY: venv
 venv:
-	if [ ! -d $(VENV_ROOT) ] ; then \
-		${MAKE} _venv_ tg ; \
-	fi
+	# FIXME: .venv-13/bin/python -c 'import tinygrad' -> ${MAKE} tg
+	${PYTHON} --version
 
 .PHONY: tg
 tg:
@@ -112,9 +58,10 @@ tg:
 tg-update:
 	(cd tinygrad && git pull origin master)
 
+
 ### Deps
 
-.PHONY: dep-freze
+.PHONY: dep-freeze
 dep-freeze: venv
 	$(PYTHON) -mpip freeze > requirements-frz.txt
 	sed -i '' '/^-e git\+https:\/\/github.com\/tinygrad\/tinygrad/d' requirements-frz.txt
@@ -148,6 +95,19 @@ mypy: venv
 
 ### Test
 
+.PHONY: new_test
+new_test:
+	if [ ! -z "${PYTEST_JUNIT_XML_PATH}" ] && [ -f "${PYTEST_JUNIT_XML_PATH}" ] ; then \
+		rm "${PYTEST_JUNIT_XML_PATH}" ; \
+	fi
+
+	${PYPROJECT_VENV} \
+		test \
+		-- \
+		${PYTEST_OPTS} \
+		--junitxml="$(PYTEST_JUNIT_XML_PATH)" \
+		--no-slow \
+
 DEFAULT_TEST_SOURCES:=${MAIN_SOURCES}
 
 TEST_SOURCES:=$$(echo "$${_TEST_SOURCES:-${DEFAULT_TEST_SOURCES}}")
@@ -161,7 +121,7 @@ _test:
 		rm "$(PYTEST_JUNIT_XML_PATH)" ; \
 	fi
 
-	$(PYTHON) -mpytest \
+	${PYTHON} -mpytest \
 		$(PYTEST_OPTS) \
 		--junitxml="$(PYTEST_JUNIT_XML_PATH)" \
 		$(TEST_SOURCES) \
