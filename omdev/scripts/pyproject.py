@@ -311,8 +311,16 @@ def _venv_cmd(args) -> None:
             f'--_docker_container={shlex.quote(sd)}',
             *map(shlex.quote, sys.argv[1:]),
         ])
-        call_args = ['docker', 'exec', '-it', ctr, 'bash', '--login', '-c', script]
-        _subprocess_check_call(call_args)
+        _subprocess_check_call([
+            'docker',
+            'exec',
+            *itertools.chain.from_iterable(
+                ('-e', f'{e}={os.environ.get(e, "")}' if '=' not in e else e)
+                for e in (args.docker_envs or [])
+            ),
+            '-it', ctr,
+            'bash', '--login', '-c', script,
+        ])
         return
 
     venv.create()
@@ -359,6 +367,7 @@ def _build_parser() -> argparse.ArgumentParser:
 
     parser_resolve = subparsers.add_parser('venv')
     parser_resolve.add_argument('name')
+    parser_resolve.add_argument('-e', '--docker-env', target='docker_envs', nargs='*', action='append')
     parser_resolve.add_argument('cmd', nargs='?')
     parser_resolve.add_argument('args', nargs='*')
     parser_resolve.set_defaults(func=_venv_cmd)
