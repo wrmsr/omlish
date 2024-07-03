@@ -30,6 +30,7 @@ all = ['@ml', 'x']
 [tool.omlish.pyproject.venvs]
 all = { interp = '@11', requires = 'requirements-dev.txt', srcs = ['@main'] }
 default = { requires = 'requirements-ext.txt' }
+deploy = {}
 docker = { docker = 'omlish-dev' }
 docker-amd64 = { docker = 'omlish-dev-amd64' }
 debug = { interp = '@11-debug' }

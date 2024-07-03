@@ -108,6 +108,12 @@ test:
 
 ### Alts
 
+# deploy
+
+.PHONY: venv-deploy
+venv-deploy:
+	VENV=deploy ${MAKE} venv
+
 # debug
 
 .PHONY: venv-debug
