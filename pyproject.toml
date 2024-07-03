@@ -4,26 +4,43 @@ requires = [
     "setuptools>=70",
     "setuptools_scm>=8",
 ]
-build-backend = "setuptools.build_meta"
+build-backend = 'setuptools.build_meta'
 
 
 ##
 
 [project]
-name = "omlish"
-author = "wrmsr"
-url = "https://github.com/wrmsr/omlish"
-#dynamic = ["version", "description", "classifiers"]
+name = 'omlish'
+author = 'wrmsr'
+url = 'https://github.com/wrmsr/omlish'
+#dynamic = ['version', 'description', 'classifiers']
 
 #[tool.setuptools.dynamic]
-##version = {attr = "my_package.VERSION"}
-#readme = {file = ["README.rst", "USAGE.rst"]}
+##version = {attr = 'my_package.VERSION'}
+#readme = {file = ['README.rst', 'USAGE.rst']}
+
+
+##
+
+[tool.omlish.pyproject.srcs]
+main = ['omlish', 'omdev', 'omserv']
+ml = ['@main', 'omml']
+all = ['@ml', 'x']
+
+[tool.omlish.pyproject.venvs]
+all = { interp = '@11', requires = 'requirements-dev.txt', srcs = ['@main'] }
+default = { requires = 'requirements-ext.txt' }
+docker = { docker = 'omlish-dev' }
+docker-amd64 = { docker = 'omlish-dev-amd64' }
+debug = { interp = '@11-debug' }
+'12' = { interp = '@12' }
+'13' = { interp = '@13' }
 
 
 ##
 
 [tool.setuptools_scm]
-version_file = "omlish/_version.py"
+version_file = 'omlish/_version.py'
 
 
 ##
@@ -54,16 +71,16 @@ exclude = [
 
 [tool.pytest.ini_options]
 addopts = [
-    "-v",
-    "--tb=short",
-    "--showlocals",
-    "--strict-markers",
-    "--durations=5",
-    "--durations-min=2",
-    # "--log=info",
+    '-v',
+    '--tb=short',
+    '--showlocals',
+    '--strict-markers',
+    '--durations=5',
+    '--durations-min=2',
+    # '--log=info',
 ]
-asyncio_mode = "strict"
-junit_family = "xunit2"
+asyncio_mode = 'strict'
+junit_family = 'xunit2'
 junit_duration_report = 'call'
 timeout = 60
 session_timeout = 600
@@ -100,20 +117,3 @@ ignore = [
     'W503',
     'W504',
 ]
-
-
-##
-
-[tool.omlish.pyproject.srcs]
-main = ['omlish', 'omdev', 'omserv']
-ml = ['@main', 'omml']
-all = ['@ml', 'x']
-
-[tool.omlish.pyproject.venvs]
-all = { interp = '@11', requires = 'requirements-dev.txt', srcs = ['@main'] }
-default = { requires = 'requirements-ext.txt' }
-docker = { docker = 'omlish-dev' }
-docker-amd64 = { docker = 'omlish-dev-amd64' }
-debug = { interp = '@11-debug' }
-'12' = { interp = '@12' }
-'13' = { interp = '@13' }

@@ -69,7 +69,7 @@ def _mask_env_kwarg(kwargs):
 
 def _subprocess_check_call(*args, stdout=sys.stderr, **kwargs):
     log.info((args, _mask_env_kwarg(kwargs)))
-    return subprocess.check_call(*args, stdout=stdout, **kwargs)
+    return subprocess.check_call(*args, stdout=stdout, **kwargs)  # type: ignore
 
 
 def _subprocess_check_output(*args, **kwargs):
