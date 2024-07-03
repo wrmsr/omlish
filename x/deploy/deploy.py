@@ -21,17 +21,7 @@ from omlish import check
 from ..infra import cmds
 
 
-async def _a_main():
-    cwd = tempfile.mkdtemp()
-    print(cwd)
-
-    bootstrap_git_path = os.path.join(os.getcwd(), '.git')
-    check.state(os.path.isdir(bootstrap_git_path))
-
-    cr: cmds.CommandRunner = cmds.LocalCommandRunner(cmds.LocalCommandRunner.Config(
-        cwd=cwd,
-    ))
-
+async def do_deploy(cr: cmds.CommandRunner) -> None:
     clone_script = [
         ['git', 'init'],
         ['git', 'remote', 'add', 'local', os.path.expanduser('~/src/wrmsr/omlish/.git'), ],
@@ -41,7 +31,7 @@ async def _a_main():
         ['git', 'checkout', 'origin/master'],
 
         ['git', 'submodule', 'update', '--init'],
-        ['make', 'venv'],
+        ['make', 'venv-deploy'],
     ]
 
     res = await cr.run_command(cr.Command([
@@ -58,6 +48,20 @@ async def _a_main():
         )),
     ]))
     res.check()
+
+
+async def _a_main():
+    cwd = tempfile.mkdtemp()
+    print(cwd)
+
+    bootstrap_git_path = os.path.join(os.getcwd(), '.git')
+    check.state(os.path.isdir(bootstrap_git_path))
+
+    cr: cmds.CommandRunner = cmds.LocalCommandRunner(cmds.LocalCommandRunner.Config(
+        cwd=cwd,
+    ))
+
+    await do_deploy(cr)
 
 
 if __name__ == '__main__':
