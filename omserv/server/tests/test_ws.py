@@ -50,14 +50,14 @@ async def _test_server_websocket():
                 break
 
             client = wsproto.WSConnection(wsproto.ConnectionType.CLIENT)
-            await conn.send(client.send(wsproto.events.Request(host='hypercorn', target='/')))
+            await conn.send(client.send(wsproto.events.Request(host='omlicorn', target='/')))
 
             client.receive_data(await anyio_eof_to_empty(conn.receive))
             assert list(client.events()) == [
                 wsproto.events.AcceptConnection(
                     extra_headers=[
                         (b'date', b'Thu, 01 Jan 1970 01:23:20 GMT'),
-                        (b'server', b'hypercorn-h11'),
+                        (b'server', b'omlicorn-h11'),
                     ]
                 )
             ]

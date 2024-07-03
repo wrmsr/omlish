@@ -33,6 +33,8 @@ log = logging.getLogger(__name__)
 
 REQUIRED_PYTHON_VERSION = (3, 8)
 
+DEBUG = 1
+
 
 ##
 
@@ -63,6 +65,18 @@ class cached_nullary:
         return bound
 
 
+def _subprocess_check_call(*args, **kwargs):
+    if DEBUG:
+        print((args, kwargs), file=sys.stderr)
+    return subprocess.check_call(*args, **kwargs)
+
+
+def _subprocess_check_output(*args, **kwargs):
+    if DEBUG:
+        print((args, kwargs), file=sys.stderr)
+    return subprocess.check_output(*args, **kwargs)
+
+
 ##
 
 
@@ -79,8 +93,8 @@ def _toml_loads(s: str) -> ta.Any:
         return toml.loads(s)
 
     if shutil.which('toml2json') is None:
-        subprocess.check_call(['cargo', 'install', 'toml2json'])
-    jsonb = subprocess.check_output(['toml2json'], input=s.encode())
+        _subprocess_check_call(['cargo', 'install', 'toml2json'])
+    jsonb = _subprocess_check_output(['toml2json'], input=s.encode())
 
     import json
     return json.loads(jsonb.decode().strip())
@@ -99,7 +113,7 @@ def _read_versions_file(file_name: str = '.versions') -> ta.Mapping[str, str]:
 
 
 def _find_docker_service_container(cfg_path: str, svc_name: str) -> str:
-    out = subprocess.check_output(['docker-compose', '-f', cfg_path, 'ps', '-q', svc_name])
+    out = _subprocess_check_output(['docker-compose', '-f', cfg_path, 'ps', '-q', svc_name])
     return out.decode().strip()
 
 
@@ -117,7 +131,7 @@ def _get_interp_exe(s: str, *, interp_script: ta.Optional[str] = None) -> str:
     ver = vers[s[1:]]
     if interp_script is None:
         interp_script = os.path.join(os.path.dirname(__file__), 'interp.py')
-    exe = subprocess.check_output([
+    exe = _subprocess_check_output([
         sys.executable,
         interp_script,
         'resolve',
@@ -221,12 +235,21 @@ class Venv:
             return False
 
         log.info(f'Using interpreter {(ie := self.interp_exe())}')
-        subprocess.check_call([ie, '-m' 'venv', dn])
+        _subprocess_check_call([ie, '-m' 'venv', dn])
 
         ve = self.exe()
 
+        _subprocess_check_call([
+            ve,
+            '-m', 'pip',
+            'install', '--upgrade',
+            'pip',
+            'setuptools',
+            'wheel',
+        ])
+
         if (sr := self._spec.requires):
-            subprocess.check_call([
+            _subprocess_check_call([
                 ve,
                 '-m', 'pip',
                 'install',
@@ -289,7 +312,7 @@ def _venv_cmd(args) -> None:
             *map(shlex.quote, sys.argv[1:]),
         ])
         call_args = ['docker', 'exec', '-it', ctr, 'bash', '--login', '-c', script]
-        subprocess.check_call(call_args)
+        _subprocess_check_call(call_args)
         return
 
     venv.create()
@@ -319,7 +342,7 @@ def _venv_cmd(args) -> None:
         print('\n'.join(venv.srcs()))
 
     elif cmd == 'test':
-        subprocess.check_call([venv.exe(), '-m', 'pytest', *(args.args or []), *venv.srcs()])
+        _subprocess_check_call([venv.exe(), '-m', 'pytest', *(args.args or []), *venv.srcs()])
 
     else:
         raise Exception(f'unknown subcommand: {cmd}')

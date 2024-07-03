@@ -23,6 +23,8 @@ log = logging.getLogger(__name__)
 
 REQUIRED_PYTHON_VERSION = (3, 8)
 
+DEBUG = 1
+
 
 ##
 
@@ -45,6 +47,18 @@ class cached_nullary:
     def __get__(self, instance, owner):  # noqa
         bound = instance.__dict__[self._fn.__name__] = self.__class__(self._fn.__get__(instance, owner))
         return bound
+
+
+def _subprocess_check_call(*args, **kwargs):
+    if DEBUG:
+        print((args, kwargs), file=sys.stderr)
+    return subprocess.check_call(*args, **kwargs)
+
+
+def _subprocess_check_output(*args, **kwargs):
+    if DEBUG:
+        print((args, kwargs), file=sys.stderr)
+    return subprocess.check_output(*args, **kwargs)
 
 
 ##
@@ -77,7 +91,7 @@ def _cmd(
         try_ = True
 
     try:
-        buf = subprocess.check_output(cmd, env=env, **kwargs)
+        buf = _subprocess_check_output(cmd, env=env, **kwargs)
     except es:
         if try_:
             log.exception(f'cmd failed: {cmd}')
