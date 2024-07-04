@@ -31,7 +31,7 @@ else:
 libc.errno = ct.cast(libc.errno, ct.POINTER(ct.c_int))  # type: ignore
 
 
-def lasterr():
+def lasterr() -> tuple[int, str]:
     err = libc.errno.contents.value  # type: ignore
     return err, errno.errorcode[err]
 
@@ -43,7 +43,7 @@ libc._raise.argtypes = [ct.c_int]
 _raise = libc._raise
 
 
-def sigtrap():
+def sigtrap() -> None:
     libc._raise(signal.SIGTRAP)
 
 
@@ -62,22 +62,22 @@ libc.free.argtypes = [ct.c_void_p]
 
 class Malloc:
 
-    def __init__(self, sz):
+    def __init__(self, sz: int) -> None:
         super().__init__()
 
         self._sz = sz
         self._base: int | None = None
 
-    def __enter__(self):
+    def __enter__(self) -> ta.Self:
         base = self._base = libc.malloc(self._sz)
         return base
 
-    def __exit__(self, et, e, tb):
+    def __exit__(self, et, e, tb) -> None:
         if self._base is not None:
             libc.free(self._base)
         self._base = None
 
-    def __int__(self):
+    def __int__(self) -> int:
         if self._base is None:
             raise ValueError
         return int(self._base)
@@ -251,8 +251,7 @@ if LINUX:
     PR_UNALIGN_NOPRINT = 1  # silently fix up unaligned user accesses
     PR_UNALIGN_SIGBUS = 2  # generate SIGBUS on unaligned user access
 
-    # Get/set whether or not to drop capabilities on setuid() away from
-    # uid 0 (as per security/commoncap.c)
+    # Get/set whether or not to drop capabilities on setuid() away from uid 0 (as per security/commoncap.c)
     PR_GET_KEEPCAPS = 7
     PR_SET_KEEPCAPS = 8
 
@@ -276,8 +275,7 @@ if LINUX:
     PR_FP_EXC_ASYNC = 2         # async recoverable exception mode
     PR_FP_EXC_PRECISE = 3       # precise exception mode
 
-    # Get/set whether we use statistical process timing or accurate timestamp
-    # process timing
+    # Get/set whether we use statistical process timing or accurate timestamp process timing
     PR_SET_NAME = 15  # Set process name
     PR_GET_NAME = 16  # Get process name
 
@@ -306,16 +304,15 @@ if LINUX:
     PR_GET_SECUREBITS = 27
     PR_SET_SECUREBITS = 28
 
-    # Get/set the timerslack as used by poll/select/nanosleep
-    # A value of 0 means "use default"
+    # Get/set the timerslack as used by poll/select/nanosleep. A value of 0 means "use default"
     PR_SET_TIMERSLACK = 29
     PR_GET_TIMERSLACK = 30
 
     PR_TASK_PERF_EVENTS_DISABLE = 31
     PR_TASK_PERF_EVENTS_ENABLE = 32
 
-    # Set early/late kill mode for hwpoison memory corruption.
-    # This influences when the process gets killed on a memory corruption.
+    # Set early/late kill mode for hwpoison memory corruption. This influences when the process gets killed on a memory
+    # corruption.
     PR_MCE_KILL = 33
     PR_MCE_KILL_CLEAR = 0
     PR_MCE_KILL_SET = 1
@@ -353,8 +350,7 @@ if LINUX or DARWIN:
         ('msg_iovlen', ct.c_size_t),      # Number of elements in the vector.
         ('msg_control', ct.c_void_p),     # Ancillary data (eg BSD filedesc passing).
         ('msg_controllen', ct.c_size_t),  # Ancillary data buffer length. !! The type should be
-        # socklen_t but the definition of the kernel is
-        # incompatible with this
+        # socklen_t but the definition of the kernel is incompatible with this
         ('msg_flags', ct.c_int),          # Flags on received message.
     ]
 
@@ -363,8 +359,8 @@ if LINUX or DARWIN:
 
     cmsghdr._fields_ = [
         ('cmsg_len', ct.c_size_t),  # Length of data in cmsg_data plus length
-        # of cmsghdr structure. !! The type should be socklen_t but the
-        # definition of the kernel is incompatible with this.
+        # of cmsghdr structure. !! The type should be socklen_t but the definition of the kernel is incompatible with
+        # this.
         ('cmsg_level', ct.c_int),   # Originating protocol.
         ('cmsg_type', ct.c_int),    # Protocol specific type.
     ]
@@ -392,11 +388,11 @@ if LINUX or DARWIN:
             raise ValueError(data)
 
         iov = iovec()
-        iov.iov_base = ct.cast(ct.c_char_p(data), ct.c_void_p)
+        iov.iov_base = ct.cast(ct.c_char_p(data), ct.c_void_p)  # noqa
         iov.iov_len = len(data)
 
         cmsg_size = CMSG_SPACE(ct.sizeof(ct.c_int))
-        msg_control = (ct.c_char * cmsg_size)()
+        msg_control = (ct.c_char * cmsg_size)()  # noqa
 
         msgh = msghdr()
         msgh.msg_name = None
@@ -424,8 +420,8 @@ if LINUX or DARWIN:
             raise ValueError(buf_len)
 
         cmsg_size = CMSG_SPACE(ct.sizeof(ct.c_int))
-        cmsg_buf = (ct.c_char * cmsg_size)()
-        data_buf = (ct.c_char * buf_len)()
+        cmsg_buf = (ct.c_char * cmsg_size)()  # noqa
+        data_buf = (ct.c_char * buf_len)()  # noqa
 
         iov = iovec()
         iov.iov_base = ct.cast(ct.addressof(data_buf), ct.c_void_p)
@@ -527,6 +523,7 @@ if LINUX:
         syscalls = {
             'i386': 224,  # unistd_32.h: #define __NR_gettid 224
             'x86_64': 186,  # unistd_64.h: #define __NR_gettid 186
+            'aarch64': 178,  # asm-generic/unistd.h: #define __NR_gettid 178
         }
         try:
             tid = ct.CDLL('libc.so.6').syscall(syscalls[platform.machine()])
