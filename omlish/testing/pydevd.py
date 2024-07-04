@@ -7,8 +7,6 @@ TODO:
  - https://www.jetbrains.com/help/pycharm/remote-debugging-with-product.html#
  - move to dev?
  - cython help? or in cython.py
- - /Applications/PyCharm.app/Contents/plugins/python/helpers/pydev/_pydev_bundle/pydev_monkey.py
-  -> patch traceback.print_exc()
 """
 import json
 import os
@@ -52,6 +50,25 @@ def forbid_debugger_call(hoist: int = 0) -> None:
         raise DebuggerCallForbiddenException
 
 
+##
+
+
+@lang.cached_function
+def patch_subprocess_check() -> None:
+    try:
+        # /Applications/PyCharm.app/Contents/plugins/python/helpers/pydev/_pydev_bundle/pydev_monkey.py
+        from _pydev_bundle import pydev_monkey  # noqa
+    except ImportError:
+        return
+
+    new_tb = lang.proxy_import('traceback')
+    new_tb.print_exc = lambda *a, **k: None
+    pydev_monkey.traceback = new_tb
+
+
+##
+
+
 @lang.cached_function
 def _pydevd() -> ta.Optional[types.ModuleType]:
     try:
@@ -73,6 +90,9 @@ def get_setup() -> ta.Optional[dict]:
 
 def is_running() -> bool:
     return get_setup() is not None
+
+
+##
 
 
 ARGS_ENV_VAR = 'PYDEVD_ARGS'
