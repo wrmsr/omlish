@@ -4,6 +4,9 @@ from .fields import field_type
 from .internals import FIELDS_ATTR
 from .internals import FieldType
 from .internals import is_dataclass_instance
+from .processing import Processor
+from .utils import set_new_attribute
+
 
 MISSING = dc.MISSING
 
@@ -30,3 +33,8 @@ def _replace(obj, /, **changes):
             changes[f.name] = getattr(obj, f.name)
 
     return obj.__class__(**changes)
+
+
+class ReplaceProcessor(Processor):
+    def _process(self) -> None:
+        set_new_attribute(self._cls, '__replace__', _replace)
