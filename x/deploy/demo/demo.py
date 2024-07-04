@@ -2,12 +2,15 @@ import os.path
 import subprocess
 
 from omlish.docker import timebomb_payload
+from omlish.testing.pydevd import silence_subprocess_check
 
 
 TIMEBOMB_DELAY_S = 20 * 60
 
 
 def _main():
+    silence_subprocess_check()
+
     img_name = 'wrmsr/omlish-deploy-demo'
     cur_dir = os.path.dirname(__file__)
     subprocess.check_call([
