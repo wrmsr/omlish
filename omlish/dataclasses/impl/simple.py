@@ -5,7 +5,6 @@ from .fields import field_assign
 from .init import get_init_fields
 from .params import get_field_extras
 from .processing import Processor
-from .replace import _replace
 from .utils import create_fn
 from .utils import set_new_attribute
 
@@ -91,8 +90,3 @@ class MatchArgsProcessor(Processor):
 
         ifs = get_init_fields(self._info.fields.values())
         set_new_attribute(self._cls, '__match_args__', tuple(f.name for f in ifs.std))
-
-
-class ReplaceProcessor(Processor):
-    def _process(self) -> None:
-        set_new_attribute(self._cls, '__replace__', _replace)
