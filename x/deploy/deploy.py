@@ -31,10 +31,12 @@ async def do_deploy(
 ) -> None:
     clone_script = [
         ['git', 'init'],
+
         *([
             ['git', 'remote', 'add', 'local', local_repo_path],
             ['git', 'fetch', '--depth=1', 'local', rev],
         ] if local_repo_path is not None else ()),
+
         ['git', 'remote', 'add', 'origin', 'https://github.com/wrmsr/omlish'],
         ['git', 'fetch', '--depth=1', 'origin', rev],
         ['git', 'checkout', f'origin/{rev}'],

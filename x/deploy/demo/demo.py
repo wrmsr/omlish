@@ -1,3 +1,7 @@
+"""
+FIXME:
+ - ubuntu installs py3.10 lols
+"""
 import asyncio
 import os.path
 import subprocess
@@ -53,10 +57,13 @@ async def _a_main():
                 password=ssh_password,
             ))
 
-            await do_deploy(
-                cr,
-                skip_submodules=True,
-            )
+            try:
+                await do_deploy(
+                    cr,
+                    skip_submodules=True,
+                )
+            except Exception as e:
+                print(e)
 
             print()
             print(ctr_id)
