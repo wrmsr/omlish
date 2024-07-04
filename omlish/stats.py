@@ -312,7 +312,7 @@ class SamplingHistogram:
             pos_list = self._percentile_pos_list
         else:
             pos_list = [self._calc_percentile_pos(p, sz) for p in self._percentiles]
-        entries.sort(key=operator.itemgetter(0))  # type: ignore
+        entries.sort(key=operator.attrgetter('value'))
         return [
             self.Percentile(p, check.not_none(entries[pos]).value)
             for p, pos in zip(self._percentiles, pos_list)
