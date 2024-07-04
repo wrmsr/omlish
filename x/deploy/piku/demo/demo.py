@@ -2,6 +2,7 @@ import os.path
 import subprocess
 
 from omlish.docker import timebomb_payload
+from omlish.testing.pydevd import silence_subprocess_check
 
 
 USE_DOCKERFILE = True
@@ -9,6 +10,8 @@ TIMEBOMB_DELAY_S = 20 * 60
 
 
 def _main():
+    silence_subprocess_check()
+
     if USE_DOCKERFILE:
         img_name = 'wrmsr/omlish-piku-demo'
         cur_dir = os.path.dirname(__file__)
