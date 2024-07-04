@@ -54,7 +54,7 @@ def forbid_debugger_call(hoist: int = 0) -> None:
 
 
 @lang.cached_function
-def patch_subprocess_check() -> None:
+def silence_subprocess_check() -> None:
     try:
         # /Applications/PyCharm.app/Contents/plugins/python/helpers/pydev/_pydev_bundle/pydev_monkey.py
         from _pydev_bundle import pydev_monkey  # noqa
@@ -62,7 +62,7 @@ def patch_subprocess_check() -> None:
         return
 
     new_tb = lang.proxy_import('traceback')
-    new_tb.print_exc = lambda *a, **k: None
+    new_tb.print_exc = lambda *a, **k: None  # type: ignore
     pydev_monkey.traceback = new_tb
 
 
