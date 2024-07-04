@@ -18,19 +18,29 @@ import shlex
 import tempfile
 
 from omlish import check
+
 from ..infra import cmds
 
 
-async def do_deploy(cr: cmds.CommandRunner) -> None:
+async def do_deploy(
+        cr: cmds.CommandRunner,
+        rev: str = 'master',
+        *,
+        local_repo_path: str | None = None,
+        skip_submodules: bool = False,
+) -> None:
     clone_script = [
         ['git', 'init'],
-        ['git', 'remote', 'add', 'local', os.path.expanduser('~/src/wrmsr/omlish/.git'), ],
-        ['git', 'fetch', '--depth=1', 'local', 'master', ],
+        *([
+            ['git', 'remote', 'add', 'local', local_repo_path],
+            ['git', 'fetch', '--depth=1', 'local', rev],
+        ] if local_repo_path is not None else ()),
         ['git', 'remote', 'add', 'origin', 'https://github.com/wrmsr/omlish'],
-        ['git', 'fetch', '--depth=1', 'origin', 'master'],
-        ['git', 'checkout', 'origin/master'],
+        ['git', 'fetch', '--depth=1', 'origin', rev],
+        ['git', 'checkout', f'origin/{rev}'],
 
-        ['git', 'submodule', 'update', '--init'],
+        *([['git', 'submodule', 'update', '--init']] if not skip_submodules else ()),
+
         ['make', 'venv-deploy'],
     ]
 
@@ -61,7 +71,10 @@ async def _a_main():
         cwd=cwd,
     ))
 
-    await do_deploy(cr)
+    await do_deploy(
+        cr,
+        local_repo_path=os.path.expanduser('~/src/wrmsr/omlish/.git'),
+    )
 
 
 if __name__ == '__main__':
