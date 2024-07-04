@@ -7,6 +7,8 @@ TODO:
  - https://www.jetbrains.com/help/pycharm/remote-debugging-with-product.html#
  - move to dev?
  - cython help? or in cython.py
+ - /Applications/PyCharm.app/Contents/plugins/python/helpers/pydev/_pydev_bundle/pydev_monkey.py
+  -> patch traceback.print_exc()
 """
 import json
 import os
