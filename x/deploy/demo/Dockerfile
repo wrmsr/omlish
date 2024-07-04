@@ -22,6 +22,8 @@ RUN \
         openssh-server \
         openssl \
         python3 \
+        python3-pip \
+        python3-venv \
         tmux \
         vim \
         wget \
