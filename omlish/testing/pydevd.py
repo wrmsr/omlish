@@ -66,6 +66,23 @@ def silence_subprocess_check() -> None:
     pydev_monkey.traceback = new_tb
 
 
+@lang.cached_function
+def patch_for_trio_asyncio() -> None:
+    try:
+        import pydevd_nest_asyncio  # noqa
+    except ImportError:
+        return
+
+    import trio_asyncio._base  # noqa
+
+    def new_call_soon(self, callback, *args, **context):
+        _, callback = pydevd_nest_asyncio._PydevdAsyncioUtils.try_to_get_internal_callback(callback)  # noqa
+        return orig_call_soon(self, callback, *args, **context)
+
+    orig_call_soon = trio_asyncio._base.BaseTrioEventLoop.call_soon  # noqa
+    trio_asyncio._base.BaseTrioEventLoop.call_soon = new_call_soon  # noqa
+
+
 ##
 
 

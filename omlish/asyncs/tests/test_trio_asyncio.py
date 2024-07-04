@@ -1,12 +1,22 @@
 """
 FIXME:
  - pydevd_nest_asyncio._patch_loop(trai._async.TrioEventLoop) :|
+  - trio_asyncio._base.BaseTrioEventLoop.call_soon ->
+  - pydevd_nest_asyncio._PydevdAsyncioUtils.try_to_get_internal_callback(callback)
 """
 import asyncio
 import functools
 
+import pytest
 import trio
 import trio_asyncio as trai
+
+from ...testing import pydevd as pdu
+
+
+@pytest.fixture(autouse=True)
+def patch_for_trio_asyncio_fixture():
+    pdu.patch_for_trio_asyncio()
 
 
 def test_hybrid():
