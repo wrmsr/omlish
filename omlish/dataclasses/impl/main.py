@@ -16,12 +16,12 @@ from .order import OrderProcessor
 from .params import ParamsExtras
 from .processing import Processor
 from .reflect import ClassInfo
+from .replace import ReplaceProcessor
 from .repr import ReprProcessor
 from .simple import DocProcessor
 from .simple import EqProcessor
 from .simple import MatchArgsProcessor
 from .simple import OverridesProcessor
-from .simple import ReplaceProcessor
 from .slots import add_slots
 
 if ta.TYPE_CHECKING:
