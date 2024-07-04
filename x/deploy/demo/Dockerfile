@@ -17,6 +17,7 @@ RUN \
         curl \
         dumb-init \
         git \
+        make \
         nginx \
         openssh-server \
         openssl \

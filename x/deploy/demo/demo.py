@@ -1,14 +1,19 @@
+import asyncio
 import os.path
 import subprocess
 
 from omlish.docker import timebomb_payload
 from omlish.testing.pydevd import silence_subprocess_check
 
+from ...infra import cmds
+from ...infra import ssh
+from ..deploy import do_deploy
+
 
 TIMEBOMB_DELAY_S = 20 * 60
 
 
-def _main():
+async def _a_main():
     silence_subprocess_check()
 
     img_name = 'wrmsr/omlish-deploy-demo'
@@ -41,6 +46,18 @@ def _main():
                 timebomb_payload(TIMEBOMB_DELAY_S),
             ])
 
+            cr: cmds.CommandRunner = ssh.AsyncsshSshCommandRunner(ssh.SshConfig(
+                host='localhost',
+                port=9082,
+                username='root',
+                password=ssh_password,
+            ))
+
+            await do_deploy(
+                cr,
+                skip_submodules=True,
+            )
+
             print()
             print(ctr_id)
             print()
@@ -52,4 +69,4 @@ def _main():
 
 
 if __name__ == '__main__':
-    _main()
+    asyncio.run(_a_main())
