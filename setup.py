@@ -3,7 +3,6 @@ TODO:
  - https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html
 """
 import os.path
-import sys
 import typing as ta
 
 import setuptools as st
@@ -15,12 +14,10 @@ PROJECT = 'omlish'
 def _read_about(fp: ta.Optional[str] = None) -> ta.Mapping[str, ta.Any]:
     if not fp:
         fp = os.path.join(PROJECT, '__about__.py')
-    dct = {}
     with open(fp, 'rb') as f:
         src = f.read()
-        if sys.version_info[0] > 2:
-            src = src.decode('UTF-8')
-        exec(src, ta.cast(ta.Dict, dct))
+    dct = {}
+    exec(src.decode(), ta.cast(ta.Dict, dct))
     return dct
 
 

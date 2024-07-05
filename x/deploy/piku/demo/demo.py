@@ -91,6 +91,7 @@ def _main():
 
         sh(
             'service cron start && '
+            'echo -e \'\\ninclude /home/piku/.piku/nginx/*.conf;\\n\' >> /etc/nginx/sites-available/default && '
             'service nginx start'
         )
 
@@ -99,6 +100,9 @@ def _main():
         )
 
         sh(
+            'cd ~ && '
+            'git config --global user.email "piku-demo@wrmsr.com" && '
+            'git config --global user.name "piku-demo" && '
             'git clone https://github.com/piku/sample-python-app && '
             'cd sample-python-app && '
             'git remote add piku piku@localhost:sample_python_app && '
