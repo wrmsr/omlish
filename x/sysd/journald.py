@@ -1,3 +1,7 @@
+"""
+- https://www.freedesktop.org/software/systemd/man/latest/systemd.journal-fields.html
+- https://github.com/mosquito/cysystemd/tree/master/cysystemd
+"""
 import ctypes as ct
 
 from omlish import libc
