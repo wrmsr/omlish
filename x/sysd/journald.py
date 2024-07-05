@@ -24,6 +24,8 @@ def _main():
     lib.sd_journal_sendv.argtypes = [ct.POINTER(libc.iovec), ct.c_int]
 
     items = {
+        'message': 'hi',
+        'priority': 'info',
         'foo': 'bar',
         'baz': 'qux',
     }
