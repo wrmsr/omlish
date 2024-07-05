@@ -1,3 +1,7 @@
+"""
+TODO:
+ - re-exec new code without dropping children, pumping state to new instance
+"""
 import enum
 import signal
 import typing as ta
