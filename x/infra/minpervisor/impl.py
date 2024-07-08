@@ -1,7 +1,25 @@
 """
-- https://github.com/python-trio/trio/issues/927
-- https://github.com/oremanj/trio-monitor
-- https://bugs.python.org/issue39060
+Base:
+ - start / restart / stop processes
+ - dynamic config reload, reconciling cfg changes to running procs
+ - act as pid1 in docker
+ - deathsig or equiv - no zombies, if at all possible...
+
+Maybe:
+ - log redirection
+
+Stretch:
+ - dynamic code reload / re-exec, holding child procs / fds
+
+
+lookit:
+ - https://github.com/python-trio/trio/issues/927
+ - https://github.com/oremanj/trio-monitor
+ - https://bugs.python.org/issue39060
+
+
+==
+
 
     for p in ps:
         p._proc.send_signal(signal.SIGTERM)
