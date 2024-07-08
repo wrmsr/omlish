@@ -1,5 +1,6 @@
 import os
 import shutil
+import subprocess
 
 from omlish import argparse as ap
 from omlish import check
@@ -10,6 +11,17 @@ from omlish import logs
 @lang.cached_function
 def docker_exe() -> str:
     return check.not_none(shutil.which('docker'))
+
+
+@lang.cached_function
+def get_local_platform() -> str:
+    return subprocess.check_output([
+        docker_exe(),
+        'system',
+        'info',
+        '--format',
+        "{{.OSType}}/{{.Architecture}}",
+    ]).decode().strip()
 
 
 class Cli(ap.Cli):
@@ -28,6 +40,7 @@ class Cli(ap.Cli):
             exe := docker_exe(),
             exe,
             'run',
+            '--platform', get_local_platform(),
             '--privileged',
             '--pid=host',
             '-it', 'debian',
