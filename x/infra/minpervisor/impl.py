@@ -40,8 +40,12 @@ lookit:
 
 """
 import dataclasses as dc
+import io
 import logging
-import signal
+import signal  # noqa
+import sys
+import threading
+import traceback
 import typing as ta
 
 from omlish import logs
@@ -91,6 +95,31 @@ class Process:
                 log.debug(f'process {self.name}={proc.pid} restarting')
 
 
+def dump(out):
+    cthr = threading.current_thread()
+    thrs_by_tid = {t.ident: t for t in threading.enumerate()}
+
+    buf = io.StringIO()
+    for tid, fr in sys._current_frames().items():  # noqa
+        if tid == cthr.ident:
+            continue
+
+        try:
+            thr = thrs_by_tid[tid]
+        except KeyError:
+            thr_rpr = repr(tid)
+        else:
+            thr_rpr = repr(thr)
+
+        tb = traceback.format_stack(fr)
+
+        buf.write(f'{thr_rpr}\n')
+        buf.write('\n'.join(l.strip() for l in tb))
+        buf.write('\n\n')
+
+    out.write(buf.getvalue())
+
+
 async def _a_main():
     pcs = [
         ProcessConfig('waiter-3', ['sleep', '3']),
@@ -109,7 +138,13 @@ async def _a_main():
         print('canceling')
         tg.cancel_scope.cancel()
 
+    async def thread_dumper() -> None:
+        while True:
+            await anyio.sleep(2)
+            dump(sys.stderr)
+
     async with anyio.create_task_group() as tg:
+        tg.start_soon(thread_dumper)
         await tg.start(inner)
         for p in ps:
             tg.start_soon(p.run)
