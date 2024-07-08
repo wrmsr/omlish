@@ -22,10 +22,15 @@
 
 """
 import dataclasses as dc
+import logging
 import signal
 import typing as ta
 
+from omlish import logs
 import anyio.abc
+
+
+log = logging.getLogger(__name__)
 
 
 @dc.dataclass(frozen=True)
@@ -41,22 +46,31 @@ class Process:
 
         self._proc: anyio.abc.Process | None = None
 
+    @property
+    def name(self) -> str:
+        return self._cfg.name
+
     async def run(self) -> None:
+        log.debug(f'process {self.name} starting')
         proc = await anyio.open_process(
             self._cfg.cmd
         )
+        log.debug(f'process {self.name}={proc.pid} started')
         async with proc:
             try:
+                log.debug(f'process {self.name}={proc.pid} waiting')
                 await proc.wait()
+                log.debug(f'process {self.name}={proc.pid} exited')
             except anyio.get_cancelled_exc_class():
-                print('dying')
+                log.debug(f'process {self.name}={proc.pid} cancelled')
                 raise
+        log.debug(f'process {self.name}={proc.pid} done')
 
 
 async def _a_main():
     pcs = [
-        ProcessConfig('waiter-0', ['sleep', '60']),
-        ProcessConfig('waiter-1', ['sleep', '90']),
+        ProcessConfig('waiter-0', ['sleep', '3']),
+        ProcessConfig('waiter-1', ['sleep', '5']),
     ]
 
     ps = []
@@ -77,4 +91,6 @@ async def _a_main():
 
 
 if __name__ == '__main__':
+    logs.configure_standard_logging('DEBUG')
+
     anyio.run(_a_main, backend='trio')
