@@ -11,6 +11,7 @@ lookit:
  - https://github.com/indygreg/python-build-standalone/blob/main/pythonbuild/cpython.py
  - https://astral.sh/blog/uv
  - https://github.com/jazzband/pip-tools
+ - https://github.com/Osiris-Team/1JPM
 """
 import argparse
 import dataclasses as dc
