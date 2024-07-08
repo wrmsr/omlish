@@ -101,8 +101,8 @@ def dump(out):
 
     buf = io.StringIO()
     for tid, fr in sys._current_frames().items():  # noqa
-        if tid == cthr.ident:
-            continue
+        # if tid == cthr.ident:
+        #     continue
 
         try:
             thr = thrs_by_tid[tid]
@@ -153,4 +153,7 @@ async def _a_main():
 if __name__ == '__main__':
     logs.configure_standard_logging('DEBUG')
 
-    anyio.run(_a_main, backend='trio')
+    anyio.run(
+        _a_main,
+        backend='trio',
+    )
