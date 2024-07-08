@@ -60,11 +60,12 @@ class AnyioHTTPWrapper:
                 headers=self.basic_headers(),
             )
             await self.send(go_ahead)
+
         try:
             data = await aiou.anyio_eof_to_empty(self.stream.receive, MAX_RECV)
         except ConnectionError:
-            # They've stopped listening. Not much we can do about it here.
             data = b''
+
         self.conn.receive_data(data)
 
     async def next_event(self) -> h11.Event:
@@ -107,7 +108,6 @@ class AnyioHTTPWrapper:
                 await self.stream.aclose()
 
     def basic_headers(self) -> list[tuple[str, bytes | str]]:
-        # HTTP requires these headers in all responses (client would do something different here)
         return [
             ('Date', format_date_time().encode('ascii')),
             ('Server', self.ident),
@@ -159,17 +159,17 @@ async def send_simple_response(
         body: bytes,
 ) -> None:
     wrapper.debug('Sending', status_code, 'response with', len(body), 'bytes')
+
     headers = wrapper.basic_headers()
     headers.append(('Content-Type', content_type))
     headers.append(('Content-Length', str(len(body))))
-    res = h11.Response(status_code=status_code, headers=headers)
-    await wrapper.send(res)
+
+    await wrapper.send(h11.Response(status_code=status_code, headers=headers))
     await wrapper.send(h11.Data(data=body))
     await wrapper.send(h11.EndOfMessage())
 
 
 async def maybe_send_error_response(wrapper: AnyioHTTPWrapper, exc: BaseException) -> None:
-    # If we can't send an error, oh well, nothing to be done
     wrapper.debug('trying to send error response...')
     if wrapper.conn.our_state not in {h11.IDLE, h11.SEND_RESPONSE}:
         wrapper.debug("...but I can't, because our state is", wrapper.conn.our_state)
