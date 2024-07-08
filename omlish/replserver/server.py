@@ -1,8 +1,16 @@
 """
 TODO:
+ - !!! ANYIO !!!
  - optional paramiko ssh-server
  - optional ipython embed
- - asyncio?
+
+lookit:
+ - https://github.com/vxgmichel/aioconsole/blob/e55f4b0601da3b3a40a88c965526d35ab38b5841/aioconsole/server.py
+ - https://github.com/nhoad/aiomanhole
+ - https://github.com/twisted/twisted/blob/00aa56f5257060304d41f09651c6ab58ee6104d6/src/twisted/conch/manhole.py
+  - https://github.com/Yelp/Tron/blob/4b864a73bd129b03e9890c134212972452bc6ab0/tron/manhole.py#L8
+ - https://github.com/ionelmc/python-manhole
+ - https://github.com/python/cpython/tree/15d48aea02099ffc5bdc5511cc53ced460cb31b9/Lib/_pyrepl
 
 socat - UNIX-CONNECT:repl.sock
 """
