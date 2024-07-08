@@ -114,7 +114,7 @@ class AnyioHTTPWrapper:
         ]
 
     def debug(self, *args: ta.Any) -> None:
-        log.debug(f'{self._obj_id}:', *args)
+        log.debug(' '.join(map(str, [f'{self._obj_id}:', *args])))
 
 
 async def http_serve(stream: anyio.abc.SocketStream) -> None:
@@ -180,7 +180,7 @@ async def maybe_send_error_response(wrapper: AnyioHTTPWrapper, exc: BaseExceptio
             status_code = exc.error_status_hint
         # elif isinstance(exc, anyio.TooSlowError):  # FIXME:
         #     status_code = 408  # Request Timeout
-        elif isinstance(exc, TimeoutError):  # FIXME:
+        elif isinstance(exc, TimeoutError):
             status_code = 408  # Request Timeout
         else:
             status_code = 500
@@ -242,4 +242,8 @@ async def serve(port: int) -> None:
 
 if __name__ == '__main__':
     logs.configure_standard_logging('DEBUG')
-    anyio.run(serve, 8080)
+    anyio.run(
+        serve,
+        8080,
+        # backend='trio',
+    )
