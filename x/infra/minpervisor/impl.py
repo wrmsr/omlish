@@ -37,6 +37,7 @@ log = logging.getLogger(__name__)
 class ProcessConfig:
     name: str
     cmd: ta.Sequence[str]
+    restart: bool = True
 
 
 class Process:
@@ -51,26 +52,32 @@ class Process:
         return self._cfg.name
 
     async def run(self) -> None:
-        log.debug(f'process {self.name} starting')
-        proc = await anyio.open_process(
-            self._cfg.cmd
-        )
-        log.debug(f'process {self.name}={proc.pid} started')
-        async with proc:
-            try:
-                log.debug(f'process {self.name}={proc.pid} waiting')
-                await proc.wait()
-                log.debug(f'process {self.name}={proc.pid} exited')
-            except anyio.get_cancelled_exc_class():
-                log.debug(f'process {self.name}={proc.pid} cancelled')
-                raise
-        log.debug(f'process {self.name}={proc.pid} done')
+        while True:
+            log.debug(f'process {self.name} starting')
+            proc = await anyio.open_process(
+                self._cfg.cmd
+            )
+            log.debug(f'process {self.name}={proc.pid} started')
+            async with proc:
+                try:
+                    log.debug(f'process {self.name}={proc.pid} waiting')
+                    await proc.wait()
+                    log.debug(f'process {self.name}={proc.pid} exited')
+                except anyio.get_cancelled_exc_class():
+                    log.debug(f'process {self.name}={proc.pid} cancelled')
+                    raise
+            log.debug(f'process {self.name}={proc.pid} done')
+            if not self._cfg.restart:
+                log.debug(f'process {self.name}={proc.pid} not restarting')
+            else:
+                log.debug(f'process {self.name}={proc.pid} restarting')
 
 
 async def _a_main():
     pcs = [
-        ProcessConfig('waiter-0', ['sleep', '3']),
-        ProcessConfig('waiter-1', ['sleep', '5']),
+        ProcessConfig('waiter-3', ['sleep', '3']),
+        ProcessConfig('waiter-5', ['sleep', '5']),
+        ProcessConfig('waiter-60', ['sleep', '60']),
     ]
 
     ps = []
