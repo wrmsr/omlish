@@ -4,15 +4,10 @@ import typing as ta
 import wsgiref.simple_server
 
 from .. import consts
+from .. import wsgi
 
 
-BytesLike: ta.TypeAlias = bytes | bytearray
-Environ = ta.Mapping[str, ta.Any]
-StartResponse = ta.Callable[[str, ta.Iterable[tuple[str, str]]], ta.Callable[[BytesLike], None]]
-App = ta.Callable[[Environ, StartResponse], ta.Iterable[BytesLike]]
-
-
-def demo_app(environ: Environ, start_response: StartResponse) -> ta.Iterable[BytesLike]:
+def demo_app(environ: wsgi.Environ, start_response: wsgi.StartResponse) -> ta.Iterable[bytes]:
     if environ['PATH_INFO'] == '/favicon.ico' and environ['REQUEST_METHOD'] == 'GET':
         start_response(consts.STATUS_NOT_FOUND, [])
         return []
@@ -33,7 +28,7 @@ def demo_app(environ: Environ, start_response: StartResponse) -> ta.Iterable[Byt
 def make_wsgiref_server(
         host: str,
         port: int,
-        app: App,
+        app: wsgi.App,
         server_class: type[wsgiref.simple_server.WSGIServer] = wsgiref.simple_server.WSGIServer,
         handler_class: type[wsgiref.simple_server.WSGIRequestHandler] = wsgiref.simple_server.WSGIRequestHandler,
 ) -> http.server.HTTPServer:

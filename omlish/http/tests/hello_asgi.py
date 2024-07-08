@@ -16,35 +16,42 @@ wsgi.errors is directed by the wrapper as needed
 """
 import typing as ta
 
+from .. import consts
 from ... import check
 
 
-def app(scope):
+async def app(scope, receive, send):
     check.equal(scope['type'], 'http')  # Ignore anything other than HTTP
 
-    async def asgi(receive, send):
-        await send({
-            'type': 'http.response.start',
-            'status': 200,
-            'headers': [
-                [b'content-type', b'text/plain'],
-            ],
-        })
-        await send({
-            'type': 'http.response.body',
-            'body': b'Hello, World!',
-        })
-
-    return asgi
+    await send({
+        'type': 'http.response.start',
+        'status': 200,
+        'headers': [
+            [consts.HEADER_CONTENT_TYPE, consts.CONTENT_TYPE_TEXT_UTF8],
+        ],
+    })
+    await send({
+        'type': 'http.response.body',
+        'body': b'Hello, World!',
+    })
 
 
 def _main() -> None:
-    uvicorn: ta.Any = __import__('uvicorn')
-    uvicorn.run(app, host='', port=8000)
+    server = 'uvloop'
+    server = 'omserv'
 
-    # import anyio
-    # omserv: ta.Any = __import__('omserv.server')
-    # anyio.run(omserv.server.serve, app, omserv.server.Config())
+    match server:
+        case 'uvloop':
+            uvicorn: ta.Any = __import__('uvicorn')
+            uvicorn.run(app, host='', port=8000)
+
+        case 'omserv':
+            import anyio
+            omserv: ta.Any = __import__('omserv.server')
+            anyio.run(omserv.server.serve, app, omserv.server.Config())
+
+        case _:
+            raise Exception(server)
 
 
 if __name__ == '__main__':
