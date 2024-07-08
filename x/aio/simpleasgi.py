@@ -8,6 +8,7 @@ import json
 import logging
 import typing as ta
 
+from omlish import check
 from omlish import logs
 from omlish.asyncs import anyio as aiou
 import anyio.abc
@@ -43,7 +44,7 @@ class AnyioHTTPWrapper:
     async def send(self, event: h11.Event) -> None:
         # The code below doesn't send ConnectionClosed, so we don't bother handling it here either -- it would require
         # that we do something appropriate when 'data' is None.
-        assert type(event) is not h11.ConnectionClosed
+        check.not_isinstance(event, h11.ConnectionClosed)
         data = self.conn.send(event)
         try:
             await self.stream.send(data)
@@ -121,7 +122,7 @@ async def http_serve(stream: anyio.abc.SocketStream) -> None:
     wrapper = AnyioHTTPWrapper(stream)
     wrapper.debug('Got new connection')
     while True:
-        assert wrapper.conn.states == {h11.CLIENT: h11.IDLE, h11.SERVER: h11.IDLE}
+        check.equal(wrapper.conn.states, {h11.CLIENT: h11.IDLE, h11.SERVER: h11.IDLE})
 
         try:
             with anyio.fail_after(TIMEOUT):
@@ -129,7 +130,7 @@ async def http_serve(stream: anyio.abc.SocketStream) -> None:
                 event = await wrapper.next_event()
                 wrapper.debug('Server main loop got event:', event)
                 if type(event) is h11.Request:
-                    await send_echo_response(wrapper, event)
+                    await send_echo_response(wrapper, check.isinstance(event, h11.Request))
         except Exception as exc:
             wrapper.debug(f'Error during response handler: {exc!r}')
             await maybe_send_error_response(wrapper, exc)
@@ -193,7 +194,7 @@ async def maybe_send_error_response(wrapper: AnyioHTTPWrapper, exc: BaseExceptio
         wrapper.debug('error while sending error response:', exc)
 
 
-async def send_echo_response(wrapper, request):
+async def send_echo_response(wrapper: AnyioHTTPWrapper, request: h11.Request) -> None:
     wrapper.debug('Preparing echo response')
     if request.method not in {b'GET', b'POST'}:
         # Laziness: we should send a proper 405 Method Not Allowed with the appropriate Accept: header, but we don't.
@@ -210,11 +211,11 @@ async def send_echo_response(wrapper, request):
     }
 
     while True:
-        event = await wrapper.next_event()
-        if type(event) is h11.EndOfMessage:
+        next_event = await wrapper.next_event()
+        if type(next_event) is h11.EndOfMessage:
             break
-        assert type(event) is h11.Data
-        response_json['body'] += event.data.decode('ascii')
+        data_event = check.isinstance(next_event, h11.Data)
+        response_json['body'] += data_event.data.decode('ascii')
 
     response_body_unicode = json.dumps(
         response_json,
