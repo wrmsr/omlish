@@ -6,9 +6,9 @@ import email.utils
 import json
 import itertools
 
-import anyio
+from omlish.asyncs import anyio as aiou
+import anyio.abc
 import h11
-import trio
 
 
 # async def _a_main():
@@ -35,19 +35,20 @@ def format_date_time(dt=None):
     return email.utils.format_datetime(dt, usegmt=True)
 
 
-class TrioHTTPWrapper:
+class AnyioHTTPWrapper:
     _next_id = itertools.count()
 
-    def __init__(self, stream):
+    def __init__(self, stream: anyio.abc.SocketStream) -> None:
+        super().__init__()
         self.stream = stream
         self.conn = h11.Connection(h11.SERVER)
         # Our Server: header
         self.ident = ' '.join(
-            [f'h11-example-trio-server/{h11.__version__}', h11.PRODUCT_ID]
+            [f'h11-example-anyio-server/{h11.__version__}', h11.PRODUCT_ID]
         ).encode('ascii')
         # A unique id for this connection, to include in debugging output (useful for understanding what's going on if
         # there are multiple simultaneous clients).
-        self._obj_id = next(TrioHTTPWrapper._next_id)
+        self._obj_id = next(AnyioHTTPWrapper._next_id)
 
     async def send(self, event):
         # The code below doesn't send ConnectionClosed, so we don't bother handling it here either -- it would require
@@ -55,7 +56,7 @@ class TrioHTTPWrapper:
         assert type(event) is not h11.ConnectionClosed
         data = self.conn.send(event)
         try:
-            await self.stream.send_all(data)
+            await self.stream.send(data)
         except BaseException:
             # If send_all raises an exception (especially trio.Cancelled), we have no choice but to give it up.
             self.conn.send_failed()
@@ -70,7 +71,7 @@ class TrioHTTPWrapper:
             )
             await self.send(go_ahead)
         try:
-            data = await self.stream.receive_some(MAX_RECV)
+            data = await aiou.anyio_eof_to_empty(self.stream.receive, MAX_RECV)
         except ConnectionError:
             # They've stopped listening. Not much we can do about it here.
             data = b''
@@ -92,7 +93,7 @@ class TrioHTTPWrapper:
         # exception if that violates the protocol.)
         try:
             await self.stream.send_eof()
-        except trio.BrokenResourceError:
+        except anyio.BrokenResourceError:
             # They're already gone, nothing to do
             return
         # Wait and read for a bit to give them a chance to see that we closed things, but eventually give up and just
@@ -102,14 +103,14 @@ class TrioHTTPWrapper:
         #  TIME_WAIT?
         # it looks like nginx never does this for keepalive timeouts, and only does it for regular timeouts (slow
         # clients I guess?) if explicitly enabled ('Default: reset_timedout_connection off')
-        with trio.move_on_after(TIMEOUT):
+        with anyio.move_on_after(TIMEOUT):
             try:
                 while True:
                     # Attempt to read until EOF
-                    got = await self.stream.receive_some(MAX_RECV)
+                    got = await aiou.anyio_eof_to_empty(self.stream.receive, MAX_RECV)
                     if not got:
                         break
-            except trio.BrokenResourceError:
+            except anyio.BrokenResourceError:
                 pass
             finally:
                 await self.stream.aclose()
@@ -126,14 +127,14 @@ class TrioHTTPWrapper:
         print(f'{self._obj_id}:', *args)
 
 
-async def http_serve(stream):
-    wrapper = TrioHTTPWrapper(stream)
+async def http_serve(stream: anyio.abc.SocketStream) -> None:
+    wrapper = AnyioHTTPWrapper(stream)
     wrapper.info('Got new connection')
     while True:
         assert wrapper.conn.states == {h11.CLIENT: h11.IDLE, h11.SERVER: h11.IDLE}
 
         try:
-            with trio.fail_after(TIMEOUT):
+            with anyio.fail_after(TIMEOUT):
                 wrapper.info('Server main loop waiting for request')
                 event = await wrapper.next_event()
                 wrapper.info('Server main loop got event:', event)
@@ -181,7 +182,9 @@ async def maybe_send_error_response(wrapper, exc):
     try:
         if isinstance(exc, h11.RemoteProtocolError):
             status_code = exc.error_status_hint
-        elif isinstance(exc, trio.TooSlowError):
+        # elif isinstance(exc, anyio.TooSlowError):  # FIXME:
+        #     status_code = 408  # Request Timeout
+        elif isinstance(exc, TimeoutError):  # FIXME:
             status_code = 408  # Request Timeout
         else:
             status_code = 500
@@ -228,10 +231,11 @@ async def send_echo_response(wrapper, request):
 async def serve(port):
     print(f'listening on http://localhost:{port}')
     try:
-        await trio.serve_tcp(http_serve, port)
+        listener = await anyio.create_tcp_listener(local_port=port)
+        await listener.serve(http_serve)
     except KeyboardInterrupt:
         print('KeyboardInterrupt - shutting down')
 
 
 if __name__ == '__main__':
-    trio.run(serve, 8080)
+    anyio.run(serve, 8080)
