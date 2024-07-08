@@ -8,6 +8,10 @@ TODO:
  - injectify
  - lifecycle / otp-ify
  - configify
+
+Lookit:
+ - https://github.com/encode/starlette
+ - https://github.com/tiangolo/fastapi
 """
 from .config import Config  # noqa
 from .serving import serve  # noqa
