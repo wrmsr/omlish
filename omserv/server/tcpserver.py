@@ -4,7 +4,6 @@ import math
 import typing as ta
 
 from omlish import check
-import anyio
 import anyio.abc
 
 from .config import Config
