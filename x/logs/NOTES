@@ -1,3 +1,15 @@
+Lookit:
+ - https://logbook.readthedocs.io/en/stable/
+ - https://www.structlog.org/en/stable/
+  - https://github.com/hynek/structlog/tree/main/src/structlog
+ - journald
+  - https://github.com/mosquito/cysystemd
+  - https://docs.docker.com/config/containers/logging/journald/
+  - https://github.com/saymedia/journald-cloudwatch-logs
+  - https://discourse.nixos.org/t/nginx-logging-to-journald/2005/5
+
+--
+
 echo -e  "MESSAGE=Hello\nFOO=BAR\nMY_ID=12345\n" |socat  - UNIX-SENDTO:/run/systemd/journal/socket
 
 journalctl -b -o json-pretty
@@ -23,11 +35,6 @@ https://discourse.nixos.org/t/nginx-logging-to-journald/2005/5
     error_log stderr;
     access_log syslog:server=unix:/dev/log combined;
 
-https://github.com/saymedia/journald-cloudwatch-logs
-
-https://github.com/mosquito/cysystemd
-
-https://docs.docker.com/config/containers/logging/journald/
 
 https://stackoverflow.com/questions/57399323/cant-read-logger-message-thru-socat-u-unix-recv-dev-log-ignoreeof-because-t
 
@@ -38,7 +45,3 @@ https://meaningfulengineer.com/ssh-logging-on-linux/
 https://www.freedesktop.org/software/systemd/man/latest/systemd.journal-fields.html
 
 https://github.com/wrmsr/nginx-udplog-module
-
-
-https://www.structlog.org/en/stable/
-https://github.com/hynek/structlog/tree/main/src/structlog
