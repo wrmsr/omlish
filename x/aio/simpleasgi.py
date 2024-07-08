@@ -194,6 +194,38 @@ async def maybe_send_error_response(wrapper: AnyioHTTPWrapper, exc: BaseExceptio
         wrapper.debug('error while sending error response:', exc)
 
 
+async def hello_app(scope, recv, send):
+    match scope_ty := scope['type']:
+        case 'lifespan':
+            while True:
+                message = await recv()
+                if message['type'] == 'lifespan.startup':
+                    # Do some startup here!
+                    await send({'type': 'lifespan.startup.complete'})
+
+                elif message['type'] == 'lifespan.shutdown':
+                    # Do some shutdown here!
+                    await send({'type': 'lifespan.shutdown.complete'})
+                    return
+
+        case 'http':
+            await send({
+                'type': 'http.response.start',
+                'status': 200,
+                'headers': [
+                    [b'content-type', b'text/plain'],
+                ]
+            })
+
+            await send({
+                'type': 'http.response.body',
+                'body': f'Hello, world! The time is {time.time()}'.encode('utf-8'),
+            })
+
+        case _:
+            raise ValueError(f'Unhandled scope type: {scope_ty!r}')
+
+
 async def send_echo_response(wrapper: AnyioHTTPWrapper, request: h11.Request) -> None:
     wrapper.debug('Preparing echo response')
     if request.method not in {b'GET', b'POST'}:
