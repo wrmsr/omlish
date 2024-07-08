@@ -12,8 +12,9 @@ STATUS_NOT_FOUND = format_status(http.HTTPStatus.NOT_FOUND)
 STATUS_METHOD_NOT_ALLOWED = format_status(http.HTTPStatus.METHOD_NOT_ALLOWED)
 
 
-CONTENT_TYPE = 'Content-Type'
-CONTENT_TEXT = 'text/plain'
-CONTENT_JSON = 'application/json'
-CONTENT_ICON = 'image/x-icon'
-CONTENT_BYTES = 'application/octet-stream'
+HEADER_CONTENT_TYPE = 'Content-Type'
+CONTENT_TYPE_TEXT = 'text/plain'
+CONTENT_TYPE_TEXT_UTF8 = CONTENT_TYPE_TEXT + '; charset=utf-8'
+CONTENT_TYPE_JSON = 'application/json'
+CONTENT_TYPE_ICON = 'image/x-icon'
+CONTENT_TYPE_BYTES = 'application/octet-stream'
