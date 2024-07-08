@@ -10,9 +10,15 @@ Maybe:
 
 Stretch:
  - dynamic code reload / re-exec, holding child procs / fds
+  - yeesh. punt, treat like uninterrupted code flips? but who was flip??
+   - https://github.com/python/cpython/blob/15d48aea02099ffc5bdc5511cc53ced460cb31b9/Lib/asyncio/unix_events.py#L845
+    - < https://github.com/python/cpython/blob/15d48aea02099ffc5bdc5511cc53ced460cb31b9/Lib/asyncio/base_subprocess.py#L39
+    - < https://github.com/python/cpython/blob/15d48aea02099ffc5bdc5511cc53ced460cb31b9/Lib/asyncio/unix_events.py#L203
+    - < https://github.com/python/cpython/blob/15d48aea02099ffc5bdc5511cc53ced460cb31b9/Lib/asyncio/base_events.py#L1755
+    - < https://github.com/python/cpython/blob/15d48aea02099ffc5bdc5511cc53ced460cb31b9/Lib/asyncio/subprocess.py#L218
+   - https://github.com/python-trio/trio/blob/72f5931b66e413f6c32c4614f9bd24ca8eeae834/src/trio/_subprocess.py#L157
 
-
-lookit:
+Lookit:
  - https://github.com/python-trio/trio/issues/927
  - https://github.com/oremanj/trio-monitor
  - https://bugs.python.org/issue39060
@@ -38,7 +44,7 @@ lookit:
                 if scope.cancelled_caught:
                     print('FAILED TO REAP')
 
-"""
+"""  # noqa
 import dataclasses as dc
 import io
 import logging
@@ -155,5 +161,5 @@ if __name__ == '__main__':
 
     anyio.run(
         _a_main,
-        backend='trio',
+        # backend='trio',
     )
