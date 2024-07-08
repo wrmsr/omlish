@@ -46,7 +46,7 @@ def demo_app(environ: Environ, start_response: StartResponse) -> ta.Iterable[Byt
     return [out.getvalue().encode('utf-8')]
 
 
-def make_server(
+def make_wsgiref_server(
         host: str,
         port: int,
         app: App,
@@ -59,7 +59,7 @@ def make_server(
 
 
 def _main() -> None:
-    with make_server('', 8000, demo_app) as httpd:
+    with make_wsgiref_server('', 8000, demo_app) as httpd:
         sa = httpd.socket.getsockname()
         print('Serving HTTP on', sa[0], 'port', sa[1], '...')
 
