@@ -11,6 +11,7 @@ Maybe:
 Stretch:
  - dynamic code reload / re-exec, holding child procs / fds
   - yeesh. punt, treat like uninterrupted code flips? but who was flip??
+   - https://github.com/python/cpython/issues/94597
    - https://github.com/python/cpython/blob/15d48aea02099ffc5bdc5511cc53ced460cb31b9/Lib/asyncio/unix_events.py#L845
     - < https://github.com/python/cpython/blob/15d48aea02099ffc5bdc5511cc53ced460cb31b9/Lib/asyncio/base_subprocess.py#L39
     - < https://github.com/python/cpython/blob/15d48aea02099ffc5bdc5511cc53ced460cb31b9/Lib/asyncio/unix_events.py#L203
