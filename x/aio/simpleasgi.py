@@ -3,26 +3,18 @@ https://github.com/python-hyper/h11/blob/cc87dfcc5a4693eb49b0453e6677ca004ffb035
 """
 import datetime
 import email.utils
-import json
 import itertools
+import json
+import logging
+import typing as ta
 
+from omlish import logs
 from omlish.asyncs import anyio as aiou
 import anyio.abc
 import h11
 
 
-# async def _a_main():
-#     async def handle(client):
-#         async with client:
-#             name = await client.receive(1024)
-#             await client.send(b'Hello, %s\n' % name)
-#
-#     listener = await anyio.create_tcp_listener(None, 8001)
-#     await listener.serve(handle)
-#
-#
-# if __name__ == '__main__':
-#     anyio.run(_a_main)
+log = logging.getLogger(__name__)
 
 
 MAX_RECV = 2**16
@@ -46,11 +38,9 @@ class AnyioHTTPWrapper:
         self.ident = ' '.join(
             [f'h11-example-anyio-server/{h11.__version__}', h11.PRODUCT_ID]
         ).encode('ascii')
-        # A unique id for this connection, to include in debugging output (useful for understanding what's going on if
-        # there are multiple simultaneous clients).
         self._obj_id = next(AnyioHTTPWrapper._next_id)
 
-    async def send(self, event):
+    async def send(self, event: h11.Event) -> None:
         # The code below doesn't send ConnectionClosed, so we don't bother handling it here either -- it would require
         # that we do something appropriate when 'data' is None.
         assert type(event) is not h11.ConnectionClosed
@@ -62,9 +52,9 @@ class AnyioHTTPWrapper:
             self.conn.send_failed()
             raise
 
-    async def _read_from_peer(self):
+    async def _read_from_peer(self) -> None:
         if self.conn.they_are_waiting_for_100_continue:
-            self.info('Sending 100 Continue')
+            self.debug('Sending 100 Continue')
             go_ahead = h11.InformationalResponse(
                 status_code=100,
                 headers=self.basic_headers(),
@@ -77,7 +67,7 @@ class AnyioHTTPWrapper:
             data = b''
         self.conn.receive_data(data)
 
-    async def next_event(self):
+    async def next_event(self) -> h11.Event:
         while True:
             event = self.conn.next_event()
             if event is h11.NEED_DATA:
@@ -85,7 +75,7 @@ class AnyioHTTPWrapper:
                 continue
             return event
 
-    async def shutdown_and_clean_up(self):
+    async def shutdown_and_clean_up(self) -> None:
         # When this method is called, it's because we definitely want to kill # this connection, either as a clean
         # shutdown or because of some kind # of error or loss-of-sync bug, and we no longer care if that violates # the
         # protocol or not. So we ignore the state of self.conn, and just # go ahead and do the shutdown on the socket
@@ -96,6 +86,7 @@ class AnyioHTTPWrapper:
         except anyio.BrokenResourceError:
             # They're already gone, nothing to do
             return
+
         # Wait and read for a bit to give them a chance to see that we closed things, but eventually give up and just
         # close the socket.
         # XX FIXME: possibly we should set SO_LINGER to 0 here, so that in the case where the client has ignored our
@@ -115,46 +106,45 @@ class AnyioHTTPWrapper:
             finally:
                 await self.stream.aclose()
 
-    def basic_headers(self):
+    def basic_headers(self) -> list[tuple[str, bytes | str]]:
         # HTTP requires these headers in all responses (client would do something different here)
         return [
             ('Date', format_date_time().encode('ascii')),
             ('Server', self.ident),
         ]
 
-    def info(self, *args):
-        # Little debugging method
-        print(f'{self._obj_id}:', *args)
+    def debug(self, *args: ta.Any) -> None:
+        log.debug(f'{self._obj_id}:', *args)
 
 
 async def http_serve(stream: anyio.abc.SocketStream) -> None:
     wrapper = AnyioHTTPWrapper(stream)
-    wrapper.info('Got new connection')
+    wrapper.debug('Got new connection')
     while True:
         assert wrapper.conn.states == {h11.CLIENT: h11.IDLE, h11.SERVER: h11.IDLE}
 
         try:
             with anyio.fail_after(TIMEOUT):
-                wrapper.info('Server main loop waiting for request')
+                wrapper.debug('Server main loop waiting for request')
                 event = await wrapper.next_event()
-                wrapper.info('Server main loop got event:', event)
+                wrapper.debug('Server main loop got event:', event)
                 if type(event) is h11.Request:
                     await send_echo_response(wrapper, event)
         except Exception as exc:
-            wrapper.info(f'Error during response handler: {exc!r}')
+            wrapper.debug(f'Error during response handler: {exc!r}')
             await maybe_send_error_response(wrapper, exc)
 
         if wrapper.conn.our_state is h11.MUST_CLOSE:
-            wrapper.info('connection is not reusable, so shutting down')
+            wrapper.debug('connection is not reusable, so shutting down')
             await wrapper.shutdown_and_clean_up()
             return
         else:
             try:
-                wrapper.info('trying to re-use connection')
+                wrapper.debug('trying to re-use connection')
                 wrapper.conn.start_next_cycle()
             except h11.ProtocolError:
                 states = wrapper.conn.states
-                wrapper.info('unexpected state', states, '-- bailing out')
+                wrapper.debug('unexpected state', states, '-- bailing out')
                 await maybe_send_error_response(
                     wrapper, RuntimeError(f'unexpected state {states}')
                 )
@@ -162,8 +152,13 @@ async def http_serve(stream: anyio.abc.SocketStream) -> None:
                 return
 
 
-async def send_simple_response(wrapper, status_code, content_type, body):
-    wrapper.info('Sending', status_code, 'response with', len(body), 'bytes')
+async def send_simple_response(
+        wrapper: AnyioHTTPWrapper,
+        status_code: int,
+        content_type: str,
+        body: bytes,
+) -> None:
+    wrapper.debug('Sending', status_code, 'response with', len(body), 'bytes')
     headers = wrapper.basic_headers()
     headers.append(('Content-Type', content_type))
     headers.append(('Content-Length', str(len(body))))
@@ -173,12 +168,13 @@ async def send_simple_response(wrapper, status_code, content_type, body):
     await wrapper.send(h11.EndOfMessage())
 
 
-async def maybe_send_error_response(wrapper, exc):
+async def maybe_send_error_response(wrapper: AnyioHTTPWrapper, exc: BaseException) -> None:
     # If we can't send an error, oh well, nothing to be done
-    wrapper.info('trying to send error response...')
+    wrapper.debug('trying to send error response...')
     if wrapper.conn.our_state not in {h11.IDLE, h11.SEND_RESPONSE}:
-        wrapper.info("...but I can't, because our state is", wrapper.conn.our_state)
+        wrapper.debug("...but I can't, because our state is", wrapper.conn.our_state)
         return
+
     try:
         if isinstance(exc, h11.RemoteProtocolError):
             status_code = exc.error_status_hint
@@ -192,15 +188,17 @@ async def maybe_send_error_response(wrapper, exc):
         await send_simple_response(
             wrapper, status_code, 'text/plain; charset=utf-8', body
         )
+
     except Exception as exc:
-        wrapper.info('error while sending error response:', exc)
+        wrapper.debug('error while sending error response:', exc)
 
 
 async def send_echo_response(wrapper, request):
-    wrapper.info('Preparing echo response')
+    wrapper.debug('Preparing echo response')
     if request.method not in {b'GET', b'POST'}:
         # Laziness: we should send a proper 405 Method Not Allowed with the appropriate Accept: header, but we don't.
         raise RuntimeError('unsupported method')
+
     response_json = {
         'method': request.method.decode('ascii'),
         'target': request.target.decode('ascii'),
@@ -210,32 +208,38 @@ async def send_echo_response(wrapper, request):
         ],
         'body': '',
     }
+
     while True:
         event = await wrapper.next_event()
         if type(event) is h11.EndOfMessage:
             break
         assert type(event) is h11.Data
         response_json['body'] += event.data.decode('ascii')
+
     response_body_unicode = json.dumps(
         response_json,
         sort_keys=True,
         indent=4,
         separators=(',', ': '),
     )
-    response_body_bytes = response_body_unicode.encode('utf-8')
+
     await send_simple_response(
-        wrapper, 200, 'application/json; charset=utf-8', response_body_bytes
+        wrapper,
+        200,
+        'application/json; charset=utf-8',
+        response_body_unicode.encode('utf-8'),
     )
 
 
-async def serve(port):
-    print(f'listening on http://localhost:{port}')
+async def serve(port: int) -> None:
+    log.info(f'listening on http://localhost:{port}')
     try:
         listener = await anyio.create_tcp_listener(local_port=port)
         await listener.serve(http_serve)
     except KeyboardInterrupt:
-        print('KeyboardInterrupt - shutting down')
+        log.info('KeyboardInterrupt - shutting down')
 
 
 if __name__ == '__main__':
+    logs.configure_standard_logging('DEBUG')
     anyio.run(serve, 8080)
