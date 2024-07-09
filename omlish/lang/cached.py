@@ -109,7 +109,7 @@ class _CachedFunction(ta.Generic[T]):
     ) -> None:
         super().__init__()
 
-        self._fn = fn
+        self._fn = (fn,)
         self._opts = opts
         self._keyer = keyer if keyer is not None else _make_cache_keyer(fn, simple=opts.simple_key)
 
@@ -117,6 +117,14 @@ class _CachedFunction(ta.Generic[T]):
         self._values = values if values is not None else opts.map_maker()
         self._value_fn = value_fn if value_fn is not None else fn
         functools.update_wrapper(self, fn)
+
+    @property
+    def _fn(self):
+        return self.__fn
+
+    @_fn.setter
+    def _fn(self, x):
+        self.__fn = x
 
     def reset(self) -> None:
         self._values = {}
@@ -173,7 +181,7 @@ class _CachedFunctionDescriptor(_CachedFunction[T]):
         if owner is self._owner and (instance is self._instance or scope is classmethod):
             return self
 
-        fn = self._fn
+        fn, = self._fn
         name = self._name
         bound_fn = fn.__get__(instance, owner)
         if self._bound_keyer is None:
