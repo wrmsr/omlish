@@ -133,7 +133,7 @@ class Process:
                         )
 
                         if glst[0].present:
-                            log.debug(f'process {self.name}={proc.pid} got message: {glst[1].must()}')
+                            log.debug(f'process {self.name}={proc.pid} got message: {glst[0].must()}')
 
                         if glst[1].present:
                             log.debug(f'process {self.name}={proc.pid} exited')
