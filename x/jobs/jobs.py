@@ -13,4 +13,18 @@ lookit:
  - https://github.com/dbader/schedule
  - https://github.com/spotify/luigi
  - https://github.com/apache/airflow/ jk god
+
+--
+
+CANCELLED
+FAILED
+QUEUED
+RUNNING
+SCHEDULED
+SKIPPED
+STARTING
+SUCCEEDED
+WAITING
+UNKNOWN
+
 """
