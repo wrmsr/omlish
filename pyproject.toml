@@ -136,6 +136,9 @@ ignore = [
     'ANN201',  # missing return type annotation for public function
     'S101',  # use of `assert` detected
 ]
+'omdev/scripts/*' = [
+    'UP',
+]
 
 [tool.ruff.lint.flake8-quotes]
 inline-quotes = 'single'

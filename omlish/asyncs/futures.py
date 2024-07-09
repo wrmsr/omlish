@@ -44,8 +44,8 @@ class FutureTimeoutException(Exception):
 def wait_futures(
         futures: ta.Sequence[cf.Future],
         *,
-        timeout_s: ta.Union[int, float] = 60,
-        tick_interval_s: ta.Union[int, float] = 0.5,
+        timeout_s: float = 60,
+        tick_interval_s: float = .5,
         tick_fn: ta.Callable[..., bool] = lambda: True,
         raise_exceptions: bool = False,
         cancel_on_exception: bool = False,
@@ -78,8 +78,8 @@ def wait_dependent_futures(
         executor: cf.Executor,
         dependency_sets_by_fn: ta.Mapping[ta.Callable, ta.AbstractSet[ta.Callable]],
         *,
-        timeout_s: ta.Union[int, float] = 60,
-        tick_interval_s: ta.Union[int, float] = 0.5,
+        timeout_s: float = 60,
+        tick_interval_s: float = .5,
         tick_fn: ta.Callable[..., bool] = lambda: True,
 ) -> ta.Mapping[ta.Callable, cf.Future]:
     for fn, deps in dependency_sets_by_fn.items():

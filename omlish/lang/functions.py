@@ -114,7 +114,7 @@ def void(*args, **kwargs) -> ta.NoReturn:
 
 
 def ticking_timeout(
-        s: int | float | None,
+        s: float | None,
         ex: type[BaseException] | BaseException = TimeoutError,
 ) -> ta.Callable[[], None]:
     if s is None:

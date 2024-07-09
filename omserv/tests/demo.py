@@ -13,7 +13,7 @@ from ..server.tests.hello import hello_app
 log = logging.getLogger(__name__)
 
 
-async def _ticker(delay_s: int | float = 3.) -> None:
+async def _ticker(delay_s: float = 3.) -> None:
     for i in itertools.count():
         await anyio.sleep(delay_s)
         log.info(f'tick: {i}')
@@ -22,7 +22,7 @@ async def _ticker(delay_s: int | float = 3.) -> None:
 async def _a_main() -> None:
     logs.configure_standard_logging('INFO')
 
-    async def _killer(delay_s: int | float = 10.) -> None:  # noqa
+    async def _killer(delay_s: float = 10.) -> None:  # noqa
         await anyio.sleep(delay_s)
         tg.cancel_scope.cancel()
 
