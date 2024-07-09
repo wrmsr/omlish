@@ -103,14 +103,10 @@ class Process:
 
 
 def dump(out):
-    cthr = threading.current_thread()
     thrs_by_tid = {t.ident: t for t in threading.enumerate()}
 
     buf = io.StringIO()
     for tid, fr in sys._current_frames().items():  # noqa
-        # if tid == cthr.ident:
-        #     continue
-
         try:
             thr = thrs_by_tid[tid]
         except KeyError:
