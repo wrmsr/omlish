@@ -17,7 +17,7 @@ import trio
 from .. import trio_util
 
 
-## helpers
+# helpers
 
 
 def current_module() -> types.ModuleType:
@@ -39,7 +39,7 @@ def current_module() -> types.ModuleType:
         stack_frame = stack_frame.f_back
 
 
-## logging
+# logging
 
 
 class LogLevel(enum.Enum):
@@ -58,7 +58,7 @@ def getLogger(name: str) -> logging.Logger:
     return logging.getLogger(name)
 
 
-## mailbox
+# mailbox
 
 
 MailboxID = ta.TypeVar('MailboxID', bound=str)  #: Mailbox identifier (UUID4)
@@ -198,7 +198,7 @@ async def mailbox_receive(
         return await rchan.receive()
 
 
-## supervisor
+# supervisor
 
 
 class restart_strategy(enum.Enum):
@@ -306,7 +306,7 @@ async def _supervisor_child_monitor(
     await _child_runner()
 
 
-## dynamic_supervisor
+# dynamic_supervisor
 
 
 async def dynamic_supervisor_start(
@@ -347,7 +347,7 @@ async def _dynamic_supervisor_child_listener(
                 pass
 
 
-##
+#
 
 
 context_app_nursery = contextvars.ContextVar('app_nursery')
@@ -411,7 +411,7 @@ async def _app_scope(app: app_spec, task_status=trio.TASK_STATUS_IGNORED):
         nursery.start_soon(supervisor_start, children, opts)
 
 
-## node
+# node
 
 
 def node_run(
@@ -443,7 +443,7 @@ async def _node_start(apps: list[app_spec]) -> None:
             await application_start(app_spec)
 
 
-## gen_server
+# gen_server
 
 
 State = ta.TypeVar('State')
