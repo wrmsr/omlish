@@ -83,19 +83,25 @@ class Process:
     async def run(self) -> None:
         while True:
             log.debug(f'process {self.name} starting')
+
             proc = await anyio.open_process(
                 self._cfg.cmd
             )
+
             log.debug(f'process {self.name}={proc.pid} started')
+
             async with proc:
                 try:
                     log.debug(f'process {self.name}={proc.pid} waiting')
                     await proc.wait()
                     log.debug(f'process {self.name}={proc.pid} exited')
+
                 except anyio.get_cancelled_exc_class():
                     log.debug(f'process {self.name}={proc.pid} cancelled')
                     raise
+
             log.debug(f'process {self.name}={proc.pid} done')
+
             if not self._cfg.restart:
                 log.debug(f'process {self.name}={proc.pid} not restarting')
             else:
@@ -155,10 +161,10 @@ async def _a_main():
 
 if __name__ == '__main__':
     backend = 'asyncio'
-    #backend = 'trio'
+    # backend = 'trio'
 
     if backend == 'asyncio':
-        if sys.platform in ('linux', 'linux2'):
+        if sys.platform == 'linux':
             import asyncio
             asyncio.get_event_loop_policy().set_child_watcher(asyncio.unix_events.PidfdChildWatcher())
 
