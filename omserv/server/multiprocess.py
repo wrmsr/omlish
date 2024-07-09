@@ -32,8 +32,8 @@ async def check_multiprocess_shutdown_event(
 def _multiprocess_serve(
         app: ASGIFramework,
         config: Config,
-        sockets: ta.Optional[Sockets] = None,
-        shutdown_event: ta.Optional[multiprocessing.synchronize.Event] = None,
+        sockets: Sockets | None = None,
+        shutdown_event: multiprocessing.synchronize.Event | None = None,
 ) -> None:
     if sockets is not None:
         for sock in sockets.insecure_sockets:

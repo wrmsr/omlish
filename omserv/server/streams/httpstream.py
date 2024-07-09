@@ -48,8 +48,8 @@ class HTTPStream:
             config: Config,
             context: WorkerContext,
             task_spawner: TaskSpawner,
-            client: ta.Optional[tuple[str, int]],
-            server: ta.Optional[tuple[str, int]],
+            client: tuple[str, int] | None,
+            server: tuple[str, int] | None,
             send: ta.Callable[[ProtocolEvent], ta.Awaitable[None]],
             stream_id: int,
     ) -> None:
@@ -122,7 +122,7 @@ class HTTPStream:
             if self.app_put is not None:
                 await self.app_put({'type': 'http.disconnect'})
 
-    async def app_send(self, message: ta.Optional[ASGISendEvent]) -> None:
+    async def app_send(self, message: ASGISendEvent | None) -> None:
         if message is None:  # ASGI App has finished sending messages
             if not self.closed:
                 # Cleanup if required

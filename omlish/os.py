@@ -6,7 +6,7 @@ import typing as ta
 
 @contextlib.contextmanager
 def tmp_dir(
-        root_dir: ta.Optional[str] = None,
+        root_dir: str | None = None,
         cleanup: bool = True,
         **kwargs: ta.Any,
 ) -> ta.Iterator[str]:
@@ -20,7 +20,7 @@ def tmp_dir(
 
 @contextlib.contextmanager
 def tmp_file(
-        root_dir: ta.Optional[str] = None,
+        root_dir: str | None = None,
         cleanup: bool = True,
         **kwargs: ta.Any,
 ) -> ta.Iterator[tempfile._TemporaryFileWrapper]:  # noqa

@@ -58,7 +58,7 @@ class Check(lang.Marker):
     pass
 
 
-def check(fn: ta.Union[ta.Callable[..., bool], staticmethod]) -> None:
+def check(fn: ta.Callable[..., bool] | staticmethod) -> None:
     _append_cls_md(Check, fn)
 
 

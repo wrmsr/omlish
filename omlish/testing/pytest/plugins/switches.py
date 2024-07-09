@@ -31,13 +31,13 @@ def _get_obj_config(obj: Configable) -> pytest.Config:
         raise TypeError(obj)
 
 
-def is_disabled(obj: ta.Optional[Configable], name: str) -> bool:
+def is_disabled(obj: Configable | None, name: str) -> bool:
     check.isinstance(name, str)
     check.in_(name, SWITCHES)
     return obj is not None and _get_obj_config(obj).getoption(f'--no-{name}')
 
 
-def skip_if_disabled(obj: ta.Optional[Configable], name: str) -> None:
+def skip_if_disabled(obj: Configable | None, name: str) -> None:
     if is_disabled(obj, name):
         pytest.skip(f'{name} disabled')
 

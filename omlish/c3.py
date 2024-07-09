@@ -49,7 +49,7 @@ def merge(seqs: ta.MutableSequence[list[T]]) -> list[T]:
     """
 
     result: list[T] = []
-    candidate: ta.Optional[T] = None
+    candidate: T | None = None
     while True:
         seqs = [s for s in seqs if s]  # purge empty sequences
         if not seqs:
@@ -73,7 +73,7 @@ def merge(seqs: ta.MutableSequence[list[T]]) -> list[T]:
 
 def mro(
         cls: T,
-        abcs: ta.Optional[ta.Sequence[T]] = None,
+        abcs: ta.Sequence[T] | None = None,
         *,
         get_bases: ta.Callable[[T], ta.Sequence[T]] = operator.attrgetter('__bases__'),
         is_subclass: ta.Callable[[T, T], bool] = issubclass,  # type: ignore
@@ -123,7 +123,7 @@ def compose_mro(
         cls: T,
         types: ta.Iterable[T],
         *,
-        get_mro: ta.Callable[[T], ta.Optional[ta.Sequence[T]]] = operator.attrgetter('__mro__'),
+        get_mro: ta.Callable[[T], ta.Sequence[T] | None] = operator.attrgetter('__mro__'),
         get_bases: ta.Callable[[T], ta.Sequence[T]] = operator.attrgetter('__bases__'),
         is_subclass: ta.Callable[[T, T], bool] = issubclass,  # type: ignore
         get_subclasses: ta.Callable[[T], ta.Iterable[T]] = operator.methodcaller('__subclasses__'),

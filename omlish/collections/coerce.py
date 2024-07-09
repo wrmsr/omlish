@@ -39,8 +39,8 @@ def seq(
 
 
 def opt_seq(
-        it: ta.Optional[ta.Iterable[T]],
-) -> ta.Optional[ta.Sequence[T]]:
+        it: ta.Iterable[T] | None,
+) -> ta.Sequence[T] | None:
     if it is None:
         return None
     else:
@@ -48,8 +48,8 @@ def opt_seq(
 
 
 def seq_or_none(
-        it: ta.Optional[ta.Iterable[T]],
-) -> ta.Optional[ta.Sequence[T]]:
+        it: ta.Iterable[T] | None,
+) -> ta.Sequence[T] | None:
     ret = opt_seq(it)
     if ret:
         return ret
@@ -58,7 +58,7 @@ def seq_or_none(
 
 
 def seq_of(
-        fn: ta.Union[ta.Callable[[T], T2], tuple],
+        fn: ta.Callable[[T], T2] | tuple,
 ) -> ta.Callable[[ta.Iterable[T]], ta.Sequence[T2]]:
     def inner(it):
         return seq(fn(e) for e in it)  # type: ignore
@@ -68,8 +68,8 @@ def seq_of(
 
 
 def opt_seq_of(
-        fn: ta.Union[ta.Callable[[T], T2], tuple],
-) -> ta.Callable[[ta.Optional[ta.Iterable[T]]], ta.Optional[ta.Sequence[T2]]]:
+        fn: ta.Callable[[T], T2] | tuple,
+) -> ta.Callable[[ta.Iterable[T] | None], ta.Sequence[T2] | None]:
     def inner(it):
         if it is None:
             return None
@@ -81,8 +81,8 @@ def opt_seq_of(
 
 
 def seq_of_or_none(
-        fn: ta.Union[ta.Callable[[T], T2], tuple],
-) -> ta.Callable[[ta.Optional[ta.Iterable[T]]], ta.Optional[ta.Sequence[T2]]]:
+        fn: ta.Callable[[T], T2] | tuple,
+) -> ta.Callable[[ta.Iterable[T] | None], ta.Sequence[T2] | None]:
     def inner(it):
         if it is None:
             return None
@@ -115,8 +115,8 @@ def abs_set(
 
 
 def opt_abs_set(
-        it: ta.Optional[ta.Iterable[T]],
-) -> ta.Optional[ta.AbstractSet[T]]:
+        it: ta.Iterable[T] | None,
+) -> ta.AbstractSet[T] | None:
     if it is None:
         return None
     else:
@@ -124,8 +124,8 @@ def opt_abs_set(
 
 
 def abs_set_or_none(
-        it: ta.Optional[ta.Iterable[T]],
-) -> ta.Optional[ta.AbstractSet[T]]:
+        it: ta.Iterable[T] | None,
+) -> ta.AbstractSet[T] | None:
     ret = opt_abs_set(it)
     if ret:
         return ret
@@ -134,7 +134,7 @@ def abs_set_or_none(
 
 
 def abs_set_of(
-        fn: ta.Union[ta.Callable[[T], T2], tuple],
+        fn: ta.Callable[[T], T2] | tuple,
 ) -> ta.Callable[[ta.Iterable[T]], ta.AbstractSet[T2]]:
     def inner(it):
         return abs_set(fn(e) for e in it)  # type: ignore
@@ -144,8 +144,8 @@ def abs_set_of(
 
 
 def opt_abs_set_of(
-        fn: ta.Union[ta.Callable[[T], T2], tuple],
-) -> ta.Callable[[ta.Optional[ta.Iterable[T]]], ta.Optional[ta.AbstractSet[T2]]]:
+        fn: ta.Callable[[T], T2] | tuple,
+) -> ta.Callable[[ta.Iterable[T] | None], ta.AbstractSet[T2] | None]:
     def inner(it):
         if it is None:
             return None
@@ -157,8 +157,8 @@ def opt_abs_set_of(
 
 
 def abs_set_of_or_none(
-        fn: ta.Union[ta.Callable[[T], T2], tuple],
-) -> ta.Callable[[ta.Optional[ta.Iterable[T]]], ta.Optional[ta.AbstractSet[T2]]]:
+        fn: ta.Callable[[T], T2] | tuple,
+) -> ta.Callable[[ta.Iterable[T] | None], ta.AbstractSet[T2] | None]:
     def inner(it):
         if it is None:
             return None
@@ -191,8 +191,8 @@ def frozenset_(
 
 
 def opt_frozenset(
-        it: ta.Optional[ta.Iterable[T]],
-) -> ta.Optional[frozenset[T]]:
+        it: ta.Iterable[T] | None,
+) -> frozenset[T] | None:
     if it is None:
         return None
     else:
@@ -200,8 +200,8 @@ def opt_frozenset(
 
 
 def frozenset_or_none(
-        it: ta.Optional[ta.Iterable[T]],
-) -> ta.Optional[frozenset[T]]:
+        it: ta.Iterable[T] | None,
+) -> frozenset[T] | None:
     ret = opt_frozenset(it)
     if ret:
         return ret
@@ -210,7 +210,7 @@ def frozenset_or_none(
 
 
 def frozenset_of(
-        fn: ta.Union[ta.Callable[[T], T2], tuple],
+        fn: ta.Callable[[T], T2] | tuple,
 ) -> ta.Callable[[ta.Iterable[T]], frozenset[T2]]:
     def inner(it):
         return frozenset_(fn(e) for e in it)  # type: ignore
@@ -220,8 +220,8 @@ def frozenset_of(
 
 
 def opt_frozenset_of(
-        fn: ta.Union[ta.Callable[[T], T2], tuple],
-) -> ta.Callable[[ta.Optional[ta.Iterable[T]]], ta.Optional[frozenset[T2]]]:
+        fn: ta.Callable[[T], T2] | tuple,
+) -> ta.Callable[[ta.Iterable[T] | None], frozenset[T2] | None]:
     def inner(it):
         if it is None:
             return None
@@ -233,8 +233,8 @@ def opt_frozenset_of(
 
 
 def frozenset_of_or_none(
-        fn: ta.Union[ta.Callable[[T], T2], tuple],
-) -> ta.Callable[[ta.Optional[ta.Iterable[T]]], ta.Optional[frozenset[T2]]]:
+        fn: ta.Callable[[T], T2] | tuple,
+) -> ta.Callable[[ta.Iterable[T] | None], frozenset[T2] | None]:
     def inner(it):
         if it is None:
             return None
@@ -256,14 +256,14 @@ def frozenset_of_or_none(
 
 
 def map(
-        src: ta.Union[ta.Mapping[K, V], ta.Iterable[tuple[K, V]]],
+        src: ta.Mapping[K, V] | ta.Iterable[tuple[K, V]],
 ) -> ta.Mapping[K, V]:
     return FrozenDict(src)
 
 
 def opt_map(
-        src: ta.Optional[ta.Union[ta.Mapping[K, V], ta.Iterable[tuple[K, V]]]],
-) -> ta.Optional[ta.Mapping[K, V]]:
+        src: ta.Mapping[K, V] | ta.Iterable[tuple[K, V]] | None,
+) -> ta.Mapping[K, V] | None:
     if src is None:
         return None
     else:
@@ -271,8 +271,8 @@ def opt_map(
 
 
 def map_or_none(
-        src: ta.Optional[ta.Union[ta.Mapping[K, V], ta.Iterable[tuple[K, V]]]],
-) -> ta.Optional[ta.Mapping[K, V]]:
+        src: ta.Mapping[K, V] | ta.Iterable[tuple[K, V]] | None,
+) -> ta.Mapping[K, V] | None:
     ret = opt_map(src)
     if ret:
         return ret
@@ -281,10 +281,10 @@ def map_or_none(
 
 
 def map_of(
-        key_fn: ta.Union[ta.Callable[[K], K2], tuple],
-        value_fn: ta.Union[ta.Callable[[V], V2], tuple],
+        key_fn: ta.Callable[[K], K2] | tuple,
+        value_fn: ta.Callable[[V], V2] | tuple,
 ) -> ta.Callable[
-    [ta.Union[ta.Mapping[K, V], ta.Iterable[tuple[K, V]]]],
+    [ta.Mapping[K, V] | ta.Iterable[tuple[K, V]]],
     ta.Mapping[K2, V2],
 ]:
     def inner(src):
@@ -296,11 +296,11 @@ def map_of(
 
 
 def opt_map_of(
-        key_fn: ta.Union[ta.Callable[[K], K2], tuple],
-        value_fn: ta.Union[ta.Callable[[V], V2], tuple],
+        key_fn: ta.Callable[[K], K2] | tuple,
+        value_fn: ta.Callable[[V], V2] | tuple,
 ) -> ta.Callable[
-    [ta.Optional[ta.Union[ta.Mapping[K, V], ta.Iterable[tuple[K, V]]]]],
-    ta.Optional[ta.Mapping[K2, V2]],
+    [ta.Mapping[K, V] | ta.Iterable[tuple[K, V]] | None],
+    ta.Mapping[K2, V2] | None,
 ]:
     def inner(src):
         if src is None:
@@ -314,11 +314,11 @@ def opt_map_of(
 
 
 def map_of_or_none(
-        key_fn: ta.Union[ta.Callable[[K], K2], tuple],
-        value_fn: ta.Union[ta.Callable[[V], V2], tuple],
+        key_fn: ta.Callable[[K], K2] | tuple,
+        value_fn: ta.Callable[[V], V2] | tuple,
 ) -> ta.Callable[
-    [ta.Optional[ta.Union[ta.Mapping[K, V], ta.Iterable[tuple[K, V]]]]],
-    ta.Optional[ta.Mapping[K2, V2]],
+    [ta.Mapping[K, V] | ta.Iterable[tuple[K, V]] | None],
+    ta.Mapping[K2, V2] | None,
 ]:
     def inner(src):
         if src is None:

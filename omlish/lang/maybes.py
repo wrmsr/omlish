@@ -130,7 +130,7 @@ def empty() -> Maybe[T]:
     return _empty  # noqa
 
 
-def maybe(o: ta.Optional[T]) -> Maybe[T]:
+def maybe(o: T | None) -> Maybe[T]:
     if o is None:
         return _empty  # noqa
     return just(o)

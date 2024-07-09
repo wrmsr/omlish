@@ -31,7 +31,7 @@ class Injector(lang.Abstract):
 
     def __getitem__(
             self,
-            target: ta.Union[Key[T], type[T]],
+            target: Key[T] | type[T],
     ) -> T:
         return self.provide(target)
 

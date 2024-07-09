@@ -26,7 +26,7 @@ Namespace: type = _Namespace()  # type: ignore
 ##
 
 
-_MARKER_NAMESPACE_KEYS: ta.Optional[set[str]] = None
+_MARKER_NAMESPACE_KEYS: set[str] | None = None
 
 
 class _MarkerMeta(abc.ABCMeta):
