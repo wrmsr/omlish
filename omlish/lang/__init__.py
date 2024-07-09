@@ -66,6 +66,7 @@ from .functions import is_lambda  # noqa
 from .functions import is_none  # noqa
 from .functions import is_not_none  # noqa
 from .functions import maybe_call  # noqa
+from .functions import periodically  # noqa
 from .functions import raise_  # noqa
 from .functions import recurse  # noqa
 from .functions import ticking_timeout  # noqa

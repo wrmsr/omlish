@@ -6,6 +6,7 @@ from .descriptors import is_method_descriptor
 
 
 T = ta.TypeVar('T')
+CallableT = ta.TypeVar('CallableT', bound=ta.Callable)
 
 
 def is_lambda(f: ta.Any) -> bool:
@@ -124,3 +125,21 @@ def ticking_timeout(
             raise ex
     deadline = time.time() + s
     return tick
+
+
+_MISSING = object()
+
+
+def periodically(fn: CallableT, interval_s: float, initial: ta.Any = _MISSING) -> CallableT:
+    nxt = float('-inf')
+    ret = initial
+
+    @functools.wraps(fn)
+    def inner(*args, **kwargs):
+        nonlocal nxt, ret
+        if time.time() >= nxt or ret is _MISSING:
+            ret = fn(*args, **kwargs)
+            nxt = time.time() + interval_s
+        return ret
+
+    return inner  # type: ignore
