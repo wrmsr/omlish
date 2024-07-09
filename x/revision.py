@@ -1,4 +1,7 @@
 """
+TODO:
+ - https://github.com/python-versioneer/python-versioneer
+
 git describe --match=NeVeRmAtCh --always --abbrev=40 --dirty > "$(DIST_BUILD_DIR)/$(PROJECT)/.revision"
 """
 import errno
