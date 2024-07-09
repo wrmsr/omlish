@@ -228,7 +228,7 @@ class _retry_strategy:
 
         self.failure_times = collections.deque()
 
-    def __call__(self, retry_state: tenacity.RetryCallState):
+    def __call__(self, retry_state: tenacity.RetryCallState) -> bool:
         match self.restart:
             case restart_strategy.PERMANENT:
                 pass
