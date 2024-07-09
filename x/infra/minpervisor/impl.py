@@ -84,17 +84,17 @@ def split_memory_object_streams(
     return tup  # type: ignore
 
 
-async def gather(*funcs: ta.Callable[..., ta.Awaitable[T]], take_first: bool = False) -> list[lang.Maybe[T]]:
-    results = [lang.empty()] * len(funcs)
+async def gather(*fns: ta.Callable[..., ta.Awaitable[T]], take_first: bool = False) -> list[lang.Maybe[T]]:
+    results = [lang.empty()] * len(fns)
 
-    async def inner(func, i):
-        results[i] = lang.just(await func())
+    async def inner(fn, i):
+        results[i] = lang.just(await fn())
         if take_first:
             tg.cancel_scope.cancel()
 
     async with anyio.create_task_group() as tg:
-        for i, func in enumerate(funcs):
-            tg.start_soon(inner, func, i)
+        for i, fn in enumerate(fns):
+            tg.start_soon(inner, fn, i)
 
     return results
 
