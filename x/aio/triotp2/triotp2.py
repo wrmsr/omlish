@@ -3,11 +3,9 @@ import contextlib
 import contextvars
 import dataclasses as dc
 import enum
-import inspect
 import logging
 import sys
 import tenacity
-import types
 import typing as ta
 import uuid
 
@@ -20,23 +18,8 @@ from .. import trio_util
 # helpers
 
 
-def current_module() -> types.ModuleType:
-    stack_frame = inspect.currentframe()
-
-    while stack_frame:
-        if stack_frame.f_code.co_name == '<module>':
-            if stack_frame.f_code.co_filename != '<stdin>':
-                caller_module = inspect.getmodule(stack_frame)
-
-            else:
-                caller_module = sys.modules['__main__']
-
-            if caller_module is not None:
-                return caller_module
-
-            break
-
-        stack_frame = stack_frame.f_back
+class Module:
+    pass
 
 
 # logging
@@ -358,7 +341,7 @@ context_app_registry = contextvars.ContextVar('app_registry')
 
 @dc.dataclass()
 class app_spec:
-    module: types.ModuleType  #: Application module
+    module: Module  #: Application module
     start_arg: ta.Any  #: Argument to pass to the module's start function
     permanent: bool = True  #: If `False`, the application won't be restarted if it exits
     opts: supervisor_options | None = None  #: Options for the supervisor managing the application task
@@ -491,7 +474,7 @@ class _CastMessage:
 
 
 async def gen_server_start(
-        module: types.ModuleType,
+        module: Module,
         init_arg: ta.Any | None = None,
         name: str | None = None,
 ) -> None:
@@ -539,7 +522,7 @@ async def gen_server_reply(caller: trio.MemorySendChannel, response: ta.Any) -> 
 
 
 async def _gen_server_loop(
-        module: types.ModuleType,
+        module: Module,
         init_arg: ta.Any | None,
         name: str | None,
 ) -> None:
@@ -581,12 +564,12 @@ async def _gen_server_loop(
             await _gen_server_terminate(module, None, state)
 
 
-async def _gen_server_init(module: types.ModuleType, init_arg: ta.Any) -> State:
+async def _gen_server_init(module: Module, init_arg: ta.Any) -> State:
     return await module.init(init_arg)
 
 
 async def _gen_server_terminate(
-        module: types.ModuleType,
+        module: Module,
         reason: BaseException | None,
         state: State,
 ) -> None:
@@ -600,7 +583,7 @@ async def _gen_server_terminate(
 
 
 async def _gen_server_handle_call(
-        module: types.ModuleType,
+        module: Module,
         message: ta.Any,
         source: trio.MemorySendChannel,
         state: State,
@@ -640,7 +623,7 @@ async def _gen_server_handle_call(
 
 
 async def _gen_server_handle_cast(
-        module: types.ModuleType,
+        module: Module,
         message: ta.Any,
         state: State,
 ) -> tuple[Continuation, State]:
@@ -671,7 +654,7 @@ async def _gen_server_handle_cast(
 
 
 async def _gen_server_handle_info(
-        module: types.ModuleType,
+        module: Module,
         message: ta.Any,
         state: State,
 ) -> tuple[Continuation, State]:

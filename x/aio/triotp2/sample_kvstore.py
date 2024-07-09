@@ -3,20 +3,6 @@ import trio
 from . import triotp2 as t2
 
 
-__module__ = t2.current_module()
-
-
-async def start(test_state):
-    try:
-        await t2.gen_server_start(__module__, test_state, name=__name__)
-
-    except Exception as err:
-        test_state.did_raise = err
-
-    finally:
-        test_state.stopped.set()
-
-
 class api:
     @staticmethod
     async def get(key):
@@ -79,81 +65,86 @@ class special_info:
         await t2.mailbox_send(__name__, 'special_info_fail')
 
 
-# gen_server callbacks
+class KvStore(t2.Module):
 
+    async def start(self, test_state):
+        try:
+            await t2.gen_server_start(self, test_state, name=__name__)
 
-async def init(test_state):
-    test_state.ready.set()
-    return test_state
+        except Exception as err:
+            test_state.did_raise = err
 
+        finally:
+            test_state.stopped.set()
 
-async def terminate(reason, test_state):
-    test_state.terminated_with = reason
+    async def init(self, test_state):
+        test_state.ready.set()
+        return test_state
 
+    async def terminate(self, reason, test_state):
+        test_state.terminated_with = reason
 
-async def handle_call(message, caller, test_state):
-    match message:
-        case ('api_get', key):
-            val = test_state.data.get(key)
-            return (t2.Reply(val), test_state)
+    async def handle_call(self, message, caller, test_state):
+        match message:
+            case ('api_get', key):
+                val = test_state.data.get(key)
+                return (t2.Reply(val), test_state)
 
-        case ('api_set', key, val):
-            prev = test_state.data.get(key)
-            test_state.data[key] = val
-            return (t2.Reply(prev), test_state)
+            case ('api_set', key, val):
+                prev = test_state.data.get(key)
+                test_state.data[key] = val
+                return (t2.Reply(prev), test_state)
 
-        case ('special_call_delayed', nursery):
-            async def slow_task():
-                await trio.sleep(0)
-                await t2.gen_server_reply(caller, 'done')
+            case ('special_call_delayed', nursery):
+                async def slow_task():
+                    await trio.sleep(0)
+                    await t2.gen_server_reply(caller, 'done')
 
-            nursery.start_soon(slow_task)
-            return (t2.NoReply(), test_state)
+                nursery.start_soon(slow_task)
+                return (t2.NoReply(), test_state)
 
-        case 'special_call_timedout':
-            return (t2.NoReply(), test_state)
+            case 'special_call_timedout':
+                return (t2.NoReply(), test_state)
 
-        case 'special_call_stopped':
-            return (t2.Stop(), test_state)
+            case 'special_call_stopped':
+                return (t2.Stop(), test_state)
 
-        case 'special_call_failure':
-            exc = RuntimeError('pytest')
-            return (t2.Stop(exc), test_state)
+            case 'special_call_failure':
+                exc = RuntimeError('pytest')
+                return (t2.Stop(exc), test_state)
 
-        case _:
-            exc = NotImplementedError('wrong call')
-            return (t2.Reply(exc), test_state)
+            case _:
+                exc = NotImplementedError('wrong call')
+                return (t2.Reply(exc), test_state)
 
+    async def handle_cast(self, message, test_state):
+        match message:
+            case 'special_cast_normal':
+                test_state.casted.set()
+                return (t2.NoReply(), test_state)
 
-async def handle_cast(message, test_state):
-    match message:
-        case 'special_cast_normal':
-            test_state.casted.set()
-            return (t2.NoReply(), test_state)
+            case 'special_cast_stop':
+                return (t2.Stop(), test_state)
 
-        case 'special_cast_stop':
-            return (t2.Stop(), test_state)
+            case _:
+                exc = NotImplementedError('wrong cast')
+                return (t2.Stop(exc), test_state)
 
-        case _:
-            exc = NotImplementedError('wrong cast')
-            return (t2.Stop(exc), test_state)
+    async def handle_info(self, message, test_state):
+        match message:
+            case ('special_info_matched', val):
+                test_state.info_val = val
+                test_state.info.set()
+                return (t2.NoReply(), test_state)
 
+            case 'special_info_stop':
+                return (t2.Stop(), test_state)
 
-async def handle_info(message, test_state):
-    match message:
-        case ('special_info_matched', val):
-            test_state.info_val = val
-            test_state.info.set()
-            return (t2.NoReply(), test_state)
+            case 'special_info_fail':
+                exc = RuntimeError('pytest')
+                return (t2.Stop(exc), test_state)
 
-        case 'special_info_stop':
-            return (t2.Stop(), test_state)
-
-        case 'special_info_fail':
-            exc = RuntimeError('pytest')
-            return (t2.Stop(exc), test_state)
-
-        case _:
-            test_state.unknown_info.append(message)
-            test_state.info.set()
-            return (t2.NoReply(), test_state)
+            case _:
+                test_state.unknown_info.append(message)
+                test_state.info.set()
+                return (t2.NoReply(), test_state)

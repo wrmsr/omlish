@@ -1,7 +1,7 @@
 import pytest
 import trio
 
-from . import sample_kvstore as kvstore
+from . import sample_kvstore
 from . import triotp2 as t2
 
 
@@ -34,8 +34,13 @@ class GenServerTestState:
         self.unknown_info = []
 
 
+@pytest.fixture(scope='function')
+def kvstore() -> sample_kvstore.KvStore:
+    return sample_kvstore.KvStore()
+
+
 @pytest.fixture
-async def test_state(mailbox_env):
+async def test_state(kvstore, mailbox_env):
     test_state = GenServerTestState()
 
     async with trio.open_nursery() as nursery:
@@ -51,20 +56,20 @@ async def test_state(mailbox_env):
 
 @pytest.mark.trio
 async def test_kvstore_api(test_state):
-    val = await kvstore.api.get('foo')
+    val = await sample_kvstore.api.get('foo')
     assert val is None
 
-    val = await kvstore.api.set('foo', 'bar')
+    val = await sample_kvstore.api.set('foo', 'bar')
     assert val is None
 
-    val = await kvstore.api.get('foo')
+    val = await sample_kvstore.api.get('foo')
     assert val == 'bar'
 
-    val = await kvstore.api.set('foo', 'baz')
+    val = await sample_kvstore.api.set('foo', 'baz')
     assert val == 'bar'
 
-    val = await kvstore.api.get('foo')
+    val = await sample_kvstore.api.get('foo')
     assert val == 'baz'
 
     with pytest.raises(NotImplementedError):
-        await kvstore.api.clear()
+        await sample_kvstore.api.clear()
