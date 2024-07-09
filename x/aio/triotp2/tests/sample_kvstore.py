@@ -1,67 +1,85 @@
 import trio
 
+from omlish import lang
+
 from .. import triotp2 as t2
 
 
-class api:
-    @staticmethod
-    async def get(key):
+class api(lang.Namespace):
+    @lang.classonly
+    @classmethod
+    async def get(cls, key):
         return await t2.gen_server_call(__name__, ('api_get', key))
 
-    @staticmethod
-    async def set(key, val):
+    @lang.classonly
+    @classmethod
+    async def set(cls, key, val):
         return await t2.gen_server_call(__name__, ('api_set', key, val))
 
-    @staticmethod
-    async def clear():
+    @lang.classonly
+    @classmethod
+    async def clear(cls):
         return await t2.gen_server_call(__name__, 'api_clear')
 
 
-class special_call:
-    @staticmethod
-    async def delayed(nursery):
+class special_call(lang.Namespace):
+    @lang.classonly
+    @classmethod
+    async def delayed(cls, nursery):
         return await t2.gen_server_call(__name__, ('special_call_delayed', nursery))
 
-    @staticmethod
-    async def timedout(timeout):
-        return await t2.gen_server_call(__name__, 'special_call_timedout', timeout=timeout)
+    @lang.classonly
+    @classmethod
+    async def timed_out(cls, timeout):
+        return await t2.gen_server_call(__name__, 'special_call_timed_out', timeout=timeout)
 
-    @staticmethod
-    async def stopped():
+    @lang.classonly
+    @classmethod
+    async def stopped(cls):
         return await t2.gen_server_call(__name__, 'special_call_stopped')
 
-    @staticmethod
-    async def failure():
+    @lang.classonly
+    @classmethod
+    async def failure(cls):
         return await t2.gen_server_call(__name__, 'special_call_failure')
 
 
-class special_cast:
-    @staticmethod
-    async def normal():
+class special_cast(lang.Namespace):
+    @lang.classonly
+    @classmethod
+    async def normal(cls):
         await t2.gen_server_cast(__name__, 'special_cast_normal')
 
-    @staticmethod
-    async def stop():
+    @lang.classonly
+    @classmethod
+    async def stop(cls):
         await t2.gen_server_cast(__name__, 'special_cast_stop')
 
-    @staticmethod
-    async def fail():
+    @lang.classonly
+    @classmethod
+    async def fail(cls):
         await t2.gen_server_cast(__name__, 'special_cast_fail')
 
 
-class special_info:
-    async def matched(val):
+class special_info(lang.Namespace):
+    @lang.classonly
+    @classmethod
+    async def matched(cls, val):
         await t2.mailboxes().send(__name__, ('special_info_matched', val))
 
-    async def no_match(val):
+    @lang.classonly
+    @classmethod
+    async def no_match(cls, val):
         await t2.mailboxes().send(__name__, ('special_info_no_match', val))
 
-    @staticmethod
-    async def stop():
+    @lang.classonly
+    @classmethod
+    async def stop(cls):
         await t2.mailboxes().send(__name__, 'special_info_stop')
 
-    @staticmethod
-    async def fail():
+    @lang.classonly
+    @classmethod
+    async def fail(cls):
         await t2.mailboxes().send(__name__, 'special_info_fail')
 
 
@@ -103,7 +121,7 @@ class KvStore(t2.App):
                 nursery.start_soon(slow_task)
                 return (t2.NoReply(), test_state)
 
-            case 'special_call_timedout':
+            case 'special_call_timed_out':
                 return (t2.NoReply(), test_state)
 
             case 'special_call_stopped':
