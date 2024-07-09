@@ -382,18 +382,20 @@ def apps() -> Apps:
 # node
 
 
-def node_run(specs: list[AppSpec]) -> None:
-    trio.run(_node_start, specs)
+class node(lang.Namespace):  # noqa
+    @classmethod
+    def run(cls, specs: list[AppSpec]) -> None:
+        trio.run(cls._start, specs)
 
+    @classmethod
+    async def _start(cls, specs: list[AppSpec]) -> None:
+        init_mailboxes()
 
-async def _node_start(specs: list[AppSpec]) -> None:
-    init_mailboxes()
+        async with trio.open_nursery() as nursery:
+            init_apps(nursery)
 
-    async with trio.open_nursery() as nursery:
-        init_apps(nursery)
-
-        for app_spec in specs:
-            await apps().start(app_spec)
+            for app_spec in specs:
+                await apps().start(app_spec)
 
 
 # gen_server
