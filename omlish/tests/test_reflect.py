@@ -35,6 +35,7 @@ def test_simple_reflect_type():
 
 def test_new_unions():
     assert rfl.type_(int | None) == rfl.Union(frozenset([int, type(None)]))
+    assert rfl.type_(int | float) == rfl.Union(frozenset([int, float]))
 
 
 def test_partial_generics():

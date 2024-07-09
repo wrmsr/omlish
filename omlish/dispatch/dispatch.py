@@ -27,10 +27,11 @@ def get_impl_func_cls_set(func: ta.Callable) -> ta.FrozenSet[type]:
         raise TypeError(f'Invalid impl func: {func!r}')
 
     _, cls = next(iter(ta.get_type_hints(func).items()))
-    if rfl.is_union_type(cls):
-        ret = frozenset(check.isinstance(arg, type) for arg in ta.get_args(cls))
+    rty = rfl.type_(cls)
+    if isinstance(rty, rfl.Union):
+        ret = frozenset(check.isinstance(arg, type) for arg in rty.args)
     else:
-        ret = frozenset([check.isinstance(cls, type)])
+        ret = frozenset([check.isinstance(rty, type)])
 
     _IMPL_FUNC_CLS_SET_CACHE[func] = ret
     return ret
