@@ -76,7 +76,7 @@ dep-updates: venv
 ### Check
 
 .PHONY: check
-check: flake8 mypy
+check: flake8 mypy check-scripts
 
 .PHONY: flake8
 flake8: venv
@@ -85,6 +85,14 @@ flake8: venv
 .PHONY: mypy
 mypy: venv
 	${PYTHON} -mmypy --check-untyped-defs ${SOURCES}
+
+.PHONY: check-scripts
+check-scripts: venv
+	SCRIPT_IMPORTS=$$(find omdev/scripts -maxdepth 1 -name '*.py' -print0 | xargs -0 ${PYTHON} -m omdev.scripts.findimports) ; \
+	if [ ! -z "$$SCRIPT_IMPORTS" ] ; then \
+		echo "script imports found: $$SCRIPT_IMPORTS" ; \
+		exit 1 ; \
+	fi
 
 
 ### Test
