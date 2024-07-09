@@ -1,12 +1,22 @@
+import abc
 import time
 import typing as ta
 
 
-TimeoutFn: ta.TypeAlias = ta.Callable[[], float]
-Timeout = TimeoutFn | float
+TimeoutLike: ta.TypeAlias = ta.Union['Timeout', float]
 
 
-class DeadlineTimeout:
+class Timeout(abc.ABC):
+    @abc.abstractmethod
+    def __call__(self) -> float:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def or_(self, o: ta.Any) -> ta.Any:
+        raise NotImplementedError
+
+
+class DeadlineTimeout(Timeout):
     def __init__(
             self,
             deadline: float,
@@ -21,16 +31,22 @@ class DeadlineTimeout:
             return rem
         raise self.exc
 
+    def or_(self, o: ta.Any) -> ta.Any:
+        return self()
 
-class InfiniteTimeout:
+
+class InfiniteTimeout(Timeout):
     def __call__(self) -> float:
         return float('inf')
 
+    def or_(self, o: ta.Any) -> ta.Any:
+        return o
 
-def timeout_fn(t: Timeout | None) -> TimeoutFn:
+
+def timeout(t: TimeoutLike | None) -> Timeout:
     if t is None:
         return InfiniteTimeout()
-    if callable(t):
+    if isinstance(t, Timeout):
         return t
     if isinstance(t, (float, int)):
         return DeadlineTimeout(time.time() + t)

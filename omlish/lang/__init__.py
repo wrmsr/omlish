@@ -149,8 +149,8 @@ from .timeouts import (  # noqa
     DeadlineTimeout,
     InfiniteTimeout,
     Timeout,
-    TimeoutFn,
-    timeout_fn,
+    TimeoutLike,
+    timeout,
 )
 
 from .typing import (  # noqa
