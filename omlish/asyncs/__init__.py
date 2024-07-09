@@ -1,12 +1,17 @@
 from .asyncs import (  # noqa
-    AsyncTimeoutException,
-    FutureException,
-    ImmediateExecutor,
     SyncableIterable,
     async_list,
-    await_dependent_futures,
-    await_futures,
     sync_await,
     sync_list,
     syncable_iterable,
+)
+
+
+from .futures import (  # noqa
+    FutureException,
+    FutureTimeoutException,
+    ImmediateExecutor,
+    new_thread_or_immediate_executor,
+    wait_dependent_futures,
+    wait_futures,
 )
