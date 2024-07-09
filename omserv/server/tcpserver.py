@@ -49,7 +49,7 @@ class TCPServer:
         return self.run().__await__()
 
     async def run(self) -> None:
-        socket = self.stream._raw_socket
+        socket = self.stream._raw_socket  # noqa
 
         try:
             client = parse_socket_addr(socket.family, socket.getpeername())
