@@ -51,18 +51,18 @@ class special_cast:
 
 class special_info:
     async def matched(val):
-        await t2.mailbox_send(__name__, ('special_info_matched', val))
+        await t2.mailboxes().send(__name__, ('special_info_matched', val))
 
     async def no_match(val):
-        await t2.mailbox_send(__name__, ('special_info_no_match', val))
+        await t2.mailboxes().send(__name__, ('special_info_no_match', val))
 
     @staticmethod
     async def stop():
-        await t2.mailbox_send(__name__, 'special_info_stop')
+        await t2.mailboxes().send(__name__, 'special_info_stop')
 
     @staticmethod
     async def fail():
-        await t2.mailbox_send(__name__, 'special_info_fail')
+        await t2.mailboxes().send(__name__, 'special_info_fail')
 
 
 class KvStore(t2.Module):
