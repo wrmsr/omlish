@@ -55,7 +55,7 @@ class ClassInfo:
             return {}
 
     @cached.property
-    def cls_annotations(self) -> dict[str, ta.Any]:
+    def cls_annotations(self) -> ta.Mapping[str, ta.Any]:
         return inspect.get_annotations(self._cls)
 
     ##
