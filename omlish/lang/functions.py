@@ -50,8 +50,8 @@ def raise_(o: BaseException) -> ta.NoReturn:
 
 
 def try_(
-        exc: ta.Union[type[Exception], ta.Iterable[type[Exception]]] = Exception,
-        default: ta.Optional[T] = None,
+        exc: type[Exception] | ta.Iterable[type[Exception]] = Exception,
+        default: T | None = None,
 ) -> ta.Callable[..., T]:
     def outer(fn):
         def inner(*args, **kwargs):

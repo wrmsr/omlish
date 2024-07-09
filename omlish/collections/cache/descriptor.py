@@ -175,7 +175,7 @@ class _CacheDescriptor:
 
 
 def cache(
-        scope: ta.Union[Scope, str] = Scope.INSTANCE,
+        scope: Scope | str = Scope.INSTANCE,
         typed: bool = False,
         **kwargs,
 ) -> CC:

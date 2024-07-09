@@ -1,6 +1,5 @@
 import abc
 import dataclasses as dc
-import typing as ta
 
 
 ##
@@ -13,7 +12,7 @@ class ServerEvent(abc.ABC):
 @dc.dataclass(frozen=True)
 class RawData(ServerEvent):
     data: bytes
-    address: ta.Optional[tuple[str, int]] = None
+    address: tuple[str, int] | None = None
 
 
 @dc.dataclass(frozen=True)

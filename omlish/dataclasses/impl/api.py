@@ -32,9 +32,9 @@ def field(
         metadata=None,
         kw_only=MISSING,
 
-        coerce: ta.Optional[ta.Callable[[ta.Any], ta.Any]] = None,
-        check: ta.Optional[ta.Callable[[ta.Any], bool]] = None,
-        check_type: ta.Optional[bool] = None,
+        coerce: ta.Callable[[ta.Any], ta.Any] | None = None,
+        check: ta.Callable[[ta.Any], bool] | None = None,
+        check_type: bool | None = None,
         override: bool = False,
 ):  # -> dc.Field
     if default is not MISSING and default_factory is not MISSING:

@@ -52,7 +52,7 @@ def build_kwargs_target(
         obj: ta.Any,
         *,
         skip_args: int = 0,
-        skip_kwargs: ta.Optional[ta.Iterable[ta.Any]] = None,
+        skip_kwargs: ta.Iterable[ta.Any] | None = None,
         raw_optional: bool = False,
 ) -> KwargsTarget:
     sig = signature(obj)

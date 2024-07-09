@@ -81,7 +81,7 @@ class Harness:
 
     def __getitem__(
             self,
-            target: ta.Union[inj.Key[T], type[T]],
+            target: inj.Key[T] | type[T],
     ) -> T:
         return check.not_none(self._inj)[target]
 

@@ -82,8 +82,8 @@ class CacheImpl(Cache[K, V]):
             lru_next: 'CacheImpl.Link'
             lfu_prev: 'CacheImpl.Link'
             lfu_next: 'CacheImpl.Link'
-            key: ta.Union[ta.Any, weakref.ref]
-            value: ta.Union[ta.Any, weakref.ref]
+            key: ta.Any | weakref.ref
+            value: ta.Any | weakref.ref
             weight: float
             written: float
             accessed: float
@@ -120,7 +120,7 @@ class CacheImpl(Cache[K, V]):
             identity_keys: bool = False,
             expire_after_access: float | None = None,
             expire_after_write: float | None = None,
-            removal_listener: ta.Callable[[ta.Union[K, weakref.ref], ta.Union[V, weakref.ref]], None] | None = None,
+            removal_listener: ta.Callable[[K | weakref.ref, V | weakref.ref], None] | None = None,
             clock: ta.Callable[[], float] | None = None,
             weak_keys: bool = False,
             weak_values: bool = False,
@@ -165,7 +165,7 @@ class CacheImpl(Cache[K, V]):
         if self._track_frequency:
             self._root.lfu_next = self._root.lfu_prev = self._root
 
-        weak_dead: ta.Optional[ta.Deque[CacheImpl.Link]]
+        weak_dead: ta.Deque[CacheImpl.Link] | None
         if weak_keys or weak_values:
             weak_dead = collections.deque()
             weak_dead_ref = weakref.ref(weak_dead)

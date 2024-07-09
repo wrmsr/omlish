@@ -26,7 +26,7 @@ class MappingMarshaler(Marshaler):
 
 
 class MappingMarshalerFactory(MarshalerFactory):
-    def __call__(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Optional[Marshaler]:
+    def __call__(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler | None:
         if isinstance(rty, rfl.Generic) and issubclass(rty.cls, collections.abc.Mapping):
             kt, vt = rty.args
             if (ke := ctx.make(kt)) is None or (ve := ctx.make(vt)) is None:
@@ -53,7 +53,7 @@ class MappingUnmarshaler(Unmarshaler):
 
 
 class MappingUnmarshalerFactory(UnmarshalerFactory):
-    def __call__(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Optional[Unmarshaler]:
+    def __call__(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler | None:
         if isinstance(rty, rfl.Generic) and issubclass(rty.cls, collections.abc.Mapping):
             kt, vt = rty.args
             if (ke := ctx.make(kt)) is None or (ve := ctx.make(vt)) is None:

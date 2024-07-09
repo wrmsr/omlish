@@ -30,7 +30,7 @@ def _check_part(o: PartT) -> PartT:
     return o
 
 
-def _check_optional_part(o: ta.Optional[PartT]) -> ta.Optional[PartT]:
+def _check_optional_part(o: PartT | None) -> PartT | None:
     if o is None:
         return None
     return _check_part(o)
@@ -49,7 +49,7 @@ class Wrap(DataPart, lang.Final):
 
 
 class List(DataPart, lang.Final):
-    parts: ta.Sequence[ta.Optional[Part]] = dc.xfield(coerce=col.seq_of(_check_optional_part))
+    parts: ta.Sequence[Part | None] = dc.xfield(coerce=col.seq_of(_check_optional_part))
     delimiter: str = dc.field(default=',')  # FIXME: , check_type=str)
     trailer: bool = dc.field(default=False)  # FIXME: , check_type=bool)
 
@@ -252,7 +252,7 @@ class PartRenderer:
             self._indents -= 1
 
 
-def render_part(part: Part, buf: ta.Optional[io.StringIO] = None) -> io.StringIO:
+def render_part(part: Part, buf: io.StringIO | None = None) -> io.StringIO:
     if buf is None:
         buf = io.StringIO()
     PartRenderer(buf)(part)

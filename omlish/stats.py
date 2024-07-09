@@ -272,10 +272,10 @@ class SamplingHistogram:
 
         self._percentile_pos_list = [self._calc_percentile_pos(p, self._size) for p in self._percentiles]
 
-        self._ring: list[ta.Optional[SamplingHistogram.Entry]] = [None] * size
+        self._ring: list[SamplingHistogram.Entry | None] = [None] * size
         self._ring_pos = 0
 
-        self._sample: list[ta.Optional[SamplingHistogram.Entry]] = [None] * size
+        self._sample: list[SamplingHistogram.Entry | None] = [None] * size
         self._sample_pos_queue = list(reversed(range(size)))
 
     def add(self, value: float) -> None:
@@ -303,7 +303,7 @@ class SamplingHistogram:
     def _calc_percentile_pos(p: float, sz: int) -> int:
         return int(round((p * sz) - 1))
 
-    def _calc_percentiles(self, entries: list[ta.Optional[Entry]]) -> list[Percentile]:
+    def _calc_percentiles(self, entries: list[Entry | None]) -> list[Percentile]:
         entries = list(filter(None, entries))
         sz = len(entries)
         if not sz:

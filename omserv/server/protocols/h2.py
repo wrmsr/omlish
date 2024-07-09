@@ -92,8 +92,8 @@ class H2Protocol(Protocol):
         config: Config,
         context: WorkerContext,
         task_spawner: TaskSpawner,
-        client: ta.Optional[tuple[str, int]],
-        server: ta.Optional[tuple[str, int]],
+        client: tuple[str, int] | None,
+        server: tuple[str, int] | None,
         send: ta.Callable[[ServerEvent], ta.Awaitable[None]],
     ) -> None:
         super().__init__()
@@ -132,7 +132,7 @@ class H2Protocol(Protocol):
         return len(self.streams) == 0 or all(stream.idle for stream in self.streams.values())
 
     async def initiate(
-        self, headers: ta.Optional[list[tuple[bytes, bytes]]] = None, settings: ta.Optional[str] = None,
+        self, headers: list[tuple[bytes, bytes]] | None = None, settings: str | None = None,
     ) -> None:
         if settings is not None:
             self.connection.initiate_upgrade_connection(settings)
@@ -296,7 +296,7 @@ class H2Protocol(Protocol):
         if data != b'':
             await self.send(RawData(data=data))
 
-    async def _window_updated(self, stream_id: ta.Optional[int]) -> None:
+    async def _window_updated(self, stream_id: int | None) -> None:
         if stream_id is None or stream_id == 0:
             # Unblock all streams
             for stream_id in list(self.stream_buffers.keys()):

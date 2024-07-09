@@ -26,14 +26,14 @@ def unwrap_method_descriptors(fn: ta.Callable) -> ta.Callable:
 
 class AccessForbiddenException(Exception):
 
-    def __init__(self, name: ta.Optional[str] = None, *args: ta.Any, **kwargs: ta.Any) -> None:
+    def __init__(self, name: str | None = None, *args: ta.Any, **kwargs: ta.Any) -> None:
         super().__init__(*((name,) if name is not None else ()), *args, **kwargs)  # noqa
         self.name = name
 
 
 class AccessForbiddenDescriptor:
 
-    def __init__(self, name: ta.Optional[str] = None) -> None:
+    def __init__(self, name: str | None = None) -> None:
         super().__init__()
 
         self._name = name

@@ -20,10 +20,10 @@ class ProtocolWrapper:
             config: Config,
             context: WorkerContext,
             task_spawner: TaskSpawner,
-            client: ta.Optional[tuple[str, int]],
-            server: ta.Optional[tuple[str, int]],
+            client: tuple[str, int] | None,
+            server: tuple[str, int] | None,
             send: ta.Callable[[ServerEvent], ta.Awaitable[None]],
-            alpn_protocol: ta.Optional[str] = None,
+            alpn_protocol: str | None = None,
     ) -> None:
         super().__init__()
         self.app = app

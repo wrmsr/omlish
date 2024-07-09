@@ -49,10 +49,10 @@ class Var(ta.Generic[T]):
 
     def __init__(
             self,
-            default: ta.Union[type[MISSING], T] = MISSING,  # type: ignore
+            default: type[MISSING] | T = MISSING,  # type: ignore
             *,
-            new: ta.Union[ta.Callable[[], T], type[MISSING]] = MISSING,
-            validate: ta.Optional[ta.Callable[[T], None]] = None,
+            new: ta.Callable[[], T] | type[MISSING] = MISSING,
+            validate: ta.Callable[[T], None] | None = None,
     ) -> None:
         super().__init__()
 
@@ -60,7 +60,7 @@ class Var(ta.Generic[T]):
             raise TypeError('Cannot set both default and new')
         elif default is not MISSING:
             new = lambda: default  # type: ignore
-        self._new: ta.Union[type[MISSING], ta.Callable[[], T]] = new
+        self._new: type[MISSING] | ta.Callable[[], T] = new
         self._validate = validate
         self._bindings_by_frame: ta.MutableMapping[types.FrameType, ta.MutableMapping[int, Binding]] = weakref.WeakValueDictionary()  # noqa
 
@@ -166,7 +166,7 @@ class Binding(ta.Generic[T]):
 
     def __enter__(self) -> T:
         frame = sys._getframe(self._offset).f_back  # noqa
-        lag_frame: ta.Optional[types.FrameType] = frame
+        lag_frame: types.FrameType | None = frame
         while lag_frame is not None:
             for cur_depth in range(_MAX_HOIST_DEPTH + 1):
                 if lag_frame is None:

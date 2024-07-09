@@ -57,7 +57,7 @@ class BasicTreeAnalysis(ta.Generic[NodeT]):
         self._dict_fac: ta.Callable[..., ta.MutableMapping[NodeT, ta.Any]] = col.IdentityKeyDict if identity else dict
         self._idx_seq_fac: ta.Callable[..., col.IndexedSeq[NodeT]] = functools.partial(col.IndexedSeq, identity=identity)  # noqa
 
-        def walk(cur: NodeT, parent: ta.Optional[NodeT]) -> None:
+        def walk(cur: NodeT, parent: NodeT | None) -> None:
             check.not_none(cur)
             if cur in node_set:
                 raise DuplicateNodeException(cur)
@@ -78,9 +78,9 @@ class BasicTreeAnalysis(ta.Generic[NodeT]):
 
         nodes: list[NodeT] = []
         node_set: ta.MutableSet[NodeT] = self._set_fac()  # type: ignore
-        children_by_node: ta.MutableMapping[ta.Optional[NodeT], ta.Sequence[NodeT]] = self._dict_fac()  # type: ignore
+        children_by_node: ta.MutableMapping[NodeT | None, ta.Sequence[NodeT]] = self._dict_fac()  # type: ignore
         child_sets_by_node: ta.MutableMapping[ta.Optional[NodeT], ta.AbstractSet[NodeT]] = self._dict_fac()  # type: ignore  # noqa
-        parents_by_node: ta.MutableMapping[NodeT, ta.Optional[NodeT]] = self._dict_fac()  # type: ignore
+        parents_by_node: ta.MutableMapping[NodeT, NodeT | None] = self._dict_fac()  # type: ignore
 
         children_by_node[None] = [root]
         child_sets_by_node[None] = self._set_fac([root])  # type: ignore
@@ -89,10 +89,10 @@ class BasicTreeAnalysis(ta.Generic[NodeT]):
 
         self._nodes = self._idx_seq_fac(nodes)  # type: ignore
         self._node_set: ta.AbstractSet[NodeT] = node_set
-        self._children_by_node: ta.Mapping[ta.Optional[NodeT], col.IndexedSeq[NodeT]] = self._dict_fac(  # type: ignore
+        self._children_by_node: ta.Mapping[NodeT | None, col.IndexedSeq[NodeT]] = self._dict_fac(  # type: ignore
             [(n, self._idx_seq_fac(cs)) for n, cs in children_by_node.items()])
-        self._child_sets_by_node: ta.Mapping[ta.Optional[NodeT], ta.AbstractSet[NodeT]] = child_sets_by_node
-        self._parents_by_node: ta.Mapping[NodeT, ta.Optional[NodeT]] = parents_by_node
+        self._child_sets_by_node: ta.Mapping[NodeT | None, ta.AbstractSet[NodeT]] = child_sets_by_node
+        self._parents_by_node: ta.Mapping[NodeT, NodeT | None] = parents_by_node
 
     @property
     def root(self) -> NodeT:
@@ -115,24 +115,21 @@ class BasicTreeAnalysis(ta.Generic[NodeT]):
         return self._node_set
 
     @property
-    def children_by_node(self) -> ta.Mapping[ta.Optional[NodeT], col.IndexedSeq[NodeT]]:
+    def children_by_node(self) -> ta.Mapping[NodeT | None, col.IndexedSeq[NodeT]]:
         return self._children_by_node
 
     @property
-    def child_sets_by_node(self) -> ta.Mapping[ta.Optional[NodeT], ta.AbstractSet[NodeT]]:
+    def child_sets_by_node(self) -> ta.Mapping[NodeT | None, ta.AbstractSet[NodeT]]:
         return self._child_sets_by_node
 
     @property
-    def parents_by_node(self) -> ta.Mapping[NodeT, ta.Optional[NodeT]]:
+    def parents_by_node(self) -> ta.Mapping[NodeT, NodeT | None]:
         return self._parents_by_node
 
     @classmethod
     def from_parents(
             cls,
-            src: ta.Union[
-                ta.Mapping[NodeT, ta.Optional[NodeT]],
-                ta.Iterable[tuple[NodeT, ta.Optional[NodeT]]],
-            ],
+            src: ta.Mapping[NodeT, NodeT | None] | ta.Iterable[tuple[NodeT, NodeT | None]],
             *,
             identity: bool = False,
             **kwargs,
@@ -166,10 +163,7 @@ class BasicTreeAnalysis(ta.Generic[NodeT]):
     @classmethod
     def from_children(
             cls,
-            src: ta.Union[
-                ta.Mapping[NodeT, ta.Iterable[NodeT]],
-                ta.Iterable[tuple[NodeT, ta.Iterable[NodeT]]],
-            ],
+            src: ta.Mapping[NodeT, ta.Iterable[NodeT]] | ta.Iterable[tuple[NodeT, ta.Iterable[NodeT]]],
             *,
             identity: bool = False,
             **kwargs,
@@ -222,7 +216,7 @@ class BasicTreeAnalysis(ta.Generic[NodeT]):
             return ret  # type: ignore
 
     def iter_ancestors(self, node: NodeT) -> NodeGenerator[NodeT]:
-        cur: ta.Optional[NodeT] = node
+        cur: NodeT | None = node
         while True:
             cur = self.parents_by_node.get(cur)  # type: ignore
             if cur is None:
@@ -232,7 +226,7 @@ class BasicTreeAnalysis(ta.Generic[NodeT]):
     def get_lineage(self, node: NodeT) -> col.IndexedSeq[NodeT]:
         return self._idx_seq_fac(reversed([node, *self.iter_ancestors(node)]))
 
-    def get_first_parent_of_type(self, node: NodeT, ty: type[T]) -> ta.Optional[T]:
+    def get_first_parent_of_type(self, node: NodeT, ty: type[T]) -> T | None:
         for cur in self.iter_ancestors(node):
             if isinstance(cur, ty):
                 return cur

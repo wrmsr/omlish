@@ -36,10 +36,10 @@ def get_impl_func_cls_set(func: ta.Callable) -> ta.FrozenSet[type]:
     return ret
 
 
-def find_impl(cls: type, registry: ta.Mapping[type, T]) -> ta.Optional[T]:
+def find_impl(cls: type, registry: ta.Mapping[type, T]) -> T | None:
     mro = c3.compose_mro(cls, registry.keys())
 
-    match: ta.Optional[type] = None
+    match: type | None = None
     for t in mro:
         if match is not None:
             # If *match* is an implicit ABC but there is another unrelated, equally matching implicit ABC, refuse the
@@ -71,7 +71,7 @@ class Dispatcher(ta.Generic[T]):
         impls_by_arg_cls: dict[type, T] = {}
         self._impls_by_arg_cls = impls_by_arg_cls
 
-        dispatch_cache: dict[ta.Any, ta.Optional[T]] = {}
+        dispatch_cache: dict[ta.Any, T | None] = {}
         self._get_dispatch_cache = lambda: dispatch_cache
 
         def cache_remove(k, self_ref=weakref.ref(self)):
@@ -87,7 +87,7 @@ class Dispatcher(ta.Generic[T]):
 
         weakref_ref_ = weakref.ref
 
-        def dispatch(cls: type) -> ta.Optional[T]:
+        def dispatch(cls: type) -> T | None:
             nonlocal cache_token
 
             if cache_token is not None and (current_token := abc.get_cache_token()) != cache_token:
@@ -132,6 +132,6 @@ class Dispatcher(ta.Generic[T]):
     def cache_size(self) -> int:
         return len(self._get_dispatch_cache())
 
-    dispatch: ta.Callable[[type], ta.Optional[T]]
+    dispatch: ta.Callable[[type], T | None]
 
     register: ta.Callable[[T, ta.Iterable[type]], T]

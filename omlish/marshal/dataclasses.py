@@ -79,7 +79,7 @@ def _make_field_obj(ctx, ty, obj, fac):
 
 
 class DataclassMarshalerFactory(MarshalerFactory):
-    def __call__(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Optional[Marshaler]:
+    def __call__(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler | None:
         if isinstance(rty, type) and dc.is_dataclass(rty):
             dc_md = get_dataclass_metadata(rty)
             fields = [
@@ -97,7 +97,7 @@ class DataclassMarshalerFactory(MarshalerFactory):
 
 
 class DataclassUnmarshalerFactory(UnmarshalerFactory):
-    def __call__(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Optional[Unmarshaler]:
+    def __call__(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler | None:
         if isinstance(rty, type) and dc.is_dataclass(rty):
             dc_md = get_dataclass_metadata(rty)
             d: dict[str, tuple[FieldInfo, Unmarshaler]] = {}
