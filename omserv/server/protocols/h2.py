@@ -67,7 +67,7 @@ class StreamBuffer:
 
     async def push(self, data: bytes) -> None:
         if self._complete:
-            raise BufferCompleteError()
+            raise BufferCompleteError
         self.buffer.extend(data)
         await self._is_empty.clear()
         if len(self.buffer) >= BUFFER_HIGH_WATER:
