@@ -1,6 +1,6 @@
 import trio
 
-from . import triotp2 as t2
+from .. import triotp2 as t2
 
 
 class api:

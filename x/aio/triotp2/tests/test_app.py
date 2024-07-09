@@ -1,0 +1,57 @@
+import pytest
+import trio
+
+from .. import triotp2 as t2
+
+
+class SampleData:
+    def __init__(self):
+        self.count = 0
+        self.stop = trio.Event()
+
+
+@pytest.fixture
+def test_data():
+    return SampleData()
+
+
+class app_a(t2.Module):
+    __name__ = 'app_a'
+
+    async def start(self, test_data):
+        test_data.count += 1
+
+
+class app_b(t2.Module):
+    __name__ = 'app_b'
+
+    async def start(self, test_data):
+        test_data.count += 1
+        raise RuntimeError("pytest")
+
+
+class app_c(t2.Module):
+    __name__ = 'app_c'
+
+    async def start(self, test_data):
+        test_data.count += 1
+        await test_data.stop.wait()
+
+
+@pytest.mark.trio
+async def test_app_stop(test_data, log_handler):
+    async with trio.open_nursery() as nursery:
+        t2._application_init(nursery)
+
+        await t2.application_start(
+            t2.app_spec(
+                module=app_c(),
+                start_arg=test_data,
+                permanent=True,
+            )
+        )
+
+        await trio.sleep(0.01)
+        await t2.application_stop(app_c.__name__)
+
+    assert test_data.count == 1
