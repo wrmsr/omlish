@@ -15,12 +15,12 @@ async def start():
    config_b.bind = ["localhost:8001"]
 
    children = [
-     supervisor.child_spec(
+     supervisor.ChildSpec(
        id='endpoint-a',
        task=serve,
        args=[asgi_app, config_a],
      ),
-     supervisor.child_spec(
+     supervisor.ChildSpec(
        id='endpoint-b',
        task=serve,
        args=[TrioWSGIMiddleware(wsgi_app), config_b],

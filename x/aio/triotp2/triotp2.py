@@ -165,30 +165,30 @@ def mailboxes() -> 'Mailboxes':
 # supervisor
 
 
-class restart_strategy(enum.Enum):
+class RestartStrategy(enum.Enum):
     PERMANENT = enum.auto()  #: Always restart the task
     TRANSIENT = enum.auto()  #: Restart the task only if it raises an exception
     TEMPORARY = enum.auto()  #: Never restart a task
 
 
 @dc.dataclass()
-class child_spec:
+class ChildSpec:
     id: str  #: Task identifier
     task: ta.Callable[..., ta.Awaitable[None]]  #: The task to run
     args: list[ta.Any]  #: Arguments to pass to the task
-    restart: restart_strategy = restart_strategy.PERMANENT  #: When to restart the task
+    restart: RestartStrategy = RestartStrategy.PERMANENT  #: When to restart the task
 
 
 @dc.dataclass()
-class supervisor_options:
+class SupervisorOptions:
     max_restarts: int = 3  #: Maximum number of restart during a limited timespan
     max_seconds: int = 5  #: Timespan duration
 
 
-class _retry_strategy:
+class _RetryStrategy:
     def __init__(
             self,
-            restart: restart_strategy,
+            restart: RestartStrategy,
             max_restarts: int,
             max_seconds: float,
     ) -> None:
@@ -201,14 +201,14 @@ class _retry_strategy:
 
     def __call__(self, retry_state: tenacity.RetryCallState) -> bool:
         match self.restart:
-            case restart_strategy.PERMANENT:
+            case RestartStrategy.PERMANENT:
                 pass
 
-            case restart_strategy.TRANSIENT:
+            case RestartStrategy.TRANSIENT:
                 if not retry_state.outcome.failed:
                     return False
 
-            case restart_strategy.TEMPORARY:
+            case RestartStrategy.TEMPORARY:
                 return False
 
         now = trio.current_time()
@@ -221,7 +221,7 @@ class _retry_strategy:
         return now - oldest_failure >= self.max_seconds
 
 
-class _retry_logger:
+class _RetryLogger:
     def __init__(self, child_id: str) -> None:
         super().__init__()
         self.logger = logbook.Logger(child_id)
@@ -240,8 +240,8 @@ class _retry_logger:
 
 
 async def supervisor_start(
-        child_specs: list[child_spec],
-        opts: supervisor_options,
+        child_specs: list[ChildSpec],
+        opts: SupervisorOptions,
         task_status=trio.TASK_STATUS_IGNORED,
 ) -> None:
     async with trio.open_nursery() as nursery:
@@ -252,17 +252,17 @@ async def supervisor_start(
 
 
 async def _supervisor_child_monitor(
-        spec: child_spec,
-        opts: supervisor_options,
+        spec: ChildSpec,
+        opts: SupervisorOptions,
         task_status=trio.TASK_STATUS_IGNORED,
 ) -> None:
     task_status.started(None)
 
     @tenacity.retry(
-        retry=_retry_strategy(spec.restart, opts.max_restarts, opts.max_seconds),
+        retry=_RetryStrategy(spec.restart, opts.max_restarts, opts.max_seconds),
         reraise=True,
         sleep=trio.sleep,
-        after=_retry_logger(spec.id),
+        after=_RetryLogger(spec.id),
     )
     async def _child_runner():
         with trio_util.defer_to_cancelled():
@@ -276,7 +276,7 @@ async def _supervisor_child_monitor(
 
 
 async def dynamic_supervisor_start(
-        opts: supervisor_options,
+        opts: SupervisorOptions,
         name: str | None = None,
         task_status=trio.TASK_STATUS_IGNORED,
 ) -> None:
@@ -289,14 +289,14 @@ async def dynamic_supervisor_start(
 
 async def dynamic_supervisor_start_child(
         name_or_mid: str | MailboxID,
-        child_spec: child_spec,
+        child_spec: ChildSpec,
 ) -> None:
     await mailboxes().send(name_or_mid, child_spec)
 
 
 async def _dynamic_supervisor_child_listener(
         mid: MailboxID,
-        opts: supervisor_options,
+        opts: SupervisorOptions,
         nursery: trio.Nursery,
         task_status=trio.TASK_STATUS_IGNORED,
 ) -> None:
@@ -306,7 +306,7 @@ async def _dynamic_supervisor_child_listener(
         request = await mailboxes().receive(mid)
 
         match request:
-            case child_spec() as spec:
+            case ChildSpec() as spec:
                 await nursery.start(_supervisor_child_monitor, spec, opts)
 
             case _:
@@ -321,11 +321,11 @@ class Module:
 
 
 @dc.dataclass()
-class app_spec:
+class AppSpec:
     module: Module  #: App module
     start_arg: ta.Any  #: Argument to pass to the module's start function
     permanent: bool = True  #: If `False`, the app won't be restarted if it exits
-    opts: supervisor_options | None = None  #: Options for the supervisor managing the app task
+    opts: SupervisorOptions | None = None  #: Options for the supervisor managing the app task
 
 
 class Apps:
@@ -334,7 +334,7 @@ class Apps:
         self.nursery = nursery
         self.registry = {}
 
-    async def start(self, app: app_spec) -> None:
+    async def start(self, app: AppSpec) -> None:
         if app.module.__name__ not in self.registry:
             local_nursery = await self.nursery.start(self._scope, app)
             self.registry[app.module.__name__] = local_nursery
@@ -345,24 +345,24 @@ class Apps:
             local_nursery.cancel_scope.cancel()
 
     @classmethod
-    async def _scope(cls, app: app_spec, task_status=trio.TASK_STATUS_IGNORED) -> None:
+    async def _scope(cls, app: AppSpec, task_status=trio.TASK_STATUS_IGNORED) -> None:
         if app.permanent:
-            restart = restart_strategy.PERMANENT
+            restart = RestartStrategy.PERMANENT
         else:
-            restart = restart_strategy.TRANSIENT
+            restart = RestartStrategy.TRANSIENT
 
         async with trio.open_nursery() as nursery:
             task_status.started(nursery)
 
             children = [
-                child_spec(
+                ChildSpec(
                     id=app.module.__name__,
                     task=app.module.start,
                     args=[app.start_arg],
                     restart=restart,
                 )
             ]
-            opts = app.opts if app.opts is not None else supervisor_options()
+            opts = app.opts if app.opts is not None else SupervisorOptions()
 
             nursery.start_soon(supervisor_start, children, opts)
 
@@ -382,7 +382,7 @@ def apps() -> Apps:
 
 
 def node_run(
-        apps_: list[app_spec],
+        apps_: list[AppSpec],
         loglevel: LogLevel = LogLevel.NONE,
         logformat: str | None = None,
 ) -> None:
@@ -400,7 +400,7 @@ def node_run(
     trio.run(_node_start, apps_)
 
 
-async def _node_start(apps_: list[app_spec]) -> None:
+async def _node_start(apps_: list[AppSpec]) -> None:
     init_mailboxes()
 
     async with trio.open_nursery() as nursery:
