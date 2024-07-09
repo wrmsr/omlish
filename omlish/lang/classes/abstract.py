@@ -48,7 +48,7 @@ class Abstract(abc.ABC):
             if ams:
                 raise TypeError(
                     f'Cannot subclass abstract class {cls.__name__} with abstract methods'
-                    f'{", ".join(map(str, sorted(ams)))}'
+                    f'{", ".join(map(str, sorted(ams)))}',
                 )
 
 

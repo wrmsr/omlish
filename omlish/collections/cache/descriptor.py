@@ -27,7 +27,7 @@ class _HashedSeq(list):
     def __init__(
             self,
             tup: ta.Tuple,
-            hasher: ta.Callable[[ta.Any], int] = hash
+            hasher: ta.Callable[[ta.Any], int] = hash,
     ) -> None:
         super().__init__()
 
@@ -46,7 +46,7 @@ def _make_key(
         fasttypes=frozenset([int, str, frozenset, type(None)]),
         tuple=tuple,
         type=type,
-        len=len
+        len=len,
 ) -> ta.Any:
     key = args
     if kwargs:
@@ -81,7 +81,7 @@ class _CacheDescriptor:
             fn: ta.Callable,
             scope: Scope,
             typed: bool,
-            **kwargs: ta.Any
+            **kwargs: ta.Any,
     ) -> None:
         super().__init__()
 
@@ -177,7 +177,7 @@ class _CacheDescriptor:
 def cache(
         scope: ta.Union[Scope, str] = Scope.INSTANCE,
         typed: bool = False,
-        **kwargs
+        **kwargs,
 ) -> CC:
     if not isinstance(scope, Scope):
         scope = getattr(Scope, scope.upper())  # noqa

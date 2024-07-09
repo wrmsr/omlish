@@ -18,7 +18,7 @@ def repr_fn(
         [
             'return f"{self.__class__.__qualname__}(' +
             ', '.join([f"{f.name}={{self.{f.name}!r}}" for f in fields]) +
-            ')"'
+            ')"',
         ],
         globals=globals,
     )

@@ -6,7 +6,7 @@ def test_scopes():
     i = inj.create_injector(inj.as_elements(
         inj.bind_scope(ss),
         inj.in_(420, ss),
-        inj.bind_scope_seed(ss, float)
+        inj.bind_scope_seed(ss, float),
     ))
     with inj.enter_seeded_scope(i, ss, {
         inj.as_key(float): 4.2,

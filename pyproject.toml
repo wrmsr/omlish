@@ -124,6 +124,7 @@ ignore = [
     'FBT002',  # boolean default positional argument in function definition
     'FBT003',  # boolean positional value in function call
     'PGH004',  # use specific rule codes when using `noqa`
+    'RUF100',  # unused blanket `noqa` directive'
     'T201',  # `print` found
     'TID252',  # prefer absolute imports over relative imports from parent modules
 ]

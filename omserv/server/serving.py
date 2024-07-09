@@ -9,10 +9,10 @@ from .workers import worker_serve
 async def serve(
         app: ASGIFramework,
         config: Config,
-        **kwargs: ta.Any
+        **kwargs: ta.Any,
 ) -> None:
     await worker_serve(
         wrap_app(app),
         config,
-        **kwargs
+        **kwargs,
     )

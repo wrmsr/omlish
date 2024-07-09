@@ -158,7 +158,7 @@ class _CachedFunctionDescriptor(_CachedFunction[T]):
             instance: ta.Any = None,
             owner: ta.Any = None,
             name: ta.Optional[str] = None,
-            **kwargs
+            **kwargs,
     ) -> None:
         super().__init__(fn, **kwargs)
 

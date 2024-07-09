@@ -23,7 +23,7 @@ def multikey_dict(dct: ta.Mapping[ta.Union[ta.Iterable[K], K], V], *, deep: bool
 
 def guarded_map_update(
         dst: ta.MutableMapping[ta.Any, ta.Any],
-        *srcs: ta.Mapping[ta.Any, ta.Any]
+        *srcs: ta.Mapping[ta.Any, ta.Any],
 ) -> ta.MutableMapping[ta.Any, ta.Any]:
     for src in srcs:
         for k, v in src.items():

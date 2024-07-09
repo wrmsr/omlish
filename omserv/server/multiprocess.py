@@ -21,7 +21,7 @@ from .workers import worker_serve
 
 async def check_multiprocess_shutdown_event(
         shutdown_event: multiprocessing.synchronize.Event,
-        sleep: ta.Callable[[float], ta.Awaitable[ta.Any]]
+        sleep: ta.Callable[[float], ta.Awaitable[ta.Any]],
 ) -> None:
     while True:
         if shutdown_event.is_set():
@@ -134,7 +134,7 @@ def _populate(
             process.start()
         except pickle.PicklingError as error:
             raise RuntimeError(
-                'Cannot pickle the config, see https://docs.python.org/3/library/pickle.html#pickle-picklable'
+                'Cannot pickle the config, see https://docs.python.org/3/library/pickle.html#pickle-picklable',
                 # noqa: E501
             ) from error
         processes.append(process)

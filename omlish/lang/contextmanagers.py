@@ -21,7 +21,7 @@ class ContextManaged:
             self,
             exc_type: ta.Optional[ta.Type[Exception]],
             exc_val: ta.Optional[Exception],
-            exc_tb: ta.Optional[types.TracebackType]
+            exc_tb: ta.Optional[types.TracebackType],
     ) -> ta.Optional[bool]:
         return None
 
@@ -148,7 +148,7 @@ class ExitStacked:
             self,
             exc_type: ta.Optional[ta.Type[Exception]],
             exc_val: ta.Optional[Exception],
-            exc_tb: ta.Optional[types.TracebackType]
+            exc_tb: ta.Optional[types.TracebackType],
     ) -> ta.Optional[bool]:
         self._exit_stack.__exit__(exc_type, exc_val, exc_tb)
         try:

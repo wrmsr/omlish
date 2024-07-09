@@ -32,7 +32,7 @@ async def hello_app(scope, recv, send):
                 'status': 200,
                 'headers': [
                     [b'content-type', b'text/plain'],
-                ]
+                ],
             })
 
             await send({

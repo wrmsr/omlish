@@ -106,7 +106,7 @@ class ReplServer:
                             log.info(
                                 f'Starting console {id(console)} repl server connection '
                                 f'on file {self._config.path} '
-                                f'on thread {threading.current_thread().ident}'
+                                f'on thread {threading.current_thread().ident}',
                             )
                             self._consoles_by_threads[threading.current_thread()] = console
                             console.interact()

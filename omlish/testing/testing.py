@@ -63,7 +63,7 @@ def run_with_timeout(
 def waitpid_with_timeout(
         pid: int,
         timeout_s: int | float | None = None,
-        timeout_exception: Exception = TimeoutError('waitpid timeout')
+        timeout_exception: Exception = TimeoutError('waitpid timeout'),
 ) -> int:
     if timeout_s is None:
         timeout_s = DEFAULT_TIMEOUT_S

@@ -8,7 +8,7 @@ import typing as ta
 def tmp_dir(
         root_dir: ta.Optional[str] = None,
         cleanup: bool = True,
-        **kwargs: ta.Any
+        **kwargs: ta.Any,
 ) -> ta.Iterator[str]:
     path = tempfile.mkdtemp(dir=root_dir, **kwargs)
     try:
@@ -22,7 +22,7 @@ def tmp_dir(
 def tmp_file(
         root_dir: ta.Optional[str] = None,
         cleanup: bool = True,
-        **kwargs: ta.Any
+        **kwargs: ta.Any,
 ) -> ta.Iterator[tempfile._TemporaryFileWrapper]:  # noqa
     with tempfile.NamedTemporaryFile(dir=root_dir, delete=False, **kwargs) as f:
         try:

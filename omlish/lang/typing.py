@@ -87,6 +87,6 @@ def typed_partial(obj, **kw):
             for n, p in sig.parameters.items()
             if n not in kw
             and p.annotation is not inspect.Signature.empty
-        }
+        },
     )(inner)
     return _update_wrapper_no_anns(lam, obj)

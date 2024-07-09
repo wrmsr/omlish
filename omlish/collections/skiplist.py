@@ -27,7 +27,7 @@ class SkipList(SortedCollection[T]):
         def __init__(
                 self,
                 value: T,
-                level: int
+                level: int,
         ) -> None:
             super().__init__()
 
