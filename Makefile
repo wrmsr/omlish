@@ -82,6 +82,10 @@ check: flake8 mypy check-scripts
 flake8: venv
 	${PYTHON} -mflake8 ${SOURCES}
 
+.PHONY: ruff
+ruff: venv
+	${PYTHON} -mruff check ${SOURCES}
+
 .PHONY: mypy
 mypy: venv
 	${PYTHON} -mmypy --check-untyped-defs ${SOURCES}
