@@ -19,18 +19,18 @@ async def fn1():
 
 async def start():
    children = [
-     t2.child_spec(
+     t2.ChildSpec(
        id='fn0',
        task=fn0,
        args=[],
      ),
-     t2.child_spec(
+     t2.ChildSpec(
        id='fn1',
        task=fn1,
        args=[],
      ),
    ]
-   opts = t2.supervisor_options()
+   opts = t2.SupervisorOptions()
    await t2.supervisor_start(children, opts)
 
 

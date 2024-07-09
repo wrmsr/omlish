@@ -57,20 +57,20 @@ async def start():
     t2.init_mailboxes()
 
     children = [
-        t2.child_spec(
+        t2.ChildSpec(
             id='server',
             task=echo_server().start,
             args=[],
-            restart=t2.restart_strategy.TRANSIENT,
+            restart=t2.RestartStrategy.TRANSIENT,
         ),
-        t2.child_spec(
+        t2.ChildSpec(
             id='client',
             task=echo_client,
             args=[],
-            restart=t2.restart_strategy.TRANSIENT,
+            restart=t2.RestartStrategy.TRANSIENT,
         ),
     ]
-    opts = t2.supervisor_options(
+    opts = t2.SupervisorOptions(
         max_restarts=3,
         max_seconds=5,
     )

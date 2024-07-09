@@ -46,7 +46,7 @@ async def test_app_stop(test_data, log_handler):
         t2.init_apps(nursery)
 
         await t2.apps().start(
-            t2.app_spec(
+            t2.AppSpec(
                 module=app_c(),
                 start_arg=test_data,
                 permanent=True,
@@ -66,11 +66,11 @@ async def test_app_automatic_restart_permanent(test_data, max_restarts, log_hand
         t2.init_apps(nursery)
 
         await t2.apps().start(
-            t2.app_spec(
+            t2.AppSpec(
                 module=app_a(),
                 start_arg=test_data,
                 permanent=True,
-                opts=t2.supervisor_options(
+                opts=t2.SupervisorOptions(
                     max_restarts=max_restarts,
                 ),
             )
@@ -88,11 +88,11 @@ async def test_app_automatic_restart_crash(test_data, max_restarts, log_handler)
             t2.init_apps(nursery)
 
             await t2.apps().start(
-                t2.app_spec(
+                t2.AppSpec(
                     module=app_b(),
                     start_arg=test_data,
                     permanent=False,
-                    opts=t2.supervisor_options(
+                    opts=t2.SupervisorOptions(
                         max_restarts=max_restarts,
                     ),
                 )
@@ -108,7 +108,7 @@ async def test_app_no_automatic_restart(test_data, log_handler):
         t2.init_apps(nursery)
 
         await t2.apps().start(
-            t2.app_spec(
+            t2.AppSpec(
                 module=app_a(),
                 start_arg=test_data,
                 permanent=False,

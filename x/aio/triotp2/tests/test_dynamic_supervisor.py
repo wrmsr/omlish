@@ -27,14 +27,14 @@ async def test_automatic_restart_permanent(max_restarts, log_handler, mailbox_en
 
     async with trio.open_nursery() as nursery:
         children = [
-            t2.child_spec(
+            t2.ChildSpec(
                 id='sample_task',
                 task=sample_task,
                 args=[test_data],
-                restart=t2.restart_strategy.PERMANENT,
+                restart=t2.RestartStrategy.PERMANENT,
             ),
         ]
-        opts = t2.supervisor_options(
+        opts = t2.SupervisorOptions(
             max_restarts=max_restarts,
             max_seconds=5,
         )
@@ -55,8 +55,8 @@ async def test_automatic_restart_permanent(max_restarts, log_handler, mailbox_en
 @pytest.mark.parametrize(
     'strategy',
     [
-        t2.restart_strategy.PERMANENT,
-        t2.restart_strategy.TRANSIENT,
+        t2.RestartStrategy.PERMANENT,
+        t2.RestartStrategy.TRANSIENT,
     ],
 )
 async def test_automatic_restart_crash(
@@ -67,14 +67,14 @@ async def test_automatic_restart_crash(
     with assert_raises_star(RuntimeError):
         async with trio.open_nursery() as nursery:
             children = [
-                t2.child_spec(
+                t2.ChildSpec(
                     id='sample_task',
                     task=sample_task_error,
                     args=[test_data],
                     restart=strategy,
                 ),
             ]
-            opts = t2.supervisor_options(
+            opts = t2.SupervisorOptions(
                 max_restarts=max_restarts,
                 max_seconds=5,
             )
@@ -94,8 +94,8 @@ async def test_automatic_restart_crash(
 @pytest.mark.parametrize(
     'strategy',
     [
-        t2.restart_strategy.TEMPORARY,
-        t2.restart_strategy.TRANSIENT,
+        t2.RestartStrategy.TEMPORARY,
+        t2.RestartStrategy.TRANSIENT,
     ],
 )
 async def test_no_restart(strategy, log_handler, mailbox_env):
@@ -103,14 +103,14 @@ async def test_no_restart(strategy, log_handler, mailbox_env):
 
     async with trio.open_nursery() as nursery:
         children = [
-            t2.child_spec(
+            t2.ChildSpec(
                 id='sample_task',
                 task=sample_task,
                 args=[test_data],
                 restart=strategy,
             ),
         ]
-        opts = t2.supervisor_options(
+        opts = t2.SupervisorOptions(
             max_restarts=3,
             max_seconds=5,
         )
