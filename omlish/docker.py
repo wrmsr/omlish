@@ -139,7 +139,7 @@ class ComposeConfig:
         return ret
 
 
-def timebomb_payload(delay_s: float, name: str = 'omlish-timebomb') -> str:
+def timebomb_payload(delay_s: float, name: str = 'omlish-docker-timebomb') -> str:
     return (
         '('
         f'echo {shlex.quote(name)} && '
