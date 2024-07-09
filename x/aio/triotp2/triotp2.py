@@ -5,13 +5,13 @@ import contextvars
 import dataclasses as dc
 import enum
 import logging
-import tenacity
 import typing as ta
 import uuid
 
-from omlish import lang
+import tenacity
 import trio
 
+from omlish import lang
 from .. import trio_util
 
 
@@ -258,42 +258,47 @@ async def _supervisor_child_monitor(
 # dynamic_supervisor
 
 
-async def dynamic_supervisor_start(
-        opts: SupervisorOptions,
-        name: str | None = None,
-        task_status=trio.TASK_STATUS_IGNORED,
-) -> None:
-    async with mailboxes().open(name) as mid:
-        task_status.started(mid)
+class dynamic_supervisor(lang.Namespace):  # noqa
+    @classmethod
+    async def start(
+            cls,
+            opts: SupervisorOptions,
+            name: str | None = None,
+            task_status=trio.TASK_STATUS_IGNORED,
+    ) -> None:
+        async with mailboxes().open(name) as mid:
+            task_status.started(mid)
 
-        async with trio.open_nursery() as nursery:
-            await nursery.start(_dynamic_supervisor_child_listener, mid, opts, nursery)
+            async with trio.open_nursery() as nursery:
+                await nursery.start(cls._child_listener, mid, opts, nursery)
 
+    @classmethod
+    async def start_child(
+            cls,
+            name_or_mid: str | MailboxID,
+            child_spec: ChildSpec,
+    ) -> None:
+        await mailboxes().send(name_or_mid, child_spec)
 
-async def dynamic_supervisor_start_child(
-        name_or_mid: str | MailboxID,
-        child_spec: ChildSpec,
-) -> None:
-    await mailboxes().send(name_or_mid, child_spec)
+    @classmethod
+    async def _child_listener(
+            cls,
+            mid: MailboxID,
+            opts: SupervisorOptions,
+            nursery: trio.Nursery,
+            task_status=trio.TASK_STATUS_IGNORED,
+    ) -> None:
+        task_status.started(None)
 
+        while True:
+            request = await mailboxes().receive(mid)
 
-async def _dynamic_supervisor_child_listener(
-        mid: MailboxID,
-        opts: SupervisorOptions,
-        nursery: trio.Nursery,
-        task_status=trio.TASK_STATUS_IGNORED,
-) -> None:
-    task_status.started(None)
+            match request:
+                case ChildSpec() as spec:
+                    await nursery.start(_supervisor_child_monitor, spec, opts)
 
-    while True:
-        request = await mailboxes().receive(mid)
-
-        match request:
-            case ChildSpec() as spec:
-                await nursery.start(_supervisor_child_monitor, spec, opts)
-
-            case _:
-                pass
+                case _:
+                    pass
 
 
 # apps
@@ -425,18 +430,18 @@ class Stop:
     reason: BaseException | None = None  # Eventual exception that caused the gen_server to stop
 
 
+Caller: ta.TypeAlias = trio.MemorySendChannel
+
+
 @dc.dataclass()
 class _CallMessage:
-    source: trio.MemorySendChannel
+    source: Caller
     payload: ta.Any
 
 
 @dc.dataclass()
 class _CastMessage:
     payload: ta.Any
-
-
-Caller: ta.TypeAlias = trio.MemorySendChannel
 
 
 class ServerApp(App, lang.Abstract):
@@ -459,52 +464,57 @@ class ServerApp(App, lang.Abstract):
         return NoReply(), state
 
 
-async def gen_server_start(
-        app: ServerApp,
-        init_arg: ta.Any | None = None,
-        name: str | None = None,
-) -> None:
-    await _GenServerLoop(app)._loop(init_arg, name)
+class gen_server(lang.Namespace):  # noqa
+    @classmethod
+    async def start(
+            cls,
+            app: ServerApp,
+            init_arg: ta.Any | None = None,
+            name: str | None = None,
+    ) -> None:
+        await _GenServerLoop(app).loop(init_arg, name)
 
+    @classmethod
+    async def call(
+            cls,
+            name_or_mid: str | MailboxID,
+            payload: ta.Any,
+            timeout: float | None = None,
+    ) -> ta.Any:
+        wchan, rchan = trio.open_memory_channel(0)
+        message = _CallMessage(source=wchan, payload=payload)
 
-async def gen_server_call(
-        name_or_mid: str | MailboxID,
-        payload: ta.Any,
-        timeout: float | None = None,
-) -> ta.Any:
-    wchan, rchan = trio.open_memory_channel(0)
-    message = _CallMessage(source=wchan, payload=payload)
+        await mailboxes().send(name_or_mid, message)
 
-    await mailboxes().send(name_or_mid, message)
+        try:
+            if timeout is not None:
+                with trio.fail_after(timeout):
+                    val = await rchan.receive()
 
-    try:
-        if timeout is not None:
-            with trio.fail_after(timeout):
+            else:
                 val = await rchan.receive()
 
-        else:
-            val = await rchan.receive()
+            if isinstance(val, Exception):
+                raise val
 
-        if isinstance(val, Exception):
-            raise val
+            return val
 
-        return val
+        finally:
+            await wchan.aclose()
+            await rchan.aclose()
 
-    finally:
-        await wchan.aclose()
-        await rchan.aclose()
+    @classmethod
+    async def cast(
+            cls,
+            name_or_mid: str | MailboxID,
+            payload: ta.Any,
+    ) -> None:
+        message = _CastMessage(payload=payload)
+        await mailboxes().send(name_or_mid, message)
 
-
-async def gen_server_cast(
-        name_or_mid: str | MailboxID,
-        payload: ta.Any,
-) -> None:
-    message = _CastMessage(payload=payload)
-    await mailboxes().send(name_or_mid, message)
-
-
-async def gen_server_reply(caller: Caller, response: ta.Any) -> None:
-    await caller.send(response)
+    @classmethod
+    async def reply(cls, caller: Caller, response: ta.Any) -> None:
+        await caller.send(response)
 
 
 class _GenServerLoop:
@@ -512,7 +522,7 @@ class _GenServerLoop:
         super().__init__()
         self.app = app
 
-    async def _loop(
+    async def loop(
             self,
             init_arg: ta.Any | None,
             name: str | None,
@@ -569,7 +579,7 @@ class _GenServerLoop:
         match result:
             case (Reply(payload), new_state):
                 state = new_state
-                await gen_server_reply(source, payload)
+                await gen_server.reply(source, payload)
                 continuation = _Loop(yes=True)
 
             case (NoReply(), new_state):
@@ -578,7 +588,7 @@ class _GenServerLoop:
 
             case (Stop(reason), new_state):
                 state = new_state
-                await gen_server_reply(source, GenServerExited())
+                await gen_server.reply(source, GenServerExited())
 
                 if reason is not None:
                     continuation = _Raise(reason)

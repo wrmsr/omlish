@@ -6,78 +6,64 @@ from .. import triotp2 as t2
 
 
 class api(lang.Namespace):
-    @lang.classonly
     @classmethod
     async def get(cls, key):
-        return await t2.gen_server_call(__name__, ('api_get', key))
+        return await t2.gen_server.call(__name__, ('api_get', key))
 
-    @lang.classonly
     @classmethod
     async def set(cls, key, val):
-        return await t2.gen_server_call(__name__, ('api_set', key, val))
+        return await t2.gen_server.call(__name__, ('api_set', key, val))
 
-    @lang.classonly
     @classmethod
     async def clear(cls):
-        return await t2.gen_server_call(__name__, 'api_clear')
+        return await t2.gen_server.call(__name__, 'api_clear')
 
 
 class special_call(lang.Namespace):
-    @lang.classonly
     @classmethod
     async def delayed(cls, nursery):
-        return await t2.gen_server_call(__name__, ('special_call_delayed', nursery))
+        return await t2.gen_server.call(__name__, ('special_call_delayed', nursery))
 
-    @lang.classonly
     @classmethod
     async def timed_out(cls, timeout):
-        return await t2.gen_server_call(__name__, 'special_call_timed_out', timeout=timeout)
+        return await t2.gen_server.call(__name__, 'special_call_timed_out', timeout=timeout)
 
-    @lang.classonly
     @classmethod
     async def stopped(cls):
-        return await t2.gen_server_call(__name__, 'special_call_stopped')
+        return await t2.gen_server.call(__name__, 'special_call_stopped')
 
-    @lang.classonly
     @classmethod
     async def failure(cls):
-        return await t2.gen_server_call(__name__, 'special_call_failure')
+        return await t2.gen_server.call(__name__, 'special_call_failure')
 
 
 class special_cast(lang.Namespace):
-    @lang.classonly
     @classmethod
     async def normal(cls):
-        await t2.gen_server_cast(__name__, 'special_cast_normal')
+        await t2.gen_server.cast(__name__, 'special_cast_normal')
 
-    @lang.classonly
     @classmethod
     async def stop(cls):
-        await t2.gen_server_cast(__name__, 'special_cast_stop')
+        await t2.gen_server.cast(__name__, 'special_cast_stop')
 
-    @lang.classonly
     @classmethod
     async def fail(cls):
-        await t2.gen_server_cast(__name__, 'special_cast_fail')
+        await t2.gen_server.cast(__name__, 'special_cast_fail')
 
 
 class special_info(lang.Namespace):
-    @lang.classonly
     @classmethod
     async def matched(cls, val):
         await t2.mailboxes().send(__name__, ('special_info_matched', val))
 
-    @lang.classonly
     @classmethod
     async def no_match(cls, val):
         await t2.mailboxes().send(__name__, ('special_info_no_match', val))
 
-    @lang.classonly
     @classmethod
     async def stop(cls):
         await t2.mailboxes().send(__name__, 'special_info_stop')
 
-    @lang.classonly
     @classmethod
     async def fail(cls):
         await t2.mailboxes().send(__name__, 'special_info_fail')
@@ -87,7 +73,7 @@ class KvStore(t2.ServerApp):
 
     async def start(self, test_state):
         try:
-            await t2.gen_server_start(self, test_state, name=__name__)
+            await t2.gen_server.start(self, test_state, name=__name__)
 
         except Exception as err:
             test_state.did_raise = err
@@ -116,7 +102,7 @@ class KvStore(t2.ServerApp):
             case ('special_call_delayed', nursery):
                 async def slow_task():
                     await trio.sleep(0)
-                    await t2.gen_server_reply(caller, 'done')
+                    await t2.gen_server.reply(caller, 'done')
 
                 nursery.start_soon(slow_task)
                 return (t2.NoReply(), test_state)
