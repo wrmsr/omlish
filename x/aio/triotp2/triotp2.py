@@ -24,12 +24,12 @@ def current_module() -> types.ModuleType:
     stack_frame = inspect.currentframe()
 
     while stack_frame:
-        if stack_frame.f_code.co_name == "<module>":
-            if stack_frame.f_code.co_filename != "<stdin>":
+        if stack_frame.f_code.co_name == '<module>':
+            if stack_frame.f_code.co_filename != '<stdin>':
                 caller_module = inspect.getmodule(stack_frame)
 
             else:
-                caller_module = sys.modules["__main__"]
+                caller_module = sys.modules['__main__']
 
             if caller_module is not None:
                 return caller_module
@@ -61,25 +61,25 @@ def getLogger(name: str) -> logging.Logger:
 ## mailbox
 
 
-MailboxID = ta.TypeVar("MailboxID", bound=str)  #: Mailbox identifier (UUID4)
+MailboxID = ta.TypeVar('MailboxID', bound=str)  #: Mailbox identifier (UUID4)
 
-context_mailbox_registry = contextvars.ContextVar("mailbox_registry")
-context_name_registry = contextvars.ContextVar("name_registry")
+context_mailbox_registry = contextvars.ContextVar('mailbox_registry')
+context_name_registry = contextvars.ContextVar('name_registry')
 
 
 class MailboxDoesNotExist(RuntimeError):
     def __init__(self, mid: MailboxID):
-        super().__init__(f"mailbox {mid} does not exist")
+        super().__init__(f'mailbox {mid} does not exist')
 
 
 class NameAlreadyExist(RuntimeError):
     def __init__(self, name: str):
-        super().__init__(f"mailbox {name} already registered")
+        super().__init__(f'mailbox {name} already registered')
 
 
 class NameDoesNotExist(RuntimeError):
     def __init__(self, name: str):
-        super().__init__(f"mailbox {name} does not exist")
+        super().__init__(f'mailbox {name} does not exist')
 
 
 def _mailbox_init() -> None:
@@ -262,15 +262,15 @@ class _retry_logger:
 
     def __call__(self, retry_state: tenacity.RetryCallState) -> None:
         if isinstance(retry_state.outcome.exception(), trio.Cancelled):
-            self.logger.info("task cancelled")
+            self.logger.info('task cancelled')
 
         elif retry_state.outcome.failed:
             exception = retry_state.outcome.exception()
             exc_info = (exception.__class__, exception, exception.__traceback__)
-            self.logger.error("restarting task after failure", exc_info=exc_info)
+            self.logger.error('restarting task after failure', exc_info=exc_info)
 
         else:
-            self.logger.error("restarting task after unexpected exit")
+            self.logger.error('restarting task after unexpected exit')
 
 
 async def supervisor_start(
@@ -350,8 +350,8 @@ async def _dynamic_supervisor_child_listener(
 ##
 
 
-context_app_nursery = contextvars.ContextVar("app_nursery")
-context_app_registry = contextvars.ContextVar("app_registry")
+context_app_nursery = contextvars.ContextVar('app_nursery')
+context_app_registry = contextvars.ContextVar('app_registry')
 
 
 @dc.dataclass()
@@ -446,7 +446,7 @@ async def _node_start(apps: list[app_spec]) -> None:
 ## gen_server
 
 
-State = ta.TypeVar("State")
+State = ta.TypeVar('State')
 
 
 class GenServerExited(Exception):
@@ -594,7 +594,7 @@ async def _gen_server_terminate(
         reason: BaseException | None,
         state: State,
 ) -> None:
-    handler = getattr(module, "terminate", None)
+    handler = getattr(module, 'terminate', None)
     if handler is not None:
         await handler(reason, state)
 
@@ -609,9 +609,9 @@ async def _gen_server_handle_call(
         source: trio.MemorySendChannel,
         state: State,
 ) -> tuple[Continuation, State]:
-    handler = getattr(module, "handle_call", None)
+    handler = getattr(module, 'handle_call', None)
     if handler is None:
-        raise NotImplementedError(f"{module.__name__}.handle_call")
+        raise NotImplementedError(f'{module.__name__}.handle_call')
 
     result = await handler(message, source, state)
 
@@ -637,7 +637,7 @@ async def _gen_server_handle_call(
 
         case _:
             raise TypeError(
-                f"{module.__name__}.handle_call did not return a valid value"
+                f'{module.__name__}.handle_call did not return a valid value'
             )
 
     return continuation, state
@@ -648,9 +648,9 @@ async def _gen_server_handle_cast(
         message: ta.Any,
         state: State,
 ) -> tuple[Continuation, State]:
-    handler = getattr(module, "handle_cast", None)
+    handler = getattr(module, 'handle_cast', None)
     if handler is None:
-        raise NotImplementedError(f"{module.__name__}.handle_cast")
+        raise NotImplementedError(f'{module.__name__}.handle_cast')
 
     result = await handler(message, state)
 
@@ -670,7 +670,7 @@ async def _gen_server_handle_cast(
 
         case _:
             raise TypeError(
-                f"{module.__name__}.handle_cast did not return a valid value"
+                f'{module.__name__}.handle_cast did not return a valid value'
             )
 
     return continuation, state
@@ -681,7 +681,7 @@ async def _gen_server_handle_info(
         message: ta.Any,
         state: State,
 ) -> tuple[Continuation, State]:
-    handler = getattr(module, "handle_info", None)
+    handler = getattr(module, 'handle_info', None)
     if handler is None:
         return _Loop(yes=True), state
 
@@ -703,7 +703,7 @@ async def _gen_server_handle_info(
 
         case _:
             raise TypeError(
-                f"{module.__name__}.handle_info did not return a valid value"
+                f'{module.__name__}.handle_info did not return a valid value'
             )
 
     return continuation, state
