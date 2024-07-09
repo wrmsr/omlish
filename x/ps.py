@@ -9,7 +9,7 @@ from omlish import lang
 class PsItem:
     pid: int
     ppid: int
-    exe: str
+    cmd: str
 
 
 def get_ps_item(pid: int, timeout: lang.Timeout | None = None) -> PsItem:
@@ -17,12 +17,30 @@ def get_ps_item(pid: int, timeout: lang.Timeout | None = None) -> PsItem:
     out = subprocess.check_output(
         ['ps', '-o', 'pid=,ppid=,command=', str(int(pid))],
         timeout=timeout.or_(None),
+    ).decode().strip()
+    pid, _, rest = out.partition(' ')
+    ppid, _, cmd = rest.strip().partition(' ')
+    return PsItem(
+        int(pid),
+        int(ppid),
+        cmd.strip(),
     )
-    print(out)
+
+
+def get_ps_lineage(pid: int, timeout: lang.Timeout | None = None) -> list[PsItem]:
+    timeout = lang.timeout(timeout)
+    ret: list[PsItem] = []
+    while True:
+        cur = get_ps_item(pid, timeout)
+        if cur.ppid < 1:
+            break
+        ret.append(cur)
+        pid = cur.ppid
+    return ret
 
 
 def _main():
-    get_ps_item(os.getpid())
+    print(get_ps_lineage(os.getpid()))
 
 
 if __name__ == '__main__':
