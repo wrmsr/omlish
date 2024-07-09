@@ -161,7 +161,7 @@ class Mailboxes:
 _context_mailboxes = contextvars.ContextVar('mailboxes')
 
 
-def _mailbox_init() -> None:
+def _mailboxes_init() -> None:
     _context_mailboxes.set(Mailboxes())
 
 
@@ -412,7 +412,7 @@ def node_run(
 
 
 async def _node_start(apps: list[app_spec]) -> None:
-    _mailbox_init()
+    _mailboxes_init()
 
     async with trio.open_nursery() as nursery:
         _application_init(nursery)
