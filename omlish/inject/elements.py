@@ -25,7 +25,7 @@ class Elements(lang.Final):
                 yield from c
 
 
-def as_elements(*args: ta.Union[Element, Elements]) -> Elements:
+def as_elements(*args: Element | Elements) -> Elements:
     es: set[Element] = set()
     cs: set['Elements'] = set()
     for a in args:

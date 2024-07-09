@@ -100,7 +100,7 @@ def polymorphism_from_subclasses(ty: type, *, naming: Naming | None = None) -> P
 class PolymorphismMarshaler(Marshaler):
     m: ta.Mapping[type, tuple[str, Marshaler]]
 
-    def marshal(self, ctx: MarshalContext, o: ta.Optional[ta.Any]) -> Value:
+    def marshal(self, ctx: MarshalContext, o: ta.Any | None) -> Value:
         tag, m = self.m[type(o)]
         return {tag: m.marshal(ctx, o)}
 
@@ -109,7 +109,7 @@ class PolymorphismMarshaler(Marshaler):
 class PolymorphismMarshalerFactory(MarshalerFactory):
     p: Polymorphism
 
-    def __call__(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Optional[Marshaler]:
+    def __call__(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler | None:
         if rty is self.p.ty:
             return PolymorphismMarshaler({
                 i.ty: (i.tag, ctx.make(i.ty))
@@ -125,7 +125,7 @@ class PolymorphismMarshalerFactory(MarshalerFactory):
 class PolymorphismUnmarshaler(Unmarshaler):
     m: ta.Mapping[str, Unmarshaler]
 
-    def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Optional[ta.Any]:
+    def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any | None:
         ma = check.isinstance(v, collections.abc.Mapping)
         [(tag, iv)] = ma.items()
         u = self.m[tag]  # type: ignore
@@ -136,7 +136,7 @@ class PolymorphismUnmarshaler(Unmarshaler):
 class PolymorphismUnmarshalerFactory(UnmarshalerFactory):
     p: Polymorphism
 
-    def __call__(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Optional[Unmarshaler]:
+    def __call__(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler | None:
         if rty is self.p.ty:
             return PolymorphismUnmarshaler({
                 t: u

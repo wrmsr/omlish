@@ -1,5 +1,3 @@
-import typing as ta
-
 from ... import inject as inj
 from ... import lang
 
@@ -26,7 +24,7 @@ def test_multi():
 
 
 def test_optional():
-    def f(i: int, f: ta.Optional[float] = None) -> str:
+    def f(i: int, f: float | None = None) -> str:
         return f'{i=} {f=}'
 
     es = inj.as_elements(

@@ -20,7 +20,7 @@ class E(enum.Enum):
 class Foo(Foox):
     s: str
     f: ta.Optional['Foo'] = None
-    e: ta.Optional[E] = None
+    e: E | None = None
 
 
 def test_marshal():

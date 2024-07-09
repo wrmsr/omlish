@@ -23,7 +23,7 @@ def call_many_with_timeout(
     fns = list(fns)
     missing = object()
     rets: list[ta.Any] = [missing] * len(fns)
-    thread_exception: ta.Optional[Exception] = None
+    thread_exception: Exception | None = None
 
     def inner(fn, idx):
         try:

@@ -11,9 +11,9 @@ SECONDS = 1.0
 class Config:
     bind: ta.Sequence[str] = ('127.0.0.1:8000',)
 
-    umask: ta.Optional[int] = None
-    user: ta.Optional[int] = None
-    group: ta.Optional[int] = None
+    umask: int | None = None
+    user: int | None = None
+    group: int | None = None
 
     workers: int = 1
 
@@ -24,7 +24,7 @@ class Config:
 
     server_names: ta.Sequence[str] = ()
 
-    max_requests: ta.Optional[int] = None
+    max_requests: int | None = None
     max_requests_jitter: int = 0
 
     backlog: int = 100
@@ -34,7 +34,7 @@ class Config:
     keep_alive_timeout: float = 5 * SECONDS
     keep_alive_max_requests: int = 1000
 
-    read_timeout: ta.Optional[int] = None
+    read_timeout: int | None = None
 
     h11_max_incomplete_size: int = 16 * 1024 * BYTES
     h11_pass_raw_headers: bool = False
@@ -48,4 +48,4 @@ class Config:
     alt_svc_headers: list[str] = dc.field(default_factory=lambda: [])
 
     websocket_max_message_size: int = 16 * 1024 * 1024 * BYTES
-    websocket_ping_interval: ta.Optional[float] = None
+    websocket_ping_interval: float | None = None

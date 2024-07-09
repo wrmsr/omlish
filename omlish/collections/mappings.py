@@ -8,7 +8,7 @@ K = ta.TypeVar('K')
 V = ta.TypeVar('V')
 
 
-def multikey_dict(dct: ta.Mapping[ta.Union[ta.Iterable[K], K], V], *, deep: bool = False) -> dict[K, V]:
+def multikey_dict(dct: ta.Mapping[ta.Iterable[K] | K, V], *, deep: bool = False) -> dict[K, V]:
     ret = {}
     for k, v in dct.items():
         if deep and isinstance(v, dict):
@@ -71,7 +71,7 @@ class TypeMap(ta.Generic[T]):
     def __iter__(self) -> ta.Iterable[T]:
         return iter(self._items)
 
-    def get(self, ty: type[T]) -> ta.Optional[T]:
+    def get(self, ty: type[T]) -> T | None:
         return self._dct.get(ty)
 
     def __getitem__(self, ty: type[T]) -> ta.Sequence[T]:

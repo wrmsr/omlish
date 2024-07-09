@@ -22,7 +22,7 @@ class EnumMarshaler(Marshaler):
 
 
 class EnumMarshalerFactory(MarshalerFactory):
-    def __call__(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Optional[Marshaler]:
+    def __call__(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler | None:
         if isinstance(rty, type) and issubclass(rty, enum.Enum):
             return EnumMarshaler(rty)
         return None
@@ -37,7 +37,7 @@ class EnumUnmarshaler(Unmarshaler):
 
 
 class EnumUnmarshalerFactory(UnmarshalerFactory):
-    def __call__(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Optional[Unmarshaler]:
+    def __call__(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler | None:
         if isinstance(rty, type) and issubclass(rty, enum.Enum):
             return EnumUnmarshaler(rty)
         return None

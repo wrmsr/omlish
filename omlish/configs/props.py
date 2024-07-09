@@ -19,7 +19,7 @@ def escape(token: str) -> str:
     return _ESCAPE_PATTERN.sub(r'\\\1', token)
 
 
-def parse_line(line: str) -> ta.Optional[ta.Tuple[str, str]]:
+def parse_line(line: str) -> ta.Tuple[str, str] | None:
     if line and not (line.startswith('#') or line.startswith('!')):
         match = _SEPARATOR_PATTERN.search(line)
         if match:

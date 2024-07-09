@@ -16,7 +16,7 @@ from .dispatch import get_impl_func_cls_set
 T = ta.TypeVar('T')
 
 
-def build_mro_dct(instance_cls: type, owner_cls: ta.Optional[type] = None) -> ta.Mapping[str, ta.Any]:
+def build_mro_dct(instance_cls: type, owner_cls: type | None = None) -> ta.Mapping[str, ta.Any]:
     if owner_cls is None:
         owner_cls = instance_cls
     mro = instance_cls.__mro__[-2::-1]
@@ -89,7 +89,7 @@ class Method:
 
         return impl
 
-    def build_attr_dispatcher(self, instance_cls: type, owner_cls: ta.Optional[type] = None) -> Dispatcher[str]:
+    def build_attr_dispatcher(self, instance_cls: type, owner_cls: type | None = None) -> Dispatcher[str]:
         disp: Dispatcher[str] = Dispatcher()
 
         mro_dct = build_mro_dct(instance_cls, owner_cls)

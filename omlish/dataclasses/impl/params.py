@@ -46,9 +46,9 @@ IS_12 = sys.version_info[1] >= 12
 
 @dc.dataclass(frozen=True)
 class FieldExtras(lang.Final):
-    coerce: ta.Optional[ta.Union[bool, ta.Callable[[ta.Any], ta.Any]]] = None
-    check: ta.Optional[ta.Callable[[ta.Any], bool]] = None
-    check_type: ta.Optional[bool] = None
+    coerce: bool | ta.Callable[[ta.Any], ta.Any] | None = None
+    check: ta.Callable[[ta.Any], bool] | None = None
+    check_type: bool | None = None
     override: bool = False
 
 

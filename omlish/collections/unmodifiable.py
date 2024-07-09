@@ -33,7 +33,7 @@ class UnmodifiableSequence(ta.Sequence[T], Unmodifiable, lang.Final):
     def __ge__(self, other: object) -> bool:
         return self._target >= other  # type: ignore
 
-    def __getitem__(self, i: ta.Union[int, slice]) -> T:  # type: ignore
+    def __getitem__(self, i: int | slice) -> T:  # type: ignore
         return self._target[i]  # type: ignore
 
     def __gt__(self, other: object) -> bool:
@@ -161,7 +161,7 @@ class UnmodifiableMapping(ta.Mapping[K, V], Unmodifiable, lang.Final):
     def __ne__(self, o: object) -> bool:
         return self._target != o
 
-    def get(self, k: K, default=None) -> ta.Optional[V]:  # type: ignore
+    def get(self, k: K, default=None) -> V | None:  # type: ignore
         return self._target.get(k)
 
     def items(self) -> ta.ItemsView[K, V]:

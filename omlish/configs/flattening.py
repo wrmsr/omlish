@@ -119,7 +119,7 @@ class Flattening:
     def unflatten(self, flattened: StrMap) -> StrMap:
         root = Flattening.UnflattenDict()
 
-        def split_keys(fkey: str) -> ta.Iterable[ta.Union[str, int]]:
+        def split_keys(fkey: str) -> ta.Iterable[str | int]:
             for part in fkey.split(self._delimiter):
                 if self._index_open in part:
                     check.state(part.endswith(self._index_close))
