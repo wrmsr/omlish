@@ -59,7 +59,7 @@ class DataMeta(abc.ABCMeta):
             # confer=frozenset(),
 
             metadata=None,
-            **kwargs
+            **kwargs,
     ):
         cls = lang.super_meta(
             super(),

@@ -236,7 +236,7 @@ class WSStream:
                 self.closed = True
             else:
                 self.app_put = await self.task_spawner.spawn_app(
-                    self.app, self.config, self.scope, self.app_send
+                    self.app, self.config, self.scope, self.app_send,
                 )
                 await self.app_put({'type': 'websocket.connect'})
         elif isinstance(event, (Body, Data)):
@@ -261,7 +261,7 @@ class WSStream:
             if self.state == ASGIWebsocketState.HANDSHAKE:
                 await self._send_error_response(500)
                 log_access(
-                    self.config, self.scope, {'status': 500, 'headers': []}, time.time() - self.start_time
+                    self.config, self.scope, {'status': 500, 'headers': []}, time.time() - self.start_time,
                 )
 
             elif self.state == ASGIWebsocketState.CONNECTED:
@@ -307,7 +307,7 @@ class WSStream:
                     wse.CloseConnection(
                         code=int(message.get('code', wsp.frame_protocol.CloseReason.NORMAL_CLOSURE)),
                         reason=message.get('reason'),
-                    )
+                    ),
                 )
                 await self.send(EndData(stream_id=self.stream_id))
 
@@ -321,7 +321,7 @@ class WSStream:
                     self.buffer.extend(event)
                 except FrameTooLargeError:
                     await self._send_wsproto_event(
-                        wse.CloseConnection(code=wsp.frame_protocol.CloseReason.MESSAGE_TOO_BIG)
+                        wse.CloseConnection(code=wsp.frame_protocol.CloseReason.MESSAGE_TOO_BIG),
                     )
                     break
 
@@ -343,11 +343,11 @@ class WSStream:
                 stream_id=self.stream_id,
                 status_code=status_code,
                 headers=[(b'content-length', b'0'), (b'connection', b'close')],
-            )
+            ),
         )
         await self.send(EndBody(stream_id=self.stream_id))
         log_access(
-            self.config, self.scope, {'status': status_code, 'headers': []}, time.time() - self.start_time
+            self.config, self.scope, {'status': status_code, 'headers': []}, time.time() - self.start_time,
         )
 
     async def _send_wsproto_event(self, event: wse.Event) -> None:
@@ -361,13 +361,13 @@ class WSStream:
     async def _accept(self, message: WebsocketAcceptEvent) -> None:
         self.state = ASGIWebsocketState.CONNECTED
         status_code, headers, self.connection = self.handshake.accept(
-            message.get('subprotocol'), message.get('headers', [])
+            message.get('subprotocol'), message.get('headers', []),
         )
         await self.send(
-            Response(stream_id=self.stream_id, status_code=status_code, headers=headers)
+            Response(stream_id=self.stream_id, status_code=status_code, headers=headers),
         )
         log_access(
-            self.config, self.scope, {'status': status_code, 'headers': []}, time.time() - self.start_time
+            self.config, self.scope, {'status': status_code, 'headers': []}, time.time() - self.start_time,
         )
         if self.config.websocket_ping_interval is not None:
             self.task_spawner.spawn(self._send_pings)
@@ -381,7 +381,7 @@ class WSStream:
                     stream_id=self.stream_id,
                     status_code=int(self.response['status']),
                     headers=headers,
-                )
+                ),
             )
             self.state = ASGIWebsocketState.RESPONSE
         if not body_suppressed:

@@ -44,7 +44,7 @@ class InteractiveSocketConsole:
             self,
             conn: sock.socket,
             locals: ta.Optional[dict[str, ta.Any]] = None,
-            filename: str = '<console>'
+            filename: str = '<console>',
     ) -> None:
         super().__init__()
 
@@ -146,7 +146,7 @@ class InteractiveSocketConsole:
             self,
             source: ta.Union[str, ast.AST],
             filename: str = '<input>',
-            symbol: str = 'single'
+            symbol: str = 'single',
     ) -> ta.Optional[types.CodeType]:
         if isinstance(source, ast.AST):
             return self._compiler.compiler(source, filename, symbol)  # type: ignore
@@ -195,7 +195,7 @@ class InteractiveSocketConsole:
                         expr.value,
                         lineno=expr.lineno,
                         col_offset=expr.col_offset,
-                    )
+                    ),
                 ],
             )
             ast.fix_missing_locations(source)

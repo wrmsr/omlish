@@ -33,7 +33,7 @@ def _raise(
         default_message: str,
         message: Message,
         *args: ta.Any,
-        **kwargs: ta.Any
+        **kwargs: ta.Any,
 ) -> ta.NoReturn:
     if _callable(message):
         message = ta.cast(ta.Callable, message)(*args, **kwargs)

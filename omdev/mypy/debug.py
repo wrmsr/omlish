@@ -23,7 +23,7 @@ class MypyDebugPathFinder(importlib.machinery.PathFinder):
                         *[
                             (i, [s]) for s, i in finder._loaders  # type: ignore  # noqa
                             if not _is_instance_or_subclass(i, importlib.machinery.ExtensionFileLoader)
-                        ]
+                        ],
                     )
                 if hasattr(finder, 'find_spec'):
                     spec = finder.find_spec(fullname, target)

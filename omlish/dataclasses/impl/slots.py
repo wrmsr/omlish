@@ -55,8 +55,8 @@ def add_slots(
             inherited_slots.__contains__,
             itertools.chain(
                 field_names,
-                ('__weakref__',) if weakref_slot else ()
-            )
+                ('__weakref__',) if weakref_slot else (),
+            ),
         ),
     )
 

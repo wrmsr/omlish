@@ -112,7 +112,7 @@ def field_init(
         locals[cn] = f.type
         lines.append(
             f'if not __dataclass_builtins_isinstance__({f.name}, {cn}): '
-            f'raise __dataclass_builtins_TypeError__({f.name}, {cn})'
+            f'raise __dataclass_builtins_TypeError__({f.name}, {cn})',
         )
 
     value: str | None = None

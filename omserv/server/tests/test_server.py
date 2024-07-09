@@ -63,7 +63,7 @@ async def _test_server_simple():
                         (b'connection', b'close'),
                         (b'content-length', b'%d' % len(SANITY_REQUEST_BODY)),
                     ],
-                )
+                ),
             )))
             await conn.send(client.send(h11.Data(data=SANITY_REQUEST_BODY)))  # type: ignore
             await conn.send(client.send(h11.EndOfMessage()))  # type: ignore
@@ -103,7 +103,7 @@ async def _test_server_simple():
             worker_serve,
             ASGIWrapper(sanity_framework),
             Config(
-                bind=(f'127.0.0.1:{port}',)
+                bind=(f'127.0.0.1:{port}',),
             ),
             shutdown_trigger=sev.wait,
         ))
@@ -151,7 +151,7 @@ async def _test_httpx_client(use_http2):
             worker_serve,
             ASGIWrapper(sanity_framework),
             Config(
-                bind=(f'127.0.0.1:{port}',)
+                bind=(f'127.0.0.1:{port}',),
             ),
             shutdown_trigger=sev.wait,
         ))
@@ -211,7 +211,7 @@ async def _test_curl(use_h2c: bool) -> None:
             worker_serve,
             ASGIWrapper(sanity_framework),
             Config(
-                bind=(f'127.0.0.1:{port}',)
+                bind=(f'127.0.0.1:{port}',),
             ),
             shutdown_trigger=sev.wait,
         ))
@@ -277,7 +277,7 @@ async def _test_curl_h2() -> None:
             worker_serve,
             ASGIWrapper(hello_app),
             Config(
-                bind=(f'127.0.0.1:{port}',)
+                bind=(f'127.0.0.1:{port}',),
             ),
             shutdown_trigger=sev.wait,
         ))

@@ -29,7 +29,7 @@ async def _a_main() -> None:
             t1.insert(), [
                 {'name': 'some name 1'},
                 {'name': 'some name 2'},
-            ]
+            ],
         )
 
     async with engine.connect() as conn:
