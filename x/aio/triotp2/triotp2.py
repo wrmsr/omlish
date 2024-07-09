@@ -361,7 +361,7 @@ class app_spec:
     module: types.ModuleType  #: Application module
     start_arg: ta.Any  #: Argument to pass to the module's start function
     permanent: bool = True  #: If `False`, the application won't be restarted if it exits
-    opts: supervisor_options | None =  None  #: Options for the supervisor managing the application task
+    opts: supervisor_options | None = None  #: Options for the supervisor managing the application task
 
 
 def _application_init(nursery: trio.Nursery) -> None:
