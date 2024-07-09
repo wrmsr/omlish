@@ -1,5 +1,3 @@
-import typing as ta
-
 import anyio
 
 from .types import WaitableEvent
@@ -26,7 +24,7 @@ class WaitableEventWrapper:
 class WorkerContext:
     event_class: type[WaitableEvent] = WaitableEventWrapper
 
-    def __init__(self, max_requests: ta.Optional[int]) -> None:
+    def __init__(self, max_requests: int | None) -> None:
         super().__init__()
         self.max_requests = max_requests
         self.requests = 0
@@ -42,7 +40,7 @@ class WorkerContext:
             await self.terminate.set()
 
     @staticmethod
-    async def sleep(wait: ta.Union[float, int]) -> None:
+    async def sleep(wait: float) -> None:
         return await anyio.sleep(wait)
 
     @staticmethod
