@@ -55,8 +55,10 @@ import threading
 import traceback
 import typing as ta
 
+from omlish import lang
 from omlish import logs
 import anyio.abc
+import anyio.streams.memory
 
 
 log = logging.getLogger(__name__)
@@ -69,12 +71,41 @@ class ProcessConfig:
     restart: bool = True
 
 
+T = ta.TypeVar('T')
+
+
+def split_memory_object_streams(
+        *args: anyio.create_memory_object_stream[T],
+) -> tuple[
+    anyio.streams.memory.MemoryObjectSendStream[T],
+    anyio.streams.memory.MemoryObjectReceiveStream[T],
+]:
+    [tup] = args  # type: ignore
+    return tup  # type: ignore
+
+
+async def gather(*funcs: ta.Callable[..., ta.Awaitable[T]], take_first: bool = False) -> list[lang.Maybe[T]]:
+    results = [lang.empty()] * len(funcs)
+
+    async def inner(func, i):
+        results[i] = lang.just(await func())
+        if take_first:
+            tg.cancel_scope.cancel()
+
+    async with anyio.create_task_group() as tg:
+        for i, func in enumerate(funcs):
+            tg.start_soon(inner, func, i)
+
+    return results
+
+
 class Process:
     def __init__(self, cfg: ProcessConfig) -> None:
         super().__init__()
         self._cfg = cfg
 
         self._proc: anyio.abc.Process | None = None
+        self._mbox_send, self._mbox_recv = split_memory_object_streams(anyio.create_memory_object_stream[ta.Any]())
 
     @property
     def name(self) -> str:
@@ -93,8 +124,19 @@ class Process:
             async with proc:
                 try:
                     log.debug(f'process {self.name}={proc.pid} waiting')
-                    await proc.wait()
-                    log.debug(f'process {self.name}={proc.pid} exited')
+
+                    glst = await gather(
+                        self._mbox_recv.receive,
+                        proc.wait,
+                        take_first=True,
+                    )
+
+                    if glst[1].present:
+                        log.debug(f'process {self.name}={proc.pid} got message: {glst[1].must()}')
+
+                    if glst[0].present:
+                        log.debug(f'process {self.name}={proc.pid} exited')
+                        break
 
                 except anyio.get_cancelled_exc_class():
                     log.debug(f'process {self.name}={proc.pid} cancelled')
@@ -153,8 +195,10 @@ async def _a_main():
             dump(sys.stderr)
 
     async with anyio.create_task_group() as tg:
-        tg.start_soon(thread_dumper)
+        # tg.start_soon(thread_dumper)
+
         await tg.start(inner)
+
         for p in ps:
             tg.start_soon(p.run)
 
