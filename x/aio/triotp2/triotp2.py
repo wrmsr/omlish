@@ -333,7 +333,7 @@ class AppRegistry:
 context_app_registry = contextvars.ContextVar('app_registry')
 
 
-def _application_init(nursery: trio.Nursery) -> None:
+def _app_init(nursery: trio.Nursery) -> None:
     context_app_registry.set(AppRegistry(nursery))
 
 
@@ -343,13 +343,13 @@ def get_app_registry() -> AppRegistry:
 
 @dc.dataclass()
 class app_spec:
-    module: Module  #: Application module
+    module: Module  #: App module
     start_arg: ta.Any  #: Argument to pass to the module's start function
-    permanent: bool = True  #: If `False`, the application won't be restarted if it exits
-    opts: supervisor_options | None = None  #: Options for the supervisor managing the application task
+    permanent: bool = True  #: If `False`, the app won't be restarted if it exits
+    opts: supervisor_options | None = None  #: Options for the supervisor managing the app task
 
 
-async def application_start(app: app_spec) -> None:
+async def app_start(app: app_spec) -> None:
     nursery = get_app_registry().nursery
     registry = get_app_registry().registry
 
@@ -358,7 +358,7 @@ async def application_start(app: app_spec) -> None:
         registry[app.module.__name__] = local_nursery
 
 
-async def application_stop(app_name: str) -> None:
+async def app_stop(app_name: str) -> None:
     registry = get_app_registry().registry
 
     if app_name in registry:
@@ -415,10 +415,10 @@ async def _node_start(apps: list[app_spec]) -> None:
     _mailboxes_init()
 
     async with trio.open_nursery() as nursery:
-        _application_init(nursery)
+        _app_init(nursery)
 
         for app_spec in apps:
-            await application_start(app_spec)
+            await app_start(app_spec)
 
 
 # gen_server
