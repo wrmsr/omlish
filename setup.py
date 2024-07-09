@@ -28,14 +28,10 @@ ABOUT = _read_about(os.path.join(DIR, PROJECT, '__about__.py'))
 if __name__ == '__main__':
     st.setup(
         name=PROJECT,
-        version=ABOUT['__version__'],
-        description=ABOUT['__description__'],
         author=ABOUT['__author__'],
         url=ABOUT['__url__'],
         license=ABOUT['__license__'],
-
-        python_requires=ABOUT['__python_requires__'],
-        classifiers=ABOUT['__classifiers__'],
+        python_requires=ABOUT['__requires_python__'],
 
         setup_requires=['setuptools'],
 
