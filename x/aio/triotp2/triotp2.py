@@ -438,7 +438,7 @@ class _CastMessage:
 
 class ServerApp(App, lang.Abstract):
     @abc.abstractmethod
-    async def init(self, init_arg: ta.Any) -> None:
+    async def init(self, init_arg: ta.Any) -> State:
         raise NotImplementedError
 
     async def terminate(self, reason: BaseException | None, state: State) -> None:
@@ -446,13 +446,13 @@ class ServerApp(App, lang.Abstract):
             logger = logging.getLogger(self.__name__)
             logger.exception(reason)
 
-    async def handle_call(self, message, caller, state):
+    async def handle_call(self, message, caller, state: State) -> tuple[Reply | NoReply | Stop, State]:
         raise TypeError(f'{self.__name__}.handle_call not implemented')
 
-    async def handle_cast(self, message, state):
+    async def handle_cast(self, message, state: State) -> tuple[NoReply | Stop, State]:
         raise TypeError(f'{self.__name__}.handle_cast not implemented')
 
-    async def handle_info(self, message, state):
+    async def handle_info(self, message, state: State) -> tuple[NoReply | Stop, State]:
         return NoReply(), state
 
 
@@ -525,20 +525,16 @@ class _GenServerLoop:
                     match message:
                         case _CallMessage(source, payload):
                             continuation, state = await self._handle_call(payload, source, state)
-
                         case _CastMessage(payload):
                             continuation, state = await self._handle_cast(payload, state)
-
                         case _:
                             continuation, state = await self._handle_info(message, state)
 
                     match continuation:
                         case _Loop(yes=False):
                             looping = False
-
                         case _Loop(yes=True):
                             looping = True
-
                         case _Raise(exc=err):
                             raise err
 
@@ -608,7 +604,6 @@ class _GenServerLoop:
 
                 if reason is not None:
                     continuation = _Raise(reason)
-
                 else:
                     continuation = _Loop(yes=False)
 
@@ -634,7 +629,6 @@ class _GenServerLoop:
 
                 if reason is not None:
                     continuation = _Raise(reason)
-
                 else:
                     continuation = _Loop(yes=False)
 
