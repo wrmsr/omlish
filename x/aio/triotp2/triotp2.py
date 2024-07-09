@@ -9,35 +9,15 @@ import tenacity
 import typing as ta
 import uuid
 
-import logbook
 import trio
 
 from .. import trio_util
 
 
-# logging
-
-
-class LogLevel(enum.Enum):
-    NONE = enum.auto()  #: Logging is disabled
-    DEBUG = enum.auto()
-    INFO = enum.auto()
-    WARNING = enum.auto()
-    ERROR = enum.auto()
-    CRITICAL = enum.auto()
-
-    def to_logbook(self) -> int:
-        return logging.getLevelNamesMapping()[self.name]
-
-
-def getLogger(name: str) -> logging.Logger:
-    return logging.getLogger(name)
-
-
 # mailbox
 
 
-MailboxID = ta.TypeVar('MailboxID', bound=str)  #: Mailbox identifier (UUID4)
+MailboxID = ta.TypeVar('MailboxID', bound=str)  # Mailbox identifier (UUID4)
 
 
 class MailboxDoesNotExist(RuntimeError):
@@ -166,9 +146,9 @@ def mailboxes() -> 'Mailboxes':
 
 
 class RestartStrategy(enum.Enum):
-    PERMANENT = enum.auto()  #: Always restart the task
-    TRANSIENT = enum.auto()  #: Restart the task only if it raises an exception
-    TEMPORARY = enum.auto()  #: Never restart a task
+    PERMANENT = enum.auto()  # Always restart the task
+    TRANSIENT = enum.auto()  # Restart the task only if it raises an exception
+    TEMPORARY = enum.auto()  # Never restart a task
 
 
 class _RetryStrategy:
@@ -208,35 +188,37 @@ class _RetryStrategy:
 
 
 class _RetryLogger:
+    logger = logging.getLogger(f'{__name__}._RetryLogger')
+
     def __init__(self, child_id: str) -> None:
         super().__init__()
-        self.logger = logbook.Logger(child_id)
+        self.child_id = child_id
 
     def __call__(self, retry_state: tenacity.RetryCallState) -> None:
         if isinstance(retry_state.outcome.exception(), trio.Cancelled):
-            self.logger.info('task cancelled')
+            self.logger.info('task cancelled', extra=dict(child_id=self.child_id))
 
         elif retry_state.outcome.failed:
             exception = retry_state.outcome.exception()
             exc_info = (exception.__class__, exception, exception.__traceback__)
-            self.logger.error('restarting task after failure', exc_info=exc_info)
+            self.logger.error('restarting task after failure', extra=dict(child_id=self.child_id), exc_info=exc_info)
 
         else:
-            self.logger.error('restarting task after unexpected exit')
+            self.logger.error('restarting task after unexpected exit', extra=dict(child_id=self.child_id))
 
 
 @dc.dataclass()
 class ChildSpec:
-    id: str  #: Task identifier
-    task: ta.Callable[..., ta.Awaitable[None]]  #: The task to run
-    args: list[ta.Any]  #: Arguments to pass to the task
-    restart: RestartStrategy = RestartStrategy.PERMANENT  #: When to restart the task
+    id: str  # Task identifier
+    task: ta.Callable[..., ta.Awaitable[None]]  # The task to run
+    args: list[ta.Any]  # Arguments to pass to the task
+    restart: RestartStrategy = RestartStrategy.PERMANENT  # When to restart the task
 
 
 @dc.dataclass()
 class SupervisorOptions:
-    max_restarts: int = 3  #: Maximum number of restart during a limited timespan
-    max_seconds: int = 5  #: Timespan duration
+    max_restarts: int = 3  # Maximum number of restart during a limited timespan
+    max_seconds: int = 5  # Timespan duration
 
 
 async def supervisor_start(
@@ -322,10 +304,10 @@ class App:
 
 @dc.dataclass()
 class AppSpec:
-    app: App  #: App app
-    start_arg: ta.Any  #: Argument to pass to the app's start function
-    permanent: bool = True  #: If `False`, the app won't be restarted if it exits
-    opts: SupervisorOptions | None = None  #: Options for the supervisor managing the app task
+    app: App  # App app
+    start_arg: ta.Any  # Argument to pass to the app's start function
+    permanent: bool = True  # If `False`, the app won't be restarted if it exits
+    opts: SupervisorOptions | None = None  # Options for the supervisor managing the app task
 
 
 class Apps:
@@ -334,10 +316,10 @@ class Apps:
         self.nursery = nursery
         self.registry = {}
 
-    async def start(self, app: AppSpec) -> None:
-        if app.app.__name__ not in self.registry:
-            local_nursery = await self.nursery.start(self._scope, app)
-            self.registry[app.app.__name__] = local_nursery
+    async def start(self, spec: AppSpec) -> None:
+        if spec.app.__name__ not in self.registry:
+            local_nursery = await self.nursery.start(self._scope, spec)
+            self.registry[spec.app.__name__] = local_nursery
 
     async def stop(self, app_name: str) -> None:
         if app_name in self.registry:
@@ -345,8 +327,8 @@ class Apps:
             local_nursery.cancel_scope.cancel()
 
     @classmethod
-    async def _scope(cls, app: AppSpec, task_status=trio.TASK_STATUS_IGNORED) -> None:
-        if app.permanent:
+    async def _scope(cls, spec: AppSpec, task_status=trio.TASK_STATUS_IGNORED) -> None:
+        if spec.permanent:
             restart = RestartStrategy.PERMANENT
         else:
             restart = RestartStrategy.TRANSIENT
@@ -356,13 +338,13 @@ class Apps:
 
             children = [
                 ChildSpec(
-                    id=app.app.__name__,
-                    task=app.app.start,
-                    args=[app.start_arg],
+                    id=spec.app.__name__,
+                    task=spec.app.start,
+                    args=[spec.start_arg],
                     restart=restart,
                 )
             ]
-            opts = app.opts if app.opts is not None else SupervisorOptions()
+            opts = spec.opts if spec.opts is not None else SupervisorOptions()
 
             nursery.start_soon(supervisor_start, children, opts)
 
@@ -381,32 +363,17 @@ def apps() -> Apps:
 # node
 
 
-def node_run(
-        apps_: list[AppSpec],
-        loglevel: LogLevel = LogLevel.NONE,
-        logformat: str | None = None,
-) -> None:
-    match loglevel:
-        case LogLevel.NONE:
-            handler = logging.NullHandler()
-
-        case _:
-            handler = logging.StreamHandler(sys.stdout, level=loglevel.to_logbook())
-
-    if logformat is not None:
-        handler.format_string = logformat
-
-    # with handler.applicationbound():  # FIXME
-    trio.run(_node_start, apps_)
+def node_run(specs: list[AppSpec]) -> None:
+    trio.run(_node_start, specs)
 
 
-async def _node_start(apps_: list[AppSpec]) -> None:
+async def _node_start(specs: list[AppSpec]) -> None:
     init_mailboxes()
 
     async with trio.open_nursery() as nursery:
         init_apps(nursery)
 
-        for app_spec in apps_:
+        for app_spec in specs:
             await apps().start(app_spec)
 
 
@@ -435,7 +402,7 @@ Continuation = _Loop | _Raise
 
 @dc.dataclass()
 class Reply:
-    payload: ta.Any  #: The response to send back
+    payload: ta.Any  # The response to send back
 
 
 @dc.dataclass()
@@ -445,7 +412,7 @@ class NoReply:
 
 @dc.dataclass()
 class Stop:
-    reason: BaseException | None =  None  #: Eventual exception that caused the gen_server to stop
+    reason: BaseException | None = None  # Eventual exception that caused the gen_server to stop
 
 
 @dc.dataclass()
@@ -522,9 +489,7 @@ async def _gen_server_loop(
 
                 match message:
                     case _CallMessage(source, payload):
-                        continuation, state = await _gen_server_handle_call(
-                            app, payload, source, state
-                        )
+                        continuation, state = await _gen_server_handle_call(app, payload, source, state)
 
                     case _CastMessage(payload):
                         continuation, state = await _gen_server_handle_cast(app, payload, state)
