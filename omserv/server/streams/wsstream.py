@@ -153,7 +153,7 @@ class WebsocketBuffer:
                 self.value = io.BytesIO()
         self.length += self.value.write(event.data)
         if self.length > self.max_length:
-            raise FrameTooLargeError()
+            raise FrameTooLargeError
 
     def clear(self) -> None:
         self.value = None
