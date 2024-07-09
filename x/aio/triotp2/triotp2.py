@@ -47,24 +47,6 @@ def getLogger(name: str) -> logging.Logger:
 MailboxID = ta.TypeVar('MailboxID', bound=str)  #: Mailbox identifier (UUID4)
 
 
-class MailboxRegistry:
-    def __init__(self):
-        super().__init__()
-        self.mailboxes = {}
-        self.names = {}
-
-
-context_mailbox_registry = contextvars.ContextVar('mailbox_registry')
-
-
-def _mailbox_init() -> None:
-    context_mailbox_registry.set(MailboxRegistry())
-
-
-def get_mailbox_registry() -> MailboxRegistry:
-    return context_mailbox_registry.get()
-
-
 class MailboxDoesNotExist(RuntimeError):
     def __init__(self, mid: MailboxID) -> None:
         super().__init__(f'mailbox {mid} does not exist')
@@ -80,115 +62,111 @@ class NameDoesNotExist(RuntimeError):
         super().__init__(f'mailbox {name} does not exist')
 
 
-def mailbox_create() -> MailboxID:
-    mid = str(uuid.uuid4())
+class Mailboxes:
+    def __init__(self):
+        super().__init__()
+        self.mailboxes = {}
+        self.names = {}
 
-    mailbox_registry = get_mailbox_registry().mailboxes
-    mailbox_registry[mid] = trio.open_memory_channel(0)
+    def create(self) -> MailboxID:
+        mid = str(uuid.uuid4())
 
-    return mid
+        self.mailboxes[mid] = trio.open_memory_channel(0)
 
+        return mid
 
-async def mailbox_destroy(mid: MailboxID) -> None:
-    mailbox_registry = get_mailbox_registry().mailboxes
+    async def destroy(self, mid: MailboxID) -> None:
+        if mid not in self.mailboxes:
+            raise MailboxDoesNotExist(mid)
 
-    if mid not in mailbox_registry:
-        raise MailboxDoesNotExist(mid)
+        self.unregister_all(mid)
 
-    mailbox_unregister_all(mid)
+        wchan, rchan = self.mailboxes.pop(mid)
+        await wchan.aclose()
+        await rchan.aclose()
 
-    wchan, rchan = mailbox_registry.pop(mid)
-    await wchan.aclose()
-    await rchan.aclose()
+    def register(self, mid: MailboxID, name: str) -> None:
+        if mid not in self.mailboxes:
+            raise MailboxDoesNotExist(mid)
 
+        if name in self.names:
+            raise NameAlreadyExist(name)
 
-def mailbox_register(mid: MailboxID, name: str) -> None:
-    mailbox_registry = get_mailbox_registry().mailboxes
+        self.names[name] = mid
 
-    if mid not in mailbox_registry:
-        raise MailboxDoesNotExist(mid)
+    def unregister(self, name: str) -> None:
+        if name not in self.names:
+            raise NameDoesNotExist(name)
 
-    name_registry = get_mailbox_registry().names
-    if name in name_registry:
-        raise NameAlreadyExist(name)
+        self.names.pop(name)
 
-    name_registry[name] = mid
+    def unregister_all(self, mid: MailboxID) -> None:
+        for name, mailbox_id in list(self.names.items()):
+            if mailbox_id == mid:
+                self.names.pop(name)
 
+    @contextlib.asynccontextmanager
+    async def open(self, name: str | None = None) -> ta.AsyncContextManager[MailboxID]:
+        mid = self.create()
 
-def mailbox_unregister(name: str) -> None:
-    name_registry = get_mailbox_registry().names
-    if name not in name_registry:
-        raise NameDoesNotExist(name)
-
-    name_registry.pop(name)
-
-
-def mailbox_unregister_all(mid: MailboxID) -> None:
-    name_registry = get_mailbox_registry().names
-
-    for name, mailbox_id in list(name_registry.items()):
-        if mailbox_id == mid:
-            name_registry.pop(name)
-
-
-@contextlib.asynccontextmanager
-async def mailbox_open(name: str | None = None) -> ta.AsyncContextManager[MailboxID]:
-    mid = mailbox_create()
-
-    try:
-        if name is not None:
-            mailbox_register(mid, name)
-
-        yield mid
-
-    finally:
-        await mailbox_destroy(mid)
-
-
-def _mailbox_resolve(name: str) -> MailboxID | None:
-    name_registry = get_mailbox_registry().names
-    return name_registry.get(name)
-
-
-async def mailbox_send(name_or_mid: str | MailboxID, message: ta.Any) -> None:
-    mailbox_registry = get_mailbox_registry().mailboxes
-
-    mid = _mailbox_resolve(name_or_mid)
-    if mid is None:
-        mid = name_or_mid
-
-    if mid not in mailbox_registry:
-        raise MailboxDoesNotExist(mid)
-
-    wchan, _ = mailbox_registry.get(mid)
-    await wchan.send(message)
-
-
-async def mailbox_receive(
-        mid: MailboxID,
-        timeout: float | None = None,
-        on_timeout: ta.Callable[[], ta.Awaitable[ta.Any]] = None,
-) -> ta.Any:
-    mailbox_registry = get_mailbox_registry().mailboxes
-
-    if mid not in mailbox_registry:
-        raise MailboxDoesNotExist(mid)
-
-    _, rchan = mailbox_registry.get(mid)
-
-    if timeout is not None:
         try:
-            with trio.fail_after(timeout):
-                return await rchan.receive()
+            if name is not None:
+                self.register(mid, name)
 
-        except trio.TooSlowError:
-            if on_timeout is None:
-                raise
+            yield mid
 
-            return await on_timeout()
+        finally:
+            await self.destroy(mid)
 
-    else:
-        return await rchan.receive()
+    def _resolve(self, name: str) -> MailboxID | None:
+        return self.names.get(name)
+
+    async def send(self, name_or_mid: str | MailboxID, message: ta.Any) -> None:
+        mid = self._resolve(name_or_mid)
+        if mid is None:
+            mid = name_or_mid
+
+        if mid not in self.mailboxes:
+            raise MailboxDoesNotExist(mid)
+
+        wchan, _ = self.mailboxes.get(mid)
+        await wchan.send(message)
+
+    async def receive(
+            self,
+            mid: MailboxID,
+            timeout: float | None = None,
+            on_timeout: ta.Callable[[], ta.Awaitable[ta.Any]] = None,
+    ) -> ta.Any:
+        if mid not in self.mailboxes:
+            raise MailboxDoesNotExist(mid)
+
+        _, rchan = self.mailboxes.get(mid)
+
+        if timeout is not None:
+            try:
+                with trio.fail_after(timeout):
+                    return await rchan.receive()
+
+            except trio.TooSlowError:
+                if on_timeout is None:
+                    raise
+
+                return await on_timeout()
+
+        else:
+            return await rchan.receive()
+
+
+_context_mailboxes = contextvars.ContextVar('mailboxes')
+
+
+def _mailbox_init() -> None:
+    _context_mailboxes.set(Mailboxes())
+
+
+def mailboxes() -> 'Mailboxes':
+    return _context_mailboxes.get()
 
 
 # supervisor
@@ -309,7 +287,7 @@ async def dynamic_supervisor_start(
         name: str | None = None,
         task_status=trio.TASK_STATUS_IGNORED,
 ) -> None:
-    async with mailbox_open(name) as mid:
+    async with mailboxes().open(name) as mid:
         task_status.started(mid)
 
         async with trio.open_nursery() as nursery:
@@ -320,7 +298,7 @@ async def dynamic_supervisor_start_child(
         name_or_mid: str | MailboxID,
         child_spec: child_spec,
 ) -> None:
-    await mailbox_send(name_or_mid, child_spec)
+    await mailboxes().send(name_or_mid, child_spec)
 
 
 async def _dynamic_supervisor_child_listener(
@@ -332,7 +310,7 @@ async def _dynamic_supervisor_child_listener(
     task_status.started(None)
 
     while True:
-        request = await mailbox_receive(mid)
+        request = await mailboxes().receive(mid)
 
         match request:
             case child_spec() as spec:
@@ -508,7 +486,7 @@ async def gen_server_call(
     wchan, rchan = trio.open_memory_channel(0)
     message = _CallMessage(source=wchan, payload=payload)
 
-    await mailbox_send(name_or_mid, message)
+    await mailboxes().send(name_or_mid, message)
 
     try:
         if timeout is not None:
@@ -533,7 +511,7 @@ async def gen_server_cast(
         payload: ta.Any,
 ) -> None:
     message = _CastMessage(payload=payload)
-    await mailbox_send(name_or_mid, message)
+    await mailboxes().send(name_or_mid, message)
 
 
 async def gen_server_reply(caller: trio.MemorySendChannel, response: ta.Any) -> None:
@@ -545,13 +523,13 @@ async def _gen_server_loop(
         init_arg: ta.Any | None,
         name: str | None,
 ) -> None:
-    async with mailbox_open(name) as mid:
+    async with mailboxes().open(name) as mid:
         try:
             state = await _gen_server_init(module, init_arg)
             looping = True
 
             while looping:
-                message = await mailbox_receive(mid)
+                message = await mailboxes().receive(mid)
 
                 match message:
                     case _CallMessage(source, payload):

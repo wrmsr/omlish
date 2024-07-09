@@ -11,7 +11,7 @@ class Producer:
         self.mbox = mbox
 
     async def __call__(self, message):
-        await t2.mailbox_send(self.mbox, message)
+        await t2.mailboxes().send(self.mbox, message)
 
 
 class Consumer:
@@ -34,11 +34,11 @@ class Consumer:
         return None
 
     async def __call__(self, task_status=trio.TASK_STATUS_IGNORED):
-        async with t2.mailbox_open(self.mbox) as mid:
+        async with t2.mailboxes().open(self.mbox) as mid:
             task_status.started(mid)
 
             cb = self.on_timeout if self.with_on_timeout else None
-            self.received_message = await t2.mailbox_receive(
+            self.received_message = await t2.mailboxes().receive(
                 mid,
                 timeout=self.timeout,
                 on_timeout=cb,
@@ -89,7 +89,7 @@ async def test_no_mailbox(mailbox_env):
         await producer("foo")
 
     with pytest.raises(t2.MailboxDoesNotExist):
-        await t2.mailbox_receive("pytest")
+        await t2.mailboxes().receive("pytest")
 
 
 @pytest.mark.trio
@@ -110,7 +110,7 @@ async def test_register(mailbox_env):
     consumer = Consumer("pytest")
 
     with pytest.raises(t2.MailboxDoesNotExist):
-        t2.mailbox_register("not-found", "pytest")
+        t2.mailboxes().register("not-found", "pytest")
 
     with assert_raises_star(t2.NameAlreadyExist):
         async with trio.open_nursery() as nursery:
@@ -127,10 +127,10 @@ async def test_unregister(mailbox_env):
         async with trio.open_nursery() as nursery:
             await nursery.start(consumer)
 
-            t2.mailbox_unregister("pytest")
+            t2.mailboxes().unregister("pytest")
 
             with pytest.raises(t2.NameDoesNotExist):
-                t2.mailbox_unregister("pytest")
+                t2.mailboxes().unregister("pytest")
 
             nursery.start_soon(producer, "foo")
 
@@ -138,4 +138,4 @@ async def test_unregister(mailbox_env):
 @pytest.mark.trio
 async def test_destroy_unknown(mailbox_env):
     with pytest.raises(t2.MailboxDoesNotExist):
-        await t2.mailbox_destroy("not-found")
+        await t2.mailboxes().destroy("not-found")
