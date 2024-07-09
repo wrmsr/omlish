@@ -154,9 +154,17 @@ async def _a_main():
 
 
 if __name__ == '__main__':
+    backend = 'asyncio'
+    #backend = 'trio'
+
+    if backend == 'asyncio':
+        if sys.platform in ('linux', 'linux2'):
+            import asyncio
+            asyncio.get_event_loop_policy().set_child_watcher(asyncio.unix_events.PidfdChildWatcher())
+
     logs.configure_standard_logging('DEBUG')
 
     anyio.run(
         _a_main,
-        # backend='trio',
+        backend=backend,
     )
