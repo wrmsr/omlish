@@ -123,6 +123,7 @@ ignore = [
     'F541',  # f-string without any placeholders
     'FBT002',  # boolean default positional argument in function definition
     'FBT003',  # boolean positional value in function call
+    'FIX001',  # line-contains-fixme
     'PGH004',  # use specific rule codes when using `noqa`
     'RUF100',  # unused blanket `noqa` directive'
     'T201',  # `print` found
