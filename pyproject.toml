@@ -1,8 +1,7 @@
 [build-system]
 requires = [
-    "python_version>='3.11'",
-    "setuptools>=70",
-    "setuptools_scm>=8",
+    'setuptools',
+    'setuptools_scm',
 ]
 build-backend = 'setuptools.build_meta'
 
@@ -11,13 +10,30 @@ build-backend = 'setuptools.build_meta'
 
 [project]
 name = 'omlish'
-#author = 'wrmsr'
-#url = 'https://github.com/wrmsr/omlish'
-#dynamic = ['version', 'description', 'classifiers']
+authors = [{name = 'wrmsr'}]
+urls = {source = 'https://github.com/wrmsr/omlish'}
+license = {text = 'BSD-3-Clause'}
+requires-python = '>=3.11'
 
-#[tool.setuptools.dynamic]
-##version = {attr = 'my_package.VERSION'}
-#readme = {file = ['README.rst', 'USAGE.rst']}
+dynamic = ['version']
+
+description = 'omlish'
+classifiers = [
+    'License :: OSI Approved :: BSD License',
+
+    'Intended Audience :: Developers',
+
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3 :: Only',
+
+    'Programming Language :: Python',
+    'Programming Language :: Python :: Implementation :: CPython',
+
+    'Operating System :: OS Independent',
+]
+
+[tool.setuptools.dynamic]
+version = {attr = 'omlish.__about__.__version__'}
 
 
 ##
