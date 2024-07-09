@@ -39,7 +39,7 @@ version = {attr = 'omlish.__about__.__version__'}
 
 [tool.setuptools.packages.find]
 include = ['omlish', 'omlish.*']
-exclude = ['tests', '*.tests', '*.tests.*']
+exclude = ['*.tests', '*.tests.*']
 
 
 ##
