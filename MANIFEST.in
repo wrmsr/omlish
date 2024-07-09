@@ -1,5 +1,1 @@
-graft omlish
-
-global-exclude **/__pycache__/**
 global-exclude **/conftest.py
-global-exclude **/tests/**
