@@ -230,7 +230,7 @@ _ci:
 
 .PYTHON: package
 package: clean-package
-	${PYTHON} setup.py sdist
+	${PYTHON} -mbuild
 
 
 ### Publish
