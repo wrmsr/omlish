@@ -21,7 +21,7 @@ class sample_app(t2.App):
 
 
 def test_node_run(test_data):
-    t2.node_run(
+    t2.node.run(
         [
             t2.AppSpec(
                 app=sample_app(),
