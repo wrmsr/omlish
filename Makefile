@@ -86,6 +86,15 @@ flake8: venv
 ruff: venv
 	${PYTHON} -mruff check ${SOURCES}
 
+.PHONY: ruff-fix
+ruff-fix: venv
+	if [ ! $$(git diff-index --quiet HEAD --) ] ; then \
+		echo 'there are uncommitted changes - refusing to run' ; \
+		exit 1 ; \
+	fi
+	echo ${PYTHON} -mruff check --fix ${SOURCES}
+
+
 .PHONY: mypy
 mypy: venv
 	${PYTHON} -mmypy --check-untyped-defs ${SOURCES}
