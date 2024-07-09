@@ -5,9 +5,6 @@ from .. import triotp2 as t2
 
 class echo_server(t2.Module):
 
-    async def start(self):
-        await t2.gen_server_start(self, init_arg=None, name=__name__)
-
     @staticmethod
     async def echo(message):
         return await t2.gen_server_call(__name__, ('echo', message))
@@ -15,6 +12,11 @@ class echo_server(t2.Module):
     @staticmethod
     async def stop():
         await t2.gen_server_cast(__name__, 'stop')
+
+    ##
+
+    async def start(self):
+        await t2.gen_server_start(self, init_arg=None, name=__name__)
 
     async def init(self, _init_arg):
         return 'nostate'

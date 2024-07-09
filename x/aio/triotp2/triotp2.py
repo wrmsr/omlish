@@ -15,13 +15,6 @@ import trio
 from .. import trio_util
 
 
-# helpers
-
-
-class Module:
-    pass
-
-
 # logging
 
 
@@ -34,7 +27,7 @@ class LogLevel(enum.Enum):
     CRITICAL = enum.auto()
 
     def to_logbook(self) -> int:
-        return logging.getLevelNamesMapping[self.name]
+        return logging.getLevelNamesMapping()[self.name]
 
 
 def getLogger(name: str) -> logging.Logger:
@@ -320,25 +313,11 @@ async def _dynamic_supervisor_child_listener(
                 pass
 
 
-#
+# apps
 
 
-class AppRegistry:
-    def __init__(self, nursery: trio.Nursery) -> None:
-        super().__init__()
-        self.nursery = nursery
-        self.registry = {}
-
-
-context_app_registry = contextvars.ContextVar('app_registry')
-
-
-def _app_init(nursery: trio.Nursery) -> None:
-    context_app_registry.set(AppRegistry(nursery))
-
-
-def get_app_registry() -> AppRegistry:
-    return context_app_registry.get()
+class Module:
+    pass
 
 
 @dc.dataclass()
@@ -349,51 +328,61 @@ class app_spec:
     opts: supervisor_options | None = None  #: Options for the supervisor managing the app task
 
 
-async def app_start(app: app_spec) -> None:
-    nursery = get_app_registry().nursery
-    registry = get_app_registry().registry
+class Apps:
+    def __init__(self, nursery: trio.Nursery) -> None:
+        super().__init__()
+        self.nursery = nursery
+        self.registry = {}
 
-    if app.module.__name__ not in registry:
-        local_nursery = await nursery.start(_app_scope, app)
-        registry[app.module.__name__] = local_nursery
+    async def start(self, app: app_spec) -> None:
+        if app.module.__name__ not in self.registry:
+            local_nursery = await self.nursery.start(self._scope, app)
+            self.registry[app.module.__name__] = local_nursery
+
+    async def stop(self, app_name: str) -> None:
+        if app_name in self.registry:
+            local_nursery = self.registry.pop(app_name)
+            local_nursery.cancel_scope.cancel()
+
+    @classmethod
+    async def _scope(cls, app: app_spec, task_status=trio.TASK_STATUS_IGNORED) -> None:
+        if app.permanent:
+            restart = restart_strategy.PERMANENT
+        else:
+            restart = restart_strategy.TRANSIENT
+
+        async with trio.open_nursery() as nursery:
+            task_status.started(nursery)
+
+            children = [
+                child_spec(
+                    id=app.module.__name__,
+                    task=app.module.start,
+                    args=[app.start_arg],
+                    restart=restart,
+                )
+            ]
+            opts = app.opts if app.opts is not None else supervisor_options()
+
+            nursery.start_soon(supervisor_start, children, opts)
 
 
-async def app_stop(app_name: str) -> None:
-    registry = get_app_registry().registry
-
-    if app_name in registry:
-        local_nursery = registry.pop(app_name)
-        local_nursery.cancel_scope.cancel()
+_context_apps = contextvars.ContextVar('apps')
 
 
-async def _app_scope(app: app_spec, task_status=trio.TASK_STATUS_IGNORED):
-    if app.permanent:
-        restart = restart_strategy.PERMANENT
+def init_apps(nursery: trio.Nursery) -> None:
+    _context_apps.set(Apps(nursery))
 
-    else:
-        restart = restart_strategy.TRANSIENT
 
-    async with trio.open_nursery() as nursery:
-        task_status.started(nursery)
-
-        children = [
-            child_spec(
-                id=app.module.__name__,
-                task=app.module.start,
-                args=[app.start_arg],
-                restart=restart,
-            )
-        ]
-        opts = app.opts if app.opts is not None else supervisor_options()
-
-        nursery.start_soon(supervisor_start, children, opts)
+def apps() -> Apps:
+    return _context_apps.get()
 
 
 # node
 
 
 def node_run(
-        apps: list[app_spec],
+        apps_: list[app_spec],
         loglevel: LogLevel = LogLevel.NONE,
         logformat: str | None = None,
 ) -> None:
@@ -408,17 +397,17 @@ def node_run(
         handler.format_string = logformat
 
     # with handler.applicationbound():  # FIXME
-    trio.run(_node_start, apps)
+    trio.run(_node_start, apps_)
 
 
-async def _node_start(apps: list[app_spec]) -> None:
+async def _node_start(apps_: list[app_spec]) -> None:
     init_mailboxes()
 
     async with trio.open_nursery() as nursery:
-        _app_init(nursery)
+        init_apps(nursery)
 
-        for app_spec in apps:
-            await app_start(app_spec)
+        for app_spec in apps_:
+            await apps().start(app_spec)
 
 
 # gen_server
