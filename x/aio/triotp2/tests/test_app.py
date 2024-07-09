@@ -43,9 +43,9 @@ class app_c(t2.Module):
 @pytest.mark.trio
 async def test_app_stop(test_data, log_handler):
     async with trio.open_nursery() as nursery:
-        t2._application_init(nursery)
+        t2._app_init(nursery)
 
-        await t2.application_start(
+        await t2.app_start(
             t2.app_spec(
                 module=app_c(),
                 start_arg=test_data,
@@ -54,7 +54,7 @@ async def test_app_stop(test_data, log_handler):
         )
 
         await trio.sleep(0.01)
-        await t2.application_stop(app_c.__name__)
+        await t2.app_stop(app_c.__name__)
 
     assert test_data.count == 1
 
@@ -63,9 +63,9 @@ async def test_app_stop(test_data, log_handler):
 @pytest.mark.parametrize("max_restarts", [1, 3, 5])
 async def test_app_automatic_restart_permanent(test_data, max_restarts, log_handler):
     async with trio.open_nursery() as nursery:
-        t2._application_init(nursery)
+        t2._app_init(nursery)
 
-        await t2.application_start(
+        await t2.app_start(
             t2.app_spec(
                 module=app_a(),
                 start_arg=test_data,
@@ -85,9 +85,9 @@ async def test_app_automatic_restart_permanent(test_data, max_restarts, log_hand
 async def test_app_automatic_restart_crash(test_data, max_restarts, log_handler):
     with assert_raises_star(RuntimeError):
         async with trio.open_nursery() as nursery:
-            t2._application_init(nursery)
+            t2._app_init(nursery)
 
-            await t2.application_start(
+            await t2.app_start(
                 t2.app_spec(
                     module=app_b(),
                     start_arg=test_data,
@@ -105,9 +105,9 @@ async def test_app_automatic_restart_crash(test_data, max_restarts, log_handler)
 @pytest.mark.trio
 async def test_app_no_automatic_restart(test_data, log_handler):
     async with trio.open_nursery() as nursery:
-        t2._application_init(nursery)
+        t2._app_init(nursery)
 
-        await t2.application_start(
+        await t2.app_start(
             t2.app_spec(
                 module=app_a(),
                 start_arg=test_data,
