@@ -92,7 +92,7 @@ ruff-fix: venv
 		echo 'there are uncommitted changes - refusing to run' ; \
 		exit 1 ; \
 	fi
-	echo ${PYTHON} -mruff check --fix ${SOURCES}
+	${PYTHON} -mruff check --fix ${SOURCES}
 
 
 .PHONY: mypy
