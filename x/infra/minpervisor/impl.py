@@ -24,9 +24,7 @@ Lookit:
  - https://github.com/oremanj/trio-monitor
  - https://bugs.python.org/issue39060
 
-
 ==
-
 
     for p in ps:
         p._proc.send_signal(signal.SIGTERM)
