@@ -47,14 +47,22 @@ def getLogger(name: str) -> logging.Logger:
 MailboxID = ta.TypeVar('MailboxID', bound=str)  #: Mailbox identifier (UUID4)
 
 
-class Registry:
+class MailboxRegistry:
     def __init__(self):
         super().__init__()
         self.mailboxes = {}
         self.names = {}
 
 
-context_registries = contextvars.ContextVar('registries')
+context_mailbox_registry = contextvars.ContextVar('mailbox_registry')
+
+
+def _mailbox_init() -> None:
+    context_mailbox_registry.set(MailboxRegistry())
+
+
+def get_mailbox_registry() -> MailboxRegistry:
+    return context_mailbox_registry.get()
 
 
 class MailboxDoesNotExist(RuntimeError):
@@ -72,21 +80,17 @@ class NameDoesNotExist(RuntimeError):
         super().__init__(f'mailbox {name} does not exist')
 
 
-def _mailbox_init() -> None:
-    context_registries.set(Registry())
-
-
 def mailbox_create() -> MailboxID:
     mid = str(uuid.uuid4())
 
-    mailbox_registry = context_registries.get().mailboxes
+    mailbox_registry = get_mailbox_registry().mailboxes
     mailbox_registry[mid] = trio.open_memory_channel(0)
 
     return mid
 
 
 async def mailbox_destroy(mid: MailboxID) -> None:
-    mailbox_registry = context_registries.get().mailboxes
+    mailbox_registry = get_mailbox_registry().mailboxes
 
     if mid not in mailbox_registry:
         raise MailboxDoesNotExist(mid)
@@ -99,12 +103,12 @@ async def mailbox_destroy(mid: MailboxID) -> None:
 
 
 def mailbox_register(mid: MailboxID, name: str) -> None:
-    mailbox_registry = context_registries.get().mailboxes
+    mailbox_registry = get_mailbox_registry().mailboxes
 
     if mid not in mailbox_registry:
         raise MailboxDoesNotExist(mid)
 
-    name_registry = context_registries.get().names
+    name_registry = get_mailbox_registry().names
     if name in name_registry:
         raise NameAlreadyExist(name)
 
@@ -112,7 +116,7 @@ def mailbox_register(mid: MailboxID, name: str) -> None:
 
 
 def mailbox_unregister(name: str) -> None:
-    name_registry = context_registries.get().names
+    name_registry = get_mailbox_registry().names
     if name not in name_registry:
         raise NameDoesNotExist(name)
 
@@ -120,7 +124,7 @@ def mailbox_unregister(name: str) -> None:
 
 
 def mailbox_unregister_all(mid: MailboxID) -> None:
-    name_registry = context_registries.get().names
+    name_registry = get_mailbox_registry().names
 
     for name, mailbox_id in list(name_registry.items()):
         if mailbox_id == mid:
@@ -142,12 +146,12 @@ async def mailbox_open(name: str | None = None) -> ta.AsyncContextManager[Mailbo
 
 
 def _mailbox_resolve(name: str) -> MailboxID | None:
-    name_registry = context_registries.get().names
+    name_registry = get_mailbox_registry().names
     return name_registry.get(name)
 
 
 async def mailbox_send(name_or_mid: str | MailboxID, message: ta.Any) -> None:
-    mailbox_registry = context_registries.get().mailboxes
+    mailbox_registry = get_mailbox_registry().mailboxes
 
     mid = _mailbox_resolve(name_or_mid)
     if mid is None:
@@ -165,7 +169,7 @@ async def mailbox_receive(
         timeout: float | None = None,
         on_timeout: ta.Callable[[], ta.Awaitable[ta.Any]] = None,
 ) -> ta.Any:
-    mailbox_registry = context_registries.get().mailboxes
+    mailbox_registry = get_mailbox_registry().mailboxes
 
     if mid not in mailbox_registry:
         raise MailboxDoesNotExist(mid)
@@ -341,8 +345,22 @@ async def _dynamic_supervisor_child_listener(
 #
 
 
+class AppRegistry:
+    def __init__(self, nursery: trio.Nursery) -> None:
+        super().__init__()
+        self.nursery = nursery
+        self.registry = {}
+
+
 context_app_nursery = contextvars.ContextVar('app_nursery')
-context_app_registry = contextvars.ContextVar('app_registry')
+
+
+def _application_init(nursery: trio.Nursery) -> None:
+    context_app_registry.set(AppRegistry(nursery))
+
+
+def get_app_registry() -> AppRegistry:
+    return context_app_registry.get()
 
 
 @dc.dataclass()
@@ -353,14 +371,9 @@ class app_spec:
     opts: supervisor_options | None = None  #: Options for the supervisor managing the application task
 
 
-def _application_init(nursery: trio.Nursery) -> None:
-    context_app_nursery.set(nursery)
-    context_app_registry.set({})
-
-
 async def application_start(app: app_spec) -> None:
-    nursery = context_app_nursery.get()
-    registry = context_app_registry.get()
+    nursery = get_app_registry().nursery
+    registry = get_app_registry().registry
 
     if app.module.__name__ not in registry:
         local_nursery = await nursery.start(_app_scope, app)
@@ -368,7 +381,7 @@ async def application_start(app: app_spec) -> None:
 
 
 async def application_stop(app_name: str) -> None:
-    registry = context_app_registry.get()
+    registry = get_app_registry().registry
 
     if app_name in registry:
         local_nursery = registry.pop(app_name)
