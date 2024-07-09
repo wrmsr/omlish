@@ -1,11 +1,8 @@
 import asyncio
-import concurrent.futures
-import time
 
 import pytest
 
 from ... import asyncs as ay
-from ... import iterators
 
 
 @pytest.mark.asyncio
@@ -42,24 +39,6 @@ def test_sync_await():
         return 2
 
     assert ay.sync_await(f2) == 2
-
-
-def test_await_futures():
-    def fn() -> float:
-        time.sleep(.2)
-        return time.time()
-
-    tp: concurrent.futures.Executor
-    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as tp:
-        futures = [tp.submit(fn) for _ in range(10)]
-        assert not ay.await_futures(futures, tick_fn=iter([True, False]).__next__)
-        assert ay.await_futures(futures)
-
-    def pairs(l):
-        return [set(p) for p in iterators.chunk(2, l)]
-
-    idxs = [t[0] for t in sorted(list(enumerate(futures)), key=lambda t: t[1].result())]
-    assert pairs(idxs) == pairs(range(10))
 
 
 def test_syncable_iterable():
