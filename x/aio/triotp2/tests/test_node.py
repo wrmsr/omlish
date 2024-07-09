@@ -22,7 +22,7 @@ class sample_app(t2.Module):
 
 def test_node_run(test_data):
     t2.node_run(
-        apps=[
+        [
             t2.app_spec(
                 module=sample_app(),
                 start_arg=test_data,
