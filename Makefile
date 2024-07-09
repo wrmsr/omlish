@@ -98,7 +98,6 @@ ruff-fix: venv
 	fi
 	${PYTHON} -mruff check --fix ${SOURCES}
 
-
 .PHONY: mypy
 mypy: venv
 	${PYTHON} -mmypy --check-untyped-defs ${SOURCES}
