@@ -88,7 +88,7 @@ ruff: venv
 
 .PHONY: ruff-fix
 ruff-fix: venv
-	if [ ! $$(git diff-index --quiet HEAD --) ] ; then \
+	if ! $$(git diff-index --quiet HEAD --) ; then \
 		echo 'there are uncommitted changes - refusing to run' ; \
 		exit 1 ; \
 	fi
