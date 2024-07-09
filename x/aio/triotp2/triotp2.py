@@ -68,17 +68,17 @@ context_name_registry = contextvars.ContextVar('name_registry')
 
 
 class MailboxDoesNotExist(RuntimeError):
-    def __init__(self, mid: MailboxID):
+    def __init__(self, mid: MailboxID) -> None:
         super().__init__(f'mailbox {mid} does not exist')
 
 
 class NameAlreadyExist(RuntimeError):
-    def __init__(self, name: str):
+    def __init__(self, name: str) -> None:
         super().__init__(f'mailbox {name} already registered')
 
 
 class NameDoesNotExist(RuntimeError):
-    def __init__(self, name: str):
+    def __init__(self, name: str) -> None:
         super().__init__(f'mailbox {name} does not exist')
 
 
@@ -227,7 +227,7 @@ class _retry_strategy:
             restart: restart_strategy,
             max_restarts: int,
             max_seconds: float,
-    ):
+    ) -> None:
         self.restart = restart
         self.max_restarts = max_restarts
         self.max_seconds = max_seconds
@@ -257,7 +257,7 @@ class _retry_strategy:
 
 
 class _retry_logger:
-    def __init__(self, child_id: str):
+    def __init__(self, child_id: str) -> None:
         self.logger = logbook.Logger(child_id)
 
     def __call__(self, retry_state: tenacity.RetryCallState) -> None:
@@ -358,12 +358,8 @@ context_app_registry = contextvars.ContextVar('app_registry')
 class app_spec:
     module: types.ModuleType  #: Application module
     start_arg: ta.Any  #: Argument to pass to the module's start function
-    permanent: bool = (
-        True  #: If `False`, the application won't be restarted if it exits
-    )
-    opts: supervisor_options | None = (
-        None  #: Options for the supervisor managing the application task
-    )
+    permanent: bool = True  #: If `False`, the application won't be restarted if it exits
+    opts: supervisor_options | None =  None  #: Options for the supervisor managing the application task
 
 
 def _application_init(nursery: trio.Nursery) -> None:
@@ -478,9 +474,7 @@ class NoReply:
 
 @dc.dataclass()
 class Stop:
-    reason: BaseException | None = (
-        None  #: Eventual exception that caused the gen_server to stop
-    )
+    reason: BaseException | None =  None  #: Eventual exception that caused the gen_server to stop
 
 
 @dc.dataclass()
@@ -669,9 +663,7 @@ async def _gen_server_handle_cast(
                 continuation = _Loop(yes=False)
 
         case _:
-            raise TypeError(
-                f'{module.__name__}.handle_cast did not return a valid value'
-            )
+            raise TypeError(f'{module.__name__}.handle_cast did not return a valid value')
 
     return continuation, state
 
@@ -702,8 +694,6 @@ async def _gen_server_handle_info(
                 continuation = _Loop(yes=False)
 
         case _:
-            raise TypeError(
-                f'{module.__name__}.handle_info did not return a valid value'
-            )
+            raise TypeError(f'{module.__name__}.handle_info did not return a valid value')
 
     return continuation, state
