@@ -171,20 +171,6 @@ class RestartStrategy(enum.Enum):
     TEMPORARY = enum.auto()  #: Never restart a task
 
 
-@dc.dataclass()
-class ChildSpec:
-    id: str  #: Task identifier
-    task: ta.Callable[..., ta.Awaitable[None]]  #: The task to run
-    args: list[ta.Any]  #: Arguments to pass to the task
-    restart: RestartStrategy = RestartStrategy.PERMANENT  #: When to restart the task
-
-
-@dc.dataclass()
-class SupervisorOptions:
-    max_restarts: int = 3  #: Maximum number of restart during a limited timespan
-    max_seconds: int = 5  #: Timespan duration
-
-
 class _RetryStrategy:
     def __init__(
             self,
@@ -237,6 +223,20 @@ class _RetryLogger:
 
         else:
             self.logger.error('restarting task after unexpected exit')
+
+
+@dc.dataclass()
+class ChildSpec:
+    id: str  #: Task identifier
+    task: ta.Callable[..., ta.Awaitable[None]]  #: The task to run
+    args: list[ta.Any]  #: Arguments to pass to the task
+    restart: RestartStrategy = RestartStrategy.PERMANENT  #: When to restart the task
+
+
+@dc.dataclass()
+class SupervisorOptions:
+    max_restarts: int = 3  #: Maximum number of restart during a limited timespan
+    max_seconds: int = 5  #: Timespan duration
 
 
 async def supervisor_start(
