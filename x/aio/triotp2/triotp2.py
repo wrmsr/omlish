@@ -139,7 +139,7 @@ def init_mailboxes() -> None:
     _context_mailboxes.set(Mailboxes())
 
 
-def mailboxes() -> 'Mailboxes':
+def mailboxes() -> Mailboxes:
     return _context_mailboxes.get()
 
 
