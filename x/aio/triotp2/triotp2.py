@@ -222,37 +222,41 @@ class SupervisorOptions:
     max_seconds: int = 5  # Timespan duration
 
 
-async def supervisor_start(
-        child_specs: list[ChildSpec],
-        opts: SupervisorOptions,
-        task_status=trio.TASK_STATUS_IGNORED,
-) -> None:
-    async with trio.open_nursery() as nursery:
-        for spec in child_specs:
-            await nursery.start(_supervisor_child_monitor, spec, opts)
+class supervisor(lang.Namespace):  # noqa
+    @classmethod
+    async def start(
+            cls,
+            child_specs: list[ChildSpec],
+            opts: SupervisorOptions,
+            task_status=trio.TASK_STATUS_IGNORED,
+    ) -> None:
+        async with trio.open_nursery() as nursery:
+            for spec in child_specs:
+                await nursery.start(cls._child_monitor, spec, opts)
 
+            task_status.started(None)
+
+    @classmethod
+    async def _child_monitor(
+            cls,
+            spec: ChildSpec,
+            opts: SupervisorOptions,
+            task_status=trio.TASK_STATUS_IGNORED,
+    ) -> None:
         task_status.started(None)
 
+        @tenacity.retry(
+            retry=_RetryStrategy(spec.restart, opts.max_restarts, opts.max_seconds),
+            reraise=True,
+            sleep=trio.sleep,
+            after=_RetryLogger(spec.id),
+        )
+        async def _child_runner():
+            with trio_util.defer_to_cancelled():
+                async with trio.open_nursery() as nursery:
+                    nursery.start_soon(spec.task, *spec.args)
 
-async def _supervisor_child_monitor(
-        spec: ChildSpec,
-        opts: SupervisorOptions,
-        task_status=trio.TASK_STATUS_IGNORED,
-) -> None:
-    task_status.started(None)
-
-    @tenacity.retry(
-        retry=_RetryStrategy(spec.restart, opts.max_restarts, opts.max_seconds),
-        reraise=True,
-        sleep=trio.sleep,
-        after=_RetryLogger(spec.id),
-    )
-    async def _child_runner():
-        with trio_util.defer_to_cancelled():
-            async with trio.open_nursery() as nursery:
-                nursery.start_soon(spec.task, *spec.args)
-
-    await _child_runner()
+        await _child_runner()
 
 
 # dynamic_supervisor
@@ -295,7 +299,7 @@ class dynamic_supervisor(lang.Namespace):  # noqa
 
             match request:
                 case ChildSpec() as spec:
-                    await nursery.start(_supervisor_child_monitor, spec, opts)
+                    await nursery.start(supervisor._child_monitor, spec, opts)  # noqa
 
                 case _:
                     pass
@@ -361,7 +365,7 @@ class Apps:
             ]
             opts = spec.opts if spec.opts is not None else SupervisorOptions()
 
-            nursery.start_soon(supervisor_start, children, opts)
+            nursery.start_soon(supervisor.start, children, opts)
 
 
 _context_apps = contextvars.ContextVar('apps')
