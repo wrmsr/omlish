@@ -14,6 +14,6 @@ def log_handler():
 
 @pytest.fixture
 def mailbox_env():
-    t2._mailboxes_init()
+    t2.init_mailboxes()
 
 
