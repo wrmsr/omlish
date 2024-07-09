@@ -38,10 +38,10 @@ async def test_automatic_restart_permanent(max_restarts, log_handler, mailbox_en
             max_restarts=max_restarts,
             max_seconds=5,
         )
-        mid = await nursery.start(t2.dynamic_supervisor_start, opts)
+        mid = await nursery.start(t2.dynamic_supervisor.start, opts)
 
         for child_spec in children:
-            await t2.dynamic_supervisor_start_child(mid, child_spec)
+            await t2.dynamic_supervisor.start_child(mid, child_spec)
 
         await trio.sleep(0.5)
         nursery.cancel_scope.cancel()
@@ -78,10 +78,10 @@ async def test_automatic_restart_crash(
                 max_restarts=max_restarts,
                 max_seconds=5,
             )
-            mid = await nursery.start(t2.dynamic_supervisor_start, opts)
+            mid = await nursery.start(t2.dynamic_supervisor.start, opts)
 
             for child_spec in children:
-                await t2.dynamic_supervisor_start_child(mid, child_spec)
+                await t2.dynamic_supervisor.start_child(mid, child_spec)
 
             await trio.sleep(0.5)
             nursery.cancel_scope.cancel()
@@ -114,10 +114,10 @@ async def test_no_restart(strategy, log_handler, mailbox_env):
             max_restarts=3,
             max_seconds=5,
         )
-        mid = await nursery.start(t2.dynamic_supervisor_start, opts)
+        mid = await nursery.start(t2.dynamic_supervisor.start, opts)
 
         for child_spec in children:
-            await t2.dynamic_supervisor_start_child(mid, child_spec)
+            await t2.dynamic_supervisor.start_child(mid, child_spec)
 
         await trio.sleep(0.5)
         nursery.cancel_scope.cancel()
