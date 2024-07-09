@@ -62,6 +62,6 @@ def parse_timedelta(s: str) -> datetime.timedelta:
         for k, v in match.groupdict().items()
         if k != 'negative' and v is not None}
     if not timedelta_kwargs:
-        raise ValueError()
+        raise ValueError
     sign = -1 if match.groupdict().get('negative') else 1
     return sign * datetime.timedelta(**timedelta_kwargs)

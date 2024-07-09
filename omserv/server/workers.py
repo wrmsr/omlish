@@ -25,7 +25,7 @@ log = logging.getLogger(__name__)
 
 async def raise_shutdown(shutdown_event: ta.Callable[..., ta.Awaitable]) -> None:
     await shutdown_event()
-    raise ShutdownError()
+    raise ShutdownError
 
 
 # Errors that accept(2) can return, and which indicate that the system is overloaded
@@ -179,7 +179,7 @@ async def worker_serve(
 
                     await anyio.sleep_forever()
             except BaseExceptionGroup as error:
-                _, other_errors = error.split((ShutdownError, KeyboardInterrupt))
+                _, other_errors = error.split((ShutdownError, KeyboardInterrupt))  # noqa
                 if other_errors is not None:
                     raise other_errors
             finally:
