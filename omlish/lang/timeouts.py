@@ -1,4 +1,3 @@
-import functools
 import time
 import typing as ta
 
@@ -7,7 +6,7 @@ TimeoutFn: ta.TypeAlias = ta.Callable[[], float]
 Timeout = TimeoutFn | float
 
 
-class TimeoutTicker:
+class DeadlineTimeout:
     def __init__(
             self,
             deadline: float,
@@ -18,12 +17,21 @@ class TimeoutTicker:
         self.exc = exc
 
     def __call__(self) -> float:
-        if (rem := time.time() - self.deadline) > 0:
+        if (rem := self.deadline - time.time()) > 0:
             return rem
         raise self.exc
 
 
+class InfiniteTimeout:
+    def __call__(self) -> float:
+        return float('inf')
+
+
 def timeout_fn(t: Timeout | None) -> TimeoutFn:
-    raise NotImplementedError
-
-
+    if t is None:
+        return InfiniteTimeout()
+    if callable(t):
+        return t
+    if isinstance(t, (float, int)):
+        return DeadlineTimeout(time.time() + t)
+    raise TypeError(t)
