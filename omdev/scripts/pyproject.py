@@ -4,6 +4,7 @@ TODO:
  - check / tests, src dir sets
  - ci
  - build / package / publish
+  - {pkg_name: [src_dirs]}, default excludes, generate MANIFST.in, ...
 
 lookit:
  - https://pdm-project.org/en/latest/
