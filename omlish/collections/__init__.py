@@ -1,63 +1,98 @@
-from .coerce import abs_set  # noqa
-from .coerce import abs_set_of  # noqa
-from .coerce import abs_set_of_or_none  # noqa
-from .coerce import abs_set_or_none  # noqa
-from .coerce import frozenset_  # noqa
-from .coerce import frozenset_of  # noqa
-from .coerce import frozenset_of_or_none  # noqa
-from .coerce import frozenset_or_none  # noqa
-from .coerce import map  # noqa
-from .coerce import map_of  # noqa
-from .coerce import map_of_or_none  # noqa
-from .coerce import map_or_none  # noqa
-from .coerce import opt_abs_set  # noqa
-from .coerce import opt_abs_set_of  # noqa
-from .coerce import opt_frozenset  # noqa
-from .coerce import opt_frozenset_of  # noqa
-from .coerce import opt_map  # noqa
-from .coerce import opt_map_of  # noqa
-from .coerce import opt_seq  # noqa
-from .coerce import opt_seq_of  # noqa
-from .coerce import seq  # noqa
-from .coerce import seq_of  # noqa
-from .coerce import seq_of_or_none  # noqa
-from .coerce import seq_or_none  # noqa
-from .frozen import Frozen  # noqa
-from .frozen import FrozenDict  # noqa
-from .frozen import FrozenList  # noqa
-from .frozen import frozendict  # noqa
-from .frozen import frozenlist  # noqa
-from .identity import IdentityKeyDict  # noqa
-from .identity import IdentitySet  # noqa
-from .identity import IdentityWrapper  # noqa
-from .indexed import IndexedSeq  # noqa
-from .indexed import IndexedSetSeq  # noqa
-from .mappings import MissingDict  # noqa
-from .mappings import TypeMap  # noqa
-from .mappings import TypeMultiMap  # noqa
-from .mappings import guarded_map_update  # noqa
-from .mappings import multikey_dict  # noqa
-from .mappings import yield_dict_init  # noqa
-from .ordered import OrderedFrozenSet  # noqa
-from .ordered import OrderedSet  # noqa
-from .persistent import PersistentMap  # noqa
-from .skiplist import SkipList  # noqa
-from .skiplist import SkipListDict  # noqa
-from .sorted import SortedCollection  # noqa
-from .sorted import SortedListDict  # noqa
-from .sorted import SortedMapping  # noqa
-from .sorted import SortedMutableMapping  # noqa
-from .treapmap import new_treap_map  # noqa
-from .unmodifiable import Unmodifiable  # noqa
-from .unmodifiable import UnmodifiableMapping  # noqa
-from .unmodifiable import UnmodifiableSequence  # noqa
-from .unmodifiable import UnmodifiableSet  # noqa
-from .utils import all_equal  # noqa
-from .utils import all_not_equal  # noqa
-from .utils import indexes  # noqa
-from .utils import key_cmp  # noqa
-from .utils import mut_toposort  # noqa
-from .utils import partition  # noqa
-from .utils import toposort  # noqa
-from .utils import unique  # noqa
-from .utils import unique_dict  # noqa
+from .coerce import (  # noqa
+    abs_set,
+    abs_set_of,
+    abs_set_of_or_none,
+    abs_set_or_none,
+    frozenset_,
+    frozenset_of,
+    frozenset_of_or_none,
+    frozenset_or_none,
+    map,
+    map_of,
+    map_of_or_none,
+    map_or_none,
+    opt_abs_set,
+    opt_abs_set_of,
+    opt_frozenset,
+    opt_frozenset_of,
+    opt_map,
+    opt_map_of,
+    opt_seq,
+    opt_seq_of,
+    seq,
+    seq_of,
+    seq_of_or_none,
+    seq_or_none,
+)
+
+from .frozen import (  # noqa
+    Frozen,
+    FrozenDict,
+    FrozenList,
+    frozendict,
+    frozenlist,
+)
+
+from .identity import (  # noqa
+    IdentityKeyDict,
+    IdentitySet,
+    IdentityWrapper,
+)
+
+from .indexed import (  # noqa
+    IndexedSeq,
+    IndexedSetSeq,
+)
+
+from .mappings import (  # noqa
+    MissingDict,
+    TypeMap,
+    TypeMultiMap,
+    guarded_map_update,
+    multikey_dict,
+    yield_dict_init,
+)
+
+from .ordered import (  # noqa
+    OrderedFrozenSet,
+    OrderedSet,
+)
+
+from .persistent import (  # noqa
+    PersistentMap,
+)
+
+from .skiplist import (  # noqa
+    SkipList,
+    SkipListDict,
+)
+
+from .sorted import (  # noqa
+    SortedCollection,
+    SortedListDict,
+    SortedMapping,
+    SortedMutableMapping,
+)
+
+from .treapmap import (  # noqa
+    new_treap_map,
+)
+
+from .unmodifiable import (  # noqa
+    Unmodifiable,
+    UnmodifiableMapping,
+    UnmodifiableSequence,
+    UnmodifiableSet,
+)
+
+from .utils import (  # noqa
+    all_equal,
+    all_not_equal,
+    indexes,
+    key_cmp,
+    mut_toposort,
+    partition,
+    toposort,
+    unique,
+    unique_dict,
+)
