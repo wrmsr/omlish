@@ -27,8 +27,21 @@ def test_function():
         pass
 
     @f.register
-    def f_a_or_b(x: ta.Union[A, B]):  # FIXME: A | B
+    def f_a_or_b(x: ta.Union[A, B]):  # noqa
         return 'a_or_b'
 
     assert f(A()) == 'a_or_b'
     assert f(B()) == 'a_or_b'
+
+    class C:
+        pass
+
+    class D:
+        pass
+
+    @f.register
+    def f_c_or_d(x: C | D):
+        return 'c_or_d'
+
+    assert f(C()) == 'c_or_d'
+    assert f(D()) == 'c_or_d'
