@@ -31,7 +31,7 @@ async def start():
      ),
    ]
    opts = t2.SupervisorOptions()
-   await t2.supervisor_start(children, opts)
+   await t2.supervisor.start(children, opts)
 
 
 if __name__ == '__main__':

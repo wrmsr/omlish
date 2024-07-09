@@ -38,7 +38,7 @@ async def test_automatic_restart_permanent(max_restarts, log_handler):
             max_restarts=max_restarts,
             max_seconds=5,
         )
-        await nursery.start(t2.supervisor_start, children, opts)
+        await nursery.start(t2.supervisor.start, children, opts)
 
     assert test_data.exec_count == (max_restarts + 1)
     assert log_handler.has_errors
@@ -70,7 +70,7 @@ async def test_automatic_restart_crash(max_restarts, strategy, log_handler):
                 max_restarts=max_restarts,
                 max_seconds=5,
             )
-            await nursery.start(t2.supervisor_start, children, opts)
+            await nursery.start(t2.supervisor.start, children, opts)
 
     assert test_data.exec_count == (max_restarts + 1)
     assert log_handler.has_errors
@@ -100,7 +100,7 @@ async def test_no_restart(strategy, log_handler):
             max_restarts=3,
             max_seconds=5,
         )
-        await nursery.start(t2.supervisor_start, children, opts)
+        await nursery.start(t2.supervisor.start, children, opts)
 
     assert test_data.exec_count == 1
     assert not log_handler.has_errors

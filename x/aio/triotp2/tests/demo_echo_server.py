@@ -74,7 +74,7 @@ async def start():
         max_restarts=3,
         max_seconds=5,
     )
-    await t2.supervisor_start(children, opts)
+    await t2.supervisor.start(children, opts)
 
 
 if __name__ == '__main__':
