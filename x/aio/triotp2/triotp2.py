@@ -228,6 +228,7 @@ class _retry_strategy:
             max_restarts: int,
             max_seconds: float,
     ) -> None:
+        super().__init__()
         self.restart = restart
         self.max_restarts = max_restarts
         self.max_seconds = max_seconds
@@ -258,6 +259,7 @@ class _retry_strategy:
 
 class _retry_logger:
     def __init__(self, child_id: str) -> None:
+        super().__init__()
         self.logger = logbook.Logger(child_id)
 
     def __call__(self, retry_state: tenacity.RetryCallState) -> None:
