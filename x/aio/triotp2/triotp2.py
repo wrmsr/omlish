@@ -1,3 +1,4 @@
+import abc
 import collections
 import contextlib
 import contextvars
@@ -298,8 +299,15 @@ async def _dynamic_supervisor_child_listener(
 # apps
 
 
-class App:
-    pass
+class App(abc.ABC):
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        if not hasattr(cls, '__name__'):
+            raise TypeError
+
+    @abc.abstractmethod
+    async def start(self, start_arg: ta.Any) -> None:
+        raise NotImplementedError
 
 
 @dc.dataclass()
