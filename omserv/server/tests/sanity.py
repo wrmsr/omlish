@@ -41,7 +41,7 @@ async def sanity_framework(
                     'type': 'http.response.start',
                     'status': 200,
                     'headers': [(b'content-length', str(content_length).encode())],
-                }
+                },
             )
             await send({'type': 'http.response.body', 'body': response, 'more_body': False})
             break

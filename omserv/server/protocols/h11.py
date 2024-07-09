@@ -107,7 +107,7 @@ class H11Protocol(Protocol):
         self.client = client
         self.config = config
         self.connection: h11.Connection | H11WSConnection = h11.Connection(
-            h11.SERVER, max_incomplete_event_size=self.config.h11_max_incomplete_size
+            h11.SERVER, max_incomplete_event_size=self.config.h11_max_incomplete_size,
         )
         self.context = context
         self.keep_alive_requests = 0
@@ -137,14 +137,14 @@ class H11Protocol(Protocol):
                     h11.Response(
                         headers=headers,
                         status_code=event.status_code,
-                    )
+                    ),
                 )
             else:
                 await self._send_h11_event(
                     h11.InformationalResponse(
                         headers=list(itertools.chain(event.headers, response_headers(self.config, 'h11'))),
                         status_code=event.status_code,
-                    )
+                    ),
                 )
 
         elif isinstance(event, InformationalResponse):
@@ -170,8 +170,8 @@ class H11Protocol(Protocol):
             if self.connection.they_are_waiting_for_100_continue:
                 await self._send_h11_event(
                     h11.InformationalResponse(
-                        status_code=100, headers=response_headers(self.config, 'h11')
-                    )
+                        status_code=100, headers=response_headers(self.config, 'h11'),
+                    ),
                 )
 
             try:
@@ -259,7 +259,7 @@ class H11Protocol(Protocol):
                 http_version=request.http_version.decode(),
                 method=request.method.decode('ascii').upper(),
                 raw_path=request.target,
-            )
+            ),
         )
         self.keep_alive_requests += 1
         await self.context.mark_request()
@@ -283,9 +283,9 @@ class H11Protocol(Protocol):
                     itertools.chain(
                         [(b'content-length', b'0'), (b'connection', b'close')],
                         response_headers(self.config, 'h11'),
-                    )
+                    ),
                 ),
-            )
+            ),
         )
         await self._send_h11_event(h11.EndOfMessage())
 
@@ -336,10 +336,10 @@ class H11Protocol(Protocol):
                         (b'connection', b'upgrade'),
                         (b'upgrade', b'h2c'),
                     ],
-                )
+                ),
             )
             raise H2CProtocolRequiredError(self.connection.trailing_data[0], event)
         elif event.method == b'PRI' and event.target == b'*' and event.http_version == b'2.0':
             raise H2ProtocolAssumedError(
-                b'PRI * HTTP/2.0\r\n\r\n' + self.connection.trailing_data[0]
+                b'PRI * HTTP/2.0\r\n\r\n' + self.connection.trailing_data[0],
             )

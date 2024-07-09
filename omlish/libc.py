@@ -94,7 +94,7 @@ libc.mmap.argtypes = [
     ct.c_int,
     ct.c_int,
     ct.c_int,
-    ct.c_size_t
+    ct.c_size_t,
 ]
 mmap = libc.mmap
 
@@ -138,7 +138,7 @@ elif DARWIN:
 libc.munmap.restype = ct.c_int
 libc.munmap.argtypes = [
     ct.c_void_p,
-    ct.c_size_t
+    ct.c_size_t,
 ]
 munmap = libc.munmap
 
@@ -148,7 +148,7 @@ libc.mprotect.restype = ct.c_int
 libc.mprotect.argtypes = [
     ct.c_void_p,
     ct.c_size_t,
-    ct.c_int
+    ct.c_int,
 ]
 mprotect = libc.mprotect
 
@@ -164,7 +164,7 @@ if LINUX:
         ct.c_void_p,
         ct.c_size_t,
         ct.c_size_t,
-        ct.c_int
+        ct.c_int,
     ]
     mremap = libc.mremap
 

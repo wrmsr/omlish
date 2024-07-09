@@ -58,8 +58,8 @@ async def _test_server_websocket():
                     extra_headers=[
                         (b'date', b'Thu, 01 Jan 1970 01:23:20 GMT'),
                         (b'server', b'omlicorn-h11'),
-                    ]
-                )
+                    ],
+                ),
             ]
 
             await conn.send(client.send(wsproto.events.BytesMessage(data=SANITY_REQUEST_BODY)))
@@ -79,7 +79,7 @@ async def _test_server_websocket():
             worker_serve,
             ASGIWrapper(sanity_framework),
             Config(
-                bind=(f'127.0.0.1:{port}',)
+                bind=(f'127.0.0.1:{port}',),
             ),
             shutdown_trigger=sev.wait,
         ))

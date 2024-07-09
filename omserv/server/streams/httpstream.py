@@ -103,7 +103,7 @@ class HTTPStream:
 
             if valid_server_name(self.config, event):
                 self.app_put = await self.task_spawner.spawn_app(
-                    self.app, self.config, self.scope, self.app_send
+                    self.app, self.config, self.scope, self.app_send,
                 )
             else:
                 await self._send_error_response(404)
@@ -152,7 +152,7 @@ class HTTPStream:
                         http_version=self.scope['http_version'],
                         method='GET',
                         raw_path=message['path'].encode(),
-                    )
+                    ),
                 )
 
             elif (
@@ -166,7 +166,7 @@ class HTTPStream:
                         stream_id=self.stream_id,
                         headers=headers,
                         status_code=103,
-                    )
+                    ),
                 )
 
             elif message['type'] == 'http.response.body' and self.state in {
@@ -180,7 +180,7 @@ class HTTPStream:
                             stream_id=self.stream_id,
                             headers=headers,
                             status_code=int(self.response['status']),
-                        )
+                        ),
                     )
                     self.state = ASGIHTTPState.RESPONSE
 
@@ -189,7 +189,7 @@ class HTTPStream:
                         and message.get('body', b'') != b''
                 ):
                     await self.send(
-                        Body(stream_id=self.stream_id, data=bytes(message.get('body', b'')))
+                        Body(stream_id=self.stream_id, data=bytes(message.get('body', b''))),
                     )
 
                 if not message.get('more_body', False):
@@ -210,10 +210,10 @@ class HTTPStream:
                 stream_id=self.stream_id,
                 headers=[(b'content-length', b'0'), (b'connection', b'close')],
                 status_code=status_code,
-            )
+            ),
         )
         await self.send(EndBody(stream_id=self.stream_id))
         self.state = ASGIHTTPState.CLOSED
         log_access(
-            self.config, self.scope, {'status': status_code, 'headers': []}, time.time() - self.start_time
+            self.config, self.scope, {'status': status_code, 'headers': []}, time.time() - self.start_time,
         )

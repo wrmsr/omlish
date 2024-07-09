@@ -21,7 +21,7 @@ class LifespanTimeoutError(Exception):
     def __init__(self, stage: str) -> None:
         super().__init__(
             f'Timeout whilst awaiting {stage}. Your application may not support the ASGI Lifespan '
-            f'protocol correctly, alternatively the {stage}_timeout configuration is incorrect.'
+            f'protocol correctly, alternatively the {stage}_timeout configuration is incorrect.',
         )
 
 
@@ -38,7 +38,7 @@ class Lifespan:
         self.startup = anyio.Event()
         self.shutdown = anyio.Event()
         self.app_send_channel, self.app_receive_channel = anyio.create_memory_object_stream[ta.Any](
-            config.max_app_queue_size
+            config.max_app_queue_size,
         )
         self.supported = True
 

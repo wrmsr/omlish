@@ -28,7 +28,7 @@ def new_type(
         name: str,
         bases: ta.Sequence[ta.Any],
         namespace: ta.Mapping[str, ta.Any],
-        **kwargs
+        **kwargs,
 ) -> ta.Type:
     return types.new_class(
         name,
@@ -44,7 +44,7 @@ def super_meta(
         name: str,
         bases: ta.Sequence[ta.Any],
         namespace: ta.MutableMapping[str, ta.Any],
-        **kwargs
+        **kwargs,
 ) -> ta.Type:
     """Per types.new_class"""
     resolved_bases = types.resolve_bases(bases)

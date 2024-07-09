@@ -54,8 +54,8 @@ def test_polymorphism():
                 PolymorphismMarshalerFactory(p),
                 DataclassMarshalerFactory(),
                 PRIMITIVE_MARSHALER_FACTORY,
-            )
-        )
+            ),
+        ),
     )
 
     uf: UnmarshalerFactory = TypeCacheFactory(
@@ -64,8 +64,8 @@ def test_polymorphism():
                 PolymorphismUnmarshalerFactory(p),
                 DataclassUnmarshalerFactory(),
                 PRIMITIVE_UNMARSHALER_FACTORY,
-            )
-        )
+            ),
+        ),
     )
 
     o = PS2('0', PS1('1', 420))

@@ -106,7 +106,7 @@ class H2Protocol(Protocol):
         self.task_spawner = task_spawner
 
         self.connection = h2.connection.H2Connection(
-            config=h2.config.H2Configuration(client_side=False, header_encoding=None)
+            config=h2.config.H2Configuration(client_side=False, header_encoding=None),
         )
         self.connection.DEFAULT_MAX_INBOUND_FRAME_SIZE = config.h2_max_inbound_frame_size
         self.connection.local_settings = h2.settings.Settings(
@@ -132,7 +132,7 @@ class H2Protocol(Protocol):
         return len(self.streams) == 0 or all(stream.idle for stream in self.streams.values())
 
     async def initiate(
-        self, headers: ta.Optional[list[tuple[bytes, bytes]]] = None, settings: ta.Optional[str] = None
+        self, headers: ta.Optional[list[tuple[bytes, bytes]]] = None, settings: ta.Optional[str] = None,
     ) -> None:
         if settings is not None:
             self.connection.initiate_upgrade_connection(settings)
@@ -252,7 +252,7 @@ class H2Protocol(Protocol):
                 if self.context.terminated.is_set():
                     self.connection.reset_stream(event.stream_id)
                     self.connection.update_settings(
-                        {h2.settings.SettingCodes.MAX_CONCURRENT_STREAMS: 0}
+                        {h2.settings.SettingCodes.MAX_CONCURRENT_STREAMS: 0},
                     )
                 else:
                     await self._create_stream(event)
@@ -263,10 +263,10 @@ class H2Protocol(Protocol):
 
             elif isinstance(event, h2.events.DataReceived):
                 await self.streams[event.stream_id].handle(
-                    Body(stream_id=event.stream_id, data=event.data)
+                    Body(stream_id=event.stream_id, data=event.data),
                 )
                 self.connection.acknowledge_received_data(
-                    event.flow_controlled_length, event.stream_id
+                    event.flow_controlled_length, event.stream_id,
                 )
 
             elif isinstance(event, h2.events.StreamEnded):
@@ -369,13 +369,13 @@ class H2Protocol(Protocol):
                 http_version='2',
                 method=method,
                 raw_path=raw_path,
-            )
+            ),
         )
         self.keep_alive_requests += 1
         await self.context.mark_request()
 
     async def _create_server_push(
-        self, stream_id: int, path: bytes, headers: list[tuple[bytes, bytes]]
+        self, stream_id: int, path: bytes, headers: list[tuple[bytes, bytes]],
     ) -> None:
         push_stream_id = self.connection.get_next_available_stream_id()
         request_headers = [(b':method', b'GET'), (b':path', path)]
