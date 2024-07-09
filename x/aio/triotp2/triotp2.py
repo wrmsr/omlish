@@ -436,6 +436,9 @@ class _CastMessage:
     payload: ta.Any
 
 
+Caller: ta.TypeAlias = trio.MemorySendChannel
+
+
 class ServerApp(App, lang.Abstract):
     @abc.abstractmethod
     async def init(self, init_arg: ta.Any) -> State:
@@ -446,7 +449,7 @@ class ServerApp(App, lang.Abstract):
             logger = logging.getLogger(self.__name__)
             logger.exception(reason)
 
-    async def handle_call(self, message, caller, state: State) -> tuple[Reply | NoReply | Stop, State]:
+    async def handle_call(self, message, caller: Caller, state: State) -> tuple[Reply | NoReply | Stop, State]:
         raise TypeError(f'{self.__name__}.handle_call not implemented')
 
     async def handle_cast(self, message, state: State) -> tuple[NoReply | Stop, State]:
@@ -500,7 +503,7 @@ async def gen_server_cast(
     await mailboxes().send(name_or_mid, message)
 
 
-async def gen_server_reply(caller: trio.MemorySendChannel, response: ta.Any) -> None:
+async def gen_server_reply(caller: Caller, response: ta.Any) -> None:
     await caller.send(response)
 
 
