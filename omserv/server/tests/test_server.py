@@ -40,7 +40,7 @@ async def _test_server_simple():
         async with contextlib.AsyncExitStack() as aes:
             aes.enter_context(lang.defer(sev.set))
 
-            tt = lang.timeout_fn(TIMEOUT_S)
+            tt = lang.timeout(TIMEOUT_S)
             while True:
                 tt()
                 try:
@@ -130,7 +130,7 @@ async def _test_httpx_client(use_http2):
         async with contextlib.AsyncExitStack() as aes:
             aes.enter_context(lang.defer(sev.set))
 
-            tt = lang.timeout_fn(5.)
+            tt = lang.timeout(5.)
             while True:
                 try:
                     async with httpx.AsyncClient(
@@ -176,7 +176,7 @@ async def _test_curl(use_h2c: bool) -> None:
         async with contextlib.AsyncExitStack() as aes:
             aes.enter_context(lang.defer(sev.set))
 
-            tt = lang.timeout_fn(TIMEOUT_S)
+            tt = lang.timeout(TIMEOUT_S)
             while True:
                 tt()
                 try:
@@ -236,7 +236,7 @@ async def _test_curl_h2() -> None:
         async with contextlib.AsyncExitStack() as aes:
             aes.enter_context(lang.defer(sev.set))
 
-            tt = lang.timeout_fn(TIMEOUT_S)
+            tt = lang.timeout(TIMEOUT_S)
             while True:
                 tt()
                 try:
