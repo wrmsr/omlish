@@ -431,7 +431,7 @@ async def gen_server_start(
         init_arg: ta.Any | None = None,
         name: str | None = None,
 ) -> None:
-    await _gen_server_loop(app, init_arg, name)
+    await _GenServerLoop(app)._loop(init_arg, name)
 
 
 async def gen_server_call(
@@ -474,162 +474,162 @@ async def gen_server_reply(caller: trio.MemorySendChannel, response: ta.Any) -> 
     await caller.send(response)
 
 
-async def _gen_server_loop(
-        app: App,
-        init_arg: ta.Any | None,
-        name: str | None,
-) -> None:
-    async with mailboxes().open(name) as mid:
-        try:
-            state = await _gen_server_init(app, init_arg)
-            looping = True
+class _GenServerLoop:
+    def __init__(self, app: App) -> None:
+        super().__init__()
+        self.app = app
 
-            while looping:
-                message = await mailboxes().receive(mid)
+    async def _loop(
+            self,
+            init_arg: ta.Any | None,
+            name: str | None,
+    ) -> None:
+        async with mailboxes().open(name) as mid:
+            try:
+                state = await self._init(init_arg)
+                looping = True
 
-                match message:
-                    case _CallMessage(source, payload):
-                        continuation, state = await _gen_server_handle_call(app, payload, source, state)
+                while looping:
+                    message = await mailboxes().receive(mid)
 
-                    case _CastMessage(payload):
-                        continuation, state = await _gen_server_handle_cast(app, payload, state)
+                    match message:
+                        case _CallMessage(source, payload):
+                            continuation, state = await self._handle_call(payload, source, state)
 
-                    case _:
-                        continuation, state = await _gen_server_handle_info(app, message, state)
+                        case _CastMessage(payload):
+                            continuation, state = await self._handle_cast(payload, state)
 
-                match continuation:
-                    case _Loop(yes=False):
-                        looping = False
+                        case _:
+                            continuation, state = await self._handle_info(message, state)
 
-                    case _Loop(yes=True):
-                        looping = True
+                    match continuation:
+                        case _Loop(yes=False):
+                            looping = False
 
-                    case _Raise(exc=err):
-                        raise err
+                        case _Loop(yes=True):
+                            looping = True
 
-        except Exception as err:
-            await _gen_server_terminate(app, err, state)
-            raise err from None
+                        case _Raise(exc=err):
+                            raise err
 
-        else:
-            await _gen_server_terminate(app, None, state)
-
-
-async def _gen_server_init(app: App, init_arg: ta.Any) -> State:
-    return await app.init(init_arg)
-
-
-async def _gen_server_terminate(
-        app: App,
-        reason: BaseException | None,
-        state: State,
-) -> None:
-    handler = getattr(app, 'terminate', None)
-    if handler is not None:
-        await handler(reason, state)
-
-    elif reason is not None:
-        logger = logging.getLogger(app.__name__)
-        logger.exception(reason)
-
-
-async def _gen_server_handle_call(
-        app: App,
-        message: ta.Any,
-        source: trio.MemorySendChannel,
-        state: State,
-) -> tuple[Continuation, State]:
-    handler = getattr(app, 'handle_call', None)
-    if handler is None:
-        raise NotImplementedError(f'{app.__name__}.handle_call')
-
-    result = await handler(message, source, state)
-
-    match result:
-        case (Reply(payload), new_state):
-            state = new_state
-            await gen_server_reply(source, payload)
-            continuation = _Loop(yes=True)
-
-        case (NoReply(), new_state):
-            state = new_state
-            continuation = _Loop(yes=True)
-
-        case (Stop(reason), new_state):
-            state = new_state
-            await gen_server_reply(source, GenServerExited())
-
-            if reason is not None:
-                continuation = _Raise(reason)
+            except Exception as err:
+                await self._terminate(err, state)
+                raise err from None
 
             else:
-                continuation = _Loop(yes=False)
+                await self._terminate(None, state)
 
-        case _:
-            raise TypeError(
-                f'{app.__name__}.handle_call did not return a valid value'
-            )
+    async def _init(self, init_arg: ta.Any) -> State:
+        return await self.app.init(init_arg)
 
-    return continuation, state
+    async def _terminate(
+            self,
+            reason: BaseException | None,
+            state: State,
+    ) -> None:
+        handler = getattr(self.app, 'terminate', None)
+        if handler is not None:
+            await handler(reason, state)
 
+        elif reason is not None:
+            logger = logging.getLogger(self.app.__name__)
+            logger.exception(reason)
 
-async def _gen_server_handle_cast(
-        app: App,
-        message: ta.Any,
-        state: State,
-) -> tuple[Continuation, State]:
-    handler = getattr(app, 'handle_cast', None)
-    if handler is None:
-        raise NotImplementedError(f'{app.__name__}.handle_cast')
+    async def _handle_call(
+            self,
+            message: ta.Any,
+            source: trio.MemorySendChannel,
+            state: State,
+    ) -> tuple[Continuation, State]:
+        handler = getattr(self.app, 'handle_call', None)
+        if handler is None:
+            raise NotImplementedError(f'{self.app.__name__}.handle_call')
 
-    result = await handler(message, state)
+        result = await handler(message, source, state)
 
-    match result:
-        case (NoReply(), new_state):
-            state = new_state
-            continuation = _Loop(yes=True)
+        match result:
+            case (Reply(payload), new_state):
+                state = new_state
+                await gen_server_reply(source, payload)
+                continuation = _Loop(yes=True)
 
-        case (Stop(reason), new_state):
-            state = new_state
+            case (NoReply(), new_state):
+                state = new_state
+                continuation = _Loop(yes=True)
 
-            if reason is not None:
-                continuation = _Raise(reason)
+            case (Stop(reason), new_state):
+                state = new_state
+                await gen_server_reply(source, GenServerExited())
 
-            else:
-                continuation = _Loop(yes=False)
+                if reason is not None:
+                    continuation = _Raise(reason)
 
-        case _:
-            raise TypeError(f'{app.__name__}.handle_cast did not return a valid value')
+                else:
+                    continuation = _Loop(yes=False)
 
-    return continuation, state
+            case _:
+                raise TypeError(
+                    f'{self.app.__name__}.handle_call did not return a valid value'
+                )
 
+        return continuation, state
 
-async def _gen_server_handle_info(
-        app: App,
-        message: ta.Any,
-        state: State,
-) -> tuple[Continuation, State]:
-    handler = getattr(app, 'handle_info', None)
-    if handler is None:
-        return _Loop(yes=True), state
+    async def _handle_cast(
+            self,
+            message: ta.Any,
+            state: State,
+    ) -> tuple[Continuation, State]:
+        handler = getattr(self.app, 'handle_cast', None)
+        if handler is None:
+            raise NotImplementedError(f'{self.app.__name__}.handle_cast')
 
-    result = await handler(message, state)
+        result = await handler(message, state)
 
-    match result:
-        case (NoReply(), new_state):
-            state = new_state
-            continuation = _Loop(yes=True)
+        match result:
+            case (NoReply(), new_state):
+                state = new_state
+                continuation = _Loop(yes=True)
 
-        case (Stop(reason), new_state):
-            state = new_state
+            case (Stop(reason), new_state):
+                state = new_state
 
-            if reason is not None:
-                continuation = _Raise(reason)
+                if reason is not None:
+                    continuation = _Raise(reason)
 
-            else:
-                continuation = _Loop(yes=False)
+                else:
+                    continuation = _Loop(yes=False)
 
-        case _:
-            raise TypeError(f'{app.__name__}.handle_info did not return a valid value')
+            case _:
+                raise TypeError(f'{self.app.__name__}.handle_cast did not return a valid value')
 
-    return continuation, state
+        return continuation, state
+
+    async def _handle_info(
+            self,
+            message: ta.Any,
+            state: State,
+    ) -> tuple[Continuation, State]:
+        handler = getattr(self.app, 'handle_info', None)
+        if handler is None:
+            return _Loop(yes=True), state
+
+        result = await handler(message, state)
+
+        match result:
+            case (NoReply(), new_state):
+                state = new_state
+                continuation = _Loop(yes=True)
+
+            case (Stop(reason), new_state):
+                state = new_state
+
+                if reason is not None:
+                    continuation = _Raise(reason)
+
+                else:
+                    continuation = _Loop(yes=False)
+
+            case _:
+                raise TypeError(f'{self.app.__name__}.handle_info did not return a valid value')
+
+        return continuation, state
