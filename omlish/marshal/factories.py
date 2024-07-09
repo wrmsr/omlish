@@ -17,7 +17,7 @@ A = ta.TypeVar('A')
 
 class Factory(abc.ABC, ta.Generic[R, C, A]):
     @abc.abstractmethod
-    def __call__(self, ctx: C, arg: A) -> ta.Optional[R]:
+    def __call__(self, ctx: C, arg: A) -> R | None:
         raise NotImplementedError
 
 
@@ -26,9 +26,9 @@ class Factory(abc.ABC, ta.Generic[R, C, A]):
 
 @dc.dataclass(frozen=True)
 class FuncFactory(ta.Generic[R, C, A]):
-    fn: ta.Callable[[C, A], ta.Optional[R]]
+    fn: ta.Callable[[C, A], R | None]
 
-    def __call__(self, ctx: C, arg: A) -> ta.Optional[R]:
+    def __call__(self, ctx: C, arg: A) -> R | None:
         return self.fn(ctx, arg)
 
 
@@ -39,7 +39,7 @@ class FuncFactory(ta.Generic[R, C, A]):
 class TypeMapFactory(Factory[R, C, rfl.Type]):
     m: ta.Mapping[rfl.Type, R] = dc.field(default_factory=dict)
 
-    def __call__(self, ctx: C, rty: rfl.Type) -> ta.Optional[R]:
+    def __call__(self, ctx: C, rty: rfl.Type) -> R | None:
         return self.m.get(rty)
 
 
@@ -50,10 +50,10 @@ class TypeCacheFactory(Factory[R, C, rfl.Type]):
     def __init__(self, f: Factory[R, C, rfl.Type]) -> None:
         super().__init__()
         self._f = f
-        self._dct: dict[rfl.Type, ta.Optional[R]] = {}
+        self._dct: dict[rfl.Type, R | None] = {}
         self._mtx = threading.RLock()
 
-    def __call__(self, ctx: C, rty: rfl.Type) -> ta.Optional[R]:
+    def __call__(self, ctx: C, rty: rfl.Type) -> R | None:
         try:
             return self._dct[rty]
         except KeyError:
@@ -73,14 +73,14 @@ class RecursiveTypeFactory(Factory[R, C, rfl.Type]):
     def __init__(
             self,
             f: Factory[R, C, rfl.Type],
-            prx: ta.Callable[[], tuple[ta.Optional[R], ta.Callable[[ta.Optional[R]], None]]],
+            prx: ta.Callable[[], tuple[R | None, ta.Callable[[R | None], None]]],
     ) -> None:
         super().__init__()
         self._f = f
         self._prx = prx
-        self._dct: dict[rfl.Type, ta.Optional[R]] = {}
+        self._dct: dict[rfl.Type, R | None] = {}
 
-    def __call__(self, ctx: C, rty: rfl.Type) -> ta.Optional[R]:
+    def __call__(self, ctx: C, rty: rfl.Type) -> R | None:
         try:
             return self._dct[rty]
         except KeyError:
@@ -108,7 +108,7 @@ class CompositeFactory(Factory[R, C, A]):
         self._fs = fs
         self._st = strategy
 
-    def __call__(self, ctx: C, arg: A) -> ta.Optional[R]:
+    def __call__(self, ctx: C, arg: A) -> R | None:
         w: list[R] = []
         for c in self._fs:
             if (r := c(ctx, arg)) is None:

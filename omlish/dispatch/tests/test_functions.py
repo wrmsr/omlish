@@ -27,7 +27,7 @@ def test_function():
         pass
 
     @f.register
-    def f_a_or_b(x: ta.Union[A, B]):
+    def f_a_or_b(x: ta.Union[A, B]):  # FIXME: A | B
         return 'a_or_b'
 
     assert f(A()) == 'a_or_b'

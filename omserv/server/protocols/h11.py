@@ -26,12 +26,7 @@ from ..workercontext import WorkerContext
 from .types import Protocol
 
 
-H11SendableEvent: ta.TypeAlias = ta.Union[
-    h11.Data,
-    h11.EndOfMessage,
-    h11.InformationalResponse,
-    h11.Response,
-]
+H11SendableEvent: ta.TypeAlias = h11.Data | h11.EndOfMessage | h11.InformationalResponse | h11.Response
 
 
 STREAM_ID = 1
@@ -76,7 +71,7 @@ class H11WSConnection:
     def receive_data(self, data: bytes) -> None:
         self.buffer.extend(data)
 
-    def next_event(self) -> ta.Union[Data, type[h11.NEED_DATA]]:
+    def next_event(self) -> Data | type[h11.NEED_DATA]:
         if self.buffer:
             event = Data(stream_id=STREAM_ID, data=bytes(self.buffer))
             self.buffer = bytearray()
@@ -84,7 +79,7 @@ class H11WSConnection:
         else:
             return h11.NEED_DATA
 
-    def send(self, event: H11SendableEvent) -> ta.Optional[bytes]:
+    def send(self, event: H11SendableEvent) -> bytes | None:
         return self.h11_connection.send(event)
 
     def start_next_cycle(self) -> None:
@@ -98,8 +93,8 @@ class H11Protocol(Protocol):
             config: Config,
             context: WorkerContext,
             task_spawner: TaskSpawner,
-            client: ta.Optional[tuple[str, int]],
-            server: ta.Optional[tuple[str, int]],
+            client: tuple[str, int] | None,
+            server: tuple[str, int] | None,
             send: ta.Callable[[ServerEvent], ta.Awaitable[None]],
     ) -> None:
         self.app = app
@@ -113,7 +108,7 @@ class H11Protocol(Protocol):
         self.keep_alive_requests = 0
         self.send = send
         self.server = server
-        self.stream: ta.Optional[ta.Union[HTTPStream, WSStream]] = None
+        self.stream: HTTPStream | WSStream | None = None
         self.task_spawner = task_spawner
 
     async def initiate(self) -> None:

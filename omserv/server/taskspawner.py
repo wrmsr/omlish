@@ -24,7 +24,7 @@ async def _handle(
         config: Config,
         scope: Scope,
         receive: ASGIReceiveCallable,
-        send: ta.Callable[[ta.Optional[ASGISendEvent]], ta.Awaitable[None]],
+        send: ta.Callable[[ASGISendEvent | None], ta.Awaitable[None]],
         sync_spawn: ta.Callable,
         call_soon: ta.Callable,
 ) -> None:
@@ -54,7 +54,7 @@ async def _handle(
 class TaskSpawner:
     def __init__(self) -> None:
         super().__init__()
-        self._task_group: ta.Optional[anyio.abc.TaskGroup] = None
+        self._task_group: anyio.abc.TaskGroup | None = None
 
     async def start(
             self,
@@ -68,7 +68,7 @@ class TaskSpawner:
             app: AppWrapper,
             config: Config,
             scope: Scope,
-            send: ta.Callable[[ta.Optional[ASGISendEvent]], ta.Awaitable[None]],
+            send: ta.Callable[[ASGISendEvent | None], ta.Awaitable[None]],
     ) -> ta.Callable[[ASGIReceiveEvent], ta.Awaitable[None]]:
         app_send_channel, app_receive_channel = anyio.create_memory_object_stream[ta.Any](config.max_app_queue_size)
         check.not_none(self._task_group).start_soon(

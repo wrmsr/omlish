@@ -105,7 +105,7 @@ class _CachedFunction(ta.Generic[T]):
             opts: Opts = Opts(),
             keyer: ta.Callable[..., tuple] | None = None,
             values: ta.MutableMapping | None = None,
-            value_fn: ta.Optional[ta.Callable[P, T]] = None,
+            value_fn: ta.Callable[P, T] | None = None,
     ) -> None:
         super().__init__()
 
@@ -157,7 +157,7 @@ class _CachedFunctionDescriptor(_CachedFunction[T]):
             *,
             instance: ta.Any = None,
             owner: ta.Any = None,
-            name: ta.Optional[str] = None,
+            name: str | None = None,
             **kwargs,
     ) -> None:
         super().__init__(fn, **kwargs)

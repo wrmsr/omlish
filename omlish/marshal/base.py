@@ -146,7 +146,7 @@ class BaseContext(lang.Abstract):
 
 @dc.dataclass(frozen=True)
 class MarshalContext(BaseContext, lang.Final):
-    factory: ta.Optional[MarshalerFactory] = None
+    factory: MarshalerFactory | None = None
 
     def make(self, o: ta.Any) -> Marshaler:
         rty = rfl.type_(o)
@@ -157,7 +157,7 @@ class MarshalContext(BaseContext, lang.Final):
 
 @dc.dataclass(frozen=True)
 class UnmarshalContext(BaseContext, lang.Final):
-    factory: ta.Optional[UnmarshalerFactory] = None
+    factory: UnmarshalerFactory | None = None
 
     def make(self, o: ta.Any) -> Unmarshaler:
         rty = rfl.type_(o)
@@ -194,8 +194,8 @@ class RecursiveUnmarshalerFactory(RecursiveTypeFactory[Unmarshaler, UnmarshalCon
 
 @dc.dataclass(frozen=True)
 class SetType(RegistryItem, lang.Final):
-    marshaler: ta.Optional[Marshaler] = None
-    marshaler_factory: ta.Optional[MarshalerFactory] = None
+    marshaler: Marshaler | None = None
+    marshaler_factory: MarshalerFactory | None = None
 
-    unmarshaler: ta.Optional[Unmarshaler] = None
-    unmarshaler_factory: ta.Optional[UnmarshalerFactory] = None
+    unmarshaler: Unmarshaler | None = None
+    unmarshaler_factory: UnmarshalerFactory | None = None

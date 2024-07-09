@@ -38,7 +38,7 @@ class SortedCollection(lang.Abstract, ta.Collection[T]):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def find(self, value: T) -> ta.Optional[T]:
+    def find(self, value: T) -> T | None:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -46,11 +46,11 @@ class SortedCollection(lang.Abstract, ta.Collection[T]):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def iter(self, base: ta.Optional[T] = None) -> ta.Iterable[T]:
+    def iter(self, base: T | None = None) -> ta.Iterable[T]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def riter(self, base: ta.Optional[T] = None) -> ta.Iterable[T]:
+    def riter(self, base: T | None = None) -> ta.Iterable[T]:
         raise NotImplementedError
 
 

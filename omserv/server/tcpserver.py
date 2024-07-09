@@ -42,8 +42,8 @@ class TCPServer:
         self.idle_lock = anyio.Lock()
         self.stream = stream
 
-        self._idle_handle: ta.Optional[anyio.abc.CancelScope] = None
-        self._task_spawner: ta.Optional[TaskSpawner] = None
+        self._idle_handle: anyio.abc.CancelScope | None = None
+        self._task_spawner: TaskSpawner | None = None
 
     def __await__(self) -> ta.Generator[ta.Any, None, None]:
         return self.run().__await__()

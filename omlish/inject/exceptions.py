@@ -13,7 +13,7 @@ class KeyException(Exception):
     key: Key
 
     source: ta.Any = None
-    name: ta.Optional[str] = None
+    name: str | None = None
 
 
 @dc.dataclass()

@@ -46,7 +46,7 @@ class SkipList(SortedCollection[T]):
             self,
             *,
             max_height: int = 16,
-            comparator: ta.Optional[SortedCollection.Comparator[T]] = None,
+            comparator: SortedCollection.Comparator[T] | None = None,
     ) -> None:
         super().__init__()
 
@@ -108,7 +108,7 @@ class SkipList(SortedCollection[T]):
         self._length += 1
         return True
 
-    def _find(self, value: T) -> ta.Optional[_Node]:
+    def _find(self, value: T) -> _Node | None:
         if value is None:
             raise TypeError(value)
 
@@ -120,7 +120,7 @@ class SkipList(SortedCollection[T]):
 
         return cur.next[0]
 
-    def find(self, value: T) -> ta.Optional[T]:
+    def find(self, value: T) -> T | None:
         node = self._find(value)
         if node is None:
             return None
@@ -157,7 +157,7 @@ class SkipList(SortedCollection[T]):
         self._length -= 1
         return True
 
-    def iter(self, base: ta.Optional[T] = None) -> ta.Iterable[T]:
+    def iter(self, base: T | None = None) -> ta.Iterable[T]:
         if base is not None:
             cur = self._find(base)
             while cur is not None and self._compare(base, cur.value) > 0:  # type: ignore
@@ -169,7 +169,7 @@ class SkipList(SortedCollection[T]):
             yield cur.value  # type: ignore
             cur = cur.next[0]
 
-    def riter(self, base: ta.Optional[T] = None) -> ta.Iterable[T]:
+    def riter(self, base: T | None = None) -> ta.Iterable[T]:
         if base is not None:
             cur = self._find(base)
             while cur is not self._head and self._compare(base, cur.value) < 0:  # type: ignore

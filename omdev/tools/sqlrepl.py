@@ -14,10 +14,10 @@ import yaml
 @dc.dataclass(frozen=True)
 class ServerSpec:
     host: str
-    port: ta.Optional[int] = None
-    username: ta.Optional[str] = None
-    password: ta.Optional[str] = None
-    db: ta.Optional[str] = None
+    port: int | None = None
+    username: str | None = None
+    password: str | None = None
+    db: str | None = None
 
     @classmethod
     def from_url(cls, url: str) -> 'ServerSpec':

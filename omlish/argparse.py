@@ -48,7 +48,7 @@ ArgumentParser = argparse.ArgumentParser
 class Arg:
     args: ta.Sequence[ta.Any]
     kwargs: ta.Mapping[str, ta.Any]
-    dest: ta.Optional[str] = None
+    dest: str | None = None
 
     def __get__(self, instance, owner=None):
         if instance is None:
@@ -92,8 +92,8 @@ class Command:
 
 def command(
         *args: Arg,
-        name: ta.Optional[str] = None,
-        parent: ta.Optional[Command] = None,
+        name: str | None = None,
+        parent: Command | None = None,
 ) -> ta.Any:  # ta.Callable[[CommandFn], Command]:  # FIXME
     for arg in args:
         check.isinstance(arg, Arg)
@@ -192,7 +192,7 @@ class _CliMeta(type):
 
 class Cli(metaclass=_CliMeta):
 
-    def __init__(self, argv: ta.Optional[ta.Sequence[str]] = None) -> None:
+    def __init__(self, argv: ta.Sequence[str] | None = None) -> None:
         super().__init__()
 
         self._argv = argv if argv is not None else sys.argv[1:]

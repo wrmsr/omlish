@@ -9,7 +9,7 @@ import typing as ta
 T = ta.TypeVar('T')
 SizedT = ta.TypeVar('SizedT', bound=ta.Sized)
 
-Message = ta.Union[str, ta.Callable[..., ta.Optional[str]], None]
+Message = ta.Union[str, ta.Callable[..., str | None], None]
 
 _NONE_TYPE = type(None)
 
@@ -64,7 +64,7 @@ def isinstance(v: ta.Any, spec: ta.Union[type[T], tuple], msg: Message = None) -
     return v
 
 
-def of_isinstance(spec: ta.Union[type[T], tuple], msg: Message = None) -> ta.Callable[[ta.Any], T]:
+def of_isinstance(spec: type[T] | tuple, msg: Message = None) -> ta.Callable[[ta.Any], T]:
     def inner(v):
         return isinstance(v, _unpack_isinstance_spec(spec), msg)
 
@@ -155,7 +155,7 @@ def single(obj: ta.Iterable[T], message: Message = None) -> T:
         return value
 
 
-def optional_single(obj: ta.Iterable[T], message: Message = None) -> ta.Optional[T]:
+def optional_single(obj: ta.Iterable[T], message: Message = None) -> T | None:
     it = iter(obj)
     try:
         value = next(it)
@@ -176,7 +176,7 @@ def none(v: ta.Any, msg: Message = None) -> None:
         _raise(ValueError, 'Must be None', msg, v)
 
 
-def not_none(v: ta.Optional[T], msg: Message = None) -> T:
+def not_none(v: T | None, msg: Message = None) -> T:
     if v is None:
         _raise(ValueError, 'Must not be None', msg, v)
     return v
@@ -212,7 +212,7 @@ def callable(v: T, msg: Message = None) -> T:
     return v  # type: ignore
 
 
-def non_empty_str(v: ta.Optional[str], msg: Message = None) -> str:
+def non_empty_str(v: str | None, msg: Message = None) -> str:
     if not _isinstance(v, str) or not v:
         _raise(ValueError, 'Must be non-empty str', msg, v)
     return v

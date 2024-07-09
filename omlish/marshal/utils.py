@@ -5,7 +5,7 @@ T = ta.TypeVar('T')
 
 
 class _Proxy(ta.Generic[T]):
-    __obj: ta.Optional[T] = None
+    __obj: T | None = None
 
     @property
     def _obj(self) -> T:

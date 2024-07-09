@@ -38,7 +38,7 @@ class ReplServer:
     @dc.dataclass(frozen=True)
     class Config:
         path: str
-        file_mode: ta.Optional[int] = None
+        file_mode: int | None = None
         poll_interval: float = 0.5
         exit_timeout: float = 10.0
 
@@ -51,7 +51,7 @@ class ReplServer:
         check.not_empty(config.path)
         self._config = check.isinstance(config, ReplServer.Config)
 
-        self._socket: ta.Optional[sock.socket] = None
+        self._socket: sock.socket | None = None
         self._is_running = False
         self._consoles_by_threads: ta.MutableMapping[threading.Thread, InteractiveSocketConsole] = \
             weakref.WeakKeyDictionary()  # noqa
@@ -135,7 +135,7 @@ class ReplServer:
                 self._is_shutdown.set()
                 self._is_running = False
 
-    def shutdown(self, block: bool = False, timeout: ta.Optional[float] = None) -> None:
+    def shutdown(self, block: bool = False, timeout: float | None = None) -> None:
         self._should_shutdown = True
         if block:
             self._is_shutdown.wait(timeout=timeout)

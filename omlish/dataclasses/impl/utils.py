@@ -16,8 +16,8 @@ def create_fn(
         args: ta.Sequence[str],
         body: ta.Sequence[str],
         *,
-        globals: ta.Optional[Namespace] = None,
-        locals: ta.Optional[Namespace] = None,
+        globals: Namespace | None = None,
+        locals: Namespace | None = None,
         return_type: lang.Maybe[ta.Any] = lang.empty(),
 ) -> ta.Callable:
     check.not_isinstance(args, str)
@@ -59,11 +59,11 @@ class FuncBuilder:
             args: ta.Sequence[str],
             body: ta.Sequence[str],
             *,
-            locals: ta.Optional[Namespace] = None,
+            locals: Namespace | None = None,
             return_type: lang.Maybe[ta.Any] = lang.empty(),
             overwrite_error: bool = False,
             unconditional_add: bool = False,
-            decorator: ta.Optional[str] = None,
+            decorator: str | None = None,
     ) -> None:
         if locals is not None:
             self.locals.update(locals)

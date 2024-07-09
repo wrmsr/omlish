@@ -43,7 +43,7 @@ class InteractiveSocketConsole:
     def __init__(
             self,
             conn: sock.socket,
-            locals: ta.Optional[dict[str, ta.Any]] = None,
+            locals: dict[str, ta.Any] | None = None,
             filename: str = '<console>',
     ) -> None:
         super().__init__()
@@ -73,7 +73,7 @@ class InteractiveSocketConsole:
 
     CPRT = 'Type "help", "copyright", "credits" or "license" for more information.'
 
-    def interact(self, banner: ta.Optional[str] = None, exitmsg: ta.Optional[str] = None) -> None:
+    def interact(self, banner: str | None = None, exitmsg: str | None = None) -> None:
         log.info(f'Console {id(self)} on thread {threading.current_thread().ident} interacting')
 
         try:
@@ -144,10 +144,10 @@ class InteractiveSocketConsole:
 
     def compile(
             self,
-            source: ta.Union[str, ast.AST],
+            source: str | ast.AST,
             filename: str = '<input>',
             symbol: str = 'single',
-    ) -> ta.Optional[types.CodeType]:
+    ) -> types.CodeType | None:
         if isinstance(source, ast.AST):
             return self._compiler.compiler(source, filename, symbol)  # type: ignore
         else:
@@ -155,7 +155,7 @@ class InteractiveSocketConsole:
 
     def run_source(
             self,
-            source: ta.Union[str, ast.AST],
+            source: str | ast.AST,
             filename: str = '<input>',
             symbol: str = 'single',
     ) -> bool:
@@ -227,7 +227,7 @@ class InteractiveSocketConsole:
         finally:
             last_tb = ei = None  # type: ignore  # noqa
 
-    def show_syntax_error(self, filename: ta.Optional[str] = None) -> None:
+    def show_syntax_error(self, filename: str | None = None) -> None:
         type, value, tb = sys.exc_info()
         sys.last_type = type
         sys.last_value = value

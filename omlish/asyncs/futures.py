@@ -12,7 +12,7 @@ T = ta.TypeVar('T')
 
 class FutureException(Exception, ta.Generic[T]):
 
-    def __init__(self, future: cf.Future, target: ta.Optional[T] = None) -> None:
+    def __init__(self, future: cf.Future, target: T | None = None) -> None:
         super().__init__()
 
         self._future = future
@@ -23,7 +23,7 @@ class FutureException(Exception, ta.Generic[T]):
         return self._future
 
     @property
-    def target(self) -> ta.Optional[T]:
+    def target(self) -> T | None:
         return self._target
 
     def __repr__(self) -> str:

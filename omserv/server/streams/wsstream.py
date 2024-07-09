@@ -62,12 +62,12 @@ class Handshake:
         super().__init__()
 
         self.http_version = http_version
-        self.connection_tokens: ta.Optional[list[str]] = None
-        self.extensions: ta.Optional[list[str]] = None
-        self.key: ta.Optional[bytes] = None
-        self.subprotocols: ta.Optional[list[str]] = None
-        self.upgrade: ta.Optional[bytes] = None
-        self.version: ta.Optional[bytes] = None
+        self.connection_tokens: list[str] | None = None
+        self.extensions: list[str] | None = None
+        self.key: bytes | None = None
+        self.subprotocols: list[str] | None = None
+        self.upgrade: bytes | None = None
+        self.version: bytes | None = None
         for name, value in headers:
             name = name.lower()
             if name == b'connection':
@@ -102,7 +102,7 @@ class Handshake:
 
     def accept(
         self,
-        subprotocol: ta.Optional[str],
+        subprotocol: str | None,
         additional_headers: ta.Iterable[tuple[bytes, bytes]],
     ) -> tuple[int, list[tuple[bytes, bytes]], wsp.Connection]:
         headers = []
@@ -141,7 +141,7 @@ class WebsocketBuffer:
     def __init__(self, max_length: int) -> None:
         super().__init__()
 
-        self.value: ta.Optional[ta.Union[io.BytesIO, io.StringIO]] = None
+        self.value: io.BytesIO | io.StringIO | None = None
         self.length = 0
         self.max_length = max_length
 
@@ -174,15 +174,15 @@ class WSStream:
         config: Config,
         context: WorkerContext,
         task_spawner: TaskSpawner,
-        client: ta.Optional[tuple[str, int]],
-        server: ta.Optional[tuple[str, int]],
+        client: tuple[str, int] | None,
+        server: tuple[str, int] | None,
         send: ta.Callable[[ProtocolEvent], ta.Awaitable[None]],
         stream_id: int,
     ) -> None:
         super().__init__()
 
         self.app = app
-        self.app_put: ta.Optional[ta.Callable] = None
+        self.app_put: ta.Callable | None = None
         self.buffer = WebsocketBuffer(config.websocket_max_message_size)
         self.client = client
         self.closed = False
@@ -251,7 +251,7 @@ class WSStream:
                     code = wsp.frame_protocol.CloseReason.ABNORMAL_CLOSURE.value
                 await self.app_put({'type': 'websocket.disconnect', 'code': code})
 
-    async def app_send(self, message: ta.Optional[ASGISendEvent]) -> None:
+    async def app_send(self, message: ASGISendEvent | None) -> None:
         if self.closed:
             # Allow app to finish after close
             return

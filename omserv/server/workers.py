@@ -79,7 +79,7 @@ async def serve_listeners(
         handler: ta.Callable[[anyio.abc.SocketStream], ta.Awaitable],
         listeners: ta.Iterable[anyio.abc.SocketListener],
         *,
-        handler_task_group: ta.Optional[anyio.abc.TaskGroup] = None,
+        handler_task_group: anyio.abc.TaskGroup | None = None,
         task_status: anyio.abc.TaskStatus[ta.Iterable[anyio.abc.SocketListener]] = anyio.TASK_STATUS_IGNORED,
 ) -> ta.NoReturn:
     async with anyio.create_task_group() as task_group:
@@ -96,7 +96,7 @@ async def serve_listeners(
 
 async def _install_signal_handler(
         tg: anyio.abc.TaskGroup,
-) -> ta.Optional[ta.Callable[..., ta.Awaitable[None]]]:
+) -> ta.Callable[..., ta.Awaitable[None]] | None:
     signal_event = anyio.Event()
 
     sigs = [
@@ -128,8 +128,8 @@ async def worker_serve(
         app: AppWrapper,
         config: Config,
         *,
-        sockets: ta.Optional[Sockets] = None,
-        shutdown_trigger: ta.Optional[ta.Callable[..., ta.Awaitable[None]]] = None,
+        sockets: Sockets | None = None,
+        shutdown_trigger: ta.Callable[..., ta.Awaitable[None]] | None = None,
         handle_shutdown_signals: bool = False,
         task_status: anyio.abc.TaskStatus[ta.Sequence[str]] = anyio.TASK_STATUS_IGNORED,
 ) -> None:

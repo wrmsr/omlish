@@ -87,7 +87,7 @@ def patch_for_trio_asyncio() -> None:
 
 
 @lang.cached_function
-def _pydevd() -> ta.Optional[types.ModuleType]:
+def _pydevd() -> types.ModuleType | None:
     try:
         return __import__('pydevd')
     except ImportError:
@@ -98,7 +98,7 @@ def is_present() -> bool:
     return _pydevd() is not None
 
 
-def get_setup() -> ta.Optional[dict]:
+def get_setup() -> dict | None:
     if is_present():
         return _pydevd().SetupHolder.setup
     else:
@@ -154,8 +154,8 @@ def save_args() -> None:
 
 def maybe_reexec(
         *,
-        file: ta.Optional[str] = None,
-        module: ta.Optional[str] = None,
+        file: str | None = None,
+        module: str | None = None,
         silence: bool = False,
 ) -> None:
     if ARGS_ENV_VAR not in os.environ:

@@ -6,7 +6,7 @@ T = ta.TypeVar('T')
 
 class OrderedSet(ta.MutableSet[T]):
 
-    def __init__(self, iterable: ta.Optional[ta.Iterable[T]] = None) -> None:
+    def __init__(self, iterable: ta.Iterable[T] | None = None) -> None:
         super().__init__()
         self._dct: dict[T, ta.Any] = {}
         if iterable is not None:

@@ -12,7 +12,7 @@ class Sockets:
     insecure_sockets: list[socket.socket]
 
 
-SocketKind: ta.TypeAlias = ta.Union[int, socket.SocketKind]
+SocketKind: ta.TypeAlias = int | socket.SocketKind
 
 
 class SocketTypeError(Exception):
@@ -105,7 +105,7 @@ def repr_socket_addr(family: int, address: tuple) -> str:
         return f'{address}'
 
 
-def parse_socket_addr(family: int, address: tuple) -> ta.Optional[tuple[str, int]]:
+def parse_socket_addr(family: int, address: tuple) -> tuple[str, int] | None:
     if family == socket.AF_INET:
         return address
     elif family == socket.AF_INET6:

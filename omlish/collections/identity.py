@@ -69,7 +69,7 @@ class IdentityKeyDict(ta.MutableMapping[K, V]):
 
 class IdentitySet(ta.MutableSet[T]):
 
-    def __init__(self, init: ta.Optional[ta.Iterable[T]] = None) -> None:
+    def __init__(self, init: ta.Iterable[T] | None = None) -> None:
         super().__init__()
         self._dict: dict[int, T] = {}
         if init is not None:

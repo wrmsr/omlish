@@ -179,7 +179,7 @@ class Mmap:
             length: int,
             *,
             prot: int = PROT_READ | PROT_WRITE,
-            flags: ta.Optional[int] = None,
+            flags: int | None = None,
             fd: int = -1,
             offset: int = 0,
             desired_base: int = 0,
@@ -205,7 +205,7 @@ class Mmap:
         self._is_mapped = False
 
     @property
-    def base(self) -> ta.Optional[int]:
+    def base(self) -> int | None:
         return self._base
 
     def __enter__(self) -> 'Mmap':

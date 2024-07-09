@@ -218,7 +218,7 @@ def get_underlying(nt: NewType) -> Type:
     return type_(nt.obj.__supertype__)  # noqa
 
 
-def get_concrete_type(ty: Type) -> ta.Optional[type]:
+def get_concrete_type(ty: Type) -> type | None:
     if isinstance(ty, type):
         return ty
     if isinstance(ty, Generic):

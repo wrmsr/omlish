@@ -74,11 +74,11 @@ class FrozenDict(ta.Mapping[K, V], Frozen):
 
 class FrozenList(ta.Sequence[T], Frozen):
 
-    def __init__(self, it: ta.Optional[ta.Iterable[T]] = None) -> None:
+    def __init__(self, it: ta.Iterable[T] | None = None) -> None:
         super().__init__()
 
         self._tup: tuple = tuple(it) if it is not None else ()
-        self._hash: ta.Optional[int] = None
+        self._hash: int | None = None
 
     @property
     def debug(self) -> ta.Sequence[T]:
@@ -111,7 +111,7 @@ class FrozenList(ta.Sequence[T], Frozen):
             self._hash = hash(self._tup)
         return self._hash
 
-    def __getitem__(self, idx: ta.Union[int, slice]) -> 'FrozenList[T]':  # type: ignore
+    def __getitem__(self, idx: int | slice) -> 'FrozenList[T]':  # type: ignore
         if isinstance(idx, int):
             return self._tup[idx]
         else:

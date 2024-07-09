@@ -45,7 +45,7 @@ class InjectorImpl(Injector, lang.Final):
         super().__init__()
 
         self._ec = check.isinstance(ec, ElementCollection)
-        self._p: ta.Optional[InjectorImpl] = check.isinstance(p, (InjectorImpl, None))
+        self._p: InjectorImpl | None = check.isinstance(p, (InjectorImpl, None))
 
         self._internal_consts: dict[Key, ta.Any] = {
             Key(Injector): self,

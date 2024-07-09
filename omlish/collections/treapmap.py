@@ -33,7 +33,7 @@ class TreapMap(PersistentMap[K, V]):
     def __init__(
             self,
             *,
-            _n: ta.Optional[treap.TreapNode[tuple[K, V]]],
+            _n: treap.TreapNode[tuple[K, V]] | None,
             _c: treap.Comparer[tuple[K, V]],
     ) -> None:
         super().__init__()
@@ -115,7 +115,7 @@ class TreapMapIterator(ta.Generic[K, V]):
             self,
             *,
             _st: list[treap.TreapNode[tuple[K, V]]],
-            _n: ta.Optional[treap.TreapNode[tuple[K, V]]],
+            _n: treap.TreapNode[tuple[K, V]] | None,
             _b: bool,
     ) -> None:
         super().__init__()

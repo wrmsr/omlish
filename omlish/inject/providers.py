@@ -53,7 +53,7 @@ class FnProvider(Provider):
         return self.cls
 
 
-def fn(fn: ta.Any, cls: ta.Optional[Cls] = _Missing) -> Provider:
+def fn(fn: ta.Any, cls: Cls | None = _Missing) -> Provider:
     check.not_isinstance(fn, type)
     check.callable(fn)
     if cls is _Missing:
@@ -90,7 +90,7 @@ class ConstProvider(Provider):
         return self.cls
 
 
-def const(v: ta.Any, cls: ta.Optional[Cls] = _Missing) -> Provider:
+def const(v: ta.Any, cls: Cls | None = _Missing) -> Provider:
     if cls is _Missing:
         cls = type(v)
     return ConstProvider(v, cls)

@@ -1,5 +1,4 @@
 import random
-import typing as ta
 
 from ..skiplist import SkipList
 from ..skiplist import SkipListDict
@@ -29,7 +28,7 @@ def test_skiplist():
 
 
 def test_skiplistdict():
-    dct: SkipListDict[ta.Union[int, float], str] = SkipListDict()
+    dct: SkipListDict[int | float, str] = SkipListDict()
     dct[4] = 'd'
     dct[2] = 'b'
     dct[5] = 'e'

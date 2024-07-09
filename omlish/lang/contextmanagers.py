@@ -19,10 +19,10 @@ class ContextManaged:
 
     def __exit__(
             self,
-            exc_type: ta.Optional[ta.Type[Exception]],
-            exc_val: ta.Optional[Exception],
-            exc_tb: ta.Optional[types.TracebackType],
-    ) -> ta.Optional[bool]:
+            exc_type: ta.Type[Exception] | None,
+            exc_val: Exception | None,
+            exc_tb: types.TracebackType | None,
+    ) -> bool | None:
         return None
 
 
@@ -146,10 +146,10 @@ class ExitStacked:
 
     def __exit__(
             self,
-            exc_type: ta.Optional[ta.Type[Exception]],
-            exc_val: ta.Optional[Exception],
-            exc_tb: ta.Optional[types.TracebackType],
-    ) -> ta.Optional[bool]:
+            exc_type: ta.Type[Exception] | None,
+            exc_val: Exception | None,
+            exc_tb: types.TracebackType | None,
+    ) -> bool | None:
         self._exit_stack.__exit__(exc_type, exc_val, exc_tb)
         try:
             superfn = super().__exit__  # type: ignore
@@ -162,12 +162,12 @@ class ExitStacked:
 ##
 
 
-ContextWrappable: ta.TypeAlias = ta.Union[ta.ContextManager, str, ta.Callable[..., ta.ContextManager]]
+ContextWrappable: ta.TypeAlias = ta.ContextManager | str | ta.Callable[..., ta.ContextManager]
 
 
 class ContextWrapped:
 
-    def __init__(self, fn: ta.Callable, cm: ta.Union[str, ContextWrappable]) -> None:
+    def __init__(self, fn: ta.Callable, cm: str | ContextWrappable) -> None:
         super().__init__()
 
         self._fn = fn

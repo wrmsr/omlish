@@ -10,11 +10,11 @@ from .cached import cached_function
 ##
 
 
-def lazy_import(name: str, package: ta.Optional[str] = None) -> ta.Callable[[], ta.Any]:
+def lazy_import(name: str, package: str | None = None) -> ta.Callable[[], ta.Any]:
     return cached_function(functools.partial(importlib.import_module, name, package=package))
 
 
-def proxy_import(name: str, package: ta.Optional[str] = None) -> types.ModuleType:
+def proxy_import(name: str, package: str | None = None) -> types.ModuleType:
     omod = None
 
     def __getattr__(att):
@@ -65,7 +65,7 @@ def yield_importable(
         package_root: str,
         *,
         recursive: bool = False,
-        filter: ta.Optional[ta.Callable[[str], bool]] = None,
+        filter: ta.Callable[[str], bool] | None = None,
         include_special: bool = False,
 ) -> ta.Iterator[str]:
     def rec(dir):
@@ -112,10 +112,10 @@ def yield_importable(
 def yield_import_all(
         package_root: str,
         *,
-        globals: ta.Optional[dict[str, ta.Any]] = None,
-        locals: ta.Optional[dict[str, ta.Any]] = None,
+        globals: dict[str, ta.Any] | None = None,
+        locals: dict[str, ta.Any] | None = None,
         recursive: bool = False,
-        filter: ta.Optional[ta.Callable[[str], bool]] = None,
+        filter: ta.Callable[[str], bool] | None = None,
         include_special: bool = False,
 ) -> ta.Iterator[str]:
     for import_path in yield_importable(
@@ -132,7 +132,7 @@ def import_all(
         package_root: str,
         *,
         recursive: bool = False,
-        filter: ta.Optional[ta.Callable[[str], bool]] = None,
+        filter: ta.Callable[[str], bool] | None = None,
         include_special: bool = False,
 ) -> None:
     for _ in yield_import_all(
@@ -144,7 +144,7 @@ def import_all(
         pass
 
 
-def try_import(spec: str) -> ta.Optional[types.ModuleType]:
+def try_import(spec: str) -> types.ModuleType | None:
     s = spec.lstrip('.')
     l = len(spec) - len(s)
     try:
