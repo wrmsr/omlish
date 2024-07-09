@@ -88,9 +88,11 @@ def _toml_loads(s: str) -> ta.Any:
         import tomllib as toml
     except ImportError:
         try:
-            from pip._vendor import tomli as toml  # noqa
+            mod = __import__('pip._vendor.tomli')
         except ImportError:
             pass
+        else:
+            toml = mod._vendor.tomli  # noqa
     if toml is not None:
         return toml.loads(s)
 

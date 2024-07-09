@@ -23,10 +23,14 @@ def _main() -> None:
 
     imps: set[str] = set()
     for rootp in sys.argv[1:]:
-        for dp, dns, fns in os.walk(os.path.expanduser(rootp)):
-            for fn in fns:
-                if fn.endswith('.py'):
-                    handle(os.path.join(dp, fn))
+        if os.path.isfile(rootp):
+            if rootp.endswith('.py'):
+                handle(os.path.join(os.path.dirname(rootp), os.path.basename(rootp)))
+        else:
+            for dp, dns, fns in os.walk(os.path.expanduser(rootp)):
+                for fn in fns:
+                    if fn.endswith('.py'):
+                        handle(os.path.join(dp, fn))
 
     def whichmod(i: str) -> str:
         try:
@@ -35,7 +39,7 @@ def _main() -> None:
             return 'bad'
         if not isinstance(l, importlib.machinery.ModuleSpec) or not l.origin:
             return 'bad'
-        if l.origin.startswith(sys.base_prefix):
+        if l.origin.startswith(sys.base_prefix) or l.origin == 'frozen':
             return 'builtin'
         return 'dep'
 
