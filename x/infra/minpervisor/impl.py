@@ -45,6 +45,11 @@ Lookit:
                 if scope.cancelled_caught:
                     print('FAILED TO REAP')
 
+==
+
+notes:
+ - stacked supervisors.. master -> process_config -> process_instance
+
 """  # noqa
 import dataclasses as dc
 import io
