@@ -83,7 +83,7 @@ class special_info(lang.Namespace):
         await t2.mailboxes().send(__name__, 'special_info_fail')
 
 
-class KvStore(t2.App):
+class KvStore(t2.ServerApp):
 
     async def start(self, test_state):
         try:
