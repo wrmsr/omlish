@@ -170,11 +170,19 @@ class ContextWrapped:
     def __init__(self, fn: ta.Callable, cm: str | ContextWrappable) -> None:
         super().__init__()
 
-        self._fn = fn
+        self._fn = (fn,)
         self._cm = cm
         self._name: str | None = None
 
         functools.update_wrapper(self, fn)
+
+    @property
+    def _fn(self):
+        return self.__fn
+
+    @_fn.setter
+    def _fn(self, x):
+        self.__fn = x
 
     def __set_name__(self, owner, name):
         if name is not None:
@@ -187,7 +195,7 @@ class ContextWrapped:
     def __get__(self, instance, owner=None):
         if instance is None and owner is None:
             return self
-        fn = self._fn.__get__(instance, owner)  # noqa
+        fn = self._fn[0].__get__(instance, owner)  # noqa
         cm: ta.Any = self._cm
         if isinstance(self._cm, str):
             if instance is not None:
@@ -217,7 +225,7 @@ class ContextWrapped:
         if not hasattr(cm, '__enter__') and callable(cm):
             cm = cm(*args, **kwargs)
         with cm:  # type: ignore
-            return self._fn(*args, **kwargs)
+            return self._fn[0](*args, **kwargs)
 
 
 def context_wrapped(cm):  # ContextWrappable -> ta.Callable[[CallableT], CallableT]:

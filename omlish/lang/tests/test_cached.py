@@ -4,6 +4,7 @@ import time
 from ... import testing as tu
 from ..cached import cached_function
 from ..cached import cached_property
+from ..contextmanagers import context_wrapped
 
 
 def test_cached_function_nullary():
@@ -185,3 +186,45 @@ def test_collections_cache():
     assert xys == [(1, 2), (1, 3), (2, 3), (2, 1)]
     assert f(2, 3) == 5
     assert xys == [(1, 2), (1, 3), (2, 3), (2, 1), (2, 3)]
+
+
+def test_context_wrapped():
+    class ContextCounter:
+        enter_count = 0
+        exit_count = 0
+
+        def __enter__(self):
+            self.enter_count += 1
+
+        def __exit__(self, exc_type, exc_val, exc_tb):
+            self.exit_count += 1
+
+    class C:
+        def __init__(self):
+            super().__init__()
+            self._lock = ContextCounter()
+
+        @cached_function
+        @context_wrapped('_lock')
+        def a(self):
+            return 'a'
+
+        @cached_function
+        @context_wrapped('_lock')
+        def b(self):
+            return f'b{self.a()}'
+
+        @cached_function
+        @context_wrapped('_lock')
+        def c(self):
+            return f'c{self.a()}'
+
+        @cached_function
+        @context_wrapped('_lock')
+        def d(self):
+            return f'd{self.c()}{self.b()}'
+
+    c = C()
+    assert c.d() == 'dcaba'
+    assert c._lock.enter_count == 4
+    assert c._lock.exit_count == 4
