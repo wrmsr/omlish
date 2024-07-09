@@ -86,6 +86,10 @@ flake8: venv
 ruff: venv
 	${PYTHON} -mruff check ${SOURCES}
 
+.PHONY: ruff-stats
+ruff-stats: venv
+	${PYTHON} -mruff check --statistics ${SOURCES}
+
 .PHONY: ruff-fix
 ruff-fix: venv
 	if ! $$(git diff-index --quiet HEAD --) ; then \

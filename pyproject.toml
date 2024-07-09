@@ -109,36 +109,37 @@ session_timeout = 600
 line-length = 120
 indent-width = 4
 
+[tool.ruff.lint]
 # select = ["E", "F"]
 select = ["ALL"]
 
 ignore = [
+    'ANN401',  # dynamically typed expressions (typing.Any) are disallowed in `*args`
     'ARG002',  # unused method argument
-
     'D',  # docstrings
-
     'E741',  # ambiguous variable name
     'E742',  # ambiguous class name
-    'F541',  # f-string without any placeholders
-
-    'PGH004',  # use specific rule codes when using `noqa`
-
     'ERA001',  # found commented-out code
-
+    'F541',  # f-string without any placeholders
+    'FBT002',  # boolean default positional argument in function definition
+    'FBT003',  # boolean positional value in function call
+    'PGH004',  # use specific rule codes when using `noqa`
     'TID252',  # prefer absolute imports over relative imports from parent modules
 ]
 
 [tool.ruff.lint.per-file-ignores]
 '**/{tests}/*' = [
+    'ANN001', # missing type annotation for function argument
+    'ANN201',  # missing return type annotation for public function
     'S101',  # use of `assert` detected
 ]
+
+[tool.ruff.lint.flake8-quotes]
+inline-quotes = 'single'
 
 # [tool.ruff.format]
 # quote-style = 'single'
 # indent-style = 'space'
-
-[tool.ruff.lint.flake8-quotes]
-inline-quotes = 'single'
 
 
 ##
