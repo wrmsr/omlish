@@ -55,6 +55,8 @@ networkx==3.3
 
 nevergrad==1.0.3
 
+sympy==1.13.0
+
 # --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/Triton-Nightly/pypi/simple/
 # triton-nightly; platform_machine == 'x86_64'
 triton==2.3.1; platform_machine == 'x86_64'
@@ -96,7 +98,7 @@ fairscale==0.4.13
 
 accelerate==0.32.1
 
-pytorch-lightning==2.3.2
+pytorch-lightning==2.3.3
 
 torchsummary==1.5.1
 
@@ -148,9 +150,9 @@ blobfile==2.1.1
 
 ### infra
 
-boto3>=1.34.140
+boto3>=1.34.141
 
-google-cloud-compute==1.19.0
+google-cloud-compute==1.19.1
 
 
 ### hn
