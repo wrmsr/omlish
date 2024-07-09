@@ -352,7 +352,7 @@ class AppRegistry:
         self.registry = {}
 
 
-context_app_nursery = contextvars.ContextVar('app_nursery')
+context_app_registry = contextvars.ContextVar('app_registry')
 
 
 def _application_init(nursery: trio.Nursery) -> None:
