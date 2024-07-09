@@ -13,7 +13,7 @@ def test_data():
     return SampleData()
 
 
-class sample_app(t2.Module):
+class sample_app(t2.App):
     __name__ = 'sample_app'
 
     async def start(self, test_data):
@@ -24,7 +24,7 @@ def test_node_run(test_data):
     t2.node_run(
         [
             t2.AppSpec(
-                module=sample_app(),
+                app=sample_app(),
                 start_arg=test_data,
                 permanent=False,
             )

@@ -65,7 +65,7 @@ class special_info:
         await t2.mailboxes().send(__name__, 'special_info_fail')
 
 
-class KvStore(t2.Module):
+class KvStore(t2.App):
 
     async def start(self, test_state):
         try:

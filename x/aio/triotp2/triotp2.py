@@ -316,14 +316,14 @@ async def _dynamic_supervisor_child_listener(
 # apps
 
 
-class Module:
+class App:
     pass
 
 
 @dc.dataclass()
 class AppSpec:
-    module: Module  #: App module
-    start_arg: ta.Any  #: Argument to pass to the module's start function
+    app: App  #: App app
+    start_arg: ta.Any  #: Argument to pass to the app's start function
     permanent: bool = True  #: If `False`, the app won't be restarted if it exits
     opts: SupervisorOptions | None = None  #: Options for the supervisor managing the app task
 
@@ -335,9 +335,9 @@ class Apps:
         self.registry = {}
 
     async def start(self, app: AppSpec) -> None:
-        if app.module.__name__ not in self.registry:
+        if app.app.__name__ not in self.registry:
             local_nursery = await self.nursery.start(self._scope, app)
-            self.registry[app.module.__name__] = local_nursery
+            self.registry[app.app.__name__] = local_nursery
 
     async def stop(self, app_name: str) -> None:
         if app_name in self.registry:
@@ -356,8 +356,8 @@ class Apps:
 
             children = [
                 ChildSpec(
-                    id=app.module.__name__,
-                    task=app.module.start,
+                    id=app.app.__name__,
+                    task=app.app.start,
                     args=[app.start_arg],
                     restart=restart,
                 )
@@ -460,11 +460,11 @@ class _CastMessage:
 
 
 async def gen_server_start(
-        module: Module,
+        app: App,
         init_arg: ta.Any | None = None,
         name: str | None = None,
 ) -> None:
-    await _gen_server_loop(module, init_arg, name)
+    await _gen_server_loop(app, init_arg, name)
 
 
 async def gen_server_call(
@@ -508,13 +508,13 @@ async def gen_server_reply(caller: trio.MemorySendChannel, response: ta.Any) -> 
 
 
 async def _gen_server_loop(
-        module: Module,
+        app: App,
         init_arg: ta.Any | None,
         name: str | None,
 ) -> None:
     async with mailboxes().open(name) as mid:
         try:
-            state = await _gen_server_init(module, init_arg)
+            state = await _gen_server_init(app, init_arg)
             looping = True
 
             while looping:
@@ -523,14 +523,14 @@ async def _gen_server_loop(
                 match message:
                     case _CallMessage(source, payload):
                         continuation, state = await _gen_server_handle_call(
-                            module, payload, source, state
+                            app, payload, source, state
                         )
 
                     case _CastMessage(payload):
-                        continuation, state = await _gen_server_handle_cast(module, payload, state)
+                        continuation, state = await _gen_server_handle_cast(app, payload, state)
 
                     case _:
-                        continuation, state = await _gen_server_handle_info(module, message, state)
+                        continuation, state = await _gen_server_handle_info(app, message, state)
 
                 match continuation:
                     case _Loop(yes=False):
@@ -543,40 +543,40 @@ async def _gen_server_loop(
                         raise err
 
         except Exception as err:
-            await _gen_server_terminate(module, err, state)
+            await _gen_server_terminate(app, err, state)
             raise err from None
 
         else:
-            await _gen_server_terminate(module, None, state)
+            await _gen_server_terminate(app, None, state)
 
 
-async def _gen_server_init(module: Module, init_arg: ta.Any) -> State:
-    return await module.init(init_arg)
+async def _gen_server_init(app: App, init_arg: ta.Any) -> State:
+    return await app.init(init_arg)
 
 
 async def _gen_server_terminate(
-        module: Module,
+        app: App,
         reason: BaseException | None,
         state: State,
 ) -> None:
-    handler = getattr(module, 'terminate', None)
+    handler = getattr(app, 'terminate', None)
     if handler is not None:
         await handler(reason, state)
 
     elif reason is not None:
-        logger = logging.getLogger(module.__name__)
+        logger = logging.getLogger(app.__name__)
         logger.exception(reason)
 
 
 async def _gen_server_handle_call(
-        module: Module,
+        app: App,
         message: ta.Any,
         source: trio.MemorySendChannel,
         state: State,
 ) -> tuple[Continuation, State]:
-    handler = getattr(module, 'handle_call', None)
+    handler = getattr(app, 'handle_call', None)
     if handler is None:
-        raise NotImplementedError(f'{module.__name__}.handle_call')
+        raise NotImplementedError(f'{app.__name__}.handle_call')
 
     result = await handler(message, source, state)
 
@@ -602,20 +602,20 @@ async def _gen_server_handle_call(
 
         case _:
             raise TypeError(
-                f'{module.__name__}.handle_call did not return a valid value'
+                f'{app.__name__}.handle_call did not return a valid value'
             )
 
     return continuation, state
 
 
 async def _gen_server_handle_cast(
-        module: Module,
+        app: App,
         message: ta.Any,
         state: State,
 ) -> tuple[Continuation, State]:
-    handler = getattr(module, 'handle_cast', None)
+    handler = getattr(app, 'handle_cast', None)
     if handler is None:
-        raise NotImplementedError(f'{module.__name__}.handle_cast')
+        raise NotImplementedError(f'{app.__name__}.handle_cast')
 
     result = await handler(message, state)
 
@@ -634,17 +634,17 @@ async def _gen_server_handle_cast(
                 continuation = _Loop(yes=False)
 
         case _:
-            raise TypeError(f'{module.__name__}.handle_cast did not return a valid value')
+            raise TypeError(f'{app.__name__}.handle_cast did not return a valid value')
 
     return continuation, state
 
 
 async def _gen_server_handle_info(
-        module: Module,
+        app: App,
         message: ta.Any,
         state: State,
 ) -> tuple[Continuation, State]:
-    handler = getattr(module, 'handle_info', None)
+    handler = getattr(app, 'handle_info', None)
     if handler is None:
         return _Loop(yes=True), state
 
@@ -665,6 +665,6 @@ async def _gen_server_handle_info(
                 continuation = _Loop(yes=False)
 
         case _:
-            raise TypeError(f'{module.__name__}.handle_info did not return a valid value')
+            raise TypeError(f'{app.__name__}.handle_info did not return a valid value')
 
     return continuation, state

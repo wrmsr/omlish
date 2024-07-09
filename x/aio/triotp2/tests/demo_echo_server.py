@@ -3,7 +3,7 @@ import trio
 from .. import triotp2 as t2
 
 
-class echo_server(t2.Module):
+class echo_server(t2.App):
 
     @staticmethod
     async def echo(message):

@@ -17,14 +17,14 @@ def test_data():
     return SampleData()
 
 
-class app_a(t2.Module):
+class app_a(t2.App):
     __name__ = 'app_a'
 
     async def start(self, test_data):
         test_data.count += 1
 
 
-class app_b(t2.Module):
+class app_b(t2.App):
     __name__ = 'app_b'
 
     async def start(self, test_data):
@@ -32,7 +32,7 @@ class app_b(t2.Module):
         raise RuntimeError("pytest")
 
 
-class app_c(t2.Module):
+class app_c(t2.App):
     __name__ = 'app_c'
 
     async def start(self, test_data):
@@ -47,7 +47,7 @@ async def test_app_stop(test_data, log_handler):
 
         await t2.apps().start(
             t2.AppSpec(
-                module=app_c(),
+                app=app_c(),
                 start_arg=test_data,
                 permanent=True,
             )
@@ -67,7 +67,7 @@ async def test_app_automatic_restart_permanent(test_data, max_restarts, log_hand
 
         await t2.apps().start(
             t2.AppSpec(
-                module=app_a(),
+                app=app_a(),
                 start_arg=test_data,
                 permanent=True,
                 opts=t2.SupervisorOptions(
@@ -89,7 +89,7 @@ async def test_app_automatic_restart_crash(test_data, max_restarts, log_handler)
 
             await t2.apps().start(
                 t2.AppSpec(
-                    module=app_b(),
+                    app=app_b(),
                     start_arg=test_data,
                     permanent=False,
                     opts=t2.SupervisorOptions(
@@ -109,7 +109,7 @@ async def test_app_no_automatic_restart(test_data, log_handler):
 
         await t2.apps().start(
             t2.AppSpec(
-                module=app_a(),
+                app=app_a(),
                 start_arg=test_data,
                 permanent=False,
             )
