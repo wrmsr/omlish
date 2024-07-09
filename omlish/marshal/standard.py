@@ -47,9 +47,9 @@ def new_standard_marshaler_factory() -> MarshalerFactory:
     return TypeCacheFactory(  # noqa
         RecursiveMarshalerFactory(
             CompositeFactory(
-                *STANDARD_MARSHALER_FACTORIES
-            )
-        )
+                *STANDARD_MARSHALER_FACTORIES,
+            ),
+        ),
     )
 
 
@@ -74,7 +74,7 @@ def new_standard_unmarshaler_factory() -> UnmarshalerFactory:
     return TypeCacheFactory(  # noqa
         RecursiveUnmarshalerFactory(
             CompositeFactory(
-                *STANDARD_UNMARSHALER_FACTORIES
-            )
-        )
+                *STANDARD_UNMARSHALER_FACTORIES,
+            ),
+        ),
     )

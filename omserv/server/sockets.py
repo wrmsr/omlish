@@ -18,7 +18,7 @@ SocketKind: ta.TypeAlias = ta.Union[int, socket.SocketKind]
 class SocketTypeError(Exception):
     def __init__(self, expected: SocketKind, actual: SocketKind) -> None:
         super().__init__(
-            f'Unexpected socket type, wanted "{socket.SocketKind(expected)}" got ' f'"{socket.SocketKind(actual)}"'
+            f'Unexpected socket type, wanted "{socket.SocketKind(expected)}" got ' f'"{socket.SocketKind(actual)}"',
         )
 
 

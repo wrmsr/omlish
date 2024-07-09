@@ -218,7 +218,7 @@ class PyenvResolver(Resolver):
             self,
             *args,
             pyenv_root: ta.Optional[str] = None,
-            **kwargs
+            **kwargs,
     ) -> None:
         if pyenv_root is not None and not (isinstance(pyenv_root, str) and pyenv_root):
             raise ValueError(f'pyenv_root: {pyenv_root!r}')

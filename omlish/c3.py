@@ -115,7 +115,7 @@ def mro(
     return merge(
         [[cls]] +
         explicit_c3_mros + abstract_c3_mros + other_c3_mros +
-        [explicit_bases] + [abstract_bases] + [other_bases]
+        [explicit_bases] + [abstract_bases] + [other_bases],
     )
 
 
