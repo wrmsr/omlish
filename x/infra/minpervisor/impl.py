@@ -125,18 +125,19 @@ class Process:
                 try:
                     log.debug(f'process {self.name}={proc.pid} waiting')
 
-                    glst = await gather(
-                        self._mbox_recv.receive,
-                        proc.wait,
-                        take_first=True,
-                    )
+                    while True:
+                        glst = await gather(
+                            self._mbox_recv.receive,
+                            proc.wait,
+                            take_first=True,
+                        )
 
-                    if glst[1].present:
-                        log.debug(f'process {self.name}={proc.pid} got message: {glst[1].must()}')
+                        if glst[0].present:
+                            log.debug(f'process {self.name}={proc.pid} got message: {glst[1].must()}')
 
-                    if glst[0].present:
-                        log.debug(f'process {self.name}={proc.pid} exited')
-                        break
+                        if glst[1].present:
+                            log.debug(f'process {self.name}={proc.pid} exited')
+                            break
 
                 except anyio.get_cancelled_exc_class():
                     log.debug(f'process {self.name}={proc.pid} cancelled')
@@ -185,7 +186,15 @@ async def _a_main():
 
     async def inner(*, task_status: anyio.abc.TaskStatus) -> None:
         task_status.started()
+
         await anyio.sleep(10)
+
+        print('messaging')
+        for p in ps:
+            await p._mbox_send.send(f'hi process {p.name}')  # noqa
+
+        await anyio.sleep(10)
+
         print('canceling')
         tg.cancel_scope.cancel()
 
