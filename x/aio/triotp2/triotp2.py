@@ -5,11 +5,11 @@ import contextvars
 import dataclasses as dc
 import enum
 import logging
-import sys
 import tenacity
 import typing as ta
 import uuid
 
+from omlish import lang
 import trio
 
 from .. import trio_util
@@ -299,7 +299,9 @@ async def _dynamic_supervisor_child_listener(
 # apps
 
 
-class App(abc.ABC):
+class App(lang.Abstract):
+    __name__: ta.ClassVar[str]
+
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
         if not hasattr(cls, '__name__'):
@@ -434,8 +436,28 @@ class _CastMessage:
     payload: ta.Any
 
 
+class ServerApp(App, lang.Abstract):
+    @abc.abstractmethod
+    async def init(self, init_arg: ta.Any) -> None:
+        raise NotImplementedError
+
+    async def terminate(self, reason: BaseException | None, state: State) -> None:
+        if reason is not None:
+            logger = logging.getLogger(self.__name__)
+            logger.exception(reason)
+
+    async def handle_call(self, message, caller, state):
+        raise TypeError(f'{self.__name__}.handle_call not implemented')
+
+    async def handle_cast(self, message, state):
+        raise TypeError(f'{self.__name__}.handle_cast not implemented')
+
+    async def handle_info(self, message, state):
+        return NoReply(), state
+
+
 async def gen_server_start(
-        app: App,
+        app: ServerApp,
         init_arg: ta.Any | None = None,
         name: str | None = None,
 ) -> None:
@@ -483,7 +505,7 @@ async def gen_server_reply(caller: trio.MemorySendChannel, response: ta.Any) -> 
 
 
 class _GenServerLoop:
-    def __init__(self, app: App) -> None:
+    def __init__(self, app: ServerApp) -> None:
         super().__init__()
         self.app = app
 
@@ -535,13 +557,7 @@ class _GenServerLoop:
             reason: BaseException | None,
             state: State,
     ) -> None:
-        handler = getattr(self.app, 'terminate', None)
-        if handler is not None:
-            await handler(reason, state)
-
-        elif reason is not None:
-            logger = logging.getLogger(self.app.__name__)
-            logger.exception(reason)
+        await self.app.terminate(reason, state)
 
     async def _handle_call(
             self,
@@ -549,11 +565,7 @@ class _GenServerLoop:
             source: trio.MemorySendChannel,
             state: State,
     ) -> tuple[Continuation, State]:
-        handler = getattr(self.app, 'handle_call', None)
-        if handler is None:
-            raise NotImplementedError(f'{self.app.__name__}.handle_call')
-
-        result = await handler(message, source, state)
+        result = await self.app.handle_call(message, source, state)
 
         match result:
             case (Reply(payload), new_state):
@@ -571,14 +583,11 @@ class _GenServerLoop:
 
                 if reason is not None:
                     continuation = _Raise(reason)
-
                 else:
                     continuation = _Loop(yes=False)
 
             case _:
-                raise TypeError(
-                    f'{self.app.__name__}.handle_call did not return a valid value'
-                )
+                raise TypeError(f'{self.app.__name__}.handle_call did not return a valid value')
 
         return continuation, state
 
@@ -587,11 +596,7 @@ class _GenServerLoop:
             message: ta.Any,
             state: State,
     ) -> tuple[Continuation, State]:
-        handler = getattr(self.app, 'handle_cast', None)
-        if handler is None:
-            raise NotImplementedError(f'{self.app.__name__}.handle_cast')
-
-        result = await handler(message, state)
+        result = await self.app.handle_cast(message, state)
 
         match result:
             case (NoReply(), new_state):
@@ -617,11 +622,7 @@ class _GenServerLoop:
             message: ta.Any,
             state: State,
     ) -> tuple[Continuation, State]:
-        handler = getattr(self.app, 'handle_info', None)
-        if handler is None:
-            return _Loop(yes=True), state
-
-        result = await handler(message, state)
+        result = await self.app.handle_info(message, state)
 
         match result:
             case (NoReply(), new_state):
