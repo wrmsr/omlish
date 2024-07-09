@@ -114,32 +114,28 @@ def void(*args, **kwargs) -> ta.NoReturn:
     raise VoidException
 
 
-def ticking_timeout(
-        s: float | None,
-        ex: type[BaseException] | BaseException = TimeoutError,
-) -> ta.Callable[[], None]:
-    if s is None:
-        return lambda: None
-    def tick():  # noqa
-        if time.time() >= deadline:
-            raise ex
-    deadline = time.time() + s
-    return tick
-
-
 _MISSING = object()
 
 
-def periodically(fn: CallableT, interval_s: float, initial: ta.Any = _MISSING) -> CallableT:
-    nxt = float('-inf')
+def periodically(
+        fn: CallableT,
+        interval_s: float,
+        initial: ta.Any = _MISSING,
+        *,
+        include_runtime: bool = False,
+) -> CallableT:
+    nxt = time.time() + interval_s
     ret = initial
 
     @functools.wraps(fn)
     def inner(*args, **kwargs):
         nonlocal nxt, ret
         if time.time() >= nxt or ret is _MISSING:
+            if include_runtime:
+                nxt = time.time() + interval_s
             ret = fn(*args, **kwargs)
-            nxt = time.time() + interval_s
+            if not include_runtime:
+                nxt = time.time() + interval_s
         return ret
 
     return inner  # type: ignore
