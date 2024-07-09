@@ -46,8 +46,15 @@ def getLogger(name: str) -> logging.Logger:
 
 MailboxID = ta.TypeVar('MailboxID', bound=str)  #: Mailbox identifier (UUID4)
 
-context_mailbox_registry = contextvars.ContextVar('mailbox_registry')
-context_name_registry = contextvars.ContextVar('name_registry')
+
+class Registry:
+    def __init__(self):
+        super().__init__()
+        self.mailboxes = {}
+        self.names = {}
+
+
+context_registries = contextvars.ContextVar('registries')
 
 
 class MailboxDoesNotExist(RuntimeError):
@@ -66,21 +73,20 @@ class NameDoesNotExist(RuntimeError):
 
 
 def _mailbox_init() -> None:
-    context_mailbox_registry.set({})
-    context_name_registry.set({})
+    context_registries.set(Registry())
 
 
 def mailbox_create() -> MailboxID:
     mid = str(uuid.uuid4())
 
-    mailbox_registry = context_mailbox_registry.get()
+    mailbox_registry = context_registries.get().mailboxes
     mailbox_registry[mid] = trio.open_memory_channel(0)
 
     return mid
 
 
 async def mailbox_destroy(mid: MailboxID) -> None:
-    mailbox_registry = context_mailbox_registry.get()
+    mailbox_registry = context_registries.get().mailboxes
 
     if mid not in mailbox_registry:
         raise MailboxDoesNotExist(mid)
@@ -93,12 +99,12 @@ async def mailbox_destroy(mid: MailboxID) -> None:
 
 
 def mailbox_register(mid: MailboxID, name: str) -> None:
-    mailbox_registry = context_mailbox_registry.get()
+    mailbox_registry = context_registries.get().mailboxes
 
     if mid not in mailbox_registry:
         raise MailboxDoesNotExist(mid)
 
-    name_registry = context_name_registry.get()
+    name_registry = context_registries.get().names
     if name in name_registry:
         raise NameAlreadyExist(name)
 
@@ -106,7 +112,7 @@ def mailbox_register(mid: MailboxID, name: str) -> None:
 
 
 def mailbox_unregister(name: str) -> None:
-    name_registry = context_name_registry.get()
+    name_registry = context_registries.get().names
     if name not in name_registry:
         raise NameDoesNotExist(name)
 
@@ -114,7 +120,7 @@ def mailbox_unregister(name: str) -> None:
 
 
 def mailbox_unregister_all(mid: MailboxID) -> None:
-    name_registry = context_name_registry.get()
+    name_registry = context_registries.get().names
 
     for name, mailbox_id in list(name_registry.items()):
         if mailbox_id == mid:
@@ -136,12 +142,12 @@ async def mailbox_open(name: str | None = None) -> ta.AsyncContextManager[Mailbo
 
 
 def _mailbox_resolve(name: str) -> MailboxID | None:
-    name_registry = context_name_registry.get()
+    name_registry = context_registries.get().names
     return name_registry.get(name)
 
 
 async def mailbox_send(name_or_mid: str | MailboxID, message: ta.Any) -> None:
-    mailbox_registry = context_mailbox_registry.get()
+    mailbox_registry = context_registries.get().mailboxes
 
     mid = _mailbox_resolve(name_or_mid)
     if mid is None:
@@ -159,7 +165,7 @@ async def mailbox_receive(
         timeout: float | None = None,
         on_timeout: ta.Callable[[], ta.Awaitable[ta.Any]] = None,
 ) -> ta.Any:
-    mailbox_registry = context_mailbox_registry.get()
+    mailbox_registry = context_registries.get().mailboxes
 
     if mid not in mailbox_registry:
         raise MailboxDoesNotExist(mid)
