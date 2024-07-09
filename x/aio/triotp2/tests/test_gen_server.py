@@ -72,7 +72,7 @@ async def test_kvstore_call_delayed(test_state):
 @pytest.mark.trio
 async def test_kvstore_call_timeout(test_state):
     with pytest.raises(trio.TooSlowError):
-        await sample_kvstore.special_call.timedout(0.01)
+        await sample_kvstore.special_call.timed_out(0.01)
 
 
 @pytest.mark.trio
