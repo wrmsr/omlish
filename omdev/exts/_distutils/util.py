@@ -133,6 +133,8 @@ def split_quoted(s: str) -> list[str]:
 
     while s:
         m = _wordchars_re.match(s, pos)
+        if m is None:
+            raise ValueError(s)
         end = m.end()
         if end == len(s):
             words.append(s[:end])
