@@ -12,6 +12,7 @@ the "typical" Unix-style command-line C compiler:
 """
 from __future__ import annotations
 
+import importlib
 import itertools
 import logging
 import os
@@ -25,13 +26,21 @@ from ..errors import DistutilsExecError
 from ..errors import LibError
 from ..errors import LinkError
 from ..modified import newer
-from ._macos_compat import compiler_fixup
 from .ccompiler import CCompiler
 from .options import gen_lib_options
 from .options import gen_preprocess_options
 
 
 log = logging.getLogger(__name__)
+
+
+def bypass_compiler_fixup(cmd, args):
+    return cmd
+
+if sys.platform == 'darwin':
+    compiler_fixup = importlib.import_module('_osx_support').compiler_fixup
+else:
+    compiler_fixup = bypass_compiler_fixup
 
 
 # XXX Things not currently handled:
