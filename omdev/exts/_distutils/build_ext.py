@@ -206,7 +206,6 @@ class BuildExt:
 
         return cc
 
-
     def get_ext_fullpath(self, ext_name: str) -> str:
         fullname = self.get_ext_fullname(ext_name)
         modpath = fullname.split('.')
