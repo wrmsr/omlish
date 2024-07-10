@@ -180,7 +180,7 @@ class CCompiler:
         for defn in definitions:
             if not (
                     isinstance(defn, tuple)
-                    and (len(defn) in (1, 2) and (isinstance(defn[1], str) or defn[1] is None))
+                    and (len(defn) == 1 or (len(defn) == 2 and (isinstance(defn[1], str) or defn[1] is None)))
                     and isinstance(defn[0], str)
             ):
                 raise TypeError(
