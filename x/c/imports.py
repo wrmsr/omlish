@@ -2,7 +2,7 @@ import glob
 import os.path
 import shutil
 
-from .exts import importhook
+from omdev.exts import importhook
 
 
 def barf(x: object) -> str:
