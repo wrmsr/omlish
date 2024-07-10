@@ -82,6 +82,8 @@ class CCompiler:
 
     library_dirs: list[str] = []  # library dirs specific to this compiler class
 
+    executables: dict[str, list[str] | None]
+
     def __init__(
             self,
             verbose: int = 0,
@@ -153,6 +155,7 @@ class CCompiler:
     linker_so: list[str]
     linker_exe: list[str]
     archiver: list[str]
+    ranlib: list[str]
 
     def set_executable(self, key, value):
         if isinstance(value, str):

@@ -127,11 +127,6 @@ def split_quoted(s: str) -> list[str]:
     Returns a list of words.
     """
 
-    # This is a nice algorithm for splitting up a single string, since it doesn't require character-by-character
-    # examination.  It was a little bit of a brain-bender to get it working right, though...
-    if _wordchars_re is None:
-        _init_regex()
-
     s = s.strip()
     words = []
     pos = 0
