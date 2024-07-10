@@ -4,7 +4,6 @@ TODO:
  - whitelist packages
 """
 import dataclasses as dc
-import imp
 import importlib
 import importlib.abc
 import importlib.machinery
@@ -15,15 +14,15 @@ import typing as ta
 from . import build
 
 
-# def load_dynamic(name, path, file=None):
-#     import importlib.machinery
-#     loader = importlib.machinery.ExtensionFileLoader(name, path)
-#
-#     # Issue #24748: Skip the sys.modules check in _load_module_shim;
-#     # always load new extension
-#     spec = importlib.machinery.ModuleSpec(
-#         name=name, loader=loader, origin=path)
-#     return _load(spec)
+def load_dynamic(name, path, file=None):
+    import importlib.machinery
+    loader = importlib.machinery.ExtensionFileLoader(name, path)
+
+    # Issue #24748: Skip the sys.modules check in _load_module_shim; always load new extension
+    spec = importlib.machinery.ModuleSpec(name=name, loader=loader, origin=path)
+
+    import importlib._bootstrap  # FIXME:  # noqa
+    return importlib._bootstrap._load(spec)  # noqa
 
 
 class CExtensionLoader(importlib.abc.Loader):
@@ -36,10 +35,10 @@ class CExtensionLoader(importlib.abc.Loader):
 
     def load_module(self, fullname):
         so_path = build.build_ext(fullname, self._path)
-        return imp.load_dynamic(self._fullname, so_path)
+        return load_dynamic(self._fullname, so_path)
 
 
-LoaderDetails: ta.TypeAlias = tuple[type[importlib.abc.Loader], ta.Sequence[str]]
+LoaderDetails: ta.TypeAlias = tuple[type[importlib.abc.Loader], list[str]]
 loader_details = (CExtensionLoader, ['.c', '.cc', '.cpp', '.cxx'])
 
 
@@ -67,8 +66,8 @@ def install():
 def uninstall():
     def is_c_loader(h):
         return (
-                isinstance(h, FileFinderPathHook) and
-                h.lds == [loader_details]
+            isinstance(h, FileFinderPathHook) and
+            h.lds == [loader_details]
         )
 
     sys.path_hooks = [h for h in sys.path_hooks if not is_c_loader(h)]
