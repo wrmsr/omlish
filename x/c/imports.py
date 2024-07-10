@@ -54,6 +54,8 @@ def _main():
     from . import _descriptor  # noqa
     print(_descriptor.field_descriptor)
 
+    importhook.uninstall()
+
 
 if __name__ == '__main__':
     _main()
