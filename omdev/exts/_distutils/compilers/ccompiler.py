@@ -57,13 +57,13 @@ class CCompiler:
 
     # Subclasses that rely on the standard filename generation methods implemented below should override these; see the
     # comment near those methods ('object_filenames()' et. al.) for details:
-    src_extensions: list[str] | None = None
-    obj_extension: str | None = None
-    static_lib_extension = None
-    shared_lib_extension: str | None = None
-    static_lib_format: str | None = None
-    shared_lib_format: str | None = None  # prob. same as static_lib_format
-    exe_extension: str | None = None
+    src_extensions: list[str]
+    obj_extension: str
+    static_lib_extension: str
+    shared_lib_extension: str
+    static_lib_format: str
+    shared_lib_format: str  # prob. same as static_lib_format
+    exe_extension: str
 
     # Default language settings. language_map is used to detect a source file or Extension target language, checking
     # source filenames. language_order is used to detect the language precedence, when deciding what language to use
@@ -145,6 +145,14 @@ class CCompiler:
             if key not in self.executables:
                 raise ValueError(f"unknown executable '{key}' for class {self.__class__.__name__}")
             self.set_executable(key, kwargs[key])
+
+    preprocessor: list[str]
+    compiler: list[str]
+    compiler_so: list[str]
+    compiler_cxx: list[str]
+    linker_so: list[str]
+    linker_exe: list[str]
+    archiver: list[str]
 
     def set_executable(self, key, value):
         if isinstance(value, str):
