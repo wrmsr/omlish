@@ -141,7 +141,7 @@ class RangeMap(dict):
     undefined_value = type('RangeValueUndefined', (), {})()
 
     class Item(int):
-        "RangeMap Item"
+        """RangeMap Item"""
 
     first_item = Item(0)
     last_item = Item(-1)
