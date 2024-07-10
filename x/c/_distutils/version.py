@@ -122,9 +122,7 @@ class StrictVersion(Version):
     The rationale for this version numbering system will be explained in the distutils documentation.
     """
 
-    version_re = re.compile(
-        r'^(\d+) \. (\d+) (\. (\d+))? ([ab](\d+))?$', re.VERBOSE | re.ASCII,
-    )
+    version_re = re.compile(r'^(\d+) \. (\d+) (\. (\d+))? ([ab](\d+))?$', re.VERBOSE | re.ASCII)
 
     def parse(self, vstring):
         match = self.version_re.match(vstring)
