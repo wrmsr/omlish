@@ -8,7 +8,6 @@ import os
 
 from .errors import DistutilsFileError
 
-
 log = logging.getLogger(__name__)
 
 
@@ -105,12 +104,13 @@ def copy_file(  # noqa: C901
     # changing it (ie. it's not already a hard/soft link to src OR
     # (not update) and (src newer than dst).
 
-    from .modified import newer
     from stat import S_IMODE, ST_ATIME, ST_MODE, ST_MTIME
+
+    from .modified import newer
 
     if not os.path.isfile(src):
         raise DistutilsFileError(
-            "can't copy '%s': doesn't exist or not a regular file" % src
+            "can't copy '%s': doesn't exist or not a regular file" % src,
         )
 
     if os.path.isdir(dst):
@@ -121,7 +121,7 @@ def copy_file(  # noqa: C901
 
     if update and not newer(src, dst):
         if verbose >= 1:
-            log.debug("not copying %s (output up-to-date)", src)
+            log.debug('not copying %s (output up-to-date)', src)
         return (dst, 0)
 
     try:
@@ -131,9 +131,9 @@ def copy_file(  # noqa: C901
 
     if verbose >= 1:
         if os.path.basename(dst) == os.path.basename(src):
-            log.info("%s %s -> %s", action, src, dir)
+            log.info('%s %s -> %s', action, src, dir)
         else:
-            log.info("%s %s -> %s", action, src, dst)
+            log.info('%s %s -> %s', action, src, dst)
 
     if dry_run:
         return (dst, 1)
@@ -184,7 +184,7 @@ def move_file(src, dst, verbose=1, dry_run=0):  # noqa: C901
     from os.path import basename, dirname, exists, isdir, isfile
 
     if verbose >= 1:
-        log.info("moving %s -> %s", src, dst)
+        log.info('moving %s -> %s', src, dst)
 
     if dry_run:
         return dst
@@ -196,12 +196,12 @@ def move_file(src, dst, verbose=1, dry_run=0):  # noqa: C901
         dst = os.path.join(dst, basename(src))
     elif exists(dst):
         raise DistutilsFileError(
-            f"can't move '{src}': destination '{dst}' already exists"
+            f"can't move '{src}': destination '{dst}' already exists",
         )
 
     if not isdir(dirname(dst)):
         raise DistutilsFileError(
-            f"can't move '{src}': destination '{dst}' not a valid path"
+            f"can't move '{src}': destination '{dst}' not a valid path",
         )
 
     copy_it = False
@@ -226,6 +226,6 @@ def move_file(src, dst, verbose=1, dry_run=0):  # noqa: C901
                 pass
             raise DistutilsFileError(
                 f"couldn't move '{src}' to '{dst}' by copy/delete: "
-                f"delete '{src}' failed: {msg}"
+                f"delete '{src}' failed: {msg}",
             )
     return dst

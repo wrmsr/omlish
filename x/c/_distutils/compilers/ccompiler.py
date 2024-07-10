@@ -10,18 +10,12 @@ import sys
 import warnings
 
 from ..dir_util import mkpath
-from ..errors import CompileError
-from ..errors import DistutilsModuleError
-from ..errors import DistutilsPlatformError
-from ..errors import LinkError
-from ..errors import UnknownFileError
+from ..errors import CompileError, DistutilsModuleError, DistutilsPlatformError, LinkError, UnknownFileError
 from ..file_util import move_file
 from ..modified import newer_group
 from ..spawn import spawn
-from ..util import execute
-from ..util import split_quoted
+from ..util import execute, split_quoted
 from .options import gen_preprocess_options
-
 
 log = logging.getLogger(__name__)
 
@@ -88,13 +82,13 @@ class CCompiler:
     # extension has two files with ".c" extension, and one with ".cpp", it
     # is still linked as c++.
     language_map = {
-        ".c": "c",
-        ".cc": "c++",
-        ".cpp": "c++",
-        ".cxx": "c++",
-        ".m": "objc",
+        '.c': 'c',
+        '.cc': 'c++',
+        '.cpp': 'c++',
+        '.cxx': 'c++',
+        '.m': 'objc',
     }
-    language_order = ["c++", "objc", "c"]
+    language_order = ['c++', 'objc', 'c']
 
     include_dirs = []
     """
@@ -171,7 +165,7 @@ class CCompiler:
         for key in kwargs:
             if key not in self.executables:
                 raise ValueError(
-                    f"unknown executable '{key}' for class {self.__class__.__name__}"
+                    f"unknown executable '{key}' for class {self.__class__.__name__}",
                 )
             self.set_executable(key, kwargs[key])
 
@@ -205,8 +199,8 @@ class CCompiler:
             ):
                 raise TypeError(
                     ("invalid macro definition '%s': " % defn)
-                    + "must be tuple (string,), (string, string), or "
-                    + "(string, None)"
+                    + 'must be tuple (string,), (string, string), or '
+                    + '(string, None)',
                 )
 
     # -- Bookkeeping methods -------------------------------------------
@@ -467,7 +461,7 @@ class CCompiler:
             )
         else:
             raise TypeError(
-                "'runtime_library_dirs' (if supplied) must be a list of strings"
+                "'runtime_library_dirs' (if supplied) must be a list of strings",
             )
 
         return (libraries, library_dirs, runtime_library_dirs)
@@ -526,7 +520,6 @@ class CCompiler:
 
         Raises PreprocessError on failure.
         """
-        pass
 
     def compile(
             self,
@@ -590,7 +583,7 @@ class CCompiler:
         # A concrete compiler class can either override this method
         # entirely or implement _compile().
         macros, objects, extra_postargs, pp_opts, build = self._setup_compile(
-            output_dir, macros, include_dirs, sources, depends, extra_postargs
+            output_dir, macros, include_dirs, sources, depends, extra_postargs,
         )
         cc_args = self._get_cc_args(pp_opts, debug, extra_preargs)
 
@@ -608,10 +601,9 @@ class CCompiler:
         """Compile 'src' to product 'obj'."""
         # A concrete compiler class that does not override compile()
         # should implement _compile().
-        pass
 
     def create_static_lib(
-            self, objects, output_libname, output_dir=None, debug=0, target_lang=None
+            self, objects, output_libname, output_dir=None, debug=0, target_lang=None,
     ):
         """Link a bunch of stuff together to create a static library file.
         The "bunch of stuff" consists of the list of object files supplied
@@ -635,12 +627,11 @@ class CCompiler:
 
         Raises LibError on failure.
         """
-        pass
 
     # values for target_desc parameter in link()
-    SHARED_OBJECT = "shared_object"
-    SHARED_LIBRARY = "shared_library"
-    EXECUTABLE = "executable"
+    SHARED_OBJECT = 'shared_object'
+    SHARED_LIBRARY = 'shared_library'
+    EXECUTABLE = 'executable'
 
     def link(
             self,
@@ -849,17 +840,17 @@ class CCompiler:
         if includes is None:
             includes = []
         else:
-            warnings.warn("includes is deprecated", DeprecationWarning)
+            warnings.warn('includes is deprecated', DeprecationWarning)
         if include_dirs is None:
             include_dirs = []
         else:
-            warnings.warn("include_dirs is deprecated", DeprecationWarning)
+            warnings.warn('include_dirs is deprecated', DeprecationWarning)
         if libraries is None:
             libraries = []
         if library_dirs is None:
             library_dirs = []
-        fd, fname = tempfile.mkstemp(".c", funcname, text=True)
-        with os.fdopen(fd, "w", encoding='utf-8') as f:
+        fd, fname = tempfile.mkstemp('.c', funcname, text=True)
+        with os.fdopen(fd, 'w', encoding='utf-8') as f:
             for incl in includes:
                 f.write("""#include "%s"\n""" % incl)
             if not includes:
@@ -877,7 +868,7 @@ extern "C"
 #endif
 char %s(void);
 """
-                    % funcname
+                    % funcname,
                 )
             f.write(
                 """\
@@ -886,7 +877,7 @@ int main (int argc, char **argv) {
     return 0;
 }
 """
-                % funcname
+                % funcname,
             )
 
         try:
@@ -898,13 +889,13 @@ int main (int argc, char **argv) {
 
         try:
             self.link_executable(
-                objects, "a.out", libraries=libraries, library_dirs=library_dirs
+                objects, 'a.out', libraries=libraries, library_dirs=library_dirs,
             )
         except (LinkError, TypeError):
             return False
         else:
             os.remove(
-                self.executable_filename("a.out", output_dir=self.output_dir or '')
+                self.executable_filename('a.out', output_dir=self.output_dir or ''),
             )
         finally:
             for fn in objects:
@@ -1012,8 +1003,8 @@ int main (int argc, char **argv) {
         expected = '"static", "shared", "dylib", "xcode_stub"'
         if lib_type not in eval(expected):
             raise ValueError(f"'lib_type' must be {expected}")
-        fmt = getattr(self, lib_type + "_lib_format")
-        ext = getattr(self, lib_type + "_lib_extension")
+        fmt = getattr(self, lib_type + '_lib_format')
+        ext = getattr(self, lib_type + '_lib_extension')
 
         dir, base = os.path.split(libname)
         filename = fmt % (base, ext)
@@ -1034,7 +1025,7 @@ int main (int argc, char **argv) {
             print(msg)
 
     def warn(self, msg):
-        sys.stderr.write("warning: %s\n" % msg)
+        sys.stderr.write('warning: %s\n' % msg)
 
     def execute(self, func, args, msg=None, level=1):
         execute(func, args, msg, self.dry_run)
@@ -1091,7 +1082,7 @@ def get_default_compiler(osname=None, platform=None):
 # find the code that implements an interface to this compiler.  (The module
 # is assumed to be in the 'distutils' package.)
 compiler_class = {
-    'unix': ('unixccompiler', 'UnixCCompiler', "standard UNIX-style compiler"),
+    'unix': ('unixccompiler', 'UnixCCompiler', 'standard UNIX-style compiler'),
 }
 
 
@@ -1138,18 +1129,18 @@ def new_compiler(plat=None, compiler=None, verbose=0, dry_run=0, force=0):
         raise DistutilsPlatformError(msg)
 
     try:
-        module_name = __package__ + "." + module_name
+        module_name = __package__ + '.' + module_name
         __import__(module_name)
         module = sys.modules[module_name]
         klass = vars(module)[class_name]
-    except ImportError as e:
+    except ImportError:
         raise DistutilsModuleError(
-            "can't compile C/C++ code: unable to load module '%s'" % module_name
+            "can't compile C/C++ code: unable to load module '%s'" % module_name,
         )
     except KeyError:
         raise DistutilsModuleError(
             f"can't compile C/C++ code: unable to find class '{class_name}' "
-            f"in module '{module_name}'"
+            f"in module '{module_name}'",
         )
 
     # XXX The None is necessary to preserve backwards compatibility

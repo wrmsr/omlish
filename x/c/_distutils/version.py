@@ -37,7 +37,7 @@ def suppress_known_deprecation():
         warnings.filterwarnings(
             action='default',
             category=DeprecationWarning,
-            message="distutils Version classes are deprecated.",
+            message='distutils Version classes are deprecated.',
         )
         yield ctx
 
@@ -53,14 +53,14 @@ class Version:
         if vstring:
             self.parse(vstring)
         warnings.warn(
-            "distutils Version classes are deprecated. "
-            "Use packaging.version instead.",
+            'distutils Version classes are deprecated. '
+            'Use packaging.version instead.',
             DeprecationWarning,
             stacklevel=2,
         )
 
     def __repr__(self):
-        return f"{self.__class__.__name__} ('{str(self)}')"
+        return f"{self.__class__.__name__} ('{self!s}')"
 
     def __eq__(self, other):
         c = self._cmp(other)
@@ -147,7 +147,7 @@ class StrictVersion(Version):
     """
 
     version_re = re.compile(
-        r'^(\d+) \. (\d+) (\. (\d+))? ([ab](\d+))?$', re.VERBOSE | re.ASCII
+        r'^(\d+) \. (\d+) (\. (\d+))? ([ab](\d+))?$', re.VERBOSE | re.ASCII,
     )
 
     def parse(self, vstring):
