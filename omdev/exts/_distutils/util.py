@@ -50,15 +50,19 @@ def get_host_platform() -> str:
     return sysconfig.get_platform()
 
 
+_syscfg_macosx_ver: ta.Any
+
 if sys.platform == 'darwin':
     _syscfg_macosx_ver = None  # cache the version pulled from sysconfig
-MACOSX_VERSION_VAR = 'MACOSX_DEPLOYMENT_TARGET'
 
 
 def _clear_cached_macosx_ver() -> None:
     """For testing only. Do not call."""
     global _syscfg_macosx_ver
     _syscfg_macosx_ver = None
+
+
+MACOSX_VERSION_VAR = 'MACOSX_DEPLOYMENT_TARGET'
 
 
 def get_macosx_target_ver_from_syscfg() -> str:
