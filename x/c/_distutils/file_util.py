@@ -67,7 +67,7 @@ def copy_file(  # noqa: C901
         update=0,
         link=None,
         verbose=1,
-        dry_run=0,
+        dry_run=False,
 ):
     """
     Copy a file 'src' to 'dst'.  If 'dst' is a directory, then 'src' is copied there with the same name; otherwise, it
@@ -156,7 +156,7 @@ def copy_file(  # noqa: C901
 
 
 # XXX I suspect this is Unix-specific -- need porting help!
-def move_file(src, dst, verbose=1, dry_run=0):  # noqa: C901
+def move_file(src, dst, verbose=1, dry_run=False):  # noqa: C901
     """
     Move a file 'src' to 'dst'.  If 'dst' is a directory, the file will be moved into it with the same name; otherwise,
     'src' is just renamed to 'dst'.  Return the new full name of the file.

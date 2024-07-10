@@ -15,7 +15,7 @@ from .errors import DistutilsExecError
 log = logging.getLogger(__name__)
 
 
-def spawn(cmd, search_path=1, verbose=0, dry_run=0, env=None, debug=False):  # noqa: C901
+def spawn(cmd, search_path=1, verbose=0, dry_run=False, env=None, debug=False):  # noqa: C901
     """
     Run another program, specified as a command list 'cmd', in a new process.
 
