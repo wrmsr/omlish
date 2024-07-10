@@ -15,7 +15,7 @@ log = logging.getLogger(__name__)
 _path_created = {}
 
 
-def mkpath(name, mode=0o777, verbose=1, dry_run=False):  # noqa: C901
+def mkpath(name, mode=0o777, verbose=1, dry_run=False) -> list[str]:  # noqa: C901
     """Create a directory and any missing ancestor directories.
 
     If the directory already exists (or if 'name' is the empty string, which means the current directory, which of
@@ -40,7 +40,7 @@ def mkpath(name, mode=0o777, verbose=1, dry_run=False):  # noqa: C901
     # recursive algorithm)
 
     name = os.path.normpath(name)
-    created_dirs = []
+    created_dirs: list[str] = []
     if os.path.isdir(name) or name == '':
         return created_dirs
     if _path_created.get(os.path.abspath(name)):
