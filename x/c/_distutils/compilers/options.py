@@ -4,14 +4,12 @@ from .._itertools import always_iterable
 
 
 def gen_preprocess_options(macros, include_dirs):
-    """Generate C pre-processor options (-D, -U, -I) as used by at least
-    two types of compilers: the typical Unix compiler and Visual C++.
-    'macros' is the usual thing, a list of 1- or 2-tuples, where (name,)
-    means undefine (-U) macro 'name', and (name,value) means define (-D)
-    macro 'name' to 'value'.  'include_dirs' is just a list of directory
-    names to be added to the header file search path (-I).  Returns a list
-    of command-line options suitable for either Unix compilers or Visual
-    C++.
+    """
+    Generate C pre-processor options (-D, -U, -I) as used by at least two types of compilers: the typical Unix compiler
+    and Visual C++. 'macros' is the usual thing, a list of 1- or 2-tuples, where (name,) means undefine (-U) macro
+    'name', and (name,value) means define (-D) macro 'name' to 'value'.  'include_dirs' is just a list of directory
+    names to be added to the header file search path (-I).  Returns a list of command-line options suitable for either
+    Unix compilers or Visual C++.
     """
     # XXX it would be nice (mainly aesthetic, and so we don't generate stupid-looking command lines) to go over 'macros'
     # and eliminate redundant definitions/undefinitions (ie. ensure that only the latest mention of a particular macro
@@ -43,11 +41,10 @@ def gen_preprocess_options(macros, include_dirs):
 
 
 def gen_lib_options(compiler, library_dirs, runtime_library_dirs, libraries):
-    """Generate linker options for searching library directories and
-    linking with specific libraries.  'libraries' and 'library_dirs' are,
-    respectively, lists of library names (not filenames!) and search
-    directories.  Returns a list of command-line options suitable for use
-    with some compiler (depending on the two format strings passed in).
+    """
+    Generate linker options for searching library directories and linking with specific libraries.  'libraries' and
+    'library_dirs' are, respectively, lists of library names (not filenames!) and search directories.  Returns a list of
+    command-line options suitable for use with some compiler (depending on the two format strings passed in).
     """
     lib_opts = []
 
@@ -68,9 +65,7 @@ def gen_lib_options(compiler, library_dirs, runtime_library_dirs, libraries):
             if lib_file:
                 lib_opts.append(lib_file)
             else:
-                compiler.warn(
-                    "no library file corresponding to '%s' found (skipping)" % lib,
-                )
+                compiler.warn("no library file corresponding to '%s' found (skipping)" % lib)
         else:
             lib_opts.append(compiler.library_option(lib))
     return lib_opts

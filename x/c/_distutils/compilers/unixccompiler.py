@@ -1,5 +1,4 @@
-"""distutils.unixccompiler
-
+"""
 Contains the UnixCCompiler class, a subclass of CCompiler that handles
 the "typical" Unix-style command-line C compiler:
   * macros defined with -Dname[=value]
@@ -7,12 +6,10 @@ the "typical" Unix-style command-line C compiler:
   * include search directories specified with -Idir
   * libraries specified with -lllib
   * library search directories specified with -Ldir
-  * compile handled by 'cc' (or similar) executable with -c option:
-    compiles .c to .o
+  * compile handled by 'cc' (or similar) executable with -c option: compiles .c to .o
   * link static library handled by 'ar' command (possibly with 'ranlib')
   * link shared library handled by 'cc -shared'
 """
-
 from __future__ import annotations
 
 import itertools
@@ -23,11 +20,16 @@ import shlex
 import sys
 
 from .. import sysconfig
-from ..errors import CompileError, DistutilsExecError, LibError, LinkError
+from ..errors import CompileError
+from ..errors import DistutilsExecError
+from ..errors import LibError
+from ..errors import LinkError
 from ..modified import newer
 from ._macos_compat import compiler_fixup
 from .ccompiler import CCompiler
-from .options import gen_lib_options, gen_preprocess_options
+from .options import gen_lib_options
+from .options import gen_preprocess_options
+
 
 log = logging.getLogger(__name__)
 
@@ -77,17 +79,13 @@ def _split_aix(cmd):
 
 def _linker_params(linker_cmd, compiler_cmd):
     """
-    The linker command usually begins with the compiler
-    command (possibly multiple elements), followed by zero or more
+    The linker command usually begins with the compiler command (possibly multiple elements), followed by zero or more
     params for shared library building.
 
-    If the LDSHARED env variable overrides the linker command,
-    however, the commands may not match.
+    If the LDSHARED env variable overrides the linker command, however, the commands may not match.
 
-    Return the best guess of the linker parameters by stripping
-    the linker command. If the compiler command does not
-    match the linker command, assume the linker command is
-    just the first element.
+    Return the best guess of the linker parameters by stripping the linker command. If the compiler command does not
+    match the linker command, assume the linker command is just the first element.
 
     >>> _linker_params('gcc foo bar'.split(), ['gcc'])
     ['foo', 'bar']
@@ -253,9 +251,8 @@ class UnixCCompiler(CCompiler):
                 ld_args.extend(extra_postargs)
             self.mkpath(os.path.dirname(output_filename))
             try:
-                # Select a linker based on context: linker_exe when
-                # building an executable or linker_so (with shared options)
-                # when building a shared library.
+                # Select a linker based on context: linker_exe when building an executable or linker_so (with shared
+                # options) when building a shared library.
                 building_exe = target_desc == CCompiler.EXECUTABLE
                 linker = (self.linker_exe if building_exe else self.linker_so)[:]
 
@@ -311,8 +308,7 @@ class UnixCCompiler(CCompiler):
                 '-L' + dir,
             ]
 
-        # For all compilers, `-Wl` is the presumed way to pass a
-        # compiler option to the linker
+        # For all compilers, `-Wl` is the presumed way to pass a compiler option to the linker
         if sysconfig.get_config_var('GNULD') == 'yes':
             return consolidate_linker_args([
                 # Force RUNPATH instead of RPATH
@@ -328,18 +324,13 @@ class UnixCCompiler(CCompiler):
     @staticmethod
     def _library_root(dir):
         """
-        macOS users can specify an alternate SDK using'-isysroot'.
-        Calculate the SDK root if it is specified.
+        macOS users can specify an alternate SDK using'-isysroot'. Calculate the SDK root if it is specified.
 
-        Note that, as of Xcode 7, Apple SDKs may contain textual stub
-        libraries with .tbd extensions rather than the normal .dylib
-        shared libraries installed in /.  The Apple compiler tool
-        chain handles this transparently but it can cause problems
-        for programs that are being built with an SDK and searching
-        for specific libraries.  Callers of find_library_file need to
-        keep in mind that the base filename of the returned SDK library
-        file might have a different extension from that of the library
-        file installed on the running system, for example:
+        Note that, as of Xcode 7, Apple SDKs may contain textual stub libraries with .tbd extensions rather than the
+        normal .dylib shared libraries installed in /.  The Apple compiler tool chain handles this transparently but it
+        can cause problems for programs that are being built with an SDK and searching for specific libraries.  Callers
+        of find_library_file need to keep in mind that the base filename of the returned SDK library file might have a
+        different extension from that of the library file installed on the running system, for example:
           /Applications/Xcode.app/Contents/Developer/Platforms/
               MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/
               usr/lib/libedit.tbd
@@ -362,10 +353,8 @@ class UnixCCompiler(CCompiler):
 
     def find_library_file(self, dirs, lib, debug=0):
         r"""
-        Second-guess the linker with not much hard
-        data to go on: GCC seems to prefer the shared library, so
-        assume that *all* Unix C compilers do,
-        ignoring even GCC's "-static" option.
+        Second-guess the linker with not much hard data to go on: GCC seems to prefer the shared library, so assume that
+        *all* Unix C compilers do, ignoring even GCC's "-static" option.
 
         >>> compiler = UnixCCompiler()
         >>> compiler._library_root = lambda dir: dir

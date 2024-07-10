@@ -1,11 +1,9 @@
-"""distutils.spawn
-
+"""
 Provides the 'spawn()' function, a front-end to various platform-
 specific functions for launching another program in a sub-process.
 Also provides the 'find_executable()' to search the path for a given
 executable name.
 """
-
 import logging
 import os
 import subprocess
@@ -13,27 +11,25 @@ import sys
 
 from .errors import DistutilsExecError
 
+
 log = logging.getLogger(__name__)
 
 
 def spawn(cmd, search_path=1, verbose=0, dry_run=0, env=None, debug=False):  # noqa: C901
-    """Run another program, specified as a command list 'cmd', in a new process.
-
-    'cmd' is just the argument list for the new process, ie.
-    cmd[0] is the program to run and cmd[1:] are the rest of its arguments.
-    There is no way to run a program with a name different from that of its
-    executable.
-
-    If 'search_path' is true (the default), the system's executable
-    search path will be used to find the program; otherwise, cmd[0]
-    must be the exact path to the executable.  If 'dry_run' is true,
-    the command will not actually be run.
-
-    Raise DistutilsExecError if running the program fails in any way; just
-    return on success.
     """
-    # cmd is documented as a list, but just in case some code passes a tuple
-    # in, protect our %-formatting code against horrible death
+    Run another program, specified as a command list 'cmd', in a new process.
+
+    'cmd' is just the argument list for the new process, ie. cmd[0] is the program to run and cmd[1:] are the rest of
+    its arguments. There is no way to run a program with a name different from that of its executable.
+
+    If 'search_path' is true (the default), the system's executable search path will be used to find the program;
+    otherwise, cmd[0] must be the exact path to the executable.  If 'dry_run' is true, the command will not actually be
+    run.
+
+    Raise DistutilsExecError if running the program fails in any way; just return on success.
+    """
+    # cmd is documented as a list, but just in case some code passes a tuple in, protect our %-formatting code against
+    # horrible death
     cmd = list(cmd)
 
     log.info(subprocess.list2cmdline(cmd))
@@ -70,10 +66,11 @@ def spawn(cmd, search_path=1, verbose=0, dry_run=0, env=None, debug=False):  # n
 
 
 def find_executable(executable, path=None):
-    """Tries to find 'executable' in the directories listed in 'path'.
+    """
+    Tries to find 'executable' in the directories listed in 'path'.
 
-    A string listing directories separated by 'os.pathsep'; defaults to
-    os.environ['PATH'].  Returns the complete filename or None if not found.
+    A string listing directories separated by 'os.pathsep'; defaults to os.environ['PATH'].  Returns the complete
+    filename or None if not found.
     """
     _, ext = os.path.splitext(executable)
     if (sys.platform == 'win32') and (ext != '.exe'):
@@ -90,8 +87,7 @@ def find_executable(executable, path=None):
             except (AttributeError, ValueError):
                 # os.confstr() or CS_PATH is not available
                 path = os.defpath
-        # bpo-35755: Don't use os.defpath if the PATH environment variable is
-        # set to an empty string
+        # bpo-35755: Don't use os.defpath if the PATH environment variable is set to an empty string
 
     # PATH='' doesn't match, whereas PATH=':' looks in the current directory
     if not path:

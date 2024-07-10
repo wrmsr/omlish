@@ -43,9 +43,17 @@ import site
 import sys
 import typing as ta
 
-from omlish import cached, check, lang
+from omlish import cached
+from omlish import check
+from omlish import lang
 
-from . import compilers, errors, extension, modified, sysconfig, util
+from . import compilers
+from . import errors
+from . import extension
+from . import modified
+from . import sysconfig
+from . import util
+
 
 log = logging.getLogger(__name__)
 
@@ -90,7 +98,6 @@ class BuildExt:
         super().__init__()
 
         self._opts = check.isinstance(opts, BuildExt.Options)
-
 
     @property
     def options(self) -> Options:
@@ -196,7 +203,6 @@ class BuildExt:
             runtime=rpath,
         )
 
-
     @lang.cached_function
     def get_compiler(self) -> compilers.ccompiler.CCompiler:
         cc = compilers.ccompiler.new_compiler(
@@ -286,7 +292,6 @@ class BuildExt:
         ext_suffix = _get_str_config_var('EXT_SUFFIX')
         return os.path.join(*ext_path) + ext_suffix  # noqa
 
-
     def get_export_symbols(self, ext: extension.Extension) -> ta.Sequence[str]:
         suffix = '_' + ext.name.split('.')[-1]
         try:
@@ -327,7 +332,6 @@ class BuildExt:
                 return ext.libraries + ['python' + ldversion]
 
         return ext.libraries
-
 
     def build_extension(self, ext: extension.Extension) -> ta.Sequence[str]:
         with self._filter_build_errors(ext):

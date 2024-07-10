@@ -1,9 +1,4 @@
-"""distutils.util
-
-Miscellaneous utility functions -- anything that doesn't fit into
-one of the other *util.py modules.
-"""
-
+"""Miscellaneous utility functions -- anything that doesn't fit into one of the other *util.py modules."""
 import logging
 import os
 import re
@@ -13,19 +8,18 @@ import sysconfig
 
 from .errors import DistutilsPlatformError
 
+
 log = logging.getLogger(__name__)
 
 
 def get_host_platform():
     """
-    Return a string that identifies the current platform. Use this
-    function to distinguish platform-specific build directories and
-    platform-specific built distributions.
+    Return a string that identifies the current platform. Use this function to distinguish platform-specific build
+    directories and platform-specific built distributions.
     """
 
-    # This function initially exposed platforms as defined in Python 3.9
-    # even with older Python versions when distutils was split out.
-    # Now it delegates to stdlib sysconfig, but maintains compatibility.
+    # This function initially exposed platforms as defined in Python 3.9 even with older Python versions when distutils
+    # was split out. Now it delegates to stdlib sysconfig, but maintains compatibility.
 
     return sysconfig.get_platform()
 
@@ -42,8 +36,10 @@ def _clear_cached_macosx_ver():
 
 
 def get_macosx_target_ver_from_syscfg():
-    """Get the version of macOS latched in the Python interpreter configuration.
-    Returns the version as a string or None if can't obtain one. Cached."""
+    """
+    Get the version of macOS latched in the Python interpreter configuration. Returns the version as a string or None
+    if can't obtain one. Cached.
+    """
     global _syscfg_macosx_ver
     if _syscfg_macosx_ver is None:
         from . import sysconfig
@@ -55,32 +51,32 @@ def get_macosx_target_ver_from_syscfg():
 
 
 def get_macosx_target_ver():
-    """Return the version of macOS for which we are building.
+    """
+    Return the version of macOS for which we are building.
 
-    The target version defaults to the version in sysconfig latched at time
-    the Python interpreter was built, unless overridden by an environment
-    variable. If neither source has a value, then None is returned"""
+    The target version defaults to the version in sysconfig latched at time the Python interpreter was built, unless
+    overridden by an environment variable. If neither source has a value, then None is returned
+    """
 
     syscfg_ver = get_macosx_target_ver_from_syscfg()
     env_ver = os.environ.get(MACOSX_VERSION_VAR)
 
     if env_ver:
-        # Validate overridden version against sysconfig version, if have both.
-        # Ensure that the deployment target of the build process is not less
-        # than 10.3 if the interpreter was built for 10.3 or later.  This
-        # ensures extension modules are built with correct compatibility
-        # values, specifically LDSHARED which can use
-        # '-undefined dynamic_lookup' which only works on >= 10.3.
+        # Validate overridden version against sysconfig version, if have both. Ensure that the deployment target of the
+        # build process is not less than 10.3 if the interpreter was built for 10.3 or later.  This ensures extension
+        # modules are built with correct compatibility values, specifically LDSHARED which can use '-undefined
+        # dynamic_lookup' which only works on >= 10.3.
         if (
                 syscfg_ver
-                and split_version(syscfg_ver) >= [10, 3]
-                and split_version(env_ver) < [10, 3]
+                and split_version(syscfg_ver) >= [10, 3] > split_version(env_ver)
         ):
-            my_msg = (
-                    '$' + MACOSX_VERSION_VAR + ' mismatch: '
-                                               f'now "{env_ver}" but "{syscfg_ver}" during configure; '
-                                               'must use 10.3 or later'
-            )
+            my_msg = ''.join([
+                '$',
+                MACOSX_VERSION_VAR,
+                ' mismatch: ',
+                f'now "{env_ver}" but "{syscfg_ver}" during configure; ',
+                'must use 10.3 or later',
+            ])
             raise DistutilsPlatformError(my_msg)
         return env_ver
     return syscfg_ver
@@ -103,19 +99,16 @@ def _init_regex():
 
 
 def split_quoted(s):
-    """Split a string up according to Unix shell-like rules for quotes and
-    backslashes.  In short: words are delimited by spaces, as long as those
-    spaces are not escaped by a backslash, or inside a quoted string.
-    Single and double quotes are equivalent, and the quote characters can
-    be backslash-escaped.  The backslash is stripped from any two-character
-    escape sequence, leaving only the escaped character.  The quote
-    characters are stripped from any quoted string.  Returns a list of
-    words.
+    """
+    Split a string up according to Unix shell-like rules for quotes and backslashes.  In short: words are delimited by
+    spaces, as long as those spaces are not escaped by a backslash, or inside a quoted string. Single and double quotes
+    are equivalent, and the quote characters can be backslash-escaped.  The backslash is stripped from any two-character
+    escape sequence, leaving only the escaped character.  The quote characters are stripped from any quoted string.
+    Returns a list of words.
     """
 
-    # This is a nice algorithm for splitting up a single string, since it
-    # doesn't require character-by-character examination.  It was a little
-    # bit of a brain-bender to get it working right, though...
+    # This is a nice algorithm for splitting up a single string, since it doesn't require character-by-character
+    # examination.  It was a little bit of a brain-bender to get it working right, though...
     if _wordchars_re is None:
         _init_regex()
 
@@ -131,15 +124,13 @@ def split_quoted(s):
             break
 
         if s[end] in string.whitespace:
-            # unescaped, unquoted whitespace: now
-            # we definitely have a word delimiter
+            # unescaped, unquoted whitespace: now we definitely have a word delimiter
             words.append(s[:end])
             s = s[end:].lstrip()
             pos = 0
 
         elif s[end] == '\\':
-            # preserve whatever is being escaped;
-            # will become part of the current word
+            # preserve whatever is being escaped; will become part of the current word
             s = s[:end] + s[end + 1:]
             pos = end + 1
 
@@ -166,13 +157,11 @@ def split_quoted(s):
 
 
 def execute(func, args, msg=None, verbose=0, dry_run=0):
-    """Perform some action that affects the outside world (eg.  by
-    writing to the filesystem).  Such actions are special because they
-    are disabled by the 'dry_run' flag.  This method takes care of all
-    that bureaucracy for you; all you have to do is supply the
-    function to call and an argument tuple for it (to embody the
-    "external action" being performed), and an optional message to
-    print.
+    """
+    Perform some action that affects the outside world (eg.  by writing to the filesystem).  Such actions are special
+    because they are disabled by the 'dry_run' flag.  This method takes care of all that bureaucracy for you; all you
+    have to do is supply the function to call and an argument tuple for it (to embody the "external action" being
+    performed), and an optional message to print.
     """
     if msg is None:
         msg = f'{func.__name__}{args!r}'

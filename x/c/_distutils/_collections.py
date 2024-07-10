@@ -2,21 +2,17 @@ from __future__ import annotations
 
 import functools
 import operator
-from collections.abc import Mapping
-from typing import Any
+import typing as ta
 
 
-# from jaraco.collections 5.0.1
 class RangeMap(dict):
     """
-    A dictionary-like object that uses the keys as bounds for a range.
-    Inclusion of the value for that range is determined by the
-    key_match_comparator, which defaults to less-than-or-equal.
-    A value is returned for a key if it is the first key that matches in
-    the sorted list of keys.
+    A dictionary-like object that uses the keys as bounds for a range. Inclusion of the value for that range is
+    determined by the key_match_comparator, which defaults to less-than-or-equal. A value is returned for a key if it is
+    the first key that matches in the sorted list of keys.
 
-    One may supply keyword parameters to be passed to the sort function used
-    to sort keys (i.e. key, reverse) as sort_params.
+    One may supply keyword parameters to be passed to the sort function used to sort keys (i.e. key, reverse) as
+    sort_params.
 
     Create a map that maps 1-3 -> 'a', 4-6 -> 'b'
 
@@ -24,14 +20,12 @@ class RangeMap(dict):
     >>> r[1], r[2], r[3], r[4], r[5], r[6]
     ('a', 'a', 'a', 'b', 'b', 'b')
 
-    Even float values should work so long as the comparison operator
-    supports it.
+    Even float values should work so long as the comparison operator supports it.
 
     >>> r[4.5]
     'b'
 
-    Notice that the way rangemap is defined, it must be open-ended
-    on one side.
+    Notice that the way rangemap is defined, it must be open-ended on one side.
 
     >>> r[0]
     'a'
@@ -70,8 +64,8 @@ class RangeMap(dict):
     >>> r.get(7, 'not found')
     'not found'
 
-    One often wishes to define the ranges by their left-most values,
-    which requires use of sort params and a key_match_comparator.
+    One often wishes to define the ranges by their left-most values, which requires use of sort params and a
+    key_match_comparator.
 
     >>> r = RangeMap({1: 'a', 4: 'b'},
     ...     sort_params=dict(reverse=True),
@@ -79,19 +73,17 @@ class RangeMap(dict):
     >>> r[1], r[2], r[3], r[4], r[5], r[6]
     ('a', 'a', 'a', 'b', 'b', 'b')
 
-    That wasn't nearly as easy as before, so an alternate constructor
-    is provided:
+    That wasn't nearly as easy as before, so an alternate constructor is provided:
 
     >>> r = RangeMap.left({1: 'a', 4: 'b', 7: RangeMap.undefined_value})
     >>> r[1], r[2], r[3], r[4], r[5], r[6]
     ('a', 'a', 'a', 'b', 'b', 'b')
-
     """
 
     def __init__(
             self,
             source,
-            sort_params: Mapping[str, Any] = {},
+            sort_params: ta.Mapping[str, ta.Any] = {},
             key_match_comparator=operator.le,
     ):
         dict.__init__(self, source)

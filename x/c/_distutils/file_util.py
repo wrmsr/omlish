@@ -1,12 +1,9 @@
-"""distutils.file_util
-
-Utility functions for operating on single files.
-"""
-
+"""Utility functions for operating on single files."""
 import logging
 import os
 
 from .errors import DistutilsFileError
+
 
 log = logging.getLogger(__name__)
 
@@ -16,14 +13,12 @@ _copy_action = {None: 'copying', 'hard': 'hard linking', 'sym': 'symbolically li
 
 
 def _copy_file_contents(src, dst, buffer_size=16 * 1024):  # noqa: C901
-    """Copy the file 'src' to 'dst'; both must be filenames.  Any error
-    opening either file, reading from 'src', or writing to 'dst', raises
-    DistutilsFileError.  Data is read/written in chunks of 'buffer_size'
-    bytes (default 16k).  No attempt is made to handle anything apart from
-    regular files.
     """
-    # Stolen from shutil module in the standard library, but with
-    # custom error-handling added.
+    Copy the file 'src' to 'dst'; both must be filenames.  Any error opening either file, reading from 'src', or writing
+    to 'dst', raises DistutilsFileError.  Data is read/written in chunks of 'buffer_size' bytes (default 16k).  No
+    attempt is made to handle anything apart from regular files.
+    """
+    # Stolen from shutil module in the standard library, but with custom error-handling added.
     fsrc = None
     fdst = None
     try:
@@ -56,6 +51,7 @@ def _copy_file_contents(src, dst, buffer_size=16 * 1024):  # noqa: C901
                 fdst.write(buf)
             except OSError as e:
                 raise DistutilsFileError(f"could not write to '{dst}': {e.strerror}")
+
     finally:
         if fdst:
             fdst.close()
@@ -73,37 +69,28 @@ def copy_file(  # noqa: C901
         verbose=1,
         dry_run=0,
 ):
-    """Copy a file 'src' to 'dst'.  If 'dst' is a directory, then 'src' is
-    copied there with the same name; otherwise, it must be a filename.  (If
-    the file exists, it will be ruthlessly clobbered.)  If 'preserve_mode'
-    is true (the default), the file's mode (type and permission bits, or
-    whatever is analogous on the current platform) is copied.  If
-    'preserve_times' is true (the default), the last-modified and
-    last-access times are copied as well.  If 'update' is true, 'src' will
-    only be copied if 'dst' does not exist, or if 'dst' does exist but is
-    older than 'src'.
+    """
+    Copy a file 'src' to 'dst'.  If 'dst' is a directory, then 'src' is copied there with the same name; otherwise, it
+    must be a filename.  (If the file exists, it will be ruthlessly clobbered.)  If 'preserve_mode' is true (the
+    default), the file's mode (type and permission bits, or whatever is analogous on the current platform) is copied.
+    If 'preserve_times' is true (the default), the last-modified and last-access times are copied as well.  If 'update'
+    is true, 'src' will only be copied if 'dst' does not exist, or if 'dst' does exist but is older than 'src'.
 
-    'link' allows you to make hard links (os.link) or symbolic links
-    (os.symlink) instead of copying: set it to "hard" or "sym"; if it is
-    None (the default), files are copied.  Don't set 'link' on systems that
-    don't support it: 'copy_file()' doesn't check if hard or symbolic
-    linking is available. If hardlink fails, falls back to
+    'link' allows you to make hard links (os.link) or symbolic links (os.symlink) instead of copying: set it to "hard"
+    or "sym"; if it is None (the default), files are copied.  Don't set 'link' on systems that don't support it:
+    'copy_file()' doesn't check if hard or symbolic linking is available. If hardlink fails, falls back to
     _copy_file_contents().
 
-    Under Mac OS, uses the native file copy function in macostools; on
-    other systems, uses '_copy_file_contents()' to copy file contents.
+    Under Mac OS, uses the native file copy function in macostools; on other systems, uses '_copy_file_contents()' to
+    copy file contents.
 
-    Return a tuple (dest_name, copied): 'dest_name' is the actual name of
-    the output file, and 'copied' is true if the file was copied (or would
-    have been copied, if 'dry_run' true).
+    Return a tuple (dest_name, copied): 'dest_name' is the actual name of the output file, and 'copied' is true if the
+    file was copied (or would have been copied, if 'dry_run' true).
     """
-    # XXX if the destination file already exists, we clobber it if
-    # copying, but blow up if linking.  Hmmm.  And I don't know what
-    # macostools.copyfile() does.  Should definitely be consistent, and
-    # should probably blow up if destination exists and we would be
-    # changing it (ie. it's not already a hard/soft link to src OR
-    # (not update) and (src newer than dst).
-
+    # XXX if the destination file already exists, we clobber it if copying, but blow up if linking.  Hmmm.  And I don't
+    # know what macostools.copyfile() does.  Should definitely be consistent, and should probably blow up if destination
+    # exists and we would be changing it (ie. it's not already a hard/soft link to src OR (not update) and (src newer
+    # than dst).
     from stat import S_IMODE, ST_ATIME, ST_MODE, ST_MTIME
 
     from .modified import newer
@@ -138,31 +125,28 @@ def copy_file(  # noqa: C901
     if dry_run:
         return (dst, 1)
 
-    # If linking (hard or symbolic), use the appropriate system call
-    # (Unix only, of course, but that's the caller's responsibility)
+    # If linking (hard or symbolic), use the appropriate system call (Unix only, of course, but that's the caller's
+    # responsibility)
     elif link == 'hard':
         if not (os.path.exists(dst) and os.path.samefile(src, dst)):
             try:
                 os.link(src, dst)
                 return (dst, 1)
             except OSError:
-                # If hard linking fails, fall back on copying file
-                # (some special filesystems don't support hard linking
-                #  even under Unix, see issue #8876).
+                # If hard linking fails, fall back on copying file (some special filesystems don't support hard linking
+                # even under Unix, see issue #8876).
                 pass
     elif link == 'sym':
         if not (os.path.exists(dst) and os.path.samefile(src, dst)):
             os.symlink(src, dst)
             return (dst, 1)
 
-    # Otherwise (non-Mac, not linking), copy the file contents and
-    # (optionally) copy the times and mode.
+    # Otherwise (non-Mac, not linking), copy the file contents and (optionally) copy the times and mode.
     _copy_file_contents(src, dst)
     if preserve_mode or preserve_times:
         st = os.stat(src)
 
-        # According to David Ascher <da@ski.org>, utime() should be done
-        # before chmod() (at least under NT).
+        # According to David Ascher <da@ski.org>, utime() should be done before chmod() (at least under NT).
         if preserve_times:
             os.utime(dst, (st[ST_ATIME], st[ST_MTIME]))
         if preserve_mode:
@@ -173,12 +157,11 @@ def copy_file(  # noqa: C901
 
 # XXX I suspect this is Unix-specific -- need porting help!
 def move_file(src, dst, verbose=1, dry_run=0):  # noqa: C901
-    """Move a file 'src' to 'dst'.  If 'dst' is a directory, the file will
-    be moved into it with the same name; otherwise, 'src' is just renamed
-    to 'dst'.  Return the new full name of the file.
+    """
+    Move a file 'src' to 'dst'.  If 'dst' is a directory, the file will be moved into it with the same name; otherwise,
+    'src' is just renamed to 'dst'.  Return the new full name of the file.
 
-    Handles cross-device moves on Unix using 'copy_file()'.  What about
-    other systems???
+    Handles cross-device moves on Unix using 'copy_file()'.  What about other systems???
     """
     import errno
     from os.path import basename, dirname, exists, isdir, isfile
@@ -195,14 +178,10 @@ def move_file(src, dst, verbose=1, dry_run=0):  # noqa: C901
     if isdir(dst):
         dst = os.path.join(dst, basename(src))
     elif exists(dst):
-        raise DistutilsFileError(
-            f"can't move '{src}': destination '{dst}' already exists",
-        )
+        raise DistutilsFileError(f"can't move '{src}': destination '{dst}' already exists")
 
     if not isdir(dirname(dst)):
-        raise DistutilsFileError(
-            f"can't move '{src}': destination '{dst}' not a valid path",
-        )
+        raise DistutilsFileError(f"can't move '{src}': destination '{dst}' not a valid path")
 
     copy_it = False
     try:
@@ -228,4 +207,5 @@ def move_file(src, dst, verbose=1, dry_run=0):  # noqa: C901
                 f"couldn't move '{src}' to '{dst}' by copy/delete: "
                 f"delete '{src}' failed: {msg}",
             )
+
     return dst
