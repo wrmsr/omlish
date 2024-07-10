@@ -57,19 +57,24 @@ class FileFinderPathHook:
         return importlib.machinery.FileFinder(path, *self.lds)
 
 
-def install():
+def _is_c_loader(h) -> bool:
+    return (
+            isinstance(h, FileFinderPathHook) and
+            h.lds == [loader_details]
+    )
+
+
+def is_installed() -> bool:
+    return any(h for h in sys.path_hooks if not _is_c_loader(h))
+
+
+def install() -> None:
     sys.path_hooks.insert(0, FileFinderPathHook([loader_details]))
     sys.path_importer_cache.clear()
     importlib.invalidate_caches()
 
 
-def uninstall():
-    def is_c_loader(h):
-        return (
-            isinstance(h, FileFinderPathHook) and
-            h.lds == [loader_details]
-        )
-
-    sys.path_hooks = [h for h in sys.path_hooks if not is_c_loader(h)]
+def uninstall() -> None:
+    sys.path_hooks = [h for h in sys.path_hooks if not _is_c_loader(h)]
     sys.path_importer_cache.clear()
     importlib.invalidate_caches()
