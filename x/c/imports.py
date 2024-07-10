@@ -1,65 +1,8 @@
 import glob
-import imp
-import importlib
-import importlib.abc
-import importlib.machinery
 import os.path
 import shutil
-import sys
-import sysconfig
 
-from . import _distutils as du
-
-
-class CExtensionLoader(importlib.abc.Loader):
-
-    def __init__(self, fullname: str, path: str) -> None:
-        super().__init__()
-
-        self._fullname = fullname
-        self._path = path
-
-    def load_module(self, fullname):
-        extra_link_args = []
-        if sys.platform == 'darwin':
-            extra_link_args.append('-Wl,-no_fixup_chains')
-
-        ext = du.Extension(
-            self._fullname,
-            sources=[self._path],
-            extra_compile_args=['-std=c++14'],
-            extra_link_args=extra_link_args,
-            undef_macros=['BARF'],
-        )
-
-        cmd_obj = du.BuildExt(du.BuildExt.Options(
-            inplace=True,
-            debug=True,
-        ))
-        cmd_obj.build_extension(ext)
-
-        so_path = os.path.join(
-            os.path.dirname(self._path),
-            ''.join([
-                fullname.rpartition('.')[2],
-                '.',
-                sysconfig.get_config_var('SOABI'),
-                sysconfig.get_config_var('SHLIB_SUFFIX'),
-            ]),
-        )
-        return imp.load_dynamic(self._fullname, so_path)
-
-
-loader_details = (CExtensionLoader, ['.c', '.cc', '.cpp', '.cxx'])
-
-
-def install():
-    sys.path_hooks.insert(0, importlib.machinery.FileFinder.path_hook(loader_details))
-    sys.path_importer_cache.clear()
-    importlib.invalidate_caches()
-
-
-##
+from .exts import importhook
 
 
 def barf(x: object) -> str:
@@ -78,7 +21,7 @@ def _main():
     for f in glob.glob(os.path.join(here, '*.so')):
         os.remove(f)
 
-    install()
+    importhook.install()
 
     ##
 
