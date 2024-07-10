@@ -113,15 +113,9 @@ def split_version(s) -> list[int]:
     return [int(n) for n in s.split('.')]
 
 
-# Needed by 'split_quoted()'
-_wordchars_re = _squote_re = _dquote_re = None
-
-
-def _init_regex():
-    global _wordchars_re, _squote_re, _dquote_re
-    _wordchars_re = re.compile(r'[^\\\'\"%s ]*' % string.whitespace)
-    _squote_re = re.compile(r"'(?:[^'\\]|\\.)*'")
-    _dquote_re = re.compile(r'"(?:[^"\\]|\\.)*"')
+_wordchars_re = re.compile(r'[^\\\'\"%s ]*' % string.whitespace)
+_squote_re = re.compile(r"'(?:[^'\\]|\\.)*'")
+_dquote_re = re.compile(r'"(?:[^"\\]|\\.)*"')
 
 
 def split_quoted(s: str) -> list[str]:
