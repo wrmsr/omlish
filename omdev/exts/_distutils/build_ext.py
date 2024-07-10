@@ -141,7 +141,7 @@ class BuildExt:
         library_dirs = list(self._opts.library_dirs or [])
         rpath = list(self._opts.rpath or [])
 
-        plat_py_include = sysconfig.get_python_inc(plat_specific=1)  # type: ignore  # noqa
+        plat_py_include = sysconfig.get_python_inc(plat_specific=1)
 
         if sys.exec_prefix != sys.base_exec_prefix:
             include_dirs.append(os.path.join(sys.exec_prefix, 'include'))

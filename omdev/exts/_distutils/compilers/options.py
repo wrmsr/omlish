@@ -1,10 +1,14 @@
 import os
+import typing as ta
 
 from ..util import always_iterable
 
 
+Macro: ta.TypeAlias = tuple[str, str | None] | tuple[str]
+
+
 def gen_preprocess_options(
-        macros: list[tuple[str, str]],
+        macros: list[Macro],
         include_dirs: list[str],
 ) -> list[str]:
     """
@@ -20,7 +24,7 @@ def gen_preprocess_options(
     # attention to the latest -D or -U mention of a macro on their command line.  Similar situation for 'include_dirs'.
     # I'm punting on both for now.  Anyways, weeding out redundancies like this should probably be the province of
     # CCompiler, since the data structures used are inherited from it and therefore common to all CCompiler classes.
-    pp_opts = []
+    pp_opts: list[str] = []
     for macro in macros:
         if not (isinstance(macro, tuple) and 1 <= len(macro) <= 2):
             raise TypeError(
