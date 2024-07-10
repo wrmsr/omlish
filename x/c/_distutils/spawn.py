@@ -13,7 +13,6 @@ import sys
 
 from .errors import DistutilsExecError
 
-
 log = logging.getLogger(__name__)
 
 
@@ -62,12 +61,12 @@ def spawn(cmd, search_path=1, verbose=0, dry_run=0, env=None, debug=False):  # n
     except OSError as exc:
         if not debug:
             cmd = cmd[0]
-        raise DistutilsExecError(f"command {cmd!r} failed: {exc.args[-1]}") from exc
+        raise DistutilsExecError(f'command {cmd!r} failed: {exc.args[-1]}') from exc
 
     if exitcode:
         if not debug:
             cmd = cmd[0]
-        raise DistutilsExecError(f"command {cmd!r} failed with exit code {exitcode}")
+        raise DistutilsExecError(f'command {cmd!r} failed with exit code {exitcode}')
 
 
 def find_executable(executable, path=None):
@@ -87,7 +86,7 @@ def find_executable(executable, path=None):
         path = os.environ.get('PATH', None)
         if path is None:
             try:
-                path = os.confstr("CS_PATH")
+                path = os.confstr('CS_PATH')
             except (AttributeError, ValueError):
                 # os.confstr() or CS_PATH is not available
                 path = os.defpath

@@ -18,7 +18,6 @@ import sysconfig
 from ._functools import pass_none
 from .errors import DistutilsPlatformError
 
-
 IS_PYPY = '__pypy__' in sys.builtin_module_names
 
 # These are needed in a couple of spots, so just compute them once.
@@ -30,15 +29,14 @@ BASE_EXEC_PREFIX = os.path.normpath(sys.base_exec_prefix)
 # Path to the base directory of the project. On Windows the binary may
 # live in project/PCbuild/win32 or project/PCbuild/amd64.
 # set for cross builds
-if "_PYTHON_PROJECT_BASE" in os.environ:
-    project_base = os.path.abspath(os.environ["_PYTHON_PROJECT_BASE"])
+if '_PYTHON_PROJECT_BASE' in os.environ:
+    project_base = os.path.abspath(os.environ['_PYTHON_PROJECT_BASE'])
+elif sys.executable:
+    project_base = os.path.dirname(os.path.abspath(sys.executable))
 else:
-    if sys.executable:
-        project_base = os.path.dirname(os.path.abspath(sys.executable))
-    else:
-        # sys.executable can be empty if argv[0] has been changed and Python is
-        # unable to retrieve the real program name
-        project_base = os.getcwd()
+    # sys.executable can be empty if argv[0] has been changed and Python is
+    # unable to retrieve the real program name
+    project_base = os.getcwd()
 
 
 def _is_python_source_dir(d):
@@ -107,7 +105,7 @@ def get_python_inc(plat_specific=0, prefix=None):
     except KeyError:
         raise DistutilsPlatformError(
             "I don't know where Python installs its C header files "
-            "on platform '%s'" % os.name
+            "on platform '%s'" % os.name,
         )
     return getter(resolved_prefix, prefix, plat_specific)
 
@@ -139,7 +137,7 @@ def _get_python_inc_posix_python(plat_specific):
     directory.
     """
     if not python_build:
-        return
+        return None
     if plat_specific:
         return _sys_home or project_base
     incdir = os.path.join(get_config_var('srcdir'), 'Include')
@@ -172,18 +170,18 @@ def _get_python_inc_from_config(plat_specific, spec_prefix):
 def _get_python_inc_posix_prefix(prefix):
     implementation = 'pypy' if IS_PYPY else 'python'
     python_dir = implementation + get_python_version() + build_flags
-    return os.path.join(prefix, "include", python_dir)
+    return os.path.join(prefix, 'include', python_dir)
 
 
 def _get_python_inc_nt(prefix, spec_prefix, plat_specific):
     if python_build:
         # Include both include dirs to ensure we can find pyconfig.h
         return (
-                os.path.join(prefix, "include")
+                os.path.join(prefix, 'include')
                 + os.path.pathsep
                 + os.path.dirname(sysconfig.get_config_h_filename())
         )
-    return os.path.join(prefix, "include")
+    return os.path.join(prefix, 'include')
 
 
 # allow this behavior to be monkey-patched. Ref pypa/distutils#2.
@@ -191,7 +189,7 @@ def _posix_lib(standard_lib, libpython, early_prefix, prefix):
     if standard_lib:
         return libpython
     else:
-        return os.path.join(libpython, "site-packages")
+        return os.path.join(libpython, 'site-packages')
 
 
 def get_python_lib(plat_specific=0, standard_lib=0, prefix=None):
@@ -214,7 +212,7 @@ def get_python_lib(plat_specific=0, standard_lib=0, prefix=None):
         if prefix is None:
             prefix = PREFIX
         if standard_lib:
-            return os.path.join(prefix, "lib-python", sys.version[0])
+            return os.path.join(prefix, 'lib-python', sys.version[0])
         return os.path.join(prefix, 'site-packages')
 
     early_prefix = prefix
@@ -225,21 +223,21 @@ def get_python_lib(plat_specific=0, standard_lib=0, prefix=None):
         else:
             prefix = plat_specific and EXEC_PREFIX or PREFIX
 
-    if os.name == "posix":
+    if os.name == 'posix':
         if plat_specific or standard_lib:
             # Platform-specific modules (any module from a non-pure-Python
             # module distribution) or standard Python library modules.
-            libdir = getattr(sys, "platlibdir", "lib")
+            libdir = getattr(sys, 'platlibdir', 'lib')
         else:
             # Pure Python
-            libdir = "lib"
+            libdir = 'lib'
         implementation = 'pypy' if IS_PYPY else 'python'
         libpython = os.path.join(prefix, libdir, implementation + get_python_version())
         return _posix_lib(standard_lib, libpython, early_prefix, prefix)
     else:
         raise DistutilsPlatformError(
             "I don't know where Python installs its library "
-            "on platform '%s'" % os.name
+            "on platform '%s'" % os.name,
         )
 
 
@@ -256,8 +254,8 @@ def _customize_macos():
     of CPU architectures for universal builds.
     """
 
-    sys.platform == "darwin" and __import__('_osx_support').customize_compiler(
-        get_config_vars()
+    sys.platform == 'darwin' and __import__('_osx_support').customize_compiler(
+        get_config_vars(),
     )
 
 
@@ -267,7 +265,7 @@ def customize_compiler(compiler):  # noqa: C901
     Mainly needed on Unix, so we can plug in the information that
     varies across Unices and is stored in Python's Makefile.
     """
-    if compiler.compiler_type == "unix":
+    if compiler.compiler_type == 'unix':
         _customize_macos()
 
         (
@@ -304,7 +302,7 @@ def customize_compiler(compiler):  # noqa: C901
         if 'CPP' in os.environ:
             cpp = os.environ['CPP']
         else:
-            cpp = cc + " -E"  # not always
+            cpp = cc + ' -E'  # not always
         if 'LDFLAGS' in os.environ:
             ldshared = ldshared + ' ' + os.environ['LDFLAGS']
         if 'CFLAGS' in os.environ:

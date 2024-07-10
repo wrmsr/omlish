@@ -23,16 +23,11 @@ import shlex
 import sys
 
 from .. import sysconfig
-from ..errors import CompileError
-from ..errors import DistutilsExecError
-from ..errors import LibError
-from ..errors import LinkError
+from ..errors import CompileError, DistutilsExecError, LibError, LinkError
 from ..modified import newer
 from ._macos_compat import compiler_fixup
 from .ccompiler import CCompiler
-from .options import gen_lib_options
-from .options import gen_preprocess_options
-
+from .options import gen_lib_options, gen_preprocess_options
 
 log = logging.getLogger(__name__)
 
@@ -64,7 +59,7 @@ def _split_env(cmd):
     (['/usr/bin/env', 'A=3'], ['gcc'])
     """
     pivot = 0
-    if os.path.basename(cmd[0]) == "env":
+    if os.path.basename(cmd[0]) == 'env':
         pivot = 1
         while '=' in cmd[pivot]:
             pivot += 1
@@ -136,17 +131,17 @@ class UnixCCompiler(CCompiler):
     # Python extensions).
     executables = {
         'preprocessor': None,
-        'compiler': ["cc"],
-        'compiler_so': ["cc"],
-        'compiler_cxx': ["cc"],
-        'linker_so': ["cc", "-shared"],
-        'linker_exe': ["cc"],
-        'archiver': ["ar", "-cr"],
+        'compiler': ['cc'],
+        'compiler_so': ['cc'],
+        'compiler_cxx': ['cc'],
+        'linker_so': ['cc', '-shared'],
+        'linker_exe': ['cc'],
+        'archiver': ['ar', '-cr'],
         'ranlib': None,
     }
 
-    if sys.platform[:6] == "darwin":
-        executables['ranlib'] = ["ranlib"]
+    if sys.platform[:6] == 'darwin':
+        executables['ranlib'] = ['ranlib']
 
     # Needed for the filename generation methods provided by the base
     # class, CCompiler.  NB. whoever instantiates/uses a particular
@@ -154,16 +149,16 @@ class UnixCCompiler(CCompiler):
     # reasonable common default here, but it's not necessarily used on all
     # Unices!
 
-    src_extensions = [".c", ".C", ".cc", ".cxx", ".cpp", ".m"]
-    obj_extension = ".o"
-    static_lib_extension = ".a"
-    shared_lib_extension = ".so"
-    dylib_lib_extension = ".dylib"
-    xcode_stub_lib_extension = ".tbd"
-    static_lib_format = shared_lib_format = dylib_lib_format = "lib%s%s"
+    src_extensions = ['.c', '.C', '.cc', '.cxx', '.cpp', '.m']
+    obj_extension = '.o'
+    static_lib_extension = '.a'
+    shared_lib_extension = '.so'
+    dylib_lib_extension = '.dylib'
+    xcode_stub_lib_extension = '.tbd'
+    static_lib_format = shared_lib_format = dylib_lib_format = 'lib%s%s'
     xcode_stub_lib_format = dylib_lib_format
-    if sys.platform == "cygwin":
-        exe_extension = ".exe"
+    if sys.platform == 'cygwin':
+        exe_extension = '.exe'
 
     def preprocess(
             self,
@@ -210,7 +205,7 @@ class UnixCCompiler(CCompiler):
             raise CompileError(msg)
 
     def create_static_lib(
-            self, objects, output_libname, output_dir=None, debug=0, target_lang=None
+            self, objects, output_libname, output_dir=None, debug=0, target_lang=None,
     ):
         objects, output_dir = self._fix_object_args(objects, output_dir)
 
@@ -231,7 +226,7 @@ class UnixCCompiler(CCompiler):
                 except DistutilsExecError as msg:
                     raise LibError(msg)
         else:
-            log.debug("skipping %s (up-to-date)", output_filename)
+            log.debug('skipping %s (up-to-date)', output_filename)
 
     def link(
             self,
@@ -275,7 +270,7 @@ class UnixCCompiler(CCompiler):
                 building_exe = target_desc == CCompiler.EXECUTABLE
                 linker = (self.linker_exe if building_exe else self.linker_so)[:]
 
-                if target_lang == "c++" and self.compiler_cxx:
+                if target_lang == 'c++' and self.compiler_cxx:
                     env, linker_ne = _split_env(linker)
                     aix, linker_na = _split_aix(linker_ne)
                     _, compiler_cxx_ne = _split_env(self.compiler_cxx)
@@ -290,19 +285,19 @@ class UnixCCompiler(CCompiler):
             except DistutilsExecError as msg:
                 raise LinkError(msg)
         else:
-            log.debug("skipping %s (up-to-date)", output_filename)
+            log.debug('skipping %s (up-to-date)', output_filename)
 
     # -- Miscellaneous methods -----------------------------------------
     # These are all used by the 'gen_lib_options() function, in
     # ccompiler.py.
 
     def library_dir_option(self, dir):
-        return "-L" + dir
+        return '-L' + dir
 
     def _is_gcc(self):
-        cc_var = sysconfig.get_config_var("CC")
+        cc_var = sysconfig.get_config_var('CC')
         compiler = os.path.basename(shlex.split(cc_var)[0])
-        return "gcc" in compiler or "g++" in compiler
+        return 'gcc' in compiler or 'g++' in compiler
 
     def runtime_library_dir_option(self, dir: str) -> str | list[str]:
         # XXX Hackish, at the very least.  See Python bug #445902:
@@ -317,35 +312,35 @@ class UnixCCompiler(CCompiler):
         # this time, there's no way to determine this information from
         # the configuration data stored in the Python installation, so
         # we use this hack.
-        if sys.platform[:6] == "darwin":
+        if sys.platform[:6] == 'darwin':
             from ..util import get_macosx_target_ver, split_version
 
             macosx_target_ver = get_macosx_target_ver()
             if macosx_target_ver and split_version(macosx_target_ver) >= [10, 5]:
-                return "-Wl,-rpath," + dir
+                return '-Wl,-rpath,' + dir
             else:  # no support for -rpath on earlier macOS versions
-                return "-L" + dir
-        elif sys.platform[:7] == "freebsd":
-            return "-Wl,-rpath=" + dir
-        elif sys.platform[:5] == "hp-ux":
+                return '-L' + dir
+        elif sys.platform[:7] == 'freebsd':
+            return '-Wl,-rpath=' + dir
+        elif sys.platform[:5] == 'hp-ux':
             return [
-                "-Wl,+s" if self._is_gcc() else "+s",
-                "-L" + dir,
+                '-Wl,+s' if self._is_gcc() else '+s',
+                '-L' + dir,
             ]
 
         # For all compilers, `-Wl` is the presumed way to pass a
         # compiler option to the linker
-        if sysconfig.get_config_var("GNULD") == "yes":
+        if sysconfig.get_config_var('GNULD') == 'yes':
             return consolidate_linker_args([
                 # Force RUNPATH instead of RPATH
-                "-Wl,--enable-new-dtags",
-                "-Wl,-rpath," + dir,
+                '-Wl,--enable-new-dtags',
+                '-Wl,-rpath,' + dir,
             ])
         else:
-            return "-Wl,-R" + dir
+            return '-Wl,-R' + dir
 
     def library_option(self, lib):
-        return "-l" + lib
+        return '-l' + lib
 
     @staticmethod
     def _library_root(dir):

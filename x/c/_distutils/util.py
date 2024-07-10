@@ -13,7 +13,6 @@ import sysconfig
 
 from .errors import DistutilsPlatformError
 
-
 log = logging.getLogger(__name__)
 
 
@@ -153,7 +152,7 @@ def split_quoted(s):
                 raise RuntimeError("this can't happen (bad char '%c')" % s[end])
 
             if m is None:
-                raise ValueError("bad string (mismatched %s quotes?)" % s[end])
+                raise ValueError('bad string (mismatched %s quotes?)' % s[end])
 
             (beg, end) = m.span()
             s = s[:beg] + s[beg + 1: end - 1] + s[end:]
@@ -176,7 +175,7 @@ def execute(func, args, msg=None, verbose=0, dry_run=0):
     print.
     """
     if msg is None:
-        msg = f"{func.__name__}{args!r}"
+        msg = f'{func.__name__}{args!r}'
         if msg[-2:] == ',)':  # correct for singleton tuple
             msg = msg[0:-2] + ')'
 

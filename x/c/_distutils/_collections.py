@@ -101,7 +101,7 @@ class RangeMap(dict):
     @classmethod
     def left(cls, source):
         return cls(
-            source, sort_params=dict(reverse=True), key_match_comparator=operator.ge
+            source, sort_params=dict(reverse=True), key_match_comparator=operator.ge,
         )
 
     def __getitem__(self, item):

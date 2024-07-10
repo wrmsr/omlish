@@ -6,9 +6,7 @@ import errno
 import logging
 import os
 
-from .errors import DistutilsFileError
-from .errors import DistutilsInternalError
-
+from .errors import DistutilsFileError, DistutilsInternalError
 
 log = logging.getLogger(__name__)
 
@@ -72,7 +70,7 @@ def mkpath(name, mode=0o777, verbose=1, dry_run=0):  # noqa: C901
             continue
 
         if verbose >= 1:
-            log.info("creating %s", head)
+            log.info('creating %s', head)
 
         if not dry_run:
             try:
@@ -80,7 +78,7 @@ def mkpath(name, mode=0o777, verbose=1, dry_run=0):  # noqa: C901
             except OSError as exc:
                 if not (exc.errno == errno.EEXIST and os.path.isdir(head)):
                     raise DistutilsFileError(
-                        f"could not create '{head}': {exc.args[-1]}"
+                        f"could not create '{head}': {exc.args[-1]}",
                     )
             created_dirs.append(head)
 

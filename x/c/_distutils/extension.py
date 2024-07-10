@@ -5,7 +5,6 @@ modules in setup scripts."""
 
 import warnings
 
-
 # This class is really only used by the "build_ext" command, so it might
 # make sense to put it in distutils.command.build_ext.  However, that
 # module is already big enough, and I want to make this class a bit more
@@ -130,7 +129,7 @@ class Extension:
         if len(kw) > 0:
             options = [repr(option) for option in kw]
             options = ', '.join(sorted(options))
-            msg = "Unknown Extension options: %s" % options
+            msg = 'Unknown Extension options: %s' % options
             warnings.warn(msg)
 
     def __repr__(self):

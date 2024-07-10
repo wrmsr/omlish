@@ -43,17 +43,9 @@ import site
 import sys
 import typing as ta
 
-from omlish import check
-from omlish import cached
-from omlish import lang
+from omlish import cached, check, lang
 
-from . import compilers
-from . import errors
-from . import extension
-from . import modified
-from . import sysconfig
-from . import util
-
+from . import compilers, errors, extension, modified, sysconfig, util
 
 log = logging.getLogger(__name__)
 
@@ -66,40 +58,39 @@ class BuildExt:
 
     @dc.dataclass(frozen=True)
     class Options:
-        build_base: ta.Optional[str] = None
-        build_lib: ta.Optional[str] = None  # directory for compiled extension modules
-        build_temp: ta.Optional[str] = None  # directory for temporary files (build by-products)
+        build_base: str | None = None
+        build_lib: str | None = None  # directory for compiled extension modules
+        build_temp: str | None = None  # directory for temporary files (build by-products)
 
-        plat_name: ta.Optional[str] = None  # platform name to cross-compile for, if supported
+        plat_name: str | None = None  # platform name to cross-compile for, if supported
 
-        include_dirs: ta.Optional[ta.Sequence[str]] = None  # list of directories to search for header files (pathsep)
-        define: ta.Optional[ta.Mapping[str, str]] = None  # C preprocessor macros to define
-        undef: ta.Optional[ta.Sequence[str]] = None  # C preprocessor macros to undefine
+        include_dirs: ta.Sequence[str] | None = None  # list of directories to search for header files (pathsep)
+        define: ta.Mapping[str, str] | None = None  # C preprocessor macros to define
+        undef: ta.Sequence[str] | None = None  # C preprocessor macros to undefine
 
-        libraries: ta.Optional[ta.Sequence[str]] = None  # external C libraries to link with
-        library_dirs: ta.Optional[ta.Sequence[str]] = None  # directories to search for external C libraries (pathsep)
-        rpath: ta.Optional[ta.Sequence[str]] = None  # directories to search for shared C libraries at runtime
-        link_objects: ta.Optional[ta.Sequence[str]] = None  # extra explicit link objects to include in the link
+        libraries: ta.Sequence[str] | None = None  # external C libraries to link with
+        library_dirs: ta.Sequence[str] | None = None  # directories to search for external C libraries (pathsep)
+        rpath: ta.Sequence[str] | None = None  # directories to search for shared C libraries at runtime
+        link_objects: ta.Sequence[str] | None = None  # extra explicit link objects to include in the link
 
         inplace: bool = False  # ignore build-lib and put compiled extensions into the source directory
         debug: bool = False  # compile/link with debugging information
         force: bool = False  # forcibly build everything (ignore file timestamps)
-        compiler: ta.Optional[str] = None  # specify the compiler type
-        parallel: ta.Optional[int] = None  # number of parallel build jobs
+        compiler: str | None = None  # specify the compiler type
+        parallel: int | None = None  # number of parallel build jobs
         user: bool = False  # add user include, library and rpath
 
         dry_run: bool = False
         verbose: bool = False
 
-        package: ta.Optional[str] = None
-        package_dir: ta.Optional[ta.Mapping[str, str]] = None
+        package: str | None = None
+        package_dir: ta.Mapping[str, str] | None = None
 
     def __init__(self, opts: Options = Options()) -> None:
         super().__init__()
 
         self._opts = check.isinstance(opts, BuildExt.Options)
 
-    #
 
     @property
     def options(self) -> Options:
@@ -205,7 +196,6 @@ class BuildExt:
             runtime=rpath,
         )
 
-    #
 
     @lang.cached_function
     def get_compiler(self) -> compilers.ccompiler.CCompiler:
@@ -240,7 +230,6 @@ class BuildExt:
 
         return cc
 
-    #
 
     def get_ext_fullpath(self, ext_name: str) -> str:
         fullname = self.get_ext_fullname(ext_name)
@@ -266,7 +255,7 @@ class BuildExt:
             else:
                 return ''
 
-        tail: ta.List[str] = []
+        tail: list[str] = []
         while path:
             try:
                 pdir = package_dir['.'.join(path)]
@@ -277,15 +266,14 @@ class BuildExt:
                 tail.insert(0, pdir)
                 return os.path.join(*tail)  # noqa
 
-        else:
-            pdir = package_dir.get('')  # type: ignore
-            if pdir is not None:
-                tail.insert(0, pdir)
+        pdir = package_dir.get('')  # type: ignore
+        if pdir is not None:
+            tail.insert(0, pdir)
 
-            if tail:
-                return os.path.join(*tail)  # noqa
-            else:
-                return ''
+        if tail:
+            return os.path.join(*tail)  # noqa
+        else:
+            return ''
 
     def get_ext_fullname(self, ext_name: str) -> str:
         if self._opts.package is None:
@@ -298,7 +286,6 @@ class BuildExt:
         ext_suffix = _get_str_config_var('EXT_SUFFIX')
         return os.path.join(*ext_path) + ext_suffix  # noqa
 
-    #
 
     def get_export_symbols(self, ext: extension.Extension) -> ta.Sequence[str]:
         suffix = '_' + ext.name.split('.')[-1]
@@ -328,15 +315,11 @@ class BuildExt:
         else:
             link_libpython = False
             if sysconfig.get_config_var('Py_ENABLE_SHARED'):
-                if hasattr(sys, 'getandroidapilevel'):
-                    link_libpython = True
-                elif sys.platform == 'cygwin':
+                if hasattr(sys, 'getandroidapilevel') or sys.platform == 'cygwin':
                     link_libpython = True
                 elif '_PYTHON_HOST_PLATFORM' in os.environ:
                     # We are cross-compiling for one of the relevant platforms
-                    if sysconfig.get_config_var('ANDROID_API_LEVEL') != 0:
-                        link_libpython = True
-                    elif sysconfig.get_config_var('MACHDEP') == 'cygwin':
+                    if sysconfig.get_config_var('ANDROID_API_LEVEL') != 0 or sysconfig.get_config_var('MACHDEP') == 'cygwin':
                         link_libpython = True
 
             if link_libpython:
@@ -345,7 +328,6 @@ class BuildExt:
 
         return ext.libraries
 
-    #
 
     def build_extension(self, ext: extension.Extension) -> ta.Sequence[str]:
         with self._filter_build_errors(ext):
