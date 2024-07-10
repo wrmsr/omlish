@@ -13,17 +13,12 @@ def gen_preprocess_options(macros, include_dirs):
     of command-line options suitable for either Unix compilers or Visual
     C++.
     """
-    # XXX it would be nice (mainly aesthetic, and so we don't generate
-    # stupid-looking command lines) to go over 'macros' and eliminate
-    # redundant definitions/undefinitions (ie. ensure that only the
-    # latest mention of a particular macro winds up on the command
-    # line).  I don't think it's essential, though, since most (all?)
-    # Unix C compilers only pay attention to the latest -D or -U
-    # mention of a macro on their command line.  Similar situation for
-    # 'include_dirs'.  I'm punting on both for now.  Anyways, weeding out
-    # redundancies like this should probably be the province of
-    # CCompiler, since the data structures used are inherited from it
-    # and therefore common to all CCompiler classes.
+    # XXX it would be nice (mainly aesthetic, and so we don't generate stupid-looking command lines) to go over 'macros'
+    # and eliminate redundant definitions/undefinitions (ie. ensure that only the latest mention of a particular macro
+    # winds up on the command line).  I don't think it's essential, though, since most (all?) Unix C compilers only pay
+    # attention to the latest -D or -U mention of a macro on their command line.  Similar situation for 'include_dirs'.
+    # I'm punting on both for now.  Anyways, weeding out redundancies like this should probably be the province of
+    # CCompiler, since the data structures used are inherited from it and therefore common to all CCompiler classes.
     pp_opts = []
     for macro in macros:
         if not (isinstance(macro, tuple) and 1 <= len(macro) <= 2):
@@ -38,8 +33,7 @@ def gen_preprocess_options(macros, include_dirs):
             if macro[1] is None:  # define with no explicit value
                 pp_opts.append('-D%s' % macro[0])
             else:
-                # XXX *don't* need to be clever about quoting the
-                # macro value here, because we're going to avoid the
+                # XXX *don't* need to be clever about quoting the macro value here, because we're going to avoid the
                 # shell at all costs when we spawn the command!
                 pp_opts.append('-D{}={}'.format(*macro))
 
@@ -63,11 +57,9 @@ def gen_lib_options(compiler, library_dirs, runtime_library_dirs, libraries):
     for dir in runtime_library_dirs:
         lib_opts.extend(always_iterable(compiler.runtime_library_dir_option(dir)))
 
-    # XXX it's important that we *not* remove redundant library mentions!
-    # sometimes you really do have to say "-lfoo -lbar -lfoo" in order to
-    # resolve all symbols.  I just hope we never have to say "-lfoo obj.o
-    # -lbar" to get things to work -- that's certainly a possibility, but a
-    # pretty nasty way to arrange your C code.
+    # XXX it's important that we *not* remove redundant library mentions! sometimes you really do have to say "-lfoo
+    # -lbar -lfoo" in order to resolve all symbols.  I just hope we never have to say "-lfoo obj.o -lbar" to get things
+    # to work -- that's certainly a possibility, but a pretty nasty way to arrange your C code.
 
     for lib in libraries:
         (lib_dir, lib_name) = os.path.split(lib)
