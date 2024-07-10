@@ -133,6 +133,9 @@ class StrictVersion(Version):
 
     version_re = re.compile(r'^(\d+) \. (\d+) (\. (\d+))? ([ab](\d+))?$', re.VERBOSE | re.ASCII)
 
+    version: tuple[int, ...]
+    prerelease = tuple[str, int] | None
+
     def parse(self, vstring):
         match = self.version_re.match(vstring)
         if not match:

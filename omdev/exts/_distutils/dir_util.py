@@ -12,7 +12,7 @@ log = logging.getLogger(__name__)
 
 # cache for by mkpath() -- in addition to cheapening redundant calls, eliminates redundant "creating /foo/bar/baz"
 # messages in dry-run mode
-_path_created = {}
+_path_created: dict[str, int] = {}
 
 
 def mkpath(name, mode=0o777, verbose=1, dry_run=False) -> list[str]:  # noqa: C901
