@@ -33,25 +33,20 @@ log = logging.getLogger(__name__)
 
 
 # XXX Things not currently handled:
-#   * optimization/debug/warning flags; we just use whatever's in Python's
-#     Makefile and live with it.  Is this adequate?  If not, we might
-#     have to have a bunch of subclasses GNUCCompiler, SGICCompiler,
-#     SunCCompiler, and I suspect down that road lies madness.
-#   * even if we don't know a warning flag from an optimization flag,
-#     we need some way for outsiders to feed preprocessor/compiler/linker
-#     flags in to us -- eg. a sysadmin might want to mandate certain flags
-#     via a site config file, or a user might want to set something for
-#     compiling this module distribution only via the setup.py command
-#     line, whatever.  As long as these options come from something on the
-#     current system, they can be as system-dependent as they like, and we
-#     should just happily stuff them into the preprocessor/compiler/linker
-#     options and carry on.
+#   * optimization/debug/warning flags; we just use whatever's in Python's Makefile and live with it.  Is this adequate?
+#      If not, we might have to have a bunch of subclasses GNUCCompiler, SGICCompiler, SunCCompiler, and I suspect down
+#     that road lies madness.
+#   * even if we don't know a warning flag from an optimization flag, we need some way for outsiders to feed
+#     preprocessor/compiler/linker flags in to us -- eg. a sysadmin might want to mandate certain flags via a site
+#     config file, or a user might want to set something for compiling this module distribution only via the setup.py
+#     command line, whatever.  As long as these options come from something on the current system, they can be as
+#     system-dependent as they like, and we should just happily stuff them into the preprocessor/compiler/linker options
+#     and carry on.
 
 
 def _split_env(cmd):
     """
-    For macOS, split command into 'env' portion (if any)
-    and the rest of the linker command.
+    For macOS, split command into 'env' portion (if any) and the rest of the linker command.
 
     >>> _split_env(['a', 'b', 'c'])
     ([], ['a', 'b', 'c'])
@@ -123,11 +118,9 @@ def consolidate_linker_args(args: list[str]) -> str | list[str]:
 class UnixCCompiler(CCompiler):
     compiler_type = 'unix'
 
-    # These are used by CCompiler in two places: the constructor sets
-    # instance attributes 'preprocessor', 'compiler', etc. from them, and
-    # 'set_executable()' allows any of these to be set.  The defaults here
-    # are pretty generic; they will probably have to be set by an outsider
-    # (eg. using information discovered by the sysconfig about building
+    # These are used by CCompiler in two places: the constructor sets instance attributes 'preprocessor', 'compiler',
+    # etc. from them, and 'set_executable()' allows any of these to be set.  The defaults here are pretty generic; they
+    # will probably have to be set by an outsider (eg. using information discovered by the sysconfig about building
     # Python extensions).
     executables = {
         'preprocessor': None,
@@ -143,11 +136,9 @@ class UnixCCompiler(CCompiler):
     if sys.platform[:6] == 'darwin':
         executables['ranlib'] = ['ranlib']
 
-    # Needed for the filename generation methods provided by the base
-    # class, CCompiler.  NB. whoever instantiates/uses a particular
-    # UnixCCompiler instance should set 'shared_lib_ext' -- we set a
-    # reasonable common default here, but it's not necessarily used on all
-    # Unices!
+    # Needed for the filename generation methods provided by the base class, CCompiler.  NB. whoever instantiates/uses a
+    # particular UnixCCompiler instance should set 'shared_lib_ext' -- we set a reasonable common default here, but it's
+    # not necessarily used on all Unices!
 
     src_extensions = ['.c', '.C', '.cc', '.cxx', '.cpp', '.m']
     obj_extension = '.o'
@@ -215,11 +206,9 @@ class UnixCCompiler(CCompiler):
             self.mkpath(os.path.dirname(output_filename))
             self.spawn(self.archiver + [output_filename] + objects + self.objects)
 
-            # Not many Unices required ranlib anymore -- SunOS 4.x is, I
-            # think the only major Unix that does.  Maybe we need some
-            # platform intelligence here to skip ranlib if it's not
-            # needed -- or maybe Python's configure script took care of
-            # it for us, hence the check for leading colon.
+            # Not many Unices required ranlib anymore -- SunOS 4.x is, I think the only major Unix that does.  Maybe we
+            # need some platform intelligence here to skip ranlib if it's not needed -- or maybe Python's configure
+            # script took care of it for us, hence the check for leading colon.
             if self.ranlib:
                 try:
                     self.spawn(self.ranlib + [output_filename])
@@ -288,8 +277,7 @@ class UnixCCompiler(CCompiler):
             log.debug('skipping %s (up-to-date)', output_filename)
 
     # -- Miscellaneous methods -----------------------------------------
-    # These are all used by the 'gen_lib_options() function, in
-    # ccompiler.py.
+    # These are all used by the 'gen_lib_options() function, in ccompiler.py.
 
     def library_dir_option(self, dir):
         return '-L' + dir
@@ -300,18 +288,13 @@ class UnixCCompiler(CCompiler):
         return 'gcc' in compiler or 'g++' in compiler
 
     def runtime_library_dir_option(self, dir: str) -> str | list[str]:
-        # XXX Hackish, at the very least.  See Python bug #445902:
-        # https://bugs.python.org/issue445902
-        # Linkers on different platforms need different options to
-        # specify that directories need to be added to the list of
-        # directories searched for dependencies when a dynamic library
-        # is sought.  GCC on GNU systems (Linux, FreeBSD, ...) has to
-        # be told to pass the -R option through to the linker, whereas
-        # other compilers and gcc on other systems just know this.
-        # Other compilers may need something slightly different.  At
-        # this time, there's no way to determine this information from
-        # the configuration data stored in the Python installation, so
-        # we use this hack.
+        # XXX Hackish, at the very least.  See Python bug #445902: https://bugs.python.org/issue445902 Linkers on
+        # different platforms need different options to specify that directories need to be added to the list of
+        # directories searched for dependencies when a dynamic library is sought.  GCC on GNU systems (Linux, FreeBSD,
+        # ...) has to be told to pass the -R option through to the linker, whereas other compilers and gcc on other
+        # systems just know this. Other compilers may need something slightly different.  At this time, there's no way
+        # to determine this information from the configuration data stored in the Python installation, so we use this
+        # hack.
         if sys.platform[:6] == 'darwin':
             from ..util import get_macosx_target_ver, split_version
 

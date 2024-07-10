@@ -1,7 +1,8 @@
-"""distutils.ccompiler
+"""
+distutils.ccompiler
 
-Contains CCompiler, an abstract base class that defines the interface
-for the Distutils compiler abstraction model."""
+Contains CCompiler, an abstract base class that defines the interface for the Distutils compiler abstraction model.
+"""
 
 import logging
 import os
@@ -21,52 +22,37 @@ log = logging.getLogger(__name__)
 
 
 class CCompiler:
-    """Abstract base class to define the interface that must be implemented
-    by real compiler classes.  Also has some utility methods used by
-    several compiler classes.
+    """Abstract base class to define the interface that must be implemented by real compiler classes.  Also has some
+    utility methods used by several compiler classes.
 
-    The basic idea behind a compiler abstraction class is that each
-    instance can be used for all the compile/link steps in building a
-    single project.  Thus, attributes common to all of those compile and
-    link steps -- include directories, macros to define, libraries to link
-    against, etc. -- are attributes of the compiler instance.  To allow for
-    variability in how individual files are treated, most of those
-    attributes may be varied on a per-compilation or per-link basis.
+    The basic idea behind a compiler abstraction class is that each instance can be used for all the compile/link steps
+    in building a single project.  Thus, attributes common to all of those compile and link steps -- include
+    directories, macros to define, libraries to link against, etc. -- are attributes of the compiler instance.  To allow
+    for variability in how individual files are treated, most of those attributes may be varied on a per-compilation or
+    per-link basis.
     """
 
-    # 'compiler_type' is a class attribute that identifies this class.  It
-    # keeps code that wants to know what kind of compiler it's dealing with
-    # from having to import all possible compiler classes just to do an
-    # 'isinstance'.  In concrete CCompiler subclasses, 'compiler_type'
-    # should really, really be one of the keys of the 'compiler_class'
-    # dictionary (see below -- used by the 'new_compiler()' factory
-    # function) -- authors of new compiler interface classes are
-    # responsible for updating 'compiler_class'!
+    # 'compiler_type' is a class attribute that identifies this class.  It keeps code that wants to know what kind of
+    # compiler it's dealing with from having to import all possible compiler classes just to do an 'isinstance'.  In
+    # concrete CCompiler subclasses, 'compiler_type' should really, really be one of the keys of the 'compiler_class'
+    # dictionary (see below -- used by the 'new_compiler()' factory function) -- authors of new compiler interface
+    # classes are responsible for updating 'compiler_class'!
     compiler_type = None
 
     # XXX things not handled by this compiler abstraction model:
-    #   * client can't provide additional options for a compiler,
-    #     e.g. warning, optimization, debugging flags.  Perhaps this
-    #     should be the domain of concrete compiler abstraction classes
-    #     (UnixCCompiler, MSVCCompiler, etc.) -- or perhaps the base
-    #     class should have methods for the common ones.
-    #   * can't completely override the include or library searchg
-    #     path, ie. no "cc -I -Idir1 -Idir2" or "cc -L -Ldir1 -Ldir2".
-    #     I'm not sure how widely supported this is even by Unix
-    #     compilers, much less on other platforms.  And I'm even less
-    #     sure how useful it is; maybe for cross-compiling, but
-    #     support for that is a ways off.  (And anyways, cross
-    #     compilers probably have a dedicated binary with the
-    #     right paths compiled in.  I hope.)
-    #   * can't do really freaky things with the library list/library
-    #     dirs, e.g. "-Ldir1 -lfoo -Ldir2 -lfoo" to link against
-    #     different versions of libfoo.a in different locations.  I
-    #     think this is useless without the ability to null out the
-    #     library search path anyways.
+    #   * client can't provide additional options for a compiler, e.g. warning, optimization, debugging flags.  Perhaps
+    #     this should be the domain of concrete compiler abstraction classes (UnixCCompiler, MSVCCompiler, etc.) -- or
+    #     perhaps the base class should have methods for the common ones.
+    #   * can't completely override the include or library searchg path, ie. no "cc -I -Idir1 -Idir2" or "cc -L -Ldir1
+    #     -Ldir2". I'm not sure how widely supported this is even by Unix compilers, much less on other platforms.  And
+    #     I'm even less sure how useful it is; maybe for cross-compiling, but support for that is a ways off.  (And
+    #     anyways, cross compilers probably have a dedicated binary with the right paths compiled in.  I hope.)
+    #   * can't do really freaky things with the library list/library dirs, e.g. "-Ldir1 -lfoo -Ldir2 -lfoo" to link
+    #     against different versions of libfoo.a in different locations.  I think this is useless without the ability to
+    #     null out the library search path anyways.
 
-    # Subclasses that rely on the standard filename generation methods
-    # implemented below should override these; see the comment near
-    # those methods ('object_filenames()' et. al.) for details:
+    # Subclasses that rely on the standard filename generation methods implemented below should override these; see the
+    # comment near those methods ('object_filenames()' et. al.) for details:
     src_extensions = None  # list of strings
     obj_extension = None  # string
     static_lib_extension = None
@@ -75,12 +61,10 @@ class CCompiler:
     shared_lib_format = None  # prob. same as static_lib_format
     exe_extension = None  # string
 
-    # Default language settings. language_map is used to detect a source
-    # file or Extension target language, checking source filenames.
-    # language_order is used to detect the language precedence, when deciding
-    # what language to use when mixing source types. For example, if some
-    # extension has two files with ".c" extension, and one with ".cpp", it
-    # is still linked as c++.
+    # Default language settings. language_map is used to detect a source file or Extension target language, checking
+    # source filenames. language_order is used to detect the language precedence, when deciding what language to use
+    # when mixing source types. For example, if some extension has two files with ".c" extension, and one with ".cpp",
+    # it is still linked as c++.
     language_map = {
         '.c': 'c',
         '.cc': 'c++',
@@ -105,62 +89,52 @@ class CCompiler:
         self.force = force
         self.verbose = verbose
 
-        # 'output_dir': a common output directory for object, library,
-        # shared object, and shared library files
+        # 'output_dir': a common output directory for object, library, shared object, and shared library files
         self.output_dir = None
 
-        # 'macros': a list of macro definitions (or undefinitions).  A
-        # macro definition is a 2-tuple (name, value), where the value is
-        # either a string or None (no explicit value).  A macro
-        # undefinition is a 1-tuple (name,).
+        # 'macros': a list of macro definitions (or undefinitions).  A macro definition is a 2-tuple (name, value),
+        # where the value is either a string or None (no explicit value).  A macro undefinition is a 1-tuple (name,).
         self.macros = []
 
         # 'include_dirs': a list of directories to search for include files
         self.include_dirs = []
 
-        # 'libraries': a list of libraries to include in any link
-        # (library names, not filenames: eg. "foo" not "libfoo.a")
+        # 'libraries': a list of libraries to include in any link (library names, not filenames: eg. "foo" not
+        # "libfoo.a")
         self.libraries = []
 
         # 'library_dirs': a list of directories to search for libraries
         self.library_dirs = []
 
-        # 'runtime_library_dirs': a list of directories to search for
-        # shared libraries/objects at runtime
+        # 'runtime_library_dirs': a list of directories to search for shared libraries/objects at runtime
         self.runtime_library_dirs = []
 
-        # 'objects': a list of object files (or similar, such as explicitly
-        # named library files) to include on any link
+        # 'objects': a list of object files (or similar, such as explicitly named library files) to include on any link
         self.objects = []
 
         for key in self.executables.keys():
             self.set_executable(key, self.executables[key])
 
     def set_executables(self, **kwargs):
-        """Define the executables (and options for them) that will be run
-        to perform the various stages of compilation.  The exact set of
-        executables that may be specified here depends on the compiler
-        class (via the 'executables' class attribute), but most will have:
+        """
+        Define the executables (and options for them) that will be run to perform the various stages of compilation.
+        The exact set of executables that may be specified here depends on the compiler class (via the 'executables'
+        class attribute), but most will have:
           compiler      the C/C++ compiler
           linker_so     linker used to create shared objects and libraries
           linker_exe    linker used to create binary executables
           archiver      static library creator
 
-        On platforms with a command-line (Unix, DOS/Windows), each of these
-        is a string that will be split into executable name and (optional)
-        list of arguments.  (Splitting the string is done similarly to how
-        Unix shells operate: words are delimited by spaces, but quotes and
-        backslashes can override this.  See
+        On platforms with a command-line (Unix, DOS/Windows), each of these is a string that will be split into
+        executable name and (optional) list of arguments.  (Splitting the string is done similarly to how Unix shells
+        operate: words are delimited by spaces, but quotes and backslashes can override this.  See
         'distutils.util.split_quoted()'.)
         """
 
-        # Note that some CCompiler implementation classes will define class
-        # attributes 'cpp', 'cc', etc. with hard-coded executable names;
-        # this is appropriate when a compiler class is for exactly one
-        # compiler/OS combination (eg. MSVCCompiler).  Other compiler
-        # classes (UnixCCompiler, in particular) are driven by information
-        # discovered at run-time, since there are many different ways to do
-        # basically the same things with Unix C compilers.
+        # Note that some CCompiler implementation classes will define class attributes 'cpp', 'cc', etc. with hard-coded
+        # executable names; this is appropriate when a compiler class is for exactly one compiler/OS combination (eg.
+        # MSVCCompiler).  Other compiler classes (UnixCCompiler, in particular) are driven by information discovered at
+        # run-time, since there are many different ways to do basically the same things with Unix C compilers.
 
         for key in kwargs:
             if key not in self.executables:
@@ -184,9 +158,9 @@ class CCompiler:
         return None
 
     def _check_macro_definitions(self, definitions):
-        """Ensures that every element of 'definitions' is a valid macro
-        definition, ie. either (name,value) 2-tuple or a (name,) tuple.  Do
-        nothing if all definitions are OK, raise TypeError otherwise.
+        """
+        Ensures that every element of 'definitions' is a valid macro definition, ie. either (name,value) 2-tuple or a
+        (name,) tuple.  Do nothing if all definitions are OK, raise TypeError otherwise.
         """
         for defn in definitions:
             if not (
@@ -206,14 +180,13 @@ class CCompiler:
     # -- Bookkeeping methods -------------------------------------------
 
     def define_macro(self, name, value=None):
-        """Define a preprocessor macro for all compilations driven by this
-        compiler object.  The optional parameter 'value' should be a
-        string; if it is not supplied, then the macro will be defined
-        without an explicit value and the exact outcome depends on the
-        compiler used (XXX true? does ANSI say anything about this?)
         """
-        # Delete from the list of macro definitions/undefinitions if
-        # already there (so that this one will take precedence).
+        Define a preprocessor macro for all compilations driven by this compiler object.  The optional parameter 'value'
+        should be a string; if it is not supplied, then the macro will be defined without an explicit value and the
+        exact outcome depends on the compiler used (XXX true? does ANSI say anything about this?)
+        """
+        # Delete from the list of macro definitions/undefinitions if already there (so that this one will take
+        # precedence).
         i = self._find_macro(name)
         if i is not None:
             del self.macros[i]
@@ -221,16 +194,14 @@ class CCompiler:
         self.macros.append((name, value))
 
     def undefine_macro(self, name):
-        """Undefine a preprocessor macro for all compilations driven by
-        this compiler object.  If the same macro is defined by
-        'define_macro()' and undefined by 'undefine_macro()' the last call
-        takes precedence (including multiple redefinitions or
-        undefinitions).  If the macro is redefined/undefined on a
-        per-compilation basis (ie. in the call to 'compile()'), then that
-        takes precedence.
         """
-        # Delete from the list of macro definitions/undefinitions if
-        # already there (so that this one will take precedence).
+        Undefine a preprocessor macro for all compilations driven by this compiler object.  If the same macro is defined
+        by 'define_macro()' and undefined by 'undefine_macro()' the last call takes precedence (including multiple
+        redefinitions or undefinitions).  If the macro is redefined/undefined on a per-compilation basis (ie. in the
+        call to 'compile()'), then that takes precedence.
+        """
+        # Delete from the list of macro definitions/undefinitions if already there (so that this one will take
+        # precedence).
         i = self._find_macro(name)
         if i is not None:
             del self.macros[i]
@@ -239,36 +210,29 @@ class CCompiler:
         self.macros.append(undefn)
 
     def add_include_dir(self, dir):
-        """Add 'dir' to the list of directories that will be searched for
-        header files.  The compiler is instructed to search directories in
-        the order in which they are supplied by successive calls to
-        'add_include_dir()'.
+        """
+        Add 'dir' to the list of directories that will be searched for header files.  The compiler is instructed to
+        search directories in the order in which they are supplied by successive calls to 'add_include_dir()'.
         """
         self.include_dirs.append(dir)
 
     def set_include_dirs(self, dirs):
-        """Set the list of directories that will be searched to 'dirs' (a
-        list of strings).  Overrides any preceding calls to
-        'add_include_dir()'; subsequence calls to 'add_include_dir()' add
-        to the list passed to 'set_include_dirs()'.  This does not affect
-        any list of standard include directories that the compiler may
-        search by default.
+        """
+        Set the list of directories that will be searched to 'dirs' (a list of strings).  Overrides any preceding calls
+        to 'add_include_dir()'; subsequence calls to 'add_include_dir()' add to the list passed to 'set_include_dirs()'.
+        This does not affect any list of standard include directories that the compiler may search by default.
         """
         self.include_dirs = dirs[:]
 
     def add_library(self, libname):
-        """Add 'libname' to the list of libraries that will be included in
-        all links driven by this compiler object.  Note that 'libname'
-        should *not* be the name of a file containing a library, but the
-        name of the library itself: the actual filename will be inferred by
-        the linker, the compiler, or the compiler class (depending on the
-        platform).
+        """
+        Add 'libname' to the list of libraries that will be included in all links driven by this compiler object.  Note
+        that 'libname' should *not* be the name of a file containing a library, but the name of the library itself: the
+        actual filename will be inferred by the linker, the compiler, or the compiler class (depending on the platform).
 
-        The linker will be instructed to link against libraries in the
-        order they were supplied to 'add_library()' and/or
-        'set_libraries()'.  It is perfectly valid to duplicate library
-        names; the linker will be instructed to link against libraries as
-        many times as they are mentioned.
+        The linker will be instructed to link against libraries in the order they were supplied to 'add_library()'
+        and/or 'set_libraries()'.  It is perfectly valid to duplicate library names; the linker will be instructed to
+        link against libraries as many times as they are mentioned.
         """
         self.libraries.append(libname)
 
