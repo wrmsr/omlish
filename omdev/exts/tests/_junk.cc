@@ -76,7 +76,7 @@ static struct PyModuleDef _junk_module = {
 
 extern "C" {
 
-PyMODINIT_FUNC PyInit_junk(void)
+PyMODINIT_FUNC PyInit__junk(void)
 {
     return PyModuleDef_Init(&_junk_module);
 }
