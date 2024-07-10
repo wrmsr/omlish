@@ -504,9 +504,9 @@ class CCompiler:
 
         'extra_preargs' and 'extra_postargs' are implementation- dependent. On platforms that have the notion of a
         command-line (e.g. Unix, DOS/Windows), they are most likely lists of strings: extra command-line arguments to
-        prepend/append to the compiler command line.  On other platforms, consult the implementation class documentation.
-        In any event, they are intended as an escape hatch for those occasions when the abstract compiler framework
-        doesn't cut the mustard.
+        prepend/append to the compiler command line.  On other platforms, consult the implementation class
+        documentation. In any event, they are intended as an escape hatch for those occasions when the abstract compiler
+        framework doesn't cut the mustard.
 
         'depends', if given, is a list of filenames that all targets depend on.  If a source file is older than any file
         in depends, then the source file will be recompiled.  This supports dependency tracking, but only at a coarse
@@ -1023,5 +1023,3 @@ def new_compiler(
     # XXX The None is necessary to preserve backwards compatibility with classes that expect verbose to be the first
     # positional argument.
     return klass(None, dry_run, force)
-
-

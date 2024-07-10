@@ -1,3 +1,8 @@
+"""
+TODO:
+ - remove imp
+ - whitelist packages
+"""
 import imp
 import importlib
 import importlib.abc
