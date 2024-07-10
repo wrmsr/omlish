@@ -18,6 +18,7 @@ from ..modified import newer_group
 from ..spawn import spawn
 from ..util import execute
 from ..util import split_quoted
+from .options import Macro
 from .options import gen_preprocess_options
 
 
@@ -41,7 +42,7 @@ class CCompiler:
     # concrete CCompiler subclasses, 'compiler_type' should really, really be one of the keys of the 'compiler_class'
     # dictionary (see below -- used by the 'new_compiler()' factory function) -- authors of new compiler interface
     # classes are responsible for updating 'compiler_class'!
-    compiler_type = None
+    compiler_type: str
 
     # XXX things not handled by this compiler abstraction model:
     #   * client can't provide additional options for a compiler, e.g. warning, optimization, debugging flags.  Perhaps
@@ -101,7 +102,7 @@ class CCompiler:
 
         # 'macros': a list of macro definitions (or undefinitions).  A macro definition is a 2-tuple (name, value),
         # where the value is either a string or None (no explicit value).  A macro undefinition is a 1-tuple (name,).
-        self.macros: list[tuple[str, str]] = []
+        self.macros: list[Macro] = []
 
         # 'include_dirs': a list of directories to search for include files
         self.include_dirs: list[str] = []
@@ -171,7 +172,7 @@ class CCompiler:
             i += 1
         return None
 
-    def _check_macro_definitions(self, definitions: list[tuple[str, str]]) -> None:
+    def _check_macro_definitions(self, definitions: list[Macro]) -> None:
         """
         Ensures that every element of 'definitions' is a valid macro definition, ie. either (name,value) 2-tuple or a
         (name,) tuple.  Do nothing if all definitions are OK, raise TypeError otherwise.
@@ -451,7 +452,7 @@ class CCompiler:
             base, ext = os.path.splitext(source)
             extlang = self.language_map.get(ext)
             try:
-                extindex = self.language_order.index(extlang)
+                extindex = self.language_order.index(extlang)  # type: ignore
                 if extindex < index:
                     lang = extlang
                     index = extindex
