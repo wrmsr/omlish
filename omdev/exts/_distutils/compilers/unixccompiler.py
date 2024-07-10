@@ -357,7 +357,7 @@ class UnixCCompiler(CCompiler):
             )
         )
 
-        return os.path.join(match.group(1), dir[1:]) if apply_root else dir
+        return os.path.join(match.group(1), dir[1:]) if match and apply_root else dir
 
     def find_library_file(self, dirs, lib, debug=0):
         """
