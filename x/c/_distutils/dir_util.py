@@ -15,7 +15,7 @@ log = logging.getLogger(__name__)
 _path_created = {}
 
 
-def mkpath(name, mode=0o777, verbose=1, dry_run=0):  # noqa: C901
+def mkpath(name, mode=0o777, verbose=1, dry_run=False):  # noqa: C901
     """Create a directory and any missing ancestor directories.
 
     If the directory already exists (or if 'name' is the empty string, which means the current directory, which of

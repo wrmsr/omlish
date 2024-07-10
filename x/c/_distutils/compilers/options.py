@@ -3,7 +3,10 @@ import os
 from ..util import always_iterable
 
 
-def gen_preprocess_options(macros, include_dirs):
+def gen_preprocess_options(
+        macros: list[tuple[str, str]],
+        include_dirs: list[str],
+) -> list[str]:
     """
     Generate C pre-processor options (-D, -U, -I) as used by at least two types of compilers: the typical Unix compiler
     and Visual C++. 'macros' is the usual thing, a list of 1- or 2-tuples, where (name,) means undefine (-U) macro
@@ -40,7 +43,12 @@ def gen_preprocess_options(macros, include_dirs):
     return pp_opts
 
 
-def gen_lib_options(compiler, library_dirs, runtime_library_dirs, libraries):
+def gen_lib_options(
+        compiler,
+        library_dirs: list[str],
+        runtime_library_dirs: list[str],
+        libraries: list[str],
+) -> list[str]:
     """
     Generate linker options for searching library directories and linking with specific libraries.  'libraries' and
     'library_dirs' are, respectively, lists of library names (not filenames!) and search directories.  Returns a list of

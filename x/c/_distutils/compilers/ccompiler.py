@@ -57,13 +57,13 @@ class CCompiler:
 
     # Subclasses that rely on the standard filename generation methods implemented below should override these; see the
     # comment near those methods ('object_filenames()' et. al.) for details:
-    src_extensions = None  # list of strings
-    obj_extension = None  # string
+    src_extensions: list[str] | None = None
+    obj_extension: str | None = None
     static_lib_extension = None
-    shared_lib_extension = None  # string
-    static_lib_format = None  # format string
-    shared_lib_format = None  # prob. same as static_lib_format
-    exe_extension = None  # string
+    shared_lib_extension: str | None = None
+    static_lib_format: str | None = None
+    shared_lib_format: str | None = None  # prob. same as static_lib_format
+    exe_extension: str | None = None
 
     # Default language settings. language_map is used to detect a source file or Extension target language, checking
     # source filenames. language_order is used to detect the language precedence, when deciding what language to use
@@ -78,43 +78,44 @@ class CCompiler:
     }
     language_order = ['c++', 'objc', 'c']
 
-    include_dirs = []
-    """
-    include dirs specific to this compiler class
-    """
+    include_dirs: list[str] = []  # include dirs specific to this compiler class
 
-    library_dirs = []
-    """
-    library dirs specific to this compiler class
-    """
+    library_dirs: list[str] = []  # library dirs specific to this compiler class
 
-    def __init__(self, verbose=0, dry_run=0, force=0):
+    def __init__(
+            self,
+            verbose: int = 0,
+            dry_run: bool = False,
+            force: bool = False,
+    ) -> None:
+        super().__init__()
+
         self.dry_run = dry_run
         self.force = force
         self.verbose = verbose
 
         # 'output_dir': a common output directory for object, library, shared object, and shared library files
-        self.output_dir = None
+        self.output_dir: str | None = None
 
         # 'macros': a list of macro definitions (or undefinitions).  A macro definition is a 2-tuple (name, value),
         # where the value is either a string or None (no explicit value).  A macro undefinition is a 1-tuple (name,).
-        self.macros = []
+        self.macros: list[tuple[str, str]] = []
 
         # 'include_dirs': a list of directories to search for include files
-        self.include_dirs = []
+        self.include_dirs: list[str] = []
 
         # 'libraries': a list of libraries to include in any link (library names, not filenames: eg. "foo" not
         # "libfoo.a")
-        self.libraries = []
+        self.libraries: list[str] = []
 
         # 'library_dirs': a list of directories to search for libraries
-        self.library_dirs = []
+        self.library_dirs: list[str] = []
 
         # 'runtime_library_dirs': a list of directories to search for shared libraries/objects at runtime
-        self.runtime_library_dirs = []
+        self.runtime_library_dirs: list[str] = []
 
         # 'objects': a list of object files (or similar, such as explicitly named library files) to include on any link
-        self.objects = []
+        self.objects: list[str] = []
 
         for key in self.executables.keys():
             self.set_executable(key, self.executables[key])
@@ -142,9 +143,7 @@ class CCompiler:
 
         for key in kwargs:
             if key not in self.executables:
-                raise ValueError(
-                    f"unknown executable '{key}' for class {self.__class__.__name__}",
-                )
+                raise ValueError(f"unknown executable '{key}' for class {self.__class__.__name__}")
             self.set_executable(key, kwargs[key])
 
     def set_executable(self, key, value):
@@ -161,7 +160,7 @@ class CCompiler:
             i += 1
         return None
 
-    def _check_macro_definitions(self, definitions):
+    def _check_macro_definitions(self, definitions: list[tuple[str, str]]) -> None:
         """
         Ensures that every element of 'definitions' is a valid macro definition, ie. either (name,value) 2-tuple or a
         (name,) tuple.  Do nothing if all definitions are OK, raise TypeError otherwise.
@@ -169,10 +168,7 @@ class CCompiler:
         for defn in definitions:
             if not (
                     isinstance(defn, tuple)
-                    and (
-                            len(defn) in (1, 2)
-                            and (isinstance(defn[1], str) or defn[1] is None)
-                    )
+                    and (len(defn) in (1, 2) and (isinstance(defn[1], str) or defn[1] is None))
                     and isinstance(defn[0], str)
             ):
                 raise TypeError(
@@ -422,9 +418,7 @@ class CCompiler:
         return (libraries, library_dirs, runtime_library_dirs)
 
     def _need_link(self, objects, output_file):
-        """
-        Return true if we need to relink the files listed in 'objects' to recreate 'output_file'.
-        """
+        """Return true if we need to relink the files listed in 'objects' to recreate 'output_file'."""
         if self.force:
             return True
         else:
@@ -949,9 +943,6 @@ int main (int argc, char **argv) {
 # match patterns. Order is important; platform mappings are preferred over OS names.
 _default_compilers = (
     # Platform string mappings
-    # on a cygwin built python we can use gcc like an ordinary UNIXish compiler
-    ('cygwin.*', 'unix'),
-    # OS name mappings
     ('posix', 'unix'),
 )
 
@@ -986,7 +977,13 @@ compiler_class = {
 }
 
 
-def new_compiler(plat=None, compiler=None, verbose=0, dry_run=0, force=0):
+def new_compiler(
+        plat=None,
+        compiler=None,
+        verbose=0,
+        dry_run=False,
+        force=False,
+):
     """
     Generate an instance of some CCompiler subclass for the supplied platform/compiler combination.  'plat' defaults to
     'os.name' (eg. 'posix', 'nt'), and 'compiler' defaults to the default compiler for that platform.  Currently only

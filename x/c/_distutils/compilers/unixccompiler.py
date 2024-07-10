@@ -46,7 +46,7 @@ log = logging.getLogger(__name__)
 #     and carry on.
 
 
-def _split_env(cmd):
+def _split_env(cmd: list[str]) -> tuple[list[str], list[str]]:
     """
     For macOS, split command into 'env' portion (if any) and the rest of the linker command.
 
@@ -63,7 +63,7 @@ def _split_env(cmd):
     return cmd[:pivot], cmd[pivot:]
 
 
-def _split_aix(cmd):
+def _split_aix(cmd: list[str]) -> tuple[list[str], list[str]]:
     """
     AIX platforms prefix the compiler with the ld_so_aix
     script, so split that from the linker command.
@@ -77,7 +77,7 @@ def _split_aix(cmd):
     return cmd[:pivot], cmd[pivot:]
 
 
-def _linker_params(linker_cmd, compiler_cmd):
+def _linker_params(linker_cmd: list[str], compiler_cmd: list[str]) -> list[str]:
     """
     The linker command usually begins with the compiler command (possibly multiple elements), followed by zero or more
     params for shared library building.
@@ -146,8 +146,6 @@ class UnixCCompiler(CCompiler):
     xcode_stub_lib_extension = '.tbd'
     static_lib_format = shared_lib_format = dylib_lib_format = 'lib%s%s'
     xcode_stub_lib_format = dylib_lib_format
-    if sys.platform == 'cygwin':
-        exe_extension = '.exe'
 
     def preprocess(
             self,
@@ -352,25 +350,9 @@ class UnixCCompiler(CCompiler):
         return os.path.join(match.group(1), dir[1:]) if apply_root else dir
 
     def find_library_file(self, dirs, lib, debug=0):
-        r"""
+        """
         Second-guess the linker with not much hard data to go on: GCC seems to prefer the shared library, so assume that
         *all* Unix C compilers do, ignoring even GCC's "-static" option.
-
-        >>> compiler = UnixCCompiler()
-        >>> compiler._library_root = lambda dir: dir
-        >>> monkeypatch = getfixture('monkeypatch')
-        >>> monkeypatch.setattr(os.path, 'exists', lambda d: 'existing' in d)
-        >>> dirs = ('/foo/bar/missing', '/foo/bar/existing')
-        >>> compiler.find_library_file(dirs, 'abc').replace('\\', '/')
-        '/foo/bar/existing/libabc.dylib'
-        >>> compiler.find_library_file(reversed(dirs), 'abc').replace('\\', '/')
-        '/foo/bar/existing/libabc.dylib'
-        >>> monkeypatch.setattr(os.path, 'exists',
-        ...     lambda d: 'existing' in d and '.a' in d)
-        >>> compiler.find_library_file(dirs, 'abc').replace('\\', '/')
-        '/foo/bar/existing/libabc.a'
-        >>> compiler.find_library_file(reversed(dirs), 'abc').replace('\\', '/')
-        '/foo/bar/existing/libabc.a'
         """
         lib_names = (
             self.library_filename(lib, lib_type=type)

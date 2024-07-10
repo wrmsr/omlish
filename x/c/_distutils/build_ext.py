@@ -127,11 +127,6 @@ class BuildExt:
         if self._opts.build_temp:
             return self._opts.build_temp
         bt = os.path.join(self.build_base, 'temp' + self.plat_specifier)
-        if os.name == 'nt':
-            if self._opts.debug:
-                bt = os.path.join(bt, 'Debug')
-            else:
-                bt = os.path.join(bt, 'Release')
         return bt
 
     @dc.dataclass(frozen=True)
@@ -155,31 +150,6 @@ class BuildExt:
         include_dirs.extend(py_include.split(os.path.pathsep))
         if plat_py_include != py_include:
             include_dirs.extend(plat_py_include.split(os.path.pathsep))
-
-        if os.name == 'nt':
-            library_dirs.append(os.path.join(sys.exec_prefix, 'libs'))
-            if sys.base_exec_prefix != sys.prefix:  # Issue 16116
-                library_dirs.append(os.path.join(sys.base_exec_prefix, 'libs'))
-
-            include_dirs.append(os.path.dirname(sysconfig.get_config_h_filename()))
-            _sys_home = getattr(sys, '_home', None)
-            if _sys_home:
-                library_dirs.append(_sys_home)
-
-            if self.plat_name == 'win32':
-                suffix = 'win32'
-            else:
-                suffix = self.plat_name[4:]
-            new_lib = os.path.join(sys.exec_prefix, 'PCbuild')
-            if suffix:
-                new_lib = os.path.join(new_lib, suffix)
-            library_dirs.append(new_lib)
-
-        if sys.platform[:6] == 'cygwin':
-            if sys.executable.startswith(os.path.join(sys.exec_prefix, 'bin')):
-                library_dirs.append(os.path.join(sys.prefix, 'lib', 'python' + sysconfig.get_python_version(), 'config'))  # noqa
-            else:
-                library_dirs.append('.')
 
         if (sysconfig.get_config_var('Py_ENABLE_SHARED')):
             if not sysconfig.python_build:  # noqa
@@ -322,10 +292,6 @@ class BuildExt:
             if sysconfig.get_config_var('Py_ENABLE_SHARED'):
                 if hasattr(sys, 'getandroidapilevel') or sys.platform == 'cygwin':
                     link_libpython = True
-                elif '_PYTHON_HOST_PLATFORM' in os.environ:
-                    # We are cross-compiling for one of the relevant platforms
-                    if sysconfig.get_config_var('ANDROID_API_LEVEL') != 0 or sysconfig.get_config_var('MACHDEP') == 'cygwin':
-                        link_libpython = True
 
             if link_libpython:
                 ldversion = _get_str_config_var('LDVERSION')
