@@ -1,6 +1,6 @@
 import os
 
-from .._itertools import always_iterable
+from ..util import always_iterable
 
 
 def gen_preprocess_options(macros, include_dirs):

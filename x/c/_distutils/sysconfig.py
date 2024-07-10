@@ -12,8 +12,8 @@ import pathlib
 import sys
 import sysconfig
 
-from ._functools import pass_none
 from .errors import DistutilsPlatformError
+from .util import pass_none
 
 
 IS_PYPY = '__pypy__' in sys.builtin_module_names

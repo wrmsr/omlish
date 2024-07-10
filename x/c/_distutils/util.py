@@ -1,10 +1,12 @@
 """Miscellaneous utility functions -- anything that doesn't fit into one of the other *util.py modules."""
+import functools
 import logging
 import os
 import re
 import string
 import sys
 import sysconfig
+import typing as ta
 
 from .errors import DistutilsPlatformError
 
@@ -12,7 +14,31 @@ from .errors import DistutilsPlatformError
 log = logging.getLogger(__name__)
 
 
-def get_host_platform():
+def pass_none(func):
+    """Wrap func so it's not called if its first param is None"""
+
+    @functools.wraps(func)
+    def wrapper(param, *args, **kwargs):
+        if param is not None:
+            return func(param, *args, **kwargs)
+
+    return wrapper
+
+
+def always_iterable(obj, base_type=(str, bytes)):
+    if obj is None:
+        return iter(())
+
+    if (base_type is not None) and isinstance(obj, base_type):
+        return iter((obj,))
+
+    try:
+        return iter(obj)
+    except TypeError:
+        return iter((obj,))
+
+
+def get_host_platform() -> str:
     """
     Return a string that identifies the current platform. Use this function to distinguish platform-specific build
     directories and platform-specific built distributions.
@@ -29,13 +55,13 @@ if sys.platform == 'darwin':
 MACOSX_VERSION_VAR = 'MACOSX_DEPLOYMENT_TARGET'
 
 
-def _clear_cached_macosx_ver():
+def _clear_cached_macosx_ver() -> None:
     """For testing only. Do not call."""
     global _syscfg_macosx_ver
     _syscfg_macosx_ver = None
 
 
-def get_macosx_target_ver_from_syscfg():
+def get_macosx_target_ver_from_syscfg() -> str:
     """
     Get the version of macOS latched in the Python interpreter configuration. Returns the version as a string or None
     if can't obtain one. Cached.
@@ -50,7 +76,7 @@ def get_macosx_target_ver_from_syscfg():
     return _syscfg_macosx_ver
 
 
-def get_macosx_target_ver():
+def get_macosx_target_ver() -> str:
     """
     Return the version of macOS for which we are building.
 
@@ -82,7 +108,7 @@ def get_macosx_target_ver():
     return syscfg_ver
 
 
-def split_version(s):
+def split_version(s) -> list[int]:
     """Convert a dot-separated string into a list of numbers for comparisons"""
     return [int(n) for n in s.split('.')]
 
@@ -98,7 +124,7 @@ def _init_regex():
     _dquote_re = re.compile(r'"(?:[^"\\]|\\.)*"')
 
 
-def split_quoted(s):
+def split_quoted(s: str) -> list[str]:
     """
     Split a string up according to Unix shell-like rules for quotes and backslashes.  In short: words are delimited by
     spaces, as long as those spaces are not escaped by a backslash, or inside a quoted string. Single and double quotes
@@ -156,7 +182,13 @@ def split_quoted(s):
     return words
 
 
-def execute(func, args, msg=None, verbose=0, dry_run=0):
+def execute(
+        func: ta.Callable,
+        args: ta.Iterable,
+        msg: str | None = None,
+        verbose: int = 0,
+        dry_run: bool = False,
+) -> None:
     """
     Perform some action that affects the outside world (eg.  by writing to the filesystem).  Such actions are special
     because they are disabled by the 'dry_run' flag.  This method takes care of all that bureaucracy for you; all you
