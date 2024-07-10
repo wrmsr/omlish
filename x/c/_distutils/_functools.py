@@ -38,8 +38,7 @@ def splat(func):
     """
     Wrap func to expect its parameters to be passed positionally in a tuple.
 
-    Has a similar effect to that of ``itertools.starmap`` over
-    simple ``map``.
+    Has a similar effect to that of ``itertools.starmap`` over simple ``map``.
 
     >>> import itertools, operator
     >>> pairs = [(-1, 1), (0, 2)]
@@ -50,8 +49,7 @@ def splat(func):
     -1 1
     0 2
 
-    The approach generalizes to other iterators that don't have a "star"
-    equivalent, such as a "starfilter".
+    The approach generalizes to other iterators that don't have a "star" equivalent, such as a "starfilter".
 
     >>> list(filter(splat(operator.add), pairs))
     [(0, 2)]
