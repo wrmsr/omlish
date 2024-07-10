@@ -37,6 +37,7 @@ log = logging.getLogger(__name__)
 def bypass_compiler_fixup(cmd, args):
     return cmd
 
+
 if sys.platform == 'darwin':
     compiler_fixup = importlib.import_module('_osx_support').compiler_fixup
 else:
@@ -348,12 +349,12 @@ class UnixCCompiler(CCompiler):
         match = re.search(r'-isysroot\s*(\S+)', cflags)
 
         apply_root = (
-                sys.platform == 'darwin'
-                and match
-                and (
-                        dir.startswith('/System/')
-                        or (dir.startswith('/usr/') and not dir.startswith('/usr/local/'))
-                )
+            sys.platform == 'darwin'
+            and match
+            and (
+                dir.startswith('/System/')
+                or (dir.startswith('/usr/') and not dir.startswith('/usr/local/'))
+            )
         )
 
         return os.path.join(match.group(1), dir[1:]) if apply_root else dir

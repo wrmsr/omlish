@@ -104,9 +104,9 @@ def _get_python_inc_posix(prefix, spec_prefix, plat_specific):
     if IS_PYPY and sys.version_info < (3, 8):
         return os.path.join(prefix, 'include')
     return (
-            _get_python_inc_posix_python(plat_specific)
-            or _extant(_get_python_inc_from_config(plat_specific, spec_prefix))
-            or _get_python_inc_posix_prefix(prefix)
+        _get_python_inc_posix_python(plat_specific)
+        or _extant(_get_python_inc_from_config(plat_specific, spec_prefix))
+        or _get_python_inc_posix_prefix(prefix)
     )
 
 
@@ -153,9 +153,9 @@ def _get_python_inc_nt(prefix, spec_prefix, plat_specific):
     if python_build:
         # Include both include dirs to ensure we can find pyconfig.h
         return (
-                os.path.join(prefix, 'include')
-                + os.path.pathsep
-                + os.path.dirname(sysconfig.get_config_h_filename())
+            os.path.join(prefix, 'include') +
+            os.path.pathsep +
+            os.path.dirname(sysconfig.get_config_h_filename())
         )
     return os.path.join(prefix, 'include')
 
