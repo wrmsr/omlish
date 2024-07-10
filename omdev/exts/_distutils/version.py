@@ -12,6 +12,7 @@ Every version number class implements the following interface:
   * _cmp compares the current instance with either another instance of the same class or a string (which will be parsed
     to an instance of the same class, thus must follow the same rules)
 """
+import abc
 import contextlib
 import re
 import warnings
@@ -28,7 +29,7 @@ def suppress_known_deprecation():
         yield ctx
 
 
-class Version:
+class Version(abc.ABC):
     """
     Abstract base class for version numbering classes.  Just provides constructor (__init__) and reproducer (__repr__),
     because those seem to be the same for all version numbering classes; and route rich comparisons to _cmp.
@@ -42,6 +43,14 @@ class Version:
             DeprecationWarning,
             stacklevel=2,
         )
+
+    @abc.abstractmethod
+    def parse(self, vstring):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def _cmp(self, other):
+        raise NotImplementedError
 
     def __repr__(self):
         return f"{self.__class__.__name__} ('{self!s}')"
