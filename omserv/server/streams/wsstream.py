@@ -1,3 +1,4 @@
+import encodings.idna  # prevents `LookupError: unknown encoding: idna`  # noqa
 import enum
 import io
 import logging
