@@ -12,7 +12,9 @@ lookit:
 import typing as ta
 
 import anyio.streams.memory
+import anyio.streams.stapled
 
+from .. import check
 from .. import lang
 
 
@@ -34,6 +36,16 @@ def split_memory_object_streams(
 ]:
     [tup] = args  # type: ignore
     return tup  # type: ignore
+
+
+def staple_memory_object_stream(
+        *args: anyio.create_memory_object_stream[T],
+) -> anyio.streams.stapled.StapledObjectStream[T]:
+    send, receive = args  # type: ignore
+    return anyio.streams.stapled.StapledObjectStream(
+        check.isinstance(send, anyio.streams.memory.MemoryObjectSendStream),
+        check.isinstance(receive, anyio.streams.memory.MemoryObjectReceiveStream),
+    )
 
 
 async def gather(*fns: ta.Callable[..., ta.Awaitable[T]], take_first: bool = False) -> list[lang.Maybe[T]]:

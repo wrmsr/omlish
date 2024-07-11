@@ -6,10 +6,12 @@ import time
 import typing as ta
 
 from omlish import lang
+from omlish.asyncs import anyio as aiu
 import anyio.abc
 
 from .events import Event
 from .events import EventHook
+from .messages import SupervisorMessage
 from .types import CancelFunc
 from .types import Context
 from .types import Duration
@@ -95,23 +97,20 @@ class SupervisorImpl(Supervisor):
 
         self._failures = 0.
         
-        # restartQueue         []serviceId = make([]serviceId, 0, 1),
+        self._restart_queue: list[ServiceId] = []
         
         self._service_counter: ServiceId = ServiceId(0)
-        
-        # control              chan supervisorMessage = make(chan supervisorMessage),
-        
-        # notifyServiceDone    chan serviceId = make(chan serviceId),
-        
-        # resumeTimer          <-chan time.Time = make(chan time.Time),
-        
-        # liveness             chan struct{} = make(chan struct{}),
+
+        self._control = aiu.staple_memory_object_stream(*anyio.create_memory_object_stream[SupervisorMessage]())
+        self._notify_service_done = aiu.staple_memory_object_stream(*anyio.create_memory_object_stream[ServiceId]())
+        self._resume_timer = aiu.staple_memory_object_stream(*anyio.create_memory_object_stream[Time]())
+        self._liveness = aiu.staple_memory_object_stream(*anyio.create_memory_object_stream[ta.Any]())
 
         # despite the recommendation in the context package to avoid holding this in a struct, I think due to the
         # function of suture and the way it works, I think it's OK in this case. This is the exceptional case,
         # basically.
         self._ctx_mutex = anyio.Lock()
-        # ctx      context.Context = nil,
+        self._ctx: Context | None = None
 
         # This function cancels this supervisor specifically.
         self._ctx_cancel: CancelFunc | None = None
