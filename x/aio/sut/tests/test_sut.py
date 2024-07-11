@@ -1,3 +1,6 @@
+import enum
+
+import anyio
 import trio  # noqa
 import pytest
 

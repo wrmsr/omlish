@@ -110,7 +110,7 @@ class SupervisorImpl(Supervisor):
         # despite the recommendation in the context package to avoid holding this in a struct, I think due to the
         # function of suture and the way it works, I think it's OK in this case. This is the exceptional case,
         # basically.
-        # ctxMutex sync.Mutex = sync.Mutex{},
+        self._ctx_mutex = anyio.Lock()
         # ctx      context.Context = nil,
 
         # This function cancels this supervisor specifically.
@@ -120,7 +120,7 @@ class SupervisorImpl(Supervisor):
         
         # getAfterChan func(Duration) <-chan time.Time = time.After
 
-        # m sync.Mutex = sync.Mutex{},
+        self._m = anyio.Lock()
 
         # The unstopped service report is generated when we finish stopping.
         self._unstopped_service_report: UnstoppedServiceReport = []
