@@ -13,11 +13,11 @@ type EventHook = ta.Callable[['Event'], None]
 
 
 class EventType(enum.Enum):
-    StopTimeout = enum.auto()
-    ServicePanic = enum.auto()
-    ServiceTerminate = enum.auto()
-    Backoff = enum.auto()
-    Resume = enum.auto()
+    STOP_TIMEOUT = enum.auto()
+    SERVICE_PANIC = enum.auto()
+    SERVICE_TERMINATE = enum.auto()
+    BACKOFF = enum.auto()
+    RESUME = enum.auto()
 
 
 class Event(lang.Abstract):
@@ -36,7 +36,7 @@ class EventStopTimeout(Event):
 
     @property
     def type(self) -> EventType:
-        return EventType.StopTimeout
+        return EventType.STOP_TIMEOUT
 
 
 @dc.dataclass()
@@ -53,7 +53,7 @@ class EventServicePanic(Event):
 
     @property
     def type(self) -> EventType:
-        return EventType.ServicePanic
+        return EventType.SERVICE_PANIC
 
 
 class EventServiceTerminate(Event):
@@ -68,7 +68,7 @@ class EventServiceTerminate(Event):
 
     @property
     def type(self) -> EventType:
-        return EventType.ServiceTerminate
+        return EventType.SERVICE_TERMINATE
 
 
 class EventBackoff(Event):
@@ -77,7 +77,7 @@ class EventBackoff(Event):
 
     @property
     def type(self) -> EventType:
-        return EventType.Backoff
+        return EventType.BACKOFF
 
 
 class EventResume(Event):
@@ -86,4 +86,4 @@ class EventResume(Event):
 
     @property
     def type(self) -> EventType:
-        return EventType.Resume
+        return EventType.RESUME
