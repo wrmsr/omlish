@@ -31,6 +31,25 @@ classifiers = [
     'Operating System :: OS Independent',
 ]
 
+[project.optional-dependencies]
+async = ['anyio']
+http = ['httpx']
+sql = ['sqlalchemy']
+wrapt = ['wrapt']
+yaml = ['pyyaml']
+
+server = [
+    'h11',
+    'h2',
+    'priority',
+    'wsproto',
+]
+
+test=['pytest']
+
+
+##
+
 [tool.setuptools]
 include-package-data = false
 
