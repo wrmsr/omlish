@@ -33,6 +33,22 @@ class Context(lang.Abstract):
 ##
 
 
+class DoNotRestart(Exception):
+    """Can be returned by a service to voluntarily not be restarted."""
+
+    def __init__(self) -> None:
+        super().__init__("service should not be restarted")
+
+
+class TerminateSupervisorTree(Exception):
+    """Can can be returned by a service to terminate the entire supervision tree above it as well."""
+    def __init__(self) -> None:
+        super().__init__("tree should be terminated")
+
+
+##
+
+
 class Service(lang.Abstract):
     @abc.abstractmethod
     async def serve(self, ctx: Context) -> Exception | None:
