@@ -99,7 +99,6 @@ def test_reflect():
     ref = dc.reflect(Baz0)
     print(ref)
     print(ref.params)
-    print(ref.params12)
     print(ref.params_extras)
     print(ref.merged_metadata)
 

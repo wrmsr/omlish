@@ -28,7 +28,6 @@ Params:
     weakref_slot: bool = False
 """
 import dataclasses as dc
-import sys
 import typing as ta
 
 from ... import lang
@@ -36,9 +35,6 @@ from .internals import PARAMS_ATTR
 from .internals import Params
 from .metadata import EMPTY_METADATA
 from .metadata import METADATA_ATTR
-
-
-IS_12 = sys.version_info[1] >= 12
 
 
 ##
@@ -77,37 +73,6 @@ def get_params(obj: ta.Any) -> Params:
     if not hasattr(obj, PARAMS_ATTR):
         raise TypeError(obj)
     return getattr(obj, PARAMS_ATTR)
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class Params12(lang.Final):
-    match_args: bool = True
-    kw_only: bool = False
-    slots: bool = False
-    weakref_slot: bool = False
-
-
-DEFAULT_PARAMS12 = Params12()
-
-
-def get_params12(obj: ta.Any) -> Params12:
-    if IS_12:
-        p = get_params(obj)
-        return Params12(
-            match_args=p.match_args,
-            kw_only=p.kw_only,
-            slots=p.slots,
-            weakref_slot=p.weakref_slot,
-        )
-
-    if (pcls := get_params_cls(obj)) is None:
-        raise TypeError(pcls)
-
-    md = pcls.__dict__.get(METADATA_ATTR, EMPTY_METADATA)
-    return md.get(Params12, DEFAULT_PARAMS12)
 
 
 ##

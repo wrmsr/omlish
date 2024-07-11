@@ -12,13 +12,10 @@ from .main import process_class
 from .metadata import METADATA_ATTR
 from .metadata import Metadata
 from .params import FieldExtras
-from .params import Params12
 from .params import ParamsExtras
 
 
 MISSING = dc.MISSING
-
-IS_12 = sys.version_info[1] >= 12
 
 
 def field(
@@ -96,8 +93,6 @@ def dataclass(
             order=order,
             unsafe_hash=unsafe_hash,
             frozen=frozen,
-        )
-        p12kw = dict(
             match_args=match_args,
             kw_only=kw_only,
             slots=slots,
@@ -117,11 +112,6 @@ def dataclass(
         mmd: dict = {
             ParamsExtras: pex,
         }
-
-        if IS_12:
-            pkw.update(p12kw)
-        else:
-            mmd[Params12] = Params12(**p12kw)
 
         md: Metadata = mmd
         cmds = []

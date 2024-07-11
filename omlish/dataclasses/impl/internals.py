@@ -17,6 +17,21 @@ POST_INIT_NAME = dc._POST_INIT_NAME  # type: ignore  # noqa
 
 Params = dc._DataclassParams  # type: ignore  # noqa
 
+"""
+@dc.dataclass(frozen=True)
+class Params:
+    init = True
+    repr = True
+    eq = True
+    order = False
+    unsafe_hash = False
+    frozen = False
+    match_args = True
+    kw_only = False
+    slots = False
+    weakref_slot = False
+"""
+
 
 ##
 

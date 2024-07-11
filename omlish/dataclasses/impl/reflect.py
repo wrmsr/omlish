@@ -22,10 +22,8 @@ from .metadata import METADATA_ATTR
 from .metadata import Metadata
 from .metadata import get_merged_metadata
 from .params import PARAMS_ATTR
-from .params import Params12
 from .params import ParamsExtras
 from .params import get_params
-from .params import get_params12
 from .params import get_params_extras
 from .utils import Namespace
 
@@ -67,10 +65,6 @@ class ClassInfo:
     @cached.property
     def cls_params(self) -> Params | None:
         return self._cls.__dict__.get(PARAMS_ATTR)
-
-    @cached.property
-    def params12(self) -> Params12:
-        return get_params12(self._cls)
 
     @cached.property
     def params_extras(self) -> ParamsExtras:

@@ -109,7 +109,7 @@ class InitBuilder:
                 self._info.params.frozen,
                 locals,
                 self._self_name,
-                self._info.params12.slots,
+                self._info.params.slots,
             )
 
             if f_lines:
