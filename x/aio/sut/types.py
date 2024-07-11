@@ -64,6 +64,11 @@ class ServiceToken(lang.Final):
     supervisor: SupervisorId
     service: ServiceId
 
+    ZERO: ta.ClassVar['ServiceToken']
+
+
+ServiceToken.ZERO = ServiceToken(SupervisorId(0), ServiceId(0))
+
 
 ##
 
