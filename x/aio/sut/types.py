@@ -7,12 +7,24 @@ import anyio.abc
 from omlish import lang
 
 
+##
+
+
 type Time = float
 type Duration = float
 
 
+##
+
+
+type CancelFunc = ta.Callable[[], None]
+
+
 class Context(lang.Final):
     pass
+
+
+##
 
 
 class Service(lang.Abstract):
@@ -29,6 +41,9 @@ ServiceId = ta.NewType('ServiceId', int)
 class ServiceToken(lang.Final):
     supervisor: SupervisorId
     service: ServiceId
+
+
+##
 
 
 @dc.dataclass(frozen=True)

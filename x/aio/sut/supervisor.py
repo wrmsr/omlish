@@ -1,20 +1,25 @@
-import abc
 import dataclasses as dc
 import enum
 import itertools
 import random
+import time
 import typing as ta
 
 from omlish import lang
+import anyio.abc
 
 from .events import Event
 from .events import EventHook
+from .types import CancelFunc
+from .types import Context
 from .types import Duration
-from .types import Time
 from .types import Service
-from .types import SupervisorId
 from .types import ServiceId
+from .types import ServiceToken
 from .types import Supervisor
+from .types import SupervisorId
+from .types import Time
+from .types import UnstoppedServiceReport
 
 
 ##
@@ -75,7 +80,6 @@ class ServiceWithName(lang.Final):
     name: str
 
 
-"""
 class SupervisorImpl(Supervisor):
     def __init__(self, name: str, spec: Spec) -> None:
         super().__init__()
@@ -83,45 +87,65 @@ class SupervisorImpl(Supervisor):
         self._name = name
         self._spec = spec
 
-        services             map[serviceID]serviceWithName = make(map[serviceID]serviceWithName),
-        cancellations        map[serviceID]context.CancelFunc = make(map[serviceID]context.CancelFunc),
-        servicesShuttingDown map[serviceID]serviceWithName = make(map[serviceID]serviceWithName),
+        self._services: dict[ServiceId, ServiceWithName] = {}
+        self._cancellations: dict[ServiceId, CancelFunc] = {}
+        self._services_shutting_down: dict[ServiceId, ServiceWithName] = {}
         
         self._last_fail: Time = 0.
 
         self._failures = 0.
         
-        restartQueue         []serviceID = make([]serviceID, 0, 1),
+        # restartQueue         []serviceId = make([]serviceId, 0, 1),
         
         self._service_counter: ServiceId = ServiceId(0)
         
-        control              chan supervisorMessage = make(chan supervisorMessage),
+        # control              chan supervisorMessage = make(chan supervisorMessage),
         
-        notifyServiceDone    chan serviceID = make(chan serviceID),
+        # notifyServiceDone    chan serviceId = make(chan serviceId),
         
-        resumeTimer          <-chan time.Time = make(chan time.Time),
+        # resumeTimer          <-chan time.Time = make(chan time.Time),
         
-        liveness             chan struct{} = make(chan struct{}),
+        # liveness             chan struct{} = make(chan struct{}),
 
         # despite the recommendation in the context package to avoid holding this in a struct, I think due to the
         # function of suture and the way it works, I think it's OK in this case. This is the exceptional case,
         # basically.
-        ctxMutex sync.Mutex = sync.Mutex{},
-        ctx      context.Context = nil,
+        # ctxMutex sync.Mutex = sync.Mutex{},
+        # ctx      context.Context = nil,
 
         # This function cancels this supervisor specifically.
-        ctxCancel func() = nil
+        self._ctx_cancel: CancelFunc | None = None
 
         self._get_now: ta.Callable[[], Time] = time.time
         
-        getAfterChan func(Duration) <-chan time.Time = time.After
+        # getAfterChan func(Duration) <-chan time.Time = time.After
 
-        m sync.Mutex = sync.Mutex{},
+        # m sync.Mutex = sync.Mutex{},
 
         # The unstopped service report is generated when we finish stopping.
-        unstoppedServiceReport UnstoppedServiceReport
+        self._unstopped_service_report: UnstoppedServiceReport = []
 
         self._id = _next_supervisor_id()
 
         self._state: SupervisorState = SupervisorState.NOT_RUNNING
-"""
+
+    async def add(self, service: Service) -> ServiceToken:
+        pass
+
+    async def serve_background(self, ctx: Context) -> anyio.abc.ObjectReceiveStream[Exception]:
+        pass
+
+    async def serve(self, ctx: Context) -> Exception:
+        pass
+
+    async def unstopped_service_report(self) -> tuple[UnstoppedServiceReport, Exception]:
+        pass
+
+    async def remove(self, id: ServiceToken) -> Exception:
+        pass
+
+    async def remove_and_wait(self, id: ServiceToken, timeout: Duration) -> Exception:
+        pass
+
+    async def services(self) -> list[Service]:
+        pass
