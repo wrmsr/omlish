@@ -3,7 +3,7 @@ import trio
 from .. import triotp2 as t2
 
 
-class echo_server(t2.App):
+class echo_server(t2.ServerApp):
 
     @staticmethod
     async def echo(message):
@@ -15,7 +15,7 @@ class echo_server(t2.App):
 
     ##
 
-    async def start(self):
+    async def start(self, start_arg):
         await t2.gen_server.start(self, init_arg=None, name=__name__)
 
     async def init(self, _init_arg):
@@ -60,7 +60,7 @@ async def start():
         t2.ChildSpec(
             id='server',
             task=echo_server().start,
-            args=[],
+            args=[None],
             restart=t2.RestartStrategy.TRANSIENT,
         ),
         t2.ChildSpec(
