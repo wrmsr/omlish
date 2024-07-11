@@ -89,19 +89,19 @@ class Supervisor(lang.Abstract):
         raise NotImplementedError
 
     @abc.abstractmethod
-    async def serve(self, ctx: Context) -> Exception:
+    async def serve(self, ctx: Context) -> Exception | None:
         raise NotImplementedError
 
     @abc.abstractmethod
-    async def unstopped_service_report(self) -> tuple[UnstoppedServiceReport, Exception]:
+    async def unstopped_service_report(self) -> tuple[UnstoppedServiceReport, Exception | None]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    async def remove(self, id: ServiceToken) -> Exception:
+    async def remove(self, id: ServiceToken) -> Exception | None:
         raise NotImplementedError
 
     @abc.abstractmethod
-    async def remove_and_wait(self, id: ServiceToken, timeout: Duration) -> Exception:
+    async def remove_and_wait(self, id: ServiceToken, timeout: Duration) -> Exception | None:
         raise NotImplementedError
 
     @abc.abstractmethod
