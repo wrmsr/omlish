@@ -1,6 +1,5 @@
 from . import (  # noqa
     logging,
-    pycharm,
     repeat,
     skips,
     spacing,
