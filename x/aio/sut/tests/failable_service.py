@@ -65,7 +65,7 @@ class FailableService(Service):
         self._m = anyio.Lock()
         self._running = False
 
-    async def serve(self, ctx: Context) -> None:
+    async def serve(self, ctx: Context) -> Exception | None:
         with self._m:
             if self._existing != 0:
                 # This will produce a fatal runtime error if FailableService is ever started twice.
@@ -83,35 +83,37 @@ class FailableService(Service):
             use_stop_chan = False
 
             while True:
-                # select {
-                # case val := <-self._take:
-                #     switch val {
-                #     case HAPPY:
-                #         // Do nothing on purpose. Life is good!
-                #     case FAIL:
-                #         releaseExistence()
-                #         if useStopChan {
-                #             self._stop <- true
-                #         }
-                #         return nil
-                #     case PANIC:
-                #         releaseExistence()
-                #         panic("Panic!")
-                #     case HANG:
-                #         // or more specifically, "hang until I release you"
-                #         <-self._release
-                #     case USE_STOP_CHAN:
-                #         useStopChan = true
-                #     case TERMINATE_TREE:
-                #         return ErrTerminateSupervisorTree
-                #     case DO_NOT_RESTART:
-                #         return ErrDoNotRestart
-                #     }
-                # case <-ctx.Done():
-                #     releaseExistence()
-                #     if useStopChan {
-                #         self._stop <- true
-                #     }
+                take_m, done_m = await aiu.gather(
+                    self._take.receive,
+                    ctx.done,
+                )
+                if take_m.present:
+                    val = take_m.must()
+                    # switch val {
+                    # case HAPPY:
+                    #     // Do nothing on purpose. Life is good!
+                    # case FAIL:
+                    #     releaseExistence()
+                    #     if useStopChan {
+                    #         self._stop <- true
+                    #     }
+                    #     return nil
+                    # case PANIC:
+                    #     releaseExistence()
+                    #     panic("Panic!")
+                    # case HANG:
+                    #     // or more specifically, "hang until I release you"
+                    #     <-self._release
+                    # case USE_STOP_CHAN:
+                    #     useStopChan = true
+                    # case TERMINATE_TREE:
+                    #     return ErrTerminateSupervisorTree
+                    # case DO_NOT_RESTART:
+                    #     return ErrDoNotRestart
+                if done_m.present:
+                    release_existence()
+                    if use_stop_chan:
+                        await self._stop.send(True)
                 #     return ctx.Err()
                 pass
 

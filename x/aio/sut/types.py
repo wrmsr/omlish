@@ -20,8 +20,14 @@ type Duration = float
 type CancelFunc = ta.Callable[[], None]
 
 
-class Context(lang.Final):
-    pass
+class Context(lang.Abstract):
+    @abc.abstractmethod
+    async def done(self) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def err(self) -> Exception | None:
+        raise NotImplementedError
 
 
 ##
@@ -29,7 +35,7 @@ class Context(lang.Final):
 
 class Service(lang.Abstract):
     @abc.abstractmethod
-    async def serve(self, ctx: Context) -> None:
+    async def serve(self, ctx: Context) -> Exception | None:
         raise NotImplementedError
 
 
