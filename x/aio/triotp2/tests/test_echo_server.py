@@ -1,4 +1,4 @@
-import trio
+import pytest
 
 from .. import triotp2 as t2
 
@@ -53,7 +53,8 @@ async def echo_client():
     await echo_server.stop()
 
 
-async def start():
+@pytest.mark.trio
+async def test_echo_server():
     t2.init_mailboxes()
 
     children = [
@@ -75,7 +76,3 @@ async def start():
         max_seconds=5,
     )
     await t2.supervisor.start(children, opts)
-
-
-if __name__ == '__main__':
-    trio.run(start)
