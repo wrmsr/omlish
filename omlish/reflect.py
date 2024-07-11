@@ -63,16 +63,6 @@ _KNOWN_SPECIAL_TYPE_VARS = tuple(
 ##
 
 
-try:
-    from types import get_original_bases  # type: ignore
-except ImportError:
-    def get_original_bases(cls, /):
-        try:
-            return cls.__dict__.get('__orig_bases__', cls.__bases__)
-        except AttributeError:
-            raise TypeError(f'Expected an instance of type, not {type(cls).__name__!r}') from None
-
-
 def get_params(obj: ta.Any) -> tuple[ta.TypeVar, ...]:
     if isinstance(obj, type):
         if issubclass(obj, ta.Generic):  # type: ignore
@@ -299,7 +289,7 @@ class GenericSubstitution:
         if (cty := get_concrete_type(ty)) is not None:
             rpl = get_type_var_replacements(ty)
             ret: list[Type] = []
-            for b in get_original_bases(cty):
+            for b in types.get_original_bases(cty):
                 bty = type_(b)
                 if isinstance(bty, Generic) and isinstance(b, type):
                     # FIXME: throws away relative types, but can't use original vars as they're class-contextual
