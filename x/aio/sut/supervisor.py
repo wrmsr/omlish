@@ -62,7 +62,6 @@ def _next_supervisor_id() -> SupervisorId:
     return SupervisorId(next(_SUPERVISOR_ID_SEQ))
 
 
-"""
 class SupervisorState(enum.Enum):
     NOT_RUNNING = enum.auto()
     NORMAL = enum.auto()
@@ -70,6 +69,13 @@ class SupervisorState(enum.Enum):
     TERMINATED = enum.auto()
 
 
+@dc.dataclass(frozen=True)
+class ServiceWithName(lang.Final):
+    service: Service
+    name: str
+
+
+"""
 class SupervisorImpl(Supervisor):
     def __init__(self, name: str, spec: Spec) -> None:
         super().__init__()
@@ -78,9 +84,7 @@ class SupervisorImpl(Supervisor):
         self._spec = spec
 
         services             map[serviceID]serviceWithName = make(map[serviceID]serviceWithName),
-        
         cancellations        map[serviceID]context.CancelFunc = make(map[serviceID]context.CancelFunc),
-        
         servicesShuttingDown map[serviceID]serviceWithName = make(map[serviceID]serviceWithName),
         
         self._last_fail: Time = 0.
