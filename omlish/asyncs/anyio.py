@@ -11,7 +11,7 @@ lookit:
 """  # noqa
 import typing as ta
 
-import anyio
+import anyio.streams.memory
 
 from .. import lang
 
