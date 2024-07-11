@@ -11,10 +11,12 @@ import anyio.abc
 
 from .events import Event
 from .events import EventHook
+from .messages import AddService
 from .messages import SupervisorMessage
 from .types import CancelFunc
 from .types import Context
 from .types import Duration
+from .types import HasSupervisor
 from .types import Service
 from .types import ServiceId
 from .types import ServiceToken
@@ -82,6 +84,10 @@ class ServiceWithName(lang.Final):
     name: str
 
 
+def _build_service_name(svc: Service) -> str:
+    return f'{svc.__class__.__name__}@{hex(id(svc))[2:]}'
+
+
 class SupervisorImpl(Supervisor):
     def __init__(self, name: str, spec: Spec) -> None:
         super().__init__()
@@ -132,29 +138,26 @@ class SupervisorImpl(Supervisor):
         return self
 
     async def add(self, service: Service) -> ServiceToken:
-        """
         if isinstance(service, HasSupervisor):
             supervisor = service.supervisor()
             if supervisor is not None:
-                supervisor.spec.event_hook = s.spec.EventHook
+                supervisor._spec.event_hook = self._spec.event_hook  # noqa
 
         with self._m:
             if self._state == SupervisorState.NOT_RUNNING:
                 sid = self._service_counter
                 self._service_counter += 1
 
-                self._services[sid] = serviceWithName{service, serviceName(service)}
-                self._restartQueue = append(self._restartQueue, sid)
+                self._services[sid] = ServiceWithName(service, _build_service_name(service))
+                self._restart_queue.append(sid)
 
-                self._m.Unlock()
-                return ServiceToken{supervisor: self._id, service: sid}
+                return ServiceToken(self._id, sid)
 
-        response := make(chan serviceID)
-        if self._sendControl(addService{service, serviceName(service), response}) != nil {
-            return ServiceToken{}
-        }
-        return ServiceToken{supervisor: self._id, service: <-response}
-        """
+        response = aiu.staple_memory_object_stream(*anyio.create_memory_object_stream[ServiceId]())
+        if self._send_control(AddService(service, _build_service_name(service), response)) is not None:
+            return ServiceToken.ZERO
+
+        return ServiceToken(self._id, await response.receive())
 
     async def serve_background(self, ctx: Context) -> anyio.abc.ObjectReceiveStream[Exception]:
         """
