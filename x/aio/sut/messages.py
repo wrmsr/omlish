@@ -20,7 +20,7 @@ class ListServices(SupervisorMessage, lang.Final):
 
 @dc.dataclass()
 class RemoveService(SupervisorMessage, lang.Final):
-    id: ServiceId
+    sid: ServiceId
     notification: anyio.abc.ObjectReceiveStream[ta.Any]
 
 
@@ -36,24 +36,24 @@ class SyncSupervisor(SupervisorMessage, lang.Final):
 
 @dc.dataclass()
 class ServiceFailed(SupervisorMessage, lang.Final):
-    id: ServiceId
+    sid: ServiceId
     panic_val: ta.Any
     stacktrace: str
 
 
-# func (s *Supervisor) fail(id ServiceId, panicVal interface{}, stacktrace []byte) {
+# func (s *Supervisor) fail(sid ServiceId, panicVal interface{}, stacktrace []byte) {
 #     select {
-#     case s.control <- serviceFailed{id, panicVal, stacktrace}:
+#     case s.control <- serviceFailed{sid, panicVal, stacktrace}:
 #     case <-s.liveness:
 
 @dc.dataclass()
 class ServiceEnded(SupervisorMessage, lang.Final):
-    id: ServiceId
+    sid: ServiceId
     err: Exception
 
 
-# func (s *Supervisor) serviceEnded(id ServiceId, err error) {
-#     s.sendControl(serviceEnded{id, err})
+# func (s *Supervisor) serviceEnded(sid ServiceId, err error) {
+#     s.sendControl(serviceEnded{sid, err})
 
 # added by the Add() method
 @dc.dataclass()

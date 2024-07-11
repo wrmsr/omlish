@@ -103,11 +103,11 @@ class Supervisor(HasSupervisor):
         raise NotImplementedError
 
     @abc.abstractmethod
-    async def remove(self, id: ServiceToken) -> Exception | None:
+    async def remove(self, sid: ServiceToken) -> Exception | None:
         raise NotImplementedError
 
     @abc.abstractmethod
-    async def remove_and_wait(self, id: ServiceToken, timeout: Duration) -> Exception | None:
+    async def remove_and_wait(self, sid: ServiceToken, timeout: Duration) -> Exception | None:
         raise NotImplementedError
 
     @abc.abstractmethod
