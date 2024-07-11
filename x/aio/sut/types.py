@@ -7,6 +7,9 @@ import anyio.abc
 from omlish import lang
 
 
+type Duration = float
+
+
 class Context(lang.Final):
     pass
 
@@ -60,7 +63,7 @@ class Supervisor(lang.Abstract):
         raise NotImplementedError
 
     @abc.abstractmethod
-    async def remove_and_wait(self, id: ServiceToken, timeout: float) -> Exception:
+    async def remove_and_wait(self, id: ServiceToken, timeout: Duration) -> Exception:
         raise NotImplementedError
 
     @abc.abstractmethod
