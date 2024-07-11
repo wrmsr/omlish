@@ -47,7 +47,7 @@ def print_event(e: Event) -> None:
     print(e)
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass()
 class Spec(lang.Final):
     event_hook: EventHook | None = print_event
     failure_decay: float = 30.
@@ -128,46 +128,43 @@ class SupervisorImpl(Supervisor):
 
         self._state: SupervisorState = SupervisorState.NOT_RUNNING
 
+    def supervisor(self) -> Supervisor | None:
+        return self
+
     async def add(self, service: Service) -> ServiceToken:
         """
-        if s == nil {
-            panic("can't add service to nil *suture.Supervisor")
-        }
-
-        if hasSupervisor, isHaveSupervisor := service.(HasSupervisor); isHaveSupervisor {
-            supervisor := hasSupervisor.GetSupervisor()
-            if supervisor != nil {
+        if isinstance(service, HasSupervisor):
+            supervisor = service.supervisor()
+            if supervisor is not None:
                 supervisor.spec.EventHook = s.spec.EventHook
-            }
+
+        self._m.Lock()
+        if self._state == notRunning {
+            id := self._serviceCounter
+            self._serviceCounter++
+
+            self._services[id] = serviceWithName{service, serviceName(service)}
+            self._restartQueue = append(self._restartQueue, id)
+
+            self._m.Unlock()
+            return ServiceToken{supervisor: self._id, service: id}
         }
-
-        s.m.Lock()
-        if s.state == notRunning {
-            id := s.serviceCounter
-            s.serviceCounter++
-
-            s.services[id] = serviceWithName{service, serviceName(service)}
-            s.restartQueue = append(s.restartQueue, id)
-
-            s.m.Unlock()
-            return ServiceToken{supervisor: s.id, service: id}
-        }
-        s.m.Unlock()
+        self._m.Unlock()
 
         response := make(chan serviceID)
-        if s.sendControl(addService{service, serviceName(service), response}) != nil {
+        if self._sendControl(addService{service, serviceName(service), response}) != nil {
             return ServiceToken{}
         }
-        return ServiceToken{supervisor: s.id, service: <-response}
+        return ServiceToken{supervisor: self._id, service: <-response}
         """
 
     async def serve_background(self, ctx: Context) -> anyio.abc.ObjectReceiveStream[Exception]:
         """
         errChan := make(chan error, 1)
         go func() {
-            errChan <- s.Serve(ctx)
+            errChan <- self._Serve(ctx)
         }()
-        s.sync()
+        self._sync()
         return errChan
         """
 
@@ -183,85 +180,85 @@ class SupervisorImpl(Supervisor):
             panic("Can't serve with a nil *suture.Supervisor")
         }
         // Take a separate cancellation function so this tree can be
-        // indepedently cancelled.
+        // independently cancelled.
         ctx, myCancel := context.WithCancel(ctx)
-        s.ctxMutex.Lock()
-        s.ctx = ctx
-        s.ctxMutex.Unlock()
-        s.ctxCancel = myCancel
+        self._ctxMutex.Lock()
+        self._ctx = ctx
+        self._ctxMutex.Unlock()
+        self._ctxCancel = myCancel
 
-        if s.id == 0 {
+        if self._id == 0 {
             panic("Can't call Serve on an incorrectly-constructed *suture.Supervisor")
         }
 
-        s.m.Lock()
-        if s.state == normal || s.state == paused {
-            s.m.Unlock()
+        self._m.Lock()
+        if self._state == normal || self._state == paused {
+            self._m.Unlock()
             panic("Called .Serve() on a supervisor that is already Serve()ing")
         }
 
-        s.state = normal
-        s.m.Unlock()
+        self._state = normal
+        self._m.Unlock()
 
         defer func() {
-            s.m.Lock()
-            s.state = terminated
-            s.m.Unlock()
+            self._m.Lock()
+            self._state = terminated
+            self._m.Unlock()
         }()
 
         // for all the services I currently know about, start them
-        for _, id := range s.restartQueue {
-            namedService, present := s.services[id]
+        for _, id := range self._restartQueue {
+            namedService, present := self._services[id]
             if present {
-                s.runService(ctx, namedService.Service, id)
+                self._runService(ctx, namedService.Service, id)
             }
         }
-        s.restartQueue = make([]serviceID, 0, 1)
+        self._restartQueue = make([]serviceID, 0, 1)
 
         for {
             select {
             case <-ctx.Done():
-                s.stopSupervisor()
+                self._stopSupervisor()
                 return ctx.Err()
-            case m := <-s.control:
+            case m := <-self._control:
                 switch msg := m.(type) {
                 case serviceFailed:
-                    s.handleFailedService(ctx, msg.id, msg.panicVal, msg.stacktrace, true)
+                    self._handleFailedService(ctx, msg.id, msg.panicVal, msg.stacktrace, true)
                 case serviceEnded:
-                    _, monitored := s.services[msg.id]
+                    _, monitored := self._services[msg.id]
                     if monitored {
-                        cancel := s.cancellations[msg.id]
+                        cancel := self._cancellations[msg.id]
                         if isErr(msg.err, ErrDoNotRestart) || isErr(msg.err, context.Canceled) || isErr(msg.err, context.DeadlineExceeded) {
-                            delete(s.services, msg.id)
-                            delete(s.cancellations, msg.id)
+                            delete(self._services, msg.id)
+                            delete(self._cancellations, msg.id)
                             go cancel()
                         } else if isErr(msg.err, ErrTerminateSupervisorTree) {
-                            s.stopSupervisor()
-                            if s.spec.DontPropagateTermination {
+                            self._stopSupervisor()
+                            if self._spec.DontPropagateTermination {
                                 return ErrDoNotRestart
                             } else {
                                 return msg.err
                             }
                         } else {
-                            s.handleFailedService(ctx, msg.id, msg.err, nil, false)
+                            self._handleFailedService(ctx, msg.id, msg.err, nil, false)
                         }
                     }
                 case addService:
-                    id := s.serviceCounter
-                    s.serviceCounter++
+                    id := self._serviceCounter
+                    self._serviceCounter++
 
-                    s.services[id] = serviceWithName{msg.service, msg.name}
-                    s.runService(ctx, msg.service, id)
+                    self._services[id] = serviceWithName{msg.service, msg.name}
+                    self._runService(ctx, msg.service, id)
 
                     msg.response <- id
                 case removeService:
-                    s.removeService(msg.id, msg.notification)
+                    self._removeService(msg.id, msg.notification)
                 case stopSupervisor:
-                    msg.done <- s.stopSupervisor()
+                    msg.done <- self._stopSupervisor()
                     return nil
                 case listServices:
                     services := []Service{}
-                    for _, service := range s.services {
+                    for _, service := range self._services {
                         services = append(services, service.Service)
                     }
                     msg.c <- services
@@ -272,25 +269,25 @@ class SupervisorImpl(Supervisor):
                     // used only by tests
                     panic("Panicking as requested!")
                 }
-            case serviceEnded := <-s.notifyServiceDone:
-                delete(s.servicesShuttingDown, serviceEnded)
-            case <-s.resumeTimer:
+            case serviceEnded := <-self._notifyServiceDone:
+                delete(self._servicesShuttingDown, serviceEnded)
+            case <-self._resumeTimer:
                 // We're resuming normal operation after a pause due to
                 // excessive thrashing
                 // FIXME: Ought to permit some spacing of these functions, rather
                 // than simply hammering through them
-                s.m.Lock()
-                s.state = normal
-                s.m.Unlock()
-                s.failures = 0
-                s.spec.EventHook(EventResume{s, s.Name})
-                for _, id := range s.restartQueue {
-                    namedService, present := s.services[id]
+                self._m.Lock()
+                self._state = normal
+                self._m.Unlock()
+                self._failures = 0
+                self._spec.EventHook(EventResume{s, self._Name})
+                for _, id := range self._restartQueue {
+                    namedService, present := self._services[id]
                     if present {
-                        s.runService(ctx, namedService.Service, id)
+                        self._runService(ctx, namedService.Service, id)
                     }
                 }
-                s.restartQueue = make([]serviceID, 0, 1)
+                self._restartQueue = make([]serviceID, 0, 1)
             }
         }
         """
@@ -312,67 +309,67 @@ class SupervisorImpl(Supervisor):
 
 """
 func (s *Supervisor) handleFailedService(ctx context.Context, id serviceID, err interface{}, stacktrace []byte, panic bool) {
-    now := s.getNow()
+    now := self._getNow()
 
-    if s.lastFail.IsZero() {
-        s.lastFail = now
-        s.failures = 1.0
+    if self._lastFail.IsZero() {
+        self._lastFail = now
+        self._failures = 1.0
     } else {
-        sinceLastFail := now.Sub(s.lastFail).Seconds()
-        intervals := sinceLastFail / s.spec.FailureDecay
-        s.failures = s.failures*math.Pow(.5, intervals) + 1
+        sinceLastFail := now.Sub(self._lastFail).Seconds()
+        intervals := sinceLastFail / self._spec.FailureDecay
+        self._failures = self._failures*math.Pow(.5, intervals) + 1
     }
 
-    if s.failures > s.spec.FailureThreshold {
-        s.m.Lock()
-        s.state = paused
-        s.m.Unlock()
-        s.spec.EventHook(EventBackoff{s, s.Name})
-        s.resumeTimer = s.getAfterChan(
-            s.spec.BackoffJitter.Jitter(s.spec.FailureBackoff))
+    if self._failures > self._spec.FailureThreshold {
+        self._m.Lock()
+        self._state = paused
+        self._m.Unlock()
+        self._spec.EventHook(EventBackoff{s, self._Name})
+        self._resumeTimer = self._getAfterChan(
+            self._spec.BackoffJitter.Jitter(self._spec.FailureBackoff))
     }
 
-    s.lastFail = now
+    self._lastFail = now
 
-    failedService, monitored := s.services[id]
+    failedService, monitored := self._services[id]
 
     // It is possible for a service to be no longer monitored
     // by the time we get here. In that case, just ignore it.
     if monitored {
-        s.m.Lock()
-        curState := s.state
-        s.m.Unlock()
+        self._m.Lock()
+        curState := self._state
+        self._m.Unlock()
         if curState == normal {
-            s.runService(ctx, failedService.Service, id)
+            self._runService(ctx, failedService.Service, id)
         } else {
-            s.restartQueue = append(s.restartQueue, id)
+            self._restartQueue = append(self._restartQueue, id)
         }
         if panic {
-            s.spec.EventHook(EventServicePanic{
+            self._spec.EventHook(EventServicePanic{
                 Supervisor:       s,
-                SupervisorName:   s.Name,
+                SupervisorName:   self._Name,
                 Service:          failedService.Service,
                 ServiceName:      failedService.name,
-                CurrentFailures:  s.failures,
-                FailureThreshold: s.spec.FailureThreshold,
+                CurrentFailures:  self._failures,
+                FailureThreshold: self._spec.FailureThreshold,
                 Restarting:       curState == normal,
-                PanicMsg:         s.spec.Sprint(err),
+                PanicMsg:         self._spec.Sprint(err),
                 Stacktrace:       string(stacktrace),
             })
         } else {
             e := EventServiceTerminate{
                 Supervisor:       s,
-                SupervisorName:   s.Name,
+                SupervisorName:   self._Name,
                 Service:          failedService.Service,
                 ServiceName:      failedService.name,
-                CurrentFailures:  s.failures,
-                FailureThreshold: s.spec.FailureThreshold,
+                CurrentFailures:  self._failures,
+                FailureThreshold: self._spec.FailureThreshold,
                 Restarting:       curState == normal,
             }
             if err != nil {
                 e.Err = err
             }
-            s.spec.EventHook(e)
+            self._spec.EventHook(e)
         }
     }
 }
@@ -384,15 +381,15 @@ func (s *Supervisor) runService(ctx context.Context, service Service, id service
         cancel()
         <-done
     }
-    s.cancellations[id] = blockingCancellation
+    self._cancellations[id] = blockingCancellation
     go func() {
-        if !s.spec.PassThroughPanics {
+        if !self._spec.PassThroughPanics {
             defer func() {
                 if r := recover(); r != nil {
                     buf := make([]byte, 65535)
                     written := runtime.Stack(buf, false)
                     buf = buf[:written]
-                    s.fail(id, r, buf)
+                    self._fail(id, r, buf)
                 }
             }()
         }
@@ -405,7 +402,7 @@ func (s *Supervisor) runService(ctx context.Context, service Service, id service
 
             r := recover()
             if r == nil {
-                s.serviceEnded(id, err)
+                self._serviceEnded(id, err)
             } else {
                 panic(r)
             }
@@ -416,13 +413,13 @@ func (s *Supervisor) runService(ctx context.Context, service Service, id service
 }
 
 func (s *Supervisor) removeService(id serviceID, notificationChan chan struct{}) {
-    namedService, present := s.services[id]
+    namedService, present := self._services[id]
     if present {
-        cancel := s.cancellations[id]
-        delete(s.services, id)
-        delete(s.cancellations, id)
+        cancel := self._cancellations[id]
+        delete(self._services, id)
+        delete(self._cancellations, id)
 
-        s.servicesShuttingDown[id] = namedService
+        self._servicesShuttingDown[id] = namedService
         go func() {
             successChan := make(chan struct{})
             go func() {
@@ -436,12 +433,12 @@ func (s *Supervisor) removeService(id serviceID, notificationChan chan struct{})
             select {
             case <-successChan:
                 // Life is good!
-            case <-s.getAfterChan(s.spec.Timeout):
-                s.spec.EventHook(EventStopTimeout{
-                    s, s.Name,
+            case <-self._getAfterChan(self._spec.Timeout):
+                self._spec.EventHook(EventStopTimeout{
+                    s, self._Name,
                     namedService.Service, namedService.name})
             }
-            s.notifyServiceDone <- id
+            self._notifyServiceDone <- id
         }()
     } else {
         if notificationChan != nil {
@@ -451,32 +448,32 @@ func (s *Supervisor) removeService(id serviceID, notificationChan chan struct{})
 }
 
 func (s *Supervisor) stopSupervisor() UnstoppedServiceReport {
-    notifyDone := make(chan serviceID, len(s.services))
+    notifyDone := make(chan serviceID, len(self._services))
 
-    for id, namedService := range s.services {
-        cancel := s.cancellations[id]
-        delete(s.services, id)
-        delete(s.cancellations, id)
-        s.servicesShuttingDown[id] = namedService
+    for id, namedService := range self._services {
+        cancel := self._cancellations[id]
+        delete(self._services, id)
+        delete(self._cancellations, id)
+        self._servicesShuttingDown[id] = namedService
         go func(sID serviceID) {
             cancel()
             notifyDone <- sID
         }(id)
     }
 
-    timeout := s.getAfterChan(s.spec.Timeout)
+    timeout := self._getAfterChan(self._spec.Timeout)
 
 SHUTTING_DOWN_SERVICES:
-    for len(s.servicesShuttingDown) > 0 {
+    for len(self._servicesShuttingDown) > 0 {
         select {
         case id := <-notifyDone:
-            delete(s.servicesShuttingDown, id)
-        case serviceID := <-s.notifyServiceDone:
-            delete(s.servicesShuttingDown, serviceID)
+            delete(self._servicesShuttingDown, id)
+        case serviceID := <-self._notifyServiceDone:
+            delete(self._servicesShuttingDown, serviceID)
         case <-timeout:
-            for _, namedService := range s.servicesShuttingDown {
-                s.spec.EventHook(EventStopTimeout{
-                    s, s.Name,
+            for _, namedService := range self._servicesShuttingDown {
+                self._spec.EventHook(EventStopTimeout{
+                    s, self._Name,
                     namedService.Service, namedService.name,
                 })
             }
@@ -487,26 +484,26 @@ SHUTTING_DOWN_SERVICES:
     }
 
     // If nothing else has cancelled our context, we should now.
-    s.ctxCancel()
+    self._ctxCancel()
 
     // Indicate that we're done shutting down
-    defer close(s.liveness)
+    defer close(self._liveness)
 
-    if len(s.servicesShuttingDown) == 0 {
+    if len(self._servicesShuttingDown) == 0 {
         return nil
     } else {
         report := UnstoppedServiceReport{}
-        for serviceID, serviceWithName := range s.servicesShuttingDown {
+        for serviceID, serviceWithName := range self._servicesShuttingDown {
             report = append(report, UnstoppedService{
                 SupervisorPath: []*Supervisor{s},
                 Service:        serviceWithName.Service,
                 Name:           serviceWithName.name,
-                ServiceToken:   ServiceToken{supervisor: s.id, service: serviceID},
+                ServiceToken:   ServiceToken{supervisor: self._id, service: serviceID},
             })
         }
-        s.m.Lock()
-        s.unstoppedServiceReport = report
-        s.m.Unlock()
+        self._m.Lock()
+        self._unstoppedServiceReport = report
+        self._m.Unlock()
         return report
     }
 }
