@@ -59,8 +59,8 @@ class FileFinderPathHook:
 
 def _is_c_loader(h) -> bool:
     return (
-            isinstance(h, FileFinderPathHook) and
-            h.lds == [loader_details]
+        isinstance(h, FileFinderPathHook) and
+        h.lds == [loader_details]
     )
 
 

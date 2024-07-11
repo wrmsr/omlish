@@ -1,3 +1,4 @@
+import dataclasses as dc
 import functools
 import time
 import typing as ta
@@ -139,3 +140,17 @@ def periodically(
         return ret
 
     return inner  # type: ignore
+
+
+@dc.dataclass(init=False)
+class Args:
+    args: ta.Sequence[ta.Any]
+    kwargs: ta.Mapping[str, ta.Any]
+
+    def __init__(self, *args: ta.Any, **kwargs: ta.Any) -> None:
+        super().__init__()
+        self.args = args
+        self.kwargs = kwargs
+
+    def __call__(self, fn: ta.Callable[..., T]) -> T:
+        return fn(*self.args, **self.kwargs)

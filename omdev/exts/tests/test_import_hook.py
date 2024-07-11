@@ -6,7 +6,7 @@ def test_import_hook():
     try:
         importhook.install()
 
-        from . import _junk
+        from . import _junk  # type: ignore
         assert _junk.junk() == 424
 
     finally:
