@@ -20,8 +20,7 @@ def server_addr(server_sock: socket.socket) -> tuple[str, int]:
     return server_sock.getsockname()[:2]
 
 
-@pytest.mark.asyncio
-async def test_send_receive(
+async def _test_send_receive(
         server_sock: socket.socket,
         server_addr: tuple[str, int],
 ) -> None:
@@ -34,3 +33,19 @@ async def test_send_receive(
         client.close()
 
     assert response == b'halb'
+
+
+@pytest.mark.asyncio
+async def test_send_receive_asyncio(
+        server_sock: socket.socket,
+        server_addr: tuple[str, int],
+) -> None:
+    await _test_send_receive(server_sock, server_addr)
+
+
+@pytest.mark.trio
+async def test_send_receive_trio(
+        server_sock: socket.socket,
+        server_addr: tuple[str, int],
+) -> None:
+    await _test_send_receive(server_sock, server_addr)

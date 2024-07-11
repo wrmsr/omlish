@@ -16,6 +16,7 @@ import h11
 import httpx
 import pytest
 import sniffio
+import trio  # noqa
 
 from ..config import Config
 from ..types import ASGIWrapper
