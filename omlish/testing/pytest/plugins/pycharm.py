@@ -4,7 +4,7 @@ from ... import pydevd as opd
 from ._registry import register
 
 
-@register
+# @register
 class PycharmPlugin:
 
     def pytest_addoption(self, parser):
