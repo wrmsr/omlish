@@ -12,7 +12,7 @@ name = 'omlish'
 authors = [{name = 'wrmsr'}]
 urls = {source = 'https://github.com/wrmsr/omlish'}
 license = {text = 'BSD-3-Clause'}
-requires-python = '>=3.11'
+requires-python = '>=3.12'
 
 dynamic = ['version']
 
@@ -50,13 +50,12 @@ ml = ['@main', 'omml']
 all = ['@ml', 'x']
 
 [tool.omlish.pyproject.venvs]
-all = { interp = '@11', requires = 'requirements-dev.txt', srcs = ['@main'] }
+all = { interp = '@12', requires = 'requirements-dev.txt', srcs = ['@main'] }
 default = { requires = 'requirements-ext.txt' }
 deploy = { interp = 'python3' }
 docker = { docker = 'omlish-dev' }
 docker-amd64 = { docker = 'omlish-dev-amd64' }
-debug = { interp = '@11-debug' }
-'12' = { interp = '@12' }
+debug = { interp = '@12-debug' }
 '13' = { interp = '@13' }
 
 
