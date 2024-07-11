@@ -34,22 +34,22 @@ def split_memory_object_streams(
     anyio.streams.memory.MemoryObjectSendStream[T],
     anyio.streams.memory.MemoryObjectReceiveStream[T],
 ]:
-    [tup] = args  # type: ignore
-    return tup  # type: ignore
+    [tup] = args
+    return tup
 
 
 def staple_memory_object_stream(
         *args: anyio.create_memory_object_stream[T],
 ) -> anyio.streams.stapled.StapledObjectStream[T]:
-    send, receive = args  # type: ignore
+    send, receive = args
     return anyio.streams.stapled.StapledObjectStream(
-        check.isinstance(send, anyio.streams.memory.MemoryObjectSendStream),
-        check.isinstance(receive, anyio.streams.memory.MemoryObjectReceiveStream),
+        check.isinstance(send, anyio.streams.memory.MemoryObjectSendStream),  # type: ignore
+        check.isinstance(receive, anyio.streams.memory.MemoryObjectReceiveStream),  # type: ignore
     )
 
 
 async def gather(*fns: ta.Callable[..., ta.Awaitable[T]], take_first: bool = False) -> list[lang.Maybe[T]]:
-    results = [lang.empty()] * len(fns)
+    results: list[lang.Maybe[T]] = [lang.empty()] * len(fns)
 
     async def inner(fn, i):
         results[i] = lang.just(await fn())
