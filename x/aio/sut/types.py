@@ -79,7 +79,13 @@ class UnstoppedService(lang.Final):
 type UnstoppedServiceReport = list[UnstoppedService]
 
 
-class Supervisor(lang.Abstract):
+class HasSupervisor(lang.Abstract):
+    @abc.abstractmethod
+    def supervisor(self) -> ta.Optional['Supervisor']:
+        raise NotImplementedError
+
+
+class Supervisor(HasSupervisor):
     @abc.abstractmethod
     async def add(self, service: Service) -> ServiceToken:
         raise NotImplementedError
