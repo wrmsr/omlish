@@ -32,7 +32,7 @@ pillow==10.4.0
 
 sentencepiece==0.2.0
 tiktoken==0.7.0
-transformers==4.42.3
+transformers==4.42.4
 
 ##
 
@@ -168,7 +168,7 @@ bellows==0.39.1
 zigpy==0.64.1
 
 # python-openzwave
-zwave-js-server-python==0.56.0
+zwave-js-server-python==0.57.0
 
 ##
 
