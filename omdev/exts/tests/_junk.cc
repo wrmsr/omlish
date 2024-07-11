@@ -23,7 +23,6 @@ static PyObject * junk(PyObject *self, PyObject *args)
     return Py_BuildValue("k", 424);
 }
 
-
 //
 
 PyDoc_STRVAR(_junk_doc, "junk");
@@ -51,14 +50,14 @@ static void _junk_free(void *module)
     _junk_clear((PyObject *)module);
 }
 
-static PyMethodDef module_methods[] = {
+static PyMethodDef _junk_methods[] = {
     {"junk", junk, METH_NOARGS, "junk"},
     {NULL, NULL, 0, NULL}
 };
 
 static struct PyModuleDef_Slot _junk_slots[] = {
-        {Py_mod_exec, (void *) _junk_exec},
-        {0, NULL}
+    {Py_mod_exec, (void *) _junk_exec},
+    {0, NULL}
 };
 
 static struct PyModuleDef _junk_module = {
@@ -66,13 +65,12 @@ static struct PyModuleDef _junk_module = {
     .m_name = "_junk",
     .m_doc = _junk_doc,
     .m_size = sizeof(_junk_state),
-    .m_methods = module_methods,
+    .m_methods = _junk_methods,
     .m_slots = _junk_slots,
     .m_traverse = _junk_traverse,
     .m_clear = _junk_clear,
     .m_free = _junk_free,
 };
-
 
 extern "C" {
 

@@ -537,7 +537,6 @@ class _GenServerLoop:
             try:
                 state = await self._init(init_arg)
                 looping = True
-
                 while looping:
                     message = await mailboxes().receive(mid)
 
@@ -612,7 +611,6 @@ class _GenServerLoop:
             state: State,
     ) -> tuple[Continuation, State]:
         result = await self.app.handle_cast(message, state)
-
         match result:
             case (NoReply(), new_state):
                 state = new_state
@@ -637,7 +635,6 @@ class _GenServerLoop:
             state: State,
     ) -> tuple[Continuation, State]:
         result = await self.app.handle_info(message, state)
-
         match result:
             case (NoReply(), new_state):
                 state = new_state
