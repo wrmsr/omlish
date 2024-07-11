@@ -84,7 +84,7 @@ class MainProcessor:
 
         cls_fields: list[dc.Field] = []
 
-        kw_only = self._info.params12.kw_only
+        kw_only = self._info.params.kw_only
         kw_only_seen = False
         for name, ann in self._info.cls_annotations.items():
             if is_kw_only(self._cls, ann):
@@ -111,11 +111,11 @@ class MainProcessor:
 
     @lang.cached_function
     def _transform_slots(self) -> None:
-        if self._info.params12.weakref_slot and not self._info.params12.slots:
+        if self._info.params.weakref_slot and not self._info.params.slots:
             raise TypeError('weakref_slot is True but slots is False')
-        if not self._info.params12.slots:
+        if not self._info.params.slots:
             return
-        self._cls = add_slots(self._cls, self._info.params.frozen, self._info.params12.weakref_slot)
+        self._cls = add_slots(self._cls, self._info.params.frozen, self._info.params.weakref_slot)
 
     @lang.cached_function
     def process(self) -> type:

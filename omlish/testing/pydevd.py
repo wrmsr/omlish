@@ -7,6 +7,12 @@ TODO:
  - https://www.jetbrains.com/help/pycharm/remote-debugging-with-product.html#
  - move to dev?
  - cython help? or in cython.py
+
+NOTE:
+ - Pycharm is still busted in 3.12: set `python.debugger.low.monitoring.api=false` in custom properties
+  - https://youtrack.jetbrains.com/issue/PY-72345/Pycharm-2024.1-Broken-debug-on-Python-3.12.3
+  - https://youtrack.jetbrains.com/issue/PY-62322
+  - https://youtrack.jetbrains.com/issue/PY-65289/Pytestddtrace-crashes-with-python-3.12-and-2023.3
 """
 import json
 import os
