@@ -6,6 +6,7 @@ import typing as ta
 from omlish import lang
 
 from .types import Service
+from .types import Supervisor
 
 
 type EventHook = ta.Callable[['Event'], None]

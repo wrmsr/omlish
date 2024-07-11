@@ -1,71 +1,76 @@
-import abc
 import dataclasses as dc
-import enum
 import typing as ta
 
 from omlish import lang
+import anyio.abc
+
+from .types import Service
+from .types import ServiceId
+from .types import UnstoppedServiceReport
 
 
 class SupervisorMessage(lang.Abstract):
     pass
 
 
-"""
-class ListServices(SupervisorMessage):
-    c chan []Service
+@dc.dataclass()
+class ListServices(SupervisorMessage, lang.Final):
+    c: anyio.abc.ObjectReceiveStream[list[Service]]
 
-type removeService struct {
-    id           serviceID
-    notification chan struct{}
 
-##
+@dc.dataclass()
+class RemoveService(SupervisorMessage, lang.Final):
+    id: ServiceId
+    notification: anyio.abc.ObjectReceiveStream[ta.Any]
 
-func (s *Supervisor) sync() {
-    select {
-    case s.control <- syncSupervisor{}:
-    case <-s.liveness:
 
-type syncSupervisor struct {
-}
+@dc.dataclass()
+class SyncSupervisor(SupervisorMessage, lang.Final):
+    pass
 
-##
 
-func (s *Supervisor) fail(id serviceID, panicVal interface{}, stacktrace []byte) {
-    select {
-    case s.control <- serviceFailed{id, panicVal, stacktrace}:
-    case <-s.liveness:
+# func (s *Supervisor) sync() {
+#     select {
+#     case s.control <- syncSupervisor{}:
+#     case <-s.liveness:
 
-type serviceFailed struct {
-    id         serviceID
-    panicVal   interface{}
-    stacktrace []byte
+@dc.dataclass()
+class ServiceFailed(SupervisorMessage, lang.Final):
+    id: ServiceId
+    panic_val: ta.Any
+    stacktrace: str
 
-##
 
-func (s *Supervisor) serviceEnded(id serviceID, err error) {
-    s.sendControl(serviceEnded{id, err})
+# func (s *Supervisor) fail(id ServiceId, panicVal interface{}, stacktrace []byte) {
+#     select {
+#     case s.control <- serviceFailed{id, panicVal, stacktrace}:
+#     case <-s.liveness:
 
-type serviceEnded struct {
-    id  serviceID
-    err error
+@dc.dataclass()
+class ServiceEnded(SupervisorMessage, lang.Final):
+    id: ServiceId
+    err: Exception
 
-##
+
+# func (s *Supervisor) serviceEnded(id ServiceId, err error) {
+#     s.sendControl(serviceEnded{id, err})
 
 # added by the Add() method
-type addService struct {
-    service  Service
-    name     string
-    response chan serviceID
+@dc.dataclass()
+class AddService(SupervisorMessage, lang.Final):
+    service: Service
+    name: str
+    response: anyio.abc.ObjectReceiveStream[ServiceId]
 
-##
 
-type stopSupervisor struct {
-    done chan UnstoppedServiceReport
+@dc.dataclass()
+class StopSupervisor(SupervisorMessage, lang.Final):
+    done: anyio.abc.ObjectReceiveStream[UnstoppedServiceReport]
 
-##
 
-func (s *Supervisor) panic() {
-    s.control <- panicSupervisor{}
+@dc.dataclass()
+class PanicSupervisor(SupervisorMessage, lang.Final):
+    pass
 
-type panicSupervisor struct {
-"""
+# func (s *Supervisor) panic() {
+#     s.control <- panicSupervisor{}
