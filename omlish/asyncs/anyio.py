@@ -7,6 +7,7 @@ lookit:
  - https://github.com/M-o-a-T/asyncscope
  - https://github.com/M-o-a-T/aevent
  - https://github.com/florimondmanca/aiometer
+ - https://github.com/sanitizers/octomachinery/blob/b36c3d3d49da813ac46e361424132955a4e99ac8/octomachinery/utils/asynctools.py
 """  # noqa
 import typing as ta
 
