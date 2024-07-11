@@ -16,7 +16,7 @@ class OverridesProcessor(Processor):
             if not fx.override:
                 continue
 
-            if self._info.params12.slots:
+            if self._info.params.slots:
                 raise TypeError
 
             self_name = '__dataclass_self__' if 'self' in self._info.fields else 'self'
@@ -85,7 +85,7 @@ class DocProcessor(Processor):
 
 class MatchArgsProcessor(Processor):
     def _process(self) -> None:
-        if not self._info.params12.match_args:
+        if not self._info.params.match_args:
             return
 
         ifs = get_init_fields(self._info.fields.values())
