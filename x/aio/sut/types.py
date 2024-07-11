@@ -2,6 +2,8 @@ import abc
 import dataclasses as dc
 import typing as ta
 
+import anyio.abc
+
 from omlish import lang
 
 
@@ -15,14 +17,25 @@ class Service(lang.Abstract):
         raise NotImplementedError
 
 
-SupervisorID = ta.NewType('SupervisorID', int)
-ServiceID = ta.NewType('ServiceID', int)
+SupervisorId = ta.NewType('SupervisorId', int)
+ServiceId = ta.NewType('ServiceId', int)
 
 
 @dc.dataclass(frozen=True)
 class ServiceToken(lang.Final):
-    supervisor: SupervisorID
-    service: ServiceID
+    supervisor: SupervisorId
+    service: ServiceId
+
+
+@dc.dataclass(frozen=True)
+class UnstoppedService(lang.Final):
+    supervisor_path: list['Supervisor']
+    service: Service
+    name: str
+    service_token: ServiceToken
+
+
+type UnstoppedServiceReport = list[UnstoppedService]
 
 
 class Supervisor(lang.Abstract):
@@ -31,23 +44,23 @@ class Supervisor(lang.Abstract):
         raise NotImplementedError
 
     @abc.abstractmethod
-    async def serve_background(self, ctx: Context) -> chan[error]:
+    async def serve_background(self, ctx: Context) -> anyio.abc.ObjectReceiveStream[Exception]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    async def serve(self, ctx: Context) -> error:
+    async def serve(self, ctx: Context) -> Exception:
         raise NotImplementedError
 
     @abc.abstractmethod
-    async def unstopped_service_report(self) -> tuple[UnstoppedServiceReport, error]:
+    async def unstopped_service_report(self) -> tuple[UnstoppedServiceReport, Exception]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    async def remove(self, id: ServiceToken) -> error:
+    async def remove(self, id: ServiceToken) -> Exception:
         raise NotImplementedError
 
     @abc.abstractmethod
-    async def remove_and_wait(self, id: ServiceToken, timeout: float) -> error:
+    async def remove_and_wait(self, id: ServiceToken, timeout: float) -> Exception:
         raise NotImplementedError
 
     @abc.abstractmethod
