@@ -7,6 +7,7 @@ import anyio.abc
 from omlish import lang
 
 
+type Time = float
 type Duration = float
 
 

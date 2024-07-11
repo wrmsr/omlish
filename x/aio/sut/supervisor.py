@@ -1,7 +1,7 @@
 import abc
 import dataclasses as dc
 import enum
-import enum
+import itertools
 import random
 import typing as ta
 
@@ -10,7 +10,10 @@ from omlish import lang
 from .events import Event
 from .events import EventHook
 from .types import Duration
+from .types import Time
 from .types import Service
+from .types import SupervisorId
+from .types import ServiceId
 from .types import Supervisor
 
 
@@ -49,6 +52,16 @@ class Spec(lang.Final):
     dont_propagate_termination: bool = False
 
 
+##
+
+
+_SUPERVISOR_ID_SEQ = itertools.count()
+
+
+def _next_supervisor_id() -> SupervisorId:
+    return SupervisorId(next(_SUPERVISOR_ID_SEQ))
+
+
 """
 class SupervisorState(enum.Enum):
     NOT_RUNNING = enum.auto()
@@ -64,69 +77,47 @@ class SupervisorImpl(Supervisor):
         self._name = name
         self._spec = spec
 
-        services             map[serviceID]serviceWithName
-        make(map[serviceID]serviceWithName),
+        services             map[serviceID]serviceWithName = make(map[serviceID]serviceWithName),
         
-        cancellations        map[serviceID]context.CancelFunc
-        make(map[serviceID]context.CancelFunc),
+        cancellations        map[serviceID]context.CancelFunc = make(map[serviceID]context.CancelFunc),
         
-        servicesShuttingDown map[serviceID]serviceWithName
-        make(map[serviceID]serviceWithName),
+        servicesShuttingDown map[serviceID]serviceWithName = make(map[serviceID]serviceWithName),
         
-        lastFail             time.Time
-        time.Time{},
+        self._last_fail: Time = 0.
 
-        failures             float64
-        0
+        self._failures = 0.
         
-        restartQueue         []serviceID
-        make([]serviceID, 0, 1),
+        restartQueue         []serviceID = make([]serviceID, 0, 1),
         
-        serviceCounter       serviceID
-        0,
+        self._service_counter: ServiceId = ServiceId(0)
         
-        control              chan supervisorMessage
-        make(chan supervisorMessage),
+        control              chan supervisorMessage = make(chan supervisorMessage),
         
-        notifyServiceDone    chan serviceID
-        make(chan serviceID),
+        notifyServiceDone    chan serviceID = make(chan serviceID),
         
-        resumeTimer          <-chan time.Time
-        make(chan time.Time),
+        resumeTimer          <-chan time.Time = make(chan time.Time),
         
-        liveness             chan struct{}
-        make(chan struct{}),
+        liveness             chan struct{} = make(chan struct{}),
 
-        // despite the recommendation in the context package to avoid
-        // holding this in a struct, I think due to the function of suture
-        // and the way it works, I think it's OK in this case. This is the
-        // exceptional case, basically.
-        ctxMutex sync.Mutex
-        sync.Mutex{},
+        # despite the recommendation in the context package to avoid holding this in a struct, I think due to the
+        # function of suture and the way it works, I think it's OK in this case. This is the exceptional case,
+        # basically.
+        ctxMutex sync.Mutex = sync.Mutex{},
+        ctx      context.Context = nil,
 
-        ctx      context.Context
-        nil,
+        # This function cancels this supervisor specifically.
+        ctxCancel func() = nil
 
-        // This function cancels this supervisor specifically.
-        ctxCancel func()
-        nil
-
-        getNow       func() time.Time
-        time.Now
+        self._get_now: ta.Callable[[], Time] = time.time
         
-        getAfterChan func(Duration) <-chan time.Time
-        time.After
+        getAfterChan func(Duration) <-chan time.Time = time.After
 
-        m sync.Mutex
-        sync.Mutex{},
+        m sync.Mutex = sync.Mutex{},
 
-        // The unstopped service report is generated when we finish
-        // stopping.
+        # The unstopped service report is generated when we finish stopping.
         unstoppedServiceReport UnstoppedServiceReport
 
-        // malign leftovers
-        id    supervisorID
-        nextSupervisorID(),
+        self._id = _next_supervisor_id()
 
         self._state: SupervisorState = SupervisorState.NOT_RUNNING
 """
