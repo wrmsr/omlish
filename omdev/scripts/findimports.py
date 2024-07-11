@@ -6,6 +6,9 @@ import os.path
 import sys
 
 
+_BUILTIN_MODULE_NAMES = frozenset([*sys.builtin_module_names, *sys.stdlib_module_names])
+
+
 def _main() -> None:
     def handle(fp: str) -> None:
         def rec(n):
@@ -39,7 +42,9 @@ def _main() -> None:
             return 'bad'
         if not isinstance(l, importlib.machinery.ModuleSpec) or not l.origin:
             return 'bad'
-        if l.origin.startswith(sys.base_prefix) or l.origin == 'frozen':
+        # if l.origin.startswith(sys.base_prefix) or l.origin == 'frozen':
+        #     return 'builtin'
+        if i in _BUILTIN_MODULE_NAMES:
             return 'builtin'
         return 'dep'
 
