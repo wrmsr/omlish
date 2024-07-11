@@ -1,0 +1,9 @@
+https://github.com/microsoft/debugpy/tree/09b5af0bb730e2707ec3bbc14c509523eca116c0
+<module 'pydevd' from '/Applications/PyCharm.app/Contents/plugins/python/helpers/pydev/pydevd.py'>
+
+/Applications/PyCharm.app/Contents/plugins/python/helpers/pydev/_pydevd_bundle/pydevd_cython_darwin_312_64.cpython-312-darwin.so
+/Applications/PyCharm.app/Contents/plugins/python/helpers/pydev/_pydevd_bundle/pydevd_pep_669_tracing_cython.cpython-312-darwin.so
+
+https://github.com/JetBrains/intellij-community/blob/7ec4a45292741b5f890f6814a5fd69ffb3237ba1/python/helpers/pydev/_pydevd_bundle/pydevd_constants.py#L173
+
+https://github.com/JetBrains/intellij-community/blob/7ec4a45292741b5f890f6814a5fd69ffb3237ba1/python/helpers/pydev/_pydevd_bundle/pydevd_constants.py#L163 lol
