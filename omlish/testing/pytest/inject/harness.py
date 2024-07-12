@@ -153,6 +153,28 @@ class HarnessPlugin:
 _HARNESS_ELEMENTS_LIST: list[inj.Elements] = []
 
 
+def register(*args: inj.Element | inj.Elements) -> None:
+    _HARNESS_ELEMENTS_LIST.append(inj.as_elements(*args))
+
+
+TypeT = ta.TypeVar('TypeT', bound=type)
+
+
+def bind(
+        scope: PytestScope | str = PytestScope.SESSION,
+        *,
+        eager: bool = False,
+) -> ta.Callable[[TypeT], TypeT]:
+    def inner(cls):
+        pts = scope if isinstance(scope, PytestScope) else PytestScope[check.isinstance(scope, str).upper()]
+        check.isinstance(cls, type)
+        register(inj.as_elements(
+            inj.in_(cls, _SCOPES_BY_PYTEST_SCOPE[pts]),
+        ))
+        return cls
+    return inner
+
+
 @pytest.fixture(scope='session', autouse=True)
 def harness() -> ta.Generator[Harness, None, None]:
     with Harness(inj.as_elements(*_HARNESS_ELEMENTS_LIST)).activate() as h:
