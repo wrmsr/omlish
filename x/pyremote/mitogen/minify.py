@@ -28,8 +28,6 @@
 
 # !mitogen: minify_safe
 
-import sys
-
 from io import StringIO
 
 from . import core
