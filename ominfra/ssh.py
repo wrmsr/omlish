@@ -23,9 +23,9 @@ if ta.TYPE_CHECKING:
 else:
     asyncssh = lang.proxy_import('asyncssh')
 
-from ..secrets import load_secrets
 from .cmds import CommandRunner
 from .cmds import LocalCommandRunner
+from .secrets import load_secrets
 
 
 @dc.dataclass(frozen=True)
@@ -94,14 +94,14 @@ class AsyncsshSshCommandRunner(CommandRunner):
                 known_hosts=None,
         ) as conn:
             async with await conn.create_process(arg) as proc:
-                check = False
+                checkw = False
                 timeout = None
-                res = await proc.wait(check, timeout)
+                res = await proc.wait(checkw, timeout)
 
         return CommandRunner.Result(
-            rc=res.returncode,
-            out=res.stdout,
-            err=res.stderr,
+            rc=check.not_none(res.returncode),
+            out=check.isinstance(res.stdout, bytes),
+            err=check.isinstance(res.stderr, bytes),
         )
 
 
