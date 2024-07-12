@@ -61,3 +61,7 @@ async def gather(*fns: ta.Callable[..., ta.Awaitable[T]], take_first: bool = Fal
             tg.start_soon(inner, fn, i)
 
     return results
+
+
+async def first(*fns: ta.Callable[..., ta.Awaitable[T]], **kwargs: ta.Any) -> list[lang.Maybe[T]]:
+    return await gather(*fns, take_first=True, **kwargs)
