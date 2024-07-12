@@ -21,6 +21,35 @@ t1 = sa.Table(
 )
 
 
+def test_mysql(harness) -> None:
+    url = check.isinstance(harness[Dbs].specs()['mysql'].loc, UrlDbLoc).url
+    url = set_url_engine(url, 'mysql+pymysql')
+
+    with contextlib.ExitStack() as es:
+        engine = sa.create_engine(url, echo=True)
+        es.enter_context(lang.defer(engine.dispose))
+
+        with engine.begin() as conn:
+            conn.execute(sa.text('create database if not exists omlish'))
+            conn.execute(sa.text('use omlish'))
+
+            meta.drop_all(bind=conn)
+            meta.create_all(bind=conn)
+
+            conn.execute(
+                t1.insert(), [
+                    {'name': 'some name 1'},
+                    {'name': 'some name 2'},
+                ],
+            )
+
+        with engine.connect() as conn:
+            result = conn.execute(sa.select(t1).where(t1.c.name == 'some name 1'))
+            rows = list(result.fetchall())
+            assert len(rows) == 1
+            assert rows[0].name == 'some name 1'
+
+
 @ptu.skip_if_cant_import('aiomysql')
 @pytest.mark.asyncio
 async def test_async_mysql(harness) -> None:
