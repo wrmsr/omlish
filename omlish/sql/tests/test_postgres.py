@@ -4,8 +4,12 @@ import pytest
 import sqlalchemy as sa
 import sqlalchemy.ext.asyncio
 
+from ... import check
 from ... import lang
 from ...testing import pytest as ptu
+from ..dbs import UrlDbLoc
+from ..dbs import set_url_engine
+from .dbs import Dbs
 
 
 meta = sa.MetaData()
@@ -18,11 +22,12 @@ t1 = sa.Table(
 
 @ptu.skip_if_cant_import('asyncpg')
 @pytest.mark.asyncio
-async def test_async_postgres() -> None:
-    port = 35225
+async def test_async_postgres(harness) -> None:
+    url = check.isinstance(harness[Dbs].specs()['postgres'].loc, UrlDbLoc).url
+    url = set_url_engine(url, 'postgresql+asyncpg')
 
     async with contextlib.AsyncExitStack() as aes:
-        engine = sa.ext.asyncio.create_async_engine(f'postgresql+asyncpg://omlish:omlish@localhost:{port}', echo=True)  # noqa
+        engine = sa.ext.asyncio.create_async_engine(url, echo=True)  # noqa
         await aes.enter_async_context(lang.a_defer(engine.dispose()))
 
         async with engine.begin() as conn:
