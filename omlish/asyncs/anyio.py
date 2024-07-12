@@ -1,7 +1,4 @@
 """
-TODO:
- - stream ctors w/ typevar syntax
-
 lookit:
  - https://github.com/davidbrochart/sqlite-anyio/blob/a3ba4c6ef0535b14a5a60071fcd6ed565a514963/sqlite_anyio/sqlite.py
  - https://github.com/rafalkrupinski/ratelimit-anyio/blob/2910a8a3d6fa54ed17ee6ba457686c9f7a4c4beb/src/ratelimit_anyio/__init__.py
@@ -41,6 +38,14 @@ def split_memory_object_streams(
     return tup
 
 
+# FIXME: https://github.com/python/mypy/issues/15238
+# def create_memory_object_stream[T](max_buffer_size: float = 0) -> tuple[
+#     anyio.streams.memory.MemoryObjectSendStream[T],
+#     anyio.streams.memory.MemoryObjectReceiveStream[T],
+# ]:
+#     return anyio.create_memory_object_stream[T](max_buffer_size)
+
+
 def staple_memory_object_stream(
         *args: anyio.create_memory_object_stream[T],
 ) -> anyio.streams.stapled.StapledObjectStream[T]:
@@ -49,6 +54,15 @@ def staple_memory_object_stream(
         check.isinstance(send, anyio.streams.memory.MemoryObjectSendStream),  # type: ignore
         check.isinstance(receive, anyio.streams.memory.MemoryObjectReceiveStream),  # type: ignore
     )
+
+
+# FIXME: https://github.com/python/mypy/issues/15238
+# def staple_memory_object_stream2[T](max_buffer_size: float = 0) -> anyio.streams.stapled.StapledObjectStream[T]:
+#     send, receive = anyio.create_memory_object_stream[T](max_buffer_size)
+#     return anyio.streams.stapled.StapledObjectStream(
+#         check.isinstance(send, anyio.streams.memory.MemoryObjectSendStream),  # type: ignore
+#         check.isinstance(receive, anyio.streams.memory.MemoryObjectReceiveStream),  # type: ignore
+#     )
 
 
 async def gather(*fns: ta.Callable[..., ta.Awaitable[T]], take_first: bool = False) -> list[lang.Maybe[T]]:
