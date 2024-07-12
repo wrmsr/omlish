@@ -1,4 +1,8 @@
 """
+lookit:
+ - piku, obviously
+ - https://github.com/mitogen-hq/mitogen/
+
 git init
 git remote add local ~/src/wrmsr/omlish/.git
 git fetch --depth=1 local master
