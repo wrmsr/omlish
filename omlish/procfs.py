@@ -19,7 +19,9 @@ from . import os as oos
 
 log = logging.getLogger(__name__)
 
-PidLike = ta.Union[int, str]
+
+PidLike = int | str
+
 
 RLIMIT_RESOURCES = {
     getattr(resource, k): k
