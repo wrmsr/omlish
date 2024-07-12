@@ -20,6 +20,32 @@ t1 = sa.Table(
 )
 
 
+def test_postgres(harness) -> None:
+    url = check.isinstance(harness[Dbs].specs()['postgres'].loc, UrlDbLoc).url
+    url = set_url_engine(url, 'postgresql+pg8000')
+
+    with contextlib.ExitStack() as es:
+        engine = sa.create_engine(url, echo=True)
+        es.enter_context(lang.defer(engine.dispose))
+
+        with engine.begin() as conn:
+            meta.drop_all(bind=conn)
+            meta.create_all(bind=conn)
+
+            conn.execute(
+                t1.insert(), [
+                    {'name': 'some name 1'},
+                    {'name': 'some name 2'},
+                ],
+            )
+
+        with engine.connect() as conn:
+            result = conn.execute(sa.select(t1).where(t1.c.name == 'some name 1'))
+            rows = list(result.fetchall())
+            assert len(rows) == 1
+            assert rows[0].name == 'some name 1'
+
+
 @ptu.skip_if_cant_import('asyncpg')
 @pytest.mark.asyncio
 async def test_async_postgres(harness) -> None:
