@@ -81,6 +81,10 @@ from .descriptors import (  # noqa
     unwrap_method_descriptors,
 )
 
+from .exceptions import (  # noqa
+    Unreachable,
+)
+
 from .functions import (  # noqa
     Args,
     VoidException,
