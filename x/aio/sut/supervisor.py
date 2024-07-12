@@ -180,7 +180,6 @@ class SupervisorImpl(Supervisor):
     async def _send_control(self, sm: SupervisorMessage) -> Exception | None:
         # sendControl abstracts checking for the supervisor to still be running when we send a message. This prevents
         # blocking when sending to a cancelled supervisor.
-        done = None
         with self._ctx_mutex:
             if self._ctx is None:
                 return SupervisorNotStarted()
@@ -191,7 +190,7 @@ class SupervisorImpl(Supervisor):
             return None
         if done_m.present:
             return SupervisorNotRunning()
-        raise lang.Unreachable()
+        raise lang.Unreachable
 
     async def add(self, service: Service) -> ServiceToken:
         if isinstance(service, HasSupervisor):
