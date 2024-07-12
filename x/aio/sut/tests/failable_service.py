@@ -84,7 +84,7 @@ class FailableService(Service):
             use_stop_chan = False
 
             while True:
-                take_m, done_m = await aiu.gather(self._take.receive, ctx.done)
+                take_m, done_m = await aiu.first(self._take.receive, ctx.done)
 
                 if take_m.present:
                     val = take_m.must()
