@@ -180,7 +180,7 @@ class SupervisorImpl(Supervisor):
     async def _send_control(self, sm: SupervisorMessage) -> Exception | None:
         # sendControl abstracts checking for the supervisor to still be running when we send a message. This prevents
         # blocking when sending to a cancelled supervisor.
-        with self._ctx_mutex:
+        async with self._ctx_mutex:
             if self._ctx is None:
                 return SupervisorNotStarted()
             done = self._ctx.done
@@ -198,7 +198,7 @@ class SupervisorImpl(Supervisor):
             if supervisor is not None:
                 supervisor._spec.event_hook = self._spec.event_hook  # noqa
 
-        with self._m:
+        async with self._m:
             if self._state == SupervisorState.NOT_RUNNING:
                 sid = self._service_counter
                 self._service_counter += 1
@@ -221,7 +221,7 @@ class SupervisorImpl(Supervisor):
         async def inner():
             await err_chan.send(await self.serve(ctx)
 
-        with anyio.create_task_group() as tg:
+        async with anyio.create_task_group() as tg:
             tg.start_soon(self._sync)
             tg.start_soon(inner)
 
@@ -237,9 +237,6 @@ class SupervisorImpl(Supervisor):
             ctx = context.Background()
         }
 
-        if s == nil {
-            panic("Can't serve with a nil *suture.Supervisor")
-        }
         # Take a separate cancellation function so this tree can be independently cancelled.
         ctx, myCancel := context.WithCancel(ctx)
         self._ctxMutex.Lock()
@@ -247,18 +244,14 @@ class SupervisorImpl(Supervisor):
         self._ctxMutex.Unlock()
         self._ctxCancel = myCancel
 
-        if self._id == 0 {
-            panic("Can't call Serve on an incorrectly-constructed *suture.Supervisor")
-        }
+        if self._id == 0:
+            raise Exception("Can't call Serve on an incorrectly-constructed *suture.Supervisor")
 
-        self._m.Lock()
-        if self._state == normal || self._state == paused {
-            self._m.Unlock()
-            panic("Called .Serve() on a supervisor that is already Serve()ing")
-        }
+        async with self._m:
+            if self._state in (SupervisorState.NORMAL, SupervisorState.PAUSED):
+                raise Exception("Called .Serve() on a supervisor that is already Serve()ing")
 
-        self._state = normal
-        self._m.Unlock()
+            self._state = normal
 
         defer func() {
             self._m.Lock()

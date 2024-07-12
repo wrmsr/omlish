@@ -67,7 +67,7 @@ class FailableService(Service):
         self._running = False
 
     async def serve(self, ctx: Context) -> Exception | None:
-        with self._m:
+        async with self._m:
             if self._existing != 0:
                 # This will produce a fatal runtime error if FailableService is ever started twice.
                 raise RuntimeError
@@ -76,7 +76,7 @@ class FailableService(Service):
 
         try:
             def release_existence():
-                with self._m:
+                async with self._m:
                     self._existing -= 1
 
             await self._started.send(True)
@@ -119,5 +119,5 @@ class FailableService(Service):
                     return ctx.err()
 
         finally:
-            with self._m:
+            async with self._m:
                 self._running = False
