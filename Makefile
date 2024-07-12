@@ -33,7 +33,17 @@ VENV?=default
 PYPROJECT_VENV=${PYPROJECT} venv ${VENV}
 
 PYTHON:=$$(${PYPROJECT_VENV} exe)
-SOURCES:=$$(${PYPROJECT_VENV} srcs)
+SRCS:=$$(${PYPROJECT_VENV} srcs)
+
+.PHONY: python
+python:
+	echo "${PYTHON}"
+
+.PHONY: srcs
+srcs:
+	echo ${SRCS}
+
+#
 
 .PHONY: venv
 venv:
@@ -80,15 +90,15 @@ check: flake8 mypy check-scripts
 
 .PHONY: flake8
 flake8: venv
-	${PYTHON} -mflake8 ${SOURCES}
+	${PYTHON} -mflake8 ${SRCS}
 
 .PHONY: ruff
 ruff: venv
-	${PYTHON} -mruff check ${SOURCES}
+	${PYTHON} -mruff check ${SRCS}
 
 .PHONY: ruff-stats
 ruff-stats: venv
-	${PYTHON} -mruff check --statistics ${SOURCES}
+	${PYTHON} -mruff check --statistics ${SRCS}
 
 .PHONY: ruff-fix
 ruff-fix: venv
@@ -96,11 +106,11 @@ ruff-fix: venv
 		echo 'there are uncommitted changes - refusing to run' ; \
 		exit 1 ; \
 	fi
-	${PYTHON} -mruff check --fix ${SOURCES}
+	${PYTHON} -mruff check --fix ${SRCS}
 
 .PHONY: mypy
 mypy: venv
-	${PYTHON} -mmypy --check-untyped-defs ${SOURCES}
+	${PYTHON} -mmypy --check-untyped-defs ${SRCS}
 
 .PHONY: check-scripts
 check-scripts: venv
@@ -148,16 +158,6 @@ venv-debug:
 test-debug:
 	VENV=debug ${MAKE} test
 
-# 12
-
-.PHONY: venv-12
-venv-12:
-	VENV=12 ${MAKE} venv
-
-.PHONY: test-12
-test-12:
-	VENV=12 ${MAKE} test
-
 # 13
 
 .PHONY: venv-13
@@ -167,6 +167,12 @@ venv-13:
 .PHONY: test-13
 test-13:
 	VENV=13 ${MAKE} test
+
+# 8
+
+.PHONY: venv-8
+venv-8:
+	VENV=8 ${MAKE} venv
 
 # docker
 
@@ -227,7 +233,7 @@ docker-invalidate:
 ci-images:
 	tar cvh \
 		--exclude "__pycache__" \
-		${SOURCES} \
+		${SRCS} \
 		LICENSE \
 		Makefile \
 		docker \
