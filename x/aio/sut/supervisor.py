@@ -217,18 +217,23 @@ class SupervisorImpl(Supervisor):
 
     async def serve_background(self, ctx: Context) -> anyio.abc.ObjectReceiveStream[Exception]:
         """
-        errChan := make(chan error, 1)
-        go func() {
-            errChan <- self._Serve(ctx)
-        }()
+        err_chan = aiu.staple_memory_object_stream(*anyio.create_memory_object_stream[Exception](1))
+
+        async def inner():
+            await err_chan.send(await self.serve(ctx)
+
+        with anyio.create_task_group() as tg:
+            tg.start_soon(self._sync)
+            tg.start_soon(inner)
+
         self._sync()
         return errChan
         """
+        raise NotImplementedError
 
     async def serve(self, ctx: Context) -> Exception | None:
         """
-        // context documentation suggests that it is legal for functions to
-        // take nil contexts, it's user's responsibility to never pass them in.
+        # context documentation suggests that it is legal for functions to take nil contexts, it's user's responsibility to never pass them in.
         if ctx == nil {
             ctx = context.Background()
         }
@@ -236,8 +241,7 @@ class SupervisorImpl(Supervisor):
         if s == nil {
             panic("Can't serve with a nil *suture.Supervisor")
         }
-        // Take a separate cancellation function so this tree can be
-        // independently cancelled.
+        # Take a separate cancellation function so this tree can be independently cancelled.
         ctx, myCancel := context.WithCancel(ctx)
         self._ctxMutex.Lock()
         self._ctx = ctx
@@ -263,7 +267,7 @@ class SupervisorImpl(Supervisor):
             self._m.Unlock()
         }()
 
-        // for all the services I currently know about, start them
+        # for all the services I currently know about, start them
         for _, sid := range self._restartQueue {
             namedService, present := self._services[sid]
             if present {
@@ -320,19 +324,18 @@ class SupervisorImpl(Supervisor):
                     }
                     msg.c <- services
                 case syncSupervisor:
-                    // this does nothing on purpose; its sole purpose is to
-                    // introduce a sync point via the channel receive
+                    # this does nothing on purpose; its sole purpose is to introduce a sync point via the channel receive
                 case panicSupervisor:
-                    // used only by tests
+                    # used only by tests
                     panic("Panicking as requested!")
                 }
             case serviceEnded := <-self._notifyServiceDone:
                 delete(self._servicesShuttingDown, serviceEnded)
             case <-self._resumeTimer:
-                // We're resuming normal operation after a pause due to
-                // excessive thrashing
-                // FIXME: Ought to permit some spacing of these functions, rather
-                // than simply hammering through them
+                # We're resuming normal operation after a pause due to
+                # excessive thrashing
+                # FIXME: Ought to permit some spacing of these functions, rather
+                # than simply hammering through them
                 self._m.Lock()
                 self._state = normal
                 self._m.Unlock()
@@ -390,8 +393,8 @@ func (s *Supervisor) handleFailedService(ctx context.Context, sid serviceID, err
 
     failedService, monitored := self._services[sid]
 
-    // It is possible for a service to be no longer monitored
-    // by the time we get here. In that case, just ignore it.
+    # It is possible for a service to be no longer monitored
+    # by the time we get here. In that case, just ignore it.
     if monitored {
         self._m.Lock()
         curState := self._state
@@ -489,7 +492,7 @@ func (s *Supervisor) removeService(sid serviceID, notificationChan chan struct{}
 
             select {
             case <-successChan:
-                // Life is good!
+                # Life is good!
             case <-self._getAfterChan(self._spec.Timeout):
                 self._spec.EventHook(EventStopTimeout{
                     s, self._Name,
@@ -535,15 +538,15 @@ SHUTTING_DOWN_SERVICES:
                 })
             }
 
-            // failed remove statements will log the errors.
+            # failed remove statements will log the errors.
             break SHUTTING_DOWN_SERVICES
         }
     }
 
-    // If nothing else has cancelled our context, we should now.
+    # If nothing else has cancelled our context, we should now.
     self._ctxCancel()
 
-    // Indicate that we're done shutting down
+    # Indicate that we're done shutting down
     defer close(self._liveness)
 
     if len(self._servicesShuttingDown) == 0 {
