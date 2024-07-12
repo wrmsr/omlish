@@ -17,6 +17,7 @@ lookit:
 import argparse
 import dataclasses as dc
 import functools
+import glob
 import itertools
 import logging
 import os.path
@@ -163,7 +164,7 @@ def _resolve_srcs(
         aliases: ta.Mapping[str, ta.Sequence[str]],
 ) -> ta.List[str]:
     todo = list(reversed(lst))
-    out: ta.List[str] = []
+    raw: ta.List[str] = []
     seen: ta.Set[str] = set()
     while todo:
         cur = todo.pop()
@@ -171,9 +172,21 @@ def _resolve_srcs(
             continue
         seen.add(cur)
         if not cur.startswith('@'):
-            out.append(cur)
+            raw.append(cur)
             continue
         todo.extend(aliases[cur[1:]][::-1])
+    out: list[str] = []
+    seen.clear()
+    for r in raw:
+        es: list[str]
+        if any(c in r for c in '*?'):
+            es = list(glob.glob(r, recursive=True))
+        else:
+            es = [r]
+        for e in es:
+            if e not in seen:
+                seen.add(e)
+                out.append(e)
     return out
 
 
