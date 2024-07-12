@@ -1,5 +1,6 @@
 import dataclasses as dc
 import enum
+import functools
 import itertools
 import random
 import time
@@ -62,6 +63,15 @@ class Spec(lang.Final):
 
 
 ##
+
+
+class SupervisorNotRunning(Exception):
+    """
+    Returned by some methods if the supervisor is not running, either because it has not been started or because it has
+    been terminated.
+    """
+    def __init__(self) -> None:
+        super().__init__("supervisor not running")
 
 
 class WrongSupervisor(Exception):
@@ -168,23 +178,20 @@ class SupervisorImpl(Supervisor):
         return self
 
     async def _send_control(self, sm: SupervisorMessage) -> Exception | None:
-        """
         # sendControl abstracts checking for the supervisor to still be running when we send a message. This prevents
         # blocking when sending to a cancelled supervisor.
-        done_chan = aiu.staple_memory_object_stream(*anyio.create_memory_object_stream[ta.Any]())
+        done = None
         with self._ctx_mutex:
-            if s.ctx == nil {
-                return ErrSupervisorNotStarted
-            }
-            doneChan = s.ctx.Done()
+            if self._ctx is None:
+                return SupervisorNotStarted()
+            done = self._ctx.done
 
-        select {
-        case s.control <- sm:
-            return nil
-        case <-doneChan:
-            return ErrSupervisorNotRunning
-        }
-        """
+        send_m, done_m = await aiu.first(functools.partial(self._control.send, sm), done)
+        if send_m.present:
+            return None
+        if done_m.present:
+            return SupervisorNotRunning()
+        raise lang.Unreachable()
 
     async def add(self, service: Service) -> ServiceToken:
         if isinstance(service, HasSupervisor):
