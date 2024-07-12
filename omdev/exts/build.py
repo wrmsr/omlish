@@ -9,7 +9,7 @@ def build_ext(
         fullname: str,
         src_path: str,
 ) -> str:
-    extra_link_args = []
+    extra_link_args: list[str] = []
     if sys.platform == 'darwin':
         extra_link_args.append('-Wl,-no_fixup_chains')
 
