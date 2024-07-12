@@ -182,3 +182,5 @@ logbook==1.7.0.post0
 tenacity==8.5.0
 
 psutil==6.0.0
+
+mitogen==0.3.7
