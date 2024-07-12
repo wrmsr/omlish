@@ -51,7 +51,7 @@ NOP_CONTEXT_MANAGER = NopContextManager()
 
 
 @contextlib.contextmanager
-def defer(fn: ta.Callable) -> ta.Iterator[ta.Callable]:
+def defer(fn: ta.Callable) -> ta.Generator[ta.Callable, None, None]:
     try:
         yield fn
     finally:
@@ -59,7 +59,7 @@ def defer(fn: ta.Callable) -> ta.Iterator[ta.Callable]:
 
 
 @contextlib.asynccontextmanager
-async def a_defer(fn: ta.Awaitable) -> ta.AsyncIterator[ta.Awaitable]:
+async def a_defer(fn: ta.Awaitable) -> ta.AsyncGenerator[ta.Awaitable, None, None]:
     try:
         yield fn
     finally:
