@@ -75,7 +75,7 @@ class FailableService(Service):
             self._running = True
 
         try:
-            def release_existence():
+            async def release_existence():
                 async with self._m:
                     self._existing -= 1
 
@@ -94,13 +94,13 @@ class FailableService(Service):
                             pass
 
                         case FailableService.Message.FAIL:
-                            release_existence()
+                            await release_existence()
                             if use_stop_chan:
                                 await self._stop.send(True)
                             return None
 
                         case FailableService.Message.PANIC:
-                            release_existence()
+                            await release_existence()
                             raise Exception("Panic!")
 
                         case FailableService.Message.HANG:
@@ -120,7 +120,7 @@ class FailableService(Service):
                             raise TypeError(val)
 
                 if done_m.present:
-                    release_existence()
+                    await release_existence()
                     if use_stop_chan:
                         await self._stop.send(True)
                     return ctx.err()
