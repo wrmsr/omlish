@@ -1,10 +1,12 @@
 import collections
 import functools
+import heapq
 import itertools
 import typing as ta
 
 
 T = ta.TypeVar('T')
+U = ta.TypeVar('U')
 
 _MISSING = object()
 
@@ -182,3 +184,42 @@ def chunk(n: int, iterable: ta.Iterable[T], strict: bool = False) -> ta.Iterator
         return iter(ret())
     else:
         return iterator
+
+
+def merge_on(
+        function: ta.Callable[[T], U],
+        *its: ta.Iterable[T],
+) -> ta.Iterator[tuple[U, list[tuple[int, T]]]]:
+    indexed_its = [
+        (
+            (function(item), it_idx, item)
+            for it_idx, item in zip(itertools.repeat(it_idx), it)
+        )
+        for it_idx, it in enumerate(its)
+    ]
+
+    grouped_indexed_its = itertools.groupby(
+        heapq.merge(*indexed_its),
+        key=lambda item_tuple: item_tuple[0],
+    )
+
+    return (
+        (fn_item, [(it_idx, item) for _, it_idx, item in grp])
+        for fn_item, grp in grouped_indexed_its
+    )
+
+
+def expand_indexed_pairs(
+        seq: ta.Iterable[tuple[int, T]],
+        default: T,
+        *,
+        width: int | None = None,
+) -> list[T]:
+    width_ = width
+    if width_ is None:
+        width_ = (max(idx for idx, _ in seq) + 1) if seq else 0
+    result = [default] * width_
+    for idx, value in seq:
+        if idx < width_:
+            result[idx] = value
+    return result
