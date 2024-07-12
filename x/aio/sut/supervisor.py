@@ -64,6 +64,36 @@ class Spec(lang.Final):
 ##
 
 
+class WrongSupervisor(Exception):
+    """Returned by the Remove method if you pass a ServiceToken from the wrong Supervisor."""
+    def __init__(self) -> None:
+        super().__init__("wrong supervisor for this service token, no service removed")
+
+
+class Timeout(Exception):
+    """Returned when an attempt to RemoveAndWait for a service to stop has timed out."""
+    def __init__(self) -> None:
+        super().__init__("waiting for service to stop has timed out")
+
+
+class SupervisorNotTerminated(Exception):
+    """Returned when asking for a stopped service report before the supervisor has been terminated."""
+    def __init__(self) -> None:
+        super().__init__("supervisor not terminated")
+
+
+class SupervisorNotStarted(Exception):
+    """
+    Returned if you try to send control messages to a supervisor that has not started yet. See note on Supervisor struct
+    about the legal ways to start a supervisor.
+    """
+    def __init__(self) -> None:
+        super().__init__("supervisor not started yet")
+
+
+##
+
+
 _SUPERVISOR_ID_SEQ = itertools.count()
 
 
@@ -137,6 +167,25 @@ class SupervisorImpl(Supervisor):
     def supervisor(self) -> Supervisor | None:
         return self
 
+    async def _send_control(self, sm: SupervisorMessage) -> Exception | None:
+        """
+        # sendControl abstracts checking for the supervisor to still be running when we send a message. This prevents
+        # blocking when sending to a cancelled supervisor.
+        done_chan = aiu.staple_memory_object_stream(*anyio.create_memory_object_stream[ta.Any]())
+        with self._ctx_mutex:
+            if s.ctx == nil {
+                return ErrSupervisorNotStarted
+            }
+            doneChan = s.ctx.Done()
+
+        select {
+        case s.control <- sm:
+            return nil
+        case <-doneChan:
+            return ErrSupervisorNotRunning
+        }
+        """
+
     async def add(self, service: Service) -> ServiceToken:
         if isinstance(service, HasSupervisor):
             supervisor = service.supervisor()
@@ -154,7 +203,7 @@ class SupervisorImpl(Supervisor):
                 return ServiceToken(self._id, sid)
 
         response = aiu.staple_memory_object_stream(*anyio.create_memory_object_stream[ServiceId]())
-        if self._send_control(AddService(service, _build_service_name(service), response)) is not None:
+        if await self._send_control(AddService(service, _build_service_name(service), response)) is not None:
             return ServiceToken.ZERO
 
         return ServiceToken(self._id, await response.receive())
