@@ -239,10 +239,9 @@ class SupervisorImpl(Supervisor):
 
         # Take a separate cancellation function so this tree can be independently cancelled.
         ctx, myCancel := context.WithCancel(ctx)
-        self._ctxMutex.Lock()
-        self._ctx = ctx
-        self._ctxMutex.Unlock()
-        self._ctxCancel = myCancel
+        async with self._ctx_mutex:
+            self._ctx = ctx
+        self._ctx_cancel = myCancel
 
         if self._id == 0:
             raise Exception("Can't call Serve on an incorrectly-constructed *suture.Supervisor")
@@ -253,95 +252,96 @@ class SupervisorImpl(Supervisor):
 
             self._state = normal
 
-        defer func() {
-            self._m.Lock()
-            self._state = terminated
-            self._m.Unlock()
-        }()
+        try:
+            # for all the services I currently know about, start them
+            for sid in self._restart_queue:
+                named_service = self._services.get(sid)
+                if named_service: is not None:
+                    self._run_service(ctx, named_service.Service, sid)
+            self._restart_queue.clear()
 
-        # for all the services I currently know about, start them
-        for _, sid := range self._restartQueue {
-            namedService, present := self._services[sid]
-            if present {
-                self._runService(ctx, namedService.Service, sid)
-            }
-        }
-        self._restartQueue = make([]serviceID, 0, 1)
+            while True:
+                select {
+                case <-ctx.Done():
+                    self._stopSupervisor()
+                    return ctx.Err()
 
-        for {
-            select {
-            case <-ctx.Done():
-                self._stopSupervisor()
-                return ctx.Err()
-            case m := <-self._control:
-                switch msg := m.(type) {
-                case serviceFailed:
-                    self._handleFailedService(ctx, msg.sid, msg.panicVal, msg.stacktrace, true)
-                case serviceEnded:
-                    _, monitored := self._services[msg.sid]
-                    if monitored {
-                        cancel := self._cancellations[msg.sid]
-                        if isErr(msg.err, ErrDoNotRestart) || isErr(msg.err, context.Canceled) || isErr(msg.err, context.DeadlineExceeded) {
-                            delete(self._services, msg.sid)
-                            delete(self._cancellations, msg.sid)
-                            go cancel()
-                        } else if isErr(msg.err, ErrTerminateSupervisorTree) {
-                            self._stopSupervisor()
-                            if self._spec.DontPropagateTermination {
-                                return ErrDoNotRestart
+                case m := <-self._control:
+                    switch msg := m.(type) {
+                    case serviceFailed:
+                        self._handleFailedService(ctx, msg.sid, msg.panicVal, msg.stacktrace, true)
+
+                    case serviceEnded:
+                        _, monitored := self._services[msg.sid]
+                        if monitored {
+                            cancel := self._cancellations[msg.sid]
+                            if isErr(msg.err, ErrDoNotRestart) || isErr(msg.err, context.Canceled) || isErr(msg.err, context.DeadlineExceeded) {
+                                delete(self._services, msg.sid)
+                                delete(self._cancellations, msg.sid)
+                                go cancel()
+                            } else if isErr(msg.err, ErrTerminateSupervisorTree) {
+                                self._stopSupervisor()
+                                if self._spec.DontPropagateTermination {
+                                    return ErrDoNotRestart
+                                } else {
+                                    return msg.err
+                                }
                             } else {
-                                return msg.err
+                                self._handleFailedService(ctx, msg.sid, msg.err, nil, false)
                             }
-                        } else {
-                            self._handleFailedService(ctx, msg.sid, msg.err, nil, false)
                         }
-                    }
-                case addService:
-                    sid := self._serviceCounter
-                    self._serviceCounter++
 
-                    self._services[sid] = serviceWithName{msg.service, msg.name}
-                    self._runService(ctx, msg.service, sid)
+                    case addService:
+                        sid := self._serviceCounter
+                        self._serviceCounter++
 
-                    msg.response <- sid
-                case removeService:
-                    self._removeService(msg.sid, msg.notification)
-                case stopSupervisor:
-                    msg.done <- self._stopSupervisor()
-                    return nil
-                case listServices:
-                    services := []Service{}
-                    for _, service := range self._services {
-                        services = append(services, service.Service)
-                    }
-                    msg.c <- services
-                case syncSupervisor:
-                    # this does nothing on purpose; its sole purpose is to introduce a sync point via the channel receive
-                case panicSupervisor:
-                    # used only by tests
-                    panic("Panicking as requested!")
-                }
-            case serviceEnded := <-self._notifyServiceDone:
-                delete(self._servicesShuttingDown, serviceEnded)
-            case <-self._resumeTimer:
-                # We're resuming normal operation after a pause due to
-                # excessive thrashing
-                # FIXME: Ought to permit some spacing of these functions, rather
-                # than simply hammering through them
-                self._m.Lock()
-                self._state = normal
-                self._m.Unlock()
-                self._failures = 0
-                self._spec.EventHook(EventResume{s, self._Name})
-                for _, sid := range self._restartQueue {
-                    namedService, present := self._services[sid]
-                    if present {
-                        self._runService(ctx, namedService.Service, sid)
-                    }
-                }
-                self._restartQueue = make([]serviceID, 0, 1)
-            }
-        }
+                        self._services[sid] = serviceWithName{msg.service, msg.name}
+                        self._runService(ctx, msg.service, sid)
+
+                        msg.response <- sid
+
+                    case removeService:
+                        self._removeService(msg.sid, msg.notification)
+
+                    case stopSupervisor:
+                        msg.done <- self._stopSupervisor()
+                        return nil
+
+                    case listServices:
+                        services := []Service{}
+                        for _, service := range self._services {
+                            services = append(services, service.Service)
+                        }
+                        msg.c <- services
+
+                    case syncSupervisor:
+                        # this does nothing on purpose; its sole purpose is to introduce a sync point via the channel receive
+
+                    case panicSupervisor:
+                        # used only by tests
+                        panic("Panicking as requested!")
+
+                case serviceEnded := <-self._notifyServiceDone:
+                    delete(self._servicesShuttingDown, serviceEnded)
+
+                case <-self._resumeTimer:
+                    # We're resuming normal operation after a pause due to excessive thrashing
+                    # FIXME: Ought to permit some spacing of these functions, rather
+                    # than simply hammering through them
+                    self._m.Lock()
+                    self._state = normal
+                    self._m.Unlock()
+                    self._failures = 0
+                    self._spec.EventHook(EventResume{s, self._Name})
+                    for _, sid := range self._restartQueue:
+                        namedService, present := self._services[sid]
+                        if present:
+                            self._runService(ctx, namedService.Service, sid)
+                    self._restartQueue = make([]serviceID, 0, 1)
+
+        finally:
+            async with self._m:
+                self._state = SupervisorState.TERMINATED
         """
 
     async def unstopped_service_report(self) -> tuple[UnstoppedServiceReport, Exception | None]:

@@ -92,23 +92,30 @@ class FailableService(Service):
                         case FailableService.Message.HAPPY:
                             # Do nothing on purpose. Life is good!
                             pass
+
                         case FailableService.Message.FAIL:
                             release_existence()
                             if use_stop_chan:
                                 await self._stop.send(True)
                             return None
+
                         case FailableService.Message.PANIC:
                             release_existence()
                             raise Exception("Panic!")
+
                         case FailableService.Message.HANG:
                             # or more specifically, "hang until I release you"
                             await self._release.receive()
+
                         case FailableService.Message.USE_STOP_CHAN:
                             use_stop_chan = True
+
                         case FailableService.Message.TERMINATE_TREE:
                             return TerminateSupervisorTree()
+
                         case FailableService.Message.DO_NOT_RESTART:
                             return DoNotRestart()
+
                         case _:
                             raise TypeError(val)
 
