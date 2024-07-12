@@ -30,9 +30,9 @@ class FailableService(Service):
 
     @classmethod
     def new(cls, name: str) -> tuple['FailableService', 'FailableService.Controller']:
-        started_send, started_receive = aiu.split_memory_object_streams(*anyio.create_memory_object_stream[bool](1))
-        take_send, take_receive = aiu.split_memory_object_streams(*anyio.create_memory_object_stream[FailableService.Message](1))  # noqa
-        release_send, release_receive = aiu.split_memory_object_streams(*anyio.create_memory_object_stream[bool](1))
+        started_send, started_receive = aiu.split_memory_object_streams(*anyio.create_memory_object_stream[bool]())
+        take_send, take_receive = aiu.split_memory_object_streams(*anyio.create_memory_object_stream[FailableService.Message]())  # noqa
+        release_send, release_receive = aiu.split_memory_object_streams(*anyio.create_memory_object_stream[bool]())
         stop_send, stop_receive = aiu.split_memory_object_streams(*anyio.create_memory_object_stream[bool](1))
         return cls(
             name,
@@ -56,13 +56,14 @@ class FailableService(Service):
             stop: anyio.abc.ObjectSendStream[bool],
     ) -> None:
         super().__init__()
+
         self._name = name
         self._started = started
         self._take = take
         self._release = release
         self._stop = stop
-        self._existing: int = 0
 
+        self._existing: int = 0
         self._m = anyio.Lock()
         self._running = False
 
