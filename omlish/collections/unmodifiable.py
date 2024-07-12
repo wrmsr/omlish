@@ -24,34 +24,34 @@ class UnmodifiableSequence(ta.Sequence[T], Unmodifiable, lang.Final):
     def __repr__(self) -> str:
         return '%s(%r)' % (type(self).__name__, self._target)
 
-    def __contains__(self, x: object) -> bool:
+    def __contains__(self, x: ta.Any) -> bool:
         return x in self._target
 
-    def __eq__(self, o: object) -> bool:
+    def __eq__(self, o: ta.Any) -> bool:
         return self._target == o
 
-    def __ge__(self, other: object) -> bool:
-        return self._target >= other  # type: ignore
+    def __ge__(self, other: ta.Any) -> bool:
+        return self._target >= other
 
     def __getitem__(self, i: int | slice) -> T:  # type: ignore
         return self._target[i]  # type: ignore
 
-    def __gt__(self, other: object) -> bool:
-        return self._target > other  # type: ignore
+    def __gt__(self, other: ta.Any) -> bool:
+        return self._target > other
 
     def __iter__(self) -> ta.Iterator[T]:
         return iter(self._target)
 
-    def __le__(self, other: object) -> bool:
-        return self._target <= other  # type: ignore
+    def __le__(self, other: ta.Any) -> bool:
+        return self._target <= other
 
     def __len__(self) -> int:
         return len(self._target)
 
-    def __lt__(self, other: object) -> bool:
-        return self._target < other  # type: ignore
+    def __lt__(self, other: ta.Any) -> bool:
+        return self._target < other
 
-    def __ne__(self, o: object) -> bool:
+    def __ne__(self, o: ta.Any) -> bool:
         return self._target != o
 
     def __reversed__(self) -> ta.Iterator[T]:
@@ -79,10 +79,10 @@ class UnmodifiableSet(ta.AbstractSet[T], Unmodifiable, lang.Final):
     def __and__(self, s: ta.AbstractSet[ta.Any]) -> ta.AbstractSet[T]:
         return self._target & s
 
-    def __contains__(self, x: object) -> bool:
+    def __contains__(self, x: ta.Any) -> bool:
         return x in self._target
 
-    def __eq__(self, o: object) -> bool:
+    def __eq__(self, o: ta.Any) -> bool:
         return self._target == o
 
     def __ge__(self, s: ta.AbstractSet[ta.Any]) -> bool:
@@ -103,7 +103,7 @@ class UnmodifiableSet(ta.AbstractSet[T], Unmodifiable, lang.Final):
     def __lt__(self, s: ta.AbstractSet[ta.Any]) -> bool:
         return self._target > s
 
-    def __ne__(self, o: object) -> bool:
+    def __ne__(self, o: ta.Any) -> bool:
         return self._target != o
 
     def __or__(self, s: ta.AbstractSet[T]) -> ta.AbstractSet[T]:  # type: ignore
@@ -120,6 +120,7 @@ class UnmodifiableSet(ta.AbstractSet[T], Unmodifiable, lang.Final):
 
 
 class UnmodifiableMapping(ta.Mapping[K, V], Unmodifiable, lang.Final):
+    # Could be a MappingProxyType but isn't for consistency with the others.
 
     def __init__(self, target: ta.Mapping[K, V]) -> None:
         super().__init__()
@@ -131,34 +132,34 @@ class UnmodifiableMapping(ta.Mapping[K, V], Unmodifiable, lang.Final):
     def __repr__(self) -> str:
         return '%s(%r)' % (type(self).__name__, self._target)
 
-    def __contains__(self, o: object) -> bool:
+    def __contains__(self, o: ta.Any) -> bool:
         return o in self._target
 
-    def __eq__(self, o: object) -> bool:
+    def __eq__(self, o: ta.Any) -> bool:
         return self._target == o
 
-    def __ge__(self, other: object) -> bool:
-        return self._target >= other  # type: ignore
+    def __ge__(self, other: ta.Any) -> bool:
+        return self._target >= other
 
     def __getitem__(self, k: K) -> V:
         return self._target[k]
 
-    def __gt__(self, other: object) -> bool:
-        return self._target > other  # type: ignore
+    def __gt__(self, other: ta.Any) -> bool:
+        return self._target > other
 
     def __iter__(self) -> ta.Iterator[T]:
         return iter(self._target)  # type: ignore
 
-    def __le__(self, other: object) -> bool:
-        return self._target <= other  # type: ignore
+    def __le__(self, other: ta.Any) -> bool:
+        return self._target <= other
 
     def __len__(self) -> int:
         return len(self._target)
 
-    def __lt__(self, other: object) -> bool:
-        return self._target < other  # type: ignore
+    def __lt__(self, other: ta.Any) -> bool:
+        return self._target < other
 
-    def __ne__(self, o: object) -> bool:
+    def __ne__(self, o: ta.Any) -> bool:
         return self._target != o
 
     def get(self, k: K, default=None) -> V | None:  # type: ignore
