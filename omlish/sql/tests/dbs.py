@@ -10,7 +10,7 @@ from ..dbs import UrlDbLoc
 
 def _get_compose_port(cfg: ta.Mapping[str, ta.Any], default: int) -> int:
     return check.single(
-        int(r)
+        int(l)
         for p in cfg['ports']
         for l, r in [p.split(':')]
         if int(r) == default
