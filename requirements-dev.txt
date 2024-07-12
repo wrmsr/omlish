@@ -19,7 +19,7 @@ types-pyyaml==6.0.12.20240311
 
 black==24.4.2
 mypy==1.10.1
-pipdeptree==2.23.0
+pipdeptree==2.23.1
 
 gprof2dot==2024.6.6
 guppy3==3.1.4.post1; python_version < '3.13'
