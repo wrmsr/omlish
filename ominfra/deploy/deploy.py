@@ -23,7 +23,7 @@ import tempfile
 
 from omlish import check
 
-from ..infra import cmds
+from .. import cmds
 
 
 async def do_deploy(

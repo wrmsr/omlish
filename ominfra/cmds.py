@@ -3,9 +3,11 @@ TODO:
  - timeout
  - stream in/out/err
  - *sessions*
+ - anyio
 """
 import abc
 import asyncio
+import io
 import typing as ta
 
 from omlish import check
@@ -52,16 +54,16 @@ class LocalCommandRunner(CommandRunner):
     async def run_command(self, cmd: CommandRunner.Command) -> CommandRunner.Result:
         proc = await asyncio.create_subprocess_exec(
             *cmd.args,
-            stdin=cmd.in_,
+            stdin=io.BytesIO(cmd.in_) if cmd.in_ is not None else None,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
-            **(dict(cwd=self._cfg.cwd) if self._cfg.cwd is not None else {}),
+            **(dict(cwd=self._cfg.cwd) if self._cfg.cwd is not None else {}),  # type: ignore
         )
 
         out, err = await proc.communicate()
 
         return CommandRunner.Result(
-            rc=proc.returncode,
+            rc=check.not_none(proc.returncode),
             out=out,
             err=err,
         )

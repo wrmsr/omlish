@@ -57,7 +57,7 @@ def get_aws_servers() -> list[Server]:
     )
     ec2 = session.client('ec2')
     resp = ec2.describe_instances()
-    out = []
+    out: list[Server] = []
     for res in resp.get('Reservations', []):
         for inst in res.get('Instances', []):
             out.append(AwsServer(

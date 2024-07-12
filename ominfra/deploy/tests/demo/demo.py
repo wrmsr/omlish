@@ -9,9 +9,9 @@ import subprocess
 from omlish.docker import timebomb_payload
 from omlish.testing.pydevd import silence_subprocess_check
 
-from ...infra import cmds
-from ...infra import ssh
-from ..deploy import do_deploy
+from .... import cmds
+from .... import ssh
+from ...deploy import do_deploy
 
 
 TIMEBOMB_DELAY_S = 20 * 60
