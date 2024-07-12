@@ -118,21 +118,23 @@ class ComposeConfig:
             self,
             prefix: str,
             *,
-            compose_path: str | None = None,
+            file_path: str | None = None,
     ) -> None:
         super().__init__()
 
         self._prefix = prefix
-        self._compose_path = compose_path
+        self._file_path = file_path
 
     @lang.cached_function
     def get_config(self) -> ta.Mapping[str, ta.Any]:
-        with open(check.not_none(self._compose_path), 'r') as f:
+        with open(check.not_none(self._file_path), 'r') as f:
             buf = f.read()
-        dct = yaml.safe_load(buf)
+        return yaml.safe_load(buf)
 
+    @lang.cached_function
+    def get_services(self) -> ta.Mapping[str, ta.Any]:
         ret = {}
-        for n, c in dct['services'].items():
+        for n, c in self.get_config()['services'].items():
             check.state(n.startswith(self._prefix))
             ret[n[len(self._prefix):]] = c
 
