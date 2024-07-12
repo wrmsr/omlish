@@ -4,8 +4,12 @@ import pytest
 import sqlalchemy as sa
 import sqlalchemy.ext.asyncio
 
+from ... import check
 from ... import lang
 from ...testing import pytest as ptu
+from ..dbs import UrlDbLoc
+from ..dbs import set_url_engine
+from .dbs import Dbs
 
 
 meta = sa.MetaData()
@@ -19,11 +23,12 @@ t1 = sa.Table(
 
 @ptu.skip_if_cant_import('aiomysql')
 @pytest.mark.asyncio
-async def test_async_mysql() -> None:
-    port = 35224
+async def test_async_mysql(harness) -> None:
+    url = check.isinstance(harness[Dbs].specs()['mysql'].loc, UrlDbLoc).url
+    url = set_url_engine(url, 'mysql+aiomysql')
 
     async with contextlib.AsyncExitStack() as aes:
-        engine = sa.ext.asyncio.create_async_engine(f'mysql+aiomysql://root:omlish@localhost:{port}', echo=True)
+        engine = sa.ext.asyncio.create_async_engine(url, echo=True)
         await aes.enter_async_context(lang.a_defer(engine.dispose()))
 
         async with engine.begin() as conn:
