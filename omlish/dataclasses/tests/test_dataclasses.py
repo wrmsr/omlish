@@ -400,3 +400,14 @@ def test_cached_property():
 #         assert c == 1
 #     with pytest.raises(dc.FrozenInstanceError):
 #         f.x = 5  # noqa
+
+
+def test_repr_lambda():
+    @dc.dataclass()
+    class Foo:
+        x: int
+        y: str = dc.xfield(repr_fn=lambda y: y + '!')
+        z: int = dc.xfield(repr_fn=lambda z: z if z > 0 else None)
+
+    assert repr(Foo(2, 'hi', 3)).endswith('.Foo(x=2, y=hi!, z=3)')
+    assert repr(Foo(1, 'bye', 0)).endswith('.Foo(x=1, y=bye!)')
