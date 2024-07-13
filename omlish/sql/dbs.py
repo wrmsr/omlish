@@ -1,7 +1,7 @@
-import dataclasses as dc
 import typing as ta
 import urllib.parse
 
+from .. import dataclasses as dc
 from .. import lang
 
 
@@ -53,7 +53,7 @@ class HostDbLoc(DbLoc, lang.Final):
     port: int | None = None
 
     username: str | None = None
-    password: str | None = dc.field(default=None, repr=False)
+    password: str | None = dc.xfield(default=None, repr_fn=lambda pw: '...' if pw is not None else None)
 
 
 ##
