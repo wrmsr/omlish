@@ -46,6 +46,7 @@ class FieldExtras(lang.Final):
     check: ta.Callable[[ta.Any], bool] | None = None
     check_type: bool | None = None
     override: bool = False
+    repr_fn: ta.Callable[[ta.Any], str | None] | None = None
 
 
 DEFAULT_FIELD_EXTRAS = FieldExtras()
