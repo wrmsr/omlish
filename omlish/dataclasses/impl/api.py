@@ -33,6 +33,7 @@ def field(
         check: ta.Callable[[ta.Any], bool] | None = None,
         check_type: bool | None = None,
         override: bool = False,
+        repr_fn: ta.Callable[[ta.Any], str | None] | None = None
 ):  # -> dc.Field
     if default is not MISSING and default_factory is not MISSING:
         raise ValueError('cannot specify both default and default_factory')
@@ -42,6 +43,7 @@ def field(
         check=check,
         check_type=check_type,
         override=override,
+        repr_fn=repr_fn,
     )
 
     md: ta.Mapping = {FieldExtras: fx}
