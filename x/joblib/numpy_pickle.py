@@ -24,7 +24,6 @@ from .numpy_pickle_utils import Unpickler, Pickler
 from .numpy_pickle_utils import _read_fileobject, _write_fileobject
 from .numpy_pickle_utils import _read_bytes, BUFFER_SIZE
 from .numpy_pickle_utils import _ensure_native_byte_order
-from .numpy_pickle_compat import load_compatibility
 from .numpy_pickle_compat import NDArrayWrapper
 # For compatibility with old versions of joblib, we need ZNDArrayWrapper to be visible in the current namespace.
 # Explicitly skipping next line from flake8 as it triggers an F401 warning which we don't care.
@@ -51,12 +50,10 @@ NUMPY_ARRAY_ALIGNMENT_BYTES = 16
 class NumpyArrayWrapper:
     """An object to be persisted instead of numpy arrays.
 
-    This object is used to hack into the pickle machinery and read numpy
-    array data from our custom persistence format.
+    This object is used to hack into the pickle machinery and read numpy array data from our custom persistence format.
     More precisely, this object is used for:
-    * carrying the information of the persisted array: subclass, shape, order,
-    dtype. Those ndarray metadata are used to correctly reconstruct the array
-    with low level numpy functions.
+    * carrying the information of the persisted array: subclass, shape, order, dtype. Those ndarray metadata are used to
+      correctly reconstruct the array with low level numpy functions.
     * determining if memmap is allowed on the array.
     * reading the array bytes from a file.
     * reading the array using memorymap from a file.
@@ -69,13 +66,11 @@ class NumpyArrayWrapper:
     shape: numpy.ndarray shape
         Determine the shape of the wrapped array.
     order: {'C', 'F'}
-        Determine the order of wrapped array data. 'C' is for C order, 'F' is
-        for fortran order.
+        Determine the order of wrapped array data. 'C' is for C order, 'F' is for fortran order.
     dtype: numpy.ndarray dtype
         Determine the data type of the wrapped array.
     allow_mmap: bool
-        Determine if memory mapping is allowed on the wrapped array.
-        Default: False.
+        Determine if memory mapping is allowed on the wrapped array. Default: False.
     """
 
     def __init__(
@@ -320,11 +315,9 @@ class NumpyPickler(Pickler):
     def save(self, obj):
         """Subclass the Pickler `save` method.
 
-        This is a total abuse of the Pickler class in order to use the numpy
-        persistence function `save` instead of the default pickle
-        implementation. The numpy array is replaced by a custom wrapper in the
-        pickle persistence stack and the serialized array is written right
-        after in the file. Warning: the file produced does not follow the
+        This is a total abuse of the Pickler class in order to use the numpy persistence function `save` instead of the
+        default pickle implementation. The numpy array is replaced by a custom wrapper in the pickle persistence stack
+        and the serialized array is written right after in the file. Warning: the file produced does not follow the
         pickle format. As such it can not be read with `pickle.load`.
         """
         if self.np is not None and type(obj) in (self.np.ndarray, self.np.matrix, self.np.memmap):
@@ -359,8 +352,8 @@ class NumpyUnpickler(Unpickler):
     file_handle: file_like
         File object to unpickle from.
     filename: str
-        Name of the file to unpickle from. It should correspond to file_handle.
-        This parameter is required when using mmap_mode.
+        Name of the file to unpickle from. It should correspond to file_handle. This parameter is required when using
+        mmap_mode.
     np: module
         Reference to numpy module if numpy is installed else None.
 
@@ -387,10 +380,9 @@ class NumpyUnpickler(Unpickler):
     def load_build(self):
         """Called to set the state of a newly created object.
 
-        We capture it to replace our place-holder objects, NDArrayWrapper or
-        NumpyArrayWrapper, by the array we are interested in. We
-        replace them directly in the stack of pickler.
-        NDArrayWrapper is used for backward compatibility with joblib <= 0.9.
+        We capture it to replace our place-holder objects, NDArrayWrapper or NumpyArrayWrapper, by the array we are
+        interested in. We replace them directly in the stack of pickler. NDArrayWrapper is used for backward
+        compatibility with joblib <= 0.9.
         """
         Unpickler.load_build(self)
 
@@ -420,20 +412,14 @@ def dump(value, filename, compress=0, protocol=None, cache_size=None):
     value: any Python object
         The object to store to disk.
     filename: str, pathlib.Path, or file object.
-        The file object or path of the file in which it is to be stored.
-        The compression method corresponding to one of the supported filename
-        extensions ('.z', '.gz', '.bz2', '.xz' or '.lzma') will be used
-        automatically.
+        The file object or path of the file in which it is to be stored. The compression method corresponding to one of
+        the supported filename extensions ('.z', '.gz', '.bz2', '.xz' or '.lzma') will be used automatically.
     compress: int from 0 to 9 or bool or 2-tuple, optional
-        Optional compression level for the data. 0 or False is no compression.
-        Higher value means more compression, but also slower read and
-        write times. Using a value of 3 is often a good compromise.
-        See the notes for more details.
-        If compress is True, the compression level used is 3.
-        If compress is a 2-tuple, the first element must correspond to a string
-        between supported compressors (e.g 'zlib', 'gzip', 'bz2', 'lzma'
-        'xz'), the second element must be an integer from 0 to 9, corresponding
-        to the compression level.
+        Optional compression level for the data. 0 or False is no compression. Higher value means more compression, but
+        also slower read and write times. Using a value of 3 is often a good compromise. See the notes for more details.
+        If compress is True, the compression level used is 3. If compress is a 2-tuple, the first element must
+        correspond to a string between supported compressors (e.g 'zlib', 'gzip', 'bz2', 'lzma' 'xz'), the second
+        element must be an integer from 0 to 9, corresponding to the compression level.
     protocol: int, optional
         Pickle protocol, see pickle.dump documentation for more details.
     cache_size: positive int, optional
@@ -442,8 +428,8 @@ def dump(value, filename, compress=0, protocol=None, cache_size=None):
     Returns
     -------
     filenames: list of strings
-        The list of file names in which the data is stored. If
-        compress is false, each array is stored in a different file.
+        The list of file names in which the data is stored. If compress is false, each array is stored in a different
+        file.
 
     See Also
     --------
@@ -630,10 +616,5 @@ def load(filename, mmap_mode=None):
     else:
         with open(filename, 'rb') as f:
             with _read_fileobject(f, filename, mmap_mode) as fobj:
-                if isinstance(fobj, str):
-                    # if the returned file object is a string, this means we try to load a pickle file generated with an
-                    # version of Joblib so we load it with joblib compatibility function.
-                    return load_compatibility(fobj)
-
                 obj = _unpickle(fobj, filename, mmap_mode)
     return obj
