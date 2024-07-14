@@ -4,5 +4,21 @@ TODO:
   - cleanup confer
  - descriptors - check_type/validators don't handle setters lol
  - deep_frozen?
- - repr='redact', 'if_not_none', 'if_truthy', dc.if_(lambda v: ...)? just a lambda returning str | None?
+ - field:
+  - frozen
+  - pickle/transient
+  - mangled
+  - doc
+  - derive
+  - check_type
+ - class
+  - strict_eq
+  - allow_setattr
+  - mangler
+ - observable
+ - c/py gen
+ - iterable
+ - proto/jsonschema gen
+ - enums
+ - nodal
 """

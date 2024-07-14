@@ -136,6 +136,7 @@ from .objects import (  # noqa
     arg_repr,
     attr_repr,
     new_type,
+    opt_repr,
     super_meta,
 )
 
