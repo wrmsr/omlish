@@ -29,7 +29,7 @@ class MovieReqs:
     def movies(self) -> ta.Sequence[Movie]:
         movies = []
         # https://github.com/wrmsr/deep_learning_cookbook/blob/138a99b09ffa3a728d261e461440f029e512ac93/data/wp_movies_10k.ndjson
-        with open('../../../../DOsinga/deep_learning_cookbook/data/wp_movies_10k.ndjson', 'r') as f:
+        with open('../../DOsinga/deep_learning_cookbook/data/wp_movies_10k.ndjson', 'r') as f:
             for l in f.readlines():
                 movies.append(Movie(*json.loads(l)))
         return movies
