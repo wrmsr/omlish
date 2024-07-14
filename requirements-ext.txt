@@ -63,7 +63,7 @@ triton==2.3.1; platform_machine == 'x86_64'
 
 wgpu==0.16.0
 
-hypothesis==6.106.1
+hypothesis==6.107.0
 
 hexdump==3.3
 
@@ -165,7 +165,7 @@ sounddevice==0.4.7
 # vosk==0.3.45
 
 bellows==0.39.1
-zigpy==0.64.1
+zigpy==0.64.2
 
 # python-openzwave
 zwave-js-server-python==0.57.0
