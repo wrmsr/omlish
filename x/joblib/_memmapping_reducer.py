@@ -144,10 +144,6 @@ class _WeakArrayKeyMap:
         raise PicklingError("_WeakArrayKeyMap is not pickleable")
 
 
-###############################################################################
-# Support for efficient transient pickling of numpy data structures
-
-
 def _get_backing_memmap(a):
     """Recursively look up the original np.memmap instance base if any."""
     b = getattr(a, 'base', None)

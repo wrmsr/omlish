@@ -39,9 +39,6 @@ register_compressor('lzma', LZMACompressorWrapper())
 register_compressor('xz', XZCompressorWrapper())
 register_compressor('lz4', LZ4CompressorWrapper())
 
-###############################################################################
-# Utility objects for persistence.
-
 # For convenience, 16 bytes are used to be sure to cover all the possible dtypes' alignments. For reference, see:
 # https://numpy.org/devdocs/dev/alignment.html
 NUMPY_ARRAY_ALIGNMENT_BYTES = 16
