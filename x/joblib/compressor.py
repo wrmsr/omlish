@@ -54,21 +54,25 @@ def register_compressor(compressor_name, compressor, force=False):
     """
     global _COMPRESSORS
     if not isinstance(compressor_name, str):
-        raise ValueError("Compressor name should be a string, "
-                         "'{}' given.".format(compressor_name))
+        raise ValueError("Compressor name should be a string, '{}' given.".format(compressor_name))
 
     if not isinstance(compressor, CompressorWrapper):
-        raise ValueError("Compressor should implement the CompressorWrapper "
-                         "interface, '{}' given.".format(compressor))
+        raise ValueError(
+            "Compressor should implement the CompressorWrapper interface, '{}' given.".format(compressor),
+        )
 
-    if (compressor.fileobj_factory is not None and
-            (not hasattr(compressor.fileobj_factory, 'read') or
-             not hasattr(compressor.fileobj_factory, 'write') or
-             not hasattr(compressor.fileobj_factory, 'seek') or
-             not hasattr(compressor.fileobj_factory, 'tell'))):
-        raise ValueError("Compressor 'fileobj_factory' attribute should "
-                         "implement the file object interface, '{}' given."
-                         .format(compressor.fileobj_factory))
+    if (
+            compressor.fileobj_factory is not None and
+            (
+                    not hasattr(compressor.fileobj_factory, 'read') or
+                    not hasattr(compressor.fileobj_factory, 'write') or
+                    not hasattr(compressor.fileobj_factory, 'seek') or
+                    not hasattr(compressor.fileobj_factory, 'tell')
+            )
+    ):
+        raise ValueError(
+            "Compressor 'fileobj_factory' attribute should implement the file object interface, '{}' given.".format(compressor.fileobj_factory),  # noqa
+        )
 
     if compressor_name in _COMPRESSORS and not force:
         raise ValueError("Compressor '{}' already registered.".format(compressor_name))
@@ -82,14 +86,11 @@ class CompressorWrapper():
     Attributes
     ----------
     obj: a file-like object
-        The object must implement the buffer interface and will be used
-        internally to compress/decompress the data.
+        The object must implement the buffer interface and will be used internally to compress/decompress the data.
     prefix: bytestring
-        A bytestring corresponding to the magic number that identifies the
-        file format associated to the compressor.
+        A bytestring corresponding to the magic number that identifies the file format associated to the compressor.
     extension: str
-        The file extension used to automatically select this compressor during
-        a dump to a file.
+        The file extension used to automatically select this compressor during a dump to a file.
     """
 
     def __init__(self, obj, prefix=b'', extension=''):
@@ -219,25 +220,21 @@ _BUFFER_SIZE = 8192
 class BinaryZlibFile(io.BufferedIOBase):
     """A file object providing transparent zlib (de)compression.
 
-    TODO python2_drop: is it still needed since we dropped Python 2 support A
-    BinaryZlibFile can act as a wrapper for an existing file object, or refer
-    directly to a named file on disk.
+    TODO python2_drop: is it still needed since we dropped Python 2 support A BinaryZlibFile can act as a wrapper for an
+    existing file object, or refer directly to a named file on disk.
 
-    Note that BinaryZlibFile provides only a *binary* file interface: data read
-    is returned as bytes, and data to be written should be given as bytes.
+    Note that BinaryZlibFile provides only a *binary* file interface: data read is returned as bytes, and data to be
+    written should be given as bytes.
 
-    This object is an adaptation of the BZ2File object and is compatible with
-    versions of python >= 2.7.
+    This object is an adaptation of the BZ2File object and is compatible with versions of python >= 2.7.
 
-    If filename is a str or bytes object, it gives the name
-    of the file to be opened. Otherwise, it should be a file object,
-    which will be used to read or write the compressed data.
+    If filename is a str or bytes object, it gives the name of the file to be opened. Otherwise, it should be a file
+    object, which will be used to read or write the compressed data.
 
     mode can be 'rb' for reading (default) or 'wb' for (over)writing
 
-    If mode is 'wb', compresslevel can be a number between 1
-    and 9 specifying the level of compression: 1 produces the least
-    compression, and 9 produces the most compression. 3 is the default.
+    If mode is 'wb', compresslevel can be a number between 1 and 9 specifying the level of compression: 1 produces the
+    least compression, and 9 produces the most compression. 3 is the default.
     """
 
     wbits = zlib.MAX_WBITS
@@ -285,8 +282,8 @@ class BinaryZlibFile(io.BufferedIOBase):
     def close(self):
         """Flush and close the file.
 
-        May be called more than once without error. Once the file is
-        closed, any other operation on it will raise a ValueError.
+        May be called more than once without error. Once the file is closed, any other operation on it will raise a
+        ValueError.
         """
         with self._lock:
             if self._mode == _MODE_CLOSED:
@@ -429,8 +426,7 @@ class BinaryZlibFile(io.BufferedIOBase):
     def read(self, size=-1):
         """Read up to size uncompressed bytes from the file.
 
-        If size is negative or omitted, read until EOF is reached.
-        Returns b'' if the file is already at EOF.
+        If size is negative or omitted, read until EOF is reached. Returns b'' if the file is already at EOF.
         """
         with self._lock:
             self._check_can_read()
@@ -452,9 +448,8 @@ class BinaryZlibFile(io.BufferedIOBase):
     def write(self, data):
         """Write a byte string to the file.
 
-        Returns the number of uncompressed bytes written, which is
-        always len(data). Note that due to buffering, the file on disk
-        may not reflect the data written until close() is called.
+        Returns the number of uncompressed bytes written, which is always len(data). Note that due to buffering, the
+        file on disk may not reflect the data written until close() is called.
         """
         with self._lock:
             self._check_can_write()
@@ -479,8 +474,7 @@ class BinaryZlibFile(io.BufferedIOBase):
     def seek(self, offset, whence=0):
         """Change the file position.
 
-        The new position is specified by offset, relative to the
-        position indicated by whence. Values for whence are:
+        The new position is specified by offset, relative to the position indicated by whence. Values for whence are:
 
             0: start of stream (default); offset must not be negative
             1: current stream position
@@ -488,8 +482,7 @@ class BinaryZlibFile(io.BufferedIOBase):
 
         Returns the new file position.
 
-        Note that seeking is emulated, so depending on the parameters,
-        this operation may be extremely slow.
+        Note that seeking is emulated, so depending on the parameters, this operation may be extremely slow.
         """
         with self._lock:
             self._check_can_seek()
@@ -534,15 +527,13 @@ class ZlibCompressorWrapper(CompressorWrapper):
 class BinaryGzipFile(BinaryZlibFile):
     """A file object providing transparent gzip (de)compression.
 
-    If filename is a str or bytes object, it gives the name
-    of the file to be opened. Otherwise, it should be a file object,
-    which will be used to read or write the compressed data.
+    If filename is a str or bytes object, it gives the name of the file to be opened. Otherwise, it should be a file
+    object, which will be used to read or write the compressed data.
 
     mode can be 'rb' for reading (default) or 'wb' for (over)writing
 
-    If mode is 'wb', compresslevel can be a number between 1
-    and 9 specifying the level of compression: 1 produces the least
-    compression, and 9 produces the most compression. 3 is the default.
+    If mode is 'wb', compresslevel can be a number between 1 and 9 specifying the level of compression: 1 produces the
+    least compression, and 9 produces the most compression. 3 is the default.
     """
 
     wbits = 31  # zlib compressor/decompressor wbits value for gzip format.
