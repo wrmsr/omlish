@@ -38,3 +38,5 @@ ujson==5.10.0
 # billiard
 # numpy
 # python-dateutil
+
+# cloudpickle
