@@ -2,110 +2,9 @@
 Backports of fixes for joblib dependencies
 """
 import os
-import re
-import time
 
 from os.path import basename
 from multiprocessing import util
-
-
-class Version:
-    """Backport from deprecated distutils
-
-    We maintain this backport to avoid introducing a new dependency on
-    `packaging`.
-
-    We might rexplore this choice in the future if all major Python projects
-    introduce a dependency on packaging anyway.
-    """
-
-    def __init__(self, vstring=None):
-        if vstring:
-            self.parse(vstring)
-
-    def __repr__(self):
-        return "%s ('%s')" % (self.__class__.__name__, str(self))
-
-    def __eq__(self, other):
-        c = self._cmp(other)
-        if c is NotImplemented:
-            return c
-        return c == 0
-
-    def __lt__(self, other):
-        c = self._cmp(other)
-        if c is NotImplemented:
-            return c
-        return c < 0
-
-    def __le__(self, other):
-        c = self._cmp(other)
-        if c is NotImplemented:
-            return c
-        return c <= 0
-
-    def __gt__(self, other):
-        c = self._cmp(other)
-        if c is NotImplemented:
-            return c
-        return c > 0
-
-    def __ge__(self, other):
-        c = self._cmp(other)
-        if c is NotImplemented:
-            return c
-        return c >= 0
-
-
-class LooseVersion(Version):
-    """Backport from deprecated distutils
-
-    We maintain this backport to avoid introducing a new dependency on
-    `packaging`.
-
-    We might rexplore this choice in the future if all major Python projects
-    introduce a dependency on packaging anyway.
-    """
-
-    component_re = re.compile(r'(\d+ | [a-z]+ | \.)', re.VERBOSE)
-
-    def __init__(self, vstring=None):
-        if vstring:
-            self.parse(vstring)
-
-    def parse(self, vstring):
-        # I've given up on thinking I can reconstruct the version string
-        # from the parsed tuple -- so I just store the string here for
-        # use by __str__
-        self.vstring = vstring
-        components = [x for x in self.component_re.split(vstring)
-                      if x and x != '.']
-        for i, obj in enumerate(components):
-            try:
-                components[i] = int(obj)
-            except ValueError:
-                pass
-
-        self.version = components
-
-    def __str__(self):
-        return self.vstring
-
-    def __repr__(self):
-        return "LooseVersion ('%s')" % str(self)
-
-    def _cmp(self, other):
-        if isinstance(other, str):
-            other = LooseVersion(other)
-        elif not isinstance(other, LooseVersion):
-            return NotImplemented
-
-        if self.version == other.version:
-            return 0
-        if self.version < other.version:
-            return -1
-        if self.version > other.version:
-            return 1
 
 
 try:
@@ -130,10 +29,14 @@ try:
             "pid {})".format(shape, basename(filename), os.getpid())
         )
 
-        mm = np.memmap(filename, dtype=dtype, mode=mode, offset=offset,
-                       shape=shape, order=order)
-        if LooseVersion(np.__version__) < '1.13':
-            mm.offset = offset
+        mm = np.memmap(
+            filename,
+            dtype=dtype,
+            mode=mode,
+            offset=offset,
+            shape=shape,
+            order=order,
+        )
         if unlink_on_gc_collect:
             from ._memmapping_reducer import add_maybe_unlink_finalizer
             add_maybe_unlink_finalizer(mm)

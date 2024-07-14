@@ -8,13 +8,15 @@ Disk management utilities.
 # License: BSD Style, 3 clauses.
 
 
+import errno
+import logging
 import os
+import shutil
 import sys
 import time
-import errno
-import shutil
 
-from multiprocessing import util
+
+log = logging.getLogger(__name__)
 
 
 def disk_used(path):
@@ -77,7 +79,7 @@ def rm_subdirs(path, onerror=None):
     an exception is raised.
     """
 
-    # NOTE this code is adapted from the one in shutil.rmtree, and is just as fast
+    # NOTE this code is adapted from the one in sh.rmtree, and is just as fast
 
     names = []
     try:
@@ -106,7 +108,7 @@ def delete_folder(folder_path, onerror=None, allow_non_empty=True):
                 try:
                     if len(files) == 0 or allow_non_empty:
                         shutil.rmtree(folder_path, ignore_errors=False, onerror=None)
-                        util.debug("Successfully deleted {}".format(folder_path))
+                        log.debug("Successfully deleted {}".format(folder_path))
                         break
                     else:
                         raise OSError(

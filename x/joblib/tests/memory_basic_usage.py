@@ -53,7 +53,7 @@ import os.path
 from .. import Memory
 
 
-location = os.path.join(os.path.dirname(__file__), './cachedir')
+location = os.path.join(os.path.dirname(__file__), './cachedir/0')
 memory = Memory(location, verbose=0)
 
 

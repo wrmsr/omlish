@@ -61,8 +61,15 @@ def get_func_code(func):
             source_lines = list(islice(source_file_obj, first_line - 1, None))
         return ''.join(inspect.getblock(source_lines)), source_file, first_line
     except:  # noqa: E722
-        # If the source code fails, we use the hash. This is fragile and might change from one session to another.
-        return str(func.__code__.__hash__()), source_file, -1
+        # If the source code fails, we use the hash. This is fragile and
+        # might change from one session to another.
+        if hasattr(func, '__code__'):
+            # Python 3.X
+            return str(func.__code__.__hash__()), source_file, -1
+        else:
+            # Weird objects like numpy ufunc don't have __code__ This is fragile, as quite often the id of the object is
+            # in the repr, so it might not persist across sessions, however it will work for ufuncs.
+            return repr(func), source_file, -1
 
 
 def _clean_win_chars(string):
