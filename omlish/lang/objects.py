@@ -21,6 +21,12 @@ def arg_repr(*args, **kwargs) -> str:
     ))
 
 
+def opt_repr(obj: ta.Any) -> str | None:
+    if obj is None:
+        return None
+    return repr(obj)
+
+
 ##
 
 

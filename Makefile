@@ -168,6 +168,16 @@ venv-13:
 test-13:
 	VENV=13 ${MAKE} test
 
+# 13t
+
+.PHONY: venv-13t
+venv-13t:
+	VENV=13t ${MAKE} venv
+
+.PHONY: test-13t
+test-13t:
+	VENV=13t ${MAKE} test
+
 # 8
 
 .PHONY: venv-8

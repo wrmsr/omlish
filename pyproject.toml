@@ -71,6 +71,7 @@ docker = { docker = 'omlish-dev' }
 docker-amd64 = { docker = 'omlish-dev-amd64' }
 debug = { interp = '@12-debug' }
 '13' = { interp = '@13' }
+'13t' = { interp = '@13t' }
 '8' = { interp = '@8', requires = [], srcs = [] }
 
 
