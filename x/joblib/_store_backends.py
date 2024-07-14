@@ -19,8 +19,8 @@ from .disk import mkdirp, memstr_to_bytes, rm_subdirs
 from .logger import format_time
 from . import numpy_pickle
 
-CacheItemInfo = collections.namedtuple('CacheItemInfo',
-                                       'path size last_access')
+
+CacheItemInfo = collections.namedtuple('CacheItemInfo', 'path size last_access')
 
 
 class CacheWarning(Warning):
@@ -162,8 +162,7 @@ class StoreBackendMixin:
                          if timestamp is not None else '')
             signature = os.path.basename(call_id[0])
             if metadata is not None and 'input_args' in metadata:
-                kwargs = ', '.join('{}={}'.format(*item)
-                                   for item in metadata['input_args'].items())
+                kwargs = ', '.join('{}={}'.format(*item) for item in metadata['input_args'].items())
                 signature += '({})'.format(kwargs)
             msg = '[Memory]{}: Loading {}'.format(ts_string, signature)
             if verbose < 10:
@@ -171,8 +170,7 @@ class StoreBackendMixin:
             else:
                 print('{0} from {1}'.format(msg, full_path))
 
-        mmap_mode = (None if not hasattr(self, 'mmap_mode')
-                     else self.mmap_mode)
+        mmap_mode = (None if not hasattr(self, 'mmap_mode') else self.mmap_mode)
 
         filename = os.path.join(full_path, 'output.pkl')
         if not self._item_exists(filename):
@@ -315,10 +313,8 @@ class StoreBackendMixin:
             try:
                 self.clear_location(item.path)
             except OSError:
-                # Even with ignore_errors=True shutil.rmtree can raise OSError
-                # with:
-                # [Errno 116] Stale file handle if another process has deleted
-                # the folder already.
+                # Even with ignore_errors=True shutil.rmtree can raise OSError with:
+                # [Errno 116] Stale file handle if another process has deleted the folder already.
                 pass
 
     def _get_items_to_delete(
@@ -353,8 +349,8 @@ class StoreBackendMixin:
             deadline = None
 
         if (
-            to_delete_size <= 0 and to_delete_items <= 0
-            and (deadline is None or older_item > deadline)
+                to_delete_size <= 0 and to_delete_items <= 0
+                and (deadline is None or older_item > deadline)
         ):
             return []
 
@@ -368,9 +364,9 @@ class StoreBackendMixin:
 
         for item in items:
             if (
-                (size_so_far >= to_delete_size)
-                and items_so_far >= to_delete_items
-                and (deadline is None or deadline < item.last_access)
+                    (size_so_far >= to_delete_size)
+                    and items_so_far >= to_delete_items
+                    and (deadline is None or deadline < item.last_access)
             ):
                 break
 
@@ -436,13 +432,11 @@ class FileSystemStoreBackend(StoreBackendBase, StoreBackendMixin):
                     dirsize = sum(os.path.getsize(fn)
                                   for fn in full_filenames)
                 except OSError:
-                    # Either output_filename or one of the files in
-                    # dirpath does not exist any more. We assume this
+                    # Either output_filename or one of the files in dirpath does not exist any more. We assume this
                     # directory is being cleaned by another process already
                     continue
 
-                items.append(CacheItemInfo(dirpath, dirsize,
-                                           last_access))
+                items.append(CacheItemInfo(dirpath, dirsize, last_access))
 
         return items
 

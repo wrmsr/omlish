@@ -51,6 +51,8 @@ print('\nThe transformed data are:\n {}'.format(data_trans))
 import os.path
 
 from .. import Memory
+
+
 location = os.path.join(os.path.dirname(__file__), './cachedir')
 memory = Memory(location, verbose=0)
 
@@ -80,6 +82,7 @@ end = time.time()
 
 print('\nThe function took {:.2f} s to compute.'.format(end - start))
 print('\nThe transformed data are:\n {}'.format(data_trans))
+
 
 ###############################################################################
 # At the second call, the computation time is largely reduced since the results

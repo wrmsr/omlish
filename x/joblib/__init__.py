@@ -108,7 +108,6 @@ Main features
 #
 __version__ = '1.5.dev0'
 
-
 import os
 
 from .memory import Memory
@@ -142,7 +141,6 @@ __all__ = [
     'register_compressor',
     'wrap_non_picklable_objects',
 ]
-
 
 # Workaround issue discovered in intel-openmp 2019.5:
 # https://github.com/ContinuumIO/anaconda-issues/issues/11294

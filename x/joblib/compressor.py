@@ -4,6 +4,7 @@ import io
 import zlib
 from joblib.backports import LooseVersion
 
+
 try:
     from threading import RLock
 except ImportError:
@@ -25,7 +26,6 @@ try:
 except ImportError:
     lzma = None
 
-
 LZ4_NOT_INSTALLED_ERROR = ('LZ4 is not installed. Install it with pip: '
                            'https://python-lz4.readthedocs.io/')
 
@@ -42,8 +42,7 @@ _LZMA_PREFIX = b'\x5d\x00'
 _LZ4_PREFIX = b'\x04\x22\x4D\x18'
 
 
-def register_compressor(compressor_name, compressor,
-                        force=False):
+def register_compressor(compressor_name, compressor, force=False):
     """Register a new compressor.
 
     Parameters
@@ -72,8 +71,7 @@ def register_compressor(compressor_name, compressor,
                          .format(compressor.fileobj_factory))
 
     if compressor_name in _COMPRESSORS and not force:
-        raise ValueError("Compressor '{}' already registered."
-                         .format(compressor_name))
+        raise ValueError("Compressor '{}' already registered.".format(compressor_name))
 
     _COMPRESSORS[compressor_name] = compressor
 
@@ -104,8 +102,7 @@ class CompressorWrapper():
         if compresslevel is None:
             return self.fileobj_factory(fileobj, 'wb')
         else:
-            return self.fileobj_factory(fileobj, 'wb',
-                                        compresslevel=compresslevel)
+            return self.fileobj_factory(fileobj, 'wb', compresslevel=compresslevel)
 
     def decompressor_file(self, fileobj):
         """Returns an instance of a decompressor file object."""
@@ -125,8 +122,7 @@ class BZ2CompressorWrapper(CompressorWrapper):
 
     def _check_versions(self):
         if bz2 is None:
-            raise ValueError('bz2 module is not compiled on your python '
-                             'standard library.')
+            raise ValueError('bz2 module is not compiled on your python standard library.')
 
     def compressor_file(self, fileobj, compresslevel=None):
         """Returns an instance of a compressor file object."""
@@ -134,8 +130,7 @@ class BZ2CompressorWrapper(CompressorWrapper):
         if compresslevel is None:
             return self.fileobj_factory(fileobj, 'wb')
         else:
-            return self.fileobj_factory(fileobj, 'wb',
-                                        compresslevel=compresslevel)
+            return self.fileobj_factory(fileobj, 'wb', compresslevel=compresslevel)
 
     def decompressor_file(self, fileobj):
         """Returns an instance of a decompressor file object."""
@@ -159,18 +154,14 @@ class LZMACompressorWrapper(CompressorWrapper):
 
     def _check_versions(self):
         if lzma is None:
-            raise ValueError('lzma module is not compiled on your python '
-                             'standard library.')
+            raise ValueError('lzma module is not compiled on your python standard library.')
 
     def compressor_file(self, fileobj, compresslevel=None):
         """Returns an instance of a compressor file object."""
         if compresslevel is None:
-            return self.fileobj_factory(fileobj, 'wb',
-                                        format=self._lzma_format)
+            return self.fileobj_factory(fileobj, 'wb', format=self._lzma_format)
         else:
-            return self.fileobj_factory(fileobj, 'wb',
-                                        format=self._lzma_format,
-                                        preset=compresslevel)
+            return self.fileobj_factory(fileobj, 'wb', format=self._lzma_format, preset=compresslevel)
 
     def decompressor_file(self, fileobj):
         """Returns an instance of a decompressor file object."""
@@ -210,8 +201,7 @@ class LZ4CompressorWrapper(CompressorWrapper):
         if compresslevel is None:
             return self.fileobj_factory(fileobj, 'wb')
         else:
-            return self.fileobj_factory(fileobj, 'wb',
-                                        compression_level=compresslevel)
+            return self.fileobj_factory(fileobj, 'wb', compression_level=compresslevel)
 
     def decompressor_file(self, fileobj):
         """Returns an instance of a decompressor file object."""
@@ -219,8 +209,6 @@ class LZ4CompressorWrapper(CompressorWrapper):
         return self.fileobj_factory(fileobj, 'rb')
 
 
-###############################################################################
-#  base file compression/decompression object definition
 _MODE_CLOSED = 0
 _MODE_READ = 1
 _MODE_READ_EOF = 2
@@ -255,8 +243,7 @@ class BinaryZlibFile(io.BufferedIOBase):
     wbits = zlib.MAX_WBITS
 
     def __init__(self, filename, mode="rb", compresslevel=3):
-        # This lock must be recursive, so that BufferedIOBase's
-        # readline(), readlines() and writelines() don't deadlock.
+        # This lock must be recursive, so that BufferedIOBase's readline(), readlines() and writelines() don't deadlock.
         self._lock = RLock()
         self._fp = None
         self._closefp = False
@@ -277,9 +264,13 @@ class BinaryZlibFile(io.BufferedIOBase):
             self._buffer_offset = 0
         elif mode == "wb":
             self._mode = _MODE_WRITE
-            self._compressor = zlib.compressobj(self.compresslevel,
-                                                zlib.DEFLATED, self.wbits,
-                                                zlib.DEF_MEM_LEVEL, 0)
+            self._compressor = zlib.compressobj(
+                self.compresslevel,
+                zlib.DEFLATED,
+                self.wbits,
+                zlib.DEF_MEM_LEVEL,
+                0,
+            )
         else:
             raise ValueError("Invalid mode: %r" % (mode,))
 
@@ -289,8 +280,7 @@ class BinaryZlibFile(io.BufferedIOBase):
         elif hasattr(filename, "read") or hasattr(filename, "write"):
             self._fp = filename
         else:
-            raise TypeError("filename must be a str or bytes object, "
-                            "or a file")
+            raise TypeError("filename must be a str or bytes object, or a file")
 
     def close(self):
         """Flush and close the file.
@@ -342,8 +332,6 @@ class BinaryZlibFile(io.BufferedIOBase):
         self._check_not_closed()
         return self._mode == _MODE_WRITE
 
-    # Mode-checking helper functions.
-
     def _check_not_closed(self):
         if self.closed:
             fname = getattr(self._fp, 'name', None)
@@ -376,8 +364,8 @@ class BinaryZlibFile(io.BufferedIOBase):
     def _fill_buffer(self):
         if self._mode == _MODE_READ_EOF:
             return False
-        # Depending on the input data, our call to the decompressor may not
-        # return any data. In this case, try again after reading another block.
+        # Depending on the input data, our call to the decompressor may not return any data. In this case, try again
+        # after reading another block.
         while self._buffer_offset == len(self._buffer):
             try:
                 rawblock = (self._decompressor.unused_data or
@@ -394,8 +382,7 @@ class BinaryZlibFile(io.BufferedIOBase):
             self._buffer_offset = 0
         return True
 
-    # Read data until EOF.
-    # If return_data is false, consume the data without returning it.
+    # Read data until EOF. If return_data is false, consume the data without returning it.
     def _read_all(self, return_data=True):
         # The loop assumes that _buffer_offset is 0. Ensure that this is true.
         self._buffer = self._buffer[self._buffer_offset:]
@@ -410,8 +397,7 @@ class BinaryZlibFile(io.BufferedIOBase):
         if return_data:
             return b"".join(blocks)
 
-    # Read a block of up to n bytes.
-    # If return_data is false, consume the data without returning it.
+    # Read a block of up to n bytes. If return_data is false, consume the data without returning it.
     def _read_block(self, n_bytes, return_data=True):
         # If we have enough data buffered, return immediately.
         end = self._buffer_offset + n_bytes
@@ -542,8 +528,7 @@ class BinaryZlibFile(io.BufferedIOBase):
 class ZlibCompressorWrapper(CompressorWrapper):
 
     def __init__(self):
-        CompressorWrapper.__init__(self, obj=BinaryZlibFile,
-                                   prefix=_ZLIB_PREFIX, extension='.z')
+        CompressorWrapper.__init__(self, obj=BinaryZlibFile, prefix=_ZLIB_PREFIX, extension='.z')
 
 
 class BinaryGzipFile(BinaryZlibFile):
@@ -566,5 +551,4 @@ class BinaryGzipFile(BinaryZlibFile):
 class GzipCompressorWrapper(CompressorWrapper):
 
     def __init__(self):
-        CompressorWrapper.__init__(self, obj=BinaryGzipFile,
-                                   prefix=_GZIP_PREFIX, extension='.gz')
+        CompressorWrapper.__init__(self, obj=BinaryGzipFile, prefix=_GZIP_PREFIX, extension='.gz')

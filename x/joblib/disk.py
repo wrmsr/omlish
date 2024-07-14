@@ -17,12 +17,6 @@ import shutil
 from multiprocessing import util
 
 
-try:
-    WindowsError
-except NameError:
-    WindowsError = OSError
-
-
 def disk_used(path):
     """ Return the disk usage in a directory."""
     size = 0
@@ -31,11 +25,10 @@ def disk_used(path):
         if hasattr(stat, 'st_blocks'):
             size += stat.st_blocks * 512
         else:
-            # on some platform st_blocks is not available (e.g., Windows)
-            # approximate by rounding to next multiple of 512
+            # on some platform st_blocks is not available (e.g., Windows) approximate by rounding to next multiple of
+            # 512
             size += (stat.st_size // 512 + 1) * 512
-    # We need to convert to int to avoid having longs on some systems (we
-    # don't want longs to avoid problems we SQLite)
+    # We need to convert to int to avoid having longs on some systems (we don't want longs to avoid problems we SQLite)
     return int(size / 1024.)
 
 
@@ -64,10 +57,9 @@ def mkdirp(d):
             raise
 
 
-# if a rmtree operation fails in rm_subdirs, wait for this much time (in secs),
-# then retry up to RM_SUBDIRS_N_RETRY times. If it still fails, raise the
-# exception. this mechanism ensures that the sub-process gc have the time to
-# collect and close the memmaps before we fail.
+# if a rmtree operation fails in rm_subdirs, wait for this much time (in secs), then retry up to RM_SUBDIRS_N_RETRY
+# times. If it still fails, raise the exception. this mechanism ensures that the sub-process gc have the time to collect
+# and close the memmaps before we fail.
 RM_SUBDIRS_RETRY_TIME = 0.1
 RM_SUBDIRS_N_RETRY = 10
 
@@ -85,8 +77,7 @@ def rm_subdirs(path, onerror=None):
     an exception is raised.
     """
 
-    # NOTE this code is adapted from the one in shutil.rmtree, and is
-    # just as fast
+    # NOTE this code is adapted from the one in shutil.rmtree, and is just as fast
 
     names = []
     try:
@@ -108,29 +99,24 @@ def delete_folder(folder_path, onerror=None, allow_non_empty=True):
         if onerror is not None:
             shutil.rmtree(folder_path, False, onerror)
         else:
-            # allow the rmtree to fail once, wait and re-try.
-            # if the error is raised again, fail
+            # allow the rmtree to fail once, wait and re-try. if the error is raised again, fail
             err_count = 0
             while True:
                 files = os.listdir(folder_path)
                 try:
                     if len(files) == 0 or allow_non_empty:
-                        shutil.rmtree(
-                            folder_path, ignore_errors=False, onerror=None
-                        )
-                        util.debug(
-                            "Successfully deleted {}".format(folder_path))
+                        shutil.rmtree(folder_path, ignore_errors=False, onerror=None)
+                        util.debug("Successfully deleted {}".format(folder_path))
                         break
                     else:
                         raise OSError(
                             "Expected empty folder {} but got {} "
                             "files.".format(folder_path, len(files))
                         )
-                except (OSError, WindowsError):
+                except OSError:
                     err_count += 1
                     if err_count > RM_SUBDIRS_N_RETRY:
-                        # the folder cannot be deleted right now. It maybe
-                        # because some temporary files have not been deleted
-                        # yet.
+                        # the folder cannot be deleted right now. It maybe because some temporary files have not been
+                        # deleted yet.
                         raise
                 time.sleep(RM_SUBDIRS_RETRY_TIME)

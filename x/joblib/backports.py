@@ -145,5 +145,4 @@ except ImportError:
             "'joblib.backports.make_memmap' should not be used "
             'if numpy is not installed.')
 
-
 from os import replace as concurrency_safe_rename  # noqa

@@ -40,23 +40,19 @@ def read_zfile(file_handle):
     length = length[len(_ZFILE_PREFIX):]
     length = int(length, 16)
 
-    # With python2 and joblib version <= 0.8.4 compressed pickle header is one
-    # character wider so we need to ignore an additional space if present.
-    # Note: the first byte of the zlib data is guaranteed not to be a
-    # space according to
+    # With python2 and joblib version <= 0.8.4 compressed pickle header is one character wider so we need to ignore an
+    # additional space if present. Note: the first byte of the zlib data is guaranteed not to be a space according to
     # https://tools.ietf.org/html/rfc6713#section-2.1
     next_byte = file_handle.read(1)
     if next_byte != b' ':
-        # The zlib compressed data has started and we need to go back
-        # one byte
+        # The zlib compressed data has started and we need to go back one byte
         file_handle.seek(header_length)
 
-    # We use the known length of the data to tell Zlib the size of the
-    # buffer to allocate.
+    # We use the known length of the data to tell Zlib the size of the buffer to allocate.
     data = zlib.decompress(file_handle.read(), 15, length)
     assert len(data) == length, (
-        "Incorrect data length while decompressing %s."
-        "The file could be corrupted." % file_handle)
+            "Incorrect data length while decompressing %s."
+            "The file could be corrupted." % file_handle)
     return data
 
 
@@ -72,9 +68,6 @@ def write_zfile(file_handle, data, compress=1):
     # Store the length of the data
     file_handle.write(asbytes(length.ljust(_MAX_LEN)))
     file_handle.write(zlib.compress(asbytes(data), compress))
-
-###############################################################################
-# Utility objects for persistence.
 
 
 class NDArrayWrapper:
@@ -93,16 +86,14 @@ class NDArrayWrapper:
     def read(self, unpickler):
         """Reconstruct the array."""
         filename = os.path.join(unpickler._dirname, self.filename)
-        # Load the array from the disk
-        # use getattr instead of self.allow_mmap to ensure backward compat
-        # with NDArrayWrapper instances pickled with joblib < 0.9.0
+        # Load the array from the disk. Use getattr instead of self.allow_mmap to ensure backward compat with
+        # NDArrayWrapper instances pickled with joblib < 0.9.0
         allow_mmap = getattr(self, 'allow_mmap', True)
         kwargs = {}
         if allow_mmap:
             kwargs['mmap_mode'] = unpickler.mmap_mode
         if "allow_pickle" in inspect.signature(unpickler.np.load).parameters:
-            # Required in numpy 1.16.3 and later to aknowledge the security
-            # risk.
+            # Required in numpy 1.16.3 and later to aknowledge the security risk.
             kwargs["allow_pickle"] = True
         array = unpickler.np.load(filename, **kwargs)
 
@@ -111,9 +102,7 @@ class NDArrayWrapper:
 
         # Reconstruct subclasses. This does not work with old
         # versions of numpy
-        if (hasattr(array, '__array_prepare__') and
-            self.subclass not in (unpickler.np.ndarray,
-                                  unpickler.np.memmap)):
+        if (hasattr(array, '__array_prepare__') and self.subclass not in (unpickler.np.ndarray, unpickler.np.memmap)):
             # We need to reconstruct another subclass
             new_array = unpickler.np.core.multiarray._reconstruct(
                 self.subclass, (0,), 'b')
@@ -125,16 +114,12 @@ class NDArrayWrapper:
 class ZNDArrayWrapper(NDArrayWrapper):
     """An object to be persisted instead of numpy arrays.
 
-    This object store the Zfile filename in which
-    the data array has been persisted, and the meta information to
+    This object store the Zfile filename in which the data array has been persisted, and the meta information to
     retrieve it.
-    The reason that we store the raw buffer data of the array and
-    the meta information, rather than array representation routine
-    (tobytes) is that it enables us to use completely the strided
-    model to avoid memory copies (a and a.T store as fast). In
-    addition saving the heavy information separately can avoid
-    creating large temporary buffers when unpickling data with
-    large arrays.
+    The reason that we store the raw buffer data of the array and the meta information, rather than array representation
+    routine (tobytes) is that it enables us to use completely the strided model to avoid memory copies (a and a.T store
+    as fast). In addition saving the heavy information separately can avoid creating large temporary buffers when
+    unpickling data with large arrays.
     """
 
     def __init__(self, filename, init_args, state):
@@ -145,8 +130,7 @@ class ZNDArrayWrapper(NDArrayWrapper):
 
     def read(self, unpickler):
         """Reconstruct the array from the meta-information and the z-file."""
-        # Here we a simply reproducing the unpickling mechanism for numpy
-        # arrays
+        # Here we a simply reproducing the unpickling mechanism for numpy arrays
         filename = os.path.join(unpickler._dirname, self.filename)
         array = unpickler.np.core.multiarray._reconstruct(*self.init_args)
         with open(filename, 'rb') as f:
@@ -180,15 +164,13 @@ class ZipNumpyUnpickler(Unpickler):
     def load_build(self):
         """Set the state of a newly created object.
 
-        We capture it to replace our place-holder objects,
-        NDArrayWrapper, by the array we are interested in. We
-        replace them directly in the stack of pickler.
+        We capture it to replace our place-holder objects, NDArrayWrapper, by the array we are interested in. We replace
+        them directly in the stack of pickler.
         """
         Unpickler.load_build(self)
         if isinstance(self.stack[-1], NDArrayWrapper):
             if self.np is None:
-                raise ImportError("Trying to unpickle an ndarray, "
-                                  "but numpy didn't import correctly")
+                raise ImportError("Trying to unpickle an ndarray, but numpy didn't import correctly")
             nd_array_wrapper = self.stack.pop()
             array = nd_array_wrapper.read(self)
             self.stack.append(array)
@@ -199,8 +181,7 @@ class ZipNumpyUnpickler(Unpickler):
 def load_compatibility(filename):
     """Reconstruct a Python object from a file persisted with joblib.dump.
 
-    This function ensures the compatibility with joblib old persistence format
-    (<= 0.9.3).
+    This function ensures the compatibility with joblib old persistence format (<= 0.9.3).
 
     Parameters
     ----------
@@ -223,10 +204,9 @@ def load_compatibility(filename):
     dump.
     """
     with open(filename, 'rb') as file_handle:
-        # We are careful to open the file handle early and keep it open to
-        # avoid race-conditions on renames. That said, if data is stored in
-        # companion files, moving the directory will create a race when
-        # joblib tries to access the companion files.
+        # We are careful to open the file handle early and keep it open to avoid race-conditions on renames. That said,
+        # if data is stored in companion files, moving the directory will create a race when joblib tries to access the
+        # companion files.
         unpickler = ZipNumpyUnpickler(filename, file_handle=file_handle)
         try:
             obj = unpickler.load()
