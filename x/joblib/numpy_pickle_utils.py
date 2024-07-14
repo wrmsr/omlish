@@ -13,6 +13,7 @@ import contextlib
 from .compressor import _ZFILE_PREFIX
 from .compressor import _COMPRESSORS
 
+
 try:
     import numpy as np
 except ImportError:
@@ -22,12 +23,9 @@ Unpickler = pickle._Unpickler
 Pickler = pickle._Pickler
 xrange = range
 
-
 try:
-    # The python standard library can be built without bz2 so we make bz2
-    # usage optional.
-    # see https://github.com/scikit-learn/scikit-learn/issues/7526 for more
-    # details.
+    # The python standard library can be built without bz2 so we make bz2 usage optional. see
+    # https://github.com/scikit-learn/scikit-learn/issues/7526 for more details.
     import bz2
 except ImportError:
     bz2 = None
@@ -73,8 +71,6 @@ def _ensure_native_byte_order(array):
     return array
 
 
-###############################################################################
-# Cache file utilities
 def _detect_compressor(fileobj):
     """Return the compressor matching fileobj.
 
@@ -89,8 +85,7 @@ def _detect_compressor(fileobj):
     # Read the magic number in the first bytes of the file.
     max_prefix_len = _get_prefixes_max_len()
     if hasattr(fileobj, 'peek'):
-        # Peek allows to read those bytes without moving the cursor in the
-        # file whic.
+        # Peek allows to read those bytes without moving the cursor in the file whic.
         first_bytes = fileobj.peek(max_prefix_len)
     else:
         # Fallback to seek if the fileobject is not peekable.
@@ -149,9 +144,8 @@ def _read_fileobject(fileobj, filename, mmap_mode=None):
     compressor = _detect_compressor(fileobj)
 
     if compressor == 'compat':
-        # Compatibility with old pickle mode: simply return the input
-        # filename "as-is" and let the compatibility function be called by the
-        # caller.
+        # Compatibility with old pickle mode: simply return the input filename "as-is" and let the compatibility
+        # function be called by the caller.
         warnings.warn("The file '%s' has been generated with a joblib "
                       "version less than 0.10. "
                       "Please regenerate this pickle file." % filename,
@@ -159,15 +153,14 @@ def _read_fileobject(fileobj, filename, mmap_mode=None):
         yield filename
     else:
         if compressor in _COMPRESSORS:
-            # based on the compressor detected in the file, we open the
-            # correct decompressor file object, wrapped in a buffer.
+            # based on the compressor detected in the file, we open the correct decompressor file object, wrapped in a
+            # buffer.
             compressor_wrapper = _COMPRESSORS[compressor]
             inst = compressor_wrapper.decompressor_file(fileobj)
             fileobj = _buffered_read_file(inst)
 
-        # Checking if incompatible load parameters with the type of file:
-        # mmap_mode cannot be used with compressed file or in memory buffers
-        # such as io.BytesIO.
+        # Checking if incompatible load parameters with the type of file: mmap_mode cannot be used with compressed file
+        # or in memory buffers such as io.BytesIO.
         if mmap_mode is not None:
             if isinstance(fileobj, io.BytesIO):
                 warnings.warn('In memory persistence is not compatible with '
@@ -202,9 +195,8 @@ def _write_fileobject(filename, compress=("zlib", 3)):
         return _buffered_write_file(file_instance)
 
 
-# Utility functions/variables from numpy required for writing arrays.
-# We need at least the functions introduced in version 1.9 of numpy. Here,
-# we use the ones from numpy 1.10.2.
+# Utility functions/variables from numpy required for writing arrays. We need at least the functions introduced in
+# version 1.9 of numpy. Here, we use the ones from numpy 1.10.2.
 BUFFER_SIZE = 2 ** 18  # size of buffer for reading npz files in bytes
 
 
@@ -236,9 +228,8 @@ def _read_bytes(fp, size, error_template="ran out of data"):
     """
     data = bytes()
     while True:
-        # io files (default in python3) return None or raise on
-        # would-block, python2 file will truncate, probably nothing can be
-        # done about that.  note that regular files can't be non-blocking
+        # io files (default in python3) return None or raise on would-block, python2 file will truncate, probably
+        # nothing can be done about that.  note that regular files can't be non-blocking
         try:
             r = fp.read(size - len(data))
             data += r

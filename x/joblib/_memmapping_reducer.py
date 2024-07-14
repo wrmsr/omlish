@@ -10,20 +10,13 @@ import errno
 import os
 import stat
 import threading
-import atexit
 import tempfile
 import time
-import warnings
 import weakref
 from uuid import uuid4
 from multiprocessing import util
 
 from pickle import whichmodule, loads, dumps, HIGHEST_PROTOCOL, PicklingError
-
-try:
-    WindowsError
-except NameError:
-    WindowsError = type(None)
 
 try:
     import numpy as np
@@ -34,6 +27,8 @@ except ImportError:
 from .numpy_pickle import dump, load, load_temporary_memmap
 from .backports import make_memmap
 from .disk import delete_folder
+
+
 # from multiprocessing import resource_tracker
 
 # Some system have a ramdisk mounted by default, we can use it instead of /tmp
@@ -141,6 +136,7 @@ class _WeakArrayKeyMap:
             # as soon as the object used as key is garbage collected.
             def on_destroy(_):
                 del self._data[key]
+
             ref = weakref.ref(obj, on_destroy)
         self._data[key] = ref, value
 
@@ -324,7 +320,7 @@ def reduce_array_memmap_backward(a):
         # file backing the memmap (done implicitly in a previously registered
         # finalizer, see ``unlink_on_gc_collect`` for more details)
         return (
-            loads, (dumps(np.asarray(a), protocol=HIGHEST_PROTOCOL), )
+            loads, (dumps(np.asarray(a), protocol=HIGHEST_PROTOCOL),)
         )
 
 

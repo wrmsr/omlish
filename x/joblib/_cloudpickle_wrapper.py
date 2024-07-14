@@ -1,6 +1,7 @@
+import functools
 import inspect
-from functools import partial
-from cloudpickle import dumps, loads
+
+import cloudpickle
 
 
 WRAP_CACHE = {}
@@ -12,15 +13,14 @@ class CloudpickledObjectWrapper:
         self._keep_wrapper = keep_wrapper
 
     def __reduce__(self):
-        _pickled_object = dumps(self._obj)
+        _pickled_object = cloudpickle.dumps(self._obj)
         if not self._keep_wrapper:
-            return loads, (_pickled_object,)
+            return cloudpickle.loads, (_pickled_object,)
 
         return _reconstruct_wrapper, (_pickled_object, self._keep_wrapper)
 
     def __getattr__(self, attr):
-        # Ensure that the wrapped object can be used seemlessly as the
-        # previous object.
+        # Ensure that the wrapped object can be used seemlessly as the previous object.
         if attr not in ["_obj", "_keep_wrapper"]:
             return getattr(self._obj, attr)
         return getattr(self, attr)
@@ -39,16 +39,15 @@ def _wrap_non_picklable_objects(obj, keep_wrapper):
 
 
 def _reconstruct_wrapper(_pickled_object, keep_wrapper):
-    obj = loads(_pickled_object)
+    obj = cloudpickle.loads(_pickled_object)
     return _wrap_non_picklable_objects(obj, keep_wrapper)
 
 
 def _wrap_objects_when_needed(obj):
-    # Function to introspect an object and decide if it should be wrapped or
-    # not.
+    # Function to introspect an object and decide if it should be wrapped or not.
     need_wrap = "__main__" in getattr(obj, "__module__", "")
-    if isinstance(obj, partial):
-        return partial(
+    if isinstance(obj, functools.partial):
+        return functools.partial(
             _wrap_objects_when_needed(obj.func),
             *[_wrap_objects_when_needed(a) for a in obj.args],
             **{
@@ -57,8 +56,7 @@ def _wrap_objects_when_needed(obj):
             }
         )
     if callable(obj):
-        # Need wrap if the object is a function defined in a local scope of
-        # another function.
+        # Need wrap if the object is a function defined in a local scope of another function.
         func_code = getattr(obj, "__code__", "")
         need_wrap |= getattr(func_code, "co_flags", 0) & inspect.CO_NESTED
 
@@ -84,8 +82,8 @@ def wrap_non_picklable_objects(obj, keep_wrapper=True):
     typically slower compared to pickle. The proper way to solve serialization issues is to avoid defining functions and
     objects in the main scripts and to implement __reduce__ functions for complex classes.
     """
-    # If obj is a  class, create a CloudpickledClassWrapper which instantiates
-    # the object internally and wrap it directly in a CloudpickledObjectWrapper
+    # If obj is a  class, create a CloudpickledClassWrapper which instantiates the object internally and wrap it
+    # directly in a CloudpickledObjectWrapper
     if inspect.isclass(obj):
 
         class CloudpickledClassWrapper(CloudpickledObjectWrapper):
@@ -96,6 +94,5 @@ def wrap_non_picklable_objects(obj, keep_wrapper=True):
         CloudpickledClassWrapper.__name__ = obj.__name__
         return CloudpickledClassWrapper
 
-    # If obj is an instance of a class, just wrap it in a regular
-    # CloudpickledObjectWrapper
+    # If obj is an instance of a class, just wrap it in a regular CloudpickledObjectWrapper
     return _wrap_non_picklable_objects(obj, keep_wrapper=keep_wrapper)
