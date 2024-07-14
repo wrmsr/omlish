@@ -184,3 +184,5 @@ tenacity==8.5.0
 psutil==6.0.0
 
 mitogen==0.3.7
+
+lz4==4.3.3
