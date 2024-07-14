@@ -12,7 +12,6 @@ information: the size on disk of the compressed data, the time spent to dump
 and the time spent to reload the data from disk.
 """
 
-import os
 import os.path
 import time
 
@@ -40,7 +39,7 @@ data = pd.read_csv(url, names=names, nrows=1e6)
 #
 # This gives reference values for later comparison.
 
-from joblib import dump, load
+from .. import dump, load
 
 pickle_file = './pickle_data.joblib'
 
