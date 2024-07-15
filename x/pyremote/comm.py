@@ -1,8 +1,8 @@
 import abc
+import collections
 import errno
 import fcntl
 import heapq
-import io
 import logging
 import os
 import select
@@ -78,6 +78,14 @@ def set_block(fd: int) -> None:
     fcntl.fcntl(fd, fcntl.F_SETFL, flags & ~os.O_NONBLOCK)
 
 
+def pipe() -> ta.Tuple[ta.BinaryIO, ta.BinaryIO]:
+    rfd, wfd = os.pipe()
+    return (
+        os.fdopen(rfd, 'rb', 0),
+        os.fdopen(wfd, 'wb', 0)
+    )
+
+
 def io_op(fn, *args):
     while True:
         try:
@@ -95,7 +103,7 @@ def io_op(fn, *args):
 ##
 
 
-IoObj = ta.Union[io.FileIO, socket.socket]
+IoObj = ta.Union[ta.BinaryIO, socket.socket]
 
 
 CHUNK_SIZE = 131072
@@ -125,6 +133,18 @@ class Side:
             set_cloexec(self._fd)
         if not blocking:
             set_nonblock(self._fd)
+
+    @property
+    def stream(self) -> 'Stream':
+        return self._stream
+
+    @property
+    def fd(self) -> int:
+        return self._fd
+
+    @property
+    def closed(self) -> bool:
+        return self._closed
 
     def __repr__(self) -> str:
         return f'<Side of {self._stream.name or repr(self._stream)} fd {self._fd}>'
@@ -225,7 +245,6 @@ class Stream:
 
 
 class Protocol(abc.ABC):
-
     read_size = CHUNK_SIZE
 
     def __init__(self) -> None:
@@ -393,6 +412,73 @@ class Poller:
 ##
 
 
+class Waker(Protocol):
+    read_size = 1
+
+    @classmethod
+    def build_stream(cls, broker: 'Broker') -> Stream:
+        return Stream(
+            cls(broker),
+            *pipe(),
+        )
+
+    def __init__(self, broker: 'Broker') -> None:
+        super().__init__()
+
+        self._broker = broker
+        self._deferred = collections.deque()
+
+    def __repr__(self):
+        return 'Waker(fd=%r/%r)' % (
+            self._stream.rs and self._stream.rs.fd,
+            self._stream.ws and self._stream.ws.fd,
+        )
+
+    @property
+    def keep_alive(self):
+        return len(self._deferred)
+
+    def on_receive(self, broker, buf):
+        _vv and IOLOG.debug('%r.on_receive()', self)
+        while True:
+            try:
+                func, args, kwargs = self._deferred.popleft()
+            except IndexError:
+                return
+
+            try:
+                func(*args, **kwargs)
+            except Exception:
+                LOG.exception('defer() crashed: %r(*%r, **%r)', func, args, kwargs)
+                broker.shutdown()
+
+    def _wake(self):
+        try:
+            self.stream.transmit_side.write(b' ')
+        except OSError:
+            e = sys.exc_info()[1]
+            if e.args[0] not in (errno.EBADF, errno.EWOULDBLOCK):
+                raise
+
+    broker_shutdown_msg = (
+        "An attempt was made to enqueue a message with a Broker that has "
+        "already exited. It is likely your program called Broker.shutdown() "
+        "too early."
+    )
+
+    def defer(self, func, *args, **kwargs):
+        if threading.get_ident() == self.broker.thread_ident:
+            _vv and IOLOG.debug('%r.defer() [immediate]', self)
+            return func(*args, **kwargs)
+
+        if self._broker._exited:
+            raise Error(self.broker_shutdown_msg)
+
+        _vv and IOLOG.debug('%r.defer() [fd=%r]', self, self.stream.transmit_side.fd)
+        self._deferred.append((func, args, kwargs))
+        self._wake()
+
+
 class Broker:
 
     def __init__(self) -> None:
@@ -414,6 +500,10 @@ class Broker:
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}@{id(self):x}'
+
+    @property
+    def thread_ident(self) -> ta.Optional[int]:
+        return self._thread.ident
 
     def keep_alive(self) -> bool:
         # it = (side.keep_alive for (_, (side, _)) in self._poller.readers)
