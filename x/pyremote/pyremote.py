@@ -69,10 +69,11 @@ def _connect_docker(ctr_id: str) -> Connection:
     context_name = f'docker:{ctr_id}'
 
     real_main_src = inspect.getsource(sys.modules[__name__])
-    main_src = '\n'.join([
-        '__name__ = "__pyremote_child_main__"\n',
+    main_src = '\n\n'.join([
+        '__name__ = "__pyremote_child_main__"',
         real_main_src,
-        '\n_child_main()\n',
+        '_child_main()',
+
     ])
     main_z = zlib.compress(main_src.encode('utf-8'))
 
@@ -108,9 +109,14 @@ class HiSayer:
 
 
 def _child_main() -> None:
+    sys.executable = os.environ.pop('ARGV0')
+
     print(f'hi from child: {socket.gethostname()}', file=sys.stderr)
-    pkl_b64 = sys.stdin.readline()
-    pkl_buf = base64.decodebytes(pkl_b64.encode('utf-8'))
+
+    fd = os.fdopen(100, 'rb', 0)
+    (pkl_len,) = struct.unpack('<L', fd.read(4))
+    pkl_buf = fd.read(pkl_len)
+    print(f'got pickle: {pkl_buf!r}', file=sys.stderr)
     obj = pickle.loads(pkl_buf)
     obj()
 
@@ -143,9 +149,8 @@ def _main() -> None:
 
         obj = HiSayer('foo')
         pkl_buf = pickle.dumps(obj)
-        pkl_b64 = base64.encodebytes(pkl_buf).replace(b'\n', b'')
-        conn._proc.stdin.write(pkl_b64)
-        conn._proc.stdin.write(b'\n')
+        conn._proc.stdin.write(struct.pack('<L', len(pkl_buf)))
+        conn._proc.stdin.write(pkl_buf)
         conn._proc.stdin.flush()
 
         while True:
