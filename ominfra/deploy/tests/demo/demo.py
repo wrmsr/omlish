@@ -44,10 +44,8 @@ async def _a_main():
     try:
         if TIMEBOMB_DELAY_S:
             subprocess.check_call([
-                'docker', 'exec',
-                '-id', ctr_id,
-                'sh', '-c',
-                timebomb_payload(TIMEBOMB_DELAY_S),
+                'docker', 'exec', '-id', ctr_id,
+                'sh', '-c', timebomb_payload(TIMEBOMB_DELAY_S),
             ])
 
             cr: cmds.CommandRunner = ssh.AsyncsshSshCommandRunner(ssh.SshConfig(
