@@ -551,6 +551,7 @@ class Message:
         Construct a message from from the supplied `kwargs`. :attr:`src_id` and :attr:`auth_id` are always set to
         :data:`mitogen.context_id`.
         """
+
         super().__init__()
         self.src_id = mitogen.context_id
         self.auth_id = mitogen.context_id
@@ -739,6 +740,7 @@ class Sender:
 
     def send(self, data):
         """Send `data` to the remote end."""
+
         _vv and IOLOG.debug('%r.send(%r..)', self, repr(data)[:100])
         self.context.send(Message.pickled(data, handle=self.dst_handle))
 
