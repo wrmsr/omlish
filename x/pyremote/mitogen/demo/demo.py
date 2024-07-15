@@ -1,5 +1,6 @@
 import os
 import subprocess
+import threading  # noqa
 
 from omlish.docker import timebomb_payload
 from omlish.testing.pydevd import silence_subprocess_check
@@ -26,12 +27,16 @@ def _main():
                 'sh', '-c', timebomb_payload(TIMEBOMB_DELAY_S),
             ])
 
-        import mitogen.master
+        import mitogen.utils
+        mitogen.utils.log_to_file()
 
+        import mitogen.master
         router = mitogen.master.Router()
 
         ctr = router.docker(container=ctr_id, python_path='python3')
         ctr.call(os.system, 'whoami')
+
+        ctr.call(exec, 'import threading; print(threading.enumerate())')
 
         print()
         print(ctr_id)

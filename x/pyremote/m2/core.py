@@ -135,7 +135,7 @@ class Error(Exception):
             fmt %= args
         if fmt and not isinstance(fmt, str):
             fmt = fmt.decode('utf-8')
-        super().__init__(self, fmt)
+        super().__init__(fmt)
 
 
 class LatchError(Error):
@@ -150,7 +150,7 @@ class CallError(Error):
 
     def __init__(self, fmt=None, *args):
         if not isinstance(fmt, BaseException):
-            super().__init__(self, fmt, *args)
+            super().__init__(fmt, *args)
         else:
             e = fmt
             cls = e.__class__
@@ -159,7 +159,7 @@ class CallError(Error):
             if tb:
                 fmt += '\n'
                 fmt += ''.join(traceback.format_tb(tb))
-            super().__init__(self, fmt)
+            super().__init__(fmt)
 
     def __reduce__(self):
         return (_unpickle_call_error, (self.args[0],))
@@ -1749,11 +1749,26 @@ class Latch:
         poller = self.poller_class()
         poller.start_receive(rsock.fileno())
         try:
-            return self._get_sleep(poller, timeout, block, rsock, wsock, cookie)
+            return self._get_sleep(
+                poller,
+                timeout,
+                block,
+                rsock,
+                wsock,
+                cookie,
+            )
         finally:
             poller.close()
 
-    def _get_sleep(self, poller, timeout, block, rsock, wsock, cookie):
+    def _get_sleep(
+            self,
+            poller,
+            timeout,
+            block,
+            rsock,
+            wsock,
+            cookie,
+    ):
         """
         When a result is not immediately available, sleep waiting for :meth:`put` to write a byte to our socket pair.
         """
@@ -2630,7 +2645,7 @@ class LogHandler(logging.Handler):
     """
 
     def __init__(self, context):
-        super().__init__(self)
+        super().__init__()
         self.context = context
         self.local = threading.local()
         self._buffer = []
