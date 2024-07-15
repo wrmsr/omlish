@@ -28,15 +28,28 @@ def _main():
             ])
 
         import mitogen.utils
-        mitogen.utils.log_to_file()
+        mitogen.utils.log_to_file(level='DEBUG')
 
         import mitogen.master
         router = mitogen.master.Router()
 
-        ctr = router.docker(container=ctr_id, python_path='python3')
+        ctr = router.docker(container=ctr_id, python_path='python3', debug=True)
         ctr.call(os.system, 'whoami')
 
-        ctr.call(exec, 'import threading; print(threading.enumerate())')
+        ctr.call(exec, """
+import threading, sys, traceback
+for th in threading.enumerate():
+    print(th)
+    fr = sys._current_frames()[th.ident]
+    traceback.print_stack(fr, file=sys.stdout)
+    print()
+""")
+
+        root = router.su(via=ctr)
+        root.call(os.system, 'whoami')
+
+        # root.shutdown(True)
+        # ctr.shutdown(True)
 
         print()
         print(ctr_id)

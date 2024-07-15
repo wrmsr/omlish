@@ -1551,10 +1551,12 @@ class Poller:
         self._update(fd)
 
     def _poll(self, timeout):
-        (rfds, wfds, _), _ = io_op(select.select,
+        (rfds, wfds, _), _ = io_op(
+            select.select,
             self._rfds,
             self._wfds,
-            (), timeout
+            (),
+            timeout,
         )
 
         for fd in rfds:
