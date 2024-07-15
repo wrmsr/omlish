@@ -688,8 +688,13 @@ class Message:
 
     def __repr__(self):
         return 'Message(%r, %r, %r, %r, %r, %r..%d)' % (
-            self.dst_id, self.src_id, self.auth_id, self.handle,
-            self.reply_to, (self.data or '')[:50], len(self.data)
+            self.dst_id,
+            self.src_id,
+            self.auth_id,
+            self.handle,
+            self.reply_to,
+            (self.data or '')[:50],
+            len(self.data),
         )
 
 
