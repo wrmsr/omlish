@@ -1877,7 +1877,7 @@ class Waker(Protocol):
 
     @classmethod
     def build_stream(cls, broker):
-        stream = super(Waker, cls).build_stream(broker)
+        stream = super().build_stream(broker)
         stream.accept(*pipe())
         return stream
 
