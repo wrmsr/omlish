@@ -15,12 +15,27 @@ import typing as ta
 log = logging.getLogger(__name__)
 
 
+T = ta.TypeVar('T')
+
+
 ##
 
 
 def _check(cond: bool, msg: str) -> None:
     if not cond:
         raise Exception(msg)
+
+
+def _check_eq(l: T, r: T) -> T:
+    if l != r:
+        raise Exception(f'must be equal: {l}, {r}')
+    return l
+
+
+def _check_not_none(o: ta.Optional[T]) -> T:
+    if o is None:
+        raise Exception('must not be none')
+    return o
 
 
 ##
@@ -123,52 +138,70 @@ class Side:
         if self._closed:
             return b''
 
-        s, disconnected = io_op(os.read, self.fd, n)
-        if disconnected:
-            log.debug('%r: disconnected during read: %s', self, disconnected)
+        c, dc = io_op(os.read, self._fd, n)
+        if dc:
+            log.debug('%r: disconnected during read: %s', self, dc)
             return b''
 
-        return s
+        return c
 
     def write(self, s: bytes) -> ta.Optional[int]:
         if self._closed:
             return None
 
-        written, disconnected = io_op(os.write, self.fd, s)
-        if disconnected:
-            log.debug('%r: disconnected during write: %s', self, disconnected)
+        c, dc = io_op(os.write, self._fd, s)
+        if dc:
+            log.debug('%r: disconnected during write: %s', self, dc)
             return None
 
-        return written
+        return c
 
 
 class Stream:
 
-    receive_side = None
-    transmit_side = None
+    def __init__(
+            self,
+            protocol: 'Protocol',
+            rfp: IoObj,
+            wfp: IoObj,
+            name: str = 'default',
+    ) -> None:
+        super().__init__()
 
-    protocol = None
-    conn = None
+        self._protocol = protocol
+        self._rs = Side(self, rfp)
+        self._ws = Side(self, wfp)
+        self._name = name
 
-    name = u'default'
+    @property
+    def protocol(self) -> 'Protocol':
+        return self._protocol
 
-    def set_protocol(self, protocol):
-        if self.protocol:
-            self.protocol.stream = None
-        self.protocol = protocol
-        self.protocol.stream = self
+    @property
+    def rs(self) -> Side:
+        return self._rs
 
-    def accept(self, rfp, wfp):
-        self.receive_side = Side(self, rfp)
-        self.transmit_side = Side(self, wfp)
+    @property
+    def ws(self) -> Side:
+        return self._ws
 
-    def __repr__(self):
-        return "<Stream %s #%04x>" % (self.name, id(self) & 0xffff,)
+    @property
+    def name(self) -> str:
+        return self._name
+
+    def __repr__(self) -> str:
+        return f'<Stream {self._name} {id(self) & 0xffff:04x}>'
+
+    def set_protocol(self, protocol: 'Protocol') -> None:
+        _check_eq(self._protocol._stream, self)  # noqa
+        self._protocol._stream = None
+        self._protocol = protocol
+        self._protocol._stream = self  # noqa
 
     def on_receive(self, broker):
-        buf = self.receive_side.read(self.protocol.read_size)
+        buf = self._rs.read(self.protocol.read_size)
         if not buf:
-            LOG.debug('%r: empty read, disconnecting', self.receive_side)
+            log.debug('%r: empty read, disconnecting', self._rs)
             return self.on_disconnect(broker)
 
         self.protocol.on_receive(broker, buf)
@@ -177,39 +210,32 @@ class Stream:
         self.protocol.on_transmit(broker)
 
     def on_shutdown(self, broker):
-        fire(self, 'shutdown')
+        callback(self, 'shutdown')
         self.protocol.on_shutdown(broker)
 
     def on_disconnect(self, broker):
-        fire(self, 'disconnect')
+        callback(self, 'disconnect')
         self.protocol.on_disconnect(broker)
 
 
 class Protocol:
-    stream_class = Stream
-
-    stream = None
 
     read_size = CHUNK_SIZE
 
-    @classmethod
-    def build_stream(cls, *args, **kwargs):
-        stream = cls.stream_class()
-        stream.set_protocol(cls(*args, **kwargs))
-        return stream
+    def __init__(self) -> None:
+        super().__init__()
 
-    def __repr__(self):
-        return '%s(%s)' % (
-            self.__class__.__name__,
-            self.stream and self.stream.name,
-        )
+        self._stream: ta.Optional[Stream] = None
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({self._stream!r})'
 
     def on_shutdown(self, broker):
-        _v and LOG.debug('%r: shutting down', self)
-        self.stream.on_disconnect(broker)
+        log.debug('%r: shutting down', self)
+        self._stream.on_disconnect(broker)
 
     def on_disconnect(self, broker):
-        LOG.debug('%r: disconnecting', self)
+        log.debug('%r: disconnecting', self)
         broker.stop_receive(self.stream)
         if self.stream.transmit_side:
             broker._stop_transmit(self.stream)
