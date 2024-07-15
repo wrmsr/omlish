@@ -131,7 +131,7 @@ class Error(Exception):
             fmt %= args
         if fmt and not isinstance(fmt, str):
             fmt = fmt.decode('utf-8')
-        Exception.__init__(self, fmt)
+        super().__init__(self, fmt)
 
 
 class LatchError(Error):
@@ -192,7 +192,7 @@ class CallError(Error):
     """
     def __init__(self, fmt=None, *args):
         if not isinstance(fmt, BaseException):
-            Error.__init__(self, fmt, *args)
+            super().__init__(self, fmt, *args)
         else:
             e = fmt
             cls = e.__class__
@@ -201,7 +201,7 @@ class CallError(Error):
             if tb:
                 fmt += '\n'
                 fmt += ''.join(traceback.format_tb(tb))
-            Error.__init__(self, fmt)
+            super().__init__(self, fmt)
 
     def __reduce__(self):
         return (_unpickle_call_error, (self.args[0],))
@@ -528,6 +528,7 @@ class Message:
         Construct a message from from the supplied `kwargs`. :attr:`src_id` and :attr:`auth_id` are always set to
         :data:`mitogen.context_id`.
         """
+        super().__init__()
         self.src_id = mitogen.context_id
         self.auth_id = mitogen.context_id
         vars(self).update(kwargs)
@@ -702,6 +703,7 @@ class Sender:
         Destination handle to send messages to.
     """
     def __init__(self, context, dst_handle):
+        super().__init__()
         self.context = context
         self.dst_handle = dst_handle
 
@@ -774,6 +776,7 @@ class Receiver:
             policy=None,
             overwrite=False,
     ):
+        super().__init__()
         self.router = router
         # The handle.
         self.handle = handle  # Avoid __repr__ crash in add_handler()
@@ -902,7 +905,7 @@ class LogHandler(logging.Handler):
         The context to send log messages towards. At present this is always the master process.
     """
     def __init__(self, context):
-        logging.Handler.__init__(self)
+        super().__init__(self)
         self.context = context
         self.local = threading.local()
         self._buffer = []
@@ -1184,6 +1187,7 @@ class BufferedWriter:
     protocol, in future it may become fixed for each stream instead.
     """
     def __init__(self, broker, protocol):
+        super().__init__()
         self._broker = broker
         self._protocol = protocol
         self._buf = collections.deque()
@@ -1265,6 +1269,7 @@ class Side:
             keep_alive=True,
             blocking=False,
     ):
+        super().__init__()
         # The :class:`Stream` for which this is a read or write side.
         self.stream = stream
         # File or socket object responsible for the lifetime of its underlying file descriptor.
@@ -1360,6 +1365,7 @@ class MitogenProtocol(Protocol):
             local_id=None,
             parent_ids=None
     ):
+        super().__init__()
         self._router = router
         self.remote_id = remote_id
         # If not :data:`None`, :class:`Router` stamps this into :attr:`Message.auth_id` of every message received on
@@ -1513,6 +1519,7 @@ class Context:
     remote_name = None
 
     def __init__(self, router, context_id, name=None):
+        super().__init__()
         self.router = router
         self.context_id = context_id
         if name:
@@ -1640,6 +1647,7 @@ class Poller:
     _generation = 1
 
     def __init__(self):
+        super().__init__()
         self._rfds = {}
         self._wfds = {}
 
@@ -1760,6 +1768,7 @@ class Latch:
     _cls_all_sockets = []
 
     def __init__(self):
+        super().__init__()
         self.closed = False
         self._lock = threading.Lock()
         # List of unconsumed enqueued items.
@@ -1998,6 +2007,7 @@ class Waker(Protocol):
         return stream
 
     def __init__(self, broker):
+        super().__init__()
         self._broker = broker
         self._deferred = collections.deque()
 
@@ -2090,6 +2100,7 @@ class IoLoggerProtocol(DelimitedProtocol):
         return stream
 
     def __init__(self, name):
+        super().__init__()
         self._log = logging.getLogger(name)
         # #453: prevent accidental log initialization in a child creating a feedback loop.
         self._log.propagate = False
@@ -2150,6 +2161,7 @@ class Router:
     )
 
     def __init__(self, broker):
+        super().__init__()
         self.broker = broker
         listen(broker, 'exit', self._on_broker_exit)
         self._setup_logging()
@@ -2562,6 +2574,7 @@ class Broker:
     shutdown_timeout = 3.0
 
     def __init__(self, poller_class=None, activate_compat=True):
+        super().__init__()
         self._alive = True
         self._exitted = False
         self._waker = Waker.build_stream(self)
@@ -2767,6 +2780,7 @@ class Dispatcher:
         return 'Dispatcher'
 
     def __init__(self, econtext):
+        super().__init__()
         self.econtext = econtext
         # Chain ID -> CallError if prior call failed.
         self._error_by_chain_id = {}
@@ -2902,6 +2916,7 @@ class ExternalContext:
     detached = False
 
     def __init__(self, config):
+        super().__init__()
         self.config = config
 
     def _on_broker_exit(self):
