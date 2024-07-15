@@ -2052,7 +2052,7 @@ class Waker(Protocol):
 
     broker_shutdown_msg = (
         "An attempt was made to enqueue a message with a Broker that has "
-        "already exitted. It is likely your program called Broker.shutdown() "
+        "already exited. It is likely your program called Broker.shutdown() "
         "too early."
     )
 
@@ -2067,7 +2067,7 @@ class Waker(Protocol):
         if threading.get_ident() == self.broker_ident:
             _vv and IOLOG.debug('%r.defer() [immediate]', self)
             return func(*args, **kwargs)
-        if self._broker._exitted:
+        if self._broker._exited:
             raise Error(self.broker_shutdown_msg)
 
         _vv and IOLOG.debug('%r.defer() [fd=%r]', self, self.stream.transmit_side.fd)
@@ -2151,7 +2151,7 @@ class Router:
     invalid_handle_msg = 'invalid handle'
     too_large_msg = 'message too large (max %d bytes)'
     respondent_disconnect_msg = 'the respondent Context has disconnected'
-    broker_exit_msg = 'Broker has exitted'
+    broker_exit_msg = 'Broker has exited'
     no_route_msg = 'no route to %r, my ID is %r'
     unidirectional_msg = (
         'routing mode prevents forward of message from context %d to '
@@ -2227,7 +2227,7 @@ class Router:
         """
         Called prior to broker exit, informs callbacks registered with :meth:`add_handler` the connection is dead.
         """
-        _v and LOG.debug('%r: broker has exitted', self)
+        _v and LOG.debug('%r: broker has exited', self)
         while self._handle_map:
             _, (_, func, _, _) = self._handle_map.popitem()
             func(Message.dead(self.broker_exit_msg))
@@ -2573,7 +2573,7 @@ class Broker:
     def __init__(self, poller_class=None, activate_compat=True):
         super().__init__()
         self._alive = True
-        self._exitted = False
+        self._exited = False
         self._waker = Waker.build_stream(self)
         # Arrange for `func(\*args, \**kwargs)` to be executed on the broker thread, or immediately if the current
         # thread is the broker thread. Safe to call from any thread.
@@ -2737,7 +2737,7 @@ class Broker:
             syslog.closelog()  # prevent test 'fd leak'.
 
         self._alive = False  # Ensure _alive is consistent on crash.
-        self._exitted = True
+        self._exited = True
         self._broker_exit()
 
     def _broker_main(self):
@@ -2752,7 +2752,7 @@ class Broker:
         _v and LOG.debug('%r: shutting down', self)
         def _shutdown():
             self._alive = False
-        if self._alive and not self._exitted:
+        if self._alive and not self._exited:
             self.defer(_shutdown)
 
     def join(self):
