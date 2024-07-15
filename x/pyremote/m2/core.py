@@ -940,8 +940,7 @@ class LogHandler(logging.Handler):
 
     def emit(self, rec):
         """Send a :data:`FORWARD_LOG` message towards the target context."""
-        if rec.name == 'mitogen.io' or \
-           getattr(self.local, 'in_emit', False):
+        if rec.name == 'mitogen.io' or getattr(self.local, 'in_emit', False):
             return
 
         self.local.in_emit = True
@@ -1153,8 +1152,7 @@ class DelimitedProtocol(Protocol):
             if cont:
                 self.on_partial_line_received(self._trailer)
             else:
-                assert stream.protocol is not self, \
-                    'stream protocol is no longer %r' % (self,)
+                assert stream.protocol is not self, 'stream protocol is no longer %r' % (self,)
                 stream.protocol.on_receive(broker, self._trailer)
 
     def on_line_received(self, line):
@@ -2522,8 +2520,7 @@ class Router:
             out_stream = parent_stream
 
         if out_stream is None:
-            self._maybe_send_dead(True, msg, self.no_route_msg,
-                                  msg.dst_id, mitogen.context_id)
+            self._maybe_send_dead(True, msg, self.no_route_msg, msg.dst_id, mitogen.context_id)
             return
 
         if in_stream and self.unidirectional and \
@@ -2684,8 +2681,8 @@ class Broker:
         elif timer_to is not None and timer_to < timeout:
             timeout = timer_to
 
-        #IOLOG.debug('readers =\n%s', pformat(self.poller.readers))
-        #IOLOG.debug('writers =\n%s', pformat(self.poller.writers))
+        # IOLOG.debug('readers =\n%s', pformat(self.poller.readers))
+        # IOLOG.debug('writers =\n%s', pformat(self.poller.writers))
         for side, func in self.poller.poll(timeout):
             self._call(side.stream, func)
         if timer_to is not None:
