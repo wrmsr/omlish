@@ -1,5 +1,8 @@
 import errno
+import heapq
 import logging
+import time
+
 import select
 import sys
 import threading
@@ -111,6 +114,56 @@ class Poller:
         return self._poll(timeout)
 
 
+class Timer:
+
+    def __init__(self, when: float, func: ta.Callable) -> None:
+        super().__init__()
+        self.when = when
+        self.func = func
+        self.active = True
+
+    def __repr__(self) -> str:
+        return f'Timer({self.when!r}, {self.func!r})'
+
+    def __eq__(self, other):
+        return self.when == other.when
+
+    def __lt__(self, other):
+        return self.when < other.when
+
+    def __le__(self, other):
+        return self.when <= other.when
+
+    def cancel(self) -> None:
+        self.active = False
+
+
+class TimerList:
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._lst: ta.List[Timer] = []
+
+    def get_timeout(self) -> float:
+        while self._lst and not self._lst[0].active:
+            heapq.heappop(self._lst)
+        if self._lst:
+            return max(0., self._lst[0].when - time.monotonic())
+
+    def schedule(self, when: float, func: ta.Callable) -> Timer:
+        timer = Timer(when, func)
+        heapq.heappush(self._lst, timer)
+        return timer
+
+    def expire(self) -> None:
+        now = time.monotonic()
+        while self._lst and self._lst[0].when <= now:
+            timer = heapq.heappop(self._lst)
+            if timer.active:
+                timer.active = False
+                timer.func()
+
+
 class Broker:
 
     def __init__(self) -> None:
@@ -120,6 +173,7 @@ class Broker:
         self._exited = False
 
         self._poller = Poller()
+        self._timers =  TimerList()
 
         self._thread = threading.Thread(
             target=self._broker_main,
@@ -131,31 +185,31 @@ class Broker:
         return f'{self.__class__.__name__}@{id(self):x}'
 
     def _loop_once(self, timeout: ta.Optional[float] = None) -> None:
-        timer_to = self.timers.get_timeout()
+        timer_to = self._timers.get_timeout()
         if timeout is None:
             timeout = timer_to
         elif timer_to is not None and timer_to < timeout:
             timeout = timer_to
 
-        for side, func in self.poller.poll(timeout):
+        for side, func in self._poller.poll(timeout):
             self._call(side.stream, func)
         if timer_to is not None:
-            self.timers.expire()
+            self._timers.expire()
 
     def _broker_exit(self):
-        for _, (side, _) in self.poller.readers + self.poller.writers:
+        for _, (side, _) in self._poller.readers + self._poller.writers:
             log.debug('%r: force disconnecting %r', self, side)
             side.stream.on_disconnect(self)
 
-        self.poller.close()
+        self._poller.close()
 
     def _broker_shutdown(self):
-        for _, (side, _) in self.poller.readers + self.poller.writers:
+        for _, (side, _) in self._poller.readers + self._poller.writers:
             self._call(side.stream, side.stream.on_shutdown)
 
-        deadline = now() + self.shutdown_timeout
-        while self.keep_alive() and now() < deadline:
-            self._loop_once(max(0, deadline - now()))
+        deadline = time.monotonic() + self.shutdown_timeout
+        while self.keep_alive() and time.monotonic() < deadline:
+            self._loop_once(max(0, deadline - time.monotonic()))
 
         if self.keep_alive():
             log.error(
@@ -173,10 +227,11 @@ class Broker:
             callback(self, 'before_shutdown')
             callback(self, 'shutdown')
             self._broker_shutdown()
+
         except Exception:  # noqa
             log.exception('%r: broker crashed', self)
 
-        self._alive = False  # Ensure _alive is consistent on crash.
+        self._alive = False
         self._exited = True
         self._broker_exit()
 
@@ -184,7 +239,6 @@ class Broker:
         try:
             self._do_broker_main()
         finally:
-            # 'finally' to ensure _on_broker_exit() can always SIGTERM.
             callback(self, 'exit')
 
     def shutdown(self) -> None:
