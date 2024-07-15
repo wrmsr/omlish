@@ -62,13 +62,13 @@ def set_block(fd: int) -> None:
     fcntl.fcntl(fd, fcntl.F_SETFL, flags & ~os.O_NONBLOCK)
 
 
-def io_op(func, *args):
+def io_op(fn, *args):
     while True:
         try:
-            return func(*args), None
+            return fn(*args), None
         except (select.error, OSError, IOError):
             e = sys.exc_info()[1]
-            log.debug('io_op(%r) -> OSError: %s', func, e)
+            log.debug('io_op(%r) -> OSError: %s', fn, e)
             if e.args[0] == errno.EINTR:
                 continue
             if e.args[0] in (errno.EIO, errno.ECONNRESET, errno.EPIPE):
@@ -80,6 +80,9 @@ def io_op(func, *args):
 
 
 IoObj = ta.Union[io.FileIO, socket.socket]
+
+
+CHUNK_SIZE = 131072
 
 
 class Side:
@@ -107,16 +110,16 @@ class Side:
         if not blocking:
             set_nonblock(self._fd)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'<Side of {self._stream.name or repr(self._stream)} fd {self._fd}>'
 
-    def close(self):
+    def close(self) -> None:
         log.debug('%r.close()', self)
         if not self._closed:
             self._closed = True
             self._fp.close()
 
-    def read(self, n=CHUNK_SIZE):
+    def read(self, n: int = CHUNK_SIZE) -> bytes:
         if self._closed:
             return b''
 
@@ -127,7 +130,7 @@ class Side:
 
         return s
 
-    def write(self, s):
+    def write(self, s: bytes) -> ta.Optional[int]:
         if self._closed:
             return None
 
@@ -137,6 +140,149 @@ class Side:
             return None
 
         return written
+
+
+class Stream:
+
+    receive_side = None
+    transmit_side = None
+
+    protocol = None
+    conn = None
+
+    name = u'default'
+
+    def set_protocol(self, protocol):
+        if self.protocol:
+            self.protocol.stream = None
+        self.protocol = protocol
+        self.protocol.stream = self
+
+    def accept(self, rfp, wfp):
+        self.receive_side = Side(self, rfp)
+        self.transmit_side = Side(self, wfp)
+
+    def __repr__(self):
+        return "<Stream %s #%04x>" % (self.name, id(self) & 0xffff,)
+
+    def on_receive(self, broker):
+        buf = self.receive_side.read(self.protocol.read_size)
+        if not buf:
+            LOG.debug('%r: empty read, disconnecting', self.receive_side)
+            return self.on_disconnect(broker)
+
+        self.protocol.on_receive(broker, buf)
+
+    def on_transmit(self, broker):
+        self.protocol.on_transmit(broker)
+
+    def on_shutdown(self, broker):
+        fire(self, 'shutdown')
+        self.protocol.on_shutdown(broker)
+
+    def on_disconnect(self, broker):
+        fire(self, 'disconnect')
+        self.protocol.on_disconnect(broker)
+
+
+class Protocol:
+    stream_class = Stream
+
+    stream = None
+
+    read_size = CHUNK_SIZE
+
+    @classmethod
+    def build_stream(cls, *args, **kwargs):
+        stream = cls.stream_class()
+        stream.set_protocol(cls(*args, **kwargs))
+        return stream
+
+    def __repr__(self):
+        return '%s(%s)' % (
+            self.__class__.__name__,
+            self.stream and self.stream.name,
+        )
+
+    def on_shutdown(self, broker):
+        _v and LOG.debug('%r: shutting down', self)
+        self.stream.on_disconnect(broker)
+
+    def on_disconnect(self, broker):
+        LOG.debug('%r: disconnecting', self)
+        broker.stop_receive(self.stream)
+        if self.stream.transmit_side:
+            broker._stop_transmit(self.stream)
+
+        self.stream.receive_side.close()
+        if self.stream.transmit_side:
+            self.stream.transmit_side.close()
+
+
+##
+
+
+class Timer:
+
+    def __init__(self, when: float, fn: ta.Callable) -> None:
+        super().__init__()
+        self._when = when
+        self._fn = fn
+        self._active = True
+
+    @property
+    def when(self) -> float:
+        return self._when
+
+    @property
+    def fn(self) -> ta.Callable:
+        return self._when
+
+    @property
+    def active(self) -> bool:
+        return self._active
+
+    def __repr__(self) -> str:
+        return f'Timer({self._when!r}, {self._fn!r})'
+
+    def __eq__(self, other):
+        return self._when == other._when  # noqa
+
+    def __lt__(self, other):
+        return self._when < other._when  # noqa
+
+    def __le__(self, other):
+        return self._when <= other._when  # noqa
+
+    def cancel(self) -> None:
+        self._active = False
+
+
+class TimerList:
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._lst: ta.List[Timer] = []
+
+    def get_timeout(self) -> ta.Optional[float]:
+        while self._lst and not self._lst[0].active:
+            heapq.heappop(self._lst)
+        if self._lst:
+            return max(0., self._lst[0].when - time.monotonic())
+        return None
+
+    def schedule(self, when: float, fn: ta.Callable) -> Timer:
+        timer = Timer(when, fn)
+        heapq.heappush(self._lst, timer)
+        return timer
+
+    def expire(self) -> None:
+        now = time.monotonic()
+        while self._lst and self._lst[0].when <= now:
+            timer = heapq.heappop(self._lst)
+            if timer.active:
+                timer.active = False
+                timer.fn()
 
 
 ##
@@ -204,55 +350,7 @@ class Poller:
         return self._poll(timeout)
 
 
-class Timer:
-
-    def __init__(self, when: float, func: ta.Callable) -> None:
-        super().__init__()
-        self.when = when
-        self.func = func
-        self.active = True
-
-    def __repr__(self) -> str:
-        return f'Timer({self.when!r}, {self.func!r})'
-
-    def __eq__(self, other):
-        return self.when == other.when
-
-    def __lt__(self, other):
-        return self.when < other.when
-
-    def __le__(self, other):
-        return self.when <= other.when
-
-    def cancel(self) -> None:
-        self.active = False
-
-
-class TimerList:
-
-    def __init__(self) -> None:
-        super().__init__()
-        self._lst: ta.List[Timer] = []
-
-    def get_timeout(self) -> ta.Optional[float]:
-        while self._lst and not self._lst[0].active:
-            heapq.heappop(self._lst)
-        if self._lst:
-            return max(0., self._lst[0].when - time.monotonic())
-        return None
-
-    def schedule(self, when: float, func: ta.Callable) -> Timer:
-        timer = Timer(when, func)
-        heapq.heappush(self._lst, timer)
-        return timer
-
-    def expire(self) -> None:
-        now = time.monotonic()
-        while self._lst and self._lst[0].when <= now:
-            timer = heapq.heappop(self._lst)
-            if timer.active:
-                timer.active = False
-                timer.func()
+##
 
 
 class Broker:
@@ -282,9 +380,9 @@ class Broker:
         # return sum(it, 0) > 0 or self._timers.get_timeout() is not None
         raise NotImplementedError
 
-    def _call(self, stream: Stream, func: ta.Callable) -> None:
+    def _call(self, stream: Stream, fn: ta.Callable) -> None:
         try:
-            func(self)
+            fn(self)
         except Exception:  # noqa
             log.exception('%r crashed', stream)
             stream.on_disconnect(self)
@@ -296,8 +394,8 @@ class Broker:
         elif timer_to is not None and timer_to < timeout:
             timeout = timer_to
 
-        for side, func in self._poller.poll(timeout):
-            self._call(side.stream, func)
+        for side, fn in self._poller.poll(timeout):
+            self._call(side.stream, fn)
         if timer_to is not None:
             self._timers.expire()
 
@@ -355,6 +453,9 @@ class Broker:
 
     def join(self) -> None:
         self._thread.join()
+
+
+##
 
 
 def _main() -> None:
