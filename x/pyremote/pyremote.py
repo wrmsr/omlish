@@ -1,9 +1,12 @@
 import base64
 import inspect
 import os
+import pickle
 import socket
+import struct
 import subprocess
 import sys
+import time
 import typing as ta
 import zlib
 
@@ -43,7 +46,7 @@ def _bootstrap_payload(context_name: str, main_z_len: int) -> str:
     bs_main_src = inspect.getsource(_bootstrap_main)
     bs_main_z = zlib.compress(bs_main_src.encode('utf-8'))
 
-    bs_main_z64 = base64.encodebytes(bs_main_z).decode('utf-8').replace('\n', '').encode('utf-8')
+    bs_main_z64 = base64.encodebytes(bs_main_z).replace(b'\n', b'')
     bs_stmts = [
         'import base64, os, sys, zlib',
         f'exec(zlib.decompress(base64.decodebytes({bs_main_z64!r})))',
@@ -95,8 +98,21 @@ def _connect_docker(ctr_id: str) -> Connection:
     return conn
 
 
+class HiSayer:
+    def __init__(self, msg):
+        super().__init__()
+        self.msg = msg
+
+    def __call__(self):
+        print(f'hi from {self!r}: {self.msg}', file=sys.stderr)
+
+
 def _child_main() -> None:
     print(f'hi from child: {socket.gethostname()}', file=sys.stderr)
+    pkl_b64 = sys.stdin.readline()
+    pkl_buf = base64.decodebytes(pkl_b64.encode('utf-8'))
+    obj = pickle.loads(pkl_buf)
+    obj()
 
 
 TIMEBOMB_DELAY_S = 20 * 60
@@ -125,7 +141,16 @@ def _main() -> None:
 
         conn = _connect_docker(ctr_id)
 
-        print(conn._proc.stderr.read())
+        obj = HiSayer('foo')
+        pkl_buf = pickle.dumps(obj)
+        pkl_b64 = base64.encodebytes(pkl_buf).replace(b'\n', b'')
+        conn._proc.stdin.write(pkl_b64)
+        conn._proc.stdin.write(b'\n')
+        conn._proc.stdin.flush()
+
+        while True:
+            print(conn._proc.stderr.read())
+            time.sleep(1.)
 
         print()
         print(ctr_id)
