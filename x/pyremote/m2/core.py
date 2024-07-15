@@ -21,7 +21,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import binascii
 import collections
-import encodings.latin_1
+import encodings.latin_1  # noqa
 import encodings.utf_8
 import errno
 import fcntl
@@ -247,6 +247,7 @@ def _has_parent_authority(context_id):
         (context_id == mitogen.context_id) or
         (context_id in mitogen.parent_ids)
     )
+
 
 def has_parent_authority(msg, _stream=None):
     """
@@ -1417,8 +1418,12 @@ class MitogenProtocol(Protocol):
             return False
 
         if msg_len > self._router.max_message_size:
-            LOG.error('%r: Maximum message size exceeded (got %d, max %d)',
-                      self, msg_len, self._router.max_message_size)
+            LOG.error(
+                '%r: Maximum message size exceeded (got %d, max %d)',
+                self,
+                msg_len,
+                self._router.max_message_size,
+            )
             self.stream.on_disconnect(broker)
             return False
 
@@ -1426,7 +1431,9 @@ class MitogenProtocol(Protocol):
         if self._input_buf_len < total_len:
             _vv and IOLOG.debug(
                 '%r: Input too short (want %d, got %d)',
-                self, msg_len, self._input_buf_len - Message.HEADER_LEN
+                self,
+                msg_len,
+                self._input_buf_len - Message.HEADER_LEN,
             )
             return False
 
@@ -1880,7 +1887,11 @@ class Latch:
         """
         _vv and IOLOG.debug(
             '%r._get_sleep(timeout=%r, block=%r, fd=%d/%d)',
-            self, timeout, block, rsock.fileno(), wsock.fileno()
+            self,
+            timeout,
+            block,
+            rsock.fileno(),
+            wsock.fileno(),
         )
 
         e = None
@@ -1944,15 +1955,14 @@ class Latch:
             if self._waking < len(self._sleeping):
                 wsock, cookie = self._sleeping[self._waking]
                 self._waking += 1
-                _vv and IOLOG.debug('%r.put() -> waking wfd=%r',
-                                    self, wsock.fileno())
+                _vv and IOLOG.debug('%r.put() -> waking wfd=%r', self, wsock.fileno())
             elif self.notify:
                 self.notify(self)
         finally:
             self._lock.release()
 
         if wsock:
-            self._wake(wsock, cookie)
+            self._wake(wsock, cookie)  # noqa
 
     def _wake(self, wsock, cookie):
         written, disconnected = io_op(os.write, wsock.fileno(), cookie)
@@ -2012,8 +2022,7 @@ class Waker(Protocol):
             try:
                 func(*args, **kwargs)
             except Exception:
-                LOG.exception('defer() crashed: %r(*%r, **%r)',
-                              func, args, kwargs)
+                LOG.exception('defer() crashed: %r(*%r, **%r)', func, args, kwargs)
                 broker.shutdown()
 
     def _wake(self):
@@ -2048,8 +2057,7 @@ class Waker(Protocol):
         if self._broker._exitted:
             raise Error(self.broker_shutdown_msg)
 
-        _vv and IOLOG.debug('%r.defer() [fd=%r]', self,
-                            self.stream.transmit_side.fd)
+        _vv and IOLOG.debug('%r.defer() [fd=%r]', self, self.stream.transmit_side.fd)
         self._deferred.append((func, args, kwargs))
         self._wake()
 
@@ -2177,8 +2185,7 @@ class Router:
 
         target_id_s, _, name = msg.data.partition(b':')
         target_id = int(target_id_s, 10)
-        LOG.error('%r: deleting route to %s (%d)',
-                  self, to_text(name), target_id)
+        LOG.error('%r: deleting route to %s (%d)', self, to_text(name), target_id)
         context = self._context_by_id.get(target_id)
         if context:
             fire(context, 'disconnect')
@@ -2268,8 +2275,7 @@ class Router:
         Register a newly constructed context and its associated stream, and add the stream's receive side to the I/O
         multiplexer. This method remains public while the design has not yet settled.
         """
-        _v and LOG.debug('%s: registering %r to stream %r',
-                         self, context, stream)
+        _v and LOG.debug('%s: registering %r to stream %r', self, context, stream)
         self._write_lock.acquire()
         try:
             self._stream_by_id[context.context_id] = stream
@@ -2456,13 +2462,25 @@ class Router:
         if in_stream:
             auth_stream = self._stream_by_id.get(msg.auth_id, parent_stream)
             if in_stream != auth_stream:
-                LOG.error('%r: bad auth_id: got %r via %r, not %r: %r',
-                          self, msg.auth_id, in_stream, auth_stream, msg)
+                LOG.error(
+                    '%r: bad auth_id: got %r via %r, not %r: %r',
+                    self,
+                    msg.auth_id,
+                    in_stream,
+                    auth_stream,
+                    msg,
+                )
                 return
 
             if msg.src_id != msg.auth_id and in_stream != src_stream:
-                LOG.error('%r: bad src_id: got %r via %r, not %r: %r',
-                          self, msg.src_id, in_stream, src_stream, msg)
+                LOG.error(
+                    '%r: bad src_id: got %r via %r, not %r: %r',
+                    self,
+                    msg.src_id,
+                    in_stream,
+                    src_stream,
+                    msg,
+                )
                 return
 
             # If the stream's MitogenProtocol has auth_id set, copy it to the message. This allows subtrees to become
@@ -2640,8 +2658,7 @@ class Broker:
         :param float timeout:
             If not :data:`None`, maximum time in seconds to wait for events.
         """
-        _vv and IOLOG.debug('%r._loop_once(%r, %r)',
-                            self, timeout, self.poller)
+        _vv and IOLOG.debug('%r._loop_once(%r, %r)', self, timeout, self.poller)
 
         timer_to = self.timers.get_timeout()
         if timeout is None:
@@ -2680,10 +2697,12 @@ class Broker:
             self._loop_once(max(0, deadline - now()))
 
         if self.keep_alive():
-            LOG.error('%r: pending work still existed %d seconds after '
-                      'shutdown began. This may be due to a timer that is yet '
-                      'to expire, or a child connection that did not fully '
-                      'shut down.', self, self.shutdown_timeout)
+            LOG.error(
+                '%r: pending work still existed %d seconds after shutdown began. This may be due to a timer that is '
+                'yet to expire, or a child connection that did not fully shut down.',
+                self,
+                self.shutdown_timeout,
+            )
 
     def _do_broker_main(self):
         """Broker thread main function. Dispatches IO events until :meth:`shutdown` is called."""
@@ -3031,13 +3050,22 @@ class ExternalContext:
                 self.router._setup_logging()
 
                 _v and LOG.debug('Python version is %s', sys.version)
-                _v and LOG.debug('Parent is context %r (%s); my ID is %r',
-                                 self.parent.context_id, self.parent.name,
-                                 mitogen.context_id)
-                _v and LOG.debug('pid:%r ppid:%r uid:%r/%r, gid:%r/%r host:%r',
-                                 os.getpid(), os.getppid(), os.geteuid(),
-                                 os.getuid(), os.getegid(), os.getgid(),
-                                 socket.gethostname())
+                _v and LOG.debug(
+                    'Parent is context %r (%s); my ID is %r',
+                    self.parent.context_id,
+                    self.parent.name,
+                    mitogen.context_id,
+                )
+                _v and LOG.debug(
+                    'pid:%r ppid:%r uid:%r/%r, gid:%r/%r host:%r',
+                    os.getpid(),
+                    os.getppid(),
+                    os.geteuid(),
+                    os.getuid(),
+                    os.getegid(),
+                    os.getgid(),
+                    socket.gethostname(),
+                )
 
                 sys.executable = os.environ.pop('ARGV0', sys.executable)
                 _v and LOG.debug('Recovered sys.executable: %r', sys.executable)
