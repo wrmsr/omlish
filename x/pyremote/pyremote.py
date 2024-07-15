@@ -75,13 +75,8 @@ def _connect_docker(ctr_id: str) -> Connection:
 
     proc = subprocess.Popen(
         [
-            'docker',
-            'exec',
-            '-i',
-            ctr_id,
-            'python3',
-            '-c',
-            _bootstrap_payload(context_name, len(main_z)),
+            'docker', 'exec', '-i', ctr_id,
+            'python3', '-c', _bootstrap_payload(context_name, len(main_z)),
         ],
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
@@ -116,9 +111,7 @@ def _main() -> None:
     img_name = 'python:3.8'
 
     ctr_id = subprocess.check_output([
-        'docker', 'run',
-        '-d',
-        img_name,
+        'docker', 'run', '-d', img_name,
         'sleep', 'infinity',
     ]).decode().strip()
     print(f'{ctr_id=}')
@@ -126,10 +119,8 @@ def _main() -> None:
     try:
         if TIMEBOMB_DELAY_S:
             subprocess.check_call([
-                'docker', 'exec',
-                '-id', ctr_id,
-                'sh', '-c',
-                timebomb_payload(TIMEBOMB_DELAY_S),
+                'docker', 'exec', '-id', ctr_id,
+                'sh', '-c', timebomb_payload(TIMEBOMB_DELAY_S),
             ])
 
         conn = _connect_docker(ctr_id)
