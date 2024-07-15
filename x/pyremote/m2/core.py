@@ -164,30 +164,6 @@ class Secret(str):
         return (Secret, (str(self),))
 
 
-class Kwargs(dict):
-    """
-    A serializable dict subclass that indicates its keys should be coerced to Unicode on Python 3 and bytes on
-    Python<2.6.
-
-    Python 2 produces keyword argument dicts whose keys are bytes, requiring a helper to ensure compatibility with
-    Python 3 where Unicode is required, whereas Python 3 produces keyword argument dicts whose keys are Unicode,
-    requiring a helper for Python 2.4/2.5, where bytes are required.
-    """
-
-    def __init__(self, dct):
-        for k, v in dct.items():
-            if type(k) is bytes:
-                self[k.decode()] = v
-            else:
-                self[k] = v
-
-    def __repr__(self):
-        return 'Kwargs(%s)' % (dict.__repr__(self),)
-
-    def __reduce__(self):
-        return (Kwargs, (dict(self),))
-
-
 class CallError(Error):
     """
     Serializable :class:`Error` subclass raised when :meth:`Context.call() <mitogen.parent.Context.call>` fails. A copy
@@ -597,8 +573,6 @@ class Message:
                 return Blob
             elif func == 'Secret':
                 return Secret
-            elif func == 'Kwargs':
-                return Kwargs
         elif module == '_codecs' and func == 'encode':
             return self._unpickle_bytes
         elif module == '__builtin__' and func == 'bytes':
@@ -1622,7 +1596,7 @@ class Context:
         elif not isinstance(service_name, str):
             service_name = service_name.name()  # Service.name()
         _v and LOG.debug('calling service %s.%s of %r, args: %r', service_name, method_name, self, kwargs)
-        tup = (service_name, to_text(method_name), Kwargs(kwargs))
+        tup = (service_name, to_text(method_name), kwargs)
         msg = Message.pickled(tup, handle=CALL_SERVICE)
         return self.send_async(msg)
 
@@ -2676,7 +2650,7 @@ class Broker:
     # :meth:`shutdown`.
     shutdown_timeout = 3.0
 
-    def __init__(self, poller_class=None, activate_compat=True):
+    def __init__(self, poller_class=None):
         super().__init__()
         self._alive = True
         self._exited = False
@@ -3071,7 +3045,7 @@ class ExternalContext:
 
     def _setup_master(self):
         Router.max_message_size = self.config['max_message_size']
-        self.broker = Broker(activate_compat=False)
+        self.broker = Broker()
         self.router = Router(self.broker)
         self.router.debug = self.config.get('debug', False)
         self.router.unidirectional = self.config['unidirectional']
