@@ -19,8 +19,34 @@
 # SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
 # WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+import binascii
+import collections
+import encodings.latin_1
+import encodings.utf_8
+import errno
+import fcntl
+import itertools
+import logging
+import os
+import pickle as py_pickle
+import pstats
+import signal
+import socket
+import struct
+import syslog
+import threading
+import time
+import traceback
+import types
+import warnings
+import weakref
+import zlib
 
-class Message(object):
+
+context_id = None
+
+
+class Message:
     """
     Messages are the fundamental unit of communication, comprising fields from
     the :ref:`stream-protocol` header, an optional reference to the receiving
@@ -235,7 +261,7 @@ class Message(object):
         )
 
 
-class Sender(object):
+class Sender:
     """
     Senders are used to send pickled messages to a handle in another context,
     it is the inverse of :class:`mitogen.core.Receiver`.
@@ -283,13 +309,13 @@ class Sender(object):
 
 def _unpickle_sender(router, context_id, dst_handle):
     if not (isinstance(router, Router) and
-            isinstance(context_id, (int, long)) and context_id >= 0 and
-            isinstance(dst_handle, (int, long)) and dst_handle > 0):
+            isinstance(context_id, int) and context_id >= 0 and
+            isinstance(dst_handle, int) and dst_handle > 0):
         raise TypeError('cannot unpickle Sender: bad input or missing router')
     return Sender(Context(router, context_id), dst_handle)
 
 
-class Receiver(object):
+class Receiver:
     """
     Receivers maintain a thread-safe queue of messages sent to a handle of this
     context from another context.
@@ -493,7 +519,7 @@ class Channel(Sender, Receiver):
         )
 
 
-class Stream(object):
+class Stream:
     """
     A :class:`Stream` is one readable and optionally one writeable file
     descriptor (represented by :class:`Side`) aggregated alongside an
@@ -629,7 +655,7 @@ class Stream(object):
         self.protocol.on_disconnect(broker)
 
 
-class Protocol(object):
+class Protocol:
     """
     Implement the program behaviour associated with activity on a
     :class:`Stream`. The protocol in use may vary over a stream's life, for
@@ -748,7 +774,7 @@ class DelimitedProtocol(Protocol):
         pass
 
 
-class BufferedWriter(object):
+class BufferedWriter:
     """
     Implement buffered output while avoiding quadratic string operations. This
     is currently constructed by each protocol, in future it may become fixed
@@ -804,7 +830,7 @@ class BufferedWriter(object):
             broker._stop_transmit(self._protocol.stream)
 
 
-class Side(object):
+class Side:
     """
     Represent one side of a :class:`Stream`. This allows unidirectional (e.g.
     pipe) and bidirectional (e.g. socket) streams to operate identically.
@@ -922,7 +948,7 @@ class Side(object):
         return written
 
 
-class Poller(object):
+class Poller:
     """
     A poller manages OS file descriptors the user is waiting to become
     available for IO. The :meth:`poll` method blocks the calling thread
@@ -1061,7 +1087,7 @@ class Poller(object):
         return self._poll(timeout)
 
 
-class Broker(object):
+class Broker:
     """
     Responsible for handling I/O multiplexing in a private thread.
 
