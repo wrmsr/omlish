@@ -63,7 +63,7 @@ triton==2.3.1; platform_machine == 'x86_64'
 
 wgpu==0.16.0
 
-hypothesis==6.108.1
+hypothesis==6.108.2
 
 hexdump==3.3
 
