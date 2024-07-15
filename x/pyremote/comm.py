@@ -1,15 +1,26 @@
 import errno
+import fcntl
 import heapq
+import io
 import logging
-import time
-
+import os
 import select
+import socket
 import sys
 import threading
+import time
 import typing as ta
 
 
 log = logging.getLogger(__name__)
+
+
+##
+
+
+def _check(cond: bool, msg: str) -> None:
+    if not cond:
+        raise Exception(msg)
 
 
 ##
@@ -35,6 +46,22 @@ def callback(obj: ta.Any, name: str, *args: ta.Any, **kwargs: ta.Any) -> None:
 ##
 
 
+def set_cloexec(fd: int) -> None:
+    flags = fcntl.fcntl(fd, fcntl.F_GETFD)
+    _check(fd > 2, f'fd {fd!r} <= 2'))
+    fcntl.fcntl(fd, fcntl.F_SETFD, flags | fcntl.FD_CLOEXEC)
+
+
+def set_nonblock(fd: int) -> None:
+    flags = fcntl.fcntl(fd, fcntl.F_GETFL)
+    fcntl.fcntl(fd, fcntl.F_SETFL, flags | os.O_NONBLOCK)
+
+
+def set_block(fd: int) -> None:
+    flags = fcntl.fcntl(fd, fcntl.F_GETFL)
+    fcntl.fcntl(fd, fcntl.F_SETFL, flags & ~os.O_NONBLOCK)
+
+
 def io_op(func, *args):
     while True:
         try:
@@ -47,6 +74,69 @@ def io_op(func, *args):
             if e.args[0] in (errno.EIO, errno.ECONNRESET, errno.EPIPE):
                 return None, e
             raise
+
+
+##
+
+
+IoObj = ta.Union[io.FileIO, socket.socket]
+
+
+class Side:
+
+    def __init__(
+            self,
+            stream: 'Stream',
+            fp: IoObj,
+            *,
+            cloexec: bool = True,
+            keep_alive: bool = True,
+            blocking: bool = False,
+    ) -> None:
+        super().__init__()
+
+        self._stream = stream
+        self._fp = fp
+        self._keep_alive = keep_alive
+
+        self._fd = fp.fileno()
+        self._closed = False
+
+        if cloexec:
+            set_cloexec(self._fd)
+        if not blocking:
+            set_nonblock(self._fd)
+
+    def __repr__(self):
+        return f'<Side of {self._stream.name or repr(self._stream)} fd {self._fd}>'
+
+    def close(self):
+        log.debug('%r.close()', self)
+        if not self._closed:
+            self._closed = True
+            self._fp.close()
+
+    def read(self, n=CHUNK_SIZE):
+        if self._closed:
+            return b''
+
+        s, disconnected = io_op(os.read, self.fd, n)
+        if disconnected:
+            log.debug('%r: disconnected during read: %s', self, disconnected)
+            return b''
+
+        return s
+
+    def write(self, s):
+        if self._closed:
+            return None
+
+        written, disconnected = io_op(os.write, self.fd, s)
+        if disconnected:
+            log.debug('%r: disconnected during write: %s', self, disconnected)
+            return None
+
+        return written
 
 
 ##
@@ -144,11 +234,12 @@ class TimerList:
         super().__init__()
         self._lst: ta.List[Timer] = []
 
-    def get_timeout(self) -> float:
+    def get_timeout(self) -> ta.Optional[float]:
         while self._lst and not self._lst[0].active:
             heapq.heappop(self._lst)
         if self._lst:
             return max(0., self._lst[0].when - time.monotonic())
+        return None
 
     def schedule(self, when: float, func: ta.Callable) -> Timer:
         timer = Timer(when, func)
@@ -172,8 +263,10 @@ class Broker:
         self._alive = True
         self._exited = False
 
+        self._shutdown_timeout = 3.0
+
         self._poller = Poller()
-        self._timers =  TimerList()
+        self._timers = TimerList()
 
         self._thread = threading.Thread(
             target=self._broker_main,
@@ -183,6 +276,18 @@ class Broker:
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}@{id(self):x}'
+
+    def keep_alive(self) -> bool:
+        # it = (side.keep_alive for (_, (side, _)) in self._poller.readers)
+        # return sum(it, 0) > 0 or self._timers.get_timeout() is not None
+        raise NotImplementedError
+
+    def _call(self, stream: Stream, func: ta.Callable) -> None:
+        try:
+            func(self)
+        except Exception:  # noqa
+            log.exception('%r crashed', stream)
+            stream.on_disconnect(self)
 
     def _loop_once(self, timeout: ta.Optional[float] = None) -> None:
         timer_to = self._timers.get_timeout()
@@ -201,22 +306,20 @@ class Broker:
             log.debug('%r: force disconnecting %r', self, side)
             side.stream.on_disconnect(self)
 
-        self._poller.close()
-
     def _broker_shutdown(self):
         for _, (side, _) in self._poller.readers + self._poller.writers:
             self._call(side.stream, side.stream.on_shutdown)
 
-        deadline = time.monotonic() + self.shutdown_timeout
+        deadline = time.monotonic() + self._shutdown_timeout
         while self.keep_alive() and time.monotonic() < deadline:
-            self._loop_once(max(0, deadline - time.monotonic()))
+            self._loop_once(max(0., deadline - time.monotonic()))
 
         if self.keep_alive():
             log.error(
                 '%r: pending work still existed %d seconds after shutdown began. This may be due to a timer that is '
                 'yet to expire, or a child connection that did not fully shut down.',
                 self,
-                self.shutdown_timeout,
+                self._shutdown_timeout,
             )
 
     def _do_broker_main(self) -> None:
@@ -242,9 +345,11 @@ class Broker:
             callback(self, 'exit')
 
     def shutdown(self) -> None:
-        _v and LOG.debug('%r: shutting down', self)
+        log.debug('%r: shutting down', self)
+
         def _shutdown():
             self._alive = False
+
         if self._alive and not self._exited:
             self.defer(_shutdown)
 
