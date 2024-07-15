@@ -78,10 +78,9 @@ STUB_CALL_SERVICE = 111
 #    clean up.
 IS_DEAD = 999
 
-FsPathTypes = (str,)
+
 BufferType = lambda buf, start: memoryview(buf)[start:]
 
-AnyTextType = (bytes, str)
 
 # Default size for calls to :meth:`Side.read` or :meth:`Side.write`, and the size of buffers configured by
 # :func:`mitogen.parent.create_socketpair`. This value has many performance implications, 128KiB seems to be a sweet
@@ -103,6 +102,7 @@ AnyTextType = (bytes, str)
 # An ideal :class:`Message` has a size that is a multiple of :data:`CHUNK_SIZE` inclusive of headers, to avoid wasting
 # IO loop iterations writing small trailer chunks.
 CHUNK_SIZE = 131072
+
 
 _tls = threading.local()
 
@@ -153,8 +153,7 @@ class Blob(bytes):
 
 class Secret(str):
     """
-    A serializable unicode subclass whose content is masked in repr() output,
-    making it suitable for logging passwords.
+    A serializable unicode subclass whose content is masked in repr() output, making it suitable for logging passwords.
     """
     def __repr__(self):
         return '[secret]'
@@ -275,8 +274,7 @@ def listen(obj, name, func):
 
 def unlisten(obj, name, func):
     """
-    Remove `func()` from the list of functions invoked when signal `name` is
-    fired by `obj`.
+    Remove `func()` from the list of functions invoked when signal `name` is fired by `obj`.
 
     :raises ValueError:
         `func()` was not on the list.
@@ -1259,7 +1257,14 @@ class Side:
     _fork_refs = weakref.WeakValueDictionary()
     closed = False
 
-    def __init__(self, stream, fp, cloexec=True, keep_alive=True, blocking=False):
+    def __init__(
+            self,
+            stream,
+            fp,
+            cloexec=True,
+            keep_alive=True,
+            blocking=False,
+    ):
         # The :class:`Stream` for which this is a read or write side.
         self.stream = stream
         # File or socket object responsible for the lifetime of its underlying file descriptor.
@@ -3040,7 +3045,6 @@ class ExternalContext:
             try:
                 self._setup_logging()
                 self._reap_first_stage()
-                if self.config.get('setup_package', True):
                 self._setup_globals()
                 if self.config.get('setup_stdio', True):
                     self._setup_stdio()
