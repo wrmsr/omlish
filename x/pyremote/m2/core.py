@@ -19,40 +19,35 @@
 # SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
 # WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-import sys
 import binascii
 import collections
 import encodings.latin_1
 import encodings.utf_8
 import errno
 import fcntl
+import io
 import itertools
 import logging
 import os
-import pickle as py_pickle
+import pickle
+import select
 import signal
 import socket
 import struct
+import sys
 import syslog
+import threading
 import time
 import traceback
-import types
 import weakref
-import zlib
-import importlib.machinery
-import importlib.util
-import select
-import threading
-import pickle
-import io
 
 
 LOG = logging.getLogger('mitogen')
 IOLOG = logging.getLogger('mitogen.io')
 IOLOG.setLevel(logging.INFO)
 
-# str.encode() may take import lock. Deadlock possible if broker calls
-# .encode() on behalf of thread currently waiting for module.
+# str.encode() may take import lock. Deadlock possible if broker calls .encode() on behalf of thread currently waiting
+# for module.
 LATIN1_CODEC = encodings.latin_1.Codec()
 
 _v = False
@@ -71,17 +66,16 @@ DETACHING = 109
 CALL_SERVICE = 110
 STUB_CALL_SERVICE = 111
 
-#: Special value used to signal disconnection or the inability to route a
-#: message, when it appears in the `reply_to` field. Usually causes
-#: :class:`mitogen.core.ChannelError` to be raised when it is received.
-#:
-#: It indicates the sender did not know how to process the message, or wishes
-#: no further messages to be delivered to it. It is used when:
-#:
-#:  * a remote receiver is disconnected or explicitly closed.
-#:  * a related message could not be delivered due to no route existing for it.
-#:  * a router is being torn down, as a sentinel value to notify
-#:    :meth:`mitogen.core.Router.add_handler` callbacks to clean up.
+# Special value used to signal disconnection or the inability to route a message, when it appears in the `reply_to`
+# field. Usually causes :class:`mitogen.core.ChannelError` to be raised when it is received.
+#
+# It indicates the sender did not know how to process the message, or wishes no further messages to be delivered to it.
+# It is used when:
+#
+#  * a remote receiver is disconnected or explicitly closed.
+#  * a related message could not be delivered due to no route existing for it.
+#  * a router is being torn down, as a sentinel value to notify :meth:`mitogen.core.Router.add_handler` callbacks to
+#    clean up.
 IS_DEAD = 999
 
 FsPathTypes = (str,)
@@ -89,44 +83,37 @@ BufferType = lambda buf, start: memoryview(buf)[start:]
 
 AnyTextType = (bytes, str)
 
-#: Default size for calls to :meth:`Side.read` or :meth:`Side.write`, and the
-#: size of buffers configured by :func:`mitogen.parent.create_socketpair`. This
-#: value has many performance implications, 128KiB seems to be a sweet spot.
-#:
-#: * When set low, large messages cause many :class:`Broker` IO loop
-#:   iterations, burning CPU and reducing throughput.
-#: * When set high, excessive RAM is reserved by the OS for socket buffers (2x
-#:   per child), and an identically sized temporary userspace buffer is
-#:   allocated on each read that requires zeroing, and over a particular size
-#:   may require two system calls to allocate/deallocate.
-#:
-#: Care must be taken to ensure the underlying kernel object and receiving
-#: program support the desired size. For example,
-#:
-#: * Most UNIXes have TTYs with fixed 2KiB-4KiB buffers, making them unsuitable
-#:   for efficient IO.
-#: * Different UNIXes have varying presets for pipes, which may not be
-#:   configurable. On recent Linux the default pipe buffer size is 64KiB, but
-#:   under memory pressure may be as low as 4KiB for unprivileged processes.
-#: * When communication is via an intermediary process, its internal buffers
-#:   effect the speed OS buffers will drain. For example OpenSSH uses 64KiB
-#:   reads.
-#:
-#: An ideal :class:`Message` has a size that is a multiple of
-#: :data:`CHUNK_SIZE` inclusive of headers, to avoid wasting IO loop iterations
-#: writing small trailer chunks.
+# Default size for calls to :meth:`Side.read` or :meth:`Side.write`, and the size of buffers configured by
+# :func:`mitogen.parent.create_socketpair`. This value has many performance implications, 128KiB seems to be a sweet
+# spot.
+#
+# * When set low, large messages cause many :class:`Broker` IO loop iterations, burning CPU and reducing throughput.
+# * When set high, excessive RAM is reserved by the OS for socket buffers (2x per child), and an identically sized
+#   temporary userspace buffer is allocated on each read that requires zeroing, and over a particular size may require
+#   two system calls to allocate/deallocate.
+#
+# Care must be taken to ensure the underlying kernel object and receiving program support the desired size. For example,
+#
+# * Most UNIXes have TTYs with fixed 2KiB-4KiB buffers, making them unsuitable for efficient IO.
+# * Different UNIXes have varying presets for pipes, which may not be configurable. On recent Linux the default pipe
+#   buffer size is 64KiB, but under memory pressure may be as low as 4KiB for unprivileged processes.
+# * When communication is via an intermediary process, its internal buffers effect the speed OS buffers will drain. For
+#   example OpenSSH uses 64KiB reads.
+#
+# An ideal :class:`Message` has a size that is a multiple of :data:`CHUNK_SIZE` inclusive of headers, to avoid wasting
+# IO loop iterations writing small trailer chunks.
 CHUNK_SIZE = 131072
 
 _tls = threading.local()
 
 
 if __name__ == 'mitogen.core':
-    # When loaded using import mechanism, ExternalContext.main() will not have
-    # a chance to set the synthetic mitogen global, so just import it here.
+    # When loaded using import mechanism, ExternalContext.main() will not have a chance to set the synthetic mitogen
+    # global, so just import it here.
     import mitogen
 else:
-    # When loaded as __main__, ensure classes and functions gain a __module__
-    # attribute consistent with the host process, so that pickling succeeds.
+    # When loaded as __main__, ensure classes and functions gain a __module__ attribute consistent with the host
+    # process, so that pickling succeeds.
     __name__ = 'mitogen.core'
 
 
@@ -148,17 +135,14 @@ class Error(Exception):
 
 
 class LatchError(Error):
-    """
-    Raised when an attempt is made to use a :class:`mitogen.core.Latch` that
-    has been marked closed.
-    """
+    """Raised when an attempt is made to use a :class:`mitogen.core.Latch` that has been marked closed."""
     pass
 
 
 class Blob(bytes):
     """
-    A serializable bytes subclass whose content is summarized in repr() output,
-    making it suitable for logging binary data.
+    A serializable bytes subclass whose content is summarized in repr() output, making it suitable for logging binary
+    data.
     """
     def __repr__(self):
         return '[blob: %d bytes]' % len(self)
@@ -181,12 +165,11 @@ class Secret(str):
 
 class Kwargs(dict):
     """
-    A serializable dict subclass that indicates its keys should be coerced to
-    Unicode on Python 3 and bytes on Python<2.6.
+    A serializable dict subclass that indicates its keys should be coerced to Unicode on Python 3 and bytes on
+    Python<2.6.
 
-    Python 2 produces keyword argument dicts whose keys are bytes, requiring a
-    helper to ensure compatibility with Python 3 where Unicode is required,
-    whereas Python 3 produces keyword argument dicts whose keys are Unicode,
+    Python 2 produces keyword argument dicts whose keys are bytes, requiring a helper to ensure compatibility with
+    Python 3 where Unicode is required, whereas Python 3 produces keyword argument dicts whose keys are Unicode,
     requiring a helper for Python 2.4/2.5, where bytes are required.
     """
     def __init__(self, dct):
@@ -205,9 +188,8 @@ class Kwargs(dict):
 
 class CallError(Error):
     """
-    Serializable :class:`Error` subclass raised when :meth:`Context.call()
-    <mitogen.parent.Context.call>` fails. A copy of the traceback from the
-    external context is appended to the exception message.
+    Serializable :class:`Error` subclass raised when :meth:`Context.call() <mitogen.parent.Context.call>` fails. A copy
+    of the traceback from the external context is appended to the exception message.
     """
     def __init__(self, fmt=None, *args):
         if not isinstance(fmt, BaseException):
@@ -233,32 +215,23 @@ def _unpickle_call_error(s):
 
 
 class ChannelError(Error):
-    """
-    Raised when a channel dies or has been closed.
-    """
+    """Raised when a channel dies or has been closed."""
     remote_msg = 'Channel closed by remote end.'
     local_msg = 'Channel closed by local end.'
 
 
 class StreamError(Error):
-    """
-    Raised when a stream cannot be established.
-    """
-    pass
+    """Raised when a stream cannot be established."""
 
 
 class TimeoutError(Error):
-    """
-    Raised when a timeout occurs on a stream.
-    """
-    pass
+    """Raised when a timeout occurs on a stream."""
 
 
 def to_text(o):
     """
-    Coerce `o` to Unicode by decoding it from UTF-8 if it is an instance of
-    :class:`bytes`, otherwise pass it to the :class:`str` constructor. The
-    returned object is always a plain :class:`str`, any subclass is removed.
+    Coerce `o` to Unicode by decoding it from UTF-8 if it is an instance of :class:`bytes`, otherwise pass it to the
+    :class:`str` constructor. The returned object is always a plain :class:`str`, any subclass is removed.
     """
     if isinstance(o, bytes):
         return o.decode('utf-8')
@@ -267,26 +240,6 @@ def to_text(o):
 
 # Documented in api.rst to work around Sphinx limitation.
 now = getattr(time, 'monotonic', time.time)
-
-
-# Python 2.4
-try:
-    any
-except NameError:
-    def any(it):
-        for elem in it:
-            if elem:
-                return True
-
-
-def _partition(s, sep, find):
-    """
-    (str|unicode).(partition|rpartition) for Python 2.4/2.5.
-    """
-    idx = find(sep)
-    if idx != -1:
-        left = s[0:idx]
-        return left, sep, s[len(left)+len(sep):]
 
 
 def _has_parent_authority(context_id):
@@ -315,9 +268,7 @@ def _signals(obj, signal):
 
 
 def listen(obj, name, func):
-    """
-    Arrange for `func()` to be invoked when signal `name` is fired on `obj`.
-    """
+    """Arrange for `func()` to be invoked when signal `name` is fired on `obj`."""
     _signals(obj, name).append(func)
 
 
@@ -333,24 +284,18 @@ def unlisten(obj, name, func):
 
 
 def fire(obj, name, *args, **kwargs):
-    """
-    Arrange for `func(*args, **kwargs)` to be invoked for every function
-    registered for signal `name` on `obj`.
-    """
+    """Arrange for `func(*args, **kwargs)` to be invoked for every function registered for signal `name` on `obj`."""
     for func in _signals(obj, name):
         func(*args, **kwargs)
 
 
 def takes_econtext(func):
     """
-    Decorator that marks a function or class method to automatically receive a
-    kwarg named `econtext`, referencing the
-    :class:`mitogen.core.ExternalContext` active in the context in which the
-    function is being invoked in. The decorator is only meaningful when the
-    function is invoked via :data:`CALL_FUNCTION <mitogen.core.CALL_FUNCTION>`.
+    Decorator that marks a function or class method to automatically receive a kwarg named `econtext`, referencing the
+    :class:`mitogen.core.ExternalContext` active in the context in which the function is being invoked in. The decorator
+    is only meaningful when the function is invoked via :data:`CALL_FUNCTION <mitogen.core.CALL_FUNCTION>`.
 
-    When the function is invoked directly, `econtext` must still be passed to
-    it explicitly.
+    When the function is invoked directly, `econtext` must still be passed to it explicitly.
     """
     func.mitogen_takes_econtext = True
     return func
@@ -358,14 +303,11 @@ def takes_econtext(func):
 
 def takes_router(func):
     """
-    Decorator that marks a function or class method to automatically receive a
-    kwarg named `router`, referencing the :class:`mitogen.core.Router` active
-    in the context in which the function is being invoked in. The decorator is
-    only meaningful when the function is invoked via :data:`CALL_FUNCTION
-    <mitogen.core.CALL_FUNCTION>`.
+    Decorator that marks a function or class method to automatically receive a kwarg named `router`, referencing the
+    :class:`mitogen.core.Router` active in the context in which the function is being invoked in. The decorator is only
+    meaningful when the function is invoked via :data:`CALL_FUNCTION <mitogen.core.CALL_FUNCTION>`.
 
-    When the function is invoked directly, `router` must still be passed to it
-    explicitly.
+    When the function is invoked directly, `router` must still be passed to it explicitly.
     """
     func.mitogen_takes_router = True
     return func
@@ -373,13 +315,12 @@ def takes_router(func):
 
 def is_blacklisted_import(importer, fullname):
     """
-    Return :data:`True` if `fullname` is part of a blacklisted package, or if
-    any packages have been whitelisted and `fullname` is not part of one.
+    Return :data:`True` if `fullname` is part of a blacklisted package, or if any packages have been whitelisted and
+    `fullname` is not part of one.
 
     NB:
       - If a package is on both lists, then it is treated as blacklisted.
-      - If any package is whitelisted, then all non-whitelisted packages are
-        treated as blacklisted.
+      - If any package is whitelisted, then all non-whitelisted packages are treated as blacklisted.
     """
     return ((not any(fullname.startswith(s) for s in importer.whitelist)) or
                 (any(fullname.startswith(s) for s in importer.blacklist)))
@@ -387,9 +328,8 @@ def is_blacklisted_import(importer, fullname):
 
 def set_cloexec(fd):
     """
-    Set the file descriptor `fd` to automatically close on :func:`os.execve`.
-    This has no effect on file descriptors inherited across :func:`os.fork`,
-    they must be explicitly closed through some other means, such as
+    Set the file descriptor `fd` to automatically close on :func:`os.execve`. This has no effect on file descriptors
+    inherited across :func:`os.fork`, they must be explicitly closed through some other means, such as
     :func:`mitogen.fork.on_fork`.
     """
     flags = fcntl.fcntl(fd, fcntl.F_GETFD)
@@ -399,10 +339,9 @@ def set_cloexec(fd):
 
 def set_nonblock(fd):
     """
-    Set the file descriptor `fd` to non-blocking mode. For most underlying file
-    types, this causes :func:`os.read` or :func:`os.write` to raise
-    :class:`OSError` with :data:`errno.EAGAIN` rather than block the thread
-    when the underlying kernel buffer is exhausted.
+    Set the file descriptor `fd` to non-blocking mode. For most underlying file types, this causes :func:`os.read` or
+    :func:`os.write` to raise :class:`OSError` with :data:`errno.EAGAIN` rather than block the thread when the
+    underlying kernel buffer is exhausted.
     """
     flags = fcntl.fcntl(fd, fcntl.F_GETFL)
     fcntl.fcntl(fd, fcntl.F_SETFL, flags | os.O_NONBLOCK)
@@ -410,8 +349,7 @@ def set_nonblock(fd):
 
 def set_block(fd):
     """
-    Inverse of :func:`set_nonblock`, i.e. cause `fd` to block the thread when
-    the underlying kernel buffer is exhausted.
+    Inverse of :func:`set_nonblock`, i.e. cause `fd` to block the thread when the underlying kernel buffer is exhausted.
     """
     flags = fcntl.fcntl(fd, fcntl.F_GETFL)
     fcntl.fcntl(fd, fcntl.F_SETFL, flags & ~os.O_NONBLOCK)
@@ -419,24 +357,18 @@ def set_block(fd):
 
 def io_op(func, *args):
     """
-    Wrap `func(*args)` that may raise :class:`select.error`, :class:`IOError`,
-    or :class:`OSError`, trapping UNIX error codes relating to disconnection
-    and retry events in various subsystems:
+    Wrap `func(*args)` that may raise :class:`select.error`, :class:`IOError`, or :class:`OSError`, trapping UNIX error
+    codes relating to disconnection and retry events in various subsystems:
 
-    * When a signal is delivered to the process on Python 2, system call retry
-      is signalled through :data:`errno.EINTR`. The invocation is automatically
-      restarted.
-    * When performing IO against a TTY, disconnection of the remote end is
-      signalled by :data:`errno.EIO`.
-    * When performing IO against a socket, disconnection of the remote end is
-      signalled by :data:`errno.ECONNRESET`.
-    * When performing IO against a pipe, disconnection of the remote end is
-      signalled by :data:`errno.EPIPE`.
+    * When a signal is delivered to the process on Python 2, system call retry is signalled through :data:`errno.EINTR`.
+      The invocation is automatically restarted.
+    * When performing IO against a TTY, disconnection of the remote end is signalled by :data:`errno.EIO`.
+    * When performing IO against a socket, disconnection of the remote end is signalled by :data:`errno.ECONNRESET`.
+    * When performing IO against a pipe, disconnection of the remote end is signalled by :data:`errno.EPIPE`.
 
     :returns:
-        Tuple of `(return_value, disconnect_reason)`, where `return_value` is
-        the return value of `func(*args)`, and `disconnected` is an exception
-        instance when disconnection was detected, otherwise :data:`None`.
+        Tuple of `(return_value, disconnect_reason)`, where `return_value` is the return value of `func(*args)`, and
+        `disconnected` is an exception instance when disconnection was detected, otherwise :data:`None`.
     """
     while True:
         try:
@@ -453,19 +385,18 @@ def io_op(func, *args):
 
 class PidfulStreamHandler(logging.StreamHandler):
     """
-    A :class:`logging.StreamHandler` subclass used when
-    :meth:`Router.enable_debug() <mitogen.master.Router.enable_debug>` has been
-    called, or the `debug` parameter was specified during context construction.
-    Verifies the process ID has not changed on each call to :meth:`emit`,
-    reopening the associated log file when a change is detected.
+    A :class:`logging.StreamHandler` subclass used when :meth:`Router.enable_debug()
+    <mitogen.master.Router.enable_debug>` has been called, or the `debug` parameter was specified during context
+    construction. Verifies the process ID has not changed on each call to :meth:`emit`, reopening the associated log
+    file when a change is detected.
 
-    This ensures logging to the per-process output files happens correctly even
-    when uncooperative third party components call :func:`os.fork`.
+    This ensures logging to the per-process output files happens correctly even when uncooperative third party
+    components call :func:`os.fork`.
     """
-    #: PID that last opened the log file.
+    # PID that last opened the log file.
     open_pid = None
 
-    #: Output path template.
+    # Output path template.
     template = '/tmp/mitogen.%s.%s.log'
 
     def _reopen(self):
@@ -507,18 +438,15 @@ def enable_debug_logging():
 
 
 def import_module(modname):
-    """
-    Import `module` and return the attribute named `attr`.
-    """
+    """Import `module` and return the attribute named `attr`."""
     return __import__(modname, None, None, [''])
 
 
 def pipe():
     """
-    Create a UNIX pipe pair using :func:`os.pipe`, wrapping the returned
-    descriptors in Python file objects in order to manage their lifetime and
-    ensure they are closed when their last reference is discarded and they have
-    not been closed explicitly.
+    Create a UNIX pipe pair using :func:`os.pipe`, wrapping the returned descriptors in Python file objects in order to
+    manage their lifetime and ensure they are closed when their last reference is discarded and they have not been
+    closed explicitly.
     """
     rfd, wfd = os.pipe()
     return (
@@ -529,14 +457,12 @@ def pipe():
 
 def iter_split(buf, delim, func):
     """
-    Invoke `func(s)` for each `delim`-delimited chunk in the potentially large
-    `buf`, avoiding intermediate lists and quadratic string operations. Return
-    the trailing undelimited portion of `buf`, or any unprocessed portion of
-    `buf` after `func(s)` returned :data:`False`.
+    Invoke `func(s)` for each `delim`-delimited chunk in the potentially large `buf`, avoiding intermediate lists and
+    quadratic string operations. Return the trailing undelimited portion of `buf`, or any unprocessed portion of `buf`
+    after `func(s)` returned :data:`False`.
 
     :returns:
-        `(trailer, cont)`, where `cont` is :data:`False` if the last call to
-        `func(s)` returned :data:`False`.
+        `(trailer, cont)`, where `cont` is :data:`False` if the last call to `func(s)` returned :data:`False`.
     """
     dlen = len(delim)
     start = 0
@@ -559,45 +485,39 @@ pickle__dumps = pickle.dumps
 
 class Message:
     """
-    Messages are the fundamental unit of communication, comprising fields from
-    the :ref:`stream-protocol` header, an optional reference to the receiving
-    :class:`mitogen.core.Router` for ingress messages, and helper methods for
+    Messages are the fundamental unit of communication, comprising fields from the :ref:`stream-protocol` header, an
+    optional reference to the receiving :class:`mitogen.core.Router` for ingress messages, and helper methods for
     deserialization and generating replies.
     """
-    #: Integer target context ID. :class:`Router` delivers messages locally
-    #: when their :attr:`dst_id` matches :data:`mitogen.context_id`, otherwise
-    #: they are routed up or downstream.
+
+    # Integer target context ID. :class:`Router` delivers messages locally when their :attr:`dst_id` matches
+    # :data:`mitogen.context_id`, otherwise they are routed up or downstream.
     dst_id = None
 
-    #: Integer source context ID. Used as the target of replies if any are
-    #: generated.
+    # Integer source context ID. Used as the target of replies if any are generated.
     src_id = None
 
-    #: Context ID under whose authority the message is acting. See
-    #: :ref:`source-verification`.
+    # Context ID under whose authority the message is acting. See :ref:`source-verification`.
     auth_id = None
 
-    #: Integer target handle in the destination context. This is one of the
-    #: :ref:`standard-handles`, or a dynamically generated handle used to
-    #: receive a one-time reply, such as the return value of a function call.
+    # Integer target handle in the destination context. This is one of the :ref:`standard-handles`, or a dynamically
+    # generated handle used to receive a one-time reply, such as the return value of a function call.
     handle = None
 
-    #: Integer target handle to direct any reply to this message. Used to
-    #: receive a one-time reply, such as the return value of a function call.
-    #: :data:`IS_DEAD` has a special meaning when it appears in this field.
+    # Integer target handle to direct any reply to this message. Used to receive a one-time reply, such as the return
+    # value of a function call. :data:`IS_DEAD` has a special meaning when it appears in this field.
     reply_to = None
 
-    #: Raw message data bytes.
+    # Raw message data bytes.
     data = b''
 
     _unpickled = object()
 
-    #: The :class:`Router` responsible for routing the message. This is
-    #: :data:`None` for locally originated messages.
+    # The :class:`Router` responsible for routing the message. This is :data:`None` for locally originated messages.
     router = None
 
-    #: The :class:`Receiver` over which the message was last received. Part of
-    #: the :class:`mitogen.select.Select` interface. Defaults to :data:`None`.
+    # The :class:`Receiver` over which the message was last received. Part of the :class:`mitogen.select.Select`
+    # interface. Defaults to :data:`None`.
     receiver = None
 
     HEADER_FMT = '>hLLLLLL'
@@ -606,8 +526,8 @@ class Message:
 
     def __init__(self, **kwargs):
         """
-        Construct a message from from the supplied `kwargs`. :attr:`src_id` and
-        :attr:`auth_id` are always set to :data:`mitogen.context_id`.
+        Construct a message from from the supplied `kwargs`. :attr:`src_id` and :attr:`auth_id` are always set to
+        :data:`mitogen.context_id`.
         """
         self.src_id = mitogen.context_id
         self.auth_id = mitogen.context_id
@@ -616,10 +536,15 @@ class Message:
 
     def pack(self):
         return (
-            struct.pack(self.HEADER_FMT, self.HEADER_MAGIC, self.dst_id,
-                        self.src_id, self.auth_id, self.handle,
-                        self.reply_to or 0, len(self.data))
-            + self.data
+            struct.pack(
+                self.HEADER_FMT,
+                self.HEADER_MAGIC,
+                self.dst_id,
+                self.src_id,
+                self.auth_id,
+                self.handle,
+                self.reply_to or 0, len(self.data)
+            ) + self.data
         )
 
     def _unpickle_context(self, context_id, name):
@@ -634,8 +559,7 @@ class Message:
 
     def _find_global(self, module, func):
         """
-        Return the class implementing `module_name.class_name` or raise
-        `StreamError` if the module is not whitelisted.
+        Return the class implementing `module_name.class_name` or raise `StreamError` if the module is not whitelisted.
         """
         if module == __name__:
             if func == '_unpickle_call_error' or func == 'CallError':
@@ -659,26 +583,23 @@ class Message:
     @property
     def is_dead(self):
         """
-        :data:`True` if :attr:`reply_to` is set to the magic value
-        :data:`IS_DEAD`, indicating the sender considers the channel dead. Dead
-        messages can be raised in a variety of circumstances, see
-        :data:`IS_DEAD` for more information.
+        :data:`True` if :attr:`reply_to` is set to the magic value :data:`IS_DEAD`, indicating the sender considers the
+        channel dead. Dead messages can be raised in a variety of circumstances, see :data:`IS_DEAD` for more
+        information.
         """
         return self.reply_to == IS_DEAD
 
     @classmethod
     def dead(cls, reason=None, **kwargs):
-        """
-        Syntax helper to construct a dead message.
-        """
+        """Syntax helper to construct a dead message."""
         kwargs['data'], _ = encodings.utf_8.encode(reason or u'')
         return cls(reply_to=IS_DEAD, **kwargs)
 
     @classmethod
     def pickled(cls, obj, **kwargs):
         """
-        Construct a pickled message, setting :attr:`data` to the serialization
-        of `obj`, and setting remaining fields using `kwargs`.
+        Construct a pickled message, setting :attr:`data` to the serialization of `obj`, and setting remaining fields
+        using `kwargs`.
 
         :returns:
             The new message.
@@ -693,12 +614,10 @@ class Message:
 
     def reply(self, msg, router=None, **kwargs):
         """
-        Compose a reply to this message and send it using :attr:`router`, or
-        `router` is :attr:`router` is :data:`None`.
+        Compose a reply to this message and send it using :attr:`router`, or `router` is :attr:`router` is :data:`None`.
 
         :param obj:
-            Either a :class:`Message`, or an object to be serialized in order
-            to construct a new message.
+            Either a :class:`Message`, or an object to be serialized in order to construct a new message.
         :param router:
             Optional router to use if :attr:`router` is :data:`None`.
         :param kwargs:
@@ -712,8 +631,7 @@ class Message:
         if msg.handle:
             (self.router or router).route(msg)
         else:
-            LOG.debug('dropping reply to message with no return address: %r',
-                      msg)
+            LOG.debug('dropping reply to message with no return address: %r', msg)
 
     UNPICKLER_KWARGS = {'encoding': 'bytes'}
 
@@ -730,8 +648,7 @@ class Message:
         Unpickle :attr:`data`, optionally raising any exceptions present.
 
         :param bool throw_dead:
-            If :data:`True`, raise exceptions, otherwise it is the caller's
-            responsibility.
+            If :data:`True`, raise exceptions, otherwise it is the caller's responsibility.
 
         :raises CallError:
             The serialized data contained CallError exception.
@@ -774,11 +691,11 @@ class Message:
 
 class Sender:
     """
-    Senders are used to send pickled messages to a handle in another context,
-    it is the inverse of :class:`mitogen.core.Receiver`.
+    Senders are used to send pickled messages to a handle in another context, it is the inverse of
+    :class:`mitogen.core.Receiver`.
 
-    Senders may be serialized, making them convenient to wire up data flows.
-    See :meth:`mitogen.core.Receiver.to_sender` for more information.
+    Senders may be serialized, making them convenient to wire up data flows. See :meth:`mitogen.core.Receiver.to_sender`
+    for more information.
 
     :param mitogen.core.Context context:
         Context to send messages to.
@@ -790,24 +707,19 @@ class Sender:
         self.dst_handle = dst_handle
 
     def send(self, data):
-        """
-        Send `data` to the remote end.
-        """
+        """Send `data` to the remote end."""
         _vv and IOLOG.debug('%r.send(%r..)', self, repr(data)[:100])
         self.context.send(Message.pickled(data, handle=self.dst_handle))
 
     explicit_close_msg = 'Sender was explicitly closed'
 
     def close(self):
-        """
-        Send a dead message to the remote, causing :meth:`ChannelError` to be
-        raised in any waiting thread.
-        """
+        """Send a dead message to the remote, causing :meth:`ChannelError` to be raised in any waiting thread."""
         _vv and IOLOG.debug('%r.close()', self)
         self.context.send(
             Message.dead(
                 reason=self.explicit_close_msg,
-                handle=self.dst_handle
+                handle=self.dst_handle,
             )
         )
 
@@ -819,49 +731,52 @@ class Sender:
 
 
 def _unpickle_sender(router, context_id, dst_handle):
-    if not (isinstance(router, Router) and
+    if not (
+            isinstance(router, Router) and
             isinstance(context_id, int) and context_id >= 0 and
-            isinstance(dst_handle, int) and dst_handle > 0):
+            isinstance(dst_handle, int) and dst_handle > 0
+    ):
         raise TypeError('cannot unpickle Sender: bad input or missing router')
     return Sender(Context(router, context_id), dst_handle)
 
 
 class Receiver:
     """
-    Receivers maintain a thread-safe queue of messages sent to a handle of this
-    context from another context.
+    Receivers maintain a thread-safe queue of messages sent to a handle of this context from another context.
 
     :param mitogen.core.Router router:
         Router to register the handler on.
 
     :param int handle:
-        If not :data:`None`, an explicit handle to register, otherwise an
-        unused handle is chosen.
+        If not :data:`None`, an explicit handle to register, otherwise an unused handle is chosen.
 
     :param bool persist:
-        If :data:`False`, unregister the handler after one message is received.
-        Single-message receivers are intended for RPC-like transactions, such
-        as in the case of :meth:`mitogen.parent.Context.call_async`.
+        If :data:`False`, unregister the handler after one message is received. Single-message receivers are intended
+        for RPC-like transactions, such as in the case of :meth:`mitogen.parent.Context.call_async`.
 
     :param mitogen.core.Context respondent:
-        Context this receiver is receiving from. If not :data:`None`, arranges
-        for the receiver to receive a dead message if messages can no longer be
-        routed to the context due to disconnection, and ignores messages that
-        did not originate from the respondent context.
+        Context this receiver is receiving from. If not :data:`None`, arranges for the receiver to receive a dead
+        message if messages can no longer be routed to the context due to disconnection, and ignores messages that did
+        not originate from the respondent context.
     """
-    #: If not :data:`None`, a function invoked as `notify(receiver)` after a
-    #: message has been received. The function is invoked on :class:`Broker`
-    #: thread, therefore it must not block. Used by
-    #: :class:`mitogen.select.Select` to efficiently implement waiting on
-    #: multiple event sources.
+    # If not :data:`None`, a function invoked as `notify(receiver)` after a message has been received. The function is
+    # invoked on :class:`Broker` thread, therefore it must not block. Used by :class:`mitogen.select.Select` to
+    # efficiently implement waiting on multiple event sources.
     notify = None
 
     raise_channelerror = True
 
-    def __init__(self, router, handle=None, persist=True,
-                 respondent=None, policy=None, overwrite=False):
+    def __init__(
+            self,
+            router,
+            handle=None,
+            persist=True,
+            respondent=None,
+            policy=None,
+            overwrite=False,
+    ):
         self.router = router
-        #: The handle.
+        # The handle.
         self.handle = handle  # Avoid __repr__ crash in add_handler()
         self._latch = Latch()  # Must exist prior to .add_handler()
         self.handle = router.add_handler(
@@ -884,9 +799,8 @@ class Receiver:
 
     def to_sender(self):
         """
-        Return a :class:`Sender` configured to deliver messages to this
-        receiver. As senders are serializable, this makes it convenient to pass
-        `(context_id, handle)` pairs around::
+        Return a :class:`Sender` configured to deliver messages to this receiver. As senders are serializable, this
+        makes it convenient to pass `(context_id, handle)` pairs around::
 
             def deliver_monthly_report(sender):
                 for line in open('monthly_report.txt'):
@@ -1127,20 +1041,20 @@ class Stream:
     managing any child process, and a reference to any separate ``stderr``
     :class:`Stream` connected to that process.
     """
-    #: A :class:`Side` representing the stream's receive file descriptor.
+    # A :class:`Side` representing the stream's receive file descriptor.
     receive_side = None
 
-    #: A :class:`Side` representing the stream's transmit file descriptor.
+    # A :class:`Side` representing the stream's transmit file descriptor.
     transmit_side = None
 
-    #: A :class:`Protocol` representing the protocol active on the stream.
+    # A :class:`Protocol` representing the protocol active on the stream.
     protocol = None
 
-    #: In parents, the :class:`mitogen.parent.Connection` instance.
+    # In parents, the :class:`mitogen.parent.Connection` instance.
     conn = None
 
-    #: The stream name. This is used in the :meth:`__repr__` output in any log
-    #: messages, it may be any descriptive string.
+    # The stream name. This is used in the :meth:`__repr__` output in any log
+    # messages, it may be any descriptive string.
     name = u'default'
 
     def set_protocol(self, protocol):
@@ -1253,12 +1167,12 @@ class Protocol:
     """
     stream_class = Stream
 
-    #: The :class:`Stream` this protocol is currently bound to, or
-    #: :data:`None`.
+    # The :class:`Stream` this protocol is currently bound to, or
+    # :data:`None`.
     stream = None
 
-    #: The size of the read buffer used by :class:`Stream` when this is the
-    #: active protocol for the stream.
+    # The size of the read buffer used by :class:`Stream` when this is the
+    # active protocol for the stream.
     read_size = CHUNK_SIZE
 
     @classmethod
@@ -1311,7 +1225,7 @@ class DelimitedProtocol(Protocol):
     allows switching from line-oriented to binary while the input buffer
     contains both kinds of data.
     """
-    #: The delimiter. Defaults to newline.
+    # The delimiter. Defaults to newline.
     delimiter = b'\n'
     _trailer = b''
 
@@ -1443,19 +1357,19 @@ class Side:
     closed = False
 
     def __init__(self, stream, fp, cloexec=True, keep_alive=True, blocking=False):
-        #: The :class:`Stream` for which this is a read or write side.
+        # The :class:`Stream` for which this is a read or write side.
         self.stream = stream
         # File or socket object responsible for the lifetime of its underlying
         # file descriptor.
         self.fp = fp
-        #: Integer file descriptor to perform IO on, or :data:`None` if
-        #: :meth:`close` has been called. This is saved separately from the
-        #: file object, since :meth:`file.fileno` cannot be called on it after
-        #: it has been closed.
+        # Integer file descriptor to perform IO on, or :data:`None` if
+        # :meth:`close` has been called. This is saved separately from the
+        # file object, since :meth:`file.fileno` cannot be called on it after
+        # it has been closed.
         self.fd = fp.fileno()
-        #: If :data:`True`, causes presence of this side in
-        #: :class:`Broker`'s active reader set to defer shutdown until the
-        #: side is disconnected.
+        # If :data:`True`, causes presence of this side in
+        # :class:`Broker`'s active reader set to defer shutdown until the
+        # side is disconnected.
         self.keep_alive = keep_alive
         self._fork_refs[id(self)] = self
         if cloexec:
@@ -1533,24 +1447,21 @@ class Side:
 
 class MitogenProtocol(Protocol):
     """
-    :class:`Protocol` implementing mitogen's :ref:`stream protocol
-    <stream-protocol>`.
+    :class:`Protocol` implementing mitogen's :ref:`stream protocol <stream-protocol>`.
     """
-    #: If not :data:`False`, indicates the stream has :attr:`auth_id` set and
-    #: its value is the same as :data:`mitogen.context_id` or appears in
-    #: :data:`mitogen.parent_ids`.
+    # If not :data:`False`, indicates the stream has :attr:`auth_id` set and its value is the same as
+    # :data:`mitogen.context_id` or appears in :data:`mitogen.parent_ids`.
     is_privileged = False
 
-    #: Invoked as `on_message(stream, msg)` each message received from the
-    #: peer.
+    # Invoked as `on_message(stream, msg)` each message received from the peer.
     on_message = None
 
     def __init__(self, router, remote_id, auth_id=None,
                  local_id=None, parent_ids=None):
         self._router = router
         self.remote_id = remote_id
-        #: If not :data:`None`, :class:`Router` stamps this into
-        #: :attr:`Message.auth_id` of every message received on this stream.
+        # If not :data:`None`, :class:`Router` stamps this into :attr:`Message.auth_id` of every message received on
+        # this stream.
         self.auth_id = auth_id
 
         if parent_ids is None:
@@ -1562,19 +1473,18 @@ class MitogenProtocol(Protocol):
             (remote_id in parent_ids) or
             auth_id in ([local_id] + parent_ids)
         )
-        self.sent_modules = set(['mitogen', 'mitogen.core'])
+        self.sent_modules = {'mitogen', 'mitogen.core'}
         self._input_buf = collections.deque()
         self._input_buf_len = 0
         self._writer = BufferedWriter(router.broker, self)
 
-        #: Routing records the dst_id of every message arriving from this
-        #: stream. Any arriving DEL_ROUTE is rebroadcast for any such ID.
+        # Routing records the dst_id of every message arriving from this
+        # stream. Any arriving DEL_ROUTE is rebroadcast for any such ID.
         self.egress_ids = set()
 
     def on_receive(self, broker, buf):
         """
-        Handle the next complete message on the stream. Raise
-        :class:`StreamError` on failure.
+        Handle the next complete message on the stream. Raise :class:`StreamError` on failure.
         """
         _vv and IOLOG.debug('%r.on_receive()', self)
         if self._input_buf and self._input_buf_len < 128:
@@ -1837,7 +1747,7 @@ class Poller:
     """
     SUPPORTED = True
 
-    #: Increments on every poll(). Used to version _rfds and _wfds.
+    # Increments on every poll(). Used to version _rfds and _wfds.
     _generation = 1
 
     def __init__(self):
@@ -1959,43 +1869,43 @@ class Latch:
 
     See :ref:`waking-sleeping-threads` for further discussion.
     """
-    #: The :class:`Poller` implementation to use. Instances are short lived so
-    #: prefer :class:`mitogen.parent.PollPoller` if it's available, otherwise
-    #: :class:`mitogen.core.Poller`. They don't need syscalls to create,
-    #: configure, or destroy. Replaced during import of :mod:`mitogen.parent`.
+    # The :class:`Poller` implementation to use. Instances are short lived so
+    # prefer :class:`mitogen.parent.PollPoller` if it's available, otherwise
+    # :class:`mitogen.core.Poller`. They don't need syscalls to create,
+    # configure, or destroy. Replaced during import of :mod:`mitogen.parent`.
     poller_class = Poller
 
-    #: If not :data:`None`, a function invoked as `notify(latch)` after a
-    #: successful call to :meth:`put`. The function is invoked on the
-    #: :meth:`put` caller's thread, which may be the :class:`Broker` thread,
-    #: therefore it must not block. Used by :class:`mitogen.select.Select` to
-    #: efficiently implement waiting on multiple event sources.
+    # If not :data:`None`, a function invoked as `notify(latch)` after a
+    # successful call to :meth:`put`. The function is invoked on the
+    # :meth:`put` caller's thread, which may be the :class:`Broker` thread,
+    # therefore it must not block. Used by :class:`mitogen.select.Select` to
+    # efficiently implement waiting on multiple event sources.
     notify = None
 
     # The _cls_ prefixes here are to make it crystal clear in the code which
     # state mutation isn't covered by :attr:`_lock`.
 
-    #: List of reusable :func:`socket.socketpair` tuples. The list is mutated
-    #: from multiple threads, the only safe operations are `append()` and
-    #: `pop()`.
+    # List of reusable :func:`socket.socketpair` tuples. The list is mutated
+    # from multiple threads, the only safe operations are `append()` and
+    # `pop()`.
     _cls_idle_socketpairs = []
 
-    #: List of every socket object that must be closed by :meth:`_on_fork`.
-    #: Inherited descriptors cannot be reused, as the duplicated handles
-    #: reference the same underlying kernel object in use by the parent.
+    # List of every socket object that must be closed by :meth:`_on_fork`.
+    # Inherited descriptors cannot be reused, as the duplicated handles
+    # reference the same underlying kernel object in use by the parent.
     _cls_all_sockets = []
 
     def __init__(self):
         self.closed = False
         self._lock = threading.Lock()
-        #: List of unconsumed enqueued items.
+        # List of unconsumed enqueued items.
         self._queue = []
-        #: List of `(wsock, cookie)` awaiting an element, where `wsock` is the
-        #: socketpair's write side, and `cookie` is the string to write.
+        # List of `(wsock, cookie)` awaiting an element, where `wsock` is the
+        # socketpair's write side, and `cookie` is the string to write.
         self._sleeping = []
-        #: Number of elements of :attr:`_sleeping` that have already been
-        #: woken, and have a corresponding element index from :attr:`_queue`
-        #: assigned to them.
+        # Number of elements of :attr:`_sleeping` that have already been
+        # woken, and have a corresponding element index from :attr:`_queue`
+        # assigned to them.
         self._waking = 0
 
     @classmethod
@@ -2382,29 +2292,29 @@ class Router:
     **Note:** This is the somewhat limited core version of the Router class
     used by child contexts. The master subclass is documented below this one.
     """
-    #: The :class:`mitogen.core.Context` subclass to use when constructing new
-    #: :class:`Context` objects in :meth:`myself` and :meth:`context_by_id`.
-    #: Permits :class:`Router` subclasses to extend the :class:`Context`
-    #: interface, as done in :class:`mitogen.parent.Router`.
+    # The :class:`mitogen.core.Context` subclass to use when constructing new
+    # :class:`Context` objects in :meth:`myself` and :meth:`context_by_id`.
+    # Permits :class:`Router` subclasses to extend the :class:`Context`
+    # interface, as done in :class:`mitogen.parent.Router`.
     context_class = Context
 
     max_message_size = 128 * 1048576
 
-    #: When :data:`True`, permit children to only communicate with the current
-    #: context or a parent of the current context. Routing between siblings or
-    #: children of parents is prohibited, ensuring no communication is possible
-    #: between intentionally partitioned networks, such as when a program
-    #: simultaneously manipulates hosts spread across a corporate and a
-    #: production network, or production networks that are otherwise
-    #: air-gapped.
-    #:
-    #: Sending a prohibited message causes an error to be logged and a dead
-    #: message to be sent in reply to the errant message, if that message has
-    #: ``reply_to`` set.
-    #:
-    #: The value of :data:`unidirectional` becomes the default for the
-    #: :meth:`local() <mitogen.master.Router.local>` `unidirectional`
-    #: parameter.
+    # When :data:`True`, permit children to only communicate with the current
+    # context or a parent of the current context. Routing between siblings or
+    # children of parents is prohibited, ensuring no communication is possible
+    # between intentionally partitioned networks, such as when a program
+    # simultaneously manipulates hosts spread across a corporate and a
+    # production network, or production networks that are otherwise
+    # air-gapped.
+    #
+    # Sending a prohibited message causes an error to be logged and a dead
+    # message to be sent in reply to the errant message, if that message has
+    # ``reply_to`` set.
+    #
+    # The value of :data:`unidirectional` becomes the default for the
+    # :meth:`local() <mitogen.master.Router.local>` `unidirectional`
+    # parameter.
     unidirectional = False
 
     duplicate_handle_msg = 'cannot register a handle that already exists'
@@ -2425,14 +2335,14 @@ class Router:
         self._setup_logging()
 
         self._write_lock = threading.Lock()
-        #: context ID -> Stream; must hold _write_lock to edit or iterate
+        # context ID -> Stream; must hold _write_lock to edit or iterate
         self._stream_by_id = {}
-        #: List of contexts to notify of shutdown; must hold _write_lock
+        # List of contexts to notify of shutdown; must hold _write_lock
         self._context_by_id = {}
         self._last_handle = itertools.count(1000)
-        #: handle -> (persistent?, func(msg))
+        # handle -> (persistent?, func(msg))
         self._handle_map = {}
-        #: Context -> set { handle, .. }
+        # Context -> set { handle, .. }
         self._handles_by_respondent = {}
         self.add_handler(self._on_del_route, DEL_ROUTE)
 
@@ -2850,17 +2760,17 @@ class Broker:
     # :class:`mitogen.parent.TimerList` during upgrade.
     timers = NullTimerList()
 
-    #: Seconds grace to allow :class:`streams <Stream>` to shutdown gracefully
-    #: before force-disconnecting them during :meth:`shutdown`.
+    # Seconds grace to allow :class:`streams <Stream>` to shutdown gracefully
+    # before force-disconnecting them during :meth:`shutdown`.
     shutdown_timeout = 3.0
 
     def __init__(self, poller_class=None, activate_compat=True):
         self._alive = True
         self._exitted = False
         self._waker = Waker.build_stream(self)
-        #: Arrange for `func(\*args, \**kwargs)` to be executed on the broker
-        #: thread, or immediately if the current thread is the broker thread.
-        #: Safe to call from any thread.
+        # Arrange for `func(\*args, \**kwargs)` to be executed on the broker
+        # thread, or immediately if the current thread is the broker thread.
+        # Safe to call from any thread.
         self.defer = self._waker.protocol.defer
         self.poller = self.poller_class()
         self.poller.start_receive(
@@ -3081,18 +2991,18 @@ class Dispatcher:
 
     def __init__(self, econtext):
         self.econtext = econtext
-        #: Chain ID -> CallError if prior call failed.
+        # Chain ID -> CallError if prior call failed.
         self._error_by_chain_id = {}
         self.recv = Receiver(
             router=econtext.router,
             handle=CALL_FUNCTION,
             policy=has_parent_authority,
         )
-        #: The :data:`CALL_SERVICE` :class:`Receiver` that will eventually be
-        #: reused by :class:`mitogen.service.Pool`, should it ever be loaded.
-        #: This is necessary for race-free reception of all service requests
-        #: delivered regardless of whether the stub or real service pool are
-        #: loaded. See #547 for related sorrows.
+        # The :data:`CALL_SERVICE` :class:`Receiver` that will eventually be
+        # reused by :class:`mitogen.service.Pool`, should it ever be loaded.
+        # This is necessary for race-free reception of all service requests
+        # delivered regardless of whether the stub or real service pool are
+        # loaded. See #547 for related sorrows.
         Dispatcher._service_recv = Receiver(
             router=econtext.router,
             handle=CALL_SERVICE,
