@@ -39,6 +39,7 @@ import syslog
 import threading
 import time
 import traceback
+import typing as ta
 import weakref
 
 
@@ -1492,8 +1493,8 @@ class Poller:
 
     def __init__(self):
         super().__init__()
-        self._rfds = {}
-        self._wfds = {}
+        self._rfds: ta.Dict[int, ta.Tuple[ta.Any, int]] = {}
+        self._wfds: ta.Dict[int, ta.Tuple[ta.Any, int]] = {}
 
     def __repr__(self):
         return '%s' % (type(self).__name__,)
@@ -1503,28 +1504,28 @@ class Poller:
         pass
 
     @property
-    def readers(self):
+    def readers(self) -> ta.List[ta.Tuple[ta.Any, int]]:
         """Return a list of `(fd, data)` tuples for every FD registered for receive readiness."""
 
         return list((fd, data) for fd, (data, gen) in self._rfds.items())
 
     @property
-    def writers(self):
+    def writers(self) -> ta.List[ta.Tuple[ta.Any, int]]:
         """Return a list of `(fd, data)` tuples for every FD registered for transmit readiness."""
 
         return list((fd, data) for fd, (data, gen) in self._wfds.items())
 
-    def close(self):
+    def close(self) -> None:
         """Close any underlying OS resource used by the poller."""
         pass
 
-    def start_receive(self, fd, data=None):
+    def start_receive(self, fd: int, data: ta.Any = None) -> None:
         """Cause :meth:`poll` to yield `data` when `fd` is readable."""
 
         self._rfds[fd] = (data or fd, self._generation)
         self._update(fd)
 
-    def stop_receive(self, fd):
+    def stop_receive(self, fd: int) -> None:
         """
         Stop yielding readability events for `fd`.
 
@@ -1534,13 +1535,13 @@ class Poller:
         self._rfds.pop(fd, None)
         self._update(fd)
 
-    def start_transmit(self, fd, data=None):
+    def start_transmit(self, fd: int, data: ta.Any = None) -> None:
         """Cause :meth:`poll` to yield `data` when `fd` is writeable."""
 
         self._wfds[fd] = (data or fd, self._generation)
         self._update(fd)
 
-    def stop_transmit(self, fd):
+    def stop_transmit(self, fd: int) -> None:
         """
         Stop yielding writeability events for `fd`.
 
