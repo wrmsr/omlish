@@ -1,3 +1,4 @@
+import abc
 import errno
 import fcntl
 import heapq
@@ -198,27 +199,32 @@ class Stream:
         self._protocol = protocol
         self._protocol._stream = self  # noqa
 
+    ##
+
     def on_receive(self, broker):
-        buf = self._rs.read(self.protocol.read_size)
+        buf = self._rs.read(self._protocol.read_size)
         if not buf:
             log.debug('%r: empty read, disconnecting', self._rs)
             return self.on_disconnect(broker)
 
-        self.protocol.on_receive(broker, buf)
+        self._protocol.on_receive(broker, buf)
 
     def on_transmit(self, broker):
-        self.protocol.on_transmit(broker)
+        self._protocol.on_transmit(broker)
 
     def on_shutdown(self, broker):
         callback(self, 'shutdown')
-        self.protocol.on_shutdown(broker)
+        self._protocol.on_shutdown(broker)
 
     def on_disconnect(self, broker):
         callback(self, 'disconnect')
-        self.protocol.on_disconnect(broker)
+        self._protocol.on_disconnect(broker)
 
 
-class Protocol:
+##
+
+
+class Protocol(abc.ABC):
 
     read_size = CHUNK_SIZE
 
@@ -230,20 +236,28 @@ class Protocol:
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({self._stream!r})'
 
+    ##
+
+    @abc.abstractmethod
+    def on_receive(self, broker, buf):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def on_transmit(self, broker):
+        raise NotImplementedError
+
     def on_shutdown(self, broker):
         log.debug('%r: shutting down', self)
         self._stream.on_disconnect(broker)
 
     def on_disconnect(self, broker):
         log.debug('%r: disconnecting', self)
-        broker.stop_receive(self.stream)
-        if self.stream.transmit_side:
-            broker._stop_transmit(self.stream)
-
-        self.stream.receive_side.close()
-        if self.stream.transmit_side:
-            self.stream.transmit_side.close()
-
+        broker.stop_receive(self._stream)
+        if self._stream.ws:
+            broker._stop_transmit(self._stream)
+        self._stream.rs.close()
+        if self._stream.ws:
+            self._stream.ws.close()
 
 ##
 
@@ -262,7 +276,7 @@ class Timer:
 
     @property
     def fn(self) -> ta.Callable:
-        return self._when
+        return self._fn
 
     @property
     def active(self) -> bool:
