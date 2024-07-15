@@ -19,43 +19,7 @@
 # SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
 # WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-# !mitogen: minify_safe
-
-"""
-This module implements most package functionality, but remains separate from
-non-essential code in order to reduce its size, since it is also serves as the
-bootstrap implementation sent to every new slave context.
-"""
-
 import sys
-try:
-    import _frozen_importlib_external
-except ImportError:
-    pass
-else:
-    class MonkeyPatchedPathFinder(_frozen_importlib_external.PathFinder):
-        """
-        Meta path finder for sys.path and package __path__ attributes.
-
-        Patched for https://github.com/python/cpython/issues/115911.
-        """
-        @classmethod
-        def _path_importer_cache(cls, path):
-            if path == '':
-                try:
-                    path = _frozen_importlib_external._os.getcwd()
-                except (FileNotFoundError, PermissionError):
-                    return None
-            return super()._path_importer_cache(path)
-
-    if sys.version_info[:2] <= (3, 12):
-        for i, mpf in enumerate(sys.meta_path):
-            if mpf is _frozen_importlib_external.PathFinder:
-                sys.meta_path[i] = MonkeyPatchedPathFinder
-        del i, mpf
-
-
 import binascii
 import collections
 import encodings.latin_1
@@ -66,45 +30,22 @@ import itertools
 import logging
 import os
 import pickle as py_pickle
-import pstats
 import signal
 import socket
 import struct
 import syslog
-import threading
 import time
 import traceback
 import types
-import warnings
 import weakref
 import zlib
-
-# Python >= 3.4, PEP 451 ModuleSpec API
 import importlib.machinery
 import importlib.util
-
-# Absolute imports for <2.5.
-select = __import__('select')
-
-try:
-    import cProfile
-except ImportError:
-    cProfile = None
-
-try:
-    import thread
-except ImportError:
-    import threading as thread
-
+import select
+import threading
 import pickle
+import io
 
-from io import BytesIO
-
-
-# TODO: usage of 'import' after setting __name__, but before fixing up
-# sys.modules generates a warning. This happens when profiling = True.
-warnings.filterwarnings('ignore',
-    "Parent module 'mitogen' not found while handling absolute import")
 
 LOG = logging.getLogger('mitogen')
 IOLOG = logging.getLogger('mitogen.io')
@@ -143,23 +84,10 @@ STUB_CALL_SERVICE = 111
 #:    :meth:`mitogen.core.Router.add_handler` callbacks to clean up.
 IS_DEAD = 999
 
-b = str.encode
-BytesType = bytes
-UnicodeType = str
 FsPathTypes = (str,)
 BufferType = lambda buf, start: memoryview(buf)[start:]
-long = int
 
-AnyTextType = (BytesType, UnicodeType)
-
-# #550: prehistoric WSL did not advertise itself in uname output.
-try:
-    fp = open('/proc/sys/kernel/osrelease')
-    IS_WSL = 'Microsoft' in fp.read()
-    fp.close()
-except IOError:
-    IS_WSL = False
-
+AnyTextType = (bytes, str)
 
 #: Default size for calls to :meth:`Side.read` or :meth:`Side.write`, and the
 #: size of buffers configured by :func:`mitogen.parent.create_socketpair`. This
@@ -214,7 +142,7 @@ class Error(Exception):
     def __init__(self, fmt=None, *args):
         if args:
             fmt %= args
-        if fmt and not isinstance(fmt, UnicodeType):
+        if fmt and not isinstance(fmt, str):
             fmt = fmt.decode('utf-8')
         Exception.__init__(self, fmt)
 
@@ -227,7 +155,7 @@ class LatchError(Error):
     pass
 
 
-class Blob(BytesType):
+class Blob(bytes):
     """
     A serializable bytes subclass whose content is summarized in repr() output,
     making it suitable for logging binary data.
@@ -236,10 +164,10 @@ class Blob(BytesType):
         return '[blob: %d bytes]' % len(self)
 
     def __reduce__(self):
-        return (Blob, (BytesType(self),))
+        return (Blob, (bytes(self),))
 
 
-class Secret(UnicodeType):
+class Secret(str):
     """
     A serializable unicode subclass whose content is masked in repr() output,
     making it suitable for logging passwords.
@@ -248,7 +176,7 @@ class Secret(UnicodeType):
         return '[secret]'
 
     def __reduce__(self):
-        return (Secret, (UnicodeType(self),))
+        return (Secret, (str(self),))
 
 
 class Kwargs(dict):
@@ -299,7 +227,7 @@ class CallError(Error):
 
 
 def _unpickle_call_error(s):
-    if not (type(s) is UnicodeType and len(s) < 10000):
+    if not (type(s) is str and len(s) < 10000):
         raise TypeError('cannot unpickle CallError: bad input')
     return CallError(s)
 
@@ -332,9 +260,9 @@ def to_text(o):
     :class:`bytes`, otherwise pass it to the :class:`str` constructor. The
     returned object is always a plain :class:`str`, any subclass is removed.
     """
-    if isinstance(o, BytesType):
+    if isinstance(o, bytes):
         return o.decode('utf-8')
-    return UnicodeType(o)
+    return str(o)
 
 
 # Documented in api.rst to work around Sphinx limitation.
@@ -359,33 +287,6 @@ def _partition(s, sep, find):
     if idx != -1:
         left = s[0:idx]
         return left, sep, s[len(left)+len(sep):]
-
-
-def threading__current_thread():
-    try:
-        return threading.current_thread()  # Added in Python 2.6+
-    except AttributeError:
-        return threading.currentThread()  # Deprecated in Python 3.10+
-
-
-def threading__thread_name(thread):
-    try:
-        return thread.name  # Added in Python 2.6+
-    except AttributeError:
-        return thread.getName()  # Deprecated in Python 3.10+
-
-
-if hasattr(UnicodeType, 'rpartition'):
-    str_partition = UnicodeType.partition
-    str_rpartition = UnicodeType.rpartition
-    bytes_partition = BytesType.partition
-else:
-    def str_partition(s, sep):
-        return _partition(s, sep, s.find) or (s, u'', u'')
-    def str_rpartition(s, sep):
-        return _partition(s, sep, s.rfind) or (u'', u'', s)
-    def bytes_partition(s, sep):
-        return _partition(s, sep, s.find) or (s, '', '')
 
 
 def _has_parent_authority(context_id):
@@ -605,51 +506,6 @@ def enable_debug_logging():
     root.handlers.insert(0, handler)
 
 
-_profile_hook = lambda name, func, *args: func(*args)
-_profile_fmt = os.environ.get(
-    'MITOGEN_PROFILE_FMT',
-    '/tmp/mitogen.stats.%(pid)s.%(identity)s.%(now)s.%(ext)s',
-)
-
-
-def _profile_hook(name, func, *args):
-    """
-    Call `func(*args)` and return its result. This function is replaced by
-    :func:`_real_profile_hook` when :func:`enable_profiling` is called. This
-    interface is obsolete and will be replaced by a signals-based integration
-    later on.
-    """
-    return func(*args)
-
-
-def _real_profile_hook(name, func, *args):
-    profiler = cProfile.Profile()
-    profiler.enable()
-    try:
-        return func(*args)
-    finally:
-        path = _profile_fmt % {
-            'now': int(1e6 * now()),
-            'identity': name,
-            'pid': os.getpid(),
-            'ext': '%s'
-        }
-        profiler.dump_stats(path % ('pstats',))
-        profiler.create_stats()
-        fp = open(path % ('log',), 'w')
-        try:
-            stats = pstats.Stats(profiler, stream=fp)
-            stats.sort_stats('cumulative')
-            stats.print_stats()
-        finally:
-            fp.close()
-
-
-def enable_profiling(econtext=None):
-    global _profile_hook
-    _profile_hook = _real_profile_hook
-
-
 def import_module(modname):
     """
     Import `module` and return the attribute named `attr`.
@@ -694,41 +550,14 @@ def iter_split(buf, delim, func):
     return buf[start:], cont
 
 
-class Py24Pickler(py_pickle.Pickler):
-    """
-    Exceptions were classic classes until Python 2.5. Sadly for 2.4, cPickle
-    offers little control over how a classic instance is pickled. Therefore 2.4
-    uses a pure-Python pickler, so CallError can be made to look as it does on
-    newer Pythons.
-
-    This mess will go away once proper serialization exists.
-    """
-    @classmethod
-    def dumps(cls, obj, protocol):
-        bio = BytesIO()
-        self = cls(bio, protocol=protocol)
-        self.dump(obj)
-        return bio.getvalue()
-
-    def save_exc_inst(self, obj):
-        if isinstance(obj, CallError):
-            func, args = obj.__reduce__()
-            self.save(func)
-            self.save(args)
-            self.write(py_pickle.REDUCE)
-        else:
-            py_pickle.Pickler.save_inst(self, obj)
-
-
-# In 3.x Unpickler is a class exposing find_class as an overridable, but it
-# cannot be overridden without subclassing.
+# In 3.x Unpickler is a class exposing find_class as an overridable, but it cannot be overridden without subclassing.
 class _Unpickler(pickle.Unpickler):
     def find_class(self, module, func):
-        return self.find_global(module, func)
+        return self.find_global(module, func)  # noqa
 pickle__dumps = pickle.dumps
 
 
-class Message(object):
+class Message:
     """
     Messages are the fundamental unit of communication, comprising fields from
     the :ref:`stream-protocol` header, an optional reference to the receiving
@@ -759,7 +588,7 @@ class Message(object):
     reply_to = None
 
     #: Raw message data bytes.
-    data = b('')
+    data = b''
 
     _unpickled = object()
 
@@ -783,7 +612,7 @@ class Message(object):
         self.src_id = mitogen.context_id
         self.auth_id = mitogen.context_id
         vars(self).update(kwargs)
-        assert isinstance(self.data, BytesType), 'Message data is not Bytes'
+        assert isinstance(self.data, bytes), 'Message data is not Bytes'
 
     def pack(self):
         return (
@@ -824,7 +653,7 @@ class Message(object):
         elif module == '_codecs' and func == 'encode':
             return self._unpickle_bytes
         elif module == '__builtin__' and func == 'bytes':
-            return BytesType
+            return bytes
         raise StreamError('cannot unpickle %r/%r', module, func)
 
     @property
@@ -915,7 +744,7 @@ class Message(object):
 
         obj = self._unpickled
         if obj is Message._unpickled:
-            fp = BytesIO(self.data)
+            fp = io.BytesIO(self.data)
             unpickler = _Unpickler(fp, **self.UNPICKLER_KWARGS)
             unpickler.find_global = self._find_global
             try:
@@ -943,7 +772,7 @@ class Message(object):
         )
 
 
-class Sender(object):
+class Sender:
     """
     Senders are used to send pickled messages to a handle in another context,
     it is the inverse of :class:`mitogen.core.Receiver`.
@@ -991,13 +820,13 @@ class Sender(object):
 
 def _unpickle_sender(router, context_id, dst_handle):
     if not (isinstance(router, Router) and
-            isinstance(context_id, (int, long)) and context_id >= 0 and
-            isinstance(dst_handle, (int, long)) and dst_handle > 0):
+            isinstance(context_id, int) and context_id >= 0 and
+            isinstance(dst_handle, int) and dst_handle > 0):
         raise TypeError('cannot unpickle Sender: bad input or missing router')
     return Sender(Context(router, context_id), dst_handle)
 
 
-class Receiver(object):
+class Receiver:
     """
     Receivers maintain a thread-safe queue of messages sent to a handle of this
     context from another context.
@@ -1201,453 +1030,6 @@ class Channel(Sender, Receiver):
         )
 
 
-class Importer(object):
-    """
-    Import protocol implementation that fetches modules from the parent
-    process.
-
-    :param context: Context to communicate via.
-    """
-    # The Mitogen package is handled specially, since the child context must
-    # construct it manually during startup.
-    MITOGEN_PKG_CONTENT = [
-        'buildah',
-        'compat',
-        'debug',
-        'doas',
-        'docker',
-        'kubectl',
-        'fakessh',
-        'fork',
-        'jail',
-        'lxc',
-        'lxd',
-        'master',
-        'minify',
-        'os_fork',
-        'parent',
-        'podman',
-        'select',
-        'service',
-        'setns',
-        'ssh',
-        'su',
-        'sudo',
-        'utils',
-    ]
-
-    ALWAYS_BLACKLIST = [
-        # 2.x generates needless imports for 'builtins', while 3.x does the
-        # same for '__builtin__'. The correct one is built-in, the other always
-        # a negative round-trip.
-        'builtins',
-        '__builtin__',
-
-        # On some Python releases (e.g. 3.8, 3.9) the subprocess module tries
-        # to import of this Windows-only builtin module.
-        'msvcrt',
-
-        # Python 2.x module that was renamed to _thread in 3.x.
-        # This entry avoids a roundtrip on 2.x -> 3.x.
-        'thread',
-
-        # org.python.core imported by copy, pickle, xml.sax; breaks Jython, but
-        # very unlikely to trigger a bug report.
-        'org',
-    ]
-
-    ALWAYS_BLACKLIST += ['cStringIO']
-
-    def __init__(self, router, context, core_src, whitelist=(), blacklist=()):
-        self._log = logging.getLogger('mitogen.importer')
-        self._context = context
-        self._present = {'mitogen': self.MITOGEN_PKG_CONTENT}
-        self._lock = threading.Lock()
-        self.whitelist = list(whitelist) or ['']
-        self.blacklist = list(blacklist) + self.ALWAYS_BLACKLIST
-
-        # Preserve copies of the original server-supplied whitelist/blacklist
-        # for later use by children.
-        self.master_whitelist = self.whitelist[:]
-        self.master_blacklist = self.blacklist[:]
-
-        # Presence of an entry in this map indicates in-flight GET_MODULE.
-        self._callbacks = {}
-        self._cache = {}
-        if core_src:
-            self._update_linecache('x/mitogen/core.py', core_src)
-            self._cache['mitogen.core'] = (
-                'mitogen.core',
-                None,
-                'x/mitogen/core.py',
-                zlib.compress(core_src, 9),
-                [],
-            )
-        self._install_handler(router)
-
-    def _update_linecache(self, path, data):
-        """
-        The Python 2.4 linecache module, used to fetch source code for
-        tracebacks and :func:`inspect.getsource`, does not support PEP-302,
-        meaning it needs extra help to for Mitogen-loaded modules. Directly
-        populate its cache if a loaded module belongs to the Mitogen package.
-        """
-
-    def _install_handler(self, router):
-        router.add_handler(
-            fn=self._on_load_module,
-            handle=LOAD_MODULE,
-            policy=has_parent_authority,
-        )
-
-    def __repr__(self):
-        return 'Importer'
-
-    @staticmethod
-    def _loader_from_module(module, default=None):
-        """Return the loader for a module object."""
-        try:
-            return module.__spec__.loader
-        except AttributeError:
-            pass
-        try:
-            return module.__loader__
-        except AttributeError:
-            pass
-        return default
-
-    def builtin_find_module(self, fullname):
-        # imp.find_module() will always succeed for __main__, because it is a
-        # built-in module. That means it exists on a special linked list deep
-        # within the bowels of the interpreter. We must special case it.
-        if fullname == '__main__':
-            raise ModuleNotFoundError()
-
-        # For a module inside a package (e.g. pkg_a.mod_b) use the search path
-        # of that package (e.g. ['/usr/lib/python3.11/site-packages/pkg_a']).
-        parent, _, modname = str_rpartition(fullname, '.')
-        if parent:
-            path = sys.modules[parent].__path__
-        else:
-            path = None
-
-        # For a top-level module search builtin modules, frozen modules,
-        # system specific locations (e.g. Windows registry, site-packages).
-        # Otherwise use search path of the parent package.
-        # Works for both stdlib modules & third-party modules.
-        # If the search is unsuccessful then raises ImportError.
-        fp, pathname, description = imp.find_module(modname, path)
-        if fp:
-            fp.close()
-
-    def find_module(self, fullname, path=None):
-        """
-        Return a loader (ourself) or None, for the module with fullname.
-
-        Implements importlib.abc.MetaPathFinder.find_module().
-        Deprecrated in Python 3.4+, replaced by find_spec().
-        Raises ImportWarning in Python 3.10+.
-        Removed in Python 3.12.
-
-        fullname    Fully qualified module name, e.g. "os.path".
-        path        __path__ of parent packge. None for a top level module.
-        """
-        if hasattr(_tls, 'running'):
-            return None
-
-        _tls.running = True
-        try:
-            #_v and self._log.debug('Python requested %r', fullname)
-            fullname = to_text(fullname)
-            pkgname, _, suffix = str_rpartition(fullname, '.')
-            pkg = sys.modules.get(pkgname)
-            if pkgname and getattr(pkg, '__loader__', None) is not self:
-                self._log.debug('%s is submodule of a locally loaded package',
-                                fullname)
-                return None
-
-            if pkgname and suffix not in self._present.get(pkgname, ()):
-                self._log.debug('%s has no submodule %s', pkgname, suffix)
-                return None
-
-            # #114: explicitly whitelisted prefixes override any
-            # system-installed package.
-            if self.whitelist != ['']:
-                if any(fullname.startswith(s) for s in self.whitelist):
-                    return self
-
-            try:
-                self.builtin_find_module(fullname)
-                _vv and self._log.debug('%r is available locally', fullname)
-            except ImportError:
-                _vv and self._log.debug('we will try to load %r', fullname)
-                return self
-        finally:
-            del _tls.running
-
-    def find_spec(self, fullname, path, target=None):
-        """
-        Return a `ModuleSpec` for module with `fullname` if we will load it.
-        Otherwise return `None`, allowing other finders to try.
-
-        fullname    Fully qualified name of the module (e.g. foo.bar.baz)
-        path        Path entries to search. None for a top-level module.
-        target      Existing module to be reloaded (if any).
-
-        Implements importlib.abc.MetaPathFinder.find_spec()
-        Python 3.4+.
-        """
-        # Presence of _tls.running indicates we've re-invoked importlib.
-        # Abort early to prevent infinite recursion. See below.
-        if hasattr(_tls, 'running'):
-            return None
-
-        log = self._log.getChild('find_spec')
-
-        if fullname.endswith('.'):
-            return None
-
-        pkgname, _, modname = fullname.rpartition('.')
-        if pkgname and modname not in self._present.get(pkgname, ()):
-            log.debug('Skipping %s. Parent %s has no submodule %s',
-                      fullname, pkgname, modname)
-            return None
-
-        pkg = sys.modules.get(pkgname)
-        pkg_loader = self._loader_from_module(pkg)
-        if pkgname and pkg_loader is not self:
-            log.debug('Skipping %s. Parent %s was loaded by %r',
-                      fullname, pkgname, pkg_loader)
-            return None
-
-        # #114: whitelisted prefixes override any system-installed package.
-        if self.whitelist != ['']:
-            if any(s and fullname.startswith(s) for s in self.whitelist):
-                log.debug('Handling %s. It is whitelisted', fullname)
-                return importlib.machinery.ModuleSpec(fullname, loader=self)
-
-        if fullname == '__main__':
-            log.debug('Handling %s. A special case', fullname)
-            return importlib.machinery.ModuleSpec(fullname, loader=self)
-
-        # Re-invoke the import machinery to allow other finders to try.
-        # Set a guard, so we don't infinitely recurse. See top of this method.
-        _tls.running = True
-        try:
-            spec = importlib.util._find_spec(fullname, path, target)
-        finally:
-            del _tls.running
-
-        if spec:
-            log.debug('Skipping %s. Available as %r', fullname, spec)
-            return spec
-
-        log.debug('Handling %s. Unavailable locally', fullname)
-        return importlib.machinery.ModuleSpec(fullname, loader=self)
-
-    blacklisted_msg = (
-        '%r is present in the Mitogen importer blacklist, therefore this '
-        'context will not attempt to request it from the master, as the '
-        'request will always be refused.'
-    )
-    pkg_resources_msg = (
-        'pkg_resources is prohibited from importing __main__, as it causes '
-        'problems in applications whose main module is not designed to be '
-        're-imported by children.'
-    )
-    absent_msg = (
-        'The Mitogen master process was unable to serve %r. It may be a '
-        'native Python extension, or it may be missing entirely. Check the '
-        'importer debug logs on the master for more information.'
-    )
-
-    def _refuse_imports(self, fullname):
-        if is_blacklisted_import(self, fullname):
-            raise ModuleNotFoundError(self.blacklisted_msg % (fullname,))
-
-        f = sys._getframe(2)
-        requestee = f.f_globals['__name__']
-
-        if fullname == '__main__' and requestee == 'pkg_resources':
-            # Anything that imports pkg_resources will eventually cause
-            # pkg_resources to try and scan __main__ for its __requires__
-            # attribute (pkg_resources/__init__.py::_build_master()). This
-            # breaks any app that is not expecting its __main__ to suddenly be
-            # sucked over a network and injected into a remote process, like
-            # py.test.
-            raise ModuleNotFoundError(self.pkg_resources_msg)
-
-        if fullname == 'pbr':
-            # It claims to use pkg_resources to read version information, which
-            # would result in PEP-302 being used, but it actually does direct
-            # filesystem access. So instead smodge the environment to override
-            # any version that was defined. This will probably break something
-            # later.
-            os.environ['PBR_VERSION'] = '0.0.0'
-
-    def _on_load_module(self, msg):
-        if msg.is_dead:
-            return
-
-        tup = msg.unpickle()
-        fullname = tup[0]
-        _v and self._log.debug('received %s', fullname)
-
-        self._lock.acquire()
-        try:
-            self._cache[fullname] = tup
-            callbacks = self._callbacks.pop(fullname, [])
-        finally:
-            self._lock.release()
-
-        for callback in callbacks:
-            callback()
-
-    def _request_module(self, fullname, callback):
-        self._lock.acquire()
-        try:
-            present = fullname in self._cache
-            if not present:
-                funcs = self._callbacks.get(fullname)
-                if funcs is not None:
-                    _v and self._log.debug('existing request for %s in flight',
-                                           fullname)
-                    funcs.append(callback)
-                else:
-                    _v and self._log.debug('sending new %s request to parent',
-                                           fullname)
-                    self._callbacks[fullname] = [callback]
-                    self._context.send(
-                        Message(data=b(fullname), handle=GET_MODULE)
-                    )
-        finally:
-            self._lock.release()
-
-        if present:
-            callback()
-
-    def create_module(self, spec):
-        """
-        Return a module object for the given ModuleSpec.
-
-        Implements PEP-451 importlib.abc.Loader API introduced in Python 3.4.
-        Unlike Loader.load_module() this shouldn't populate sys.modules or
-        set module attributes. Both are done by Python.
-        """
-        self._log.debug('Creating module for %r', spec)
-
-        # FIXME Should this be done in find_spec()? Can it?
-        self._refuse_imports(spec.name)
-
-        # FIXME "create_module() should properly handle the case where it is
-        #       called more than once for the same spec/module." -- PEP-451
-        event = threading.Event()
-        self._request_module(spec.name, callback=event.set)
-        event.wait()
-
-        # 0:fullname 1:pkg_present 2:path 3:compressed 4:related
-        _, pkg_present, path, _, _ = self._cache[spec.name]
-
-        if path is None:
-            raise ImportError(self.absent_msg % (spec.name))
-
-        spec.origin = self.get_filename(spec.name)
-        if pkg_present is not None:
-            # TODO Namespace packages
-            spec.submodule_search_locations = []
-            self._present[spec.name] = pkg_present
-
-        module = types.ModuleType(spec.name)
-        # FIXME create_module() shouldn't initialise module attributes
-        module.__file__ = spec.origin
-        return module
-
-    def exec_module(self, module):
-        """
-        Execute the module to initialise it. Don't return anything.
-
-        Implements PEP-451 importlib.abc.Loader API, introduced in Python 3.4.
-        """
-        name = module.__spec__.name
-        origin = module.__spec__.origin
-        self._log.debug('Executing %s from %s', name, origin)
-        source = self.get_source(name)
-        try:
-            # Compile the source into a code object. Don't add any __future__
-            # flags and don't inherit any from this module.
-            # FIXME Should probably be exposed as get_code()
-            code = compile(source, origin, 'exec', flags=0, dont_inherit=True)
-        except SyntaxError:
-            # FIXME Why is this LOG, rather than self._log?
-            LOG.exception('while importing %r', name)
-            raise
-
-        exec(code, module.__dict__)
-
-    def load_module(self, fullname):
-        """
-        Return the loaded module specified by fullname.
-
-        Implements importlib.abc.Loader.load_module().
-        Deprecated in Python 3.4+, replaced by create_module() & exec_module().
-        """
-        fullname = to_text(fullname)
-        _v and self._log.debug('requesting %s', fullname)
-        self._refuse_imports(fullname)
-
-        event = threading.Event()
-        self._request_module(fullname, event.set)
-        event.wait()
-
-        # 0:fullname 1:pkg_present 2:path 3:compressed 4:related
-        _, pkg_present, path, _, _ = self._cache[fullname]
-        if path is None:
-            raise ModuleNotFoundError(self.absent_msg % (fullname,))
-
-        mod = sys.modules.setdefault(fullname, imp.new_module(fullname))
-        mod.__file__ = self.get_filename(fullname)
-        mod.__loader__ = self
-        if pkg_present is not None:  # it's a package.
-            mod.__path__ = []
-            mod.__package__ = fullname
-            self._present[fullname] = pkg_present
-        else:
-            mod.__package__ = str_rpartition(fullname, '.')[0] or None
-
-        source = self.get_source(fullname)
-        try:
-            code = compile(source, mod.__file__, 'exec', 0, 1)
-        except SyntaxError:
-            LOG.exception('while importing %r', fullname)
-            raise
-
-        exec(code, vars(mod))
-
-        # #590: if a module replaces itself in sys.modules during import, below
-        # is necessary. This matches PyImport_ExecCodeModuleEx()
-        return sys.modules.get(fullname, mod)
-
-    def get_filename(self, fullname):
-        if fullname in self._cache:
-            path = self._cache[fullname][2]
-            if path is None:
-                # If find_loader() returns self but a subsequent master RPC
-                # reveals the module can't be loaded, and so load_module()
-                # throws ImportError, on Python 3.x it is still possible for
-                # the loader to be called to fetch metadata.
-                raise ModuleNotFoundError(self.absent_msg % (fullname,))
-            return u'master:' + self._cache[fullname][2]
-
-    def get_source(self, fullname):
-        if fullname in self._cache:
-            compressed = self._cache[fullname][3]
-            if compressed is None:
-                raise ModuleNotFoundError(self.absent_msg % (fullname,))
-
-            source = zlib.decompress(self._cache[fullname][3])
-            return to_text(source)
-
-
 class LogHandler(logging.Handler):
     """
     A :class:`logging.Handler` subclass that arranges for :data:`FORWARD_LOG`
@@ -1712,7 +1094,7 @@ class LogHandler(logging.Handler):
         try:
             msg = self.format(rec)
             encoded = '%s\x00%s\x00%s' % (rec.name, rec.levelno, msg)
-            if isinstance(encoded, UnicodeType):
+            if isinstance(encoded, str):
                 # Logging package emits both :(
                 encoded = encoded.encode('utf-8')
             self._send(Message(data=encoded, handle=FORWARD_LOG))
@@ -1720,7 +1102,7 @@ class LogHandler(logging.Handler):
             self.local.in_emit = False
 
 
-class Stream(object):
+class Stream:
     """
     A :class:`Stream` is one readable and optionally one writeable file
     descriptor (represented by :class:`Side`) aggregated alongside an
@@ -1856,7 +1238,7 @@ class Stream(object):
         self.protocol.on_disconnect(broker)
 
 
-class Protocol(object):
+class Protocol:
     """
     Implement the program behaviour associated with activity on a
     :class:`Stream`. The protocol in use may vary over a stream's life, for
@@ -1930,8 +1312,8 @@ class DelimitedProtocol(Protocol):
     contains both kinds of data.
     """
     #: The delimiter. Defaults to newline.
-    delimiter = b('\n')
-    _trailer = b('')
+    delimiter = b'\n'
+    _trailer = b''
 
     def on_receive(self, broker, buf):
         _vv and IOLOG.debug('%r.on_receive()', self)
@@ -1975,7 +1357,7 @@ class DelimitedProtocol(Protocol):
         pass
 
 
-class BufferedWriter(object):
+class BufferedWriter:
     """
     Implement buffered output while avoiding quadratic string operations. This
     is currently constructed by each protocol, in future it may become fixed
@@ -2031,7 +1413,7 @@ class BufferedWriter(object):
             broker._stop_transmit(self._protocol.stream)
 
 
-class Side(object):
+class Side:
     """
     Represent one side of a :class:`Stream`. This allows unidirectional (e.g.
     pipe) and bidirectional (e.g. socket) streams to operate identically.
@@ -2121,11 +1503,11 @@ class Side(object):
         if self.closed:
             # Refuse to touch the handle after closed, it may have been reused
             # by another thread. TODO: synchronize read()/write()/close().
-            return b('')
+            return b''
         s, disconnected = io_op(os.read, self.fd, n)
         if disconnected:
             LOG.debug('%r: disconnected during read: %s', self, disconnected)
-            return b('')
+            return b''
         return s
 
     def write(self, s):
@@ -2254,7 +1636,7 @@ class MitogenProtocol(Protocol):
             prev_start = start
             start = 0
 
-        msg.data = b('').join(bits)
+        msg.data = b''.join(bits)
         self._input_buf.appendleft(buf[prev_start+len(bit):])
         self._input_buf_len -= total_len
         self._router._async_route(msg, self.stream)
@@ -2296,7 +1678,7 @@ class MitogenProtocol(Protocol):
         _v and LOG.debug('%r: shutting down', self)
 
 
-class Context(object):
+class Context:
     """
     Represent a remote context regardless of the underlying connection method.
     Context objects are simple facades that emit messages through an
@@ -2362,12 +1744,11 @@ class Context(object):
         return receiver
 
     def call_service_async(self, service_name, method_name, **kwargs):
-        if isinstance(service_name, BytesType):
+        if isinstance(service_name, bytes):
             service_name = service_name.encode('utf-8')
-        elif not isinstance(service_name, UnicodeType):
+        elif not isinstance(service_name, str):
             service_name = service_name.name()  # Service.name()
-        _v and LOG.debug('calling service %s.%s of %r, args: %r',
-                         service_name, method_name, self, kwargs)
+        _v and LOG.debug('calling service %s.%s of %r, args: %r', service_name, method_name, self, kwargs)
         tup = (service_name, to_text(method_name), Kwargs(kwargs))
         msg = Message.pickled(tup, handle=CALL_SERVICE)
         return self.send_async(msg)
@@ -2412,9 +1793,9 @@ class Context(object):
 
 
 def _unpickle_context(context_id, name, router=None):
-    if not (isinstance(context_id, (int, long)) and context_id >= 0 and (
+    if not (isinstance(context_id, int) and context_id >= 0 and (
         (name is None) or
-        (isinstance(name, UnicodeType) and len(name) < 100))
+        (isinstance(name, str) and len(name) < 100))
     ):
         raise TypeError('cannot unpickle Context: bad input')
 
@@ -2423,7 +1804,7 @@ def _unpickle_context(context_id, name, router=None):
     return Context(None, context_id, name)  # For plain Jane pickle.
 
 
-class Poller(object):
+class Poller:
     """
     A poller manages OS file descriptors the user is waiting to become
     available for IO. The :meth:`poll` method blocks the calling thread
@@ -2562,7 +1943,7 @@ class Poller(object):
         return self._poll(timeout)
 
 
-class Latch(object):
+class Latch:
     """
     A latch is a :class:`Queue.Queue`-like object that supports mutation and
     waiting from multiple threads, however unlike :class:`Queue.Queue`,
@@ -2690,7 +2071,7 @@ class Latch(object):
             self._cls_all_sockets.extend((rsock, wsock))
             return rsock, wsock
 
-    COOKIE_MAGIC, = struct.unpack('L', b('LTCH') * (struct.calcsize('L')//4))
+    COOKIE_MAGIC, = struct.unpack('L', b'LTCH' * (struct.calcsize('L')//4))
     COOKIE_FMT = '>Qqqq'  # #545: id() and get_ident() may exceed long on armhfp.
     COOKIE_SIZE = struct.calcsize(COOKIE_FMT)
 
@@ -2701,7 +2082,7 @@ class Latch(object):
         and buggy internal FD sharing.
         """
         return struct.pack(self.COOKIE_FMT, self.COOKIE_MAGIC,
-                           os.getpid(), id(self), thread.get_ident())
+                           os.getpid(), id(self), threading.get_ident())
 
     def get(self, timeout=None, block=True):
         """
@@ -2838,7 +2219,7 @@ class Latch(object):
         return 'Latch(%#x, size=%d, t=%r)' % (
             id(self),
             len(self._queue),
-            threading__thread_name(threading__current_thread()),
+            threading.current_thread().name,
         )
 
 
@@ -2902,7 +2283,7 @@ class Waker(Protocol):
         teardown, the FD may already be closed, so ignore EBADF.
         """
         try:
-            self.stream.transmit_side.write(b(' '))
+            self.stream.transmit_side.write(b' ')
         except OSError:
             e = sys.exc_info()[1]
             if e.args[0] not in (errno.EBADF, errno.EWOULDBLOCK):
@@ -2923,7 +2304,7 @@ class Waker(Protocol):
         :raises mitogen.core.Error:
             :meth:`defer` was called after :class:`Broker` has begun shutdown.
         """
-        if thread.get_ident() == self.broker_ident:
+        if threading.get_ident() == self.broker_ident:
             _vv and IOLOG.debug('%r.defer() [immediate]', self)
             return func(*args, **kwargs)
         if self._broker._exitted:
@@ -2992,7 +2373,7 @@ class IoLoggerProtocol(DelimitedProtocol):
         self._log.info('%s', line.decode('utf-8', 'replace'))
 
 
-class Router(object):
+class Router:
     """
     Route messages between contexts, and invoke local handlers for messages
     addressed to this context. :meth:`Router.route() <route>` straddles the
@@ -3079,7 +2460,7 @@ class Router(object):
         if msg.is_dead:
             return
 
-        target_id_s, _, name = bytes_partition(msg.data, b(':'))
+        target_id_s, _, name = msg.data.partition(b':')
         target_id = int(target_id_s, 10)
         LOG.error('%r: deleting route to %s (%d)',
                   self, to_text(name), target_id)
@@ -3449,12 +2830,12 @@ class Router(object):
         self.broker.defer(self._async_route, msg)
 
 
-class NullTimerList(object):
+class NullTimerList:
     def get_timeout(self):
         return None
 
 
-class Broker(object):
+class Broker:
     """
     Responsible for handling I/O multiplexing in a private thread.
 
@@ -3491,19 +2872,6 @@ class Broker(object):
             name='mitogen.broker'
         )
         self._thread.start()
-        if activate_compat:
-            self._py24_25_compat()
-
-    def _py24_25_compat(self):
-        """
-        Python 2.4/2.5 have grave difficulties with threads/fork. We
-        mandatorily quiesce all running threads during fork using a
-        monkey-patch there.
-        """
-        if sys.version_info < (2, 6):
-            # import_module() is used to avoid dep scanner.
-            os_fork = import_module('mitogen.os_fork')
-            os_fork._notice_broker_or_pool(self)
 
     def start_receive(self, stream):
         """
@@ -3648,7 +3016,7 @@ class Broker(object):
         :meth:`shutdown` is called.
         """
         # For Python 2.4, no way to retrieve ident except on thread.
-        self._waker.protocol.broker_ident = thread.get_ident()
+        self._waker.protocol.broker_ident = threading.get_ident()
         try:
             while self._alive:
                 self._loop_once()
@@ -3668,7 +3036,7 @@ class Broker(object):
 
     def _broker_main(self):
         try:
-            _profile_hook('mitogen.broker', self._do_broker_main)
+            self._do_broker_main()
         finally:
             # 'finally' to ensure _on_broker_exit() can always SIGTERM.
             fire(self, 'exit')
@@ -3695,7 +3063,7 @@ class Broker(object):
         return 'Broker(%04x)' % (id(self) & 0xffff,)
 
 
-class Dispatcher(object):
+class Dispatcher:
     """
     Implementation of the :data:`CALL_FUNCTION` handle for a child context.
     Listens on the child's main thread for messages sent by
@@ -3826,10 +3194,10 @@ class Dispatcher(object):
         if self.econtext.config.get('on_start'):
             self.econtext.config['on_start'](self.econtext)
 
-        _profile_hook('mitogen.child_main', self._dispatch_calls)
+        self._dispatch_calls()
 
 
-class ExternalContext(object):
+class ExternalContext:
     """
     External context implementation.
 
@@ -3870,8 +3238,7 @@ class ExternalContext(object):
         self.config = config
 
     def _on_broker_exit(self):
-        if not self.config['profiling']:
-            os.kill(os.getpid(), signal.SIGTERM)
+        os.kill(os.getpid(), signal.SIGTERM)
 
     def _on_shutdown_msg(self, msg):
         if not msg.is_dead:
@@ -3905,8 +3272,6 @@ class ExternalContext(object):
 
     def _setup_master(self):
         Router.max_message_size = self.config['max_message_size']
-        if self.config['profiling']:
-            enable_profiling()
         self.broker = Broker(activate_compat=False)
         self.router = Router(self.broker)
         self.router.debug = self.config.get('debug', False)
@@ -3954,50 +3319,6 @@ class ExternalContext(object):
         root.handlers = [self.log_handler]
         if self.config['debug']:
             enable_debug_logging()
-
-    def _setup_importer(self):
-        importer = self.config.get('importer')
-        if importer:
-            importer._install_handler(self.router)
-            importer._context = self.parent
-        else:
-            core_src_fd = self.config.get('core_src_fd', 101)
-            if core_src_fd:
-                fp = os.fdopen(core_src_fd, 'rb', 0)
-                try:
-                    core_src = fp.read()
-                    # Strip "ExternalContext.main()" call from last line.
-                    core_src = b('\n').join(core_src.splitlines()[:-1])
-                finally:
-                    fp.close()
-            else:
-                core_src = None
-
-            importer = Importer(
-                self.router,
-                self.parent,
-                core_src,
-                self.config.get('whitelist', ()),
-                self.config.get('blacklist', ()),
-            )
-
-        self.importer = importer
-        self.router.importer = importer
-        sys.meta_path.insert(0, self.importer)
-
-    def _setup_package(self):
-        global mitogen
-        mitogen = types.ModuleType('mitogen')
-        mitogen.__package__ = 'mitogen'
-        mitogen.__path__ = []
-        mitogen.__loader__ = self.importer
-        mitogen.main = lambda *args, **kwargs: (lambda func: None)
-        mitogen.core = sys.modules['__main__']
-        mitogen.core.__file__ = 'x/mitogen/core.py'  # For inspect.getsource()
-        mitogen.core.__loader__ = self.importer
-        sys.modules['mitogen'] = mitogen
-        sys.modules['mitogen.core'] = mitogen.core
-        del sys.modules['__main__']
 
     def _setup_globals(self):
         mitogen.is_master = False
@@ -4061,10 +3382,8 @@ class ExternalContext(object):
         try:
             try:
                 self._setup_logging()
-                self._setup_importer()
                 self._reap_first_stage()
                 if self.config.get('setup_package', True):
-                    self._setup_package()
                 self._setup_globals()
                 if self.config.get('setup_stdio', True):
                     self._setup_stdio()
@@ -4086,8 +3405,7 @@ class ExternalContext(object):
                 _v and LOG.debug('Recovered sys.executable: %r', sys.executable)
 
                 if self.config.get('send_ec2', True):
-                    self.stream.transmit_side.write(b('MITO002\n'))
-                self.broker._py24_25_compat()
+                    self.stream.transmit_side.write(b'MITO002\n')
                 self.log_handler.uncork()
                 self.dispatcher.run()
                 _v and LOG.debug('ExternalContext.main() normal exit')
