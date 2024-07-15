@@ -166,7 +166,7 @@ venv-13:
 
 .PHONY: test-13
 test-13:
-	VENV=13 ${MAKE} test
+	${PYPROJECT_VENV} test -- ${PYTEST_OPTS} --ignore=omlish/sql
 
 # 13t
 
@@ -176,7 +176,7 @@ venv-13t:
 
 .PHONY: test-13t
 test-13t:
-	VENV=13t ${MAKE} test
+	${PYPROJECT_VENV} test -- ${PYTEST_OPTS} --ignore=omlish/sql
 
 # 8
 
