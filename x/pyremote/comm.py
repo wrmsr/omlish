@@ -708,61 +708,33 @@ class Broker:
         return self._thread.ident
 
     def start_receive(self, stream):
-        """
-        Mark the :attr:`receive_side <Stream.receive_side>` on `stream` as ready for reading. Safe to call from any
-        thread. When the associated file descriptor becomes ready for reading, :meth:`BasicStream.on_receive` will be
-        called.
-        """
-
-        _vv and IOLOG.debug('%r.start_receive(%r)', self, stream)
+        log.debug('%r.start_receive(%r)', self, stream)
         side = stream.receive_side
-        assert side and not side.closed
-        self.defer(self.poller.start_receive,
-                   side.fd, (side, stream.on_receive))
+        _check(side and not side.closed)
+        self.defer(self._poller.start_receive, side.fd, (side, stream.on_receive))
 
     def stop_receive(self, stream):
-        """
-        Mark the :attr:`receive_side <Stream.receive_side>` on `stream` as not ready for reading. Safe to call from any
-        thread.
-        """
-
-        _vv and IOLOG.debug('%r.stop_receive(%r)', self, stream)
-        self.defer(self.poller.stop_receive, stream.receive_side.fd)
+        log.debug('%r.stop_receive(%r)', self, stream)
+        self.defer(self._poller.stop_receive, stream.receive_side.fd)
 
     def _start_transmit(self, stream):
-        """
-        Mark the :attr:`transmit_side <Stream.transmit_side>` on `stream` as ready for writing. Must only be called from
-        the Broker thread. When the associated file descriptor becomes ready for writing,
-        :meth:`BasicStream.on_transmit` will be called.
-        """
-
-        _vv and IOLOG.debug('%r._start_transmit(%r)', self, stream)
+        log.debug('%r._start_transmit(%r)', self, stream)
         side = stream.transmit_side
-        assert side and not side.closed
-        self.poller.start_transmit(side.fd, (side, stream.on_transmit))
+        _check(side and not side.closed)
+        self._poller.start_transmit(side.fd, (side, stream.on_transmit))
 
     def _stop_transmit(self, stream):
-        """Mark the :attr:`transmit_side <Stream.receive_side>` on `stream` as not ready for writing."""
-
-        _vv and IOLOG.debug('%r._stop_transmit(%r)', self, stream)
-        self.poller.stop_transmit(stream.transmit_side.fd)
+        log.debug('%r._stop_transmit(%r)', self, stream)
+        self._poller.stop_transmit(stream.transmit_side.fd)
 
     def keep_alive(self) -> bool:
         it = (side.keep_alive for (_, (side, _)) in self._poller.readers)
         return sum(it, 0) > 0 or self._timers.get_timeout() is not None
 
     def defer(self, func):
-        self._waker.defer(func)
+        self._waker.protocol.defer(func)  # noqa
 
     def defer_sync(self, func):
-        """
-        Arrange for `func()` to execute on :class:`Broker` thread, blocking the current thread until a result or
-        exception is available.
-
-        :returns:
-            Return value of `func()`.
-        """
-
         latch = Latch()
         def wrapper():
             try:
@@ -856,7 +828,14 @@ class Broker:
 
 
 def _main() -> None:
-    pass
+    latch = Latch()
+    broker = Broker()
+    try:
+        broker.defer(lambda: latch.put(123))
+        _check_eq(123, latch.get())
+    finally:
+        broker.shutdown()
+        broker.join()
 
 
 if __name__ == '__main__':
