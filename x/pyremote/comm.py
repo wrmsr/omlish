@@ -1,3 +1,24 @@
+# Copyright 2019, David Wilson
+#
+# Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+# following conditions are met:
+#
+# 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following
+# disclaimer.
+#
+# 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following
+# disclaimer in the documentation and/or other materials provided with the distribution.
+#
+# 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote
+# products derived from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import abc
 import binascii
 import collections
@@ -315,27 +336,21 @@ class Latch:
         self._waking = 0
 
     def __repr__(self) -> str:
-        return 'Latch(%#x, size=%d, t=%r)' % (id(self), len(self._queue), threading.current_thread().name)
+        return f'Latch({id(self):x}, size={len(self._queue)}, t={threading.current_thread().name})'
 
     def close(self) -> None:
-        self._lock.acquire()
-        try:
+        with self._lock:
             self._closed = True
             while self._waking < len(self._sleeping):
                 wsock, cookie = self._sleeping[self._waking]
                 self._wake(wsock, cookie)
                 self._waking += 1
-        finally:
-            self._lock.release()
 
     def size(self) -> int:
-        self._lock.acquire()
-        try:
+        with self._lock:
             if self._closed:
                 raise LatchError
             return len(self._queue)
-        finally:
-            self._lock.release()
 
     def _get_socketpair(self) -> SocketPair:
         try:
@@ -362,8 +377,7 @@ class Latch:
 
     def get(self, timeout: ta.Optional[float] = None, block: bool = True) -> ta.Any:
         log.debug('%r.get(timeout=%r, block=%r)', self, timeout, block)
-        self._lock.acquire()
-        try:
+        with self._lock:
             if self._closed:
                 raise LatchError
             i = len(self._sleeping)
@@ -375,8 +389,6 @@ class Latch:
             rsock, wsock = self._get_socketpair()
             cookie = self._make_cookie()
             self._sleeping.append((wsock, cookie))
-        finally:
-            self._lock.release()
 
         poller = Poller()
         poller.start_read(rsock.fileno())
@@ -413,11 +425,10 @@ class Latch:
         e = None
         try:
             list(poller.poll(timeout))
-        except Exception:
+        except Exception:  # noqa
             e = sys.exc_info()[1]
 
-        self._lock.acquire()
-        try:
+        with self._lock:
             i = self._sleeping.index((wsock, cookie))
             del self._sleeping[i]
 
@@ -441,13 +452,10 @@ class Latch:
                 raise LatchError
             log.debug('%r.get() wake -> %r', self, self._queue[i])
             return self._queue.pop(i)
-        finally:
-            self._lock.release()
 
     def put(self, obj: ta.Any = None) -> None:
         log.debug('%r.put(%r)', self, obj)
-        self._lock.acquire()
-        try:
+        with self._lock:
             if self._closed:
                 raise LatchError
             self._queue.append(obj)
@@ -459,8 +467,6 @@ class Latch:
                 log.debug('%r.put() -> waking wfd=%r', self, wsock.fileno())
             elif self._notify:
                 self._notify(self)
-        finally:
-            self._lock.release()
 
         if wsock:
             self._wake(wsock, cookie)  # noqa
@@ -831,6 +837,11 @@ class Broker:
 
 
 def _main() -> None:
+    from omlish import logs
+    logs.configure_standard_logging('DEBUG')
+
+    ##
+
     latch = Latch()
     broker = Broker()
     try:
