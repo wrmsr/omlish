@@ -1,4 +1,5 @@
 import abc
+import binascii
 import collections
 import errno
 import fcntl
@@ -7,6 +8,7 @@ import logging
 import os
 import select
 import socket
+import struct
 import sys
 import threading
 import time
@@ -27,15 +29,15 @@ def _check(cond: bool, msg: str) -> None:
         raise Exception(msg)
 
 
-def _check_eq(l: T, r: T) -> T:
+def _check_eq(l: T, r: T, msg: ta.Optional[str] = None) -> T:
     if l != r:
-        raise Exception(f'must be equal: {l}, {r}')
+        raise Exception(msg or f'must be equal: {l}, {r}')
     return l
 
 
-def _check_not_none(o: ta.Optional[T]) -> T:
+def _check_not_none(o: ta.Optional[T], msg: ta.Optional[str] = None) -> T:
     if o is None:
-        raise Exception('must not be none')
+        raise Exception(msg or 'must not be none')
     return o
 
 
@@ -64,7 +66,7 @@ def callback(obj: ta.Any, name: str, *args: ta.Any, **kwargs: ta.Any) -> None:
 
 def set_cloexec(fd: int) -> None:
     flags = fcntl.fcntl(fd, fcntl.F_GETFD)
-    _check(fd > 2, f'fd {fd!r} <= 2'))
+    _check(fd > 2, f'fd {fd!r} <= 2')
     fcntl.fcntl(fd, fcntl.F_SETFD, flags | fcntl.FD_CLOEXEC)
 
 
@@ -278,6 +280,193 @@ class Protocol(abc.ABC):
         if self._stream.ws:
             self._stream.ws.close()
 
+
+##
+
+
+class SocketPair(ta.Tuple):
+    rsock: socket.socket
+    wsock: socket.socket
+
+
+class LatchError(Exception):
+    pass
+
+
+class Latch:
+
+    _idle_socketpairs: ta.ClassVar[ta.List[SocketPair]] = []
+
+    def __init__(
+            self,
+            *,
+            notify: ta.Optional[ta.Callable[['Latch'], None]] = None,
+    ) -> None:
+        super().__init__()
+        self._notify = notify
+
+        self._closed = False
+        self._lock = threading.Lock()
+        self._queue: ta.List[ta.Any] = []
+        self._sleeping: ta.List[ta.Tuple[socket.socket, bytes]] = []
+        self._waking = 0
+
+    def __repr__(self) -> str:
+        return 'Latch(%#x, size=%d, t=%r)' % (id(self), len(self._queue), threading.current_thread().name)
+
+    def close(self) -> None:
+        self._lock.acquire()
+        try:
+            self._closed = True
+            while self._waking < len(self._sleeping):
+                wsock, cookie = self._sleeping[self._waking]
+                self._wake(wsock, cookie)
+                self._waking += 1
+        finally:
+            self._lock.release()
+
+    def size(self) -> int:
+        self._lock.acquire()
+        try:
+            if self._closed:
+                raise LatchError
+            return len(self._queue)
+        finally:
+            self._lock.release()
+
+    def _get_socketpair(self) -> SocketPair:
+        try:
+            return Latch._idle_socketpairs.pop()
+        except IndexError:
+            rsock, wsock = socket.socketpair()
+            rsock.setblocking(False)
+            set_cloexec(rsock.fileno())
+            set_cloexec(wsock.fileno())
+            return SocketPair(rsock, wsock)
+
+    COOKIE_MAGIC, = struct.unpack('L', b'LTCH' * (struct.calcsize('L')//4))
+    COOKIE_FMT = '>Qqqq'
+    COOKIE_SIZE = struct.calcsize(COOKIE_FMT)
+
+    def _make_cookie(self) -> bytes:
+        return struct.pack(
+            self.COOKIE_FMT,
+            self.COOKIE_MAGIC,
+            os.getpid(),
+            id(self),
+            threading.get_ident(),
+        )
+
+    def get(self, timeout: ta.Optional[float] = None, block: bool = True) -> ta.Any:
+        log.debug('%r.get(timeout=%r, block=%r)', self, timeout, block)
+        self._lock.acquire()
+        try:
+            if self._closed:
+                raise LatchError
+            i = len(self._sleeping)
+            if len(self._queue) > i:
+                log.debug('%r.get() -> %r', self, self._queue[i])
+                return self._queue.pop(i)
+            if not block:
+                raise TimeoutError
+            rsock, wsock = self._get_socketpair()
+            cookie = self._make_cookie()
+            self._sleeping.append((wsock, cookie))
+        finally:
+            self._lock.release()
+
+        poller = Poller()
+        poller.start_receive(rsock.fileno())
+        try:
+            return self._get_sleep(
+                poller,
+                timeout,
+                block,
+                rsock,
+                wsock,
+                cookie,
+            )
+        finally:
+            poller.close()
+
+    def _get_sleep(
+            self,
+            poller: 'Poller',
+            timeout: ta.Optional[float],
+            block: bool,
+            rsock: socket.socket,
+            wsock: socket.socket,
+            cookie: bytes,
+    ) -> ta.Any:
+        log.debug(
+            '%r._get_sleep(timeout=%r, block=%r, fd=%d/%d)',
+            self,
+            timeout,
+            block,
+            rsock.fileno(),
+            wsock.fileno(),
+        )
+
+        e = None
+        try:
+            list(poller.poll(timeout))
+        except Exception:
+            e = sys.exc_info()[1]
+
+        self._lock.acquire()
+        try:
+            i = self._sleeping.index((wsock, cookie))
+            del self._sleeping[i]
+
+            try:
+                got_cookie = rsock.recv(self.COOKIE_SIZE)
+            except socket.error:
+                e2 = sys.exc_info()[1]
+                if e2.args[0] == errno.EAGAIN:
+                    e = TimeoutError()
+                else:
+                    e = e2
+
+            Latch._idle_socketpairs.append(SocketPair(rsock, wsock))
+            if e:
+                raise e
+
+            _check_eq(cookie, got_cookie, f'Cookie incorrect; got {binascii.hexlify(got_cookie)!r}, expected {binascii.hexlify(cookie)!r}')  # noqa
+            _check(i < self._waking, 'Cookie correct, but no queue element assigned.')
+            self._waking -= 1
+            if self._closed:
+                raise LatchError
+            log.debug('%r.get() wake -> %r', self, self._queue[i])
+            return self._queue.pop(i)
+        finally:
+            self._lock.release()
+
+    def put(self, obj: ta.Any = None) -> None:
+        log.debug('%r.put(%r)', self, obj)
+        self._lock.acquire()
+        try:
+            if self._closed:
+                raise LatchError
+            self._queue.append(obj)
+
+            wsock = None
+            if self._waking < len(self._sleeping):
+                wsock, cookie = self._sleeping[self._waking]
+                self._waking += 1
+                log.debug('%r.put() -> waking wfd=%r', self, wsock.fileno())
+            elif self._notify:
+                self._notify(self)
+        finally:
+            self._lock.release()
+
+        if wsock:
+            self._wake(wsock, cookie)  # noqa
+
+    def _wake(self, wsock: socket.socket, cookie: bytes) -> None:
+        c, dc = io_op(os.write, wsock.fileno(), cookie)
+        _check(c == len(cookie) and not dc)
+
+
 ##
 
 
@@ -370,6 +559,9 @@ class Poller:
     def writers(self) -> ta.List[ta.Tuple[ta.Any, int]]:
         return list((fd, data) for fd, (data, gen) in self._wfds.items())
 
+    def close(self) -> None:
+        pass
+
     def start_receive(self, fd: int, data: ta.Any = None) -> None:
         self._rfds[fd] = Poller.Entry(data or fd, self._gen)
 
@@ -435,11 +627,15 @@ class Waker(Protocol):
         )
 
     @property
-    def keep_alive(self):
-        return len(self._deferred)
+    def keep_alive(self) -> bool:
+        return bool(self._deferred)
+
+    def on_transmit(self, broker):
+        raise TypeError
 
     def on_receive(self, broker, buf):
-        _vv and IOLOG.debug('%r.on_receive()', self)
+        log.debug('%r.on_receive()', self)
+
         while True:
             try:
                 func, args, kwargs = self._deferred.popleft()
@@ -449,32 +645,31 @@ class Waker(Protocol):
             try:
                 func(*args, **kwargs)
             except Exception:
-                LOG.exception('defer() crashed: %r(*%r, **%r)', func, args, kwargs)
+                log.exception('%r.defer() crashed: %r(*%r, **%r)', self, func, args, kwargs)
                 broker.shutdown()
 
     def _wake(self):
         try:
-            self.stream.transmit_side.write(b' ')
+            self._stream.ws.write(b' ')
         except OSError:
             e = sys.exc_info()[1]
             if e.args[0] not in (errno.EBADF, errno.EWOULDBLOCK):
                 raise
 
     broker_shutdown_msg = (
-        "An attempt was made to enqueue a message with a Broker that has "
-        "already exited. It is likely your program called Broker.shutdown() "
-        "too early."
+        "An attempt was made to enqueue a message with a Broker that has already exited. It is likely your program "
+        "called Broker.shutdown() too early."
     )
 
     def defer(self, func, *args, **kwargs):
-        if threading.get_ident() == self.broker.thread_ident:
-            _vv and IOLOG.debug('%r.defer() [immediate]', self)
+        if threading.get_ident() == self._broker.thread_ident:
+            log.debug('%r.defer() [immediate]', self)
             return func(*args, **kwargs)
 
-        if self._broker._exited:
-            raise Error(self.broker_shutdown_msg)
+        if self._broker._exited:  # noqa
+            raise Exception(self.broker_shutdown_msg)
 
-        _vv and IOLOG.debug('%r.defer() [fd=%r]', self, self.stream.transmit_side.fd)
+        log.debug('%r.defer() [fd=%r]', self, self._stream.ws.fd)
         self._deferred.append((func, args, kwargs))
         self._wake()
 
@@ -533,6 +728,8 @@ class Broker:
         for _, (side, _) in self._poller.readers + self._poller.writers:
             log.debug('%r: force disconnecting %r', self, side)
             side.stream.on_disconnect(self)
+
+        self._poller.close()
 
     def _broker_shutdown(self):
         for _, (side, _) in self._poller.readers + self._poller.writers:
