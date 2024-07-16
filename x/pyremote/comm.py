@@ -350,8 +350,8 @@ class Latch:
                 raise LatchError
             return len(self._queue)
 
-    _all_sockets: ta.List[socket.socket] = []
     _idle_socket_pairs: ta.ClassVar[ta.List[SocketPair]] = []
+    _all_sockets: ta.ClassVar[ta.List[socket.socket]] = []
 
     @classmethod
     def _get_socket_pair(cls) -> SocketPair:
