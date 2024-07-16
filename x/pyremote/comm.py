@@ -226,16 +226,16 @@ class Stream:
 
     ##
 
-    def on_receive(self, broker):
+    def on_read(self, broker):
         buf = self._rs.read(self._protocol.read_size)
         if not buf:
             log.debug('%r: empty read, disconnecting', self._rs)
             return self.on_disconnect(broker)
 
-        self._protocol.on_receive(broker, buf)
+        self._protocol.on_read(broker, buf)
 
-    def on_transmit(self, broker):
-        self._protocol.on_transmit(broker)
+    def on_write(self, broker):
+        self._protocol.on_write(broker)
 
     def on_shutdown(self, broker):
         callback(self, 'shutdown')
@@ -263,11 +263,11 @@ class Protocol(abc.ABC):
     ##
 
     @abc.abstractmethod
-    def on_receive(self, broker, buf):
+    def on_read(self, broker, buf):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def on_transmit(self, broker):
+    def on_write(self, broker):
         raise NotImplementedError
 
     def on_shutdown(self, broker):
@@ -276,9 +276,9 @@ class Protocol(abc.ABC):
 
     def on_disconnect(self, broker):
         log.debug('%r: disconnecting', self)
-        broker.stop_receive(self._stream)
+        broker.stop_read(self._stream)
         if self._stream.ws:
-            broker._stop_transmit(self._stream)
+            broker._stop_write(self._stream)
         self._stream.rs.close()
         if self._stream.ws:
             self._stream.ws.close()
@@ -298,7 +298,7 @@ class LatchError(Exception):
 
 class Latch:
 
-    _idle_socketpairs: ta.ClassVar[ta.List[SocketPair]] = []
+    _idle_socket_pairs: ta.ClassVar[ta.List[SocketPair]] = []
 
     def __init__(
             self,
@@ -339,7 +339,7 @@ class Latch:
 
     def _get_socketpair(self) -> SocketPair:
         try:
-            return Latch._idle_socketpairs.pop()
+            return Latch._idle_socket_pairs.pop()
         except IndexError:
             rsock, wsock = socket.socketpair()
             rsock.setblocking(False)
@@ -379,7 +379,7 @@ class Latch:
             self._lock.release()
 
         poller = Poller()
-        poller.start_receive(rsock.fileno())
+        poller.start_read(rsock.fileno())
         try:
             return self._get_sleep(
                 poller,
@@ -430,7 +430,7 @@ class Latch:
                 else:
                     e = e2
 
-            Latch._idle_socketpairs.append(SocketPair(rsock, wsock))
+            Latch._idle_socket_pairs.append(SocketPair(rsock, wsock))
             if e:
                 raise e
 
@@ -565,16 +565,16 @@ class Poller:
     def close(self) -> None:
         pass
 
-    def start_receive(self, fd: int, data: ta.Any = None) -> None:
+    def start_read(self, fd: int, data: ta.Any = None) -> None:
         self._rfds[fd] = Poller.Entry(data or fd, self._gen)
 
-    def stop_receive(self, fd: int) -> None:
+    def stop_read(self, fd: int) -> None:
         self._rfds.pop(fd, None)
 
-    def start_transmit(self, fd: int, data: ta.Any = None) -> None:
+    def start_write(self, fd: int, data: ta.Any = None) -> None:
         self._wfds[fd] = Poller.Entry(data or fd, self._gen)
 
-    def stop_transmit(self, fd: int) -> None:
+    def stop_write(self, fd: int) -> None:
         self._wfds.pop(fd, None)
 
     def _poll(self, timeout: ta.Optional[float]) -> ta.Iterable[ta.Any]:
@@ -633,22 +633,22 @@ class Waker(Protocol):
     def keep_alive(self) -> bool:
         return bool(self._deferred)
 
-    def on_transmit(self, broker):
+    def on_write(self, broker):
         raise TypeError
 
-    def on_receive(self, broker, buf):
-        log.debug('%r.on_receive()', self)
+    def on_read(self, broker, buf):
+        log.debug('%r.on_read()', self)
 
         while True:
             try:
-                func, args, kwargs = self._deferred.popleft()
+                fn, args, kwargs = self._deferred.popleft()
             except IndexError:
                 return
 
             try:
-                func(*args, **kwargs)
+                fn(*args, **kwargs)
             except Exception:
-                log.exception('%r.defer() crashed: %r(*%r, **%r)', self, func, args, kwargs)
+                log.exception('%r.defer() crashed: %r(*%r, **%r)', self, fn, args, kwargs)
                 broker.shutdown()
 
     def _wake(self):
@@ -664,16 +664,16 @@ class Waker(Protocol):
         "called Broker.shutdown() too early."
     )
 
-    def defer(self, func, *args, **kwargs):
+    def defer(self, fn, *args, **kwargs):
         if threading.get_ident() == self._broker.thread_ident:
             log.debug('%r.defer() [immediate]', self)
-            return func(*args, **kwargs)
+            return fn(*args, **kwargs)
 
         if self._broker._exited:  # noqa
             raise Exception(self.broker_shutdown_msg)
 
         log.debug('%r.defer() [fd=%r]', self, self._stream.ws.fd)
-        self._deferred.append((func, args, kwargs))
+        self._deferred.append((fn, args, kwargs))
         self._wake()
 
 
@@ -692,9 +692,9 @@ class Broker:
         self._waker = Waker.build_stream(self)
 
         self._poller = Poller()
-        self._poller.start_receive(
+        self._poller.start_read(
             self._waker.rs.fd,
-            (self._waker.rs, self._waker.on_receive)
+            (self._waker.rs, self._waker.on_read)
         )
 
         self._thread = threading.Thread(
@@ -710,38 +710,38 @@ class Broker:
     def thread_ident(self) -> ta.Optional[int]:
         return self._thread.ident
 
-    def start_receive(self, stream):
-        log.debug('%r.start_receive(%r)', self, stream)
+    def start_read(self, stream):
+        log.debug('%r.start_read(%r)', self, stream)
         side = stream.rs
         _check(side and not side.closed)
-        self.defer(self._poller.start_receive, side.fd, (side, stream.on_receive))
+        self.defer(self._poller.start_read, side.fd, (side, stream.on_read))
 
-    def stop_receive(self, stream):
-        log.debug('%r.stop_receive(%r)', self, stream)
-        self.defer(self._poller.stop_receive, stream.rs.fd)
+    def stop_read(self, stream):
+        log.debug('%r.stop_read(%r)', self, stream)
+        self.defer(self._poller.stop_read, stream.rs.fd)
 
-    def _start_transmit(self, stream):
-        log.debug('%r._start_transmit(%r)', self, stream)
+    def _start_write(self, stream):
+        log.debug('%r._start_write(%r)', self, stream)
         side = stream.ws
         _check(side and not side.closed)
-        self._poller.start_transmit(side.fd, (side, stream.on_transmit))
+        self._poller.start_write(side.fd, (side, stream.on_write))
 
-    def _stop_transmit(self, stream):
-        log.debug('%r._stop_transmit(%r)', self, stream)
-        self._poller.stop_transmit(stream.ws.fd)
+    def _stop_write(self, stream):
+        log.debug('%r._stop_write(%r)', self, stream)
+        self._poller.stop_write(stream.ws.fd)
 
     def keep_alive(self) -> bool:
         it = (side.keep_alive for (_, (side, _)) in self._poller.readers)
         return sum(it, 0) > 0 or self._timers.get_timeout() is not None
 
-    def defer(self, func, *args, **kwargs):
-        self._waker.protocol.defer(func, *args, **kwargs)  # noqa
+    def defer(self, fn, *args, **kwargs):
+        self._waker.protocol.defer(fn, *args, **kwargs)  # noqa
 
-    def defer_sync(self, func):
+    def defer_sync(self, fn):
         latch = Latch()
         def wrapper():
             try:
-                latch.put(func())
+                latch.put(fn())
             except Exception:
                 latch.put(sys.exc_info()[1])
         self.defer(wrapper)
