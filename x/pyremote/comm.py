@@ -24,9 +24,9 @@ T = ta.TypeVar('T')
 ##
 
 
-def _check(cond: bool, msg: str) -> None:
+def _check(cond: bool, msg: ta.Optional[str] = None) -> None:
     if not cond:
-        raise Exception(msg)
+        raise Exception(msg or 'check failed')
 
 
 def _check_eq(l: T, r: T, msg: ta.Optional[str] = None) -> T:
@@ -191,7 +191,10 @@ class Stream:
     ) -> None:
         super().__init__()
 
+        _check_eq(protocol._stream, None)  # noqa
         self._protocol = protocol
+        protocol._stream = self  # noqa
+
         self._rs = Side(self, rfp)
         self._ws = Side(self, wfp)
         self._name = name
@@ -284,7 +287,7 @@ class Protocol(abc.ABC):
 ##
 
 
-class SocketPair(ta.Tuple):
+class SocketPair(ta.NamedTuple):
     rsock: socket.socket
     wsock: socket.socket
 
@@ -709,30 +712,30 @@ class Broker:
 
     def start_receive(self, stream):
         log.debug('%r.start_receive(%r)', self, stream)
-        side = stream.receive_side
+        side = stream.rs
         _check(side and not side.closed)
         self.defer(self._poller.start_receive, side.fd, (side, stream.on_receive))
 
     def stop_receive(self, stream):
         log.debug('%r.stop_receive(%r)', self, stream)
-        self.defer(self._poller.stop_receive, stream.receive_side.fd)
+        self.defer(self._poller.stop_receive, stream.rs.fd)
 
     def _start_transmit(self, stream):
         log.debug('%r._start_transmit(%r)', self, stream)
-        side = stream.transmit_side
+        side = stream.ws
         _check(side and not side.closed)
         self._poller.start_transmit(side.fd, (side, stream.on_transmit))
 
     def _stop_transmit(self, stream):
         log.debug('%r._stop_transmit(%r)', self, stream)
-        self._poller.stop_transmit(stream.transmit_side.fd)
+        self._poller.stop_transmit(stream.ws.fd)
 
     def keep_alive(self) -> bool:
         it = (side.keep_alive for (_, (side, _)) in self._poller.readers)
         return sum(it, 0) > 0 or self._timers.get_timeout() is not None
 
-    def defer(self, func):
-        self._waker.protocol.defer(func)  # noqa
+    def defer(self, func, *args, **kwargs):
+        self._waker.protocol.defer(func, *args, **kwargs)  # noqa
 
     def defer_sync(self, func):
         latch = Latch()
