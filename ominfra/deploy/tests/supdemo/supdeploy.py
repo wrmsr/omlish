@@ -1,12 +1,19 @@
 """
 ~omlish
+  deploy.pid (flock)
   /conf
+    /env
+      wrmsr--omlish--<rev>.env
     /nginx
       wrmsr--omlish--<rev>.conf
     /supervisor
       wrmsr--omlish--<rev>.conf
   /venv
-    /wrmsr--omlish--<rev>--deploy
+    /wrmsr--omlish--<rev>
+
+?
+  /logs
+    /wrmsr--omlish--<rev>
 
 https://docs.docker.com/config/containers/multi-service_container/#use-a-process-manager
 https://serverfault.com/questions/211525/supervisor-not-loading-new-configuration-files
