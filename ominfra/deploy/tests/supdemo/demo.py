@@ -1,7 +1,3 @@
-"""
-https://docs.docker.com/config/containers/multi-service_container/#use-a-process-manager
-https://serverfault.com/questions/211525/supervisor-not-loading-new-configuration-files
-"""
 import os.path
 import subprocess
 
@@ -39,6 +35,23 @@ def _main():
             subprocess.check_call([
                 'docker', 'exec', ctr_id,
                 'python3.12', '--version',
+            ])
+
+            fname = subprocess.check_output([
+                'docker', 'exec', ctr_id,
+                'mktemp', '--suffix=-supdeploy',
+            ]).decode().strip()
+
+            with open(os.path.join(os.path.dirname(__file__), 'supdeploy.py'), 'rb') as f:
+                buf = f.read()
+
+            subprocess.run([
+                'docker', 'exec', '-i', ctr_id,
+                'sh', '-c', f'cp /dev/stdin {fname}',
+            ], input=buf, check=True)
+
+            subprocess.check_call([
+                'python3.12', fname,
             ])
 
             print()
