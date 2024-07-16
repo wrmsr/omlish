@@ -839,8 +839,9 @@ class Broker:
 
 
 def _main() -> None:
-    from omlish import logs
-    logs.configure_standard_logging('DEBUG')
+    import logging
+    logging.root.addHandler(logging.StreamHandler())
+    logging.root.setLevel('DEBUG')
 
     ##
 
