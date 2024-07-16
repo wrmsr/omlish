@@ -666,8 +666,8 @@ class Waker(Protocol):
                 raise
 
     broker_shutdown_msg = (
-        "An attempt was made to enqueue a message with a Broker that has already exited. It is likely your program "
-        "called Broker.shutdown() too early."
+        'An attempt was made to enqueue a message with a Broker that has already exited. It is likely your program '
+        'called Broker.shutdown() too early.'
     )
 
     def defer(self, fn: ta.Callable, *args: ta.Any, **kwargs: ta.Any) -> None:
