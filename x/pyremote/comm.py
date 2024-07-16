@@ -170,7 +170,7 @@ class Side:
         return self._closed
 
     def __repr__(self) -> str:
-        return f'<Side of {self._stream.name or repr(self._stream)} fd {self._fd}>'
+        return f'<{self.__class__.__name__}@{id(self):x} of {self._stream.name or repr(self._stream)} fd {self._fd}>'
 
     def close(self) -> None:
         log.debug('%r.close()', self)
@@ -237,7 +237,7 @@ class Stream:
         return self._name
 
     def __repr__(self) -> str:
-        return f'<Stream {self._name} {id(self) & 0xffff:04x}>'
+        return f'<{self.__class__.__name__}@{id(self):x} {self._name}>'
 
     def set_protocol(self, protocol: 'Protocol') -> None:
         _check_eq(self._protocol._stream, self)  # noqa
@@ -279,7 +279,7 @@ class Protocol(abc.ABC):
         self._stream: ta.Optional[Stream] = None
 
     def __repr__(self) -> str:
-        return f'{self.__class__.__name__}({self._stream!r})'
+        return f'{self.__class__.__name__}@{id(self):x}({self._stream!r})'
 
     ##
 
@@ -319,8 +319,6 @@ class LatchError(Exception):
 
 class Latch:
 
-    _idle_socket_pairs: ta.ClassVar[ta.List[SocketPair]] = []
-
     def __init__(
             self,
             *,
@@ -336,7 +334,7 @@ class Latch:
         self._waking = 0
 
     def __repr__(self) -> str:
-        return f'Latch({id(self):x}, size={len(self._queue)}, t={threading.current_thread().name})'
+        return f'{self.__class__.__name__}@{id(self):x}(size={len(self._queue)}, t={threading.current_thread().name})'
 
     def close(self) -> None:
         with self._lock:
@@ -352,14 +350,19 @@ class Latch:
                 raise LatchError
             return len(self._queue)
 
-    def _get_socketpair(self) -> SocketPair:
+    _all_sockets: ta.List[socket.socket] = []
+    _idle_socket_pairs: ta.ClassVar[ta.List[SocketPair]] = []
+
+    @classmethod
+    def _get_socket_pair(cls) -> SocketPair:
         try:
-            return Latch._idle_socket_pairs.pop()
+            return cls._idle_socket_pairs.pop()
         except IndexError:
             rsock, wsock = socket.socketpair()
             rsock.setblocking(False)
             set_cloexec(rsock.fileno())
             set_cloexec(wsock.fileno())
+            cls._all_sockets.extend([rsock, wsock])
             return SocketPair(rsock, wsock)
 
     COOKIE_MAGIC, = struct.unpack('L', b'LTCH' * (struct.calcsize('L')//4))
@@ -386,7 +389,7 @@ class Latch:
                 return self._queue.pop(i)
             if not block:
                 raise TimeoutError
-            rsock, wsock = self._get_socketpair()
+            rsock, wsock = self._get_socket_pair()
             cookie = self._make_cookie()
             self._sleeping.append((wsock, cookie))
 
@@ -500,7 +503,7 @@ class Timer:
         return self._active
 
     def __repr__(self) -> str:
-        return f'Timer({self._when!r}, {self._fn!r})'
+        return f'{self.__class__.__name__}({self._when!r}, {self._fn!r})'
 
     def __eq__(self, other):
         return self._when == other._when  # noqa
@@ -629,11 +632,8 @@ class Waker(Protocol):
         self._broker = broker
         self._deferred = collections.deque()
 
-    def __repr__(self):
-        return 'Waker(fd=%r/%r)' % (
-            self._stream.rs and self._stream.rs.fd,
-            self._stream.ws and self._stream.ws.fd,
-        )
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}(fd={self._stream.rs and self._stream.rs.fd!r}/{self._stream.ws and self._stream.ws.fd!r})'  # noqa
 
     @property
     def keep_alive(self) -> bool:
@@ -657,7 +657,7 @@ class Waker(Protocol):
                 log.exception('%r.defer() crashed: %r(*%r, **%r)', self, fn, args, kwargs)
                 broker.shutdown()
 
-    def _wake(self):
+    def _wake(self) -> None:
         try:
             self._stream.ws.write(b' ')
         except OSError:
@@ -670,7 +670,7 @@ class Waker(Protocol):
         "called Broker.shutdown() too early."
     )
 
-    def defer(self, fn, *args, **kwargs):
+    def defer(self, fn: ta.Callable, *args: ta.Any, **kwargs: ta.Any) -> None:
         if threading.get_ident() == self._broker.thread_ident:
             log.debug('%r.defer() [immediate]', self)
             return fn(*args, **kwargs)
@@ -716,23 +716,23 @@ class Broker:
     def thread_ident(self) -> ta.Optional[int]:
         return self._thread.ident
 
-    def start_read(self, stream):
+    def start_read(self, stream: Stream) -> None:
         log.debug('%r.start_read(%r)', self, stream)
         side = stream.rs
         _check(side and not side.closed)
         self.defer(self._poller.start_read, side.fd, (side, stream.on_read))
 
-    def stop_read(self, stream):
+    def stop_read(self, stream: Stream) -> None:
         log.debug('%r.stop_read(%r)', self, stream)
         self.defer(self._poller.stop_read, stream.rs.fd)
 
-    def _start_write(self, stream):
+    def _start_write(self, stream: Stream) -> None:
         log.debug('%r._start_write(%r)', self, stream)
         side = stream.ws
         _check(side and not side.closed)
         self._poller.start_write(side.fd, (side, stream.on_write))
 
-    def _stop_write(self, stream):
+    def _stop_write(self, stream: Stream) -> None:
         log.debug('%r._stop_write(%r)', self, stream)
         self._poller.stop_write(stream.ws.fd)
 
@@ -740,16 +740,18 @@ class Broker:
         it = (side.keep_alive for (_, (side, _)) in self._poller.readers)
         return sum(it, 0) > 0 or self._timers.get_timeout() is not None
 
-    def defer(self, fn, *args, **kwargs):
+    def defer(self, fn: ta.Callable, *args: ta.Any, **kwargs: ta.Any) -> None:
         self._waker.protocol.defer(fn, *args, **kwargs)  # noqa
 
-    def defer_sync(self, fn):
+    def defer_sync(self, fn: ta.Callable) -> ta.Any:
         latch = Latch()
+
         def wrapper():
             try:
                 latch.put(fn())
-            except Exception:
+            except Exception:  # noqa
                 latch.put(sys.exc_info()[1])
+
         self.defer(wrapper)
         res = latch.get()
         if isinstance(res, Exception):
@@ -775,14 +777,14 @@ class Broker:
         if timer_to is not None:
             self._timers.expire()
 
-    def _broker_exit(self):
+    def _broker_exit(self) -> None:
         for _, (side, _) in self._poller.readers + self._poller.writers:
             log.debug('%r: force disconnecting %r', self, side)
             side.stream.on_disconnect(self)
 
         self._poller.close()
 
-    def _broker_shutdown(self):
+    def _broker_shutdown(self) -> None:
         for _, (side, _) in self._poller.readers + self._poller.writers:
             self._call(side.stream, side.stream.on_shutdown)
 
