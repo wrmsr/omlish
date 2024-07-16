@@ -835,10 +835,30 @@ def _main() -> None:
     broker = Broker()
     try:
         broker.defer(lambda: latch.put(123))
-        _check_eq(123, latch.get())
+        assert 123 == latch.get()
     finally:
         broker.shutdown()
         broker.join()
+
+    ##
+
+    broker = Broker()
+    try:
+        th = broker.defer_sync(lambda: threading.current_thread())
+        assert th == broker._thread  # noqa
+    finally:
+        broker.shutdown()
+        broker.join()
+
+    ##
+
+    # latch = mitogen.core.Latch()
+    # broker = self.klass()
+    # broker.shutdown()
+    # broker.join()
+    #
+    # e = self.assertRaises(mitogen.core.Error, lambda: broker.defer(lambda: latch.put(123)))
+    # self.assertEqual(e.args[0], mitogen.core.Waker.broker_shutdown_msg)
 
 
 if __name__ == '__main__':
