@@ -32,11 +32,6 @@ def _main():
                 'sh', '-c', timebomb_payload(TIMEBOMB_DELAY_S),
             ])
 
-            subprocess.check_call([
-                'docker', 'exec', ctr_id,
-                'python3.12', '--version',
-            ])
-
             fname = subprocess.check_output([
                 'docker', 'exec', ctr_id,
                 'mktemp', '--suffix=-supdeploy',
