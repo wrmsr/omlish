@@ -51,6 +51,7 @@ def _main():
             ], input=buf, check=True)
 
             subprocess.check_call([
+                'docker', 'exec', '-i', ctr_id,
                 'python3.12', fname,
             ])
 
