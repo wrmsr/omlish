@@ -1,6 +1,6 @@
 import pytest
 
-from ..restrict import FinalException
+from ..restrict import FinalError
 from ..simple import LazySingleton
 from ..simple import Marker
 from ..simple import Singleton
@@ -10,7 +10,7 @@ def test_marker():
     class M(Marker):
         pass
 
-    with pytest.raises(FinalException):
+    with pytest.raises(FinalError):
         class N(M):
             pass
     with pytest.raises(TypeError):

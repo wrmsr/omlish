@@ -29,10 +29,10 @@ class CommandRunner(lang.Abstract):
 
         def check(self: ta.Self) -> ta.Self:
             if self.rc != 0:
-                raise CommandRunner.ReturnCodeException(self)
+                raise CommandRunner.ReturnCodeError(self)
             return self
 
-    class ReturnCodeException(Exception):
+    class ReturnCodeError(Exception):
         def __init__(self, result: 'CommandRunner.Result') -> None:
             super().__init__(f'Bad return code: {result.rc}', result)
             self.result = result

@@ -6,7 +6,7 @@ K = ta.TypeVar('K')
 V = ta.TypeVar('V')
 
 
-class OverweightException(Exception):
+class OverweightError(Exception):
     pass
 
 

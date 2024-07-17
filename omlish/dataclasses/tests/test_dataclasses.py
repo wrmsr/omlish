@@ -47,7 +47,7 @@ def test_check_coerce():
     print(Bar(4))
     print(Bar('4'))  # type: ignore
 
-    with pytest.raises(dc.CheckException):
+    with pytest.raises(dc.CheckError):
         Bar(11)
 
 
@@ -70,7 +70,7 @@ def test_check_init():
     c = C(11)
     assert c._foo == 100  # noqa
 
-    with pytest.raises(dc.CheckException):
+    with pytest.raises(dc.CheckError):
         C(9)
 
 

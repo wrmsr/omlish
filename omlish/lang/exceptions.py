@@ -1,2 +1,2 @@
-class Unreachable(Exception):
+class Unreachable(Exception):  # noqa
     pass

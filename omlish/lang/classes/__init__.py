@@ -8,13 +8,13 @@ from .abstract import (  # noqa
 
 from .restrict import (  # noqa
     Final,
-    FinalException,
+    FinalError,
     NoBool,
     NotInstantiable,
     NotPicklable,
     PackageSealed,
     Sealed,
-    SealedException,
+    SealedError,
     no_bool,
 )
 
