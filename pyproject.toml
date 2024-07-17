@@ -152,6 +152,7 @@ ignore = [
     'RET505',  # unnecessary `else` after `return` statement
     'RUF100',  # unused blanket `noqa` directive'
     'SIM108',  # use ternary operator
+    'SIM114',  # combine `if` branches using logical `or` operator'
     'T201',  # `print` found
     'TD001', # invalid TODO tag
     'TD002',  # missing author in TODO
