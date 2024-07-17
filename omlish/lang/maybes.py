@@ -63,6 +63,7 @@ class Maybe(abc.ABC, ta.Generic[T]):
 
 
 class _Maybe(Maybe[T], tuple):
+    __slots__ = ()
 
     @property
     def present(self) -> bool:
