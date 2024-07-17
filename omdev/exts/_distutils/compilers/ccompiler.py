@@ -5,6 +5,7 @@ import logging
 import os
 import re
 import sys
+import typing as ta
 import warnings
 
 from ..dir_util import mkpath
@@ -58,7 +59,7 @@ class CCompiler:
 
     # Subclasses that rely on the standard filename generation methods implemented below should override these; see the
     # comment near those methods ('object_filenames()' et. al.) for details:
-    src_extensions: list[str]
+    src_extensions: ta.ClassVar[list[str]]
     obj_extension: str
     static_lib_extension: str
     shared_lib_extension: str
@@ -70,20 +71,16 @@ class CCompiler:
     # source filenames. language_order is used to detect the language precedence, when deciding what language to use
     # when mixing source types. For example, if some extension has two files with ".c" extension, and one with ".cpp",
     # it is still linked as c++.
-    language_map = {
+    language_map: ta.ClassVar[dict[str, str]] = {
         '.c': 'c',
         '.cc': 'c++',
         '.cpp': 'c++',
         '.cxx': 'c++',
         '.m': 'objc',
     }
-    language_order = ['c++', 'objc', 'c']
+    language_order: ta.ClassVar[list[str]] = ['c++', 'objc', 'c']
 
-    include_dirs: list[str] = []  # include dirs specific to this compiler class
-
-    library_dirs: list[str] = []  # library dirs specific to this compiler class
-
-    executables: dict[str, list[str] | None]
+    executables: ta.ClassVar[dict[str, list[str] | None]]
 
     def __init__(
             self,
