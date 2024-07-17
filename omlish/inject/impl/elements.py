@@ -51,7 +51,7 @@ class ElementCollection(lang.Final):
 
         self._es = check.isinstance(es, Elements)
 
-        self._private_infos: ta.MutableMapping[Private, 'private_.PrivateInfo'] | None = None
+        self._private_infos: ta.MutableMapping[Private, private_.PrivateInfo] | None = None
 
     ##
 

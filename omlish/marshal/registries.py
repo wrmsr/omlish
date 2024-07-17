@@ -31,7 +31,7 @@ class Registry:
         super().__init__()
         self._mtx = threading.Lock()
         self._dct: dict[rfl.Type, _TypeRegistry] = {}
-        self._ps: ta.Sequence['Registry'] = []
+        self._ps: ta.Sequence[Registry] = []
 
     def register(self, rty: rfl.Type, *items: RegistryItem) -> 'Registry':
         check.isinstance(rty, rfl.TYPES)

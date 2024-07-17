@@ -27,7 +27,7 @@ class Elements(lang.Final):
 
 def as_elements(*args: Element | Elements) -> Elements:
     es: set[Element] = set()
-    cs: set['Elements'] = set()
+    cs: set[Elements] = set()
     for a in args:
         if isinstance(a, Element):
             es.add(a)
