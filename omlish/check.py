@@ -206,7 +206,7 @@ def is_not(v: T, *os: ta.Any, msg: Message = None) -> T:
     return v
 
 
-def callable(v: T, msg: Message = None) -> T:
+def callable(v: T, msg: Message = None) -> T:  # noqa
     if not _callable(v):
         _raise(TypeError, 'Must be callable', msg, v)
     return v  # type: ignore

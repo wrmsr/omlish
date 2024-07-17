@@ -12,7 +12,7 @@ def frozen_get_del_attr(
         fields: ta.Sequence[dc.Field],
         globals: Namespace,  # noqa
 ) -> tuple[ta.Callable, ta.Callable]:
-    locals = {
+    locals = {  # noqa
         'cls': cls,
         'FrozenInstanceError': dc.FrozenInstanceError,
     }
