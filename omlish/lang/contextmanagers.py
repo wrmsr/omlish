@@ -19,7 +19,7 @@ class ContextManaged:
 
     def __exit__(
             self,
-            exc_type: ta.Type[Exception] | None,
+            exc_type: type[Exception] | None,
             exc_val: Exception | None,
             exc_tb: types.TracebackType | None,
     ) -> bool | None:
@@ -146,7 +146,7 @@ class ExitStacked:
 
     def __exit__(
             self,
-            exc_type: ta.Type[Exception] | None,
+            exc_type: type[Exception] | None,
             exc_val: Exception | None,
             exc_tb: types.TracebackType | None,
     ) -> bool | None:

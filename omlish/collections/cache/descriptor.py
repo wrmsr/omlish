@@ -26,7 +26,7 @@ class _HashedSeq(list):
 
     def __init__(
             self,
-            tup: ta.Tuple,
+            tup: tuple,
             hasher: ta.Callable[[ta.Any], int] = hash,
     ) -> None:
         super().__init__()
@@ -39,8 +39,8 @@ class _HashedSeq(list):
 
 
 def _make_key(
-        args: ta.Tuple,
-        kwargs: ta.Dict[str, ta.Any],
+        args: tuple,
+        kwargs: dict[str, ta.Any],
         typed: bool,
         kwd_mark=(object(),),
         fasttypes=frozenset([int, str, frozenset, type(None)]),

@@ -103,7 +103,7 @@ class PrefetchIterator(ta.Iterator[T]):
         super().__init__()
 
         self._fn = fn
-        self._deque: ta.Deque[T] = collections.deque()
+        self._deque: collections.deque[T] = collections.deque()
 
     def __iter__(self) -> ta.Iterator[T]:
         return self
@@ -126,7 +126,7 @@ class RetainIterator(ta.Iterator[T]):
         super().__init__()
 
         self._fn = fn
-        self._deque: ta.Deque[T] = collections.deque()
+        self._deque: collections.deque[T] = collections.deque()
 
     def __iter__(self) -> ta.Iterator[T]:
         return self

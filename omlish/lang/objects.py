@@ -35,7 +35,7 @@ def new_type(
         bases: ta.Sequence[ta.Any],
         namespace: ta.Mapping[str, ta.Any],
         **kwargs,
-) -> ta.Type:
+) -> type:
     return types.new_class(
         name,
         tuple(bases),
@@ -46,12 +46,12 @@ def new_type(
 
 def super_meta(
         super_meta: ta.Any,
-        meta: ta.Type,
+        meta: type,
         name: str,
         bases: ta.Sequence[ta.Any],
         namespace: ta.MutableMapping[str, ta.Any],
         **kwargs,
-) -> ta.Type:
+) -> type:
     """Per types.new_class"""
     resolved_bases = types.resolve_bases(bases)
     if resolved_bases is not bases:
