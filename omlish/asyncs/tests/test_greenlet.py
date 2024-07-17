@@ -64,8 +64,8 @@ def test_bridge(event_loop):
 
     async def main():
         rs = await asyncio.gather(
-            hello("Billy Bob", .3),
-            hello("Billy Alice", .1),
+            hello('Billy Bob', .3),
+            hello('Billy Alice', .1),
         )
         assert rs == [4, 4]
 

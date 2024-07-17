@@ -31,7 +31,7 @@ def test_hybrid():
     async def hybrid():
         await trio.sleep(.1)
         await asyncio.sleep(.1)
-        print("Well, that worked")
+        print('Well, that worked')
 
     trai.run(trai.allow_asyncio, hybrid)
 
@@ -113,7 +113,7 @@ def test_asyncio_from_trio5():
 
     async def trio_ctx():
         async with trai.aio_as_trio(AsyncCtx()) as ctx:
-            print("within")
+            print('within')
             await trai.aio_as_trio(ctx.delay)(.2)
 
     trai.run(trio_ctx)

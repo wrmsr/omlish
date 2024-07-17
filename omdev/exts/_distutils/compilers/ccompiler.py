@@ -911,7 +911,7 @@ int main (int argc, char **argv) {
             output_dir='',  # or 'shared'
     ):
         check.not_none(output_dir)
-        expected = ("static", "shared", "dylib", "xcode_stub")
+        expected = ('static', 'shared', 'dylib', 'xcode_stub')
         if lib_type not in expected:
             raise ValueError(f"'lib_type' must be {expected!r}")
         fmt = getattr(self, lib_type + '_lib_format')

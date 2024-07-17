@@ -91,7 +91,7 @@ class FuncBuilder:
         body = textwrap.indent('\n'.join(body), '    ')
 
         # Compute the text of the entire function, add it to the text we're generating.
-        deco_str = "  {decorator}\n" if decorator else ""
+        deco_str = '  {decorator}\n' if decorator else ''
         self.src.append(f'{deco_str}  def {name}({args}){return_annotation}:\n{body}')
 
     def add_fns_to_class(self, cls: type) -> None:
