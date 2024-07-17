@@ -37,8 +37,7 @@ class MypyDebugPathFinder(importlib.machinery.PathFinder):
                 if portions is None:
                     raise ImportError('spec missing loader')
                 namespace_path.extend(portions)
-        else:
-            return None
+        return None
 
     @classmethod
     def find_spec(cls, fullname, path=None, target=None):

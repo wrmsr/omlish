@@ -282,7 +282,8 @@ def test_confer_frozen():
 
 
 def test_box():
-    class Thing(dc.Box[list[str]]): pass
+    class Thing(dc.Box[list[str]]):
+        pass
 
     assert Thing('foo').v == 'foo'
 
