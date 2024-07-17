@@ -8,4 +8,4 @@ from .impl import LRU  # noqa
 from .impl import new_cache  # noqa
 from .types import Cache  # noqa
 from .types import Eviction  # noqa
-from .types import OverweightException  # noqa
+from .types import OverweightError  # noqa

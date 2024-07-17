@@ -25,7 +25,7 @@ from ..bindings import Binding
 from ..eagers import Eager
 from ..elements import Element
 from ..elements import Elements
-from ..exceptions import DuplicateKeyException
+from ..exceptions import DuplicateKeyError
 from ..keys import Key
 from ..overrides import Overrides
 from ..private import Expose
@@ -139,7 +139,7 @@ class ElementCollection(lang.Final):
                 mm.setdefault(k, []).extend(bis)
             else:
                 if len(bis) > 1:
-                    raise DuplicateKeyException(k)
+                    raise DuplicateKeyError(k)
                 [pm[k]] = bis
 
         if mm:

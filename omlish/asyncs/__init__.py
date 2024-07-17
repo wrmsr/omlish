@@ -8,8 +8,8 @@ from .asyncs import (  # noqa
 
 
 from .futures import (  # noqa
-    FutureException,
-    FutureTimeoutException,
+    FutureError,
+    FutureTimeoutError,
     ImmediateExecutor,
     new_thread_or_immediate_executor,
     wait_dependent_futures,

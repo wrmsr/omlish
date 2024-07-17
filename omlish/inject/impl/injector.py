@@ -16,8 +16,8 @@ from ... import check
 from ... import lang
 from ..eagers import Eager
 from ..elements import Elements
-from ..exceptions import CyclicDependencyException
-from ..exceptions import UnboundKeyException
+from ..exceptions import CyclicDependencyError
+from ..exceptions import UnboundKeyError
 from ..injector import Injector
 from ..inspect import KwargsTarget
 from ..keys import Key
@@ -97,7 +97,7 @@ class InjectorImpl(Injector, lang.Final):
             except KeyError:
                 pass
             if key in self._seen_keys:
-                raise CyclicDependencyException(key)
+                raise CyclicDependencyError(key)
             self._seen_keys.add(key)
             return lang.empty()
 
@@ -154,7 +154,7 @@ class InjectorImpl(Injector, lang.Final):
         v = self.try_provide(key)
         if v.present:
             return v.must()
-        raise UnboundKeyException(key)
+        raise UnboundKeyError(key)
 
     def provide_kwargs(self, kt: KwargsTarget) -> ta.Mapping[str, ta.Any]:
         ret: dict[str, ta.Any] = {}
