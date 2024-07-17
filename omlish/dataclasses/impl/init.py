@@ -86,7 +86,7 @@ class InitBuilder:
                 elif seen_default:
                     raise TypeError(f'non-default argument {f.name!r} follows default argument {seen_default.name!r}')
 
-        locals: dict[str, ta.Any] = {}
+        locals: dict[str, ta.Any] = {}  # noqa
 
         if self._info.params_extras.generic_init:
             get_fty = lambda f: self._info.generic_replaced_field_annotations[f.name]

@@ -42,7 +42,7 @@ def gen_preprocess_options(
                 # shell at all costs when we spawn the command!
                 pp_opts.append('-D{}={}'.format(*macro))
 
-    for dir in include_dirs:
+    for dir in include_dirs:  # noqa
         pp_opts.append('-I%s' % dir)
     return pp_opts
 
@@ -60,10 +60,10 @@ def gen_lib_options(
     """
     lib_opts = []
 
-    for dir in library_dirs:
+    for dir in library_dirs:  # noqa
         lib_opts.append(compiler.library_dir_option(dir))
 
-    for dir in runtime_library_dirs:
+    for dir in runtime_library_dirs:  # noqa
         lib_opts.extend(always_iterable(compiler.runtime_library_dir_option(dir)))
 
     # XXX it's important that we *not* remove redundant library mentions! sometimes you really do have to say "-lfoo

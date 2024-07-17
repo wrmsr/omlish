@@ -13,7 +13,7 @@ def repr_fn(
         fields: ta.Sequence[dc.Field],
         globals: Namespace,  # noqa
 ) -> ta.Callable:
-    locals: dict[str, ta.Any] = {}
+    locals: dict[str, ta.Any] = {}  # noqa
     if any(get_field_extras(f).repr_fn is not None for f in fields):
         lst: list[str] = []
         for f in fields:

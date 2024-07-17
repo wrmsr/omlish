@@ -101,10 +101,10 @@ def copy_file(  # noqa: C901
         )
 
     if os.path.isdir(dst):
-        dir = dst
+        dir = dst  # noqa
         dst = os.path.join(dst, os.path.basename(src))
     else:
-        dir = os.path.dirname(dst)
+        dir = os.path.dirname(dst)  # noqa
 
     if update and not newer(src, dst):
         if verbose >= 1:

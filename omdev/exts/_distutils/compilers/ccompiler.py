@@ -920,10 +920,10 @@ int main (int argc, char **argv) {
         fmt = getattr(self, lib_type + '_lib_format')
         ext = getattr(self, lib_type + '_lib_extension')
 
-        dir, base = os.path.split(libname)
+        dir, base = os.path.split(libname)  # noqa
         filename = fmt % (base, ext)
         if strip_dir:
-            dir = ''
+            dir = ''  # noqa
 
         return os.path.join(output_dir, dir, filename)
 

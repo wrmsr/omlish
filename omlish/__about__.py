@@ -1,4 +1,3 @@
-__name__ = 'omlish'
 __author__ = 'wrmsr'
 __url__ = 'https://github.com/wrmsr/omlish'
 __license__ = 'BSD-3-Clause'

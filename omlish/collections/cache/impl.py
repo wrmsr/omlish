@@ -463,10 +463,10 @@ class CacheImpl(Cache[K, V]):
                 else:
                     yield key  # type: ignore
 
-                next = link.ins_prev
-                if next is link:
+                nxt = link.ins_prev
+                if nxt is link:
                     raise ValueError
-                link = next
+                link = nxt
 
     @property
     def stats(self) -> Cache.Stats:
