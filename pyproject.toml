@@ -137,9 +137,12 @@ ignore = [
     'ARG001',  # unused function argument,
     'ARG002',  # unused method argument
     'B008',  # do not perform function call in argument defaults
+    'B009',  # do not call `getattr` with a constant attribute value
+    'B028',  # no explicit `stacklevel` keyword argument found
     'B905',  # `zip()` without an explicit `strict=` parameter'
     'C901',  # function is too complex
     'D',  # docstrings
+    'E731',  # do not assign a `lambda` expression, use a `def`
     'E741',  # ambiguous variable name
     'E742',  # ambiguous class name
     'ERA001',  # found commented-out code
@@ -152,6 +155,7 @@ ignore = [
     'PERF401',  # use a list comprehension to create a transformed list
     'PGH003',  # use specific rule codes when ignoring type issues
     'PGH004',  # use specific rule codes when using `noqa`
+    'PLR0911',  # too many return statements
     'PLR0912',  # too many branches
     'PLR0913',  # too many arguments in function definition
     'PLR0915',  # too many statements
@@ -163,22 +167,23 @@ ignore = [
     'RET504',  # unnecessary assignment before `return` statement
     'RET505',  # unnecessary `else` after `return` statement
     'RUF009',  # do not perform function call `col.TypeMap` in dataclass defaults
-    'RUF100',  # unused blanket `noqa` directive'
+    'RUF100',  # unused blanket `noqa` directive
     'S102',  # use of `exec` detected
-    'S311',  # standard pseudo-random generators are not suitable for cryptographic purposes',
+    'S311',  # standard pseudo-random generators are not suitable for cryptographic purposes
     'S603',  # `subprocess` call: check for execution of untrusted input
+    'S606',  # starting a process without a shell
     'S607',  # starting a process with a partial executable path
     'SIM102',  # use a single `if` statement instead of nested `if` statements
     'SIM103',  # return the negated condition directly
     'SIM108',  # use ternary operator
-    'SIM114',  # combine `if` branches using logical `or` operator'
+    'SIM114',  # combine `if` branches using logical `or` operator
     'T201',  # `print` found
-    'T203',  # `pprint` found'
+    'T203',  # `pprint` found
     'TD001', # invalid TODO tag
     'TD002',  # missing author in TODO
     'TD003',  # missing issue link on the line following this TODO
     'TD004',  # missing colon in TODO
-    'TD005',  # missing issue description after `TODO'
+    'TD005',  # missing issue description after `TODO`
     'TID252',  # prefer absolute imports over relative imports from parent modules
     'UP038',  # use `X | Y` in `isinstance` call instead of `(X, Y)`
 
