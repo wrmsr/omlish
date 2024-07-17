@@ -70,7 +70,7 @@ def test_check_init():
     c = C(11)
     assert c._foo == 100  # noqa
 
-    with pytest.raises(Exception):
+    with pytest.raises(dc.CheckException):
         C(9)
 
 
