@@ -21,6 +21,7 @@ def pass_none(func):
     def wrapper(param, *args, **kwargs):
         if param is not None:
             return func(param, *args, **kwargs)
+        return None
 
     return wrapper
 
