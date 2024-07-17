@@ -132,6 +132,7 @@ ignore = [
     'ANN401',  # dynamically typed expressions (typing.Any) are disallowed in `*args`
     'ARG001',  # unused function argument,
     'ARG002',  # unused method argument
+    'B008',  # do not perform function call in argument defaults
     'C901',  # function is too complex
     'D',  # docstrings
     'E741',  # ambiguous variable name
@@ -141,6 +142,7 @@ ignore = [
     'FBT002',  # boolean default positional argument in function definition
     'FBT003',  # boolean positional value in function call
     'FIX001',  # line-contains-fixme
+    'PERF401',  # use a list comprehension to create a transformed list
     'PGH003',  # use specific rule codes when ignoring type issues
     'PGH004',  # use specific rule codes when using `noqa`
     'PLR0912',  # too many branches
@@ -151,6 +153,7 @@ ignore = [
     'RET504',  # unnecessary assignment before `return` statement
     'RET505',  # unnecessary `else` after `return` statement
     'RUF100',  # unused blanket `noqa` directive'
+    'S603',  # `subprocess` call: check for execution of untrusted input
     'S607',  # starting a process with a partial executable path
     'SIM102',  # use a single `if` statement instead of nested `if` statements
     'SIM108',  # use ternary operator
