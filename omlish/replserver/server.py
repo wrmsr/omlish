@@ -141,6 +141,6 @@ class ReplServer:
             self._is_shutdown.wait(timeout=timeout)
 
 
-def run():
+def run() -> None:
     with ReplServer(ReplServer.Config('repl.sock')) as repl_server:
         repl_server.run()

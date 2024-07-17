@@ -1,3 +1,4 @@
+# ruff: noqa: ANN201
 # ruff: noqa: N802
 
 import datetime

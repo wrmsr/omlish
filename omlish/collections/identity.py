@@ -63,7 +63,7 @@ class IdentityKeyDict(ta.MutableMapping[K, V]):
     def __iter__(self) -> ta.Iterator[K]:
         return iter(map(op.itemgetter(0), self._dict.values()))
 
-    def clear(self):
+    def clear(self) -> None:
         self._dict.clear()
 
 

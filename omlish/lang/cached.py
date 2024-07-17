@@ -207,7 +207,7 @@ class _CachedFunctionDescriptor(_CachedFunction[T]):
         return bound
 
 
-def cached_function(fn=None, **kwargs):
+def cached_function(fn=None, **kwargs):  # noqa
     if fn is None:
         return functools.partial(cached_function, **kwargs)
     opts = _CachedFunction.Opts(**kwargs)
@@ -269,7 +269,7 @@ class _CachedProperty:
         raise TypeError(self._name)
 
 
-def cached_property(fn=None, **kwargs):
+def cached_property(fn=None, **kwargs):  # noqa
     if fn is None:
         return functools.partial(cached_property, **kwargs)
     return _CachedProperty(fn, **kwargs)
