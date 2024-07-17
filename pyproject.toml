@@ -156,6 +156,9 @@ ignore = [
     'TD004',  # missing colon in TODO
     'TD005',  # missing issue description after `TODO'
     'TID252',  # prefer absolute imports over relative imports from parent modules
+
+    # FIXME: mypy error: PEP 695 type aliases are not yet supported
+    'UP040',  # type alias uses `TypeAlias` annotation instead of the `type` keyword
 ]
 
 [tool.ruff.lint.per-file-ignores]
