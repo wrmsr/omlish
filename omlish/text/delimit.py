@@ -135,8 +135,7 @@ class DelimitedEscaping:
                 if c == self._delimit_char:
                     if not quoted:
                         break
-                    else:
-                        buf.write(c)
+                    buf.write(c)
                 elif c == self._quote_char:
                     if not quoted:
                         raise ValueError(s)

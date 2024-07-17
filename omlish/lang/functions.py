@@ -41,7 +41,7 @@ def unwrap_func_with_partials(fn: ta.Callable) -> tuple[ta.Callable, list[functo
             nxt = getattr(fn, '__wrapped__', None)
             if not callable(nxt):
                 break
-            elif nxt is fn:
+            if nxt is fn:
                 raise TypeError(fn)
             fn = nxt
     return fn, ps
