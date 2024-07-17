@@ -19,5 +19,5 @@ class _Proxy(ta.Generic[T]):
         self.__obj = obj
 
     @classmethod
-    def _new(cls):
+    def _new(cls) -> tuple[ta.Any, ta.Callable[[ta.Any], None]]:
         return (p := cls()), p._set_obj  # noqa

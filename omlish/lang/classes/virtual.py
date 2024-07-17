@@ -117,11 +117,11 @@ class Callable(NotInstantiable, Final, ta.Generic[T]):
         raise TypeError
 
     @classmethod
-    def __instancecheck__(cls, instance):
+    def __instancecheck__(cls, instance: object) -> bool:
         return callable(instance)
 
     @classmethod
-    def __subclasscheck__(cls, subclass):
+    def __subclasscheck__(cls, subclass: type) -> bool:
         if not hasattr(subclass, '__call__'):
             return False
         call = subclass.__call__
