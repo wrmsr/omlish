@@ -1,3 +1,4 @@
+import contextlib
 import dataclasses as dc
 import os
 import socket
@@ -56,10 +57,8 @@ def _create_sockets(
             sock = socket.socket(socket.AF_INET6 if ':' in host else socket.AF_INET, type_)
             sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
             if config.workers > 1:
-                try:
+                with contextlib.suppress(AttributeError):
                     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
-                except AttributeError:
-                    pass
             binding = (host, port)
 
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -80,10 +79,8 @@ def _create_sockets(
             sock.bind(binding)
 
         sock.setblocking(False)
-        try:
+        with contextlib.suppress(AttributeError):
             sock.set_inheritable(True)
-        except AttributeError:
-            pass
         sockets.append(sock)
 
     return sockets

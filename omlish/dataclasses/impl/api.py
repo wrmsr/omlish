@@ -1,4 +1,5 @@
 import collections.abc
+import contextlib
 import dataclasses as dc
 import keyword
 import sys
@@ -195,10 +196,8 @@ def make_dataclass(  # noqa
         try:
             module = sys._getframemodulename(1) or '__main__'  # type: ignore  # noqa
         except AttributeError:
-            try:
+            with contextlib.suppress(AttributeError, ValueError):
                 module = sys._getframe(1).f_globals.get('__name__', '__main__')  # noqa
-            except (AttributeError, ValueError):
-                pass
     if module is not None:
         cls.__module__ = module
 

@@ -4,6 +4,7 @@ TODO:
  - ALT: A.f(super(), ... ? :/
  - classmethod/staticmethod
 """
+import contextlib
 import functools
 import typing as ta
 import weakref
@@ -55,10 +56,8 @@ class Method:
         def dispatch_func_cache_remove(k, self_ref=weakref.ref(self)):
             if (ref_self := self_ref()) is not None:
                 cache = ref_self._dispatch_func_cache  # noqa
-                try:
+                with contextlib.suppress(KeyError):
                     del cache[k]
-                except KeyError:
-                    pass
 
         self._dispatch_func_cache_remove = dispatch_func_cache_remove
 

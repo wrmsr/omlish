@@ -26,10 +26,8 @@ def sync_await(fn: ta.Callable[..., T], *args, **kwargs) -> T:
 
     cr = gate()
     with contextlib.closing(cr):
-        try:
+        with contextlib.suppress(StopIteration):
             cr.send(None)
-        except StopIteration:
-            pass
         if ret is missing or cr.cr_await is not None or cr.cr_running:
             raise TypeError('Not terminated')
 

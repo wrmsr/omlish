@@ -8,6 +8,7 @@ TODO:
  - further cythonize hot path?
 """
 import collections
+import contextlib
 import functools
 import logging
 import time
@@ -276,10 +277,8 @@ class CacheImpl(Cache[K, V]):
             raise Exception
 
         def fail():
-            try:
+            with contextlib.suppress(KeyError):
                 del self._cache[cache_key]
-            except KeyError:
-                pass
             self._unlink(link)
             raise KeyError(key)
 

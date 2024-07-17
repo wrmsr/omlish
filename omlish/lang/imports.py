@@ -1,3 +1,4 @@
+import contextlib
 import functools
 import importlib
 import sys
@@ -100,11 +101,8 @@ def yield_importable(
                 name = cur + '.' + file
                 if filter is not None and not filter(name):
                     continue
-
-                try:
+                with contextlib.suppress(ImportError, NotImplementedError):
                     yield from rec(name)
-                except (ImportError, NotImplementedError):
-                    pass
 
     yield from rec(package_root)
 

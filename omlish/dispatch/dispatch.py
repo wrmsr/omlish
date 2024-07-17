@@ -1,4 +1,5 @@
 import abc
+import contextlib
 import typing as ta
 import weakref
 
@@ -17,10 +18,8 @@ _IMPL_FUNC_CLS_SET_CACHE: ta.MutableMapping[ta.Callable, frozenset[type]] = weak
 
 
 def get_impl_func_cls_set(func: ta.Callable) -> frozenset[type]:
-    try:
+    with contextlib.suppress(KeyError):
         return _IMPL_FUNC_CLS_SET_CACHE[func]
-    except KeyError:
-        pass
 
     ann = getattr(func, '__annotations__', {})
     if not ann:
@@ -78,10 +77,8 @@ class Dispatcher(ta.Generic[T]):
         def cache_remove(k, self_ref=weakref.ref(self)):
             if (ref_self := self_ref()) is not None:
                 cache = ref_self._get_dispatch_cache()  # noqa
-                try:
+                with contextlib.suppress(KeyError):
                     del cache[k]
-                except KeyError:
-                    pass
 
         cache_token: ta.Any = None
         self._get_cache_token = lambda: cache_token
