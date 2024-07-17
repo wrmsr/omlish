@@ -150,8 +150,7 @@ ignore = [
     'FBT001',  # boolean-typed positional argument in function definition
     'FBT002',  # boolean default positional argument in function definition
     'FBT003',  # boolean positional value in function call
-    'FIX001',  # line-contains-fixme
-    'FIX004',  # line contains HACK, consider resolving the issue
+    'FIX',
     'PERF401',  # use a list comprehension to create a transformed list
     'PGH003',  # use specific rule codes when ignoring type issues
     'PGH004',  # use specific rule codes when using `noqa`
