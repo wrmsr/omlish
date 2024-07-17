@@ -135,12 +135,12 @@ def field_init(
             locals[default_name] = f.default
             value = f.name
 
+    elif slots and f.default is not MISSING:
+        locals[default_name] = f.default
+        value = default_name
+
     else:
-        if slots and f.default is not MISSING:
-            locals[default_name] = f.default
-            value = default_name
-        else:
-            pass
+        pass
 
     if value is not None and field_type(f) is not FieldType.INIT:
         lines.append(field_assign(frozen, f.name, value, self_name, fx.override))  # noqa

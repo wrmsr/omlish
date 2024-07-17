@@ -39,20 +39,14 @@ class PeekIterator(ta.Iterator[T]):
             self._item = ta.cast(T, self._next_item)
             self._next_item = _MISSING
         else:
-            try:
-                self._item = next(self._it)
-            except StopIteration:
-                raise
+            self._item = next(self._it)
         self._pos += 1
         return self._item
 
     def peek(self) -> T:
         if self._next_item is not _MISSING:
             return ta.cast(T, self._next_item)
-        try:
-            self._next_item = next(self._it)
-        except StopIteration:
-            raise
+        self._next_item = next(self._it)
         return self._next_item
 
     def next_peek(self) -> T:

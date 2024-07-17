@@ -186,9 +186,8 @@ def maybe_reexec(
             """))
         file = bootstrap_path
 
-    else:
-        if file is None:
-            raise ValueError
+    elif file is None:
+        raise ValueError
 
     args = [sys.executable]
     args.extend(json.loads(os.environ[ARGS_ENV_VAR]))
