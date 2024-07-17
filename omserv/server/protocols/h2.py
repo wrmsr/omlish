@@ -206,9 +206,11 @@ class H2Protocol(Protocol):
             if isinstance(event, (InformationalResponse, Response)):
                 self.connection.send_headers(
                     event.stream_id,
-                    [(b':status', b'%d' % event.status_code)]
-                    + event.headers
-                    + response_headers(self.config, 'h2'),
+                    [
+                        (b':status', b'%d' % event.status_code),
+                        *event.headers,
+                        *response_headers(self.config, 'h2'),
+                    ],
                 )
                 await self._flush()
 
