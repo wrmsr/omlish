@@ -148,7 +148,7 @@ class Var(ta.Generic[T]):
         try:
             return next(self.values)
         except StopIteration:
-            raise UnboundVarError
+            raise UnboundVarError from None
 
 
 class Binding(ta.Generic[T]):

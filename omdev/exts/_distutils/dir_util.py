@@ -69,9 +69,7 @@ def mkpath(name, mode=0o777, verbose=1, dry_run=False) -> list[str]:  # noqa: C9
                 os.mkdir(head, mode)
             except OSError as exc:
                 if not (exc.errno == errno.EEXIST and os.path.isdir(head)):
-                    raise DistutilsFileError(
-                        f"could not create '{head}': {exc.args[-1]}",
-                    )
+                    raise DistutilsFileError(f"could not create '{head}': {exc.args[-1]}") from None
             created_dirs.append(head)
 
         _path_created[abs_head] = 1

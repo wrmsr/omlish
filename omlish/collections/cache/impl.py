@@ -308,7 +308,7 @@ class CacheImpl(Cache[K, V]):
                 link, value = self._get_link(key)
             except KeyError:
                 self._misses += 1
-                raise KeyError(key)
+                raise KeyError(key) from None
 
             if link.lru_next is not self._root:
                 link.lru_prev.lru_next = link.lru_next

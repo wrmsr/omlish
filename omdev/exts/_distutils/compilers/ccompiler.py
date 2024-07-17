@@ -875,7 +875,7 @@ int main (int argc, char **argv) {
         try:
             new_ext = self.out_extensions[ext]
         except LookupError:
-            raise UnknownFileError(f"unknown file type '{ext}' (from '{src_name}')")
+            raise UnknownFileError(f"unknown file type '{ext}' (from '{src_name}')") from None
         if strip_dir:
             base = os.path.basename(base)
         return os.path.join(output_dir, base + new_ext)
@@ -1012,7 +1012,7 @@ def new_compiler(
         msg = "don't know how to compile C/C++ code on platform '%s'" % plat
         if compiler is not None:
             msg = msg + " with '%s' compiler" % compiler
-        raise DistutilsPlatformError(msg)
+        raise DistutilsPlatformError(msg) from None
 
     try:
         module_name = __package__ + '.' + module_name
@@ -1022,12 +1022,12 @@ def new_compiler(
     except ImportError:
         raise DistutilsModuleError(
             "can't compile C/C++ code: unable to load module '%s'" % module_name,
-        )
+        ) from None
     except KeyError:
         raise DistutilsModuleError(
             f"can't compile C/C++ code: unable to find class '{class_name}' "
             f"in module '{module_name}'",
-        )
+        ) from None
 
     # The None is necessary to preserve backwards compatibility with classes that expect verbose to be the first
     # positional argument.

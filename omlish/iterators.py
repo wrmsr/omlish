@@ -111,7 +111,7 @@ class PrefetchIterator(ta.Iterator[T]):
             return self._deque.popleft()
         except IndexError:
             if self._fn is None:
-                raise StopIteration
+                raise StopIteration from None
         return self._fn()
 
 
