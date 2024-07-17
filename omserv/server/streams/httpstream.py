@@ -130,76 +130,75 @@ class HTTPStream:
                     await self._send_error_response(500)
                 await self.send(StreamClosed(stream_id=self.stream_id))
 
-        else:
-            if message['type'] == 'http.response.start' and self.state == ASGIHTTPState.REQUEST:
-                self.response = message
+        elif message['type'] == 'http.response.start' and self.state == ASGIHTTPState.REQUEST:
+            self.response = message
 
-            elif (
-                    message['type'] == 'http.response.push'
-                    and self.scope['http_version'] in PUSH_VERSIONS
-            ):
-                if not isinstance(message['path'], str):
-                    raise TypeError(f'{message["path"]} should be a str')
-                headers = [(b':scheme', self.scope['scheme'].encode())]
-                for name, value in self.scope['headers']:
-                    if name == b'host':
-                        headers.append((b':authority', value))
-                headers.extend(build_and_validate_headers(message['headers']))
+        elif (
+                message['type'] == 'http.response.push'
+                and self.scope['http_version'] in PUSH_VERSIONS
+        ):
+            if not isinstance(message['path'], str):
+                raise TypeError(f'{message["path"]} should be a str')
+            headers = [(b':scheme', self.scope['scheme'].encode())]
+            for name, value in self.scope['headers']:
+                if name == b'host':
+                    headers.append((b':authority', value))
+            headers.extend(build_and_validate_headers(message['headers']))
+            await self.send(
+                Request(
+                    stream_id=self.stream_id,
+                    headers=headers,
+                    http_version=self.scope['http_version'],
+                    method='GET',
+                    raw_path=message['path'].encode(),
+                ),
+            )
+
+        elif (
+                message['type'] == 'http.response.early_hint'
+                and self.scope['http_version'] in EARLY_HINTS_VERSIONS
+                and self.state == ASGIHTTPState.REQUEST
+        ):
+            headers = [(b'link', bytes(link).strip()) for link in message['links']]
+            await self.send(
+                InformationalResponse(
+                    stream_id=self.stream_id,
+                    headers=headers,
+                    status_code=103,
+                ),
+            )
+
+        elif message['type'] == 'http.response.body' and self.state in {
+            ASGIHTTPState.REQUEST,
+            ASGIHTTPState.RESPONSE,
+        }:
+            if self.state == ASGIHTTPState.REQUEST:
+                headers = build_and_validate_headers(self.response.get('headers', []))
                 await self.send(
-                    Request(
+                    Response(
                         stream_id=self.stream_id,
                         headers=headers,
-                        http_version=self.scope['http_version'],
-                        method='GET',
-                        raw_path=message['path'].encode(),
+                        status_code=int(self.response['status']),
                     ),
                 )
+                self.state = ASGIHTTPState.RESPONSE
 
-            elif (
-                    message['type'] == 'http.response.early_hint'
-                    and self.scope['http_version'] in EARLY_HINTS_VERSIONS
-                    and self.state == ASGIHTTPState.REQUEST
+            if (
+                    not suppress_body(self.scope['method'], int(self.response['status']))
+                    and message.get('body', b'') != b''
             ):
-                headers = [(b'link', bytes(link).strip()) for link in message['links']]
                 await self.send(
-                    InformationalResponse(
-                        stream_id=self.stream_id,
-                        headers=headers,
-                        status_code=103,
-                    ),
+                    Body(stream_id=self.stream_id, data=bytes(message.get('body', b''))),
                 )
 
-            elif message['type'] == 'http.response.body' and self.state in {
-                ASGIHTTPState.REQUEST,
-                ASGIHTTPState.RESPONSE,
-            }:
-                if self.state == ASGIHTTPState.REQUEST:
-                    headers = build_and_validate_headers(self.response.get('headers', []))
-                    await self.send(
-                        Response(
-                            stream_id=self.stream_id,
-                            headers=headers,
-                            status_code=int(self.response['status']),
-                        ),
+            if not message.get('more_body', False):
+                if self.state != ASGIHTTPState.CLOSED:
+                    self.state = ASGIHTTPState.CLOSED
+                    log_access(
+                        self.config, self.scope, self.response, time.time() - self.start_time  # type: ignore  # FIXME  # noqa
                     )
-                    self.state = ASGIHTTPState.RESPONSE
-
-                if (
-                        not suppress_body(self.scope['method'], int(self.response['status']))
-                        and message.get('body', b'') != b''
-                ):
-                    await self.send(
-                        Body(stream_id=self.stream_id, data=bytes(message.get('body', b''))),
-                    )
-
-                if not message.get('more_body', False):
-                    if self.state != ASGIHTTPState.CLOSED:
-                        self.state = ASGIHTTPState.CLOSED
-                        log_access(
-                            self.config, self.scope, self.response, time.time() - self.start_time  # type: ignore  # FIXME  # noqa
-                        )
-                        await self.send(EndBody(stream_id=self.stream_id))
-                        await self.send(StreamClosed(stream_id=self.stream_id))
+                    await self.send(EndBody(stream_id=self.stream_id))
+                    await self.send(StreamClosed(stream_id=self.stream_id))
 
             else:
                 raise UnexpectedMessageError(self.state, message['type'])
