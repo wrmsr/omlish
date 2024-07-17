@@ -57,7 +57,7 @@ def test_context_wrapped():
 
     gcm = CM()
 
-    @context_wrapped(lambda x: gcm)
+    @context_wrapped(lambda x: gcm)  # noqa
     def g(x):
         return x + 3
 
@@ -65,7 +65,7 @@ def test_context_wrapped():
     assert gcm.count == 1
 
     class D:
-        @context_wrapped(lambda self, x: gcm)
+        @context_wrapped(lambda self, x: gcm)  # noqa
         def g(self, x):
             return x + 3
 

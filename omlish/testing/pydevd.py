@@ -60,7 +60,7 @@ def silence_subprocess_check() -> None:
         return
 
     new_tb = lang.proxy_import('traceback')
-    new_tb.print_exc = lambda *a, **k: None  # type: ignore
+    new_tb.print_exc = lambda *a, **k: None  # type: ignore  # noqa
     pydev_monkey.traceback = new_tb
 
 

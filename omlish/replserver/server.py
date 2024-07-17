@@ -123,7 +123,7 @@ class ReplServer:
                     except Exception:
                         log.exception('Error shutting down')
 
-                for thread in self._consoles_by_threads.keys():
+                for thread in self._consoles_by_threads:
                     try:
                         thread.join(self._config.exit_timeout)
                     except Exception:

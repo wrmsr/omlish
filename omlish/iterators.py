@@ -29,9 +29,10 @@ class PeekIterator(ta.Iterator[T]):
     def done(self) -> bool:
         try:
             self.peek()
-            return False
         except StopIteration:
             return True
+        else:
+            return False
 
     def __next__(self) -> T:
         if self._next_item is not _MISSING:

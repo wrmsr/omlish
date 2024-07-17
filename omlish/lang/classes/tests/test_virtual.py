@@ -47,10 +47,10 @@ def test_virtual():
 
 
 def test_callable():
-    with pytest.raises(Exception):
+    with pytest.raises(TypeError):
         Callable()
 
-    with pytest.raises(Exception):
+    with pytest.raises(TypeError):
         class C(Callable):  # noqa
             pass
 
