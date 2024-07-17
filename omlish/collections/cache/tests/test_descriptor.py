@@ -19,8 +19,8 @@ def test_descriptor_static():
 
 def test_descriptor_instance():
     class C:
-        def __init__(self):
-            self.hits = []
+        def __init__(self) -> None:
+            self.hits: list = []
 
         @desc_.cache()
         def f(self, x):

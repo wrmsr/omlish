@@ -830,7 +830,7 @@ class TestCase(unittest.TestCase):
     def test_deliberately_mutable_defaults(self):
         # If a mutable default isn't in the known list of (list, dict, set), then it's okay.
         class Mutable:
-            def __init__(self):
+            def __init__(self) -> None:
                 self.l = []
 
         @dataclass
@@ -2397,7 +2397,7 @@ class TestDocString(unittest.TestCase):
 class TestInit(unittest.TestCase):
     def test_base_has_init(self):
         class B:
-            def __init__(self):
+            def __init__(self) -> None:
                 self.z = 100
 
         # Make sure that declaring this class doesn't raise an error. The issue is that we can't override __init__ in
@@ -2430,7 +2430,7 @@ class TestInit(unittest.TestCase):
         class C:
             i: int = 2
 
-            def __init__(self):
+            def __init__(self) -> None:
                 self.i = 3
 
         self.assertEqual(C().i, 3)
@@ -2531,7 +2531,7 @@ class TestRepr(unittest.TestCase):
         class C:
             x: int
 
-            def __repr__(self):
+            def __repr__(self) -> str:
                 return 'C-class'
 
         self.assertEqual(repr(C(3)), 'C-class')
@@ -2543,7 +2543,7 @@ class TestRepr(unittest.TestCase):
         class C:
             x: int
 
-            def __repr__(self):
+            def __repr__(self) -> str:
                 return 'x'
 
         self.assertEqual(repr(C(0)), 'x')
@@ -2552,7 +2552,7 @@ class TestRepr(unittest.TestCase):
         class C:
             x: int
 
-            def __repr__(self):
+            def __repr__(self) -> str:
                 return 'x'
 
         self.assertEqual(repr(C(0)), 'x')
@@ -2561,7 +2561,7 @@ class TestRepr(unittest.TestCase):
         class C:
             x: int
 
-            def __repr__(self):
+            def __repr__(self) -> str:
                 return 'x'
 
         self.assertEqual(repr(C(0)), 'x')

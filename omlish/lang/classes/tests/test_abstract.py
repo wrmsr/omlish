@@ -1,4 +1,5 @@
 import abc
+import typing as ta
 
 import pytest
 
@@ -75,7 +76,7 @@ def test_is_abstract():
 
     class C(Abstract):
 
-        def __init_subclass__(cls, **kwargs):
+        def __init_subclass__(cls, **kwargs: ta.Any) -> None:
             super().__init_subclass__(**kwargs)
             if cls.__name__ == 'D':
                 assert is_abstract(cls)
