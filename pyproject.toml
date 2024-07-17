@@ -195,6 +195,9 @@ ignore = [
     'S101',  # use of `assert` detected
 ]
 
+[tool.ruff.lint.flake8-pytest-style]
+mark-parentheses = true
+
 [tool.ruff.lint.flake8-quotes]
 inline-quotes = 'single'
 
