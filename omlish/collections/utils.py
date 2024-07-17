@@ -18,7 +18,7 @@ def mut_toposort(data: dict[T, set[T]]) -> ta.Iterator[set[T]]:
     extra_items_in_deps = functools.reduce(set.union, data.values()) - set(data.keys())
     data.update({item: set() for item in extra_items_in_deps})
     while True:
-        ordered = set(item for item, dep in data.items() if not dep)
+        ordered = {item for item, dep in data.items() if not dep}
         if not ordered:
             break
         yield ordered
