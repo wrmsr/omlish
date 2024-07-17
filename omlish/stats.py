@@ -251,7 +251,7 @@ class SamplingHistogram:
         sample_percentiles: list['SamplingHistogram.Percentile']
 
     DEFAULT_SIZE = 1000
-    DEFAULT_PERCENTILES = [0.5, 0.75, 0.9, 0.95, 0.99]
+    DEFAULT_PERCENTILES = (0.5, 0.75, 0.9, 0.95, 0.99)
 
     def __init__(
             self,
