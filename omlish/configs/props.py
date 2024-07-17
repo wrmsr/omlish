@@ -19,7 +19,7 @@ def escape(token: str) -> str:
     return _ESCAPE_PATTERN.sub(r'\\\1', token)
 
 
-def parse_line(line: str) -> ta.Tuple[str, str] | None:
+def parse_line(line: str) -> tuple[str, str] | None:
     if line and not (line.startswith('#') or line.startswith('!')):
         match = _SEPARATOR_PATTERN.search(line)
         if match:
@@ -54,7 +54,7 @@ def coalesce_lines(lines: ta.Iterable[str]) -> ta.Generator[str, None, None]:
         pass
 
 
-def parse_lines(lines: ta.Iterable[str]) -> ta.Dict[str, str]:
+def parse_lines(lines: ta.Iterable[str]) -> dict[str, str]:
     props = {}
     for line in coalesce_lines(lines):
         kv_pair = parse_line(line)

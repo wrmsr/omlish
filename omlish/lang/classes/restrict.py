@@ -10,7 +10,7 @@ from .abstract import is_abstract
 
 class FinalException(TypeError):
 
-    def __init__(self, _type: ta.Type) -> None:
+    def __init__(self, _type: type) -> None:
         super().__init__()
 
         self._type = _type

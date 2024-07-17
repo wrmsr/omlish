@@ -42,7 +42,7 @@ class AccessForbiddenDescriptor:
 
         self._name = name
 
-    def __set_name__(self, owner: ta.Type, name: str) -> None:
+    def __set_name__(self, owner: type, name: str) -> None:
         if self._name is None:
             self._name = name
         elif name != self._name:

@@ -55,11 +55,11 @@ class OrderedSet(ta.MutableSet[T]):
         return set(self) == set(other)
 
 
-class OrderedFrozenSet(ta.FrozenSet[T]):
+class OrderedFrozenSet(ta.FrozenSet[T]):  # noqa
 
     _list: ta.Sequence[T]
 
-    def __new__(cls, items: ta.Iterable[T]) -> ta.FrozenSet[T]:  # type: ignore
+    def __new__(cls, items: ta.Iterable[T]) -> frozenset[T]:  # type: ignore
         item_set = set()
         item_list = []
         for item in items:
@@ -76,6 +76,6 @@ class OrderedFrozenSet(ta.FrozenSet[T]):
     def __iter__(self) -> ta.Iterator[T]:
         return iter(self._list)
 
-    def __sub__(self, other: ta.Iterable[T]) -> ta.FrozenSet[T]:
+    def __sub__(self, other: ta.Iterable[T]) -> frozenset[T]:
         s = set(other)
         return type(self)(i for i in self if i not in s)

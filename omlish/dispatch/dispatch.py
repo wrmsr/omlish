@@ -13,10 +13,10 @@ T = ta.TypeVar('T')
 ##
 
 
-_IMPL_FUNC_CLS_SET_CACHE: ta.MutableMapping[ta.Callable, ta.FrozenSet[type]] = weakref.WeakKeyDictionary()
+_IMPL_FUNC_CLS_SET_CACHE: ta.MutableMapping[ta.Callable, frozenset[type]] = weakref.WeakKeyDictionary()
 
 
-def get_impl_func_cls_set(func: ta.Callable) -> ta.FrozenSet[type]:
+def get_impl_func_cls_set(func: ta.Callable) -> frozenset[type]:
     try:
         return _IMPL_FUNC_CLS_SET_CACHE[func]
     except KeyError:

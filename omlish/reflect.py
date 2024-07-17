@@ -21,7 +21,7 @@ else:
 
 _NoneType = types.NoneType  # type: ignore
 
-_NONE_TYPE_FROZENSET: ta.FrozenSet['Type'] = frozenset([_NoneType])
+_NONE_TYPE_FROZENSET: frozenset['Type'] = frozenset([_NoneType])
 
 
 _GenericAlias = ta._GenericAlias  # type: ignore  # noqa
@@ -99,7 +99,7 @@ Type = ta.Union[
 
 
 class Union(ta.NamedTuple):
-    args: ta.FrozenSet[Type]
+    args: frozenset[Type]
 
     @property
     def is_optional(self) -> bool:
