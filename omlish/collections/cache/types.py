@@ -10,7 +10,7 @@ class OverweightException(Exception):
     pass
 
 
-Eviction: ta.TypeAlias = ta.Callable[['Cache'], None]
+type Eviction = ta.Callable[['Cache'], None]
 
 
 class Cache(ta.MutableMapping[K, V]):

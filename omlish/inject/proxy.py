@@ -22,7 +22,7 @@ def _cyclic_dependency_proxy() -> tuple[type, ta.Callable[[ta.Any, ta.Any], None
         def __init__(self, cls):
             super().__init__(_CyclicDependencyPlaceholder(cls))
             if isinstance(cls, type):
-                self._self__class__ = cls
+                self._self__class__ = cls  # noqa
 
         def __repr__(self) -> str:
             return f'_CyclicDependencyProxy({self.__wrapped__!r})'
@@ -40,9 +40,9 @@ def _cyclic_dependency_proxy() -> tuple[type, ta.Callable[[ta.Any, ta.Any], None
         check.not_isinstance(obj, _CyclicDependencyPlaceholder)
         check.isinstance(prox.__wrapped__, _CyclicDependencyPlaceholder)
         if hasattr(prox, '_self__class__'):
-            check.issubclass(type(obj), prox._self__class__)
+            check.issubclass(type(obj), prox._self__class__)  # noqa
         prox.__wrapped__ = obj
         if hasattr(prox, '_self__class__'):
-            del prox._self__class__
+            del prox._self__class__  # noqa
 
     return (_CyclicDependencyProxy, set)  # noqa
