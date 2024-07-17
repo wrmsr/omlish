@@ -33,15 +33,15 @@ class SKIP(lang.Marker):
     pass
 
 
-def LRU(cache: 'Cache') -> None:
+def LRU(cache: 'Cache') -> None:  # noqa
     cache._kill(cache._root.lru_next)  # type: ignore  # noqa
 
 
-def LRI(cache: 'Cache') -> None:
+def LRI(cache: 'Cache') -> None:  # noqa
     cache._kill(cache._root.ins_next)  # type: ignore  # noqa
 
 
-def LFU(cache: 'Cache') -> None:
+def LFU(cache: 'Cache') -> None:  # noqa
     cache._kill(cache._root.lfu_prev)  # type: ignore  # noqa
 
 

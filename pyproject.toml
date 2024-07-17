@@ -130,6 +130,7 @@ select = ["ALL"]
 
 ignore = [
     'ANN401',  # dynamically typed expressions (typing.Any) are disallowed in `*args`
+    'ARG001',  # unused function argument,
     'ARG002',  # unused method argument
     'C901',  # function is too complex
     'D',  # docstrings
@@ -143,12 +144,14 @@ ignore = [
     'PGH003',  # use specific rule codes when ignoring type issues
     'PGH004',  # use specific rule codes when using `noqa`
     'PLR0912',  # too many branches
+    'PLR0913',  # too many arguments in function definition
     'PLR2004',  # magic value used in comparison
     'PT018',  # assertion should be broken down into multiple parts
     'PTH118',  # `os.path.join()` should be replaced by `Path` with `/` operator
     'RET504',  # unnecessary assignment before `return` statement
     'RET505',  # unnecessary `else` after `return` statement
     'RUF100',  # unused blanket `noqa` directive'
+    'SIM108',  # use ternary operator
     'T201',  # `print` found
     'TD001', # invalid TODO tag
     'TD002',  # missing author in TODO
@@ -156,6 +159,7 @@ ignore = [
     'TD004',  # missing colon in TODO
     'TD005',  # missing issue description after `TODO'
     'TID252',  # prefer absolute imports over relative imports from parent modules
+    'UP038',  # use `X | Y` in `isinstance` call instead of `(X, Y)`
 
     # FIXME: mypy error: PEP 695 type aliases are not yet supported
     'UP040',  # type alias uses `TypeAlias` annotation instead of the `type` keyword
@@ -168,7 +172,8 @@ ignore = [
 '**/{tests}/*' = [
     'ANN001', # missing type annotation for function argument
     'ANN201',  # missing return type annotation for public function
-    'B011',  # do not `assert Fals'
+    'ANN202',  # missing return type annotation for private function
+    'B011',  # do not `assert False
     'S101',  # use of `assert` detected
 ]
 'omdev/scripts/*' = [
@@ -177,6 +182,7 @@ ignore = [
 'omlish/testing/*' = [
     'ANN001', # missing type annotation for function argument
     'ANN201',  # missing return type annotation for public function
+    'ANN202',  # missing return type annotation for private function
     'S101',  # use of `assert` detected
 ]
 
