@@ -1,4 +1,5 @@
 import abc
+import itertools
 import typing as ta
 
 from .. import check
@@ -135,7 +136,7 @@ class Flattening:
         for fk, v in flattened.items():
             node: Flattening.UnflattenNode = root
             fks = list(split_keys(fk))
-            for key, nkey in zip(fks, fks[1:]):
+            for key, nkey in itertools.pairwise(fks):
                 if isinstance(nkey, str):
                     node = node.setdefault(key, Flattening.UnflattenDict)
                 elif isinstance(nkey, int):
