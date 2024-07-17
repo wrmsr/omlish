@@ -37,7 +37,7 @@ async def hello_app(scope, recv, send):
 
             await send({
                 'type': 'http.response.body',
-                'body': f'Hello, world! The time is {time.time()}'.encode('utf-8'),
+                'body': f'Hello, world! The time is {time.time()}'.encode(),
             })
 
         case _:

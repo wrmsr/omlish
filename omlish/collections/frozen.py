@@ -38,7 +38,7 @@ class FrozenDict(ta.Mapping[K, V], Frozen):
         return '(%r)' % (self._dct,)
 
     def __eq__(self, other) -> bool:
-        return type(self) == type(other) and self._dct == other._dct
+        return type(self) is type(other) and self._dct == other._dct
 
     def __getitem__(self, key: K) -> V:
         return self._dct[key]

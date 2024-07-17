@@ -276,7 +276,7 @@ def _cmp_cmd(args: ta.Any) -> None:
         for m in get_process_maps(pid, sharing=True):
             yield from get_process_range_pagemaps(m['address'], m['end_address'], pid)
 
-    lpms, rpms = [g(pid) for pid in (lpid, rpid)]
+    lpms, rpms = (g(pid) for pid in (lpid, rpid))
 
     l_pages = 0
     r_pages = 0
