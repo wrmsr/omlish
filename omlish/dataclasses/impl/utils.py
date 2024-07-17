@@ -16,15 +16,15 @@ def create_fn(
         args: ta.Sequence[str],
         body: ta.Sequence[str],
         *,
-        globals: Namespace | None = None,
-        locals: Namespace | None = None,
+        globals: Namespace | None = None,  # noqa
+        locals: Namespace | None = None,  # noqa
         return_type: lang.Maybe[ta.Any] = lang.empty(),
 ) -> ta.Callable:
     check.not_isinstance(args, str)
     check.not_isinstance(body, str)
 
     if locals is None:
-        locals = {}
+        locals = {}  # noqa
     return_annotation = ''
     if return_type.present:
         locals['__dataclass_return_type__'] = return_type()
@@ -43,7 +43,7 @@ def create_fn(
 
 # TODO: https://github.com/python/cpython/commit/8945b7ff55b87d11c747af2dad0e3e4d631e62d6
 class FuncBuilder:
-    def __init__(self, globals: Namespace) -> None:
+    def __init__(self, globals: Namespace) -> None:  # noqa
         super().__init__()
 
         self.names: list[str] = []
@@ -59,7 +59,7 @@ class FuncBuilder:
             args: ta.Sequence[str],
             body: ta.Sequence[str],
             *,
-            locals: Namespace | None = None,
+            locals: Namespace | None = None,  # noqa
             return_type: lang.Maybe[ta.Any] = lang.empty(),
             overwrite_error: bool = False,
             unconditional_add: bool = False,

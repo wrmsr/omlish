@@ -88,7 +88,7 @@ def field_assign(
 def field_init(
         f: dc.Field,
         frozen: bool,
-        locals: dict[str, ta.Any],
+        locals: dict[str, ta.Any],  # noqa
         self_name: str,
         slots: bool,
 ) -> ta.Sequence[str]:

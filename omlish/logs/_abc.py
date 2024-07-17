@@ -1,3 +1,4 @@
+# ruff: noqa: A002
 # ruff: noqa: N802
 
 import types
