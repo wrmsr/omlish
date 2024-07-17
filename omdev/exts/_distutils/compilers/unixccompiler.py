@@ -193,14 +193,14 @@ class UnixCCompiler(CCompiler):
         try:
             self.spawn(pp_args)
         except DistutilsExecError as msg:
-            raise CompileError(msg)
+            raise CompileError(msg) from None
 
     def _compile(self, obj, src, ext, cc_args, extra_postargs, pp_opts):
         compiler_so = compiler_fixup(self.compiler_so, cc_args + extra_postargs)
         try:
             self.spawn(compiler_so + cc_args + [src, '-o', obj] + extra_postargs)
         except DistutilsExecError as msg:
-            raise CompileError(msg)
+            raise CompileError(msg) from None
 
     def create_static_lib(
             self,
@@ -225,7 +225,7 @@ class UnixCCompiler(CCompiler):
                 try:
                     self.spawn([*self.ranlib, output_filename])
                 except DistutilsExecError as msg:
-                    raise LibError(msg)
+                    raise LibError(msg) from None
         else:
             log.debug('skipping %s (up-to-date)', output_filename)
 
@@ -283,7 +283,7 @@ class UnixCCompiler(CCompiler):
 
                 self.spawn(linker + ld_args)
             except DistutilsExecError as msg:
-                raise LinkError(msg)
+                raise LinkError(msg) from None
         else:
             log.debug('skipping %s (up-to-date)', output_filename)
 
