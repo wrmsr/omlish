@@ -19,6 +19,7 @@ import os
 import re
 import shlex
 import sys
+import typing as ta
 
 from .. import sysconfig
 from ..errors import CompileError
@@ -130,7 +131,7 @@ class UnixCCompiler(CCompiler):
     # etc. from them, and 'set_executable()' allows any of these to be set.  The defaults here are pretty generic; they
     # will probably have to be set by an outsider (eg. using information discovered by the sysconfig about building
     # Python extensions).
-    executables = {
+    executables = {  # noqa
         'preprocessor': None,
         'compiler': ['cc'],
         'compiler_so': ['cc'],
@@ -148,7 +149,7 @@ class UnixCCompiler(CCompiler):
     # particular UnixCCompiler instance should set 'shared_lib_ext' -- we set a reasonable common default here, but it's
     # not necessarily used on all Unices!
 
-    src_extensions = ['.c', '.C', '.cc', '.cxx', '.cpp', '.m']
+    src_extensions: ta.ClassVar[list[str]] = ['.c', '.C', '.cc', '.cxx', '.cpp', '.m']
     obj_extension = '.o'
     static_lib_extension = '.a'
     shared_lib_extension = '.so'
