@@ -11,7 +11,7 @@ import typing as ta
 import weakref
 
 from ... import reflect as rfl
-from ..exceptions import DuplicateKeyException
+from ..exceptions import DuplicateKeyError
 from ..inspect import Kwarg
 from ..inspect import KwargsTarget
 from ..keys import Key
@@ -83,7 +83,7 @@ def build_kwargs_target(
             k = tag(k, pt)
 
         if k in seen:
-            raise DuplicateKeyException(k)
+            raise DuplicateKeyError(k)
         seen.add(k)
 
         kws.append(Kwarg(

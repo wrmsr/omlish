@@ -3,7 +3,7 @@ import inspect
 import typing as ta
 
 from ... import lang
-from .exceptions import CheckException
+from .exceptions import CheckError
 from .fields import field_init
 from .fields import field_type
 from .fields import has_default
@@ -99,7 +99,7 @@ class InitBuilder:
             '__dataclass_builtins_object__': object,
             '__dataclass_builtins_isinstance__': isinstance,
             '__dataclass_builtins_TypeError__': TypeError,
-            '__dataclass_CheckException__': CheckException,
+            '__dataclass_CheckException__': CheckError,
         })
 
         body_lines: list[str] = []

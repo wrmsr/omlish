@@ -9,7 +9,7 @@ from .types import Scope
 
 
 @dc.dataclass()
-class KeyException(Exception):
+class BaseKeyError(Exception):
     key: Key
 
     source: ta.Any = None
@@ -17,17 +17,17 @@ class KeyException(Exception):
 
 
 @dc.dataclass()
-class UnboundKeyException(KeyException):
+class UnboundKeyError(KeyError):
     pass
 
 
 @dc.dataclass()
-class DuplicateKeyException(KeyException):
+class DuplicateKeyError(KeyError):
     pass
 
 
 @dc.dataclass()
-class CyclicDependencyException(KeyException):
+class CyclicDependencyError(KeyError):
     pass
 
 
@@ -35,15 +35,15 @@ class CyclicDependencyException(KeyException):
 
 
 @dc.dataclass()
-class ScopeException(Exception):
+class ScopeError(Exception):
     scope: Scope
 
 
 @dc.dataclass()
-class ScopeAlreadyOpenException(ScopeException):
+class ScopeAlreadyOpenError(ScopeError):
     pass
 
 
 @dc.dataclass()
-class ScopeNotOpenException(ScopeException):
+class ScopeNotOpenError(ScopeError):
     pass

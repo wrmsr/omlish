@@ -8,7 +8,7 @@ from .abstract import is_abstract
 ##
 
 
-class FinalException(TypeError):
+class FinalError(TypeError):
 
     def __init__(self, _type: type) -> None:
         super().__init__()
@@ -28,11 +28,11 @@ class Final(Abstract):
         abstracts: set[ta.Any] = set()
         for base in cls.__bases__:
             if base is Abstract:
-                raise FinalException(base)
+                raise FinalError(base)
             elif base is Final:
                 continue
             elif Final in base.__mro__:
-                raise FinalException(base)
+                raise FinalError(base)
             else:
                 abstracts.update(getattr(base, '__abstractmethods__', []))
 
@@ -40,15 +40,15 @@ class Final(Abstract):
             try:
                 v = cls.__dict__[a]
             except KeyError:
-                raise FinalException(a)
+                raise FinalError(a)
             if is_abstract(v):
-                raise FinalException(a)
+                raise FinalError(a)
 
 
 ##
 
 
-class SealedException(TypeError):
+class SealedError(TypeError):
 
     def __init__(self, _type) -> None:
         super().__init__()
@@ -67,7 +67,7 @@ class Sealed:
             if base is not Abstract:
                 if Sealed in base.__bases__:
                     if cls.__module__ != base.__module__:
-                        raise SealedException(base)
+                        raise SealedError(base)
         super().__init_subclass__(**kwargs)
 
 
@@ -79,7 +79,7 @@ class PackageSealed:
             if base is not Abstract:
                 if PackageSealed in base.__bases__:
                     if cls.__module__.split('.')[:-1] != base.__module__.split('.')[:-1]:
-                        raise SealedException(base)
+                        raise SealedError(base)
         super().__init_subclass__(**kwargs)
 
 

@@ -18,7 +18,7 @@ NodeWalker = ta.Callable[[NodeT], ta.Iterable[NodeT]]
 NodeGenerator = ta.Generator[NodeT, None, None]
 
 
-class NodeException(ta.Generic[NodeT], Exception):
+class NodeError(ta.Generic[NodeT], Exception):
     def __init__(self, node: NodeT, msg: str, *args, **kwargs) -> None:
         super().__init__(msg, *args, **kwargs)  # noqa
         self._node = node
@@ -28,12 +28,12 @@ class NodeException(ta.Generic[NodeT], Exception):
         return self._node
 
 
-class DuplicateNodeException(NodeException[NodeT]):
+class DuplicateNodeError(NodeError[NodeT]):
     def __init__(self, node: NodeT, *args, **kwargs) -> None:
         super().__init__(node, f'Duplicate node: {node!r}', *args, **kwargs)
 
 
-class UnknownNodeException(NodeException[NodeT]):
+class UnknownNodeError(NodeError[NodeT]):
     def __init__(self, node: NodeT, *args, **kwargs) -> None:
         super().__init__(node, f'Unknown node: {node!r}', *args, **kwargs)
 
@@ -60,14 +60,14 @@ class BasicTreeAnalysis(ta.Generic[NodeT]):
         def walk(cur: NodeT, parent: NodeT | None) -> None:
             check.not_none(cur)
             if cur in node_set:
-                raise DuplicateNodeException(cur)
+                raise DuplicateNodeError(cur)
 
             nodes.append(cur)
             node_set.add(cur)
             if parent is None:
                 check.state(cur is root)
             elif parent not in node_set:
-                raise UnknownNodeException(parent)
+                raise UnknownNodeError(parent)
 
             parents_by_node[cur] = parent
 

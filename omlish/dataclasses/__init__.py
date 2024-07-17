@@ -54,7 +54,7 @@ globals()['make_dataclass'] = xmake_dataclass
 
 
 from .impl.exceptions import (  # noqa
-    CheckException,
+    CheckError,
 )
 
 from .impl.metaclass import (  # noqa

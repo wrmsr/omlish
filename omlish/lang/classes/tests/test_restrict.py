@@ -3,10 +3,10 @@ import typing as ta
 import pytest
 
 from ..restrict import Final
-from ..restrict import FinalException
+from ..restrict import FinalError
 from ..restrict import NoBool
 from ..restrict import Sealed
-from ..restrict import SealedException
+from ..restrict import SealedError
 from ..restrict import no_bool
 
 
@@ -21,7 +21,7 @@ def test_final():
 
     B()
 
-    with pytest.raises(FinalException):
+    with pytest.raises(FinalError):
         class C(B):
             pass
 
@@ -33,7 +33,7 @@ def test_final():
     D()
     D[int]  # noqa
 
-    with pytest.raises(FinalException):
+    with pytest.raises(FinalError):
         class E(D[int]):
             pass
 
@@ -45,7 +45,7 @@ def test_sealed():
     class B(A):
         __module__ = 'a'
 
-    with pytest.raises(SealedException):
+    with pytest.raises(SealedError):
         class C(A):
             __module__ = 'c'
 

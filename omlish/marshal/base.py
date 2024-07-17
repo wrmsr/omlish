@@ -81,7 +81,7 @@ from .. import check
 from .. import collections as col
 from .. import lang
 from .. import reflect as rfl
-from .exceptions import UnhandledTypeException
+from .exceptions import UnhandledTypeError
 from .factories import Factory
 from .factories import RecursiveTypeFactory
 from .registries import Registry
@@ -152,7 +152,7 @@ class MarshalContext(BaseContext, lang.Final):
         rty = rfl.type_(o)
         if (m := check.not_none(self.factory)(self, rty)) is not None:  # noqa
             return m
-        raise UnhandledTypeException(rty)
+        raise UnhandledTypeError(rty)
 
 
 @dc.dataclass(frozen=True)
@@ -163,7 +163,7 @@ class UnmarshalContext(BaseContext, lang.Final):
         rty = rfl.type_(o)
         if (m := check.not_none(self.factory)(self, rty)) is not None:  # noqa
             return m
-        raise UnhandledTypeException(rty)
+        raise UnhandledTypeError(rty)
 
 
 ##

@@ -38,14 +38,14 @@ def is_debugger_call(hoist: int = 0, walk: int = 2) -> bool:
     return False
 
 
-class DebuggerCallForbiddenException(Exception):
+class DebuggerCallForbiddenError(Exception):
     pass
 
 
 def forbid_debugger_call(hoist: int = 0) -> None:
     # FIXME: only reentrant?
     if not ALLOW_DEBUGGER_CALLS and is_debugger_call(hoist + 1):
-        raise DebuggerCallForbiddenException
+        raise DebuggerCallForbiddenError
 
 
 ##

@@ -28,7 +28,7 @@ def unwrap_method_descriptors(fn: ta.Callable) -> ta.Callable:
 ##
 
 
-class AccessForbiddenException(Exception):
+class AccessForbiddenError(Exception):
 
     def __init__(self, name: str | None = None, *args: ta.Any, **kwargs: ta.Any) -> None:
         super().__init__(*((name,) if name is not None else ()), *args, **kwargs)  # noqa
@@ -49,7 +49,7 @@ class AccessForbiddenDescriptor:
             raise NameError(name)
 
     def __get__(self, instance, owner=None):
-        raise AccessForbiddenException(self._name)
+        raise AccessForbiddenError(self._name)
 
 
 def access_forbidden():  # noqa

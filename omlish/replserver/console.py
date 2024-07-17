@@ -31,7 +31,7 @@ from .. import check
 log = logging.getLogger(__name__)
 
 
-class DisconnectException(Exception):
+class DisconnectError(Exception):
     pass
 
 
@@ -109,7 +109,7 @@ class InteractiveSocketConsole:
             elif exitmsg != '':
                 self.write('%s\n' % exitmsg)
 
-        except DisconnectException:
+        except DisconnectError:
             pass
 
         except OSError as oe:
@@ -133,7 +133,7 @@ class InteractiveSocketConsole:
         while True:
             b = self._conn.recv(1)
             if not b:
-                raise DisconnectException
+                raise DisconnectError
             if b == b'\n':
                 break
             buf += b

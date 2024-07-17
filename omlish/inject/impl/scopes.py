@@ -9,8 +9,8 @@ from ... import lang
 from ..bindings import Binding
 from ..elements import Elements
 from ..elements import as_elements
-from ..exceptions import ScopeAlreadyOpenException
-from ..exceptions import ScopeNotOpenException
+from ..exceptions import ScopeAlreadyOpenError
+from ..exceptions import ScopeNotOpenError
 from ..injector import Injector
 from ..keys import Key
 from ..providers import Provider
@@ -134,7 +134,7 @@ class SeededScopeImpl(ScopeImpl):
 
     def must_state(self) -> 'SeededScopeImpl.State':
         if (st := self._st) is None:
-            raise ScopeNotOpenException(self._ss)
+            raise ScopeNotOpenError(self._ss)
         return st
 
     class Manager(SeededScope.Manager, lang.Final):
@@ -148,12 +148,12 @@ class SeededScopeImpl(ScopeImpl):
         def __call__(self, seeds: ta.Mapping[Key, ta.Any]) -> ta.Generator[None, None, None]:
             try:
                 if self._ssi._st is not None:  # noqa
-                    raise ScopeAlreadyOpenException(self._ss)
+                    raise ScopeAlreadyOpenError(self._ss)
                 self._ssi._st = SeededScopeImpl.State(dict(seeds))  # noqa
                 yield
             finally:
                 if self._ssi._st is None:  # noqa
-                    raise ScopeNotOpenException(self._ss)
+                    raise ScopeNotOpenError(self._ss)
                 self._ssi._st = None  # noqa
 
     def auto_elements(self) -> Elements:

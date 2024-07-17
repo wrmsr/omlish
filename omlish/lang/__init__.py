@@ -8,7 +8,7 @@ from .classes import (  # noqa
     Callable,
     Descriptor,
     Final,
-    FinalException,
+    FinalError,
     LazySingleton,
     Marker,
     Namespace,
@@ -18,7 +18,7 @@ from .classes import (  # noqa
     PackageSealed,
     Picklable,
     Sealed,
-    SealedException,
+    SealedError,
     SimpleMetaDict,
     Singleton,
     Virtual,
@@ -74,7 +74,7 @@ from .datetimes import (  # noqa
 )
 
 from .descriptors import (  # noqa
-    AccessForbiddenException,
+    AccessForbiddenError,
     access_forbidden,
     classonly,
     is_method_descriptor,
@@ -87,7 +87,7 @@ from .exceptions import (  # noqa
 
 from .functions import (  # noqa
     Args,
-    VoidException,
+    VoidError,
     constant,
     identity,
     is_lambda,

@@ -18,7 +18,7 @@ import weakref
 from ... import lang
 from .types import Cache
 from .types import Eviction
-from .types import OverweightException
+from .types import OverweightError
 
 
 K = ta.TypeVar('K')
@@ -371,7 +371,7 @@ class CacheImpl(Cache[K, V]):
 
             if self._max_weight is not None and weight > self._max_weight:
                 if self._raise_overweight:
-                    raise OverweightException
+                    raise OverweightError
                 else:
                     return
 
