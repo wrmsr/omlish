@@ -6,7 +6,7 @@ from ... import lang
 
 METADATA_ATTR = '__dataclass_metadata__'
 
-type Metadata = ta.Mapping[ta.Any, ta.Any]
+Metadata: ta.TypeAlias = ta.Mapping[ta.Any, ta.Any]
 
 EMPTY_METADATA: Metadata = types.MappingProxyType({})
 

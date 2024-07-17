@@ -12,7 +12,7 @@ from .types import Cache
 
 
 C = ta.TypeVar('C', bound=ta.Callable)
-type CC = ta.Callable[[C], C]
+CC: ta.TypeAlias = ta.Callable[[C], C]
 
 
 class Scope(enum.Enum):

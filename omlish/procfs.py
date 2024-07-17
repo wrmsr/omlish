@@ -288,7 +288,7 @@ def _cmp_cmd(args: ta.Any) -> None:
             l_pages += 1
         elif l is None and r is not None:
             r_pages += 1
-        elif l['pfn'] != r['pfn']:
+        elif l['pfn'] != r['pfn']:  # type: ignore
             c_pages += 1
         else:
             continue

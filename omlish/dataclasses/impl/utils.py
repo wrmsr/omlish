@@ -8,7 +8,7 @@ from ... import lang
 
 
 T = ta.TypeVar('T')
-type Namespace = ta.MutableMapping[str, ta.Any]
+Namespace: ta.TypeAlias = ta.MutableMapping[str, ta.Any]
 
 
 def create_fn(

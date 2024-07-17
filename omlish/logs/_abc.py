@@ -5,10 +5,10 @@ import typing as ta
 ##
 
 
-type Level = int
+Level: ta.TypeAlias = int
 
 
-type ExceptionInfo = tuple[type[BaseException], BaseException, types.TracebackType]
+ExceptionInfo: ta.TypeAlias = tuple[type[BaseException], BaseException, types.TracebackType]
 
 
 class LogRecord:
@@ -150,7 +150,7 @@ class Manager(ta.Protocol):
 ##
 
 
-type Caller = tuple[
+Caller: ta.TypeAlias = tuple[
     str,  # filename
     int,  # lineno
     str,  # name
