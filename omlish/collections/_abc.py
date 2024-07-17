@@ -1,3 +1,5 @@
+# ruff: noqa: ANN204
+
 class Hashable:
     def __hash__(self): ...
 
