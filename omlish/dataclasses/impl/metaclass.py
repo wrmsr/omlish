@@ -97,7 +97,7 @@ class Data(metaclass=DataMeta):
             spi = super().__post_init__  # type: ignore  # noqa
         except AttributeError:
             if args or kwargs:
-                raise TypeError(args, kwargs)
+                raise TypeError(args, kwargs) from None
         else:
             spi(*args, **kwargs)
 

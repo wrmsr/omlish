@@ -181,7 +181,7 @@ async def worker_serve(
             except BaseExceptionGroup as error:
                 _, other_errors = error.split((ShutdownError, KeyboardInterrupt))  # noqa
                 if other_errors is not None:
-                    raise other_errors
+                    raise other_errors  # noqa
             finally:
                 await context.terminated.set()
                 server_task_group.cancel_scope.deadline = anyio.current_time() + config.graceful_timeout

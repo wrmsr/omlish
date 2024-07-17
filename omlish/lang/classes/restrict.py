@@ -40,7 +40,7 @@ class Final(Abstract):
             try:
                 v = cls.__dict__[a]
             except KeyError:
-                raise FinalError(a)
+                raise FinalError(a) from None
             if is_abstract(v):
                 raise FinalError(a)
 
