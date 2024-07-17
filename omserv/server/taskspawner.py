@@ -91,6 +91,11 @@ class TaskSpawner:
         await self._task_group.__aenter__()
         return self
 
-    async def __aexit__(self, exc_type: type[BaseException], exc_value: BaseException, tb: types.TracebackType) -> None:
+    async def __aexit__(
+            self,
+            exc_type: type[BaseException] | None,
+            exc_value: BaseException | None,
+            tb: types.TracebackType | None,
+    ) -> None:
         await check.not_none(self._task_group).__aexit__(exc_type, exc_value, tb)
         self._task_group = None

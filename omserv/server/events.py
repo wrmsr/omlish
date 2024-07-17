@@ -1,11 +1,12 @@
-import abc
 import dataclasses as dc
+
+from omlish import lang
 
 
 ##
 
 
-class ServerEvent(abc.ABC):
+class ServerEvent(lang.Abstract):
     pass
 
 

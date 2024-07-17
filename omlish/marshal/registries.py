@@ -1,13 +1,13 @@
-import abc
 import dataclasses as dc
 import threading
 import typing as ta
 
 from .. import check
+from .. import lang
 from .. import reflect as rfl
 
 
-class RegistryItem(abc.ABC):
+class RegistryItem(lang.Abstract):
     pass
 
 

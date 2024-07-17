@@ -10,7 +10,7 @@ def _is_instance_or_subclass(obj, cls):
 class MypyDebugPathFinder(importlib.machinery.PathFinder):
 
     @classmethod
-    def _get_spec(cls, fullname, path, target=None):
+    def _get_spec(cls, fullname, path, target=None):  # noqa
         namespace_path = []
         for entry in path:
             if not isinstance(entry, (str, bytes)):
@@ -40,7 +40,7 @@ class MypyDebugPathFinder(importlib.machinery.PathFinder):
         return None
 
     @classmethod
-    def find_spec(cls, fullname, path=None, target=None):
+    def find_spec(cls, fullname, path=None, target=None):  # noqa
         if not fullname.startswith('mypy.') and fullname != 'mypy':
             return None
         if path is None:
