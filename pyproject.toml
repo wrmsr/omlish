@@ -146,6 +146,7 @@ ignore = [
     'E731',  # do not assign a `lambda` expression, use a `def`
     'E741',  # ambiguous variable name
     'E742',  # ambiguous class name
+    'EM102',  # exception must not use an f-string literal, assign to variable first
     'ERA001',  # found commented-out code
     'F541',  # f-string without any placeholders
     'FBT001',  # boolean-typed positional argument in function definition
