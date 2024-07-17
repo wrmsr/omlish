@@ -22,7 +22,7 @@ else:
 
 
 @pytest.fixture(autouse=True)
-def patch_for_trio_asyncio_fixture():
+def _patch_for_trio_asyncio_fixture():
     pdu.patch_for_trio_asyncio()
 
 
