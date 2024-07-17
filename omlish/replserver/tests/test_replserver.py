@@ -29,10 +29,8 @@ def test_replserver():
         with contextlib.closing(conn):
             buf = b''
             while True:
-                try:
+                with contextlib.suppress(socket.timeout):
                     buf += conn.recv(1024)
-                except socket.timeout:
-                    pass
                 if time.time() >= deadline:
                     raise ValueError
                 if buf.endswith(b'>>> '):
@@ -42,10 +40,8 @@ def test_replserver():
 
             buf = b''
             while True:
-                try:
+                with contextlib.suppress(socket.timeout):
                     buf += conn.recv(1024)
-                except socket.timeout:
-                    pass
                 if time.time() >= deadline:
                     raise ValueError
                 if buf == b'3\n>>> ':

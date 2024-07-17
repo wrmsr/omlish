@@ -1,4 +1,5 @@
 """Utility functions for operating on single files."""
+import contextlib
 import logging
 import os
 
@@ -199,10 +200,8 @@ def move_file(src, dst, verbose=1, dry_run=False):  # noqa: C901
             os.unlink(src)
         except OSError as e:
             (num, msg) = e.args
-            try:
+            with contextlib.suppress(OSError):
                 os.unlink(dst)
-            except OSError:
-                pass
             raise DistutilsFileError(
                 f"couldn't move '{src}' to '{dst}' by copy/delete: "
                 f"delete '{src}' failed: {msg}",

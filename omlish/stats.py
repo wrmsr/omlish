@@ -5,6 +5,7 @@ TODO:
 """
 import bisect
 import collections
+import contextlib
 import dataclasses as dc
 import math
 import operator
@@ -291,10 +292,8 @@ class SamplingHistogram:
 
         sample_pos = None
         if self._sample_pos_queue:
-            try:
+            with contextlib.suppress(IndexError):
                 sample_pos = self._sample_pos_queue.pop()
-            except IndexError:
-                pass
         if sample_pos is None:
             sample_pos = random.randrange(0, self._size)
         self._sample[sample_pos] = entry
