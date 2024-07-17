@@ -25,7 +25,7 @@ def repr_fn(
         src = [
             'l = []',
             *lst,
-            'return f"{self.__class__.__qualname__}({\", \".join(l)})"',
+            'return f"{self.__class__.__qualname__}({", ".join(l)})"',
         ]
     else:
         src = [

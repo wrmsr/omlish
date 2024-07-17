@@ -162,11 +162,9 @@ class CCompiler:
             setattr(self, key, value)
 
     def _find_macro(self, name):
-        i = 0
-        for defn in self.macros:
+        for i, defn in enumerate(self.macros):
             if defn[0] == name:
                 return i
-            i += 1
         return None
 
     def _check_macro_definitions(self, definitions: list[Macro]) -> None:

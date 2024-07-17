@@ -141,7 +141,7 @@ class HarnessPlugin:
         with harness._pytest_scope_manager(PytestScope.CLASS, request):  # noqa
             yield
 
-    @pytest.fixture(scope='function', autouse=True)
+    @pytest.fixture(scope='function', autouse=True)  # noqa
     def _harness_scope_listener_function(self, harness, request):
         with harness._pytest_scope_manager(PytestScope.FUNCTION, request):  # noqa
             yield
