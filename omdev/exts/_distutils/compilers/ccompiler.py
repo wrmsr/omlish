@@ -327,7 +327,7 @@ class CCompiler:
 
     def _get_cc_args(self, pp_opts, debug, before):
         # works for unixccompiler, cygwinccompiler
-        cc_args = pp_opts + ['-c']
+        cc_args = [*pp_opts, '-c']
         if debug:
             cc_args[:0] = ['-g']
         if before:

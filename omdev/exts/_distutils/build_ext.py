@@ -284,7 +284,7 @@ class BuildExt:
                 if self._opts.debug:
                     template = template + '_d'
                 pythonlib = (template % (sys.hexversion >> 24, (sys.hexversion >> 16) & 0xff))
-                return ext.libraries + [pythonlib]
+                return [*ext.libraries, pythonlib]
 
         else:
             link_libpython = False
@@ -294,7 +294,7 @@ class BuildExt:
 
             if link_libpython:
                 ldversion = _get_str_config_var('LDVERSION')
-                return ext.libraries + ['python' + ldversion]
+                return [*ext.libraries, 'python' + ldversion]
 
         return ext.libraries
 
