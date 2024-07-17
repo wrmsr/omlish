@@ -15,8 +15,8 @@ _0, _1, _2, _3 = rfl._KNOWN_SPECIAL_TYPE_VARS[:4]  # noqa
 
 def test_simple_reflect_type():
     assert rfl.type_(int) is int
-    assert rfl.type_(ta.Union[int, float]) == rfl.Union(frozenset([int, float]))
-    assert rfl.type_(ta.Optional[int]) == rfl.Union(frozenset([int, type(None)]))
+    assert rfl.type_(ta.Union[int, float]) == rfl.Union(frozenset([int, float]))  # noqa
+    assert rfl.type_(ta.Optional[int]) == rfl.Union(frozenset([int, type(None)]))  # noqa
 
     assert rfl.type_(ta.Sequence[int]) == rfl.Generic(collections.abc.Sequence, (int,), (_0,), ta.Sequence[int])
     assert rfl.type_(ta.Mapping[int, str]) == rfl.Generic(collections.abc.Mapping, (int, str), (_0, _1), ta.Mapping[int, str])  # noqa

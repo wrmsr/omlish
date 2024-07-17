@@ -45,7 +45,7 @@ else:
     compiler_fixup = bypass_compiler_fixup
 
 
-# XXX Things not currently handled:
+# Things not currently handled:
 #   * optimization/debug/warning flags; we just use whatever's in Python's Makefile and live with it.  Is this adequate?
 #      If not, we might have to have a bunch of subclasses GNUCCompiler, SGICCompiler, SunCCompiler, and I suspect down
 #     that road lies madness.
@@ -299,13 +299,12 @@ class UnixCCompiler(CCompiler):
         return 'gcc' in compiler or 'g++' in compiler
 
     def runtime_library_dir_option(self, dir: str) -> str | list[str]:  # noqa
-        # XXX Hackish, at the very least.  See Python bug #445902: https://bugs.python.org/issue445902 Linkers on
-        # different platforms need different options to specify that directories need to be added to the list of
-        # directories searched for dependencies when a dynamic library is sought.  GCC on GNU systems (Linux, FreeBSD,
-        # ...) has to be told to pass the -R option through to the linker, whereas other compilers and gcc on other
-        # systems just know this. Other compilers may need something slightly different.  At this time, there's no way
-        # to determine this information from the configuration data stored in the Python installation, so we use this
-        # hack.
+        # Hackish, at the very least.  See Python bug #445902: https://bugs.python.org/issue445902 Linkers on different
+        # platforms need different options to specify that directories need to be added to the list of directories
+        # searched for dependencies when a dynamic library is sought.  GCC on GNU systems (Linux, FreeBSD, ...) has to
+        # be told to pass the -R option through to the linker, whereas other compilers and gcc on other systems just
+        # know this. Other compilers may need something slightly different.  At this time, there's no way to determine
+        # this information from the configuration data stored in the Python installation, so we use this hack.
         if sys.platform[:6] == 'darwin':
             from ..util import get_macosx_target_ver, split_version
 

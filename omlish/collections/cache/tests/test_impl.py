@@ -84,7 +84,7 @@ def test_lfu():
     c = impl_.new_cache()  # type: ignore
     for i in range(10):
         c[i] = i
-        for j in range(i):
+        for _ in range(i):
             c[i]
 
     c = impl_.new_cache(max_size=5, eviction=impl_.LFU)

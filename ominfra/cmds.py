@@ -19,7 +19,7 @@ class CommandRunner(lang.Abstract):
     @dc.dataclass(frozen=True)
     class Command:
         args: ta.Sequence[str]
-        in_: ta.Optional[bytes] = None
+        in_: bytes | None = None
 
     @dc.dataclass(frozen=True)
     class Result:
@@ -45,7 +45,7 @@ class CommandRunner(lang.Abstract):
 class LocalCommandRunner(CommandRunner):
     @dc.dataclass(frozen=True)
     class Config:
-        cwd: ta.Optional[str] = None
+        cwd: str | None = None
 
     def __init__(self, cfg: Config = Config()) -> None:
         super().__init__()

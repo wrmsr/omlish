@@ -30,20 +30,20 @@ from .secrets import load_secrets
 
 @dc.dataclass(frozen=True)
 class SshConfig:
-    host: ta.Optional[str] = None
-    port: ta.Optional[int] = None
+    host: str | None = None
+    port: int | None = None
 
-    username: ta.Optional[str] = None
-    password: ta.Optional[str] = None
+    username: str | None = None
+    password: str | None = None
 
-    key_file_path: ta.Optional[str] = None
+    key_file_path: str | None = None
 
 
 class SshSubprocessCommandRunner(CommandRunner):
     def __init__(
             self,
             cfg: SshConfig,
-            lcr: ta.Optional[LocalCommandRunner] = None,
+            lcr: LocalCommandRunner | None = None,
     ) -> None:
         super().__init__()
         self._cfg = check.isinstance(cfg, SshConfig)

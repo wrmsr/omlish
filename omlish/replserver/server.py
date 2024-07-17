@@ -117,7 +117,7 @@ class ReplServer:
                         name=self.CONNECTION_THREAD_NAME)
                     thread.start()
 
-                for thread, console in self._consoles_by_threads.items():
+                for console in self._consoles_by_threads.values():
                     try:
                         console.conn.close()
                     except Exception:

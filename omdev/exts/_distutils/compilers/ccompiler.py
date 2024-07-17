@@ -45,7 +45,7 @@ class CCompiler:
     # classes are responsible for updating 'compiler_class'!
     compiler_type: str
 
-    # XXX things not handled by this compiler abstraction model:
+    # things not handled by this compiler abstraction model:
     #   * client can't provide additional options for a compiler, e.g. warning, optimization, debugging flags.  Perhaps
     #     this should be the domain of concrete compiler abstraction classes (UnixCCompiler, MSVCCompiler, etc.) -- or
     #     perhaps the base class should have methods for the common ones.
@@ -1029,6 +1029,6 @@ def new_compiler(
             f"in module '{module_name}'",
         )
 
-    # XXX The None is necessary to preserve backwards compatibility with classes that expect verbose to be the first
+    # The None is necessary to preserve backwards compatibility with classes that expect verbose to be the first
     # positional argument.
     return klass(None, dry_run, force)

@@ -98,7 +98,7 @@ class ElementCollection(lang.Final):
                     try:
                         bs = ovr[k]
                     except KeyError:
-                        bs = src[k]
+                        bs = b
                     add(k, *bs)
 
             else:

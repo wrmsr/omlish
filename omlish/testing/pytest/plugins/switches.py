@@ -13,7 +13,7 @@ from .... import collections as col
 from ._registry import register
 
 
-Configable = ta.Union[pytest.FixtureRequest, pytest.Config]
+Configable = pytest.FixtureRequest | pytest.Config
 
 
 SWITCHES = col.OrderedSet([

@@ -236,7 +236,7 @@ def context_wrapped(cm):  # ContextWrappable -> ta.Callable[[CallableT], Callabl
 
 
 Lockable = ta.Callable[[], ta.ContextManager]
-DefaultLockable = ta.Union[None, bool, Lockable, ta.ContextManager]
+DefaultLockable = bool | Lockable | ta.ContextManager | None
 
 
 def default_lock(value: DefaultLockable, default: DefaultLockable) -> Lockable:
