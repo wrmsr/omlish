@@ -1,3 +1,5 @@
+# ruff: noqa: N802
+
 import datetime
 import logging
 

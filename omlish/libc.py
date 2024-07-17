@@ -1,3 +1,5 @@
+# ruff: noqa: N802
+
 import ctypes as ct
 import errno
 import platform
