@@ -35,9 +35,9 @@ def mkpath(name, mode=0o777, verbose=1, dry_run=False) -> list[str]:  # noqa: C9
     if not isinstance(name, str):
         raise DistutilsInternalError(f"mkpath: 'name' must be a string (got {name!r})")
 
-    # XXX what's the better way to handle verbosity? print as we create each directory in the path (the current
-    # behaviour), or only announce the creation of the whole path? (quite easy to do the latter since we're not using a
-    # recursive algorithm)
+    # what's the better way to handle verbosity? print as we create each directory in the path (the current behaviour),
+    # or only announce the creation of the whole path? (quite easy to do the latter since we're not using a recursive
+    # algorithm)
 
     name = os.path.normpath(name)
     created_dirs: list[str] = []

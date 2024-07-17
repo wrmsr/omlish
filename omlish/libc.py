@@ -1,4 +1,5 @@
 # ruff: noqa: ANN201
+# ruff: noqa: N801
 # ruff: noqa: N802
 
 import ctypes as ct

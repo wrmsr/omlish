@@ -30,7 +30,7 @@ def _main() -> None:
             if rootp.endswith('.py'):
                 handle(os.path.join(os.path.dirname(rootp), os.path.basename(rootp)))
         else:
-            for dp, dns, fns in os.walk(os.path.expanduser(rootp)):
+            for dp, dns, fns in os.walk(os.path.expanduser(rootp)):  # noqa
                 for fn in fns:
                     if fn.endswith('.py'):
                         handle(os.path.join(dp, fn))
