@@ -165,7 +165,7 @@ class CacheImpl(Cache[K, V]):
         if self._track_frequency:
             self._root.lfu_next = self._root.lfu_prev = self._root
 
-        weak_dead: ta.Deque[CacheImpl.Link] | None
+        weak_dead: collections.deque[CacheImpl.Link] | None
         if weak_keys or weak_values:
             weak_dead = collections.deque()
             weak_dead_ref = weakref.ref(weak_dead)

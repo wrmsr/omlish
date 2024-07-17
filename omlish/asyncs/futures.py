@@ -92,7 +92,7 @@ def wait_dependent_futures(
             if fn in dependency_sets_by_fn[dep]:
                 raise Exception(f'Cyclic dependencies: {fn} <-> {dep}', fn, dep)
 
-    dependent_sets_by_fn: ta.Dict[ta.Callable, ta.Set[ta.Callable]] = {fn: set() for fn in dependency_sets_by_fn}
+    dependent_sets_by_fn: dict[ta.Callable, set[ta.Callable]] = {fn: set() for fn in dependency_sets_by_fn}
     for fn, deps in dependency_sets_by_fn.items():
         for dep in deps:
             dependent_sets_by_fn[dep].add(fn)
