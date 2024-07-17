@@ -107,7 +107,7 @@ class Void:
     def __new__(cls, *args, **kwargs):
         raise VoidException
 
-    def __init_subclass__(cls, **kwargs):
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         raise VoidException
 
 

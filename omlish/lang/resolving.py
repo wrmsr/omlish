@@ -45,6 +45,6 @@ def get_fqcn_cls(fqcn: str, *, nocheck: bool = False) -> type:
 
 
 class Resolvable:
-    def __init_subclass__(cls, **kwargs):
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
         get_cls_fqcn(cls, nocheck=True)

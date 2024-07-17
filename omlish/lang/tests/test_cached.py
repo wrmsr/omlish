@@ -200,7 +200,7 @@ def test_context_wrapped():
             self.exit_count += 1
 
     class C:
-        def __init__(self):
+        def __init__(self) -> None:
             super().__init__()
             self._lock = ContextCounter()
 
