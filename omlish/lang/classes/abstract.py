@@ -23,7 +23,7 @@ def make_abstract(obj: T) -> T:
         return obj
 
 
-class Abstract(abc.ABC):
+class Abstract(abc.ABC):  # noqa
     __slots__ = ()
 
     def __forceabstract__(self):

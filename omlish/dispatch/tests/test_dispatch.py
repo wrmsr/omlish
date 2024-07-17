@@ -56,7 +56,7 @@ def test_weaks():
 def test_abc():
     disp: Dispatcher[str] = Dispatcher()
 
-    class A(abc.ABC):
+    class A(abc.ABC):  # noqa
         pass
 
     class B:
@@ -78,7 +78,7 @@ def test_abc():
 def test_abc_weaks():
     disp: Dispatcher[str] = Dispatcher()
 
-    class A(abc.ABC):
+    class A(abc.ABC):  # noqa
         pass
 
     disp.register('object', [object])

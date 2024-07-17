@@ -166,6 +166,7 @@ ignore = [
     'Q003',  # change outer quotes to avoid escaping inner quotes
     'RET504',  # unnecessary assignment before `return` statement
     'RET505',  # unnecessary `else` after `return` statement
+    'RET506',  # unnecessary `elif` after `raise` statement
     'RUF009',  # do not perform function call `col.TypeMap` in dataclass defaults
     'RUF100',  # unused blanket `noqa` directive
     'S102',  # use of `exec` detected

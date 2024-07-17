@@ -18,7 +18,7 @@ class InfinityType:
     def __le__(self, other: ta.Any) -> bool:
         return False
 
-    def __eq__(self, other: ta.Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         return isinstance(other, self.__class__)
 
     def __gt__(self, other: ta.Any) -> bool:
@@ -47,7 +47,7 @@ class NegativeInfinityType:
     def __le__(self, other: ta.Any) -> bool:
         return True
 
-    def __eq__(self, other: ta.Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         return isinstance(other, self.__class__)
 
     def __gt__(self, other: ta.Any) -> bool:

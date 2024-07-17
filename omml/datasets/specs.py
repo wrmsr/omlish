@@ -2,12 +2,13 @@
 TODO:
  - import datasets
 """
-import abc
 import dataclasses as dc
+
+from omlish import lang
 
 
 @dc.dataclass(frozen=True)
-class DatasetSpec(abc.ABC):
+class DatasetSpec(lang.Abstract):
     pass
 
 

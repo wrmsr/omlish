@@ -82,7 +82,7 @@ class FixedWidthInt(int):
         cls.MASK = (1 << cls.BITS) - 1
 
     @classmethod
-    def clamp(cls, value):
+    def clamp(cls, value: int) -> int:
         return ((value - cls.MIN) & cls.MASK) + cls.MIN
 
     def __new__(cls, value, *args, **kwargs):
