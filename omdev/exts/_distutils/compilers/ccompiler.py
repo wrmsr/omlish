@@ -881,7 +881,7 @@ int main (int argc, char **argv) {
         return os.path.join(output_dir, base + new_ext)
 
     @staticmethod
-    def _make_relative(base):
+    def _make_relative(base: str) -> str:
         """
         In order to ensure that a filename always honors the indicated output_dir, make sure it's relative. Ref
         python/cpython#37775.
@@ -911,9 +911,9 @@ int main (int argc, char **argv) {
             output_dir='',  # or 'shared'
     ):
         check.not_none(output_dir)
-        expected = '"static", "shared", "dylib", "xcode_stub"'
-        if lib_type not in eval(expected):
-            raise ValueError(f"'lib_type' must be {expected}")
+        expected = ("static", "shared", "dylib", "xcode_stub")
+        if lib_type not in expected:
+            raise ValueError(f"'lib_type' must be {expected!r}")
         fmt = getattr(self, lib_type + '_lib_format')
         ext = getattr(self, lib_type + '_lib_extension')
 

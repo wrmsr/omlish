@@ -35,7 +35,7 @@ def test_cached_function_nullary():
 
         @cached_function
         @staticmethod
-        def s():
+        def s() -> str:
             nonlocal c
             c += 1
             return 'C.s'
