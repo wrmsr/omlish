@@ -89,8 +89,8 @@ def _main():
 
         sh(
             'service cron start && '
-            'echo -e \'\\ninclude /home/piku/.piku/nginx/*.conf;\\n\' >> /etc/nginx/sites-available/default && '
-            'service nginx start'
+            'echo -e \'\\ninclude /home/piku/.piku/nginx/*.conf;\\n\' >> /etc/nginx/sites-available/default '
+            # ' && service nginx start'
         )
 
         sh(
