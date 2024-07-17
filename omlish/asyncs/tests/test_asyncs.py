@@ -21,8 +21,8 @@ async def test_simple():
 
     async def main():
         await asyncio.gather(
-            hello("Billy Bob", .3),
-            hello("Billy Alice", .1),
+            hello('Billy Bob', .3),
+            hello('Billy Alice', .1),
         )
 
     await main()

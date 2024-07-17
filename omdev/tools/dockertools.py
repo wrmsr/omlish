@@ -20,7 +20,7 @@ def get_local_platform() -> str:
         'system',
         'info',
         '--format',
-        "{{.OSType}}/{{.Architecture}}",
+        '{{.OSType}}/{{.Architecture}}',
     ]).decode().strip()
 
 
