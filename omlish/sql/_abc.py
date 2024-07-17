@@ -1,9 +1,9 @@
 import typing as ta
 
 
-type DBAPITypeCode = ta.Any | None
+DBAPITypeCode: ta.TypeAlias = ta.Any | None
 
-type DBAPIColumnDescription = tuple[
+DBAPIColumnDescription: ta.TypeAlias = tuple[
     str,
     DBAPITypeCode,
     int | None,

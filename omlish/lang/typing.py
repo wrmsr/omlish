@@ -12,7 +12,7 @@ import typing as ta
 Ty = ta.TypeVar('Ty', bound=type)
 
 
-type BytesLike = bytes | bytearray
+BytesLike: ta.TypeAlias = bytes | bytearray
 
 
 ##
