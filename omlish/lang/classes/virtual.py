@@ -15,10 +15,10 @@ Ty = ta.TypeVar('Ty', bound=type)
 
 
 def _make_not_instantiable():
-    def __new__(cls, *args, **kwargs):
+    def __new__(cls, *args, **kwargs):  # noqa
         raise TypeError(cls)
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs):  # noqa
         raise TypeError(self)
 
     return {
@@ -49,7 +49,7 @@ class _VirtualMeta(abc.ABCMeta):
                 reqset -= set(mro_cls.__dict__)
             return reqset
 
-        def __subclasshook__(cls, subclass):
+        def __subclasshook__(cls, subclass):  # noqa
             if cls is not kls:
                 return super(kls, cls).__subclasshook__(subclass)  # type: ignore
             if get_missing_reqs(subclass):

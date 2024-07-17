@@ -10,7 +10,7 @@ from .utils import set_new_attribute
 def frozen_get_del_attr(
         cls: type,
         fields: ta.Sequence[dc.Field],
-        globals: Namespace,
+        globals: Namespace,  # noqa
 ) -> tuple[ta.Callable, ta.Callable]:
     locals = {
         'cls': cls,

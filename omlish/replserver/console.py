@@ -43,13 +43,13 @@ class InteractiveSocketConsole:
     def __init__(
             self,
             conn: sock.socket,
-            locals: dict[str, ta.Any] | None = None,
+            locals: dict[str, ta.Any] | None = None,  # noqa
             filename: str = '<console>',
     ) -> None:
         super().__init__()
 
         if locals is None:
-            locals = {
+            locals = {  # noqa
                 '__name__': '__console__',
                 '__doc__': None,
                 '__console__': self,
@@ -228,20 +228,20 @@ class InteractiveSocketConsole:
             last_tb = ei = None  # type: ignore  # noqa
 
     def show_syntax_error(self, filename: str | None = None) -> None:
-        type, value, tb = sys.exc_info()
-        sys.last_type = type
-        sys.last_value = value
+        et, e, tb = sys.exc_info()
+        sys.last_type = et
+        sys.last_value = e
         sys.last_traceback = tb
-        if filename and type is SyntaxError:
+        if filename and et is SyntaxError:
             # Work hard to stuff the correct filename in the exception
             try:
-                msg, (dummy_filename, lineno, offset, line) = value.args  # type: ignore
+                msg, (dummy_filename, lineno, offset, line) = e.args  # type: ignore
             except ValueError:
                 # Not the format we expect; leave it alone
                 pass
             else:
                 # Stuff in the right filename
-                value = SyntaxError(msg, (filename, lineno, offset, line))
-                sys.last_value = value
-        lines = traceback.format_exception_only(type, value)
+                e = SyntaxError(msg, (filename, lineno, offset, line))
+                sys.last_value = e
+        lines = traceback.format_exception_only(et, e)
         self.write(''.join(lines))

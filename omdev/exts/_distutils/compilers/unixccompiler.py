@@ -202,7 +202,12 @@ class UnixCCompiler(CCompiler):
             raise CompileError(msg)
 
     def create_static_lib(
-            self, objects, output_libname, output_dir=None, debug=0, target_lang=None,
+            self,
+            objects,
+            output_libname,
+            output_dir=None,
+            debug=0,
+            target_lang=None,
     ):
         objects, output_dir = self._fix_object_args(objects, output_dir)
 
@@ -284,7 +289,7 @@ class UnixCCompiler(CCompiler):
     # -- Miscellaneous methods -----------------------------------------
     # These are all used by the 'gen_lib_options() function, in ccompiler.py.
 
-    def library_dir_option(self, dir):
+    def library_dir_option(self, dir):  # noqa
         return '-L' + dir
 
     def _is_gcc(self):
@@ -292,7 +297,7 @@ class UnixCCompiler(CCompiler):
         compiler = os.path.basename(shlex.split(cc_var)[0])
         return 'gcc' in compiler or 'g++' in compiler
 
-    def runtime_library_dir_option(self, dir: str) -> str | list[str]:
+    def runtime_library_dir_option(self, dir: str) -> str | list[str]:  # noqa
         # XXX Hackish, at the very least.  See Python bug #445902: https://bugs.python.org/issue445902 Linkers on
         # different platforms need different options to specify that directories need to be added to the list of
         # directories searched for dependencies when a dynamic library is sought.  GCC on GNU systems (Linux, FreeBSD,
@@ -330,7 +335,7 @@ class UnixCCompiler(CCompiler):
         return '-l' + lib
 
     @staticmethod
-    def _library_root(dir):
+    def _library_root(dir):  # noqa
         """
         macOS users can specify an alternate SDK using'-isysroot'. Calculate the SDK root if it is specified.
 
