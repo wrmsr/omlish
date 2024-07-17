@@ -106,7 +106,7 @@ def get_process_stats(pid: PidLike = 'self') -> list[str]:
         buf = f.read()
     l, _, r = buf.rpartition(')')
     pid, _, comm = l.partition('(')
-    return [pid.strip(), comm] + r.strip().split(' ')
+    return [pid.strip(), comm, *r.strip().split(' ')]
 
 
 def get_process_chain(pid: PidLike = 'self') -> list[tuple[int, str]]:
