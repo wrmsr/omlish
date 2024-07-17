@@ -1,3 +1,5 @@
+# ruff: noqa: ANN204
+
 class IOBase:
     def seek(self, pos, whence=0): ...
 
