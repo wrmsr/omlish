@@ -87,7 +87,7 @@ class SimpleProxy(ta.Generic[T]):
                 return self
             delattr(object.__getattribute__(instance, '__wrapped__'), self._attr)
 
-    __wrapped_attrs__: ta.Iterable[str] = set()
+    __wrapped_attrs__: ta.ClassVar[ta.Iterable[str]] = ()
 
     def __init__(self, wrapped: T) -> None:
         super().__init__()

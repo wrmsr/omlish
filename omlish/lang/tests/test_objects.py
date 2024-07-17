@@ -3,7 +3,7 @@ from ..objects import SimpleProxy
 
 def test_simple_proxy():
     class WrappedInt(SimpleProxy):
-        __wrapped_attrs__ = {'__add__'}
+        __wrapped_attrs__ = ('__add__',)
 
     assert WrappedInt(4) + 2 == 6  # type: ignore
 
