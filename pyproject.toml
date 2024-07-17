@@ -187,6 +187,7 @@ ignore = [
     'TD004',  # missing colon in TODO
     'TD005',  # missing issue description after `TODO`
     'TID252',  # prefer absolute imports over relative imports from parent modules
+    'TRY003',  # avoid specifying long messages outside the exception class
     'UP038',  # use `X | Y` in `isinstance` call instead of `(X, Y)`
 
     # FIXME: mypy error: PEP 695 type aliases are not yet supported
