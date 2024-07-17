@@ -14,9 +14,9 @@ def test_unmodifiable():
     assert s == {1, 2, 3}
     assert d == {1: 2, 3: 4}
 
-    with pytest.raises(Exception):
+    with pytest.raises(TypeError):
         l[0] = 1  # type: ignore
-    with pytest.raises(Exception):
+    with pytest.raises(AttributeError):
         s.add(4)  # type: ignore
-    with pytest.raises(Exception):
+    with pytest.raises(TypeError):
         d[5] = 6  # type: ignore

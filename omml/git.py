@@ -81,13 +81,14 @@ def get_local_git_subtree_path(
         if not os.path.exists(local_path):
             raise RuntimeError(local_path)
         os.rename(local_path, target_dir)
-        return target_dir
     except Exception:
         try:
             shutil.rmtree(tmp_path)
         except Exception as e2:
             print(str(e2), file=sys.stderr)
         raise
+    else:
+        return target_dir
 
 
 if __name__ == '__main__':

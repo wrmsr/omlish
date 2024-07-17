@@ -8,6 +8,8 @@ import sys
 import typing as ta
 import warnings
 
+from omlish import check
+
 from ..dir_util import mkpath
 from ..errors import CompileError
 from ..errors import DistutilsModuleError
@@ -117,7 +119,7 @@ class CCompiler:
         # 'objects': a list of object files (or similar, such as explicitly named library files) to include on any link
         self.objects: list[str] = []
 
-        for key in self.executables.keys():
+        for key in self.executables:
             self.set_executable(key, self.executables[key])
 
     def set_executables(self, **kwargs):
@@ -306,7 +308,7 @@ class CCompiler:
 
         # Get the list of expected output (object) files
         objects = self.object_filenames(sources, strip_dir=0, output_dir=outdir)
-        assert len(objects) == len(sources)
+        check.equal(len(objects), len(sources))
 
         pp_opts = gen_preprocess_options(macros, incdirs)
 
@@ -370,7 +372,7 @@ class CCompiler:
         """
         # Get the list of expected output (object) files
         objects = self.object_filenames(sources, output_dir=output_dir)
-        assert len(objects) == len(sources)
+        check.equal(len(objects), len(sources))
 
         # Return an empty dict for the "which source files can be skipped"
         # return value to preserve API compatibility.
@@ -890,13 +892,13 @@ int main (int argc, char **argv) {
         return no_drive[os.path.isabs(no_drive):]
 
     def shared_object_filename(self, basename, strip_dir=0, output_dir=''):
-        assert output_dir is not None
+        check.not_none(output_dir)
         if strip_dir:
             basename = os.path.basename(basename)
         return os.path.join(output_dir, basename + self.shared_lib_extension)
 
     def executable_filename(self, basename, strip_dir=0, output_dir=''):
-        assert output_dir is not None
+        check.not_none(output_dir)
         if strip_dir:
             basename = os.path.basename(basename)
         return os.path.join(output_dir, basename + (self.exe_extension or ''))
@@ -908,7 +910,7 @@ int main (int argc, char **argv) {
             strip_dir=0,
             output_dir='',  # or 'shared'
     ):
-        assert output_dir is not None
+        check.not_none(output_dir)
         expected = '"static", "shared", "dylib", "xcode_stub"'
         if lib_type not in eval(expected):
             raise ValueError(f"'lib_type' must be {expected}")
