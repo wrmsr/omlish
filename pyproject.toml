@@ -159,8 +159,10 @@ ignore = [
     'PTH',  # pathlib
     'RET504',  # unnecessary assignment before `return` statement
     'RET505',  # unnecessary `else` after `return` statement
+    'RUF009',  # Do not perform function call `col.TypeMap` in dataclass defaults
     'RUF100',  # unused blanket `noqa` directive'
     'S102',  # use of `exec` detected
+    'S311',  # standard pseudo-random generators are not suitable for cryptographic purposes',
     'S603',  # `subprocess` call: check for execution of untrusted input
     'S607',  # starting a process with a partial executable path
     'SIM102',  # use a single `if` statement instead of nested `if` statements
