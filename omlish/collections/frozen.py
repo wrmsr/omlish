@@ -17,7 +17,7 @@ class Frozen(ta.Hashable, abc.ABC):
 
 class FrozenDict(ta.Mapping[K, V], Frozen):
 
-    def __new__(cls, *args, **kwargs) -> 'FrozenDict[K, V]':
+    def __new__(cls, *args: ta.Any, **kwargs: ta.Any) -> 'FrozenDict[K, V]':  # noqa
         if len(args) == 1 and Frozen in type(args[0]).__bases__:
             return args[0]
         return super().__new__(cls)

@@ -141,6 +141,7 @@ def _get_python_inc_from_config(plat_specific, spec_prefix):
     """
     if spec_prefix is None:
         return get_config_var('CONF' * plat_specific + 'INCLUDEPY')
+    return None
 
 
 def _get_python_inc_posix_prefix(prefix):

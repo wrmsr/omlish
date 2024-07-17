@@ -140,6 +140,7 @@ ignore = [
     'B009',  # do not call `getattr` with a constant attribute value
     'B028',  # no explicit `stacklevel` keyword argument found
     'B905',  # `zip()` without an explicit `strict=` parameter'
+    'C408',  # unnecessary `dict` call (rewrite as a literal)
     'C901',  # function is too complex
     'D',  # docstrings
     'E731',  # do not assign a `lambda` expression, use a `def`
@@ -151,6 +152,7 @@ ignore = [
     'FBT002',  # boolean default positional argument in function definition
     'FBT003',  # boolean positional value in function call
     'FIX',
+    'N804',  # first argument of a class method should be named `cls`
     'PERF401',  # use a list comprehension to create a transformed list
     'PGH003',  # use specific rule codes when ignoring type issues
     'PGH004',  # use specific rule codes when using `noqa`
@@ -219,6 +221,7 @@ ignore = [
 ]
 
 [tool.ruff.lint.flake8-pytest-style]
+fixture-parentheses = false
 mark-parentheses = false
 
 [tool.ruff.lint.flake8-quotes]

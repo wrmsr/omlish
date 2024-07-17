@@ -304,3 +304,5 @@ class LooseVersion(Version):
             return -1
         if self.version > other.version:
             return 1
+
+        return None

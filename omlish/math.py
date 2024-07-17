@@ -66,7 +66,7 @@ class FixedWidthInt(int):
 
     MASK: ta.ClassVar[int]
 
-    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+    def __init_subclass__(cls) -> None:
         super().__init_subclass__()
 
         if not isinstance(cls.BITS, int):
@@ -85,8 +85,8 @@ class FixedWidthInt(int):
     def clamp(cls, value: int) -> int:
         return ((value - cls.MIN) & cls.MASK) + cls.MIN
 
-    def __new__(cls, value, *args, **kwargs):
-        return super().__new__(cls, cls.clamp(value))
+    def __new__(cls, value: int) -> 'FixedWidthInt':
+        return super().__new__(cls, cls.clamp(value))  # noqa
 
     SCALAR_PROXY_METHODS = frozenset([
         '__abs__',

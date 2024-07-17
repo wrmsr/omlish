@@ -104,7 +104,7 @@ class Var(ta.Generic[T]):
 
                 @staticmethod
                 @functools.wraps(fn)
-                def __call__(*args, **kwargs):
+                def __call__(*args, **kwargs):  # noqa
                     with this.binding(binding_fn(*args, **kwargs)):
                         return fn(*args, **kwargs)
 

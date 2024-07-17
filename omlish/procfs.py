@@ -164,7 +164,7 @@ def get_process_maps(pid: PidLike = 'self', sharing: bool = False) -> ta.Iterato
     """http://man7.org/linux/man-pages/man5/proc.5.html -> /proc/[pid]/maps"""
 
     _check_linux()
-    with open('/proc/%s/%s' % (pid, 'smaps' if sharing else 'maps'), 'r') as map_file:
+    with open('/proc/%s/%s' % (pid, 'smaps' if sharing else 'maps')) as map_file:
         while True:
             line = map_file.readline()
             if not line:

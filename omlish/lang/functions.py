@@ -104,14 +104,14 @@ class VoidException(Exception):
 
 class Void:
 
-    def __new__(cls, *args, **kwargs):
+    def __new__(cls, *args: ta.Any, **kwargs: ta.Any) -> None:  # type: ignore  # noqa
         raise VoidException
 
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         raise VoidException
 
 
-def void(*args, **kwargs) -> ta.NoReturn:
+def void(*args: ta.Any, **kwargs: ta.Any) -> ta.NoReturn:
     raise VoidException
 
 

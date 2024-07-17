@@ -127,7 +127,7 @@ class ComposeConfig:
 
     @lang.cached_function
     def get_config(self) -> ta.Mapping[str, ta.Any]:
-        with open(check.not_none(self._file_path), 'r') as f:
+        with open(check.not_none(self._file_path)) as f:
             buf = f.read()
         return yaml.safe_load(buf)
 
