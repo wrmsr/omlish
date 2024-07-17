@@ -137,6 +137,7 @@ ignore = [
     'ARG001',  # unused function argument,
     'ARG002',  # unused method argument
     'B008',  # do not perform function call in argument defaults
+    'B905',  # `zip()` without an explicit `strict=` parameter'
     'C901',  # function is too complex
     'D',  # docstrings
     'E741',  # ambiguous variable name
