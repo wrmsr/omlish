@@ -16,7 +16,7 @@ def test_repr_mro():
         a = 0
 
     class B(A):
-        __repr_attrs__ = ['b']
+        __repr_attrs__ = ('b',)
         b = 1
 
     assert repr(A()).endswith('(a=0)')

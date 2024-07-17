@@ -3,6 +3,7 @@
 
 import datetime
 import logging
+import typing as ta
 
 from .. import json
 from .. import term
@@ -23,7 +24,7 @@ class StandardLogFormatter(logging.Formatter):
 
 class ColorLogFormatter(StandardLogFormatter):
 
-    LEVEL_COLORS = {
+    LEVEL_COLORS: ta.Mapping[int, term.SGRs.FG] = {
         logging.WARNING: term.SGRs.FG.BRIGHT_YELLOW,
         logging.ERROR: term.SGRs.FG.BRIGHT_RED,
         logging.CRITICAL: term.SGRs.FG.BRIGHT_RED,
@@ -42,7 +43,7 @@ class ColorLogFormatter(StandardLogFormatter):
 
 class JsonLogFormatter(logging.Formatter):
 
-    KEYS = {
+    KEYS: ta.Mapping[str, bool] = {
         'name': False,
         'msg': False,
         'args': False,
