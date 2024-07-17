@@ -35,7 +35,7 @@ def _cyclic_dependency_proxy() -> tuple[type, ta.Callable[[ta.Any, ta.Any], None
                     pass
             return object.__getattribute__(self, att)  # noqa
 
-    def set(prox, obj):
+    def set_obj(prox, obj):
         check.state(type(prox) is _CyclicDependencyProxy)
         check.not_isinstance(obj, _CyclicDependencyPlaceholder)
         check.isinstance(prox.__wrapped__, _CyclicDependencyPlaceholder)
@@ -45,4 +45,4 @@ def _cyclic_dependency_proxy() -> tuple[type, ta.Callable[[ta.Any, ta.Any], None
         if hasattr(prox, '_self__class__'):
             del prox._self__class__  # noqa
 
-    return (_CyclicDependencyProxy, set)  # noqa
+    return (_CyclicDependencyProxy, set_obj)  # noqa

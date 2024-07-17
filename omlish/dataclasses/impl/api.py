@@ -23,8 +23,8 @@ def field(  # noqa
         *,
         default_factory=MISSING,
         init=True,
-        repr=True,
-        hash=None,
+        repr=True,  # noqa
+        hash=None,  # noqa
         compare=True,
         metadata=None,
         kw_only=MISSING,
@@ -71,7 +71,7 @@ def dataclass(  # noqa
         /,
         *,
         init=True,
-        repr=True,
+        repr=True,  # noqa
         eq=True,
         order=False,
         unsafe_hash=False,
@@ -142,7 +142,7 @@ def make_dataclass(  # noqa
         bases=(),
         namespace=None,
         init=True,
-        repr=True,
+        repr=True,  # noqa
         eq=True,
         order=False,
         unsafe_hash=False,

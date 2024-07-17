@@ -17,7 +17,7 @@ def lazy_import(name: str, package: str | None = None) -> ta.Callable[[], ta.Any
 def proxy_import(name: str, package: str | None = None) -> types.ModuleType:
     omod = None
 
-    def __getattr__(att):
+    def __getattr__(att):  # noqa
         nonlocal omod
         if omod is None:
             omod = importlib.import_module(name, package=package)
@@ -65,39 +65,39 @@ def yield_importable(
         package_root: str,
         *,
         recursive: bool = False,
-        filter: ta.Callable[[str], bool] | None = None,
+        filter: ta.Callable[[str], bool] | None = None,  # noqa
         include_special: bool = False,
 ) -> ta.Iterator[str]:
-    def rec(dir):
-        if dir.split('.')[-1] == '__pycache__':
+    def rec(cur):
+        if cur.split('.')[-1] == '__pycache__':
             return
 
         try:
-            module = sys.modules[dir]
+            module = sys.modules[cur]
         except KeyError:
             try:
-                __import__(dir)
+                __import__(cur)
             except ImportError:
                 return
-            module = sys.modules[dir]
+            module = sys.modules[cur]
 
         # FIXME: pyox
         if getattr(module, '__file__', None) is None:
             return
 
-        for file in _pkg_resources().resource_listdir(dir, '.'):
+        for file in _pkg_resources().resource_listdir(cur, '.'):
             if file.endswith('.py'):
                 if not (include_special or file not in SPECIAL_IMPORTABLE):
                     continue
 
-                name = dir + '.' + file[:-3]
+                name = cur + '.' + file[:-3]
                 if filter is not None and not filter(name):
                     continue
 
                 yield name
 
             elif recursive and '.' not in file:
-                name = dir + '.' + file
+                name = cur + '.' + file
                 if filter is not None and not filter(name):
                     continue
 
@@ -112,10 +112,10 @@ def yield_importable(
 def yield_import_all(
         package_root: str,
         *,
-        globals: dict[str, ta.Any] | None = None,
-        locals: dict[str, ta.Any] | None = None,
+        globals: dict[str, ta.Any] | None = None,  # noqa
+        locals: dict[str, ta.Any] | None = None,  # noqa
         recursive: bool = False,
-        filter: ta.Callable[[str], bool] | None = None,
+        filter: ta.Callable[[str], bool] | None = None,  # noqa
         include_special: bool = False,
 ) -> ta.Iterator[str]:
     for import_path in yield_importable(
@@ -132,7 +132,7 @@ def import_all(
         package_root: str,
         *,
         recursive: bool = False,
-        filter: ta.Callable[[str], bool] | None = None,
+        filter: ta.Callable[[str], bool] | None = None,  # noqa
         include_special: bool = False,
 ) -> None:
     for _ in yield_import_all(

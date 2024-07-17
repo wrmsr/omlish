@@ -11,7 +11,7 @@ from .utils import set_new_attribute
 
 def repr_fn(
         fields: ta.Sequence[dc.Field],
-        globals: Namespace,
+        globals: Namespace,  # noqa
 ) -> ta.Callable:
     locals: dict[str, ta.Any] = {}
     if any(get_field_extras(f).repr_fn is not None for f in fields):
