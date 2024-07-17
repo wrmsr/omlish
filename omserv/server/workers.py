@@ -101,7 +101,7 @@ async def _install_signal_handler(
 
     sigs = [
         getattr(signal, signal_name)
-        for signal_name in {'SIGINT', 'SIGTERM', 'SIGBREAK'}
+        for signal_name in ('SIGINT', 'SIGTERM', 'SIGBREAK')
         if hasattr(signal, signal_name)
     ]
 

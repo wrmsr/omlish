@@ -217,9 +217,6 @@ def cached_function(fn=None, **kwargs):  # noqa
     return _CachedFunctionDescriptor(fn, scope, opts=opts)
 
 
-cached_function = cached_function
-
-
 ##
 
 

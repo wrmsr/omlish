@@ -29,8 +29,6 @@ def mkpath(name, mode=0o777, verbose=1, dry_run=False) -> list[str]:  # noqa: C9
     b) it blows up if the directory already exists (in which case it should silently succeed).
     """
 
-    global _path_created
-
     # Detect a common bug -- name is None
     if not isinstance(name, str):
         raise DistutilsInternalError(f"mkpath: 'name' must be a string (got {name!r})")

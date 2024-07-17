@@ -153,13 +153,14 @@ ignore = [
     'PGH004',  # use specific rule codes when using `noqa`
     'PLR0912',  # too many branches
     'PLR0913',  # too many arguments in function definition
+    'PLR0915',  # too many statements
     'PLR2004',  # magic value used in comparison
     'PLW0603',  # using the global statement is discouraged
     'PT018',  # assertion should be broken down into multiple parts
     'PTH',  # pathlib
     'RET504',  # unnecessary assignment before `return` statement
     'RET505',  # unnecessary `else` after `return` statement
-    'RUF009',  # Do not perform function call `col.TypeMap` in dataclass defaults
+    'RUF009',  # do not perform function call `col.TypeMap` in dataclass defaults
     'RUF100',  # unused blanket `noqa` directive'
     'S102',  # use of `exec` detected
     'S311',  # standard pseudo-random generators are not suitable for cryptographic purposes',

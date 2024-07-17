@@ -184,7 +184,7 @@ class Logger(Filterer, ta.Protocol):
 
     def log(self, level: Level, msg: str, *args: ta.Any, **kwargs: ta.Any) -> None: ...
 
-    def findCaller(self, stack_info: bool = False, stacklevel: int = 1) -> Caller: ...  #
+    def findCaller(self, stack_info: bool = False, stacklevel: int = 1) -> Caller: ...
 
     def makeRecord(
         self,
