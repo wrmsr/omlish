@@ -255,7 +255,7 @@ def frozenset_of_or_none(
 # region map
 
 
-def map(
+def map(  # noqa
         src: ta.Mapping[K, V] | ta.Iterable[tuple[K, V]],
 ) -> ta.Mapping[K, V]:
     return FrozenDict(src)
