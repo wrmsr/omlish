@@ -94,11 +94,9 @@ class DelimitedEscaping:
         if isinstance(strs, str):
             raise TypeError(strs)
         buf = io.StringIO()
-        count = 0
-        for s in strs:
+        for count, s in enumerate(strs):
             if count:
                 buf.write(self._delimit_char)
-            count += 1
             if self.contains_escaped_char(s):
                 buf.write(self.quote(s))
             else:

@@ -147,14 +147,14 @@ class SeededScopeImpl(ScopeImpl):
         @contextlib.contextmanager
         def __call__(self, seeds: ta.Mapping[Key, ta.Any]) -> ta.Generator[None, None, None]:
             try:
-                if self._ssi._st is not None:
+                if self._ssi._st is not None:  # noqa
                     raise ScopeAlreadyOpenException(self._ss)
-                self._ssi._st = SeededScopeImpl.State(dict(seeds))
+                self._ssi._st = SeededScopeImpl.State(dict(seeds))  # noqa
                 yield
             finally:
-                if self._ssi._st is None:
+                if self._ssi._st is None:  # noqa
                     raise ScopeNotOpenException(self._ss)
-                self._ssi._st = None
+                self._ssi._st = None  # noqa
 
     def auto_elements(self) -> Elements:
         return as_elements(

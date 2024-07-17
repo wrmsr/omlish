@@ -37,14 +37,14 @@ def lasterr() -> tuple[int, str]:
 
 
 # int raise(int sig);
-libc._raise = libc['raise']  # type: ignore
-libc._raise.restype = ct.c_int
-libc._raise.argtypes = [ct.c_int]
-_raise = libc._raise
+libc._raise = libc['raise']  # type: ignore  # noqa
+libc._raise.restype = ct.c_int  # noqa
+libc._raise.argtypes = [ct.c_int]  # noqa
+_raise = libc._raise  # noqa
 
 
 def sigtrap() -> None:
-    libc._raise(signal.SIGTRAP)
+    libc._raise(signal.SIGTRAP)  # noqa
 
 
 ##

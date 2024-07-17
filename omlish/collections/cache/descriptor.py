@@ -12,7 +12,7 @@ from .types import Cache
 
 
 C = ta.TypeVar('C', bound=ta.Callable)
-CC: ta.TypeAlias = ta.Callable[[C], C]
+type CC = ta.Callable[[C], C]
 
 
 class Scope(enum.Enum):
@@ -109,7 +109,7 @@ class _CacheDescriptor:
     def _build(self, fn: ta.Callable, cache: Cache):
         def miss(key, result):
             if isinstance(result, Ignore):
-                return result._value
+                return result._value  # noqa
             else:
                 cache[key] = result
                 return result

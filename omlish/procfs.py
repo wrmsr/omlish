@@ -98,7 +98,7 @@ def _check_linux() -> None:
         raise OSError
 
 
-def get_process_stats(pid: PidLike = 'self') -> ta.List[str]:
+def get_process_stats(pid: PidLike = 'self') -> list[str]:
     """http://man7.org/linux/man-pages/man5/proc.5.html -> /proc/[pid]/stat"""
 
     _check_linux()
@@ -109,7 +109,7 @@ def get_process_stats(pid: PidLike = 'self') -> ta.List[str]:
     return [pid.strip(), comm] + r.strip().split(' ')
 
 
-def get_process_chain(pid: PidLike = 'self') -> ta.List[ta.Tuple[int, str]]:
+def get_process_chain(pid: PidLike = 'self') -> list[tuple[int, str]]:
     _check_linux()
     lst = []
     while pid:
@@ -160,7 +160,7 @@ MAP_LINE_RX = re.compile(
 )
 
 
-def get_process_maps(pid: PidLike = 'self', sharing: bool = False) -> ta.Iterator[ta.Dict[str, ta.Any]]:
+def get_process_maps(pid: PidLike = 'self', sharing: bool = False) -> ta.Iterator[dict[str, ta.Any]]:
     """http://man7.org/linux/man-pages/man5/proc.5.html -> /proc/[pid]/maps"""
 
     _check_linux()
@@ -210,7 +210,7 @@ PAGEMAP_KEYS = (
 )
 
 
-def get_process_range_pagemaps(start: int, end: int, pid: PidLike = 'self') -> ta.Iterable[ta.Dict[str, int]]:
+def get_process_range_pagemaps(start: int, end: int, pid: PidLike = 'self') -> ta.Iterable[dict[str, int]]:
     """https://www.kernel.org/doc/Documentation/vm/pagemap.txt"""
 
     _check_linux()
@@ -237,14 +237,14 @@ def get_process_range_pagemaps(start: int, end: int, pid: PidLike = 'self') -> t
         }
 
 
-def get_process_pagemaps(pid: PidLike = 'self') -> ta.Iterable[ta.Dict[str, int]]:
+def get_process_pagemaps(pid: PidLike = 'self') -> ta.Iterable[dict[str, int]]:
     _check_linux()
     for m in get_process_maps(pid):
         for p in get_process_range_pagemaps(m['address'], m['end_address'], pid):
             yield p
 
 
-def _dump_cmd(args):
+def _dump_cmd(args: ta.Any) -> None:
     total = 0
     dirty_total = 0
     for m in get_process_maps(args.pid, sharing=True):
@@ -264,7 +264,7 @@ def _dump_cmd(args):
     sys.stdout.write('\n')
 
 
-def _cmp_cmd(args):
+def _cmp_cmd(args: ta.Any) -> None:
     if len(args.pids) == 1:
         [rpid] = args.pids
         lpid = get_process_chain(rpid)[1][0]
@@ -273,10 +273,9 @@ def _cmp_cmd(args):
     else:
         raise TypeError('Invalid arguments')
 
-    def g(pid):
+    def g(pid: int) -> ta.Iterator[dict[str, int]]:
         for m in get_process_maps(pid, sharing=True):
-            for pm in get_process_range_pagemaps(m['address'], m['end_address'], pid):
-                yield pm
+            yield from get_process_range_pagemaps(m['address'], m['end_address'], pid)
 
     lpms, rpms = [g(pid) for pid in (lpid, rpid)]
 
