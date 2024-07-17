@@ -27,7 +27,7 @@ class UnmodifiableSequence(ta.Sequence[T], Unmodifiable, lang.Final):
     def __contains__(self, x: ta.Any) -> bool:
         return x in self._target
 
-    def __eq__(self, o: ta.Any) -> bool:
+    def __eq__(self, o: object) -> bool:
         return self._target == o
 
     def __ge__(self, other: ta.Any) -> bool:
@@ -51,7 +51,7 @@ class UnmodifiableSequence(ta.Sequence[T], Unmodifiable, lang.Final):
     def __lt__(self, other: ta.Any) -> bool:
         return self._target < other
 
-    def __ne__(self, o: ta.Any) -> bool:
+    def __ne__(self, o: object) -> bool:
         return self._target != o
 
     def __reversed__(self) -> ta.Iterator[T]:
@@ -82,7 +82,7 @@ class UnmodifiableSet(ta.AbstractSet[T], Unmodifiable, lang.Final):
     def __contains__(self, x: ta.Any) -> bool:
         return x in self._target
 
-    def __eq__(self, o: ta.Any) -> bool:
+    def __eq__(self, o: object) -> bool:
         return self._target == o
 
     def __ge__(self, s: ta.AbstractSet[ta.Any]) -> bool:
@@ -103,7 +103,7 @@ class UnmodifiableSet(ta.AbstractSet[T], Unmodifiable, lang.Final):
     def __lt__(self, s: ta.AbstractSet[ta.Any]) -> bool:
         return self._target > s
 
-    def __ne__(self, o: ta.Any) -> bool:
+    def __ne__(self, o: object) -> bool:
         return self._target != o
 
     def __or__(self, s: ta.AbstractSet[T]) -> ta.AbstractSet[T]:  # type: ignore
@@ -135,7 +135,7 @@ class UnmodifiableMapping(ta.Mapping[K, V], Unmodifiable, lang.Final):
     def __contains__(self, o: ta.Any) -> bool:
         return o in self._target
 
-    def __eq__(self, o: ta.Any) -> bool:
+    def __eq__(self, o: object) -> bool:
         return self._target == o
 
     def __ge__(self, other: ta.Any) -> bool:
@@ -159,7 +159,7 @@ class UnmodifiableMapping(ta.Mapping[K, V], Unmodifiable, lang.Final):
     def __lt__(self, other: ta.Any) -> bool:
         return self._target < other
 
-    def __ne__(self, o: ta.Any) -> bool:
+    def __ne__(self, o: object) -> bool:
         return self._target != o
 
     def get(self, k: K, default=None) -> V | None:  # type: ignore

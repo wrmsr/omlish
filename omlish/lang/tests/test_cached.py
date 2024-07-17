@@ -42,13 +42,13 @@ def test_cached_function_nullary():
 
         @cached_function
         @classmethod
-        def c(cls):
+        def c(cls) -> str:
             nonlocal c
             c += 1
             return f'C.c({cls.cv})'
 
         @cached_function
-        def i(self):
+        def i(self) -> str:
             nonlocal c
             c += 1
             return f'C.i({self.iv})'
