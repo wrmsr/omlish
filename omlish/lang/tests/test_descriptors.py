@@ -10,7 +10,7 @@ def test_access_forbidden():
         f = access_forbidden()
 
     try:
-        C.f
+        C.f  # noqa
     except AccessForbiddenException as e:
         assert e.name == 'f'  # noqa
 

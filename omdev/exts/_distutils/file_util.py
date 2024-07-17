@@ -24,7 +24,7 @@ def _copy_file_contents(src, dst, buffer_size=16 * 1024):  # noqa: C901
     fdst = None
     try:
         try:
-            fsrc = open(src, 'rb')
+            fsrc = open(src, 'rb')  # noqa
         except OSError as e:
             raise DistutilsFileError(f"could not open '{src}': {e.strerror}")
 
@@ -35,7 +35,7 @@ def _copy_file_contents(src, dst, buffer_size=16 * 1024):  # noqa: C901
                 raise DistutilsFileError(f"could not delete '{dst}': {e.strerror}")
 
         try:
-            fdst = open(dst, 'wb')
+            fdst = open(dst, 'wb')  # noqa
         except OSError as e:
             raise DistutilsFileError(f"could not create '{dst}': {e.strerror}")
 
