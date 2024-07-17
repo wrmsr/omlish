@@ -88,7 +88,7 @@ def serve_multiprocess(
             ctx,
         )
 
-        for signal_name in {'SIGINT', 'SIGTERM', 'SIGBREAK'}:
+        for signal_name in ('SIGINT', 'SIGTERM', 'SIGBREAK'):
             if hasattr(signal, signal_name):
                 signal.signal(getattr(signal, signal_name), shutdown)
 
