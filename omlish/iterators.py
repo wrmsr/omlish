@@ -22,7 +22,7 @@ class PeekIterator(ta.Iterator[T]):
 
     _item: T
 
-    def __iter__(self) -> ta.Iterator[T]:
+    def __iter__(self) -> ta.Self:
         return self
 
     @property
@@ -91,7 +91,7 @@ class ProxyIterator(ta.Iterator[T]):
     def __init__(self, fn: ta.Callable[[], T]) -> None:
         self._fn = fn
 
-    def __iter__(self) -> ta.Iterator[T]:
+    def __iter__(self) -> ta.Self:
         return self
 
     def __next__(self) -> T:
@@ -106,7 +106,7 @@ class PrefetchIterator(ta.Iterator[T]):
         self._fn = fn
         self._deque: collections.deque[T] = collections.deque()
 
-    def __iter__(self) -> ta.Iterator[T]:
+    def __iter__(self) -> ta.Self:
         return self
 
     def push(self, item) -> None:
@@ -129,7 +129,7 @@ class RetainIterator(ta.Iterator[T]):
         self._fn = fn
         self._deque: collections.deque[T] = collections.deque()
 
-    def __iter__(self) -> ta.Iterator[T]:
+    def __iter__(self) -> ta.Self:
         return self
 
     def pop(self) -> None:

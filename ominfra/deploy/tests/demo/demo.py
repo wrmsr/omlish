@@ -29,7 +29,7 @@ async def _a_main():
         cur_dir,
     ])
 
-    ssh_password = 'foobar'
+    ssh_password = 'foobar'  # noqa
 
     ctr_id = subprocess.check_output([
         'docker', 'run',

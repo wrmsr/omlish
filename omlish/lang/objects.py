@@ -81,11 +81,13 @@ class SimpleProxy(ta.Generic[T]):
             if instance is None:
                 return self
             setattr(object.__getattribute__(instance, '__wrapped__'), self._attr, value)
+            return None
 
         def __delete__(self, instance):
             if instance is None:
                 return self
             delattr(object.__getattribute__(instance, '__wrapped__'), self._attr)
+            return None
 
     __wrapped_attrs__: ta.ClassVar[ta.Iterable[str]] = ()
 
