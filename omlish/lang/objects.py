@@ -93,7 +93,7 @@ class SimpleProxy(ta.Generic[T]):
         super().__init__()
         object.__setattr__(self, '__wrapped__', wrapped)
 
-    def __init_subclass__(cls, **kwargs):
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
 
         for attr in cls.__wrapped_attrs__:

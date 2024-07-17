@@ -39,7 +39,7 @@ def test_singletons():
         foo2_init_calls = 0
 
         class Foo(bcls):  # type: ignore
-            def __init__(self):
+            def __init__(self) -> None:
                 super().__init__()
                 nonlocal foo_init_calls
                 foo_init_calls += 1
@@ -48,7 +48,7 @@ def test_singletons():
         assert foo_init_calls == 1
 
         class Foo2(Foo):
-            def __init__(self):
+            def __init__(self) -> None:
                 super().__init__()
                 nonlocal foo2_init_calls
                 foo2_init_calls += 1

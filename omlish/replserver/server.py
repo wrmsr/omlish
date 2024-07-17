@@ -62,12 +62,12 @@ class ReplServer:
     def path(self) -> str:
         return self._config.path
 
-    def __enter__(self):
+    def __enter__(self) -> ta.Self:
         check.state(not self._is_running)
         check.state(not self._is_shutdown.is_set())
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         if not self._is_shutdown.is_set():
             self.shutdown(True, self._config.exit_timeout)
 
