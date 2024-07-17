@@ -133,5 +133,5 @@ class _NoBoolDescriptor:
         return self._fn(*args, **kwargs)
 
 
-def no_bool(fn):
+def no_bool(fn):  # noqa
     return _NoBoolDescriptor(fn)

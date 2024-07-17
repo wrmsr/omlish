@@ -25,7 +25,7 @@ _HOISTED_CODE_DEPTH: ta.MutableMapping[types.CodeType, int] = weakref.WeakKeyDic
 _MAX_HOIST_DEPTH = 0
 
 
-def hoist(depth=0):
+def hoist(depth=0):  # noqa
     def inner(fn):
         _HOISTED_CODE_DEPTH[fn.__code__] = depth
         global _MAX_HOIST_DEPTH
@@ -87,7 +87,7 @@ class Var(ta.Generic[T]):
             self._validate(self.value)
         return Binding(self, value, offset=offset)
 
-    def with_binding(self, value):
+    def with_binding(self, value):  # noqa
         def outer(fn):
             @functools.wraps(fn)
             def inner(*args, **kwargs):
@@ -96,7 +96,7 @@ class Var(ta.Generic[T]):
             return inner
         return outer
 
-    def with_binding_fn(self, binding_fn):
+    def with_binding_fn(self, binding_fn):  # noqa
         this = self
 
         def outer(fn):
@@ -213,7 +213,7 @@ class _GeneratorContextManager(contextlib._GeneratorContextManager):  # noqa
         return super().__enter__()
 
 
-def contextmanager(fn):
+def contextmanager(fn):  # noqa
     @functools.wraps(fn)
     def helper(*args, **kwds):
         return _GeneratorContextManager(fn, args, kwds)

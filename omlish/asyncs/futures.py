@@ -5,6 +5,7 @@ import typing as ta
 
 
 T = ta.TypeVar('T')
+P = ta.ParamSpec('P')
 
 
 ##
@@ -147,7 +148,7 @@ class ImmediateExecutor(cf.Executor):
         super().__init__()
         self._immediate_exceptions = immediate_exceptions
 
-    def submit(self, fn, *args, **kwargs):
+    def submit(self, fn: ta.Callable[P, T], /, *args: P.args, **kwargs: P.kwargs) -> cf.Future[T]:
         future: ta.Any = cf.Future()
         try:
             result = fn(*args, **kwargs)

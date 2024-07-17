@@ -18,7 +18,7 @@ from .params import ParamsExtras
 MISSING = dc.MISSING
 
 
-def field(
+def field(  # noqa
         default=MISSING,
         *,
         default_factory=MISSING,
@@ -66,7 +66,7 @@ def _strip_missing_values(d):
     return {k: v for k, v in d.items() if v is not MISSING}
 
 
-def dataclass(
+def dataclass(  # noqa
         cls=None,
         /,
         *,
@@ -135,7 +135,7 @@ def dataclass(
     return wrap(cls)
 
 
-def make_dataclass(
+def make_dataclass(  # noqa
         cls_name,
         fields,
         *,
@@ -225,7 +225,7 @@ class _ExtraParamsKwargs:
     pass
 
 
-def extra_params(
+def extra_params(  # noqa
         *,
         reorder=MISSING,
         cache_hash=MISSING,

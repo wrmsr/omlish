@@ -84,7 +84,7 @@ def disposing(obj: T, attr: str = 'dispose') -> ta.Iterator[T]:
 
 
 @contextlib.contextmanager
-def breakpoint_on_exception():
+def breakpoint_on_exception():  # noqa
     try:
         yield
     except Exception as e:  # noqa
@@ -102,7 +102,7 @@ def context_var_setting(var: contextvars.ContextVar[T], val: T) -> ta.Iterator[T
 
 
 @contextlib.contextmanager
-def attr_setting(obj, attr, val, *, default=None):
+def attr_setting(obj, attr, val, *, default=None):  # noqa
     not_set = object()
     orig = getattr(obj, attr, not_set)
     try:
@@ -228,7 +228,7 @@ class ContextWrapped:
             return self._fn[0](*args, **kwargs)
 
 
-def context_wrapped(cm):  # ContextWrappable -> ta.Callable[[CallableT], CallableT]:
+def context_wrapped(cm):  # ContextWrappable -> ta.Callable[[CallableT], CallableT]:  # noqa
     def inner(fn):
         return ContextWrapped(fn, cm)
     return inner

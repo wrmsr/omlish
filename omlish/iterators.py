@@ -58,30 +58,30 @@ class PeekIterator(ta.Iterator[T]):
         next(self)
         return self.peek()
 
-    def takewhile(self, fn):
+    def takewhile(self, fn: ta.Callable[[T], bool]) -> ta.Iterator[T]:
         while fn(self.peek()):
             yield next(self)
 
-    def skipwhile(self, fn):
+    def skipwhile(self, fn: ta.Callable[[T], bool]) -> None:
         while fn(self.peek()):
             next(self)
 
-    def takeuntil(self, fn):
+    def takeuntil(self, fn: ta.Callable[[T], bool]) -> ta.Iterator[T]:
         return self.takewhile(lambda e: not fn(e))
 
-    def skipuntil(self, fn):
+    def skipuntil(self, fn: ta.Callable[[T], bool]) -> None:
         self.skipwhile(lambda e: not fn(e))
 
-    def takethrough(self, pos):
+    def takethrough(self, pos: int) -> ta.Iterator[T]:
         return self.takewhile(lambda _: self._pos < pos)
 
-    def skipthrough(self, pos):
+    def skipthrough(self, pos: int) -> None:
         self.skipwhile(lambda _: self._pos < pos)
 
-    def taketo(self, pos):
+    def taketo(self, pos: int) -> ta.Iterator[T]:
         return self.takethrough(pos - 1)
 
-    def skipto(self, pos):
+    def skipto(self, pos: int) -> None:
         self.skipthrough(pos - 1)
 
 
