@@ -34,7 +34,7 @@ def peek(vs: ta.Iterable[T]) -> ta.Tuple[T, ta.Iterator[T]]:
     return v, itertools.chain(iter((v,)), it)
 
 
-type Rangeable = int | ta.Tuple[int] | ta.Tuple[int, int] | ta.Iterable[int]
+Rangeable: ta.TypeAlias = int | ta.Tuple[int] | ta.Tuple[int, int] | ta.Iterable[int]
 
 
 def asrange(i: Rangeable) -> ta.Iterable[int]:
