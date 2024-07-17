@@ -64,7 +64,7 @@ class InitBuilder:
             fields: ta.Mapping[str, dc.Field],
             has_post_init: bool,
             self_name: str,
-            globals: Namespace,
+            globals: Namespace,  # noqa
     ) -> None:
         super().__init__()
 

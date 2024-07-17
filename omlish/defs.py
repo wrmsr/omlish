@@ -85,8 +85,8 @@ def build_repr(obj, *attrs):
 
 @_basic
 @lang.cls_dct_fn()
-def repr(cls_dct, *attrs, mro=False, priority=None):
-    def __repr__(self):
+def repr(cls_dct, *attrs, mro=False, priority=None):  # noqa
+    def __repr__(self):  # noqa
         return build_attr_repr(self, mro=mro)
 
     cls_dct['__repr_attrs__'] = attrs
@@ -97,7 +97,7 @@ def repr(cls_dct, *attrs, mro=False, priority=None):
 
 @lang.cls_dct_fn()
 def bare_repr(cls_dct, *attrs):
-    def __repr__(self):
+    def __repr__(self):  # noqa
         return lang.attr_repr(self, *attrs)
 
     cls_dct['__repr__'] = __repr__
@@ -105,7 +105,7 @@ def bare_repr(cls_dct, *attrs):
 
 @lang.cls_dct_fn()
 def name_repr(cls_dct):
-    def __repr__(self):
+    def __repr__(self):  # noqa
         return self.__name__
 
     cls_dct['__repr__'] = __repr__
@@ -113,7 +113,7 @@ def name_repr(cls_dct):
 
 @lang.cls_dct_fn()
 def ne(cls_dct):
-    def __ne__(self, other):
+    def __ne__(self, other):  # noqa
         return not (self == other)
 
     cls_dct['__ne__'] = __ne__
@@ -139,12 +139,12 @@ def no_order(cls_dct, *, raise_=None):
 @_basic
 @lang.cls_dct_fn()
 def hash_eq(cls_dct, *attrs):
-    def __hash__(self):
+    def __hash__(self):  # noqa
         return hash(tuple(getattr(self, attr) for attr in attrs))
 
     cls_dct['__hash__'] = __hash__
 
-    def __eq__(self, other):
+    def __eq__(self, other):  # noqa
         if type(other) is not type(self):
             return False
         for attr in attrs:

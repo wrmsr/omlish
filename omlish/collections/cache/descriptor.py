@@ -44,9 +44,9 @@ def _make_key(
         typed: bool,
         kwd_mark=(object(),),
         fasttypes=frozenset([int, str, frozenset, type(None)]),
-        tuple=tuple,
-        type=type,
-        len=len,
+        tuple=tuple,  # noqa
+        type=type,  # noqa
+        len=len,  # noqa
 ) -> ta.Any:
     key = args
     if kwargs:

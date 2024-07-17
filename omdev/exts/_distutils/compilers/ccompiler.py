@@ -221,7 +221,7 @@ class CCompiler:
         undefn = (name,)
         self.macros.append(undefn)
 
-    def add_include_dir(self, dir):
+    def add_include_dir(self, dir):  # noqa
         """
         Add 'dir' to the list of directories that will be searched for header files.  The compiler is instructed to
         search directories in the order in which they are supplied by successive calls to 'add_include_dir()'.
@@ -255,7 +255,7 @@ class CCompiler:
         """
         self.libraries = libnames[:]
 
-    def add_library_dir(self, dir):
+    def add_library_dir(self, dir):  # noqa
         """
         Add 'dir' to the list of directories that will be searched for libraries specified to 'add_library()' and
         'set_libraries()'.  The linker will be instructed to search for libraries in the order they are supplied to
@@ -270,7 +270,7 @@ class CCompiler:
         """
         self.library_dirs = dirs[:]
 
-    def add_runtime_library_dir(self, dir):
+    def add_runtime_library_dir(self, dir):  # noqa
         """
         Add 'dir' to the list of directories that will be searched for shared libraries at runtime.
         """
@@ -283,7 +283,7 @@ class CCompiler:
         """
         self.runtime_library_dirs = dirs[:]
 
-    def add_link_object(self, object):
+    def add_link_object(self, object):  # noqa
         """
         Add 'object' to the list of object files (or analogues, such as explicitly named library files or the output of
         "resource compilers") to be included in every link driven by this compiler object.
@@ -724,11 +724,11 @@ class CCompiler:
     # These are all used by the 'gen_lib_options() function; there is no appropriate default implementation so
     # subclasses should implement all of these.
 
-    def library_dir_option(self, dir):
+    def library_dir_option(self, dir):  # noqa
         """Return the compiler option to add 'dir' to the list of directories searched for libraries."""
         raise NotImplementedError
 
-    def runtime_library_dir_option(self, dir):
+    def runtime_library_dir_option(self, dir):  # noqa
         """Return the compiler option to add 'dir' to the list of directories searched for runtime libraries."""
         raise NotImplementedError
 

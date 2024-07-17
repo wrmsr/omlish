@@ -12,7 +12,7 @@ def cmp_fn(
         op: str,
         self_tuple: str,
         other_tuple: str,
-        globals: Namespace,
+        globals: Namespace,  # noqa
 ) -> ta.Callable:
     return create_fn(
         name,
