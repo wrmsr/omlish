@@ -98,8 +98,7 @@ class ObjectUnmarshaler(Unmarshaler):
                 if ukf is not None:
                     ukf[ks] = mv  # FIXME: unmarshal?
                     continue
-                else:
-                    raise
+                raise
             if fi.name in kw:
                 raise KeyError(f'Duplicate keys for field {fi.name!r}: {ks!r}')
             kw[fi.name] = u.unmarshal(ctx, mv)

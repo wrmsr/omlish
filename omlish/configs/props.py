@@ -20,7 +20,7 @@ def escape(token: str) -> str:
 
 
 def parse_line(line: str) -> tuple[str, str] | None:
-    if line and not (line.startswith('#') or line.startswith('!')):
+    if line and not line.startswith(('#', '!')):
         match = _SEPARATOR_PATTERN.search(line)
         if match:
             return normalize(line[:match.start()]), normalize(line[match.end():])

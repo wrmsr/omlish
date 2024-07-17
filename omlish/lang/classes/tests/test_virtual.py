@@ -35,10 +35,10 @@ def test_virtual():
         def f(self):
             pass
 
-    with pytest.raises(TypeError):
-        class D(P):
-            pass
+    class D(P):
+        pass
 
+    with pytest.raises(TypeError):
         D()  # type: ignore
 
     virtual_check(P)(A)
