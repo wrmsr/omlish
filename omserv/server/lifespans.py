@@ -68,10 +68,10 @@ class Lifespan:
                 failure_error = error.subgroup(LifespanFailureError)
                 if failure_error is not None:
                     # Lifespan failures should crash the server
-                    raise failure_error
+                    raise failure_error  # noqa
                 reraise_error = error.subgroup((LifespanFailureError, anyio.get_cancelled_exc_class()))
                 if reraise_error is not None:
-                    raise reraise_error
+                    raise reraise_error  # noqa
 
             self.supported = False
             if not self.startup.is_set():

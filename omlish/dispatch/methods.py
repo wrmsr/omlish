@@ -24,7 +24,7 @@ def build_mro_dct(instance_cls: type, owner_cls: type | None = None) -> ta.Mappi
     try:
         pos = mro.index(owner_cls)
     except ValueError:
-        raise TypeError(f'Owner class {owner_cls} not in mro of instance class {instance_cls}')
+        raise TypeError(f'Owner class {owner_cls} not in mro of instance class {instance_cls}') from None
     dct: dict[str, ta.Any] = {}
     for cur_cls in mro[:pos + 1]:
         dct.update(cur_cls.__dict__)
