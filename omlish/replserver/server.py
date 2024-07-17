@@ -91,7 +91,7 @@ class ReplServer:
                 while not self._should_shutdown:
                     try:
                         conn, _ = self._socket.accept()
-                    except sock.timeout:
+                    except TimeoutError:
                         continue
 
                     log.info(f'Got repl server connection on file {self._config.path}')

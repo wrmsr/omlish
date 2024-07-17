@@ -240,8 +240,7 @@ def get_process_range_pagemaps(start: int, end: int, pid: PidLike = 'self') -> t
 def get_process_pagemaps(pid: PidLike = 'self') -> ta.Iterable[dict[str, int]]:
     _check_linux()
     for m in get_process_maps(pid):
-        for p in get_process_range_pagemaps(m['address'], m['end_address'], pid):
-            yield p
+        yield from get_process_range_pagemaps(m['address'], m['end_address'], pid)
 
 
 def _dump_cmd(args: ta.Any) -> None:

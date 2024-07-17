@@ -26,7 +26,7 @@ def test_identity_key_dict():
     dct[x] = 6
     assert dct[x] == 6
     assert dct[y] == 5
-    assert list(dct)[0] is x
+    assert list(dct)[0] is x  # noqa
     assert list(dct)[1] is y
     del dct[y]
     with pytest.raises(KeyError):

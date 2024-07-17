@@ -46,7 +46,7 @@ class DelimitedEscaping:
     def is_control_char(self, c: str) -> bool:
         if not len(c) == 1:
             raise TypeError(c)
-        return c == self._delimit_char or c == self._quote_char or c == self._escape_char
+        return c == self._delimit_char or c == self._quote_char or c == self._escape_char  # noqa
 
     def contains_escaped_char(self, s: str) -> bool:
         return any(c in self._all_escaped_chars for c in s)

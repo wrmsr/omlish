@@ -339,7 +339,7 @@ class CacheImpl(Cache[K, V]):
             return value
 
     @staticmethod
-    def _weak_die(dead_ref: weakref.ref, link: Link, key_ref: weakref.ref) -> None:
+    def _weak_die(dead_ref: weakref.ref, link: Link, key_ref: weakref.ref) -> None:  # noqa
         dead = dead_ref()
         if dead is not None:
             dead.append(link)
