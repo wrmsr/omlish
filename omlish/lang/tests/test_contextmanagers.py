@@ -10,7 +10,7 @@ def test_exit_stacked():
 
     with A() as a:
         assert isinstance(a, A)
-        assert isinstance(a._exit_stack, contextlib.ExitStack)
+        assert isinstance(a._exit_stack, contextlib.ExitStack)  # noqa
 
     class B(ExitStacked):
 

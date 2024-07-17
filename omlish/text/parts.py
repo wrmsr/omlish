@@ -12,7 +12,7 @@ from .. import lang
 T = ta.TypeVar('T')
 
 
-Part: ta.TypeAlias = ta.Union[str, ta.Sequence['Part'], 'DataPart']
+type Part = ta.Union[str, ta.Sequence['Part'], 'DataPart']
 PartT = ta.TypeVar('PartT', bound=Part)
 
 

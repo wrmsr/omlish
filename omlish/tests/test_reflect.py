@@ -1,5 +1,5 @@
 import collections.abc
-import pprint  # noqa
+import pprint
 import typing as ta
 
 from .. import reflect as rfl
@@ -28,9 +28,9 @@ def test_simple_reflect_type():
     assert rfl.type_(dict[int, str]) == rfl.Generic(dict, (int, str), (_0, _1), dict[int, str])
 
     assert rfl.type_(list) is list
-    assert rfl.type_(ta.List) == rfl.Generic(list, (_0,), (_0,), ta.List)
+    assert rfl.type_(ta.List) == rfl.Generic(list, (_0,), (_0,), ta.List)  # noqa
     assert rfl.type_(list[int]) == rfl.Generic(list, (int,), (_0,), list[int])
-    assert rfl.type_(ta.List[int]) == rfl.Generic(list, (int,), (_0,), ta.List[int])
+    assert rfl.type_(ta.List[int]) == rfl.Generic(list, (int,), (_0,), ta.List[int])  # noqa
 
 
 def test_new_unions():
@@ -44,7 +44,7 @@ def test_partial_generics():
     for ty in [
         ta.Mapping[int, V],  # type: ignore
         ta.Mapping[K, int],  # type: ignore
-        ta.Mapping[int, ta.Set[V]],  # type: ignore
+        ta.Mapping[int, ta.Set[V]],  # type: ignore  # noqa
     ]:
         print(ty)
 
@@ -110,8 +110,6 @@ def test_extended_reflect_type():
         b: U
 
     print()
-
-    import pprint
 
     for ty in [
         A,

@@ -226,5 +226,5 @@ def test_context_wrapped():
 
     c = C()
     assert c.d() == 'dcaba'
-    assert c._lock.enter_count == 4
-    assert c._lock.exit_count == 4
+    assert c._lock.enter_count == 4  # noqa
+    assert c._lock.exit_count == 4  # noqa

@@ -3,7 +3,7 @@ import time
 import typing as ta
 
 
-TimeoutLike: ta.TypeAlias = ta.Union['Timeout', float]
+type TimeoutLike = ta.Union['Timeout', float]
 
 
 class Timeout(abc.ABC):

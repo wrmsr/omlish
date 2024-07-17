@@ -162,7 +162,7 @@ class ExitStacked:
 ##
 
 
-ContextWrappable: ta.TypeAlias = ta.ContextManager | str | ta.Callable[..., ta.ContextManager]
+type ContextWrappable = ta.ContextManager | str | ta.Callable[..., ta.ContextManager]
 
 
 class ContextWrapped:
