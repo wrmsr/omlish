@@ -212,10 +212,8 @@ class ContextWrapped:
             raise TypeError(cm)
         ret = type(self)(fn, cm)
         if self._name is not None:
-            try:
+            with contextlib.suppress(TypeError):
                 instance.__dict__[self._name] = ret
-            except TypeError:
-                pass
         return ret
 
     def __call__(self, *args, **kwargs):

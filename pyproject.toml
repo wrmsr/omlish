@@ -125,10 +125,14 @@ line-length = 120
 indent-width = 4
 
 [tool.ruff.lint]
-# select = ["E", "F"]
-select = ["ALL"]
+exclude = [
+    'omlish/dataclasses/tests/cpython/*',
+]
+
+select = ['ALL']
 
 ignore = [
+
     'ANN401',  # dynamically typed expressions (typing.Any) are disallowed in `*args`
     'ARG001',  # unused function argument,
     'ARG002',  # unused method argument
@@ -139,6 +143,7 @@ ignore = [
     'E742',  # ambiguous class name
     'ERA001',  # found commented-out code
     'F541',  # f-string without any placeholders
+    'FBT001',  # boolean-typed positional argument in function definition
     'FBT002',  # boolean default positional argument in function definition
     'FBT003',  # boolean positional value in function call
     'FIX001',  # line-contains-fixme
@@ -169,6 +174,7 @@ ignore = [
 
     # FIXME: mypy error: PEP 695 type aliases are not yet supported
     'UP040',  # type alias uses `TypeAlias` annotation instead of the `type` keyword
+
 ]
 
 [tool.ruff.lint.per-file-ignores]
