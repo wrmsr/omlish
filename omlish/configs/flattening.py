@@ -37,7 +37,7 @@ class Flattening:
         def rec(prefix: ta.List[str], value: ta.Any) -> None:
             if isinstance(value, dict):
                 for k, v in value.items():
-                    rec(prefix + [k], v)
+                    rec([*prefix, k], v)
             elif isinstance(value, list):
                 check.not_empty(prefix)
                 for i, v in enumerate(value):

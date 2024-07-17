@@ -52,7 +52,7 @@ def _unpack_isinstance_spec(spec: ta.Any) -> tuple:
     if not _isinstance(spec, tuple):
         spec = (spec,)
     if None in spec:
-        spec = tuple(filter(None, spec)) + (_NONE_TYPE,)
+        spec = tuple(filter(None, spec)) + (_NONE_TYPE,)  # noqa
     if ta.Any in spec:
         spec = (object,)
     return spec
