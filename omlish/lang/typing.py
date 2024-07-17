@@ -43,7 +43,7 @@ def typed_lambda(ret=_MISSING, **kw):  # noqa
         ns['__fn'] = fn
         proto = ['def __lam(']
         call = ['return __fn(']
-        pkw = {k: v for k, v in kw.items()}
+        pkw = dict(kw)
         for i, (n, t) in enumerate(pkw.items()):
             if i:
                 call.append(', ')

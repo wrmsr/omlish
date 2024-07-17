@@ -52,7 +52,7 @@ def _check_not(v: ta.Any) -> None:
     return v
 
 
-class cached_nullary:
+class cached_nullary:  # noqa
     def __init__(self, fn):
         self._fn = fn
         self._value = self._missing = object()

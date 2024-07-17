@@ -22,7 +22,7 @@ def test_skiplist():
     assert lst.find(41) == 41
     assert lst.find(42) is None
     assert lst.find(43) == 43
-    no42 = list(sorted(set(range(100)) - {42}))
+    no42 = sorted(set(range(100)) - {42})
     assert list(lst.iter()) == list(no42)
     assert list(lst.riter()) == list(reversed(no42))
 

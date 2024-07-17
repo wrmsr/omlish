@@ -19,5 +19,5 @@ def test_wait_futures():
     def pairs(l):
         return [set(p) for p in iterators.chunk(2, l)]
 
-    idxs = [t[0] for t in sorted(list(enumerate(futures)), key=lambda t: t[1].result())]
+    idxs = [t[0] for t in sorted(enumerate(futures), key=lambda t: t[1].result())]
     assert pairs(idxs) == pairs(range(10))

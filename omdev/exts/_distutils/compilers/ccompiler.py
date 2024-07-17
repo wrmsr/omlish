@@ -858,10 +858,10 @@ int main (int argc, char **argv) {
     def object_filenames(self, source_filenames, strip_dir=0, output_dir=''):
         if output_dir is None:
             output_dir = ''
-        return list(
+        return [
             self._make_out_path(output_dir, strip_dir, src_name)
             for src_name in source_filenames
-        )
+        ]
 
     @property
     def out_extensions(self):

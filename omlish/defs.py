@@ -64,7 +64,7 @@ def build_attr_repr(obj, *, mro=False):
     if mro:
         attrs = [
             attr
-            for ty in sorted(reversed(type(obj).__mro__), key=lambda _ty: _ty.__dict__.get('__repr_priority__', 0))
+            for ty in sorted(reversed(type(obj).__mro__), key=lambda _ty: _ty.__dict__.get('__repr_priority__', 0))  # noqa
             for attr in ty.__dict__.get('__repr_attrs__', [])]
     else:
         attrs = obj.__repr_attrs__

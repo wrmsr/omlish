@@ -33,7 +33,7 @@ def _check_not_none(v: ta.Optional[T]) -> T:
     return v
 
 
-class cached_nullary:
+class cached_nullary:  # noqa
     def __init__(self, fn):
         self._fn = fn
         self._value = self._missing = object()

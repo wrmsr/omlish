@@ -119,7 +119,7 @@ class Var(ta.Generic[T]):
 
                     return inner
 
-            dct = dict((k, getattr(fn, k)) for k in functools.WRAPPER_ASSIGNMENTS)
+            dct = {k: getattr(fn, k) for k in functools.WRAPPER_ASSIGNMENTS}
             return lang.new_type(fn.__name__, (Descriptor,), dct)()
 
         return outer

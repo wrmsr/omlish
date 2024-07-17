@@ -45,7 +45,7 @@ class Config:
 
     include_date_header: bool = True
     include_server_header: bool = True
-    alt_svc_headers: list[str] = dc.field(default_factory=lambda: [])
+    alt_svc_headers: list[str] = dc.field(default_factory=list)
 
     websocket_max_message_size: int = 16 * 1024 * 1024 * BYTES
     websocket_ping_interval: float | None = None

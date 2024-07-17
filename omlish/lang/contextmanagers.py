@@ -88,7 +88,7 @@ def breakpoint_on_exception():  # noqa
     try:
         yield
     except Exception as e:  # noqa
-        breakpoint()
+        breakpoint()  # noqa
         raise
 
 

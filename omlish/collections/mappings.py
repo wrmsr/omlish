@@ -68,7 +68,7 @@ class TypeMap(ta.Generic[T]):
     def __len__(self) -> int:
         return len(self._items)
 
-    def __iter__(self) -> ta.Iterable[T]:
+    def __iter__(self) -> ta.Iterator[T]:
         return iter(self._items)
 
     def get(self, ty: type[T]) -> T | None:
@@ -99,7 +99,7 @@ class TypeMultiMap(ta.Generic[V]):
     def __len__(self) -> int:
         return len(self._items)
 
-    def __iter__(self) -> ta.Iterable[V]:
+    def __iter__(self) -> ta.Iterator[V]:
         return iter(self._items)
 
     def __getitem__(self, ty: type[T]) -> ta.Sequence[T]:
