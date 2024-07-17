@@ -1,2 +1,2 @@
-class CheckException(Exception):
+class CheckError(Exception):
     pass

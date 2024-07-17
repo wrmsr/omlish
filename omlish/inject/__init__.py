@@ -18,13 +18,13 @@ from .elements import (  # noqa
 )
 
 from .exceptions import (  # noqa
-    CyclicDependencyException,
-    DuplicateKeyException,
-    KeyException,
-    ScopeAlreadyOpenException,
-    ScopeException,
-    ScopeNotOpenException,
-    UnboundKeyException,
+    BaseKeyError,
+    CyclicDependencyError,
+    DuplicateKeyError,
+    ScopeAlreadyOpenError,
+    ScopeError,
+    ScopeNotOpenError,
+    UnboundKeyError,
 )
 
 from .injector import (  # noqa

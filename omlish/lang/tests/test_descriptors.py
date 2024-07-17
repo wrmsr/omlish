@@ -1,7 +1,7 @@
 import pytest
 
 from ..descriptors import access_forbidden
-from ..descriptors import AccessForbiddenException
+from ..descriptors import AccessForbiddenError
 from ..descriptors import classonly
 
 
@@ -11,7 +11,7 @@ def test_access_forbidden():
 
     try:
         C.f  # noqa
-    except AccessForbiddenException as e:
+    except AccessForbiddenError as e:
         assert e.name == 'f'  # noqa
 
 

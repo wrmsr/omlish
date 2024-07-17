@@ -11,7 +11,7 @@ P = ta.ParamSpec('P')
 ##
 
 
-class FutureException(Exception, ta.Generic[T]):
+class FutureError(Exception, ta.Generic[T]):
 
     def __init__(self, future: cf.Future, target: T | None = None) -> None:
         super().__init__()
@@ -38,7 +38,7 @@ class FutureException(Exception, ta.Generic[T]):
     __str__ = __repr__
 
 
-class FutureTimeoutException(Exception):
+class FutureTimeoutError(Exception):
     pass
 
 
@@ -62,14 +62,14 @@ def wait_futures(
                     if cancel_on_exception:
                         for cancel_fut in not_done:
                             cancel_fut.cancel()
-                    raise FutureException(fut) from fut.exception()
+                    raise FutureError(fut) from fut.exception()
 
         not_done -= done
         if not not_done:
             return True
 
         if time.time() >= (start + timeout_s):
-            raise FutureTimeoutException
+            raise FutureTimeoutError
         time.sleep(tick_interval_s)
 
     return False
@@ -115,7 +115,7 @@ def wait_dependent_futures(
         for fut in done:
             if fut.exception():
                 cancel()
-                raise FutureException(fut) from fut.exception()
+                raise FutureError(fut) from fut.exception()
 
             fn = fns_by_fut[fut]
             for dependent_fn in dependent_sets_by_fn.get(fn, set()):
@@ -129,7 +129,7 @@ def wait_dependent_futures(
 
         if time.time() >= (start + timeout_s):
             cancel()
-            raise FutureTimeoutException
+            raise FutureTimeoutError
 
     remaining_fns = {fn: deps for fn, deps in remaining_dep_sets_by_fn.items() if deps}
     if remaining_fns:

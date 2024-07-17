@@ -98,21 +98,21 @@ def is_not_none(o: ta.Any) -> bool:
     return o is not None
 
 
-class VoidException(Exception):
+class VoidError(Exception):
     pass
 
 
 class Void:
 
     def __new__(cls, *args: ta.Any, **kwargs: ta.Any) -> None:  # type: ignore  # noqa
-        raise VoidException
+        raise VoidError
 
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
-        raise VoidException
+        raise VoidError
 
 
 def void(*args: ta.Any, **kwargs: ta.Any) -> ta.NoReturn:
-    raise VoidException
+    raise VoidError
 
 
 _MISSING = object()
