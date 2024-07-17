@@ -9,4 +9,4 @@ class PydevdPlugin:
         setup = opd.get_setup()
         if setup is not None:
             if hasattr(session.config, '_env_timeout'):
-                session.config._env_timeout = None
+                session.config._env_timeout = None  # noqa

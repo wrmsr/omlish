@@ -54,7 +54,7 @@ class InjectorImpl(Injector, lang.Final):
         self._bim = ec.binding_impl_map()
 
         self._cs: weakref.WeakSet[InjectorImpl] | None = None
-        self._root: InjectorImpl = p._root if p is not None else self
+        self._root: InjectorImpl = p._root if p is not None else self  # noqa
 
         self.__cur_req: InjectorImpl._Request | None = None
 

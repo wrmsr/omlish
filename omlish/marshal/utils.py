@@ -20,4 +20,4 @@ class _Proxy(ta.Generic[T]):
 
     @classmethod
     def _new(cls):
-        return (p := cls()), p._set_obj
+        return (p := cls()), p._set_obj  # noqa

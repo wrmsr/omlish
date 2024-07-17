@@ -55,7 +55,7 @@ def preprocess_field(
     if ft in (FieldType.CLASS, FieldType.INIT):
         if f.default_factory is not MISSING:
             raise TypeError(f'field {f.name} cannot have a default factory')
-    f._field_type = ft.value  # type: ignore
+    f._field_type = ft.value  # type: ignore  # noqa
 
     if ft in (FieldType.INSTANCE, FieldType.INIT):
         if f.kw_only is MISSING:
