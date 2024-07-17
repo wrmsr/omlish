@@ -110,7 +110,7 @@ class SortedListDict(SortedMutableMapping[K, V]):
         return len(self._impl)
 
     def __iter__(self) -> ta.Iterator[K]:
-        for k, v in self._impl:
+        for k, _ in self._impl:
             yield k
 
     def items(self) -> ta.Iterator[tuple[K, V]]:  # type: ignore

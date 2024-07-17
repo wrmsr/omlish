@@ -13,7 +13,7 @@ Any
 import typing as ta
 
 
-Value = ta.Union[
+Value = ta.Union[  # noqa
     None,
 
     bool,
