@@ -281,10 +281,8 @@ class LooseVersion(Version):
         self.vstring = vstring
         components = [x for x in self.component_re.split(vstring) if x and x != '.']
         for i, obj in enumerate(components):
-            try:
+            with contextlib.suppress(ValueError):
                 components[i] = int(obj)
-            except ValueError:
-                pass
 
         self.version = components
 

@@ -1,3 +1,4 @@
+import contextlib
 import operator as op
 import typing as ta
 
@@ -87,10 +88,8 @@ class IdentitySet(ta.MutableSet[T]):
         self._dict[id(item)] = item
 
     def discard(self, item: T) -> None:
-        try:
+        with contextlib.suppress(KeyError):
             del self._dict[id(item)]
-        except KeyError:
-            pass
 
     def update(self, items: ta.Iterable[T]) -> None:
         for item in items:
