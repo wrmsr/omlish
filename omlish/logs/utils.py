@@ -5,7 +5,7 @@ import logging
 log = logging.getLogger(__name__)
 
 
-def error_logging(log=log):
+def error_logging(log=log):  # noqa
     def outer(fn):
         @functools.wraps(fn)
         def inner(*args, **kwargs):

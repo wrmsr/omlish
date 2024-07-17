@@ -52,7 +52,7 @@ class AccessForbiddenDescriptor:
         raise AccessForbiddenException(self._name)
 
 
-def access_forbidden():
+def access_forbidden():  # noqa
     return AccessForbiddenDescriptor()
 
 

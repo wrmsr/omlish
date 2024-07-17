@@ -37,7 +37,7 @@ def _update_wrapper_no_anns(wrapper, wrapped):
     return wrapper
 
 
-def typed_lambda(ret=_MISSING, **kw):
+def typed_lambda(ret=_MISSING, **kw):  # noqa
     def inner(fn):
         ns = {}
         ns['__fn'] = fn
@@ -69,7 +69,7 @@ def typed_lambda(ret=_MISSING, **kw):
     return inner
 
 
-def typed_partial(obj, **kw):
+def typed_partial(obj, **kw):  # noqa
     for k in kw:
         if k.startswith('__'):
             raise NameError(k)

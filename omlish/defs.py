@@ -4,6 +4,8 @@ class definitions. Should be used sparingly for methods not directly used by hum
 remain @property's for type annotation, tool assistance, debugging, and otherwise, but these are still nice to have in
 certain circumstances (the real-world alternative usually being simply not adding them).
 """
+# ruff: noqa: ANN201
+
 import abc
 import functools
 import operator

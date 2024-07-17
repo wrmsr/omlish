@@ -1,3 +1,5 @@
+# ruff: noqa: ANN201
+
 import logging
 import threading
 

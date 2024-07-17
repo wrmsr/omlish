@@ -208,7 +208,7 @@ BG24_RGB = ControlSequence(
     '24-Bit Background Color (RGB)')
 
 
-def main():
+def main() -> None:
     import sys
 
     sys.stdout.write(SGR(SGRs.RESET))

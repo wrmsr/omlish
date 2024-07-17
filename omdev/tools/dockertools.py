@@ -28,7 +28,7 @@ class Cli(ap.Cli):
     @ap.command(
         ap.arg('args', nargs='*'),
     )
-    def ns1(self):
+    def ns1(self) -> None:
         """
         - https://gist.github.com/BretFisher/5e1a0c7bcca4c735e716abf62afad389
         - https://github.com/justincormack/nsenter1/blob/8d3ba504b2c14d73c70cf34f1ec6943c093f1b02/nsenter1.c
@@ -60,7 +60,7 @@ class Cli(ap.Cli):
     @ap.command(
         ap.arg('--amd64', action='store_true'),
     )
-    def enable_ptrace(self):
+    def enable_ptrace(self) -> None:
         """
         - https://github.com/docker/for-mac/issues/5191
         - https://forums.docker.com/t/sys-ptrace-capability-for-linux-amd64/138482/4

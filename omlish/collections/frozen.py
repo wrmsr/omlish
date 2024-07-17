@@ -63,11 +63,11 @@ class FrozenDict(ta.Mapping[K, V], Frozen):
     def __setstate__(self, t):
         self.__init__(t)  # type: ignore
 
-    def drop(self, *keys):
+    def drop(self, *keys: T) -> 'FrozenDict[K, V]':
         ks = frozenset(keys)
         return type(self)((k, self[k]) for k in self if k not in ks)
 
-    def set(self, *args, **kwargs):
+    def set(self, *args: ta.Any, **kwargs: ta.Any) -> 'FrozenDict[K, V]':
         new = type(self)(*args, **kwargs)
         return type(self)(itertools.chain(self.items(), new.items()))
 

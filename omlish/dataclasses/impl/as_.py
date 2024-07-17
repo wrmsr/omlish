@@ -5,7 +5,7 @@ from .internals import is_dataclass_instance
 from .internals import ATOMIC_TYPES
 
 
-def asdict(obj, *, dict_factory=dict):
+def asdict(obj, *, dict_factory=dict):  # noqa
     if not is_dataclass_instance(obj):  # noqa
         raise TypeError("asdict() should be called on dataclass instances")
     return _asdict_inner(obj, dict_factory)
@@ -40,7 +40,7 @@ def _asdict_inner(obj, dict_factory):
         return copy.deepcopy(obj)
 
 
-def astuple(obj, *, tuple_factory=tuple):
+def astuple(obj, *, tuple_factory=tuple):  # noqa
     if not is_dataclass_instance(obj):
         raise TypeError("astuple() should be called on dataclass instances")
     return _astuple_inner(obj, tuple_factory)

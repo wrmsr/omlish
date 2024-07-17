@@ -158,5 +158,5 @@ class Method:
         return func.__get__(instance)(*args, **kwargs)  # noqa
 
 
-def method(func):
+def method(func):  # noqa
     return Method(func)

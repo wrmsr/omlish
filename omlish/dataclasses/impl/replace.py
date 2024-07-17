@@ -11,7 +11,7 @@ from .utils import set_new_attribute
 MISSING = dc.MISSING
 
 
-def replace(obj, /, **changes):
+def replace(obj, /, **changes):  # noqa
     if not is_dataclass_instance(obj):
         raise TypeError('replace() should be called on dataclass instances')
     return _replace(obj, **changes)
