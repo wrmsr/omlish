@@ -270,50 +270,49 @@ class WSStream:
 
             await self.send(StreamClosed(stream_id=self.stream_id))
 
-        else:
-            if message['type'] == 'websocket.accept' and self.state == ASGIWebsocketState.HANDSHAKE:
-                await self._accept(message)
+        elif message['type'] == 'websocket.accept' and self.state == ASGIWebsocketState.HANDSHAKE:
+            await self._accept(message)
 
-            elif (
-                message['type'] == 'websocket.http.response.start'
-                and self.state == ASGIWebsocketState.HANDSHAKE
-            ):
-                self.response = message
+        elif (
+            message['type'] == 'websocket.http.response.start'
+            and self.state == ASGIWebsocketState.HANDSHAKE
+        ):
+            self.response = message
 
-            elif message['type'] == 'websocket.http.response.body' and self.state in {
-                ASGIWebsocketState.HANDSHAKE,
-                ASGIWebsocketState.RESPONSE,
-            }:
-                await self._send_rejection(message)
+        elif message['type'] == 'websocket.http.response.body' and self.state in {
+            ASGIWebsocketState.HANDSHAKE,
+            ASGIWebsocketState.RESPONSE,
+        }:
+            await self._send_rejection(message)
 
-            elif message['type'] == 'websocket.send' and self.state == ASGIWebsocketState.CONNECTED:
-                event: wse.Event
-                if message.get('bytes') is not None:
-                    event = wse.BytesMessage(data=bytes(message['bytes']))
-                elif not isinstance(message['text'], str):
-                    raise TypeError(f'{message["text"]} should be a str')
-                else:
-                    event = wse.TextMessage(data=message['text'])
-                await self._send_wsproto_event(event)
-
-            elif (
-                message['type'] == 'websocket.close' and self.state == ASGIWebsocketState.HANDSHAKE
-            ):
-                self.state = ASGIWebsocketState.HTTPCLOSED
-                await self._send_error_response(403)
-
-            elif message['type'] == 'websocket.close':
-                self.state = ASGIWebsocketState.CLOSED
-                await self._send_wsproto_event(
-                    wse.CloseConnection(
-                        code=int(message.get('code', wsp.frame_protocol.CloseReason.NORMAL_CLOSURE)),
-                        reason=message.get('reason'),
-                    ),
-                )
-                await self.send(EndData(stream_id=self.stream_id))
-
+        elif message['type'] == 'websocket.send' and self.state == ASGIWebsocketState.CONNECTED:
+            event: wse.Event
+            if message.get('bytes') is not None:
+                event = wse.BytesMessage(data=bytes(message['bytes']))
+            elif not isinstance(message['text'], str):
+                raise TypeError(f'{message["text"]} should be a str')
             else:
-                raise UnexpectedMessageError(self.state, message['type'])
+                event = wse.TextMessage(data=message['text'])
+            await self._send_wsproto_event(event)
+
+        elif (
+            message['type'] == 'websocket.close' and self.state == ASGIWebsocketState.HANDSHAKE
+        ):
+            self.state = ASGIWebsocketState.HTTPCLOSED
+            await self._send_error_response(403)
+
+        elif message['type'] == 'websocket.close':
+            self.state = ASGIWebsocketState.CLOSED
+            await self._send_wsproto_event(
+                wse.CloseConnection(
+                    code=int(message.get('code', wsp.frame_protocol.CloseReason.NORMAL_CLOSURE)),
+                    reason=message.get('reason'),
+                ),
+            )
+            await self.send(EndData(stream_id=self.stream_id))
+
+        else:
+            raise UnexpectedMessageError(self.state, message['type'])
 
     async def _handle_events(self) -> None:
         for event in self.connection.events():
