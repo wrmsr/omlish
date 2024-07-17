@@ -100,7 +100,7 @@ class Singleton:
     def __new__(cls):
         return cls.__dict__[_SINGLETON_INSTANCE_ATTR]
 
-    def __init_subclass__(cls, **kwargs):
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
         _set_singleton_instance(super().__new__(cls))  # noqa
 

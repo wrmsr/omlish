@@ -43,7 +43,7 @@ def test_context_wrapped():
     assert cm.count == 2
 
     class C:
-        def __init__(self):
+        def __init__(self) -> None:
             self.cm = CM()
 
         @context_wrapped('cm')

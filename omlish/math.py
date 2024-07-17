@@ -66,7 +66,7 @@ class FixedWidthInt(int):
 
     MASK: ta.ClassVar[int]
 
-    def __init_subclass__(cls, **kwargs):
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__()
 
         if not isinstance(cls.BITS, int):
@@ -130,7 +130,7 @@ class FixedWidthInt(int):
         locals()[_proxy_name] = _gen_tuple_proxy_method(_proxy_name)
     del _proxy_name
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'{self.__class__.__name__}({int(self)})'
 
 

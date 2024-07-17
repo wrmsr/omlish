@@ -44,7 +44,7 @@ class OrderedSet(ta.MutableSet[T]):
         self.discard(item)
         return item
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         if not self:
             return '%s()' % (self.__class__.__name__,)
         return '%s(%r)' % (self.__class__.__name__, list(self))

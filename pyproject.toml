@@ -167,6 +167,7 @@ ignore = [
     'SIM108',  # use ternary operator
     'SIM114',  # combine `if` branches using logical `or` operator'
     'T201',  # `print` found
+    'T203',  # `pprint` found'
     'TD001', # invalid TODO tag
     'TD002',  # missing author in TODO
     'TD003',  # missing issue link on the line following this TODO

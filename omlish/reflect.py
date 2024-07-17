@@ -121,7 +121,7 @@ class Generic(ta.NamedTuple):
     # params2: tuple[ta.TypeVar, ...]  # map[int, V] = (V,)     | map[T, T] = (T,)
     obj: ta.Any
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             f'{self.__class__.__name__}('
             f'cls={self.cls.__name__}, '

@@ -31,7 +31,7 @@ class Abstract(abc.ABC):
 
     setattr(__forceabstract__, '__isabstractmethod__', True)
 
-    def __init_subclass__(cls, **kwargs) -> None:
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         if Abstract in cls.__bases__:
             cls.__forceabstract__ = Abstract.__forceabstract__  # type: ignore
         else:

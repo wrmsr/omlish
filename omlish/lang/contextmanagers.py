@@ -28,7 +28,7 @@ class ContextManaged:
 
 class NopContextManaged(ContextManaged):
 
-    def __init_subclass__(cls, **kwargs):
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         raise TypeError
 
 
@@ -37,7 +37,7 @@ NOP_CONTEXT_MANAGED = NopContextManaged()
 
 class NopContextManager:
 
-    def __init_subclass__(cls, **kwargs):
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         raise TypeError
 
     def __call__(self, *args, **kwargs):

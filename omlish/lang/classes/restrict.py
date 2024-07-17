@@ -22,7 +22,7 @@ class FinalException(TypeError):
 class Final(Abstract):
     __slots__ = ()
 
-    def __init_subclass__(cls, **kwargs) -> None:
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
 
         abstracts: set[ta.Any] = set()
@@ -62,7 +62,7 @@ class SealedException(TypeError):
 class Sealed:
     __slots__ = ()
 
-    def __init_subclass__(cls, **kwargs) -> None:
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         for base in cls.__bases__:
             if base is not Abstract:
                 if Sealed in base.__bases__:
@@ -74,7 +74,7 @@ class Sealed:
 class PackageSealed:
     __slots__ = ()
 
-    def __init_subclass__(cls, **kwargs) -> None:
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         for base in cls.__bases__:
             if base is not Abstract:
                 if PackageSealed in base.__bases__:
