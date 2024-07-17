@@ -130,7 +130,7 @@ class Handshake:
             status_code = 101
 
         for name, value in additional_headers:
-            if b'sec-websocket-protocol' == name or name.startswith(b':'):
+            if name == b'sec-websocket-protocol' or name.startswith(b':'):
                 raise Exception(f'Invalid additional header, {name.decode()}')
 
             headers.append((name, value))

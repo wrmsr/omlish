@@ -12,7 +12,7 @@ def test_access_forbidden():
     try:
         C.f
     except AccessForbiddenException as e:
-        assert e.name == 'f'
+        assert e.name == 'f'  # noqa
 
 
 def test_classonly():
