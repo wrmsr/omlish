@@ -370,8 +370,8 @@ class UnixCCompiler(CCompiler):
         *all* Unix C compilers do, ignoring even GCC's "-static" option.
         """
         lib_names = (
-            self.library_filename(lib, lib_type=type)
-            for type in 'dylib xcode_stub shared static'.split()
+            self.library_filename(lib, lib_type=ty)
+            for ty in 'dylib xcode_stub shared static'.split()
         )
 
         roots = map(self._library_root, dirs)
