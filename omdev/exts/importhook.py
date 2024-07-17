@@ -9,12 +9,13 @@ import importlib.abc
 import importlib.machinery
 import os.path
 import sys
+import types
 import typing as ta
 
 from . import build
 
 
-def load_dynamic(name, path, file=None):
+def load_dynamic(name: str, path: str) -> types.ModuleType:
     import importlib.machinery
     loader = importlib.machinery.ExtensionFileLoader(name, path)
 
@@ -33,7 +34,7 @@ class CExtensionLoader(importlib.abc.Loader):
         self._fullname = fullname
         self._path = path
 
-    def load_module(self, fullname):
+    def load_module(self, fullname: str) -> types.ModuleType:
         so_path = build.build_ext(fullname, self._path)
         return load_dynamic(self._fullname, so_path)
 

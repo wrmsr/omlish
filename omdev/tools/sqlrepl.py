@@ -144,7 +144,7 @@ class Cli(ap.Cli):
         ap.arg('target'),
         ap.arg('args', nargs='*'),
     )
-    def repl(self):
+    def repl(self) -> None:
         l, _, r = (target := self.args.target).partition(':')
         _, lf = os.path.dirname(l), os.path.basename(l)
         if not lf.endswith('.yml'):

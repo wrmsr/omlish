@@ -60,7 +60,7 @@ class ClassDctFn:
         return self._fn(cls_dct, *args, **kwargs)
 
 
-def cls_dct_fn(offset=1, *, wrap=True):
+def cls_dct_fn(offset=1, *, wrap=True):  # noqa
     def outer(fn):
         return ClassDctFn(fn, offset, wrap=wrap)
 
