@@ -30,7 +30,7 @@ def repr_fn(
     else:
         src = [
             'return f"{self.__class__.__qualname__}(' +
-            ', '.join([f"{f.name}={{self.{f.name}!r}}" for f in fields]) +
+            ', '.join([f'{f.name}={{self.{f.name}!r}}' for f in fields]) +
             ')"',
         ]
     fn = create_fn(

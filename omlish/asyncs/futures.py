@@ -133,7 +133,7 @@ def wait_dependent_futures(
 
     remaining_fns = {fn: deps for fn, deps in remaining_dep_sets_by_fn.items() if deps}
     if remaining_fns:
-        raise Exception(f"Unfinished fns: {remaining_fns}", remaining_fns)
+        raise Exception(f'Unfinished fns: {remaining_fns}', remaining_fns)
 
     futs_by_fn = {fn: fut for fut, fn in fns_by_fut.items()}
     return futs_by_fn
