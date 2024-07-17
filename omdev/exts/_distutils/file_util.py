@@ -88,8 +88,8 @@ def copy_file(  # noqa: C901
     Return a tuple (dest_name, copied): 'dest_name' is the actual name of the output file, and 'copied' is true if the
     file was copied (or would have been copied, if 'dry_run' true).
     """
-    # XXX if the destination file already exists, we clobber it if copying, but blow up if linking.  Hmmm.  And I don't
-    # know what macostools.copyfile() does.  Should definitely be consistent, and should probably blow up if destination
+    # if the destination file already exists, we clobber it if copying, but blow up if linking.  Hmmm.  And I don't know
+    # what macostools.copyfile() does.  Should definitely be consistent, and should probably blow up if destination
     # exists and we would be changing it (ie. it's not already a hard/soft link to src OR (not update) and (src newer
     # than dst).
     from stat import S_IMODE, ST_ATIME, ST_MODE, ST_MTIME
@@ -156,7 +156,7 @@ def copy_file(  # noqa: C901
     return (dst, 1)
 
 
-# XXX I suspect this is Unix-specific -- need porting help!
+# I suspect this is Unix-specific -- need porting help!
 def move_file(src, dst, verbose=1, dry_run=False):  # noqa: C901
     """
     Move a file 'src' to 'dst'.  If 'dst' is a directory, the file will be moved into it with the same name; otherwise,

@@ -66,7 +66,7 @@ class MypyDebugPathFinder(importlib.machinery.PathFinder):
 
 
 def _main():
-    for i, e in enumerate(sys.meta_path):
+    for e in sys.meta_path:
         if _is_instance_or_subclass(e, importlib.machinery.PathFinder):
             break
     sys.meta_path.insert(i, MypyDebugPathFinder)  # noqa

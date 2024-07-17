@@ -133,7 +133,7 @@ class Var(ta.Generic[T]):
             except KeyError:
                 pass
             else:
-                for level, frame_binding in sorted(frame_bindings.items()):
+                for level, frame_binding in sorted(frame_bindings.items()):  # noqa
                     yield frame_binding._value  # noqa
             frame = frame.f_back
 
