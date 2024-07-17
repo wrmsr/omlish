@@ -34,7 +34,7 @@ class Flattening:
         self._index_close = check.not_empty(index_close)
 
     def flatten(self, unflattened: StrMap) -> StrMap:
-        def rec(prefix: ta.List[str], value: ta.Any) -> None:
+        def rec(prefix: list[str], value: ta.Any) -> None:
             if isinstance(value, dict):
                 for k, v in value.items():
                     rec([*prefix, k], v)
@@ -48,7 +48,7 @@ class Flattening:
                     raise KeyError(k)
                 ret[k] = value
 
-        ret: ta.Dict[str, ta.Any] = {}
+        ret: dict[str, ta.Any] = {}
         rec([], unflattened)
         return ret
 
@@ -83,7 +83,7 @@ class Flattening:
         def __init__(self) -> None:
             super().__init__()
 
-            self._dict: ta.Dict[str, ta.Any] = {}
+            self._dict: dict[str, ta.Any] = {}
 
         def get(self, key: str) -> ta.Any:
             return self._dict.get(key, _MISSING)
@@ -100,7 +100,7 @@ class Flattening:
         def __init__(self) -> None:
             super().__init__()
 
-            self._list: ta.List[ta.Any] = []
+            self._list: list[ta.Any] = []
 
         def get(self, key: int) -> ta.Any:
             check.arg(key >= 0)
