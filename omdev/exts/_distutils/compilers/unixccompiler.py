@@ -215,7 +215,7 @@ class UnixCCompiler(CCompiler):
 
         if self._need_link(objects, output_filename):
             self.mkpath(os.path.dirname(output_filename))
-            self.spawn([*self.archiver, output_filename,  *objects,  *self.objects])
+            self.spawn([*self.archiver, output_filename, *objects, *self.objects])
 
             # Not many Unices required ranlib anymore -- SunOS 4.x is, I think the only major Unix that does.  Maybe we
             # need some platform intelligence here to skip ranlib if it's not needed -- or maybe Python's configure

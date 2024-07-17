@@ -88,7 +88,7 @@ class FixedWidthInt(int):
     def __new__(cls, value, *args, **kwargs):
         return super().__new__(cls, cls.clamp(value))
 
-    SCALAR_PROXY_METHODS = {
+    SCALAR_PROXY_METHODS = frozenset([
         '__abs__',
         '__add__',
         '__and__',
@@ -117,12 +117,12 @@ class FixedWidthInt(int):
         '__sub__',
         '__truediv__',
         '__xor__',
-    }
+    ])
 
-    TUPLE_PROXY_METHODS = {
+    TUPLE_PROXY_METHODS = frozenset([
         '__divmod__',
         '__rdivmod__',
-    }
+    ])
 
     for _proxy_name in SCALAR_PROXY_METHODS:
         locals()[_proxy_name] = _gen_scalar_proxy_method(_proxy_name)
