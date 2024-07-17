@@ -113,7 +113,7 @@ def mro(
     abstract_c3_mros = [mro(base, abcs=abcs, get_bases=get_bases, is_subclass=is_subclass) for base in abstract_bases]
     other_c3_mros = [mro(base, abcs=abcs, get_bases=get_bases, is_subclass=is_subclass) for base in other_bases]
     return merge(
-        [[cls]] +
+        [[cls]] +  # noqa
         explicit_c3_mros + abstract_c3_mros + other_c3_mros +
         [explicit_bases] + [abstract_bases] + [other_bases],
     )

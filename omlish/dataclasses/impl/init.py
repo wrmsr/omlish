@@ -143,7 +143,7 @@ class InitBuilder:
 
         return create_fn(
             '__init__',
-            [self._self_name] + _init_params,
+            [self._self_name, *_init_params],
             body_lines,
             locals=locals,
             globals=self._globals,

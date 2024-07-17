@@ -215,7 +215,7 @@ class Stats(ta.Sequence[float]):
         else:
             bins = [float(x) for x in bins]
             if self.min < bins[0]:
-                bins = [self.min] + bins
+                bins = [self.min, *bins]
 
         round_factor = 10.0 ** bin_digits
         bins = [math.floor(b * round_factor) / round_factor for b in bins]
