@@ -559,7 +559,7 @@ def _format_explanation(explanation):
 
 
 class AssertionError(builtins.AssertionError):
-    def __init__(self, *args):
+    def __init__(self, *args, lineofs=0):
         super().__init__(self, *args)
         if args:
             try:
@@ -567,15 +567,14 @@ class AssertionError(builtins.AssertionError):
             except _sysex:
                 raise
             except:
-                self.msg = "<[broken __repr__] %s at %0xd>" % (
-                    args[0].__class__, id(args[0]))
+                self.msg = "<[broken __repr__] %s at %0xd>" % (args[0].__class__, id(args[0]))
         else:
             f = Frame(sys._getframe(1))
             try:
                 source = f.code.fullsource
                 if source is not None:
                     try:
-                        source = source.getstatement(f.lineno, assertion=True)
+                        source = source.getstatement(f.lineno + lineofs, assertion=True)
                     except IndexError:
                         source = None
                     else:
@@ -735,13 +734,11 @@ class DebugInterpreter(ast.NodeVisitor):
         for op, next_op in zip(comp.ops, comp.comparators):
             next_explanation, next_result = self.visit(next_op)
             op_symbol = operator_map[op.__class__]
-            explanation = "%s %s %s" % (left_explanation, op_symbol,
-                                        next_explanation)
+            explanation = "%s %s %s" % (left_explanation, op_symbol, next_explanation)
             source = "__exprinfo_left %s __exprinfo_right" % (op_symbol,)
             co = self._compile(source)
             try:
-                result = self.frame.eval(co, __exprinfo_left=left_result,
-                                         __exprinfo_right=next_result)
+                result = self.frame.eval(co, __exprinfo_left=left_result, __exprinfo_right=next_result)
             except Exception:
                 raise Failure(explanation)
             try:
@@ -880,6 +877,7 @@ class DebugInterpreter(ast.NodeVisitor):
 
     def visit_Assert(self, assrt):
         test_explanation, test_result = self.visit(assrt.test)
+        breakpoint()
         if test_explanation.startswith("False\n{False =") and \
                 test_explanation.endswith("\n"):
             test_explanation = test_explanation[15:-2]
@@ -906,3 +904,16 @@ class DebugInterpreter(ast.NodeVisitor):
         except Exception:
             raise Failure(explanation)
         return explanation, value_result
+
+
+##
+
+
+def _main():
+    x = 4
+    assert x * 2 == 8
+    raise AssertionError(lineofs=-1)
+
+
+if __name__ == '__main__':
+    _main()
