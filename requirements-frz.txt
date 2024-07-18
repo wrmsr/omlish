@@ -30,8 +30,8 @@ black==24.4.2
 bleach==6.1.0
 blis==0.7.11
 blobfile==2.1.1
-boto3==1.34.144
-botocore==1.34.144
+boto3==1.34.145
+botocore==1.34.145
 bs4==0.0.2
 bsddb3==6.2.9
 build==1.2.1
@@ -90,7 +90,7 @@ google-pasta==0.2.0
 googleapis-common-protos==1.63.2
 gprof2dot==2024.6.6
 greenlet==3.0.3
-grpcio==1.64.1
+grpcio==1.65.1
 grpcio-status==1.62.2
 guppy3==3.1.4.post1
 Gutenberg==0.8.2
@@ -101,7 +101,7 @@ hexdump==3.3
 hpack==4.0.0
 httpcore==1.0.5
 httpx==0.27.0
-huggingface-hub==0.23.5
+huggingface-hub==0.24.0
 hyperframe==6.0.1
 hypothesis==6.108.2
 idna==3.7
@@ -132,7 +132,7 @@ jupyter_client==8.6.2
 jupyter_core==5.7.2
 jupyter_server==2.14.2
 jupyter_server_terminals==0.5.3
-jupyterlab==4.2.3
+jupyterlab==4.2.4
 jupyterlab_pygments==0.3.0
 jupyterlab_server==2.27.3
 jupyterlab_widgets==3.0.11
@@ -279,7 +279,7 @@ rich==13.7.1
 rpds-py==0.19.0
 rsa==4.9
 rubicon-objc==0.4.9
-ruff==0.5.2
+ruff==0.5.3
 s3transfer==0.10.2
 safetensors==0.4.3
 scikit-image==0.24.0
@@ -290,7 +290,7 @@ selectolax==0.3.21
 Send2Trash==1.8.3
 sentencepiece==0.2.0
 setproctitle==1.3.3
-setuptools==70.3.0
+setuptools==71.0.3
 shapely==2.0.5
 shellingham==1.5.4
 simsimd==4.4.0
@@ -308,7 +308,7 @@ spacy-legacy==3.0.12
 spacy-loggers==1.0.5
 SPARQLWrapper==1.8.5
 SQLAlchemy==2.0.31
-sqlglot==25.6.0
+sqlglot==25.6.1
 sqlparse==0.4.4
 srsly==2.4.8
 stack-data==0.6.3
@@ -364,4 +364,5 @@ xxhash==3.4.1
 yarl==1.9.4
 zigpy==0.64.3
 zipp==3.19.2
+zstd==1.5.5.1
 zwave-js-server-python==0.57.0
