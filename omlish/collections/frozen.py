@@ -35,7 +35,7 @@ class FrozenDict(ta.Mapping[K, V], Frozen):
         return dict(self._dct)
 
     def __repr__(self) -> str:
-        return '(%r)' % (self._dct,)
+        return f'({self._dct!r})'
 
     def __eq__(self, other) -> bool:
         return type(self) is type(other) and self._dct == other._dct
@@ -85,7 +85,7 @@ class FrozenList(ta.Sequence[T], Frozen):
         return list(self)
 
     def __repr__(self) -> str:
-        return '([%s])' % (', '.join(map(repr, self._tup)),)
+        return f'([{", ".join(map(repr, self._tup))}])'
 
     def __add__(self, o) -> 'FrozenList[T]':
         if isinstance(o, FrozenList):

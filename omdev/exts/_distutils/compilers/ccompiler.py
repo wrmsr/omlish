@@ -181,7 +181,7 @@ class CCompiler:
                     and isinstance(defn[0], str)
             ):
                 raise TypeError(
-                    ("invalid macro definition '%s': " % defn)
+                    (f"invalid macro definition '{defn}': ")
                     + 'must be tuple (string,), (string, string), or '
                     + '(string, None)',
                 )
@@ -772,29 +772,27 @@ class CCompiler:
         fd, fname = tempfile.mkstemp('.c', funcname, text=True)
         with os.fdopen(fd, 'w', encoding='utf-8') as f:
             for incl in includes:
-                f.write("""#include "%s"\n""" % incl)
+                f.write(f"""#include "{incl}"\n""")
             if not includes:
                 # Use "char func(void);" as the prototype to follow what autoconf does.  This prototype does not match
                 # any well-known function the compiler might recognize as a builtin, so this ends up as a true link
                 # test. Without a fake prototype, the test would need to know the exact argument types, and the
                 # has_function interface does not provide that level of information.
                 f.write(
-                    """\
+                    f"""\
 #ifdef __cplusplus
 extern "C"
 #endif
-char %s(void);
+char {funcname}(void);
 """
-                    % funcname,
                 )
             f.write(
-                """\
-int main (int argc, char **argv) {
-    %s();
+                f"""\
+int main (int argc, char **argv) {{
+    {funcname}();
     return 0;
-}
+}}
 """
-                % funcname,
             )
 
         try:
@@ -933,7 +931,7 @@ int main (int argc, char **argv) {
         print(msg)
 
     def warn(self, msg):
-        sys.stderr.write('warning: %s\n' % msg)
+        sys.stderr.write(f'warning: {msg}\n')
 
     def execute(self, func, args, msg=None, level=1):
         execute(func, args, msg, self.dry_run)
@@ -1009,9 +1007,9 @@ def new_compiler(
 
         (module_name, class_name, long_description) = compiler_class[compiler]
     except KeyError:
-        msg = "don't know how to compile C/C++ code on platform '%s'" % plat
+        msg = f"don't know how to compile C/C++ code on platform '{plat}'"
         if compiler is not None:
-            msg = msg + " with '%s' compiler" % compiler
+            msg = msg + f" with '{compiler}' compiler"
         raise DistutilsPlatformError(msg) from None
 
     try:
@@ -1020,13 +1018,10 @@ def new_compiler(
         module = sys.modules[module_name]
         klass = vars(module)[class_name]
     except ImportError:
-        raise DistutilsModuleError(
-            "can't compile C/C++ code: unable to load module '%s'" % module_name,
-        ) from None
+        raise DistutilsModuleError(f"can't compile C/C++ code: unable to load module '{module_name}'") from None
     except KeyError:
         raise DistutilsModuleError(
-            f"can't compile C/C++ code: unable to find class '{class_name}' "
-            f"in module '{module_name}'",
+            f"can't compile C/C++ code: unable to find class '{class_name}' in module '{module_name}'",
         ) from None
 
     # The None is necessary to preserve backwards compatibility with classes that expect verbose to be the first

@@ -209,7 +209,7 @@ def get_python_lib(plat_specific=0, standard_lib=0, prefix=None):
         libpython = os.path.join(prefix, libdir, implementation + get_python_version())
         return _posix_lib(standard_lib, libpython, early_prefix, prefix)
     else:
-        raise DistutilsPlatformError("I don't know where Python installs its library on platform '%s'" % os.name)
+        raise DistutilsPlatformError(f"I don't know where Python installs its library on platform '{os.name}'")
 
 
 @functools.lru_cache

@@ -22,7 +22,7 @@ class UnmodifiableSequence(ta.Sequence[T], Unmodifiable, lang.Final):
         self._target = target
 
     def __repr__(self) -> str:
-        return '%s(%r)' % (type(self).__name__, self._target)
+        return f'{type(self).__name__}({self._target!r})'
 
     def __contains__(self, x: ta.Any) -> bool:
         return x in self._target
@@ -74,7 +74,7 @@ class UnmodifiableSet(ta.AbstractSet[T], Unmodifiable, lang.Final):
         self._target = target
 
     def __repr__(self) -> str:
-        return '%s(%r)' % (type(self).__name__, self._target)
+        return f'{type(self).__name__}({self._target!r})'
 
     def __and__(self, s: ta.AbstractSet[ta.Any]) -> ta.AbstractSet[T]:
         return self._target & s
@@ -130,7 +130,7 @@ class UnmodifiableMapping(ta.Mapping[K, V], Unmodifiable, lang.Final):
         self._target = target
 
     def __repr__(self) -> str:
-        return '%s(%r)' % (type(self).__name__, self._target)
+        return f'{type(self).__name__}({self._target!r})'
 
     def __contains__(self, o: ta.Any) -> bool:
         return o in self._target

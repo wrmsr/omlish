@@ -27,23 +27,20 @@ def gen_preprocess_options(
     pp_opts: list[str] = []
     for macro in macros:
         if not (isinstance(macro, tuple) and 1 <= len(macro) <= 2):
-            raise TypeError(
-                "bad macro definition '%s': "
-                "each element of 'macros' list must be a 1- or 2-tuple" % macro,
-            )
+            raise TypeError(f"bad macro definition '{macro}': each element of 'macros' list must be a 1- or 2-tuple")
 
         if len(macro) == 1:  # undefine this macro
-            pp_opts.append('-U%s' % macro[0])
+            pp_opts.append(f'-U{macro[0]}')
         elif len(macro) == 2:
             if macro[1] is None:  # define with no explicit value
-                pp_opts.append('-D%s' % macro[0])
+                pp_opts.append(f'-D{macro[0]}' )
             else:
                 # *don't* need to be clever about quoting the macro value here, because we're going to avoid the shell
                 # at all costs when we spawn the command!
                 pp_opts.append('-D{}={}'.format(*macro))
 
     for dir in include_dirs:  # noqa
-        pp_opts.append('-I%s' % dir)
+        pp_opts.append(f'-I{dir}')
     return pp_opts
 
 
@@ -77,7 +74,7 @@ def gen_lib_options(
             if lib_file:
                 lib_opts.append(lib_file)
             else:
-                compiler.warn("no library file corresponding to '%s' found (skipping)" % lib)
+                compiler.warn(f"no library file corresponding to '{lib}' found (skipping)")
         else:
             lib_opts.append(compiler.library_option(lib))
     return lib_opts

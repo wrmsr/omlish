@@ -118,7 +118,7 @@ def split_version(s) -> list[int]:
     return [int(n) for n in s.split('.')]
 
 
-_wordchars_re = re.compile(r'[^\\\'\"%s ]*' % string.whitespace)
+_wordchars_re = re.compile(r'[^\\\'\"%s ]*' % string.whitespace)  # noqa
 _squote_re = re.compile(r"'(?:[^'\\]|\\.)*'")
 _dquote_re = re.compile(r'"(?:[^"\\]|\\.)*"')
 
@@ -162,10 +162,10 @@ def split_quoted(s: str) -> list[str]:
             elif s[end] == '"':  # slurp doubly-quoted string
                 m = _dquote_re.match(s, end)
             else:
-                raise RuntimeError("this can't happen (bad char '%c')" % s[end])
+                raise RuntimeError(f"this can't happen (bad char '{s[end]}')")
 
             if m is None:
-                raise ValueError('bad string (mismatched %s quotes?)' % s[end])
+                raise ValueError(f'bad string (mismatched {s[end]} quotes?)')
 
             (beg, end) = m.span()
             s = s[:beg] + s[beg + 1: end - 1] + s[end:]
