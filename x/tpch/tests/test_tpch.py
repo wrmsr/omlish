@@ -40,6 +40,15 @@ def test_cext():
 
     from .. import _tpch  # noqa
 
-    tds = text_.TextDists.default()
+    dists = text_.TextDists.default()
 
-    print(_tpch.gen_text_pool(1024, 256, tds))
+    ext_dists = {
+        n: getattr(dists, n).bytes_seq
+        for n in [
+            'grammars',
+            'noun_phrase',
+            'verb_phrase',
+        ]
+    }
+
+    print(_tpch.gen_text_pool(1024, 256, dists))
