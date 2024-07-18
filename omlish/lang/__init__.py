@@ -96,6 +96,7 @@ from .functions import (  # noqa
     maybe_call,
     periodically,
     raise_,
+    raising,
     recurse,
     try_,
     unwrap_func,
