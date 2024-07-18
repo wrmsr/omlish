@@ -17,12 +17,15 @@ def test_treapmap():
     m = m.with_(55, 'here')
 
     print(m)
+    print('===')
 
     it = m.iterate()
     while it.has_next():
         print(it.next())
+    print('===')
 
     print(len(m))
+    print('===')
 
     old = m.with_(500, 'five hundred')
     m = m.without(53)
@@ -32,7 +35,24 @@ def test_treapmap():
     print(old[53])
     print(old[52])
     print(old[500])
+    print('===')
 
     it = m.iterate()
     while it.has_next():
         print(it.next())
+    print('===')
+
+    it = m.reverse_iterate()
+    while it.has_next():
+        print(it.next())
+    print('===')
+
+    it = m.iterate_from(30)
+    while it.has_next():
+        print(it.next())
+    print('===')
+
+    it = m.reverse_iterate_from(30)
+    while it.has_next():
+        print(it.next())
+    print('===')

@@ -43,6 +43,9 @@ class TreapNode(ta.Generic[T]):
         self._left = _left
         self._right = _right
 
+    def __repr__(self) -> str:
+        return f'TreapNode(value={self._value!r}, priority={self._priority!r})'
+
     @property
     def value(self) -> T:
         return self._value
@@ -78,6 +81,26 @@ def find(n: TreapNode[T] | None, v: T, c: Comparer[T]) -> TreapNode[T] | None:
             n = n._right  # noqa
         else:
             n = n._left  # noqa
+
+
+def place(n: TreapNode[T] | None, v: T, c: Comparer[T], *, desc: bool = False) -> list[TreapNode[T]]:
+    ret: list[TreapNode[T]] = []
+    while True:
+        if n is None:
+            break
+        diff = c(n._value, v)  # noqa
+        if diff == 0:
+            ret.append(n)
+            break
+        elif diff < 0:
+            if desc:
+                ret.append(n)
+            n = n._right  # noqa
+        else:
+            if not desc:
+                ret.append(n)
+            n = n._left  # noqa
+    return ret
 
 
 def union(
