@@ -68,19 +68,13 @@ def build_attr_repr(obj, *, mro=False):
             for attr in ty.__dict__.get('__repr_attrs__', [])]
     else:
         attrs = obj.__repr_attrs__
-    return '%s@%s(%s)' % (
-        type(obj).__name__,
-        hex(id(obj))[2:],
-        ', '.join('%s=%s' % (attr, '<self>' if value is obj else _repr(value))
-                  for attr in attrs for value in [getattr(obj, attr)]))
+    s = ', '.join(f'{a}={"<self>" if v is obj else _repr(v)}' for a in attrs for v in [getattr(obj, a)])
+    return f'{type(obj).__name__}@{hex(id(obj))[2:]}({s})'
 
 
 @_repr_guard
 def build_repr(obj, *attrs):
-    return '%s@%s(%s)' % (
-        type(obj).__name__,
-        hex(id(obj))[2:],
-        ', '.join('%s=%r' % (attr, getattr(obj, attr)) for attr in attrs))
+    return f'{type(obj).__name__}@{hex(id(obj))[2:]}({", ".join(f"{attr}={getattr(obj, attr)!r}" for attr in attrs)})'
 
 
 @_basic

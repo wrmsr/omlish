@@ -100,7 +100,7 @@ class Extension:
         # If there are unknown keyword options, warn about them
         if len(kw) > 0:
             options = ', '.join(sorted([repr(option) for option in kw]))
-            msg = 'Unknown Extension options: %s' % options
+            msg = f'Unknown Extension options: {options}'
             warnings.warn(msg)
 
     def __repr__(self):
