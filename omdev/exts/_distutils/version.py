@@ -139,7 +139,7 @@ class StrictVersion(Version):
     def parse(self, vstring):
         match = self.version_re.match(vstring)
         if not match:
-            raise ValueError("invalid version number '%s'" % vstring)
+            raise ValueError(f"invalid version number '{vstring}'")
 
         (major, minor, patch, prerelease, prerelease_num) = match.group(1, 2, 4, 5, 6)
 
@@ -289,8 +289,8 @@ class LooseVersion(Version):
     def __str__(self):
         return self.vstring
 
-    def __repr__(self):
-        return "LooseVersion ('%s')" % str(self)
+    def __repr__(self) -> str:
+        return f"LooseVersion ('{str(self)}')"
 
     def _cmp(self, other):
         if isinstance(other, str):
