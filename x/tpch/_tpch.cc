@@ -318,6 +318,13 @@ static PyObject * gen_text_pool(PyObject *self, PyObject *args)
         return NULL;
     }
 
+    PyObject* grammars = NULL;
+    if ((grammars = PyObject_GetAttrString(distsobj, "grammars")) == NULL) {
+        PyErr_Format(PyExc_TypeError, "must have grammars attribute");
+        return NULL;
+    }
+
+    Py_XDECREF(grammars);
     return Py_BuildValue("k", 424);
 }
 
