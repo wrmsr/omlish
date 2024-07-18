@@ -8,7 +8,7 @@ https://github.com/wrmsr/omnibus/blob/c2ff67b6c5c80aa03fe27a9b6f36212f3212c7ca/o
 
 #include <unistd.h>
 
-//
+///
 
 static constexpr int64_t int_multiplier = 16807;
 static constexpr int64_t int_modulus    = 2147483647;
@@ -294,7 +294,7 @@ private:
     int64_t _seed;
 };
 
-//
+///
 
 typedef struct _tpch_state {
 } _tpch_state;
