@@ -2,7 +2,7 @@ import dataclasses as dc
 import os
 import subprocess
 
-from omlish import lang
+from .. import lang
 
 
 @dc.dataclass(frozen=True)
@@ -18,10 +18,10 @@ def get_ps_item(pid: int, timeout: lang.Timeout | None = None) -> PsItem:
         ['ps', '-o', 'pid=,ppid=,command=', str(int(pid))],
         timeout=timeout.or_(None),
     ).decode().strip()
-    pid, _, rest = out.partition(' ')
+    opid, _, rest = out.partition(' ')
     ppid, _, cmd = rest.strip().partition(' ')
     return PsItem(
-        int(pid),
+        int(opid),
         int(ppid),
         cmd.strip(),
     )
@@ -39,7 +39,7 @@ def get_ps_lineage(pid: int, timeout: lang.Timeout | None = None) -> list[PsItem
     return ret
 
 
-def _main():
+def _main() -> None:
     print(get_ps_lineage(os.getpid()))
 
 
