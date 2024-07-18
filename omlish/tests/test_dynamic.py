@@ -1,5 +1,7 @@
 import contextlib
 
+import pytest
+
 from .. import dynamic as dyn
 from ..testing.pytest import skip_if_cant_import
 
@@ -25,7 +27,7 @@ def test_dyn():
     except dyn.UnboundVarError:
         pass
     else:
-        assert False
+        pytest.fail()
 
     def _g1():
         while True:
@@ -56,7 +58,7 @@ def test_dyn():
     except dyn.UnboundVarError:
         pass
     else:
-        assert False
+        pytest.fail()
 
 
 def test_var():
