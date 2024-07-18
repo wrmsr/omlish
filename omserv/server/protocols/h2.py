@@ -301,8 +301,8 @@ class H2Protocol(Protocol):
     async def _window_updated(self, stream_id: int | None) -> None:
         if stream_id is None or stream_id == 0:
             # Unblock all streams
-            for stream_id in list(self.stream_buffers.keys()):
-                self.priority.unblock(stream_id)
+            for buf_stream_id in list(self.stream_buffers.keys()):
+                self.priority.unblock(buf_stream_id)
         elif stream_id is not None and stream_id in self.stream_buffers:
             self.priority.unblock(stream_id)
         await self.has_data.set()
