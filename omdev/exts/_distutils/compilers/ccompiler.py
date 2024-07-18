@@ -82,6 +82,9 @@ class CCompiler:
     }
     language_order: ta.ClassVar[list[str]] = ['c++', 'objc', 'c']
 
+    default_include_dirs: list[str] = []
+    default_library_dirs: list[str] = []
+
     executables: ta.ClassVar[dict[str, list[str] | None]]
 
     def __init__(
@@ -359,7 +362,7 @@ class CCompiler:
             raise TypeError("'include_dirs' (if supplied) must be a list of strings")
 
         # add include dirs for class
-        include_dirs += self.__class__.include_dirs
+        include_dirs += self.__class__.default_include_dirs
 
         return output_dir, macros, include_dirs
 
@@ -415,7 +418,7 @@ class CCompiler:
             raise TypeError("'library_dirs' (if supplied) must be a list of strings")
 
         # add library dirs for class
-        library_dirs += self.__class__.library_dirs
+        library_dirs += self.__class__.default_library_dirs
 
         if runtime_library_dirs is None:
             runtime_library_dirs = list(self.runtime_library_dirs)
