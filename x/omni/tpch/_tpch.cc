@@ -67,7 +67,7 @@ static struct PyModuleDef _tpch_module = {
 
 extern "C" {
 
-PyMODINIT_FUNC PyInit_tpch(void)
+PyMODINIT_FUNC PyInit__tpch(void)
 {
     return PyModuleDef_Init(&_tpch_module);
 }
