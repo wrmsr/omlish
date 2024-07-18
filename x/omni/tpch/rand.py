@@ -5,12 +5,6 @@ from omlish import check
 from omlish import lang
 
 
-from omdev.exts.importhook import install as _install_ext_hook  # noqa
-_install_ext_hook()  # noqa
-
-from . import _tpch
-
-
 class ByRow(lang.Abstract):
 
     @abc.abstractmethod
