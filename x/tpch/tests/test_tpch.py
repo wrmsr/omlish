@@ -42,4 +42,4 @@ def test_cext():
 
     tds = text_.TextDists.default()
 
-    print(_tpch.gen_text_pool())
+    print(_tpch.gen_text_pool(1024, 256, tds))
