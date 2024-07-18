@@ -290,7 +290,7 @@ class LooseVersion(Version):
         return self.vstring
 
     def __repr__(self) -> str:
-        return f"LooseVersion ('{str(self)}')"
+        return f"LooseVersion ('{self!s}')"
 
     def _cmp(self, other):
         if isinstance(other, str):
