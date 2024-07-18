@@ -82,7 +82,7 @@ class TreapMap(PersistentMap[K, V]):
         return i
 
     def iterate_from(self, k: K) -> 'TreapMapIterator[K, V]':
-        lst = treap.place(self._n, (k, None), self._c)
+        lst = treap.place(self._n, (k, None), self._c)  # type: ignore
         i = TreapMapIterator(
             _st=lst,
             _n=lst.pop(),
@@ -99,8 +99,8 @@ class TreapMap(PersistentMap[K, V]):
             i._n = n.right  # noqa
         return i
 
-    def reverse_iterate_from(self, k: K) -> 'TreapMapReverseeIterator[K, V]':
-        lst = treap.place(self._n, (k, None), self._c, desc=True)
+    def reverse_iterate_from(self, k: K) -> 'TreapMapReverseIterator[K, V]':
+        lst = treap.place(self._n, (k, None), self._c, desc=True)  # type: ignore
         i = TreapMapReverseIterator(
             _st=lst,
             _n=lst.pop(),
