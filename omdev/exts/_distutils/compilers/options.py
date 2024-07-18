@@ -33,7 +33,7 @@ def gen_preprocess_options(
             pp_opts.append(f'-U{macro[0]}')
         elif len(macro) == 2:
             if macro[1] is None:  # define with no explicit value
-                pp_opts.append(f'-D{macro[0]}' )
+                pp_opts.append(f'-D{macro[0]}')
             else:
                 # *don't* need to be clever about quoting the macro value here, because we're going to avoid the shell
                 # at all costs when we spawn the command!
