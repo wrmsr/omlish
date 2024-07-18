@@ -308,6 +308,13 @@ static inline _tpch_state * get_tpch_state(PyObject *module)
 
 //
 
+static PyObject * gen_text_pool(PyObject *self, PyObject *args)
+{
+    return Py_BuildValue("k", 424);
+}
+
+//
+
 PyDoc_STRVAR(_tpch_doc, "tpch");
 
 static int _tpch_exec(PyObject *module)
@@ -334,6 +341,7 @@ static void _tpch_free(void *module)
 }
 
 static PyMethodDef _tpch_methods[] = {
+    {"gen_text_pool", gen_text_pool, METH_NOARGS, "gen_text_pool"},
     {NULL, NULL, 0, NULL}
 };
 
