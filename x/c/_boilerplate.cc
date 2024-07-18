@@ -67,7 +67,7 @@ static struct PyModuleDef _boilerplate_module = {
 
 extern "C" {
 
-PyMODINIT_FUNC PyInit_boilerplate(void)
+PyMODINIT_FUNC PyInit__boilerplate(void)
 {
     return PyModuleDef_Init(&_boilerplate_module);
 }
