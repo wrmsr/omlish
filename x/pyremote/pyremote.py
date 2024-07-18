@@ -1,3 +1,7 @@
+"""
+See:
+ - https://github.com/pytest-dev/execnet
+"""
 import base64
 import inspect
 import os
