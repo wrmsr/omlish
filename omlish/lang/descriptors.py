@@ -13,6 +13,10 @@ def attr_property(n: str):
     return property(operator.attrgetter(n))
 
 
+def item_property(n: str):
+    return property(operator.itemgetter(n))
+
+
 ##
 
 
