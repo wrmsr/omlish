@@ -5,6 +5,7 @@ import pkg_resources
 from omlish import cached
 from omlish import check
 from omlish import defs
+from omlish import lang
 
 from .rand import Gen
 from .rand import GenRandom
@@ -199,27 +200,27 @@ class TextDists:
     def __getitem__(self, name: str) -> TextDist:
         return self._dists_by_name[name]
 
-    grammars: TextDist = property(lambda self: self['grammar'])
-    noun_phrase: TextDist = property(lambda self: self['np'])
-    verb_phrase: TextDist = property(lambda self: self['vp'])
-    prepositions: TextDist = property(lambda self: self['prepositions'])
-    nouns: TextDist = property(lambda self: self['nouns'])
-    verbs: TextDist = property(lambda self: self['verbs'])
-    articles: TextDist = property(lambda self: self['articles'])
-    adjectives: TextDist = property(lambda self: self['adjectives'])
-    adverbs: TextDist = property(lambda self: self['adverbs'])
-    auxiliaries: TextDist = property(lambda self: self['auxillaries'])
-    terminators: TextDist = property(lambda self: self['terminators'])
-    order_priorities: TextDist = property(lambda self: self['o_oprio'])
-    ship_instructions: TextDist = property(lambda self: self['instruct'])
-    ship_modes: TextDist = property(lambda self: self['smode'])
-    return_flags: TextDist = property(lambda self: self['rflag'])
-    part_containers: TextDist = property(lambda self: self['p_cntr'])
-    part_colors: TextDist = property(lambda self: self['colors'])
-    part_types: TextDist = property(lambda self: self['p_types'])
-    market_segments: TextDist = property(lambda self: self['msegmnt'])
-    nations: TextDist = property(lambda self: self['nations'])
-    regions: TextDist = property(lambda self: self['regions'])
+    grammars: TextDist = lang.item_property('grammar')
+    noun_phrase: TextDist = lang.item_property('np')
+    verb_phrase: TextDist = lang.item_property('vp')
+    prepositions: TextDist = lang.item_property('prepositions')
+    nouns: TextDist = lang.item_property('nouns')
+    verbs: TextDist = lang.item_property('verbs')
+    articles: TextDist = lang.item_property('articles')
+    adjectives: TextDist = lang.item_property('adjectives')
+    adverbs: TextDist = lang.item_property('adverbs')
+    auxiliaries: TextDist = lang.item_property('auxillaries')
+    terminators: TextDist = lang.item_property('terminators')
+    order_priorities: TextDist = lang.item_property('o_oprio')
+    ship_instructions: TextDist = lang.item_property('instruct')
+    ship_modes: TextDist = lang.item_property('smode')
+    return_flags: TextDist = lang.item_property('rflag')
+    part_containers: TextDist = lang.item_property('p_cntr')
+    part_colors: TextDist = lang.item_property('colors')
+    part_types: TextDist = lang.item_property('p_types')
+    market_segments: TextDist = lang.item_property('msegmnt')
+    nations: TextDist = lang.item_property('nations')
+    regions: TextDist = lang.item_property('regions')
 
 
 class PyTextPoolGen:
