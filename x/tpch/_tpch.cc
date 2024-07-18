@@ -310,6 +310,14 @@ static inline _tpch_state * get_tpch_state(PyObject *module)
 
 static PyObject * gen_text_pool(PyObject *self, PyObject *args)
 {
+    int size;
+    int max_sentence_length;
+    PyObject *distsobj;
+
+    if (!PyArg_ParseTuple(args, "iiO", &size, &max_sentence_length, &distsobj)) {
+        return NULL;
+    }
+
     return Py_BuildValue("k", 424);
 }
 
@@ -341,7 +349,7 @@ static void _tpch_free(void *module)
 }
 
 static PyMethodDef _tpch_methods[] = {
-    {"gen_text_pool", gen_text_pool, METH_NOARGS, "gen_text_pool"},
+    {"gen_text_pool", gen_text_pool, METH_VARARGS, "gen_text_pool"},
     {NULL, NULL, 0, NULL}
 };
 
