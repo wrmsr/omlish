@@ -89,6 +89,7 @@ from .functions import (  # noqa
     Args,
     VoidError,
     constant,
+    finally_,
     identity,
     is_lambda,
     is_none,

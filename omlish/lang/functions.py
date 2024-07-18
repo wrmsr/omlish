@@ -7,12 +7,19 @@ from .descriptors import is_method_descriptor
 
 
 T = ta.TypeVar('T')
+P = ta.ParamSpec('P')
 CallableT = ta.TypeVar('CallableT', bound=ta.Callable)
+
+
+##
 
 
 def is_lambda(f: ta.Any) -> bool:
     l = lambda: 0
     return isinstance(f, type(l)) and f.__name__ == l.__name__
+
+
+##
 
 
 def maybe_call(obj: ta.Any, att: str, *args, default: ta.Any = None, **kwargs) -> ta.Any:
@@ -22,6 +29,16 @@ def maybe_call(obj: ta.Any, att: str, *args, default: ta.Any = None, **kwargs) -
         return default
     else:
         return fn(*args, **kwargs)
+
+
+def recurse(fn: ta.Callable[..., T], *args, **kwargs) -> T:
+    def rec(*args, **kwargs) -> T:
+        return fn(rec, *args, **kwargs)
+
+    return rec(*args, **kwargs)
+
+
+##
 
 
 def unwrap_func(fn: ta.Callable) -> ta.Callable:
@@ -47,6 +64,9 @@ def unwrap_func_with_partials(fn: ta.Callable) -> tuple[ta.Callable, list[functo
     return fn, ps
 
 
+##
+
+
 def raise_(o: BaseException) -> ta.NoReturn:
     raise o
 
@@ -58,27 +78,31 @@ def raising(o: BaseException) -> ta.Callable[..., ta.NoReturn]:
 
 
 def try_(
+        fn: ta.Callable[P, T],
         exc: type[Exception] | ta.Iterable[type[Exception]] = Exception,
         default: T | None = None,
-) -> ta.Callable[..., T]:
-    def outer(fn):
-        def inner(*args, **kwargs):
-            try:
-                return fn(*args, **kwargs)
-            except exct:
-                return default
-
-        return inner
+) -> ta.Callable[P, T]:
+    def inner(*args, **kwargs):
+        try:
+            return fn(*args, **kwargs)
+        except exct:
+            return default
 
     exct = (exc,) if isinstance(exc, type) else tuple(exc)
-    return outer
+    return inner
 
 
-def recurse(fn: ta.Callable[..., T], *args, **kwargs) -> T:
-    def rec(*args, **kwargs) -> T:
-        return fn(rec, *args, **kwargs)
+def finally_(fn: ta.Callable[P, T], fin: ta.Callable) -> ta.Callable[P, T]:
+    def inner(*args, **kwargs):
+        try:
+            return fn(*args, **kwargs)
+        finally:
+            fin()
 
-    return rec(*args, **kwargs)
+    return inner
+
+
+##
 
 
 def identity(obj: T) -> T:
@@ -121,6 +145,9 @@ def void(*args: ta.Any, **kwargs: ta.Any) -> ta.NoReturn:
     raise VoidError
 
 
+##
+
+
 _MISSING = object()
 
 
@@ -146,6 +173,9 @@ def periodically(
         return ret
 
     return inner  # type: ignore
+
+
+##
 
 
 @dc.dataclass(init=False)
