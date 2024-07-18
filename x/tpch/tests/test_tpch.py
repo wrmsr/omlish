@@ -38,4 +38,7 @@ def test_cext():
     _install_ext_hook()  # noqa
 
     from .. import _tpch  # noqa
+
+    tds = text_.TextDists.default()
+
     print(_tpch.gen_text_pool())
