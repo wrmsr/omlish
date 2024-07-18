@@ -4,6 +4,9 @@ from .. import importhook
 
 
 def test_import_hook():
+    if not os.path.isfile(os.path.join(os.getcwd(), 'pyproject.toml')):
+        raise EnvironmentError('run in project root')
+
     for fn in os.listdir(os.path.dirname(__file__)):
         if os.path.isfile(fn) and fn.endswith('.so'):
             os.unlink(fn)

@@ -30,9 +30,10 @@ def test_rand():
 
 
 def test_cext():
-    for fn in os.listdir(os.path.join(os.path.dirname(__file__), '..')):
-        if os.path.isfile(fn) and fn.endswith('.so'):
-            os.unlink(fn)
+    for fn in os.listdir(bp := os.path.join(os.path.dirname(__file__), '..')):
+        fp = os.path.abspath(os.path.join(bp, fn))
+        if os.path.isfile(fp) and fp.endswith('.so'):
+            os.unlink(fp)
 
     from omdev.exts.importhook import install as _install_ext_hook  # noqa
     _install_ext_hook()  # noqa
