@@ -83,7 +83,7 @@ class InteractiveSocketConsole:
             if banner is None:
                 self.write(f'Python {sys.version} on {sys.platform}\n{self.CPRT}\n({self.__class__.__name__})\n')
             elif banner:
-                self.write(f'{str(banner)}\n')
+                self.write(f'{banner!s}\n')
 
             more = False
             while True:

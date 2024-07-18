@@ -93,7 +93,7 @@ class CacheImpl(Cache[K, V]):
 
             def __repr__(self) -> str:
                 return (
-                    f'Link@{str(self.seq)}('
+                    f'Link@{self.seq!s}('
                     f'ins_prev={("@" + str(self.ins_prev.seq)) if self.ins_prev is not None else None}, '
                     f'ins_next={("@" + str(self.ins_next.seq)) if self.ins_next is not None else None}, '
                     f'lru_prev={("@" + str(self.lru_prev.seq)) if self.lru_prev is not None else None}, '
