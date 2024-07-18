@@ -362,7 +362,6 @@ static struct PyModuleDef _tpch_module = {
     .m_free = _tpch_free,
 };
 
-
 extern "C" {
 
 PyMODINIT_FUNC PyInit__tpch(void)
