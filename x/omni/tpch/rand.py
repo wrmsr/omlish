@@ -1,19 +1,31 @@
+import abc
 import io
+import typing as ta
 
-from .. import check
-from .. import lang
-
-
-class ByRow(lang.Interface):
-
-    def row_finished(self) -> None: ...
-    def advance_rows(self, row_count: int) -> None: ...
+from omlish import check
+from omlish import lang
 
 
-class Gen(ByRow, lang.Interface):
+class ByRow(lang.Abstract):
 
-    def next(self) -> int: ...
-    def rand(self, low_value: int, high_value: int) -> int: ...
+    @abc.abstractmethod
+    def row_finished(self) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def advance_rows(self, row_count: int) -> None:
+        raise NotImplementedError
+
+
+class Gen(ByRow, lang.Abstract):
+
+    @abc.abstractmethod
+    def next(self) -> int:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def rand(self, low_value: int, high_value: int) -> int:
+        raise NotImplementedError
 
 
 class PyIntGen(Gen):
