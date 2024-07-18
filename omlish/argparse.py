@@ -164,7 +164,7 @@ class _CliMeta(type):
         namespace['_parser'] = parser
 
         subparsers = parser.add_subparsers()
-        for name, obj in objs.items():
+        for att, obj in objs.items():
             if isinstance(obj, Command):
                 if obj.parent is not None:
                     raise NotImplementedError
@@ -174,14 +174,14 @@ class _CliMeta(type):
                 cparser.set_defaults(_cmd=obj)
 
             elif isinstance(obj, Arg):
-                if name in anns:
-                    akwargs = get_arg_ann_kwargs(anns[name])
+                if att in anns:
+                    akwargs = get_arg_ann_kwargs(anns[att])
                     obj.kwargs = {**akwargs, **obj.kwargs}
                 if not obj.dest:
                     if 'dest' in obj.kwargs:
                         obj.dest = obj.kwargs['dest']
                     else:
-                        obj.dest = obj.kwargs['dest'] = name  # type: ignore
+                        obj.dest = obj.kwargs['dest'] = att  # type: ignore
                 parser.add_argument(*obj.args, **obj.kwargs)
 
             else:
