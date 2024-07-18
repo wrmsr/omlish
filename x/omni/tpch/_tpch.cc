@@ -182,7 +182,7 @@ struct text_pool_gen {
     }
 
 private:
-    void _write(char* p, int sz) {
+    void _write(const char* p, int sz) {
         if (!sz) {
             return;
         }
@@ -203,11 +203,38 @@ private:
         }
     }
 
-    text_dist_item _rand(text_dist& dist) {
+    text_dist_item _rand(text_dist dist) {
         _seed = (_seed * int_multiplier) % int_modulus;
         auto double_range = static_cast<double>(dist.size);
         auto idx = static_cast<int>((1. * _seed / int_modulus) * double_range);
         return dist.items[idx];
+    }
+
+    void _generate_noun_phrase() {
+        auto syntax = _rand(_dists.noun_phrase);
+        text_dist source;
+        for (int i = 0; i < syntax.size; i++) {
+            if (syntax.item[i] == 'A') {
+                source = _dists.articles;
+            } else if (syntax.item[i] == 'J') {
+                source = _dists.adjectives;
+            } else if (syntax.item[i] == 'D') {
+                source = _dists.adverbs;
+            } else if (syntax.item[i] == 'N') {
+                source = _dists.nouns;
+            } else if (syntax.item[i] == ',') {
+                _erase(1);
+                _write(", ", 2);
+                continue;
+            } else if (syntax.item[i] == ' ') {
+                continue;
+            } else {
+                throw "unknown token";
+            }
+            auto word = _rand(source);
+            _write(word.item, word.size);
+            _write(" ", 1);
+        }
     }
 
     char * const _buf;
