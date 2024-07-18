@@ -79,6 +79,7 @@ from .descriptors import (  # noqa
     attr_property,
     classonly,
     is_method_descriptor,
+    item_property,
     unwrap_method_descriptors,
 )
 
