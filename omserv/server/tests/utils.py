@@ -47,5 +47,5 @@ async def anyio_eof_to_empty(fn: ta.Callable[..., ta.Awaitable[T]], *args: ta.An
 
 
 @pytest.fixture(autouse=True)
-def _headers_time_patch(monkeypatch) -> None:
+def headers_time_patch(monkeypatch) -> None:
     monkeypatch.setattr(headers, '_now', lambda: 5000)

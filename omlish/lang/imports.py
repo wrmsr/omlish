@@ -43,7 +43,7 @@ def import_module(dotted_path: str) -> types.ModuleType:
         try:
             mod = getattr(mod, name)
         except AttributeError:
-            raise AttributeError('Module %r has no attribute %r' % (mod, name)) from None
+            raise AttributeError(f'Module {mod!r} has no attribute {name!r}') from None
     return mod
 
 
@@ -53,7 +53,7 @@ def import_module_attr(dotted_path: str) -> ta.Any:
     try:
         return getattr(mod, class_name)
     except AttributeError:
-        raise AttributeError('Module %r has no attr %r' % (module_name, class_name)) from None
+        raise AttributeError(f'Module {module_name!r} has no attr {class_name!r}') from None
 
 
 SPECIAL_IMPORTABLE: ta.AbstractSet[str] = frozenset([

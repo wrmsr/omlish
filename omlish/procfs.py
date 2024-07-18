@@ -102,7 +102,7 @@ def get_process_stats(pid: PidLike = 'self') -> list[str]:
     """http://man7.org/linux/man-pages/man5/proc.5.html -> /proc/[pid]/stat"""
 
     _check_linux()
-    with open('/proc/%s/stat' % (pid,)) as f:
+    with open(f'/proc/{pid}/stat') as f:
         buf = f.read()
     l, _, r = buf.rpartition(')')
     pid, _, comm = l.partition('(')
@@ -144,7 +144,7 @@ def get_process_rss(pid: PidLike = 'self') -> int:
 
 def set_process_oom_score_adj(score: str, pid: PidLike = 'self') -> None:
     _check_linux()
-    with open('/proc/%s/oom_score_adj' % (pid,), 'w') as f:
+    with open(f'/proc/{pid}/oom_score_adj', 'w') as f:
         f.write(str(score))
 
 
@@ -164,7 +164,7 @@ def get_process_maps(pid: PidLike = 'self', sharing: bool = False) -> ta.Iterato
     """http://man7.org/linux/man-pages/man5/proc.5.html -> /proc/[pid]/maps"""
 
     _check_linux()
-    with open('/proc/%s/%s' % (pid, 'smaps' if sharing else 'maps')) as map_file:
+    with open(f'/proc/{pid}/{"smaps" if sharing else "maps"}') as map_file:
         while True:
             line = map_file.readline()
             if not line:
@@ -217,7 +217,7 @@ def get_process_range_pagemaps(start: int, end: int, pid: PidLike = 'self') -> t
     offset = (start // oos.PAGE_SIZE) * 8
     npages = ((end - start) // oos.PAGE_SIZE)
     size = npages * 8
-    with open('/proc/%s/pagemap' % (pid,), 'rb') as pagemap_file:
+    with open(f'/proc/{pid}/pagemap', 'rb') as pagemap_file:
         pagemap_file.seek(offset)
         pagemap_buf = pagemap_file.read(size)
     if not pagemap_buf:
