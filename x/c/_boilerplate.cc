@@ -64,7 +64,6 @@ static struct PyModuleDef _boilerplate_module = {
     .m_free = _boilerplate_free,
 };
 
-
 extern "C" {
 
 PyMODINIT_FUNC PyInit__boilerplate(void)
