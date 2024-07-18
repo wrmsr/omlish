@@ -51,6 +51,12 @@ def raise_(o: BaseException) -> ta.NoReturn:
     raise o
 
 
+def raising(o: BaseException) -> ta.Callable[..., ta.NoReturn]:
+    def inner(*args, **kwargs):
+        raise o
+    return inner
+
+
 def try_(
         exc: type[Exception] | ta.Iterable[type[Exception]] = Exception,
         default: T | None = None,
