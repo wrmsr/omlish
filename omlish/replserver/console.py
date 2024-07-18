@@ -81,11 +81,9 @@ class InteractiveSocketConsole:
             ps2 = getattr(sys, 'ps2', '... ')
 
             if banner is None:
-                self.write(
-                    'Python %s on %s\n%s\n(%s)\n' %
-                    (sys.version, sys.platform, self.CPRT, self.__class__.__name__))
+                self.write(f'Python {sys.version} on {sys.platform}\n{self.CPRT}\n({self.__class__.__name__})\n')
             elif banner:
-                self.write('%s\n' % (str(banner),))
+                self.write(f'{str(banner)}\n')
 
             more = False
             while True:
@@ -104,10 +102,10 @@ class InteractiveSocketConsole:
                     more = False
 
             if exitmsg is None:
-                self.write('now exiting %s...\n' % self.__class__.__name__)
+                self.write(f'now exiting {self.__class__.__name__}...\n')
 
             elif exitmsg != '':
-                self.write('%s\n' % exitmsg)
+                self.write(f'{exitmsg}\n')
 
         except DisconnectError:
             pass
