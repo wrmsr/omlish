@@ -186,6 +186,9 @@ private:
         if (!sz) {
             return;
         }
+        if ((_pos + sz) >= _size) {
+            throw "write past end";
+        }
         memcpy(_buf + _pos, p, sz);
         _pos += sz;
         _last = _buf[_pos - 1];
@@ -234,6 +237,50 @@ private:
             auto word = _rand(source);
             _write(word.item, word.size);
             _write(" ", 1);
+        }
+    }
+
+    void _generate_verb_phrase() {
+        auto syntax = _rand(_dists.verb_phrase);
+        text_dist source;
+        for (int i = 0; i < syntax.size; i += 2) {
+            if (syntax.item[i] == 'D') {
+                source = _dists.adverbs;
+            } else if (syntax.item[i] == 'V') {
+                source = _dists.verbs;
+            } else if (syntax.item[i] == 'X') {
+                source = _dists.auxiliaries;
+            } else {
+                throw "unknown token";
+            }
+            auto word = _rand(source);
+            _write(word.item, word.size);
+            _write(" ", 1);
+        }
+    }
+
+    void _generate_sentence() {
+        auto syntax = _rand(_dists.grammars);
+        for (int i = 0; i < syntax.size; i += 2) {
+            if (syntax.item[i] == 'V') {
+                _generate_verb_phrase();
+            } else if (syntax.item[i] == 'N') {
+                _generate_noun_phrase();
+            } else if (syntax.item[i] == 'P') {
+                auto preposition = _rand(_dists.prepositions);
+                _write(preposition.item, preposition.size);
+                _write(" the ", 5);
+                _generate_noun_phrase();
+            } else if (syntax.item[i] == 'T') {
+                _erase(1);
+                auto terminator = _rand(_dists.terminators);
+                _write(terminator.item, terminator.size);
+            } else {
+                throw "unknown token";
+            }
+            if (_last != ' ') {
+                _write(" ", 1);
+            }
         }
     }
 
