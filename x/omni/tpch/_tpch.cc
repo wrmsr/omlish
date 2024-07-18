@@ -136,12 +136,12 @@ private:
 //
 
 struct text_dist_item {
-    char * const item;
+    const char* item;
     int size;
 };
 
 struct text_dist {
-    text_dist_item * const items;
+    const text_dist_item* items;
     int size;
 };
 
@@ -180,8 +180,16 @@ struct text_pool_gen {
     }
 
 private:
+    void _write(char* p, int sz) {
+        if (!sz) {
+            return;
+        }
+        memcpy(_buf + _pos, p, sz);
+        _pos += sz;
+        _last = _buf[_pos - 1];
+    }
 
-    const char *_buf;
+    char * const _buf;
     const int _size;
     const text_dists& _dists;
 
