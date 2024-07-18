@@ -10,6 +10,9 @@ https://github.com/wrmsr/omnibus/blob/c2ff67b6c5c80aa03fe27a9b6f36212f3212c7ca/o
 
 //
 
+static constexpr int64_t int_multiplier = 16807;
+static constexpr int64_t int_modulus    = 2147483647;
+
 struct int_gen {
     explicit int_gen(
         int64_t seed,
@@ -25,7 +28,7 @@ struct int_gen {
         if (_usage >= _expected_usage_per_row) {
             throw "unexpected usages";
         }
-        _seed = (_seed * _multiplier) % _modulus;
+        _seed = (_seed * int_multiplier) % int_modulus;
         _usage++;
         return _seed;
     }
@@ -34,18 +37,18 @@ struct int_gen {
         next();
         auto int_range = high - low + 1;
         auto double_range = static_cast<double>(int_range);
-        auto value_in_range = static_cast<int32_t>((1. * static_cast<double>(_seed) / static_cast<double>(_modulus)) * double_range);
+        auto value_in_range = static_cast<int32_t>((1. * static_cast<double>(_seed) / static_cast<double>(int_modulus)) * double_range);
         return static_cast<int64_t>(static_cast<int32_t>(low) * value_in_range);
     }
 
     void advance_seed(int count) {
-        auto multiplier = _multiplier;
+        auto multiplier = int_multiplier;
         while (count > 0) {
             if (count % 2 != 0) {
-                _seed = (multiplier * _seed) % _modulus;
+                _seed = (multiplier * _seed) % int_modulus;
             }
             count /= 2;
-            multiplier = (multiplier * multiplier) % _modulus;
+            multiplier = (multiplier * multiplier) % int_modulus;
         }
     }
 
@@ -62,14 +65,19 @@ struct int_gen {
     }
 
 private:
-    static constexpr int64_t _multiplier = 16807;
-    static constexpr int64_t _modulus    = 2147483647;
-
     int64_t _seed;
     const int _expected_usage_per_row;
 
     int _usage;
 };
+
+//
+
+static constexpr int64_t long_multiplier    = 6364136223846793005;
+static constexpr int64_t long_increment     = 1;
+
+static constexpr int64_t long_multiplier_32 = 16807;
+static constexpr int64_t long_modulus_32    = 2147483647;
 
 struct long_gen {
     explicit long_gen(
@@ -86,7 +94,7 @@ struct long_gen {
         if (_usage >= _expected_usage_per_row) {
             throw "unexpected usages";
         }
-        _seed = (_seed * _multiplier) + _increment;
+        _seed = (_seed * long_multiplier) + long_increment;
         _usage++;
         return _seed;
     }
@@ -98,13 +106,13 @@ struct long_gen {
     }
 
     void advance_seed(int count) {
-        auto multiplier = _multiplier_32;
+        auto multiplier = long_multiplier_32;
         while (count > 0) {
             if (count % 2 != 0) {
-                _seed = (multiplier * _seed) % _modulus_32;
+                _seed = (multiplier * _seed) % long_modulus_32;
             }
             count /= 2;
-            multiplier = (multiplier * multiplier) % _modulus_32;
+            multiplier = (multiplier * multiplier) % long_modulus_32;
         }
     }
 
@@ -121,12 +129,6 @@ struct long_gen {
     }
 
 private:
-    static constexpr int64_t _multiplier    = 6364136223846793005;
-    static constexpr int64_t _increment     = 1;
-
-    static constexpr int64_t _multiplier_32 = 16807;
-    static constexpr int64_t _modulus_32    = 2147483647;
-
     int64_t _seed;
     const int _expected_usage_per_row;
 
@@ -187,6 +189,25 @@ private:
         memcpy(_buf + _pos, p, sz);
         _pos += sz;
         _last = _buf[_pos - 1];
+    }
+
+    void _erase(int i) {
+        if (i > _pos) {
+            throw i;
+        }
+        _pos -= i;
+        if (_pos) {
+            _last = _buf[_pos - 1];
+        } else {
+            _last = 0;
+        }
+    }
+
+    text_dist_item _rand(text_dist& dist) {
+        _seed = (_seed * int_multiplier) % int_modulus;
+        auto double_range = static_cast<double>(dist.size);
+        auto idx = static_cast<int>((1. * _seed / int_modulus) * double_range);
+        return dist.items[idx];
     }
 
     char * const _buf;
