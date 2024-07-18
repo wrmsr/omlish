@@ -252,6 +252,7 @@ pytest==8.2.2
 pytest-asyncio==0.23.8
 pytest-benchmark==4.0.0
 pytest-clarity==1.0.1
+pytest-stress==1.0.1
 pytest-timeout==2.3.1
 pytest-trio==0.8.0
 pytest-xdist==3.6.1
