@@ -6,7 +6,7 @@
 matplotlib==3.9.1
 numpy==1.26.4
 
-huggingface_hub==0.23.5
+huggingface_hub==0.24.0
 evaluate==0.4.2
 datasets==2.20.0
 
@@ -187,3 +187,5 @@ mitogen==0.3.7
 
 lz4==4.3.3
 cloudpickle==3.0.0
+
+zstd==1.5.5.1
