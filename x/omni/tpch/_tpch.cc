@@ -175,10 +175,9 @@ struct text_pool_gen {
         _last{0},
         _seed{_initial_seed}
     {
-        // while this._pos < size:
-        //     this._generate_sentence()
-
-        // del this._buf[size:]
+        while (_pos < size) {
+            _generate_sentence();
+        }
     }
 
 private:
