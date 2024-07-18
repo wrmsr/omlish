@@ -25,7 +25,7 @@ import traceback
 import types
 import typing as ta
 
-from .. import check
+from ... import check
 
 
 log = logging.getLogger(__name__)

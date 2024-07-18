@@ -11,10 +11,10 @@ import struct
 import sys
 import typing as ta
 
-from . import iterators as it
-from . import json
-from . import lang
-from . import os as oos
+from .. import iterators as it
+from .. import json
+from .. import lang
+from .. import os as oos
 
 
 log = logging.getLogger(__name__)
@@ -308,7 +308,7 @@ def _cmp_cmd(args: ta.Any) -> None:
     sys.stdout.write('\n')
 
 
-def _main():
+def _main() -> None:
     _check_linux()
 
     arg_parser = argparse.ArgumentParser()
