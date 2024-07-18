@@ -16,6 +16,7 @@ WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEM
 COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
+import abc
 import random
 import typing as ta
 
@@ -74,11 +75,36 @@ class TreapMap(PersistentMap[K, V]):
         i = TreapMapIterator(
             _st=[],
             _n=self._n,
-            _b=False,
         )
         while (n := i._n) is not None and n.left is not None:  # noqa
             i._st.append(n)  # noqa
             i._n = n.left  # noqa
+        return i
+
+    def iterate_from(self, k: K) -> 'TreapMapIterator[K, V]':
+        lst = treap.place(self._n, (k, None), self._c)
+        i = TreapMapIterator(
+            _st=lst,
+            _n=lst.pop(),
+        )
+        return i
+
+    def reverse_iterate(self) -> 'TreapMapReverseIterator[K, V]':
+        i = TreapMapReverseIterator(
+            _st=[],
+            _n=self._n,
+        )
+        while (n := i._n) is not None and n.right is not None:  # noqa
+            i._st.append(n)  # noqa
+            i._n = n.right  # noqa
+        return i
+
+    def reverse_iterate_from(self, k: K) -> 'TreapMapReverseeIterator[K, V]':
+        lst = treap.place(self._n, (k, None), self._c, desc=True)
+        i = TreapMapReverseIterator(
+            _st=lst,
+            _n=lst.pop(),
+        )
         return i
 
     def with_(self, k: K, v: V) -> 'TreapMap[K, V]':
@@ -108,24 +134,30 @@ def new_treap_map(cmp: ta.Callable[[tuple[K, V], tuple[K, V]], int]) -> Persiste
     return TreapMap(_n=None, _c=cmp)
 
 
-class TreapMapIterator(ta.Generic[K, V]):
-    __slots__ = ('_st', '_n', '_b')
+class BaseTreapMapIterator(abc.ABC, ta.Generic[K, V]):
+    __slots__ = ('_st', '_n')
 
     def __init__(
             self,
             *,
             _st: list[treap.TreapNode[tuple[K, V]]],
             _n: treap.TreapNode[tuple[K, V]] | None,
-            _b: bool,
     ) -> None:
         super().__init__()
 
         self._st = _st
         self._n = _n
-        self._b = _b
 
     def has_next(self) -> bool:
         return self._n is not None
+
+    @abc.abstractmethod
+    def next(self) -> tuple[K, V]:
+        raise NotImplementedError
+
+
+class TreapMapIterator(BaseTreapMapIterator[K, V]):
+    __slots__ = BaseTreapMapIterator.__slots__
 
     def next(self) -> tuple[K, V]:
         n = self._n
@@ -136,6 +168,26 @@ class TreapMapIterator(ta.Generic[K, V]):
             while self._n.left is not None:
                 self._st.append(self._n)
                 self._n = self._n.left
+        elif len(self._st) > 0:
+            self._n = self._st[-1]
+            self._st.pop()
+        else:
+            self._n = None
+        return n.value
+
+
+class TreapMapReverseIterator(BaseTreapMapIterator[K, V]):
+    __slots__ = BaseTreapMapIterator.__slots__
+
+    def next(self) -> tuple[K, V]:
+        n = self._n
+        if n is None:
+            raise StopIteration
+        if n.left is not None:
+            self._n = n.left
+            while self._n.right is not None:
+                self._st.append(self._n)
+                self._n = self._n.right
         elif len(self._st) > 0:
             self._n = self._st[-1]
             self._st.pop()
