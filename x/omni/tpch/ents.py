@@ -6,35 +6,39 @@ TODO:
 
 https://github.com/databricks/tpch-dbgen
 """
+import enum
 import typing as ta
 
-from .. import dataclasses as dc
-from .. import lang
+from omlish import dataclasses as dc
 
 
-class Meta(dc.Pure):
+@dc.dataclass(frozen=True)
+class Meta:
     primary_key: ta.Sequence[str]
     indices: ta.Sequence[ta.Sequence[str]] = ()
 
 
-class Column(dc.Pure):
-    class Type(lang.AutoEnum):
-        INTEGER = ...
-        IDENTIFIER = ...
-        DATE = ...
-        DOUBLE = ...
-        VARCHAR = ...
+@dc.dataclass(frozen=True)
+class Column:
+    class Type(enum.Enum):
+        INTEGER = enum.auto()
+        IDENTIFIER = enum.auto()
+        DATE = enum.auto()
+        DOUBLE = enum.auto()
+        VARCHAR = enum.auto()
 
     name: str
     type: Type
-    precision: ta.Optional[int] = dc.field(0, kwonly=True)
-    scale: ta.Optional[int] = dc.field(0, kwonly=True)
+    precision: ta.Optional[int] = dc.field(default=0, kw_only=True)
+    scale: ta.Optional[int] = dc.field(default=0, kw_only=True)
 
 
-class Entity(dc.Enum):
+@dc.dataclass(frozen=True)
+class Entity:
     row_number: int
 
 
+@dc.dataclass(frozen=True)
 class Region(Entity):
     dc.metadata({Meta: Meta(['region_key'])})
 
@@ -43,6 +47,7 @@ class Region(Entity):
     comment: str = dc.field(metadata={Column: Column('r_comment', Column.Type.VARCHAR, precision=152)})
 
 
+@dc.dataclass(frozen=True)
 class Nation(Entity):
     dc.metadata({Meta: Meta(['nation_key'], [['region_key']])})
 
@@ -52,6 +57,7 @@ class Nation(Entity):
     comment: str = dc.field(metadata={Column: Column('n_comment', Column.Type.VARCHAR, precision=152)})
 
 
+@dc.dataclass(frozen=True)
 class Part(Entity):
     dc.metadata({Meta: Meta(['part_key'])})
 
@@ -66,6 +72,7 @@ class Part(Entity):
     comment: str = dc.field(metadata={Column: Column('p_comment', Column.Type.VARCHAR, precision=23)})
 
 
+@dc.dataclass(frozen=True)
 class Supplier(Entity):
     dc.metadata({Meta: Meta(['supplier_key'], [['nation_key']])})
 
@@ -78,6 +85,7 @@ class Supplier(Entity):
     comment: str = dc.field(metadata={Column: Column('s_comment', Column.Type.VARCHAR, precision=101)})
 
 
+@dc.dataclass(frozen=True)
 class PartSupplier(Entity):
     dc.metadata({Meta: Meta(['part_key', 'supplier_key'], [['supplier_key', 'part_key']])})
 
@@ -88,6 +96,7 @@ class PartSupplier(Entity):
     comment: str = dc.field(metadata={Column: Column('ps_comment', Column.Type.VARCHAR, precision=199)})
 
 
+@dc.dataclass(frozen=True)
 class Customer(Entity):
     dc.metadata({Meta: Meta(['customer_key'], [['nation_key']])})
 
@@ -101,6 +110,7 @@ class Customer(Entity):
     comment: str = dc.field(metadata={Column: Column('c_comment', Column.Type.VARCHAR, precision=117)})
 
 
+@dc.dataclass(frozen=True)
 class Order(Entity):
     dc.metadata({Meta: Meta(['order_key'], [['customer_key']])})
 
@@ -115,6 +125,7 @@ class Order(Entity):
     comment: str = dc.field(metadata={Column: Column('o_comment', Column.Type.VARCHAR, precision=79)})
 
 
+@dc.dataclass(frozen=True)
 class LineItem(Entity):
     dc.metadata({Meta: Meta(['order_key', 'line_number'], [['part_key'], ['supp_key']])})
 

@@ -1,6 +1,7 @@
 import typing as ta
 
-from .. import check
+from omlish import check
+
 from .ents import Customer
 from .ents import Region
 from .rand import RandomAlphaNumeric
@@ -106,8 +107,8 @@ class RegionGenerator(ta.Iterable[Region]):
     ) -> None:
         super().__init__()
 
-        self._text_dists = check.isinstance(text_dists, TextDists) if text_dists is not None else TextDists.DEFAULT
-        self._text_pool = check.isinstance(text_pool, TextPool) if text_pool is not None else TextPool.DEFAULT
+        self._text_dists = check.isinstance(text_dists, TextDists) if text_dists is not None else TextDists.default()
+        self._text_pool = check.isinstance(text_pool, TextPool) if text_pool is not None else TextPool.default()
 
     def __iter__(self) -> ta.Iterator[Customer]:
         # market_segment_random = RandomString(1140279430, self._text_dists.market_segments)
@@ -152,8 +153,8 @@ class CustomerGenerator(ta.Iterable[Customer]):
         self._part = part
         self._part_count = part_count
 
-        self._text_dists = check.isinstance(text_dists, TextDists) if text_dists is not None else TextDists.DEFAULT
-        self._text_pool = check.isinstance(text_pool, TextPool) if text_pool is not None else TextPool.DEFAULT
+        self._text_dists = check.isinstance(text_dists, TextDists) if text_dists is not None else TextDists.default()
+        self._text_pool = check.isinstance(text_pool, TextPool) if text_pool is not None else TextPool.default()
 
     def __iter__(self) -> ta.Iterator[Customer]:
         start_index = calculate_start_index(self._SCALE_BASE, self._scale_factor, self._part, self._part_count)

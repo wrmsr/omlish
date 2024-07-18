@@ -2,9 +2,10 @@ import typing as ta
 
 import pkg_resources
 
-from .. import check
-from .. import defs
-from .. import properties
+from omlish import cached
+from omlish import check
+from omlish import defs
+
 from .rand import Gen
 from .rand import GenRandom
 from .rand import IntGen
@@ -30,8 +31,8 @@ class TextDist:
         #  "nations" is hack and not a valid dist so we need to skip it
         if is_valid:
             self._max_weight = self._weights[-1]
-            self._seq: ta.List[str] = [None] * self._max_weight
-            self._bytes_seq: ta.List[bytes] = [None] * self._max_weight
+            self._seq: list[str | None] = [None] * self._max_weight
+            self._bytes_seq: list[bytes | None] = [None] * self._max_weight
 
             i = 0
             for value in self._values:
@@ -189,12 +190,11 @@ class TextDists:
 
         self._dists_by_name = dists_by_name
 
+    @cached.function
     @classmethod
-    def load_defaults(cls) -> ta.Mapping[str, TextDist]:
-        return TextDistLoading.load_dist(
-            pkg_resources.resource_string(__package__, 'dists.dss').decode('utf-8'))
-
-    DEFAULT: 'TextDists' = properties.cached_class(lambda cls: cls(cls.load_defaults()))
+    def default(cls) -> 'TextDists':
+        data = TextDistLoading.load_dist(pkg_resources.resource_string(__package__, 'dists.dss').decode('utf-8'))
+        return cls(data)
 
     def __getitem__(self, name: str) -> TextDist:
         return self._dists_by_name[name]
@@ -238,12 +238,8 @@ class PyTextPoolGen:
         self._last = None
         self._gen = IntGen(933588178, 0x7FFFFFFF)
 
-        i = 0
         while self._pos < size:
             self._generate_sentence()
-            i += 1
-            if i % 1000 == 0:
-                print(self._pos)
 
         del self._buf[size:]
 
@@ -335,6 +331,9 @@ def py_gen_text_pool(size: int, max_sentence_length: int, dists: TextDists) -> b
     return PyTextPoolGen(size, max_sentence_length, dists).buf
 
 
+# from . import _tpch  # noqa
+
+
 _CY_ENABLED = True
 
 try:
@@ -368,7 +367,10 @@ class TextPool:
 
         self._buf = gen_text_pool(size, self.MAX_SENTENCE_LENGTH, dists)
 
-    DEFAULT: 'TextPool' = properties.cached_class(lambda cls: cls(cls.DEFAULT_SIZE, TextDists.DEFAULT))
+    @cached.function
+    @classmethod
+    def default(cls) -> 'TextPool':
+        return cls(cls.DEFAULT_SIZE, TextDists.default())
 
     @property
     def size(self) -> int:
@@ -398,4 +400,4 @@ class RandomText(GenRandom):
 
 
 if __name__ == '__main__':
-    TextPool.DEFAULT  # noqa
+    TextPool.default()  # noqa
