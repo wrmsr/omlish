@@ -76,6 +76,7 @@ from .datetimes import (  # noqa
 from .descriptors import (  # noqa
     AccessForbiddenError,
     access_forbidden,
+    attr_property,
     classonly,
     is_method_descriptor,
     unwrap_method_descriptors,
