@@ -1,8 +1,16 @@
 import functools
+import operator
 import typing as ta
 
 
 T = ta.TypeVar('T')
+
+
+##
+
+
+def attr_property(n: str):
+    return property(operator.attrgetter(n))
 
 
 ##
