@@ -62,6 +62,68 @@ private:
 
     int64_t _seed;
     int _expected_usage_per_row;
+
+    int _usage;
+};
+
+struct long_gen {
+    explicit long_gen(
+        int64_t seed,
+        int expected_usage_per_row
+    ) noexcept :
+        _seed{seed},
+        _expected_usage_per_row{expected_usage_per_row},
+        _usage{0}
+    {}
+
+    int64_t next() {
+        if (_usage >= _expected_usage_per_row) {
+            throw "unexpected usages";
+        }
+        _seed = (_seed * _multiplier) + _increment;
+        _usage++;
+        return _seed;
+    }
+
+    int64_t rand(int64_t low, int64_t high) {
+        next();
+        auto value_in_range = llabs(_seed) % (high - low + 1);
+        return low + value_in_range;
+    }
+
+    void advance_seed(int count) {
+        auto multiplier = _multiplier_32;
+        while (count > 0) {
+            if (count % 2 != 0) {
+                _seed = (multiplier * _seed) % _modulus_32;
+            }
+            count /= 2;
+            multiplier = (multiplier * multiplier) % _modulus_32;
+        }
+    }
+
+    void row_finished() {
+        advance_seed(_expected_usage_per_row - _usage);
+        _usage = 0;
+    }
+
+    void advance_rows(int row_count) {
+        if (_usage > 0) {
+            row_finished();
+        }
+        advance_seed(_expected_usage_per_row * row_count);
+    }
+
+private:
+    static constexpr int64_t _multiplier    = 6364136223846793005;
+    static constexpr int64_t _increment     = 1;
+
+    static constexpr int64_t _multiplier_32 = 16807;
+    static constexpr int64_t _modulus_32    = 2147483647;
+
+    int64_t _seed;
+    int _expected_usage_per_row;
+
     int _usage;
 };
 
