@@ -1,3 +1,7 @@
+/*
+https://github.com/wrmsr/bane/blob/27647abdcfb323b73e6982a5c318c7029496b203/core/tpch/text.go
+https://github.com/wrmsr/omnibus/blob/c2ff67b6c5c80aa03fe27a9b6f36212f3212c7ca/omnibus/_ext/cy/tpch.pyx
+*/
 #define PY_SSIZE_T_CLEAN
 #include "Python.h"
 #include "structmember.h"
@@ -13,6 +17,7 @@ struct int_gen {
     ) noexcept :
         _seed{seed},
         _expected_usage_per_row{expected_usage_per_row},
+
         _usage{0}
     {}
 
@@ -61,7 +66,7 @@ private:
     static constexpr int64_t _modulus    = 2147483647;
 
     int64_t _seed;
-    int _expected_usage_per_row;
+    const int _expected_usage_per_row;
 
     int _usage;
 };
@@ -73,6 +78,7 @@ struct long_gen {
     ) noexcept :
         _seed{seed},
         _expected_usage_per_row{expected_usage_per_row},
+
         _usage{0}
     {}
 
@@ -122,9 +128,68 @@ private:
     static constexpr int64_t _modulus_32    = 2147483647;
 
     int64_t _seed;
-    int _expected_usage_per_row;
+    const int _expected_usage_per_row;
 
     int _usage;
+};
+
+//
+
+struct text_dist_item {
+    char * const item;
+    int size;
+};
+
+struct text_dist {
+    text_dist_item * const items;
+    int size;
+};
+
+struct text_dists {
+    text_dist adjectives;
+    text_dist adverbs;
+    text_dist articles;
+    text_dist auxiliaries;
+    text_dist grammars;
+    text_dist noun_phrase;
+    text_dist nouns;
+    text_dist prepositions;
+    text_dist terminators;
+    text_dist verb_phrase;
+    text_dist verbs;
+};
+
+struct text_pool_gen {
+    explicit text_pool_gen(
+        char* buf,
+        int size,
+        text_dists& dists
+    ) :
+        _buf{buf},
+        _size{size},
+        _dists{dists},
+
+        _pos{0},
+        _last{0},
+        _seed{_initial_seed}
+    {
+        // while this._pos < size:
+        //     this._generate_sentence()
+
+        // del this._buf[size:]
+    }
+
+private:
+
+    const char *_buf;
+    const int _size;
+    const text_dists& _dists;
+
+    static constexpr int64_t _initial_seed = 933588178;
+
+    int _pos;
+    char _last;
+    int64_t _seed;
 };
 
 //
