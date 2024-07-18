@@ -23,8 +23,8 @@ import threading
 import typing as ta
 import weakref
 
-from .. import check
-from .. import dataclasses as dc
+from ... import check
+from ... import dataclasses as dc
 from .console import InteractiveSocketConsole
 
 
