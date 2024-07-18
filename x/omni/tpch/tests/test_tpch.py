@@ -38,3 +38,4 @@ def test_cext():
     _install_ext_hook()  # noqa
 
     from .. import _tpch  # noqa
+    print(_tpch.gen_text_pool())
