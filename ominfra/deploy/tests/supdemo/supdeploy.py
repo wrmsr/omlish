@@ -28,8 +28,7 @@ adduser \
   --group \
   --shell /bin/bash \
   omlish
-
-==
+ ==
 
 ~piku/.piku
   /apps/<app>
@@ -70,10 +69,11 @@ USERNAME = 'deploy'
 APP_NAME = 'omlish'
 REPO_URL = 'https://github.com/wrmsr/omlish'
 REVISION = 'cb60a99124c4d6973ac6e88d1a4313bcc9d8a197'
-REQUIREMENTS_TXT = 'requirements-dev.txt'
+REQUIREMENTS_TXT = 'requirements.txt'
 ENTRYPOINT = 'omserv.server.tests.hello'
 
-SUPERVISOR_CONF_PATH = '/etc/supervisor/conf.d/supervisord.conf'
+GLOBAL_SUPERVISOR_CONF_PATH = '/etc/supervisor/conf.d/supervisord.conf'
+GLOBAL_NGINX_CONF_PATH = '/etc/nginx/sites-enabled/deploy.conf'
 
 
 def sh(*ss):
@@ -98,6 +98,8 @@ def _main() -> None:
     logging.root.addHandler(logging.StreamHandler())
     logging.root.setLevel('INFO')
 
+    ###
+
     try:
         pwn = pwd.getpwnam(USERNAME)
     except KeyError:
@@ -111,6 +113,8 @@ def _main() -> None:
             USERNAME,
         ]))
         pwn = pwd.getpwnam(USERNAME)
+
+    ##
 
     home_dir = os.path.expanduser(f'~{USERNAME}')
     for dn in [
@@ -127,17 +131,32 @@ def _main() -> None:
             os.mkdir(fp)
             os.chown(fp, pwn.pw_uid, pwn.pw_gid)
 
+    ##
+
+    nginx_conf_dir = os.path.join(home_dir, 'conf/nginx')
+    if not os.path.isfile(GLOBAL_NGINX_CONF_PATH):
+        log.info('Writing global nginx conf at %s', GLOBAL_NGINX_CONF_PATH)
+        with open(GLOBAL_NGINX_CONF_PATH, 'w') as f:
+            f.write(f'include {nginx_conf_dir}/*.conf;\n')
+
+    log.info('Starting nginx')
+    sh('service start nginx')
+
+    ##
+
     sup_conf_dir = os.path.join(home_dir, 'conf/supervisor')
-    with open(SUPERVISOR_CONF_PATH, 'r') as f:
+    with open(GLOBAL_SUPERVISOR_CONF_PATH, 'r') as f:
         glo_sup_conf = f.read()
     if sup_conf_dir not in glo_sup_conf:
-        log.info('Updating global supervisor conf at %s', SUPERVISOR_CONF_PATH)
+        log.info('Updating global supervisor conf at %s', GLOBAL_SUPERVISOR_CONF_PATH)
         glo_sup_conf += f"""
 [include]
 files = {home_dir}/conf/supervisor/*.conf
 """
-        with open(SUPERVISOR_CONF_PATH, 'w') as f:
+        with open(GLOBAL_SUPERVISOR_CONF_PATH, 'w') as f:
             f.write(glo_sup_conf)
+
+    ###
 
     clone_submodules = False
     ush(
@@ -149,11 +168,20 @@ files = {home_dir}/conf/supervisor/*.conf
         ] if clone_submodules else []),
     )
 
+    ##
+
     ush(
         'cd ~/venv',
         f'{PYTHON_BIN} -mvenv {APP_NAME}',
         f'{APP_NAME}/bin/python -mpip install -r ~deploy/app/{APP_NAME}/{REQUIREMENTS_TXT}',
     )
+
+    ##
+
+    nginx_conf = f"""
+"""
+
+    ##
 
     sup_conf = f"""
 [program:{APP_NAME}]

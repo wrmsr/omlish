@@ -21,7 +21,12 @@ def _main():
     ])
 
     ctr_id = subprocess.check_output([
-        'docker', 'run', '-d', img_name,
+        'docker', 'run',
+        '-d',
+        '-p', '9322:22',
+        '-p', '9380:80',
+        '-p', '9343:443',
+        img_name,
     ]).decode().strip()
     print(f'{ctr_id=}')
 
