@@ -27,8 +27,9 @@
 /.ipynb_checkpoints/
 /.mypy_cache/
 /.pytest_cache/
+/.ruff_cache/
 /.tox/
-/.vector_cache
+/.vector_cache/
 /.venv*/
 /MANIFEST
 /build/
