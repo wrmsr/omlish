@@ -65,12 +65,15 @@ REQUIRED_PYTHON_VERSION = (3, 8)
 log = logging.getLogger(__name__)
 
 
+PYTHON_BIN = 'python3.12'
 USERNAME = 'deploy'
 APP_NAME = 'omlish'
 REPO_URL = 'https://github.com/wrmsr/omlish'
 REVISION = 'cb60a99124c4d6973ac6e88d1a4313bcc9d8a197'
 REQUIREMENTS_TXT = 'requirements-dev.txt'
 ENTRYPOINT = 'omserv.server.tests.hello'
+
+SUPERVISOR_CONF_PATH = '/etc/supervisor/conf.d/supervisord.conf'
 
 
 def sh(*ss):
@@ -124,6 +127,18 @@ def _main() -> None:
             os.mkdir(fp)
             os.chown(fp, pwn.pw_uid, pwn.pw_gid)
 
+    sup_conf_dir = os.path.join(home_dir, 'conf/supervisor')
+    with open(SUPERVISOR_CONF_PATH, 'r') as f:
+        glo_sup_conf = f.read()
+    if sup_conf_dir not in glo_sup_conf:
+        log.info('Updating global supervisor conf at %s', SUPERVISOR_CONF_PATH)
+        glo_sup_conf += f"""
+[include]
+files = {home_dir}/conf/supervisor/*.conf
+"""
+        with open(SUPERVISOR_CONF_PATH, 'w') as f:
+            f.write(glo_sup_conf)
+
     clone_submodules = False
     ush(
         'cd ~/app',
@@ -136,7 +151,7 @@ def _main() -> None:
 
     ush(
         'cd ~/venv',
-        f'python3 -mvenv {APP_NAME}',
+        f'{PYTHON_BIN} -mvenv {APP_NAME}',
         f'{APP_NAME}/bin/python -mpip install -r ~deploy/app/{APP_NAME}/{REQUIREMENTS_TXT}',
     )
 
@@ -152,6 +167,9 @@ autorestart=true
     log.info('Writing supervisor conf to %s', sup_conf_file)
     with open(sup_conf_file, 'w') as f:
         f.write(sup_conf)
+
+    log.info('Poking supervisor')
+    sh('kill -HUP 1')
 
 
 if __name__ == '__main__':
