@@ -1,0 +1,12 @@
+.cache
+.data
+.git
+.mypy_cache
+.ruff_cache
+.vector_cache
+.venv*
+dp
+tinygrad
+
+!.git/HEAD
+!.git/refs
