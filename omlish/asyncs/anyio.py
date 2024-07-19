@@ -39,11 +39,12 @@ def split_memory_object_streams(
 
 
 # FIXME: https://github.com/python/mypy/issues/15238
+# FIXME: https://youtrack.jetbrains.com/issues?q=tag:%20%7BPEP%20695%7D
 def create_memory_object_stream[T](max_buffer_size: float = 0) -> tuple[
     anyio.streams.memory.MemoryObjectSendStream[T],
     anyio.streams.memory.MemoryObjectReceiveStream[T],
 ]:
-    return anyio.create_memory_object_stream[T](max_buffer_size)
+    return anyio.create_memory_object_stream[T](max_buffer_size)  # noqa
 
 
 def staple_memory_object_stream(
@@ -57,6 +58,7 @@ def staple_memory_object_stream(
 
 
 # FIXME: https://github.com/python/mypy/issues/15238
+# FIXME: https://youtrack.jetbrains.com/issues?q=tag:%20%7BPEP%20695%7D
 def staple_memory_object_stream2[T](max_buffer_size: float = 0) -> anyio.streams.stapled.StapledObjectStream[T]:
     send, receive = anyio.create_memory_object_stream[T](max_buffer_size)
     return anyio.streams.stapled.StapledObjectStream(
