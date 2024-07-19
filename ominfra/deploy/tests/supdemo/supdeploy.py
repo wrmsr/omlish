@@ -27,16 +27,10 @@ spec = <name>--<rev>--<when>
 
 https://docs.docker.com/config/containers/multi-service_container/#use-a-process-manager
 https://serverfault.com/questions/211525/supervisor-not-loading-new-configuration-files
-
-adduser \
-  --system \
-  --disabled-password \
-  --group \
-  --shell /bin/bash \
-  omlish
- ==
 """  # noqa
+import abc
 import dataclasses as dc
+import enum
 import functools
 import logging
 import os.path
@@ -121,6 +115,49 @@ class HostConfig:
     global_nginx_conf_file_path: str = '/etc/nginx/sites-enabled/deploy.conf'
 
 
+##
+
+
+class Phase(enum.Enum):
+    HOST = enum.auto()
+    ENV = enum.auto()
+    BACKEND = enum.auto()
+    FRONTEND = enum.auto()
+
+
+def run_in_phase(*ps: Phase):
+    def inner(fn):
+        fn.__deployment_phases__ = ps
+        return fn
+    return inner
+
+
+class Concern(abc.ABC):
+    def __init__(self, d: 'Deployment') -> None:
+        super().__init__()
+        self._d = d
+
+    @dc.dataclass(frozen=True)
+    class Output(abc.ABC):
+        path: str
+        is_file: bool
+
+    def outputs(self) -> ta.Sequence[Output]:
+        return ()
+
+
+##
+
+
+class User(Concern):
+    @run_in_phase(Phase.HOST)
+    def create_user(self) -> None:
+
+
+
+##
+
+
 class Deployment:
 
     def __init__(
@@ -142,9 +179,9 @@ class Deployment:
         self.sh(f"su - {self._host_cfg.username} -c {shlex.quote(s)}")
 
     @cached_nullary
-    def pwn(self) -> pwd.struct_passwd:
+    def create_user(self) -> None:
         try:
-            return pwd.getpwnam(self._host_cfg.username)
+            pwd.getpwnam(self._host_cfg.username)
         except KeyError:
             log.info('Creating user %s', self._host_cfg.username)
             self.sh(' '.join([
@@ -155,7 +192,7 @@ class Deployment:
                 '--shell /bin/bash',
                 self._host_cfg.username,
             ]))
-            return pwd.getpwnam(self._host_cfg.username)
+            pwd.getpwnam(self._host_cfg.username)
 
     @cached_nullary
     def home_dir(self) -> str:
@@ -163,7 +200,7 @@ class Deployment:
 
     @cached_nullary
     def create_dirs(self) -> None:
-        pwn = self.pwn()
+        pwn = pwd.getpwnam(self._host_cfg.username)
 
         for dn in [
             'app',
@@ -258,7 +295,7 @@ class Deployment:
 
     @cached_nullary
     def deploy(self) -> None:
-        self.pwn()
+        self.create_user()
 
         self.create_dirs()
 
