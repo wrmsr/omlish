@@ -55,7 +55,7 @@ class BasicTreeAnalysis(ta.Generic[NodeT]):
 
         self._set_fac: ta.Callable[..., ta.MutableSet[NodeT]] = col.IdentitySet if identity else set
         self._dict_fac: ta.Callable[..., ta.MutableMapping[NodeT, ta.Any]] = col.IdentityKeyDict if identity else dict
-        self._idx_seq_fac: ta.Callable[..., col.IndexedSeq[NodeT]] = functools.partial(col.IndexedSeq, identity=identity)  # noqa
+        self._idx_seq_fac: ta.Callable[..., col.IndexedSeq[NodeT]] = functools.partial(col.IndexedSeq, identity=identity)  # type: ignore  # noqa
 
         def walk(cur: NodeT, parent: NodeT | None) -> None:
             check.not_none(cur)
@@ -77,19 +77,19 @@ class BasicTreeAnalysis(ta.Generic[NodeT]):
                 walk(child, cur)
 
         nodes: list[NodeT] = []
-        node_set: ta.MutableSet[NodeT] = self._set_fac()  # type: ignore
-        children_by_node: ta.MutableMapping[NodeT | None, ta.Sequence[NodeT]] = self._dict_fac()  # type: ignore
-        child_sets_by_node: ta.MutableMapping[ta.Optional[NodeT], ta.AbstractSet[NodeT]] = self._dict_fac()  # type: ignore  # noqa
-        parents_by_node: ta.MutableMapping[NodeT, NodeT | None] = self._dict_fac()  # type: ignore
+        node_set: ta.MutableSet[NodeT] = self._set_fac()
+        children_by_node: ta.MutableMapping[NodeT | None, ta.Sequence[NodeT]] = self._dict_fac()
+        child_sets_by_node: ta.MutableMapping[ta.Optional[NodeT], ta.AbstractSet[NodeT]] = self._dict_fac()
+        parents_by_node: ta.MutableMapping[NodeT, NodeT | None] = self._dict_fac()
 
         children_by_node[None] = [root]
-        child_sets_by_node[None] = self._set_fac([root])  # type: ignore
+        child_sets_by_node[None] = self._set_fac([root])
 
         walk(root, None)
 
-        self._nodes = self._idx_seq_fac(nodes)  # type: ignore
+        self._nodes = self._idx_seq_fac(nodes)
         self._node_set: ta.AbstractSet[NodeT] = node_set
-        self._children_by_node: ta.Mapping[NodeT | None, col.IndexedSeq[NodeT]] = self._dict_fac(  # type: ignore
+        self._children_by_node: ta.Mapping[NodeT | None, col.IndexedSeq[NodeT]] = self._dict_fac(
             [(n, self._idx_seq_fac(cs)) for n, cs in children_by_node.items()])
         self._child_sets_by_node: ta.Mapping[NodeT | None, ta.AbstractSet[NodeT]] = child_sets_by_node
         self._parents_by_node: ta.Mapping[NodeT, NodeT | None] = parents_by_node
