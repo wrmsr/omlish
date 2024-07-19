@@ -5,9 +5,8 @@ TODO:
 git describe --match=NeVeRmAtCh --always --abbrev=40 --dirty > "$(DIST_BUILD_DIR)/$(PROJECT)/.revision"
 """
 import errno
+import importlib.resources
 import typing as ta
-
-import pkg_resources
 
 
 def get_revision() -> ta.Optional[str]:
@@ -17,7 +16,7 @@ def get_revision() -> ta.Optional[str]:
     except NameError:
         pass
     try:
-        __revision__ = pkg_resources.resource_string(__package__, '.revision').decode('utf-8').strip()
+        __revision__ = importlib.resources.files(__package__).joinpath('.revision').read_text().strip()
     except OSError as e:
         if e.errno != errno.ENOENT:
             raise
