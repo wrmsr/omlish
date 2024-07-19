@@ -50,6 +50,12 @@ def _main():
                 'sh', '-c', f'cp /dev/stdin {fname}',
             ], input=buf, check=True)
 
+            # https://stackoverflow.com/questions/77364550/attributeerror-module-pkgutil-has-no-attribute-impimporter-did-you-mean
+            # RUN ( \
+            #     python3.12 -m ensurepip --upgrade && \
+            #     python3.12 -m pip install --upgrade setuptools \
+            # )
+
             subprocess.check_call([
                 'docker', 'exec', '-i', ctr_id,
                 'python3.12', fname,
