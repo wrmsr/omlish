@@ -49,6 +49,15 @@ environment=PYTHONPATH='/home/myapp/live/eco/lib'
 user=myapp
 autostart=true
 autorestart=true
+
+==
+
+server {
+    listen 80;
+    location / {
+        proxy_pass  http://127.0.0.1:8000/;
+    }
+}
 """  # noqa
 import logging
 import os.path
@@ -140,7 +149,7 @@ def _main() -> None:
             f.write(f'include {nginx_conf_dir}/*.conf;\n')
 
     log.info('Starting nginx')
-    sh('service start nginx')
+    sh('service nginx start')
 
     ##
 
@@ -179,7 +188,17 @@ files = {home_dir}/conf/supervisor/*.conf
     ##
 
     nginx_conf = f"""
-"""
+server {{
+    listen 80;
+    location / {{
+        proxy_pass  http://127.0.0.1:8000/;
+    }}
+}}
+"""  # noqa
+    nginx_conf_file = os.path.join(home_dir, f'conf/nginx/{APP_NAME}.conf')
+    log.info('Writing nginx conf to %s', nginx_conf_file)
+    with open(nginx_conf_file, 'w') as f:
+        f.write(nginx_conf)
 
     ##
 
@@ -198,6 +217,15 @@ autorestart=true
 
     log.info('Poking supervisor')
     sh('kill -HUP 1')
+
+    ##
+
+    log.info('Poking nginx')
+    sh('nginx -s reload')
+
+    ##
+
+    log.info('Shitty deploy complete!')
 
 
 if __name__ == '__main__':
