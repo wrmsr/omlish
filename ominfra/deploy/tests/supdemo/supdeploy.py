@@ -65,6 +65,9 @@ log = logging.getLogger(__name__)
 
 
 USERNAME = 'deploy'
+APP_NAME = 'omlish'
+REPO_URL = 'https://github.com/wrmsr/omlish'
+REVISION = 'cb60a99124c4d6973ac6e88d1a4313bcc9d8a197'
 
 
 def sh(*ss):
@@ -82,7 +85,7 @@ def _main() -> None:
     logging.root.setLevel('INFO')
 
     try:
-        pwd.getpwnam(USERNAME)
+        pwn = pwd.getpwnam(USERNAME)
     except KeyError:
         log.info('Creating user %s', USERNAME)
         sh(' '.join([
@@ -93,6 +96,7 @@ def _main() -> None:
             '--shell /bin/bash',
             USERNAME,
         ]))
+        pwn = pwd.getpwnam(USERNAME)
 
     home_dir = os.path.expanduser(f'~{USERNAME}')
     for dn in [
@@ -101,12 +105,15 @@ def _main() -> None:
         'conf/env',
         'conf/nginx',
         'conf/supervisor',
-        'conf/supervisor',
         'venv',
     ]:
         fp = os.path.join(home_dir, dn)
         if not os.path.exists(fp):
             log.info('Creating directory: %s', fp)
+            os.mkdir(fp)
+            os.chown(fp, pwn.pw_uid, pwn.pw_gid)
+
+    sh(f"su - {USERNAME} -c 'cd ~/app && git clone --depth 1 {REPO_URL} {APP_NAME}'")
 
 
 if __name__ == '__main__':
