@@ -69,6 +69,8 @@ USERNAME = 'deploy'
 APP_NAME = 'omlish'
 REPO_URL = 'https://github.com/wrmsr/omlish'
 REVISION = 'cb60a99124c4d6973ac6e88d1a4313bcc9d8a197'
+REQUIREMENTS_TXT = 'requirements-dev.txt'
+ENTRYPOINT = 'omserv.server.tests.hello'
 
 
 def sh(*ss):
@@ -88,6 +90,7 @@ def _main() -> None:
 
     if sys.platform != 'linux':
         raise EnvironmentError('must run on linux')
+    True  # type: ignore  # noqa
 
     logging.root.addHandler(logging.StreamHandler())
     logging.root.setLevel('INFO')
@@ -134,8 +137,21 @@ def _main() -> None:
     ush(
         'cd ~/venv',
         f'python3 -mvenv {APP_NAME}',
-        f'{APP_NAME}/bin/python -mpip install -r ~deploy/app/{APP_NAME}/requirements.txt',
+        f'{APP_NAME}/bin/python -mpip install -r ~deploy/app/{APP_NAME}/{REQUIREMENTS_TXT}',
     )
+
+    sup_conf = f"""
+[program:{APP_NAME}]
+command={home_dir}/venv/{APP_NAME}/bin/python -m {ENTRYPOINT}
+directory={home_dir}/app/{APP_NAME}
+user={USERNAME}
+autostart=true
+autorestart=true
+"""
+    sup_conf_file = os.path.join(home_dir, f'conf/supervisor/{APP_NAME}.conf')
+    log.info('Writing supervisor conf to %s', sup_conf_file)
+    with open(sup_conf_file, 'w') as f:
+        f.write(sup_conf)
 
 
 if __name__ == '__main__':
