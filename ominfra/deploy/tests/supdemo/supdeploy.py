@@ -51,7 +51,20 @@ user=myapp
 autostart=true
 autorestart=true
 """  # noqa
+import logging
+import os.path
+import pwd
 import subprocess
+import sys
+
+
+REQUIRED_PYTHON_VERSION = (3, 8)
+
+
+log = logging.getLogger(__name__)
+
+
+USERNAME = 'deploy'
 
 
 def sh(*ss):
@@ -59,8 +72,41 @@ def sh(*ss):
 
 
 def _main() -> None:
-    print('hi from supdeploy')
-    sh('hostname')
+    if sys.version_info < REQUIRED_PYTHON_VERSION:
+        raise EnvironmentError(f'Requires python {REQUIRED_PYTHON_VERSION}, got {sys.version_info} from {sys.executable}')  # noqa
+
+    if sys.platform != 'linux':
+        raise EnvironmentError('must run on linux')
+
+    logging.root.addHandler(logging.StreamHandler())
+    logging.root.setLevel('INFO')
+
+    try:
+        pwd.getpwnam(USERNAME)
+    except KeyError:
+        log.info('Creating user %s', USERNAME)
+        sh(' '.join([
+            'adduser',
+            '--system',
+            '--disabled-password',
+            '--group',
+            '--shell /bin/bash',
+            USERNAME,
+        ]))
+
+    home_dir = os.path.expanduser(f'~{USERNAME}')
+    for dn in [
+        'app',
+        'conf',
+        'conf/env',
+        'conf/nginx',
+        'conf/supervisor',
+        'conf/supervisor',
+        'venv',
+    ]:
+        fp = os.path.join(home_dir, dn)
+        if not os.path.exists(fp):
+            log.info('Creating directory: %s', fp)
 
 
 if __name__ == '__main__':
