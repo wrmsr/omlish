@@ -386,10 +386,18 @@ class CacheImpl(Cache[K, V]):
                 self._eviction(self)
 
             link = CacheImpl.Link()
+
             self._seq += 1
             link.seq = self._seq
-            link.key = weakref.ref(key, functools.partial(CacheImpl._weak_die, self._weak_dead_ref, link)) if self._weak_keys else key  # noqa
-            link.value = weakref.ref(value, functools.partial(CacheImpl._weak_die, self._weak_dead_ref, link)) if self._weak_values else value  # noqa
+
+            def make_ref(o, b):
+                if not b:
+                    return o
+                return weakref.ref(o, functools.partial(CacheImpl._weak_die, self._weak_dead_ref, link))  # type: ignore  # noqa
+
+            link.key = make_ref(key, self._weak_keys)
+            link.value = make_ref(value, self._weak_values)
+
             link.weight = weight
             link.written = link.accessed = self._clock()
             link.hits = 0

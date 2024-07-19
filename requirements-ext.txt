@@ -55,7 +55,7 @@ networkx==3.3
 
 nevergrad==1.0.3
 
-sympy==1.13.0
+sympy==1.13.1
 
 # --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/Triton-Nightly/pypi/simple/
 # triton-nightly; platform_machine == 'x86_64'
@@ -114,7 +114,7 @@ fire==0.6.0
 bs4==0.0.2
 beautifulsoup4==4.12.3
 
-gensim==4.3.2
+gensim==4.3.3
 geopandas==1.0.1; sys_platform == 'darwin'  # FIXME: libgdal-dev gdal-bin?
 gutenberg==0.8.2
 # h5py

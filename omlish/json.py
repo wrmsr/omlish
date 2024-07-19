@@ -1,5 +1,6 @@
 import functools
 import json as _json
+import typing as ta
 
 
 dump = _json.dump
@@ -15,7 +16,7 @@ loads = _json.loads
 
 PRETTY_INDENT = 2
 
-PRETTY_KWARGS = dict(
+PRETTY_KWARGS: ta.Mapping[str, ta.Any] = dict(
     indent=PRETTY_INDENT,
 )
 
@@ -27,7 +28,7 @@ dumps_pretty = functools.partial(dumps, **PRETTY_KWARGS)
 
 COMPACT_SEPARATORS = (',', ':')
 
-COMPACT_KWARGS = dict(
+COMPACT_KWARGS: ta.Mapping[str, ta.Any] = dict(
     indent=0,
     separators=COMPACT_SEPARATORS,
 )

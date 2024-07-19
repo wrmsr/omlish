@@ -39,11 +39,11 @@ def split_memory_object_streams(
 
 
 # FIXME: https://github.com/python/mypy/issues/15238
-# def create_memory_object_stream[T](max_buffer_size: float = 0) -> tuple[
-#     anyio.streams.memory.MemoryObjectSendStream[T],
-#     anyio.streams.memory.MemoryObjectReceiveStream[T],
-# ]:
-#     return anyio.create_memory_object_stream[T](max_buffer_size)
+def create_memory_object_stream[T](max_buffer_size: float = 0) -> tuple[
+    anyio.streams.memory.MemoryObjectSendStream[T],
+    anyio.streams.memory.MemoryObjectReceiveStream[T],
+]:
+    return anyio.create_memory_object_stream[T](max_buffer_size)
 
 
 def staple_memory_object_stream(
@@ -57,12 +57,12 @@ def staple_memory_object_stream(
 
 
 # FIXME: https://github.com/python/mypy/issues/15238
-# def staple_memory_object_stream2[T](max_buffer_size: float = 0) -> anyio.streams.stapled.StapledObjectStream[T]:
-#     send, receive = anyio.create_memory_object_stream[T](max_buffer_size)
-#     return anyio.streams.stapled.StapledObjectStream(
-#         check.isinstance(send, anyio.streams.memory.MemoryObjectSendStream),  # type: ignore
-#         check.isinstance(receive, anyio.streams.memory.MemoryObjectReceiveStream),  # type: ignore
-#     )
+def staple_memory_object_stream2[T](max_buffer_size: float = 0) -> anyio.streams.stapled.StapledObjectStream[T]:
+    send, receive = anyio.create_memory_object_stream[T](max_buffer_size)
+    return anyio.streams.stapled.StapledObjectStream(
+        check.isinstance(send, anyio.streams.memory.MemoryObjectSendStream),  # type: ignore
+        check.isinstance(receive, anyio.streams.memory.MemoryObjectReceiveStream),  # type: ignore
+    )
 
 
 async def gather(*fns: ta.Callable[..., ta.Awaitable[T]], take_first: bool = False) -> list[lang.Maybe[T]]:
