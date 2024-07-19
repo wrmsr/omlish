@@ -29,48 +29,70 @@ adduser \
   --shell /bin/bash \
   omlish
  ==
-
-~piku/.piku
-  /apps/<app>
-  /data/<app>
-  /envs/<app>
-  /logs/<app>
-  /nginx
-  /repos/<app>
-  /uwsgi
-  /uwsgi-available/<app>_<proc>.<n>.ini
-
-==
-
-[program:myapp_live]
-command=/usr/local/bin/gunicorn_django --log-file /home/myapp/logs/gunicorn_live.log --log-level info --workers 2 -t 120 -b 127.0.0.1:10000 -p deploy/gunicorn_live.pid webapp/settings_live.py
-directory=/home/myapp/live
-environment=PYTHONPATH='/home/myapp/live/eco/lib'
-user=myapp
-autostart=true
-autorestart=true
-
-==
-
-server {
-    listen 80;
-    location / {
-        proxy_pass  http://127.0.0.1:8000/;
-    }
-}
 """  # noqa
+import functools
 import logging
 import os.path
 import pwd
 import shlex
 import subprocess
 import sys
+import typing as ta
+
+
+T = ta.TypeVar('T')
 
 
 REQUIRED_PYTHON_VERSION = (3, 8)
 
 
 log = logging.getLogger(__name__)
+
+
+##
+
+
+def _check_not_none(v: ta.Optional[T]) -> T:
+    if v is None:
+        raise ValueError
+    return v
+
+
+def _check_not(v: ta.Any) -> None:
+    if v:
+        raise ValueError(v)
+    return v
+
+
+class cached_nullary:  # noqa
+    def __init__(self, fn):
+        self._fn = fn
+        self._value = self._missing = object()
+        functools.update_wrapper(self, fn)
+    def __call__(self, *args, **kwargs):  # noqa
+        if self._value is self._missing:
+            self._value = self._fn()
+        return self._value
+    def __get__(self, instance, owner):  # noqa
+        bound = instance.__dict__[self._fn.__name__] = self.__class__(self._fn.__get__(instance, owner))
+        return bound
+
+
+def _mask_env_kwarg(kwargs):
+    return {**kwargs, **({'env': '...'} if 'env' in kwargs else {})}
+
+
+def _subprocess_check_call(*args, stdout=sys.stderr, **kwargs):
+    log.debug((args, _mask_env_kwarg(kwargs)))
+    return subprocess.check_call(*args, stdout=stdout, **kwargs)  # type: ignore
+
+
+def _subprocess_check_output(*args, **kwargs):
+    log.debug((args, _mask_env_kwarg(kwargs)))
+    return subprocess.check_output(*args, **kwargs)
+
+
+##
 
 
 PYTHON_BIN = 'python3.12'
@@ -88,7 +110,7 @@ GLOBAL_NGINX_CONF_PATH = '/etc/nginx/sites-enabled/deploy.conf'
 def sh(*ss):
     s = ' && '.join(ss)
     log.info('Executing: %s', s)
-    subprocess.check_call(s, shell=True)
+    _subprocess_check_call(s, shell=True)
 
 
 def ush(*ss):
@@ -191,7 +213,7 @@ files = {home_dir}/conf/supervisor/*.conf
 server {{
     listen 80;
     location / {{
-        proxy_pass  http://127.0.0.1:8000/;
+        proxy_pass http://127.0.0.1:8000/;
     }}
 }}
 """  # noqa
