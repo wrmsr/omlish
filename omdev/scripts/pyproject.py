@@ -380,7 +380,7 @@ def _venv_cmd(args) -> None:
 
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
-    parser.add_argument('--_docker_container')
+    parser.add_argument('--_docker_container', help=argparse.SUPPRESS)
 
     subparsers = parser.add_subparsers()
 
