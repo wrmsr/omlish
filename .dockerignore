@@ -1,6 +1,5 @@
 .cache
 .data
-.git
 .idea
 .pytest_cache
 .mypy_cache
@@ -10,5 +9,6 @@
 dp
 tinygrad
 
+.git
 !.git/HEAD
 !.git/refs
