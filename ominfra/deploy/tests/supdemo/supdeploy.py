@@ -283,6 +283,12 @@ autorestart=true
 
 
 def _main() -> None:
+    pycharm_version = '241.18034.82'
+    subprocess.check_call([sys.executable, '-mpip', 'install', f'pydevd-pycharm~={pycharm_version}'])
+
+    import pydevd_pycharm  # noqa
+    pydevd_pycharm.settrace('docker.for.mac.localhost', port=43251, stdoutToServer=True, stderrToServer=True)
+
     if sys.version_info < REQUIRED_PYTHON_VERSION:
         raise EnvironmentError(f'Requires python {REQUIRED_PYTHON_VERSION}, got {sys.version_info} from {sys.executable}')  # noqa
 
