@@ -1,6 +1,8 @@
 .cache
 .data
 .git
+.idea
+.pytest_cache
 .mypy_cache
 .ruff_cache
 .vector_cache
