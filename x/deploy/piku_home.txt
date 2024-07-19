@@ -1,3 +1,16 @@
+~piku/.piku
+  /apps/<app>
+  /data/<app>
+  /envs/<app>
+  /logs/<app>
+  /repos/<app>
+  /uwsgi-available/<app>_<proc>.<n>.ini
+
+  /nginx
+  /uwsgi
+
+==
+
 /home/piku
 /home/piku/.profile
 /home/piku/.local
