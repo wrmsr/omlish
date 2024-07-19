@@ -1,6 +1,6 @@
 import contextlib
 import functools
-import importlib
+import importlib.resources
 import sys
 import types
 import typing as ta
@@ -30,9 +30,6 @@ def proxy_import(name: str, package: str | None = None) -> types.ModuleType:
 
 
 ##
-
-
-_pkg_resources = lazy_import('pkg_resources')
 
 
 def import_module(dotted_path: str) -> types.ModuleType:
@@ -86,19 +83,19 @@ def yield_importable(
         if getattr(module, '__file__', None) is None:
             return
 
-        for file in _pkg_resources().resource_listdir(cur, '.'):
-            if file.endswith('.py'):
-                if not (include_special or file not in SPECIAL_IMPORTABLE):
+        for file in importlib.resources.files(cur).iterdir():
+            if file.is_file() and file.name.endswith('.py'):
+                if not (include_special or file.name not in SPECIAL_IMPORTABLE):
                     continue
 
-                name = cur + '.' + file[:-3]
+                name = cur + '.' + file.name[:-3]
                 if filter is not None and not filter(name):
                     continue
 
                 yield name
 
-            elif recursive and '.' not in file:
-                name = cur + '.' + file
+            elif recursive and file.is_dir():
+                name = cur + '.' + file.name
                 if filter is not None and not filter(name):
                     continue
                 with contextlib.suppress(ImportError, NotImplementedError):
