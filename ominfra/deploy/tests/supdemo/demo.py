@@ -1,5 +1,7 @@
 import os.path
 import subprocess
+import textwrap
+import traceback
 
 from omlish.docker import timebomb_payload
 from omlish.testing.pydevd import silence_subprocess_check
@@ -42,23 +44,33 @@ def _main():
                 'mktemp', '--suffix=-supdeploy',
             ]).decode().strip()
 
-            with open(os.path.join(os.path.dirname(__file__), 'supdeploy.py'), 'rb') as f:
+            with open(os.path.join(os.path.dirname(__file__), 'supdeploy.py'), 'r') as f:
                 buf = f.read()
+
+            pycharm_port = 43251
+            pycharm_version = '241.18034.82'
+            buf = textwrap.dedent(f"""
+                import subprocess
+                import sys
+                subprocess.check_call([sys.executable, '-mpip', 'install', f'pydevd-pycharm~={pycharm_version}'])
+
+                import pydevd_pycharm  # noqa
+                pydevd_pycharm.settrace(
+                    'docker.for.mac.localhost',
+                     port={pycharm_port},
+                      stdoutToServer=True,
+                       stderrToServer=True,
+                   )
+            """) + '\n' * 2 + buf
 
             subprocess.run([
                 'docker', 'exec', '-i', ctr_id,
                 'sh', '-c', f'cp /dev/stdin {fname}',
-            ], input=buf, check=True)
-
-            # https://stackoverflow.com/questions/77364550/attributeerror-module-pkgutil-has-no-attribute-impimporter-did-you-mean
-            # RUN ( \
-            #     python3.12 -m ensurepip --upgrade && \
-            #     python3.12 -m pip install --upgrade setuptools \
-            # )
+            ], input=buf.encode(), check=True)
 
             subprocess.check_call([
                 'docker', 'exec', '-i', ctr_id,
-                'python3.12', fname,
+                'python3', fname,
             ])
 
             print()
@@ -66,6 +78,15 @@ def _main():
             print()
             print('done - press enter to die')
             input()
+
+    except Exception:  # noqa
+        traceback.print_exc()
+
+        print()
+        print(ctr_id)
+        print()
+        print('failed - press enter to die')
+        input()
 
     finally:
         subprocess.check_call(['docker', 'kill', '-sKILL', ctr_id])

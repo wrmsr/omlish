@@ -6,6 +6,26 @@ an already-debugging PyCharm instance to debug PySpark jobs.
 TODO:
  - https://www.jetbrains.com/help/pycharm/remote-debugging-with-product.html#
  - PyCharm.app/Contents/plugins/python/helpers/pydev/_pydevd_bundle/pydevd_constants.py -> USE_LOW_IMPACT_MONITORING
+
+==
+
+https://www.jetbrains.com/help/pycharm/remote-debugging-with-product.html#remote-debug-config ->
+
+pycharm_port = 43251
+pycharm_version = '241.18034.82'
+buf = textwrap.dedent(f'''
+    import subprocess
+    import sys
+    subprocess.check_call([sys.executable, '-mpip', 'install', f'pydevd-pycharm~={pycharm_version}'])
+
+    import pydevd_pycharm  # noqa
+    pydevd_pycharm.settrace(
+        'docker.for.mac.localhost',
+         port={pycharm_port},
+          stdoutToServer=True,
+           stderrToServer=True,
+       )
+''') + '\n' * 2 + buf
 """
 import json
 import os

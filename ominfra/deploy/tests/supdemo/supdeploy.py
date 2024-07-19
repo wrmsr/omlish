@@ -44,6 +44,7 @@ import pwd
 import shlex
 import subprocess
 import sys
+import textwrap
 import typing as ta
 
 
@@ -193,10 +194,10 @@ class Deployment:
             glo_sup_conf = f.read()
         if sup_conf_dir not in glo_sup_conf:
             log.info('Updating global supervisor conf at %s', self._host_cfg.global_supervisor_conf_file_path)  # noqa
-            glo_sup_conf += f"""
-[include]
-files = {self.home_dir()}/conf/supervisor/*.conf
-"""
+            glo_sup_conf += textwrap.dedent(f"""
+                [include]
+                files = {self.home_dir()}/conf/supervisor/*.conf
+            """)
             with open(self._host_cfg.global_supervisor_conf_file_path, 'w') as f:
                 f.write(glo_sup_conf)
 
@@ -217,21 +218,24 @@ files = {self.home_dir()}/conf/supervisor/*.conf
         self.ush(
             'cd ~/venv',
             f'{self._cfg.python_bin} -mvenv {self._cfg.app_name}',
+
+            # https://stackoverflow.com/questions/77364550/attributeerror-module-pkgutil-has-no-attribute-impimporter-did-you-mean
             f'{self._cfg.app_name}/bin/python -m ensurepip',
-            f'{self._cfg.app_name}/bin/python -mpip install --upgrade setuptools',
+            f'{self._cfg.app_name}/bin/python -mpip install --upgrade setuptools pip',
+
             f'{self._cfg.app_name}/bin/python -mpip install -r ~deploy/app/{self._cfg.app_name}/{self._cfg.requirements_txt}',  # noqa
         )
 
     @cached_nullary
     def create_nginx_conf(self) -> None:
-        nginx_conf = f"""
-server {{
-    listen 80;
-    location / {{
-        proxy_pass http://127.0.0.1:8000/;
-    }}
-}}
-"""  # noqa
+        nginx_conf = textwrap.dedent(f"""
+            server {{
+                listen 80;
+                location / {{
+                    proxy_pass http://127.0.0.1:8000/;
+                }}
+            }}
+        """)
         nginx_conf_file = os.path.join(self.home_dir(), f'conf/nginx/{self._cfg.app_name}.conf')
         log.info('Writing nginx conf to %s', nginx_conf_file)
         with open(nginx_conf_file, 'w') as f:
@@ -239,14 +243,14 @@ server {{
 
     @cached_nullary
     def create_supervisor_conf(self) -> None:
-        sup_conf = f"""
-[program:{self._cfg.app_name}]
-command={self.home_dir()}/venv/{self._cfg.app_name}/bin/python -m {self._cfg.entrypoint}
-directory={self.home_dir()}/app/{self._cfg.app_name}
-user={self._host_cfg.username}
-autostart=true
-autorestart=true
-"""
+        sup_conf = textwrap.dedent(f"""
+            [program:{self._cfg.app_name}]
+            command={self.home_dir()}/venv/{self._cfg.app_name}/bin/python -m {self._cfg.entrypoint}
+            directory={self.home_dir()}/app/{self._cfg.app_name}
+            user={self._host_cfg.username}
+            autostart=true
+            autorestart=true
+        """)
         sup_conf_file = os.path.join(self.home_dir(), f'conf/supervisor/{self._cfg.app_name}.conf')
         log.info('Writing supervisor conf to %s', sup_conf_file)
         with open(sup_conf_file, 'w') as f:
@@ -285,12 +289,6 @@ autorestart=true
 
 
 def _main() -> None:
-    # pycharm_version = '241.18034.82'
-    # subprocess.check_call([sys.executable, '-mpip', 'install', f'pydevd-pycharm~={pycharm_version}'])
-    #
-    # import pydevd_pycharm  # noqa
-    # pydevd_pycharm.settrace('docker.for.mac.localhost', port=43251, stdoutToServer=True, stderrToServer=True)
-
     if sys.version_info < REQUIRED_PYTHON_VERSION:
         raise EnvironmentError(f'Requires python {REQUIRED_PYTHON_VERSION}, got {sys.version_info} from {sys.executable}')  # noqa
 
