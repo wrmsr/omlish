@@ -35,6 +35,7 @@ RUN ( \
     add-apt-repository ppa:deadsnakes/ppa && \
     apt install -y \
 \
+        python3.12-distutils \
         python3.12-full \
 \
 )
