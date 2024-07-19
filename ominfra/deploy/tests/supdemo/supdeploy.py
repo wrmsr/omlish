@@ -217,6 +217,8 @@ files = {self.home_dir()}/conf/supervisor/*.conf
         self.ush(
             'cd ~/venv',
             f'{self._cfg.python_bin} -mvenv {self._cfg.app_name}',
+            f'{self._cfg.app_name}/bin/python -m ensurepip',
+            f'{self._cfg.app_name}/bin/python -mpip install --upgrade setuptools',
             f'{self._cfg.app_name}/bin/python -mpip install -r ~deploy/app/{self._cfg.app_name}/{self._cfg.requirements_txt}',  # noqa
         )
 
@@ -283,11 +285,11 @@ autorestart=true
 
 
 def _main() -> None:
-    pycharm_version = '241.18034.82'
-    subprocess.check_call([sys.executable, '-mpip', 'install', f'pydevd-pycharm~={pycharm_version}'])
-
-    import pydevd_pycharm  # noqa
-    pydevd_pycharm.settrace('docker.for.mac.localhost', port=43251, stdoutToServer=True, stderrToServer=True)
+    # pycharm_version = '241.18034.82'
+    # subprocess.check_call([sys.executable, '-mpip', 'install', f'pydevd-pycharm~={pycharm_version}'])
+    #
+    # import pydevd_pycharm  # noqa
+    # pydevd_pycharm.settrace('docker.for.mac.localhost', port=43251, stdoutToServer=True, stderrToServer=True)
 
     if sys.version_info < REQUIRED_PYTHON_VERSION:
         raise EnvironmentError(f'Requires python {REQUIRED_PYTHON_VERSION}, got {sys.version_info} from {sys.executable}')  # noqa
