@@ -34,7 +34,7 @@ class _HashedSeq(list):
         self[:] = tup
         self.hash_value = hasher(tup)
 
-    def __hash__(self):
+    def __hash__(self) -> int:  # type: ignore
         return self.hash_value
 
 
