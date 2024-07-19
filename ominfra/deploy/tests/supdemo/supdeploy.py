@@ -54,6 +54,7 @@ autorestart=true
 import logging
 import os.path
 import pwd
+import shlex
 import subprocess
 import sys
 
@@ -71,7 +72,14 @@ REVISION = 'cb60a99124c4d6973ac6e88d1a4313bcc9d8a197'
 
 
 def sh(*ss):
-    subprocess.check_call(' && '.join(ss), shell=True)
+    s = ' && '.join(ss)
+    log.info('Executing: %s', s)
+    subprocess.check_call(s, shell=True)
+
+
+def ush(*ss):
+    s = ' && '.join(ss)
+    sh(f"su - {USERNAME} -c {shlex.quote(s)}")
 
 
 def _main() -> None:
@@ -113,7 +121,21 @@ def _main() -> None:
             os.mkdir(fp)
             os.chown(fp, pwn.pw_uid, pwn.pw_gid)
 
-    sh(f"su - {USERNAME} -c 'cd ~/app && git clone --depth 1 {REPO_URL} {APP_NAME}'")
+    clone_submodules = False
+    ush(
+        'cd ~/app',
+        f'git clone --depth 1 {REPO_URL} {APP_NAME}',
+        *([
+            f'cd {APP_NAME}',
+            'git submodule update --init',
+        ] if clone_submodules else []),
+    )
+
+    ush(
+        'cd ~/venv',
+        f'python3 -mvenv {APP_NAME}',
+        f'{APP_NAME}/bin/python -mpip install -r ~deploy/app/{APP_NAME}/requirements.txt',
+    )
 
 
 if __name__ == '__main__':
