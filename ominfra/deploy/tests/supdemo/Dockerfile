@@ -43,8 +43,8 @@ RUN mkdir -p /var/log/supervisor
 RUN echo "\
 [supervisord] \n\
 nodaemon=true \n\
-logfile=/dev/null \n\
-logfile_maxbytes=0 \n\
+logfile=/var/log/supervisor/supervisor.log \n\
+logfile_maxbytes=4194304 \n\
 \n\
 [program:app] \n\
 command = sleep infinity \n\
