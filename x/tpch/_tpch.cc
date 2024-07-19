@@ -6,6 +6,8 @@ https://github.com/wrmsr/omnibus/blob/c2ff67b6c5c80aa03fe27a9b6f36212f3212c7ca/o
 #include "Python.h"
 #include "structmember.h"
 
+#include <vector>
+
 #include <unistd.h>
 
 ///
@@ -73,11 +75,11 @@ private:
 
 //
 
-static constexpr int64_t long_multiplier    = 6364136223846793005;
-static constexpr int64_t long_increment     = 1;
+const int64_t long_multiplier    = 6364136223846793005;
+const int64_t long_increment     = 1;
 
-static constexpr int64_t long_multiplier_32 = 16807;
-static constexpr int64_t long_modulus_32    = 2147483647;
+const int64_t long_multiplier_32 = 16807;
+const int64_t long_modulus_32    = 2147483647;
 
 struct long_gen {
     explicit long_gen(
@@ -142,10 +144,7 @@ struct text_dist_item {
     int size;
 };
 
-struct text_dist {
-    const text_dist_item* items;
-    int size;
-};
+using text_dist = std::vector<text_dist_item>;
 
 struct text_dists {
     text_dist adjectives;
@@ -169,11 +168,7 @@ struct text_pool_gen {
     ) :
         _buf{buf},
         _size{size},
-        _dists{dists},
-
-        _pos{0},
-        _last{0},
-        _seed{_initial_seed}
+        _dists{dists}
     {
         while (_pos < size) {
             _generate_sentence();
@@ -205,11 +200,11 @@ private:
         }
     }
 
-    text_dist_item _rand(text_dist dist) {
+    text_dist_item _rand(const text_dist& dist) {
         _seed = (_seed * int_multiplier) % int_modulus;
-        auto double_range = static_cast<double>(dist.size);
+        auto double_range = static_cast<double>(dist.size());
         auto idx = static_cast<int>((1. * _seed / int_modulus) * double_range);
-        return dist.items[idx];
+        return dist[idx];
     }
 
     void _generate_noun_phrase() {
@@ -289,9 +284,9 @@ private:
 
     static constexpr int64_t _initial_seed = 933588178;
 
-    int _pos;
-    char _last;
-    int64_t _seed;
+    int _pos{};
+    char _last{};
+    int64_t _seed{_initial_seed};
 };
 
 ///
