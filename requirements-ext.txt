@@ -114,7 +114,7 @@ fire==0.6.0
 bs4==0.0.2
 beautifulsoup4==4.12.3
 
-gensim==4.3.3
+gensim==4.3.2
 geopandas==1.0.1; sys_platform == 'darwin'  # FIXME: libgdal-dev gdal-bin?
 gutenberg==0.8.2
 # h5py
