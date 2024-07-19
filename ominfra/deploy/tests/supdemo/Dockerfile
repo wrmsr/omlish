@@ -41,6 +41,8 @@ RUN ( \
 
 #
 
+RUN rm /etc/nginx/sites-enabled/default
+
 RUN mkdir -p /var/log/supervisor
 
 RUN echo "\
