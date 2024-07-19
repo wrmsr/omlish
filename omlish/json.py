@@ -20,8 +20,8 @@ PRETTY_KWARGS: ta.Mapping[str, ta.Any] = dict(
     indent=PRETTY_INDENT,
 )
 
-dump_pretty = functools.partial(dump, **PRETTY_KWARGS)
-dumps_pretty = functools.partial(dumps, **PRETTY_KWARGS)
+dump_pretty: ta.Callable[..., bytes] = functools.partial(dump, **PRETTY_KWARGS)  # type: ignore
+dumps_pretty: ta.Callable[..., str] = functools.partial(dumps, **PRETTY_KWARGS)
 
 ##
 
@@ -33,8 +33,8 @@ COMPACT_KWARGS: ta.Mapping[str, ta.Any] = dict(
     separators=COMPACT_SEPARATORS,
 )
 
-dump_compact = functools.partial(dump, **COMPACT_KWARGS)
-dumps_compact = functools.partial(dumps, **COMPACT_KWARGS)
+dump_compact: ta.Callable[..., bytes] = functools.partial(dump, **COMPACT_KWARGS)  # type: ignore
+dumps_compact: ta.Callable[..., str] = functools.partial(dumps, **COMPACT_KWARGS)
 
 
 ##
