@@ -1,6 +1,5 @@
+import importlib.resources
 import typing as ta
-
-import pkg_resources
 
 from omlish import cached
 from omlish import check
@@ -194,7 +193,8 @@ class TextDists:
     @cached.function
     @classmethod
     def default(cls) -> 'TextDists':
-        data = TextDistLoading.load_dist(pkg_resources.resource_string(__package__, 'dists.dss').decode('utf-8'))
+        src = importlib.resources.files(__package__).joinpath('dists.dss').read_text()
+        data = TextDistLoading.load_dist(src)
         return cls(data)
 
     def __getitem__(self, name: str) -> TextDist:
