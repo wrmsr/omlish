@@ -7,6 +7,7 @@ TODO:
   - config is probably shared with ElementCollection... but not 'bound', must be shared everywhere
   - InjectorRoot object?
  - ** eagers in any scope, on scope init/open
+ - injection listeners
 """
 import contextlib
 import typing as ta

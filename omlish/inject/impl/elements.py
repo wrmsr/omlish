@@ -14,7 +14,7 @@ Element Types:
  - Overrides
  - Expose
  - Private
- - ScopeSeed
+ - ScopeBinding
 """
 import typing as ta
 
