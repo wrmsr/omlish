@@ -1,11 +1,13 @@
-import os
-os.environ['TF_USE_LEGACY_KERAS'] = 'True'
+# import os
+# os.environ['TF_USE_LEGACY_KERAS'] = 'True'
 
 import functools
 import os.path  # noqa
 import time
 
 import tensorflow.keras.backend as K
+import tensorflow as tf
+import tensorflow.keras.ops as KO
 from keras.api.callbacks import EarlyStopping
 from keras.api.datasets import mnist
 from keras.api.layers import Input, Dense, Lambda
@@ -70,7 +72,7 @@ def VariationalAutoEncoder(batch_size, latent_space_depth, num_pixels):
 
     def KL_loss(y_true, y_pred):
         # breakpoint()
-        return (0.5 * K.sum(K.exp(z_log_var) + K.square(z_mean) - 1 - z_log_var, axis=1))
+        return (0.5 * K.sum(KO.exp(z_log_var) + KO.square(z_mean) - 1 - z_log_var, axis=1))
 
     def reconstruction_loss(y_true, y_pred):
         # breakpoint()
