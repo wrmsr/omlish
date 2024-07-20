@@ -63,6 +63,7 @@ class VAE(nn.Module):
         return .5 * (z_log_var.exp() + z_mean.square() - 1 - z_log_var).sum(1)
 
     def reconstruction_loss(self, y_true: torch.Tensor, y_pred: torch.Tensor) -> torch.Tensor:
+        print((y_true.min(), y_true.max(), y_pred.min(), y_pred.max()))
         return F.binary_cross_entropy(y_true, y_pred, reduction='none').sum(-1)
 
     def total_loss(self, y_true: torch.Tensor, y_pred: torch.Tensor) -> torch.Tensor:
