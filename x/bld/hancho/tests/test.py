@@ -48,7 +48,7 @@ def run(cmd):
 
 def run_hancho(name):
     """Runs a Hancho build script, quietly."""
-    return os.system(f"python3 ../hancho.py --quiet {name}.hancho")
+    return os.system(f"python3 {path.dirname(path.dirname(__file__))}/hancho.py --quiet {name}.hancho")
 
 
 ################################################################################

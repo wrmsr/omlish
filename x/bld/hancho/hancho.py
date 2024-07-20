@@ -23,8 +23,9 @@ import subprocess
 import sys
 import traceback
 import types
-from pathlib import Path
 from glob import glob
+from pathlib import Path
+
 
 # If we were launched directly, a reference to this module is already in
 # sys.modules[__name__]. Stash another reference in sys.modules["hancho"] so
@@ -36,6 +37,7 @@ MAX_EXPAND_DEPTH = 100
 
 # Matches {} delimited regions inside a template string.
 template_regex = re.compile("{[^}]*}")
+
 
 ####################################################################################################
 
@@ -260,8 +262,8 @@ def expand(template, rule=None, depth=0):
 
     result = ""
     while span := template_regex.search(template):
-        result += template[0 : span.start()]
-        exp = template[span.start() : span.end()]
+        result += template[0: span.start()]
+        exp = template[span.start(): span.end()]
 
         # Evaluate the template contents.
         try:
@@ -269,11 +271,11 @@ def expand(template, rule=None, depth=0):
             replacement = eval(exp[1:-1], globals(), rule)
             result += stringize(replacement, rule, depth + 1)
         except Exception as exc:  # pylint: disable=broad-except
-            #print(f"exp {exp} did not expand")
-            #raise ValueError(f"Template '{exp}' failed to eval") from exc
+            # print(f"exp {exp} did not expand")
+            # raise ValueError(f"Template '{exp}' failed to eval") from exc
             result += exp
 
-        template = template[span.end() :]
+        template = template[span.end():]
 
     result += template
     return result
@@ -356,8 +358,8 @@ def expand_norecurse(template, rule=None, depth=0):
 
     result = ""
     while span := template_regex.search(template):
-        result += template[0 : span.start()]
-        exp = template[span.start() : span.end()]
+        result += template[0: span.start()]
+        exp = template[span.start(): span.end()]
 
         # Evaluate the template contents.
         try:
@@ -365,16 +367,17 @@ def expand_norecurse(template, rule=None, depth=0):
             replacement = eval(exp[1:-1], globals(), rule)
             result += stringize_norecurse(replacement, rule, depth + 1)
         except Exception as exc:  # pylint: disable=broad-except
-            #print(f"exp {exp} did not expand")
-            #raise ValueError(f"Template '{exp}' failed to eval") from exc
+            # print(f"exp {exp} did not expand")
+            # raise ValueError(f"Template '{exp}' failed to eval") from exc
             result += exp
 
-        template = template[span.end() :]
+        template = template[span.end():]
 
     result += template
     return result
 
-def expand_variant(variant, task, expand_tasks = False):
+
+def expand_variant(variant, task, expand_tasks=False):
     match variant:
         case Rule():
             return variant, False
@@ -399,11 +402,12 @@ def expand_variant(variant, task, expand_tasks = False):
             return Path(new_value), new_value != str(variant)
         case str() if template_regex.search(variant):
             new_value = expand_norecurse(variant, task)
-            #print()
-            #print(new_value)
+            # print()
+            # print(new_value)
             return new_value, new_value != variant
         case _:
             return variant, False
+
 
 def expand_task(task):
     for _ in range(MAX_EXPAND_DEPTH):
@@ -435,7 +439,6 @@ async def await_variant(variant):
         case _ if inspect.isawaitable(variant):
             variant = await variant
     return variant
-
 
 
 ####################################################################################################
@@ -621,7 +624,7 @@ class Task(Config):
     def task_init(self):
         """All the setup steps needed before we run a task."""
 
-        #expand_task(self)
+        # expand_task(self)
 
         # Check for missing fields
         # pylint: disable=access-member-before-definition
@@ -783,8 +786,8 @@ class Task(Config):
                     deplines = [self.work_dir / Path(d) for d in deplines]
                     if deplines and max(mtime(f) for f in deplines) >= min_out:
                         return (
-                            f"Rebuilding {self.files_out} because a dependency in "
-                            + f"{abs_depfile} has changed"
+                                f"Rebuilding {self.files_out} because a dependency in "
+                                + f"{abs_depfile} has changed"
                         )
 
         # All checks passed; we don't need to rebuild this output.
@@ -807,7 +810,7 @@ class Task(Config):
 
             # Print the "[1/N] Foo foo.foo foo.o" status line and debug information
             log(
-                f"{color(128,255,196)}[{self.task_index}/{app.tasks_total}]{color()} {self.desc}",
+                f"{color(128, 255, 196)}[{self.task_index}/{app.tasks_total}]{color()} {self.desc}",
                 sameline=not self.verbose,
             )
 
@@ -820,7 +823,7 @@ class Task(Config):
             dryrun = "(DRY RUN) " if self.dryrun else ""
 
             if self.verbose or self.debug:
-                log(f"{color(128,128,128)}Reason: {self.reason}{color()}")
+                log(f"{color(128, 128, 128)}Reason: {self.reason}{color()}")
 
             if self.debug:
                 log(self)
@@ -828,7 +831,7 @@ class Task(Config):
             result = []
             for command in self.command:
                 if self.verbose or self.debug:
-                    log(f"{color(128,128,255)}{work_dir}$ {color()}{dryrun}{command}")
+                    log(f"{color(128, 128, 255)}{work_dir}$ {color()}{dryrun}{command}")
                 result = await self.run_command(command)
         finally:
             await app.release_jobs(self.job_count)
@@ -946,14 +949,16 @@ class App:
         # pylint: disable=line-too-long
         # fmt: off
         parser = argparse.ArgumentParser()
-        parser.add_argument("start_filename",  default="build.hancho", type=str, nargs="?", help="The name of the .hancho file to build")
-        parser.add_argument("-C", "--chdir",   default=".",            type=str,            help="Change directory before starting the build")
-        parser.add_argument("-j", "--jobs",    default=os.cpu_count(), type=int,            help="Run N jobs in parallel (default = cpu_count)")
-        parser.add_argument("-v", "--verbose", default=False,          action="store_true", help="Print verbose build info")
-        parser.add_argument("-q", "--quiet",   default=False,          action="store_true", help="Mute all output")
-        parser.add_argument("-n", "--dryrun",  default=False,          action="store_true", help="Do not run commands")
-        parser.add_argument("-d", "--debug",   default=False,          action="store_true", help="Print debugging information")
-        parser.add_argument("-f", "--force",   default=False,          action="store_true", help="Force rebuild of everything")
+        parser.add_argument("start_filename", default="build.hancho", type=str, nargs="?",
+                            help="The name of the .hancho file to build")
+        parser.add_argument("-C", "--chdir", default=".", type=str, help="Change directory before starting the build")
+        parser.add_argument("-j", "--jobs", default=os.cpu_count(), type=int,
+                            help="Run N jobs in parallel (default = cpu_count)")
+        parser.add_argument("-v", "--verbose", default=False, action="store_true", help="Print verbose build info")
+        parser.add_argument("-q", "--quiet", default=False, action="store_true", help="Mute all output")
+        parser.add_argument("-n", "--dryrun", default=False, action="store_true", help="Do not run commands")
+        parser.add_argument("-d", "--debug", default=False, action="store_true", help="Print debugging information")
+        parser.add_argument("-f", "--force", default=False, action="store_true", help="Force rebuild of everything")
         # fmt: on
 
         # Parse the command line
@@ -1149,17 +1154,17 @@ app = App()
 
 if __name__ == "__main__":
 
-#    t = Task(
-#        foo = "{relpath(bar, baz)}",
-#        bar = "{bar2}",
-#        baz = "{baz2}",
-#        bar2 = "/home/foo/bar",
-#        baz2 = "{baz3}",
-#        baz3 = "/home/foo",
-#        relpath = relpath,
-#    )
-#
-#    expand_task(t)
-#    sys.exit(0)
+    #    t = Task(
+    #        foo = "{relpath(bar, baz)}",
+    #        bar = "{bar2}",
+    #        baz = "{baz2}",
+    #        bar2 = "/home/foo/bar",
+    #        baz2 = "{baz3}",
+    #        baz3 = "/home/foo",
+    #        relpath = relpath,
+    #    )
+    #
+    #    expand_task(t)
+    #    sys.exit(0)
 
     sys.exit(app.main())
