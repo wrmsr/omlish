@@ -66,13 +66,13 @@ all = ['@ml', 'x']
 [tool.omlish.pyproject.venvs]
 all = { interp = '@12', requires = 'requirements-dev.txt', srcs = ['@main'] }
 default = { requires = 'requirements-ext.txt' }
-deploy = { interp = 'python3' }
-docker = { docker = 'omlish-dev' }
-docker-amd64 = { docker = 'omlish-dev-amd64' }
-debug = { interp = '@12-debug' }
 '13' = { interp = '@13' }
 '13t' = { interp = '@13t' }
 '8' = { interp = '@8', requires = [], srcs = [] }
+docker = { docker = 'omlish-dev' }
+docker-amd64 = { docker = 'omlish-dev-amd64' }
+deploy = { interp = 'python3' }
+debug = { interp = '@12-debug' }
 
 
 ##
@@ -81,7 +81,6 @@ debug = { interp = '@12-debug' }
 ignore_missing_imports = true
 no_implicit_optional = true
 warn_redundant_casts = true
-#warn_return_any = true
 warn_unreachable = true
 warn_unused_ignores = true
 
