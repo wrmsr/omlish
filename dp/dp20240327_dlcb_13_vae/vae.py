@@ -186,7 +186,7 @@ def _main() -> None:
         validation_data=(x_test, x_test),
         callbacks=[
             *([SaveModelCallback(10, out_model_path)] if out_model_path else []),
-        ]
+        ],
     )
 
     ##
