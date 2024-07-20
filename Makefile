@@ -37,11 +37,11 @@ SRCS:=$$(${PYPROJECT_VENV} srcs)
 
 .PHONY: python
 python:
-	echo "${PYTHON}"
+	@echo "${PYTHON}"
 
 .PHONY: srcs
 srcs:
-	echo ${SRCS}
+	@echo ${SRCS}
 
 #
 
@@ -142,47 +142,35 @@ test:
 
 ### Alts
 
-# deploy
-
-.PHONY: venv-deploy
-venv-deploy:
-	VENV=deploy ${MAKE} venv
-
-# debug
-
-.PHONY: venv-debug
-venv-debug:
-	VENV=debug ${MAKE} venv
-
-.PHONY: test-debug
-test-debug:
-	VENV=debug ${MAKE} test
+# all
+.PHONY: venv-all
+venv-all: venv venv-13 venv-13t venv-8 venv-docker
 
 # 13
 
 .PHONY: venv-13
 venv-13:
-	VENV=13 ${MAKE} venv
+	${PYPROJECT} venv 13 exe
 
 .PHONY: test-13
 test-13:
-	${PYPROJECT_VENV} test -- ${PYTEST_OPTS} --ignore=omlish/sql
+	${PYPROJECT} venv 13 test -- ${PYTEST_OPTS} --ignore=omlish/sql
 
 # 13t
 
 .PHONY: venv-13t
 venv-13t:
-	VENV=13t ${MAKE} venv
+	${PYPROJECT} venv 13t exe
 
 .PHONY: test-13t
 test-13t:
-	${PYPROJECT_VENV} test -- ${PYTEST_OPTS} --ignore=omlish/sql
+	${PYPROJECT} venv 13t test -- ${PYTEST_OPTS} --ignore=omlish/sql
 
 # 8
 
 .PHONY: venv-8
 venv-8:
-	VENV=8 ${MAKE} venv
+	${PYPROJECT} venv 8 exe
 
 # docker
 
@@ -210,6 +198,22 @@ venv-docker-amd64:
 .PHONY: test-docker-amd64
 test-docker-amd64:
 	VENV=docker-amd64 ${MAKE} test
+
+# deploy
+
+.PHONY: venv-deploy
+venv-deploy:
+	VENV=deploy ${MAKE} venv
+
+# debug
+
+.PHONY: venv-debug
+venv-debug:
+	VENV=debug ${MAKE} venv
+
+.PHONY: test-debug
+test-debug:
+	VENV=debug ${MAKE} test
 
 
 ### Docker
