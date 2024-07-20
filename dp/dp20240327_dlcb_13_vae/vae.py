@@ -72,7 +72,7 @@ def VariationalAutoEncoder(batch_size, latent_space_depth, num_pixels):
 
     def KL_loss(y_true, y_pred):
         # breakpoint()
-        return (0.5 * K.sum(KO.exp(z_log_var) + KO.square(z_mean) - 1 - z_log_var, axis=1))
+        return (0.5 * KO.sum(KO.exp(z_log_var) + KO.square(z_mean) - 1 - z_log_var, axis=1))
 
     def reconstruction_loss(y_true, y_pred):
         # breakpoint()
