@@ -1,17 +1,20 @@
+import os
+os.environ['TF_USE_LEGACY_KERAS'] = 'True'
+
 import functools
 import os.path  # noqa
 import time
 
 from keras import backend as K
-from keras.callbacks import EarlyStopping
-from keras.datasets import mnist
-from keras.layers import Input, Dense, Lambda
-from keras.models import Model
-from keras.optimizers.legacy import Adam  # https://stackoverflow.com/a/75596562
-from keras.utils import to_categorical
+from keras.api.callbacks import EarlyStopping
+from keras.api.datasets import mnist
+from keras.api.layers import Input, Dense, Lambda
+from keras.api.models import Model
+from keras.api.optimizers.legacy import Adam  # https://stackoverflow.com/a/75596562
+from keras.api.utils import to_categorical
 import PIL
-import keras.callbacks
-import keras.models as km
+import keras.api.callbacks
+import keras.api.models as km
 import numpy as np
 import torchvision.datasets  # noqa
 
