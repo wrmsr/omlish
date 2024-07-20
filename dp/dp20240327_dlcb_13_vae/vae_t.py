@@ -100,7 +100,7 @@ LOCAL_DIR = os.path.dirname(__file__)
 
 
 def _main() -> None:
-    from keras.datasets import mnist
+    from keras.datasets import mnist  # noqa
     train, test = mnist.load_data()
     x_train, y_train = prepare(*train)
     x_test, y_test = prepare(*test)
