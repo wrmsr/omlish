@@ -5,12 +5,12 @@ import functools
 import os.path  # noqa
 import time
 
-from keras import backend as K
+import tensorflow.keras.backend as K
 from keras.api.callbacks import EarlyStopping
 from keras.api.datasets import mnist
 from keras.api.layers import Input, Dense, Lambda
 from keras.api.models import Model
-from keras.api.optimizers.legacy import Adam  # https://stackoverflow.com/a/75596562
+from keras.api.optimizers import Adam  # https://stackoverflow.com/a/75596562
 from keras.api.utils import to_categorical
 import PIL
 import keras.api.callbacks
@@ -69,15 +69,15 @@ def VariationalAutoEncoder(batch_size, latent_space_depth, num_pixels):
     z_log_var = Dense(latent_space_depth, activation='linear')(encoder_hidden)
 
     def KL_loss(y_true, y_pred):
-        breakpoint()
+        # breakpoint()
         return (0.5 * K.sum(K.exp(z_log_var) + K.square(z_mean) - 1 - z_log_var, axis=1))
 
     def reconstruction_loss(y_true, y_pred):
-        breakpoint()
+        # breakpoint()
         return K.sum(K.binary_crossentropy(y_true, y_pred), axis=-1)
 
     def total_loss(y_true, y_pred):
-        breakpoint()
+        # breakpoint()
         return KL_loss(y_true, y_pred) + reconstruction_loss(y_true, y_pred)
 
     z = Lambda(
@@ -99,7 +99,7 @@ def VariationalAutoEncoder(batch_size, latent_space_depth, num_pixels):
     auto_encoder = Model(pixels, outputs)
 
     auto_encoder.compile(
-        optimizer=Adam(lr=0.001),
+        optimizer=Adam(0.001),
         loss=total_loss,
         metrics=[KL_loss, reconstruction_loss],
     )
