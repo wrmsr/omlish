@@ -157,7 +157,7 @@ class ElementCollection(lang.Final):
     ##
 
     @lang.cached_function
-    def eager_keys_by_scope(self) -> ta.MutableMapping[Scope, ta.Sequence[Key]]:
+    def eager_keys_by_scope(self) -> ta.Mapping[Scope, ta.Sequence[Key]]:
         bim = self.binding_impl_map()
         ret: dict[Scope, list[Key]] = {}
         for e in self.elements_of_type(Eager):
