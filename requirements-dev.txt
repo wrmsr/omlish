@@ -1,7 +1,7 @@
 -r requirements.txt
 
 build==1.2.1
-twine==5.1.1
+twine==5.1.1; python_version < '3.13'
 wheel==0.43.0
 
 pytest==8.3.1
