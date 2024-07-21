@@ -15,7 +15,6 @@ import weakref
 
 from ... import check
 from ... import lang
-from ..eagers import Eager
 from ..elements import Elements
 from ..exceptions import CyclicDependencyError
 from ..exceptions import UnboundKeyError
@@ -68,14 +67,13 @@ class InjectorImpl(Injector, lang.Final):
             s: make_scope_impl(s) for s in ss
         }
 
-        self._instantiate_eagers(Unscoped)
+        self._instantiate_eagers(Unscoped())
 
     _root: 'InjectorImpl'
 
     def _instantiate_eagers(self, sc: Scope) -> None:
-        for ks in self._ekbs.get(sc, ()):
-            for k in ks:
-                self.provide(k)
+        for k in self._ekbs.get(sc, ()):
+            self.provide(k)
 
     def get_scope_impl(self, sc: Scope) -> ScopeImpl:
         return self._scopes[sc]
