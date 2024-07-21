@@ -28,7 +28,7 @@ def test_seeded_eager():
         inj.bind_scope(ss),
         inj.in_(420, ss),
         inj.in_(foo, ss),
-        inj.in_(inj.eager(str), ss),
+        inj.eager(str),
         inj.bind_scope_seed(ss, float),
     ))
     assert c == 0

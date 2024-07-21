@@ -53,6 +53,7 @@ class InjectorImpl(Injector, lang.Final):
         }
 
         self._bim = ec.binding_impl_map()
+        self._ekbs = ec.eager_keys_by_scope()
 
         self._cs: weakref.WeakSet[InjectorImpl] | None = None
         self._root: InjectorImpl = p._root if p is not None else self  # noqa
@@ -67,13 +68,14 @@ class InjectorImpl(Injector, lang.Final):
             s: make_scope_impl(s) for s in ss
         }
 
-        self._instantiate_eagers()
+        self._instantiate_eagers(Unscoped)
 
     _root: 'InjectorImpl'
 
-    def _instantiate_eagers(self) -> None:
-        for e in self._ec.elements_of_type(Eager):
-            self.provide(e.key)
+    def _instantiate_eagers(self, sc: Scope) -> None:
+        for ks in self._ekbs.get(sc, ()):
+            for k in ks:
+                self.provide(k)
 
     def get_scope_impl(self, sc: Scope) -> ScopeImpl:
         return self._scopes[sc]
