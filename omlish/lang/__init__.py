@@ -156,6 +156,10 @@ from .strings import (  # noqa
     snake_case,
 )
 
+from .sys import (  # noqa
+    is_gil_enabled,
+)
+
 from .timeouts import (  # noqa
     DeadlineTimeout,
     InfiniteTimeout,
