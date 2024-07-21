@@ -6,7 +6,7 @@ curl \
 """
 import asyncio
 
-from omserv.secrets import load_secrets
+from ..secrets import load_secrets
 
 import telegram
 
