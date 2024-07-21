@@ -31,6 +31,7 @@ from ..overrides import Overrides
 from ..private import Expose
 from ..private import Private
 from ..scopes import ScopeBinding
+from ..types import Scope
 from .bindings import BindingImpl
 from .providers import MultiProviderImpl
 from .providers import make_provider_impl
@@ -152,3 +153,14 @@ class ElementCollection(lang.Final):
     @lang.cached_function
     def binding_impl_map(self) -> ta.Mapping[Key, BindingImpl]:
         return self._build_binding_impl_map(self.element_multimap())
+
+    ##
+
+    @lang.cached_function
+    def eager_keys_by_scope(self) -> ta.MutableMapping[Scope, ta.Sequence[Key]]:
+        bim = self.binding_impl_map()
+        ret: dict[Scope, list[Key]] = {}
+        for e in self.elements_of_type(Eager):
+            bi = bim[e.key]
+            ret.setdefault(bi.scope, []).append(e.key)
+        return ret
