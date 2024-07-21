@@ -141,8 +141,8 @@ class SeededScopeImpl(ScopeImpl):
         def __init__(self, ss: SeededScope, i: Injector) -> None:
             super().__init__()
             self._ss = check.isinstance(ss, SeededScope)
-            ii = check.isinstance(i, injector_.InjectorImpl)
-            self._ssi = check.isinstance(ii.get_scope_impl(self._ss), SeededScopeImpl)
+            self._ii = check.isinstance(i, injector_.InjectorImpl)
+            self._ssi = check.isinstance(self._ii.get_scope_impl(self._ss), SeededScopeImpl)
 
         @contextlib.contextmanager
         def __call__(self, seeds: ta.Mapping[Key, ta.Any]) -> ta.Generator[None, None, None]:
@@ -150,6 +150,7 @@ class SeededScopeImpl(ScopeImpl):
                 if self._ssi._st is not None:  # noqa
                     raise ScopeAlreadyOpenError(self._ss)
                 self._ssi._st = SeededScopeImpl.State(dict(seeds))  # noqa
+                self._ii._instantiate_eagers(self._ss)  # noqa
                 yield
             finally:
                 if self._ssi._st is None:  # noqa
