@@ -1,8 +1,17 @@
 import asyncio
+import subprocess
+import sys
 
 import pytest
 
 from ... import asyncs as ay
+
+
+def test_no_import_backend():
+    script = f"""{sys.executable} -c 'import sys, {__package__.rpartition(".")[0]}; print(" ".join(sys.modules))'"""
+    buf = subprocess.check_output(['sh', '-c', script]).decode()
+    mods = frozenset(sl for l in buf.split(' ') if (sl := l.strip()))
+    pass
 
 
 @pytest.mark.asyncio
