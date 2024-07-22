@@ -22,6 +22,9 @@ else:
     trio_asyncio = lang.proxy_import('trio_asyncio')
 
 
+##
+
+
 _FLAVOR_ATTR = '__async_flavor__'
 
 
@@ -60,3 +63,48 @@ def get_flavor(obj: ta.Any, default: ta.Union[Flavor, type[_MISSING], None] = _M
     if default is not _MISSING:
         return default  # type: ignore
     raise TypeError(f'not marked with flavor: {obj}')
+
+
+##
+
+
+class Adapter(lang.Abstract):
+    def from_asyncio(self, fn):
+        raise NotImplementedError
+
+    def from_trio(self, fn):
+        raise NotImplementedError
+
+
+class AsyncioAdapter(Adapter):
+    def from_asyncio(self, fn):
+        return fn
+
+    def from_trio(self, fn):
+        return trio_asyncio.trio_as_aio(fn)
+
+
+class TrioAdapter(Adapter):
+    def from_asyncio(self, fn):
+        return trio_asyncio.aio_as_trio(fn)
+
+    def from_trio(self, fn):
+        return fn
+
+
+_ADAPTERS_BY_BACKEND: ta.Mapping[str, Adapter] = {
+    'asyncio': AsyncioAdapter(),
+    'trio': TrioAdapter(),
+}
+
+
+def get_adapter() -> Adapter:
+    return _ADAPTERS_BY_BACKEND[sniffio.current_async_library()]
+
+
+def from_asyncio(fn):
+    return get_adapter().from_asyncio(fn)
+
+
+def from_trio(fn):
+    return get_adapter().from_trio(fn)
