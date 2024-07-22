@@ -20,7 +20,11 @@ import time
 import types
 import typing as ta
 
-import psutil
+psutil: ta.Any
+try:
+    psutil = __import__('psutil')
+except ImportError:
+    psutil = None
 
 
 log = logging.getLogger(__name__)
@@ -44,11 +48,18 @@ class StatsFactory:
         self._start_time = start_time if start_time is not None else time.time()
 
     def __call__(self) -> Stats:
-        mem = psutil.Process().memory_info()
+        kw: dict = {}
+
+        if psutil is not None:
+            mem = psutil.Process().memory_info()
+            kw.update(
+                vm_rss=mem.rss,
+                vm_vms=mem.vms,
+            )
+
         return Stats(
             time=time.time() - self._start_time,
-            vm_rss=mem.rss,
-            vm_vms=mem.vms,
+            **kw,
         )
 
     PROC_MEM_KEYS_BY_FIELD = {

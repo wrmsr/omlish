@@ -10,16 +10,13 @@ import enum
 import typing as ta
 
 from .. import lang
+from .trio_asyncio import check_trio_asyncio
 
 if ta.TYPE_CHECKING:
-    import asyncio  # noqa
     import sniffio
-    import trio  # noqa
     import trio_asyncio
 else:
-    asyncio = lang.proxy_import('asyncio')
     sniffio = lang.proxy_import('sniffio')
-    trio = lang.proxy_import('trio')
     trio_asyncio = lang.proxy_import('trio_asyncio')
 
 
@@ -58,6 +55,10 @@ mark_anyio = mark_flavor(Flavor.ANYIO)
 mark_trio = mark_flavor(Flavor.TRIO)
 
 PACKAGE_FLAVORS: ta.MutableMapping[str, Flavor] = {
+    'anyio': Flavor.ANYIO,
+    'asyncio': Flavor.ASYNCIO,
+    'trio': Flavor.TRIO,
+
     'sqlalchemy.ext.asyncio': Flavor.ASYNCIO,
 }
 
@@ -87,26 +88,16 @@ def get_flavor(obj: ta.Any, default: ta.Union[Flavor, type[_MISSING], None] = _M
         pass
 
     if (mn := getattr(u, '__module__', None)) is not None:
-        dp = mn.find('.')
-        try:
-            return Flavor[(mn[:dp] if dp >= 0 else mn).upper()]
-        except KeyError:
-            pass
-
         if (pf := _get_module_flavor(mn)):
             return pf
 
     if default is not _MISSING:
         return default  # type: ignore
+
     raise TypeError(f'not marked with flavor: {obj}')
 
 
 ##
-
-
-def check_trio_asyncio() -> None:
-    if trio_asyncio.current_loop.get() is None:
-        raise RuntimeError('trio_asyncio loop not running')
 
 
 class Adapter(lang.Abstract):
@@ -163,8 +154,8 @@ def get_adapter() -> Adapter:
     return _ADAPTERS_BY_BACKEND[sniffio.current_async_library()]
 
 
-def adapt(fn):
-    return get_adapter().adapt(fn)
+def adapt(fn, fl=None):
+    return get_adapter().adapt(fn, fl)
 
 
 def from_anyio(fn):
