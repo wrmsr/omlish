@@ -140,5 +140,5 @@ def from_trio(fn):
     return get_adapter().from_trio(fn)
 
 
-def from_(fn):
+def adapt(fn):
     return get_adapter().from_(fn)
