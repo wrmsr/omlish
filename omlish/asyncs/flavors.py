@@ -3,17 +3,17 @@ TODO:
  - 'get current'? -> sniffio..
  - mark whole class / module?
  - sync/greenlet bridge
- - auto for things in asyncio/trio/anyio packages
 """
+import abc
 import enum
 import typing as ta
 
 from .. import lang
 
 if ta.TYPE_CHECKING:
-    import asyncio
+    import asyncio  # noqa
     import sniffio
-    import trio
+    import trio  # noqa
     import trio_asyncio
 else:
     asyncio = lang.proxy_import('asyncio')
@@ -56,10 +56,20 @@ mark_trio = mark_flavor(Flavor.TRIO)
 
 def get_flavor(obj: ta.Any, default: ta.Union[Flavor, type[_MISSING], None] = _MISSING) -> Flavor:
     u = lang.unwrap_func(obj)
+
     try:
         return getattr(u, _FLAVOR_ATTR)
     except AttributeError:
         pass
+
+    if (mn := getattr(u, '__module__', None)) is not None:
+        if (dp := mn.find('.')) >= 0:
+            mn = mn[:dp]
+        try:
+            return Flavor[mn.upper()]
+        except KeyError:
+            pass
+
     if default is not _MISSING:
         return default  # type: ignore
     raise TypeError(f'not marked with flavor: {obj}')
@@ -69,9 +79,25 @@ def get_flavor(obj: ta.Any, default: ta.Union[Flavor, type[_MISSING], None] = _M
 
 
 class Adapter(lang.Abstract):
+    _FROM_METHODS_BY_FLAVOR: ta.ClassVar[ta.Mapping[Flavor, str]] = {
+        Flavor.ANYIO: 'from_anyio',
+        Flavor.ASYNCIO: 'from_asyncio',
+        Flavor.TRIO: 'from_trio',
+    }
+
+    def from_(self, fn, fl=None):
+        if fl is None:
+            fl = get_flavor(fn)
+        return getattr(self, self._FROM_METHODS_BY_FLAVOR[fl])(fn)
+
+    def from_anyio(self, fn):
+        return fn
+
+    @abc.abstractmethod
     def from_asyncio(self, fn):
         raise NotImplementedError
 
+    @abc.abstractmethod
     def from_trio(self, fn):
         raise NotImplementedError
 
@@ -102,9 +128,17 @@ def get_adapter() -> Adapter:
     return _ADAPTERS_BY_BACKEND[sniffio.current_async_library()]
 
 
+def from_anyio(fn):
+    return get_adapter().from_anyio(fn)
+
+
 def from_asyncio(fn):
     return get_adapter().from_asyncio(fn)
 
 
 def from_trio(fn):
     return get_adapter().from_trio(fn)
+
+
+def from_(fn):
+    return get_adapter().from_(fn)

@@ -82,3 +82,18 @@ async def test_trio_loop(harness) -> None:
         await _anyio_func(True, True)
         await trio_asyncio.aio_as_trio(_asyncio_func)(True)
         await _trio_func(True)
+
+
+##
+
+
+def test_get_flavor_anyio():
+    assert flavors.get_flavor(anyio.sleep) == flavors.Flavor.ANYIO
+
+
+def test_get_flavor_asyncio():
+    assert flavors.get_flavor(asyncio.sleep) == flavors.Flavor.ASYNCIO
+
+
+def test_get_flavor_trio():
+    assert flavors.get_flavor(trio.sleep) == flavors.Flavor.TRIO
