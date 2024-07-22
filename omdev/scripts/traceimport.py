@@ -13,6 +13,7 @@ jq '..?|.loaded_name?|select(.!=null)'
 import dataclasses as dc
 import inspect
 import logging
+import operator
 import os
 import sys
 import threading
@@ -33,11 +34,25 @@ log = logging.getLogger(__name__)
 REQUIRED_PYTHON_VERSION = (3, 8)
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass()
 class Stats:
-    time: float
+    _ATTRS: ta.ClassVar[ta.Sequence[str]]
+
+    time: float = 0.
     vm_rss: int = 0
     vm_vms: int = 0
+
+    def _op(self, op, other):
+        return Stats(*[op(getattr(self, a), getattr(other, a)) for a in Stats._ATTRS])
+
+    def __add__(self, other):
+        return self._op(operator.add, other)
+
+    def __sub__(self, other):
+        return self._op(operator.sub, other)
+
+
+Stats._ATTRS = [f.name for f in dc.fields(Stats)]
 
 
 class StatsFactory:
@@ -93,6 +108,9 @@ class StatsFactory:
         return status
 
 
+##
+
+
 @dc.dataclass()
 class StackTraceEntry:
     file: str
@@ -121,9 +139,12 @@ class Node:
     loaded_id: ta.Optional[int] = None
 
     start_stats: ta.Optional[Stats] = None
-    exclusive_stats: ta.Optional[Stats] = None
-    cumulative_stats: ta.Optional[Stats] = None
     end_stats: ta.Optional[Stats] = None
+
+    stats: ta.Optional[Stats] = None
+
+    self_stats: ta.Optional[Stats] = None
+    child_stats: ta.Optional[Stats] = None
 
     seq: ta.Optional[int] = None
     depth: int = 0
@@ -142,6 +163,18 @@ class ImportTracer:
             return repr(o)
         else:
             return o
+
+    def _fixup_node(self, node: Node, *, depth: int = 0, seq: int = 0) -> int:
+        node.depth = depth
+        node.seq = seq
+        node.child_stats = Stats()
+
+        for child in node.children:
+            seq = self._fixup_node(child, depth=depth + 1, seq=seq + 1)
+            node.child_stats += child.stats  # type: ignore
+
+        node.self_stats = node.stats - node.child_stats  # type: ignore
+        return seq
 
     def trace(self, root_module: str) -> Node:
         node_stack = [Node()]
@@ -180,6 +213,7 @@ class ImportTracer:
 
             finally:
                 node.end_stats = self._stats_factory()
+                node.stats = node.end_stats - node.start_stats
                 if node_stack.pop() is not node:
                     raise RuntimeError(node_stack)
 
@@ -197,29 +231,14 @@ class ImportTracer:
             raise RuntimeError(node_stack)
 
         node = node_stack[0].children[0]
-        fixup_node(node)
+        self._fixup_node(node)
         return node
 
 
-def fixup_node(node: Node, *, depth: int = 0, seq: int = 0) -> int:
-    node.depth = depth
-    node.seq = seq
-
-    # agg_keys = ['time', 'vm_rss', 'vm_vms']
-    # for key in agg_keys:
-    #     node['cumulative_' + key] = node['end_' + key] - node['start_' + key]
-    #     node['exclusive_' + key] = node['cumulative_' + key]
-
-    for child in node.children:
-        seq = fixup_node(child, depth=depth + 1, seq=seq + 1)
-
-        # for key in agg_keys:
-        #     node['exclusive_' + key] -= child['cumulative_' + key]
-
-    return seq
+##
 
 
-def main():
+def main() -> None:
     if sys.version_info < REQUIRED_PYTHON_VERSION:
         raise EnvironmentError(f'Requires python {REQUIRED_PYTHON_VERSION}, got {sys.version_info} from {sys.executable}')  # noqa
 
