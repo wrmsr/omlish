@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 TODO:
  - no psutil on lin / togglable on mac
@@ -432,20 +433,34 @@ class SqliteWriter:
 ##
 
 
-def main() -> None:
+def _main() -> None:
     if sys.version_info < REQUIRED_PYTHON_VERSION:
         raise EnvironmentError(f'Requires python {REQUIRED_PYTHON_VERSION}, got {sys.version_info} from {sys.executable}')  # noqa
 
-    _, mod = sys.argv
-    node = ImportTracer(stringify_fields=True).trace(mod)
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--sqlite')
+    parser.add_argument('--pretty', action='store_true')
+    parser.add_argument('mod')
+    args = parser.parse_args()
 
-    # import json
-    # print(json.dumps(dc.asdict(node)))
+    node = ImportTracer(stringify_fields=True).trace(args.mod)
 
-    with SqliteWriter('imports.db') as sw:
-        # sw.write(node)
-        pass
+    if args.sqlite:
+        with SqliteWriter(args.sqlite) as sw:
+            sw.write(node)
+
+    else:
+        import json
+
+        kw = {}
+        if args.pretty:
+            kw.update(indent=2, separators=(', ', ': '))
+        else:
+            kw.update(indent=None, separators=(',', ':'))
+
+        print(json.dumps(dc.asdict(node), **kw))
 
 
 if __name__ == '__main__':
-    main()
+    _main()

@@ -7,7 +7,7 @@ def _get_rss() -> int:
     return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
 
 
-def _main():
+def _main() -> None:
     [src] = sys.argv[1:]
     start = _get_rss()
     exec(src)
