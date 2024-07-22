@@ -1,3 +1,8 @@
+"""
+TODO:
+ - async engine / conn adapter :|
+ - serverside created_at/updated_at
+"""
 import contextlib
 import dataclasses as dc
 import datetime
