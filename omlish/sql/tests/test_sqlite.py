@@ -8,12 +8,18 @@ from ... import lang
 from ...testing import pytest as ptu
 
 
+##
+
+
 meta = sa.MetaData()
 t1 = sa.Table(
     't1',
     meta,
     sa.Column('name', sa.String(50), primary_key=True),
 )
+
+
+##
 
 
 def test_sqlite() -> None:
@@ -37,6 +43,9 @@ def test_sqlite() -> None:
             rows = list(result.fetchall())
             assert len(rows) == 1
             assert rows[0].name == 'some name 1'
+
+
+##
 
 
 @ptu.skip_if_cant_import('aiosqlite')
