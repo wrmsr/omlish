@@ -27,3 +27,7 @@ from .futures import (  # noqa
     wait_dependent_futures,
     wait_futures,
 )
+
+from .trio_asyncio import (  # noqa
+    with_trio_asyncio_loop,
+)
