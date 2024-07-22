@@ -39,6 +39,8 @@ class NodeRegistrant:
     ) -> None:
         super().__init__()
 
+        self._engine = engine
+
         self._info = NodeInfo(
             uuid=str(uuid.uuid4()).replace('-', ''),
             hostname=socket.gethostname(),
