@@ -8,22 +8,31 @@ import sqlalchemy as sa
 import sqlalchemy.ext.asyncio as saa
 
 from omlish import asyncs as au
+from omlish import check
 
 from ..secrets import load_secrets  # noqa
+
+
+##
 
 
 meta = sa.MetaData()
 
 
-_nodes_table = sa.Table(
+NODES = sa.Table(
     '_nodes',
     meta,
 
-    sa.Column('_id', sa.Integer, primary_key=True, autoincrement=True),
-    sa.Column('name', sa.String(50), nullable=False, unique=True),
+    sa.Column('_id', sa.Integer, nullable=False, primary_key=True, autoincrement=True),
 
-    sa.Index('_nodes_by_name', 'name', unique=True),
+    sa.Column('uuid', sa.String(50), nullable=False, unique=True),
+    sa.Column('hostname', sa.String(100), nullable=False),
+
+    sa.Index('_nodes_by_uuid', 'uuid', unique=True),
 )
+
+
+##
 
 
 @dc.dataclass()
@@ -50,10 +59,28 @@ class NodeRegistrant:
     async def __call__(self) -> None:
         async with contextlib.AsyncExitStack() as aes:
             conn = await aes.enter_async_context(au.adapt_context(self._engine.connect()))
-            txn = await aes.enter_async_context(au.adapt_context(conn.begin()))  # noqa
 
-            result = await au.adapt(conn.execute)(sa.select(1))
-            print(result.fetchall())
+            nid: int
+
+            async with au.adapt_context(conn.begin()):
+                rows = (await conn.execute(sa.select(NODES).where(NODES.c.uuid == self._info.uuid))).fetchall()
+
+                if len(rows) > 0:
+                    row = check.single(rows)
+                    nid = row['_id']  # type: ignore  # noqa
+
+                else:
+                    result = await conn.execute(NODES.insert(), [{
+                        'uuid': self._info.uuid,
+                        'hostname': self._info.hostname,
+                    }])
+                    nid = check.single(result.inserted_primary_key)  # noqa
+
+            print(f'{nid=}')
+            await anyio.sleep(10.)
+
+
+##
 
 
 def _get_db_url() -> str:
@@ -63,6 +90,11 @@ def _get_db_url() -> str:
 
 async def _a_main() -> None:
     engine = saa.create_async_engine(_get_db_url(), echo=True)
+
+    async with au.adapt_context(engine.connect()) as conn:
+        await au.adapt(conn.run_sync)(meta.drop_all)
+        await au.adapt(conn.run_sync)(meta.create_all)
+
     await NodeRegistrant(engine)()
 
 
