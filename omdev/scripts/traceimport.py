@@ -255,21 +255,27 @@ def sqlite3() -> ta.Any:
     return _sqlite3
 
 
-def sqlite_retrying(fn):
-    @functools.wraps(fn)
-    def inner(*args, **kwargs):
-        while True:
-            try:
-                return fn(*args, **kwargs)
-            except sqlite3().OperationalError:
-                log.exception()
-    return inner
+def sqlite_retrying(max_retries: int = 10):
+    def outer(fn):
+        @functools.wraps(fn)
+        def inner(*args, **kwargs):
+            n = 0
+            while True:
+                try:
+                    return fn(*args, **kwargs)
+                except sqlite3().OperationalError:
+                    if n >= max_retries:
+                        raise
+                    n += 1
+                    log.exception('Sqlite error')
+        return inner
+    return outer
 
 
 class SqliteWriter:
 
     def __init__(self, db_path: str) -> None:
-        self.__init__()
+        super().__init__()
 
         self._db_path = db_path
 
@@ -291,9 +297,13 @@ class SqliteWriter:
     _DEFAULT_INDEXES = [
         'root_id',
         'parent_id',
-        'module',
-        'loaded_file',
+
         'has_exception',
+
+        'import_name',
+
+        'loaded_name',
+        'loaded_file',
     ]
 
     def _build_columns(self, base: ta.Iterable[ta.Tuple[str, str]]) -> ta.Sequence[ta.Tuple[str, str]]:
@@ -316,7 +326,7 @@ class SqliteWriter:
                 cols.append((f.name, 'text'))  # json
         return cols
 
-    @sqlite_retrying
+    @sqlite_retrying()
     def _init_db(self, cursor):
         cols = ', '.join(f'{n} {t}' for n, t in self._columns)
         stmt = f'create table if not exists {self._table} ({cols});'
@@ -365,7 +375,7 @@ class SqliteWriter:
 #             self._insert_node(cursor, child, root_id, row_id)
 #             for child in node.get('children', []))
 #
-#     @sqlite_retrying
+#     @sqlite_retrying()
 #     def _write_node(self, node: Node) -> None:
 #         assert node['seq'] == 0
 #
@@ -390,7 +400,7 @@ class SqliteWriter:
 #         finally:
 #             cursor.close()
 
-    @sqlite_retrying
+    @sqlite_retrying()
     def __enter__(self: 'SqliteWriter') -> 'SqliteWriter':
         log.info('initializing database %s' % (self._db_path))
 
@@ -433,7 +443,7 @@ def main() -> None:
     # print(json.dumps(dc.asdict(node)))
 
     with SqliteWriter('imports.db') as sw:
-        # sw.write()
+        # sw.write(node)
         pass
 
 
