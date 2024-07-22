@@ -6,10 +6,22 @@ import sqlalchemy.ext.asyncio
 
 from ... import check
 from ... import lang
+from ...testing import pydevd as pdu  # noqa
 from ...testing import pytest as ptu
 from ..dbs import UrlDbLoc
 from ..dbs import set_url_engine
 from .dbs import Dbs
+
+
+##
+
+
+@pytest.fixture(autouse=True)
+def _patch_for_trio_asyncio_fixture():
+    pdu.patch_for_trio_asyncio()
+
+
+##
 
 
 meta = sa.MetaData()
@@ -21,10 +33,10 @@ t1 = sa.Table(
 )
 
 
-def test_mysql(harness) -> None:
-    url = check.isinstance(harness[Dbs].specs()['mysql'].loc, UrlDbLoc).url
-    url = set_url_engine(url, 'mysql+pymysql')
+##
 
+
+def _test_mysql(url: str) -> None:
     with contextlib.ExitStack() as es:
         engine = sa.create_engine(url, echo=True)
         es.enter_context(lang.defer(engine.dispose))
@@ -50,12 +62,16 @@ def test_mysql(harness) -> None:
             assert rows[0].name == 'some name 1'
 
 
-@ptu.skip_if_cant_import('aiomysql')
-@pytest.mark.asyncio
-async def test_async_mysql(harness) -> None:
+def test_mysql(harness) -> None:
     url = check.isinstance(harness[Dbs].specs()['mysql'].loc, UrlDbLoc).url
-    url = set_url_engine(url, 'mysql+aiomysql')
+    url = set_url_engine(url, 'mysql+pymysql')
+    _test_mysql(url)
 
+
+##
+
+
+async def _test_mysql_async(url: str) -> None:
     async with contextlib.AsyncExitStack() as aes:
         engine = sa.ext.asyncio.create_async_engine(url, echo=True)
         await aes.enter_async_context(lang.a_defer(engine.dispose()))
@@ -79,3 +95,24 @@ async def test_async_mysql(harness) -> None:
             rows = list(result.fetchall())
             assert len(rows) == 1
             assert rows[0].name == 'some name 1'
+
+
+@ptu.skip_if_cant_import('aiomysql')
+@pytest.mark.asyncio
+async def test_async_mysql(harness) -> None:
+    url = check.isinstance(harness[Dbs].specs()['mysql'].loc, UrlDbLoc).url
+    url = set_url_engine(url, 'mysql+aiomysql')
+    await _test_mysql_async(url)
+
+
+@ptu.skip_if_cant_import('asyncpg')
+@ptu.skip_if_cant_import('trio')
+@ptu.skip_if_cant_import('trio_asyncio')
+@pytest.mark.trio
+async def test_async_postgres_trio_asyncio(harness) -> None:
+    url = check.isinstance(harness[Dbs].specs()['mysql'].loc, UrlDbLoc).url
+    url = set_url_engine(url, 'mysql+aiomysql')
+
+    import trio_asyncio  # noqa
+    async with trio_asyncio.open_loop() as loop:  # noqa
+        await trio_asyncio.aio_as_trio(_test_mysql_async)(url)

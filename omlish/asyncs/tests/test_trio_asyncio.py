@@ -155,3 +155,11 @@ def test_trio_from_asyncio2():
         assert r == 42
 
     trai.run(trai.aio_as_trio, functools.partial(aio_sleep, .3))
+
+
+@skip_if_cant_import('trio_asyncio')
+@pytest.mark.trio
+async def test_trio_asyncio_loop(harness) -> None:
+    async with trai.open_loop() as loop:  # noqa
+        await trio.sleep(.1)
+        await trai.aio_as_trio(asyncio.sleep)(.1)
