@@ -5,6 +5,7 @@ TODO:
  - sync/greenlet bridge
 """
 import abc
+import dataclasses as dc
 import enum
 import typing as ta
 
@@ -20,6 +21,9 @@ else:
     sniffio = lang.proxy_import('sniffio')
     trio = lang.proxy_import('trio')
     trio_asyncio = lang.proxy_import('trio_asyncio')
+
+
+T = ta.TypeVar('T')
 
 
 ##
@@ -90,10 +94,12 @@ class Adapter(lang.Abstract):
         Flavor.TRIO: 'from_trio',
     }
 
-    def from_(self, fn, fl=None):
+    def adapt(self, fn, fl=None):
         if fl is None:
             fl = get_flavor(fn)
         return getattr(self, self._FROM_METHODS_BY_FLAVOR[fl])(fn)
+
+    #
 
     def from_anyio(self, fn):
         return fn
@@ -135,6 +141,10 @@ def get_adapter() -> Adapter:
     return _ADAPTERS_BY_BACKEND[sniffio.current_async_library()]
 
 
+def adapt(fn):
+    return get_adapter().adapt(fn)
+
+
 def from_anyio(fn):
     return get_adapter().from_anyio(fn)
 
@@ -147,5 +157,32 @@ def from_trio(fn):
     return get_adapter().from_trio(fn)
 
 
-def adapt(fn):
-    return get_adapter().from_(fn)
+##
+
+
+@dc.dataclass(frozen=True)
+class ContextManagerAdapter(ta.Generic[T]):
+    obj: ta.AsyncContextManager[T]
+    adapt: ta.Callable[[ta.Callable], ta.Callable]
+
+    async def __aenter__(self, *args: ta.Any, **kwargs: ta.Any) -> T:
+        return await self.adapt(self.obj.__aenter__)(*args, **kwargs)
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        return await self.adapt(self.obj.__aexit__)(exc_type, exc_val, exc_tb)
+
+
+def adapt_context(obj):
+    return ContextManagerAdapter(obj, get_adapter().adapt)
+
+
+def from_anyio_context(obj):
+    return ContextManagerAdapter(obj, get_adapter().from_anyio)
+
+
+def from_asyncio_context(obj):
+    return ContextManagerAdapter(obj, get_adapter().from_asyncio)
+
+
+def from_trio_context(obj):
+    return ContextManagerAdapter(obj, get_adapter().from_trio)
