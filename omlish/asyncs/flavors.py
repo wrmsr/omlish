@@ -1,11 +1,25 @@
 """
 TODO:
+ - 'get current'? -> sniffio..
  - mark whole class / module?
+ - sync/greenlet bridge
+ - auto for things in asyncio/trio/anyio packages
 """
 import enum
 import typing as ta
 
 from .. import lang
+
+if ta.TYPE_CHECKING:
+    import asyncio
+    import sniffio
+    import trio
+    import trio_asyncio
+else:
+    asyncio = lang.proxy_import('asyncio')
+    sniffio = lang.proxy_import('sniffio')
+    trio = lang.proxy_import('trio')
+    trio_asyncio = lang.proxy_import('trio_asyncio')
 
 
 _FLAVOR_ATTR = '__async_flavor__'
