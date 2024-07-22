@@ -8,7 +8,8 @@ from ... import asyncs as ay
 
 
 def test_no_import_backend():
-    # -S disables sitecustomize which is used by pydevd (inherited via environ under debug) and imports a ton of junk
+    # Goes through sh to block pydevd from attaching and importing a ton of junk.
+    # -S disables sitecustomize which is used by pydevd (inherited via environ under debug) and imports a ton of junk.
     script = f"""{sys.executable} -S -c 'import sys, {__package__.rpartition(".")[0]}; print(" ".join(sys.modules))'"""
     buf = subprocess.check_output(['sh', '-c', script]).decode()
     mods = frozenset(sl for l in buf.split(' ') if (sl := l.strip()))
