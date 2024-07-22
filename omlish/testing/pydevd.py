@@ -87,6 +87,8 @@ def silence_subprocess_check() -> None:
 
 @lang.cached_function
 def patch_for_trio_asyncio() -> None:
+    """Fix for `trio a callable object was expected by call_soon(), got Task`"""
+
     try:
         import pydevd_nest_asyncio  # noqa
     except ImportError:
