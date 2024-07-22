@@ -19,7 +19,7 @@ def test_marker():
     assert repr(M) == '<M>'
 
     assert isinstance(M, M)
-    assert issubclass(M, M)  # noqa
+    assert issubclass(M, M)  # type: ignore
 
     class O(Marker):
         pass
