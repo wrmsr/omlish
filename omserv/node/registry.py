@@ -19,8 +19,11 @@ meta = sa.MetaData()
 _nodes_table = sa.Table(
     '_nodes',
     meta,
-    sa.Column('id', sa.Integer, primary_key=True, autoincrement=True),
+
+    sa.Column('_id', sa.Integer, primary_key=True, autoincrement=True),
     sa.Column('name', sa.String(50), nullable=False, unique=True),
+
+    sa.Index('_node_by_name', 'name', unique=True),
 )
 
 
