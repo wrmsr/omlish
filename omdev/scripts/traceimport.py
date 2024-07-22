@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
 TODO:
+ - hoist first stacktrace file to a full field
  - no psutil on lin / togglable on mac
  - create table paths(path varchar(1024); - norm, dedupe, index, etc (bonus points for 32bit key)
- - store lineno from stacktrace
  - gviz
 
 http://www.logilab.org/856
