@@ -1,11 +1,14 @@
 import contextlib
 import dataclasses as dc
+import datetime
 import socket
+import typing as ta
 import uuid
 
 import anyio
 import sqlalchemy as sa
 import sqlalchemy.ext.asyncio as saa
+import sqlalchemy.orm
 
 from omlish import asyncs as au
 from omlish import check
@@ -16,20 +19,26 @@ from ..secrets import load_secrets  # noqa
 ##
 
 
-meta = sa.MetaData()
+Metadata = sa.MetaData()
+Base: ta.Any = sa.orm.declarative_base(metadata=Metadata)
 
 
-NODES = sa.Table(
-    '_nodes',
-    meta,
+class Node(Base):
+    __tablename__ = '_nodes'
+    __table_args__ = (
+        sa.Index('_nodes_by_uuid', 'uuid', unique=True),
+    )
 
-    sa.Column('_id', sa.Integer, nullable=False, primary_key=True, autoincrement=True),
+    _id = sa.Column(sa.Integer, nullable=False, primary_key=True, autoincrement=True)
 
-    sa.Column('uuid', sa.String(50), nullable=False, unique=True),
-    sa.Column('hostname', sa.String(100), nullable=False),
+    created_at = sa.Column(sa.TIMESTAMP, default=datetime.datetime.utcnow, nullable=False)  # , server_default=sa.text('0'))  # noqa
+    updated_at = sa.Column(sa.TIMESTAMP, default=datetime.datetime.utcnow, nullable=False, onupdate=datetime.datetime.utcnow)  # noqa
 
-    sa.Index('_nodes_by_uuid', 'uuid', unique=True),
-)
+    uuid = sa.Column(sa.String(50), nullable=False, unique=True)
+    hostname = sa.Column(sa.String(100), nullable=False)
+
+
+Nodes = Node.__table__
 
 
 ##
@@ -63,14 +72,16 @@ class NodeRegistrant:
             nid: int
 
             async with au.adapt_context(conn.begin()):
-                rows = (await conn.execute(sa.select(NODES).where(NODES.c.uuid == self._info.uuid))).fetchall()
+                rows = (await au.adapt(conn.execute)(
+                    sa.select(Nodes).where(Nodes.c.uuid == self._info.uuid)
+                )).fetchall()
 
                 if len(rows) > 0:
                     row = check.single(rows)
-                    nid = row['_id']  # type: ignore  # noqa
+                    nid = row['_id']
 
                 else:
-                    result = await conn.execute(NODES.insert(), [{
+                    result = await au.adapt(conn.execute)(Nodes.insert(), [{
                         'uuid': self._info.uuid,
                         'hostname': self._info.hostname,
                     }])
@@ -92,8 +103,9 @@ async def _a_main() -> None:
     engine = saa.create_async_engine(_get_db_url(), echo=True)
 
     async with au.adapt_context(engine.connect()) as conn:
-        await au.adapt(conn.run_sync)(meta.drop_all)
-        await au.adapt(conn.run_sync)(meta.create_all)
+        async with au.adapt_context(conn.begin()):
+            await au.adapt(conn.run_sync)(Metadata.drop_all)
+            await au.adapt(conn.run_sync)(Metadata.create_all)
 
     await NodeRegistrant(engine)()
 
