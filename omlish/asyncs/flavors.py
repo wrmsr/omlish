@@ -57,6 +57,26 @@ mark_asyncio = mark_flavor(Flavor.ASYNCIO)
 mark_anyio = mark_flavor(Flavor.ANYIO)
 mark_trio = mark_flavor(Flavor.TRIO)
 
+PACKAGE_FLAVORS: ta.MutableMapping[str, Flavor] = {
+    'sqlalchemy.ext.asyncio': Flavor.ASYNCIO,
+}
+
+_MODULE_FLAVOR_CACHE: dict[str, Flavor | None] = {}
+
+
+def _get_module_flavor(p: str) -> Flavor | None:
+    try:
+        return _MODULE_FLAVOR_CACHE[p]
+    except KeyError:
+        pass
+    pf: Flavor | None = None
+    for cp, cf in PACKAGE_FLAVORS.items():
+        if p.startswith(cp) and (len(cp) == len(p) or p[len(cp)] == '.'):
+            pf = cf
+            break
+    _MODULE_FLAVOR_CACHE[p] = pf
+    return pf
+
 
 def get_flavor(obj: ta.Any, default: ta.Union[Flavor, type[_MISSING], None] = _MISSING) -> Flavor:
     u = lang.unwrap_func(obj)
@@ -67,12 +87,14 @@ def get_flavor(obj: ta.Any, default: ta.Union[Flavor, type[_MISSING], None] = _M
         pass
 
     if (mn := getattr(u, '__module__', None)) is not None:
-        if (dp := mn.find('.')) >= 0:
-            mn = mn[:dp]
+        dp = mn.find('.')
         try:
-            return Flavor[mn.upper()]
+            return Flavor[(mn[:dp] if dp >= 0 else mn).upper()]
         except KeyError:
             pass
+
+        if (pf := _get_module_flavor(mn)):
+            return pf
 
     if default is not _MISSING:
         return default  # type: ignore

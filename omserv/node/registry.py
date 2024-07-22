@@ -40,10 +40,10 @@ async def register_node(engine: sa.Engine) -> None:
     )
 
     async with contextlib.AsyncExitStack() as aes:
-        conn = await aes.enter_async_context(au.from_asyncio_context(engine.connect()))
-        txn = await aes.enter_async_context(au.from_asyncio_context(conn.begin()))  # noqa
+        conn = await aes.enter_async_context(au.adapt_context(engine.connect()))
+        txn = await aes.enter_async_context(au.adapt_context(conn.begin()))  # noqa
 
-        result = await au.from_asyncio(conn.execute)(sa.select(1))
+        result = await au.adapt(conn.execute)(sa.select(1))
         print(result.fetchall())
 
 
@@ -64,8 +64,8 @@ async def _a_main() -> None:
 
 
 if __name__ == '__main__':
-    # _backend = 'asyncio'
-    _backend = 'trio'
+    _backend = 'asyncio'
+    # _backend = 'trio'
 
     match _backend:
         case 'asyncio':
