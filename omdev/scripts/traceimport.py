@@ -52,6 +52,20 @@ log = logging.getLogger(__name__)
 REQUIRED_PYTHON_VERSION = (3, 8)
 
 
+##
+
+
+def _json_dumps(o: ta.Any) -> str:
+    return json().dumps(o, indent=None, separators=(',', ':'))
+
+
+def _json_dumps_pretty(o: ta.Any) -> str:
+    return json().dumps(o, indent=2, separators=(', ', ': '))
+
+
+##
+
+
 @dc.dataclass()
 class Stats:
     ATTRS: ta.ClassVar[ta.Sequence[str]]
@@ -150,7 +164,7 @@ class Node:
     pid: ta.Optional[int] = None
     tid: ta.Optional[int] = None
 
-    stack_trace: ta.Optional[ta.Sequence[StackTraceEntry]] = None
+    stacktrace: ta.Optional[ta.Sequence[StackTraceEntry]] = None
     exception: ta.Optional[ta.Union[Exception, str]] = None
 
     cached_id: ta.Optional[int] = None
@@ -182,7 +196,13 @@ class ImportTracer:
         else:
             return o
 
-    def _fixup_node(self, node: Node, *, depth: int = 0, seq: int = 0) -> int:
+    def _fixup_node(
+            self,
+            node: Node,
+            *,
+            depth: int = 0,
+            seq: int = 0,
+    ) -> int:
         node.depth = depth
         node.seq = seq
         node.child_stats = Stats()
@@ -206,7 +226,7 @@ class ImportTracer:
                 pid=os.getpid(),
                 tid=threading.current_thread().ident,
 
-                stack_trace=[
+                stacktrace=[
                     StackTraceEntry(*s[1:4])
                     for s in inspect.stack()
                     if s[0].f_code.co_filename != __file__
@@ -314,7 +334,10 @@ class SqliteWriter:
         'loaded_file',
     ]
 
-    def _build_columns(self, base: ta.Iterable[ta.Tuple[str, str]]) -> ta.Sequence[ta.Tuple[str, str]]:
+    def _build_columns(
+            self,
+            base: ta.Iterable[ta.Tuple[str, str]],
+    ) -> ta.Sequence[ta.Tuple[str, str]]:
         cols = list(base)
         for f in dc.fields(Node):
             if f.type in (str, ta.Optional[str]):
@@ -335,7 +358,7 @@ class SqliteWriter:
         return cols
 
     @sqlite_retrying()
-    def _init_db(self, cursor):
+    def _init_db(self, cursor: ta.Any) -> None:
         cols = ', '.join(f'{n} {t}' for n, t in self._columns)
         stmt = f'create table if not exists {self._table} ({cols});'
         cursor.execute(stmt)
@@ -343,8 +366,15 @@ class SqliteWriter:
         for c in self._indexes:
             cursor.execute(f'create index if not exists {self._table}_by_{c} on {self._table} ({c});')
 
-    def _insert_node(self, cursor, node: Node, root_id=None, parent_id=None):
-        cols = [
+    def _insert_node(
+            self,
+            cursor: ta.Any,
+            node: Node,
+            *,
+            root_id: ta.Optional[int] = None,
+            parent_id: ta.Optional[int] = None,
+    ) -> int:
+        cols: ta.List[ta.Tuple[str, ta.Any]] = [
             ('root_id', root_id),
             ('parent_id', parent_id),
 
@@ -360,73 +390,56 @@ class SqliteWriter:
             elif f.type in (Stats, ta.Optional[Stats]):
                 pfx = f.name[:-5] if f.name != 'stats' else ''
                 cols.extend((pfx + a, getattr(v, a)) for a in Stats.ATTRS)
+            elif f.name == 'stacktrace':
+                cols.append((f.name, _json_dumps([dc.asdict(e) for e in v])))
             else:
-                dct[f.name] = json().dumps(indent=None, separators=(',', ':'))
+                cols.append((f.name, _json_dumps(v)))
 
-#     def _insert_node(self, cursor, node, root_id=None, parent_id=None):
-#         stmt = 'insert into nodes (%s) values (%s);' % (
-#             ', '.join(col for col, spec in self.COLUMNS),
-#             ','.join('?' for _ in self.COLUMNS))
-#
-#         vals = (
-#             root_id,
-#             parent_id,
-#             node['depth'],
-#             node['seq'],
-#             node['module'],
-#             node['start_time'],
-#             node['end_time'],
-#             node['cumulative_time'],
-#             node['exclusive_time'],
-#             node['start_vm_size'],
-#             node['end_vm_size'],
-#             node['cumulative_vm_size'],
-#             node['exclusive_vm_size'],
-#             node['start_vm_rss'],
-#             node['end_vm_rss'],
-#             node['cumulative_vm_rss'],
-#             node['exclusive_vm_rss'],
-#             node.get('cached_id'),
-#             node.get('loaded_id'),
-#             node.get('loaded_file'),
-#             1 if 'exception' in node else 0,
-#             node.get('exception'))
-#
-#         cursor.execute(stmt, vals)
-#         row_id = cursor.lastrowid
-#
-#         if root_id is None:
-#             root_id = row_id
-#             cursor.execute('update nodes set root_id = ? where rowid = ?;', (root_id, root_id))
-#
-#         return 1 + sum(
-#             self._insert_node(cursor, child, root_id, row_id)
-#             for child in node.get('children', []))
-#
-#     @sqlite_retrying()
-#     def _write_node(self, node: Node) -> None:
-#         assert node['seq'] == 0
-#
-#         log.info('%s: beginning write' % (node['module']))
-#
-#         cursor = self._conn.cursor()
-#         try:
-#             node_count = self._insert_node(cursor, node)
-#
-#             cursor.execute('select count(*) from nodes;')
-#             total_node_count, = cursor.fetchone()
-#
-#             cursor.execute('select count(*) from nodes where parent_id is null;')
-#             total_root_count, = cursor.fetchone()
-#
-#             self._conn.commit()
-#
-#             log.info(
-#                 '%s: %d import trace nodes (db: %d roots, %d total)' % (
-#                     node['module'], node_count, total_root_count, total_node_count))
-#
-#         finally:
-#             cursor.close()
+        stmt = f'insert into {self._table} ({", ".join(k for k, v in cols)}) values ({", ".join("?" for _ in cols)});'
+
+        cursor.execute(stmt, [v for k, v in cols])
+        row_id = cursor.lastrowid
+
+        if root_id is None:
+            root_id = row_id
+            cursor.execute(f'update {self._table} set root_id = ? where rowid = ?;', (root_id, root_id))
+
+        return 1 + sum(
+            self._insert_node(
+                cursor,
+                child,
+                root_id=root_id,
+                parent_id=row_id,
+            )
+            for child in (node.children or [])
+        )
+
+    @sqlite_retrying()
+    def _write_node(self, node: Node) -> None:
+        assert node.seq == 0
+
+        cursor = self._conn.cursor()
+        try:
+            node_count = self._insert_node(cursor, node)
+
+            cursor.execute(f'select count(*) from {self._table};')
+            total_node_count, = cursor.fetchone()
+
+            cursor.execute(f'select count(*) from {self._table} where parent_id is null;')
+            total_root_count, = cursor.fetchone()
+
+            self._conn.commit()
+
+            log.info(
+                '%s: %d import trace nodes (db: %d roots, %d total)',
+                node.import_name,
+                node_count,
+                total_root_count,
+                total_node_count,
+            )
+
+        finally:
+            cursor.close()
 
     @sqlite_retrying()
     def __enter__(self: 'SqliteWriter') -> 'SqliteWriter':
@@ -478,13 +491,8 @@ def _main() -> None:
             sw.write(node)
 
     else:
-        kw = {}
-        if args.pretty:
-            kw.update(indent=2, separators=(', ', ': '))
-        else:
-            kw.update(indent=None, separators=(',', ':'))
-
-        print(json().dumps(dc.asdict(node), **kw))
+        fn = _json_dumps_pretty if args.pretty else _json_dumps
+        print(fn(dc.asdict(node)))
 
 
 if __name__ == '__main__':
