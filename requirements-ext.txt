@@ -63,7 +63,7 @@ triton==2.3.1; platform_machine == 'x86_64'
 
 wgpu==0.16.0
 
-hypothesis==6.108.2
+hypothesis==6.108.3
 
 hexdump==3.3
 
@@ -192,4 +192,4 @@ zstd==1.5.5.1
 
 ##
 
-openai==1.36.1
+openai==1.37.0
