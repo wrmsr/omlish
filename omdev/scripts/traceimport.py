@@ -32,6 +32,20 @@ except ImportError:
     psutil = None
 
 
+def _late_import(m):
+    def get():
+        try:
+            return globals()[k]
+        except KeyError:
+            ret = globals()[k] = __import__(m)
+            return ret
+    k = '_' + m
+    return get
+
+
+json = _late_import('json')
+
+
 log = logging.getLogger(__name__)
 
 
@@ -246,14 +260,7 @@ class ImportTracer:
 ##
 
 
-_sqlite3: ta.Any = None
-
-
-def sqlite3() -> ta.Any:
-    global _sqlite3
-    if _sqlite3 is None:
-        _sqlite3 = __import__('sqlite3')
-    return _sqlite3
+sqlite3 = _late_import('sqlite3')
 
 
 def sqlite_retrying(max_retries: int = 10):
@@ -335,6 +342,26 @@ class SqliteWriter:
 
         for c in self._indexes:
             cursor.execute(f'create index if not exists {self._table}_by_{c} on {self._table} ({c});')
+
+    def _insert_node(self, cursor, node: Node, root_id=None, parent_id=None):
+        cols = [
+            ('root_id', root_id),
+            ('parent_id', parent_id),
+
+            ('has_exception', int(node.exception is not None)),
+        ]
+
+        for f in dc.fields(Node):
+            v = getattr(node, f.name)
+            if f.type in (str, ta.Optional[str], int, ta.Optional[int]):
+                cols.append((f.name, v))
+            elif f.name == 'children':
+                continue
+            elif f.type in (Stats, ta.Optional[Stats]):
+                pfx = f.name[:-5] if f.name != 'stats' else ''
+                cols.extend((pfx + a, getattr(v, a)) for a in Stats.ATTRS)
+            else:
+                dct[f.name] = json().dumps(indent=None, separators=(',', ':'))
 
 #     def _insert_node(self, cursor, node, root_id=None, parent_id=None):
 #         stmt = 'insert into nodes (%s) values (%s);' % (
@@ -451,15 +478,13 @@ def _main() -> None:
             sw.write(node)
 
     else:
-        import json
-
         kw = {}
         if args.pretty:
             kw.update(indent=2, separators=(', ', ': '))
         else:
             kw.update(indent=None, separators=(',', ':'))
 
-        print(json.dumps(dc.asdict(node), **kw))
+        print(json().dumps(dc.asdict(node), **kw))
 
 
 if __name__ == '__main__':
