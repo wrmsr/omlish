@@ -8,7 +8,6 @@ import sqlalchemy as sa
 import sqlalchemy.ext.asyncio
 
 from omlish import asyncs as au
-from omlish import check
 
 from ..secrets import load_secrets  # noqa
 
@@ -35,14 +34,14 @@ class NodeInfo:
 
 @au.mark_anyio
 async def register_node(engine: sa.Engine) -> None:
-    ni = NodeInfo(
+    ni = NodeInfo(  # noqa
         uuid=str(uuid.uuid4()).replace('-', ''),
         hostname=socket.gethostname(),
     )
 
     async with contextlib.AsyncExitStack() as aes:
-        conn = await au.from_asyncio(aes.enter_async_context)(engine.connect())
-        txn = await au.from_asyncio(aes.enter_async_context)(conn.begin())  # noqa
+        conn = await aes.enter_async_context(au.from_asyncio_context(engine.connect()))
+        txn = await aes.enter_async_context(au.from_asyncio_context(conn.begin()))  # noqa
 
         result = await au.from_asyncio(conn.execute)(sa.select(1))
         print(result.fetchall())

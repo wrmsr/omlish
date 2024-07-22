@@ -7,11 +7,16 @@ from .asyncs import (  # noqa
 )
 
 from .flavors import (  # noqa
+    ContextManagerAdapter,
     Flavor,
     adapt,
+    adapt_context,
     from_anyio,
+    from_anyio_context,
     from_asyncio,
+    from_asyncio_context,
     from_trio,
+    from_trio_context,
     get_flavor,
     mark_anyio,
     mark_asyncio,
