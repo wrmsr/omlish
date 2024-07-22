@@ -8,6 +8,7 @@ from .asyncs import (  # noqa
 
 from .flavors import (  # noqa
     Flavor,
+    adapt,
     from_anyio,
     from_asyncio,
     from_trio,
