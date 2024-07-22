@@ -78,7 +78,7 @@ async def test_trio_loop(harness) -> None:
     await _anyio_func(False, True)
     await _trio_func(False)
 
-    async with trio_asyncio.open_loop() as loop:  # noqa
+    async with trio_asyncio.open_loop():
         await _anyio_func(True, True)
         await trio_asyncio.aio_as_trio(_asyncio_func)(True)
         await _trio_func(True)

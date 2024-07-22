@@ -78,6 +78,11 @@ def get_flavor(obj: ta.Any, default: ta.Union[Flavor, type[_MISSING], None] = _M
 ##
 
 
+def check_trio_asyncio() -> None:
+    if trio_asyncio.current_loop.get() is None:
+        raise RuntimeError('trio_asyncio loop not running')
+
+
 class Adapter(lang.Abstract):
     _FROM_METHODS_BY_FLAVOR: ta.ClassVar[ta.Mapping[Flavor, str]] = {
         Flavor.ANYIO: 'from_anyio',
@@ -107,11 +112,13 @@ class AsyncioAdapter(Adapter):
         return fn
 
     def from_trio(self, fn):
+        check_trio_asyncio()
         return trio_asyncio.trio_as_aio(fn)
 
 
 class TrioAdapter(Adapter):
     def from_asyncio(self, fn):
+        check_trio_asyncio()
         return trio_asyncio.aio_as_trio(fn)
 
     def from_trio(self, fn):
