@@ -58,13 +58,7 @@ class NodeRegistrant:
 
 def _get_db_url() -> str:
     cfg = load_secrets()
-
-    host = cfg['postgres_host']
-    port = 5432
-    user = cfg['postgres_user']
-    password = cfg['postgres_pass']
-
-    return f'postgresql+asyncpg://{user}:{password}@{host}:{port}'
+    return f'postgresql+asyncpg://{cfg["postgres_user"]}:{cfg["postgres_pass"]}@{cfg["postgres_host"]}:5432'
 
 
 async def _a_main() -> None:
