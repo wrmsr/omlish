@@ -1,5 +1,6 @@
 """
-todo:
+TODO:
+ - no psutil on lin / togglable on mac
  - create table paths(path varchar(1024); - norm, dedupe, index, etc (bonus points for 32bit key)
  - store lineno from stacktrace
 
@@ -11,6 +12,7 @@ start / end / cumulative / exclusive time / vm_rss / vm_vms
 jq '..?|.loaded_name?|select(.!=null)'
 """
 import dataclasses as dc
+import functools
 import inspect
 import logging
 import operator
@@ -36,14 +38,14 @@ REQUIRED_PYTHON_VERSION = (3, 8)
 
 @dc.dataclass()
 class Stats:
-    _ATTRS: ta.ClassVar[ta.Sequence[str]]
+    ATTRS: ta.ClassVar[ta.Sequence[str]]
 
     time: float = 0.
     vm_rss: int = 0
     vm_vms: int = 0
 
     def _op(self, op, other):
-        return Stats(*[op(getattr(self, a), getattr(other, a)) for a in Stats._ATTRS])
+        return Stats(*[op(getattr(self, a), getattr(other, a)) for a in Stats.ATTRS])
 
     def __add__(self, other):
         return self._op(operator.add, other)
@@ -52,7 +54,7 @@ class Stats:
         return self._op(operator.sub, other)
 
 
-Stats._ATTRS = [f.name for f in dc.fields(Stats)]
+Stats.ATTRS = [f.name for f in dc.fields(Stats)]
 
 
 class StatsFactory:
@@ -120,6 +122,11 @@ class StackTraceEntry:
 
 @dc.dataclass()
 class Node:
+    seq: ta.Optional[int] = None
+    depth: int = 0
+
+    children: ta.List['Node'] = dc.field(default_factory=list)
+
     import_name: ta.Optional[str] = None
     import_fromlist: ta.Optional[ta.Iterable[str]] = None
     import_level: ta.Optional[int] = None
@@ -129,8 +136,6 @@ class Node:
 
     stack_trace: ta.Optional[ta.Sequence[StackTraceEntry]] = None
     exception: ta.Optional[ta.Union[Exception, str]] = None
-
-    children: ta.List['Node'] = dc.field(default_factory=list)
 
     cached_id: ta.Optional[int] = None
 
@@ -145,9 +150,6 @@ class Node:
 
     self_stats: ta.Optional[Stats] = None
     child_stats: ta.Optional[Stats] = None
-
-    seq: ta.Optional[int] = None
-    depth: int = 0
 
 
 class ImportTracer:
@@ -184,14 +186,18 @@ class ImportTracer:
                 import_name=name,
                 import_fromlist=fromlist,
                 import_level=level,
+
                 pid=os.getpid(),
                 tid=threading.current_thread().ident,
+
                 stack_trace=[
                     StackTraceEntry(*s[1:4])
                     for s in inspect.stack()
                     if s[0].f_code.co_filename != __file__
                 ],
+
                 cached_id=id(sys.modules[name]) if name in sys.modules else None,
+
                 start_stats=self._stats_factory(),
             )
 
@@ -238,12 +244,189 @@ class ImportTracer:
 ##
 
 
+_sqlite3: ta.Any = None
+
+
+def sqlite3() -> ta.Any:
+    global _sqlite3
+    if _sqlite3 is None:
+        _sqlite3 = __import__('sqlite3')
+    return _sqlite3
+
+
+def sqlite_retrying(fn):
+    @functools.wraps(fn)
+    def inner(*args, **kwargs):
+        while True:
+            try:
+                return fn(*args, **kwargs)
+            except sqlite3().OperationalError:
+                log.exception()
+    return inner
+
+
+# class SqliteWriter:
+#
+#     def __init__(self, db_path: str) -> None:
+#         self.__init__()
+#
+#         self._db_path = db_path
+#
+#     _conn: ta.Any
+#
+#     COLUMNS = [
+#         ('root_id', 'int'),
+#         ('parent_id', 'int'),
+#
+#         ('depth', 'int not null'),
+#         ('seq', 'int not null'),
+#         ('module', 'varchar(1024) not null'),
+#         ('start_time', 'real not null'),
+#         ('end_time', 'real not null'),
+#         ('cumulative_time', 'real not null'),
+#         ('exclusive_time', 'real not null'),
+#         ('start_vm_size', 'int not null'),
+#         ('end_vm_size', 'int not null'),
+#         ('cumulative_vm_size', 'int not null'),
+#         ('exclusive_vm_size', 'int not null'),
+#         ('start_vm_rss', 'int not null'),
+#         ('end_vm_rss', 'int not null'),
+#         ('cumulative_vm_rss', 'int not null'),
+#         ('exclusive_vm_rss', 'int not null'),
+#         ('cached_id', 'int'),
+#         ('loaded_id', 'int'),
+#         ('loaded_file', 'varchar(1024)'),
+#         ('has_exception', 'int not null'),
+#         ('exception', 'text'),
+#     ]
+#
+#     INDEXES = [
+#         'root_id',
+#         'parent_id',
+#         'module',
+#         'loaded_file',
+#         'cumulative_time',
+#         'exclusive_time',
+#         'cumulative_vm_size',
+#         'exclusive_vm_size',
+#         'cumulative_vm_rss',
+#         'exclusive_vm_rss',
+#         'has_exception',
+#     ]
+#
+#     @sqlite_retrying
+#     def _init_db(self, cursor):
+#         stmt = 'create table if not exists nodes (%s);' % (
+#             ', '.join('%s %s' % (col, spec) for col, spec in self.COLUMNS))
+#         cursor.execute(stmt)
+#
+#         for index in self.INDEXES:
+#             cursor.execute('create index if not exists nodes_by_%s on nodes (%s);' % (index, index))
+#
+#     def _insert_node(self, cursor, node, root_id=None, parent_id=None):
+#         stmt = 'insert into nodes (%s) values (%s);' % (
+#             ', '.join(col for col, spec in self.COLUMNS),
+#             ','.join('?' for _ in self.COLUMNS))
+#
+#         vals = (
+#             root_id,
+#             parent_id,
+#             node['depth'],
+#             node['seq'],
+#             node['module'],
+#             node['start_time'],
+#             node['end_time'],
+#             node['cumulative_time'],
+#             node['exclusive_time'],
+#             node['start_vm_size'],
+#             node['end_vm_size'],
+#             node['cumulative_vm_size'],
+#             node['exclusive_vm_size'],
+#             node['start_vm_rss'],
+#             node['end_vm_rss'],
+#             node['cumulative_vm_rss'],
+#             node['exclusive_vm_rss'],
+#             node.get('cached_id'),
+#             node.get('loaded_id'),
+#             node.get('loaded_file'),
+#             1 if 'exception' in node else 0,
+#             node.get('exception'))
+#
+#         cursor.execute(stmt, vals)
+#         row_id = cursor.lastrowid
+#
+#         if root_id is None:
+#             root_id = row_id
+#             cursor.execute('update nodes set root_id = ? where rowid = ?;', (root_id, root_id))
+#
+#         return 1 + sum(
+#             self._insert_node(cursor, child, root_id, row_id)
+#             for child in node.get('children', []))
+#
+#     @sqlite_retrying
+#     def _write_node(self, node: Node) -> None:
+#         assert node['seq'] == 0
+#
+#         log.info('%s: beginning write' % (node['module']))
+#
+#         cursor = self._conn.cursor()
+#         try:
+#             node_count = self._insert_node(cursor, node)
+#
+#             cursor.execute('select count(*) from nodes;')
+#             total_node_count, = cursor.fetchone()
+#
+#             cursor.execute('select count(*) from nodes where parent_id is null;')
+#             total_root_count, = cursor.fetchone()
+#
+#             self._conn.commit()
+#
+#             log.info(
+#                 '%s: %d import trace nodes (db: %d roots, %d total)' % (
+#                     node['module'], node_count, total_root_count, total_node_count))
+#
+#         finally:
+#             cursor.close()
+#
+#     @sqlite_retrying
+#     def __enter__(self: 'SqliteWriter') -> 'SqliteWriter':
+#         log.info('initializing database %s' % (self._db_path))
+#
+#         try:
+#             self._conn = sqlite3().connect(self._db_path, isolation_level='immediate', timeout=20)
+#
+#             cursor = self._conn.cursor()
+#             try:
+#                 self._init_db(cursor)
+#                 self._conn.commit()
+#             finally:
+#                 cursor.close()
+#
+#             return self
+#
+#         except Exception:
+#             del self._conn
+#             raise
+#
+#     def __exit__(self, *exc_info) -> None:
+#         self._conn = None
+#
+#         log.info('done with database %s' % (self._db_path))
+#
+#     def write(self, node: Node) -> None:
+#         return self._write_node(node)
+
+
+##
+
+
 def main() -> None:
     if sys.version_info < REQUIRED_PYTHON_VERSION:
         raise EnvironmentError(f'Requires python {REQUIRED_PYTHON_VERSION}, got {sys.version_info} from {sys.executable}')  # noqa
 
     _, mod = sys.argv
     node = ImportTracer(stringify_fields=True).trace(mod)
+
     import json
     print(json.dumps(dc.asdict(node)))
 
