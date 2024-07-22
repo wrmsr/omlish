@@ -16,7 +16,6 @@ t1 = sa.Table(
     meta,
     sa.Column('_id', sa.Integer, primary_key=True, autoincrement=True),
     sa.Column('name', sa.String(50), nullable=False),
-    sa.Index('_node_by_name', 'name', unique=True),
 )
 
 
