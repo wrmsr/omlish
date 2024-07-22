@@ -3,6 +3,7 @@ TODO:
  - no psutil on lin / togglable on mac
  - create table paths(path varchar(1024); - norm, dedupe, index, etc (bonus points for 32bit key)
  - store lineno from stacktrace
+ - gviz
 
 http://www.logilab.org/856
 http://www.python.org/dev/peps/pep-0302/
@@ -265,64 +266,65 @@ def sqlite_retrying(fn):
     return inner
 
 
-# class SqliteWriter:
-#
-#     def __init__(self, db_path: str) -> None:
-#         self.__init__()
-#
-#         self._db_path = db_path
-#
-#     _conn: ta.Any
-#
-#     COLUMNS = [
-#         ('root_id', 'int'),
-#         ('parent_id', 'int'),
-#
-#         ('depth', 'int not null'),
-#         ('seq', 'int not null'),
-#         ('module', 'varchar(1024) not null'),
-#         ('start_time', 'real not null'),
-#         ('end_time', 'real not null'),
-#         ('cumulative_time', 'real not null'),
-#         ('exclusive_time', 'real not null'),
-#         ('start_vm_size', 'int not null'),
-#         ('end_vm_size', 'int not null'),
-#         ('cumulative_vm_size', 'int not null'),
-#         ('exclusive_vm_size', 'int not null'),
-#         ('start_vm_rss', 'int not null'),
-#         ('end_vm_rss', 'int not null'),
-#         ('cumulative_vm_rss', 'int not null'),
-#         ('exclusive_vm_rss', 'int not null'),
-#         ('cached_id', 'int'),
-#         ('loaded_id', 'int'),
-#         ('loaded_file', 'varchar(1024)'),
-#         ('has_exception', 'int not null'),
-#         ('exception', 'text'),
-#     ]
-#
-#     INDEXES = [
-#         'root_id',
-#         'parent_id',
-#         'module',
-#         'loaded_file',
-#         'cumulative_time',
-#         'exclusive_time',
-#         'cumulative_vm_size',
-#         'exclusive_vm_size',
-#         'cumulative_vm_rss',
-#         'exclusive_vm_rss',
-#         'has_exception',
-#     ]
-#
-#     @sqlite_retrying
-#     def _init_db(self, cursor):
-#         stmt = 'create table if not exists nodes (%s);' % (
-#             ', '.join('%s %s' % (col, spec) for col, spec in self.COLUMNS))
-#         cursor.execute(stmt)
-#
-#         for index in self.INDEXES:
-#             cursor.execute('create index if not exists nodes_by_%s on nodes (%s);' % (index, index))
-#
+class SqliteWriter:
+
+    def __init__(self, db_path: str) -> None:
+        self.__init__()
+
+        self._db_path = db_path
+
+        self._table = self._DEFAULT_TABLE
+        self._columns = self._build_columns(self._DEFAULT_COLUMNS)
+        self._indexes = self._DEFAULT_INDEXES
+
+    _conn: ta.Any
+
+    _DEFAULT_TABLE = 'nodes'
+
+    _DEFAULT_COLUMNS = [
+        ('root_id', 'int'),
+        ('parent_id', 'int'),
+
+        ('has_exception', 'int not null'),
+    ]
+
+    _DEFAULT_INDEXES = [
+        'root_id',
+        'parent_id',
+        'module',
+        'loaded_file',
+        'has_exception',
+    ]
+
+    def _build_columns(self, base: ta.Iterable[ta.Tuple[str, str]]) -> ta.Sequence[ta.Tuple[str, str]]:
+        cols = list(base)
+        for f in dc.fields(Node):
+            if f.type in (str, ta.Optional[str]):
+                cols.append((f.name, 'text'))
+            elif f.type in (int, ta.Optional[int]):
+                cols.append((f.name, 'int'))
+            elif f.name == 'children':
+                continue
+            elif f.type in (Stats, ta.Optional[Stats]):
+                pfx = f.name[:-5] if f.name != 'stats' else ''
+                cols.extend([
+                    (pfx + 'time', 'real'),
+                    (pfx + 'vm_rss', 'int'),
+                    (pfx + 'vm_vms', 'int'),
+                ])
+            else:
+                cols.append((f.name, 'text'))  # json
+        return cols
+
+    @sqlite_retrying
+    def _init_db(self, cursor):
+        cols = ', '.join(f'{n} {t}' for n, t in self._columns)
+        stmt = f'create table if not exists {self._table} ({cols});'
+        cursor.execute(stmt)
+
+        for c in self._indexes:
+            cursor.execute(f'create index if not exists {self._table}_by_{c} on {self._table} ({c});')
+
 #     def _insert_node(self, cursor, node, root_id=None, parent_id=None):
 #         stmt = 'insert into nodes (%s) values (%s);' % (
 #             ', '.join(col for col, spec in self.COLUMNS),
@@ -387,34 +389,34 @@ def sqlite_retrying(fn):
 #
 #         finally:
 #             cursor.close()
-#
-#     @sqlite_retrying
-#     def __enter__(self: 'SqliteWriter') -> 'SqliteWriter':
-#         log.info('initializing database %s' % (self._db_path))
-#
-#         try:
-#             self._conn = sqlite3().connect(self._db_path, isolation_level='immediate', timeout=20)
-#
-#             cursor = self._conn.cursor()
-#             try:
-#                 self._init_db(cursor)
-#                 self._conn.commit()
-#             finally:
-#                 cursor.close()
-#
-#             return self
-#
-#         except Exception:
-#             del self._conn
-#             raise
-#
-#     def __exit__(self, *exc_info) -> None:
-#         self._conn = None
-#
-#         log.info('done with database %s' % (self._db_path))
-#
-#     def write(self, node: Node) -> None:
-#         return self._write_node(node)
+
+    @sqlite_retrying
+    def __enter__(self: 'SqliteWriter') -> 'SqliteWriter':
+        log.info('initializing database %s' % (self._db_path))
+
+        try:
+            self._conn = sqlite3().connect(self._db_path, isolation_level='immediate', timeout=20)
+
+            cursor = self._conn.cursor()
+            try:
+                self._init_db(cursor)
+                self._conn.commit()
+            finally:
+                cursor.close()
+
+            return self
+
+        except Exception:
+            del self._conn
+            raise
+
+    def __exit__(self, *exc_info) -> None:
+        self._conn = None
+
+        log.info('done with database %s' % (self._db_path))
+
+    def write(self, node: Node) -> None:
+        return self._write_node(node)
 
 
 ##
@@ -427,8 +429,12 @@ def main() -> None:
     _, mod = sys.argv
     node = ImportTracer(stringify_fields=True).trace(mod)
 
-    import json
-    print(json.dumps(dc.asdict(node)))
+    # import json
+    # print(json.dumps(dc.asdict(node)))
+
+    with SqliteWriter('imports.db') as sw:
+        # sw.write()
+        pass
 
 
 if __name__ == '__main__':
