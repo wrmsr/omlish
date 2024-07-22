@@ -5,7 +5,7 @@ import uuid
 
 import anyio
 import sqlalchemy as sa
-import sqlalchemy.ext.asyncio
+import sqlalchemy.ext.asyncio as saa
 
 from omlish import asyncs as au
 
@@ -22,7 +22,7 @@ _nodes_table = sa.Table(
     sa.Column('_id', sa.Integer, primary_key=True, autoincrement=True),
     sa.Column('name', sa.String(50), nullable=False, unique=True),
 
-    sa.Index('_node_by_name', 'name', unique=True),
+    sa.Index('_nodes_by_name', 'name', unique=True),
 )
 
 
@@ -32,19 +32,26 @@ class NodeInfo:
     hostname: str
 
 
-@au.mark_anyio
-async def register_node(engine: sa.Engine) -> None:
-    ni = NodeInfo(  # noqa
-        uuid=str(uuid.uuid4()).replace('-', ''),
-        hostname=socket.gethostname(),
-    )
+class NodeRegistrant:
+    def __init__(
+            self,
+            engine: saa.AsyncEngine,
+    ) -> None:
+        super().__init__()
 
-    async with contextlib.AsyncExitStack() as aes:
-        conn = await aes.enter_async_context(au.adapt_context(engine.connect()))
-        txn = await aes.enter_async_context(au.adapt_context(conn.begin()))  # noqa
+        self._info = NodeInfo(
+            uuid=str(uuid.uuid4()).replace('-', ''),
+            hostname=socket.gethostname(),
+        )
 
-        result = await au.adapt(conn.execute)(sa.select(1))
-        print(result.fetchall())
+    @au.mark_anyio
+    async def __call__(self) -> None:
+        async with contextlib.AsyncExitStack() as aes:
+            conn = await aes.enter_async_context(au.adapt_context(self._engine.connect()))
+            txn = await aes.enter_async_context(au.adapt_context(conn.begin()))  # noqa
+
+            result = await au.adapt(conn.execute)(sa.select(1))
+            print(result.fetchall())
 
 
 def _get_db_url() -> str:
@@ -59,13 +66,13 @@ def _get_db_url() -> str:
 
 
 async def _a_main() -> None:
-    engine = sa.ext.asyncio.create_async_engine(_get_db_url(), echo=True)
-    await register_node(engine)
+    engine = saa.create_async_engine(_get_db_url(), echo=True)
+    await NodeRegistrant(engine)()
 
 
 if __name__ == '__main__':
-    _backend = 'asyncio'
-    # _backend = 'trio'
+    # _backend = 'asyncio'
+    _backend = 'trio'
 
     match _backend:
         case 'asyncio':
