@@ -49,7 +49,7 @@ class Var(ta.Generic[T]):
 
     def __init__(
             self,
-            default: type[MISSING] | T = MISSING,  # type: ignore
+            default: type[MISSING] | T = MISSING,
             *,
             new: ta.Callable[[], T] | type[MISSING] = MISSING,
             validate: ta.Callable[[T], None] | None = None,
@@ -138,7 +138,7 @@ class Var(ta.Generic[T]):
             frame = frame.f_back
 
         if self._new is not MISSING:
-            yield self._new()
+            yield self._new()  # type: ignore
 
     def __iter__(self) -> ta.Iterator[T]:
         return self.values

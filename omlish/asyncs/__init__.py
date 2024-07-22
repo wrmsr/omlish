@@ -6,6 +6,14 @@ from .asyncs import (  # noqa
     syncable_iterable,
 )
 
+from .flavors import (  # noqa
+    Flavor,
+    get_flavor,
+    mark_anyio,
+    mark_asyncio,
+    mark_flavor,
+    mark_trio,
+)
 
 from .futures import (  # noqa
     FutureError,
