@@ -7,7 +7,7 @@ from ... import iterators
 
 def test_wait_futures():
     def fn() -> float:
-        time.sleep(.2)
+        time.sleep(0)
         return time.time()
 
     tp: concurrent.futures.Executor
