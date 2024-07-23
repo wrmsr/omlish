@@ -9,7 +9,6 @@ from ... import lang
 from ...testing import pydevd as pdu  # noqa
 from ...testing import pytest as ptu
 from ..dbs import UrlDbLoc
-from ..dbs import rebuild_url
 from ..dbs import set_url_engine
 from .dbs import Dbs
 
@@ -72,7 +71,6 @@ def test_mysql_mysql_connector_python(harness) -> None:
 def test_mysql_mysqlclient(harness) -> None:
     url = check.isinstance(harness[Dbs].specs()['mysql'].loc, UrlDbLoc).url
     url = set_url_engine(url, 'mysql+mysqldb')
-    url = rebuild_url(url, lambda u: u._replace(netloc=u.netloc.rpartition('@')[0] + '@127.0.0.1:' + u.netloc.rpartition(':')[-1]))  # noqa
     _test_mysql(url)
 
 
