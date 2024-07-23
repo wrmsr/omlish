@@ -1,3 +1,4 @@
+import dataclasses as dc
 import functools
 import logging
 import signal
@@ -6,6 +7,7 @@ import typing as ta
 from omlish import asyncs as au
 from omlish import logs
 from omlish import sql
+from omlish.diag import procstats
 import anyio.abc
 import sqlalchemy.ext.asyncio as saa
 
@@ -45,11 +47,20 @@ async def _install_signal_handler(
     return event.wait
 
 
+async def get_procstats() -> ta.Mapping[str, ta.Any]:
+    return dc.asdict(procstats.get_psutil_procstats())
+
+
 async def _a_main() -> None:
     engine = sql.async_adapt(saa.create_async_engine(get_db_url(), echo=True))
     await recreate_all(engine)
 
-    nr = NodeRegistrant(engine)
+    nr = NodeRegistrant(
+        engine,
+        extras={
+            'procstats': get_procstats,
+        },
+    )
 
     shutdown = anyio.Event()
 

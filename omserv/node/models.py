@@ -32,6 +32,8 @@ class Node(
 
     heartbeat_at = sa.Column(sa.TIMESTAMP(timezone=True))
 
+    extra = sa.Column(sa.TEXT)
+
 
 Nodes = Node.__table__
 
