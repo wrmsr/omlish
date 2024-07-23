@@ -49,6 +49,75 @@ Nodes = Node.__table__
 ##
 
 
+class AsyncTransactionAdapter:
+    def __init__(self, underlying: saa.AsyncTransaction) -> None:
+        super().__init__()
+        self._underlying = underlying
+
+    @property
+    def underlying(self) -> saa.AsyncTransaction:
+        return self._underlying
+
+    ##
+
+    async def close(self) -> None:
+        await au.from_asyncio(self._underlying.close)()
+
+    async def rollback(self) -> None:
+        await au.from_asyncio(self._underlying.rollback)()
+
+    async def commit(self) -> None:
+        await au.from_asyncio(self._underlying.commit)()
+
+
+class AsyncConnectionAdapter:
+    def __init__(self, underlying: saa.AsyncConnection) -> None:
+        super().__init__()
+        self._underlying = underlying
+
+    @property
+    def underlying(self) -> saa.AsyncConnection:
+        return self._underlying
+
+    ##
+
+    @contextlib.asynccontextmanager
+    async def begin(self) -> ta.Generator[AsyncTransactionAdapter, None, None]:
+        async with au.from_asyncio_context(self._underlying.begin()) as u:
+            yield AsyncTransactionAdapter(u)
+
+    async def execute(
+            self,
+            statement: ta.Any,
+            *args: ta.Any,
+            **kwargs: ta.Any,
+    ) -> sa.CursorResult[ta.Any]:
+        return await au.from_asyncio(self._underlying.execute)(statement, *args, **kwargs)
+
+
+class AsyncEngineAdapter:
+    def __init__(self, underlying: saa.AsyncEngine) -> None:
+        super().__init__()
+        self._underlying = underlying
+
+    @property
+    def underlying(self) -> saa.AsyncEngine:
+        return self._underlying
+
+    ##
+
+    @contextlib.asynccontextmanager
+    async def connect(self) -> ta.Generator[AsyncConnectionAdapter, None, None]:
+        async with au.from_asyncio_context(self._underlying.connect()) as u:
+            yield AsyncConnectionAdapter(u)
+
+    async def dispose(self, close: bool = True) -> None:
+        await au.from_asyncio(self._underlying.dispose)(close)
+
+
+##
+
+
 @dc.dataclass()
 class NodeInfo:
     uuid: str
