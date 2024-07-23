@@ -1,49 +1,63 @@
+#### optional
 greenlet==3.0.3; python_version < '3.13'
 pyyaml==6.0.1
 wrapt>=1.14.1
-
 anyio==4.4.0
 
-## compress:
 
+### compress:
 lz4==4.3.3
 python-snappy==0.7.2
 zstd==1.5.5.1
 
-## db:
+
+### db:
 sqlalchemy[asyncio]==2.0.31; python_version < '3.13'
 sqlalchemy==2.0.31; python_version >= '3.13'  # greenlet
 
-# kazoo
-# mysql-connector-python
-# pg8000
-# psycopg2
+## sql
+pg8000==1.31.2
+psycopg2==2.9.9
+
+mysql-connector-python==9.0.0
+mysqlclient==2.2.4; sys_platform == 'darwin'  # brew install mysql pkg-config
+pymysql==1.1.1
+
 # pyhive
+
+## caches
 # pymemcache
-# pymongo
-# pymysql
 # redis
 
-## diag:
-# psutil
+## config
+# kazoo
 
-## serde:
+
+### diag:
+psutil==6.0.0
+
+
+### serde:
+## json
 ujson==5.10.0
+# orjson
 
+## pickle
+cloudpickle==3.0.0
+
+## other
 # cbor
 # msgpack
-# orjson
 # toml
 
-## misc
+
+### misc
 # billiard
 # numpy
 # python-dateutil
 
-# cloudpickle
 
-##
-
+### web
 h11==0.14.0
 h2==4.1.0
 priority==2.0.0
@@ -51,12 +65,13 @@ wsproto==1.2.0
 
 httpx[http2]==0.27.0  # FIXME: ,zstd,cli (dev only)
 
+
+### async
 trio==0.26.0
 trio-asyncio==0.15.0; python_version < '3.13'  # greenlet
 
 aiomysql==0.2.0
 aiosqlite==0.20.0
-
 asyncpg==0.29.0; python_version < '3.13'  # greenlet
 
 asyncssh==2.15.0; python_version < '3.13'  # cffi
