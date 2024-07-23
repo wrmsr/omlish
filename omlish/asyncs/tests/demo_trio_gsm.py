@@ -4,7 +4,7 @@ import trio
 
 
 class GracefulShutdownManager:
-    def __init__(self):
+    def __init__(self) -> None:
         self._shutting_down = False
         self._cancel_scopes = set()
 
