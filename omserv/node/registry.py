@@ -156,6 +156,8 @@ class Node(
     uuid = sa.Column(sa.String(50), nullable=False, unique=True)
     hostname = sa.Column(sa.String(100), nullable=False)
 
+    heartbeat_at = sa.Column(sa.TIMESTAMP(timezone=True))
+
 
 Nodes = Node.__table__
 
@@ -210,7 +212,16 @@ class NodeRegistrant:
                     nid = check.single(result.inserted_primary_key)  # noqa
 
             print(f'{nid=}')
-            await anyio.sleep(10.)
+            for _ in range(10):
+                await anyio.sleep(1.)
+                async with conn.begin():  # FIXME: real autocommit lol
+                    await conn.execute(sa.update(
+                        Nodes
+                    ).where(
+                        Nodes.c.uuid == self._info.uuid,
+                    ).values(
+                        heartbeat_at=utcnow(),
+                    ))
 
 
 ##
