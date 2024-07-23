@@ -1,3 +1,8 @@
+"""
+TODO:
+ - Maysync impls?
+ - base Protocol so adapters and real sa impls can be used interchangeably (if in asyncio ctx)?
+"""
 import contextlib
 import typing as ta
 
@@ -11,12 +16,12 @@ T = ta.TypeVar('T')
 P = ta.ParamSpec('P')
 
 
-AsyncEngineLike = ta.Union[saa.AsyncEngine, 'AsyncEngineAdapter']
-AsyncConnectionLike = ta.Union[saa.AsyncConnection, 'AsyncConnectionAdapter']
-AsyncTransactionLike = ta.Union[saa.AsyncTransaction, 'AsyncTransactionAdapter']
+AsyncEngineLike = ta.Union[saa.AsyncEngine, 'AsyncEngine']
+AsyncConnectionLike = ta.Union[saa.AsyncConnection, 'AsyncConnection']
+AsyncTransactionLike = ta.Union[saa.AsyncTransaction, 'AsyncTransaction']
 
 
-class AsyncTransactionAdapter:
+class AsyncTransaction:
     def __init__(self, underlying: saa.AsyncTransaction) -> None:
         super().__init__()
         self._underlying = underlying
@@ -40,7 +45,7 @@ class AsyncTransactionAdapter:
         await au.from_asyncio(self._underlying.commit)()
 
 
-class AsyncConnectionAdapter:
+class AsyncConnection:
     def __init__(self, underlying: saa.AsyncConnection) -> None:
         super().__init__()
         self._underlying = underlying
@@ -53,9 +58,9 @@ class AsyncConnectionAdapter:
 
     @contextlib.asynccontextmanager
     @au.mark_asyncio
-    async def begin(self) -> ta.AsyncIterator[AsyncTransactionAdapter]:
+    async def begin(self) -> ta.AsyncIterator[AsyncTransaction]:
         async with au.from_asyncio_context(self._underlying.begin()) as u:
-            yield AsyncTransactionAdapter(u)
+            yield AsyncTransaction(u)
 
     @au.mark_asyncio
     async def execute(
@@ -76,7 +81,7 @@ class AsyncConnectionAdapter:
         return await au.from_asyncio(self._underlying.run_sync)(fn, *args, **kwargs)
 
 
-class AsyncEngineAdapter:
+class AsyncEngine:
     def __init__(self, underlying: saa.AsyncEngine) -> None:
         super().__init__()
         self._underlying = underlying
@@ -89,9 +94,9 @@ class AsyncEngineAdapter:
 
     @contextlib.asynccontextmanager
     @au.mark_asyncio
-    async def connect(self) -> ta.AsyncIterator[AsyncConnectionAdapter]:
+    async def connect(self) -> ta.AsyncIterator[AsyncConnection]:
         async with au.from_asyncio_context(self._underlying.connect()) as u:
-            yield AsyncConnectionAdapter(u)
+            yield AsyncConnection(u)
 
     @au.mark_asyncio
     async def dispose(self, close: bool = True) -> None:
@@ -102,42 +107,42 @@ class AsyncEngineAdapter:
 
 
 @ta.overload
-def async_adapt(obj: AsyncEngineAdapter) -> AsyncEngineAdapter:
+def async_adapt(obj: AsyncEngine) -> AsyncEngine:
     ...
 
 
 @ta.overload
-def async_adapt(obj: AsyncConnectionAdapter) -> AsyncConnectionAdapter:
+def async_adapt(obj: AsyncConnection) -> AsyncConnection:
     ...
 
 
 @ta.overload
-def async_adapt(obj: AsyncTransactionAdapter) -> AsyncTransactionAdapter:
+def async_adapt(obj: AsyncTransaction) -> AsyncTransaction:
     ...
 
 
 @ta.overload
-def async_adapt(obj: saa.AsyncEngine) -> AsyncEngineAdapter:
+def async_adapt(obj: saa.AsyncEngine) -> AsyncEngine:
     ...
 
 
 @ta.overload
-def async_adapt(obj: saa.AsyncConnection) -> AsyncConnectionAdapter:
+def async_adapt(obj: saa.AsyncConnection) -> AsyncConnection:
     ...
 
 
 @ta.overload
-def async_adapt(obj: saa.AsyncTransaction) -> AsyncTransactionAdapter:
+def async_adapt(obj: saa.AsyncTransaction) -> AsyncTransaction:
     ...
 
 
 def async_adapt(obj: ta.Any) -> ta.Any:
-    if isinstance(obj, (AsyncEngineAdapter, AsyncConnectionAdapter, AsyncTransactionAdapter)):
+    if isinstance(obj, (AsyncEngine, AsyncConnection, AsyncTransaction)):
         return obj
     if isinstance(obj, saa.AsyncTransaction):
-        return AsyncTransactionAdapter(obj)
+        return AsyncTransaction(obj)
     if isinstance(obj, saa.AsyncConnection):
-        return AsyncConnectionAdapter(obj)
+        return AsyncConnection(obj)
     if isinstance(obj, saa.AsyncEngine):
-        return AsyncEngineAdapter(obj)
+        return AsyncEngine(obj)
     raise TypeError(obj)

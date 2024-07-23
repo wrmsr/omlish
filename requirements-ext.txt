@@ -17,7 +17,7 @@ numpy==1.26.4
 
 matplotlib==3.9.1
 
-huggingface_hub==0.24.0
+huggingface_hub==0.24.1
 evaluate==0.4.2
 datasets==2.20.0
 
@@ -43,7 +43,7 @@ pillow==10.4.0
 
 sentencepiece==0.2.0
 tiktoken==0.7.0
-transformers==4.42.4
+transformers==4.43.1
 
 ##
 
@@ -74,7 +74,7 @@ triton==2.3.1; platform_machine == 'x86_64'
 
 wgpu==0.16.0
 
-hypothesis==6.108.3
+hypothesis==6.108.4
 
 hexdump==3.3
 
@@ -107,7 +107,7 @@ qtconsole==5.5.1
 
 fairscale==0.4.13
 
-accelerate==0.32.1
+accelerate==0.33.0
 
 pytorch-lightning==2.3.3
 
@@ -196,10 +196,7 @@ psutil==6.0.0
 
 mitogen==0.3.7
 
-lz4==4.3.3
 cloudpickle==3.0.0
-
-zstd==1.5.5.1
 
 ##
 

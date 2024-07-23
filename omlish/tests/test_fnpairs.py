@@ -1,3 +1,6 @@
+import copy
+import pytest
+
 from .. import fnpairs
 
 
@@ -34,3 +37,32 @@ def test_compose():
     buf = jlzfp.forward(obj2)
     assert isinstance(buf, bytes)
     assert jlzfp.backward(buf) == obj2
+
+
+@pytest.mark.parametrize('cls', [
+    fnpairs.Bz2,
+    fnpairs.Gzip,
+    fnpairs.Lzma,
+    fnpairs.Lz4,
+    fnpairs.Snappy,
+    fnpairs.Zstd,
+])
+def test_compression(cls: type[fnpairs.Compression]) -> None:
+    fp = cls()
+    o = b'abcd1234'
+    c = fp.forward(o)
+    u = fp.backward(c)
+    assert o == u
+
+
+@pytest.mark.parametrize('cls', [
+    fnpairs.Json,
+    fnpairs.Yaml,
+    fnpairs.YamlUnsafe,
+])
+def test_object_str(cls: type[fnpairs.ObjectStr]) -> None:
+    fp = cls()
+    o = {'hi': {'i am': [123, 4.56, False, None, {'a': 'test'}]}}
+    e = fp.forward(o)
+    d = fp.backward(e)
+    assert o == d

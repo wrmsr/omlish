@@ -28,6 +28,10 @@ classifiers = [
 
 [project.optional-dependencies]
 async = ['anyio']
+trio = [
+    'trio',
+    'trio-asyncio',
+]
 http = ['httpx']
 sql = ['sqlalchemy']
 wrapt = ['wrapt']

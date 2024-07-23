@@ -1,9 +1,9 @@
-from .asyncadapters import (  # noqa
-    AsyncConnectionAdapter,
+from .asyncs import (  # noqa
+    AsyncConnection,
     AsyncConnectionLike,
-    AsyncEngineAdapter,
+    AsyncEngine,
     AsyncEngineLike,
-    AsyncTransactionAdapter,
+    AsyncTransaction,
     AsyncTransactionLike,
     async_adapt,
 )
