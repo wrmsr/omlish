@@ -9,7 +9,12 @@ import sqlalchemy.ext.compiler
 
 
 class IdMixin:
-    _id = sa.Column(sa.Integer, nullable=False, primary_key=True, autoincrement=True)
+    _id = sa.Column(
+        sa.Integer,
+        nullable=False,
+        primary_key=True,
+        autoincrement=True,
+    )
 
 
 ##
