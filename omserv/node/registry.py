@@ -5,21 +5,25 @@ TODO:
 """
 import contextlib
 import dataclasses as dc
+import logging
 import socket
 import uuid
 
+from omlish import asyncs as au
+from omlish import check
+from omlish import logs
+from omlish import sql
 import anyio.abc
 import sqlalchemy as sa
 import sqlalchemy.ext.asyncio as saa
-
-from omlish import asyncs as au
-from omlish import check
-from omlish import sql
 
 from .dbs import get_db_url
 from .models import recreate_all
 from .models import Nodes
 from .sql import utcnow
+
+
+log = logging.getLogger(__name__)
 
 
 ##
@@ -98,8 +102,7 @@ class NodeRegistrant:
 
             task_status.started()
 
-            print(f'{nid=}')
-            for _ in range(10):
+            while True:
                 await anyio.sleep(1.)
                 async with conn.begin():  # FIXME: real autocommit lol
                     await conn.execute(sa.update(
@@ -120,11 +123,20 @@ async def _a_main() -> None:
 
     nr = NodeRegistrant(engine)
 
+    async def killer() -> None:
+        await anyio.sleep(10)
+        log.info('Killing')
+        tg.cancel_scope.cancel()
+
     async with anyio.create_task_group() as tg:
+        tg.start_soon(killer)
         await tg.start(nr)
+        log.info('Node running')
 
 
 if __name__ == '__main__':
+    logs.configure_standard_logging('DEBUG')
+
     # _backend = 'asyncio'
     _backend = 'trio'
 
