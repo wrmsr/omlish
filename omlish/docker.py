@@ -32,6 +32,9 @@ else:
     yaml = lang.proxy_import('yaml')
 
 
+##
+
+
 @dc.dataclass(frozen=True)
 class PsItem(lang.Final):
     dc.metadata(msh.ObjectMetadata(
@@ -113,6 +116,9 @@ def cli_inspect(ids: list[str]) -> list[Inspect]:
     return msh.unmarshal(json.loads(o.decode()), list[Inspect])
 
 
+##
+
+
 class ComposeConfig:
     def __init__(
             self,
@@ -139,6 +145,18 @@ class ComposeConfig:
             ret[n[len(self._prefix):]] = c
 
         return ret
+
+
+def get_compose_port(cfg: ta.Mapping[str, ta.Any], default: int) -> int:
+    return check.single(
+        int(l)
+        for p in cfg['ports']
+        for l, r in [p.split(':')]
+        if int(r) == default
+    )
+
+
+##
 
 
 def timebomb_payload(delay_s: float, name: str = 'omlish-docker-timebomb') -> str:
