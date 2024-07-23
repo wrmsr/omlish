@@ -8,7 +8,7 @@ import dataclasses as dc
 import socket
 import uuid
 
-import anyio
+import anyio.abc
 import sqlalchemy as sa
 import sqlalchemy.ext.asyncio as saa
 
@@ -20,6 +20,32 @@ from .dbs import get_db_url
 from .models import recreate_all
 from .models import Nodes
 from .sql import utcnow
+
+
+##
+
+
+class GracefulShutdownManager:
+    def __init__(self) -> None:
+        super().__init__()
+        self._shutting_down = False
+        self._cancel_scopes: set[anyio.CancelScope] = set()
+
+    def start_shutdown(self) -> None:
+        self._shutting_down = True
+        for cancel_scope in self._cancel_scopes:
+            cancel_scope.cancel()
+
+    def cancel_on_graceful_shutdown(self):
+        cancel_scope = anyio.CancelScope()
+        self._cancel_scopes.add(cancel_scope)
+        if self._shutting_down:
+            cancel_scope.cancel()
+        return cancel_scope
+
+    @property
+    def shutting_down(self) -> bool:
+        return self._shutting_down
 
 
 ##
@@ -46,7 +72,11 @@ class NodeRegistrant:
         )
 
     @au.mark_anyio
-    async def __call__(self) -> None:
+    async def __call__(
+            self,
+            *,
+            task_status: anyio.abc.TaskStatus[None] = anyio.TASK_STATUS_IGNORED,
+    ) -> None:
         async with contextlib.AsyncExitStack() as aes:
             conn: sql.AsyncConnection = await aes.enter_async_context(self._engine.connect())  # noqa
 
@@ -65,6 +95,8 @@ class NodeRegistrant:
                         'hostname': self._info.hostname,
                     }])
                     nid = check.single(result.inserted_primary_key)  # noqa
+
+            task_status.started()
 
             print(f'{nid=}')
             for _ in range(10):
@@ -85,7 +117,11 @@ class NodeRegistrant:
 async def _a_main() -> None:
     engine = sql.async_adapt(saa.create_async_engine(get_db_url(), echo=True))
     await recreate_all(engine)
-    await NodeRegistrant(engine)()
+
+    nr = NodeRegistrant(engine)
+
+    async with anyio.create_task_group() as tg:
+        await tg.start(nr)
 
 
 if __name__ == '__main__':
