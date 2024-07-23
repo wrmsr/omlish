@@ -40,7 +40,8 @@ psutil==6.0.0
 ### serde:
 ## json
 ujson==5.10.0
-# orjson
+orjson==3.10.6
+python-rapidjson==1.18
 
 ## pickle
 cloudpickle==3.0.0
