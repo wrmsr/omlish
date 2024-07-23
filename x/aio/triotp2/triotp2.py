@@ -2,6 +2,7 @@
 See:
  - https://github.com/python-trio/trio/commit/29ec0ad9f48900ac701bccd4f289a115999fd3a3
  - https://trio.discourse.group/t/graceful-shutdown/93/22
+ - https://github.com/python-trio/trio/issues/569#issuecomment-408419260
  - demo_trio_gsm
 """
 import abc
