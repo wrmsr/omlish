@@ -193,16 +193,14 @@ class NodeRegistrant:
         async with contextlib.AsyncExitStack() as aes:
             conn: sql.AsyncConnection = await aes.enter_async_context(self._engine.connect())  # noqa
 
-            nid: int
-
             async with conn.begin():
                 rows = (await conn.execute(
                     sa.select(Nodes).where(Nodes.c.uuid == self._info.uuid)
                 )).fetchall()
 
+                nid: int
                 if len(rows) > 0:
-                    row = check.single(rows)
-                    nid = row['_id']
+                    nid = check.single(rows)['_id']
 
                 else:
                     result = await conn.execute(Nodes.insert(), [{
