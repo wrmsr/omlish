@@ -34,7 +34,7 @@ async def _a_main() -> None:
     async with anyio.create_task_group() as tg:
         # tg.start_soon(killer, 10.)
 
-        await tg.start(functools.partial(nr, shutdown))
+        await tg.start(functools.partial(nr.run, shutdown))
 
         tg.start_soon(functools.partial(
             server.serve,

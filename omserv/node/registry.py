@@ -42,7 +42,7 @@ class NodeRegistrant:
         )
 
     @au.mark_anyio
-    async def __call__(
+    async def run(
             self,
             shutdown: anyio.Event,
             *,
