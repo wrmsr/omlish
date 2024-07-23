@@ -1,4 +1,3 @@
-import copy
 import pytest
 
 from .. import fnpairs
