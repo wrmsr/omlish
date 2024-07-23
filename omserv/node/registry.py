@@ -73,7 +73,7 @@ class NodeRegistrant:
     @au.mark_anyio
     async def __call__(self) -> None:
         async with contextlib.AsyncExitStack() as aes:
-            conn: sql.AsyncConnection = await aes.enter_async_context(self._engine.connect())
+            conn: sql.AsyncConnection = await aes.enter_async_context(self._engine.connect())  # noqa
 
             nid: int
 
