@@ -7,7 +7,6 @@ import uuid
 
 from omlish import asyncs as au
 from omlish import check
-from omlish import json
 from omlish import sql
 from omlish.asyncs import anyio as anu
 import anyio.abc
@@ -84,7 +83,7 @@ class NodeRegistrant:
                     result = await conn.execute(Nodes.insert(), [{
                         'uuid': self._info.uuid,
                         'hostname': self._info.hostname,
-                        'extra': json.dumps_compact(self._info.extra),
+                        'extra': self._info.extra,
                     }])
                     nid = check.single(result.inserted_primary_key)  # noqa
 
@@ -112,5 +111,5 @@ class NodeRegistrant:
                         Nodes.c.uuid == self._info.uuid,
                     ).values(
                         heartbeat_at=utcnow(),
-                        extra=json.dumps_compact(self._info.extra),
+                        extra=self._info.extra,
                     ))

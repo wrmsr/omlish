@@ -2,6 +2,7 @@ import typing as ta
 
 from omlish import sql
 import sqlalchemy as sa
+import sqlalchemy.dialects.postgresql as sapg
 import sqlalchemy.orm
 
 from .sql import CREATE_UPDATED_AT_FUNCTION_STATEMENT
@@ -32,7 +33,7 @@ class Node(
 
     heartbeat_at = sa.Column(sa.TIMESTAMP(timezone=True))
 
-    extra = sa.Column(sa.TEXT)
+    extra = sa.Column(sapg.JSONB)
 
 
 Nodes = Node.__table__

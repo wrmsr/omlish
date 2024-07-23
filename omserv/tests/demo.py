@@ -1,3 +1,8 @@
+"""
+TODO:
+ - ping self webserver
+ - get current revision, package OR live git repo
+"""
 import dataclasses as dc
 import functools
 import logging
