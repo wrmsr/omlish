@@ -15,12 +15,16 @@ from .. import iterators as it
 from .. import json
 from .. import lang
 from .. import os as oos
+from .procstats import ProcStats
 
 
 log = logging.getLogger(__name__)
 
 
 PidLike = int | str
+
+
+##
 
 
 RLIMIT_RESOURCES = {
@@ -98,6 +102,9 @@ def _check_linux() -> None:
         raise OSError
 
 
+##
+
+
 def get_process_stats(pid: PidLike = 'self') -> list[str]:
     """http://man7.org/linux/man-pages/man5/proc.5.html -> /proc/[pid]/stat"""
 
@@ -107,6 +114,18 @@ def get_process_stats(pid: PidLike = 'self') -> list[str]:
     l, _, r = buf.rpartition(')')
     pid, _, comm = l.partition('(')
     return [pid.strip(), comm, *r.strip().split(' ')]
+
+
+def get_process_procstats(pid: int | None = None) -> ProcStats:
+    st = get_process_stats('self' if pid is None else pid)
+    return ProcStats(
+        pid=int(st[ProcStat.PID]),
+
+        rss=int(st[ProcStat.RSS]),
+    )
+
+
+##
 
 
 def get_process_chain(pid: PidLike = 'self') -> list[tuple[int, str]]:
@@ -146,6 +165,9 @@ def set_process_oom_score_adj(score: str, pid: PidLike = 'self') -> None:
     _check_linux()
     with open(f'/proc/{pid}/oom_score_adj', 'w') as f:
         f.write(str(score))
+
+
+##
 
 
 MAP_LINE_RX = re.compile(
@@ -198,6 +220,9 @@ def get_process_maps(pid: PidLike = 'self', sharing: bool = False) -> ta.Iterato
             yield d
 
 
+##
+
+
 PAGEMAP_KEYS = (
     'address',
     'pfn',
@@ -241,6 +266,9 @@ def get_process_pagemaps(pid: PidLike = 'self') -> ta.Iterable[dict[str, int]]:
     _check_linux()
     for m in get_process_maps(pid):
         yield from get_process_range_pagemaps(m['address'], m['end_address'], pid)
+
+
+##
 
 
 def _dump_cmd(args: ta.Any) -> None:
