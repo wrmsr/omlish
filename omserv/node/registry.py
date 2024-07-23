@@ -137,8 +137,8 @@ async def _a_main() -> None:
 if __name__ == '__main__':
     logs.configure_standard_logging('DEBUG')
 
-    _backend = 'asyncio'
-    # _backend = 'trio'
+    # _backend = 'asyncio'
+    _backend = 'trio'
 
     match _backend:
         case 'asyncio':
@@ -148,7 +148,7 @@ if __name__ == '__main__':
             from omlish.testing.pydevd import patch_for_trio_asyncio
             patch_for_trio_asyncio()  # noqa
 
-            anyio.run(au.with_trio_asyncio_loop(_a_main), backend='trio')
+            anyio.run(au.with_trio_asyncio_loop(_a_main, wait=True), backend='trio')
 
         case _:
             raise RuntimeError(f'Unknown backend: {_backend}')
