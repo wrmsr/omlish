@@ -1,43 +1,66 @@
 import functools
 import logging
-import itertools
 
+from omlish import asyncs as au
 from omlish import logs
-import anyio
-import sniffio
+from omlish import sql
+import anyio.abc
+import sqlalchemy.ext.asyncio as saa
 
 from .. import server
+from ..node.dbs import get_db_url
+from ..node.models import recreate_all
+from ..node.registry import NodeRegistrant
 from ..server.tests.hello import hello_app
 
 
 log = logging.getLogger(__name__)
 
 
-async def _ticker(delay_s: float = 3.) -> None:
-    for i in itertools.count():
-        await anyio.sleep(delay_s)
-        log.info(f'tick: {i}')
-
-
 async def _a_main() -> None:
-    logs.configure_standard_logging('INFO')
+    engine = sql.async_adapt(saa.create_async_engine(get_db_url(), echo=True))
+    await recreate_all(engine)
 
-    async def _killer(delay_s: float = 10.) -> None:  # noqa
-        await anyio.sleep(delay_s)
-        tg.cancel_scope.cancel()
+    nr = NodeRegistrant(engine)
+
+    shutdown = anyio.Event()
+
+    async def killer(sleep_s: float) -> None:
+        log.warning('Killing in %d seconds', sleep_s)
+        await anyio.sleep(sleep_s)
+        log.warning('Killing')
+        shutdown.set()
 
     async with anyio.create_task_group() as tg:
+        # tg.start_soon(killer, 10.)
+
+        await tg.start(functools.partial(nr, shutdown))
+
         tg.start_soon(functools.partial(
             server.serve,
             hello_app,
             server.Config(),
-            handle_shutdown_signals=sniffio.current_async_library() != 'trio',
+            shutdown_trigger=shutdown.wait,
         ))
 
-        tg.start_soon(_ticker)
-
-        # tg.start_soon(_killer)
+        log.info('Node running')
 
 
 if __name__ == '__main__':
-    anyio.run(_a_main)
+    logs.configure_standard_logging('DEBUG')
+
+    # _backend = 'asyncio'
+    _backend = 'trio'
+
+    match _backend:
+        case 'asyncio':
+            anyio.run(_a_main, backend='asyncio')
+
+        case 'trio':
+            from omlish.testing.pydevd import patch_for_trio_asyncio
+            patch_for_trio_asyncio()  # noqa
+
+            anyio.run(au.with_trio_asyncio_loop(_a_main, wait=True), backend='trio')
+
+        case _:
+            raise RuntimeError(f'Unknown backend: {_backend}')
