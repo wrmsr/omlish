@@ -66,6 +66,8 @@ class NodeRegistrant:
                     }])
                     nid = check.single(result.inserted_primary_key)  # noqa
 
+                # await conn.execute(sa.select(sa.func.pg_advisory_lock(sa.column('_id'))).select_from(t1))
+
             log.info('Node started: nid=%d', nid)
             task_status.started()
 
