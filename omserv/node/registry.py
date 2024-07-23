@@ -106,12 +106,12 @@ def _get_db_url() -> str:
 
 
 async def _a_main() -> None:
-    engine = saa.create_async_engine(_get_db_url(), echo=True)
+    engine = sql.async_adapt(saa.create_async_engine(_get_db_url(), echo=True))
 
-    async with au.adapt_context(engine.connect()) as conn:
-        async with au.adapt_context(conn.begin()):
-            await au.adapt(conn.run_sync)(Metadata.drop_all)
-            await au.adapt(conn.run_sync)(Metadata.create_all)
+    async with engine.connect() as conn:
+        async with conn.begin():
+            await conn.run_sync(Metadata.drop_all)
+            await conn.run_sync(Metadata.create_all)
 
     await NodeRegistrant(engine)()
 
