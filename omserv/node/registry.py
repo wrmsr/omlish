@@ -5,15 +5,17 @@ TODO:
 """
 import contextlib
 import dataclasses as dc
-import datetime
 import socket
+import textwrap
 import typing as ta
 import uuid
 
 import anyio
 import sqlalchemy as sa
 import sqlalchemy.ext.asyncio as saa
+import sqlalchemy.ext.compiler
 import sqlalchemy.orm
+import sqlalchemy.sql.elements
 
 from omlish import asyncs as au
 from omlish import check
@@ -25,26 +27,140 @@ from ..secrets import load_secrets  # noqa
 ##
 
 
+class IdMixin:
+    _id = sa.Column(sa.Integer, nullable=False, primary_key=True, autoincrement=True)
+
+
+##
+
+
+class utcnow(sa.sql.expression.FunctionElement):
+    type = sa.TIMESTAMP()
+
+
+@sa.ext.compiler.compiles(utcnow)
+def _compile_utcnow(
+        element: utcnow,
+        compiler: sa.sql.compiler.SQLCompiler,
+        **kw: ta.Any,
+) -> str:
+    return "timezone('utc', now())"
+
+
+##
+
+
+class TimestampsMixin:
+    created_at = sa.Column(
+        sa.TIMESTAMP(timezone=True),
+        server_default=utcnow(),
+        nullable=False,
+    )
+
+    updated_at = sa.Column(
+        sa.TIMESTAMP(timezone=True),
+        server_default=utcnow(),
+        server_onupdate=sa.schema.FetchedValue(for_update=True),
+        nullable=False,
+    )
+
+
+##
+
+
+CREATE_UPDATED_AT_FUNCTION_STATEMENT = textwrap.dedent("""
+    create or replace function set_updated_at_timestamp()
+    returns trigger as $$
+    begin
+        new.updated_at = now() at time zone 'utc';
+        return new;
+    end;
+    $$ language 'plpgsql';
+""")
+
+
+##
+
+
+def get_update_at_trigger_name(table_name: str) -> str:
+    return f'trigger__updated_at_{table_name}'
+
+
+#
+
+
+class CreateUpdateAtTrigger(sa.schema.DDLElement):
+    def __init__(self, table_name: str) -> None:
+        super().__init__()
+        self.table_name = table_name
+
+
+@sa.ext.compiler.compiles(CreateUpdateAtTrigger)
+def _compile_create_update_at_trigger(
+        element: CreateUpdateAtTrigger,
+        compiler: sa.sql.compiler.SQLCompiler,
+        **kw: ta.Any,
+):
+    return textwrap.dedent(f"""
+        create trigger {get_update_at_trigger_name(element.table_name)}
+            before update
+            on {element.table_name}
+            for each row
+            execute procedure set_updated_at_timestamp()
+    """)
+
+
+#
+
+
+class DropUpdateAtTrigger(sa.schema.DDLElement):
+    def __init__(self, table_name: str) -> None:
+        super().__init__()
+        self.table_name = table_name
+
+
+@sa.ext.compiler.compiles(DropUpdateAtTrigger)
+def _compile_drop_update_at_trigger(
+        element: DropUpdateAtTrigger,
+        compiler: sa.sql.compiler.SQLCompiler,
+        **kw: ta.Any,
+) -> str:
+    return f'drop trigger if exists {get_update_at_trigger_name(element.table_name)} on {element.table_name}'
+
+
+#
+
+
+def create_updated_at_trigger(metadata: sa.MetaData, table_name: str) -> None:
+    sa.event.listen(metadata, 'after_create', CreateUpdateAtTrigger(table_name))
+    sa.event.listen(metadata, 'before_drop', DropUpdateAtTrigger(table_name))
+
+
+##
+
+
 Metadata = sa.MetaData()
 Base: ta.Any = sa.orm.declarative_base(metadata=Metadata)
 
 
-class Node(Base):
-    __tablename__ = '_nodes'
+class Node(
+    IdMixin,
+    TimestampsMixin,
+    Base,
+):
+    __tablename__ = 'nodes'
     __table_args__ = (
-        sa.Index('_nodes_by_uuid', 'uuid', unique=True),
+        sa.Index('nodes_by_uuid', 'uuid', unique=True),
     )
-
-    _id = sa.Column(sa.Integer, nullable=False, primary_key=True, autoincrement=True)
-
-    created_at = sa.Column(sa.TIMESTAMP, default=datetime.datetime.utcnow, nullable=False)  # , server_default=sa.text('0'))  # noqa
-    updated_at = sa.Column(sa.TIMESTAMP, default=datetime.datetime.utcnow, nullable=False, onupdate=datetime.datetime.utcnow)  # noqa
 
     uuid = sa.Column(sa.String(50), nullable=False, unique=True)
     hostname = sa.Column(sa.String(100), nullable=False)
 
 
 Nodes = Node.__table__
+
+
+create_updated_at_trigger(Metadata, 'nodes')
 
 
 ##
@@ -112,6 +228,7 @@ async def _a_main() -> None:
     async with engine.connect() as conn:
         async with conn.begin():
             await conn.run_sync(Metadata.drop_all)
+            await conn.execute(sa.text(CREATE_UPDATED_AT_FUNCTION_STATEMENT))
             await conn.run_sync(Metadata.create_all)
 
     await NodeRegistrant(engine)()
