@@ -1,3 +1,16 @@
+"""
+TODO:
+ - objects
+  - csv
+  - csvloader
+  - cbor
+  - cloudpickle
+  - alt json backends
+ - compression
+  - snappy
+  - lz4
+ - wrapped (wait for usecase)
+"""
 import abc
 import codecs
 import dataclasses as dc
@@ -6,32 +19,39 @@ import typing as ta
 from . import lang
 
 if ta.TYPE_CHECKING:
-    import bzip2 as _bzip2
+    import bz2 as _bz2
     import gzip as _gzip
     import json as _json
+    import lz4.frame as _lz4_frame
     import lzma as _lzma
     import pickle as _pickle
+    import snappy as _snappy
     import struct as _struct
     import tomllib as _tomllib
+    import yaml as _yaml
+    import zstd as _zstd
 
 else:
-    _bzip2 = lang.proxy_import('bzip2')
+    _bz2 = lang.proxy_import('bz2')
     _gzip = lang.proxy_import('gzip')
     _json = lang.proxy_import('json')
+    _lz4_frame = lang.proxy_import('lz4.frame')
     _lzma = lang.proxy_import('lzma')
     _pickle = lang.proxy_import('pickle')
+    _snappy = lang.proxy_import('snappy')
     _struct = lang.proxy_import('struct')
     _tomllib = lang.proxy_import('tomllib')
-
-_zstd = lang.proxy_import('zstd')
-_yaml = lang.proxy_import('yaml')
+    _yaml = lang.proxy_import('yaml')
+    _zstd = lang.proxy_import('zstd')
 
 
 ##
 
 
 F = ta.TypeVar('F')
+F2 = ta.TypeVar('F2')
 T = ta.TypeVar('T')
+T2 = ta.TypeVar('T2')
 U = ta.TypeVar('U')
 
 
@@ -43,6 +63,11 @@ class FnPair(ta.Generic[F, T], abc.ABC):
     @abc.abstractmethod
     def backward(self, t: T) -> F:
         raise NotImplementedError
+
+    ##
+
+    def __call__(self, f: F) -> T:
+        return self.forward(f)
 
     def invert(self) -> 'FnPair[T, F]':
         if isinstance(self, Inverted):
@@ -76,6 +101,8 @@ Simple.__abstractmethods__ = frozenset()  # noqa
 
 of = Simple
 
+NOP: FnPair[ta.Any, ta.Any] = of(lang.identity, lang.identity)
+
 
 ##
 
@@ -91,9 +118,6 @@ class Inverted(FnPair[F, T]):
         return self.fp.forward(t)
 
 
-##
-
-
 @dc.dataclass(frozen=True)
 class Composite(FnPair[F, T]):
     children: ta.Sequence[FnPair]
@@ -107,6 +131,14 @@ class Composite(FnPair[F, T]):
         for c in reversed(self.children):
             t = c.backward(t)
         return ta.cast(F, t)
+
+
+def compose(*ps: FnPair) -> FnPair:
+    if not ps:
+        return NOP
+    if len(ps) == 1:
+        return ps[0]
+    return Composite(ps)
 
 
 ##
@@ -177,11 +209,27 @@ def _register_extension(*ss):
     return inner
 
 
+def get_for_extension(ext: str) -> FnPair:
+    return compose(*[_EXTENSION_REGISTRY[p]() for p in ext.split('.')])
+
+
 ##
 
 
 class Compression(FnPair[bytes, bytes], abc.ABC):
     pass
+
+
+@_register_extension('bz2')
+@dc.dataclass(frozen=True)
+class Bz2(Compression):
+    compresslevel: int = 9
+
+    def forward(self, f: bytes) -> bytes:
+        return _bz2.compress(f, compresslevel=self.compresslevel)
+
+    def backward(self, t: bytes) -> bytes:
+        return _bz2.decompress(t)
 
 
 @_register_extension('gz')
@@ -196,18 +244,6 @@ class Gzip(Compression):
         return _gzip.decompress(t)
 
 
-@_register_extension('bz2')
-@dc.dataclass(frozen=True)
-class Bzip2(Compression):
-    compresslevel: int = 9
-
-    def forward(self, f: bytes) -> bytes:
-        return _bzip2.compress(f, compresslevel=self.compresslevel)
-
-    def backward(self, t: bytes) -> bytes:
-        return _bzip2.decompress(t)
-
-
 @_register_extension('lzma')
 class Lzma(Compression):
     def forward(self, f: bytes) -> bytes:
@@ -218,6 +254,27 @@ class Lzma(Compression):
 
 
 #
+
+
+@_register_extension('lz4')
+@dc.dataclass(frozen=True)
+class Lz4(Compression):
+    compression_level: int = 0
+
+    def forward(self, f: bytes) -> bytes:
+        return _lz4_frame.compress(f, compression_level=self.compression_level)
+
+    def backward(self, t: bytes) -> bytes:
+        return _lz4_frame.decompress(t)
+
+
+@_register_extension('snappy')
+class Snappy(Compression):
+    def forward(self, f: bytes) -> bytes:
+        return _snappy.compress(f)
+
+    def backward(self, t: bytes) -> bytes:
+        return _snappy.decompress(t)
 
 
 @_register_extension('zstd')
@@ -243,9 +300,27 @@ class Struct(FnPair[tuple, bytes]):
         return _struct.unpack(self.fmt, t)
 
 
+##
+
+
+class Object(FnPair[ta.Any, T], lang.Abstract):  # noqa
+    pass
+
+
+class ObjectStr(Object[str], lang.Abstract):  # noqa
+    pass
+
+
+class ObjectBytes(Object[bytes], lang.Abstract):  # noqa
+    pass
+
+
+#
+
+
 @_register_extension('pkl')
 @dc.dataclass(frozen=True)
-class Pickle(FnPair[ta.Any, bytes]):
+class Pickle(ObjectBytes):
     protocol: int | None = None
 
     def forward(self, f: ta.Any) -> bytes:
@@ -257,7 +332,7 @@ class Pickle(FnPair[ta.Any, bytes]):
 
 @_register_extension('json')
 @dc.dataclass(frozen=True)
-class Json(FnPair[ta.Any, str]):
+class Json(ObjectStr):
     indent: int | str | None = dc.field(default=None, kw_only=True)
     separators: tuple[str, str] | None = dc.field(default=None, kw_only=True)
 
@@ -283,7 +358,7 @@ class JsonLines(FnPair[ta.Sequence[ta.Any], str]):
 
 
 @_register_extension('toml')
-class Toml(FnPair[ta.Any, str]):
+class Toml(ObjectStr):
     def forward(self, f: ta.Any) -> str:
         raise NotImplementedError
 
@@ -295,7 +370,7 @@ class Toml(FnPair[ta.Any, str]):
 
 
 @_register_extension('yml', 'yaml')
-class Yaml(FnPair[ta.Any, str]):
+class Yaml(ObjectStr):
     def forward(self, f: ta.Any) -> str:
         return _yaml.dump(f)
 
@@ -303,9 +378,9 @@ class Yaml(FnPair[ta.Any, str]):
         return _yaml.safe_load(t)
 
 
-class UnsafeYaml(FnPair[ta.Any, str]):
+class YamlUnsafe(ObjectStr):
     def forward(self, f: ta.Any) -> str:
         return _yaml.dump(f)
 
     def backward(self, t: str) -> ta.Any:
-        return _yaml.safe_load(t, loader=_yaml.FullLoader)
+        return _yaml.load(t, _yaml.FullLoader)
