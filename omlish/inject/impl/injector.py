@@ -8,6 +8,7 @@ TODO:
   - InjectorRoot object?
  - ** eagers in any scope, on scope init/open
  - injection listeners
+ - unions - raise on ambiguous - usecase: sql.AsyncEngineLike
 """
 import contextlib
 import typing as ta

@@ -17,6 +17,7 @@ import sqlalchemy.orm
 
 from omlish import asyncs as au
 from omlish import check
+from omlish import sql
 
 from ..secrets import load_secrets  # noqa
 
@@ -49,75 +50,6 @@ Nodes = Node.__table__
 ##
 
 
-class AsyncTransactionAdapter:
-    def __init__(self, underlying: saa.AsyncTransaction) -> None:
-        super().__init__()
-        self._underlying = underlying
-
-    @property
-    def underlying(self) -> saa.AsyncTransaction:
-        return self._underlying
-
-    ##
-
-    async def close(self) -> None:
-        await au.from_asyncio(self._underlying.close)()
-
-    async def rollback(self) -> None:
-        await au.from_asyncio(self._underlying.rollback)()
-
-    async def commit(self) -> None:
-        await au.from_asyncio(self._underlying.commit)()
-
-
-class AsyncConnectionAdapter:
-    def __init__(self, underlying: saa.AsyncConnection) -> None:
-        super().__init__()
-        self._underlying = underlying
-
-    @property
-    def underlying(self) -> saa.AsyncConnection:
-        return self._underlying
-
-    ##
-
-    @contextlib.asynccontextmanager
-    async def begin(self) -> ta.Generator[AsyncTransactionAdapter, None, None]:
-        async with au.from_asyncio_context(self._underlying.begin()) as u:
-            yield AsyncTransactionAdapter(u)
-
-    async def execute(
-            self,
-            statement: ta.Any,
-            *args: ta.Any,
-            **kwargs: ta.Any,
-    ) -> sa.CursorResult[ta.Any]:
-        return await au.from_asyncio(self._underlying.execute)(statement, *args, **kwargs)
-
-
-class AsyncEngineAdapter:
-    def __init__(self, underlying: saa.AsyncEngine) -> None:
-        super().__init__()
-        self._underlying = underlying
-
-    @property
-    def underlying(self) -> saa.AsyncEngine:
-        return self._underlying
-
-    ##
-
-    @contextlib.asynccontextmanager
-    async def connect(self) -> ta.Generator[AsyncConnectionAdapter, None, None]:
-        async with au.from_asyncio_context(self._underlying.connect()) as u:
-            yield AsyncConnectionAdapter(u)
-
-    async def dispose(self, close: bool = True) -> None:
-        await au.from_asyncio(self._underlying.dispose)(close)
-
-
-##
-
-
 @dc.dataclass()
 class NodeInfo:
     uuid: str
@@ -127,11 +59,11 @@ class NodeInfo:
 class NodeRegistrant:
     def __init__(
             self,
-            engine: saa.AsyncEngine,
+            engine: sql.AsyncEngineLike,
     ) -> None:
         super().__init__()
 
-        self._engine = engine
+        self._engine = sql.async_adapt(engine)
 
         self._info = NodeInfo(
             uuid=str(uuid.uuid4()).replace('-', ''),
@@ -141,12 +73,12 @@ class NodeRegistrant:
     @au.mark_anyio
     async def __call__(self) -> None:
         async with contextlib.AsyncExitStack() as aes:
-            conn = await aes.enter_async_context(au.adapt_context(self._engine.connect()))
+            conn = await aes.enter_async_context(self._engine.connect())
 
             nid: int
 
-            async with au.adapt_context(conn.begin()):
-                rows = (await au.adapt(conn.execute)(
+            async with conn.begin():
+                rows = (await conn.execute(
                     sa.select(Nodes).where(Nodes.c.uuid == self._info.uuid)
                 )).fetchall()
 
@@ -155,7 +87,7 @@ class NodeRegistrant:
                     nid = row['_id']
 
                 else:
-                    result = await au.adapt(conn.execute)(Nodes.insert(), [{
+                    result = await conn.execute(Nodes.insert(), [{
                         'uuid': self._info.uuid,
                         'hostname': self._info.hostname,
                     }])
