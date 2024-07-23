@@ -73,7 +73,7 @@ class NodeRegistrant:
     @au.mark_anyio
     async def __call__(self) -> None:
         async with contextlib.AsyncExitStack() as aes:
-            conn = await aes.enter_async_context(self._engine.connect())
+            conn: sql.AsyncConnectionAdapter = await aes.enter_async_context(self._engine.connect())
 
             nid: int
 
@@ -108,6 +108,7 @@ def _get_db_url() -> str:
 async def _a_main() -> None:
     engine = sql.async_adapt(saa.create_async_engine(_get_db_url(), echo=True))
 
+    conn: sql.AsyncConnectionAdapter
     async with engine.connect() as conn:
         async with conn.begin():
             await conn.run_sync(Metadata.drop_all)
