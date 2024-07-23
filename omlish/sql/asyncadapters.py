@@ -7,6 +7,10 @@ import sqlalchemy.ext.asyncio as saa
 from .. import asyncs as au
 
 
+T = ta.TypeVar('T')
+P = ta.ParamSpec('P')
+
+
 AsyncEngineLike = ta.Union[saa.AsyncEngine, 'AsyncEngineAdapter']
 AsyncConnectionLike = ta.Union[saa.AsyncConnection, 'AsyncConnectionAdapter']
 AsyncTransactionLike = ta.Union[saa.AsyncTransaction, 'AsyncTransactionAdapter']
@@ -61,6 +65,15 @@ class AsyncConnectionAdapter:
             **kwargs: ta.Any,
     ) -> sa.CursorResult[ta.Any]:
         return await au.from_asyncio(self._underlying.execute)(statement, *args, **kwargs)
+
+    @au.mark_asyncio
+    async def run_sync(
+            self,
+            fn: ta.Callable[ta.Concatenate[sa.Connection, P], T],
+            *args: P.args,
+            **kwargs: P.kwargs,
+    ) -> T:
+        return await au.from_asyncio(self._underlying.run_sync)(fn, *args, **kwargs)
 
 
 class AsyncEngineAdapter:
