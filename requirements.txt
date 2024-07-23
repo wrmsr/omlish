@@ -6,8 +6,9 @@ anyio==4.4.0
 
 ## compress:
 
-# lz4
-# zstd
+lz4==4.3.3
+python-snappy==0.7.2
+zstd==1.5.5.1
 
 ## db:
 sqlalchemy[asyncio]==2.0.31; python_version < '3.13'
