@@ -137,8 +137,8 @@ async def _a_main() -> None:
 if __name__ == '__main__':
     logs.configure_standard_logging('DEBUG')
 
-    # _backend = 'asyncio'
-    _backend = 'trio'
+    _backend = 'asyncio'
+    # _backend = 'trio'
 
     match _backend:
         case 'asyncio':
