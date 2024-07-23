@@ -65,6 +65,10 @@ tg-update:
 
 ### Deps
 
+.PHONY: dep-list
+dep-list: venv
+	${PYTHON} -mpip freeze
+
 .PHONY: dep-freeze
 dep-freeze: venv
 	${PYTHON} -mpip freeze > requirements-frz.txt
