@@ -165,7 +165,7 @@ dumps_pretty: ta.Callable[..., str] = functools.partial(dumps, **PRETTY_KWARGS)
 COMPACT_SEPARATORS = (',', ':')
 
 COMPACT_KWARGS: ta.Mapping[str, ta.Any] = dict(
-    indent=0,
+    indent=None,
     separators=COMPACT_SEPARATORS,
 )
 
