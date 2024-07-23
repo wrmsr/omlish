@@ -66,8 +66,8 @@ tg-update:
 ### Deps
 
 .PHONY: dep-list
-dep-list: venv
-	${PYTHON} -mpip freeze
+dep-list:
+	@${PYTHON} -mpip freeze
 
 .PHONY: dep-freeze
 dep-freeze: venv
@@ -79,8 +79,8 @@ dep-unfreeze: venv
 	${PYTHON} -mpip install -r requirements-frz.txt
 
 .PHONY: dep-tree
-dep-tree: venv
-	${PYTHON} -mpipdeptree
+dep-tree:
+	@${PYTHON} -mpipdeptree
 
 .PHONY: dep-updates
 dep-updates: venv
