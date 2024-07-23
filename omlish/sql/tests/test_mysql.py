@@ -62,6 +62,12 @@ def _test_mysql(url: str) -> None:
             assert rows[0].name == 'some name 1'
 
 
+def test_mysql_mysql_connector_python(harness) -> None:
+    url = check.isinstance(harness[Dbs].specs()['mysql'].loc, UrlDbLoc).url
+    url = set_url_engine(url, 'mysql+mysqlconnector')
+    _test_mysql(url)
+
+
 def test_mysql_mysqlclient(harness) -> None:
     url = check.isinstance(harness[Dbs].specs()['mysql'].loc, UrlDbLoc).url
     url = set_url_engine(url, 'mysql+mysqldb')
