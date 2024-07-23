@@ -55,11 +55,13 @@ def test_compression(cls: type[fnpairs.Compression]) -> None:
 
 
 @pytest.mark.parametrize('cls', [
+    fnpairs.Pickle,
     fnpairs.Json,
+    fnpairs.Cloudpickle,
     fnpairs.Yaml,
     fnpairs.YamlUnsafe,
 ])
-def test_object_str(cls: type[fnpairs.ObjectStr]) -> None:
+def test_object(cls: type[fnpairs.Object]) -> None:
     fp = cls()
     o = {'hi': {'i am': [123, 4.56, False, None, {'a': 'test'}]}}
     e = fp.forward(o)

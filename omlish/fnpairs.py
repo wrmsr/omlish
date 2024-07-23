@@ -20,6 +20,7 @@ from . import lang
 
 if ta.TYPE_CHECKING:
     import bz2 as _bz2
+    import cloudpickle as _cloudpickle
     import gzip as _gzip
     import json as _json
     import lz4.frame as _lz4_frame
@@ -33,6 +34,7 @@ if ta.TYPE_CHECKING:
 
 else:
     _bz2 = lang.proxy_import('bz2')
+    _cloudpickle = lang.proxy_import('cloudpickle')
     _gzip = lang.proxy_import('gzip')
     _json = lang.proxy_import('json')
     _lz4_frame = lang.proxy_import('lz4.frame')
@@ -367,6 +369,18 @@ class Toml(ObjectStr):
 
 
 #
+
+
+@_register_extension('cpkl')
+@dc.dataclass(frozen=True)
+class Cloudpickle(ObjectBytes):
+    protocol: int | None = None
+
+    def forward(self, f: ta.Any) -> bytes:
+        return _cloudpickle.dumps(f, protocol=self.protocol)
+
+    def backward(self, t: bytes) -> ta.Any:
+        return _cloudpickle.loads(t)
 
 
 @_register_extension('yml', 'yaml')
