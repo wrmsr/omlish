@@ -46,6 +46,7 @@ RUN \
         jq \
         less \
         libdb-dev \
+        libpq-dev \
         llvm \
         lsb-release \
         lsof \
