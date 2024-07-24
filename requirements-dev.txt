@@ -52,7 +52,7 @@ pytest-trio==0.8.0
 
 ##
 
-psycopg2==2.9.9
+psycopg2==2.9.9; python_version < '3.13'
 
 mysql-connector-python==9.0.0
 mysqlclient==2.2.4; sys_platform == 'darwin'  # brew install mysql pkg-config
