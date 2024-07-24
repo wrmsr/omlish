@@ -178,7 +178,7 @@ MAP_LINE_RX = re.compile(
     r'(?P<device>\S+)\s+'
     r'(?P<inode>\d+)\s+'
     r'(?P<path>.*)'
-    r'$'
+    r'$',
 )
 
 

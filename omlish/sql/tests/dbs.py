@@ -25,7 +25,7 @@ class Dbs:
             lst.append(DbSpec(
                 'mysql',
                 DbTypes.MYSQL,
-                UrlDbLoc(f'mysql://root:{env["MYSQL_ROOT_PASSWORD"]}@127.0.0.1:{port}')
+                UrlDbLoc(f'mysql://root:{env["MYSQL_ROOT_PASSWORD"]}@127.0.0.1:{port}'),
             ))
 
         if (postgres := svcs.get('postgres')):
@@ -34,7 +34,7 @@ class Dbs:
             lst.append(DbSpec(
                 'postgres',
                 DbTypes.POSTGRES,
-                UrlDbLoc(f'postgresql://{env["POSTGRES_USER"]}:{env["POSTGRES_PASSWORD"]}@127.0.0.1:{port}')
+                UrlDbLoc(f'postgresql://{env["POSTGRES_USER"]}:{env["POSTGRES_PASSWORD"]}@127.0.0.1:{port}'),
             ))
 
         return {s.name: s for s in lst}
