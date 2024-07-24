@@ -75,7 +75,7 @@ default = { requires = 'requirements-ext.txt' }
 '8' = { interp = '@8', requires = [], srcs = [] }
 docker = { docker = 'omlish-dev' }
 docker-amd64 = { docker = 'omlish-dev-amd64' }
-deploy = { interp = 'python3' }
+deploy = { interp = 'python3', requires = 'requirements.txt' }
 debug = { interp = '@12-debug' }
 
 
