@@ -6,7 +6,15 @@ git describe --match=NeVeRmAtCh --always --abbrev=40 --dirty > "$(DIST_BUILD_DIR
 """
 import errno
 import importlib.resources
+import subprocess
 import typing as ta
+
+
+GIT_REVISION_CMD = 'git describe --match=NeVeRmAtCh --always --abbrev=40 --dirty'
+
+
+def run_git_revision_cmd() -> str:
+    return subprocess.check_output(GIT_REVISION_CMD).decode().strip()
 
 
 def get_revision() -> ta.Optional[str]:
