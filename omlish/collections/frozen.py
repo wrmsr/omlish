@@ -5,7 +5,6 @@ import typing as ta
 
 from .mappings import yield_dict_init
 
-
 T = ta.TypeVar('T')
 K = ta.TypeVar('K')
 V = ta.TypeVar('V')

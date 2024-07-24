@@ -6,7 +6,6 @@ from .. import check
 from .identity import IdentityKeyDict
 from .identity import IdentitySet
 
-
 T = ta.TypeVar('T')
 K = ta.TypeVar('K')
 V = ta.TypeVar('V')

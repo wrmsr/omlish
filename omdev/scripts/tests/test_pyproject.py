@@ -1,6 +1,5 @@
 from .. import pyproject
 
-
 _TEST_TOML = """
 [tool.omlish.pyproject.srcs]
 main = ['omlish', 'omdev', 'omserv']

@@ -5,7 +5,6 @@ from .. import check
 from .dispatch import Dispatcher
 from .dispatch import get_impl_func_cls_set
 
-
 # USE_EXTENSION = True
 USE_EXTENSION = False
 

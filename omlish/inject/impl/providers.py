@@ -5,10 +5,10 @@ TODO:
 import abc
 import typing as ta
 
-from .. import Cls
 from ... import check
 from ... import dataclasses as dc
 from ... import lang
+from .. import Cls
 from ..injector import Injector
 from ..inspect import KwargsTarget
 from ..providers import ConstProvider

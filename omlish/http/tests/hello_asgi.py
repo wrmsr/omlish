@@ -16,8 +16,8 @@ wsgi.errors is directed by the wrapper as needed
 """
 import typing as ta
 
-from .. import consts
 from ... import check
+from .. import consts
 
 
 async def app(scope, receive, send):

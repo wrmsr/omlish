@@ -9,11 +9,12 @@ TODO:
 import contextlib
 import functools
 
-from omlish import lang
 import anyio
 import pytest
 import sniffio
 import wsproto
+
+from omlish import lang
 
 from ..config import Config
 from ..types import ASGIWrapper

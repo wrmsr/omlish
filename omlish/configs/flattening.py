@@ -5,7 +5,6 @@ import typing as ta
 from .. import check
 from .. import lang
 
-
 K = ta.TypeVar('K')
 V = ta.TypeVar('V')
 StrMap = ta.Mapping[str, ta.Any]

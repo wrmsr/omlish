@@ -6,7 +6,6 @@ import traceback
 from omlish.docker import timebomb_payload
 from omlish.testing.pydevd import silence_subprocess_check
 
-
 TIMEBOMB_DELAY_S = 20 * 60
 
 PYCHARM_DEBUG = False

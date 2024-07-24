@@ -54,7 +54,6 @@ from . import modified
 from . import sysconfig
 from . import util
 
-
 log = logging.getLogger(__name__)
 
 

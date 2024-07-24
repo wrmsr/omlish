@@ -1,7 +1,6 @@
 import types
 import typing as ta
 
-
 T = ta.TypeVar('T')
 
 

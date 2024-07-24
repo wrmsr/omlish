@@ -1,15 +1,15 @@
 import typing as ta
 
-from omlish import sql
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as sapg
 import sqlalchemy.orm
+
+from omlish import sql
 
 from .sql import CREATE_UPDATED_AT_FUNCTION_STATEMENT
 from .sql import IdMixin
 from .sql import TimestampsMixin
 from .sql import install_updated_at_trigger
-
 
 ##
 

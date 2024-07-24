@@ -7,12 +7,11 @@ import anyio.from_thread
 import anyio.to_thread
 
 from .config import Config
+from .types import AppWrapper
 from .types import ASGIReceiveEvent
 from .types import ASGISendEvent
-from .types import AppWrapper
 from .types import LifespanScope
 from .types import UnexpectedMessageError
-
 
 log = logging.getLogger(__name__)
 
