@@ -787,7 +787,7 @@ class CCompiler:
 extern "C"
 #endif
 char {funcname}(void);
-"""
+""",
                 )
             f.write(
                 f"""\
@@ -795,7 +795,7 @@ int main (int argc, char **argv) {{
     {funcname}();
     return 0;
 }}
-"""
+""",
             )
 
         try:

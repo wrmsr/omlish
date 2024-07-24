@@ -169,8 +169,8 @@ def get_digital_ocean_servers() -> list[DigitalOceanServer]:
         'GET',
         'https://api.digitalocean.com/v2/droplets',
         headers={
-            'Authorization': f'Bearer {api_key}'
-        }
+            'Authorization': f'Bearer {api_key}',
+        },
     )
     droplets = json.loads(resp.data.decode('utf-8')).get('droplets', [])
     out = []
