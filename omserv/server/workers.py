@@ -159,7 +159,7 @@ async def worker_serve(
                 listeners.append(anyio._core._eventloop.get_async_backend().create_tcp_listener(sock))  # noqa
                 bind = repr_socket_addr(sock.family, sock.getsockname())
                 binds.append(f'http://{bind}')
-                log.info(f'Running on http://{bind} (CTRL + C to quit)')
+                log.info('Running on http://%s (CTRL + C to quit)', bind)
 
             task_status.started(binds)
             try:

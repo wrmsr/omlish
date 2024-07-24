@@ -313,7 +313,7 @@ class BuildExt:
         ) as e:
             if not ext.optional:
                 raise
-            log.warning(f'building extension "{ext.name}" failed: {e}')
+            log.warning('building extension "%s" failed: {e}', ext.name)
 
     def _build_extension(self, ext: extension.Extension) -> ta.Sequence[str]:
         sources = ext.sources

@@ -47,4 +47,4 @@ def log_access(
     #     self.access_logger.info(
     #         self.access_log_format, self.atoms(request, response, request_time)
     #     )
-    log.info(f'access: {request!r} {response!r}')
+    log.info('access: %r %r', request, response)

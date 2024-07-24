@@ -253,7 +253,7 @@ class Venv:
                 raise Exception(f'{dn} exists but is not a directory!')
             return False
 
-        log.info(f'Using interpreter {(ie := self.interp_exe())}')
+        log.info('Using interpreter %s', (ie := self.interp_exe()))
         _subprocess_check_call([ie, '-m' 'venv', dn])
 
         ve = self.exe()

@@ -94,7 +94,7 @@ def _cmd(
         buf = _subprocess_check_output(cmd, env=env, **kwargs)
     except es:
         if try_:
-            log.exception(f'cmd failed: {cmd}')
+            log.exception('cmd failed: %r', cmd)
             return None
         else:
             raise

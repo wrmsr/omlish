@@ -12,7 +12,7 @@ def error_logging(log=log):  # noqa
             try:
                 return fn(*args, **kwargs)
             except Exception:
-                log.exception(f'Error in {fn!r}')
+                log.exception('Error in %r', fn)
                 raise
 
         return inner

@@ -74,7 +74,7 @@ class InteractiveSocketConsole:
     CPRT = 'Type "help", "copyright", "credits" or "license" for more information.'
 
     def interact(self, banner: str | None = None, exitmsg: str | None = None) -> None:
-        log.info(f'Console {id(self)} on thread {threading.current_thread().ident} interacting')
+        log.info('Console %x on thread %r interacting', id(self), threading.current_thread().ident)
 
         try:
             ps1 = getattr(sys, 'ps1', '>>> ')
@@ -115,7 +115,7 @@ class InteractiveSocketConsole:
                 pass
 
         finally:
-            log.info(f'Console {id(self)} on thread {threading.current_thread().ident} finished')
+            log.info('Console %x on thread %r finished', id(self), threading.current_thread().ident)
 
     def push_line(self, line: str) -> bool:
         self._buffer.append(line)
