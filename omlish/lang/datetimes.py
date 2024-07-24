@@ -18,17 +18,18 @@ def months_ago(date: datetime.date, num: int) -> datetime.date:
     return datetime.date(ago_year, ago_month, 1)
 
 
-def parse_date(s: str) -> datetime.date:
+def parse_date(s: str, tz: datetime.timezone | None = None) -> datetime.date:
+
     if s.lower() in ['today', 'now']:
-        return datetime.date.today()
+        return datetime.datetime.now(tz=tz)
     elif s.lower() == 'yesterday':
-        return datetime.date.today() - datetime.timedelta(days=1)
+        return datetime.datetime.now(tz=tz) - datetime.timedelta(days=1)
     elif s.lower().endswith(' days ago'):
         num = int(s.split(' ', 1)[0])
-        return datetime.date.today() - datetime.timedelta(days=num)
+        return datetime.datetime.now(tz=tz) - datetime.timedelta(days=num)
     elif s.lower().endswith(' months ago'):
         months = int(s.split(' ', 1)[0])
-        return months_ago(datetime.date.today(), months)
+        return months_ago(datetime.datetime.now(tz=tz), months)
     else:
         return datetime.date(*map(int, s.split('-', 3)))
 
