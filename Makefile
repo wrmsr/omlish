@@ -125,6 +125,23 @@ check-scripts: venv
 	fi
 
 
+## pre-commit
+
+.PHONY: pre-commit
+pre-commit:
+	if git rev-parse --verify HEAD >/dev/null 2>&1 ; then \
+		against=HEAD ; \
+	else \
+		against=$$(git hash-object -t tree /dev/null) ; \
+	fi
+
+	st=$$(git status -s secrets.yml) ; \
+	if [ ! -z "$$st" ] ; then \
+		echo 'must not checkin secrets.yml' ; \
+		exit 1 ; \
+	fi
+
+
 ### Test
 
 PYTEST_OPTS=
