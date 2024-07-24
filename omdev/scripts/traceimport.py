@@ -265,7 +265,7 @@ class ImportTracer:
             try:
                 __import__(root_module, globals(), locals(), [], 0)
             except Exception:
-                log.exception(f'root_module: {root_module}')
+                log.exception('root_module: %s', root_module)
         finally:
             __builtins__.__import__ = old_import
 
