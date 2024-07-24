@@ -110,12 +110,12 @@ class StatsFactory:
             **kw,
         )
 
-    PROC_MEM_KEYS_BY_FIELD = {
+    _PROC_MEM_KEYS_BY_FIELD: ta.ClassVar[ta.Mapping[str, str]] = {
         'vm_vms': 'VmSize',
         'vm_rss': 'VmRSS',
     }
 
-    PROC_MEM_SCALE = {
+    _PROC_MEM_SCALE: ta.ClassVar[ta.Mapping[str, float]] = {
         'kb': 1024.0,
         'mb': 1024.0 * 1024.0,
     }
@@ -133,10 +133,10 @@ class StatsFactory:
 
         status = {}
 
-        for key, field in cls.PROC_MEM_KEYS_BY_FIELD.items():
+        for key, field in cls._PROC_MEM_KEYS_BY_FIELD.items():
             num, unit = status_fields[field].split()
 
-            status[key] = int(float(num) * cls.PROC_MEM_SCALE[unit.lower()])
+            status[key] = int(float(num) * cls._PROC_MEM_SCALE[unit.lower()])
 
         return status
 
@@ -316,14 +316,14 @@ class SqliteWriter:
 
     _DEFAULT_TABLE = 'nodes'
 
-    _DEFAULT_COLUMNS = [
+    _DEFAULT_COLUMNS: ta.ClassVar[ta.Sequence[ta.Tuple[str, str]]] = [
         ('root_id', 'int'),
         ('parent_id', 'int'),
 
         ('has_exception', 'int not null'),
     ]
 
-    _DEFAULT_INDEXES = [
+    _DEFAULT_INDEXES: ta.ClassVar[ta.Sequence[str]] = [
         'root_id',
         'parent_id',
 
@@ -417,7 +417,8 @@ class SqliteWriter:
 
     @sqlite_retrying()
     def _write_node(self, node: Node) -> None:
-        assert node.seq == 0
+        if node.seq != 0:
+            raise ValueError(node.seq)
 
         cursor = self._conn.cursor()
         try:
@@ -444,7 +445,7 @@ class SqliteWriter:
 
     @sqlite_retrying()
     def __enter__(self: 'SqliteWriter') -> 'SqliteWriter':
-        log.info('initializing database %s' % (self._db_path))
+        log.info('initializing database %s', self._db_path)
 
         try:
             self._conn = sqlite3().connect(self._db_path, isolation_level='immediate', timeout=20)
@@ -465,7 +466,7 @@ class SqliteWriter:
     def __exit__(self, *exc_info) -> None:
         self._conn = None
 
-        log.info('done with database %s' % (self._db_path))
+        log.info('done with database %s', self._db_path)
 
     def write(self, node: Node) -> None:
         return self._write_node(node)

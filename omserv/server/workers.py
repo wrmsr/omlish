@@ -61,12 +61,11 @@ async def _serve_one_listener(
                 stream = await listener.accept()
             except OSError as exc:
                 if exc.errno in ACCEPT_CAPACITY_ERRNOS:
-                    log.error(
+                    log.exception(
                         'accept returned %s (%s); retrying in %s seconds',
                         errno.errorcode[exc.errno],
                         os.strerror(exc.errno),
                         SLEEP_TIME,
-                        exc_info=True,
                     )
                     await anyio.sleep(SLEEP_TIME)
                 else:
