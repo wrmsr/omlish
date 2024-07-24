@@ -169,6 +169,7 @@ ignore = [
     'PLR0913',  # too many arguments in function definition
     'PLR0915',  # too many statements
     'PLR2004',  # magic value used in comparison
+    'PLC0208',  # iteration-over-set
     'PLR2044',  # line with empty comment
     'PLW0603',  # using the global statement is discouraged
     'PLW2901',  # `for` loop variable overwritten by assignment target
@@ -190,6 +191,7 @@ ignore = [
     'SIM103',  # return the negated condition directly
     'SIM108',  # use ternary operator
     'SIM114',  # combine `if` branches using logical `or` operator
+    'SIM117',  # combine `with` statements
     'T201',  # `print` found
     'T203',  # `pprint` found
     'TD001', # invalid TODO tag

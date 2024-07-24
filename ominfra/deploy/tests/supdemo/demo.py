@@ -46,7 +46,7 @@ def _main():
                 'mktemp', '--suffix=-supdeploy',
             ]).decode().strip()
 
-            with open(os.path.join(os.path.dirname(__file__), 'scripts/supdeploy.py'), 'r') as f:
+            with open(os.path.join(os.path.dirname(__file__), 'scripts/supdeploy.py')) as f:
                 buf = f.read()
 
             if PYCHARM_DEBUG:
