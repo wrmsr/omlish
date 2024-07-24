@@ -12,7 +12,7 @@ from ...testing import pydevd as pdu
 from ...testing.pytest import skip_if_cant_import
 
 if ta.TYPE_CHECKING:
-    import trio_asyncio as trio_asyncio
+    import trio_asyncio
 else:
     trio_asyncio = lang.proxy_import('trio_asyncio')
 

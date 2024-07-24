@@ -20,7 +20,7 @@ class IdMixin:
 ##
 
 
-class utcnow(sa.sql.expression.FunctionElement):
+class utcnow(sa.sql.expression.FunctionElement):  # noqa
     inherit_cache = True
     type = sa.TIMESTAMP()
 

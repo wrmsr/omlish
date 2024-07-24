@@ -352,7 +352,7 @@ class Deployment:
 
     def ush(self, *ss: str) -> None:
         s = ' && '.join(ss)
-        self.sh(f"su - {self._host_cfg.username} -c {shlex.quote(s)}")
+        self.sh(f'su - {self._host_cfg.username} -c {shlex.quote(s)}')
 
     @cached_nullary
     def home_dir(self) -> str:
