@@ -122,7 +122,7 @@ class Callable(NotInstantiable, Final, ta.Generic[T]):
 
     @classmethod
     def __subclasscheck__(cls, subclass: type) -> bool:
-        if not hasattr(subclass, '__call__'):
+        if not hasattr(subclass, '__call__'):  # noqa
             return False
         call = subclass.__call__
         if isinstance(call, types.MethodWrapperType) and call.__self__ is subclass:
