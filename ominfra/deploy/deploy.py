@@ -54,7 +54,7 @@ async def do_deploy(
         'sh', '-c', ' '.join(itertools.chain.from_iterable(
             [
                 *(['&&'] if i > 0 else []),
-                shlex.join(l)
+                shlex.join(l),
             ]
             for i, l in enumerate([
                 ['mkdir', 'omlish'],

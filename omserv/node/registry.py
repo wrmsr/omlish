@@ -73,7 +73,7 @@ class NodeRegistrant:
 
             async with conn.begin():
                 rows = (await conn.execute(
-                    sa.select(Nodes).where(Nodes.c.uuid == self._info.uuid)
+                    sa.select(Nodes).where(Nodes.c.uuid == self._info.uuid),
                 )).fetchall()
 
                 nid: int
@@ -106,7 +106,7 @@ class NodeRegistrant:
 
                 async with conn.begin():  # FIXME: real autocommit lol
                     await conn.execute(sa.update(
-                        Nodes
+                        Nodes,
                     ).where(
                         Nodes.c.uuid == self._info.uuid,
                     ).values(

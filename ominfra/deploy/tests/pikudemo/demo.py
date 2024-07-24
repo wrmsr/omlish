@@ -94,7 +94,7 @@ def _main():
         )
 
         sh(
-            'tmux new-session -d -s uwsgi-piku uwsgi-piku --ini ~piku/.piku/uwsgi/uwsgi.ini'
+            'tmux new-session -d -s uwsgi-piku uwsgi-piku --ini ~piku/.piku/uwsgi/uwsgi.ini',
         )
 
         sh(
