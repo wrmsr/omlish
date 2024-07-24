@@ -12,24 +12,28 @@ def test_args():
     assert Args(1, 2, 3)(f) == 7
 
 
+class FooError(Exception):
+    pass
+
+
 def test_try():
     def foo():
-        raise Exception
+        raise FooError
 
-    assert try_(foo, Exception, 5)() == 5
+    assert try_(foo, FooError, 5)() == 5
 
 
 def test_finally():
     c = 0
 
     def foo():
-        raise Exception
+        raise FooError
 
     def fin():
         nonlocal c
         c += 1
 
     f = finally_(foo, fin)
-    with pytest.raises(Exception):
+    with pytest.raises(FooError):
         f()
     assert c == 1

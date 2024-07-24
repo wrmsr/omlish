@@ -184,9 +184,9 @@ class CCompiler:
                     and isinstance(defn[0], str)
             ):
                 raise TypeError(
-                    (f"invalid macro definition '{defn}': ")
-                    + 'must be tuple (string,), (string, string), or '
-                    + '(string, None)',
+                    f"invalid macro definition '{defn}': "
+                    'must be tuple (string,), (string, string), or '
+                    '(string, None)',
                 )
 
     # -- Bookkeeping methods -------------------------------------------
