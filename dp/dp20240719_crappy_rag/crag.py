@@ -63,6 +63,25 @@ DEFAULT_PARAGRAPH_SEP = "\n\n\n"
 CHUNKING_REGEX = "[^,.;。？！]+[,.;。？！]?"
 
 
+def load_tiktoken_tokenizer() -> ta.Callable[[str], list]:
+    # should_revert = False
+    # if "TIKTOKEN_CACHE_DIR" not in os.environ:
+    #     should_revert = True
+    #     import llama_index
+    #     os.environ["TIKTOKEN_CACHE_DIR"] = os.path.join(
+    #         os.path.dirname(os.path.abspath(__file__)),
+    #         "_static/tiktoken_cache",
+    #     )
+
+    enc = tiktoken.encoding_for_model("gpt-3.5-turbo")
+    tokenizer = functools.partial(enc.encode, allowed_special="all")
+
+    # if should_revert:
+    #     del os.environ["TIKTOKEN_CACHE_DIR"]
+
+    return tokenizer
+
+
 class DumbRag:
     def __init__(self) -> None:
         super().__init__()
@@ -70,8 +89,7 @@ class DumbRag:
         self.chunk_size = 64
         self.chunk_overlap = 2
 
-        enc = tiktoken.encoding_for_model("gpt-3.5-turbo")
-        self._tokenizer = functools.partial(enc.encode, allowed_special="all")
+        self._tokenizer = load_tiktoken_tokenizer()
 
         self._split_fns = [
             split_by_sep(DEFAULT_PARAGRAPH_SEP),
