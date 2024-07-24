@@ -251,7 +251,7 @@ mark-parentheses = false
 inline-quotes = 'single'
 
 [tool.ruff.lint.isort]
-force-single-line = true
+force-single-line = false
 
 # [tool.ruff.format]
 # quote-style = 'single'
