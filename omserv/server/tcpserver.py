@@ -3,8 +3,9 @@ import logging
 import math
 import typing as ta
 
-from omlish import check
 import anyio.abc
+
+from omlish import check
 
 from .config import Config
 from .events import Closed
@@ -16,7 +17,6 @@ from .sockets import parse_socket_addr
 from .taskspawner import TaskSpawner
 from .types import AppWrapper
 from .workercontext import WorkerContext
-
 
 log = logging.getLogger(__name__)
 

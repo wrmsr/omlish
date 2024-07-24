@@ -1,6 +1,6 @@
 import errno
-import logging
 import functools
+import logging
 import os
 import random
 import signal  # noqa
@@ -18,7 +18,6 @@ from .tcpserver import TCPServer
 from .types import AppWrapper
 from .workercontext import ShutdownError
 from .workercontext import WorkerContext
-
 
 log = logging.getLogger(__name__)
 

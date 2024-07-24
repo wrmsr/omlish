@@ -1,7 +1,6 @@
 import abc
 import typing as ta
 
-
 K = ta.TypeVar('K')
 V = ta.TypeVar('V')
 

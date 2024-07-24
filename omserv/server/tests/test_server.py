@@ -9,14 +9,15 @@ TODO:
 import contextlib
 import functools
 
-from omlish import check
-from omlish import lang
 import anyio
 import h11
 import httpx
 import pytest
 import sniffio
 import trio  # noqa
+
+from omlish import check
+from omlish import lang
 
 from ..config import Config
 from ..types import ASGIWrapper

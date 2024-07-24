@@ -20,7 +20,6 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 
 import typing as ta
 
-
 T = ta.TypeVar('T')
 Comparer = ta.Callable[[T, T], int]
 

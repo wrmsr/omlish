@@ -25,7 +25,6 @@ from .primitives import PRIMITIVE_UNMARSHALER_FACTORY
 from .uuids import UUID_MARSHALER_FACTORY
 from .uuids import UUID_UNMARSHALER_FACTORY
 
-
 ##
 
 

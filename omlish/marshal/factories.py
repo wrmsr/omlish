@@ -6,7 +6,6 @@ import typing as ta
 
 from .. import reflect as rfl
 
-
 R = ta.TypeVar('R')
 C = ta.TypeVar('C')
 A = ta.TypeVar('A')

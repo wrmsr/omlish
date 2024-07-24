@@ -41,7 +41,6 @@ import sys
 import textwrap
 import typing as ta
 
-
 T = ta.TypeVar('T')
 
 

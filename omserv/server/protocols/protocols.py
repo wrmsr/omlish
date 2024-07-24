@@ -6,10 +6,10 @@ from ..events import ServerEvent
 from ..taskspawner import TaskSpawner
 from ..types import AppWrapper
 from ..workercontext import WorkerContext
-from .h11 import H11Protocol
+from .h2 import H2Protocol
 from .h11 import H2CProtocolRequiredError
 from .h11 import H2ProtocolAssumedError
-from .h2 import H2Protocol
+from .h11 import H11Protocol
 from .types import Protocol
 
 

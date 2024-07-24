@@ -4,11 +4,10 @@ import typing as ta
 
 import pytest
 
-from .. import plugins
 from .... import check
 from .... import inject as inj
 from .... import lang
-
+from .. import plugins
 
 T = ta.TypeVar('T')
 

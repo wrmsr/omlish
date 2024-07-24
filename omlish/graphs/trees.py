@@ -11,7 +11,6 @@ from .. import check
 from .. import collections as col
 from .. import lang
 
-
 T = ta.TypeVar('T')
 NodeT = ta.TypeVar('NodeT')
 NodeWalker = ta.Callable[[NodeT], ta.Iterable[NodeT]]
