@@ -2,19 +2,19 @@ import logging
 import types
 import typing as ta
 
-from omlish import check
 import anyio
 import anyio.abc
 import anyio.from_thread
 import anyio.to_thread
 
+from omlish import check
+
 from .config import Config
+from .types import AppWrapper
 from .types import ASGIReceiveCallable
 from .types import ASGIReceiveEvent
 from .types import ASGISendEvent
-from .types import AppWrapper
 from .types import Scope
-
 
 log = logging.getLogger(__name__)
 

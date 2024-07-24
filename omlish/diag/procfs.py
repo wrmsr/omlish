@@ -17,7 +17,6 @@ from .. import lang
 from .. import os as oos
 from .procstats import ProcStats
 
-
 log = logging.getLogger(__name__)
 
 

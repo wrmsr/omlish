@@ -7,9 +7,9 @@ from .exceptions import CheckError
 from .fields import field_init
 from .fields import field_type
 from .fields import has_default
-from .internals import FieldType
 from .internals import HAS_DEFAULT_FACTORY
 from .internals import POST_INIT_NAME
+from .internals import FieldType
 from .metadata import Check
 from .metadata import Init
 from .processing import Processor
@@ -17,7 +17,6 @@ from .reflect import ClassInfo
 from .utils import Namespace
 from .utils import create_fn
 from .utils import set_new_attribute
-
 
 MISSING = dc.MISSING
 

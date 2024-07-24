@@ -7,7 +7,6 @@ import sqlalchemy.ext.asyncio
 from ... import lang
 from ...testing import pytest as ptu
 
-
 ##
 
 

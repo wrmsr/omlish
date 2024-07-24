@@ -14,7 +14,6 @@ from .contextmanagers import default_lock
 from .functions import unwrap_func
 from .functions import unwrap_func_with_partials
 
-
 P = ta.ParamSpec('P')
 T = ta.TypeVar('T')
 

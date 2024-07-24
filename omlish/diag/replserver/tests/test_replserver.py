@@ -5,9 +5,9 @@ import tempfile
 import threading
 import time
 
-from .. import server as server_
 from .... import lang
 from ....testing import run_with_timeout
+from .. import server as server_
 
 
 def test_replserver():

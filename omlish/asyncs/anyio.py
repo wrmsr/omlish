@@ -17,7 +17,6 @@ import anyio.streams.stapled
 from .. import check
 from .. import lang
 
-
 T = ta.TypeVar('T')
 
 

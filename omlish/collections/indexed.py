@@ -1,8 +1,7 @@
 import typing as ta
 
-from .identity import IdentitySet
 from .identity import IdentityKeyDict
-
+from .identity import IdentitySet
 
 T = ta.TypeVar('T')
 
