@@ -14,7 +14,7 @@ from ..config import Config
 from ..serving import serve
 
 
-J2_ENV = jinja2.Environment()
+J2_ENV = jinja2.Environment(autoescape=True)
 HELLO_TMPL = J2_ENV.from_string(importlib.resources.files(__package__).joinpath('hello.j2').read_text())
 
 

@@ -175,6 +175,7 @@ ignore = [
     'PLR2044',  # line with empty comment
     'PLW0603',  # using the global statement is discouraged
     'PLW2901',  # `for` loop variable overwritten by assignment target
+    'PT004',  # fixture does not return anything, add leading underscore
     'PT016',  # pytest-fail-without-message
     'PT018',  # assertion should be broken down into multiple parts
     'PTH',  # pathlib
@@ -188,6 +189,7 @@ ignore = [
     'S102',  # use of `exec` detected
     'S311',  # standard pseudo-random generators are not suitable for cryptographic purposes
     'S603',  # `subprocess` call: check for execution of untrusted input
+    'S604',  # call-with-shell-equals-true
     'S606',  # starting a process without a shell
     'S607',  # starting a process with a partial executable path
     'SIM102',  # use a single `if` statement instead of nested `if` statements

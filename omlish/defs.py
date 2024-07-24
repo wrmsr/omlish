@@ -141,7 +141,7 @@ def hash_eq(cls_dct, *attrs):
     def __eq__(self, other):  # noqa
         if type(other) is not type(self):
             return False
-        for attr in attrs:
+        for attr in attrs:  # noqa
             if getattr(self, attr) != getattr(other, attr):
                 return False
         return True

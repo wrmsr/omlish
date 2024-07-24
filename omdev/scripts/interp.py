@@ -119,7 +119,7 @@ class Resolver:
         if version is not None and not (isinstance(version, str) and version.strip()):
             raise ValueError(f'version: {version!r}')
         if not isinstance(debug, bool):
-            raise ValueError(f'debug: {debug!r}')
+            raise TypeError(f'debug: {debug!r}')
 
         super().__init__()
 

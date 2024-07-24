@@ -54,7 +54,7 @@ async def _trio_func(cross):
     await anyio.sleep(0)
     if cross:
         await trio_asyncio.aio_as_trio(asyncio.sleep)(0)
-    await trio.sleep(0)
+    await trio.sleep(0)  # noqa
 
 
 ##

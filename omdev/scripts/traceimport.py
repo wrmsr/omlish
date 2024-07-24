@@ -218,7 +218,7 @@ class ImportTracer:
     def trace(self, root_module: str) -> Node:
         node_stack = [Node()]
 
-        def new_import(name, globals=None, locals=None, fromlist=(), level=0):
+        def new_import(name, globals=None, locals=None, fromlist=(), level=0):  # noqa
             node = Node(
                 import_name=name,
                 import_fromlist=fromlist,

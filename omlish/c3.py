@@ -144,7 +144,7 @@ def compose_mro(
 
     # Remove entries which are strict bases of other entries (they will end up in the MRO anyway.
     def is_strict_base(typ):
-        for other in types:
+        for other in types:  # noqa
             if typ != other and typ in (get_mro(other) or []):
                 return True
         return False
