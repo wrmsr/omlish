@@ -84,7 +84,7 @@ class ReplServer:
         with contextlib.closing(self._socket):
             self._socket.listen(1)
 
-            log.info(f'Repl server listening on file {self._config.path}')
+            log.info('Repl server listening on file %s', self._config.path)
 
             self._is_running = True
             try:
@@ -94,7 +94,7 @@ class ReplServer:
                     except TimeoutError:
                         continue
 
-                    log.info(f'Got repl server connection on file {self._config.path}')
+                    log.info('Got repl server connection on file %s', self._config.path)
 
                     def run(conn):
                         with contextlib.closing(conn):
@@ -104,9 +104,10 @@ class ReplServer:
                             variables['__console__'] = console
 
                             log.info(
-                                f'Starting console {id(console)} repl server connection '
-                                f'on file {self._config.path} '
-                                f'on thread {threading.current_thread().ident}',
+                                'Starting console %x repl server connection on file %s on thread %r',
+                                id(console),
+                                self._config.path,
+                                threading.current_thread().ident,
                             )
                             self._consoles_by_threads[threading.current_thread()] = console
                             console.interact()
