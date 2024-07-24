@@ -140,6 +140,12 @@ select = ['ALL']
 
 ignore = [
 
+    'ANN001',  # missing-type-function-argument
+    'ANN002',  # missing-type-args
+    'ANN003',  # missing-type-kwargs
+    'ANN201',  # missing-return-type-undocumented-public-function
+    'ANN202',  # missing-return-type-private-function
+    'ANN204',  # missing-return-type-special-method
     'ANN401',  # dynamically typed expressions (typing.Any) are disallowed in `*args`
     'ARG001',  # unused function argument,
     'ARG002',  # unused method argument
@@ -221,15 +227,7 @@ ignore = [
 '**/__init__.py' = [
     'F401',  # imported but unused
 ]
-'**/conftest.py' = [
-    'ANN001', # missing type annotation for function argument
-    'ANN201',  # missing return type annotation for public function
-    'ANN202',  # missing return type annotation for private function
-]
 '**/tests/*' = [
-    'ANN001', # missing type annotation for function argument
-    'ANN201',  # missing return type annotation for public function
-    'ANN202',  # missing return type annotation for private function
     'B011',  # do not `assert False
     'S101',  # use of `assert` detected
 ]
@@ -237,9 +235,6 @@ ignore = [
     'UP',
 ]
 'omlish/testing/*' = [
-    'ANN001', # missing type annotation for function argument
-    'ANN201',  # missing return type annotation for public function
-    'ANN202',  # missing return type annotation for private function
     'S101',  # use of `assert` detected
 ]
 
