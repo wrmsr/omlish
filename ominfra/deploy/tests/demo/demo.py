@@ -75,7 +75,7 @@ async def _a_main():
                     cr,
                     skip_submodules=True,
                 )
-            except Exception as e:
+            except Exception as e:  # noqa
                 print(e)
 
             print()

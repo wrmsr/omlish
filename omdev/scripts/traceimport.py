@@ -244,7 +244,7 @@ class ImportTracer:
             try:
                 loaded = old_import(name, globals, locals, fromlist, level)
                 if not isinstance(loaded, types.ModuleType):
-                    raise TypeError(loaded)
+                    raise TypeError(loaded)  # noqa
                 node.loaded_name = loaded.__name__
                 node.loaded_id = id(loaded)
                 node.loaded_file = getattr(loaded, '__file__', None)
