@@ -177,13 +177,13 @@ UTF8 = text('utf-8')
 
 
 @dc.dataclass(frozen=True)
-class Optional(FnPair[ta.Optional[F], ta.Optional[T]]):
+class Optional(FnPair[F | None, T | None]):
     fp: FnPair[F, T]
 
-    def forward(self, f: ta.Optional[F]) -> ta.Optional[T]:
+    def forward(self, f: F | None) -> T | None:
         return None if f is None else self.fp.forward(f)
 
-    def backward(self, t: ta.Optional[T]) -> ta.Optional[F]:
+    def backward(self, t: T | None) -> T | None:
         return None if t is None else self.fp.backward(t)
 
 
