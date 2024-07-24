@@ -1,8 +1,8 @@
 import copy
 import dataclasses as dc
 
-from .internals import is_dataclass_instance
 from .internals import ATOMIC_TYPES
+from .internals import is_dataclass_instance
 
 
 def asdict(obj, *, dict_factory=dict):  # noqa

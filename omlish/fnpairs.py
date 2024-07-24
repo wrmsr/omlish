@@ -20,29 +20,31 @@ from . import lang
 
 if ta.TYPE_CHECKING:
     import bz2 as _bz2
-    import cloudpickle as _cloudpickle
     import gzip as _gzip
     import json as _json
-    import lz4.frame as _lz4_frame
     import lzma as _lzma
     import pickle as _pickle
-    import snappy as _snappy
     import struct as _struct
     import tomllib as _tomllib
+
+    import cloudpickle as _cloudpickle
+    import lz4.frame as _lz4_frame
+    import snappy as _snappy
     import yaml as _yaml
     import zstd as _zstd
 
 else:
     _bz2 = lang.proxy_import('bz2')
-    _cloudpickle = lang.proxy_import('cloudpickle')
     _gzip = lang.proxy_import('gzip')
     _json = lang.proxy_import('json')
-    _lz4_frame = lang.proxy_import('lz4.frame')
     _lzma = lang.proxy_import('lzma')
     _pickle = lang.proxy_import('pickle')
-    _snappy = lang.proxy_import('snappy')
     _struct = lang.proxy_import('struct')
     _tomllib = lang.proxy_import('tomllib')
+
+    _cloudpickle = lang.proxy_import('cloudpickle')
+    _lz4_frame = lang.proxy_import('lz4.frame')
+    _snappy = lang.proxy_import('snappy')
     _yaml = lang.proxy_import('yaml')
     _zstd = lang.proxy_import('zstd')
 

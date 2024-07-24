@@ -11,7 +11,6 @@ from .base import UnmarshalerFactory
 from .factories import TypeMapFactory
 from .values import Value
 
-
 PATTERN = re.compile(r'([0-9A-Fa-f]{8}-([0-9A-Fa-f]{4}-){3}[0-9A-Fa-f]{12})|([0-9A-Fa-f]{32})')
 
 

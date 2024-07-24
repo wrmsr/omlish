@@ -7,7 +7,6 @@ import typing as ta
 
 from .cached import cached_function
 
-
 ##
 
 

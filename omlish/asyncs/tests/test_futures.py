@@ -1,8 +1,8 @@
 import concurrent.futures
 import time
 
-from .. import futures as fus
 from ... import iterators
+from .. import futures as fus
 
 
 def test_wait_futures():

@@ -6,7 +6,6 @@ import pytest
 
 from .. import headers
 
-
 T = ta.TypeVar('T')
 
 

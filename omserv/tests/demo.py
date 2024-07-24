@@ -9,19 +9,19 @@ import logging
 import signal
 import typing as ta
 
+import anyio.abc
+import sqlalchemy.ext.asyncio as saa
+
 from omlish import asyncs as au
 from omlish import logs
 from omlish import sql
 from omlish.diag import procstats
-import anyio.abc
-import sqlalchemy.ext.asyncio as saa
 
 from .. import server
 from ..node.dbs import get_db_url
 from ..node.models import recreate_all
 from ..node.registry import NodeRegistrant
 from ..server.tests.hello import hello_app
-
 
 log = logging.getLogger(__name__)
 

@@ -4,7 +4,6 @@ from .. import check
 from .frozen import FrozenDict
 from .frozen import FrozenList
 
-
 T = ta.TypeVar('T')
 T2 = ta.TypeVar('T2')
 K = ta.TypeVar('K')

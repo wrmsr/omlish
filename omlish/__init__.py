@@ -1,6 +1,5 @@
 import sys as _sys
 
-
 REQUIRED_PYTHON_VERSION = (3, 12)
 
 

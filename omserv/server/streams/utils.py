@@ -1,10 +1,9 @@
 import logging
 import typing as ta
 
-from ..types import Scope
 from ..config import Config
 from ..events import Request
-
+from ..types import Scope
 
 log = logging.getLogger(__name__)
 

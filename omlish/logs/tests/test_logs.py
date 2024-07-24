@@ -1,7 +1,7 @@
 import logging
 
-from .. import formatters
 from .. import configs
+from .. import formatters
 
 
 def test_logs():

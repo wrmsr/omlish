@@ -10,7 +10,6 @@ import socket
 import sys
 import typing as ta
 
-
 LINUX_PLATFORMS = ('linux',)
 DARWIN_PLATFORMS = ('darwin',)
 

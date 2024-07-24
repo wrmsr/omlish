@@ -14,7 +14,6 @@ from .... import cmds
 from .... import ssh
 from ...deploy import do_deploy
 
-
 TIMEBOMB_DELAY_S = 20 * 60
 
 

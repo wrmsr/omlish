@@ -4,7 +4,6 @@ import typing as ta
 from .sorted import SortedCollection
 from .sorted import SortedListDict
 
-
 T = ta.TypeVar('T')
 K = ta.TypeVar('K')
 V = ta.TypeVar('V')

@@ -12,7 +12,6 @@ Any
 """
 import typing as ta
 
-
 Value = ta.Union[  # noqa
     None,
 

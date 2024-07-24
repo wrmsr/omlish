@@ -17,7 +17,6 @@ import weakref
 
 from . import lang
 
-
 T = ta.TypeVar('T')
 
 

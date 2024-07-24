@@ -5,16 +5,16 @@ import socket
 import typing as ta
 import uuid
 
+import anyio.abc
+import sqlalchemy as sa
+
 from omlish import asyncs as au
 from omlish import check
 from omlish import sql
 from omlish.asyncs import anyio as anu
-import anyio.abc
-import sqlalchemy as sa
 
 from .models import Nodes
 from .sql import utcnow
-
 
 log = logging.getLogger(__name__)
 

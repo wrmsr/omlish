@@ -5,7 +5,6 @@ TODO:
 import re
 import typing as ta
 
-
 _NORMALIZE_PATTERN = re.compile(r'\\([:=\s])')
 _ESCAPE_PATTERN = re.compile(r'([=:\s])')
 _SEPARATOR_PATTERN = re.compile(r'(?<!\\)[=:]')

@@ -1,7 +1,7 @@
 import typing as ta
 
-from .utils import Namespace
 from .processing import Processor
+from .utils import Namespace
 from .utils import create_fn
 from .utils import set_new_attribute
 from .utils import tuple_str

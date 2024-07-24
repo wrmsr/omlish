@@ -7,8 +7,8 @@ TODO:
   - cache __hash__ in Generic/Union
 """
 import collections.abc
-import typing as ta
 import types
+import typing as ta
 
 from . import c3
 from . import lang

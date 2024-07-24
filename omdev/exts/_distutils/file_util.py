@@ -5,7 +5,6 @@ import os
 
 from .errors import DistutilsFileError
 
-
 log = logging.getLogger(__name__)
 
 
@@ -92,7 +91,10 @@ def copy_file(  # noqa: C901
     # what macostools.copyfile() does.  Should definitely be consistent, and should probably blow up if destination
     # exists and we would be changing it (ie. it's not already a hard/soft link to src OR (not update) and (src newer
     # than dst).
-    from stat import S_IMODE, ST_ATIME, ST_MODE, ST_MTIME
+    from stat import S_IMODE
+    from stat import ST_ATIME
+    from stat import ST_MODE
+    from stat import ST_MTIME
 
     from .modified import newer
 
@@ -164,7 +166,11 @@ def move_file(src, dst, verbose=1, dry_run=False):  # noqa: C901
     Handles cross-device moves on Unix using 'copy_file()'.  What about other systems???
     """
     import errno
-    from os.path import basename, dirname, exists, isdir, isfile
+    from os.path import basename
+    from os.path import dirname
+    from os.path import exists
+    from os.path import isdir
+    from os.path import isfile
 
     if verbose >= 1:
         log.info('moving %s -> %s', src, dst)

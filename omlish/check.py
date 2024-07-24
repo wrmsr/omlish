@@ -5,7 +5,6 @@ TODO:
 import collections
 import typing as ta
 
-
 T = ta.TypeVar('T')
 SizedT = ta.TypeVar('SizedT', bound=ta.Sized)
 

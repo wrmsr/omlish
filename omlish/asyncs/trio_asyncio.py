@@ -5,6 +5,7 @@ from .. import lang
 
 if ta.TYPE_CHECKING:
     import asyncio
+
     import sniffio
     import trio_asyncio
 else:

@@ -1,8 +1,8 @@
 import pytest
 
 from ..functions import Args
-from ..functions import try_
 from ..functions import finally_
+from ..functions import try_
 
 
 def test_args():

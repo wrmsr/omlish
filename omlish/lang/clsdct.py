@@ -3,7 +3,6 @@ import sys
 import types
 import typing as ta
 
-
 _CLS_DCT_ATTR_SETS = [
     {
         '__module__',

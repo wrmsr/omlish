@@ -5,7 +5,6 @@ import typing as ta
 from .filters import TidFilter
 from .formatters import StandardLogFormatter
 
-
 NOISY_LOGGERS: set[str] = {
     'boto3.resources.action',
     'datadog.dogstatsd',

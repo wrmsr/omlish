@@ -4,7 +4,6 @@ import shutil
 import tempfile
 import typing as ta
 
-
 PAGE_SIZE = resource.getpagesize()
 
 

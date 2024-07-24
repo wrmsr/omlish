@@ -33,7 +33,6 @@ from .inspect import build_kwargs_target
 from .scopes import ScopeImpl
 from .scopes import make_scope_impl
 
-
 DEFAULT_SCOPES: list[Scope] = [
     Unscoped(),
     Singleton(),

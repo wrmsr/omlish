@@ -10,7 +10,6 @@ import typing as ta
 
 from .errors import DistutilsPlatformError
 
-
 log = logging.getLogger(__name__)
 
 

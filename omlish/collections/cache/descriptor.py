@@ -10,7 +10,6 @@ import weakref
 from .impl import new_cache
 from .types import Cache
 
-
 C = ta.TypeVar('C', bound=ta.Callable)
 CC: ta.TypeAlias = ta.Callable[[C], C]
 

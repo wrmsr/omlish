@@ -31,7 +31,6 @@ from .ccompiler import CCompiler
 from .options import gen_lib_options
 from .options import gen_preprocess_options
 
-
 log = logging.getLogger(__name__)
 
 
@@ -306,7 +305,8 @@ class UnixCCompiler(CCompiler):
         # know this. Other compilers may need something slightly different.  At this time, there's no way to determine
         # this information from the configuration data stored in the Python installation, so we use this hack.
         if sys.platform[:6] == 'darwin':
-            from ..util import get_macosx_target_ver, split_version
+            from ..util import get_macosx_target_ver
+            from ..util import split_version
 
             macosx_target_ver = get_macosx_target_ver()
             if macosx_target_ver and split_version(macosx_target_ver) >= [10, 5]:

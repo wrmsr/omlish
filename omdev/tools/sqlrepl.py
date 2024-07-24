@@ -5,10 +5,11 @@ import sys
 import typing as ta
 import urllib.parse
 
+import yaml
+
 from omlish import argparse as ap
 from omlish import check
 from omlish import logs
-import yaml
 
 
 @dc.dataclass(frozen=True)

@@ -27,7 +27,6 @@ from ... import check
 from ... import dataclasses as dc
 from .console import InteractiveSocketConsole
 
-
 log = logging.getLogger(__name__)
 
 

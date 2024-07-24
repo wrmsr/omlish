@@ -4,7 +4,6 @@ import typing as ta
 from .abstract import Abstract
 from .abstract import is_abstract
 
-
 ##
 
 

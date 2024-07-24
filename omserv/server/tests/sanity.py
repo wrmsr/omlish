@@ -2,7 +2,6 @@ from ..types import ASGIReceiveCallable
 from ..types import ASGISendCallable
 from ..types import Scope
 
-
 SANITY_REQUEST_BODY = b'Hello Omlicorn'
 SANITY_RESPONSE_BODY = b'Hello & Goodbye'
 

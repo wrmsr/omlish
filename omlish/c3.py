@@ -38,7 +38,6 @@ License Agreement.
 import operator
 import typing as ta
 
-
 T = ta.TypeVar('T')
 
 

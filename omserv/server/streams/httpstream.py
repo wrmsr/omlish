@@ -13,8 +13,8 @@ from ..events import Request
 from ..events import Response
 from ..events import StreamClosed
 from ..taskspawner import TaskSpawner
-from ..types import ASGISendEvent
 from ..types import AppWrapper
+from ..types import ASGISendEvent
 from ..types import HTTPResponseStartEvent
 from ..types import HTTPScope
 from ..types import UnexpectedMessageError
@@ -23,7 +23,6 @@ from .utils import build_and_validate_headers
 from .utils import log_access
 from .utils import suppress_body
 from .utils import valid_server_name
-
 
 log = logging.getLogger(__name__)
 

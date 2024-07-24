@@ -3,7 +3,6 @@ import contextlib
 import time
 import typing as ta
 
-
 T = ta.TypeVar('T')
 P = ta.ParamSpec('P')
 

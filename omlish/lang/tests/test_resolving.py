@@ -1,9 +1,9 @@
 import pytest
 
 from ..resolving import Resolvable
+from ..resolving import ResolvableClassNameError
 from ..resolving import get_cls_fqcn
 from ..resolving import get_fqcn_cls
-from ..resolving import ResolvableClassNameError
 
 
 class Thing(Resolvable):
