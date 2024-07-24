@@ -4,9 +4,9 @@ FIXME:
 """
 import asyncio
 import os.path
-import subprocess
 import typing as ta
 
+from omlish import check
 from omlish.docker import timebomb_payload
 from omlish.testing.pydevd import silence_subprocess_check
 
@@ -35,7 +35,7 @@ async def _a_main():
         await proc.wait()
         if proc.returncode:
             raise Exception(f'process failed: {proc.returncode}')
-        return await proc.stdout.read()
+        return await check.not_none(proc.stdout).read()
 
     await check_call([
         'docker', 'build',
