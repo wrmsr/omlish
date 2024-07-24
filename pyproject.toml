@@ -169,6 +169,7 @@ ignore = [
     'PLR0913',  # too many arguments in function definition
     'PLR0915',  # too many statements
     'PLR2004',  # magic value used in comparison
+    'PLR2044',  # line with empty comment
     'PLW0603',  # using the global statement is discouraged
     'PLW2901',  # `for` loop variable overwritten by assignment target
     'PT018',  # assertion should be broken down into multiple parts
