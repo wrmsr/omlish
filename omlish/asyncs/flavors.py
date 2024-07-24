@@ -79,7 +79,7 @@ def _get_module_flavor(p: str) -> Flavor | None:
     return pf
 
 
-def get_flavor(obj: ta.Any, default: ta.Union[Flavor, type[_MISSING], None] = _MISSING) -> Flavor:
+def get_flavor(obj: ta.Any, default: Flavor | type[_MISSING] | None = _MISSING) -> Flavor:
     u = lang.unwrap_func(obj)
 
     try:

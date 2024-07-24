@@ -79,7 +79,7 @@ class BasicTreeAnalysis(ta.Generic[NodeT]):
         nodes: list[NodeT] = []
         node_set: ta.MutableSet[NodeT] = self._set_fac()
         children_by_node: ta.MutableMapping[NodeT | None, ta.Sequence[NodeT]] = self._dict_fac()
-        child_sets_by_node: ta.MutableMapping[ta.Optional[NodeT], ta.AbstractSet[NodeT]] = self._dict_fac()
+        child_sets_by_node: ta.MutableMapping[NodeT | None, ta.AbstractSet[NodeT]] = self._dict_fac()
         parents_by_node: ta.MutableMapping[NodeT, NodeT | None] = self._dict_fac()
 
         children_by_node[None] = [root]

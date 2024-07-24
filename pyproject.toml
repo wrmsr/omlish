@@ -222,7 +222,7 @@ ignore = [
     'B011',  # do not `assert False
     'S101',  # use of `assert` detected
 ]
-'omdev/scripts/*' = [
+'**/scripts/*' = [
     'UP',
 ]
 'omlish/testing/*' = [
