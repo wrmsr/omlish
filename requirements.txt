@@ -19,10 +19,10 @@ sqlalchemy==2.0.31; python_version >= '3.13'  # greenlet
 
 ## sql
 pg8000==1.31.2
-psycopg2==2.9.9
+#> psycopg2==2.9.9
 
-mysql-connector-python==9.0.0
-mysqlclient==2.2.4; sys_platform == 'darwin'  # brew install mysql pkg-config
+#> mysql-connector-python==9.0.0
+#> mysqlclient==2.2.4; sys_platform == 'darwin'  # brew install mysql pkg-config
 pymysql==1.1.1
 
 # pyhive
@@ -41,9 +41,9 @@ psutil==6.0.0
 
 ### serde:
 ## json
-ujson==5.10.0
+#> ujson==5.10.0
 orjson==3.10.6
-python-rapidjson==1.18
+#> python-rapidjson==1.18
 
 ## pickle
 cloudpickle==3.0.0
