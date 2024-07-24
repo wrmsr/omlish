@@ -90,7 +90,7 @@ dep-updates: venv
 ### Check
 
 .PHONY: check
-check: flake8 mypy check-scripts
+check: flake8 ruff mypy check-scripts
 
 .PHONY: flake8
 flake8: venv
