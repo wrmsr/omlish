@@ -183,7 +183,7 @@ class Optional(FnPair[F | None, T | None]):
     def forward(self, f: F | None) -> T | None:
         return None if f is None else self.fp.forward(f)
 
-    def backward(self, t: T | None) -> T | None:
+    def backward(self, t: T | None) -> F | None:
         return None if t is None else self.fp.backward(t)
 
 
