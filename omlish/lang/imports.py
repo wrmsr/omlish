@@ -1,6 +1,6 @@
 import contextlib
 import functools
-import importlib.resources
+import importlib
 import sys
 import types
 import typing as ta
@@ -66,6 +66,8 @@ def yield_importable(
         filter: ta.Callable[[str], bool] | None = None,  # noqa
         include_special: bool = False,
 ) -> ta.Iterator[str]:
+    from importlib import resources
+
     def rec(cur):
         if cur.split('.')[-1] == '__pycache__':
             return
@@ -83,7 +85,7 @@ def yield_importable(
         if getattr(module, '__file__', None) is None:
             return
 
-        for file in importlib.resources.files(cur).iterdir():
+        for file in resources.files(cur).iterdir():
             if file.is_file() and file.name.endswith('.py'):
                 if not (include_special or file.name not in SPECIAL_IMPORTABLE):
                     continue
