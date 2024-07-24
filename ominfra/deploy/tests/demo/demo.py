@@ -5,6 +5,7 @@ FIXME:
 import asyncio
 import os.path
 import subprocess
+import typing as ta
 
 from omlish.docker import timebomb_payload
 from omlish.testing.pydevd import silence_subprocess_check
@@ -22,7 +23,21 @@ async def _a_main():
 
     img_name = 'wrmsr/omlish-deploy-demo'
     cur_dir = os.path.dirname(__file__)
-    subprocess.check_call([
+
+    async def check_call(cmd: ta.Sequence[str], **kwargs: ta.Any) -> None:
+        proc = await asyncio.create_subprocess_exec(*cmd, **kwargs)
+        await proc.wait()
+        if proc.returncode:
+            raise Exception(f'process failed: {proc.returncode}')
+
+    async def check_output(cmd: ta.Sequence[str], **kwargs: ta.Any) -> bytes:
+        proc = await asyncio.create_subprocess_exec(*cmd, stdout=asyncio.subprocess.PIPE, **kwargs)
+        await proc.wait()
+        if proc.returncode:
+            raise Exception(f'process failed: {proc.returncode}')
+        return await proc.stdout.read()
+
+    await check_call([
         'docker', 'build',
         '--tag', img_name,
         '-f', os.path.join(cur_dir, 'Dockerfile'),
@@ -31,19 +46,19 @@ async def _a_main():
 
     ssh_password = 'foobar'  # noqa
 
-    ctr_id = subprocess.check_output([
+    ctr_id = (await check_output([
         'docker', 'run',
         '-d',
         '-e', f'SSH_PASSWORD={ssh_password}',
         '-p', '9082:22',
         '-p', '9081:9081',
         img_name,
-    ]).decode().strip()
+    ])).decode().strip()
     print(f'{ctr_id=}')
 
     try:
         if TIMEBOMB_DELAY_S:
-            subprocess.check_call([
+            await check_call([
                 'docker', 'exec', '-id', ctr_id,
                 'sh', '-c', timebomb_payload(TIMEBOMB_DELAY_S),
             ])
@@ -70,7 +85,7 @@ async def _a_main():
             input()
 
     finally:
-        subprocess.check_call(['docker', 'kill', '-sKILL', ctr_id])
+        await check_call(['docker', 'kill', '-sKILL', ctr_id])
 
 
 if __name__ == '__main__':
