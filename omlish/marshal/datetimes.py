@@ -67,7 +67,7 @@ class DatetimeUnmarshaler(Unmarshaler):
 
         for fmt in self.fmts:
             try:
-                return datetime.datetime.strptime(v, fmt)
+                return datetime.datetime.strptime(v, fmt)  # FIXME: timezone  # noqa
             except ValueError:
                 pass
 
