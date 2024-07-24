@@ -208,7 +208,7 @@ class InteractiveSocketConsole:
             exec(code, self._locals)
         except SystemExit:
             raise
-        except Exception:
+        except Exception:  # noqa
             self.show_traceback()
         else:
             if self._count == self._write_count:
