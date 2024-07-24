@@ -82,8 +82,8 @@ class CCompiler:
     }
     language_order: ta.ClassVar[list[str]] = ['c++', 'objc', 'c']
 
-    default_include_dirs: list[str] = []
-    default_library_dirs: list[str] = []
+    default_include_dirs: ta.ClassVar[list[str]] = []
+    default_library_dirs: ta.ClassVar[list[str]] = []
 
     executables: ta.ClassVar[dict[str, list[str] | None]]
 
