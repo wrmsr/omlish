@@ -250,6 +250,9 @@ mark-parentheses = false
 [tool.ruff.lint.flake8-quotes]
 inline-quotes = 'single'
 
+[tool.ruff.lint.isort]
+force-single-line = true
+
 # [tool.ruff.format]
 # quote-style = 'single'
 # indent-style = 'space'
