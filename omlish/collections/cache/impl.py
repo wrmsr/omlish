@@ -55,7 +55,7 @@ class CacheImpl(Cache[K, V]):
         if not ta.TYPE_CHECKING:
             from ..._ext.cy.collections.cache import CacheLink as Link
         else:
-            raise ImportError
+            raise ImportError  # noqa
 
     except ImportError:
         class Link:

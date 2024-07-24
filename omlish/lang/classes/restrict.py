@@ -89,7 +89,7 @@ class PackageSealed:
 class NotInstantiable(Abstract):
     __slots__ = ()
 
-    def __new__(cls, *args, **kwargs):
+    def __new__(cls, *args, **kwargs):  # noqa
         raise TypeError
 
 
