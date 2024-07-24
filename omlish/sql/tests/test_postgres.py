@@ -58,12 +58,14 @@ def _test_postgres(url: str) -> None:
             assert rows[0].name == 'some name 1'
 
 
+@ptu.skip_if_cant_import('pg8000')
 def test_postgres_pg8000(harness) -> None:
     url = check.isinstance(harness[Dbs].specs()['postgres'].loc, UrlDbLoc).url
     url = set_url_engine(url, 'postgresql+pg8000')
     _test_postgres(url)
 
 
+@ptu.skip_if_cant_import('psycopg2')
 def test_postgres_psycopg2(harness) -> None:
     url = check.isinstance(harness[Dbs].specs()['postgres'].loc, UrlDbLoc).url
     url = set_url_engine(url, 'postgresql+psycopg2')
