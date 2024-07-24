@@ -3,13 +3,19 @@ curl -v localhost:8000
 curl -v --http2 localhost:8000
 """
 import logging
+import importlib.resources
 import time
 
 from omlish import logs
 import anyio
+import jinja2
 
 from ..config import Config
 from ..serving import serve
+
+
+J2_ENV = jinja2.Environment()
+HELLO_TMPL = J2_ENV.from_string(importlib.resources.files(__package__).joinpath('hello.j2').read_text())
 
 
 async def hello_app(scope, recv, send):
@@ -37,7 +43,7 @@ async def hello_app(scope, recv, send):
 
             await send({
                 'type': 'http.response.body',
-                'body': f'Hello, world! The time is {time.time()}'.encode(),
+                'body': HELLO_TMPL.render(now_str=str(time.time())).encode(),
             })
 
         case _:
