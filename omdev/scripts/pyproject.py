@@ -254,7 +254,7 @@ class Venv:
             return False
 
         log.info('Using interpreter %s', (ie := self.interp_exe()))
-        _subprocess_check_call([ie, '-m' 'venv', dn])
+        _subprocess_check_call([ie, '-m', 'venv', dn])
 
         ve = self.exe()
 
