@@ -14,6 +14,7 @@ from .params import MetaclassParams
 from .params import get_metaclass_params
 from .params import get_params
 
+
 T = ta.TypeVar('T')
 
 
@@ -38,7 +39,12 @@ def confer_kwargs(
         for ck in bmp.confer:
             if ck in kwargs:
                 continue
-            if ck in ('frozen', 'generic_init', 'kw_only'):
+            if ck in (
+                    'frozen',
+                    'generic_init',
+                    'kw_only',
+                    'reorder',
+            ):
                 confer_kwarg(out, ck, get_params(base).frozen)
             elif ck == 'confer':
                 confer_kwarg(out, 'confer', bmp.confer)

@@ -1,3 +1,7 @@
+"""
+TODO:
+ - replace with codecs.StreamReader
+"""
 import io
 import typing as ta
 
