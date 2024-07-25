@@ -24,7 +24,7 @@ audioread==3.0.1
 Babel==2.15.0
 bayesian-optimization==1.5.1
 beautifulsoup4==4.12.3
-bellows==0.40.0
+bellows==0.40.1
 bitsandbytes==0.42.0
 black==24.4.2
 bleach==6.1.0
