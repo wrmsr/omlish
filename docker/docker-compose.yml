@@ -15,10 +15,12 @@ services:
     depends_on:
       - 'omlish-mysql'
       - 'omlish-postgres'
+      - 'omlish-redis'
       - 'omlish-s3'
     links:
       - 'omlish-mysql'
       - 'omlish-postgres'
+      - 'omlish-redis'
       - 'omlish-s3'
     expose:
       - '22'
@@ -70,6 +72,14 @@ services:
     ports:
       - '35225:5432'
 
+  omlish-redis:
+    image: 'redis:7.2'
+    restart: 'unless-stopped'
+    expose:
+      - '6379'
+    ports:
+      - '35226:6379'
+
   omlish-s3:
     image: 'adobe/s3mock:3.9.1'
     restart: 'unless-stopped'
@@ -77,5 +87,5 @@ services:
       - '9090'
       - '9191'
     ports:
-      - '35226:9090'
-      - '35227:9191'
+      - '35227:9090'
+      - '35228:9191'
