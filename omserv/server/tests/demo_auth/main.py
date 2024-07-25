@@ -1,77 +1,27 @@
 """
 https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login
 """
-import dataclasses as dc
-import importlib.resources
-import itertools
 import logging
 import typing as ta
 import urllib.parse
 
 import anyio
-import jinja2
 
 from omlish import check
-from omlish import lang
 from omlish import logs
 from omlish.http import consts
 
 from ...config import Config
 from ...serving import serve
+from .j2 import j2_helper
+from .j2 import load_templates
+from .j2 import render_template
 from .utils import finish_response
 from .utils import start_response
 from .utils import stub_lifespan
 
 
 log = logging.getLogger(__name__)
-
-
-##
-
-
-class _J2Loader(jinja2.BaseLoader):
-
-    def get_source(self, environment, template):
-        raise TypeError
-
-    def list_templates(self):
-        raise TypeError
-
-    def load(self, environment, name, globals=None):
-        return load_templates()[f'{name}.j2']
-
-
-J2_ENV = jinja2.Environment(
-    loader=_J2Loader(),
-    autoescape=True,
-)
-
-
-@lang.cached_function
-def load_templates() -> ta.Mapping[str, jinja2.Template]:
-    ret: dict[str, jinja2.Template] = {}
-    for fn in importlib.resources.files(__package__).joinpath('templates').iterdir():
-        ret[fn.name] = J2_ENV.from_string(fn.read_text())
-    return ret
-
-
-class _EnvUser:
-    is_authenticated = False
-
-
-J2_DEFAULT_KWARGS = dict(
-    get_flashed_messages=lambda: [],
-    current_user=_EnvUser(),
-)
-
-
-def j2_helper(fn):
-    J2_DEFAULT_KWARGS[fn.__name__] = fn
-    return fn
-
-
-def render_template(name: str, **kwargs: ta.Any) -> bytes:
-    return load_templates()[f'{name}.j2'].render(**{**J2_DEFAULT_KWARGS, **kwargs}).encode()
 
 
 ##
@@ -93,48 +43,6 @@ def handle(method: str, path: str):
         HANDLERS[(method, path)] = fn
         return fn
     return inner
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class User:
-    id: int
-    email: str
-    password: str
-    name: str
-
-
-class Users:
-    def __init__(self) -> None:
-        super().__init__()
-        self._next_user_id = itertools.count()
-        self._users_by_id: dict[int, User] = {}
-        self._user_ids_by_email: dict[str, int] = {}
-
-    def create(
-            self,
-            email: str,
-            name: str,
-    ) -> User:
-        check.not_in(email, self._user_ids_by_email)
-        u = User(
-            id=next(self._next_user_id),
-            email=email,
-            name=name,
-        )
-        self._users_by_id[u.id] = u
-        self._user_ids_by_email[u.email] = u.id
-        return u
-
-    def update(self, u: User) -> None:
-        e = self._users_by_id[u.id]
-        check.equal(u.email, e.email)
-        self._users_by_id[u.id] = u
-
-
-USERS = Users()
 
 
 ##
