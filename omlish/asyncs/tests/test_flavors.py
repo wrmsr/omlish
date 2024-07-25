@@ -11,6 +11,7 @@ from ...testing import pydevd as pdu
 from ...testing.pytest import skip_if_cant_import
 from .. import flavors
 
+
 if ta.TYPE_CHECKING:
     import trio_asyncio
 else:

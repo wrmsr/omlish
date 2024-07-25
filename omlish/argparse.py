@@ -11,6 +11,7 @@ import typing as ta
 from . import c3
 from . import check
 
+
 T = ta.TypeVar('T')
 
 

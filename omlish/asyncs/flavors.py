@@ -12,6 +12,7 @@ import typing as ta
 from .. import lang
 from .trio_asyncio import check_trio_asyncio
 
+
 if ta.TYPE_CHECKING:
     import sniffio
     import trio_asyncio

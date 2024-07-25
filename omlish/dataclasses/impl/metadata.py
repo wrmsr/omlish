@@ -3,6 +3,7 @@ import typing as ta
 
 from ... import lang
 
+
 METADATA_ATTR = '__dataclass_metadata__'
 
 Metadata: ta.TypeAlias = ta.Mapping[ta.Any, ta.Any]

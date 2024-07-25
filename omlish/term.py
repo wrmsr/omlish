@@ -4,6 +4,7 @@ import typing as ta
 
 from . import lang
 
+
 ESC = '\x1b'
 BEL = '\x07'
 

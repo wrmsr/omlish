@@ -24,6 +24,7 @@ from ..util import split_quoted
 from .options import Macro
 from .options import gen_preprocess_options
 
+
 log = logging.getLogger(__name__)
 
 

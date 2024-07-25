@@ -2,6 +2,7 @@ import typing as ta
 
 from .. import lang
 
+
 T = ta.TypeVar('T')
 K = ta.TypeVar('K')
 V = ta.TypeVar('V')

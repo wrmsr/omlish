@@ -2,6 +2,7 @@ import typing as ta
 
 from .. import lang
 
+
 Environ = ta.Mapping[str, ta.Any]
 StartResponse = ta.Callable[[str, ta.Iterable[tuple[str | bytes, str | bytes]]], ta.Callable[[lang.BytesLike], None]]
 App = ta.Callable[[Environ, StartResponse], ta.Iterable[lang.BytesLike]]
