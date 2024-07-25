@@ -357,7 +357,6 @@ class DotEnv:
             yield io.StringIO('')
 
     def dict(self) -> dict[str, str | None]:
-        """Return dotenv as dict"""
         if self._dict:
             return self._dict
 

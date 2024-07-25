@@ -9,6 +9,7 @@ TODO:
  - ** eagers in any scope, on scope init/open
  - injection listeners
  - unions - raise on ambiguous - usecase: sql.AsyncEngineLike
+ - multiple live request scopes on single injector - use private injectors?
 """
 import contextlib
 import typing as ta
