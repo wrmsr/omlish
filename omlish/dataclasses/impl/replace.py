@@ -7,6 +7,7 @@ from .internals import is_dataclass_instance
 from .processing import Processor
 from .utils import set_new_attribute
 
+
 MISSING = dc.MISSING
 
 

@@ -12,6 +12,7 @@ from .... import check
 from .... import collections as col
 from ._registry import register
 
+
 Configable = pytest.FixtureRequest | pytest.Config
 
 

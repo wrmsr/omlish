@@ -5,6 +5,7 @@ from ..config import Config
 from ..events import Request
 from ..types import Scope
 
+
 log = logging.getLogger(__name__)
 
 

@@ -6,6 +6,7 @@ import typing as ta
 from .restrict import Final
 from .restrict import NotInstantiable
 
+
 K = ta.TypeVar('K')
 V = ta.TypeVar('V')
 

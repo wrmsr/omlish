@@ -6,6 +6,7 @@ from .abstract import make_abstract
 from .restrict import Final
 from .restrict import NotInstantiable
 
+
 T = ta.TypeVar('T')
 Ty = ta.TypeVar('Ty', bound=type)
 

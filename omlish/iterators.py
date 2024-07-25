@@ -4,6 +4,7 @@ import heapq
 import itertools
 import typing as ta
 
+
 T = ta.TypeVar('T')
 U = ta.TypeVar('U')
 

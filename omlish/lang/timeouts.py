@@ -2,6 +2,7 @@ import abc
 import time
 import typing as ta
 
+
 TimeoutLike: ta.TypeAlias = ta.Union['Timeout', float]
 
 
