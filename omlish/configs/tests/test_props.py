@@ -69,7 +69,7 @@ def test_basic_escape_write():
     p['key'] = 'hello\nworld'
 
     out = io.BytesIO()
-    p.store(out, timestamp=None)
+    p.store(out, timestamp=False)
 
     out.seek(0)
     assert out.read() == b'key=hello\\nworld\n'
@@ -208,7 +208,7 @@ def test_surrogate_roundtrip(out_encoding):
     p['surrogate'] = 'Muuusic \U0001D160'
 
     out = io.BytesIO()
-    p.store(out, encoding=out_encoding, timestamp=None)
+    p.store(out, encoding=out_encoding, timestamp=False)
 
     out.seek(0)
     dumped = out.read()
@@ -225,7 +225,7 @@ def test_surrogate_roundtrip_utf8():
     p['surrogate'] = 'Muuusic \U0001D160'
 
     out = io.BytesIO()
-    p.store(out, encoding='utf-8', timestamp=None)
+    p.store(out, encoding='utf-8', timestamp=False)
 
     out.seek(0)
     dumped = out.read()
