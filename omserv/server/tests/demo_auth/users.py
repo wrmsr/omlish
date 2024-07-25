@@ -25,13 +25,16 @@ class Users:
 
     def create(
             self,
+            *,
             email: str,
+            password: str,
             name: str,
     ) -> User:
         check.not_in(email, self._user_ids_by_email)
         u = User(
             id=next(self._next_user_id),
             email=email,
+            password=password,
             name=name,
         )
         self._users_by_id[u.id] = u

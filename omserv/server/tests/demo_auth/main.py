@@ -16,7 +16,9 @@ from ...serving import serve
 from .j2 import j2_helper
 from .j2 import load_templates
 from .j2 import render_template
+from .users import USERS
 from .utils import finish_response
+from .utils import redirect_response
 from .utils import start_response
 from .utils import stub_lifespan
 
@@ -104,10 +106,16 @@ async def handle_post_signup(scope, recv, send):
 
     dct = urllib.parse.parse_qs(body)  # noqa
     email = check.single(dct[b'email']).decode()
-    name = check.single(dct[b'name']).decode()
     password = check.single(dct[b'password']).decode()
+    name = check.single(dct[b'name']).decode()
 
-    raise NotImplementedError
+    USERS.create(
+        email=email,
+        password=password,
+        name=name,
+    )
+
+    await redirect_response(send, url_for('login'))
 
 
 #
