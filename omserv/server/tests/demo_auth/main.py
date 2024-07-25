@@ -3,11 +3,9 @@ https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-yo
 """
 import logging
 import typing as ta
-import urllib.parse
 
 import anyio
 
-from omlish import check
 from omlish import logs
 from omlish.http import consts
 
@@ -18,6 +16,7 @@ from .j2 import load_templates
 from .j2 import render_template
 from .users import USERS
 from .utils import finish_response
+from .utils import read_form_body
 from .utils import redirect_response
 from .utils import start_response
 from .utils import stub_lifespan
@@ -84,6 +83,14 @@ async def handle_get_login(scope, recv, send):
 
 @handle('POST', '/login')
 async def handle_post_login(scope, recv, send):
+    dct = await read_form_body(recv)
+
+    email = dct[b'email'].decode()
+    password = dct[b'password'].decode()
+    # remember = True if request.form.get('remember') else False
+
+    u = USERS.get(email=email)
+
     raise NotImplementedError
 
 
@@ -97,17 +104,11 @@ async def handle_get_signup(scope, recv, send):
 
 @handle('POST', '/signup')
 async def handle_post_signup(scope, recv, send):
-    body = b''
-    more_body = True
-    while more_body:
-        message = await recv()
-        body += message.get('body', b'')
-        more_body = message.get('more_body', False)
+    dct = await read_form_body(recv)
 
-    dct = urllib.parse.parse_qs(body)  # noqa
-    email = check.single(dct[b'email']).decode()
-    password = check.single(dct[b'password']).decode()
-    name = check.single(dct[b'name']).decode()
+    email = dct[b'email'].decode()
+    password = dct[b'password'].decode()
+    name = dct[b'name'].decode()
 
     USERS.create(
         email=email,
