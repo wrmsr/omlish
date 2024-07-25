@@ -1,16 +1,36 @@
+"""
+https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login
+"""
+import importlib.resources
 import logging
 import typing as ta
 
 import anyio
+import jinja2
 
+from omlish import lang
 from omlish import logs
 from omlish.http import consts
 
-from ..config import Config
-from ..serving import serve
+from ...config import Config
+from ...serving import serve
 
 
 log = logging.getLogger(__name__)
+
+
+##
+
+
+J2_ENV = jinja2.Environment(autoescape=True)
+
+
+@lang.cached_function
+def load_templates() -> ta.Mapping[str, jinja2.Template]:
+    ret: dict[str, jinja2.Template] = {}
+    for fn in importlib.resources.files(__package__).joinpath('templates').iterdir():
+        ret[fn.name] = J2_ENV.from_string(fn.read_text())
+    return ret
 
 
 ##
@@ -93,6 +113,8 @@ async def auth_app(scope, recv, send):
 
 def _main():
     logs.configure_standard_logging(logging.INFO)
+
+    load_templates()
 
     async def _a_main():
         await serve(
