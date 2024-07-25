@@ -156,7 +156,7 @@ class Original(ta.NamedTuple):
     line: int
 
 
-class _Binding(ta.NamedTuple):
+class Binding(ta.NamedTuple):
     key: str | None
     value: str | None
     original: Original
@@ -260,12 +260,12 @@ def _parse_value(reader: _Reader) -> str:
         return _parse_unquoted_value(reader)
 
 
-def _parse_binding(reader: _Reader) -> _Binding:
+def _parse_binding(reader: _Reader) -> Binding:
     reader.set_mark()
     try:
         reader.read_regex(_multiline_whitespace)
         if not reader.has_next():
-            return _Binding(
+            return Binding(
                 key=None,
                 value=None,
                 original=reader.get_marked(),
@@ -281,7 +281,7 @@ def _parse_binding(reader: _Reader) -> _Binding:
             value = None
         reader.read_regex(_comment)
         reader.read_regex(_end_of_line)
-        return _Binding(
+        return Binding(
             key=key,
             value=value,
             original=reader.get_marked(),
@@ -289,7 +289,7 @@ def _parse_binding(reader: _Reader) -> _Binding:
         )
     except Error:
         reader.read_regex(_rest_of_line)
-        return _Binding(
+        return Binding(
             key=None,
             value=None,
             original=reader.get_marked(),
@@ -297,7 +297,7 @@ def _parse_binding(reader: _Reader) -> _Binding:
         )
 
 
-def _parse_stream(stream: ta.IO[str]) -> ta.Iterator[_Binding]:
+def parse_stream(stream: ta.IO[str]) -> ta.Iterator[Binding]:
     reader = _Reader(stream)
     while reader.has_next():
         yield _parse_binding(reader)
@@ -312,7 +312,7 @@ def _parse_stream(stream: ta.IO[str]) -> ta.Iterator[_Binding]:
 StrPath: ta.TypeAlias = ta.Union[str, 'os.PathLike[str]']
 
 
-def _with_warn_for_invalid_lines(mappings: ta.Iterator[_Binding]) -> ta.Iterator[_Binding]:
+def _with_warn_for_invalid_lines(mappings: ta.Iterator[Binding]) -> ta.Iterator[Binding]:
     for mapping in mappings:
         if mapping.error:
             log.warning(
