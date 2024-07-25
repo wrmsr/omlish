@@ -34,17 +34,20 @@ import tempfile
 import typing as ta
 
 
-#
+logger = logging.getLogger(__name__)
+
+
+##
 
 
 _posix_variable: ta.Pattern[str] = re.compile(
     r"""
     \$\{
-        (?P<name>[^\}:]*)
+        (?P<name>[^}:]*)
         (?::-
-            (?P<default>[^\}]*)
+            (?P<default>[^}]*)
         )?
-    \}
+    }
     """,
     re.VERBOSE,
 )
@@ -298,20 +301,17 @@ def parse_stream(stream: ta.IO[str]) -> ta.Iterator[Binding]:
 ##
 
 
-# A type alias for a string path to be used for the paths in this file.
-# These paths may flow to `open()` and `shutil.move()`; `shutil.move()`
-# only accepts string paths, not byte paths or file descriptors. See
+# A type alias for a string path to be used for the paths in this file. These paths may flow to `open()` and
+# `shutil.move()`; `shutil.move()` only accepts string paths, not byte paths or file descriptors. See
 # https://github.com/python/typeshed/pull/6832.
-StrPath = ta.Union[str, 'os.PathLike[str]']
-
-logger = logging.getLogger(__name__)
+StrPath: ta.TypeAlias = ta.Union[str, 'os.PathLike[str]']
 
 
 def with_warn_for_invalid_lines(mappings: ta.Iterator[Binding]) -> ta.Iterator[Binding]:
     for mapping in mappings:
         if mapping.error:
             logger.warning(
-                'Python-dotenv could not parse statement starting at line %s',
+                'dotenv could not parse statement starting at line %s',
                 mapping.original.line,
             )
         yield mapping
@@ -327,6 +327,7 @@ class DotEnv:
         interpolate: bool = True,
         override: bool = True,
     ) -> None:
+        super().__init__()
         self.dotenv_path: StrPath | None = dotenv_path
         self.stream: ta.IO[str] | None = stream
         self._dict: dict[str, str | None] | None = None
@@ -345,7 +346,7 @@ class DotEnv:
         else:
             if self.verbose:
                 logger.info(
-                    'Python-dotenv could not find configuration file %s.',
+                    'dotenv could not find configuration file %s.',
                     self.dotenv_path or '.env',
                 )
             yield io.StringIO('')
@@ -424,7 +425,7 @@ def rewrite(
         try:
             with open(path, encoding=encoding) as source:
                 yield (source, dest)
-        except BaseException as err:
+        except BaseException as err:  # noqa
             error = err
 
     if error is None:
@@ -517,7 +518,7 @@ def unset_key(
 def resolve_variables(
     values: ta.Iterable[tuple[str, str | None]],
     override: bool,
-) -> ta.Mapping[str, str | None]:
+) -> dict[str, str | None]:
     new_values: dict[str, str | None] = {}
 
     for (name, value) in values:
@@ -537,110 +538,6 @@ def resolve_variables(
         new_values[name] = result
 
     return new_values
-
-
-def _walk_to_root(path: str) -> ta.Iterator[str]:
-    """
-    Yield directories starting from the given directory up to the root
-    """
-    if not os.path.exists(path):
-        raise OSError('Starting path not found')
-
-    if os.path.isfile(path):
-        path = os.path.dirname(path)
-
-    last_dir = None
-    current_dir = os.path.abspath(path)
-    while last_dir != current_dir:
-        yield current_dir
-        parent_dir = os.path.abspath(os.path.join(current_dir, os.path.pardir))
-        last_dir, current_dir = current_dir, parent_dir
-
-
-def find_dotenv(
-    filename: str = '.env',
-    raise_error_if_not_found: bool = False,
-    usecwd: bool = False,
-) -> str:
-    """
-    Search in increasingly higher folders for the given file
-
-    Returns path to the file if found, or an empty string otherwise
-    """
-
-    def _is_interactive():
-        """ Decide whether this is running in a REPL or IPython notebook """
-        try:
-            main = __import__('__main__', None, None, fromlist=['__file__'])
-        except ModuleNotFoundError:
-            return False
-        return not hasattr(main, '__file__')
-
-    if usecwd or _is_interactive() or getattr(sys, 'frozen', False):
-        # Should work without __file__, e.g. in REPL or IPython notebook.
-        path = os.getcwd()
-    else:
-        # will work for .py files
-        frame = sys._getframe()
-        current_file = __file__
-
-        while frame.f_code.co_filename == current_file or not os.path.exists(
-            frame.f_code.co_filename,
-        ):
-            assert frame.f_back is not None
-            frame = frame.f_back
-        frame_filename = frame.f_code.co_filename
-        path = os.path.dirname(os.path.abspath(frame_filename))
-
-    for dirname in _walk_to_root(path):
-        check_path = os.path.join(dirname, filename)
-        if os.path.isfile(check_path):
-            return check_path
-
-    if raise_error_if_not_found:
-        raise OSError('File not found')
-
-    return ''
-
-
-def load_dotenv(
-    dotenv_path: StrPath | None = None,
-    stream: ta.IO[str] | None = None,
-    verbose: bool = False,
-    override: bool = False,
-    interpolate: bool = True,
-    encoding: str | None = 'utf-8',
-) -> bool:
-    """Parse a .env file and then load all the variables found as environment variables.
-
-    Parameters:
-        dotenv_path: Absolute or relative path to .env file.
-        stream: Text stream (such as `io.StringIO`) with .env content, used if
-            `dotenv_path` is `None`.
-        verbose: Whether to output a warning the .env file is missing.
-        override: Whether to override the system environment variables with the variables
-            from the `.env` file.
-        encoding: Encoding to be used to read the file.
-    Returns:
-        Bool: True if at least one environment variable is set else False
-
-    If both `dotenv_path` and `stream` are `None`, `find_dotenv()` is used to find the
-    .env file with it's default parameters. If you need to change the default parameters
-    of `find_dotenv()`, you can explicitly call `find_dotenv()` and pass the result
-    to this function as `dotenv_path`.
-    """
-    if dotenv_path is None and stream is None:
-        dotenv_path = find_dotenv()
-
-    dotenv = DotEnv(
-        dotenv_path=dotenv_path,
-        stream=stream,
-        verbose=verbose,
-        interpolate=interpolate,
-        override=override,
-        encoding=encoding,
-    )
-    return dotenv.set_as_environment_variables()
 
 
 def dotenv_values(
