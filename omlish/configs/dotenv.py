@@ -409,6 +409,7 @@ class DotEnv:
 def get_key(
     path: StrPath,
     key_to_get: str,
+    *,
     encoding: str | None = 'utf-8',
 ) -> str | None:
     """
@@ -445,6 +446,7 @@ def set_key(
     path: StrPath,
     key_to_set: str,
     value_to_set: str,
+    *,
     quote_mode: str = 'always',
     export: bool = False,
     encoding: str | None = 'utf-8',
@@ -493,6 +495,7 @@ def set_key(
 def unset_key(
     path: StrPath,
     key_to_unset: str,
+    *,
     quote_mode: str = 'always',
     encoding: str | None = 'utf-8',
 ) -> tuple[bool | None, str]:
@@ -549,6 +552,7 @@ def resolve_variables(
 def dotenv_values(
     path: StrPath | None = None,
     stream: ta.IO[str] | None = None,
+    *,
     verbose: bool = False,
     interpolate: bool = True,
     encoding: str | None = 'utf-8',
