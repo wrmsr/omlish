@@ -2,6 +2,7 @@ import dataclasses as dc
 import typing as ta
 
 from ... import inject as inj
+from ... import lang
 from ..classes import Configurable
 from .test_classes import AThing
 from .test_classes import BThing
@@ -34,7 +35,8 @@ def bind_factory(cls: type[Configurable]) -> inj.Elements:
 
         def inner(config):
             impl_cls = ifd[type(config)].impl_cls
-            raise NotImplementedError
+            fac = lang.typed_partial(impl_cls, config=config)  # FIXME: horribly slow lol
+            return i.inject(fac)
 
         return inner
 
