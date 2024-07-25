@@ -33,21 +33,42 @@ def _get_secrets() -> dict[str, ta.Any]:
 ##
 
 
+class Resource(lang.Abstract):
+    pass
+
+
 @dc.dataclass(frozen=True)
-class Server:
+class Server(Resource):
     host: str
+
+
+class ObjectStorage(Resource):
+    pass
+
+
+@dc.dataclass(frozen=True)
+class DbInstance(Resource):
+    host: str
+    port: int
+
+
+##
+
+
+class AwsResource(Resource):
+    pass
 
 
 ##
 
 
 @dc.dataclass(frozen=True)
-class AwsServer(Server):
+class Ec2Server(Server, AwsResource):
     id: str
     region: str
 
 
-def get_aws_servers() -> list[Server]:
+def get_ec2_servers() -> list[Ec2Server]:
     cfg = _get_secrets()
     import boto3
     session = boto3.Session(
@@ -57,14 +78,46 @@ def get_aws_servers() -> list[Server]:
     )
     ec2 = session.client('ec2')
     resp = ec2.describe_instances()
-    out: list[Server] = []
+    out: list[Ec2Server] = []
     for res in resp.get('Reservations', []):
         for inst in res.get('Instances', []):
-            out.append(AwsServer(
+            out.append(Ec2Server(
                 host=inst['PublicIpAddress'],
                 id=inst['InstanceId'],
                 region=ec2.meta.region_name,
             ))
+    return out
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class RdsInstance(DbInstance, AwsResource):
+    id: str
+    region: str
+    engine: str
+
+
+def get_rds_instances() -> list[RdsInstance]:
+    cfg = _get_secrets()
+    import boto3
+    session = boto3.Session(
+        aws_access_key_id=cfg['aws_access_key_id'],
+        aws_secret_access_key=cfg['aws_secret_access_key'],
+        region_name=cfg['aws_region'],
+    )
+    rds = session.client('rds')
+    resp = rds.describe_db_instances()
+    out: list[RdsInstance] = []
+    for inst in resp.get('DBInstances', []):
+        out.append(RdsInstance(
+            host=inst['Endpoint']['Address'],
+            port=inst['Endpoint']['Port'],
+            id=inst['DBInstanceIdentifier'],
+            region=rds.meta.region_name,
+            engine=inst['Engine'],
+        ))
     return out
 
 
@@ -86,7 +139,7 @@ def get_gcp_servers() -> list[GcpServer]:
     request = compute_v1.AggregatedListInstancesRequest()
     request.project = cfg['gcp_project_id']
     request.max_results = 50
-    out = []
+    out: list[GcpServer] = []
     for zone, response in instance_client.aggregated_list(request=request):
         for instance in (response.instances or []):
             ip = check.single([ac.nat_i_p for ni in instance.network_interfaces for ac in ni.access_configs if ac.nat_i_p])  # noqa
@@ -146,7 +199,7 @@ def get_lambda_labs_servers() -> list[LambdaLabsServer]:
         ),
     )
     insts = json.loads(resp.data.decode('utf-8')).get('data', {})
-    out = []
+    out: list[LambdaLabsServer] = []
     for inst in insts:
         out.append(LambdaLabsServer(
             host=inst['ip'],
@@ -173,7 +226,7 @@ def get_digital_ocean_servers() -> list[DigitalOceanServer]:
         },
     )
     droplets = json.loads(resp.data.decode('utf-8')).get('droplets', [])
-    out = []
+    out: list[DigitalOceanServer] = []
     for droplet in droplets:
         net = check.single([n for n in droplet['networks']['v4'] if n['type'] == 'public'])
         out.append(DigitalOceanServer(
@@ -187,15 +240,16 @@ def get_digital_ocean_servers() -> list[DigitalOceanServer]:
 
 
 def _main() -> None:
-    svrs = [
-        *get_aws_servers(),
+    rsrcs: list[Resource] = [
+        *get_ec2_servers(),
+        *get_rds_instances(),
         *get_gcp_servers(),
         *get_runpod_servers(),
         *get_lambda_labs_servers(),
         *get_digital_ocean_servers(),
     ]
 
-    pprint.pprint(svrs)
+    pprint.pprint(rsrcs)
 
 
 if __name__ == '__main__':
