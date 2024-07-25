@@ -155,7 +155,7 @@ class Properties(collections.abc.MutableMapping):
             self,
             *,
             process_escapes_in_values: bool = True,
-    ):
+    ) -> None:
         super().__init__()
 
         self._process_escapes_in_values = process_escapes_in_values
@@ -163,12 +163,20 @@ class Properties(collections.abc.MutableMapping):
         self.reset()
         self.clear()
 
+    _next_metadata: dict[str, str]
+    _lookahead: str | None = None
+    _prev_key: str | None
+    _metadata: dict
+    _key_order: list
+    _properties: dict
+    _line_number: int
+
     def __len__(self) -> int:
         return len(self._properties)
 
     def __getitem__(self, item: str) -> PropertyTuple:
         if not isinstance(item, str):
-            raise TypeError('Property keys must be of type str or unicode')
+            raise TypeError('Property keys must be of type str')
 
         if item not in self._properties:
             raise KeyError('Key not found')
@@ -180,14 +188,14 @@ class Properties(collections.abc.MutableMapping):
 
     def __setitem__(self, key: str, value) -> None:
         if not isinstance(key, str):
-            raise TypeError('Property keys must be of type str or unicode')
+            raise TypeError('Property keys must be of type str')
 
         metadata = None
         if isinstance(value, tuple):
             value, metadata = value
 
         if not isinstance(value, str):
-            raise TypeError('Property values must be of type str or unicode')
+            raise TypeError('Property values must be of type str')
 
         if metadata is not None and not isinstance(metadata, dict):
             raise TypeError('Metadata needs to be a dictionary')
@@ -198,7 +206,7 @@ class Properties(collections.abc.MutableMapping):
 
     def __delitem__(self, key: str) -> None:
         if not isinstance(key, str):
-            raise TypeError('Property keys must be of type str or unicode')
+            raise TypeError('Property keys must be of type str')
 
         if key not in self._properties:
             raise KeyError('Key not found')
@@ -481,14 +489,6 @@ class Properties(collections.abc.MutableMapping):
     def _parse(self) -> None:
         while self._parse_logical_line():
             pass
-
-    _next_metadata: dict[str, str]
-    _lookahead: str | None = None
-    _prev_key: str | None
-    _metadata: dict
-    _key_order: list
-    _properties: dict
-    _line_number: int
 
     def reset(self, metadoc=False):
         self._source_file = None
