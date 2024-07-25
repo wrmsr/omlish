@@ -541,7 +541,7 @@ class Properties(collections.abc.MutableMapping):
             # \r, \n, \t or \f.
             return eval(r"u'\%s'" % (escaped_char,))  # noqa
 
-        if escaped_char == '':
+        if escaped_char == 'u':
             # Unicode escape: \uXXXX.
             start_linenumber = self._line_number
 
