@@ -12,6 +12,7 @@ import jinja2
 
 from omlish import lang
 from omlish import logs
+from omlish.http import consts
 
 from ...config import Config
 from ...serving import serve
@@ -26,7 +27,22 @@ log = logging.getLogger(__name__)
 ##
 
 
-J2_ENV = jinja2.Environment(autoescape=True)
+class _J2Loader(jinja2.BaseLoader):
+
+    def get_source(self, environment, template):
+        raise TypeError
+
+    def list_templates(self):
+        raise TypeError
+
+    def load(self, environment, name, globals = None):
+        return load_templates()[f'{name}.j2']
+
+
+J2_ENV = jinja2.Environment(
+    loader=_J2Loader(),
+    autoescape=True,
+)
 
 
 @lang.cached_function
@@ -35,6 +51,22 @@ def load_templates() -> ta.Mapping[str, jinja2.Template]:
     for fn in importlib.resources.files(__package__).joinpath('templates').iterdir():
         ret[fn.name] = J2_ENV.from_string(fn.read_text())
     return ret
+
+
+class _EnvUser:
+    is_authenticated = False
+
+
+J2_DEFAULT_KWARGS = {
+    'url_for': lambda s: f'http://localhost:8000/{s}',
+    'current_user': _EnvUser(),
+}
+
+def render_template(name: str, **kwargs: ta.Any) -> bytes:
+    return load_templates()[f'{name}.j2'].render(
+        **J2_DEFAULT_KWARGS,
+        **kwargs,
+    ).encode()
 
 
 ##
@@ -87,9 +119,9 @@ USERS = Users()
 
 
 @handle('GET', '/')
-async def handle_get_root(scope, recv, send):
-    await start_response(send, 200)
-    await finish_response(send, b'hi')
+async def handle_get_index(scope, recv, send):
+    await start_response(send, 200, consts.CONTENT_TYPE_HTML_UTF8)
+    await finish_response(send, render_template('index.html'))
 
 
 ##
