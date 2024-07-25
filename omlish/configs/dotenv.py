@@ -35,7 +35,7 @@ import typing as ta
 ##
 
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 
 ##
@@ -130,25 +130,25 @@ def parse_variables(value: str) -> ta.Iterator[Atom]:
 ##
 
 
-def make_regex(string: str, extra_flags: int = 0) -> ta.Pattern[str]:
+def _make_regex(string: str, extra_flags: int = 0) -> ta.Pattern[str]:
     return re.compile(string, re.UNICODE | extra_flags)
 
 
-_newline = make_regex(r'(\r\n|\n|\r)')
-_multiline_whitespace = make_regex(r'\s*', extra_flags=re.MULTILINE)
-_whitespace = make_regex(r'[^\S\r\n]*')
-_export = make_regex(r'(?:export[^\S\r\n]+)?')
-_single_quoted_key = make_regex(r"'([^']+)'")
-_unquoted_key = make_regex(r'([^=\#\s]+)')
-_equal_sign = make_regex(r'(=[^\S\r\n]*)')
-_single_quoted_value = make_regex(r"'((?:\\'|[^'])*)'")
-_double_quoted_value = make_regex(r'"((?:\\"|[^"])*)"')
-_unquoted_value = make_regex(r'([^\r\n]*)')
-_comment = make_regex(r'(?:[^\S\r\n]*#[^\r\n]*)?')
-_end_of_line = make_regex(r'[^\S\r\n]*(?:\r\n|\n|\r|$)')
-_rest_of_line = make_regex(r'[^\r\n]*(?:\r|\n|\r\n)?')
-_double_quote_escapes = make_regex(r"\\[\\'\"abfnrtv]")
-_single_quote_escapes = make_regex(r"\\[\\']")
+_newline = _make_regex(r'(\r\n|\n|\r)')
+_multiline_whitespace = _make_regex(r'\s*', extra_flags=re.MULTILINE)
+_whitespace = _make_regex(r'[^\S\r\n]*')
+_export = _make_regex(r'(?:export[^\S\r\n]+)?')
+_single_quoted_key = _make_regex(r"'([^']+)'")
+_unquoted_key = _make_regex(r'([^=\#\s]+)')
+_equal_sign = _make_regex(r'(=[^\S\r\n]*)')
+_single_quoted_value = _make_regex(r"'((?:\\'|[^'])*)'")
+_double_quoted_value = _make_regex(r'"((?:\\"|[^"])*)"')
+_unquoted_value = _make_regex(r'([^\r\n]*)')
+_comment = _make_regex(r'(?:[^\S\r\n]*#[^\r\n]*)?')
+_end_of_line = _make_regex(r'[^\S\r\n]*(?:\r\n|\n|\r|$)')
+_rest_of_line = _make_regex(r'[^\r\n]*(?:\r|\n|\r\n)?')
+_double_quote_escapes = _make_regex(r"\\[\\'\"abfnrtv]")
+_single_quote_escapes = _make_regex(r"\\[\\']")
 
 
 class Original(ta.NamedTuple):
@@ -156,24 +156,24 @@ class Original(ta.NamedTuple):
     line: int
 
 
-class Binding(ta.NamedTuple):
+class _Binding(ta.NamedTuple):
     key: str | None
     value: str | None
     original: Original
     error: bool
 
 
-class Position:
+class _Position:
     def __init__(self, chars: int, line: int) -> None:
         super().__init__()
         self.chars = chars
         self.line = line
 
     @classmethod
-    def start(cls) -> 'Position':
+    def start(cls) -> '_Position':
         return cls(chars=0, line=1)
 
-    def set(self, other: 'Position') -> None:
+    def set(self, other: '_Position') -> None:
         self.chars = other.chars
         self.line = other.line
 
@@ -186,12 +186,12 @@ class Error(Exception):
     pass
 
 
-class Reader:
+class _Reader:
     def __init__(self, stream: ta.IO[str]) -> None:
         super().__init__()
         self.string = stream.read()
-        self.position = Position.start()
-        self.mark = Position.start()
+        self.position = _Position.start()
+        self.mark = _Position.start()
 
     def has_next(self) -> bool:
         return self.position.chars < len(self.string)
@@ -223,14 +223,14 @@ class Reader:
         return match.groups()
 
 
-def decode_escapes(regex: ta.Pattern[str], string: str) -> str:
+def _decode_escapes(regex: ta.Pattern[str], string: str) -> str:
     def decode_match(match: ta.Match[str]) -> str:
         return codecs.decode(match.group(0), 'unicode-escape')  # type: ignore
 
     return regex.sub(decode_match, string)
 
 
-def parse_key(reader: Reader) -> str | None:
+def _parse_key(reader: _Reader) -> str | None:
     char = reader.peek(1)
     if char == '#':
         return None
@@ -241,47 +241,47 @@ def parse_key(reader: Reader) -> str | None:
     return key
 
 
-def parse_unquoted_value(reader: Reader) -> str:
+def _parse_unquoted_value(reader: _Reader) -> str:
     (part,) = reader.read_regex(_unquoted_value)
     return re.sub(r'\s+#.*', '', part).rstrip()
 
 
-def parse_value(reader: Reader) -> str:
+def _parse_value(reader: _Reader) -> str:
     char = reader.peek(1)
     if char == "'":
         (value,) = reader.read_regex(_single_quoted_value)
-        return decode_escapes(_single_quote_escapes, value)
+        return _decode_escapes(_single_quote_escapes, value)
     elif char == '"':
         (value,) = reader.read_regex(_double_quoted_value)
-        return decode_escapes(_double_quote_escapes, value)
+        return _decode_escapes(_double_quote_escapes, value)
     elif char in ('', '\n', '\r'):
         return ''
     else:
-        return parse_unquoted_value(reader)
+        return _parse_unquoted_value(reader)
 
 
-def parse_binding(reader: Reader) -> Binding:
+def _parse_binding(reader: _Reader) -> _Binding:
     reader.set_mark()
     try:
         reader.read_regex(_multiline_whitespace)
         if not reader.has_next():
-            return Binding(
+            return _Binding(
                 key=None,
                 value=None,
                 original=reader.get_marked(),
                 error=False,
             )
         reader.read_regex(_export)
-        key = parse_key(reader)
+        key = _parse_key(reader)
         reader.read_regex(_whitespace)
         if reader.peek(1) == '=':
             reader.read_regex(_equal_sign)
-            value: str | None = parse_value(reader)
+            value: str | None = _parse_value(reader)
         else:
             value = None
         reader.read_regex(_comment)
         reader.read_regex(_end_of_line)
-        return Binding(
+        return _Binding(
             key=key,
             value=value,
             original=reader.get_marked(),
@@ -289,7 +289,7 @@ def parse_binding(reader: Reader) -> Binding:
         )
     except Error:
         reader.read_regex(_rest_of_line)
-        return Binding(
+        return _Binding(
             key=None,
             value=None,
             original=reader.get_marked(),
@@ -297,10 +297,10 @@ def parse_binding(reader: Reader) -> Binding:
         )
 
 
-def parse_stream(stream: ta.IO[str]) -> ta.Iterator[Binding]:
-    reader = Reader(stream)
+def _parse_stream(stream: ta.IO[str]) -> ta.Iterator[_Binding]:
+    reader = _Reader(stream)
     while reader.has_next():
-        yield parse_binding(reader)
+        yield _parse_binding(reader)
 
 
 ##
@@ -312,10 +312,10 @@ def parse_stream(stream: ta.IO[str]) -> ta.Iterator[Binding]:
 StrPath: ta.TypeAlias = ta.Union[str, 'os.PathLike[str]']
 
 
-def with_warn_for_invalid_lines(mappings: ta.Iterator[Binding]) -> ta.Iterator[Binding]:
+def _with_warn_for_invalid_lines(mappings: ta.Iterator[_Binding]) -> ta.Iterator[_Binding]:
     for mapping in mappings:
         if mapping.error:
-            logger.warning(
+            log.warning(
                 'dotenv could not parse statement starting at line %s',
                 mapping.original.line,
             )
@@ -350,7 +350,7 @@ class DotEnv:
             yield self.stream
         else:
             if self.verbose:
-                logger.info(
+                log.info(
                     'dotenv could not find configuration file %s.',
                     self.dotenv_path or '.env',
                 )
@@ -372,14 +372,12 @@ class DotEnv:
 
     def parse(self) -> ta.Iterator[tuple[str, str | None]]:
         with self._get_stream() as stream:
-            for mapping in with_warn_for_invalid_lines(parse_stream(stream)):
+            for mapping in _with_warn_for_invalid_lines(_parse_stream(stream)):
                 if mapping.key is not None:
                     yield mapping.key, mapping.value
 
     def set_as_environment_variables(self) -> bool:
-        """
-        Load the current dotenv as system environment variable.
-        """
+        """Load the current dotenv as system environment variable."""
         if not self.dict():
             return False
 
@@ -400,9 +398,12 @@ class DotEnv:
             return data[key]
 
         if self.verbose:
-            logger.warning('Key %s not found in %s.', key, self.dotenv_path)
+            log.warning('Key %s not found in %s.', key, self.dotenv_path)
 
         return None
+
+
+##
 
 
 def get_key(
@@ -419,7 +420,7 @@ def get_key(
 
 
 @contextlib.contextmanager
-def rewrite(
+def _rewrite(
     path: StrPath,
     encoding: str | None,
 ) -> ta.Iterator[tuple[ta.IO[str], ta.IO[str]]]:
@@ -471,10 +472,10 @@ def set_key(
     else:
         line_out = f'{key_to_set}={value_out}\n'
 
-    with rewrite(dotenv_path, encoding=encoding) as (source, dest):
+    with _rewrite(dotenv_path, encoding=encoding) as (source, dest):
         replaced = False
         missing_newline = False
-        for mapping in with_warn_for_invalid_lines(parse_stream(source)):
+        for mapping in _with_warn_for_invalid_lines(_parse_stream(source)):
             if mapping.key == key_to_set:
                 dest.write(line_out)
                 replaced = True
@@ -502,19 +503,19 @@ def unset_key(
     If the given key doesn't exist in the .env, fails.
     """
     if not os.path.exists(dotenv_path):
-        logger.warning("Can't delete from %s - it doesn't exist.", dotenv_path)
+        log.warning("Can't delete from %s - it doesn't exist.", dotenv_path)
         return None, key_to_unset
 
     removed = False
-    with rewrite(dotenv_path, encoding=encoding) as (source, dest):
-        for mapping in with_warn_for_invalid_lines(parse_stream(source)):
+    with _rewrite(dotenv_path, encoding=encoding) as (source, dest):
+        for mapping in _with_warn_for_invalid_lines(_parse_stream(source)):
             if mapping.key == key_to_unset:
                 removed = True
             else:
                 dest.write(mapping.original.string)
 
     if not removed:
-        logger.warning("Key %s not removed from %s - key doesn't exist.", key_to_unset, dotenv_path)
+        log.warning("Key %s not removed from %s - key doesn't exist.", key_to_unset, dotenv_path)
         return None, key_to_unset
 
     return removed, key_to_unset
