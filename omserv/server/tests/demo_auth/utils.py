@@ -1,5 +1,7 @@
 import logging
+import urllib.parse
 
+from omlish import check
 from omlish.http import consts
 
 
@@ -49,3 +51,19 @@ async def redirect_response(send, url: str):
         'type': 'http.response.body',
         'body': b'',
     })
+
+
+async def read_body(recv) -> bytes:
+    body = b''
+    more_body = True
+    while more_body:
+        message = await recv()
+        body += message.get('body', b'')
+        more_body = message.get('more_body', False)
+    return body
+
+
+async def read_form_body(recv) -> dict[bytes, bytes]:
+    body = await read_body(recv)
+    dct = urllib.parse.parse_qs(body)  # noqa
+    return {k: check.single(v) for k, v in dct.items()}

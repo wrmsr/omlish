@@ -23,6 +23,20 @@ class Users:
         self._users_by_id: dict[int, User] = {}
         self._user_ids_by_email: dict[str, int] = {}
 
+    def get(
+            self,
+            *,
+            id: int | None = None,
+            email: str | None = None,
+    ) -> User | None:
+        if id is not None:
+            return self._users_by_id.get(id)
+        elif email is not None:
+            i = self._user_ids_by_email.get(email)
+            return self._users_by_id[i] if i is not None else None
+        else:
+            return None
+
     def create(
             self,
             *,
