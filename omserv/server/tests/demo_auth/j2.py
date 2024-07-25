@@ -18,7 +18,7 @@ class _J2Loader(jinja2.BaseLoader):
     def list_templates(self):
         raise TypeError
 
-    def load(self, environment, name, globals=None):
+    def load(self, environment, name, globals=None):  # noqa
         return load_templates()[f'{name}.j2']
 
 
@@ -41,7 +41,7 @@ class _EnvUser:
 
 
 J2_DEFAULT_KWARGS = dict(
-    get_flashed_messages=lambda: [],
+    get_flashed_messages=lambda: [],  # noqa
     current_user=_EnvUser(),
 )
 
