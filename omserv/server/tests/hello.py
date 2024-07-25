@@ -27,7 +27,6 @@ async def hello_app(scope, recv, send):
                 if message['type'] == 'lifespan.startup':
                     # Do some startup here!
                     await send({'type': 'lifespan.startup.complete'})
-                    return
 
                 elif message['type'] == 'lifespan.shutdown':
                     # Do some shutdown here!
