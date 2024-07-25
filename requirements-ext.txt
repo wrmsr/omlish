@@ -175,7 +175,7 @@ soco==0.30.4
 sounddevice==0.4.7
 # vosk==0.3.45
 
-bellows==0.40.0
+bellows==0.40.1
 zigpy==0.64.3
 
 # python-openzwave
