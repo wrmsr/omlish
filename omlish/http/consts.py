@@ -10,6 +10,8 @@ def format_status(status: http.HTTPStatus) -> str:
 
 STATUS_OK = format_status(http.HTTPStatus.OK)
 
+STATUS_TEMPORARY_REDIRECT = format_status(http.HTTPStatus.TEMPORARY_REDIRECT)
+
 STATUS_BAD_REQUEST = format_status(http.HTTPStatus.BAD_REQUEST)
 STATUS_UNAUTHORIZED = format_status(http.HTTPStatus.UNAUTHORIZED)
 STATUS_FORBIDDEN = format_status(http.HTTPStatus.FORBIDDEN)
