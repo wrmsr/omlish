@@ -1,7 +1,9 @@
 """
 https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login
 """
+import dataclasses as dc
 import importlib.resources
+import itertools
 import logging
 import typing as ta
 
@@ -10,10 +12,12 @@ import jinja2
 
 from omlish import lang
 from omlish import logs
-from omlish.http import consts
 
 from ...config import Config
 from ...serving import serve
+from .utils import finish_response
+from .utils import start_response
+from .utils import stub_lifespan
 
 
 log = logging.getLogger(__name__)
@@ -36,39 +40,6 @@ def load_templates() -> ta.Mapping[str, jinja2.Template]:
 ##
 
 
-async def stub_lifespan(scope, recv, send):
-    while True:
-        message = await recv()
-        if message['type'] == 'lifespan.startup':
-            log.info('Lifespan starting up')
-            await send({'type': 'lifespan.startup.complete'})
-
-        elif message['type'] == 'lifespan.shutdown':
-            log.info('Lifespan shutting down')
-            await send({'type': 'lifespan.shutdown.complete'})
-            return
-
-
-async def start_response(send, status: int, content_type: bytes = consts.CONTENT_TYPE_TEXT_UTF8):
-    await send({
-        'type': 'http.response.start',
-        'status': status,
-        'headers': [
-            [b'content-type', content_type],
-        ],
-    })
-
-
-async def finish_response(send, body: bytes = b''):
-    await send({
-        'type': 'http.response.body',
-        'body': body,
-    })
-
-
-##
-
-
 HANDLERS: dict[tuple[str, str], ta.Any] = {}
 
 
@@ -77,6 +48,42 @@ def handle(method: str, path: str):
         HANDLERS[(method, path)] = fn
         return fn
     return inner
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class User:
+    id: int
+    email: str
+    password: str
+    name: str
+
+
+class Users:
+    def __init__(self) -> None:
+        super().__init__()
+        self._next_user_id = itertools.count()
+        self._users_by_id: dict[int, User] = {}
+
+    def create(self, **kwargs: ta.Any) -> User:
+        u = User(
+            id=next(self._next_user_id),
+            **kwargs,
+        )
+        self._users_by_id[u.id] = u
+        return u
+
+    def update(self, u: User) -> None:
+        _ = self._users_by_id[u.id]
+        self._users_by_id[u.id] = u
+
+
+USERS = Users()
+
+
+##
 
 
 @handle('GET', '/')
