@@ -34,7 +34,7 @@ import tempfile
 import typing as ta
 
 
-##
+#
 
 
 _posix_variable: ta.Pattern[str] = re.compile(
@@ -66,7 +66,7 @@ class Literal(Atom):
         self.value = value
 
     def __repr__(self) -> str:
-        return f"Literal(value={self.value})"
+        return f'Literal(value={self.value})'
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, self.__class__):
@@ -86,7 +86,7 @@ class Variable(Atom):
         self.default = default
 
     def __repr__(self) -> str:
-        return f"Variable(name={self.name}, default={self.default})"
+        return f'Variable(name={self.name}, default={self.default})'
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, self.__class__):
@@ -97,9 +97,9 @@ class Variable(Atom):
         return hash((self.__class__, self.name, self.default))
 
     def resolve(self, env: ta.Mapping[str, str | None]) -> str:
-        default = self.default if self.default is not None else ""
+        default = self.default if self.default is not None else ''
         result = env.get(self.name, default)
-        return result if result is not None else ""
+        return result if result is not None else ''
 
 
 def parse_variables(value: str) -> ta.Iterator[Atom]:
@@ -107,8 +107,8 @@ def parse_variables(value: str) -> ta.Iterator[Atom]:
 
     for match in _posix_variable.finditer(value):
         (start, end) = match.span()
-        name = match["name"]
-        default = match["default"]
+        name = match['name']
+        default = match['default']
 
         if start > cursor:
             yield Literal(value=value[cursor:start])
@@ -128,19 +128,19 @@ def make_regex(string: str, extra_flags: int = 0) -> ta.Pattern[str]:
     return re.compile(string, re.UNICODE | extra_flags)
 
 
-_newline = make_regex(r"(\r\n|\n|\r)")
-_multiline_whitespace = make_regex(r"\s*", extra_flags=re.MULTILINE)
-_whitespace = make_regex(r"[^\S\r\n]*")
-_export = make_regex(r"(?:export[^\S\r\n]+)?")
+_newline = make_regex(r'(\r\n|\n|\r)')
+_multiline_whitespace = make_regex(r'\s*', extra_flags=re.MULTILINE)
+_whitespace = make_regex(r'[^\S\r\n]*')
+_export = make_regex(r'(?:export[^\S\r\n]+)?')
 _single_quoted_key = make_regex(r"'([^']+)'")
-_unquoted_key = make_regex(r"([^=\#\s]+)")
-_equal_sign = make_regex(r"(=[^\S\r\n]*)")
+_unquoted_key = make_regex(r'([^=\#\s]+)')
+_equal_sign = make_regex(r'(=[^\S\r\n]*)')
 _single_quoted_value = make_regex(r"'((?:\\'|[^'])*)'")
 _double_quoted_value = make_regex(r'"((?:\\"|[^"])*)"')
-_unquoted_value = make_regex(r"([^\r\n]*)")
-_comment = make_regex(r"(?:[^\S\r\n]*#[^\r\n]*)?")
-_end_of_line = make_regex(r"[^\S\r\n]*(?:\r\n|\n|\r|$)")
-_rest_of_line = make_regex(r"[^\r\n]*(?:\r|\n|\r\n)?")
+_unquoted_value = make_regex(r'([^\r\n]*)')
+_comment = make_regex(r'(?:[^\S\r\n]*#[^\r\n]*)?')
+_end_of_line = make_regex(r'[^\S\r\n]*(?:\r\n|\n|\r|$)')
+_rest_of_line = make_regex(r'[^\r\n]*(?:\r|\n|\r\n)?')
 _double_quote_escapes = make_regex(r"\\[\\'\"abfnrtv]")
 _single_quote_escapes = make_regex(r"\\[\\']")
 
@@ -163,10 +163,10 @@ class Position:
         self.line = line
 
     @classmethod
-    def start(cls) -> "Position":
+    def start(cls) -> 'Position':
         return cls(chars=0, line=1)
 
-    def set(self, other: "Position") -> None:
+    def set(self, other: 'Position') -> None:
         self.chars = other.chars
         self.line = other.line
 
@@ -203,14 +203,14 @@ class Reader:
     def read(self, count: int) -> str:
         result = self.string[self.position.chars:self.position.chars + count]
         if len(result) < count:
-            raise Error("read: End of string")
+            raise Error('read: End of string')
         self.position.advance(result)
         return result
 
     def read_regex(self, regex: ta.Pattern[str]) -> ta.Sequence[str]:
         match = regex.match(self.string, self.position.chars)
         if match is None:
-            raise Error("read_regex: Pattern not found")
+            raise Error('read_regex: Pattern not found')
         self.position.advance(self.string[match.start():match.end()])
         return match.groups()
 
@@ -224,7 +224,7 @@ def decode_escapes(regex: ta.Pattern[str], string: str) -> str:
 
 def parse_key(reader: Reader) -> str | None:
     char = reader.peek(1)
-    if char == "#":
+    if char == '#':
         return None
     elif char == "'":
         (key,) = reader.read_regex(_single_quoted_key)
@@ -235,19 +235,19 @@ def parse_key(reader: Reader) -> str | None:
 
 def parse_unquoted_value(reader: Reader) -> str:
     (part,) = reader.read_regex(_unquoted_value)
-    return re.sub(r"\s+#.*", "", part).rstrip()
+    return re.sub(r'\s+#.*', '', part).rstrip()
 
 
 def parse_value(reader: Reader) -> str:
     char = reader.peek(1)
-    if char == u"'":
+    if char == "'":
         (value,) = reader.read_regex(_single_quoted_value)
         return decode_escapes(_single_quote_escapes, value)
-    elif char == u'"':
+    elif char == '"':
         (value,) = reader.read_regex(_double_quoted_value)
         return decode_escapes(_double_quote_escapes, value)
-    elif char in (u"", u"\n", u"\r"):
-        return u""
+    elif char in ('', '\n', '\r'):
+        return ''
     else:
         return parse_unquoted_value(reader)
 
@@ -266,7 +266,7 @@ def parse_binding(reader: Reader) -> Binding:
         reader.read_regex(_export)
         key = parse_key(reader)
         reader.read_regex(_whitespace)
-        if reader.peek(1) == "=":
+        if reader.peek(1) == '=':
             reader.read_regex(_equal_sign)
             value: str | None = parse_value(reader)
         else:
@@ -311,7 +311,7 @@ def with_warn_for_invalid_lines(mappings: ta.Iterator[Binding]) -> ta.Iterator[B
     for mapping in mappings:
         if mapping.error:
             logger.warning(
-                "Python-dotenv could not parse statement starting at line %s",
+                'Python-dotenv could not parse statement starting at line %s',
                 mapping.original.line,
             )
         yield mapping
@@ -345,7 +345,7 @@ class DotEnv:
         else:
             if self.verbose:
                 logger.info(
-                    "Python-dotenv could not find configuration file %s.",
+                    'Python-dotenv could not find configuration file %s.',
                     self.dotenv_path or '.env',
                 )
             yield io.StringIO('')
@@ -394,7 +394,7 @@ class DotEnv:
             return data[key]
 
         if self.verbose:
-            logger.warning("Key %s not found in %s.", key, self.dotenv_path)
+            logger.warning('Key %s not found in %s.', key, self.dotenv_path)
 
         return None
 
@@ -402,7 +402,7 @@ class DotEnv:
 def get_key(
     dotenv_path: StrPath,
     key_to_get: str,
-    encoding: str | None = "utf-8",
+    encoding: str | None = 'utf-8',
 ) -> str | None:
     """
     Get the value of a given key from the given .env.
@@ -419,7 +419,7 @@ def rewrite(
 ) -> ta.Iterator[tuple[ta.IO[str], ta.IO[str]]]:
     pathlib.Path(path).touch()
 
-    with tempfile.NamedTemporaryFile(mode="w", encoding=encoding, delete=False) as dest:
+    with tempfile.NamedTemporaryFile(mode='w', encoding=encoding, delete=False) as dest:
         error = None
         try:
             with open(path, encoding=encoding) as source:
@@ -438,9 +438,9 @@ def set_key(
     dotenv_path: StrPath,
     key_to_set: str,
     value_to_set: str,
-    quote_mode: str = "always",
+    quote_mode: str = 'always',
     export: bool = False,
-    encoding: str | None = "utf-8",
+    encoding: str | None = 'utf-8',
 ) -> tuple[bool | None, str, str]:
     """
     Adds or Updates a key/value to the given .env
@@ -448,12 +448,12 @@ def set_key(
     If the .env path given doesn't exist, fails instead of risking creating
     an orphan .env somewhere in the filesystem
     """
-    if quote_mode not in ("always", "auto", "never"):
-        raise ValueError(f"Unknown quote_mode: {quote_mode}")
+    if quote_mode not in ('always', 'auto', 'never'):
+        raise ValueError(f'Unknown quote_mode: {quote_mode}')
 
     quote = (
-        quote_mode == "always"
-        or (quote_mode == "auto" and not value_to_set.isalnum())
+        quote_mode == 'always'
+        or (quote_mode == 'auto' and not value_to_set.isalnum())
     )
 
     if quote:
@@ -463,7 +463,7 @@ def set_key(
     if export:
         line_out = f'export {key_to_set}={value_out}\n'
     else:
-        line_out = f"{key_to_set}={value_out}\n"
+        line_out = f'{key_to_set}={value_out}\n'
 
     with rewrite(dotenv_path, encoding=encoding) as (source, dest):
         replaced = False
@@ -474,10 +474,10 @@ def set_key(
                 replaced = True
             else:
                 dest.write(mapping.original.string)
-                missing_newline = not mapping.original.string.endswith("\n")
+                missing_newline = not mapping.original.string.endswith('\n')
         if not replaced:
             if missing_newline:
-                dest.write("\n")
+                dest.write('\n')
             dest.write(line_out)
 
     return True, key_to_set, value_to_set
@@ -486,8 +486,8 @@ def set_key(
 def unset_key(
     dotenv_path: StrPath,
     key_to_unset: str,
-    quote_mode: str = "always",
-    encoding: str | None = "utf-8",
+    quote_mode: str = 'always',
+    encoding: str | None = 'utf-8',
 ) -> tuple[bool | None, str]:
     """
     Removes a given key from the given `.env` file.
@@ -532,7 +532,7 @@ def resolve_variables(
             else:
                 env.update(new_values)
                 env.update(os.environ)  # type: ignore
-            result = "".join(atom.resolve(env) for atom in atoms)
+            result = ''.join(atom.resolve(env) for atom in atoms)
 
         new_values[name] = result
 
@@ -544,7 +544,7 @@ def _walk_to_root(path: str) -> ta.Iterator[str]:
     Yield directories starting from the given directory up to the root
     """
     if not os.path.exists(path):
-        raise IOError('Starting path not found')
+        raise OSError('Starting path not found')
 
     if os.path.isfile(path):
         path = os.path.dirname(path)
@@ -585,7 +585,7 @@ def find_dotenv(
         current_file = __file__
 
         while frame.f_code.co_filename == current_file or not os.path.exists(
-            frame.f_code.co_filename
+            frame.f_code.co_filename,
         ):
             assert frame.f_back is not None
             frame = frame.f_back
@@ -598,7 +598,7 @@ def find_dotenv(
             return check_path
 
     if raise_error_if_not_found:
-        raise IOError('File not found')
+        raise OSError('File not found')
 
     return ''
 
@@ -609,7 +609,7 @@ def load_dotenv(
     verbose: bool = False,
     override: bool = False,
     interpolate: bool = True,
-    encoding: str | None = "utf-8",
+    encoding: str | None = 'utf-8',
 ) -> bool:
     """Parse a .env file and then load all the variables found as environment variables.
 
@@ -648,7 +648,7 @@ def dotenv_values(
     stream: ta.IO[str] | None = None,
     verbose: bool = False,
     interpolate: bool = True,
-    encoding: str | None = "utf-8",
+    encoding: str | None = 'utf-8',
 ) -> dict[str, str | None]:
     """
     Parse a .env file and return its content as a dict.
