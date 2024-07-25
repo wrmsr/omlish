@@ -132,11 +132,7 @@ class ParseError(PropertyError):
 
     def __str__(self) -> str:
         filename = '<unknown>' if not hasattr(self.file_obj, 'filename') else self.file_obj.filename
-        return 'Parse error in %s:%d: %s' % (
-            filename,
-            self.line_number,
-            self.message,
-        )
+        return f'Parse error in {filename}:{self.line_number}: {self.message}'
 
 
 class Properties(collections.abc.MutableMapping):
@@ -167,9 +163,9 @@ class Properties(collections.abc.MutableMapping):
     _next_metadata: dict[str, str]
     _lookahead: str | None = None
     _prev_key: str | None
-    _metadata: dict
-    _key_order: list
-    _properties: dict
+    _metadata: dict[str, ta.Any]
+    _key_order: list[str]
+    _properties: dict[str, ta.Any]
     _line_number: int
     _metadoc: bool
 
