@@ -67,6 +67,7 @@ class Atom(metaclass=abc.ABCMeta):
 
 class Literal(Atom):
     def __init__(self, value: str) -> None:
+        super().__init__()
         self.value = value
 
     def __repr__(self) -> str:
@@ -86,6 +87,7 @@ class Literal(Atom):
 
 class Variable(Atom):
     def __init__(self, name: str, default: str | None) -> None:
+        super().__init__()
         self.name = name
         self.default = default
 
@@ -163,6 +165,7 @@ class Binding(ta.NamedTuple):
 
 class Position:
     def __init__(self, chars: int, line: int) -> None:
+        super().__init__()
         self.chars = chars
         self.line = line
 
@@ -185,6 +188,7 @@ class Error(Exception):
 
 class Reader:
     def __init__(self, stream: ta.IO[str]) -> None:
+        super().__init__()
         self.string = stream.read()
         self.position = Position.start()
         self.mark = Position.start()
