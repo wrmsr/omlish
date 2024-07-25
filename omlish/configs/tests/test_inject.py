@@ -9,22 +9,20 @@ from .test_classes import BThing
 from .test_classes import Thing
 
 
-ConfigurableT = ta.TypeVar('ConfigurableT', bound=Configurable)
-ConfigurableU = ta.TypeVar('ConfigurableU', bound=ConfigurableT)
-
-
 @dc.dataclass(frozen=True)
 class ImplFor:
     cls: type
     impl_cls: type
 
 
-def bind_impl(cls: type[ConfigurableT], impl_cls: type[ConfigurableU]) -> inj.Elements:
+def bind_impl(cls: type[Configurable], impl_cls: type[Configurable]) -> inj.Elements:
+    if not issubclass(impl_cls, cls):
+        raise TypeError(impl_cls, cls)
     return inj.as_elements(
         inj.Binding(
             inj.Key(ImplFor, tag=cls, multi=True),
             inj.const((ImplFor(cls, impl_cls),)),
-        )
+        ),
     )
 
 
@@ -40,11 +38,11 @@ def bind_factory(cls: type[Configurable]) -> inj.Elements:
 
         return inner
 
-    fac_cls = ta.Callable[[cls.Config], cls]
+    fac_cls = ta.Callable[[cls.Config], cls]  # type: ignore
     return inj.as_elements(
         inj.singleton(inj.Binding(
-            inj.Key(fac_cls),
-            inj.fn(outer, fac_cls)
+            inj.Key(fac_cls),  # type: ignore
+            inj.fn(outer, fac_cls),  # type: ignore
         )),
     )
 
@@ -57,7 +55,7 @@ def test_inject():
     )
 
     i = inj.create_injector(es)
-    fac = i[inj.Key(ta.Callable[[Thing.Config], Thing])]
+    fac: ta.Any = i[inj.Key(ta.Callable[[Thing.Config], Thing])]  # type: ignore
 
     assert isinstance(fac(AThing.Config()), AThing)
     assert isinstance(fac(BThing.Config()), BThing)
