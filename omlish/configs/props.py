@@ -315,6 +315,12 @@ class Properties(collections.abc.MutableMapping):
 
         self._next_metadata[key] = value
 
+    # \r, \n, \t or \f.
+    _ESCAPED_CHARS: ta.ClassVar[ta.Mapping[str, str]] = {
+        ec: eval(r"u'\%s'" % (ec,))  # noqa
+        for ec in 'rntf'
+    }
+
     def _handle_escape(self, allow_line_continuation: bool = True) -> str:
         if self._peek() == '\\':
             self._getc()
@@ -336,9 +342,10 @@ class Properties(collections.abc.MutableMapping):
 
         self._getc()
 
-        if escaped_char in 'rntf':
-            # \r, \n, \t or \f.
-            return eval(r"u'\%s'" % (escaped_char,))  # noqa
+        try:
+            return self._ESCAPED_CHARS[escaped_char]
+        except KeyError:
+            pass
 
         if escaped_char == 'u':
             start_linenumber = self._line_number
