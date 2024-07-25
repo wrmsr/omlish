@@ -87,7 +87,7 @@ async def handle_post_login(scope, recv, send):
 
     email = dct[b'email'].decode()
     password = dct[b'password'].decode()
-    # remember = True if request.form.get('remember') else False
+    remember = b'remember' in dct
 
     u = USERS.get(email=email)
 
