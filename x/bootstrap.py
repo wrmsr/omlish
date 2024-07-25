@@ -24,8 +24,7 @@ from omlish import logs
 log = logging.getLogger(__name__)
 
 
-class Bootstrap(cfgs.Configurable['Bootstrap.Config'], lc.ContextManageableLifecycle):
-
+class Bootstrap(cfgs.Configurable['Bootstrap.Config']):
     class Config(cfgs.Config):
         debug: bool = dc.field(False, check_type=bool)
 
@@ -45,9 +44,7 @@ class Bootstrap(cfgs.Configurable['Bootstrap.Config'], lc.ContextManageableLifec
     def __init__(self, config: Config = Config()) -> None:
         super().__init__(config)
 
-    def _do_lifecycle_start(self) -> None:
-        super()._do_lifecycle_start()
-
+    def start(self) -> None:
         if self._config.log:
             if self._config.log.lower() == 'standard':
                 logs.configure_standard_logging(logging.INFO)
@@ -73,7 +70,7 @@ class Bootstrap(cfgs.Configurable['Bootstrap.Config'], lc.ContextManageableLifec
             faulthandler.enable()
 
         if self._config.prctl_dumpable or self._config.prctl_deathsig not in (None, False):
-            from omnibus import libc
+            from omlish import libc
 
             if hasattr(libc, 'prctl'):
                 if self._config.prctl_dumpable:
