@@ -1,4 +1,5 @@
 import logging
+import typing as ta
 
 import anyio
 
@@ -6,35 +7,70 @@ from omlish import logs
 
 from ..config import Config
 from ..serving import serve
-from .hello import hello_app
 
 
-BASIC_AUTH_TOKEN = b'blahblah'
-BASIC_AUTH_HEADER = b'Bearer ' + BASIC_AUTH_TOKEN
+HANDLERS: dict[tuple[str, str], ta.Any] = {}
 
 
-def authed_app(app):
-    async def handle(scope, recv, send):
-        if scope['type'] == 'http':
-            hdrs = dict(scope['headers'])
-            auth = hdrs.get(b'authorization')
-            if auth != BASIC_AUTH_HEADER:
+def handle(method: str, path: str):
+    def inner(fn):
+        HANDLERS[(method, path)] = fn
+        return fn
+    return inner
+
+
+@handle('GET', '/')
+async def handle_get_root(scope, recv, send):
+    await send({
+        'type': 'http.response.start',
+        'status': 200,
+        'headers': [
+            [b'content-type', b'text/plain'],
+        ],
+    })
+
+    await send({
+        'type': 'http.response.body',
+        'body': b'hi',
+    })
+
+
+async def auth_app(scope, recv, send):
+    match scope_ty := scope['type']:
+        case 'lifespan':
+            while True:
+                message = await recv()
+                if message['type'] == 'lifespan.startup':
+                    await send({'type': 'lifespan.startup.complete'})
+                    return
+
+                elif message['type'] == 'lifespan.shutdown':
+                    # Do some shutdown here!
+                    await send({'type': 'lifespan.shutdown.complete'})
+                    return
+
+        case 'http':
+            handler = HANDLERS.get((scope['method'], scope['raw_path'].decode()))
+
+            if handler is not None:
+                await handler(scope, recv, send)
+
+            else:
                 await send({
                     'type': 'http.response.start',
-                    'status': 401,
+                    'status': 404,
                     'headers': [
                         [b'content-type', b'text/plain'],
                     ],
                 })
+
                 await send({
                     'type': 'http.response.body',
                     'body': b'',
                 })
-                return None
 
-        return await app(scope, recv, send)
-
-    return handle
+        case _:
+            raise ValueError(f'Unhandled scope type: {scope_ty!r}')
 
 
 def _main():
@@ -42,7 +78,7 @@ def _main():
 
     async def _a_main():
         await serve(
-            authed_app(hello_app),
+            auth_app,
             Config(),
             handle_shutdown_signals=True,
         )
