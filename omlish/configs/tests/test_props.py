@@ -101,24 +101,20 @@ def test_line_continuation_forbidden():
     # In metadata comments, line continuation is disabled.
 
     p = Properties()
-    p.load(
-        io.BytesIO(br"""
-            #: metakey meta\
-            value continuation
+    p.load(io.BytesIO(br"""
+        #: metakey meta\
+        value continuation
 
-            multi\
-            line\ key = value
-        """),
-    )
+        multi\
+        line\ key = value
+    """))
 
     assert p.properties == {'multiline key': 'value', 'value': 'continuation'}
 
 
 def test_stray_line_continuation():
     p = Properties()
-    p.load(
-        io.BytesIO(b'key value\\'),
-    )
+    p.load(io.BytesIO(b'key value\\'))
 
     assert p.properties == {'key': 'value'}
 
@@ -245,9 +241,7 @@ def test_surrogate_high_without_low__garbage():
     p = Properties()
 
     with pytest.raises(ParseError) as excinfo:
-        p.load(
-            io.BytesIO(b'surrogate=Muuusic \\ud834 foobar\n'),
-        )
+        p.load(io.BytesIO(b'surrogate=Muuusic \\ud834 foobar\n'))
 
     # Caused by garbage after the first unicode escape
     assert 'High surrogate unicode escape sequence not followed by' in str(excinfo.value)
@@ -257,9 +251,7 @@ def test_surrogate_high_without_low__eof():
     p = Properties()
 
     with pytest.raises(ParseError) as excinfo:
-        p.load(
-            io.BytesIO(b'surrogate=Muuusic \\ud834\n'),
-        )
+        p.load(io.BytesIO(b'surrogate=Muuusic \\ud834\n'))
 
     # Caused by short read (read 1 byte, wanted 6) after the first unicode escape
     assert 'High surrogate unicode escape sequence not followed by' in str(excinfo.value)
@@ -269,9 +261,7 @@ def test_surrogate_high_followed_by_non_low_surrogate_uniescape():
     p = Properties()
 
     with pytest.raises(ParseError) as excinfo:
-        p.load(
-            io.BytesIO(b'surrogate=Muuusic \\ud834\\u000a\n'),
-        )
+        p.load(io.BytesIO(b'surrogate=Muuusic \\ud834\\u000a\n'))
 
     # Caused by short read (read 1 byte, wanted 6) after the first unicode escape
     assert (
