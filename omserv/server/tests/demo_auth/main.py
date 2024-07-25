@@ -35,7 +35,7 @@ class _J2Loader(jinja2.BaseLoader):
     def list_templates(self):
         raise TypeError
 
-    def load(self, environment, name, globals = None):
+    def load(self, environment, name, globals=None):
         return load_templates()[f'{name}.j2']
 
 
@@ -57,16 +57,15 @@ class _EnvUser:
     is_authenticated = False
 
 
-J2_DEFAULT_KWARGS = {
-    'url_for': lambda s: f'http://localhost:8000/{s}',
-    'current_user': _EnvUser(),
-}
+J2_DEFAULT_KWARGS = dict(
+    url_for=lambda s: f'http://localhost:8000/{s}',
+    get_flashed_messages=lambda: [],
+    current_user=_EnvUser(),
+)
+
 
 def render_template(name: str, **kwargs: ta.Any) -> bytes:
-    return load_templates()[f'{name}.j2'].render(
-        **J2_DEFAULT_KWARGS,
-        **kwargs,
-    ).encode()
+    return load_templates()[f'{name}.j2'].render(**{**J2_DEFAULT_KWARGS, **kwargs}).encode()
 
 
 ##
@@ -118,10 +117,63 @@ USERS = Users()
 ##
 
 
+def login_required(fn):
+    return fn
+
+
+##
+
+
 @handle('GET', '/')
 async def handle_get_index(scope, recv, send):
     await start_response(send, 200, consts.CONTENT_TYPE_HTML_UTF8)
     await finish_response(send, render_template('index.html'))
+
+
+#
+
+
+@handle('GET', '/profile')
+@login_required
+async def handle_get_profile(scope, recv, send):
+    await start_response(send, 200, consts.CONTENT_TYPE_HTML_UTF8)
+    await finish_response(send, render_template('profile.html'))
+
+
+#
+
+
+@handle('GET', '/login')
+async def handle_get_login(scope, recv, send):
+    await start_response(send, 200, consts.CONTENT_TYPE_HTML_UTF8)
+    await finish_response(send, render_template('login.html'))
+
+
+@handle('POST', '/login')
+async def handle_post_login(scope, recv, send):
+    raise NotImplementedError
+
+
+#
+
+@handle('GET', '/signup')
+async def handle_get_signup(scope, recv, send):
+    await start_response(send, 200, consts.CONTENT_TYPE_HTML_UTF8)
+    await finish_response(send, render_template('signup.html'))
+
+
+@handle('POST', '/signup')
+async def handle_post_signup(scope, recv, send):
+    raise NotImplementedError
+
+
+#
+
+
+@handle('GET', '/logout')
+@login_required
+async def handle_get_logout(scope, recv, send):
+    raise NotImplementedError
 
 
 ##
