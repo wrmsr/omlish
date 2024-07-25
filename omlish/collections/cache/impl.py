@@ -20,6 +20,7 @@ from .types import Cache
 from .types import Eviction
 from .types import OverweightError
 
+
 K = ta.TypeVar('K')
 K2 = ta.TypeVar('K2')
 V = ta.TypeVar('V')

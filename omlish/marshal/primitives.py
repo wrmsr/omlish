@@ -9,6 +9,7 @@ from .base import UnmarshalerFactory
 from .factories import TypeMapFactory
 from .values import Value
 
+
 PRIMITIVE_TYPES: tuple[type, ...] = (
     bool,
     int,

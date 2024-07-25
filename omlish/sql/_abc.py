@@ -1,5 +1,6 @@
 import typing as ta
 
+
 DBAPITypeCode: ta.TypeAlias = ta.Any | None
 
 DBAPIColumnDescription: ta.TypeAlias = tuple[

@@ -32,6 +32,7 @@ from ..types import WaitableEvent
 from ..workercontext import WorkerContext
 from .types import Protocol
 
+
 BUFFER_HIGH_WATER = 2 * 2**14  # Twice the default max frame size (two frames worth)
 BUFFER_LOW_WATER = BUFFER_HIGH_WATER / 2
 

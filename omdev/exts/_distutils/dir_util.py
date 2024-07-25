@@ -6,6 +6,7 @@ import os
 from .errors import DistutilsFileError
 from .errors import DistutilsInternalError
 
+
 log = logging.getLogger(__name__)
 
 
