@@ -29,9 +29,10 @@ import os
 import pathlib
 import re
 import shutil
-import sys
 import tempfile
 import typing as ta
+
+##
 
 
 logger = logging.getLogger(__name__)
@@ -564,7 +565,7 @@ def dotenv_values(
     .env file.
     """
     if dotenv_path is None and stream is None:
-        dotenv_path = find_dotenv()
+        raise ValueError('must set dotenv_path or stream')
 
     return DotEnv(
         dotenv_path=dotenv_path,
