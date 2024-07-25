@@ -163,6 +163,7 @@ class Properties(collections.abc.MutableMapping):
         self.reset()
         self.clear()
 
+    _source_file: ta.IO[str] | None
     _next_metadata: dict[str, str]
     _lookahead: str | None = None
     _prev_key: str | None
@@ -170,6 +171,7 @@ class Properties(collections.abc.MutableMapping):
     _key_order: list
     _properties: dict
     _line_number: int
+    _metadoc: bool
 
     def __len__(self) -> int:
         return len(self._properties)
@@ -490,7 +492,7 @@ class Properties(collections.abc.MutableMapping):
         while self._parse_logical_line():
             pass
 
-    def reset(self, metadoc=False):
+    def reset(self, metadoc: bool = False) -> None:
         self._source_file = None
         self._line_number = 1
         self._lookahead = None
@@ -518,7 +520,7 @@ class Properties(collections.abc.MutableMapping):
         elif isinstance(source_data, str):
             self._source_file = io.StringIO(source_data)
         elif encoding is not None:
-            self._source_file = codecs.getreader(encoding)(source_data)
+            self._source_file = codecs.getreader(encoding)(source_data)  # type: ignore
         else:
             self._source_file = source_data
 
