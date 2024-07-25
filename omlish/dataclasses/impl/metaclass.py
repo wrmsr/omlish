@@ -14,7 +14,6 @@ from .params import MetaclassParams
 from .params import get_metaclass_params
 from .params import get_params
 
-
 T = ta.TypeVar('T')
 
 
