@@ -86,10 +86,20 @@ async def handle_post_login(scope, recv, send):
     dct = await read_form_body(recv)
 
     email = dct[b'email'].decode()
-    password = dct[b'password'].decode()
-    remember = b'remember' in dct
+    password = dct[b'password'].decode()  # noqa
+    remember = b'remember' in dct  # noqa
 
-    u = USERS.get(email=email)
+    u = USERS.get(email=email)  # noqa
+
+    # # check if the user actually exists
+    # # take the user-supplied password, hash it, and compare it to the hashed password in the database
+    # if not user or not check_password_hash(user.password, password):
+    #     flash('Please check your login details and try again.')
+    #     return redirect(url_for('auth.login'))  # if the user doesn't exist or password is wrong, reload the page
+    #
+    # # if the above check passes, then we know the user has the right credentials
+    # login_user(user, remember=remember)
+    # return redirect(url_for('main.profile'))
 
     raise NotImplementedError
 

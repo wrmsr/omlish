@@ -26,7 +26,7 @@ class Users:
     def get(
             self,
             *,
-            id: int | None = None,
+            id: int | None = None,  # noqa
             email: str | None = None,
     ) -> User | None:
         if id is not None:

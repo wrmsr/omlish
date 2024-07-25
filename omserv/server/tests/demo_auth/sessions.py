@@ -12,24 +12,24 @@ import time
 import typing as ta
 
 
-secret_key = 'secret-key-goes-here'
-salt = 'cookie-session'
+SECRET_KEY = 'secret-key-goes-here'  # noqa
+SALT = 'cookie-session'
 
 
-digestmod = hashlib.sha1
+DIGESTMOD = hashlib.sha1
 
 
 def base64_encode(b: bytes) -> bytes:
-    return base64.urlsafe_b64encode(b).rstrip(b"=")
+    return base64.urlsafe_b64encode(b).rstrip(b'=')
 
 
 def base64_decode(b: bytes) -> bytes:
-    b += b"=" * (-len(b) % 4)
+    b += b'=' * (-len(b) % 4)
     return base64.urlsafe_b64decode(b)
 
 
 def get_signature(key: bytes, value: bytes) -> bytes:
-    mac = hmac.new(key, msg=value, digestmod=digestmod)
+    mac = hmac.new(key, msg=value, digestmod=DIGESTMOD)
     return mac.digest()
 
 
@@ -51,8 +51,8 @@ def load_session_cookie(signed_value: bytes) -> ta.Any:
 
     sig_b = base64_decode(sig)
 
-    mac = hmac.new(secret_key.encode(), digestmod=digestmod)
-    mac.update(salt.encode())
+    mac = hmac.new(SECRET_KEY.encode(), digestmod=DIGESTMOD)
+    mac.update(SALT.encode())
     d_key = mac.digest()
 
     if not verify_signature(d_key, value, sig_b):
