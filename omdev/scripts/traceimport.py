@@ -26,6 +26,7 @@ import time
 import types
 import typing as ta
 
+
 psutil: ta.Any
 try:
     psutil = __import__('psutil')

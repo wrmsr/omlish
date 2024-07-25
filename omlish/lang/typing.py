@@ -9,6 +9,7 @@ import functools
 import inspect
 import typing as ta
 
+
 Ty = ta.TypeVar('Ty', bound=type)
 
 

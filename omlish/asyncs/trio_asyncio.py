@@ -3,6 +3,7 @@ import typing as ta
 
 from .. import lang
 
+
 if ta.TYPE_CHECKING:
     import asyncio
 

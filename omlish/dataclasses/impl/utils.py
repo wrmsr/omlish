@@ -6,6 +6,7 @@ import typing as ta
 from ... import check
 from ... import lang
 
+
 T = ta.TypeVar('T')
 Namespace: ta.TypeAlias = ta.MutableMapping[str, ta.Any]
 

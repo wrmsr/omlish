@@ -23,6 +23,7 @@ import typing as ta
 from . import treap
 from .persistent import PersistentMap
 
+
 K = ta.TypeVar('K')
 V = ta.TypeVar('V')
 

@@ -14,6 +14,7 @@ from .providers import Provider
 from .types import Cls
 from .types import Scope
 
+
 if ta.TYPE_CHECKING:
     from . import injector as injector_
 else:

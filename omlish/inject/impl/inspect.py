@@ -18,6 +18,7 @@ from ..keys import Key
 from ..keys import as_key
 from ..keys import tag
 
+
 P = ta.ParamSpec('P')
 R = ta.TypeVar('R')
 

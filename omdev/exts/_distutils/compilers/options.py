@@ -3,6 +3,7 @@ import typing as ta
 
 from ..util import always_iterable
 
+
 Macro: ta.TypeAlias = tuple[str, str | None] | tuple[str]
 
 

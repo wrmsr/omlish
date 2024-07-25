@@ -127,6 +127,7 @@ import typing as ta
 
 from . import lang
 
+
 if ta.TYPE_CHECKING:
     import orjson as _orjson
     import ujson as _ujson

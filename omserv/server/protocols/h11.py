@@ -25,6 +25,7 @@ from ..types import AppWrapper
 from ..workercontext import WorkerContext
 from .types import Protocol
 
+
 H11SendableEvent: ta.TypeAlias = h11.Data | h11.EndOfMessage | h11.InformationalResponse | h11.Response
 
 

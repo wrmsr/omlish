@@ -18,6 +18,7 @@ import typing as ta
 
 from . import lang
 
+
 if ta.TYPE_CHECKING:
     import bz2 as _bz2
     import gzip as _gzip

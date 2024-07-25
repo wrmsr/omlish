@@ -1,6 +1,7 @@
 import dataclasses as dc
 import typing as ta
 
+
 BYTES = 1
 OCTETS = 1
 SECONDS = 1.0

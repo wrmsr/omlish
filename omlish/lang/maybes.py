@@ -1,6 +1,7 @@
 import abc
 import typing as ta
 
+
 T = ta.TypeVar('T')
 U = ta.TypeVar('U')
 

@@ -24,6 +24,7 @@ from .simple import MatchArgsProcessor
 from .simple import OverridesProcessor
 from .slots import add_slots
 
+
 if ta.TYPE_CHECKING:
     from . import metaclass
 else:

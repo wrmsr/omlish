@@ -11,6 +11,7 @@ from .sql import IdMixin
 from .sql import TimestampsMixin
 from .sql import install_updated_at_trigger
 
+
 ##
 
 

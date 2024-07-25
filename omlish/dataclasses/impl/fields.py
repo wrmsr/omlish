@@ -9,6 +9,7 @@ from .internals import is_classvar
 from .internals import is_initvar
 from .params import get_field_extras
 
+
 if ta.TYPE_CHECKING:
     from . import api
 else:
