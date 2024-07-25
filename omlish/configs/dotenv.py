@@ -225,7 +225,7 @@ class _Reader:
 
 def _decode_escapes(regex: ta.Pattern[str], string: str) -> str:
     def decode_match(match: ta.Match[str]) -> str:
-        return codecs.decode(match.group(0), 'unicode-escape')  # type: ignore
+        return codecs.decode(match.group(0), 'unicode-escape')
 
     return regex.sub(decode_match, string)
 
@@ -325,7 +325,7 @@ def _with_warn_for_invalid_lines(mappings: ta.Iterator[_Binding]) -> ta.Iterator
 class DotEnv:
     def __init__(
         self,
-        dotenv_path: StrPath | None,
+        path: StrPath | None,
         stream: ta.IO[str] | None = None,
         verbose: bool = False,
         encoding: str | None = None,
@@ -333,7 +333,7 @@ class DotEnv:
         override: bool = True,
     ) -> None:
         super().__init__()
-        self.dotenv_path: StrPath | None = dotenv_path
+        self.path: StrPath | None = path
         self.stream: ta.IO[str] | None = stream
         self._dict: dict[str, str | None] | None = None
         self.verbose: bool = verbose
@@ -343,8 +343,8 @@ class DotEnv:
 
     @contextlib.contextmanager
     def _get_stream(self) -> ta.Iterator[ta.IO[str]]:
-        if self.dotenv_path and os.path.isfile(self.dotenv_path):
-            with open(self.dotenv_path, encoding=self.encoding) as stream:
+        if self.path and os.path.isfile(self.path):
+            with open(self.path, encoding=self.encoding) as stream:
                 yield stream
         elif self.stream is not None:
             yield self.stream
@@ -352,7 +352,7 @@ class DotEnv:
             if self.verbose:
                 log.info(
                     'dotenv could not find configuration file %s.',
-                    self.dotenv_path or '.env',
+                    self.path or '.env',
                 )
             yield io.StringIO('')
 
@@ -366,7 +366,7 @@ class DotEnv:
         if self.interpolate:
             self._dict = resolve_variables(raw_values, override=self.override)
         else:
-            self._dict = raw_values
+            self._dict = dict(raw_values)
 
         return self._dict
 
@@ -398,7 +398,7 @@ class DotEnv:
             return data[key]
 
         if self.verbose:
-            log.warning('Key %s not found in %s.', key, self.dotenv_path)
+            log.warning('Key %s not found in %s.', key, self.path)
 
         return None
 
@@ -407,7 +407,7 @@ class DotEnv:
 
 
 def get_key(
-    dotenv_path: StrPath,
+    path: StrPath,
     key_to_get: str,
     encoding: str | None = 'utf-8',
 ) -> str | None:
@@ -416,7 +416,7 @@ def get_key(
 
     Returns `None` if the key isn't found or doesn't have a value.
     """
-    return DotEnv(dotenv_path, verbose=True, encoding=encoding).get(key_to_get)
+    return DotEnv(path, verbose=True, encoding=encoding).get(key_to_get)
 
 
 @contextlib.contextmanager
@@ -442,7 +442,7 @@ def _rewrite(
 
 
 def set_key(
-    dotenv_path: StrPath,
+    path: StrPath,
     key_to_set: str,
     value_to_set: str,
     quote_mode: str = 'always',
@@ -472,7 +472,7 @@ def set_key(
     else:
         line_out = f'{key_to_set}={value_out}\n'
 
-    with _rewrite(dotenv_path, encoding=encoding) as (source, dest):
+    with _rewrite(path, encoding=encoding) as (source, dest):
         replaced = False
         missing_newline = False
         for mapping in _with_warn_for_invalid_lines(_parse_stream(source)):
@@ -491,7 +491,7 @@ def set_key(
 
 
 def unset_key(
-    dotenv_path: StrPath,
+    path: StrPath,
     key_to_unset: str,
     quote_mode: str = 'always',
     encoding: str | None = 'utf-8',
@@ -502,12 +502,12 @@ def unset_key(
     If the .env path given doesn't exist, fails.
     If the given key doesn't exist in the .env, fails.
     """
-    if not os.path.exists(dotenv_path):
-        log.warning("Can't delete from %s - it doesn't exist.", dotenv_path)
+    if not os.path.exists(path):
+        log.warning("Can't delete from %s - it doesn't exist.", path)
         return None, key_to_unset
 
     removed = False
-    with _rewrite(dotenv_path, encoding=encoding) as (source, dest):
+    with _rewrite(path, encoding=encoding) as (source, dest):
         for mapping in _with_warn_for_invalid_lines(_parse_stream(source)):
             if mapping.key == key_to_unset:
                 removed = True
@@ -515,7 +515,7 @@ def unset_key(
                 dest.write(mapping.original.string)
 
     if not removed:
-        log.warning("Key %s not removed from %s - key doesn't exist.", key_to_unset, dotenv_path)
+        log.warning("Key %s not removed from %s - key doesn't exist.", key_to_unset, path)
         return None, key_to_unset
 
     return removed, key_to_unset
@@ -534,11 +534,11 @@ def resolve_variables(
             atoms = parse_variables(value)
             env: dict[str, str | None] = {}
             if override:
-                env.update(os.environ)  # type: ignore
+                env.update(os.environ)
                 env.update(new_values)
             else:
                 env.update(new_values)
-                env.update(os.environ)  # type: ignore
+                env.update(os.environ)
             result = ''.join(atom.resolve(env) for atom in atoms)
 
         new_values[name] = result
@@ -547,7 +547,7 @@ def resolve_variables(
 
 
 def dotenv_values(
-    dotenv_path: StrPath | None = None,
+    path: StrPath | None = None,
     stream: ta.IO[str] | None = None,
     verbose: bool = False,
     interpolate: bool = True,
@@ -561,19 +561,19 @@ def dotenv_values(
     `{"foo": None}`
 
     Parameters:
-        dotenv_path: Absolute or relative path to the .env file.
-        stream: `StringIO` object with .env content, used if `dotenv_path` is `None`.
+        path: Absolute or relative path to the .env file.
+        stream: `StringIO` object with .env content, used if `path` is `None`.
         verbose: Whether to output a warning if the .env file is missing.
         encoding: Encoding to be used to read the file.
 
-    If both `dotenv_path` and `stream` are `None`, `find_dotenv()` is used to find the
+    If both `path` and `stream` are `None`, `find_dotenv()` is used to find the
     .env file.
     """
-    if dotenv_path is None and stream is None:
-        raise ValueError('must set dotenv_path or stream')
+    if path is None and stream is None:
+        raise ValueError('must set path or stream')
 
     return DotEnv(
-        dotenv_path=dotenv_path,
+        path=path,
         stream=stream,
         verbose=verbose,
         interpolate=interpolate,
