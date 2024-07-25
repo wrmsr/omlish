@@ -372,7 +372,7 @@ class DotEnv:
 
     def parse(self) -> ta.Iterator[tuple[str, str | None]]:
         with self._get_stream() as stream:
-            for mapping in _with_warn_for_invalid_lines(_parse_stream(stream)):
+            for mapping in _with_warn_for_invalid_lines(parse_stream(stream)):
                 if mapping.key is not None:
                     yield mapping.key, mapping.value
 
@@ -477,7 +477,7 @@ def set_key(
     with _rewrite(path, encoding=encoding) as (source, dest):
         replaced = False
         missing_newline = False
-        for mapping in _with_warn_for_invalid_lines(_parse_stream(source)):
+        for mapping in _with_warn_for_invalid_lines(parse_stream(source)):
             if mapping.key == key_to_set:
                 dest.write(line_out)
                 replaced = True
@@ -511,7 +511,7 @@ def unset_key(
 
     removed = False
     with _rewrite(path, encoding=encoding) as (source, dest):
-        for mapping in _with_warn_for_invalid_lines(_parse_stream(source)):
+        for mapping in _with_warn_for_invalid_lines(parse_stream(source)):
             if mapping.key == key_to_unset:
                 removed = True
             else:

@@ -24,6 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import codecs
 import collections.abc
+import contextlib
 import functools
 import io
 import itertools
@@ -49,8 +50,8 @@ def _is_runtime_meta(key):
     Handles both unicode and byte metadata keys.
     """
     return (
-        (isinstance(key, str) and key.startswith("__")) or
-        (isinstance(key, bytes) and key.startswith(b"__"))
+        (isinstance(key, str) and key.startswith('__')) or
+        (isinstance(key, bytes) and key.startswith(b'__'))
     )
 
 
@@ -80,13 +81,13 @@ def _escape_non_ascii(unicode_obj):
         s = match.group(0)
         n = ord(s)
         if n < 0x10000:
-            return u'\\u{0:04x}'.format(n)
+            return f'\\u{n:04x}'
         else:
             # surrogate pair
             n -= 0x10000
             s1 = 0xd800 | ((n >> 10) & 0x3ff)
             s2 = 0xdc00 | (n & 0x3ff)
-            return u'\\u{0:04x}\\u{1:04x}'.format(s1, s2)
+            return f'\\u{s1:04x}\\u{s2:04x}'
 
     # Just to be sure: If we get passed a str object, then try to decode it as UTF-8.
     if isinstance(unicode_obj, bytes):
@@ -95,11 +96,11 @@ def _escape_non_ascii(unicode_obj):
     return re.sub(
         r'[^ -~]',
         replace,
-        unicode_obj
+        unicode_obj,
     )
 
 
-@functools.partial(codecs.register_error, "jproperties.jbackslashreplace")
+@functools.partial(codecs.register_error, 'jproperties.jbackslashreplace')
 def _jbackslashreplace_error_handler(err):
     """
     Encoding error handler which replaces invalid characters with Java-compliant Unicode escape sequences.
@@ -132,7 +133,7 @@ def _escape_str(raw_str, only_leading_spaces=False, escape_non_printing=False, l
     # We NEED an unicode object. It's worth a try.
     if isinstance(raw_str, bytes):
         # consider bringing in chardet...
-        raw_str = raw_str.decode("utf-8")
+        raw_str = raw_str.decode('utf-8')
     elif not isinstance(raw_str, str):
         # Last resort: Convert unknown object to a unicode string.
         # This works nicely for integers etc.
@@ -140,9 +141,9 @@ def _escape_str(raw_str, only_leading_spaces=False, escape_non_printing=False, l
 
     # Do simple whitespace substitutions.
     trans_dict = {
-        ord("\r"): "\\r",
-        ord("\n"): "\\n",
-        ord("\f"): "\\f"
+        ord('\r'): '\\r',
+        ord('\n'): '\\n',
+        ord('\f'): '\\f',
     }
 
     # Do we want to be conform to the specs fully?
@@ -150,13 +151,13 @@ def _escape_str(raw_str, only_leading_spaces=False, escape_non_printing=False, l
         # Yes, so escape more possibly ambiguous characters as well.
         trans_dict.update(
             {
-                ord("#"): "\\#",
-                ord("!"): "\\!",
-                ord("="): "\\=",
-                ord(":"): "\\:",
-                ord("\\"): "\\\\",
-                ord("\t"): "\\t",
-            }
+                ord('#'): '\\#',
+                ord('!'): '\\!',
+                ord('='): '\\=',
+                ord(':'): '\\:',
+                ord('\\'): '\\\\',
+                ord('\t'): '\\t',
+            },
         )
 
     # All right, now we can actually do the substitutions.
@@ -164,9 +165,9 @@ def _escape_str(raw_str, only_leading_spaces=False, escape_non_printing=False, l
 
     # Now escape either all space characters or only a possibly present single space at the beginning.
     if not only_leading_spaces:
-        escaped_str = escaped_str.replace(" ", "\\ ")
+        escaped_str = escaped_str.replace(' ', '\\ ')
     else:
-        escaped_str = re.sub("^ ", "\\\\ ", escaped_str)
+        escaped_str = re.sub('^ ', '\\\\ ', escaped_str)
 
     # Do we want to escape non-printing characters as well?
     if escape_non_printing:
@@ -207,12 +208,12 @@ class ParseError(PropertyError):
 
         :return: Human-readable string representation of this object.
         """
-        filename = "<unknown>" if not hasattr(self.file_obj, "filename") else self.file_obj.filename
+        filename = '<unknown>' if not hasattr(self.file_obj, 'filename') else self.file_obj.filename
 
-        return "Parse error in %s:%d: %s" % (
+        return 'Parse error in %s:%d: %s' % (
             filename,
             self.line_number,
-            self.message
+            self.message,
         )
 
 
@@ -224,10 +225,10 @@ class Properties(collections.abc.MutableMapping):
     http://docs.oracle.com/javase/7/docs/api/java/util/Properties.html#load(java.io.Reader)
     """
     # Line endings/terminators.
-    _EOL = "\r\n"
+    _EOL = '\r\n'
 
     # Non-line terminator whitespace.
-    _WHITESPACE = " \t\f"
+    _WHITESPACE = ' \t\f'
 
     # Which characters do we treat as whitespace?
     _ALLWHITESPACE = _EOL + _WHITESPACE
@@ -255,29 +256,29 @@ class Properties(collections.abc.MutableMapping):
 
     def __getitem__(self, item):
         if not isinstance(item, str):
-            raise TypeError("Property keys must be of type str or unicode")
+            raise TypeError('Property keys must be of type str or unicode')
 
         if item not in self._properties:
-            raise KeyError("Key not found")
+            raise KeyError('Key not found')
 
         return PropertyTuple(
             self._properties[item],
-            self._metadata.get(item, {})
+            self._metadata.get(item, {}),
         )
 
     def __setitem__(self, key, value):
         if not isinstance(key, str):
-            raise TypeError("Property keys must be of type str or unicode")
+            raise TypeError('Property keys must be of type str or unicode')
 
         metadata = None
         if isinstance(value, tuple):
             value, metadata = value
 
         if not isinstance(value, str):
-            raise TypeError("Property values must be of type str or unicode")
+            raise TypeError('Property values must be of type str or unicode')
 
         if metadata is not None and not isinstance(metadata, dict):
-            raise TypeError("Metadata needs to be a dictionary")
+            raise TypeError('Metadata needs to be a dictionary')
 
         self._properties[key] = value
         if metadata is not None:
@@ -285,10 +286,10 @@ class Properties(collections.abc.MutableMapping):
 
     def __delitem__(self, key):
         if not isinstance(key, str):
-            raise TypeError("Property keys must be of type str or unicode")
+            raise TypeError('Property keys must be of type str or unicode')
 
         if key not in self._properties:
-            raise KeyError("Key not found")
+            raise KeyError('Key not found')
 
         # Remove the property itself.
         del self._properties[key]
@@ -298,10 +299,8 @@ class Properties(collections.abc.MutableMapping):
             del self._metadata[key]
 
         # We also no longer need to remember its key order since the property does not exist anymore.
-        try:
+        with contextlib.suppress(ValueError):
             self._key_order.remove(key)
-        except ValueError:
-            pass
 
     def __iter__(self):
         return self._properties.__iter__()
@@ -341,7 +340,7 @@ class Properties(collections.abc.MutableMapping):
         :raise: TypeError if the metadata is not a dictionary.
         """
         if not isinstance(metadata, dict):
-            raise TypeError("Metadata needs to be a dictionary")
+            raise TypeError('Metadata needs to be a dictionary')
 
         self._metadata[key] = metadata
 
@@ -357,9 +356,9 @@ class Properties(collections.abc.MutableMapping):
         """
         if self._lookahead is None:
             # No lookahead yet, need to read a char.
-            c = self._source_file.read(1)
-            if c == "":
-                raise EOFError()
+            c = self._source_file.read(1)  # type: ignore
+            if c == '':
+                raise EOFError
 
             self._lookahead = c
 
@@ -390,18 +389,18 @@ class Properties(collections.abc.MutableMapping):
         :raise: EOFError, IOError.
         """
         c = self._peek()
-        if c == "\r":
+        if c == '\r':
             # Mac or DOS line ending
             self._line_number += 1
             self._getc()
 
             try:
-                if self._peek() == "\n":
+                if self._peek() == '\n':
                     # DOS line ending. Skip it.
                     self._getc()
             except EOFError:
                 pass
-        elif c == "\n":
+        elif c == '\n':
             # UNIX line ending.
             self._line_number += 1
             self._getc()
@@ -440,7 +439,7 @@ class Properties(collections.abc.MutableMapping):
         :return: The text on the line.
         :raise: IOError.
         """
-        line = ""
+        line = ''
 
         try:
             while self._peek() not in self._EOL:
@@ -468,14 +467,14 @@ class Properties(collections.abc.MutableMapping):
         self._getc()
 
         # If the next character is a colon, then this is a metadata comment. If not, then we skip this comment.
-        if self._peek() != ":":
+        if self._peek() != ':':
             docstr = self._skip_natural_line()
             if self._metadoc and self._prev_key:
                 prev_metadata = self._metadata.setdefault(self._prev_key, {})
-                prev_metadata.setdefault('_doc', "")
-                if docstr.startswith(" "):
+                prev_metadata.setdefault('_doc', '')
+                if docstr.startswith(' '):
                     docstr = docstr[1:]
-                prev_metadata['_doc'] += docstr + "\n"
+                prev_metadata['_doc'] += docstr + '\n'
             return
 
         # Skip the metadata marker (the colon).
@@ -489,9 +488,9 @@ class Properties(collections.abc.MutableMapping):
         # catch this here.
         if not len(key):
             raise ParseError(
-                "Empty key in metadata key-value pair",
+                'Empty key in metadata key-value pair',
                 self._line_number,
-                self._source_file
+                self._source_file,
             )
 
         # Good, now we can record the metadata. Also, _parse_value() already took care of the EOL after the comment
@@ -509,7 +508,7 @@ class Properties(collections.abc.MutableMapping):
         :return: The evaluated escape sequence (string).
         :raise: EOFError and IOError.
         """
-        if self._peek() == "\\":
+        if self._peek() == '\\':
             self._getc()
 
         try:
@@ -518,7 +517,7 @@ class Properties(collections.abc.MutableMapping):
             escaped_char = self._peek()
         except EOFError:
             # Nothing more to read, stray trailing backslash. Drop it.
-            return ""
+            return ''
 
         if escaped_char in self._EOL:
             # \<newline>
@@ -532,24 +531,24 @@ class Properties(collections.abc.MutableMapping):
                 except EOFError:
                     pass
 
-            return ""
+            return ''
 
         # Not an escaped line terminator sequence -- need to manually skip the escaped character (since we are not
         # calling _handle_eol() which would do this for us if it were a line terminator sequence).
         self._getc()
 
-        if escaped_char in "rntf":
+        if escaped_char in 'rntf':
             # \r, \n, \t or \f.
-            return eval(r"u'\%s'" % escaped_char)
+            return eval(r"u'\%s'" % (escaped_char,))  # noqa
 
-        if escaped_char == "":
+        if escaped_char == '':
             # Unicode escape: \uXXXX.
             start_linenumber = self._line_number
 
             try:
                 # Read the next four characters which MUST be present and make up the rest of the escape sequence.
-                codepoint_hex = ""
-                for i in range(4):
+                codepoint_hex = ''
+                for _ in range(4):
                     codepoint_hex += self._getc()
 
                 # Decode the hex string to an int.
@@ -560,17 +559,17 @@ class Properties(collections.abc.MutableMapping):
                 #
                 # See: http://unicodebook.readthedocs.io/unicode_encodings.html#utf-16-surrogate-pairs
                 if 0xD800 <= codepoint <= 0xDBFF:
-                    codepoint2_hex = ""
+                    codepoint2_hex = ''
                     try:
-                        for i in range(6):
+                        for _ in range(6):
                             codepoint2_hex += self._getc()
                     except EOFError:
                         pass
 
-                    if codepoint2_hex[:2] != r"\u" or len(codepoint2_hex) != 6:
+                    if codepoint2_hex[:2] != r'\u' or len(codepoint2_hex) != 6:
                         raise ParseError(
-                            "High surrogate unicode escape sequence not followed by another "
-                            "(low surrogate) unicode escape sequence.",
+                            'High surrogate unicode escape sequence not followed by another '
+                            '(low surrogate) unicode escape sequence.',
                             start_linenumber,
                             self._source_file,
                         )
@@ -578,8 +577,8 @@ class Properties(collections.abc.MutableMapping):
                     codepoint2 = int(codepoint2_hex[2:], base=16)
                     if not (0xDC00 <= codepoint2 <= 0xDFFF):
                         raise ParseError(
-                            "Low surrogate unicode escape sequence expected after high surrogate "
-                            "escape sequence, but got a non-low-surrogate unicode escape sequence.",
+                            'Low surrogate unicode escape sequence expected after high surrogate '
+                            'escape sequence, but got a non-low-surrogate unicode escape sequence.',
                             start_linenumber,
                             self._source_file,
                         )
@@ -590,9 +589,9 @@ class Properties(collections.abc.MutableMapping):
 
                     codepoint = final_codepoint
 
-                return struct.pack("=I", codepoint).decode("utf-32")
+                return struct.pack('=I', codepoint).decode('utf-32')
             except (EOFError, ValueError) as e:
-                raise ParseError(str(e), start_linenumber, self._source_file)
+                raise ParseError('Parse error', start_linenumber, self._source_file) from e
 
         # Else it's an unknown escape sequence. Swallow the backslash.
         return escaped_char
@@ -607,19 +606,19 @@ class Properties(collections.abc.MutableMapping):
         """
         self._skip_whitespace(single_line_only)
 
-        key = ""
+        key = ''
         while True:
             try:
                 c = self._peek()
             except EOFError:
                 break
 
-            if c == "\\":
+            if c == '\\':
                 # Figure out how we need to handle this escape sequence.
                 key += self._handle_escape(not single_line_only)
                 continue
 
-            if c in self._ALLWHITESPACE or c in ":=":
+            if c in self._ALLWHITESPACE or c in ':=':
                 # End of key.
                 break
 
@@ -640,23 +639,23 @@ class Properties(collections.abc.MutableMapping):
         # First skip a separator (: or =), if present. It may be surrounded by whitespace.
         try:
             self._skip_whitespace(True)
-            if self._peek() in ":=":
+            if self._peek() in ':=':
                 self._getc()
             self._skip_whitespace(True)
         except EOFError:
             # Still no value.
-            return ""
+            return ''
 
         # Now there's definitely a value present. Simply read until the end of the line (or EOF), processing escapes as
         # usual.
-        value = ""
+        value = ''
         while True:
             try:
                 c = self._peek()
             except EOFError:
                 break
 
-            if c == "\\" and self._process_escapes_in_values:
+            if c == '\\' and self._process_escapes_in_values:
                 # Figure out how we need to handle this escape sequence.
                 value += self._handle_escape(not single_line_only)
                 continue
@@ -691,7 +690,7 @@ class Properties(collections.abc.MutableMapping):
             return False
 
         # Is this a comment line?
-        if c in "!#":
+        if c in '!#':
             try:
                 self._parse_comment()
             except EOFError:
@@ -732,6 +731,12 @@ class Properties(collections.abc.MutableMapping):
         """
         while self._parse_logical_line():
             pass
+
+    _next_metadata: dict[str, str]
+
+    _lookahead: str | None = None
+
+    _prev_key: str | None
 
     # noinspection PyAttributeOutsideInit
     def reset(self, metadoc=False):
@@ -775,7 +780,7 @@ class Properties(collections.abc.MutableMapping):
         # Key order. Populated when parsing so that key order can be preserved when writing the data back.
         self._key_order = []
 
-    def load(self, source_data, encoding="iso-8859-1", metadoc=False):
+    def load(self, source_data, encoding='iso-8859-1', metadoc=False):
         """
         Load, decode and parse an input stream (or string).
 
@@ -813,7 +818,7 @@ class Properties(collections.abc.MutableMapping):
             self,
             out_stream,
             initial_comments=None,
-            encoding="iso-8859-1",
+            encoding='iso-8859-1',
             strict=True,
             strip_meta=True,
             timestamp=True,
@@ -840,55 +845,55 @@ class Properties(collections.abc.MutableMapping):
         out_codec_info = codecs.lookup(encoding)
         wrapped_out_stream = out_codec_info.streamwriter(
             out_stream,
-            "jproperties.jbackslashreplace"
+            'jproperties.jbackslashreplace',
         )
-        properties_escape_nonprinting = strict and out_codec_info == codecs.lookup("latin_1")
+        properties_escape_nonprinting = strict and out_codec_info == codecs.lookup('latin_1')
 
         # Print initial comment line(s), if provided.
         if initial_comments is not None:
             # Normalize line endings.
             initial_comments = re.sub(
-                r"(\r\n|\r)",
-                "\n",
-                initial_comments
+                r'(\r\n|\r)',
+                '\n',
+                initial_comments,
             )
 
             # Embedded line terminator sequences in initial_comments need to be replaced by \n<hash sign> to correctly
             # yield multiple comment lines.
             initial_comments = re.sub(
-                r"\n(?![#!])",
-                "\n#",
-                initial_comments
+                r'\n(?![#!])',
+                '\n#',
+                initial_comments,
             )
 
             # Make sure that no line of the initial comment is accidentally treated as a metadata comment. Because we
             # already replaced all line terminator sequences in the comment with the sequence "\n#" and also normalized
             # the line endings, we simply need to match on all occurrences of "\n#:" or "\n::".
             initial_comments = re.sub(
-                r"(\n[#!]):",
-                r"\g<1>\:",
-                initial_comments
+                r'(\n[#!]):',
+                r'\g<1>\:',
+                initial_comments,
             )
 
-            print("#" + initial_comments, file=wrapped_out_stream)
+            print('#' + initial_comments, file=wrapped_out_stream)
 
         if timestamp:
             # Print a comment line with the current time and date. Yes, this is ugly, but we need to print an ENGLISH
             # string. It can't be locale-dependent.
-            day_of_week = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-            month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+            day_of_week = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+            month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
             now = time.gmtime()
             print(
-                "#%s %s %02d %02d:%02d:%02d UTC %04d" % (
+                '#%s %s %02d %02d:%02d:%02d UTC %04d' % (
                     day_of_week[now.tm_wday],
                     month[now.tm_mon - 1],
                     now.tm_mday,
                     now.tm_hour,
                     now.tm_min,
                     now.tm_sec,
-                    now.tm_year
+                    now.tm_year,
                 ),
-                file=wrapped_out_stream
+                file=wrapped_out_stream,
             )
 
         # Now come the properties themselves.
@@ -921,28 +926,28 @@ class Properties(collections.abc.MutableMapping):
                             continue
 
                         print(
-                            "#: %s=%s" % (
+                            '#: {}={}'.format(  # noqa
                                 _escape_str(mkey),
-                                _escape_str(metadata[mkey], True)
+                                _escape_str(metadata[mkey], True),
                             ),
-                            file=wrapped_out_stream
+                            file=wrapped_out_stream,
                         )
 
                 # Now write the key-value pair itself.
                 print(
-                    "%s=%s" % (
+                    '='.join([
                         _escape_str(
                             key,
-                            escape_non_printing=properties_escape_nonprinting
+                            escape_non_printing=properties_escape_nonprinting,
                         ),
                         _escape_str(
                             self._properties[key],
                             True,
                             escape_non_printing=properties_escape_nonprinting,
-                            line_breaks_only=not self._process_escapes_in_values
-                        )
-                    ),
-                    file=wrapped_out_stream
+                            line_breaks_only=not self._process_escapes_in_values,
+                        ),
+                    ]),
+                    file=wrapped_out_stream,
                 )
 
     def list(self, out_stream=sys.stderr):
@@ -952,9 +957,9 @@ class Properties(collections.abc.MutableMapping):
         :param out_stream: Where to print the property list.
         :return: None
         """
-        print("-- listing properties --", file=out_stream)
+        print('-- listing properties --', file=out_stream)
         for key in self._properties:
-            msg = "%s=%s" % (key, self._properties[key])
+            msg = f'{key}={self._properties[key]}'
             print(msg, file=out_stream)
 
 
@@ -979,40 +984,40 @@ def main():
     """
     prog_name = os.path.basename(sys.argv[0])
 
-    if len(sys.argv) < 2 or sys.argv[1] == "-h":
-        print("Loads a property file and dumps it to stdout, optionally converting between encodings.", file=sys.stderr)
-        print("Escape sequence handling can also be disabled (it is enabled by default).\n", file=sys.stderr)
-        print("Usage:", file=sys.stderr)
-        print(" %s [-h] input_file [input_encoding [output_encoding [process_escapes]]]\n" % prog_name, file=sys.stderr)
+    if len(sys.argv) < 2 or sys.argv[1] == '-h':
+        print('Loads a property file and dumps it to stdout, optionally converting between encodings.', file=sys.stderr)
+        print('Escape sequence handling can also be disabled (it is enabled by default).\n', file=sys.stderr)
+        print('Usage:', file=sys.stderr)
+        print(f' {prog_name} [-h] input_file [input_encoding [output_encoding [process_escapes]]]\n', file=sys.stderr)
         print("The input and output encodings default to `utf-8'. If `false' is given for the", file=sys.stderr)
         print("`process_escapes' parameter, then escape sequences in property values are taken", file=sys.stderr)
-        print("literally, i. e. they are treated like normal characters. This will also cause", file=sys.stderr)
-        print("the writer to try hard not to output any escape sequences in values and thus it", file=sys.stderr)
-        print("will output everything literally, as long as this does not lead to invalid output.", file=sys.stderr)
+        print('literally, i. e. they are treated like normal characters. This will also cause', file=sys.stderr)
+        print('the writer to try hard not to output any escape sequences in values and thus it', file=sys.stderr)
+        print('will output everything literally, as long as this does not lead to invalid output.', file=sys.stderr)
 
         return 1
 
-    in_enc = "utf-8" if len(sys.argv) < 3 else sys.argv[2]
-    out_enc = "utf-8" if len(sys.argv) < 4 else sys.argv[3]
-    process_escapes_in_values = len(sys.argv) < 5 or sys.argv[4].lower() != "false"
+    in_enc = 'utf-8' if len(sys.argv) < 3 else sys.argv[2]
+    out_enc = 'utf-8' if len(sys.argv) < 4 else sys.argv[3]
+    process_escapes_in_values = len(sys.argv) < 5 or sys.argv[4].lower() != 'false'
 
     try:
-        f = open(sys.argv[1], "rb")
         p = Properties(process_escapes_in_values)
-        p.load(f, in_enc)
-    except (IOError, EOFError, ParseError, UnicodeDecodeError, LookupError) as e:
-        print("Error: Could not read input file:", e, file=sys.stderr)
+        with open(sys.argv[1], 'rb') as f:
+            p.load(f, in_enc)
+    except (OSError, EOFError, ParseError, UnicodeDecodeError, LookupError) as e:
+        print('Error: Could not read input file:', e, file=sys.stderr)
         return 2
 
     try:
         p.store(
             sys.stdout.buffer,
-            "File generated by %s (escapes in values: %s)" % (prog_name, process_escapes_in_values),
+            f'File generated by {prog_name} (escapes in values: {process_escapes_in_values})',
             out_enc,
-            False
+            False,
         )
-    except (LookupError, IOError, UnicodeEncodeError) as e:
-        print("Error: Could not dump properties:", e, file=sys.stderr)
+    except (OSError, LookupError, UnicodeEncodeError) as e:
+        print('Error: Could not dump properties:', e, file=sys.stderr)
         return 3
 
     return 0
