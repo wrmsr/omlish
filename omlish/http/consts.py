@@ -10,6 +10,7 @@ def format_status(status: http.HTTPStatus) -> str:
 
 STATUS_OK = format_status(http.HTTPStatus.OK)
 
+STATUS_FOUND = format_status(http.HTTPStatus.FOUND)
 STATUS_TEMPORARY_REDIRECT = format_status(http.HTTPStatus.TEMPORARY_REDIRECT)
 
 STATUS_BAD_REQUEST = format_status(http.HTTPStatus.BAD_REQUEST)
