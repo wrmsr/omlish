@@ -4,9 +4,49 @@ import typing as ta
 import anyio
 
 from omlish import logs
+from omlish.http import consts
 
 from ..config import Config
 from ..serving import serve
+
+
+log = logging.getLogger(__name__)
+
+
+##
+
+
+async def stub_lifespan(scope, recv, send):
+    while True:
+        message = await recv()
+        if message['type'] == 'lifespan.startup':
+            log.info('Lifespan starting up')
+            await send({'type': 'lifespan.startup.complete'})
+
+        elif message['type'] == 'lifespan.shutdown':
+            log.info('Lifespan shutting down')
+            await send({'type': 'lifespan.shutdown.complete'})
+            return
+
+
+async def start_response(send, status: int, content_type: bytes = consts.CONTENT_TYPE_TEXT_UTF8):
+    await send({
+        'type': 'http.response.start',
+        'status': status,
+        'headers': [
+            [b'content-type', content_type],
+        ],
+    })
+
+
+async def finish_response(send, body: bytes = b''):
+    await send({
+        'type': 'http.response.body',
+        'body': body,
+    })
+
+
+##
 
 
 HANDLERS: dict[tuple[str, str], ta.Any] = {}
@@ -21,33 +61,18 @@ def handle(method: str, path: str):
 
 @handle('GET', '/')
 async def handle_get_root(scope, recv, send):
-    await send({
-        'type': 'http.response.start',
-        'status': 200,
-        'headers': [
-            [b'content-type', b'text/plain'],
-        ],
-    })
+    await start_response(send, 200)
+    await finish_response(send, b'hi')
 
-    await send({
-        'type': 'http.response.body',
-        'body': b'hi',
-    })
+
+##
 
 
 async def auth_app(scope, recv, send):
     match scope_ty := scope['type']:
         case 'lifespan':
-            while True:
-                message = await recv()
-                if message['type'] == 'lifespan.startup':
-                    await send({'type': 'lifespan.startup.complete'})
-                    return
-
-                elif message['type'] == 'lifespan.shutdown':
-                    # Do some shutdown here!
-                    await send({'type': 'lifespan.shutdown.complete'})
-                    return
+            await stub_lifespan(scope, recv, send)
+            return
 
         case 'http':
             handler = HANDLERS.get((scope['method'], scope['raw_path'].decode()))
@@ -56,21 +81,14 @@ async def auth_app(scope, recv, send):
                 await handler(scope, recv, send)
 
             else:
-                await send({
-                    'type': 'http.response.start',
-                    'status': 404,
-                    'headers': [
-                        [b'content-type', b'text/plain'],
-                    ],
-                })
-
-                await send({
-                    'type': 'http.response.body',
-                    'body': b'',
-                })
+                await start_response(send, 404)
+                await finish_response(send)
 
         case _:
             raise ValueError(f'Unhandled scope type: {scope_ty!r}')
+
+
+##
 
 
 def _main():
