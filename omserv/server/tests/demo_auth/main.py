@@ -6,10 +6,12 @@ import importlib.resources
 import itertools
 import logging
 import typing as ta
+import urllib.parse
 
 import anyio
 import jinja2
 
+from omlish import check
 from omlish import lang
 from omlish import logs
 from omlish.http import consts
@@ -58,14 +60,26 @@ class _EnvUser:
 
 
 J2_DEFAULT_KWARGS = dict(
-    url_for=lambda s: f'http://localhost:8000/{s}',
     get_flashed_messages=lambda: [],
     current_user=_EnvUser(),
 )
 
 
+def j2_helper(fn):
+    J2_DEFAULT_KWARGS[fn.__name__] = fn
+    return fn
+
+
 def render_template(name: str, **kwargs: ta.Any) -> bytes:
     return load_templates()[f'{name}.j2'].render(**{**J2_DEFAULT_KWARGS, **kwargs}).encode()
+
+
+##
+
+
+@j2_helper
+def url_for(s: str) -> str:
+    return f'http://localhost:8000/{s}'
 
 
 ##
@@ -97,17 +111,26 @@ class Users:
         super().__init__()
         self._next_user_id = itertools.count()
         self._users_by_id: dict[int, User] = {}
+        self._user_ids_by_email: dict[str, int] = {}
 
-    def create(self, **kwargs: ta.Any) -> User:
+    def create(
+            self,
+            email: str,
+            name: str,
+    ) -> User:
+        check.not_in(email, self._user_ids_by_email)
         u = User(
             id=next(self._next_user_id),
-            **kwargs,
+            email=email,
+            name=name,
         )
         self._users_by_id[u.id] = u
+        self._user_ids_by_email[u.email] = u.id
         return u
 
     def update(self, u: User) -> None:
-        _ = self._users_by_id[u.id]
+        e = self._users_by_id[u.id]
+        check.equal(u.email, e.email)
         self._users_by_id[u.id] = u
 
 
@@ -164,6 +187,18 @@ async def handle_get_signup(scope, recv, send):
 
 @handle('POST', '/signup')
 async def handle_post_signup(scope, recv, send):
+    body = b''
+    more_body = True
+    while more_body:
+        message = await recv()
+        body += message.get('body', b'')
+        more_body = message.get('more_body', False)
+
+    dct = urllib.parse.parse_qs(body)  # noqa
+    email = check.single(dct[b'email']).decode()
+    name = check.single(dct[b'name']).decode()
+    password = check.single(dct[b'password']).decode()
+
     raise NotImplementedError
 
 
