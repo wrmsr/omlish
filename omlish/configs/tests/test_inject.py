@@ -22,23 +22,28 @@ def bind_impl(cls: type[ConfigurableT], impl_cls: type[ConfigurableU]) -> inj.El
     return inj.as_elements(
         inj.Binding(
             inj.Key(ImplFor, tag=cls, multi=True),
-            inj.const(ImplFor(cls, impl_cls)),
+            inj.const((ImplFor(cls, impl_cls),)),
         )
     )
 
 
 def bind_factory(cls: type[Configurable]) -> inj.Elements:
     def outer(i: inj.Injector):
+        ifs = i.provide(inj.Key(ImplFor, tag=cls, multi=True))
+        ifd = {ic.impl_cls.Config: ic for ic in ifs}
+
         def inner(config):
+            impl_cls = ifd[type(config)].impl_cls
             raise NotImplementedError
+
         return inner
 
     fac_cls = ta.Callable[[cls.Config], cls]
     return inj.as_elements(
-        inj.Binding(
+        inj.singleton(inj.Binding(
             inj.Key(fac_cls),
             inj.fn(outer, fac_cls)
-        ),
+        )),
     )
 
 
@@ -51,4 +56,6 @@ def test_inject():
 
     i = inj.create_injector(es)
     fac = i[inj.Key(ta.Callable[[Thing.Config], Thing])]
-    print(fac)
+
+    assert isinstance(fac(AThing.Config()), AThing)
+    assert isinstance(fac(BThing.Config()), BThing)
