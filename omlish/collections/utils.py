@@ -64,7 +64,7 @@ def unique_dict(items: ta.Iterable[tuple[K, V]], *, identity: bool = False) -> t
 
 
 def multi_dict(*kvs: tuple[K, V]) -> dict[K, list[V]]:
-    d = {}
+    d: dict[K, list[V]] = {}
     for k, v in kvs:
         d.setdefault(k, []).append(v)
     return d
