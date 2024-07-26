@@ -3,7 +3,7 @@ import typing as ta
 import urllib.parse
 
 from omlish import check
-from omlish.http import consts
+from omlish import http as hu
 
 
 log = logging.getLogger(__name__)
@@ -25,7 +25,7 @@ async def stub_lifespan(scope, recv, send):
 async def start_response(
         send,
         status: int,
-        content_type: bytes = consts.CONTENT_TYPE_TEXT_UTF8,
+        content_type: bytes = hu.consts.CONTENT_TYPE_TEXT_UTF8,
         headers: ta.Sequence[tuple[bytes, bytes]] | None = None,
 ):
     await send({
@@ -54,7 +54,7 @@ async def redirect_response(
         'type': 'http.response.start',
         'status': 302,
         'headers': [
-            (b'content-type', consts.CONTENT_TYPE_TEXT_UTF8),
+            (b'content-type', hu.consts.CONTENT_TYPE_TEXT_UTF8),
             (b'location', url.encode()),
             *(headers or ()),
         ],

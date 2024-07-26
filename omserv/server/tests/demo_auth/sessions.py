@@ -12,6 +12,8 @@ import time
 import typing as ta
 import zlib
 
+from omlish import http as hu
+
 
 SECRET_KEY = 'secret-key-goes-here'  # noqa
 SALT = 'cookie-session'
@@ -114,9 +116,10 @@ def save_session_cookie(obj: ta.Any) -> bytes:
 def extract_session(scope) -> dict[str, ta.Any]:
     for k, v in scope['headers']:
         if k == b'cookie':
-            n, _, p = v.partition(b'=')
-            if n == b'session':
-                return load_session_cookie(p)
+            cks = hu.parse_cookie(v.decode())  # FIXME: lol
+            sk = cks.get('session')
+            if sk:
+                return load_session_cookie(sk[0].encode())  # FIXME: lol
     return {}
 
 
