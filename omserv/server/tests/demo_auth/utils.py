@@ -1,6 +1,6 @@
 import logging
-import urllib.parse
 import typing as ta
+import urllib.parse
 
 from omlish import check
 from omlish.http import consts

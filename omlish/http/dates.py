@@ -20,8 +20,8 @@
 # WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import datetime
-import time
 import email.utils
+import time
 
 
 def _dt_as_utc(dt: datetime.datetime | None) -> datetime.datetime | None:
@@ -29,18 +29,18 @@ def _dt_as_utc(dt: datetime.datetime | None) -> datetime.datetime | None:
         return dt
 
     if dt.tzinfo is None:
-        return dt.replace(tzinfo=datetime.timezone.utc)
-    elif dt.tzinfo != datetime.timezone.utc:
-        return dt.astimezone(datetime.timezone.utc)
+        return dt.replace(tzinfo=datetime.UTC)
+    elif dt.tzinfo != datetime.UTC:
+        return dt.astimezone(datetime.UTC)
 
     return dt
 
 
-def http_date(timestamp: datetime.datetime | datetime.date | int | float | time.struct_time | None = None) -> str:
+def http_date(timestamp: datetime.datetime | datetime.date | float | time.struct_time | None = None) -> str:
     if isinstance(timestamp, datetime.date):
         if not isinstance(timestamp, datetime.datetime):
             # Assume plain date is midnight UTC.
-            timestamp = datetime.datetime.combine(timestamp, datetime.time(), tzinfo=datetime.timezone.utc)
+            timestamp = datetime.datetime.combine(timestamp, datetime.time(), tzinfo=datetime.UTC)
         else:
             # Ensure datetime is timezone-aware.
             timestamp = _dt_as_utc(timestamp)
