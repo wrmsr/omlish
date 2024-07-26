@@ -1,4 +1,9 @@
 """
+TODO:
+ - expires
+ - fix parse_cookie encode/decode - latin1?
+ - remember
+
 https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login
 """
 import contextlib

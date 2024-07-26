@@ -17,6 +17,7 @@ from .encodings import (  # noqa
 )
 
 from .json import (  # noqa
+    JSON_TAGGER,
     JsonTag,
     JsonTagger,
     json_dumps,
