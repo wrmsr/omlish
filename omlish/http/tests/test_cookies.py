@@ -32,83 +32,83 @@ from ..encodings import latin1_decode  # noqa
 
 def test_parse_cookie():
     cookies = parse_cookie(
-        "dismiss-top=6; CP=null*; PHPSESSID=0a539d42abc001cdc762809248d4beed;"
+        'dismiss-top=6; CP=null*; PHPSESSID=0a539d42abc001cdc762809248d4beed;'
         'a=42; b="\\";"; ; fo234{=bar;blub=Blah; "__Secure-c"=d;'
-        "==__Host-eq=bad;__Host-eq=good;"
+        '==__Host-eq=bad;__Host-eq=good;',
     )
     assert cookies == {
-        "CP": ["null*"],
-        "PHPSESSID": ["0a539d42abc001cdc762809248d4beed"],
-        "a": ["42"],
-        "dismiss-top": ["6"],
-        "b": ['";'],
-        "fo234{": ["bar"],
-        "blub": ["Blah"],
-        '"__Secure-c"': ["d"],
-        "__Host-eq": ["good"],
+        'CP': ['null*'],
+        'PHPSESSID': ['0a539d42abc001cdc762809248d4beed'],
+        'a': ['42'],
+        'dismiss-top': ['6'],
+        'b': ['";'],
+        'fo234{': ['bar'],
+        'blub': ['Blah'],
+        '"__Secure-c"': ['d'],
+        '__Host-eq': ['good'],
     }
 
 
 def test_dump_cookie():
     rv = dump_cookie(
-        "foo",
-        "bar baz blub",
+        'foo',
+        'bar baz blub',
         max_age=360,
         httponly=True,
         sync_expires=False,
     )
-    assert set(rv.split("; ")) == {
-        "HttpOnly",
-        "Max-Age=360",
-        "Path=/",
+    assert set(rv.split('; ')) == {
+        'HttpOnly',
+        'Max-Age=360',
+        'Path=/',
         'foo="bar baz blub"',
     }
-    assert dump_cookie("key", "xxx/") == "key=xxx/; Path=/"
-    assert dump_cookie("key", "xxx=", path=None) == "key=xxx="
+    assert dump_cookie('key', 'xxx/') == 'key=xxx/; Path=/'
+    assert dump_cookie('key', 'xxx=', path=None) == 'key=xxx='
 
 
 def test_bad_cookies():
     cookies = parse_cookie(
-        "first=IamTheFirst ; a=1; oops ; a=2 ;second = andMeTwo;"
+        'first=IamTheFirst ; a=1; oops ; a=2 ;second = andMeTwo;',
     )
     expect = {
-        "first": ["IamTheFirst"],
-        "a": ["1", "2"],
-        "oops": [""],
-        "second": ["andMeTwo"],
+        'first': ['IamTheFirst'],
+        'a': ['1', '2'],
+        'oops': [''],
+        'second': ['andMeTwo'],
     }
     assert cookies == expect
-    assert cookies["a"] == ["1", "2"]
+    assert cookies['a'] == ['1', '2']
 
 
 def test_empty_keys_are_ignored():
-    cookies = parse_cookie("spam=ham; duck=mallard; ; ")
-    expect = {"spam": ["ham"], "duck": ["mallard"]}
+    cookies = parse_cookie('spam=ham; duck=mallard; ; ')
+    expect = {'spam': ['ham'], 'duck': ['mallard']}
     assert cookies == expect
 
 
 def test_cookie_quoting():
-    val = dump_cookie("foo", "?foo")
-    assert val == "foo=?foo; Path=/"
-    assert parse_cookie(val)["foo"] == ["?foo"]
-    assert parse_cookie(r'foo="foo\054bar"')["foo"] == ["foo,bar"]
+    val = dump_cookie('foo', '?foo')
+    assert val == 'foo=?foo; Path=/'
+    assert parse_cookie(val)['foo'] == ['?foo']
+    assert parse_cookie(r'foo="foo\054bar"')['foo'] == ['foo,bar']
 
 
 def test_parse_set_cookie_directive():
     val = 'foo="?foo"; version="0.1";'
-    assert parse_cookie(val) == {"foo": ["?foo"], "version": ["0.1"]}
+    assert parse_cookie(val) == {'foo': ['?foo'], 'version': ['0.1']}
 
 
 def test_cookie_domain_resolving():
-    val = dump_cookie("foo", "bar", domain="\N{SNOWMAN}.com")
-    assert val == "foo=bar; Domain=xn--n3h.com; Path=/"
+    val = dump_cookie('foo', 'bar', domain='\N{SNOWMAN}.com')
+    assert val == 'foo=bar; Domain=xn--n3h.com; Path=/'
 
 
 def test_cookie_unicode_dumping():
-    val = dump_cookie("foo", "\N{SNOWMAN}")
+    val = dump_cookie('foo', '\N{SNOWMAN}')
     assert val == 'foo="\\342\\230\\203"; Path=/'
     cookies = parse_cookie(val)
-    assert cookies["foo"] == ["\N{SNOWMAN}"]
+    assert cookies['foo'] == ['\N{SNOWMAN}']
 
 
 # FIXME:
@@ -122,53 +122,53 @@ def test_cookie_unicode_dumping():
 
 def test_cookie_unicode_parsing():
     # This is submitted by Firefox if you set a Unicode cookie.
-    cookies = parse_cookie("fÃ¶=fÃ¶")
-    assert cookies["fö"] == ["fö"]
+    cookies = parse_cookie('fÃ¶=fÃ¶')
+    assert cookies['fö'] == ['fö']
 
 
 def test_cookie_domain_encoding():
-    val = dump_cookie("foo", "bar", domain="\N{SNOWMAN}.com")
-    assert val == "foo=bar; Domain=xn--n3h.com; Path=/"
+    val = dump_cookie('foo', 'bar', domain='\N{SNOWMAN}.com')
+    assert val == 'foo=bar; Domain=xn--n3h.com; Path=/'
 
-    val = dump_cookie("foo", "bar", domain="foo.com")
-    assert val == "foo=bar; Domain=foo.com; Path=/"
+    val = dump_cookie('foo', 'bar', domain='foo.com')
+    assert val == 'foo=bar; Domain=foo.com; Path=/'
 
 
 def test_cookie_maxsize():
-    val = dump_cookie("foo", "bar" * 1360 + "b")
+    val = dump_cookie('foo', 'bar' * 1360 + 'b')
     assert len(val) == 4093
 
     with pytest.raises(CookieTooBigError):
-        dump_cookie("foo", "bar" * 1360 + "ba")
+        dump_cookie('foo', 'bar' * 1360 + 'ba')
 
     with pytest.raises(CookieTooBigError):
-        dump_cookie("foo", "w" * 501, max_size=512)
+        dump_cookie('foo', 'w' * 501, max_size=512)
 
 
 @pytest.mark.parametrize(
-    ["samesite", "expected"],
+    ('samesite', 'expected'),
     [
-        ("strict", "foo=bar; SameSite=Strict"),
-        ("lax", "foo=bar; SameSite=Lax"),
-        ("none", "foo=bar; SameSite=None"),
-        (None, "foo=bar"),
+        ('strict', 'foo=bar; SameSite=Strict'),
+        ('lax', 'foo=bar; SameSite=Lax'),
+        ('none', 'foo=bar; SameSite=None'),
+        (None, 'foo=bar'),
     ],
 )
 def test_cookie_samesite_attribute(samesite, expected):
-    value = dump_cookie("foo", "bar", samesite=samesite, path=None)
+    value = dump_cookie('foo', 'bar', samesite=samesite, path=None)
     assert value == expected
 
 
 def test_cookie_samesite_invalid():
-    with pytest.raises(ValueError):
-        dump_cookie("foo", "bar", samesite="invalid")
+    with pytest.raises(ValueError):  # noqa
+        dump_cookie('foo', 'bar', samesite='invalid')
 
 
 def test_cookie_partitioned():
-    value = dump_cookie("foo", "bar", partitioned=True, secure=True)
-    assert value == "foo=bar; Secure; Path=/; Partitioned"
+    value = dump_cookie('foo', 'bar', partitioned=True, secure=True)
+    assert value == 'foo=bar; Secure; Path=/; Partitioned'
 
 
 def test_cookie_partitioned_sets_secure():
-    value = dump_cookie("foo", "bar", partitioned=True, secure=False)
-    assert value == "foo=bar; Secure; Path=/; Partitioned"
+    value = dump_cookie('foo', 'bar', partitioned=True, secure=False)
+    assert value == 'foo=bar; Secure; Path=/; Partitioned'
