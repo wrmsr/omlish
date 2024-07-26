@@ -27,8 +27,20 @@ from .params import get_params
 from .params import get_params_extras
 from .utils import Namespace
 
+try:
+    import annotationlib  # noqa
+except ImportError:
+    annotationlib = None
+
 
 MISSING = dc.MISSING
+
+
+def _get_annotations(obj):
+    if annotationlib is not None:
+        return annotationlib.get_annotations(obj, format=annotationlib.Format.FORWARDREF)  # noqa
+    else:
+        return inspect.get_annotations(obj)
 
 
 class ClassInfo:
@@ -54,7 +66,7 @@ class ClassInfo:
 
     @cached.property
     def cls_annotations(self) -> ta.Mapping[str, ta.Any]:
-        return inspect.get_annotations(self._cls)
+        return _get_annotations(self._cls)
 
     ##
 
