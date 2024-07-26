@@ -87,6 +87,9 @@ def handle(method: str, path: str):
 
 
 def login_required(fn):
+    async def inner(scope, recv, send):
+        await inner(scope, recv, send)
+
     return fn
 
 
@@ -141,8 +144,8 @@ async def handle_post_login(scope, recv, send):
         await redirect_response(send, url_for('login'), headers=[*build_session_headers(SESSION.get())])
         return
 
-    # # if the above check passes, then we know the user has the right credentials
-    # login_user(user, remember=remember)
+    # if the above check passes, then we know the user has the right credentials
+    SESSION.get()['_user_id'] = user.id
     await redirect_response(send, url_for('profile'), headers=[*build_session_headers(SESSION.get())])
 
 
