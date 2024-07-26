@@ -8,8 +8,8 @@ import typing as ta
 
 import anyio
 
-from omlish import logs
 from omlish import http as hu
+from omlish import logs
 
 from ...config import Config
 from ...serving import serve
@@ -64,7 +64,7 @@ def with_session(fn):
                     'headers': [
                         *obj.get('headers', []),
                         *build_session_headers(out_session),
-                    ]
+                    ],
                 }
 
             await send(obj)
