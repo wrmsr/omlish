@@ -90,33 +90,17 @@ class JsonTag:
         return {self.key: self.to_json(value)}
 
 
-class TagDunderDict(JsonTag):
-    key = ' di'
-
-    def check(self, value: ta.Any) -> bool:
-        return (
-            isinstance(value, dict)
-            and len(value) == 1
-            and next(iter(value)) in self.tagger.tags
-        )
-
-    def to_json(self, value: ta.Any) -> ta.Any:
-        key = next(iter(value))
-        return {f'{key}__': self.tagger.tag(value[key])}
-
-    def to_python(self, value: ta.Any) -> ta.Any:
-        key = next(iter(value))
-        return {key[:-2]: value[key]}
-
-
 class TagDict(JsonTag):
+    key = ' d'
+
     def check(self, value: ta.Any) -> bool:
         return isinstance(value, dict)
 
     def to_json(self, value: ta.Any) -> ta.Any:
-        return {k: self.tagger.tag(v) for k, v in value.items()}
+        return [[k, self.tagger.tag(v)] for k, v in value.items()]
 
-    tag = to_json
+    def to_python(self, value: ta.Any) -> ta.Any:
+        return dict(value)
 
 
 class TagTuple(JsonTag):
@@ -182,7 +166,7 @@ class TagUuid(JsonTag):
 
 
 class TagDatetime(JsonTag):
-    key = ' d'
+    key = ' dt'
 
     def check(self, value: ta.Any) -> bool:
         return isinstance(value, datetime.datetime)
@@ -196,7 +180,6 @@ class TagDatetime(JsonTag):
 
 class JsonTagger:
     default_tags: ta.ClassVar[ta.Sequence[type[JsonTag]]] = [
-        TagDunderDict,
         TagDict,
         TagTuple,
         PassList,

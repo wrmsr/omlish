@@ -41,7 +41,6 @@ class _EnvUser:
 
 
 J2_DEFAULT_KWARGS = dict(
-    get_flashed_messages=lambda: [],  # noqa
     current_user=_EnvUser(),
 )
 
