@@ -15,6 +15,28 @@ import zlib
 from omlish import http as hu
 
 
+##
+
+
+def base64_encode(b: bytes) -> bytes:
+    return base64.urlsafe_b64encode(b).rstrip(b'=')
+
+
+def base64_decode(b: bytes) -> bytes:
+    b += b'=' * (-len(b) % 4)
+    return base64.urlsafe_b64decode(b)
+
+
+def int_to_bytes(num: int) -> bytes:
+    return struct.pack('>Q', num).lstrip(b'\0')
+
+
+def bytes_to_int(bytestr: bytes) -> int:
+    return struct.unpack('>Q', bytestr.rjust(8, b'\0'))[0]
+
+
+##
+
 SECRET_KEY = 'secret-key-goes-here'  # noqa
 SALT = 'cookie-session'
 SEP = b'.'
@@ -28,15 +50,6 @@ def derive_key() -> bytes:
     return mac.digest()
 
 
-def base64_encode(b: bytes) -> bytes:
-    return base64.urlsafe_b64encode(b).rstrip(b'=')
-
-
-def base64_decode(b: bytes) -> bytes:
-    b += b'=' * (-len(b) % 4)
-    return base64.urlsafe_b64decode(b)
-
-
 def get_signature(key: bytes, value: bytes) -> bytes:
     mac = hmac.new(key, msg=value, digestmod=DIGESTMOD)
     return mac.digest()
@@ -44,14 +57,6 @@ def get_signature(key: bytes, value: bytes) -> bytes:
 
 def verify_signature(key: bytes, value: bytes, sig: bytes) -> bool:
     return hmac.compare_digest(sig, get_signature(key, value))
-
-
-def int_to_bytes(num: int) -> bytes:
-    return struct.pack('>Q', num).lstrip(b'\0')
-
-
-def bytes_to_int(bytestr: bytes) -> int:
-    return struct.unpack('>Q', bytestr.rjust(8, b'\0'))[0]
 
 
 def load_session_cookie(signed_value: bytes) -> ta.Any:
