@@ -21,7 +21,7 @@ from .. import server
 from ..node.dbs import get_db_url
 from ..node.models import recreate_all
 from ..node.registry import NodeRegistrant
-from ..server.tests.hello import hello_app
+from ..server.tests.demo_auth.main import auth_app
 
 
 log = logging.getLogger(__name__)
@@ -85,7 +85,7 @@ async def _a_main() -> None:
 
         tg.start_soon(functools.partial(
             server.serve,
-            hello_app,
+            auth_app,
             server.Config(),
             shutdown_trigger=shutdown.wait,
         ))
