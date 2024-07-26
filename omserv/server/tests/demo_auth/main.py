@@ -124,14 +124,14 @@ def login_required(fn):
         session = SESSION.get()
 
         user_id = session.get('_user_id')
-        if not user_id or (user := USERS.get(id=user_id)) is None:
+        if user_id is None or (user := USERS.get(id=user_id)) is None:
             await redirect_response(send, url_for('login'))
             return
 
         with setting_context_var(USER, user):
-            await inner(scope, recv, send)
+            await fn(scope, recv, send)
 
-    return fn
+    return inner
 
 
 ##
