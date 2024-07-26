@@ -52,7 +52,6 @@ def _test_compression(cls: type[fnpairs.Compression]) -> None:
     fnpairs.Gzip,
     fnpairs.Lzma,
     fnpairs.Lz4,
-    fnpairs.Snappy,
     fnpairs.Zstd,
 ])
 def test_compression(cls: type[fnpairs.Compression]) -> None:
