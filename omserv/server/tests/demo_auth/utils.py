@@ -50,6 +50,7 @@ async def redirect_response(
         url: str,
         headers: ta.Sequence[tuple[bytes, bytes]] | None = None,
 ):
+    log.info('Redirecting to %s', url)
     await send({
         'type': 'http.response.start',
         'status': 302,
