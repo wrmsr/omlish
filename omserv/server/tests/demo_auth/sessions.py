@@ -123,7 +123,7 @@ def extract_session(scope) -> dict[str, ta.Any]:
 def build_session_headers(session: ta.Mapping[str, ta.Any]) -> list[tuple[bytes, bytes]]:
     return [
         (b'Vary', b'Cookie'),
-        (b'Set-Cookie', b'session=' + save_session_cookie(session))
+        (b'Set-Cookie', b'session=' + save_session_cookie(session)),
     ]
 
 

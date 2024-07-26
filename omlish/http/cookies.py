@@ -45,7 +45,7 @@ _COOKIE_RE = re.compile(
     """,
     flags=re.ASCII | re.VERBOSE,
 )
-_COOKIE_UNSLASH_RE = re.compile(rb"\\([0-3][0-7]{2}|.)")
+_COOKIE_UNSLASH_RE = re.compile(rb'\\([0-3][0-7]{2}|.)')
 
 
 def _cookie_unslash_replace(m: ta.Match[bytes]) -> bytes:
@@ -54,21 +54,21 @@ def _cookie_unslash_replace(m: ta.Match[bytes]) -> bytes:
     if len(v) == 1:
         return v
 
-    return int(v, 8).to_bytes(1, "big")
+    return int(v, 8).to_bytes(1, 'big')
 
 
-def _parse_cookie(
+def parse_cookie(
         cookie: str | None = None,
         *,
         no_latin1: bool = False,
 ) -> dict[str, list[str]]:
     if (not no_latin1) and cookie:
-        cookie = cookie.encode("latin1").decode()
+        cookie = cookie.encode('latin1').decode()
 
     if not cookie:
         return {}
 
-    cookie = f"{cookie};"
+    cookie = f'{cookie};'
     out = []
 
     for ck, cv in _COOKIE_RE.findall(cookie):
@@ -83,7 +83,7 @@ def _parse_cookie(
             cv = _COOKIE_UNSLASH_RE.sub(
                 _cookie_unslash_replace,
                 cv[1:-1].encode(),
-            ).decode(errors="replace")
+            ).decode(errors='replace')
 
         out.append((ck, cv))
 
@@ -93,21 +93,22 @@ def _parse_cookie(
 ##
 
 
-_COOKIE_NO_QUOTE_RE = re.compile(r"[\w!#$%&'()*+\-./:<=>?@\[\]^`{|}~]*", re.A)
-_COOKIE_SLASH_RE = re.compile(rb"[\x00-\x19\",;\\\x7f-\xff]", re.A)
-_COOKIE_SLASH_MAP = {b'"': b'\\"', b"\\": b"\\\\"}
+_COOKIE_NO_QUOTE_RE = re.compile(r"[\w!#$%&'()*+\-./:<=>?@\[\]^`{|}~]*", re.ASCII)
+_COOKIE_SLASH_RE = re.compile(rb'[\x00-\x19\",;\\\x7f-\xff]', re.ASCII)
+_COOKIE_SLASH_MAP = {b'"': b'\\"', b'\\': b'\\\\'}
 _COOKIE_SLASH_MAP.update(
-    (v.to_bytes(1, "big"), b"\\%03o" % v)
-    for v in [*range(0x20), *b",;", *range(0x7F, 256)]
+    (v.to_bytes(1, 'big'), b'\\%03o' % v)
+    for v in [*range(0x20), *b',;', *range(0x7F, 256)]
 )
 
 
 def dump_cookie(
         key: str,
-        value: str = "",
+        value: str = '',
+        *,
         max_age: datetime.timedelta | int | None = None,
-        expires: str | datetime.datetime | int | float | None = None,
-        path: str | None = "/",
+        expires: str | datetime.datetime | float | None = None,
+        path: str | None = '/',
         domain: str | None = None,
         secure: bool = False,
         httponly: bool = False,
@@ -122,7 +123,7 @@ def dump_cookie(
         path = urllib.parse.quote(path, safe="%!$&'()*+,/:=@")
 
     if domain:
-        domain = domain.partition(":")[0].lstrip(".").encode("idna").decode("ascii")
+        domain = domain.partition(':')[0].lstrip('.').encode('idna').decode('ascii')
 
     if isinstance(max_age, datetime.timedelta):
         max_age = int(max_age.total_seconds())
@@ -131,12 +132,12 @@ def dump_cookie(
         if not isinstance(expires, str):
             expires = http_date(expires)
     elif max_age is not None and sync_expires:
-        expires = http_date(datetime.datetime.now(tz=datetime.timezone.utc).timestamp() + max_age)
+        expires = http_date(datetime.datetime.now(tz=datetime.UTC).timestamp() + max_age)
 
     if samesite is not None:
         samesite = samesite.title()
 
-        if samesite not in {"Strict", "Lax", "None"}:
+        if samesite not in {'Strict', 'Lax', 'None'}:
             raise ValueError("SameSite must be 'Strict', 'Lax', or 'None'.")
 
     if partitioned:
@@ -147,8 +148,8 @@ def dump_cookie(
     if not _COOKIE_NO_QUOTE_RE.fullmatch(value):
         # Work with bytes here, since a UTF-8 character could be multiple bytes.
         value = _COOKIE_SLASH_RE.sub(
-            lambda m: _COOKIE_SLASH_MAP[m.group()], value.encode()
-        ).decode("ascii")
+            lambda m: _COOKIE_SLASH_MAP[m.group()], value.encode(),
+        ).decode('ascii')
         value = f'"{value}"'
 
     # Send a non-ASCII key as mojibake. Everything else should already be ASCII.
@@ -156,14 +157,14 @@ def dump_cookie(
     buf = [f"{key.encode().decode('latin1')}={value}"]
 
     for k, v in (
-            ("Domain", domain),
-            ("Expires", expires),
-            ("Max-Age", max_age),
-            ("Secure", secure),
-            ("HttpOnly", httponly),
-            ("Path", path),
-            ("SameSite", samesite),
-            ("Partitioned", partitioned),
+            ('Domain', domain),
+            ('Expires', expires),
+            ('Max-Age', max_age),
+            ('Secure', secure),
+            ('HttpOnly', httponly),
+            ('Path', path),
+            ('SameSite', samesite),
+            ('Partitioned', partitioned),
     ):
         if v is None or v is False:
             continue
@@ -172,9 +173,9 @@ def dump_cookie(
             buf.append(k)
             continue
 
-        buf.append(f"{k}={v}")
+        buf.append(f'{k}={v}')
 
-    rv = "; ".join(buf)
+    rv = '; '.join(buf)
 
     # Warn if the final value of the cookie is larger than the limit. If the cookie is too large, then it may be
     # silently ignored by the browser, which can be quite hard to debug.
