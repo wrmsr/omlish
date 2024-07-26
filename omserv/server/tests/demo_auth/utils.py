@@ -45,13 +45,18 @@ async def finish_response(send, body: bytes = b''):
     })
 
 
-async def redirect_response(send, url: str):
+async def redirect_response(
+        send,
+        url: str,
+        headers: ta.Sequence[tuple[bytes, bytes]] | None = None,
+):
     await send({
         'type': 'http.response.start',
         'status': 302,
         'headers': [
             (b'content-type', consts.CONTENT_TYPE_TEXT_UTF8),
             (b'location', url.encode()),
+            *(headers or ()),
         ],
     })
     await send({

@@ -138,14 +138,12 @@ async def handle_post_login(scope, recv, send):
         flash('Please check your login details and try again.')
 
         # if the user doesn't exist or password is wrong, reload the page
-        await redirect_response(send, url_for('login'))
+        await redirect_response(send, url_for('login'), headers=[*build_session_headers(SESSION.get())])
         return
 
     # # if the above check passes, then we know the user has the right credentials
     # login_user(user, remember=remember)
-    # return redirect(url_for('main.profile'))
-
-    raise NotImplementedError
+    await redirect_response(send, url_for('profile'), headers=[*build_session_headers(SESSION.get())])
 
 
 #
@@ -170,7 +168,7 @@ async def handle_post_signup(scope, recv, send):
         name=name,
     )
 
-    await redirect_response(send, url_for('login'))
+    await redirect_response(send, url_for('login'), headers=[*build_session_headers(SESSION.get())])
 
 
 #
