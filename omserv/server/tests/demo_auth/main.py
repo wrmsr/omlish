@@ -16,6 +16,8 @@ from ...serving import serve
 from .j2 import j2_helper
 from .j2 import load_templates
 from .j2 import render_template
+from .security import check_password_hash
+from .security import generate_password_hash
 from .sessions import build_session_headers
 from .sessions import extract_session
 from .users import USERS
@@ -138,7 +140,7 @@ async def handle_post_login(scope, recv, send):
         # if the user doesn't exist or password is wrong, reload the page
         await redirect_response(send, url_for('login'))
         return
-    #
+
     # # if the above check passes, then we know the user has the right credentials
     # login_user(user, remember=remember)
     # return redirect(url_for('main.profile'))
@@ -164,7 +166,7 @@ async def handle_post_signup(scope, recv, send):
 
     USERS.create(
         email=email,
-        password=password,
+        password=generate_password_hash(password, method='scrypt'),
         name=name,
     )
 
