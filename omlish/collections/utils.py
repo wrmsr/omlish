@@ -63,6 +63,13 @@ def unique_dict(items: ta.Iterable[tuple[K, V]], *, identity: bool = False) -> t
     return dct
 
 
+def multi_dict(*kvs: tuple[K, V]) -> dict[K, list[V]]:
+    d = {}
+    for k, v in kvs:
+        d.setdefault(k, []).append(v)
+    return d
+
+
 def all_equal(it: ta.Iterable[T]) -> bool:
     i = iter(it)
     try:

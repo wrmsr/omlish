@@ -21,56 +21,11 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import datetime
 import re
-import time
-import email.utils
 import typing as ta
 import urllib.parse
 
-
-##
-
-
-K = ta.TypeVar('K')
-V = ta.TypeVar('V')
-
-
-def build_multidict(*kvs: tuple[K, V]) -> dict[K, list[V]]:
-    d = {}
-    for k, v in kvs:
-        d.setdefault(k, []).append(v)
-    return d
-
-
-##
-
-
-def _dt_as_utc(dt: datetime.datetime | None) -> datetime.datetime | None:
-    if dt is None:
-        return dt
-
-    if dt.tzinfo is None:
-        return dt.replace(tzinfo=datetime.timezone.utc)
-    elif dt.tzinfo != datetime.timezone.utc:
-        return dt.astimezone(datetime.timezone.utc)
-
-    return dt
-
-
-def http_date(timestamp: datetime.datetime | datetime.date | int | float | time.struct_time | None = None) -> str:
-    if isinstance(timestamp, datetime.date):
-        if not isinstance(timestamp, datetime.datetime):
-            # Assume plain date is midnight UTC.
-            timestamp = datetime.datetime.combine(timestamp, datetime.time(), tzinfo=datetime.timezone.utc)
-        else:
-            # Ensure datetime is timezone-aware.
-            timestamp = _dt_as_utc(timestamp)
-
-        return email.utils.format_datetime(timestamp, usegmt=True)
-
-    if isinstance(timestamp, time.struct_time):
-        timestamp = time.mktime(timestamp)
-
-    return email.utils.formatdate(timestamp, usegmt=True)
+from .. import collections as col
+from .dates import http_date
 
 
 ##
@@ -132,7 +87,10 @@ def _parse_cookie(
 
         out.append((ck, cv))
 
-    return build_multidict(*out)
+    return col.multi_dict(*out)
+
+
+##
 
 
 _COOKIE_NO_QUOTE_RE = re.compile(r"[\w!#$%&'()*+\-./:<=>?@\[\]^`{|}~]*", re.A)
