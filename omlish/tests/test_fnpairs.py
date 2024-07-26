@@ -1,6 +1,7 @@
 import pytest
 
 from .. import fnpairs
+from ..testing import pytest as ptu
 
 
 def test_simple():
@@ -38,6 +39,14 @@ def test_compose():
     assert jlzfp.backward(buf) == obj2
 
 
+def _test_compression(cls: type[fnpairs.Compression]) -> None:
+    fp = cls()
+    o = b'abcd1234'
+    c = fp.forward(o)
+    u = fp.backward(c)
+    assert o == u
+
+
 @pytest.mark.parametrize('cls', [
     fnpairs.Bz2,
     fnpairs.Gzip,
@@ -47,11 +56,12 @@ def test_compose():
     fnpairs.Zstd,
 ])
 def test_compression(cls: type[fnpairs.Compression]) -> None:
-    fp = cls()
-    o = b'abcd1234'
-    c = fp.forward(o)
-    u = fp.backward(c)
-    assert o == u
+    _test_compression(cls)
+
+
+@ptu.skip_if_cant_import('snappy')
+def test_compression_snappy() -> None:
+    _test_compression(fnpairs.Snappy)
 
 
 @pytest.mark.parametrize('cls', [
