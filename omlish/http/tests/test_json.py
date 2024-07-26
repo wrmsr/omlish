@@ -29,19 +29,19 @@ from ..json import JsonTagger
 
 
 @pytest.mark.parametrize(
-    "data",
-    (
-        {" t": (1, 2, 3)},
-        {" t__": b"a"},
-        {" di": " di"},
-        {"x": (1, 2, 3), "y": 4},
+    'data',
+    [
+        {' t': (1, 2, 3)},
+        {' t__': b'a'},
+        {' di': ' di'},
+        {'x': (1, 2, 3), 'y': 4},
         (1, 2, 3),
         [(1, 2, 3)],
-        b"\xff",
+        b'\xff',
         # markupsafe.Markup('<html>'),
         uuid.uuid4(),
-        datetime.datetime.now(tz=datetime.timezone.utc).replace(microsecond=0),
-    ),
+        datetime.datetime.now(tz=datetime.UTC).replace(microsecond=0),
+    ],
 )
 def test_dump_load_unchanged(data):
     s = JsonTagger()
@@ -54,12 +54,12 @@ def test_dump_load_unchanged(data):
 
 def test_duplicate_tag():
     class TagDunderDict(JsonTag):
-        key = " d"
+        key = ' d'
 
     s = JsonTagger()
     pytest.raises(KeyError, s.register, TagDunderDict)
     s.register(TagDunderDict, force=True, index=0)
-    assert isinstance(s.tags[" d"], TagDunderDict)
+    assert isinstance(s.tags[' d'], TagDunderDict)
     assert isinstance(s.order[0], TagDunderDict)
 
 
@@ -70,24 +70,24 @@ def test_custom_tag():
 
     class TagFoo(JsonTag):
         __slots__ = ()
-        key = " f"
+        key = ' f'
 
         def check(self, value):
             return isinstance(value, Foo)
 
         def to_json(self, value):
-            return self.serializer.tag(value.data)
+            return self.tagger.tag(value.data)
 
         def to_python(self, value):
             return Foo(value)
 
     s = JsonTagger()
     s.register(TagFoo)
-    assert s.loads(s.dumps(Foo("bar"))).data == "bar"
+    assert s.loads(s.dumps(Foo('bar'))).data == 'bar'
 
 
 def test_tag_interface():
-    t = JsonTag(None)
+    t = JsonTag(None)  # type: ignore
     pytest.raises(NotImplementedError, t.check, None)
     pytest.raises(NotImplementedError, t.to_json, None)
     pytest.raises(NotImplementedError, t.to_python, None)
@@ -95,10 +95,10 @@ def test_tag_interface():
 
 def test_tag_order():
     class Tag1(JsonTag):
-        key = " 1"
+        key = ' 1'
 
     class Tag2(JsonTag):
-        key = " 2"
+        key = ' 2'
 
     s = JsonTagger()
 
