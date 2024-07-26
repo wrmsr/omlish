@@ -54,14 +54,14 @@ def test_dump_load_unchanged(data):
 
 
 def test_duplicate_tag():
-    class TagDunderDict(JsonTag):
+    class TagDict2(JsonTag):
         key = ' d'
 
     s = JsonTagger()
-    pytest.raises(KeyError, s.register, TagDunderDict)
-    s.register(TagDunderDict, force=True, index=0)
-    assert isinstance(s.tags[' d'], TagDunderDict)
-    assert isinstance(s.order[0], TagDunderDict)
+    pytest.raises(KeyError, s.register, TagDict2)
+    s.register(TagDict2, force=True, index=0)
+    assert isinstance(s.tags[' d'], TagDict2)
+    assert isinstance(s.order[0], TagDict2)
 
 
 def test_custom_tag():

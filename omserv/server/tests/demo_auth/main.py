@@ -1,6 +1,8 @@
 """
 https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login
 """
+import contextlib
+import contextvars
 import logging
 import typing as ta
 
@@ -28,6 +30,37 @@ log = logging.getLogger(__name__)
 
 
 ##
+
+
+SCOPE: contextvars.ContextVar[dict[str, ta.Any]] = contextvars.ContextVar('scope')
+SESSION: contextvars.ContextVar[dict[str, ta.Any]] = contextvars.ContextVar('session')
+
+
+@contextlib.contextmanager
+def setting_context_var(cv: contextvars.ContextVar, v: ta.Any) -> ta.Iterator[None]:
+    tok = cv.set(v)
+    try:
+        yield
+    finally:
+        cv.reset(tok)
+
+
+##
+
+
+@j2_helper
+def get_flashed_messages() -> list[str]:
+    session = SESSION.get()
+    try:
+        ret = session['_flashes']
+    except KeyError:
+        return []
+    del session['_flashes']
+    return ret
+
+
+def flash(msg: str) -> None:
+    SESSION.get().setdefault('_flashes', []).append(msg)
 
 
 @j2_helper
@@ -60,18 +93,11 @@ def login_required(fn):
 
 @handle('GET', '/')
 async def handle_get_index(scope, recv, send):
-    session = extract_session(scope)
+    session = SESSION.get()
 
     session['c'] = session.get('c', 0) + 1
 
-    await start_response(
-        send,
-        200,
-        consts.CONTENT_TYPE_HTML_UTF8,
-        headers=[
-            *build_session_headers(session),
-        ],
-    )
+    await start_response(send, 200, consts.CONTENT_TYPE_HTML_UTF8, headers=[*build_session_headers(SESSION.get())])  # noqa
     await finish_response(send, render_template('index.html'))
 
 
@@ -81,7 +107,7 @@ async def handle_get_index(scope, recv, send):
 @handle('GET', '/profile')
 @login_required
 async def handle_get_profile(scope, recv, send):
-    await start_response(send, 200, consts.CONTENT_TYPE_HTML_UTF8)
+    await start_response(send, 200, consts.CONTENT_TYPE_HTML_UTF8, headers=[*build_session_headers(SESSION.get())])  # noqa
     await finish_response(send, render_template('profile.html'))
 
 
@@ -90,7 +116,7 @@ async def handle_get_profile(scope, recv, send):
 
 @handle('GET', '/login')
 async def handle_get_login(scope, recv, send):
-    await start_response(send, 200, consts.CONTENT_TYPE_HTML_UTF8)
+    await start_response(send, 200, consts.CONTENT_TYPE_HTML_UTF8, headers=[*build_session_headers(SESSION.get())])  # noqa
     await finish_response(send, render_template('login.html'))
 
 
@@ -102,13 +128,16 @@ async def handle_post_login(scope, recv, send):
     password = dct[b'password'].decode()  # noqa
     remember = b'remember' in dct  # noqa
 
-    u = USERS.get(email=email)  # noqa
+    user = USERS.get(email=email)  # noqa
 
-    # # check if the user actually exists
-    # # take the user-supplied password, hash it, and compare it to the hashed password in the database
-    # if not user or not check_password_hash(user.password, password):
-    #     flash('Please check your login details and try again.')
-    #     return redirect(url_for('auth.login'))  # if the user doesn't exist or password is wrong, reload the page
+    # check if the user actually exists
+    # take the user-supplied password, hash it, and compare it to the hashed password in the database
+    if not user or not check_password_hash(user.password, password):
+        flash('Please check your login details and try again.')
+
+        # if the user doesn't exist or password is wrong, reload the page
+        await redirect_response(send, url_for('login'))
+        return
     #
     # # if the above check passes, then we know the user has the right credentials
     # login_user(user, remember=remember)
@@ -121,7 +150,7 @@ async def handle_post_login(scope, recv, send):
 
 @handle('GET', '/signup')
 async def handle_get_signup(scope, recv, send):
-    await start_response(send, 200, consts.CONTENT_TYPE_HTML_UTF8)
+    await start_response(send, 200, consts.CONTENT_TYPE_HTML_UTF8, headers=[*build_session_headers(SESSION.get())])  # noqa
     await finish_response(send, render_template('signup.html'))
 
 
@@ -164,7 +193,10 @@ async def auth_app(scope, recv, send):
             handler = HANDLERS.get((scope['method'], scope['raw_path'].decode()))
 
             if handler is not None:
-                await handler(scope, recv, send)
+                with setting_context_var(SCOPE, scope):
+                    session = extract_session(scope)
+                    with setting_context_var(SESSION, session):
+                        await handler(scope, recv, send)
 
             else:
                 await start_response(send, 404)
