@@ -21,6 +21,7 @@ from .security import generate_password_hash
 from .sessions import build_session_headers
 from .sessions import extract_session
 from .users import USERS
+from .users import User
 from .utils import finish_response
 from .utils import read_form_body
 from .utils import redirect_response
@@ -35,7 +36,6 @@ log = logging.getLogger(__name__)
 
 
 SCOPE: contextvars.ContextVar[dict[str, ta.Any]] = contextvars.ContextVar('scope')
-SESSION: contextvars.ContextVar[dict[str, ta.Any]] = contextvars.ContextVar('session')
 
 
 @contextlib.contextmanager
@@ -45,6 +45,27 @@ def setting_context_var(cv: contextvars.ContextVar, v: ta.Any) -> ta.Iterator[No
         yield
     finally:
         cv.reset(tok)
+
+
+##
+
+
+SESSION: contextvars.ContextVar[dict[str, ta.Any]] = contextvars.ContextVar('session')
+
+
+def with_session(fn):
+    async def inner(scope, recv, send):
+        async def _send(obj):
+            if obj['type'] == 'http.response.start':
+                out_session = SESSION.get()
+                obj.setdefault('headers', []).extend(build_session_headers(out_session))
+            await send(obj)
+
+        in_session = extract_session(scope)
+        with setting_context_var(SESSION, in_session):
+            await fn(scope, recv, _send)
+
+    return inner
 
 
 ##
@@ -86,9 +107,20 @@ def handle(method: str, path: str):
 ##
 
 
+USER: contextvars.ContextVar[User] = contextvars.ContextVar('user')
+
+
 def login_required(fn):
     async def inner(scope, recv, send):
-        await inner(scope, recv, send)
+        session = SESSION.get()
+
+        user_id = session.get('_user_id')
+        if not user_id or (user := USERS.get(user_id)) is None:
+            await redirect_response(send, url_for('login'))
+            return
+
+        with setting_context_var(USER, user):
+            await inner(scope, recv, send)
 
     return fn
 
@@ -97,12 +129,13 @@ def login_required(fn):
 
 
 @handle('GET', '/')
+@with_session
 async def handle_get_index(scope, recv, send):
     session = SESSION.get()
 
     session['c'] = session.get('c', 0) + 1
 
-    await start_response(send, 200, consts.CONTENT_TYPE_HTML_UTF8, headers=[*build_session_headers(SESSION.get())])  # noqa
+    await start_response(send, 200, consts.CONTENT_TYPE_HTML_UTF8)  # noqa
     await finish_response(send, render_template('index.html'))
 
 
@@ -110,22 +143,25 @@ async def handle_get_index(scope, recv, send):
 
 
 @handle('GET', '/profile')
+@with_session
 @login_required
 async def handle_get_profile(scope, recv, send):
-    await start_response(send, 200, consts.CONTENT_TYPE_HTML_UTF8, headers=[*build_session_headers(SESSION.get())])  # noqa
-    await finish_response(send, render_template('profile.html'))
+    await start_response(send, 200, consts.CONTENT_TYPE_HTML_UTF8)  # noqa
+    await finish_response(send, render_template('profile.html', name=USER.get().name))
 
 
 #
 
 
 @handle('GET', '/login')
+@with_session
 async def handle_get_login(scope, recv, send):
-    await start_response(send, 200, consts.CONTENT_TYPE_HTML_UTF8, headers=[*build_session_headers(SESSION.get())])  # noqa
+    await start_response(send, 200, consts.CONTENT_TYPE_HTML_UTF8)  # noqa
     await finish_response(send, render_template('login.html'))
 
 
 @handle('POST', '/login')
+@with_session
 async def handle_post_login(scope, recv, send):
     dct = await read_form_body(recv)
 
@@ -141,23 +177,25 @@ async def handle_post_login(scope, recv, send):
         flash('Please check your login details and try again.')
 
         # if the user doesn't exist or password is wrong, reload the page
-        await redirect_response(send, url_for('login'), headers=[*build_session_headers(SESSION.get())])
+        await redirect_response(send, url_for('login'))
         return
 
     # if the above check passes, then we know the user has the right credentials
     SESSION.get()['_user_id'] = user.id
-    await redirect_response(send, url_for('profile'), headers=[*build_session_headers(SESSION.get())])
+    await redirect_response(send, url_for('profile'))
 
 
 #
 
 @handle('GET', '/signup')
+@with_session
 async def handle_get_signup(scope, recv, send):
-    await start_response(send, 200, consts.CONTENT_TYPE_HTML_UTF8, headers=[*build_session_headers(SESSION.get())])  # noqa
+    await start_response(send, 200, consts.CONTENT_TYPE_HTML_UTF8)  # noqa
     await finish_response(send, render_template('signup.html'))
 
 
 @handle('POST', '/signup')
+@with_session
 async def handle_post_signup(scope, recv, send):
     dct = await read_form_body(recv)
 
@@ -171,16 +209,18 @@ async def handle_post_signup(scope, recv, send):
         name=name,
     )
 
-    await redirect_response(send, url_for('login'), headers=[*build_session_headers(SESSION.get())])
+    await redirect_response(send, url_for('login'))
 
 
 #
 
 
 @handle('GET', '/logout')
+@with_session
 @login_required
 async def handle_get_logout(scope, recv, send):
-    raise NotImplementedError
+    SESSION.get().pop('_user_id', None)
+    await redirect_response(send, url_for(''))
 
 
 ##
@@ -197,9 +237,7 @@ async def auth_app(scope, recv, send):
 
             if handler is not None:
                 with setting_context_var(SCOPE, scope):
-                    session = extract_session(scope)
-                    with setting_context_var(SESSION, session):
-                        await handler(scope, recv, send)
+                    await handler(scope, recv, send)
 
             else:
                 await start_response(send, 404)
