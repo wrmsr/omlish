@@ -1,4 +1,12 @@
 """
+https://iceberg.apache.org/spec/
+https://github.com/delta-io/delta/blob/master/PROTOCOL.md
+https://hudi.apache.org/tech-specshttps://hudi.apache.org/tech-specs/
+
+https://yousry.medium.com/delta-lake-z-ordering-from-a-to-z-315063a42031
+
+==
+
 syntax = "proto3";
 
 package kleist;
@@ -151,7 +159,7 @@ class Record:
 
 def main():
     import tempfile
-    from omnibus import json
+    import json
 
     def write_segment(gen: int, recs: ta.Iterable[Record], max_split: int = 25) -> Segment:
         recs = sorted(recs, key=lambda r: r.id)
