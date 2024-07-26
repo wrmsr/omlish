@@ -132,17 +132,29 @@ def current_user() -> User | None:
     return USER.get()
 
 
-def login_required(fn):
+def with_user(fn):
     async def inner(scope, recv, send):
         session = SESSION.get()
 
         user_id = session.get('_user_id')
-        if user_id is None or (user := USERS.get(id=user_id)) is None:
-            await redirect_response(send, url_for('login'))
-            return
+        if user_id is not None:
+            user = USERS.get(id=user_id)
+        else:
+            user = None
 
         with setting_context_var(USER, user):
             await fn(scope, recv, send)
+
+    return inner
+
+
+def login_required(fn):
+    async def inner(scope, recv, send):
+        if USER.get() is None:
+            await redirect_response(send, url_for('login'))
+            return
+
+        await fn(scope, recv, send)
 
     return inner
 
@@ -152,6 +164,7 @@ def login_required(fn):
 
 @handle('GET', '/')
 @with_session
+@with_user
 async def handle_get_index(scope, recv, send):
     session = SESSION.get()
 
@@ -167,6 +180,7 @@ async def handle_get_index(scope, recv, send):
 
 @handle('GET', '/profile')
 @with_session
+@with_user
 @login_required
 async def handle_get_profile(scope, recv, send):
     html = render_template('profile.html', name=check.not_none(USER.get()).name)
@@ -179,6 +193,7 @@ async def handle_get_profile(scope, recv, send):
 
 @handle('GET', '/login')
 @with_session
+@with_user
 async def handle_get_login(scope, recv, send):
     html = render_template('login.html')
     await start_response(send, 200, hu.consts.CONTENT_TYPE_HTML_UTF8)  # noqa
@@ -187,6 +202,7 @@ async def handle_get_login(scope, recv, send):
 
 @handle('POST', '/login')
 @with_session
+@with_user
 async def handle_post_login(scope, recv, send):
     dct = await read_form_body(recv)
 
@@ -215,6 +231,7 @@ async def handle_post_login(scope, recv, send):
 
 @handle('GET', '/signup')
 @with_session
+@with_user
 async def handle_get_signup(scope, recv, send):
     html = render_template('signup.html')
     await start_response(send, 200, hu.consts.CONTENT_TYPE_HTML_UTF8)  # noqa
@@ -223,6 +240,7 @@ async def handle_get_signup(scope, recv, send):
 
 @handle('POST', '/signup')
 @with_session
+@with_user
 async def handle_post_signup(scope, recv, send):
     dct = await read_form_body(recv)
 
@@ -244,6 +262,7 @@ async def handle_post_signup(scope, recv, send):
 
 @handle('GET', '/logout')
 @with_session
+@with_user
 @login_required
 async def handle_get_logout(scope, recv, send):
     SESSION.get().pop('_user_id', None)
