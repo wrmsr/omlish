@@ -58,10 +58,19 @@ def with_session(fn):
         async def _send(obj):
             if obj['type'] == 'http.response.start':
                 out_session = SESSION.get()
-                obj.setdefault('headers', []).extend(build_session_headers(out_session))
+                print('\n'.join([f'{scope=}', f'{in_session=}', f'{obj=}', f'{out_session=}', '']))
+                obj = {
+                    **obj,
+                    'headers': [
+                        *obj.get('headers', []),
+                        *build_session_headers(out_session),
+                    ]
+                }
+
             await send(obj)
 
         in_session = extract_session(scope)
+        print('\n'.join([f'{scope=}', f'{in_session=}', '']))
         with setting_context_var(SESSION, in_session):
             await fn(scope, recv, _send)
 
