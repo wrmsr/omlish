@@ -9,7 +9,7 @@ import typing as ta
 import anyio
 
 from omlish import logs
-from omlish.http import consts
+from omlish import http as hu
 
 from ...config import Config
 from ...serving import serve
@@ -144,8 +144,9 @@ async def handle_get_index(scope, recv, send):
 
     session['c'] = session.get('c', 0) + 1
 
-    await start_response(send, 200, consts.CONTENT_TYPE_HTML_UTF8)  # noqa
-    await finish_response(send, render_template('index.html'))
+    html = render_template('index.html')
+    await start_response(send, 200, hu.consts.CONTENT_TYPE_HTML_UTF8)  # noqa
+    await finish_response(send, html)
 
 
 #
@@ -155,8 +156,9 @@ async def handle_get_index(scope, recv, send):
 @with_session
 @login_required
 async def handle_get_profile(scope, recv, send):
-    await start_response(send, 200, consts.CONTENT_TYPE_HTML_UTF8)  # noqa
-    await finish_response(send, render_template('profile.html', name=USER.get().name))
+    html = render_template('profile.html', name=USER.get().name)
+    await start_response(send, 200, hu.consts.CONTENT_TYPE_HTML_UTF8)  # noqa
+    await finish_response(send, html)
 
 
 #
@@ -165,8 +167,9 @@ async def handle_get_profile(scope, recv, send):
 @handle('GET', '/login')
 @with_session
 async def handle_get_login(scope, recv, send):
-    await start_response(send, 200, consts.CONTENT_TYPE_HTML_UTF8)  # noqa
-    await finish_response(send, render_template('login.html'))
+    html = render_template('login.html')
+    await start_response(send, 200, hu.consts.CONTENT_TYPE_HTML_UTF8)  # noqa
+    await finish_response(send, html)
 
 
 @handle('POST', '/login')
@@ -199,8 +202,9 @@ async def handle_post_login(scope, recv, send):
 @handle('GET', '/signup')
 @with_session
 async def handle_get_signup(scope, recv, send):
-    await start_response(send, 200, consts.CONTENT_TYPE_HTML_UTF8)  # noqa
-    await finish_response(send, render_template('signup.html'))
+    html = render_template('signup.html')
+    await start_response(send, 200, hu.consts.CONTENT_TYPE_HTML_UTF8)  # noqa
+    await finish_response(send, html)
 
 
 @handle('POST', '/signup')
