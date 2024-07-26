@@ -83,10 +83,16 @@ def load_session_cookie(signed_value: bytes) -> ta.Any:
     return obj
 
 
+def save_session_cookie(obj: ta.Any) -> bytes:
+    raise NotImplementedError
+
+
 def _main() -> None:
     signed_value = b'eyJfZnJlc2giOmZhbHNlfQ.ZqLLYg.4hMQ-ZLN_40k-q7efM87KEEx93g'
     obj = load_session_cookie(signed_value)
     print(obj)
+    out = save_session_cookie(obj)
+    print(out)
 
 
 if __name__ == '__main__':
