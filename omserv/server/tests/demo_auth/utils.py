@@ -1,5 +1,6 @@
 import logging
 import urllib.parse
+import typing as ta
 
 from omlish import check
 from omlish.http import consts
@@ -21,12 +22,18 @@ async def stub_lifespan(scope, recv, send):
             return
 
 
-async def start_response(send, status: int, content_type: bytes = consts.CONTENT_TYPE_TEXT_UTF8):
+async def start_response(
+        send,
+        status: int,
+        content_type: bytes = consts.CONTENT_TYPE_TEXT_UTF8,
+        headers: ta.Sequence[tuple[bytes, bytes]] | None = None,
+):
     await send({
         'type': 'http.response.start',
         'status': status,
         'headers': [
-            [b'content-type', content_type],
+            (b'content-type', content_type),
+            *(headers or ()),
         ],
     })
 
@@ -43,8 +50,8 @@ async def redirect_response(send, url: str):
         'type': 'http.response.start',
         'status': 302,
         'headers': [
-            [b'content-type', consts.CONTENT_TYPE_TEXT_UTF8],
-            [b'location', url.encode()],
+            (b'content-type', consts.CONTENT_TYPE_TEXT_UTF8),
+            (b'location', url.encode()),
         ],
     })
     await send({
