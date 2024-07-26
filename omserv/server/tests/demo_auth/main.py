@@ -14,8 +14,8 @@ from ...serving import serve
 from .j2 import j2_helper
 from .j2 import load_templates
 from .j2 import render_template
-from .sessions import load_session_cookie
-from .sessions import save_session_cookie
+from .sessions import build_session_headers
+from .sessions import extract_session
 from .users import USERS
 from .utils import finish_response
 from .utils import read_form_body
@@ -60,12 +60,7 @@ def login_required(fn):
 
 @handle('GET', '/')
 async def handle_get_index(scope, recv, send):
-    session = {}
-    for k, v in scope['headers']:
-        if k == b'cookie':
-            n, _, p = v.partition(b'=')
-            if n == b'session':
-                session = load_session_cookie(p)
+    session = extract_session(scope)
 
     session['c'] = session.get('c', 0) + 1
 
@@ -74,8 +69,7 @@ async def handle_get_index(scope, recv, send):
         200,
         consts.CONTENT_TYPE_HTML_UTF8,
         headers=[
-            (b'Vary', b'Cookie'),
-            (b'Set-Cookie', b'session=' + save_session_cookie(session))
+            *build_session_headers(session),
         ],
     )
     await finish_response(send, render_template('index.html'))
