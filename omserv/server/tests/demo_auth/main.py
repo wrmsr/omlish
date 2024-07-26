@@ -115,7 +115,7 @@ def login_required(fn):
         session = SESSION.get()
 
         user_id = session.get('_user_id')
-        if not user_id or (user := USERS.get(user_id)) is None:
+        if not user_id or (user := USERS.get(id=user_id)) is None:
             await redirect_response(send, url_for('login'))
             return
 

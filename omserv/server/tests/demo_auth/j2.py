@@ -50,5 +50,5 @@ def j2_helper(fn):
     return fn
 
 
-def render_template(name: str, **kwargs: ta.Any) -> bytes:
-    return load_templates()[f'{name}.j2'].render(**{**J2_DEFAULT_KWARGS, **kwargs}).encode()
+def render_template(template_name: str, **kwargs: ta.Any) -> bytes:
+    return load_templates()[f'{template_name}.j2'].render(**{**J2_DEFAULT_KWARGS, **kwargs}).encode()
