@@ -108,6 +108,7 @@ from .functions import (  # noqa
 )
 
 from .imports import (  # noqa
+    can_import,
     import_all,
     import_module,
     import_module_attr,

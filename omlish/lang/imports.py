@@ -1,15 +1,18 @@
-"""
-TODO:
- - can_import - does *not* import
-"""
 import contextlib
 import functools
-import importlib
+import importlib.util
 import sys
 import types
 import typing as ta
 
 from .cached import cached_function
+
+
+##
+
+
+def can_import(name: str, package: str | None = None) -> bool:
+    return importlib.util.find_spec(name, package) is not None
 
 
 ##

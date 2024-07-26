@@ -27,8 +27,14 @@ import json as _json
 import typing as ta
 import uuid
 
+from .. import lang
 from .dates import http_date
 from .dates import parse_date
+
+if ta.TYPE_CHECKING:
+    import markupsafe
+else:
+    markupsafe = lang.proxy_import('markupsafe')
 
 
 ##
@@ -148,17 +154,17 @@ class TagBytes(JsonTag):
         return base64.b64decode(value)
 
 
-# class TagMarkup(JsonTag):
-#     key = ' m'
-#
-#     def check(self, value: t.Any) -> bool:
-#         return callable(getattr(value, '__html__', None))
-#
-#     def to_json(self, value: t.Any) -> t.Any:
-#         return str(value.__html__())
-#
-#     def to_python(self, value: t.Any) -> t.Any:
-#         return markupsafe.Markup(value)
+class TagMarkup(JsonTag):
+    key = ' m'
+
+    def check(self, value: ta.Any) -> bool:
+        return callable(getattr(value, '__html__', None))
+
+    def to_json(self, value: ta.Any) -> ta.Any:
+        return str(value.__html__())
+
+    def to_python(self, value: ta.Any) -> ta.Any:
+        return markupsafe.Markup(value)
 
 
 class TagUuid(JsonTag):
@@ -194,6 +200,7 @@ class JsonTagger:
         TagTuple,
         PassList,
         TagBytes,
+        *([TagMarkup] if lang.can_import('markupsafe') else []),
         TagUuid,
         TagDatetime,
     ]
