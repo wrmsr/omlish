@@ -31,6 +31,7 @@ from .. import lang
 from .dates import http_date
 from .dates import parse_date
 
+
 if ta.TYPE_CHECKING:
     import markupsafe
 else:

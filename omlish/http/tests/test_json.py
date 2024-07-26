@@ -22,6 +22,7 @@
 import datetime
 import uuid
 
+import markupsafe
 import pytest
 
 from ..json import JsonTag
@@ -38,7 +39,7 @@ from ..json import JsonTagger
         (1, 2, 3),
         [(1, 2, 3)],
         b'\xff',
-        # markupsafe.Markup('<html>'),
+        markupsafe.Markup('<html>'),
         uuid.uuid4(),
         datetime.datetime.now(tz=datetime.UTC).replace(microsecond=0),
     ],
