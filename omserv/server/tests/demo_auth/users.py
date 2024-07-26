@@ -19,7 +19,10 @@ class User:
 class Users:
     def __init__(self) -> None:
         super().__init__()
+
         self._next_user_id = itertools.count()
+        next(self._next_user_id)
+
         self._users_by_id: dict[int, User] = {}
         self._user_ids_by_email: dict[str, int] = {}
 
