@@ -8,6 +8,7 @@ import typing as ta
 
 import anyio
 
+from omlish import check
 from omlish import http as hu
 from omlish import logs
 
@@ -116,7 +117,12 @@ def handle(method: str, path: str):
 ##
 
 
-USER: contextvars.ContextVar[User] = contextvars.ContextVar('user')
+USER: contextvars.ContextVar[User | None] = contextvars.ContextVar('user', default=None)
+
+
+@j2_helper
+def current_user() -> User | None:
+    return USER.get()
 
 
 def login_required(fn):
@@ -156,7 +162,7 @@ async def handle_get_index(scope, recv, send):
 @with_session
 @login_required
 async def handle_get_profile(scope, recv, send):
-    html = render_template('profile.html', name=USER.get().name)
+    html = render_template('profile.html', name=check.not_none(USER.get()).name)
     await start_response(send, 200, hu.consts.CONTENT_TYPE_HTML_UTF8)  # noqa
     await finish_response(send, html)
 
