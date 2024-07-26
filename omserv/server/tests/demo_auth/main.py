@@ -4,6 +4,7 @@ https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-yo
 import contextlib
 import contextvars
 import logging
+import os
 import typing as ta
 
 import anyio
@@ -96,9 +97,15 @@ def flash(msg: str) -> None:
     SESSION.get().setdefault('_flashes', []).append(msg)
 
 
+#
+
+
+BASE_SERVER_URL = os.environ.get('BASE_SERVER_URL', 'http://localhost:8000/')
+
+
 @j2_helper
 def url_for(s: str) -> str:
-    return f'http://localhost:8000/{s}'
+    return BASE_SERVER_URL + s
 
 
 ##
