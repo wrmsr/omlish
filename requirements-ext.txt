@@ -200,4 +200,4 @@ cloudpickle==3.0.0
 
 ##
 
-openai==1.37.0
+openai==1.37.1
