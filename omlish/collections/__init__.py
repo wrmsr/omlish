@@ -90,6 +90,7 @@ from .utils import (  # noqa
     all_not_equal,
     indexes,
     key_cmp,
+    multi_dict,
     mut_toposort,
     partition,
     toposort,
