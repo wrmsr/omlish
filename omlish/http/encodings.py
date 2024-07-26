@@ -4,5 +4,3 @@ def latin1_decode(s: str) -> str:
 
 def latin1_encode(s: str) -> str:
     return s.encode().decode('latin1')
-
-
