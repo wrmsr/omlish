@@ -205,6 +205,7 @@ async def handle_post_login(scope, recv, send):
 
 #
 
+
 @handle('GET', '/signup')
 @with_session
 async def handle_get_signup(scope, recv, send):
