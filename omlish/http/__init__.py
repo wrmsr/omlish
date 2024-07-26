@@ -8,9 +8,17 @@ from .cookies import (  # noqa
 
 from .dates import (  # noqa
     http_date,
+    parse_date,
 )
 
 from .encodings import (  # noqa
     latin1_decode,
     latin1_encode,
+)
+
+from .json import (  # noqa
+    JsonTag,
+    JsonTagger,
+    json_dumps,
+    json_loads,
 )
