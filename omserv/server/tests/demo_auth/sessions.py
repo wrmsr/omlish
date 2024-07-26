@@ -2,6 +2,9 @@
 TODO:
  - 'tagged' json marshal
  - expires
+ - `Vary: Cookie` response header
+ - `Set-Cookie: session=abcd1234`
+
 """
 import base64
 import hashlib
