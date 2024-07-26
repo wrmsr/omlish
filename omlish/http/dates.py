@@ -23,6 +23,8 @@ import datetime
 import email.utils
 import time
 
+from .. import check
+
 
 def _dt_as_utc(dt: datetime.datetime | None) -> datetime.datetime | None:
     if dt is None:
@@ -45,7 +47,7 @@ def http_date(timestamp: datetime.datetime | datetime.date | float | time.struct
             # Ensure datetime is timezone-aware.
             timestamp = _dt_as_utc(timestamp)
 
-        return email.utils.format_datetime(timestamp, usegmt=True)
+        return email.utils.format_datetime(check.not_none(timestamp), usegmt=True)
 
     if isinstance(timestamp, time.struct_time):
         timestamp = time.mktime(timestamp)

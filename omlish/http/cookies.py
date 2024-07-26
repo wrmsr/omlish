@@ -1,3 +1,7 @@
+"""
+https://github.com/pallets/werkzeug/blob/9e050f7750214d6779636813b8d661250804e811/src/werkzeug/http.py
+https://github.com/pallets/werkzeug/blob/9e050f7750214d6779636813b8d661250804e811/src/werkzeug/sansio/http.py
+"""
 # Copyright 2007 Pallets
 #
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -102,6 +106,10 @@ _COOKIE_SLASH_MAP.update(
 )
 
 
+class CookieTooBigError(Exception):
+    pass
+
+
 def dump_cookie(
         key: str,
         value: str = '',
@@ -181,6 +189,6 @@ def dump_cookie(
     # silently ignored by the browser, which can be quite hard to debug.
     cookie_size = len(rv)
     if max_size and cookie_size > max_size:
-        raise Exception(f'Cookie too big: {cookie_size}')
+        raise CookieTooBigError(cookie_size)
 
     return rv
