@@ -65,6 +65,6 @@ def parse_date(value: str | None) -> datetime.datetime | None:
         return None
 
     if dt.tzinfo is None:
-        return dt.replace(tzinfo=datetime.timezone.utc)
+        return dt.replace(tzinfo=datetime.UTC)
 
     return dt

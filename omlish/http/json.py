@@ -42,16 +42,16 @@ def _default(o: ta.Any) -> ta.Any:
         return str(o)
 
     if dc.is_dataclass(o):
-        return dc.asdict(o)
+        return dc.asdict(o)  # type: ignore
 
-    if hasattr(o, "__html__"):
+    if hasattr(o, '__html__'):
         return str(o.__html__())
 
-    raise TypeError(f"Object of type {type(o).__name__} is not Json serializable")
+    raise TypeError(f'Object of type {type(o).__name__} is not Json serializable')
 
 
 def json_dumps(obj: ta.Any, **kwargs: ta.Any) -> str:
-    kwargs.setdefault("default", _default)
+    kwargs.setdefault('default', _default)
     return _json.dumps(obj, **kwargs)
 
 
@@ -63,9 +63,11 @@ def json_loads(s: str | bytes, **kwargs: ta.Any) -> ta.Any:
 
 
 class JsonTag:
-    key: str = ""
+    key: str = ''
 
     def __init__(self, tagger: 'JsonTagger') -> None:
+        super().__init__()
+
         self.tagger = tagger
 
     def check(self, value: ta.Any) -> bool:
@@ -82,7 +84,7 @@ class JsonTag:
 
 
 class TagDunderDict(JsonTag):
-    key = " di"
+    key = ' di'
 
     def check(self, value: ta.Any) -> bool:
         return (
@@ -93,7 +95,7 @@ class TagDunderDict(JsonTag):
 
     def to_json(self, value: ta.Any) -> ta.Any:
         key = next(iter(value))
-        return {f"{key}__": self.tagger.tag(value[key])}
+        return {f'{key}__': self.tagger.tag(value[key])}
 
     def to_python(self, value: ta.Any) -> ta.Any:
         key = next(iter(value))
@@ -111,7 +113,7 @@ class TagDict(JsonTag):
 
 
 class TagTuple(JsonTag):
-    key = " t"
+    key = ' t'
 
     def check(self, value: ta.Any) -> bool:
         return isinstance(value, tuple)
@@ -134,13 +136,13 @@ class PassList(JsonTag):
 
 
 class TagBytes(JsonTag):
-    key = " b"
+    key = ' b'
 
     def check(self, value: ta.Any) -> bool:
         return isinstance(value, bytes)
 
     def to_json(self, value: ta.Any) -> ta.Any:
-        return base64.b64encode(value).decode("ascii")
+        return base64.b64encode(value).decode('ascii')
 
     def to_python(self, value: ta.Any) -> ta.Any:
         return base64.b64decode(value)
@@ -160,7 +162,7 @@ class TagBytes(JsonTag):
 
 
 class TagUuid(JsonTag):
-    key = " u"
+    key = ' u'
 
     def check(self, value: ta.Any) -> bool:
         return isinstance(value, uuid.UUID)
@@ -173,7 +175,7 @@ class TagUuid(JsonTag):
 
 
 class TagDatetime(JsonTag):
-    key = " d"
+    key = ' d'
 
     def check(self, value: ta.Any) -> bool:
         return isinstance(value, datetime.datetime)
@@ -186,7 +188,7 @@ class TagDatetime(JsonTag):
 
 
 class JsonTagger:
-    default_tags = [
+    default_tags: ta.ClassVar[ta.Sequence[type[JsonTag]]] = [
         TagDunderDict,
         TagDict,
         TagTuple,
@@ -197,6 +199,8 @@ class JsonTagger:
     ]
 
     def __init__(self) -> None:
+        super().__init__()
+
         self.tags: dict[str, JsonTag] = {}
         self.order: list[JsonTag] = []
 
@@ -243,18 +247,16 @@ class JsonTagger:
 
     def untag_scan(self, value: ta.Any) -> ta.Any:
         if isinstance(value, dict):
-            # untag each item recursively
             value = {k: self.untag_scan(v) for k, v in value.items()}
-            # untag the dict itself
             value = self.untag(value)
+
         elif isinstance(value, list):
-            # untag each item recursively
             value = [self.untag_scan(item) for item in value]
 
         return value
 
     def dumps(self, value: ta.Any) -> str:
-        return json_dumps(self.tag(value), separators=(",", ":"))
+        return json_dumps(self.tag(value), separators=(',', ':'))
 
     def loads(self, value: str) -> ta.Any:
         return self.untag_scan(json_loads(value))
