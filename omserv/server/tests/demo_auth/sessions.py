@@ -1,12 +1,6 @@
-"""
-TODO:
- - 'tagged' json marshal
- - expires
-"""
 import base64
 import hashlib
 import hmac
-import json
 import struct
 import time
 import typing as ta
@@ -36,6 +30,7 @@ def bytes_to_int(bytestr: bytes) -> int:
 
 
 ##
+
 
 SECRET_KEY = 'secret-key-goes-here'  # noqa
 SALT = 'cookie-session'
@@ -90,13 +85,17 @@ def load_session_cookie(signed_value: bytes) -> ta.Any:
     if decompress:
         jb = zlib.decompress(jb)
 
-    obj = json.loads(jb.decode())
+    jbs = jb.decode()
+
+    obj = hu.JSON_TAGGER.loads(jbs)
 
     return obj
 
 
 def save_session_cookie(obj: ta.Any) -> bytes:
-    jb = json.dumps(obj, separators=(',', ':')).encode()
+    jbs = hu.JSON_TAGGER.dumps(obj)
+
+    jb = jbs.encode()
 
     is_compressed = False
     compressed = zlib.compress(jb)
