@@ -2,9 +2,6 @@
 TODO:
  - 'tagged' json marshal
  - expires
- - `Vary: Cookie` response header
- - `Set-Cookie: session=abcd1234`
-
 """
 import base64
 import hashlib
@@ -112,6 +109,22 @@ def save_session_cookie(obj: ta.Any) -> bytes:
 
     value = payload + SEP + timestamp
     return value + SEP + base64_encode(get_signature(derive_key(), value))
+
+
+def extract_session(scope) -> dict[str, ta.Any]:
+    for k, v in scope['headers']:
+        if k == b'cookie':
+            n, _, p = v.partition(b'=')
+            if n == b'session':
+                return load_session_cookie(p)
+    return {}
+
+
+def build_session_headers(session: ta.Mapping[str, ta.Any]) -> list[tuple[bytes, bytes]]:
+    return [
+        (b'Vary', b'Cookie'),
+        (b'Set-Cookie', b'session=' + save_session_cookie(session))
+    ]
 
 
 def _main() -> None:
