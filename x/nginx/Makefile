@@ -13,23 +13,23 @@ build:
 	\
 	cd build && \
 	\
-	if [ ! -f 'nginx-1.26.1.tar.gz' ] ; then \
-		wget 'https://nginx.org/download/nginx-1.26.1.tar.gz' -O 'nginx-1.26.1.tar.gz' ; \
+	if [ ! -f 'nginx-1.27.0.tar.gz' ] ; then \
+		wget 'https://nginx.org/download/nginx-1.27.0.tar.gz' -O 'nginx-1.27.0.tar.gz' ; \
 	fi && \
 	\
 	if [ ! -f 'nginx-module-vts-0.2.2.tar.gz' ] ; then \
 		wget 'https://github.com/vozlt/nginx-module-vts/archive/refs/tags/v0.2.2.tar.gz' -O 'nginx-module-vts-0.2.2.tar.gz' ; \
 	fi && \
 	\
-	if [ ! -d 'nginx-1.26.1' ] ; then \
-		tar xvzf 'nginx-1.26.1.tar.gz' ; \
+	if [ ! -d 'nginx-1.27.0' ] ; then \
+		tar xvzf 'nginx-1.27.0.tar.gz' ; \
 	fi && \
 	\
 	if [ ! -d 'nginx-module-vts-0.2.2' ] ; then \
 		tar xvzf 'nginx-module-vts-0.2.2.tar.gz' ; \
 	fi && \
 	\
-	cd 'nginx-1.26.1' && \
+	cd 'nginx-1.27.0' && \
 	\
 	BREW_CFLAGS='' ; \
 	BREW_LDFLAGS='' ; \
