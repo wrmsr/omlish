@@ -53,3 +53,18 @@ def http_date(timestamp: datetime.datetime | datetime.date | float | time.struct
         timestamp = time.mktime(timestamp)
 
     return email.utils.formatdate(timestamp, usegmt=True)
+
+
+def parse_date(value: str | None) -> datetime.datetime | None:
+    if value is None:
+        return None
+
+    try:
+        dt = email.utils.parsedate_to_datetime(value)
+    except (TypeError, ValueError):
+        return None
+
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=datetime.timezone.utc)
+
+    return dt
