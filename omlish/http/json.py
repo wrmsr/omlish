@@ -251,3 +251,6 @@ class JsonTagger:
 
     def loads(self, value: str) -> ta.Any:
         return self.untag_scan(json_loads(value))
+
+
+JSON_TAGGER = JsonTagger()
