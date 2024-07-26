@@ -24,23 +24,23 @@ import hmac
 import secrets
 
 
-SALT_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+SALT_CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 DEFAULT_PBKDF2_ITERATIONS = 600000
 
 
 def gen_salt(length: int) -> str:
     if length <= 0:
-        raise ValueError("Salt length must be at least 1.")
+        raise ValueError('Salt length must be at least 1.')
 
-    return "".join(secrets.choice(SALT_CHARS) for _ in range(length))
+    return ''.join(secrets.choice(SALT_CHARS) for _ in range(length))
 
 
 def _hash_internal(method: str, salt: str, password: str) -> tuple[str, str]:
-    method, *args = method.split(":")
+    method, *args = method.split(':')
     salt_bytes = salt.encode()
     password_bytes = password.encode()
 
-    if method == "scrypt":
+    if method == 'scrypt':
         if not args:
             n = 2 ** 15
             r = 8
@@ -54,15 +54,15 @@ def _hash_internal(method: str, salt: str, password: str) -> tuple[str, str]:
         maxmem = 132 * n * r * p  # ideally 128, but some extra seems needed
         return (
             hashlib.scrypt(
-                password_bytes, salt=salt_bytes, n=n, r=r, p=p, maxmem=maxmem
+                password_bytes, salt=salt_bytes, n=n, r=r, p=p, maxmem=maxmem,
             ).hex(),
-            f"scrypt:{n}:{r}:{p}",
+            f'scrypt:{n}:{r}:{p}',
         )
-    elif method == "pbkdf2":
+    elif method == 'pbkdf2':
         len_args = len(args)
 
         if len_args == 0:
-            hash_name = "sha256"
+            hash_name = 'sha256'
             iterations = DEFAULT_PBKDF2_ITERATIONS
         elif len_args == 1:
             hash_name = args[0]
@@ -75,9 +75,9 @@ def _hash_internal(method: str, salt: str, password: str) -> tuple[str, str]:
 
         return (
             hashlib.pbkdf2_hmac(
-                hash_name, password_bytes, salt_bytes, iterations
+                hash_name, password_bytes, salt_bytes, iterations,
             ).hex(),
-            f"pbkdf2:{hash_name}:{iterations}",
+            f'pbkdf2:{hash_name}:{iterations}',
         )
     else:
         raise ValueError(f"Invalid hash method '{method}'.")
@@ -85,17 +85,17 @@ def _hash_internal(method: str, salt: str, password: str) -> tuple[str, str]:
 
 def generate_password_hash(
         password: str,
-        method: str = "scrypt",
+        method: str = 'scrypt',
         salt_length: int = 16,
 ) -> str:
     salt = gen_salt(salt_length)
     h, actual_method = _hash_internal(method, salt, password)
-    return f"{actual_method}${salt}${h}"
+    return f'{actual_method}${salt}${h}'
 
 
 def check_password_hash(pwhash: str, password: str) -> bool:
     try:
-        method, salt, hashval = pwhash.split("$", 2)
+        method, salt, hashval = pwhash.split('$', 2)
     except ValueError:
         return False
 
