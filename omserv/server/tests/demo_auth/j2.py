@@ -40,9 +40,7 @@ class _EnvUser:
     is_authenticated = False
 
 
-J2_DEFAULT_KWARGS = dict(
-    current_user=_EnvUser(),
-)
+J2_DEFAULT_KWARGS = {}
 
 
 def j2_helper(fn):
