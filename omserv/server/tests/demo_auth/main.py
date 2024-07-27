@@ -1,8 +1,7 @@
 """
 TODO:
- - expires
- - fix parse_cookie encode/decode - latin1?
- - remember
+ - remember - just a second cookie lol
+ - chrome save text boxes / login
 
 https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login
 """
@@ -164,6 +163,10 @@ def login_required(fn):
     return inner
 
 
+def login_user(user: User, *, remember: bool = False) -> None:
+    SESSION.get()['_user_id'] = user.id
+
+
 ##
 
 
@@ -227,7 +230,7 @@ async def handle_post_login(scope, recv, send):
         return
 
     # if the above check passes, then we know the user has the right credentials
-    SESSION.get()['_user_id'] = user.id
+    login_user(user, remember=remember)
     await redirect_response(send, url_for('profile'))
 
 
