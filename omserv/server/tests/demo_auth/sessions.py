@@ -158,10 +158,10 @@ class CookieSessionStore:
     def extract(self, scope) -> Session:
         for k, v in scope['headers']:
             if k == b'cookie':
-                cks = hu.parse_cookie(v.decode())  # FIXME
+                cks = hu.parse_cookie(v.decode('latin-1', 'strict'))
                 sk = cks.get(self._config.key)
                 if sk:
-                    return self._marshal.load(sk[0].encode())  # FIXME
+                    return self._marshal.load(sk[0].encode('latin-1', 'strict'))
 
         return {}
 
@@ -170,13 +170,14 @@ class CookieSessionStore:
 
         c = hu.dump_cookie(
             self._config.key,
-            d.decode(),  # FIXME
+            d.decode('latin-1', 'strict'),
             max_age=self._config.max_age,
+            httponly=True,
         )
 
         return [
             (b'Vary', b'Cookie'),
-            (b'Set-Cookie', c.encode()),  # FIXME
+            (b'Set-Cookie', c.encode('latin-1', 'strict')),
         ]
 
 
