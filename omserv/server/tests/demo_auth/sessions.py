@@ -11,6 +11,9 @@ from omlish import http as hu
 from omlish import lang
 
 
+Session: ta.TypeAlias = dict[str, ta.Any]
+
+
 ##
 
 
@@ -63,7 +66,7 @@ class Signer:
         return hmac.compare_digest(sig, self.get_signature(value))
 
 
-class CookieSessionStore:
+class SessionMarshal:
     def __init__(self, signer: Signer) -> None:
         super().__init__()
 
@@ -71,8 +74,8 @@ class CookieSessionStore:
 
     SEP = b'.'
 
-    def load(self, cookie: bytes) -> ta.Any:
-        value, sig = cookie.rsplit(self.SEP, 1)
+    def load(self, bs: bytes) -> ta.Any:
+        value, sig = bs.rsplit(self.SEP, 1)
 
         sig_b = base64_decode(sig)
 
@@ -108,7 +111,7 @@ class CookieSessionStore:
 
         return obj
 
-    def save(self, obj: ta.Any) -> bytes:
+    def dump(self, obj: ta.Any) -> bytes:
         jbs = hu.JSON_TAGGER.dumps(obj)
 
         jb = jbs.encode()
@@ -133,24 +136,35 @@ class CookieSessionStore:
         return value + self.SEP + base64_encode(self._signer.get_signature(value))
 
 
-COOKIE_SESSION_STORE = CookieSessionStore(Signer())
+class CookieSessionStore:
+    @dc.dataclass(frozen=True)
+    class Config:
+        pass
+
+    def __init__(self, marshal: SessionMarshal, config: Config = Config()) -> None:
+        super().__init__()
+
+        self._marshal = marshal
+        self._config = config
+
+    def extract(self, scope) -> Session:
+        for k, v in scope['headers']:
+            if k == b'cookie':
+                cks = hu.parse_cookie(v.decode())  # FIXME: lol
+                sk = cks.get('session')
+                if sk:
+                    return self._marshal.load(sk[0].encode())  # FIXME: lol
+        return {}
+
+    def build_headers(self, session: Session) -> list[tuple[bytes, bytes]]:
+        return [
+            (b'Vary', b'Cookie'),
+            (b'Set-Cookie', b'session=' + self._marshal.dump(session)),
+        ]
 
 
-def extract_session(scope) -> dict[str, ta.Any]:
-    for k, v in scope['headers']:
-        if k == b'cookie':
-            cks = hu.parse_cookie(v.decode())  # FIXME: lol
-            sk = cks.get('session')
-            if sk:
-                return COOKIE_SESSION_STORE.load(sk[0].encode())  # FIXME: lol
-    return {}
-
-
-def build_session_headers(session: ta.Mapping[str, ta.Any]) -> list[tuple[bytes, bytes]]:
-    return [
-        (b'Vary', b'Cookie'),
-        (b'Set-Cookie', b'session=' + COOKIE_SESSION_STORE.save(session)),
-    ]
+SESSION_MARSHAL = SessionMarshal(Signer())
+COOKIE_SESSION_STORE = CookieSessionStore(SESSION_MARSHAL)
 
 
 def _main() -> None:
@@ -158,9 +172,9 @@ def _main() -> None:
 
     print(sv)
     for _ in range(3):
-        obj = COOKIE_SESSION_STORE.load(sv)
+        obj = SESSION_MARSHAL.load(sv)
         print(obj)
-        sv = COOKIE_SESSION_STORE.save(obj)
+        sv = SESSION_MARSHAL.dump(obj)
         print(sv)
 
 
