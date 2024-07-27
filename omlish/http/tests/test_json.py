@@ -55,22 +55,21 @@ def test_dump_load_unchanged(data):
 
 def test_duplicate_tag():
     class TagDict2(JsonTag):
-        key = ' d'
+        key = ' di'
 
     s = JsonTagger()
     pytest.raises(KeyError, s.register, TagDict2)
     s.register(TagDict2, force=True, index=0)
-    assert isinstance(s.tags[' d'], TagDict2)
+    assert isinstance(s.tags[' di'], TagDict2)
     assert isinstance(s.order[0], TagDict2)
 
 
 def test_custom_tag():
-    class Foo:  # noqa: B903, for Python2 compatibility
+    class Foo:
         def __init__(self, data):
             self.data = data
 
     class TagFoo(JsonTag):
-        __slots__ = ()
         key = ' f'
 
         def check(self, value):
