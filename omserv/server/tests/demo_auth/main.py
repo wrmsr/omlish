@@ -25,8 +25,8 @@ from .j2 import load_templates
 from .j2 import render_template
 from .security import check_password_hash
 from .security import generate_password_hash
-from .sessions import build_session_headers
-from .sessions import extract_session
+from .sessions import COOKIE_SESSION_STORE
+from .sessions import Session
 from .users import USERS
 from .users import User
 from .utils import finish_response
@@ -57,7 +57,7 @@ def setting_context_var(cv: contextvars.ContextVar, v: ta.Any) -> ta.Iterator[No
 ##
 
 
-SESSION: contextvars.ContextVar[dict[str, ta.Any]] = contextvars.ContextVar('session')
+SESSION: contextvars.ContextVar[Session] = contextvars.ContextVar('session')
 
 
 def with_session(fn):
@@ -70,13 +70,13 @@ def with_session(fn):
                     **obj,
                     'headers': [
                         *obj.get('headers', []),
-                        *build_session_headers(out_session),
+                        *COOKIE_SESSION_STORE.build_headers(out_session),
                     ],
                 }
 
             await send(obj)
 
-        in_session = extract_session(scope)
+        in_session = COOKIE_SESSION_STORE.extract(scope)
         print('\n'.join([f'{scope=}', f'{in_session=}', '']))
         with setting_context_var(SESSION, in_session):
             await fn(scope, recv, _send)
