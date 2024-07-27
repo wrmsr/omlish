@@ -19,19 +19,23 @@
                         <a href="{{ url_for('') }}" class="navbar-item">
                             Home
                         </a>
+
                         {% if current_user() %}
                             <a href="{{ url_for('profile') }}" class="navbar-item">
                                 Profile
                             </a>
                         {% endif %}
+
                         {% if not current_user() %}
                             <a href="{{ url_for('login') }}" class="navbar-item">
                                 Login
                             </a>
+
                             <a href="{{ url_for('signup') }}" class="navbar-item">
                                 Sign Up
                             </a>
                         {% endif %}
+
                         {% if current_user() %}
                             <a href="{{ url_for('logout') }}" class="navbar-item">
                                 Logout
