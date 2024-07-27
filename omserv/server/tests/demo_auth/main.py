@@ -22,8 +22,8 @@ from ...serving import serve
 from .j2 import j2_helper
 from .j2 import load_templates
 from .j2 import render_template
-from .security import check_password_hash
-from .security import generate_password_hash
+from .passwords import check_password_hash
+from .passwords import generate_password_hash
 from .sessions import COOKIE_SESSION_STORE
 from .sessions import Session
 from .users import USERS
