@@ -15,19 +15,22 @@
             <form method="POST" action="{{ url_for('signup') }}">
                 <div class="field">
                     <div class="control">
-                        <input class="input is-large" type="email" name="email" placeholder="Email" autofocus="">
+                        <label for="email">Email</label>
+                        <input id="email" class="input is-large" type="email" name="email" placeholder="Email" autofocus="" required>
                     </div>
                 </div>
 
                 <div class="field">
                     <div class="control">
-                        <input class="input is-large" type="text" name="name" placeholder="Name" autofocus="">
+                        <label for="name">Name</label>
+                        <input id="name" class="input is-large" type="text" name="name" placeholder="Name" autofocus="" required>
                     </div>
                 </div>
 
                 <div class="field">
                     <div class="control">
-                        <input class="input is-large" type="password" name="password" placeholder="Password">
+                        <label for="password">Password</label>
+                        <input id="password" class="input is-large" type="password" name="password" placeholder="Password" required>
                     </div>
                 </div>
 
