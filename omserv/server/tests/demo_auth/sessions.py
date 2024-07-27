@@ -1,5 +1,6 @@
 import base64
 import dataclasses as dc
+import datetime
 import hashlib
 import hmac
 import struct
@@ -64,6 +65,9 @@ class Signer:
 
     def verify_signature(self, value: bytes, sig: bytes) -> bool:
         return hmac.compare_digest(sig, self.get_signature(value))
+
+
+##
 
 
 class SessionMarshal:
@@ -136,10 +140,14 @@ class SessionMarshal:
         return value + self.SEP + base64_encode(self._signer.get_signature(value))
 
 
+##
+
+
 class CookieSessionStore:
     @dc.dataclass(frozen=True)
     class Config:
-        pass
+        key: str = 'session'
+        max_age: datetime.timedelta | int | None = None
 
     def __init__(self, marshal: SessionMarshal, config: Config = Config()) -> None:
         super().__init__()
@@ -150,21 +158,44 @@ class CookieSessionStore:
     def extract(self, scope) -> Session:
         for k, v in scope['headers']:
             if k == b'cookie':
-                cks = hu.parse_cookie(v.decode())  # FIXME: lol
-                sk = cks.get('session')
+                cks = hu.parse_cookie(v.decode())  # FIXME
+                sk = cks.get(self._config.key)
                 if sk:
-                    return self._marshal.load(sk[0].encode())  # FIXME: lol
+                    return self._marshal.load(sk[0].encode())  # FIXME
+
         return {}
 
     def build_headers(self, session: Session) -> list[tuple[bytes, bytes]]:
+        d = self._marshal.dump(session)
+
+        c = hu.dump_cookie(
+            self._config.key,
+            d.decode(),  # FIXME
+            max_age=self._config.max_age,
+        )
+
         return [
             (b'Vary', b'Cookie'),
-            (b'Set-Cookie', b'session=' + self._marshal.dump(session)),
+            (b'Set-Cookie', c.encode()),  # FIXME
         ]
 
 
-SESSION_MARSHAL = SessionMarshal(Signer())
-COOKIE_SESSION_STORE = CookieSessionStore(SESSION_MARSHAL)
+##
+
+
+SESSION_MARSHAL = SessionMarshal(
+    signer=Signer(),
+)
+
+COOKIE_SESSION_STORE = CookieSessionStore(
+    marshal=SESSION_MARSHAL,
+    config=CookieSessionStore.Config(
+        max_age=datetime.timedelta(days=31),
+    ),
+)
+
+
+##
 
 
 def _main() -> None:
