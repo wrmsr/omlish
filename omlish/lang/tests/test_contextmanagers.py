@@ -1,5 +1,10 @@
 import contextlib
+import typing as ta
 
+import pytest
+
+from ..contextmanagers import AsyncContextManager
+from ..contextmanagers import ContextManager
 from ..contextmanagers import ExitStacked
 from ..contextmanagers import context_wrapped
 
@@ -72,3 +77,36 @@ def test_context_wrapped():
     d = D()
     assert d.g(10) == 13
     assert gcm.count == 2
+
+
+def test_contextmanager_class():
+    class C(ContextManager[int]):
+        c = 0
+
+        def __contextmanager__(self) -> ta.Iterable[int]:
+            self.c += 1
+            yield 420
+            self.c += 1
+
+    c = C()
+    with c as n:
+        assert n == 420
+        assert c.c == 1
+    assert c.c == 2
+
+
+@pytest.mark.asyncio
+async def test_asynccontextmanager_class():
+    class C(AsyncContextManager[int]):
+        c = 0
+
+        async def __asynccontextmanager__(self) -> ta.AsyncIterator[int]:
+            self.c += 1
+            yield 420
+            self.c += 1
+
+    c = C()
+    async with c as n:
+        assert n == 420
+        assert c.c == 1
+    assert c.c == 2
