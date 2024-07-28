@@ -1,8 +1,8 @@
-from .. import domination as domination_
+from .. import domination
 
 
 def test_dom():
-    g = domination_.ListDictDirectedGraph([
+    g = domination.ListDictDirectedGraph([
         (0, [1, 2]),
         (1, [4]),
         (2, [3]),
@@ -10,7 +10,7 @@ def test_dom():
         (4, []),
     ])
 
-    d = domination_.DominatorTree(g, 0)
+    d = domination.DominatorTree(g, 0)
 
     assert d.immediate_dominators == {1: 0, 2: 0, 3: 2, 4: 0}
     assert d.dominator_tree == {0: {1, 2, 4}, 2: {3}}
