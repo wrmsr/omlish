@@ -81,6 +81,36 @@ class ContextManager(abc.ABC, ta.Generic[T]):
         return self._contextmanager.__exit__(exc_type, exc_val, exc_tb)
 
 
+class AsyncContextManager(abc.ABC, ta.Generic[T]):
+
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+
+        if not hasattr(cls.__asynccontextmanager__, '_is_asynccontextmanager'):
+            cls.__asynccontextmanager__ = contextlib.asynccontextmanager(cls.__asynccontextmanager__)  # type: ignore  # noqa
+            cls.__asynccontextmanager__._is_asynccontextmanager = True  # type: ignore  # noqa
+
+    @abc.abstractmethod
+    async def __asynccontextmanager__(self) -> ta.AsyncIterator[T]:
+        raise NotImplementedError
+
+    __asynccontextmanager__._is_asynccontextmanager = True  # type: ignore  # noqa
+
+    _asynccontextmanager: ta.Any
+
+    async def __aenter__(self) -> T:
+        self._asynccontextmanager = self.__asynccontextmanager__()
+        return await self._asynccontextmanager.__aenter__()  # type: ignore
+
+    async def __aexit__(
+            self,
+            exc_type: type[BaseException] | None,
+            exc_val: BaseException | None,
+            exc_tb: types.TracebackType | None,
+    ) -> None:
+        return await self._asynccontextmanager.__aexit__(exc_type, exc_val, exc_tb)
+
+
 ##
 
 
