@@ -213,8 +213,13 @@ def main() -> None:
 
     sys.stdout.write(SGR(SGRs.RESET))
     sys.stdout.write(BG8(15) + ' ')
-    for i in [196, 160, 124, 88, 52, 16]:
+    for i in range(20):
         sys.stdout.write(BG8(i) + ' ')
+    sys.stdout.write('\n')
+    for i in range(256):
+        if i % 12 == 0:
+            sys.stdout.write('\n')
+        sys.stdout.write(BG8(i + 16) + ' ')
     sys.stdout.write(SGR(SGRs.RESET) + '\n')
 
 
