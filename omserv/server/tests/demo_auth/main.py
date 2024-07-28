@@ -5,7 +5,6 @@ TODO:
 
 https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login
 """
-import contextlib
 import contextvars
 import logging
 import os
@@ -15,6 +14,7 @@ import anyio
 
 from omlish import check
 from omlish import http as hu
+from omlish import lang
 from omlish import logs
 
 from ...config import Config
@@ -44,15 +44,6 @@ log = logging.getLogger(__name__)
 SCOPE: contextvars.ContextVar[dict[str, ta.Any]] = contextvars.ContextVar('scope')
 
 
-@contextlib.contextmanager
-def setting_context_var(cv: contextvars.ContextVar, v: ta.Any) -> ta.Iterator[None]:
-    tok = cv.set(v)
-    try:
-        yield
-    finally:
-        cv.reset(tok)
-
-
 ##
 
 
@@ -77,7 +68,7 @@ def with_session(fn):
 
         in_session = COOKIE_SESSION_STORE.extract(scope)
         print('\n'.join([f'{scope=}', f'{in_session=}', '']))
-        with setting_context_var(SESSION, in_session):
+        with lang.context_var_setting(SESSION, in_session):
             await fn(scope, recv, _send)
 
     return inner
@@ -146,7 +137,7 @@ def with_user(fn):
         else:
             user = None
 
-        with setting_context_var(USER, user):
+        with lang.context_var_setting(USER, user):
             await fn(scope, recv, send)
 
     return inner
@@ -290,7 +281,7 @@ async def auth_app(scope, recv, send):
             handler = HANDLERS.get((scope['method'], scope['raw_path'].decode()))
 
             if handler is not None:
-                with setting_context_var(SCOPE, scope):
+                with lang.context_var_setting(SCOPE, scope):
                     await handler(scope, recv, send)
 
             else:
