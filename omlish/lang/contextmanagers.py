@@ -91,7 +91,7 @@ class AsyncContextManager(abc.ABC, ta.Generic[T]):
             cls.__asynccontextmanager__._is_asynccontextmanager = True  # type: ignore  # noqa
 
     @abc.abstractmethod
-    async def __asynccontextmanager__(self) -> ta.AsyncIterator[T]:
+    def __asynccontextmanager__(self) -> ta.AsyncIterator[T]:
         raise NotImplementedError
 
     __asynccontextmanager__._is_asynccontextmanager = True  # type: ignore  # noqa
