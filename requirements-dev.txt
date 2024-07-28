@@ -58,6 +58,6 @@ mysql-connector-python==9.0.0
 mysqlclient==2.2.4; sys_platform == 'darwin'  # brew install mysql pkg-config
 
 ujson==5.10.0
-python-rapidjson==1.18
+python-rapidjson==1.19
 
 markupsafe==2.1.5

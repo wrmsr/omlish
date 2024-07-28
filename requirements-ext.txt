@@ -74,7 +74,7 @@ sympy==1.13.1
 
 wgpu==0.16.0
 
-hypothesis==6.108.4
+hypothesis==6.108.5
 
 hexdump==3.3
 
