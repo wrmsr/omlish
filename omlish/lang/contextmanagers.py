@@ -1,3 +1,4 @@
+import abc
 import contextlib
 import contextvars
 import functools
@@ -45,6 +46,39 @@ class NopContextManager:
 
 
 NOP_CONTEXT_MANAGER = NopContextManager()
+
+
+##
+
+
+class ContextManager(abc.ABC, ta.Generic[T]):
+
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+
+        if not hasattr(cls.__contextmanager__, '_is_contextmanager'):
+            cls.__contextmanager__ = contextlib.contextmanager(cls.__contextmanager__)  # type: ignore  # noqa
+            cls.__contextmanager__._is_contextmanager = True  # type: ignore  # noqa
+
+    @abc.abstractmethod
+    def __contextmanager__(self) -> ta.Iterable[T]:
+        raise NotImplementedError
+
+    __contextmanager__._is_contextmanager = True  # type: ignore  # noqa
+
+    _contextmanager: ta.Any
+
+    def __enter__(self) -> T:
+        self._contextmanager = self.__contextmanager__()
+        return self._contextmanager.__enter__()  # type: ignore
+
+    def __exit__(
+            self,
+            exc_type: type[BaseException] | None,
+            exc_val: BaseException | None,
+            exc_tb: types.TracebackType | None,
+    ) -> None:
+        return self._contextmanager.__exit__(exc_type, exc_val, exc_tb)
 
 
 ##

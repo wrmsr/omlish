@@ -47,6 +47,7 @@ from .cmp import (  # noqa
 
 from .contextmanagers import (  # noqa
     ContextManaged,
+    ContextManager,
     ContextWrapped,
     DefaultLockable,
     ExitStacked,
