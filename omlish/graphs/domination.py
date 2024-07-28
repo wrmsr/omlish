@@ -1,4 +1,5 @@
 import abc
+import contextlib
 import typing as ta
 
 from .. import check
@@ -6,13 +7,12 @@ from .. import lang
 
 
 V = ta.TypeVar('V')
-E = ta.TypeVar('E')
 MK = ta.TypeVar('MK')
 MV = ta.TypeVar('MV')
 SetMap = ta.Mapping[MK, ta.AbstractSet[MV]]
 
 
-class DirectedGraph(ta.Generic[V, E], lang.Abstract):
+class DirectedGraph(ta.Generic[V], lang.Abstract):
 
     @abc.abstractmethod
     def get_successors(self, vertex: V) -> ta.Collection[V]:
@@ -23,9 +23,9 @@ class DirectedGraph(ta.Generic[V, E], lang.Abstract):
         raise NotImplementedError
 
 
-class ListDictDirectedGraph(DirectedGraph[V, E]):
+class ListDictDirectedGraph(DirectedGraph[V]):
 
-    def __init__(self, items: ta.Iterable[ta.Tuple[V, ta.Iterable[V]]]) -> None:
+    def __init__(self, items: ta.Iterable[tuple[V, ta.Iterable[V]]]) -> None:
         super().__init__()
 
         lst_dct: dict[V, list[V]] = {}
@@ -58,9 +58,9 @@ class ListDictDirectedGraph(DirectedGraph[V, E]):
                     stack.append(child)
 
 
-class DominatorTree(ta.Generic[V, E]):
+class DominatorTree(ta.Generic[V]):
 
-    def __init__(self, graph: DirectedGraph[V, E], root: V) -> None:
+    def __init__(self, graph: DirectedGraph[V], root: V) -> None:
         super().__init__()
 
         self._graph = check.not_none(graph)
@@ -137,9 +137,9 @@ class DominatorTree(ta.Generic[V, E]):
         return list(reversed(self.topological_traversal))
 
 
-class _Dfs(ta.Generic[V, E]):
+class _Dfs(ta.Generic[V]):
 
-    def __init__(self, graph: DirectedGraph[V, E], root: V) -> None:
+    def __init__(self, graph: DirectedGraph[V], root: V) -> None:
         super().__init__()
 
         semi: dict[V, int] = {}
@@ -190,12 +190,12 @@ class _Dfs(ta.Generic[V, E]):
         return self._label
 
 
-class _ImmediateDominanceComputer(ta.Generic[V, E]):
+class _ImmediateDominanceComputer(ta.Generic[V]):
 
-    def __init__(self, dfs: _Dfs[V, E]) -> None:
+    def __init__(self, dfs: _Dfs[V]) -> None:
         super().__init__()
 
-        self._dfs = check.isinstance(dfs, _Dfs)
+        self._dfs: _Dfs[V] = check.isinstance(dfs, _Dfs)  # type: ignore
 
         self._ancestor: dict[V, V] = {}
         self._semi = dict(self._dfs.semi)
@@ -229,10 +229,8 @@ class _ImmediateDominanceComputer(ta.Generic[V, E]):
                 else:
                     idom[v] = p
 
-            try:
+            with contextlib.suppress(KeyError):
                 del bucket[p]
-            except KeyError:
-                pass
 
         for i in range(1, last_semi_number + 1):
             w = self._dfs.vertex[i]
