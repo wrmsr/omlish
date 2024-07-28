@@ -3,10 +3,6 @@ import typing as ta
 
 from .. import check
 from .. import lang
-from .. import properties
-
-
-lang.warn_unstable()
 
 
 V = ta.TypeVar('V')
@@ -32,7 +28,7 @@ class ListDictDirectedGraph(DirectedGraph[V, E]):
     def __init__(self, items: ta.Iterable[ta.Tuple[V, ta.Iterable[V]]]) -> None:
         super().__init__()
 
-        lst_dct: ta.Dict[V, ta.List[V]] = {}
+        lst_dct: dict[V, list[V]] = {}
         all_children = set()
         for parent, children in items:
             check.not_in(parent, lst_dct)
@@ -51,8 +47,8 @@ class ListDictDirectedGraph(DirectedGraph[V, E]):
         return self._lst_dct[vertex]
 
     def yield_depth_first(self, root: V) -> ta.Iterator[V]:
-        stack: ta.List[V] = [root]
-        seen: ta.Set[V] = set()
+        stack: list[V] = [root]
+        seen: set[V] = set()
         while stack:
             cur = stack.pop()
             yield cur
@@ -72,21 +68,21 @@ class DominatorTree(ta.Generic[V, E]):
         check.not_none(self._graph.get_successors(root))
         self._dfs = _Dfs(graph, root)
 
-    @properties.cached
+    @lang.cached_property
     def immediate_dominators(self) -> ta.Mapping[V, V]:
         return _ImmediateDominanceComputer(self._dfs).immediate_dominators
 
-    @properties.cached
+    @lang.cached_property
     def dominator_tree(self) -> SetMap[V, V]:
-        tree: ta.Dict[V, ta.Set[V]] = {}
+        tree: dict[V, set[V]] = {}
         for node, dom in self.immediate_dominators.items():
             tree.setdefault(dom, set()).add(node)
         return tree
 
-    @properties.cached
+    @lang.cached_property
     def deep_dominated(self) -> SetMap[V, V]:
-        seen: ta.Set[V] = set()
-        ret: ta.Dict[V, ta.Set[V]] = {}
+        seen: set[V] = set()
+        ret: dict[V, set[V]] = {}
 
         def rec(node: V) -> ta.Collection[V]:
             check.not_in(node, seen)
@@ -103,9 +99,9 @@ class DominatorTree(ta.Generic[V, E]):
         rec(self._root)
         return ret
 
-    @properties.cached
+    @lang.cached_property
     def dominance_frontiers(self) -> SetMap[V, V]:
-        dominance_frontiers: ta.Dict[V, ta.Set[V]] = {}
+        dominance_frontiers: dict[V, set[V]] = {}
 
         for x in self.reverse_topological_traversal:
             dfx = dominance_frontiers.setdefault(x, set())
@@ -121,10 +117,10 @@ class DominatorTree(ta.Generic[V, E]):
 
         return {k: v for k, v in dominance_frontiers.items() if v}
 
-    @properties.cached
-    def topological_traversal(self) -> ta.List[V]:
+    @lang.cached_property
+    def topological_traversal(self) -> list[V]:
         # FIXME: LinkedList
-        lst: ta.List[V] = []
+        lst: list[V] = []
 
         for node in self._dfs.vertex:
             try:
@@ -136,8 +132,8 @@ class DominatorTree(ta.Generic[V, E]):
 
         return lst
 
-    @properties.cached
-    def reverse_topological_traversal(self) -> ta.List[V]:
+    @lang.cached_property
+    def reverse_topological_traversal(self) -> list[V]:
         return list(reversed(self.topological_traversal))
 
 
@@ -146,11 +142,11 @@ class _Dfs(ta.Generic[V, E]):
     def __init__(self, graph: DirectedGraph[V, E], root: V) -> None:
         super().__init__()
 
-        semi: ta.Dict[V, int] = {}
-        vertex: ta.List[V] = []
-        parent: ta.Dict[V, V] = {}
-        pred: ta.Dict[V, ta.Set[V]] = {}
-        label: ta.Dict[V, V] = {}
+        semi: dict[V, int] = {}
+        vertex: list[V] = []
+        parent: dict[V, V] = {}
+        pred: dict[V, set[V]] = {}
+        label: dict[V, V] = {}
 
         for node in graph.yield_depth_first(root):
             if node not in semi:
@@ -174,23 +170,23 @@ class _Dfs(ta.Generic[V, E]):
         self._label = label
 
     @property
-    def semi(self) -> ta.Dict[V, int]:
+    def semi(self) -> dict[V, int]:
         return self._semi
 
     @property
-    def vertex(self) -> ta.List[V]:
+    def vertex(self) -> list[V]:
         return self._vertex
 
     @property
-    def parent(self) -> ta.Dict[V, V]:
+    def parent(self) -> dict[V, V]:
         return self._parent
 
     @property
-    def pred(self) -> ta.Dict[V, ta.Set[V]]:
+    def pred(self) -> dict[V, set[V]]:
         return self._pred
 
     @property
-    def label(self) -> ta.Dict[V, V]:
+    def label(self) -> dict[V, V]:
         return self._label
 
 
@@ -201,14 +197,14 @@ class _ImmediateDominanceComputer(ta.Generic[V, E]):
 
         self._dfs = check.isinstance(dfs, _Dfs)
 
-        self._ancestor: ta.Dict[V, V] = {}
+        self._ancestor: dict[V, V] = {}
         self._semi = dict(self._dfs.semi)
         self._label = dict(self._dfs.label)
 
-    @properties.cached
+    @lang.cached_property
     def immediate_dominators(self) -> ta.Mapping[V, V]:
-        idom: ta.Dict[V, V] = {}
-        bucket: ta.Dict[V, ta.Set[V]] = {}
+        idom: dict[V, V] = {}
+        bucket: dict[V, set[V]] = {}
 
         last_semi_number = len(self._semi) - 1
 
@@ -251,7 +247,7 @@ class _ImmediateDominanceComputer(ta.Generic[V, E]):
         return self._label[v]
 
     def _compress(self, v: V) -> None:
-        worklist: ta.List[V] = [v]
+        worklist: list[V] = [v]
 
         a = self._ancestor.get(v)
 
