@@ -35,7 +35,7 @@ class SetProvider(Provider):
 
 
 def bind_set_provider(multi_key: ta.Any) -> Element:
-    # multi_key = as_key(multi_key)  # ta.AbstractSet
+    multi_key = as_key(multi_key)  # ta.AbstractSet
     return Binding(multi_key, SetProvider(multi_key))
 
 
@@ -59,5 +59,5 @@ class MapProvider(Provider):
 
 
 def bind_map_provider(multi_key: ta.Any) -> Element:
-    # multi_key = as_key(multi_key)  # ta.Mapping
+    multi_key = as_key(multi_key)  # ta.Mapping
     return Binding(multi_key, MapProvider(multi_key))
