@@ -26,12 +26,11 @@ class NOT_DONE_YET:
 
 
 class deferring_chunked_producer:
-    """A producer that implements the 'chunked' transfer coding for HTTP/1.1.
+    """
+    A producer that implements the 'chunked' transfer coding for HTTP/1.1.
     Here is a sample usage:
             request['Transfer-Encoding'] = 'chunked'
-            request.push (
-                    producers.chunked_producer (your_producer)
-                    )
+            request.push(producers.chunked_producer (your_producer))
             request.done()
     """
 
@@ -80,9 +79,8 @@ class deferring_composite_producer:
 
 class deferring_globbing_producer:
     """
-    'glob' the output from a producer into a particular buffer size.
-    helps reduce the number of calls to send().  [this appears to
-    gain about 30% performance on requests to a single channel]
+    'glob' the output from a producer into a particular buffer size. helps reduce the number of calls to send().
+    [this appears to gain about 30% performance on requests to a single channel]
     """
 
     def __init__(self, producer, buffer_size=1 << 16):
@@ -110,9 +108,8 @@ class deferring_globbing_producer:
 
 class deferring_hooked_producer:
     """
-    A producer that will call <function> when it empties,.
-    with an argument of the number of bytes produced.  Useful
-    for logging/instrumentation purposes.
+    A producer that will call <function> when it empties,. with an argument of the number of bytes produced.  Useful for
+    logging/instrumentation purposes.
     """
 
     def __init__(self, producer, function):
@@ -137,17 +134,18 @@ class deferring_hooked_producer:
 
 
 class deferring_http_request(http_server.http_request):
-    """ The medusa http_request class uses the default set of producers in
-    medusa.producers.  We can't use these because they don't know anything
-    about deferred responses, so we override various methods here.  This was
-    added to support tail -f like behavior on the logtail handler """
+    """
+    The medusa http_request class uses the default set of producers in medusa.producers.  We can't use these because
+    they don't know anything about deferred responses, so we override various methods here.  This was added to support
+    tail -f like behavior on the logtail handler
+    """
 
     def done(self, *arg, **kw):
+        """
+        I didn't want to override this, but there's no way around it in order to support deferreds - CM
 
-        """ I didn't want to override this, but there's no way around
-        it in order to support deferreds - CM
-
-        finalize this transaction - send output to the http channel"""
+        finalize this transaction - send output to the http channel
+        """
 
         # ----------------------------------------
         # persistent connection management
@@ -186,11 +184,9 @@ class deferring_http_request(http_server.http_request):
                 else:
                     close_it = 1
         elif self.version is None:
-            # Although we don't *really* support http/0.9 (because
-            # we'd have to use \r\n as a terminator, and it would just
-            # yuck up a lot of stuff) it's very common for developers
-            # to not want to type a version number when using telnet
-            # to debug a server.
+            # Although we don't *really* support http/0.9 (because we'd have to use \r\n as a terminator, and it would
+            # just yuck up a lot of stuff) it's very common for developers to not want to type a version number when
+            # using telnet to debug a server.
             close_it = 1
 
         outgoing_header = producers.simple_producer(self.build_reply_header())
@@ -226,8 +222,10 @@ class deferring_http_request(http_server.http_request):
             self.channel.close_when_done()
 
     def log(self, bytes):
-        """ We need to override this because UNIX domain sockets return
-        an empty string for the addr rather than a (host, port) combination """
+        """
+        We need to override this because UNIX domain sockets return an empty string for the addr rather than a
+        (host, port) combination.
+        """
         if self.channel.addr:
             host = self.channel.addr[0]
             port = self.channel.addr[1]
@@ -250,9 +248,11 @@ class deferring_http_request(http_server.http_request):
 
         # maps request some headers to environment variables.
         # (those that don't start with 'HTTP_')
-        header2env = {'content-length': 'CONTENT_LENGTH',
-                      'content-type': 'CONTENT_TYPE',
-                      'connection': 'CONNECTION_TYPE'}
+        header2env = {
+            'content-length': 'CONTENT_LENGTH',
+            'content-type': 'CONTENT_TYPE',
+            'connection': 'CONNECTION_TYPE',
+        }
 
         workdir = os.getcwd()
         (path, params, query, fragment) = self.split_uri()
@@ -299,8 +299,9 @@ class deferring_http_request(http_server.http_request):
         return env
 
     def get_server_url(self):
-        """ Functionality that medusa's http request doesn't have; set an
-        attribute named 'server_url' on the request based on the Host: header
+        """
+        Functionality that medusa's http request doesn't have; set an attribute named 'server_url' on the request based
+        on the Host: header
         """
         default_port = {'http': '80', 'https': '443'}
         environ = self.cgi_environment()
@@ -329,9 +330,8 @@ class deferring_http_request(http_server.http_request):
 
 
 class deferring_http_channel(http_server.http_channel):
-
-    # use a 4096-byte buffer size instead of the default 65536-byte buffer in
-    # order to spew tail -f output faster (speculative)
+    # use a 4096-byte buffer size instead of the default 65536-byte buffer in order to spew tail -f output faster
+    # (speculative)
     ac_out_buffer_size = 4096
 
     delay = 0  # seconds
@@ -353,12 +353,11 @@ class deferring_http_channel(http_server.http_channel):
         return http_server.http_channel.writable(self)
 
     def refill_buffer(self):
-        """ Implement deferreds """
+        """Implement deferreds."""
         while 1:
             if len(self.producer_fifo):
                 p = self.producer_fifo.first()
-                # a 'None' in the producer fifo is a sentinel,
-                # telling us to close the channel.
+                # a 'None' in the producer fifo is a sentinel, telling us to close the channel.
                 if p is None:
                     if not self.ac_out_buffer:
                         self.producer_fifo.pop()
@@ -385,14 +384,14 @@ class deferring_http_channel(http_server.http_channel):
                 return
 
     def found_terminator(self):
-        """ We only override this to use 'deferring_http_request' class
-        instead of the normal http_request class; it sucks to need to override
-        this """
+        """
+        We only override this to use 'deferring_http_request' class instead of the normal http_request class; it sucks
+        to need to override this.
+        """
         if self.current_request:
             self.current_request.found_terminator()
         else:
-            # we convert the header to text to facilitate processing.
-            # some of the underlying APIs (such as splitquery)
+            # we convert the header to text to facilitate processing. some of the underlying APIs (such as splitquery)
             # expect text rather than bytes.
             header = as_string(self.in_buffer)
             self.in_buffer = b''
@@ -403,10 +402,8 @@ class deferring_http_channel(http_server.http_channel):
             # --------------------------------------------------
 
             while lines and not lines[0]:
-                # as per the suggestion of http-1.1 section 4.1, (and
-                # Eric Parker <eparker@zyvex.com>), ignore a leading
-                # blank lines (buggy browsers tack it onto the end of
-                # POST requests)
+                # as per the suggestion of http-1.1 section 4.1, (and Eric Parker <eparker@zyvex.com>), ignore a leading
+                # blank lines (buggy browsers tack it onto the end of POST requests)
                 lines = lines[1:]
 
             if not lines:
@@ -418,8 +415,8 @@ class deferring_http_channel(http_server.http_channel):
             command, uri, version = http_server.crack_request(request)
             header = http_server.join_headers(lines[1:])
 
-            # unquote path if necessary (thanks to Skip Montanaro for pointing
-            # out that we must unquote in piecemeal fashion).
+            # unquote path if necessary (thanks to Skip Montanaro for pointing out that we must unquote in piecemeal
+            # fashion).
             rpath, rquery = http_server.splitquery(uri)
             if '%' in rpath:
                 if rquery:
@@ -470,8 +467,7 @@ class supervisor_http_server(http_server.http_server):
     ip = None
 
     def prebind(self, sock, logger_object):
-        """ Override __init__ to do logger setup earlier so it can
-        go to our logger object instead of stdout """
+        """ Override __init__ to do logger setup earlier so it can go to our logger object instead of stdout"""
         from .medusa import logger
 
         if not logger_object:
@@ -536,11 +532,11 @@ class supervisor_af_inet_http_server(supervisor_http_server):
                 ip = socket.gethostbyname(hostname)
             except OSError:
                 raise ValueError(
-                    'Could not determine IP address for hostname %s, '
-                    'please try setting an explicit IP address in the "port" '
-                    'setting of your [inet_http_server] section.  For example, '
-                    'instead of "port = 9001", try "port = 127.0.0.1:9001."'
-                    % hostname)
+                    'Could not determine IP address for hostname %s, please try setting an explicit IP address in '
+                    'the "port" setting of your [inet_http_server] section.  For example, instead of "port = 9001", '
+                    'try "port = 127.0.0.1:9001."'
+                    % hostname,
+                )
         try:
             self.server_name = socket.gethostbyaddr(ip)[0]
         except OSError:
@@ -560,8 +556,7 @@ class supervisor_af_unix_http_server(supervisor_http_server):
         # XXX this is insecure.  We really should do something like
         # http://developer.apple.com/samplecode/CFLocalServer/listing6.html
         # (see also http://developer.apple.com/technotes/tn2005/tn2083.html#SECUNIXDOMAINSOCKETS)
-        # but it would be very inconvenient for the user to need to get all
-        # the directory setup right.
+        # but it would be very inconvenient for the user to need to get all the directory setup right.
 
         tempname = '%s.%d' % (socketname, os.getpid())
 
@@ -600,16 +595,11 @@ class supervisor_af_unix_http_server(supervisor_http_server):
                         os.chown(socketname, sockchown[0], sockchown[1])
                     except OSError as why:
                         if why.args[0] == errno.EPERM:
-                            msg = ('Not permitted to chown %s to uid/gid %s; '
-                                   'adjust "sockchown" value in config file or '
-                                   'on command line to values that the '
-                                   'current user (%s) can successfully chown')
-                            raise ValueError(msg % (socketname,
-                                                    repr(sockchown),
-                                                    pwd.getpwuid(
-                                                        os.geteuid())[0],
-                                                    ),
-                                             )
+                            msg = (
+                                'Not permitted to chown %s to uid/gid %s; adjust "sockchown" value in config file or on '
+                                'command line to values that the current user (%s) can successfully chown'
+                            )
+                            raise ValueError(msg % (socketname, repr(sockchown), pwd.getpwuid(os.geteuid())[0]))
                         else:
                             raise
                     self.prebind(sock, logger_object)
@@ -741,21 +731,19 @@ class logtail_handler:
         logfile = getattr(process.config, '%s_logfile' % channel, None)
 
         if logfile is None or not os.path.exists(logfile):
-            # we return 404 because no logfile is a temporary condition.
-            # if the process has never been started, no logfile will exist
-            # on disk.  a logfile of None is also a temporary condition,
-            # since the config file can be reloaded.
+            # we return 404 because no logfile is a temporary condition. if the process has never been started, no
+            # logfile will exist on disk.  a logfile of None is also a temporary condition, since the config file can be
+            # reloaded.
             request.error(404)  # not found
             return
 
         mtime = os.stat(logfile)[stat.ST_MTIME]
         request['Last-Modified'] = http_date.build_http_date(mtime)
         request['Content-Type'] = 'text/plain;charset=utf-8'
-        # the lack of a Content-Length header makes the outputter
-        # send a 'Transfer-Encoding: chunked' response
+        # the lack of a Content-Length header makes the outputter send a 'Transfer-Encoding: chunked' response
         request['X-Accel-Buffering'] = 'no'
-        # tell reverse proxy server (e.g., nginx) to disable proxy buffering
-        # (see also http://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_buffering)
+        # tell reverse proxy server (e.g., nginx) to disable proxy buffering (see also
+        # http://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_buffering)
 
         request.push(tail_f_producer(request, logfile, 1024))
 
@@ -780,17 +768,15 @@ class mainlogtail_handler:
         logfile = self.supervisord.options.logfile
 
         if logfile is None or not os.path.exists(logfile):
-            # we return 404 because no logfile is a temporary condition.
-            # even if a log file of None is configured, the config file
-            # may be reloaded, and the new config may have a logfile.
+            # we return 404 because no logfile is a temporary condition. even if a log file of None is configured, the
+            # config file may be reloaded, and the new config may have a logfile.
             request.error(404)  # not found
             return
 
         mtime = os.stat(logfile)[stat.ST_MTIME]
         request['Last-Modified'] = http_date.build_http_date(mtime)
         request['Content-Type'] = 'text/plain;charset=utf-8'
-        # the lack of a Content-Length header makes the outputter
-        # send a 'Transfer-Encoding: chunked' response
+        # the lack of a Content-Length header makes the outputter send a 'Transfer-Encoding: chunked' response
 
         request.push(tail_f_producer(request, logfile, 1024))
 
@@ -806,14 +792,12 @@ def make_http_servers(options, supervisord):
 
         if family == socket.AF_INET:
             host, port = config['host'], config['port']
-            hs = supervisor_af_inet_http_server(host, port,
-                                                logger_object=wrapper)
+            hs = supervisor_af_inet_http_server(host, port, logger_object=wrapper)
         elif family == socket.AF_UNIX:
             socketname = config['file']
             sockchmod = config['chmod']
             sockchown = config['chown']
-            hs = supervisor_af_unix_http_server(socketname, sockchmod, sockchown,
-                                                logger_object=wrapper)
+            hs = supervisor_af_unix_http_server(socketname, sockchmod, sockchown, logger_object=wrapper)
         else:
             raise ValueError('Cannot determine socket type %r' % family)
 
@@ -832,8 +816,7 @@ def make_http_servers(options, supervisord):
             subinterfaces.append((name, inst))
             options.logger.info('RPC interface %r initialized' % name)
 
-        subinterfaces.append(('system',
-                              SystemNamespaceRPCInterface(subinterfaces)))
+        subinterfaces.append(('system', SystemNamespaceRPCInterface(subinterfaces)))
         xmlrpchandler = supervisor_xmlrpc_handler(supervisord, subinterfaces)
         tailhandler = logtail_handler(supervisord)
         maintailhandler = mainlogtail_handler(supervisord)
@@ -847,8 +830,7 @@ def make_http_servers(options, supervisord):
         password = config['password']
 
         if username:
-            # wrap the xmlrpc handler and tailhandler in an authentication
-            # handler
+            # wrap the xmlrpc handler and tailhandler in an authentication handler
             users = {username: password}
             xmlrpchandler = supervisor_auth_handler(users, xmlrpchandler)
             tailhandler = supervisor_auth_handler(users, tailhandler)
@@ -859,8 +841,9 @@ def make_http_servers(options, supervisord):
             options.logger.critical(
                 'Server %r running without any HTTP '
                 'authentication checking' % config['section'])
-        # defaulthandler must be consulted last as its match method matches
-        # everything, so it's first here (indicating last checked)
+
+        # defaulthandler must be consulted last as its match method matches everything, so it's first here (indicating
+        # last checked)
         hs.install_handler(defaulthandler)
         hs.install_handler(uihandler)
         hs.install_handler(maintailhandler)
@@ -872,16 +855,16 @@ def make_http_servers(options, supervisord):
 
 
 class LogWrapper:
-    """Receives log messages from the Medusa servers and forwards
-    them to the Supervisor logger"""
+    """Receives log messages from the Medusa servers and forwards them to the Supervisor logger"""
 
     def __init__(self, logger):
         self.logger = logger
 
     def log(self, msg):
-        '''Medusa servers call this method.  There is no log level so
-        we have to sniff the message.  We want "Server Error" messages
-        from medusa.http_server logged as errors at least.'''
+        """
+        Medusa servers call this method.  There is no log level so we have to sniff the message.  We want "Server Error"
+        messages from medusa.http_server logged as errors at least.
+        """
         if msg.endswith('\n'):
             msg = msg[:-1]
         if 'error' in msg.lower():
