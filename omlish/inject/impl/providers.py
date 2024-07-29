@@ -18,6 +18,9 @@ from ..providers import Provider
 from .inspect import build_kwargs_target
 
 
+##
+
+
 class ProviderImpl(lang.Abstract):
     @property
     @abc.abstractmethod
@@ -29,12 +32,18 @@ class ProviderImpl(lang.Abstract):
         raise NotImplementedError
 
 
+##
+
+
 @dc.dataclass(frozen=True, eq=False)
 class InternalProvider(Provider):
     impl: ProviderImpl
 
     def provided_cls(self) -> Cls | None:
         raise TypeError
+
+
+##
 
 
 @dc.dataclass(frozen=True, eq=False)
@@ -50,6 +59,9 @@ class CallableProviderImpl(ProviderImpl, lang.Final):
         return injector.inject(self.kt)
 
 
+##
+
+
 @dc.dataclass(frozen=True, eq=False)
 class ConstProviderImpl(ProviderImpl, lang.Final):
     p: ConstProvider
@@ -62,6 +74,9 @@ class ConstProviderImpl(ProviderImpl, lang.Final):
         return self.p.v
 
 
+##
+
+
 @dc.dataclass(frozen=True, eq=False)
 class LinkProviderImpl(ProviderImpl, lang.Final):
     p: LinkProvider
@@ -72,6 +87,9 @@ class LinkProviderImpl(ProviderImpl, lang.Final):
 
     def provide(self, injector: Injector) -> ta.Any:
         return injector.provide(self.p.k)
+
+
+##
 
 
 PROVIDER_IMPLS_BY_PROVIDER: dict[type[Provider], ta.Callable[..., ProviderImpl]] = {
