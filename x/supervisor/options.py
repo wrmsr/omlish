@@ -1,14 +1,11 @@
 import configparser as ConfigParser
 import errno
-import fcntl
 import getopt
 import glob
-import grp
 import os
 import platform
 import pwd
 import re
-import resource
 import signal
 import socket
 import stat
@@ -17,6 +14,10 @@ import tempfile
 import warnings
 import xmlrpc.client as xmlrpclib
 from io import StringIO
+
+import fcntl
+import grp
+import resource
 
 from . import loggers
 from . import poller
@@ -84,8 +85,8 @@ class Options:
     configroot = None
     here = None
 
-    # Class variable deciding whether positional arguments are allowed.
-    # If you want positional arguments, set this to 1 in your subclass.
+    # Class variable deciding whether positional arguments are allowed. If you want positional arguments, set this to 1
+    # in your subclass.
     positional_args_allowed = 0
 
     def __init__(self, require_configfile=True):
@@ -111,13 +112,14 @@ class Options:
         self.parse_infos = []
 
         here = os.path.dirname(os.path.dirname(sys.argv[0]))
-        searchpaths = [os.path.join(here, 'etc', 'supervisord.conf'),
-                       os.path.join(here, 'supervisord.conf'),
-                       'supervisord.conf',
-                       'etc/supervisord.conf',
-                       '/etc/supervisord.conf',
-                       '/etc/supervisor/supervisord.conf',
-                       ]
+        searchpaths = [
+            os.path.join(here, 'etc', 'supervisord.conf'),
+            os.path.join(here, 'supervisord.conf'),
+            'supervisord.conf',
+            'etc/supervisord.conf',
+            '/etc/supervisord.conf',
+            '/etc/supervisor/supervisord.conf',
+        ]
         self.searchpaths = searchpaths
 
         self.environ_expansions = {}
@@ -138,7 +140,8 @@ class Options:
         return config
 
     def help(self, dummy):
-        """Print a long help message to stdout and exit(0).
+        """
+        Print a long help message to stdout and exit(0).
 
         Occurrences of "%s" in are replaced by self.progname.
         """
@@ -154,7 +157,8 @@ class Options:
         self.stderr.write('For help, use %s -h\n' % self.progname)
         self.exit(2)
 
-    def add(self,
+    def add(
+            self,
             name=None,  # attribute name on self
             confname=None,  # dotted config path name
             short=None,  # short option name
@@ -164,7 +168,7 @@ class Options:
             required=None,  # message if not provided
             flag=None,  # if not None, flag value
             env=None,  # if not None, environment variable
-            ):
+    ):
         """Add information about a configuration option.
 
         This can take several forms:
@@ -322,8 +326,8 @@ class Options:
         if self.configfile:
             self.process_config_file(do_usage)
 
-        # Copy config options to attributes of self.  This only fills
-        # in options that aren't already set from the command line.
+        # Copy config options to attributes of self.  This only fills in options that aren't already set from the
+        # command line.
         for name, confname in self.names_list:
             if confname:
                 parts = confname.split('.')
@@ -375,13 +379,11 @@ class Options:
             name = section.split(':', 1)[1]
             factory_spec = parser.saneget(section, factory_key, None)
             if factory_spec is None:
-                raise ValueError('section [%s] does not specify a %s' %
-                                 (section, factory_key))
+                raise ValueError('section [%s] does not specify a %s' % (section, factory_key))
             try:
                 factory = self.import_spec(factory_spec)
             except (AttributeError, ImportError):
-                raise ValueError('%s cannot be resolved within [%s]' % (
-                    factory_spec, section))
+                raise ValueError('%s cannot be resolved within [%s]' % (factory_spec, section))
 
             extras = {}
             for k in parser.options(section):
@@ -399,8 +401,7 @@ class Options:
         if parser.has_section('include'):
             parser.expand_here(self.here)
             if not parser.has_option('include', 'files'):
-                raise ValueError('.ini file has [include] section, but no '
-                                 'files setting')
+                raise ValueError('.ini file has [include] section, but no files setting')
             files = parser.get('include', 'files')
             files = expand(files, expansions, 'include.files')
             files = files.split()
@@ -412,20 +413,16 @@ class Options:
                 pattern = os.path.join(base, pattern)
                 filenames = glob.glob(pattern)
                 if not filenames:
-                    self.parse_warnings.append(
-                        'No file matches via include "%s"' % pattern)
+                    self.parse_warnings.append('No file matches via include "%s"' % pattern)
                     continue
                 for filename in sorted(filenames):
-                    self.parse_infos.append(
-                        'Included extra file "%s" during parsing' % filename)
+                    self.parse_infos.append('Included extra file "%s" during parsing' % filename)
                     try:
                         parser.read(filename)
                     except ConfigParser.ParsingError as why:
                         raise ValueError(str(why))
                     else:
-                        parser.expand_here(
-                            os.path.abspath(os.path.dirname(filename)),
-                        )
+                        parser.expand_here(os.path.abspath(os.path.dirname(filename)))
 
     def _log_parsing_messages(self, logger):
         for msg in self.parse_criticals:
@@ -457,48 +454,30 @@ class ServerOptions(Options):
         self.configroot.supervisord = Dummy()
 
         self.add(None, None, 'v', 'version', self.version)
-        self.add('nodaemon', 'supervisord.nodaemon', 'n', 'nodaemon', flag=1,
-                 default=0)
+        self.add('nodaemon', 'supervisord.nodaemon', 'n', 'nodaemon', flag=1, default=0)
         self.add('user', 'supervisord.user', 'u:', 'user=')
-        self.add('umask', 'supervisord.umask', 'm:', 'umask=',
-                 octal_type, default='022')
-        self.add('directory', 'supervisord.directory', 'd:', 'directory=',
-                 existing_directory)
-        self.add('logfile', 'supervisord.logfile', 'l:', 'logfile=',
-                 existing_dirpath, default='supervisord.log')
-        self.add('logfile_maxbytes', 'supervisord.logfile_maxbytes',
-                 'y:', 'logfile_maxbytes=', byte_size,
-                 default=50 * 1024 * 1024)  # 50MB
-        self.add('logfile_backups', 'supervisord.logfile_backups',
-                 'z:', 'logfile_backups=', integer, default=10)
-        self.add('loglevel', 'supervisord.loglevel', 'e:', 'loglevel=',
-                 logging_level, default='info')
-        self.add('pidfile', 'supervisord.pidfile', 'j:', 'pidfile=',
-                 existing_dirpath, default='supervisord.pid')
-        self.add('identifier', 'supervisord.identifier', 'i:', 'identifier=',
-                 str, default='supervisor')
-        self.add('childlogdir', 'supervisord.childlogdir', 'q:', 'childlogdir=',
-                 existing_directory, default=tempfile.gettempdir())
-        self.add('minfds', 'supervisord.minfds',
-                 'a:', 'minfds=', int, default=1024)
-        self.add('minprocs', 'supervisord.minprocs',
-                 '', 'minprocs=', int, default=200)
-        self.add('nocleanup', 'supervisord.nocleanup',
-                 'k', 'nocleanup', flag=1, default=0)
-        self.add('strip_ansi', 'supervisord.strip_ansi',
-                 't', 'strip_ansi', flag=1, default=0)
-        self.add('profile_options', 'supervisord.profile_options',
-                 '', 'profile_options=', profile_options, default=None)
-        self.add('silent', 'supervisord.silent',
-                 's', 'silent', flag=1, default=0)
+        self.add('umask', 'supervisord.umask', 'm:', 'umask=', octal_type, default='022')
+        self.add('directory', 'supervisord.directory', 'd:', 'directory=', existing_directory)  # noqa
+        self.add('logfile', 'supervisord.logfile', 'l:', 'logfile=', existing_dirpath, default='supervisord.log')  # noqa
+        self.add('logfile_maxbytes', 'supervisord.logfile_maxbytes', 'y:', 'logfile_maxbytes=', byte_size, default=50 * 1024 * 1024)  # 50MB  # noqa
+        self.add('logfile_backups', 'supervisord.logfile_backups', 'z:', 'logfile_backups=', integer, default=10)  # noqa
+        self.add('loglevel', 'supervisord.loglevel', 'e:', 'loglevel=', logging_level, default='info')  # noqa
+        self.add('pidfile', 'supervisord.pidfile', 'j:', 'pidfile=', existing_dirpath, default='supervisord.pid')  # noqa
+        self.add('identifier', 'supervisord.identifier', 'i:', 'identifier=', str, default='supervisor')  # noqa
+        self.add('childlogdir', 'supervisord.childlogdir', 'q:', 'childlogdir=', existing_directory, default=tempfile.gettempdir())  # noqa
+        self.add('minfds', 'supervisord.minfds', 'a:', 'minfds=', int, default=1024)
+        self.add('minprocs', 'supervisord.minprocs', '', 'minprocs=', int, default=200)
+        self.add('nocleanup', 'supervisord.nocleanup', 'k', 'nocleanup', flag=1, default=0)  # noqa
+        self.add('strip_ansi', 'supervisord.strip_ansi', 't', 'strip_ansi', flag=1, default=0)  # noqa
+        self.add('profile_options', 'supervisord.profile_options', '', 'profile_options=', profile_options, default=None)  # noqa
+        self.add('silent', 'supervisord.silent', 's', 'silent', flag=1, default=0)
         self.pidhistory = {}
         self.process_group_configs = []
         self.signal_receiver = SignalReceiver()
         self.poller = poller.Poller(self)
 
     def version(self, dummy):
-        """Print version to stdout and exit(0).
-        """
+        """Print version to stdout and exit(0)."""
         self.stdout.write('%s\n' % VERSION)
         self.exit(0)
 
@@ -509,12 +488,9 @@ class ServerOptions(Options):
     def default_configfile(self):
         if os.getuid() == 0:
             self.warnings.warn(
-                'Supervisord is running as root and it is searching '
-                'for its configuration file in default locations '
-                '(including its current working directory); you '
-                'probably want to specify a "-c" argument specifying an '
-                'absolute path to a configuration file for improved '
-                'security.',
+                'Supervisord is running as root and it is searching for its configuration file in default locations '
+                '(including its current working directory); you probably want to specify a "-c" argument specifying an '
+                'absolute path to a configuration file for improved security.',
             )
         return Options.default_configfile(self)
 
@@ -540,9 +516,8 @@ class ServerOptions(Options):
             logfile = section.logfile
 
         if logfile != 'syslog':
-            # if the value for logfile is "syslog", we don't want to
-            # normalize the path to something like $CWD/syslog.log, but
-            # instead use the syslog service.
+            # if the value for logfile is "syslog", we don't want to normalize the path to something like
+            # $CWD/syslog.log, but instead use the syslog service.
             self.logfile = normalize_path(logfile)
 
         if self.pidfile:
@@ -577,8 +552,7 @@ class ServerOptions(Options):
                     host = 'localhost'
                 self.serverurl = 'http://%s:%s' % (host, port)
 
-        # self.serverurl may still be None if no servers at all are
-        # configured in the config file
+        # self.serverurl may still be None if no servers at all are configured in the config file
 
     def process_config(self, do_usage=True):
         Options.process_config(self, do_usage=do_usage)
@@ -587,8 +561,7 @@ class ServerOptions(Options):
         self.process_group_configs = new
 
     def read_config(self, fp):
-        # Clear parse messages, since we may be re-reading the
-        # config a second time after a reload.
+        # Clear parse messages, since we may be re-reading the config a second time after a reload.
         self.parse_criticals = []
         self.parse_warnings = []
         self.parse_infos = []
@@ -618,8 +591,10 @@ class ServerOptions(Options):
                 fp.close()
 
         host_node_name = platform.node()
-        expansions = {'here': self.here,
-                      'host_node_name': host_node_name}
+        expansions = {
+            'here': self.here,
+            'host_node_name': host_node_name,
+        }
         expansions.update(self.environ_expansions)
 
         self.read_include_config(fp, parser, expansions)
@@ -711,16 +686,12 @@ class ServerOptions(Options):
                 program_section = 'program:%s' % program
                 fcgi_section = 'fcgi-program:%s' % program
                 if program_section not in all_sections and fcgi_section not in all_sections:
-                    raise ValueError(
-                        '[%s] names unknown program or fcgi-program %s' % (section, program))
+                    raise ValueError('[%s] names unknown program or fcgi-program %s' % (section, program))
                 if program_section in all_sections and fcgi_section in all_sections:
-                    raise ValueError(
-                        '[%s] name %s is ambiguous (exists as program and fcgi-program)' %
-                        (section, program))
+                    raise ValueError('[%s] name %s is ambiguous (exists as program and fcgi-program)' % (section, program))  # noqa
                 section = program_section if program_section in all_sections else fcgi_section
                 homogeneous_exclude.append(section)
-                processes = self.processes_from_section(parser, section,
-                                                        group_name, ProcessConfig)
+                processes = self.processes_from_section(parser, section, group_name, ProcessConfig)
 
                 group_processes.extend(processes)
             groups.append(
@@ -729,16 +700,12 @@ class ServerOptions(Options):
 
         # process "normal" homogeneous groups
         for section in all_sections:
-            if ((not section.startswith('program:'))
-                    or section in homogeneous_exclude):
+            if ((not section.startswith('program:')) or section in homogeneous_exclude):
                 continue
             program_name = process_or_group_name(section.split(':', 1)[1])
             priority = integer(get(section, 'priority', 999))
-            processes = self.processes_from_section(parser, section, program_name,
-                                                    ProcessConfig)
-            groups.append(
-                ProcessGroupConfig(self, program_name, priority, processes),
-            )
+            processes = self.processes_from_section(parser, section, program_name, ProcessConfig)
+            groups.append(ProcessGroupConfig(self, program_name, priority, processes))
 
         # process "event listener" homogeneous groups
         for section in all_sections:
@@ -752,19 +719,16 @@ class ServerOptions(Options):
 
             buffer_size = integer(get(section, 'buffer_size', 10))
             if buffer_size < 1:
-                raise ValueError('[%s] section sets invalid buffer_size (%d)' %
-                                 (section, buffer_size))
+                raise ValueError('[%s] section sets invalid buffer_size (%d)' % (section, buffer_size))
 
-            result_handler = get(section, 'result_handler',
-                                 'supervisor.dispatchers:default_handler')
+            result_handler = get(section, 'result_handler', 'supervisor.dispatchers:default_handler')
             try:
                 result_handler = self.import_spec(result_handler)
             except (AttributeError, ImportError):
                 raise ValueError('%s cannot be resolved within [%s]' % (
                     result_handler, section))
 
-            pool_event_names = [x.upper() for x in
-                                list_of_strings(get(section, 'events', ''))]
+            pool_event_names = [x.upper() for x in list_of_strings(get(section, 'events', ''))]
             pool_event_names = set(pool_event_names)
             if not pool_event_names:
                 raise ValueError('[%s] section requires an "events" line' %
@@ -775,8 +739,7 @@ class ServerOptions(Options):
             for pool_event_name in pool_event_names:
                 pool_event = getattr(EventTypes, pool_event_name, None)
                 if pool_event is None:
-                    raise ValueError('Unknown event type %s in [%s] events' %
-                                     (pool_event_name, section))
+                    raise ValueError('Unknown event type %s in [%s] events' % (pool_event_name, section))
                 pool_events.append(pool_event)
 
             redirect_stderr = boolean(get(section, 'redirect_stderr', 'false'))
@@ -785,19 +748,23 @@ class ServerOptions(Options):
                                  'but this is not allowed because it will interfere '
                                  'with the eventlistener protocol' % section)
 
-            processes = self.processes_from_section(parser, section, pool_name,
-                                                    EventListenerConfig)
+            processes = self.processes_from_section(parser, section, pool_name, EventListenerConfig)
 
             groups.append(
-                EventListenerPoolConfig(self, pool_name, priority, processes,
-                                        buffer_size, pool_events,
-                                        result_handler),
+                EventListenerPoolConfig(
+                    self,
+                    pool_name,
+                    priority,
+                    processes,
+                    buffer_size,
+                    pool_events,
+                    result_handler,
+                ),
             )
 
         # process fastcgi homogeneous groups
         for section in all_sections:
-            if ((not section.startswith('fcgi-program:'))
-                    or section in homogeneous_exclude):
+            if ((not section.startswith('fcgi-program:')) or section in homogeneous_exclude):
                 continue
             program_name = process_or_group_name(section.split(':', 1)[1])
             priority = integer(get(section, 'priority', 999))
@@ -815,43 +782,39 @@ class ServerOptions(Options):
             if socket_backlog is not None:
                 socket_backlog = integer(socket_backlog)
                 if (socket_backlog < 1 or socket_backlog > 65535):
-                    raise ValueError('Invalid socket_backlog value %s'
-                                     % socket_backlog)
+                    raise ValueError('Invalid socket_backlog value %s' % socket_backlog)
 
             socket_owner = get(section, 'socket_owner', None)
             if socket_owner is not None:
                 try:
                     socket_owner = colon_separated_user_group(socket_owner)
                 except ValueError:
-                    raise ValueError('Invalid socket_owner value %s'
-                                     % socket_owner)
+                    raise ValueError('Invalid socket_owner value %s' % socket_owner)
 
             socket_mode = get(section, 'socket_mode', None)
             if socket_mode is not None:
                 try:
                     socket_mode = octal_type(socket_mode)
                 except (TypeError, ValueError):
-                    raise ValueError('Invalid socket_mode value %s'
-                                     % socket_mode)
+                    raise ValueError('Invalid socket_mode value %s' % socket_mode)
 
             socket = get(section, 'socket', None, expansions=fcgi_expansions)
             if not socket:
-                raise ValueError('[%s] section requires a "socket" line' %
-                                 section)
+                raise ValueError('[%s] section requires a "socket" line' % section)
 
             try:
-                socket_config = self.parse_fcgi_socket(socket, proc_uid,
-                                                       socket_owner, socket_mode,
-                                                       socket_backlog)
+                socket_config = self.parse_fcgi_socket(
+                    socket,
+                    proc_uid,
+                    socket_owner,
+                    socket_mode,
+                    socket_backlog,
+                )
             except ValueError as e:
                 raise ValueError('%s in [%s] socket' % (str(e), section))
 
-            processes = self.processes_from_section(parser, section, program_name,
-                                                    FastCGIProcessConfig)
-            groups.append(
-                FastCGIGroupConfig(self, program_name, priority, processes,
-                                   socket_config),
-            )
+            processes = self.processes_from_section(parser, section, program_name, FastCGIProcessConfig)
+            groups.append(FastCGIGroupConfig(self, program_name, priority, processes, socket_config))
 
         groups.sort()
         return groups
@@ -862,8 +825,7 @@ class ServerOptions(Options):
             path = sock[7:]
             # Check it's an absolute path
             if not os.path.isabs(path):
-                raise ValueError('Unix socket path %s is not an absolute path',
-                                 path)
+                raise ValueError('Unix socket path %s is not an absolute path', path)
             path = normalize_path(path)
 
             if socket_owner is None:
@@ -874,20 +836,21 @@ class ServerOptions(Options):
             if socket_mode is None:
                 socket_mode = 0o700
 
-            return UnixStreamSocketConfig(path, owner=socket_owner,
-                                          mode=socket_mode,
-                                          backlog=socket_backlog)
+            return UnixStreamSocketConfig(
+                path,
+                owner=socket_owner,
+                mode=socket_mode,
+                backlog=socket_backlog,
+            )
 
         if socket_owner is not None or socket_mode is not None:
-            raise ValueError('socket_owner and socket_mode params should'
-                             + ' only be used with a Unix domain socket')
+            raise ValueError('socket_owner and socket_mode params should only be used with a Unix domain socket')
 
         m = re.match(r'tcp://([^\s:]+):(\d+)$', sock)
         if m:
             host = m.group(1)
             port = int(m.group(2))
-            return InetStreamSocketConfig(host, port,
-                                          backlog=socket_backlog)
+            return InetStreamSocketConfig(host, port, backlog=socket_backlog)
 
         raise ValueError('Bad socket format %s', sock)
 
@@ -898,21 +861,21 @@ class ServerOptions(Options):
                 parser, section, group_name, klass)
         except ValueError as e:
             filename = parser.section_to_file.get(section, self.configfile)
-            raise ValueError('%s in section %r (file: %r)'
-                             % (e, section, filename))
+            raise ValueError('%s in section %r (file: %r)' % (e, section, filename))
 
-    def _processes_from_section(self, parser, section, group_name,
-                                klass=None):
+    def _processes_from_section(self, parser, section, group_name, klass=None):
         if klass is None:
             klass = ProcessConfig
         programs = []
 
         program_name = process_or_group_name(section.split(':', 1)[1])
         host_node_name = platform.node()
-        common_expansions = {'here': self.here,
-                             'program_name': program_name,
-                             'host_node_name': host_node_name,
-                             'group_name': group_name}
+        common_expansions = {
+            'here': self.here,
+            'program_name': program_name,
+            'host_node_name': host_node_name,
+            'group_name': group_name,
+        }
 
         def get(section, opt, *args, **kwargs):
             expansions = kwargs.get('expansions', {})
@@ -955,28 +918,23 @@ class ServerOptions(Options):
             umask = octal_type(umask)
 
         process_name = process_or_group_name(
-            get(section, 'process_name', '%(program_name)s', do_expand=False))
+            get(section, 'process_name', '%(program_name)s', do_expand=False),
+        )
 
         if numprocs > 1:
             if '%(process_num)' not in process_name:
-                # process_name needs to include process_num when we
-                # represent a group of processes
-                raise ValueError(
-                    '%(process_num) must be present within process_name when '
-                    'numprocs > 1')
+                # process_name needs to include process_num when we represent a group of processes
+                raise ValueError('%(process_num) must be present within process_name when numprocs > 1')
 
         if stopasgroup and not killasgroup:
-            raise ValueError(
-                'Cannot set stopasgroup=true and killasgroup=false',
-            )
+            raise ValueError('Cannot set stopasgroup=true and killasgroup=false')
 
         for process_num in range(numprocs_start, numprocs + numprocs_start):
             expansions = common_expansions
             expansions.update({'process_num': process_num, 'numprocs': numprocs})
             expansions.update(self.environ_expansions)
 
-            environment = dict_of_key_value_pairs(
-                expand(environment_str, expansions, 'environment'))
+            environment = dict_of_key_value_pairs(expand(environment_str, expansions, 'environment'))
 
             # extend expansions for process from [program:x] environment definition
             for k, v in environment.items():
@@ -1011,8 +969,7 @@ class ServerOptions(Options):
                 if lf_val is Syslog:
                     self.parse_warnings.append(
                         'For [%s], %s=syslog but this is deprecated and will '
-                        'be removed.  Use %s=true to enable syslog instead.' % (
-                            section, lf_key, sy_key))
+                        'be removed.  Use %s=true to enable syslog instead.' % (section, lf_key, sy_key))
                     logfiles[lf_key] = lf_val = None
                     logfiles[sy_key] = True
 
@@ -1157,23 +1114,17 @@ class ServerOptions(Options):
         self.poller.after_daemonize()
 
     def _daemonize(self):
-        # To daemonize, we need to become the leader of our own session
-        # (process) group.  If we do not, signals sent to our
-        # parent process will also be sent to us.   This might be bad because
-        # signals such as SIGINT can be sent to our parent process during
-        # normal (uninteresting) operations such as when we press Ctrl-C in the
-        # parent terminal window to escape from a logtail command.
-        # To disassociate ourselves from our parent's session group we use
-        # os.setsid.  It means "set session id", which has the effect of
-        # disassociating a process from is current session and process group
-        # and setting itself up as a new session leader.
+        # To daemonize, we need to become the leader of our own session (process) group.  If we do not, signals sent to
+        # our parent process will also be sent to us.   This might be bad because signals such as SIGINT can be sent to
+        # our parent process during normal (uninteresting) operations such as when we press Ctrl-C in the parent
+        # terminal window to escape from a logtail command. To disassociate ourselves from our parent's session group we
+        # use os.setsid.  It means "set session id", which has the effect of disassociating a process from is current
+        # session and process group and setting itself up as a new session leader.
         #
-        # Unfortunately we cannot call setsid if we're already a session group
-        # leader, so we use "fork" to make a copy of ourselves that is
-        # guaranteed to not be a session group leader.
+        # Unfortunately we cannot call setsid if we're already a session group leader, so we use "fork" to make a copy
+        # of ourselves that is guaranteed to not be a session group leader.
         #
-        # We also change directories, set stderr and stdout to null, and
-        # change our umask.
+        # We also change directories, set stderr and stdout to null, and change our umask.
         #
         # This explanation was (gratefully) garnered from
         # http://www.cems.uwe.ac.uk/~irjohnso/coursenotes/lrc/system/daemons/d3.htm
@@ -1189,11 +1140,9 @@ class ServerOptions(Options):
             try:
                 os.chdir(self.directory)
             except OSError as err:
-                self.logger.critical("can't chdir into %r: %s"
-                                     % (self.directory, err))
+                self.logger.critical("can't chdir into %r: %s" % (self.directory, err))
             else:
-                self.logger.info('set current directory: %r'
-                                 % self.directory)
+                self.logger.info('set current directory: %r' % self.directory)
         os.close(0)
         self.stdin = sys.stdin = sys.__stdin__ = open('/dev/null')
         os.close(1)
@@ -1246,16 +1195,12 @@ class ServerOptions(Options):
                     dispatcher_servers.append(dispatcher)
         for server in dispatcher_servers:
             # TODO: try to remove this entirely.
-            # For unknown reasons, sometimes an http_channel
-            # dispatcher in the socket map related to servers
-            # remains open *during a reload*.  If one of these
-            # exists at this point, we need to close it by hand
-            # (thus removing it from the asyncore.socket_map).  If
-            # we don't do this, 'cleanup_fds' will cause its file
-            # descriptor to be closed, but it will still remain in
-            # the socket_map, and eventually its file descriptor
-            # will be passed to # select(), which will bomb.  See
-            # also https://web.archive.org/web/20160729222427/http://www.plope.com/software/collector/253
+            # For unknown reasons, sometimes an http_channel dispatcher in the socket map related to servers remains
+            # open *during a reload*.  If one of these exists at this point, we need to close it by hand (thus removing
+            # it from the asyncore.socket_map).  If we don't do this, 'cleanup_fds' will cause its file descriptor to be
+            # closed, but it will still remain in the socket_map, and eventually its file descriptor will be passed to #
+            # select(), which will bomb.  See also
+            # https://web.archive.org/web/20160729222427/http://www.plope.com/software/collector/253
             server.close()
 
     def close_logger(self):
@@ -1279,18 +1224,17 @@ class ServerOptions(Options):
             self.unlink_socketfiles = True
         except OSError as why:
             if why.args[0] == errno.EADDRINUSE:
-                self.usage('Another program is already listening on '
-                           'a port that one of our HTTP servers is '
-                           'configured to use.  Shut this program '
-                           'down first before starting supervisord.')
+                self.usage(
+                    'Another program is already listening on a port that one of our HTTP servers is configured to '
+                    'use.  Shut this program down first before starting supervisord.'
+                )
             else:
                 help = 'Cannot open an HTTP server: socket.error reported'
                 errorname = errno.errorcode.get(why.args[0])
                 if errorname is None:
                     self.usage('%s %s' % (help, why.args[0]))
                 else:
-                    self.usage('%s errno.%s (%d)' %
-                               (help, errorname, why.args[0]))
+                    self.usage('%s errno.%s (%d)' % (help, errorname, why.args[0]))
         except ValueError as why:
             self.usage(why.args[0])
 
@@ -1299,7 +1243,8 @@ class ServerOptions(Options):
         logfile = self.mktempfile(
             suffix='.log',
             prefix=prefix,
-            dir=self.childlogdir)
+            dir=self.childlogdir,
+        )
         return logfile
 
     def clear_autochildlogdir(self):
@@ -1332,34 +1277,29 @@ class ServerOptions(Options):
         os.kill(pid, signal)
 
     def waitpid(self):
-        # Need pthread_sigmask here to avoid concurrent sigchld, but Python
-        # doesn't offer in Python < 3.4.  There is still a race condition here;
-        # we can get a sigchld while we're sitting in the waitpid call.
-        # However, AFAICT, if waitpid is interrupted by SIGCHLD, as long as we
-        # call waitpid again (which happens every so often during the normal
-        # course in the mainloop), we'll eventually reap the child that we
-        # tried to reap during the interrupted call. At least on Linux, this
-        # appears to be true, or at least stopping 50 processes at once never
-        # left zombies laying around.
+        # Need pthread_sigmask here to avoid concurrent sigchld, but Python doesn't offer in Python < 3.4.  There is
+        # still a race condition here; we can get a sigchld while we're sitting in the waitpid call. However, AFAICT, if
+        # waitpid is interrupted by SIGCHLD, as long as we call waitpid again (which happens every so often during the
+        # normal course in the mainloop), we'll eventually reap the child that we tried to reap during the interrupted
+        # call. At least on Linux, this appears to be true, or at least stopping 50 processes at once never left zombies
+        # laying around.
         try:
             pid, sts = os.waitpid(-1, os.WNOHANG)
         except OSError as exc:
             code = exc.args[0]
             if code not in (errno.ECHILD, errno.EINTR):
-                self.logger.critical(
-                    'waitpid error %r; '
-                    'a process may not be cleaned up properly' % code,
-                )
+                self.logger.critical('waitpid error %r; a process may not be cleaned up properly' % code)
             if code == errno.EINTR:
                 self.logger.blather('EINTR during reap')
             pid, sts = None, None
         return pid, sts
 
     def drop_privileges(self, user):
-        """Drop privileges to become the specified user, which may be a
-        username or uid.  Called for supervisord startup and when spawning
-        subprocesses.  Returns None on success or a string error message if
-        privileges could not be dropped."""
+        """
+        Drop privileges to become the specified user, which may be a username or uid.  Called for supervisord startup
+        and when spawning subprocesses.  Returns None on success or a string error message if privileges could not be
+        dropped.
+        """
         if user is None:
             return 'No user specified to setuid to!'
 
@@ -1381,10 +1321,9 @@ class ServerOptions(Options):
         current_uid = os.getuid()
 
         if current_uid == uid:
-            # do nothing and return successfully if the uid is already the
-            # current one.  this allows a supervisord running as an
-            # unprivileged user "foo" to start a process where the config
-            # has "user=foo" (same user) in it.
+            # do nothing and return successfully if the uid is already the current one.  this allows a supervisord
+            # running as an unprivileged user "foo" to start a process where the config has "user=foo" (same user) in
+            # it.
             return None
 
         if current_uid != 0:
@@ -1393,14 +1332,11 @@ class ServerOptions(Options):
         gid = pwrec[3]
         if hasattr(os, 'setgroups'):
             user = pwrec[0]
-            groups = [grprec[2] for grprec in grp.getgrall() if user in
-                      grprec[3]]
+            groups = [grprec[2] for grprec in grp.getgrall() if user in grprec[3]]
 
-            # always put our primary gid first in this list, otherwise we can
-            # lose group info since sometimes the first group in the setgroups
-            # list gets overwritten on the subsequent setgid call (at least on
-            # freebsd 9 with python 2.7 - this will be safe though for all unix
-            # /python version combos)
+            # always put our primary gid first in this list, otherwise we can lose group info since sometimes the first
+            # group in the setgroups list gets overwritten on the subsequent setgid call (at least on freebsd 9 with
+            # python 2.7 - this will be safe though for all unix /python version combos)
             groups.insert(0, gid)
             try:
                 os.setgroups(groups)
@@ -1413,61 +1349,56 @@ class ServerOptions(Options):
         os.setuid(uid)
 
     def set_uid_or_exit(self):
-        """Set the uid of the supervisord process.  Called during supervisord
-        startup only.  No return value.  Exits the process via usage() if
-        privileges could not be dropped."""
+        """
+        Set the uid of the supervisord process.  Called during supervisord startup only.  No return value.  Exits the
+        process via usage() if privileges could not be dropped.
+        """
         if self.uid is None:
             if os.getuid() == 0:
-                self.parse_criticals.append('Supervisor is running as root.  '
-                                            'Privileges were not dropped because no user is '
-                                            'specified in the config file.  If you intend to run '
-                                            'as root, you can set user=root in the config file '
-                                            'to avoid this message.')
+                self.parse_criticals.append(
+                    'Supervisor is running as root.  Privileges were not dropped because no user is specified in the '
+                    'config file.  If you intend to run as root, you can set user=root in the config file to avoid '
+                    'this message.'
+                )
         else:
             msg = self.drop_privileges(self.uid)
             if msg is None:
-                self.parse_infos.append('Set uid to user %s succeeded' %
-                                        self.uid)
+                self.parse_infos.append('Set uid to user %s succeeded' % self.uid)
             else:  # failed to drop privileges
                 self.usage(msg)
 
     def set_rlimits_or_exit(self):
-        """Set the rlimits of the supervisord process.  Called during
-        supervisord startup only.  No return value.  Exits the process via
-        usage() if any rlimits could not be set."""
+        """
+        Set the rlimits of the supervisord process.  Called during supervisord startup only.  No return value.  Exits
+        the process via usage() if any rlimits could not be set.
+        """
         limits = []
         if hasattr(resource, 'RLIMIT_NOFILE'):
-            limits.append(
-                {
-                    'msg': ('The minimum number of file descriptors required '
-                            'to run this process is %(min_limit)s as per the "minfds" '
-                            'command-line argument or config file setting. '
-                            'The current environment will only allow you '
-                            'to open %(hard)s file descriptors.  Either raise '
-                            'the number of usable file descriptors in your '
-                            'environment (see README.rst) or lower the '
-                            'minfds setting in the config file to allow '
-                            'the process to start.'),
-                    'min': self.minfds,
-                    'resource': resource.RLIMIT_NOFILE,
-                    'name': 'RLIMIT_NOFILE',
+            limits.append({
+                'msg': (
+                    'The minimum number of file descriptors required to run this process is %(min_limit)s as per the '
+                    '"minfds" command-line argument or config file setting. The current environment will only allow '
+                    'you to open %(hard)s file descriptors.  Either raise the number of usable file descriptors in '
+                    'your environment (see README.rst) or lower the minfds setting in the config file to allow the '
+                    'process to start.'
+                ),
+                'min': self.minfds,
+                'resource': resource.RLIMIT_NOFILE,
+                'name': 'RLIMIT_NOFILE',
                 })
         if hasattr(resource, 'RLIMIT_NPROC'):
-            limits.append(
-                {
-                    'msg': ('The minimum number of available processes required '
-                            'to run this program is %(min_limit)s as per the "minprocs" '
-                            'command-line argument or config file setting. '
-                            'The current environment will only allow you '
-                            'to open %(hard)s processes.  Either raise '
-                            'the number of usable processes in your '
-                            'environment (see README.rst) or lower the '
-                            'minprocs setting in the config file to allow '
-                            'the program to start.'),
-                    'min': self.minprocs,
-                    'resource': resource.RLIMIT_NPROC,
-                    'name': 'RLIMIT_NPROC',
-                })
+            limits.append({
+                'msg': (
+                    'The minimum number of available processes required to run this program is %(min_limit)s as per '
+                    'the "minprocs" command-line argument or config file setting. The current environment will only '
+                    'allow you to open %(hard)s processes.  Either raise the number of usable processes in your '
+                    'environment (see README.rst) or lower the minprocs setting in the config file to allow the '
+                    'program to start.'
+                ),
+                'min': self.minprocs,
+                'resource': resource.RLIMIT_NPROC,
+                'name': 'RLIMIT_NPROC',
+            })
 
         for limit in limits:
             min_limit = limit['min']
@@ -1480,14 +1411,13 @@ class ServerOptions(Options):
 
             if (soft < min_limit) and (soft != -1):  # -1 means unlimited
                 if (hard < min_limit) and (hard != -1):
-                    # setrlimit should increase the hard limit if we are
-                    # root, if not then setrlimit raises and we print usage
+                    # setrlimit should increase the hard limit if we are root, if not then setrlimit raises and we print
+                    # usage
                     hard = min_limit
 
                 try:
                     resource.setrlimit(res, (min_limit, hard))
-                    self.parse_infos.append('Increased %(name)s limit to '
-                                            '%(min_limit)s' % locals())
+                    self.parse_infos.append('Increased %(name)s limit to %(min_limit)s' % locals())
                 except (resource.error, ValueError):
                     self.usage(msg % locals())
 
@@ -1536,8 +1466,7 @@ class ServerOptions(Options):
         return os.execve(filename, argv, env)
 
     def mktempfile(self, suffix, prefix, dir):
-        # set os._urandomfd as a hack around bad file descriptor bug
-        # seen in the wild, see
+        # set os._urandomfd as a hack around bad file descriptor bug seen in the wild, see
         # https://web.archive.org/web/20160729044005/http://www.plope.com/software/collector/252
         os._urandomfd = None
         fd, filename = tempfile.mkstemp(suffix, prefix, dir)
@@ -1597,17 +1526,19 @@ class ServerOptions(Options):
         os.chdir(dir)
 
     def make_pipes(self, stderr=True):
-        """ Create pipes for parent to child stdin/stdout/stderr
-        communications.  Open fd in non-blocking mode so we can read them
-        in the mainloop without blocking.  If stderr is False, don't
-        create a pipe for stderr. """
+        """
+        Create pipes for parent to child stdin/stdout/stderr communications.  Open fd in non-blocking mode so we can
+        read them in the mainloop without blocking.  If stderr is False, don't create a pipe for stderr.
+        """
 
-        pipes = {'child_stdin': None,
-                 'stdin': None,
-                 'stdout': None,
-                 'child_stdout': None,
-                 'stderr': None,
-                 'child_stderr': None}
+        pipes = {
+            'child_stdin': None,
+            'stdin': None,
+            'stdout': None,
+            'child_stdout': None,
+            'stderr': None,
+            'child_stderr': None,
+        }
         try:
             stdin, child_stdin = os.pipe()
             pipes['child_stdin'], pipes['stdin'] = stdin, child_stdin
@@ -1667,11 +1598,9 @@ class ClientOptions(Options):
         # without the default plugin, please write your own supervisorctl.
         self.plugin_factories = [default_factory]
 
-        self.add('interactive', 'supervisorctl.interactive', 'i',
-                 'interactive', flag=1, default=0)
+        self.add('interactive', 'supervisorctl.interactive', 'i', 'interactive', flag=1, default=0)  # noqa
         self.add('prompt', 'supervisorctl.prompt', default='supervisor')
-        self.add('serverurl', 'supervisorctl.serverurl', 's:', 'serverurl=',
-                 url, default='http://localhost:9001')
+        self.add('serverurl', 'supervisorctl.serverurl', 's:', 'serverurl=', url, default='http://localhost:9001')  # noqa
         self.add('username', 'supervisorctl.username', 'u:', 'username=')
         self.add('password', 'supervisorctl.password', 'p:', 'password=')
         self.add('history', 'supervisorctl.history_file', 'r:', 'history_file=')
@@ -1714,8 +1643,13 @@ class ClientOptions(Options):
         sections = parser.sections()
         if 'supervisorctl' not in sections:
             raise ValueError('.ini file does not include supervisorctl section')
-        serverurl = parser.getdefault('serverurl', 'http://localhost:9001',
-                                      expansions={'here': self.here})
+        serverurl = parser.getdefault(
+            'serverurl',
+            'http://localhost:9001',
+            expansions={
+                'here': self.here,
+            },
+        )
         if serverurl.startswith('unix://'):
             path = normalize_path(serverurl[7:])
             serverurl = 'unix://%s' % path
@@ -1726,8 +1660,13 @@ class ClientOptions(Options):
         section.prompt = parser.getdefault('prompt', section.prompt)
         section.username = parser.getdefault('username', section.username)
         section.password = parser.getdefault('password', section.password)
-        history_file = parser.getdefault('history_file', section.history_file,
-                                         expansions={'here': self.here})
+        history_file = parser.getdefault(
+            'history_file',
+            section.history_file,
+            expansions={
+                'here': self.here,
+            },
+        )
 
         if history_file:
             history_file = normalize_path(history_file)
@@ -1748,13 +1687,14 @@ class ClientOptions(Options):
     # TODO: not covered by any test, but used by supervisorctl
     def getServerProxy(self):
         return xmlrpclib.ServerProxy(
-            # dumbass ServerProxy won't allow us to pass in a non-HTTP url,
-            # so we fake the url we pass into it and always use the transport's
-            # 'serverurl' to figure out what to attach to
+            # dumbass ServerProxy won't allow us to pass in a non-HTTP url, so we fake the url we pass into it and
+            # always use the transport's 'serverurl' to figure out what to attach to
             'http://127.0.0.1',
-            transport=xmlrpc.SupervisorTransport(self.username,
-                                                 self.password,
-                                                 self.serverurl),
+            transport=xmlrpc.SupervisorTransport(
+                self.username,
+                self.password,
+                self.serverurl,
+            ),
         )
 
 
@@ -1765,9 +1705,8 @@ class UnhosedConfigParser(ConfigParser.RawConfigParser):
     mysection = 'supervisord'
 
     def __init__(self, *args, **kwargs):
-        # inline_comment_prefixes and strict were added in Python 3 but their
-        # defaults make RawConfigParser behave differently than it did on
-        # Python 2.  We make it work like 2 by default for backwards compat.
+        # inline_comment_prefixes and strict were added in Python 3 but their defaults make RawConfigParser behave
+        # differently than it did on Python 2.  We make it work like 2 by default for backwards compat.
         if 'inline_comment_prefixes' not in kwargs:
             kwargs['inline_comment_prefixes'] = (';', '#')
 
@@ -1780,8 +1719,10 @@ class UnhosedConfigParser(ConfigParser.RawConfigParser):
         self.expansions = {}
 
     def read_string(self, string, source='<string>'):
-        """Parse configuration data from a string.  This is intended
-        to be used in tests only.  We add this method for Py 2/3 compat."""
+        """
+        Parse configuration data from a string.  This is intended to be used in tests only.  We add this method for Py
+        2/3 compat.
+        """
         try:
             return ConfigParser.RawConfigParser.read_string(
                 self, string, source)  # Python 3.2 or later
@@ -1789,10 +1730,10 @@ class UnhosedConfigParser(ConfigParser.RawConfigParser):
             return self.readfp(StringIO(string))
 
     def read(self, filenames, **kwargs):
-        """Attempt to read and parse a list of filenames, returning a list
-        of filenames which were successfully parsed.  This is a method of
-        RawConfigParser that is overridden to build self.section_to_file,
-        which is a mapping of section names to the files they came from.
+        """
+        Attempt to read and parse a list of filenames, returning a list of filenames which were successfully parsed.
+        This is a method of RawConfigParser that is overridden to build self.section_to_file, which is a mapping of
+        section names to the files they came from.
         """
         if isinstance(filenames, str):  # RawConfigParser compat
             filenames = [filenames]
@@ -1809,8 +1750,7 @@ class UnhosedConfigParser(ConfigParser.RawConfigParser):
                 self.section_to_file[section] = filename
         return ok_filenames
 
-    def saneget(self, section, option, default=_marker, do_expand=True,
-                expansions={}):
+    def saneget(self, section, option, default=_marker, do_expand=True, expansions={}):
         try:
             optval = self.get(section, option)
         except ConfigParser.NoOptionError:
@@ -1820,17 +1760,14 @@ class UnhosedConfigParser(ConfigParser.RawConfigParser):
                 optval = default
 
         if do_expand and isinstance(optval, str):
-            combined_expansions = dict(
-                list(self.expansions.items()) + list(expansions.items()))
+            combined_expansions = dict(list(self.expansions.items()) + list(expansions.items()))
 
-            optval = expand(optval, combined_expansions,
-                            '%s.%s' % (section, option))
+            optval = expand(optval, combined_expansions, '%s.%s' % (section, option))
 
         return optval
 
     def getdefault(self, option, default=_marker, expansions={}, **kwargs):
-        return self.saneget(self.mysection, option, default=default,
-                            expansions=expansions, **kwargs)
+        return self.saneget(self.mysection, option, default=default, expansions=expansions, **kwargs)
 
     def expand_here(self, here):
         HERE_FORMAT = '%(here)s'
@@ -1877,17 +1814,40 @@ class Config:
 
 class ProcessConfig(Config):
     req_param_names = [
-        'name', 'uid', 'command', 'directory', 'umask', 'priority',
-        'autostart', 'autorestart', 'startsecs', 'startretries',
-        'stdout_logfile', 'stdout_capture_maxbytes',
-        'stdout_events_enabled', 'stdout_syslog',
-        'stdout_logfile_backups', 'stdout_logfile_maxbytes',
-        'stderr_logfile', 'stderr_capture_maxbytes',
-        'stderr_logfile_backups', 'stderr_logfile_maxbytes',
-        'stderr_events_enabled', 'stderr_syslog',
-        'stopsignal', 'stopwaitsecs', 'stopasgroup', 'killasgroup',
-        'exitcodes', 'redirect_stderr']
-    optional_param_names = ['environment', 'serverurl']
+        'name',
+        'uid',
+        'command',
+        'directory',
+        'umask',
+        'priority',
+        'autostart',
+        'autorestart',
+        'startsecs',
+        'startretries',
+        'stdout_logfile',
+        'stdout_capture_maxbytes',
+        'stdout_events_enabled',
+        'stdout_syslog',
+        'stdout_logfile_backups',
+        'stdout_logfile_maxbytes',
+        'stderr_logfile',
+        'stderr_capture_maxbytes',
+        'stderr_logfile_backups',
+        'stderr_logfile_maxbytes',
+        'stderr_events_enabled',
+        'stderr_syslog',
+        'stopsignal',
+        'stopwaitsecs',
+        'stopasgroup',
+        'killasgroup',
+        'exitcodes',
+        'redirect_stderr',
+    ]
+
+    optional_param_names = [
+        'environment',
+        'serverurl',
+    ]
 
     def __init__(self, options, **params):
         self.options = options
@@ -1909,8 +1869,10 @@ class ProcessConfig(Config):
         return True
 
     def get_path(self):
-        """Return a list corresponding to $PATH that is configured to be set
-        in the process environment, or the system default."""
+        """
+        Return a list corresponding to $PATH that is configured to be set in the process environment, or the system
+        default.
+        """
         if self.environment is not None:
             path = self.environment.get('PATH')
             if path is not None:
@@ -1954,8 +1916,8 @@ class ProcessConfig(Config):
 
 class EventListenerConfig(ProcessConfig):
     def make_dispatchers(self, proc):
-        # always use_stderr=True for eventlisteners because mixing stderr
-        # messages into stdout would break the eventlistener protocol
+        # always use_stderr=True for eventlisteners because mixing stderr messages into stdout would break the
+        # eventlistener protocol
         use_stderr = True
         p = self.options.make_pipes(use_stderr)
         stdout_fd, stderr_fd, stdin_fd = p['stdout'], p['stderr'], p['stdin']
@@ -1965,8 +1927,7 @@ class EventListenerConfig(ProcessConfig):
         from .dispatchers import PInputDispatcher
         from .dispatchers import POutputDispatcher
         if stdout_fd is not None:
-            dispatchers[stdout_fd] = PEventListenerDispatcher(proc, 'stdout',
-                                                              stdout_fd)
+            dispatchers[stdout_fd] = PEventListenerDispatcher(proc, 'stdout', stdout_fd)
         if stderr_fd is not None:
             etype = events.ProcessCommunicationStderrEvent
             dispatchers[stderr_fd] = POutputDispatcher(proc, etype, stderr_fd)
@@ -1987,9 +1948,8 @@ class FastCGIProcessConfig(ProcessConfig):
 
     def make_dispatchers(self, proc):
         dispatchers, p = ProcessConfig.make_dispatchers(self, proc)
-        # FastCGI child processes expect the FastCGI socket set to
-        # file descriptor 0, so supervisord cannot use stdin
-        # to communicate with the child process
+        # FastCGI child processes expect the FastCGI socket set to file descriptor 0, so supervisord cannot use stdin to
+        # communicate with the child process
         stdin_fd = p['stdin']
         if stdin_fd is not None:
             dispatchers[stdin_fd].close()
@@ -2026,8 +1986,16 @@ class ProcessGroupConfig(Config):
 
 
 class EventListenerPoolConfig(Config):
-    def __init__(self, options, name, priority, process_configs, buffer_size,
-                 pool_events, result_handler):
+    def __init__(
+            self,
+            options,
+            name,
+            priority,
+            process_configs,
+            buffer_size,
+             pool_events,
+            result_handler,
+    ):
         self.options = options
         self.name = name
         self.priority = priority
@@ -2040,12 +2008,14 @@ class EventListenerPoolConfig(Config):
         if not isinstance(other, EventListenerPoolConfig):
             return False
 
-        if ((self.name == other.name) and
-                (self.priority == other.priority) and
-                (self.process_configs == other.process_configs) and
-                (self.buffer_size == other.buffer_size) and
-                (self.pool_events == other.pool_events) and
-                (self.result_handler == other.result_handler)):
+        if (
+                self.name == other.name and
+                self.priority == other.priority and
+                self.process_configs == other.process_configs and
+                self.buffer_size == other.buffer_size and
+                self.pool_events == other.pool_events and
+                self.result_handler == other.result_handler
+        ):
             return True
 
         return False
@@ -2121,10 +2091,9 @@ def readFile(filename, offset, length):
 
 def tailFile(filename, offset, length):
     """
-    Read length bytes from the file named by filename starting at
-    offset, automatically increasing offset and setting overflow
-    flag if log size has grown beyond (offset + length).  If length
-    bytes are not available, as many bytes as are available are returned.
+    Read length bytes from the file named by filename starting at offset, automatically increasing offset and setting
+    overflow flag if log size has grown beyond (offset + length).  If length bytes are not available, as many bytes as
+    are available are returned.
     """
 
     try:
@@ -2162,12 +2131,11 @@ def tailFile(filename, offset, length):
 # Helpers for dealing with signals and exit status
 
 def decode_wait_status(sts):
-    """Decode the status returned by wait() or waitpid().
+    """
+    Decode the status returned by wait() or waitpid().
 
-    Return a tuple (exitstatus, message) where exitstatus is the exit
-    status, or -1 if the process was killed by a signal; and message
-    is a message telling what happened.  It is the caller's
-    responsibility to display the message.
+    Return a tuple (exitstatus, message) where exitstatus is the exit status, or -1 if the process was killed by a
+    signal; and message is a message telling what happened.  It is the caller's responsibility to display the message.
     """
     if os.WIFEXITED(sts):
         es = os.WEXITSTATUS(sts) & 0xffff
@@ -2192,10 +2160,10 @@ _signames = None
 
 
 def signame(sig):
-    """Return a symbolic name for a signal.
+    """
+    Return a symbolic name for a signal.
 
-    Return "signal NNN" if there is no corresponding SIG name in the
-    signal module.
+    Return "signal NNN" if there is no corresponding SIG name in the signal module.
     """
 
     if _signames is None:
@@ -2251,9 +2219,8 @@ def expand(s, expansions, name):
 
 
 def make_namespec(group_name, process_name):
-    # we want to refer to the process by its "short name" (a process named
-    # process1 in the group process1 has a name "process1").  This is for
-    # backwards compatibility
+    # we want to refer to the process by its "short name" (a process named process1 in the group process1 has a name
+    # "process1").  This is for backwards compatibility
     if group_name == process_name:
         name = process_name
     else:
@@ -2276,6 +2243,7 @@ def split_namespec(namespec):
 
 # exceptions
 
+
 class ProcessException(Exception):
     """ Specialized exceptions used when attempting to start a process """
 
@@ -2290,11 +2258,11 @@ class NotExecutable(ProcessException):
 
 
 class NotFound(ProcessException):
-    """ Indicates that the filespec cannot be executed because it could not
-    be found """
+    """ Indicates that the filespec cannot be executed because it could not be found """
 
 
 class NoPermission(ProcessException):
-    """ Indicates that the file cannot be executed because the supervisor
-    process does not possess the appropriate UNIX filesystem permission
-    to execute the file. """
+    """
+    Indicates that the file cannot be executed because the supervisor process does not possess the appropriate UNIX
+    filesystem permission to execute the file.
+    """

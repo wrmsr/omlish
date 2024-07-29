@@ -82,8 +82,8 @@ class Handler:
                 try:
                     fd = self.stream.fileno()
                 except OSError:
-                    # on python 3, io.IOBase objects always have fileno()
-                    # but calling it may raise io.UnsupportedOperation
+                    # on python 3, io.IOBase objects always have fileno() but calling it may raise
+                    # io.UnsupportedOperation
                     pass
                 else:
                     if fd < 3:  # don't ever close stdout or stderr
@@ -93,9 +93,11 @@ class Handler:
 
     def emit(self, record):
         try:
-            binary = (self.fmt == '%(message)s' and
-                      isinstance(record.msg, bytes) and
-                      (not record.kw or record.kw == {'exc_info': None}))
+            binary = (
+                    self.fmt == '%(message)s' and
+                    isinstance(record.msg, bytes) and
+                    (not record.kw or record.kw == {'exc_info': None})
+            )
             binary_stream = not is_text_stream(self.stream)
             if binary:
                 msg = record.msg
@@ -107,9 +109,8 @@ class Handler:
                 self.stream.write(msg)
             except UnicodeError:
                 # TODO sort out later
-                # this only occurs because of a test stream type
-                # which deliberately raises an exception the first
-                # time it's called. So just do it again
+                # this only occurs because of a test stream type which deliberately raises an exception the first time
+                # it's called. So just do it again
                 self.stream.write(msg)
             self.flush()
         except:
@@ -158,8 +159,7 @@ class BoundIO:
 
 
 class FileHandler(Handler):
-    """File handler which supports reopening of logs.
-    """
+    """File handler which supports reopening of logs."""
 
     def __init__(self, filename, mode='ab'):
         Handler.__init__(self)
@@ -168,10 +168,8 @@ class FileHandler(Handler):
             self.stream = open(filename, mode)
         except OSError as e:
             if mode == 'ab' and e.errno == errno.ESPIPE:
-                # Python 3 can't open special files like
-                # /dev/stdout in 'a' mode due to an implicit seek call
-                # that fails with ESPIPE. Retry in 'w' mode.
-                # See: http://bugs.python.org/issue27805
+                # Python 3 can't open special files like /dev/stdout in 'a' mode due to an implicit seek call that fails
+                # with ESPIPE. Retry in 'w' mode. See: http://bugs.python.org/issue27805
                 mode = 'wb'
                 self.stream = open(filename, mode)
             else:
@@ -200,20 +198,15 @@ class RotatingFileHandler(FileHandler):
         """
         Open the specified file and use it as the stream for logging.
 
-        By default, the file grows indefinitely. You can specify particular
-        values of maxBytes and backupCount to allow the file to rollover at
-        a predetermined size.
+        By default, the file grows indefinitely. You can specify particular values of maxBytes and backupCount to allow
+        the file to rollover at a predetermined size.
 
-        Rollover occurs whenever the current log file is nearly maxBytes in
-        length. If backupCount is >= 1, the system will successively create
-        new files with the same pathname as the base file, but with extensions
-        ".1", ".2" etc. appended to it. For example, with a backupCount of 5
-        and a base file name of "app.log", you would get "app.log",
-        "app.log.1", "app.log.2", ... through to "app.log.5". The file being
-        written to is always "app.log" - when it gets filled up, it is closed
-        and renamed to "app.log.1", and if files "app.log.1", "app.log.2" etc.
-        exist, then they are renamed to "app.log.2", "app.log.3" etc.
-        respectively.
+        Rollover occurs whenever the current log file is nearly maxBytes in length. If backupCount is >= 1, the system
+        will successively create new files with the same pathname as the base file, but with extensions ".1", ".2" etc.
+        appended to it. For example, with a backupCount of 5 and a base file name of "app.log", you would get "app.log",
+        "app.log.1", "app.log.2", ... through to "app.log.5". The file being written to is always "app.log" - when it
+        gets filled up, it is closed and renamed to "app.log.1", and if files "app.log.1", "app.log.2" etc. exist, then
+        they are renamed to "app.log.2", "app.log.3" etc. respectively.
 
         If maxBytes is zero, rollover never occurs.
         """
@@ -258,8 +251,7 @@ class RotatingFileHandler(FileHandler):
         try:
             self._rename(sfn, dfn)
         except OSError as why:
-            # catch exceptional condition (source deleted)
-            # E.g. cleanup script removes active log.
+            # catch exceptional condition (source deleted) E.g. cleanup script removes active log.
             if why.args[0] != errno.ENOENT:
                 raise
 
@@ -302,8 +294,11 @@ class LogRecord:
             msg = as_string(self.msg)
             if self.kw:
                 msg = msg % self.kw
-            self.dictrepr = {'message': msg, 'levelname': levelname,
-                             'asctime': asctime}
+            self.dictrepr = {
+                'message': msg,
+                'levelname': levelname,
+                'asctime': asctime,
+            }
         return self.dictrepr
 
 
@@ -426,8 +421,10 @@ def handle_syslog(logger, fmt):
 
 
 def handle_file(logger, filename, fmt, rotating=False, maxbytes=0, backups=0):
-    """Attach a new file handler to an existing Logger. If the filename
-    is the magic name of 'syslog' then make it a syslog handler instead."""
+    """
+    Attach a new file handler to an existing Logger. If the filename is the magic name of 'syslog' then make it a syslog
+    handler instead.
+    """
     if filename == 'syslog':  # TODO remove this
         handler = SyslogHandler()
     elif rotating is False:

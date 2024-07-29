@@ -1,10 +1,9 @@
 #!/usr/bin/env python -u
+"""
+pidproxy -- run command and proxy signals to it via its pidfile.
 
-"""pidproxy -- run command and proxy signals to it via its pidfile.
-
-This executable runs a command and then monitors a pidfile.  When this
-executable receives a signal, it sends the same signal to the pid
-in the pidfile.
+This executable runs a command and then monitors a pidfile.  When this executable receives a signal, it sends the same
+signal to the pid in the pidfile.
 
 Usage: %s <pidfile name> <command> [<cmdarg1> ...]
 """

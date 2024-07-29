@@ -157,25 +157,21 @@ class KQueuePoller(BasePoller):
 
     def register_readable(self, fd):
         self.readables.add(fd)
-        kevent = select.kevent(fd, filter=select.KQ_FILTER_READ,
-                               flags=select.KQ_EV_ADD)
+        kevent = select.kevent(fd, filter=select.KQ_FILTER_READ, flags=select.KQ_EV_ADD)
         self._kqueue_control(fd, kevent)
 
     def register_writable(self, fd):
         self.writables.add(fd)
-        kevent = select.kevent(fd, filter=select.KQ_FILTER_WRITE,
-                               flags=select.KQ_EV_ADD)
+        kevent = select.kevent(fd, filter=select.KQ_FILTER_WRITE, flags=select.KQ_EV_ADD)
         self._kqueue_control(fd, kevent)
 
     def unregister_readable(self, fd):
-        kevent = select.kevent(fd, filter=select.KQ_FILTER_READ,
-                               flags=select.KQ_EV_DELETE)
+        kevent = select.kevent(fd, filter=select.KQ_FILTER_READ, flags=select.KQ_EV_DELETE)
         self.readables.discard(fd)
         self._kqueue_control(fd, kevent)
 
     def unregister_writable(self, fd):
-        kevent = select.kevent(fd, filter=select.KQ_FILTER_WRITE,
-                               flags=select.KQ_EV_DELETE)
+        kevent = select.kevent(fd, filter=select.KQ_FILTER_WRITE, flags=select.KQ_EV_DELETE)
         self.writables.discard(fd)
         self._kqueue_control(fd, kevent)
 
@@ -184,8 +180,7 @@ class KQueuePoller(BasePoller):
             self._kqueue.control([kevent], 0)
         except OSError as error:
             if error.errno == errno.EBADF:
-                self.options.logger.blather('EBADF encountered in kqueue. '
-                                            'Invalid file descriptor %s' % fd)
+                self.options.logger.blather('EBADF encountered in kqueue. Invalid file descriptor %s' % fd)
             else:
                 raise
 
