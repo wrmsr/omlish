@@ -61,10 +61,10 @@ def _main():
                     import pydevd_pycharm  # noqa
                     pydevd_pycharm.settrace(
                         'docker.for.mac.localhost',
-                         port={pycharm_port},
-                          stdoutToServer=True,
-                           stderrToServer=True,
-                       )
+                        port={pycharm_port},
+                        stdoutToServer=True,
+                        stderrToServer=True,
+                    )
                 """) + '\n' * 2 + buf
 
             subprocess.run([
