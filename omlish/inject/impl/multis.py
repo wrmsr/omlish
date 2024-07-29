@@ -52,16 +52,16 @@ class MapProviderImpl(ProviderImpl, lang.Final):
         return rv
 
 
-def make_multi_provider_impl(p: Provider, es_by_ty: ta.MutableMapping[type, ta.Sequence[Element]]) -> ProviderImpl:
+def make_multi_provider_impl(p: Provider, es_by_ty: ta.MutableMapping[type, list[Element]]) -> ProviderImpl:
     if isinstance(p, SetProvider):
-        mbs = es_by_ty.pop(SetBinding, ())
+        sbs: ta.Iterable[SetBinding] = es_by_ty.pop(SetBinding, ())  # type: ignore
         return SetProviderImpl([
-            LinkProviderImpl(LinkProvider(mb.dst))
-            for mb in mbs
+            LinkProviderImpl(LinkProvider(sb.dst))
+            for sb in sbs
         ])
 
     elif isinstance(p, MapProvider):
-        mbs = es_by_ty.pop(MapBinding, ())
+        mbs: ta.Iterable[MapBinding] = es_by_ty.pop(MapBinding, ())  # type: ignore
         return MapProviderImpl([
             MapProviderImpl.Entry(
                 mb.map_key,

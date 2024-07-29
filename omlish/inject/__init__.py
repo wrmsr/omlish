@@ -86,7 +86,6 @@ from .scopes import (  # noqa
 )
 
 from .types import (  # noqa
-    Cls,
     Scope,
     Unscoped,
 )
