@@ -3,6 +3,7 @@ import typing as ta
 
 from .. import dataclasses as dc
 from .. import lang
+from .. import reflect as rfl
 
 
 T = ta.TypeVar('T')
@@ -14,7 +15,7 @@ T = ta.TypeVar('T')
 @dc.dataclass(frozen=True)
 @dc.extra_params(cache_hash=True)
 class Key(lang.Final, ta.Generic[T]):
-    cls: type[T] | ta.NewType
+    ty: rfl.Type
     tag: ta.Any = dc.field(default=None, kw_only=True)
 
 
