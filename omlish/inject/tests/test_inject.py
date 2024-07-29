@@ -30,7 +30,7 @@ def test_set_multi():
 
 def test_map_multi():
     es = inj.as_elements(
-        inj.bind_set_provider(inj.Key(ta.Mapping[str, int])),
+        inj.bind_map_provider(inj.Key(ta.Mapping[str, int])),
         inj.MapBinding(inj.Key(ta.Mapping[str, int]), 'a', inj.Key(int, tag='four twenty')),
         inj.MapBinding(inj.Key(ta.Mapping[str, int]), 'b', inj.Key(int, tag='four twenty one')),
         inj.Binding(inj.Key(int, tag='four twenty'), inj.const(420)),
