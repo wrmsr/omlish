@@ -11,9 +11,9 @@ def get_secret_db_url() -> str:
 def get_docker_db_url() -> str:
     from omlish import docker
     cc = docker.ComposeConfig('omlish-', file_path='docker/docker-compose.yml')
-    pg = cc.get_services()['postgres']
-    port = docker.get_compose_port(pg, 5432)
-    env = pg['environment']
+    svc = cc.get_services()['postgres']
+    port = docker.get_compose_port(svc, 5432)
+    env = svc['environment']
     return f'postgresql+asyncpg://{env["POSTGRES_USER"]}:{env["POSTGRES_PASSWORD"]}@127.0.0.1:{port}'
 
 
