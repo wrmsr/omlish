@@ -20,15 +20,15 @@ def bind_impl(cls: type[Configurable], impl_cls: type[Configurable]) -> inj.Elem
         raise TypeError(impl_cls, cls)
     return inj.as_elements(
         inj.Binding(
-            inj.Key(ImplFor, tag=cls, multi=True),
-            inj.const((ImplFor(cls, impl_cls),)),
+            inj.Key(ImplFor, tag=cls, multi=inj.SetMulti()),
+            inj.const(ImplFor(cls, impl_cls)),
         ),
     )
 
 
 def bind_factory(cls: type[Configurable]) -> inj.Elements:
     def outer(i: inj.Injector):
-        ifs = i.provide(inj.Key(ImplFor, tag=cls, multi=True))
+        ifs = i.provide(inj.Key(ImplFor, tag=cls, multi=inj.SetMulti()))
         ifd = {ic.impl_cls.Config: ic for ic in ifs}
 
         def inner(config):
