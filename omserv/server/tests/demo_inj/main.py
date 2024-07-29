@@ -78,15 +78,9 @@ async def inj_app(scope, recv, send) -> None:
 
 
 class InjApp(AsgiApp):
-    @dc.dataclass(frozen=True)
-    class Handler:
-        endpoint: Endpoint
-        app: AsgiApp
-
-    def __init__(self, handlers: ta.AbstractSet[Handler]) -> None:
+    def __init__(self, endpoints: ta.Mapping[Endpoint, AsgiApp]) -> None:
         super().__init__()
-        self._handlers = list(handlers)
-        self._handlers_by_endpoint = {h.endpoint: h for h in self._handlers}
+        self._endpoints = endpoints
 
     async def __call__(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
         match scope_ty := scope['type']:
@@ -96,12 +90,12 @@ class InjApp(AsgiApp):
 
             case 'http':
                 ep = Endpoint(scope['method'], scope['raw_path'].decode())
-                h = self._handlers_by_endpoint.get(ep)
-                if h is None:
+                app = self._endpoints.get(ep)
+                if app is None:
                     await send_response(send, 404)
                     return
 
-                await h.app(scope, recv, send)
+                await app(scope, recv, send)
 
             case _:
                 raise ValueError(f'Unhandled scope type: {scope_ty!r}')
@@ -113,9 +107,13 @@ class InjApp(AsgiApp):
 def _bind() -> inj.Elements:
     return inj.as_elements(
         inj.singleton(InjApp),
+        inj.bind_map_provider(ta.Mapping[Endpoint, AsgiApp]),
 
-        inj.as_(inj.set_multi(InjApp.Handler), inj.const(InjApp.Handler(Endpoint('GET', '/hi'), HiAsgiApp()))),
-        inj.as_(inj.set_multi(InjApp.Handler), inj.const(InjApp.Handler(Endpoint('GET', '/bye'), ByeAsgiApp()))),
+        inj.as_binding(HiAsgiApp),
+        inj.MapBinding(inj.Key(ta.Mapping[Endpoint, AsgiApp]), Endpoint('GET', '/hi'), inj.Key(HiAsgiApp)),
+
+        inj.as_binding(ByeAsgiApp),
+        inj.MapBinding(inj.Key(ta.Mapping[Endpoint, AsgiApp]), Endpoint('GET', '/hi'), inj.Key(ByeAsgiApp)),
     )
 
 
