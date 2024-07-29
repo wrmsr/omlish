@@ -77,9 +77,7 @@ class EventListenerProtocol:
 
     def send(self, data, stdout=sys.stdout):
         resultlen = len(data)
-        result = '%s%s\n%s' % (as_string(PEventListenerDispatcher.RESULT_TOKEN_START),
-                               str(resultlen),
-                               data)
+        result = '%s%s\n%s' % (as_string(PEventListenerDispatcher.RESULT_TOKEN_START), str(resultlen), data)
         stdout.write(result)
         stdout.flush()
 

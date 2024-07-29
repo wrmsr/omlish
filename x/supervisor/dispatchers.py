@@ -25,10 +25,7 @@ class PDispatcher:
         self.closed = False  # True if close() has been called
 
     def __repr__(self):
-        return '<%s at %s for %s (%s)>' % (self.__class__.__name__,
-                                           id(self),
-                                           self.process,
-                                           self.channel)
+        return '<%s at %s for %s (%s)>' % (self.__class__.__name__, id(self), self.process, self.channel)
 
     def readable(self):
         raise NotImplementedError
@@ -46,19 +43,13 @@ class PDispatcher:
         nil, t, v, tbinfo = compact_traceback()
 
         self.process.config.options.logger.critical(
-            'uncaptured python exception, closing channel %s (%s:%s %s)' % (
-                repr(self),
-                t,
-                v,
-                tbinfo,
-            ),
+            'uncaptured python exception, closing channel %s (%s:%s %s)' % ( repr(self), t, v, tbinfo),
         )
         self.close()
 
     def close(self):
         if not self.closed:
-            self.process.config.options.logger.debug(
-                'fd %s closed, stopped monitoring %s' % (self.fd, self))
+            self.process.config.options.logger.debug('fd %s closed, stopped monitoring %s' % (self.fd, self))
             self.closed = True
 
     def flush(self):
@@ -67,14 +58,11 @@ class PDispatcher:
 
 class POutputDispatcher(PDispatcher):
     """
-    Dispatcher for one channel (stdout or stderr) of one process.
-    Serves several purposes:
+    Dispatcher for one channel (stdout or stderr) of one process. Serves several purposes:
 
-    - capture output sent within <!--XSUPERVISOR:BEGIN--> and
-      <!--XSUPERVISOR:END--> tags and signal a ProcessCommunicationEvent
-      by calling notify(event).
-    - route the output to the appropriate log handlers as specified in the
-      config.
+    - capture output sent within <!--XSUPERVISOR:BEGIN--> and <!--XSUPERVISOR:END--> tags and signal a
+      ProcessCommunicationEvent by calling notify(event).
+    - route the output to the appropriate log handlers as specified in the config.
     """
 
     childlog = None  # the current logger (normallog or capturelog)
@@ -87,8 +75,7 @@ class POutputDispatcher(PDispatcher):
         """
         Initialize the dispatcher.
 
-        `event_type` should be one of ProcessLogStdoutEvent or
-        ProcessLogStderrEvent
+        `event_type` should be one of ProcessLogStdoutEvent or ProcessLogStderrEvent
         """
         self.process = process
         self.event_type = event_type
@@ -113,8 +100,8 @@ class POutputDispatcher(PDispatcher):
 
     def _init_normallog(self):
         """
-        Configure the "normal" (non-capture) log for this channel of this
-        process.  Sets self.normallog if logging is enabled.
+        Configure the "normal" (non-capture) log for this channel of this process. Sets self.normallog if logging is
+        enabled.
         """
         config = self.process.config
         channel = self.channel
@@ -145,12 +132,10 @@ class POutputDispatcher(PDispatcher):
 
     def _init_capturelog(self):
         """
-        Configure the capture log for this process.  This log is used to
-        temporarily capture output when special output is detected.
-        Sets self.capturelog if capturing is enabled.
+        Configure the capture log for this process.  This log is used to temporarily capture output when special output
+        is detected. Sets self.capturelog if capturing is enabled.
         """
-        capture_maxbytes = getattr(self.process.config,
-                                   '%s_capture_maxbytes' % self.channel)
+        capture_maxbytes = getattr(self.process.config, '%s_capture_maxbytes' % self.channel)
         if capture_maxbytes:
             self.capturelog = self.process.config.options.getLogger()
             loggers.handle_boundIO(
@@ -193,15 +178,9 @@ class POutputDispatcher(PDispatcher):
                     channel=self.channel, data=text)
             if self.channel == 'stdout':
                 if self.stdout_events_enabled:
-                    notify(
-                        ProcessLogStdoutEvent(self.process,
-                                              self.process.pid, data),
-                    )
+                    notify(ProcessLogStdoutEvent(self.process, self.process.pid, data))
             elif self.stderr_events_enabled:
-                notify(
-                    ProcessLogStderrEvent(self.process,
-                                          self.process.pid, data),
-                )
+                notify(ProcessLogStderrEvent(self.process, self.process.pid, data))
 
     def record_output(self):
         if self.capturelog is None:
@@ -255,9 +234,7 @@ class POutputDispatcher(PDispatcher):
                 notify(event)
 
                 msg = '%(procname)r %(channel)s emitted a comm event'
-                self.process.config.options.logger.debug(msg,
-                                                         procname=procname,
-                                                         channel=channel)
+                self.process.config.options.logger.debug(msg, procname=procname, channel=channel)
                 for handler in self.capturelog.handlers:
                     handler.remove()
                     handler.reopen()
@@ -276,15 +253,13 @@ class POutputDispatcher(PDispatcher):
         self.output_buffer += data
         self.record_output()
         if not data:
-            # if we get no data back from the pipe, it means that the
-            # child process has ended.  See
+            # if we get no data back from the pipe, it means that the child process has ended.  See
             # mail.python.org/pipermail/python-dev/2004-August/046850.html
             self.close()
 
 
 class PEventListenerDispatcher(PDispatcher):
-    """ An output dispatcher that monitors and changes a process'
-    listener_state """
+    """An output dispatcher that monitors and changes a process' listener_state."""
     childlog = None  # the logger
     state_buffer = b''  # data waiting to be reviewed for state changes
 
@@ -295,8 +270,8 @@ class PEventListenerDispatcher(PDispatcher):
 
     def __init__(self, process, channel, fd):
         PDispatcher.__init__(self, process, channel, fd)
-        # the initial state of our listener is ACKNOWLEDGED; this is a
-        # "busy" state that implies we're awaiting a READY_FOR_EVENTS_TOKEN
+        # the initial state of our listener is ACKNOWLEDGED; this is a "busy" state that implies we're awaiting a
+        # READY_FOR_EVENTS_TOKEN
         self.process.listener_state = EventListenerStates.ACKNOWLEDGED
         self.process.event = None
         self.result = b''
@@ -349,8 +324,7 @@ class PEventListenerDispatcher(PDispatcher):
                     data = stripEscapes(data)
                 self.childlog.info(data)
         else:
-            # if we get no data back from the pipe, it means that the
-            # child process has ended.  See
+            # if we get no data back from the pipe, it means that the child process has ended.  See
             # mail.python.org/pipermail/python-dev/2004-August/046850.html
             self.close()
 
@@ -416,9 +390,7 @@ class PEventListenerDispatcher(PDispatcher):
                         result_line = as_string(result_line)
                     except UnicodeDecodeError:
                         result_line = 'Undecodable: %r' % result_line
-                    process.config.options.logger.warning(
-                        '%s: bad result line: \'%s\'' % (procname, result_line),
-                    )
+                    process.config.options.logger.warning('%s: bad result line: \'%s\'' % (procname, result_line))
                     self._change_listener_state(EventListenerStates.UNKNOWN)
                     self.state_buffer = b''
                     notify(EventRejectedEvent(process, process.event))
@@ -515,8 +487,7 @@ class PInputDispatcher(PDispatcher):
 
 
 ANSI_ESCAPE_BEGIN = b'\x1b['
-ANSI_TERMINATORS = (b'H', b'f', b'A', b'B', b'C', b'D', b'R', b's', b'u', b'J',
-                    b'K', b'h', b'l', b'p', b'm')
+ANSI_TERMINATORS = (b'H', b'f', b'A', b'B', b'C', b'D', b'R', b's', b'u', b'J', b'K', b'h', b'l', b'p', b'm')
 
 
 def stripEscapes(s):
@@ -543,8 +514,7 @@ def stripEscapes(s):
 
 
 class RejectEvent(Exception):
-    """ The exception type expected by a dispatcher when a handler wants
-    to reject an event """
+    """The exception type expected by a dispatcher when a handler wants to reject an event."""
 
 
 def default_handler(event, response):

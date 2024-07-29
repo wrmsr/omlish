@@ -24,11 +24,11 @@ def clear():
 
 
 class Event:
-    """ Abstract event type """
+    """Abstract event type """
 
 
 class ProcessLogEvent(Event):
-    """ Abstract """
+    """Abstract"""
     channel = None
 
     def __init__(self, process, pid, data):
@@ -44,9 +44,6 @@ class ProcessLogEvent(Event):
             data = as_string(self.data)
         except UnicodeDecodeError:
             data = 'Undecodable: %r' % self.data
-        # On Python 2, stuff needs to be in Unicode before invoking the
-        # % operator, otherwise implicit encodings to ASCII can cause
-        # failures
         fmt = as_string('processname:%s groupname:%s pid:%s channel:%s\n%s')
         result = fmt % (as_string(self.process.config.name),
                         as_string(groupname), self.pid,
@@ -143,8 +140,11 @@ class ProcessStateEvent(Event):
         groupname = ''
         if self.process.group is not None:
             groupname = self.process.group.config.name
-        L = [('processname', self.process.config.name), ('groupname', groupname),
-             ('from_state', getProcessStateDescription(self.from_state))]
+        L = [
+            ('processname', self.process.config.name),
+            ('groupname', groupname),
+            ('from_state', getProcessStateDescription(self.from_state)),
+        ]
         L.extend(self.extra_values)
         s = ' '.join(['%s:%s' % (name, val) for (name, val) in L])
         return s
