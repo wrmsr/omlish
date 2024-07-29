@@ -143,15 +143,22 @@ class ElementCollection(lang.Final):
             if k is None:
                 continue
 
-            es_by_ty = col.multi_dict()
+            es_by_ty = col.multi_map_by(type, es)
 
-            bis = [bi for e in es for bi in self._make_binding_impls(e)]
-            if False:  # k.multi:
-                mm.setdefault(k, []).extend(bis)
-            else:
-                if len(bis) > 1:
-                    raise DuplicateKeyError(k)
-                pm[k] = check.single(bis)
+            es_by_ty.pop(Eager, None)
+            es_by_ty.pop(Expose, None)
+
+            if (bs := es_by_ty.pop(Binding, None)):
+                bis = []
+                for b in bs:
+                    p = make_provider_impl(b.provider)
+                    bis.append(BindingImpl(b.key, p, b.scope, b))
+                if False:  # k.multi:
+                    mm.setdefault(k, []).extend(bis)
+                else:
+                    if len(bis) > 1:
+                        raise DuplicateKeyError(k)
+                    pm[k] = check.single(bis)
 
         if mm:
             for k, aps in mm.items():
