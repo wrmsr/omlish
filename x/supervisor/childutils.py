@@ -1,7 +1,7 @@
 import sys
 import time
 
-from .compat import xmlrpclib
+import xmlrpc.client as xmlrpclib
 from .compat import long
 from .compat import as_string
 

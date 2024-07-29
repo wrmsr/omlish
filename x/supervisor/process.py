@@ -6,7 +6,7 @@ import shlex
 import time
 import traceback
 
-from .compat import maxint
+from sys import maxsize as maxint
 from .compat import as_bytes
 from .compat import as_string
 

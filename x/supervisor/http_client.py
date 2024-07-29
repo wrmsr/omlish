@@ -6,7 +6,7 @@ import socket
 from .compat import as_bytes
 from .compat import as_string
 from .compat import encodestring
-from .compat import urlparse
+import urllib.parse as urlparse
 from .medusa import asynchat_25 as asynchat
 
 

@@ -6,11 +6,10 @@ import datetime
 
 from . import templating
 
-from .compat import urllib
-from .compat import urlparse
+import urllib.parse as urllib
+import urllib.parse as urlparse
 from .compat import as_bytes
 from .compat import as_string
-from .compat import unicode
 
 from .medusa import producers
 from .medusa.http_server import http_date

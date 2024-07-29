@@ -29,8 +29,8 @@ import socket
 import sys
 import threading
 
-from .compat import xmlrpclib
-from .compat import urlparse
+import xmlrpc.client as xmlrpclib
+import urllib.parse as urlparse
 from .compat import unicode
 from .compat import raw_input
 from .compat import as_string

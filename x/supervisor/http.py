@@ -13,8 +13,8 @@ try:
 except ImportError:  # Windows
     import getpass as pwd
 
-from .compat import urllib
-from .compat import sha1
+import urllib.parse as urllib
+from hashlib import sha1
 from .compat import as_bytes
 from .compat import as_string
 from .medusa import asyncore_25 as asyncore
