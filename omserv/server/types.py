@@ -4,18 +4,18 @@ import typing as ta
 ##
 
 
-ASGIReceiveEvent: ta.TypeAlias = dict
-ASGISendEvent: ta.TypeAlias = dict
+AsgiReceiveEvent: ta.TypeAlias = dict
+AsgiSendEvent: ta.TypeAlias = dict
 
-ASGIReceiveCallable: ta.TypeAlias = ta.Callable[[], ta.Awaitable[ASGIReceiveEvent]]
-ASGISendCallable: ta.TypeAlias = ta.Callable[[ASGISendEvent], ta.Awaitable[None]]
+AsgiReceiveCallable: ta.TypeAlias = ta.Callable[[], ta.Awaitable[AsgiReceiveEvent]]
+AsgiSendCallable: ta.TypeAlias = ta.Callable[[AsgiSendEvent], ta.Awaitable[None]]
 
 Scope: ta.TypeAlias = dict
-ASGIFramework: ta.TypeAlias = ta.Callable[
+AsgiFramework: ta.TypeAlias = ta.Callable[
     [
         Scope,
-        ASGIReceiveCallable,
-        ASGISendCallable,
+        AsgiReceiveCallable,
+        AsgiSendCallable,
     ],
     ta.Awaitable[None],
 ]
@@ -38,16 +38,16 @@ class UnexpectedMessageError(Exception):
     pass
 
 
-class ASGIWrapper:
-    def __init__(self, app: ASGIFramework) -> None:
+class AsgiWrapper:
+    def __init__(self, app: AsgiFramework) -> None:
         super().__init__()
         self.app = app
 
     async def __call__(
             self,
             scope: Scope,
-            receive: ASGIReceiveCallable,
-            send: ASGISendCallable,
+            receive: AsgiReceiveCallable,
+            send: AsgiSendCallable,
             sync_spawn: ta.Callable,
             call_soon: ta.Callable,
     ) -> None:
@@ -58,8 +58,8 @@ class AppWrapper(ta.Protocol):
     async def __call__(
             self,
             scope: Scope,
-            receive: ASGIReceiveCallable,
-            send: ASGISendCallable,
+            receive: AsgiReceiveCallable,
+            send: AsgiSendCallable,
             sync_spawn: ta.Callable,
             call_soon: ta.Callable,
     ) -> None:
@@ -67,9 +67,9 @@ class AppWrapper(ta.Protocol):
 
 
 def wrap_app(
-        app: ASGIFramework,
+        app: AsgiFramework,
 ) -> AppWrapper:
-    return ASGIWrapper(app)
+    return AsgiWrapper(app)
 
 
 ##

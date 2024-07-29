@@ -14,7 +14,7 @@ import anyio
 from .config import Config
 from .sockets import Sockets
 from .sockets import create_sockets
-from .types import ASGIFramework
+from .types import AsgiFramework
 from .types import wrap_app
 from .workers import worker_serve
 
@@ -30,7 +30,7 @@ async def check_multiprocess_shutdown_event(
 
 
 def _multiprocess_serve(
-        app: ASGIFramework,
+        app: AsgiFramework,
         config: Config,
         sockets: Sockets | None = None,
         shutdown_event: multiprocessing.synchronize.Event | None = None,
@@ -56,7 +56,7 @@ def _multiprocess_serve(
 
 
 def serve_multiprocess(
-        app: ASGIFramework,
+        app: AsgiFramework,
         config: Config,
 ) -> int:
     sockets = create_sockets(config)
@@ -112,7 +112,7 @@ def serve_multiprocess(
 
 def _populate(
         processes: list[multiprocessing.Process],
-        app: ASGIFramework,
+        app: AsgiFramework,
         config: Config,
         worker_func: ta.Callable,
         sockets: Sockets,
