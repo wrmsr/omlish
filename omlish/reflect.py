@@ -1,5 +1,6 @@
 """
 TODO:
+ - callables..
  - uniform collection isinstance - items() for mappings, iter() for other
  - also check instance type in isinstance not just items lol
  - ta.Generic in mro causing trouble - omit? no longer 1:1
@@ -26,6 +27,7 @@ _NONE_TYPE_FROZENSET: frozenset['Type'] = frozenset([_NoneType])
 
 
 _GenericAlias = ta._GenericAlias  # type: ignore  # noqa
+# _CallableGenericAlias = ta._CallableGenericAlias  # type: ignore  # noqa
 _SpecialGenericAlias = ta._SpecialGenericAlias  # type: ignore  # noqa
 _UnionGenericAlias = ta._UnionGenericAlias   # type: ignore  # noqa
 
@@ -156,7 +158,10 @@ def type_(obj: ta.Any) -> Type:
     if isinstance(obj, ta.NewType):  # noqa
         return NewType(oty)
 
-    if oty is _GenericAlias or oty is ta.GenericAlias:  # type: ignore  # noqa
+    if (
+            oty is _GenericAlias or
+            oty is ta.GenericAlias  # type: ignore  # noqa
+    ):
         origin = ta.get_origin(obj)
         args = ta.get_args(obj)
         if origin is ta.Generic:
