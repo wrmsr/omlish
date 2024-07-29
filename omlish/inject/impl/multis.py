@@ -36,10 +36,10 @@ class MultiProviderImpl(ProviderImpl, lang.Final):
             yield from p.providers
 
     def provide(self, injector: Injector) -> ta.Any:
-        rv = []
+        rv = set()
         for ep in self.ps:
             o = ep.provide(injector)
             if isinstance(o, _ILLEGAL_MULTI_TYPES):
                 raise TypeError(o)
-            rv.extend(o)
+            rv.add(o)
         return rv

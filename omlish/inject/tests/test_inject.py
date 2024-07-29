@@ -20,7 +20,7 @@ def test_multi():
     )
 
     i = inj.create_injector(es)
-    assert sorted(i.provide(inj.set_multi(int))) == {420, 421}
+    assert i.provide(inj.set_multi(int)) == {420, 421}
 
 
 def test_optional():
