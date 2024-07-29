@@ -1,7 +1,6 @@
 """
 Based on https://github.com/pgjones/hypercorn
 
-
 TODO:
  - !!! error handling jfc
  - add ssl back lol

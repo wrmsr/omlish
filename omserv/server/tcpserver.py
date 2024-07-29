@@ -25,7 +25,7 @@ log = logging.getLogger(__name__)
 MAX_RECV = 2 ** 16
 
 
-class TCPServer:
+class TcpServer:
     def __init__(
             self,
             app: AppWrapper,
