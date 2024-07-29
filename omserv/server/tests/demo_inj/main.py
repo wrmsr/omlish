@@ -83,7 +83,7 @@ class InjApp(AsgiApp):
         endpoint: Endpoint
         app: AsgiApp
 
-    def __init__(self, handlers: ta.Sequence[Handler]) -> None:
+    def __init__(self, handlers: ta.AbstractSet[Handler]) -> None:
         super().__init__()
         self._handlers = list(handlers)
         self._handlers_by_endpoint = {h.endpoint: h for h in self._handlers}
