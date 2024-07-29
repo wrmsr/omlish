@@ -3,6 +3,7 @@ import typing as ta
 
 from ... import inject as inj
 from ... import lang
+from ..classes import Config
 from ..classes import Configurable
 from .test_classes import AThing
 from .test_classes import BThing
@@ -25,6 +26,18 @@ def bind_impl(cls: type[Configurable], impl_cls: type[Configurable]) -> inj.Elem
     )
 
 
+ConfigT = ta.TypeVar('ConfigT', bound=Config)
+ConfigurableT = ta.TypeVar('ConfigurableT', bound=Configurable)
+
+
+@dc.dataclass(frozen=True)
+class Factory(ta.Generic[ConfigT, ConfigurableT]):
+    fn: ta.Callable[[ConfigT], ConfigurableT]
+
+    def __call__(self, cfg: ConfigT, **kwargs: ta.Any) -> ConfigurableT:
+        return self.fn(cfg, **kwargs)
+
+
 def bind_factory(cls: type[Configurable]) -> inj.Elements:
     def outer(i: inj.Injector):
         ifs = i.provide(inj.Key(ta.AbstractSet[ImplFor], tag=cls))
@@ -35,14 +48,14 @@ def bind_factory(cls: type[Configurable]) -> inj.Elements:
             fac = lang.typed_partial(impl_cls, config=config)  # FIXME: horribly slow lol
             return i.inject(fac)
 
-        return inner
+        return Factory(inner)
 
-    fac_cls = ta.Callable[[cls.Config], cls]  # type: ignore
+    fac_cls = Factory[cls.Config, cls]  # type: ignore
     return inj.as_elements(
         inj.bind_set_provider(inj.Key(ta.AbstractSet[ImplFor], tag=cls)),
         inj.singleton(inj.Binding(
-            inj.Key(fac_cls),  # type: ignore
-            inj.fn(outer, fac_cls),  # type: ignore
+            inj.Key(fac_cls),
+            inj.fn(outer, fac_cls),
         )),
     )
 
@@ -55,7 +68,7 @@ def test_inject():
     )
 
     i = inj.create_injector(es)
-    fac: ta.Any = i[inj.Key(ta.Callable[[Thing.Config], Thing])]  # type: ignore
+    fac: ta.Any = i[inj.Key(Factory[Thing.Config, Thing])]
 
     assert isinstance(fac(AThing.Config()), AThing)
     assert isinstance(fac(BThing.Config()), BThing)
