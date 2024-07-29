@@ -36,13 +36,10 @@ from ..multis import SetProvider
 from ..overrides import Overrides
 from ..private import Expose
 from ..private import Private
-from ..providers import LinkProvider
 from ..scopes import ScopeBinding
 from ..types import Scope
 from .bindings import BindingImpl
-from .multis import MapProviderImpl
-from .multis import SetProviderImpl
-from .providers import LinkProviderImpl
+from .multis import make_multi_provider_impl
 from .providers import ProviderImpl
 from .providers import make_provider_impl
 from .scopes import make_scope_impl
@@ -145,25 +142,12 @@ class ElementCollection(lang.Final):
             if (bs := es_by_ty.pop(Binding, None)):
                 if len(bs) > 1:
                     raise DuplicateKeyError(k)
+
                 b: Binding = check.isinstance(check.single(bs), Binding)
-
                 p: ProviderImpl
-                if isinstance(b.provider, SetProvider):
-                    mbs = es_by_ty.pop(SetBinding, ())
-                    p = SetProviderImpl([
-                        LinkProviderImpl(LinkProvider(mb.dst))
-                        for mb in mbs
-                    ])
 
-                elif isinstance(b.provider, MapProvider):
-                    mbs = es_by_ty.pop(MapBinding, ())
-                    p = MapProviderImpl([
-                        MapProviderImpl.Entry(
-                            mb.map_key,
-                            LinkProviderImpl(LinkProvider(mb.dst)),
-                        )
-                        for mb in mbs
-                    ])
+                if isinstance(b.provider, (SetProvider, MapProvider)):
+                    p = make_multi_provider_impl(b.provider, es_by_ty)
 
                 else:
                     p = make_provider_impl(b.provider)
