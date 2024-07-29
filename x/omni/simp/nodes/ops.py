@@ -88,7 +88,7 @@ class UnaryOps(UnaryOp.Values):
 
 
 OPS_BY_GLYPH_BY_CLS: ta.Mapping[ta.Type[Op], ta.Mapping[str, Op]] = {
-    c: col.unique_dict((o.glyph, o) for n in ns for o in [check.isinstance(ns(n), Op)])
+    c: col.unique_map((o.glyph, o) for n in ns for o in [check.isinstance(ns(n), Op)])
     for c, ns in [
         (BinOp, BinOps),
         (BoolOp, BoolOps),

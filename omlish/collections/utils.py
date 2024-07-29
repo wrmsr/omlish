@@ -54,20 +54,32 @@ def unique(it: ta.Iterable[T], *, identity: bool = False) -> list[T]:
     return ret
 
 
-def unique_dict(items: ta.Iterable[tuple[K, V]], *, identity: bool = False) -> ta.MutableMapping[K, V]:
-    dct: ta.MutableMapping[K, V] = IdentityKeyDict() if identity else {}
-    for k, v in items:
-        if k in dct:
-            raise KeyError(k)
-        dct[k] = v
-    return dct
-
-
-def multi_dict(*kvs: tuple[K, V]) -> dict[K, list[V]]:
-    d: dict[K, list[V]] = {}
+def unique_map(kvs: ta.Iterable[tuple[K, V]], *, identity: bool = False) -> ta.MutableMapping[K, V]:
+    d: ta.MutableMapping[K, V] = IdentityKeyDict() if identity else {}
     for k, v in kvs:
-        d.setdefault(k, []).append(v)
+        if k in d:
+            raise KeyError(k)
+        d[k] = v
     return d
+
+
+def unique_map_by(fn: ta.Callable[[V], K], vs: ta.Iterable[V], *, identity: bool = False) -> ta.MutableMapping[K, V]:
+    return unique_map_by(((fn(v), v) for v in vs), identity=identity)
+
+
+def multi_map(kvs: ta.Iterable[tuple[K, V]], *, identity: bool = False) -> ta.MutableMapping[K, list[V]]:
+    d: ta.MutableMapping[K, V] = IdentityKeyDict() if identity else {}
+    for k, v in kvs:
+        try:
+            l = d[k]
+        except KeyError:
+            l = d[k] = []
+        l.append(v)
+    return d
+
+
+def multi_map_by(fn: ta.Callable[[V], K], vs: ta.Iterable[V], *, identity: bool = False) -> ta.MutableMapping[K, list[V]]:  # noqa
+    return multi_map(((fn(v), v) for v in vs), identity=identity)
 
 
 def all_equal(it: ta.Iterable[T]) -> bool:
