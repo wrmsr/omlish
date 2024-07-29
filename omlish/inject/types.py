@@ -1,12 +1,4 @@
-import typing as ta
-
 from .. import lang
-
-
-##
-
-
-Cls = type | ta.NewType
 
 
 ##

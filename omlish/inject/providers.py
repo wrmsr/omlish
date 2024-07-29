@@ -4,12 +4,12 @@ import typing as ta
 from .. import check
 from .. import dataclasses as dc
 from .. import lang
+from .. import reflect as rfl
 from .elements import Element
 from .elements import Elements
 from .impl.inspect import signature
 from .keys import Key
 from .keys import as_key
-from .types import Cls
 
 
 class _Missing(lang.NotInstantiable):
@@ -21,7 +21,7 @@ class _Missing(lang.NotInstantiable):
 
 class Provider(lang.Abstract):
     @abc.abstractmethod
-    def provided_cls(self) -> Cls | None:
+    def provided_ty(self) -> rfl.Type | None:
         raise NotImplementedError
 
 
@@ -47,19 +47,19 @@ def as_provider(o: ta.Any) -> Provider:
 @dc.dataclass(frozen=True, eq=False)
 class FnProvider(Provider):
     fn: ta.Any
-    cls: Cls | None = None
+    ty: rfl.Type | None = None
 
-    def provided_cls(self) -> Cls | None:
-        return self.cls
+    def provided_ty(self) -> rfl.Type | None:
+        return self.ty
 
 
-def fn(fn: ta.Any, cls: Cls | None = _Missing) -> Provider:
+def fn(fn: ta.Any, ty: rfl.Type | None = _Missing) -> Provider:
     check.not_isinstance(fn, type)
     check.callable(fn)
-    if cls is _Missing:
+    if ty is _Missing:
         sig = signature(fn)
-        cls = check.isinstance(sig.return_annotation, type)
-    return FnProvider(fn, cls)
+        ty = check.isinstance(sig.return_annotation, type)
+    return FnProvider(fn, ty)
 
 
 ##
@@ -67,15 +67,15 @@ def fn(fn: ta.Any, cls: Cls | None = _Missing) -> Provider:
 
 @dc.dataclass(frozen=True, eq=False)
 class CtorProvider(Provider):
-    cls: type
+    ty: type
 
-    def provided_cls(self) -> Cls:
-        return self.cls
+    def provided_ty(self) -> type:
+        return self.ty
 
 
-def ctor(cls: type) -> Provider:
-    check.isinstance(cls, type)
-    return CtorProvider(cls)
+def ctor(ty: type) -> Provider:
+    check.isinstance(ty, type)
+    return CtorProvider(ty)
 
 
 ##
@@ -84,7 +84,7 @@ def ctor(cls: type) -> Provider:
 @dc.dataclass(frozen=True, eq=False)
 class ConstProvider(Provider):
     v: ta.Any
-    cls: Cls | None = None
+    ty: rfl.Type | None = None
 
     def provided_cls(self) -> Cls | None:
         return self.cls
