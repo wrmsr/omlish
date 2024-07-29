@@ -1,4 +1,4 @@
-from supervisor.compat import escape
+from ..compat import escape
 
 def html_repr (object):
     so = escape (repr (object))
