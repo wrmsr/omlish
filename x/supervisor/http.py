@@ -7,6 +7,7 @@ import errno
 import weakref
 import traceback
 
+
 try:
     import pwd
 except ImportError:  # Windows
@@ -25,8 +26,10 @@ from .medusa import default_handler
 
 from .medusa.auth_handler import auth_handler
 
+
 class NOT_DONE_YET:
     pass
+
 
 class deferring_chunked_producer:
     """A producer that implements the 'chunked' transfer coding for HTTP/1.1.
@@ -38,12 +41,12 @@ class deferring_chunked_producer:
             request.done()
     """
 
-    def __init__ (self, producer, footers=None):
+    def __init__(self, producer, footers=None):
         self.producer = producer
         self.footers = footers
         self.delay = 0.1
 
-    def more (self):
+    def more(self):
         if self.producer:
             data = self.producer.more()
             if data is NOT_DONE_YET:
@@ -60,13 +63,15 @@ class deferring_chunked_producer:
         else:
             return b''
 
+
 class deferring_composite_producer:
     """combine a fifo of producers into one"""
-    def __init__ (self, producers):
+
+    def __init__(self, producers):
         self.producers = producers
         self.delay = 0.1
 
-    def more (self):
+    def more(self):
         while len(self.producers):
             p = self.producers[0]
             d = p.more()
@@ -87,13 +92,13 @@ class deferring_globbing_producer:
     gain about 30% performance on requests to a single channel]
     """
 
-    def __init__ (self, producer, buffer_size=1<<16):
+    def __init__(self, producer, buffer_size=1 << 16):
         self.producer = producer
         self.buffer = b''
         self.buffer_size = buffer_size
         self.delay = 0.1
 
-    def more (self):
+    def more(self):
         while len(self.buffer) < self.buffer_size:
             data = self.producer.more()
             if data is NOT_DONE_YET:
@@ -117,20 +122,20 @@ class deferring_hooked_producer:
     for logging/instrumentation purposes.
     """
 
-    def __init__ (self, producer, function):
+    def __init__(self, producer, function):
         self.producer = producer
         self.function = function
         self.bytes = 0
         self.delay = 0.1
 
-    def more (self):
+    def more(self):
         if self.producer:
             result = self.producer.more()
             if result is NOT_DONE_YET:
                 return NOT_DONE_YET
             if not result:
                 self.producer = None
-                self.function (self.bytes)
+                self.function(self.bytes)
             else:
                 self.bytes += len(result)
             return result
@@ -157,7 +162,7 @@ class deferring_http_request(http_server.http_request):
 
         #  --- BUCKLE UP! ----
 
-        connection = http_server.get_header(http_server.CONNECTION,self.header)
+        connection = http_server.get_header(http_server.CONNECTION, self.header)
         connection = connection.lower()
 
         close_it = 0
@@ -202,12 +207,12 @@ class deferring_http_request(http_server.http_request):
 
         if wrap_in_chunking:
             outgoing_producer = deferring_chunked_producer(
-                    deferring_composite_producer(self.outgoing)
-                    )
+                deferring_composite_producer(self.outgoing)
+            )
             # prepend the header
             outgoing_producer = deferring_composite_producer(
                 [outgoing_header, outgoing_producer]
-                )
+            )
         else:
             # prepend the header
             self.outgoing.insert(0, outgoing_header)
@@ -227,7 +232,7 @@ class deferring_http_request(http_server.http_request):
         if close_it:
             self.channel.close_when_done()
 
-    def log (self, bytes):
+    def log(self, bytes):
         """ We need to override this because UNIX domain sockets return
         an empty string for the addr rather than a (host, port) combination """
         if self.channel.addr:
@@ -236,31 +241,31 @@ class deferring_http_request(http_server.http_request):
         else:
             host = 'localhost'
             port = 0
-        self.channel.server.logger.log (
-                host,
-                '%d - - [%s] "%s" %d %d\n' % (
-                        port,
-                        self.log_date_string (time.time()),
-                        self.request,
-                        self.reply_code,
-                        bytes
-                        )
-                )
+        self.channel.server.logger.log(
+            host,
+            '%d - - [%s] "%s" %d %d\n' % (
+                port,
+                self.log_date_string(time.time()),
+                self.request,
+                self.reply_code,
+                bytes
+            )
+        )
 
     def cgi_environment(self):
         env = {}
 
         # maps request some headers to environment variables.
         # (those that don't start with 'HTTP_')
-        header2env= {'content-length'    : 'CONTENT_LENGTH',
-                     'content-type'      : 'CONTENT_TYPE',
-                     'connection'        : 'CONNECTION_TYPE'}
+        header2env = {'content-length': 'CONTENT_LENGTH',
+                      'content-type': 'CONTENT_TYPE',
+                      'connection': 'CONNECTION_TYPE'}
 
         workdir = os.getcwd()
         (path, params, query, fragment) = self.split_uri()
 
         if params:
-            path = path + params # undo medusa bug!
+            path = path + params  # undo medusa bug!
 
         while path and path[0] == '/':
             path = path[1:]
@@ -279,7 +284,7 @@ class deferring_http_request(http_server.http_request):
         env['SCRIPT_NAME'] = ''
         env['PATH_INFO'] = '/' + path
         env['PATH_TRANSLATED'] = os.path.normpath(os.path.join(
-                workdir, env['PATH_INFO']))
+            workdir, env['PATH_INFO']))
         if query:
             env['QUERY_STRING'] = query
         env['GATEWAY_INTERFACE'] = 'CGI/1.1'
@@ -289,25 +294,25 @@ class deferring_http_request(http_server.http_request):
             env['REMOTE_ADDR'] = '127.0.0.1'
 
         for header in self.header:
-            key,value=header.split(":",1)
-            key=key.lower()
-            value=value.strip()
+            key, value = header.split(":", 1)
+            key = key.lower()
+            value = value.strip()
             if key in header2env and value:
-                env[header2env.get(key)]=value
+                env[header2env.get(key)] = value
             else:
-                key='HTTP_%s' % ("_".join(key.split( "-"))).upper()
+                key = 'HTTP_%s' % ("_".join(key.split("-"))).upper()
                 if value and key not in env:
-                    env[key]=value
+                    env[key] = value
         return env
 
     def get_server_url(self):
         """ Functionality that medusa's http request doesn't have; set an
         attribute named 'server_url' on the request based on the Host: header
         """
-        default_port={'http': '80', 'https': '443'}
+        default_port = {'http': '80', 'https': '443'}
         environ = self.cgi_environment()
         if (environ.get('HTTPS') in ('on', 'ON') or
-            environ.get('SERVER_PORT_SECURE') == "1"):
+                environ.get('SERVER_PORT_SECURE') == "1"):
             # XXX this will currently never be true
             protocol = 'https'
         else:
@@ -325,9 +330,10 @@ class deferring_http_request(http_server.http_request):
         else:
             host = hostname + ':' + port
         server_url = '%s://%s' % (protocol, host)
-        if server_url[-1:]=='/':
-            server_url=server_url[:-1]
+        if server_url[-1:] == '/':
+            server_url = server_url[:-1]
         return server_url
+
 
 class deferring_http_channel(http_server.http_channel):
 
@@ -335,8 +341,8 @@ class deferring_http_channel(http_server.http_channel):
     # order to spew tail -f output faster (speculative)
     ac_out_buffer_size = 4096
 
-    delay = 0 # seconds
-    last_writable_check = 0 # timestamp of last writable check; 0 if never
+    delay = 0  # seconds
+    last_writable_check = 0  # timestamp of last writable check; 0 if never
 
     def writable(self, now=None):
         if now is None:  # for unit tests
@@ -353,7 +359,7 @@ class deferring_http_channel(http_server.http_channel):
 
         return http_server.http_channel.writable(self)
 
-    def refill_buffer (self):
+    def refill_buffer(self):
         """ Implement deferreds """
         while 1:
             if len(self.producer_fifo):
@@ -385,7 +391,7 @@ class deferring_http_channel(http_server.http_channel):
             else:
                 return
 
-    def found_terminator (self):
+    def found_terminator(self):
         """ We only override this to use 'deferring_http_request' class
         instead of the normal http_request class; it sucks to need to override
         this """
@@ -416,8 +422,8 @@ class deferring_http_channel(http_server.http_channel):
 
             request = lines[0]
 
-            command, uri, version = http_server.crack_request (request)
-            header = http_server.join_headers (lines[1:])
+            command, uri, version = http_server.crack_request(request)
+            header = http_server.join_headers(lines[1:])
 
             # unquote path if necessary (thanks to Skip Montanaro for pointing
             # out that we must unquote in piecemeal fashion).
@@ -434,36 +440,37 @@ class deferring_http_channel(http_server.http_channel):
             self.server.total_requests.increment()
 
             if command is None:
-                self.log_info ('Bad HTTP request: %s' % repr(request), 'error')
-                r.error (400)
+                self.log_info('Bad HTTP request: %s' % repr(request), 'error')
+                r.error(400)
                 return
 
             # --------------------------------------------------
             # handler selection and dispatch
             # --------------------------------------------------
             for h in self.server.handlers:
-                if h.match (r):
+                if h.match(r):
                     try:
                         self.current_request = r
                         # This isn't used anywhere.
                         # r.handler = h # CYCLE
-                        h.handle_request (r)
+                        h.handle_request(r)
                     except:
                         self.server.exceptions.increment()
                         (file, fun, line), t, v, tbinfo = \
-                               asyncore.compact_traceback()
+                            asyncore.compact_traceback()
                         self.server.log_info(
                             'Server Error: %s, %s: file: %s line: %s' %
-                            (t,v,file,line),
+                            (t, v, file, line),
                             'error')
                         try:
-                            r.error (500)
+                            r.error(500)
                         except:
                             pass
                     return
 
             # no handlers, so complain
-            r.error (404)
+            r.error(404)
+
 
 class supervisor_http_server(http_server.http_server):
     channel_class = deferring_http_channel
@@ -480,7 +487,7 @@ class supervisor_http_server(http_server.http_server):
         logger_object = logger.unresolving_logger(logger_object)
         self.logger = logger_object
 
-        asyncore.dispatcher.__init__ (self)
+        asyncore.dispatcher.__init__(self)
         self.set_socket(sock)
 
         self.handlers = []
@@ -498,25 +505,26 @@ class supervisor_http_server(http_server.http_server):
         self.total_requests = counter()
         self.exceptions = counter()
         self.bytes_out = counter()
-        self.bytes_in  = counter()
+        self.bytes_in = counter()
 
-        self.log_info (
-                'Medusa (V%s) started at %s'
-                '\n\tHostname: %s'
-                '\n\tPort:%s'
-                '\n' % (
-                        VERSION_STRING,
-                        time.ctime(time.time()),
-                        self.server_name,
-                        self.port,
-                        )
-                )
+        self.log_info(
+            'Medusa (V%s) started at %s'
+            '\n\tHostname: %s'
+            '\n\tPort:%s'
+            '\n' % (
+                VERSION_STRING,
+                time.ctime(time.time()),
+                self.server_name,
+                self.port,
+            )
+        )
 
     def log_info(self, message, type='info'):
         ip = ''
         if getattr(self, 'ip', None) is not None:
             ip = self.ip
         self.logger.log(ip, message)
+
 
 class supervisor_af_inet_http_server(supervisor_http_server):
     """ AF_INET version of supervisor HTTP server """
@@ -541,12 +549,13 @@ class supervisor_af_inet_http_server(supervisor_http_server):
                     'instead of "port = 9001", try "port = 127.0.0.1:9001."'
                     % hostname)
         try:
-            self.server_name = socket.gethostbyaddr (ip)[0]
+            self.server_name = socket.gethostbyaddr(ip)[0]
         except socket.error:
             self.log_info('Cannot do reverse lookup', 'warning')
-            self.server_name = ip       # use the IP address as the "hostname"
+            self.server_name = ip  # use the IP address as the "hostname"
 
         self.postbind()
+
 
 class supervisor_af_unix_http_server(supervisor_http_server):
     """ AF_UNIX version of supervisor HTTP server """
@@ -634,6 +643,7 @@ class supervisor_af_unix_http_server(supervisor_http_server):
         else:
             return True
 
+
 class tail_f_producer:
     def __init__(self, request, filename, head):
         self.request = weakref.ref(request)
@@ -681,12 +691,13 @@ class tail_f_producer:
             # file was unlinked
             return
 
-        if self.ino != ino: # log rotation occurred
+        if self.ino != ino:  # log rotation occurred
             self._close()
             self._open()
 
     def _fsize(self):
         return os.fstat(self.file.fileno())[stat.ST_SIZE]
+
 
 class logtail_handler:
     IDENT = 'Logtail HTTP Request Handler'
@@ -700,7 +711,7 @@ class logtail_handler:
 
     def handle_request(self, request):
         if request.command != 'GET':
-            request.error (400) # bad request
+            request.error(400)  # bad request
             return
 
         path, params, query, fragment = request.split_uri()
@@ -726,12 +737,12 @@ class logtail_handler:
 
         group = self.supervisord.process_groups.get(group_name)
         if group is None:
-            request.error(404) # not found
+            request.error(404)  # not found
             return
 
         process = group.processes.get(process_name)
         if process is None:
-            request.error(404) # not found
+            request.error(404)  # not found
             return
 
         logfile = getattr(process.config, '%s_logfile' % channel, None)
@@ -741,7 +752,7 @@ class logtail_handler:
             # if the process has never been started, no logfile will exist
             # on disk.  a logfile of None is also a temporary condition,
             # since the config file can be reloaded.
-            request.error(404) # not found
+            request.error(404)  # not found
             return
 
         mtime = os.stat(logfile)[stat.ST_MTIME]
@@ -757,6 +768,7 @@ class logtail_handler:
 
         request.done()
 
+
 class mainlogtail_handler:
     IDENT = 'Main Logtail HTTP Request Handler'
     path = '/mainlogtail'
@@ -769,7 +781,7 @@ class mainlogtail_handler:
 
     def handle_request(self, request):
         if request.command != 'GET':
-            request.error (400) # bad request
+            request.error(400)  # bad request
             return
 
         logfile = self.supervisord.options.logfile
@@ -778,7 +790,7 @@ class mainlogtail_handler:
             # we return 404 because no logfile is a temporary condition.
             # even if a log file of None is configured, the config file
             # may be reloaded, and the new config may have a logfile.
-            request.error(404) # not found
+            request.error(404)  # not found
             return
 
         mtime = os.stat(logfile)[stat.ST_MTIME]
@@ -790,6 +802,7 @@ class mainlogtail_handler:
         request.push(tail_f_producer(request, logfile, 1024))
 
         request.done()
+
 
 def make_http_servers(options, supervisord):
     servers = []
@@ -806,7 +819,7 @@ def make_http_servers(options, supervisord):
             socketname = config['file']
             sockchmod = config['chmod']
             sockchown = config['chown']
-            hs = supervisor_af_unix_http_server(socketname,sockchmod, sockchown,
+            hs = supervisor_af_unix_http_server(socketname, sockchmod, sockchown,
                                                 logger_object=wrapper)
         else:
             raise ValueError('Cannot determine socket type %r' % family)
@@ -843,7 +856,7 @@ def make_http_servers(options, supervisord):
         if username:
             # wrap the xmlrpc handler and tailhandler in an authentication
             # handler
-            users = {username:password}
+            users = {username: password}
             xmlrpchandler = supervisor_auth_handler(users, xmlrpchandler)
             tailhandler = supervisor_auth_handler(users, tailhandler)
             maintailhandler = supervisor_auth_handler(users, maintailhandler)
@@ -859,14 +872,16 @@ def make_http_servers(options, supervisord):
         hs.install_handler(uihandler)
         hs.install_handler(maintailhandler)
         hs.install_handler(tailhandler)
-        hs.install_handler(xmlrpchandler) # last for speed (first checked)
+        hs.install_handler(xmlrpchandler)  # last for speed (first checked)
         servers.append((config, hs))
 
     return servers
 
+
 class LogWrapper:
     '''Receives log messages from the Medusa servers and forwards
     them to the Supervisor logger'''
+
     def __init__(self, logger):
         self.logger = logger
 
@@ -881,8 +896,9 @@ class LogWrapper:
         else:
             self.logger.trace(msg)
 
+
 class encrypted_dictionary_authorizer:
-    def __init__ (self, dict):
+    def __init__(self, dict):
         self.dict = dict
 
     def authorize(self, auth_info):
@@ -896,6 +912,7 @@ class encrypted_dictionary_authorizer:
                 return stored_password == password
         else:
             return False
+
 
 class supervisor_auth_handler(auth_handler):
     def __init__(self, dict, handler, realm='default'):

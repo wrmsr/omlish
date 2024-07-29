@@ -53,17 +53,20 @@ import time
 
 import os
 from errno import EALREADY, EINPROGRESS, EWOULDBLOCK, ECONNRESET, \
-     ENOTCONN, ESHUTDOWN, EINTR, EISCONN, errorcode
+    ENOTCONN, ESHUTDOWN, EINTR, EISCONN, errorcode
 
 from ..compat import as_string, as_bytes
+
 
 try:
     socket_map
 except NameError:
     socket_map = {}
 
+
 class ExitNow(Exception):
     pass
+
 
 def read(obj):
     try:
@@ -73,6 +76,7 @@ def read(obj):
     except:
         obj.handle_error()
 
+
 def write(obj):
     try:
         obj.handle_write_event()
@@ -81,13 +85,15 @@ def write(obj):
     except:
         obj.handle_error()
 
-def _exception (obj):
+
+def _exception(obj):
     try:
         obj.handle_expt_event()
     except ExitNow:
         raise
     except:
         obj.handle_error()
+
 
 def readwrite(obj, flags):
     try:
@@ -102,11 +108,14 @@ def readwrite(obj, flags):
     except:
         obj.handle_error()
 
+
 def poll(timeout=0.0, map=None):
     if map is None:
         map = socket_map
     if map:
-        r = []; w = []; e = []
+        r = [];
+        w = [];
+        e = []
         for fd, obj in map.items():
             is_r = obj.readable()
             is_w = obj.writable()
@@ -145,13 +154,14 @@ def poll(timeout=0.0, map=None):
                 continue
             _exception(obj)
 
+
 def poll2(timeout=0.0, map=None):
     # Use the poll() support added to the select module in Python 2.0
     if map is None:
         map = socket_map
     if timeout is not None:
         # timeout is in milliseconds
-        timeout = int(timeout*1000)
+        timeout = int(timeout * 1000)
     pollster = select.poll()
     if map:
         for fd, obj in map.items():
@@ -177,7 +187,9 @@ def poll2(timeout=0.0, map=None):
                 continue
             readwrite(obj, flags)
 
-poll3 = poll2                           # Alias for backward compatibility
+
+poll3 = poll2  # Alias for backward compatibility
+
 
 def loop(timeout=30.0, use_poll=False, map=None, count=None):
     if map is None:
@@ -196,6 +208,7 @@ def loop(timeout=30.0, use_poll=False, map=None, count=None):
         while map and count > 0:
             poll_fun(timeout, map)
             count -= 1
+
 
 class dispatcher:
 
@@ -227,7 +240,7 @@ class dispatcher:
             self.socket = None
 
     def __repr__(self):
-        status = [self.__class__.__module__+"."+self.__class__.__name__]
+        status = [self.__class__.__module__ + "." + self.__class__.__name__]
         if self.accepting and self.addr:
             status.append('listening')
         elif self.connected:
@@ -240,7 +253,7 @@ class dispatcher:
         return '<%s at %#x>' % (' '.join(status), id(self))
 
     def add_channel(self, map=None):
-        #self.log_info('adding channel %s' % self)
+        # self.log_info('adding channel %s' % self)
         if map is None:
             map = self._map
         map[self._fileno] = self
@@ -250,7 +263,7 @@ class dispatcher:
         if map is None:
             map = self._map
         if fd in map:
-            #self.log_info('closing channel %d:%s' % (fd, self))
+            # self.log_info('closing channel %d:%s' % (fd, self))
             del map[fd]
         self._fileno = None
 
@@ -263,7 +276,7 @@ class dispatcher:
 
     def set_socket(self, sock, map=None):
         self.socket = sock
-##        self.__dict__['socket'] = sock
+        ##        self.__dict__['socket'] = sock
         self._fileno = sock.fileno()
         self.add_channel(map)
 
@@ -274,7 +287,7 @@ class dispatcher:
                 socket.SOL_SOCKET, socket.SO_REUSEADDR,
                 self.socket.getsockopt(socket.SOL_SOCKET,
                                        socket.SO_REUSEADDR) | 1
-                )
+            )
         except socket.error:
             pass
 
@@ -367,9 +380,10 @@ class dispatcher:
             pass
 
         # does not raise if called on already-closed socket
-        self.socket.close()  
+        self.socket.close()
 
-    # cheap inheritance, used to pass all other attribute
+        # cheap inheritance, used to pass all other attribute
+
     # references to the underlying socket object.
     def __getattr__(self, attr):
         return getattr(self.socket, attr)
@@ -424,9 +438,9 @@ class dispatcher:
                 t,
                 v,
                 tbinfo
-                ),
+            ),
             'error'
-            )
+        )
         self.close()
 
     def handle_expt(self):
@@ -447,6 +461,7 @@ class dispatcher:
     def handle_close(self):
         self.log_info('unhandled close event', 'warning')
         self.close()
+
 
 # ---------------------------------------------------------------------------
 # adds simple buffered output capability, useful for simple clients.
@@ -475,6 +490,7 @@ class dispatcher_with_send(dispatcher):
         self.out_buffer = self.out_buffer + data
         self.initiate_send()
 
+
 # ---------------------------------------------------------------------------
 # used for debugging.
 # ---------------------------------------------------------------------------
@@ -482,13 +498,13 @@ class dispatcher_with_send(dispatcher):
 def compact_traceback():
     t, v, tb = sys.exc_info()
     tbinfo = []
-    assert tb # Must have a traceback
+    assert tb  # Must have a traceback
     while tb:
         tbinfo.append((
             tb.tb_frame.f_code.co_filename,
             tb.tb_frame.f_code.co_name,
             str(tb.tb_lineno)
-            ))
+        ))
         tb = tb.tb_next
 
     # just to be safe
@@ -498,12 +514,14 @@ def compact_traceback():
     info = ' '.join(['[%s|%s|%s]' % x for x in tbinfo])
     return (file, function, line), t, v, info
 
+
 def close_all(map=None):
     if map is None:
         map = socket_map
     for x in map.values():
         x.socket.close()
     map.clear()
+
 
 # Asynchronous File I/O:
 #
@@ -520,6 +538,7 @@ def close_all(map=None):
 
 if os.name == 'posix':
     import fcntl
+
 
     class file_wrapper:
         # here we override just enough to make a file
@@ -542,6 +561,7 @@ if os.name == 'posix':
 
         def fileno(self):
             return self.fd
+
 
     class file_dispatcher(dispatcher):
 

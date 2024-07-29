@@ -1,6 +1,7 @@
 import select
 import errno
 
+
 class BasePoller:
 
     def __init__(self, options):
@@ -62,7 +63,7 @@ class SelectPoller(BasePoller):
                 self.readables,
                 self.writables,
                 [], timeout
-                )
+            )
         except select.error as err:
             if err.args[0] == errno.EINTR:
                 self.options.logger.blather('EINTR encountered in poll')
@@ -77,6 +78,7 @@ class SelectPoller(BasePoller):
     def _init_fdsets(self):
         self.readables = set()
         self.writables = set()
+
 
 class PollPoller(BasePoller):
 
@@ -139,6 +141,7 @@ class PollPoller(BasePoller):
             self.writables.discard(fd)
             return True
         return False
+
 
 class KQueuePoller(BasePoller):
     '''
@@ -219,11 +222,14 @@ class KQueuePoller(BasePoller):
         self._kqueue.close()
         self._kqueue = None
 
+
 def implements_poll():
     return hasattr(select, 'poll')
 
+
 def implements_kqueue():
     return hasattr(select, 'kqueue')
+
 
 if implements_kqueue():
     Poller = KQueuePoller

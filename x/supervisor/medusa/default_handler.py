@@ -19,6 +19,7 @@ from . import producers as producers
 
 from .util import html_repr
 
+
 unquote = http_server.unquote
 
 # This is the 'default' handler.  it implements the base set of
@@ -36,6 +37,7 @@ unquote = http_server.unquote
 
 from .medusa.counter import counter
 
+
 class default_handler:
 
     valid_commands = ['GET', 'HEAD']
@@ -44,13 +46,13 @@ class default_handler:
 
     # Pathnames that are tried when a URI resolves to a directory name
     directory_defaults = [
-            'index.html',
-            'default.html'
-            ]
+        'index.html',
+        'default.html'
+    ]
 
     default_file_producer = producers.file_producer
 
-    def __init__ (self, filesystem):
+    def __init__(self, filesystem):
         self.filesystem = filesystem
         # count total hits
         self.hit_counter = counter()
@@ -61,23 +63,23 @@ class default_handler:
 
     hit_counter = 0
 
-    def __repr__ (self):
+    def __repr__(self):
         return '<%s (%s hits) at %x>' % (
-                self.IDENT,
-                self.hit_counter,
-                id (self)
-                )
+            self.IDENT,
+            self.hit_counter,
+            id(self)
+        )
 
     # always match, since this is a default
-    def match (self, request):
+    def match(self, request):
         return 1
 
     # handle a file request, with caching.
 
-    def handle_request (self, request):
+    def handle_request(self, request):
 
         if request.command not in self.valid_commands:
-            request.error (400) # bad request
+            request.error(400)  # bad request
             return
 
         self.hit_counter.increment()
@@ -85,19 +87,19 @@ class default_handler:
         path, params, query, fragment = request.split_uri()
 
         if '%' in path:
-            path = unquote (path)
+            path = unquote(path)
 
         # strip off all leading slashes
         while path and path[0] == '/':
             path = path[1:]
 
-        if self.filesystem.isdir (path):
+        if self.filesystem.isdir(path):
             if path and path[-1] != '/':
                 request['Location'] = 'http://%s/%s/' % (
-                        request.channel.server.server_name,
-                        path
-                        )
-                request.error (301)
+                    request.channel.server.server_name,
+                    path
+                )
+                request.error(301)
                 return
 
             # we could also generate a directory listing here,
@@ -108,25 +110,25 @@ class default_handler:
                 path += '/'
             for default in self.directory_defaults:
                 p = path + default
-                if self.filesystem.isfile (p):
+                if self.filesystem.isfile(p):
                     path = p
                     found = 1
                     break
             if not found:
-                request.error (404) # Not Found
+                request.error(404)  # Not Found
                 return
 
-        elif not self.filesystem.isfile (path):
-            request.error (404) # Not Found
+        elif not self.filesystem.isfile(path):
+            request.error(404)  # Not Found
             return
 
-        file_length = self.filesystem.stat (path)[stat.ST_SIZE]
+        file_length = self.filesystem.stat(path)[stat.ST_SIZE]
 
-        ims = get_header_match (IF_MODIFIED_SINCE, request.header)
+        ims = get_header_match(IF_MODIFIED_SINCE, request.header)
 
         length_match = 1
         if ims:
-            length = ims.group (4)
+            length = ims.group(4)
             if length:
                 try:
                     length = int(length)
@@ -138,12 +140,12 @@ class default_handler:
         ims_date = 0
 
         if ims:
-            ims_date = http_date.parse_http_date (ims.group (1))
+            ims_date = http_date.parse_http_date(ims.group(1))
 
         try:
-            mtime = self.filesystem.stat (path)[stat.ST_MTIME]
+            mtime = self.filesystem.stat(path)[stat.ST_MTIME]
         except:
-            request.error (404)
+            request.error(404)
             return
 
         if length_match and ims_date:
@@ -153,22 +155,22 @@ class default_handler:
                 self.cache_counter.increment()
                 return
         try:
-            file = self.filesystem.open (path, 'rb')
+            file = self.filesystem.open(path, 'rb')
         except IOError:
-            request.error (404)
+            request.error(404)
             return
 
-        request['Last-Modified'] = http_date.build_http_date (mtime)
+        request['Last-Modified'] = http_date.build_http_date(mtime)
         request['Content-Length'] = file_length
-        self.set_content_type (path, request)
+        self.set_content_type(path, request)
 
         if request.command == 'GET':
-            request.push (self.default_file_producer (file))
+            request.push(self.default_file_producer(file))
 
         self.file_counter.increment()
         request.done()
 
-    def set_content_type (self, path, request):
+    def set_content_type(self, path, request):
         typ, encoding = mimetypes.guess_type(path)
         if typ is not None:
             request['Content-Type'] = typ
@@ -177,38 +179,40 @@ class default_handler:
             # characters, and use application/octet-stream instead.
             request['Content-Type'] = 'text/plain'
 
-    def status (self):
-        return producers.simple_producer (
-                '<li>%s' % html_repr (self)
-                + '<ul>'
-                + '  <li><b>Total Hits:</b> %s'                 % self.hit_counter
-                + '  <li><b>Files Delivered:</b> %s'    % self.file_counter
-                + '  <li><b>Cache Hits:</b> %s'                 % self.cache_counter
-                + '</ul>'
-                )
+    def status(self):
+        return producers.simple_producer(
+            '<li>%s' % html_repr(self)
+            + '<ul>'
+            + '  <li><b>Total Hits:</b> %s' % self.hit_counter
+            + '  <li><b>Files Delivered:</b> %s' % self.file_counter
+            + '  <li><b>Cache Hits:</b> %s' % self.cache_counter
+            + '</ul>'
+        )
+
 
 # HTTP/1.0 doesn't say anything about the "; length=nnnn" addition
 # to this header.  I suppose its purpose is to avoid the overhead
 # of parsing dates...
-IF_MODIFIED_SINCE = re.compile (
-        'If-Modified-Since: ([^;]+)((; length=([0-9]+)$)|$)',
-        re.IGNORECASE
-        )
+IF_MODIFIED_SINCE = re.compile(
+    'If-Modified-Since: ([^;]+)((; length=([0-9]+)$)|$)',
+    re.IGNORECASE
+)
 
-USER_AGENT = re.compile ('User-Agent: (.*)', re.IGNORECASE)
+USER_AGENT = re.compile('User-Agent: (.*)', re.IGNORECASE)
 
-CONTENT_TYPE = re.compile (
-        r'Content-Type: ([^;]+)((; boundary=([A-Za-z0-9\'\(\)+_,./:=?-]+)$)|$)',
-        re.IGNORECASE
-        )
+CONTENT_TYPE = re.compile(
+    r'Content-Type: ([^;]+)((; boundary=([A-Za-z0-9\'\(\)+_,./:=?-]+)$)|$)',
+    re.IGNORECASE
+)
 
 get_header = http_server.get_header
 get_header_match = http_server.get_header_match
 
-def get_extension (path):
+
+def get_extension(path):
     dirsep = path.rfind('/')
     dotsep = path.rfind('.')
     if dotsep > dirsep:
-        return path[dotsep+1:]
+        return path[dotsep + 1:]
     else:
         return ''
