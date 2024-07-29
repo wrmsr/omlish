@@ -65,7 +65,7 @@ def parse_cookie(
         cookie: str | None = None,
         *,
         no_latin1: bool = False,
-) -> dict[str, list[str]]:
+) -> ta.MutableMapping[str, list[str]]:
     if (not no_latin1) and cookie:
         cookie = cookie.encode('latin1').decode()
 
@@ -91,7 +91,7 @@ def parse_cookie(
 
         out.append((ck, cv))
 
-    return col.multi_dict(*out)
+    return col.multi_dict(out)
 
 
 ##
