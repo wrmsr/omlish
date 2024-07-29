@@ -16,6 +16,11 @@ from omlish import check
 from omlish import http as hu
 from omlish import lang
 from omlish import logs
+from omlish.http.asgi import finish_response
+from omlish.http.asgi import read_form_body
+from omlish.http.asgi import redirect_response
+from omlish.http.asgi import start_response
+from omlish.http.asgi import stub_lifespan
 
 from ...config import Config
 from ...serving import serve
@@ -28,11 +33,6 @@ from .sessions import COOKIE_SESSION_STORE
 from .sessions import Session
 from .users import USERS
 from .users import User
-from .utils import finish_response
-from .utils import read_form_body
-from .utils import redirect_response
-from .utils import start_response
-from .utils import stub_lifespan
 
 
 log = logging.getLogger(__name__)

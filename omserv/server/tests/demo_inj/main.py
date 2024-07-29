@@ -13,15 +13,15 @@ import anyio
 
 from omlish import inject as inj
 from omlish import logs
+from omlish.http.asgi import AsgiApp
+from omlish.http.asgi import AsgiRecv
+from omlish.http.asgi import AsgiScope
+from omlish.http.asgi import AsgiSend
+from omlish.http.asgi import send_response
+from omlish.http.asgi import stub_lifespan
 
 from ...config import Config
 from ...serving import serve
-from .utils import AsgiApp
-from .utils import AsgiRecv
-from .utils import AsgiScope
-from .utils import AsgiSend
-from .utils import send_response
-from .utils import stub_lifespan
 
 
 log = logging.getLogger(__name__)
