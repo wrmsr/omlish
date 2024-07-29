@@ -10,6 +10,8 @@ Multi's + Scopes:
 
 Element Types:
  - Binding
+ - SetBinding
+ - MapBinding
  - Eager
  - Overrides
  - Expose
@@ -137,7 +139,7 @@ class ElementCollection(lang.Final):
                 continue
 
             bis = [bi for e in es for bi in self._make_binding_impls(e)]
-            if k.multi:
+            if False:  # k.multi:
                 mm.setdefault(k, []).extend(bis)
             else:
                 if len(bis) > 1:
