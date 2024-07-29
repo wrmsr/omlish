@@ -34,13 +34,11 @@ class Listener:
             sdata = as_string(data)
         except UnicodeDecodeError:
             sdata = 'Undecodable: %r' % data
-        # We've got Unicode data in sdata now, but writing to stdout sometimes
-        # fails - see issue #1231.
+        # We've got Unicode data in sdata now, but writing to stdout sometimes fails - see issue #1231.
         try:
             sys.stdout.write(sdata)
         except UnicodeEncodeError:
-            s = ('Unable to write Unicode to stdout because it has '
-                 'encoding %s' % sys.stdout.encoding)
+            s = 'Unable to write Unicode to stdout because it has encoding %s' % sys.stdout.encoding
             raise ValueError(s)
         sys.stdout.flush()
 
