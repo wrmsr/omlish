@@ -10,8 +10,10 @@ from .loggers import getLevelNumByDescription
 
 
 def process_or_group_name(name):
-    """Ensures that a process or group name is not created with
-       characters that break the eventlistener protocol or web UI URLs"""
+    """
+    Ensures that a process or group name is not created with characters that break the eventlistener protocol or web UI
+    URLs
+    """
     s = str(name).strip()
     for character in ' :/':
         if character in s:
@@ -72,8 +74,8 @@ def list_of_exitcodes(arg):
 
 
 def dict_of_key_value_pairs(arg):
-    """ parse KEY=val,KEY2=val2 into {'KEY':'val', 'KEY2':'val2'}
-        Quotes can be used to allow commas in the value
+    """
+    Parse `KEY=val,KEY2=val2` into `{'KEY':'val', 'KEY2':'val2'}`. Quotes can be used to allow commas in the value.
     """
     lexer = shlex.shlex(str(arg))
     lexer.wordchars += '/.+-():'
@@ -294,10 +296,11 @@ class UnixStreamSocketConfig(SocketConfig):
 
 
 def colon_separated_user_group(arg):
-    """ Find a user ID and group ID from a string like 'user:group'.  Returns
-        a tuple (uid, gid).  If the string only contains a user like 'user'
-        then (uid, -1) will be returned.  Raises ValueError if either
-        the user or group can't be resolved to valid IDs on the system. """
+    """
+    Find a user ID and group ID from a string like 'user:group'.  Returns a tuple (uid, gid).  If the string only
+    contains a user like 'user' then (uid, -1) will be returned.  Raises ValueError if either the user or group can't be
+    resolved to valid IDs on the system.
+    """
     try:
         parts = arg.split(':', 1)
         if len(parts) == 1:
@@ -312,9 +315,10 @@ def colon_separated_user_group(arg):
 
 
 def name_to_uid(name):
-    """ Find a user ID from a string containing a user name or ID.
-        Raises ValueError if the string can't be resolved to a valid
-        user ID on the system. """
+    """
+    Find a user ID from a string containing a user name or ID. Raises ValueError if the string can't be resolved to a
+    valid user ID on the system.
+    """
     try:
         uid = int(name)
     except ValueError:
@@ -332,9 +336,10 @@ def name_to_uid(name):
 
 
 def name_to_gid(name):
-    """ Find a group ID from a string containing a group name or ID.
-        Raises ValueError if the string can't be resolved to a valid
-        group ID on the system. """
+    """
+    Find a group ID from a string containing a group name or ID. Raises ValueError if the string can't be resolved to a
+    valid group ID on the system.
+    """
     try:
         gid = int(name)
     except ValueError:
@@ -378,8 +383,7 @@ def existing_dirpath(v):
         return nv
     if os.path.isdir(dir):
         return nv
-    raise ValueError('The directory named as part of the path %s '
-                     'does not exist' % v)
+    raise ValueError('The directory named as part of the path %s does not exist' % v)
 
 
 def logging_level(value):
@@ -391,9 +395,8 @@ def logging_level(value):
 
 
 class SuffixMultiplier:
-    # d is a dictionary of suffixes to integer multipliers.  If no suffixes
-    # match, default is the multiplier.  Matches are case insensitive.  Return
-    # values are in the fundamental unit.
+    # d is a dictionary of suffixes to integer multipliers.  If no suffixes match, default is the multiplier.  Matches
+    # are case insensitive.  Return values are in the fundamental unit.
     def __init__(self, d, default=1):
         self._d = d
         self._default = default
@@ -413,9 +416,11 @@ class SuffixMultiplier:
         return int(v) * self._default
 
 
-byte_size = SuffixMultiplier({'kb': 1024,
-                              'mb': 1024 * 1024,
-                              'gb': 1024 * 1024 * 1024 })
+byte_size = SuffixMultiplier({
+    'kb': 1024,
+    'mb': 1024 * 1024,
+    'gb': 1024 * 1024 * 1024,
+})
 
 
 def url(value):
