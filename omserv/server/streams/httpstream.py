@@ -102,9 +102,8 @@ class HTTPStream:
                 self.scope['extensions']['http.response.early_hint'] = {}
 
             if valid_server_name(self.config, event):
-                self.app_put = await self.task_spawner.spawn_app(
-                    self.app, self.config, self.scope, self.app_send,
-                )
+                self.app_put = await self.task_spawner.spawn_app(self.app, self.config, self.scope, self.app_send)
+
             else:
                 await self._send_error_response(404)
                 self.closed = True
