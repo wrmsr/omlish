@@ -17,11 +17,13 @@ def test_inject():
 
 def test_set_multi():
     es = inj.as_elements(
-        inj.bind_set_provider(inj.Key(ta.AbstractSet[int])),
-        inj.SetBinding(inj.Key(ta.AbstractSet[int]), inj.Key(int, tag='four twenty')),
-        inj.SetBinding(inj.Key(ta.AbstractSet[int]), inj.Key(int, tag='four twenty one')),
+        inj.bind_set_provider(ta.AbstractSet[int]),
+
         inj.Binding(inj.Key(int, tag='four twenty'), inj.const(420)),
+        inj.SetBinding(inj.Key(ta.AbstractSet[int]), inj.Key(int, tag='four twenty')),
+
         inj.Binding(inj.Key(int, tag='four twenty one'), inj.const(421)),
+        inj.SetBinding(inj.Key(ta.AbstractSet[int]), inj.Key(int, tag='four twenty one')),
     )
 
     i = inj.create_injector(es)
@@ -30,11 +32,13 @@ def test_set_multi():
 
 def test_map_multi():
     es = inj.as_elements(
-        inj.bind_map_provider(inj.Key(ta.Mapping[str, int])),
-        inj.MapBinding(inj.Key(ta.Mapping[str, int]), 'a', inj.Key(int, tag='four twenty')),
-        inj.MapBinding(inj.Key(ta.Mapping[str, int]), 'b', inj.Key(int, tag='four twenty one')),
+        inj.bind_map_provider(ta.Mapping[str, int]),
+
         inj.Binding(inj.Key(int, tag='four twenty'), inj.const(420)),
+        inj.MapBinding(inj.Key(ta.Mapping[str, int]), 'a', inj.Key(int, tag='four twenty')),
+
         inj.Binding(inj.Key(int, tag='four twenty one'), inj.const(421)),
+        inj.MapBinding(inj.Key(ta.Mapping[str, int]), 'b', inj.Key(int, tag='four twenty one')),
     )
 
     i = inj.create_injector(es)
