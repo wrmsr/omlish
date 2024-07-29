@@ -11,6 +11,7 @@ class ProcessStates:
     FATAL = 200
     UNKNOWN = 1000
 
+
 STOPPED_STATES = (ProcessStates.STOPPED,
                   ProcessStates.EXITED,
                   ProcessStates.FATAL,
@@ -21,8 +22,9 @@ RUNNING_STATES = (ProcessStates.RUNNING,
                   ProcessStates.STARTING)
 
 SIGNALLABLE_STATES = (ProcessStates.RUNNING,
-                     ProcessStates.STARTING,
-                     ProcessStates.STOPPING)
+                      ProcessStates.STARTING,
+                      ProcessStates.STOPPING)
+
 
 def getProcessStateDescription(code):
     return _process_states_by_code.get(code)
@@ -34,15 +36,17 @@ class SupervisorStates:
     RESTARTING = 0
     SHUTDOWN = -1
 
+
 def getSupervisorStateDescription(code):
     return _supervisor_states_by_code.get(code)
 
 
 class EventListenerStates:
-    READY = 10 # the process ready to be sent an event from supervisor
-    BUSY = 20 # event listener is processing an event sent to it by supervisor
-    ACKNOWLEDGED = 30 # the event listener processed an event
-    UNKNOWN = 40 # the event listener is in an unknown state
+    READY = 10  # the process ready to be sent an event from supervisor
+    BUSY = 20  # event listener is processing an event sent to it by supervisor
+    ACKNOWLEDGED = 30  # the event listener processed an event
+    UNKNOWN = 40  # the event listener is in an unknown state
+
 
 def getEventListenerStateDescription(code):
     return _eventlistener_states_by_code.get(code)
@@ -56,6 +60,8 @@ def _names_by_code(states):
             code = getattr(states, name)
             d[code] = name
     return d
+
+
 _process_states_by_code = _names_by_code(ProcessStates)
 _supervisor_states_by_code = _names_by_code(SupervisorStates)
 _eventlistener_states_by_code = _names_by_code(EventListenerStates)

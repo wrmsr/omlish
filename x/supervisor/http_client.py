@@ -10,9 +10,11 @@ from .compat import PY2
 from .compat import urlparse
 from .medusa import asynchat_25 as asynchat
 
+
 CR = b'\x0d'
 LF = b'\x0a'
-CRLF = CR+LF
+CRLF = CR + LF
+
 
 class Listener(object):
 
@@ -52,15 +54,16 @@ class Listener(object):
     def close(self, url):
         pass
 
+
 class HTTPHandler(asynchat.async_chat):
     def __init__(
-        self,
-        listener,
-        username='',
-        password=None,
-        conn=None,
-        map=None
-        ):
+            self,
+            listener,
+            username='',
+            password=None,
+            conn=None,
+            map=None
+    ):
         asynchat.async_chat.__init__(self, conn, map)
         self.listener = listener
         self.user_agent = 'Supervisor HTTP Client'
@@ -121,7 +124,7 @@ class HTTPHandler(asynchat.async_chat):
         if self.error_handled:
             return
         if 1 or self.connected:
-            t,v,tb = sys.exc_info()
+            t, v, tb = sys.exc_info()
             msg = 'Cannot connect, error: %s (%s)' % (t, v)
             self.listener.error(self.url, msg)
             self.part = self.ignore
@@ -149,13 +152,12 @@ class HTTPHandler(asynchat.async_chat):
         self.push(CRLF)
         self.push(CRLF)
 
-
     def feed(self, data):
         self.listener.feed(self.url, data)
 
     def collect_incoming_data(self, bytes):
         self.buffer = self.buffer + bytes
-        if self.part==self.body:
+        if self.part == self.body:
             self.feed(self.buffer)
             self.buffer = b''
 
@@ -219,7 +221,7 @@ class HTTPHandler(asynchat.async_chat):
         if not line:
             return
         chunk_size = int(line.split()[0], 16)
-        if chunk_size==0:
+        if chunk_size == 0:
             self.part = self.trailer
         else:
             self.set_terminator(chunk_size)

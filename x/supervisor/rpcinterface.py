@@ -11,7 +11,7 @@ from .compat import unicode
 from .datatypes import (
     Automatic,
     signal_number,
-    )
+)
 
 from .options import readFile
 from .options import tailFile
@@ -31,7 +31,7 @@ from .xmlrpc import (
     capped_int,
     Faults,
     RPCError,
-    )
+)
 
 from .states import SupervisorStates
 from .states import getSupervisorStateDescription
@@ -41,18 +41,20 @@ from .states import (
     RUNNING_STATES,
     STOPPED_STATES,
     SIGNALLABLE_STATES
-    )
+)
 
-API_VERSION  = '3.0'
+
+API_VERSION = '3.0'
+
 
 class SupervisorNamespaceRPCInterface:
     def __init__(self, supervisord):
         self.supervisord = supervisord
 
     def _update(self, text):
-        self.update_text = text # for unit tests, mainly
-        if ( isinstance(self.supervisord.options.mood, int) and
-             self.supervisord.options.mood < SupervisorStates.RUNNING ):
+        self.update_text = text  # for unit tests, mainly
+        if (isinstance(self.supervisord.options.mood, int) and
+                self.supervisord.options.mood < SupervisorStates.RUNNING):
             raise RPCError(Faults.SHUTDOWN_STATE)
 
     # RPC API methods
@@ -65,7 +67,7 @@ class SupervisorNamespaceRPCInterface:
         self._update('getAPIVersion')
         return API_VERSION
 
-    getVersion = getAPIVersion # b/w compatibility with releases before 3.0
+    getVersion = getAPIVersion  # b/w compatibility with releases before 3.0
 
     def getSupervisorVersion(self):
         """ Return the version of the supervisor package in use by supervisord
@@ -92,10 +94,10 @@ class SupervisorNamespaceRPCInterface:
 
         state = self.supervisord.options.mood
         statename = getSupervisorStateDescription(state)
-        data =  {
-            'statecode':state,
-            'statename':statename,
-            }
+        data = {
+            'statecode': state,
+            'statename': statename,
+        }
         return data
 
     def getPID(self):
@@ -126,7 +128,7 @@ class SupervisorNamespaceRPCInterface:
             why = inst.args[0]
             raise RPCError(getattr(Faults, why))
 
-    readMainLog = readLog # b/w compatibility with releases before 2.1
+    readMainLog = readLog  # b/w compatibility with releases before 2.1
 
     def clearLog(self):
         """ Clear the main log.
@@ -197,7 +199,7 @@ class SupervisorNamespaceRPCInterface:
         added = [group.name for group in added]
         changed = [group.name for group in changed]
         removed = [group.name for group in removed]
-        return [[added, changed, removed]] # cannot return len > 1, apparently
+        return [[added, changed, removed]]  # cannot return len > 1, apparently
 
     def addProcessGroup(self, name):
         """ Update the config for a running process from config file.
@@ -247,11 +249,11 @@ class SupervisorNamespaceRPCInterface:
                     all_processes.append((group, process))
         else:
             groups = list(self.supervisord.process_groups.values())
-            groups.sort() # asc by priority
+            groups.sort()  # asc by priority
 
             for group in groups:
                 processes = list(group.processes.values())
-                processes.sort() # asc by priority
+                processes.sort()  # asc by priority
                 for process in processes:
                     all_processes.append((group, process))
 
@@ -348,7 +350,7 @@ class SupervisorNamespaceRPCInterface:
 
             onwait.delay = 0.05
             onwait.rpcinterface = self
-            return onwait # deferred
+            return onwait  # deferred
 
         return True
 
@@ -368,14 +370,14 @@ class SupervisorNamespaceRPCInterface:
 
         processes = list(group.processes.values())
         processes.sort()
-        processes = [ (group, process) for process in processes ]
+        processes = [(group, process) for process in processes]
 
         startall = make_allfunc(processes, isNotRunning, self.startProcess,
                                 wait=wait)
 
         startall.delay = 0.05
         startall.rpcinterface = self
-        return startall # deferred
+        return startall  # deferred
 
     def startAllProcesses(self, wait=True):
         """ Start all processes listed in the configuration file
@@ -391,7 +393,7 @@ class SupervisorNamespaceRPCInterface:
 
         startall.delay = 0.05
         startall.rpcinterface = self
-        return startall # deferred
+        return startall  # deferred
 
     def stopProcess(self, name, wait=True):
         """ Stop a process named by name
@@ -440,7 +442,7 @@ class SupervisorNamespaceRPCInterface:
 
             onwait.delay = 0
             onwait.rpcinterface = self
-            return onwait # deferred
+            return onwait  # deferred
 
         return True
 
@@ -460,14 +462,14 @@ class SupervisorNamespaceRPCInterface:
 
         processes = list(group.processes.values())
         processes.sort()
-        processes = [ (group, process) for process in processes ]
+        processes = [(group, process) for process in processes]
 
         killall = make_allfunc(processes, isRunning, self.stopProcess,
                                wait=wait)
 
         killall.delay = 0.05
         killall.rpcinterface = self
-        return killall # deferred
+        return killall  # deferred
 
     def stopAllProcesses(self, wait=True):
         """ Stop all processes in the process list
@@ -484,7 +486,7 @@ class SupervisorNamespaceRPCInterface:
 
         killall.delay = 0.05
         killall.rpcinterface = self
-        return killall # deferred
+        return killall  # deferred
 
     def signalProcess(self, name, signal):
         """ Send an arbitrary UNIX signal to the process named by name
@@ -550,7 +552,7 @@ class SupervisorNamespaceRPCInterface:
         """
         processes = self._getAllProcesses()
         signalall = make_allfunc(processes, isSignallable, self.signalProcess,
-            signal=signal)
+                                 signal=signal)
         result = signalall()
         self._update('signalAllProcesses')
         return result
@@ -587,7 +589,7 @@ class SupervisorNamespaceRPCInterface:
                      'stdout_logfile_backups': pconfig.stdout_logfile_backups,
                      'stdout_logfile_maxbytes': pconfig.stdout_logfile_maxbytes,
                      'stdout_syslog': pconfig.stdout_syslog,
-                     'stopsignal': int(pconfig.stopsignal), # enum on py3
+                     'stopsignal': int(pconfig.stopsignal),  # enum on py3
                      'stopwaitsecs': pconfig.stopwaitsecs,
                      'stderr_capture_maxbytes': pconfig.stderr_capture_maxbytes,
                      'stderr_events_enabled': pconfig.stderr_events_enabled,
@@ -596,7 +598,7 @@ class SupervisorNamespaceRPCInterface:
                      'stderr_logfile_maxbytes': pconfig.stderr_logfile_maxbytes,
                      'stderr_syslog': pconfig.stderr_syslog,
                      'serverurl': pconfig.serverurl,
-                    }
+                     }
                 # no support for these types in xml-rpc
                 d.update((k, 'auto') for k, v in d.items() if v is Automatic)
                 d.update((k, 'none') for k, v in d.items() if v is None)
@@ -614,7 +616,7 @@ class SupervisorNamespaceRPCInterface:
             start_dt = datetime.datetime(*time.gmtime(start)[:6])
             now_dt = datetime.datetime(*time.gmtime(now)[:6])
             uptime = now_dt - start_dt
-            if _total_seconds(uptime) < 0: # system time set back
+            if _total_seconds(uptime) < 0:  # system time set back
                 uptime = datetime.timedelta(0)
             desc = 'pid %s, uptime %s' % (info['pid'], uptime)
 
@@ -663,26 +665,26 @@ class SupervisorNamespaceRPCInterface:
         stderr_logfile = process.config.stderr_logfile or ''
 
         info = {
-            'name':process.config.name,
-            'group':group.config.name,
-            'start':start,
-            'stop':stop,
-            'now':now,
-            'state':state,
-            'statename':getProcessStateDescription(state),
-            'spawnerr':spawnerr,
-            'exitstatus':exitstatus,
-            'logfile':stdout_logfile, # b/c alias
-            'stdout_logfile':stdout_logfile,
-            'stderr_logfile':stderr_logfile,
-            'pid':process.pid,
-            }
+            'name': process.config.name,
+            'group': group.config.name,
+            'start': start,
+            'stop': stop,
+            'now': now,
+            'state': state,
+            'statename': getProcessStateDescription(state),
+            'spawnerr': spawnerr,
+            'exitstatus': exitstatus,
+            'logfile': stdout_logfile,  # b/c alias
+            'stdout_logfile': stdout_logfile,
+            'stderr_logfile': stderr_logfile,
+            'pid': process.pid,
+        }
 
         description = self._interpretProcessInfo(info)
         info['description'] = description
         return info
 
-    def _now(self): # pragma: no cover
+    def _now(self):  # pragma: no cover
         # this is here to service stubbing in unit tests
         return time.time()
 
@@ -729,7 +731,7 @@ class SupervisorNamespaceRPCInterface:
         self._update('readProcessStdoutLog')
         return self._readProcessLog(name, offset, length, 'stdout')
 
-    readProcessLog = readProcessStdoutLog # b/c alias
+    readProcessLog = readProcessStdoutLog  # b/c alias
 
     def readProcessStderrLog(self, name, offset, length):
         """ Read length bytes from name's stderr log starting at offset
@@ -777,7 +779,7 @@ class SupervisorNamespaceRPCInterface:
         self._update('tailProcessStdoutLog')
         return self._tailProcessLog(name, offset, length, 'stdout')
 
-    tailProcessLog = tailProcessStdoutLog # b/c alias
+    tailProcessLog = tailProcessStdoutLog  # b/c alias
 
     def tailProcessStderrLog(self, name, offset, length):
         """
@@ -823,7 +825,7 @@ class SupervisorNamespaceRPCInterface:
 
         return True
 
-    clearProcessLog = clearProcessLogs # b/c alias
+    clearProcessLog = clearProcessLogs  # b/c alias
 
     def clearAllProcessLogs(self):
         """ Clear all process log files
@@ -831,7 +833,7 @@ class SupervisorNamespaceRPCInterface:
         @return array result   An array of process status info structs
         """
         self._update('clearAllProcessLogs')
-        results  = []
+        results = []
         callbacks = []
 
         all_processes = self._getAllProcesses()
@@ -849,17 +851,17 @@ class SupervisorNamespaceRPCInterface:
                 callback(name)
             except RPCError as e:
                 results.append(
-                    {'name':process.config.name,
-                     'group':group.config.name,
-                     'status':e.code,
-                     'description':e.text})
+                    {'name': process.config.name,
+                     'group': group.config.name,
+                     'status': e.code,
+                     'description': e.text})
             else:
                 results.append(
-                    {'name':process.config.name,
-                     'group':group.config.name,
-                     'status':Faults.SUCCESS,
-                     'description':'OK'}
-                    )
+                    {'name': process.config.name,
+                     'group': group.config.name,
+                     'status': Faults.SUCCESS,
+                     'description': 'OK'}
+                )
 
             if callbacks:
                 return NOT_DONE_YET
@@ -868,7 +870,7 @@ class SupervisorNamespaceRPCInterface:
 
         clearall.delay = 0.05
         clearall.rpcinterface = self
-        return clearall # deferred
+        return clearall  # deferred
 
     def sendProcessStdin(self, name, chars):
         """ Send a string of chars to the stdin of the process name.
@@ -927,9 +929,11 @@ class SupervisorNamespaceRPCInterface:
 
         return True
 
+
 def _total_seconds(timedelta):
-    return ((timedelta.days * 86400 + timedelta.seconds) * 10**6 +
-                timedelta.microseconds) / 10**6
+    return ((timedelta.days * 86400 + timedelta.seconds) * 10 ** 6 +
+            timedelta.microseconds) / 10 ** 6
+
 
 def make_allfunc(processes, predicate, func, **extra_kwargs):
     """ Return a closure representing a function that calls a
@@ -939,13 +943,13 @@ def make_allfunc(processes, predicate, func, **extra_kwargs):
     results = []
 
     def allfunc(
-        processes=processes,
-        predicate=predicate,
-        func=func,
-        extra_kwargs=extra_kwargs,
-        callbacks=callbacks, # used only to fool scoping, never passed by caller
-        results=results, # used only to fool scoping, never passed by caller
-        ):
+            processes=processes,
+            predicate=predicate,
+            func=func,
+            extra_kwargs=extra_kwargs,
+            callbacks=callbacks,  # used only to fool scoping, never passed by caller
+            results=results,  # used only to fool scoping, never passed by caller
+    ):
 
         if not callbacks:
 
@@ -955,20 +959,20 @@ def make_allfunc(processes, predicate, func, **extra_kwargs):
                     try:
                         callback = func(name, **extra_kwargs)
                     except RPCError as e:
-                        results.append({'name':process.config.name,
-                                        'group':group.config.name,
-                                        'status':e.code,
-                                        'description':e.text})
+                        results.append({'name': process.config.name,
+                                        'group': group.config.name,
+                                        'status': e.code,
+                                        'description': e.text})
                         continue
                     if isinstance(callback, types.FunctionType):
                         callbacks.append((group, process, callback))
                     else:
                         results.append(
-                            {'name':process.config.name,
-                             'group':group.config.name,
-                             'status':Faults.SUCCESS,
-                             'description':'OK'}
-                            )
+                            {'name': process.config.name,
+                             'group': group.config.name,
+                             'status': Faults.SUCCESS,
+                             'description': 'OK'}
+                        )
 
         if not callbacks:
             return results
@@ -981,19 +985,19 @@ def make_allfunc(processes, predicate, func, **extra_kwargs):
                 value = cb()
             except RPCError as e:
                 results.append(
-                    {'name':process.config.name,
-                     'group':group.config.name,
-                     'status':e.code,
-                     'description':e.text})
+                    {'name': process.config.name,
+                     'group': group.config.name,
+                     'status': e.code,
+                     'description': e.text})
                 callbacks.remove(struct)
             else:
                 if value is not NOT_DONE_YET:
                     results.append(
-                        {'name':process.config.name,
-                         'group':group.config.name,
-                         'status':Faults.SUCCESS,
-                         'description':'OK'}
-                        )
+                        {'name': process.config.name,
+                         'group': group.config.name,
+                         'status': Faults.SUCCESS,
+                         'description': 'OK'}
+                    )
                     callbacks.remove(struct)
 
         if callbacks:
@@ -1021,17 +1025,20 @@ def make_allfunc(processes, predicate, func, **extra_kwargs):
     # the setting of ignore flags to signals.
     return allfunc
 
+
 def isRunning(process):
     return process.get_state() in RUNNING_STATES
 
+
 def isNotRunning(process):
     return not isRunning(process)
+
 
 def isSignallable(process):
     if process.get_state() in SIGNALLABLE_STATES:
         return True
 
+
 # this is not used in code but referenced via an entry point in the conf file
 def make_main_rpcinterface(supervisord):
     return SupervisorNamespaceRPCInterface(supervisord)
-

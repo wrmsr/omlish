@@ -23,6 +23,7 @@ from .medusa import producers
 
 from .http import NOT_DONE_YET
 
+
 class Faults:
     UNKNOWN_METHOD = 1
     INCORRECT_PARAMETERS = 2
@@ -43,11 +44,13 @@ class Faults:
     STILL_RUNNING = 91
     CANT_REREAD = 92
 
+
 def getFaultDescription(code):
     for faultname in Faults.__dict__:
         if getattr(Faults, faultname) == code:
             return faultname
     return 'UNKNOWN'
+
 
 class RPCError(Exception):
     def __init__(self, code, extra=None):
@@ -59,10 +62,11 @@ class RPCError(Exception):
     def __str__(self):
         return 'code=%r, text=%r' % (self.code, self.text)
 
+
 class DeferredXMLRPCResponse:
     """ A medusa producer that implements a deferred callback; requires
     a subclass of asynchat.async_chat that handles NOT_DONE_YET sentinel """
-    CONNECTION = re.compile ('Connection: (.*)', re.IGNORECASE)
+    CONNECTION = re.compile('Connection: (.*)', re.IGNORECASE)
 
     def __init__(self, request, callback):
         self.callback = callback
@@ -91,7 +95,7 @@ class DeferredXMLRPCResponse:
             tb = traceback.format_exc()
             self.request.channel.server.logger.log(
                 "XML-RPC response callback error", tb
-                )
+            )
             self.finished = True
             self.request.error(500)
 
@@ -114,7 +118,7 @@ class DeferredXMLRPCResponse:
         elif self.request.version is None:
             close_it = 1
 
-        outgoing_header = producers.simple_producer (
+        outgoing_header = producers.simple_producer(
             self.request.build_reply_header())
 
         if close_it:
@@ -125,21 +129,22 @@ class DeferredXMLRPCResponse:
         outgoing_producer = producers.composite_producer(self.request.outgoing)
 
         # apply a few final transformations to the output
-        self.request.channel.push_with_producer (
-                # globbing gives us large packets
-                producers.globbing_producer (
-                        # hooking lets us log the number of bytes sent
-                        producers.hooked_producer (
-                                outgoing_producer,
-                                self.request.log
-                                )
-                        )
+        self.request.channel.push_with_producer(
+            # globbing gives us large packets
+            producers.globbing_producer(
+                # hooking lets us log the number of bytes sent
+                producers.hooked_producer(
+                    outgoing_producer,
+                    self.request.log
                 )
+            )
+        )
 
         self.request.channel.current_request = None
 
         if close_it:
             self.request.channel.close_when_done()
+
 
 def xmlrpc_marshal(value):
     ismethodresponse = not isinstance(value, xmlrpclib.Fault)
@@ -150,6 +155,7 @@ def xmlrpc_marshal(value):
     else:
         body = xmlrpclib.dumps(value)
     return body
+
 
 class SystemNamespaceRPCInterface:
     def __init__(self, namespaces):
@@ -210,10 +216,10 @@ class SystemNamespaceRPCInterface:
                 ptypes = []
                 parsed = gettags(methods[method])
                 for thing in parsed:
-                    if thing[1] == 'return': # tag name
-                        rtype = thing[2] # datatype
-                    elif thing[1] == 'param': # tag name
-                        ptypes.append(thing[2]) # datatype
+                    if thing[1] == 'return':  # tag name
+                        rtype = thing[2]  # datatype
+                    elif thing[1] == 'param':  # tag name
+                        ptypes.append(thing[2])  # datatype
                 if rtype is None:
                     raise RPCError(Faults.SIGNATURE_UNSUPPORTED)
                 return [rtype] + ptypes
@@ -231,9 +237,9 @@ class SystemNamespaceRPCInterface:
         @param array calls  An array of call requests
         @return array result  An array of results
         """
-        remaining_calls = calls[:] # [{'methodName':x, 'params':x}, ...]
-        callbacks = [] # always empty or 1 callback function only
-        results = [] # results of completed calls
+        remaining_calls = calls[:]  # [{'methodName':x, 'params':x}, ...]
+        callbacks = []  # always empty or 1 callback function only
+        results = []  # results of completed calls
 
         # args are only to fool scoping and are never passed by caller
         def multi(remaining_calls=remaining_calls,
@@ -266,10 +272,10 @@ class SystemNamespaceRPCInterface:
                 try:
                     if name is None:
                         raise RPCError(Faults.INCORRECT_PARAMETERS,
-                            'No methodName')
+                                       'No methodName')
                     if name == 'system.multicall':
                         raise RPCError(Faults.INCORRECT_PARAMETERS,
-                            'Recursive system.multicall forbidden')
+                                       'Recursive system.multicall forbidden')
                     # make the call, may return a callback or not
                     root = AttrDict(self.namespaces)
                     value = traverse(root, name, params)
@@ -292,6 +298,7 @@ class SystemNamespaceRPCInterface:
                 return NOT_DONE_YET
             else:
                 return results
+
         multi.delay = 0.05
 
         # optimization: multi() is called here instead of just returning
@@ -302,15 +309,18 @@ class SystemNamespaceRPCInterface:
         else:
             return value
 
+
 class AttrDict(dict):
     # hack to make a dict's getattr equivalent to its getitem
     def __getattr__(self, name):
         return self.get(name)
 
+
 class RootRPCInterface:
     def __init__(self, subinterfaces):
         for name, rpcinterface in subinterfaces:
             setattr(self, name, rpcinterface)
+
 
 def capped_int(value):
     i = int(value)
@@ -320,10 +330,12 @@ def capped_int(value):
         i = xmlrpclib.MAXINT
     return i
 
+
 def make_datetime(text):
     return datetime.datetime(
         *time.strptime(text, "%Y%m%dT%H:%M:%S")[:6]
     )
+
 
 class supervisor_xmlrpc_handler(xmlrpc_handler):
     path = '/RPC2'
@@ -341,7 +353,7 @@ class supervisor_xmlrpc_handler(xmlrpc_handler):
         "struct": lambda x: dict([(k.text or "", v.text) for k, v in x]),
         "base64": lambda x: as_string(decodestring(as_bytes(x.text or ""))),
         "param": lambda x: x[0].text,
-        }
+    }
 
     def __init__(self, supervisord, subinterfaces):
         self.rpcinterface = RootRPCInterface(subinterfaces)
@@ -396,7 +408,7 @@ class supervisor_xmlrpc_handler(xmlrpc_handler):
                 logger.error(
                     'XML-RPC request data %r is invalid: no method name' %
                     (data,)
-                    )
+                )
                 request.error(400)
                 return
 
@@ -438,12 +450,13 @@ class supervisor_xmlrpc_handler(xmlrpc_handler):
             logger.critical(
                 "Handling XML-RPC request with data %r raised an unexpected "
                 "exception: %s" % (data, tb)
-                )
+            )
             # internal error, report as HTTP server error
             request.error(500)
 
     def call(self, method, params):
         return traverse(self.rpcinterface, method, params)
+
 
 def traverse(ob, method, params):
     dotted_parts = method.split('.')
@@ -470,6 +483,7 @@ def traverse(ob, method, params):
     except TypeError:
         raise RPCError(Faults.INCORRECT_PARAMETERS)
 
+
 class SupervisorTransport(xmlrpclib.Transport):
     """
     Provides a Transport for xmlrpclib that uses
@@ -490,8 +504,10 @@ class SupervisorTransport(xmlrpclib.Transport):
             host, port = parsed.hostname, parsed.port
             if port is None:
                 port = 80
+
             def get_connection(host=host, port=port):
                 return httplib.HTTPConnection(host, port)
+
             self._get_connection = get_connection
         elif serverurl.startswith('unix://'):
             def get_connection(serverurl=serverurl):
@@ -500,6 +516,7 @@ class SupervisorTransport(xmlrpclib.Transport):
                 conn = UnixStreamHTTPConnection('localhost')
                 conn.socketfile = serverurl[7:]
                 return conn
+
             self._get_connection = get_connection
         else:
             raise ValueError('Unknown protocol for serverurl %s' % serverurl)
@@ -514,10 +531,10 @@ class SupervisorTransport(xmlrpclib.Transport):
         if not self.connection:
             self.connection = self._get_connection()
             self.headers = {
-                "User-Agent" : self.user_agent,
-                "Content-Type" : "text/xml",
+                "User-Agent": self.user_agent,
+                "Content-Type": "text/xml",
                 "Accept": "text/xml"
-                }
+            }
 
             # basic auth
             if self.username is not None and self.password is not None:
@@ -539,7 +556,7 @@ class SupervisorTransport(xmlrpclib.Transport):
             raise xmlrpclib.ProtocolError(host + handler,
                                           r.status,
                                           r.reason,
-                                          '' )
+                                          '')
         data = r.read()
         data = as_string(data)
         # on 2.x, the Expat parser doesn't like Unicode which actually
@@ -550,11 +567,13 @@ class SupervisorTransport(xmlrpclib.Transport):
         p.close()
         return u.close()
 
+
 class UnixStreamHTTPConnection(httplib.HTTPConnection):
-    def connect(self): # pragma: no cover
+    def connect(self):  # pragma: no cover
         self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         # we abuse the host parameter as the socketname
         self.sock.connect(self.socketfile)
+
 
 def gettags(comment):
     """ Parse documentation strings into JavaDoc-like tokens """
