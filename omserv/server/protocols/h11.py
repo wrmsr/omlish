@@ -334,7 +334,6 @@ class H11Protocol(Protocol):
                 ),
             )
             raise H2CProtocolRequiredError(self.connection.trailing_data[0], event)
+
         elif event.method == b'PRI' and event.target == b'*' and event.http_version == b'2.0':
-            raise H2ProtocolAssumedError(
-                b'PRI * HTTP/2.0\r\n\r\n' + self.connection.trailing_data[0],
-            )
+            raise H2ProtocolAssumedError(b'PRI * HTTP/2.0\r\n\r\n' + self.connection.trailing_data[0])
