@@ -39,8 +39,12 @@ from .inspect import (  # noqa
 
 from .keys import (  # noqa
     Key,
+    MapMulti,
+    Multi,
+    SetMulti,
     as_key,
-    multi,
+    map_multi,
+    set_multi,
     tag,
 )
 

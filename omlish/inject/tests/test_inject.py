@@ -15,12 +15,12 @@ def test_inject():
 
 def test_multi():
     es = inj.as_elements(
-        inj.as_(inj.multi(int), [420]),
-        inj.as_(inj.multi(int), [421]),
+        inj.as_(inj.set_multi(int), 420),
+        inj.as_(inj.set_multi(int), 421),
     )
 
     i = inj.create_injector(es)
-    assert sorted(i.provide(inj.multi(int))) == [420, 421]
+    assert sorted(i.provide(inj.set_multi(int))) == {420, 421}
 
 
 def test_optional():

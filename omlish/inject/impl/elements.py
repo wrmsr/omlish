@@ -33,7 +33,7 @@ from ..private import Private
 from ..scopes import ScopeBinding
 from ..types import Scope
 from .bindings import BindingImpl
-from .providers import MultiProviderImpl
+from .multis import MultiProviderImpl
 from .providers import make_provider_impl
 from .scopes import make_scope_impl
 
