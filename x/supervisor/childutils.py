@@ -1,13 +1,13 @@
 import sys
 import time
 
-from supervisor.compat import xmlrpclib
-from supervisor.compat import long
-from supervisor.compat import as_string
+from .compat import xmlrpclib
+from .compat import long
+from .compat import as_string
 
-from supervisor.xmlrpc import SupervisorTransport
-from supervisor.events import ProcessCommunicationEvent
-from supervisor.dispatchers import PEventListenerDispatcher
+from .xmlrpc import SupervisorTransport
+from .events import ProcessCommunicationEvent
+from .dispatchers import PEventListenerDispatcher
 
 def getRPCTransport(env):
     u = env.get('SUPERVISOR_USERNAME', '')

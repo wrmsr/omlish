@@ -12,20 +12,20 @@ import socket
 import sys
 import time
 
-from supervisor.compat import as_bytes
+from ..compat import as_bytes
 
 # async modules
-import supervisor.medusa.asyncore_25 as asyncore
-import supervisor.medusa.asynchat_25 as asynchat
+from . import asyncore_25 as asyncore
+from . import asynchat_25 as asynchat
 
 # medusa modules
-import supervisor.medusa.http_date as http_date
-import supervisor.medusa.producers as producers
-import supervisor.medusa.logger as logger
+from . import http_date as http_date
+from . import producers as producers
+from . import logger as logger
 
 VERSION_STRING = RCS_ID.split()[2]
 
-from supervisor.medusa.counter import counter
+from ..medusa.counter import counter
 try:
     from urllib import unquote, splitquery
 except ImportError:

@@ -13,11 +13,11 @@ import re
 import stat
 
 # medusa modules
-import supervisor.medusa.http_date as http_date
-import supervisor.medusa.http_server as http_server
-import supervisor.medusa.producers as producers
+from . import http_date as http_date
+from . import http_server as http_server
+from . import producers as producers
 
-from supervisor.medusa.util import html_repr
+from .util import html_repr
 
 unquote = http_server.unquote
 
