@@ -48,7 +48,6 @@ you - by calling your self.found_terminator() method.
 
 import socket
 from . import asyncore_25 as asyncore
-from ..compat import long
 from ..compat import as_bytes
 
 
@@ -106,7 +105,7 @@ class async_chat(asyncore.dispatcher):
                 # no terminator, collect it all
                 self.collect_incoming_data(self.ac_in_buffer)
                 self.ac_in_buffer = b''
-            elif isinstance(terminator, int) or isinstance(terminator, long):
+            elif isinstance(terminator, int):
                 # numeric terminator
                 n = terminator
                 if lb < n:

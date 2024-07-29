@@ -14,8 +14,6 @@
 # opening files for reading, and listing directories, should
 # return a producer.
 
-from ..compat import long
-
 
 class abstract_filesystem:
     def __init__(self):
@@ -348,7 +346,7 @@ def unix_longify(file, stat_info):
         dirchar = 'd'
     else:
         dirchar = '-'
-    date = ls_date(long(time.time()), stat_info[stat.ST_MTIME])
+    date = ls_date(int(time.time()), stat_info[stat.ST_MTIME])
     return '%s%s %3d %-8d %-8d %8d %s %s' % (
         dirchar,
         mode,

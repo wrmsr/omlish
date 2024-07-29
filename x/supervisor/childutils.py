@@ -2,7 +2,6 @@ import sys
 import time
 
 import xmlrpc.client as xmlrpclib
-from .compat import long
 from .compat import as_string
 
 from .xmlrpc import SupervisorTransport
@@ -36,7 +35,7 @@ def eventdata(payload):
 def get_asctime(now=None):
     if now is None:  # for testing
         now = time.time()  # pragma: no cover
-    msecs = (now - long(now)) * 1000
+    msecs = (now - int(now)) * 1000
     part1 = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(now))
     asctime = '%s,%03d' % (part1, msecs)
     return asctime

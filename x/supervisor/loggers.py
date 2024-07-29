@@ -14,7 +14,6 @@ import time
 import traceback
 
 import syslog
-from .compat import long
 from .compat import is_text_stream
 from .compat import as_string
 
@@ -296,7 +295,7 @@ class LogRecord:
     def asdict(self):
         if self.dictrepr is None:
             now = time.time()
-            msecs = (now - long(now)) * 1000
+            msecs = (now - int(now)) * 1000
             part1 = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(now))
             asctime = '%s,%03d' % (part1, msecs)
             levelname = LOG_LEVELS_BY_NUM[self.level]
