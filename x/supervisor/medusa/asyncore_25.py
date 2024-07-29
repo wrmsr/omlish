@@ -47,6 +47,7 @@ sophisticated high-performance network servers and clients a snap.
 """
 
 import os
+import select
 import socket
 import sys
 import time
@@ -59,8 +60,6 @@ from errno import ENOTCONN
 from errno import ESHUTDOWN
 from errno import EWOULDBLOCK
 from errno import errorcode
-
-import select
 
 from ..compat import as_bytes
 from ..compat import as_string
@@ -121,8 +120,8 @@ def poll(timeout=0.0, map=None):
     if map is None:
         map = socket_map
     if map:
-        r = [];
-        w = [];
+        r = []
+        w = []
         e = []
         for fd, obj in map.items():
             is_r = obj.readable()
@@ -138,7 +137,7 @@ def poll(timeout=0.0, map=None):
         else:
             try:
                 r, w, e = select.select(r, w, e, timeout)
-            except select.error as err:
+            except OSError as err:
                 if err.args[0] != EINTR:
                     raise
                 else:
@@ -185,7 +184,7 @@ def poll2(timeout=0.0, map=None):
                 pollster.register(fd, flags)
         try:
             r = pollster.poll(timeout)
-        except select.error as err:
+        except OSError as err:
             if err.args[0] != EINTR:
                 raise
             r = []
@@ -241,14 +240,14 @@ class dispatcher:
             # be connected?
             try:
                 self.addr = sock.getpeername()
-            except socket.error:
+            except OSError:
                 # The addr isn't crucial
                 pass
         else:
             self.socket = None
 
     def __repr__(self):
-        status = [self.__class__.__module__ + "." + self.__class__.__name__]
+        status = [self.__class__.__module__ + '.' + self.__class__.__name__]
         if self.accepting and self.addr:
             status.append('listening')
         elif self.connected:
@@ -294,9 +293,9 @@ class dispatcher:
             self.socket.setsockopt(
                 socket.SOL_SOCKET, socket.SO_REUSEADDR,
                 self.socket.getsockopt(socket.SOL_SOCKET,
-                                       socket.SO_REUSEADDR) | 1
+                                       socket.SO_REUSEADDR) | 1,
             )
-        except socket.error:
+        except OSError:
             pass
 
     # ==================================================
@@ -336,14 +335,14 @@ class dispatcher:
             self.connected = True
             self.handle_connect()
         else:
-            raise socket.error(err, errorcode[err])
+            raise OSError(err, errorcode[err])
 
     def accept(self):
         # XXX can return either an address pair or None
         try:
             conn, addr = self.socket.accept()
             return conn, addr
-        except socket.error as why:
+        except OSError as why:
             if why.args[0] == EWOULDBLOCK:
                 pass
             else:
@@ -353,7 +352,7 @@ class dispatcher:
         try:
             result = self.socket.send(data)
             return result
-        except socket.error as why:
+        except OSError as why:
             if why.args[0] == EWOULDBLOCK:
                 return 0
             else:
@@ -369,7 +368,7 @@ class dispatcher:
                 return b''
             else:
                 return data
-        except socket.error as why:
+        except OSError as why:
             # winsock sometimes throws ENOTCONN
             if why.args[0] in [ECONNRESET, ENOTCONN, ESHUTDOWN]:
                 self.handle_close()
@@ -382,7 +381,7 @@ class dispatcher:
 
         try:
             self.socket.shutdown(socket.SHUT_RDWR)
-        except socket.error:
+        except OSError:
             # must swallow exception from already-closed socket
             # (at least with Python 3.11.7 on macOS 14.2.1)
             pass
@@ -445,9 +444,9 @@ class dispatcher:
                 self_repr,
                 t,
                 v,
-                tbinfo
+                tbinfo,
             ),
-            'error'
+            'error',
         )
         self.close()
 
@@ -511,7 +510,7 @@ def compact_traceback():
         tbinfo.append((
             tb.tb_frame.f_code.co_filename,
             tb.tb_frame.f_code.co_name,
-            str(tb.tb_lineno)
+            str(tb.tb_lineno),
         ))
         tb = tb.tb_next
 

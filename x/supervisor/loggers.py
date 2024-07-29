@@ -10,10 +10,9 @@ idiosyncratic and a bit slow for our purposes (we don't use threads).
 import errno
 import os
 import sys
+import syslog
 import time
 import traceback
-
-import syslog
 
 from .compat import as_string
 from .compat import is_text_stream
@@ -72,7 +71,7 @@ class Handler:
     def flush(self):
         try:
             self.stream.flush()
-        except IOError as why:
+        except OSError as why:
             # if supervisor output is piped, EPIPE can be raised at exit
             if why.args[0] != errno.EPIPE:
                 raise
@@ -82,7 +81,7 @@ class Handler:
             if hasattr(self.stream, 'fileno'):
                 try:
                     fd = self.stream.fileno()
-                except IOError:
+                except OSError:
                     # on python 3, io.IOBase objects always have fileno()
                     # but calling it may raise io.UnsupportedOperation
                     pass
@@ -277,11 +276,11 @@ class RotatingFileHandler(FileHandler):
         self.stream.close()
         if self.backupCount > 0:
             for i in range(self.backupCount - 1, 0, -1):
-                sfn = "%s.%d" % (self.baseFilename, i)
-                dfn = "%s.%d" % (self.baseFilename, i + 1)
+                sfn = '%s.%d' % (self.baseFilename, i)
+                dfn = '%s.%d' % (self.baseFilename, i + 1)
                 if os.path.exists(sfn):
                     self.removeAndRename(sfn, dfn)
-            dfn = self.baseFilename + ".1"
+            dfn = self.baseFilename + '.1'
             self.removeAndRename(self.baseFilename, dfn)
         self.stream = open(self.baseFilename, 'wb')
 
@@ -297,7 +296,7 @@ class LogRecord:
         if self.dictrepr is None:
             now = time.time()
             msecs = (now - int(now)) * 1000
-            part1 = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(now))
+            part1 = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(now))
             asctime = '%s,%03d' % (part1, msecs)
             levelname = LOG_LEVELS_BY_NUM[self.level]
             msg = as_string(self.msg)
@@ -323,31 +322,31 @@ class Logger:
             handler.close()
 
     def blather(self, msg, **kw):
-        if LevelsByName.BLAT >= self.level:
+        if self.level <= LevelsByName.BLAT:
             self.log(LevelsByName.BLAT, msg, **kw)
 
     def trace(self, msg, **kw):
-        if LevelsByName.TRAC >= self.level:
+        if self.level <= LevelsByName.TRAC:
             self.log(LevelsByName.TRAC, msg, **kw)
 
     def debug(self, msg, **kw):
-        if LevelsByName.DEBG >= self.level:
+        if self.level <= LevelsByName.DEBG:
             self.log(LevelsByName.DEBG, msg, **kw)
 
     def info(self, msg, **kw):
-        if LevelsByName.INFO >= self.level:
+        if self.level <= LevelsByName.INFO:
             self.log(LevelsByName.INFO, msg, **kw)
 
     def warn(self, msg, **kw):
-        if LevelsByName.WARN >= self.level:
+        if self.level <= LevelsByName.WARN:
             self.log(LevelsByName.WARN, msg, **kw)
 
     def error(self, msg, **kw):
-        if LevelsByName.ERRO >= self.level:
+        if self.level <= LevelsByName.ERRO:
             self.log(LevelsByName.ERRO, msg, **kw)
 
     def critical(self, msg, **kw):
-        if LevelsByName.CRIT >= self.level:
+        if self.level <= LevelsByName.CRIT:
             self.log(LevelsByName.CRIT, msg, **kw)
 
     def log(self, level, msg, **kw):
@@ -366,7 +365,7 @@ class Logger:
 class SyslogHandler(Handler):
     def __init__(self):
         Handler.__init__(self)
-        assert syslog is not None, "Syslog module not present"
+        assert syslog is not None, 'Syslog module not present'
 
     def close(self):
         pass
@@ -388,7 +387,7 @@ class SyslogHandler(Handler):
                 try:
                     self._syslog(msg)
                 except UnicodeError:
-                    self._syslog(msg.encode("UTF-8"))
+                    self._syslog(msg.encode('UTF-8'))
         except:
             self.handleError()
 
@@ -431,11 +430,10 @@ def handle_file(logger, filename, fmt, rotating=False, maxbytes=0, backups=0):
     is the magic name of 'syslog' then make it a syslog handler instead."""
     if filename == 'syslog':  # TODO remove this
         handler = SyslogHandler()
+    elif rotating is False:
+        handler = FileHandler(filename)
     else:
-        if rotating is False:
-            handler = FileHandler(filename)
-        else:
-            handler = RotatingFileHandler(filename, 'a', maxbytes, backups)
+        handler = RotatingFileHandler(filename, 'a', maxbytes, backups)
     handler.setFormat(fmt)
     handler.setLevel(logger.level)
     logger.addHandler(handler)

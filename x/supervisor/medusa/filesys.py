@@ -21,43 +21,34 @@ class abstract_filesystem:
 
     def current_directory(self):
         """Return a string representing the current directory."""
-        pass
 
     def listdir(self, path, long=0):
         """Return a listing of the directory at 'path' The empty string
         indicates the current directory.  If 'long' is set, instead
         return a list of (name, stat_info) tuples
         """
-        pass
 
     def open(self, path, mode):
         """Return an open file object"""
-        pass
 
     def stat(self, path):
         """Return the equivalent of os.stat() on the given path."""
-        pass
 
     def isdir(self, path):
         """Does the path represent a directory?"""
-        pass
 
     def isfile(self, path):
         """Does the path represent a plain file?"""
-        pass
 
     def cwd(self, path):
         """Change the working directory."""
-        pass
 
     def cdup(self):
         """Change to the parent of the current directory."""
-        pass
 
     def longify(self, path):
         """Return a 'long' representation of the filename
         [for the output of the LIST command]"""
-        pass
 
 
 # standard wrapper around a unix-like filesystem, with a 'false root'
@@ -197,7 +188,7 @@ class os_filesystem:
     def __repr__(self):
         return '<unix-style fs root:%s wd:%s>' % (
             self.root,
-            self.wd
+            self.wd,
         )
 
 
@@ -295,7 +286,7 @@ def msdos_longify(file, stat_info):
         date,
         dir,
         stat_info[stat.ST_SIZE],
-        file
+        file,
     )
 
 
@@ -317,7 +308,7 @@ def msdos_date(t):
         info[0] % 100,
         hour,
         info[4],
-        merid
+        merid,
     )
 
 
@@ -332,7 +323,7 @@ mode_table = {
     '4': 'r--',
     '5': 'r-x',
     '6': 'rw-',
-    '7': 'rwx'
+    '7': 'rwx',
 }
 
 import time
@@ -355,7 +346,7 @@ def unix_longify(file, stat_info):
         stat_info[stat.ST_GID],
         stat_info[stat.ST_SIZE],
         date,
-        file
+        file,
     )
 
 
@@ -376,14 +367,14 @@ def ls_date(now, t):
         return '%s %2d  %d' % (
             months[info[1] - 1],
             info[2],
-            info[0]
+            info[0],
         )
     else:
         return '%s %2d %02d:%02d' % (
             months[info[1] - 1],
             info[2],
             info[3],
-            info[4]
+            info[4],
         )
 
 

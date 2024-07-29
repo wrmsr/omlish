@@ -1,4 +1,3 @@
-from hashlib import sha1
 import errno
 import os
 import pwd
@@ -9,16 +8,16 @@ import time
 import traceback
 import urllib.parse as urllib
 import weakref
+from hashlib import sha1
 
 from .compat import as_bytes
 from .compat import as_string
 from .medusa import asyncore_25 as asyncore
+from .medusa import default_handler
+from .medusa import filesys
 from .medusa import http_date
 from .medusa import http_server
 from .medusa import producers
-from .medusa import filesys
-from .medusa import default_handler
-
 from .medusa.auth_handler import auth_handler
 
 
@@ -76,8 +75,7 @@ class deferring_composite_producer:
                 return d
             else:
                 self.producers.pop(0)
-        else:
-            return b''
+        return b''
 
 
 class deferring_globbing_producer:
@@ -166,7 +164,7 @@ class deferring_http_request(http_server.http_request):
 
         if self.version == '1.0':
             if connection == 'keep-alive':
-                if not 'Content-Length' in self:
+                if 'Content-Length' not in self:
                     close_it = 1
                 else:
                     self['Connection'] = 'Keep-Alive'
@@ -175,9 +173,9 @@ class deferring_http_request(http_server.http_request):
         elif self.version == '1.1':
             if connection == 'close':
                 close_it = 1
-            elif not 'Content-Length' in self:
+            elif 'Content-Length' not in self:
                 if 'Transfer-Encoding' in self:
-                    if not self['Transfer-Encoding'] == 'chunked':
+                    if self['Transfer-Encoding'] != 'chunked':
                         close_it = 1
                 elif self.use_chunked:
                     self['Transfer-Encoding'] = 'chunked'
@@ -202,11 +200,11 @@ class deferring_http_request(http_server.http_request):
 
         if wrap_in_chunking:
             outgoing_producer = deferring_chunked_producer(
-                deferring_composite_producer(self.outgoing)
+                deferring_composite_producer(self.outgoing),
             )
             # prepend the header
             outgoing_producer = deferring_composite_producer(
-                [outgoing_header, outgoing_producer]
+                [outgoing_header, outgoing_producer],
             )
         else:
             # prepend the header
@@ -243,8 +241,8 @@ class deferring_http_request(http_server.http_request):
                 self.log_date_string(time.time()),
                 self.request,
                 self.reply_code,
-                bytes
-            )
+                bytes,
+            ),
         )
 
     def cgi_environment(self):
@@ -274,7 +272,7 @@ class deferring_http_request(http_server.http_request):
         env['SERVER_PORT'] = str(server.port)
         env['SERVER_NAME'] = server.server_name
         env['SERVER_SOFTWARE'] = server.SERVER_IDENT
-        env['SERVER_PROTOCOL'] = "HTTP/" + self.version
+        env['SERVER_PROTOCOL'] = 'HTTP/' + self.version
         env['channel.creation_time'] = self.channel.creation_time
         env['SCRIPT_NAME'] = ''
         env['PATH_INFO'] = '/' + path
@@ -289,13 +287,13 @@ class deferring_http_request(http_server.http_request):
             env['REMOTE_ADDR'] = '127.0.0.1'
 
         for header in self.header:
-            key, value = header.split(":", 1)
+            key, value = header.split(':', 1)
             key = key.lower()
             value = value.strip()
             if key in header2env and value:
                 env[header2env.get(key)] = value
             else:
-                key = 'HTTP_%s' % ("_".join(key.split("-"))).upper()
+                key = 'HTTP_%s' % ('_'.join(key.split('-'))).upper()
                 if value and key not in env:
                     env[key] = value
         return env
@@ -307,7 +305,7 @@ class deferring_http_request(http_server.http_request):
         default_port = {'http': '80', 'https': '443'}
         environ = self.cgi_environment()
         if (environ.get('HTTPS') in ('on', 'ON') or
-                environ.get('SERVER_PORT_SECURE') == "1"):
+                environ.get('SERVER_PORT_SECURE') == '1'):
             # XXX this will currently never be true
             protocol = 'https'
         else:
@@ -511,7 +509,7 @@ class supervisor_http_server(http_server.http_server):
                 time.ctime(time.time()),
                 self.server_name,
                 self.port,
-            )
+            ),
         )
 
     def log_info(self, message, type='info'):
@@ -536,7 +534,7 @@ class supervisor_af_inet_http_server(supervisor_http_server):
             hostname = socket.gethostname()
             try:
                 ip = socket.gethostbyname(hostname)
-            except socket.error:
+            except OSError:
                 raise ValueError(
                     'Could not determine IP address for hostname %s, '
                     'please try setting an explicit IP address in the "port" '
@@ -545,7 +543,7 @@ class supervisor_af_inet_http_server(supervisor_http_server):
                     % hostname)
         try:
             self.server_name = socket.gethostbyaddr(ip)[0]
-        except socket.error:
+        except OSError:
             self.log_info('Cannot do reverse lookup', 'warning')
             self.server_name = ip  # use the IP address as the "hostname"
 
@@ -565,7 +563,7 @@ class supervisor_af_unix_http_server(supervisor_http_server):
         # but it would be very inconvenient for the user to need to get all
         # the directory setup right.
 
-        tempname = "%s.%d" % (socketname, os.getpid())
+        tempname = '%s.%d' % (socketname, os.getpid())
 
         try:
             os.unlink(tempname)
@@ -585,10 +583,10 @@ class supervisor_af_unix_http_server(supervisor_http_server):
                     used = self.checkused(socketname)
                     if used:
                         # cooperate with 'openhttpserver' in supervisord
-                        raise socket.error(errno.EADDRINUSE)
+                        raise OSError(errno.EADDRINUSE)
 
                     # Stale socket -- delete, sleep, and try again.
-                    msg = "Unlinking stale socket %s\n" % socketname
+                    msg = 'Unlinking stale socket %s\n' % socketname
                     sys.stderr.write(msg)
                     try:
                         os.unlink(socketname)
@@ -630,10 +628,10 @@ class supervisor_af_unix_http_server(supervisor_http_server):
         s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         try:
             s.connect(socketname)
-            s.send(as_bytes("GET / HTTP/1.0\r\n\r\n"))
+            s.send(as_bytes('GET / HTTP/1.0\r\n\r\n'))
             s.recv(1)
             s.close()
-        except socket.error:
+        except OSError:
             return False
         else:
             return True
@@ -663,7 +661,7 @@ class tail_f_producer:
         bytes_added = newsz - self.sz
         if bytes_added < 0:
             self.sz = 0
-            return "==> File truncated <==\n"
+            return '==> File truncated <==\n'
         if bytes_added > 0:
             self.file.seek(-bytes_added, 2)
             bytes = self.file.read(bytes_added)
@@ -819,9 +817,9 @@ def make_http_servers(options, supervisord):
         else:
             raise ValueError('Cannot determine socket type %r' % family)
 
-        from .xmlrpc import supervisor_xmlrpc_handler
-        from .xmlrpc import SystemNamespaceRPCInterface
         from .web import supervisor_ui_handler
+        from .xmlrpc import SystemNamespaceRPCInterface
+        from .xmlrpc import supervisor_xmlrpc_handler
 
         subinterfaces = []
         for name, factory, d in options.rpcinterface_factories:
@@ -829,7 +827,7 @@ def make_http_servers(options, supervisord):
                 inst = factory(supervisord, **d)
             except:
                 tb = traceback.format_exc()
-                options.logger.warn(tb)
+                options.logger.warning(tb)
                 raise ValueError('Could not make %s rpc interface' % name)
             subinterfaces.append((name, inst))
             options.logger.info('RPC interface %r initialized' % name)
@@ -874,8 +872,8 @@ def make_http_servers(options, supervisord):
 
 
 class LogWrapper:
-    '''Receives log messages from the Medusa servers and forwards
-    them to the Supervisor logger'''
+    """Receives log messages from the Medusa servers and forwards
+    them to the Supervisor logger"""
 
     def __init__(self, logger):
         self.logger = logger

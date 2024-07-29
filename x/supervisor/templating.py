@@ -21,16 +21,16 @@ from .compat import as_bytes
 from .compat import as_string
 
 
-AUTOCLOSE = "p", "li", "tr", "th", "td", "head", "body"
-IGNOREEND = "img", "hr", "meta", "link", "br"
+AUTOCLOSE = 'p', 'li', 'tr', 'th', 'td', 'head', 'body'
+IGNOREEND = 'img', 'hr', 'meta', 'link', 'br'
 _BLANK = as_bytes('', encoding='latin1')
 _SPACE = as_bytes(' ', encoding='latin1')
 _EQUAL = as_bytes('=', encoding='latin1')
 _QUOTE = as_bytes('"', encoding='latin1')
-_OPEN_TAG_START = as_bytes("<", encoding='latin1')
-_CLOSE_TAG_START = as_bytes("</", encoding='latin1')
-_OPEN_TAG_END = _CLOSE_TAG_END = as_bytes(">", encoding='latin1')
-_SELF_CLOSE = as_bytes(" />", encoding='latin1')
+_OPEN_TAG_START = as_bytes('<', encoding='latin1')
+_CLOSE_TAG_START = as_bytes('</', encoding='latin1')
+_OPEN_TAG_END = _CLOSE_TAG_END = as_bytes('>', encoding='latin1')
+_SELF_CLOSE = as_bytes(' />', encoding='latin1')
 _OMITTED_TEXT = as_bytes(' [...]\n', encoding='latin1')
 _COMMENT_START = as_bytes('<!-- ', encoding='latin1')
 _COMMENT_END = as_bytes(' -->', encoding='latin1')
@@ -39,7 +39,7 @@ _PI_END = as_bytes('?>', encoding='latin1')
 _AMPER_ESCAPED = as_bytes('&amp;', encoding='latin1')
 _LT = as_bytes('<', encoding='latin1')
 _LT_ESCAPED = as_bytes('&lt;', encoding='latin1')
-_QUOTE_ESCAPED = as_bytes("&quot;", encoding='latin1')
+_QUOTE_ESCAPED = as_bytes('&quot;', encoding='latin1')
 _XML_PROLOG_BEGIN = as_bytes('<?xml version="1.0"', encoding='latin1')
 _ENCODING = as_bytes('encoding', encoding='latin1')
 _XML_PROLOG_END = as_bytes('?>\n', encoding='latin1')
@@ -111,7 +111,7 @@ class PyHelper:
 
     def getiterator(self, node, tag=None):
         nodes = []
-        if tag == "*":
+        if tag == '*':
             tag = None
         if tag is None or node.tag == tag:
             nodes.append(node)
@@ -168,7 +168,7 @@ class _MeldElementInterface:
         self._children = []
 
     def __repr__(self):
-        return "<MeldElement %s at %x>" % (self.tag, id(self))
+        return '<MeldElement %s at %x>' % (self.tag, id(self))
 
     def __len__(self):
         return len(self._children)
@@ -458,9 +458,8 @@ class _MeldElementInterface:
             if attribval is not None:
                 if value is None:
                     elements.append(element)
-                else:
-                    if value == attribval:
-                        elements.append(element)
+                elif value == attribval:
+                    elements.append(element)
         return elements
 
     # ZPT-alike methods
@@ -559,8 +558,8 @@ class _MeldElementInterface:
         pipeline    - preserve 'meld' namespace identifiers in output
                       for use in pipelining
         """
-        if not hasattr(file, "write"):
-            file = open(file, "wb")
+        if not hasattr(file, 'write'):
+            file = open(file, 'wb')
         data = self.write_xmlstring(encoding, doctype, fragment, declaration,
                                     pipeline)
         file.write(data)
@@ -598,8 +597,8 @@ class _MeldElementInterface:
 
         HTML is not valid XML, so an XML declaration header is never emitted.
         """
-        if not hasattr(file, "write"):
-            file = open(file, "wb")
+        if not hasattr(file, 'write'):
+            file = open(file, 'wb')
         page = self.write_htmlstring(encoding, doctype, fragment)
         file.write(page)
 
@@ -632,8 +631,8 @@ class _MeldElementInterface:
         pipeline    - preserve 'meld' namespace identifiers in output
                       for use in pipelining
         """
-        if not hasattr(file, "write"):
-            file = open(file, "wb")
+        if not hasattr(file, 'write'):
+            file = open(file, 'wb')
         page = self.write_xhtmlstring(encoding, doctype, fragment, declaration,
                                       pipeline)
         file.write(page)
@@ -754,7 +753,7 @@ class HTMLXMLParser(HTMLParser):
         if builder is None:
             builder = MeldTreeBuilder()
         self.builder = builder
-        self.encoding = encoding or "iso-8859-1"
+        self.encoding = encoding or 'iso-8859-1'
         try:
             # ``convert_charrefs`` was added in Python 3.4.  Set it to avoid
             # "DeprecationWarning: The value of convert_charrefs will become
@@ -770,20 +769,20 @@ class HTMLXMLParser(HTMLParser):
         return self.builder.close()
 
     def handle_starttag(self, tag, attrs):
-        if tag == "meta":
+        if tag == 'meta':
             # look for encoding directives
             http_equiv = content = None
             for k, v in attrs:
-                if k == "http-equiv":
+                if k == 'http-equiv':
                     http_equiv = v.lower()
-                elif k == "content":
+                elif k == 'content':
                     content = v
-            if http_equiv == "content-type" and content:
+            if http_equiv == 'content-type' and content:
                 # use email to parse the http header
                 msg = email.message_from_string(
-                    "%s: %s\n\n" % (http_equiv, content)
+                    '%s: %s\n\n' % (http_equiv, content),
                 )
-                encoding = msg.get_param("charset")
+                encoding = msg.get_param('charset')
                 if encoding:
                     self.encoding = encoding
         if tag in AUTOCLOSE:
@@ -816,7 +815,7 @@ class HTMLXMLParser(HTMLParser):
         self.builder.end(tag)
 
     def handle_charref(self, char):
-        if char[:1] == "x":
+        if char[:1] == 'x':
             char = int(char[1:], 16)
         else:
             char = int(char)
@@ -938,7 +937,7 @@ def _write_html(write, node, encoding, namespaces, depth=-1, maxdepth=None):
     else:
         xmlns_items = []  # new namespaces in this scope
         try:
-            if tag[:1] == "{":
+            if tag[:1] == '{':
                 if tag[:_XHTML_PREFIX_LEN] == _XHTML_PREFIX:
                     tag = tag[_XHTML_PREFIX_LEN:]
                 else:
@@ -960,7 +959,7 @@ def _write_html(write, node, encoding, namespaces, depth=-1, maxdepth=None):
                 attrib_keys = attrib
             for k in attrib_keys:
                 try:
-                    if k[:1] == "{":
+                    if k[:1] == '{':
                         continue
                 except TypeError:
                     _raise_serialization_error(k)
@@ -1036,7 +1035,7 @@ def _write_xml(write, node, encoding, namespaces, pipeline, xhtml=False):
             items = []  # must always be sortable.
         xmlns_items = []  # new namespaces in this scope
         try:
-            if tag[:1] == "{":
+            if tag[:1] == '{':
                 tag, xmlns = fixtag(tag, namespaces)
                 if xmlns:
                     xmlns_items.append(xmlns)
@@ -1047,7 +1046,7 @@ def _write_xml(write, node, encoding, namespaces, pipeline, xhtml=False):
             items.sort()  # lexical order
             for k, v in items:
                 try:
-                    if k[:1] == "{":
+                    if k[:1] == '{':
                         if not pipeline:
                             if k == _MELD_ID:
                                 continue
@@ -1261,18 +1260,18 @@ _NON_ASCII_MIN = as_string('\xc2\x80', 'utf-8')  # u'\u0080'
 _NON_ASCII_MAX = as_string('\xef\xbf\xbf', 'utf-8')  # u'\uffff'
 
 _escape_map = {
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
 }
 
 _namespace_map = {
     # "well-known" namespace prefixes
-    "http://www.w3.org/XML/1998/namespace": "xml",
-    "http://www.w3.org/1999/xhtml": "html",
-    "http://www.w3.org/1999/02/22-rdf-syntax-ns#": "rdf",
-    "http://schemas.xmlsoap.org/wsdl/": "wsdl",
+    'http://www.w3.org/XML/1998/namespace': 'xml',
+    'http://www.w3.org/1999/xhtml': 'html',
+    'http://www.w3.org/1999/02/22-rdf-syntax-ns#': 'rdf',
+    'http://schemas.xmlsoap.org/wsdl/': 'wsdl',
 }
 
 
@@ -1285,7 +1284,7 @@ def _encode(s, encoding):
 
 def _raise_serialization_error(text):
     raise TypeError(
-        "cannot serialize %r (type %s)" % (text, type(text).__name__)
+        'cannot serialize %r (type %s)' % (text, type(text).__name__),
     )
 
 
@@ -1306,12 +1305,12 @@ def _encode_entity(text):
         for char in m.group():
             text = _escape_map.get(char)
             if text is None:
-                text = "&#%d;" % ord(char)
+                text = '&#%d;' % ord(char)
             append(text)
         return ''.join(out)
 
     try:
-        return _encode(_pattern.sub(_escape_entities, text), "ascii")
+        return _encode(_pattern.sub(_escape_entities, text), 'ascii')
     except TypeError:
         _raise_serialization_error(text)
 
@@ -1321,20 +1320,20 @@ def fixtag(tag, namespaces):
     # tag and namespace declaration, if any
     if isinstance(tag, QName):
         tag = tag.text
-    namespace_uri, tag = tag[1:].split("}", 1)
+    namespace_uri, tag = tag[1:].split('}', 1)
     prefix = namespaces.get(namespace_uri)
     if prefix is None:
         prefix = _namespace_map.get(namespace_uri)
         if prefix is None:
-            prefix = "ns%d" % len(namespaces)
+            prefix = 'ns%d' % len(namespaces)
         namespaces[namespace_uri] = prefix
-        if prefix == "xml":
+        if prefix == 'xml':
             xmlns = None
         else:
-            xmlns = ("xmlns:%s" % prefix, namespace_uri)
+            xmlns = ('xmlns:%s' % prefix, namespace_uri)
     else:
         xmlns = None
-    return "%s:%s" % (prefix, tag), xmlns
+    return '%s:%s' % (prefix, tag), xmlns
 
 # -----------------------------------------------------------------------------
 # End fork from Python 2.6.8 stdlib

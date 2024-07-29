@@ -122,7 +122,7 @@ class rotating_file_logger(file_logger):
             try:
                 if os.stat(self.filename)[stat.ST_SIZE] > self.maxsize:
                     self.rotate()
-            except os.error:  # file not found, probably
+            except OSError:  # file not found, probably
                 self.rotate()  # will create a new file
 
     def rotate(self):
@@ -131,8 +131,8 @@ class rotating_file_logger(file_logger):
             self.file.close()
             newname = '%s.ends%04d%02d%02d' % (self.filename, yr, mo, day)
             try:
-                open(newname, "r").close()  # check if file exists
-                newname += "-%02d%02d%02d" % (hr, min, sec)
+                open(newname).close()  # check if file exists
+                newname += '-%02d%02d%02d' % (hr, min, sec)
             except:  # YEAR_MONTH_DAY is unique
                 pass
             os.rename(self.filename, newname)
@@ -202,8 +202,8 @@ class resolving_logger:
             ip,
             self.logger_thunk(
                 message,
-                self.logger
-            )
+                self.logger,
+            ),
         )
 
 

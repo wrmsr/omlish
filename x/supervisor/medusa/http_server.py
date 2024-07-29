@@ -12,14 +12,16 @@ import socket
 import sys
 import time
 
+from ..compat import as_bytes
 from . import asynchat_25 as asynchat
+
 # async modules
 from . import asyncore_25 as asyncore
+
 # medusa modules
 from . import http_date as http_date
 from . import logger as logger
 from . import producers as producers
-from ..compat import as_bytes
 
 
 VERSION_STRING = RCS_ID.split()[2]
@@ -28,9 +30,11 @@ from ..medusa.counter import counter
 
 
 try:
-    from urllib import unquote, splitquery
+    from urllib import splitquery
+    from urllib import unquote
 except ImportError:
-    from urllib.parse import unquote, splitquery
+    from urllib.parse import splitquery
+    from urllib.parse import unquote
 
 
 # ===========================================================================
@@ -65,7 +69,7 @@ class http_request:
         self.outgoing = []
         self.reply_headers = {
             'Server': 'Medusa/%s' % VERSION_STRING,
-            'Date': http_date.build_http_date(time.time())
+            'Date': http_date.build_http_date(time.time()),
         }
 
         # New reply header list (to support multiple
@@ -137,7 +141,7 @@ class http_request:
             found_it = 1
 
         removed_headers = []
-        if not value is None:
+        if value is not None:
             if (name, value) in self.__reply_header_list:
                 removed_headers = [(name, value)]
                 found_it = 1
@@ -149,9 +153,9 @@ class http_request:
 
         if not found_it:
             if value is None:
-                search_value = "%s" % name
+                search_value = '%s' % name
             else:
-                search_value = "%s: %s" % (name, value)
+                search_value = '%s: %s' % (name, value)
 
             raise LookupError("Header '%s' not found" % search_value)
 
@@ -189,7 +193,7 @@ class http_request:
         header_tuples = self.get_reply_headers()
 
         headers = [self.response(self.reply_code)]
-        headers += ["%s: %s" % h for h in header_tuples]
+        headers += ['%s: %s' % h for h in header_tuples]
         return '\r\n'.join(headers) + '\r\n\r\n'
 
     # ---------------------------------------------------
@@ -204,14 +208,14 @@ class http_request:
     # <path>;<params>?<query>#<fragment>
     path_regex = re.compile(
         #      path      params    query   fragment
-        r'([^;?#]*)(;[^?#]*)?(\?[^#]*)?(#.*)?'
+        r'([^;?#]*)(;[^?#]*)?(\?[^#]*)?(#.*)?',
     )
 
     def split_uri(self):
         if self._split_uri is None:
             m = self.path_regex.match(self.uri)
             if m.end() != len(self.uri):
-                raise ValueError("Broken URI")
+                raise ValueError('Broken URI')
             else:
                 self._split_uri = m.groups()
         return self._split_uri
@@ -249,7 +253,7 @@ class http_request:
         else:
             self.log_info(
                 'Dropping %d bytes of incoming request data' % len(data),
-                'warning'
+                'warning',
             )
 
     def found_terminator(self):
@@ -258,7 +262,7 @@ class http_request:
         else:
             self.log_info(
                 'Unexpected end-of-record for incoming request',
-                'warning'
+                'warning',
             )
 
     def push(self, thing):
@@ -319,7 +323,7 @@ class http_request:
                 close_it = 1
             elif 'Content-Length' not in self:
                 if 'Transfer-Encoding' in self:
-                    if not self['Transfer-Encoding'] == 'chunked':
+                    if self['Transfer-Encoding'] != 'chunked':
                         close_it = 1
                 elif self.use_chunked:
                     self['Transfer-Encoding'] = 'chunked'
@@ -340,11 +344,11 @@ class http_request:
 
         if wrap_in_chunking:
             outgoing_producer = producers.chunked_producer(
-                producers.composite_producer(self.outgoing)
+                producers.composite_producer(self.outgoing),
             )
             # prepend the header
             outgoing_producer = producers.composite_producer(
-                [outgoing_header, outgoing_producer]
+                [outgoing_header, outgoing_producer],
             )
         else:
             # prepend the header
@@ -358,9 +362,9 @@ class http_request:
                 # hooking lets us log the number of bytes sent
                 producers.hooked_producer(
                     outgoing_producer,
-                    self.log
-                )
-            )
+                    self.log,
+                ),
+            ),
         )
 
         self.channel.current_request = None
@@ -396,48 +400,48 @@ class http_request:
                 self.log_date_string(time.time()),
                 self.request,
                 self.reply_code,
-                bytes
-            )
+                bytes,
+            ),
         )
 
     responses = {
-        100: "Continue",
-        101: "Switching Protocols",
-        200: "OK",
-        201: "Created",
-        202: "Accepted",
-        203: "Non-Authoritative Information",
-        204: "No Content",
-        205: "Reset Content",
-        206: "Partial Content",
-        300: "Multiple Choices",
-        301: "Moved Permanently",
-        302: "Moved Temporarily",
-        303: "See Other",
-        304: "Not Modified",
-        305: "Use Proxy",
-        400: "Bad Request",
-        401: "Unauthorized",
-        402: "Payment Required",
-        403: "Forbidden",
-        404: "Not Found",
-        405: "Method Not Allowed",
-        406: "Not Acceptable",
-        407: "Proxy Authentication Required",
-        408: "Request Time-out",
-        409: "Conflict",
-        410: "Gone",
-        411: "Length Required",
-        412: "Precondition Failed",
-        413: "Request Entity Too Large",
-        414: "Request-URI Too Large",
-        415: "Unsupported Media Type",
-        500: "Internal Server Error",
-        501: "Not Implemented",
-        502: "Bad Gateway",
-        503: "Service Unavailable",
-        504: "Gateway Time-out",
-        505: "HTTP Version not supported"
+        100: 'Continue',
+        101: 'Switching Protocols',
+        200: 'OK',
+        201: 'Created',
+        202: 'Accepted',
+        203: 'Non-Authoritative Information',
+        204: 'No Content',
+        205: 'Reset Content',
+        206: 'Partial Content',
+        300: 'Multiple Choices',
+        301: 'Moved Permanently',
+        302: 'Moved Temporarily',
+        303: 'See Other',
+        304: 'Not Modified',
+        305: 'Use Proxy',
+        400: 'Bad Request',
+        401: 'Unauthorized',
+        402: 'Payment Required',
+        403: 'Forbidden',
+        404: 'Not Found',
+        405: 'Method Not Allowed',
+        406: 'Not Acceptable',
+        407: 'Proxy Authentication Required',
+        408: 'Request Time-out',
+        409: 'Conflict',
+        410: 'Gone',
+        411: 'Length Required',
+        412: 'Precondition Failed',
+        413: 'Request Entity Too Large',
+        414: 'Request-URI Too Large',
+        415: 'Unsupported Media Type',
+        500: 'Internal Server Error',
+        501: 'Not Implemented',
+        502: 'Bad Gateway',
+        503: 'Service Unavailable',
+        504: 'Gateway Time-out',
+        505: 'HTTP Version not supported',
     }
 
     # Default error message
@@ -450,8 +454,8 @@ class http_request:
          '<p>Error code %(code)d.',
          '<p>Message: %(message)s.',
          '</body>',
-         ''
-         )
+         '',
+         ),
     )
 
     def log_info(self, msg, level):
@@ -487,7 +491,7 @@ class http_channel(asynchat.async_chat):
         return '<%s channel#: %s requests:%s>' % (
             ar,
             self.channel_number,
-            self.request_counter
+            self.request_counter,
         )
 
     # Channel Counter, Maintenance Interval...
@@ -535,7 +539,7 @@ class http_channel(asynchat.async_chat):
             # where medusa keeps running and can't be shut down.  This
             # is where MemoryError tends to get thrown, though of
             # course it could get thrown elsewhere.
-            sys.exit("Out of Memory!")
+            sys.exit('Out of Memory!')
 
     def handle_error(self):
         t, v = sys.exc_info()[:2]
@@ -680,7 +684,7 @@ class http_server(asyncore.dispatcher):
             ip = socket.gethostbyname(socket.gethostname())
         try:
             self.server_name = socket.gethostbyaddr(ip)[0]
-        except socket.error:
+        except OSError:
             self.log_info('Cannot do reverse lookup', 'warning')
             self.server_name = ip  # use the IP address as the "hostname"
 
@@ -708,7 +712,7 @@ class http_server(asyncore.dispatcher):
                 time.ctime(time.time()),
                 self.server_name,
                 port,
-            )
+            ),
         )
 
     def writable(self):
@@ -727,7 +731,7 @@ class http_server(asyncore.dispatcher):
         self.total_clients.increment()
         try:
             conn, addr = self.accept()
-        except socket.error:
+        except OSError:
             # linux: on rare occasions we get a bogus socket back from
             # accept.  socketmodule.c:makesockaddr complains that the
             # address family is unknown.  We don't want the whole server
@@ -779,7 +783,7 @@ class http_server(asyncore.dispatcher):
                  '<li>Total <b>Exceptions:</b> %s' % self.exceptions,
                  '</ul><p>'
                  '<b>Extension List</b><ul>',
-                 ])] + handler_stats + [producers.simple_producer('</ul>')]
+                 ])] + handler_stats + [producers.simple_producer('</ul>')],
         )
 
 
@@ -840,12 +844,12 @@ if __name__ == '__main__':
     if len(sys.argv) < 2:
         print('usage: %s <root> <port>' % (sys.argv[0]))
     else:
-        import supervisor.medusa.monitor as monitor
-        import supervisor.medusa.filesys as filesys
-        import supervisor.medusa.default_handler as default_handler
-        import supervisor.medusa.ftp_server as ftp_server
-        import supervisor.medusa.chat_server as chat_server
-        import supervisor.medusa.resolver as resolver
+        from supervisor.medusa import chat_server
+        from supervisor.medusa import default_handler
+        from supervisor.medusa import filesys
+        from supervisor.medusa import ftp_server
+        from supervisor.medusa import monitor
+        from supervisor.medusa import resolver
 
 
         rs = resolver.caching_resolver('127.0.0.1')
@@ -859,7 +863,7 @@ if __name__ == '__main__':
             ftp_server.dummy_authorizer(sys.argv[1]),
             port=8021,
             resolver=rs,
-            logger_object=lg
+            logger_object=lg,
         )
         cs = chat_server.chat_server('', 7777)
         if '-p' in sys.argv:

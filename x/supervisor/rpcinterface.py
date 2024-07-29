@@ -11,19 +11,19 @@ from .datatypes import signal_number
 from .events import RemoteCommunicationEvent
 from .events import notify
 from .http import NOT_DONE_YET
+from .options import VERSION
 from .options import BadCommand
 from .options import NoPermission
 from .options import NotExecutable
 from .options import NotFound
-from .options import VERSION
 from .options import make_namespec
 from .options import readFile
 from .options import split_namespec
 from .options import tailFile
-from .states import ProcessStates
 from .states import RUNNING_STATES
 from .states import SIGNALLABLE_STATES
 from .states import STOPPED_STATES
+from .states import ProcessStates
 from .states import SupervisorStates
 from .states import getProcessStateDescription
 from .states import getSupervisorStateDescription
@@ -132,7 +132,7 @@ class SupervisorNamespaceRPCInterface:
         # there is a race condition here, but ignore it.
         try:
             self.supervisord.options.remove(logfile)
-        except (OSError, IOError):
+        except OSError:
             raise RPCError(Faults.FAILED)
 
         for handler in self.supervisord.options.logger.handlers:
@@ -292,7 +292,7 @@ class SupervisorNamespaceRPCInterface:
 
         if process.get_state() == ProcessStates.UNKNOWN:
             raise RPCError(Faults.FAILED,
-                           "%s is in an unknown process state" % name)
+                           '%s is in an unknown process state' % name)
 
         process.spawn()
 
@@ -502,7 +502,7 @@ class SupervisorNamespaceRPCInterface:
 
         msg = process.signal(sig)
 
-        if not msg is None:
+        if msg is not None:
             raise RPCError(Faults.FAILED, msg)
 
         return True
@@ -808,7 +808,7 @@ class SupervisorNamespaceRPCInterface:
         try:
             # implies a reopen
             process.removelogs()
-        except (IOError, OSError):
+        except OSError:
             raise RPCError(Faults.FAILED, name)
 
         return True
@@ -848,7 +848,7 @@ class SupervisorNamespaceRPCInterface:
                     {'name': process.config.name,
                      'group': group.config.name,
                      'status': Faults.SUCCESS,
-                     'description': 'OK'}
+                     'description': 'OK'},
                 )
 
             if callbacks:
@@ -912,7 +912,7 @@ class SupervisorNamespaceRPCInterface:
             data = data.encode('utf-8')
 
         notify(
-            RemoteCommunicationEvent(type, data)
+            RemoteCommunicationEvent(type, data),
         )
 
         return True
@@ -959,7 +959,7 @@ def make_allfunc(processes, predicate, func, **extra_kwargs):
                             {'name': process.config.name,
                              'group': group.config.name,
                              'status': Faults.SUCCESS,
-                             'description': 'OK'}
+                             'description': 'OK'},
                         )
 
         if not callbacks:
@@ -984,7 +984,7 @@ def make_allfunc(processes, predicate, func, **extra_kwargs):
                         {'name': process.config.name,
                          'group': group.config.name,
                          'status': Faults.SUCCESS,
-                         'description': 'OK'}
+                         'description': 'OK'},
                     )
                     callbacks.remove(struct)
 

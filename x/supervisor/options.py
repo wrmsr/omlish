@@ -1,11 +1,14 @@
 import configparser as ConfigParser
 import errno
+import fcntl
 import getopt
 import glob
+import grp
 import os
 import platform
 import pwd
 import re
+import resource
 import signal
 import socket
 import stat
@@ -14,10 +17,6 @@ import tempfile
 import warnings
 import xmlrpc.client as xmlrpclib
 from io import StringIO
-
-import fcntl
-import grp
-import resource
 
 from . import loggers
 from . import poller
@@ -56,7 +55,7 @@ from .medusa import asyncore_25 as asyncore
 def _read_version_txt():
     mydir = os.path.abspath(os.path.dirname(__file__))
     version_txt = os.path.join(mydir, 'version.txt')
-    with open(version_txt, 'r') as f:
+    with open(version_txt) as f:
         return f.read().strip()
 
 
@@ -104,9 +103,9 @@ class Options:
         self.environ_map = {}
         self.attr_priorities = {}
         self.require_configfile = require_configfile
-        self.add(None, None, "h", "help", self.help)
-        self.add(None, None, "?", None, self.help)
-        self.add("configfile", None, "c:", "configuration=")
+        self.add(None, None, 'h', 'help', self.help)
+        self.add(None, None, '?', None, self.help)
+        self.add('configfile', None, 'c:', 'configuration=')
         self.parse_criticals = []
         self.parse_warnings = []
         self.parse_infos = []
@@ -143,16 +142,16 @@ class Options:
 
         Occurrences of "%s" in are replaced by self.progname.
         """
-        help = self.doc + "\n"
-        if help.find("%s") > 0:
-            help = help.replace("%s", self.progname)
+        help = self.doc + '\n'
+        if help.find('%s') > 0:
+            help = help.replace('%s', self.progname)
         self.stdout.write(help)
         self.exit(0)
 
     def usage(self, msg):
         """Print a brief error message to stderr and exit(2)."""
-        self.stderr.write("Error: %s\n" % str(msg))
-        self.stderr.write("For help, use %s -h\n" % self.progname)
+        self.stderr.write('Error: %s\n' % str(msg))
+        self.stderr.write('For help, use %s -h\n' % self.progname)
         self.exit(2)
 
     def add(self,
@@ -189,39 +188,39 @@ class Options:
         """
         if flag is not None:
             if handler is not None:
-                raise ValueError("use at most one of flag= and handler=")
+                raise ValueError('use at most one of flag= and handler=')
             if not long and not short:
-                raise ValueError("flag= requires a command line flag")
-            if short and short.endswith(":"):
-                raise ValueError("flag= requires a command line flag")
-            if long and long.endswith("="):
-                raise ValueError("flag= requires a command line flag")
+                raise ValueError('flag= requires a command line flag')
+            if short and short.endswith(':'):
+                raise ValueError('flag= requires a command line flag')
+            if long and long.endswith('='):
+                raise ValueError('flag= requires a command line flag')
             handler = lambda arg, flag=flag: flag
 
         if short and long:
-            if short.endswith(":") != long.endswith("="):
-                raise ValueError("inconsistent short/long options: %r %r" % (
+            if short.endswith(':') != long.endswith('='):
+                raise ValueError('inconsistent short/long options: %r %r' % (
                     short, long))
 
         if short:
-            if short[0] == "-":
+            if short[0] == '-':
                 raise ValueError("short option should not start with '-'")
             key, rest = short[:1], short[1:]
-            if rest not in ("", ":"):
+            if rest not in ('', ':'):
                 raise ValueError("short option should be 'x' or 'x:'")
-            key = "-" + key
+            key = '-' + key
             if key in self.options_map:
                 raise ValueError("duplicate short option key '%s'" % key)
             self.options_map[key] = (name, handler)
             self.short_options.append(short)
 
         if long:
-            if long[0] == "-":
+            if long[0] == '-':
                 raise ValueError("long option should not start with '-'")
             key = long
-            if key[-1] == "=":
+            if key[-1] == '=':
                 key = key[:-1]
-            key = "--" + key
+            key = '--' + key
             if key in self.options_map:
                 raise ValueError("duplicate long option key '%s'" % key)
             self.options_map[key] = (name, handler)
@@ -275,13 +274,13 @@ class Options:
         # Call getopt
         try:
             self.options, self.args = getopt.getopt(
-                args, "".join(self.short_options), self.long_options)
+                args, ''.join(self.short_options), self.long_options)
         except getopt.error as exc:
             self.usage(str(exc))
 
         # Check for positional args
         if self.args and not self.positional_args_allowed:
-            self.usage("positional arguments are not supported: %s" % (str(self.args)))
+            self.usage('positional arguments are not supported: %s' % (str(self.args)))
 
         # Process options returned by getopt
         for opt, arg in self.options:
@@ -290,10 +289,10 @@ class Options:
                 try:
                     arg = handler(arg)
                 except ValueError as msg:
-                    self.usage("invalid value for %s %r: %s" % (opt, arg, msg))
+                    self.usage('invalid value for %s %r: %s' % (opt, arg, msg))
             if name and arg is not None:
                 if getattr(self, name) is not None:
-                    self.usage("conflicting command line option %r" % opt)
+                    self.usage('conflicting command line option %r' % opt)
                 self._set(name, arg, 2)
 
         # Process environment variables
@@ -305,7 +304,7 @@ class Options:
                     try:
                         value = handler(value)
                     except ValueError as msg:
-                        self.usage("invalid environment value for %s %r: %s"
+                        self.usage('invalid environment value for %s %r: %s'
                                    % (envvar, value, msg))
                 if name and value is not None:
                     self._set(name, value, 1)
@@ -327,7 +326,7 @@ class Options:
         # in options that aren't already set from the command line.
         for name, confname in self.names_list:
             if confname:
-                parts = confname.split(".")
+                parts = confname.split('.')
                 obj = self.configroot
                 for part in parts:
                     if obj is None:
@@ -400,8 +399,8 @@ class Options:
         if parser.has_section('include'):
             parser.expand_here(self.here)
             if not parser.has_option('include', 'files'):
-                raise ValueError(".ini file has [include] section, but no "
-                                 "files setting")
+                raise ValueError('.ini file has [include] section, but no '
+                                 'files setting')
             files = parser.get('include', 'files')
             files = expand(files, expansions, 'include.files')
             files = files.split()
@@ -425,14 +424,14 @@ class Options:
                         raise ValueError(str(why))
                     else:
                         parser.expand_here(
-                            os.path.abspath(os.path.dirname(filename))
+                            os.path.abspath(os.path.dirname(filename)),
                         )
 
     def _log_parsing_messages(self, logger):
         for msg in self.parse_criticals:
             logger.critical(msg)
         for msg in self.parse_warnings:
-            logger.warn(msg)
+            logger.warning(msg)
         for msg in self.parse_infos:
             logger.info(msg)
 
@@ -457,41 +456,41 @@ class ServerOptions(Options):
         self.configroot = Dummy()
         self.configroot.supervisord = Dummy()
 
-        self.add(None, None, "v", "version", self.version)
-        self.add("nodaemon", "supervisord.nodaemon", "n", "nodaemon", flag=1,
+        self.add(None, None, 'v', 'version', self.version)
+        self.add('nodaemon', 'supervisord.nodaemon', 'n', 'nodaemon', flag=1,
                  default=0)
-        self.add("user", "supervisord.user", "u:", "user=")
-        self.add("umask", "supervisord.umask", "m:", "umask=",
+        self.add('user', 'supervisord.user', 'u:', 'user=')
+        self.add('umask', 'supervisord.umask', 'm:', 'umask=',
                  octal_type, default='022')
-        self.add("directory", "supervisord.directory", "d:", "directory=",
+        self.add('directory', 'supervisord.directory', 'd:', 'directory=',
                  existing_directory)
-        self.add("logfile", "supervisord.logfile", "l:", "logfile=",
-                 existing_dirpath, default="supervisord.log")
-        self.add("logfile_maxbytes", "supervisord.logfile_maxbytes",
-                 "y:", "logfile_maxbytes=", byte_size,
+        self.add('logfile', 'supervisord.logfile', 'l:', 'logfile=',
+                 existing_dirpath, default='supervisord.log')
+        self.add('logfile_maxbytes', 'supervisord.logfile_maxbytes',
+                 'y:', 'logfile_maxbytes=', byte_size,
                  default=50 * 1024 * 1024)  # 50MB
-        self.add("logfile_backups", "supervisord.logfile_backups",
-                 "z:", "logfile_backups=", integer, default=10)
-        self.add("loglevel", "supervisord.loglevel", "e:", "loglevel=",
-                 logging_level, default="info")
-        self.add("pidfile", "supervisord.pidfile", "j:", "pidfile=",
-                 existing_dirpath, default="supervisord.pid")
-        self.add("identifier", "supervisord.identifier", "i:", "identifier=",
-                 str, default="supervisor")
-        self.add("childlogdir", "supervisord.childlogdir", "q:", "childlogdir=",
+        self.add('logfile_backups', 'supervisord.logfile_backups',
+                 'z:', 'logfile_backups=', integer, default=10)
+        self.add('loglevel', 'supervisord.loglevel', 'e:', 'loglevel=',
+                 logging_level, default='info')
+        self.add('pidfile', 'supervisord.pidfile', 'j:', 'pidfile=',
+                 existing_dirpath, default='supervisord.pid')
+        self.add('identifier', 'supervisord.identifier', 'i:', 'identifier=',
+                 str, default='supervisor')
+        self.add('childlogdir', 'supervisord.childlogdir', 'q:', 'childlogdir=',
                  existing_directory, default=tempfile.gettempdir())
-        self.add("minfds", "supervisord.minfds",
-                 "a:", "minfds=", int, default=1024)
-        self.add("minprocs", "supervisord.minprocs",
-                 "", "minprocs=", int, default=200)
-        self.add("nocleanup", "supervisord.nocleanup",
-                 "k", "nocleanup", flag=1, default=0)
-        self.add("strip_ansi", "supervisord.strip_ansi",
-                 "t", "strip_ansi", flag=1, default=0)
-        self.add("profile_options", "supervisord.profile_options",
-                 "", "profile_options=", profile_options, default=None)
-        self.add("silent", "supervisord.silent",
-                 "s", "silent", flag=1, default=0)
+        self.add('minfds', 'supervisord.minfds',
+                 'a:', 'minfds=', int, default=1024)
+        self.add('minprocs', 'supervisord.minprocs',
+                 '', 'minprocs=', int, default=200)
+        self.add('nocleanup', 'supervisord.nocleanup',
+                 'k', 'nocleanup', flag=1, default=0)
+        self.add('strip_ansi', 'supervisord.strip_ansi',
+                 't', 'strip_ansi', flag=1, default=0)
+        self.add('profile_options', 'supervisord.profile_options',
+                 '', 'profile_options=', profile_options, default=None)
+        self.add('silent', 'supervisord.silent',
+                 's', 'silent', flag=1, default=0)
         self.pidhistory = {}
         self.process_group_configs = []
         self.signal_receiver = SignalReceiver()
@@ -515,7 +514,7 @@ class ServerOptions(Options):
                 '(including its current working directory); you '
                 'probably want to specify a "-c" argument specifying an '
                 'absolute path to a configuration file for improved '
-                'security.'
+                'security.',
             )
         return Options.default_configfile(self)
 
@@ -598,12 +597,12 @@ class ServerOptions(Options):
         need_close = False
         if not hasattr(fp, 'read'):
             if not self.exists(fp):
-                raise ValueError("could not find config file %s" % fp)
+                raise ValueError('could not find config file %s' % fp)
             try:
                 fp = self.open(fp, 'r')
                 need_close = True
-            except (IOError, OSError):
-                raise ValueError("could not read config file %s" % fp)
+            except OSError:
+                raise ValueError('could not read config file %s' % fp)
 
         parser = UnhosedConfigParser()
         parser.expansions = self.environ_expansions
@@ -626,7 +625,7 @@ class ServerOptions(Options):
         self.read_include_config(fp, parser, expansions)
 
         sections = parser.sections()
-        if not 'supervisord' in sections:
+        if 'supervisord' not in sections:
             raise ValueError('.ini file does not include supervisord section')
 
         common_expansions = {'here': self.here}
@@ -675,7 +674,7 @@ class ServerOptions(Options):
         section.rpcinterface_factories = self.get_plugins(
             parser,
             'supervisor.rpcinterface_factory',
-            'rpcinterface:'
+            'rpcinterface:',
         )
         section.process_group_configs = self.process_groups_from_parser(parser)
         for group in section.process_group_configs:
@@ -709,9 +708,9 @@ class ServerOptions(Options):
             priority = integer(get(section, 'priority', 999))
             group_processes = []
             for program in programs:
-                program_section = "program:%s" % program
-                fcgi_section = "fcgi-program:%s" % program
-                if not program_section in all_sections and not fcgi_section in all_sections:
+                program_section = 'program:%s' % program
+                fcgi_section = 'fcgi-program:%s' % program
+                if program_section not in all_sections and fcgi_section not in all_sections:
                     raise ValueError(
                         '[%s] names unknown program or fcgi-program %s' % (section, program))
                 if program_section in all_sections and fcgi_section in all_sections:
@@ -725,7 +724,7 @@ class ServerOptions(Options):
 
                 group_processes.extend(processes)
             groups.append(
-                ProcessGroupConfig(self, group_name, priority, group_processes)
+                ProcessGroupConfig(self, group_name, priority, group_processes),
             )
 
         # process "normal" homogeneous groups
@@ -738,7 +737,7 @@ class ServerOptions(Options):
             processes = self.processes_from_section(parser, section, program_name,
                                                     ProcessConfig)
             groups.append(
-                ProcessGroupConfig(self, program_name, priority, processes)
+                ProcessGroupConfig(self, program_name, priority, processes),
             )
 
         # process "event listener" homogeneous groups
@@ -792,7 +791,7 @@ class ServerOptions(Options):
             groups.append(
                 EventListenerPoolConfig(self, pool_name, priority, processes,
                                         buffer_size, pool_events,
-                                        result_handler)
+                                        result_handler),
             )
 
         # process fastcgi homogeneous groups
@@ -851,7 +850,7 @@ class ServerOptions(Options):
                                                     FastCGIProcessConfig)
             groups.append(
                 FastCGIGroupConfig(self, program_name, priority, processes,
-                                   socket_config)
+                                   socket_config),
             )
 
         groups.sort()
@@ -863,7 +862,7 @@ class ServerOptions(Options):
             path = sock[7:]
             # Check it's an absolute path
             if not os.path.isabs(path):
-                raise ValueError("Unix socket path %s is not an absolute path",
+                raise ValueError('Unix socket path %s is not an absolute path',
                                  path)
             path = normalize_path(path)
 
@@ -880,8 +879,8 @@ class ServerOptions(Options):
                                           backlog=socket_backlog)
 
         if socket_owner is not None or socket_mode is not None:
-            raise ValueError("socket_owner and socket_mode params should"
-                             + " only be used with a Unix domain socket")
+            raise ValueError('socket_owner and socket_mode params should'
+                             + ' only be used with a Unix domain socket')
 
         m = re.match(r'tcp://([^\s:]+):(\d+)$', sock)
         if m:
@@ -890,7 +889,7 @@ class ServerOptions(Options):
             return InetStreamSocketConfig(host, port,
                                           backlog=socket_backlog)
 
-        raise ValueError("Bad socket format %s", sock)
+        raise ValueError('Bad socket format %s', sock)
 
     def processes_from_section(self, parser, section, group_name,
                                klass=None):
@@ -959,7 +958,7 @@ class ServerOptions(Options):
             get(section, 'process_name', '%(program_name)s', do_expand=False))
 
         if numprocs > 1:
-            if not '%(process_num)' in process_name:
+            if '%(process_num)' not in process_name:
                 # process_name needs to include process_num when we
                 # represent a group of processes
                 raise ValueError(
@@ -968,7 +967,7 @@ class ServerOptions(Options):
 
         if stopasgroup and not killasgroup:
             raise ValueError(
-                "Cannot set stopasgroup=true and killasgroup=false"
+                'Cannot set stopasgroup=true and killasgroup=false',
             )
 
         for process_num in range(numprocs_start, numprocs + numprocs_start):
@@ -1182,10 +1181,10 @@ class ServerOptions(Options):
         pid = os.fork()
         if pid != 0:
             # Parent
-            self.logger.blather("supervisord forked; parent exiting")
+            self.logger.blather('supervisord forked; parent exiting')
             os._exit(0)
         # Child
-        self.logger.info("daemonizing the supervisord process")
+        self.logger.info('daemonizing the supervisord process')
         if self.directory:
             try:
                 os.chdir(self.directory)
@@ -1193,14 +1192,14 @@ class ServerOptions(Options):
                 self.logger.critical("can't chdir into %r: %s"
                                      % (self.directory, err))
             else:
-                self.logger.info("set current directory: %r"
+                self.logger.info('set current directory: %r'
                                  % self.directory)
         os.close(0)
-        self.stdin = sys.stdin = sys.__stdin__ = open("/dev/null")
+        self.stdin = sys.stdin = sys.__stdin__ = open('/dev/null')
         os.close(1)
-        self.stdout = sys.stdout = sys.__stdout__ = open("/dev/null", "w")
+        self.stdout = sys.stdout = sys.__stdout__ = open('/dev/null', 'w')
         os.close(2)
-        self.stderr = sys.stderr = sys.__stderr__ = open("/dev/null", "w")
+        self.stderr = sys.stderr = sys.__stderr__ = open('/dev/null', 'w')
         os.setsid()
         os.umask(self.umask)
         # XXX Stevens, in his Advanced Unix book, section 13.3 (page
@@ -1214,7 +1213,7 @@ class ServerOptions(Options):
         try:
             with open(self.pidfile, 'w') as f:
                 f.write('%s\n' % pid)
-        except (IOError, OSError):
+        except OSError:
             self.logger.critical('could not write pidfile %s' % self.pidfile)
         else:
             self.unlink_pidfile = True
@@ -1278,7 +1277,7 @@ class ServerOptions(Options):
         try:
             self.httpservers = self.make_http_servers(supervisord)
             self.unlink_socketfiles = True
-        except socket.error as why:
+        except OSError as why:
             if why.args[0] == errno.EADDRINUSE:
                 self.usage('Another program is already listening on '
                            'a port that one of our HTTP servers is '
@@ -1309,8 +1308,8 @@ class ServerOptions(Options):
         fnre = re.compile(r'.+?---%s-\S+\.log\.{0,1}\d{0,4}' % self.identifier)
         try:
             filenames = os.listdir(childlogdir)
-        except (IOError, OSError):
-            self.logger.warn('Could not clear childlog dir')
+        except OSError:
+            self.logger.warning('Could not clear childlog dir')
             return
 
         for filename in filenames:
@@ -1318,8 +1317,8 @@ class ServerOptions(Options):
                 pathname = os.path.join(childlogdir, filename)
                 try:
                     self.remove(pathname)
-                except (OSError, IOError):
-                    self.logger.warn('Failed to clean up %r' % pathname)
+                except OSError:
+                    self.logger.warning('Failed to clean up %r' % pathname)
 
     def get_socket_map(self):
         return asyncore.socket_map
@@ -1349,7 +1348,7 @@ class ServerOptions(Options):
             if code not in (errno.ECHILD, errno.EINTR):
                 self.logger.critical(
                     'waitpid error %r; '
-                    'a process may not be cleaned up properly' % code
+                    'a process may not be cleaned up properly' % code,
                 )
             if code == errno.EINTR:
                 self.logger.blather('EINTR during reap')
@@ -1362,7 +1361,7 @@ class ServerOptions(Options):
         subprocesses.  Returns None on success or a string error message if
         privileges could not be dropped."""
         if user is None:
-            return "No user specified to setuid to!"
+            return 'No user specified to setuid to!'
 
         # get uid for user, which can be a number or username
         try:
@@ -1386,7 +1385,7 @@ class ServerOptions(Options):
             # current one.  this allows a supervisord running as an
             # unprivileged user "foo" to start a process where the config
             # has "user=foo" (same user) in it.
-            return
+            return None
 
         if current_uid != 0:
             return "Can't drop privilege as nonroot user"
@@ -1502,7 +1501,7 @@ class ServerOptions(Options):
             self.logger,
             self.logfile,
             format,
-            rotating=not not self.logfile_maxbytes,
+            rotating=bool(self.logfile_maxbytes),
             maxbytes=self.logfile_maxbytes,
             backups=self.logfile_backups,
         )
@@ -1556,9 +1555,9 @@ class ServerOptions(Options):
 
     def get_path(self):
         """Return a list corresponding to $PATH, or a default."""
-        path = ["/bin", "/usr/bin", "/usr/local/bin"]
-        if "PATH" in os.environ:
-            p = os.environ["PATH"]
+        path = ['/bin', '/usr/bin', '/usr/local/bin']
+        if 'PATH' in os.environ:
+            p = os.environ['PATH']
             if p:
                 path = p.split(os.pathsep)
         return path
@@ -1571,13 +1570,13 @@ class ServerOptions(Options):
             raise NotFound("can't find command %r" % filename)
 
         elif stat.S_ISDIR(st[stat.ST_MODE]):
-            raise NotExecutable("command at %r is a directory" % filename)
+            raise NotExecutable('command at %r is a directory' % filename)
 
         elif not (stat.S_IMODE(st[stat.ST_MODE]) & 0o111):
-            raise NotExecutable("command at %r is not executable" % filename)
+            raise NotExecutable('command at %r is not executable' % filename)
 
         elif not os.access(filename, os.X_OK):
-            raise NoPermission("no permission to run command %r" % filename)
+            raise NoPermission('no permission to run command %r' % filename)
 
     def reopenlogs(self):
         self.logger.info('supervisord logreopen')
@@ -1668,14 +1667,14 @@ class ClientOptions(Options):
         # without the default plugin, please write your own supervisorctl.
         self.plugin_factories = [default_factory]
 
-        self.add("interactive", "supervisorctl.interactive", "i",
-                 "interactive", flag=1, default=0)
-        self.add("prompt", "supervisorctl.prompt", default="supervisor")
-        self.add("serverurl", "supervisorctl.serverurl", "s:", "serverurl=",
-                 url, default="http://localhost:9001")
-        self.add("username", "supervisorctl.username", "u:", "username=")
-        self.add("password", "supervisorctl.password", "p:", "password=")
-        self.add("history", "supervisorctl.history_file", "r:", "history_file=")
+        self.add('interactive', 'supervisorctl.interactive', 'i',
+                 'interactive', flag=1, default=0)
+        self.add('prompt', 'supervisorctl.prompt', default='supervisor')
+        self.add('serverurl', 'supervisorctl.serverurl', 's:', 'serverurl=',
+                 url, default='http://localhost:9001')
+        self.add('username', 'supervisorctl.username', 'u:', 'username=')
+        self.add('password', 'supervisorctl.password', 'p:', 'password=')
+        self.add('history', 'supervisorctl.history_file', 'r:', 'history_file=')
 
     def realize(self, *arg, **kw):
         Options.realize(self, *arg, **kw)
@@ -1693,12 +1692,12 @@ class ClientOptions(Options):
         if not hasattr(fp, 'read'):
             self.here = os.path.dirname(normalize_path(fp))
             if not self.exists(fp):
-                raise ValueError("could not find config file %s" % fp)
+                raise ValueError('could not find config file %s' % fp)
             try:
                 fp = self.open(fp, 'r')
                 need_close = True
-            except (IOError, OSError):
-                raise ValueError("could not read config file %s" % fp)
+            except OSError:
+                raise ValueError('could not read config file %s' % fp)
 
         parser = UnhosedConfigParser()
         parser.expansions = self.environ_expansions
@@ -1713,7 +1712,7 @@ class ClientOptions(Options):
         self.read_include_config(fp, parser, parser.expansions)
 
         sections = parser.sections()
-        if not 'supervisorctl' in sections:
+        if 'supervisorctl' not in sections:
             raise ValueError('.ini file does not include supervisorctl section')
         serverurl = parser.getdefault('serverurl', 'http://localhost:9001',
                                       expansions={'here': self.here})
@@ -1741,7 +1740,7 @@ class ClientOptions(Options):
         self.plugin_factories += self.get_plugins(
             parser,
             'supervisor.ctl_factory',
-            'ctlplugin:'
+            'ctlplugin:',
         )
 
         return section
@@ -1755,7 +1754,7 @@ class ClientOptions(Options):
             'http://127.0.0.1',
             transport=xmlrpc.SupervisorTransport(self.username,
                                                  self.password,
-                                                 self.serverurl)
+                                                 self.serverurl),
         )
 
 
@@ -1781,8 +1780,8 @@ class UnhosedConfigParser(ConfigParser.RawConfigParser):
         self.expansions = {}
 
     def read_string(self, string, source='<string>'):
-        '''Parse configuration data from a string.  This is intended
-        to be used in tests only.  We add this method for Py 2/3 compat.'''
+        """Parse configuration data from a string.  This is intended
+        to be used in tests only.  We add this method for Py 2/3 compat."""
         try:
             return ConfigParser.RawConfigParser.read_string(
                 self, string, source)  # Python 3.2 or later
@@ -1790,11 +1789,11 @@ class UnhosedConfigParser(ConfigParser.RawConfigParser):
             return self.readfp(StringIO(string))
 
     def read(self, filenames, **kwargs):
-        '''Attempt to read and parse a list of filenames, returning a list
+        """Attempt to read and parse a list of filenames, returning a list
         of filenames which were successfully parsed.  This is a method of
         RawConfigParser that is overridden to build self.section_to_file,
         which is a mapping of section names to the files they came from.
-        '''
+        """
         if isinstance(filenames, str):  # RawConfigParser compat
             filenames = [filenames]
 
@@ -1825,7 +1824,7 @@ class UnhosedConfigParser(ConfigParser.RawConfigParser):
                 list(self.expansions.items()) + list(expansions.items()))
 
             optval = expand(optval, combined_expansions,
-                            "%s.%s" % (section, option))
+                            '%s.%s' % (section, option))
 
         return optval
 
@@ -1838,12 +1837,12 @@ class UnhosedConfigParser(ConfigParser.RawConfigParser):
         for section in self.sections():
             for key, value in self.items(section):
                 if HERE_FORMAT in value:
-                    assert here is not None, "here has not been set to a path"
+                    assert here is not None, 'here has not been set to a path'
                     value = value.replace(HERE_FORMAT, here)
                     self.set(section, key, value)
 
 
-class Config(object):
+class Config:
     def __ne__(self, other):
         return not self.__eq__(other)
 
@@ -1910,8 +1909,8 @@ class ProcessConfig(Config):
         return True
 
     def get_path(self):
-        '''Return a list corresponding to $PATH that is configured to be set
-        in the process environment, or the system default.'''
+        """Return a list corresponding to $PATH that is configured to be set
+        in the process environment, or the system default."""
         if self.environment is not None:
             path = self.environment.get('PATH')
             if path is not None:
@@ -1939,9 +1938,9 @@ class ProcessConfig(Config):
         p = self.options.make_pipes(use_stderr)
         stdout_fd, stderr_fd, stdin_fd = p['stdout'], p['stderr'], p['stdin']
         dispatchers = {}
-        from .dispatchers import POutputDispatcher
-        from .dispatchers import PInputDispatcher
         from . import events
+        from .dispatchers import PInputDispatcher
+        from .dispatchers import POutputDispatcher
         if stdout_fd is not None:
             etype = events.ProcessCommunicationStdoutEvent
             dispatchers[stdout_fd] = POutputDispatcher(proc, etype, stdout_fd)
@@ -1961,10 +1960,10 @@ class EventListenerConfig(ProcessConfig):
         p = self.options.make_pipes(use_stderr)
         stdout_fd, stderr_fd, stdin_fd = p['stdout'], p['stderr'], p['stdin']
         dispatchers = {}
+        from . import events
         from .dispatchers import PEventListenerDispatcher
         from .dispatchers import PInputDispatcher
         from .dispatchers import POutputDispatcher
-        from . import events
         if stdout_fd is not None:
             dispatchers[stdout_fd] = PEventListenerDispatcher(proc, 'stdout',
                                                               stdout_fd)
@@ -2114,7 +2113,7 @@ def readFile(filename, offset, length):
                 else:
                     f.seek(offset)
                     data = f.read(length)
-    except (OSError, IOError):
+    except OSError:
         raise ValueError('FAILED')
 
     return data
@@ -2156,7 +2155,7 @@ def tailFile(filename, offset, length):
 
             offset = sz
             return [as_string(data), offset, overflow]
-    except (OSError, IOError):
+    except OSError:
         return ['', offset, False]
 
 
@@ -2172,20 +2171,20 @@ def decode_wait_status(sts):
     """
     if os.WIFEXITED(sts):
         es = os.WEXITSTATUS(sts) & 0xffff
-        msg = "exit status %s" % es
+        msg = 'exit status %s' % es
         return es, msg
     elif os.WIFSIGNALED(sts):
         sig = os.WTERMSIG(sts)
-        msg = "terminated by %s" % signame(sig)
-        if hasattr(os, "WCOREDUMP"):
+        msg = 'terminated by %s' % signame(sig)
+        if hasattr(os, 'WCOREDUMP'):
             iscore = os.WCOREDUMP(sts)
         else:
             iscore = sts & 0x80
         if iscore:
-            msg += " (core dumped)"
+            msg += ' (core dumped)'
         return -1, msg
     else:
-        msg = "unknown termination cause 0x%04x" % sts
+        msg = 'unknown termination cause 0x%04x' % sts
         return -1, msg
 
 
@@ -2201,17 +2200,17 @@ def signame(sig):
 
     if _signames is None:
         _init_signames()
-    return _signames.get(sig) or "signal %d" % sig
+    return _signames.get(sig) or 'signal %d' % sig
 
 
 def _init_signames():
     global _signames
     d = {}
     for k, v in signal.__dict__.items():
-        k_startswith = getattr(k, "startswith", None)
+        k_startswith = getattr(k, 'startswith', None)
         if k_startswith is None:
             continue
-        if k_startswith("SIG") and not k_startswith("SIG_"):
+        if k_startswith('SIG') and not k_startswith('SIG_'):
             d[v] = k
     _signames = d
 
@@ -2243,11 +2242,11 @@ def expand(s, expansions, name):
         raise ValueError(
             'Format string %r for %r contains names (%s) which cannot be '
             'expanded. Available names: %s' %
-            (s, name, str(ex), ", ".join(available)))
+            (s, name, str(ex), ', '.join(available)))
     except Exception as ex:
         raise ValueError(
             'Format string %r for %r is badly formatted: %s' %
-            (s, name, str(ex))
+            (s, name, str(ex)),
         )
 
 

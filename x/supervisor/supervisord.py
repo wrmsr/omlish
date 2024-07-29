@@ -303,15 +303,15 @@ class Supervisor:
         sig = self.options.get_signal()
         if sig:
             if sig in (signal.SIGTERM, signal.SIGINT, signal.SIGQUIT):
-                self.options.logger.warn(
+                self.options.logger.warning(
                     'received %s indicating exit request' % signame(sig))
                 self.options.mood = SupervisorStates.SHUTDOWN
             elif sig == signal.SIGHUP:
                 if self.options.mood == SupervisorStates.SHUTDOWN:
-                    self.options.logger.warn(
+                    self.options.logger.warning(
                         'ignored %s indicating restart request (shutdown in progress)' % signame(sig))
                 else:
-                    self.options.logger.warn(
+                    self.options.logger.warning(
                         'received %s indicating restart request' % signame(sig))
                     self.options.mood = SupervisorStates.RESTARTING
             elif sig == signal.SIGCHLD:
@@ -360,7 +360,7 @@ def profile(cmd, globals, locals, sort_order, callers):  # pragma: no cover
 
 # Main program
 def main(args=None, test=False):
-    assert os.name == "posix", "This code makes Unix-specific assumptions"
+    assert os.name == 'posix', 'This code makes Unix-specific assumptions'
     # if we hup, restart by making a new Supervisor()
     first = True
     while 1:
@@ -388,5 +388,5 @@ def go(options):  # pragma: no cover
         pass
 
 
-if __name__ == "__main__":  # pragma: no cover
+if __name__ == '__main__':  # pragma: no cover
     main()

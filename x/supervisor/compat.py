@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 
 
 def as_bytes(s, encoding='utf8'):

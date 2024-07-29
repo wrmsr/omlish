@@ -46,7 +46,7 @@ class default_handler:
     # Pathnames that are tried when a URI resolves to a directory name
     directory_defaults = [
         'index.html',
-        'default.html'
+        'default.html',
     ]
 
     default_file_producer = producers.file_producer
@@ -66,7 +66,7 @@ class default_handler:
         return '<%s (%s hits) at %x>' % (
             self.IDENT,
             self.hit_counter,
-            id(self)
+            id(self),
         )
 
     # always match, since this is a default
@@ -96,7 +96,7 @@ class default_handler:
             if path and path[-1] != '/':
                 request['Location'] = 'http://%s/%s/' % (
                     request.channel.server.server_name,
-                    path
+                    path,
                 )
                 request.error(301)
                 return
@@ -155,7 +155,7 @@ class default_handler:
                 return
         try:
             file = self.filesystem.open(path, 'rb')
-        except IOError:
+        except OSError:
             request.error(404)
             return
 
@@ -185,7 +185,7 @@ class default_handler:
             + '  <li><b>Total Hits:</b> %s' % self.hit_counter
             + '  <li><b>Files Delivered:</b> %s' % self.file_counter
             + '  <li><b>Cache Hits:</b> %s' % self.cache_counter
-            + '</ul>'
+            + '</ul>',
         )
 
 
@@ -194,14 +194,14 @@ class default_handler:
 # of parsing dates...
 IF_MODIFIED_SINCE = re.compile(
     'If-Modified-Since: ([^;]+)((; length=([0-9]+)$)|$)',
-    re.IGNORECASE
+    re.IGNORECASE,
 )
 
 USER_AGENT = re.compile('User-Agent: (.*)', re.IGNORECASE)
 
 CONTENT_TYPE = re.compile(
     r'Content-Type: ([^;]+)((; boundary=([A-Za-z0-9\'\(\)+_,./:=?-]+)$)|$)',
-    re.IGNORECASE
+    re.IGNORECASE,
 )
 
 get_header = http_server.get_header

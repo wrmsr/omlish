@@ -25,7 +25,6 @@ def clear():
 
 class Event:
     """ Abstract event type """
-    pass
 
 
 class ProcessLogEvent(Event):

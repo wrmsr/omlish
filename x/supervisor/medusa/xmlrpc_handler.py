@@ -5,10 +5,10 @@
 
 # Based on "xmlrpcserver.py" by Fredrik Lundh (fredrik@pythonware.com)
 
-VERSION = "$Id: xmlrpc_handler.py,v 1.6 2004/04/21 14:09:24 akuchling Exp $"
+VERSION = '$Id: xmlrpc_handler.py,v 1.6 2004/04/21 14:09:24 akuchling Exp $'
 
-from . import http_server as http_server
 from ..compat import as_string
+from . import http_server as http_server
 
 
 try:
@@ -45,7 +45,7 @@ class xmlrpc_handler:
             except:
                 # report exception back to server
                 response = xmlrpclib.dumps(
-                    xmlrpclib.Fault(1, "%s:%s" % (sys.exc_info()[0], sys.exc_info()[1]))
+                    xmlrpclib.Fault(1, '%s:%s' % (sys.exc_info()[0], sys.exc_info()[1])),
                 )
             else:
                 response = xmlrpclib.dumps(response, methodresponse=1)
@@ -60,7 +60,7 @@ class xmlrpc_handler:
 
     def call(self, method, params):
         # override this method to implement RPC methods
-        raise Exception("NotYetImplemented")
+        raise Exception('NotYetImplemented')
 
 
 class collector:
@@ -100,7 +100,7 @@ if __name__ == '__main__':
 
         def call(self, method, params):
             print('method="%s" params=%s' % (method, params))
-            return "Sure, that works"
+            return 'Sure, that works'
 
 
     import supervisor.medusa.asyncore_25 as asyncore
