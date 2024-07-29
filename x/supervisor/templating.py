@@ -22,7 +22,6 @@ from io import StringIO
 import html.entities as htmlentitydefs
 from html.parser import HTMLParser
 from .compat import StringTypes
-from .compat import unichr
 from .compat import as_bytes
 from .compat import as_string
 
@@ -825,7 +824,7 @@ class HTMLXMLParser(HTMLParser):
             char = int(char[1:], 16)
         else:
             char = int(char)
-        self.builder.data(unichr(char))
+        self.builder.data(chr(char))
 
     def handle_entityref(self, name):
         entity = htmlentitydefs.entitydefs.get(name)
@@ -834,7 +833,7 @@ class HTMLXMLParser(HTMLParser):
                 entity = ord(entity)
             else:
                 entity = int(entity[2:-1])
-            self.builder.data(unichr(entity))
+            self.builder.data(chr(entity))
         else:
             self.unknown_entityref(name)
 

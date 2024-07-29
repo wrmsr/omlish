@@ -19,7 +19,6 @@ import configparser as ConfigParser
 from .compat import as_bytes, as_string
 import xmlrpc.client as xmlrpclib
 from io import StringIO
-from .compat import basestring
 from .compat import import_spec
 
 from .medusa import asyncore_25 as asyncore
@@ -992,7 +991,7 @@ class ServerOptions(Options):
             for k in ('stdout', 'stderr'):
                 lf_key = '%s_logfile' % k
                 lf_val = get(section, lf_key, Automatic)
-                if isinstance(lf_val, basestring):
+                if isinstance(lf_val, str):
                     lf_val = expand(lf_val, expansions, lf_key)
                 lf_val = logfile_name(lf_val)
                 logfiles[lf_key] = lf_val
@@ -1797,7 +1796,7 @@ class UnhosedConfigParser(ConfigParser.RawConfigParser):
         RawConfigParser that is overridden to build self.section_to_file,
         which is a mapping of section names to the files they came from.
         '''
-        if isinstance(filenames, basestring):  # RawConfigParser compat
+        if isinstance(filenames, str):  # RawConfigParser compat
             filenames = [filenames]
 
         ok_filenames = []
@@ -1822,7 +1821,7 @@ class UnhosedConfigParser(ConfigParser.RawConfigParser):
             else:
                 optval = default
 
-        if do_expand and isinstance(optval, basestring):
+        if do_expand and isinstance(optval, str):
             combined_expansions = dict(
                 list(self.expansions.items()) + list(expansions.items()))
 

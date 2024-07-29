@@ -31,8 +31,6 @@ import threading
 
 import xmlrpc.client as xmlrpclib
 import urllib.parse as urlparse
-from .compat import unicode
-from .compat import raw_input
 from .compat import as_string
 
 from .medusa import asyncore_25 as asyncore
@@ -214,7 +212,7 @@ class Controller(cmd.Cmd):
                     if e.errcode == 401:
                         if self.options.interactive:
                             self.output('Server requires authentication')
-                            username = raw_input('Username:')
+                            username = input('Username:')
                             password = getpass.getpass(prompt='Password:')
                             self.output('')
                             self.options.username = username
@@ -244,7 +242,7 @@ class Controller(cmd.Cmd):
         return func
 
     def output(self, message):
-        if isinstance(message, unicode):
+        if isinstance(message, str):
             message = message.encode('utf-8')
         self.stdout.write(message + '\n')
 
@@ -996,8 +994,7 @@ class DefaultControllerPlugin(ControllerPluginBase):
             return
 
         if self.ctl.options.interactive:
-            yesno = raw_input('Really shut the remote supervisord process '
-                              'down y/N? ')
+            yesno = input('Really shut the remote supervisord process down y/N? ')
             really = yesno.lower().startswith('y')
         else:
             really = 1
@@ -1036,8 +1033,7 @@ class DefaultControllerPlugin(ControllerPluginBase):
             return
 
         if self.ctl.options.interactive:
-            yesno = raw_input('Really restart the remote supervisord process '
-                              'y/N? ')
+            yesno = input('Really restart the remote supervisord process y/N? ')
             really = yesno.lower().startswith('y')
         else:
             really = 1
@@ -1389,7 +1385,7 @@ class DefaultControllerPlugin(ControllerPluginBase):
 
             # this takes care of the user input
             while True:
-                inp = raw_input() + '\n'
+                inp = input() + '\n'
                 try:
                     supervisor.sendProcessStdin(name, inp)
                 except xmlrpclib.Fault as e:
