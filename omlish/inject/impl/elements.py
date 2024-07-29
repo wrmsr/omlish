@@ -20,6 +20,7 @@ Element Types:
 """
 import typing as ta
 
+from . import multis  # noqa
 from ... import check
 from ... import collections as col
 from ... import lang
@@ -37,7 +38,6 @@ from ..private import Private
 from ..scopes import ScopeBinding
 from ..types import Scope
 from .bindings import BindingImpl
-from .multis import MultiProviderImpl
 from .providers import make_provider_impl
 from .scopes import make_scope_impl
 
@@ -125,20 +125,8 @@ class ElementCollection(lang.Final):
 
     ##
 
-    def _make_binding_impls(self, e: Element) -> ta.Iterable[BindingImpl]:
-        if isinstance(e, Binding):
-            p = make_provider_impl(e.provider)
-            return (BindingImpl(e.key, p, e.scope, e),)
-
-        elif isinstance(e, (Eager, Expose)):
-            return ()
-
-        else:
-            raise TypeError(e)
-
     def _build_binding_impl_map(self, em: ta.Mapping[Key | None, ta.Sequence[Element]]) -> dict[Key, BindingImpl]:
         pm: dict[Key, BindingImpl] = {}
-        mm: dict[Key, list[BindingImpl]] = {}
         for k, es in em.items():
             if k is None:
                 continue
@@ -149,21 +137,14 @@ class ElementCollection(lang.Final):
             es_by_ty.pop(Expose, None)
 
             if (bs := es_by_ty.pop(Binding, None)):
-                bis = []
-                for b in bs:
-                    p = make_provider_impl(b.provider)
-                    bis.append(BindingImpl(b.key, p, b.scope, b))
-                if False:  # k.multi:
-                    mm.setdefault(k, []).extend(bis)
-                else:
-                    if len(bis) > 1:
-                        raise DuplicateKeyError(k)
-                    pm[k] = check.single(bis)
+                if len(bs) > 1:
+                    raise DuplicateKeyError(k)
+                b: Binding = check.single(bs)
+                p = make_provider_impl(b.provider)
+                pm[k] = BindingImpl(b.key, p, b.scope, b)
 
-        if mm:
-            for k, aps in mm.items():
-                mp = MultiProviderImpl([ap.provider for ap in aps])
-                pm[k] = BindingImpl(k, mp)  # FIXME: SCOPING
+            if es_by_ty:
+                raise TypeError(set(es_by_ty))
 
         return pm
 
