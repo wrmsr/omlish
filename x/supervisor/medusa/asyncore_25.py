@@ -55,7 +55,8 @@ import os
 from errno import EALREADY, EINPROGRESS, EWOULDBLOCK, ECONNRESET, \
     ENOTCONN, ESHUTDOWN, EINTR, EISCONN, errorcode
 
-from ..compat import as_string, as_bytes
+from ..compat import as_string
+from ..compat import as_bytes
 
 
 try:
