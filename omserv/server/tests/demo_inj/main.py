@@ -113,7 +113,7 @@ def _bind() -> inj.Elements:
         inj.MapBinding(inj.Key(ta.Mapping[Endpoint, AsgiApp]), Endpoint('GET', '/hi'), inj.Key(HiAsgiApp)),
 
         inj.as_binding(ByeAsgiApp),
-        inj.MapBinding(inj.Key(ta.Mapping[Endpoint, AsgiApp]), Endpoint('GET', '/hi'), inj.Key(ByeAsgiApp)),
+        inj.MapBinding(inj.Key(ta.Mapping[Endpoint, AsgiApp]), Endpoint('GET', '/bye'), inj.Key(ByeAsgiApp)),
     )
 
 
