@@ -114,8 +114,8 @@ def _bind() -> inj.Elements:
     return inj.as_elements(
         inj.singleton(InjApp),
 
-        inj.as_(inj.multi(InjApp.Handler), inj.const([InjApp.Handler(Endpoint('GET', '/hi'), HiAsgiApp())])),
-        inj.as_(inj.multi(InjApp.Handler), inj.const([InjApp.Handler(Endpoint('GET', '/bye'), ByeAsgiApp())])),
+        inj.as_(inj.set_multi(InjApp.Handler), inj.const(InjApp.Handler(Endpoint('GET', '/hi'), HiAsgiApp()))),
+        inj.as_(inj.set_multi(InjApp.Handler), inj.const(InjApp.Handler(Endpoint('GET', '/bye'), ByeAsgiApp()))),
     )
 
 
@@ -123,12 +123,12 @@ def _main() -> None:
     logs.configure_standard_logging(logging.INFO)
 
     async def _a_main():
-        with inj.create_injector(_bind()) as injector:
-            await serve(
-                injector[InjApp],
-                Config(),
-                handle_shutdown_signals=True,
-            )
+        injector = inj.create_injector(_bind())
+        await serve(
+            injector[InjApp],
+            Config(),
+            handle_shutdown_signals=True,
+        )
 
     anyio.run(_a_main)
 
