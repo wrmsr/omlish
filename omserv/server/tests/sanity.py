@@ -1,5 +1,5 @@
-from ..types import ASGIReceiveCallable
-from ..types import ASGISendCallable
+from ..types import AsgiReceiveCallable
+from ..types import AsgiSendCallable
 from ..types import Scope
 
 
@@ -9,8 +9,8 @@ SANITY_RESPONSE_BODY = b'Hello & Goodbye'
 
 async def sanity_framework(
         scope: Scope,
-        receive: ASGIReceiveCallable,
-        send: ASGISendCallable,
+        receive: AsgiReceiveCallable,
+        send: AsgiSendCallable,
 ) -> None:
     body = b''
     if scope['type'] == 'websocket':
