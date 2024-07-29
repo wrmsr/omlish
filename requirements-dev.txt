@@ -61,3 +61,5 @@ ujson==5.10.0
 python-rapidjson==1.19
 
 markupsafe==2.1.5
+
+redis==5.0.7
