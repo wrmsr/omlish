@@ -15,7 +15,7 @@ T = ta.TypeVar('T')
 @dc.dataclass(frozen=True)
 @dc.extra_params(cache_hash=True)
 class Key(lang.Final, ta.Generic[T]):
-    ty: rfl.Type
+    ty: rfl.Type = dc.xfield(check=lambda o: isinstance(o, rfl.TYPES))
     tag: ta.Any = dc.field(default=None, kw_only=True)
 
 
