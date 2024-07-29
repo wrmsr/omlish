@@ -29,20 +29,20 @@ import socket
 import sys
 import threading
 
-from supervisor.compat import xmlrpclib
-from supervisor.compat import urlparse
-from supervisor.compat import unicode
-from supervisor.compat import raw_input
-from supervisor.compat import as_string
+from .compat import xmlrpclib
+from .compat import urlparse
+from .compat import unicode
+from .compat import raw_input
+from .compat import as_string
 
-from supervisor.medusa import asyncore_25 as asyncore
+from .medusa import asyncore_25 as asyncore
 
-from supervisor.options import ClientOptions
-from supervisor.options import make_namespec
-from supervisor.options import split_namespec
-from supervisor import xmlrpc
-from supervisor import states
-from supervisor import http_client
+from .options import ClientOptions
+from .options import make_namespec
+from .options import split_namespec
+from . import xmlrpc
+from . import states
+from . import http_client
 
 class LSBInitExitStatuses:
     SUCCESS = 0
@@ -257,7 +257,7 @@ class Controller(cmd.Cmd):
         try:
             supervisor = self.get_supervisor()
             api = supervisor.getVersion() # deprecated
-            from supervisor import rpcinterface
+            from . import rpcinterface
             if api != rpcinterface.API_VERSION:
                 self.output(
                     'Sorry, this version of supervisorctl expects to '

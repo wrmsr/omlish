@@ -15,45 +15,45 @@ import platform
 import warnings
 import fcntl
 
-from supervisor.compat import PY2
-from supervisor.compat import ConfigParser
-from supervisor.compat import as_bytes, as_string
-from supervisor.compat import xmlrpclib
-from supervisor.compat import StringIO
-from supervisor.compat import basestring
-from supervisor.compat import import_spec
+from .compat import PY2
+from .compat import ConfigParser
+from .compat import as_bytes, as_string
+from .compat import xmlrpclib
+from .compat import StringIO
+from .compat import basestring
+from .compat import import_spec
 
-from supervisor.medusa import asyncore_25 as asyncore
+from .medusa import asyncore_25 as asyncore
 
-from supervisor.datatypes import process_or_group_name
-from supervisor.datatypes import boolean
-from supervisor.datatypes import integer
-from supervisor.datatypes import name_to_uid
-from supervisor.datatypes import gid_for_uid
-from supervisor.datatypes import existing_dirpath
-from supervisor.datatypes import byte_size
-from supervisor.datatypes import signal_number
-from supervisor.datatypes import list_of_exitcodes
-from supervisor.datatypes import dict_of_key_value_pairs
-from supervisor.datatypes import logfile_name
-from supervisor.datatypes import list_of_strings
-from supervisor.datatypes import octal_type
-from supervisor.datatypes import existing_directory
-from supervisor.datatypes import logging_level
-from supervisor.datatypes import colon_separated_user_group
-from supervisor.datatypes import inet_address
-from supervisor.datatypes import InetStreamSocketConfig
-from supervisor.datatypes import UnixStreamSocketConfig
-from supervisor.datatypes import url
-from supervisor.datatypes import Automatic
-from supervisor.datatypes import Syslog
-from supervisor.datatypes import auto_restart
-from supervisor.datatypes import profile_options
+from .datatypes import process_or_group_name
+from .datatypes import boolean
+from .datatypes import integer
+from .datatypes import name_to_uid
+from .datatypes import gid_for_uid
+from .datatypes import existing_dirpath
+from .datatypes import byte_size
+from .datatypes import signal_number
+from .datatypes import list_of_exitcodes
+from .datatypes import dict_of_key_value_pairs
+from .datatypes import logfile_name
+from .datatypes import list_of_strings
+from .datatypes import octal_type
+from .datatypes import existing_directory
+from .datatypes import logging_level
+from .datatypes import colon_separated_user_group
+from .datatypes import inet_address
+from .datatypes import InetStreamSocketConfig
+from .datatypes import UnixStreamSocketConfig
+from .datatypes import url
+from .datatypes import Automatic
+from .datatypes import Syslog
+from .datatypes import auto_restart
+from .datatypes import profile_options
 
-from supervisor import loggers
-from supervisor import states
-from supervisor import xmlrpc
-from supervisor import poller
+from . import loggers
+from . import states
+from . import xmlrpc
+from . import poller
 
 def _read_version_txt():
     mydir = os.path.abspath(os.path.dirname(__file__))
@@ -765,7 +765,7 @@ class ServerOptions(Options):
                 raise ValueError('[%s] section requires an "events" line' %
                                  section)
 
-            from supervisor.events import EventTypes
+            from .events import EventTypes
             pool_events = []
             for pool_event_name in pool_event_names:
                 pool_event = getattr(EventTypes, pool_event_name, None)
@@ -1502,7 +1502,7 @@ class ServerOptions(Options):
         self._log_parsing_messages(self.logger)
 
     def make_http_servers(self, supervisord):
-        from supervisor.http import make_http_servers
+        from .http import make_http_servers
         return make_http_servers(self, supervisord)
 
     def close_fd(self, fd):
@@ -1654,7 +1654,7 @@ class ClientOptions(Options):
         self.configroot.supervisorctl.password = None
         self.configroot.supervisorctl.history_file = None
 
-        from supervisor.supervisorctl import DefaultControllerPlugin
+        from .supervisorctl import DefaultControllerPlugin
         default_factory = ('default', DefaultControllerPlugin, {})
         # we always add the default factory. If you want to a supervisorctl
         # without the default plugin, please write your own supervisorctl.
@@ -1919,7 +1919,7 @@ class ProcessConfig(Config):
             self.stderr_logfile = get_autoname(name, sid, 'stderr')
 
     def make_process(self, group=None):
-        from supervisor.process import Subprocess
+        from .process import Subprocess
         process = Subprocess(self)
         process.group = group
         return process
@@ -1929,9 +1929,9 @@ class ProcessConfig(Config):
         p = self.options.make_pipes(use_stderr)
         stdout_fd,stderr_fd,stdin_fd = p['stdout'],p['stderr'],p['stdin']
         dispatchers = {}
-        from supervisor.dispatchers import POutputDispatcher
-        from supervisor.dispatchers import PInputDispatcher
-        from supervisor import events
+        from .dispatchers import POutputDispatcher
+        from .dispatchers import PInputDispatcher
+        from . import events
         if stdout_fd is not None:
             etype = events.ProcessCommunicationStdoutEvent
             dispatchers[stdout_fd] = POutputDispatcher(proc, etype, stdout_fd)
@@ -1950,10 +1950,10 @@ class EventListenerConfig(ProcessConfig):
         p = self.options.make_pipes(use_stderr)
         stdout_fd,stderr_fd,stdin_fd = p['stdout'],p['stderr'],p['stdin']
         dispatchers = {}
-        from supervisor.dispatchers import PEventListenerDispatcher
-        from supervisor.dispatchers import PInputDispatcher
-        from supervisor.dispatchers import POutputDispatcher
-        from supervisor import events
+        from .dispatchers import PEventListenerDispatcher
+        from .dispatchers import PInputDispatcher
+        from .dispatchers import POutputDispatcher
+        from . import events
         if stdout_fd is not None:
             dispatchers[stdout_fd] = PEventListenerDispatcher(proc, 'stdout',
                                                               stdout_fd)
@@ -1969,7 +1969,7 @@ class FastCGIProcessConfig(ProcessConfig):
     def make_process(self, group=None):
         if group is None:
             raise NotImplementedError('FastCGI programs require a group')
-        from supervisor.process import FastCGISubprocess
+        from .process import FastCGISubprocess
         process = FastCGISubprocess(self)
         process.group = group
         return process
@@ -2009,7 +2009,7 @@ class ProcessGroupConfig(Config):
             config.create_autochildlogs()
 
     def make_group(self):
-        from supervisor.process import ProcessGroup
+        from .process import ProcessGroup
         return ProcessGroup(self)
 
 class EventListenerPoolConfig(Config):
@@ -2042,7 +2042,7 @@ class EventListenerPoolConfig(Config):
             config.create_autochildlogs()
 
     def make_group(self):
-        from supervisor.process import EventListenerPool
+        from .process import EventListenerPool
         return EventListenerPool(self)
 
 class FastCGIGroupConfig(ProcessGroupConfig):
@@ -2066,7 +2066,7 @@ class FastCGIGroupConfig(ProcessGroupConfig):
         return ProcessGroupConfig.__eq__(self, other)
 
     def make_group(self):
-        from supervisor.process import FastCGIProcessGroup
+        from .process import FastCGIProcessGroup
         return FastCGIProcessGroup(self)
 
 def readFile(filename, offset, length):

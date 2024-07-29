@@ -4,40 +4,40 @@ import datetime
 import errno
 import types
 
-from supervisor.compat import as_string
-from supervisor.compat import as_bytes
-from supervisor.compat import unicode
+from .compat import as_string
+from .compat import as_bytes
+from .compat import unicode
 
-from supervisor.datatypes import (
+from .datatypes import (
     Automatic,
     signal_number,
     )
 
-from supervisor.options import readFile
-from supervisor.options import tailFile
-from supervisor.options import BadCommand
-from supervisor.options import NotExecutable
-from supervisor.options import NotFound
-from supervisor.options import NoPermission
-from supervisor.options import make_namespec
-from supervisor.options import split_namespec
-from supervisor.options import VERSION
+from .options import readFile
+from .options import tailFile
+from .options import BadCommand
+from .options import NotExecutable
+from .options import NotFound
+from .options import NoPermission
+from .options import make_namespec
+from .options import split_namespec
+from .options import VERSION
 
-from supervisor.events import notify
-from supervisor.events import RemoteCommunicationEvent
+from .events import notify
+from .events import RemoteCommunicationEvent
 
-from supervisor.http import NOT_DONE_YET
-from supervisor.xmlrpc import (
+from .http import NOT_DONE_YET
+from .xmlrpc import (
     capped_int,
     Faults,
     RPCError,
     )
 
-from supervisor.states import SupervisorStates
-from supervisor.states import getSupervisorStateDescription
-from supervisor.states import ProcessStates
-from supervisor.states import getProcessStateDescription
-from supervisor.states import (
+from .states import SupervisorStates
+from .states import getSupervisorStateDescription
+from .states import ProcessStates
+from .states import getProcessStateDescription
+from .states import (
     RUNNING_STATES,
     STOPPED_STATES,
     SIGNALLABLE_STATES

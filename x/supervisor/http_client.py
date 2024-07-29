@@ -3,12 +3,12 @@
 import sys
 import socket
 
-from supervisor.compat import as_bytes
-from supervisor.compat import as_string
-from supervisor.compat import encodestring
-from supervisor.compat import PY2
-from supervisor.compat import urlparse
-from supervisor.medusa import asynchat_25 as asynchat
+from .compat import as_bytes
+from .compat import as_string
+from .compat import encodestring
+from .compat import PY2
+from .compat import urlparse
+from .medusa import asynchat_25 as asynchat
 
 CR = b'\x0d'
 LF = b'\x0a'

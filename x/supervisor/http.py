@@ -12,18 +12,18 @@ try:
 except ImportError:  # Windows
     import getpass as pwd
 
-from supervisor.compat import urllib
-from supervisor.compat import sha1
-from supervisor.compat import as_bytes
-from supervisor.compat import as_string
-from supervisor.medusa import asyncore_25 as asyncore
-from supervisor.medusa import http_date
-from supervisor.medusa import http_server
-from supervisor.medusa import producers
-from supervisor.medusa import filesys
-from supervisor.medusa import default_handler
+from .compat import urllib
+from .compat import sha1
+from .compat import as_bytes
+from .compat import as_string
+from .medusa import asyncore_25 as asyncore
+from .medusa import http_date
+from .medusa import http_server
+from .medusa import producers
+from .medusa import filesys
+from .medusa import default_handler
 
-from supervisor.medusa.auth_handler import auth_handler
+from .medusa.auth_handler import auth_handler
 
 class NOT_DONE_YET:
     pass
@@ -472,7 +472,7 @@ class supervisor_http_server(http_server.http_server):
     def prebind(self, sock, logger_object):
         """ Override __init__ to do logger setup earlier so it can
         go to our logger object instead of stdout """
-        from supervisor.medusa import logger
+        from .medusa import logger
 
         if not logger_object:
             logger_object = logger.file_logger(sys.stdout)
@@ -489,8 +489,8 @@ class supervisor_http_server(http_server.http_server):
         self.set_reuse_addr()
 
     def postbind(self):
-        from supervisor.medusa.counter import counter
-        from supervisor.medusa.http_server import VERSION_STRING
+        from .medusa.counter import counter
+        from .medusa.http_server import VERSION_STRING
 
         self.listen(1024)
 
@@ -721,7 +721,7 @@ class logtail_handler:
             process_name = process_name_and_channel
             channel = 'stdout'
 
-        from supervisor.options import split_namespec
+        from .options import split_namespec
         group_name, process_name = split_namespec(process_name)
 
         group = self.supervisord.process_groups.get(group_name)
@@ -811,9 +811,9 @@ def make_http_servers(options, supervisord):
         else:
             raise ValueError('Cannot determine socket type %r' % family)
 
-        from supervisor.xmlrpc import supervisor_xmlrpc_handler
-        from supervisor.xmlrpc import SystemNamespaceRPCInterface
-        from supervisor.web import supervisor_ui_handler
+        from .xmlrpc import supervisor_xmlrpc_handler
+        from .xmlrpc import SystemNamespaceRPCInterface
+        from .web import supervisor_ui_handler
 
         subinterfaces = []
         for name, factory, d in options.rpcinterface_factories:

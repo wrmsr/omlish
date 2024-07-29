@@ -754,7 +754,7 @@ class http_server (asyncore.dispatcher):
         self.handlers.remove (handler)
 
     def status (self):
-        from supervisor.medusa.util import english_bytes
+        from .medusa.util import english_bytes
         def nice_bytes (n):
             return ''.join(english_bytes (n))
 

@@ -7,21 +7,21 @@ import traceback
 import types
 from xml.etree.ElementTree import iterparse
 
-from supervisor.compat import xmlrpclib
-from supervisor.compat import StringIO
-from supervisor.compat import urlparse
-from supervisor.compat import as_bytes
-from supervisor.compat import as_string
-from supervisor.compat import encodestring
-from supervisor.compat import decodestring
-from supervisor.compat import httplib
-from supervisor.compat import PY2
+from .compat import xmlrpclib
+from .compat import StringIO
+from .compat import urlparse
+from .compat import as_bytes
+from .compat import as_string
+from .compat import encodestring
+from .compat import decodestring
+from .compat import httplib
+from .compat import PY2
 
-from supervisor.medusa.http_server import get_header
-from supervisor.medusa.xmlrpc_handler import xmlrpc_handler
-from supervisor.medusa import producers
+from .medusa.http_server import get_header
+from .medusa.xmlrpc_handler import xmlrpc_handler
+from .medusa import producers
 
-from supervisor.http import NOT_DONE_YET
+from .http import NOT_DONE_YET
 
 class Faults:
     UNKNOWN_METHOD = 1

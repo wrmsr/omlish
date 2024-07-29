@@ -5,9 +5,9 @@ import signal
 import socket
 import shlex
 
-from supervisor.compat import urlparse
-from supervisor.compat import long
-from supervisor.loggers import getLevelNumByDescription
+from .compat import urlparse
+from .compat import long
+from .loggers import getLevelNumByDescription
 
 def process_or_group_name(name):
     """Ensures that a process or group name is not created with

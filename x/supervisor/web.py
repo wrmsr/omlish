@@ -4,33 +4,33 @@ import time
 import traceback
 import datetime
 
-from supervisor import templating
+from . import templating
 
-from supervisor.compat import urllib
-from supervisor.compat import urlparse
-from supervisor.compat import as_bytes
-from supervisor.compat import as_string
-from supervisor.compat import PY2
-from supervisor.compat import unicode
+from .compat import urllib
+from .compat import urlparse
+from .compat import as_bytes
+from .compat import as_string
+from .compat import PY2
+from .compat import unicode
 
-from supervisor.medusa import producers
-from supervisor.medusa.http_server import http_date
-from supervisor.medusa.http_server import get_header
-from supervisor.medusa.xmlrpc_handler import collector
+from .medusa import producers
+from .medusa.http_server import http_date
+from .medusa.http_server import get_header
+from .medusa.xmlrpc_handler import collector
 
-from supervisor.process import ProcessStates
-from supervisor.http import NOT_DONE_YET
+from .process import ProcessStates
+from .http import NOT_DONE_YET
 
-from supervisor.options import VERSION
-from supervisor.options import make_namespec
-from supervisor.options import split_namespec
+from .options import VERSION
+from .options import make_namespec
+from .options import split_namespec
 
-from supervisor.xmlrpc import SystemNamespaceRPCInterface
-from supervisor.xmlrpc import RootRPCInterface
-from supervisor.xmlrpc import Faults
-from supervisor.xmlrpc import RPCError
+from .xmlrpc import SystemNamespaceRPCInterface
+from .xmlrpc import RootRPCInterface
+from .xmlrpc import Faults
+from .xmlrpc import RPCError
 
-from supervisor.rpcinterface import SupervisorNamespaceRPCInterface
+from .rpcinterface import SupervisorNamespaceRPCInterface
 
 class DeferredWebProducer:
     """ A medusa producer that implements a deferred callback; requires
