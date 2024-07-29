@@ -38,8 +38,8 @@ class MapProviderImpl(ProviderImpl, lang.Final):
             yield from e.v.providers
 
     def provide(self, injector: Injector) -> ta.Any:
-        rv = set()
-        for ep in self.ps:
-            o = ep.provide(injector)
-            rv.add(o)
+        rv = {}
+        for e in self.es:
+            o = e.v.provide(injector)
+            rv[e.k] = o
         return rv
