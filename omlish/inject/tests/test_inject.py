@@ -17,7 +17,7 @@ def test_inject():
 
 def test_multi():
     es = inj.as_elements(
-        inj.bind_set_provider(ta.AbstractSet[int]),
+        inj.bind_set_provider(inj.Key(ta.AbstractSet[int])),
         inj.SetBinding(inj.Key(ta.AbstractSet[int]), inj.Key(int, tag='four twenty')),
         inj.SetBinding(inj.Key(ta.AbstractSet[int]), inj.Key(int, tag='four twenty one')),
         inj.Binding(inj.Key(int, tag='four twenty'), inj.const(420)),
