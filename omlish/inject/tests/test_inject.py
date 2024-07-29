@@ -20,14 +20,14 @@ def test_set_multi():
         inj.bind_set_provider(ta.AbstractSet[int]),
 
         inj.Binding(inj.Key(int, tag='four twenty'), inj.const(420)),
-        inj.SetBinding(inj.Key(ta.AbstractSet[int]), inj.Key(int, tag='four twenty')),
+        inj.SetBinding(inj.as_key(ta.AbstractSet[int]), inj.Key(int, tag='four twenty')),
 
         inj.Binding(inj.Key(int, tag='four twenty one'), inj.const(421)),
-        inj.SetBinding(inj.Key(ta.AbstractSet[int]), inj.Key(int, tag='four twenty one')),
+        inj.SetBinding(inj.as_key(ta.AbstractSet[int]), inj.Key(int, tag='four twenty one')),
     )
 
     i = inj.create_injector(es)
-    assert i.provide(inj.Key(ta.AbstractSet[int])) == {420, 421}
+    assert i.provide(inj.as_key(ta.AbstractSet[int])) == {420, 421}
 
 
 def test_map_multi():
@@ -35,14 +35,14 @@ def test_map_multi():
         inj.bind_map_provider(ta.Mapping[str, int]),
 
         inj.Binding(inj.Key(int, tag='four twenty'), inj.const(420)),
-        inj.MapBinding(inj.Key(ta.Mapping[str, int]), 'a', inj.Key(int, tag='four twenty')),
+        inj.MapBinding(inj.as_key(ta.Mapping[str, int]), 'a', inj.Key(int, tag='four twenty')),
 
         inj.Binding(inj.Key(int, tag='four twenty one'), inj.const(421)),
-        inj.MapBinding(inj.Key(ta.Mapping[str, int]), 'b', inj.Key(int, tag='four twenty one')),
+        inj.MapBinding(inj.as_key(ta.Mapping[str, int]), 'b', inj.Key(int, tag='four twenty one')),
     )
 
     i = inj.create_injector(es)
-    assert i.provide(inj.Key(ta.Mapping[str, int])) == {'a': 420, 'b': 421}
+    assert i.provide(inj.as_key(ta.Mapping[str, int])) == {'a': 420, 'b': 421}
 
 
 def test_optional():
