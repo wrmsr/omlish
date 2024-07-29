@@ -18,17 +18,16 @@ class ImplFor:
 def bind_impl(cls: type[Configurable], impl_cls: type[Configurable]) -> inj.Elements:
     if not issubclass(impl_cls, cls):
         raise TypeError(impl_cls, cls)
+    inst = ImplFor(cls, impl_cls)
     return inj.as_elements(
-        inj.Binding(
-            inj.Key(ImplFor, tag=cls, multi=inj.SetMulti()),
-            inj.const(ImplFor(cls, impl_cls)),
-        ),
+        inj.SetBinding(inj.Key(ta.AbstractSet[ImplFor], tag=cls), inj.Key(ImplFor, tag=id(inst))),
+        inj.Binding(inj.Key(ImplFor, tag=id(inst)), inj.const(inst)),
     )
 
 
 def bind_factory(cls: type[Configurable]) -> inj.Elements:
     def outer(i: inj.Injector):
-        ifs = i.provide(inj.Key(ImplFor, tag=cls, multi=inj.SetMulti()))
+        ifs = i.provide(inj.Key(ta.AbstractSet[ImplFor], tag=cls))
         ifd = {ic.impl_cls.Config: ic for ic in ifs}
 
         def inner(config):
@@ -40,6 +39,7 @@ def bind_factory(cls: type[Configurable]) -> inj.Elements:
 
     fac_cls = ta.Callable[[cls.Config], cls]  # type: ignore
     return inj.as_elements(
+        inj.bind_set_provider(inj.Key(ta.AbstractSet[ImplFor], tag=cls)),
         inj.singleton(inj.Binding(
             inj.Key(fac_cls),  # type: ignore
             inj.fn(outer, fac_cls),  # type: ignore
