@@ -13,10 +13,12 @@ import re
 import sys
 import time
 
-from ..compat import as_string, as_bytes
-from ..compat import encodestring, decodestring
+from ..compat import as_string
+from ..compat import as_bytes
+from base64 import encodebytes as encodestring
+from base64 import decodebytes as decodestring
 from ..compat import long
-from ..compat import md5
+from hashlib import md5
 
 from . import counter as counter
 from . import default_handler as default_handler

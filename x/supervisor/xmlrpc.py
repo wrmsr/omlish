@@ -12,8 +12,8 @@ from io import StringIO
 import urllib.parse as urlparse
 from .compat import as_bytes
 from .compat import as_string
-from .compat import encodestring
-from .compat import decodestring
+from base64 import encodebytes as encodestring
+from base64 import decodebytes as decodestring
 import http.client as httplib
 
 from .medusa.http_server import get_header

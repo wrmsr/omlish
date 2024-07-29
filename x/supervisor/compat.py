@@ -31,38 +31,7 @@ def is_text_stream(stream):
     return isinstance(stream, _io._TextIOBase)
 
 
-from base64 import decodebytes as decodestring, encodebytes as encodestring
-
-from xmlrpc.client import Fault
-
-from string import ascii_letters as letters
-
-from hashlib import md5
-
-import _thread as thread
-
 StringTypes = (str,)
-
-from html import escape
-
-import html.entities as htmlentitydefs
-
-from html.parser import HTMLParser
-
-# Begin importlib/setuptools compatibility code
-
-# Supervisor used pkg_resources (a part of setuptools) to load package
-# resources for 15 years, until setuptools 67.5.0 (2023-03-05) deprecated
-# the use of pkg_resources.  On Python 3.8 or later, Supervisor now uses
-# importlib (part of Python 3 stdlib).  Unfortunately, on Python < 3.8,
-# Supervisor needs to use pkg_resources despite its deprecation.  The PyPI
-# backport packages "importlib-resources" and "importlib-metadata" couldn't
-# be added as dependencies to Supervisor because they require even more
-# dependencies that would likely cause some Supervisor installs to fail.
-from warnings import filterwarnings as _fw
-
-
-_fw("ignore", message="pkg_resources is deprecated as an API")
 
 from importlib.metadata import EntryPoint as _EntryPoint
 

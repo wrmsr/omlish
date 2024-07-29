@@ -1,4 +1,4 @@
-from ..compat import escape
+from html import escape
 
 
 def html_repr(object):

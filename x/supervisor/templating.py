@@ -19,8 +19,8 @@ from xml.etree.ElementTree import (
 
 from io import StringIO
 
-from .compat import htmlentitydefs
-from .compat import HTMLParser
+import html.entities as htmlentitydefs
+from html.parser import HTMLParser
 from .compat import StringTypes
 from .compat import unichr
 from .compat import as_bytes
