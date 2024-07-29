@@ -22,10 +22,13 @@ def is_text_stream(stream):
 
 from importlib.metadata import EntryPoint as _EntryPoint
 
+
 def import_spec(spec):
     return _EntryPoint(None, spec, None).load()
 
+
 import importlib.resources as _importlib_resources
+
 
 def resource_filename(package, path):
     return str(_importlib_resources.files(package).joinpath(path))

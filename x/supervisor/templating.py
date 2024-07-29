@@ -5,22 +5,18 @@
 # Supervisor at the time this file was bundled with Supervisor.
 
 import email
-import re
-
-from xml.etree.ElementTree import (
-    Comment,
-    ElementPath,
-    ProcessingInstruction,
-    QName,
-    TreeBuilder,
-    XMLParser,
-    parse as et_parse
-)
-
-from io import StringIO
-
 import html.entities as htmlentitydefs
+import re
 from html.parser import HTMLParser
+from io import StringIO
+from xml.etree.ElementTree import Comment
+from xml.etree.ElementTree import ElementPath
+from xml.etree.ElementTree import ProcessingInstruction
+from xml.etree.ElementTree import QName
+from xml.etree.ElementTree import TreeBuilder
+from xml.etree.ElementTree import XMLParser
+from xml.etree.ElementTree import parse as et_parse
+
 from .compat import as_bytes
 from .compat import as_string
 
@@ -50,6 +46,7 @@ _XML_PROLOG_END = as_bytes('?>\n', encoding='latin1')
 _DOCTYPE_BEGIN = as_bytes('<!DOCTYPE', encoding='latin1')
 _PUBLIC = as_bytes('PUBLIC', encoding='latin1')
 _DOCTYPE_END = as_bytes('>\n', encoding='latin1')
+
 
 def encode(text, encoding):
     if not isinstance(text, bytes):

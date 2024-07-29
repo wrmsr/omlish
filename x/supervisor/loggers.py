@@ -7,15 +7,16 @@ idiosyncratic and a bit slow for our purposes (we don't use threads).
 # This module must not depend on any non-stdlib modules to
 # avoid circular import problems
 
-import os
 import errno
+import os
 import sys
 import time
 import traceback
 
 import syslog
-from .compat import is_text_stream
+
 from .compat import as_string
+from .compat import is_text_stream
 
 
 class LevelsByName:

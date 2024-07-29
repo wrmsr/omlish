@@ -46,17 +46,24 @@ many of the difficult problems for you, making the task of building
 sophisticated high-performance network servers and clients a snap.
 """
 
-import select
+import os
 import socket
 import sys
 import time
+from errno import EALREADY
+from errno import ECONNRESET
+from errno import EINPROGRESS
+from errno import EINTR
+from errno import EISCONN
+from errno import ENOTCONN
+from errno import ESHUTDOWN
+from errno import EWOULDBLOCK
+from errno import errorcode
 
-import os
-from errno import EALREADY, EINPROGRESS, EWOULDBLOCK, ECONNRESET, \
-    ENOTCONN, ESHUTDOWN, EINTR, EISCONN, errorcode
+import select
 
-from ..compat import as_string
 from ..compat import as_bytes
+from ..compat import as_string
 
 
 try:

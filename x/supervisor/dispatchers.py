@@ -1,15 +1,15 @@
 import errno
-from .medusa.asynchat_25 import find_prefix_at_end
-from .medusa.asyncore_25 import compact_traceback
 
+from . import loggers
 from .compat import as_string
-from .events import notify
 from .events import EventRejectedEvent
 from .events import ProcessLogStderrEvent
 from .events import ProcessLogStdoutEvent
+from .events import notify
+from .medusa.asynchat_25 import find_prefix_at_end
+from .medusa.asyncore_25 import compact_traceback
 from .states import EventListenerStates
 from .states import getEventListenerStateDescription
-from . import loggers
 
 
 class PDispatcher:

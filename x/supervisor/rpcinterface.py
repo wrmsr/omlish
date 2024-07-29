@@ -1,46 +1,35 @@
-import os
-import time
 import datetime
 import errno
+import os
+import time
 import types
 
-from .compat import as_string
 from .compat import as_bytes
-
-from .datatypes import (
-    Automatic,
-    signal_number,
-)
-
-from .options import readFile
-from .options import tailFile
+from .compat import as_string
+from .datatypes import Automatic
+from .datatypes import signal_number
+from .events import RemoteCommunicationEvent
+from .events import notify
+from .http import NOT_DONE_YET
 from .options import BadCommand
+from .options import NoPermission
 from .options import NotExecutable
 from .options import NotFound
-from .options import NoPermission
-from .options import make_namespec
-from .options import split_namespec
 from .options import VERSION
-
-from .events import notify
-from .events import RemoteCommunicationEvent
-
-from .http import NOT_DONE_YET
-from .xmlrpc import (
-    capped_int,
-    Faults,
-    RPCError,
-)
-
-from .states import SupervisorStates
-from .states import getSupervisorStateDescription
+from .options import make_namespec
+from .options import readFile
+from .options import split_namespec
+from .options import tailFile
 from .states import ProcessStates
+from .states import RUNNING_STATES
+from .states import SIGNALLABLE_STATES
+from .states import STOPPED_STATES
+from .states import SupervisorStates
 from .states import getProcessStateDescription
-from .states import (
-    RUNNING_STATES,
-    STOPPED_STATES,
-    SIGNALLABLE_STATES
-)
+from .states import getSupervisorStateDescription
+from .xmlrpc import Faults
+from .xmlrpc import RPCError
+from .xmlrpc import capped_int
 
 
 API_VERSION = '3.0'

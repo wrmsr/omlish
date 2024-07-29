@@ -47,6 +47,7 @@ you - by calling your self.found_terminator() method.
 """
 
 import socket
+
 from . import asyncore_25 as asyncore
 from ..compat import as_bytes
 

@@ -32,16 +32,15 @@ Options:
 """
 
 import os
-import time
 import signal
+import time
 
-from .medusa import asyncore_25 as asyncore
-
+from . import events
 from .compat import as_string
+from .medusa import asyncore_25 as asyncore
 from .options import ServerOptions
 from .options import decode_wait_status
 from .options import signame
-from . import events
 from .states import SupervisorStates
 from .states import getProcessStateDescription
 
