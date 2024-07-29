@@ -15,7 +15,6 @@ from .compat import as_string
 from .compat import encodestring
 from .compat import decodestring
 from .compat import httplib
-from .compat import PY2
 
 from .medusa.http_server import get_header
 from .medusa.xmlrpc_handler import xmlrpc_handler
@@ -388,12 +387,6 @@ class supervisor_xmlrpc_handler(xmlrpc_handler):
 
         try:
             try:
-                # on 2.x, the Expat parser doesn't like Unicode which actually
-                # contains non-ASCII characters. It's a bit of a kludge to
-                # do it conditionally here, but it's down to how underlying
-                # libs behave
-                if PY2:
-                    data = data.encode('ascii', 'xmlcharrefreplace')
                 params, method = self.loads(data)
             except:
                 logger.error(

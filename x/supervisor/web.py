@@ -10,7 +10,6 @@ from .compat import urllib
 from .compat import urlparse
 from .compat import as_bytes
 from .compat import as_string
-from .compat import PY2
 from .compat import unicode
 
 from .medusa import producers
@@ -124,12 +123,6 @@ class DeferredWebProducer:
                 [outgoing_header, outgoing_producer]
             )
         else:
-            # fix AttributeError: 'unicode' object has no attribute 'more'
-            if PY2 and (len(self.request.outgoing) > 0):
-                body = self.request.outgoing[0]
-                if isinstance(body, unicode):
-                    self.request.outgoing[0] = producers.simple_producer(body)
-
             # prepend the header
             self.request.outgoing.insert(0, outgoing_header)
             outgoing_producer = producers.composite_producer(

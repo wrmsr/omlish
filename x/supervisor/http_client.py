@@ -6,7 +6,6 @@ import socket
 from .compat import as_bytes
 from .compat import as_string
 from .compat import encodestring
-from .compat import PY2
 from .compat import urlparse
 from .medusa import asynchat_25 as asynchat
 
@@ -40,15 +39,9 @@ class Listener(object):
         try:
             sys.stdout.write(sdata)
         except UnicodeEncodeError:
-            if PY2:
-                # This might seem like The Wrong Thing To Do (writing bytes
-                # rather than text to an output stream), but it seems to work
-                # OK for Python 2.7.
-                sys.stdout.write(data)
-            else:
-                s = ('Unable to write Unicode to stdout because it has '
-                     'encoding %s' % sys.stdout.encoding)
-                raise ValueError(s)
+            s = ('Unable to write Unicode to stdout because it has '
+                 'encoding %s' % sys.stdout.encoding)
+            raise ValueError(s)
         sys.stdout.flush()
 
     def close(self, url):

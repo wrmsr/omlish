@@ -18,7 +18,6 @@ from xml.etree.ElementTree import (
 )
 
 from .compat import (
-    PY2,
     htmlentitydefs,
     HTMLParser,
     StringIO,
@@ -55,14 +54,10 @@ _DOCTYPE_BEGIN = as_bytes('<!DOCTYPE', encoding='latin1')
 _PUBLIC = as_bytes('PUBLIC', encoding='latin1')
 _DOCTYPE_END = as_bytes('>\n', encoding='latin1')
 
-if PY2:
-    def encode(text, encoding):
-        return text.encode(encoding)
-else:
-    def encode(text, encoding):
-        if not isinstance(text, bytes):
-            text = text.encode(encoding)
-        return text
+def encode(text, encoding):
+    if not isinstance(text, bytes):
+        text = text.encode(encoding)
+    return text
 
 
 # replace element factory
