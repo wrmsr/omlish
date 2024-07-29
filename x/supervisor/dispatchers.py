@@ -50,8 +50,8 @@ class PDispatcher:
                 repr(self),
                 t,
                 v,
-                tbinfo
-            )
+                tbinfo,
+            ),
         )
         self.close()
 
@@ -132,15 +132,15 @@ class POutputDispatcher(PDispatcher):
                 self.normallog,
                 filename=logfile,
                 fmt='%(message)s',
-                rotating=not not maxbytes,  # optimization
+                rotating=bool(maxbytes),  # optimization
                 maxbytes=maxbytes,
-                backups=backups
+                backups=backups,
             )
 
         if to_syslog:
             loggers.handle_syslog(
                 self.normallog,
-                fmt=config.name + ' %(message)s'
+                fmt=config.name + ' %(message)s',
             )
 
     def _init_capturelog(self):
@@ -195,14 +195,13 @@ class POutputDispatcher(PDispatcher):
                 if self.stdout_events_enabled:
                     notify(
                         ProcessLogStdoutEvent(self.process,
-                                              self.process.pid, data)
+                                              self.process.pid, data),
                     )
-            else:  # channel == stderr
-                if self.stderr_events_enabled:
-                    notify(
-                        ProcessLogStderrEvent(self.process,
-                                              self.process.pid, data)
-                    )
+            elif self.stderr_events_enabled:
+                notify(
+                    ProcessLogStderrEvent(self.process,
+                                          self.process.pid, data),
+                )
 
     def record_output(self):
         if self.capturelog is None:
@@ -255,7 +254,7 @@ class POutputDispatcher(PDispatcher):
                 event = self.event_type(self.process, self.process.pid, data)
                 notify(event)
 
-                msg = "%(procname)r %(channel)s emitted a comm event"
+                msg = '%(procname)r %(channel)s emitted a comm event'
                 self.process.config.options.logger.debug(msg,
                                                          procname=procname,
                                                          channel=channel)
@@ -313,7 +312,7 @@ class PEventListenerDispatcher(PDispatcher):
                 self.childlog,
                 logfile,
                 '%(message)s',
-                rotating=not not maxbytes,  # optimization
+                rotating=bool(maxbytes),  # optimization
                 maxbytes=maxbytes,
                 backups=backups,
             )
@@ -417,8 +416,8 @@ class PEventListenerDispatcher(PDispatcher):
                         result_line = as_string(result_line)
                     except UnicodeDecodeError:
                         result_line = 'Undecodable: %r' % result_line
-                    process.config.options.logger.warn(
-                        '%s: bad result line: \'%s\'' % (procname, result_line)
+                    process.config.options.logger.warning(
+                        '%s: bad result line: \'%s\'' % (procname, result_line),
                     )
                     self._change_listener_state(EventListenerStates.UNKNOWN)
                     self.state_buffer = b''
@@ -454,11 +453,11 @@ class PEventListenerDispatcher(PDispatcher):
             logger.debug('%s: event was processed' % procname)
             self._change_listener_state(EventListenerStates.ACKNOWLEDGED)
         except RejectEvent:
-            logger.warn('%s: event was rejected' % procname)
+            logger.warning('%s: event was rejected' % procname)
             self._change_listener_state(EventListenerStates.ACKNOWLEDGED)
             notify(EventRejectedEvent(process, process.event))
         except:
-            logger.warn('%s: event caused an error' % procname)
+            logger.warning('%s: event caused an error' % procname)
             self._change_listener_state(EventListenerStates.UNKNOWN)
             notify(EventRejectedEvent(process, process.event))
 
@@ -470,7 +469,7 @@ class PEventListenerDispatcher(PDispatcher):
         msg = '%s: %s -> %s' % (
             procname,
             getEventListenerStateDescription(old_state),
-            getEventListenerStateDescription(new_state)
+            getEventListenerStateDescription(new_state),
         )
         process.config.options.logger.debug(msg)
 
@@ -479,7 +478,7 @@ class PEventListenerDispatcher(PDispatcher):
             msg = ('%s: has entered the UNKNOWN state and will no longer '
                    'receive events, this usually indicates the process '
                    'violated the eventlistener protocol' % procname)
-            process.config.options.logger.warn(msg)
+            process.config.options.logger.warning(msg)
 
 
 class PInputDispatcher(PDispatcher):

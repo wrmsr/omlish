@@ -1,11 +1,10 @@
+import grp
 import os
 import pwd
 import shlex
 import signal
 import socket
 import urllib.parse as urlparse
-
-import grp
 
 from .loggers import getLevelNumByDescription
 
@@ -16,7 +15,7 @@ def process_or_group_name(name):
     s = str(name).strip()
     for character in ' :/':
         if character in s:
-            raise ValueError("Invalid name: %r because of character: %r" % (name, character))
+            raise ValueError('Invalid name: %r because of character: %r' % (name, character))
     return s
 
 
@@ -39,7 +38,7 @@ def boolean(s):
     elif ss in FALSY_STRINGS:
         return False
     else:
-        raise ValueError("not a valid boolean value: " + repr(s))
+        raise ValueError('not a valid boolean value: ' + repr(s))
 
 
 def list_of_strings(arg):
@@ -48,7 +47,7 @@ def list_of_strings(arg):
     try:
         return [x.strip() for x in arg.split(',')]
     except:
-        raise ValueError("not a valid list of strings: " + repr(arg))
+        raise ValueError('not a valid list of strings: ' + repr(arg))
 
 
 def list_of_ints(arg):
@@ -56,9 +55,9 @@ def list_of_ints(arg):
         return []
     else:
         try:
-            return list(map(int, arg.split(",")))
+            return list(map(int, arg.split(',')))
         except:
-            raise ValueError("not a valid list of ints: " + repr(arg))
+            raise ValueError('not a valid list of ints: ' + repr(arg))
 
 
 def list_of_exitcodes(arg):
@@ -69,7 +68,7 @@ def list_of_exitcodes(arg):
                 raise ValueError('Invalid exit code "%s"' % val)
         return vals
     except:
-        raise ValueError("not a valid list of exit codes: " + repr(arg))
+        raise ValueError('not a valid list of exit codes: ' + repr(arg))
 
 
 def dict_of_key_value_pairs(arg):
@@ -100,7 +99,6 @@ class Automatic:
 
 class Syslog:
     """TODO deprecated; remove this special 'syslog' filename in the future"""
-    pass
 
 
 LOGFILE_NONES = ('none', 'off', None)
@@ -135,10 +133,10 @@ class RangeCheckedConversion:
     def __call__(self, value):
         v = self._conversion(value)
         if self._min is not None and v < self._min:
-            raise ValueError("%s is below lower bound (%s)"
+            raise ValueError('%s is below lower bound (%s)'
                              % (repr(v), repr(self._min)))
         if self._max is not None and v > self._max:
-            raise ValueError("%s is above upper bound (%s)"
+            raise ValueError('%s is above upper bound (%s)'
                              % (repr(v), repr(self._max)))
         return v
 
@@ -149,17 +147,17 @@ port_number = RangeCheckedConversion(integer, min=1, max=0xffff).__call__
 def inet_address(s):
     # returns (host, port) tuple
     host = ''
-    if ":" in s:
-        host, s = s.rsplit(":", 1)
+    if ':' in s:
+        host, s = s.rsplit(':', 1)
         if not s:
-            raise ValueError("no port number specified in %r" % s)
+            raise ValueError('no port number specified in %r' % s)
         port = port_number(s)
         host = host.lower()
     else:
         try:
             port = port_number(s)
         except ValueError:
-            raise ValueError("not a valid port number: %r " % s)
+            raise ValueError('not a valid port number: %r ' % s)
     if not host or host == '*':
         host = ''
     return host, port
@@ -168,8 +166,8 @@ def inet_address(s):
 class SocketAddress:
     def __init__(self, s):
         # returns (family, address) tuple
-        if "/" in s or s.find(os.sep) >= 0 or ":" not in s:
-            self.family = getattr(socket, "AF_UNIX", None)
+        if '/' in s or s.find(os.sep) >= 0 or ':' not in s:
+            self.family = getattr(socket, 'AF_UNIX', None)
             self.address = s
         else:
             self.family = socket.AF_INET
@@ -283,16 +281,16 @@ class UnixStreamSocketConfig(SocketConfig):
             try:
                 os.chmod(self.path, self.mode)
             except Exception as e:
-                raise ValueError("Could not change permissions of socket "
-                                 + "file: %s" % e)
+                raise ValueError('Could not change permissions of socket '
+                                 + 'file: %s' % e)
 
     def _chown(self):
         if self.owner is not None:
             try:
                 os.chown(self.path, self.owner[0], self.owner[1])
             except Exception as e:
-                raise ValueError("Could not change ownership of socket file: "
-                                 + "%s" % e)
+                raise ValueError('Could not change ownership of socket file: '
+                                 + '%s' % e)
 
 
 def colon_separated_user_group(arg):
@@ -323,13 +321,13 @@ def name_to_uid(name):
         try:
             pwdrec = pwd.getpwnam(name)
         except KeyError:
-            raise ValueError("Invalid user name %s" % name)
+            raise ValueError('Invalid user name %s' % name)
         uid = pwdrec[2]
     else:
         try:
             pwd.getpwuid(uid)  # check if uid is valid
         except KeyError:
-            raise ValueError("Invalid user id %s" % name)
+            raise ValueError('Invalid user id %s' % name)
     return uid
 
 
@@ -343,13 +341,13 @@ def name_to_gid(name):
         try:
             grprec = grp.getgrnam(name)
         except KeyError:
-            raise ValueError("Invalid group name %s" % name)
+            raise ValueError('Invalid group name %s' % name)
         gid = grprec[2]
     else:
         try:
             grp.getgrgid(gid)  # check if gid is valid
         except KeyError:
-            raise ValueError("Invalid group id %s" % name)
+            raise ValueError('Invalid group id %s' % name)
     return gid
 
 
@@ -417,14 +415,14 @@ class SuffixMultiplier:
 
 byte_size = SuffixMultiplier({'kb': 1024,
                               'mb': 1024 * 1024,
-                              'gb': 1024 * 1024 * int(1024), })
+                              'gb': 1024 * 1024 * 1024 })
 
 
 def url(value):
     scheme, netloc, path, params, query, fragment = urlparse.urlparse(value)
     if scheme and (netloc or path):
         return value
-    raise ValueError("value %r is not a URL" % value)
+    raise ValueError('value %r is not a URL' % value)
 
 
 # all valid signal numbers

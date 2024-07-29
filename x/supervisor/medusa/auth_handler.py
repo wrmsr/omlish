@@ -16,10 +16,10 @@ from base64 import decodebytes as decodestring
 from base64 import encodebytes as encodestring
 from hashlib import md5
 
-from . import counter as counter
-from . import default_handler as default_handler
 from ..compat import as_bytes
 from ..compat import as_string
+from . import counter as counter
+from . import default_handler as default_handler
 
 
 get_header = default_handler.get_header
@@ -113,13 +113,13 @@ class auth_handler:
         r = [
             producers.simple_producer(
                 '<li>Authorization Extension : '
-                '<b>Unauthorized requests:</b> %s<ul>' % self.fail_count
-            )
+                '<b>Unauthorized requests:</b> %s<ul>' % self.fail_count,
+            ),
         ]
         if hasattr(self.handler, 'status'):
             r.append(self.handler.status())
         r.append(
-            producers.simple_producer('</ul>')
+            producers.simple_producer('</ul>'),
         )
         return producers.composite_producer(r)
 
@@ -139,5 +139,5 @@ class dictionary_authorizer:
 AUTHORIZATION = re.compile(
     #               scheme  challenge
     'Authorization: ([^ ]+) (.*)',
-    re.IGNORECASE
+    re.IGNORECASE,
 )

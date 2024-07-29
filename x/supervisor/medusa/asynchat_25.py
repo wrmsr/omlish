@@ -46,10 +46,9 @@ method) up to the terminator, and then control will be returned to
 you - by calling your self.found_terminator() method.
 """
 
-import socket
 
-from . import asyncore_25 as asyncore
 from ..compat import as_bytes
+from . import asyncore_25 as asyncore
 
 
 class async_chat(asyncore.dispatcher):
@@ -68,10 +67,10 @@ class async_chat(asyncore.dispatcher):
         asyncore.dispatcher.__init__(self, conn, map)
 
     def collect_incoming_data(self, data):
-        raise NotImplementedError("must be implemented in subclass")
+        raise NotImplementedError('must be implemented in subclass')
 
     def found_terminator(self):
-        raise NotImplementedError("must be implemented in subclass")
+        raise NotImplementedError('must be implemented in subclass')
 
     def set_terminator(self, term):
         """Set the input delimiter.  Can be a fixed string of any length, an integer, or None"""
@@ -88,7 +87,7 @@ class async_chat(asyncore.dispatcher):
     def handle_read(self):
         try:
             data = self.recv(self.ac_in_buffer_size)
-        except socket.error:
+        except OSError:
             self.handle_error()
             return
 
@@ -222,7 +221,7 @@ class async_chat(asyncore.dispatcher):
                 if num_sent:
                     self.ac_out_buffer = self.ac_out_buffer[num_sent:]
 
-            except socket.error:
+            except OSError:
                 self.handle_error()
                 return
 

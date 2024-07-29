@@ -15,13 +15,13 @@ LF = b'\x0a'
 CRLF = CR + LF
 
 
-class Listener(object):
+class Listener:
 
     def status(self, url, status):
         pass
 
     def error(self, url, error):
-        sys.stderr.write("%s %s\n" % (url, error))
+        sys.stderr.write('%s %s\n' % (url, error))
 
     def response_header(self, url, name, value):
         pass
@@ -55,7 +55,7 @@ class HTTPHandler(asynchat.async_chat):
             username='',
             password=None,
             conn=None,
-            map=None
+            map=None,
     ):
         asynchat.async_chat.__init__(self, conn, map)
         self.listener = listener
@@ -80,11 +80,11 @@ class HTTPHandler(asynchat.async_chat):
         self.url = serverurl + path
         scheme, host, path_ignored, params, query, fragment = urlparse.urlparse(
             self.url)
-        if not scheme in ("http", "unix"):
+        if scheme not in ('http', 'unix'):
             raise NotImplementedError
         self.host = host
-        if ":" in host:
-            hostname, port = host.split(":", 1)
+        if ':' in host:
+            hostname, port = host.split(':', 1)
             port = int(port)
         else:
             hostname = host
@@ -93,11 +93,11 @@ class HTTPHandler(asynchat.async_chat):
         self.path = path
         self.port = port
 
-        if scheme == "http":
+        if scheme == 'http':
             ip = hostname
             self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
             self.connect((ip, self.port))
-        elif scheme == "unix":
+        elif scheme == 'unix':
             socketname = serverurl[7:]
             self.create_socket(socket.AF_UNIX, socket.SOCK_STREAM)
             self.connect(socketname)
@@ -107,7 +107,7 @@ class HTTPHandler(asynchat.async_chat):
         self.connected = 0
         self.del_channel()
         self.socket.close()
-        self.url = "CLOSED"
+        self.url = 'CLOSED'
 
     def header(self, name, value):
         self.push('%s: %s' % (name, value))
@@ -129,11 +129,11 @@ class HTTPHandler(asynchat.async_chat):
 
     def handle_connect(self):
         self.connected = 1
-        method = "GET"
-        version = "HTTP/1.1"
-        self.push("%s %s %s" % (method, self.path, version))
+        method = 'GET'
+        version = 'HTTP/1.1'
+        self.push('%s %s %s' % (method, self.path, version))
         self.push(CRLF)
-        self.header("Host", self.host)
+        self.header('Host', self.host)
 
         self.header('Accept-Encoding', 'chunked')
         self.header('Accept', '*/*')

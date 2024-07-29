@@ -1,5 +1,4 @@
 import errno
-
 import select
 
 
@@ -63,9 +62,9 @@ class SelectPoller(BasePoller):
             r, w, x = self._select.select(
                 self.readables,
                 self.writables,
-                [], timeout
+                [], timeout,
             )
-        except select.error as err:
+        except OSError as err:
             if err.args[0] == errno.EINTR:
                 self.options.logger.blather('EINTR encountered in poll')
                 return [], []
@@ -125,7 +124,7 @@ class PollPoller(BasePoller):
     def _poll_fds(self, timeout):
         try:
             return self._poller.poll(timeout * 1000)
-        except select.error as err:
+        except OSError as err:
             if err.args[0] == errno.EINTR:
                 self.options.logger.blather('EINTR encountered in poll')
                 return []
@@ -145,9 +144,9 @@ class PollPoller(BasePoller):
 
 
 class KQueuePoller(BasePoller):
-    '''
+    """
     Wrapper for select.kqueue()/kevent()
-    '''
+    """
 
     max_events = 1000
 

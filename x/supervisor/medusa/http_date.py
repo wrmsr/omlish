@@ -49,9 +49,9 @@ rfc822_date = join(
      months_reg,  # month
      group('[0-9]+'),  # year
      hms_reg,  # hour minute second
-     'gmt'
+     'gmt',
      ],
-    ' '
+    ' ',
 )
 
 rfc822_reg = re.compile(rfc822_date)
@@ -69,7 +69,7 @@ def unpack_rfc822(m):
         i(g(7)),  # second
         0,
         0,
-        0
+        0,
     )
 
 
@@ -79,14 +79,14 @@ rfc850_date = join(
      join(
          [group('[0-9][0-9]?'),
           months_reg,
-          group('[0-9]+')
+          group('[0-9]+'),
           ],
-         '-'
+         '-',
      ),
      hms_reg,
-     'gmt'
+     'gmt',
      ],
-    ' '
+    ' ',
 )
 
 rfc850_reg = re.compile(rfc850_date)
@@ -105,7 +105,7 @@ def unpack_rfc850(m):
         i(g(7)),  # second
         0,
         0,
-        0
+        0,
     )
 
 

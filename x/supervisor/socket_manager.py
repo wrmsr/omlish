@@ -59,7 +59,7 @@ class SocketManager:
         self.prepared = False
         self.socket_config = socket_config
         self.ref_ctr = ReferenceCounter(
-            on_zero=self._close, on_non_zero=self._prepare_socket
+            on_zero=self._close, on_non_zero=self._prepare_socket,
         )
 
     def __repr__(self):

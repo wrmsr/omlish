@@ -11,8 +11,8 @@ For example, you can feed dynamically-produced output into the compressing
 producer, then wrap this with the 'chunked' transfer-encoding producer.
 """
 
-from .asynchat_25 import find_prefix_at_end
 from ..compat import as_bytes
+from .asynchat_25 import find_prefix_at_end
 
 
 class simple_producer:
@@ -46,7 +46,7 @@ class scanning_producer:
             lp = self.pos
             rp = min(
                 len(self.data),
-                self.pos + self.buffer_size
+                self.pos + self.buffer_size,
             )
             result = self.data[lp:rp]
             self.pos += len(result)
@@ -165,8 +165,7 @@ class composite_producer:
                 return d
             else:
                 self.producers.pop(0)
-        else:
-            return b''
+        return b''
 
 
 class globbing_producer:

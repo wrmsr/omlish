@@ -57,7 +57,7 @@ class PidProxy:
 
     def passtochild(self, sig, frame):
         try:
-            with open(self.pidfile, 'r') as f:
+            with open(self.pidfile) as f:
                 pid = int(f.read().strip())
         except:
             print("Can't read child pidfile %s!" % self.pidfile)

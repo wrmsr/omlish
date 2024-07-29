@@ -91,7 +91,7 @@ class DeferredXMLRPCResponse:
         except:
             tb = traceback.format_exc()
             self.request.channel.server.logger.log(
-                "XML-RPC response callback error", tb
+                'XML-RPC response callback error', tb,
             )
             self.finished = True
             self.request.error(500)
@@ -132,9 +132,9 @@ class DeferredXMLRPCResponse:
                 # hooking lets us log the number of bytes sent
                 producers.hooked_producer(
                     outgoing_producer,
-                    self.request.log
-                )
-            )
+                    self.request.log,
+                ),
+            ),
         )
 
         self.request.channel.current_request = None
@@ -252,7 +252,7 @@ class SystemNamespaceRPCInterface:
                              'faultString': exc.text}
                 except:
                     info = sys.exc_info()
-                    errmsg = "%s:%s" % (info[0], info[1])
+                    errmsg = '%s:%s' % (info[0], info[1])
                     value = {'faultCode': Faults.FAILED,
                              'faultString': 'FAILED: ' + errmsg}
                 if value is not NOT_DONE_YET:
@@ -281,7 +281,7 @@ class SystemNamespaceRPCInterface:
                              'faultString': exc.text}
                 except:
                     info = sys.exc_info()
-                    errmsg = "%s:%s" % (info[0], info[1])
+                    errmsg = '%s:%s' % (info[0], info[1])
                     value = {'faultCode': Faults.FAILED,
                              'faultString': 'FAILED: ' + errmsg}
 
@@ -330,7 +330,7 @@ def capped_int(value):
 
 def make_datetime(text):
     return datetime.datetime(
-        *time.strptime(text, "%Y%m%dT%H:%M:%S")[:6]
+        *time.strptime(text, '%Y%m%dT%H:%M:%S')[:6],
     )
 
 
@@ -339,17 +339,17 @@ class supervisor_xmlrpc_handler(xmlrpc_handler):
     IDENT = 'Supervisor XML-RPC Handler'
 
     unmarshallers = {
-        "int": lambda x: int(x.text),
-        "i4": lambda x: int(x.text),
-        "boolean": lambda x: x.text == "1",
-        "string": lambda x: x.text or "",
-        "double": lambda x: float(x.text),
-        "dateTime.iso8601": lambda x: make_datetime(x.text),
-        "array": lambda x: x[0].text,
-        "data": lambda x: [v.text for v in x],
-        "struct": lambda x: dict([(k.text or "", v.text) for k, v in x]),
-        "base64": lambda x: as_string(decodestring(as_bytes(x.text or ""))),
-        "param": lambda x: x[0].text,
+        'int': lambda x: int(x.text),
+        'i4': lambda x: int(x.text),
+        'boolean': lambda x: x.text == '1',
+        'string': lambda x: x.text or '',
+        'double': lambda x: float(x.text),
+        'dateTime.iso8601': lambda x: make_datetime(x.text),
+        'array': lambda x: x[0].text,
+        'data': lambda x: [v.text for v in x],
+        'struct': lambda x: dict([(k.text or '', v.text) for k, v in x]),
+        'base64': lambda x: as_string(decodestring(as_bytes(x.text or ''))),
+        'param': lambda x: x[0].text,
     }
 
     def __init__(self, supervisord, subinterfaces):
@@ -364,16 +364,16 @@ class supervisor_xmlrpc_handler(xmlrpc_handler):
                 data = unmarshall(elem)
                 elem.clear()
                 elem.text = data
-            elif elem.tag == "value":
+            elif elem.tag == 'value':
                 try:
                     data = elem[0].text
                 except IndexError:
-                    data = elem.text or ""
+                    data = elem.text or ''
                 elem.clear()
                 elem.text = data
-            elif elem.tag == "methodName":
+            elif elem.tag == 'methodName':
                 method = elem.text
-            elif elem.tag == "params":
+            elif elem.tag == 'params':
                 params = tuple([v.text for v in elem])
         return params, method
 
@@ -389,7 +389,7 @@ class supervisor_xmlrpc_handler(xmlrpc_handler):
             except:
                 logger.error(
                     'XML-RPC request data %r is invalid: unmarshallable' %
-                    (data,)
+                    (data,),
                 )
                 request.error(400)
                 return
@@ -398,7 +398,7 @@ class supervisor_xmlrpc_handler(xmlrpc_handler):
             if not method:
                 logger.error(
                     'XML-RPC request data %r is invalid: no method name' %
-                    (data,)
+                    (data,),
                 )
                 request.error(400)
                 return
@@ -439,8 +439,8 @@ class supervisor_xmlrpc_handler(xmlrpc_handler):
         except:
             tb = traceback.format_exc()
             logger.critical(
-                "Handling XML-RPC request with data %r raised an unexpected "
-                "exception: %s" % (data, tb)
+                'Handling XML-RPC request with data %r raised an unexpected '
+                'exception: %s' % (data, tb),
             )
             # internal error, report as HTTP server error
             request.error(500)
@@ -522,20 +522,20 @@ class SupervisorTransport(xmlrpclib.Transport):
         if not self.connection:
             self.connection = self._get_connection()
             self.headers = {
-                "User-Agent": self.user_agent,
-                "Content-Type": "text/xml",
-                "Accept": "text/xml"
+                'User-Agent': self.user_agent,
+                'Content-Type': 'text/xml',
+                'Accept': 'text/xml',
             }
 
             # basic auth
             if self.username is not None and self.password is not None:
-                unencoded = "%s:%s" % (self.username, self.password)
+                unencoded = '%s:%s' % (self.username, self.password)
                 encoded = as_string(encodestring(as_bytes(unencoded)))
                 encoded = encoded.replace('\n', '')
                 encoded = encoded.replace('\012', '')
-                self.headers["Authorization"] = "Basic %s" % encoded
+                self.headers['Authorization'] = 'Basic %s' % encoded
 
-        self.headers["Content-Length"] = str(len(request_body))
+        self.headers['Content-Length'] = str(len(request_body))
 
         self.connection.request('POST', handler, request_body, self.headers)
 
@@ -579,7 +579,7 @@ def gettags(comment):
 
     for line in comment.split('\n'):
         line = line.strip()
-        if line.startswith("@"):
+        if line.startswith('@'):
             tags.append((tag_lineno, tag, datatype, name, '\n'.join(tag_text)))
             parts = line.split(None, 3)
             if len(parts) == 1:
@@ -600,9 +600,8 @@ def gettags(comment):
                 tag_text = [parts[3].lstrip()]
             tag = parts[0][1:]
             tag_lineno = lineno
-        else:
-            if line:
-                tag_text.append(line)
+        elif line:
+            tag_text.append(line)
         lineno += 1
 
     tags.append((tag_lineno, tag, datatype, name, '\n'.join(tag_text)))

@@ -20,8 +20,8 @@ from .options import split_namespec
 from .process import ProcessStates
 from .rpcinterface import SupervisorNamespaceRPCInterface
 from .xmlrpc import Faults
-from .xmlrpc import RPCError
 from .xmlrpc import RootRPCInterface
+from .xmlrpc import RPCError
 from .xmlrpc import SystemNamespaceRPCInterface
 
 
@@ -91,7 +91,7 @@ class DeferredWebProducer:
                 close_it = 1
             elif 'Content-Length' not in self.request:
                 if 'Transfer-Encoding' in self.request:
-                    if not self.request['Transfer-Encoding'] == 'chunked':
+                    if self.request['Transfer-Encoding'] != 'chunked':
                         close_it = 1
                 elif self.request.use_chunked:
                     self.request['Transfer-Encoding'] = 'chunked'
@@ -109,11 +109,11 @@ class DeferredWebProducer:
 
         if wrap_in_chunking:
             outgoing_producer = producers.chunked_producer(
-                producers.composite_producer(self.request.outgoing)
+                producers.composite_producer(self.request.outgoing),
             )
             # prepend the header
             outgoing_producer = producers.composite_producer(
-                [outgoing_header, outgoing_producer]
+                [outgoing_header, outgoing_producer],
             )
         else:
             # prepend the header
@@ -128,9 +128,9 @@ class DeferredWebProducer:
                 # hooking lets us log the number of bytes sent
                 producers.hooked_producer(
                     outgoing_producer,
-                    self.request.log
-                )
-            )
+                    self.request.log,
+                ),
+            ),
         )
 
         self.request.channel.current_request = None
@@ -184,7 +184,7 @@ class TailView(MeldView):
         supervisord = self.context.supervisord
         form = self.context.form
 
-        if not 'processname' in form:
+        if 'processname' not in form:
             tail = 'No process name found'
             processname = None
         else:
@@ -217,8 +217,8 @@ class TailView(MeldView):
         if processname is not None:
             refresh_anchor.attributes(
                 href='tail.html?processname=%s&limit=%s' % (
-                    urllib.quote(processname), urllib.quote(str(abs(limit)))
-                )
+                    urllib.quote(processname), urllib.quote(str(abs(limit))),
+                ),
             )
         else:
             refresh_anchor.deparent()
@@ -254,12 +254,12 @@ class StatusView(MeldView):
         tailf_stdout = {
             'name': 'Tail -f Stdout',
             'href': 'logtail/%s' % processname,
-            'target': '_blank'
+            'target': '_blank',
         }
         tailf_stderr = {
             'name': 'Tail -f Stderr',
             'href': 'logtail/%s/stderr' % processname,
-            'target': '_blank'
+            'target': '_blank',
         }
         if state == ProcessStates.RUNNING:
             actions = [restart, stop, clearlog, tailf_stdout, tailf_stderr]
@@ -430,7 +430,7 @@ class StatusView(MeldView):
                           'params': [namespec]},
                          {'methodName': 'supervisor.startProcess',
                           'params': [namespec]},
-                         ]
+                         ],
                     )
                     if callable(results_or_callback):
                         callback = results_or_callback
@@ -489,14 +489,14 @@ class StatusView(MeldView):
                     return NOT_DONE_YET
                 if message is not None:
                     server_url = form['SERVER_URL']
-                    location = server_url + "/" + '?message=%s' % urllib.quote(
+                    location = server_url + '/' + '?message=%s' % urllib.quote(
                         message)
                     response['headers']['Location'] = location
 
         supervisord = self.context.supervisord
         rpcinterface = RootRPCInterface(
             [('supervisor',
-              SupervisorNamespaceRPCInterface(supervisord))]
+              SupervisorNamespaceRPCInterface(supervisord))],
         )
 
         processnames = []
@@ -587,7 +587,7 @@ class OKView:
 VIEWS = {
     'index.html': {
         'template': 'ui/status.html',
-        'view': StatusView
+        'view': StatusView,
     },
     'tail.html': {
         'template': 'ui/tail.html',
@@ -618,7 +618,7 @@ class supervisor_ui_handler:
         if not path:
             path = 'index.html'
 
-        for viewname in VIEWS.keys():
+        for viewname in VIEWS:
             if viewname == path:
                 return True
 

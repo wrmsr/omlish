@@ -44,7 +44,7 @@ def english_bytes(n):
         n,
         ('', 'K', 'M', 'G', 'T'),
         (1024, 1024, 1024, 1024, 1024),
-        '%d %sB'
+        '%d %sB',
     )
 
 
@@ -53,5 +53,5 @@ def english_time(n):
         n,
         ('secs', 'mins', 'hours', 'days', 'weeks', 'years'),
         (60, 60, 24, 7, 52),
-        '%d %s'
+        '%d %s',
     )
