@@ -15,7 +15,7 @@ def test_inject():
     assert i.provide(str) == '420'
 
 
-def test_multi():
+def test_set_multi():
     es = inj.as_elements(
         inj.bind_set_provider(inj.Key(ta.AbstractSet[int])),
         inj.SetBinding(inj.Key(ta.AbstractSet[int]), inj.Key(int, tag='four twenty')),
@@ -26,6 +26,19 @@ def test_multi():
 
     i = inj.create_injector(es)
     assert i.provide(inj.Key(ta.AbstractSet[int])) == {420, 421}
+
+
+def test_map_multi():
+    es = inj.as_elements(
+        inj.bind_set_provider(inj.Key(ta.Mapping[str, int])),
+        inj.MapBinding(inj.Key(ta.Mapping[str, int]), 'a', inj.Key(int, tag='four twenty')),
+        inj.MapBinding(inj.Key(ta.Mapping[str, int]), 'b', inj.Key(int, tag='four twenty one')),
+        inj.Binding(inj.Key(int, tag='four twenty'), inj.const(420)),
+        inj.Binding(inj.Key(int, tag='four twenty one'), inj.const(421)),
+    )
+
+    i = inj.create_injector(es)
+    assert i.provide(inj.Key(ta.Mapping[str, int])) == {'a': 420, 'b': 421}
 
 
 def test_optional():
