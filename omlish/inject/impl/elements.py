@@ -150,11 +150,20 @@ class ElementCollection(lang.Final):
                 p: ProviderImpl
                 if isinstance(b.provider, SetProvider):
                     mbs = es_by_ty.pop(SetBinding, ())
-                    p = SetProviderImpl([LinkProviderImpl(LinkProvider(mb.dst)) for mb in mbs])
+                    p = SetProviderImpl([
+                        LinkProviderImpl(LinkProvider(mb.dst))
+                        for mb in mbs
+                    ])
 
                 elif isinstance(b.provider, MapProvider):
                     mbs = es_by_ty.pop(MapBinding, ())
-                    raise NotImplementedError
+                    p = MapProviderImpl([
+                        MapProviderImpl.Entry(
+                            mb.map_key,
+                            LinkProviderImpl(LinkProvider(mb.dst)),
+                        )
+                        for mb in mbs
+                    ])
 
                 else:
                     p = make_provider_impl(b.provider)
