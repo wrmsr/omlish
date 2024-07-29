@@ -21,7 +21,7 @@ def test_multi():
         inj.SetBinding(inj.Key(ta.AbstractSet[int]), inj.Key(int, tag='four twenty')),
         inj.SetBinding(inj.Key(ta.AbstractSet[int]), inj.Key(int, tag='four twenty one')),
         inj.Binding(inj.Key(int, tag='four twenty'), inj.const(420)),
-        inj.Binding(inj.Key(int, tag='four twenty one '), inj.const(421)),
+        inj.Binding(inj.Key(int, tag='four twenty one'), inj.const(421)),
     )
 
     i = inj.create_injector(es)
