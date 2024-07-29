@@ -20,7 +20,6 @@ Element Types:
 """
 import typing as ta
 
-from . import multis  # noqa
 from ... import check
 from ... import collections as col
 from ... import lang
@@ -31,13 +30,17 @@ from ..elements import Elements
 from ..exceptions import DuplicateKeyError
 from ..keys import Key
 from ..multis import MapBinding
+from ..multis import MapProvider
 from ..multis import SetBinding
+from ..multis import SetProvider
 from ..overrides import Overrides
 from ..private import Expose
 from ..private import Private
 from ..scopes import ScopeBinding
 from ..types import Scope
 from .bindings import BindingImpl
+from .multis import MapProviderImpl
+from .multis import SetProviderImpl
 from .providers import make_provider_impl
 from .scopes import make_scope_impl
 
@@ -140,7 +143,18 @@ class ElementCollection(lang.Final):
                 if len(bs) > 1:
                     raise DuplicateKeyError(k)
                 b: Binding = check.single(bs)
-                p = make_provider_impl(b.provider)
+
+                if isinstance(b.provider, SetProvider):
+                    mbs = es_by_ty.pop(SetBinding, ())
+                    raise NotImplementedError
+
+                elif isinstance(b.provider, MapProvider):
+                    mbs = es_by_ty.pop(MapBinding, ())
+                    raise NotImplementedError
+
+                else:
+                    p = make_provider_impl(b.provider)
+
                 pm[k] = BindingImpl(b.key, p, b.scope, b)
 
             if es_by_ty:
