@@ -11,6 +11,7 @@ import typing as ta
 
 import anyio
 
+from omlish import inject as inj
 from omlish import logs
 
 from ...config import Config
@@ -76,15 +77,58 @@ async def inj_app(scope, recv, send) -> None:
 ##
 
 
+class InjApp(AsgiApp):
+    @dc.dataclass(frozen=True)
+    class Handler:
+        endpoint: Endpoint
+        app: AsgiApp
+
+    def __init__(self, handlers: ta.Sequence[Handler]) -> None:
+        super().__init__()
+        self._handlers = list(handlers)
+        self._handlers_by_endpoint = {h.endpoint: h for h in self._handlers}
+
+    async def __call__(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
+        match scope_ty := scope['type']:
+            case 'lifespan':
+                await stub_lifespan(scope, recv, send)
+                return
+
+            case 'http':
+                ep = Endpoint(scope['method'], scope['raw_path'].decode())
+                h = self._handlers_by_endpoint.get(ep)
+                if h is None:
+                    await send_response(send, 404)
+                    return
+
+                await h.app(scope, recv, send)
+
+            case _:
+                raise ValueError(f'Unhandled scope type: {scope_ty!r}')
+
+
+##
+
+
+def _bind() -> inj.Elements:
+    return inj.as_elements(
+        inj.singleton(InjApp),
+
+        inj.as_(inj.multi(InjApp.Handler), inj.const([InjApp.Handler(Endpoint('GET', '/hi'), HiAsgiApp())])),
+        inj.as_(inj.multi(InjApp.Handler), inj.const([InjApp.Handler(Endpoint('GET', '/bye'), ByeAsgiApp())])),
+    )
+
+
 def _main() -> None:
     logs.configure_standard_logging(logging.INFO)
 
     async def _a_main():
-        await serve(
-            inj_app,
-            Config(),
-            handle_shutdown_signals=True,
-        )
+        with inj.create_injector(_bind()) as injector:
+            await serve(
+                injector[InjApp],
+                Config(),
+                handle_shutdown_signals=True,
+            )
 
     anyio.run(_a_main)
 
