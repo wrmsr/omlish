@@ -1,57 +1,56 @@
-import socket
+import configparser as ConfigParser
+import errno
 import getopt
+import glob
 import os
+import platform
+import pwd
+import re
+import signal
+import socket
+import stat
 import sys
 import tempfile
-import errno
-import signal
-import re
-import pwd
-import grp
-import resource
-import stat
-import glob
-import platform
 import warnings
-import fcntl
-
-import configparser as ConfigParser
-from .compat import as_bytes, as_string
 import xmlrpc.client as xmlrpclib
 from io import StringIO
-from .compat import import_spec
 
-from .medusa import asyncore_25 as asyncore
-
-from .datatypes import process_or_group_name
-from .datatypes import boolean
-from .datatypes import integer
-from .datatypes import name_to_uid
-from .datatypes import gid_for_uid
-from .datatypes import existing_dirpath
-from .datatypes import byte_size
-from .datatypes import signal_number
-from .datatypes import list_of_exitcodes
-from .datatypes import dict_of_key_value_pairs
-from .datatypes import logfile_name
-from .datatypes import list_of_strings
-from .datatypes import octal_type
-from .datatypes import existing_directory
-from .datatypes import logging_level
-from .datatypes import colon_separated_user_group
-from .datatypes import inet_address
-from .datatypes import InetStreamSocketConfig
-from .datatypes import UnixStreamSocketConfig
-from .datatypes import url
-from .datatypes import Automatic
-from .datatypes import Syslog
-from .datatypes import auto_restart
-from .datatypes import profile_options
+import fcntl
+import grp
+import resource
 
 from . import loggers
+from . import poller
 from . import states
 from . import xmlrpc
-from . import poller
+from .compat import as_bytes
+from .compat import as_string
+from .compat import import_spec
+from .datatypes import Automatic
+from .datatypes import InetStreamSocketConfig
+from .datatypes import Syslog
+from .datatypes import UnixStreamSocketConfig
+from .datatypes import auto_restart
+from .datatypes import boolean
+from .datatypes import byte_size
+from .datatypes import colon_separated_user_group
+from .datatypes import dict_of_key_value_pairs
+from .datatypes import existing_directory
+from .datatypes import existing_dirpath
+from .datatypes import gid_for_uid
+from .datatypes import inet_address
+from .datatypes import integer
+from .datatypes import list_of_exitcodes
+from .datatypes import list_of_strings
+from .datatypes import logfile_name
+from .datatypes import logging_level
+from .datatypes import name_to_uid
+from .datatypes import octal_type
+from .datatypes import process_or_group_name
+from .datatypes import profile_options
+from .datatypes import signal_number
+from .datatypes import url
+from .medusa import asyncore_25 as asyncore
 
 
 def _read_version_txt():

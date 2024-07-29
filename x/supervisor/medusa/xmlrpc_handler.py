@@ -7,9 +7,8 @@
 
 VERSION = "$Id: xmlrpc_handler.py,v 1.6 2004/04/21 14:09:24 akuchling Exp $"
 
-from ..compat import as_string
-
 from . import http_server as http_server
+from ..compat import as_string
 
 
 try:

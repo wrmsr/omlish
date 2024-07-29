@@ -1,12 +1,11 @@
 import sys
 import time
-
 import xmlrpc.client as xmlrpclib
-from .compat import as_string
 
-from .xmlrpc import SupervisorTransport
-from .events import ProcessCommunicationEvent
+from .compat import as_string
 from .dispatchers import PEventListenerDispatcher
+from .events import ProcessCommunicationEvent
+from .xmlrpc import SupervisorTransport
 
 
 def getRPCTransport(env):

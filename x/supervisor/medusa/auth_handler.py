@@ -12,15 +12,14 @@ RCS_ID = '$Id: auth_handler.py,v 1.6 2002/11/25 19:40:23 akuchling Exp $'
 import re
 import sys
 import time
-
-from ..compat import as_string
-from ..compat import as_bytes
-from base64 import encodebytes as encodestring
 from base64 import decodebytes as decodestring
+from base64 import encodebytes as encodestring
 from hashlib import md5
 
 from . import counter as counter
 from . import default_handler as default_handler
+from ..compat import as_bytes
+from ..compat import as_string
 
 
 get_header = default_handler.get_header

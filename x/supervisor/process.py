@@ -1,33 +1,27 @@
 import errno
 import functools
 import os
-import signal
 import shlex
+import signal
 import time
 import traceback
-
 from sys import maxsize as maxint
-from .compat import as_bytes
-from .compat import as_string
-
-from .medusa import asyncore_25 as asyncore
-
-from .states import ProcessStates
-from .states import SupervisorStates
-from .states import getProcessStateDescription
-from .states import STOPPED_STATES
-
-from .options import decode_wait_status
-from .options import signame
-from .options import ProcessException, BadCommand
-
-from .dispatchers import EventListenerStates
 
 from . import events
-
+from .compat import as_bytes
+from .compat import as_string
 from .datatypes import RestartUnconditionally
-
+from .dispatchers import EventListenerStates
+from .medusa import asyncore_25 as asyncore
+from .options import BadCommand
+from .options import ProcessException
+from .options import decode_wait_status
+from .options import signame
 from .socket_manager import SocketManager
+from .states import ProcessStates
+from .states import STOPPED_STATES
+from .states import SupervisorStates
+from .states import getProcessStateDescription
 
 
 @functools.total_ordering

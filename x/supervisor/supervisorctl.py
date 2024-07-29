@@ -28,19 +28,17 @@ import getpass
 import socket
 import sys
 import threading
-
-import xmlrpc.client as xmlrpclib
 import urllib.parse as urlparse
+import xmlrpc.client as xmlrpclib
+
+from . import http_client
+from . import states
+from . import xmlrpc
 from .compat import as_string
-
 from .medusa import asyncore_25 as asyncore
-
 from .options import ClientOptions
 from .options import make_namespec
 from .options import split_namespec
-from . import xmlrpc
-from . import states
-from . import http_client
 
 
 class LSBInitExitStatuses:

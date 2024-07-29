@@ -1,5 +1,6 @@
-import select
 import errno
+
+import select
 
 
 class BasePoller:

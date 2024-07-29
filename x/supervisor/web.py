@@ -1,34 +1,28 @@
+import datetime
 import os
 import re
 import time
 import traceback
-import datetime
-
-from . import templating
-
 import urllib.parse as urllib
 import urllib.parse as urlparse
+
+from . import templating
 from .compat import as_bytes
 from .compat import as_string
-
-from .medusa import producers
-from .medusa.http_server import http_date
-from .medusa.http_server import get_header
-from .medusa.xmlrpc_handler import collector
-
-from .process import ProcessStates
 from .http import NOT_DONE_YET
-
+from .medusa import producers
+from .medusa.http_server import get_header
+from .medusa.http_server import http_date
+from .medusa.xmlrpc_handler import collector
 from .options import VERSION
 from .options import make_namespec
 from .options import split_namespec
-
-from .xmlrpc import SystemNamespaceRPCInterface
-from .xmlrpc import RootRPCInterface
+from .process import ProcessStates
+from .rpcinterface import SupervisorNamespaceRPCInterface
 from .xmlrpc import Faults
 from .xmlrpc import RPCError
-
-from .rpcinterface import SupervisorNamespaceRPCInterface
+from .xmlrpc import RootRPCInterface
+from .xmlrpc import SystemNamespaceRPCInterface
 
 
 class DeferredWebProducer:

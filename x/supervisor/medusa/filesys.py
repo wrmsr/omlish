@@ -71,8 +71,8 @@ class abstract_filesystem:
 # what to do if wd is an invalid directory?
 
 import os
-import stat
 import re
+import stat
 
 
 def safe_stat(path):

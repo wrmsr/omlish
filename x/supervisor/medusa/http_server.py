@@ -12,16 +12,14 @@ import socket
 import sys
 import time
 
-from ..compat import as_bytes
-
+from . import asynchat_25 as asynchat
 # async modules
 from . import asyncore_25 as asyncore
-from . import asynchat_25 as asynchat
-
 # medusa modules
 from . import http_date as http_date
-from . import producers as producers
 from . import logger as logger
+from . import producers as producers
+from ..compat import as_bytes
 
 
 VERSION_STRING = RCS_ID.split()[2]

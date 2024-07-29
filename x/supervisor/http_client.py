@@ -1,12 +1,12 @@
 # this code based on Daniel Krech's RDFLib HTTP client code (see rdflib.dev)
 
-import sys
 import socket
+import sys
+import urllib.parse as urlparse
+from base64 import encodebytes as encodestring
 
 from .compat import as_bytes
 from .compat import as_string
-from base64 import encodebytes as encodestring
-import urllib.parse as urlparse
 from .medusa import asynchat_25 as asynchat
 
 

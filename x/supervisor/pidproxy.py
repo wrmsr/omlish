@@ -10,8 +10,8 @@ Usage: %s <pidfile name> <command> [<cmdarg1> ...]
 """
 
 import os
-import sys
 import signal
+import sys
 import time
 
 

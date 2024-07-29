@@ -1,26 +1,24 @@
 import datetime
+import http.client as httplib
 import re
 import socket
 import sys
 import time
 import traceback
 import types
+import urllib.parse as urlparse
+import xmlrpc.client as xmlrpclib
+from base64 import decodebytes as decodestring
+from base64 import encodebytes as encodestring
+from io import StringIO
 from xml.etree.ElementTree import iterparse
 
-import xmlrpc.client as xmlrpclib
-from io import StringIO
-import urllib.parse as urlparse
 from .compat import as_bytes
 from .compat import as_string
-from base64 import encodebytes as encodestring
-from base64 import decodebytes as decodestring
-import http.client as httplib
-
+from .http import NOT_DONE_YET
+from .medusa import producers
 from .medusa.http_server import get_header
 from .medusa.xmlrpc_handler import xmlrpc_handler
-from .medusa import producers
-
-from .http import NOT_DONE_YET
 
 
 class Faults:

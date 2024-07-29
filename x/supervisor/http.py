@@ -1,20 +1,15 @@
-import os
-import stat
-import time
-import sys
-import socket
-import errno
-import weakref
-import traceback
-
-
-try:
-    import pwd
-except ImportError:  # Windows
-    import getpass as pwd
-
-import urllib.parse as urllib
 from hashlib import sha1
+import errno
+import os
+import pwd
+import socket
+import stat
+import sys
+import time
+import traceback
+import urllib.parse as urllib
+import weakref
+
 from .compat import as_bytes
 from .compat import as_string
 from .medusa import asyncore_25 as asyncore

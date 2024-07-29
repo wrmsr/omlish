@@ -1,11 +1,12 @@
-import grp
 import os
 import pwd
+import shlex
 import signal
 import socket
-import shlex
-
 import urllib.parse as urlparse
+
+import grp
+
 from .loggers import getLevelNumByDescription
 
 

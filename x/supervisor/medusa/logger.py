@@ -1,10 +1,11 @@
 # -*- Mode: Python -*-
 
-from . import asynchat_25 as asynchat
-import socket
-import time  # these three are for the rotating logger
 import os  # |
+import socket
 import stat  # v
+import time  # these three are for the rotating logger
+
+from . import asynchat_25 as asynchat
 
 
 #
