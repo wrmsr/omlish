@@ -295,7 +295,7 @@ async def auth_app(scope, recv, send):
 ##
 
 
-def _main():
+def _main() -> None:
     logs.configure_standard_logging(logging.INFO)
 
     load_templates()
