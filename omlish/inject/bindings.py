@@ -36,13 +36,13 @@ def as_binding(o: ta.Any) -> Binding:
         return o
     check.not_isinstance(o, (Element, Elements))
     if isinstance(o, Provider):
-        return Binding(Key(check.not_none(o.provided_cls())), o)  # type: ignore  # noqa
+        return Binding(Key(check.not_none(o.provided_ty())), o)
     if isinstance(o, type):
         return as_binding(ctor(o))
     if callable(o):
         return as_binding(fn(o))
-    cls = type(o)
-    return Binding(Key(cls), const(o, cls))
+    ty = type(o)
+    return Binding(Key(ty), const(o, ty))
 
 
 def as_(k: ta.Any, p: ta.Any) -> Binding:

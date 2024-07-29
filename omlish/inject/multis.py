@@ -2,18 +2,17 @@
 TODO:
  - scopes
  - checks (enforce AbstractSet / Mapping)
- - Cls -> rfl
 """
 import typing as ta
 
 from .. import dataclasses as dc
 from .. import lang
+from .. import reflect as rfl
 from .bindings import Binding
 from .elements import Element
 from .keys import Key
 from .keys import as_key
 from .providers import Provider
-from .types import Cls
 
 
 ##
@@ -30,7 +29,7 @@ class SetBinding(Element, lang.Final):
 class SetProvider(Provider):
     multi_key: Key  # ta.AbstractSet
 
-    def provided_ty(self) -> Cls | None:
+    def provided_ty(self) -> rfl.Type | None:
         return self.multi_key.ty
 
 
@@ -54,7 +53,7 @@ class MapBinding(Element, lang.Final):
 class MapProvider(Provider):
     multi_key: Key  # ta.Mapping
 
-    def provided_ty(self) -> Cls | None:
+    def provided_ty(self) -> rfl.Type | None:
         return self.multi_key.ty
 
 

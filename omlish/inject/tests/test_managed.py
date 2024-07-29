@@ -46,7 +46,7 @@ def test_custom_inject():
 
         return inj.as_elements(
             dc.replace(b, key=mg_key),
-            dc.replace(b, provider=inj.fn(prov, b.key.cls)),
+            dc.replace(b, provider=inj.fn(prov, b.key.ty)),
         )
 
     with inj.create_managed_injector(inj.as_elements(

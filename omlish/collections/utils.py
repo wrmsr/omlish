@@ -12,6 +12,9 @@ K = ta.TypeVar('K')
 V = ta.TypeVar('V')
 
 
+##
+
+
 def mut_toposort(data: dict[T, set[T]]) -> ta.Iterator[set[T]]:
     for k, v in data.items():
         v.discard(k)
@@ -29,6 +32,9 @@ def mut_toposort(data: dict[T, set[T]]) -> ta.Iterator[set[T]]:
 
 def toposort(data: ta.Mapping[T, ta.AbstractSet[T]]) -> ta.Iterator[set[T]]:
     return mut_toposort({k: set(v) for k, v in data.items()})
+
+
+##
 
 
 def partition(items: ta.Iterable[T], pred: ta.Callable[[T], bool]) -> tuple[list[T], list[T]]:
@@ -64,11 +70,12 @@ def unique_map(kvs: ta.Iterable[tuple[K, V]], *, identity: bool = False) -> ta.M
 
 
 def unique_map_by(fn: ta.Callable[[V], K], vs: ta.Iterable[V], *, identity: bool = False) -> ta.MutableMapping[K, V]:
-    return unique_map_by(((fn(v), v) for v in vs), identity=identity)
+    return unique_map(((fn(v), v) for v in vs), identity=identity)
 
 
 def multi_map(kvs: ta.Iterable[tuple[K, V]], *, identity: bool = False) -> ta.MutableMapping[K, list[V]]:
-    d: ta.MutableMapping[K, V] = IdentityKeyDict() if identity else {}
+    d: ta.MutableMapping[K, list[V]] = IdentityKeyDict() if identity else {}
+    l: list[V]
     for k, v in kvs:
         try:
             l = d[k]
@@ -80,6 +87,9 @@ def multi_map(kvs: ta.Iterable[tuple[K, V]], *, identity: bool = False) -> ta.Mu
 
 def multi_map_by(fn: ta.Callable[[V], K], vs: ta.Iterable[V], *, identity: bool = False) -> ta.MutableMapping[K, list[V]]:  # noqa
     return multi_map(((fn(v), v) for v in vs), identity=identity)
+
+
+##
 
 
 def all_equal(it: ta.Iterable[T]) -> bool:
@@ -98,6 +108,9 @@ def all_not_equal(it: ta.Iterable[T]) -> bool:
             return False
         s.add(v)
     return True
+
+
+##
 
 
 def key_cmp(fn: ta.Callable[[K, K], int]) -> ta.Callable[[tuple[K, V], tuple[K, V]], int]:

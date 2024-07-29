@@ -91,7 +91,7 @@ def parse_cookie(
 
         out.append((ck, cv))
 
-    return col.multi_dict(out)
+    return col.multi_map(out)
 
 
 ##

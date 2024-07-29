@@ -86,14 +86,14 @@ class ConstProvider(Provider):
     v: ta.Any
     ty: rfl.Type | None = None
 
-    def provided_cls(self) -> Cls | None:
-        return self.cls
+    def provided_ty(self) -> rfl.Type | None:
+        return self.ty
 
 
-def const(v: ta.Any, cls: Cls | None = _Missing) -> Provider:
-    if cls is _Missing:
-        cls = type(v)
-    return ConstProvider(v, cls)
+def const(v: ta.Any, ty: rfl.Type | None = _Missing) -> Provider:
+    if ty is _Missing:
+        ty = type(v)
+    return ConstProvider(v, ty)
 
 
 ##
@@ -103,7 +103,7 @@ def const(v: ta.Any, cls: Cls | None = _Missing) -> Provider:
 class LinkProvider(Provider):
     k: Key
 
-    def provided_cls(self) -> Cls | None:
+    def provided_ty(self) -> rfl.Type | None:
         return None
 
 
