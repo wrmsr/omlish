@@ -10,6 +10,7 @@ from omlish.testing.pydevd import silence_subprocess_check
 
 TIMEBOMB_DELAY_S = 20 * 60
 
+SCRIPT_TEMP_FILE = False
 PYCHARM_DEBUG = False
 
 
@@ -67,11 +68,6 @@ def _main():
                     )
                 """) + '\n' * 2 + buf
 
-            subprocess.run([
-                'docker', 'exec', '-i', ctr_id,
-                'sh', '-c', f'cp /dev/stdin {fname}',
-            ], input=buf.encode(), check=True)
-
             cfg = dict(
                 python_bin='python3.12',
                 app_name='omlish',
@@ -81,10 +77,22 @@ def _main():
                 entrypoint='omserv.server.tests.hello',
             )
 
-            subprocess.check_call([
-                'docker', 'exec', '-i', ctr_id,
-                'python3', fname, 'deploy', json.dumps(cfg),
-            ])
+            if SCRIPT_TEMP_FILE:
+                subprocess.run([
+                    'docker', 'exec', '-i', ctr_id,
+                    'sh', '-c', f'cp /dev/stdin {fname}',
+                ], input=buf.encode(), check=True)
+
+                subprocess.check_call([
+                    'docker', 'exec', '-i', ctr_id,
+                    'python3', fname, 'deploy', json.dumps(cfg),
+                ])
+
+            else:
+                subprocess.run([
+                    'docker', 'exec', '-i', ctr_id,
+                    'python3', '-', 'deploy', json.dumps(cfg),
+                ], input=buf.encode(), check=True)
 
             print()
             print(ctr_id)
