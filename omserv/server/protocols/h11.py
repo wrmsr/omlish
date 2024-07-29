@@ -18,7 +18,7 @@ from ..events import ServerEvent
 from ..events import StreamClosed
 from ..events import Updated
 from ..headers import response_headers
-from ..streams.httpstream import HTTPStream
+from ..streams.httpstream import HttpStream
 from ..streams.wsstream import WSStream
 from ..taskspawner import TaskSpawner
 from ..types import AppWrapper
@@ -108,7 +108,7 @@ class H11Protocol(Protocol):
         self.keep_alive_requests = 0
         self.send = send
         self.server = server
-        self.stream: HTTPStream | WSStream | None = None
+        self.stream: HttpStream | WSStream | None = None
         self.task_spawner = task_spawner
 
     async def initiate(self) -> None:
@@ -231,7 +231,7 @@ class H11Protocol(Protocol):
             )
             self.connection = H11WSConnection(ta.cast(h11.Connection, self.connection))
         else:
-            self.stream = HTTPStream(
+            self.stream = HttpStream(
                 self.app,
                 self.config,
                 self.context,
