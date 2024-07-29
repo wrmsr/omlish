@@ -1,3 +1,4 @@
+import json
 import os.path
 import subprocess
 import textwrap
@@ -71,9 +72,18 @@ def _main():
                 'sh', '-c', f'cp /dev/stdin {fname}',
             ], input=buf.encode(), check=True)
 
+            cfg = dict(
+                python_bin='python3.12',
+                app_name='omlish',
+                repo_url='https://github.com/wrmsr/omlish',
+                revision='cb60a99124c4d6973ac6e88d1a4313bcc9d8a197',
+                requirements_txt='requirements.txt',
+                entrypoint='omserv.server.tests.hello',
+            )
+
             subprocess.check_call([
                 'docker', 'exec', '-i', ctr_id,
-                'python3', fname,
+                'python3', fname, 'deploy', json.dumps(cfg),
             ])
 
             print()

@@ -29,9 +29,11 @@ https://docs.docker.com/config/containers/multi-service_container/#use-a-process
 https://serverfault.com/questions/211525/supervisor-not-loading-new-configuration-files
 """  # noqa
 import abc
+import argparse
 import dataclasses as dc
 import enum
 import functools
+import json
 import logging
 import os.path
 import pwd
@@ -371,7 +373,29 @@ class Deployment:
 ##
 
 
-def _main() -> None:
+def _deploy_cmd(args) -> None:
+    dct = json.loads(args.cfg)
+    cfg = DeployConfig(**dct)
+    dp = Deployment(cfg)
+    dp.deploy()
+
+
+##
+
+
+def _build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser()
+
+    subparsers = parser.add_subparsers()
+
+    parser_resolve = subparsers.add_parser('deploy')
+    parser_resolve.add_argument('cfg')
+    parser_resolve.set_defaults(func=_deploy_cmd)
+
+    return parser
+
+
+def _main(argv: ta.Optional[ta.Sequence[str]] = None) -> None:
     if sys.version_info < REQUIRED_PYTHON_VERSION:
         raise EnvironmentError(f'Requires python {REQUIRED_PYTHON_VERSION}, got {sys.version_info} from {sys.executable}')  # noqa
 
@@ -382,14 +406,12 @@ def _main() -> None:
     logging.root.addHandler(logging.StreamHandler())
     logging.root.setLevel('INFO')
 
-    Deployment(DeployConfig(
-        python_bin='python3.12',
-        app_name='omlish',
-        repo_url='https://github.com/wrmsr/omlish',
-        revision='cb60a99124c4d6973ac6e88d1a4313bcc9d8a197',
-        requirements_txt='requirements.txt',
-        entrypoint='omserv.server.tests.hello',
-    )).deploy()
+    parser = _build_parser()
+    args = parser.parse_args(argv)
+    if not getattr(args, 'func', None):
+        parser.print_help()
+    else:
+        args.func(args)
 
 
 if __name__ == '__main__':
