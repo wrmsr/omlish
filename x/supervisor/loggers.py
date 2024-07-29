@@ -13,10 +13,10 @@ import sys
 import time
 import traceback
 
-from supervisor.compat import syslog
-from supervisor.compat import long
-from supervisor.compat import is_text_stream
-from supervisor.compat import as_string
+from .compat import syslog
+from .compat import long
+from .compat import is_text_stream
+from .compat import as_string
 
 class LevelsByName:
     CRIT = 50   # messages that probably require immediate user attention

@@ -6,29 +6,29 @@ import shlex
 import time
 import traceback
 
-from supervisor.compat import maxint
-from supervisor.compat import as_bytes
-from supervisor.compat import as_string
-from supervisor.compat import PY2
+from .compat import maxint
+from .compat import as_bytes
+from .compat import as_string
+from .compat import PY2
 
-from supervisor.medusa import asyncore_25 as asyncore
+from .medusa import asyncore_25 as asyncore
 
-from supervisor.states import ProcessStates
-from supervisor.states import SupervisorStates
-from supervisor.states import getProcessStateDescription
-from supervisor.states import STOPPED_STATES
+from .states import ProcessStates
+from .states import SupervisorStates
+from .states import getProcessStateDescription
+from .states import STOPPED_STATES
 
-from supervisor.options import decode_wait_status
-from supervisor.options import signame
-from supervisor.options import ProcessException, BadCommand
+from .options import decode_wait_status
+from .options import signame
+from .options import ProcessException, BadCommand
 
-from supervisor.dispatchers import EventListenerStates
+from .dispatchers import EventListenerStates
 
-from supervisor import events
+from . import events
 
-from supervisor.datatypes import RestartUnconditionally
+from .datatypes import RestartUnconditionally
 
-from supervisor.socket_manager import SocketManager
+from .socket_manager import SocketManager
 
 @functools.total_ordering
 class Subprocess(object):

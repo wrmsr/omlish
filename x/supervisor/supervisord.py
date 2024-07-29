@@ -35,15 +35,15 @@ import os
 import time
 import signal
 
-from supervisor.medusa import asyncore_25 as asyncore
+from .medusa import asyncore_25 as asyncore
 
-from supervisor.compat import as_string
-from supervisor.options import ServerOptions
-from supervisor.options import decode_wait_status
-from supervisor.options import signame
-from supervisor import events
-from supervisor.states import SupervisorStates
-from supervisor.states import getProcessStateDescription
+from .compat import as_string
+from .options import ServerOptions
+from .options import decode_wait_status
+from .options import signame
+from . import events
+from .states import SupervisorStates
+from .states import getProcessStateDescription
 
 class Supervisor:
     stopping = False # set after we detect that we are handling a stop request

@@ -1,15 +1,15 @@
 import errno
-from supervisor.medusa.asynchat_25 import find_prefix_at_end
-from supervisor.medusa.asyncore_25 import compact_traceback
+from .medusa.asynchat_25 import find_prefix_at_end
+from .medusa.asyncore_25 import compact_traceback
 
-from supervisor.compat import as_string
-from supervisor.events import notify
-from supervisor.events import EventRejectedEvent
-from supervisor.events import ProcessLogStderrEvent
-from supervisor.events import ProcessLogStdoutEvent
-from supervisor.states import EventListenerStates
-from supervisor.states import getEventListenerStateDescription
-from supervisor import loggers
+from .compat import as_string
+from .events import notify
+from .events import EventRejectedEvent
+from .events import ProcessLogStderrEvent
+from .events import ProcessLogStdoutEvent
+from .states import EventListenerStates
+from .states import getEventListenerStateDescription
+from . import loggers
 
 class PDispatcher:
     """ Asyncore dispatcher for mainloop, representing a process channel

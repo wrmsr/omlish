@@ -1,5 +1,5 @@
-from supervisor.states import getProcessStateDescription
-from supervisor.compat import as_string
+from .states import getProcessStateDescription
+from .compat import as_string
 
 callbacks = []
 

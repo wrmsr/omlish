@@ -34,7 +34,7 @@ unquote = http_server.unquote
 # class <default_with_post_handler>, defined below.
 #
 
-from supervisor.medusa.counter import counter
+from .medusa.counter import counter
 
 class default_handler:
 

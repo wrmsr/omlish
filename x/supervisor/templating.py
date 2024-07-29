@@ -17,7 +17,7 @@ from xml.etree.ElementTree import (
     parse as et_parse
     )
 
-from supervisor.compat import (
+from .compat import (
     PY2,
     htmlentitydefs,
     HTMLParser,
