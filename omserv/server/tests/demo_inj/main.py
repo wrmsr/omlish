@@ -31,11 +31,17 @@ log = logging.getLogger(__name__)
 
 
 class HiAsgiApp(AsgiApp):
+    def __init__(self) -> None:
+        super().__init__()
+
     async def __call__(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
         await send_response(send, 200, body=b'hi')
 
 
 class ByeAsgiApp(AsgiApp):
+    def __init__(self) -> None:
+        super().__init__()
+
     async def __call__(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
         await send_response(send, 200, body=b'bye')
 
@@ -47,34 +53,6 @@ class ByeAsgiApp(AsgiApp):
 class Endpoint:
     method: ta.Literal['GET', 'POST']
     endpoint: str
-
-
-ENDPOINTS: ta.Mapping[Endpoint, AsgiApp] = {
-    Endpoint('GET', '/hi'): HiAsgiApp(),
-    Endpoint('GET', '/bye'): ByeAsgiApp(),
-}
-
-
-async def inj_app(scope, recv, send) -> None:
-    match scope_ty := scope['type']:
-        case 'lifespan':
-            await stub_lifespan(scope, recv, send)
-            return
-
-        case 'http':
-            ep = Endpoint(scope['method'], scope['raw_path'].decode())
-            app = ENDPOINTS.get(ep)
-            if app is None:
-                await send_response(send, 404)
-                return
-
-            await app(scope, recv, send)
-
-        case _:
-            raise ValueError(f'Unhandled scope type: {scope_ty!r}')
-
-
-##
 
 
 class InjApp(AsgiApp):
