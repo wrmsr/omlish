@@ -39,18 +39,21 @@ from .inspect import (  # noqa
 
 from .keys import (  # noqa
     Key,
-    MapMulti,
-    Multi,
-    SetMulti,
     as_key,
-    map_multi,
-    set_multi,
     tag,
 )
 
 from .managed import (  # noqa
     create_managed_injector,
 )
+
+from .multis import (  # noqa
+    MapBinding,
+    SetBinding,
+    bind_map_provider,
+    bind_set_provider,
+)
+
 
 from .overrides import (  # noqa
     override,

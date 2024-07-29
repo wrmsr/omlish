@@ -1,3 +1,5 @@
+import typing as ta
+
 from ... import inject as inj
 from ... import lang
 
@@ -15,12 +17,15 @@ def test_inject():
 
 def test_multi():
     es = inj.as_elements(
-        inj.as_(inj.set_multi(int), 420),
-        inj.as_(inj.set_multi(int), 421),
+        inj.bind_set_provider(ta.AbstractSet[int]),
+        inj.SetBinding(inj.Key(ta.AbstractSet[int]), inj.Key(int, tag='four twenty')),
+        inj.SetBinding(inj.Key(ta.AbstractSet[int]), inj.Key(int, tag='four twenty one')),
+        inj.Binding(inj.Key(int, tag='four twenty'), inj.const(420)),
+        inj.Binding(inj.Key(int, tag='four twenty one '), inj.const(421)),
     )
 
     i = inj.create_injector(es)
-    assert i.provide(inj.set_multi(int)) == {420, 421}
+    assert i.provide(inj.Key(ta.AbstractSet[int])) == {420, 421}
 
 
 def test_optional():
