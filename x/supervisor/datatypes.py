@@ -6,7 +6,6 @@ import socket
 import shlex
 
 import urllib.parse as urlparse
-from .compat import long
 from .loggers import getLevelNumByDescription
 
 
@@ -24,7 +23,7 @@ def integer(value):
     try:
         return int(value)
     except (ValueError, OverflowError):
-        return long(value)  # why does this help ValueError? (CM)
+        return int(value)  # why does this help ValueError? (CM)
 
 
 TRUTHY_STRINGS = ('yes', 'true', 'on', '1')
@@ -417,7 +416,7 @@ class SuffixMultiplier:
 
 byte_size = SuffixMultiplier({'kb': 1024,
                               'mb': 1024 * 1024,
-                              'gb': 1024 * 1024 * long(1024), })
+                              'gb': 1024 * 1024 * int(1024), })
 
 
 def url(value):

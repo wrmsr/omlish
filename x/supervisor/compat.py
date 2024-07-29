@@ -1,9 +1,6 @@
 from __future__ import absolute_import
 
 
-long = int
-
-
 def as_bytes(s, encoding='utf8'):
     if isinstance(s, bytes):
         return s
@@ -22,8 +19,6 @@ def is_text_stream(stream):
     import _io
     return isinstance(stream, _io._TextIOBase)
 
-
-StringTypes = (str,)
 
 from importlib.metadata import EntryPoint as _EntryPoint
 

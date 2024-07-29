@@ -17,7 +17,6 @@ from ..compat import as_string
 from ..compat import as_bytes
 from base64 import encodebytes as encodestring
 from base64 import decodebytes as decodestring
-from ..compat import long
 from hashlib import md5
 
 from . import counter as counter
@@ -95,7 +94,7 @@ class auth_handler:
     def make_nonce(self, request):
         """A digest-authentication <nonce>, constructed as suggested in RFC 2069"""
         ip = request.channel.server.ip
-        now = str(long(time.time()))
+        now = str(int(time.time()))
         if now[-1:] == 'L':
             now = now[:-1]
         private_key = str(id(self))

@@ -21,7 +21,6 @@ from io import StringIO
 
 import html.entities as htmlentitydefs
 from html.parser import HTMLParser
-from .compat import StringTypes
 from .compat import as_bytes
 from .compat import as_string
 
@@ -526,9 +525,9 @@ class _MeldElementInterface:
         """ Set attributes on this node. """
         for k, v in kw.items():
             # prevent this from getting to the parser if possible
-            if not isinstance(k, StringTypes):
+            if not isinstance(k, str):
                 raise ValueError('do not set non-stringtype as key: %s' % k)
-            if not isinstance(v, StringTypes):
+            if not isinstance(v, str):
                 raise ValueError('do not set non-stringtype as val: %s' % v)
             self.attrib[k] = kw[k]
 
