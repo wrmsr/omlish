@@ -15,8 +15,8 @@ from ..events import StreamClosed
 from ..taskspawner import TaskSpawner
 from ..types import AppWrapper
 from ..types import AsgiSendEvent
-from ..types import HTTPResponseStartEvent
-from ..types import HTTPScope
+from ..types import HttpResponseStartEvent
+from ..types import HttpScope
 from ..types import UnexpectedMessageError
 from ..workercontext import WorkerContext
 from .utils import build_and_validate_headers
@@ -32,7 +32,7 @@ PUSH_VERSIONS = {'2', '3'}
 EARLY_HINTS_VERSIONS = {'2', '3'}
 
 
-class AsgiHTTPState(enum.Enum):
+class AsgiHttpState(enum.Enum):
     # The Asgi Spec is clear that a response should not start till the
     # framework has sent at least one body message hence why this
     # state tracking is required.
@@ -41,7 +41,7 @@ class AsgiHTTPState(enum.Enum):
     CLOSED = enum.auto()
 
 
-class HTTPStream:
+class HttpStream:
     def __init__(
             self,
             app: AppWrapper,
@@ -59,13 +59,13 @@ class HTTPStream:
         self.closed = False
         self.config = config
         self.context = context
-        self.response: HTTPResponseStartEvent
-        self.scope: HTTPScope
+        self.response: HttpResponseStartEvent
+        self.scope: HttpScope
         self.send = send
         self.scheme = 'http'
         self.server = server
         self.start_time: float
-        self.state = AsgiHTTPState.REQUEST
+        self.state = AsgiHttpState.REQUEST
         self.stream_id = stream_id
         self.task_spawner = task_spawner
 
@@ -116,7 +116,7 @@ class HTTPStream:
 
         elif isinstance(event, StreamClosed):
             self.closed = True
-            if self.state != AsgiHTTPState.CLOSED:
+            if self.state != AsgiHttpState.CLOSED:
                 log_access(self.config, self.scope, None, time.time() - self.start_time)
             if self.app_put is not None:
                 await self.app_put({'type': 'http.disconnect'})
@@ -125,11 +125,11 @@ class HTTPStream:
         if message is None:  # Asgi App has finished sending messages
             if not self.closed:
                 # Cleanup if required
-                if self.state == AsgiHTTPState.REQUEST:
+                if self.state == AsgiHttpState.REQUEST:
                     await self._send_error_response(500)
                 await self.send(StreamClosed(stream_id=self.stream_id))
 
-        elif message['type'] == 'http.response.start' and self.state == AsgiHTTPState.REQUEST:
+        elif message['type'] == 'http.response.start' and self.state == AsgiHttpState.REQUEST:
             self.response = message
 
         elif (
@@ -156,7 +156,7 @@ class HTTPStream:
         elif (
                 message['type'] == 'http.response.early_hint'
                 and self.scope['http_version'] in EARLY_HINTS_VERSIONS
-                and self.state == AsgiHTTPState.REQUEST
+                and self.state == AsgiHttpState.REQUEST
         ):
             headers = [(b'link', bytes(link).strip()) for link in message['links']]
             await self.send(
@@ -168,10 +168,10 @@ class HTTPStream:
             )
 
         elif message['type'] == 'http.response.body' and self.state in {
-            AsgiHTTPState.REQUEST,
-            AsgiHTTPState.RESPONSE,
+            AsgiHttpState.REQUEST,
+            AsgiHttpState.RESPONSE,
         }:
-            if self.state == AsgiHTTPState.REQUEST:
+            if self.state == AsgiHttpState.REQUEST:
                 headers = build_and_validate_headers(self.response.get('headers', []))
                 await self.send(
                     Response(
@@ -180,7 +180,7 @@ class HTTPStream:
                         status_code=int(self.response['status']),
                     ),
                 )
-                self.state = AsgiHTTPState.RESPONSE
+                self.state = AsgiHttpState.RESPONSE
 
             if (
                     not suppress_body(self.scope['method'], int(self.response['status']))
@@ -191,8 +191,8 @@ class HTTPStream:
                 )
 
             if not message.get('more_body', False):
-                if self.state != AsgiHTTPState.CLOSED:
-                    self.state = AsgiHTTPState.CLOSED
+                if self.state != AsgiHttpState.CLOSED:
+                    self.state = AsgiHttpState.CLOSED
                     log_access(
                         self.config, self.scope, self.response, time.time() - self.start_time  # type: ignore  # FIXME  # noqa
                     )
@@ -211,7 +211,7 @@ class HTTPStream:
             ),
         )
         await self.send(EndBody(stream_id=self.stream_id))
-        self.state = AsgiHTTPState.CLOSED
+        self.state = AsgiHttpState.CLOSED
         log_access(
             self.config, self.scope, {'status': status_code, 'headers': []}, time.time() - self.start_time,
         )

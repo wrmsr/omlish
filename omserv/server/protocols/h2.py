@@ -24,7 +24,7 @@ from ..events import StreamClosed
 from ..events import Updated
 from ..headers import filter_pseudo_headers
 from ..headers import response_headers
-from ..streams.httpstream import HTTPStream
+from ..streams.httpstream import HttpStream
 from ..streams.wsstream import WSStream
 from ..taskspawner import TaskSpawner
 from ..types import AppWrapper
@@ -121,7 +121,7 @@ class H2Protocol(Protocol):
         self.keep_alive_requests = 0
         self.send = send
         self.server = server
-        self.streams: dict[int, HTTPStream | WSStream] = {}
+        self.streams: dict[int, HttpStream | WSStream] = {}
         # The below are used by the sending task
         self.has_data = self.context.event_class()
         self.priority = priority.PriorityTree()
@@ -345,7 +345,7 @@ class H2Protocol(Protocol):
                 request.stream_id,
             )
         else:
-            self.streams[request.stream_id] = HTTPStream(
+            self.streams[request.stream_id] = HttpStream(
                 self.app,
                 self.config,
                 self.context,

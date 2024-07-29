@@ -22,8 +22,8 @@ AsgiFramework: ta.TypeAlias = ta.Callable[
 
 LifespanScope: ta.TypeAlias = Scope
 
-HTTPResponseStartEvent: ta.TypeAlias = dict
-HTTPScope: ta.TypeAlias = Scope
+HttpResponseStartEvent: ta.TypeAlias = dict
+HttpScope: ta.TypeAlias = Scope
 WebsocketScope: ta.TypeAlias = Scope
 
 WebsocketAcceptEvent: ta.TypeAlias = dict
