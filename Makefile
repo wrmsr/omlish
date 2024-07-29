@@ -86,6 +86,11 @@ dep-tree:
 dep-updates: venv
 	${PYTHON} -mpip list -o --format=columns
 
+.PHONY: dep-refresh
+dep-refresh: venv
+	${PYTHON} -mpip install --upgrade pip setuptools wheel
+	${PYTHON} -mpip install -r requirements-ext.txt
+
 
 ### Check
 
