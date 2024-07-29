@@ -17,17 +17,17 @@ class BaseKeyError(Exception):
 
 
 @dc.dataclass()
-class UnboundKeyError(KeyError):
+class UnboundKeyError(BaseKeyError):
     pass
 
 
 @dc.dataclass()
-class DuplicateKeyError(KeyError):
+class DuplicateKeyError(BaseKeyError):
     pass
 
 
 @dc.dataclass()
-class CyclicDependencyError(KeyError):
+class CyclicDependencyError(BaseKeyError):
     pass
 
 

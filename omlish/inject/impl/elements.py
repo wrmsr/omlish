@@ -36,11 +36,14 @@ from ..multis import SetProvider
 from ..overrides import Overrides
 from ..private import Expose
 from ..private import Private
+from ..providers import LinkProvider
 from ..scopes import ScopeBinding
 from ..types import Scope
 from .bindings import BindingImpl
 from .multis import MapProviderImpl
 from .multis import SetProviderImpl
+from .providers import LinkProviderImpl
+from .providers import ProviderImpl
 from .providers import make_provider_impl
 from .scopes import make_scope_impl
 
@@ -142,11 +145,12 @@ class ElementCollection(lang.Final):
             if (bs := es_by_ty.pop(Binding, None)):
                 if len(bs) > 1:
                     raise DuplicateKeyError(k)
-                b: Binding = check.single(bs)
+                b: Binding = check.isinstance(check.single(bs), Binding)
 
+                p: ProviderImpl
                 if isinstance(b.provider, SetProvider):
                     mbs = es_by_ty.pop(SetBinding, ())
-                    raise NotImplementedError
+                    p = SetProviderImpl([LinkProviderImpl(LinkProvider(mb.dst)) for mb in mbs])
 
                 elif isinstance(b.provider, MapProvider):
                     mbs = es_by_ty.pop(MapBinding, ())
