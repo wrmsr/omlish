@@ -8,8 +8,8 @@ import anyio.to_thread
 
 from .config import Config
 from .types import AppWrapper
-from .types import ASGIReceiveEvent
-from .types import ASGISendEvent
+from .types import AsgiReceiveEvent
+from .types import AsgiSendEvent
 from .types import LifespanScope
 from .types import UnexpectedMessageError
 
@@ -20,7 +20,7 @@ log = logging.getLogger(__name__)
 class LifespanTimeoutError(Exception):
     def __init__(self, stage: str) -> None:
         super().__init__(
-            f'Timeout whilst awaiting {stage}. Your application may not support the ASGI Lifespan '
+            f'Timeout whilst awaiting {stage}. Your application may not support the Asgi Lifespan '
             f'protocol correctly, alternatively the {stage}_timeout configuration is incorrect.',
         )
 
@@ -75,11 +75,11 @@ class Lifespan:
 
             self.supported = False
             if not self.startup.is_set():
-                log.warning('ASGI Framework Lifespan error, continuing without Lifespan support')
+                log.warning('Asgi Framework Lifespan error, continuing without Lifespan support')
             elif not self.shutdown.is_set():
-                log.exception('ASGI Framework Lifespan error, shutdown without Lifespan support')
+                log.exception('Asgi Framework Lifespan error, shutdown without Lifespan support')
             else:
-                log.exception('ASGI Framework Lifespan errored after shutdown.')
+                log.exception('Asgi Framework Lifespan errored after shutdown.')
 
         finally:
             self.startup.set()
@@ -109,10 +109,10 @@ class Lifespan:
         except TimeoutError as error:
             raise LifespanTimeoutError('startup') from error
 
-    async def asgi_receive(self) -> ASGIReceiveEvent:
+    async def asgi_receive(self) -> AsgiReceiveEvent:
         return await self.app_receive_channel.receive()
 
-    async def asgi_send(self, message: ASGISendEvent) -> None:
+    async def asgi_send(self, message: AsgiSendEvent) -> None:
         if message['type'] == 'lifespan.startup.complete':
             self.startup.set()
 

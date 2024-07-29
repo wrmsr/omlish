@@ -11,9 +11,9 @@ from omlish import check
 
 from .config import Config
 from .types import AppWrapper
-from .types import ASGIReceiveCallable
-from .types import ASGIReceiveEvent
-from .types import ASGISendEvent
+from .types import AsgiReceiveCallable
+from .types import AsgiReceiveEvent
+from .types import AsgiSendEvent
 from .types import Scope
 
 
@@ -24,8 +24,8 @@ async def _handle(
         app: AppWrapper,
         config: Config,
         scope: Scope,
-        receive: ASGIReceiveCallable,
-        send: ta.Callable[[ASGISendEvent | None], ta.Awaitable[None]],
+        receive: AsgiReceiveCallable,
+        send: ta.Callable[[AsgiSendEvent | None], ta.Awaitable[None]],
         sync_spawn: ta.Callable,
         call_soon: ta.Callable,
 ) -> None:
@@ -42,12 +42,12 @@ async def _handle(
     except BaseExceptionGroup as error:
         _, other_errors = error.split(anyio.get_cancelled_exc_class())
         if other_errors is not None:
-            log.exception('Error in ASGI Framework')
+            log.exception('Error in Asgi Framework')
             await send(None)
         else:
             raise
     except Exception:
-        log.exception('Error in ASGI Framework')
+        log.exception('Error in Asgi Framework')
     finally:
         await send(None)
 
@@ -69,8 +69,8 @@ class TaskSpawner:
             app: AppWrapper,
             config: Config,
             scope: Scope,
-            send: ta.Callable[[ASGISendEvent | None], ta.Awaitable[None]],
-    ) -> ta.Callable[[ASGIReceiveEvent], ta.Awaitable[None]]:
+            send: ta.Callable[[AsgiSendEvent | None], ta.Awaitable[None]],
+    ) -> ta.Callable[[AsgiReceiveEvent], ta.Awaitable[None]]:
         app_send_channel, app_receive_channel = anyio.create_memory_object_stream[ta.Any](config.max_app_queue_size)
         check.not_none(self._task_group).start_soon(
             _handle,
