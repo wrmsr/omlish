@@ -33,9 +33,8 @@ EARLY_HINTS_VERSIONS = {'2', '3'}
 
 
 class AsgiHttpState(enum.Enum):
-    # The Asgi Spec is clear that a response should not start till the
-    # framework has sent at least one body message hence why this
-    # state tracking is required.
+    # The Asgi Spec is clear that a response should not start till the framework has sent at least one body message
+    # hence why this state tracking is required.
     REQUEST = enum.auto()
     RESPONSE = enum.auto()
     CLOSED = enum.auto()
@@ -194,7 +193,10 @@ class HttpStream:
                 if self.state != AsgiHttpState.CLOSED:
                     self.state = AsgiHttpState.CLOSED
                     log_access(
-                        self.config, self.scope, self.response, time.time() - self.start_time  # type: ignore  # FIXME  # noqa
+                        self.config,
+                        self.scope,
+                        self.response,  # type: ignore  # FIXME  # noqa
+                        time.time() - self.start_time,
                     )
                     await self.send(EndBody(stream_id=self.stream_id))
                     await self.send(StreamClosed(stream_id=self.stream_id))
@@ -206,12 +208,21 @@ class HttpStream:
         await self.send(
             Response(
                 stream_id=self.stream_id,
-                headers=[(b'content-length', b'0'), (b'connection', b'close')],
+                headers=[
+                    (b'content-length', b'0'),
+                    (b'connection', b'close'),
+                ],
                 status_code=status_code,
             ),
         )
         await self.send(EndBody(stream_id=self.stream_id))
         self.state = AsgiHttpState.CLOSED
         log_access(
-            self.config, self.scope, {'status': status_code, 'headers': []}, time.time() - self.start_time,
+            self.config,
+            self.scope,
+            {
+                'status': status_code,
+                'headers': [],
+            },
+            time.time() - self.start_time,
         )

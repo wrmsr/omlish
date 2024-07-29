@@ -14,7 +14,7 @@ from .lifespans import Lifespan
 from .sockets import Sockets
 from .sockets import create_sockets
 from .sockets import repr_socket_addr
-from .tcpserver import TCPServer
+from .tcpserver import TcpServer
 from .types import AppWrapper
 from .workercontext import ShutdownError
 from .workercontext import WorkerContext
@@ -170,7 +170,7 @@ async def worker_serve(
                     task_group.start_soon(
                         functools.partial(
                             serve_listeners,
-                            functools.partial(TCPServer, app, config, context),
+                            functools.partial(TcpServer, app, config, context),
                             listeners,
                             handler_task_group=server_task_group,
                         ),
