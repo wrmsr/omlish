@@ -17,7 +17,7 @@ numpy==1.26.4
 
 matplotlib==3.9.1
 
-huggingface_hub==0.24.2
+huggingface_hub==0.24.3
 evaluate==0.4.2
 datasets==2.20.0
 
@@ -175,8 +175,8 @@ soco==0.30.4
 sounddevice==0.4.7
 # vosk==0.3.45
 
-bellows==0.40.1
-zigpy==0.64.3
+bellows==0.40.2
+zigpy==0.65.0
 
 # python-openzwave
 zwave-js-server-python==0.57.0
@@ -190,7 +190,7 @@ discord.py==2.4.0
 
 logbook==1.7.0.post0
 
-tenacity==8.5.0
+tenacity==9.0.0
 
 psutil==6.0.0
 
