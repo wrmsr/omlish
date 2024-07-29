@@ -1,13 +1,13 @@
 import typing as ta
 
 from .config import Config
-from .types import ASGIFramework
+from .types import AsgiFramework
 from .types import wrap_app
 from .workers import worker_serve
 
 
 async def serve(
-        app: ASGIFramework,
+        app: AsgiFramework,
         config: Config,
         **kwargs: ta.Any,
 ) -> None:
