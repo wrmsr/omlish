@@ -13,7 +13,7 @@ import sys
 import time
 import traceback
 
-from .compat import syslog
+import syslog
 from .compat import long
 from .compat import is_text_stream
 from .compat import as_string

@@ -17,15 +17,14 @@ from xml.etree.ElementTree import (
     parse as et_parse
 )
 
-from .compat import (
-    htmlentitydefs,
-    HTMLParser,
-    StringIO,
-    StringTypes,
-    unichr,
-    as_bytes,
-    as_string,
-)
+from io import StringIO
+
+from .compat import htmlentitydefs
+from .compat import HTMLParser
+from .compat import StringTypes
+from .compat import unichr
+from .compat import as_bytes
+from .compat import as_string
 
 
 AUTOCLOSE = "p", "li", "tr", "th", "td", "head", "body"

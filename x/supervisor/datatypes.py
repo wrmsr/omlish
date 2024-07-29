@@ -5,7 +5,7 @@ import signal
 import socket
 import shlex
 
-from .compat import urlparse
+import urllib.parse as urlparse
 from .compat import long
 from .loggers import getLevelNumByDescription
 

@@ -15,10 +15,10 @@ import platform
 import warnings
 import fcntl
 
-from .compat import ConfigParser
+import configparser as ConfigParser
 from .compat import as_bytes, as_string
-from .compat import xmlrpclib
-from .compat import StringIO
+import xmlrpc.client as xmlrpclib
+from io import StringIO
 from .compat import basestring
 from .compat import import_spec
 

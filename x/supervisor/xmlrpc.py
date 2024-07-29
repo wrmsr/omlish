@@ -7,14 +7,14 @@ import traceback
 import types
 from xml.etree.ElementTree import iterparse
 
-from .compat import xmlrpclib
-from .compat import StringIO
-from .compat import urlparse
+import xmlrpc.client as xmlrpclib
+from io import StringIO
+import urllib.parse as urlparse
 from .compat import as_bytes
 from .compat import as_string
 from .compat import encodestring
 from .compat import decodestring
-from .compat import httplib
+import http.client as httplib
 
 from .medusa.http_server import get_header
 from .medusa.xmlrpc_handler import xmlrpc_handler

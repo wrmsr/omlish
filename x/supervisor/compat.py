@@ -31,23 +31,6 @@ def is_text_stream(stream):
     return isinstance(stream, _io._TextIOBase)
 
 
-import xmlrpc.client as xmlrpclib
-
-import urllib.parse as urlparse
-import urllib.parse as urllib
-
-from hashlib import sha1
-
-import syslog
-
-import configparser as ConfigParser
-
-from io import StringIO
-
-from sys import maxsize as maxint
-
-import http.client as httplib
-
 from base64 import decodebytes as decodestring, encodebytes as encodestring
 
 from xmlrpc.client import Fault
