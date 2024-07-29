@@ -6,7 +6,6 @@ import types
 
 from .compat import as_string
 from .compat import as_bytes
-from .compat import unicode
 
 from .datatypes import (
     Automatic,
@@ -887,7 +886,7 @@ class SupervisorNamespaceRPCInterface:
         """
         self._update('sendProcessStdin')
 
-        if not isinstance(chars, (str, bytes, unicode)):
+        if not isinstance(chars, (str, bytes)):
             raise RPCError(Faults.INCORRECT_PARAMETERS, chars)
 
         chars = as_bytes(chars)
@@ -918,9 +917,9 @@ class SupervisorNamespaceRPCInterface:
         @param  string  data  Data for the event body
         @return boolean       Always return True unless error
         """
-        if isinstance(type, unicode):
+        if isinstance(type, str):
             type = type.encode('utf-8')
-        if isinstance(data, unicode):
+        if isinstance(data, str):
             data = data.encode('utf-8')
 
         notify(

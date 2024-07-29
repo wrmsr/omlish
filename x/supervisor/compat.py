@@ -2,14 +2,6 @@ from __future__ import absolute_import
 
 
 long = int
-basestring = str
-raw_input = input
-unichr = chr
-
-
-class unicode(str):
-    def __init__(self, string, encoding, errors):
-        str.__init__(self, string)
 
 
 def as_bytes(s, encoding='utf8'):
