@@ -29,6 +29,8 @@ from ..elements import Element
 from ..elements import Elements
 from ..exceptions import DuplicateKeyError
 from ..keys import Key
+from ..multis import MapBinding
+from ..multis import SetBinding
 from ..overrides import Overrides
 from ..private import Expose
 from ..private import Private
@@ -95,10 +97,13 @@ class ElementCollection(lang.Final):
                 pi = self._get_private_info(e)
                 self._build_raw_element_multimap(pi.owner_elements(), out)
 
+            elif isinstance(e, (SetBinding, MapBinding)):
+                add(e.multi_key, e)
+
             elif isinstance(e, Overrides):
                 ovr = self._build_raw_element_multimap(e.ovr)
                 src = self._build_raw_element_multimap(e.src)
-                for k, b in src.items():
+                for k, b in src.items():  # FIXME: merge None keys?
                     try:
                         bs = ovr[k]
                     except KeyError:
@@ -144,7 +149,7 @@ class ElementCollection(lang.Final):
             else:
                 if len(bis) > 1:
                     raise DuplicateKeyError(k)
-                [pm[k]] = bis
+                pm[k] = check.single(bis)
 
         if mm:
             for k, aps in mm.items():
