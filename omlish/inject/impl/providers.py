@@ -7,7 +7,7 @@ import typing as ta
 
 from ... import dataclasses as dc
 from ... import lang
-from .. import Cls
+from ... import reflect as rfl
 from ..injector import Injector
 from ..inspect import KwargsTarget
 from ..providers import ConstProvider
@@ -39,7 +39,7 @@ class ProviderImpl(lang.Abstract):
 class InternalProvider(Provider):
     impl: ProviderImpl
 
-    def provided_cls(self) -> Cls | None:
+    def provided_ty(self) -> rfl.Type | None:
         raise TypeError
 
 
@@ -94,7 +94,7 @@ class LinkProviderImpl(ProviderImpl, lang.Final):
 
 PROVIDER_IMPLS_BY_PROVIDER: dict[type[Provider], ta.Callable[..., ProviderImpl]] = {
     FnProvider: lambda p: CallableProviderImpl(p, build_kwargs_target(p.fn)),
-    CtorProvider: lambda p: CallableProviderImpl(p, build_kwargs_target(p.cls)),
+    CtorProvider: lambda p: CallableProviderImpl(p, build_kwargs_target(p.ty)),
     ConstProvider: ConstProviderImpl,
     LinkProvider: LinkProviderImpl,
     InternalProvider: lambda p: p.impl,
