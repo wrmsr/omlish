@@ -30,8 +30,8 @@ class SetBinding(Element, lang.Final):
 class SetProvider(Provider):
     multi_key: Key  # ta.AbstractSet
 
-    def provided_cls(self) -> Cls | None:
-        return self.multi_key.cls
+    def provided_ty(self) -> Cls | None:
+        return self.multi_key.ty
 
 
 def bind_set_provider(multi_key: ta.Any) -> Element:
@@ -54,8 +54,8 @@ class MapBinding(Element, lang.Final):
 class MapProvider(Provider):
     multi_key: Key  # ta.Mapping
 
-    def provided_cls(self) -> Cls | None:
-        return self.multi_key.cls
+    def provided_ty(self) -> Cls | None:
+        return self.multi_key.ty
 
 
 def bind_map_provider(multi_key: ta.Any) -> Element:
