@@ -1,7 +1,7 @@
 import typing as ta
 
-from .. import check
-from .. import lang
+from ... import check
+from ... import lang
 
 
 @lang.cached_function
