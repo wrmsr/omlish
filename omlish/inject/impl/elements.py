@@ -143,6 +143,8 @@ class ElementCollection(lang.Final):
             if k is None:
                 continue
 
+            es_by_ty = col.multi_dict()
+
             bis = [bi for e in es for bi in self._make_binding_impls(e)]
             if False:  # k.multi:
                 mm.setdefault(k, []).extend(bis)

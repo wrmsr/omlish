@@ -149,7 +149,7 @@ class ClassInfo:
 
     @cached.property
     def generic_mro_lookup(self) -> ta.Mapping[type, rfl.Type]:
-        return col.unique_dict((check.not_none(rfl.get_concrete_type(g)), g) for g in self.generic_mro)
+        return col.unique_map((check.not_none(rfl.get_concrete_type(g)), g) for g in self.generic_mro)
 
     @cached.property
     def generic_replaced_field_types(self) -> ta.Mapping[str, rfl.Type]:
