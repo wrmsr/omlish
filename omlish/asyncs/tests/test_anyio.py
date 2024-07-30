@@ -6,7 +6,6 @@ import anyio.to_thread
 import pytest
 
 from ... import lang
-from ...testing.pytest.helpers import asyncio_drainer  # noqa
 from .. import anyio as anu
 
 
@@ -94,12 +93,7 @@ async def test_lazy_fn2():
 
 @pytest.mark.asyncio
 @pytest.mark.drain_asyncio
-async def test_lazy_fn3(
-        # asyncio_drainer,  # noqa
-):
-    # from ...diag.threads import create_thread_dump_thread
-    # create_thread_dump_thread(start=True)
-
+async def test_lazy_fn3():
     c = 0
 
     def fn():
