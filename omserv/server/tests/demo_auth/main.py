@@ -17,8 +17,10 @@ from omlish import http as hu
 from omlish import lang
 from omlish import logs
 from omlish.http.asgi import finish_response
+from omlish.http.asgi import read_body
 from omlish.http.asgi import read_form_body
 from omlish.http.asgi import redirect_response
+from omlish.http.asgi import send_response
 from omlish.http.asgi import start_response
 from omlish.http.asgi import stub_lifespan
 
@@ -271,6 +273,39 @@ async def handle_get_logout(scope, recv, send):
 ##
 
 
+if ta.TYPE_CHECKING:
+    import tiktoken
+else:
+    tiktoken = lang.proxy_import('tiktoken')
+
+
+@handle('POST', '/tik')
+async def handle_post_tik(scope, recv, send):
+    basic_auth_token = os.environ.get('BASIC_AUTH_TOKEN')
+    if not basic_auth_token:
+        await send_response(send, 404)
+        return
+
+    basic_auth_header = b'Bearer ' + basic_auth_token.encode()
+
+    hdrs = dict(scope['headers'])
+    auth = hdrs.get(b'authorization')
+    if auth != basic_auth_header:
+        await send_response(send, 401)
+        return
+
+    enc = tiktoken.get_encoding('gpt2')
+
+    req_body = await read_body(recv)
+    toks = enc.encode(req_body.decode())
+    resp_body = ' '.join(map(str, toks)).encode() + b'\n'
+
+    await send_response(send, 200, hu.consts.CONTENT_TYPE_HTML_UTF8, body=resp_body)
+
+
+##
+
+
 async def auth_app(scope, recv, send):
     match scope_ty := scope['type']:
         case 'lifespan':
@@ -285,8 +320,7 @@ async def auth_app(scope, recv, send):
                     await handler(scope, recv, send)
 
             else:
-                await start_response(send, 404)
-                await finish_response(send)
+                await send_response(send, 404)
 
         case _:
             raise ValueError(f'Unhandled scope type: {scope_ty!r}')
