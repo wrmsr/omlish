@@ -1,6 +1,8 @@
 import abc
 import gc
 
+import pytest
+
 from ..dispatch import Dispatcher
 
 
@@ -21,6 +23,7 @@ def test_simple():
         assert disp.dispatch(A) == 'A'
 
 
+@pytest.mark.skip_if_nogil
 def test_weaks():
     disp: Dispatcher[str] = Dispatcher()
 
