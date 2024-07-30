@@ -1,11 +1,10 @@
 """
-Logger implementation loosely modeled on PEP 282.  We don't use the
-PEP 282 logger implementation in the stdlib ('logging') because it's
-idiosyncratic and a bit slow for our purposes (we don't use threads).
+Logger implementation loosely modeled on PEP 282.  We don't use the PEP 282 logger implementation in the stdlib
+('logging') because it's idiosyncratic and a bit slow for our purposes (we don't use threads).
 """
 
-# This module must not depend on any non-stdlib modules to
-# avoid circular import problems
+# This module must not depend on any non-stdlib modules to avoid circular import problems
+
 
 import errno
 import os
