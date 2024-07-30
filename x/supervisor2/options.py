@@ -517,31 +517,6 @@ class ServerOptions(Options):
 
         self.pidfile = normalize_path(pidfile)
 
-        self.serverurl = None
-
-        self.server_configs = sconfigs = section.server_configs
-
-        # we need to set a fallback serverurl that process.spawn can use
-
-        # prefer a unix domain socket
-        for config in [config for config in sconfigs if
-                       config['family'] is socket.AF_UNIX]:
-            path = config['file']
-            self.serverurl = 'unix://%s' % path
-            break
-
-        # fall back to an inet socket
-        if self.serverurl is None:
-            for config in [config for config in sconfigs if
-                           config['family'] is socket.AF_INET]:
-                host = config['host']
-                port = config['port']
-                if not host:
-                    host = 'localhost'
-                self.serverurl = 'http://%s:%s' % (host, port)
-
-        # self.serverurl may still be None if no servers at all are configured in the config file
-
     def process_config(self, do_usage=True):
         Options.process_config(self, do_usage=do_usage)
 
@@ -638,7 +613,6 @@ class ServerOptions(Options):
                 env = section.environment.copy()
                 env.update(proc.environment)
                 proc.environment = env
-        section.server_configs = self.server_configs_from_parser(parser)
         section.profile_options = None
         return section
 
@@ -787,9 +761,6 @@ class ServerOptions(Options):
         stdout_events = boolean(get(section, 'stdout_events_enabled', 'false'))
         stderr_cmaxbytes = byte_size(get(section, 'stderr_capture_maxbytes', '0'))
         stderr_events = boolean(get(section, 'stderr_events_enabled', 'false'))
-        serverurl = get(section, 'serverurl', None)
-        if serverurl and serverurl.strip().upper() == 'AUTO':
-            serverurl = None
 
         # find uid from "user" option
         user = get(section, 'user', None)
@@ -908,90 +879,12 @@ class ServerOptions(Options):
                 killasgroup=killasgroup,
                 exitcodes=exitcodes,
                 redirect_stderr=redirect_stderr,
-                environment=environment,
-                serverurl=serverurl)
+                environment=environment)
 
             programs.append(pconfig)
 
         programs.sort()  # asc by priority
         return programs
-
-    def _parse_servernames(self, parser, stype):
-        options = []
-        for section in parser.sections():
-            if section.startswith(stype):
-                parts = section.split(':', 1)
-                if len(parts) > 1:
-                    name = parts[1]
-                else:
-                    name = None  # default sentinel
-                options.append((name, section))
-        return options
-
-    def _parse_username_and_password(self, parser, section):
-        get = parser.saneget
-        username = get(section, 'username', None)
-        password = get(section, 'password', None)
-        if username is not None or password is not None:
-            if username is None or password is None:
-                raise ValueError(
-                    'Section [%s] contains incomplete authentication: '
-                    'If a username or a password is specified, both the '
-                    'username and password must be specified' % section)
-        return {'username': username, 'password': password}
-
-    def server_configs_from_parser(self, parser):
-        configs = []
-        inet_serverdefs = self._parse_servernames(parser, 'inet_http_server')
-        for name, section in inet_serverdefs:
-            config = {}
-            get = parser.saneget
-            config.update(self._parse_username_and_password(parser, section))
-            config['name'] = name
-            config['family'] = socket.AF_INET
-            port = get(section, 'port', None)
-            if port is None:
-                raise ValueError('section [%s] has no port value' % section)
-            host, port = inet_address(port)
-            config['host'] = host
-            config['port'] = port
-            config['section'] = section
-            configs.append(config)
-
-        unix_serverdefs = self._parse_servernames(parser, 'unix_http_server')
-        for name, section in unix_serverdefs:
-            config = {}
-            get = parser.saneget
-            sfile = get(section, 'file', None, expansions={'here': self.here})
-            if sfile is None:
-                raise ValueError('section [%s] has no file value' % section)
-            sfile = sfile.strip()
-            config['name'] = name
-            config['family'] = socket.AF_UNIX
-            config['file'] = normalize_path(sfile)
-            config.update(self._parse_username_and_password(parser, section))
-            chown = get(section, 'chown', None)
-            if chown is not None:
-                try:
-                    chown = colon_separated_user_group(chown)
-                except ValueError:
-                    raise ValueError('Invalid sockchown value %s' % chown)
-            else:
-                chown = (-1, -1)
-            config['chown'] = chown
-            chmod = get(section, 'chmod', None)
-            if chmod is not None:
-                try:
-                    chmod = octal_type(chmod)
-                except (TypeError, ValueError):
-                    raise ValueError('Invalid chmod value %s' % chmod)
-            else:
-                chmod = 0o700
-            config['chmod'] = chmod
-            config['section'] = section
-            configs.append(config)
-
-        return configs
 
     def daemonize(self):
         self.poller.before_daemonize()
@@ -1410,120 +1303,6 @@ class ServerOptions(Options):
                 self.close_fd(fd)
 
 
-class ClientOptions(Options):
-    positional_args_allowed = 1
-
-    interactive = None
-    prompt = None
-    serverurl = None
-    username = None
-    password = None
-    history_file = None
-
-    def __init__(self):
-        Options.__init__(self, require_configfile=False)
-        self.configroot = Dummy()
-        self.configroot.supervisorctl = Dummy()
-        self.configroot.supervisorctl.interactive = None
-        self.configroot.supervisorctl.prompt = 'supervisor'
-        self.configroot.supervisorctl.serverurl = None
-        self.configroot.supervisorctl.username = None
-        self.configroot.supervisorctl.password = None
-        self.configroot.supervisorctl.history_file = None
-
-        from .supervisorctl import DefaultControllerPlugin
-        default_factory = ('default', DefaultControllerPlugin, {})
-        # we always add the default factory. If you want to a supervisorctl without the default plugin, please write
-        # your own supervisorctl.
-        self.plugin_factories = [default_factory]
-
-        self.add('interactive', 'supervisorctl.interactive', 'i', 'interactive', flag=1, default=0)  # noqa
-        self.add('prompt', 'supervisorctl.prompt', default='supervisor')
-        self.add('serverurl', 'supervisorctl.serverurl', 's:', 'serverurl=', url, default='http://localhost:9001')  # noqa
-        self.add('username', 'supervisorctl.username', 'u:', 'username=')
-        self.add('password', 'supervisorctl.password', 'p:', 'password=')
-        self.add('history', 'supervisorctl.history_file', 'r:', 'history_file=')
-
-    def realize(self, *arg, **kw):
-        Options.realize(self, *arg, **kw)
-        if not self.args:
-            self.interactive = 1
-
-        format = '%(levelname)s: %(message)s\n'
-        logger = loggers.getLogger()
-        loggers.handle_stdout(logger, format)
-        self._log_parsing_messages(logger)
-
-    def read_config(self, fp):
-        section = self.configroot.supervisorctl
-        need_close = False
-        if not hasattr(fp, 'read'):
-            self.here = os.path.dirname(normalize_path(fp))
-            if not self.exists(fp):
-                raise ValueError('could not find config file %s' % fp)
-            try:
-                fp = self.open(fp, 'r')
-                need_close = True
-            except OSError:
-                raise ValueError('could not read config file %s' % fp)
-
-        parser = UnhosedConfigParser()
-        parser.expansions = self.environ_expansions
-        parser.mysection = 'supervisorctl'
-        try:
-            parser.read_file(fp)
-        except AttributeError:
-            parser.readfp(fp)
-
-        if need_close:
-            fp.close()
-        self.read_include_config(fp, parser, parser.expansions)
-
-        sections = parser.sections()
-        if 'supervisorctl' not in sections:
-            raise ValueError('.ini file does not include supervisorctl section')
-        serverurl = parser.getdefault(
-            'serverurl',
-            'http://localhost:9001',
-            expansions={
-                'here': self.here,
-            },
-        )
-        if serverurl.startswith('unix://'):
-            path = normalize_path(serverurl[7:])
-            serverurl = 'unix://%s' % path
-        section.serverurl = serverurl
-
-        # The defaults used below are really set in __init__ (since
-        # section==self.configroot.supervisorctl)
-        section.prompt = parser.getdefault('prompt', section.prompt)
-        section.username = parser.getdefault('username', section.username)
-        section.password = parser.getdefault('password', section.password)
-        history_file = parser.getdefault(
-            'history_file',
-            section.history_file,
-            expansions={
-                'here': self.here,
-            },
-        )
-
-        if history_file:
-            history_file = normalize_path(history_file)
-            section.history_file = history_file
-            self.history_file = history_file
-        else:
-            section.history_file = None
-            self.history_file = None
-
-        self.plugin_factories += self.get_plugins(
-            parser,
-            'supervisor.ctl_factory',
-            'ctlplugin:',
-        )
-
-        return section
-
-
 _marker = []
 
 
@@ -1672,7 +1451,6 @@ class ProcessConfig(Config):
 
     optional_param_names = [
         'environment',
-        'serverurl',
     ]
 
     def __init__(self, options, **params):
