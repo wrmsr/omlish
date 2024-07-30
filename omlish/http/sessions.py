@@ -8,8 +8,11 @@ import time
 import typing as ta
 import zlib
 
-from omlish import http as hu
-from omlish import lang
+from .. import fnpairs as fps
+from .. import lang
+from .cookies import dump_cookie
+from .cookies import parse_cookie
+from .json import JSON_TAGGER
 
 
 Session: ta.TypeAlias = dict[str, ta.Any]
@@ -41,10 +44,10 @@ def bytes_to_int(bytestr: bytes) -> int:
 class Signer:
     @dc.dataclass(frozen=True)
     class Config:
-        secret_key: str = 'secret-key-goes-here'  # noqa
+        secret_key: str
         salt: str = 'cookie-session'
 
-    def __init__(self, config: Config = Config()) -> None:
+    def __init__(self, config: Config) -> None:
         super().__init__()
 
         self._config = config
@@ -70,11 +73,24 @@ class Signer:
 ##
 
 
+class SessionExpiredError(Exception):
+    pass
+
+
+class SessionVerificationError(Exception):
+    pass
+
+
 class SessionMarshal:
-    def __init__(self, signer: Signer) -> None:
+    def __init__(
+            self,
+            signer: Signer,
+            serializer: fps.ObjectStr = fps.of(JSON_TAGGER.dumps, JSON_TAGGER.loads),
+    ) -> None:
         super().__init__()
 
         self._signer = signer
+        self._serializer = serializer
 
     SEP = b'.'
 
@@ -84,7 +100,7 @@ class SessionMarshal:
         sig_b = base64_decode(sig)
 
         if not self._signer.verify_signature(value, sig_b):
-            raise Exception
+            raise SessionVerificationError
 
         value, ts_bytes = value.rsplit(self.SEP, 1)
         ts_int = bytes_to_int(base64_decode(ts_bytes))
@@ -93,9 +109,9 @@ class SessionMarshal:
         age = int(time.time()) - ts_int
 
         if age > max_age:
-            raise Exception
+            raise SessionExpiredError
         if age < 0:
-            raise Exception
+            raise SessionExpiredError
 
         payload = value
 
@@ -111,12 +127,12 @@ class SessionMarshal:
 
         jbs = jb.decode()
 
-        obj = hu.JSON_TAGGER.loads(jbs)
+        obj = self._serializer.backward(jbs)
 
         return obj
 
     def dump(self, obj: ta.Any) -> bytes:
-        jbs = hu.JSON_TAGGER.dumps(obj)
+        jbs = self._serializer.forward(obj)
 
         jb = jbs.encode()
 
@@ -158,7 +174,7 @@ class CookieSessionStore:
     def extract(self, scope) -> Session:
         for k, v in scope['headers']:
             if k == b'cookie':
-                cks = hu.parse_cookie(v.decode('latin-1', 'strict'))
+                cks = parse_cookie(v.decode('latin-1', 'strict'))
                 sk = cks.get(self._config.key)
                 if sk:
                     return self._marshal.load(sk[0].encode('latin-1', 'strict'))
@@ -168,7 +184,7 @@ class CookieSessionStore:
     def build_headers(self, session: Session) -> list[tuple[bytes, bytes]]:
         d = self._marshal.dump(session)
 
-        c = hu.dump_cookie(
+        c = dump_cookie(
             self._config.key,
             d.decode('latin-1', 'strict'),
             max_age=self._config.max_age,
@@ -179,36 +195,3 @@ class CookieSessionStore:
             (b'Vary', b'Cookie'),
             (b'Set-Cookie', c.encode('latin-1', 'strict')),
         ]
-
-
-##
-
-
-SESSION_MARSHAL = SessionMarshal(
-    signer=Signer(),
-)
-
-COOKIE_SESSION_STORE = CookieSessionStore(
-    marshal=SESSION_MARSHAL,
-    config=CookieSessionStore.Config(
-        max_age=datetime.timedelta(days=31),
-    ),
-)
-
-
-##
-
-
-def _main() -> None:
-    sv = b'eyJfZnJlc2giOmZhbHNlfQ.ZqLLYg.4hMQ-ZLN_40k-q7efM87KEEx93g'
-
-    print(sv)
-    for _ in range(3):
-        obj = SESSION_MARSHAL.load(sv)
-        print(obj)
-        sv = SESSION_MARSHAL.dump(obj)
-        print(sv)
-
-
-if __name__ == '__main__':
-    _main()
