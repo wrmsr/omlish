@@ -7,10 +7,12 @@ TODO:
 import abc
 import dataclasses as dc
 import enum
+import functools
 import typing as ta
 
 from .. import lang
 from .trio_asyncio import check_trio_asyncio
+from .trio_asyncio import with_trio_asyncio_loop
 
 
 if ta.TYPE_CHECKING:
@@ -96,6 +98,29 @@ def get_flavor(obj: ta.Any, default: Flavor | type[_MISSING] | None = _MISSING) 
         return default  # type: ignore
 
     raise TypeError(f'not marked with flavor: {obj}')
+
+
+##
+
+
+def with_adapter_loop(*, wait=False):
+    def outer(fn):
+        @functools.wraps(fn)
+        async def inner(*args, **kwargs):
+            cur_lib = sniffio.current_async_library()
+
+            if cur_lib == 'asyncio':
+                await fn(*args, **kwargs)
+
+            elif cur_lib == 'trio':
+                await with_trio_asyncio_loop(wait=wait)(fn)(*args, **kwargs)
+
+            else:
+                raise RuntimeError(f'Unknown async library: {cur_lib}')
+
+        return inner
+
+    return outer
 
 
 ##
