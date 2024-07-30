@@ -6,6 +6,7 @@ TODO:
 https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login
 """
 import contextvars
+import dataclasses as dc
 import datetime
 import functools
 import importlib.resources
@@ -18,6 +19,7 @@ import anyio.to_thread
 from omlish import asyncs as asu
 from omlish import check
 from omlish import http as hu
+from omlish import json
 from omlish import lang
 from omlish import logs
 from omlish.asyncs import anyio as anu
@@ -200,9 +202,30 @@ async def handle_get_index(scope, recv, send):
 @with_user
 @login_required
 async def handle_get_profile(scope, recv, send):
-    html = render_template('profile.html', name=check.not_none(USER.get()).name)
+    user = check.not_none(USER.get())
+    html = render_template(
+        'profile.html',
+        name=user.name,
+        auth_token=user.auth_token or '',
+    )
     await start_response(send, 200, hu.consts.CONTENT_TYPE_HTML_UTF8)  # noqa
     await finish_response(send, html)
+
+
+@handle('POST', '/profile')
+@with_session
+@with_user
+async def handle_post_profile(scope, recv, send):
+    user = check.not_none(USER.get())
+
+    dct = await read_form_body(recv)
+
+    auth_token = dct[b'auth-token'].decode()
+
+    user = dc.replace(user, auth_token=auth_token or None)
+    USERS.update(user)
+
+    await redirect_response(send, url_for('profile'))
 
 
 #
@@ -229,16 +252,12 @@ async def handle_post_login(scope, recv, send):
 
     user = USERS.get(email=email)  # noqa
 
-    # check if the user actually exists
-    # take the user-supplied password, hash it, and compare it to the hashed password in the database
     if not user or not check_password_hash(user.password, password):
         flash('Please check your login details and try again.')
 
-        # if the user doesn't exist or password is wrong, reload the page
         await redirect_response(send, url_for('login'))
         return
 
-    # if the above check passes, then we know the user has the right credentials
     login_user(user, remember=remember)
     await redirect_response(send, url_for('profile'))
 
@@ -315,18 +334,24 @@ def _gpt2_enc() -> 'tiktoken.Encoding':
 gpt2_enc = anu.LazyFn(functools.partial(anyio.to_thread.run_sync, _gpt2_enc))
 
 
+BASIC_AUTH_PREFIX = b'Bearer '
+
+
 @handle('POST', '/tik')
 async def handle_post_tik(scope, recv, send):
-    basic_auth_token = os.environ.get('BASIC_AUTH_TOKEN')
-    if not basic_auth_token:
-        await send_response(send, 404)
-        return
-
-    basic_auth_header = b'Bearer ' + basic_auth_token.encode()
-
     hdrs = dict(scope['headers'])
     auth = hdrs.get(b'authorization')
-    if auth != basic_auth_header:
+    if not auth or not auth.startswith(BASIC_AUTH_PREFIX):
+        await send_response(send, 401)
+        return
+
+    auth_token = auth[len(BASIC_AUTH_PREFIX):].decode()
+    user: User | None = None
+    for u in USERS.get_all():
+        if u.auth_token and u.auth_token == auth_token:
+            user = u
+            break
+    if not user:
         await send_response(send, 401)
         return
 
@@ -334,9 +359,14 @@ async def handle_post_tik(scope, recv, send):
 
     req_body = await read_body(recv)
     toks = enc.encode(req_body.decode())
-    resp_body = ' '.join(map(str, toks)).encode() + b'\n'
+    dct = {
+        'user_id': user.id,
+        'user_name': user.name,
+        'tokens': toks,
+    }
+    resp_body = json.dumps(dct).encode() + b'\n'
 
-    await send_response(send, 200, hu.consts.CONTENT_TYPE_HTML_UTF8, body=resp_body)
+    await send_response(send, 200, hu.consts.CONTENT_TYPE_JSON_UTF8, body=resp_body)
 
 
 ##

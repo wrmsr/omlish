@@ -28,6 +28,9 @@ class Users:
         self._users_by_id: dict[int, User] = {}
         self._user_ids_by_email: dict[str, int] = {}
 
+    def get_all(self) -> list[User]:
+        return list(self._users_by_id.values())
+
     def get(
             self,
             *,
