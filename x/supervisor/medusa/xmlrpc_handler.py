@@ -103,7 +103,7 @@ if __name__ == '__main__':
             return 'Sure, that works'
 
 
-    import supervisor.medusa.asyncore_25 as asyncore
+    from . import asyncore_25 as asyncore
 
 
     hs = http_server.http_server('', 8000)

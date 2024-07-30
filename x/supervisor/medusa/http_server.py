@@ -844,12 +844,12 @@ if __name__ == '__main__':
     if len(sys.argv) < 2:
         print('usage: %s <root> <port>' % (sys.argv[0]))
     else:
-        from supervisor.medusa import chat_server
-        from supervisor.medusa import default_handler
-        from supervisor.medusa import filesys
-        from supervisor.medusa import ftp_server
-        from supervisor.medusa import monitor
-        from supervisor.medusa import resolver
+        from . import chat_server
+        from . import default_handler
+        from . import filesys
+        from . import ftp_server
+        from . import monitor
+        from . import resolver
 
 
         rs = resolver.caching_resolver('127.0.0.1')
