@@ -24,6 +24,10 @@ from omlish import lang
 from omlish import logs
 from omlish.asyncs import anyio as anu
 from omlish.http import sessions
+from omlish.http.asgi import AbstractAsgiApp
+from omlish.http.asgi import AsgiRecv
+from omlish.http.asgi import AsgiScope
+from omlish.http.asgi import AsgiSend
 from omlish.http.asgi import finish_response
 from omlish.http.asgi import read_body
 from omlish.http.asgi import read_form_body
@@ -379,24 +383,34 @@ async def handle_post_tik(scope, recv, send):
 ##
 
 
-async def auth_app(scope, recv, send):
-    match scope_ty := scope['type']:
-        case 'lifespan':
-            await stub_lifespan(scope, recv, send)
-            return
+class AuthApp(AbstractAsgiApp):
+    async def __call__(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
+        match scope_ty := scope['type']:
+            case 'lifespan':
+                await stub_lifespan(scope, recv, send)
+                return
 
-        case 'http':
-            handler = HANDLERS.get((scope['method'], scope['raw_path'].decode()))
+            case 'http':
+                handler = HANDLERS.get((scope['method'], scope['raw_path'].decode()))
 
-            if handler is not None:
-                with lang.context_var_setting(SCOPE, scope):
-                    await handler(scope, recv, send)
+                if handler is not None:
+                    with lang.context_var_setting(SCOPE, scope):
+                        await handler(scope, recv, send)
 
-            else:
-                await send_response(send, 404)
+                else:
+                    await send_response(send, 404)
 
-        case _:
-            raise ValueError(f'Unhandled scope type: {scope_ty!r}')
+            case _:
+                raise ValueError(f'Unhandled scope type: {scope_ty!r}')
+
+
+@lang.cached_function
+def _auth_app() -> AuthApp:
+    return AuthApp()
+
+
+async def auth_app(scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
+    await _auth_app()(scope, recv, send)
 
 
 ##
