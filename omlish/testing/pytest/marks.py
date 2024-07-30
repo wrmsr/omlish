@@ -40,9 +40,9 @@ def skip_if_nogil():
 
 class drain_asyncio(ManagerMark):  # noqa
     def __call__(self, item: pytest.Function) -> ta.Iterator[None]:
+        loop = asyncio.get_event_loop()
         try:
             yield
         finally:
-            loop = asyncio.get_event_loop()
-            while loop._ready or loop._scheduled:  # noqa
-                loop._run_once()  # noqa
+            while loop._ready or loop._scheduled:  # type: ignore  # noqa
+                loop._run_once()  # type: ignore  # noqa
