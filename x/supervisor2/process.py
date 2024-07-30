@@ -17,7 +17,6 @@ from .options import BadCommand
 from .options import ProcessException
 from .options import decode_wait_status
 from .options import signame
-from .socket_manager import SocketManager
 from .states import ProcessStates
 from .states import STOPPED_STATES
 from .states import SupervisorStates

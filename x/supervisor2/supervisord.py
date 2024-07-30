@@ -77,7 +77,6 @@ class Supervisor:
         try:
             for config in self.options.process_group_configs:
                 self.add_process_group(config)
-            self.options.openhttpservers(self)
             self.options.setsignals()
             if not self.options.nodaemon and self.options.first:
                 self.options.daemonize()
@@ -164,11 +163,8 @@ class Supervisor:
         events.notify(events.SupervisorRunningEvent())
         timeout = 1  # this cannot be fewer than the smallest TickEvent (5)
 
-        # socket_map = self.options.get_socket_map()
-
         while 1:
             combined_map = {}
-            # combined_map.update(socket_map)
             combined_map.update(self.get_process_map())
 
             pgroups = list(self.process_groups.values())
@@ -348,7 +344,6 @@ def main(args=None, test=False):
             profile('go(options)', globals(), locals(), sort_order, callers)
         else:
             go(options)
-        options.close_httpservers()
         options.close_logger()
         first = False
         if test or (options.mood < SupervisorStates.RESTARTING):
