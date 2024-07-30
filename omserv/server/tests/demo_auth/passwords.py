@@ -35,7 +35,11 @@ def gen_salt(length: int) -> str:
     return ''.join(secrets.choice(SALT_CHARS) for _ in range(length))
 
 
-def _hash_internal(method: str, salt: str, password: str) -> tuple[str, str]:
+def _hash_internal(
+        method: str,
+        salt: str,
+        password: str,
+) -> tuple[str, str]:
     method, *args = method.split(':')
     salt_bytes = salt.encode()
     password_bytes = password.encode()
@@ -52,12 +56,19 @@ def _hash_internal(method: str, salt: str, password: str) -> tuple[str, str]:
                 raise ValueError("'scrypt' takes 3 arguments.") from None
 
         maxmem = 132 * n * r * p  # ideally 128, but some extra seems needed
+
         return (
             hashlib.scrypt(
-                password_bytes, salt=salt_bytes, n=n, r=r, p=p, maxmem=maxmem,
+                password_bytes,
+                salt=salt_bytes,
+                n=n,
+                r=r,
+                p=p,
+                maxmem=maxmem,
             ).hex(),
             f'scrypt:{n}:{r}:{p}',
         )
+
     elif method == 'pbkdf2':
         len_args = len(args)
 
@@ -75,10 +86,14 @@ def _hash_internal(method: str, salt: str, password: str) -> tuple[str, str]:
 
         return (
             hashlib.pbkdf2_hmac(
-                hash_name, password_bytes, salt_bytes, iterations,
+                hash_name,
+                password_bytes,
+                salt_bytes,
+                iterations,
             ).hex(),
             f'pbkdf2:{hash_name}:{iterations}',
         )
+
     else:
         raise ValueError(f"Invalid hash method '{method}'.")
 
