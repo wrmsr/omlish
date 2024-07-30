@@ -61,8 +61,8 @@ DEAD_PROGRAM_FAULTS = (xmlrpc.Faults.SPAWN_ERROR,
 
 
 class fgthread(threading.Thread):
-    """ A subclass of threading.Thread, with a kill() method.
-    To be used for foreground output/error streaming.
+    """
+    A subclass of threading.Thread, with a kill() method. To be used for foreground output/error streaming.
     http://mail.python.org/pipermail/python-list/2004-May/260937.html
     """
 
@@ -72,12 +72,16 @@ class fgthread(threading.Thread):
         self.program = program
         self.ctl = ctl
         self.listener = http_client.Listener()
-        self.output_handler = http_client.HTTPHandler(self.listener,
-                                                      self.ctl.options.username,
-                                                      self.ctl.options.password)
-        self.error_handler = http_client.HTTPHandler(self.listener,
-                                                     self.ctl.options.username,
-                                                     self.ctl.options.password)
+        self.output_handler = http_client.HTTPHandler(
+            self.listener,
+            self.ctl.options.username,
+            self.ctl.options.password,
+        )
+        self.error_handler = http_client.HTTPHandler(
+            self.listener,
+            self.ctl.options.username,
+            self.ctl.options.password,
+        )
 
     def start(self):  # pragma: no cover
         # Start the thread
@@ -86,10 +90,8 @@ class fgthread(threading.Thread):
         threading.Thread.start(self)
 
     def run(self):  # pragma: no cover
-        self.output_handler.get(self.ctl.options.serverurl,
-                                '/logtail/%s/stdout' % self.program)
-        self.error_handler.get(self.ctl.options.serverurl,
-                               '/logtail/%s/stderr' % self.program)
+        self.output_handler.get(self.ctl.options.serverurl, '/logtail/%s/stdout' % self.program)
+        self.error_handler.get(self.ctl.options.serverurl, '/logtail/%s/stderr' % self.program)
         asyncore.loop()
 
     def __run(self):  # pragma: no cover
@@ -118,8 +120,7 @@ class fgthread(threading.Thread):
 
 class Controller(cmd.Cmd):
 
-    def __init__(self, options, completekey='tab', stdin=None,
-                 stdout=None):
+    def __init__(self, options, completekey='tab', stdin=None, stdout=None):
         self.options = options
         self.prompt = self.options.prompt + '> '
         self.options.plugins = []
@@ -183,7 +184,8 @@ class Controller(cmd.Cmd):
             self.exitstatus = LSBInitExitStatuses.GENERIC
 
     def onecmd(self, line):
-        """ Override the onecmd method to:
+        """
+        Override the onecmd method to:
           - catch and print all exceptions
           - call 'do_foo' on plugins rather than ourself
         """
@@ -290,11 +292,11 @@ class Controller(cmd.Cmd):
         return True
 
     def complete(self, text, state, line=None):
-        """Completer function that Cmd will register with readline using
-        readline.set_completer().  This function will be called by readline
-        as complete(text, state) where text is a fragment to complete and
-        state is an integer (0..n).  Each call returns a string with a new
-        completion.  When no more are available, None is returned."""
+        """
+        Completer function that Cmd will register with readline using readline.set_completer().  This function will be
+        called by readline as complete(text, state) where text is a fragment to complete and state is an integer (0..n).
+        Each call returns a string with a new completion.  When no more are available, None is returned.
+        """
         if line is None:  # line is only set in tests
             import readline
             line = readline.get_line_buffer()
@@ -316,8 +318,17 @@ class Controller(cmd.Cmd):
             elif action in ('add', 'remove', 'update'):
                 matches = self._complete_groups(text)
             # actions that accept a process name
-            elif action in ('clear', 'fg', 'pid', 'restart', 'signal',
-                            'start', 'status', 'stop', 'tail'):
+            elif action in (
+                    'clear',
+                    'fg',
+                    'pid',
+                    'restart',
+                    'signal',
+                    'start',
+                    'status',
+                    'stop',
+                    'tail',
+            ):
                 matches = self._complete_processes(text)
         if len(matches) > state:
             return matches[state]
@@ -347,9 +358,10 @@ class Controller(cmd.Cmd):
         return [p + ' ' for p in processes if p.startswith(text)]
 
     def _get_complete_info(self):
-        """Get all process info used for completion.  We cache this between
-        commands to reduce XML-RPC calls because readline may call
-        complete() many times if the user hits tab only once."""
+        """
+        Get all process info used for completion.  We cache this between commands to reduce XML-RPC calls because
+        readline may call complete() many times if the user hits tab only once.
+        """
         if self._complete_info is None:
             self._complete_info = self.get_supervisor().getAllProcessInfo()
         return self._complete_info
@@ -447,9 +459,9 @@ def not_all_langs():
 def check_encoding(ctl):
     problematic_enc = not_all_langs()
     if problematic_enc:
-        ctl.output('Warning: sys.stdout.encoding is set to %s, so Unicode '
-                   'output may fail. Check your LANG and PYTHONIOENCODING '
-                   'environment settings.' % problematic_enc)
+        ctl.output(
+            'Warning: sys.stdout.encoding is set to %s, so Unicode output may fail. Check your LANG and '
+            'PYTHONIOENCODING environment settings.' % problematic_enc)
 
 
 class DefaultControllerPlugin(ControllerPluginBase):
@@ -464,12 +476,9 @@ class DefaultControllerPlugin(ControllerPluginBase):
         password = self.ctl.options.password
         handler = None
         try:
-            # Python's urllib2 (at least as of Python 2.4.2) isn't up
-            # to this task; it doesn't actually implement a proper
-            # HTTP/1.1 client that deals with chunked responses (it
-            # always sends a Connection: close header).  We use a
-            # homegrown client based on asyncore instead.  This makes
-            # me sad.
+            # Python's urllib2 (at least as of Python 2.4.2) isn't up to this task; it doesn't actually implement a
+            # proper HTTP/1.1 client that deals with chunked responses (it always sends a Connection: close header).  We
+            # use a homegrown client based on asyncore instead.  This makes me sad.
             if self.listener is None:
                 listener = http_client.Listener()
             else:
@@ -544,22 +553,18 @@ class DefaultControllerPlugin(ControllerPluginBase):
             check_encoding(self.ctl)
             try:
                 if channel == 'stdout':
-                    output = supervisor.readProcessStdoutLog(name,
-                                                             -bytes, 0)
+                    output = supervisor.readProcessStdoutLog(name, -bytes, 0)
                 else:
-                    output = supervisor.readProcessStderrLog(name,
-                                                             -bytes, 0)
+                    output = supervisor.readProcessStderrLog(name, -bytes, 0)
             except xmlrpclib.Fault as e:
                 self.ctl.exitstatus = LSBInitExitStatuses.GENERIC
                 template = '%s: ERROR (%s)'
                 if e.faultCode == xmlrpc.Faults.NO_FILE:
                     self.ctl.output(template % (name, 'no log file'))
                 elif e.faultCode == xmlrpc.Faults.FAILED:
-                    self.ctl.output(template % (name,
-                                                'unknown error reading log'))
+                    self.ctl.output(template % (name, 'unknown error reading log'))
                 elif e.faultCode == xmlrpc.Faults.BAD_NAME:
-                    self.ctl.output(template % (name,
-                                                'no such process name'))
+                    self.ctl.output(template % (name, 'no such process name'))
                 else:
                     raise
             else:
@@ -619,8 +624,7 @@ class DefaultControllerPlugin(ControllerPluginBase):
             if e.faultCode == xmlrpc.Faults.NO_FILE:
                 self.ctl.output(template % ('supervisord', 'no log file'))
             elif e.faultCode == xmlrpc.Faults.FAILED:
-                self.ctl.output(template % ('supervisord',
-                                            'unknown error reading log'))
+                self.ctl.output(template % ('supervisord', 'unknown error reading log'))
             else:
                 raise
         else:
@@ -654,14 +658,15 @@ class DefaultControllerPlugin(ControllerPluginBase):
 
         template = '%(namespec)-' + str(maxlen + 3) + 's%(state)-10s%(desc)s'
         for i, info in enumerate(process_infos):
-            line = template % {'namespec': namespecs[i],
-                               'state': info['statename'],
-                               'desc': info['description']}
+            line = template % {
+                'namespec': namespecs[i],
+                'state': info['statename'],
+                'desc': info['description'],
+            }
             self.ctl.output(line)
 
     def do_status(self, arg):
-        # XXX In case upcheck fails, we override the exitstatus which
-        # should only return 4 for do_status
+        # XXX In case upcheck fails, we override the exitstatus which should only return 4 for do_status
         # TODO review this
         if not self.ctl.upcheck():
             self.ctl.exitstatus = LSBStatusExitStatuses.UNKNOWN
@@ -704,10 +709,8 @@ class DefaultControllerPlugin(ControllerPluginBase):
 
     def help_status(self):
         self.ctl.output('status <name>\t\tGet status for a single process')
-        self.ctl.output('status <gname>:*\tGet status for all '
-                        'processes in a group')
-        self.ctl.output('status <name> <name>\tGet status for multiple named '
-                        'processes')
+        self.ctl.output('status <gname>:*\tGet status for all processes in a group')
+        self.ctl.output('status <name> <name>\tGet status for multiple named processes')
         self.ctl.output('status\t\t\tGet all process status info')
 
     def do_pid(self, arg):
@@ -739,10 +742,8 @@ class DefaultControllerPlugin(ControllerPluginBase):
 
     def help_pid(self):
         self.ctl.output('pid\t\t\tGet the PID of supervisord.')
-        self.ctl.output('pid <name>\t\tGet the PID of a single '
-                        'child process by name.')
-        self.ctl.output('pid all\t\t\tGet the PID of every child '
-                        'process, one per line.')
+        self.ctl.output('pid <name>\t\tGet the PID of a single child process by name.')
+        self.ctl.output('pid all\t\t\tGet the PID of every child process, one per line.')
 
     def _startresult(self, result):
         name = make_namespec(result['group'], result['name'])
@@ -804,10 +805,12 @@ class DefaultControllerPlugin(ControllerPluginBase):
                     try:
                         result = supervisor.startProcess(name)
                     except xmlrpclib.Fault as e:
-                        error = {'status': e.faultCode,
-                                 'name': process_name,
-                                 'group': group_name,
-                                 'description': e.faultString}
+                        error = {
+                            'status': e.faultCode,
+                            'name': process_name,
+                            'group': group_name,
+                            'description': e.faultString,
+                        }
                         self.ctl.output(self._startresult(error))
                         self.ctl.set_exitstatus_from_xmlrpc_fault(error['status'], xmlrpc.Faults.ALREADY_STARTED)
                     else:
@@ -817,8 +820,7 @@ class DefaultControllerPlugin(ControllerPluginBase):
     def help_start(self):
         self.ctl.output('start <name>\t\tStart a process')
         self.ctl.output('start <gname>:*\t\tStart all processes in a group')
-        self.ctl.output(
-            'start <name> <name>\tStart multiple processes or groups')
+        self.ctl.output('start <name> <name>\tStart multiple processes or groups')
         self.ctl.output('start all\t\tStart all processes')
 
     def _signalresult(self, result, success='signalled'):
@@ -881,10 +883,12 @@ class DefaultControllerPlugin(ControllerPluginBase):
                     try:
                         supervisor.stopProcess(name)
                     except xmlrpclib.Fault as e:
-                        error = {'status': e.faultCode,
-                                 'name': process_name,
-                                 'group': group_name,
-                                 'description': e.faultString}
+                        error = {
+                            'status': e.faultCode,
+                            'name': process_name,
+                            'group': group_name,
+                            'description': e.faultString,
+                        }
                         self.ctl.output(self._stopresult(error))
                         self.ctl.set_exitstatus_from_xmlrpc_fault(error['status'], xmlrpc.Faults.NOT_RUNNING)
                     else:
@@ -903,8 +907,7 @@ class DefaultControllerPlugin(ControllerPluginBase):
 
         args = arg.split()
         if len(args) < 2:
-            self.ctl.output(
-                'Error: signal requires a signal name and a process name')
+            self.ctl.output('Error: signal requires a signal name and a process name')
             self.help_signal()
             self.ctl.exitstatus = LSBInitExitStatuses.GENERIC
             return
@@ -924,9 +927,7 @@ class DefaultControllerPlugin(ControllerPluginBase):
                 group_name, process_name = split_namespec(name)
                 if process_name is None:
                     try:
-                        results = supervisor.signalProcessGroup(
-                            group_name, sig,
-                        )
+                        results = supervisor.signalProcessGroup(group_name, sig)
                         for result in results:
                             self.ctl.output(self._signalresult(result))
                             self.ctl.set_exitstatus_from_xmlrpc_fault(result['status'])
@@ -941,10 +942,12 @@ class DefaultControllerPlugin(ControllerPluginBase):
                     try:
                         supervisor.signalProcess(name, sig)
                     except xmlrpclib.Fault as e:
-                        error = {'status': e.faultCode,
-                                 'name': process_name,
-                                 'group': group_name,
-                                 'description': e.faultString}
+                        error = {
+                            'status': e.faultCode,
+                            'name': process_name,
+                            'group': group_name,
+                            'description': e.faultString,
+                        }
                         self.ctl.output(self._signalresult(error))
                         self.ctl.set_exitstatus_from_xmlrpc_fault(error['status'])
                     else:
@@ -975,11 +978,9 @@ class DefaultControllerPlugin(ControllerPluginBase):
     def help_restart(self):
         self.ctl.output('restart <name>\t\tRestart a process')
         self.ctl.output('restart <gname>:*\tRestart all processes in a group')
-        self.ctl.output('restart <name> <name>\tRestart multiple processes or '
-                        'groups')
+        self.ctl.output('restart <name> <name>\tRestart multiple processes or groups')
         self.ctl.output('restart all\t\tRestart all processes')
-        self.ctl.output('Note: restart does not reread config files. For that,'
-                        ' see reread and update.')
+        self.ctl.output('Note: restart does not reread config files. For that, see reread and update.')
 
     def do_shutdown(self, arg):
         if arg:
@@ -1051,9 +1052,11 @@ class DefaultControllerPlugin(ControllerPluginBase):
     def _formatChanges(self, added_changed_dropped_tuple):
         added, changed, dropped = added_changed_dropped_tuple
         changedict = {}
-        for n, t in [(added, 'available'),
-                     (changed, 'changed'),
-                     (dropped, 'disappeared')]:
+        for n, t in [
+            (added, 'available'),
+            (changed, 'changed'),
+            (dropped, 'disappeared'),
+        ]:
             changedict.update(dict(zip(n, [t] * len(n))))
 
         if changedict:
@@ -1075,8 +1078,7 @@ class DefaultControllerPlugin(ControllerPluginBase):
             formatted['autostart'] = 'auto'
         else:
             formatted['autostart'] = 'manual'
-        formatted['priority'] = '%s:%s' % (configinfo['group_prio'],
-                                           configinfo['process_prio'])
+        formatted['priority'] = '%s:%s' % (configinfo['group_prio'], configinfo['process_prio'])
 
         template = '%(name)-32s %(inuse)-9s %(autostart)-9s %(priority)s'
         return template % formatted
@@ -1151,8 +1153,7 @@ class DefaultControllerPlugin(ControllerPluginBase):
                 self.ctl.output('%s: added process group' % name)
 
     def help_add(self):
-        self.ctl.output('add <name> [...]\tActivates any updates in config '
-                        'for process/group')
+        self.ctl.output('add <name> [...]\tActivates any updates in config for process/group')
 
     def do_remove(self, arg):
         names = arg.split()
@@ -1164,8 +1165,7 @@ class DefaultControllerPlugin(ControllerPluginBase):
             except xmlrpclib.Fault as e:
                 self.ctl.exitstatus = LSBInitExitStatuses.GENERIC
                 if e.faultCode == xmlrpc.Faults.STILL_RUNNING:
-                    self.ctl.output('ERROR: process/group still running: %s'
-                                    % name)
+                    self.ctl.output('ERROR: process/group still running: %s' % name)
                 elif e.faultCode == xmlrpc.Faults.BAD_NAME:
                     self.ctl.output('ERROR: no such process/group: %s' % name)
                 else:
@@ -1174,8 +1174,7 @@ class DefaultControllerPlugin(ControllerPluginBase):
                 self.ctl.output('%s: removed process group' % name)
 
     def help_remove(self):
-        self.ctl.output('remove <name> [...]\tRemoves process/group from '
-                        'active config')
+        self.ctl.output('remove <name> [...]\tRemoves process/group from active config')
 
     def do_update(self, arg):
         def log(name, message):
@@ -1199,14 +1198,12 @@ class DefaultControllerPlugin(ControllerPluginBase):
         if 'all' in valid_gnames:
             valid_gnames = set()
 
-        # If any gnames are specified we need to verify that they are
-        # valid in order to print a useful error message.
+        # If any gnames are specified we need to verify that they are valid in order to print a useful error message.
         if valid_gnames:
             groups = set()
             for info in supervisor.getAllProcessInfo():
                 groups.add(info['group'])
-            # New gnames would not currently exist in this set so
-            # add those as well.
+            # New gnames would not currently exist in this set so add those as well.
             groups.update(added)
 
             for gname in valid_gnames:
@@ -1220,8 +1217,7 @@ class DefaultControllerPlugin(ControllerPluginBase):
             results = supervisor.stopProcessGroup(gname)
             log(gname, 'stopped')
 
-            fails = [res for res in results
-                     if res['status'] == xmlrpc.Faults.FAILED]
+            fails = [res for res in results if res['status'] == xmlrpc.Faults.FAILED]
             if fails:
                 self.ctl.output('%s: %s' % (gname, 'has problems; not removing'))
                 self.ctl.exitstatus = LSBInitExitStatuses.GENERIC
@@ -1287,10 +1283,12 @@ class DefaultControllerPlugin(ControllerPluginBase):
                 try:
                     supervisor.clearProcessLogs(name)
                 except xmlrpclib.Fault as e:
-                    error = {'status': e.faultCode,
-                             'name': process_name,
-                             'group': group_name,
-                             'description': e.faultString}
+                    error = {
+                        'status': e.faultCode,
+                        'name': process_name,
+                        'group': group_name,
+                        'description': e.faultString,
+                    }
                     self.ctl.output(self._clearresult(error))
                     self.ctl.set_exitstatus_from_xmlrpc_fault(error['status'])
                 else:
@@ -1299,8 +1297,7 @@ class DefaultControllerPlugin(ControllerPluginBase):
 
     def help_clear(self):
         self.ctl.output("clear <name>\t\tClear a process' log files.")
-        self.ctl.output(
-            "clear <name> <name>\tClear multiple process' log files")
+        self.ctl.output("clear <name> <name>\tClear multiple process' log files")
         self.ctl.output("clear all\t\tClear all process' log files")
 
     def do_open(self, arg):
