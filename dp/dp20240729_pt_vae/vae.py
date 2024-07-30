@@ -58,6 +58,7 @@ def _main():
     train, test = mnist.load_data()
     x_train, y_train = prepare(*train)
     x_test, y_test = prepare(*test)
+    img_width, img_height = train[0].shape[1:]
 
     batch_size = 250
 
@@ -68,8 +69,19 @@ def _main():
     test_loader = torch.utils.data.DataLoader(test_ds, batch_size=batch_size, shuffle=True)
 
     class Vae(nn.Module):
-        def __init__(self, x_dim, h_dim1, h_dim2, z_dim):
+        def __init__(
+                self,
+                x_dim,
+                h_dim1,
+                h_dim2,
+                z_dim,
+        ):
             super().__init__()
+
+            self.x_dim = x_dim
+            self.h_dim1 = h_dim1
+            self.h_dim2 = h_dim2
+            self.z_dim = z_dim
 
             # encoder part
             self.fc1 = nn.Linear(x_dim, h_dim1)
@@ -154,6 +166,9 @@ def _main():
 
         test_loss /= len(test_loader.dataset)
         print('====> Test set loss: {:.4f}'.format(test_loss))
+
+        random_number = np.asarray([[np.random.normal() for _ in range(vae.z_dim)]])
+        decode_img(vae.decoder(torch.Tensor(random_number)).reshape(img_width, img_height).detach().numpy()).resize((56, 56)).show()
 
     for epoch in range(1, 51):
         train(epoch)
