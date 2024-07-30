@@ -1,7 +1,7 @@
 import shutil
 import sys
-import typing as ta
 import sysconfig
+import typing as ta
 
 import pytest
 
