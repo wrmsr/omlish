@@ -61,8 +61,10 @@ class RPCError(Exception):
 
 
 class DeferredXMLRPCResponse:
-    """ A medusa producer that implements a deferred callback; requires
-    a subclass of asynchat.async_chat that handles NOT_DONE_YET sentinel """
+    """
+    A medusa producer that implements a deferred callback; requires a subclass of asynchat.async_chat that handles
+    NOT_DONE_YET sentinel
+    """
     CONNECTION = re.compile('Connection: (.*)', re.IGNORECASE)
 
     def __init__(self, request, callback):
@@ -130,10 +132,7 @@ class DeferredXMLRPCResponse:
             # globbing gives us large packets
             producers.globbing_producer(
                 # hooking lets us log the number of bytes sent
-                producers.hooked_producer(
-                    outgoing_producer,
-                    self.request.log,
-                ),
+                producers.hooked_producer(outgoing_producer, self.request.log),
             ),
         )
 
@@ -166,8 +165,7 @@ class SystemNamespaceRPCInterface:
         for ns_name in self.namespaces:
             namespace = self.namespaces[ns_name]
             for method_name in namespace.__class__.__dict__:
-                # introspect; any methods that don't start with underscore
-                # are published
+                # introspect; any methods that don't start with underscore are published
                 func = getattr(namespace, method_name)
                 if callable(func):
                     if not method_name.startswith('_'):
@@ -176,7 +174,8 @@ class SystemNamespaceRPCInterface:
         return methods
 
     def listMethods(self):
-        """ Return an array listing the available method names
+        """
+        Return an array listing the available method names
 
         @return array result  An array of method names available (strings).
         """
@@ -186,7 +185,8 @@ class SystemNamespaceRPCInterface:
         return keys
 
     def methodHelp(self, name):
-        """ Return a string showing the method's documentation
+        """
+        Return a string showing the method's documentation
 
         @param string name   The name of the method.
         @return string result The documentation for the method name.
@@ -198,10 +198,10 @@ class SystemNamespaceRPCInterface:
         raise RPCError(Faults.SIGNATURE_UNSUPPORTED)
 
     def methodSignature(self, name):
-        """ Return an array describing the method signature in the
-        form [rtype, ptype, ptype...] where rtype is the return data type
-        of the method, and ptypes are the parameter data types that the
-        method accepts in method argument order.
+        """
+        Return an array describing the method signature in the form [rtype, ptype, ptype...] where rtype is the return
+        data type of the method, and ptypes are the parameter data types that the method accepts in method argument
+        order.
 
         @param string name  The name of the method.
         @return array result  The result.
@@ -223,13 +223,11 @@ class SystemNamespaceRPCInterface:
         raise RPCError(Faults.SIGNATURE_UNSUPPORTED)
 
     def multicall(self, calls):
-        """Process an array of calls, and return an array of
-        results. Calls should be structs of the form {'methodName':
-        string, 'params': array}. Each result will either be a
-        single-item array containing the result value, or a struct of
-        the form {'faultCode': int, 'faultString': string}. This is
-        useful when you need to make lots of small calls without lots
-        of round trips.
+        """
+        Process an array of calls, and return an array of results. Calls should be structs of the form
+        {'methodName': string, 'params': array}. Each result will either be a single-item array containing the result
+        value, or a struct of the form {'faultCode': int, 'faultString': string}. This is useful when you need to make
+        lots of small calls without lots of round trips.
 
         @param array calls  An array of call requests
         @return array result  An array of results
@@ -239,9 +237,7 @@ class SystemNamespaceRPCInterface:
         results = []  # results of completed calls
 
         # args are only to fool scoping and are never passed by caller
-        def multi(remaining_calls=remaining_calls,
-                  callbacks=callbacks,
-                  results=results):
+        def multi(remaining_calls=remaining_calls, callbacks=callbacks, results=results):
 
             # if waiting on a callback, call it, then remove it if it's done
             if callbacks:
@@ -259,8 +255,7 @@ class SystemNamespaceRPCInterface:
                     callbacks.pop(0)
                     results.append(value)
 
-            # if we don't have a callback now, pop calls and call them in
-            # order until one returns a callback.
+            # if we don't have a callback now, pop calls and call them in order until one returns a callback.
             while (not callbacks) and remaining_calls:
                 call = remaining_calls.pop(0)
                 name = call.get('methodName', None)
@@ -271,8 +266,7 @@ class SystemNamespaceRPCInterface:
                         raise RPCError(Faults.INCORRECT_PARAMETERS,
                                        'No methodName')
                     if name == 'system.multicall':
-                        raise RPCError(Faults.INCORRECT_PARAMETERS,
-                                       'Recursive system.multicall forbidden')
+                        raise RPCError(Faults.INCORRECT_PARAMETERS, 'Recursive system.multicall forbidden')
                     # make the call, may return a callback or not
                     root = AttrDict(self.namespaces)
                     value = traverse(root, name, params)
@@ -282,8 +276,10 @@ class SystemNamespaceRPCInterface:
                 except:
                     info = sys.exc_info()
                     errmsg = '%s:%s' % (info[0], info[1])
-                    value = {'faultCode': Faults.FAILED,
-                             'faultString': 'FAILED: ' + errmsg}
+                    value = {
+                        'faultCode': Faults.FAILED,
+                        'faultString': 'FAILED: ' + errmsg,
+                    }
 
                 if isinstance(value, types.FunctionType):
                     callbacks.append(value)
@@ -298,8 +294,8 @@ class SystemNamespaceRPCInterface:
 
         multi.delay = 0.05
 
-        # optimization: multi() is called here instead of just returning
-        # multi in case all calls complete and we can return with no delay.
+        # optimization: multi() is called here instead of just returning multi in case all calls complete and we can
+        # return with no delay.
         value = multi()
         if value is NOT_DONE_YET:
             return multi
@@ -329,9 +325,7 @@ def capped_int(value):
 
 
 def make_datetime(text):
-    return datetime.datetime(
-        *time.strptime(text, '%Y%m%dT%H:%M:%S')[:6],
-    )
+    return datetime.datetime(*time.strptime(text, '%Y%m%dT%H:%M:%S')[:6])
 
 
 class supervisor_xmlrpc_handler(xmlrpc_handler):
@@ -387,49 +381,38 @@ class supervisor_xmlrpc_handler(xmlrpc_handler):
             try:
                 params, method = self.loads(data)
             except:
-                logger.error(
-                    'XML-RPC request data %r is invalid: unmarshallable' %
-                    (data,),
-                )
+                logger.error('XML-RPC request data %r is invalid: unmarshallable' % (data,))
                 request.error(400)
                 return
 
             # no <methodName> in the request or name is an empty string
             if not method:
-                logger.error(
-                    'XML-RPC request data %r is invalid: no method name' %
-                    (data,),
-                )
+                logger.error('XML-RPC request data %r is invalid: no method name' % (data,))
                 request.error(400)
                 return
 
-            # we allow xml-rpc clients that do not send empty <params>
-            # when there are no parameters for the method call
+            # we allow xml-rpc clients that do not send empty <params> when there are no parameters for the method call
             if params is None:
                 params = ()
 
             try:
                 logger.trace('XML-RPC method called: %s()' % method)
                 value = self.call(method, params)
-                logger.trace('XML-RPC method %s() returned successfully' %
-                             method)
+                logger.trace('XML-RPC method %s() returned successfully' % method)
             except RPCError as err:
                 # turn RPCError reported by method into a Fault instance
                 value = xmlrpclib.Fault(err.code, err.text)
-                logger.trace('XML-RPC method %s() returned fault: [%d] %s' % (
-                    method,
-                    err.code, err.text))
+                logger.trace('XML-RPC method %s() returned fault: [%d] %s' % (method, err.code, err.text))
 
             if isinstance(value, types.FunctionType):
-                # returning a function from an RPC method implies that
-                # this needs to be a deferred response (it needs to block).
+                # returning a function from an RPC method implies that this needs to be a deferred response (it needs to
+                # block).
                 pushproducer = request.channel.push_with_producer
                 pushproducer(DeferredXMLRPCResponse(request, value))
 
             else:
-                # if we get anything but a function, it implies that this
-                # response doesn't need to be deferred, we can service it
-                # right away.
+                # if we get anything but a function, it implies that this response doesn't need to be deferred, we can
+                # service it right away.
                 body = as_bytes(xmlrpc_marshal(value))
                 request['Content-Type'] = 'text/xml'
                 request['Content-Length'] = len(body)
@@ -477,10 +460,8 @@ def traverse(ob, method, params):
 
 class SupervisorTransport(xmlrpclib.Transport):
     """
-    Provides a Transport for xmlrpclib that uses
-    httplib.HTTPConnection in order to support persistent
-    connections.  Also support basic auth and UNIX domain socket
-    servers.
+    Provides a Transport for xmlrpclib that uses httplib.HTTPConnection in order to support persistent connections.
+    Also support basic auth and UNIX domain socket servers.
     """
     connection = None
 
@@ -502,8 +483,7 @@ class SupervisorTransport(xmlrpclib.Transport):
             self._get_connection = get_connection
         elif serverurl.startswith('unix://'):
             def get_connection(serverurl=serverurl):
-                # we use 'localhost' here because domain names must be
-                # < 64 chars (or we'd use the serverurl filename)
+                # we use 'localhost' here because domain names must be < 64 chars (or we'd use the serverurl filename)
                 conn = UnixStreamHTTPConnection('localhost')
                 conn.socketfile = serverurl[7:]
                 return conn
@@ -544,14 +524,10 @@ class SupervisorTransport(xmlrpclib.Transport):
         if r.status != 200:
             self.connection.close()
             self.connection = None
-            raise xmlrpclib.ProtocolError(host + handler,
-                                          r.status,
-                                          r.reason,
-                                          '')
+            raise xmlrpclib.ProtocolError(host + handler, r.status, r.reason, '')
         data = r.read()
         data = as_string(data)
-        # on 2.x, the Expat parser doesn't like Unicode which actually
-        # contains non-ASCII characters
+        # on 2.x, the Expat parser doesn't like Unicode which actually contains non-ASCII characters
         data = data.encode('ascii', 'xmlcharrefreplace')
         p, u = self.getparser()
         p.feed(data)
