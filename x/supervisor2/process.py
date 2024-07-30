@@ -188,7 +188,7 @@ class Subprocess:
 
         if self.pid:
             msg = 'process \'%s\' already running' % processname
-            options.logger.warning(msg)
+            options.logger.warn(msg)
             return None
 
         self.killing = False
@@ -514,7 +514,7 @@ class Subprocess:
             too_quickly = now - self.laststart < self.config.startsecs
         else:
             too_quickly = False
-            self.config.options.logger.warning(
+            self.config.options.logger.warn(
                 "process '%s' (%s) laststart time is in the future, don't "
                 "know how long process was running so assuming it did "
                 "not exit too quickly" % (processname, self.pid))
@@ -533,7 +533,7 @@ class Subprocess:
             if exit_expected:
                 self.config.options.logger.info(msg)
             else:
-                self.config.options.logger.warning(msg)
+                self.config.options.logger.warn(msg)
 
         elif too_quickly:
             # the program did not stay up long enough to make it to RUNNING implies STARTING -> BACKOFF
@@ -542,7 +542,7 @@ class Subprocess:
             msg = 'exited: %s (%s)' % (processname, msg + '; not expected')
             self._assertInState(ProcessStates.STARTING)
             self.change_state(ProcessStates.BACKOFF)
-            self.config.options.logger.warning(msg)
+            self.config.options.logger.warn(msg)
 
         else:
             # this finish was not the result of a stop request, the program was in the RUNNING state but exited implies
@@ -568,7 +568,7 @@ class Subprocess:
                 self.spawnerr = 'Bad exit code %s' % es
                 msg = 'exited: %s (%s)' % (processname, msg + '; not expected')
                 self.change_state(ProcessStates.EXITED, expected=False)
-                self.config.options.logger.warning(msg)
+                self.config.options.logger.warn(msg)
 
         self.pid = 0
         self.config.options.close_parent_pipes(self.pipes)
@@ -657,7 +657,7 @@ class Subprocess:
             if time_left <= 0:
                 # kill processes which are taking too long to stop with a final sigkill.  if this doesn't kill it, the
                 # process will be stuck in the STOPPING state forever.
-                self.config.options.logger.warning('killing \'%s\' (%s) with SIGKILL' % (processname, self.pid))
+                self.config.options.logger.warn('killing \'%s\' (%s) with SIGKILL' % (processname, self.pid))
                 self.kill(signal.SIGKILL)
 
 

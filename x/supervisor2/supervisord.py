@@ -164,11 +164,11 @@ class Supervisor:
         events.notify(events.SupervisorRunningEvent())
         timeout = 1  # this cannot be fewer than the smallest TickEvent (5)
 
-        socket_map = self.options.get_socket_map()
+        # socket_map = self.options.get_socket_map()
 
         while 1:
             combined_map = {}
-            combined_map.update(socket_map)
+            # combined_map.update(socket_map)
             combined_map.update(self.get_process_map())
 
             pgroups = list(self.process_groups.values())
@@ -284,13 +284,13 @@ class Supervisor:
         sig = self.options.get_signal()
         if sig:
             if sig in (signal.SIGTERM, signal.SIGINT, signal.SIGQUIT):
-                self.options.logger.warning('received %s indicating exit request' % signame(sig))
+                self.options.logger.warn('received %s indicating exit request' % signame(sig))
                 self.options.mood = SupervisorStates.SHUTDOWN
             elif sig == signal.SIGHUP:
                 if self.options.mood == SupervisorStates.SHUTDOWN:
-                    self.options.logger.warning('ignored %s indicating restart request (shutdown in progress)' % signame(sig))  # noqa
+                    self.options.logger.warn('ignored %s indicating restart request (shutdown in progress)' % signame(sig))  # noqa
                 else:
-                    self.options.logger.warning('received %s indicating restart request' % signame(sig))  # noqa
+                    self.options.logger.warn('received %s indicating restart request' % signame(sig))  # noqa
                     self.options.mood = SupervisorStates.RESTARTING
             elif sig == signal.SIGCHLD:
                 self.options.logger.debug('received %s indicating a child quit' % signame(sig))
