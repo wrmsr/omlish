@@ -15,6 +15,8 @@ class User:
     password: str
     name: str
 
+    auth_token: str | None = None
+
 
 class Users:
     def __init__(self) -> None:
