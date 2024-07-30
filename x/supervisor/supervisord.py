@@ -58,8 +58,7 @@ class Supervisor:
 
     def main(self):
         if not self.options.first:
-            # prevent crash on libdispatch-based systems, at least for the
-            # first request
+            # prevent crash on libdispatch-based systems, at least for the first request
             self.options.cleanup_fds()
 
         self.options.set_uid_or_exit()
@@ -67,8 +66,7 @@ class Supervisor:
         if self.options.first:
             self.options.set_rlimits_or_exit()
 
-        # this sets the options.logger object
-        # delay logger instantiation until after setuid
+        # this sets the options.logger object delay logger instantiation until after setuid
         self.options.make_logger()
 
         if not self.options.nocleanup:
@@ -86,10 +84,9 @@ class Supervisor:
                 self.add_process_group(config)
             self.options.openhttpservers(self)
             self.options.setsignals()
-            if (not self.options.nodaemon) and self.options.first:
+            if not self.options.nodaemon and self.options.first:
                 self.options.daemonize()
-            # writing pid file needs to come *after* daemonizing or pid
-            # will be wrong
+            # writing pid file needs to come *after* daemonizing or pid will be wrong
             self.options.write_pidfile()
             self.runforever()
         finally:
@@ -105,8 +102,7 @@ class Supervisor:
         added = [cand for cand in new if cand.name not in curdict]
         removed = [cand for cand in cur if cand.name not in newdict]
 
-        changed = [cand for cand in new
-                   if cand != curdict.get(cand.name, cand)]
+        changed = [cand for cand in new if cand != curdict.get(cand.name, cand)]
 
         return added, changed, removed
 
@@ -159,16 +155,14 @@ class Supervisor:
             self.stop_groups[-1].stop_all()
 
     def ordered_stop_groups_phase_2(self):
-        # after phase 1 we've transitioned and reaped, let's see if we
-        # can remove the group we stopped from the stop_groups queue.
+        # after phase 1 we've transitioned and reaped, let's see if we can remove the group we stopped from the
+        # stop_groups queue.
         if self.stop_groups:
             # pop the last group (the one with the "highest" priority)
             group = self.stop_groups.pop()
             if group.get_unstopped_processes():
-                # if any processes in the group aren't yet in a
-                # stopped state, we're not yet done shutting this
-                # group down, so push it back on to the end of the
-                # stop group queue
+                # if any processes in the group aren't yet in a stopped state, we're not yet done shutting this group
+                # down, so push it back on to the end of the stop group queue
                 self.stop_groups.append(group)
 
     def runforever(self):
@@ -187,8 +181,7 @@ class Supervisor:
 
             if self.options.mood < SupervisorStates.RUNNING:
                 if not self.stopping:
-                    # first time, set the stopping flag, do a
-                    # notification and set stop_groups
+                    # first time, set the stopping flag, do a notification and set stop_groups
                     self.stopping = True
                     self.stop_groups = pgroups[:]
                     events.notify(events.SupervisorStoppingEvent())
@@ -196,8 +189,7 @@ class Supervisor:
                 self.ordered_stop_groups_phase_1()
 
                 if not self.shutdown_report():
-                    # if there are no unstopped processes (we're done
-                    # killing everything), it's OK to shutdown or reload
+                    # if there are no unstopped processes (we're done killing everything), it's OK to shutdown or reload
                     raise asyncore.ExitNow
 
             for fd, dispatcher in combined_map.items():
@@ -212,9 +204,7 @@ class Supervisor:
                 if fd in combined_map:
                     try:
                         dispatcher = combined_map[fd]
-                        self.options.logger.blather(
-                            'read event caused by %(dispatcher)r',
-                            dispatcher=dispatcher)
+                        self.options.logger.blather('read event caused by %(dispatcher)r', dispatcher=dispatcher)
                         dispatcher.handle_read_event()
                         if not dispatcher.readable():
                             self.options.poller.unregister_readable(fd)
@@ -223,8 +213,8 @@ class Supervisor:
                     except:
                         combined_map[fd].handle_error()
                 else:
-                    # if the fd is not in combined_map, we should unregister it. otherwise,
-                    # it will be polled every time, which may cause 100% cpu usage
+                    # if the fd is not in combined_map, we should unregister it. otherwise, it will be polled every
+                    # time, which may cause 100% cpu usage
                     self.options.logger.blather('unexpected read event from fd %r' % fd)
                     try:
                         self.options.poller.unregister_readable(fd)
@@ -235,9 +225,7 @@ class Supervisor:
                 if fd in combined_map:
                     try:
                         dispatcher = combined_map[fd]
-                        self.options.logger.blather(
-                            'write event caused by %(dispatcher)r',
-                            dispatcher=dispatcher)
+                        self.options.logger.blather('write event caused by %(dispatcher)r', dispatcher=dispatcher)
                         dispatcher.handle_write_event()
                         if not dispatcher.writable():
                             self.options.poller.unregister_writable(fd)
@@ -266,8 +254,7 @@ class Supervisor:
                 break
 
     def tick(self, now=None):
-        """ Send one or more 'tick' events when the timeslice related to
-        the period for the event type rolls over """
+        """ Send one or more 'tick' events when the timeslice related to the period for the event type rolls over """
         if now is None:
             # now won't be None in unit tests
             now = time.time()
@@ -295,37 +282,30 @@ class Supervisor:
                 process.finish(pid, sts)
                 del self.options.pidhistory[pid]
             if not once:
-                # keep reaping until no more kids to reap, but don't recurse
-                # infinitely
+                # keep reaping until no more kids to reap, but don't recurse infinitely
                 self.reap(once=False, recursionguard=recursionguard + 1)
 
     def handle_signal(self):
         sig = self.options.get_signal()
         if sig:
             if sig in (signal.SIGTERM, signal.SIGINT, signal.SIGQUIT):
-                self.options.logger.warning(
-                    'received %s indicating exit request' % signame(sig))
+                self.options.logger.warning('received %s indicating exit request' % signame(sig))
                 self.options.mood = SupervisorStates.SHUTDOWN
             elif sig == signal.SIGHUP:
                 if self.options.mood == SupervisorStates.SHUTDOWN:
-                    self.options.logger.warning(
-                        'ignored %s indicating restart request (shutdown in progress)' % signame(sig))
+                    self.options.logger.warning('ignored %s indicating restart request (shutdown in progress)' % signame(sig))  # noqa
                 else:
-                    self.options.logger.warning(
-                        'received %s indicating restart request' % signame(sig))
+                    self.options.logger.warning('received %s indicating restart request' % signame(sig))  # noqa
                     self.options.mood = SupervisorStates.RESTARTING
             elif sig == signal.SIGCHLD:
-                self.options.logger.debug(
-                    'received %s indicating a child quit' % signame(sig))
+                self.options.logger.debug('received %s indicating a child quit' % signame(sig))
             elif sig == signal.SIGUSR2:
-                self.options.logger.info(
-                    'received %s indicating log reopen request' % signame(sig))
+                self.options.logger.info('received %s indicating log reopen request' % signame(sig))
                 self.options.reopenlogs()
                 for group in self.process_groups.values():
                     group.reopenlogs()
             else:
-                self.options.logger.blather(
-                    'received %s indicating nothing' % signame(sig))
+                self.options.logger.blather('received %s indicating nothing' % signame(sig))
 
     def get_state(self):
         return self.options.mood
