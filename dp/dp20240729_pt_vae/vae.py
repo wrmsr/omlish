@@ -1,12 +1,13 @@
 """
 https://github.com/lyeoni/pytorch-mnist-VAE/blob/master/pytorch-mnist-VAE.ipynb
 """
+import PIL
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-import numpy as np
-import PIL
+import torch.utils.data
 
 
 def to_categorical(y, num_classes=None, dtype="float32"):
@@ -117,8 +118,11 @@ def _main():
         vae.train()
         train_loss = 0
         for batch_idx, data in enumerate(train_loader):
+            data = torch.stack(data).squeeze(0)
+
             if torch.cuda.is_available():
                 data = data.cuda()
+
             optimizer.zero_grad()
 
             recon_batch, mu, log_var = vae(data)
@@ -139,6 +143,8 @@ def _main():
         test_loss = 0
         with torch.no_grad():
             for data in test_loader:
+                data = torch.stack(data).squeeze(0)
+
                 if torch.cuda.is_available():
                     data = data.cuda()
                 recon, mu, log_var = vae(data)
