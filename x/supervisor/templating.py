@@ -1,8 +1,6 @@
-# This file was originally based on the meld3 package version 2.0.0
-# (https://pypi.org/project/meld3/2.0.0/).  The meld3 package is not
-# called out separately in Supervisor's license or copyright files
-# because meld3 had the same authors, copyright, and license as
-# Supervisor at the time this file was bundled with Supervisor.
+# This file was originally based on the meld3 package version 2.0.0 (https://pypi.org/project/meld3/2.0.0/).  The meld3
+# package is not called out separately in Supervisor's license or copyright files because meld3 had the same authors,
+# copyright, and license as Supervisor at the time this file was bundled with Supervisor.
 
 import email
 import html.entities as htmlentitydefs
@@ -144,14 +142,26 @@ _marker = []
 
 class doctype:
     # lookup table for ease of use in external code
-    html_strict = ('HTML', '-//W3C//DTD HTML 4.01//EN',
-                   'http://www.w3.org/TR/html4/strict.dtd')
-    html = ('HTML', '-//W3C//DTD HTML 4.01 Transitional//EN',
-            'http://www.w3.org/TR/html4/loose.dtd')
-    xhtml_strict = ('html', '-//W3C//DTD XHTML 1.0 Strict//EN',
-                    'http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd')
-    xhtml = ('html', '-//W3C//DTD XHTML 1.0 Transitional//EN',
-             'http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd')
+    html_strict = (
+        'HTML',
+        '-//W3C//DTD HTML 4.01//EN',
+        'http://www.w3.org/TR/html4/strict.dtd',
+    )
+    html = (
+        'HTML',
+        '-//W3C//DTD HTML 4.01 Transitional//EN',
+        'http://www.w3.org/TR/html4/loose.dtd',
+    )
+    xhtml_strict = (
+        'html',
+        '-//W3C//DTD XHTML 1.0 Strict//EN',
+        'http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd',
+    )
+    xhtml = (
+        'html',
+        '-//W3C//DTD XHTML 1.0 Transitional//EN',
+        'http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd',
+    )
 
 
 class _MeldElementInterface:
@@ -209,8 +219,8 @@ class _MeldElementInterface:
         return list(self.attrib.items())
 
     def getiterator(self, *ignored_args, **ignored_kw):
-        # we ignore any tag= passed in to us, originally because it was too
-        # painfail to support in the old C extension, now for b/w compat
+        # we ignore any tag= passed in to us, originally because it was too painfail to support in the old C extension,
+        # now for b/w compat
         return helper.getiterator(self)
 
     # overrides to support parent pointers and factories
@@ -265,18 +275,18 @@ class _MeldElementInterface:
     # meld-specific
 
     def __mod__(self, other):
-        """ Fill in the text values of meld nodes in tree; only
-        support dictionarylike operand (sequence operand doesn't seem
-        to make sense here)"""
+        """
+        Fill in the text values of meld nodes in tree; only support dictionarylike operand (sequence operand doesn't
+        seem to make sense here)
+        """
         return self.fillmelds(**other)
 
     def fillmelds(self, **kw):
-        """ Fill in the text values of meld nodes in tree using the
-        keyword arguments passed in; use the keyword keys as meld ids
-        and the keyword values as text that should fill in the node
-        text on which that meld id is found.  Return a list of keys
-        from **kw that were not able to be found anywhere in the tree.
-        Never raises an exception. """
+        """
+        Fill in the text values of meld nodes in tree using the keyword arguments passed in; use the keyword keys as
+        meld ids and the keyword values as text that should fill in the node text on which that meld id is found.
+        Return a list of keys from **kw that were not able to be found anywhere in the tree. Never raises an exception.
+        """
         unfilled = []
         for k in kw:
             node = self.findmeld(k)
@@ -287,51 +297,37 @@ class _MeldElementInterface:
         return unfilled
 
     def fillmeldhtmlform(self, **kw):
-        """ Perform magic to 'fill in' HTML form element values from a
-        dictionary.  Unlike 'fillmelds', the type of element being
-        'filled' is taken into consideration.
+        """
+        Perform magic to 'fill in' HTML form element values from a dictionary.  Unlike 'fillmelds', the type of element
+        being 'filled' is taken into consideration.
 
-        Perform a 'findmeld' on each key in the dictionary and use the
-        value that corresponds to the key to perform mutation of the
-        tree, changing data in what is presumed to be one or more HTML
-        form elements according to the following rules::
+        Perform a 'findmeld' on each key in the dictionary and use the value that corresponds to the key to perform
+        mutation of the tree, changing data in what is presumed to be one or more HTML form elements according to the
+        following rules::
 
-          If the found element is an 'input group' (its meld id ends
-          with the string ':inputgroup'), set the 'checked' attribute
-          on the appropriate subelement which has a 'value' attribute
-          which matches the dictionary value.  Also remove the
-          'checked' attribute from every other 'input' subelement of
-          the input group.  If no input subelement's value matches the
-          dictionary value, this key is treated as 'unfilled'.
+          If the found element is an 'input group' (its meld id ends with the string ':inputgroup'), set the 'checked'
+          attribute on the appropriate subelement which has a 'value' attribute which matches the dictionary value.
+          Also remove the 'checked' attribute from every other 'input' subelement of the input group.  If no input
+          subelement's value matches the dictionary value, this key is treated as 'unfilled'.
 
-          If the found element is an 'input type=text', 'input
-          type=hidden', 'input type=submit', 'input type=password',
-          'input type=reset' or 'input type=file' element, replace its
-          'value' attribute with the value.
+          If the found element is an 'input type=text', 'input type=hidden', 'input type=submit', 'input type=password',
+          'input type=reset' or 'input type=file' element, replace its 'value' attribute with the value.
 
-          If the found element is an 'input type=checkbox' or 'input
-          type='radio' element, set its 'checked' attribute to true if
-          the dict value is true, or remove its 'checked' attribute if
-          the dict value is false.
+          If the found element is an 'input type=checkbox' or 'input type='radio' element, set its 'checked' attribute
+          to true if the dict value is true, or remove its 'checked' attribute if the dict value is false.
 
-          If the found element is a 'select' element and the value
-          exists in the 'value=' attribute of one of its 'option'
-          subelements, change that option's 'selected' attribute to
-          true and mark all other option elements as unselected.  If
-          the select element does not contain an option with a value
-          that matches the dictionary value, do nothing and return
-          this key as unfilled.
+          If the found element is a 'select' element and the value exists in the 'value=' attribute of one of its
+          'option' subelements, change that option's 'selected' attribute to true and mark all other option elements as
+          unselected.  If the select element does not contain an option with a value that matches the dictionary value,
+          do nothing and return this key as unfilled.
 
-          If the found element is a 'textarea' or any other kind of
-          element, replace its text with the value.
+          If the found element is a 'textarea' or any other kind of element, replace its text with the value.
 
-          If the element corresponding to the key is not found,
-          do nothing and treat the key as 'unfilled'.
+          If the element corresponding to the key is not found, do nothing and treat the key as 'unfilled'.
 
-        Return a list of 'unfilled' keys, representing meld ids
-        present in the dictionary but not present in the element tree
-        or meld ids which could not be filled due to the lack of any
-        matching subelements for 'select' nodes or 'inputgroup' nodes.
+        Return a list of 'unfilled' keys, representing meld ids present in the dictionary but not present in the element
+        tree or meld ids which could not be filled due to the lack of any matching subelements for 'select' nodes or
+        'inputgroup' nodes.
         """
 
         unfilled = []
@@ -346,9 +342,8 @@ class _MeldElementInterface:
             val = kw[k]
 
             if k.endswith(':inputgroup'):
-                # an input group is a list of input type="checkbox" or
-                # input type="radio" elements that can be treated as a group
-                # because they attempt to specify the same value
+                # an input group is a list of input type="checkbox" or input type="radio" elements that can be treated
+                # as a group because they attempt to specify the same value
 
                 found = []
                 unfound = []
@@ -385,12 +380,17 @@ class _MeldElementInterface:
                     input_type = node.attrib.get('type', 'text').lower()
 
                     # fill in value attrib for most input types
-                    if input_type in ('hidden', 'submit', 'text',
-                                      'password', 'reset', 'file'):
+                    if input_type in (
+                            'hidden',
+                            'submit',
+                            'text',
+                            'password',
+                            'reset',
+                            'file',
+                    ):
                         node.attrib['value'] = val
 
-                    # unless it's a checkbox or radio attribute, then we
-                    # fill in its checked attribute
+                    # unless it's a checkbox or radio attribute, then we fill in its checked attribute
                     elif input_type in ('checkbox', 'radio'):
                         if val:
                             node.attrib['checked'] = 'checked'
@@ -404,8 +404,7 @@ class _MeldElementInterface:
                         unfilled.append(k)
 
                 elif tag == 'select':
-                    # if the node is a select node, we want to select
-                    # the value matching val, otherwise it's unfilled
+                    # if the node is a select node, we want to select the value matching val, otherwise it's unfilled
 
                     found = []
                     unfound = []
@@ -431,26 +430,25 @@ class _MeldElementInterface:
         return unfilled
 
     def findmeld(self, name, default=None):
-        """ Find a node in the tree that has a 'meld id' corresponding
-        to 'name'. Iterate over all subnodes recursively looking for a
-        node which matches.  If we can't find the node, return None."""
-        # this could be faster if we indexed all the meld nodes in the
-        # tree; we just walk the whole hierarchy now.
+        """
+        Find a node in the tree that has a 'meld id' corresponding to 'name'. Iterate over all subnodes recursively
+        looking for a node which matches.  If we can't find the node, return None.
+        """
+        # this could be faster if we indexed all the meld nodes in the tree; we just walk the whole hierarchy now.
         result = helper.findmeld(self, name)
         if result is None:
             return default
         return result
 
     def findmelds(self):
-        """ Find all nodes that have a meld id attribute and return
-        the found nodes in a list"""
+        """ Find all nodes that have a meld id attribute and return the found nodes in a list"""
         return self.findwithattrib(_MELD_ID)
 
     def findwithattrib(self, attrib, value=None):
-        """ Find all nodes that have an attribute named 'attrib'.  If
-        'value' is not None, omit nodes on which the attribute value
-        does not compare equally to 'value'. Return the found nodes in
-        a list."""
+        """
+        Find all nodes that have an attribute named 'attrib'.  If 'value' is not None, omit nodes on which the attribute
+        value does not compare equally to 'value'. Return the found nodes in a list.
+        """
         iterator = helper.getiterator(self)
         elements = []
         for element in iterator:
@@ -464,19 +462,15 @@ class _MeldElementInterface:
 
     # ZPT-alike methods
     def repeat(self, iterable, childname=None):
-        """repeats an element with values from an iterable.  If
-        'childname' is not None, repeat the element on which the
-        repeat is called, otherwise find the child element with a
-        'meld:id' matching 'childname' and repeat that.  The element
-        is repeated within its parent element (nodes that are created
-        as a result of a repeat share the same parent).  This method
-        returns an iterable; the value of each iteration is a
-        two-sequence in the form (newelement, data).  'newelement' is
-        a clone of the template element (including clones of its
-        children) which has already been seated in its parent element
-        in the template. 'data' is a value from the passed in
-        iterable.  Changing 'newelement' (typically based on values
-        from 'data') mutates the element 'in place'."""
+        """
+        repeats an element with values from an iterable.  If 'childname' is not None, repeat the element on which the
+        repeat is called, otherwise find the child element with a 'meld:id' matching 'childname' and repeat that.  The
+        element is repeated within its parent element (nodes that are created as a result of a repeat share the same
+        parent).  This method returns an iterable; the value of each iteration is a two-sequence in the form
+        (newelement, data).  'newelement' is a clone of the template element (including clones of its children) which
+        has already been seated in its parent element in the template. 'data' is a value from the passed in iterable.
+        Changing 'newelement' (typically based on values from 'data') mutates the element 'in place'.
+        """
         if childname:
             element = self.findmeld(childname)
         else:
@@ -496,11 +490,11 @@ class _MeldElementInterface:
         return L
 
     def replace(self, text, structure=False):
-        """ Replace this element with a Replace node in our parent with
-        the text 'text' and return the index of our position in
-        our parent.  If we have no parent, do nothing, and return None.
-        Pass the 'structure' flag to the replace node so it can do the right
-        thing at render time. """
+        """
+        Replace this element with a Replace node in our parent with the text 'text' and return the index of our position
+        in our parent.  If we have no parent, do nothing, and return None. Pass the 'structure' flag to the replace node
+        so it can do the right thing at render time.
+        """
         parent = self.parent
         i = self.deparent()
         if i is not None:
@@ -511,10 +505,10 @@ class _MeldElementInterface:
             return i
 
     def content(self, text, structure=False):
-        """ Delete this node's children and append a Replace node that
-        contains text.  Always return None.  Pass the 'structure' flag
-        to the replace node so it can do the right thing at render
-        time."""
+        """
+        Delete this node's children and append a Replace node that contains text.  Always return None.  Pass the
+        'structure' flag to the replace node so it can do the right thing at render time.
+        """
         helper.content(self, text, structure)
 
     def attributes(self, **kw):
@@ -528,8 +522,7 @@ class _MeldElementInterface:
             self.attrib[k] = kw[k]
 
     # output methods
-    def write_xmlstring(self, encoding=None, doctype=None, fragment=False,
-                        declaration=True, pipeline=False):
+    def write_xmlstring(self, encoding=None, doctype=None, fragment=False, declaration=True, pipeline=False):
         data = []
         write = data.append
         if not fragment:
@@ -540,8 +533,7 @@ class _MeldElementInterface:
         _write_xml(write, self, encoding, {}, pipeline)
         return _BLANK.join(data)
 
-    def write_xml(self, file, encoding=None, doctype=None,
-                  fragment=False, declaration=True, pipeline=False):
+    def write_xml(self, file, encoding=None, doctype=None, fragment=False, declaration=True, pipeline=False):
         """ Write XML to 'file' (which can be a filename or filelike object)
 
         encoding    - encoding string (if None, 'utf-8' encoding is assumed)
@@ -560,8 +552,7 @@ class _MeldElementInterface:
         """
         if not hasattr(file, 'write'):
             file = open(file, 'wb')
-        data = self.write_xmlstring(encoding, doctype, fragment, declaration,
-                                    pipeline)
+        data = self.write_xmlstring(encoding, doctype, fragment, declaration, pipeline)
         file.write(data)
 
     def write_htmlstring(self, encoding=None, doctype=doctype.html,
@@ -577,8 +568,7 @@ class _MeldElementInterface:
         joined = _BLANK.join(data)
         return joined
 
-    def write_html(self, file, encoding=None, doctype=doctype.html,
-                   fragment=False):
+    def write_html(self, file, encoding=None, doctype=doctype.html, fragment=False):
         """ Write HTML to 'file' (which can be a filename or filelike object)
 
         encoding    - encoding string (if None, 'utf-8' encoding is assumed).
@@ -602,8 +592,14 @@ class _MeldElementInterface:
         page = self.write_htmlstring(encoding, doctype, fragment)
         file.write(page)
 
-    def write_xhtmlstring(self, encoding=None, doctype=doctype.xhtml,
-                          fragment=False, declaration=False, pipeline=False):
+    def write_xhtmlstring(
+            self,
+            encoding=None,
+            doctype=doctype.xhtml,
+            fragment=False,
+            declaration=False,
+            pipeline=False,
+    ):
         data = []
         write = data.append
         if not fragment:
@@ -614,8 +610,15 @@ class _MeldElementInterface:
         _write_xml(write, self, encoding, {}, pipeline, xhtml=True)
         return _BLANK.join(data)
 
-    def write_xhtml(self, file, encoding=None, doctype=doctype.xhtml,
-                    fragment=False, declaration=False, pipeline=False):
+    def write_xhtml(
+            self,
+            file,
+            encoding=None,
+            doctype=doctype.xhtml,
+            fragment=False,
+            declaration=False,
+            pipeline=False,
+    ):
         """ Write XHTML to 'file' (which can be a filename or filelike object)
 
         encoding    - encoding string (if None, 'utf-8' encoding is assumed)
@@ -638,14 +641,14 @@ class _MeldElementInterface:
         file.write(page)
 
     def clone(self, parent=None):
-        """ Create a clone of an element.  If parent is not None,
-        append the element to the parent.  Recurse as necessary to create
-        a deep clone of the element. """
+        """
+        Create a clone of an element.  If parent is not None, append the element to the parent.  Recurse as necessary to
+        create a deep clone of the element.
+        """
         return helper.bfclone(self, parent)
 
     def deparent(self):
-        """ Remove ourselves from our parent node (de-parent) and return
-        the index of the parent which was deleted. """
+        """ Remove ourselves from our parent node (de-parent) and return the index of the parent which was deleted. """
         i = self.parentindex()
         if i is not None:
             del self.parent[i]
@@ -663,13 +666,13 @@ class _MeldElementInterface:
         return _BLANK.join(data)
 
     def diffmeld(self, other):
-        """ Compute the meld element differences from this node (the
-        source) to 'other' (the target).  Return a dictionary of
-        sequences in the form {'unreduced:
+        """
+        Compute the meld element differences from this node (the source) to 'other' (the target).  Return a dictionary
+        of sequences in the form {'unreduced:
                {'added':[], 'removed':[], 'moved':[]},
                                'reduced':
                {'added':[], 'removed':[], 'moved':[]},}
-                               """
+        """
         srcelements = self.findmelds()
         tgtelements = other.findmelds()
         srcids = [x.meldid() for x in srcelements]
@@ -700,11 +703,9 @@ class _MeldElementInterface:
         added_reduced = diffreduce(added)
         removed_reduced = diffreduce(removed)
 
-        reduced = {'moved': moved_reduced, 'added': added_reduced,
-                   'removed': removed_reduced}
+        reduced = {'moved': moved_reduced, 'added': added_reduced, 'removed': removed_reduced}
 
-        return {'unreduced': unreduced,
-                'reduced': reduced}
+        return {'unreduced': unreduced, 'reduced': reduced}
 
     def meldid(self):
         return self.attrib.get(_MELD_ID)
@@ -728,8 +729,7 @@ class MeldTreeBuilder(TreeBuilder):
         for key, value in attrs.items():
             if key == _MELD_ID:
                 if value in self.meldids:
-                    raise ValueError('Repeated meld id "%s" in source' %
-                                     value)
+                    raise ValueError('Repeated meld id "%s" in source' % value)
                 self.meldids[value] = 1
                 break
         return elem
@@ -744,9 +744,10 @@ class MeldTreeBuilder(TreeBuilder):
 
 
 class HTMLXMLParser(HTMLParser):
-    """ A mostly-cut-and-paste of ElementTree's HTMLTreeBuilder that
-    does special meld3 things (like preserve comments and munge meld
-    ids).  Subclassing is not possible due to private attributes. :-("""
+    """
+    A mostly-cut-and-paste of ElementTree's HTMLTreeBuilder that does special meld3 things (like preserve comments and
+    munge meld ids).  Subclassing is not possible due to private attributes. :-(
+    """
 
     def __init__(self, builder=None, encoding=None):
         self.__stack = []
@@ -755,9 +756,8 @@ class HTMLXMLParser(HTMLParser):
         self.builder = builder
         self.encoding = encoding or 'iso-8859-1'
         try:
-            # ``convert_charrefs`` was added in Python 3.4.  Set it to avoid
-            # "DeprecationWarning: The value of convert_charrefs will become
-            # True in 3.5. You are encouraged to set the value explicitly."
+            # ``convert_charrefs`` was added in Python 3.4.  Set it to avoid "DeprecationWarning: The value of
+            # convert_charrefs will become True in 3.5. You are encouraged to set the value explicitly."
             HTMLParser.__init__(self, convert_charrefs=False)
         except TypeError:
             HTMLParser.__init__(self)
@@ -779,9 +779,7 @@ class HTMLXMLParser(HTMLParser):
                     content = v
             if http_equiv == 'content-type' and content:
                 # use email to parse the http header
-                msg = email.message_from_string(
-                    '%s: %s\n\n' % (http_equiv, content),
-                )
+                msg = email.message_from_string('%s: %s\n\n' % (http_equiv, content))
                 encoding = msg.get_param('charset')
                 if encoding:
                     self.encoding = encoding
@@ -795,8 +793,7 @@ class HTMLXMLParser(HTMLParser):
                 if k == _MELD_SHORT_ID:
                     k = _MELD_ID
                     if self.meldids.get(v):
-                        raise ValueError('Repeated meld id "%s" in source' %
-                                         v)
+                        raise ValueError('Repeated meld id "%s" in source' % v)
                     self.meldids[v] = 1
                 else:
                     k = k.lower()
