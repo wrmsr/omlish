@@ -6,17 +6,20 @@ TODO:
 https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login
 """
 import contextvars
+import functools
 import importlib.resources
 import logging
 import os
 import typing as ta
 
-import anyio
+import anyio.to_thread
 
+from omlish import asyncs as asu
 from omlish import check
 from omlish import http as hu
 from omlish import lang
 from omlish import logs
+from omlish.asyncs import anyio as anu
 from omlish.http.asgi import finish_response
 from omlish.http.asgi import read_body
 from omlish.http.asgi import read_form_body
@@ -293,6 +296,13 @@ else:
     tiktoken = lang.proxy_import('tiktoken')
 
 
+def _gpt2_enc() -> 'tiktoken.Encoding':
+    return tiktoken.get_encoding('gpt2')
+
+
+gpt2_enc = anu.LazyFn(functools.partial(anyio.to_thread.run_sync, _gpt2_enc))
+
+
 @handle('POST', '/tik')
 async def handle_post_tik(scope, recv, send):
     basic_auth_token = os.environ.get('BASIC_AUTH_TOKEN')
@@ -308,7 +318,7 @@ async def handle_post_tik(scope, recv, send):
         await send_response(send, 401)
         return
 
-    enc = tiktoken.get_encoding('gpt2')
+    enc = await gpt2_enc.get()
 
     req_body = await read_body(recv)
     toks = enc.encode(req_body.decode())
@@ -348,6 +358,7 @@ def _main() -> None:
 
     load_templates()
 
+    @asu.with_adapter_loop(wait=True)
     async def _a_main():
         await serve(
             auth_app,
