@@ -22,6 +22,7 @@ from .flavors import (  # noqa
     mark_asyncio,
     mark_flavor,
     mark_trio,
+    with_adapter_loop,
 )
 
 from .futures import (  # noqa
@@ -31,8 +32,4 @@ from .futures import (  # noqa
     new_thread_or_immediate_executor,
     wait_dependent_futures,
     wait_futures,
-)
-
-from .trio_asyncio import (  # noqa
-    with_trio_asyncio_loop,
 )
