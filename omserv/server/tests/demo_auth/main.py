@@ -34,9 +34,8 @@ from omlish.http.asgi import stub_lifespan
 
 from ...config import Config
 from ...serving import serve
+from .j2 import J2Templates
 from .j2 import j2_helper
-from .j2 import load_templates
-from .j2 import render_template
 from .passwords import check_password_hash
 from .passwords import generate_password_hash
 from .users import USERS
@@ -181,6 +180,14 @@ def login_user(user: User, *, remember: bool = False) -> None:
 ##
 
 
+TEMPLATES = J2Templates(J2Templates.Config(
+    reload=True,
+))
+
+
+##
+
+
 @handle('GET', '/')
 @with_session
 @with_user
@@ -189,7 +196,7 @@ async def handle_get_index(scope, recv, send):
 
     session['c'] = session.get('c', 0) + 1
 
-    html = render_template('index.html')
+    html = TEMPLATES.render('index.html.j2')
     await start_response(send, 200, hu.consts.CONTENT_TYPE_HTML_UTF8)  # noqa
     await finish_response(send, html)
 
@@ -203,8 +210,8 @@ async def handle_get_index(scope, recv, send):
 @login_required
 async def handle_get_profile(scope, recv, send):
     user = check.not_none(USER.get())
-    html = render_template(
-        'profile.html',
+    html = TEMPLATES.render(
+        'profile.html.j2',
         name=user.name,
         auth_token=user.auth_token or '',
     )
@@ -235,7 +242,7 @@ async def handle_post_profile(scope, recv, send):
 @with_session
 @with_user
 async def handle_get_login(scope, recv, send):
-    html = render_template('login.html')
+    html = TEMPLATES.render('login.html.j2')
     await start_response(send, 200, hu.consts.CONTENT_TYPE_HTML_UTF8)  # noqa
     await finish_response(send, html)
 
@@ -269,7 +276,7 @@ async def handle_post_login(scope, recv, send):
 @with_session
 @with_user
 async def handle_get_signup(scope, recv, send):
-    html = render_template('signup.html')
+    html = TEMPLATES.render('signup.html.j2')
     await start_response(send, 200, hu.consts.CONTENT_TYPE_HTML_UTF8)  # noqa
     await finish_response(send, html)
 
@@ -395,21 +402,18 @@ async def auth_app(scope, recv, send):
 ##
 
 
-def _main() -> None:
+@asu.with_adapter_loop(wait=True)
+async def _a_main() -> None:
     logs.configure_standard_logging(logging.INFO)
 
-    load_templates()
+    TEMPLATES.load_all()
 
-    @asu.with_adapter_loop(wait=True)
-    async def _a_main():
-        await serve(
-            auth_app,
-            Config(),
-            handle_shutdown_signals=True,
-        )
-
-    anyio.run(_a_main)
+    await serve(
+        auth_app,
+        Config(),
+        handle_shutdown_signals=True,
+    )
 
 
 if __name__ == '__main__':
-    _main()
+    anyio.run(_a_main)
