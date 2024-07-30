@@ -28,7 +28,7 @@ J2_ENV = jinja2.Environment(
 )
 
 
-@lang.cached_function
+# @lang.cached_function
 def load_templates() -> ta.Mapping[str, jinja2.Template]:
     ret: dict[str, jinja2.Template] = {}
     for fn in importlib.resources.files(__package__).joinpath('templates').iterdir():

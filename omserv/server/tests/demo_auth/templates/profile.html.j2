@@ -1,7 +1,21 @@
 {% extends "base.html" %}
 
 {% block content %}
+
     <h1 class="title">
         Welcome, {{ name }}!
     </h1>
+
+    <div class="column is-4 is-offset-4">
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="notification is-danger">
+                    {{ messages[0] }}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+    </div>
+
 {% endblock %}
