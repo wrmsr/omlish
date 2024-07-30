@@ -13,8 +13,10 @@ from .states import getEventListenerStateDescription
 
 
 class PDispatcher:
-    """ Asyncore dispatcher for mainloop, representing a process channel
-    (stdin, stdout, or stderr).  This class is abstract. """
+    """
+    Asyncore dispatcher for mainloop, representing a process channel (stdin, stdout, or stderr).  This class is
+    abstract.
+    """
 
     closed = False  # True if close() has been called
 
@@ -491,9 +493,7 @@ ANSI_TERMINATORS = (b'H', b'f', b'A', b'B', b'C', b'D', b'R', b's', b'u', b'J', 
 
 
 def stripEscapes(s):
-    """
-    Remove all ANSI color escapes from the given string.
-    """
+    """Remove all ANSI color escapes from the given string."""
     result = b''
     show = 1
     i = 0

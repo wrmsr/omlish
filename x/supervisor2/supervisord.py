@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 """supervisord -- run a set of applications as daemons.
 
 Usage: %s [options]
@@ -20,17 +19,13 @@ Options:
 -j/--pidfile FILENAME -- write a pid file for the daemon process to FILENAME
 -i/--identifier STR -- identifier used for this instance of supervisord
 -q/--childlogdir DIRECTORY -- the log directory for child process logs
--k/--nocleanup --  prevent the process from performing cleanup (removal of
-                   old automatic child log files) at startup.
+-k/--nocleanup --  prevent the process from performing cleanup (removal of old automatic child log files) at startup.
 -a/--minfds NUM -- the minimum number of file descriptors for start success
 -t/--strip_ansi -- strip ansi escape codes from process output
 --minprocs NUM  -- the minimum number of processes available for start success
---profile_options OPTIONS -- run supervisord under profiler and output
-                             results based on OPTIONS, which  is a comma-sep'd
-                             list of 'cumulative', 'calls', and/or 'callers',
-                             e.g. 'cumulative,callers')
+--profile_options OPTIONS -- run supervisord under profiler and output results based on OPTIONS, which  is a comma-sep'd
+                             list of 'cumulative', 'calls', and/or 'callers', e.g. 'cumulative,callers'
 """
-
 import os
 import signal
 import time
