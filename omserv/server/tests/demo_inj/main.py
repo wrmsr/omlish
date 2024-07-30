@@ -13,7 +13,7 @@ import anyio
 
 from omlish import inject as inj
 from omlish import logs
-from omlish.http.asgi import AsgiApp
+from omlish.http.asgi import AbstractAsgiApp
 from omlish.http.asgi import AsgiRecv
 from omlish.http.asgi import AsgiScope
 from omlish.http.asgi import AsgiSend
@@ -30,7 +30,7 @@ log = logging.getLogger(__name__)
 ##
 
 
-class HiAsgiApp(AsgiApp):
+class HiAsgiApp(AbstractAsgiApp):
     def __init__(self) -> None:
         super().__init__()
 
@@ -38,7 +38,7 @@ class HiAsgiApp(AsgiApp):
         await send_response(send, 200, body=b'hi')
 
 
-class ByeAsgiApp(AsgiApp):
+class ByeAsgiApp(AbstractAsgiApp):
     def __init__(self) -> None:
         super().__init__()
 
@@ -55,8 +55,8 @@ class Endpoint:
     endpoint: str
 
 
-class InjApp(AsgiApp):
-    def __init__(self, endpoints: ta.Mapping[Endpoint, AsgiApp]) -> None:
+class InjApp(AbstractAsgiApp):
+    def __init__(self, endpoints: ta.Mapping[Endpoint, AbstractAsgiApp]) -> None:
         super().__init__()
         self._endpoints = endpoints
 
@@ -84,14 +84,14 @@ class InjApp(AsgiApp):
 
 def _bind() -> inj.Elements:
     return inj.as_elements(
-        inj.bind_map_provider(ta.Mapping[Endpoint, AsgiApp]),
+        inj.bind_map_provider(ta.Mapping[Endpoint, AbstractAsgiApp]),
         inj.singleton(InjApp),
 
         inj.singleton(HiAsgiApp),
-        inj.MapBinding(inj.Key(ta.Mapping[Endpoint, AsgiApp]), Endpoint('GET', '/hi'), inj.Key(HiAsgiApp)),
+        inj.MapBinding(inj.Key(ta.Mapping[Endpoint, AbstractAsgiApp]), Endpoint('GET', '/hi'), inj.Key(HiAsgiApp)),
 
         inj.singleton(ByeAsgiApp),
-        inj.MapBinding(inj.Key(ta.Mapping[Endpoint, AsgiApp]), Endpoint('GET', '/bye'), inj.Key(ByeAsgiApp)),
+        inj.MapBinding(inj.Key(ta.Mapping[Endpoint, AbstractAsgiApp]), Endpoint('GET', '/bye'), inj.Key(ByeAsgiApp)),
     )
 
 
