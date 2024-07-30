@@ -4,8 +4,8 @@ import typing as ta
 import anyio
 import pytest
 
-from .. import anyio as anu
 from ... import lang
+from .. import anyio as anu
 
 
 @pytest.fixture
