@@ -148,6 +148,16 @@ def void(*args: ta.Any, **kwargs: ta.Any) -> ta.NoReturn:
 ##
 
 
+def as_async(fn: ta.Callable[P, T]) -> ta.Callable[P, ta.Awaitable[T]]:
+    @functools.wraps(fn)
+    async def inner(*args, **kwargs):
+        return fn(*args, **kwargs)
+    return inner
+
+
+##
+
+
 _MISSING = object()
 
 
