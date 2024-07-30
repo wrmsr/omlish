@@ -1,3 +1,8 @@
+"""
+TODO:
+ - sync (lol) w/ asyncs.anyio
+ - atomics
+"""
 import threading
 import typing as ta
 

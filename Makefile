@@ -111,8 +111,8 @@ ruff-stats: venv
 
 .PHONY: ruff-fix
 ruff-fix: venv
-	if ! $$(git diff-index --quiet HEAD --) ; then \
-		echo 'there are uncommitted changes - refusing to run' ; \
+	if ! $$(git diff-files --quiet --ignore-submodules) ; then \
+		echo 'there are unstaged changes - refusing to run' ; \
 		exit 1 ; \
 	fi
 	${PYTHON} -mruff check --fix ${SRCS}

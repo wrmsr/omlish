@@ -4,6 +4,9 @@ import typing as ta
 import anyio
 import pytest
 
+from .. import anyio as anu
+from ... import lang
+
 
 @pytest.fixture
 def server_sock() -> ta.Generator[socket.socket, None, None]:
@@ -49,3 +52,39 @@ async def test_send_receive_trio(
         server_addr: tuple[str, int],
 ) -> None:
     await _test_send_receive(server_sock, server_addr)
+
+
+@pytest.mark.asyncio
+async def test_lazy_fn():
+    c = 0
+
+    async def fn():
+        nonlocal c
+        c += 1
+        return 420
+
+    lfn = anu.LazyFn(fn)
+
+    assert c == 0
+    assert await lfn.get() == 420
+    assert c == 1
+    assert await lfn.get() == 420
+    assert c == 1
+
+
+@pytest.mark.asyncio
+async def test_lazy_fn2():
+    c = 0
+
+    def fn():
+        nonlocal c
+        c += 1
+        return 420
+
+    lfn = anu.LazyFn(lang.as_async(fn))
+
+    assert c == 0
+    assert await lfn.get() == 420
+    assert c == 1
+    assert await lfn.get() == 420
+    assert c == 1
