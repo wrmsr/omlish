@@ -517,8 +517,6 @@ class ServerOptions(Options):
 
         self.pidfile = normalize_path(pidfile)
 
-        self.rpcinterface_factories = section.rpcinterface_factories
-
         self.serverurl = None
 
         self.server_configs = sconfigs = section.server_configs
@@ -634,13 +632,6 @@ class ServerOptions(Options):
         for k, v in section.environment.items():
             self.environ_expansions['ENV_%s' % k] = v
 
-        # Process rpcinterface plugins before groups to allow custom events to
-        # be registered.
-        section.rpcinterface_factories = self.get_plugins(
-            parser,
-            'supervisor.rpcinterface_factory',
-            'rpcinterface:',
-        )
         section.process_group_configs = self.process_groups_from_parser(parser)
         for group in section.process_group_configs:
             for proc in group.process_configs:
@@ -1078,27 +1069,6 @@ class ServerOptions(Options):
         except OSError:
             pass
 
-    def close_httpservers(self):
-        # FIXME:
-        # dispatcher_servers = []
-        # for config, server in self.httpservers:
-        #     server.close()
-        #     # server._map is a reference to the asyncore socket_map
-        #     for dispatcher in self.get_socket_map().values():
-        #         dispatcher_server = getattr(dispatcher, 'server', None)
-        #         if dispatcher_server is server:
-        #             dispatcher_servers.append(dispatcher)
-        # for server in dispatcher_servers:
-        #     # TODO: try to remove this entirely.
-        #     # For unknown reasons, sometimes an http_channel dispatcher in the socket map related to servers remains
-        #     # open *during a reload*.  If one of these exists at this point, we need to close it by hand (thus removing
-        #     # it from the asyncore.socket_map).  If we don't do this, 'cleanup_fds' will cause its file descriptor to be
-        #     # closed, but it will still remain in the socket_map, and eventually its file descriptor will be passed to #
-        #     # select(), which will bomb.  See also
-        #     # https://web.archive.org/web/20160729222427/http://www.plope.com/software/collector/253
-        #     server.close()
-        pass
-
     def close_logger(self):
         self.logger.close()
 
@@ -1113,27 +1083,6 @@ class ServerOptions(Options):
 
     def get_signal(self):
         return self.signal_receiver.get_signal()
-
-    def openhttpservers(self, supervisord):
-        # try:
-        #     self.httpservers = self.make_http_servers(supervisord)
-        #     self.unlink_socketfiles = True
-        # except OSError as why:
-        #     if why.args[0] == errno.EADDRINUSE:
-        #         self.usage(
-        #             'Another program is already listening on a port that one of our HTTP servers is configured to '
-        #             'use.  Shut this program down first before starting supervisord.'
-        #         )
-        #     else:
-        #         help = 'Cannot open an HTTP server: socket.error reported'
-        #         errorname = errno.errorcode.get(why.args[0])
-        #         if errorname is None:
-        #             self.usage('%s %s' % (help, why.args[0]))
-        #         else:
-        #             self.usage('%s errno.%s (%d)' % (help, errorname, why.args[0]))
-        # except ValueError as why:
-        #     self.usage(why.args[0])
-        pass
 
     def get_autochildlog_name(self, name, identifier, channel):
         prefix = '%s-%s---%s-' % (name, channel, identifier)

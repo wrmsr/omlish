@@ -1,24 +1,9 @@
 import sys
 import time
-import xmlrpc.client as xmlrpclib
 
 from .compat import as_string
 from .dispatchers import PEventListenerDispatcher
 from .events import ProcessCommunicationEvent
-from .xmlrpc import SupervisorTransport
-
-
-def getRPCTransport(env):
-    u = env.get('SUPERVISOR_USERNAME', '')
-    p = env.get('SUPERVISOR_PASSWORD', '')
-    return SupervisorTransport(u, p, env['SUPERVISOR_SERVER_URL'])
-
-
-def getRPCInterface(env):
-    # dumbass ServerProxy won't allow us to pass in a non-HTTP url,
-    # so we fake the url we pass into it and always use the transport's
-    # 'serverurl' to figure out what to attach to
-    return xmlrpclib.ServerProxy('http://127.0.0.1', getRPCTransport(env))
 
 
 def get_headers(line):
