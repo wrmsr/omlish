@@ -12,7 +12,6 @@ import stat
 import sys
 import tempfile
 import warnings
-import xmlrpc.client as xmlrpclib
 from io import StringIO
 
 import fcntl
@@ -22,7 +21,6 @@ import resource
 from . import loggers
 from . import poller
 from . import states
-from . import xmlrpc
 from .compat import as_bytes
 from .compat import as_string
 from .compat import import_spec
@@ -52,14 +50,7 @@ from .datatypes import signal_number
 from .datatypes import url
 
 
-def _read_version_txt():
-    mydir = os.path.abspath(os.path.dirname(__file__))
-    version_txt = os.path.join(mydir, 'version.txt')
-    with open(version_txt) as f:
-        return f.read().strip()
-
-
-VERSION = _read_version_txt()
+VERSION = 'foo'
 
 
 def normalize_path(v):
@@ -427,7 +418,7 @@ class Options:
         for msg in self.parse_criticals:
             logger.critical(msg)
         for msg in self.parse_warnings:
-            logger.warning(msg)
+            logger.warn(msg)
         for msg in self.parse_infos:
             logger.info(msg)
 
@@ -1124,24 +1115,25 @@ class ServerOptions(Options):
         return self.signal_receiver.get_signal()
 
     def openhttpservers(self, supervisord):
-        try:
-            self.httpservers = self.make_http_servers(supervisord)
-            self.unlink_socketfiles = True
-        except OSError as why:
-            if why.args[0] == errno.EADDRINUSE:
-                self.usage(
-                    'Another program is already listening on a port that one of our HTTP servers is configured to '
-                    'use.  Shut this program down first before starting supervisord.'
-                )
-            else:
-                help = 'Cannot open an HTTP server: socket.error reported'
-                errorname = errno.errorcode.get(why.args[0])
-                if errorname is None:
-                    self.usage('%s %s' % (help, why.args[0]))
-                else:
-                    self.usage('%s errno.%s (%d)' % (help, errorname, why.args[0]))
-        except ValueError as why:
-            self.usage(why.args[0])
+        # try:
+        #     self.httpservers = self.make_http_servers(supervisord)
+        #     self.unlink_socketfiles = True
+        # except OSError as why:
+        #     if why.args[0] == errno.EADDRINUSE:
+        #         self.usage(
+        #             'Another program is already listening on a port that one of our HTTP servers is configured to '
+        #             'use.  Shut this program down first before starting supervisord.'
+        #         )
+        #     else:
+        #         help = 'Cannot open an HTTP server: socket.error reported'
+        #         errorname = errno.errorcode.get(why.args[0])
+        #         if errorname is None:
+        #             self.usage('%s %s' % (help, why.args[0]))
+        #         else:
+        #             self.usage('%s errno.%s (%d)' % (help, errorname, why.args[0]))
+        # except ValueError as why:
+        #     self.usage(why.args[0])
+        pass
 
     def get_autochildlog_name(self, name, identifier, channel):
         prefix = '%s-%s---%s-' % (name, channel, identifier)
@@ -1159,7 +1151,7 @@ class ServerOptions(Options):
         try:
             filenames = os.listdir(childlogdir)
         except OSError:
-            self.logger.warning('Could not clear childlog dir')
+            self.logger.warn('Could not clear childlog dir')
             return
 
         for filename in filenames:
@@ -1168,7 +1160,7 @@ class ServerOptions(Options):
                 try:
                     self.remove(pathname)
                 except OSError:
-                    self.logger.warning('Failed to clean up %r' % pathname)
+                    self.logger.warn('Failed to clean up %r' % pathname)
 
     def cleanup_fds(self):
         # try to close any leaked file descriptors (for reload)
@@ -1339,10 +1331,6 @@ class ServerOptions(Options):
         )
         self._log_parsing_messages(self.logger)
 
-    def make_http_servers(self, supervisord):
-        from .http import make_http_servers
-        return make_http_servers(self, supervisord)
-
     def close_fd(self, fd):
         try:
             os.close(fd)
@@ -1496,8 +1484,8 @@ class ClientOptions(Options):
 
         from .supervisorctl import DefaultControllerPlugin
         default_factory = ('default', DefaultControllerPlugin, {})
-        # we always add the default factory. If you want to a supervisorctl
-        # without the default plugin, please write your own supervisorctl.
+        # we always add the default factory. If you want to a supervisorctl without the default plugin, please write
+        # your own supervisorctl.
         self.plugin_factories = [default_factory]
 
         self.add('interactive', 'supervisorctl.interactive', 'i', 'interactive', flag=1, default=0)  # noqa
@@ -1585,19 +1573,6 @@ class ClientOptions(Options):
         )
 
         return section
-
-    # TODO: not covered by any test, but used by supervisorctl
-    def getServerProxy(self):
-        return xmlrpclib.ServerProxy(
-            # dumbass ServerProxy won't allow us to pass in a non-HTTP url, so we fake the url we pass into it and
-            # always use the transport's 'serverurl' to figure out what to attach to
-            'http://127.0.0.1',
-            transport=xmlrpc.SupervisorTransport(
-                self.username,
-                self.password,
-                self.serverurl,
-            ),
-        )
 
 
 _marker = []

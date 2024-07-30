@@ -392,7 +392,7 @@ class PEventListenerDispatcher(PDispatcher):
                         result_line = as_string(result_line)
                     except UnicodeDecodeError:
                         result_line = 'Undecodable: %r' % result_line
-                    process.config.options.logger.warning('%s: bad result line: \'%s\'' % (procname, result_line))
+                    process.config.options.logger.warn('%s: bad result line: \'%s\'' % (procname, result_line))
                     self._change_listener_state(EventListenerStates.UNKNOWN)
                     self.state_buffer = b''
                     notify(EventRejectedEvent(process, process.event))
@@ -427,11 +427,11 @@ class PEventListenerDispatcher(PDispatcher):
             logger.debug('%s: event was processed' % procname)
             self._change_listener_state(EventListenerStates.ACKNOWLEDGED)
         except RejectEvent:
-            logger.warning('%s: event was rejected' % procname)
+            logger.warn('%s: event was rejected' % procname)
             self._change_listener_state(EventListenerStates.ACKNOWLEDGED)
             notify(EventRejectedEvent(process, process.event))
         except:
-            logger.warning('%s: event caused an error' % procname)
+            logger.warn('%s: event caused an error' % procname)
             self._change_listener_state(EventListenerStates.UNKNOWN)
             notify(EventRejectedEvent(process, process.event))
 
@@ -452,7 +452,7 @@ class PEventListenerDispatcher(PDispatcher):
             msg = ('%s: has entered the UNKNOWN state and will no longer '
                    'receive events, this usually indicates the process '
                    'violated the eventlistener protocol' % procname)
-            process.config.options.logger.warning(msg)
+            process.config.options.logger.warn(msg)
 
 
 class PInputDispatcher(PDispatcher):
