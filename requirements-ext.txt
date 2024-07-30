@@ -194,7 +194,7 @@ tenacity==9.0.0
 
 psutil==6.0.0
 
-mitogen==0.3.7
+mitogen==0.3.8
 
 cloudpickle==3.0.0
 

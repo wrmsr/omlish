@@ -1,6 +1,7 @@
 import pytest
 
 from ..functions import Args
+from ..functions import as_async
 from ..functions import finally_
 from ..functions import try_
 
@@ -37,3 +38,8 @@ def test_finally():
     with pytest.raises(FooError):
         f()
     assert c == 1
+
+
+@pytest.mark.asyncio
+async def test_as_async():
+    assert (await as_async(lambda: 420)()) == 420
