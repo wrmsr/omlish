@@ -6,6 +6,7 @@ TODO:
 https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login
 """
 import contextvars
+import importlib.resources
 import logging
 import os
 import typing as ta
@@ -268,6 +269,19 @@ async def handle_post_signup(scope, recv, send):
 async def handle_get_logout(scope, recv, send):
     SESSION.get().pop('_user_id', None)
     await redirect_response(send, url_for(''))
+
+
+##
+
+
+@lang.cached_function
+def _favicon_bytes() -> bytes:
+    return importlib.resources.files(__package__).joinpath('../../resources/favicon.ico').read_bytes()
+
+
+@handle('GET', '/favicon.ico')
+async def handle_get_favicon_ico(scope, recv, send):
+    await send_response(send, 200, hu.consts.CONTENT_TYPE_ICON, body=_favicon_bytes())
 
 
 ##
