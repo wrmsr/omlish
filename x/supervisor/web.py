@@ -26,8 +26,10 @@ from .xmlrpc import SystemNamespaceRPCInterface
 
 
 class DeferredWebProducer:
-    """ A medusa producer that implements a deferred callback; requires
-    a subclass of asynchat.async_chat that handles NOT_DONE_YET sentinel """
+    """
+    A medusa producer that implements a deferred callback; requires a subclass of asynchat.async_chat that handles
+    NOT_DONE_YET sentinel
+    """
     CONNECTION = re.compile('Connection: (.*)', re.IGNORECASE)
 
     def __init__(self, request, callback):
@@ -55,7 +57,6 @@ class DeferredWebProducer:
             self.request.error(500)
 
     def sendresponse(self, response):
-
         headers = response.get('headers', {})
         for header in headers:
             self.request[header] = headers[header]
@@ -101,35 +102,26 @@ class DeferredWebProducer:
         elif self.request.version is None:
             close_it = 1
 
-        outgoing_header = producers.simple_producer(
-            self.request.build_reply_header())
+        outgoing_header = producers.simple_producer(self.request.build_reply_header())
 
         if close_it:
             self.request['Connection'] = 'close'
 
         if wrap_in_chunking:
-            outgoing_producer = producers.chunked_producer(
-                producers.composite_producer(self.request.outgoing),
-            )
+            outgoing_producer = producers.chunked_producer(producers.composite_producer(self.request.outgoing))
             # prepend the header
-            outgoing_producer = producers.composite_producer(
-                [outgoing_header, outgoing_producer],
-            )
+            outgoing_producer = producers.composite_producer([outgoing_header, outgoing_producer])
         else:
             # prepend the header
             self.request.outgoing.insert(0, outgoing_header)
-            outgoing_producer = producers.composite_producer(
-                self.request.outgoing)
+            outgoing_producer = producers.composite_producer(self.request.outgoing)
 
         # apply a few final transformations to the output
         self.request.channel.push_with_producer(
             # globbing gives us large packets
             producers.globbing_producer(
                 # hooking lets us log the number of bytes sent
-                producers.hooked_producer(
-                    outgoing_producer,
-                    self.request.log,
-                ),
+                producers.hooked_producer(outgoing_producer, self.request.log),
             ),
         )
 
@@ -197,14 +189,12 @@ class TailView(MeldView):
             else:
                 rpcinterface = SupervisorNamespaceRPCInterface(supervisord)
                 try:
-                    tail = rpcinterface.readProcessStdoutLog(processname,
-                                                             limit, offset)
+                    tail = rpcinterface.readProcessStdoutLog(processname, limit, offset)
                 except RPCError as e:
                     if e.code == Faults.NO_FILE:
                         tail = 'No file for %s' % processname
                     else:
-                        tail = 'ERROR: unexpected rpc fault [%d] %s' % (
-                            e.code, e.text)
+                        tail = 'ERROR: unexpected rpc fault [%d] %s' % (e.code, e.text)
 
         root = self.clone()
 
@@ -216,9 +206,7 @@ class TailView(MeldView):
         refresh_anchor = root.findmeld('refresh_anchor')
         if processname is not None:
             refresh_anchor.attributes(
-                href='tail.html?processname=%s&limit=%s' % (
-                    urllib.quote(processname), urllib.quote(str(abs(limit))),
-                ),
+                href='tail.html?processname=%s&limit=%s' % (urllib.quote(processname), urllib.quote(str(abs(limit)))),
             )
         else:
             refresh_anchor.deparent()
@@ -229,8 +217,7 @@ class TailView(MeldView):
 class StatusView(MeldView):
     def actions_for_process(self, process):
         state = process.get_state()
-        processname = urllib.quote(make_namespec(process.group.config.name,
-                                                 process.config.name))
+        processname = urllib.quote(make_namespec(process.group.config.name, process.config.name))
         start = {
             'name': 'Start',
             'href': 'index.html?processname=%s&amp;action=start' % processname,
@@ -263,8 +250,7 @@ class StatusView(MeldView):
         }
         if state == ProcessStates.RUNNING:
             actions = [restart, stop, clearlog, tailf_stdout, tailf_stderr]
-        elif state in (ProcessStates.STOPPED, ProcessStates.EXITED,
-                       ProcessStates.FATAL):
+        elif state in (ProcessStates.STOPPED, ProcessStates.EXITED, ProcessStates.FATAL):
             actions = [start, None, clearlog, tailf_stdout, tailf_stderr]
         else:
             actions = [None, None, clearlog, tailf_stdout, tailf_stderr]
@@ -281,15 +267,13 @@ class StatusView(MeldView):
     def make_callback(self, namespec, action):
         supervisord = self.context.supervisord
 
-        # the rpc interface code is already written to deal properly in a
-        # deferred world, so just use it
+        # the rpc interface code is already written to deal properly in a deferred world, so just use it
         main = ('supervisor', SupervisorNamespaceRPCInterface(supervisord))
         system = ('system', SystemNamespaceRPCInterface([main]))
 
         rpcinterface = RootRPCInterface([main, system])
 
         if action:
-
             if action == 'refresh':
                 def donothing():
                     message = 'Page refreshed at %s' % time.ctime()
@@ -311,9 +295,10 @@ class StatusView(MeldView):
                 return stopall
 
             elif action == 'restartall':
-                callback = rpcinterface.system.multicall(
-                    [{'methodName': 'supervisor.stopAllProcesses'},
-                     {'methodName': 'supervisor.startAllProcesses'}])
+                callback = rpcinterface.system.multicall([
+                    {'methodName': 'supervisor.stopAllProcesses'},
+                    {'methodName': 'supervisor.startAllProcesses'},
+                ])
 
                 def restartall():
                     result = callback()
@@ -339,9 +324,7 @@ class StatusView(MeldView):
 
                 if action == 'start':
                     try:
-                        bool_or_callback = (
-                            rpcinterface.supervisor.startProcess(namespec)
-                        )
+                        bool_or_callback = rpcinterface.supervisor.startProcess(namespec)
                     except RPCError as e:
                         if e.code == Faults.NO_FILE:
                             msg = 'no such file'
@@ -354,8 +337,7 @@ class StatusView(MeldView):
                         elif e.code == Faults.ABNORMAL_TERMINATION:
                             msg = 'abnormal termination'
                         else:
-                            msg = 'unexpected rpc fault [%d] %s' % (
-                                e.code, e.text)
+                            msg = 'unexpected rpc fault [%d] %s' % (e.code, e.text)
 
                         def starterr():
                             return 'ERROR: Process %s: %s' % (namespec, msg)
@@ -373,8 +355,7 @@ class StatusView(MeldView):
                                 elif e.code == Faults.ABNORMAL_TERMINATION:
                                     msg = 'abnormal termination'
                                 else:
-                                    msg = 'unexpected rpc fault [%d] %s' % (
-                                        e.code, e.text)
+                                    msg = 'unexpected rpc fault [%d] %s' % (e.code, e.text)
                                 return 'ERROR: Process %s: %s' % (namespec, msg)
 
                             if result is NOT_DONE_YET:
@@ -392,9 +373,7 @@ class StatusView(MeldView):
 
                 elif action == 'stop':
                     try:
-                        bool_or_callback = (
-                            rpcinterface.supervisor.stopProcess(namespec)
-                        )
+                        bool_or_callback = rpcinterface.supervisor.stopProcess(namespec)
                     except RPCError as e:
                         msg = 'unexpected rpc fault [%d] %s' % (e.code, e.text)
 
@@ -425,13 +404,10 @@ class StatusView(MeldView):
                         return stopdone
 
                 elif action == 'restart':
-                    results_or_callback = rpcinterface.system.multicall(
-                        [{'methodName': 'supervisor.stopProcess',
-                          'params': [namespec]},
-                         {'methodName': 'supervisor.startProcess',
-                          'params': [namespec]},
-                         ],
-                    )
+                    results_or_callback = rpcinterface.system.multicall([
+                        {'methodName': 'supervisor.stopProcess', 'params': [namespec]},
+                        {'methodName': 'supervisor.startProcess', 'params': [namespec]},
+                    ])
                     if callable(results_or_callback):
                         callback = results_or_callback
 
@@ -452,8 +428,7 @@ class StatusView(MeldView):
 
                 elif action == 'clearlog':
                     try:
-                        callback = rpcinterface.supervisor.clearProcessLogs(
-                            namespec)
+                        callback = rpcinterface.supervisor.clearProcessLogs(namespec)
                     except RPCError as e:
                         msg = 'unexpected rpc fault [%d] %s' % (e.code, e.text)
 
@@ -489,15 +464,13 @@ class StatusView(MeldView):
                     return NOT_DONE_YET
                 if message is not None:
                     server_url = form['SERVER_URL']
-                    location = server_url + '/' + '?message=%s' % urllib.quote(
-                        message)
+                    location = server_url + '/' + '?message=%s' % urllib.quote(message)
                     response['headers']['Location'] = location
 
         supervisord = self.context.supervisord
-        rpcinterface = RootRPCInterface(
-            [('supervisor',
-              SupervisorNamespaceRPCInterface(supervisord))],
-        )
+        rpcinterface = RootRPCInterface([
+            ('supervisor', SupervisorNamespaceRPCInterface(supervisord))
+        ])
 
         processnames = []
         for group in supervisord.process_groups.values():
@@ -508,8 +481,7 @@ class StatusView(MeldView):
 
         data = []
         for groupname, processname in processnames:
-            actions = self.actions_for_process(
-                supervisord.process_groups[groupname].processes[processname])
+            actions = self.actions_for_process(supervisord.process_groups[groupname].processes[processname])
             sent_name = make_namespec(groupname, processname)
             info = rpcinterface.supervisor.getProcessInfo(sent_name)
             data.append({
@@ -535,16 +507,14 @@ class StatusView(MeldView):
             for tr_element, item in iterator:
                 status_text = tr_element.findmeld('status_text')
                 status_text.content(item['status'].lower())
-                status_text.attrib['class'] = self.css_class_for_state(
-                    item['state'])
+                status_text.attrib['class'] = self.css_class_for_state(item['state'])
 
                 info_text = tr_element.findmeld('info_text')
                 info_text.content(item['description'])
 
                 anchor = tr_element.findmeld('name_anchor')
                 processname = make_namespec(item['group'], item['name'])
-                anchor.attributes(href='tail.html?processname=%s' %
-                                       urllib.quote(processname))
+                anchor.attributes(href='tail.html?processname=%s' % urllib.quote(processname))
                 anchor.content(processname)
 
                 actions = item['actions']
@@ -555,8 +525,7 @@ class StatusView(MeldView):
                     if actionitem is None:
                         anchor.attrib['class'] = 'hidden'
                     else:
-                        anchor.attributes(href=actionitem['href'],
-                                          name=actionitem['name'])
+                        anchor.attributes(href=actionitem['href'], name=actionitem['name'])
                         anchor.content(actionitem['name'])
                         if actionitem['target']:
                             anchor.attributes(target=actionitem['target'])
@@ -667,11 +636,13 @@ class supervisor_ui_handler:
 
         viewclass = viewinfo['view']
         viewtemplate = viewinfo['template']
-        context = ViewContext(template=viewtemplate,
-                              request=request,
-                              form=form,
-                              response=response,
-                              supervisord=self.supervisord)
+        context = ViewContext(
+            template=viewtemplate,
+            request=request,
+            form=form,
+            response=response,
+            supervisord=self.supervisord,
+        )
         view = viewclass(context)
         pushproducer = request.channel.push_with_producer
         pushproducer(DeferredWebProducer(request, view))

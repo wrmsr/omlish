@@ -853,9 +853,10 @@ def do_parse(source, parser):
 
 
 def parse_xml(source):
-    """ Parse source (a filelike object) into an element tree.  If
-    html is true, use a parser that can resolve somewhat ambiguous
-    HTML into XHTML.  Otherwise use a 'normal' parser only."""
+    """
+    Parse source (a filelike object) into an element tree.  If html is true, use a parser that can resolve somewhat
+    ambiguous HTML into XHTML.  Otherwise use a 'normal' parser only.
+    """
     builder = MeldTreeBuilder()
     parser = XMLParser(target=builder)
     return do_parse(source, parser)
@@ -888,23 +889,48 @@ def _both_case(mapping):
         mapping[k.upper()] = mapping[k]
 
 
-_HTMLTAGS_UNBALANCED = {'area': 1, 'base': 1, 'basefont': 1, 'br': 1, 'col': 1,
-                        'frame': 1, 'hr': 1, 'img': 1, 'input': 1, 'isindex': 1,
-                        'link': 1, 'meta': 1, 'param': 1}
+_HTMLTAGS_UNBALANCED = {
+    'area': 1,
+    'base': 1,
+    'basefont': 1,
+    'br': 1,
+    'col': 1,
+    'frame': 1,
+    'hr': 1,
+    'img': 1,
+    'input': 1,
+    'isindex': 1,
+    'link': 1,
+    'meta': 1,
+    'param': 1,
+}
 _both_case(_HTMLTAGS_UNBALANCED)
 
-_HTMLTAGS_NOESCAPE = {'script': 1, 'style': 1}
+_HTMLTAGS_NOESCAPE = {
+    'script': 1,
+    'style': 1,
+}
 _both_case(_HTMLTAGS_NOESCAPE)
 
-_HTMLATTRS_BOOLEAN = {'selected': 1, 'checked': 1, 'compact': 1, 'declare': 1,
-                      'defer': 1, 'disabled': 1, 'ismap': 1, 'multiple': 1,
-                      'nohref': 1, 'noresize': 1, 'noshade': 1, 'nowrap': 1}
+_HTMLATTRS_BOOLEAN = {
+    'selected': 1,
+    'checked': 1,
+    'compact': 1,
+    'declare': 1,
+    'defer': 1,
+    'disabled': 1,
+    'ismap': 1,
+    'multiple': 1,
+    'nohref': 1,
+    'noresize': 1,
+    'noshade': 1,
+    'nowrap': 1,
+}
 _both_case(_HTMLATTRS_BOOLEAN)
 
 
 def _write_html(write, node, encoding, namespaces, depth=-1, maxdepth=None):
-    """ Walk 'node', calling 'write' with bytes(?).
-    """
+    """ Walk 'node', calling 'write' with bytes(?). """
     if encoding is None:
         encoding = 'utf-8'
 
@@ -985,8 +1011,7 @@ def _write_html(write, node, encoding, namespaces, depth=-1, maxdepth=None):
             if maxdepth is not None:
                 depth = depth + 1
                 if depth < maxdepth:
-                    _write_html(write, child, encoding, namespaces, depth,
-                                maxdepth)
+                    _write_html(write, child, encoding, namespaces, depth, maxdepth)
                 elif depth == maxdepth and text:
                     write(_OMITTED_TEXT)
 
@@ -1009,13 +1034,9 @@ def _write_xml(write, node, encoding, namespaces, pipeline, xhtml=False):
         encoding = 'utf-8'
     tag = node.tag
     if tag is Comment:
-        write(_COMMENT_START +
-              _escape_cdata(node.text, encoding) +
-              _COMMENT_END)
+        write(_COMMENT_START + _escape_cdata(node.text, encoding) + _COMMENT_END)
     elif tag is ProcessingInstruction:
-        write(_PI_START +
-              _escape_cdata(node.text, encoding) +
-              _PI_END)
+        write(_PI_START + _escape_cdata(node.text, encoding) + _PI_END)
     elif tag is Replace:
         if node.structure:
             # this may produce invalid xml
@@ -1075,13 +1096,14 @@ def _write_xml(write, node, encoding, namespaces, pipeline, xhtml=False):
 
 
 def _encode_attrib(k, v, encoding):
-    return _BLANK.join((_SPACE,
-                        encode(k, encoding),
-                        _EQUAL,
-                        _QUOTE,
-                        _escape_attrib(v, encoding),
-                        _QUOTE,
-                        ))
+    return _BLANK.join((
+        _SPACE,
+        encode(k, encoding),
+        _EQUAL,
+        _QUOTE,
+        _escape_attrib(v, encoding),
+        _QUOTE,
+    ))
 
 
 # overrides to elementtree to increase speed and get entity quoting correct.
@@ -1133,14 +1155,16 @@ def _write_declaration(write, encoding):
     if not encoding:
         write(_XML_PROLOG_BEGIN + _XML_PROLOG_END)
     else:
-        write(_XML_PROLOG_BEGIN +
-              _SPACE +
-              _ENCODING +
-              _EQUAL +
-              _QUOTE +
-              as_bytes(encoding, encoding='latin1') +
-              _QUOTE +
-              _XML_PROLOG_END)
+        write(
+            _XML_PROLOG_BEGIN +
+            _SPACE +
+            _ENCODING +
+            _EQUAL +
+            _QUOTE +
+            as_bytes(encoding, encoding='latin1') +
+            _QUOTE +
+            _XML_PROLOG_END,
+        )
 
 
 def _write_doctype(write, doctype):
@@ -1148,13 +1172,24 @@ def _write_doctype(write, doctype):
     try:
         name, pubid, system = doctype
     except (ValueError, TypeError):
-        raise ValueError("doctype must be supplied as a 3-tuple in the form "
-                         "(name, pubid, system) e.g. '%s'" % doctype.xhtml)
-    write(_DOCTYPE_BEGIN + _SPACE + as_bytes(name, encoding='latin1') +
-          _SPACE + _PUBLIC + _SPACE +
-          _QUOTE + as_bytes(pubid, encoding='latin1') + _QUOTE + _SPACE +
-          _QUOTE + as_bytes(system, encoding='latin1') + _QUOTE +
-          _DOCTYPE_END)
+        raise ValueError(
+            "doctype must be supplied as a 3-tuple in the form (name, pubid, system) e.g. '%s'" % doctype.xhtml)
+    write(
+        _DOCTYPE_BEGIN +
+        _SPACE +
+        as_bytes(name, encoding='latin1') +
+        _SPACE +
+        _PUBLIC +
+        _SPACE +
+        _QUOTE +
+        as_bytes(pubid, encoding='latin1') +
+        _QUOTE +
+        _SPACE +
+        _QUOTE +
+        as_bytes(system, encoding='latin1') +
+        _QUOTE +
+        _DOCTYPE_END,
+    )
 
 
 _XML_DECL_RE = re.compile(r'<\?xml .*?\?>')
@@ -1210,8 +1245,8 @@ def sharedlineage(srcelement, tgtelement):
 
 
 def diffreduce(elements):
-    # each element in 'elements' should all have non-None meldids, and should
-    # be preordered in depth-first traversal order
+    # each element in 'elements' should all have non-None meldids, and should be preordered in depth-first traversal
+    # order
     reduced = []
     for element in elements:
         parent = element.parent
