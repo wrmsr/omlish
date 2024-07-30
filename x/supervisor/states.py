@@ -12,18 +12,24 @@ class ProcessStates:
     UNKNOWN = 1000
 
 
-STOPPED_STATES = (ProcessStates.STOPPED,
-                  ProcessStates.EXITED,
-                  ProcessStates.FATAL,
-                  ProcessStates.UNKNOWN)
+STOPPED_STATES = (
+    ProcessStates.STOPPED,
+    ProcessStates.EXITED,
+    ProcessStates.FATAL,
+    ProcessStates.UNKNOWN,
+)
 
-RUNNING_STATES = (ProcessStates.RUNNING,
-                  ProcessStates.BACKOFF,
-                  ProcessStates.STARTING)
+RUNNING_STATES = (
+    ProcessStates.RUNNING,
+    ProcessStates.BACKOFF,
+    ProcessStates.STARTING,
+)
 
-SIGNALLABLE_STATES = (ProcessStates.RUNNING,
-                      ProcessStates.STARTING,
-                      ProcessStates.STOPPING)
+SIGNALLABLE_STATES = (
+    ProcessStates.RUNNING,
+    ProcessStates.STARTING,
+    ProcessStates.STOPPING,
+)
 
 
 def getProcessStateDescription(code):

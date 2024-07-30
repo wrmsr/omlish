@@ -26,7 +26,6 @@ from .states import getProcessStateDescription
 
 @functools.total_ordering
 class Subprocess:
-
     """A class to manage a subprocess."""
 
     # Initial state; overridden by instance variables
@@ -72,10 +71,8 @@ class Subprocess:
 
     def drain(self):
         for dispatcher in self.dispatchers.values():
-            # note that we *must* call readable() for every
-            # dispatcher, as it may have side effects for a given
-            # dispatcher (eg. call handle_listener_state_change for
-            # event listener processes)
+            # note that we *must* call readable() for every dispatcher, as it may have side effects for a given
+            # dispatcher (eg. call handle_listener_state_change for event listener processes)
             if dispatcher.readable():
                 dispatcher.handle_read_event()
             if dispatcher.writable():
@@ -97,14 +94,14 @@ class Subprocess:
         dispatcher.flush()  # this must raise EPIPE if the pipe is closed
 
     def get_execv_args(self):
-        """Internal: turn a program name into a file name, using $PATH,
-        make sure it exists / is executable, raising a ProcessException
-        if not """
+        """
+        Internal: turn a program name into a file name, using $PATH, make sure it exists / is executable, raising a
+        ProcessException if not
+        """
         try:
             commandargs = shlex.split(self.config.command)
         except ValueError as e:
-            raise BadCommand("can't parse command %r: %s" % \
-                             (self.config.command, str(e)))
+            raise BadCommand("can't parse command %r: %s" % (self.config.command, str(e)))
 
         if commandargs:
             program = commandargs[0]
@@ -135,9 +132,8 @@ class Subprocess:
             else:
                 filename = found
 
-        # check_execv_args will raise a ProcessException if the execv
-        # args are bogus, we break it out into a separate options
-        # method call here only to service unit tests
+        # check_execv_args will raise a ProcessException if the execv args are bogus, we break it out into a separate
+        # options method call here only to service unit tests
         self.config.options.check_execv_args(filename, commandargs, st)
 
         return filename, commandargs
@@ -175,15 +171,15 @@ class Subprocess:
             current_state = getProcessStateDescription(self.state)
             allowable_states = ' '.join(map(getProcessStateDescription, states))
             processname = as_string(self.config.name)
-            raise AssertionError('Assertion failed for %s: %s not in %s' % (
-                processname, current_state, allowable_states))
+            raise AssertionError('Assertion failed for %s: %s not in %s' % (processname, current_state, allowable_states))  # noqa
 
     def record_spawnerr(self, msg):
         self.spawnerr = msg
         self.config.options.logger.info('spawnerr: %s' % msg)
 
     def spawn(self):
-        """Start the subprocess.  It must not be running already.
+        """
+        Start the subprocess.  It must not be running already.
 
         Return the process id.  If the fork() call fails, return None.
         """
@@ -203,8 +199,12 @@ class Subprocess:
 
         self.laststart = time.time()
 
-        self._assertInState(ProcessStates.EXITED, ProcessStates.FATAL,
-                            ProcessStates.BACKOFF, ProcessStates.STOPPED)
+        self._assertInState(
+            ProcessStates.EXITED,
+            ProcessStates.FATAL,
+            ProcessStates.BACKOFF,
+            ProcessStates.STOPPED,
+        )
 
         self.change_state(ProcessStates.STARTING)
 
@@ -224,8 +224,7 @@ class Subprocess:
                 # too many file descriptors open
                 msg = 'too many open files to spawn \'%s\'' % processname
             else:
-                msg = 'unknown error making dispatchers for \'%s\': %s' % (
-                    processname, errno.errorcode.get(code, code))
+                msg = 'unknown error making dispatchers for \'%s\': %s' % (processname, errno.errorcode.get(code, code))
             self.record_spawnerr(msg)
             self._assertInState(ProcessStates.STARTING)
             self.change_state(ProcessStates.BACKOFF)
@@ -237,11 +236,9 @@ class Subprocess:
             code = why.args[0]
             if code == errno.EAGAIN:
                 # process table full
-                msg = ('Too many processes in process table to spawn \'%s\'' %
-                       processname)
+                msg = ('Too many processes in process table to spawn \'%s\'' % processname)
             else:
-                msg = 'unknown error during fork for \'%s\': %s' % (
-                    processname, errno.errorcode.get(code, code))
+                msg = 'unknown error during fork for \'%s\': %s' % (processname, errno.errorcode.get(code, code))
             self.record_spawnerr(msg)
             self._assertInState(ProcessStates.STARTING)
             self.change_state(ProcessStates.BACKOFF)
@@ -280,14 +277,10 @@ class Subprocess:
     def _spawn_as_child(self, filename, argv):
         options = self.config.options
         try:
-            # prevent child from receiving signals sent to the
-            # parent by calling os.setpgrp to create a new process
-            # group for the child; this prevents, for instance,
-            # the case of child processes being sent a SIGINT when
-            # running supervisor in foreground mode and Ctrl-C in
-            # the terminal window running supervisord is pressed.
-            # Presumably it also prevents HUP, etc received by
-            # supervisord from being sent to children.
+            # prevent child from receiving signals sent to the parent by calling os.setpgrp to create a new process
+            # group for the child; this prevents, for instance, the case of child processes being sent a SIGINT when
+            # running supervisor in foreground mode and Ctrl-C in the terminal window running supervisord is pressed.
+            # Presumably it also prevents HUP, etc received by supervisord from being sent to children.
             options.setpgrp()
 
             self._prepare_child_fds()
@@ -341,8 +334,7 @@ class Subprocess:
                 msg = "couldn't exec %s: %s\n" % (filename, error)
                 options.write(2, 'supervisor: ' + msg)
 
-            # this point should only be reached if execve failed.
-            # the finally clause will exit the child process.
+            # this point should only be reached if execve failed. the finally clause will exit the child process.
 
         finally:
             options.write(2, 'supervisor: child process was not spawned\n')
@@ -350,8 +342,7 @@ class Subprocess:
 
     def _check_and_adjust_for_system_clock_rollback(self, test_time):
         """
-        Check if system clock has rolled backward beyond test_time. If so, set
-        affected timestamps to test_time.
+        Check if system clock has rolled backward beyond test_time. If so, set affected timestamps to test_time.
         """
         if self.state == ProcessStates.STARTING:
             if test_time < self.laststart:
@@ -384,8 +375,7 @@ class Subprocess:
             self._check_and_adjust_for_system_clock_rollback(now)
 
             if now > (self.laststopreport + 2):  # every 2 seconds
-                self.config.options.logger.info(
-                    'waiting for %s to stop' % as_string(self.config.name))
+                self.config.options.logger.info('waiting for %s to stop' % as_string(self.config.name))
                 self.laststopreport = now
 
     def give_up(self):
@@ -396,35 +386,32 @@ class Subprocess:
         self.change_state(ProcessStates.FATAL)
 
     def kill(self, sig):
-        """Send a signal to the subprocess with the intention to kill
-        it (to make it exit).  This may or may not actually kill it.
+        """
+        Send a signal to the subprocess with the intention to kill it (to make it exit).  This may or may not actually
+        kill it.
 
-        Return None if the signal was sent, or an error message string
-        if an error occurred or if the subprocess is not running.
+        Return None if the signal was sent, or an error message string if an error occurred or if the subprocess is not
+        running.
         """
         now = time.time()
         options = self.config.options
 
         processname = as_string(self.config.name)
-        # If the process is in BACKOFF and we want to stop or kill it, then
-        # BACKOFF -> STOPPED.  This is needed because if startretries is a
-        # large number and the process isn't starting successfully, the stop
-        # request would be blocked for a long time waiting for the retries.
+        # If the process is in BACKOFF and we want to stop or kill it, then BACKOFF -> STOPPED.  This is needed because
+        # if startretries is a large number and the process isn't starting successfully, the stop request would be
+        # blocked for a long time waiting for the retries.
         if self.state == ProcessStates.BACKOFF:
-            msg = ('Attempted to kill %s, which is in BACKOFF state.' %
-                   processname)
+            msg = ('Attempted to kill %s, which is in BACKOFF state.' % processname)
             options.logger.debug(msg)
             self.change_state(ProcessStates.STOPPED)
             return None
 
         if not self.pid:
-            msg = ("attempted to kill %s with sig %s but it wasn't running" %
-                   (processname, signame(sig)))
+            msg = ("attempted to kill %s with sig %s but it wasn't running" % (processname, signame(sig)))
             options.logger.debug(msg)
             return msg
 
-        # If we're in the stopping state, then we've already sent the stop
-        # signal and this is the kill signal
+        # If we're in the stopping state, then we've already sent the stop signal and this is the kill signal
         if self.state == ProcessStates.STOPPING:
             killasgroup = self.config.killasgroup
         else:
@@ -435,20 +422,13 @@ class Subprocess:
             as_group = 'process group '
 
         options.logger.debug('killing %s (pid %s) %swith signal %s'
-                             % (processname,
-                                self.pid,
-                                as_group,
-                                signame(sig)),
-                             )
+                             % (processname, self.pid, as_group, signame(sig)))
 
         # RUNNING/STARTING/STOPPING -> STOPPING
         self.killing = True
         self.delay = now + self.config.stopwaitsecs
-        # we will already be in the STOPPING state if we're doing a
-        # SIGKILL as a result of overrunning stopwaitsecs
-        self._assertInState(ProcessStates.RUNNING,
-                            ProcessStates.STARTING,
-                            ProcessStates.STOPPING)
+        # we will already be in the STOPPING state if we're doing a SIGKILL as a result of overrunning stopwaitsecs
+        self._assertInState(ProcessStates.RUNNING, ProcessStates.STARTING, ProcessStates.STOPPING)
         self.change_state(ProcessStates.STOPPING)
 
         pid = self.pid
@@ -464,14 +444,13 @@ class Subprocess:
                     msg = ('unable to signal %s (pid %s), it probably just exited '
                            'on its own: %s' % (processname, self.pid, str(exc)))
                     options.logger.debug(msg)
-                    # we could change the state here but we intentionally do
-                    # not.  we will do it during normal SIGCHLD processing.
+                    # we could change the state here but we intentionally do not.  we will do it during normal SIGCHLD
+                    # processing.
                     return None
                 raise
         except:
             tb = traceback.format_exc()
-            msg = 'unknown problem killing %s (%s):%s' % (processname,
-                                                          self.pid, tb)
+            msg = 'unknown problem killing %s (%s):%s' % (processname, self.pid, tb)
             options.logger.critical(msg)
             self.change_state(ProcessStates.UNKNOWN)
             self.killing = False
@@ -481,28 +460,22 @@ class Subprocess:
         return None
 
     def signal(self, sig):
-        """Send a signal to the subprocess, without intending to kill it.
+        """
+        Send a signal to the subprocess, without intending to kill it.
 
-        Return None if the signal was sent, or an error message string
-        if an error occurred or if the subprocess is not running.
+        Return None if the signal was sent, or an error message string if an error occurred or if the subprocess is not
+        running.
         """
         options = self.config.options
         processname = as_string(self.config.name)
         if not self.pid:
-            msg = ("attempted to send %s sig %s but it wasn't running" %
-                   (processname, signame(sig)))
+            msg = ("attempted to send %s sig %s but it wasn't running" % (processname, signame(sig)))
             options.logger.debug(msg)
             return msg
 
-        options.logger.debug('sending %s (pid %s) sig %s'
-                             % (processname,
-                                self.pid,
-                                signame(sig)),
-                             )
+        options.logger.debug('sending %s (pid %s) sig %s' % (processname, self.pid, signame(sig)))
 
-        self._assertInState(ProcessStates.RUNNING,
-                            ProcessStates.STARTING,
-                            ProcessStates.STOPPING)
+        self._assertInState(ProcessStates.RUNNING, ProcessStates.STARTING, ProcessStates.STOPPING)
 
         try:
             try:
@@ -510,17 +483,15 @@ class Subprocess:
             except OSError as exc:
                 if exc.errno == errno.ESRCH:
                     msg = ('unable to signal %s (pid %s), it probably just now exited '
-                           'on its own: %s' % (processname, self.pid,
-                                               str(exc)))
+                           'on its own: %s' % (processname, self.pid, str(exc)))
                     options.logger.debug(msg)
-                    # we could change the state here but we intentionally do
-                    # not.  we will do it during normal SIGCHLD processing.
+                    # we could change the state here but we intentionally do not.  we will do it during normal SIGCHLD
+                    # processing.
                     return None
                 raise
         except:
             tb = traceback.format_exc()
-            msg = 'unknown problem sending sig %s (%s):%s' % (
-                processname, self.pid, tb)
+            msg = 'unknown problem sending sig %s (%s):%s' % (processname, self.pid, tb)
             options.logger.critical(msg)
             self.change_state(ProcessStates.UNKNOWN)
             return msg
@@ -528,8 +499,7 @@ class Subprocess:
         return None
 
     def finish(self, pid, sts):
-        """ The process was reaped and we need to report and manage its state
-        """
+        """ The process was reaped and we need to report and manage its state """
         self.drain()
 
         es, msg = decode_wait_status(sts)
@@ -553,8 +523,7 @@ class Subprocess:
         exit_expected = es in self.config.exitcodes
 
         if self.killing:
-            # likely the result of a stop request
-            # implies STOPPING -> STOPPED
+            # likely the result of a stop request implies STOPPING -> STOPPED
             self.killing = False
             self.delay = 0
             self.exitstatus = es
@@ -567,10 +536,8 @@ class Subprocess:
             else:
                 self.config.options.logger.warning(msg)
 
-
         elif too_quickly:
-            # the program did not stay up long enough to make it to RUNNING
-            # implies STARTING -> BACKOFF
+            # the program did not stay up long enough to make it to RUNNING implies STARTING -> BACKOFF
             self.exitstatus = None
             self.spawnerr = 'Exited too quickly (process log may have details)'
             msg = 'exited: %s (%s)' % (processname, msg + '; not expected')
@@ -579,16 +546,14 @@ class Subprocess:
             self.config.options.logger.warning(msg)
 
         else:
-            # this finish was not the result of a stop request, the
-            # program was in the RUNNING state but exited
-            # implies RUNNING -> EXITED normally but see next comment
+            # this finish was not the result of a stop request, the program was in the RUNNING state but exited implies
+            # RUNNING -> EXITED normally but see next comment
             self.delay = 0
             self.backoff = 0
             self.exitstatus = es
 
-            # if the process was STARTING but a system time change causes
-            # self.laststart to be in the future, the normal STARTING->RUNNING
-            # transition can be subverted so we perform the transition here.
+            # if the process was STARTING but a system time change causes self.laststart to be in the future, the normal
+            # STARTING->RUNNING transition can be subverted so we perform the transition here.
             if self.state == ProcessStates.STARTING:
                 self.change_state(ProcessStates.RUNNING)
 
@@ -611,12 +576,10 @@ class Subprocess:
         self.pipes = {}
         self.dispatchers = {}
 
-        # if we died before we processed the current event (only happens
-        # if we're an event listener), notify the event system that this
-        # event was rejected so it can be processed again.
+        # if we died before we processed the current event (only happens if we're an event listener), notify the event
+        # system that this event was rejected so it can be processed again.
         if self.event is not None:
-            # Note: this should only be true if we were in the BUSY
-            # state when finish() was called.
+            # Note: this should only be true if we were in the BUSY state when finish() was called.
             events.notify(events.EventRejectedEvent(self, self.event))
             self.event = None
 
@@ -634,13 +597,10 @@ class Subprocess:
         return self.config.priority == other.config.priority
 
     def __repr__(self):
-        # repr can't return anything other than a native string,
-        # but the name might be unicode - a problem on Python 2.
+        # repr can't return anything other than a native string, but the name might be unicode - a problem on Python 2.
         name = self.config.name
         return '<Subprocess at %s with name %s in state %s>' % (
-            id(self),
-            name,
-            getProcessStateDescription(self.get_state()))
+            id(self), name, getProcessStateDescription(self.get_state()))
 
     def get_state(self):
         return self.state
@@ -676,36 +636,29 @@ class Subprocess:
         processname = as_string(self.config.name)
         if state == ProcessStates.STARTING:
             if now - self.laststart > self.config.startsecs:
-                # STARTING -> RUNNING if the proc has started
-                # successfully and it has stayed up for at least
+                # STARTING -> RUNNING if the proc has started successfully and it has stayed up for at least
                 # proc.config.startsecs,
                 self.delay = 0
                 self.backoff = 0
                 self._assertInState(ProcessStates.STARTING)
                 self.change_state(ProcessStates.RUNNING)
-                msg = (
-                        'entered RUNNING state, process has stayed up for '
-                        '> than %s seconds (startsecs)' % self.config.startsecs)
+                msg = ('entered RUNNING state, process has stayed up for '
+                       '> than %s seconds (startsecs)' % self.config.startsecs)
                 logger.info('success: %s %s' % (processname, msg))
 
         if state == ProcessStates.BACKOFF:
             if self.backoff > self.config.startretries:
-                # BACKOFF -> FATAL if the proc has exceeded its number
-                # of retries
+                # BACKOFF -> FATAL if the proc has exceeded its number of retries
                 self.give_up()
-                msg = ('entered FATAL state, too many start retries too '
-                       'quickly')
+                msg = ('entered FATAL state, too many start retries too quickly')
                 logger.info('gave up: %s %s' % (processname, msg))
 
         elif state == ProcessStates.STOPPING:
             time_left = self.delay - now
             if time_left <= 0:
-                # kill processes which are taking too long to stop with a final
-                # sigkill.  if this doesn't kill it, the process will be stuck
-                # in the STOPPING state forever.
-                self.config.options.logger.warning(
-                    'killing \'%s\' (%s) with SIGKILL' % (processname,
-                                                          self.pid))
+                # kill processes which are taking too long to stop with a final sigkill.  if this doesn't kill it, the
+                # process will be stuck in the STOPPING state forever.
+                self.config.options.logger.warning('killing \'%s\' (%s) with SIGKILL' % (processname, self.pid))
                 self.kill(signal.SIGKILL)
 
 
@@ -717,20 +670,15 @@ class FastCGISubprocess(Subprocess):
         self.fcgi_sock = None
 
     def before_spawn(self):
-        """
-        The FastCGI socket needs to be created by the parent before we fork
-        """
+        """The FastCGI socket needs to be created by the parent before we fork."""
         if self.group is None:
             raise NotImplementedError('No group set for FastCGISubprocess')
         if not hasattr(self.group, 'socket_manager'):
-            raise NotImplementedError('No SocketManager set for '
-                                      '%s:%s' % (self.group, dir(self.group)))
+            raise NotImplementedError('No SocketManager set for %s:%s' % (self.group, dir(self.group)))
         self.fcgi_sock = self.group.socket_manager.get_socket()
 
     def spawn(self):
-        """
-        Overrides Subprocess.spawn() so we can hook in before it happens
-        """
+        """Overrides Subprocess.spawn() so we can hook in before it happens."""
         self.before_spawn()
         pid = Subprocess.spawn(self)
         if pid is None:
@@ -739,16 +687,12 @@ class FastCGISubprocess(Subprocess):
         return pid
 
     def after_finish(self):
-        """
-        Releases reference to FastCGI socket when process is reaped
-        """
+        """Releases reference to FastCGI socket when process is reaped."""
         # Remove object reference to decrement the reference count
         self.fcgi_sock = None
 
     def finish(self, pid, sts):
-        """
-        Overrides Subprocess.finish() so we can hook in after it happens
-        """
+        """Overrides Subprocess.finish() so we can hook in after it happens."""
         retval = Subprocess.finish(self, pid, sts)
         self.after_finish()
         return retval
@@ -786,11 +730,9 @@ class ProcessGroupBase:
         return self.config.priority == other.config.priority
 
     def __repr__(self):
-        # repr can't return anything other than a native string,
-        # but the name might be unicode - a problem on Python 2.
+        # repr can't return anything other than a native string, but the name might be unicode - a problem on Python 2.
         name = self.config.name
-        return '<%s instance at %s named %s>' % (self.__class__, id(self),
-                                                 name)
+        return '<%s instance at %s named %s>' % (self.__class__, id(self), name)
 
     def removelogs(self):
         for process in self.processes.values():
@@ -819,8 +761,7 @@ class ProcessGroupBase:
 
     def get_unstopped_processes(self):
         """ Processes which aren't in a state that is considered 'stopped' """
-        return [x for x in self.processes.values() if x.get_state() not in
-                STOPPED_STATES]
+        return [x for x in self.processes.values() if x.get_state() not in STOPPED_STATES]
 
     def get_dispatchers(self):
         dispatchers = {}
@@ -843,17 +784,13 @@ class FastCGIProcessGroup(ProcessGroup):
     def __init__(self, config, **kwargs):
         ProcessGroup.__init__(self, config)
         sockManagerKlass = kwargs.get('socketManager', SocketManager)
-        self.socket_manager = sockManagerKlass(config.socket_config,
-                                               logger=config.options.logger)
-        # It's not required to call get_socket() here but we want
-        # to fail early during start up if there is a config error
+        self.socket_manager = sockManagerKlass(config.socket_config, logger=config.options.logger)
+        # It's not required to call get_socket() here but we want to fail early during start up if there is a config
+        # error
         try:
             self.socket_manager.get_socket()
         except Exception as e:
-            raise ValueError(
-                'Could not create FastCGI socket %s: %s' % (
-                    self.socket_manager.config(), e),
-            )
+            raise ValueError('Could not create FastCGI socket %s: %s' % (self.socket_manager.config(), e))
 
 
 class EventListenerPool(ProcessGroupBase):
@@ -877,8 +814,7 @@ class EventListenerPool(ProcessGroupBase):
         dispatch_capable = False
         for process in processes:
             process.transition()
-            # this is redundant, we do it in _dispatchEvent too, but we
-            # want to reduce function call overhead
+            # this is redundant, we do it in _dispatchEvent too, but we want to reduce function call overhead
             if process.state == ProcessStates.RUNNING:
                 if process.listener_state == EventListenerStates.READY:
                     dispatch_capable = True
@@ -887,8 +823,7 @@ class EventListenerPool(ProcessGroupBase):
                 now = time.time()
 
                 if now < self.last_dispatch:
-                    # The system clock appears to have moved backward
-                    # Reset self.last_dispatch accordingly
+                    # The system clock appears to have moved backward Reset self.last_dispatch accordingly
                     self.last_dispatch = now
 
                 if now - self.last_dispatch < self.dispatch_throttle:
@@ -904,15 +839,13 @@ class EventListenerPool(ProcessGroupBase):
             event = self.event_buffer.pop(0)
             ok = self._dispatchEvent(event)
             if not ok:
-                # if we can't dispatch an event, rebuffer it and stop trying
-                # to process any further events in the buffer
+                # if we can't dispatch an event, rebuffer it and stop trying to process any further events in the buffer
                 self._acceptEvent(event, head=True)
                 break
         self.last_dispatch = time.time()
 
     def _acceptEvent(self, event, head=False):
-        # events are required to be instances
-        # this has a side effect to fail with an attribute error on 'old style'
+        # events are required to be instances this has a side effect to fail with an attribute error on 'old style'
         # classes
         processname = as_string(self.config.name)
         if not hasattr(event, 'serial'):
@@ -924,16 +857,14 @@ class EventListenerPool(ProcessGroupBase):
         else:
             self.config.options.logger.debug(
                 'rebuffering event %s for pool %s (buf size=%d, max=%d)' % (
-                    (event.serial, processname, len(self.event_buffer),
-                     self.config.buffer_size)))
+                    (event.serial, processname, len(self.event_buffer), self.config.buffer_size)))
 
         if len(self.event_buffer) >= self.config.buffer_size:
             if self.event_buffer:
                 # discard the oldest event
                 discarded_event = self.event_buffer.pop(0)
                 self.config.options.logger.error(
-                    'pool %s event buffer overflowed, discarding event %s' % (
-                        (processname, discarded_event.serial)))
+                    'pool %s event buffer overflowed, discarding event %s' % ((processname, discarded_event.serial)))
         if head:
             self.event_buffer.insert(0, event)
         else:
@@ -951,8 +882,7 @@ class EventListenerPool(ProcessGroupBase):
                 try:
                     event_type = event.__class__
                     serial = event.serial
-                    envelope = self._eventEnvelope(event_type, serial,
-                                                   pool_serial, payload)
+                    envelope = self._eventEnvelope(event_type, serial, pool_serial, payload)
                     process.write(as_bytes(envelope))
                 except OSError as why:
                     if why.args[0] != errno.EPIPE:
@@ -960,15 +890,12 @@ class EventListenerPool(ProcessGroupBase):
 
                     self.config.options.logger.debug(
                         'epipe occurred while sending event %s '
-                        'to listener %s, listener state unchanged' % (
-                            event.serial, processname))
+                        'to listener %s, listener state unchanged' % (event.serial, processname))
                     continue
 
                 process.listener_state = EventListenerStates.BUSY
                 process.event = event
-                self.config.options.logger.debug(
-                    'event %s sent to listener %s' % (
-                        event.serial, processname))
+                self.config.options.logger.debug('event %s sent to listener %s' % (event.serial, processname))
                 return True
 
         return False
@@ -986,9 +913,16 @@ class EventListenerPool(ProcessGroupBase):
             'len': payload_len,
             'payload': payload,
         }
-        return ('ver:%(ver)s server:%(sid)s serial:%(serial)s '
-                'pool:%(pool_name)s poolserial:%(pool_serial)s '
-                'eventname:%(event_name)s len:%(len)s\n%(payload)s' % D)
+        return (
+                'ver:%(ver)s '
+                'server:%(sid)s '
+                'serial:%(serial)s '
+                'pool:%(pool_name)s '
+                'poolserial:%(pool_serial)s '
+                'eventname:%(event_name)s '
+                'len:%(len)s\n%(payload)s'
+                % D
+        )
 
     def _subscribe(self):
         for event_type in self.config.pool_events:
