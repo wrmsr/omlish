@@ -93,9 +93,13 @@ async def test_lazy_fn2():
 
 
 @pytest.mark.asyncio
+@pytest.mark.drain_asyncio
 async def test_lazy_fn3(
-        asyncio_drainer,  # noqa
+        # asyncio_drainer,  # noqa
 ):
+    # from ...diag.threads import create_thread_dump_thread
+    # create_thread_dump_thread(start=True)
+
     c = 0
 
     def fn():
