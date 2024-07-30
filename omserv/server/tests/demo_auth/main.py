@@ -6,6 +6,7 @@ TODO:
 https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login
 """
 import contextvars
+import datetime
 import functools
 import importlib.resources
 import logging
@@ -20,6 +21,7 @@ from omlish import http as hu
 from omlish import lang
 from omlish import logs
 from omlish.asyncs import anyio as anu
+from omlish.http import sessions
 from omlish.http.asgi import finish_response
 from omlish.http.asgi import read_body
 from omlish.http.asgi import read_form_body
@@ -35,8 +37,6 @@ from .j2 import load_templates
 from .j2 import render_template
 from .passwords import check_password_hash
 from .passwords import generate_password_hash
-from .sessions import COOKIE_SESSION_STORE
-from .sessions import Session
 from .users import USERS
 from .users import User
 
@@ -53,7 +53,19 @@ SCOPE: contextvars.ContextVar[dict[str, ta.Any]] = contextvars.ContextVar('scope
 ##
 
 
-SESSION: contextvars.ContextVar[Session] = contextvars.ContextVar('session')
+COOKIE_SESSION_STORE = sessions.CookieSessionStore(
+    marshal=sessions.SessionMarshal(
+        signer=sessions.Signer(sessions.Signer.Config(
+            secret_key='secret-key-goes-here',  # noqa
+        )),
+    ),
+    config=sessions.CookieSessionStore.Config(
+        max_age=datetime.timedelta(days=31),
+    ),
+)
+
+
+SESSION: contextvars.ContextVar[sessions.Session] = contextvars.ContextVar('session')
 
 
 def with_session(fn):

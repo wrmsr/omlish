@@ -70,7 +70,7 @@ def test_compression_snappy() -> None:
     fnpairs.Yaml,
     fnpairs.YamlUnsafe,
 ])
-def test_object(cls: type[fnpairs.Object]) -> None:
+def test_object(cls: type[fnpairs.Object_]) -> None:
     fp = cls()
     o = {'hi': {'i am': [123, 4.56, False, None, {'a': 'test'}]}}
     e = fp.forward(o)

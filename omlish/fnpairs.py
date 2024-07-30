@@ -308,15 +308,20 @@ class Struct(FnPair[tuple, bytes]):
 ##
 
 
-class Object(FnPair[ta.Any, T], lang.Abstract):  # noqa
+Object: ta.TypeAlias = FnPair[ta.Any, T]
+ObjectStr: ta.TypeAlias = Object[str]
+ObjectBytes: ta.TypeAlias = Object[bytes]
+
+
+class Object_(FnPair[ta.Any, T], lang.Abstract):  # noqa
     pass
 
 
-class ObjectStr(Object[str], lang.Abstract):  # noqa
+class ObjectStr_(Object_[str], lang.Abstract):  # noqa
     pass
 
 
-class ObjectBytes(Object[bytes], lang.Abstract):  # noqa
+class ObjectBytes_(Object_[bytes], lang.Abstract):  # noqa
     pass
 
 
@@ -325,7 +330,7 @@ class ObjectBytes(Object[bytes], lang.Abstract):  # noqa
 
 @_register_extension('pkl')
 @dc.dataclass(frozen=True)
-class Pickle(ObjectBytes):
+class Pickle(ObjectBytes_):
     protocol: int | None = None
 
     def forward(self, f: ta.Any) -> bytes:
@@ -337,7 +342,7 @@ class Pickle(ObjectBytes):
 
 @_register_extension('json')
 @dc.dataclass(frozen=True)
-class Json(ObjectStr):
+class Json(ObjectStr_):
     indent: int | str | None = dc.field(default=None, kw_only=True)
     separators: tuple[str, str] | None = dc.field(default=None, kw_only=True)
 
@@ -363,7 +368,7 @@ class JsonLines(FnPair[ta.Sequence[ta.Any], str]):
 
 
 @_register_extension('toml')
-class Toml(ObjectStr):
+class Toml(ObjectStr_):
     def forward(self, f: ta.Any) -> str:
         raise NotImplementedError
 
@@ -376,7 +381,7 @@ class Toml(ObjectStr):
 
 @_register_extension('cpkl')
 @dc.dataclass(frozen=True)
-class Cloudpickle(ObjectBytes):
+class Cloudpickle(ObjectBytes_):
     protocol: int | None = None
 
     def forward(self, f: ta.Any) -> bytes:
@@ -387,7 +392,7 @@ class Cloudpickle(ObjectBytes):
 
 
 @_register_extension('yml', 'yaml')
-class Yaml(ObjectStr):
+class Yaml(ObjectStr_):
     def forward(self, f: ta.Any) -> str:
         return _yaml.dump(f)
 
@@ -395,7 +400,7 @@ class Yaml(ObjectStr):
         return _yaml.safe_load(t)
 
 
-class YamlUnsafe(ObjectStr):
+class YamlUnsafe(ObjectStr_):
     def forward(self, f: ta.Any) -> str:
         return _yaml.dump(f)
 
