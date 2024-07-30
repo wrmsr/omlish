@@ -1,12 +1,13 @@
 import shutil
 import sys
 import typing as ta
+import sysconfig
 
 import pytest
 
-from ... import lang
+from ... import lang  # noqa
 from ..testing import can_import
-from .plugins.managermarks import ManagerMark
+from .plugins.managermarks import ManagerMark  # noqa
 
 
 def skip_if_cant_import(module: str, *args, **kwargs):
@@ -27,8 +28,12 @@ def skip_if_not_single():
     raise NotImplementedError
 
 
-class skip_if_nogil(ManagerMark):  # noqa
-    def __call__(self, item: pytest.Function) -> ta.Iterator[None]:
-        if not lang.is_gil_enabled():
-            pytest.skip('requires gil')
-        yield
+def skip_if_nogil():
+    return pytest.mark.skipif(sysconfig.get_config_var('Py_GIL_DISABLED'), reason='requires gil build')
+
+
+# class skip_if_nogil(ManagerMark):  # noqa
+#     def __call__(self, item: pytest.Function) -> ta.Iterator[None]:
+#         if not lang.is_gil_enabled():
+#             pytest.skip('requires gil')
+#         yield
