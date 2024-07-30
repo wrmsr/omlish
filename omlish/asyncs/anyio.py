@@ -1,4 +1,9 @@
 """
+TODO:
+ - bane
+  - owned lock
+  - async once
+
 lookit:
  - https://github.com/davidbrochart/sqlite-anyio/blob/a3ba4c6ef0535b14a5a60071fcd6ed565a514963/sqlite_anyio/sqlite.py
  - https://github.com/rafalkrupinski/ratelimit-anyio/blob/2910a8a3d6fa54ed17ee6ba457686c9f7a4c4beb/src/ratelimit_anyio/__init__.py
@@ -84,3 +89,64 @@ async def gather(*fns: ta.Callable[..., ta.Awaitable[T]], take_first: bool = Fal
 
 async def first(*fns: ta.Callable[..., ta.Awaitable[T]], **kwargs: ta.Any) -> list[lang.Maybe[T]]:
     return await gather(*fns, take_first=True, **kwargs)
+
+
+##
+
+
+class Once:
+    def __init__(self) -> None:
+        super().__init__()
+        self._done = False
+        self._lock = anyio.Lock()
+
+    async def do(self, fn: ta.Callable[[], ta.Awaitable[None]]) -> bool:
+        if self._done:
+            return False
+        async with self._lock:
+            if self._done:
+                return False  # type: ignore
+            try:
+                await fn()
+            finally:
+                self._done = True
+            return True
+
+
+class Lazy(ta.Generic[T]):
+    def __init__(self) -> None:
+        super().__init__()
+        self._once = Once()
+        self._v: lang.Maybe[T] = lang.empty()
+
+    def peek(self) -> lang.Maybe[T]:
+        return self._v
+
+    def set(self, v: T) -> None:
+        self._v = lang.just(v)
+
+    async def get(self, fn: ta.Callable[[], ta.Awaitable[T]]) -> T:
+        async def do():
+            self._v = lang.just(await fn())
+        await self._once.do(do)
+        return self._v.must()
+
+
+class LazyFn(ta.Generic[T]):
+    def __init__(self, fn: ta.Callable[[], ta.Awaitable[T]]) -> None:
+        super().__init__()
+        self._fn = fn
+        self._once = Once()
+        self._v: lang.Maybe[T] = lang.empty()
+
+    def peek(self) -> lang.Maybe[T]:
+        return self._v
+
+    def set(self, v: T) -> None:
+        self._v = lang.just(v)
+
+    async def get(self) -> T:
+        async def do():
+            self._v = lang.just(await self._fn())
+        await self._once.do(do)
+        return self._v.must()

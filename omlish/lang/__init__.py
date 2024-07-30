@@ -92,6 +92,7 @@ from .exceptions import (  # noqa
 from .functions import (  # noqa
     Args,
     VoidError,
+    as_async,
     constant,
     finally_,
     identity,
