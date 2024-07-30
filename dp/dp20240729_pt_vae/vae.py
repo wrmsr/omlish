@@ -67,9 +67,9 @@ def _main():
     test_ds = torch.utils.data.TensorDataset(torch.tensor(x_test))
     test_loader = torch.utils.data.DataLoader(test_ds, batch_size=batch_size, shuffle=True)
 
-    class VAE(nn.Module):
+    class Vae(nn.Module):
         def __init__(self, x_dim, h_dim1, h_dim2, z_dim):
-            super(VAE, self).__init__()
+            super().__init__()
 
             # encoder part
             self.fc1 = nn.Linear(x_dim, h_dim1)
@@ -102,7 +102,7 @@ def _main():
             return self.decoder(z), mu, log_var
 
     # build model
-    vae = VAE(x_dim=784, h_dim1=512, h_dim2=256, z_dim=2)
+    vae = Vae(x_dim=784, h_dim1=512, h_dim2=256, z_dim=2)
     if torch.cuda.is_available():
         vae.cuda()
 
