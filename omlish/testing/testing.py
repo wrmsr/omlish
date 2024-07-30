@@ -1,6 +1,7 @@
 import functools
 import importlib
 import os
+import sys
 import threading
 import time
 import traceback
@@ -100,3 +101,12 @@ def xfail(fn):
             traceback.print_exc()
 
     return inner
+
+
+def raise_in_thread(thr: threading.Thread, exc: BaseException | type[BaseException]) -> None:
+    if sys.implementation.name != 'cpython':
+        raise RuntimeError(sys.implementation.name)
+
+    # https://github.com/python/cpython/blob/37ba7531a59a0a2b240a86f7e2adfb1b1cd8ac0c/Lib/test/test_threading.py#L182
+    import ctypes as ct
+    ct.pythonapi.PyThreadState_SetAsyncExc(ct.c_ulong(thr.ident), ct.py_object(exc))  # type: ignore
