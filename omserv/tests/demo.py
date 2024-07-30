@@ -100,15 +100,8 @@ if __name__ == '__main__':
     # _backend = 'asyncio'
     _backend = 'trio'
 
-    match _backend:
-        case 'asyncio':
-            anyio.run(_a_main, backend='asyncio')
+    if _backend == 'trio':
+        from omlish.testing.pydevd import patch_for_trio_asyncio  # noqa
+        patch_for_trio_asyncio()  # noqa
 
-        case 'trio':
-            from omlish.testing.pydevd import patch_for_trio_asyncio
-            patch_for_trio_asyncio()  # noqa
-
-            anyio.run(_a_main, backend='trio')
-
-        case _:
-            raise RuntimeError(f'Unknown backend: {_backend}')
+    anyio.run(_a_main, backend=_backend)
