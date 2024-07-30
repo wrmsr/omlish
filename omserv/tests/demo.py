@@ -57,6 +57,7 @@ async def get_procstats() -> ta.Mapping[str, ta.Any]:
     return dc.asdict(procstats.get_psutil_procstats())
 
 
+@au.with_adapter_loop(wait=True)
 async def _a_main() -> None:
     engine = sql.async_adapt(saa.create_async_engine(get_db_url(), echo=True))
     await recreate_all(engine)
@@ -107,7 +108,7 @@ if __name__ == '__main__':
             from omlish.testing.pydevd import patch_for_trio_asyncio
             patch_for_trio_asyncio()  # noqa
 
-            anyio.run(au.with_trio_asyncio_loop(_a_main, wait=True), backend='trio')
+            anyio.run(_a_main, backend='trio')
 
         case _:
             raise RuntimeError(f'Unknown backend: {_backend}')
