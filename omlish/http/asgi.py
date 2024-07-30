@@ -92,10 +92,10 @@ async def send_response(
 
 
 async def redirect_response(
-        send,
+        send: AsgiSend,
         url: str,
         headers: ta.Sequence[tuple[bytes, bytes]] | None = None,
-):
+) -> None:
     log.info('Redirecting to %s', url)
     await send({
         'type': 'http.response.start',
@@ -115,7 +115,7 @@ async def redirect_response(
 ##
 
 
-async def read_body(recv) -> bytes:
+async def read_body(recv: AsgiRecv) -> bytes:
     body = b''
     more_body = True
     while more_body:
@@ -125,7 +125,7 @@ async def read_body(recv) -> bytes:
     return body
 
 
-async def read_form_body(recv) -> dict[bytes, bytes]:
+async def read_form_body(recv: AsgiRecv) -> dict[bytes, bytes]:
     body = await read_body(recv)
     dct = urllib.parse.parse_qs(body)  # noqa
     return {k: check.single(v) for k, v in dct.items()}
