@@ -661,59 +661,6 @@ class Subprocess:
                 self.kill(signal.SIGKILL)
 
 
-class FastCGISubprocess(Subprocess):
-    """Extends Subprocess class to handle FastCGI subprocesses"""
-
-    def __init__(self, config):
-        Subprocess.__init__(self, config)
-        self.fcgi_sock = None
-
-    def before_spawn(self):
-        """The FastCGI socket needs to be created by the parent before we fork."""
-        if self.group is None:
-            raise NotImplementedError('No group set for FastCGISubprocess')
-        if not hasattr(self.group, 'socket_manager'):
-            raise NotImplementedError('No SocketManager set for %s:%s' % (self.group, dir(self.group)))
-        self.fcgi_sock = self.group.socket_manager.get_socket()
-
-    def spawn(self):
-        """Overrides Subprocess.spawn() so we can hook in before it happens."""
-        self.before_spawn()
-        pid = Subprocess.spawn(self)
-        if pid is None:
-            # Remove object reference to decrement the reference count on error
-            self.fcgi_sock = None
-        return pid
-
-    def after_finish(self):
-        """Releases reference to FastCGI socket when process is reaped."""
-        # Remove object reference to decrement the reference count
-        self.fcgi_sock = None
-
-    def finish(self, pid, sts):
-        """Overrides Subprocess.finish() so we can hook in after it happens."""
-        retval = Subprocess.finish(self, pid, sts)
-        self.after_finish()
-        return retval
-
-    def _prepare_child_fds(self):
-        """
-        Overrides Subprocess._prepare_child_fds()
-        The FastCGI socket needs to be set to file descriptor 0 in the child
-        """
-        sock_fd = self.fcgi_sock.fileno()
-
-        options = self.config.options
-        options.dup2(sock_fd, 0)
-        options.dup2(self.pipes['child_stdout'], 1)
-        if self.config.redirect_stderr:
-            options.dup2(self.pipes['child_stdout'], 2)
-        else:
-            options.dup2(self.pipes['child_stderr'], 2)
-        for i in range(3, options.minfds):
-            options.close_fd(i)
-
-
 @functools.total_ordering
 class ProcessGroupBase:
     def __init__(self, config):
@@ -776,20 +723,6 @@ class ProcessGroup(ProcessGroupBase):
     def transition(self):
         for proc in self.processes.values():
             proc.transition()
-
-
-class FastCGIProcessGroup(ProcessGroup):
-
-    def __init__(self, config, **kwargs):
-        ProcessGroup.__init__(self, config)
-        sockManagerKlass = kwargs.get('socketManager', SocketManager)
-        self.socket_manager = sockManagerKlass(config.socket_config, logger=config.options.logger)
-        # It's not required to call get_socket() here but we want to fail early during start up if there is a config
-        # error
-        try:
-            self.socket_manager.get_socket()
-        except Exception as e:
-            raise ValueError('Could not create FastCGI socket %s: %s' % (self.socket_manager.config(), e))
 
 
 class EventListenerPool(ProcessGroupBase):

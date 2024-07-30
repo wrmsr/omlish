@@ -683,19 +683,13 @@ class ServerOptions(Options):
             group_processes = []
             for program in programs:
                 program_section = 'program:%s' % program
-                fcgi_section = 'fcgi-program:%s' % program
-                if program_section not in all_sections and fcgi_section not in all_sections:
-                    raise ValueError('[%s] names unknown program or fcgi-program %s' % (section, program))
-                if program_section in all_sections and fcgi_section in all_sections:
-                    raise ValueError('[%s] name %s is ambiguous (exists as program and fcgi-program)' % (section, program))  # noqa
-                section = program_section if program_section in all_sections else fcgi_section
-                homogeneous_exclude.append(section)
-                processes = self.processes_from_section(parser, section, group_name, ProcessConfig)
+                if program_section not in all_sections:
+                    raise ValueError('[%s] names unknown program %s' % (section, program))
+                homogeneous_exclude.append(program_section)
+                processes = self.processes_from_section(parser, program_section, group_name, ProcessConfig)
 
                 group_processes.extend(processes)
-            groups.append(
-                ProcessGroupConfig(self, group_name, priority, group_processes),
-            )
+            groups.append(ProcessGroupConfig(self, group_name, priority, group_processes))
 
         # process "normal" homogeneous groups
         for section in all_sections:
@@ -730,8 +724,7 @@ class ServerOptions(Options):
             pool_event_names = [x.upper() for x in list_of_strings(get(section, 'events', ''))]
             pool_event_names = set(pool_event_names)
             if not pool_event_names:
-                raise ValueError('[%s] section requires an "events" line' %
-                                 section)
+                raise ValueError('[%s] section requires an "events" line' % section)
 
             from .events import EventTypes
             pool_events = []
@@ -761,97 +754,8 @@ class ServerOptions(Options):
                 ),
             )
 
-        # process fastcgi homogeneous groups
-        for section in all_sections:
-            if ((not section.startswith('fcgi-program:')) or section in homogeneous_exclude):
-                continue
-            program_name = process_or_group_name(section.split(':', 1)[1])
-            priority = integer(get(section, 'priority', 999))
-            fcgi_expansions = {'program_name': program_name}
-
-            # find proc_uid from "user" option
-            proc_user = get(section, 'user', None)
-            if proc_user is None:
-                proc_uid = None
-            else:
-                proc_uid = name_to_uid(proc_user)
-
-            socket_backlog = get(section, 'socket_backlog', None)
-
-            if socket_backlog is not None:
-                socket_backlog = integer(socket_backlog)
-                if (socket_backlog < 1 or socket_backlog > 65535):
-                    raise ValueError('Invalid socket_backlog value %s' % socket_backlog)
-
-            socket_owner = get(section, 'socket_owner', None)
-            if socket_owner is not None:
-                try:
-                    socket_owner = colon_separated_user_group(socket_owner)
-                except ValueError:
-                    raise ValueError('Invalid socket_owner value %s' % socket_owner)
-
-            socket_mode = get(section, 'socket_mode', None)
-            if socket_mode is not None:
-                try:
-                    socket_mode = octal_type(socket_mode)
-                except (TypeError, ValueError):
-                    raise ValueError('Invalid socket_mode value %s' % socket_mode)
-
-            socket = get(section, 'socket', None, expansions=fcgi_expansions)
-            if not socket:
-                raise ValueError('[%s] section requires a "socket" line' % section)
-
-            try:
-                socket_config = self.parse_fcgi_socket(
-                    socket,
-                    proc_uid,
-                    socket_owner,
-                    socket_mode,
-                    socket_backlog,
-                )
-            except ValueError as e:
-                raise ValueError('%s in [%s] socket' % (str(e), section))
-
-            processes = self.processes_from_section(parser, section, program_name, FastCGIProcessConfig)
-            groups.append(FastCGIGroupConfig(self, program_name, priority, processes, socket_config))
-
         groups.sort()
         return groups
-
-    def parse_fcgi_socket(self, sock, proc_uid, socket_owner, socket_mode,
-                          socket_backlog):
-        if sock.startswith('unix://'):
-            path = sock[7:]
-            # Check it's an absolute path
-            if not os.path.isabs(path):
-                raise ValueError('Unix socket path %s is not an absolute path', path)
-            path = normalize_path(path)
-
-            if socket_owner is None:
-                uid = os.getuid()
-                if proc_uid is not None and proc_uid != uid:
-                    socket_owner = (proc_uid, gid_for_uid(proc_uid))
-
-            if socket_mode is None:
-                socket_mode = 0o700
-
-            return UnixStreamSocketConfig(
-                path,
-                owner=socket_owner,
-                mode=socket_mode,
-                backlog=socket_backlog,
-            )
-
-        if socket_owner is not None or socket_mode is not None:
-            raise ValueError('socket_owner and socket_mode params should only be used with a Unix domain socket')
-
-        m = re.match(r'tcp://([^\s:]+):(\d+)$', sock)
-        if m:
-            host = m.group(1)
-            port = int(m.group(2))
-            return InetStreamSocketConfig(host, port, backlog=socket_backlog)
-
-        raise ValueError('Bad socket format %s', sock)
 
     def processes_from_section(self, parser, section, group_name,
                                klass=None):
@@ -1934,26 +1838,6 @@ class EventListenerConfig(ProcessConfig):
         return dispatchers, p
 
 
-class FastCGIProcessConfig(ProcessConfig):
-
-    def make_process(self, group=None):
-        if group is None:
-            raise NotImplementedError('FastCGI programs require a group')
-        from .process import FastCGISubprocess
-        process = FastCGISubprocess(self)
-        process.group = group
-        return process
-
-    def make_dispatchers(self, proc):
-        dispatchers, p = ProcessConfig.make_dispatchers(self, proc)
-        # FastCGI child processes expect the FastCGI socket set to file descriptor 0, so supervisord cannot use stdin to
-        # communicate with the child process
-        stdin_fd = p['stdin']
-        if stdin_fd is not None:
-            dispatchers[stdin_fd].close()
-        return dispatchers, p
-
-
 class ProcessGroupConfig(Config):
     def __init__(self, options, name, priority, process_configs):
         self.options = options
@@ -2025,31 +1909,6 @@ class EventListenerPoolConfig(Config):
     def make_group(self):
         from .process import EventListenerPool
         return EventListenerPool(self)
-
-
-class FastCGIGroupConfig(ProcessGroupConfig):
-    def __init__(self, options, name, priority, process_configs, socket_config):
-        ProcessGroupConfig.__init__(
-            self,
-            options,
-            name,
-            priority,
-            process_configs,
-        )
-        self.socket_config = socket_config
-
-    def __eq__(self, other):
-        if not isinstance(other, FastCGIGroupConfig):
-            return False
-
-        if self.socket_config != other.socket_config:
-            return False
-
-        return ProcessGroupConfig.__eq__(self, other)
-
-    def make_group(self):
-        from .process import FastCGIProcessGroup
-        return FastCGIProcessGroup(self)
 
 
 def readFile(filename, offset, length):
