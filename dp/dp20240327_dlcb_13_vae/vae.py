@@ -38,6 +38,36 @@ def decode_img(a):
     return PIL.Image.fromarray(a)
 
 
+from keras.api.layers import Layer
+
+
+class KL_loss(Layer):
+    def __init__(self, z_log_var, z_mean):
+        super().__init__()
+        self.z_log_var = z_log_var
+        self.z_mean = z_mean
+
+    def call(self, y_true, y_pred):
+        # breakpoint()
+        return (0.5 * KO.sum(KO.exp(self.z_log_var) + KO.square(self.z_mean) - 1 - self.z_log_var, axis=1))
+
+
+class reconstruction_loss(Layer):
+    def call(self, y_true, y_pred):
+        # breakpoint()
+        return K.sum(K.binary_crossentropy(y_true, y_pred), axis=-1)
+
+
+class total_loss(Layer):
+    def __init__(self, kl_loss):
+        super().__init__()
+        self.kl_loss = kl_loss
+
+    def call(self, y_true, y_pred):
+        # breakpoint()
+        return self.kl_loss(y_true, y_pred) + reconstruction_loss()(y_true, y_pred)
+
+
 """
 __________________________________________________________________________________________________
  Layer (type)                Output Shape                 Param #   Connected to                  
@@ -70,18 +100,6 @@ def VariationalAutoEncoder(batch_size, latent_space_depth, num_pixels):
     z_mean = Dense(latent_space_depth, activation='linear')(encoder_hidden)
     z_log_var = Dense(latent_space_depth, activation='linear')(encoder_hidden)
 
-    def KL_loss(y_true, y_pred):
-        # breakpoint()
-        return (0.5 * KO.sum(KO.exp(z_log_var) + KO.square(z_mean) - 1 - z_log_var, axis=1))
-
-    def reconstruction_loss(y_true, y_pred):
-        # breakpoint()
-        return K.sum(K.binary_crossentropy(y_true, y_pred), axis=-1)
-
-    def total_loss(y_true, y_pred):
-        # breakpoint()
-        return KL_loss(y_true, y_pred) + reconstruction_loss(y_true, y_pred)
-
     z = Lambda(
         functools.partial(sample_z, batch_size, latent_space_depth),
         output_shape=(latent_space_depth,),
@@ -100,10 +118,11 @@ def VariationalAutoEncoder(batch_size, latent_space_depth, num_pixels):
     outputs = reconstruct_pixels(hidden)
     auto_encoder = Model(pixels, outputs)
 
+    kll = KL_loss(z_log_var, z_mean)
     auto_encoder.compile(
         optimizer=Adam(0.001),
-        loss=total_loss,
-        metrics=[KL_loss, reconstruction_loss],
+        loss=total_loss(kll),
+        metrics=[kll, reconstruction_loss()],
     )
 
     return auto_encoder, decoder
