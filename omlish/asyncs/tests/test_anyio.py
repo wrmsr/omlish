@@ -6,6 +6,7 @@ import anyio.to_thread
 import pytest
 
 from ... import lang
+from ...testing.pytest.helpers import asyncio_drainer  # noqa
 from .. import anyio as anu
 
 
@@ -91,9 +92,10 @@ async def test_lazy_fn2():
     assert c == 1
 
 
-@pytest.mark.skip('anyio hang')
 @pytest.mark.asyncio
-async def test_lazy_fn3():
+async def test_lazy_fn3(
+        asyncio_drainer,  # noqa
+):
     c = 0
 
     def fn():
