@@ -48,6 +48,7 @@ class ManagerMarksPlugin:
                 f'{n}: mark to manage {n}',
             )
 
+    @pytest.hookimpl(hookwrapper=True)
     def pytest_runtest_call(self, item):
         with contextlib.ExitStack() as es:
             for n, cls in self.mark_classes().items():
@@ -56,4 +57,4 @@ class ManagerMarksPlugin:
                 inst = cls(*m.args, **m.kwargs)
                 es.enter_context(contextlib.contextmanager(inst)(item))
 
-            item.runtest()
+            yield
