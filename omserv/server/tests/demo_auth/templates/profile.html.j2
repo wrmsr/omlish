@@ -1,20 +1,18 @@
 {% extends "base.html" %}
 
-{% block content %}
+{% from 'macros.html' import flash_messages with context %}
 
-    <h1 class="title">
-        Welcome, {{ name }}!
-    </h1>
+{% block content %}
 
     <div class="column is-4 is-offset-4">
 
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div class="notification is-danger">
-                    {{ messages[0] }}
-                </div>
-            {% endif %}
-        {% endwith %}
+        <h1 class="title">Welcome, {{ name }}!</h1>
+
+        <div class="column is-4 is-offset-4">
+
+            {{ flash_messages() }}
+
+        </div>
 
     </div>
 
