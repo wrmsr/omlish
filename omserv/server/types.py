@@ -4,13 +4,13 @@ import typing as ta
 ##
 
 
-AsgiReceiveEvent: ta.TypeAlias = dict
-AsgiSendEvent: ta.TypeAlias = dict
+AsgiReceiveEvent: ta.TypeAlias = dict[str, ta.Any]
+AsgiSendEvent: ta.TypeAlias = dict[str, ta.Any]
 
 AsgiReceiveCallable: ta.TypeAlias = ta.Callable[[], ta.Awaitable[AsgiReceiveEvent]]
 AsgiSendCallable: ta.TypeAlias = ta.Callable[[AsgiSendEvent], ta.Awaitable[None]]
 
-Scope: ta.TypeAlias = dict
+Scope: ta.TypeAlias = dict[str, ta.Any]
 AsgiFramework: ta.TypeAlias = ta.Callable[
     [
         Scope,
@@ -22,13 +22,13 @@ AsgiFramework: ta.TypeAlias = ta.Callable[
 
 LifespanScope: ta.TypeAlias = Scope
 
-HttpResponseStartEvent: ta.TypeAlias = dict
+HttpResponseStartEvent: ta.TypeAlias = dict[str, ta.Any]
 HttpScope: ta.TypeAlias = Scope
 WebsocketScope: ta.TypeAlias = Scope
 
-WebsocketAcceptEvent: ta.TypeAlias = dict
-WebsocketResponseBodyEvent: ta.TypeAlias = dict
-WebsocketResponseStartEvent: ta.TypeAlias = dict
+WebsocketAcceptEvent: ta.TypeAlias = dict[str, ta.Any]
+WebsocketResponseBodyEvent: ta.TypeAlias = dict[str, ta.Any]
+WebsocketResponseStartEvent: ta.TypeAlias = dict[str, ta.Any]
 
 
 ##
