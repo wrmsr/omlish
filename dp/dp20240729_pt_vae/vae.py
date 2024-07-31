@@ -103,7 +103,10 @@ def _main():
     # build model
     vae = Vae(
         x_dim=784,
-        h_dims=[512, 256],
+        h_dims=[
+            512,
+            # 256,
+        ],
         z_dim=2,
     )
 
