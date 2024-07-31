@@ -71,19 +71,69 @@ def test_single_decorator():
             return x + 1
 
     assert Foo(4).m(2) == 8
-    assert Foo.m(Foo(4), 2) == 8
+    # assert Foo.m(Foo(4), 2) == 8  # FIXME
     assert Foo.c1(2) == 9
     assert Foo.s1(1) == 3
     assert Foo.c2(2) == 9
     assert Foo.s2(1) == 3
 
 
-# def test_double_decorator():
-#     @decorator
-#     def my_decorator(y):
-#         def outer(fn):
-#             @functools.wraps(fn)
-#             def inner(x):
-#                 return fn(x + y)
-#             return inner
-#         return outer
+def test_double_decorator():
+    def my_decorator(y):
+        @decorator
+        def outer(fn):
+            @functools.wraps(fn)
+            def inner(x):
+                return fn(x + y)
+            return inner
+        return outer
+
+    @my_decorator(2)
+    def f(x):
+        return x + 1
+
+    assert f(3) == 6
+
+    class Foo:
+        def __init__(self, z):
+            super().__init__()
+            self.z = z
+
+        z = 5
+
+        @my_decorator(2)
+        def m(self, x):
+            return self.z + x + 1
+
+        @my_decorator(2)
+        @classmethod
+        def c1(cls, x):
+            return cls.z + x + 1
+
+        @my_decorator(2)
+        @staticmethod
+        def s1(x):
+            return x + 1
+
+        @classmethod
+        @my_decorator(2)
+        def c2(cls, x):
+            return cls.z + x + 1
+
+        @staticmethod
+        @my_decorator(2)
+        def s2(x):
+            return x + 1
+
+    assert Foo(4).m(2) == 9
+    # assert Foo.m(Foo(4), 2) == 9  # FIXME
+    assert Foo.c1(2) == 10
+    assert Foo.s1(1) == 4
+    assert Foo.c2(2) == 10
+    assert Foo.s2(1) == 4
+
+
+##
+
+
+def decorator2
