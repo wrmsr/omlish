@@ -20,7 +20,7 @@ types-pyyaml==6.0.12.20240724
 types-ujson==5.10.0.20240515
 
 black==24.4.2
-mypy==1.11.0
+mypy==1.11.1
 pipdeptree==2.23.1
 
 gprof2dot==2024.6.6
