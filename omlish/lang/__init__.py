@@ -85,7 +85,6 @@ from .descriptors import (  # noqa
     item_property,
     unwrap_func,
     unwrap_func_with_partials,
-    unwrap_method,
     unwrap_method_descriptors,
     update_wrapper_except_dict,
 )

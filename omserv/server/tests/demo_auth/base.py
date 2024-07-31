@@ -139,7 +139,7 @@ def login_required(fn):
 
         await fn(scope, recv, send)
 
-    app = lang.unwrap_method(lang.unwrap_func(fn))
+    app = lang.unwrap_func(fn)
     app.__dict__.setdefault('__asgi_marks__', []).append('login_required')
     return inner(fn)
 

@@ -3,8 +3,6 @@ import functools
 import time
 import typing as ta
 
-from .descriptors import is_method_descriptor
-
 
 T = ta.TypeVar('T')
 P = ta.ParamSpec('P')
