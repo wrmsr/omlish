@@ -130,6 +130,30 @@ def login_user(user: User, *, remember: bool = False) -> None:
 #
 
 
+class AppMarker(lang.Abstract):
+    pass
+
+
+APP_MARKERS_ATTR = '__app_markers__'
+
+
+def append_app_marker(obj: ta.Any, marker: AppMarker) -> None:
+    tgt = lang.unwrap_func(obj)
+    tgt.__dict__.setdefault(APP_MARKERS_ATTR, []).append(marker)
+
+
+def get_app_markers(obj) -> ta.Sequence[AppMarker]:
+    tgt = lang.unwrap_func(obj)
+    return tgt.__dict__.get(APP_MARKERS_ATTR, ())
+
+
+#
+
+
+class _LoginRequired(AppMarker, lang.Singleton, lang.Final):
+    pass
+
+
 def login_required(fn):
     @lang.decorator
     async def inner(fn: AsgiApp, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
@@ -139,8 +163,7 @@ def login_required(fn):
 
         await fn(scope, recv, send)
 
-    app = lang.unwrap_func(fn)
-    app.__dict__.setdefault('__asgi_marks__', []).append('login_required')
+    append_app_marker(fn, _LoginRequired())
     return inner(fn)
 
 
