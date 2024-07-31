@@ -1,6 +1,6 @@
 import os
 
-from ..secrets import load_secrets  # noqa
+from .secrets import load_secrets  # noqa
 
 
 def get_secret_db_url() -> str:
