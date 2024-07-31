@@ -136,12 +136,21 @@ def test_double_decorator():
 ##
 
 
-def decorator2(wrapper):
-    def outer(fn):
-        def inner(*args, **kwargs):
-            return wrapper(fn, *args, **kwargs)
-        return inner
-    return outer
+class decorator2:
+    def __init__(self, wrapper):
+        self._wrapper = wrapper
+        functools.update_wrapper(self, wrapper)
+
+    def __call__(self, fn):
+        return self.__class__._Descriptor(self._wrapper, fn)
+
+    class _Descriptor:
+        def __init__(self, wrapper, fn):
+            self._wrapper, self._fn = wrapper, fn
+            functools.update_wrapper(self, fn)
+
+        def __call__(self, *args, **kwargs):
+            return self._wrapper(self._fn, *args, **kwargs)
 
 
 def test_decorator2():
