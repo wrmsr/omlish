@@ -2,6 +2,8 @@
 TODO:
  - remember - just a second cookie lol
  - chrome save text boxes / login
+ - with_session / with_user / login_required as *marks* not wrappers
+  - maybe *both*, just to last-ditch validate login_required
 
 https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login
 """
