@@ -93,29 +93,39 @@ class Vae(nn.Module):
 
 @dc.dataclass(frozen=True, kw_only=True)
 class VaeData:
+    img_width: int
+    img_height: int
+    num_px: int
+
     px_shuf: ta.Sequence[int]
     px_unshuf: ta.Sequence[int]
 
-    img_width: int
-    img_height: int
+    batch_size: int
 
     train_loader: torch.utils.data.DataLoader
     test_loader: torch.utils.data.DataLoader
 
 
-def load_vae_data() -> VaeData:
+def load_vae_data(
+        *,
+        shuffle_px: bool = True,
+        batch_size: int = 250,
+) -> VaeData:
     from keras.datasets import mnist  # noqa
     (train_images, train_labels), (test_images, test_labels) = mnist.load_data()
-    img_width, img_height = train_images.shape[1:]
 
-    px_shuf = list(range(img_width * img_height))
-    random.shuffle(px_shuf)
-    px_unshuf = [f for t, f in sorted((t, f) for f, t in enumerate(px_shuf))]
+    img_width, img_height = train_images.shape[1:]
+    num_px = img_width * img_height
+
+    if shuffle_px:
+        px_shuf = list(range(num_px))
+        random.shuffle(px_shuf)
+        px_unshuf = [f for t, f in sorted(lang.renumerate(px_shuf))]
+    else:
+        px_shuf = px_unshuf = list(range(num_px))
 
     x_train, y_train = prepare(train_images, train_labels, px_shuf)
     x_test, y_test = prepare(test_images, test_labels, px_shuf)
-
-    batch_size = 250
 
     train_ds = torch.utils.data.TensorDataset(torch.tensor(x_train))
     train_loader = torch.utils.data.DataLoader(train_ds, batch_size=batch_size, shuffle=True)
@@ -124,11 +134,14 @@ def load_vae_data() -> VaeData:
     test_loader = torch.utils.data.DataLoader(test_ds, batch_size=batch_size, shuffle=True)
 
     return VaeData(
+        img_width=img_width,
+        img_height=img_height,
+        num_px=num_px,
+
         px_shuf=px_shuf,
         px_unshuf=px_unshuf,
 
-        img_width=img_width,
-        img_height=img_height,
+        batch_size=batch_size,
 
         train_loader=train_loader,
         test_loader=test_loader,

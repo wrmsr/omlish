@@ -127,8 +127,10 @@ from .iterables import (  # noqa
     asrange,
     exhaust,
     ilen,
+    itergen,
     peek,
     prodrange,
+    renumerate,
     take,
 )
 
