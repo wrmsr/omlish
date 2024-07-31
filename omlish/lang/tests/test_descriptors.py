@@ -2,6 +2,7 @@ import inspect
 
 import pytest
 
+from ..descriptors import _DECORATOR_HANDLES_UNBOUND_METHODS
 from ..descriptors import AccessForbiddenError
 from ..descriptors import access_forbidden
 from ..descriptors import attr_property
@@ -89,15 +90,16 @@ def test_single_decorator():
         def s2(x):
             return x + 1
 
-    # FIXME? Could maybe fix with __wrapped__ traversal to check if underlying is a Method, but slow and brittle...
-    assert Foo.m(Foo(4), 2) == 8
-
     f = Foo(4)
     for _ in range(2):
         assert f.m(2) == 8
 
-    assert Foo.c1(2) == 9
-    assert Foo.s1(1) == 3
+    if _DECORATOR_HANDLES_UNBOUND_METHODS:
+        assert Foo.m(Foo(4), 2) == 8
+
+    else:
+        assert Foo.c1(2) == 9
+        assert Foo.s1(1) == 3
 
     assert Foo.c2(2) == 9
     assert Foo.s2(1) == 3
