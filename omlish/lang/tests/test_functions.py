@@ -1,3 +1,5 @@
+import functools
+
 import pytest
 
 from ..functions import Args
@@ -48,3 +50,5 @@ async def test_as_async():
 
 def test_unwrap_func():
     assert unwrap_func(l := lambda: None) is l
+
+    assert unwrap_func(functools.partial(l)) is l
