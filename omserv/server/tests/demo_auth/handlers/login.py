@@ -25,6 +25,7 @@ from ..users import UserStore
 class LoginHandler(Handler_):
     def __init__(
             self,
+            *,
             templates: J2Templates,
             users: UserStore,
     ) -> None:

@@ -26,6 +26,8 @@ from omlish.http.asgi import stub_lifespan
 from ...config import Config
 from ...serving import serve
 from .base import SCOPE
+from .base import SESSION
+from .base import USER
 from .base import USER_STORE
 from .base import Handler_
 from .base import Route
@@ -85,14 +87,18 @@ def _auth_app() -> AuthApp:
         reload=True,
     ))
 
+    current_scope = lang.Func0(SCOPE.get)  # noqa
+    current_session = lang.Func0(SESSION.get)
+    current_user = lang.Func0(USER.get)
+
     handlers: list[Handler_] = [
-        IndexHandler(templates),
-        ProfileHandler(templates, USER_STORE),
-        LoginHandler(templates, USER_STORE),
-        SignupHandler(templates, USER_STORE),
+        IndexHandler(current_session=current_session, templates=templates),
+        ProfileHandler(current_user=current_user, templates=templates, users=USER_STORE),
+        LoginHandler(templates=templates, users=USER_STORE),
+        SignupHandler(templates=templates, users=USER_STORE),
         LogoutHandler(),
         FaviconHandler(),
-        TikHandler(USER_STORE),
+        TikHandler(users=USER_STORE),
     ]
 
     return AuthApp(

@@ -1,13 +1,14 @@
 import typing as ta
 
 from omlish import http as hu
+from omlish import lang
 from omlish.http.asgi import AsgiRecv
 from omlish.http.asgi import AsgiScope
 from omlish.http.asgi import AsgiSend
 from omlish.http.asgi import finish_response
 from omlish.http.asgi import start_response
+from omlish.http.sessions import Session
 
-from ..base import SESSION
 from ..base import Handler_
 from ..base import Route
 from ..base import RouteHandler
@@ -19,9 +20,12 @@ from ..j2 import J2Templates
 class IndexHandler(Handler_):
     def __init__(
             self,
+            *,
+            current_session: lang.Func0[Session],
             templates: J2Templates,
     ) -> None:
         super().__init__()
+        self._current_session = current_session
         self._templates = templates
 
     def get_route_handlers(self) -> ta.Iterable[RouteHandler]:
@@ -32,7 +36,7 @@ class IndexHandler(Handler_):
     @with_session
     @with_user
     async def handle_get_index(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
-        session = SESSION.get()
+        session = self._current_session()
 
         session['c'] = session.get('c', 0) + 1
 
