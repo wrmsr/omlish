@@ -89,12 +89,12 @@ def test_single_decorator():
         def s2(x):
             return x + 1
 
+    # FIXME? Could maybe fix with __wrapped__ traversal to check if underlying is a Method, but slow and brittle...
+    assert Foo.m(Foo(4), 2) == 8
+
     f = Foo(4)
     for _ in range(2):
         assert f.m(2) == 8
-
-    # FIXME? Could fix with __wrapped__ traversal to check if underlying is a Method, but slow and brittle...
-    # assert Foo.m(Foo(4), 2) == 8
 
     assert Foo.c1(2) == 9
     assert Foo.s1(1) == 3
@@ -110,6 +110,8 @@ def test_single_decorator():
         Foo.s2,
     ]:
         assert list(inspect.signature(fn).parameters) == ['x']
+
+    assert list(inspect.signature(Foo.m).parameters) == ['self', 'x']
 
 
 def test_double_decorator():
