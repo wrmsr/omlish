@@ -1,5 +1,6 @@
 """
 TODO:
+ - pydevd connect-back
  - logging
  - env vars, files
  - repl server
