@@ -4,6 +4,7 @@ TODO:
  - chrome save text boxes / login
  - with_session / with_user / login_required as *marks* not wrappers
   - maybe *both*, just to last-ditch validate login_required
+ - logout is POST
 
 https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login
 """
@@ -187,16 +188,6 @@ class RouteHandler(ta.NamedTuple):
     handler: AsgiApp
 
 
-ROUTE_HANDLERS: dict[Route, ta.Any] = {}
-
-
-def handle(method: str, path: str):
-    def inner(fn):
-        ROUTE_HANDLERS[Route(method, path)] = fn
-        return fn
-    return inner
-
-
 ##
 
 
@@ -227,12 +218,6 @@ class IndexHandler(Handler_):
         await finish_response(send, html)
 
 
-INDEX_HANDLER = IndexHandler()
-
-for _rh in INDEX_HANDLER.get_route_handlers():
-    handle(*_rh.route)(_rh.handler)
-
-
 #
 
 
@@ -240,39 +225,36 @@ class ProfileHandler(Handler_):
 
     def get_route_handlers(self) -> ta.Iterable[RouteHandler]:
         return [
-            RouteHandler(Route('GET', '/'), self.handle_get_index),  # noqa
+            RouteHandler(Route('GET', '/profile'), self.handle_get_profile),  # noqa
+            RouteHandler(Route('POST', '/profile'), self.handle_post_profile),  # noqa
         ]
 
+    @with_session
+    @with_user
+    @login_required
+    async def handle_get_profile(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
+        user = check.not_none(USER.get())
+        html = TEMPLATES.render(
+            'profile.html.j2',
+            name=user.name,
+            auth_token=user.auth_token or '',
+        )
+        await start_response(send, 200, hu.consts.CONTENT_TYPE_HTML_UTF8)  # noqa
+        await finish_response(send, html)
 
-@handle('GET', '/profile')
-@with_session
-@with_user
-@login_required
-async def handle_get_profile(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
-    user = check.not_none(USER.get())
-    html = TEMPLATES.render(
-        'profile.html.j2',
-        name=user.name,
-        auth_token=user.auth_token or '',
-    )
-    await start_response(send, 200, hu.consts.CONTENT_TYPE_HTML_UTF8)  # noqa
-    await finish_response(send, html)
+    @with_session
+    @with_user
+    async def handle_post_profile(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
+        user = check.not_none(USER.get())
 
+        dct = await read_form_body(recv)
 
-@handle('POST', '/profile')
-@with_session
-@with_user
-async def handle_post_profile(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
-    user = check.not_none(USER.get())
+        auth_token = dct[b'auth-token'].decode()
 
-    dct = await read_form_body(recv)
+        user = dc.replace(user, auth_token=auth_token or None)
+        USERS.update(user)
 
-    auth_token = dct[b'auth-token'].decode()
-
-    user = dc.replace(user, auth_token=auth_token or None)
-    USERS.update(user)
-
-    await redirect_response(send, url_for('profile'))
+        await redirect_response(send, url_for('profile'))
 
 
 #
@@ -282,10 +264,10 @@ class LoginHandler(Handler_):
 
     def get_route_handlers(self) -> ta.Iterable[RouteHandler]:
         return [
-            RouteHandler(Route('GET', '/'), self.handle_get_index),  # noqa
+            RouteHandler(Route('GET', '/login'), self.handle_get_login),  # noqa
+            RouteHandler(Route('POST', '/login'), self.handle_post_login),  # noqa
         ]
 
-    @handle('GET', '/login')
     @with_session
     @with_user
     async def handle_get_login(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
@@ -293,10 +275,9 @@ class LoginHandler(Handler_):
         await start_response(send, 200, hu.consts.CONTENT_TYPE_HTML_UTF8)  # noqa
         await finish_response(send, html)
 
-    @handle('POST', '/login')
     @with_session
     @with_user
-    async def handle_post_login(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None::
+    async def handle_post_login(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
         dct = await read_form_body(recv)
 
         email = dct[b'email'].decode()
@@ -322,36 +303,33 @@ class SignupHandler(Handler_):
 
     def get_route_handlers(self) -> ta.Iterable[RouteHandler]:
         return [
-            RouteHandler(Route('GET', '/'), self.handle_get_index),  # noqa
+            RouteHandler(Route('GET', '/signup'), self.handle_get_signup),  # noqa
+            RouteHandler(Route('POST', '/signup'), self.handle_post_signup),  # noqa
         ]
 
+    @with_session
+    @with_user
+    async def handle_get_signup(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
+        html = TEMPLATES.render('signup.html.j2')
+        await start_response(send, 200, hu.consts.CONTENT_TYPE_HTML_UTF8)  # noqa
+        await finish_response(send, html)
 
-@handle('GET', '/signup')
-@with_session
-@with_user
-async def handle_get_signup(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None::
-    html = TEMPLATES.render('signup.html.j2')
-    await start_response(send, 200, hu.consts.CONTENT_TYPE_HTML_UTF8)  # noqa
-    await finish_response(send, html)
+    @with_session
+    @with_user
+    async def handle_post_signup(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
+        dct = await read_form_body(recv)
 
+        email = dct[b'email'].decode()
+        password = dct[b'password'].decode()
+        name = dct[b'name'].decode()
 
-@handle('POST', '/signup')
-@with_session
-@with_user
-async def handle_post_signup(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None::
-    dct = await read_form_body(recv)
+        USERS.create(
+            email=email,
+            password=generate_password_hash(password, method='scrypt'),
+            name=name,
+        )
 
-    email = dct[b'email'].decode()
-    password = dct[b'password'].decode()
-    name = dct[b'name'].decode()
-
-    USERS.create(
-        email=email,
-        password=generate_password_hash(password, method='scrypt'),
-        name=name,
-    )
-
-    await redirect_response(send, url_for('login'))
+        await redirect_response(send, url_for('login'))
 
 
 #
@@ -361,38 +339,34 @@ class LogoutHandler(Handler_):
 
     def get_route_handlers(self) -> ta.Iterable[RouteHandler]:
         return [
-            RouteHandler(Route('GET', '/'), self.handle_get_index),  # noqa
+            RouteHandler(Route('GET', '/logout'), self.handle_get_logout),  # noqa
         ]
 
-
-@handle('GET', '/logout')
-@with_session
-@with_user
-@login_required
-async def handle_get_logout(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None::
-    SESSION.get().pop('_user_id', None)
-    await redirect_response(send, url_for(''))
+    @with_session
+    @with_user
+    @login_required
+    async def handle_get_logout(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
+        SESSION.get().pop('_user_id', None)
+        await redirect_response(send, url_for(''))
 
 
 ##
+
+
+@lang.cached_function
+def _favicon_bytes(self) -> bytes:
+    return importlib.resources.files(__package__).joinpath('../../resources/favicon.ico').read_bytes()
 
 
 class FaviconHandler(Handler_):
 
     def get_route_handlers(self) -> ta.Iterable[RouteHandler]:
         return [
-            RouteHandler(Route('GET', '/'), self.handle_get_index),  # noqa
+            RouteHandler(Route('GET', '/favicon.ico'), self.handle_get_favicon_ico),  # noqa
         ]
 
-
-@lang.cached_function
-def _favicon_bytes() -> bytes:
-    return importlib.resources.files(__package__).joinpath('../../resources/favicon.ico').read_bytes()
-
-
-@handle('GET', '/favicon.ico')
-async def handle_get_favicon_ico(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None::
-    await send_response(send, 200, hu.consts.CONTENT_TYPE_ICON, body=_favicon_bytes())
+    async def handle_get_favicon_ico(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
+        await send_response(send, 200, hu.consts.CONTENT_TYPE_ICON, body=_favicon_bytes())
 
 
 ##
@@ -404,14 +378,6 @@ else:
     tiktoken = lang.proxy_import('tiktoken')
 
 
-class TikHandler(Handler_):
-
-    def get_route_handlers(self) -> ta.Iterable[RouteHandler]:
-        return [
-            RouteHandler(Route('GET', '/'), self.handle_get_index),  # noqa
-        ]
-
-
 def _gpt2_enc() -> 'tiktoken.Encoding':
     return tiktoken.get_encoding('gpt2')
 
@@ -419,36 +385,42 @@ def _gpt2_enc() -> 'tiktoken.Encoding':
 gpt2_enc = anu.LazyFn(functools.partial(anyio.to_thread.run_sync, _gpt2_enc))
 
 
-@handle('POST', '/tik')
-async def handle_post_tik(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
-    hdrs = dict(scope['headers'])
-    auth = hdrs.get(hu.consts.AUTH_HEADER_NAME)
-    if not auth or not auth.startswith(hu.consts.BASIC_AUTH_HEADER_PREFIX):
-        await send_response(send, 401)
-        return
+class TikHandler(Handler_):
 
-    auth_token = auth[len(hu.consts.BASIC_AUTH_HEADER_PREFIX):].decode()
-    user: User | None = None
-    for u in USERS.get_all():
-        if u.auth_token and u.auth_token == auth_token:
-            user = u
-            break
-    if not user:
-        await send_response(send, 401)
-        return
+    def get_route_handlers(self) -> ta.Iterable[RouteHandler]:
+        return [
+            RouteHandler(Route('POST', '/tik'), self.handle_post_tik),  # noqa
+        ]
 
-    enc = await gpt2_enc.get()
+    async def handle_post_tik(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
+        hdrs = dict(scope['headers'])
+        auth = hdrs.get(hu.consts.AUTH_HEADER_NAME)
+        if not auth or not auth.startswith(hu.consts.BASIC_AUTH_HEADER_PREFIX):
+            await send_response(send, 401)
+            return
 
-    req_body = await read_body(recv)
-    toks = enc.encode(req_body.decode())
-    dct = {
-        'user_id': user.id,
-        'user_name': user.name,
-        'tokens': toks,
-    }
-    resp_body = json.dumps(dct).encode() + b'\n'
+        auth_token = auth[len(hu.consts.BASIC_AUTH_HEADER_PREFIX):].decode()
+        user: User | None = None
+        for u in USERS.get_all():
+            if u.auth_token and u.auth_token == auth_token:
+                user = u
+                break
+        if not user:
+            await send_response(send, 401)
+            return
 
-    await send_response(send, 200, hu.consts.CONTENT_TYPE_JSON_UTF8, body=resp_body)
+        enc = await gpt2_enc.get()
+
+        req_body = await read_body(recv)
+        toks = enc.encode(req_body.decode())
+        dct = {
+            'user_id': user.id,
+            'user_name': user.name,
+            'tokens': toks,
+        }
+        resp_body = json.dumps(dct).encode() + b'\n'
+
+        await send_response(send, 200, hu.consts.CONTENT_TYPE_JSON_UTF8, body=resp_body)
 
 
 ##
@@ -485,10 +457,24 @@ class AuthApp(AsgiApp_):
                 raise ValueError(f'Unhandled scope type: {scope_ty!r}')
 
 
+##
+
+
 @lang.cached_function
 def _auth_app() -> AuthApp:
+    handlers: list[Handler_] = [
+        IndexHandler(),
+        ProfileHandler(),
+        LoginHandler(),
+        SignupHandler(),
+        LogoutHandler(),
+        FaviconHandler(),
+        TikHandler(),
+
+    ]
+
     return AuthApp(
-        route_handlers=ROUTE_HANDLERS,
+        route_handlers={rh.route: rh.handler for h in handlers for rh in h.get_route_handlers()},
     )
 
 
