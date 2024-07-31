@@ -123,17 +123,25 @@ async def with_user(fn: AsgiApp, scope: AsgiScope, recv: AsgiRecv, send: AsgiSen
         await fn(scope, recv, send)
 
 
-@lang.decorator
-async def login_required(fn: AsgiApp, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
-    if USER.get() is None:
-        await redirect_response(send, url_for('login'))
-        return
-
-    await fn(scope, recv, send)
-
-
 def login_user(user: User, *, remember: bool = False) -> None:
     SESSION.get()['_user_id'] = user.id
+
+
+#
+
+
+def login_required(fn):
+    @lang.decorator
+    async def inner(fn: AsgiApp, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
+        if USER.get() is None:
+            await redirect_response(send, url_for('login'))
+            return
+
+        await fn(scope, recv, send)
+
+    app = lang.unwrap_method(lang.unwrap_func(fn))
+    app.__dict__.setdefault('__asgi_marks__', []).append('login_required')
+    return inner(fn)
 
 
 ##

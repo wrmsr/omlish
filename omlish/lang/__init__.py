@@ -83,6 +83,7 @@ from .descriptors import (  # noqa
     decorator,
     is_method_descriptor,
     item_property,
+    unwrap_method,
     unwrap_method_descriptors,
     update_wrapper_except_dict,
 )

@@ -101,8 +101,14 @@ def _auth_app() -> AuthApp:
         TikHandler(users=USER_STORE),
     ]
 
+    route_handlers: dict[Route, ta.Any] = {}
+    for h in handlers:
+        for rh in h.get_route_handlers():
+            # app = lang.unwrap_func(rh.handler)
+            route_handlers[rh.route] = rh.handler
+
     return AuthApp(
-        route_handlers={rh.route: rh.handler for h in handlers for rh in h.get_route_handlers()},
+        route_handlers=route_handlers,
     )
 
 

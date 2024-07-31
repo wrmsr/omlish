@@ -51,16 +51,18 @@ def unwrap_func_with_partials(fn: ta.Callable) -> tuple[ta.Callable, list[functo
     while True:
         if is_method_descriptor(fn):
             fn = fn.__func__  # type: ignore
+        elif hasattr(fn, '__wrapped__'):
+            nxt = fn.__wrapped__
+            if not callable(nxt):
+                raise TypeError(nxt)
+            if nxt is fn:
+                raise TypeError(fn)
+            fn = nxt
         elif isinstance(fn, functools.partial):
             ps.append(fn)
             fn = fn.func
         else:
-            nxt = getattr(fn, '__wrapped__', None)
-            if not callable(nxt):
-                break
-            if nxt is fn:
-                raise TypeError(fn)
-            fn = nxt
+            break
     return fn, ps
 
 
