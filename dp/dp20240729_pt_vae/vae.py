@@ -83,7 +83,7 @@ class Vae(nn.Module):
         return F.sigmoid(self.reconstruct_pixels(h))
 
     def forward(self, x):
-        z_mean, z_log_var = self.encoder(x.view(-1, 784))
+        z_mean, z_log_var = self.encoder(x.view(-1, self.x_dim))
         z = self.sampling(z_mean, z_log_var)
         return self.decoder(z), z_mean, z_log_var
 
@@ -125,7 +125,7 @@ def _main():
 
     # return reconstruction error + KL divergence losses
     def loss_function(recon_x, x, z_mean, z_log_var):
-        reconstruction_loss = F.binary_cross_entropy(recon_x, x.view(-1, 784), reduction='sum')
+        reconstruction_loss = F.binary_cross_entropy(recon_x, x.view(-1, img_width * img_height), reduction='sum')
         kl_loss = -0.5 * torch.sum(1 + z_log_var - z_mean.pow(2) - z_log_var.exp())
         return reconstruction_loss + kl_loss
 
