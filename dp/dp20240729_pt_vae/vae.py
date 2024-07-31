@@ -56,22 +56,22 @@ class Vae(nn.Module):
         self.z_dim = z_dim
 
         # encoder part
-        self.fc1 = nn.Linear(x_dim, h_dim1)
-        self.fc2 = nn.Linear(h_dim1, h_dim2)
+        self.encoder_hidden_0 = nn.Linear(x_dim, h_dim1)
+        self.encoder_hidden_1 = nn.Linear(h_dim1, h_dim2)
 
-        self.fc31 = nn.Linear(h_dim2, z_dim)
-        self.fc32 = nn.Linear(h_dim2, z_dim)
+        self.z_mean = nn.Linear(h_dim2, z_dim)
+        self.z_log_var = nn.Linear(h_dim2, z_dim)
 
         # decoder part
-        self.fc4 = nn.Linear(z_dim, h_dim2)
-        self.fc5 = nn.Linear(h_dim2, h_dim1)
+        self.decoder_hidden_1 = nn.Linear(z_dim, h_dim2)
+        self.decoder_hidden_0 = nn.Linear(h_dim2, h_dim1)
 
-        self.fc6 = nn.Linear(h_dim1, x_dim)
+        self.reconstruct_pixels = nn.Linear(h_dim1, x_dim)
 
     def encoder(self, x):
-        h = F.relu(self.fc1(x))
-        h = F.relu(self.fc2(h))
-        return self.fc31(h), self.fc32(h)  # z_mean, z_log_var
+        h = F.relu(self.encoder_hidden_0(x))
+        h = F.relu(self.encoder_hidden_1(h))
+        return self.z_mean(h), self.z_log_var(h)
 
     def sampling(self, z_mean, z_log_var):
         std = torch.exp(0.5 * z_log_var)
@@ -79,9 +79,9 @@ class Vae(nn.Module):
         return eps.mul(std).add_(z_mean)  # return z sample
 
     def decoder(self, z):
-        h = F.relu(self.fc4(z))
-        h = F.relu(self.fc5(h))
-        return F.sigmoid(self.fc6(h))
+        h = F.relu(self.decoder_hidden_1(z))
+        h = F.relu(self.decoder_hidden_0(h))
+        return F.sigmoid(self.reconstruct_pixels(h))
 
     def forward(self, x):
         z_mean, z_log_var = self.encoder(x.view(-1, 784))
@@ -105,7 +105,13 @@ def _main():
     test_loader = torch.utils.data.DataLoader(test_ds, batch_size=batch_size, shuffle=True)
 
     # build model
-    vae = Vae(x_dim=784, h_dim1=512, h_dim2=256, z_dim=2)
+    vae = Vae(
+        x_dim=784,
+        h_dim1=512,
+        h_dim2=256,
+        z_dim=2,
+    )
+
     if torch.cuda.is_available():
         vae.cuda()
 
