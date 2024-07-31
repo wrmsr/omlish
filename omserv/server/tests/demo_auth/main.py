@@ -75,28 +75,26 @@ COOKIE_SESSION_STORE = sessions.CookieSessionStore(
 SESSION: contextvars.ContextVar[sessions.Session] = contextvars.ContextVar('session')
 
 
-def with_session(fn):
-    async def inner(scope, recv, send):
-        async def _send(obj):
-            if obj['type'] == 'http.response.start':
-                out_session = SESSION.get()
-                print('\n'.join([f'{scope=}', f'{in_session=}', f'{obj=}', f'{out_session=}', '']))
-                obj = {
-                    **obj,
-                    'headers': [
-                        *obj.get('headers', []),
-                        *COOKIE_SESSION_STORE.build_headers(out_session),
-                    ],
-                }
+@lang.decorator
+async def with_session(fn, scope, recv, send):
+    async def _send(obj):
+        if obj['type'] == 'http.response.start':
+            out_session = SESSION.get()
+            print('\n'.join([f'{scope=}', f'{in_session=}', f'{obj=}', f'{out_session=}', '']))
+            obj = {
+                **obj,
+                'headers': [
+                    *obj.get('headers', []),
+                    *COOKIE_SESSION_STORE.build_headers(out_session),
+                ],
+            }
 
-            await send(obj)
+        await send(obj)
 
-        in_session = COOKIE_SESSION_STORE.extract(scope)
-        print('\n'.join([f'{scope=}', f'{in_session=}', '']))
-        with lang.context_var_setting(SESSION, in_session):
-            await fn(scope, recv, _send)
-
-    return inner
+    in_session = COOKIE_SESSION_STORE.extract(scope)
+    print('\n'.join([f'{scope=}', f'{in_session=}', '']))
+    with lang.context_var_setting(SESSION, in_session):
+        await fn(scope, recv, _send)
 
 
 ##
@@ -152,31 +150,27 @@ def current_user() -> User | None:
     return USER.get()
 
 
-def with_user(fn):
-    async def inner(scope, recv, send):
-        session = SESSION.get()
+@lang.decorator
+async def with_user(fn, scope, recv, send):
+    session = SESSION.get()
 
-        user_id = session.get('_user_id')
-        if user_id is not None:
-            user = USERS.get(id=user_id)
-        else:
-            user = None
+    user_id = session.get('_user_id')
+    if user_id is not None:
+        user = USERS.get(id=user_id)
+    else:
+        user = None
 
-        with lang.context_var_setting(USER, user):
-            await fn(scope, recv, send)
-
-    return inner
-
-
-def login_required(fn):
-    async def inner(scope, recv, send):
-        if USER.get() is None:
-            await redirect_response(send, url_for('login'))
-            return
-
+    with lang.context_var_setting(USER, user):
         await fn(scope, recv, send)
 
-    return inner
+
+@lang.decorator
+async def login_required(fn, scope, recv, send):
+    if USER.get() is None:
+        await redirect_response(send, url_for('login'))
+        return
+
+    await fn(scope, recv, send)
 
 
 def login_user(user: User, *, remember: bool = False) -> None:

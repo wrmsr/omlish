@@ -40,24 +40,51 @@ def unwrap_method_descriptors(fn: ta.Callable) -> ta.Callable:
 ##
 
 
+WRAPPER_UPDATES_EXCEPT_DICT = tuple(a for a in functools.WRAPPER_UPDATES if a != '__dict__')
+
+
+def update_wrapper_except_dict(
+        wrapper,
+        wrapped,
+        assigned=functools.WRAPPER_ASSIGNMENTS,
+        updated=WRAPPER_UPDATES_EXCEPT_DICT,
+):
+    return functools.update_wrapper(
+        wrapper,
+        wrapped,
+        assigned=assigned,
+        updated=updated,
+    )
+
+
+##
+
+
+class _decorator_descriptor:  # noqa
+    def __init__(self, wrapper, fn):
+        self._wrapper, self._fn = wrapper, fn
+        update_wrapper_except_dict(self, fn)
+
+    def __repr__(self):
+        return f'{self.__class__.__name__}<{self._wrapper}, {self._fn}>'
+
+    def __get__(self, instance, owner):
+        return functools.partial(self._wrapper, self._fn.__get__(instance, owner))
+
+    def __call__(self, *args, **kwargs):
+        return self._wrapper(self._fn, *args, **kwargs)
+
+
 class decorator:  # noqa
     def __init__(self, wrapper):
         self._wrapper = wrapper
-        functools.update_wrapper(self, wrapper)
+        update_wrapper_except_dict(self, wrapper)
+
+    def __repr__(self):
+        return f'{self.__class__.__name__}<{self._wrapper}>'
 
     def __call__(self, fn):
-        return self.__class__._Descriptor(self._wrapper, fn)  # noqa
-
-    class _Descriptor:
-        def __init__(self, wrapper, fn):
-            self._wrapper, self._fn = wrapper, fn
-            functools.update_wrapper(self, fn)
-
-        def __get__(self, instance, owner):
-            return functools.partial(self._wrapper, self._fn.__get__(instance, owner))
-
-        def __call__(self, *args, **kwargs):
-            return self._wrapper(self._fn, *args, **kwargs)
+        return _decorator_descriptor(self._wrapper, fn)  # noqa
 
 
 ##
