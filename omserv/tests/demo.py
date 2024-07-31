@@ -18,7 +18,7 @@ from omlish import sql
 from omlish.diag import procstats
 
 from .. import server
-from ..node.dbs import get_db_url
+from ..dbs import get_db_url
 from ..node.models import recreate_all
 from ..node.registry import NodeRegistrant
 from ..server.tests.demo_auth.main import auth_app

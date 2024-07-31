@@ -19,7 +19,7 @@ from ..events import StreamClosed
 from ..events import Updated
 from ..headers import response_headers
 from ..streams.httpstream import HttpStream
-from ..streams.wsstream import WSStream
+from ..streams.wsstream import WsStream
 from ..taskspawner import TaskSpawner
 from ..types import AppWrapper
 from ..workercontext import WorkerContext
@@ -55,7 +55,7 @@ class H2ProtocolAssumedError(Exception):
         self.data = data
 
 
-class H11WSConnection:
+class H11WsConnection:
     # This class matches the h11 interface, and either passes data
     # through without altering it (for Data, EndData) or sends h11
     # events (Response, Body, EndBody).
@@ -101,14 +101,14 @@ class H11Protocol(Protocol):
         self.can_read = context.event_class()
         self.client = client
         self.config = config
-        self.connection: h11.Connection | H11WSConnection = h11.Connection(
+        self.connection: h11.Connection | H11WsConnection = h11.Connection(
             h11.SERVER, max_incomplete_event_size=self.config.h11_max_incomplete_size,
         )
         self.context = context
         self.keep_alive_requests = 0
         self.send = send
         self.server = server
-        self.stream: HttpStream | WSStream | None = None
+        self.stream: HttpStream | WsStream | None = None
         self.task_spawner = task_spawner
 
     async def initiate(self) -> None:
@@ -219,7 +219,7 @@ class H11Protocol(Protocol):
                 and upgrade_value.lower() == 'websocket'
                 and request.method.decode('ascii').upper() == 'GET'
         ):
-            self.stream = WSStream(
+            self.stream = WsStream(
                 self.app,
                 self.config,
                 self.context,
@@ -229,7 +229,7 @@ class H11Protocol(Protocol):
                 self.stream_send,
                 STREAM_ID,
             )
-            self.connection = H11WSConnection(ta.cast(h11.Connection, self.connection))
+            self.connection = H11WsConnection(ta.cast(h11.Connection, self.connection))
         else:
             self.stream = HttpStream(
                 self.app,
