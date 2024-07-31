@@ -1,6 +1,7 @@
 """
 https://github.com/lyeoni/pytorch-mnist-VAE/blob/master/pytorch-mnist-VAE.ipynb
 """
+from omlish.iterators import sliding_window
 import PIL
 import numpy as np
 import torch
@@ -44,33 +45,27 @@ class Vae(nn.Module):
     def __init__(
             self,
             x_dim,
-            h_dim1,
-            h_dim2,
+            h_dims,
             z_dim,
     ):
         super().__init__()
 
         self.x_dim = x_dim
-        self.h_dim1 = h_dim1
-        self.h_dim2 = h_dim2
+        self.h_dims = h_dims
         self.z_dim = z_dim
 
-        # encoder part
-        self.encoder_hidden_0 = nn.Linear(x_dim, h_dim1)
-        self.encoder_hidden_1 = nn.Linear(h_dim1, h_dim2)
+        self.z_mean = nn.Linear(h_dims[-1], z_dim)
+        self.z_log_var = nn.Linear(h_dims[-1], z_dim)
 
-        self.z_mean = nn.Linear(h_dim2, z_dim)
-        self.z_log_var = nn.Linear(h_dim2, z_dim)
+        self.encoder_hidden = [nn.Linear(f, t) for f, t in sliding_window([x_dim, *h_dims], 2)]
+        self.decoder_hidden = [nn.Linear(f, t) for f, t in sliding_window([z_dim, *reversed(h_dims)], 2)]
 
-        # decoder part
-        self.decoder_hidden_1 = nn.Linear(z_dim, h_dim2)
-        self.decoder_hidden_0 = nn.Linear(h_dim2, h_dim1)
-
-        self.reconstruct_pixels = nn.Linear(h_dim1, x_dim)
+        self.reconstruct_pixels = nn.Linear(h_dims[0], x_dim)
 
     def encoder(self, x):
-        h = F.relu(self.encoder_hidden_0(x))
-        h = F.relu(self.encoder_hidden_1(h))
+        h = x
+        for l in self.encoder_hidden:
+            h = F.relu(l(h))
         return self.z_mean(h), self.z_log_var(h)
 
     def sampling(self, z_mean, z_log_var):
@@ -79,8 +74,9 @@ class Vae(nn.Module):
         return eps.mul(std).add_(z_mean)  # return z sample
 
     def decoder(self, z):
-        h = F.relu(self.decoder_hidden_1(z))
-        h = F.relu(self.decoder_hidden_0(h))
+        h = z
+        for l in self.decoder_hidden:
+            h = F.relu(l(h))
         return F.sigmoid(self.reconstruct_pixels(h))
 
     def forward(self, x):
@@ -107,8 +103,7 @@ def _main():
     # build model
     vae = Vae(
         x_dim=784,
-        h_dim1=512,
-        h_dim2=256,
+        h_dims=[512, 256],
         z_dim=2,
     )
 
