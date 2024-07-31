@@ -11,8 +11,8 @@ import typing as ta
 
 from .contextmanagers import DefaultLockable
 from .contextmanagers import default_lock
-from .functions import unwrap_func
-from .functions import unwrap_func_with_partials
+from .descriptors import unwrap_func
+from .descriptors import unwrap_func_with_partials
 
 
 P = ta.ParamSpec('P')

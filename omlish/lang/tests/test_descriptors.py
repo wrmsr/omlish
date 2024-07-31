@@ -1,13 +1,41 @@
+import functools
 import inspect
 
 import pytest
 
-from ..descriptors import _DECORATOR_HANDLES_UNBOUND_METHODS
 from ..descriptors import AccessForbiddenError
+from ..descriptors import _DECORATOR_HANDLES_UNBOUND_METHODS
 from ..descriptors import access_forbidden
 from ..descriptors import attr_property
 from ..descriptors import classonly
 from ..descriptors import decorator
+from ..descriptors import unwrap_func
+
+
+def test_unwrap_func():
+    assert unwrap_func(l := lambda: None) is l
+
+    assert unwrap_func(functools.partial(l)) is l
+
+    #
+
+    def f(x):
+        return x + 1
+
+    @functools.wraps(f)
+    def g(x):
+        return f(x + 1)
+
+    assert unwrap_func(f) is f
+    assert unwrap_func(g) is f
+
+    #
+
+    p0 = lambda: None  # noqa
+    p1 = functools.wraps(p0)(lambda: p0())
+    p2 = functools.wraps(p1)(functools.partial(lambda: p1()))
+
+    assert unwrap_func(p2) is p0
 
 
 def test_access_forbidden():
@@ -97,9 +125,8 @@ def test_single_decorator():
     if _DECORATOR_HANDLES_UNBOUND_METHODS:
         assert Foo.m(Foo(4), 2) == 8
 
-    else:
-        assert Foo.c1(2) == 9
-        assert Foo.s1(1) == 3
+    assert Foo.c1(2) == 9
+    assert Foo.s1(1) == 3
 
     assert Foo.c2(2) == 9
     assert Foo.s2(1) == 3

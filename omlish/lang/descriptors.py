@@ -52,6 +52,36 @@ def unwrap_method_descriptors(fn: ta.Callable) -> ta.Callable:
 ##
 
 
+def unwrap_func(fn: ta.Callable) -> ta.Callable:
+    fn, _ = unwrap_func_with_partials(fn)
+    return fn
+
+
+def unwrap_func_with_partials(fn: ta.Callable) -> tuple[ta.Callable, list[functools.partial]]:
+    ps = []
+    while True:
+        if is_method_descriptor(fn):
+            fn = fn.__func__  # type: ignore
+        elif hasattr(fn, '__wrapped__'):
+            nxt = fn.__wrapped__
+            if not callable(nxt):
+                raise TypeError(nxt)
+            if nxt is fn:
+                raise TypeError(fn)
+            fn = nxt
+        # NOTE: __wrapped__ takes precedence - a partial might point to a bound Method when the important information is
+        # still the unbound func. see _decorator_descriptor for an example of this.
+        elif isinstance(fn, functools.partial):
+            ps.append(fn)
+            fn = fn.func
+        else:
+            break
+    return fn, ps
+
+
+##
+
+
 WRAPPER_UPDATES_EXCEPT_DICT = tuple(a for a in functools.WRAPPER_UPDATES if a != '__dict__')
 
 
@@ -72,12 +102,13 @@ def update_wrapper_except_dict(
 ##
 
 
-_DECORATOR_HANDLES_UNBOUND_METHODS = False
+_DECORATOR_HANDLES_UNBOUND_METHODS = True
 
 
 class _decorator_descriptor:  # noqa
     def __init__(self, wrapper, fn):
-        self._wrapper, self._fn = wrapper, fn
+        self._wrapper = wrapper
+        self._fn = fn
         update_wrapper_except_dict(self, fn)
 
     def __repr__(self):
