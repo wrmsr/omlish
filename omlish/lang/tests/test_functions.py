@@ -52,3 +52,23 @@ def test_unwrap_func():
     assert unwrap_func(l := lambda: None) is l
 
     assert unwrap_func(functools.partial(l)) is l
+
+    #
+
+    def f(x):
+        return x + 1
+
+    @functools.wraps(f)
+    def g(x):
+        return f(x + 1)
+
+    assert unwrap_func(f) is f
+    assert unwrap_func(g) is f
+
+    #
+
+    p0 = lambda: None  # noqa
+    p1 = functools.wraps(p0)(lambda: p0())
+    p2 = functools.wraps(p1)(functools.partial(lambda: p1()))
+
+    assert unwrap_func(p2) is p0

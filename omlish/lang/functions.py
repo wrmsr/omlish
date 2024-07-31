@@ -58,6 +58,8 @@ def unwrap_func_with_partials(fn: ta.Callable) -> tuple[ta.Callable, list[functo
             if nxt is fn:
                 raise TypeError(fn)
             fn = nxt
+        # NOTE: __wrapped__ takes precedence - a partial might point to a bound Method when the important information is
+        # still the unbound func. see _decorator_descriptor for an example of this.
         elif isinstance(fn, functools.partial):
             ps.append(fn)
             fn = fn.func
