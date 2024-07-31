@@ -104,7 +104,7 @@ def _auth_app() -> AuthApp:
     route_handlers: dict[Route, ta.Any] = {}
     for h in handlers:
         for rh in h.get_route_handlers():
-            app = lang.unwrap_func(rh.handler)
+            app = lang.unwrap_method(lang.unwrap_func(rh.handler))  # noqa
             route_handlers[rh.route] = rh.handler
 
     return AuthApp(

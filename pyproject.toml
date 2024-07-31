@@ -194,6 +194,7 @@ ignore = [
     'RET506',  # unnecessary `elif` after `raise` statement
     'RET508',  # unnecessary `elif` after `break` statement
     'RUF009',  # do not perform function call `col.TypeMap` in dataclass defaults
+    'RUF018',  # avoid assignment expressions in `assert` statements
     'RUF100',  # unused blanket `noqa` directive
     'S102',  # use of `exec` detected
     'S311',  # standard pseudo-random generators are not suitable for cryptographic purposes
