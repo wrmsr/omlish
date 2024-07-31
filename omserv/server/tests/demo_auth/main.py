@@ -176,12 +176,17 @@ TEMPLATES = J2Templates(J2Templates.Config(
 ##
 
 
-HANDLERS: dict[tuple[str, str], ta.Any] = {}
+class Route(ta.NamedTuple):
+    method: str
+    path: str
+
+
+ROUTE_HANDLERS: dict[Route, ta.Any] = {}
 
 
 def handle(method: str, path: str):
     def inner(fn):
-        HANDLERS[(method, path)] = fn
+        ROUTE_HANDLERS[Route(method, path)] = fn
         return fn
     return inner
 
@@ -189,17 +194,25 @@ def handle(method: str, path: str):
 ##
 
 
-@handle('GET', '/')
-@with_session
-@with_user
-async def handle_get_index(scope, recv, send):
-    session = SESSION.get()
+##
 
-    session['c'] = session.get('c', 0) + 1
 
-    html = TEMPLATES.render('index.html.j2')
-    await start_response(send, 200, hu.consts.CONTENT_TYPE_HTML_UTF8)  # noqa
-    await finish_response(send, html)
+class IndexHandler:
+    @with_session
+    @with_user
+    async def handle_get_index(self, scope, recv, send):
+        session = SESSION.get()
+
+        session['c'] = session.get('c', 0) + 1
+
+        html = TEMPLATES.render('index.html.j2')
+        await start_response(send, 200, hu.consts.CONTENT_TYPE_HTML_UTF8)  # noqa
+        await finish_response(send, html)
+
+
+INDEX_HANDLER = IndexHandler()
+
+handle('GET', '/')(INDEX_HANDLER.handle_get_index)
 
 
 #
@@ -381,11 +394,11 @@ class AuthApp(AsgiApp_):
     def __init__(
             self,
             *,
-            handlers: dict[tuple[str, str], ta.Any],
+            route_handlers: dict[Route, ta.Any],
     ) -> None:
         super().__init__()
 
-        self._handlers = handlers
+        self._route_handlers = route_handlers
 
     async def __call__(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
         match scope_ty := scope['type']:
@@ -394,7 +407,8 @@ class AuthApp(AsgiApp_):
                 return
 
             case 'http':
-                handler = self._handlers.get((scope['method'], scope['raw_path'].decode()))
+                route = Route(scope['method'], scope['raw_path'].decode())
+                handler = self._route_handlers.get(route)
 
                 if handler is not None:
                     with lang.context_var_setting(SCOPE, scope):
@@ -410,7 +424,7 @@ class AuthApp(AsgiApp_):
 @lang.cached_function
 def _auth_app() -> AuthApp:
     return AuthApp(
-        handlers=HANDLERS,
+        route_handlers=ROUTE_HANDLERS,
     )
 
 
