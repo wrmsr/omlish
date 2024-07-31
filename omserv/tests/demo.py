@@ -86,7 +86,7 @@ async def _a_main() -> None:
 
         tg.start_soon(functools.partial(
             server.serve,
-            auth_app,
+            auth_app,  # type: ignore
             server.Config(),
             shutdown_trigger=shutdown.wait,
         ))

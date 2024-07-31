@@ -52,7 +52,7 @@ log = logging.getLogger(__name__)
 ##
 
 
-SCOPE: contextvars.ContextVar[dict[str, ta.Any]] = contextvars.ContextVar('scope')
+SCOPE: contextvars.ContextVar[AsgiScope] = contextvars.ContextVar('scope')
 
 
 ##
@@ -384,6 +384,15 @@ async def handle_post_tik(scope, recv, send):
 
 
 class AuthApp(AbstractAsgiApp):
+    def __init__(
+            self,
+            *,
+            handlers: dict[tuple[str, str], ta.Any],
+    ) -> None:
+        super().__init__()
+
+        self._handlers = handlers
+
     async def __call__(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
         match scope_ty := scope['type']:
             case 'lifespan':
@@ -391,7 +400,7 @@ class AuthApp(AbstractAsgiApp):
                 return
 
             case 'http':
-                handler = HANDLERS.get((scope['method'], scope['raw_path'].decode()))
+                handler = self._handlers.get((scope['method'], scope['raw_path'].decode()))
 
                 if handler is not None:
                     with lang.context_var_setting(SCOPE, scope):
@@ -406,7 +415,9 @@ class AuthApp(AbstractAsgiApp):
 
 @lang.cached_function
 def _auth_app() -> AuthApp:
-    return AuthApp()
+    return AuthApp(
+        handlers=HANDLERS,
+    )
 
 
 async def auth_app(scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
@@ -423,7 +434,7 @@ async def _a_main() -> None:
     TEMPLATES.load_all()
 
     await serve(
-        auth_app,
+        auth_app,  # type: ignore
         Config(),
         handle_shutdown_signals=True,
     )
