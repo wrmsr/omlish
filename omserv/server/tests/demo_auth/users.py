@@ -18,7 +18,7 @@ class User:
     auth_token: str | None = None
 
 
-class Users:
+class UserStore:
     def __init__(self) -> None:
         super().__init__()
 
@@ -67,6 +67,3 @@ class Users:
         e = self._users_by_id[u.id]
         check.equal(u.email, e.email)
         self._users_by_id[u.id] = u
-
-
-USERS = Users()
