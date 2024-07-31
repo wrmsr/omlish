@@ -32,9 +32,10 @@ def to_categorical(y, num_classes=None, dtype="float32"):
     return categorical
 
 
-def prepare(images, labels):
-    images = images.astype('float32') / 255
+def prepare(images, labels, px_shuf):
     n, w, h = images.shape
+    images = images.reshape(n, -1)[:, px_shuf].reshape(n, w, h)
+    images = images.astype('float32') / 255
     return images.reshape((n, w * h)), to_categorical(labels)
 
 
@@ -96,8 +97,8 @@ def _main():
     random.shuffle(px_shuf)
     px_unshuf = [f for t, f in sorted((t, f) for f, t in enumerate(px_shuf))]
 
-    x_train, y_train = prepare(*train)
-    x_test, y_test = prepare(*test)
+    x_train, y_train = prepare(*train, px_shuf)
+    x_test, y_test = prepare(*test, px_shuf)
 
     batch_size = 250
 
