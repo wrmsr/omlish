@@ -183,13 +183,9 @@ def _main():
         print('====> Test set loss: {:.4f}'.format(test_loss))
 
         random_number = np.asarray([[np.random.normal() for _ in range(vae.z_dim)]])
-        decode_img(
-            vae.decoder(torch.Tensor(random_number))
-                .reshape(img_width, img_height)
-                .detach()
-                .numpy()
-            ).resize((56, 56)) \
-            .show()
+        dn = vae.decoder(torch.Tensor(random_number)).reshape(img_width, img_height).detach().numpy()
+        dn = dn.reshape(-1)[px_unshuf].reshape(img_width, img_height)
+        decode_img(dn).resize((56, 56)).show()
 
     for epoch in range(1, 51):
         train(epoch)
