@@ -1,5 +1,6 @@
 import functools
 import operator
+import types
 import typing as ta
 
 
@@ -16,6 +17,16 @@ def attr_property(n: str):
 
 def item_property(n: str):
     return property(operator.itemgetter(n))
+
+
+##
+
+
+def unwrap_method(obj):
+    if isinstance(obj, types.MethodType):
+        return obj.__func__
+    else:
+        return obj
 
 
 ##
@@ -70,7 +81,7 @@ class _decorator_descriptor:  # noqa
         return f'{self.__class__.__name__}<{self._wrapper}, {self._fn}>'
 
     def __get__(self, instance, owner):
-        return functools.partial(self._wrapper, self._fn.__get__(instance, owner))
+        return functools.update_wrapper(functools.partial(self._wrapper, fn := self._fn.__get__(instance, owner)), fn)  # noqa
 
     def __call__(self, *args, **kwargs):
         return self._wrapper(self._fn, *args, **kwargs)
