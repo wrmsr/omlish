@@ -40,6 +40,29 @@ def unwrap_method_descriptors(fn: ta.Callable) -> ta.Callable:
 ##
 
 
+class decorator:  # noqa
+    def __init__(self, wrapper):
+        self._wrapper = wrapper
+        functools.update_wrapper(self, wrapper)
+
+    def __call__(self, fn):
+        return self.__class__._Descriptor(self._wrapper, fn)  # noqa
+
+    class _Descriptor:
+        def __init__(self, wrapper, fn):
+            self._wrapper, self._fn = wrapper, fn
+            functools.update_wrapper(self, fn)
+
+        def __get__(self, instance, owner):
+            return functools.partial(self._wrapper, self._fn.__get__(instance, owner))
+
+        def __call__(self, *args, **kwargs):
+            return self._wrapper(self._fn, *args, **kwargs)
+
+
+##
+
+
 class AccessForbiddenError(Exception):
 
     def __init__(self, name: str | None = None, *args: ta.Any, **kwargs: ta.Any) -> None:

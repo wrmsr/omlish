@@ -80,6 +80,7 @@ from .descriptors import (  # noqa
     access_forbidden,
     attr_property,
     classonly,
+    decorator,
     is_method_descriptor,
     item_property,
     unwrap_method_descriptors,

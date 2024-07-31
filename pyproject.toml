@@ -146,6 +146,8 @@ ignore = [
     'ANN201',  # missing-return-type-undocumented-public-function
     'ANN202',  # missing-return-type-private-function
     'ANN204',  # missing-return-type-special-method
+    'ANN205',  # missing return type annotation for staticmethod
+    'ANN206',  # missing return type annotation for classmethod
     'ANN401',  # dynamically typed expressions (typing.Any) are disallowed in `*args`
     'ARG001',  # unused function argument,
     'ARG002',  # unused method argument
