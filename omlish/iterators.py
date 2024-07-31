@@ -218,3 +218,16 @@ def expand_indexed_pairs(
         if idx < width_:
             result[idx] = value
     return result
+
+
+##
+# https://docs.python.org/3/library/itertools.html#itertools-recipes
+
+
+def sliding_window(it: ta.Iterable[T], n: int) -> tuple[T, ...]:
+    # sliding_window('ABCDEFG', 4) -> ABCD BCDE CDEF DEFG
+    iterator = iter(it)
+    window = collections.deque(itertools.islice(iterator, n - 1), maxlen=n)
+    for x in iterator:
+        window.append(x)
+        yield tuple(window)
