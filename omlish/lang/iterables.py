@@ -1,3 +1,4 @@
+import dataclasses as dc
 import itertools
 import typing as ta
 
@@ -52,3 +53,15 @@ def prodrange(*dims: Rangeable) -> ta.Iterable[ta.Sequence[int]]:
     if not dims:
         return []
     return itertools.product(*map(asrange, dims))
+
+
+@dc.dataclass(frozen=True)
+class itergen(ta.Generic[T]):  # noqa
+    fn: ta.Callable[[], ta.Iterable[T]]
+
+    def __iter__(self):
+        return iter(self.fn())
+
+
+def renumerate(it: ta.Iterable[T]) -> ta.Iterable[tuple[T, int]]:
+    return ((e, i) for i, e in enumerate(it))
