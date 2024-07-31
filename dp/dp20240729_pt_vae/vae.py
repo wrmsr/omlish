@@ -1,8 +1,11 @@
 """
 https://github.com/lyeoni/pytorch-mnist-VAE/blob/master/pytorch-mnist-VAE.ipynb
 """
+import dataclasses as dc
 import random
+import typing as ta
 
+from omlish import lang
 from omlish.iterators import sliding_window
 import PIL
 import numpy as np
@@ -88,17 +91,29 @@ class Vae(nn.Module):
         return self.decoder(z), z_mean, z_log_var
 
 
-def _main():
+@dc.dataclass(frozen=True, kw_only=True)
+class VaeData:
+    px_shuf: ta.Sequence[int]
+    px_unshuf: ta.Sequence[int]
+
+    img_width: int
+    img_height: int
+
+    train_loader: torch.utils.data.DataLoader
+    test_loader: torch.utils.data.DataLoader
+
+
+def load_vae_data() -> VaeData:
     from keras.datasets import mnist  # noqa
-    train, test = mnist.load_data()
-    img_width, img_height = train[0].shape[1:]
+    (train_images, train_labels), (test_images, test_labels) = mnist.load_data()
+    img_width, img_height = train_images.shape[1:]
 
     px_shuf = list(range(img_width * img_height))
     random.shuffle(px_shuf)
     px_unshuf = [f for t, f in sorted((t, f) for f, t in enumerate(px_shuf))]
 
-    x_train, y_train = prepare(*train, px_shuf)
-    x_test, y_test = prepare(*test, px_shuf)
+    x_train, y_train = prepare(train_images, train_labels, px_shuf)
+    x_test, y_test = prepare(test_images, test_labels, px_shuf)
 
     batch_size = 250
 
@@ -108,52 +123,67 @@ def _main():
     test_ds = torch.utils.data.TensorDataset(torch.tensor(x_test))
     test_loader = torch.utils.data.DataLoader(test_ds, batch_size=batch_size, shuffle=True)
 
-    # build model
-    vae = Vae(
-        x_dim=img_width * img_height,
-        h_dims=[
-            512,
-            256,
-        ],
-        z_dim=2,
+    return VaeData(
+        px_shuf=px_shuf,
+        px_unshuf=px_unshuf,
+
+        img_width=img_width,
+        img_height=img_height,
+
+        train_loader=train_loader,
+        test_loader=test_loader,
     )
 
-    if torch.cuda.is_available():
-        vae.cuda()
 
-    optimizer = optim.Adam(vae.parameters())
+class VaeTest:
+    def __init__(self) -> None:
+        super().__init__()
 
-    # return reconstruction error + KL divergence losses
-    def loss_function(recon_x, x, z_mean, z_log_var):
-        reconstruction_loss = F.binary_cross_entropy(recon_x, x.view(-1, img_width * img_height), reduction='sum')
+        self._data = load_vae_data()
+
+        self._vae = Vae(
+            x_dim=self._data.img_width * self._data.img_height,
+            h_dims=[
+                512,
+                256,
+            ],
+            z_dim=2,
+        )
+        if torch.cuda.is_available():
+            self._vae.cuda()
+
+        self._optimizer = optim.Adam(self._vae.parameters())
+
+    def loss_function(self, recon_x, x, z_mean, z_log_var):
+        reconstruction_loss = F.binary_cross_entropy(recon_x, x.view(-1, self._vae.x_dim), reduction='sum')
         kl_loss = -0.5 * torch.sum(1 + z_log_var - z_mean.pow(2) - z_log_var.exp())
         return reconstruction_loss + kl_loss
 
-    def train(epoch):
-        vae.train()
+    def train(self, epoch):
+        self._vae.train()
         train_loss = 0
-        for batch_idx, data in enumerate(train_loader):
+        for batch_idx, data in enumerate(self._data.train_loader):
             data = torch.stack(data).squeeze(0)
 
             if torch.cuda.is_available():
                 data = data.cuda()
 
-            optimizer.zero_grad()
+            self._optimizer.zero_grad()
 
-            recon_batch, z_mean, z_log_var = vae(data)
-            loss = loss_function(recon_batch, data, z_mean, z_log_var)
+            recon_batch, z_mean, z_log_var = self._vae(data)
+            loss = self.loss_function(recon_batch, data, z_mean, z_log_var)
 
             loss.backward()
             train_loss += loss.item()
-            optimizer.step()
+            self._optimizer.step()
 
             if batch_idx % 100 == 0:
                 print(
                     'Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
-                    epoch,
+                        epoch,
                         batch_idx * len(data),
-                        -len(train_loader.dataset),
-                        100. * batch_idx / len(train_loader),
+                        -len(self._data.train_loader.dataset),
+                        100. * batch_idx / len(self._data.train_loader),
                         loss.item() / len(data),
                     ),
                 )
@@ -161,35 +191,44 @@ def _main():
         print(
             '====> Epoch: {} Average loss: {:.4f}'.format(
                 epoch,
-                train_loss / len(train_loader.dataset),
+                train_loss / len(self._data.train_loader.dataset),
             ),
         )
 
-    def test():
-        vae.eval()
+    def test(self):
+        self._vae.eval()
         test_loss = 0
         with torch.no_grad():
-            for data in test_loader:
+            for data in self._data.test_loader:
                 data = torch.stack(data).squeeze(0)
 
                 if torch.cuda.is_available():
                     data = data.cuda()
-                recon, z_mean, z_log_var = vae(data)
+                recon, z_mean, z_log_var = self._vae(data)
 
                 # sum up batch loss
-                test_loss += loss_function(recon, data, z_mean, z_log_var).item()
+                test_loss += self.loss_function(recon, data, z_mean, z_log_var).item()
 
-        test_loss /= len(test_loader.dataset)
+        test_loss /= len(self._data.test_loader.dataset)
         print('====> Test set loss: {:.4f}'.format(test_loss))
 
-        random_number = np.asarray([[np.random.normal() for _ in range(vae.z_dim)]])
-        dn = vae.decoder(torch.Tensor(random_number)).reshape(img_width, img_height).detach().numpy()
-        dn = dn.reshape(-1)[px_unshuf].reshape(img_width, img_height)
+        random_number = np.asarray([[np.random.normal() for _ in range(self._vae.z_dim)]])
+        dn = self._vae.decoder(torch.Tensor(random_number)) \
+            .reshape(self._data.img_width, self._data.img_height) \
+            .detach() \
+            .numpy()
+        dn = dn.reshape(-1)[self._data.px_unshuf] \
+            .reshape(self._data.img_width, self._data.img_height)
         decode_img(dn).resize((56, 56)).show()
 
-    for epoch in range(1, 51):
-        train(epoch)
-        test()
+    def run(self):
+        for epoch in range(1, 51):
+            self.train(epoch)
+            self.test()
+
+
+def _main():
+    VaeTest().run()
 
 
 if __name__ == '__main__':
