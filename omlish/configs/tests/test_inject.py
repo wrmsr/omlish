@@ -30,12 +30,8 @@ ConfigT = ta.TypeVar('ConfigT', bound=Config)
 ConfigurableT = ta.TypeVar('ConfigurableT', bound=Configurable)
 
 
-@dc.dataclass(frozen=True)
-class Factory(ta.Generic[ConfigT, ConfigurableT]):
-    fn: ta.Callable[[ConfigT], ConfigurableT]
-
-    def __call__(self, cfg: ConfigT, **kwargs: ta.Any) -> ConfigurableT:
-        return self.fn(cfg, **kwargs)
+class Factory(lang.Func1[ConfigT, ConfigurableT]):
+    pass
 
 
 def bind_factory(cls: type[Configurable]) -> inj.Elements:

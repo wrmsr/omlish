@@ -178,6 +178,10 @@ from .timeouts import (  # noqa
 
 from .typing import (  # noqa
     BytesLike,
+    Func0,
+    Func1,
+    Func2,
+    Func3,
     protocol_check,
     typed_lambda,
     typed_partial,
