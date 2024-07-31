@@ -58,22 +58,25 @@ class Vae(nn.Module):
         # encoder part
         self.fc1 = nn.Linear(x_dim, h_dim1)
         self.fc2 = nn.Linear(h_dim1, h_dim2)
+
         self.fc31 = nn.Linear(h_dim2, z_dim)
         self.fc32 = nn.Linear(h_dim2, z_dim)
+
         # decoder part
         self.fc4 = nn.Linear(z_dim, h_dim2)
         self.fc5 = nn.Linear(h_dim2, h_dim1)
+
         self.fc6 = nn.Linear(h_dim1, x_dim)
 
     def encoder(self, x):
         h = F.relu(self.fc1(x))
         h = F.relu(self.fc2(h))
-        return self.fc31(h), self.fc32(h)  # mu, log_var
+        return self.fc31(h), self.fc32(h)  # z_mean, z_log_var
 
-    def sampling(self, mu, log_var):
-        std = torch.exp(0.5 * log_var)
+    def sampling(self, z_mean, z_log_var):
+        std = torch.exp(0.5 * z_log_var)
         eps = torch.randn_like(std)
-        return eps.mul(std).add_(mu)  # return z sample
+        return eps.mul(std).add_(z_mean)  # return z sample
 
     def decoder(self, z):
         h = F.relu(self.fc4(z))
@@ -81,9 +84,9 @@ class Vae(nn.Module):
         return F.sigmoid(self.fc6(h))
 
     def forward(self, x):
-        mu, log_var = self.encoder(x.view(-1, 784))
-        z = self.sampling(mu, log_var)
-        return self.decoder(z), mu, log_var
+        z_mean, z_log_var = self.encoder(x.view(-1, 784))
+        z = self.sampling(z_mean, z_log_var)
+        return self.decoder(z), z_mean, z_log_var
 
 
 def _main():
@@ -109,9 +112,9 @@ def _main():
     optimizer = optim.Adam(vae.parameters())
 
     # return reconstruction error + KL divergence losses
-    def loss_function(recon_x, x, mu, log_var):
+    def loss_function(recon_x, x, z_mean, z_log_var):
         reconstruction_loss = F.binary_cross_entropy(recon_x, x.view(-1, 784), reduction='sum')
-        kl_loss = -0.5 * torch.sum(1 + log_var - mu.pow(2) - log_var.exp())
+        kl_loss = -0.5 * torch.sum(1 + z_log_var - z_mean.pow(2) - z_log_var.exp())
         return reconstruction_loss + kl_loss
 
     def train(epoch):
@@ -125,8 +128,8 @@ def _main():
 
             optimizer.zero_grad()
 
-            recon_batch, mu, log_var = vae(data)
-            loss = loss_function(recon_batch, data, mu, log_var)
+            recon_batch, z_mean, z_log_var = vae(data)
+            loss = loss_function(recon_batch, data, z_mean, z_log_var)
 
             loss.backward()
             train_loss += loss.item()
@@ -159,10 +162,10 @@ def _main():
 
                 if torch.cuda.is_available():
                     data = data.cuda()
-                recon, mu, log_var = vae(data)
+                recon, z_mean, z_log_var = vae(data)
 
                 # sum up batch loss
-                test_loss += loss_function(recon, data, mu, log_var).item()
+                test_loss += loss_function(recon, data, z_mean, z_log_var).item()
 
         test_loss /= len(test_loader.dataset)
         print('====> Test set loss: {:.4f}'.format(test_loss))
