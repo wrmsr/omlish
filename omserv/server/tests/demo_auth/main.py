@@ -31,6 +31,7 @@ from .base import USER
 from .base import USER_STORE
 from .base import Handler_
 from .base import Route
+from .base import get_app_markers
 from .handlers.favicon import FaviconHandler
 from .handlers.index import IndexHandler
 from .handlers.login import LoginHandler
@@ -104,7 +105,7 @@ def _auth_app() -> AuthApp:
     route_handlers: dict[Route, ta.Any] = {}
     for h in handlers:
         for rh in h.get_route_handlers():
-            app = lang.unwrap_func(rh.handler)  # noqa
+            markers = get_app_markers(rh.handler)  # noqa
             route_handlers[rh.route] = rh.handler
 
     return AuthApp(
