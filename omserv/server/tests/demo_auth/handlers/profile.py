@@ -3,6 +3,7 @@ import typing as ta
 
 from omlish import check
 from omlish import http as hu
+from omlish import lang
 from omlish.http.asgi import AsgiRecv
 from omlish.http.asgi import AsgiScope
 from omlish.http.asgi import AsgiSend
@@ -11,10 +12,10 @@ from omlish.http.asgi import read_form_body
 from omlish.http.asgi import redirect_response
 from omlish.http.asgi import start_response
 
-from ..base import USER
 from ..base import Handler_
 from ..base import Route
 from ..base import RouteHandler
+from ..base import User
 from ..base import login_required
 from ..base import url_for
 from ..base import with_session
@@ -26,10 +27,12 @@ from ..users import UserStore
 class ProfileHandler(Handler_):
     def __init__(
             self,
+            current_user: lang.Func0[User | None],
             templates: J2Templates,
             users: UserStore,
     ) -> None:
         super().__init__()
+        self._current_user = current_user
         self._templates = templates
         self._users = users
 
@@ -43,7 +46,7 @@ class ProfileHandler(Handler_):
     @with_user
     @login_required
     async def handle_get_profile(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
-        user = check.not_none(USER.get())
+        user = check.not_none(self._current_user())
         html = self._templates.render(
             'profile.html.j2',
             name=user.name,
@@ -55,7 +58,7 @@ class ProfileHandler(Handler_):
     @with_session
     @with_user
     async def handle_post_profile(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
-        user = check.not_none(USER.get())
+        user = check.not_none(self._current_user())
 
         dct = await read_form_body(recv)
 

@@ -23,6 +23,7 @@ from ..users import UserStore
 class SignupHandler(Handler_):
     def __init__(
             self,
+            *,
             templates: J2Templates,
             users: UserStore,
     ) -> None:
