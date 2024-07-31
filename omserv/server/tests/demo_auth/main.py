@@ -345,18 +345,15 @@ def _gpt2_enc() -> 'tiktoken.Encoding':
 gpt2_enc = anu.LazyFn(functools.partial(anyio.to_thread.run_sync, _gpt2_enc))
 
 
-BASIC_AUTH_PREFIX = b'Bearer '
-
-
 @handle('POST', '/tik')
 async def handle_post_tik(scope, recv, send):
     hdrs = dict(scope['headers'])
-    auth = hdrs.get(b'authorization')
-    if not auth or not auth.startswith(BASIC_AUTH_PREFIX):
+    auth = hdrs.get(hu.consts.AUTH_HEADER_NAME)
+    if not auth or not auth.startswith(hu.consts.BASIC_AUTH_HEADER_PREFIX):
         await send_response(send, 401)
         return
 
-    auth_token = auth[len(BASIC_AUTH_PREFIX):].decode()
+    auth_token = auth[len(hu.consts.BASIC_AUTH_HEADER_PREFIX):].decode()
     user: User | None = None
     for u in USERS.get_all():
         if u.auth_token and u.auth_token == auth_token:
