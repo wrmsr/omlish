@@ -1,12 +1,9 @@
-import functools
-
 import pytest
 
 from ..functions import Args
 from ..functions import as_async
 from ..functions import finally_
 from ..functions import try_
-from ..functions import unwrap_func
 
 
 def test_args():
@@ -48,27 +45,3 @@ async def test_as_async():
     assert (await as_async(lambda: 420)()) == 420
 
 
-def test_unwrap_func():
-    assert unwrap_func(l := lambda: None) is l
-
-    assert unwrap_func(functools.partial(l)) is l
-
-    #
-
-    def f(x):
-        return x + 1
-
-    @functools.wraps(f)
-    def g(x):
-        return f(x + 1)
-
-    assert unwrap_func(f) is f
-    assert unwrap_func(g) is f
-
-    #
-
-    p0 = lambda: None  # noqa
-    p1 = functools.wraps(p0)(lambda: p0())
-    p2 = functools.wraps(p1)(functools.partial(lambda: p1()))
-
-    assert unwrap_func(p2) is p0

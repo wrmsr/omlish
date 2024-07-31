@@ -41,36 +41,6 @@ def recurse(fn: ta.Callable[..., T], *args, **kwargs) -> T:
 ##
 
 
-def unwrap_func(fn: ta.Callable) -> ta.Callable:
-    fn, _ = unwrap_func_with_partials(fn)
-    return fn
-
-
-def unwrap_func_with_partials(fn: ta.Callable) -> tuple[ta.Callable, list[functools.partial]]:
-    ps = []
-    while True:
-        if is_method_descriptor(fn):
-            fn = fn.__func__  # type: ignore
-        elif hasattr(fn, '__wrapped__'):
-            nxt = fn.__wrapped__
-            if not callable(nxt):
-                raise TypeError(nxt)
-            if nxt is fn:
-                raise TypeError(fn)
-            fn = nxt
-        # NOTE: __wrapped__ takes precedence - a partial might point to a bound Method when the important information is
-        # still the unbound func. see _decorator_descriptor for an example of this.
-        elif isinstance(fn, functools.partial):
-            ps.append(fn)
-            fn = fn.func
-        else:
-            break
-    return fn, ps
-
-
-##
-
-
 def raise_(o: BaseException) -> ta.NoReturn:
     raise o
 

@@ -83,6 +83,8 @@ from .descriptors import (  # noqa
     decorator,
     is_method_descriptor,
     item_property,
+    unwrap_func,
+    unwrap_func_with_partials,
     unwrap_method,
     unwrap_method_descriptors,
     update_wrapper_except_dict,
@@ -108,8 +110,6 @@ from .functions import (  # noqa
     raising,
     recurse,
     try_,
-    unwrap_func,
-    unwrap_func_with_partials,
     void,
 )
 
