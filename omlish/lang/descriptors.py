@@ -22,16 +22,6 @@ def item_property(n: str):
 ##
 
 
-def unwrap_method(obj):
-    if isinstance(obj, types.MethodType):
-        return obj.__func__
-    else:
-        return obj
-
-
-##
-
-
 BUILTIN_METHOD_DESCRIPTORS = (classmethod, staticmethod)
 
 
@@ -60,7 +50,7 @@ def unwrap_func(fn: ta.Callable) -> ta.Callable:
 def unwrap_func_with_partials(fn: ta.Callable) -> tuple[ta.Callable, list[functools.partial]]:
     ps = []
     while True:
-        if is_method_descriptor(fn):
+        if is_method_descriptor(fn) or isinstance(fn, types.MethodType):
             fn = fn.__func__  # type: ignore
         elif hasattr(fn, '__wrapped__'):
             nxt = fn.__wrapped__
@@ -102,7 +92,7 @@ def update_wrapper_except_dict(
 ##
 
 
-_DECORATOR_HANDLES_UNBOUND_METHODS = True
+_DECORATOR_HANDLES_UNBOUND_METHODS = False
 
 
 class _decorator_descriptor:  # noqa

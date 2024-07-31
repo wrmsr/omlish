@@ -3,8 +3,8 @@ import inspect
 
 import pytest
 
-from ..descriptors import AccessForbiddenError
 from ..descriptors import _DECORATOR_HANDLES_UNBOUND_METHODS
+from ..descriptors import AccessForbiddenError
 from ..descriptors import access_forbidden
 from ..descriptors import attr_property
 from ..descriptors import classonly
@@ -28,6 +28,31 @@ def test_unwrap_func():
 
     assert unwrap_func(f) is f
     assert unwrap_func(g) is f
+
+    #
+
+    def _m(self):
+        pass
+
+    def _c(cls):
+        pass
+
+    def _s():
+        pass
+
+    class C:
+        m = _m
+        c = classmethod(_c)
+        s = staticmethod(_s)
+
+    assert C().m is not _m
+    assert unwrap_func(C().m) is _m
+
+    assert C.c is not _c
+    assert unwrap_func(C.c) is _c
+
+    # assert C.s is not _s
+    assert unwrap_func(C.s) is _s
 
     #
 
@@ -80,12 +105,30 @@ def test_single_decorator():
     def my_decorator(fn, x):
         return fn(x + 1)
 
-    @my_decorator
-    def f(x):
+    def _f(x):
         return x + 1
+    f = my_decorator(_f)
 
     for _ in range(2):
         assert f(3) == 5
+
+    assert list(inspect.signature(f).parameters) == ['x']
+    assert unwrap_func(f) is _f
+
+    def _m(self, x):
+        return self.z + x + 1
+
+    def _c1(cls, x):
+        return cls.z + x + 1
+
+    def _s1(x):
+        return x + 1
+
+    def _c2(cls, x):
+        return cls.z + x + 1
+
+    def _s2(x):
+        return x + 1
 
     class Foo:
         def __init__(self, z):
@@ -94,29 +137,13 @@ def test_single_decorator():
 
         z = 5
 
-        @my_decorator
-        def m(self, x):
-            return self.z + x + 1
+        m = my_decorator(_m)
 
-        @my_decorator
-        @classmethod
-        def c1(cls, x):
-            return cls.z + x + 1
+        c1 = my_decorator(classmethod(_c1))
+        s1 = my_decorator(staticmethod(_s1))
 
-        @my_decorator
-        @staticmethod
-        def s1(x):
-            return x + 1
-
-        @classmethod
-        @my_decorator
-        def c2(cls, x):
-            return cls.z + x + 1
-
-        @staticmethod
-        @my_decorator
-        def s2(x):
-            return x + 1
+        c2 = classmethod(my_decorator(_c2))  # type: ignore
+        s2 = staticmethod(my_decorator(_s2))
 
     f = Foo(4)
     for _ in range(2):
@@ -131,16 +158,20 @@ def test_single_decorator():
     assert Foo.c2(2) == 9
     assert Foo.s2(1) == 3
 
-    for fn in [
-        f.m,
-        Foo.c1,
-        Foo.s1,
-        Foo.c2,
-        Foo.s2,
+    assert list(inspect.signature(f.m).parameters) == ['x']
+    assert unwrap_func(f.m) is _m
+
+    for fn, wfn in [
+        (Foo.c1, _c1),
+        (Foo.s1, _s1),
+        (Foo.c2, _c2),
+        (Foo.s2, _s2),
     ]:
         assert list(inspect.signature(fn).parameters) == ['x']
+        assert unwrap_func(fn) is wfn
 
     assert list(inspect.signature(Foo.m).parameters) == ['self', 'x']
+    assert unwrap_func(Foo.m) is _m
 
 
 def test_double_decorator():
