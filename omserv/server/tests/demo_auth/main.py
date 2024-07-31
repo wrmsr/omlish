@@ -47,8 +47,8 @@ from .j2 import J2Templates
 from .j2 import j2_helper
 from .passwords import check_password_hash
 from .passwords import generate_password_hash
-from .users import USERS
 from .users import User
+from .users import UserStore
 
 
 log = logging.getLogger(__name__)
@@ -132,6 +132,8 @@ def url_for(s: str) -> str:
 ##
 
 
+USER_STORE = UserStore()
+
 USER: contextvars.ContextVar[User | None] = contextvars.ContextVar('user', default=None)
 
 
@@ -146,7 +148,7 @@ async def with_user(fn: AsgiApp, scope: AsgiScope, recv: AsgiRecv, send: AsgiSen
 
     user_id = session.get('_user_id')
     if user_id is not None:
-        user = USERS.get(id=user_id)
+        user = USER_STORE.get(id=user_id)
     else:
         user = None
 
@@ -222,6 +224,9 @@ class IndexHandler(Handler_):
 
 
 class ProfileHandler(Handler_):
+    def __init__(self, users: UserStore) -> None:
+        super().__init__()
+        self._users = users
 
     def get_route_handlers(self) -> ta.Iterable[RouteHandler]:
         return [
@@ -252,7 +257,7 @@ class ProfileHandler(Handler_):
         auth_token = dct[b'auth-token'].decode()
 
         user = dc.replace(user, auth_token=auth_token or None)
-        USERS.update(user)
+        self._users.update(user)
 
         await redirect_response(send, url_for('profile'))
 
@@ -261,6 +266,9 @@ class ProfileHandler(Handler_):
 
 
 class LoginHandler(Handler_):
+    def __init__(self, users: UserStore) -> None:
+        super().__init__()
+        self._users = users
 
     def get_route_handlers(self) -> ta.Iterable[RouteHandler]:
         return [
@@ -284,7 +292,7 @@ class LoginHandler(Handler_):
         password = dct[b'password'].decode()  # noqa
         remember = b'remember' in dct  # noqa
 
-        user = USERS.get(email=email)  # noqa
+        user = self._users.get(email=email)  # noqa
 
         if not user or not check_password_hash(user.password, password):
             flash('Please check your login details and try again.')
@@ -300,6 +308,9 @@ class LoginHandler(Handler_):
 
 
 class SignupHandler(Handler_):
+    def __init__(self, users: UserStore) -> None:
+        super().__init__()
+        self._users = users
 
     def get_route_handlers(self) -> ta.Iterable[RouteHandler]:
         return [
@@ -323,7 +334,7 @@ class SignupHandler(Handler_):
         password = dct[b'password'].decode()
         name = dct[b'name'].decode()
 
-        USERS.create(
+        self._users.create(
             email=email,
             password=generate_password_hash(password, method='scrypt'),
             name=name,
@@ -386,6 +397,9 @@ gpt2_enc = anu.LazyFn(functools.partial(anyio.to_thread.run_sync, _gpt2_enc))
 
 
 class TikHandler(Handler_):
+    def __init__(self, users: UserStore) -> None:
+        super().__init__()
+        self._users = users
 
     def get_route_handlers(self) -> ta.Iterable[RouteHandler]:
         return [
@@ -401,7 +415,7 @@ class TikHandler(Handler_):
 
         auth_token = auth[len(hu.consts.BASIC_AUTH_HEADER_PREFIX):].decode()
         user: User | None = None
-        for u in USERS.get_all():
+        for u in self._users.get_all():
             if u.auth_token and u.auth_token == auth_token:
                 user = u
                 break
@@ -464,13 +478,12 @@ class AuthApp(AsgiApp_):
 def _auth_app() -> AuthApp:
     handlers: list[Handler_] = [
         IndexHandler(),
-        ProfileHandler(),
-        LoginHandler(),
-        SignupHandler(),
+        ProfileHandler(USER_STORE),
+        LoginHandler(USER_STORE),
+        SignupHandler(USER_STORE),
         LogoutHandler(),
         FaviconHandler(),
-        TikHandler(),
-
+        TikHandler(USER_STORE),
     ]
 
     return AuthApp(
