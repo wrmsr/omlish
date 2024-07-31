@@ -4,6 +4,7 @@ import typing as ta
 
 
 T = ta.TypeVar('T')
+P = ta.ParamSpec('P')
 
 
 ##
@@ -75,7 +76,7 @@ class _decorator_descriptor:  # noqa
         return self._wrapper(self._fn, *args, **kwargs)
 
 
-class decorator:  # noqa
+class _decorator:  # noqa
     def __init__(self, wrapper):
         self._wrapper = wrapper
         update_wrapper_except_dict(self, wrapper)
@@ -85,6 +86,16 @@ class decorator:  # noqa
 
     def __call__(self, fn):
         return _decorator_descriptor(self._wrapper, fn)  # noqa
+
+
+# FIXME:
+# def decorator(
+#         wrapper: ta.Callable[ta.Concatenate[ta.Any, P], T],  # FIXME: https://youtrack.jetbrains.com/issue/PY-72164  # noqa
+# ) -> ta.Callable[[ta.Callable[P, T]], ta.Callable[P, T]]:
+#     return _decorator(wrapper)
+
+
+decorator = _decorator
 
 
 ##
