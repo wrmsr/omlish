@@ -187,3 +187,53 @@ def test_double_decorator():
 
     for _ in range(2):
         assert f(3) == 6
+
+
+def test_nested_decorator():
+    @decorator
+    def my_decorator1(fn, x):
+        return fn(x + 1)
+
+    @decorator
+    def my_decorator2(fn, x):
+        return fn(x * 2)
+
+    def _m(self, x):
+        return self.z + x + 1
+
+    def _c(cls, x):
+        return cls.z + x + 1
+
+    class Foo:
+        z = 9
+
+        def __init__(self, z):
+            self.z = z
+
+        m1 = my_decorator1(my_decorator2(_m))
+        m2 = my_decorator2(my_decorator1(_m))
+
+        c1 = my_decorator1(my_decorator2(classmethod(_c)))
+        c2 = my_decorator1(classmethod(my_decorator2(_c)))
+        c3 = my_decorator1(my_decorator2(classmethod(my_decorator2(my_decorator1(_c)))))
+
+    assert Foo(3).m1(2) == 10
+    assert Foo(3).m2(2) == 9
+
+    assert unwrap_func(Foo(3).m1) is _m
+    assert unwrap_func(Foo(3).m2) is _m
+
+    if _DECORATOR_HANDLES_UNBOUND_METHODS:
+        print(Foo.m1(Foo(3), 2))
+        print(Foo.m2(Foo(3), 2))
+
+    assert unwrap_func(Foo.m1) is _m
+    assert unwrap_func(Foo.m2) is _m
+
+    assert Foo.c1(9) == 30
+    assert Foo.c2(9) == 30
+    assert Foo.c3(9) == 51
+
+    assert unwrap_func(Foo.c1) is _c
+    assert unwrap_func(Foo.c2) is _c
+    assert unwrap_func(Foo.c3) is _c

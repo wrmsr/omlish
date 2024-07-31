@@ -33,6 +33,19 @@ def is_method_descriptor(obj: ta.Any) -> bool:
     return isinstance(obj, (*BUILTIN_METHOD_DESCRIPTORS, _MethodDescriptor))
 
 
+def _has_method_descriptor(obj: ta.Any) -> bool:
+    while True:
+        if is_method_descriptor(obj):
+            return True
+        elif isinstance(obj, functools.partial):
+            obj = obj.func
+        else:
+            try:
+                obj = getattr(obj, '__wrapped__')
+            except AttributeError:
+                return False
+
+
 def unwrap_method_descriptors(fn: ta.Callable) -> ta.Callable:
     while is_method_descriptor(fn):
         fn = fn.__func__  # type: ignore  # noqa
@@ -96,19 +109,28 @@ _DECORATOR_HANDLES_UNBOUND_METHODS = False
 
 
 class _decorator_descriptor:  # noqa
-    def __init__(self, wrapper, fn):
-        self._wrapper = wrapper
-        self._fn = fn
-        update_wrapper_except_dict(self, fn)
+    if not _DECORATOR_HANDLES_UNBOUND_METHODS:
+        def __init__(self, wrapper, fn):
+            self._wrapper, self._fn = wrapper, fn
+            update_wrapper_except_dict(self, fn)
 
-    def __repr__(self):
-        return f'{self.__class__.__name__}<{self._wrapper}, {self._fn}>'
+        def __get__(self, instance, owner):
+            return functools.update_wrapper(functools.partial(self._wrapper, fn := self._fn.__get__(instance, owner)), fn)  # noqa
 
-    if _DECORATOR_HANDLES_UNBOUND_METHODS:
+    else:
+        def __init__(self, wrapper, fn):
+            self._wrapper = wrapper
+            self._fn = fn
+            self._has_method_descriptor = _has_method_descriptor(fn)
+            update_wrapper_except_dict(self, fn)
+
         def __get__(self, instance, owner):
             fn = self._fn.__get__(instance, owner)
-            if instance is not None:
-                return functools.update_wrapper(functools.partial(self._wrapper, fn), fn)
+            if self._has_method_descriptor or instance is not None:
+                @functools.wraps(fn)
+                def inner(*args, **kwargs):
+                    return self._wrapper(fn, *args, **kwargs)
+                return inner
             else:
                 @functools.wraps(fn)
                 def outer(this, *args, **kwargs):
@@ -118,9 +140,8 @@ class _decorator_descriptor:  # noqa
                     return self._wrapper(inner, *args, **kwargs)
                 return outer
 
-    else:
-        def __get__(self, instance, owner):
-            return functools.update_wrapper(functools.partial(self._wrapper, fn := self._fn.__get__(instance, owner)), fn)  # noqa
+    def __repr__(self):
+        return f'{self.__class__.__name__}<{self._wrapper}, {self._fn}>'
 
     def __call__(self, *args, **kwargs):
         return self._wrapper(self._fn, *args, **kwargs)
