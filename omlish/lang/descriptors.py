@@ -72,6 +72,9 @@ def update_wrapper_except_dict(
 ##
 
 
+_DECORATOR_HANDLES_UNBOUND_METHODS = False
+
+
 class _decorator_descriptor:  # noqa
     def __init__(self, wrapper, fn):
         self._wrapper, self._fn = wrapper, fn
@@ -80,8 +83,23 @@ class _decorator_descriptor:  # noqa
     def __repr__(self):
         return f'{self.__class__.__name__}<{self._wrapper}, {self._fn}>'
 
-    def __get__(self, instance, owner):
-        return functools.update_wrapper(functools.partial(self._wrapper, fn := self._fn.__get__(instance, owner)), fn)  # noqa
+    if _DECORATOR_HANDLES_UNBOUND_METHODS:
+        def __get__(self, instance, owner):
+            fn = self._fn.__get__(instance, owner)
+            if instance is not None:
+                return functools.update_wrapper(functools.partial(self._wrapper, fn), fn)
+            else:
+                @functools.wraps(fn)
+                def outer(this, *args, **kwargs):
+                    @functools.wraps(self._fn)
+                    def inner(*args2, **kwargs2):
+                        return fn(this, *args2, **kwargs2)
+                    return self._wrapper(inner, *args, **kwargs)
+                return outer
+
+    else:
+        def __get__(self, instance, owner):
+            return functools.update_wrapper(functools.partial(self._wrapper, fn := self._fn.__get__(instance, owner)), fn)  # noqa
 
     def __call__(self, *args, **kwargs):
         return self._wrapper(self._fn, *args, **kwargs)
