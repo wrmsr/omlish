@@ -1,0 +1,17 @@
+reasons to c:
+ - speed
+ - mem
+ - debug opacity
+
+feats:
+ - import hook to auto-patch known accels?
+
+targets:
+ - dataclasses
+  - FieldDescriptor
+ - lang
+  - _decorator, _decorator_descriptor
+  - update_wrapper
+  - simple funcs (identity, etc)
+ - dispatch
+  - WeakKeyDict
