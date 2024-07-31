@@ -25,7 +25,7 @@ from ..events import Updated
 from ..headers import filter_pseudo_headers
 from ..headers import response_headers
 from ..streams.httpstream import HttpStream
-from ..streams.wsstream import WSStream
+from ..streams.wsstream import WsStream
 from ..taskspawner import TaskSpawner
 from ..types import AppWrapper
 from ..types import WaitableEvent
@@ -121,7 +121,7 @@ class H2Protocol(Protocol):
         self.keep_alive_requests = 0
         self.send = send
         self.server = server
-        self.streams: dict[int, HttpStream | WSStream] = {}
+        self.streams: dict[int, HttpStream | WsStream] = {}
         # The below are used by the sending task
         self.has_data = self.context.event_class()
         self.priority = priority.PriorityTree()
@@ -334,7 +334,7 @@ class H2Protocol(Protocol):
                 raw_path = value
 
         if method == 'CONNECT':
-            self.streams[request.stream_id] = WSStream(
+            self.streams[request.stream_id] = WsStream(
                 self.app,
                 self.config,
                 self.context,

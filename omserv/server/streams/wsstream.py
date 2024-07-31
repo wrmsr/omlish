@@ -178,7 +178,7 @@ class WebsocketBuffer:
         }
 
 
-class WSStream:
+class WsStream:
     def __init__(
         self,
         app: AppWrapper,
