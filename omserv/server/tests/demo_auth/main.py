@@ -236,11 +236,19 @@ for _rh in INDEX_HANDLER.get_route_handlers():
 #
 
 
+class ProfileHandler(Handler_):
+
+    def get_route_handlers(self) -> ta.Iterable[RouteHandler]:
+        return [
+            RouteHandler(Route('GET', '/'), self.handle_get_index),  # noqa
+        ]
+
+
 @handle('GET', '/profile')
 @with_session
 @with_user
 @login_required
-async def handle_get_profile(scope, recv, send):
+async def handle_get_profile(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
     user = check.not_none(USER.get())
     html = TEMPLATES.render(
         'profile.html.j2',
@@ -254,7 +262,7 @@ async def handle_get_profile(scope, recv, send):
 @handle('POST', '/profile')
 @with_session
 @with_user
-async def handle_post_profile(scope, recv, send):
+async def handle_post_profile(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
     user = check.not_none(USER.get())
 
     dct = await read_form_body(recv)
@@ -270,44 +278,58 @@ async def handle_post_profile(scope, recv, send):
 #
 
 
-@handle('GET', '/login')
-@with_session
-@with_user
-async def handle_get_login(scope, recv, send):
-    html = TEMPLATES.render('login.html.j2')
-    await start_response(send, 200, hu.consts.CONTENT_TYPE_HTML_UTF8)  # noqa
-    await finish_response(send, html)
+class LoginHandler(Handler_):
 
+    def get_route_handlers(self) -> ta.Iterable[RouteHandler]:
+        return [
+            RouteHandler(Route('GET', '/'), self.handle_get_index),  # noqa
+        ]
 
-@handle('POST', '/login')
-@with_session
-@with_user
-async def handle_post_login(scope, recv, send):
-    dct = await read_form_body(recv)
+    @handle('GET', '/login')
+    @with_session
+    @with_user
+    async def handle_get_login(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
+        html = TEMPLATES.render('login.html.j2')
+        await start_response(send, 200, hu.consts.CONTENT_TYPE_HTML_UTF8)  # noqa
+        await finish_response(send, html)
 
-    email = dct[b'email'].decode()
-    password = dct[b'password'].decode()  # noqa
-    remember = b'remember' in dct  # noqa
+    @handle('POST', '/login')
+    @with_session
+    @with_user
+    async def handle_post_login(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None::
+        dct = await read_form_body(recv)
 
-    user = USERS.get(email=email)  # noqa
+        email = dct[b'email'].decode()
+        password = dct[b'password'].decode()  # noqa
+        remember = b'remember' in dct  # noqa
 
-    if not user or not check_password_hash(user.password, password):
-        flash('Please check your login details and try again.')
+        user = USERS.get(email=email)  # noqa
 
-        await redirect_response(send, url_for('login'))
-        return
+        if not user or not check_password_hash(user.password, password):
+            flash('Please check your login details and try again.')
 
-    login_user(user, remember=remember)
-    await redirect_response(send, url_for('profile'))
+            await redirect_response(send, url_for('login'))
+            return
+
+        login_user(user, remember=remember)
+        await redirect_response(send, url_for('profile'))
 
 
 #
 
 
+class SignupHandler(Handler_):
+
+    def get_route_handlers(self) -> ta.Iterable[RouteHandler]:
+        return [
+            RouteHandler(Route('GET', '/'), self.handle_get_index),  # noqa
+        ]
+
+
 @handle('GET', '/signup')
 @with_session
 @with_user
-async def handle_get_signup(scope, recv, send):
+async def handle_get_signup(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None::
     html = TEMPLATES.render('signup.html.j2')
     await start_response(send, 200, hu.consts.CONTENT_TYPE_HTML_UTF8)  # noqa
     await finish_response(send, html)
@@ -316,7 +338,7 @@ async def handle_get_signup(scope, recv, send):
 @handle('POST', '/signup')
 @with_session
 @with_user
-async def handle_post_signup(scope, recv, send):
+async def handle_post_signup(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None::
     dct = await read_form_body(recv)
 
     email = dct[b'email'].decode()
@@ -335,16 +357,32 @@ async def handle_post_signup(scope, recv, send):
 #
 
 
+class LogoutHandler(Handler_):
+
+    def get_route_handlers(self) -> ta.Iterable[RouteHandler]:
+        return [
+            RouteHandler(Route('GET', '/'), self.handle_get_index),  # noqa
+        ]
+
+
 @handle('GET', '/logout')
 @with_session
 @with_user
 @login_required
-async def handle_get_logout(scope, recv, send):
+async def handle_get_logout(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None::
     SESSION.get().pop('_user_id', None)
     await redirect_response(send, url_for(''))
 
 
 ##
+
+
+class FaviconHandler(Handler_):
+
+    def get_route_handlers(self) -> ta.Iterable[RouteHandler]:
+        return [
+            RouteHandler(Route('GET', '/'), self.handle_get_index),  # noqa
+        ]
 
 
 @lang.cached_function
@@ -353,7 +391,7 @@ def _favicon_bytes() -> bytes:
 
 
 @handle('GET', '/favicon.ico')
-async def handle_get_favicon_ico(scope, recv, send):
+async def handle_get_favicon_ico(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None::
     await send_response(send, 200, hu.consts.CONTENT_TYPE_ICON, body=_favicon_bytes())
 
 
@@ -366,6 +404,14 @@ else:
     tiktoken = lang.proxy_import('tiktoken')
 
 
+class TikHandler(Handler_):
+
+    def get_route_handlers(self) -> ta.Iterable[RouteHandler]:
+        return [
+            RouteHandler(Route('GET', '/'), self.handle_get_index),  # noqa
+        ]
+
+
 def _gpt2_enc() -> 'tiktoken.Encoding':
     return tiktoken.get_encoding('gpt2')
 
@@ -374,7 +420,7 @@ gpt2_enc = anu.LazyFn(functools.partial(anyio.to_thread.run_sync, _gpt2_enc))
 
 
 @handle('POST', '/tik')
-async def handle_post_tik(scope, recv, send):
+async def handle_post_tik(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
     hdrs = dict(scope['headers'])
     auth = hdrs.get(hu.consts.AUTH_HEADER_NAME)
     if not auth or not auth.startswith(hu.consts.BASIC_AUTH_HEADER_PREFIX):
