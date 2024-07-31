@@ -1,6 +1,8 @@
 """
 https://github.com/lyeoni/pytorch-mnist-VAE/blob/master/pytorch-mnist-VAE.ipynb
 """
+import random
+
 from omlish.iterators import sliding_window
 import PIL
 import numpy as np
@@ -88,9 +90,14 @@ class Vae(nn.Module):
 def _main():
     from keras.datasets import mnist  # noqa
     train, test = mnist.load_data()
+    img_width, img_height = train[0].shape[1:]
+
+    px_shuf = list(range(img_width * img_height))
+    random.shuffle(px_shuf)
+    px_unshuf = [f for t, f in sorted((t, f) for f, t in enumerate(px_shuf))]
+
     x_train, y_train = prepare(*train)
     x_test, y_test = prepare(*test)
-    img_width, img_height = train[0].shape[1:]
 
     batch_size = 250
 
@@ -102,10 +109,10 @@ def _main():
 
     # build model
     vae = Vae(
-        x_dim=784,
+        x_dim=img_width * img_height,
         h_dims=[
             512,
-            # 256,
+            256,
         ],
         z_dim=2,
     )
