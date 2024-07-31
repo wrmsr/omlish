@@ -26,7 +26,8 @@ from omlish import lang
 from omlish import logs
 from omlish.asyncs import anyio as anu
 from omlish.http import sessions
-from omlish.http.asgi import AbstractAsgiApp
+from omlish.http.asgi import AsgiApp
+from omlish.http.asgi import AsgiApp_
 from omlish.http.asgi import AsgiRecv
 from omlish.http.asgi import AsgiScope
 from omlish.http.asgi import AsgiSend
@@ -76,7 +77,7 @@ SESSION: contextvars.ContextVar[sessions.Session] = contextvars.ContextVar('sess
 
 
 @lang.decorator
-async def with_session(fn, scope, recv, send):
+async def with_session(fn: AsgiApp, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
     async def _send(obj):
         if obj['type'] == 'http.response.start':
             out_session = SESSION.get()
@@ -129,19 +130,6 @@ def url_for(s: str) -> str:
 ##
 
 
-HANDLERS: dict[tuple[str, str], ta.Any] = {}
-
-
-def handle(method: str, path: str):
-    def inner(fn):
-        HANDLERS[(method, path)] = fn
-        return fn
-    return inner
-
-
-##
-
-
 USER: contextvars.ContextVar[User | None] = contextvars.ContextVar('user', default=None)
 
 
@@ -151,7 +139,7 @@ def current_user() -> User | None:
 
 
 @lang.decorator
-async def with_user(fn, scope, recv, send):
+async def with_user(fn: AsgiApp, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
     session = SESSION.get()
 
     user_id = session.get('_user_id')
@@ -165,7 +153,7 @@ async def with_user(fn, scope, recv, send):
 
 
 @lang.decorator
-async def login_required(fn, scope, recv, send):
+async def login_required(fn: AsgiApp, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
     if USER.get() is None:
         await redirect_response(send, url_for('login'))
         return
@@ -183,6 +171,19 @@ def login_user(user: User, *, remember: bool = False) -> None:
 TEMPLATES = J2Templates(J2Templates.Config(
     reload=True,
 ))
+
+
+##
+
+
+HANDLERS: dict[tuple[str, str], ta.Any] = {}
+
+
+def handle(method: str, path: str):
+    def inner(fn):
+        HANDLERS[(method, path)] = fn
+        return fn
+    return inner
 
 
 ##
@@ -376,7 +377,7 @@ async def handle_post_tik(scope, recv, send):
 ##
 
 
-class AuthApp(AbstractAsgiApp):
+class AuthApp(AsgiApp_):
     def __init__(
             self,
             *,

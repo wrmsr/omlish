@@ -20,7 +20,7 @@ AsgiSend: ta.TypeAlias = ta.Callable[[AsgiMessage], ta.Awaitable[None]]
 AsgiApp: ta.TypeAlias = ta.Callable[[AsgiScope, AsgiRecv, AsgiSend], ta.Awaitable[None]]
 
 
-class AbstractAsgiApp(abc.ABC):
+class AsgiApp_(abc.ABC):
     @abc.abstractmethod
     async def __call__(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
         raise NotImplementedError
