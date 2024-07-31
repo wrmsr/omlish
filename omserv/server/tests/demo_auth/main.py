@@ -7,6 +7,7 @@ TODO:
 
 https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login
 """
+import abc
 import contextvars
 import dataclasses as dc
 import datetime
@@ -181,6 +182,11 @@ class Route(ta.NamedTuple):
     path: str
 
 
+class RouteHandler(ta.NamedTuple):
+    route: Route
+    handler: AsgiApp
+
+
 ROUTE_HANDLERS: dict[Route, ta.Any] = {}
 
 
@@ -194,13 +200,24 @@ def handle(method: str, path: str):
 ##
 
 
+class Handler_(lang.Abstract):  # noqa
+    @abc.abstractmethod
+    def get_route_handlers(self) -> ta.Iterable[RouteHandler]:
+        raise NotImplementedError
+
+
 ##
 
 
-class IndexHandler:
+class IndexHandler(Handler_):
+    def get_route_handlers(self) -> ta.Iterable[RouteHandler]:
+        return [
+            RouteHandler(Route('GET', '/'), self.handle_get_index),  # noqa
+        ]
+
     @with_session
     @with_user
-    async def handle_get_index(self, scope, recv, send):
+    async def handle_get_index(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
         session = SESSION.get()
 
         session['c'] = session.get('c', 0) + 1
@@ -212,7 +229,8 @@ class IndexHandler:
 
 INDEX_HANDLER = IndexHandler()
 
-handle('GET', '/')(INDEX_HANDLER.handle_get_index)
+for _rh in INDEX_HANDLER.get_route_handlers():
+    handle(*_rh.route)(_rh.handler)
 
 
 #
