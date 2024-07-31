@@ -1,3 +1,4 @@
+from ..iterables import itergen
 from ..iterables import peek
 from ..iterables import prodrange
 
@@ -18,3 +19,15 @@ def test_prodrange():
         (2, 0),
         (2, 1),
     ]
+
+
+def test_itergen():
+    l = list(reversed(range(3)))
+
+    a = enumerate(l)
+    assert list(a) == [(0, 2), (1, 1), (2, 0)]
+    assert list(a) == []
+
+    b = itergen(lambda: enumerate(l))
+    for _ in range(2):
+        assert list(b) == [(0, 2), (1, 1), (2, 0)]
