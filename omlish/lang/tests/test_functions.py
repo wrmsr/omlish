@@ -4,6 +4,7 @@ from ..functions import Args
 from ..functions import as_async
 from ..functions import finally_
 from ..functions import try_
+from ..functions import unwrap_func
 
 
 def test_args():
@@ -43,3 +44,7 @@ def test_finally():
 @pytest.mark.asyncio
 async def test_as_async():
     assert (await as_async(lambda: 420)()) == 420
+
+
+def test_unwrap_func():
+    assert unwrap_func(l := lambda: None) is l
