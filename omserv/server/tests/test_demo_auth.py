@@ -5,6 +5,8 @@ import anyio
 import httpx
 import pytest
 
+from omlish import lang
+
 from ..config import Config
 from ..types import AsgiWrapper
 from ..workers import worker_serve
@@ -12,7 +14,6 @@ from .demo_auth.main import auth_app
 from .utils import TIMEOUT_S
 from .utils import get_free_port
 from .utils import headers_time_patch  # noqa
-from omlish import lang
 
 
 @pytest.mark.trio
@@ -42,7 +43,7 @@ async def test_demo_auth():
     async with anyio.create_task_group() as tg:
         tg.start_soon(functools.partial(
             worker_serve,
-            AsgiWrapper(auth_app),
+            AsgiWrapper(auth_app),  # type: ignore
             Config(
                 bind=(f'127.0.0.1:{port}',),
             ),
