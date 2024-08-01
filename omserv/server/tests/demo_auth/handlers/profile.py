@@ -23,18 +23,11 @@ from ..j2 import J2Templates
 from ..users import UserStore
 
 
+@dc.dataclass(frozen=True)
 class ProfileHandler(Handler_):
-    def __init__(
-            self,
-            *,
-            current_user: lang.Func0[User | None],
-            templates: J2Templates,
-            users: UserStore,
-    ) -> None:
-        super().__init__()
-        self._current_user = current_user
-        self._templates = templates
-        self._users = users
+    _current_user: lang.Func0[User | None]
+    _templates: J2Templates
+    _users: UserStore
 
     @handles(Route('GET', '/profile'))
     @with_session

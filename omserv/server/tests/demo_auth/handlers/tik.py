@@ -1,3 +1,4 @@
+import dataclasses as dc
 import functools
 import typing as ta
 
@@ -33,14 +34,9 @@ def _gpt2_enc() -> 'tiktoken.Encoding':
 gpt2_enc = anu.LazyFn(functools.partial(anyio.to_thread.run_sync, _gpt2_enc))
 
 
+@dc.dataclass(frozen=True)
 class TikHandler(Handler_):
-    def __init__(
-            self,
-            *,
-            users: UserStore,
-    ) -> None:
-        super().__init__()
-        self._users = users
+    _users: UserStore
 
     @handles(Route('POST', '/tik'))
     async def handle_post_tik(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:

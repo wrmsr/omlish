@@ -1,3 +1,5 @@
+import dataclasses as dc
+
 from omlish import http as hu
 from omlish.http.asgi import AsgiRecv
 from omlish.http.asgi import AsgiScope
@@ -18,16 +20,10 @@ from ..passwords import generate_password_hash
 from ..users import UserStore
 
 
+@dc.dataclass(frozen=True)
 class SignupHandler(Handler_):
-    def __init__(
-            self,
-            *,
-            templates: J2Templates,
-            users: UserStore,
-    ) -> None:
-        super().__init__()
-        self._templates = templates
-        self._users = users
+    _templates: J2Templates
+    _users: UserStore
 
     @handles(Route('GET', '/signup'))
     @with_session
