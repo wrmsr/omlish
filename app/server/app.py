@@ -28,12 +28,12 @@ from omlish.http.sessions import Session
 from omserv.server.config import Config
 from omserv.server.serving import serve
 
-from .base import Handler_
-from .base import Route
 from .base import SCOPE
 from .base import SESSION
 from .base import USER
 from .base import USER_STORE
+from .base import Handler_
+from .base import Route
 from .base import User
 from .base import get_app_markers
 from .handlers.favicon import FaviconHandler
@@ -97,6 +97,9 @@ def _server_app() -> AuthApp:
         inj.as_(lang.Func0[Session], inj.const(lang.Func0(SESSION.get))),
         inj.as_(lang.Func0[User | None], inj.const(lang.Func0(USER.get))),
 
+        inj.as_binding(inj.const(templates)),
+        inj.as_binding(inj.const(USER_STORE)),
+
         inj.bind_set_provider(ta.AbstractSet[Handler_]),
 
         *itertools.chain.from_iterable([
@@ -113,22 +116,7 @@ def _server_app() -> AuthApp:
         ]),
     ))
 
-    hs = i.provide(inj.as_key(ta.AbstractSet[Handler_]))
-    breakpoint()
-
-    current_scope = lang.Func0(SCOPE.get)  # noqa
-    current_session = lang.Func0(SESSION.get)
-    current_user = lang.Func0(USER.get)
-
-    handlers: list[Handler_] = [
-        IndexHandler(_current_session=current_session, _templates=templates),
-        ProfileHandler(_current_user=current_user, _templates=templates, _users=USER_STORE),
-        LoginHandler(_templates=templates, _users=USER_STORE),
-        SignupHandler(_templates=templates, _users=USER_STORE),
-        LogoutHandler(),
-        FaviconHandler(),
-        TikHandler(_users=USER_STORE),
-    ]
+    handlers = i.provide(inj.as_key(ta.AbstractSet[Handler_]))
 
     route_handlers: dict[Route, ta.Any] = {}
     for h in handlers:
