@@ -10,7 +10,7 @@ from .. import headers
 T = ta.TypeVar('T')
 
 
-TIMEOUT_S: int = 5
+TIMEOUT_S: int = 50
 
 
 def get_free_port(address: str = '') -> int:
