@@ -1,9 +1,6 @@
 import os.path
 import subprocess
 
-from omlish.docker import timebomb_payload
-from omlish.testing.pydevd import silence_subprocess_check
-
 from .. import utils as u
 
 
@@ -12,37 +9,20 @@ TIMEBOMB_DELAY_S = 20 * 60
 
 
 def _main():
-    silence_subprocess_check()
-
     if USE_DOCKERFILE:
         img_name = 'wrmsr/omlish-piku-demo'
         cur_dir = os.path.dirname(__file__)
-        subprocess.check_call([
-            'docker', 'build',
-            '--tag', img_name,
-            '-f', os.path.join(cur_dir, 'Dockerfile'),
-            cur_dir,
-        ])
+        u.build_docker_image(img_name, cur_dir)
 
     else:
         img_name = 'ubuntu:22.04'
 
-    ctr_id = subprocess.check_output([
-        'docker', 'run',
-        '-d',
-        '-p', '9080:9080',
-        img_name,
-        'sleep', 'infinity',
-    ]).decode().strip()
-    print(f'{ctr_id=}')
-
-    try:
-        if TIMEBOMB_DELAY_S:
-            subprocess.check_call([
-                'docker', 'exec', '-id', ctr_id,
-                'sh', '-c', timebomb_payload(TIMEBOMB_DELAY_S),
-            ])
-
+    with u.launch_docker_container(
+            '-p', '9080:9080',
+            img_name,
+            'sleep', 'infinity',
+            timebomb_delay_s=TIMEBOMB_DELAY_S,
+    ) as ctr_id:
         def get(*args):
             subprocess.check_output(['docker', 'exec', '-i', ctr_id, *args])
 
@@ -108,15 +88,6 @@ def _main():
             'git remote add piku piku@localhost:sample_python_app',
             'git push piku master',
         )
-
-        print()
-        print(ctr_id)
-        print()
-        print('done - press enter to die')
-        input()
-
-    finally:
-        subprocess.check_call(['docker', 'kill', '-sKILL', ctr_id])
 
 
 if __name__ == '__main__':
