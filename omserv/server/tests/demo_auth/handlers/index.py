@@ -1,5 +1,3 @@
-import typing as ta
-
 from omlish import http as hu
 from omlish import lang
 from omlish.http.asgi import AsgiRecv
@@ -11,7 +9,7 @@ from omlish.http.sessions import Session
 
 from ..base import Handler_
 from ..base import Route
-from ..base import RouteHandler
+from ..base import handles
 from ..base import with_session
 from ..base import with_user
 from ..j2 import J2Templates
@@ -28,11 +26,7 @@ class IndexHandler(Handler_):
         self._current_session = current_session
         self._templates = templates
 
-    def get_route_handlers(self) -> ta.Iterable[RouteHandler]:
-        return [
-            RouteHandler(Route('GET', '/'), self.handle_get_index),  # noqa
-        ]
-
+    @handles(Route('GET', '/'))
     @with_session
     @with_user
     async def handle_get_index(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
