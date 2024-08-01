@@ -11,6 +11,8 @@ https://tailscale.com/kb/1085/auth-keys
 ==
 
 curl -fsSL https://tailscale.com/install.sh | sh
+
+tailscale up --authkey=tskey-0123456789abcdef --hostname=server-foo
 """
 import datetime
 import json
@@ -74,31 +76,31 @@ def _main():
     devs = msh.unmarshal(dct['devices'], list[Device])
     print(devs)
 
-    # with urllib.request.urlopen(urllib.request.Request(
-    #         f'{base_url}/tailnet/-/keys',
-    #         method='POST',
-    #         headers=hdrs,
-    #         data=json.dumps({
-    #             'capabilities': {
-    #                 'devices': {
-    #                     'create': {
-    #                         'reusable': False,
-    #                         'ephemeral': True,
-    #                         'preauthorized': True,
-    #                         'tags': [
-    #                             'tag:server'
-    #                         ]
-    #                     }
-    #                 }
-    #             },
-    #             'expirySeconds': 3600,
-    #             'description': 'server access',
-    #         }).encode(),
-    # )) as resp:
-    #     buf = resp.read()
-    #
-    # dct = json.loads(buf.decode())
-    # print(dct)
+    with urllib.request.urlopen(urllib.request.Request(
+            f'{base_url}/tailnet/-/keys',
+            method='POST',
+            headers=hdrs,
+            data=json.dumps({
+                'capabilities': {
+                    'devices': {
+                        'create': {
+                            'reusable': False,
+                            'ephemeral': True,
+                            'preauthorized': True,
+                            'tags': [
+                                'tag:server'
+                            ]
+                        }
+                    }
+                },
+                'expirySeconds': 3600,
+                'description': 'server access',
+            }).encode(),
+    )) as resp:
+        buf = resp.read()
+
+    dct = json.loads(buf.decode())
+    print(dct)
 
     with urllib.request.urlopen(urllib.request.Request(
             f'{base_url}/tailnet/-/keys',
