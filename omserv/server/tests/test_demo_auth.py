@@ -9,7 +9,6 @@ from ..config import Config
 from ..types import AsgiWrapper
 from ..workers import worker_serve
 from .demo_auth.main import auth_app
-from .sanity import sanity_framework
 from .utils import TIMEOUT_S
 from .utils import get_free_port
 from .utils import headers_time_patch  # noqa
@@ -19,6 +18,8 @@ from omlish import lang
 @pytest.mark.trio
 async def test_demo_auth():
     port = get_free_port()
+    base_url = f'https://localhost:{port}/'
+
     sev = anyio.Event()
 
     async def inner():
@@ -30,7 +31,7 @@ async def test_demo_auth():
                 while True:
                     tt()
                     try:
-                        r = await client.get(f'https://localhost:/{port}')
+                        r = await client.get(base_url)
                     except httpx.ConnectError:
                         await anyio.sleep(.1)
                         continue
