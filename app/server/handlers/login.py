@@ -18,7 +18,7 @@ from ..base import url_for
 from ..base import with_session
 from ..base import with_user
 from ..j2 import J2Templates
-from ..passwords import check_password_hash
+from omserv.passwords import check_password_hash
 from ..users import UserStore
 
 

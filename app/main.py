@@ -17,11 +17,11 @@ from omlish import logs
 from omlish import sql
 from omlish.diag import procstats
 
-from .. import server
-from ..dbs import get_db_url
-from ..node.models import recreate_all
-from ..node.registry import NodeRegistrant
-from ..server.tests.demo_auth.main import auth_app
+from omserv import server
+from omserv.dbs import get_db_url
+from omserv.node.models import recreate_all
+from omserv.node.registry import NodeRegistrant
+from .server.app import server_app
 
 
 log = logging.getLogger(__name__)
@@ -86,7 +86,7 @@ async def _a_main() -> None:
 
         tg.start_soon(functools.partial(
             server.serve,
-            auth_app,  # type: ignore
+            server_app,  # type: ignore
             server.Config(),
             shutdown_trigger=shutdown.wait,
         ))

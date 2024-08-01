@@ -22,9 +22,9 @@ from omlish.http.asgi import AsgiScope
 from omlish.http.asgi import AsgiSend
 from omlish.http.asgi import send_response
 from omlish.http.asgi import stub_lifespan
+from omserv.server.config import Config
+from omserv.server.serving import serve
 
-from ...config import Config
-from ...serving import serve
 from .base import SCOPE
 from .base import SESSION
 from .base import USER
@@ -83,7 +83,7 @@ class AuthApp(AsgiApp_):
 
 
 @lang.cached_function
-def _auth_app() -> AuthApp:
+def _server_app() -> AuthApp:
     templates = J2Templates(J2Templates.Config(
         reload=True,
     ))
@@ -113,8 +113,8 @@ def _auth_app() -> AuthApp:
     )
 
 
-async def auth_app(scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
-    await _auth_app()(scope, recv, send)
+async def server_app(scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
+    await _server_app()(scope, recv, send)
 
 
 ##
@@ -125,7 +125,7 @@ async def _a_main() -> None:
     logs.configure_standard_logging(logging.INFO)
 
     await serve(
-        auth_app,  # type: ignore
+        server_app,  # type: ignore
         Config(),
         handle_shutdown_signals=True,
     )
