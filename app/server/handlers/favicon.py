@@ -14,7 +14,7 @@ from ..base import handles
 
 @lang.cached_function
 def _favicon_bytes() -> bytes:
-    return importlib.resources.files(__package__).joinpath('../../../resources/favicon.ico').read_bytes()
+    return importlib.resources.files('omserv.server.resources').joinpath('favicon.ico').read_bytes()
 
 
 class FaviconHandler(Handler_):
