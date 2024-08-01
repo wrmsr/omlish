@@ -1,3 +1,7 @@
+"""
+TODO:
+ - AsyncExitStacked
+"""
 import abc
 import contextlib
 import contextvars
@@ -77,7 +81,7 @@ class ContextManager(abc.ABC, ta.Generic[T]):
             exc_type: type[BaseException] | None,
             exc_val: BaseException | None,
             exc_tb: types.TracebackType | None,
-    ) -> None:
+    ) -> bool | None:
         return self._contextmanager.__exit__(exc_type, exc_val, exc_tb)
 
 

@@ -5,10 +5,10 @@ TODO:
   517 ns ± 13.2 ns per loop (mean ± std. dev. of 7 runs, 1000000 loops each)
   - injected io provider - sync vs greenlet aio trampolined
  - push/pull bridge?
+ - move to lang
 
 https://github.com/sqlalchemy/sqlalchemy/blob/1e75c189da721395bc8c2d899c722a5b9a170404/lib/sqlalchemy/util/_concurrency_py3k.py#L83
 """
-import contextlib
 import functools
 import typing as ta
 
@@ -16,8 +16,7 @@ import typing as ta
 T = ta.TypeVar('T')
 
 
-def sync_await(fn: ta.Callable[..., T], *args, **kwargs) -> T:
-    ret: ta.Any
+def sync_await(fn: ta.Callable[..., T], *args: ta.Any, **kwargs: ta.Any) -> T:
     ret = missing = object()
 
     async def gate():
@@ -25,13 +24,17 @@ def sync_await(fn: ta.Callable[..., T], *args, **kwargs) -> T:
         ret = await fn(*args, **kwargs)  # type: ignore
 
     cr = gate()
-    with contextlib.closing(cr):
-        with contextlib.suppress(StopIteration):
+    try:
+        try:  # noqa
             cr.send(None)
+        except StopIteration:
+            pass
         if ret is missing or cr.cr_await is not None or cr.cr_running:
             raise TypeError('Not terminated')
+    finally:
+        cr.close()
 
-    return ta.cast(T, ret)
+    return ret  # type: ignore
 
 
 def sync_list(fn: ta.Callable[..., ta.AsyncIterator[T]], *args, **kwargs) -> list[T]:
