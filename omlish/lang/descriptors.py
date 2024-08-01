@@ -119,14 +119,13 @@ class _decorator_descriptor:  # noqa
 
     else:
         def __init__(self, wrapper, fn):
-            self._wrapper = wrapper
-            self._fn = fn
-            self._has_method_descriptor = _has_method_descriptor(fn)
+            self._wrapper, self._fn = wrapper, fn
+            self._md = _has_method_descriptor(fn)
             update_wrapper_except_dict(self, fn)
 
         def __get__(self, instance, owner):
             fn = self._fn.__get__(instance, owner)
-            if self._has_method_descriptor or instance is not None:
+            if self._md or instance is not None:
                 @functools.wraps(fn)
                 def inner(*args, **kwargs):
                     return self._wrapper(fn, *args, **kwargs)
