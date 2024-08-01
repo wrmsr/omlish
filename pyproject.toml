@@ -63,7 +63,7 @@ exclude = ['*.tests', '*.tests.*']
 ##
 
 [tool.omlish.pyproject.srcs]
-main = ['omlish', 'omdev', 'ominfra', 'omserv']
+main = ['omlish', 'omdev', 'ominfra', 'omserv', 'app']
 ml = ['@main', 'omml']
 all = ['@ml', 'x']
 
