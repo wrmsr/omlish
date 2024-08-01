@@ -1,10 +1,11 @@
-import abc
 import contextvars
+import dataclasses as dc
 import datetime
 import logging
 import os
 import typing as ta
 
+from omlish import check
 from omlish import lang
 from omlish.http import sessions
 from omlish.http.asgi import AsgiApp
@@ -16,6 +17,9 @@ from omlish.http.asgi import redirect_response
 from .j2 import j2_helper
 from .users import User
 from .users import UserStore
+
+
+T = ta.TypeVar('T')
 
 
 log = logging.getLogger(__name__)
@@ -144,13 +148,17 @@ def append_app_marker(obj: ta.Any, marker: AppMarker) -> None:
 
 def get_app_markers(obj) -> ta.Sequence[AppMarker]:
     tgt = lang.unwrap_func(obj)
-    return tgt.__dict__.get(APP_MARKERS_ATTR, ())
+    try:
+        dct = tgt.__dict__
+    except AttributeError:
+        return ()
+    return dct.get(APP_MARKERS_ATTR, ())
 
 
 #
 
 
-class _LoginRequired(AppMarker, lang.Singleton, lang.Final):
+class _LoginRequiredAppMarker(AppMarker, lang.Singleton, lang.Final):
     pass
 
 
@@ -163,7 +171,7 @@ def login_required(fn):
 
         await fn(scope, recv, send)
 
-    append_app_marker(fn, _LoginRequired())
+    append_app_marker(fn, _LoginRequiredAppMarker())
     return inner(fn)
 
 
@@ -180,10 +188,44 @@ class RouteHandler(ta.NamedTuple):
     handler: AsgiApp
 
 
+@dc.dataclass(frozen=True)
+class _HandlesAppMarker(AppMarker, lang.Final):
+    routes: ta.Sequence[Route]
+
+
+def handles(*routes: Route):
+    def inner(fn):
+        append_app_marker(fn, _HandlesAppMarker(routes))
+        return fn
+
+    routes = tuple(map(check.of_isinstance(Route), routes))
+    return inner
+
+
 ##
 
 
 class Handler_(lang.Abstract):  # noqa
-    @abc.abstractmethod
     def get_route_handlers(self) -> ta.Iterable[RouteHandler]:
-        raise NotImplementedError
+        return get_marked_route_handlers(self)
+
+
+def get_marked_route_handlers(h: Handler_) -> ta.Sequence[RouteHandler]:
+    ret: list[RouteHandler] = []
+
+    cdct: dict[str, ta.Any] = {}
+    for mcls in reversed(type(h).__mro__):
+        cdct.update(**mcls.__dict__)
+
+    for att, obj in cdct.items():
+        if not (mks := get_app_markers(obj)):
+            continue
+        if not (hms := [m for m in mks if isinstance(m, _HandlesAppMarker)]):
+            continue
+        if not (rs := [r for hm in hms for r in hm.routes]):
+            continue
+
+        app = getattr(h, att)
+        ret.extend(RouteHandler(r, app) for r in rs)
+
+    return ret

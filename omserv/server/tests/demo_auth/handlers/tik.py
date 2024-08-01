@@ -15,7 +15,7 @@ from omlish.http.asgi import send_response
 
 from ..base import Handler_
 from ..base import Route
-from ..base import RouteHandler
+from ..base import handles
 from ..users import User
 from ..users import UserStore
 
@@ -42,14 +42,10 @@ class TikHandler(Handler_):
         super().__init__()
         self._users = users
 
-    def get_route_handlers(self) -> ta.Iterable[RouteHandler]:
-        return [
-            RouteHandler(Route('POST', '/tik'), self.handle_post_tik),  # noqa
-        ]
-
+    @handles(Route('POST', '/tik'))
     async def handle_post_tik(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
         hdrs = dict(scope['headers'])
-        auth = hdrs.get(hu.consts.HEADER_AUTH)
+        auth = hdrs.get(hu.consts.HEADER_AUTH.lower())
         if not auth or not auth.startswith(hu.consts.BEARER_AUTH_HEADER_PREFIX):
             await send_response(send, 401)
             return
