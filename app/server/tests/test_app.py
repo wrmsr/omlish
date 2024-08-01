@@ -12,13 +12,14 @@ import pytest
 from omlish import check
 from omlish import lang
 
-from ..config import Config
-from ..types import AsgiWrapper
-from ..workers import worker_serve
-from .demo_auth.main import auth_app
-from .utils import TIMEOUT_S
-from .utils import get_free_port
-from .utils import headers_time_patch  # noqa
+from omserv.server.config import Config
+from omserv.server.types import AsgiWrapper
+from omserv.server.workers import worker_serve
+
+from ..app import server_app
+from omserv.server.tests.utils import TIMEOUT_S
+from omserv.server.tests.utils import get_free_port
+from omserv.server.tests.utils import headers_time_patch  # noqa
 
 
 def randhex(l: int) -> str:
@@ -121,7 +122,7 @@ async def test_demo_auth():
     async with anyio.create_task_group() as tg:
         tg.start_soon(functools.partial(
             worker_serve,
-            AsgiWrapper(auth_app),  # type: ignore
+            AsgiWrapper(server_app),  # type: ignore
             Config(
                 bind=(f'127.0.0.1:{port}',),
             ),
