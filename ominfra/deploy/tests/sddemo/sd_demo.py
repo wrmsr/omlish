@@ -39,6 +39,9 @@ qemu-system-aarch64 \
     -m 4G \
     -hda ubuntu-22.04-server-cloudimg-arm64.qcow2 \
 
+==
+
+https://gist.github.com/si458/98aa940837784e9ef9bff9e24a7a8bfd
 """
 import os.path
 import subprocess
