@@ -10,7 +10,7 @@ import asyncio
 from omlish import json
 import aiohttp
 
-from ....secrets import load_secrets
+from omserv.secrets import load_secrets
 
 
 async def _a_main() -> None:
