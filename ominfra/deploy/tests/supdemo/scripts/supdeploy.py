@@ -3,6 +3,15 @@ TODO:
  - flock
  - interp.py
 
+deployment matrix
+ - os: ubuntu / amzn / generic
+ - arch: amd64 / arm64
+ - host: bare / docker
+ - init: supervisor-provided / supervisor-must-configure / systemd (/ self?)
+ - interp: system / pyenv / interp.py
+ - venv: none / yes
+ - nginx: no / provided / must-configure
+
 ==
 
 ~deploy
@@ -235,6 +244,9 @@ class User(Concern):
             pwd.getpwnam(self._d.host_cfg.username)
 
 
+##
+
+
 class Dirs(Concern):
     @run_in_phase(Phase.HOST)
     def create_dirs(self) -> None:
@@ -255,30 +267,7 @@ class Dirs(Concern):
                 os.chown(fp, pwn.pw_uid, pwn.pw_gid)
 
 
-class GlobalNginx(Concern):
-    @run_in_phase(Phase.HOST)
-    def create_global_nginx_conf(self) -> None:
-        nginx_conf_dir = os.path.join(self._d.home_dir(), 'conf/nginx')
-        if not os.path.isfile(self._d.host_cfg.global_nginx_conf_file_path):
-            log.info('Writing global nginx conf at %s', self._d.host_cfg.global_nginx_conf_file_path)
-            with open(self._d.host_cfg.global_nginx_conf_file_path, 'w') as f:
-                f.write(f'include {nginx_conf_dir}/*.conf;\n')
-
-
-class GlobalSupervisor(Concern):
-    @run_in_phase(Phase.HOST)
-    def create_global_supervisor_conf(self) -> None:
-        sup_conf_dir = os.path.join(self._d.home_dir(), 'conf/supervisor')
-        with open(self._d.host_cfg.global_supervisor_conf_file_path, 'r') as f:
-            glo_sup_conf = f.read()
-        if sup_conf_dir not in glo_sup_conf:
-            log.info('Updating global supervisor conf at %s', self._d.host_cfg.global_supervisor_conf_file_path)  # noqa
-            glo_sup_conf += textwrap.dedent(f"""
-                [include]
-                files = {self._d.home_dir()}/conf/supervisor/*.conf
-            """)
-            with open(self._d.host_cfg.global_supervisor_conf_file_path, 'w') as f:
-                f.write(glo_sup_conf)
+##
 
 
 class Repo(Concern):
@@ -295,6 +284,9 @@ class Repo(Concern):
         )
 
 
+##
+
+
 class Venv(Concern):
     @run_in_phase(Phase.ENV)
     def setup_venv(self) -> None:
@@ -308,6 +300,25 @@ class Venv(Concern):
 
             f'{self._d.cfg.app_name}/bin/python -mpip install -r ~deploy/app/{self._d.cfg.app_name}/{self._d.cfg.requirements_txt}',  # noqa
         )
+
+
+##
+
+
+class GlobalSupervisor(Concern):
+    @run_in_phase(Phase.HOST)
+    def create_global_supervisor_conf(self) -> None:
+        sup_conf_dir = os.path.join(self._d.home_dir(), 'conf/supervisor')
+        with open(self._d.host_cfg.global_supervisor_conf_file_path, 'r') as f:
+            glo_sup_conf = f.read()
+        if sup_conf_dir not in glo_sup_conf:
+            log.info('Updating global supervisor conf at %s', self._d.host_cfg.global_supervisor_conf_file_path)  # noqa
+            glo_sup_conf += textwrap.dedent(f"""
+                [include]
+                files = {self._d.home_dir()}/conf/supervisor/*.conf
+            """)
+            with open(self._d.host_cfg.global_supervisor_conf_file_path, 'w') as f:
+                f.write(glo_sup_conf)
 
 
 class Supervisor(Concern):
@@ -330,6 +341,19 @@ class Supervisor(Concern):
     def poke_supervisor(self) -> None:
         log.info('Poking supervisor')
         self._d.sh('kill -HUP 1')
+
+
+##
+
+
+class GlobalNginx(Concern):
+    @run_in_phase(Phase.HOST)
+    def create_global_nginx_conf(self) -> None:
+        nginx_conf_dir = os.path.join(self._d.home_dir(), 'conf/nginx')
+        if not os.path.isfile(self._d.host_cfg.global_nginx_conf_file_path):
+            log.info('Writing global nginx conf at %s', self._d.host_cfg.global_nginx_conf_file_path)
+            with open(self._d.host_cfg.global_nginx_conf_file_path, 'w') as f:
+                f.write(f'include {nginx_conf_dir}/*.conf;\n')
 
 
 class Nginx(Concern):
