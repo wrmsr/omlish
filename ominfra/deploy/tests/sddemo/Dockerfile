@@ -28,36 +28,12 @@ RUN \
         vim \
         wget \
 \
-        supervisor \
+        dbus \
+        dbus-user-session \
+        systemd \
+        systemd-sysv \
 \
 )
 
-RUN ( \
-    add-apt-repository ppa:deadsnakes/ppa && \
-    apt install -y \
-\
-        python3.12-dev \
-        python3.12-full \
-\
-)
-
-#
-
-RUN rm /etc/nginx/sites-enabled/default
-
-RUN mkdir -p /var/log/supervisor
-
-RUN echo "\
-[supervisord] \n\
-nodaemon=true \n\
-logfile=/var/log/supervisor/supervisor.log \n\
-logfile_maxbytes=4194304 \n\
-\n\
-[program:app] \n\
-command = sleep infinity \n\
-stdout_logfile=/dev/fd/1 \n\
-stdout_logfile_maxbytes=0 \n\
-redirect_stderr=true \n\
-" > /etc/supervisor/conf.d/supervisord.conf
-
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["sh", "-c", "echo 'Ready' && sleep infinity"]

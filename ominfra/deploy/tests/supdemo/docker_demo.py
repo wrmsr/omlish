@@ -43,62 +43,62 @@ def _main():
                 'sh', '-c', timebomb_payload(TIMEBOMB_DELAY_S),
             ])
 
-            fname = subprocess.check_output([
-                'docker', 'exec', ctr_id,
-                'mktemp', '--suffix=-supdeploy',
-            ]).decode().strip()
+        fname = subprocess.check_output([
+            'docker', 'exec', ctr_id,
+            'mktemp', '--suffix=-supdeploy',
+        ]).decode().strip()
 
-            with open(os.path.join(os.path.dirname(__file__), 'scripts/supdeploy.py')) as f:
-                buf = f.read()
+        with open(os.path.join(os.path.dirname(__file__), 'scripts/supdeploy.py')) as f:
+            buf = f.read()
 
-            if PYCHARM_DEBUG:
-                pycharm_port = 43251
-                pycharm_version = '241.18034.82'
-                buf = textwrap.dedent(f"""
-                    import subprocess
-                    import sys
-                    subprocess.check_call([sys.executable, '-mpip', 'install', f'pydevd-pycharm~={pycharm_version}'])
+        if PYCHARM_DEBUG:
+            pycharm_port = 43251
+            pycharm_version = '241.18034.82'
+            buf = textwrap.dedent(f"""
+                import subprocess
+                import sys
+                subprocess.check_call([sys.executable, '-mpip', 'install', f'pydevd-pycharm~={pycharm_version}'])
 
-                    import pydevd_pycharm  # noqa
-                    pydevd_pycharm.settrace(
-                        'docker.for.mac.localhost',
-                        port={pycharm_port},
-                        stdoutToServer=True,
-                        stderrToServer=True,
-                    )
-                """) + '\n' * 2 + buf
+                import pydevd_pycharm  # noqa
+                pydevd_pycharm.settrace(
+                    'docker.for.mac.localhost',
+                    port={pycharm_port},
+                    stdoutToServer=True,
+                    stderrToServer=True,
+                )
+            """) + '\n' * 2 + buf
 
-            cfg = dict(
-                python_bin='python3.12',
-                app_name='omlish',
-                repo_url='https://github.com/wrmsr/omlish',
-                revision='f28093d9c3c4314ef84b51f695efc95e4e38a36a',
-                requirements_txt='requirements.txt',
-                entrypoint='omserv.server.tests.hello',
-            )
+        cfg = dict(
+            python_bin='python3.12',
+            app_name='omlish',
+            repo_url='https://github.com/wrmsr/omlish',
+            revision='d2002c719fcba45d30b9d0e288f317478315f534',
+            requirements_txt='requirements.txt',
+            entrypoint='omserv.server.tests.hello',
+        )
 
-            if SCRIPT_TEMP_FILE:
-                subprocess.run([
-                    'docker', 'exec', '-i', ctr_id,
-                    'sh', '-c', f'cp /dev/stdin {fname}',
-                ], input=buf.encode(), check=True)
+        if SCRIPT_TEMP_FILE:
+            subprocess.run([
+                'docker', 'exec', '-i', ctr_id,
+                'sh', '-c', f'cp /dev/stdin {fname}',
+            ], input=buf.encode(), check=True)
 
-                subprocess.check_call([
-                    'docker', 'exec', '-i', ctr_id,
-                    'python3', fname, 'deploy', json.dumps(cfg),
-                ])
+            subprocess.check_call([
+                'docker', 'exec', '-i', ctr_id,
+                'python3', fname, 'deploy', json.dumps(cfg),
+            ])
 
-            else:
-                subprocess.run([
-                    'docker', 'exec', '-i', ctr_id,
-                    'python3', '-', 'deploy', json.dumps(cfg),
-                ], input=buf.encode(), check=True)
+        else:
+            subprocess.run([
+                'docker', 'exec', '-i', ctr_id,
+                'python3', '-', 'deploy', json.dumps(cfg),
+            ], input=buf.encode(), check=True)
 
-            print()
-            print(ctr_id)
-            print()
-            print('done - press enter to die')
-            input()
+        print()
+        print(ctr_id)
+        print()
+        print('done - press enter to die')
+        input()
 
     except Exception:  # noqa
         traceback.print_exc()
