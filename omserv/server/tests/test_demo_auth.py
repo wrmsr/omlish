@@ -2,12 +2,14 @@ import contextlib
 import functools
 import json
 import os
+import secrets
 import urllib.parse
 
 import anyio
 import httpx
 import pytest
 
+from omlish import check
 from omlish import lang
 
 from ..config import Config
@@ -17,6 +19,10 @@ from .demo_auth.main import auth_app
 from .utils import TIMEOUT_S
 from .utils import get_free_port
 from .utils import headers_time_patch  # noqa
+
+
+def randhex(l: int) -> str:
+    return hex(secrets.randbits(4 * l))[2:]
 
 
 @pytest.mark.trio
@@ -35,6 +41,7 @@ async def test_demo_auth():
         async with contextlib.AsyncExitStack() as aes:
             aes.enter_context(lang.defer(sev.set))
 
+            r: httpx.Response
             async with httpx.AsyncClient(timeout=TIMEOUT_S) as client:
                 tt = lang.timeout(TIMEOUT_S)
                 while True:
@@ -55,7 +62,7 @@ async def test_demo_auth():
 
                 email = 'foo@bar.com'
                 name = 'foo'
-                password = 'barf'
+                password = randhex(16)
 
                 r = await client.post(
                     base_url + 'signup',
@@ -67,7 +74,7 @@ async def test_demo_auth():
                 )
                 assert r.status_code == 302
 
-                r = await client.send(r.next_request)
+                r = await client.send(check.not_none(r.next_request))
                 assert r.status_code == 200
 
                 ##
@@ -81,12 +88,12 @@ async def test_demo_auth():
                 )
                 assert r.status_code == 302
 
-                r = await client.send(r.next_request)
+                r = await client.send(check.not_none(r.next_request))
                 assert r.status_code == 200
 
                 ##
 
-                auth_token = 'barf'
+                auth_token = randhex(16)
 
                 r = await client.post(
                     base_url + 'profile',
@@ -96,7 +103,7 @@ async def test_demo_auth():
                 )
                 assert r.status_code == 302
 
-                r = await client.send(r.next_request)
+                r = await client.send(check.not_none(r.next_request))
                 assert r.status_code == 200
 
             async with httpx.AsyncClient(timeout=TIMEOUT_S) as client:
