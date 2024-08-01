@@ -24,9 +24,19 @@ RUN \
         python3 \
         python3-pip \
         python3-venv \
+        software-properties-common \
         tmux \
         vim \
         wget \
+\
+)
+
+RUN ( \
+    add-apt-repository ppa:deadsnakes/ppa && \
+    apt install -y \
+\
+        python3.12-dev \
+        python3.12-full \
 \
 )
 
