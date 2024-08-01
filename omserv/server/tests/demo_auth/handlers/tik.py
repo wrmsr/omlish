@@ -49,7 +49,7 @@ class TikHandler(Handler_):
 
     async def handle_post_tik(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
         hdrs = dict(scope['headers'])
-        auth = hdrs.get(hu.consts.AUTH_HEADER_NAME)
+        auth = hdrs.get(hu.consts.HEADER_AUTH)
         if not auth or not auth.startswith(hu.consts.BEARER_AUTH_HEADER_PREFIX):
             await send_response(send, 401)
             return
