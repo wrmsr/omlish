@@ -92,12 +92,13 @@ def flash(msg: str) -> None:
 #
 
 
-BASE_SERVER_URL = os.environ.get('BASE_SERVER_URL', 'http://localhost:8000/')
+def base_server_url() -> str:
+    return os.environ.get('BASE_SERVER_URL', 'http://localhost:8000/')
 
 
 @j2_helper
 def url_for(s: str) -> str:
-    return BASE_SERVER_URL + s
+    return base_server_url() + s
 
 
 ##

@@ -1,5 +1,7 @@
 import contextlib
 import functools
+import os
+import urllib.parse
 
 import anyio
 import httpx
@@ -18,8 +20,13 @@ from .utils import headers_time_patch  # noqa
 
 @pytest.mark.trio
 async def test_demo_auth():
+    # from omlish import logs  # noqa
+    # logs.configure_standard_logging('INFO')  # noqa
+
     port = get_free_port()
     base_url = f'http://127.0.0.1:{port}/'
+
+    os.environ['BASE_SERVER_URL'] = base_url
 
     sev = anyio.Event()
 
@@ -27,7 +34,7 @@ async def test_demo_auth():
         async with contextlib.AsyncExitStack() as aes:
             aes.enter_context(lang.defer(sev.set))
 
-            async with httpx.AsyncClient() as client:
+            async with httpx.AsyncClient(timeout=TIMEOUT_S) as client:
                 tt = lang.timeout(TIMEOUT_S)
                 while True:
                     tt()
@@ -37,6 +44,28 @@ async def test_demo_auth():
                         await anyio.sleep(.1)
                         continue
                     break
+
+                assert r.status_code == 200
+
+                r = await client.get(base_url + 'signup')
+                assert r.status_code == 200
+
+                email = 'foo@bar.com'
+                name = 'foo'
+                password = 'barf'
+
+                r = await client.post(
+                    base_url + 'signup',
+                    content=urllib.parse.urlencode({
+                        'email': email,
+                        'name': name,
+                        'password': password,
+                    }),
+                )
+                assert r.status_code == 302
+
+                r = await client.send(r.next_request)
+                assert r.status_code == 200
 
                 print(r)
 
