@@ -8,16 +8,22 @@ curl -su "$TAILSCALE_API_KEY:" https://api.tailscale.com/api/v2/tailnet/-/device
 https://www.reddit.com/r/Tailscale/comments/wk5bwm/how_do_i_login_to_tailscale_on_a_headless_ubuntu/
 https://tailscale.com/kb/1085/auth-keys
 """
+import base64
 import datetime
+import json
+import urllib.parse
+import urllib.request
+import typing as ta
 
 from omlish import dataclasses as dc
 from omlish import marshal as msh
+from omserv.secrets import load_secrets
 
 
 @dc.dataclass(frozen=True)
 class Device:
     dc.metadata(msh.ObjectMetadata(
-        field_naming=msh.Naming.CAMEL,
+        field_naming=msh.Naming.LOW_CAMEL,
         unknown_field='x',
     ))
 
@@ -34,17 +40,29 @@ class Device:
     last_seen: datetime.datetime
     machine_key: str
     name: str
-    nodeId: str
-    nodeKey: str
+    node_id: str
+    node_key: str
     os: str
     tailnet_lock_error: str
     tailnet_lock_key: str
     update_available: bool
     user: bool
 
+    x: ta.Mapping[str, ta.Any] | None = None
+
 
 def _main():
-    pass
+    sec = load_secrets()
+
+    url = 'https://api.tailscale.com/api/v2/tailnet/-/devices'
+    creds = base64.b64encode(f'{sec["tailscale_api_key"]}:'.encode()).decode('ascii')
+    request = urllib.request.Request(url)
+    request.add_header('Authorization', 'Basic %s' % creds)
+    with urllib.request.urlopen(request) as resp:
+        buf = resp.read()
+    dct = json.loads(buf.decode())
+    devs = msh.unmarshal(dct['devices'], list[Device])
+    print(devs)
 
 
 if __name__ == '__main__':
