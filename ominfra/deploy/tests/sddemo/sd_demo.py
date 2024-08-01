@@ -45,8 +45,6 @@ https://gist.github.com/si458/98aa940837784e9ef9bff9e24a7a8bfd
 """
 import os.path
 
-from omlish.testing.pydevd import silence_subprocess_check
-
 from .. import utils as u
 
 
@@ -54,8 +52,6 @@ TIMEBOMB_DELAY_S = 20 * 60
 
 
 def _main():
-    silence_subprocess_check()
-
     img_name = 'wrmsr/omlish-sd-demo'
     cur_dir = os.path.dirname(__file__)
     u.build_docker_image(img_name, cur_dir)
