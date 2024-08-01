@@ -54,7 +54,6 @@ async def with_session(fn: AsgiApp, scope: AsgiScope, recv: AsgiRecv, send: Asgi
     async def _send(obj):
         if obj['type'] == 'http.response.start':
             out_session = SESSION.get()
-            print('\n'.join([f'{scope=}', f'{in_session=}', f'{obj=}', f'{out_session=}', '']))
             obj = {
                 **obj,
                 'headers': [
@@ -66,7 +65,6 @@ async def with_session(fn: AsgiApp, scope: AsgiScope, recv: AsgiRecv, send: Asgi
         await send(obj)
 
     in_session = COOKIE_SESSION_STORE.extract(scope)
-    print('\n'.join([f'{scope=}', f'{in_session=}', '']))
     with lang.context_var_setting(SESSION, in_session):
         await fn(scope, recv, _send)
 

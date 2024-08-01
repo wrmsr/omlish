@@ -1,5 +1,6 @@
 import contextlib
 import functools
+import json
 import os
 import urllib.parse
 
@@ -47,6 +48,8 @@ async def test_demo_auth():
 
                 assert r.status_code == 200
 
+                ##
+
                 r = await client.get(base_url + 'signup')
                 assert r.status_code == 200
 
@@ -67,7 +70,46 @@ async def test_demo_auth():
                 r = await client.send(r.next_request)
                 assert r.status_code == 200
 
-                print(r)
+                ##
+
+                r = await client.post(
+                    base_url + 'login',
+                    content=urllib.parse.urlencode({
+                        'email': email,
+                        'password': password,
+                    }),
+                )
+                assert r.status_code == 302
+
+                r = await client.send(r.next_request)
+                assert r.status_code == 200
+
+                ##
+
+                auth_token = 'barf'
+
+                r = await client.post(
+                    base_url + 'profile',
+                    content=urllib.parse.urlencode({
+                        'auth-token': auth_token,
+                    }),
+                )
+                assert r.status_code == 302
+
+                r = await client.send(r.next_request)
+                assert r.status_code == 200
+
+            async with httpx.AsyncClient(timeout=TIMEOUT_S) as client:
+                r = await client.post(
+                    base_url + 'tik',
+                    content='foo bar baz qux hi there',
+                    headers={'Authorization': 'Bearer ' + auth_token},
+                )
+                assert r.status_code == 200
+
+                dct = json.loads(r.read().decode())
+                assert dct['user_name'] == name
+                assert dct['tokens'] == [21943, 2318, 275, 1031, 627, 87, 23105, 612]
 
     async with anyio.create_task_group() as tg:
         tg.start_soon(functools.partial(
