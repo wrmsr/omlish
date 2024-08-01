@@ -118,13 +118,13 @@ def _main():
                             'ephemeral': True,
                             'preauthorized': True,
                             'tags': [
-                                'tag:server',
+                                'tag:infra',
                             ]
                         }
                     }
                 },
                 'expirySeconds': 3600,
-                'description': 'server access',
+                'description': 'infra access',
             }).encode(),
     )) as resp:
         buf = resp.read()
