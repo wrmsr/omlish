@@ -93,9 +93,9 @@ def _server_app() -> AuthApp:
     ))
 
     i = inj.create_injector(inj.as_elements(
-        inj.as_(lang.Func0[AsgiScope], lang.Func0(SCOPE.get)),
-        inj.as_(lang.Func0[Session], lang.Func0(SESSION.get)),
-        inj.as_(lang.Func0[User | None], lang.Func0(USER.get)),
+        inj.as_(lang.Func0[AsgiScope], inj.const(lang.Func0(SCOPE.get))),
+        inj.as_(lang.Func0[Session], inj.const(lang.Func0(SESSION.get))),
+        inj.as_(lang.Func0[User | None], inj.const(lang.Func0(USER.get))),
 
         inj.bind_set_provider(ta.AbstractSet[Handler_]),
 
