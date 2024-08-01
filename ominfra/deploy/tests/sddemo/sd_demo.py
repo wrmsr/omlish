@@ -56,7 +56,7 @@ def _main():
     cur_dir = os.path.dirname(__file__)
     u.build_docker_image(img_name, cur_dir)
 
-    with u.launch_docker_container(img_name, timebomb_delay_s=TIMEBOMB_DELAY_S) as ctr_id:
+    with u.launch_docker_container(img_name, timebomb_delay_s=TIMEBOMB_DELAY_S) as ctr_id:  # noqa
         pass
 
 

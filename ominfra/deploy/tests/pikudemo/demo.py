@@ -8,7 +8,7 @@ USE_DOCKERFILE = True
 TIMEBOMB_DELAY_S = 20 * 60
 
 
-def _main():
+def _main() -> None:
     if USE_DOCKERFILE:
         img_name = 'wrmsr/omlish-piku-demo'
         cur_dir = os.path.dirname(__file__)
