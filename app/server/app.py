@@ -8,12 +8,14 @@ TODO:
 
 https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login
 """
+import itertools
 import logging
 import typing as ta
 
 import anyio.to_thread
 
 from omlish import asyncs as asu
+from omlish import inject as inj
 from omlish import lang
 from omlish import logs
 from omlish.http.asgi import AsgiApp_
@@ -22,15 +24,17 @@ from omlish.http.asgi import AsgiScope
 from omlish.http.asgi import AsgiSend
 from omlish.http.asgi import send_response
 from omlish.http.asgi import stub_lifespan
+from omlish.http.sessions import Session
 from omserv.server.config import Config
 from omserv.server.serving import serve
 
+from .base import Handler_
+from .base import Route
 from .base import SCOPE
 from .base import SESSION
 from .base import USER
 from .base import USER_STORE
-from .base import Handler_
-from .base import Route
+from .base import User
 from .base import get_app_markers
 from .handlers.favicon import FaviconHandler
 from .handlers.index import IndexHandler
@@ -87,6 +91,30 @@ def _server_app() -> AuthApp:
     templates = J2Templates(J2Templates.Config(
         reload=True,
     ))
+
+    i = inj.create_injector(inj.as_elements(
+        inj.as_(lang.Func0[AsgiScope], lang.Func0(SCOPE.get)),
+        inj.as_(lang.Func0[Session], lang.Func0(SESSION.get)),
+        inj.as_(lang.Func0[User | None], lang.Func0(USER.get)),
+
+        inj.bind_set_provider(ta.AbstractSet[Handler_]),
+
+        *itertools.chain.from_iterable([
+            inj.singleton(hc),
+            inj.SetBinding(inj.as_key(ta.AbstractSet[Handler_]), inj.Key(hc)),
+        ] for hc in [
+            IndexHandler,
+            ProfileHandler,
+            LoginHandler,
+            SignupHandler,
+            LogoutHandler,
+            FaviconHandler,
+            TikHandler,
+        ]),
+    ))
+
+    hs = i.provide(inj.as_key(ta.AbstractSet[Handler_]))
+    breakpoint()
 
     current_scope = lang.Func0(SCOPE.get)  # noqa
     current_session = lang.Func0(SESSION.get)
