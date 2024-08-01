@@ -1,4 +1,5 @@
-import http  # noqa
+import base64
+import http
 
 
 ##
@@ -51,4 +52,9 @@ CONTENT_TYPE_TEXT_UTF8 = b'; '.join([CONTENT_TYPE_TEXT, CONTENT_CHARSET_UTF8])
 
 
 AUTH_HEADER_NAME = b'authorization'
-BASIC_AUTH_HEADER_PREFIX = b'Bearer '
+BEARER_AUTH_HEADER_PREFIX = b'Bearer '
+BASIC_AUTH_HEADER_PREFIX = b'Basic '
+
+
+def format_basic_auth_header(username: str, password: str) -> bytes:
+    return BASIC_AUTH_HEADER_PREFIX + base64.b64encode(':'.join([username, password]).encode())
