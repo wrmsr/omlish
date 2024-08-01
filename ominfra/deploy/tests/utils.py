@@ -24,11 +24,11 @@ def check_output(*args, **kwargs):
     return subprocess.check_output(*args, **kwargs)
 
 
-def build_docker_image(img_name: str, cur_dir: str) -> None:
+def build_docker_image(img_name: str, cur_dir: str, dockerfile: str | None = None) -> None:
     check_call([
         'docker', 'build',
         '--tag', img_name,
-        '-f', os.path.join(cur_dir, 'Dockerfile'),
+        '-f', dockerfile if dockerfile is not None else os.path.join(cur_dir, 'Dockerfile'),
         cur_dir,
     ])
 
