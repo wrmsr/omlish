@@ -18,7 +18,7 @@ from omlish import lang
 @pytest.mark.trio
 async def test_demo_auth():
     port = get_free_port()
-    base_url = f'https://localhost:{port}/'
+    base_url = f'http://127.0.0.1:{port}/'
 
     sev = anyio.Event()
 
