@@ -3,7 +3,7 @@ from collections import defaultdict
 from google.oauth2 import service_account
 from google.cloud import compute_v1
 
-from ....secrets import load_secrets
+from omserv.secrets import load_secrets
 
 
 def _main() -> None:

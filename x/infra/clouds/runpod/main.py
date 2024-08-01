@@ -26,7 +26,7 @@ import aiohttp
 
 from omlish import json
 
-from ....secrets import load_secrets
+from omserv.secrets import load_secrets
 
 
 async def _a_main() -> None:
