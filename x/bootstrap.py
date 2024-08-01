@@ -15,10 +15,8 @@ import logging
 import os
 import pwd
 import signal
-import typing as ta
 
 from omlish import configs as cfgs
-from omlish import dataclasses as dc
 from omlish import logs
 
 
@@ -27,20 +25,20 @@ log = logging.getLogger(__name__)
 
 class Bootstrap(cfgs.Configurable['Bootstrap.Config']):
     class Config(cfgs.Config):
-        debug: bool = dc.field(False, check_type=bool)
+        debug: bool = False
 
-        log: ta.Optional[str] = dc.field('standard', check_type=(str, None))
+        log: str | None = 'standard'
 
-        setuid: ta.Optional[str] = dc.field(None, check_type=(str, None))
-        nice: ta.Optional[int] = dc.field(None, check_type=(int, None))
+        setuid: str | None = None
+        nice: int | None = None
 
-        gc_debug: bool = dc.field(False, check_type=bool)
-        gc_disable: bool = dc.field(False, check_type=bool)
+        gc_debug: bool = False
+        gc_disable: bool = False
 
-        faulthandler_enabled: bool = dc.field(False, check_type=bool)
+        faulthandler_enabled: bool = False
 
-        prctl_dumpable: bool = dc.field(False, check_type=bool)
-        prctl_deathsig: ta.Union[bool, int, None] = dc.field(False, check_type=(bool, int, None))
+        prctl_dumpable: bool = False
+        prctl_deathsig: bool | int | None = False
 
     def __init__(self, config: Config = Config()) -> None:
         super().__init__(config)
