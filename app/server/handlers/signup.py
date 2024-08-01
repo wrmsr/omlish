@@ -8,6 +8,7 @@ from omlish.http.asgi import finish_response
 from omlish.http.asgi import read_form_body
 from omlish.http.asgi import redirect_response
 from omlish.http.asgi import start_response
+from omserv.passwords import generate_password_hash
 
 from ..base import Handler_
 from ..base import Route
@@ -16,7 +17,6 @@ from ..base import url_for
 from ..base import with_session
 from ..base import with_user
 from ..j2 import J2Templates
-from omserv.passwords import generate_password_hash
 from ..users import UserStore
 
 
