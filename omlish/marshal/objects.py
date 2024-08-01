@@ -2,6 +2,7 @@
 TODO:
  - cfg naming
  - adapters for dataclasses / namedtuples / user objects (as confitured)
+ - mro-merge ObjectMetadata
 """
 import collections.abc
 import typing as ta
