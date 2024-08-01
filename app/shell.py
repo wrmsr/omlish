@@ -1,6 +1,5 @@
 """
 TODO:
- - ping self webserver
  - get current revision, package OR live git repo
 """
 import dataclasses as dc
@@ -16,12 +15,13 @@ from omlish import asyncs as au
 from omlish import logs
 from omlish import sql
 from omlish.diag import procstats
-from omserv import server
 from omserv.dbs import get_db_url
 from omserv.node.models import recreate_all
 from omserv.node.registry import NodeRegistrant
 
-from .server.app import server_app
+
+ShutdownTrigger: ta.TypeAlias = ta.Callable[..., ta.Awaitable[None]]
+ShellApp: ta.TypeAlias = ta.Callable[[ShutdownTrigger], ta.Awaitable[None]]
 
 
 log = logging.getLogger(__name__)
@@ -58,7 +58,7 @@ async def get_procstats() -> ta.Mapping[str, ta.Any]:
 
 
 @au.with_adapter_loop(wait=True)
-async def _a_main() -> None:
+async def a_run_shell(app: ShellApp) -> None:
     engine = sql.async_adapt(saa.create_async_engine(get_db_url(), echo=True))
     await recreate_all(engine)
 
@@ -84,17 +84,12 @@ async def _a_main() -> None:
 
         await tg.start(functools.partial(nr.run, shutdown))
 
-        tg.start_soon(functools.partial(
-            server.serve,
-            server_app,  # type: ignore
-            server.Config(),
-            shutdown_trigger=shutdown.wait,
-        ))
+        tg.start_soon(functools.partial(app, shutdown.wait))
 
         log.info('Node running')
 
 
-if __name__ == '__main__':
+def run_shell(app: ShellApp) -> None:
     logs.configure_standard_logging('DEBUG')
 
     # _backend = 'asyncio'
@@ -104,4 +99,4 @@ if __name__ == '__main__':
         from omlish.testing.pydevd import patch_for_trio_asyncio  # noqa
         patch_for_trio_asyncio()  # noqa
 
-    anyio.run(_a_main, backend=_backend)
+    anyio.run(functools.partial(a_run_shell, app), backend=_backend)
