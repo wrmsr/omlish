@@ -1,5 +1,3 @@
-from . import plugins  # noqa
-
 from .helpers import (  # noqa
     assert_raises_star,
 )
