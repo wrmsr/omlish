@@ -1,5 +1,4 @@
 import dataclasses as dc
-import typing as ta
 
 from omlish import check
 from omlish import http as hu
@@ -14,8 +13,8 @@ from omlish.http.asgi import start_response
 
 from ..base import Handler_
 from ..base import Route
-from ..base import RouteHandler
 from ..base import User
+from ..base import handles
 from ..base import login_required
 from ..base import url_for
 from ..base import with_session
@@ -27,6 +26,7 @@ from ..users import UserStore
 class ProfileHandler(Handler_):
     def __init__(
             self,
+            *,
             current_user: lang.Func0[User | None],
             templates: J2Templates,
             users: UserStore,
@@ -36,12 +36,7 @@ class ProfileHandler(Handler_):
         self._templates = templates
         self._users = users
 
-    def get_route_handlers(self) -> ta.Iterable[RouteHandler]:
-        return [
-            RouteHandler(Route('GET', '/profile'), self.handle_get_profile),  # noqa
-            RouteHandler(Route('POST', '/profile'), self.handle_post_profile),  # noqa
-        ]
-
+    @handles(Route('GET', '/profile'))
     @with_session
     @with_user
     @login_required
@@ -55,6 +50,7 @@ class ProfileHandler(Handler_):
         await start_response(send, 200, hu.consts.CONTENT_TYPE_HTML_UTF8)  # noqa
         await finish_response(send, html)
 
+    @handles(Route('POST', '/profile'))
     @with_session
     @with_user
     async def handle_post_profile(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
