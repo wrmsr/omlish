@@ -1,3 +1,13 @@
+"""
+god is it just easier to use qemu lol
+
+https://stackoverflow.com/questions/36617368/docker-centos-7-with-systemctl-failed-to-mount-tmpfs-cgroup
+https://developers.redhat.com/blog/2016/09/13/running-systemd-in-a-non-privileged-container#the_quest
+
+https://hub.docker.com/r/centos/systemd/ old and dead
+https://hub.docker.com/r/rockylinux/rockylinux
+https://hub.docker.com/r/jrei/systemd-ubuntu
+"""
 import os.path
 import subprocess
 import traceback
