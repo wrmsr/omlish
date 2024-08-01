@@ -52,13 +52,15 @@ class Device:
 
 def _main():
     sec = load_secrets()
+    auth = {'Authorization': hu.consts.format_basic_auth_header(sec['tailscale_api_key'], '').decode()}
+    base_url = 'https://api.tailscale.com/api/v2'
 
-    url = 'https://api.tailscale.com/api/v2/tailnet/-/devices'
-
-    request = urllib.request.Request(url)
-    request.add_header('Authorization', hu.consts.format_basic_auth_header(sec['tailscale_api_key'], '').decode())
-    with urllib.request.urlopen(request) as resp:
+    with urllib.request.urlopen(urllib.request.Request(
+            f'{base_url}/tailnet/-/devices',
+            headers={**auth},
+    )) as resp:
         buf = resp.read()
+
     dct = json.loads(buf.decode())
     devs = msh.unmarshal(dct['devices'], list[Device])
     print(devs)
