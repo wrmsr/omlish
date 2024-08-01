@@ -50,11 +50,11 @@ class TikHandler(Handler_):
     async def handle_post_tik(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
         hdrs = dict(scope['headers'])
         auth = hdrs.get(hu.consts.AUTH_HEADER_NAME)
-        if not auth or not auth.startswith(hu.consts.BASIC_AUTH_HEADER_PREFIX):
+        if not auth or not auth.startswith(hu.consts.BEARER_AUTH_HEADER_PREFIX):
             await send_response(send, 401)
             return
 
-        auth_token = auth[len(hu.consts.BASIC_AUTH_HEADER_PREFIX):].decode()
+        auth_token = auth[len(hu.consts.BEARER_AUTH_HEADER_PREFIX):].decode()
         user: User | None = None
         for u in self._users.get_all():
             if u.auth_token and u.auth_token == auth_token:
