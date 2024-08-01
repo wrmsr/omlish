@@ -93,13 +93,13 @@ def _auth_app() -> AuthApp:
     current_user = lang.Func0(USER.get)
 
     handlers: list[Handler_] = [
-        IndexHandler(current_session=current_session, templates=templates),
-        ProfileHandler(current_user=current_user, templates=templates, users=USER_STORE),
-        LoginHandler(templates=templates, users=USER_STORE),
-        SignupHandler(templates=templates, users=USER_STORE),
+        IndexHandler(_current_session=current_session, _templates=templates),
+        ProfileHandler(_current_user=current_user, _templates=templates, _users=USER_STORE),
+        LoginHandler(_templates=templates, _users=USER_STORE),
+        SignupHandler(_templates=templates, _users=USER_STORE),
         LogoutHandler(),
         FaviconHandler(),
-        TikHandler(users=USER_STORE),
+        TikHandler(_users=USER_STORE),
     ]
 
     route_handlers: dict[Route, ta.Any] = {}
