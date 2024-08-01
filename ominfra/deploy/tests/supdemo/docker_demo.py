@@ -43,11 +43,6 @@ def _main():
                 'sh', '-c', timebomb_payload(TIMEBOMB_DELAY_S),
             ])
 
-        fname = subprocess.check_output([
-            'docker', 'exec', ctr_id,
-            'mktemp', '--suffix=-supdeploy',
-        ]).decode().strip()
-
         with open(os.path.join(os.path.dirname(__file__), 'scripts/supdeploy.py')) as f:
             buf = f.read()
 
@@ -78,6 +73,11 @@ def _main():
         )
 
         if SCRIPT_TEMP_FILE:
+            fname = subprocess.check_output([
+                'docker', 'exec', ctr_id,
+                'mktemp', '--suffix=-supdeploy',
+            ]).decode().strip()
+
             subprocess.run([
                 'docker', 'exec', '-i', ctr_id,
                 'sh', '-c', f'cp /dev/stdin {fname}',
