@@ -7,6 +7,10 @@ curl -su "$TAILSCALE_API_KEY:" https://api.tailscale.com/api/v2/tailnet/-/device
 
 https://www.reddit.com/r/Tailscale/comments/wk5bwm/how_do_i_login_to_tailscale_on_a_headless_ubuntu/
 https://tailscale.com/kb/1085/auth-keys
+
+==
+
+curl -fsSL https://tailscale.com/install.sh | sh
 """
 import datetime
 import json
@@ -53,17 +57,58 @@ class Device:
 def _main():
     sec = load_secrets()
     auth = {'Authorization': hu.consts.format_basic_auth_header(sec['tailscale_api_key'], '').decode()}
+    hdrs = {
+        **auth,
+        # hu.consts.HEADER_AUTH.decode(): hu.consts.CONTENT_TYPE_JSON_UTF8.decode(),
+        # hu.consts.HEADER_ACCEPT.decode(): hu.consts.CONTENT_TYPE_JSON,
+    }
     base_url = 'https://api.tailscale.com/api/v2'
 
     with urllib.request.urlopen(urllib.request.Request(
             f'{base_url}/tailnet/-/devices',
-            headers={**auth},
+            headers=hdrs,
     )) as resp:
         buf = resp.read()
 
     dct = json.loads(buf.decode())
     devs = msh.unmarshal(dct['devices'], list[Device])
     print(devs)
+
+    # with urllib.request.urlopen(urllib.request.Request(
+    #         f'{base_url}/tailnet/-/keys',
+    #         method='POST',
+    #         headers=hdrs,
+    #         data=json.dumps({
+    #             'capabilities': {
+    #                 'devices': {
+    #                     'create': {
+    #                         'reusable': False,
+    #                         'ephemeral': True,
+    #                         'preauthorized': True,
+    #                         'tags': [
+    #                             'tag:server'
+    #                         ]
+    #                     }
+    #                 }
+    #             },
+    #             'expirySeconds': 3600,
+    #             'description': 'server access',
+    #         }).encode(),
+    # )) as resp:
+    #     buf = resp.read()
+    #
+    # dct = json.loads(buf.decode())
+    # print(dct)
+
+    with urllib.request.urlopen(urllib.request.Request(
+            f'{base_url}/tailnet/-/keys',
+            headers=hdrs,
+    )) as resp:
+        buf = resp.read()
+
+    dct = json.loads(buf.decode())
+    print(dct)
+
 
 
 if __name__ == '__main__':

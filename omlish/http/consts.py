@@ -32,6 +32,8 @@ STATUS_GATEWAY_TIMEOUT = format_status(http.HTTPStatus.GATEWAY_TIMEOUT)
 
 
 HEADER_CONTENT_TYPE = b'Content-Type'
+HEADER_ACCEPT = b'Accept'
+
 CONTENT_CHARSET_UTF8 = b'charset=utf-8'
 
 CONTENT_TYPE_BYTES = b'application/octet-stream'
@@ -51,7 +53,7 @@ CONTENT_TYPE_TEXT_UTF8 = b'; '.join([CONTENT_TYPE_TEXT, CONTENT_CHARSET_UTF8])
 ##
 
 
-AUTH_HEADER_NAME = b'authorization'
+HEADER_AUTH = b'Authorization'
 BEARER_AUTH_HEADER_PREFIX = b'Bearer '
 BASIC_AUTH_HEADER_PREFIX = b'Basic '
 
