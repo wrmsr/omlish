@@ -16,11 +16,11 @@ from omlish import asyncs as au
 from omlish import logs
 from omlish import sql
 from omlish.diag import procstats
-
 from omserv import server
 from omserv.dbs import get_db_url
 from omserv.node.models import recreate_all
 from omserv.node.registry import NodeRegistrant
+
 from .server.app import server_app
 
 
