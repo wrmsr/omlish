@@ -56,6 +56,36 @@ class Device:
     x: ta.Mapping[str, ta.Any] | None = None
 
 
+@dc.dataclass(frozen=True)
+class CreatedKey:
+    dc.metadata(msh.ObjectMetadata(
+        field_naming=msh.Naming.LOW_CAMEL,
+        unknown_field='x',
+    ))
+
+    id: str
+    key: str
+    created: datetime.datetime
+    expires: datetime.datetime
+    capabilities: ta.Mapping[str, ta.Any]
+    description: str
+
+    x: ta.Mapping[str, ta.Any] | None = None
+
+
+@dc.dataclass(frozen=True)
+class ListedKey:
+    dc.metadata(msh.ObjectMetadata(
+        field_naming=msh.Naming.LOW_CAMEL,
+        unknown_field='x',
+    ))
+
+    id: str
+    description: str
+
+    x: ta.Mapping[str, ta.Any] | None = None
+
+
 def _main():
     sec = load_secrets()
     auth = {'Authorization': hu.consts.format_basic_auth_header(sec['tailscale_api_key'], '').decode()}
@@ -88,7 +118,7 @@ def _main():
                             'ephemeral': True,
                             'preauthorized': True,
                             'tags': [
-                                'tag:server'
+                                'tag:server',
                             ]
                         }
                     }

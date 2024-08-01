@@ -35,7 +35,13 @@ def peek(vs: ta.Iterable[T]) -> tuple[T, ta.Iterator[T]]:
     return v, itertools.chain(iter((v,)), it)
 
 
-Rangeable: ta.TypeAlias = int | tuple[int] | tuple[int, int] | ta.Iterable[int]
+Rangeable: ta.TypeAlias = ta.Union[  # noqa
+    int,
+    tuple[int],
+    tuple[int, int],
+    tuple[int, int, int],
+    ta.Iterable[int],
+]
 
 
 def asrange(i: Rangeable) -> ta.Iterable[int]:
