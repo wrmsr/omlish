@@ -11,15 +11,14 @@ import pytest
 
 from omlish import check
 from omlish import lang
-
 from omserv.server.config import Config
+from omserv.server.tests.utils import TIMEOUT_S
+from omserv.server.tests.utils import get_free_port
+from omserv.server.tests.utils import headers_time_patch  # noqa
 from omserv.server.types import AsgiWrapper
 from omserv.server.workers import worker_serve
 
 from ..app import server_app
-from omserv.server.tests.utils import TIMEOUT_S
-from omserv.server.tests.utils import get_free_port
-from omserv.server.tests.utils import headers_time_patch  # noqa
 
 
 def randhex(l: int) -> str:
