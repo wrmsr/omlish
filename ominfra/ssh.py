@@ -24,9 +24,10 @@ if ta.TYPE_CHECKING:
 else:
     asyncssh = lang.proxy_import('asyncssh')
 
+from omserv.secrets import load_secrets
+
 from .cmds import CommandRunner
 from .cmds import LocalCommandRunner
-from .secrets import load_secrets
 
 
 @dc.dataclass(frozen=True)
