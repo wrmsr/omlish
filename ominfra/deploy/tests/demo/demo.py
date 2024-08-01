@@ -63,26 +63,26 @@ async def _a_main():
                 'sh', '-c', timebomb_payload(TIMEBOMB_DELAY_S),
             ])
 
-            cr: cmds.CommandRunner = ssh.AsyncsshSshCommandRunner(ssh.SshConfig(
-                host='localhost',
-                port=9082,
-                username='root',
-                password=ssh_password,
-            ))
+        cr: cmds.CommandRunner = ssh.AsyncsshSshCommandRunner(ssh.SshConfig(
+            host='localhost',
+            port=9082,
+            username='root',
+            password=ssh_password,
+        ))
 
-            try:
-                await do_deploy(
-                    cr,
-                    skip_submodules=True,
-                )
-            except Exception as e:  # noqa
-                print(e)
+        try:
+            await do_deploy(
+                cr,
+                skip_submodules=True,
+            )
+        except Exception as e:  # noqa
+            print(e)
 
-            print()
-            print(ctr_id)
-            print()
-            print('done - press enter to die')
-            input()
+        print()
+        print(ctr_id)
+        print()
+        print('done - press enter to die')
+        input()
 
     finally:
         await check_call(['docker', 'kill', '-sKILL', ctr_id])
