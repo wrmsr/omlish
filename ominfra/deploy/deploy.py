@@ -26,6 +26,16 @@ from omlish import check
 from .. import cmds
 
 
+def render_script(*cs: list[str] | tuple[str, ...]) -> str:
+    return ' '.join(itertools.chain.from_iterable(
+        [
+            *(['&&'] if i > 0 else []),
+            shlex.join(check.not_isinstance(l, str)),
+        ]
+        for i, l in enumerate(cs)
+    ))
+
+
 async def do_deploy(
         cr: cmds.CommandRunner,
         rev: str = 'master',
@@ -51,17 +61,11 @@ async def do_deploy(
     ]
 
     res = await cr.run_command(cr.Command([
-        'sh', '-c', ' '.join(itertools.chain.from_iterable(
-            [
-                *(['&&'] if i > 0 else []),
-                shlex.join(l),
-            ]
-            for i, l in enumerate([
-                ['mkdir', 'omlish'],
-                ['cd', 'omlish'],
-                *clone_script,
-            ])
-        )),
+        'sh', '-c', render_script(
+            ['mkdir', 'omlish'],
+            ['cd', 'omlish'],
+            *clone_script,
+        ),
     ]))
     res.check()
 
