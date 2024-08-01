@@ -1,3 +1,5 @@
+import dataclasses as dc
+
 from omlish import http as hu
 from omlish import lang
 from omlish.http.asgi import AsgiRecv
@@ -15,16 +17,10 @@ from ..base import with_user
 from ..j2 import J2Templates
 
 
+@dc.dataclass(frozen=True)
 class IndexHandler(Handler_):
-    def __init__(
-            self,
-            *,
-            current_session: lang.Func0[Session],
-            templates: J2Templates,
-    ) -> None:
-        super().__init__()
-        self._current_session = current_session
-        self._templates = templates
+    _current_session: lang.Func0[Session]
+    _templates: J2Templates
 
     @handles(Route('GET', '/'))
     @with_session
