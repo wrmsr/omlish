@@ -11,7 +11,7 @@ from omlish.testing.pydevd import silence_subprocess_check
 
 def run(*args, **kwargs):
     silence_subprocess_check()
-    return subprocess.run(*args, **kwargs)
+    return subprocess.run(*args, **kwargs)  # noqa
 
 
 def check_call(*args, **kwargs):
@@ -47,6 +47,9 @@ def launch_docker_container(
     ]).decode().strip()
 
     try:
+        print(ctr_id)
+        print()
+
         if timebomb_delay_s:
             subprocess.check_call([
                 'docker', 'exec', '-id', ctr_id,
