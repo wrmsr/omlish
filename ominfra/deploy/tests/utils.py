@@ -35,7 +35,6 @@ def build_docker_image(img_name: str, cur_dir: str) -> None:
 
 @contextlib.contextmanager
 def launch_docker_container(
-        img_name: str,
         *args: str,
         timebomb_delay_s: float | None = None,
 ) -> ta.Iterator[str]:
@@ -43,7 +42,6 @@ def launch_docker_container(
         'docker', 'run',
         '-d',
         *args,
-        img_name,
     ]).decode().strip()
 
     try:
