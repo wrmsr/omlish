@@ -5,5 +5,5 @@ from ..keys import Key
 from ..providers import ConstProvider
 
 
-def test_api():
+def test_binder():
     assert bind(5) == Binding(Key(rfl.type_(int)), ConstProvider(5))
