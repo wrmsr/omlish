@@ -140,10 +140,12 @@ class ElementCollection(lang.Final):
             es_by_ty.pop(Expose, None)
 
             if (bs := es_by_ty.pop(Binding, None)):
-                if len(bs) > 1:
+                # FIXME: lol - this squeezes multis for us, but when tracebacks come this.. won't work
+                bss = set(bs)
+                if len(bss) > 1:
                     raise DuplicateKeyError(k)
 
-                b: Binding = check.isinstance(check.single(bs), Binding)
+                b: Binding = check.isinstance(check.single(bss), Binding)
                 p: ProviderImpl
 
                 if isinstance(b.provider, (SetProvider, MapProvider)):
