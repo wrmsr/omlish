@@ -8,6 +8,7 @@ TODO:
   - cache __hash__ in Generic/Union
 """
 import collections.abc
+import dataclasses as dc
 import types
 import typing as ta
 
@@ -130,19 +131,22 @@ class Union(ta.NamedTuple):
         return Union(rem)
 
 
-class Generic(ta.NamedTuple):
+@dc.dataclass(frozen=True)
+class Generic:
     cls: type
-    args: tuple[Type, ...]             # map[int, V] = (int, V) | map[T, T] = (T, T)
-    params: tuple[ta.TypeVar, ...]     # map[int, V] = (_0, _1) | map[T, T] = (_0, _1)
-    # params2: tuple[ta.TypeVar, ...]  # map[int, V] = (V,)     | map[T, T] = (T,)
-    obj: ta.Any
+    args: tuple[Type, ...]                                       # map[int, V] = (int, V) | map[T, T] = (T, T)
 
-    def __repr__(self) -> str:
+    params: tuple[ta.TypeVar, ...] = dc.field(compare=False)     # map[int, V] = (_0, _1) | map[T, T] = (_0, _1)
+    # params2: tuple[ta.TypeVar, ...]                            # map[int, V] = (V,)     | map[T, T] = (T,)
+
+    obj: ta.Any = dc.field(compare=False, repr=False)
+
+    def full_eq(self, other: 'Generic') -> bool:
         return (
-            f'{self.__class__.__name__}('
-            f'cls={self.cls.__name__}, '
-            f'args={self.args!r}, '
-            f'params={self.params!r})'
+            self.cls == other.cls and
+            self.args == other.args and
+            self.params == other.params and
+            self.obj == other.obj
         )
 
 
@@ -320,7 +324,7 @@ def replace_type_vars(
                         obj = cur.obj[*nargs]
             else:
                 obj = None
-            return cur._replace(args=args, obj=obj)
+            return dc.replace(cur, args=args, obj=obj)
 
         if isinstance(cur, Union):
             return Union(frozenset(rec(e) for e in cur.args))
