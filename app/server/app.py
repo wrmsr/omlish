@@ -11,6 +11,8 @@ https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-yo
 import datetime
 import logging
 
+import sqlalchemy.ext.asyncio as saa
+
 from omlish import inject as inj
 from omlish import lang
 from omlish import sql
@@ -22,11 +24,10 @@ from omlish.http.asgi import AsgiSend
 from omserv.apps.j2 import J2Templates
 from omserv.apps.routes import RouteHandlerApp
 from omserv.dbs import get_db_url
-import sqlalchemy.ext.asyncio as saa
 
-from ..usersdb import DbUserStore
 from ..users import InMemoryUserStore
 from ..users import UserStore
+from ..usersdb import DbUserStore
 from .apps import inject as apps_inj
 from .handlers import inject as handlers_inj
 
