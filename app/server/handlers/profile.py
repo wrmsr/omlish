@@ -54,6 +54,6 @@ class ProfileHandler(Handler_):
         auth_token = dct[b'auth-token'].decode()
 
         user = dc.replace(user, auth_token=auth_token or None)
-        self._users.update(user)
+        await self._users.update(user)
 
         await redirect_response(send, url_for('profile'))

@@ -43,7 +43,7 @@ class SignupHandler(Handler_):
         password = dct[b'password'].decode()
         name = dct[b'name'].decode()
 
-        self._users.create(
+        await self._users.create(
             email=email,
             password=generate_password_hash(password, method='scrypt'),
             name=name,

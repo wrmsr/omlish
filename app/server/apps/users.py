@@ -54,7 +54,7 @@ class _WithUserAppMarkerProcessor(AppMarkerProcessor):
 
             user_id = session.get('_user_id')
             if user_id is not None:
-                user = self._users.get(id=user_id)
+                user = await self._users.get(id=user_id)
             else:
                 user = None
 

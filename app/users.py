@@ -28,11 +28,11 @@ class User:
 
 class UserStore(lang.Abstract):
     @abc.abstractmethod
-    def get_all(self) -> list[User]:
+    async def get_all(self) -> list[User]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get(
+    async def get(
             self,
             *,
             id: int | None = None,  # noqa
@@ -41,7 +41,7 @@ class UserStore(lang.Abstract):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def create(
+    async def create(
             self,
             *,
             email: str,
@@ -51,7 +51,7 @@ class UserStore(lang.Abstract):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def update(self, u: User) -> None:
+    async def update(self, u: User) -> None:
         raise NotImplementedError
 
 
@@ -68,10 +68,10 @@ class InMemoryUserStore(UserStore):
         self._users_by_id: dict[int, User] = {}
         self._user_ids_by_email: dict[str, int] = {}
 
-    def get_all(self) -> list[User]:
+    async def get_all(self) -> list[User]:
         return list(self._users_by_id.values())
 
-    def get(
+    async def get(
             self,
             *,
             id: int | None = None,  # noqa
@@ -85,7 +85,7 @@ class InMemoryUserStore(UserStore):
         else:
             return None
 
-    def create(
+    async def create(
             self,
             *,
             email: str,
@@ -103,7 +103,7 @@ class InMemoryUserStore(UserStore):
         self._user_ids_by_email[u.email] = u.id
         return u
 
-    def update(self, u: User) -> None:
+    async def update(self, u: User) -> None:
         e = self._users_by_id[u.id]
         check.equal(u.email, e.email)
         self._users_by_id[u.id] = u
