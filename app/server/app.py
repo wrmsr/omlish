@@ -8,7 +8,6 @@ TODO:
 
 https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login
 """
-import itertools
 import logging
 import typing as ta
 
@@ -55,7 +54,7 @@ def _build_route_handler_map(handlers: ta.AbstractSet[Handler_]) -> ta.Mapping[R
             for m in markers:
                 mp = APP_MARKER_PROCESSORS[type(m)]
                 if mp is not None:
-                    app = mp(app)
+                    app = mp()(app)
             route_handlers[rh.route] = app
     return route_handlers
 

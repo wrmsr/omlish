@@ -1,3 +1,4 @@
+import abc
 import contextvars
 import dataclasses as dc
 import datetime
@@ -58,7 +59,18 @@ def get_app_markers(obj) -> ta.Sequence[AppMarker]:
     return dct.get(APP_MARKERS_ATTR, ())
 
 
-APP_MARKER_PROCESSORS: dict[type[AppMarker], ta.Callable[[AsgiApp], AsgiApp] | None] = {}
+class AppMarkerProcessor(lang.Abstract):
+    @abc.abstractmethod
+    def __call__(self, app: AsgiApp) -> AsgiApp:
+        return app
+
+
+APP_MARKER_PROCESSORS: dict[type[AppMarker], type[AppMarkerProcessor]] = {}
+
+
+class NopAppMarkerProcessor(AppMarkerProcessor):
+    def __call__(self, app: AsgiApp) -> AsgiApp:
+        return app
 
 
 ##
@@ -111,12 +123,12 @@ def with_session(fn):
     return fn
 
 
-class _WithSessionAppMarkerProcessor:
+class _WithSessionAppMarkerProcessor(AppMarkerProcessor):
     def __call__(self, app: AsgiApp) -> AsgiApp:
         return _with_session(app)  # noqa
 
 
-APP_MARKER_PROCESSORS[_WithSessionAppMarker] = _WithSessionAppMarkerProcessor()
+APP_MARKER_PROCESSORS[_WithSessionAppMarker] = _WithSessionAppMarkerProcessor
 
 
 ##
@@ -188,12 +200,12 @@ def with_user(fn):
     return fn
 
 
-class _WithUserAppMarkerProcessor:
+class _WithUserAppMarkerProcessor(AppMarkerProcessor):
     def __call__(self, app: AsgiApp) -> AsgiApp:
         return _with_user(app)  # noqa
 
 
-APP_MARKER_PROCESSORS[_WithUserAppMarker] = _WithUserAppMarkerProcessor()
+APP_MARKER_PROCESSORS[_WithUserAppMarker] = _WithUserAppMarkerProcessor
 
 
 #
@@ -227,12 +239,12 @@ def login_required(fn):
     return fn
 
 
-class _LoginRequiredAppMarkerProcessor:
+class _LoginRequiredAppMarkerProcessor(AppMarkerProcessor):
     def __call__(self, app: AsgiApp) -> AsgiApp:
         return _login_required(app)  # noqa
 
 
-APP_MARKER_PROCESSORS[_LoginRequiredAppMarker] = _LoginRequiredAppMarkerProcessor()
+APP_MARKER_PROCESSORS[_LoginRequiredAppMarker] = _LoginRequiredAppMarkerProcessor
 
 
 ##
@@ -253,7 +265,7 @@ class _HandlesAppMarker(AppMarker, lang.Final):
     routes: ta.Sequence[Route]
 
 
-APP_MARKER_PROCESSORS[_HandlesAppMarker] = None
+APP_MARKER_PROCESSORS[_HandlesAppMarker] = NopAppMarkerProcessor
 
 
 def handles(*routes: Route):
