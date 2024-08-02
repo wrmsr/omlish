@@ -169,7 +169,7 @@ def bind(
         pts = scope if isinstance(scope, PytestScope) else PytestScope[check.isinstance(scope, str).upper()]
         check.isinstance(cls, type)
         register(inj.as_elements(
-            inj.in_(cls, _SCOPES_BY_PYTEST_SCOPE[pts]),
+            inj.bind(cls, in_=_SCOPES_BY_PYTEST_SCOPE[pts]),
         ))
         return cls
     return inner
