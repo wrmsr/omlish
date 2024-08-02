@@ -71,6 +71,9 @@ from .overrides import (  # noqa
 from .privates import (  # noqa
     Expose,
     Private,
+    private,
+
+    Expose as expose,  # noqa
 )
 
 from .providers import (  # noqa
