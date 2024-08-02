@@ -18,11 +18,11 @@ from omlish.http.asgi import AsgiApp
 from omlish.http.asgi import AsgiRecv
 from omlish.http.asgi import AsgiScope
 from omlish.http.asgi import AsgiSend
+from omserv.apps.j2 import J2Templates
+from omserv.apps.routes import RouteHandlerApp
 
 from ..users import UserStore
 from .apps import inject as apps_inj
-from .apps.j2 import J2Templates
-from .apps.routes import RouteHandlerApp
 from .handlers import inject as handlers_inj
 
 
@@ -57,7 +57,6 @@ def bind_server_app() -> inj.Elemental:
         inj.bind(J2Templates, singleton=True),
 
         apps_inj.bind(),
-        apps_inj.bind_route_handler_map(),
 
         handlers_inj.bind(),
 

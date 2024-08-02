@@ -3,11 +3,10 @@ from omlish.http.asgi import AsgiRecv
 from omlish.http.asgi import AsgiScope
 from omlish.http.asgi import AsgiSend
 from omlish.http.asgi import send_response
+from omserv.apps.routes import Handler_
+from omserv.apps.routes import Route
+from omserv.apps.routes import handles
 from omserv.server.resources import favicon_bytes
-
-from ..apps.routes import Handler_
-from ..apps.routes import Route
-from ..apps.routes import handles
 
 
 class FaviconHandler(Handler_):
