@@ -69,7 +69,7 @@ def fn(fn: ta.Any, ty: rfl.Type | None = _Missing) -> Provider:
 @dc.dataclass(frozen=True)
 @dc.extra_params(cache_hash=True)
 class CtorProvider(Provider):
-    ty: type = dc.xfield(check=lang.isinstance_of(type))
+    ty: type = dc.xfield(coerce=check.of_isinstance(type))
 
     def provided_ty(self) -> type:
         return self.ty
@@ -105,7 +105,7 @@ def const(v: ta.Any, ty: rfl.Type | None = _Missing) -> Provider:
 @dc.dataclass(frozen=True)
 @dc.extra_params(cache_hash=True)
 class LinkProvider(Provider):
-    k: Key = dc.xfield(check=lang.isinstance_of(Key))
+    k: Key = dc.xfield(coerce=check.of_isinstance(Key))
 
     def provided_ty(self) -> rfl.Type | None:
         return None
