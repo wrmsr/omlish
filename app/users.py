@@ -1,8 +1,10 @@
+import abc
 import dataclasses as dc
 import itertools
 import logging
 
 from omlish import check
+from omlish import lang
 
 
 log = logging.getLogger(__name__)
@@ -21,7 +23,42 @@ class User:
     auth_token: str | None = None
 
 
-class UserStore:
+##
+
+
+class UserStore(lang.Abstract):
+    @abc.abstractmethod
+    def get_all(self) -> list[User]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def get(
+            self,
+            *,
+            id: int | None = None,  # noqa
+            email: str | None = None,
+    ) -> User | None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def create(
+            self,
+            *,
+            email: str,
+            password: str,
+            name: str,
+    ) -> User:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def update(self, u: User) -> None:
+        raise NotImplementedError
+
+
+##
+
+
+class InMemoryUserStore(UserStore):
     def __init__(self) -> None:
         super().__init__()
 
