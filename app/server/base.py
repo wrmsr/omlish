@@ -1,7 +1,6 @@
 import abc
 import contextvars
 import dataclasses as dc
-import datetime
 import logging
 import os
 import typing as ta
@@ -76,39 +75,7 @@ class NopAppMarkerProcessor(AppMarkerProcessor):
 ##
 
 
-COOKIE_SESSION_STORE = sessions.CookieSessionStore(
-    marshal=sessions.SessionMarshal(
-        signer=sessions.Signer(sessions.Signer.Config(
-            secret_key='secret-key-goes-here',  # noqa
-        )),
-    ),
-    config=sessions.CookieSessionStore.Config(
-        max_age=datetime.timedelta(days=31),
-    ),
-)
-
-
 SESSION: contextvars.ContextVar[sessions.Session] = contextvars.ContextVar('session')
-
-
-@lang.decorator
-async def _with_session(fn: AsgiApp, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
-    async def _send(obj):
-        if obj['type'] == 'http.response.start':
-            out_session = SESSION.get()
-            obj = {
-                **obj,
-                'headers': [
-                    *obj.get('headers', []),
-                    *COOKIE_SESSION_STORE.build_headers(out_session),
-                ],
-            }
-
-        await send(obj)
-
-    in_session = COOKIE_SESSION_STORE.extract(scope)
-    with lang.context_var_setting(SESSION, in_session):
-        await fn(scope, recv, _send)
 
 
 #
@@ -123,8 +90,30 @@ def with_session(fn):
     return fn
 
 
+@dc.dataclass(frozen=True)
 class _WithSessionAppMarkerProcessor(AppMarkerProcessor):
+    _ss: sessions.CookieSessionStore
+
     def __call__(self, app: AsgiApp) -> AsgiApp:
+        @lang.decorator
+        async def _with_session(fn: AsgiApp, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
+            async def _send(obj):
+                if obj['type'] == 'http.response.start':
+                    out_session = SESSION.get()
+                    obj = {
+                        **obj,
+                        'headers': [
+                            *obj.get('headers', []),
+                            *self._ss.build_headers(out_session),
+                        ],
+                    }
+
+                await send(obj)
+
+            in_session = self._ss.extract(scope)
+            with lang.context_var_setting(SESSION, in_session):
+                await fn(scope, recv, _send)
+
         return _with_session(app)  # noqa
 
 
@@ -164,28 +153,12 @@ def url_for(s: str) -> str:
 ##
 
 
-USER_STORE = UserStore()
-
 USER: contextvars.ContextVar[User | None] = contextvars.ContextVar('user', default=None)
 
 
 @j2_helper
 def current_user() -> User | None:
     return USER.get()
-
-
-@lang.decorator
-async def _with_user(fn: AsgiApp, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
-    session = SESSION.get()
-
-    user_id = session.get('_user_id')
-    if user_id is not None:
-        user = USER_STORE.get(id=user_id)
-    else:
-        user = None
-
-    with lang.context_var_setting(USER, user):
-        await fn(scope, recv, send)
 
 
 #
@@ -200,8 +173,24 @@ def with_user(fn):
     return fn
 
 
+@dc.dataclass(frozen=True)
 class _WithUserAppMarkerProcessor(AppMarkerProcessor):
+    _users: UserStore
+
     def __call__(self, app: AsgiApp) -> AsgiApp:
+        @lang.decorator
+        async def _with_user(fn: AsgiApp, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
+            session = SESSION.get()
+
+            user_id = session.get('_user_id')
+            if user_id is not None:
+                user = self._users.get(id=user_id)
+            else:
+                user = None
+
+            with lang.context_var_setting(USER, user):
+                await fn(scope, recv, send)
+
         return _with_user(app)  # noqa
 
 
