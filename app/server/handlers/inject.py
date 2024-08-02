@@ -1,6 +1,6 @@
 from omlish import inject as inj
+from omserv.apps.inject import bind_handler
 
-from ..apps.inject import bind_handler
 from .favicon import FaviconHandler
 from .index import IndexHandler
 from .login import LoginHandler
