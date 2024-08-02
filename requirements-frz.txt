@@ -27,7 +27,7 @@ bayesian-optimization==1.5.1
 beautifulsoup4==4.12.3
 bellows==0.40.2
 bitsandbytes==0.42.0
-black==24.4.2
+black==24.8.0
 bleach==6.1.0
 blis==0.7.11
 blobfile==2.1.1
@@ -67,6 +67,7 @@ discord.py==2.4.0
 distro==1.9.0
 docstring_parser==0.16
 docutils==0.21.2
+duckdb==1.0.0
 einops==0.8.0
 evaluate==0.4.2
 execnet==2.1.1
@@ -291,7 +292,7 @@ rich==13.7.1
 rpds-py==0.19.1
 rsa==4.9
 rubicon-objc==0.4.9
-ruff==0.5.5
+ruff==0.5.6
 s3transfer==0.10.2
 safetensors==0.4.3
 scikit-image==0.24.0
