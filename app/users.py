@@ -27,6 +27,9 @@ class User:
 
 
 class UserStore(lang.Abstract):
+    async def setup(self) -> None:
+        pass
+
     @abc.abstractmethod
     async def get_all(self) -> list[User]:
         raise NotImplementedError
