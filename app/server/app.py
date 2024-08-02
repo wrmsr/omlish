@@ -20,14 +20,14 @@ from omlish.http.asgi import AsgiScope
 from omlish.http.asgi import AsgiSend
 from omlish.http.sessions import Session
 
-from .base import Handler_
 from .base import APP_MARKER_PROCESSORS
-from .base import Route
-from .base import RouteHandlerApp
 from .base import SCOPE
 from .base import SESSION
 from .base import USER
 from .base import USER_STORE
+from .base import Handler_
+from .base import Route
+from .base import RouteHandlerApp
 from .base import User
 from .base import get_app_markers
 from .handlers.favicon import FaviconHandler
@@ -60,6 +60,13 @@ def _build_route_handler_map(handlers: ta.AbstractSet[Handler_]) -> ta.Mapping[R
     return route_handlers
 
 
+def bind_handler(hc: type[Handler_]) -> inj.Elemental:
+    return inj.as_elements(
+        inj.bind(hc, singleton=True),
+        inj.set_binder[Handler_]().bind(hc),
+    )
+
+
 def bind_server_app() -> inj.Elemental:
     return inj.as_elements(
         inj.bind(ta.Callable[[], AsgiScope], to_const=SCOPE.get),
@@ -73,18 +80,13 @@ def bind_server_app() -> inj.Elemental:
 
         inj.set_binder[Handler_](),
 
-        *itertools.chain.from_iterable([
-            inj.bind(hc, singleton=True),
-            inj.set_binder[Handler_]().bind(hc),
-        ] for hc in [
-            IndexHandler,
-            ProfileHandler,
-            LoginHandler,
-            SignupHandler,
-            LogoutHandler,
-            FaviconHandler,
-            TikHandler,
-        ]),
+        bind_handler(IndexHandler),
+        bind_handler(ProfileHandler),
+        bind_handler(LoginHandler),
+        bind_handler(SignupHandler),
+        bind_handler(LogoutHandler),
+        bind_handler(FaviconHandler),
+        bind_handler(TikHandler),
 
         inj.bind(_build_route_handler_map, singleton=True),
 
