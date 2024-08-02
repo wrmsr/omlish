@@ -17,7 +17,6 @@ from ..inspect import Kwarg
 from ..inspect import KwargsTarget
 from ..keys import Key
 from ..keys import as_key
-from ..keys import tag
 
 
 P = ta.ParamSpec('P')

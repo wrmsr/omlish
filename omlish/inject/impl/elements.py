@@ -34,8 +34,8 @@ from ..multis import MapProvider
 from ..multis import SetBinding
 from ..multis import SetProvider
 from ..overrides import Overrides
-from ..private import Expose
-from ..private import Private
+from ..privates import Expose
+from ..privates import Private
 from ..scopes import ScopeBinding
 from ..types import Scope
 from .bindings import BindingImpl

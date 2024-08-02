@@ -63,7 +63,7 @@ from .overrides import (  # noqa
     override,
 )
 
-from .private import (  # noqa
+from .privates import (  # noqa
     Expose,
     Private,
 )
@@ -74,11 +74,6 @@ from .providers import (  # noqa
     FnProvider,
     LinkProvider,
     Provider,
-    as_provider,
-    const,
-    ctor,
-    fn,
-    link,
 )
 
 from .scopes import (  # noqa
