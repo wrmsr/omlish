@@ -1,9 +1,7 @@
 """
-class Binding(Element, lang.Final):
-
-class Eager(Element, lang.Final):
-
-class Key(lang.Final, ta.Generic[T]):
+TODO:
+ - multis?
+ - expose?
 
 class SetBinding(Element, lang.Final):
 class SetProvider(Provider):
@@ -11,23 +9,8 @@ class SetProvider(Provider):
 class MapBinding(Element, lang.Final):
 class MapProvider(Provider):
 
-class Overrides(Element, lang.Final):
-
 class Expose(Element, lang.Final):
 class Private(Element, lang.Final):
-
-class Provider(lang.Abstract):
-class FnProvider(Provider):
-class CtorProvider(Provider):
-class ConstProvider(Provider):
-class LinkProvider(Provider):
-
-class ScopeBinding(Element, lang.Final):
-class Singleton(Scope, lang.Singleton, lang.Final):
-class Thread(Scope, lang.Singleton, lang.Final):
-
-class SeededScope(Scope, lang.Final):
-class ScopeSeededProvider(Provider):
 """
 import inspect
 import typing as ta
@@ -46,6 +29,7 @@ from ..providers import CtorProvider
 from ..providers import FnProvider
 from ..providers import LinkProvider
 from ..providers import Provider
+from ..scopes import SCOPE_ALIASES
 from ..scopes import Singleton
 from ..types import Scope
 from ..types import Unscoped
@@ -100,8 +84,11 @@ def bind(
     provider, = providers
 
     scopes: list[Scope] = []
-    if in_ is not None:  # TODO: string alises?
-        scopes.append(check.isinstance(in_, Scope))
+    if in_ is not None:
+        if isinstance(in_, str):
+            scopes.append(SCOPE_ALIASES[in_])
+        else:
+            scopes.append(check.isinstance(in_, Scope))
     if singleton:
         scopes.append(Singleton())
     if len(scopes) > 1:

@@ -24,6 +24,9 @@ else:
 ##
 
 
+SCOPE_ALIASES: dict[str, Scope] = {}
+
+
 @dc.dataclass(frozen=True)
 @dc.extra_params(cache_hash=True)
 class ScopeBinding(Element, lang.Final):
@@ -38,16 +41,28 @@ def in_(b: ta.Any, sc: Scope) -> 'Binding':
     return dc.replace(as_binding(b), scope=check.isinstance(sc, Scope))
 
 
+##
+
+
 class Singleton(Scope, lang.Singleton, lang.Final):
     pass
+
+
+SCOPE_ALIASES['singleton'] = Singleton()
 
 
 def singleton(b: ta.Any) -> 'Binding':
     return in_(b, Singleton())
 
 
+##
+
+
 class Thread(Scope, lang.Singleton, lang.Final):
     pass
+
+
+SCOPE_ALIASES['thread'] = Thread()
 
 
 ##
