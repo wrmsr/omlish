@@ -77,7 +77,7 @@ _SINGLETON_LOCK = threading.RLock()
 
 
 def _set_singleton_instance(inst):
-    cls = type(inst)
+    cls = inst.__class__
     if _SINGLETON_INSTANCE_ATTR in cls.__dict__:
         raise TypeError(cls)
 
@@ -86,7 +86,7 @@ def _set_singleton_instance(inst):
 
     @functools.wraps(old_init)
     def new_init(self):
-        if type(self) is not cls:
+        if self.__class__ is not cls:
             old_init(self)  # noqa
 
     setattr(cls, '__init__', new_init)
