@@ -21,6 +21,8 @@ def bind_app_marker_processor(mc: type[AppMarker], pc: type[AppMarkerProcessor])
 
 def bind() -> inj.Elemental:
     return inj.as_elements(
+        inj.map_binder[type[AppMarker], AppMarkerProcessor](),
+
         bind_app_marker_processor(_WithSessionAppMarker, _WithSessionAppMarkerProcessor),
         bind_app_marker_processor(_WithUserAppMarker, _WithUserAppMarkerProcessor),
         bind_app_marker_processor(_LoginRequiredAppMarker, _LoginRequiredAppMarkerProcessor),
