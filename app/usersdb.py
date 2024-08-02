@@ -4,6 +4,7 @@ import typing as ta
 import sqlalchemy as sa
 import sqlalchemy.orm
 
+from omlish import check
 from omlish import sql
 
 from .users import User
@@ -44,11 +45,11 @@ Users = UserModel.__table__
 class DbUserStore(UserStore):
     def __init__(
             self,
-            engine: sql.AsyncEngineLike,
+            engine: sql.AsyncEngine,
     ) -> None:
         super().__init__()
 
-        self._engine = sql.async_adapt(engine)
+        self._engine = engine
         self._has_setup = False
 
     async def _setup(self) -> None:
@@ -60,11 +61,35 @@ class DbUserStore(UserStore):
 
     async def get_all(self) -> list[User]:
         await self._setup()
+
+        conn: sql.AsyncConnection
+        async with self._engine.connect() as conn:
+            rows = (await conn.execute(sa.select(Users))).fetchall()
+
         raise NotImplementedError
 
     async def get(self, *, id: int | None = None, email: str | None = None) -> User | None:  # noqa
         await self._setup()
-        raise NotImplementedError
+
+        conn: sql.AsyncConnection
+        async with self._engine.connect() as conn:
+            if id is not None:
+                rows = (await conn.execute(sa.select(Users).where(Users.c.id == id))).fetchall()
+            elif email is not None:
+                rows = (await conn.execute(sa.select(Users).where(Users.c.email == email))).fetchall()
+            else:
+                raise TypeError('Must specify a filter')
+
+        if not rows:
+            return None
+
+        row = check.single(rows)
+        return User(
+            id=row.id,
+            email=row.email,
+            password=row.email,
+            name=row.name,
+        )
 
     async def create(self, *, email: str, password: str, name: str) -> User:
         await self._setup()
