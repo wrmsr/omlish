@@ -19,7 +19,7 @@ T = ta.TypeVar('T')
 
 class ContextManaged:
 
-    def __enter__(self: ta.Self) -> ta.Self:
+    def __enter__(self) -> ta.Self:
         return self
 
     def __exit__(
@@ -202,7 +202,7 @@ class ExitStacked:
     def _enter_context(self, context_manager: ta.ContextManager[T]) -> T:
         return self._exit_stack.enter_context(ta.cast(ta.ContextManager, context_manager))
 
-    def __enter__(self: ta.Self) -> ta.Self:
+    def __enter__(self) -> ta.Self:
         try:
             superfn = super().__enter__  # type: ignore
         except AttributeError:

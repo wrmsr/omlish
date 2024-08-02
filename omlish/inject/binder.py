@@ -92,7 +92,7 @@ def bind(
         eager: bool = False,
         expose: bool = False,
 ) -> Element | Elements:
-    if obj is inspect.Parameter.empty or obj is None:
+    if obj is None or obj is inspect.Parameter.empty:
         raise TypeError(obj)
     if isinstance(obj, _BANNED_BIND_TYPES):
         raise TypeError(obj)
