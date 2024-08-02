@@ -1,3 +1,10 @@
+"""
+TODO:
+ - https://github.com/asg017/sqlite-vec/tree/main
+ - https://github.com/wrmsr/sqlean.py (3.13)
+ - async
+ - duckdb - https://github.com/Mause/duckdb_engine
+"""
 import contextlib
 
 import pytest
@@ -6,6 +13,7 @@ import sqlalchemy.ext.asyncio
 
 from ... import lang
 from ...testing import pytest as ptu
+from .. import sqlean as _sqlean
 
 
 ##
@@ -22,9 +30,9 @@ t1 = sa.Table(
 ##
 
 
-def test_sqlite() -> None:
+def _test_sqlite(scheme: str) -> None:
     with contextlib.ExitStack() as es:
-        engine = sa.create_engine('sqlite://', echo=True)
+        engine = sa.create_engine(f'{scheme}://', echo=True)
         es.enter_context(lang.defer(engine.dispose))
 
         with engine.begin() as conn:
@@ -44,15 +52,28 @@ def test_sqlite() -> None:
             assert len(rows) == 1
             assert rows[0].name == 'some name 1'
 
+            print(conn.execute(sa.text('select sqlite_version()')).fetchall())
+
+
+def test_sqlite():
+    _test_sqlite('sqlite')
+
+
+@ptu.skip_if_cant_import('sqlean')
+def test_sqlite_sqlean():
+    _test_sqlite(_sqlean.DIALECT_NAME)
+
+    with lang.disposing(sa.create_engine(f'{_sqlean.DIALECT_NAME}://', echo=True)) as engine:
+        with engine.connect() as conn:
+            print(conn.execute(sa.text('select cos(0)')).fetchall())
+
 
 ##
 
 
-@ptu.skip_if_cant_import('aiosqlite')
-@pytest.mark.asyncio
-async def test_async_sqlite() -> None:
+async def _test_async_sqlite(scheme: str) -> None:
     async with contextlib.AsyncExitStack() as aes:
-        engine = sa.ext.asyncio.create_async_engine('sqlite+aiosqlite://', echo=True)
+        engine = sa.ext.asyncio.create_async_engine(f'{scheme}://', echo=True)
         await aes.enter_async_context(lang.a_defer(engine.dispose()))
 
         async with engine.begin() as conn:
@@ -71,3 +92,9 @@ async def test_async_sqlite() -> None:
             rows = list(result.fetchall())
             assert len(rows) == 1
             assert rows[0].name == 'some name 1'
+
+
+@ptu.skip_if_cant_import('aiosqlite')
+@pytest.mark.asyncio
+async def test_async_sqlite():
+    await _test_async_sqlite('sqlite+aiosqlite')
