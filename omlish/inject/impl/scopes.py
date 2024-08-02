@@ -13,8 +13,8 @@ from ..exceptions import ScopeAlreadyOpenError
 from ..exceptions import ScopeNotOpenError
 from ..injector import Injector
 from ..keys import Key
+from ..providers import FnProvider
 from ..providers import Provider
-from ..providers import fn
 from ..scopes import ScopeSeededProvider
 from ..scopes import SeededScope
 from ..scopes import Singleton
@@ -162,7 +162,7 @@ class SeededScopeImpl(ScopeImpl):
         return as_elements(
             Binding(
                 Key(SeededScope.Manager, tag=self._ss),
-                fn(lang.typed_partial(SeededScopeImpl.Manager, ss=self._ss)),
+                FnProvider(lang.typed_partial(SeededScopeImpl.Manager, ss=self._ss)),
                 scope=Singleton(),
             ),
         )
