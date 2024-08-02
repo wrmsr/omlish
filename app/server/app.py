@@ -66,11 +66,11 @@ def _server_app() -> AsgiApp:
 
         inj.bind(USER_STORE),
 
-        inj.bind_set_provider(ta.AbstractSet[Handler_]),
+        inj.set_binder[Handler_](),
 
         *itertools.chain.from_iterable([
             inj.bind(hc, singleton=True),
-            inj.SetBinding(inj.as_key(ta.AbstractSet[Handler_]), inj.Key(hc)),
+            inj.set_binder[Handler_]().bind(hc),
         ] for hc in [
             IndexHandler,
             ProfileHandler,
