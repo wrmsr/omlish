@@ -15,12 +15,9 @@ import typing as ta
 from omlish import inject as inj
 from omlish import lang
 from omlish.http.asgi import AsgiApp
-from omlish.http.asgi import AsgiApp_
 from omlish.http.asgi import AsgiRecv
 from omlish.http.asgi import AsgiScope
 from omlish.http.asgi import AsgiSend
-from omlish.http.asgi import send_response
-from omlish.http.asgi import stub_lifespan
 from omlish.http.sessions import Session
 
 from .base import SCOPE
@@ -43,40 +40,6 @@ from .j2 import J2Templates
 
 
 log = logging.getLogger(__name__)
-
-
-##
-
-
-class AuthApp(AsgiApp_):
-    def __init__(
-            self,
-            *,
-            route_handlers: dict[Route, ta.Any],
-    ) -> None:
-        super().__init__()
-
-        self._route_handlers = route_handlers
-
-    async def __call__(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
-        match scope_ty := scope['type']:
-            case 'lifespan':
-                await stub_lifespan(scope, recv, send)
-                return
-
-            case 'http':
-                route = Route(scope['method'], scope['raw_path'].decode())
-                handler = self._route_handlers.get(route)
-
-                if handler is not None:
-                    with lang.context_var_setting(SCOPE, scope):
-                        await handler(scope, recv, send)
-
-                else:
-                    await send_response(send, 404)
-
-            case _:
-                raise ValueError(f'Unhandled scope type: {scope_ty!r}')
 
 
 ##
