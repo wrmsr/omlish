@@ -4,11 +4,13 @@ import shutil
 import sys
 import typing as ta
 import urllib.parse
+import warnings
 
 import yaml
 
 from omlish import argparse as ap
 from omlish import check
+from omlish import lang
 from omlish import logs
 
 
@@ -69,6 +71,18 @@ def spec_from_cfg(cfg: ta.Mapping[str, ta.Any], prefix: str) -> ServerSpec:
     )
 
 
+@lang.cached_function
+def _maybe_warn_pgcli_keyring() -> None:
+    import pgcli.config
+
+    c = pgcli.config.get_config()
+    if c['main'].as_bool('keyring'):
+        warnings.warn(
+            'pgcli keyring is not disabled, it will try to store credentials. '
+            'set `keyring = False` in ~/.config/pgcli/config',
+        )
+
+
 def _dbcli_or_fallback_exe(dbcli_mod: str | None, default_exe: str) -> tuple[ta.Sequence[str], bool]:
     if dbcli_mod is not None:
         main_mod = dbcli_mod + '.main'
@@ -77,6 +91,8 @@ def _dbcli_or_fallback_exe(dbcli_mod: str | None, default_exe: str) -> tuple[ta.
         except ImportError:
             pass
         else:
+            if dbcli_mod == 'pgcli':
+                _maybe_warn_pgcli_keyring()
             return [sys.executable, '-m', main_mod], True
     return [check.not_none(shutil.which(default_exe))], False
 
