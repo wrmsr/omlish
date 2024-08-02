@@ -70,7 +70,7 @@ async def killer(shutdown: anyio.Event, sleep_s: float) -> None:
 async def a_run_shell(app: ShellApp) -> None:
     async with contextlib.AsyncExitStack() as aes:
         engine = sql.async_adapt(saa.create_async_engine(get_db_url(), echo=True))
-        await aes.enter_async_context(lang.a_defer(engine.dispose))
+        await aes.enter_async_context(lang.a_defer(engine.dispose()))
 
         await recreate_all(engine)
 

@@ -61,8 +61,8 @@ async def test_demo_auth():
                 r = await client.get(base_url + 'signup')
                 assert r.status_code == 200
 
-                email = 'foo@bar.com'
-                name = 'foo'
+                email = f'email-{randhex(16)}@bar.com'
+                name = f'name-{randhex(16)}'
                 password = randhex(16)
 
                 r = await client.post(

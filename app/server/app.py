@@ -84,8 +84,8 @@ def bind_server_app() -> inj.Elemental:
 
         handlers_inj.bind(),
 
-        # _bind_in_memory_user_store(),
-        _bind_db_user_store(),
+        _bind_in_memory_user_store(),
+        # _bind_db_user_store(),
 
         bind_cookie_session_store(),
 
