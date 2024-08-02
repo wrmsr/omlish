@@ -5,7 +5,7 @@ def test_scopes():
     ss = inj.SeededScope('hi')
     i = inj.create_injector(inj.as_elements(
         inj.bind_scope(ss),
-        inj.in_(420, ss),
+        inj.bind(420, in_=ss),
         inj.bind_scope_seed(ss, float),
     ))
     with inj.enter_seeded_scope(i, ss, {
@@ -26,9 +26,8 @@ def test_seeded_eager():
     ss = inj.SeededScope('hi')
     i = inj.create_injector(inj.as_elements(
         inj.bind_scope(ss),
-        inj.in_(420, ss),
-        inj.in_(foo, ss),
-        inj.eager(str),
+        inj.bind(420, in_=ss),
+        inj.bind(foo, in_=ss, eager=True),
         inj.bind_scope_seed(ss, float),
     ))
     assert c == 0

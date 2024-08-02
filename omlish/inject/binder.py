@@ -1,6 +1,7 @@
 """
 TODO:
  - multis?
+ - FN_TYPES? not all callables should be treated as factories
 
 class SetBinding(Element, lang.Final):
 class SetProvider(Provider):
@@ -18,9 +19,10 @@ from .bindings import Binding
 from .eagers import Eager
 from .elements import Element
 from .elements import Elements
+from .impl.inspect import signature
 from .keys import Key
 from .keys import as_key
-from .private import Expose
+from .privates import Expose
 from .providers import ConstProvider
 from .providers import CtorProvider
 from .providers import FnProvider
@@ -51,15 +53,31 @@ def bind(
     if obj is inspect.Parameter.empty or obj is None:
         raise TypeError(obj)
 
+    has_to = (
+            to_fn is not None or
+            to_ctor is not None or
+            to_const is not None or
+            to_key is not None
+    )
     if isinstance(obj, Key):
         key = obj
+    elif isinstance(obj, type):
+        if not has_to:
+            to_ctor = obj
+        key = Key(obj)
     elif isinstance(obj, rfl.TYPES) or rfl.is_type(obj):
-        key = Key(rfl.type_(obj))
+        key = Key(obj)
+    elif callable(obj) and not has_to:
+        sig = signature(obj)
+        ty = rfl.type_(sig.return_annotation)
+        to_fn = obj
+        key = Key(ty)
     else:
         if to_const is not None:
             raise TypeError('Cannot bind instance with to_const')
         to_const = obj
-        key = Key(rfl.type_(type(obj)))
+        key = Key(type(obj))
+    del has_to
 
     if tag is not None:
         if key.tag is not None:

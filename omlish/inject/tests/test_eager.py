@@ -10,8 +10,7 @@ def test_eager():
         return 420
 
     es = inj.as_elements(
-        inj.as_binding(f),
-        inj.eager(int),
+        inj.bind(f, eager=True),
     )
 
     for _ in range(2):
