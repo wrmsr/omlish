@@ -46,6 +46,29 @@ log = logging.getLogger(__name__)
 ##
 
 
+def bind_cookie_session_store() -> inj.Elemental:
+    return inj.private(
+        inj.bind(sessions.Signer.Config(
+            secret_key='secret-key-goes-here',  # noqa
+        )),
+        inj.bind(sessions.Signer, singleton=True),
+
+        inj.bind(sessions.SessionMarshal, singleton=True),
+
+        inj.bind(sessions.CookieSessionStore.Config(
+            max_age=datetime.timedelta(days=31),
+        )),
+        inj.bind(sessions.CookieSessionStore, singleton=True, expose=True),
+    )
+
+
+def bind_handler(hc: type[Handler_]) -> inj.Elemental:
+    return inj.as_elements(
+        inj.bind(hc, singleton=True),
+        inj.set_binder[Handler_]().bind(hc),
+    )
+
+
 def _build_route_handler_map(
         i: inj.Injector,
         handlers: ta.AbstractSet[Handler_],
@@ -63,27 +86,8 @@ def _build_route_handler_map(
     return route_handlers
 
 
-def bind_handler(hc: type[Handler_]) -> inj.Elemental:
-    return inj.as_elements(
-        inj.bind(hc, singleton=True),
-        inj.set_binder[Handler_]().bind(hc),
-    )
-
-
-COOKIE_SESSION_STORE = sessions.CookieSessionStore(
-    marshal=sessions.SessionMarshal(
-        signer=sessions.Signer(sessions.Signer.Config(
-            secret_key='secret-key-goes-here',  # noqa
-        )),
-    ),
-    config=sessions.CookieSessionStore.Config(
-        max_age=datetime.timedelta(days=31),
-    ),
-)
-
-
 def bind_server_app() -> inj.Elemental:
-    return inj.as_elements(
+    return inj.private(
         inj.bind(ta.Callable[[], AsgiScope], to_const=SCOPE.get),
         inj.bind(ta.Callable[[], sessions.Session], to_const=SESSION.get),
         inj.bind(ta.Callable[[], User | None], to_const=USER.get),
@@ -91,7 +95,7 @@ def bind_server_app() -> inj.Elemental:
         inj.bind(J2Templates.Config(reload=True)),
         inj.bind(J2Templates, singleton=True),
 
-        inj.bind(sessions.CookieSessionStore, to_const=COOKIE_SESSION_STORE),
+        bind_cookie_session_store(),
 
         inj.bind(UserStore, singleton=True),
 
@@ -108,7 +112,7 @@ def bind_server_app() -> inj.Elemental:
         inj.bind(_build_route_handler_map, singleton=True),
 
         inj.bind(RouteHandlerApp, singleton=True),
-        inj.bind(AsgiApp, to_key=RouteHandlerApp),
+        inj.bind(AsgiApp, to_key=RouteHandlerApp, expose=True),
     )
 
 
