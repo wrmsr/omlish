@@ -11,8 +11,8 @@ class Element(lang.Abstract):
 
 @dc.dataclass(frozen=True)
 class Elements(lang.Final):
-    es: frozenset[Element] | None = None
-    cs: frozenset['Elements'] | None = None
+    es: frozenset[Element] | None = dc.xfield(None, coerce=check.of_isinstance(frozenset))
+    cs: frozenset['Elements'] | None = dc.xfield(None, coerce=check.of_isinstance(frozenset))
 
     def __iter__(self) -> ta.Generator[Element, None, None]:
         if self.es:
