@@ -27,7 +27,7 @@ from ..bindings import Binding
 from ..eagers import Eager
 from ..elements import Element
 from ..elements import Elements
-from ..exceptions import DuplicateKeyError
+from ..exceptions import ConflictingKeyError
 from ..keys import Key
 from ..multis import MapBinding
 from ..multis import MapProvider
@@ -143,7 +143,7 @@ class ElementCollection(lang.Final):
                 # FIXME: lol - this squeezes multis for us, but when tracebacks come this.. won't work
                 bss = set(bs)
                 if len(bss) > 1:
-                    raise DuplicateKeyError(k)
+                    raise ConflictingKeyError(k)
 
                 b: Binding = check.isinstance(check.single(bss), Binding)
                 p: ProviderImpl

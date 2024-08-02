@@ -23,8 +23,8 @@ from .elements import (  # noqa
 
 from .exceptions import (  # noqa
     BaseKeyError,
+    ConflictingKeyError,
     CyclicDependencyError,
-    DuplicateKeyError,
     ScopeAlreadyOpenError,
     ScopeError,
     ScopeNotOpenError,
