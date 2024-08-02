@@ -3,6 +3,28 @@ import typing as ta
 from ... import inject as inj
 
 
+##
+
+
+T = ta.TypeVar('T')
+K = ta.TypeVar('K')
+V = ta.TypeVar('V')
+
+
+class set_binder(ta.Generic[T]):
+    def __init__(self, *keys: ta.Any) -> None:
+        super().__init__()
+        self.keys = keys
+
+
+def test_set_binder():
+    sb = set_binder[object](int)
+    print(sb)
+
+
+##
+
+
 def test_set_multi():
     es = inj.as_elements(
         inj.bind_set_provider(ta.AbstractSet[int]),
