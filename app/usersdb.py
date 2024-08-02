@@ -65,7 +65,7 @@ class DbUserStore(UserStore):
         return User(
             id=row.id,
             email=row.email,
-            password=row.email,
+            password=row.password,
             name=row.name,
             auth_token=row.auth_token,
         )
@@ -115,4 +115,16 @@ class DbUserStore(UserStore):
     async def update(self, u: User) -> None:
         await self._setup()
 
-        raise NotImplementedError
+        conn: sql.AsyncConnection
+        async with self._engine.connect() as conn:
+            async with conn.begin():  # FIXME: real autocommit lol
+                await conn.execute(sa.update(
+                    Users,
+                ).where(
+                    Users.c.id == u.id,
+                ).values(
+                    email=u.email,
+                    password=u.password,
+                    name=u.name,
+                    auth_token=u.auth_token,
+                ))
