@@ -46,9 +46,9 @@ from .scopes import make_scope_impl
 
 
 if ta.TYPE_CHECKING:
-    from . import private as private_
+    from . import privates as privates_
 else:
-    private_ = lang.proxy_import('.private', __package__)
+    privates_ = lang.proxy_import('.privates', __package__)
 
 
 ElementT = ta.TypeVar('ElementT', bound=Element)
@@ -60,17 +60,17 @@ class ElementCollection(lang.Final):
 
         self._es = check.isinstance(es, Elements)
 
-        self._private_infos: ta.MutableMapping[Private, private_.PrivateInfo] | None = None
+        self._private_infos: ta.MutableMapping[Private, privates_.PrivateInfo] | None = None
 
     ##
 
-    def _get_private_info(self, p: Private) -> 'private_.PrivateInfo':
+    def _get_private_info(self, p: Private) -> 'privates_.PrivateInfo':
         if (pis := self._private_infos) is None:
             self._private_infos = pis = col.IdentityKeyDict()
         try:
             return pis[p]
         except KeyError:
-            pis[p] = ec = private_.PrivateInfo(self, p)
+            pis[p] = ec = privates_.PrivateInfo(self, p)
             return ec
 
     ##
