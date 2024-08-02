@@ -45,7 +45,7 @@ class LoginHandler(Handler_):
         password = dct[b'password'].decode()  # noqa
         remember = b'remember' in dct  # noqa
 
-        user = self._users.get(email=email)  # noqa
+        user = await self._users.get(email=email)  # noqa
 
         if not user or not check_password_hash(user.password, password):
             flash('Please check your login details and try again.')

@@ -48,7 +48,7 @@ class TikHandler(Handler_):
 
         auth_token = auth[len(hu.consts.BEARER_AUTH_HEADER_PREFIX):].decode()
         user: User | None = None
-        for u in self._users.get_all():
+        for u in await self._users.get_all():
             if u.auth_token and u.auth_token == auth_token:
                 user = u
                 break
