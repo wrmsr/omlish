@@ -2,6 +2,7 @@
 TODO:
  - get current revision, package OR live git repo
 """
+import contextlib
 import dataclasses as dc
 import functools
 import logging
@@ -12,6 +13,7 @@ import anyio.abc
 import sqlalchemy.ext.asyncio as saa
 
 from omlish import asyncs as au
+from omlish import lang
 from omlish import logs
 from omlish import sql
 from omlish.diag import procstats
@@ -66,28 +68,31 @@ async def killer(shutdown: anyio.Event, sleep_s: float) -> None:
 
 @au.with_adapter_loop(wait=True)
 async def a_run_shell(app: ShellApp) -> None:
-    engine = sql.async_adapt(saa.create_async_engine(get_db_url(), echo=True))
-    await recreate_all(engine)
+    async with contextlib.AsyncExitStack() as aes:
+        engine = sql.async_adapt(saa.create_async_engine(get_db_url(), echo=True))
+        aes.enter_async_context(lang.a_defer(engine.dispose))
 
-    nr = NodeRegistrant(
-        engine,
-        extras={
-            'procstats': get_procstats,
-        },
-    )
+        await recreate_all(engine)
 
-    shutdown = anyio.Event()
+        nr = NodeRegistrant(
+            engine,
+            extras={
+                'procstats': get_procstats,
+            },
+        )
 
-    async with anyio.create_task_group() as tg:
-        await _install_signal_handler(tg, shutdown)
+        shutdown = anyio.Event()
 
-        # tg.start_soon(killer, shutdown, 10.)
+        async with anyio.create_task_group() as tg:
+            await _install_signal_handler(tg, shutdown)
 
-        await tg.start(functools.partial(nr.run, shutdown))
+            # tg.start_soon(killer, shutdown, 10.)
 
-        tg.start_soon(functools.partial(app, shutdown.wait))
+            await tg.start(functools.partial(nr.run, shutdown))
 
-        log.info('Node running')
+            tg.start_soon(functools.partial(app, shutdown.wait))
+
+            log.info('Node running')
 
 
 def run_shell(app: ShellApp) -> None:
