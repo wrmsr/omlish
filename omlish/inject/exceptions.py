@@ -22,7 +22,7 @@ class UnboundKeyError(BaseKeyError):
 
 
 @dc.dataclass()
-class DuplicateKeyError(BaseKeyError):
+class ConflictingKeyError(BaseKeyError):
     pass
 
 

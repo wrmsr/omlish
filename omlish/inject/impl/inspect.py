@@ -12,7 +12,7 @@ import typing as ta
 import weakref
 
 from ... import reflect as rfl
-from ..exceptions import DuplicateKeyError
+from ..exceptions import ConflictingKeyError
 from ..inspect import Kwarg
 from ..inspect import KwargsTarget
 from ..keys import Key
@@ -83,7 +83,7 @@ def build_kwargs_target(
             k = dc.replace(k, tag=pt)
 
         if k in seen:
-            raise DuplicateKeyError(k)
+            raise ConflictingKeyError(k)
         seen.add(k)
 
         kws.append(Kwarg(
