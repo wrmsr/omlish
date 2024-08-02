@@ -52,6 +52,8 @@ def bind(
 ) -> Element | Elements:
     if obj is inspect.Parameter.empty or obj is None:
         raise TypeError(obj)
+    if isinstance(obj, (Element, Provider, Elements, Scope)):
+        raise TypeError(obj)
 
     has_to = (
             to_fn is not None or
