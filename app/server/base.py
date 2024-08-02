@@ -49,7 +49,7 @@ def append_app_marker(obj: ta.Any, marker: AppMarker) -> None:
     tgt.__dict__.setdefault(APP_MARKERS_ATTR, []).append(marker)
 
 
-def get_app_markers(obj) -> ta.Sequence[AppMarker]:
+def get_app_markers(obj: ta.Any) -> ta.Sequence[AppMarker]:
     tgt = lang.unwrap_func(obj)
     try:
         dct = tgt.__dict__
@@ -67,7 +67,7 @@ class AppMarkerProcessor(lang.Abstract):
 APP_MARKER_PROCESSORS: dict[type[AppMarker], type[AppMarkerProcessor]] = {}
 
 
-class NopAppMarkerProcessor(AppMarkerProcessor):
+class NopAppMarkerProcessor(AppMarkerProcessor, lang.Final):
     def __call__(self, app: AsgiApp) -> AsgiApp:
         return app
 
