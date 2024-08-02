@@ -1,8 +1,8 @@
 import dataclasses as dc
+import typing as ta
 
 from omlish import check
 from omlish import http as hu
-from omlish import lang
 from omlish.http.asgi import AsgiRecv
 from omlish.http.asgi import AsgiScope
 from omlish.http.asgi import AsgiSend
@@ -25,7 +25,7 @@ from ..users import UserStore
 
 @dc.dataclass(frozen=True)
 class ProfileHandler(Handler_):
-    _current_user: lang.Func0[User | None]
+    _current_user: ta.Callable[[], User | None]
     _templates: J2Templates
     _users: UserStore
 

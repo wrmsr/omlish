@@ -1,7 +1,7 @@
 import dataclasses as dc
+import typing as ta
 
 from omlish import http as hu
-from omlish import lang
 from omlish.http.asgi import AsgiRecv
 from omlish.http.asgi import AsgiScope
 from omlish.http.asgi import AsgiSend
@@ -19,7 +19,7 @@ from ..j2 import J2Templates
 
 @dc.dataclass(frozen=True)
 class IndexHandler(Handler_):
-    _current_session: lang.Func0[Session]
+    _current_session: ta.Callable[[], Session]
     _templates: J2Templates
 
     @handles(Route('GET', '/'))

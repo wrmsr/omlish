@@ -18,6 +18,7 @@ from omlish import asyncs as asu
 from omlish import inject as inj
 from omlish import lang
 from omlish import logs
+from omlish.http.asgi import AsgiApp
 from omlish.http.asgi import AsgiApp_
 from omlish.http.asgi import AsgiRecv
 from omlish.http.asgi import AsgiScope
@@ -28,12 +29,13 @@ from omlish.http.sessions import Session
 from omserv.server.config import Config
 from omserv.server.serving import serve
 
+from .base import Handler_
+from .base import Route
+from .base import RouteHandlerApp
 from .base import SCOPE
 from .base import SESSION
 from .base import USER
 from .base import USER_STORE
-from .base import Handler_
-from .base import Route
 from .base import User
 from .base import get_app_markers
 from .handlers.favicon import FaviconHandler
@@ -86,18 +88,25 @@ class AuthApp(AsgiApp_):
 ##
 
 
+def _build_route_handler_map(handlers: ta.AbstractSet[Handler_]) -> ta.Mapping[Route, AsgiApp]:
+    route_handlers: dict[Route, AsgiApp] = {}
+    for h in handlers:
+        for rh in h.get_route_handlers():
+            markers = get_app_markers(rh.handler)  # noqa
+            route_handlers[rh.route] = rh.handler
+    return route_handlers
+
+
 @lang.cached_function
-def _server_app() -> AuthApp:
-    templates = J2Templates(J2Templates.Config(
-        reload=True,
-    ))
-
+def _server_app() -> AsgiApp:
     i = inj.create_injector(inj.as_elements(
-        inj.as_(lang.Func0[AsgiScope], inj.const(lang.Func0(SCOPE.get))),
-        inj.as_(lang.Func0[Session], inj.const(lang.Func0(SESSION.get))),
-        inj.as_(lang.Func0[User | None], inj.const(lang.Func0(USER.get))),
+        inj.as_(ta.Callable[[], AsgiScope], inj.const(SCOPE.get)),
+        inj.as_(ta.Callable[[], Session], inj.const(SESSION.get)),
+        inj.as_(ta.Callable[[], User | None], inj.const(USER.get)),
 
-        inj.as_binding(inj.const(templates)),
+        inj.as_binding(inj.const(J2Templates.Config(reload=True))),
+        inj.as_binding(inj.singleton(J2Templates)),
+
         inj.as_binding(inj.const(USER_STORE)),
 
         inj.bind_set_provider(ta.AbstractSet[Handler_]),
@@ -114,19 +123,13 @@ def _server_app() -> AuthApp:
             FaviconHandler,
             TikHandler,
         ]),
+
+        inj.as_binding(inj.singleton(_build_route_handler_map)),
+
+        inj.as_binding(inj.singleton(RouteHandlerApp)),
     ))
 
-    handlers = i.provide(inj.as_key(ta.AbstractSet[Handler_]))
-
-    route_handlers: dict[Route, ta.Any] = {}
-    for h in handlers:
-        for rh in h.get_route_handlers():
-            markers = get_app_markers(rh.handler)  # noqa
-            route_handlers[rh.route] = rh.handler
-
-    return AuthApp(
-        route_handlers=route_handlers,
-    )
+    return i[RouteHandlerApp]
 
 
 async def server_app(scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
