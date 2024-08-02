@@ -9,6 +9,7 @@ TODO:
 https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login
 """
 import datetime
+import itertools
 import logging
 import typing as ta
 
@@ -24,6 +25,8 @@ from .base import APP_MARKER_PROCESSORS
 from .base import SCOPE
 from .base import SESSION
 from .base import USER
+from .base import AppMarker
+from .base import AppMarkerProcessor
 from .base import Handler_
 from .base import Route
 from .base import RouteHandlerApp
@@ -69,9 +72,19 @@ def bind_handler(hc: type[Handler_]) -> inj.Elemental:
     )
 
 
+def bind_app_marker_processors() -> inj.Elemental:
+    return inj.as_elements(
+        *itertools.chain.from_iterable([
+            inj.map_binder[type[AppMarker], AppMarkerProcessor]().bind(k, v)
+            for k, v in APP_MARKER_PROCESSORS.items()
+        ]),
+    )
+
+
 def _build_route_handler_map(
         i: inj.Injector,
         handlers: ta.AbstractSet[Handler_],
+        processors: ta.Mapping[type[AppMarker], AppMarkerProcessor],
 ) -> ta.Mapping[Route, AsgiApp]:
     route_handlers: dict[Route, AsgiApp] = {}
     for h in handlers:
@@ -110,6 +123,9 @@ def bind_server_app() -> inj.Elemental:
         bind_handler(TikHandler),
 
         inj.bind(_build_route_handler_map, singleton=True),
+        inj.map_binder[type[AppMarker], AppMarkerProcessor](),
+
+        bind_app_marker_processors(),
 
         inj.bind(RouteHandlerApp, singleton=True),
         inj.bind(AsgiApp, to_key=RouteHandlerApp, expose=True),
