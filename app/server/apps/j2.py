@@ -5,8 +5,6 @@ import typing as ta
 
 import jinja2
 
-from omlish import lang  # noqa
-
 
 log = logging.getLogger(__name__)
 
