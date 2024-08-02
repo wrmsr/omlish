@@ -9,7 +9,7 @@ class Foo:
 
 
 def test_privates():
-    es = inj.as_elements(
+    i = inj.create_injector(
         inj.Private(inj.as_elements(
             inj.bind(420, expose=True),
             inj.bind(12.3),
@@ -20,6 +20,5 @@ def test_privates():
         )),
         inj.bind(Foo('foo')),
     )
-    i = inj.create_injector(es)
     assert i.provide(int) == 420
     assert i.provide(str) == '32.1! foo'
