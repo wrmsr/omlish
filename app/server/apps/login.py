@@ -4,13 +4,13 @@ from omlish.http.asgi import AsgiRecv
 from omlish.http.asgi import AsgiScope
 from omlish.http.asgi import AsgiSend
 from omlish.http.asgi import redirect_response
+from omserv.apps.base import url_for
+from omserv.apps.markers import AppMarker
+from omserv.apps.markers import AppMarkerProcessor
+from omserv.apps.markers import append_app_marker
+from omserv.apps.sessions import SESSION
 
 from ...users import User
-from .base import url_for
-from .markers import AppMarker
-from .markers import AppMarkerProcessor
-from .markers import append_app_marker
-from .sessions import SESSION
 from .users import USER
 
 
