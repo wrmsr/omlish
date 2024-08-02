@@ -98,6 +98,10 @@ def is_union_type(cls: ta.Any) -> bool:
         return ta.get_origin(cls) in {ta.Union}
 
 
+def get_orig_class(obj: ta.Any) -> ta.Any:
+    return obj.__orig_class__  # noqa
+
+
 ##
 
 

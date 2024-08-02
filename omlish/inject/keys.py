@@ -17,7 +17,7 @@ class Key(lang.Final, ta.Generic[T]):
 
 
 def as_key(o: ta.Any) -> Key:
-    if o is inspect.Parameter.empty:
+    if o is None or o is inspect.Parameter.empty:
         raise TypeError(o)
     if isinstance(o, Key):
         return o
