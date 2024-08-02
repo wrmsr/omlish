@@ -1,10 +1,15 @@
 import sys
 import types
+import typing as ta
 
 from ... import dataclasses as dc
+from ... import lang
 from ..origins import HasOrigins
 from ..origins import Origin
 from ..origins import Origins
+
+
+HasOriginsT = ta.TypeVar('HasOriginsT', bound=HasOrigins)
 
 
 ##
@@ -16,6 +21,12 @@ ORIGIN_BASE_OFS = 2
 ORIGIN_IGNORED_PACKAGES = frozenset([
     __package__,
     __package__.rpartition('.')[0],
+
+    lang.__name__,
+    lang.functions.__name__,
+
+    dc.__name__,
+    dc.impl.__name__,  # noqa
 ])
 
 
@@ -38,7 +49,7 @@ def build_origin(ofs: int = 0) -> Origin:
         if is_origin_frame(cur):
             lst.append(cur)
         cur = cur.f_back  # type: ignore
-    return Origin([str(f) for f in lst])
+    return Origin(tuple(str(f) for f in lst))
 
 
 ##
@@ -47,13 +58,18 @@ def build_origin(ofs: int = 0) -> Origin:
 ORIGINS_ATTR = '__inject_origins__'
 
 
+def set_origins(obj: HasOriginsT, origins: Origins) -> HasOriginsT:
+    obj.__dict__[ORIGINS_ATTR] = origins
+    return obj
+
+
 class HasOriginsImpl(HasOrigins):
     @property
     def origins(self) -> Origins:
-        raise NotImplementedError
+        return self.__dict__[ORIGINS_ATTR]
 
     def __post_init__(self) -> None:
         dc.maybe_post_init(super())
         if ORIGINS_ATTR in self.__dict__:
             raise AttributeError('Origin already set')
-        self.__dict__[ORIGINS_ATTR] = Origins([build_origin()])
+        set_origins(self, Origins((build_origin(),)))
