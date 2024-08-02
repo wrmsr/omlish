@@ -1,7 +1,6 @@
 """
 TODO:
  - multis?
- - FN_TYPES? not all callables should be treated as factories
 
 class SetBinding(Element, lang.Final):
 class SetProvider(Provider):
@@ -9,7 +8,9 @@ class SetProvider(Provider):
 class MapBinding(Element, lang.Final):
 class MapProvider(Provider):
 """
+import functools
 import inspect
+import types
 import typing as ta
 
 from .. import check
@@ -32,6 +33,39 @@ from .scopes import SCOPE_ALIASES
 from .scopes import Singleton
 from .types import Scope
 from .types import Unscoped
+
+
+T = ta.TypeVar('T')
+
+
+##
+
+
+_FN_TYPES: tuple[type, ...] = (
+    types.FunctionType,
+    types.MethodType,
+
+    classmethod,
+    staticmethod,
+
+    functools.partial,
+    functools.partialmethod,
+)
+
+
+def _is_fn(obj: ta.Any) -> bool:
+    return isinstance(obj, _FN_TYPES)
+
+
+def bind_as_fn(cls: type[T]) -> type[T]:
+    check.isinstance(cls, type)
+    global _FN_TYPES
+    if cls not in _FN_TYPES:
+        _FN_TYPES = (*_FN_TYPES, cls)
+    return cls
+
+
+##
 
 
 _BANNED_BIND_TYPES = (
@@ -63,6 +97,8 @@ def bind(
     if isinstance(obj, _BANNED_BIND_TYPES):
         raise TypeError(obj)
 
+    ##
+
     has_to = (
         to_fn is not None or
         to_ctor is not None or
@@ -77,7 +113,7 @@ def bind(
         key = Key(obj)
     elif isinstance(obj, rfl.TYPES) or rfl.is_type(obj):
         key = Key(obj)
-    elif callable(obj) and not has_to:
+    elif _is_fn(obj) and not has_to:
         sig = signature(obj)
         ty = rfl.type_(sig.return_annotation)
         to_fn = obj
@@ -89,10 +125,14 @@ def bind(
         key = Key(type(obj))
     del has_to
 
+    ##
+
     if tag is not None:
         if key.tag is not None:
             raise TypeError('Tag already set')
         key = dc.replace(key, tag=tag)
+
+    ##
 
     providers: list[Provider] = []
     if to_fn is not None:
@@ -108,6 +148,8 @@ def bind(
     if len(providers) > 1:
         raise TypeError('May not specify multiple providers')
     provider, = providers
+
+    ##
 
     scopes: list[Scope] = []
     if in_ is not None:
@@ -125,7 +167,11 @@ def bind(
     else:
         scope, = scopes
 
+    ##
+
     binding = Binding(key, provider, scope)
+
+    ##
 
     elements: list[Element] = [binding]
 
