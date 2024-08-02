@@ -14,8 +14,8 @@ from ..eagers import Eager
 from ..elements import Element
 from ..injector import Injector
 from ..keys import Key
-from ..private import Expose
-from ..private import Private
+from ..privates import Expose
+from ..privates import Private
 from ..providers import Provider
 from ..scopes import Singleton
 from .elements import ElementCollection
