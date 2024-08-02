@@ -15,9 +15,10 @@ from .eagers import (  # noqa
 )
 
 from .elements import (  # noqa
-    as_elements,
     Element,
+    Elemental,
     Elements,
+    as_elements,
 )
 
 from .exceptions import (  # noqa
