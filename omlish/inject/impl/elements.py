@@ -29,6 +29,7 @@ from ..eagers import Eager
 from ..elements import Element
 from ..elements import Elements
 from ..exceptions import ConflictingKeyError
+from ..exceptions import UnboundKeyError
 from ..keys import Key
 from ..multis import MapBinding
 from ..multis import MapProvider
@@ -41,6 +42,8 @@ from ..scopes import ScopeBinding
 from ..types import Scope
 from .bindings import BindingImpl
 from .multis import make_multi_provider_impl
+from .origins import Origins
+from .origins import set_origins
 from .providers import ProviderImpl
 from .providers import make_provider_impl
 from .scopes import make_scope_impl
@@ -129,6 +132,24 @@ class ElementCollection(lang.Final):
 
     ##
 
+    def _get_single_binding(self, k: Key, bs: ta.Sequence[Binding]) -> Binding:
+        if not bs:
+            raise UnboundKeyError(k)
+
+        elif len(bs) > 1:
+            d: dict = {}
+            for b in bs:
+                d.setdefault(b, []).append(b)
+            if len(d) > 1:
+                raise ConflictingKeyError(k)
+            l = check.single(d.values())
+            b = copy.copy(l[0])
+            set_origins(b, Origins(tuple(o for c in l for o in c.origins)))
+            return b
+
+        else:
+            return check.isinstance(check.single(bs), Binding)
+
     def _build_binding_impl_map(self, em: ta.Mapping[Key | None, ta.Sequence[Element]]) -> dict[Key, BindingImpl]:
         pm: dict[Key, BindingImpl] = {}
         for k, es in em.items():
@@ -141,19 +162,7 @@ class ElementCollection(lang.Final):
             es_by_ty.pop(Expose, None)
 
             if (bs := es_by_ty.pop(Binding, None)):
-                b: Binding
-                if len(bs) > 1:
-                    d = {}
-                    for b in bs:
-                        d.setdefault(b, []).append(b)
-                    if len(d) > 1:
-                        raise ConflictingKeyError(k)
-                    l = check.single(d.values())
-                    b = copy.copy(l[0])
-                    # FIXME: merge origins
-                    raise NotImplementedError
-                else:
-                    b = check.isinstance(check.single(bs), Binding)
+                b = self._get_single_binding(k, bs)  # type: ignore
 
                 p: ProviderImpl
                 if isinstance(b.provider, (SetProvider, MapProvider)):
