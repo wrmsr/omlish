@@ -116,7 +116,12 @@ def bind(
     elements: list[Element] = [binding]
 
     if eager:
-        elements.append(Ea)
+        elements.append(Eager(key))
+
+    if len(elements) == 1:
+        return elements[0]
+    else:
+        return Elements(frozenset(elements))
 
 
 def test_api():
