@@ -12,12 +12,8 @@ import itertools
 import logging
 import typing as ta
 
-import anyio.to_thread
-
-from omlish import asyncs as asu
 from omlish import inject as inj
 from omlish import lang
-from omlish import logs
 from omlish.http.asgi import AsgiApp
 from omlish.http.asgi import AsgiApp_
 from omlish.http.asgi import AsgiRecv
@@ -26,8 +22,6 @@ from omlish.http.asgi import AsgiSend
 from omlish.http.asgi import send_response
 from omlish.http.asgi import stub_lifespan
 from omlish.http.sessions import Session
-from omserv.server.config import Config
-from omserv.server.serving import serve
 
 from .base import SCOPE
 from .base import SESSION
@@ -134,21 +128,3 @@ def _server_app() -> AsgiApp:
 
 async def server_app(scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
     await _server_app()(scope, recv, send)
-
-
-##
-
-
-@asu.with_adapter_loop(wait=True)
-async def _a_main() -> None:
-    logs.configure_standard_logging(logging.INFO)
-
-    await serve(
-        server_app,  # type: ignore
-        Config(),
-        handle_shutdown_signals=True,
-    )
-
-
-if __name__ == '__main__':
-    anyio.run(_a_main)
