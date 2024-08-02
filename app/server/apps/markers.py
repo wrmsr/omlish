@@ -16,7 +16,7 @@ APP_MARKERS_ATTR = '__app_markers__'
 
 
 def append_app_marker(obj: T, *markers: AppMarker) -> T:
-    tgt = lang.unwrap_func(obj)
+    tgt = lang.unwrap_func(obj)  # type: ignore
     tgt.__dict__.setdefault(APP_MARKERS_ATTR, []).extend(markers)
     return obj
 

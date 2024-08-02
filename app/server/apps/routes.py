@@ -39,7 +39,6 @@ class _HandlesAppMarker(AppMarker, lang.Final):
     routes: ta.Sequence[Route]
 
 
-
 def handles(*routes: Route):
     def inner(fn):
         append_app_marker(fn, _HandlesAppMarker(routes))

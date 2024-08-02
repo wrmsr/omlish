@@ -22,5 +22,3 @@ def base_server_url() -> str:
 @j2_helper
 def url_for(s: str) -> str:
     return base_server_url() + s
-
-

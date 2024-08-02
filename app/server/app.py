@@ -9,7 +9,6 @@ TODO:
 https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login
 """
 import datetime
-import itertools
 import logging
 import typing as ta
 
@@ -116,8 +115,6 @@ def bind_server_app() -> inj.Elemental:
 
         inj.bind(_build_route_handler_map, singleton=True),
         inj.map_binder[type[AppMarker], AppMarkerProcessor](),
-
-        bind_app_marker_processors(),
 
         inj.bind(RouteHandlerApp, singleton=True),
         inj.bind(AsgiApp, to_key=RouteHandlerApp, expose=True),
