@@ -151,3 +151,8 @@ def test_callable():
         rfl.type_(ta.Callable[[int, ...], str])
     with pytest.raises(TypeError):
         rfl.type_(ta.Callable[P, str])
+
+
+def test_generic_type():
+    assert rfl.type_(type[int]) == rfl.Generic(type, (int,), (_0,), type[int])
+    assert rfl.type_(type) is type
