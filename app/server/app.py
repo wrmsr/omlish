@@ -54,9 +54,8 @@ def _build_route_handler_map(handlers: ta.AbstractSet[Handler_]) -> ta.Mapping[R
     return route_handlers
 
 
-@lang.cached_function
-def _server_app() -> AsgiApp:
-    i = inj.create_injector(
+def bind_server_app() -> inj.Elemental:
+    return inj.as_elements(
         inj.bind(ta.Callable[[], AsgiScope], to_const=SCOPE.get),
         inj.bind(ta.Callable[[], Session], to_const=SESSION.get),
         inj.bind(ta.Callable[[], User | None], to_const=USER.get),
@@ -84,9 +83,13 @@ def _server_app() -> AsgiApp:
         inj.bind(_build_route_handler_map, singleton=True),
 
         inj.bind(RouteHandlerApp, singleton=True),
+        inj.bind(AsgiApp, to_key=RouteHandlerApp),
     )
 
-    return i[RouteHandlerApp]
+
+@lang.cached_function
+def _server_app() -> AsgiApp:
+    return inj.create_injector(bind_server_app()).provide(AsgiApp)
 
 
 async def server_app(scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
