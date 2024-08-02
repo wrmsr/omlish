@@ -27,7 +27,7 @@ _NONE_TYPE_FROZENSET: frozenset['Type'] = frozenset([_NoneType])
 
 
 _GenericAlias = ta._GenericAlias  # type: ignore  # noqa
-# _CallableGenericAlias = ta._CallableGenericAlias  # type: ignore  # noqa
+_CallableGenericAlias = ta._CallableGenericAlias  # type: ignore  # noqa
 _SpecialGenericAlias = ta._SpecialGenericAlias  # type: ignore  # noqa
 _UnionGenericAlias = ta._UnionGenericAlias   # type: ignore  # noqa
 
@@ -57,9 +57,11 @@ _KNOWN_SPECIALS_BY_NAME = {s.name: s for s in _KNOWN_SPECIALS}
 _KNOWN_SPECIALS_BY_ALIAS = {s.alias: s for s in _KNOWN_SPECIALS}
 _KNOWN_SPECIALS_BY_ORIGIN = {s.origin: s for s in _KNOWN_SPECIALS}
 
+_MAX_KNOWN_SPECIAL_TYPE_VARS = 16
+
 _KNOWN_SPECIAL_TYPE_VARS = tuple(
     ta.TypeVar(f'_{i}')  # noqa
-    for i in range(max(s.nparams for s in _KNOWN_SPECIALS) + 1)
+    for i in range(_MAX_KNOWN_SPECIAL_TYPE_VARS)
 )
 
 
@@ -76,8 +78,14 @@ def get_params(obj: ta.Any) -> tuple[ta.TypeVar, ...]:
 
     oty = type(obj)
 
-    if oty is _GenericAlias or oty is ta.GenericAlias:  # type: ignore  # noqa
+    if (
+            oty is _GenericAlias or
+            oty is ta.GenericAlias  # type: ignore  # noqa
+    ):
         return obj.__dict__.get('__parameters__', ())  # noqa
+
+    if oty is _CallableGenericAlias:
+        raise NotImplementedError('get_params not yet implemented for typing.Callable')
 
     raise TypeError(obj)
 
@@ -160,11 +168,16 @@ def type_(obj: ta.Any) -> Type:
 
     if (
             oty is _GenericAlias or
-            oty is ta.GenericAlias  # type: ignore  # noqa
+            oty is ta.GenericAlias or  # type: ignore  # noqa
+            oty is _CallableGenericAlias
     ):
         origin = ta.get_origin(obj)
         args = ta.get_args(obj)
-        if origin is ta.Generic:
+        if oty is _CallableGenericAlias:
+            p, r = args
+            args = (*p, r)
+            params = _KNOWN_SPECIAL_TYPE_VARS[:len(args)]
+        elif origin is ta.Generic:
             params = args
         else:
             params = get_params(origin)

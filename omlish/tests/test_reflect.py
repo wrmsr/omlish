@@ -134,3 +134,7 @@ def test_extended_reflect_type():
 def test_newtype():
     Username = ta.NewType('Username', str)
     print(rfl.type_(Username))
+
+
+def test_callable():
+    print(rfl.type_(ta.Callable[[int, float], str]))

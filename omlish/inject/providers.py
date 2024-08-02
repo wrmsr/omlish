@@ -58,7 +58,7 @@ def fn(fn: ta.Any, ty: rfl.Type | None = _Missing) -> Provider:
     check.callable(fn)
     if ty is _Missing:
         sig = signature(fn)
-        ty = check.isinstance(sig.return_annotation, type)
+        ty = rfl.type_(sig.return_annotation)
     return FnProvider(fn, ty)
 
 

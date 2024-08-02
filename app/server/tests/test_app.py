@@ -26,6 +26,7 @@ def randhex(l: int) -> str:
 
 
 @pytest.mark.trio
+# @pytest.mark.asyncio
 async def test_demo_auth():
     # from omlish import logs  # noqa
     # logs.configure_standard_logging('INFO')  # noqa

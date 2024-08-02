@@ -5,7 +5,6 @@ TODO:
   - probably need to gen types per inst
  - typed_factory
 """
-import dataclasses as dc
 import functools
 import inspect
 import typing as ta
@@ -97,39 +96,3 @@ def typed_partial(obj, **kw):  # noqa
         },
     )(inner)
     return _update_wrapper_no_anns(lam, obj)
-
-
-##
-# Mostly a workaround for reflect not handling Callable yet.
-
-
-@dc.dataclass(frozen=True)
-class Func0(ta.Generic[T]):
-    fn: ta.Callable[[], T]
-
-    def __call__(self) -> T:
-        return self.fn()
-
-
-@dc.dataclass(frozen=True)
-class Func1(ta.Generic[A0, T]):
-    fn: ta.Callable[[A0], T]
-
-    def __call__(self, a0: A0) -> T:
-        return self.fn(a0)
-
-
-@dc.dataclass(frozen=True)
-class Func2(ta.Generic[A0, A1, T]):
-    fn: ta.Callable[[A0, A1], T]
-
-    def __call__(self, a0: A0, a1: A1) -> T:
-        return self.fn(a0, a1)
-
-
-@dc.dataclass(frozen=True)
-class Func3(ta.Generic[A0, A1, A2, T]):
-    fn: ta.Callable[[A0, A1, A2], T]
-
-    def __call__(self, a0: A0, a1: A1, a2: A2) -> T:
-        return self.fn(a0, a1, a2)
