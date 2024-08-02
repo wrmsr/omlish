@@ -37,7 +37,7 @@ def test_map_multi():
         inj.bind(420, tag='four twenty'),
         inj.MapBinding(inj.as_key(ta.Mapping[str, int]), 'a', inj.Key(int, tag='four twenty')),
 
-        inj.bind(int, tag='four twenty one'),
+        inj.bind(421, tag='four twenty one'),
         inj.MapBinding(inj.as_key(ta.Mapping[str, int]), 'b', inj.Key(int, tag='four twenty one')),
     )
 
