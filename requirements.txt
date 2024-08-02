@@ -29,6 +29,9 @@ pg8000==1.31.2
 #> mysqlclient==2.2.4; sys_platform == 'darwin'  # brew install mysql pkg-config
 pymysql==1.1.1
 
+sqlean.py==3.45.1; python_version < '3.13'
+# git+https://github.com/wrmsr/sqlean.py.git
+
 # pyhive
 
 ## caches

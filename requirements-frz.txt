@@ -195,7 +195,7 @@ numpy==1.26.4
 objgraph==3.6.1
 onnx==1.16.2
 onnx2torch==1.5.14
-openai==1.37.2
+openai==1.38.0
 opencv-python==4.10.0.84
 opt-einsum==3.3.0
 optree==0.12.1
@@ -321,6 +321,7 @@ spacy-legacy==3.0.12
 spacy-loggers==1.0.5
 SPARQLWrapper==1.8.5
 SQLAlchemy==2.0.31
+sqlean.py==3.45.1
 sqlglot==25.8.1
 sqlparse==0.4.4
 srsly==2.4.8
