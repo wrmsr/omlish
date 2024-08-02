@@ -85,7 +85,7 @@ class SetBinder(ElementGenerator, ta.Generic[T]):
     def bind(self, *keys: ta.Any) -> ta.Self:
         if not isinstance(self, SetBinder):
             raise TypeError
-        self._sbs.extend(SetBinding(self._multi_key, k) for k in keys)
+        self._sbs.extend(SetBinding(self._multi_key, as_key(k)) for k in keys)
         return self  # type: ignore
 
     def __iter__(self) -> ta.Iterator[Element]:

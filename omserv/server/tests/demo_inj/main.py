@@ -84,14 +84,14 @@ class InjApp(AsgiApp_):
 
 def _bind() -> inj.Elements:
     return inj.as_elements(
-        inj.bind_map_provider(ta.Mapping[Endpoint, AsgiApp_]),
+        inj.map_binder[Endpoint, AsgiApp_](),
         inj.bind(InjApp, singleton=True),
 
         inj.bind(HiAsgiApp, singleton=True),
-        inj.MapBinding(inj.Key(ta.Mapping[Endpoint, AsgiApp_]), Endpoint('GET', '/hi'), inj.Key(HiAsgiApp)),
+        inj.map_binder[Endpoint, AsgiApp_]().bind(Endpoint('GET', '/hi'), HiAsgiApp),
 
         inj.bind(ByeAsgiApp, singleton=True),
-        inj.MapBinding(inj.Key(ta.Mapping[Endpoint, AsgiApp_]), Endpoint('GET', '/bye'), inj.Key(ByeAsgiApp)),
+        inj.map_binder[Endpoint, AsgiApp_]().bind(Endpoint('GET', '/bye'), ByeAsgiApp),
     )
 
 
