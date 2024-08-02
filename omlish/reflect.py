@@ -162,19 +162,19 @@ def is_type(obj: ta.Any) -> bool:
     oty = type(obj)
 
     return (
-            oty is _UnionGenericAlias or oty is types.UnionType or
+        oty is _UnionGenericAlias or oty is types.UnionType or  # noqa
 
-            isinstance(obj, ta.NewType) or  # noqa
+        isinstance(obj, ta.NewType) or  # noqa
 
-            (
-                    oty is _GenericAlias or
-                    oty is ta.GenericAlias or  # type: ignore  # noqa
-                    oty is _CallableGenericAlias
-            ) or
+        (
+            oty is _GenericAlias or
+            oty is ta.GenericAlias or  # type: ignore  # noqa
+            oty is _CallableGenericAlias
+        ) or
 
-            isinstance(obj, type) or
+        isinstance(obj, type) or
 
-            isinstance(obj, _SpecialGenericAlias)
+        isinstance(obj, _SpecialGenericAlias)
     )
 
 

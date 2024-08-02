@@ -29,11 +29,11 @@ class Thread(Scope, lang.Singleton, lang.Final):
 class SeededScope(Scope, lang.Final):
 class ScopeSeededProvider(Provider):
 """
-import dataclasses as dc
 import inspect
 import typing as ta
 
 from ... import check
+from ... import dataclasses as dc
 from ... import reflect as rfl
 from ..bindings import Binding
 from ..eagers import Eager
@@ -106,6 +106,7 @@ def bind(
         scopes.append(Singleton())
     if len(scopes) > 1:
         raise TypeError('May not specify multiple scopes')
+    scope: Scope
     if not scopes:
         scope = Unscoped()
     else:

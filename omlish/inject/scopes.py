@@ -64,7 +64,8 @@ class SeededScope(Scope, lang.Final):
             raise NotImplementedError
 
 
-@dc.dataclass(frozen=True, eq=False)
+@dc.dataclass(frozen=True)
+@dc.extra_params(cache_hash=True)
 class ScopeSeededProvider(Provider):
     ss: SeededScope = dc.xfield(coerce=check.of_isinstance(SeededScope))
     key: Key = dc.xfield(coerce=check.of_isinstance(Key))

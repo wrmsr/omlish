@@ -44,7 +44,8 @@ def as_provider(o: ta.Any) -> Provider:
 ##
 
 
-@dc.dataclass(frozen=True, eq=False)
+@dc.dataclass(frozen=True)
+@dc.extra_params(cache_hash=True)
 class FnProvider(Provider):
     fn: ta.Any = dc.xfield(check=callable)
     ty: rfl.Type | None = None
@@ -65,7 +66,8 @@ def fn(fn: ta.Any, ty: rfl.Type | None = _Missing) -> Provider:
 ##
 
 
-@dc.dataclass(frozen=True, eq=False)
+@dc.dataclass(frozen=True)
+@dc.extra_params(cache_hash=True)
 class CtorProvider(Provider):
     ty: type = dc.xfield(check=lang.isinstance_of(type))
 
@@ -81,7 +83,8 @@ def ctor(ty: type) -> Provider:
 ##
 
 
-@dc.dataclass(frozen=True, eq=False)
+@dc.dataclass(frozen=True)
+@dc.extra_params(cache_hash=True)
 class ConstProvider(Provider):
     v: ta.Any
     ty: rfl.Type | None = None
@@ -99,7 +102,8 @@ def const(v: ta.Any, ty: rfl.Type | None = _Missing) -> Provider:
 ##
 
 
-@dc.dataclass(frozen=True, eq=False)
+@dc.dataclass(frozen=True)
+@dc.extra_params(cache_hash=True)
 class LinkProvider(Provider):
     k: Key = dc.xfield(check=lang.isinstance_of(Key))
 
