@@ -49,20 +49,27 @@ class DbUserStore(UserStore):
         super().__init__()
 
         self._engine = sql.async_adapt(engine)
+        self._has_setup = False
 
-    async def setup(self) -> None:
-        async with sql.async_adapt(self._engine).connect() as conn:
-            async with conn.begin():
-                await conn.run_sync(Metadata.create_all)
+    async def _setup(self) -> None:
+        if not self._has_setup:
+            async with sql.async_adapt(self._engine).connect() as conn:
+                async with conn.begin():
+                    await conn.run_sync(Metadata.create_all)
+            self._has_setup = True
 
     async def get_all(self) -> list[User]:
+        await self._setup()
         raise NotImplementedError
 
     async def get(self, *, id: int | None = None, email: str | None = None) -> User | None:  # noqa
+        await self._setup()
         raise NotImplementedError
 
     async def create(self, *, email: str, password: str, name: str) -> User:
+        await self._setup()
         raise NotImplementedError
 
     async def update(self, u: User) -> None:
+        await self._setup()
         raise NotImplementedError
