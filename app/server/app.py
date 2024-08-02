@@ -21,6 +21,7 @@ from omlish.http.asgi import AsgiSend
 from omserv.apps.j2 import J2Templates
 from omserv.apps.routes import RouteHandlerApp
 
+from ..users import InMemoryUserStore
 from ..users import UserStore
 from .apps import inject as apps_inj
 from .handlers import inject as handlers_inj
@@ -62,7 +63,8 @@ def bind_server_app() -> inj.Elemental:
 
         bind_cookie_session_store(),
 
-        inj.bind(UserStore, singleton=True),
+        inj.bind(InMemoryUserStore, singleton=True),
+        inj.bind(UserStore, to_key=InMemoryUserStore),
 
         inj.bind(RouteHandlerApp, singleton=True),
         inj.bind(AsgiApp, to_key=RouteHandlerApp, expose=True),
