@@ -23,6 +23,7 @@ from omlish.http.asgi import AsgiSend
 
 from ..users import User
 from ..users import UserStore
+from .apps import inject as apps_inject
 from .apps.base import SCOPE
 from .apps.j2 import J2Templates
 from .apps.markers import AppMarker
@@ -71,15 +72,6 @@ def bind_handler(hc: type[Handler_]) -> inj.Elemental:
     )
 
 
-def bind_app_marker_processors() -> inj.Elemental:
-    return inj.as_elements(
-        *itertools.chain.from_iterable([
-            inj.bind(pc),
-            inj.map_binder[type[AppMarker], AppMarkerProcessor]().bind(mc, pc),
-        ] for mc, pc in APP_MARKER_PROCESSORS.items()),
-    )
-
-
 def _build_route_handler_map(
         handlers: ta.AbstractSet[Handler_],
         processors: ta.Mapping[type[AppMarker], AppMarkerProcessor],
@@ -105,6 +97,8 @@ def bind_server_app() -> inj.Elemental:
 
         inj.bind(J2Templates.Config(reload=True)),
         inj.bind(J2Templates, singleton=True),
+
+        apps_inject.bind(),
 
         bind_cookie_session_store(),
 
