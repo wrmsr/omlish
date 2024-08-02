@@ -203,6 +203,8 @@ def type_(obj: ta.Any) -> Type:
         args = ta.get_args(obj)
         if oty is _CallableGenericAlias:
             p, r = args
+            if p is Ellipsis or isinstance(p, ta.ParamSpec):
+                raise TypeError(f'Callable argument not yet supported for {obj=}')
             args = (*p, r)
             params = _KNOWN_SPECIAL_TYPE_VARS[:len(args)]
         elif origin is ta.Generic:

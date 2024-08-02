@@ -2,6 +2,8 @@ import collections.abc
 import pprint
 import typing as ta
 
+import pytest
+
 from .. import reflect as rfl
 
 
@@ -9,6 +11,8 @@ K = ta.TypeVar('K')
 V = ta.TypeVar('V')
 T = ta.TypeVar('T')
 U = ta.TypeVar('U')
+
+P = ta.ParamSpec('P')
 
 _0, _1, _2, _3 = rfl._KNOWN_SPECIAL_TYPE_VARS[:4]  # noqa
 
@@ -132,9 +136,18 @@ def test_extended_reflect_type():
 
 
 def test_newtype():
-    Username = ta.NewType('Username', str)
+    Username = ta.NewType('Username', str)  # noqa
     print(rfl.type_(Username))
 
 
 def test_callable():
-    print(rfl.type_(ta.Callable[[int, float], str]))
+    assert rfl.type_(ta.Callable[[], int]) == rfl.Generic(collections.abc.Callable, (int,), (_0,), ta.Callable[[], int])  # type: ignore  # noqa
+    assert rfl.type_(ta.Callable[[int], None]) == rfl.Generic(collections.abc.Callable, (int, type(None)), (_0, _1), ta.Callable[[int], None])  # type: ignore  # noqa
+    assert rfl.type_(ta.Callable[[int, float], str]) == rfl.Generic(collections.abc.Callable, (int, float, str), (_0, _1, _2), ta.Callable[[int, float], str])  # type: ignore  # noqa
+
+    with pytest.raises(TypeError):
+        rfl.type_(ta.Callable[..., int])
+    with pytest.raises(TypeError):
+        rfl.type_(ta.Callable[[int, ...], str])
+    with pytest.raises(TypeError):
+        rfl.type_(ta.Callable[P, str])
