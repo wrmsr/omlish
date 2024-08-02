@@ -15,12 +15,12 @@ import typing as ta
 
 from .. import check
 from .. import dataclasses as dc
+from .. import lang
 from .. import reflect as rfl
 from .bindings import Binding
 from .eagers import Eager
 from .elements import Element
 from .elements import Elements
-from .impl.inspect import signature
 from .keys import Key
 from .keys import as_key
 from .privates import Expose
@@ -33,6 +33,12 @@ from .scopes import SCOPE_ALIASES
 from .scopes import Singleton
 from .types import Scope
 from .types import Unscoped
+
+
+if ta.TYPE_CHECKING:
+    from .impl.inspect import inspect as _inspect
+else:
+    _inspect = lang.proxy_import('.impl.inspect', __package__)
 
 
 T = ta.TypeVar('T')
@@ -114,7 +120,7 @@ def bind(
     elif isinstance(obj, rfl.TYPES) or rfl.is_type(obj):
         key = Key(obj)
     elif _is_fn(obj) and not has_to:
-        sig = signature(obj)
+        sig = _inspect.signature(obj)
         ty = rfl.type_(sig.return_annotation)
         to_fn = obj
         key = Key(ty)
