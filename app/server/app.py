@@ -75,14 +75,13 @@ def bind_handler(hc: type[Handler_]) -> inj.Elemental:
 def bind_app_marker_processors() -> inj.Elemental:
     return inj.as_elements(
         *itertools.chain.from_iterable([
-            inj.map_binder[type[AppMarker], AppMarkerProcessor]().bind(k, v)
-            for k, v in APP_MARKER_PROCESSORS.items()
-        ]),
+            inj.bind(pc),
+            inj.map_binder[type[AppMarker], AppMarkerProcessor]().bind(mc, pc),
+        ] for mc, pc in APP_MARKER_PROCESSORS.items()),
     )
 
 
 def _build_route_handler_map(
-        i: inj.Injector,
         handlers: ta.AbstractSet[Handler_],
         processors: ta.Mapping[type[AppMarker], AppMarkerProcessor],
 ) -> ta.Mapping[Route, AsgiApp]:
@@ -92,9 +91,9 @@ def _build_route_handler_map(
             app = rh.handler
             markers = get_app_markers(rh.handler)
             for m in markers:
-                mp = APP_MARKER_PROCESSORS[type(m)]
+                mp = processors[type(m)]
                 if mp is not None:
-                    app = i.inject(mp)(app)
+                    app = mp(app)
             route_handlers[rh.route] = app
     return route_handlers
 

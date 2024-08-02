@@ -134,10 +134,10 @@ class Union(ta.NamedTuple):
 @dc.dataclass(frozen=True)
 class Generic:
     cls: type
-    args: tuple[Type, ...]                                       # map[int, V] = (int, V) | map[T, T] = (T, T)
+    args: tuple[Type, ...]                                                # map[int, V] = (int, V) | map[T, T] = (T, T)
 
-    params: tuple[ta.TypeVar, ...] = dc.field(compare=False)     # map[int, V] = (_0, _1) | map[T, T] = (_0, _1)
-    # params2: tuple[ta.TypeVar, ...]                            # map[int, V] = (V,)     | map[T, T] = (T,)
+    params: tuple[ta.TypeVar, ...] = dc.field(compare=False, repr=False)  # map[int, V] = (_0, _1) | map[T, T] = (_0, _1)  # noqa
+    # params2: tuple[ta.TypeVar, ...]                                     # map[int, V] = (V,)     | map[T, T] = (T,)
 
     obj: ta.Any = dc.field(compare=False, repr=False)
 
