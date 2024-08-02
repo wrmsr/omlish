@@ -93,6 +93,7 @@ def get_params(obj: ta.Any) -> tuple[ta.TypeVar, ...]:
 def is_union_type(cls: ta.Any) -> bool:
     if hasattr(ta, 'UnionType'):
         return ta.get_origin(cls) in {ta.Union, getattr(ta, 'UnionType')}
+
     else:
         return ta.get_origin(cls) in {ta.Union}
 
@@ -220,6 +221,7 @@ def type_(obj: ta.Any) -> Type:
 def types_equivalent(l: Type, r: Type) -> bool:
     if isinstance(l, Generic) and isinstance(r, Generic):
         return l.cls == r.cls and l.args == r.args
+
     return l == r
 
 
@@ -230,28 +232,36 @@ def get_underlying(nt: NewType) -> Type:
 def get_concrete_type(ty: Type) -> type | None:
     if isinstance(ty, type):
         return ty
+
     if isinstance(ty, Generic):
         return ty.cls
+
     if isinstance(ty, NewType):
         return get_concrete_type(get_underlying(ty))
+
     if isinstance(ty, (Union, ta.TypeVar)):
         return None
+
     raise TypeError(ty)
 
 
 def get_type_var_replacements(ty: Type) -> ta.Mapping[ta.TypeVar, Type]:
     if isinstance(ty, Generic):
         return dict(zip(ty.params, ty.args))
+
     return {}
 
 
 def to_annotation(ty: Type) -> ta.Any:
     if isinstance(ty, Generic):
         return ty.obj if ty.obj is not None else ty.cls
+
     if isinstance(ty, Union):
         return ta.Union[*tuple(to_annotation(e) for e in ty.args)]
+
     if isinstance(ty, (type, ta.TypeVar, NewType)):
         return ty
+
     raise TypeError(ty)
 
 
@@ -264,8 +274,10 @@ def replace_type_vars(
     def rec(cur):
         if isinstance(cur, type):
             return cur
+
         if isinstance(cur, NewType):
             return cur
+
         if isinstance(cur, Generic):
             args = tuple(rec(a) for a in cur.args)
             if update_aliases:
@@ -280,10 +292,13 @@ def replace_type_vars(
             else:
                 obj = None
             return cur._replace(args=args, obj=obj)
+
         if isinstance(cur, Union):
             return Union(frozenset(rec(e) for e in cur.args))
+
         if isinstance(cur, ta.TypeVar):
             return rpl[cur]
+
         raise TypeError(cur)
 
     return rec(ty)
