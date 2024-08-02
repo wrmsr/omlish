@@ -20,13 +20,14 @@ from omlish.http.asgi import AsgiScope
 from omlish.http.asgi import AsgiSend
 from omlish.http.sessions import Session
 
+from .base import Handler_
+from .base import APP_MARKER_PROCESSORS
+from .base import Route
+from .base import RouteHandlerApp
 from .base import SCOPE
 from .base import SESSION
 from .base import USER
 from .base import USER_STORE
-from .base import Handler_
-from .base import Route
-from .base import RouteHandlerApp
 from .base import User
 from .base import get_app_markers
 from .handlers.favicon import FaviconHandler
@@ -49,8 +50,13 @@ def _build_route_handler_map(handlers: ta.AbstractSet[Handler_]) -> ta.Mapping[R
     route_handlers: dict[Route, AsgiApp] = {}
     for h in handlers:
         for rh in h.get_route_handlers():
-            markers = get_app_markers(rh.handler)  # noqa
-            route_handlers[rh.route] = rh.handler
+            app = rh.handler
+            markers = get_app_markers(rh.handler)
+            for m in markers:
+                mp = APP_MARKER_PROCESSORS[type(m)]
+                if mp is not None:
+                    app = mp(app)
+            route_handlers[rh.route] = app
     return route_handlers
 
 
