@@ -50,7 +50,7 @@ def test_custom_inject():
         )
 
     with inj.create_managed_injector(inj.as_elements(
-            inj.as_binding(420),
+            inj.bind(420),
             jank_managed(SomeManager),
     )) as i:
         assert i[int] == 420

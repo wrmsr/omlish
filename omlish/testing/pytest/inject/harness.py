@@ -50,7 +50,7 @@ class Harness:
         super().__init__()
         self._orig_es = es
         self._es = inj.as_elements(
-            inj.as_binding(self),
+            inj.bind(self),
             *[
                 inj.as_elements(
                     inj.bind_scope(ss),
