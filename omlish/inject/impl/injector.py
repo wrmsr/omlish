@@ -70,6 +70,7 @@ class InjectorImpl(Injector, lang.Final):
         }
 
         self._instantiate_eagers(Unscoped())
+        self._instantiate_eagers(Singleton())
 
     _root: 'InjectorImpl'
 
