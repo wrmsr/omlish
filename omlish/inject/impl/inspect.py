@@ -5,6 +5,7 @@ TODO:
  - tag decorator - @inj.tag(x='foo')
  - *unpack optional here*
 """
+import dataclasses as dc
 import inspect
 import types
 import typing as ta
@@ -80,7 +81,7 @@ def build_kwargs_target(
 
         k = as_key(ann)
         if tags is not None and (pt := tags.get(p.name)) is not None:
-            k = tag(k, pt)
+            k = dc.replace(k, tag=pt)
 
         if k in seen:
             raise DuplicateKeyError(k)
