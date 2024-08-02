@@ -68,6 +68,12 @@ from .overrides import (  # noqa
     override,
 )
 
+from .origins import (  # noqa
+    HasOrigins,
+    Origin,
+    Origins,
+)
+
 from .privates import (  # noqa
     Expose,
     Private,
