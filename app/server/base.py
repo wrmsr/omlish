@@ -37,6 +37,33 @@ SCOPE: contextvars.ContextVar[AsgiScope] = contextvars.ContextVar('scope')
 ##
 
 
+class AppMarker(lang.Abstract):
+    pass
+
+
+APP_MARKERS_ATTR = '__app_markers__'
+
+
+def append_app_marker(obj: ta.Any, marker: AppMarker) -> None:
+    tgt = lang.unwrap_func(obj)
+    tgt.__dict__.setdefault(APP_MARKERS_ATTR, []).append(marker)
+
+
+def get_app_markers(obj) -> ta.Sequence[AppMarker]:
+    tgt = lang.unwrap_func(obj)
+    try:
+        dct = tgt.__dict__
+    except AttributeError:
+        return ()
+    return dct.get(APP_MARKERS_ATTR, ())
+
+
+APP_MARKER_PROCESSORS: dict[type[AppMarker], ta.Callable[[AsgiApp], AsgiApp] | None] = {}
+
+
+##
+
+
 COOKIE_SESSION_STORE = sessions.CookieSessionStore(
     marshal=sessions.SessionMarshal(
         signer=sessions.Signer(sessions.Signer.Config(
@@ -53,7 +80,7 @@ SESSION: contextvars.ContextVar[sessions.Session] = contextvars.ContextVar('sess
 
 
 @lang.decorator
-async def with_session(fn: AsgiApp, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
+async def _with_session(fn: AsgiApp, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
     async def _send(obj):
         if obj['type'] == 'http.response.start':
             out_session = SESSION.get()
@@ -70,6 +97,26 @@ async def with_session(fn: AsgiApp, scope: AsgiScope, recv: AsgiRecv, send: Asgi
     in_session = COOKIE_SESSION_STORE.extract(scope)
     with lang.context_var_setting(SESSION, in_session):
         await fn(scope, recv, _send)
+
+
+#
+
+
+class _WithSessionAppMarker(AppMarker, lang.Singleton, lang.Final):
+    pass
+
+
+def with_session(fn):
+    append_app_marker(fn, _WithSessionAppMarker())
+    return fn
+
+
+class _WithSessionAppMarkerProcessor:
+    def __call__(self, app: AsgiApp) -> AsgiApp:
+        return _with_session(app)  # noqa
+
+
+APP_MARKER_PROCESSORS[_WithSessionAppMarker] = _WithSessionAppMarkerProcessor()
 
 
 ##
@@ -116,7 +163,7 @@ def current_user() -> User | None:
 
 
 @lang.decorator
-async def with_user(fn: AsgiApp, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
+async def _with_user(fn: AsgiApp, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
     session = SESSION.get()
 
     user_id = session.get('_user_id')
@@ -129,6 +176,29 @@ async def with_user(fn: AsgiApp, scope: AsgiScope, recv: AsgiRecv, send: AsgiSen
         await fn(scope, recv, send)
 
 
+#
+
+
+class _WithUserAppMarker(AppMarker, lang.Singleton, lang.Final):
+    pass
+
+
+def with_user(fn):
+    append_app_marker(fn, _WithUserAppMarker())
+    return fn
+
+
+class _WithUserAppMarkerProcessor:
+    def __call__(self, app: AsgiApp) -> AsgiApp:
+        return _with_user(app)  # noqa
+
+
+APP_MARKER_PROCESSORS[_WithUserAppMarker] = _WithUserAppMarkerProcessor()
+
+
+#
+
+
 def login_user(user: User, *, remember: bool = False) -> None:
     SESSION.get()['_user_id'] = user.id
 
@@ -136,25 +206,13 @@ def login_user(user: User, *, remember: bool = False) -> None:
 #
 
 
-class AppMarker(lang.Abstract):
-    pass
+@lang.decorator
+async def _login_required(fn: AsgiApp, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
+    if USER.get() is None:
+        await redirect_response(send, url_for('login'))
+        return
 
-
-APP_MARKERS_ATTR = '__app_markers__'
-
-
-def append_app_marker(obj: ta.Any, marker: AppMarker) -> None:
-    tgt = lang.unwrap_func(obj)
-    tgt.__dict__.setdefault(APP_MARKERS_ATTR, []).append(marker)
-
-
-def get_app_markers(obj) -> ta.Sequence[AppMarker]:
-    tgt = lang.unwrap_func(obj)
-    try:
-        dct = tgt.__dict__
-    except AttributeError:
-        return ()
-    return dct.get(APP_MARKERS_ATTR, ())
+    await fn(scope, recv, send)
 
 
 #
@@ -165,16 +223,16 @@ class _LoginRequiredAppMarker(AppMarker, lang.Singleton, lang.Final):
 
 
 def login_required(fn):
-    @lang.decorator
-    async def inner(fn: AsgiApp, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
-        if USER.get() is None:
-            await redirect_response(send, url_for('login'))
-            return
-
-        await fn(scope, recv, send)
-
     append_app_marker(fn, _LoginRequiredAppMarker())
-    return inner(fn)
+    return fn
+
+
+class _LoginRequiredAppMarkerProcessor:
+    def __call__(self, app: AsgiApp) -> AsgiApp:
+        return _login_required(app)  # noqa
+
+
+APP_MARKER_PROCESSORS[_LoginRequiredAppMarker] = _LoginRequiredAppMarkerProcessor()
 
 
 ##
@@ -193,6 +251,9 @@ class RouteHandler(ta.NamedTuple):
 @dc.dataclass(frozen=True)
 class _HandlesAppMarker(AppMarker, lang.Final):
     routes: ta.Sequence[Route]
+
+
+APP_MARKER_PROCESSORS[_HandlesAppMarker] = None
 
 
 def handles(*routes: Route):
