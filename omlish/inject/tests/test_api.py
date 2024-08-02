@@ -1,16 +1,12 @@
 """
 TODO:
  - multis?
- - expose?
 
 class SetBinding(Element, lang.Final):
 class SetProvider(Provider):
 
 class MapBinding(Element, lang.Final):
 class MapProvider(Provider):
-
-class Expose(Element, lang.Final):
-class Private(Element, lang.Final):
 """
 import inspect
 import typing as ta
@@ -24,6 +20,7 @@ from ..elements import Element
 from ..elements import Elements
 from ..keys import Key
 from ..keys import as_key
+from ..private import Expose
 from ..providers import ConstProvider
 from ..providers import CtorProvider
 from ..providers import FnProvider
@@ -41,6 +38,7 @@ def bind(
         tag: ta.Any = None,
 
         eager: bool = False,
+        expose: bool = False,
 
         in_: Scope | None = None,
         singleton: bool = False,
@@ -105,6 +103,8 @@ def bind(
 
     if eager:
         elements.append(Eager(key))
+    if expose:
+        elements.append(Expose(key))
 
     if len(elements) == 1:
         return elements[0]
