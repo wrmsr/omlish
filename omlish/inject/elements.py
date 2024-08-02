@@ -29,10 +29,10 @@ class Elements(lang.Final):
                 yield from c
 
 
-Elemental = ta.Union[
+Elemental = ta.Union[  # noqa
     Element,
-    ElementGenerator,
     Elements,
+    ElementGenerator,
 ]
 
 
