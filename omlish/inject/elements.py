@@ -1,3 +1,4 @@
+import abc
 import typing as ta
 
 from .. import check
@@ -7,6 +8,12 @@ from .. import lang
 
 class Element(lang.Abstract):
     pass
+
+
+class ElementGenerator(lang.Abstract, lang.PackageSealed):
+    @abc.abstractmethod
+    def __iter__(self) -> ta.Iterator[Element]:
+        raise NotImplementedError
 
 
 @dc.dataclass(frozen=True)
@@ -22,18 +29,34 @@ class Elements(lang.Final):
                 yield from c
 
 
-def as_elements(*args: Element | Elements) -> Elements:
+Elemental = ta.Union[
+    Element,
+    ElementGenerator,
+    Elements,
+]
+
+
+def as_elements(*args: Elemental) -> Elements:
     es: set[Element] = set()
     cs: set[Elements] = set()
-    for a in args:
+
+    def rec(a):
         if isinstance(a, Element):
             es.add(a)
         elif isinstance(a, Elements):
             cs.add(a)
+        elif isinstance(a, ElementGenerator):
+            for n in a:
+                rec(n)
         else:
             raise TypeError(a)
+
+    for a in args:
+        rec(a)
+
     if not es and len(cs) == 1:
         return next(iter(cs))
+
     return Elements(
         frozenset(es) if es else None,
         frozenset(cs) if cs else None,
