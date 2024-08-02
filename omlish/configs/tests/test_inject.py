@@ -21,7 +21,7 @@ def bind_impl(cls: type[Configurable], impl_cls: type[Configurable]) -> inj.Elem
         raise TypeError(impl_cls, cls)
     inst = ImplFor(cls, impl_cls)
     return inj.as_elements(
-        inj.SetBinding(inj.Key(ta.AbstractSet[ImplFor], tag=cls), inj.Key(ImplFor, tag=id(inst))),
+        inj.set_binder[ImplFor](tag=cls).bind(inj.Key(ImplFor, tag=id(inst))),
         inj.bind(ImplFor, tag=id(inst), to_const=inst),
     )
 
@@ -52,7 +52,7 @@ def bind_factory(cls: type[Configurable]) -> inj.Elements:
 
     fac_cls = Factory[cls.Config, cls]  # type: ignore
     return inj.as_elements(
-        inj.bind_set_provider(inj.Key(ta.AbstractSet[ImplFor], tag=cls)),
+        inj.set_binder[ImplFor](tag=cls),
         inj.bind(fac_cls, to_fn=outer, singleton=True),
     )
 
