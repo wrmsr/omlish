@@ -155,6 +155,29 @@ TYPES: tuple[type, ...] = (
 )
 
 
+def is_type(obj: ta.Any) -> bool:
+    if isinstance(obj, (Union, Generic, ta.TypeVar, NewType)):  # noqa
+        return True
+
+    oty = type(obj)
+
+    return (
+            oty is _UnionGenericAlias or oty is types.UnionType or
+
+            isinstance(obj, ta.NewType) or  # noqa
+
+            (
+                    oty is _GenericAlias or
+                    oty is ta.GenericAlias or  # type: ignore  # noqa
+                    oty is _CallableGenericAlias
+            ) or
+
+            isinstance(obj, type) or
+
+            isinstance(obj, _SpecialGenericAlias)
+    )
+
+
 def type_(obj: ta.Any) -> Type:
     if isinstance(obj, (Union, Generic, ta.TypeVar, NewType)):  # noqa
         return obj
