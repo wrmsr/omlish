@@ -58,13 +58,11 @@ def bind_factory(cls: type[Configurable]) -> inj.Elements:
 
 
 def test_inject():
-    es = inj.as_elements(
+    i = inj.create_injector(
         bind_impl(Thing, AThing),
         bind_impl(Thing, BThing),
         bind_factory(Thing),
     )
-
-    i = inj.create_injector(es)
     fac: ta.Any = i[inj.Key(Factory[Thing.Config, Thing])]
 
     assert isinstance(fac(AThing.Config()), AThing)

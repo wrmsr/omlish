@@ -3,12 +3,10 @@ from ... import lang
 
 
 def test_inject():
-    es = inj.as_elements(
+    i = inj.create_injector(
         inj.bind(420),
         inj.bind(lang.typed_lambda(str, i=int)(lambda i: str(i))),
     )
-
-    i = inj.create_injector(es)
     assert i.provide(int) == 420
     assert i.provide(str) == '420'
 
