@@ -109,7 +109,7 @@ class InjectorImpl(Injector, lang.Final):
             check.not_in(key, self._provisions)
             self._provisions[key] = v
 
-        def __enter__(self: ta.Self) -> ta.Self:
+        def __enter__(self) -> ta.Self:
             return self
 
         def __exit__(self, *exc) -> None:

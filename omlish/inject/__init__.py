@@ -55,8 +55,11 @@ from .multis import (  # noqa
     MapProvider,
     SetBinding,
     SetProvider,
-    bind_map_provider,
-    bind_set_provider,
+    MapBinder,
+    SetBinder,
+
+    MapBinder as map_binder,  # noqa
+    SetBinder as set_binder,  # noqa
 )
 
 
