@@ -3,6 +3,7 @@
 """
 from .binder import (  # noqa
     bind,
+    bind_as_fn,
 )
 
 from .bindings import (  # noqa
