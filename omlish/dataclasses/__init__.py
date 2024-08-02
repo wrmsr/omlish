@@ -81,3 +81,7 @@ from .impl.reflect import (  # noqa
     ClassInfo,
     reflect,
 )
+
+from .utils import (  # noqa
+    maybe_post_init,
+)
