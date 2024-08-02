@@ -4,6 +4,7 @@ import typing as ta
 
 from ... import check
 from ... import lang
+from .copy import CopyProcessor
 from .fields import preprocess_field
 from .frozen import FrozenProcessor
 from .hashing import HashProcessor
@@ -137,6 +138,7 @@ class MainProcessor:
             DocProcessor,
             MatchArgsProcessor,
             ReplaceProcessor,
+            CopyProcessor,
         ]:
             pcls(self._info).process()
 

@@ -1,3 +1,5 @@
+import pytest
+
 from ... import inject as inj
 from ... import lang
 
@@ -26,3 +28,31 @@ def test_optional():
         *es,
     )
     assert inj.create_injector(es)[str] == 'i=420 f=2.3'
+
+
+def test_dupe_squashing():
+    i = inj.create_injector(
+        inj.as_elements(
+            inj.bind(420),
+            inj.bind(42.),
+        ),
+        inj.as_elements(
+            inj.bind(420),
+            inj.bind('four twenty'),
+        ),
+    )
+    assert i[int] == 420
+    assert i[float] == 42.
+    assert i[str] == 'four twenty'
+
+    with pytest.raises(inj.ConflictingKeyError):
+        inj.create_injector(
+            inj.as_elements(
+                inj.bind(420),
+                inj.bind(42.),
+            ),
+            inj.as_elements(
+                inj.bind(421),
+                inj.bind('four twenty'),
+            ),
+        )

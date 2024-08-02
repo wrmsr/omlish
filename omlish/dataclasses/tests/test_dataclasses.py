@@ -1,4 +1,5 @@
 import abc
+import copy
 import dataclasses as _dc
 import inspect
 import pprint  # noqa
@@ -412,3 +413,15 @@ def test_repr_lambda():
 
     assert repr(Foo(2, 'hi', 3)).endswith('.Foo(x=2, y=hi!, z=3)')
     assert repr(Foo(1, 'bye', 0)).endswith('.Foo(x=1, y=bye!)')
+
+
+def test_copy():
+    @dc.dataclass()
+    class Foo:
+        x: int
+        y: int
+
+    f = Foo(1, 2)
+    c = copy.copy(f)
+    assert f == c
+    assert f is not c

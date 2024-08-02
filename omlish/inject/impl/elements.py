@@ -18,6 +18,7 @@ Element Types:
  - Private
  - ScopeBinding
 """
+import copy
 import typing as ta
 
 from ... import check
@@ -140,14 +141,21 @@ class ElementCollection(lang.Final):
             es_by_ty.pop(Expose, None)
 
             if (bs := es_by_ty.pop(Binding, None)):
-                # FIXME: lol - this squeezes multis for us, but when tracebacks come this.. won't work
-                bss = set(bs)
-                if len(bss) > 1:
-                    raise ConflictingKeyError(k)
+                b: Binding
+                if len(bs) > 1:
+                    d = {}
+                    for b in bs:
+                        d.setdefault(b, []).append(b)
+                    if len(d) > 1:
+                        raise ConflictingKeyError(k)
+                    l = check.single(d.values())
+                    b = copy.copy(l[0])
+                    # FIXME: merge origins
+                    raise NotImplementedError
+                else:
+                    b = check.isinstance(check.single(bs), Binding)
 
-                b: Binding = check.isinstance(check.single(bss), Binding)
                 p: ProviderImpl
-
                 if isinstance(b.provider, (SetProvider, MapProvider)):
                     p = make_multi_provider_impl(b.provider, es_by_ty)
 
