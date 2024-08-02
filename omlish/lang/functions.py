@@ -100,11 +100,11 @@ def is_not_none(o: ta.Any) -> bool:
     return o is not None
 
 
-def is_instance_of(class_or_tuple: ta.Any) -> ta.Callable[[ta.Any], bool]:
+def isinstance_of(class_or_tuple: ta.Any) -> ta.Callable[[ta.Any], bool]:
     return lambda o: isinstance(o, class_or_tuple)
 
 
-def is_subclass_of(class_or_tuple: ta.Any) -> ta.Callable[[ta.Any], bool]:
+def issubclass_of(class_or_tuple: ta.Any) -> ta.Callable[[ta.Any], bool]:
     return lambda o: issubclass(o, class_or_tuple)
 
 
