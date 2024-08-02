@@ -4,10 +4,10 @@ import typing as ta
 from .. import check
 from .. import dataclasses as dc
 from .. import lang
-from .impl.origins import HasOrigins
+from .impl.origins import HasOriginsImpl
 
 
-class Element(HasOrigins, lang.Abstract, lang.PackageSealed):
+class Element(HasOriginsImpl, lang.Abstract, lang.PackageSealed):
     pass
 
 

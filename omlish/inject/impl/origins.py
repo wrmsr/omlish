@@ -2,6 +2,7 @@ import sys
 import types
 
 from ... import dataclasses as dc
+from ..origins import HasOrigins
 from ..origins import Origin
 from ..origins import Origins
 
@@ -46,7 +47,7 @@ def build_origin(ofs: int = 0) -> Origin:
 ORIGINS_ATTR = '__inject_origins__'
 
 
-class HasOrigins:
+class HasOriginsImpl(HasOrigins):
     @property
     def origins(self) -> Origins:
         raise NotImplementedError
