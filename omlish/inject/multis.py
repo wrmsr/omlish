@@ -29,7 +29,8 @@ class SetBinding(Element, lang.Final):
     dst: Key = dc.xfield()
 
 
-@dc.dataclass(frozen=True, eq=False)
+@dc.dataclass(frozen=True)
+@dc.extra_params(cache_hash=True)
 class SetProvider(Provider):
     multi_key: Key = dc.xfield(check=_check_set_multi_key)
 
@@ -57,7 +58,8 @@ class MapBinding(Element, lang.Final):
     dst: Key = dc.xfield(())
 
 
-@dc.dataclass(frozen=True, eq=False)
+@dc.dataclass(frozen=True)
+@dc.extra_params(cache_hash=True)
 class MapProvider(Provider):
     multi_key: Key = dc.xfield(check=_check_map_multi_key)
 
