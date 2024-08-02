@@ -57,6 +57,13 @@ async def get_procstats() -> ta.Mapping[str, ta.Any]:
     return dc.asdict(procstats.get_psutil_procstats())
 
 
+async def killer(shutdown: anyio.Event, sleep_s: float) -> None:
+    log.warning('Killing in %d seconds', sleep_s)
+    await anyio.sleep(sleep_s)
+    log.warning('Killing')
+    shutdown.set()
+
+
 @au.with_adapter_loop(wait=True)
 async def a_run_shell(app: ShellApp) -> None:
     engine = sql.async_adapt(saa.create_async_engine(get_db_url(), echo=True))
@@ -71,16 +78,10 @@ async def a_run_shell(app: ShellApp) -> None:
 
     shutdown = anyio.Event()
 
-    async def killer(sleep_s: float) -> None:
-        log.warning('Killing in %d seconds', sleep_s)
-        await anyio.sleep(sleep_s)
-        log.warning('Killing')
-        shutdown.set()
-
     async with anyio.create_task_group() as tg:
         await _install_signal_handler(tg, shutdown)
 
-        # tg.start_soon(killer, 10.)
+        # tg.start_soon(killer, shutdown, 10.)
 
         await tg.start(functools.partial(nr.run, shutdown))
 
