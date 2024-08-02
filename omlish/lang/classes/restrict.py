@@ -78,7 +78,8 @@ class PackageSealed:
         for base in cls.__bases__:
             if base is not Abstract:
                 if PackageSealed in base.__bases__:
-                    if cls.__module__.split('.')[:-1] != base.__module__.split('.')[:-1]:
+                    pfx = base.__module__.split('.')[:-1]
+                    if cls.__module__.split('.')[:len(pfx)] != pfx:
                         raise SealedError(base)
         super().__init_subclass__(**kwargs)
 
