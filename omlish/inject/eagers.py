@@ -14,7 +14,7 @@ from .keys import as_key
 @dc.dataclass(frozen=True)
 @dc.extra_params(cache_hash=True)
 class Eager(Element, lang.Final):
-    key: Key
+    key: Key = dc.xfield(check=lang.isinstance_of(Key))
 
 
 def eager(k: ta.Any) -> Element:

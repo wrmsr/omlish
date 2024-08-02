@@ -29,17 +29,26 @@ class Thread(Scope, lang.Singleton, lang.Final):
 class SeededScope(Scope, lang.Final):
 class ScopeSeededProvider(Provider):
 """
+import dataclasses as dc
 import inspect
 import typing as ta
 
+from ... import check
 from ... import reflect as rfl
 from ..bindings import Binding
+from ..eagers import Eager
 from ..elements import Element
 from ..elements import Elements
 from ..keys import Key
 from ..keys import as_key
 from ..providers import ConstProvider
+from ..providers import CtorProvider
+from ..providers import FnProvider
+from ..providers import LinkProvider
+from ..providers import Provider
+from ..scopes import Singleton
 from ..types import Scope
+from ..types import Unscoped
 
 
 def bind(
@@ -70,7 +79,44 @@ def bind(
         to_const = obj
         key = Key(rfl.type_(type(obj)))
 
-    raise NotImplementedError
+    if tag is not None:
+        if key.tag is not None:
+            raise TypeError('Tag already set')
+        key = dc.replace(key, tag=tag)
+
+    providers: list[Provider] = []
+    if to_fn is not None:
+        providers.append(FnProvider(to_fn))
+    if to_ctor is not None:
+        providers.append(CtorProvider(to_ctor))
+    if to_const is not None:
+        providers.append(ConstProvider(to_const))
+    if to_key is not None:
+        providers.append(LinkProvider(as_key(to_key)))
+    if not providers:
+        raise TypeError('Must specify provider')
+    if len(providers) > 1:
+        raise TypeError('May not specify multiple providers')
+    provider, = providers
+
+    scopes: list[Scope] = []
+    if in_ is not None:  # TODO: string alises?
+        scopes.append(check.isinstance(in_, Scope))
+    if singleton:
+        scopes.append(Singleton())
+    if len(scopes) > 1:
+        raise TypeError('May not specify multiple scopes')
+    if not scopes:
+        scope = Unscoped()
+    else:
+        scope, = scopes
+
+    binding = Binding(key, provider, scope)
+
+    elements: list[Element] = [binding]
+
+    if eager:
+        elements.append(Ea)
 
 
 def test_api():
