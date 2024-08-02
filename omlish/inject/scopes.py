@@ -7,7 +7,6 @@ from .. import dataclasses as dc
 from .. import lang
 from .. import reflect as rfl
 from .bindings import Binding
-from .bindings import as_binding
 from .elements import Element
 from .keys import Key
 from .keys import as_key
@@ -37,10 +36,6 @@ def bind_scope(sc: Scope) -> Element:
     return ScopeBinding(sc)
 
 
-def in_(b: ta.Any, sc: Scope) -> 'Binding':
-    return dc.replace(as_binding(b), scope=check.isinstance(sc, Scope))
-
-
 ##
 
 
@@ -49,10 +44,6 @@ class Singleton(Scope, lang.Singleton, lang.Final):
 
 
 SCOPE_ALIASES['singleton'] = Singleton()
-
-
-def singleton(b: ta.Any) -> 'Binding':
-    return in_(b, Singleton())
 
 
 ##

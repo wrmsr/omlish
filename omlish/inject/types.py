@@ -1,9 +1,6 @@
 from .. import lang
 
 
-##
-
-
 class Scope(lang.Abstract):
     def __repr__(self) -> str:
         return type(self).__name__
