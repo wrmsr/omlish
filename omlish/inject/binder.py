@@ -39,9 +39,6 @@ def bind(
         *,
         tag: ta.Any = None,
 
-        eager: bool = False,
-        expose: bool = False,
-
         in_: Scope | None = None,
         singleton: bool = False,
 
@@ -49,6 +46,9 @@ def bind(
         to_ctor: ta.Any = None,
         to_const: ta.Any = None,
         to_key: ta.Any = None,
+
+        eager: bool = False,
+        expose: bool = False,
 ) -> Element | Elements:
     if obj is inspect.Parameter.empty or obj is None:
         raise TypeError(obj)
@@ -128,7 +128,3 @@ def bind(
         return elements[0]
     else:
         return Elements(frozenset(elements))
-
-
-def test_api():
-    assert bind(5) == Binding(Key(rfl.type_(int)), ConstProvider(5))
