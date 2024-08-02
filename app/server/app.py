@@ -61,15 +61,15 @@ def _server_app() -> AsgiApp:
         inj.bind(ta.Callable[[], Session], to_const=SESSION.get),
         inj.bind(ta.Callable[[], User | None], to_const=USER.get),
 
-        inj.as_binding(inj.const(J2Templates.Config(reload=True))),
-        inj.as_binding(inj.singleton(J2Templates)),
+        inj.bind(J2Templates.Config(reload=True)),
+        inj.bind(J2Templates, singleton=True),
 
-        inj.as_binding(inj.const(USER_STORE)),
+        inj.bind(USER_STORE),
 
         inj.bind_set_provider(ta.AbstractSet[Handler_]),
 
         *itertools.chain.from_iterable([
-            inj.singleton(hc),
+            inj.bind(hc, singleton=True),
             inj.SetBinding(inj.as_key(ta.AbstractSet[Handler_]), inj.Key(hc)),
         ] for hc in [
             IndexHandler,
@@ -81,9 +81,9 @@ def _server_app() -> AsgiApp:
             TikHandler,
         ]),
 
-        inj.as_binding(inj.singleton(_build_route_handler_map)),
+        inj.bind(_build_route_handler_map, singleton=True),
 
-        inj.as_binding(inj.singleton(RouteHandlerApp)),
+        inj.bind(RouteHandlerApp, singleton=True),
     ))
 
     return i[RouteHandlerApp]

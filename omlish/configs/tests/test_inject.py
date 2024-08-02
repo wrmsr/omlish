@@ -22,7 +22,7 @@ def bind_impl(cls: type[Configurable], impl_cls: type[Configurable]) -> inj.Elem
     inst = ImplFor(cls, impl_cls)
     return inj.as_elements(
         inj.SetBinding(inj.Key(ta.AbstractSet[ImplFor], tag=cls), inj.Key(ImplFor, tag=id(inst))),
-        inj.Binding(inj.Key(ImplFor, tag=id(inst)), inj.const(inst)),
+        inj.bind(ImplFor, tag=id(inst), to_const=inst),
     )
 
 
@@ -53,10 +53,7 @@ def bind_factory(cls: type[Configurable]) -> inj.Elements:
     fac_cls = Factory[cls.Config, cls]  # type: ignore
     return inj.as_elements(
         inj.bind_set_provider(inj.Key(ta.AbstractSet[ImplFor], tag=cls)),
-        inj.singleton(inj.Binding(
-            inj.Key(fac_cls),
-            inj.fn(outer, fac_cls),
-        )),
+        inj.bind(fac_cls, to_fn=outer, singleton=True),
     )
 
 
