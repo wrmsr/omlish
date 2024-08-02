@@ -56,7 +56,7 @@ class J2Templates:
 
     def _load_all(self) -> ta.Mapping[str, jinja2.Template]:
         ret: dict[str, jinja2.Template] = {}
-        for fn in importlib.resources.files(__package__).joinpath('templates').iterdir():
+        for fn in importlib.resources.files(__package__).joinpath('../templates').iterdir():
             ret[fn.name] = self._env.from_string(fn.read_text())
         return ret
 
