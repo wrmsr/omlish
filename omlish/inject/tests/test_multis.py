@@ -19,8 +19,8 @@ V = ta.TypeVar('V')
 class set_binder(ElementGenerator, ta.Generic[T]):
     def __init__(self, *, tag: ta.Any = None) -> None:
         super().__init__()
-        self._tag = tag
-        self._keys = []
+        self._tag: ta.Any = tag
+        self._sbs: list[inj.SetBinding] = []
 
     @lang.cached_property
     def _multi_key(self) -> inj.Key:
@@ -28,19 +28,19 @@ class set_binder(ElementGenerator, ta.Generic[T]):
         ety = check.single(oty.args)
         return inj.Key(ta.AbstractSet[ety], tag=self._tag)
 
+    @lang.cached_property
+    def _set_provider_binding(self) -> inj.Element:
+        return inj.Binding(self._multi_key, inj.SetProvider(self._multi_key))
+
     def bind(self, *keys: ta.Any) -> ta.Self:
         if not isinstance(self, set_binder):
             raise TypeError
-        self._keys.extend(inj.as_key(k) for k in keys)
+        self._sbs.extend(inj.SetBinding(self._multi_key, k) for k in keys)
         return self
 
     def __iter__(self) -> ta.Iterator[Element]:
-        raise NotImplementedError
-
-
-def test_set_binder():
-    sb = set_binder[object]().bind(int)
-    print(sb._multi_key)
+        yield self._set_provider_binding
+        yield from self._sbs
 
 
 ##
