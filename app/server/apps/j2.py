@@ -26,9 +26,10 @@ def j2_helper(fn):
 class J2Templates:
     @dc.dataclass(frozen=True)
     class Config:
+        resource_root: str
         reload: bool = False
 
-    def __init__(self, config: Config = Config()) -> None:
+    def __init__(self, config: Config) -> None:
         super().__init__()
 
         self._config = config
@@ -56,8 +57,9 @@ class J2Templates:
 
     def _load_all(self) -> ta.Mapping[str, jinja2.Template]:
         ret: dict[str, jinja2.Template] = {}
-        for fn in importlib.resources.files(__package__).joinpath('../templates').iterdir():
-            ret[fn.name] = self._env.from_string(fn.read_text())
+        for fn in importlib.resources.files(self._config.resource_root).iterdir():
+            if fn.name.endswith('.j2'):
+                ret[fn.name] = self._env.from_string(fn.read_text())
         return ret
 
     def load_all(self) -> ta.Mapping[str, jinja2.Template]:
