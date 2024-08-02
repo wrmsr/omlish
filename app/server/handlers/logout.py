@@ -2,14 +2,14 @@ from omlish.http.asgi import AsgiRecv
 from omlish.http.asgi import AsgiScope
 from omlish.http.asgi import AsgiSend
 from omlish.http.asgi import redirect_response
+from omserv.apps.base import url_for
+from omserv.apps.routes import Handler_
+from omserv.apps.routes import Route
+from omserv.apps.routes import handles
+from omserv.apps.sessions import SESSION
+from omserv.apps.sessions import with_session
 
-from ..apps.base import url_for
 from ..apps.login import login_required
-from ..apps.routes import Handler_
-from ..apps.routes import Route
-from ..apps.routes import handles
-from ..apps.sessions import SESSION
-from ..apps.sessions import with_session
 from ..apps.users import with_user
 
 

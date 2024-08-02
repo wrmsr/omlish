@@ -10,7 +10,6 @@ from omlish.http.asgi import AsgiRecv
 from omlish.http.asgi import AsgiScope
 from omlish.http.asgi import AsgiSend
 
-from .j2 import j2_helper
 from .markers import AppMarker
 from .markers import AppMarkerProcessor
 from .markers import append_app_marker
@@ -61,21 +60,3 @@ class _WithSessionAppMarkerProcessor(AppMarkerProcessor):
                 await fn(scope, recv, _send)
 
         return _with_session(app)  # noqa
-
-
-##
-
-
-@j2_helper
-def get_flashed_messages() -> list[str]:
-    session = SESSION.get()
-    try:
-        ret = session['_flashes']
-    except KeyError:
-        return []
-    del session['_flashes']
-    return ret
-
-
-def flash(msg: str) -> None:
-    SESSION.get().setdefault('_flashes', []).append(msg)
