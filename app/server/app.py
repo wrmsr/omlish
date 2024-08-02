@@ -8,26 +8,27 @@ TODO:
 
 https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login
 """
+import datetime
 import logging
 import typing as ta
 
 from omlish import inject as inj
 from omlish import lang
+from omlish.http import sessions
 from omlish.http.asgi import AsgiApp
 from omlish.http.asgi import AsgiRecv
 from omlish.http.asgi import AsgiScope
 from omlish.http.asgi import AsgiSend
-from omlish.http.sessions import Session
 
 from .base import APP_MARKER_PROCESSORS
 from .base import SCOPE
 from .base import SESSION
 from .base import USER
-from .base import USER_STORE
 from .base import Handler_
 from .base import Route
 from .base import RouteHandlerApp
 from .base import User
+from .base import UserStore
 from .base import get_app_markers
 from .handlers.favicon import FaviconHandler
 from .handlers.index import IndexHandler
@@ -45,7 +46,10 @@ log = logging.getLogger(__name__)
 ##
 
 
-def _build_route_handler_map(handlers: ta.AbstractSet[Handler_]) -> ta.Mapping[Route, AsgiApp]:
+def _build_route_handler_map(
+        i: inj.Injector,
+        handlers: ta.AbstractSet[Handler_],
+) -> ta.Mapping[Route, AsgiApp]:
     route_handlers: dict[Route, AsgiApp] = {}
     for h in handlers:
         for rh in h.get_route_handlers():
@@ -54,7 +58,7 @@ def _build_route_handler_map(handlers: ta.AbstractSet[Handler_]) -> ta.Mapping[R
             for m in markers:
                 mp = APP_MARKER_PROCESSORS[type(m)]
                 if mp is not None:
-                    app = mp()(app)
+                    app = i.inject(mp)(app)
             route_handlers[rh.route] = app
     return route_handlers
 
@@ -66,16 +70,30 @@ def bind_handler(hc: type[Handler_]) -> inj.Elemental:
     )
 
 
+COOKIE_SESSION_STORE = sessions.CookieSessionStore(
+    marshal=sessions.SessionMarshal(
+        signer=sessions.Signer(sessions.Signer.Config(
+            secret_key='secret-key-goes-here',  # noqa
+        )),
+    ),
+    config=sessions.CookieSessionStore.Config(
+        max_age=datetime.timedelta(days=31),
+    ),
+)
+
+
 def bind_server_app() -> inj.Elemental:
     return inj.as_elements(
         inj.bind(ta.Callable[[], AsgiScope], to_const=SCOPE.get),
-        inj.bind(ta.Callable[[], Session], to_const=SESSION.get),
+        inj.bind(ta.Callable[[], sessions.Session], to_const=SESSION.get),
         inj.bind(ta.Callable[[], User | None], to_const=USER.get),
 
         inj.bind(J2Templates.Config(reload=True)),
         inj.bind(J2Templates, singleton=True),
 
-        inj.bind(USER_STORE),
+        inj.bind(sessions.CookieSessionStore, to_const=COOKIE_SESSION_STORE),
+
+        inj.bind(UserStore, singleton=True),
 
         inj.set_binder[Handler_](),
 
