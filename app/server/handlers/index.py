@@ -22,7 +22,7 @@ class IndexHandler(Handler_):
     _current_session: ta.Callable[[], Session]
     _templates: J2Templates
 
-    @handles(Route('GET', '/'))
+    @handles(Route.get('/'))
     @with_session
     @with_user
     async def handle_get_index(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:

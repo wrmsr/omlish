@@ -14,7 +14,7 @@ from ..apps.users import with_user
 
 
 class LogoutHandler(Handler_):
-    @handles(Route('GET', '/logout'))
+    @handles(Route.get('/logout'))
     @with_session
     @with_user
     @login_required
