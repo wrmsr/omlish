@@ -31,8 +31,8 @@ black==24.8.0
 bleach==6.1.0
 blis==0.7.11
 blobfile==2.1.1
-boto3==1.34.152
-botocore==1.34.152
+boto3==1.34.153
+botocore==1.34.153
 bs4==0.0.2
 bsddb3==6.2.9
 build==1.2.1
@@ -81,6 +81,7 @@ Flake8-pyproject==1.2.3
 flatbuffers==24.3.25
 fonttools==4.53.1
 fqdn==1.5.1
+frozendict==2.4.4
 frozenlist==1.4.1
 fsspec==2024.5.0
 ftfy==6.2.0
@@ -218,6 +219,7 @@ pipdeptree==2.23.1
 pkginfo==1.10.0
 platformdirs==4.2.2
 pluggy==1.5.0
+polars==1.4.0
 pooch==1.8.2
 portalocker==2.8.2
 pprintpp==0.4.0
@@ -381,7 +383,7 @@ wsproto==1.2.0
 xmltodict==0.13.0
 xxhash==3.4.1
 yarl==1.9.4
-zigpy==0.65.0
+zigpy==0.65.2
 zipp==3.19.2
 zstd==1.5.5.1
 zwave-js-server-python==0.57.0

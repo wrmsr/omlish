@@ -12,15 +12,18 @@ log = logging.getLogger(__name__)
 ##
 
 
-J2_DEFAULT_KWARGS = {}
+J2_DEFAULT_NAMESPACE = {}
 
 
 def j2_helper(fn):
-    J2_DEFAULT_KWARGS[fn.__name__] = fn
+    J2_DEFAULT_NAMESPACE[fn.__name__] = fn
     return fn
 
 
 ##
+
+
+J2Namespace = ta.NewType('J2Env', ta.Mapping[str, ta.Any])
 
 
 class J2Templates:
@@ -29,10 +32,11 @@ class J2Templates:
         resource_root: str
         reload: bool = False
 
-    def __init__(self, config: Config) -> None:
+    def __init__(self, config: Config, ns: J2Namespace) -> None:
         super().__init__()
 
         self._config = config
+        self._ns = ns
 
         self._env = jinja2.Environment(
             loader=self._Loader(self),
@@ -74,4 +78,8 @@ class J2Templates:
         return self.load_all()[name]
 
     def render(self, template_name: str, **kwargs: ta.Any) -> bytes:
-        return self.load(template_name).render(**{**J2_DEFAULT_KWARGS, **kwargs}).encode()
+        return self.load(template_name).render(**{
+            **J2_DEFAULT_NAMESPACE,
+            **self._ns,
+            **kwargs,
+        }).encode()

@@ -1,5 +1,5 @@
-from omserv.apps.j2 import j2_helper
 from omserv.apps.sessions import SESSION
+from omserv.apps.templates import j2_helper
 
 
 @j2_helper

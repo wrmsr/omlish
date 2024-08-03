@@ -8,11 +8,11 @@ from omlish.http.asgi import AsgiSend
 from omlish.http.asgi import finish_response
 from omlish.http.asgi import start_response
 from omlish.http.sessions import Session
-from omserv.apps.j2 import J2Templates
 from omserv.apps.routes import Handler_
 from omserv.apps.routes import Route
 from omserv.apps.routes import handles
 from omserv.apps.sessions import with_session
+from omserv.apps.templates import J2Templates
 
 from ..apps.users import with_user
 

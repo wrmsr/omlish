@@ -1,6 +1,6 @@
 import os
 
-from omserv.apps.j2 import j2_helper
+from omserv.apps.templates import j2_helper
 
 
 def base_server_url() -> str:

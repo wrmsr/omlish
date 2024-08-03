@@ -1,6 +1,7 @@
 import typing as ta
 
 from omlish import inject as inj
+from omlish import lang
 from omlish.http import sessions
 from omlish.http.asgi import AsgiApp
 from omlish.http.asgi import AsgiScope
@@ -16,6 +17,8 @@ from .routes import _HandlesAppMarker
 from .sessions import SESSION
 from .sessions import _WithSessionAppMarker
 from .sessions import _WithSessionAppMarkerProcessor
+from .templates import J2Namespace
+from .templates import J2Templates
 
 
 def bind_handler(hc: type[Handler_]) -> inj.Elemental:
@@ -71,4 +74,17 @@ def bind() -> inj.Elemental:
         ##
 
         inj.set_binder[Handler_](),
+    )
+
+
+def _merge_j2_namespaces(nss: ta.AbstractSet[J2Namespace]) -> J2Namespace:
+    return J2Namespace({k: v for ns in nss for k, v in ns.items()})
+
+
+def bind_templates() -> inj.Elemental:
+    return inj.as_elements(
+        inj.bind(J2Templates, singleton=True),
+
+        inj.set_binder[J2Namespace](),
+        inj.bind(_merge_j2_namespaces),
     )
