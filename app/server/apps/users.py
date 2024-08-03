@@ -7,11 +7,11 @@ from omlish.http.asgi import AsgiApp
 from omlish.http.asgi import AsgiRecv
 from omlish.http.asgi import AsgiScope
 from omlish.http.asgi import AsgiSend
-from omserv.apps.j2 import j2_helper
 from omserv.apps.markers import AppMarker
 from omserv.apps.markers import AppMarkerProcessor
 from omserv.apps.markers import append_app_marker
 from omserv.apps.sessions import SESSION
+from omserv.apps.templates import j2_helper
 
 from ...users import User
 from ...users import UserStore

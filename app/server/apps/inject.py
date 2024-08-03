@@ -15,6 +15,7 @@ def bind() -> inj.Elemental:
     return inj.as_elements(
         base_apps_inj.bind(),
         base_apps_inj.bind_route_handler_map(),
+        base_apps_inj.bind_templates(),
 
         ##
 
