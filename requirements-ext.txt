@@ -161,7 +161,7 @@ blobfile==2.1.1
 
 ### infra
 
-boto3>=1.34.152
+boto3>=1.34.153
 
 google-cloud-compute==1.19.2
 
@@ -176,7 +176,7 @@ sounddevice==0.4.7
 # vosk==0.3.45
 
 bellows==0.40.2
-zigpy==0.65.0
+zigpy==0.65.2
 
 # python-openzwave
 zwave-js-server-python==0.57.0
