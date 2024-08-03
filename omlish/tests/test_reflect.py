@@ -161,3 +161,7 @@ def test_callable():
 def test_generic_type():
     assert_generic_full_eq(type[int], rfl.Generic(type, (int,), (_0,), type[int]))
     assert rfl.type_(type) is type
+
+
+def test_annotated():
+    rfl.type_(ta.Annotated[int, 'foo'])

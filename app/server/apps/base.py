@@ -1,12 +1,13 @@
-import os
-
-from omserv.apps.templates import j2_helper
-
-
-def base_server_url() -> str:
-    return os.environ.get('BASE_SERVER_URL', 'http://localhost:8000/')
+import dataclasses as dc
+import typing as ta
 
 
-@j2_helper
-def url_for(s: str) -> str:
-    return base_server_url() + s
+BaseServerUrl = ta.NewType('BaseServerUrl', str)
+
+
+@dc.dataclass(frozen=True)
+class UrlFor:
+    base_server_url: BaseServerUrl
+
+    def __call__(self, s: str) -> str:
+        return self.base_server_url + s
