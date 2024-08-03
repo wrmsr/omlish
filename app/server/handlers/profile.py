@@ -29,7 +29,7 @@ class ProfileHandler(Handler_):
     _templates: J2Templates
     _users: UserStore
 
-    @handles(Route('GET', '/profile'))
+    @handles(Route.get('/profile'))
     @with_session
     @with_user
     @login_required
@@ -43,7 +43,7 @@ class ProfileHandler(Handler_):
         await start_response(send, 200, hu.consts.CONTENT_TYPE_HTML_UTF8)  # noqa
         await finish_response(send, html)
 
-    @handles(Route('POST', '/profile'))
+    @handles(Route.post('/profile'))
     @with_session
     @with_user
     async def handle_post_profile(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:

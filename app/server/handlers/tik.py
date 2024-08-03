@@ -38,7 +38,7 @@ gpt2_enc = anu.LazyFn(functools.partial(anyio.to_thread.run_sync, _gpt2_enc))
 class TikHandler(Handler_):
     _users: UserStore
 
-    @handles(Route('POST', '/tik'))
+    @handles(Route.post('/tik'))
     async def handle_post_tik(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
         hdrs = dict(scope['headers'])
         auth = hdrs.get(hu.consts.HEADER_AUTH.lower())

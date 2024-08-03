@@ -25,7 +25,7 @@ class SignupHandler(Handler_):
     _templates: J2Templates
     _users: UserStore
 
-    @handles(Route('GET', '/signup'))
+    @handles(Route.get('/signup'))
     @with_session
     @with_user
     async def handle_get_signup(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
@@ -33,7 +33,7 @@ class SignupHandler(Handler_):
         await start_response(send, 200, hu.consts.CONTENT_TYPE_HTML_UTF8)  # noqa
         await finish_response(send, html)
 
-    @handles(Route('POST', '/signup'))
+    @handles(Route.post('/signup'))
     @with_session
     @with_user
     async def handle_post_signup(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:

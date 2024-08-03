@@ -28,6 +28,22 @@ class Route(ta.NamedTuple):
     method: str
     path: str
 
+    @classmethod
+    def get(cls, path: str) -> 'Route':
+        return cls('GET', path)
+
+    @classmethod
+    def post(cls, path: str) -> 'Route':
+        return cls('POST', path)
+
+    @classmethod
+    def put(cls, path: str) -> 'Route':
+        return cls('PUT', path)
+
+    @classmethod
+    def delete(cls, path: str) -> 'Route':
+        return cls('DELETE', path)
+
 
 class RouteHandler(ta.NamedTuple):
     route: Route
