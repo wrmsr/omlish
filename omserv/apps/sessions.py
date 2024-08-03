@@ -1,7 +1,6 @@
 import contextvars
 import dataclasses as dc
 import logging
-import typing as ta
 
 from omlish import lang
 from omlish.http import sessions
@@ -13,9 +12,6 @@ from omlish.http.asgi import AsgiSend
 from .markers import AppMarker
 from .markers import AppMarkerProcessor
 from .markers import append_app_marker
-
-
-T = ta.TypeVar('T')
 
 
 log = logging.getLogger(__name__)
