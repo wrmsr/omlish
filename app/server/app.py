@@ -21,8 +21,8 @@ from omlish.http.asgi import AsgiApp
 from omlish.http.asgi import AsgiRecv
 from omlish.http.asgi import AsgiScope
 from omlish.http.asgi import AsgiSend
-from omserv.apps.j2 import J2Templates
 from omserv.apps.routes import RouteHandlerApp
+from omserv.apps.templates import J2Templates
 from omserv.dbs import get_db_url
 
 from ..users import InMemoryUserStore
@@ -78,7 +78,6 @@ def bind_server_app() -> inj.Elemental:
             resource_root=__package__ + '.templates',
             reload=True,
         )),
-        inj.bind(J2Templates, singleton=True),
 
         apps_inj.bind(),
 

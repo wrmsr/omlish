@@ -64,6 +64,9 @@ class Lifespan:
         except (LifespanFailureError, anyio.get_cancelled_exc_class()):
             raise
         except (BaseExceptionGroup, Exception) as error:
+            # FIXME: debug
+            # breakpoint()
+
             if isinstance(error, BaseExceptionGroup):
                 failure_error = error.subgroup(LifespanFailureError)
                 if failure_error is not None:
