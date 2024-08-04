@@ -33,9 +33,9 @@ import time
 from . import events
 from .compat import ExitNow
 from .compat import as_string
+from .compat import decode_wait_status
+from .compat import signame
 from .options import ServerOptions
-from .options import decode_wait_status
-from .options import signame
 from .states import SupervisorStates
 from .states import get_process_state_description
 
