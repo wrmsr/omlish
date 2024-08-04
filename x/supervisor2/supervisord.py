@@ -46,7 +46,7 @@ class Supervisor:
     process_groups = None  # map of process group name to process group object
     stop_groups = None  # list used for priority ordered shutdown
 
-    def __init__(self, options):
+    def __init__(self, options: ServerOptions) -> None:
         super().__init__()
 
         self.options = options

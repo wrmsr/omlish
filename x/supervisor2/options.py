@@ -1,7 +1,9 @@
+from io import StringIO
 import configparser as ConfigParser
 import errno
 import getopt
 import glob
+import logging
 import os
 import platform
 import pwd
@@ -12,17 +14,14 @@ import stat
 import sys
 import tempfile
 import warnings
-from io import StringIO
 
 import fcntl
 import grp
 import resource
 
-from . import loggers
 from . import poller
 from . import states
 from .compat import as_bytes
-from .compat import as_string
 from .compat import import_spec
 from .datatypes import Automatic
 from .datatypes import Syslog
@@ -409,7 +408,7 @@ class Options:
                     else:
                         parser.expand_here(os.path.abspath(os.path.dirname(filename)))
 
-    def _log_parsing_messages(self, logger):
+    def _log_parsing_messages(self, logger: logging.Logger):
         for msg in self.parse_criticals:
             logger.critical(msg)
         for msg in self.parse_warnings:
@@ -468,7 +467,7 @@ class ServerOptions(Options):
 
     # TODO: not covered by any test, but used by dispatchers
     def getLogger(self, *args, **kwargs):
-        return loggers.getLogger(*args, **kwargs)
+        return logging.getLogger(__name__)
 
     def default_configfile(self):
         if os.getuid() == 0:
@@ -1155,17 +1154,20 @@ class ServerOptions(Options):
     def make_logger(self):
         # must be called after realize() and after supervisor does setuid()
         format = '%(asctime)s %(levelname)s %(message)s\n'
-        self.logger = loggers.getLogger(self.loglevel)
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(self.loglevel)
         if self.nodaemon and not self.silent:
-            loggers.handle_stdout(self.logger, format)
-        loggers.handle_file(
-            self.logger,
-            self.logfile,
-            format,
-            rotating=bool(self.logfile_maxbytes),
-            maxbytes=self.logfile_maxbytes,
-            backups=self.logfile_backups,
-        )
+            handler = logging.StreamHandler()
+            handler.setFormatter(logging.Formatter(format))
+            logging.root.addHandler(handler)
+        # loggers.handle_file(
+        #     self.logger,
+        #     self.logfile,
+        #     format,
+        #     rotating=bool(self.logfile_maxbytes),
+        #     maxbytes=self.logfile_maxbytes,
+        #     backups=self.logfile_backups,
+        # )
         self._log_parsing_messages(self.logger)
 
     def close_fd(self, fd):
@@ -1386,25 +1388,21 @@ class Config:
     def __lt__(self, other):
         if self.priority == other.priority:
             return self.name < other.name
-
         return self.priority < other.priority
 
     def __le__(self, other):
         if self.priority == other.priority:
             return self.name <= other.name
-
         return self.priority <= other.priority
 
     def __gt__(self, other):
         if self.priority == other.priority:
             return self.name > other.name
-
         return self.priority > other.priority
 
     def __ge__(self, other):
         if self.priority == other.priority:
             return self.name >= other.name
-
         return self.priority >= other.priority
 
     def __repr__(self):
@@ -1571,7 +1569,7 @@ class EventListenerPoolConfig(Config):
             priority,
             process_configs,
             buffer_size,
-             pool_events,
+            pool_events,
             result_handler,
     ):
         self.options = options

@@ -1,6 +1,6 @@
 import errno
+import logging
 
-from . import loggers
 from .compat import as_string
 from .compat import compact_traceback
 from .compat import find_prefix_at_end
@@ -94,7 +94,7 @@ class POutputDispatcher(PDispatcher):
         endtoken = self.event_type.END_TOKEN
         self.begintoken_data = (begintoken, len(begintoken))
         self.endtoken_data = (endtoken, len(endtoken))
-        self.mainlog_level = loggers.LevelsByName.DEBG
+        self.mainlog_level = logging.DEBUG
         config = self.process.config
         self.log_to_mainlog = config.options.loglevel <= self.mainlog_level
         self.stdout_events_enabled = config.stdout_events_enabled
@@ -116,21 +116,21 @@ class POutputDispatcher(PDispatcher):
         if logfile or to_syslog:
             self.normallog = config.options.getLogger()
 
-        if logfile:
-            loggers.handle_file(
-                self.normallog,
-                filename=logfile,
-                fmt='%(message)s',
-                rotating=bool(maxbytes),  # optimization
-                maxbytes=maxbytes,
-                backups=backups,
-            )
-
-        if to_syslog:
-            loggers.handle_syslog(
-                self.normallog,
-                fmt=config.name + ' %(message)s',
-            )
+        # if logfile:
+        #     loggers.handle_file(
+        #         self.normallog,
+        #         filename=logfile,
+        #         fmt='%(message)s',
+        #         rotating=bool(maxbytes),  # optimization
+        #         maxbytes=maxbytes,
+        #         backups=backups,
+        #     )
+        #
+        # if to_syslog:
+        #     loggers.handle_syslog(
+        #         self.normallog,
+        #         fmt=config.name + ' %(message)s',
+        #     )
 
     def _init_capturelog(self):
         """
@@ -140,11 +140,11 @@ class POutputDispatcher(PDispatcher):
         capture_maxbytes = getattr(self.process.config, '%s_capture_maxbytes' % self.channel)
         if capture_maxbytes:
             self.capturelog = self.process.config.options.getLogger()
-            loggers.handle_boundIO(
-                self.capturelog,
-                fmt='%(message)s',
-                maxbytes=capture_maxbytes,
-            )
+            # loggers.handle_boundIO(
+            #     self.capturelog,
+            #     fmt='%(message)s',
+            #     maxbytes=capture_maxbytes,
+            # )
 
     def removelogs(self):
         for log in (self.normallog, self.capturelog):
@@ -285,14 +285,14 @@ class PEventListenerDispatcher(PDispatcher):
             maxbytes = getattr(process.config, '%s_logfile_maxbytes' % channel)
             backups = getattr(process.config, '%s_logfile_backups' % channel)
             self.childlog = process.config.options.getLogger()
-            loggers.handle_file(
-                self.childlog,
-                logfile,
-                '%(message)s',
-                rotating=bool(maxbytes),  # optimization
-                maxbytes=maxbytes,
-                backups=backups,
-            )
+            # loggers.handle_file(
+            #     self.childlog,
+            #     logfile,
+            #     '%(message)s',
+            #     rotating=bool(maxbytes),  # optimization
+            #     maxbytes=maxbytes,
+            #     backups=backups,
+            # )
 
     def removelogs(self):
         if self.childlog is not None:
