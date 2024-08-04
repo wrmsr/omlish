@@ -1,56 +1,47 @@
 """
-configs:
- - get_path
- - get_auto_child_log_name
- - identifier
- - make_pipes
+class ServerOptions:
+    def _exit(self, code: int) -> None:
+    def chdir(self, dir: str) -> None:
+    def check_execv_args(self, filename, argv, st):
+    def cleanup(self) -> None:
+    def cleanup_fds(self) -> None:
+    def clear_auto_child_logdir(self) -> None:
+    def close_child_pipes(self, pipes: ta.Mapping[str, int]) -> None:
+    def close_fd(self, fd: int) -> None:
+    def close_parent_pipes(self, pipes: ta.Mapping[str, int]) -> None:
+    def daemonize(self) -> None:
+    def drop_privileges(self, user: int | str) -> str | None:
+    def dup2(self, frm: int, to: int) -> int:
+    def execve(self, filename: str, argv: list[str], env: dict[str, str]) -> ta.NoReturn:
+    first: bool
+    def fork(self) -> int:
+    def get_auto_child_log_name(self, name: str, identifier: str, channel: str) -> str:
+    get_path
+    get_signal
+    identifier
+    kill
+    logger
+    make_logger
+    make_pipes
+    minfds
+    mood
+    nocleanup
+    nodaemon
+    pid_history
+    poller
+    process_group_configs
+    reopen_logs
+    set_rlimits_or_exit
+    set_uid_or_exit
+    set_umask
+    setpgrp
+    setsignals
+    stat
+    test: bool
+    waitpid
+    write
+    write_pidfile
 
-process:
- - logger
- - stat
- - check_execv_args
- - fork
- - close_parent_pipes
- - close_child_pipes
- - pid_history
- - dup2
- - minfds
- - close_fd
- - setpgrp
- - write
- - chdir
- - set_umask
- - execve
- - _exit
- - identifier
- - drop_privileges
- - mood
- - drop_privileges
- - kill
-
-supervisord:
- - first
- - cleanup_fds
- - set_uid_or_exit
- - set_rlimits_or_exit
- - make_logger
- - nocleanup
- - clear_auto_child_logdir
- - process_group_configs
- - setsignals
- - nodaemon
- - daemonize
- - write_pidfile
- - cleanup
- - process_group_configs
- - logger
- - mood
- - poller
- - test
- - waitpid
- - pid_history
- - get_signal
- - reopen_logs
 """
 import configparser
 import errno
@@ -124,7 +115,6 @@ class ServerOptions:
 
     progname = sys.argv[0]
     config_file = None
-    schemadir = None
     config_root = None
     here = None
 
@@ -133,12 +123,9 @@ class ServerOptions:
     positional_args_allowed = 0
 
     user = None
-    sockchown = None
-    sockchmod = None
     logfile = None
     loglevel = None
     pidfile = None
-    passwdfile = None
     nodaemon = None
     silent = None
     unlink_pidfile = False
@@ -216,9 +203,8 @@ class ServerOptions:
                 config = path
                 break
         if config is None and self.require_config_file:
-            self.usage('No config file found at default paths (%s); '
-                       'use the -c option to specify a config file '
-                       'at a different path' % ', '.join(self.search_paths))
+            self.usage('No config file found at default paths (%s); use the -c option to specify a config file at a '
+                       'different path' % ', '.join(self.search_paths))
         return config
 
     def help(self, dummy):
@@ -932,7 +918,7 @@ class ServerOptions:
         programs.sort()  # asc by priority
         return programs
 
-    def daemonize(self):
+    def daemonize(self) -> None:
         self.poller.before_daemonize()
         self._daemonize()
         self.poller.after_daemonize()
@@ -990,7 +976,7 @@ class ServerOptions:
             self.unlink_pidfile = True
             self.logger.info('supervisord started with pid %s' % pid)
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         if self.unlink_pidfile:
             self._try_unlink(self.pidfile)
         self.poller.close()
@@ -1017,7 +1003,7 @@ class ServerOptions:
     def get_signal(self):
         return self.signal_receiver.get_signal()
 
-    def get_auto_child_log_name(self, name, identifier, channel):
+    def get_auto_child_log_name(self, name: str, identifier: str, channel: str) -> str:
         prefix = '%s-%s---%s-' % (name, channel, identifier)
         logfile = self.mktempfile(
             suffix='.log',
@@ -1026,7 +1012,7 @@ class ServerOptions:
         )
         return logfile
 
-    def clear_auto_child_logdir(self):
+    def clear_auto_child_logdir(self) -> None:
         # must be called after realize()
         child_logdir = self.child_logdir
         fnre = re.compile(r'.+?---%s-\S+\.log\.{0,1}\d{0,4}' % self.identifier)
@@ -1044,7 +1030,7 @@ class ServerOptions:
                 except OSError:
                     self.logger.warn('Failed to clean up %r' % pathname)
 
-    def cleanup_fds(self):
+    def cleanup_fds(self) -> None:
         # try to close any leaked file descriptors (for reload)
         start = 5
         os.closerange(start, self.minfds)
@@ -1070,7 +1056,7 @@ class ServerOptions:
             pid, sts = None, None
         return pid, sts
 
-    def drop_privileges(self, user):
+    def drop_privileges(self, user: int | str) -> str | None:
         """
         Drop privileges to become the specified user, which may be a username or uid.  Called for supervisord startup
         and when spawning subprocesses.  Returns None on success or a string error message if privileges could not be
@@ -1216,16 +1202,16 @@ class ServerOptions:
         # )
         self._log_parsing_messages(self.logger)
 
-    def close_fd(self, fd):
+    def close_fd(self, fd: int) -> None:
         try:
             os.close(fd)
         except OSError:
             pass
 
-    def fork(self):
+    def fork(self) -> int:
         return os.fork()
 
-    def dup2(self, frm, to):
+    def dup2(self, frm: int, to: int) -> int:
         return os.dup2(frm, to)
 
     def setpgrp(self):
@@ -1237,7 +1223,7 @@ class ServerOptions:
     def write(self, fd, data):
         return os.write(fd, as_bytes(data))
 
-    def execve(self, filename, argv, env):
+    def execve(self, filename: str, argv: list[str], env: dict[str, str]) -> ta.NoReturn:
         return os.execve(filename, argv, env)
 
     def mktempfile(self, suffix, prefix, dir):
@@ -1251,7 +1237,7 @@ class ServerOptions:
     def remove(self, path):
         os.remove(path)
 
-    def _exit(self, code):
+    def _exit(self, code: int) -> None:
         os._exit(code)
 
     def set_umask(self, mask):
@@ -1269,7 +1255,7 @@ class ServerOptions:
     def get_pid(self):
         return os.getpid()
 
-    def check_execv_args(self, filename, argv, st):
+    def check_execv_args(self, filename, argv, st) -> None:
         if st is None:
             raise NotFound("can't find command %r" % filename)
 
@@ -1297,7 +1283,7 @@ class ServerOptions:
             data = b''
         return data
 
-    def chdir(self, dir):
+    def chdir(self, dir: str) -> None:
         os.chdir(dir)
 
     def make_pipes(self, stderr=True):
@@ -1333,13 +1319,13 @@ class ServerOptions:
                     self.close_fd(fd)
             raise
 
-    def close_parent_pipes(self, pipes):
+    def close_parent_pipes(self, pipes: ta.Mapping[str, int]) -> None:
         for fdname in ('stdin', 'stdout', 'stderr'):
             fd = pipes.get(fdname)
             if fd is not None:
                 self.close_fd(fd)
 
-    def close_child_pipes(self, pipes):
+    def close_child_pipes(self, pipes: ta.Mapping[str, int]) -> None:
         for fdname in ('child_stdin', 'child_stdout', 'child_stderr'):
             fd = pipes.get(fdname)
             if fd is not None:

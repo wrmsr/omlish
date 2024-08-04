@@ -283,7 +283,7 @@ class PEventListenerDispatcher(PDispatcher):
     RESULT_TOKEN_START_LEN = len(RESULT_TOKEN_START)
 
     def __init__(self, process, channel, fd):
-        super().__init__(self, process, channel, fd)
+        super().__init__(process, channel, fd)
         # the initial state of our listener is ACKNOWLEDGED; this is a "busy" state that implies we're awaiting a
         # READY_FOR_EVENTS_TOKEN
         self.process.listener_state = EventListenerStates.ACKNOWLEDGED
@@ -471,7 +471,7 @@ class PInputDispatcher(PDispatcher):
     """ Input (stdin) dispatcher """
 
     def __init__(self, process, channel, fd):
-        super().__init__(self, process, channel, fd)
+        super().__init__(process, channel, fd)
         self.input_buffer = b''
 
     def writable(self):
