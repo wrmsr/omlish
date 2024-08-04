@@ -12,7 +12,6 @@ import pwd
 import re
 import resource
 import signal
-import socket
 import stat
 import sys
 import tempfile
