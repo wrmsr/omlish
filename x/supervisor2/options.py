@@ -448,7 +448,7 @@ class ServerOptions(Options):
         self.add('loglevel', 'supervisord.loglevel', 'e:', 'loglevel=', logging_level, default='info')  # noqa
         self.add('pidfile', 'supervisord.pidfile', 'j:', 'pidfile=', existing_dirpath, default='supervisord.pid')  # noqa
         self.add('identifier', 'supervisord.identifier', 'i:', 'identifier=', str, default='supervisor')  # noqa
-        self.add('childlogdir', 'supervisord.childlogdir', 'q:', 'childlogdir=', existing_directory, default=tempfile.gettempdir())  # noqa
+        self.add('child_logdir', 'supervisord.child_logdir', 'q:', 'child_logdir=', existing_directory, default=tempfile.gettempdir())  # noqa
         self.add('minfds', 'supervisord.minfds', 'a:', 'minfds=', int, default=1024)
         self.add('minprocs', 'supervisord.minprocs', '', 'minprocs=', int, default=200)
         self.add('nocleanup', 'supervisord.nocleanup', 'k', 'nocleanup', flag=1, default=0)  # noqa
@@ -589,7 +589,7 @@ class ServerOptions(Options):
         section.silent = boolean(get('silent', 'false'))
 
         tempdir = tempfile.gettempdir()
-        section.childlogdir = existing_directory(get('childlogdir', tempdir))
+        section.child_logdir = existing_directory(get('child_logdir', tempdir))
         section.nocleanup = boolean(get('nocleanup', 'false'))
         section.strip_ansi = boolean(get('strip_ansi', 'false'))
 
@@ -971,28 +971,28 @@ class ServerOptions(Options):
     def get_signal(self):
         return self.signal_receiver.get_signal()
 
-    def get_autochildlog_name(self, name, identifier, channel):
+    def get_autochild_log_name(self, name, identifier, channel):
         prefix = '%s-%s---%s-' % (name, channel, identifier)
         logfile = self.mktempfile(
             suffix='.log',
             prefix=prefix,
-            dir=self.childlogdir,
+            dir=self.child_logdir,
         )
         return logfile
 
-    def clear_autochildlogdir(self):
+    def clear_autochild_logdir(self):
         # must be called after realize()
-        childlogdir = self.childlogdir
+        child_logdir = self.child_logdir
         fnre = re.compile(r'.+?---%s-\S+\.log\.{0,1}\d{0,4}' % self.identifier)
         try:
-            filenames = os.listdir(childlogdir)
+            filenames = os.listdir(child_logdir)
         except OSError:
-            self.logger.warn('Could not clear childlog dir')
+            self.logger.warn('Could not clear child_log dir')
             return
 
         for filename in filenames:
             if fnre.match(filename):
-                pathname = os.path.join(childlogdir, filename)
+                pathname = os.path.join(child_logdir, filename)
                 try:
                     self.remove(pathname)
                 except OSError:
@@ -1236,7 +1236,7 @@ class ServerOptions(Options):
         elif not os.access(filename, os.X_OK):
             raise NoPermission('no permission to run command %r' % filename)
 
-    def reopenlogs(self):
+    def reopen_logs(self):
         self.logger.info('supervisord logreopen')
         for handler in self.logger.handlers:
             if hasattr(handler, 'reopen'):
@@ -1475,9 +1475,9 @@ class ProcessConfig(Config):
                 return path.split(os.pathsep)
         return self.options.get_path()
 
-    def create_autochildlogs(self):
+    def create_autochild_logs(self):
         # temporary logfiles which are erased at start time
-        get_autoname = self.options.get_autochildlog_name
+        get_autoname = self.options.get_autochild_log_name
         sid = self.options.identifier
         name = self.name
         if self.stdout_logfile is Automatic:
@@ -1554,7 +1554,7 @@ class ProcessGroupConfig(Config):
 
     def after_setuid(self):
         for config in self.process_configs:
-            config.create_autochildlogs()
+            config.create_autochild_logs()
 
     def make_group(self):
         from .process import ProcessGroup
@@ -1598,7 +1598,7 @@ class EventListenerPoolConfig(Config):
 
     def after_setuid(self):
         for config in self.process_configs:
-            config.create_autochildlogs()
+            config.create_autochild_logs()
 
     def make_group(self):
         from .process import EventListenerPool
