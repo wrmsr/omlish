@@ -458,7 +458,7 @@ class ServerOptions(Options):
         self.pidhistory = {}
         self.process_group_configs = []
         self.signal_receiver = SignalReceiver()
-        self.poller = poller.Poller(self)
+        self.poller = poller.Poller()
 
     def version(self, dummy):
         """Print version to stdout and exit(0)."""

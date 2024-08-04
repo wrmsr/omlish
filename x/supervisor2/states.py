@@ -1,6 +1,3 @@
-# This module must not depend on any other non-stdlib module to prevent
-# circular import problems.
-
 class ProcessStates:
     STOPPED = 0
     STARTING = 10
@@ -32,7 +29,7 @@ SIGNALLABLE_STATES = (
 )
 
 
-def getProcessStateDescription(code):
+def get_process_state_description(code):
     return _process_states_by_code.get(code)
 
 
@@ -43,7 +40,7 @@ class SupervisorStates:
     SHUTDOWN = -1
 
 
-def getSupervisorStateDescription(code):
+def get_supervisor_state_description(code):
     return _supervisor_states_by_code.get(code)
 
 
@@ -54,8 +51,8 @@ class EventListenerStates:
     UNKNOWN = 40  # the event listener is in an unknown state
 
 
-def getEventListenerStateDescription(code):
-    return _eventlistener_states_by_code.get(code)
+def get_event_listener_state_description(code):
+    return _event_listener_states_by_code.get(code)
 
 
 # below is an optimization for internal use in this module only
@@ -70,4 +67,4 @@ def _names_by_code(states):
 
 _process_states_by_code = _names_by_code(ProcessStates)
 _supervisor_states_by_code = _names_by_code(SupervisorStates)
-_eventlistener_states_by_code = _names_by_code(EventListenerStates)
+_event_listener_states_by_code = _names_by_code(EventListenerStates)

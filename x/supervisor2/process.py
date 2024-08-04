@@ -20,7 +20,7 @@ from .options import signame
 from .states import ProcessStates
 from .states import STOPPED_STATES
 from .states import SupervisorStates
-from .states import getProcessStateDescription
+from .states import get_process_state_description
 
 
 @functools.total_ordering
@@ -167,8 +167,8 @@ class Subprocess:
 
     def _assertInState(self, *states):
         if self.state not in states:
-            current_state = getProcessStateDescription(self.state)
-            allowable_states = ' '.join(map(getProcessStateDescription, states))
+            current_state = get_process_state_description(self.state)
+            allowable_states = ' '.join(map(get_process_state_description, states))
             processname = as_string(self.config.name)
             raise AssertionError('Assertion failed for %s: %s not in %s' % (processname, current_state, allowable_states))  # noqa
 
@@ -593,7 +593,7 @@ class Subprocess:
         # repr can't return anything other than a native string, but the name might be unicode - a problem on Python 2.
         name = self.config.name
         return '<Subprocess at %s with name %s in state %s>' % (
-            id(self), name, getProcessStateDescription(self.get_state()))
+            id(self), name, get_process_state_description(self.get_state()))
 
     def get_state(self):
         return self.state
