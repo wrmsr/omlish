@@ -8,7 +8,6 @@ from omlish import inject as inj
 from omlish import sql
 from omlish.http import sessions
 from omlish.http.asgi import AsgiApp
-from omserv.apps.base import BASE_SERVER_URL
 from omserv.apps.base import BaseServerUrl
 from omserv.apps.routes import RouteHandlerApp
 from omserv.apps.templates import J2Templates
@@ -62,7 +61,7 @@ def _bind_db_user_store() -> inj.Elemental:
 
 
 def base_server_url() -> BaseServerUrl:
-    return os.environ.get('BASE_SERVER_URL', 'http://localhost:8000/')
+    return BaseServerUrl(os.environ.get('BASE_SERVER_URL', 'http://localhost:8000/'))
 
 
 def bind() -> inj.Elemental:
