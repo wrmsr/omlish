@@ -19,7 +19,7 @@ class Key(lang.Final, ta.Generic[T]):
         default=None,
         kw_only=True,
         check=lambda o: not isinstance(o, Tag),
-        repr_fn=lambda t: repr(t) if t is not None else None,
+        repr_fn=dc.opt_repr,
     )
 
 
