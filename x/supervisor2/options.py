@@ -1186,50 +1186,53 @@ class ServerOptions:
             if hasattr(handler, 'reopen'):
                 handler.reopen()
 
-    def make_pipes(self, stderr=True) -> ta.Mapping[str, int]:
-        """
-        Create pipes for parent to child stdin/stdout/stderr communications.  Open fd in non-blocking mode so we can
-        read them in the mainloop without blocking.  If stderr is False, don't create a pipe for stderr.
-        """
 
-        pipes = {
-            'child_stdin': None,
-            'stdin': None,
-            'stdout': None,
-            'child_stdout': None,
-            'stderr': None,
-            'child_stderr': None,
-        }
-        try:
-            stdin, child_stdin = os.pipe()
-            pipes['child_stdin'], pipes['stdin'] = stdin, child_stdin
-            stdout, child_stdout = os.pipe()
-            pipes['stdout'], pipes['child_stdout'] = stdout, child_stdout
-            if stderr:
-                stderr, child_stderr = os.pipe()
-                pipes['stderr'], pipes['child_stderr'] = stderr, child_stderr
-            for fd in (pipes['stdout'], pipes['stderr'], pipes['stdin']):
-                if fd is not None:
-                    flags = fcntl.fcntl(fd, fcntl.F_GETFL) | os.O_NDELAY
-                    fcntl.fcntl(fd, fcntl.F_SETFL, flags)
-            return pipes
-        except OSError:
-            for fd in pipes.values():
-                if fd is not None:
-                    close_fd(fd)
-            raise
+def make_pipes(stderr=True) -> ta.Mapping[str, int]:
+    """
+    Create pipes for parent to child stdin/stdout/stderr communications.  Open fd in non-blocking mode so we can
+    read them in the mainloop without blocking.  If stderr is False, don't create a pipe for stderr.
+    """
 
-    def close_parent_pipes(self, pipes: ta.Mapping[str, int]) -> None:
-        for fdname in ('stdin', 'stdout', 'stderr'):
-            fd = pipes.get(fdname)
+    pipes = {
+        'child_stdin': None,
+        'stdin': None,
+        'stdout': None,
+        'child_stdout': None,
+        'stderr': None,
+        'child_stderr': None,
+    }
+    try:
+        stdin, child_stdin = os.pipe()
+        pipes['child_stdin'], pipes['stdin'] = stdin, child_stdin
+        stdout, child_stdout = os.pipe()
+        pipes['stdout'], pipes['child_stdout'] = stdout, child_stdout
+        if stderr:
+            stderr, child_stderr = os.pipe()
+            pipes['stderr'], pipes['child_stderr'] = stderr, child_stderr
+        for fd in (pipes['stdout'], pipes['stderr'], pipes['stdin']):
+            if fd is not None:
+                flags = fcntl.fcntl(fd, fcntl.F_GETFL) | os.O_NDELAY
+                fcntl.fcntl(fd, fcntl.F_SETFL, flags)
+        return pipes
+    except OSError:
+        for fd in pipes.values():
             if fd is not None:
                 close_fd(fd)
+        raise
 
-    def close_child_pipes(self, pipes: ta.Mapping[str, int]) -> None:
-        for fdname in ('child_stdin', 'child_stdout', 'child_stderr'):
-            fd = pipes.get(fdname)
-            if fd is not None:
-                close_fd(fd)
+
+def close_parent_pipes(pipes: ta.Mapping[str, int]) -> None:
+    for fdname in ('stdin', 'stdout', 'stderr'):
+        fd = pipes.get(fdname)
+        if fd is not None:
+            close_fd(fd)
+
+
+def close_child_pipes(pipes: ta.Mapping[str, int]) -> None:
+    for fdname in ('child_stdin', 'child_stdout', 'child_stderr'):
+        fd = pipes.get(fdname)
+        if fd is not None:
+            close_fd(fd)
 
 
 _marker = []
