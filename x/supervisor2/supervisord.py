@@ -25,32 +25,6 @@ Options:
 --minprocs NUM  -- the minimum number of processes available for start success
 --profile_options OPTIONS -- run supervisord under profiler and output results based on OPTIONS, which  is a comma-sep'd
                              list of 'cumulative', 'calls', and/or 'callers', e.g. 'cumulative,callers'
-
-==
-
-first
-cleanup_fds
-set_uid_or_exit
-set_rlimits_or_exit
-make_logger
-nocleanup
-clear_auto_child_logdir
-process_group_configs
-setsignals
-nodaemon
-daemonize
-write_pidfile
-cleanup
-process_group_configs
-logger
-mood
-poller
-test
-waitpid
-pid_history
-get_signal
-reopen_logs
-
 """
 import os
 import signal

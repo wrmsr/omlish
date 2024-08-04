@@ -1,3 +1,57 @@
+"""
+configs:
+ - get_path
+ - get_auto_child_log_name
+ - identifier
+ - make_pipes
+
+process:
+ - logger
+ - stat
+ - check_execv_args
+ - fork
+ - close_parent_pipes
+ - close_child_pipes
+ - pid_history
+ - dup2
+ - minfds
+ - close_fd
+ - setpgrp
+ - write
+ - chdir
+ - set_umask
+ - execve
+ - _exit
+ - identifier
+ - drop_privileges
+ - mood
+ - drop_privileges
+ - kill
+
+supervisord:
+ - first
+ - cleanup_fds
+ - set_uid_or_exit
+ - set_rlimits_or_exit
+ - make_logger
+ - nocleanup
+ - clear_auto_child_logdir
+ - process_group_configs
+ - setsignals
+ - nodaemon
+ - daemonize
+ - write_pidfile
+ - cleanup
+ - process_group_configs
+ - logger
+ - mood
+ - poller
+ - test
+ - waitpid
+ - pid_history
+ - get_signal
+ - reopen_logs
+"""
 import configparser
 import errno
 import fcntl
