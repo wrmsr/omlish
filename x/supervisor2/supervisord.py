@@ -42,11 +42,13 @@ from .states import getProcessStateDescription
 
 class Supervisor:
     stopping = False  # set after we detect that we are handling a stop request
-    lastshutdownreport = 0  # throttle for delayed process error reports at stop
+    last_shutdown_report = 0  # throttle for delayed process error reports at stop
     process_groups = None  # map of process group name to process group object
     stop_groups = None  # list used for priority ordered shutdown
 
     def __init__(self, options):
+        super().__init__()
+
         self.options = options
         self.process_groups = {}
         self.ticks = {}
@@ -132,11 +134,11 @@ class Supervisor:
         if unstopped:
             # throttle 'waiting for x to die' reports
             now = time.time()
-            if now > (self.lastshutdownreport + 3):  # every 3 secs
+            if now > (self.last_shutdown_report + 3):  # every 3 secs
                 names = [as_string(p.config.name) for p in unstopped]
                 namestr = ', '.join(names)
                 self.options.logger.info('waiting for %s to die' % namestr)
-                self.lastshutdownreport = now
+                self.last_shutdown_report = now
                 for proc in unstopped:
                     state = getProcessStateDescription(proc.get_state())
                     self.options.logger.blather(
