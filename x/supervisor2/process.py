@@ -431,7 +431,7 @@ class Subprocess:
 
         try:
             try:
-                options.kill(pid, sig)
+                os.kill(pid, sig)
             except OSError as exc:
                 if exc.errno == errno.ESRCH:
                     msg = ('unable to signal %s (pid %s), it probably just exited '
@@ -472,7 +472,7 @@ class Subprocess:
 
         try:
             try:
-                options.kill(self.pid, sig)
+                os.kill(self.pid, sig)
             except OSError as exc:
                 if exc.errno == errno.ESRCH:
                     msg = ('unable to signal %s (pid %s), it probably just now exited '

@@ -145,7 +145,7 @@ class SignalReceiver:
         return sig
 
 
-def readfd(self, fd: int) -> bytes:
+def readfd(fd: int) -> bytes:
     try:
         data = os.read(fd, 2 << 16)  # 128K
     except OSError as why:
@@ -153,3 +153,11 @@ def readfd(self, fd: int) -> bytes:
             raise
         data = b''
     return data
+
+
+def try_unlink(path: str) -> bool:
+    try:
+        os.unlink(path)
+    except OSError:
+        return False
+    return True

@@ -36,7 +36,6 @@ class ServerOptions:
     def daemonize(self) -> None:
     def get_auto_child_log_name(self, name: str, identifier: str, channel: str) -> str:
     def get_signal(self) -> int | None:
-    def kill(self, pid: int, signal: int) -> None:
     def make_logger(self) -> None:
     def make_pipes(self, stderr=True) -> ta.Mapping[str, int]:
     def reopen_logs(self) -> None:
@@ -68,6 +67,7 @@ from . import states
 from .compat import SignalReceiver
 from .compat import expand
 from .compat import import_spec
+from .compat import try_unlink
 from .configs import EventListenerConfig
 from .configs import EventListenerPoolConfig
 from .configs import ProcessConfig
@@ -480,7 +480,7 @@ class ServerOptions:
                     else:
                         parser.expand_here(os.path.abspath(os.path.dirname(filename)))
 
-    def _log_parsing_messages(self, logger: logging.Logger):
+    def _log_parsing_messages(self, logger: logging.Logger) -> None:
         for msg in self.parse_criticals:
             logger.critical(msg)
         for msg in self.parse_warnings:
@@ -490,7 +490,7 @@ class ServerOptions:
 
     ##
 
-    def version(self, dummy):
+    def version(self, dummy) -> None:
         """Print version to stdout and exit(0)."""
         self.stdout.write('%s\n' % VERSION)
         self.exit(0)
@@ -962,14 +962,8 @@ class ServerOptions:
 
     def cleanup(self) -> None:
         if self.unlink_pidfile:
-            self._try_unlink(self.pidfile)
+            try_unlink(self.pidfile)
         self.poller.close()
-
-    def _try_unlink(self, path):
-        try:
-            os.unlink(path)
-        except OSError:
-            pass
 
     def close_logger(self):
         # self.logger.close()
@@ -1018,9 +1012,6 @@ class ServerOptions:
         # try to close any leaked file descriptors (for reload)
         start = 5
         os.closerange(start, self.minfds)
-
-    def kill(self, pid: int, signal: int) -> None:
-        os.kill(pid, signal)
 
     def waitpid(self) -> tuple[int | None, int | None]:
         # Need pthread_sigmask here to avoid concurrent sigchld, but Python doesn't offer in Python < 3.4.  There is
