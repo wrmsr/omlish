@@ -117,7 +117,7 @@ class POutputDispatcher(PDispatcher):
         to_syslog = getattr(config, '%s_syslog' % channel)
 
         if logfile or to_syslog:
-            self.normal_log = config.options.getLogger()
+            self.normal_log = logging.getLogger(__name__)
 
         # if logfile:
         #     loggers.handle_file(
@@ -142,7 +142,7 @@ class POutputDispatcher(PDispatcher):
         """
         capture_maxbytes = getattr(self.process.config, '%s_capture_maxbytes' % self.channel)
         if capture_maxbytes:
-            self.capture_log = self.process.config.options.getLogger()
+            self.capture_log = logging.getLogger(__name__)
             # loggers.handle_boundIO(
             #     self.capture_log,
             #     fmt='%(message)s',
@@ -287,7 +287,7 @@ class PEventListenerDispatcher(PDispatcher):
         if logfile:
             maxbytes = getattr(process.config, '%s_logfile_maxbytes' % channel)
             backups = getattr(process.config, '%s_logfile_backups' % channel)
-            self.child_log = process.config.options.getLogger()
+            self.child_log = logging.getLogger(__name__)
             # loggers.handle_file(
             #     self.child_log,
             #     logfile,

@@ -68,6 +68,8 @@ from .compat import SignalReceiver
 from .compat import close_fd
 from .compat import expand
 from .compat import import_spec
+from .compat import mktempfile
+from .compat import real_exit
 from .compat import try_unlink
 from .configs import EventListenerConfig
 from .configs import EventListenerPoolConfig
@@ -928,7 +930,7 @@ class ServerOptions:
         if pid != 0:
             # Parent
             self.logger.debug('supervisord forked; parent exiting')
-            os._exit(0)
+            real_exit(0)
         # Child
         self.logger.info('daemonizing the supervisord process')
         if self.directory:
@@ -984,7 +986,7 @@ class ServerOptions:
 
     def get_auto_child_log_name(self, name: str, identifier: str, channel: str) -> str:
         prefix = '%s-%s---%s-' % (name, channel, identifier)
-        logfile = self.mktempfile(
+        logfile = mktempfile(
             suffix='.log',
             prefix=prefix,
             dir=self.child_logdir,
@@ -1177,26 +1179,6 @@ class ServerOptions:
         #     backups=self.logfile_backups,
         # )
         self._log_parsing_messages(self.logger)
-
-    def mktempfile(self, suffix, prefix, dir):
-        # set os._urandomfd as a hack around bad file descriptor bug seen in the wild, see
-        # https://web.archive.org/web/20160729044005/http://www.plope.com/software/collector/252
-        os._urandomfd = None
-        fd, filename = tempfile.mkstemp(suffix, prefix, dir)
-        os.close(fd)
-        return filename
-
-    def _exit(self, code: int) -> None:
-        os._exit(code)
-
-    def get_path(self) -> ta.Sequence[str]:
-        """Return a list corresponding to $PATH, or a default."""
-        path = ['/bin', '/usr/bin', '/usr/local/bin']
-        if 'PATH' in os.environ:
-            p = os.environ['PATH']
-            if p:
-                path = p.split(os.pathsep)
-        return path
 
     def reopen_logs(self) -> None:
         self.logger.info('supervisord logreopen')
