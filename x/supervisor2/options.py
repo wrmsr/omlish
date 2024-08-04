@@ -1004,7 +1004,7 @@ class ServerOptions:
             if fnre.match(filename):
                 pathname = os.path.join(child_logdir, filename)
                 try:
-                    self.remove(pathname)
+                    os.remove(pathname)
                 except OSError:
                     self.logger.warn('Failed to clean up %r' % pathname)
 
@@ -1191,9 +1191,6 @@ class ServerOptions:
         os.close(fd)
         return filename
 
-    def remove(self, path):
-        os.remove(path)
-
     def _exit(self, code: int) -> None:
         os._exit(code)
 
@@ -1205,22 +1202,6 @@ class ServerOptions:
             if p:
                 path = p.split(os.pathsep)
         return path
-
-    def get_pid(self):
-        return os.getpid()
-
-    def check_execv_args(self, filename, argv, st) -> None:
-        if st is None:
-            raise NotFound("can't find command %r" % filename)
-
-        elif stat.S_ISDIR(st[stat.ST_MODE]):
-            raise NotExecutable('command at %r is a directory' % filename)
-
-        elif not (stat.S_IMODE(st[stat.ST_MODE]) & 0o111):
-            raise NotExecutable('command at %r is not executable' % filename)
-
-        elif not os.access(filename, os.X_OK):
-            raise NoPermission('no permission to run command %r' % filename)
 
     def reopen_logs(self) -> None:
         self.logger.info('supervisord logreopen')
@@ -1361,6 +1342,20 @@ class UnhosedConfigParser(configparser.RawConfigParser):
 
 
 # exceptions
+
+
+def check_execv_args(filename, argv, st) -> None:
+    if st is None:
+        raise NotFound("can't find command %r" % filename)
+
+    elif stat.S_ISDIR(st[stat.ST_MODE]):
+        raise NotExecutable('command at %r is a directory' % filename)
+
+    elif not (stat.S_IMODE(st[stat.ST_MODE]) & 0o111):
+        raise NotExecutable('command at %r is not executable' % filename)
+
+    elif not os.access(filename, os.X_OK):
+        raise NoPermission('no permission to run command %r' % filename)
 
 
 class ProcessException(Exception):
