@@ -1,38 +1,11 @@
-"""
-
-==
-
-logger
-stat
-check_execv_args
-fork
-close_parent_pipes
-close_child_pipes
-pid_history
-dup2
-minfds
-close_fd
-setpgrp
-write
-chdir
-set_umask
-execve
-_exit
-identifier
-drop_privileges
-mood
-drop_privileges
-kill
-
-"""
 import errno
 import functools
 import os
 import shlex
 import signal
+import sys
 import time
 import traceback
-from sys import maxsize as maxint
 
 from . import events
 from .compat import as_bytes
@@ -897,7 +870,7 @@ GlobalSerial = GlobalSerial()  # singleton
 
 
 def new_serial(inst):
-    if inst.serial == maxint:
+    if inst.serial == sys.maxsize:
         inst.serial = -1
     inst.serial += 1
     return inst.serial

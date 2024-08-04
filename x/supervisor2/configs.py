@@ -1,13 +1,3 @@
-"""
-
-==
-
-get_path
-get_auto_child_log_name
-identifier
-make_pipes
-
-"""
 import os
 
 from .datatypes import Automatic
