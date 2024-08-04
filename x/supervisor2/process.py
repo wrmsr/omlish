@@ -259,7 +259,7 @@ class Subprocess:
         options.logger.info('spawned: \'%s\' with pid %s' % (as_string(self.config.name), pid))
         self.spawnerr = None
         self.delay = time.time() + self.config.startsecs
-        options.pidhistory[pid] = self
+        options.pid_history[pid] = self
         return pid
 
     def _prepare_child_fds(self):
