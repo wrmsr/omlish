@@ -964,7 +964,7 @@ class ServerOptions:
     def get_signal(self):
         return self.signal_receiver.get_signal()
 
-    def get_autochild_log_name(self, name, identifier, channel):
+    def get_auto_child_log_name(self, name, identifier, channel):
         prefix = '%s-%s---%s-' % (name, channel, identifier)
         logfile = self.mktempfile(
             suffix='.log',
@@ -973,7 +973,7 @@ class ServerOptions:
         )
         return logfile
 
-    def clear_autochild_logdir(self):
+    def clear_auto_child_logdir(self):
         # must be called after realize()
         child_logdir = self.child_logdir
         fnre = re.compile(r'.+?---%s-\S+\.log\.{0,1}\d{0,4}' % self.identifier)

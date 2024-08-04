@@ -1,3 +1,13 @@
+"""
+
+==
+
+get_path
+get_auto_child_log_name
+identifier
+make_pipes
+
+"""
 import os
 
 from .datatypes import Automatic
@@ -97,9 +107,9 @@ class ProcessConfig(Config):
                 return path.split(os.pathsep)
         return self.options.get_path()
 
-    def create_autochild_logs(self):
+    def create_auto_child_logs(self):
         # temporary logfiles which are erased at start time
-        get_autoname = self.options.get_autochild_log_name
+        get_autoname = self.options.get_auto_child_log_name
         sid = self.options.identifier
         name = self.name
         if self.stdout_logfile is Automatic:
@@ -176,7 +186,7 @@ class ProcessGroupConfig(Config):
 
     def after_setuid(self):
         for config in self.process_configs:
-            config.create_autochild_logs()
+            config.create_auto_child_logs()
 
     def make_group(self):
         from .process import ProcessGroup
@@ -220,7 +230,7 @@ class EventListenerPoolConfig(Config):
 
     def after_setuid(self):
         for config in self.process_configs:
-            config.create_autochild_logs()
+            config.create_auto_child_logs()
 
     def make_group(self):
         from .process import EventListenerPool

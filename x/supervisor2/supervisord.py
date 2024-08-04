@@ -34,7 +34,7 @@ set_uid_or_exit
 set_rlimits_or_exit
 make_logger
 nocleanup
-clear_autochild_logdir
+clear_auto_child_logdir
 process_group_configs
 setsignals
 nodaemon
@@ -94,7 +94,7 @@ class Supervisor:
 
         if not self.options.nocleanup:
             # clean up old automatic logs
-            self.options.clear_autochild_logdir()
+            self.options.clear_auto_child_logdir()
 
         self.run()
 
