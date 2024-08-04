@@ -1,10 +1,21 @@
+import abc
 import os
 
 from .compat import get_path
 from .datatypes import Automatic
 
 
-class Config:
+class Config(abc.ABC):
+    @property
+    @abc.abstractmethod
+    def priority(self) -> int:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def name(self) -> str:
+        raise NotImplementedError
+
     def __ne__(self, other):
         return not self.__eq__(other)
 
