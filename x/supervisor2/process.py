@@ -17,6 +17,7 @@ from .datatypes import RestartUnconditionally
 from .dispatchers import EventListenerStates
 from .options import BadCommand
 from .options import ProcessException
+from .options import check_execv_args
 from .states import ProcessStates
 from .states import STOPPED_STATES
 from .states import SupervisorStates
@@ -133,7 +134,7 @@ class Subprocess:
 
         # check_execv_args will raise a ProcessException if the execv args are bogus, we break it out into a separate
         # options method call here only to service unit tests
-        self.config.options.check_execv_args(filename, commandargs, st)
+        check_execv_args(filename, commandargs, st)
 
         return filename, commandargs
 
