@@ -72,7 +72,7 @@ class ServerOptions:
     progname = sys.argv[0]
     config_file = None
     schemadir = None
-    configroot = None
+    config_root = None
     here = None
 
     # Class variable deciding whether positional arguments are allowed. If you want positional arguments, set this to 1
@@ -126,8 +126,8 @@ class ServerOptions:
         for k, v in os.environ.items():
             self.environ_expansions['ENV_%s' % k] = v
 
-        self.configroot = Dummy()
-        self.configroot.supervisord = Dummy()
+        self.config_root = Dummy()
+        self.config_root.supervisord = Dummy()
 
         self.add(None, None, 'v', 'version', self.version)
         self.add('nodaemon', 'supervisord.nodaemon', 'n', 'nodaemon', flag=1, default=0)
@@ -359,7 +359,7 @@ class ServerOptions:
         for name, confname in self.names_list:
             if confname:
                 parts = confname.split('.')
-                obj = self.configroot
+                obj = self.config_root
                 for part in parts:
                     if obj is None:
                         break
@@ -482,7 +482,7 @@ class ServerOptions:
 
     def realize(self, *arg, **kw):
         self._realize(*arg, **kw)
-        section = self.configroot.supervisord
+        section = self.config_root.supervisord
 
         # Additional checking of user option; set uid and gid
         if self.user is not None:
@@ -516,7 +516,7 @@ class ServerOptions:
     def process_config(self, do_usage=True):
         self._process_config(do_usage=do_usage)
 
-        new = self.configroot.supervisord.process_group_configs
+        new = self.config_root.supervisord.process_group_configs
         self.process_group_configs = new
 
     def read_config(self, fp):
@@ -525,7 +525,7 @@ class ServerOptions:
         self.parse_warnings = []
         self.parse_infos = []
 
-        section = self.configroot.supervisord
+        section = self.config_root.supervisord
         need_close = False
         if not hasattr(fp, 'read'):
             if not self.exists(fp):
