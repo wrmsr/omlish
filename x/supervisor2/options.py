@@ -25,18 +25,14 @@ from .compat import as_bytes
 from .compat import as_string
 from .compat import import_spec
 from .datatypes import Automatic
-from .datatypes import InetStreamSocketConfig
 from .datatypes import Syslog
-from .datatypes import UnixStreamSocketConfig
 from .datatypes import auto_restart
 from .datatypes import boolean
 from .datatypes import byte_size
-from .datatypes import colon_separated_user_group
 from .datatypes import dict_of_key_value_pairs
 from .datatypes import existing_directory
 from .datatypes import existing_dirpath
 from .datatypes import gid_for_uid
-from .datatypes import inet_address
 from .datatypes import integer
 from .datatypes import list_of_exitcodes
 from .datatypes import list_of_strings
@@ -47,7 +43,6 @@ from .datatypes import octal_type
 from .datatypes import process_or_group_name
 from .datatypes import profile_options
 from .datatypes import signal_number
-from .datatypes import url
 
 
 VERSION = 'foo'
@@ -1413,8 +1408,7 @@ class Config:
         return self.priority >= other.priority
 
     def __repr__(self):
-        return '<%s instance at %s named %s>' % (self.__class__, id(self),
-                                                 self.name)
+        return '<%s instance at %s named %s>' % (self.__class__, id(self), self.name)
 
 
 class ProcessConfig(Config):
@@ -1648,45 +1642,6 @@ def readFile(filename, offset, length):
     return data
 
 
-def tailFile(filename, offset, length):
-    """
-    Read length bytes from the file named by filename starting at offset, automatically increasing offset and setting
-    overflow flag if log size has grown beyond (offset + length).  If length bytes are not available, as many bytes as
-    are available are returned.
-    """
-
-    try:
-        with open(filename, 'rb') as f:
-            overflow = False
-            f.seek(0, 2)
-            sz = f.tell()
-
-            if sz > (offset + length):
-                overflow = True
-                offset = sz - 1
-
-            if (offset + length) > sz:
-                if offset > (sz - 1):
-                    length = 0
-                offset = sz - length
-
-            if offset < 0:
-                offset = 0
-            if length < 0:
-                length = 0
-
-            if length == 0:
-                data = b''
-            else:
-                f.seek(offset)
-                data = f.read(length)
-
-            offset = sz
-            return [as_string(data), offset, overflow]
-    except OSError:
-        return ['', offset, False]
-
-
 # Helpers for dealing with signals and exit status
 
 def decode_wait_status(sts):
@@ -1760,6 +1715,7 @@ class SignalReceiver:
 
 # miscellaneous utility functions
 
+
 def expand(s, expansions, name):
     try:
         return s % expansions
@@ -1775,29 +1731,6 @@ def expand(s, expansions, name):
             'Format string %r for %r is badly formatted: %s' %
             (s, name, str(ex)),
         )
-
-
-def make_namespec(group_name, process_name):
-    # we want to refer to the process by its "short name" (a process named process1 in the group process1 has a name
-    # "process1").  This is for backwards compatibility
-    if group_name == process_name:
-        name = process_name
-    else:
-        name = '%s:%s' % (group_name, process_name)
-    return name
-
-
-def split_namespec(namespec):
-    names = namespec.split(':', 1)
-    if len(names) == 2:
-        # group and process name differ
-        group_name, process_name = names
-        if not process_name or process_name == '*':
-            process_name = None
-    else:
-        # group name is same as process name
-        group_name, process_name = namespec, namespec
-    return group_name, process_name
 
 
 # exceptions

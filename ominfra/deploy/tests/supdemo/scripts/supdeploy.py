@@ -53,7 +53,6 @@ After= \
     network-online.target
 Requires=network-online.target
 
-
 [Service]
 Type=simple
 StandardOutput=journal
