@@ -14,7 +14,13 @@ T = ta.TypeVar('T')
 @dc.extra_params(cache_hash=True)
 class Key(lang.Final, ta.Generic[T]):
     ty: rfl.Type = dc.xfield(coerce=rfl.type_)
-    tag: ta.Any = dc.xfield(default=None, kw_only=True, check=lambda o: not isinstance(o, Tag))
+
+    tag: ta.Any = dc.xfield(
+        default=None,
+        kw_only=True,
+        check=lambda o: not isinstance(o, Tag),
+        repr_fn=lambda t: repr(t) if t is not None else None,
+    )
 
 
 def as_key(o: ta.Any) -> Key:

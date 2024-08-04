@@ -15,7 +15,7 @@ HasOriginsT = ta.TypeVar('HasOriginsT', bound=HasOrigins)
 ##
 
 
-ORIGIN_NUM_FRAMES = 5
+ORIGIN_NUM_FRAMES = 8
 ORIGIN_BASE_OFS = 2
 
 ORIGIN_IGNORED_PACKAGES = frozenset([
