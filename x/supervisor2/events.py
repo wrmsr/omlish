@@ -233,11 +233,16 @@ class Tick3600Event(TickEvent):
     period = 3600
 
 
-TICK_EVENTS = [Tick5Event, Tick60Event, Tick3600Event]  # imported elsewhere
+TICK_EVENTS = [  # imported elsewhere
+    Tick5Event,
+    Tick60Event,
+    Tick3600Event,
+]
 
 
 class EventTypes:
     EVENT = Event  # abstract
+
     PROCESS_STATE = ProcessStateEvent  # abstract
     PROCESS_STATE_STOPPED = ProcessStateStoppedEvent
     PROCESS_STATE_EXITED = ProcessStateExitedEvent
@@ -247,20 +252,26 @@ class EventTypes:
     PROCESS_STATE_FATAL = ProcessStateFatalEvent
     PROCESS_STATE_RUNNING = ProcessStateRunningEvent
     PROCESS_STATE_UNKNOWN = ProcessStateUnknownEvent
+
     PROCESS_COMMUNICATION = ProcessCommunicationEvent  # abstract
     PROCESS_COMMUNICATION_STDOUT = ProcessCommunicationStdoutEvent
     PROCESS_COMMUNICATION_STDERR = ProcessCommunicationStderrEvent
+
     PROCESS_LOG = ProcessLogEvent
     PROCESS_LOG_STDOUT = ProcessLogStdoutEvent
     PROCESS_LOG_STDERR = ProcessLogStderrEvent
+
     REMOTE_COMMUNICATION = RemoteCommunicationEvent
+
     SUPERVISOR_STATE_CHANGE = SupervisorStateChangeEvent  # abstract
     SUPERVISOR_STATE_CHANGE_RUNNING = SupervisorRunningEvent
     SUPERVISOR_STATE_CHANGE_STOPPING = SupervisorStoppingEvent
+
     TICK = TickEvent  # abstract
     TICK_5 = Tick5Event
     TICK_60 = Tick60Event
     TICK_3600 = Tick3600Event
+
     PROCESS_GROUP = ProcessGroupEvent  # abstract
     PROCESS_GROUP_ADDED = ProcessGroupAddedEvent
     PROCESS_GROUP_REMOVED = ProcessGroupRemovedEvent
