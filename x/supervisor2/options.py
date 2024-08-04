@@ -22,13 +22,7 @@ class ServerOptions:
 
     def setsignals(self) -> None:
     def waitpid(self) -> tuple[int | None, int | None]:
-    def _exit(self, code: int) -> None:
-    def check_execv_args(self, filename, argv, st):
-    def drop_privileges(self, user: int | str) -> str | None:
     def set_uid_or_exit(self) -> None:
-    def get_path(self) -> ta.Sequence[str]:
-    def close_fd(self, fd: int) -> None:
-    def close_parent_pipes(self, pipes: ta.Mapping[str, int]) -> None:
 
     def cleanup(self) -> None:
     def cleanup_fds(self) -> None:
