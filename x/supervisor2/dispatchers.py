@@ -57,7 +57,7 @@ class PDispatcher:
         nil, t, v, tbinfo = compact_traceback()
 
         self.process.config.options.logger.critical(
-            'uncaptured python exception, closing channel %s (%s:%s %s)' % ( repr(self), t, v, tbinfo),
+            'uncaptured python exception, closing channel %s (%s:%s %s)' % (repr(self), t, v, tbinfo),
         )
         self.close()
 
@@ -283,13 +283,13 @@ class PEventListenerDispatcher(PDispatcher):
     RESULT_TOKEN_START_LEN = len(RESULT_TOKEN_START)
 
     def __init__(self, process, channel, fd):
-        PDispatcher.__init__(self, process, channel, fd)
+        super().__init__(self, process, channel, fd)
         # the initial state of our listener is ACKNOWLEDGED; this is a "busy" state that implies we're awaiting a
         # READY_FOR_EVENTS_TOKEN
         self.process.listener_state = EventListenerStates.ACKNOWLEDGED
         self.process.event = None
         self.result = b''
-        self.resultlen = None
+        self.result_len = None
 
         logfile = getattr(process.config, '%s_logfile' % channel)
 
@@ -386,7 +386,7 @@ class PEventListenerDispatcher(PDispatcher):
             return
 
         elif state == EventListenerStates.BUSY:
-            if self.resultlen is None:
+            if self.result_len is None:
                 # we haven't begun gathering result data yet
                 pos = data.find(b'\n')
                 if pos == -1:
@@ -396,9 +396,9 @@ class PEventListenerDispatcher(PDispatcher):
 
                 result_line = self.state_buffer[:pos]
                 self.state_buffer = self.state_buffer[pos + 1:]  # rid LF
-                resultlen = result_line[self.RESULT_TOKEN_START_LEN:]
+                result_len = result_line[self.RESULT_TOKEN_START_LEN:]
                 try:
-                    self.resultlen = int(resultlen)
+                    self.result_len = int(result_len)
                 except ValueError:
                     try:
                         result_line = as_string(result_line)
@@ -412,18 +412,18 @@ class PEventListenerDispatcher(PDispatcher):
                     return
 
             else:
-                needed = self.resultlen - len(self.result)
+                needed = self.result_len - len(self.result)
 
                 if needed:
                     self.result += self.state_buffer[:needed]
                     self.state_buffer = self.state_buffer[needed:]
-                    needed = self.resultlen - len(self.result)
+                    needed = self.result_len - len(self.result)
 
                 if not needed:
                     self.handle_result(self.result)
                     self.process.event = None
                     self.result = b''
-                    self.resultlen = None
+                    self.result_len = None
 
             if self.state_buffer:
                 # keep going til its too short
@@ -471,7 +471,7 @@ class PInputDispatcher(PDispatcher):
     """ Input (stdin) dispatcher """
 
     def __init__(self, process, channel, fd):
-        PDispatcher.__init__(self, process, channel, fd)
+        super().__init__(self, process, channel, fd)
         self.input_buffer = b''
 
     def writable(self):
