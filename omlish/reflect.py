@@ -1,6 +1,6 @@
 """
 TODO:
- - callables..
+ - visitor / transformer
  - uniform collection isinstance - items() for mappings, iter() for other
  - also check instance type in isinstance not just items lol
  - ta.Generic in mro causing trouble - omit? no longer 1:1
@@ -31,6 +31,7 @@ _GenericAlias = ta._GenericAlias  # type: ignore  # noqa
 _CallableGenericAlias = ta._CallableGenericAlias  # type: ignore  # noqa
 _SpecialGenericAlias = ta._SpecialGenericAlias  # type: ignore  # noqa
 _UnionGenericAlias = ta._UnionGenericAlias   # type: ignore  # noqa
+_AnnotatedAlias = ta._AnnotatedAlias  # type: ignore  # noqa
 
 
 ##
@@ -109,9 +110,10 @@ def get_orig_class(obj: ta.Any) -> ta.Any:
 Type = ta.Union[
     type,
     ta.TypeVar,
-    'NewType',
     'Union',
     'Generic',
+    'NewType',
+    'Annotated',
 ]
 
 
@@ -154,13 +156,25 @@ class NewType(ta.NamedTuple):
     obj: ta.Any
 
 
+@dc.dataclass(frozen=True)
+class Annotated:
+    ty: Type
+    md: ta.Sequence[ta.Any]
+
+    obj: ta.Any = dc.field(compare=False, repr=False)
+
+
 TYPES: tuple[type, ...] = (
     type,
     ta.TypeVar,
     Union,
     Generic,
     NewType,
+    Annotated,
 )
+
+
+##
 
 
 def is_type(obj: ta.Any) -> bool:
@@ -245,10 +259,46 @@ def type_(obj: ta.Any) -> Type:
                 obj,
             )
 
+    if isinstance(obj, _AnnotatedAlias):
+        o = ta.get_origin(obj)
+        return Annotated(type_(o), md=obj.__metadata__, obj=obj)
+
     raise TypeError(obj)
 
 
 ##
+
+
+def strip_objs(ty: Type) -> Type:
+    if isinstance(ty, (type, ta.TypeVar, NewType)):
+        return ty
+
+    if isinstance(ty, Union):
+        return Union(frozenset(map(strip_objs, ty.args)))
+
+    if isinstance(ty, Generic):
+        return Generic(ty.obj, tuple(map(strip_objs, ty.args)), ty.params, None)
+
+    if isinstance(ty, Annotated):
+        return Annotated(strip_objs(ty.ty), ty.md)
+
+    raise TypeError(ty)
+
+
+def strip_annotations(ty: Type) -> Type:
+    if isinstance(ty, (type, ta.TypeVar, NewType)):
+        return ty
+
+    if isinstance(ty, Union):
+        return Union(frozenset(map(strip_annotations, ty.args)))
+
+    if isinstance(ty, Generic):
+        return Generic(ty.obj, tuple(map(strip_annotations, ty.args)), ty.params, ty.obj)
+
+    if isinstance(ty, Annotated):
+        return strip_annotations(ty.ty)
+
+    raise TypeError(ty)
 
 
 def types_equivalent(l: Type, r: Type) -> bool:

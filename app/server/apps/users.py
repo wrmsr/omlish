@@ -47,18 +47,18 @@ def with_user(fn):
 class _WithUserAppMarkerProcessor(AppMarkerProcessor):
     _users: UserStore
 
+    @lang.decorator
+    async def _app(self, fn: AsgiApp, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
+        session = SESSION.get()
+
+        user_id = session.get('_user_id')
+        if user_id is not None:
+            user = await self._users.get(id=user_id)
+        else:
+            user = None
+
+        with lang.context_var_setting(USER, user):
+            await fn(scope, recv, send)
+
     def __call__(self, app: AsgiApp) -> AsgiApp:
-        @lang.decorator
-        async def _with_user(fn: AsgiApp, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
-            session = SESSION.get()
-
-            user_id = session.get('_user_id')
-            if user_id is not None:
-                user = await self._users.get(id=user_id)
-            else:
-                user = None
-
-            with lang.context_var_setting(USER, user):
-                await fn(scope, recv, send)
-
-        return _with_user(app)  # noqa
+        return self._app(app)  # noqa

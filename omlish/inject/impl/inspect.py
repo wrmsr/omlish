@@ -78,7 +78,11 @@ def build_kwargs_target(
         ):
             [ann] = [a for a in rf.args if a is not types.NoneType]
 
-        k = as_key(ann)
+        rty = rfl.type_(ann)
+        if isinstance(rty, rfl.Annotated):
+            md = rty.md
+            breakpoint()
+        k = as_key(rfl.strip_annotations(rty))
         if tags is not None and (pt := tags.get(p.name)) is not None:
             k = dc.replace(k, tag=pt)
 

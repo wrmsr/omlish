@@ -1,4 +1,10 @@
+import typing as ta
+
 from .. import lang
+
+
+class Tag(ta.NamedTuple):
+    tag: ta.Any
 
 
 class Scope(lang.Abstract):
