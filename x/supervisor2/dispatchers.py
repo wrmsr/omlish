@@ -1,22 +1,12 @@
-"""
-
-==
-
-logger
-loglevel
-getLogger
-strip_ansi
-readfd
-write
-
-"""
 import errno
 import logging
+import os
 
 from .compat import as_bytes
 from .compat import as_string
 from .compat import compact_traceback
 from .compat import find_prefix_at_end
+from .compat import readfd
 from .events import EventRejectedEvent
 from .events import ProcessLogStderrEvent
 from .events import ProcessLogStdoutEvent
@@ -264,7 +254,7 @@ class POutputDispatcher(PDispatcher):
         return True
 
     def handle_read_event(self):
-        data = self.process.config.options.readfd(self.fd)
+        data = readfd(self.fd)
         self.output_buffer += data
         self.record_output()
         if not data:
@@ -327,7 +317,7 @@ class PEventListenerDispatcher(PDispatcher):
         return True
 
     def handle_read_event(self):
-        data = self.process.config.options.readfd(self.fd)
+        data = readfd(self.fd)
         if data:
             self.state_buffer += data
             procname = self.process.config.name

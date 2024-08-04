@@ -1,3 +1,4 @@
+import errno
 import importlib.metadata
 import io
 import os
@@ -142,3 +143,13 @@ class SignalReceiver:
         else:
             sig = None
         return sig
+
+
+def readfd(self, fd: int) -> bytes:
+    try:
+        data = os.read(fd, 2 << 16)  # 128K
+    except OSError as why:
+        if why.args[0] not in (errno.EWOULDBLOCK, errno.EBADF, errno.EINTR):
+            raise
+        data = b''
+    return data
