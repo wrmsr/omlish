@@ -65,13 +65,62 @@ from .datatypes import octal_type
 from .datatypes import process_or_group_name
 from .datatypes import signal_number
 
+if ta.TYPE_CHECKING:
+    from . import process
+
+
+@dc.dataclass(frozen=True)
+class ServerOptionsData:
+    def add(
+            self,
+            name=None,  # attribute name on self
+            confname=None,  # dotted config path name
+            short=None,  # short option name
+            long=None,  # long option name
+
+            handler=None,  # handler (defaults to string)
+            default=None,  # default value
+            required=None,  # message if not provided
+            flag=None,  # if not None, flag value
+            env=None,  # if not None, environment variable
+    ):
+        pass
+
+    user: str | None = None
+    nodaemon: bool = False
+    umask: int = dc.xfield(0o22, coerce=octal_type)
+    directory: str | None = dc.xfield(None, coerce=existing_directory)
+    logfile: str = dc.xfield('supervisord.log', coerce=existing_dirpath)
+    logfile_maxbytes: int = dc.xfield(50 * 1024 * 1024, coerce=byte_size)
+    logfile_backups: int = dc.xfield(10)
+    loglevel: int = dc.xfield(logging.INFO, coerce=logging_level)
+    pidfile: str = dc.xfield('supervisord.pid', coerce=existing_dirpath)
+    identifier: str = dc.xfield('supervisor')
+    child_logdir = dc.xfield(tempfile.gettempdir(), coerce=existing_directory)
+    minfds: int = 1024
+    minprocs: int = 200
+    nocleanup: bool = False
+    strip_ansi: bool = False
+    silent: bool = False
+
+
+log = logging.getLogger(__name__)
+
 
 class ServerContext:
-    logger: logging.Logger
-    poller: Poller
+    options: ServerOptionsData
 
-    mood: SupervisorStates
-    pid_history: dict[int, Subprocess]
+    uid: int
+    gid: int
+
+    poller: poller.Poller
+
+    mood: states.SupervisorStates = states.SupervisorStates.RUNNING
+    pid_history: dict[int, 'process.Subprocess'] = {}
+
+    signal_receiver: SignalReceiver
+
+    unlink_pidfile: bool = False
 
     ##
 
@@ -97,9 +146,9 @@ class ServerContext:
         except OSError as exc:
             code = exc.args[0]
             if code not in (errno.ECHILD, errno.EINTR):
-                self.logger.critical('waitpid error %r; a process may not be cleaned up properly' % code)
+                log.critical('waitpid error %r; a process may not be cleaned up properly' % code)
             if code == errno.EINTR:
-                self.logger.debug('EINTR during reap')
+                log.debug('EINTR during reap')
             pid, sts = None, None
         return pid, sts
 
@@ -110,7 +159,7 @@ class ServerContext:
         """
         if self.uid is None:
             if os.getuid() == 0:
-                self.parse_criticals.append(
+                warnings.warn(
                     'Supervisor is running as root.  Privileges were not dropped because no user is specified in the '
                     'config file.  If you intend to run as root, you can set user=root in the config file to avoid '
                     'this message.'
@@ -118,7 +167,7 @@ class ServerContext:
         else:
             msg = drop_privileges(self.uid)
             if msg is None:
-                self.parse_infos.append('Set uid to user %s succeeded' % self.uid)
+                log.info('Set uid to user %s succeeded' % self.uid)
             else:  # failed to drop privileges
                 self.usage(msg)
 
@@ -172,28 +221,28 @@ class ServerContext:
 
                 try:
                     resource.setrlimit(res, (min_limit, hard))
-                    self.parse_infos.append('Increased %(name)s limit to %(min_limit)s' % locals())
+                    log.info('Increased %(name)s limit to %(min_limit)s' % locals())
                 except (resource.error, ValueError):
                     self.usage(msg % locals())
 
     def cleanup(self) -> None:
         if self.unlink_pidfile:
-            try_unlink(self.pidfile)
+            try_unlink(self.options.pidfile)
         self.poller.close()
 
     def cleanup_fds(self) -> None:
         # try to close any leaked file descriptors (for reload)
         start = 5
-        os.closerange(start, self.minfds)
+        os.closerange(start, self.options.minfds)
 
     def clear_auto_child_logdir(self) -> None:
         # must be called after realize()
-        child_logdir = self.child_logdir
+        child_logdir = self.options.child_logdir
         fnre = re.compile(r'.+?---%s-\S+\.log\.{0,1}\d{0,4}' % self.identifier)
         try:
             filenames = os.listdir(child_logdir)
         except OSError:
-            self.logger.warn('Could not clear child_log dir')
+            log.warn('Could not clear child_log dir')
             return
 
         for filename in filenames:
@@ -202,7 +251,7 @@ class ServerContext:
                 try:
                     os.remove(pathname)
                 except OSError:
-                    self.logger.warn('Failed to clean up %r' % pathname)
+                    log.warn('Failed to clean up %r' % pathname)
 
     def daemonize(self) -> None:
         self.poller.before_daemonize()
@@ -228,25 +277,23 @@ class ServerContext:
         pid = os.fork()
         if pid != 0:
             # Parent
-            self.logger.debug('supervisord forked; parent exiting')
+            log.debug('supervisord forked; parent exiting')
             real_exit(0)
         # Child
-        self.logger.info('daemonizing the supervisord process')
+        log.info('daemonizing the supervisord process')
         if self.directory:
             try:
-                os.chdir(self.directory)
+                os.chdir(self.options.directory)
             except OSError as err:
-                self.logger.critical("can't chdir into %r: %s" % (self.directory, err))
+                log.critical("can't chdir into %r: %s" % (self.options.directory, err))
             else:
-                self.logger.info('set current directory: %r' % self.directory)
-        os.close(0)
-        sys.stdin = sys.__stdin__ = open('/dev/null')
-        os.close(1)
-        sys.stdout = sys.__stdout__ = open('/dev/null', 'w')
-        os.close(2)
-        sys.stderr = sys.__stderr__ = open('/dev/null', 'w')
+                log.info('set current directory: %r' % (self.options.directory),)
+        dn = os.open('/dev/null')
+        os.dup2(0, dn)
+        os.dup2(1, dn)
+        os.dup2(2, dn)
         os.setsid()
-        os.umask(self.umask)
+        os.umask(self.options.umask)
         # XXX Stevens, in his Advanced Unix book, section 13.3 (page 417) recommends calling umask(0) and closing unused
         # file descriptors.  In his Network Programming book, he additionally recommends ignoring SIGHUP and forking
         # again after the setsid() call, for obscure SVR4 reasons.
@@ -256,48 +303,23 @@ class ServerContext:
         logfile = mktempfile(
             suffix='.log',
             prefix=prefix,
-            dir=self.child_logdir,
+            dir=self.options.child_logdir,
         )
         return logfile
-
-    def reopen_logs(self) -> None:
-        self.logger.info('supervisord logreopen')
-        for handler in self.logger.handlers:
-            if hasattr(handler, 'reopen'):
-                handler.reopen()
 
     def get_signal(self) -> int | None:
         return self.signal_receiver.get_signal()
 
-    def make_logger(self) -> None:
-        # must be called after realize() and after supervisor does setuid()
-        format = '%(asctime)s %(levelname)s %(message)s\n'
-        self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(self.loglevel)
-        if self.nodaemon and not self.silent:
-            handler = logging.StreamHandler()
-            handler.setFormatter(logging.Formatter(format))
-            logging.root.addHandler(handler)
-        # loggers.handle_file(
-        #     self.logger,
-        #     self.logfile,
-        #     format,
-        #     rotating=bool(self.logfile_maxbytes),
-        #     maxbytes=self.logfile_maxbytes,
-        #     backups=self.logfile_backups,
-        # )
-        self._log_parsing_messages(self.logger)
-
     def write_pidfile(self) -> None:
         pid = os.getpid()
         try:
-            with open(self.pidfile, 'w') as f:
+            with open(self.options.pidfile, 'w') as f:
                 f.write('%s\n' % pid)
         except OSError:
-            self.logger.critical('could not write pidfile %s' % self.pidfile)
+            log.critical('could not write pidfile %s' % (self.options.pidfile,))
         else:
             self.unlink_pidfile = True
-            self.logger.info('supervisord started with pid %s' % pid)
+            log.info('supervisord started with pid %s' % pid)
 
 
 class ServerOptions:
@@ -663,14 +685,6 @@ class ServerOptions:
                         raise ValueError(str(why))
                     else:
                         parser.expand_here(os.path.abspath(os.path.dirname(filename)))
-
-    def _log_parsing_messages(self, logger: logging.Logger) -> None:
-        for msg in self.parse_criticals:
-            logger.critical(msg)
-        for msg in self.parse_warnings:
-            logger.warn(msg)
-        for msg in self.parse_infos:
-            logger.info(msg)
 
     ##
 
@@ -1084,8 +1098,3 @@ class ServerOptions:
 
         programs.sort()  # asc by priority
         return programs
-
-    def close_logger(self):
-        # self.logger.close()
-        pass
-

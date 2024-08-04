@@ -113,41 +113,6 @@ def _get_search_paths() -> list[str]:
     ]
 
 
-@dc.dataclass(frozen=True)
-class ServerOptionsData:
-    def add(
-            self,
-            name=None,  # attribute name on self
-            confname=None,  # dotted config path name
-            short=None,  # short option name
-            long=None,  # long option name
-
-            handler=None,  # handler (defaults to string)
-            default=None,  # default value
-            required=None,  # message if not provided
-            flag=None,  # if not None, flag value
-            env=None,  # if not None, environment variable
-    ):
-        pass
-
-    user: str | None = None
-    nodaemon: bool = False
-    umask: int = dc.xfield(0o22, coerce=octal_type)
-    directory: str | None = dc.xfield(None, coerce=existing_directory)
-    logfile: str = dc.xfield('supervisord.log', coerce=existing_dirpath)
-    logfile_maxbytes: int = dc.xfield(50 * 1024 * 1024, coerce=byte_size)
-    logfile_backups: int = dc.xfield(10)
-    loglevel: int = dc.xfield(logging.INFO, coerce=logging_level)
-    pidfile: str = dc.xfield('supervisord.pid', coerce=existing_dirpath)
-    identifier: str = dc.xfield('supervisor')
-    child_logdir = dc.xfield(tempfile.gettempdir(), coerce=existing_directory)
-    minfds: int = 1024
-    minprocs: int = 200
-    nocleanup: bool = False
-    strip_ansi: bool = False
-    silent: bool = False
-
-
 class ServerOptions:
     uid = gid = None
 
@@ -167,7 +132,6 @@ class ServerOptions:
     nodaemon = None
     silent = None
     unlink_pidfile = False
-    unlink_socketfiles = False
     mood = states.SupervisorStates.RUNNING
 
     def __init__(self, *, require_config_file=True):
