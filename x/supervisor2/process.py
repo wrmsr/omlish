@@ -1,3 +1,30 @@
+"""
+
+==
+
+logger
+stat
+check_execv_args
+fork
+close_parent_pipes
+close_child_pipes
+pid_history
+dup2
+minfds
+close_fd
+setpgrp
+write
+chdir
+set_umask
+execve
+_exit
+identifier
+drop_privileges
+mood
+drop_privileges
+kill
+
+"""
 import errno
 import functools
 import os
