@@ -1,10 +1,9 @@
-import typing as ta
+import collections
 
 from .. import lang
 
 
-class Tag(ta.NamedTuple):
-    tag: ta.Any
+Tag = collections.namedtuple('Tag', 'tag')
 
 
 class Scope(lang.Abstract):

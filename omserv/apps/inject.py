@@ -77,7 +77,7 @@ def bind() -> inj.Elemental:
     )
 
 
-def _build_j2_namespaces(ns: ta.Annotated[ta.Mapping[str, ta.Any], J2Namespace]) -> J2Namespace:
+def _build_j2_namespaces(ns: ta.Annotated[ta.Mapping[str, ta.Any], inj.Tag(J2Namespace)]) -> J2Namespace:
     return J2Namespace(ns)
 
 
