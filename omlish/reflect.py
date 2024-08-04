@@ -284,7 +284,7 @@ def strip_objs(ty: Type) -> Type:
         return Generic(ty.cls, tuple(map(strip_objs, ty.args)), ty.params, None)
 
     if isinstance(ty, Annotated):
-        return Annotated(strip_objs(ty.ty), ty.md)
+        return Annotated(strip_objs(ty.ty), ty.md, None)
 
     raise TypeError(ty)
 
