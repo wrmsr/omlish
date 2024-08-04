@@ -110,7 +110,7 @@ class Subprocess:
         if '/' in program:
             filename = program
             try:
-                st = self.config.options.stat(filename)
+                st = os.stat(filename)
             except OSError:
                 st = None
 
@@ -121,7 +121,7 @@ class Subprocess:
             for dir in path:
                 found = os.path.join(dir, program)
                 try:
-                    st = self.config.options.stat(found)
+                    st = os.stat(found)
                 except OSError:
                     pass
                 else:
@@ -230,7 +230,7 @@ class Subprocess:
             return None
 
         try:
-            pid = options.fork()
+            pid = os.fork()
         except OSError as why:
             code = why.args[0]
             if code == errno.EAGAIN:
@@ -290,7 +290,7 @@ class Subprocess:
             if setuid_msg:
                 uid = self.config.uid
                 msg = "couldn't setuid to %s: %s\n" % (uid, setuid_msg)
-                options.write(2, 'supervisor: ' + msg)
+                os.write(2, as_bytes('supervisor: ' + msg))
                 return  # finally clause will exit the child process
 
             # set environment
@@ -310,28 +310,28 @@ class Subprocess:
             except OSError as why:
                 code = errno.errorcode.get(why.args[0], why.args[0])
                 msg = "couldn't chdir to %s: %s\n" % (cwd, code)
-                options.write(2, 'supervisor: ' + msg)
+                os.write(2, as_bytes('supervisor: ' + msg))
                 return  # finally clause will exit the child process
 
             # set umask, then execve
             try:
                 if self.config.umask is not None:
-                    options.set_umask(self.config.umask)
-                options.execve(filename, argv, env)
+                    os.umask(self.config.umask)
+                os.execve(filename, argv, env)
             except OSError as why:
                 code = errno.errorcode.get(why.args[0], why.args[0])
                 msg = "couldn't exec %s: %s\n" % (argv[0], code)
-                options.write(2, 'supervisor: ' + msg)
+                os.write(2, as_bytes('supervisor: ' + msg))
             except:
                 (file, fun, line), t, v, tbinfo = compact_traceback()
                 error = '%s, %s: file: %s line: %s' % (t, v, file, line)
                 msg = "couldn't exec %s: %s\n" % (filename, error)
-                options.write(2, 'supervisor: ' + msg)
+                os.write(2, as_bytes('supervisor: ' + msg))
 
             # this point should only be reached if execve failed. the finally clause will exit the child process.
 
         finally:
-            options.write(2, 'supervisor: child process was not spawned\n')
+            os.write(2, as_bytes('supervisor: child process was not spawned\n'))
             options._exit(127)  # exit process with code for spawn failure
 
     def _check_and_adjust_for_system_clock_rollback(self, test_time):

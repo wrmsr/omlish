@@ -13,6 +13,7 @@ write
 import errno
 import logging
 
+from .compat import as_bytes
 from .compat import as_string
 from .compat import compact_traceback
 from .compat import find_prefix_at_end
@@ -484,8 +485,7 @@ class PInputDispatcher(PDispatcher):
 
     def flush(self):
         # other code depends on this raising EPIPE if the pipe is closed
-        sent = self.process.config.options.write(self.fd,
-                                                 self.input_buffer)
+        sent = os.write(self.fd, as_bytes(self.input_buffer))
         self.input_buffer = self.input_buffer[sent:]
 
     def handle_write_event(self):

@@ -18,17 +18,12 @@ class ServerOptions:
 
     poller: Poller
 
-    def execve(self, filename: str, argv: list[str], env: dict[str, str]) -> ta.NoReturn:
-    def fork(self) -> int:
     def setsignals(self) -> None:
-    def stat(self, filename: str) -> os.stat_result:
     def waitpid(self) -> tuple[int | None, int | None]:
     def _exit(self, code: int) -> None:
     def check_execv_args(self, filename, argv, st):
     def drop_privileges(self, user: int | str) -> str | None:
     def set_uid_or_exit(self) -> None:
-    def set_umask(self, mask: int) -> None:
-    def write(self, fd: int, data: str | bytes) -> int:
     def get_path(self) -> ta.Sequence[str]:
     def close_fd(self, fd: int) -> None:
     def close_parent_pipes(self, pipes: ta.Mapping[str, int]) -> None:
@@ -1212,18 +1207,6 @@ class ServerOptions:
         except OSError:
             pass
 
-    def fork(self) -> int:
-        return os.fork()
-
-    def stat(self, filename: str) -> os.stat_result:
-        return os.stat(filename)
-
-    def write(self, fd: int, data: str | bytes) -> int:
-        return os.write(fd, as_bytes(data))
-
-    def execve(self, filename: str, argv: list[str], env: dict[str, str]) -> ta.NoReturn:
-        return os.execve(filename, argv, env)
-
     def mktempfile(self, suffix, prefix, dir):
         # set os._urandomfd as a hack around bad file descriptor bug seen in the wild, see
         # https://web.archive.org/web/20160729044005/http://www.plope.com/software/collector/252
@@ -1237,9 +1220,6 @@ class ServerOptions:
 
     def _exit(self, code: int) -> None:
         os._exit(code)
-
-    def set_umask(self, mask: int) -> None:
-        os.umask(mask)
 
     def get_path(self) -> ta.Sequence[str]:
         """Return a list corresponding to $PATH, or a default."""
