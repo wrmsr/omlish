@@ -973,7 +973,7 @@ class ServerOptions:
         pass
 
     def setsignals(self) -> None:
-        self.signal_receiver.receive(
+        self.signal_receiver.install(
             signal.SIGTERM,
             signal.SIGINT,
             signal.SIGQUIT,
