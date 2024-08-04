@@ -1,12 +1,11 @@
 import grp
+import logging
 import os
 import pwd
 import shlex
 import signal
 import socket
 import urllib.parse as urlparse
-
-from .loggers import getLevelNumByDescription
 
 
 def process_or_group_name(name):
@@ -388,7 +387,7 @@ def existing_dirpath(v):
 
 def logging_level(value):
     s = str(value).lower()
-    level = getLevelNumByDescription(s)
+    level = logging.getLevelNamesMapping().get(s.upper())
     if level is None:
         raise ValueError('bad logging level name %r' % value)
     return level
