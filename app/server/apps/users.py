@@ -47,8 +47,7 @@ def with_user(fn):
 class _WithUserAppMarkerProcessor(AppMarkerProcessor):
     _users: UserStore
 
-    @lang.decorator
-    async def _app(self, fn: AsgiApp, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
+    async def _wrap(self, fn: AsgiApp, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
         session = SESSION.get()
 
         user_id = session.get('_user_id')
@@ -61,4 +60,4 @@ class _WithUserAppMarkerProcessor(AppMarkerProcessor):
             await fn(scope, recv, send)
 
     def __call__(self, app: AsgiApp) -> AsgiApp:
-        return self._app(app)  # noqa
+        return lang.decorator(self._wrap)(app)  # noqa

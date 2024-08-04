@@ -115,6 +115,7 @@ class _decorator_descriptor:  # noqa
             update_wrapper_except_dict(self, fn)
 
         def __get__(self, instance, owner):
+            breakpoint()
             return functools.update_wrapper(functools.partial(self._wrapper, fn := self._fn.__get__(instance, owner)), fn)  # noqa
 
     else:
@@ -124,6 +125,7 @@ class _decorator_descriptor:  # noqa
             update_wrapper_except_dict(self, fn)
 
         def __get__(self, instance, owner):
+            breakpoint()
             fn = self._fn.__get__(instance, owner)
             if self._md or instance is not None:
                 @functools.wraps(fn)
