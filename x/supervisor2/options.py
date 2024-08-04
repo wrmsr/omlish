@@ -1,7 +1,33 @@
 """
 class ServerOptions:
-    def _exit(self, code: int) -> None:
+    first: bool
+    test: bool
+
+    identifier: str
+
+    nocleanup: bool
+    nodaemon: bool
+    minfds: int
+
+    process_group_configs: list[ProcessGroupConfig]
+
+    mood: SupervisorStates
+    pid_history: dict[int, Subprocess]
+
+    logger: log.Logger
+
+    poller: Poller
+
+    def dup2(self, frm: int, to: int) -> int:
+    def execve(self, filename: str, argv: list[str], env: dict[str, str]) -> ta.NoReturn:
+    def fork(self) -> int:
     def chdir(self, dir: str) -> None:
+    def setpgrp(self) -> None:
+    def setsignals(self) -> None:
+    def stat(self, filename: str) -> os.stat_result:
+    def waitpid(self) -> tuple[int | None, int | None]:
+    def _exit(self, code: int) -> None:
+
     def check_execv_args(self, filename, argv, st):
     def cleanup(self) -> None:
     def cleanup_fds(self) -> None:
@@ -11,36 +37,18 @@ class ServerOptions:
     def close_parent_pipes(self, pipes: ta.Mapping[str, int]) -> None:
     def daemonize(self) -> None:
     def drop_privileges(self, user: int | str) -> str | None:
-    def dup2(self, frm: int, to: int) -> int:
-    def execve(self, filename: str, argv: list[str], env: dict[str, str]) -> ta.NoReturn:
-    first: bool
-    def fork(self) -> int:
     def get_auto_child_log_name(self, name: str, identifier: str, channel: str) -> str:
-    get_path
-    get_signal
-    identifier
-    kill
-    logger
-    make_logger
-    make_pipes
-    minfds
-    mood
-    nocleanup
-    nodaemon
-    pid_history
-    poller
-    process_group_configs
-    reopen_logs
-    set_rlimits_or_exit
-    set_uid_or_exit
-    set_umask
-    setpgrp
-    setsignals
-    stat
-    test: bool
-    waitpid
-    write
-    write_pidfile
+    def get_path(self) -> ta.Sequence[str]:
+    def get_signal(self) -> int | None:
+    def kill(self, pid: int, signal: int) -> None:
+    def make_logger(self) -> None:
+    def make_pipes(self, stderr=True) -> ta.Mapping[str, int]:
+    def reopen_logs(self) -> None:
+    def set_rlimits_or_exit(self) -> None:
+    def set_uid_or_exit(self) -> None:
+    def set_umask(self, mask: int) -> None:
+    def write(self, fd: int, data: str | bytes) -> int:
+    def write_pidfile(self) -> None:
 
 """
 import configparser
@@ -965,7 +973,7 @@ class ServerOptions:
         # file descriptors.  In his Network Programming book, he additionally recommends ignoring SIGHUP and forking
         # again after the setsid() call, for obscure SVR4 reasons.
 
-    def write_pidfile(self):
+    def write_pidfile(self) -> None:
         pid = os.getpid()
         try:
             with open(self.pidfile, 'w') as f:
@@ -991,7 +999,7 @@ class ServerOptions:
         # self.logger.close()
         pass
 
-    def setsignals(self):
+    def setsignals(self) -> None:
         receive = self.signal_receiver.receive
         signal.signal(signal.SIGTERM, receive)
         signal.signal(signal.SIGINT, receive)
@@ -1000,7 +1008,7 @@ class ServerOptions:
         signal.signal(signal.SIGCHLD, receive)
         signal.signal(signal.SIGUSR2, receive)
 
-    def get_signal(self):
+    def get_signal(self) -> int | None:
         return self.signal_receiver.get_signal()
 
     def get_auto_child_log_name(self, name: str, identifier: str, channel: str) -> str:
@@ -1035,10 +1043,10 @@ class ServerOptions:
         start = 5
         os.closerange(start, self.minfds)
 
-    def kill(self, pid, signal):
+    def kill(self, pid: int, signal: int) -> None:
         os.kill(pid, signal)
 
-    def waitpid(self):
+    def waitpid(self) -> tuple[int | None, int | None]:
         # Need pthread_sigmask here to avoid concurrent sigchld, but Python doesn't offer in Python < 3.4.  There is
         # still a race condition here; we can get a sigchld while we're sitting in the waitpid call. However, AFAICT, if
         # waitpid is interrupted by SIGCHLD, as long as we call waitpid again (which happens every so often during the
@@ -1110,7 +1118,7 @@ class ServerOptions:
             return 'Could not set group id of effective user'
         os.setuid(uid)
 
-    def set_uid_or_exit(self):
+    def set_uid_or_exit(self) -> None:
         """
         Set the uid of the supervisord process.  Called during supervisord startup only.  No return value.  Exits the
         process via usage() if privileges could not be dropped.
@@ -1129,7 +1137,7 @@ class ServerOptions:
             else:  # failed to drop privileges
                 self.usage(msg)
 
-    def set_rlimits_or_exit(self):
+    def set_rlimits_or_exit(self) -> None:
         """
         Set the rlimits of the supervisord process.  Called during supervisord startup only.  No return value.  Exits
         the process via usage() if any rlimits could not be set.
@@ -1183,7 +1191,7 @@ class ServerOptions:
                 except (resource.error, ValueError):
                     self.usage(msg % locals())
 
-    def make_logger(self):
+    def make_logger(self) -> None:
         # must be called after realize() and after supervisor does setuid()
         format = '%(asctime)s %(levelname)s %(message)s\n'
         self.logger = logging.getLogger(__name__)
@@ -1214,13 +1222,13 @@ class ServerOptions:
     def dup2(self, frm: int, to: int) -> int:
         return os.dup2(frm, to)
 
-    def setpgrp(self):
+    def setpgrp(self) -> None:
         return os.setpgrp()
 
-    def stat(self, filename):
+    def stat(self, filename: str) -> os.stat_result:
         return os.stat(filename)
 
-    def write(self, fd, data):
+    def write(self, fd: int, data: str | bytes) -> int:
         return os.write(fd, as_bytes(data))
 
     def execve(self, filename: str, argv: list[str], env: dict[str, str]) -> ta.NoReturn:
@@ -1240,10 +1248,10 @@ class ServerOptions:
     def _exit(self, code: int) -> None:
         os._exit(code)
 
-    def set_umask(self, mask):
+    def set_umask(self, mask: int) -> None:
         os.umask(mask)
 
-    def get_path(self):
+    def get_path(self) -> ta.Sequence[str]:
         """Return a list corresponding to $PATH, or a default."""
         path = ['/bin', '/usr/bin', '/usr/local/bin']
         if 'PATH' in os.environ:
@@ -1268,7 +1276,7 @@ class ServerOptions:
         elif not os.access(filename, os.X_OK):
             raise NoPermission('no permission to run command %r' % filename)
 
-    def reopen_logs(self):
+    def reopen_logs(self) -> None:
         self.logger.info('supervisord logreopen')
         for handler in self.logger.handlers:
             if hasattr(handler, 'reopen'):
@@ -1286,7 +1294,7 @@ class ServerOptions:
     def chdir(self, dir: str) -> None:
         os.chdir(dir)
 
-    def make_pipes(self, stderr=True):
+    def make_pipes(self, stderr=True) -> ta.Mapping[str, int]:
         """
         Create pipes for parent to child stdin/stdout/stderr communications.  Open fd in non-blocking mode so we can
         read them in the mainloop without blocking.  If stderr is False, don't create a pipe for stderr.
