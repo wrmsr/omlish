@@ -8,7 +8,10 @@ from .inspect import KwargsTarget
 from .keys import Key
 
 
-_impl = lang.proxy_import('.impl.injector', __package__)
+if ta.TYPE_CHECKING:
+    from .impl import injector as _injector
+else:
+    _injector = lang.proxy_import('.impl.injector', __package__)
 
 
 T = ta.TypeVar('T')
@@ -39,4 +42,4 @@ class Injector(lang.Abstract):
 
 
 def create_injector(*args: Elemental) -> Injector:
-    return _impl.create_injector(as_elements(*args))
+    return _injector.create_injector(as_elements(*args))
