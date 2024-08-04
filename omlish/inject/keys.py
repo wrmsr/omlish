@@ -4,6 +4,7 @@ import typing as ta
 from .. import dataclasses as dc
 from .. import lang
 from .. import reflect as rfl
+from .types import Tag
 
 
 T = ta.TypeVar('T')
@@ -13,7 +14,7 @@ T = ta.TypeVar('T')
 @dc.extra_params(cache_hash=True)
 class Key(lang.Final, ta.Generic[T]):
     ty: rfl.Type = dc.xfield(coerce=rfl.type_)
-    tag: ta.Any = dc.field(default=None, kw_only=True)
+    tag: ta.Any = dc.field(default=None, kw_only=True, check=lambda o: not isinstance(o, Tag))
 
 
 def as_key(o: ta.Any) -> Key:

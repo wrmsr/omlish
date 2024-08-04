@@ -14,9 +14,9 @@ from omserv.apps.routes import handles
 from omserv.apps.sessions import with_session
 from omserv.apps.templates import J2Templates
 from omserv.passwords import generate_password_hash
+from omserv.apps.base import url_for
 
 from ...users import UserStore
-from ..apps.base import url_for
 from ..apps.users import with_user
 
 

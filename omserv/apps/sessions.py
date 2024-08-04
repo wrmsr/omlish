@@ -35,24 +35,24 @@ def with_session(fn):
 class _WithSessionAppMarkerProcessor(AppMarkerProcessor):
     _ss: sessions.CookieSessionStore
 
+    @lang.decorator
+    async def _app(self, fn: AsgiApp, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
+        async def _send(obj):
+            if obj['type'] == 'http.response.start':
+                out_session = SESSION.get()
+                obj = {
+                    **obj,
+                    'headers': [
+                        *obj.get('headers', []),
+                        *self._ss.build_headers(out_session),
+                    ],
+                }
+
+            await send(obj)
+
+        in_session = self._ss.extract(scope)
+        with lang.context_var_setting(SESSION, in_session):
+            await fn(scope, recv, _send)
+
     def __call__(self, app: AsgiApp) -> AsgiApp:
-        @lang.decorator
-        async def _with_session(fn: AsgiApp, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
-            async def _send(obj):
-                if obj['type'] == 'http.response.start':
-                    out_session = SESSION.get()
-                    obj = {
-                        **obj,
-                        'headers': [
-                            *obj.get('headers', []),
-                            *self._ss.build_headers(out_session),
-                        ],
-                    }
-
-                await send(obj)
-
-            in_session = self._ss.extract(scope)
-            with lang.context_var_setting(SESSION, in_session):
-                await fn(scope, recv, _send)
-
-        return _with_session(app)  # noqa
+        return self._app(app)  # noqa
