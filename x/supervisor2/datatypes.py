@@ -4,8 +4,6 @@ import os
 import pwd
 import shlex
 import signal
-import socket
-import urllib.parse as urlparse
 
 
 def process_or_group_name(name):
@@ -121,177 +119,6 @@ def logfile_name(val):
         return Syslog
     else:
         return existing_dirpath(val)
-
-
-class RangeCheckedConversion:
-    """Conversion helper that range checks another conversion."""
-
-    def __init__(self, conversion, min=None, max=None):
-        self._min = min
-        self._max = max
-        self._conversion = conversion
-
-    def __call__(self, value):
-        v = self._conversion(value)
-        if self._min is not None and v < self._min:
-            raise ValueError('%s is below lower bound (%s)'
-                             % (repr(v), repr(self._min)))
-        if self._max is not None and v > self._max:
-            raise ValueError('%s is above upper bound (%s)'
-                             % (repr(v), repr(self._max)))
-        return v
-
-
-port_number = RangeCheckedConversion(integer, min=1, max=0xffff).__call__
-
-
-def inet_address(s):
-    # returns (host, port) tuple
-    host = ''
-    if ':' in s:
-        host, s = s.rsplit(':', 1)
-        if not s:
-            raise ValueError('no port number specified in %r' % s)
-        port = port_number(s)
-        host = host.lower()
-    else:
-        try:
-            port = port_number(s)
-        except ValueError:
-            raise ValueError('not a valid port number: %r ' % s)
-    if not host or host == '*':
-        host = ''
-    return host, port
-
-
-class SocketAddress:
-    def __init__(self, s):
-        # returns (family, address) tuple
-        if '/' in s or s.find(os.sep) >= 0 or ':' not in s:
-            self.family = getattr(socket, 'AF_UNIX', None)
-            self.address = s
-        else:
-            self.family = socket.AF_INET
-            self.address = inet_address(s)
-
-
-class SocketConfig:
-    """ Abstract base class which provides a uniform abstraction
-    for TCP vs Unix sockets """
-    url = ''  # socket url
-    addr = None  # socket addr
-    backlog = None  # socket listen backlog
-
-    def __repr__(self):
-        return '<%s at %s for %s>' % (self.__class__,
-                                      id(self),
-                                      self.url)
-
-    def __str__(self):
-        return str(self.url)
-
-    def __eq__(self, other):
-        if not isinstance(other, SocketConfig):
-            return False
-
-        if self.url != other.url:
-            return False
-
-        return True
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
-
-    def get_backlog(self):
-        return self.backlog
-
-    def addr(self):  # pragma: no cover
-        raise NotImplementedError
-
-    def create_and_bind(self):  # pragma: no cover
-        raise NotImplementedError
-
-
-class InetStreamSocketConfig(SocketConfig):
-    """ TCP socket config helper """
-
-    host = None  # host name or ip to bind to
-    port = None  # integer port to bind to
-
-    def __init__(self, host, port, **kwargs):
-        self.host = host.lower()
-        self.port = port_number(port)
-        self.url = 'tcp://%s:%d' % (self.host, self.port)
-        self.backlog = kwargs.get('backlog', None)
-
-    def addr(self):
-        return self.host, self.port
-
-    def create_and_bind(self):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        try:
-            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            sock.bind(self.addr())
-        except:
-            sock.close()
-            raise
-        return sock
-
-
-class UnixStreamSocketConfig(SocketConfig):
-    """ Unix domain socket config helper """
-
-    path = None  # Unix domain socket path
-    mode = None  # Unix permission mode bits for socket
-    owner = None  # Tuple (uid, gid) for Unix ownership of socket
-    sock = None  # socket object
-
-    def __init__(self, path, **kwargs):
-        self.path = path
-        self.url = 'unix://%s' % path
-        self.mode = kwargs.get('mode', None)
-        self.owner = kwargs.get('owner', None)
-        self.backlog = kwargs.get('backlog', None)
-
-    def addr(self):
-        return self.path
-
-    def create_and_bind(self):
-        if os.path.exists(self.path):
-            os.unlink(self.path)
-        sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        try:
-            sock.bind(self.addr())
-            self._chown()
-            self._chmod()
-        except:
-            sock.close()
-            if os.path.exists(self.path):
-                os.unlink(self.path)
-            raise
-        return sock
-
-    def get_mode(self):
-        return self.mode
-
-    def get_owner(self):
-        return self.owner
-
-    def _chmod(self):
-        if self.mode is not None:
-            try:
-                os.chmod(self.path, self.mode)
-            except Exception as e:
-                raise ValueError('Could not change permissions of socket '
-                                 + 'file: %s' % e)
-
-    def _chown(self):
-        if self.owner is not None:
-            try:
-                os.chown(self.path, self.owner[0], self.owner[1])
-            except Exception as e:
-                raise ValueError('Could not change ownership of socket file: '
-                                 + '%s' % e)
 
 
 def colon_separated_user_group(arg):
@@ -420,13 +247,6 @@ byte_size = SuffixMultiplier({
     'mb': 1024 * 1024,
     'gb': 1024 * 1024 * 1024,
 })
-
-
-def url(value):
-    scheme, netloc, path, params, query, fragment = urlparse.urlparse(value)
-    if scheme and (netloc or path):
-        return value
-    raise ValueError('value %r is not a URL' % value)
 
 
 # all valid signal numbers
