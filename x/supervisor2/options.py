@@ -1,23 +1,23 @@
-from io import StringIO
-import configparser as ConfigParser
+import configparser
 import errno
+import fcntl
 import getopt
 import glob
+import grp
+import io
 import logging
 import os
 import platform
 import pwd
 import re
+import resource
 import signal
 import socket
 import stat
 import sys
 import tempfile
+import typing as ta
 import warnings
-
-import fcntl
-import grp
-import resource
 
 from . import poller
 from . import states
@@ -64,7 +64,7 @@ class ServerOptions:
     uid = gid = None
 
     progname = sys.argv[0]
-    configfile = None
+    config_file = None
     schemadir = None
     configroot = None
     here = None
@@ -87,8 +87,9 @@ class ServerOptions:
     unlink_socketfiles = False
     mood = states.SupervisorStates.RUNNING
 
-    def __init__(self, *, require_configfile=True):
+    def __init__(self, *, require_config_file=True):
         super().__init__()
+
         self.names_list = []
         self.short_options = []
         self.long_options = []
@@ -97,10 +98,10 @@ class ServerOptions:
         self.required_map = {}
         self.environ_map = {}
         self.attr_priorities = {}
-        self.require_configfile = require_configfile
+        self.require_config_file = require_config_file
         self.add(None, None, 'h', 'help', self.help)
         self.add(None, None, '?', None, self.help)
-        self.add('configfile', None, 'c:', 'configuration=')
+        self.add('config_file', None, 'c:', 'configuration=')
         self.parse_criticals = []
         self.parse_warnings = []
         self.parse_infos = []
@@ -149,14 +150,14 @@ class ServerOptions:
 
     ##
 
-    def _default_configfile(self):
+    def _default_config_file(self):
         """Return the name of the found config file or print usage/exit."""
         config = None
         for path in self.searchpaths:
             if os.path.exists(path):
                 config = path
                 break
-        if config is None and self.require_configfile:
+        if config is None and self.require_config_file:
             self.usage('No config file found at default paths (%s); '
                        'use the -c option to specify a config file '
                        'at a different path' % ', '.join(self.searchpaths))
@@ -336,8 +337,8 @@ class ServerOptions:
                 if name and value is not None:
                     self._set(name, value, 1)
 
-        if self.configfile is None:
-            self.configfile = self.default_configfile()
+        if self.config_file is None:
+            self.config_file = self.default_config_file()
 
         self.process_config()
 
@@ -346,7 +347,7 @@ class ServerOptions:
 
         This includes reading config file if necessary, setting defaults etc.
         """
-        if self.configfile:
+        if self.config_file:
             self.process_config_file(do_usage)
 
         # Copy config options to attributes of self.  This only fills in options that aren't already set from the
@@ -374,10 +375,10 @@ class ServerOptions:
 
     def process_config_file(self, do_usage):
         # Process config file
-        if not hasattr(self.configfile, 'read'):
-            self.here = os.path.abspath(os.path.dirname(self.configfile))
+        if not hasattr(self.config_file, 'read'):
+            self.here = os.path.abspath(os.path.dirname(self.config_file))
         try:
-            self.read_config(self.configfile)
+            self.read_config(self.config_file)
         except ValueError as msg:
             if do_usage:
                 # if this is not called from an RPC method, run usage and exit.
@@ -442,7 +443,7 @@ class ServerOptions:
                     self.parse_infos.append('Included extra file "%s" during parsing' % filename)
                     try:
                         parser.read(filename)
-                    except ConfigParser.ParsingError as why:
+                    except configparser.ParsingError as why:
                         raise ValueError(str(why))
                     else:
                         parser.expand_here(os.path.abspath(os.path.dirname(filename)))
@@ -466,14 +467,14 @@ class ServerOptions:
     def getLogger(self, *args, **kwargs):
         return logging.getLogger(__name__)
 
-    def default_configfile(self):
+    def default_config_file(self):
         if os.getuid() == 0:
             self.warnings.warn(
                 'Supervisord is running as root and it is searching for its configuration file in default locations '
                 '(including its current working directory); you probably want to specify a "-c" argument specifying an '
                 'absolute path to a configuration file for improved security.',
             )
-        return self._default_configfile(self)
+        return self._default_config_file(self)
 
     def realize(self, *arg, **kw):
         self._realize(*arg, **kw)
@@ -538,7 +539,7 @@ class ServerOptions:
                 parser.read_file(fp)
             except AttributeError:
                 parser.readfp(fp)
-        except ConfigParser.ParsingError as why:
+        except configparser.ParsingError as why:
             raise ValueError(str(why))
         finally:
             if need_close:
@@ -709,7 +710,7 @@ class ServerOptions:
             return self._processes_from_section(
                 parser, section, group_name, klass)
         except ValueError as e:
-            filename = parser.section_to_file.get(section, self.configfile)
+            filename = parser.section_to_file.get(section, self.config_file)
             raise ValueError('%s in section %r (file: %r)' % (e, section, filename))
 
     def _processes_from_section(self, parser, section, group_name, klass=None):
@@ -1296,7 +1297,7 @@ class ServerOptions:
 _marker = []
 
 
-class UnhosedConfigParser(ConfigParser.RawConfigParser):
+class UnhosedConfigParser(configparser.RawConfigParser):
     mysection = 'supervisord'
 
     def __init__(self, *args, **kwargs):
@@ -1308,7 +1309,7 @@ class UnhosedConfigParser(ConfigParser.RawConfigParser):
         if 'strict' not in kwargs:
             kwargs['strict'] = False
 
-        ConfigParser.RawConfigParser.__init__(self, *args, **kwargs)
+        configparser.RawConfigParser.__init__(self, *args, **kwargs)
 
         self.section_to_file = {}
         self.expansions = {}
@@ -1319,10 +1320,10 @@ class UnhosedConfigParser(ConfigParser.RawConfigParser):
         2/3 compat.
         """
         try:
-            return ConfigParser.RawConfigParser.read_string(
+            return configparser.RawConfigParser.read_string(
                 self, string, source)  # Python 3.2 or later
         except AttributeError:
-            return self.readfp(StringIO(string))
+            return self.readfp(io.StringIO(string))
 
     def read(self, filenames, **kwargs):
         """
@@ -1338,7 +1339,7 @@ class UnhosedConfigParser(ConfigParser.RawConfigParser):
             sections_orig = self._sections.copy()
 
             ok_filenames.extend(
-                ConfigParser.RawConfigParser.read(self, [filename], **kwargs))
+                configparser.RawConfigParser.read(self, [filename], **kwargs))
 
             diff = frozenset(self._sections) - frozenset(sections_orig)
             for section in diff:
@@ -1348,7 +1349,7 @@ class UnhosedConfigParser(ConfigParser.RawConfigParser):
     def saneget(self, section, option, default=_marker, do_expand=True, expansions={}):
         try:
             optval = self.get(section, option)
-        except ConfigParser.NoOptionError:
+        except configparser.NoOptionError:
             if default is _marker:
                 raise
             else:
@@ -1673,7 +1674,7 @@ class SignalReceiver:
 # miscellaneous utility functions
 
 
-def expand(s, expansions, name):
+def expand(s: str, expansions: ta.Any, name: str) -> str:
     try:
         return s % expansions
     except KeyError as ex:
