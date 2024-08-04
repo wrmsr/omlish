@@ -58,15 +58,15 @@ class Subprocess:
         self.pipes = {}
         self.state = ProcessStates.STOPPED
 
-    def removelogs(self):
+    def remove_logs(self):
         for dispatcher in self.dispatchers.values():
-            if hasattr(dispatcher, 'removelogs'):
-                dispatcher.removelogs()
+            if hasattr(dispatcher, 'remove_logs'):
+                dispatcher.remove_logs()
 
-    def reopenlogs(self):
+    def reopen_logs(self):
         for dispatcher in self.dispatchers.values():
-            if hasattr(dispatcher, 'reopenlogs'):
-                dispatcher.reopenlogs()
+            if hasattr(dispatcher, 'reopen_logs'):
+                dispatcher.reopen_logs()
 
     def drain(self):
         for dispatcher in self.dispatchers.values():
@@ -674,13 +674,13 @@ class ProcessGroupBase:
         name = self.config.name
         return '<%s instance at %s named %s>' % (self.__class__, id(self), name)
 
-    def removelogs(self):
+    def remove_logs(self):
         for process in self.processes.values():
-            process.removelogs()
+            process.remove_logs()
 
-    def reopenlogs(self):
+    def reopen_logs(self):
         for process in self.processes.values():
-            process.reopenlogs()
+            process.reopen_logs()
 
     def stop_all(self):
         processes = list(self.processes.values())

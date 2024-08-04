@@ -67,10 +67,10 @@ class POutputDispatcher(PDispatcher):
     - route the output to the appropriate log handlers as specified in the config.
     """
 
-    childlog = None  # the current logger (normallog or capturelog)
-    normallog = None  # the "normal" (non-capture) logger
-    capturelog = None  # the logger used while we're in capturemode
-    capturemode = False  # are we capturing process event data
+    child_log = None  # the current logger (normal_log or capture_log)
+    normal_log = None  # the "normal" (non-capture) logger
+    capture_log = None  # the logger used while we're in capture_mode
+    capture_mode = False  # are we capturing process event data
     output_buffer = b''  # data waiting to be logged
 
     def __init__(self, process, event_type, fd):
@@ -84,25 +84,25 @@ class POutputDispatcher(PDispatcher):
         self.fd = fd
         self.channel = self.event_type.channel
 
-        self._init_normallog()
-        self._init_capturelog()
+        self._init_normal_log()
+        self._init_capture_log()
 
-        self.childlog = self.normallog
+        self.child_log = self.normal_log
 
         # all code below is purely for minor speedups
-        begintoken = self.event_type.BEGIN_TOKEN
-        endtoken = self.event_type.END_TOKEN
-        self.begintoken_data = (begintoken, len(begintoken))
-        self.endtoken_data = (endtoken, len(endtoken))
-        self.mainlog_level = logging.DEBUG
+        begin_token = self.event_type.BEGIN_TOKEN
+        end_token = self.event_type.END_TOKEN
+        self.begin_token_data = (begin_token, len(begin_token))
+        self.end_token_data = (end_token, len(end_token))
+        self.main_log_level = logging.DEBUG
         config = self.process.config
-        self.log_to_mainlog = config.options.loglevel <= self.mainlog_level
+        self.log_to_main_log = config.options.loglevel <= self.main_log_level
         self.stdout_events_enabled = config.stdout_events_enabled
         self.stderr_events_enabled = config.stderr_events_enabled
 
-    def _init_normallog(self):
+    def _init_normal_log(self):
         """
-        Configure the "normal" (non-capture) log for this channel of this process. Sets self.normallog if logging is
+        Configure the "normal" (non-capture) log for this channel of this process. Sets self.normal_log if logging is
         enabled.
         """
         config = self.process.config
@@ -114,11 +114,11 @@ class POutputDispatcher(PDispatcher):
         to_syslog = getattr(config, '%s_syslog' % channel)
 
         if logfile or to_syslog:
-            self.normallog = config.options.getLogger()
+            self.normal_log = config.options.getLogger()
 
         # if logfile:
         #     loggers.handle_file(
-        #         self.normallog,
+        #         self.normal_log,
         #         filename=logfile,
         #         fmt='%(message)s',
         #         rotating=bool(maxbytes),  # optimization
@@ -128,33 +128,33 @@ class POutputDispatcher(PDispatcher):
         #
         # if to_syslog:
         #     loggers.handle_syslog(
-        #         self.normallog,
+        #         self.normal_log,
         #         fmt=config.name + ' %(message)s',
         #     )
 
-    def _init_capturelog(self):
+    def _init_capture_log(self):
         """
         Configure the capture log for this process.  This log is used to temporarily capture output when special output
-        is detected. Sets self.capturelog if capturing is enabled.
+        is detected. Sets self.capture_log if capturing is enabled.
         """
         capture_maxbytes = getattr(self.process.config, '%s_capture_maxbytes' % self.channel)
         if capture_maxbytes:
-            self.capturelog = self.process.config.options.getLogger()
+            self.capture_log = self.process.config.options.getLogger()
             # loggers.handle_boundIO(
-            #     self.capturelog,
+            #     self.capture_log,
             #     fmt='%(message)s',
             #     maxbytes=capture_maxbytes,
             # )
 
-    def removelogs(self):
-        for log in (self.normallog, self.capturelog):
+    def remove_logs(self):
+        for log in (self.normal_log, self.capture_log):
             if log is not None:
                 for handler in log.handlers:
                     handler.remove()
                     handler.reopen()
 
-    def reopenlogs(self):
-        for log in (self.normallog, self.capturelog):
+    def reopen_logs(self):
+        for log in (self.normal_log, self.capture_log):
             if log is not None:
                 for handler in log.handlers:
                     handler.reopen()
@@ -163,10 +163,10 @@ class POutputDispatcher(PDispatcher):
         if data:
             config = self.process.config
             if config.options.strip_ansi:
-                data = stripEscapes(data)
-            if self.childlog:
-                self.childlog.info(data)
-            if self.log_to_mainlog:
+                data = strip_escapes(data)
+            if self.child_log:
+                self.child_log.info(data)
+            if self.log_to_main_log:
                 if not isinstance(data, bytes):
                     text = data
                 else:
@@ -176,7 +176,7 @@ class POutputDispatcher(PDispatcher):
                         text = 'Undecodable: %r' % data
                 msg = '%(name)r %(channel)s output:\n%(data)s'
                 config.options.logger.log(
-                    self.mainlog_level, msg, name=config.name,
+                    self.main_log_level, msg, name=config.name,
                     channel=self.channel, data=text)
             if self.channel == 'stdout':
                 if self.stdout_events_enabled:
@@ -185,17 +185,17 @@ class POutputDispatcher(PDispatcher):
                 notify(ProcessLogStderrEvent(self.process, self.process.pid, data))
 
     def record_output(self):
-        if self.capturelog is None:
+        if self.capture_log is None:
             # shortcut trying to find capture data
             data = self.output_buffer
             self.output_buffer = b''
             self._log(data)
             return
 
-        if self.capturemode:
-            token, tokenlen = self.endtoken_data
+        if self.capture_mode:
+            token, tokenlen = self.end_token_data
         else:
-            token, tokenlen = self.begintoken_data
+            token, tokenlen = self.begin_token_data
 
         if len(self.output_buffer) <= tokenlen:
             return  # not enough data
@@ -214,22 +214,22 @@ class POutputDispatcher(PDispatcher):
             self._log(data)
         else:
             self._log(before)
-            self.toggle_capturemode()
+            self.toggle_capture_mode()
             self.output_buffer = after
 
         if after:
             self.record_output()
 
-    def toggle_capturemode(self):
-        self.capturemode = not self.capturemode
+    def toggle_capture_mode(self):
+        self.capture_mode = not self.capture_mode
 
-        if self.capturelog is not None:
-            if self.capturemode:
-                self.childlog = self.capturelog
+        if self.capture_log is not None:
+            if self.capture_mode:
+                self.child_log = self.capture_log
             else:
-                for handler in self.capturelog.handlers:
+                for handler in self.capture_log.handlers:
                     handler.flush()
-                data = self.capturelog.getvalue()
+                data = self.capture_log.getvalue()
                 channel = self.channel
                 procname = self.process.config.name
                 event = self.event_type(self.process, self.process.pid, data)
@@ -237,10 +237,10 @@ class POutputDispatcher(PDispatcher):
 
                 msg = '%(procname)r %(channel)s emitted a comm event'
                 self.process.config.options.logger.debug(msg, procname=procname, channel=channel)
-                for handler in self.capturelog.handlers:
+                for handler in self.capture_log.handlers:
                     handler.remove()
                     handler.reopen()
-                self.childlog = self.normallog
+                self.child_log = self.normal_log
 
     def writable(self):
         return False
@@ -262,7 +262,7 @@ class POutputDispatcher(PDispatcher):
 
 class PEventListenerDispatcher(PDispatcher):
     """An output dispatcher that monitors and changes a process' listener_state."""
-    childlog = None  # the logger
+    child_log = None  # the logger
     state_buffer = b''  # data waiting to be reviewed for state changes
 
     READY_FOR_EVENTS_TOKEN = b'READY\n'
@@ -284,9 +284,9 @@ class PEventListenerDispatcher(PDispatcher):
         if logfile:
             maxbytes = getattr(process.config, '%s_logfile_maxbytes' % channel)
             backups = getattr(process.config, '%s_logfile_backups' % channel)
-            self.childlog = process.config.options.getLogger()
+            self.child_log = process.config.options.getLogger()
             # loggers.handle_file(
-            #     self.childlog,
+            #     self.child_log,
             #     logfile,
             #     '%(message)s',
             #     rotating=bool(maxbytes),  # optimization
@@ -294,15 +294,15 @@ class PEventListenerDispatcher(PDispatcher):
             #     backups=backups,
             # )
 
-    def removelogs(self):
-        if self.childlog is not None:
-            for handler in self.childlog.handlers:
+    def remove_logs(self):
+        if self.child_log is not None:
+            for handler in self.child_log.handlers:
                 handler.remove()
                 handler.reopen()
 
-    def reopenlogs(self):
-        if self.childlog is not None:
-            for handler in self.childlog.handlers:
+    def reopen_logs(self):
+        if self.child_log is not None:
+            for handler in self.child_log.handlers:
                 handler.reopen()
 
     def writable(self):
@@ -321,10 +321,10 @@ class PEventListenerDispatcher(PDispatcher):
             msg = '%r %s output:\n%s' % (procname, self.channel, data)
             self.process.config.options.logger.debug(msg)
 
-            if self.childlog:
+            if self.child_log:
                 if self.process.config.options.strip_ansi:
-                    data = stripEscapes(data)
-                self.childlog.info(data)
+                    data = strip_escapes(data)
+                self.child_log.info(data)
         else:
             # if we get no data back from the pipe, it means that the child process has ended.  See
             # mail.python.org/pipermail/python-dev/2004-August/046850.html
@@ -492,7 +492,7 @@ ANSI_ESCAPE_BEGIN = b'\x1b['
 ANSI_TERMINATORS = (b'H', b'f', b'A', b'B', b'C', b'D', b'R', b's', b'u', b'J', b'K', b'h', b'l', b'p', b'm')
 
 
-def stripEscapes(s):
+def strip_escapes(s):
     """Remove all ANSI color escapes from the given string."""
     result = b''
     show = 1

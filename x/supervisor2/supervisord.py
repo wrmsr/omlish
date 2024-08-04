@@ -18,7 +18,7 @@ Options:
 -e/--loglevel LEVEL -- use LEVEL as log level (debug,info,warn,error,critical)
 -j/--pidfile FILENAME -- write a pid file for the daemon process to FILENAME
 -i/--identifier STR -- identifier used for this instance of supervisord
--q/--childlogdir DIRECTORY -- the log directory for child process logs
+-q/--child_logdir DIRECTORY -- the log directory for child process logs
 -k/--nocleanup --  prevent the process from performing cleanup (removal of old automatic child log files) at startup.
 -a/--minfds NUM -- the minimum number of file descriptors for start success
 -t/--strip_ansi -- strip ansi escape codes from process output
@@ -68,7 +68,7 @@ class Supervisor:
 
         if not self.options.nocleanup:
             # clean up old automatic logs
-            self.options.clear_autochildlogdir()
+            self.options.clear_autochild_logdir()
 
         self.run()
 
@@ -294,9 +294,9 @@ class Supervisor:
                 self.options.logger.debug('received %s indicating a child quit' % signame(sig))
             elif sig == signal.SIGUSR2:
                 self.options.logger.info('received %s indicating log reopen request' % signame(sig))
-                self.options.reopenlogs()
+                self.options.reopen_logs()
                 for group in self.process_groups.values():
-                    group.reopenlogs()
+                    group.reopen_logs()
             else:
                 self.options.logger.blather('received %s indicating nothing' % signame(sig))
 
