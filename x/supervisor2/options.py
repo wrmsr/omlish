@@ -818,23 +818,21 @@ class ServerOptions(Options):
                 # TODO remove this in a future version
                 if lf_val is Syslog:
                     self.parse_warnings.append(
-                        'For [%s], %s=syslog but this is deprecated and will '
-                        'be removed.  Use %s=true to enable syslog instead.' % (section, lf_key, sy_key))
+                        'For [%s], %s=syslog but this is deprecated and will be removed. Use %s=true to enable '
+                        ' syslog instead.' % (section, lf_key, sy_key))
                     logfiles[lf_key] = lf_val = None
                     logfiles[sy_key] = True
 
                 if lf_val is Automatic and not maxbytes:
                     self.parse_warnings.append(
-                        'For [%s], AUTO logging used for %s without '
-                        'rollover, set maxbytes > 0 to avoid filling up '
+                        'For [%s], AUTO logging used for %s without rollover, set maxbytes > 0 to avoid filling up '
                         'filesystem unintentionally' % (section, lf_key))
 
             if redirect_stderr:
                 if logfiles['stderr_logfile'] not in (Automatic, None):
                     self.parse_warnings.append(
-                        'For [%s], redirect_stderr=true but stderr_logfile has '
-                        'also been set to a filename, the filename has been '
-                        'ignored' % section)
+                        'For [%s], redirect_stderr=true but stderr_logfile has also been set to a filename, the '
+                        'filename has been ignored' % section)
                 # never create an stderr logfile when redirected
                 logfiles['stderr_logfile'] = None
 
@@ -923,11 +921,9 @@ class ServerOptions(Options):
         self.stderr = sys.stderr = sys.__stderr__ = open('/dev/null', 'w')
         os.setsid()
         os.umask(self.umask)
-        # XXX Stevens, in his Advanced Unix book, section 13.3 (page
-        # 417) recommends calling umask(0) and closing unused
-        # file descriptors.  In his Network Programming book, he
-        # additionally recommends ignoring SIGHUP and forking again
-        # after the setsid() call, for obscure SVR4 reasons.
+        # XXX Stevens, in his Advanced Unix book, section 13.3 (page 417) recommends calling umask(0) and closing unused
+        # file descriptors.  In his Network Programming book, he additionally recommends ignoring SIGHUP and forking
+        # again after the setsid() call, for obscure SVR4 reasons.
 
     def write_pidfile(self):
         pid = os.getpid()
