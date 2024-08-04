@@ -99,7 +99,7 @@ from .datatypes import signal_number
 VERSION = 'foo'
 
 
-def normalize_path(v):
+def normalize_path(v: str) -> str:
     return os.path.normpath(os.path.abspath(os.path.expanduser(v)))
 
 
@@ -973,13 +973,14 @@ class ServerOptions:
         pass
 
     def setsignals(self) -> None:
-        receive = self.signal_receiver.receive
-        signal.signal(signal.SIGTERM, receive)
-        signal.signal(signal.SIGINT, receive)
-        signal.signal(signal.SIGQUIT, receive)
-        signal.signal(signal.SIGHUP, receive)
-        signal.signal(signal.SIGCHLD, receive)
-        signal.signal(signal.SIGUSR2, receive)
+        self.signal_receiver.receive(
+            signal.SIGTERM,
+            signal.SIGINT,
+            signal.SIGQUIT,
+            signal.SIGHUP,
+            signal.SIGCHLD,
+            signal.SIGUSR2,
+        )
 
     def get_signal(self) -> int | None:
         return self.signal_receiver.get_signal()
@@ -1034,60 +1035,6 @@ class ServerOptions:
             pid, sts = None, None
         return pid, sts
 
-    def drop_privileges(self, user: int | str) -> str | None:
-        """
-        Drop privileges to become the specified user, which may be a username or uid.  Called for supervisord startup
-        and when spawning subprocesses.  Returns None on success or a string error message if privileges could not be
-        dropped.
-        """
-        if user is None:
-            return 'No user specified to setuid to!'
-
-        # get uid for user, which can be a number or username
-        try:
-            uid = int(user)
-        except ValueError:
-            try:
-                pwrec = pwd.getpwnam(user)
-            except KeyError:
-                return "Can't find username %r" % user
-            uid = pwrec[2]
-        else:
-            try:
-                pwrec = pwd.getpwuid(uid)
-            except KeyError:
-                return "Can't find uid %r" % uid
-
-        current_uid = os.getuid()
-
-        if current_uid == uid:
-            # do nothing and return successfully if the uid is already the current one.  this allows a supervisord
-            # running as an unprivileged user "foo" to start a process where the config has "user=foo" (same user) in
-            # it.
-            return None
-
-        if current_uid != 0:
-            return "Can't drop privilege as nonroot user"
-
-        gid = pwrec[3]
-        if hasattr(os, 'setgroups'):
-            user = pwrec[0]
-            groups = [grprec[2] for grprec in grp.getgrall() if user in grprec[3]]
-
-            # always put our primary gid first in this list, otherwise we can lose group info since sometimes the first
-            # group in the setgroups list gets overwritten on the subsequent setgid call (at least on freebsd 9 with
-            # python 2.7 - this will be safe though for all unix /python version combos)
-            groups.insert(0, gid)
-            try:
-                os.setgroups(groups)
-            except OSError:
-                return 'Could not set groups of effective user'
-        try:
-            os.setgid(gid)
-        except OSError:
-            return 'Could not set group id of effective user'
-        os.setuid(uid)
-
     def set_uid_or_exit(self) -> None:
         """
         Set the uid of the supervisord process.  Called during supervisord startup only.  No return value.  Exits the
@@ -1101,7 +1048,7 @@ class ServerOptions:
                     'this message.'
                 )
         else:
-            msg = self.drop_privileges(self.uid)
+            msg = drop_privileges(self.uid)
             if msg is None:
                 self.parse_infos.append('Set uid to user %s succeeded' % self.uid)
             else:  # failed to drop privileges
@@ -1185,6 +1132,61 @@ class ServerOptions:
         for handler in self.logger.handlers:
             if hasattr(handler, 'reopen'):
                 handler.reopen()
+
+
+def drop_privileges(user: int | str) -> str | None:
+    """
+    Drop privileges to become the specified user, which may be a username or uid.  Called for supervisord startup
+    and when spawning subprocesses.  Returns None on success or a string error message if privileges could not be
+    dropped.
+    """
+    if user is None:
+        return 'No user specified to setuid to!'
+
+    # get uid for user, which can be a number or username
+    try:
+        uid = int(user)
+    except ValueError:
+        try:
+            pwrec = pwd.getpwnam(user)
+        except KeyError:
+            return "Can't find username %r" % user
+        uid = pwrec[2]
+    else:
+        try:
+            pwrec = pwd.getpwuid(uid)
+        except KeyError:
+            return "Can't find uid %r" % uid
+
+    current_uid = os.getuid()
+
+    if current_uid == uid:
+        # do nothing and return successfully if the uid is already the current one.  this allows a supervisord
+        # running as an unprivileged user "foo" to start a process where the config has "user=foo" (same user) in
+        # it.
+        return None
+
+    if current_uid != 0:
+        return "Can't drop privilege as nonroot user"
+
+    gid = pwrec[3]
+    if hasattr(os, 'setgroups'):
+        user = pwrec[0]
+        groups = [grprec[2] for grprec in grp.getgrall() if user in grprec[3]]
+
+        # always put our primary gid first in this list, otherwise we can lose group info since sometimes the first
+        # group in the setgroups list gets overwritten on the subsequent setgid call (at least on freebsd 9 with
+        # python 2.7 - this will be safe though for all unix /python version combos)
+        groups.insert(0, gid)
+        try:
+            os.setgroups(groups)
+        except OSError:
+            return 'Could not set groups of effective user'
+    try:
+        os.setgid(gid)
+    except OSError:
+        return 'Could not set group id of effective user'
+    os.setuid(uid)
 
 
 def make_pipes(stderr=True) -> ta.Mapping[str, int]:

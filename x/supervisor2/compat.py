@@ -138,6 +138,10 @@ class SignalReceiver:
         if sig not in self._signals_recvd:
             self._signals_recvd.append(sig)
 
+    def install(self, *sigs: int) -> None:
+        for sig in sigs:
+            signal.signal(sig, self.receive)
+
     def get_signal(self) -> int | None:
         if self._signals_recvd:
             sig = self._signals_recvd.pop(0)
