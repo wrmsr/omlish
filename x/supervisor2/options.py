@@ -114,11 +114,6 @@ def _get_search_paths() -> list[str]:
 
 
 class ServerOptions:
-    stderr = sys.stderr
-    stdout = sys.stdout
-    exit = sys.exit
-    warnings = warnings
-
     uid = gid = None
 
     progname = sys.argv[0]
@@ -218,7 +213,7 @@ class ServerOptions:
         help = self.doc + '\n'
         if help.find('%s') > 0:
             help = help.replace('%s', self.progname)
-        self.stdout.write(help)
+        sys.stdout.write(help)
         self.exit(0)
 
     def usage(self, msg):
@@ -495,12 +490,12 @@ class ServerOptions:
 
     def version(self, dummy) -> None:
         """Print version to stdout and exit(0)."""
-        self.stdout.write('%s\n' % VERSION)
-        self.exit(0)
+        sys.stdout.write('%s\n' % VERSION)
+        sys.exit(0)
 
     def default_config_file(self):
         if os.getuid() == 0:
-            self.warnings.warn(
+            warnings.warn(
                 'Supervisord is running as root and it is searching for its configuration file in default locations '
                 '(including its current working directory); you probably want to specify a "-c" argument specifying an '
                 'absolute path to a configuration file for improved security.',
@@ -941,11 +936,11 @@ class ServerOptions:
             else:
                 self.logger.info('set current directory: %r' % self.directory)
         os.close(0)
-        self.stdin = sys.stdin = sys.__stdin__ = open('/dev/null')
+        sys.stdin = sys.__stdin__ = open('/dev/null')
         os.close(1)
-        self.stdout = sys.stdout = sys.__stdout__ = open('/dev/null', 'w')
+        sys.stdout = sys.__stdout__ = open('/dev/null', 'w')
         os.close(2)
-        self.stderr = sys.stderr = sys.__stderr__ = open('/dev/null', 'w')
+        sys.stderr = sys.__stderr__ = open('/dev/null', 'w')
         os.setsid()
         os.umask(self.umask)
         # XXX Stevens, in his Advanced Unix book, section 13.3 (page 417) recommends calling umask(0) and closing unused
