@@ -1,5 +1,5 @@
 from .compat import as_string
-from .states import getProcessStateDescription
+from .states import get_process_state_description
 
 
 callbacks = []
@@ -143,7 +143,7 @@ class ProcessStateEvent(Event):
         L = [
             ('processname', self.process.config.name),
             ('groupname', groupname),
-            ('from_state', getProcessStateDescription(self.from_state)),
+            ('from_state', get_process_state_description(self.from_state)),
         ]
         L.extend(self.extra_values)
         s = ' '.join(['%s:%s' % (name, val) for (name, val) in L])

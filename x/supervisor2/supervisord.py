@@ -37,7 +37,7 @@ from .options import ServerOptions
 from .options import decode_wait_status
 from .options import signame
 from .states import SupervisorStates
-from .states import getProcessStateDescription
+from .states import get_process_state_description
 
 
 class Supervisor:
@@ -140,7 +140,7 @@ class Supervisor:
                 self.options.logger.info('waiting for %s to die' % namestr)
                 self.last_shutdown_report = now
                 for proc in unstopped:
-                    state = getProcessStateDescription(proc.get_state())
+                    state = get_process_state_description(proc.get_state())
                     self.options.logger.debug(
                         '%s state: %s' % (proc.config.name, state))
         return unstopped

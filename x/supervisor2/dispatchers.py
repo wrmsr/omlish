@@ -9,7 +9,7 @@ from .events import ProcessLogStderrEvent
 from .events import ProcessLogStdoutEvent
 from .events import notify
 from .states import EventListenerStates
-from .states import getEventListenerStateDescription
+from .states import get_event_listener_state_description
 
 
 class PDispatcher:
@@ -442,8 +442,8 @@ class PEventListenerDispatcher(PDispatcher):
 
         msg = '%s: %s -> %s' % (
             procname,
-            getEventListenerStateDescription(old_state),
-            getEventListenerStateDescription(new_state),
+            get_event_listener_state_description(old_state),
+            get_event_listener_state_description(new_state),
         )
         process.config.options.logger.debug(msg)
 

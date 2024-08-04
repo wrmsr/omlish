@@ -1,11 +1,14 @@
 import errno
+import logging
 import select
+
+
+log = logging.getLogger(__name__)
 
 
 class BasePoller:
 
-    def __init__(self, options):
-        self.options = options
+    def __init__(self):
         self.initialize()
 
     def initialize(self):
@@ -66,10 +69,10 @@ class SelectPoller(BasePoller):
             )
         except OSError as err:
             if err.args[0] == errno.EINTR:
-                self.options.logger.debug('EINTR encountered in poll')
+                log.debug('EINTR encountered in poll')
                 return [], []
             if err.args[0] == errno.EBADF:
-                self.options.logger.debug('EBADF encountered in poll')
+                log.debug('EBADF encountered in poll')
                 self.unregister_all()
                 return [], []
             raise
@@ -126,7 +129,7 @@ class PollPoller(BasePoller):
             return self._poller.poll(timeout * 1000)
         except OSError as err:
             if err.args[0] == errno.EINTR:
-                self.options.logger.debug('EINTR encountered in poll')
+                log.debug('EINTR encountered in poll')
                 return []
             raise
 
@@ -180,7 +183,7 @@ class KQueuePoller(BasePoller):
             self._kqueue.control([kevent], 0)
         except OSError as error:
             if error.errno == errno.EBADF:
-                self.options.logger.debug('EBADF encountered in kqueue. Invalid file descriptor %s' % fd)
+                log.debug('EBADF encountered in kqueue. Invalid file descriptor %s' % fd)
             else:
                 raise
 
@@ -191,7 +194,7 @@ class KQueuePoller(BasePoller):
             kevents = self._kqueue.control(None, self.max_events, timeout)
         except OSError as error:
             if error.errno == errno.EINTR:
-                self.options.logger.debug('EINTR encountered in poll')
+                log.debug('EINTR encountered in poll')
                 return readables, writables
             raise
 
