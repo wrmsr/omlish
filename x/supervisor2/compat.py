@@ -161,3 +161,11 @@ def try_unlink(path: str) -> bool:
     except OSError:
         return False
     return True
+
+
+def close_fd(fd: int) -> bool:
+    try:
+        os.close(fd)
+    except OSError:
+        return False
+    return True

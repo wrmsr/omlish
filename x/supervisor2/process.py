@@ -10,6 +10,7 @@ import traceback
 from . import events
 from .compat import as_bytes
 from .compat import as_string
+from .compat import close_fd
 from .compat import compact_traceback
 from .compat import decode_wait_status
 from .compat import signame
@@ -272,7 +273,7 @@ class Subprocess:
         else:
             os.dup2(self.pipes['child_stderr'], 2)
         for i in range(3, options.minfds):
-            options.close_fd(i)
+            close_fd(i)
 
     def _spawn_as_child(self, filename, argv):
         options = self.config.options

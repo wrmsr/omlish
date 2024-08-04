@@ -65,6 +65,7 @@ import warnings
 from . import poller
 from . import states
 from .compat import SignalReceiver
+from .compat import close_fd
 from .compat import expand
 from .compat import import_spec
 from .compat import try_unlink
@@ -1177,12 +1178,6 @@ class ServerOptions:
         # )
         self._log_parsing_messages(self.logger)
 
-    def close_fd(self, fd: int) -> None:
-        try:
-            os.close(fd)
-        except OSError:
-            pass
-
     def mktempfile(self, suffix, prefix, dir):
         # set os._urandomfd as a hack around bad file descriptor bug seen in the wild, see
         # https://web.archive.org/web/20160729044005/http://www.plope.com/software/collector/252
@@ -1239,20 +1234,20 @@ class ServerOptions:
         except OSError:
             for fd in pipes.values():
                 if fd is not None:
-                    self.close_fd(fd)
+                    close_fd(fd)
             raise
 
     def close_parent_pipes(self, pipes: ta.Mapping[str, int]) -> None:
         for fdname in ('stdin', 'stdout', 'stderr'):
             fd = pipes.get(fdname)
             if fd is not None:
-                self.close_fd(fd)
+                close_fd(fd)
 
     def close_child_pipes(self, pipes: ta.Mapping[str, int]) -> None:
         for fdname in ('child_stdin', 'child_stdout', 'child_stderr'):
             fd = pipes.get(fdname)
             if fd is not None:
-                self.close_fd(fd)
+                close_fd(fd)
 
 
 _marker = []
