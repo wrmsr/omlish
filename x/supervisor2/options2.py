@@ -1,70 +1,16 @@
-"""
-class ServerOptions:
-    first: bool
-    test: bool
-
-    identifier: str
-
-    strip_ansi: bool
-
-    nocleanup: bool
-    nodaemon: bool
-    minfds: int
-
-    process_group_configs: list[ProcessGroupConfig]
-
-    mood: SupervisorStates
-    pid_history: dict[int, Subprocess]
-
-    logger: log.Logger
-
-    poller: Poller
-
-    def setsignals(self) -> None:
-    def waitpid(self) -> tuple[int | None, int | None]:
-    def set_uid_or_exit(self) -> None:
-
-    def cleanup(self) -> None:
-    def cleanup_fds(self) -> None:
-    def clear_auto_child_logdir(self) -> None:
-    def daemonize(self) -> None:
-    def get_auto_child_log_name(self, name: str, identifier: str, channel: str) -> str:
-    def get_signal(self) -> int | None:
-    def make_logger(self) -> None:
-    def make_pipes(self, stderr=True) -> ta.Mapping[str, int]:
-    def reopen_logs(self) -> None:
-    def set_rlimits_or_exit(self) -> None:
-    def write_pidfile(self) -> None:
-"""
 import configparser
-import errno
-import fcntl
 import getopt
 import glob
-import grp
-import io
-import logging
 import os
 import platform
-import pwd
-import re
-import resource
-import signal
-import stat
 import sys
 import tempfile
-import typing as ta
 import warnings
 
 from . import poller
-from . import states
 from .compat import SignalReceiver
-from .compat import close_fd
 from .compat import expand
 from .compat import import_spec
-from .compat import mktempfile
-from .compat import real_exit
-from .compat import try_unlink
 from .configs import EventListenerConfig
 from .configs import EventListenerPoolConfig
 from .configs import ProcessConfig
@@ -88,37 +34,14 @@ from .datatypes import octal_type
 from .datatypes import process_or_group_name
 from .datatypes import profile_options
 from .datatypes import signal_number
+from .options import Dummy
+from .options import UnhosedConfigParser
+from .options import VERSION
+from .options import _get_search_paths
+from .options import normalize_path
 
 
-VERSION = 'foo'
-
-
-def normalize_path(v: str) -> str:
-    return os.path.normpath(os.path.abspath(os.path.expanduser(v)))
-
-
-class Dummy:
-    pass
-
-
-def _get_search_paths() -> list[str]:
-    here = os.path.dirname(os.path.dirname(sys.argv[0]))
-    return [
-        os.path.join(here, 'etc', 'supervisord.conf'),
-        os.path.join(here, 'supervisord.conf'),
-        'supervisord.conf',
-        'etc/supervisord.conf',
-        '/etc/supervisord.conf',
-        '/etc/supervisor/supervisord.conf',
-    ]
-
-
-class ServerOptions:
-    stderr = sys.stderr
-    stdout = sys.stdout
-    exit = sys.exit
-    warnings = warnings
-
+class ServerOptionsReader:
     uid = gid = None
 
     progname = sys.argv[0]
@@ -136,15 +59,9 @@ class ServerOptions:
     pidfile = None
     nodaemon = None
     silent = None
-    unlink_pidfile = False
-    unlink_socketfiles = False
-    mood = states.SupervisorStates.RUNNING
 
     def __init__(self, *, require_config_file=True):
         super().__init__()
-
-        from .options2 import ServerOptionsReader
-        ServerOptionsReader()
 
         self.names_list = []
         self.short_options = []
@@ -197,6 +114,11 @@ class ServerOptions:
 
     ##
 
+    def version(self, dummy) -> None:
+        """Print version to stdout and exit(0)."""
+        sys.stdout.write('%s\n' % VERSION)
+        sys.exit(0)
+
     def _default_config_file(self):
         """Return the name of the found config file or print usage/exit."""
         config = None
@@ -218,14 +140,14 @@ class ServerOptions:
         help = self.doc + '\n'
         if help.find('%s') > 0:
             help = help.replace('%s', self.progname)
-        self.stdout.write(help)
-        self.exit(0)
+        sys.stdout.write(help)
+        sys.exit(0)
 
     def usage(self, msg):
         """Print a brief error message to stderr and exit(2)."""
-        self.stderr.write('Error: %s\n' % str(msg))
-        self.stderr.write('For help, use %s -h\n' % self.progname)
-        self.exit(2)
+        sys.stderr.write('Error: %s\n' % str(msg))
+        sys.stderr.write('For help, use %s -h\n' % self.progname)
+        sys.exit(2)
 
     def add(
             self,
@@ -483,24 +405,11 @@ class ServerOptions:
                     else:
                         parser.expand_here(os.path.abspath(os.path.dirname(filename)))
 
-    def _log_parsing_messages(self, logger: logging.Logger) -> None:
-        for msg in self.parse_criticals:
-            logger.critical(msg)
-        for msg in self.parse_warnings:
-            logger.warn(msg)
-        for msg in self.parse_infos:
-            logger.info(msg)
-
     ##
-
-    def version(self, dummy) -> None:
-        """Print version to stdout and exit(0)."""
-        self.stdout.write('%s\n' % VERSION)
-        self.exit(0)
 
     def default_config_file(self):
         if os.getuid() == 0:
-            self.warnings.warn(
+            warnings.warn(
                 'Supervisord is running as root and it is searching for its configuration file in default locations '
                 '(including its current working directory); you probably want to specify a "-c" argument specifying an '
                 'absolute path to a configuration file for improved security.',
@@ -904,461 +813,3 @@ class ServerOptions:
 
         programs.sort()  # asc by priority
         return programs
-
-    def daemonize(self) -> None:
-        self.poller.before_daemonize()
-        self._daemonize()
-        self.poller.after_daemonize()
-
-    def _daemonize(self) -> None:
-        # To daemonize, we need to become the leader of our own session (process) group.  If we do not, signals sent to
-        # our parent process will also be sent to us.   This might be bad because signals such as SIGINT can be sent to
-        # our parent process during normal (uninteresting) operations such as when we press Ctrl-C in the parent
-        # terminal window to escape from a logtail command. To disassociate ourselves from our parent's session group we
-        # use os.setsid.  It means "set session id", which has the effect of disassociating a process from is current
-        # session and process group and setting itself up as a new session leader.
-        #
-        # Unfortunately we cannot call setsid if we're already a session group leader, so we use "fork" to make a copy
-        # of ourselves that is guaranteed to not be a session group leader.
-        #
-        # We also change directories, set stderr and stdout to null, and change our umask.
-        #
-        # This explanation was (gratefully) garnered from
-        # http://www.cems.uwe.ac.uk/~irjohnso/coursenotes/lrc/system/daemons/d3.htm
-
-        pid = os.fork()
-        if pid != 0:
-            # Parent
-            self.logger.debug('supervisord forked; parent exiting')
-            real_exit(0)
-        # Child
-        self.logger.info('daemonizing the supervisord process')
-        if self.directory:
-            try:
-                os.chdir(self.directory)
-            except OSError as err:
-                self.logger.critical("can't chdir into %r: %s" % (self.directory, err))
-            else:
-                self.logger.info('set current directory: %r' % self.directory)
-        os.close(0)
-        self.stdin = sys.stdin = sys.__stdin__ = open('/dev/null')
-        os.close(1)
-        self.stdout = sys.stdout = sys.__stdout__ = open('/dev/null', 'w')
-        os.close(2)
-        self.stderr = sys.stderr = sys.__stderr__ = open('/dev/null', 'w')
-        os.setsid()
-        os.umask(self.umask)
-        # XXX Stevens, in his Advanced Unix book, section 13.3 (page 417) recommends calling umask(0) and closing unused
-        # file descriptors.  In his Network Programming book, he additionally recommends ignoring SIGHUP and forking
-        # again after the setsid() call, for obscure SVR4 reasons.
-
-    def write_pidfile(self) -> None:
-        pid = os.getpid()
-        try:
-            with open(self.pidfile, 'w') as f:
-                f.write('%s\n' % pid)
-        except OSError:
-            self.logger.critical('could not write pidfile %s' % self.pidfile)
-        else:
-            self.unlink_pidfile = True
-            self.logger.info('supervisord started with pid %s' % pid)
-
-    def cleanup(self) -> None:
-        if self.unlink_pidfile:
-            try_unlink(self.pidfile)
-        self.poller.close()
-
-    def close_logger(self):
-        # self.logger.close()
-        pass
-
-    def setsignals(self) -> None:
-        self.signal_receiver.install(
-            signal.SIGTERM,
-            signal.SIGINT,
-            signal.SIGQUIT,
-            signal.SIGHUP,
-            signal.SIGCHLD,
-            signal.SIGUSR2,
-        )
-
-    def get_signal(self) -> int | None:
-        return self.signal_receiver.get_signal()
-
-    def get_auto_child_log_name(self, name: str, identifier: str, channel: str) -> str:
-        prefix = '%s-%s---%s-' % (name, channel, identifier)
-        logfile = mktempfile(
-            suffix='.log',
-            prefix=prefix,
-            dir=self.child_logdir,
-        )
-        return logfile
-
-    def clear_auto_child_logdir(self) -> None:
-        # must be called after realize()
-        child_logdir = self.child_logdir
-        fnre = re.compile(r'.+?---%s-\S+\.log\.{0,1}\d{0,4}' % self.identifier)
-        try:
-            filenames = os.listdir(child_logdir)
-        except OSError:
-            self.logger.warn('Could not clear child_log dir')
-            return
-
-        for filename in filenames:
-            if fnre.match(filename):
-                pathname = os.path.join(child_logdir, filename)
-                try:
-                    os.remove(pathname)
-                except OSError:
-                    self.logger.warn('Failed to clean up %r' % pathname)
-
-    def cleanup_fds(self) -> None:
-        # try to close any leaked file descriptors (for reload)
-        start = 5
-        os.closerange(start, self.minfds)
-
-    def waitpid(self) -> tuple[int | None, int | None]:
-        # Need pthread_sigmask here to avoid concurrent sigchld, but Python doesn't offer in Python < 3.4.  There is
-        # still a race condition here; we can get a sigchld while we're sitting in the waitpid call. However, AFAICT, if
-        # waitpid is interrupted by SIGCHLD, as long as we call waitpid again (which happens every so often during the
-        # normal course in the mainloop), we'll eventually reap the child that we tried to reap during the interrupted
-        # call. At least on Linux, this appears to be true, or at least stopping 50 processes at once never left zombies
-        # laying around.
-        try:
-            pid, sts = os.waitpid(-1, os.WNOHANG)
-        except OSError as exc:
-            code = exc.args[0]
-            if code not in (errno.ECHILD, errno.EINTR):
-                self.logger.critical('waitpid error %r; a process may not be cleaned up properly' % code)
-            if code == errno.EINTR:
-                self.logger.debug('EINTR during reap')
-            pid, sts = None, None
-        return pid, sts
-
-    def set_uid_or_exit(self) -> None:
-        """
-        Set the uid of the supervisord process.  Called during supervisord startup only.  No return value.  Exits the
-        process via usage() if privileges could not be dropped.
-        """
-        if self.uid is None:
-            if os.getuid() == 0:
-                self.parse_criticals.append(
-                    'Supervisor is running as root.  Privileges were not dropped because no user is specified in the '
-                    'config file.  If you intend to run as root, you can set user=root in the config file to avoid '
-                    'this message.'
-                )
-        else:
-            msg = drop_privileges(self.uid)
-            if msg is None:
-                self.parse_infos.append('Set uid to user %s succeeded' % self.uid)
-            else:  # failed to drop privileges
-                self.usage(msg)
-
-    def set_rlimits_or_exit(self) -> None:
-        """
-        Set the rlimits of the supervisord process.  Called during supervisord startup only.  No return value.  Exits
-        the process via usage() if any rlimits could not be set.
-        """
-        limits = []
-        if hasattr(resource, 'RLIMIT_NOFILE'):
-            limits.append({
-                'msg': (
-                    'The minimum number of file descriptors required to run this process is %(min_limit)s as per the '
-                    '"minfds" command-line argument or config file setting. The current environment will only allow '
-                    'you to open %(hard)s file descriptors.  Either raise the number of usable file descriptors in '
-                    'your environment (see README.rst) or lower the minfds setting in the config file to allow the '
-                    'process to start.'
-                ),
-                'min': self.minfds,
-                'resource': resource.RLIMIT_NOFILE,
-                'name': 'RLIMIT_NOFILE',
-                })
-        if hasattr(resource, 'RLIMIT_NPROC'):
-            limits.append({
-                'msg': (
-                    'The minimum number of available processes required to run this program is %(min_limit)s as per '
-                    'the "minprocs" command-line argument or config file setting. The current environment will only '
-                    'allow you to open %(hard)s processes.  Either raise the number of usable processes in your '
-                    'environment (see README.rst) or lower the minprocs setting in the config file to allow the '
-                    'program to start.'
-                ),
-                'min': self.minprocs,
-                'resource': resource.RLIMIT_NPROC,
-                'name': 'RLIMIT_NPROC',
-            })
-
-        for limit in limits:
-            min_limit = limit['min']
-            res = limit['resource']
-            msg = limit['msg']
-            name = limit['name']
-            name = name  # name is used below by locals()
-
-            soft, hard = resource.getrlimit(res)
-
-            if (soft < min_limit) and (soft != -1):  # -1 means unlimited
-                if (hard < min_limit) and (hard != -1):
-                    # setrlimit should increase the hard limit if we are root, if not then setrlimit raises and we print
-                    # usage
-                    hard = min_limit
-
-                try:
-                    resource.setrlimit(res, (min_limit, hard))
-                    self.parse_infos.append('Increased %(name)s limit to %(min_limit)s' % locals())
-                except (resource.error, ValueError):
-                    self.usage(msg % locals())
-
-    def make_logger(self) -> None:
-        # must be called after realize() and after supervisor does setuid()
-        format = '%(asctime)s %(levelname)s %(message)s\n'
-        self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(self.loglevel)
-        if self.nodaemon and not self.silent:
-            handler = logging.StreamHandler()
-            handler.setFormatter(logging.Formatter(format))
-            logging.root.addHandler(handler)
-        # loggers.handle_file(
-        #     self.logger,
-        #     self.logfile,
-        #     format,
-        #     rotating=bool(self.logfile_maxbytes),
-        #     maxbytes=self.logfile_maxbytes,
-        #     backups=self.logfile_backups,
-        # )
-        self._log_parsing_messages(self.logger)
-
-    def reopen_logs(self) -> None:
-        self.logger.info('supervisord logreopen')
-        for handler in self.logger.handlers:
-            if hasattr(handler, 'reopen'):
-                handler.reopen()
-
-
-def drop_privileges(user: int | str) -> str | None:
-    """
-    Drop privileges to become the specified user, which may be a username or uid.  Called for supervisord startup
-    and when spawning subprocesses.  Returns None on success or a string error message if privileges could not be
-    dropped.
-    """
-    if user is None:
-        return 'No user specified to setuid to!'
-
-    # get uid for user, which can be a number or username
-    try:
-        uid = int(user)
-    except ValueError:
-        try:
-            pwrec = pwd.getpwnam(user)
-        except KeyError:
-            return "Can't find username %r" % user
-        uid = pwrec[2]
-    else:
-        try:
-            pwrec = pwd.getpwuid(uid)
-        except KeyError:
-            return "Can't find uid %r" % uid
-
-    current_uid = os.getuid()
-
-    if current_uid == uid:
-        # do nothing and return successfully if the uid is already the current one.  this allows a supervisord
-        # running as an unprivileged user "foo" to start a process where the config has "user=foo" (same user) in
-        # it.
-        return None
-
-    if current_uid != 0:
-        return "Can't drop privilege as nonroot user"
-
-    gid = pwrec[3]
-    if hasattr(os, 'setgroups'):
-        user = pwrec[0]
-        groups = [grprec[2] for grprec in grp.getgrall() if user in grprec[3]]
-
-        # always put our primary gid first in this list, otherwise we can lose group info since sometimes the first
-        # group in the setgroups list gets overwritten on the subsequent setgid call (at least on freebsd 9 with
-        # python 2.7 - this will be safe though for all unix /python version combos)
-        groups.insert(0, gid)
-        try:
-            os.setgroups(groups)
-        except OSError:
-            return 'Could not set groups of effective user'
-    try:
-        os.setgid(gid)
-    except OSError:
-        return 'Could not set group id of effective user'
-    os.setuid(uid)
-
-
-def make_pipes(stderr=True) -> ta.Mapping[str, int]:
-    """
-    Create pipes for parent to child stdin/stdout/stderr communications.  Open fd in non-blocking mode so we can
-    read them in the mainloop without blocking.  If stderr is False, don't create a pipe for stderr.
-    """
-
-    pipes = {
-        'child_stdin': None,
-        'stdin': None,
-        'stdout': None,
-        'child_stdout': None,
-        'stderr': None,
-        'child_stderr': None,
-    }
-    try:
-        stdin, child_stdin = os.pipe()
-        pipes['child_stdin'], pipes['stdin'] = stdin, child_stdin
-        stdout, child_stdout = os.pipe()
-        pipes['stdout'], pipes['child_stdout'] = stdout, child_stdout
-        if stderr:
-            stderr, child_stderr = os.pipe()
-            pipes['stderr'], pipes['child_stderr'] = stderr, child_stderr
-        for fd in (pipes['stdout'], pipes['stderr'], pipes['stdin']):
-            if fd is not None:
-                flags = fcntl.fcntl(fd, fcntl.F_GETFL) | os.O_NDELAY
-                fcntl.fcntl(fd, fcntl.F_SETFL, flags)
-        return pipes
-    except OSError:
-        for fd in pipes.values():
-            if fd is not None:
-                close_fd(fd)
-        raise
-
-
-def close_parent_pipes(pipes: ta.Mapping[str, int]) -> None:
-    for fdname in ('stdin', 'stdout', 'stderr'):
-        fd = pipes.get(fdname)
-        if fd is not None:
-            close_fd(fd)
-
-
-def close_child_pipes(pipes: ta.Mapping[str, int]) -> None:
-    for fdname in ('child_stdin', 'child_stdout', 'child_stderr'):
-        fd = pipes.get(fdname)
-        if fd is not None:
-            close_fd(fd)
-
-
-_marker = []
-
-
-class UnhosedConfigParser(configparser.RawConfigParser):
-    mysection = 'supervisord'
-
-    def __init__(self, *args, **kwargs):
-        # inline_comment_prefixes and strict were added in Python 3 but their defaults make RawConfigParser behave
-        # differently than it did on Python 2.  We make it work like 2 by default for backwards compat.
-        if 'inline_comment_prefixes' not in kwargs:
-            kwargs['inline_comment_prefixes'] = (';', '#')
-
-        if 'strict' not in kwargs:
-            kwargs['strict'] = False
-
-        configparser.RawConfigParser.__init__(self, *args, **kwargs)
-
-        self.section_to_file = {}
-        self.expansions = {}
-
-    def read_string(self, string, source='<string>'):
-        """
-        Parse configuration data from a string.  This is intended to be used in tests only.  We add this method for Py
-        2/3 compat.
-        """
-        try:
-            return configparser.RawConfigParser.read_string(
-                self, string, source)  # Python 3.2 or later
-        except AttributeError:
-            return self.readfp(io.StringIO(string))
-
-    def read(self, filenames, **kwargs):
-        """
-        Attempt to read and parse a list of filenames, returning a list of filenames which were successfully parsed.
-        This is a method of RawConfigParser that is overridden to build self.section_to_file, which is a mapping of
-        section names to the files they came from.
-        """
-        if isinstance(filenames, str):  # RawConfigParser compat
-            filenames = [filenames]
-
-        ok_filenames = []
-        for filename in filenames:
-            sections_orig = self._sections.copy()
-
-            ok_filenames.extend(
-                configparser.RawConfigParser.read(self, [filename], **kwargs))
-
-            diff = frozenset(self._sections) - frozenset(sections_orig)
-            for section in diff:
-                self.section_to_file[section] = filename
-        return ok_filenames
-
-    def saneget(self, section, option, default=_marker, do_expand=True, expansions={}):
-        try:
-            optval = self.get(section, option)
-        except configparser.NoOptionError:
-            if default is _marker:
-                raise
-            else:
-                optval = default
-
-        if do_expand and isinstance(optval, str):
-            combined_expansions = dict(list(self.expansions.items()) + list(expansions.items()))
-
-            optval = expand(optval, combined_expansions, '%s.%s' % (section, option))
-
-        return optval
-
-    def getdefault(self, option, default=_marker, expansions={}, **kwargs):
-        return self.saneget(self.mysection, option, default=default, expansions=expansions, **kwargs)
-
-    def expand_here(self, here):
-        here_format = '%(here)s'
-        for section in self.sections():
-            for key, value in self.items(section):
-                if here_format in value:
-                    assert here is not None, 'here has not been set to a path'
-                    value = value.replace(here_format, here)
-                    self.set(section, key, value)
-
-
-# Helpers for dealing with signals and exit status
-
-
-
-
-# exceptions
-
-
-def check_execv_args(filename, argv, st) -> None:
-    if st is None:
-        raise NotFound("can't find command %r" % filename)
-
-    elif stat.S_ISDIR(st[stat.ST_MODE]):
-        raise NotExecutable('command at %r is a directory' % filename)
-
-    elif not (stat.S_IMODE(st[stat.ST_MODE]) & 0o111):
-        raise NotExecutable('command at %r is not executable' % filename)
-
-    elif not os.access(filename, os.X_OK):
-        raise NoPermission('no permission to run command %r' % filename)
-
-
-class ProcessException(Exception):
-    """ Specialized exceptions used when attempting to start a process """
-
-
-class BadCommand(ProcessException):
-    """ Indicates the command could not be parsed properly. """
-
-
-class NotExecutable(ProcessException):
-    """ Indicates that the filespec cannot be executed because its path
-    resolves to a file which is not executable, or which is a directory. """
-
-
-class NotFound(ProcessException):
-    """ Indicates that the filespec cannot be executed because it could not be found """
-
-
-class NoPermission(ProcessException):
-    """
-    Indicates that the file cannot be executed because the supervisor process does not possess the appropriate UNIX
-    filesystem permission to execute the file.
-    """
