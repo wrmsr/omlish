@@ -183,7 +183,7 @@ class Options:
                 raise ValueError('flag= requires a command line flag')
             if long and long.endswith('='):
                 raise ValueError('flag= requires a command line flag')
-            handler = lambda arg, flag=flag: flag
+            handler = lambda arg, fl=flag: fl
 
         if short and long:
             if short.endswith(':') != long.endswith('='):
