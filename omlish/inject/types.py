@@ -3,7 +3,7 @@ import collections
 from .. import lang
 
 
-Tag = collections.namedtuple('Tag', 'tag')
+Tag = collections.namedtuple('Tag', 'tag')  # noqa
 
 
 class Scope(lang.Abstract):

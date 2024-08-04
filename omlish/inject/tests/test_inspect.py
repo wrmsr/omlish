@@ -1,6 +1,5 @@
 import typing as ta
 
-from ... import check
 from ... import dataclasses as dc
 from ..impl.inspect import signature
 

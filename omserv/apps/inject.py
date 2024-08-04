@@ -1,7 +1,6 @@
 import typing as ta
 
 from omlish import inject as inj
-from omlish import lang
 from omlish.http import sessions
 from omlish.http.asgi import AsgiApp
 from omlish.http.asgi import AsgiScope

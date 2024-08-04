@@ -28,7 +28,7 @@ j2_helper(url_for)
 ##
 
 
-J2Namespace = ta.NewType('J2Env', ta.Mapping[str, ta.Any])
+J2Namespace = ta.NewType('J2Namespace', ta.Mapping[str, ta.Any])
 
 
 class J2Templates:

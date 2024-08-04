@@ -14,8 +14,8 @@ from omlish.http.asgi import send_response
 from omlish.http.asgi import stub_lifespan
 
 from .base import BASE_SERVER_URL
-from .base import BaseServerUrl
 from .base import SCOPE
+from .base import BaseServerUrl
 from .markers import AppMarker
 from .markers import append_app_marker
 from .markers import get_app_markers
