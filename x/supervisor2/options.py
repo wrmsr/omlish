@@ -37,6 +37,7 @@ class ServerOptions:
     def write_pidfile(self) -> None:
 """
 import configparser
+from omlish import dataclasses as dc
 import errno
 import fcntl
 import getopt
@@ -86,7 +87,6 @@ from .datatypes import logging_level
 from .datatypes import name_to_uid
 from .datatypes import octal_type
 from .datatypes import process_or_group_name
-from .datatypes import profile_options
 from .datatypes import signal_number
 
 
@@ -111,6 +111,41 @@ def _get_search_paths() -> list[str]:
         '/etc/supervisord.conf',
         '/etc/supervisor/supervisord.conf',
     ]
+
+
+@dc.dataclass(frozen=True)
+class ServerOptionsData:
+    def add(
+            self,
+            name=None,  # attribute name on self
+            confname=None,  # dotted config path name
+            short=None,  # short option name
+            long=None,  # long option name
+
+            handler=None,  # handler (defaults to string)
+            default=None,  # default value
+            required=None,  # message if not provided
+            flag=None,  # if not None, flag value
+            env=None,  # if not None, environment variable
+    ):
+        pass
+
+    user: str | None = None
+    nodaemon: bool = False
+    umask: int = dc.xfield(0o22, coerce=octal_type)
+    directory: str | None = dc.xfield(None, coerce=existing_directory)
+    logfile: str = dc.xfield('supervisord.log', coerce=existing_dirpath)
+    logfile_maxbytes: int = dc.xfield(50 * 1024 * 1024, coerce=byte_size)
+    logfile_backups: int = dc.xfield(10)
+    loglevel: int = dc.xfield(logging.INFO, coerce=logging_level)
+    pidfile: str = dc.xfield('supervisord.pid', coerce=existing_dirpath)
+    identifier: str = dc.xfield('supervisor')
+    child_logdir = dc.xfield(tempfile.gettempdir(), coerce=existing_directory)
+    minfds: int = 1024
+    minprocs: int = 200
+    nocleanup: bool = False
+    strip_ansi: bool = False
+    silent: bool = False
 
 
 class ServerOptions:
@@ -182,7 +217,6 @@ class ServerOptions:
         self.add('minprocs', 'supervisord.minprocs', '', 'minprocs=', int, default=200)
         self.add('nocleanup', 'supervisord.nocleanup', 'k', 'nocleanup', flag=1, default=0)  # noqa
         self.add('strip_ansi', 'supervisord.strip_ansi', 't', 'strip_ansi', flag=1, default=0)  # noqa
-        self.add('profile_options', 'supervisord.profile_options', '', 'profile_options=', profile_options, default=None)  # noqa
         self.add('silent', 'supervisord.silent', 's', 'silent', flag=1, default=0)
 
         self.pid_history = {}
@@ -631,7 +665,6 @@ class ServerOptions:
                 env = section.environment.copy()
                 env.update(proc.environment)
                 proc.environment = env
-        section.profile_options = None
         return section
 
     def process_groups_from_parser(self, parser):

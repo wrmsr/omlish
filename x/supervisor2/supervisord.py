@@ -308,29 +308,6 @@ def timeslice(period, when):
     return int(when - (when % period))
 
 
-# profile entry point
-def profile(cmd, globals, locals, sort_order, callers):  # pragma: no cover
-    try:
-        import cProfile as profile
-    except ImportError:
-        import profile
-    import pstats
-    import tempfile
-    fd, fn = tempfile.mkstemp()
-    try:
-        profile.runctx(cmd, globals, locals, fn)
-        stats = pstats.Stats(fn)
-        stats.strip_dirs()
-        # calls,time,cumulative and cumulative,calls,time are useful
-        stats.sort_stats(*sort_order or ('cumulative', 'calls', 'time'))
-        if callers:
-            stats.print_callers(.3)
-        else:
-            stats.print_stats(.3)
-    finally:
-        os.remove(fn)
-
-
 # Main program
 def main(args=None, test=False):
     assert os.name == 'posix', 'This code makes Unix-specific assumptions'
@@ -341,11 +318,7 @@ def main(args=None, test=False):
         options.realize(args, doc=__doc__)
         options.first = first
         options.test = test
-        if options.profile_options:
-            sort_order, callers = options.profile_options
-            profile('go(options)', globals(), locals(), sort_order, callers)
-        else:
-            go(options)
+        go(options)
         options.close_logger()
         first = False
         if test or (options.mood < SupervisorStates.RESTARTING):

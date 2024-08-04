@@ -32,7 +32,6 @@ from .datatypes import logging_level
 from .datatypes import name_to_uid
 from .datatypes import octal_type
 from .datatypes import process_or_group_name
-from .datatypes import profile_options
 from .datatypes import signal_number
 from .options import Dummy
 from .options import UnhosedConfigParser
@@ -104,7 +103,6 @@ class ServerOptionsReader:
         self.add('minprocs', 'supervisord.minprocs', '', 'minprocs=', int, default=200)
         self.add('nocleanup', 'supervisord.nocleanup', 'k', 'nocleanup', flag=1, default=0)  # noqa
         self.add('strip_ansi', 'supervisord.strip_ansi', 't', 'strip_ansi', flag=1, default=0)  # noqa
-        self.add('profile_options', 'supervisord.profile_options', '', 'profile_options=', profile_options, default=None)  # noqa
         self.add('silent', 'supervisord.silent', 's', 'silent', flag=1, default=0)
 
         self.pid_history = {}
@@ -545,7 +543,6 @@ class ServerOptionsReader:
                 env = section.environment.copy()
                 env.update(proc.environment)
                 proc.environment = env
-        section.profile_options = None
         return section
 
     def process_groups_from_parser(self, parser):
