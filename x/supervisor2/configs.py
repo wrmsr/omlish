@@ -116,7 +116,8 @@ class ProcessConfig(Config):
 
     def make_dispatchers(self, proc):
         use_stderr = not self.redirect_stderr
-        p = self.options.make_pipes(use_stderr)
+        from .options import make_pipes
+        p = make_pipes(use_stderr)
         stdout_fd, stderr_fd, stdin_fd = p['stdout'], p['stderr'], p['stdin']
         dispatchers = {}
         from . import events
@@ -138,7 +139,8 @@ class EventListenerConfig(ProcessConfig):
         # always use_stderr=True for eventlisteners because mixing stderr messages into stdout would break the
         # eventlistener protocol
         use_stderr = True
-        p = self.options.make_pipes(use_stderr)
+        from .options import make_pipes
+        p = make_pipes(use_stderr)
         stdout_fd, stderr_fd, stdin_fd = p['stdout'], p['stderr'], p['stdin']
         dispatchers = {}
         from . import events

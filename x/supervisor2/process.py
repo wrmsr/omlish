@@ -12,6 +12,8 @@ from .compat import as_bytes
 from .compat import as_string
 from .compat import close_fd
 from .compat import compact_traceback
+from .options import close_parent_pipes
+from .options import close_child_pipes
 from .compat import decode_wait_status
 from .compat import real_exit
 from .compat import signame
@@ -244,8 +246,8 @@ class Subprocess:
             self.record_spawn_err(msg)
             self._check_in_state(ProcessStates.STARTING)
             self.change_state(ProcessStates.BACKOFF)
-            options.close_parent_pipes(self.pipes)
-            options.close_child_pipes(self.pipes)
+            close_parent_pipes(self.pipes)
+            close_child_pipes(self.pipes)
             return None
 
         if pid != 0:
@@ -258,7 +260,7 @@ class Subprocess:
         # Parent
         self.pid = pid
         options = self.config.options
-        options.close_child_pipes(self.pipes)
+        close_child_pipes(self.pipes)
         options.logger.info('spawned: \'%s\' with pid %s' % (as_string(self.config.name), pid))
         self.spawn_err = None
         self.delay = time.time() + self.config.startsecs
@@ -568,7 +570,7 @@ class Subprocess:
                 self.config.options.logger.warn(msg)
 
         self.pid = 0
-        self.config.options.close_parent_pipes(self.pipes)
+        close_parent_pipes(self.pipes)
         self.pipes = {}
         self.dispatchers = {}
 
