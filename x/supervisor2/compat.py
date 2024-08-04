@@ -1,4 +1,3 @@
-import importlib.resources as _importlib_resources
 import sys
 from importlib.metadata import EntryPoint as _EntryPoint
 
@@ -24,10 +23,6 @@ def is_text_stream(stream):
 
 def import_spec(spec):
     return _EntryPoint(None, spec, None).load()
-
-
-def resource_filename(package, path):
-    return str(_importlib_resources.files(package).joinpath(path))
 
 
 def compact_traceback():
