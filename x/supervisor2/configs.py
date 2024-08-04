@@ -1,5 +1,6 @@
 import os
 
+from .compat import get_path
 from .datatypes import Automatic
 
 
@@ -95,7 +96,7 @@ class ProcessConfig(Config):
             path = self.environment.get('PATH')
             if path is not None:
                 return path.split(os.pathsep)
-        return self.options.get_path()
+        return get_path()
 
     def create_auto_child_logs(self):
         # temporary logfiles which are erased at start time

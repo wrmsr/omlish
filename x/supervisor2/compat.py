@@ -4,6 +4,7 @@ import io
 import os
 import signal
 import sys
+import tempfile
 import typing as ta
 
 
@@ -169,3 +170,26 @@ def close_fd(fd: int) -> bool:
     except OSError:
         return False
     return True
+
+
+def mktempfile(suffix, prefix, dir):
+    # set os._urandomfd as a hack around bad file descriptor bug seen in the wild, see
+    # https://web.archive.org/web/20160729044005/http://www.plope.com/software/collector/252
+    os._urandomfd = None
+    fd, filename = tempfile.mkstemp(suffix, prefix, dir)
+    os.close(fd)
+    return filename
+
+
+def real_exit(code: int) -> None:
+    os._exit(code)  # noqa
+
+
+def get_path() -> ta.Sequence[str]:
+    """Return a list corresponding to $PATH, or a default."""
+    path = ['/bin', '/usr/bin', '/usr/local/bin']
+    if 'PATH' in os.environ:
+        p = os.environ['PATH']
+        if p:
+            path = p.split(os.pathsep)
+    return path

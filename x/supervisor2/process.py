@@ -13,6 +13,7 @@ from .compat import as_string
 from .compat import close_fd
 from .compat import compact_traceback
 from .compat import decode_wait_status
+from .compat import real_exit
 from .compat import signame
 from .datatypes import RestartUnconditionally
 from .dispatchers import EventListenerStates
@@ -334,7 +335,7 @@ class Subprocess:
 
         finally:
             os.write(2, as_bytes('supervisor: child process was not spawned\n'))
-            options._exit(127)  # exit process with code for spawn failure
+            real_exit(127)  # exit process with code for spawn failure
 
     def _check_and_adjust_for_system_clock_rollback(self, test_time):
         """
