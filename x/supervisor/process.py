@@ -265,12 +265,12 @@ class Subprocess:
 
     def _prepare_child_fds(self):
         options = self.config.options
-        options.dup2(self.pipes['child_stdin'], 0)
-        options.dup2(self.pipes['child_stdout'], 1)
+        os.dup2(self.pipes['child_stdin'], 0)
+        os.dup2(self.pipes['child_stdout'], 1)
         if self.config.redirect_stderr:
-            options.dup2(self.pipes['child_stdout'], 2)
+            os.dup2(self.pipes['child_stdout'], 2)
         else:
-            options.dup2(self.pipes['child_stderr'], 2)
+            os.dup2(self.pipes['child_stderr'], 2)
         for i in range(3, options.minfds):
             options.close_fd(i)
 
@@ -705,12 +705,12 @@ class FastCGISubprocess(Subprocess):
         sock_fd = self.fcgi_sock.fileno()
 
         options = self.config.options
-        options.dup2(sock_fd, 0)
-        options.dup2(self.pipes['child_stdout'], 1)
+        os.dup2(sock_fd, 0)
+        os.dup2(self.pipes['child_stdout'], 1)
         if self.config.redirect_stderr:
-            options.dup2(self.pipes['child_stdout'], 2)
+            os.dup2(self.pipes['child_stdout'], 2)
         else:
-            options.dup2(self.pipes['child_stderr'], 2)
+            os.dup2(self.pipes['child_stderr'], 2)
         for i in range(3, options.minfds):
             options.close_fd(i)
 

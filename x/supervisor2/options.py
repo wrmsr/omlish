@@ -18,36 +18,32 @@ class ServerOptions:
 
     poller: Poller
 
-    def dup2(self, frm: int, to: int) -> int:
     def execve(self, filename: str, argv: list[str], env: dict[str, str]) -> ta.NoReturn:
     def fork(self) -> int:
-    def chdir(self, dir: str) -> None:
-    def setpgrp(self) -> None:
     def setsignals(self) -> None:
     def stat(self, filename: str) -> os.stat_result:
     def waitpid(self) -> tuple[int | None, int | None]:
     def _exit(self, code: int) -> None:
-
     def check_execv_args(self, filename, argv, st):
+    def drop_privileges(self, user: int | str) -> str | None:
+    def set_uid_or_exit(self) -> None:
+    def set_umask(self, mask: int) -> None:
+    def write(self, fd: int, data: str | bytes) -> int:
+    def get_path(self) -> ta.Sequence[str]:
+    def close_fd(self, fd: int) -> None:
+    def close_parent_pipes(self, pipes: ta.Mapping[str, int]) -> None:
+
     def cleanup(self) -> None:
     def cleanup_fds(self) -> None:
     def clear_auto_child_logdir(self) -> None:
-    def close_child_pipes(self, pipes: ta.Mapping[str, int]) -> None:
-    def close_fd(self, fd: int) -> None:
-    def close_parent_pipes(self, pipes: ta.Mapping[str, int]) -> None:
     def daemonize(self) -> None:
-    def drop_privileges(self, user: int | str) -> str | None:
     def get_auto_child_log_name(self, name: str, identifier: str, channel: str) -> str:
-    def get_path(self) -> ta.Sequence[str]:
     def get_signal(self) -> int | None:
     def kill(self, pid: int, signal: int) -> None:
     def make_logger(self) -> None:
     def make_pipes(self, stderr=True) -> ta.Mapping[str, int]:
     def reopen_logs(self) -> None:
     def set_rlimits_or_exit(self) -> None:
-    def set_uid_or_exit(self) -> None:
-    def set_umask(self, mask: int) -> None:
-    def write(self, fd: int, data: str | bytes) -> int:
     def write_pidfile(self) -> None:
 
 """
@@ -1219,12 +1215,6 @@ class ServerOptions:
     def fork(self) -> int:
         return os.fork()
 
-    def dup2(self, frm: int, to: int) -> int:
-        return os.dup2(frm, to)
-
-    def setpgrp(self) -> None:
-        return os.setpgrp()
-
     def stat(self, filename: str) -> os.stat_result:
         return os.stat(filename)
 
@@ -1290,9 +1280,6 @@ class ServerOptions:
                 raise
             data = b''
         return data
-
-    def chdir(self, dir: str) -> None:
-        os.chdir(dir)
 
     def make_pipes(self, stderr=True) -> ta.Mapping[str, int]:
         """

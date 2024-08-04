@@ -264,12 +264,12 @@ class Subprocess:
 
     def _prepare_child_fds(self):
         options = self.config.options
-        options.dup2(self.pipes['child_stdin'], 0)
-        options.dup2(self.pipes['child_stdout'], 1)
+        os.dup2(self.pipes['child_stdin'], 0)
+        os.dup2(self.pipes['child_stdout'], 1)
         if self.config.redirect_stderr:
-            options.dup2(self.pipes['child_stdout'], 2)
+            os.dup2(self.pipes['child_stdout'], 2)
         else:
-            options.dup2(self.pipes['child_stderr'], 2)
+            os.dup2(self.pipes['child_stderr'], 2)
         for i in range(3, options.minfds):
             options.close_fd(i)
 
@@ -280,7 +280,7 @@ class Subprocess:
             # group for the child; this prevents, for instance, the case of child processes being sent a SIGINT when
             # running supervisor in foreground mode and Ctrl-C in the terminal window running supervisord is pressed.
             # Presumably it also prevents HUP, etc received by supervisord from being sent to children.
-            options.setpgrp()
+            os.setpgrp()
 
             self._prepare_child_fds()
             # sending to fd 2 will put this output in the stderr log
@@ -306,7 +306,7 @@ class Subprocess:
             cwd = self.config.directory
             try:
                 if cwd is not None:
-                    options.chdir(cwd)
+                    os.chdir(cwd)
             except OSError as why:
                 code = errno.errorcode.get(why.args[0], why.args[0])
                 msg = "couldn't chdir to %s: %s\n" % (cwd, code)
