@@ -143,6 +143,10 @@ class Generic:
 
     obj: ta.Any = dc.field(compare=False, repr=False)
 
+    # def __post_init__(self) -> None:
+    #     if not isinstance(self.cls, type):
+    #         raise TypeError(self.cls)
+
     def full_eq(self, other: 'Generic') -> bool:
         return (
             self.cls == other.cls and
@@ -260,7 +264,7 @@ def type_(obj: ta.Any) -> Type:
             )
 
     if isinstance(obj, _AnnotatedAlias):
-        o = ta.get_origin(obj)
+        o = ta.get_args(obj)[0]
         return Annotated(type_(o), md=obj.__metadata__, obj=obj)
 
     raise TypeError(obj)
@@ -277,7 +281,7 @@ def strip_objs(ty: Type) -> Type:
         return Union(frozenset(map(strip_objs, ty.args)))
 
     if isinstance(ty, Generic):
-        return Generic(ty.obj, tuple(map(strip_objs, ty.args)), ty.params, None)
+        return Generic(ty.cls, tuple(map(strip_objs, ty.args)), ty.params, None)
 
     if isinstance(ty, Annotated):
         return Annotated(strip_objs(ty.ty), ty.md)
@@ -293,7 +297,7 @@ def strip_annotations(ty: Type) -> Type:
         return Union(frozenset(map(strip_annotations, ty.args)))
 
     if isinstance(ty, Generic):
-        return Generic(ty.obj, tuple(map(strip_annotations, ty.args)), ty.params, ty.obj)
+        return Generic(ty.cls, tuple(map(strip_annotations, ty.args)), ty.params, ty.obj)
 
     if isinstance(ty, Annotated):
         return strip_annotations(ty.ty)
