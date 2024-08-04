@@ -12,8 +12,6 @@ from .compat import as_bytes
 from .compat import as_string
 from .compat import close_fd
 from .compat import compact_traceback
-from .options import close_parent_pipes
-from .options import close_child_pipes
 from .compat import decode_wait_status
 from .compat import real_exit
 from .compat import signame
@@ -22,6 +20,9 @@ from .dispatchers import EventListenerStates
 from .options import BadCommand
 from .options import ProcessException
 from .options import check_execv_args
+from .options import close_child_pipes
+from .options import close_parent_pipes
+from .options import drop_privileges
 from .states import ProcessStates
 from .states import STOPPED_STATES
 from .states import SupervisorStates
@@ -584,7 +585,7 @@ class Subprocess:
     def set_uid(self):
         if self.config.uid is None:
             return None
-        msg = self.config.options.drop_privileges(self.config.uid)
+        msg = drop_privileges(self.config.uid)
         return msg
 
     def __lt__(self, other):
