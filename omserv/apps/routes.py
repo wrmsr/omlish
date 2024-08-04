@@ -1,3 +1,4 @@
+import contextlib
 import dataclasses as dc
 import logging
 import typing as ta
@@ -12,6 +13,8 @@ from omlish.http.asgi import AsgiSend
 from omlish.http.asgi import send_response
 from omlish.http.asgi import stub_lifespan
 
+from .base import BASE_SERVER_URL
+from .base import BaseServerUrl
 from .base import SCOPE
 from .markers import AppMarker
 from .markers import append_app_marker
@@ -98,24 +101,28 @@ def get_marked_route_handlers(h: Handler_) -> ta.Sequence[RouteHandler]:
 
 @dc.dataclass(frozen=True)
 class RouteHandlerApp(AsgiApp_):
-    _route_handlers: ta.Mapping[Route, AsgiApp]
+    route_handlers: ta.Mapping[Route, AsgiApp]
+    base_server_url: BaseServerUrl
 
     async def __call__(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
-        match scope_ty := scope['type']:
-            case 'lifespan':
-                await stub_lifespan(scope, recv, send)
-                return
+        with contextlib.ExitStack() as es:
+            es.enter_context(lang.context_var_setting(BASE_SERVER_URL, self.base_server_url))
+            es.enter_context(lang.context_var_setting(SCOPE, scope))
 
-            case 'http':
-                route = Route(scope['method'], scope['raw_path'].decode())
-                handler = self._route_handlers.get(route)
+            match scope_ty := scope['type']:
+                case 'lifespan':
+                    await stub_lifespan(scope, recv, send)
+                    return
 
-                if handler is not None:
-                    with lang.context_var_setting(SCOPE, scope):
+                case 'http':
+                    route = Route(scope['method'], scope['raw_path'].decode())
+                    handler = self.route_handlers.get(route)
+
+                    if handler is not None:
                         await handler(scope, recv, send)
 
-                else:
-                    await send_response(send, 404)
+                    else:
+                        await send_response(send, 404)
 
-            case _:
-                raise ValueError(f'Unhandled scope type: {scope_ty!r}')
+                case _:
+                    raise ValueError(f'Unhandled scope type: {scope_ty!r}')
