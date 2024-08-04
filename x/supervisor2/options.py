@@ -904,7 +904,7 @@ class ServerOptions(Options):
         pid = os.fork()
         if pid != 0:
             # Parent
-            self.logger.blather('supervisord forked; parent exiting')
+            self.logger.debug('supervisord forked; parent exiting')
             os._exit(0)
         # Child
         self.logger.info('daemonizing the supervisord process')
@@ -1020,7 +1020,7 @@ class ServerOptions(Options):
             if code not in (errno.ECHILD, errno.EINTR):
                 self.logger.critical('waitpid error %r; a process may not be cleaned up properly' % code)
             if code == errno.EINTR:
-                self.logger.blather('EINTR during reap')
+                self.logger.debug('EINTR during reap')
             pid, sts = None, None
         return pid, sts
 

@@ -40,6 +40,10 @@ def compact_traceback():
     # just to be safe
     del tb
 
+    file, function, line = tbinfo[-1]
+    info = ' '.join(['[%s|%s|%s]' % x for x in tbinfo])
+    return (file, function, line), t, v, info
+
 
 def find_prefix_at_end(haystack, needle):
     l = len(needle) - 1

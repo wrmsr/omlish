@@ -141,7 +141,7 @@ class Supervisor:
                 self.last_shutdown_report = now
                 for proc in unstopped:
                     state = getProcessStateDescription(proc.get_state())
-                    self.options.logger.blather(
+                    self.options.logger.debug(
                         '%s state: %s' % (proc.config.name, state))
         return unstopped
 
@@ -197,7 +197,7 @@ class Supervisor:
                 if fd in combined_map:
                     try:
                         dispatcher = combined_map[fd]
-                        self.options.logger.blather('read event caused by %(dispatcher)r', dispatcher=dispatcher)
+                        self.options.logger.debug('read event caused by %(dispatcher)r', dispatcher=dispatcher)
                         dispatcher.handle_read_event()
                         if not dispatcher.readable():
                             self.options.poller.unregister_readable(fd)
@@ -208,7 +208,7 @@ class Supervisor:
                 else:
                     # if the fd is not in combined_map, we should unregister it. otherwise, it will be polled every
                     # time, which may cause 100% cpu usage
-                    self.options.logger.blather('unexpected read event from fd %r' % fd)
+                    self.options.logger.debug('unexpected read event from fd %r' % fd)
                     try:
                         self.options.poller.unregister_readable(fd)
                     except:
@@ -218,7 +218,7 @@ class Supervisor:
                 if fd in combined_map:
                     try:
                         dispatcher = combined_map[fd]
-                        self.options.logger.blather('write event caused by %(dispatcher)r', dispatcher=dispatcher)
+                        self.options.logger.debug('write event caused by %(dispatcher)r', dispatcher=dispatcher)
                         dispatcher.handle_write_event()
                         if not dispatcher.writable():
                             self.options.poller.unregister_writable(fd)
@@ -227,7 +227,7 @@ class Supervisor:
                     except:
                         combined_map[fd].handle_error()
                 else:
-                    self.options.logger.blather('unexpected write event from fd %r' % fd)
+                    self.options.logger.debug('unexpected write event from fd %r' % fd)
                     try:
                         self.options.poller.unregister_writable(fd)
                     except:
@@ -298,7 +298,7 @@ class Supervisor:
                 for group in self.process_groups.values():
                     group.reopen_logs()
             else:
-                self.options.logger.blather('received %s indicating nothing' % signame(sig))
+                self.options.logger.debug('received %s indicating nothing' % signame(sig))
 
     def get_state(self):
         return self.options.mood
