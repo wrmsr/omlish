@@ -5,6 +5,8 @@ import typing as ta
 
 import jinja2
 
+from .base import url_for
+
 
 log = logging.getLogger(__name__)
 
@@ -18,6 +20,9 @@ J2_DEFAULT_NAMESPACE = {}
 def j2_helper(fn):
     J2_DEFAULT_NAMESPACE[fn.__name__] = fn
     return fn
+
+
+j2_helper(url_for)
 
 
 ##
