@@ -316,7 +316,7 @@ class Subprocess:
             # set umask, then execve
             try:
                 if self.config.umask is not None:
-                    options.setumask(self.config.umask)
+                    options.set_umask(self.config.umask)
                 options.execve(filename, argv, env)
             except OSError as why:
                 code = errno.errorcode.get(why.args[0], why.args[0])

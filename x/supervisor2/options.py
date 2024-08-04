@@ -1201,7 +1201,7 @@ class ServerOptions:
     def _exit(self, code):
         os._exit(code)
 
-    def setumask(self, mask):
+    def set_umask(self, mask):
         os.umask(mask)
 
     def get_path(self):
@@ -1365,12 +1365,12 @@ class UnhosedConfigParser(configparser.RawConfigParser):
         return self.saneget(self.mysection, option, default=default, expansions=expansions, **kwargs)
 
     def expand_here(self, here):
-        HERE_FORMAT = '%(here)s'
+        here_format = '%(here)s'
         for section in self.sections():
             for key, value in self.items(section):
-                if HERE_FORMAT in value:
+                if here_format in value:
                     assert here is not None, 'here has not been set to a path'
-                    value = value.replace(HERE_FORMAT, here)
+                    value = value.replace(here_format, here)
                     self.set(section, key, value)
 
 
