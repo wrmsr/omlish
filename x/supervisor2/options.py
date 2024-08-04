@@ -88,7 +88,6 @@ class ServerOptions:
     passwdfile = None
     nodaemon = None
     silent = None
-    httpservers = ()
     unlink_pidfile = False
     unlink_socketfiles = False
     mood = states.SupervisorStates.RUNNING
@@ -113,7 +112,7 @@ class ServerOptions:
         self.parse_infos = []
 
         here = os.path.dirname(os.path.dirname(sys.argv[0]))
-        searchpaths = [
+        search_paths = [
             os.path.join(here, 'etc', 'supervisord.conf'),
             os.path.join(here, 'supervisord.conf'),
             'supervisord.conf',
@@ -121,7 +120,7 @@ class ServerOptions:
             '/etc/supervisord.conf',
             '/etc/supervisor/supervisord.conf',
         ]
-        self.searchpaths = searchpaths
+        self.search_paths = search_paths
 
         self.environ_expansions = {}
         for k, v in os.environ.items():
@@ -149,7 +148,7 @@ class ServerOptions:
         self.add('profile_options', 'supervisord.profile_options', '', 'profile_options=', profile_options, default=None)  # noqa
         self.add('silent', 'supervisord.silent', 's', 'silent', flag=1, default=0)
 
-        self.pidhistory = {}
+        self.pid_history = {}
         self.process_group_configs = []
         self.signal_receiver = SignalReceiver()
         self.poller = poller.Poller()
@@ -159,14 +158,14 @@ class ServerOptions:
     def _default_config_file(self):
         """Return the name of the found config file or print usage/exit."""
         config = None
-        for path in self.searchpaths:
+        for path in self.search_paths:
             if os.path.exists(path):
                 config = path
                 break
         if config is None and self.require_config_file:
             self.usage('No config file found at default paths (%s); '
                        'use the -c option to specify a config file '
-                       'at a different path' % ', '.join(self.searchpaths))
+                       'at a different path' % ', '.join(self.search_paths))
         return config
 
     def help(self, dummy):
@@ -307,8 +306,7 @@ class ServerOptions:
 
         # Call getopt
         try:
-            self.options, self.args = getopt.getopt(
-                args, ''.join(self.short_options), self.long_options)
+            self.options, self.args = getopt.getopt( args, ''.join(self.short_options), self.long_options)
         except getopt.error as exc:
             self.usage(str(exc))
 
@@ -940,11 +938,6 @@ class ServerOptions:
             self.logger.info('supervisord started with pid %s' % pid)
 
     def cleanup(self):
-        for config, server in self.httpservers:
-            if config['family'] == socket.AF_UNIX:
-                if self.unlink_socketfiles:
-                    socketname = config['file']
-                    self._try_unlink(socketname)
         if self.unlink_pidfile:
             self._try_unlink(self.pidfile)
         self.poller.close()

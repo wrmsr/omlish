@@ -267,13 +267,13 @@ class Supervisor:
             return
         pid, sts = self.options.waitpid()
         if pid:
-            process = self.options.pidhistory.get(pid, None)
+            process = self.options.pid_history.get(pid, None)
             if process is None:
                 _, msg = decode_wait_status(sts)
                 self.options.logger.info('reaped unknown pid %s (%s)' % (pid, msg))
             else:
                 process.finish(pid, sts)
-                del self.options.pidhistory[pid]
+                del self.options.pid_history[pid]
             if not once:
                 # keep reaping until no more kids to reap, but don't recurse infinitely
                 self.reap(once=False, recursionguard=recursionguard + 1)
