@@ -827,7 +827,7 @@ class EventListenerPool(ProcessGroupBase):
         return False
 
     def _eventEnvelope(self, event_type, serial, pool_serial, payload):
-        event_name = events.getEventNameByType(event_type)
+        event_name = events.get_event_name_by_type(event_type)
         payload_len = len(payload)
         D = {
             'ver': '3.0',

@@ -266,7 +266,7 @@ class EventTypes:
     PROCESS_GROUP_REMOVED = ProcessGroupRemovedEvent
 
 
-def getEventNameByType(requested):
+def get_event_name_by_type(requested):
     for name, typ in EventTypes.__dict__.items():
         if typ is requested:
             return name
