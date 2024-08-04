@@ -17,10 +17,15 @@ from ..inspect import Kwarg
 from ..inspect import KwargsTarget
 from ..keys import Key
 from ..keys import as_key
+from ..types import Tag
 
 
+T = ta.TypeVar('T')
 P = ta.ParamSpec('P')
 R = ta.TypeVar('R')
+
+
+##
 
 
 _signature_cache: ta.MutableMapping[ta.Any, inspect.Signature] = weakref.WeakKeyDictionary()
@@ -38,7 +43,15 @@ def signature(obj: ta.Any) -> inspect.Signature:
     return sig
 
 
+##
+
+
 _tags: ta.MutableMapping[ta.Any, dict[str, ta.Any]] = weakref.WeakKeyDictionary()
+
+
+def tag(obj: T, **kwargs: ta.Any) -> T:
+    _tags.setdefault(obj, {}).update(**kwargs)
+    return obj
 
 
 def tags(**kwargs: ta.Any) -> ta.Callable[[ta.Callable[P, R]], ta.Callable[P, R]]:
@@ -46,6 +59,9 @@ def tags(**kwargs: ta.Any) -> ta.Callable[[ta.Callable[P, R]], ta.Callable[P, R]
         _tags[obj] = kwargs
         return obj
     return inner
+
+
+##
 
 
 def build_kwargs_target(
@@ -79,10 +95,15 @@ def build_kwargs_target(
             [ann] = [a for a in rf.args if a is not types.NoneType]
 
         rty = rfl.type_(ann)
+
+        tag = None
         if isinstance(rty, rfl.Annotated):
-            md = rty.md
-            breakpoint()
-        k = as_key(rfl.strip_annotations(rty))
+            for e in rty.md:
+                if isinstance(e, Tag):
+                    tag = e.tag
+                    break
+
+        k = Key(rfl.strip_annotations(rty), tag=tag)
         if tags is not None and (pt := tags.get(p.name)) is not None:
             k = dc.replace(k, tag=pt)
 
