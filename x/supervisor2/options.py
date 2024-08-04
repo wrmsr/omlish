@@ -101,6 +101,18 @@ class Dummy:
     pass
 
 
+def _get_search_paths() -> list[str]:
+    here = os.path.dirname(os.path.dirname(sys.argv[0]))
+    return [
+        os.path.join(here, 'etc', 'supervisord.conf'),
+        os.path.join(here, 'supervisord.conf'),
+        'supervisord.conf',
+        'etc/supervisord.conf',
+        '/etc/supervisord.conf',
+        '/etc/supervisor/supervisord.conf',
+    ]
+
+
 class ServerOptions:
     stderr = sys.stderr
     stdout = sys.stdout
@@ -147,16 +159,7 @@ class ServerOptions:
         self.parse_warnings = []
         self.parse_infos = []
 
-        here = os.path.dirname(os.path.dirname(sys.argv[0]))
-        search_paths = [
-            os.path.join(here, 'etc', 'supervisord.conf'),
-            os.path.join(here, 'supervisord.conf'),
-            'supervisord.conf',
-            'etc/supervisord.conf',
-            '/etc/supervisord.conf',
-            '/etc/supervisor/supervisord.conf',
-        ]
-        self.search_paths = search_paths
+        self.search_paths = _get_search_paths()
 
         self.environ_expansions = {}
         for k, v in os.environ.items():
