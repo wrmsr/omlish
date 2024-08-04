@@ -957,7 +957,8 @@ class ServerOptions(Options):
             pass
 
     def close_logger(self):
-        self.logger.close()
+        # self.logger.close()
+        pass
 
     def setsignals(self):
         receive = self.signal_receiver.receive
