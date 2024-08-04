@@ -15,10 +15,10 @@ from omserv.apps.routes import Route
 from omserv.apps.routes import handles
 from omserv.apps.sessions import with_session
 from omserv.apps.templates import J2Templates
+from omserv.apps.base import url_for
 
 from ...users import User
 from ...users import UserStore
-from ..apps.base import url_for
 from ..apps.login import login_required
 from ..apps.users import with_user
 

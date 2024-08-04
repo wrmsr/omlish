@@ -77,8 +77,8 @@ def bind() -> inj.Elemental:
     )
 
 
-def _build_j2_namespaces(nss: ta.AbstractSet[J2Namespace]) -> J2Namespace:
-    return J2Namespace({k: v for ns in nss for k, v in ns.items()})
+def _build_j2_namespaces(ns: ta.Annotated[ta.Mapping[str, ta.Any], J2Namespace]) -> J2Namespace:
+    return J2Namespace(ns)
 
 
 def bind_templates() -> inj.Elemental:
@@ -86,5 +86,5 @@ def bind_templates() -> inj.Elemental:
         inj.bind(J2Templates, singleton=True),
 
         inj.map_binder[str, ta.Any](tag=J2Namespace),
-        inj.bind(_merge_j2_namespaces),
+        inj.bind(_build_j2_namespaces),
     )

@@ -103,5 +103,6 @@ from .scopes import (  # noqa
 
 from .types import (  # noqa
     Scope,
+    Tag,
     Unscoped,
 )
