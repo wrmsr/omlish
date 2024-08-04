@@ -21,6 +21,7 @@ import warnings
 
 from . import poller
 from . import states
+from .compat import SignalReceiver
 from .compat import as_bytes
 from .compat import expand
 from .compat import import_spec
@@ -1383,73 +1384,6 @@ class UnhosedConfigParser(configparser.RawConfigParser):
 # Helpers for dealing with signals and exit status
 
 
-def decode_wait_status(sts):
-    """
-    Decode the status returned by wait() or waitpid().
-
-    Return a tuple (exitstatus, message) where exitstatus is the exit status, or -1 if the process was killed by a
-    signal; and message is a message telling what happened.  It is the caller's responsibility to display the message.
-    """
-    if os.WIFEXITED(sts):
-        es = os.WEXITSTATUS(sts) & 0xffff
-        msg = 'exit status %s' % es
-        return es, msg
-    elif os.WIFSIGNALED(sts):
-        sig = os.WTERMSIG(sts)
-        msg = 'terminated by %s' % signame(sig)
-        if hasattr(os, 'WCOREDUMP'):
-            iscore = os.WCOREDUMP(sts)
-        else:
-            iscore = sts & 0x80
-        if iscore:
-            msg += ' (core dumped)'
-        return -1, msg
-    else:
-        msg = 'unknown termination cause 0x%04x' % sts
-        return -1, msg
-
-
-_signames = None
-
-
-def signame(sig):
-    """
-    Return a symbolic name for a signal.
-
-    Return "signal NNN" if there is no corresponding SIG name in the signal module.
-    """
-
-    if _signames is None:
-        _init_signames()
-    return _signames.get(sig) or 'signal %d' % sig
-
-
-def _init_signames():
-    global _signames
-    d = {}
-    for k, v in signal.__dict__.items():
-        k_startswith = getattr(k, 'startswith', None)
-        if k_startswith is None:
-            continue
-        if k_startswith('SIG') and not k_startswith('SIG_'):
-            d[v] = k
-    _signames = d
-
-
-class SignalReceiver:
-    def __init__(self):
-        self._signals_recvd = []
-
-    def receive(self, sig, frame):
-        if sig not in self._signals_recvd:
-            self._signals_recvd.append(sig)
-
-    def get_signal(self):
-        if self._signals_recvd:
-            sig = self._signals_recvd.pop(0)
-        else:
-            sig = None
-        return sig
 
 
 # exceptions

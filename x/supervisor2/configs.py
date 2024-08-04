@@ -1,47 +1,6 @@
-import configparser
-import errno
-import fcntl
-import getopt
-import glob
-import grp
-import io
-import logging
 import os
-import platform
-import pwd
-import re
-import resource
-import signal
-import socket
-import stat
-import sys
-import tempfile
-import typing as ta
-import warnings
 
-from . import poller
-from . import states
-from .compat import as_bytes
-from .compat import import_spec
 from .datatypes import Automatic
-from .datatypes import Syslog
-from .datatypes import auto_restart
-from .datatypes import boolean
-from .datatypes import byte_size
-from .datatypes import dict_of_key_value_pairs
-from .datatypes import existing_directory
-from .datatypes import existing_dirpath
-from .datatypes import gid_for_uid
-from .datatypes import integer
-from .datatypes import list_of_exitcodes
-from .datatypes import list_of_strings
-from .datatypes import logfile_name
-from .datatypes import logging_level
-from .datatypes import name_to_uid
-from .datatypes import octal_type
-from .datatypes import process_or_group_name
-from .datatypes import profile_options
-from .datatypes import signal_number
 
 
 class Config:

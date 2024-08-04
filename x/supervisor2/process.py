@@ -11,12 +11,12 @@ from . import events
 from .compat import as_bytes
 from .compat import as_string
 from .compat import compact_traceback
+from .compat import decode_wait_status
+from .compat import signame
 from .datatypes import RestartUnconditionally
 from .dispatchers import EventListenerStates
 from .options import BadCommand
 from .options import ProcessException
-from .options import decode_wait_status
-from .options import signame
 from .states import ProcessStates
 from .states import STOPPED_STATES
 from .states import SupervisorStates
