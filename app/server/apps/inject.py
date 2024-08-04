@@ -1,4 +1,3 @@
-import os
 import typing as ta
 
 from omlish import inject as inj
@@ -10,10 +9,6 @@ from .login import _LoginRequiredAppMarkerProcessor
 from .users import USER
 from .users import _WithUserAppMarker
 from .users import _WithUserAppMarkerProcessor
-
-
-def base_server_url() -> str:
-    return os.environ.get('BASE_SERVER_URL', 'http://localhost:8000/')
 
 
 def bind() -> inj.Elemental:
