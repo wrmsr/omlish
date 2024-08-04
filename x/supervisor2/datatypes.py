@@ -85,8 +85,7 @@ def dict_of_key_value_pairs(arg):
     while i < tokens_len:
         k_eq_v = tokens[i:i + 3]
         if len(k_eq_v) != 3 or k_eq_v[1] != '=':
-            raise ValueError(
-                "Unexpected end of key/value pairs in value '%s'" % arg)
+            raise ValueError("Unexpected end of key/value pairs in value '%s'" % arg)
         D[k_eq_v[0]] = k_eq_v[2].strip('\'"')
         i += 4
     return D
@@ -121,7 +120,7 @@ def logfile_name(val):
         return existing_dirpath(val)
 
 
-def colon_separated_user_group(arg):
+def colon_separated_user_group(arg: str) -> tuple[int, int]:
     """
     Find a user ID and group ID from a string like 'user:group'.  Returns a tuple (uid, gid).  If the string only
     contains a user like 'user' then (uid, -1) will be returned.  Raises ValueError if either the user or group can't be
@@ -140,7 +139,7 @@ def colon_separated_user_group(arg):
         raise ValueError('Invalid user:group definition %s' % arg)
 
 
-def name_to_uid(name):
+def name_to_uid(name: str) -> int:
     """
     Find a user ID from a string containing a user name or ID. Raises ValueError if the string can't be resolved to a
     valid user ID on the system.
@@ -161,7 +160,7 @@ def name_to_uid(name):
     return uid
 
 
-def name_to_gid(name):
+def name_to_gid(name: str) -> int:
     """
     Find a group ID from a string containing a group name or ID. Raises ValueError if the string can't be resolved to a
     valid group ID on the system.
@@ -182,26 +181,26 @@ def name_to_gid(name):
     return gid
 
 
-def gid_for_uid(uid):
+def gid_for_uid(uid: int) -> int:
     pwrec = pwd.getpwuid(uid)
     return pwrec[3]
 
 
-def octal_type(arg):
+def octal_type(arg: str) -> int:
     try:
         return int(arg, 8)
     except (TypeError, ValueError):
         raise ValueError('%s can not be converted to an octal type' % arg)
 
 
-def existing_directory(v):
+def existing_directory(v: str) -> str:
     nv = os.path.expanduser(v)
     if os.path.isdir(nv):
         return nv
     raise ValueError('%s is not an existing directory' % v)
 
 
-def existing_dirpath(v):
+def existing_dirpath(v: str) -> str:
     nv = os.path.expanduser(v)
     dir = os.path.dirname(nv)
     if not dir:
@@ -212,7 +211,7 @@ def existing_dirpath(v):
     raise ValueError('The directory named as part of the path %s does not exist' % v)
 
 
-def logging_level(value):
+def logging_level(value: str) -> int:
     s = str(value).lower()
     level = logging.getLevelNamesMapping().get(s.upper())
     if level is None:
@@ -253,7 +252,7 @@ byte_size = SuffixMultiplier({
 SIGNUMS = [getattr(signal, k) for k in dir(signal) if k.startswith('SIG')]
 
 
-def signal_number(value):
+def signal_number(value: int | str) -> int:
     try:
         num = int(value)
     except (ValueError, TypeError):

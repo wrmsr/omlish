@@ -1,3 +1,15 @@
+"""
+
+==
+
+logger
+loglevel
+getLogger
+strip_ansi
+readfd
+write
+
+"""
 import errno
 import logging
 
