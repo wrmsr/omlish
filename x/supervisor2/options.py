@@ -5,6 +5,8 @@ class ServerOptions:
 
     identifier: str
 
+    strip_ansi: bool
+
     nocleanup: bool
     nodaemon: bool
     minfds: int
@@ -40,7 +42,6 @@ class ServerOptions:
     def reopen_logs(self) -> None:
     def set_rlimits_or_exit(self) -> None:
     def write_pidfile(self) -> None:
-
 """
 import configparser
 import errno
@@ -65,7 +66,6 @@ import warnings
 from . import poller
 from . import states
 from .compat import SignalReceiver
-from .compat import as_bytes
 from .compat import expand
 from .compat import import_spec
 from .configs import EventListenerConfig
@@ -429,12 +429,6 @@ class ServerOptions:
                 # if this is called from an RPC method, raise an error
                 raise ValueError(msg)
 
-    def exists(self, path):
-        return os.path.exists(path)
-
-    def open(self, fn, mode='r'):
-        return open(fn, mode)
-
     def get_plugins(self, parser, factory_key, section_prefix):
         factories = []
 
@@ -447,7 +441,7 @@ class ServerOptions:
             if factory_spec is None:
                 raise ValueError('section [%s] does not specify a %s' % (section, factory_key))
             try:
-                factory = self.import_spec(factory_spec)
+                factory = import_spec(factory_spec)
             except (AttributeError, ImportError):
                 raise ValueError('%s cannot be resolved within [%s]' % (factory_spec, section))
 
@@ -458,10 +452,6 @@ class ServerOptions:
             factories.append((name, factory, extras))
 
         return factories
-
-    def import_spec(self, spec):
-        """On failure, raises either AttributeError or ImportError"""
-        return import_spec(spec)
 
     def read_include_config(self, fp, parser, expansions):
         if parser.has_section('include'):
@@ -504,10 +494,6 @@ class ServerOptions:
         """Print version to stdout and exit(0)."""
         self.stdout.write('%s\n' % VERSION)
         self.exit(0)
-
-    # TODO: not covered by any test, but used by dispatchers
-    def getLogger(self, *args, **kwargs):
-        return logging.getLogger(__name__)
 
     def default_config_file(self):
         if os.getuid() == 0:
@@ -566,10 +552,10 @@ class ServerOptions:
         section = self.config_root.supervisord
         need_close = False
         if not hasattr(fp, 'read'):
-            if not self.exists(fp):
+            if not os.path.exists(fp):
                 raise ValueError('could not find config file %s' % fp)
             try:
-                fp = self.open(fp, 'r')
+                fp = open(fp, 'r')
                 need_close = True
             except OSError:
                 raise ValueError('could not read config file %s' % fp)
@@ -749,8 +735,7 @@ class ServerOptions:
 
     def processes_from_section(self, parser, section, group_name, klass=None):
         try:
-            return self._processes_from_section(
-                parser, section, group_name, klass)
+            return self._processes_from_section(parser, section, group_name, klass)
         except ValueError as e:
             filename = parser.section_to_file.get(section, self.config_file)
             raise ValueError('%s in section %r (file: %r)' % (e, section, filename))
@@ -922,7 +907,7 @@ class ServerOptions:
         self._daemonize()
         self.poller.after_daemonize()
 
-    def _daemonize(self):
+    def _daemonize(self) -> None:
         # To daemonize, we need to become the leader of our own session (process) group.  If we do not, signals sent to
         # our parent process will also be sent to us.   This might be bad because signals such as SIGINT can be sent to
         # our parent process during normal (uninteresting) operations such as when we press Ctrl-C in the parent
@@ -1251,15 +1236,6 @@ class ServerOptions:
         for handler in self.logger.handlers:
             if hasattr(handler, 'reopen'):
                 handler.reopen()
-
-    def readfd(self, fd):
-        try:
-            data = os.read(fd, 2 << 16)  # 128K
-        except OSError as why:
-            if why.args[0] not in (errno.EWOULDBLOCK, errno.EBADF, errno.EINTR):
-                raise
-            data = b''
-        return data
 
     def make_pipes(self, stderr=True) -> ta.Mapping[str, int]:
         """
