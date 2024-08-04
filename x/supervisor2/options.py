@@ -55,7 +55,7 @@ class Dummy:
     pass
 
 
-class Options:
+class ServerOptions:
     stderr = sys.stderr
     stdout = sys.stdout
     exit = sys.exit
@@ -73,12 +73,22 @@ class Options:
     # in your subclass.
     positional_args_allowed = 0
 
-    def __init__(self, require_configfile=True):
-        """Constructor.
+    user = None
+    sockchown = None
+    sockchmod = None
+    logfile = None
+    loglevel = None
+    pidfile = None
+    passwdfile = None
+    nodaemon = None
+    silent = None
+    httpservers = ()
+    unlink_pidfile = False
+    unlink_socketfiles = False
+    mood = states.SupervisorStates.RUNNING
 
-        Params:
-        require_configfile -- whether we should fail on no config file.
-        """
+    def __init__(self, *, require_configfile=True):
+        super().__init__()
         self.names_list = []
         self.short_options = []
         self.long_options = []
@@ -110,7 +120,36 @@ class Options:
         for k, v in os.environ.items():
             self.environ_expansions['ENV_%s' % k] = v
 
-    def default_configfile(self):
+        self.configroot = Dummy()
+        self.configroot.supervisord = Dummy()
+
+        self.add(None, None, 'v', 'version', self.version)
+        self.add('nodaemon', 'supervisord.nodaemon', 'n', 'nodaemon', flag=1, default=0)
+        self.add('user', 'supervisord.user', 'u:', 'user=')
+        self.add('umask', 'supervisord.umask', 'm:', 'umask=', octal_type, default='022')
+        self.add('directory', 'supervisord.directory', 'd:', 'directory=', existing_directory)  # noqa
+        self.add('logfile', 'supervisord.logfile', 'l:', 'logfile=', existing_dirpath, default='supervisord.log')  # noqa
+        self.add('logfile_maxbytes', 'supervisord.logfile_maxbytes', 'y:', 'logfile_maxbytes=', byte_size, default=50 * 1024 * 1024)  # 50MB  # noqa
+        self.add('logfile_backups', 'supervisord.logfile_backups', 'z:', 'logfile_backups=', integer, default=10)  # noqa
+        self.add('loglevel', 'supervisord.loglevel', 'e:', 'loglevel=', logging_level, default='info')  # noqa
+        self.add('pidfile', 'supervisord.pidfile', 'j:', 'pidfile=', existing_dirpath, default='supervisord.pid')  # noqa
+        self.add('identifier', 'supervisord.identifier', 'i:', 'identifier=', str, default='supervisor')  # noqa
+        self.add('child_logdir', 'supervisord.child_logdir', 'q:', 'child_logdir=', existing_directory, default=tempfile.gettempdir())  # noqa
+        self.add('minfds', 'supervisord.minfds', 'a:', 'minfds=', int, default=1024)
+        self.add('minprocs', 'supervisord.minprocs', '', 'minprocs=', int, default=200)
+        self.add('nocleanup', 'supervisord.nocleanup', 'k', 'nocleanup', flag=1, default=0)  # noqa
+        self.add('strip_ansi', 'supervisord.strip_ansi', 't', 'strip_ansi', flag=1, default=0)  # noqa
+        self.add('profile_options', 'supervisord.profile_options', '', 'profile_options=', profile_options, default=None)  # noqa
+        self.add('silent', 'supervisord.silent', 's', 'silent', flag=1, default=0)
+
+        self.pidhistory = {}
+        self.process_group_configs = []
+        self.signal_receiver = SignalReceiver()
+        self.poller = poller.Poller()
+
+    ##
+
+    def _default_configfile(self):
         """Return the name of the found config file or print usage/exit."""
         config = None
         for path in self.searchpaths:
@@ -232,7 +271,7 @@ class Options:
             setattr(self, attr, value)
             self.attr_priorities[attr] = prio
 
-    def realize(self, args=None, doc=None, progname=None):
+    def _realize(self, args=None, doc=None, progname=None):
         """Realize a configuration.
 
         Optional arguments:
@@ -302,7 +341,7 @@ class Options:
 
         self.process_config()
 
-    def process_config(self, do_usage=True):
+    def _process_config(self, do_usage=True):
         """Process configuration data structure.
 
         This includes reading config file if necessary, setting defaults etc.
@@ -416,49 +455,7 @@ class Options:
         for msg in self.parse_infos:
             logger.info(msg)
 
-
-class ServerOptions(Options):
-    user = None
-    sockchown = None
-    sockchmod = None
-    logfile = None
-    loglevel = None
-    pidfile = None
-    passwdfile = None
-    nodaemon = None
-    silent = None
-    httpservers = ()
-    unlink_pidfile = False
-    unlink_socketfiles = False
-    mood = states.SupervisorStates.RUNNING
-
-    def __init__(self):
-        Options.__init__(self)
-        self.configroot = Dummy()
-        self.configroot.supervisord = Dummy()
-
-        self.add(None, None, 'v', 'version', self.version)
-        self.add('nodaemon', 'supervisord.nodaemon', 'n', 'nodaemon', flag=1, default=0)
-        self.add('user', 'supervisord.user', 'u:', 'user=')
-        self.add('umask', 'supervisord.umask', 'm:', 'umask=', octal_type, default='022')
-        self.add('directory', 'supervisord.directory', 'd:', 'directory=', existing_directory)  # noqa
-        self.add('logfile', 'supervisord.logfile', 'l:', 'logfile=', existing_dirpath, default='supervisord.log')  # noqa
-        self.add('logfile_maxbytes', 'supervisord.logfile_maxbytes', 'y:', 'logfile_maxbytes=', byte_size, default=50 * 1024 * 1024)  # 50MB  # noqa
-        self.add('logfile_backups', 'supervisord.logfile_backups', 'z:', 'logfile_backups=', integer, default=10)  # noqa
-        self.add('loglevel', 'supervisord.loglevel', 'e:', 'loglevel=', logging_level, default='info')  # noqa
-        self.add('pidfile', 'supervisord.pidfile', 'j:', 'pidfile=', existing_dirpath, default='supervisord.pid')  # noqa
-        self.add('identifier', 'supervisord.identifier', 'i:', 'identifier=', str, default='supervisor')  # noqa
-        self.add('child_logdir', 'supervisord.child_logdir', 'q:', 'child_logdir=', existing_directory, default=tempfile.gettempdir())  # noqa
-        self.add('minfds', 'supervisord.minfds', 'a:', 'minfds=', int, default=1024)
-        self.add('minprocs', 'supervisord.minprocs', '', 'minprocs=', int, default=200)
-        self.add('nocleanup', 'supervisord.nocleanup', 'k', 'nocleanup', flag=1, default=0)  # noqa
-        self.add('strip_ansi', 'supervisord.strip_ansi', 't', 'strip_ansi', flag=1, default=0)  # noqa
-        self.add('profile_options', 'supervisord.profile_options', '', 'profile_options=', profile_options, default=None)  # noqa
-        self.add('silent', 'supervisord.silent', 's', 'silent', flag=1, default=0)
-        self.pidhistory = {}
-        self.process_group_configs = []
-        self.signal_receiver = SignalReceiver()
-        self.poller = poller.Poller()
+    ##
 
     def version(self, dummy):
         """Print version to stdout and exit(0)."""
@@ -476,10 +473,10 @@ class ServerOptions(Options):
                 '(including its current working directory); you probably want to specify a "-c" argument specifying an '
                 'absolute path to a configuration file for improved security.',
             )
-        return Options.default_configfile(self)
+        return self._default_configfile(self)
 
     def realize(self, *arg, **kw):
-        Options.realize(self, *arg, **kw)
+        self._realize(*arg, **kw)
         section = self.configroot.supervisord
 
         # Additional checking of user option; set uid and gid
@@ -512,7 +509,7 @@ class ServerOptions(Options):
         self.pidfile = normalize_path(pidfile)
 
     def process_config(self, do_usage=True):
-        Options.process_config(self, do_usage=do_usage)
+        self._process_config(do_usage=do_usage)
 
         new = self.configroot.supervisord.process_group_configs
         self.process_group_configs = new
@@ -707,8 +704,7 @@ class ServerOptions(Options):
         groups.sort()
         return groups
 
-    def processes_from_section(self, parser, section, group_name,
-                               klass=None):
+    def processes_from_section(self, parser, section, group_name, klass=None):
         try:
             return self._processes_from_section(
                 parser, section, group_name, klass)
@@ -1602,42 +1598,8 @@ class EventListenerPoolConfig(Config):
         return EventListenerPool(self)
 
 
-def readFile(filename, offset, length):
-    """ Read length bytes from the file named by filename starting at
-    offset """
-
-    absoffset = abs(offset)
-    abslength = abs(length)
-
-    try:
-        with open(filename, 'rb') as f:
-            if absoffset != offset:
-                # negative offset returns offset bytes from tail of the file
-                if length:
-                    raise ValueError('BAD_ARGUMENTS')
-                f.seek(0, 2)
-                sz = f.tell()
-                pos = int(sz - absoffset)
-                if pos < 0:
-                    pos = 0
-                f.seek(pos)
-                data = f.read(absoffset)
-            else:
-                if abslength != length:
-                    raise ValueError('BAD_ARGUMENTS')
-                if length == 0:
-                    f.seek(offset)
-                    data = f.read()
-                else:
-                    f.seek(offset)
-                    data = f.read(length)
-    except OSError:
-        raise ValueError('FAILED')
-
-    return data
-
-
 # Helpers for dealing with signals and exit status
+
 
 def decode_wait_status(sts):
     """
