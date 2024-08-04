@@ -1,5 +1,7 @@
+import importlib.metadata
+import io
 import sys
-from importlib.metadata import EntryPoint as _EntryPoint
+import typing as ta
 
 
 def as_bytes(s, encoding='utf8'):
@@ -17,12 +19,11 @@ def as_string(s, encoding='utf8'):
 
 
 def is_text_stream(stream):
-    import _io
-    return isinstance(stream, _io._TextIOBase)
+    return isinstance(stream, io.TextIOBase)
 
 
 def import_spec(spec):
-    return _EntryPoint(None, spec, None).load()
+    return importlib.metadata.EntryPoint(None, spec, None).load()  # noqa
 
 
 def compact_traceback():
@@ -45,7 +46,7 @@ def compact_traceback():
     return (file, function, line), t, v, info
 
 
-def find_prefix_at_end(haystack, needle):
+def find_prefix_at_end(haystack: str, needle: str) -> int:
     l = len(needle) - 1
     while l and not haystack.endswith(needle[:l]):
         l -= 1
@@ -54,3 +55,16 @@ def find_prefix_at_end(haystack, needle):
 
 class ExitNow(Exception):
     pass
+
+
+def expand(s: str, expansions: ta.Any, name: str) -> str:
+    try:
+        return s % expansions
+    except KeyError as ex:
+        available = list(expansions.keys())
+        available.sort()
+        raise ValueError(
+            'Format string %r for %r contains names (%s) which cannot be '
+            'expanded. Available names: %s' % (s, name, str(ex), ', '.join(available)))
+    except Exception as ex:
+        raise ValueError('Format string %r for %r is badly formatted: %s' % (s, name, str(ex)))
