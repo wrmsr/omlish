@@ -1,16 +1,4 @@
 """
-class ServerOptions:
-    first: bool
-    test: bool
-
-    identifier: str
-
-    strip_ansi: bool
-
-    nocleanup: bool
-    nodaemon: bool
-    minfds: int
-
     process_group_configs: list[ProcessGroupConfig]
 """
 import configparser
@@ -108,6 +96,9 @@ log = logging.getLogger(__name__)
 
 
 class ServerContext:
+    first = False
+    test = False
+
     options: ServerOptionsData
 
     uid: int
@@ -169,7 +160,7 @@ class ServerContext:
             if msg is None:
                 log.info('Set uid to user %s succeeded' % self.uid)
             else:  # failed to drop privileges
-                self.usage(msg)
+                raise RuntimeError(msg)
 
     def set_rlimits_or_exit(self) -> None:
         """
@@ -186,7 +177,7 @@ class ServerContext:
                     'your environment (see README.rst) or lower the minfds setting in the config file to allow the '
                     'process to start.'
                 ),
-                'min': self.minfds,
+                'min': self.options.minfds,
                 'resource': resource.RLIMIT_NOFILE,
                 'name': 'RLIMIT_NOFILE',
             })
@@ -199,7 +190,7 @@ class ServerContext:
                     'environment (see README.rst) or lower the minprocs setting in the config file to allow the '
                     'program to start.'
                 ),
-                'min': self.minprocs,
+                'min': self.options.minprocs,
                 'resource': resource.RLIMIT_NPROC,
                 'name': 'RLIMIT_NPROC',
             })
@@ -223,7 +214,7 @@ class ServerContext:
                     resource.setrlimit(res, (min_limit, hard))
                     log.info('Increased %(name)s limit to %(min_limit)s' % locals())
                 except (resource.error, ValueError):
-                    self.usage(msg % locals())
+                    raise RuntimeError(msg % locals())
 
     def cleanup(self) -> None:
         if self.unlink_pidfile:
@@ -238,7 +229,7 @@ class ServerContext:
     def clear_auto_child_logdir(self) -> None:
         # must be called after realize()
         child_logdir = self.options.child_logdir
-        fnre = re.compile(r'.+?---%s-\S+\.log\.{0,1}\d{0,4}' % self.identifier)
+        fnre = re.compile(r'.+?---%s-\S+\.log\.{0,1}\d{0,4}' % self.options.identifier)
         try:
             filenames = os.listdir(child_logdir)
         except OSError:
@@ -281,7 +272,7 @@ class ServerContext:
             real_exit(0)
         # Child
         log.info('daemonizing the supervisord process')
-        if self.directory:
+        if self.options.directory:
             try:
                 os.chdir(self.options.directory)
             except OSError as err:
@@ -423,12 +414,6 @@ class ServerOptions:
             help = help.replace('%s', self.progname)
         sys.stdout.write(help)
         sys.exit(0)
-
-    def usage(self, msg):
-        """Print a brief error message to stderr and exit(2)."""
-        sys.stderr.write('Error: %s\n' % str(msg))
-        sys.stderr.write('For help, use %s -h\n' % self.progname)
-        sys.exit(2)
 
     def add(
             self,
