@@ -33,10 +33,6 @@ if ta.TYPE_CHECKING:
 VERSION = 'foo'
 
 
-class Dummy:
-    pass
-
-
 log = logging.getLogger(__name__)
 
 

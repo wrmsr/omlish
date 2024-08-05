@@ -3,24 +3,25 @@ import os
 import signal
 import sys
 import tempfile
+import types
 import typing as ta
 
 
-def as_bytes(s, encoding='utf8'):
+def as_bytes(s: str | bytes, encoding: str = 'utf8') -> bytes:
     if isinstance(s, bytes):
         return s
     else:
         return s.encode(encoding)
 
 
-def as_string(s, encoding='utf8'):
+def as_string(s: str | bytes, encoding='utf8') -> str:
     if isinstance(s, str):
         return s
     else:
         return s.decode(encoding)
 
 
-def compact_traceback():
+def compact_traceback() -> tuple[tuple[str, str, int], type[BaseException], BaseException, types.TracebackType]:
     t, v, tb = sys.exc_info()
     tbinfo = []
     assert tb  # Must have a traceback
@@ -54,7 +55,7 @@ class ExitNow(Exception):
 ##
 
 
-def decode_wait_status(sts):
+def decode_wait_status(sts: int) -> tuple[int, str]:
     """
     Decode the status returned by wait() or waitpid().
 
@@ -83,20 +84,14 @@ def decode_wait_status(sts):
 _signames: ta.Mapping[int, str] | None = None
 
 
-def signame(sig):
-    """
-    Return a symbolic name for a signal.
-
-    Return "signal NNN" if there is no corresponding SIG name in the signal module.
-    """
-
+def signame(sig: int) -> str:
     global _signames
     if _signames is None:
         _signames = _init_signames()
     return _signames.get(sig) or 'signal %d' % sig
 
 
-def _init_signames():
+def _init_signames() -> dict[int, str]:
     d = {}
     for k, v in signal.__dict__.items():
         k_startswith = getattr(k, 'startswith', None)
@@ -108,10 +103,11 @@ def _init_signames():
 
 
 class SignalReceiver:
-    def __init__(self):
-        self._signals_recvd = []
+    def __init__(self) -> None:
+        super().__init__()
+        self._signals_recvd: list[int] = []
 
-    def receive(self, sig, frame):
+    def receive(self, sig: int, frame: ta.Any) -> None:
         if sig not in self._signals_recvd:
             self._signals_recvd.append(sig)
 
@@ -153,7 +149,7 @@ def close_fd(fd: int) -> bool:
     return True
 
 
-def mktempfile(suffix, prefix, dir):
+def mktempfile(suffix: str, prefix: str, dir: str) -> str:
     # set os._urandomfd as a hack around bad file descriptor bug seen in the wild, see
     # https://web.archive.org/web/20160729044005/http://www.plope.com/software/collector/252
     os._urandomfd = None

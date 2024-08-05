@@ -221,17 +221,9 @@ class KQueuePoller(BasePoller):
         self._kqueue = None
 
 
-def implements_poll():
-    return hasattr(select, 'poll')
-
-
-def implements_kqueue():
-    return hasattr(select, 'kqueue')
-
-
-if implements_kqueue():
+if hasattr(select, 'kqueue'):
     Poller = KQueuePoller
-elif implements_poll():
+elif hasattr(select, 'poll'):
     Poller = PollPoller
 else:
     Poller = SelectPoller
