@@ -30,8 +30,14 @@ class Foo:
     s: str = dc.field() | interpolate_field
 
 
+@dc.dataclass(frozen=True)
+class Foo2:
+    l: list[Foo]
+
+
 def interpolate_fields(obj: T, replacements: ta.Mapping[str, str]) -> T:
     kw = {}
+
     for f in dc.fields(obj):  # type: ignore
         if not f.metadata.get(InterpolateStringsMetadata):
             continue
@@ -43,6 +49,7 @@ def interpolate_fields(obj: T, replacements: ta.Mapping[str, str]) -> T:
             nv = nv.replace(rk, rv)
         if nv != v:
             kw[f.name] = nv
+
     if not kw:
         return obj
     return dc.replace(obj, **kw)
@@ -54,3 +61,11 @@ def test_strings():
     rpl = {'$THERE': 'yes'}
     c2 = interpolate_fields(c, rpl)
     assert c2.s == 'hi yes bye'
+
+    lc = Foo2([Foo(4, 'hi $THERE bye'), Foo(5, 'bye $HERE hi')])
+    assert lc.l[0].s == 'hi $THERE bye'
+    assert lc.l[1].s == 'bye $HERE hi'
+    rpl = {'$THERE': 'yes', '$HERE': 'no'}
+    lc2 = interpolate_fields(c, rpl)
+    assert lc2.l[0].s == 'hi yes bye'
+    assert lc2.l[1].s == 'bye no hi'
