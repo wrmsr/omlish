@@ -213,7 +213,9 @@ def existing_dirpath(v: str) -> str:
     raise ValueError('The directory named as part of the path %s does not exist' % v)
 
 
-def logging_level(value: str) -> int:
+def logging_level(value: str | int) -> int:
+    if isinstance(value, int):
+        return value
     s = str(value).lower()
     level = logging.getLevelNamesMapping().get(s.upper())
     if level is None:
