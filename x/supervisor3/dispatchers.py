@@ -3,16 +3,12 @@ import logging
 import os
 
 from .compat import as_bytes
-from .compat import as_string
 from .compat import compact_traceback
 from .compat import find_prefix_at_end
 from .compat import readfd
-from .events import EventRejectedEvent
 from .events import ProcessLogStderrEvent
 from .events import ProcessLogStdoutEvent
 from .events import notify
-from .states import EventListenerStates
-from .states import get_event_listener_state_description
 
 
 log = logging.getLogger(__name__)

@@ -19,7 +19,6 @@ from .compat import close_fd
 from .compat import mktempfile
 from .compat import real_exit
 from .compat import try_unlink
-from .configs import ProcessConfig
 from .configs import ServerConfig
 from .datatypes import gid_for_uid
 from .datatypes import name_to_uid
