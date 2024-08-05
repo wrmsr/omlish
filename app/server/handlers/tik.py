@@ -5,7 +5,6 @@ import typing as ta
 import anyio.to_thread
 
 from omlish import http as hu
-from omlish import json
 from omlish import lang
 from omlish.asyncs import anyio as anu
 from omlish.http.asgi import AsgiRecv
@@ -13,6 +12,7 @@ from omlish.http.asgi import AsgiScope
 from omlish.http.asgi import AsgiSend
 from omlish.http.asgi import read_body
 from omlish.http.asgi import send_response
+from omlish.serde import json
 from omserv.apps.routes import Handler_
 from omserv.apps.routes import Route
 from omserv.apps.routes import handles

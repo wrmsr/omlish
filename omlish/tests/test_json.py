@@ -1,4 +1,4 @@
-from .. import json
+from ..serde import json
 
 
 def test_json():

@@ -1,6 +1,6 @@
 from .. import docker
-from .. import json
 from .. import marshal as msh
+from ..serde import json
 from ..testing import pytest as ptu
 
 
