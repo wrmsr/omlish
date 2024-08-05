@@ -26,7 +26,6 @@ from .context import close_parent_pipes
 from .context import drop_privileges
 from .context import make_pipes
 from .datatypes import RestartUnconditionally
-from .dispatchers import EventListenerStates
 from .dispatchers import PInputDispatcher
 from .dispatchers import POutputDispatcher
 from .exceptions import BadCommand
@@ -38,61 +37,6 @@ from .states import get_process_state_description
 
 
 log = logging.getLogger(__name__)
-
-
-@functools.total_ordering
-class ProcessGroup:
-    def __init__(self, config):
-        self.config = config
-        self.processes = {}
-        for pconfig in self.config.process_configs:
-            self.processes[pconfig.name] = pconfig.make_process(self)
-
-    def __lt__(self, other):
-        return self.config.priority < other.config.priority
-
-    def __eq__(self, other):
-        return self.config.priority == other.config.priority
-
-    def __repr__(self):
-        # repr can't return anything other than a native string, but the name might be unicode - a problem on Python 2.
-        name = self.config.name
-        return '<%s instance at %s named %s>' % (self.__class__, id(self), name)
-
-    def remove_logs(self):
-        for process in self.processes.values():
-            process.remove_logs()
-
-    def reopen_logs(self):
-        for process in self.processes.values():
-            process.reopen_logs()
-
-    def stop_all(self):
-        processes = list(self.processes.values())
-        processes.sort()
-        processes.reverse()  # stop in desc priority order
-
-        for proc in processes:
-            state = proc.get_state()
-            if state == ProcessStates.RUNNING:
-                # RUNNING -> STOPPING
-                proc.stop()
-            elif state == ProcessStates.STARTING:
-                # STARTING -> STOPPING
-                proc.stop()
-            elif state == ProcessStates.BACKOFF:
-                # BACKOFF -> FATAL
-                proc.give_up()
-
-    def get_unstopped_processes(self):
-        """ Processes which aren't in a state that is considered 'stopped' """
-        return [x for x in self.processes.values() if x.get_state() not in STOPPED_STATES]
-
-    def get_dispatchers(self):
-        dispatchers = {}
-        for process in self.processes.values():
-            dispatchers.update(process.dispatchers)
-        return dispatchers
 
 
 @functools.total_ordering
@@ -739,11 +683,11 @@ class Subprocess:
 
 @functools.total_ordering
 class ProcessGroupBase:
-    def __init__(self, config, context: ServerContext):
+    def __init__(self, config: ProcessGroupConfig, context: ServerContext):
         self.config = config
         self.context = context
         self.processes = {}
-        for pconfig in self.config.process_configs:
+        for pconfig in self.processes:
             self.processes[pconfig.name] = pconfig.make_process(self)
 
     def __lt__(self, other):
@@ -795,153 +739,9 @@ class ProcessGroupBase:
     def before_remove(self):
         pass
 
-
-class ProcessGroup(ProcessGroupBase):
     def transition(self):
         for proc in self.processes.values():
             proc.transition()
-
-
-class EventListenerPool(ProcessGroupBase):
-    def __init__(self, config, context: ServerContext):
-        ProcessGroupBase.__init__(self, config, context)
-        self.event_buffer = []
-        self.serial = -1
-        self.last_dispatch = 0
-        self.dispatch_throttle = 0  # in seconds: .00195 is an interesting one
-        self._subscribe()
-
-    def handle_rejected(self, event):
-        process = event.process
-        procs = self.processes.values()
-        if process in procs:  # this is one of our processes
-            # rebuffer the event
-            self._accept_event(event.event, head=True)
-
-    def transition(self):
-        processes = self.processes.values()
-        dispatch_capable = False
-        for process in processes:
-            process.transition()
-            # this is redundant, we do it in _dispatch_event too, but we want to reduce function call overhead
-            if process.state == ProcessStates.RUNNING:
-                if process.listener_state == EventListenerStates.READY:
-                    dispatch_capable = True
-        if dispatch_capable:
-            if self.dispatch_throttle:
-                now = time.time()
-
-                if now < self.last_dispatch:
-                    # The system clock appears to have moved backward Reset self.last_dispatch accordingly
-                    self.last_dispatch = now
-
-                if now - self.last_dispatch < self.dispatch_throttle:
-                    return
-            self.dispatch()
-
-    def before_remove(self):
-        self._unsubscribe()
-
-    def dispatch(self):
-        while self.event_buffer:
-            # dispatch the oldest event
-            event = self.event_buffer.pop(0)
-            ok = self._dispatch_event(event)
-            if not ok:
-                # if we can't dispatch an event, rebuffer it and stop trying to process any further events in the buffer
-                self._accept_event(event, head=True)
-                break
-        self.last_dispatch = time.time()
-
-    def _accept_event(self, event, head=False):
-        # events are required to be instances this has a side effect to fail with an attribute error on 'old style'
-        # classes
-        processname = as_string(self.config.name)
-        if not hasattr(event, 'serial'):
-            event.serial = new_serial(GlobalSerial)
-        if not hasattr(event, 'pool_serials'):
-            event.pool_serials = {}
-        if self.config.name not in event.pool_serials:
-            event.pool_serials[self.config.name] = new_serial(self)
-        else:
-            log.debug(
-                'rebuffering event %s for pool %s (buf size=%d, max=%d)' % (
-                    (event.serial, processname, len(self.event_buffer), self.config.buffer_size)))
-
-        if len(self.event_buffer) >= self.config.buffer_size:
-            if self.event_buffer:
-                # discard the oldest event
-                discarded_event = self.event_buffer.pop(0)
-                log.error(
-                    'pool %s event buffer overflowed, discarding event %s' % ((processname, discarded_event.serial)))
-        if head:
-            self.event_buffer.insert(0, event)
-        else:
-            self.event_buffer.append(event)
-
-    def _dispatch_event(self, event):
-        pool_serial = event.pool_serials[self.config.name]
-
-        for process in self.processes.values():
-            if process.state != ProcessStates.RUNNING:
-                continue
-            if process.listener_state == EventListenerStates.READY:
-                processname = as_string(process.config.name)
-                payload = event.payload()
-                try:
-                    event_type = event.__class__
-                    serial = event.serial
-                    envelope = self._event_envelope(event_type, serial, pool_serial, payload)
-                    process.write(as_bytes(envelope))
-                except OSError as why:
-                    if why.args[0] != errno.EPIPE:
-                        raise
-
-                    log.debug(
-                        'epipe occurred while sending event %s '
-                        'to listener %s, listener state unchanged' % (event.serial, processname))
-                    continue
-
-                process.listener_state = EventListenerStates.BUSY
-                process.event = event
-                log.debug('event %s sent to listener %s' % (event.serial, processname))
-                return True
-
-        return False
-
-    def _event_envelope(self, event_type, serial, pool_serial, payload):
-        event_name = events.get_event_name_by_type(event_type)
-        payload_len = len(payload)
-        D = {
-            'ver': '3.0',
-            'sid': self.context.config.identifier,
-            'serial': serial,
-            'pool_name': self.config.name,
-            'pool_serial': pool_serial,
-            'event_name': event_name,
-            'len': payload_len,
-            'payload': payload,
-        }
-        return (
-                'ver:%(ver)s '
-                'server:%(sid)s '
-                'serial:%(serial)s '
-                'pool:%(pool_name)s '
-                'poolserial:%(pool_serial)s '
-                'eventname:%(event_name)s '
-                'len:%(len)s\n%(payload)s'
-                % D
-        )
-
-    def _subscribe(self):
-        for event_type in self.config.pool_events:
-            events.subscribe(event_type, self._accept_event)
-        events.subscribe(events.EventRejectedEvent, self.handle_rejected)
-
-    def _unsubscribe(self):
-        for event_type in self.config.pool_events:
-            events.unsubscribe(event_type, self._accept_event)
-        events.unsubscribe(events.EventRejectedEvent, self.handle_rejected)
 
 
 class GlobalSerial:

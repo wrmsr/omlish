@@ -52,6 +52,8 @@ class ServerConfig:
 class ProcessGroupConfig:
     name: str
 
+    priority: int = 999
+
     processes: ta.Sequence['ProcessConfig'] | None = None
 
 
