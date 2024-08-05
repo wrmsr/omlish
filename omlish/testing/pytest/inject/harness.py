@@ -24,7 +24,7 @@ class PytestScope(enum.Enum):
     FUNCTION = enum.auto()
 
 
-class Scopes(lang.Namespace):
+class Scopes(lang.Namespace, lang.Final):
     Session = inj.SeededScope(PytestScope.SESSION)
     Package = inj.SeededScope(PytestScope.PACKAGE)
     Module = inj.SeededScope(PytestScope.MODULE)

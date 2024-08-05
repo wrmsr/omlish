@@ -67,4 +67,4 @@ def test_namespace():
     with pytest.raises(TypeError):
         Foo()
 
-    assert list(Foo) == [('X', 1), ('Y', 2)]
+    assert list(Foo) == [('X', 1), ('Y', '2')]
