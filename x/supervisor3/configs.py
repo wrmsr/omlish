@@ -45,6 +45,13 @@ class ServerConfig:
     strip_ansi: bool = False
     silent: bool = False
 
+    groups: ta.Sequence['ProcessGroupConfig'] | None = None
+
+
+@dc.dataclass(frozen=True)
+class ProcessGroupConfig:
+    name: str
+
     processes: ta.Sequence['ProcessConfig'] | None = None
 
 
