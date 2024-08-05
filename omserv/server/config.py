@@ -15,7 +15,7 @@ class Config:
     user: int | None = None
     group: int | None = None
 
-    workers: int = 1
+    workers: int = 0
 
     max_app_queue_size: int = 10
 

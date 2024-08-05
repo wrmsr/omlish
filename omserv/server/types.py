@@ -67,9 +67,11 @@ class AppWrapper(ta.Protocol):
 
 
 def wrap_app(
-        app: AsgiFramework,
+        app: AsgiFramework | AppWrapper,
 ) -> AppWrapper:
-    return AsgiWrapper(app)
+    if isinstance(app, AsgiWrapper):
+        return app
+    return AsgiWrapper(app)  # type: ignore
 
 
 ##
