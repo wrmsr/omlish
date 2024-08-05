@@ -6,7 +6,7 @@ import threading
 log = logging.getLogger(__name__)
 
 
-def handle_error_debug(e):
+def handle_error_debug(e: BaseException) -> None:
     exc_info = sys.exc_info()
 
     try:

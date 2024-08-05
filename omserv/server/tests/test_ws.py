@@ -18,7 +18,7 @@ from omlish import lang
 
 from ..config import Config
 from ..types import AsgiWrapper
-from ..workers import worker_serve
+from ..workers import serve
 from .sanity import SANITY_REQUEST_BODY
 from .sanity import sanity_framework
 from .utils import CONNECTION_REFUSED_EXCEPTION_TYPES
@@ -77,7 +77,7 @@ async def _test_server_websocket():
 
     async with anyio.create_task_group() as tg:
         tg.start_soon(functools.partial(
-            worker_serve,
+            serve,
             AsgiWrapper(sanity_framework),
             Config(
                 bind=(f'127.0.0.1:{port}',),
