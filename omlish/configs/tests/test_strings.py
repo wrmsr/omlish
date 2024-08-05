@@ -1,4 +1,3 @@
-import types
 import typing as ta
 
 from ... import dataclasses as dc
@@ -24,24 +23,35 @@ def interpolate_field(f: dc.Field) -> dc.Field:
     return dc.update_field_metadata(f, {InterpolateStringsMetadata: True})
 
 
-def interpolate_fields(obj: T, replacements: ta.Mapping[str, str]) -> T:
-    kw = {}
+class StringInterpolator:
+    def __init__(self, rpl: ta.Mapping[str, str]) -> None:
+        super().__init__()
+        self._rpl = rpl
 
-    for f in dc.fields(obj):  # type: ignore
-        if not f.metadata.get(InterpolateStringsMetadata):
-            continue
-        v = getattr(obj, f.name)
-        if not isinstance(v, str):
-            raise TypeError(v)
-        nv = v
-        for rk, rv in replacements.items():
-            nv = nv.replace(rk, rv)
-        if nv != v:
-            kw[f.name] = nv
+    def __call__(self, v: T, *, _soft: bool = False) -> T:
+        if dc.is_dataclass(v):
+            kw = {}
+            for f in dc.fields(v):  # type: ignore
+                fv = getattr(v, f.name)
+                nfv = self(fv, _soft=not f.metadata.get(InterpolateStringsMetadata))
+                if fv is not nfv:
+                    kw[f.name] = nfv
+            if not kw:
+                return v
+            return dc.replace(v, **kw)
 
-    if not kw:
-        return obj
-    return dc.replace(obj, **kw)
+        elif isinstance(v, str):
+            if not _soft:
+                for rk, rv in self._rpl.items():
+                    v = v.replace(rk, rv)
+            return v
+
+        else:
+            return v
+
+
+def interpolate_strings(v: T, rpl: ta.Mapping[str, str]) -> T:
+    return StringInterpolator(rpl)(v)
 
 
 ##
@@ -67,19 +77,19 @@ def test_strings():
     c = Foo(4, 'hi $THERE bye')
     assert c.s == 'hi $THERE bye'
     rpl = {'$THERE': 'yes'}
-    c2 = interpolate_fields(c, rpl)
+    c2 = interpolate_strings(c, rpl)
     assert c2.s == 'hi yes bye'
 
     pc = ParentFoo(Foo(4, 'hi $THERE bye'))
     assert pc.f.s == 'hi $THERE bye'
     rpl = {'$THERE': 'yes'}
-    pc2 = interpolate_fields(pc, rpl)
+    pc2 = interpolate_strings(pc, rpl)
     assert pc2.f.s == 'hi yes bye'
 
     lc = ListFoo([Foo(4, 'hi $THERE bye'), Foo(5, 'bye $HERE hi')])
     assert lc.l[0].s == 'hi $THERE bye'
     assert lc.l[1].s == 'bye $HERE hi'
     rpl = {'$THERE': 'yes', '$HERE': 'no'}
-    lc2 = interpolate_fields(lc, rpl)
+    lc2 = interpolate_strings(lc, rpl)
     assert lc2.l[0].s == 'hi yes bye'
     assert lc2.l[1].s == 'bye no hi'
