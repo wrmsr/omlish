@@ -103,24 +103,22 @@ def field_init(
         if f.init:
             locals[default_name] = f.default_factory
             lines.append(f'if {f.name} is __dataclass_HAS_DEFAULT_FACTORY__: {f.name} = {default_name}()')
-            value = (
-                f'{default_name}() '
-                f'if {f.name} is __dataclass_HAS_DEFAULT_FACTORY__ '
-                f'else {f.name}'
-            )
+            value = f.name
         else:
             locals[default_name] = f.default_factory
             lines.append(f'{f.name} = {default_name}()')
+            value = f.name
 
     elif f.init:
         if f.default is MISSING:
             value = f.name
         elif f.default is not MISSING:
-            locals[default_name] = f.default
+            locals[default_name] = f.default  # Not referenced her, just useful / consistent to have in function scope
             value = f.name
 
     elif slots and f.default is not MISSING:
         locals[default_name] = f.default
+        lines.append(f'{f.name} = {default_name}')
         value = default_name
 
     else:
@@ -129,19 +127,19 @@ def field_init(
     if fx.coerce is not None:
         cn = f'__dataclass_coerce__{f.name}__'
         locals[cn] = fx.coerce
-        lines.append(f'{f.name} = {cn}({f.name})')
+        lines.append(f'{value} = {cn}({value})')
 
     if fx.check is not None:
         cn = f'__dataclass_check__{f.name}__'
         locals[cn] = fx.check
-        lines.append(f'if not {cn}({f.name}): raise __dataclass_FieldCheckError__({f.name})')
+        lines.append(f'if not {cn}({value}): raise __dataclass_FieldCheckError__({f.name})')
 
     if fx.check_type:
         cn = f'__dataclass_check_type__{f.name}__'
         locals[cn] = f.type
         lines.append(
-            f'if not __dataclass_builtins_isinstance__({f.name}, {cn}): '
-            f'raise __dataclass_builtins_TypeError__({f.name}, {cn})',
+            f'if not __dataclass_builtins_isinstance__({value}, {cn}): '
+            f'raise __dataclass_builtins_TypeError__({value}, {cn})',
         )
 
     if value is not None and field_type(f) is not FieldType.INIT:
