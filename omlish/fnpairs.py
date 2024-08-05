@@ -29,6 +29,7 @@ if ta.TYPE_CHECKING:
     import tomllib as _tomllib
 
     import cloudpickle as _cloudpickle
+    import json5 as _json5
     import lz4.frame as _lz4_frame
     import snappy as _snappy
     import yaml as _yaml
@@ -44,6 +45,7 @@ else:
     _tomllib = lang.proxy_import('tomllib')
 
     _cloudpickle = lang.proxy_import('cloudpickle')
+    _json5 = lang.proxy_import('json5')
     _lz4_frame = lang.proxy_import('lz4.frame')
     _snappy = lang.proxy_import('snappy')
     _yaml = lang.proxy_import('yaml')
@@ -389,6 +391,15 @@ class Cloudpickle(ObjectBytes_):
 
     def backward(self, t: bytes) -> ta.Any:
         return _cloudpickle.loads(t)
+
+
+@_register_extension('json5')
+class Json5(ObjectStr_):
+    def forward(self, f: ta.Any) -> str:
+        return _json5.dumps(f)
+
+    def backward(self, t: str) -> ta.Any:
+        return _json5.loads(t)
 
 
 @_register_extension('yml', 'yaml')
