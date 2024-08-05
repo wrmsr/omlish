@@ -45,6 +45,8 @@ class ServerConfig:
     strip_ansi: bool = False
     silent: bool = False
 
+    processes: ta.Sequence['ProcessConfig'] | None = None
+
 
 @dc.dataclass(frozen=True)
 class ProcessConfig:

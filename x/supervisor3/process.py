@@ -14,6 +14,7 @@ from .compat import as_string
 from .compat import close_fd
 from .compat import compact_traceback
 from .compat import decode_wait_status
+from .compat import get_path
 from .compat import real_exit
 from .compat import signame
 from .configs import ProcessConfig
@@ -22,8 +23,11 @@ from .context import check_execv_args
 from .context import close_child_pipes
 from .context import close_parent_pipes
 from .context import drop_privileges
+from .context import make_pipes
 from .datatypes import RestartUnconditionally
 from .dispatchers import EventListenerStates
+from .dispatchers import PInputDispatcher
+from .dispatchers import POutputDispatcher
 from .exceptions import BadCommand
 from .exceptions import ProcessException
 from .states import ProcessStates
@@ -128,7 +132,7 @@ class Subprocess:
                 st = None
 
         else:
-            path = self.config.get_path()
+            path = get_path()
             found = None
             st = None
             for dir in path:
@@ -228,7 +232,7 @@ class Subprocess:
             return None
 
         try:
-            self.dispatchers, self.pipes = self.config.make_dispatchers(self)
+            self.dispatchers, self.pipes = self._make_dispatchers(self)
         except OSError as why:
             code = why.args[0]
             if code == errno.EMFILE:
@@ -262,6 +266,21 @@ class Subprocess:
 
         else:
             return self._spawn_as_child(filename, argv)
+
+    def _make_dispatchers(self, proc):
+        use_stderr = not self.config.redirect_stderr
+        p = make_pipes(use_stderr)
+        stdout_fd, stderr_fd, stdin_fd = p['stdout'], p['stderr'], p['stdin']
+        dispatchers = {}
+        if stdout_fd is not None:
+            etype = events.ProcessCommunicationStdoutEvent
+            dispatchers[stdout_fd] = POutputDispatcher(proc, etype, stdout_fd)
+        if stderr_fd is not None:
+            etype = events.ProcessCommunicationStderrEvent
+            dispatchers[stderr_fd] = POutputDispatcher(proc, etype, stderr_fd)
+        if stdin_fd is not None:
+            dispatchers[stdin_fd] = PInputDispatcher(proc, 'stdin', stdin_fd)
+        return dispatchers, p
 
     def _spawn_as_parent(self, pid):
         # Parent
