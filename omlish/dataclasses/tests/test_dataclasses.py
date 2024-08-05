@@ -433,7 +433,7 @@ def test_default_factory_coerce():
 
     @dc.dataclass()
     class C:
-        x = dc.xfield(coerce=coerce, default_factory=lambda: 2)
+        x: int = dc.xfield(coerce=coerce, default_factory=lambda: 2)
 
     assert C().x == 4
     assert C(3).x == 6
