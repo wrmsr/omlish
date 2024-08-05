@@ -552,9 +552,9 @@ class Subprocess:
             self._check_in_state(ProcessStates.STOPPING)
             self.change_state(ProcessStates.STOPPED)
             if exit_expected:
-                log.logger.info(msg)
+                log.info(msg)
             else:
-                log.logger.warn(msg)
+                log.warn(msg)
 
         elif too_quickly:
             # the program did not stay up long enough to make it to RUNNING implies STARTING -> BACKOFF
