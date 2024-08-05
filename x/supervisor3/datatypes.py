@@ -35,10 +35,6 @@ def logfile_name(val):
 
 
 def name_to_uid(name: str) -> int:
-    """
-    Find a user ID from a string containing a user name or ID. Raises ValueError if the string can't be resolved to a
-    valid user ID on the system.
-    """
     try:
         uid = int(name)
     except ValueError:
@@ -56,10 +52,6 @@ def name_to_uid(name: str) -> int:
 
 
 def name_to_gid(name: str) -> int:
-    """
-    Find a group ID from a string containing a group name or ID. Raises ValueError if the string can't be resolved to a
-    valid group ID on the system.
-    """
     try:
         gid = int(name)
     except ValueError:

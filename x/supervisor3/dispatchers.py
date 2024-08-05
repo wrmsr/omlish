@@ -21,7 +21,7 @@ if ta.TYPE_CHECKING:
 log = logging.getLogger(__name__)
 
 
-class PDispatcher:
+class Dispatcher:
     """
     Asyncore dispatcher for mainloop, representing a process channel (stdin, stdout, or stderr).  This class is
     abstract.
@@ -68,7 +68,7 @@ class PDispatcher:
         pass
 
 
-class POutputDispatcher(PDispatcher):
+class OutputDispatcher(Dispatcher):
     """
     Dispatcher for one channel (stdout or stderr) of one process. Serves several purposes:
 
@@ -269,7 +269,7 @@ class POutputDispatcher(PDispatcher):
             self.close()
 
 
-class PInputDispatcher(PDispatcher):
+class InputDispatcher(Dispatcher):
     """ Input (stdin) dispatcher """
 
     def __init__(self, process, channel, fd):
