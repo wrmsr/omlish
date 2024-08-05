@@ -31,7 +31,7 @@ class ServerConfig:
     user: str | None = None
     nodaemon: bool = False
     umask: int = dc.xfield(0o22, coerce=octal_type)
-    directory: str | None = dc.xfield(None, coerce=existing_directory)
+    directory: str | None = dc.xfield(None, coerce=lambda d: existing_directory(d) if d is not None else None)
     logfile: str = dc.xfield('supervisord.log', coerce=existing_dirpath)
     logfile_maxbytes: int = dc.xfield(50 * 1024 * 1024, coerce=byte_size)
     logfile_backups: int = dc.xfield(10)

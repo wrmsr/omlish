@@ -235,7 +235,9 @@ class SuffixMultiplier:
             else:
                 assert self._keysz == len(k)
 
-    def __call__(self, v):
+    def __call__(self, v: str | int) -> int:
+        if isinstance(v, int):
+            return v
         v = v.lower()
         for s, m in self._d.items():
             if v[-self._keysz:] == s:
