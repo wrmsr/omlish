@@ -68,3 +68,4 @@ def test_namespace():
         Foo()
 
     assert list(Foo) == [('X', 1), ('Y', '2')]
+    assert Foo['X'] == 1
