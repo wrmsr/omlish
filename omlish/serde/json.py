@@ -160,6 +160,7 @@ PRETTY_KWARGS: ta.Mapping[str, ta.Any] = dict(
 dump_pretty: ta.Callable[..., bytes] = functools.partial(dump, **PRETTY_KWARGS)  # type: ignore
 dumps_pretty: ta.Callable[..., str] = functools.partial(dumps, **PRETTY_KWARGS)
 
+
 ##
 
 
