@@ -98,28 +98,11 @@ def field_init(
 
     lines = []
 
-    if fx.coerce is not None:
-        cn = f'__dataclass_coerce__{f.name}__'
-        locals[cn] = fx.coerce
-        lines.append(f'{f.name} = {cn}({f.name})')
-
-    if fx.check is not None:
-        cn = f'__dataclass_check__{f.name}__'
-        locals[cn] = fx.check
-        lines.append(f'if not {cn}({f.name}): raise __dataclass_CheckException__')
-
-    if fx.check_type:
-        cn = f'__dataclass_check_type__{f.name}__'
-        locals[cn] = f.type
-        lines.append(
-            f'if not __dataclass_builtins_isinstance__({f.name}, {cn}): '
-            f'raise __dataclass_builtins_TypeError__({f.name}, {cn})',
-        )
-
     value: str | None = None
     if f.default_factory is not MISSING:
         if f.init:
             locals[default_name] = f.default_factory
+            lines.append(f'if {f.name} is __dataclass_HAS_DEFAULT_FACTORY__: {f.name} = {default_name}()')
             value = (
                 f'{default_name}() '
                 f'if {f.name} is __dataclass_HAS_DEFAULT_FACTORY__ '
@@ -127,7 +110,7 @@ def field_init(
             )
         else:
             locals[default_name] = f.default_factory
-            value = f'{default_name}()'
+            lines.append(f'{f.name} = {default_name}()')
 
     elif f.init:
         if f.default is MISSING:
@@ -142,6 +125,24 @@ def field_init(
 
     else:
         pass
+
+    if fx.coerce is not None:
+        cn = f'__dataclass_coerce__{f.name}__'
+        locals[cn] = fx.coerce
+        lines.append(f'{f.name} = {cn}({f.name})')
+
+    if fx.check is not None:
+        cn = f'__dataclass_check__{f.name}__'
+        locals[cn] = fx.check
+        lines.append(f'if not {cn}({f.name}): raise __dataclass_FieldCheckError__({f.name})')
+
+    if fx.check_type:
+        cn = f'__dataclass_check_type__{f.name}__'
+        locals[cn] = f.type
+        lines.append(
+            f'if not __dataclass_builtins_isinstance__({f.name}, {cn}): '
+            f'raise __dataclass_builtins_TypeError__({f.name}, {cn})',
+        )
 
     if value is not None and field_type(f) is not FieldType.INIT:
         lines.append(field_assign(frozen, f.name, value, self_name, fx.override))  # noqa
