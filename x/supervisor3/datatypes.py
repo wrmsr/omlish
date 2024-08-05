@@ -122,7 +122,8 @@ class SuffixMultiplier:
             if self._keysz is None:
                 self._keysz = len(k)
             else:
-                assert self._keysz == len(k)
+                if self._keysz == len(k):
+                    raise ValueError(k)
 
     def __call__(self, v: str | int) -> int:
         if isinstance(v, int):

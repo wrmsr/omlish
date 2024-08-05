@@ -198,7 +198,7 @@ class Subprocess:
 
         if self.pid:
             msg = 'process \'%s\' already running' % processname
-            log.warn(msg)
+            log.warning(msg)
             return None
 
         self.killing = False
@@ -531,7 +531,7 @@ class Subprocess:
             too_quickly = now - self.laststart < self.config.startsecs
         else:
             too_quickly = False
-            log.warn(
+            log.warning(
                 "process '%s' (%s) laststart time is in the future, don't "
                 "know how long process was running so assuming it did "
                 "not exit too quickly" % (processname, self.pid))
@@ -550,7 +550,7 @@ class Subprocess:
             if exit_expected:
                 log.info(msg)
             else:
-                log.warn(msg)
+                log.warning(msg)
 
         elif too_quickly:
             # the program did not stay up long enough to make it to RUNNING implies STARTING -> BACKOFF
@@ -559,7 +559,7 @@ class Subprocess:
             msg = 'exited: %s (%s)' % (processname, msg + '; not expected')
             self._check_in_state(ProcessStates.STARTING)
             self.change_state(ProcessStates.BACKOFF)
-            log.warn(msg)
+            log.warning(msg)
 
         else:
             # this finish was not the result of a stop request, the program was in the RUNNING state but exited implies
@@ -585,7 +585,7 @@ class Subprocess:
                 self.spawn_err = 'Bad exit code %s' % es
                 msg = 'exited: %s (%s)' % (processname, msg + '; not expected')
                 self.change_state(ProcessStates.EXITED, expected=False)
-                log.warn(msg)
+                log.warning(msg)
 
         self.pid = 0
         close_parent_pipes(self._pipes)
@@ -674,7 +674,7 @@ class Subprocess:
             if time_left <= 0:
                 # kill processes which are taking too long to stop with a final sigkill.  if this doesn't kill it, the
                 # process will be stuck in the STOPPING state forever.
-                log.warn('killing \'%s\' (%s) with SIGKILL' % (processname, self.pid))
+                log.warning('killing \'%s\' (%s) with SIGKILL' % (processname, self.pid))
                 self.kill(signal.SIGKILL)
 
     def create_auto_child_logs(self):

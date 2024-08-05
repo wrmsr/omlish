@@ -27,7 +27,8 @@ def as_string(s: str | bytes, encoding='utf8') -> str:
 def compact_traceback() -> tuple[tuple[str, str, int], type[BaseException], BaseException, types.TracebackType]:
     t, v, tb = sys.exc_info()
     tbinfo = []
-    assert tb  # Must have a traceback
+    if not tb:
+        raise RuntimeError('No traceback')
     while tb:
         tbinfo.append((
             tb.tb_frame.f_code.co_filename,

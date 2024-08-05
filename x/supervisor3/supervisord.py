@@ -260,21 +260,25 @@ class Supervisor:
         sig = self.context.get_signal()
         if sig:
             if sig in (signal.SIGTERM, signal.SIGINT, signal.SIGQUIT):
-                log.warn('received %s indicating exit request' % signame(sig))
+                log.warning('received %s indicating exit request' % signame(sig))
                 self.context.state = SupervisorStates.SHUTDOWN
+
             elif sig == signal.SIGHUP:
                 if self.context.state == SupervisorStates.SHUTDOWN:
-                    log.warn('ignored %s indicating restart request (shutdown in progress)' % signame(sig))  # noqa
+                    log.warning('ignored %s indicating restart request (shutdown in progress)' % signame(sig))  # noqa
                 else:
-                    log.warn('received %s indicating restart request' % signame(sig))  # noqa
+                    log.warning('received %s indicating restart request' % signame(sig))  # noqa
                     self.context.state = SupervisorStates.RESTARTING
+
             elif sig == signal.SIGCHLD:
                 log.debug('received %s indicating a child quit' % signame(sig))
+
             elif sig == signal.SIGUSR2:
                 log.info('received %s indicating log reopen request' % signame(sig))
                 # self.context.reopen_logs()
                 for group in self.process_groups.values():
                     group.reopen_logs()
+
             else:
                 log.debug('received %s indicating nothing' % signame(sig))
 
@@ -290,7 +294,6 @@ def main(args=None, test=False):
     from omlish import logs
     logs.configure_standard_logging('INFO')
 
-    assert os.name == 'posix', 'This code makes Unix-specific assumptions'
     # if we hup, restart by making a new Supervisor()
     first = True
     while True:
