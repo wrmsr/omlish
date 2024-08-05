@@ -4,6 +4,7 @@ import typing as ta
 
 from ... import lang
 from .exceptions import CheckError
+from .exceptions import FieldCheckError
 from .fields import field_init
 from .fields import field_type
 from .fields import has_default
@@ -99,7 +100,8 @@ class InitBuilder:
             '__dataclass_builtins_object__': object,
             '__dataclass_builtins_isinstance__': isinstance,
             '__dataclass_builtins_TypeError__': TypeError,
-            '__dataclass_CheckException__': CheckError,
+            '__dataclass_CheckError__': CheckError,
+            '__dataclass_FieldCheckError__': FieldCheckError,
         })
 
         body_lines: list[str] = []
@@ -126,7 +128,7 @@ class InitBuilder:
             locals[cn] = fn
             csig = inspect.signature(fn)
             cas = ', '.join(p.name for p in csig.parameters.values())
-            body_lines.append(f'if not {cn}({cas}): raise __dataclass_CheckException__')
+            body_lines.append(f'if not {cn}({cas}): raise __dataclass_CheckError__')
 
         for i, fn in enumerate(self._info.merged_metadata.get(Init, [])):
             cn = f'__dataclass_init_{i}__'
