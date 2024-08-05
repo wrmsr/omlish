@@ -25,8 +25,8 @@ from .context import close_parent_pipes
 from .context import drop_privileges
 from .context import make_pipes
 from .datatypes import RestartUnconditionally
-from .dispatchers import PInputDispatcher
-from .dispatchers import POutputDispatcher
+from .dispatchers import InputDispatcher
+from .dispatchers import OutputDispatcher
 from .exceptions import BadCommand
 from .exceptions import ProcessException
 from .states import ProcessStates
@@ -274,12 +274,12 @@ class Subprocess:
         dispatchers = {}
         if stdout_fd is not None:
             etype = events.ProcessCommunicationStdoutEvent
-            dispatchers[stdout_fd] = POutputDispatcher(proc, etype, stdout_fd)
+            dispatchers[stdout_fd] = OutputDispatcher(proc, etype, stdout_fd)
         if stderr_fd is not None:
             etype = events.ProcessCommunicationStderrEvent
-            dispatchers[stderr_fd] = POutputDispatcher(proc, etype, stderr_fd)
+            dispatchers[stderr_fd] = OutputDispatcher(proc, etype, stderr_fd)
         if stdin_fd is not None:
-            dispatchers[stdin_fd] = PInputDispatcher(proc, 'stdin', stdin_fd)
+            dispatchers[stdin_fd] = InputDispatcher(proc, 'stdin', stdin_fd)
         return dispatchers, p
 
     def _spawn_as_parent(self, pid):
