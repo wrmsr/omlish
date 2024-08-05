@@ -1,9 +1,11 @@
+import abc
 import collections.abc
 import copy
 import typing as ta
 
 from ... import check
 from ... import dataclasses as dc
+from ... import lang
 from ..base import MarshalContext
 from ..base import Marshaler
 from ..base import UnmarshalContext
@@ -20,6 +22,40 @@ from ..values import Value
 @dc.dataclass(frozen=True)
 class Secret:
     key: str
+
+
+##
+
+
+class Secrets(lang.Abstract):
+    def fix(self, obj: str | Secret) -> str:
+        if isinstance(obj, str):
+            return obj
+        elif isinstance(obj, Secret):
+            return self.get(obj.key)
+        else:
+            raise TypeError(obj)
+
+    @abc.abstractmethod
+    def get(self, key: str) -> str:
+        raise NotImplementedError
+
+
+class EmptySecrets(Secrets):
+    def get(self, key: str) -> str:
+        raise KeyError(key)
+
+
+class SimpleSecrets(Secrets):
+    def __init_(self, dct: ta.Mapping[str, str]) -> None:
+        super().__init__()
+        self._dct = dct
+
+    def get(self, key: str) -> str:
+        return self._dct[key]
+
+
+##
 
 
 class StrOrSecretMarshaler(Marshaler):
