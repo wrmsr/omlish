@@ -209,13 +209,13 @@ class ServerOptions:
         if help.find('%s') > 0:
             help = help.replace('%s', self.progname)
         sys.stdout.write(help)
-        self.exit(0)
+        sys.exit(0)
 
     def usage(self, msg):
         """Print a brief error message to stderr and exit(2)."""
-        self.stderr.write('Error: %s\n' % str(msg))
-        self.stderr.write('For help, use %s -h\n' % self.progname)
-        self.exit(2)
+        sys.stderr.write('Error: %s\n' % str(msg))
+        sys.stderr.write('For help, use %s -h\n' % self.progname)
+        sys.exit(2)
 
     def add(
             self,
@@ -929,12 +929,10 @@ class ServerOptions:
                 self.logger.critical("can't chdir into %r: %s" % (self.directory, err))
             else:
                 self.logger.info('set current directory: %r' % self.directory)
-        os.close(0)
-        sys.stdin = sys.__stdin__ = open('/dev/null')
-        os.close(1)
-        sys.stdout = sys.__stdout__ = open('/dev/null', 'w')
-        os.close(2)
-        sys.stderr = sys.__stderr__ = open('/dev/null', 'w')
+        dn = os.open('/dev/null')
+        os.dup2(0, dn)
+        os.dup2(1, dn)
+        os.dup2(2, dn)
         os.setsid()
         os.umask(self.umask)
         # XXX Stevens, in his Advanced Unix book, section 13.3 (page 417) recommends calling umask(0) and closing unused
