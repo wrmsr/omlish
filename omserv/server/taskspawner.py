@@ -10,6 +10,7 @@ import anyio.to_thread
 from omlish import check
 
 from .config import Config
+from .debug import handle_error_debug
 from .types import AppWrapper
 from .types import AsgiReceiveCallable
 from .types import AsgiReceiveEvent
@@ -37,17 +38,25 @@ async def _handle(
             sync_spawn,
             call_soon,
         )
+
     except anyio.get_cancelled_exc_class():
         raise
+
     except BaseExceptionGroup as error:
+        handle_error_debug(error)
+
         _, other_errors = error.split(anyio.get_cancelled_exc_class())
         if other_errors is not None:
             log.exception('Error in Asgi Framework')
             await send(None)
         else:
             raise
-    except Exception:
+
+    except Exception as error:
+        handle_error_debug(error)
+
         log.exception('Error in Asgi Framework')
+
     finally:
         await send(None)
 
