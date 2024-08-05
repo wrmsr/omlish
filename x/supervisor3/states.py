@@ -1,3 +1,9 @@
+import typing as ta
+
+
+ProcessState: ta.TypeAlias = int
+
+
 class ProcessStates:
     STOPPED = 0
     STARTING = 10
