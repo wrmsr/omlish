@@ -16,7 +16,7 @@ class DbType:
     default_port: int | None = None
 
 
-class DbTypes(lang.Namespace):
+class DbTypes(lang.Namespace, lang.Final):
     MYSQL = DbType(
         name='mysql',
         dialect_name='mysql',

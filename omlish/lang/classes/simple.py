@@ -17,13 +17,15 @@ V = ta.TypeVar('V')
 class _NamespaceMeta(abc.ABCMeta):
     def __new__(mcls, name, bases, namespace):
         if bases:
-            for nc in (Final, NotInstantiable):
+            for nc in (NotInstantiable,):
                 if nc not in bases:
                     bases = (*bases, nc)
         return super().__new__(mcls, name, bases, namespace)
 
-    def __iter__(self) -> ta.Iterator[tuple[str, ta.Any]]:
-        raise NotImplementedError
+    def __iter__(cls) -> ta.Iterator[tuple[str, ta.Any]]:
+        for a in dir(cls):
+            if not a.startswith('_'):
+                yield (a, getattr(cls, a))
 
 
 class Namespace(metaclass=_NamespaceMeta):

@@ -42,7 +42,7 @@ def parse_size(s: str) -> int:
     return int(v) * us[u]
 
 
-class ProcStat(lang.Namespace):
+class ProcStat(lang.Namespace, lang.Final):
     PID = 0
     COMM = 1
     STATE = 2
