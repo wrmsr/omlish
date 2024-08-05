@@ -21,6 +21,8 @@ import tempfile
 import typing as ta
 import warnings
 
+from omlish import dataclasses as dc
+
 from . import poller
 from . import states
 from .compat import SignalReceiver
@@ -58,6 +60,50 @@ if ta.TYPE_CHECKING:
 
 
 @dc.dataclass(frozen=True)
+class ProcessConfigData:
+    name: str
+    command: str
+
+    uid: int | None = None
+    directory: str | None = None
+    umask: int | None = None
+    priority: int = 999
+
+    autostart: bool = True
+    autorestart: str = 'unexpected'
+
+    startsecs: int = 1
+    startretries: int = 3
+
+    numprocs: int = 1
+    numprocs_start: int = 0
+
+    @dc.dataclass(frozen=True)
+    class Log:
+        file: str | None = None
+        capture_maxbytes: int | None = None
+        events_enabled: bool = False
+        syslog: bool = False
+        backups: int | None = None
+        maxbytes: int | None = None
+
+    stdout: Log = Log()
+    stderr: Log = Log()
+
+    stopsignal: str = 'TERM'
+    stopwaitsecs: int = 10
+    stopasgroup: bool = False
+
+    killasgroup: bool = False
+
+    exitcodes: ta.Iterable[int] = (0,)
+
+    redirect_stderr: bool = False
+
+    environment: ta.Mapping[str, str] | None = None
+
+
+@dc.dataclass(frozen=True)
 class ServerOptionsData:
     def add(
             self,
@@ -84,7 +130,7 @@ class ServerOptionsData:
     loglevel: int = dc.xfield(logging.INFO, coerce=logging_level)
     pidfile: str = dc.xfield('supervisord.pid', coerce=existing_dirpath)
     identifier: str = dc.xfield('supervisor')
-    child_logdir = dc.xfield(tempfile.gettempdir(), coerce=existing_directory)
+    child_logdir = dc.xfield(default_factory=lambda: tempfile.gettempdir(), coerce=existing_directory)
     minfds: int = 1024
     minprocs: int = 200
     nocleanup: bool = False

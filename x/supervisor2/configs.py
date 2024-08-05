@@ -1,4 +1,5 @@
 import os
+import functools
 import typing as ta
 
 from omlish import dataclasses as dc
@@ -7,6 +8,7 @@ from .compat import get_path
 from .datatypes import Automatic
 
 
+@functools.total_ordering
 class Config:
     priority: int
     name: str
@@ -19,77 +21,8 @@ class Config:
             return self.name < other.name
         return self.priority < other.priority
 
-    def __le__(self, other):
-        if self.priority == other.priority:
-            return self.name <= other.name
-        return self.priority <= other.priority
-
-    def __gt__(self, other):
-        if self.priority == other.priority:
-            return self.name > other.name
-        return self.priority > other.priority
-
-    def __ge__(self, other):
-        if self.priority == other.priority:
-            return self.name >= other.name
-        return self.priority >= other.priority
-
     def __repr__(self):
         return '<%s instance at %s named %s>' % (self.__class__, id(self), self.name)
-
-
-@dc.dataclass(frozen=True)
-class ProcessConfigData:
-    name: str
-    command: str
-
-    uid: int | None = None
-    directory: str | None = None
-    umask: int | None = None
-    priority: int = 999
-
-    autostart: bool = True
-    autorestart: str = 'unexpected'
-
-    startsecs: int = 1
-    startretries: int = 3
-
-    # numprocs = integer(get(section, 'numprocs', 1))
-    # numprocs_start = integer(get(section, 'numprocs_start', 0))
-
-    # stopasgroup = boolean(get(section, 'stopasgroup', 'false'))
-    # killasgroup = boolean(get(section, 'killasgroup', stopasgroup))
-    # # see also redirect_stderr check in process_groups_from_parser()
-    # stdout_cmaxbytes = byte_size(get(section, 'stdout_capture_maxbytes', '0'))
-    # stdout_events = boolean(get(section, 'stdout_events_enabled', 'false'))
-    # stderr_cmaxbytes = byte_size(get(section, 'stderr_capture_maxbytes', '0'))
-    # stderr_events = boolean(get(section, 'stderr_events_enabled', 'false'))
-
-    # stdout_logfile
-    # stdout_capture_maxbytes
-    # stdout_events_enabled
-    # stdout_syslog
-    # stdout_logfile_backups
-    # stdout_logfile_maxbytes
-
-    # stderr_logfile
-    # stderr_capture_maxbytes
-    # stderr_logfile_backups
-    # stderr_logfile_maxbytes
-    # stderr_events_enabled
-    # stderr_syslog
-
-    stopsignal: str = 'TERM'
-    stopwaitsecs: int = 10
-    stopasgroup: bool = False
-
-    killasgroup: bool = False
-
-    exitcodes: ta.Iterable[int] = (0,)
-
-    redirect_stderr: bool = False
-
-    environment: ta.Mapping[str, str] | None = None
 
 
 class ProcessConfig(Config):
