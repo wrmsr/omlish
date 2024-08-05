@@ -14,13 +14,20 @@ V = ta.TypeVar('V')
 ##
 
 
-class _Namespace(Final):
+class _NamespaceMeta(abc.ABCMeta):
+    def __new__(mcls, name, bases, namespace):
+        if bases:
+            for nc in (Final, NotInstantiable):
+                if nc not in bases:
+                    bases = (*bases, nc)
+        return super().__new__(mcls, name, bases, namespace)
 
-    def __mro_entries__(self, bases, **kwargs):
-        return (Final, NotInstantiable)
+    def __iter__(self) -> ta.Iterator[tuple[str, ta.Any]]:
+        raise NotImplementedError
 
 
-Namespace: type = _Namespace()  # type: ignore
+class Namespace(metaclass=_NamespaceMeta):
+    pass
 
 
 ##
