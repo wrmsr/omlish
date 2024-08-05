@@ -12,6 +12,7 @@ from .configs import ProcessConfig
 from .configs import ProcessGroupConfig
 from .configs import ServerConfig
 from .context import ServerContext
+from .process import ProcessGroup
 from .states import SupervisorStates
 from .states import get_process_state_description
 
@@ -82,8 +83,8 @@ class Supervisor:
     def add_process_group(self, config):
         name = config.name
         if name not in self.process_groups:
-            config.after_setuid()
-            self.process_groups[name] = config.make_group()
+            group = self.process_groups[name] = ProcessGroup(config, self.context)
+            group.after_setuid()
             events.notify(events.ProcessGroupAddedEvent(name))
             return True
         return False
@@ -287,6 +288,9 @@ def timeslice(period, when):
 
 # Main program
 def main(args=None, test=False):
+    from omlish import logs
+    logs.configure_standard_logging('INFO')
+
     assert os.name == 'posix', 'This code makes Unix-specific assumptions'
     # if we hup, restart by making a new Supervisor()
     first = True

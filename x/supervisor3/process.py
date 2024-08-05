@@ -64,12 +64,13 @@ class Subprocess:
     spawn_err = None  # error message attached by spawn() if any
     group = None  # ProcessGroup instance if process is in the group
 
-    def __init__(self, config: ProcessConfig, context: ServerContext) -> None:
+    def __init__(self, config: ProcessConfig, group: 'ProcessGroup', context: ServerContext) -> None:
         """Constructor.
 
         Argument is a ProcessConfig instance.
         """
         self.config = config
+        self.group = group
         self.context = context
         self.dispatchers = {}
         self.pipes = {}
@@ -680,15 +681,26 @@ class Subprocess:
                 log.warn('killing \'%s\' (%s) with SIGKILL' % (processname, self.pid))
                 self.kill(signal.SIGKILL)
 
+    def create_auto_child_logs(self):
+        # temporary logfiles which are erased at start time
+        get_autoname = self.context.get_auto_child_log_name
+        sid = self.context.config.identifier
+        name = self.config.name
+        # if self.stdout_logfile is Automatic:
+        #     self.stdout_logfile = get_autoname(name, sid, 'stdout')
+        # if self.stderr_logfile is Automatic:
+        #     self.stderr_logfile = get_autoname(name, sid, 'stderr')
+
 
 @functools.total_ordering
-class ProcessGroupBase:
+class ProcessGroup:
     def __init__(self, config: ProcessGroupConfig, context: ServerContext):
         self.config = config
         self.context = context
         self.processes = {}
-        for pconfig in self.processes:
-            self.processes[pconfig.name] = pconfig.make_process(self)
+        for pconfig in self.config.processes:
+            process = Subprocess(pconfig, self, self.context)
+            self.processes[pconfig.name] = process
 
     def __lt__(self, other):
         return self.config.priority < other.config.priority
@@ -742,6 +754,10 @@ class ProcessGroupBase:
     def transition(self):
         for proc in self.processes.values():
             proc.transition()
+
+    def after_setuid(self):
+        for proc in self.processes.values():
+            proc.create_auto_child_logs()
 
 
 class GlobalSerial:
