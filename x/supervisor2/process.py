@@ -19,10 +19,10 @@ from .datatypes import RestartUnconditionally
 from .dispatchers import EventListenerStates
 from .options import BadCommand
 from .options import ProcessException
-from .options import check_execv_args
-from .options import close_child_pipes
-from .options import close_parent_pipes
-from .options import drop_privileges
+from .context import check_execv_args
+from .context import close_child_pipes
+from .context import close_parent_pipes
+from .context import drop_privileges
 from .states import ProcessStates
 from .states import STOPPED_STATES
 from .states import SupervisorStates
