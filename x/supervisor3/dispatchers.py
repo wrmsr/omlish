@@ -320,12 +320,3 @@ def strip_escapes(s):
                 show = 0
         i += 1
     return result
-
-
-class RejectEvent(Exception):
-    """The exception type expected by a dispatcher when a handler wants to reject an event."""
-
-
-def default_handler(event, response):
-    if response != b'OK':
-        raise RejectEvent(response)
