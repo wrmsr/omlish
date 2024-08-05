@@ -30,9 +30,6 @@ if ta.TYPE_CHECKING:
     from . import process
 
 
-VERSION = 'foo'
-
-
 log = logging.getLogger(__name__)
 
 
@@ -66,7 +63,7 @@ class ServerContext:
 
     ##
 
-    def setsignals(self) -> None:
+    def set_signals(self) -> None:
         self.signal_receiver.install(
             signal.SIGTERM,
             signal.SIGINT,
