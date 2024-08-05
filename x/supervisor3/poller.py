@@ -8,63 +8,63 @@ log = logging.getLogger(__name__)
 
 class BasePoller:
 
-    def __init__(self):
-        self.initialize()
+    def __init__(self) -> None:
+        super().__init__()
 
-    def initialize(self):
+    def register_readable(self, fd: int) -> None:
+        raise NotImplementedError
+
+    def register_writable(self, fd: int) -> None:
+        raise NotImplementedError
+
+    def unregister_readable(self, fd: int) -> None:
+        raise NotImplementedError
+
+    def unregister_writable(self, fd: int) -> None:
+        raise NotImplementedError
+
+    def poll(self, timeout: float | None) -> tuple[list[int], list[int]]:
+        raise NotImplementedError
+
+    def before_daemonize(self) -> None:
         pass
 
-    def register_readable(self, fd):
-        raise NotImplementedError
-
-    def register_writable(self, fd):
-        raise NotImplementedError
-
-    def unregister_readable(self, fd):
-        raise NotImplementedError
-
-    def unregister_writable(self, fd):
-        raise NotImplementedError
-
-    def poll(self, timeout):
-        raise NotImplementedError
-
-    def before_daemonize(self):
+    def after_daemonize(self) -> None:
         pass
 
-    def after_daemonize(self):
-        pass
-
-    def close(self):
+    def close(self) -> None:
         pass
 
 
 class SelectPoller(BasePoller):
 
-    def initialize(self):
-        self._select = select
-        self._init_fdsets()
+    def __init__(self) -> None:
+        super().__init__()
 
-    def register_readable(self, fd):
-        self.readables.add(fd)
+        self._readables: set[int] = set()
+        self._writables: set[int] = set()
 
-    def register_writable(self, fd):
-        self.writables.add(fd)
+    def register_readable(self, fd: int) -> None:
+        self._readables.add(fd)
 
-    def unregister_readable(self, fd):
-        self.readables.discard(fd)
+    def register_writable(self, fd: int) -> None:
+        self._writables.add(fd)
 
-    def unregister_writable(self, fd):
-        self.writables.discard(fd)
+    def unregister_readable(self, fd: int) -> None:
+        self._readables.discard(fd)
 
-    def unregister_all(self):
-        self._init_fdsets()
+    def unregister_writable(self, fd: int) -> None:
+        self._writables.discard(fd)
 
-    def poll(self, timeout):
+    def unregister_all(self) -> None:
+        self._readables.clear()
+        self._writables.clear()
+
+    def poll(self, timeout: float | None) -> tuple[list[int], list[int]]:
         try:
-            r, w, x = self._select.select(
-                self.readables,
-                self.writables,
+            r, w, x = select.select(
+                self._readables,
+                self._writables,
                 [], timeout,
             )
         except OSError as err:
@@ -78,53 +78,51 @@ class SelectPoller(BasePoller):
             raise
         return r, w
 
-    def _init_fdsets(self):
-        self.readables = set()
-        self.writables = set()
-
 
 class PollPoller(BasePoller):
+    _READ = select.POLLIN | select.POLLPRI | select.POLLHUP
+    _WRITE = select.POLLOUT
 
-    def initialize(self):
+    def __init__(self) -> None:
+        super().__init__()
+
         self._poller = select.poll()
-        self.READ = select.POLLIN | select.POLLPRI | select.POLLHUP
-        self.WRITE = select.POLLOUT
-        self.readables = set()
-        self.writables = set()
+        self._readables: set[int] = set()
+        self._writables: set[int] = set()
 
-    def register_readable(self, fd):
-        self._poller.register(fd, self.READ)
-        self.readables.add(fd)
+    def register_readable(self, fd: int) -> None:
+        self._poller.register(fd, self._READ)
+        self._readables.add(fd)
 
-    def register_writable(self, fd):
-        self._poller.register(fd, self.WRITE)
-        self.writables.add(fd)
+    def register_writable(self, fd: int) -> None:
+        self._poller.register(fd, self._WRITE)
+        self._writables.add(fd)
 
-    def unregister_readable(self, fd):
-        self.readables.discard(fd)
+    def unregister_readable(self, fd: int) -> None:
+        self._readables.discard(fd)
         self._poller.unregister(fd)
-        if fd in self.writables:
-            self._poller.register(fd, self.WRITE)
+        if fd in self._writables:
+            self._poller.register(fd, self._WRITE)
 
-    def unregister_writable(self, fd):
-        self.writables.discard(fd)
+    def unregister_writable(self, fd: int) -> None:
+        self._writables.discard(fd)
         self._poller.unregister(fd)
-        if fd in self.readables:
-            self._poller.register(fd, self.READ)
+        if fd in self._readables:
+            self._poller.register(fd, self._READ)
 
-    def poll(self, timeout):
+    def poll(self, timeout: float | None) -> tuple[list[int], list[int]]:
         fds = self._poll_fds(timeout)
         readables, writables = [], []
         for fd, eventmask in fds:
             if self._ignore_invalid(fd, eventmask):
                 continue
-            if eventmask & self.READ:
+            if eventmask & self._READ:
                 readables.append(fd)
-            if eventmask & self.WRITE:
+            if eventmask & self._WRITE:
                 writables.append(fd)
         return readables, writables
 
-    def _poll_fds(self, timeout):
+    def _poll_fds(self, timeout: float) -> list[tuple[int, int]]:
         try:
             return self._poller.poll(timeout * 1000)
         except OSError as err:
@@ -133,52 +131,48 @@ class PollPoller(BasePoller):
                 return []
             raise
 
-    def _ignore_invalid(self, fd, eventmask):
+    def _ignore_invalid(self, fd: int, eventmask: int) -> bool:
         if eventmask & select.POLLNVAL:
-            # POLLNVAL means `fd` value is invalid, not open.
-            # When a process quits it's `fd`s are closed so there
-            # is no more reason to keep this `fd` registered
-            # If the process restarts it's `fd`s are registered again
+            # POLLNVAL means `fd` value is invalid, not open. When a process quits it's `fd`s are closed so there is no
+            # more reason to keep this `fd` registered If the process restarts it's `fd`s are registered again.
             self._poller.unregister(fd)
-            self.readables.discard(fd)
-            self.writables.discard(fd)
+            self._readables.discard(fd)
+            self._writables.discard(fd)
             return True
         return False
 
 
 class KQueuePoller(BasePoller):
-    """
-    Wrapper for select.kqueue()/kevent()
-    """
-
     max_events = 1000
 
-    def initialize(self):
-        self._kqueue = select.kqueue()
-        self.readables = set()
-        self.writables = set()
+    def __init__(self) -> None:
+        super().__init__()
 
-    def register_readable(self, fd):
-        self.readables.add(fd)
+        self._kqueue = select.kqueue()
+        self._readables: set[int] = set()
+        self._writables: set[int] = set()
+
+    def register_readable(self, fd: int) -> None:
+        self._readables.add(fd)
         kevent = select.kevent(fd, filter=select.KQ_FILTER_READ, flags=select.KQ_EV_ADD)
         self._kqueue_control(fd, kevent)
 
-    def register_writable(self, fd):
-        self.writables.add(fd)
+    def register_writable(self, fd: int) -> None:
+        self._writables.add(fd)
         kevent = select.kevent(fd, filter=select.KQ_FILTER_WRITE, flags=select.KQ_EV_ADD)
         self._kqueue_control(fd, kevent)
 
-    def unregister_readable(self, fd):
+    def unregister_readable(self, fd: int) -> None:
         kevent = select.kevent(fd, filter=select.KQ_FILTER_READ, flags=select.KQ_EV_DELETE)
-        self.readables.discard(fd)
+        self._readables.discard(fd)
         self._kqueue_control(fd, kevent)
 
-    def unregister_writable(self, fd):
+    def unregister_writable(self, fd: int) -> None:
         kevent = select.kevent(fd, filter=select.KQ_FILTER_WRITE, flags=select.KQ_EV_DELETE)
-        self.writables.discard(fd)
+        self._writables.discard(fd)
         self._kqueue_control(fd, kevent)
 
-    def _kqueue_control(self, fd, kevent):
+    def _kqueue_control(self, fd: int, kevent: 'select.kevent') -> None:
         try:
             self._kqueue.control([kevent], 0)
         except OSError as error:
@@ -187,7 +181,7 @@ class KQueuePoller(BasePoller):
             else:
                 raise
 
-    def poll(self, timeout):
+    def poll(self, timeout: float | None) -> tuple[list[int], list[int]]:
         readables, writables = [], []
 
         try:
@@ -206,17 +200,17 @@ class KQueuePoller(BasePoller):
 
         return readables, writables
 
-    def before_daemonize(self):
+    def before_daemonize(self) -> None:
         self.close()
 
-    def after_daemonize(self):
+    def after_daemonize(self) -> None:
         self._kqueue = select.kqueue()
-        for fd in self.readables:
+        for fd in self._readables:
             self.register_readable(fd)
-        for fd in self.writables:
+        for fd in self._writables:
             self.register_writable(fd)
 
-    def close(self):
+    def close(self) -> None:
         self._kqueue.close()
         self._kqueue = None
 
