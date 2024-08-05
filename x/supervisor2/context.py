@@ -21,6 +21,8 @@ from .compat import real_exit
 from .compat import try_unlink
 from .configs import ProcessConfig
 from .configs import ServerConfig
+from .datatypes import gid_for_uid
+from .datatypes import name_to_uid
 from .exceptions import NoPermission
 from .exceptions import NotExecutable
 from .exceptions import NotFound
@@ -60,20 +62,6 @@ class ServerContext:
     first = False
     test = False
 
-    config: ServerConfig
-
-    uid: int
-    gid: int
-
-    mood: states.SupervisorStates = states.SupervisorStates.RUNNING
-    pid_history: dict[int, 'process.Subprocess']
-
-    signal_receiver: SignalReceiver
-
-    unlink_pidfile: bool = False
-
-    poller: poller.Poller
-
     ##
 
     def __init__(self, config: ServerConfig) -> None:
@@ -81,11 +69,22 @@ class ServerContext:
 
         self.config = config
 
-        self.pid_history = {}
+        self.pid_history: dict[int, 'process.Subprocess'] = {}
+        self.mood: states.SupervisorStates = states.SupervisorStates.RUNNING
 
         self.signal_receiver = SignalReceiver()
 
         self.poller = poller.Poller()
+
+        if self.config.user is not None:
+            uid = name_to_uid(self.config.user)
+            self.uid = uid
+            self.gid = gid_for_uid(uid)
+        else:
+            self.uid = None
+            self.gid = None
+
+        self.unlink_pidfile = False
 
     ##
 
