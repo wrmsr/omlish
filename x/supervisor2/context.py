@@ -62,14 +62,27 @@ class ServerContext:
     uid: int
     gid: int
 
-    poller: poller.Poller
-
     mood: states.SupervisorStates = states.SupervisorStates.RUNNING
-    pid_history: dict[int, 'process.Subprocess'] = {}
+    pid_history: dict[int, 'process.Subprocess']
 
     signal_receiver: SignalReceiver
 
     unlink_pidfile: bool = False
+
+    poller: poller.Poller
+
+    ##
+
+    def __init__(self, config: ServerConfig) -> None:
+        super().__init__()
+
+        self.config = config
+
+        self.pid_history = {}
+
+        self.signal_receiver = SignalReceiver()
+
+        self.poller = poller.Poller()
 
     ##
 
