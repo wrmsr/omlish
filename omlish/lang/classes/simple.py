@@ -19,7 +19,7 @@ class _NamespaceMeta(abc.ABCMeta):
         if bases:
             for nc in (NotInstantiable,):
                 if nc not in bases:
-                    bases = (*bases, nc)
+                    bases += (nc,)
         return super().__new__(mcls, name, bases, namespace)
 
     def __iter__(cls) -> ta.Iterator[tuple[str, ta.Any]]:
@@ -65,8 +65,6 @@ class _MarkerMeta(abc.ABCMeta):
 
 class Marker(NotInstantiable, metaclass=_MarkerMeta):
     """A marker."""
-
-    __slots__ = ()
 
 
 ##
