@@ -13,7 +13,13 @@ class GlyphMatch:
 
 class GlyphSplitter:
 
-    def __init__(self, glyphs: tuple[str, str]) -> None:
+    def __init__(
+            self,
+            glyphs: tuple[str, str],
+            *,
+            escape_returned_doubles: bool = False,
+            compact: bool = False,
+    ) -> None:
         super().__init__()
 
         glyphs = tuple(map(check.of_isinstance(str), glyphs))  # type: ignore
@@ -21,48 +27,64 @@ class GlyphSplitter:
         check.state(len(glyphs) == 2)
 
         self._glyphs = glyphs
-        self._lglyph, self._rglyph = glyphs
+        self._l_glyph, self._r_glyph = glyphs
 
-        self._double_glyphs: tuple[str, str] = tuple(s * 2 for s in glyphs)  # type: ignore  # noqa
-        self._escaped_glyphs: tuple[str, str] = tuple(map(re.escape, glyphs))  # type: ignore  # noqa
+        self._escape_returned_doubles = escape_returned_doubles
+        self._compact = compact
 
-        self._lglyph_pat = re.compile(r'(%s)' % (self._escaped_glyphs[0] * 2,))  # noqa
-        self._rglyph_pat = re.compile(r'(%s)' % (self._escaped_glyphs[1] * 2,))  # noqa
-        self._single_glyph_pat = re.compile(r'(%s[^%s]*?%s)' % (  # noqa
-            self._escaped_glyphs[0], self._escaped_glyphs[1], self._escaped_glyphs[1]))
+        self._l_double_glyph = self._l_glyph * 2
+        self._r_double_glyph = self._r_glyph * 2
+        self._double_glyphs = (self._l_double_glyph, self._r_double_glyph)
+
+        self._l_escaped_glyph = re.escape(self._l_glyph)
+        self._r_escaped_glyph = re.escape(self._r_glyph)
+
+        self._l_glyph_pat = re.compile(r'(%s)' % (self._l_escaped_glyph * 2,))  # noqa
+        self._r_glyph_pat = re.compile(r'(%s)' % (self._r_escaped_glyph * 2,))  # noqa
+
+        self._single_glyph_pat = re.compile(r'(%s[^%s]*?%s)' % (self._l_escaped_glyph, self._r_escaped_glyph, self._r_escaped_glyph))  # noqa
 
     def split(self, s: str) -> list[GlyphMatch | str]:
-        ps = self._lglyph_pat.split(s)
-        ps = [p[::-1] for p in ps for p in reversed(self._rglyph_pat.split(p[::-1]))]
+        ps = self._l_glyph_pat.split(s)
+        ps = [p[::-1] for p in ps for p in reversed(self._r_glyph_pat.split(p[::-1]))]
 
-        lst = []
+        ret = []  # type: ignore
+
+        def append_ret(o):
+            if self._compact and isinstance(o, str) and ret and isinstance(ret[-1], str):
+                ret[-1] = ret[-1] + o
+            else:
+                ret.append(o)
+
         for p in ps:
             if p in self._double_glyphs:
-                lst.append(p)
+                if self._escape_returned_doubles:
+                    p = self._glyphs[p == self._r_double_glyph]
+                append_ret(p)
                 continue
 
             ms = list(self._single_glyph_pat.finditer(p))
             if not ms:
-                lst.append(p)
+                append_ret(p)
                 continue
 
             l = 0
             for m in ms:
                 if m.start() != l:
-                    lst.append(p[l:m.start()])
-                lst.append(GlyphMatch(self._lglyph, p[m.start() + 1:m.end() - 1], self._rglyph))
+                    append_ret(p[l:m.start()])
+                append_ret(GlyphMatch(self._l_glyph, p[m.start() + 1:m.end() - 1], self._r_glyph))
                 l = m.end()
 
             if l < len(p):
-                lst.append(p[l:])
+                append_ret(p[l:])
 
-        return lst
+        return ret
 
 
-_PAREN_GLYPH_SPLITTER = GlyphSplitter(('(', ')'))
-_BRACE_GLYPH_SPLITTER = GlyphSplitter(('{', '}'))
-_BRACKET_GLYPH_SPLITTER = GlyphSplitter(('[', ']'))
-_ANGLE_BRACKET_GLYPH_SPLITTER = GlyphSplitter(('<', '>'))
+_PAREN_GLYPH_SPLITTER = GlyphSplitter(('(', ')'), escape_returned_doubles=True, compact=True)
+_BRACE_GLYPH_SPLITTER = GlyphSplitter(('{', '}'), escape_returned_doubles=True, compact=True)
+_BRACKET_GLYPH_SPLITTER = GlyphSplitter(('[', ']'), escape_returned_doubles=True, compact=True)
+_ANGLE_BRACKET_GLYPH_SPLITTER = GlyphSplitter(('<', '>'), escape_returned_doubles=True, compact=True)
 
 split_parens = _PAREN_GLYPH_SPLITTER.split
 split_braces = _BRACE_GLYPH_SPLITTER.split
