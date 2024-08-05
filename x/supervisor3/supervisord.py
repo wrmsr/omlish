@@ -26,6 +26,7 @@ Options:
 --profile_options OPTIONS -- run supervisord under profiler and output results based on OPTIONS, which  is a comma-sep'd
                              list of 'cumulative', 'calls', and/or 'callers', e.g. 'cumulative,callers'
 """
+import logging
 import os
 import signal
 import time
@@ -35,9 +36,13 @@ from .compat import ExitNow
 from .compat import as_string
 from .compat import decode_wait_status
 from .compat import signame
-from .options import ServerOptions
+from .configs import ServerConfig
+from .context import ServerContext
 from .states import SupervisorStates
 from .states import get_process_state_description
+
+
+log = logging.getLogger(__name__)
 
 
 class Supervisor:
@@ -46,29 +51,27 @@ class Supervisor:
     process_groups = None  # map of process group name to process group object
     stop_groups = None  # list used for priority ordered shutdown
 
-    def __init__(self, options: ServerOptions) -> None:
+    def __init__(self, context: ServerContext) -> None:
         super().__init__()
 
-        self.options = options
+        self.context = context
         self.process_groups = {}
         self.ticks = {}
 
     def main(self):
-        if not self.options.first:
+        if not self.context.first:
             # prevent crash on libdispatch-based systems, at least for the first request
-            self.options.cleanup_fds()
+            self.context.cleanup_fds()
 
-        self.options.set_uid_or_exit()
+        self.context.set_uid_or_exit()
 
-        if self.options.first:
-            self.options.set_rlimits_or_exit()
+        if self.context.first:
+            self.context.set_rlimits_or_exit()
 
         # this sets the options.logger object delay logger instantiation until after setuid
-        self.options.make_logger()
-
-        if not self.options.nocleanup:
+        if not self.context.config.nocleanup:
             # clean up old automatic logs
-            self.options.clear_auto_child_logdir()
+            self.context.clear_auto_child_logdir()
 
         self.run()
 
@@ -77,19 +80,19 @@ class Supervisor:
         self.stop_groups = None  # clear
         events.clear()
         try:
-            for config in self.options.process_group_configs:
+            for config in self.context.process_group_configs:
                 self.add_process_group(config)
-            self.options.setsignals()
-            if not self.options.nodaemon and self.options.first:
-                self.options.daemonize()
+            self.context.setsignals()
+            if not self.context.config.nodaemon and self.context.first:
+                self.context.daemonize()
             # writing pid file needs to come *after* daemonizing or pid will be wrong
-            self.options.write_pidfile()
+            self.context.write_pidfile()
             self.runforever()
         finally:
-            self.options.cleanup()
+            self.context.cleanup()
 
     def diff_to_active(self):
-        new = self.options.process_group_configs
+        new = self.context.process_group_configs
         cur = [group.config for group in self.process_groups.values()]
 
         curdict = dict(zip([cfg.name for cfg in cur], cur))
@@ -137,11 +140,11 @@ class Supervisor:
             if now > (self.last_shutdown_report + 3):  # every 3 secs
                 names = [as_string(p.config.name) for p in unstopped]
                 namestr = ', '.join(names)
-                self.options.logger.info('waiting for %s to die' % namestr)
+                log.info('waiting for %s to die' % namestr)
                 self.last_shutdown_report = now
                 for proc in unstopped:
                     state = get_process_state_description(proc.get_state())
-                    self.options.logger.debug(
+                    log.debug(
                         '%s state: %s' % (proc.config.name, state))
         return unstopped
 
@@ -172,7 +175,7 @@ class Supervisor:
             pgroups = list(self.process_groups.values())
             pgroups.sort()
 
-            if self.options.mood < SupervisorStates.RUNNING:
+            if self.context.mood < SupervisorStates.RUNNING:
                 if not self.stopping:
                     # first time, set the stopping flag, do a notification and set stop_groups
                     self.stopping = True
@@ -187,20 +190,20 @@ class Supervisor:
 
             for fd, dispatcher in combined_map.items():
                 if dispatcher.readable():
-                    self.options.poller.register_readable(fd)
+                    self.context.poller.register_readable(fd)
                 if dispatcher.writable():
-                    self.options.poller.register_writable(fd)
+                    self.context.poller.register_writable(fd)
 
-            r, w = self.options.poller.poll(timeout)
+            r, w = self.context.poller.poll(timeout)
 
             for fd in r:
                 if fd in combined_map:
                     try:
                         dispatcher = combined_map[fd]
-                        self.options.logger.debug('read event caused by %(dispatcher)r', dispatcher=dispatcher)
+                        log.debug('read event caused by %(dispatcher)r', dispatcher=dispatcher)
                         dispatcher.handle_read_event()
                         if not dispatcher.readable():
-                            self.options.poller.unregister_readable(fd)
+                            self.context.poller.unregister_readable(fd)
                     except ExitNow:
                         raise
                     except:
@@ -208,9 +211,9 @@ class Supervisor:
                 else:
                     # if the fd is not in combined_map, we should unregister it. otherwise, it will be polled every
                     # time, which may cause 100% cpu usage
-                    self.options.logger.debug('unexpected read event from fd %r' % fd)
+                    log.debug('unexpected read event from fd %r' % fd)
                     try:
-                        self.options.poller.unregister_readable(fd)
+                        self.context.poller.unregister_readable(fd)
                     except:
                         pass
 
@@ -218,18 +221,18 @@ class Supervisor:
                 if fd in combined_map:
                     try:
                         dispatcher = combined_map[fd]
-                        self.options.logger.debug('write event caused by %(dispatcher)r', dispatcher=dispatcher)
+                        log.debug('write event caused by %(dispatcher)r', dispatcher=dispatcher)
                         dispatcher.handle_write_event()
                         if not dispatcher.writable():
-                            self.options.poller.unregister_writable(fd)
+                            self.context.poller.unregister_writable(fd)
                     except ExitNow:
                         raise
                     except:
                         combined_map[fd].handle_error()
                 else:
-                    self.options.logger.debug('unexpected write event from fd %r' % fd)
+                    log.debug('unexpected write event from fd %r' % fd)
                     try:
-                        self.options.poller.unregister_writable(fd)
+                        self.context.poller.unregister_writable(fd)
                     except:
                         pass
 
@@ -240,10 +243,10 @@ class Supervisor:
             self.handle_signal()
             self.tick()
 
-            if self.options.mood < SupervisorStates.RUNNING:
+            if self.context.mood < SupervisorStates.RUNNING:
                 self.ordered_stop_groups_phase_2()
 
-            if self.options.test:
+            if self.context.test:
                 break
 
     def tick(self, now=None):
@@ -265,43 +268,43 @@ class Supervisor:
     def reap(self, once=False, recursionguard=0):
         if recursionguard == 100:
             return
-        pid, sts = self.options.waitpid()
+        pid, sts = self.context.waitpid()
         if pid:
-            process = self.options.pid_history.get(pid, None)
+            process = self.context.pid_history.get(pid, None)
             if process is None:
                 _, msg = decode_wait_status(sts)
-                self.options.logger.info('reaped unknown pid %s (%s)' % (pid, msg))
+                log.info('reaped unknown pid %s (%s)' % (pid, msg))
             else:
                 process.finish(pid, sts)
-                del self.options.pid_history[pid]
+                del self.context.pid_history[pid]
             if not once:
                 # keep reaping until no more kids to reap, but don't recurse infinitely
                 self.reap(once=False, recursionguard=recursionguard + 1)
 
     def handle_signal(self):
-        sig = self.options.get_signal()
+        sig = self.context.get_signal()
         if sig:
             if sig in (signal.SIGTERM, signal.SIGINT, signal.SIGQUIT):
-                self.options.logger.warn('received %s indicating exit request' % signame(sig))
-                self.options.mood = SupervisorStates.SHUTDOWN
+                log.warn('received %s indicating exit request' % signame(sig))
+                self.context.mood = SupervisorStates.SHUTDOWN
             elif sig == signal.SIGHUP:
-                if self.options.mood == SupervisorStates.SHUTDOWN:
-                    self.options.logger.warn('ignored %s indicating restart request (shutdown in progress)' % signame(sig))  # noqa
+                if self.context.mood == SupervisorStates.SHUTDOWN:
+                    log.warn('ignored %s indicating restart request (shutdown in progress)' % signame(sig))  # noqa
                 else:
-                    self.options.logger.warn('received %s indicating restart request' % signame(sig))  # noqa
-                    self.options.mood = SupervisorStates.RESTARTING
+                    log.warn('received %s indicating restart request' % signame(sig))  # noqa
+                    self.context.mood = SupervisorStates.RESTARTING
             elif sig == signal.SIGCHLD:
-                self.options.logger.debug('received %s indicating a child quit' % signame(sig))
+                log.debug('received %s indicating a child quit' % signame(sig))
             elif sig == signal.SIGUSR2:
-                self.options.logger.info('received %s indicating log reopen request' % signame(sig))
-                self.options.reopen_logs()
+                log.info('received %s indicating log reopen request' % signame(sig))
+                # self.context.reopen_logs()
                 for group in self.process_groups.values():
                     group.reopen_logs()
             else:
-                self.options.logger.debug('received %s indicating nothing' % signame(sig))
+                log.debug('received %s indicating nothing' % signame(sig))
 
     def get_state(self):
-        return self.options.mood
+        return self.context.mood
 
 
 def timeslice(period, when):
@@ -314,19 +317,23 @@ def main(args=None, test=False):
     # if we hup, restart by making a new Supervisor()
     first = True
     while 1:
-        options = ServerOptions()
-        options.realize(args, doc=__doc__)
-        options.first = first
-        options.test = test
-        go(options)
-        options.close_logger()
+        config = ServerConfig(
+            nodaemon=True,
+        )
+        context = ServerContext(
+            config,
+        )
+        context.first = first
+        context.test = test
+        go(context)
+        # options.close_logger()
         first = False
-        if test or (options.mood < SupervisorStates.RESTARTING):
+        if test or (context.mood < SupervisorStates.RESTARTING):
             break
 
 
-def go(options):  # pragma: no cover
-    d = Supervisor(options)
+def go(context):  # pragma: no cover
+    d = Supervisor(context)
     try:
         d.main()
     except ExitNow:

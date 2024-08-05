@@ -15,6 +15,9 @@ from .states import EventListenerStates
 from .states import get_event_listener_state_description
 
 
+log = logging.getLogger(__name__)
+
+
 class PDispatcher:
     """
     Asyncore dispatcher for mainloop, representing a process channel (stdin, stdout, or stderr).  This class is
@@ -47,14 +50,14 @@ class PDispatcher:
     def handle_error(self):
         nil, t, v, tbinfo = compact_traceback()
 
-        self.process.config.options.logger.critical(
+        log.critical(
             'uncaptured python exception, closing channel %s (%s:%s %s)' % (repr(self), t, v, tbinfo),
         )
         self.close()
 
     def close(self):
         if not self.closed:
-            self.process.config.options.logger.debug('fd %s closed, stopped monitoring %s' % (self.fd, self))
+            log.debug('fd %s closed, stopped monitoring %s' % (self.fd, self))
             self.closed = True
 
     def flush(self):
@@ -178,7 +181,7 @@ class POutputDispatcher(PDispatcher):
                     except UnicodeDecodeError:
                         text = 'Undecodable: %r' % data
                 msg = '%(name)r %(channel)s output:\n%(data)s'
-                config.options.logger.log(
+                log.log(
                     self.main_log_level, msg, name=config.name,
                     channel=self.channel, data=text)
             if self.channel == 'stdout':
@@ -239,7 +242,7 @@ class POutputDispatcher(PDispatcher):
                 notify(event)
 
                 msg = '%(procname)r %(channel)s emitted a comm event'
-                self.process.config.options.logger.debug(msg, procname=procname, channel=channel)
+                log.debug(msg, procname=procname, channel=channel)
                 for handler in self.capture_log.handlers:
                     handler.remove()
                     handler.reopen()
@@ -322,7 +325,7 @@ class PEventListenerDispatcher(PDispatcher):
             self.state_buffer += data
             procname = self.process.config.name
             msg = '%r %s output:\n%s' % (procname, self.channel, data)
-            self.process.config.options.logger.debug(msg)
+            log.logger.debug(msg)
 
             if self.child_log:
                 if self.process.config.options.strip_ansi:
@@ -395,7 +398,7 @@ class PEventListenerDispatcher(PDispatcher):
                         result_line = as_string(result_line)
                     except UnicodeDecodeError:
                         result_line = 'Undecodable: %r' % result_line
-                    process.config.options.logger.warn('%s: bad result line: \'%s\'' % (procname, result_line))
+                    log.warning('%s: bad result line: \'%s\'' % (procname, result_line))
                     self._change_listener_state(EventListenerStates.UNKNOWN)
                     self.state_buffer = b''
                     notify(EventRejectedEvent(process, process.event))
@@ -423,18 +426,17 @@ class PEventListenerDispatcher(PDispatcher):
     def handle_result(self, result):
         process = self.process
         procname = process.config.name
-        logger = process.config.options.logger
 
         try:
             self.process.group.config.result_handler(process.event, result)
-            logger.debug('%s: event was processed' % procname)
+            log.debug('%s: event was processed' % procname)
             self._change_listener_state(EventListenerStates.ACKNOWLEDGED)
         except RejectEvent:
-            logger.warn('%s: event was rejected' % procname)
+            log.warn('%s: event was rejected' % procname)
             self._change_listener_state(EventListenerStates.ACKNOWLEDGED)
             notify(EventRejectedEvent(process, process.event))
         except:
-            logger.warn('%s: event caused an error' % procname)
+            log.warn('%s: event caused an error' % procname)
             self._change_listener_state(EventListenerStates.UNKNOWN)
             notify(EventRejectedEvent(process, process.event))
 
@@ -448,14 +450,14 @@ class PEventListenerDispatcher(PDispatcher):
             get_event_listener_state_description(old_state),
             get_event_listener_state_description(new_state),
         )
-        process.config.options.logger.debug(msg)
+        log.debug(msg)
 
         process.listener_state = new_state
         if new_state == EventListenerStates.UNKNOWN:
             msg = ('%s: has entered the UNKNOWN state and will no longer '
                    'receive events, this usually indicates the process '
                    'violated the eventlistener protocol' % procname)
-            process.config.options.logger.warn(msg)
+            log.warning(msg)
 
 
 class PInputDispatcher(PDispatcher):

@@ -137,9 +137,6 @@ class ServerOptions:
     def __init__(self, *, require_config_file=True):
         super().__init__()
 
-        from .options2 import ServerOptionsReader
-        ServerOptionsReader()
-
         self.names_list = []
         self.short_options = []
         self.long_options = []

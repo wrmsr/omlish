@@ -1,5 +1,6 @@
 import errno
 import functools
+import logging
 import os
 import shlex
 import signal
@@ -15,18 +16,23 @@ from .compat import compact_traceback
 from .compat import decode_wait_status
 from .compat import real_exit
 from .compat import signame
+from .configs import ProcessConfig
+from .context import ServerContext
+from .context import check_execv_args
+from .context import close_child_pipes
+from .context import close_parent_pipes
+from .context import drop_privileges
 from .datatypes import RestartUnconditionally
 from .dispatchers import EventListenerStates
-from .options import BadCommand
-from .options import ProcessException
-from .options import check_execv_args
-from .options import close_child_pipes
-from .options import close_parent_pipes
-from .options import drop_privileges
+from .exceptions import BadCommand
+from .exceptions import ProcessException
 from .states import ProcessStates
 from .states import STOPPED_STATES
 from .states import SupervisorStates
 from .states import get_process_state_description
+
+
+log = logging.getLogger(__name__)
 
 
 @functools.total_ordering
@@ -54,12 +60,13 @@ class Subprocess:
     spawn_err = None  # error message attached by spawn() if any
     group = None  # ProcessGroup instance if process is in the group
 
-    def __init__(self, config):
+    def __init__(self, config: ProcessConfig, context: ServerContext) -> None:
         """Constructor.
 
         Argument is a ProcessConfig instance.
         """
         self.config = config
+        self.context = context
         self.dispatchers = {}
         self.pipes = {}
         self.state = ProcessStates.STOPPED
@@ -180,7 +187,7 @@ class Subprocess:
 
     def record_spawn_err(self, msg):
         self.spawn_err = msg
-        self.config.options.logger.info('spawn_err: %s' % msg)
+        log.info('spawn_err: %s' % msg)
 
     def spawn(self):
         """
@@ -188,12 +195,11 @@ class Subprocess:
 
         Return the process id.  If the fork() call fails, return None.
         """
-        options = self.config.options
         processname = as_string(self.config.name)
 
         if self.pid:
             msg = 'process \'%s\' already running' % processname
-            options.logger.warn(msg)
+            log.warn(msg)
             return None
 
         self.killing = False
@@ -260,27 +266,24 @@ class Subprocess:
     def _spawn_as_parent(self, pid):
         # Parent
         self.pid = pid
-        options = self.config.options
         close_child_pipes(self.pipes)
-        options.logger.info('spawned: \'%s\' with pid %s' % (as_string(self.config.name), pid))
+        log.info('spawned: \'%s\' with pid %s' % (as_string(self.config.name), pid))
         self.spawn_err = None
         self.delay = time.time() + self.config.startsecs
-        options.pid_history[pid] = self
+        self.context.pid_history[pid] = self
         return pid
 
     def _prepare_child_fds(self):
-        options = self.config.options
         os.dup2(self.pipes['child_stdin'], 0)
         os.dup2(self.pipes['child_stdout'], 1)
         if self.config.redirect_stderr:
             os.dup2(self.pipes['child_stdout'], 2)
         else:
             os.dup2(self.pipes['child_stderr'], 2)
-        for i in range(3, options.minfds):
+        for i in range(3, self.context.config.minfds):
             close_fd(i)
 
     def _spawn_as_child(self, filename, argv):
-        options = self.config.options
         try:
             # prevent child from receiving signals sent to the parent by calling os.setpgrp to create a new process
             # group for the child; this prevents, for instance, the case of child processes being sent a SIGINT when
@@ -375,7 +378,7 @@ class Subprocess:
             self._check_and_adjust_for_system_clock_rollback(now)
 
             if now > (self.last_stop_report + 2):  # every 2 seconds
-                self.config.options.logger.info('waiting for %s to stop' % as_string(self.config.name))
+                log.info('waiting for %s to stop' % as_string(self.config.name))
                 self.last_stop_report = now
 
     def give_up(self):
@@ -394,7 +397,6 @@ class Subprocess:
         running.
         """
         now = time.time()
-        options = self.config.options
 
         processname = as_string(self.config.name)
         # If the process is in BACKOFF and we want to stop or kill it, then BACKOFF -> STOPPED.  This is needed because
@@ -402,13 +404,13 @@ class Subprocess:
         # blocked for a long time waiting for the retries.
         if self.state == ProcessStates.BACKOFF:
             msg = ('Attempted to kill %s, which is in BACKOFF state.' % processname)
-            options.logger.debug(msg)
+            log.debug(msg)
             self.change_state(ProcessStates.STOPPED)
             return None
 
         if not self.pid:
             msg = ("attempted to kill %s with sig %s but it wasn't running" % (processname, signame(sig)))
-            options.logger.debug(msg)
+            log.debug(msg)
             return msg
 
         # If we're in the stopping state, then we've already sent the stop signal and this is the kill signal
@@ -421,7 +423,7 @@ class Subprocess:
         if killasgroup:
             as_group = 'process group '
 
-        options.logger.debug('killing %s (pid %s) %swith signal %s' % (processname, self.pid, as_group, signame(sig)))
+        log.debug('killing %s (pid %s) %swith signal %s' % (processname, self.pid, as_group, signame(sig)))
 
         # RUNNING/STARTING/STOPPING -> STOPPING
         self.killing = True
@@ -442,7 +444,7 @@ class Subprocess:
                 if exc.errno == errno.ESRCH:
                     msg = ('unable to signal %s (pid %s), it probably just exited '
                            'on its own: %s' % (processname, self.pid, str(exc)))
-                    options.logger.debug(msg)
+                    log.debug(msg)
                     # we could change the state here but we intentionally do not.  we will do it during normal SIGCHLD
                     # processing.
                     return None
@@ -450,7 +452,7 @@ class Subprocess:
         except:
             tb = traceback.format_exc()
             msg = 'unknown problem killing %s (%s):%s' % (processname, self.pid, tb)
-            options.logger.critical(msg)
+            log.critical(msg)
             self.change_state(ProcessStates.UNKNOWN)
             self.killing = False
             self.delay = 0
@@ -465,14 +467,13 @@ class Subprocess:
         Return None if the signal was sent, or an error message string if an error occurred or if the subprocess is not
         running.
         """
-        options = self.config.options
         processname = as_string(self.config.name)
         if not self.pid:
             msg = ("attempted to send %s sig %s but it wasn't running" % (processname, signame(sig)))
-            options.logger.debug(msg)
+            log.debug(msg)
             return msg
 
-        options.logger.debug('sending %s (pid %s) sig %s' % (processname, self.pid, signame(sig)))
+        log.debug('sending %s (pid %s) sig %s' % (processname, self.pid, signame(sig)))
 
         self._check_in_state(ProcessStates.RUNNING, ProcessStates.STARTING, ProcessStates.STOPPING)
 
@@ -483,7 +484,7 @@ class Subprocess:
                 if exc.errno == errno.ESRCH:
                     msg = ('unable to signal %s (pid %s), it probably just now exited '
                            'on its own: %s' % (processname, self.pid, str(exc)))
-                    options.logger.debug(msg)
+                    log.debug(msg)
                     # we could change the state here but we intentionally do not.  we will do it during normal SIGCHLD
                     # processing.
                     return None
@@ -491,7 +492,7 @@ class Subprocess:
         except:
             tb = traceback.format_exc()
             msg = 'unknown problem sending sig %s (%s):%s' % (processname, self.pid, tb)
-            options.logger.critical(msg)
+            log.critical(msg)
             self.change_state(ProcessStates.UNKNOWN)
             return msg
 
@@ -514,7 +515,7 @@ class Subprocess:
             too_quickly = now - self.laststart < self.config.startsecs
         else:
             too_quickly = False
-            self.config.options.logger.warn(
+            log.warn(
                 "process '%s' (%s) laststart time is in the future, don't "
                 "know how long process was running so assuming it did "
                 "not exit too quickly" % (processname, self.pid))
@@ -531,9 +532,9 @@ class Subprocess:
             self._check_in_state(ProcessStates.STOPPING)
             self.change_state(ProcessStates.STOPPED)
             if exit_expected:
-                self.config.options.logger.info(msg)
+                log.logger.info(msg)
             else:
-                self.config.options.logger.warn(msg)
+                log.logger.warn(msg)
 
         elif too_quickly:
             # the program did not stay up long enough to make it to RUNNING implies STARTING -> BACKOFF
@@ -542,7 +543,7 @@ class Subprocess:
             msg = 'exited: %s (%s)' % (processname, msg + '; not expected')
             self._check_in_state(ProcessStates.STARTING)
             self.change_state(ProcessStates.BACKOFF)
-            self.config.options.logger.warn(msg)
+            log.warn(msg)
 
         else:
             # this finish was not the result of a stop request, the program was in the RUNNING state but exited implies
@@ -562,13 +563,13 @@ class Subprocess:
                 # expected exit code
                 msg = 'exited: %s (%s)' % (processname, msg + '; expected')
                 self.change_state(ProcessStates.EXITED, expected=True)
-                self.config.options.logger.info(msg)
+                log.info(msg)
             else:
                 # unexpected exit code
                 self.spawn_err = 'Bad exit code %s' % es
                 msg = 'exited: %s (%s)' % (processname, msg + '; not expected')
                 self.change_state(ProcessStates.EXITED, expected=False)
-                self.config.options.logger.warn(msg)
+                log.warn(msg)
 
         self.pid = 0
         close_parent_pipes(self.pipes)
@@ -610,9 +611,9 @@ class Subprocess:
 
         self._check_and_adjust_for_system_clock_rollback(now)
 
-        logger = self.config.options.logger
+        logger = log
 
-        if self.config.options.mood > SupervisorStates.RESTARTING:
+        if self.context.mood > SupervisorStates.RESTARTING:
             # dont start any processes if supervisor is shutting down
             if state == ProcessStates.EXITED:
                 if self.config.autorestart:
@@ -657,14 +658,15 @@ class Subprocess:
             if time_left <= 0:
                 # kill processes which are taking too long to stop with a final sigkill.  if this doesn't kill it, the
                 # process will be stuck in the STOPPING state forever.
-                self.config.options.logger.warn('killing \'%s\' (%s) with SIGKILL' % (processname, self.pid))
+                log.warn('killing \'%s\' (%s) with SIGKILL' % (processname, self.pid))
                 self.kill(signal.SIGKILL)
 
 
 @functools.total_ordering
 class ProcessGroupBase:
-    def __init__(self, config):
+    def __init__(self, config, context: ServerContext):
         self.config = config
+        self.context = context
         self.processes = {}
         for pconfig in self.config.process_configs:
             self.processes[pconfig.name] = pconfig.make_process(self)
@@ -726,8 +728,8 @@ class ProcessGroup(ProcessGroupBase):
 
 
 class EventListenerPool(ProcessGroupBase):
-    def __init__(self, config):
-        ProcessGroupBase.__init__(self, config)
+    def __init__(self, config, context: ServerContext):
+        ProcessGroupBase.__init__(self, config, context)
         self.event_buffer = []
         self.serial = -1
         self.last_dispatch = 0
@@ -787,7 +789,7 @@ class EventListenerPool(ProcessGroupBase):
         if self.config.name not in event.pool_serials:
             event.pool_serials[self.config.name] = new_serial(self)
         else:
-            self.config.options.logger.debug(
+            log.debug(
                 'rebuffering event %s for pool %s (buf size=%d, max=%d)' % (
                     (event.serial, processname, len(self.event_buffer), self.config.buffer_size)))
 
@@ -795,7 +797,7 @@ class EventListenerPool(ProcessGroupBase):
             if self.event_buffer:
                 # discard the oldest event
                 discarded_event = self.event_buffer.pop(0)
-                self.config.options.logger.error(
+                log.error(
                     'pool %s event buffer overflowed, discarding event %s' % ((processname, discarded_event.serial)))
         if head:
             self.event_buffer.insert(0, event)
@@ -820,14 +822,14 @@ class EventListenerPool(ProcessGroupBase):
                     if why.args[0] != errno.EPIPE:
                         raise
 
-                    self.config.options.logger.debug(
+                    log.debug(
                         'epipe occurred while sending event %s '
                         'to listener %s, listener state unchanged' % (event.serial, processname))
                     continue
 
                 process.listener_state = EventListenerStates.BUSY
                 process.event = event
-                self.config.options.logger.debug('event %s sent to listener %s' % (event.serial, processname))
+                log.debug('event %s sent to listener %s' % (event.serial, processname))
                 return True
 
         return False
@@ -837,7 +839,7 @@ class EventListenerPool(ProcessGroupBase):
         payload_len = len(payload)
         D = {
             'ver': '3.0',
-            'sid': self.config.options.identifier,
+            'sid': self.context.config.identifier,
             'serial': serial,
             'pool_name': self.config.name,
             'pool_serial': pool_serial,
