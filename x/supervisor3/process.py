@@ -18,6 +18,7 @@ from .compat import get_path
 from .compat import real_exit
 from .compat import signame
 from .configs import ProcessConfig
+from .configs import ProcessGroupConfig
 from .context import ServerContext
 from .context import check_execv_args
 from .context import close_child_pipes
@@ -37,6 +38,61 @@ from .states import get_process_state_description
 
 
 log = logging.getLogger(__name__)
+
+
+@functools.total_ordering
+class ProcessGroup:
+    def __init__(self, config):
+        self.config = config
+        self.processes = {}
+        for pconfig in self.config.process_configs:
+            self.processes[pconfig.name] = pconfig.make_process(self)
+
+    def __lt__(self, other):
+        return self.config.priority < other.config.priority
+
+    def __eq__(self, other):
+        return self.config.priority == other.config.priority
+
+    def __repr__(self):
+        # repr can't return anything other than a native string, but the name might be unicode - a problem on Python 2.
+        name = self.config.name
+        return '<%s instance at %s named %s>' % (self.__class__, id(self), name)
+
+    def remove_logs(self):
+        for process in self.processes.values():
+            process.remove_logs()
+
+    def reopen_logs(self):
+        for process in self.processes.values():
+            process.reopen_logs()
+
+    def stop_all(self):
+        processes = list(self.processes.values())
+        processes.sort()
+        processes.reverse()  # stop in desc priority order
+
+        for proc in processes:
+            state = proc.get_state()
+            if state == ProcessStates.RUNNING:
+                # RUNNING -> STOPPING
+                proc.stop()
+            elif state == ProcessStates.STARTING:
+                # STARTING -> STOPPING
+                proc.stop()
+            elif state == ProcessStates.BACKOFF:
+                # BACKOFF -> FATAL
+                proc.give_up()
+
+    def get_unstopped_processes(self):
+        """ Processes which aren't in a state that is considered 'stopped' """
+        return [x for x in self.processes.values() if x.get_state() not in STOPPED_STATES]
+
+    def get_dispatchers(self):
+        dispatchers = {}
+        for process in self.processes.values():
+            dispatchers.update(process.dispatchers)
+        return dispatchers
 
 
 @functools.total_ordering

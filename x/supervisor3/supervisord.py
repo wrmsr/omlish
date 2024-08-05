@@ -9,6 +9,7 @@ from .compat import as_string
 from .compat import decode_wait_status
 from .compat import signame
 from .configs import ProcessConfig
+from .configs import ProcessGroupConfig
 from .configs import ServerConfig
 from .context import ServerContext
 from .states import SupervisorStates
@@ -289,31 +290,32 @@ def main(args=None, test=False):
     assert os.name == 'posix', 'This code makes Unix-specific assumptions'
     # if we hup, restart by making a new Supervisor()
     first = True
-    while 1:
-        proc_cfgs = [
-            ProcessConfig(
-                name='sleep',
-                command='sleep 600',
-                stdout=ProcessConfig.Log(
-                    file='/dev/fd/1',
-                    maxbytes=0,
-                ),
-                redirect_stderr=True,
-            ),
-            ProcessConfig(
-                name='ls',
-                command='ls -al',
-                stdout=ProcessConfig.Log(
-                    file='/dev/fd/1',
-                    maxbytes=0,
-                ),
-                redirect_stderr=True,
-            ),
-        ]
-
+    while True:
         config = ServerConfig(
             nodaemon=True,
-            processes=proc_cfgs,
+            groups=ProcessGroupConfig(
+                name='default',
+                processes=[
+                    ProcessConfig(
+                        name='sleep',
+                        command='sleep 600',
+                        stdout=ProcessConfig.Log(
+                            file='/dev/fd/1',
+                            maxbytes=0,
+                        ),
+                        redirect_stderr=True,
+                    ),
+                    ProcessConfig(
+                        name='ls',
+                        command='ls -al',
+                        stdout=ProcessConfig.Log(
+                            file='/dev/fd/1',
+                            maxbytes=0,
+                        ),
+                        redirect_stderr=True,
+                    ),
+                ],
+            ),
         )
 
         context = ServerContext(
