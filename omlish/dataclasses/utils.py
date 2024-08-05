@@ -20,7 +20,7 @@ def opt_repr(o: ta.Any) -> str | None:
 
 
 class field_modifier:  # noqa
-    def __init__(self, fn):
+    def __init__(self, fn: ta.Callable[[dc.Field], dc.Field]) -> None:
         super().__init__()
         self.fn = fn
 
@@ -31,5 +31,11 @@ class field_modifier:  # noqa
         return check.isinstance(self.fn(check.isinstance(f, dc.Field)), dc.Field)
 
 
-def update_metadata(old: ta.Mapping, new: ta.Mapping) -> types.MappingProxyType:
-    return types.MappingProxyType(collections.ChainMap(new, old))  # type: ignore  # noqa
+def chain_metadata(*mds: ta.Mapping) -> types.MappingProxyType:
+    return types.MappingProxyType(collections.ChainMap(*mds))  # type: ignore  # noqa
+
+
+def update_field_metadata(f: dc.Field, nmd: ta.Mapping) -> dc.Field:
+    check.isinstance(f, dc.Field)
+    f.metadata = chain_metadata(nmd, f.metadata)
+    return f

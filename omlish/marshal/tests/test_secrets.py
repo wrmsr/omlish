@@ -1,6 +1,5 @@
 import abc
 import collections.abc
-import copy
 import typing as ta
 
 from ... import check
@@ -83,15 +82,13 @@ class StrOrSecretUnmarshaler(Unmarshaler):
 
 @dc.field_modifier
 def secret_or_key_field(f: dc.Field) -> dc.Field:
-    f = copy.copy(check.isinstance(f, dc.Field))
-    f.metadata = dc.update_metadata(f.metadata, {
+    return dc.update_field_metadata(f, {
         FieldMetadata: dc.replace(
             f.metadata.get(FieldMetadata, FieldMetadata()),
             marshaler=StrOrSecretMarshaler(),
             unmarshaler=StrOrSecretUnmarshaler(),
         ),
     })
-    return f
 
 
 ##
