@@ -6,6 +6,7 @@ from .compat import as_bytes
 from .compat import compact_traceback
 from .compat import find_prefix_at_end
 from .compat import readfd
+from .configs import ProcessConfig
 from .events import ProcessLogStderrEvent
 from .events import ProcessLogStdoutEvent
 from .events import notify
@@ -86,6 +87,8 @@ class POutputDispatcher(PDispatcher):
         self.fd = fd
         self.channel = self.event_type.channel
 
+        self.lc: ProcessConfig.Log = getattr(process.config, self.channel)
+
         self._init_normal_log()
         self._init_capture_log()
 
@@ -98,9 +101,9 @@ class POutputDispatcher(PDispatcher):
         self.end_token_data = (end_token, len(end_token))
         self.main_log_level = logging.DEBUG
         config = self.process.config
-        self.log_to_main_log = config.options.loglevel <= self.main_log_level
-        self.stdout_events_enabled = config.stdout_events_enabled
-        self.stderr_events_enabled = config.stderr_events_enabled
+        self.log_to_main_log = process.context.config.loglevel <= self.main_log_level
+        self.stdout_events_enabled = config.stdout.events_enabled
+        self.stderr_events_enabled = config.stderr.events_enabled
 
     def _init_normal_log(self):
         """
@@ -110,10 +113,10 @@ class POutputDispatcher(PDispatcher):
         config = self.process.config
         channel = self.channel
 
-        logfile = getattr(config, '%s_logfile' % channel)
-        maxbytes = getattr(config, '%s_logfile_maxbytes' % channel)
-        backups = getattr(config, '%s_logfile_backups' % channel)
-        to_syslog = getattr(config, '%s_syslog' % channel)
+        logfile = self.lc.file
+        maxbytes = self.lc.maxbytes
+        backups = self.lc.backups
+        to_syslog = self.lc.syslog
 
         if logfile or to_syslog:
             self.normal_log = logging.getLogger(__name__)
@@ -139,7 +142,7 @@ class POutputDispatcher(PDispatcher):
         Configure the capture log for this process.  This log is used to temporarily capture output when special output
         is detected. Sets self.capture_log if capturing is enabled.
         """
-        capture_maxbytes = getattr(self.process.config, '%s_capture_maxbytes' % self.channel)
+        capture_maxbytes = self.lc.capture_maxbytes
         if capture_maxbytes:
             self.capture_log = logging.getLogger(__name__)
             # loggers.handle_boundIO(
