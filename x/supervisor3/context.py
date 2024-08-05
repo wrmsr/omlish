@@ -12,7 +12,8 @@ import typing as ta
 import warnings
 
 from . import poller
-from . import states
+from .states import SupervisorState
+from .states import SupervisorStates
 from .compat import SignalReceiver
 from .compat import close_fd
 from .compat import mktempfile
@@ -45,7 +46,7 @@ class ServerContext:
         self.config = config
 
         self.pid_history: dict[int, 'process.Subprocess'] = {}
-        self.mood: states.SupervisorStates = states.SupervisorStates.RUNNING
+        self.state: SupervisorState = SupervisorStates.RUNNING
 
         self.signal_receiver = SignalReceiver()
 

@@ -633,7 +633,7 @@ class Subprocess:
 
         logger = log
 
-        if self.context.mood > SupervisorStates.RESTARTING:
+        if self.context.state > SupervisorStates.RESTARTING:
             # dont start any processes if supervisor is shutting down
             if state == ProcessStates.EXITED:
                 if self.config.autorestart:
@@ -713,15 +713,15 @@ class ProcessGroup:
         name = self.config.name
         return '<%s instance at %s named %s>' % (self.__class__, id(self), name)
 
-    def remove_logs(self):
+    def remove_logs(self) -> None:
         for process in self.processes.values():
             process.remove_logs()
 
-    def reopen_logs(self):
+    def reopen_logs(self) -> None:
         for process in self.processes.values():
             process.reopen_logs()
 
-    def stop_all(self):
+    def stop_all(self) -> None:
         processes = list(self.processes.values())
         processes.sort()
         processes.reverse()  # stop in desc priority order
@@ -738,23 +738,22 @@ class ProcessGroup:
                 # BACKOFF -> FATAL
                 proc.give_up()
 
-    def get_unstopped_processes(self):
-        """ Processes which aren't in a state that is considered 'stopped' """
+    def get_unstopped_processes(self) -> list[Subprocess]:
         return [x for x in self.processes.values() if x.get_state() not in STOPPED_STATES]
 
-    def get_dispatchers(self):
+    def get_dispatchers(self) -> dict[int, Dispatcher]:
         dispatchers = {}
         for process in self.processes.values():
             dispatchers.update(process.dispatchers)
         return dispatchers
 
-    def before_remove(self):
+    def before_remove(self) -> None:
         pass
 
-    def transition(self):
+    def transition(self) -> None:
         for proc in self.processes.values():
             proc.transition()
 
-    def after_setuid(self):
+    def after_setuid(self) -> None:
         for proc in self.processes.values():
             proc.create_auto_child_logs()
