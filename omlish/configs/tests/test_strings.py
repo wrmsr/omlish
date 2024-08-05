@@ -1,3 +1,4 @@
+import collections.abc
 import typing as ta
 
 from ... import dataclasses as dc
@@ -23,35 +24,66 @@ def interpolate_field(f: dc.Field) -> dc.Field:
     return dc.update_field_metadata(f, {InterpolateStringsMetadata: True})
 
 
-class StringInterpolator:
-    def __init__(self, rpl: ta.Mapping[str, str]) -> None:
+class StringRewriter:
+    def __init__(self, fn: ta.Callable[[str], str]) -> None:
         super().__init__()
-        self._rpl = rpl
+        self._fn = fn
 
     def __call__(self, v: T, *, _soft: bool = False) -> T:
+        if v is None:
+            return None  # type: ignore
+
         if dc.is_dataclass(v):
             kw = {}
-            for f in dc.fields(v):  # type: ignore
+            for f in dc.fields(v):
                 fv = getattr(v, f.name)
                 nfv = self(fv, _soft=not f.metadata.get(InterpolateStringsMetadata))
                 if fv is not nfv:
                     kw[f.name] = nfv
             if not kw:
-                return v
+                return v  # type: ignore
             return dc.replace(v, **kw)
 
-        elif isinstance(v, str):
+        if isinstance(v, str):
             if not _soft:
-                for rk, rv in self._rpl.items():
-                    v = v.replace(rk, rv)
-            return v
+                v = self._fn(v)  # type: ignore
+            return v  # type: ignore
 
-        else:
-            return v
+        if isinstance(v, lang.BUILTIN_SCALAR_ITERABLE_TYPES):
+            return v  # type: ignore
+
+        if isinstance(v, collections.abc.Mapping):
+            nm = []
+            b = False
+            for mk, mv in v.items():
+                nk, nv = self(mk, _soft=_soft), self(mv, _soft=_soft)
+                nm.append((nk, nv))
+                b |= nk is not mk or nv is not mv
+            if not b:
+                return v  # type: ignore
+            return v.__class__(nm)  # type: ignore
+
+        if isinstance(v, (collections.abc.Sequence, collections.abc.Set)):
+            nl = []
+            b = False
+            for le in v:
+                ne = self(le, _soft=_soft)
+                nl.append(ne)
+                b |= ne is not le
+            if not b:
+                return v  # type: ignore
+            return v.__class__(nl)  # type: ignore
+
+        return v
 
 
 def interpolate_strings(v: T, rpl: ta.Mapping[str, str]) -> T:
-    return StringInterpolator(rpl)(v)
+    def fn(v):
+        for rk, rv in rpl.items():
+            v = v.replace(rk, rv)
+        return v
+
+    return StringRewriter(fn)(v)
 
 
 ##
