@@ -97,7 +97,7 @@ def polymorphism_from_subclasses(ty: type, *, naming: Naming | None = None) -> P
 
 
 @dc.dataclass(frozen=True)
-class PolymorphismMarshaler(Marshaler):
+class DictKeyPolymorphismMarshaler(Marshaler):
     m: ta.Mapping[type, tuple[str, Marshaler]]
 
     def marshal(self, ctx: MarshalContext, o: ta.Any | None) -> Value:
@@ -111,7 +111,7 @@ class PolymorphismMarshalerFactory(MarshalerFactory):
 
     def __call__(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler | None:
         if rty is self.p.ty:
-            return PolymorphismMarshaler({
+            return DictKeyPolymorphismMarshaler({
                 i.ty: (i.tag, ctx.make(i.ty))
                 for i in self.p.impls
             })
@@ -122,7 +122,7 @@ class PolymorphismMarshalerFactory(MarshalerFactory):
 
 
 @dc.dataclass(frozen=True)
-class PolymorphismUnmarshaler(Unmarshaler):
+class DictKeyPolymorphismUnmarshaler(Unmarshaler):
     m: ta.Mapping[str, Unmarshaler]
 
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any | None:
@@ -138,7 +138,7 @@ class PolymorphismUnmarshalerFactory(UnmarshalerFactory):
 
     def __call__(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler | None:
         if rty is self.p.ty:
-            return PolymorphismUnmarshaler({
+            return DictKeyPolymorphismUnmarshaler({
                 t: u
                 for i in self.p.impls
                 for u in [ctx.make(i.ty)]
