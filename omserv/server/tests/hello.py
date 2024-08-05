@@ -12,7 +12,7 @@ import jinja2
 from omlish import logs
 
 from ..config import Config
-from ..serving import serve
+from ..workers import serve
 
 
 J2_ENV = jinja2.Environment(autoescape=True)
@@ -61,7 +61,7 @@ def _main():
     backend = 'asyncio'
     # backend = 'trio'
 
-    if cfg.workers > 1:
+    if cfg.workers:
         from ..multiprocess import serve_multiprocess
         serve_multiprocess(hello_app, cfg)
 

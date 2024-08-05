@@ -21,7 +21,7 @@ from omlish import lang
 
 from ..config import Config
 from ..types import AsgiWrapper
-from ..workers import worker_serve
+from ..workers import serve
 from .hello import hello_app
 from .sanity import SANITY_REQUEST_BODY
 from .sanity import SANITY_RESPONSE_BODY
@@ -102,7 +102,7 @@ async def _test_server_simple():
 
     async with anyio.create_task_group() as tg:
         tg.start_soon(functools.partial(
-            worker_serve,
+            serve,
             AsgiWrapper(sanity_framework),
             Config(
                 bind=(f'127.0.0.1:{port}',),
@@ -150,7 +150,7 @@ async def _test_httpx_client(use_http2):
 
     async with anyio.create_task_group() as tg:
         tg.start_soon(functools.partial(
-            worker_serve,
+            serve,
             AsgiWrapper(sanity_framework),
             Config(
                 bind=(f'127.0.0.1:{port}',),
@@ -210,7 +210,7 @@ async def _test_curl(use_h2c: bool) -> None:
 
     async with anyio.create_task_group() as tg:
         tg.start_soon(functools.partial(
-            worker_serve,
+            serve,
             AsgiWrapper(sanity_framework),
             Config(
                 bind=(f'127.0.0.1:{port}',),
@@ -276,7 +276,7 @@ async def _test_curl_h2() -> None:
 
     async with anyio.create_task_group() as tg:
         tg.start_soon(functools.partial(
-            worker_serve,
+            serve,
             AsgiWrapper(hello_app),
             Config(
                 bind=(f'127.0.0.1:{port}',),

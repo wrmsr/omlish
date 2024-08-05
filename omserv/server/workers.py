@@ -16,6 +16,8 @@ from .sockets import create_sockets
 from .sockets import repr_socket_addr
 from .tcpserver import TcpServer
 from .types import AppWrapper
+from .types import AsgiFramework
+from .types import wrap_app
 from .workercontext import ShutdownError
 from .workercontext import WorkerContext
 
@@ -123,8 +125,8 @@ async def _install_signal_handler(
     return signal_event.wait
 
 
-async def worker_serve(
-        app: AppWrapper,
+async def serve(
+        app: AsgiFramework | AppWrapper,
         config: Config,
         *,
         sockets: Sockets | None = None,
@@ -132,6 +134,8 @@ async def worker_serve(
         handle_shutdown_signals: bool = False,
         task_status: anyio.abc.TaskStatus[ta.Sequence[str]] = anyio.TASK_STATUS_IGNORED,
 ) -> None:
+    app = wrap_app(app)
+
     lifespan = Lifespan(app, config)
     max_requests = None
     if config.max_requests is not None:

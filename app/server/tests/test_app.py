@@ -16,7 +16,7 @@ from omserv.server.tests.utils import TIMEOUT_S
 from omserv.server.tests.utils import get_free_port
 from omserv.server.tests.utils import headers_time_patch  # noqa
 from omserv.server.types import AsgiWrapper
-from omserv.server.workers import worker_serve
+from omserv.server.workers import serve
 
 from ..app import server_app
 
@@ -121,7 +121,7 @@ async def test_demo_auth():
 
     async with anyio.create_task_group() as tg:
         tg.start_soon(functools.partial(
-            worker_serve,
+            serve,
             AsgiWrapper(server_app),  # type: ignore
             Config(
                 bind=(f'127.0.0.1:{port}',),
