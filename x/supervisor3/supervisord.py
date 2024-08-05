@@ -57,7 +57,7 @@ class Supervisor:
         try:
             for config in self.context.config.groups:
                 self.add_process_group(config)
-            self.context.setsignals()
+            self.context.set_signals()
             if not self.context.config.nodaemon and self.context.first:
                 self.context.daemonize()
             # writing pid file needs to come *after* daemonizing or pid will be wrong
