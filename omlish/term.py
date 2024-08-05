@@ -90,7 +90,7 @@ HIDE_CURSOR = ControlSequence(lambda: CSI + '?25l', 'Hide Cursor')
 SGR = ControlSequence(lambda n: CSI + _str_val(n) + 'm', 'Select Graphic Rendition')
 
 
-class SGRs(lang.Namespace):
+class SGRs(lang.Namespace, lang.Final):
     RESET = 0
     NORMAL_COLOR_AND_INTENSITY = 22
 
