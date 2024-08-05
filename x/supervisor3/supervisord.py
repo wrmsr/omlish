@@ -54,7 +54,7 @@ class Supervisor:
         self.stop_groups = None  # clear
         events.clear()
         try:
-            for config in self.context.process_group_configs:
+            for config in self.context.config.groups:
                 self.add_process_group(config)
             self.context.setsignals()
             if not self.context.config.nodaemon and self.context.first:
@@ -66,7 +66,7 @@ class Supervisor:
             self.context.cleanup()
 
     def diff_to_active(self):
-        new = self.context.process_group_configs
+        new = self.context.config.groups
         cur = [group.config for group in self.process_groups.values()]
 
         curdict = dict(zip([cfg.name for cfg in cur], cur))
@@ -293,29 +293,31 @@ def main(args=None, test=False):
     while True:
         config = ServerConfig(
             nodaemon=True,
-            groups=ProcessGroupConfig(
-                name='default',
-                processes=[
-                    ProcessConfig(
-                        name='sleep',
-                        command='sleep 600',
-                        stdout=ProcessConfig.Log(
-                            file='/dev/fd/1',
-                            maxbytes=0,
+            groups=[
+                ProcessGroupConfig(
+                    name='default',
+                    processes=[
+                        ProcessConfig(
+                            name='sleep',
+                            command='sleep 600',
+                            stdout=ProcessConfig.Log(
+                                file='/dev/fd/1',
+                                maxbytes=0,
+                            ),
+                            redirect_stderr=True,
                         ),
-                        redirect_stderr=True,
-                    ),
-                    ProcessConfig(
-                        name='ls',
-                        command='ls -al',
-                        stdout=ProcessConfig.Log(
-                            file='/dev/fd/1',
-                            maxbytes=0,
+                        ProcessConfig(
+                            name='ls',
+                            command='ls -al',
+                            stdout=ProcessConfig.Log(
+                                file='/dev/fd/1',
+                                maxbytes=0,
+                            ),
+                            redirect_stderr=True,
                         ),
-                        redirect_stderr=True,
-                    ),
-                ],
-            ),
+                    ],
+                ),
+            ],
         )
 
         context = ServerContext(
