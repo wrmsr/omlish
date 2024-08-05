@@ -38,7 +38,7 @@ class ServerConfig:
     loglevel: int = dc.xfield(logging.INFO, coerce=logging_level)
     pidfile: str = dc.xfield('supervisord.pid', coerce=existing_dirpath)
     identifier: str = dc.xfield('supervisor')
-    child_logdir = dc.xfield(default_factory=lambda: tempfile.gettempdir(), coerce=existing_directory)
+    child_logdir: str = dc.xfield(default_factory=lambda: tempfile.gettempdir(), coerce=existing_directory)
     minfds: int = 1024
     minprocs: int = 200
     nocleanup: bool = False
