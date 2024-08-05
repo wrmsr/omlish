@@ -7,6 +7,9 @@ import types
 import typing as ta
 
 
+T = ta.TypeVar('T')
+
+
 def as_bytes(s: str | bytes, encoding: str = 'utf8') -> bytes:
     if isinstance(s, bytes):
         return s
@@ -41,7 +44,7 @@ def compact_traceback() -> tuple[tuple[str, str, int], type[BaseException], Base
     return (file, function, line), t, v, info
 
 
-def find_prefix_at_end(haystack: str, needle: str) -> int:
+def find_prefix_at_end(haystack: T, needle: T) -> int:
     l = len(needle) - 1
     while l and not haystack.endswith(needle[:l]):
         l -= 1
@@ -176,3 +179,26 @@ def normalize_path(v: str) -> str:
     return os.path.normpath(os.path.abspath(os.path.expanduser(v)))
 
 
+ANSI_ESCAPE_BEGIN = b'\x1b['
+ANSI_TERMINATORS = (b'H', b'f', b'A', b'B', b'C', b'D', b'R', b's', b'u', b'J', b'K', b'h', b'l', b'p', b'm')
+
+
+def strip_escapes(s):
+    """Remove all ANSI color escapes from the given string."""
+    result = b''
+    show = 1
+    i = 0
+    L = len(s)
+    while i < L:
+        if show == 0 and s[i:i + 1] in ANSI_TERMINATORS:
+            show = 1
+        elif show:
+            n = s.find(ANSI_ESCAPE_BEGIN, i)
+            if n == -1:
+                return result + s[i:]
+            else:
+                result = result + s[i:n]
+                i = n
+                show = 0
+        i += 1
+    return result
