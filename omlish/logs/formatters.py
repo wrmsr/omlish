@@ -5,8 +5,8 @@ import datetime
 import logging
 import typing as ta
 
-from .. import json
 from .. import term
+from ..serde import json
 
 
 class StandardLogFormatter(logging.Formatter):

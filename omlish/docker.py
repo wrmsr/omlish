@@ -22,9 +22,9 @@ import typing as ta
 
 from . import check
 from . import dataclasses as dc
-from . import json
 from . import lang
 from . import marshal as msh
+from .serde import json
 
 
 if ta.TYPE_CHECKING:

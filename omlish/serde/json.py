@@ -125,7 +125,7 @@ import functools
 import json as _json
 import typing as ta
 
-from . import lang
+from .. import lang
 
 
 if ta.TYPE_CHECKING:
