@@ -1,4 +1,5 @@
 import logging
+import signal
 import tempfile
 import typing as ta
 
@@ -88,7 +89,7 @@ class ProcessConfig:
     stdout: Log = Log()
     stderr: Log = Log()
 
-    stopsignal: str = 'TERM'
+    stopsignal: int = signal.SIGTERM
     stopwaitsecs: int = 10
     stopasgroup: bool = False
 

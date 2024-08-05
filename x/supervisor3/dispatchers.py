@@ -22,15 +22,10 @@ log = logging.getLogger(__name__)
 
 
 class Dispatcher:
-    """
-    Asyncore dispatcher for mainloop, representing a process channel (stdin, stdout, or stderr).  This class is
-    abstract.
-    """
-
-    closed = False  # True if close() has been called
 
     def __init__(self, process: 'process_.Subprocess', channel: str, fd: int) -> None:
         super().__init__()
+
         self.process = process  # process which "owns" this dispatcher
         self.channel = channel  # 'stderr' or 'stdout'
         self.fd = fd
@@ -270,7 +265,6 @@ class OutputDispatcher(Dispatcher):
 
 
 class InputDispatcher(Dispatcher):
-    """ Input (stdin) dispatcher """
 
     def __init__(self, process, channel, fd):
         super().__init__(process, channel, fd)

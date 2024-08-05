@@ -250,7 +250,7 @@ class Supervisor:
                 _, msg = decode_wait_status(sts)
                 log.info('reaped unknown pid %s (%s)' % (pid, msg))
             else:
-                process.finish(pid, sts)
+                process.finish(sts)
                 del self.context.pid_history[pid]
             if not once:
                 # keep reaping until no more kids to reap, but don't recurse infinitely
