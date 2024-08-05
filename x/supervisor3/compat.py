@@ -80,7 +80,7 @@ def decode_wait_status(sts):
         return -1, msg
 
 
-_signames = None
+_signames: ta.Mapping[int, str] | None = None
 
 
 def signame(sig):
@@ -90,13 +90,13 @@ def signame(sig):
     Return "signal NNN" if there is no corresponding SIG name in the signal module.
     """
 
+    global _signames
     if _signames is None:
-        _init_signames()
+        _signames = _init_signames()
     return _signames.get(sig) or 'signal %d' % sig
 
 
 def _init_signames():
-    global _signames
     d = {}
     for k, v in signal.__dict__.items():
         k_startswith = getattr(k, 'startswith', None)
@@ -104,7 +104,7 @@ def _init_signames():
             continue
         if k_startswith('SIG') and not k_startswith('SIG_'):
             d[v] = k
-    _signames = d
+    return d
 
 
 class SignalReceiver:
