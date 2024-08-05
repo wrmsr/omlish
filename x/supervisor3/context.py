@@ -8,7 +8,6 @@ import re
 import resource
 import signal
 import stat
-import sys
 import typing as ta
 import warnings
 
@@ -34,24 +33,8 @@ if ta.TYPE_CHECKING:
 VERSION = 'foo'
 
 
-def normalize_path(v: str) -> str:
-    return os.path.normpath(os.path.abspath(os.path.expanduser(v)))
-
-
 class Dummy:
     pass
-
-
-def _get_search_paths() -> list[str]:
-    here = os.path.dirname(os.path.dirname(sys.argv[0]))
-    return [
-        os.path.join(here, 'etc', 'supervisord.conf'),
-        os.path.join(here, 'supervisord.conf'),
-        'supervisord.conf',
-        'etc/supervisord.conf',
-        '/etc/supervisord.conf',
-        '/etc/supervisor/supervisord.conf',
-    ]
 
 
 log = logging.getLogger(__name__)

@@ -1,6 +1,4 @@
 import errno
-import importlib.metadata
-import io
 import os
 import signal
 import sys
@@ -20,14 +18,6 @@ def as_string(s, encoding='utf8'):
         return s
     else:
         return s.decode(encoding)
-
-
-def is_text_stream(stream):
-    return isinstance(stream, io.TextIOBase)
-
-
-def import_spec(spec):
-    return importlib.metadata.EntryPoint(None, spec, None).load()  # noqa
 
 
 def compact_traceback():
@@ -59,19 +49,6 @@ def find_prefix_at_end(haystack: str, needle: str) -> int:
 
 class ExitNow(Exception):
     pass
-
-
-def expand(s: str, expansions: ta.Any, name: str) -> str:
-    try:
-        return s % expansions
-    except KeyError as ex:
-        available = list(expansions.keys())
-        available.sort()
-        raise ValueError(
-            'Format string %r for %r contains names (%s) which cannot be '
-            'expanded. Available names: %s' % (s, name, str(ex), ', '.join(available)))
-    except Exception as ex:
-        raise ValueError('Format string %r for %r is badly formatted: %s' % (s, name, str(ex)))
 
 
 ##
@@ -197,3 +174,9 @@ def get_path() -> ta.Sequence[str]:
         if p:
             path = p.split(os.pathsep)
     return path
+
+
+def normalize_path(v: str) -> str:
+    return os.path.normpath(os.path.abspath(os.path.expanduser(v)))
+
+

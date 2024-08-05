@@ -4,7 +4,6 @@ import logging
 import os
 import shlex
 import signal
-import sys
 import time
 import traceback
 
@@ -758,18 +757,3 @@ class ProcessGroup:
     def after_setuid(self):
         for proc in self.processes.values():
             proc.create_auto_child_logs()
-
-
-class GlobalSerial:
-    def __init__(self):
-        self.serial = -1
-
-
-GlobalSerial = GlobalSerial()  # singleton
-
-
-def new_serial(inst):
-    if inst.serial == sys.maxsize:
-        inst.serial = -1
-    inst.serial += 1
-    return inst.serial

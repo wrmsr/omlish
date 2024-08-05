@@ -286,7 +286,6 @@ def timeslice(period, when):
     return int(when - (when % period))
 
 
-# Main program
 def main(args=None, test=False):
     from omlish import logs
     logs.configure_standard_logging('INFO')
@@ -345,5 +344,5 @@ def go(context):  # pragma: no cover
         pass
 
 
-if __name__ == '__main__':  # pragma: no cover
+if __name__ == '__main__':
     main()
