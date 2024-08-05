@@ -27,6 +27,9 @@ class _NamespaceMeta(abc.ABCMeta):
             if not a.startswith('_'):
                 yield (a, getattr(cls, a))
 
+    def __getitem__(cls, n: str) -> ta.Any:
+        return getattr(cls, n)
+
 
 class Namespace(metaclass=_NamespaceMeta):
     pass
