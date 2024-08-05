@@ -332,6 +332,7 @@ class DotEnv:
         encoding: str | None = None,
         interpolate: bool = True,
         override: bool = True,
+        env: ta.Mapping[str, str] | None = None,
     ) -> None:
         super().__init__()
         self.path: StrPath | None = path
@@ -341,6 +342,7 @@ class DotEnv:
         self.encoding: str | None = encoding
         self.interpolate: bool = interpolate
         self.override: bool = override
+        self.env = env or {}
 
     @contextlib.contextmanager
     def _get_stream(self) -> ta.Iterator[ta.IO[str]]:
@@ -364,7 +366,7 @@ class DotEnv:
         raw_values = self.parse()
 
         if self.interpolate:
-            self._dict = resolve_variables(raw_values, override=self.override)
+            self._dict = resolve_variables(raw_values, override=self.override, env=self.env)
         else:
             self._dict = dict(raw_values)
 
@@ -376,22 +378,7 @@ class DotEnv:
                 if mapping.key is not None:
                     yield mapping.key, mapping.value
 
-    def set_as_environment_variables(self) -> bool:
-        """Load the current dotenv as system environment variable."""
-        if not self.dict():
-            return False
-
-        for k, v in self.dict().items():
-            if k in os.environ and not self.override:
-                continue
-            if v is not None:
-                os.environ[k] = v
-
-        return True
-
     def get(self, key: str) -> str | None:
-        """
-        """
         data = self.dict()
 
         if key in data:
@@ -525,8 +512,9 @@ def unset_key(
 
 
 def resolve_variables(
-    values: ta.Iterable[tuple[str, str | None]],
-    override: bool,
+        values: ta.Iterable[tuple[str, str | None]],
+        override: bool,
+        env: ta.Mapping[str, str],
 ) -> dict[str, str | None]:
     new_values: dict[str, str | None] = {}
 
@@ -535,14 +523,14 @@ def resolve_variables(
             result = None
         else:
             atoms = parse_variables(value)
-            env: dict[str, str | None] = {}
+            aenv: dict[str, str | None] = {}
             if override:
-                env.update(os.environ)
-                env.update(new_values)
+                aenv.update(env)
+                aenv.update(new_values)
             else:
-                env.update(new_values)
-                env.update(os.environ)
-            result = ''.join(atom.resolve(env) for atom in atoms)
+                aenv.update(new_values)
+                aenv.update(env)
+            result = ''.join(atom.resolve(aenv) for atom in atoms)
 
         new_values[name] = result
 
