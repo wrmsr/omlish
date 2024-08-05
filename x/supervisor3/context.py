@@ -182,7 +182,7 @@ class ServerContext:
         try:
             filenames = os.listdir(child_logdir)
         except OSError:
-            log.warn('Could not clear child_log dir')
+            log.warning('Could not clear child_log dir')
             return
 
         for filename in filenames:
@@ -191,7 +191,7 @@ class ServerContext:
                 try:
                     os.remove(pathname)
                 except OSError:
-                    log.warn('Failed to clean up %r' % pathname)
+                    log.warning('Failed to clean up %r' % pathname)
 
     def daemonize(self) -> None:
         self.poller.before_daemonize()
