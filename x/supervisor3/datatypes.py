@@ -186,7 +186,9 @@ def gid_for_uid(uid: int) -> int:
     return pwrec[3]
 
 
-def octal_type(arg: str) -> int:
+def octal_type(arg: str | int) -> int:
+    if isinstance(arg, int):
+        return arg
     try:
         return int(arg, 8)
     except (TypeError, ValueError):
