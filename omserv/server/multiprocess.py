@@ -16,7 +16,7 @@ from .sockets import Sockets
 from .sockets import create_sockets
 from .types import AsgiFramework
 from .types import wrap_app
-from .workers import worker_serve
+from .workers import serve
 
 
 async def check_multiprocess_shutdown_event(
@@ -45,7 +45,7 @@ def _multiprocess_serve(
 
     anyio.run(
         functools.partial(
-            worker_serve,
+            serve,
             wrap_app(app),
             config,
             sockets=sockets,
@@ -119,7 +119,10 @@ def _populate(
         shutdown_event: multiprocessing.synchronize.Event,
         ctx: multiprocessing.context.BaseContext,
 ) -> None:
-    for _ in range(config.workers - len(processes)):
+    num_workers = config.workers or 1
+    if num_workers < 0:
+        num_workers = multiprocessing.cpu_count()
+    for _ in range(num_workers - len(processes)):
         process = ctx.Process(  # type: ignore
             target=worker_func,
             kwargs={

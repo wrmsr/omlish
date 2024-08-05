@@ -56,7 +56,7 @@ def _create_sockets(
                 host, port = bind, 8000
             sock = socket.socket(socket.AF_INET6 if ':' in host else socket.AF_INET, type_)
             sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-            if config.workers > 1:
+            if config.workers:
                 with contextlib.suppress(AttributeError):
                     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
             binding = (host, port)
