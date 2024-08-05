@@ -425,3 +425,15 @@ def test_copy():
     c = copy.copy(f)
     assert f == c
     assert f is not c
+
+
+def test_default_factory_coerce():
+    def coerce(x: int) -> int:
+        return x * 2
+
+    @dc.dataclass()
+    class C:
+        x = dc.xfield(coerce=coerce, default_factory=lambda: 2)
+
+    assert C().x == 4
+    assert C(3).x == 6
