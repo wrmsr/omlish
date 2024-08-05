@@ -1,6 +1,21 @@
 import typing as ta
 
 
+##
+
+
+def _names_by_code(states: ta.Any) -> dict[int, str]:
+    d = {}
+    for name in states.__dict__:
+        if not name.startswith('__'):
+            code = getattr(states, name)
+            d[code] = name
+    return d
+
+
+##
+
+
 ProcessState: ta.TypeAlias = int
 
 
@@ -35,8 +50,17 @@ SIGNALLABLE_STATES = (
 )
 
 
-def get_process_state_description(code):
+_process_states_by_code = _names_by_code(ProcessStates)
+
+
+def get_process_state_description(code: ProcessState) -> str:
     return _process_states_by_code.get(code)
+
+
+##
+
+
+SupervisorState: ta.TypeAlias = int
 
 
 class SupervisorStates:
@@ -46,19 +70,8 @@ class SupervisorStates:
     SHUTDOWN = -1
 
 
-def get_supervisor_state_description(code):
-    return _supervisor_states_by_code.get(code)
-
-
-# below is an optimization for internal use in this module only
-def _names_by_code(states):
-    d = {}
-    for name in states.__dict__:
-        if not name.startswith('__'):
-            code = getattr(states, name)
-            d[code] = name
-    return d
-
-
-_process_states_by_code = _names_by_code(ProcessStates)
 _supervisor_states_by_code = _names_by_code(SupervisorStates)
+
+
+def get_supervisor_state_description(code: SupervisorState) -> str:
+    return _supervisor_states_by_code.get(code)

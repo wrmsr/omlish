@@ -150,7 +150,7 @@ class Supervisor:
             pgroups = list(self.process_groups.values())
             pgroups.sort()
 
-            if self.context.mood < SupervisorStates.RUNNING:
+            if self.context.state < SupervisorStates.RUNNING:
                 if not self.stopping:
                     # first time, set the stopping flag, do a notification and set stop_groups
                     self.stopping = True
@@ -218,7 +218,7 @@ class Supervisor:
             self.handle_signal()
             self.tick()
 
-            if self.context.mood < SupervisorStates.RUNNING:
+            if self.context.state < SupervisorStates.RUNNING:
                 self.ordered_stop_groups_phase_2()
 
             if self.context.test:
@@ -261,13 +261,13 @@ class Supervisor:
         if sig:
             if sig in (signal.SIGTERM, signal.SIGINT, signal.SIGQUIT):
                 log.warn('received %s indicating exit request' % signame(sig))
-                self.context.mood = SupervisorStates.SHUTDOWN
+                self.context.state = SupervisorStates.SHUTDOWN
             elif sig == signal.SIGHUP:
-                if self.context.mood == SupervisorStates.SHUTDOWN:
+                if self.context.state == SupervisorStates.SHUTDOWN:
                     log.warn('ignored %s indicating restart request (shutdown in progress)' % signame(sig))  # noqa
                 else:
                     log.warn('received %s indicating restart request' % signame(sig))  # noqa
-                    self.context.mood = SupervisorStates.RESTARTING
+                    self.context.state = SupervisorStates.RESTARTING
             elif sig == signal.SIGCHLD:
                 log.debug('received %s indicating a child quit' % signame(sig))
             elif sig == signal.SIGUSR2:
@@ -279,7 +279,7 @@ class Supervisor:
                 log.debug('received %s indicating nothing' % signame(sig))
 
     def get_state(self):
-        return self.context.mood
+        return self.context.state
 
 
 def timeslice(period, when):
@@ -332,7 +332,7 @@ def main(args=None, test=False):
         go(context)
         # options.close_logger()
         first = False
-        if test or (context.mood < SupervisorStates.RESTARTING):
+        if test or (context.state < SupervisorStates.RESTARTING):
             break
 
 
