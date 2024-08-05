@@ -1,15 +1,21 @@
 import errno
 import logging
 import os
+import typing as ta
 
 from .compat import as_bytes
 from .compat import compact_traceback
 from .compat import find_prefix_at_end
 from .compat import readfd
+from .compat import strip_escapes
 from .configs import ProcessConfig
 from .events import ProcessLogStderrEvent
 from .events import ProcessLogStdoutEvent
 from .events import notify
+
+
+if ta.TYPE_CHECKING:
+    from . import process as process_
 
 
 log = logging.getLogger(__name__)
@@ -23,13 +29,14 @@ class PDispatcher:
 
     closed = False  # True if close() has been called
 
-    def __init__(self, process, channel, fd):
+    def __init__(self, process: 'process_.Subprocess', channel: str, fd: int) -> None:
+        super().__init__()
         self.process = process  # process which "owns" this dispatcher
         self.channel = channel  # 'stderr' or 'stdout'
         self.fd = fd
         self.closed = False  # True if close() has been called
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return '<%s at %s for %s (%s)>' % (self.__class__.__name__, id(self), self.process, self.channel)
 
     def readable(self):
@@ -76,16 +83,14 @@ class POutputDispatcher(PDispatcher):
     capture_mode = False  # are we capturing process event data
     output_buffer = b''  # data waiting to be logged
 
-    def __init__(self, process, event_type, fd):
+    def __init__(self, process: 'process_.Subprocess', event_type, fd):
         """
         Initialize the dispatcher.
 
         `event_type` should be one of ProcessLogStdoutEvent or ProcessLogStderrEvent
         """
-        self.process = process
+        super().__init__(process, event_type.channel, fd)
         self.event_type = event_type
-        self.fd = fd
-        self.channel = self.event_type.channel
 
         self.lc: ProcessConfig.Log = getattr(process.config, self.channel)
 
@@ -166,8 +171,7 @@ class POutputDispatcher(PDispatcher):
 
     def _log(self, data):
         if data:
-            config = self.process.config
-            if config.options.strip_ansi:
+            if self.process.context.config.strip_ansi:
                 data = strip_escapes(data)
             if self.child_log:
                 self.child_log.info(data)
@@ -181,7 +185,7 @@ class POutputDispatcher(PDispatcher):
                         text = 'Undecodable: %r' % data
                 msg = '%(name)r %(channel)s output:\n%(data)s'
                 log.log(
-                    self.main_log_level, msg, name=config.name,
+                    self.main_log_level, msg, name=self.process.config.name,
                     channel=self.channel, data=text)
             if self.channel == 'stdout':
                 if self.stdout_events_enabled:
@@ -295,28 +299,3 @@ class PInputDispatcher(PDispatcher):
                     self.close()
                 else:
                     raise
-
-
-ANSI_ESCAPE_BEGIN = b'\x1b['
-ANSI_TERMINATORS = (b'H', b'f', b'A', b'B', b'C', b'D', b'R', b's', b'u', b'J', b'K', b'h', b'l', b'p', b'm')
-
-
-def strip_escapes(s):
-    """Remove all ANSI color escapes from the given string."""
-    result = b''
-    show = 1
-    i = 0
-    L = len(s)
-    while i < L:
-        if show == 0 and s[i:i + 1] in ANSI_TERMINATORS:
-            show = 1
-        elif show:
-            n = s.find(ANSI_ESCAPE_BEGIN, i)
-            if n == -1:
-                return result + s[i:]
-            else:
-                result = result + s[i:n]
-                i = n
-                show = 0
-        i += 1
-    return result
