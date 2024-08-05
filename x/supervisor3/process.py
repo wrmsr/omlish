@@ -70,22 +70,22 @@ class Subprocess:
         self.config = config
         self.group = group
         self.context = context
-        self.dispatchers = {}
-        self.pipes = {}
+        self._dispatchers = {}
+        self._pipes = {}
         self.state = ProcessStates.STOPPED
 
     def remove_logs(self) -> None:
-        for dispatcher in self.dispatchers.values():
+        for dispatcher in self._dispatchers.values():
             if hasattr(dispatcher, 'remove_logs'):
                 dispatcher.remove_logs()
 
     def reopen_logs(self) -> None:
-        for dispatcher in self.dispatchers.values():
+        for dispatcher in self._dispatchers.values():
             if hasattr(dispatcher, 'reopen_logs'):
                 dispatcher.reopen_logs()
 
     def drain(self) -> None:
-        for dispatcher in self.dispatchers.values():
+        for dispatcher in self._dispatchers.values():
             # note that we *must* call readable() for every dispatcher, as it may have side effects for a given
             # dispatcher (eg. call handle_listener_state_change for event listener processes)
             if dispatcher.readable():
@@ -97,11 +97,11 @@ class Subprocess:
         if not self.pid or self.killing:
             raise OSError(errno.EPIPE, 'Process already closed')
 
-        stdin_fd = self.pipes['stdin']
+        stdin_fd = self._pipes['stdin']
         if stdin_fd is None:
             raise OSError(errno.EPIPE, 'Process has no stdin channel')
 
-        dispatcher = self.dispatchers[stdin_fd]
+        dispatcher = self._dispatchers[stdin_fd]
         if dispatcher.closed:
             raise OSError(errno.EPIPE, "Process' stdin channel is closed")
 
@@ -194,11 +194,6 @@ class Subprocess:
         log.info('spawn_err: %s' % msg)
 
     def spawn(self) -> int | None:
-        """
-        Start the subprocess.  It must not be running already.
-
-        Return the process id.  If the fork() call fails, return None.
-        """
         processname = as_string(self.config.name)
 
         if self.pid:
@@ -232,7 +227,7 @@ class Subprocess:
             return None
 
         try:
-            self.dispatchers, self.pipes = self._make_dispatchers()
+            self._dispatchers, self._pipes = self._make_dispatchers()
         except OSError as why:
             code = why.args[0]
             if code == errno.EMFILE:
@@ -257,8 +252,8 @@ class Subprocess:
             self._record_spawn_err(msg)
             self._check_in_state(ProcessStates.STARTING)
             self.change_state(ProcessStates.BACKOFF)
-            close_parent_pipes(self.pipes)
-            close_child_pipes(self.pipes)
+            close_parent_pipes(self._pipes)
+            close_child_pipes(self._pipes)
             return None
 
         if pid != 0:
@@ -285,7 +280,7 @@ class Subprocess:
     def _spawn_as_parent(self, pid: int) -> int:
         # Parent
         self.pid = pid
-        close_child_pipes(self.pipes)
+        close_child_pipes(self._pipes)
         log.info('spawned: \'%s\' with pid %s' % (as_string(self.config.name), pid))
         self.spawn_err = None
         self.delay = time.time() + self.config.startsecs
@@ -293,12 +288,12 @@ class Subprocess:
         return pid
 
     def _prepare_child_fds(self) -> None:
-        os.dup2(self.pipes['child_stdin'], 0)
-        os.dup2(self.pipes['child_stdout'], 1)
+        os.dup2(self._pipes['child_stdin'], 0)
+        os.dup2(self._pipes['child_stdout'], 1)
         if self.config.redirect_stderr:
-            os.dup2(self.pipes['child_stdout'], 2)
+            os.dup2(self._pipes['child_stdout'], 2)
         else:
-            os.dup2(self.pipes['child_stderr'], 2)
+            os.dup2(self._pipes['child_stderr'], 2)
         for i in range(3, self.context.config.minfds):
             close_fd(i)
 
@@ -593,9 +588,9 @@ class Subprocess:
                 log.warn(msg)
 
         self.pid = 0
-        close_parent_pipes(self.pipes)
-        self.pipes = {}
-        self.dispatchers = {}
+        close_parent_pipes(self._pipes)
+        self._pipes = {}
+        self._dispatchers = {}
 
         # if we died before we processed the current event (only happens if we're an event listener), notify the event
         # system that this event was rejected so it can be processed again.
@@ -643,10 +638,12 @@ class Subprocess:
                     elif self.exitstatus not in self.config.exitcodes:
                         # EXITED -> STARTING
                         self.spawn()
+
             elif state == ProcessStates.STOPPED and not self.laststart:
                 if self.config.autostart:
                     # STOPPED -> STARTING
                     self.spawn()
+
             elif state == ProcessStates.BACKOFF:
                 if self.backoff <= self.config.startretries:
                     if now > self.delay:
@@ -662,8 +659,7 @@ class Subprocess:
                 self.backoff = 0
                 self._check_in_state(ProcessStates.STARTING)
                 self.change_state(ProcessStates.RUNNING)
-                msg = ('entered RUNNING state, process has stayed up for '
-                       '> than %s seconds (startsecs)' % self.config.startsecs)
+                msg = ('entered RUNNING state, process has stayed up for > than %s seconds (startsecs)' % self.config.startsecs)  # noqa
                 logger.info('success: %s %s' % (processname, msg))
 
         if state == ProcessStates.BACKOFF:
@@ -731,9 +727,11 @@ class ProcessGroup:
             if state == ProcessStates.RUNNING:
                 # RUNNING -> STOPPING
                 proc.stop()
+
             elif state == ProcessStates.STARTING:
                 # STARTING -> STOPPING
                 proc.stop()
+
             elif state == ProcessStates.BACKOFF:
                 # BACKOFF -> FATAL
                 proc.give_up()
@@ -744,7 +742,7 @@ class ProcessGroup:
     def get_dispatchers(self) -> dict[int, Dispatcher]:
         dispatchers = {}
         for process in self.processes.values():
-            dispatchers.update(process.dispatchers)
+            dispatchers.update(process._dispatchers)
         return dispatchers
 
     def before_remove(self) -> None:
