@@ -1,3 +1,4 @@
+import types
 import typing as ta
 
 from ... import dataclasses as dc
@@ -31,10 +32,17 @@ class Foo:
 
 def interpolate_fields(obj: T, replacements: ta.Mapping[str, str]) -> T:
     kw = {}
-    for f in dc.fields(obj):
+    for f in dc.fields(obj):  # type: ignore
         if not f.metadata.get(InterpolateStringsMetadata):
             continue
-        raise NotImplementedError
+        v = getattr(obj, f.name)
+        if not isinstance(v, str):
+            raise TypeError(v)
+        nv = v
+        for rk, rv in replacements.items():
+            nv = nv.replace(rk, rv)
+        if nv != v:
+            kw[f.name] = nv
     if not kw:
         return obj
     return dc.replace(obj, **kw)
