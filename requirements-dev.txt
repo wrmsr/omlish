@@ -49,6 +49,8 @@ lxml==4.9.4; python_version < '3.13'
 
 pytest-trio==0.8.0
 
+json5==0.9.25
+
 
 ##
 
