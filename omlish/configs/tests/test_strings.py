@@ -8,7 +8,7 @@ class Foo:
     i: int
     s: str = dc.field() | interpolate_field
     s2: str = 'nope'
-    s3: str = dc.xfield(default='nope again') | interpolate_field
+    s3: str = dc.field(default='nope again') | interpolate_field
 
 
 @dc.dataclass(frozen=True)
