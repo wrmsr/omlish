@@ -7,6 +7,7 @@ import anyio.from_thread
 import anyio.to_thread
 
 from .config import Config
+from .debug import handle_error_debug
 from .types import AppWrapper
 from .types import AsgiReceiveEvent
 from .types import AsgiSendEvent
@@ -64,8 +65,7 @@ class Lifespan:
         except (LifespanFailureError, anyio.get_cancelled_exc_class()):
             raise
         except (BaseExceptionGroup, Exception) as error:
-            # FIXME: debug
-            # breakpoint()
+            handle_error_debug(error)
 
             if isinstance(error, BaseExceptionGroup):
                 failure_error = error.subgroup(LifespanFailureError)
