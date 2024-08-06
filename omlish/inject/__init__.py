@@ -47,6 +47,7 @@ from .keys import (  # noqa
 )
 
 from .managed import (  # noqa
+    create_async_managed_injector,
     create_managed_injector,
 )
 
