@@ -462,10 +462,10 @@ class LifecycleContextManager:
 
     def __exit__(
             self,
-            exc_type: ta.Optional[ta.Type[Exception]],
-            exc_val: ta.Optional[Exception],
-            exc_tb: ta.Optional[types.TracebackType],
-    ) -> ta.Optional[bool]:
+            exc_type: type[Exception] | None,
+            exc_val: Exception | None,
+            exc_tb: types.TracebackType | None,
+    ) -> bool | None:
         try:
             if self.controller.state is LifecycleStates.STARTED:
                 self.controller.lifecycle_stop()
