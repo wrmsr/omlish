@@ -102,7 +102,7 @@ def run_shell(app: ShellApp) -> None:
     _backend = 'trio'
 
     if _backend == 'trio':
-        from omlish.testing.pydevd import patch_for_trio_asyncio  # noqa
+        from omlish.diag.pydevd import patch_for_trio_asyncio  # noqa
         patch_for_trio_asyncio()  # noqa
 
     anyio.run(functools.partial(a_run_shell, app), backend=_backend)
