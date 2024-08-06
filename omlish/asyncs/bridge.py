@@ -85,6 +85,7 @@ def s_to_a(fn, *, require_await=False):
 
         if require_await and not switch_occurred:
             raise BridgeAwaitRequiredError
+
         return result
 
     return inner
