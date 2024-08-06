@@ -63,10 +63,10 @@ class Lifecycle:
 
 @dc.dataclass(frozen=True, kw_only=True)
 class CallbackLifecycle(Lifecycle, lang.Final, ta.Generic[LifecycleT]):
-    on_construct: LifecycleCallback[LifecycleT] | None = None
-    on_start: LifecycleCallback[LifecycleT] | None = None
-    on_stop: LifecycleCallback[LifecycleT] | None = None
-    on_destroy: LifecycleCallback[LifecycleT] | None = None
+    on_construct: LifecycleCallback['CallbackLifecycle[LifecycleT]'] | None = None
+    on_start: LifecycleCallback['CallbackLifecycle[LifecycleT]'] | None = None
+    on_stop: LifecycleCallback['CallbackLifecycle[LifecycleT]'] | None = None
+    on_destroy: LifecycleCallback['CallbackLifecycle[LifecycleT]'] | None = None
 
     def lifecycle_construct(self) -> None:
         if self.on_construct is not None:
