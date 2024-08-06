@@ -68,12 +68,11 @@ def s_to_a_await(awaitable: ta.Awaitable[T]) -> T:
 def s_to_a(fn, *, require_await=False):
     @types.coroutine
     def inner(*args, **kwargs):
-        result: ta.Any
         g = greenlet.greenlet(fn)
         setattr(g, _BRIDGE_GREENLET_ATTR, True)
-        switch_occurred = False
 
-        result = g.switch(*args, **kwargs)
+        result: ta.Any = g.switch(*args, **kwargs)
+        switch_occurred = False
         while not g.dead:
             switch_occurred = True
             try:
