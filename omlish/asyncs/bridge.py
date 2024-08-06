@@ -10,6 +10,7 @@ if ta.TYPE_CHECKING:
     import asyncio
 
     import greenlet
+
 else:
     asyncio = lang.proxy_import('asyncio')
 
