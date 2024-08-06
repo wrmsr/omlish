@@ -50,7 +50,7 @@ services:
       - 'omlish-postgres'
 
   omlish-mysql:
-    image: 'mysql:8.4.0'
+    image: 'mysql:9.0.1'
     restart: 'unless-stopped'
     environment:
       MYSQL_USER: 'omlish'
@@ -73,7 +73,7 @@ services:
       - '35225:5432'
 
   omlish-redis:
-    image: 'redis:7.2'
+    image: 'redis:7.4.0'
     restart: 'unless-stopped'
     expose:
       - '6379'
@@ -81,7 +81,7 @@ services:
       - '35226:6379'
 
   omlish-s3:
-    image: 'adobe/s3mock:3.9.1'
+    image: 'adobe/s3mock:3.10.0'
     restart: 'unless-stopped'
     expose:
       - '9090'
