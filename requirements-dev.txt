@@ -51,6 +51,10 @@ pytest-trio==0.8.0
 
 json5==0.9.25
 
+# pyrsistent
+# rpds-py
+# sortedcontainers
+
 
 ##
 
