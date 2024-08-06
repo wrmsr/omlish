@@ -16,7 +16,9 @@ def build_ext(
     ext = du.Extension(
         fullname,
         sources=[src_path],
-        extra_compile_args=['-std=c++14'],
+        extra_compile_args=[
+            *(['-std=c++14'] if any(src_path.endswith(sf) for sf in ('cc', 'cpp')) else []),
+        ],
         extra_link_args=extra_link_args,
         undef_macros=['BARF'],
     )
