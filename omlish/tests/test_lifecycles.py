@@ -1,3 +1,4 @@
+import contextlib
 import functools
 import types
 import typing as ta
@@ -415,7 +416,7 @@ class LifecycleManager:
 ##
 
 
-@dc.dataclass(frozen=True, kw_only=True)
+@dc.dataclass(frozen=True)
 class ContextManagerLifecycle(Lifecycle, lang.Final, ta.Generic[ContextManagerT]):
     cm: ContextManagerT
 
@@ -428,35 +429,33 @@ class ContextManagerLifecycle(Lifecycle, lang.Final, ta.Generic[ContextManagerT]
         self.cm.__exit__(None, None, None)
 
 
-class LifecycleContextManager:
+class LifecycleContextManager(ta.Generic[LifecycleT]):
 
-    def __init__(self, **kwargs: ta.Any) -> None:
+    def __init__(self, lifecycle: LifecycleT) -> None:
         super().__init__()
+        self._lifecycle = lifecycle
+        self._controller = lifecycle if isinstance(lifecycle, LifecycleController) else LifecycleController(lifecycle)
 
-        self._manager = LifecycleManager(**kwargs)
+    defs.repr('lifecycle', 'state')
 
     @property
-    def manager(self) -> LifecycleManager:
-        return self._manager
+    def lifecycle(self) -> LifecycleT:
+        return self._lifecycle
 
     @property
     def controller(self) -> LifecycleController:
-        return self._manager.controller
+        return self._controller
 
-    def add(
-            self,
-            lifecycle: Lifecycle,
-            dependencies: ta.Iterable[Lifecycle] = (),
-    ) -> ta.Self:
-        self._manager.add(lifecycle, dependencies)
-        return self
+    @property
+    def state(self) -> LifecycleState:
+        return self.controller.state
 
     def __enter__(self) -> ta.Self:
         try:
-            self.controller.lifecycle_construct()
-            self.controller.lifecycle_start()
+            self._controller.lifecycle_construct()
+            self._controller.lifecycle_start()
         except Exception:
-            self.controller.lifecycle_destroy()
+            self._controller.lifecycle_destroy()
             raise
         return self
 
@@ -467,7 +466,7 @@ class LifecycleContextManager:
             exc_tb: types.TracebackType | None,
     ) -> bool | None:
         try:
-            if self.controller.state is LifecycleStates.STARTED:
+            if self._controller.state is LifecycleStates.STARTED:
                 self.controller.lifecycle_stop()
         except Exception:
             self.controller.lifecycle_destroy()
@@ -477,18 +476,22 @@ class LifecycleContextManager:
         return None
 
 
-def context_manage(
-        *lifecycles: Lifecycle,
-        lock: lang.DefaultLockable = None,
-) -> LifecycleContextManager:
-    lcm = LifecycleContextManager(lock=lock)
-    for lc in lifecycles:
-        lcm.add(lc)
-    return lcm
-
-
 ##
 
 
 def test_lifecycles():
-    pass
+    @contextlib.contextmanager
+    def foo():
+        print('foo.enter')
+        try:
+            yield
+        finally:
+            print('foo.exit')
+
+    mgr = LifecycleManager()
+
+    f = foo()
+    mgr.add(ContextManagerLifecycle(f))
+
+    with LifecycleContextManager(mgr.controller):
+        print('inner')
