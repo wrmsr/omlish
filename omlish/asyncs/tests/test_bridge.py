@@ -72,7 +72,8 @@ def s_to_a_await(awaitable: ta.Awaitable[T]) -> T:
 
 
 def s_to_a(fn, *, require_await=False):
-    async def inner(*args, **kwargs):
+    @types.coroutine
+    def inner(*args, **kwargs):
         result: ta.Any
         g = greenlet.greenlet(fn)
         setattr(g, _BRIDGE_GREENLET_ATTR, True)
@@ -82,7 +83,7 @@ def s_to_a(fn, *, require_await=False):
         while not g.dead:
             switch_occurred = True
             try:
-                value = await result
+                value = yield result
             except BaseException:  # noqa
                 result = g.throw(*sys.exc_info())
             else:
