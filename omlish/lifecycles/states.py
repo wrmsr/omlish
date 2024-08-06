@@ -1,13 +1,7 @@
-import contextlib
 import functools
-import types
-import typing as ta
 
-from .. import cached
 from .. import check
-from .. import collections as col
 from .. import dataclasses as dc
-from .. import defs
 from .. import lang
 
 
@@ -47,5 +41,3 @@ class LifecycleStates(lang.Namespace):
     DESTROYING = LifecycleState('DESTROYING', 11, False)
     FAILED_DESTROYING = LifecycleState('FAILED_DESTROYING', 12, True)
     DESTROYED = LifecycleState('DESTROYED', 13, False)
-
-
