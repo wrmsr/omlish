@@ -142,13 +142,22 @@ async def a_func(a_cb, arg):
     return f'a_func({arg}) -> {await a_cb(arg)}'
 
 
-@pytest.mark.asyncio
-async def test_async_bridge():
+async def _test_async_bridge():
     assert (await a_func(a_callback, 'arg')) == 'a_func(arg) -> a_callback(arg)'
     assert (await a_func(s_to_a(callback), 'arg')) == 'a_func(arg) -> callback(arg)'
 
     assert (await s_to_a(func)(callback, 'arg')) == 'func(arg) -> callback(arg)'
     assert (await s_to_a(func)(a_to_s(a_callback), 'arg')) == 'func(arg) -> a_callback(arg)'
+
+
+@pytest.mark.asyncio
+async def test_async_bridge_asyncio():
+    await _test_async_bridge()
+
+
+@pytest.mark.trio
+async def test_async_bridge_trio():
+    await _test_async_bridge()
 
 
 def test_bridge():
@@ -167,6 +176,15 @@ async def a_sleep_callback(arg):
     return f'a_sleep_callback({arg})'
 
 
-@pytest.mark.asyncio
-async def test_async_bridge2():
+async def _test_async_bridge2():
     assert (await s_to_a(func)(a_to_s(a_sleep_callback), 'arg')) == 'func(arg) -> a_sleep_callback(arg)'
+
+
+@pytest.mark.asyncio
+async def test_async_bridge2_asyncio():
+    await _test_async_bridge2()
+
+
+@pytest.mark.trio
+async def test_async_bridge2_trio():
+    await _test_async_bridge2()
