@@ -1,9 +1,16 @@
 import contextlib
 import typing as ta
 
+import anyio
+import pytest
+
+from ... import asyncs as au
 from ... import dataclasses as dc  # noqa
 from ... import inject as inj
 from ... import lang  # noqa
+
+
+##
 
 
 class SomeManager:
@@ -19,18 +26,58 @@ class SomeManager:
 
 
 def test_managed():
-    def _provide_some_manager(
-            i: inj.Injector,
-            es: contextlib.ExitStack,
-    ) -> SomeManager:
-        return es.enter_context(i.inject(SomeManager))
+    def make_managed_provider(cls: type):
+        def _provide(
+                i: inj.Injector,
+                es: contextlib.ExitStack,
+        ):
+            return es.enter_context(i.inject(cls))
+        return _provide
 
     with inj.create_managed_injector(
-        inj.bind(_provide_some_manager, singleton=True),
+        inj.bind(SomeManager, singleton=True, to_fn=make_managed_provider(SomeManager)),
     ) as i:
         sm = i[SomeManager]
         assert sm.ec == 1
         assert i[SomeManager] is sm
+        assert sm.ec == 1
+        assert sm.xc == 0
+    assert sm.ec == 1
+    assert sm.xc == 1
+
+
+##
+
+
+class SomeAsyncManager:
+    ec = 0
+    xc = 0
+
+    async def __aenter__(self) -> ta.Self:
+        self.ec += 1
+        await anyio.sleep(.01)
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        self.xc += 1
+
+
+@pytest.mark.asyncio
+async def test_async_managed():
+    def make_async_managed_provider(cls: type):
+        def _provide(
+                i: inj.Injector,
+                aes: contextlib.AsyncExitStack,
+        ):
+            return au.s_to_a_await(aes.enter_async_context(i.inject(cls)))
+        return _provide
+
+    async with inj.create_async_managed_injector(
+            inj.bind(SomeAsyncManager, singleton=True, to_fn=make_async_managed_provider(SomeAsyncManager)),
+    ) as i:
+        sm = await au.s_to_a(i.provide)(SomeAsyncManager)
+        assert sm.ec == 1
+        assert i[SomeAsyncManager] is sm
         assert sm.ec == 1
         assert sm.xc == 0
     assert sm.ec == 1
