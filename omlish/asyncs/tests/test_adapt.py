@@ -12,6 +12,21 @@ from .. import asyncs
 ##
 
 
+def simple_s_to_a(fn):
+    async def inner(*args, **kwargs):
+        return fn(*args, **kwargs)
+    return inner
+
+
+def simple_a_to_s(fn):
+    def inner(*args, **kwargs):
+        return asyncs.sync_await(fn, *args, **kwargs)
+    return inner
+
+
+##
+
+
 def s_to_a(fn):
     async def inner(*args, **kwargs):
         return fn(*args, **kwargs)
