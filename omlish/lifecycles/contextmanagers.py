@@ -46,7 +46,7 @@ class LifecycleContextManager(ta.Generic[LifecycleT]):
 
     @property
     def state(self) -> LifecycleState:
-        return self.controller.state
+        return self._controller.state
 
     def __enter__(self) -> ta.Self:
         try:
@@ -65,10 +65,10 @@ class LifecycleContextManager(ta.Generic[LifecycleT]):
     ) -> bool | None:
         try:
             if self._controller.state is LifecycleStates.STARTED:
-                self.controller.lifecycle_stop()
+                self._controller.lifecycle_stop()
         except Exception:
-            self.controller.lifecycle_destroy()
+            self._controller.lifecycle_destroy()
             raise
         else:
-            self.controller.lifecycle_destroy()
+            self._controller.lifecycle_destroy()
         return None
