@@ -31,7 +31,7 @@ class LifecycleManager(AbstractLifecycle):
 
         self._entries_by_lifecycle: ta.MutableMapping[Lifecycle, LifecycleManager.Entry] = col.IdentityKeyDict()
 
-        self._controller = LifecycleController(self._lifecycle)
+        self._controller = LifecycleController(self._lifecycle, lock=self._lock)
 
     @property
     def controller(self) -> LifecycleController:
