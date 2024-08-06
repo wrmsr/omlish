@@ -1,4 +1,5 @@
 #### optional
+
 greenlet==3.0.3; python_version < '3.13'
 
 wrapt>=1.14.1
@@ -12,16 +13,19 @@ jinja2==3.1.4
 
 
 ### compress:
+
 lz4==4.3.3
 python-snappy==0.7.2; python_version < '3.13'
 zstd==1.5.5.1
 
 
 ### db:
+
 sqlalchemy[asyncio]==2.0.32; python_version < '3.13'
 sqlalchemy==2.0.32; python_version >= '3.13'  # greenlet
 
 ## sql
+
 pg8000==1.31.2
 #> psycopg2==2.9.9
 
@@ -42,31 +46,38 @@ pymysql==1.1.1
 
 
 ### diag:
+
 psutil==6.0.0
 
 
 ### serde:
+
 ## json
+
 #> ujson==5.10.0
 orjson==3.10.6
 #> python-rapidjson==1.18
 
 ## pickle
+
 cloudpickle==3.0.0
 
 ## other
+
 # cbor
 # msgpack
 # toml
 
 
 ### misc
+
 # billiard
 # numpy
 # python-dateutil
 
 
 ### web
+
 h11==0.14.0
 h2==4.1.0
 priority==2.0.0
@@ -76,6 +87,7 @@ httpx[http2]==0.27.0  # FIXME: ,zstd,cli (dev only)
 
 
 ### async
+
 trio==0.26.1
 trio-asyncio==0.15.0; python_version < '3.13'  # greenlet
 
