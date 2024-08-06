@@ -310,14 +310,19 @@ DefaultLockable = bool | Lockable | ta.ContextManager | None
 def default_lock(value: DefaultLockable, default: DefaultLockable) -> Lockable:
     if value is None:
         value = default
+
     if value is True:
         lock = threading.RLock()
         return lambda: lock
+
     elif value is False or value is None:
         return NOP_CONTEXT_MANAGER
+
     elif callable(value):
         return value
+
     elif isinstance(value, ta.ContextManager):
         return lambda: value
+
     else:
         raise TypeError(value)
