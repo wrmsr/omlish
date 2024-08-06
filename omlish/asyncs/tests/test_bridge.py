@@ -2,9 +2,12 @@
 See:
  - https://github.com/sqlalchemy/sqlalchemy/blob/3ac034057ce621379fb8e0926b851a903d2c7e0b/lib/sqlalchemy/util/concurrency.py
 """  # noqa
+import functools
+
 import anyio
 import pytest
 
+from .. import anyio as aiu
 from .. import bridge as br
 
 
@@ -78,10 +81,39 @@ async def a_sleep_callback(arg):
     return f'a_sleep_callback({arg})'
 
 
+async def a_sleep_callback2(arg):
+    for _ in range(2):
+        await anyio.sleep(.01)
+    return f'a_sleep_callback2({arg})'
+
+
+async def a_sleep_callback3(arg):
+    await aiu.gather(
+        functools.partial(anyio.sleep, .02),
+        functools.partial(anyio.sleep, .01),
+    )
+    return f'a_sleep_callback3({arg})'
+
+
+async def a_sleep_callback4(arg):
+    await aiu.gather(
+        functools.partial(anyio.sleep, .02),
+        functools.partial(anyio.sleep, .01),
+        take_first=True,
+    )
+    return f'a_sleep_callback4({arg})'
+
+
 async def _test_async_bridge2():
     await anyio.sleep(.01)
-    assert (await br.s_to_a(func)(br.a_to_s(a_sleep_callback), 'arg')) == 'func(arg) -> a_sleep_callback(arg)'
     assert (await br.s_to_a(func)(sleep_callback, 'arg')) == 'func(arg) -> sleep_callback(arg)'
+    for a_cb in [
+        a_sleep_callback,
+        a_sleep_callback2,
+        a_sleep_callback3,
+        a_sleep_callback4,
+    ]:
+        assert (await br.s_to_a(func)(br.a_to_s(a_cb), 'arg')) == f'func(arg) -> {a_cb.__name__}(arg)'
 
 
 @pytest.mark.asyncio
