@@ -48,7 +48,7 @@ def make_pg_lock_name(s: str) -> int:
 
 
 class pg_lock_name(sqlalchemy.sql.expression.UnaryExpression):  # noqa
-    pass
+    inherit_cache = True
 
 
 @sa.ext.compiler.compiles(pg_lock_name)
@@ -70,7 +70,7 @@ def test_pglocks(harness) -> None:
         es.enter_context(lang.defer(engine.dispose))
 
         with engine.begin() as conn:
-            conn.execute(sa.text('create extension pgcrypto'))
+            conn.execute(sa.text('create extension if not exists pgcrypto'))
 
             lock_name = 'foo'
 
