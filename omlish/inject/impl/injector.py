@@ -154,10 +154,12 @@ class InjectorImpl(Injector, lang.Final):
             bi = self._bim.get(key)
             if bi is not None:
                 sc = self._scopes[bi.scope]
+
                 fn = lambda: sc.provide(bi, self)  # noqa
                 for pl in self._pls:
-                    fn = functools.partial(pl, self, key, fn)
+                    fn = functools.partial(pl, self, key, bi.binding, fn)
                 v = fn()
+
                 cr.handle_provision(key, v)
                 return lang.just(v)
 
