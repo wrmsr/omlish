@@ -67,7 +67,6 @@ cloudpickle==3.0.0
 
 # cbor
 # msgpack
-# toml
 
 
 ### misc
