@@ -103,7 +103,6 @@ class KvStore(t2.ServerApp):
                 async def slow_task():
                     await trio.sleep(0)
                     await t2.gen_server.reply(caller, 'done')
-                    raise NotImplementedError
 
                 nursery.start_soon(slow_task)
                 return (t2.NoReply(), test_state)
