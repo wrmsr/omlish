@@ -3,6 +3,7 @@ See:
  - https://github.com/sqlalchemy/sqlalchemy/blob/3ac034057ce621379fb8e0926b851a903d2c7e0b/lib/sqlalchemy/util/concurrency.py
 """  # noqa
 import sys
+import types
 import typing as ta
 
 import anyio
@@ -177,6 +178,7 @@ async def a_sleep_callback(arg):
 
 
 async def _test_async_bridge2():
+    await anyio.sleep(.01)
     assert (await s_to_a(func)(a_to_s(a_sleep_callback), 'arg')) == 'func(arg) -> a_sleep_callback(arg)'
 
 
