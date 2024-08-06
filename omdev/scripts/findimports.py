@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+"""
+TODO:
+ - multiple commands:
+  - dumb cmp (a = set(sys.modules); import ...; print(set(sys.modules) - a)
+"""
 import ast
 import importlib.machinery
 import importlib.util
