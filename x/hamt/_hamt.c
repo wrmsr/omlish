@@ -37,20 +37,69 @@ https://github.com/python/cpython/blob/5b8a6c5186be299d96dd483146dc6ea737ffdfe7/
 https://github.com/python/cpython/blob/5b8a6c5186be299d96dd483146dc6ea737ffdfe7/Include/internal/pycore_hamt.h
 */
 #include "Python.h"
-#include "pycore_bitutils.h"      // _Py_popcount32()
-#include "pycore_hamt.h"
-#include "pycore_initconfig.h"    // _PyStatus_OK()
-#include "pycore_long.h"          // _PyLong_Format()
-#include "pycore_object.h"        // _PyObject_GC_TRACK()
+//#include "pycore_long.h"          // _PyLong_Format()
 
 #include <stddef.h>               // offsetof()
 
 ////
 
-#ifndef Py_BUILD_CORE
-#  error "this header requires Py_BUILD_CORE define"
+// Population count: count the number of 1's in 'x'
+// (number of bits set to 1), also known as the hamming weight.
+//
+// Implementation note. CPUID is not used, to test if x86 POPCNT instruction
+// can be used, to keep the implementation simple. For example, Visual Studio
+// __popcnt() is not used this reason. The clang and GCC builtin function can
+// use the x86 POPCNT instruction if the target architecture has SSE4a or
+// newer.
+static inline int
+_Py_popcount32(uint32_t x)
+{
+#if (defined(__clang__) || defined(__GNUC__))
+
+#if SIZEOF_INT >= 4
+    Py_BUILD_ASSERT(sizeof(x) <= sizeof(unsigned int));
+    return __builtin_popcount(x);
+#else
+    // The C standard guarantees that unsigned long will always be big enough
+    // to hold a uint32_t value without losing information.
+    Py_BUILD_ASSERT(sizeof(x) <= sizeof(unsigned long));
+    return __builtin_popcountl(x);
 #endif
 
+#else
+    // 32-bit SWAR (SIMD Within A Register) popcount
+
+    // Binary: 0 1 0 1 ...
+    const uint32_t M1 = 0x55555555;
+    // Binary: 00 11 00 11. ..
+    const uint32_t M2 = 0x33333333;
+    // Binary: 0000 1111 0000 1111 ...
+    const uint32_t M4 = 0x0F0F0F0F;
+
+    // Put count of each 2 bits into those 2 bits
+    x = x - ((x >> 1) & M1);
+    // Put count of each 4 bits into those 4 bits
+    x = (x & M2) + ((x >> 2) & M2);
+    // Put count of each 8 bits into those 8 bits
+    x = (x + (x >> 4)) & M4;
+    // Sum of the 4 byte counts.
+    // Take care when considering changes to the next line. Portability and
+    // correctness are delicate here, thanks to C's "integer promotions" (C99
+    // §6.3.1.1p2). On machines where the `int` type has width greater than 32
+    // bits, `x` will be promoted to an `int`, and following C's "usual
+    // arithmetic conversions" (C99 §6.3.1.8), the multiplication will be
+    // performed as a multiplication of two `unsigned int` operands. In this
+    // case it's critical that we cast back to `uint32_t` in order to keep only
+    // the least significant 32 bits. On machines where the `int` type has
+    // width no greater than 32, the multiplication is of two 32-bit unsigned
+    // integer types, and the (uint32_t) cast is a no-op. In both cases, we
+    // avoid the risk of undefined behaviour due to overflow of a
+    // multiplication of signed integer types.
+    return (uint32_t)(x * 0x01010101U) >> 24;
+#endif
+}
+
+////
 
 /*
 HAMT tree is shaped by hashes of keys. Every group of 5 bits of a hash denotes
@@ -708,7 +757,7 @@ hamt_node_bitmap_new(Py_ssize_t size)
 
     node->b_bitmap = 0;
 
-    _PyObject_GC_TRACK(node);
+    PyObject_GC_Track(node);
 
     return (PyHamtNode *)node;
 }
@@ -1425,7 +1474,7 @@ hamt_node_collision_new(int32_t hash, Py_ssize_t size)
     Py_SET_SIZE(node, size);
     node->c_hash = hash;
 
-    _PyObject_GC_TRACK(node);
+    PyObject_GC_Track(node);
 
     return (PyHamtNode *)node;
 }
@@ -1776,7 +1825,7 @@ hamt_node_array_new(Py_ssize_t count)
 
     node->a_count = count;
 
-    _PyObject_GC_TRACK(node);
+    PyObject_GC_Track(node);
     return (PyHamtNode *)node;
 }
 
@@ -2598,7 +2647,7 @@ hamt_alloc(void)
 }
 
 #define _empty_hamt \
-    (&_Py_INTERP_SINGLETON(_PyInterpreterState_GET(), hamt_empty))
+    (&_Py_INTERP_SINGLETON(PyInterpreterState_Get(), hamt_empty))
 
 PyHamtObject *
 _PyHamt_New(void)
@@ -3126,11 +3175,7 @@ static struct PyModuleDef _hamt_module = {
     .m_free = _hamt_free,
 };
 
-extern "C" {
-
 PyMODINIT_FUNC PyInit__hamt(void)
 {
     return PyModuleDef_Init(&_hamt_module);
-}
-
 }
