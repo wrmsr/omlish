@@ -462,8 +462,8 @@ class LifecycleContextManager:
 
     def __exit__(
             self,
-            exc_type: type[Exception] | None,
-            exc_val: Exception | None,
+            exc_type: type[BaseException] | None,
+            exc_val: BaseException | None,
             exc_tb: types.TracebackType | None,
     ) -> bool | None:
         try:
