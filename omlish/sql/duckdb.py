@@ -1,5 +1,6 @@
 """
 See:
+ - https://duckdb.org/docs/api/python/overview.html
  - https://github.com/Mause/duckdb_engine/blob/0e3ea0107f81c66d50b444011d31fce22a9b902c/duckdb_engine/__init__.py
 """
 import typing as ta
