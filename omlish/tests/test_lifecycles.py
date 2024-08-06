@@ -169,7 +169,7 @@ class LifecycleController(Lifecycle, ta.Generic[LifecycleT]):
     ) -> None:
         super().__init__()
 
-        self._lifecycle = check.isinstance(lifecycle, Lifecycle)
+        self._lifecycle: LifecycleT = check.isinstance(lifecycle, Lifecycle)  # type: ignore
         self._lock = lang.default_lock(lock, True)
 
         self._state = LifecycleStates.NEW
@@ -186,7 +186,7 @@ class LifecycleController(Lifecycle, ta.Generic[LifecycleT]):
         return self._state
 
     def add_listener(self, listener: LifecycleListener[LifecycleT]) -> 'LifecycleController':
-        self._listeners.append(check.isinstance(listener, LifecycleListener))
+        self._listeners.append(check.isinstance(listener, LifecycleListener))  # type: ignore
         return self
 
     def _advance(
