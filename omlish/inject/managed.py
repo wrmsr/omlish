@@ -35,19 +35,6 @@ def create_managed_injector(*args: Elemental) -> ta.Generator[Injector, None, No
         yield i
 
 
-@contextlib.asynccontextmanager
-async def create_async_managed_injector(*args: Elemental) -> ta.AsyncGenerator[Injector, None]:
-    i = await _asyncs.s_to_a(create_injector)(
-        bind(contextlib.AsyncExitStack, singleton=True, eager=True),
-        *args,
-    )
-    async with i[contextlib.AsyncExitStack]:
-        yield i
-
-
-##
-
-
 def make_managed_provider(cls: type[T]) -> ta.Callable[..., T]:
     kt = build_kwargs_target(cls)
 
@@ -58,6 +45,19 @@ def make_managed_provider(cls: type[T]) -> ta.Callable[..., T]:
         return es.enter_context(i.inject(kt))
 
     return _provide
+
+
+##
+
+
+@contextlib.asynccontextmanager
+async def create_async_managed_injector(*args: Elemental) -> ta.AsyncGenerator[Injector, None]:
+    i = await _asyncs.s_to_a(create_injector)(
+        bind(contextlib.AsyncExitStack, singleton=True, eager=True),
+        *args,
+    )
+    async with i[contextlib.AsyncExitStack]:
+        yield i
 
 
 def make_async_managed_provider(cls: type[T]) -> ta.Callable[..., T]:
