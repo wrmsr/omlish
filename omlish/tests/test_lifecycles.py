@@ -69,18 +69,22 @@ class CallbackLifecycle(Lifecycle, lang.Final, ta.Generic[LifecycleT]):
     on_stop: LifecycleCallback['CallbackLifecycle[LifecycleT]'] | None = None
     on_destroy: LifecycleCallback['CallbackLifecycle[LifecycleT]'] | None = None
 
+    @ta.override
     def lifecycle_construct(self) -> None:
         if self.on_construct is not None:
             self.on_construct(self)
 
+    @ta.override
     def lifecycle_start(self) -> None:
         if self.on_start is not None:
             self.on_start(self)
 
+    @ta.override
     def lifecycle_stop(self) -> None:
         if self.on_stop is not None:
             self.on_stop(self)
 
+    @ta.override
     def lifecycle_destroy(self) -> None:
         if self.on_destroy is not None:
             self.on_destroy(self)
@@ -213,12 +217,14 @@ class LifecycleController(Lifecycle, ta.Generic[LifecycleT]):
                 for listener in self._listeners:
                     post_listener_fn(listener)(self._lifecycle)
 
+    @ta.override
     def lifecycle_construct(self) -> None:
         self._advance(
             LifecycleTransitions.CONSTRUCT,
             self._lifecycle.lifecycle_construct,
         )
 
+    @ta.override
     def lifecycle_start(self) -> None:
         self._advance(
             LifecycleTransitions.START,
@@ -227,6 +233,7 @@ class LifecycleController(Lifecycle, ta.Generic[LifecycleT]):
             lambda l: l.on_started,
         )
 
+    @ta.override
     def lifecycle_stop(self) -> None:
         self._advance(
             LifecycleTransitions.STOP,
@@ -235,6 +242,7 @@ class LifecycleController(Lifecycle, ta.Generic[LifecycleT]):
             lambda l: l.on_stopped,
         )
 
+    @ta.override
     def lifecycle_destroy(self) -> None:
         self._advance(
             LifecycleTransitions.DESTROY,
@@ -264,13 +272,20 @@ class LifecycleManager(Lifecycle):
 
         self._entries_by_lifecycle: ta.MutableMapping[Lifecycle, LifecycleManager.Entry] = col.IdentityKeyDict()
 
+        self._controller = LifecycleController(CallbackLifecycle(
+            on_construct=lambda _: self._lifecycle_construct(),
+            on_start=lambda _: self._lifecycle_start(),
+            on_stop=lambda _: self._lifecycle_stop(),
+            on_destroy=lambda _: self._lifecycle_destroy(),
+        ))
+
     @property
     def controller(self: LifecycleManagerT) -> 'LifecycleController[LifecycleManagerT]':
-        return self.lifecycle_controller
+        return self._controller
 
     @property
     def state(self) -> LifecycleState:
-        return self.lifecycle_controller.state
+        return self._controller.state
 
     @staticmethod
     def _get_controller(lifecycle: Lifecycle) -> LifecycleController:
@@ -318,6 +333,7 @@ class LifecycleManager(Lifecycle):
                             rec(dep)
                         e.controller.lifecycle_construct()
                 rec(entry)
+
             if self.state >= LifecycleStates.STARTING:  # noqa
                 def rec(e):
                     if e.controller.state < LifecycleStates.STARTED:
@@ -328,50 +344,58 @@ class LifecycleManager(Lifecycle):
 
             return entry
 
-    @ta.override
-    def lifecycle_construct(self) -> None:
+    def _lifecycle_construct(self) -> None:
         def rec(entry: LifecycleManager.Entry) -> None:
             for dep in entry.dependencies:
                 rec(dep)
+
             if entry.controller.state.is_failed:
                 raise LifecycleStateError(entry.controller)
+
             if entry.controller.state < LifecycleStates.CONSTRUCTED:
                 entry.controller.lifecycle_construct()
+
         for entry in self._entries_by_lifecycle.values():
             rec(entry)
 
-    @ta.override
-    def lifecycle_start(self) -> None:
+    def _lifecycle_start(self) -> None:
         def rec(entry: LifecycleManager.Entry) -> None:
             for dep in entry.dependencies:
                 rec(dep)
+
             if entry.controller.state.is_failed:
                 raise LifecycleStateError(entry.controller)
+
             if entry.controller.state < LifecycleStates.CONSTRUCTED:
                 entry.controller.lifecycle_construct()
+
             if entry.controller.state < LifecycleStates.STARTED:
                 entry.controller.lifecycle_start()
+
         for entry in self._entries_by_lifecycle.values():
             rec(entry)
 
-    @ta.override
-    def lifecycle_stop(self) -> None:
+    def _lifecycle_stop(self) -> None:
         def rec(entry: LifecycleManager.Entry) -> None:
             for dep in entry.dependents:
                 rec(dep)
+
             if entry.controller.state.is_failed:
                 raise LifecycleStateError(entry.controller)
+
             if entry.controller.state is LifecycleStates.STARTED:
                 entry.controller.lifecycle_stop()
+
         for entry in self._entries_by_lifecycle.values():
             rec(entry)
 
-    @ta.override
-    def lifecycle_destroy(self) -> None:
+    def _lifecycle_destroy(self) -> None:
         def rec(entry: LifecycleManager.Entry) -> None:
             for dep in entry.dependents:
                 rec(dep)
+
             if entry.controller.state < LifecycleStates.DESTROYED:
                 entry.controller.lifecycle_destroy()
+
         for entry in self._entries_by_lifecycle.values():
             rec(entry)
