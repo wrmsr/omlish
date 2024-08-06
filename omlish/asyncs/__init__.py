@@ -6,6 +6,14 @@ from .asyncs import (  # noqa
     syncable_iterable,
 )
 
+from .bridge import (  # noqa
+    a_to_s,
+    s_to_a,
+    s_to_a_await,
+    simple_a_to_s,
+    simple_s_to_a,
+)
+
 from .flavors import (  # noqa
     ContextManagerAdapter,
     Flavor,
