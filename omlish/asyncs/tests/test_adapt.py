@@ -4,6 +4,8 @@ See:
 """  # noqa
 import pytest
 
+import anyio
+
 from .. import asyncs
 
 
@@ -56,3 +58,16 @@ def test_adapt():
 
     assert a_to_s(a_func)(a_callback, 'arg') == 'a_func(arg) -> a_callback(arg)'
     assert a_to_s(a_func)(s_to_a(callback), 'arg') == 'a_func(arg) -> callback(arg)'
+
+
+##
+
+
+async def a_sleep_callback(arg):
+    await anyio.sleep(.01)
+    return f'a_sleep_callback({arg})'
+
+
+@pytest.mark.asyncio
+async def test_async_adapt2():
+    assert (await s_to_a(func)(a_to_s(a_sleep_callback), 'arg')) == 'func(arg) -> a_sleep_callback(arg)'
