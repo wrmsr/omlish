@@ -37,7 +37,7 @@ def create_managed_injector(*args: Elemental) -> ta.Generator[Injector, None, No
 
 @contextlib.asynccontextmanager
 async def create_async_managed_injector(*args: Elemental) -> ta.AsyncGenerator[Injector, None]:
-    i = create_injector(
+    i = await _asyncs.s_to_a(create_injector)(
         bind(contextlib.AsyncExitStack, singleton=True, eager=True),
         *args,
     )

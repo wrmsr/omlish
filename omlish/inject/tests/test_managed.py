@@ -27,9 +27,15 @@ class SomeManager:
         self.xc += 1
 
 
-def test_managed():
+@pytest.mark.parametrize('eager', [False, True])
+def test_managed(eager):
     with inj.create_managed_injector(
-        inj.bind(SomeManager, singleton=True, to_fn=inj.make_managed_provider(SomeManager)),
+        inj.bind(
+            SomeManager,
+            singleton=True,
+            eager=eager,
+            to_fn=inj.make_managed_provider(SomeManager),
+        ),
     ) as i:
         sm = i[SomeManager]
         assert sm.ec == 1
@@ -57,9 +63,15 @@ class SomeAsyncManager:
 
 
 @pytest.mark.asyncio
-async def test_async_managed():
+@pytest.mark.parametrize('eager', [False, True])
+async def test_async_managed(eager):
     async with inj.create_async_managed_injector(
-            inj.bind(SomeAsyncManager, singleton=True, to_fn=inj.make_async_managed_provider(SomeAsyncManager)),
+            inj.bind(
+                SomeAsyncManager,
+                singleton=True,
+                eager=eager,
+                to_fn=inj.make_async_managed_provider(SomeAsyncManager),
+            ),
     ) as i:
         sam = await au.s_to_a(i.provide)(SomeAsyncManager)
         assert sam.ec == 1
