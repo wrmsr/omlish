@@ -466,9 +466,8 @@ def _main(argv: ta.Optional[ta.Sequence[str]] = None) -> None:
     if sys.version_info < REQUIRED_PYTHON_VERSION:
         raise EnvironmentError(f'Requires python {REQUIRED_PYTHON_VERSION}, got {sys.version_info} from {sys.executable}')  # noqa
 
-    if sys.platform != 'linux':
+    if getattr(sys, 'platform') != 'linux':  # noqa
         raise EnvironmentError('must run on linux')
-    True  # type: ignore  # noqa
 
     logging.root.addHandler(logging.StreamHandler())
     logging.root.setLevel('INFO')
