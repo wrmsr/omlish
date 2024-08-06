@@ -50,6 +50,9 @@ _tags: ta.MutableMapping[ta.Any, dict[str, ta.Any]] = weakref.WeakKeyDictionary(
 
 
 def tag(obj: T, **kwargs: ta.Any) -> T:
+    for v in kwargs.values():
+        if isinstance(v, Tag):
+            raise TypeError(v)
     _tags.setdefault(obj, {}).update(**kwargs)
     return obj
 

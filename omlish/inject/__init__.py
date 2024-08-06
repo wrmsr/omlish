@@ -39,6 +39,8 @@ from .injector import (  # noqa
 from .inspect import (  # noqa
     Kwarg,
     KwargsTarget,
+    build_kwargs_target,
+    tag,
 )
 
 from .keys import (  # noqa
@@ -55,6 +57,8 @@ from .listeners import (  # noqa
 from .managed import (  # noqa
     create_async_managed_injector,
     create_managed_injector,
+    make_async_managed_provider,
+    make_managed_provider,
 )
 
 from .multis import (  # noqa
