@@ -430,7 +430,7 @@ class ContextManagerLifecycle(Lifecycle, lang.Final, ta.Generic[ContextManagerT]
 
 class LifecycleContextManager:
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs: ta.Any) -> None:
         super().__init__()
 
         self._manager = LifecycleManager(**kwargs)
