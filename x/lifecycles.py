@@ -10,7 +10,7 @@ from omlish import lang
 LifecycleT = ta.TypeVar('LifecycleT', bound='Lifecycle')
 
 
-class LifecycleStateException(Exception):
+class LifecycleStateError(Exception):
     pass
 
 
