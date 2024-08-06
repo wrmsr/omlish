@@ -1,0 +1,57 @@
+name: nikola
+version: 8.3.1
+summary: A static website generator
+description: A static website generator
+confinement: strict
+base: core18
+grade: stable
+
+apps:
+    nikola:
+         command: nikola.sh
+         plugs: [network, network-bind, home, removable-media]
+
+parts:
+    nikola-script:
+        plugin: dump
+        source: scripts/snapcraft
+    nikola:
+        source: .
+        stage-packages:
+            - locales
+            - libc-bin
+        plugin: python
+        python-packages:
+            - feedparser
+            - Markdown
+            - Jinja2
+            - pyphen
+            - micawber
+            - pygal
+            - typogrify
+            - phpserialize
+            - ghp-import2
+            - ws4py
+            - watchdog
+            - doit
+            - Pygments
+            - python-dateutil
+            - docutils
+            - mako
+            - unidecode
+            - lxml
+            - PyRSS2Gen
+            - blinker
+            - setuptools
+            - natsort
+            - requests
+            - husl
+            - piexif
+            - notebook
+            - ipykernel
+        build-packages: [libjpeg-dev]
+        override-build: |
+            snapcraftctl build
+            find $SNAPCRAFT_PART_INSTALL -name '*.a'  -print0 | xargs -0r rm
+            find $SNAPCRAFT_PART_INSTALL -name 'terminado' -type d -print0 | xargs -0r rm -rf
+            find $SNAPCRAFT_PART_INSTALL -name 'tornado' -type d -print0 | xargs -0r rm -rf
