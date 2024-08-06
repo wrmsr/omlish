@@ -68,6 +68,11 @@ def test_bridge(a_to_s, s_to_a):
 ##
 
 
+def sleep_callback(arg):
+    br.s_to_a_await(anyio.sleep(.01))
+    return f'sleep_callback({arg})'
+
+
 async def a_sleep_callback(arg):
     await anyio.sleep(.01)
     return f'a_sleep_callback({arg})'
@@ -76,6 +81,7 @@ async def a_sleep_callback(arg):
 async def _test_async_bridge2():
     await anyio.sleep(.01)
     assert (await br.s_to_a(func)(br.a_to_s(a_sleep_callback), 'arg')) == 'func(arg) -> a_sleep_callback(arg)'
+    assert (await br.s_to_a(func)(sleep_callback, 'arg')) == 'func(arg) -> sleep_callback(arg)'
 
 
 @pytest.mark.asyncio
