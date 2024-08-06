@@ -65,3 +65,6 @@ python-rapidjson==1.20
 markupsafe==2.1.5
 
 redis==5.0.8
+
+sqlean.py==3.45.1; python_version < '3.13'
+duckdb==1.0.0
