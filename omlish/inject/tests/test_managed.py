@@ -79,13 +79,13 @@ async def test_async_managed():
     async with inj.create_async_managed_injector(
             inj.bind(SomeAsyncManager, singleton=True, to_fn=make_async_managed_provider(SomeAsyncManager)),
     ) as i:
-        sm = await au.s_to_a(i.provide)(SomeAsyncManager)
-        assert sm.ec == 1
-        assert i[SomeAsyncManager] is sm
-        assert sm.ec == 1
-        assert sm.xc == 0
-    assert sm.ec == 1
-    assert sm.xc == 1
+        sam = await au.s_to_a(i.provide)(SomeAsyncManager)
+        assert sam.ec == 1
+        assert i[SomeAsyncManager] is sam
+        assert sam.ec == 1
+        assert sam.xc == 0
+    assert sam.ec == 1
+    assert sam.xc == 1
 
 
 # def test_custom_inject():
