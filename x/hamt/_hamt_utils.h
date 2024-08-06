@@ -33,71 +33,62 @@
 // 8. By copying, installing or otherwise using Python, Licensee agrees to be bound by the terms and conditions of this
 //    License Agreement.
 
-// https://github.com/python/cpython/blob/5b8a6c5186be299d96dd483146dc6ea737ffdfe7/Python/hamt.c
+// https://github.com/python/cpython/blob/4767a6e31c0550836b2af45d27e374e721f0c4e6/Include/internal/pycore_bitutils.h#L95
 
-#include "Python.h"
+#pragma once
 
-#include "_hamt_impl.c"
-
-typedef struct _hamt_state {
-} _hamt_state;
-
-static inline _hamt_state * get_hamt_state(PyObject *module)
-{
-    void *state = PyModule_GetState(module);
-    assert(state != NULL);
-    return (_hamt_state *)state;
-}
-
+// Population count: count the number of 1's in 'x'
+// (number of bits set to 1), also known as the hamming weight.
 //
-
-PyDoc_STRVAR(_hamt_doc, "hamt");
-
-static int _hamt_exec(PyObject *module)
+// Implementation note. CPUID is not used, to test if x86 POPCNT instruction
+// can be used, to keep the implementation simple. For example, Visual Studio
+// __popcnt() is not used this reason. The clang and GCC builtin function can
+// use the x86 POPCNT instruction if the target architecture has SSE4a or
+// newer.
+static inline int
+_Py_popcount32(uint32_t x)
 {
-    get_hamt_state(module);
-    return 0;
-}
+#if (defined(__clang__) || defined(__GNUC__))
 
-static int _hamt_traverse(PyObject *module, visitproc visit, void *arg)
-{
-    get_hamt_state(module);
-    return 0;
-}
+#if SIZEOF_INT >= 4
+    Py_BUILD_ASSERT(sizeof(x) <= sizeof(unsigned int));
+    return __builtin_popcount(x);
+#else
+    // The C standard guarantees that unsigned long will always be big enough
+    // to hold a uint32_t value without losing information.
+    Py_BUILD_ASSERT(sizeof(x) <= sizeof(unsigned long));
+    return __builtin_popcountl(x);
+#endif
 
-static int _hamt_clear(PyObject *module)
-{
-    get_hamt_state(module);
-    return 0;
-}
+#else
+    // 32-bit SWAR (SIMD Within A Register) popcount
 
-static void _hamt_free(void *module)
-{
-    _hamt_clear((PyObject *)module);
-}
+    // Binary: 0 1 0 1 ...
+    const uint32_t M1 = 0x55555555;
+    // Binary: 00 11 00 11. ..
+    const uint32_t M2 = 0x33333333;
+    // Binary: 0000 1111 0000 1111 ...
+    const uint32_t M4 = 0x0F0F0F0F;
 
-static PyMethodDef _hamt_methods[] = {
-    {NULL, NULL, 0, NULL}
-};
-
-static struct PyModuleDef_Slot _hamt_slots[] = {
-    {Py_mod_exec, (void *) _hamt_exec},
-    {0, NULL}
-};
-
-static struct PyModuleDef _hamt_module = {
-    .m_base = PyModuleDef_HEAD_INIT,
-    .m_name = "_hamt",
-    .m_doc = _hamt_doc,
-    .m_size = sizeof(_hamt_state),
-    .m_methods = _hamt_methods,
-    .m_slots = _hamt_slots,
-    .m_traverse = _hamt_traverse,
-    .m_clear = _hamt_clear,
-    .m_free = _hamt_free,
-};
-
-PyMODINIT_FUNC PyInit__hamt(void)
-{
-    return PyModuleDef_Init(&_hamt_module);
+    // Put count of each 2 bits into those 2 bits
+    x = x - ((x >> 1) & M1);
+    // Put count of each 4 bits into those 4 bits
+    x = (x & M2) + ((x >> 2) & M2);
+    // Put count of each 8 bits into those 8 bits
+    x = (x + (x >> 4)) & M4;
+    // Sum of the 4 byte counts.
+    // Take care when considering changes to the next line. Portability and
+    // correctness are delicate here, thanks to C's "integer promotions" (C99
+    // §6.3.1.1p2). On machines where the `int` type has width greater than 32
+    // bits, `x` will be promoted to an `int`, and following C's "usual
+    // arithmetic conversions" (C99 §6.3.1.8), the multiplication will be
+    // performed as a multiplication of two `unsigned int` operands. In this
+    // case it's critical that we cast back to `uint32_t` in order to keep only
+    // the least significant 32 bits. On machines where the `int` type has
+    // width no greater than 32, the multiplication is of two 32-bit unsigned
+    // integer types, and the (uint32_t) cast is a no-op. In both cases, we
+    // avoid the risk of undefined behaviour due to overflow of a
+    // multiplication of signed integer types.
+    return (uint32_t)(x * 0x01010101U) >> 24;
+#endif
 }
