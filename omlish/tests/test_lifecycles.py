@@ -244,7 +244,8 @@ class LifecycleController(Lifecycle, ta.Generic[LifecycleT]):
 
 LifecycleManagerT = ta.TypeVar('LifecycleManagerT', bound='LifecycleManager')
 
-class LifecycleManager:
+
+class LifecycleManager(Lifecycle):
 
     @dc.dataclass(frozen=True)
     class Entry(lang.Final):
@@ -275,15 +276,15 @@ class LifecycleManager:
     def _get_controller(lifecycle: Lifecycle) -> LifecycleController:
         if isinstance(lifecycle, LifecycleController):
             return lifecycle
-        elif isinstance(lifecycle, AbstractLifecycle):
-            return lifecycle.lifecycle_controller
+        # elif isinstance(lifecycle, AbstractLifecycle):
+        #     return lifecycle.lifecycle_controller
         elif isinstance(lifecycle, Lifecycle):
             return LifecycleController(lifecycle)
         else:
             raise TypeError(lifecycle)
 
     def _add_internal(self, lifecycle: Lifecycle, dependencies: ta.Iterable[Lifecycle]) -> Entry:
-        check.state(self.state.phase < LifecycleStates.STOPPING.phase and not self.state.is_failed)
+        check.state(self.state < LifecycleStates.STOPPING and not self.state.is_failed)
 
         check.isinstance(lifecycle, Lifecycle)
         try:
@@ -305,21 +306,21 @@ class LifecycleManager:
             lifecycle: Lifecycle,
             dependencies: ta.Iterable[Lifecycle] = (),
     ) -> Entry:
-        check.state(self.state.phase < LifecycleStates.STOPPING.phase and not self.state.is_failed)
+        check.state(self.state < LifecycleStates.STOPPING and not self.state.is_failed)
 
         with self._lock():
             entry = self._add_internal(lifecycle, dependencies)
 
-            if self.state.phase >= LifecycleStates.CONSTRUCTING.phase:
+            if self.state >= LifecycleStates.CONSTRUCTING:  # noqa
                 def rec(e):
-                    if e.controller.state.phase < LifecycleStates.CONSTRUCTED.phase:
+                    if e.controller.state < LifecycleStates.CONSTRUCTED:
                         for dep in e.dependencies:
                             rec(dep)
                         e.controller.lifecycle_construct()
                 rec(entry)
-            if self.state.phase >= LifecycleStates.STARTING.phase:
+            if self.state >= LifecycleStates.STARTING:  # noqa
                 def rec(e):
-                    if e.controller.state.phase < LifecycleStates.STARTED.phase:
+                    if e.controller.state < LifecycleStates.STARTED:
                         for dep in e.dependencies:
                             rec(dep)
                         e.controller.lifecycle_start()
@@ -327,40 +328,34 @@ class LifecycleManager:
 
             return entry
 
-    def construct(self) -> None:
-        self.lifecycle_construct()
-
-    def _do_lifecycle_construct(self) -> None:
+    @ta.override
+    def lifecycle_construct(self) -> None:
         def rec(entry: LifecycleManager.Entry) -> None:
             for dep in entry.dependencies:
                 rec(dep)
             if entry.controller.state.is_failed:
                 raise LifecycleStateError(entry.controller)
-            if entry.controller.state.phase < LifecycleStates.CONSTRUCTED.phase:
+            if entry.controller.state < LifecycleStates.CONSTRUCTED:
                 entry.controller.lifecycle_construct()
         for entry in self._entries_by_lifecycle.values():
             rec(entry)
 
-    def start(self) -> None:
-        self.lifecycle_start()
-
-    def _do_lifecycle_start(self) -> None:
+    @ta.override
+    def lifecycle_start(self) -> None:
         def rec(entry: LifecycleManager.Entry) -> None:
             for dep in entry.dependencies:
                 rec(dep)
             if entry.controller.state.is_failed:
                 raise LifecycleStateError(entry.controller)
-            if entry.controller.state.phase < LifecycleStates.CONSTRUCTED.phase:
+            if entry.controller.state < LifecycleStates.CONSTRUCTED:
                 entry.controller.lifecycle_construct()
-            if entry.controller.state.phase < LifecycleStates.STARTED.phase:
+            if entry.controller.state < LifecycleStates.STARTED:
                 entry.controller.lifecycle_start()
         for entry in self._entries_by_lifecycle.values():
             rec(entry)
 
-    def stop(self) -> None:
-        self.lifecycle_stop()
-
-    def _do_lifecycle_stop(self) -> None:
+    @ta.override
+    def lifecycle_stop(self) -> None:
         def rec(entry: LifecycleManager.Entry) -> None:
             for dep in entry.dependents:
                 rec(dep)
@@ -371,14 +366,12 @@ class LifecycleManager:
         for entry in self._entries_by_lifecycle.values():
             rec(entry)
 
-    def destroy(self) -> None:
-        self.lifecycle_destroy()
-
-    def _do_lifecycle_destroy(self) -> None:
+    @ta.override
+    def lifecycle_destroy(self) -> None:
         def rec(entry: LifecycleManager.Entry) -> None:
             for dep in entry.dependents:
                 rec(dep)
-            if entry.controller.state.phase < LifecycleStates.DESTROYED.phase:
+            if entry.controller.state < LifecycleStates.DESTROYED:
                 entry.controller.lifecycle_destroy()
         for entry in self._entries_by_lifecycle.values():
             rec(entry)
