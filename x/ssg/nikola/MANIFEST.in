@@ -1,0 +1,13 @@
+graft npm_assets
+graft docs
+graft logo
+graft nikola
+graft scripts
+graft tests
+graft translations
+include *.txt
+include *.rst
+include *.py
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude *.pyd
