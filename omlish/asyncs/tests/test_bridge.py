@@ -69,7 +69,7 @@ def test_bridge(a_to_s, s_to_a):
 
 
 def sleep_callback(arg):
-    br.s_to_a_await(anyio.sleep(.01))
+    br.a_to_s(anyio.sleep)(.01)
     return f'sleep_callback({arg})'
 
 
