@@ -1,4 +1,7 @@
 """
+FIXME:
+ - macos pipe size lol, and just like checking at all
+
 https://www.tecmint.com/gpg-encrypt-decrypt-files/
 
 gpg --batch --passphrase '' --quick-gen-key wrmsr default default
@@ -17,12 +20,16 @@ https://wiki.openssl.org/index.php/Enc#Options
 -pass 'file:...'
 """
 import abc
+import contextlib
+import fcntl
 import os  # noqa
 import subprocess  # noqa
 import tempfile  # noqa
 import typing as ta  # noqa
 
-from omlish import check
+import pytest
+
+from ... import check
 
 
 class Crypto(abc.ABC):
@@ -39,9 +46,48 @@ class Crypto(abc.ABC):
         raise NotImplementedError
 
 
+class SubprocessFileInput(ta.NamedTuple):
+    fp: str
+    kw: ta.Mapping[str, ta.Any]
+
+
+@contextlib.contextmanager
+def _temp_subprocess_file_input(buf: bytes) -> ta.Iterator[SubprocessFileInput]:
+    with tempfile.NamedTemporaryFile() as kf:
+        kf.write(buf)
+        kf.flush()
+        yield SubprocessFileInput(kf.name, {})
+
+
+@contextlib.contextmanager
+def _pipe_fd_subprocess_file_input(buf: bytes) -> ta.Iterator[SubprocessFileInput]:
+    rfd, wfd = os.pipe()
+    closed_wfd = False
+    try:
+        if hasattr(fcntl, 'F_SETPIPE_SZ'):
+            fcntl.fcntl(wfd, fcntl.F_SETPIPE_SZ, max(len(buf), 0x1000))
+        os.write(wfd, buf)
+        os.close(wfd)
+        closed_wfd = True
+        yield SubprocessFileInput(f'/dev/fd/{rfd}', dict(pass_fds=[rfd]))
+    finally:
+        if not closed_wfd:
+            os.close(wfd)
+        os.close(rfd)
+
+
 class OpensslShellCrypto(Crypto):
-    _cmd: ta.Sequence[str] = ['openssl']
-    _timeout: float = 5.
+    def __init__(
+            self,
+            *,
+            cmd: ta.Sequence[str] = ('openssl',),
+            timeout: float = 5.,
+            file_input: ta.Callable[[bytes], ta.ContextManager[SubprocessFileInput]] = _temp_subprocess_file_input,
+    ) -> None:
+        super().__init__()
+        self._cmd = cmd
+        self._timeout = timeout
+        self._file_input = file_input
 
     def generate_key(self, sz: int = 128) -> bytes:
         check.arg(sz > 0)
@@ -62,9 +108,7 @@ class OpensslShellCrypto(Crypto):
         return out
 
     def encrypt(self, data: bytes, key: bytes) -> bytes:
-        with tempfile.NamedTemporaryFile() as kf:
-            kf.write(key)
-            kf.flush()
+        with self._file_input(key) as fi:
             ret = subprocess.run(
                 [
                     *self._cmd,
@@ -74,20 +118,19 @@ class OpensslShellCrypto(Crypto):
                     '-e',
                     '-aes256',
                     '-pbkdf2',
-                    '-kfile', kf.name,
+                    '-kfile', fi.fp,
                 ],
                 input=data,
                 stdout=subprocess.PIPE,
                 timeout=self._timeout,
                 check=True,
+                **fi.kw,
             )
             out = ret.stdout
             return out
 
     def decrypt(self, data: bytes, key: bytes) -> bytes:
-        with tempfile.NamedTemporaryFile() as kf:
-            kf.write(key)
-            kf.flush()
+        with self._file_input(key) as fi:
             ret = subprocess.run(
                 [
                     *self._cmd,
@@ -96,20 +139,23 @@ class OpensslShellCrypto(Crypto):
                     '-pbkdf2',
                     '-in', '-',
                     '-out', '-',
-                    '-kfile', kf.name,
+                    '-kfile', fi.fp,
                 ],
                 input=data,
                 stdout=subprocess.PIPE,
                 timeout=self._timeout,
                 check=True,
+                **fi.kw,
             )
             out = ret.stdout
             return out
 
 
-def test_crypto() -> None:
-    sec = OpensslShellCrypto()
-
+@pytest.mark.parametrize('sec', [
+    OpensslShellCrypto(),
+    OpensslShellCrypto(file_input=_pipe_fd_subprocess_file_input),
+])
+def test_crypto(sec: OpensslShellCrypto) -> None:
     key = sec.generate_key()
     print(repr(key))
 
@@ -120,78 +166,22 @@ def test_crypto() -> None:
     dec = sec.decrypt(enc, key)
     print(repr(dec))
 
-    # OpensslShellSecrets().generate_key()
-    #
-    # r0, w0 = os.pipe()
-    # r1, w1 = os.pipe()
-
-    # pipesize = -1
-    # err_close_fds.extend((p2cread, p2cwrite))
-    # if self.pipesize > 0 and hasattr(fcntl, "F_SETPIPE_SZ"):
-    #     fcntl.fcntl(p2cwrite, fcntl.F_SETPIPE_SZ, self.pipesize)
-
-    """
-    @contextlib.contextmanager
-    def _on_error_fd_closer(self):
-        to_close = []
-        try:
-            yield to_close
-        except:
-            if hasattr(self, '_devnull'):
-                to_close.append(self._devnull)
-                del self._devnull
-            for fd in to_close:
-                try:
-                    if _mswindows and isinstance(fd, Handle):
-                        fd.Close()
-                    else:
-                        os.close(fd)
-                except OSError:
-                    pass
-            raise
-
-    def _stdin_write(self, input):
-        if input:
-            try:
-                self.stdin.write(input)
-            except BrokenPipeError:
-                pass  # communicate() must ignore broken pipe errors.
-            except OSError as exc:
-                if exc.errno == errno.EINVAL:
-                    # bpo-19612, bpo-30418: On Windows, stdin.write() fails
-                    # with EINVAL if the child process exited or if the child
-                    # process is still running but closed the pipe.
-                    pass
-                else:
-                    raise
-
-        try:
-            self.stdin.close()
-        except BrokenPipeError:
-            pass  # communicate() must ignore broken pipe errors.
-        except OSError as exc:
-            if exc.errno == errno.EINVAL:
-                pass
-            else:
-                raise
-    """
-
-    # subprocess.run(
-    #     # ['cat', '/dev/fd/1'],
-    #     ['ls', '-al', '/dev/fd'],
-    #     input=b'barf',
-    # )
-    #
-    # print()
-
 
 def test_pipes():
+    buf = b'hi'
+
     rfd, wfd = os.pipe()
-    os.write(wfd, b'hi')
+    if hasattr(fcntl, 'F_SETPIPE_SZ'):
+        fcntl.fcntl(wfd, fcntl.F_SETPIPE_SZ, max(len(buf), 0x1000))
+    os.write(wfd, buf)
     os.close(wfd)
+
     ret = subprocess.run(
         ['cat', f'/dev/fd/{rfd}'],
         pass_fds=[rfd],
         stdout=subprocess.PIPE,
+        check=True,
     )
+    os.close(rfd)
+
     print(ret.stdout)
