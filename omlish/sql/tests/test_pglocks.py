@@ -57,8 +57,7 @@ def _pg_lock_name(
         compiler: sa.sql.compiler.SQLCompiler,
         **kw: ta.Any,
 ) -> str:
-    # FIXME: escape lol
-    return "trim(leading '\\' from substr(digest('%s', 'sha1'), 1, 8)::text)::bit(64)::bigint" % \
+    return "trim(leading '\\' from substr(digest(%s, 'sha1'), 1, 8)::text)::bit(64)::bigint" % \
         (element.element._compiler_dispatch(compiler),)  # noqa
 
 
@@ -71,8 +70,10 @@ def test_pglocks(harness) -> None:
         es.enter_context(lang.defer(engine.dispose))
 
         with engine.begin() as conn:
+            conn.execute(sa.text('create extension pgcrypto'))
+
             lock_name = 'foo'
 
             py_key = make_pg_lock_name(lock_name)
-            pg_key = conn.execute(sa.select(pg_lock_name(sa.literal(lock_name)))).fetchone()
+            [pg_key] = conn.execute(sa.select(pg_lock_name(sa.literal(lock_name)))).fetchone()  # type: ignore
             assert py_key == pg_key
