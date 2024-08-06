@@ -8,6 +8,7 @@ from omlish import lang
 
 
 LifecycleT = ta.TypeVar('LifecycleT', bound='Lifecycle')
+LifecycleCallback: ta.TypeAlias = ta.Callable[[LifecycleT], None]
 
 
 class LifecycleStateError(Exception):
@@ -58,6 +59,30 @@ class Lifecycle:
 
     def lifecycle_destroy(self) -> None:
         pass
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+class CallbackLifecycle(Lifecycle, lang.Final, ta.Generic[LifecycleT]):
+    on_construct: LifecycleCallback[LifecycleT] | None = None
+    on_start: LifecycleCallback[LifecycleT] | None = None
+    on_stop: LifecycleCallback[LifecycleT] | None = None
+    on_destroy: LifecycleCallback[LifecycleT] | None = None
+
+    def lifecycle_construct(self) -> None:
+        if self.on_construct is not None:
+            self.on_construct(self)
+
+    def lifecycle_start(self) -> None:
+        if self.on_start is not None:
+            self.on_start(self)
+
+    def lifecycle_stop(self) -> None:
+        if self.on_stop is not None:
+            self.on_stop(self)
+
+    def lifecycle_destroy(self) -> None:
+        if self.on_destroy is not None:
+            self.on_destroy(self)
 
 
 class LifecycleListener(ta.Generic[LifecycleT]):
