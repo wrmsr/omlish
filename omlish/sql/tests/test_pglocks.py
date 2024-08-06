@@ -27,6 +27,7 @@ In [14]: struct.unpack('>q', hashlib.sha1(b'foo').digest()[:8])
 Out[14]: (859844163007352795,)
 
 """  # noqa
+import contextlib
 import hashlib
 import struct
 import typing as ta
@@ -34,13 +35,20 @@ import typing as ta
 import sqlalchemy as sa
 import sqlalchemy.ext.compiler
 
+from ... import check
+from ... import lang
+from ...diag import pydevd as pdu  # noqa
+from ..dbs import UrlDbLoc
+from ..dbs import set_url_engine
+from .dbs import Dbs
+
 
 def make_pg_lock_name(s: str) -> int:
     return struct.unpack('>q', hashlib.sha1(s.encode()).digest()[:8])[0]  # noqa
 
 
-class pg_lock_name(sa.sql.expression.FunctionElement):  # noqa
-    s: str
+class pg_lock_name(sqlalchemy.sql.expression.UnaryExpression):  # noqa
+    pass
 
 
 @sa.ext.compiler.compiles(pg_lock_name)
@@ -50,4 +58,21 @@ def _pg_lock_name(
         **kw: ta.Any,
 ) -> str:
     # FIXME: escape lol
-    return f"trim(leading '\\' from substr(digest('{element.s}', 'sha1'), 1, 8)::text)::bit(64)::bigint"
+    return "trim(leading '\\' from substr(digest('%s', 'sha1'), 1, 8)::text)::bit(64)::bigint" % \
+        (element.element._compiler_dispatch(compiler),)  # noqa
+
+
+def test_pglocks(harness) -> None:
+    url = check.isinstance(harness[Dbs].specs()['postgres'].loc, UrlDbLoc).url
+    url = set_url_engine(url, 'postgresql+pg8000')
+
+    with contextlib.ExitStack() as es:
+        engine = sa.create_engine(url, echo=True)
+        es.enter_context(lang.defer(engine.dispose))
+
+        with engine.begin() as conn:
+            lock_name = 'foo'
+
+            py_key = make_pg_lock_name(lock_name)
+            pg_key = conn.execute(sa.select(pg_lock_name(sa.literal(lock_name)))).fetchone()
+            assert py_key == pg_key
