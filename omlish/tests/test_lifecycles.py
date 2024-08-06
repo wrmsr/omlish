@@ -1,4 +1,5 @@
 import functools
+import types
 import typing as ta
 
 from .. import check
@@ -10,41 +11,10 @@ from .. import lang
 
 LifecycleT = ta.TypeVar('LifecycleT', bound='Lifecycle')
 LifecycleCallback: ta.TypeAlias = ta.Callable[[LifecycleT], None]
+ContextManagerT = ta.TypeVar('ContextManagerT', bound=ta.ContextManager)
 
 
-class LifecycleStateError(Exception):
-    pass
-
-
-@dc.dataclass(frozen=True, eq=False)
-@functools.total_ordering
-class LifecycleState(lang.Final):
-    name: str
-    phase: int
-    is_failed: bool
-
-    def __lt__(self, other):
-        return self.phase < check.isinstance(other, LifecycleState).phase
-
-
-class LifecycleStates(lang.Namespace):
-    NEW = LifecycleState('NEW', 0, False)
-
-    CONSTRUCTING = LifecycleState('CONSTRUCTING', 1, False)
-    FAILED_CONSTRUCTING = LifecycleState('FAILED_CONSTRUCTING', 2, True)
-    CONSTRUCTED = LifecycleState('CONSTRUCTED', 3, False)
-
-    STARTING = LifecycleState('STARTING', 5, False)
-    FAILED_STARTING = LifecycleState('FAILED_STARTING', 6, True)
-    STARTED = LifecycleState('STARTED', 7, False)
-
-    STOPPING = LifecycleState('STOPPING', 8, False)
-    FAILED_STOPPING = LifecycleState('FAILED_STOPPING', 9, True)
-    STOPPED = LifecycleState('STOPPED', 10, False)
-
-    DESTROYING = LifecycleState('DESTROYING', 11, False)
-    FAILED_DESTROYING = LifecycleState('FAILED_DESTROYING', 12, True)
-    DESTROYED = LifecycleState('DESTROYED', 13, False)
+##
 
 
 class Lifecycle:
@@ -90,19 +60,45 @@ class CallbackLifecycle(Lifecycle, lang.Final, ta.Generic[LifecycleT]):
             self.on_destroy(self)
 
 
-class LifecycleListener(ta.Generic[LifecycleT]):
+##
 
-    def on_starting(self, obj: LifecycleT) -> None:
-        pass
 
-    def on_started(self, obj: LifecycleT) -> None:
-        pass
+class LifecycleStateError(Exception):
+    pass
 
-    def on_stopping(self, obj: LifecycleT) -> None:
-        pass
 
-    def on_stopped(self, obj: LifecycleT) -> None:
-        pass
+@dc.dataclass(frozen=True, eq=False)
+@functools.total_ordering
+class LifecycleState(lang.Final):
+    name: str
+    phase: int
+    is_failed: bool
+
+    def __lt__(self, other):
+        return self.phase < check.isinstance(other, LifecycleState).phase
+
+    def __le__(self, other):
+        return self.phase <= check.isinstance(other, LifecycleState).phase
+
+
+class LifecycleStates(lang.Namespace):
+    NEW = LifecycleState('NEW', 0, False)
+
+    CONSTRUCTING = LifecycleState('CONSTRUCTING', 1, False)
+    FAILED_CONSTRUCTING = LifecycleState('FAILED_CONSTRUCTING', 2, True)
+    CONSTRUCTED = LifecycleState('CONSTRUCTED', 3, False)
+
+    STARTING = LifecycleState('STARTING', 5, False)
+    FAILED_STARTING = LifecycleState('FAILED_STARTING', 6, True)
+    STARTED = LifecycleState('STARTED', 7, False)
+
+    STOPPING = LifecycleState('STOPPING', 8, False)
+    FAILED_STOPPING = LifecycleState('FAILED_STOPPING', 9, True)
+    STOPPED = LifecycleState('STOPPED', 10, False)
+
+    DESTROYING = LifecycleState('DESTROYING', 11, False)
+    FAILED_DESTROYING = LifecycleState('FAILED_DESTROYING', 12, True)
+    DESTROYED = LifecycleState('DESTROYED', 13, False)
 
 
 @dc.dataclass(frozen=True)
@@ -164,6 +160,21 @@ class LifecycleTransitions(lang.Namespace):
     )
 
 
+class LifecycleListener(ta.Generic[LifecycleT]):
+
+    def on_starting(self, obj: LifecycleT) -> None:
+        pass
+
+    def on_started(self, obj: LifecycleT) -> None:
+        pass
+
+    def on_stopping(self, obj: LifecycleT) -> None:
+        pass
+
+    def on_stopped(self, obj: LifecycleT) -> None:
+        pass
+
+
 class LifecycleController(Lifecycle, ta.Generic[LifecycleT]):
 
     def __init__(
@@ -175,7 +186,7 @@ class LifecycleController(Lifecycle, ta.Generic[LifecycleT]):
         super().__init__()
 
         self._lifecycle: LifecycleT = check.isinstance(lifecycle, Lifecycle)  # type: ignore
-        self._lock = lang.default_lock(lock, True)
+        self._lock = lang.default_lock(lock, False)
 
         self._state = LifecycleStates.NEW
         self._listeners: list[LifecycleListener[LifecycleT]] = []
@@ -250,10 +261,10 @@ class LifecycleController(Lifecycle, ta.Generic[LifecycleT]):
         )
 
 
-LifecycleManagerT = ta.TypeVar('LifecycleManagerT', bound='LifecycleManager')
+##
 
 
-class LifecycleManager(Lifecycle):
+class LifecycleManager:
 
     @dc.dataclass(frozen=True)
     class Entry(lang.Final):
@@ -268,11 +279,11 @@ class LifecycleManager(Lifecycle):
     ) -> None:
         super().__init__()
 
-        self._lock = lang.default_lock(lock, True)
+        self._lock = lang.default_lock(lock, False)
 
         self._entries_by_lifecycle: ta.MutableMapping[Lifecycle, LifecycleManager.Entry] = col.IdentityKeyDict()
 
-        self._controller = LifecycleController(CallbackLifecycle(
+        self._controller: LifecycleController = LifecycleController(CallbackLifecycle(
             on_construct=lambda _: self._lifecycle_construct(),
             on_start=lambda _: self._lifecycle_start(),
             on_stop=lambda _: self._lifecycle_stop(),
@@ -280,7 +291,7 @@ class LifecycleManager(Lifecycle):
         ))
 
     @property
-    def controller(self: LifecycleManagerT) -> 'LifecycleController[LifecycleManagerT]':
+    def controller(self) -> LifecycleController:
         return self._controller
 
     @property
@@ -326,7 +337,7 @@ class LifecycleManager(Lifecycle):
         with self._lock():
             entry = self._add_internal(lifecycle, dependencies)
 
-            if self.state >= LifecycleStates.CONSTRUCTING:  # noqa
+            if self.state >= LifecycleStates.CONSTRUCTING:
                 def rec(e):
                     if e.controller.state < LifecycleStates.CONSTRUCTED:
                         for dep in e.dependencies:
@@ -334,7 +345,7 @@ class LifecycleManager(Lifecycle):
                         e.controller.lifecycle_construct()
                 rec(entry)
 
-            if self.state >= LifecycleStates.STARTING:  # noqa
+            if self.state >= LifecycleStates.STARTING:
                 def rec(e):
                     if e.controller.state < LifecycleStates.STARTED:
                         for dep in e.dependencies:
@@ -399,3 +410,85 @@ class LifecycleManager(Lifecycle):
 
         for entry in self._entries_by_lifecycle.values():
             rec(entry)
+
+
+##
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+class ContextManagerLifecycle(Lifecycle, lang.Final, ta.Generic[ContextManagerT]):
+    cm: ContextManagerT
+
+    @ta.override
+    def lifecycle_start(self) -> None:
+        self.cm.__enter__()
+
+    @ta.override
+    def lifecycle_stop(self) -> None:
+        self.cm.__exit__(None, None, None)
+
+
+class LifecycleContextManager:
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__()
+
+        self._manager = LifecycleManager(**kwargs)
+
+    @property
+    def manager(self) -> LifecycleManager:
+        return self._manager
+
+    @property
+    def controller(self) -> LifecycleController:
+        return self._manager.controller
+
+    def add(
+            self,
+            lifecycle: Lifecycle,
+            dependencies: ta.Iterable[Lifecycle] = (),
+    ) -> ta.Self:
+        self._manager.add(lifecycle, dependencies)
+        return self
+
+    def __enter__(self) -> ta.Self:
+        try:
+            self.controller.lifecycle_construct()
+            self.controller.lifecycle_start()
+        except Exception:
+            self.controller.lifecycle_destroy()
+            raise
+        return self
+
+    def __exit__(
+            self,
+            exc_type: ta.Optional[ta.Type[Exception]],
+            exc_val: ta.Optional[Exception],
+            exc_tb: ta.Optional[types.TracebackType],
+    ) -> ta.Optional[bool]:
+        try:
+            if self.controller.state is LifecycleStates.STARTED:
+                self.controller.lifecycle_stop()
+        except Exception:
+            self.controller.lifecycle_destroy()
+            raise
+        else:
+            self.controller.lifecycle_destroy()
+        return None
+
+
+def context_manage(
+        *lifecycles: Lifecycle,
+        lock: lang.DefaultLockable = None,
+) -> LifecycleContextManager:
+    lcm = LifecycleContextManager(lock=lock)
+    for lc in lifecycles:
+        lcm.add(lc)
+    return lcm
+
+
+##
+
+
+def test_lifecycles():
+    pass
