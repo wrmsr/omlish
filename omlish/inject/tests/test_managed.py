@@ -1,4 +1,3 @@
-import contextlib
 import typing as ta
 
 import anyio
@@ -8,6 +7,9 @@ from ... import asyncs as au
 from ... import dataclasses as dc  # noqa
 from ... import inject as inj
 from ... import lang  # noqa
+
+
+T = ta.TypeVar('T')
 
 
 ##
@@ -25,19 +27,9 @@ class SomeManager:
         self.xc += 1
 
 
-def make_managed_provider(cls: type) -> ta.Callable:
-    def _provide(
-            i: inj.Injector,
-            es: contextlib.ExitStack,
-    ):
-        return es.enter_context(i.inject(cls))
-
-    return _provide
-
-
 def test_managed():
     with inj.create_managed_injector(
-        inj.bind(SomeManager, singleton=True, to_fn=make_managed_provider(SomeManager)),
+        inj.bind(SomeManager, singleton=True, to_fn=inj.make_managed_provider(SomeManager)),
     ) as i:
         sm = i[SomeManager]
         assert sm.ec == 1
@@ -64,20 +56,10 @@ class SomeAsyncManager:
         self.xc += 1
 
 
-def make_async_managed_provider(cls: type) -> ta.Callable:
-    def _provide(
-            i: inj.Injector,
-            aes: contextlib.AsyncExitStack,
-    ):
-        return au.a_to_s(aes.enter_async_context)(i.inject(cls))
-
-    return _provide
-
-
 @pytest.mark.asyncio
 async def test_async_managed():
     async with inj.create_async_managed_injector(
-            inj.bind(SomeAsyncManager, singleton=True, to_fn=make_async_managed_provider(SomeAsyncManager)),
+            inj.bind(SomeAsyncManager, singleton=True, to_fn=inj.make_async_managed_provider(SomeAsyncManager)),
     ) as i:
         sam = await au.s_to_a(i.provide)(SomeAsyncManager)
         assert sam.ec == 1
@@ -86,6 +68,9 @@ async def test_async_managed():
         assert sam.xc == 0
     assert sam.ec == 1
     assert sam.xc == 1
+
+
+##
 
 
 # def test_custom_inject():
