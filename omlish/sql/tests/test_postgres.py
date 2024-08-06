@@ -6,7 +6,7 @@ import sqlalchemy.ext.asyncio
 
 from ... import check
 from ... import lang
-from ...testing import pydevd as pdu  # noqa
+from ...diag import pydevd as pdu  # noqa
 from ...testing import pytest as ptu
 from ..dbs import UrlDbLoc
 from ..dbs import set_url_engine

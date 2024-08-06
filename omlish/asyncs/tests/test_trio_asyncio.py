@@ -13,7 +13,7 @@ import pytest
 import trio
 
 from ... import lang
-from ...testing import pydevd as pdu
+from ...diag import pydevd as pdu
 from ...testing.pytest import skip_if_cant_import
 
 

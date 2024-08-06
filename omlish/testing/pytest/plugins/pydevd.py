@@ -1,4 +1,4 @@
-from ... import pydevd as opd
+from ....diag import pydevd as opd
 from ._registry import register
 
 
