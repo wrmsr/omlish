@@ -212,3 +212,5 @@ polars==1.4.1
 pyzmq==26.1.0
 
 safetensors==0.4.4
+
+docutils==0.21.2
