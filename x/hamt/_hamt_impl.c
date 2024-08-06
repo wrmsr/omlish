@@ -40,7 +40,7 @@
 
 #include <stddef.h>               // offsetof()
 
-#include "_hamt.h"
+#include "_hamt_impl.h"
 #include "_hamt_utils.h"
 
 /*
