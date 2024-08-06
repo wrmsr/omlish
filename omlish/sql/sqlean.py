@@ -2,10 +2,10 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import sqlite as sal
 
 
-DIALECT_NAME = 'sqlite__sqlean'
-
-
 class SqleanDialect(sal.dialect):  # type: ignore
+    name = 'sqlite__sqlean'
+    driver = 'sqlean_engine'
+
     supports_statement_cache = True
 
     @classmethod
@@ -14,4 +14,4 @@ class SqleanDialect(sal.dialect):  # type: ignore
         return dbapi2
 
 
-sa.dialects.registry.register(DIALECT_NAME, __name__, SqleanDialect.__name__)
+sa.dialects.registry.register(SqleanDialect.name, __name__, SqleanDialect.__name__)
