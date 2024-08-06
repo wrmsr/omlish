@@ -46,6 +46,12 @@ from .keys import (  # noqa
     as_key,
 )
 
+from .listeners import (  # noqa
+    ProvisionListener,
+    ProvisionListenerBinding,
+    bind_provision_listener,
+)
+
 from .managed import (  # noqa
     create_async_managed_injector,
     create_managed_injector,

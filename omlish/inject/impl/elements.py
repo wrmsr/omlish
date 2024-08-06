@@ -10,6 +10,7 @@ Multi's + Scopes:
 
 Element Types:
  - Binding
+ - ProvisionListenerBinding
  - SetBinding
  - MapBinding
  - Eager
@@ -31,6 +32,7 @@ from ..elements import Elements
 from ..exceptions import ConflictingKeyError
 from ..exceptions import UnboundKeyError
 from ..keys import Key
+from ..listeners import ProvisionListenerBinding
 from ..multis import MapBinding
 from ..multis import MapProvider
 from ..multis import SetBinding
@@ -107,6 +109,9 @@ class ElementCollection(lang.Final):
             elif isinstance(e, (SetBinding, MapBinding)):
                 add(e.multi_key, e)
 
+            elif isinstance(e, ProvisionListenerBinding):
+                add(None, e)
+
             elif isinstance(e, Overrides):
                 ovr = self._build_raw_element_multimap(e.ovr)
                 src = self._build_raw_element_multimap(e.src)
@@ -160,6 +165,7 @@ class ElementCollection(lang.Final):
 
             es_by_ty.pop(Eager, None)
             es_by_ty.pop(Expose, None)
+            es_by_ty.pop(ProvisionListenerBinding, None)
 
             if (bs := es_by_ty.pop(Binding, None)):
                 b = self._get_single_binding(k, bs)  # type: ignore

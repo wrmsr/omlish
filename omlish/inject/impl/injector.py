@@ -12,6 +12,8 @@ TODO:
  - multiple live request scopes on single injector - use private injectors?
 """
 import contextlib
+import functools
+import itertools
 import typing as ta
 import weakref
 
@@ -24,6 +26,8 @@ from ..injector import Injector
 from ..inspect import KwargsTarget
 from ..keys import Key
 from ..keys import as_key
+from ..listeners import ProvisionListener
+from ..listeners import ProvisionListenerBinding
 from ..scopes import ScopeBinding
 from ..scopes import Singleton
 from ..scopes import Thread
@@ -55,6 +59,13 @@ class InjectorImpl(Injector, lang.Final):
 
         self._bim = ec.binding_impl_map()
         self._ekbs = ec.eager_keys_by_scope()
+        self._pls: tuple[ProvisionListener, ...] = tuple(
+            b.listener
+            for b in itertools.chain(
+                ec.elements_of_type(ProvisionListenerBinding),
+                (p._pls if p is not None else ()),  # noqa
+            )
+        )
 
         self._cs: weakref.WeakSet[InjectorImpl] | None = None
         self._root: InjectorImpl = p._root if p is not None else self  # noqa
@@ -143,7 +154,10 @@ class InjectorImpl(Injector, lang.Final):
             bi = self._bim.get(key)
             if bi is not None:
                 sc = self._scopes[bi.scope]
-                v = sc.provide(bi, self)
+                fn = lambda: sc.provide(bi, self)  # noqa
+                for pl in self._pls:
+                    fn = functools.partial(pl, self, key, fn)
+                v = fn()
                 cr.handle_provision(key, v)
                 return lang.just(v)
 
