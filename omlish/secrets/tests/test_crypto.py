@@ -183,3 +183,15 @@ def test_crypto() -> None:
     # )
     #
     # print()
+
+
+def test_pipes():
+    rfd, wfd = os.pipe()
+    os.write(wfd, b'hi')
+    os.close(wfd)
+    ret = subprocess.run(
+        ['cat', f'/dev/fd/{rfd}'],
+        pass_fds=[rfd],
+        stdout=subprocess.PIPE,
+    )
+    print(ret.stdout)
