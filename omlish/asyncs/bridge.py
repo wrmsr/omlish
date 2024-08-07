@@ -149,7 +149,7 @@ def s_to_a(fn, *, require_await=False):
             added_t = _push_transition(False, tl, _BridgeTransition(seq, False, g))
 
         try:
-            result: ta.Any = g.switch(*args, **kwargs)
+            result: ta.Any = g.switch()
             switch_occurred = False
             while not g.dead:
                 switch_occurred = True
@@ -192,12 +192,8 @@ def a_to_s(fn):
         try:
             gl = getattr(g, _BRIDGE_GREENLET_ATTR)
         except AttributeError:
-            added_g = None
-        else:
-            added_g = _push_transition(True, gl, _BridgeTransition(seq, True, g))
-
-        if not (added_t or added_g):
-            raise UnexpectedBridgeNestingError
+            setattr(g, _BRIDGE_GREENLET_ATTR, gl := [])
+        added_g = _push_transition(True, gl, _BridgeTransition(seq, True, g))
 
         try:
             ret = missing = object()
@@ -228,11 +224,10 @@ def a_to_s(fn):
                 if (cur_t := _pop_transition(True, tl)) is not added_t:  # noqa
                     raise UnexpectedBridgeNestingError
 
-            if added_g is not None:
-                if (gl2 := getattr(g, _BRIDGE_GREENLET_ATTR)) is not gl:  # noqa
-                    raise UnexpectedBridgeNestingError
-                if (cur_g := _pop_transition(True, gl)) is not added_g:  # noqa
-                    raise UnexpectedBridgeNestingError
+            if (gl2 := getattr(g, _BRIDGE_GREENLET_ATTR)) is not gl:  # noqa
+                raise UnexpectedBridgeNestingError
+            if (cur_g := _pop_transition(True, gl)) is not added_g:  # noqa
+                raise UnexpectedBridgeNestingError
 
         return ret
 
