@@ -59,14 +59,22 @@ class MissingBridgeGreenletError(Exception):
     pass
 
 
+class UnexpectedBridgeNestingError(Exception):
+    pass
+
+
+# _DEBUG_PRINT = None
+_DEBUG_PRINT = print
+
 _BRIDGED_TASKS = weakref.WeakSet()
 
 
 def is_in_bridge() -> bool:
-    has_ct = (ct := aiu.get_current_backend_task()) is not None
-    has_ctb = ct is not None and ct in _BRIDGED_TASKS
+    has_t = (t := aiu.get_current_backend_task()) is not None
+    has_tb = t is not None and t in _BRIDGED_TASKS
     has_gl = getattr(greenlet.getcurrent(), _BRIDGE_GREENLET_ATTR, False)
-    print(f'{has_ct=} {has_ctb=} {has_gl=}')
+    if _DEBUG_PRINT:
+        _DEBUG_PRINT(f'{has_t=} {has_tb=} {has_gl=}')
     return has_gl
 
 
@@ -124,17 +132,21 @@ def a_to_s(fn):
                 if not getattr(g, _BRIDGE_GREENLET_ATTR, False):
                     added_g = True
                     setattr(g, _BRIDGE_GREENLET_ATTR, True)
-                    print(f'added g {g=}')
+                    if _DEBUG_PRINT:
+                        _DEBUG_PRINT(f'added g {g=}')
                 else:
-                    print(f'didnt add g {g=}')
+                    if _DEBUG_PRINT:
+                        _DEBUG_PRINT(f'didnt add g {g=}')
             else:
                 g = None
                 if t not in _BRIDGED_TASKS:
                     added_t = True
                     _BRIDGED_TASKS.add(t)
-                    print(f'added t {t=}')
+                    if _DEBUG_PRINT:
+                        _DEBUG_PRINT(f'added t {t=}')
                 else:
-                    print(f'didnt add t {t=}')
+                    if _DEBUG_PRINT:
+                        _DEBUG_PRINT(f'didnt add t {t=}')
 
             try:
                 nonlocal ret
@@ -143,24 +155,28 @@ def a_to_s(fn):
             finally:
                 if added_g:
                     if not getattr(g, _BRIDGE_GREENLET_ATTR, False):
-                        raise RuntimeError('Unexpected bridge nesting')
+                        raise UnexpectedBridgeNestingError
                     else:
                         delattr(g, _BRIDGE_GREENLET_ATTR)
-                        print(f'removed g {g=}')
+                        if _DEBUG_PRINT:
+                            _DEBUG_PRINT(f'removed g {g=}')
                 elif g is not None:
                     if not getattr(g, _BRIDGE_GREENLET_ATTR, False):
-                        raise RuntimeError('Unexpected bridge nesting')
-                    print(f'didnt remove g {g=}')
+                        raise UnexpectedBridgeNestingError
+                    if _DEBUG_PRINT:
+                        _DEBUG_PRINT(f'didnt remove g {g=}')
 
                 if added_t:
                     if t not in _BRIDGED_TASKS:
-                        raise RuntimeError('Unexpected bridge nesting')
+                        raise UnexpectedBridgeNestingError
                     _BRIDGED_TASKS.remove(t)
-                    print(f'removed t {t=}')
+                    if _DEBUG_PRINT:
+                        _DEBUG_PRINT(f'removed t {t=}')
                 elif t is not None:
                     if t not in _BRIDGED_TASKS:
-                        raise RuntimeError('Unexpected bridge nesting')
-                    print(f'didnt remove t {t=}')
+                        raise UnexpectedBridgeNestingError
+                    if _DEBUG_PRINT:
+                        _DEBUG_PRINT(f'didnt remove t {t=}')
 
         cr = gate()
         sv = None
