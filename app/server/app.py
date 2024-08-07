@@ -10,6 +10,7 @@ https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-yo
 """
 import logging
 
+from omlish import asyncs as au
 from omlish import inject as inj
 from omlish import lang
 from omlish.http.asgi import AsgiApp
@@ -29,4 +30,8 @@ def _server_app() -> AsgiApp:
 
 
 async def server_app(scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
-    await _server_app()(scope, recv, send)
+    async with inj.create_async_managed_injector(
+        bind()
+    ) as i:
+        app = await au.s_to_a(i.provide)(AsgiApp)
+        await app(scope, recv, send)

@@ -5,6 +5,7 @@ import os
 import sqlalchemy.ext.asyncio as saa
 
 from omlish import inject as inj
+from omlish import lang
 from omlish import sql
 from omlish.http import sessions
 from omlish.http.asgi import AsgiApp
@@ -54,7 +55,13 @@ def _bind_db_user_store() -> inj.Elemental:
         return sql.async_adapt(saa.create_async_engine(get_db_url(), echo=True))
 
     return inj.as_elements(
-        inj.bind(sql.AsyncEngine, to_fn=build_engine),
+        inj.bind(
+            sql.AsyncEngine,
+            to_fn=inj.make_async_managed_provider(
+                build_engine,
+                lambda e: lang.a_defer(e.dispose),  # noqa
+            ),
+        ),
 
         inj.bind(DbUserStore, singleton=True),
         inj.bind(UserStore, to_key=DbUserStore),
