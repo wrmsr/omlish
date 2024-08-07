@@ -112,7 +112,7 @@ async def test_async_bridge2():
 
 @pytest.mark.all_async_backends
 async def test_async_bridge3():
-    n = 2
+    n = 4
 
     fn = a_sleep_callback
     for _ in range(n):
