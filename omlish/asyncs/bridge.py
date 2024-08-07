@@ -190,7 +190,7 @@ def a_to_s(fn):
 
         g = greenlet.getcurrent()
         try:
-            gl = getattr(_BRIDGE_GREENLET_ATTR)
+            gl = getattr(g, _BRIDGE_GREENLET_ATTR)
         except AttributeError:
             added_g = None
         else:
