@@ -258,5 +258,5 @@ def test_bridge_lock_sync():
 
 @pytest.mark.all_async_backends
 async def test_bridge_lock_async():
-    await br.s_to_a(test_bridge_lock_sync)()
+    await br.s_to_a(_test_bridge_lock_sync)()
     await _test_bridge_lock_async()
