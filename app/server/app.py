@@ -31,7 +31,7 @@ def _server_app() -> AsgiApp:
 
 async def server_app(scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
     async with inj.create_async_managed_injector(
-        bind()
+        bind(),
     ) as i:
         app = await au.s_to_a(i.provide)(AsgiApp)
         await app(scope, recv, send)
