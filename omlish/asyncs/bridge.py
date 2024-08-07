@@ -1,3 +1,7 @@
+"""
+TODO:
+ - reuse greenlet if nested somehow?
+"""
 import sys
 import types
 import typing as ta
@@ -9,12 +13,19 @@ from .asyncs import sync_await
 if ta.TYPE_CHECKING:
     import asyncio
 
+    import anyio
     import greenlet
+    import sniffio
 
 else:
     asyncio = lang.proxy_import('asyncio')
 
+    anyio = lang.proxy_import('anyio')
     greenlet = lang.proxy_import('greenlet')
+    sniffio = lang.proxy_import('sniffio')
+
+
+T = ta.TypeVar('T')
 
 
 ##
@@ -35,8 +46,6 @@ def simple_a_to_s(fn):
 ##
 # https://gist.github.com/snaury/202bf4f22c41ca34e56297bae5f33fef
 
-T = ta.TypeVar('T')
-
 
 _BRIDGE_GREENLET_ATTR = f'__{__package__.replace(".", "__")}__bridge_greenlet__'
 
@@ -47,6 +56,10 @@ class BridgeAwaitRequiredError(Exception):
 
 class MissingBridgeGreenletError(Exception):
     pass
+
+
+def is_in_s_to_a_bridge() -> bool:
+    return getattr(greenlet.getcurrent(), _BRIDGE_GREENLET_ATTR, False)
 
 
 def _safe_cancel_awaitable(awaitable: ta.Awaitable[ta.Any]) -> None:
@@ -90,11 +103,28 @@ def s_to_a(fn, *, require_await=False):
     return inner
 
 
+##
+
+
+_BRIDGE_TASK_ATTR = f'__{__package__.replace(".", "__")}__bridge_task__'
+
+
+def is_in_a_to_s_bridge() -> bool:
+    try:
+        ct = anyio.get_current_task()
+    except sniffio.AsyncLibraryNotFoundError:
+        return False
+    return getattr(ct, _BRIDGE_TASK_ATTR, False)
+
+
 def a_to_s(fn):
     def inner(*args, **kwargs):
         ret = missing = object()
 
         async def gate():
+            ct = anyio.get_current_task()
+            setattr(ct, _BRIDGE_TASK_ATTR, False)
+
             nonlocal ret
             ret = await fn(*args, **kwargs)
 
@@ -116,3 +146,10 @@ def a_to_s(fn):
         return ret
 
     return inner
+
+
+##
+
+
+def is_in_bridge() -> bool:
+    return is_in_s_to_a_bridge() or is_in_a_to_s_bridge()
