@@ -2,6 +2,7 @@
 TODO:
  - reuse greenlet if nested somehow?
 """
+import itertools
 import sys
 import types
 import typing as ta
@@ -63,19 +64,23 @@ class UnexpectedBridgeNestingError(Exception):
     pass
 
 
-# _DEBUG_PRINT = None
-_DEBUG_PRINT = print
+class _BridgeTransition(ta.NamedTuple):
+    obj: ta.Any
 
-_BRIDGED_TASKS = weakref.WeakSet()
+_DEBUG_PRINT: ta.Callable[..., None] | None = None
+# _DEBUG_PRINT = print
+
+_BRIDGED_TASKS: ta.MutableSet[ta.Any] = weakref.WeakSet()
 
 
 def is_in_bridge() -> bool:
     has_t = (t := aiu.get_current_backend_task()) is not None
     has_tb = t is not None and t in _BRIDGED_TASKS
-    has_gl = getattr(greenlet.getcurrent(), _BRIDGE_GREENLET_ATTR, False)
+    has_g = getattr(greenlet.getcurrent(), _BRIDGE_GREENLET_ATTR, False)
     if _DEBUG_PRINT:
-        _DEBUG_PRINT(f'{has_t=} {has_tb=} {has_gl=}')
-    return has_gl
+        _DEBUG_PRINT(f'{has_t=} {has_tb=} {has_g=}')
+    print(f'{has_t=} {has_tb=} {has_g=}')
+    return has_g
 
 
 def _safe_cancel_awaitable(awaitable: ta.Awaitable[ta.Any]) -> None:
