@@ -129,5 +129,5 @@ def test_inject():
 
             inj.bind(420),
     ) as i:  # noqa
-        with LifecycleContextManager(i[LifecycleManager]):
+        with LifecycleContextManager(i[LifecycleManager].controller):
             print(i[ServiceC])
