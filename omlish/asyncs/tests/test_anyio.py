@@ -108,3 +108,8 @@ async def test_lazy_fn3():
     assert c == 1
     assert await lfn.get() == 420
     assert c == 1
+
+
+@pytest.mark.all_async_backends
+async def test_all_async_backends():
+    await anyio.sleep(.1)
