@@ -37,29 +37,29 @@ class _LifecycleRegistrar(lang.Final):
             binding: inj.Binding,
             fn: ta.Callable[[], ta.Any],
     ) -> ta.Callable[[], ta.Any]:
-        st = self.State(key)
+        st = _LifecycleRegistrar.State(key)
         self._stack.append(st)
         try:
-            instance = fn()
+            obj = fn()
         finally:
             popped = self._stack.pop()
             check.state(popped is st)
 
-        if isinstance(instance, Lifecycle) and not isinstance(instance, LifecycleManager):
+        if isinstance(obj, Lifecycle) and not isinstance(obj, LifecycleManager):
             if self._stack:
-                self._stack[-1].deps.append(_LifecycleRegistrar.Dep(binding, instance))
+                self._stack[-1].deps.append(_LifecycleRegistrar.Dep(binding, obj))
 
-            if instance not in self._seen:
+            if obj not in self._seen:
                 man_key = inj.Key(LifecycleManager)
                 man: LifecycleManager = injector.provide(man_key)
                 dep_objs = [d.obj for d in st.deps]
-                man.add(instance, dep_objs)
-                self._seen.add(instance)
+                man.add(obj, dep_objs)
+                self._seen.add(obj)
 
         elif self._stack:
             self._stack[-1].deps.extend(st.deps)
 
-        return instance
+        return obj
 
 
 ##
@@ -81,7 +81,7 @@ class ServiceB:
 
 
 @dc.dataclass(frozen=True)
-class ServiceB:
+class ServiceC:
     a: ServiceA
     b: ServiceB
     db: Db
@@ -90,7 +90,13 @@ class ServiceB:
 def test_inject():
     lr = _LifecycleRegistrar()
     with inj.create_managed_injector(
-        inj.bind(_LifecycleRegistrar, to_const=lr),
-        inj.bind_provision_listener(lr._on_provision),
+            inj.bind(_LifecycleRegistrar, to_const=lr),
+            inj.bind_provision_listener(lr._on_provision),
+
+            inj.bind(Db, singleton=True),
+            inj.bind(ServiceA, singleton=True),
+            inj.bind(ServiceB, singleton=True),
+            inj.bind(ServiceC, singleton=True),
     ) as i:  # noqa
-        pass
+        c = i[ServiceC]
+        print(c)
