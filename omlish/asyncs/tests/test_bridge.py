@@ -2,6 +2,7 @@
 See:
  - https://github.com/sqlalchemy/sqlalchemy/blob/3ac034057ce621379fb8e0926b851a903d2c7e0b/lib/sqlalchemy/util/concurrency.py
 """  # noqa
+import abc
 import functools
 
 import anyio
@@ -150,3 +151,142 @@ async def test_async_bridge3_asyncio():
 @pytest.mark.trio
 async def test_async_bridge3_trio():
     await _test_async_bridge3()
+
+
+##
+
+
+class SLock(abc.ABC):
+    @abc.abstractmethod
+    def lock(self):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def unlock(self):
+        raise NotImplementedError
+
+
+class ALock(abc.ABC):
+    @abc.abstractmethod
+    async def lock(self):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    async def unlock(self):
+        raise NotImplementedError
+
+
+#
+
+
+class SLockImpl(SLock):
+    def lock(self):
+        print(f'{self!r}.lock')
+
+    def unlock(self):
+        print(f'{self!r}.unlock')
+
+
+class ALockImpl(ALock):
+    async def lock(self):
+        print(f'{self!r}.lock')
+
+    async def unlock(self):
+        print(f'{self!r}.unlock')
+
+
+#
+
+
+class AtoSLock(SLock):
+    def __init__(self, alock: ALock) -> None:
+        self.alock = alock
+
+    def lock(self):
+        return br.a_to_s(self.alock.lock)()
+
+    def unlock(self):
+        return br.a_to_s(self.alock.unlock)()
+
+
+class StoALock(ALock):
+    def __init__(self, slock: SLock) -> None:
+        self.slock = slock
+
+    async def lock(self):
+        return await br.s_to_a(self.slock.lock)()
+
+    async def unlock(self):
+        return await br.s_to_a(self.slock.unlock)()
+
+
+#
+
+def new_s_lock() -> SLock:
+    if br.is_in_bridge():
+        return AtoSLock(ALockImpl())
+    else:
+        return SLockImpl()
+
+
+def new_a_lock() -> ALock:
+    if br.is_in_bridge():
+        return StoALock(SLockImpl())
+    else:
+        return ALockImpl()
+
+
+#
+
+
+class SLockThing:
+    def __init__(self):
+        self.slock = new_s_lock()
+
+    def run(self):
+        self.slock.lock()
+        try:
+            print(f'{self!r}.run')
+        finally:
+            self.slock.unlock()
+
+
+class ALockThing:
+    def __init__(self):
+        self.alock = new_a_lock()
+
+    async def run(self):
+        await self.alock.lock()
+        try:
+            print(f'{self!r}.run')
+        finally:
+            await self.alock.unlock()
+
+
+def test_bridge_lock_sync():
+    print()
+
+    SLockThing().run()
+
+    async def inner():
+        await ALockThing().run()
+
+    br.a_to_s(inner)()
+
+
+async def _test_bridge_lock_async():
+    print()
+
+    await ALockThing().run()
+
+    await br.s_to_a(lambda: SLockThing().run())()
+
+
+@pytest.mark.asyncio
+async def test_bridge_lock_async_asyncio():
+    await _test_bridge_lock_async()
+
+
+@pytest.mark.trio
+async def test_bridge_lock_async_trio():
+    await _test_bridge_lock_async()
