@@ -36,10 +36,10 @@ def create_managed_injector(*args: Elemental) -> ta.Generator[Injector, None, No
 
 
 def make_managed_provider(
-        cls: type[T],
+        fac: ta.Callable[..., T],
         *fns: ta.Callable[[T], ta.ContextManager[T]],
 ) -> ta.Callable[..., T]:
-    kt = build_kwargs_target(cls)
+    kt = build_kwargs_target(fac)
 
     def _provide(
             i: Injector,
@@ -70,10 +70,10 @@ async def create_async_managed_injector(*args: Elemental) -> ta.AsyncGenerator[I
 
 
 def make_async_managed_provider(
-        cls: type[T],
+        fac: ta.Callable[..., T],
         *fns: ta.Callable[[T], ta.AsyncContextManager[T]],
 ) -> ta.Callable[..., T]:
-    kt = build_kwargs_target(cls)
+    kt = build_kwargs_target(fac)
 
     def _provide(
             i: Injector,
