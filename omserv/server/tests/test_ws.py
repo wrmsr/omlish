@@ -11,7 +11,6 @@ import functools
 
 import anyio
 import pytest
-import sniffio
 import wsproto
 
 from omlish import lang
@@ -29,7 +28,8 @@ from .utils import headers_time_patch  # noqa
 from .utils import is_connection_refused_exception
 
 
-async def _test_server_websocket():
+@pytest.mark.all_async_backends
+async def test_server_websocket():
     port = get_free_port()
     sev = anyio.Event()
 
@@ -85,15 +85,3 @@ async def _test_server_websocket():
             shutdown_trigger=sev.wait,
         ))
         tg.start_soon(inner)
-
-
-@pytest.mark.asyncio
-async def test_server_websocket_asyncio():
-    assert sniffio.current_async_library() == 'asyncio'
-    await _test_server_websocket()
-
-
-@pytest.mark.trio
-async def test_server_websocket_trio():
-    assert sniffio.current_async_library() == 'trio'
-    await _test_server_websocket()
