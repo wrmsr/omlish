@@ -148,7 +148,7 @@ def a_to_s(fn):
                         delattr(g, _BRIDGE_GREENLET_ATTR)
                         print(f'removed g {g=}')
                 elif g is not None:
-                    if getattr(g, _BRIDGE_GREENLET_ATTR, False):
+                    if not getattr(g, _BRIDGE_GREENLET_ATTR, False):
                         raise RuntimeError('Unexpected bridge nesting')
                     print(f'didnt remove g {g=}')
 
@@ -158,7 +158,7 @@ def a_to_s(fn):
                     _BRIDGED_TASKS.remove(t)
                     print(f'removed t {t=}')
                 elif t is not None:
-                    if t in _BRIDGED_TASKS:
+                    if t not in _BRIDGED_TASKS:
                         raise RuntimeError('Unexpected bridge nesting')
                     print(f'didnt remove t {t=}')
 
