@@ -128,8 +128,8 @@ async def test_lazy_fn3():
 
 
 @pytest.mark.all_async_backends
-async def test_all_async_backends(anyio_backend):
+async def test_all_async_backends(__async_backend):
     backend = sniffio.current_async_library()
-    assert anyio_backend == backend
+    assert __async_backend == backend
 
     await anyio.sleep(.1)
