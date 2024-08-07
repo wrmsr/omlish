@@ -1,6 +1,7 @@
 import socket
 import typing as ta
 
+from omlish.diag import pydevd as pdu
 import anyio
 import pytest
 
@@ -10,7 +11,14 @@ from .. import headers
 T = ta.TypeVar('T')
 
 
-TIMEOUT_S: int = 50
+DEFAULT_TIMEOUT_S: float = 50
+
+
+def get_timeout_s() -> float | None:
+    if pdu.is_present():
+        return None
+    else:
+        return DEFAULT_TIMEOUT_S
 
 
 def get_free_port(address: str = '') -> int:
