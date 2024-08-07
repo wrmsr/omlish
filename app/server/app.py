@@ -8,15 +8,14 @@ TODO:
 
 https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login
 """
+import contextlib
 import logging
+import typing as ta
 
 from omlish import asyncs as au
 from omlish import inject as inj
 from omlish import lang
 from omlish.http.asgi import AsgiApp
-from omlish.http.asgi import AsgiRecv
-from omlish.http.asgi import AsgiScope
-from omlish.http.asgi import AsgiSend
 
 from .inject import bind
 
@@ -29,10 +28,10 @@ def _server_app() -> AsgiApp:
     return inj.create_injector(bind()).provide(AsgiApp)
 
 
-async def server_app(scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
-    # async with inj.create_async_managed_injector(
-    #     bind(),
-    # ) as i:
-    #     app = await au.s_to_a(i.provide)(AsgiApp)
-    #     await app(scope, recv, send)
-    await _server_app()(scope, recv, send)
+@contextlib.asynccontextmanager
+async def server_app_context() -> ta.AsyncIterator[AsgiApp]:
+    async with inj.create_async_managed_injector(
+        bind(),
+    ) as i:
+        app = await au.s_to_a(i.provide)(AsgiApp)
+        yield app
