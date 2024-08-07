@@ -25,7 +25,7 @@ def sync_await(fn: ta.Callable[..., T], *args: ta.Any, **kwargs: ta.Any) -> T:
 
     cr = gate()
     try:
-        try:  # noqa
+        try:
             cr.send(None)
         except StopIteration:
             pass
