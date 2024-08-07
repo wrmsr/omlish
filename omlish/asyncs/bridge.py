@@ -58,7 +58,9 @@ class MissingBridgeGreenletError(Exception):
 
 
 class UnexpectedBridgeNestingError(Exception):
-    pass
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        breakpoint()
 
 
 _BRIDGE_TRANSITIONS_SEQ = itertools.count()
@@ -81,7 +83,8 @@ def is_in_bridge() -> bool:
     # has_g = getattr(greenlet.getcurrent(), _BRIDGE_GREENLET_ATTR, False)
     # print(f'{has_t=} {has_tb=} {has_g=}')
     # return has_g
-    raise NotImplementedError
+    # raise NotImplementedError
+    return False
 
 
 def _safe_cancel_awaitable(awaitable: ta.Awaitable[ta.Any]) -> None:
@@ -117,8 +120,8 @@ def s_to_a(fn, *, require_await=False):
         seq = next(_BRIDGE_TRANSITIONS_SEQ)
 
         g = greenlet.greenlet(inner)
-        gl = [added_g := _BridgeTransition(g, seq, False)]
-        setattr(g, _BRIDGE_GREENLET_ATTR, gl)
+        setattr(g, _BRIDGE_GREENLET_ATTR, gl := [])
+        gl.append(added_g := _BridgeTransition(g, seq, False))
 
         if (t := aiu.get_current_backend_task()) is not None:
             try:
