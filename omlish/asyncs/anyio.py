@@ -18,6 +18,7 @@ import typing as ta
 
 import anyio.streams.memory
 import anyio.streams.stapled
+import sniffio
 
 from .. import check
 from .. import lang
@@ -26,11 +27,90 @@ from .. import lang
 T = ta.TypeVar('T')
 
 
+##
+
+
 async def anyio_eof_to_empty(fn: ta.Callable[..., ta.Awaitable[T]], *args: ta.Any, **kwargs: ta.Any) -> T | bytes:
     try:
         return await fn(*args, **kwargs)
     except anyio.EndOfStream:
         return b''
+
+
+async def gather(*fns: ta.Callable[..., ta.Awaitable[T]], take_first: bool = False) -> list[lang.Maybe[T]]:
+    results: list[lang.Maybe[T]] = [lang.empty()] * len(fns)
+
+    async def inner(fn, i):
+        results[i] = lang.just(await fn())
+        if take_first:
+            tg.cancel_scope.cancel()
+
+    async with anyio.create_task_group() as tg:
+        for i, fn in enumerate(fns):
+            tg.start_soon(inner, fn, i)
+
+    return results
+
+
+async def first(*fns: ta.Callable[..., ta.Awaitable[T]], **kwargs: ta.Any) -> list[lang.Maybe[T]]:
+    return await gather(*fns, take_first=True, **kwargs)
+
+
+##
+
+
+def get_current_task() -> anyio.TaskInfo | None:
+    try:
+        return anyio.get_current_task()
+    except sniffio.AsyncLibraryNotFoundError:
+        return None
+
+
+#
+
+
+BackendTask: ta.TypeAlias = ta.Union[
+    # asyncio.tasks.Task,
+    # trio.lowlevel.Task,
+    ta.Any,
+]
+
+
+def _is_class_named(obj: ta.Any, m: str, n: str) -> bool:
+    cls = obj.__class__
+    return cls.__module__ == m and cls.__name__ == n
+
+
+def get_backend_task(at: anyio.TaskInfo) -> BackendTask | None:
+    if _is_class_named(at, 'anyio._backends._asyncio', 'AsyncIOTaskInfo'):
+        # https://github.com/agronholm/anyio/blob/8907964926a24461840eee0925d3f355e729f15d/src/anyio/_backends/_asyncio.py#L1846  # noqa
+        # weakref.ref
+        obj = at._task()  # noqa
+        if obj is not None and not _is_class_named(obj, 'asyncio.tasks', 'Task'):
+            raise TypeError(obj)
+        return obj
+
+    elif _is_class_named(at, 'anyio._backends._trio', 'TrioTaskInfo'):
+        # https://github.com/agronholm/anyio/blob/8907964926a24461840eee0925d3f355e729f15d/src/anyio/_backends/_trio.py#L850  # noqa
+        # weakref.proxy
+        # https://stackoverflow.com/a/62144308 :|
+        obj = at._task.__repr__.__self__  # noqa
+        if obj is not None and not _is_class_named(obj, 'trio.lowlevel', 'Task'):
+            raise TypeError(obj)
+        return obj
+
+    else:
+        raise TypeError(at)
+
+
+def get_current_backend_task() -> BackendTask | None:
+    if (at := get_current_task()) is not None:
+        return get_backend_task(at)
+    else:
+        return None
+
+
+##
 
 
 def split_memory_object_streams(
@@ -70,25 +150,6 @@ def staple_memory_object_stream2[T](max_buffer_size: float = 0) -> anyio.streams
         check.isinstance(send, anyio.streams.memory.MemoryObjectSendStream),  # type: ignore
         check.isinstance(receive, anyio.streams.memory.MemoryObjectReceiveStream),  # type: ignore
     )
-
-
-async def gather(*fns: ta.Callable[..., ta.Awaitable[T]], take_first: bool = False) -> list[lang.Maybe[T]]:
-    results: list[lang.Maybe[T]] = [lang.empty()] * len(fns)
-
-    async def inner(fn, i):
-        results[i] = lang.just(await fn())
-        if take_first:
-            tg.cancel_scope.cancel()
-
-    async with anyio.create_task_group() as tg:
-        for i, fn in enumerate(fns):
-            tg.start_soon(inner, fn, i)
-
-    return results
-
-
-async def first(*fns: ta.Callable[..., ta.Awaitable[T]], **kwargs: ta.Any) -> list[lang.Maybe[T]]:
-    return await gather(*fns, take_first=True, **kwargs)
 
 
 ##
