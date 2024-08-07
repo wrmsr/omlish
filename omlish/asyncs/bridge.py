@@ -77,6 +77,16 @@ _BRIDGED_TASKS: ta.MutableMapping[ta.Any, list[_BridgeTransition]] = weakref.Wea
 _BRIDGE_GREENLET_ATTR = f'__{__package__.replace(".", "__")}__bridge_greenlet__'
 
 
+def _push_transition(l: list[_BridgeTransition], t: _BridgeTransition) -> _BridgeTransition:
+    l.append(t)
+    return t
+
+
+def _pop_transition(l: list[_BridgeTransition]) -> _BridgeTransition:
+    t = l.pop()
+    return t
+
+
 def is_in_bridge() -> bool:
     # has_t = (t := aiu.get_current_backend_task()) is not None
     # has_tb = t is not None and t in _BRIDGED_TASKS
@@ -112,7 +122,7 @@ def s_to_a(fn, *, require_await=False):
             finally:
                 if (gl2 := getattr(g, _BRIDGE_GREENLET_ATTR)) is not gl:  # noqa
                     raise UnexpectedBridgeNestingError
-                if (cur_g := gl.pop()) is not added_g:  # noqa
+                if (cur_g := _pop_transition(gl)) is not added_g:  # noqa
                     raise UnexpectedBridgeNestingError
                 if gl:
                     raise UnexpectedBridgeNestingError
@@ -121,14 +131,14 @@ def s_to_a(fn, *, require_await=False):
 
         g = greenlet.greenlet(inner)
         setattr(g, _BRIDGE_GREENLET_ATTR, gl := [])
-        gl.append(added_g := _BridgeTransition(g, seq, False))
+        added_g = _push_transition(gl, _BridgeTransition(g, seq, False))
 
         if (t := aiu.get_current_backend_task()) is not None:
             try:
                 tl = _BRIDGED_TASKS[t]
             except KeyError:
                 tl = _BRIDGED_TASKS[t] = []
-            tl.append(added_t := _BridgeTransition(t, seq, False))
+            added_t = _push_transition(tl, _BridgeTransition(t, seq, False))
 
         try:
             result: ta.Any = g.switch(*args, **kwargs)
@@ -151,7 +161,7 @@ def s_to_a(fn, *, require_await=False):
             if t is not None:
                 if (tl2 := _BRIDGED_TASKS[t]) is not tl:  # noqa
                     raise UnexpectedBridgeNestingError
-                if (cur_t := tl.pop()) is not added_t:  # noqa
+                if (cur_t := _pop_transition(tl)) is not added_t:  # noqa
                     raise UnexpectedBridgeNestingError
 
     return outer
@@ -169,7 +179,7 @@ def a_to_s(fn):
                     tl = _BRIDGED_TASKS[t]
                 except KeyError:
                     tl = _BRIDGED_TASKS[t] = []
-                tl.append(added_t := _BridgeTransition(t, seq, True))
+                added_t = _push_transition(tl, _BridgeTransition(t, seq, True))
             else:
                 added_t = None
 
@@ -179,7 +189,7 @@ def a_to_s(fn):
             except AttributeError:
                 added_g = None
             else:
-                gl.append(added_g := _BridgeTransition(g, seq, True))
+                added_g = _push_transition(gl, _BridgeTransition(g, seq, True))
 
             if not (added_t or added_g):
                 raise UnexpectedBridgeNestingError
@@ -192,13 +202,13 @@ def a_to_s(fn):
                 if t is not None:
                     if (tl2 := _BRIDGED_TASKS[t]) is not tl:  # noqa
                         raise UnexpectedBridgeNestingError
-                    if (cur_t := tl.pop()) is not added_t:  # noqa
+                    if (cur_t := _pop_transition(tl)) is not added_t:  # noqa
                         raise UnexpectedBridgeNestingError
 
                 if added_g is not None:
                     if (gl2 := getattr(g, _BRIDGE_GREENLET_ATTR)) is not gl:  # noqa
                         raise UnexpectedBridgeNestingError
-                    if (cur_g := gl.pop()) is not added_g:  # noqa
+                    if (cur_g := _pop_transition(gl)) is not added_g:  # noqa
                         raise UnexpectedBridgeNestingError
 
         cr = gate()
