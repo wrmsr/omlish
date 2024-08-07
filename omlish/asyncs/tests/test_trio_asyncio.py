@@ -9,7 +9,9 @@ import asyncio
 import functools
 import typing as ta
 
+import anyio
 import pytest
+import sniffio
 import trio
 
 from ... import lang
@@ -165,3 +167,25 @@ async def test_trio_asyncio_loop(harness) -> None:
     async with trai.open_loop() as loop:  # noqa
         await trio.sleep(.1)
         await trai.aio_as_trio(asyncio.sleep)(.1)
+
+
+@skip_if_cant_import('trio_asyncio')
+@pytest.mark.all_async_backends
+async def test_all_async_backends_no_loop(anyio_backend):
+    backend = sniffio.current_async_library()
+    assert anyio_backend == backend
+
+    assert trai.current_loop.get() is None
+
+    await anyio.sleep(.1)
+
+
+@skip_if_cant_import('trio_asyncio')
+@pytest.mark.asyncio
+async def test_all_asyncio_no_loop():
+    backend = sniffio.current_async_library()
+    assert backend == 'asyncio'
+
+    assert trai.current_loop.get() is None
+
+    await anyio.sleep(.1)
