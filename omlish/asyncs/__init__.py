@@ -8,9 +8,7 @@ from .asyncs import (  # noqa
 
 from .bridge import (  # noqa
     a_to_s,
-    is_in_a_to_s_bridge,
     is_in_bridge,
-    is_in_s_to_a_bridge,
     s_to_a,
     s_to_a_await,
     simple_a_to_s,
