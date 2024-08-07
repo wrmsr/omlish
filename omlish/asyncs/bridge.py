@@ -117,6 +117,12 @@ def is_in_a_to_s_bridge() -> bool:
     return getattr(ct, _BRIDGE_TASK_ATTR, False)
 
 
+# anyio._backends._asyncio.AsyncIOTaskInfo._task -> asyncio.tasks.Task
+# anyio._backends._trio.TrioTaskInfo._task -> trio.lowlevel.Task
+# https://stackoverflow.com/a/62144308 :|
+# ct._task.__repr__.__self__
+
+
 def a_to_s(fn):
     def inner(*args, **kwargs):
         ret = missing = object()
@@ -127,7 +133,9 @@ def a_to_s(fn):
             except sniffio.AsyncLibraryNotFoundError:
                 ct = None
             else:
-                setattr(ct, _BRIDGE_TASK_ATTR, False)
+                if getattr(ct, _BRIDGE_TASK_ATTR, None):
+                    raise RuntimeError('Unexpected async bridge nesting')
+                setattr(ct, _BRIDGE_TASK_ATTR, True)
 
             try:
                 nonlocal ret
