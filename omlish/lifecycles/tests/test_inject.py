@@ -1,3 +1,7 @@
+"""
+TODO:
+ - *external* Lifecycles - objs themselves hide their lc's
+"""
 import typing as ta
 import weakref
 
@@ -50,10 +54,9 @@ class _LifecycleRegistrar(lang.Final):
                 self._stack[-1].deps.append(_LifecycleRegistrar.Dep(binding, obj))
 
             if obj not in self._seen:
-                man_key = inj.Key(LifecycleManager)
-                man: LifecycleManager = injector.provide(man_key)
+                mgr = injector[LifecycleManager]
                 dep_objs = [d.obj for d in st.deps]
-                man.add(obj, dep_objs)
+                mgr.add(obj, dep_objs)
                 self._seen.add(obj)
 
         elif self._stack:
@@ -66,22 +69,23 @@ class _LifecycleRegistrar(lang.Final):
 
 
 @dc.dataclass(frozen=True)
-class Db:
+class Db(Lifecycle):
     pass
 
 
 @dc.dataclass(frozen=True)
-class ServiceA:
+class ServiceA(Lifecycle):
+    db: Db
+    i: int
+
+
+@dc.dataclass(frozen=True)
+class ServiceB(Lifecycle):
     db: Db
 
 
 @dc.dataclass(frozen=True)
-class ServiceB:
-    db: Db
-
-
-@dc.dataclass(frozen=True)
-class ServiceC:
+class ServiceC(Lifecycle):
     a: ServiceA
     b: ServiceB
     db: Db
@@ -93,10 +97,14 @@ def test_inject():
             inj.bind(_LifecycleRegistrar, to_const=lr),
             inj.bind_provision_listener(lr._on_provision),
 
+            inj.bind(LifecycleManager, singleton=True, eager=True),
+
             inj.bind(Db, singleton=True),
             inj.bind(ServiceA, singleton=True),
             inj.bind(ServiceB, singleton=True),
             inj.bind(ServiceC, singleton=True),
+
+            inj.bind(420),
     ) as i:  # noqa
         c = i[ServiceC]
         print(c)
