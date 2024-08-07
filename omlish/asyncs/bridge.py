@@ -67,9 +67,9 @@ _BRIDGE_TRANSITIONS_SEQ = itertools.count()
 
 
 class _BridgeTransition(ta.NamedTuple):
-    obj: ta.Any
     seq: int
     a_to_s: bool
+    obj: ta.Any
 
 
 _BRIDGED_TASKS: ta.MutableMapping[ta.Any, list[_BridgeTransition]] = weakref.WeakKeyDictionary()
@@ -139,14 +139,14 @@ def s_to_a(fn, *, require_await=False):
 
         g = greenlet.greenlet(inner)
         setattr(g, _BRIDGE_GREENLET_ATTR, gl := [])
-        added_g = _push_transition(gl, _BridgeTransition(g, seq, False))
+        added_g = _push_transition(gl, _BridgeTransition(seq, False, g))
 
         if (t := aiu.get_current_backend_task()) is not None:
             try:
                 tl = _BRIDGED_TASKS[t]
             except KeyError:
                 tl = _BRIDGED_TASKS[t] = []
-            added_t = _push_transition(tl, _BridgeTransition(t, seq, False))
+            added_t = _push_transition(tl, _BridgeTransition(seq, False, g))
 
         try:
             result: ta.Any = g.switch(*args, **kwargs)
@@ -187,7 +187,7 @@ def a_to_s(fn):
                     tl = _BRIDGED_TASKS[t]
                 except KeyError:
                     tl = _BRIDGED_TASKS[t] = []
-                added_t = _push_transition(tl, _BridgeTransition(t, seq, True))
+                added_t = _push_transition(tl, _BridgeTransition(seq, True, t))
             else:
                 added_t = None
 
@@ -197,7 +197,7 @@ def a_to_s(fn):
             except AttributeError:
                 added_g = None
             else:
-                added_g = _push_transition(gl, _BridgeTransition(g, seq, True))
+                added_g = _push_transition(gl, _BridgeTransition(seq, True, g))
 
             if not (added_t or added_g):
                 raise UnexpectedBridgeNestingError
