@@ -251,12 +251,22 @@ async def _test_bridge_lock_async():
     await br.s_to_a(lambda: SLockThing().run())()
 
 
-def test_bridge_lock_sync():
+def _test_bridge_lock_sync2():
     _test_bridge_lock_sync()
     br.a_to_s(_test_bridge_lock_async)()
 
 
+async def _test_bridge_lock_async2():
+    await br.s_to_a(_test_bridge_lock_sync)()
+    await _test_bridge_lock_async()
+
+
+def test_bridge_lock_sync():
+    _test_bridge_lock_sync2()
+    br.a_to_s(_test_bridge_lock_async2)()
+
+
 @pytest.mark.all_async_backends
 async def test_bridge_lock_async():
-    await br.s_to_a(test_bridge_lock_sync)()
-    await _test_bridge_lock_async()
+    await br.s_to_a(_test_bridge_lock_sync2)()
+    await _test_bridge_lock_async2()
