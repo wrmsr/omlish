@@ -12,7 +12,10 @@ ALL_BACKENDS_MARK = 'all_async_backends'
 KNOWN_BACKENDS = (
     'asyncio',
     'trio',
+    'trio_asyncio',
 )
+
+PARAM_NAME = '__async_backend'
 
 
 @register
@@ -32,6 +35,21 @@ class AsyncsPlugin:
                     collector.get_closest_marker(ALL_BACKENDS_MARK) is not None or
                     any(marker.name == ALL_BACKENDS_MARK for marker in getattr(obj, 'pytestmark', ()))
             ):
-                pytest.mark.anyio()(obj)
-                pytest.mark.usefixtures('anyio_backend')(obj)
-                pytest.mark.parametrize('anyio_backend', self.ASYNC_BACKENDS)(obj)
+                # anyio apparently spins up trio_asyncio for asyncio tests, which means the real asyncio backend just
+                # isn't tested. It'd be nice to test trio_asyncio too.
+                # pytest.mark.anyio()(obj)
+                # pytest.mark.usefixtures('anyio_backend')(obj)
+                # pytest.mark.parametrize('anyio_backend', self.ASYNC_BACKENDS)(obj)
+                pass
+
+    def pytest_generate_tests(self, metafunc):
+        if metafunc.definition.get_closest_marker('all_async_backends') is None:
+            return
+
+        metafunc.fixturenames.append(PARAM_NAME)
+        metafunc.parametrize(PARAM_NAME, self.ASYNC_BACKENDS)
+
+        for c in metafunc._calls:  # noqa
+            c.marks.append(pytest.Mark(c.params[PARAM_NAME], (), {}))
+
+        print(metafunc)
