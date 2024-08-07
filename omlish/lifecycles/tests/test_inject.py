@@ -1,10 +1,8 @@
 """
 TODO:
- - ** WeakIdentitySet **
  - *external* Lifecycles - objs themselves hide their lc's
 """
 import typing as ta
-import weakref
 
 from ... import check
 from ... import collections as col
@@ -19,18 +17,12 @@ from ..manager import LifecycleManager
 ##
 
 
-def _new_weak_identity_set():
-    s = weakref.WeakSet()
-    s.data = col.IdentitySet()
-    return s
-
-
 class _LifecycleRegistrar(lang.Final):
 
     def __init__(self) -> None:
         super().__init__()
 
-        self._seen: ta.MutableSet[ta.Any] = _new_weak_identity_set()
+        self._seen: ta.MutableSet[ta.Any] = col.WeakIdentitySet()
         self._stack: list[_LifecycleRegistrar.State] = []
 
     @dc.dataclass(frozen=True)
@@ -92,23 +84,23 @@ class DumbLifecycle(Lifecycle):
 
 
 @dc.dataclass()
-class Db(Lifecycle):
+class Db(DumbLifecycle):
     pass
 
 
 @dc.dataclass()
-class ServiceA(Lifecycle):
+class ServiceA(DumbLifecycle):
     db: Db
     i: int
 
 
 @dc.dataclass()
-class ServiceB(Lifecycle):
+class ServiceB(DumbLifecycle):
     db: Db
 
 
 @dc.dataclass()
-class ServiceC(Lifecycle):
+class ServiceC(DumbLifecycle):
     a: ServiceA
     b: ServiceB
     db: Db
@@ -118,7 +110,7 @@ def test_inject():
     lr = _LifecycleRegistrar()
     with inj.create_managed_injector(
             inj.bind(_LifecycleRegistrar, to_const=lr),
-            inj.bind_provision_listener(lr._on_provision),
+            inj.bind_provision_listener(lr._on_provision),  # noqa
 
             inj.bind(LifecycleManager, singleton=True, eager=True),
 
@@ -129,5 +121,6 @@ def test_inject():
 
             inj.bind(420),
     ) as i:  # noqa
+        print()
         with LifecycleContextManager(i[LifecycleManager].controller):
             print(i[ServiceC])
