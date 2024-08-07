@@ -22,7 +22,7 @@ class DispatchCacheProtocol(ta.Protocol[T]):
 class DispatcherProtocol(ta.Protocol[T]):
     def cache_size(self) -> int: ...
     def register(self, impl: T, cls_col: ta.Iterable[type]) -> T: ...
-    def dispatch(self, cls: type) -> ta.Optional[T]: ...
+    def dispatch(self, cls: type) -> T | None: ...
 
 
 ##
@@ -76,7 +76,7 @@ class Dispatcher(DispatcherProtocol[T]):
         super().__init__()
 
         self._impls_by_arg_cls: dict[type, T] = {}
-        self._cache: DispatchCache[ta.Optional[T]] = DispatchCache()
+        self._cache: DispatchCache[T | None] = DispatchCache()
 
     def cache_size(self) -> int:
         return self._cache.size()
@@ -88,7 +88,7 @@ class Dispatcher(DispatcherProtocol[T]):
 
         return impl
 
-    def dispatch(self, cls: type) -> ta.Optional[T]:
+    def dispatch(self, cls: type) -> T | None:
         try:
             return self._cache.get(cls)
         except KeyError:

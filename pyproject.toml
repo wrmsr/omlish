@@ -204,6 +204,7 @@ ignore = [
     'S607',  # starting a process with a partial executable path
     'SIM102',  # use a single `if` statement instead of nested `if` statements
     'SIM103',  # return the negated condition directly
+    'SIM105',  # use `contextlib.suppress(KeyError)` instead of `try`-`except`-`pass`
     'SIM108',  # use ternary operator
     'SIM114',  # combine `if` branches using logical `or` operator
     'SIM117',  # combine `with` statements
