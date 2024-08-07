@@ -122,11 +122,20 @@ def a_to_s(fn):
         ret = missing = object()
 
         async def gate():
-            ct = anyio.get_current_task()
-            setattr(ct, _BRIDGE_TASK_ATTR, False)
+            try:
+                ct = anyio.get_current_task()
+            except sniffio.AsyncLibraryNotFoundError:
+                ct = None
+            else:
+                setattr(ct, _BRIDGE_TASK_ATTR, False)
 
-            nonlocal ret
-            ret = await fn(*args, **kwargs)
+            try:
+                nonlocal ret
+                ret = await fn(*args, **kwargs)
+
+            finally:
+                if ct is not None:
+                    delattr(ct, _BRIDGE_TASK_ATTR)
 
         cr = gate()
         sv = None
