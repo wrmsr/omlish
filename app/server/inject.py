@@ -50,10 +50,11 @@ def _bind_in_memory_user_store() -> inj.Elemental:
 
 
 def _bind_db_user_store() -> inj.Elemental:
-    engine = sql.async_adapt(saa.create_async_engine(get_db_url(), echo=True))  # FIXME: lol
+    def build_engine():
+        return sql.async_adapt(saa.create_async_engine(get_db_url(), echo=True))
 
     return inj.as_elements(
-        inj.bind(engine),
+        inj.bind(sql.AsyncEngine, to_fn=build_engine),
 
         inj.bind(DbUserStore, singleton=True),
         inj.bind(UserStore, to_key=DbUserStore),
@@ -77,8 +78,8 @@ def bind() -> inj.Elemental:
 
         handlers_inj.bind(),
 
-        _bind_in_memory_user_store(),
-        # _bind_db_user_store(),
+        # _bind_in_memory_user_store(),
+        _bind_db_user_store(),
 
         _bind_cookie_session_store(),
 
