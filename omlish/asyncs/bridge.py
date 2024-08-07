@@ -58,7 +58,7 @@ class MissingBridgeGreenletError(Exception):
     pass
 
 
-def is_in_s_to_a_bridge() -> bool:
+def is_in_bridge() -> bool:
     return getattr(greenlet.getcurrent(), _BRIDGE_GREENLET_ATTR, False)
 
 
@@ -103,37 +103,27 @@ def s_to_a(fn, *, require_await=False):
     return inner
 
 
-##
-
-
-_BRIDGE_TASK_ATTR = f'__{__package__.replace(".", "__")}__bridge_task__'
-
-
-def is_in_a_to_s_bridge() -> bool:
-    # return (ct := aiu.get_current_backend_task()) is not None and getattr(ct, _BRIDGE_TASK_ATTR, False)
-    return False
-
-
 def a_to_s(fn):
     def inner(*args, **kwargs):
         ret = missing = object()
 
         async def gate():
-            b = is_in_s_to_a_bridge()
-            if (ct := aiu.get_current_backend_task()) is not None:
-                # if ct.__dict__.get(_BRIDGE_TASK_ATTR):
-                #     raise RuntimeError('Unexpected async bridge nesting')
-                # ct.__dict__[_BRIDGE_TASK_ATTR] = True
-                pass
+            ct = aiu.get_current_task()
+            if ct is None:
+                g = greenlet.getcurrent()
+                if getattr(g, _BRIDGE_GREENLET_ATTR, False):
+                    raise RuntimeError('Unexpected bridge nesting')
+                setattr(g, _BRIDGE_GREENLET_ATTR, True)
+            else:
+                g = None
 
             try:
                 nonlocal ret
                 ret = await fn(*args, **kwargs)
 
             finally:
-                # if ct is not None:
-                #     del ct.__dict__[_BRIDGE_TASK_ATTR]
-                pass
+                if g is not None:
+                    delattr(g, _BRIDGE_GREENLET_ATTR)
 
         cr = gate()
         sv = None
@@ -153,10 +143,3 @@ def a_to_s(fn):
         return ret
 
     return inner
-
-
-##
-
-
-def is_in_bridge() -> bool:
-    return is_in_s_to_a_bridge() or is_in_a_to_s_bridge()
