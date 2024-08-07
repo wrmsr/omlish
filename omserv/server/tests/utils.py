@@ -1,9 +1,10 @@
 import socket
 import typing as ta
 
-from omlish.diag import pydevd as pdu
 import anyio
 import pytest
+
+from omlish.diag import pydevd as pdu
 
 from .. import headers
 

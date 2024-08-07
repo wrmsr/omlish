@@ -18,7 +18,7 @@ from omserv.server.tests.utils import headers_time_patch  # noqa
 from omserv.server.types import AsgiWrapper
 from omserv.server.workers import serve
 
-from ..app import server_app
+from ..app import server_app_context
 
 
 def randhex(l: int) -> str:
@@ -120,12 +120,13 @@ async def test_demo_auth():
                 assert dct['tokens'] == [21943, 2318, 275, 1031, 627, 87, 23105, 612]
 
     async with anyio.create_task_group() as tg:
-        tg.start_soon(functools.partial(
-            serve,
-            AsgiWrapper(server_app),  # type: ignore
-            Config(
-                bind=(f'127.0.0.1:{port}',),
-            ),
-            shutdown_trigger=sev.wait,
-        ))
-        tg.start_soon(inner)
+        async with server_app_context() as server_app:
+            tg.start_soon(functools.partial(
+                serve,
+                AsgiWrapper(server_app),  # type: ignore
+                Config(
+                    bind=(f'127.0.0.1:{port}',),
+                ),
+                shutdown_trigger=sev.wait,
+            ))
+            tg.start_soon(inner)
