@@ -81,6 +81,8 @@ class LifecycleController(Lifecycle, ta.Generic[LifecycleT]):
                 for listener in self._listeners:
                     post_listener_fn(listener)(self._lifecycle)
 
+    ##
+
     @ta.override
     def lifecycle_construct(self) -> None:
         self._advance(
