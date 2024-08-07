@@ -1,4 +1,5 @@
 import inspect
+import typing as ta
 
 import pytest
 
@@ -16,7 +17,7 @@ PARAM_NAME = '__async_backend'
 
 @register
 class AsyncsPlugin:
-    async_backends = [
+    ASYNC_BACKENDS: ta.ClassVar[ta.Sequence[str]] = [
         *[s for s in KNOWN_BACKENDS if lang.can_import(s)],
     ]
 
@@ -32,5 +33,5 @@ class AsyncsPlugin:
                     any(marker.name == 'all_async_backends' for marker in getattr(obj, 'pytestmark', ()))
             ):
                 pytest.mark.anyio()(obj)
-                pytest.mark.usefixtures("anyio_backend")(obj)
-                pytest.mark.parametrize('anyio_backend', self.async_backends)(obj)
+                pytest.mark.usefixtures('anyio_backend')(obj)
+                pytest.mark.parametrize('anyio_backend', self.ASYNC_BACKENDS)(obj)
