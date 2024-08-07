@@ -13,16 +13,16 @@ from .asyncs import sync_await
 if ta.TYPE_CHECKING:
     import asyncio
 
-    import anyio
     import greenlet
-    import sniffio
+
+    from . import anyio as aiu
 
 else:
     asyncio = lang.proxy_import('asyncio')
 
-    anyio = lang.proxy_import('anyio')
     greenlet = lang.proxy_import('greenlet')
-    sniffio = lang.proxy_import('sniffio')
+
+    aiu = lang.proxy_import('.anyio', __package__)
 
 
 T = ta.TypeVar('T')
@@ -110,17 +110,7 @@ _BRIDGE_TASK_ATTR = f'__{__package__.replace(".", "__")}__bridge_task__'
 
 
 def is_in_a_to_s_bridge() -> bool:
-    try:
-        ct = anyio.get_current_task()
-    except sniffio.AsyncLibraryNotFoundError:
-        return False
-    return getattr(ct, _BRIDGE_TASK_ATTR, False)
-
-
-# anyio._backends._asyncio.AsyncIOTaskInfo._task -> asyncio.tasks.Task
-# anyio._backends._trio.TrioTaskInfo._task -> trio.lowlevel.Task
-# https://stackoverflow.com/a/62144308 :|
-# ct._task.__repr__.__self__
+    return (ct := aiu.get_current_backend_task()) is not None and getattr(ct, _BRIDGE_TASK_ATTR, False)
 
 
 def a_to_s(fn):
@@ -128,11 +118,7 @@ def a_to_s(fn):
         ret = missing = object()
 
         async def gate():
-            try:
-                ct = anyio.get_current_task()
-            except sniffio.AsyncLibraryNotFoundError:
-                ct = None
-            else:
+            if (ct := aiu.get_current_backend_task()) is not None:
                 if getattr(ct, _BRIDGE_TASK_ATTR, None):
                     raise RuntimeError('Unexpected async bridge nesting')
                 setattr(ct, _BRIDGE_TASK_ATTR, True)
