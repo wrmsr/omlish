@@ -81,17 +81,17 @@ _DEBUG_PRINT: ta.Callable[..., None] | None = None
 _DEBUG_PRINT = print  # noqa
 
 
-def _push_transition(l: list[_BridgeTransition], t: _BridgeTransition) -> _BridgeTransition:
+def _push_transition(a_to_s: bool, l: list[_BridgeTransition], t: _BridgeTransition) -> _BridgeTransition:
     l.append(t)
     if _DEBUG_PRINT:
-        _DEBUG_PRINT(f'_push_transition: {id(l)=} {t=}')
+        _DEBUG_PRINT(f'_push_transition: {a_to_s=} {id(l)=} {t=}')
     return t
 
 
-def _pop_transition(l: list[_BridgeTransition]) -> _BridgeTransition:
+def _pop_transition(a_to_s: bool, l: list[_BridgeTransition]) -> _BridgeTransition:
     t = l.pop()
     if _DEBUG_PRINT:
-        _DEBUG_PRINT(f'_pop_transition: {id(l)=} {t=}')
+        _DEBUG_PRINT(f'_pop_transition: {a_to_s=} {id(l)=} {t=}')
     return t
 
 
@@ -130,7 +130,7 @@ def s_to_a(fn, *, require_await=False):
             finally:
                 if (gl2 := getattr(g, _BRIDGE_GREENLET_ATTR)) is not gl:  # noqa
                     raise UnexpectedBridgeNestingError
-                if (cur_g := _pop_transition(gl)) is not added_g:  # noqa
+                if (cur_g := _pop_transition(False, gl)) is not added_g:  # noqa
                     raise UnexpectedBridgeNestingError
                 if gl:
                     raise UnexpectedBridgeNestingError
@@ -139,14 +139,14 @@ def s_to_a(fn, *, require_await=False):
 
         g = greenlet.greenlet(inner)
         setattr(g, _BRIDGE_GREENLET_ATTR, gl := [])
-        added_g = _push_transition(gl, _BridgeTransition(seq, False, g))
+        added_g = _push_transition(False, gl, _BridgeTransition(seq, False, g))
 
         if (t := aiu.get_current_backend_task()) is not None:
             try:
                 tl = _BRIDGED_TASKS[t]
             except KeyError:
                 tl = _BRIDGED_TASKS[t] = []
-            added_t = _push_transition(tl, _BridgeTransition(seq, False, g))
+            added_t = _push_transition(False, tl, _BridgeTransition(seq, False, g))
 
         try:
             result: ta.Any = g.switch(*args, **kwargs)
@@ -169,7 +169,7 @@ def s_to_a(fn, *, require_await=False):
             if t is not None:
                 if (tl2 := _BRIDGED_TASKS[t]) is not tl:  # noqa
                     raise UnexpectedBridgeNestingError
-                if (cur_t := _pop_transition(tl)) is not added_t:  # noqa
+                if (cur_t := _pop_transition(False, tl)) is not added_t:  # noqa
                     raise UnexpectedBridgeNestingError
 
     return outer
@@ -187,7 +187,7 @@ def a_to_s(fn):
                     tl = _BRIDGED_TASKS[t]
                 except KeyError:
                     tl = _BRIDGED_TASKS[t] = []
-                added_t = _push_transition(tl, _BridgeTransition(seq, True, t))
+                added_t = _push_transition(True, tl, _BridgeTransition(seq, True, t))
             else:
                 added_t = None
 
@@ -197,7 +197,7 @@ def a_to_s(fn):
             except AttributeError:
                 added_g = None
             else:
-                added_g = _push_transition(gl, _BridgeTransition(seq, True, g))
+                added_g = _push_transition(True, gl, _BridgeTransition(seq, True, g))
 
             if not (added_t or added_g):
                 raise UnexpectedBridgeNestingError
@@ -210,13 +210,13 @@ def a_to_s(fn):
                 if t is not None:
                     if (tl2 := _BRIDGED_TASKS[t]) is not tl:  # noqa
                         raise UnexpectedBridgeNestingError
-                    if (cur_t := _pop_transition(tl)) is not added_t:  # noqa
+                    if (cur_t := _pop_transition(True, tl)) is not added_t:  # noqa
                         raise UnexpectedBridgeNestingError
 
                 if added_g is not None:
                     if (gl2 := getattr(g, _BRIDGE_GREENLET_ATTR)) is not gl:  # noqa
                         raise UnexpectedBridgeNestingError
-                    if (cur_g := _pop_transition(gl)) is not added_g:  # noqa
+                    if (cur_g := _pop_transition(True, gl)) is not added_g:  # noqa
                         raise UnexpectedBridgeNestingError
 
         cr = gate()
