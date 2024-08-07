@@ -77,13 +77,21 @@ _BRIDGED_TASKS: ta.MutableMapping[ta.Any, list[_BridgeTransition]] = weakref.Wea
 _BRIDGE_GREENLET_ATTR = f'__{__package__.replace(".", "__")}__bridge_greenlet__'
 
 
+_DEBUG_PRINT: ta.Callable[..., None] | None = None
+_DEBUG_PRINT = print  # noqa
+
+
 def _push_transition(l: list[_BridgeTransition], t: _BridgeTransition) -> _BridgeTransition:
     l.append(t)
+    if _DEBUG_PRINT:
+        _DEBUG_PRINT(f'_push_transition: {id(l)=} {t=}')
     return t
 
 
 def _pop_transition(l: list[_BridgeTransition]) -> _BridgeTransition:
     t = l.pop()
+    if _DEBUG_PRINT:
+        _DEBUG_PRINT(f'_pop_transition: {id(l)=} {t=}')
     return t
 
 
