@@ -234,6 +234,7 @@ class ALockThing:
 
 def _test_bridge_lock_sync():
     print()
+    print('_test_bridge_lock_sync')
 
     SLockThing().run()
 
@@ -245,6 +246,7 @@ def _test_bridge_lock_sync():
 
 async def _test_bridge_lock_async():
     print()
+    print('_test_bridge_lock_async')
 
     await ALockThing().run()
 
@@ -253,24 +255,32 @@ async def _test_bridge_lock_async():
 
 def _test_bridge_lock_sync2():
     print()
+    print('_test_bridge_lock_sync2')
+
     _test_bridge_lock_sync()
-    print()
     br.a_to_s(_test_bridge_lock_async)()
 
 
 async def _test_bridge_lock_async2():
     print()
+    print('_test_bridge_lock_async2')
+
     await br.s_to_a(_test_bridge_lock_sync)()
-    print()
     await _test_bridge_lock_async()
 
 
 def test_bridge_lock_sync():
+    print()
+    print('test_bridge_lock_sync')
+
     _test_bridge_lock_sync2()
     br.a_to_s(_test_bridge_lock_async2)()
 
 
 @pytest.mark.all_async_backends
 async def test_bridge_lock_async():
+    print()
+    print('test_bridge_lock_async')
+
     await br.s_to_a(_test_bridge_lock_sync2)()
     await _test_bridge_lock_async2()
