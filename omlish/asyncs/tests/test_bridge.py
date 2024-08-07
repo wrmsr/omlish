@@ -252,12 +252,16 @@ async def _test_bridge_lock_async():
 
 
 def _test_bridge_lock_sync2():
+    print()
     _test_bridge_lock_sync()
+    print()
     br.a_to_s(_test_bridge_lock_async)()
 
 
 async def _test_bridge_lock_async2():
+    print()
     await br.s_to_a(_test_bridge_lock_sync)()
+    print()
     await _test_bridge_lock_async()
 
 
