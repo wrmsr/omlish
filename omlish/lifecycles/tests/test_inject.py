@@ -22,7 +22,7 @@ class _LifecycleRegistrar(lang.Final):
     def __init__(self) -> None:
         super().__init__()
 
-        self._seen: ta.MutableSet[ta.Any] = col.WeakIdentitySet()
+        self._seen: ta.MutableSet[ta.Any] = col.IdentityWeakSet()
         self._stack: list[_LifecycleRegistrar.State] = []
 
     @dc.dataclass(frozen=True)

@@ -106,7 +106,7 @@ class IdentitySet(ta.MutableSet[T]):
         return iter(self._dict.values())
 
 
-class WeakIdentitySet(weakref.WeakSet):
+class IdentityWeakSet(weakref.WeakSet):
     def __init__(self, init=None):
         super().__init__()
         self.data = IdentitySet(init)  # type: ignore
