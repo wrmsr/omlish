@@ -13,7 +13,6 @@ import anyio
 import h11
 import httpx
 import pytest
-import sniffio
 import trio  # noqa
 
 from omlish import check
@@ -34,7 +33,8 @@ from .utils import headers_time_patch  # noqa
 from .utils import is_connection_refused_exception
 
 
-async def _test_server_simple():
+@pytest.mark.all_async_backends
+async def test_server_simple():
     port = get_free_port()
     sev = anyio.Event()
 
@@ -112,19 +112,9 @@ async def _test_server_simple():
         tg.start_soon(inner)
 
 
-@pytest.mark.asyncio
-async def test_server_simple_asyncio():
-    assert sniffio.current_async_library() == 'asyncio'
-    await _test_server_simple()
-
-
-@pytest.mark.trio
-async def test_server_simple_trio():
-    assert sniffio.current_async_library() == 'trio'
-    await _test_server_simple()
-
-
-async def _test_httpx_client(use_http2):
+@pytest.mark.all_async_backends
+@pytest.mark.parametrize('use_http2', [False, True])
+async def test_httpx_client(use_http2):
     port = get_free_port()
     sev = anyio.Event()
 
@@ -160,17 +150,9 @@ async def _test_httpx_client(use_http2):
         tg.start_soon(inner)
 
 
-@pytest.mark.asyncio
-async def test_httpx_client_asyncio():
-    await _test_httpx_client(True)
-
-
-@pytest.mark.trio
-async def test_httpx_client_trio():
-    await _test_httpx_client(True)
-
-
-async def _test_curl(use_h2c: bool) -> None:
+@pytest.mark.all_async_backends
+@pytest.mark.parametrize('use_h2c', [False, True])
+async def test_curl(use_h2c: bool) -> None:
     port = get_free_port()
     sev = anyio.Event()
 
@@ -206,7 +188,7 @@ async def _test_curl(use_h2c: bool) -> None:
 
                 err = await check.not_none(proc.stderr).receive()
                 err_lines = [l.strip() for l in err.decode().splitlines()]
-                assert '> Upgrade: h2c' in err_lines
+                assert ('> Upgrade: h2c' in err_lines) == use_h2c
 
     async with anyio.create_task_group() as tg:
         tg.start_soon(functools.partial(
@@ -220,17 +202,8 @@ async def _test_curl(use_h2c: bool) -> None:
         tg.start_soon(inner)
 
 
-@pytest.mark.asyncio
-async def test_curl_asyncio():
-    await _test_curl(True)
-
-
-@pytest.mark.trio
-async def test_curl_trio():
-    await _test_curl(True)
-
-
-async def _test_curl_h2() -> None:
+@pytest.mark.all_async_backends
+async def test_curl_h2() -> None:
     port = get_free_port()
     sev = anyio.Event()
 
@@ -284,13 +257,3 @@ async def _test_curl_h2() -> None:
             shutdown_trigger=sev.wait,
         ))
         tg.start_soon(inner)
-
-
-@pytest.mark.asyncio
-async def test_curl_h2_asyncio():
-    await _test_curl_h2()
-
-
-@pytest.mark.trio
-async def test_curl_h2_trio():
-    await _test_curl_h2()
