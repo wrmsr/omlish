@@ -30,14 +30,14 @@ class LifecycleStates(lang.Namespace):
     FAILED_CONSTRUCTING = LifecycleState('FAILED_CONSTRUCTING', 2, True)
     CONSTRUCTED = LifecycleState('CONSTRUCTED', 3, False)
 
-    STARTING = LifecycleState('STARTING', 5, False)
-    FAILED_STARTING = LifecycleState('FAILED_STARTING', 6, True)
-    STARTED = LifecycleState('STARTED', 7, False)
+    STARTING = LifecycleState('STARTING', 4, False)
+    FAILED_STARTING = LifecycleState('FAILED_STARTING', 5, True)
+    STARTED = LifecycleState('STARTED', 6, False)
 
-    STOPPING = LifecycleState('STOPPING', 8, False)
-    FAILED_STOPPING = LifecycleState('FAILED_STOPPING', 9, True)
-    STOPPED = LifecycleState('STOPPED', 10, False)
+    STOPPING = LifecycleState('STOPPING', 7, False)
+    FAILED_STOPPING = LifecycleState('FAILED_STOPPING', 8, True)
+    STOPPED = LifecycleState('STOPPED', 9, False)
 
-    DESTROYING = LifecycleState('DESTROYING', 11, False)
-    FAILED_DESTROYING = LifecycleState('FAILED_DESTROYING', 12, True)
-    DESTROYED = LifecycleState('DESTROYED', 13, False)
+    DESTROYING = LifecycleState('DESTROYING', 10, False)
+    FAILED_DESTROYING = LifecycleState('FAILED_DESTROYING', 11, True)
+    DESTROYED = LifecycleState('DESTROYED', 12, False)
