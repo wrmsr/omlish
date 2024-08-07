@@ -12,8 +12,8 @@ import pytest
 from omlish import check
 from omlish import lang
 from omserv.server.config import Config
-from omserv.server.tests.utils import TIMEOUT_S
 from omserv.server.tests.utils import get_free_port
+from omserv.server.tests.utils import get_timeout_s
 from omserv.server.tests.utils import headers_time_patch  # noqa
 from omserv.server.types import AsgiWrapper
 from omserv.server.workers import serve
@@ -43,8 +43,8 @@ async def test_demo_auth():
             aes.enter_context(lang.defer(sev.set))
 
             r: httpx.Response
-            async with httpx.AsyncClient(timeout=TIMEOUT_S) as client:
-                tt = lang.timeout(TIMEOUT_S)
+            async with httpx.AsyncClient(timeout=get_timeout_s()) as client:
+                tt = lang.timeout(get_timeout_s())
                 while True:
                     tt()
                     try:
@@ -107,7 +107,7 @@ async def test_demo_auth():
                 r = await client.send(check.not_none(r.next_request))
                 assert r.status_code == 200
 
-            async with httpx.AsyncClient(timeout=TIMEOUT_S) as client:
+            async with httpx.AsyncClient(timeout=get_timeout_s()) as client:
                 r = await client.post(
                     base_url + 'tik',
                     content='foo bar baz qux hi there',

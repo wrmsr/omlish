@@ -105,7 +105,7 @@ def update_wrapper_except_dict(
 ##
 
 
-_DECORATOR_HANDLES_UNBOUND_METHODS = False
+_DECORATOR_HANDLES_UNBOUND_METHODS = True
 
 
 class _decorator_descriptor:  # noqa
