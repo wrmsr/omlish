@@ -98,6 +98,8 @@ class LifecycleManager(AbstractLifecycle):
 
             return entry
 
+    ##
+
     @ta.override
     def _lifecycle_construct(self) -> None:
         def rec(entry: LifecycleManager.Entry) -> None:
