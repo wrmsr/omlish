@@ -111,6 +111,8 @@ def s_to_a(fn, *, require_await=False):
                     raise UnexpectedBridgeNestingError
                 if (cur_g := gl.pop()) is not added_g:  # noqa
                     raise UnexpectedBridgeNestingError
+                if gl:
+                    raise UnexpectedBridgeNestingError
 
         seq = next(_BRIDGE_TRANSITIONS_SEQ)
 
@@ -158,53 +160,43 @@ def a_to_s(fn):
 
         async def gate():
             seq = next(_BRIDGE_TRANSITIONS_SEQ)
+
             if (t := aiu.get_current_backend_task()) is not None:
                 try:
-                    l = _BRIDGED_TASKS[t]
+                    tl = _BRIDGED_TASKS[t]
                 except KeyError:
-                    l = _BRIDGED_TASKS[t] = []
-                added_t = _BridgeTransition()
-            added_t = None
-            added_g = False
-            if t is None:
-                if not getattr(g, _BRIDGE_GREENLET_ATTR, False):
-                    added_g = True
-                    setattr(g, _BRIDGE_GREENLET_ATTR, True)
-                else:
-                    pass
+                    tl = _BRIDGED_TASKS[t] = []
+                tl.append(added_t := _BridgeTransition(t, seq, True))
             else:
-                g = None
-                if t not in _BRIDGED_TASKS:
-                    added_t = True
-                    _BRIDGED_TASKS.add(t)
-                else:
-                    pass
+                added_t = None
+
+            g = greenlet.getcurrent()
+            try:
+                gl = getattr(_BRIDGE_GREENLET_ATTR)
+            except AttributeError:
+                added_g = None
+            else:
+                gl.append(added_g := _BridgeTransition(g, seq, True))
+
+            if not (added_t or added_g):
+                raise UnexpectedBridgeNestingError
 
             try:
                 nonlocal ret
                 ret = await fn(*args, **kwargs)
 
             finally:
-                if added_g:
-                    if not getattr(g, _BRIDGE_GREENLET_ATTR, False):
+                if t is not None:
+                    if (tl2 := _BRIDGED_TASKS[t]) is not tl:  # noqa
                         raise UnexpectedBridgeNestingError
-                    else:
-                        delattr(g, _BRIDGE_GREENLET_ATTR)
-                        pass
-                elif g is not None:
-                    if not getattr(g, _BRIDGE_GREENLET_ATTR, False):
+                    if (cur_t := tl.pop()) is not added_t:  # noqa
                         raise UnexpectedBridgeNestingError
-                    pass
 
-                if added_t:
-                    if t not in _BRIDGED_TASKS:
+                if added_g is not None:
+                    if (gl2 := getattr(g, _BRIDGE_GREENLET_ATTR)) is not gl:  # noqa
                         raise UnexpectedBridgeNestingError
-                    _BRIDGED_TASKS.remove(t)
-                    pass
-                elif t is not None:
-                    if t not in _BRIDGED_TASKS:
+                    if (cur_g := gl.pop()) is not added_g:  # noqa
                         raise UnexpectedBridgeNestingError
-                    pass
 
         cr = gate()
         sv = None
