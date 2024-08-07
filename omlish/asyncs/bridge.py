@@ -110,7 +110,8 @@ _BRIDGE_TASK_ATTR = f'__{__package__.replace(".", "__")}__bridge_task__'
 
 
 def is_in_a_to_s_bridge() -> bool:
-    return (ct := aiu.get_current_backend_task()) is not None and getattr(ct, _BRIDGE_TASK_ATTR, False)
+    # return (ct := aiu.get_current_backend_task()) is not None and getattr(ct, _BRIDGE_TASK_ATTR, False)
+    return False
 
 
 def a_to_s(fn):
@@ -118,18 +119,21 @@ def a_to_s(fn):
         ret = missing = object()
 
         async def gate():
+            b = is_in_s_to_a_bridge()
             if (ct := aiu.get_current_backend_task()) is not None:
-                if getattr(ct, _BRIDGE_TASK_ATTR, None):
-                    raise RuntimeError('Unexpected async bridge nesting')
-                setattr(ct, _BRIDGE_TASK_ATTR, True)
+                # if ct.__dict__.get(_BRIDGE_TASK_ATTR):
+                #     raise RuntimeError('Unexpected async bridge nesting')
+                # ct.__dict__[_BRIDGE_TASK_ATTR] = True
+                pass
 
             try:
                 nonlocal ret
                 ret = await fn(*args, **kwargs)
 
             finally:
-                if ct is not None:
-                    delattr(ct, _BRIDGE_TASK_ATTR)
+                # if ct is not None:
+                #     del ct.__dict__[_BRIDGE_TASK_ATTR]
+                pass
 
         cr = gate()
         sv = None
