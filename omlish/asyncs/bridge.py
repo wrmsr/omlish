@@ -49,9 +49,6 @@ def simple_a_to_s(fn):
 # https://gist.github.com/snaury/202bf4f22c41ca34e56297bae5f33fef
 
 
-_BRIDGE_GREENLET_ATTR = f'__{__package__.replace(".", "__")}__bridge_greenlet__'
-
-
 class BridgeAwaitRequiredError(Exception):
     pass
 
@@ -64,23 +61,27 @@ class UnexpectedBridgeNestingError(Exception):
     pass
 
 
+_BRIDGE_TRANSITIONS_SEQ = itertools.count()
+
+
 class _BridgeTransition(ta.NamedTuple):
     obj: ta.Any
+    seq: int
+    a_to_s: bool
 
-_DEBUG_PRINT: ta.Callable[..., None] | None = None
-# _DEBUG_PRINT = print
 
-_BRIDGED_TASKS: ta.MutableSet[ta.Any] = weakref.WeakSet()
+_BRIDGED_TASKS: ta.MutableMapping[ta.Any, list[_BridgeTransition]] = weakref.WeakKeyDictionary()
+
+_BRIDGE_GREENLET_ATTR = f'__{__package__.replace(".", "__")}__bridge_greenlet__'
 
 
 def is_in_bridge() -> bool:
-    has_t = (t := aiu.get_current_backend_task()) is not None
-    has_tb = t is not None and t in _BRIDGED_TASKS
-    has_g = getattr(greenlet.getcurrent(), _BRIDGE_GREENLET_ATTR, False)
-    if _DEBUG_PRINT:
-        _DEBUG_PRINT(f'{has_t=} {has_tb=} {has_g=}')
-    print(f'{has_t=} {has_tb=} {has_g=}')
-    return has_g
+    # has_t = (t := aiu.get_current_backend_task()) is not None
+    # has_tb = t is not None and t in _BRIDGED_TASKS
+    # has_g = getattr(greenlet.getcurrent(), _BRIDGE_GREENLET_ATTR, False)
+    # print(f'{has_t=} {has_tb=} {has_g=}')
+    # return has_g
+    raise NotImplementedError
 
 
 def _safe_cancel_awaitable(awaitable: ta.Awaitable[ta.Any]) -> None:
@@ -101,27 +102,59 @@ def s_to_a_await(awaitable: ta.Awaitable[T]) -> T:
 
 def s_to_a(fn, *, require_await=False):
     @types.coroutine
-    def inner(*args, **kwargs):
-        g = greenlet.greenlet(fn)
-        setattr(g, _BRIDGE_GREENLET_ATTR, True)
-
-        result: ta.Any = g.switch(*args, **kwargs)
-        switch_occurred = False
-        while not g.dead:
-            switch_occurred = True
+    def outer(*args, **kwargs):
+        def inner():
             try:
-                value = yield result
-            except BaseException:  # noqa
-                result = g.throw(*sys.exc_info())
-            else:
-                result = g.switch(value)
+                return fn(*args, **kwargs)
+            finally:
+                gl2 = getattr(g, _BRIDGE_GREENLET_ATTR)
+                if gl2 is not gl:
+                cur_g = gl.pop()
+                if cur_g is not added_g:
+                    raise UnexpectedBridgeNestingError
 
-        if require_await and not switch_occurred:
-            raise BridgeAwaitRequiredError
+        seq = next(_BRIDGE_TRANSITIONS_SEQ)
 
-        return result
+        g = greenlet.greenlet(inner)
+        added_g = _BridgeTransition(g, seq, False)
+        gl = [added_g]
+        setattr(g, _BRIDGE_GREENLET_ATTR, gl)
 
-    return inner
+        if (t := aiu.get_current_backend_task()) is not None:
+            try:
+                tl = _BRIDGED_TASKS[t]
+            except KeyError:
+                tl = _BRIDGED_TASKS[t] = []
+            added_t = _BridgeTransition(t, seq, False)
+            tl.append(added_t)
+
+        try:
+            result: ta.Any = g.switch(*args, **kwargs)
+            switch_occurred = False
+            while not g.dead:
+                switch_occurred = True
+                try:
+                    value = yield result
+                except BaseException:  # noqa
+                    result = g.throw(*sys.exc_info())
+                else:
+                    result = g.switch(value)
+
+            if require_await and not switch_occurred:
+                raise BridgeAwaitRequiredError
+
+            return result
+
+        finally:
+            if t is not None:
+                tl2 = _BRIDGED_TASKS[t]
+                if tl2 is not tl:  # noqa
+                    raise UnexpectedBridgeNestingError
+                cur_t = tl.pop()
+                if cur_t is not added_t:  # noqa
+                    raise UnexpectedBridgeNestingError
+
+    return outer
 
 
 def a_to_s(fn):
@@ -129,29 +162,28 @@ def a_to_s(fn):
         ret = missing = object()
 
         async def gate():
-            t = aiu.get_current_backend_task()
-            added_t = False
+            seq = next(_BRIDGE_TRANSITIONS_SEQ)
+            if (t := aiu.get_current_backend_task()) is not None:
+                try:
+                    l = _BRIDGED_TASKS[t]
+                except KeyError:
+                    l = _BRIDGED_TASKS[t] = []
+                added_t = _BridgeTransition()
+            added_t = None
             added_g = False
             if t is None:
-                g = greenlet.getcurrent()
                 if not getattr(g, _BRIDGE_GREENLET_ATTR, False):
                     added_g = True
                     setattr(g, _BRIDGE_GREENLET_ATTR, True)
-                    if _DEBUG_PRINT:
-                        _DEBUG_PRINT(f'added g {g=}')
                 else:
-                    if _DEBUG_PRINT:
-                        _DEBUG_PRINT(f'didnt add g {g=}')
+                    pass
             else:
                 g = None
                 if t not in _BRIDGED_TASKS:
                     added_t = True
                     _BRIDGED_TASKS.add(t)
-                    if _DEBUG_PRINT:
-                        _DEBUG_PRINT(f'added t {t=}')
                 else:
-                    if _DEBUG_PRINT:
-                        _DEBUG_PRINT(f'didnt add t {t=}')
+                    pass
 
             try:
                 nonlocal ret
@@ -163,25 +195,21 @@ def a_to_s(fn):
                         raise UnexpectedBridgeNestingError
                     else:
                         delattr(g, _BRIDGE_GREENLET_ATTR)
-                        if _DEBUG_PRINT:
-                            _DEBUG_PRINT(f'removed g {g=}')
+                        pass
                 elif g is not None:
                     if not getattr(g, _BRIDGE_GREENLET_ATTR, False):
                         raise UnexpectedBridgeNestingError
-                    if _DEBUG_PRINT:
-                        _DEBUG_PRINT(f'didnt remove g {g=}')
+                    pass
 
                 if added_t:
                     if t not in _BRIDGED_TASKS:
                         raise UnexpectedBridgeNestingError
                     _BRIDGED_TASKS.remove(t)
-                    if _DEBUG_PRINT:
-                        _DEBUG_PRINT(f'removed t {t=}')
+                    pass
                 elif t is not None:
                     if t not in _BRIDGED_TASKS:
                         raise UnexpectedBridgeNestingError
-                    if _DEBUG_PRINT:
-                        _DEBUG_PRINT(f'didnt remove t {t=}')
+                    pass
 
         cr = gate()
         sv = None
