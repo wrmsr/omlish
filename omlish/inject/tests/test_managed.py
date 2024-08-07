@@ -1,3 +1,4 @@
+import contextlib
 import typing as ta
 
 import anyio
@@ -80,6 +81,29 @@ async def test_async_managed(eager):
         assert sam.xc == 0
     assert sam.ec == 1
     assert sam.xc == 1
+
+
+##
+
+
+class SomeCloseable:
+    closed = False
+
+    def close(self):
+        self.closed = True
+
+
+def test_closing():
+    with inj.create_managed_injector(
+            inj.bind(
+                SomeCloseable,
+                singleton=True,
+                to_fn=inj.make_managed_provider(SomeCloseable, contextlib.closing),
+            ),
+    ) as i:
+        cl = i[SomeCloseable]
+        assert not cl.closed
+    assert cl.closed
 
 
 ##

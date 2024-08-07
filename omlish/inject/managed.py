@@ -35,14 +35,23 @@ def create_managed_injector(*args: Elemental) -> ta.Generator[Injector, None, No
         yield i
 
 
-def make_managed_provider(cls: type[T]) -> ta.Callable[..., T]:
+def make_managed_provider(
+        cls: type[T],
+        *fns: ta.Callable[[T], ta.ContextManager[T]],
+) -> ta.Callable[..., T]:
     kt = build_kwargs_target(cls)
 
     def _provide(
             i: Injector,
             es: contextlib.ExitStack,
     ):
-        return es.enter_context(i.inject(kt))
+        obj = i.inject(kt)
+        if not fns:
+            obj = es.enter_context(obj)
+        else:
+            for fn in fns:
+                es.enter_context(fn(obj))
+        return obj
 
     return _provide
 
@@ -60,13 +69,22 @@ async def create_async_managed_injector(*args: Elemental) -> ta.AsyncGenerator[I
         yield i
 
 
-def make_async_managed_provider(cls: type[T]) -> ta.Callable[..., T]:
+def make_async_managed_provider(
+        cls: type[T],
+        *fns: ta.Callable[[T], ta.AsyncContextManager[T]],
+) -> ta.Callable[..., T]:
     kt = build_kwargs_target(cls)
 
     def _provide(
             i: Injector,
             aes: contextlib.AsyncExitStack,
     ):
-        return _asyncs.a_to_s(aes.enter_async_context)(i.inject(kt))
+        obj = i.inject(kt)
+        if not fns:
+            obj = _asyncs.a_to_s(aes.enter_async_context)(obj)
+        else:
+            for fn in fns:
+                _asyncs.a_to_s(aes.enter_async_context)(fn(obj))
+        return obj
 
     return _provide
