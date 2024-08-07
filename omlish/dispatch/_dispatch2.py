@@ -16,7 +16,7 @@ class Dispatcher(ta.Generic[T]):
         super().__init__()
 
         self._impls_by_arg_cls: dict[type, T] = {}
-        self._dispatch_cache: dict[ta.Any, ta.Optional[T]] = {}
+        self._dispatch_cache: dict[ta.Any, T | None] = {}
 
         def cache_remove(k, self_ref=weakref.ref(self)):
             if (ref_self := self_ref()) is not None:
@@ -43,7 +43,7 @@ class Dispatcher(ta.Generic[T]):
         self._dispatch_cache.clear()
         return impl
 
-    def dispatch(self, cls: type) -> ta.Optional[T]:
+    def dispatch(self, cls: type) -> T | None:
         if self._cache_token is not None and (current_token := abc.get_cache_token()) != self._cache_token:
             self._dispatch_cache.clear()
             self._cache_token = current_token

@@ -26,7 +26,12 @@ from ..workercontext import WorkerContext
 from .types import Protocol
 
 
-H11SendableEvent: ta.TypeAlias = h11.Data | h11.EndOfMessage | h11.InformationalResponse | h11.Response
+H11SendableEvent: ta.TypeAlias = ta.Union[  # noqa
+    h11.Data,
+    h11.EndOfMessage,
+    h11.InformationalResponse,
+    h11.Response,
+]
 
 
 STREAM_ID = 1

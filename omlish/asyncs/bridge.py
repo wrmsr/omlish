@@ -102,7 +102,7 @@ def a_to_s(fn):
         sv = None
         try:
             while True:
-                try:  # noqa
+                try:
                     sv = cr.send(sv)
                 except StopIteration:
                     break
