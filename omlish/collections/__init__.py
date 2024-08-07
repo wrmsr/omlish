@@ -37,6 +37,7 @@ from .identity import (  # noqa
     IdentityKeyDict,
     IdentitySet,
     IdentityWrapper,
+    WeakIdentitySet,
 )
 
 from .indexed import (  # noqa

@@ -1,6 +1,7 @@
 import contextlib
 import operator as op
 import typing as ta
+import weakref
 
 from .. import lang
 from .mappings import yield_dict_init
@@ -103,3 +104,9 @@ class IdentitySet(ta.MutableSet[T]):
 
     def __iter__(self) -> ta.Iterator[T]:
         return iter(self._dict.values())
+
+
+class WeakIdentitySet(weakref.WeakSet):
+    def __init__(self, init=None):
+        super().__init__()
+        self.data = IdentitySet(init)  # type: ignore
