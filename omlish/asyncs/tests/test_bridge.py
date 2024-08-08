@@ -260,10 +260,12 @@ def _test_bridge_lock_sync(expects_async):
     print()
     print('_test_bridge_lock_sync')
 
-    SLockThing().run()
+    sl = SLockThing()
+    sl.run()
 
     async def inner():
-        await ALockThing().run()
+        al = ALockThing()
+        await al.run()
 
     br.a_to_s(inner)()
 
@@ -272,9 +274,14 @@ async def _test_bridge_lock_async(expects_async):
     print()
     print('_test_bridge_lock_async')
 
-    await ALockThing().run()
+    al = ALockThing()
+    await al.run()
 
-    await br.s_to_a(lambda: SLockThing().run())()
+    async def inner():
+        sl = SLockThing()
+        sl.run()
+
+    await br.s_to_a(inner)()
 
 
 def _test_bridge_lock_sync2(expects_async):
