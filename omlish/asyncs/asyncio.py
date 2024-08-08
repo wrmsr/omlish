@@ -28,8 +28,8 @@ def drain_tasks(loop=None):
     if loop is None:
         loop = get_real_current_loop()
 
-    while loop._ready or loop._scheduled:  # type: ignore  # noqa
-        loop._run_once()  # type: ignore  # noqa
+    while loop._ready or loop._scheduled:  # noqa
+        loop._run_once()  # noqa
 
 
 @contextlib.contextmanager

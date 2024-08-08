@@ -9,3 +9,6 @@ from .marks import (  # noqa
     skip_if_not_on_path,
     skip_if_python_version_less_than,
 )
+
+# Imported for convenience in things that import this but not lang.
+from ...lang import breakpoint_on_exception  # noqa

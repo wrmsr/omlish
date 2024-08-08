@@ -37,14 +37,14 @@ https://github.com/agronholm/anyio/blob/8907964926a24461840eee0925d3f355e729f15d
  - pytest_fixture_setup
 
 """  # noqa
-import functools
 import inspect
 import typing as ta
 
 import pytest
 
 from .... import lang
-from ....diag.pydevd import patch_for_trio_asyncio
+from ....asyncs import trio_asyncio as trai
+from ....diag import pydevd as pdu
 from ._registry import register
 
 
@@ -94,13 +94,19 @@ class AsyncsPlugin:
         for c in metafunc._calls:  # noqa
             be = c.params[PARAM_NAME]
             if be == 'trio_asyncio':
-                patch_for_trio_asyncio()
+                if pdu.is_present():
+                    pdu.patch_for_trio_asyncio()
+
                 c.marks.extend([
                     pytest.mark.trio.mark,
                     pytest.mark.trio_asyncio.mark,
                 ])
+
             else:
                 c.marks.append(getattr(pytest.mark, be).mark)
+
+            if pdu.is_present():
+                c.marks.append(pytest.mark.drain_asyncio.mark)
 
     @pytest.hookimpl(hookwrapper=True)
     def pytest_runtest_call(self, item):
@@ -111,14 +117,6 @@ class AsyncsPlugin:
             raise Exception(f'{item.nodeid}: async def function and no async plugin specified')
 
         if 'trio_asyncio' in bes:
-            obj = item.obj
-            import trio_asyncio
-
-            @functools.wraps(obj)
-            async def run(*args, **kwargs):
-                async with trio_asyncio.open_loop():
-                    await trio_asyncio.aio_as_trio(obj)(*args, **kwargs)
-
-            item.obj = run
+            item.obj = trai.with_trio_asyncio_loop(wait=True)(item.obj)
 
         yield
