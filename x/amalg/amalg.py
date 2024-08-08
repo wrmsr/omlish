@@ -40,6 +40,24 @@ class Import:
 
     toks: Tokens = dc.field(repr=False)
 
+    @lang.cached_property
+    def mod_path(self) -> str | None:
+        if not self.mod.startswith('.'):
+            return None
+
+        parts = self.mod.split('.')
+        nd = len(parts) - parts[::-1].index('')
+        mod_path = os.path.abspath(
+            os.path.join(
+                os.path.dirname(self.src_path),
+                '../' * (nd - 1),
+                *parts[nd:-1],
+                parts[-1] + '.py',
+            ),
+        )
+
+        return check.isinstance(mod_path, str)
+
 
 def make_import(
         lts: Tokens,
@@ -147,21 +165,8 @@ def _main() -> None:
 
         for imp in f.imports():
             print(imp)
-
-            if not imp.mod.startswith('.'):
-                continue
-
-            parts = imp.mod.split('.')
-            nd = len(parts) - parts[::-1].index('')
-            imp_path = os.path.abspath(
-                os.path.join(
-                    os.path.dirname(src_path),
-                    '../' * (nd - 1),
-                    *parts[nd:-1],
-                    parts[-1] + '.py',
-                ),
-            )
-            todo.append(check.isinstance(imp_path, str))
+            if (mp := imp.mod_path) is not None:
+                todo.append(mp)
 
         print()
 
