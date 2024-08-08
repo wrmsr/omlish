@@ -1,4 +1,7 @@
 """
+TODO:
+ - codegen bound descriptor methods into locals somehow
+
 $ python slots_dict.py 30 1000000
 AdaptiveSlotsDict, z=30, n=1000000... 386,095,488B, 50s
 $ python slots_dict.py 30 1000000 -d
@@ -147,11 +150,36 @@ def AdaptiveSlotsDict(keys=(), name='AdaptiveSlotsDict'):
             except _AttributeError:
                 raise _KeyError(k)
 
+        # def __setitem__(self, k, v):
+        #     if k in _illegal_keys:
+        #         raise _KeyError(k)
+        #     container = self._container
+        #     try:
+        #         dsc = container.__class__.__dict__[k]
+        #     except KeyError:
+        #         slots = self._container_type.__slots__
+        #         if k in slots:
+        #             new_container_type = self._container_type
+        #         else:
+        #             new_container_type = create_container_type(slots + (k,))
+        #         new_container = new_container_type.__new__(new_container_type)
+        #         getitem = self.__getitem__
+        #         for _k in self:
+        #             _setattr(new_container, _k, getitem(_k))
+        #         _setattr(new_container, k, v)
+        #         container = self._container = new_container
+        #         type(self)._container_type = new_container_type
+        #         dsc = container.__class__.__dict__[k]
+        #     try:
+        #         dsc.__get__(container)
+        #     except _AttributeError:
+        #         self._len += 1
+        #     dsc.__set__(container, v)
+
         def __setitem__(self, k, v):
             if k in _illegal_keys:
                 raise _KeyError(k)
             container = self._container
-            # dsc = container.__class__.__dict__[k]
             if not _hasattr(container, k):
                 self._len += 1
             try:
