@@ -151,6 +151,7 @@ def AdaptiveSlotsDict(keys=(), name='AdaptiveSlotsDict'):
             if k in _illegal_keys:
                 raise _KeyError(k)
             container = self._container
+            # dsc = container.__class__.__dict__[k]
             if not _hasattr(container, k):
                 self._len += 1
             try:
