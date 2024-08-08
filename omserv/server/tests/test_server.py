@@ -33,7 +33,7 @@ from .utils import headers_time_patch  # noqa
 from .utils import is_connection_refused_exception
 
 
-@pytest.mark.all_async_backends
+@pytest.mark.all_asyncs
 async def test_server_simple():
     port = get_free_port()
     sev = anyio.Event()
@@ -112,7 +112,7 @@ async def test_server_simple():
         tg.start_soon(inner)
 
 
-@pytest.mark.all_async_backends
+@pytest.mark.all_asyncs
 @pytest.mark.parametrize('use_http2', [False, True])
 async def test_httpx_client(use_http2):
     port = get_free_port()
@@ -150,7 +150,7 @@ async def test_httpx_client(use_http2):
         tg.start_soon(inner)
 
 
-@pytest.mark.all_async_backends
+@pytest.mark.all_asyncs
 @pytest.mark.parametrize('use_h2c', [False, True])
 async def test_curl(use_h2c: bool) -> None:
     port = get_free_port()
@@ -202,7 +202,7 @@ async def test_curl(use_h2c: bool) -> None:
         tg.start_soon(inner)
 
 
-@pytest.mark.all_async_backends
+@pytest.mark.all_asyncs
 async def test_curl_h2() -> None:
     port = get_free_port()
     sev = anyio.Event()

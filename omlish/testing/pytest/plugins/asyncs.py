@@ -42,7 +42,7 @@ from .... import lang
 from ._registry import register
 
 
-ALL_BACKENDS_MARK = 'all_async_backends'
+ALL_BACKENDS_MARK = 'all_asyncs'
 
 KNOWN_BACKENDS = (
     'asyncio',
@@ -69,9 +69,9 @@ class AsyncsPlugin:
     )
 
     def pytest_generate_tests(self, metafunc):
-        if metafunc.definition.get_closest_marker('all_async_backends') is None:
+        if metafunc.definition.get_closest_marker('all_asyncs') is not None:
             bes = self.ASYNC_BACKENDS
-        elif metafunc.definition.get_closest_marker('trio_asyncio') is None:
+        elif metafunc.definition.get_closest_marker('trio_asyncio') is not None:
             bes = ['trio_asyncio']
         else:
             return
