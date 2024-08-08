@@ -112,6 +112,6 @@ class AsyncsPlugin:
                 is_async_function(item.obj) and
                 not any(item.get_closest_marker(be) is not None for be in self.ASYNC_BACKENDS)
         ):
-            raise Exception(f'{item.nodeid}: async def function and no async plugin installed')
+            raise Exception(f'{item.nodeid}: async def function and no async plugin specified')
 
         yield
