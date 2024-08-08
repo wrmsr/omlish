@@ -72,11 +72,6 @@ class AsyncsPlugin:
         config.addinivalue_line('markers', f'{ALL_BACKENDS_MARK}: marks for all async backends')
         config.addinivalue_line('markers', 'trio_asyncio: marks for trio_asyncio backend')
 
-    _TRIO_ASYNCIO_MARKS = (
-        pytest.Mark('trio', (), {}),
-        pytest.Mark('trio_asyncio', (), {}),
-    )
-
     def pytest_generate_tests(self, metafunc):
         if metafunc.definition.get_closest_marker('all_asyncs') is not None:
             bes = self.ASYNC_BACKENDS
@@ -91,7 +86,10 @@ class AsyncsPlugin:
         for c in metafunc._calls:  # noqa
             be = c.params[PARAM_NAME]
             if be == 'trio_asyncio':
-                c.marks.extend(self._TRIO_ASYNCIO_MARKS)
+                c.marks.extend([
+                    pytest.Mark('trio', (), {}),
+                    pytest.Mark('trio_asyncio', (), {}),
+                ])
             else:
                 c.marks.append(pytest.Mark(be, (), {}))
 
