@@ -170,8 +170,8 @@ async def test_trio_asyncio_loop(harness) -> None:
         await trai.aio_as_trio(asyncio.sleep)(.1)
 
 
-@pytest.mark.all_async_backends
-async def test_all_async_backends_no_loop(__async_backend):  # noqa
+@pytest.mark.all_asyncs
+async def test_all_asyncs(__async_backend):  # noqa
     backend = sniffio.current_async_library()
     match __async_backend:
         case 'asyncio':
@@ -188,6 +188,16 @@ async def test_all_async_backends_no_loop(__async_backend):  # noqa
             assert isinstance(asyncio.get_running_loop(), trai.TrioEventLoop)
         case _:
             raise ValueError(__async_backend)
+
+    await anyio.sleep(.1)
+
+
+@pytest.mark.trio_asyncio
+async def test_just_trio_asyncio(__async_backend):  # noqa
+    assert __async_backend == 'trio_asyncio'
+    backend = sniffio.current_async_library()
+    assert backend == 'asyncio'
+    assert isinstance(asyncio.get_running_loop(), trai.TrioEventLoop)
 
     await anyio.sleep(.1)
 
