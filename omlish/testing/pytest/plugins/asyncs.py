@@ -2,51 +2,33 @@
 
 pytest_trio:
 https://github.com/python-trio/pytest-trio/blob/f03160aa1dd355a12d39fa21f4aee4e1239efea3/pytest_trio/plugin.py
- - def pytest_addoption(parser):
- - def pytest_configure(config):
- - @pytest.hookimpl(hookwrapper=True)
-   def pytest_runtest_call(item):
- - def pytest_fixture_setup(fixturedef, request):
- - def pytest_collection_modifyitems(config, items):
+ - pytest_addoption
+ - pytest_configure
+ - pytest_collection_modifyitems
+ - pytest_runtest_call @(hookwrapper=True)
+ - pytest_fixture_setup
 
 pytest_asyncio:
 https://github.com/pytest-dev/pytest-asyncio/blob/f45aa18cf3eeeb94075de16a1d797858facab863/pytest_asyncio/plugin.py
- - def pytest_addoption(parser: Parser, pluginmanager: PytestPluginManager) -> None:
- - def pytest_configure(config: Config) -> None:
- - @pytest.hookimpl(tryfirst=True)
-   def pytest_report_header(config: Config) -> List[str]:
- - @pytest.hookimpl(specname="pytest_pycollect_makeitem", tryfirst=True)
-   def pytest_pycollect_makeitem_preprocess_async_fixtures(
-       collector: Union[pytest.Module, pytest.Class], name: str, obj: object
-   ) -> Union[
-       pytest.Item, pytest.Collector, List[Union[pytest.Item, pytest.Collector]], None
-   ]:
- - @pytest.hookimpl(specname="pytest_pycollect_makeitem", hookwrapper=True)
-   def pytest_pycollect_makeitem_convert_async_functions_to_subclass(
-       collector: Union[pytest.Module, pytest.Class], name: str, obj: object
-   ) -> Generator[None, Any, None]:
- - @pytest.hookimpl
-   def pytest_collectstart(collector: pytest.Collector) -> None:
- - @pytest.hookimpl(tryfirst=True)
- - def pytest_generate_tests(metafunc: Metafunc) -> None:
- - @pytest.hookimpl(hookwrapper=True)
-   def pytest_fixture_setup(
- -     fixturedef: FixtureDef,
- - ) -> Generator[None, Any, None]:
- - @pytest.hookimpl(tryfirst=True, hookwrapper=True)
-   def pytest_pyfunc_call(pyfuncitem: Function) -> Optional[object]:
- - def pytest_runtest_setup(item: pytest.Item) -> None:
+ - pytest_addoption
+ - pytest_configure
+ - pytest_pycollect_makeitem_preprocess_async_fixtures @(specname="pytest_pycollect_makeitem", tryfirst=True)
+ - pytest_pycollect_makeitem_convert_async_functions_to_subclass @(specname="pytest_pycollect_makeitem", hookwrapper=True)
+ - pytest_generate_tests @(tryfirst=True)
+ - pytest_runtest_setup(item: pytest.Item) -> None:
+ - pytest_pyfunc_call @(tryfirst=True, hookwrapper=True)
+ - pytest_collectstart @()
+ - pytest_report_header @(tryfirst=True)
+ - pytest_fixture_setup @(hookwrapper=True)
 
 anyio.pytest_plugin:
 https://github.com/agronholm/anyio/blob/8907964926a24461840eee0925d3f355e729f15d/src/anyio/pytest_plugin.py
- - def pytest_configure(config: Any) -> None:
- - def pytest_fixture_setup(fixturedef: Any, request: Any) -> None:
- - @pytest.hookimpl(tryfirst=True)
-   def pytest_pycollect_makeitem(collector: Any, name: Any, obj: Any) -> None:
- - @pytest.hookimpl(tryfirst=True)
-   def pytest_pyfunc_call(pyfuncitem: Any) -> bool | None:
+ - pytest_configure
+ - pytest_pycollect_makeitem @(tryfirst=True)
+ - pytest_pyfunc_call @(tryfirst=True)
+ - pytest_fixture_setup
 
-"""
+"""  # noqa
 import typing as ta
 
 import pytest
