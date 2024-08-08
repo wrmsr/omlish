@@ -1,6 +1,8 @@
 import functools
+import logging
 import os.path  # noqa
 import pprint
+import sys
 import typing as ta  # noqa
 
 
@@ -45,6 +47,31 @@ def check_not(v: ta.Any) -> None:
 
 
 ########################################
+# /Users/spinlock/src/wrmsr/omlish/x/amalg/demo/std/logging.py
+
+
+log = logging.getLogger(__name__)
+
+
+def setup_standard_logging() -> None:
+    logging.root.addHandler(logging.StreamHandler())
+    logging.root.setLevel('INFO')
+
+
+########################################
+# /Users/spinlock/src/wrmsr/omlish/x/amalg/demo/std/runtime.py
+
+
+REQUIRED_PYTHON_VERSION = (3, 8)
+
+
+def check_runtime_version() -> None:
+    if sys.version_info < REQUIRED_PYTHON_VERSION:
+        raise EnvironmentError(
+            f'Requires python {REQUIRED_PYTHON_VERSION}, got {sys.version_info} from {sys.executable}')  # noqa
+
+
+########################################
 # /Users/spinlock/src/wrmsr/omlish/x/amalg/demo/demo.py
 
 
@@ -55,6 +82,10 @@ def _foo():
 
 def _main() -> None:
     """Docstring"""
+
+    check_runtime_version()
+    setup_standard_logging()
+    log.info('hi')
 
     # Comment
     check_not_none(_foo())  # Inline comment

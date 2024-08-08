@@ -1,4 +1,8 @@
 """
+TODO:
+ - shebang
+ - hoist initial docstring/comments
+
 Targets:
  - interp
  - pyproject
