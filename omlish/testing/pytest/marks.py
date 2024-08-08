@@ -11,9 +11,10 @@ from .plugins.managermarks import ManagerMark  # noqa
 
 
 if ta.TYPE_CHECKING:
-    import asyncio
+    from ...asyncs import asyncio as aiu
+
 else:
-    asyncio = lang.proxy_import('asyncio')
+    aiu = lang.proxy_import('...asyncs.asyncio', __package__)
 
 
 def skip_if_cant_import(module: str, *args, **kwargs):
@@ -40,9 +41,5 @@ def skip_if_nogil():
 
 class drain_asyncio(ManagerMark):  # noqa
     def __call__(self, item: pytest.Function) -> ta.Iterator[None]:
-        loop = asyncio.get_event_loop()
-        try:
+        with aiu.draining_asyncio_tasks():
             yield
-        finally:
-            while loop._ready or loop._scheduled:  # type: ignore  # noqa
-                loop._run_once()  # type: ignore  # noqa
