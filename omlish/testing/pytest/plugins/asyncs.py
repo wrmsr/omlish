@@ -34,6 +34,7 @@ https://github.com/agronholm/anyio/blob/8907964926a24461840eee0925d3f355e729f15d
 
 """  # noqa
 import functools
+import inspect
 import typing as ta
 
 import pytest
@@ -51,6 +52,14 @@ KNOWN_BACKENDS = (
 )
 
 PARAM_NAME = '__async_backend'
+
+
+def iscoroutinefunction(func: ta.Any) -> bool:
+    return inspect.iscoroutinefunction(func) or getattr(func, '_is_coroutine', False)
+
+
+def is_async_function(func: ta.Any) -> bool:
+    return iscoroutinefunction(func) or inspect.isasyncgenfunction(func)
 
 
 @register
@@ -98,5 +107,11 @@ class AsyncsPlugin:
                     await trio_asyncio.aio_as_trio(obj)(*args, **kwargs)
 
             item.obj = run
+
+        elif (
+                is_async_function(item.obj) and
+                not any(item.get_closest_marker(be) is not None for be in self.ASYNC_BACKENDS)
+        ):
+            raise Exception(f'{item.nodeid}: async def function and no async plugin installed')
 
         yield
