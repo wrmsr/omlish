@@ -87,11 +87,11 @@ class AsyncsPlugin:
             be = c.params[PARAM_NAME]
             if be == 'trio_asyncio':
                 c.marks.extend([
-                    pytest.Mark('trio', (), {}),
-                    pytest.Mark('trio_asyncio', (), {}),
+                    pytest.mark.trio.mark,
+                    pytest.mark.trio_asyncio.mark,
                 ])
             else:
-                c.marks.append(pytest.Mark(be, (), {}))
+                c.marks.append(getattr(pytest.mark, be).mark)
 
     @pytest.hookimpl(hookwrapper=True)
     def pytest_runtest_call(self, item):
