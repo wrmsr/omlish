@@ -4,7 +4,6 @@ import typing as ta
 
 import anyio.to_thread
 import pytest
-import sniffio
 
 from ... import lang
 from .. import anyio as anu
@@ -125,21 +124,3 @@ async def test_lazy_fn3():
     assert c == 1
     assert await lfn.get() == 420
     assert c == 1
-
-
-@pytest.mark.all_async_backends
-async def test_all_async_backends(__async_backend):  # noqa
-    backend = sniffio.current_async_library()
-    assert __async_backend == backend
-
-    await anyio.sleep(.1)
-
-
-# @pytest.mark.anyio
-# @pytest.mark.parametrize('anyio_backend', ['asyncio', 'trio'])
-# async def test_all_anyio_all_backends(anyio_backend):
-#     backend = sniffio.current_async_library()
-#     assert anyio_backend == backend
-#     if backend == 'asyncio':
-#         import trio_asyncio
-#         assert trio_asyncio.current_loop.get() is not None

@@ -1,5 +1,9 @@
 """
 
+_pytest:
+https://github.com/pytest-dev/pytest/blob/ef9b8f9d748b6f50eab5d43e32d93008f7880899/src/_pytest/python.py#L155
+"async def function and no async plugin installed (see warnings)"
+
 pytest_trio:
 https://github.com/python-trio/pytest-trio/blob/f03160aa1dd355a12d39fa21f4aee4e1239efea3/pytest_trio/plugin.py
  - pytest_addoption
@@ -29,6 +33,7 @@ https://github.com/agronholm/anyio/blob/8907964926a24461840eee0925d3f355e729f15d
  - pytest_fixture_setup
 
 """  # noqa
+import functools
 import typing as ta
 
 import pytest
@@ -42,7 +47,7 @@ ALL_BACKENDS_MARK = 'all_async_backends'
 KNOWN_BACKENDS = (
     'asyncio',
     'trio',
-    # 'trio_asyncio',
+    'trio_asyncio',
 )
 
 PARAM_NAME = '__async_backend'
@@ -68,7 +73,21 @@ class AsyncsPlugin:
             be = c.params[PARAM_NAME]
             if be == 'trio_asyncio':
                 c.marks.append(pytest.Mark('trio', (), {}))
-                # c.fixturenames.append('__trio_asyncio_fixture')
-                raise NotImplementedError
+                c.marks.append(pytest.Mark('trio_asyncio', (), {}))
             else:
                 c.marks.append(pytest.Mark(be, (), {}))
+
+    @pytest.hookimpl(hookwrapper=True)
+    def pytest_runtest_call(self, item):
+        if item.get_closest_marker('trio_asyncio') is not None:
+            obj = item.obj
+            import trio_asyncio
+
+            @functools.wraps(obj)
+            async def run(*args, **kwargs):
+                async with trio_asyncio.open_loop():
+                    await trio_asyncio.aio_as_trio(obj)(*args, **kwargs)
+
+            item.obj = run
+
+        yield

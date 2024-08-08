@@ -17,3 +17,7 @@ def asyncio_once(fn: CallableT) -> CallableT:
         return await future
 
     return ta.cast(CallableT, inner)
+
+
+def get_real_current_loop() -> asyncio.AbstractEventLoop | None:
+    return asyncio.get_event_loop_policy()._local._loop  # type: ignore  # noqa

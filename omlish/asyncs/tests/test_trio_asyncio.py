@@ -17,6 +17,7 @@ import trio
 from ... import lang
 from ...diag import pydevd as pdu
 from ...testing.pytest import skip_if_cant_import
+from .. import asyncio as asu
 
 
 if ta.TYPE_CHECKING:
@@ -169,13 +170,24 @@ async def test_trio_asyncio_loop(harness) -> None:
         await trai.aio_as_trio(asyncio.sleep)(.1)
 
 
-@skip_if_cant_import('trio_asyncio')
 @pytest.mark.all_async_backends
 async def test_all_async_backends_no_loop(__async_backend):  # noqa
     backend = sniffio.current_async_library()
-    assert __async_backend == backend
-
-    assert trai.current_loop.get() is None
+    match __async_backend:
+        case 'asyncio':
+            assert backend == 'asyncio'
+            assert asu.get_real_current_loop() is not None
+            assert trai.current_loop.get() is None
+            assert not isinstance(asyncio.get_running_loop(), trai.TrioEventLoop)
+        case 'trio':
+            assert backend == 'trio'
+            assert asu.get_real_current_loop() is None
+            assert trai.current_loop.get() is None
+        case 'trio_asyncio':
+            assert backend == 'asyncio'
+            assert isinstance(asyncio.get_running_loop(), trai.TrioEventLoop)
+        case _:
+            raise ValueError(__async_backend)
 
     await anyio.sleep(.1)
 
