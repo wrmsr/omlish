@@ -11,8 +11,8 @@ from .bridge import (  # noqa
     is_in_bridge,
     s_to_a,
     s_to_a_await,
-    simple_a_to_s,
-    simple_s_to_a,
+    trivial_a_to_s,
+    trivial_s_to_a,
 )
 
 from .flavors import (  # noqa
