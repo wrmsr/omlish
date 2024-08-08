@@ -5,6 +5,7 @@ import pprint  # noqa
 import typing as ta
 
 from omlish import check
+from omlish import collections as col
 from omlish import lang
 import tokenize_rt as trt
 
@@ -161,14 +162,26 @@ def _main() -> None:
 
         f = SrcFile(src_path)
         src_files[src_path] = f
-        print(src_path)
 
         for imp in f.imports():
-            print(imp)
             if (mp := imp.mod_path) is not None:
                 todo.append(mp)
 
-        print()
+    ts = list(col.toposort({
+        f.path: {mp for i in f.imports() if (mp := i.mod_path) is not None}
+        for f in src_files.values()
+    }))
+    sfs = [sf for ss in ts for sf in sorted(ss)]
+
+    for sf in sfs:
+        f = src_files[sf]
+        for imp in f.imports():
+            print(imp)
+
+    for sf in sfs:
+        f = src_files[sf]
+        for cl in f.content_lines():
+            print(cl)
 
 
 if __name__ == '__main__':
