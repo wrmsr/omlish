@@ -256,32 +256,34 @@ class ALockThing:
             await self.alock.unlock()
 
 
+def _assert_s_lock(expects_async):
+    sl = SLockThing()
+    assert sl.slock.lc == sl.slock.uc == 0
+    sl.run()
+    assert sl.slock.lc == sl.slock.uc == 1
+
+
+async def _assert_a_lock(expects_async):
+    al = ALockThing()
+    assert al.alock.lc == al.alock.uc == 0
+    await al.run()
+    assert al.alock.lc == al.alock.uc == 1
+
+
 def _test_bridge_lock_sync(expects_async):
     print()
     print('_test_bridge_lock_sync')
 
-    sl = SLockThing()
-    sl.run()
-
-    async def inner():
-        al = ALockThing()
-        await al.run()
-
-    br.a_to_s(inner)()
+    _assert_s_lock(expects_async)
+    br.a_to_s(_assert_a_lock)(expects_async)
 
 
 async def _test_bridge_lock_async(expects_async):
     print()
     print('_test_bridge_lock_async')
 
-    al = ALockThing()
-    await al.run()
-
-    async def inner():
-        sl = SLockThing()
-        sl.run()
-
-    await br.s_to_a(inner)()
+    await _assert_a_lock(expects_async)
+    await br.s_to_a(_assert_s_lock)(expects_async)
 
 
 def _test_bridge_lock_sync2(expects_async):
