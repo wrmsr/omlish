@@ -8,7 +8,7 @@ import trio
 
 from ... import lang
 from ...diag import pydevd as pdu
-from ...testing.pytest import skip_if_cant_import
+from ...testing import pytest as ptu
 from .. import flavors
 
 
@@ -61,7 +61,7 @@ async def _trio_func(cross):
 ##
 
 
-@skip_if_cant_import('trio_asyncio')
+@ptu.skip_if_cant_import('trio_asyncio')
 @pytest.mark.asyncio
 async def test_asyncio_loop(harness) -> None:
     await _anyio_func(True, False)
@@ -73,7 +73,7 @@ async def test_asyncio_loop(harness) -> None:
     #     await trio_asyncio.trio_as_aio(_trio_func)(True)
 
 
-@skip_if_cant_import('trio_asyncio')
+@ptu.skip_if_cant_import('trio_asyncio')
 @pytest.mark.trio
 async def test_trio_loop(harness) -> None:
     await _anyio_func(False, True)
