@@ -95,6 +95,28 @@ def _pop_transition(a_to_s: bool, l: list[_BridgeTransition]) -> _BridgeTransiti
     return t
 
 
+def _get_transitions() -> list[_BridgeTransition]:
+    l: list[_BridgeTransition] = []
+
+    if (t := aiu.get_current_backend_task()) is not None:
+        try:
+            tl = _BRIDGED_TASKS[t]
+        except KeyError:
+            pass
+        else:
+            l.extend(tl)
+
+    g = greenlet.getcurrent()
+    try:
+        gl = getattr(g, _BRIDGE_GREENLET_ATTR)
+    except AttributeError:
+        pass
+    else:
+        l.extend(gl)
+
+    return l
+
+
 def is_in_bridge() -> bool:
     # has_t = (t := aiu.get_current_backend_task()) is not None
     # has_tb = t is not None and t in _BRIDGED_TASKS

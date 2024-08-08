@@ -154,7 +154,7 @@ def AdaptiveSlotsDict(keys=(), name='AdaptiveSlotsDict'):
             if not _hasattr(container, k):
                 self._len += 1
             try:
-                _setattr(self._container, k, v)
+                _setattr(container, k, v)
             except _AttributeError:
                 slots = self._container_type.__slots__
                 if k in slots:
@@ -273,4 +273,4 @@ if __name__ == '__main__':
         s = str(n)[::-1]
         return ','.join(s[i:i + 3] for i in range(0, len(s), 3))[::-1]
 
-    sys.stderr.write('%sB, %ss\n' % (comma_digit(used_mem), comma_digit(int(used_time))))
+    sys.stderr.write('%sB, %0.2fs\n' % (comma_digit(used_mem), used_time))
