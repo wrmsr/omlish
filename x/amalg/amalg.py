@@ -133,12 +133,14 @@ class SrcFile:
 def _main() -> None:
     root_dir = os.path.dirname(__file__)
     main_file = os.path.abspath(os.path.join(root_dir, 'demo/demo.py'))
+
     src_files: dict[str, SrcFile] = {}
     todo = [main_file]
     while todo:
         src_file = todo.pop()
         if src_file in src_files:
             continue
+
         f = SrcFile(src_file)
         src_files[src_file] = f
         print(src_file)
@@ -148,6 +150,7 @@ def _main() -> None:
 
             if not imp.mod.startswith('.'):
                 continue
+
             parts = imp.mod.split('.')
             nd = len(parts) - parts[::-1].index('')
             rel_path = os.path.join(os.path.dirname(src_file), '../' * (nd - 1), *parts[nd:-1], parts[-1] + '.py')
