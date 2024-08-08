@@ -1,4 +1,5 @@
 import dataclasses as dc
+import io
 import itertools
 import os.path
 import pprint  # noqa
@@ -25,6 +26,10 @@ def is_ws(tok: trt.Token) -> bool:
 
 def ignore_ws(toks: ta.Iterable[trt.Token]) -> ta.Iterable[trt.Token]:
     return (t for t in toks if not is_ws(t))
+
+
+def join_toks(ts: Tokens) -> str:
+    return ''.join(t.src for t in ts)
 
 
 ##
@@ -113,7 +118,7 @@ class SrcFile:
     @lang.cached_function
     def src(self) -> str:
         with open(self.path) as f:
-            return f.read()
+            return f.read().strip()
 
     @lang.cached_function
     def tokens(self) -> Tokens:
@@ -167,6 +172,23 @@ def _main() -> None:
             if (mp := imp.mod_path) is not None:
                 todo.append(mp)
 
+    ##
+
+    out = io.StringIO()
+
+    ##
+
+    all_imps = [i for f in src_files.values() for i in f.imports()]
+    gl_imps = [i for i in all_imps if i.mod_path is None]
+
+    dct = {}
+    for imp in gl_imps:
+        dct.setdefault((k := (imp.mod, imp.item, imp.as_)), []).append(imp)
+    for _, l in sorted(dct.items()):
+        out.write(join_toks(l[0].toks))
+
+    ##
+
     ts = list(col.toposort({
         f.path: {mp for i in f.imports() if (mp := i.mod_path) is not None}
         for f in src_files.values()
@@ -175,13 +197,12 @@ def _main() -> None:
 
     for sf in sfs:
         f = src_files[sf]
-        for imp in f.imports():
-            print(imp)
-
-    for sf in sfs:
-        f = src_files[sf]
         for cl in f.content_lines():
-            print(cl)
+            out.write(join_toks(cl))
+
+    ##
+
+    print(out.getvalue())
 
 
 if __name__ == '__main__':
