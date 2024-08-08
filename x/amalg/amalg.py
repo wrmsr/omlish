@@ -1,11 +1,15 @@
 import dataclasses as dc
 import itertools
 import os.path
-import pprint
+import pprint  # noqa
 import typing as ta
 
 from omlish import check
+from omlish import lang
 import tokenize_rt as trt
+
+
+Tokens: ta.TypeAlias = ta.Sequence[trt.Token]
 
 
 ##
@@ -34,11 +38,11 @@ class Import:
     src_file: str
     line: int
 
-    toks: ta.Sequence[trt.Token] = dc.field(repr=False)
+    toks: Tokens = dc.field(repr=False)
 
 
 def make_import(
-        lts: list[trt.Token],
+        lts: Tokens,
         src_file: str,
 ) -> Import | None:
     if not lts:
@@ -80,30 +84,75 @@ def make_import(
     )
 
 
+##
+
+
+@dc.dataclass(frozen=True)
+class SrcFile:
+    path: str
+
+    @lang.cached_function
+    def src(self) -> str:
+        with open(os.path.join(self.path)) as f:
+            return f.read()
+
+    @lang.cached_function
+    def tokens(self) -> Tokens:
+        return trt.src_to_tokens(self.src())
+
+    @lang.cached_function
+    def lines(self) -> ta.Sequence[Tokens]:
+        return [list(it) for g, it in itertools.groupby(self.tokens(), lambda t: t.line)]
+
+    @lang.cached_function
+    def _process_lines(self) -> tuple[
+        ta.Sequence[Import],
+        ta.Sequence[Tokens],
+    ]:
+        imps: list[Import] = []
+        ctls: list[list[trt.Token]] = []
+        for line in self.lines():
+            if (imp := make_import(line, self.path)) is not None:
+                imps.append(imp)
+            else:
+                ctls.append(line)
+        return imps, ctls
+
+    @lang.cached_function
+    def imports(self) -> ta.Sequence[Import]:
+        return self._process_lines[0]
+
+    @lang.cached_function
+    def content_lines(self) -> ta.Sequence[Tokens]:
+        return self._process_lines[1]
+
+
+##
+
+
 def _main() -> None:
     root_dir = os.path.dirname(__file__)
 
-    for src_file in [
-        'demo/demo.py',
-        'demo/stdlib.py',
-    ]:
+    main_file = 'demo/demo.py'
+    src_files = [main_file]
+    while src_files:
+        src_file = src_files.pop()
         print(src_file)
 
         with open(os.path.join(root_dir, src_file)) as f:
             src = f.read()
 
-        print(src)
-
         toks = trt.src_to_tokens(src)
-
         tok_lines = [list(it) for g, it in itertools.groupby(toks, lambda t: t.line)]
-        pprint.pprint(tok_lines)
 
         imps = [i for lts in tok_lines if (i := make_import(lts, src_file)) is not None]
-        pprint.pprint(imps)
-
-        src2 = trt.tokens_to_src(toks)
-        print(src2)
+        for imp in imps:
+            if not imp.mod.startswith('.'):
+                continue
+            parts = imp.mod.split('.')
+            nd = len(parts) - parts[::-1].index('')
+            rel_path = os.path.join('../' * (nd - 1), *parts[nd:-1], parts[-1] + '.py')
+            src_files.append(rel_path)
 
 
 if __name__ == '__main__':
