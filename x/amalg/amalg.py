@@ -11,7 +11,7 @@ Targets:
  - pyremote
  - bootstrap
  - deploy
- - supervisor
+ - supervisor?
 """
 import dataclasses as dc
 import io
