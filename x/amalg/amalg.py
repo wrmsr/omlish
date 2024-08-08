@@ -1,3 +1,14 @@
+"""
+Targets:
+ - interp
+ - pyproject
+ - precheck
+ - build
+ - pyremote
+ - bootstrap
+ - deploy
+ - supervisor
+"""
 import dataclasses as dc
 import io
 import itertools

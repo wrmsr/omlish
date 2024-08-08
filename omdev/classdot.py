@@ -33,12 +33,20 @@ def gen_class_dot(roots: ta.Iterable[type]) -> dot.Graph:
 
 
 def _main() -> None:
-    import sys
+    import argparse
 
     from omlish import lang
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--import', '-i', action='append', dest='imports')
+    parser.add_argument('roots', nargs='+')
+    args = parser.parse_args()
+
+    for imp in (args.imports or ()):
+        lang.import_module(imp)
+
     roots = []
-    for spec in sys.argv[1:]:
+    for spec in args.roots:
         cls = lang.import_module_attr(spec)
         roots.append(cls)
 
