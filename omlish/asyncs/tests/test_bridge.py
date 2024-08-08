@@ -293,7 +293,8 @@ def test_bridge_lock_sync():
 
 
 @ptu.skip_if_cant_import('greenlet')
-@pytest.mark.all_asyncs
+# @pytest.mark.all_asyncs
+@pytest.mark.trio
 async def test_bridge_lock_async():
     print()
     print('test_bridge_lock_async')

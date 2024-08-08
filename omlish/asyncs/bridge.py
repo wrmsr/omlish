@@ -69,8 +69,18 @@ _BRIDGE_TRANSITIONS_SEQ = itertools.count()
 class _BridgeTransition(ta.NamedTuple):
     seq: int
     a_to_s: bool
+
+    obj_cls: str
+    obj_id: int
+
     obj: ta.Any
 
+
+def _make_transition(seq: int, a_to_s: bool, obj: ta.Any) -> _BridgeTransition:
+    return _BridgeTransition(seq, a_to_s, obj.__class__.__name__, id(obj), (obj if _TRACK_TRANSITION_OBJS else None))
+
+
+_TRACK_TRANSITION_OBJS = False
 
 _BRIDGED_TASKS: ta.MutableMapping[ta.Any, list[_BridgeTransition]] = weakref.WeakKeyDictionary()
 
@@ -78,7 +88,7 @@ _BRIDGE_GREENLET_ATTR = f'__{__package__.replace(".", "__")}__bridge_greenlet__'
 
 
 _DEBUG_PRINT: ta.Callable[..., None] | None = None
-# _DEBUG_PRINT = print  # noqa
+_DEBUG_PRINT = print  # noqa
 
 
 def _push_transition(a_to_s: bool, l: list[_BridgeTransition], t: _BridgeTransition) -> _BridgeTransition:
@@ -114,6 +124,7 @@ def _get_transitions() -> list[_BridgeTransition]:
     else:
         l.extend(gl)
 
+    l.sort(key=lambda t: (t.seq, t.a_to_s))
     return l
 
 
@@ -124,6 +135,10 @@ def is_in_bridge() -> bool:
     # print(f'{has_t=} {has_tb=} {has_g=}')
     # return has_g
     # raise NotImplementedError
+    if _DEBUG_PRINT:
+        l = _get_transitions()
+        import pprint
+        pprint.pprint(l)
     return False
 
 
@@ -161,14 +176,14 @@ def s_to_a(fn, *, require_await=False):
 
         g = greenlet.greenlet(inner)
         setattr(g, _BRIDGE_GREENLET_ATTR, gl := [])  # type: ignore
-        added_g = _push_transition(False, gl, _BridgeTransition(seq, False, g))
+        added_g = _push_transition(False, gl, _make_transition(seq, False, g))
 
         if (t := aiu.get_current_backend_task()) is not None:
             try:
                 tl = _BRIDGED_TASKS[t]
             except KeyError:
                 tl = _BRIDGED_TASKS[t] = []
-            added_t = _push_transition(False, tl, _BridgeTransition(seq, False, g))
+            added_t = _push_transition(False, tl, _make_transition(seq, False, g))
 
         try:
             result: ta.Any = g.switch()
@@ -206,7 +221,7 @@ def a_to_s(fn):
                 tl = _BRIDGED_TASKS[t]
             except KeyError:
                 tl = _BRIDGED_TASKS[t] = []
-            added_t = _push_transition(True, tl, _BridgeTransition(seq, True, t))
+            added_t = _push_transition(True, tl, _make_transition(seq, True, t))
         else:
             added_t = None
 
@@ -215,7 +230,7 @@ def a_to_s(fn):
             gl = getattr(g, _BRIDGE_GREENLET_ATTR)
         except AttributeError:
             setattr(g, _BRIDGE_GREENLET_ATTR, gl := [])
-        added_g = _push_transition(True, gl, _BridgeTransition(seq, True, g))
+        added_g = _push_transition(True, gl, _make_transition(seq, True, g))
 
         try:
             ret = missing = object()
