@@ -31,7 +31,7 @@ async def a_func(a_cb, arg):
     return f'a_func({arg}) -> {await a_cb(arg)}'
 
 
-@pytest.mark.all_async_backends
+@pytest.mark.all_asyncs
 @pytest.mark.parametrize(('a_to_s', 's_to_a'), [
     (br.a_to_s, br.s_to_a),
     (br.trivial_a_to_s, br.trivial_s_to_a),
@@ -92,7 +92,7 @@ async def a_sleep_callback4(arg):
     return f'a_sleep_callback4({arg})'
 
 
-@pytest.mark.all_async_backends
+@pytest.mark.all_asyncs
 async def test_async_bridge2():
     await anyio.sleep(.01)
 
@@ -110,7 +110,7 @@ async def test_async_bridge2():
 ##
 
 
-@pytest.mark.all_async_backends
+@pytest.mark.all_asyncs
 async def test_async_bridge3():
     n = 4
 
@@ -277,7 +277,7 @@ def test_bridge_lock_sync():
     br.a_to_s(_test_bridge_lock_async2)()
 
 
-@pytest.mark.all_async_backends
+@pytest.mark.all_asyncs
 async def test_bridge_lock_async():
     print()
     print('test_bridge_lock_async')
