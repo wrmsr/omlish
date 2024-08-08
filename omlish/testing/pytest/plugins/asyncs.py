@@ -48,7 +48,7 @@ from ....diag.pydevd import patch_for_trio_asyncio
 from ._registry import register
 
 
-ALL_BACKENDS_MARK = 'all_asyncs'
+ALL_ASYNCS_MARK = 'all_asyncs'
 
 KNOWN_BACKENDS = (
     'asyncio',
@@ -74,12 +74,15 @@ class AsyncsPlugin:
     ]
 
     def pytest_configure(self, config):
-        config.addinivalue_line('markers', f'{ALL_BACKENDS_MARK}: marks for all async backends')
+        config.addinivalue_line('markers', f'{ALL_ASYNCS_MARK}: marks for all async backends')
         config.addinivalue_line('markers', 'trio_asyncio: marks for trio_asyncio backend')
 
     def pytest_generate_tests(self, metafunc):
-        if metafunc.definition.get_closest_marker('all_asyncs') is not None:
-            bes = self.ASYNC_BACKENDS
+        if (m := metafunc.definition.get_closest_marker(ALL_ASYNCS_MARK)) is not None:
+            if m.args:
+                bes = m.args
+            else:
+                bes = self.ASYNC_BACKENDS
         elif metafunc.definition.get_closest_marker('trio_asyncio') is not None:
             bes = ['trio_asyncio']
         else:
