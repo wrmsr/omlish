@@ -34,9 +34,9 @@ async def a_func(a_cb, arg):
 @pytest.mark.all_async_backends
 @pytest.mark.parametrize(('a_to_s', 's_to_a'), [
     (br.a_to_s, br.s_to_a),
-    (br.simple_a_to_s, br.simple_s_to_a),
+    (br.trivial_a_to_s, br.trivial_s_to_a),
 ])
-async def test_async_bridge(a_to_s, s_to_a):
+async def test_trivial_async_bridge(a_to_s, s_to_a):
     assert (await a_func(a_callback, 'arg')) == 'a_func(arg) -> a_callback(arg)'
     assert (await a_func(s_to_a(callback), 'arg')) == 'a_func(arg) -> callback(arg)'
 
@@ -46,9 +46,9 @@ async def test_async_bridge(a_to_s, s_to_a):
 
 @pytest.mark.parametrize(('a_to_s', 's_to_a'), [
     (br.a_to_s, br.s_to_a),
-    (br.simple_a_to_s, br.simple_s_to_a),
+    (br.trivial_a_to_s, br.trivial_s_to_a),
 ])
-def test_bridge(a_to_s, s_to_a):
+def test_trivial_bridge(a_to_s, s_to_a):
     assert func(callback, 'arg') == 'func(arg) -> callback(arg)'
     assert func(a_to_s(a_callback), 'arg') == 'func(arg) -> a_callback(arg)'
 
