@@ -163,19 +163,29 @@ class ALock(abc.ABC):
 
 
 class SLockImpl(SLock):
+    lc = 0
+    uc = 0
+
     def lock(self):
         print(f'{self!r}.lock')
+        self.lc += 1
 
     def unlock(self):
         print(f'{self!r}.unlock')
+        self.uc += 1
 
 
 class ALockImpl(ALock):
+    lc = 0
+    uc = 0
+
     async def lock(self):
         print(f'{self!r}.lock')
+        self.lc += 1
 
     async def unlock(self):
         print(f'{self!r}.unlock')
+        self.uc += 1
 
 
 #
@@ -246,7 +256,7 @@ class ALockThing:
             await self.alock.unlock()
 
 
-def _test_bridge_lock_sync():
+def _test_bridge_lock_sync(expects_async):
     print()
     print('_test_bridge_lock_sync')
 
@@ -258,7 +268,7 @@ def _test_bridge_lock_sync():
     br.a_to_s(inner)()
 
 
-async def _test_bridge_lock_async():
+async def _test_bridge_lock_async(expects_async):
     print()
     print('_test_bridge_lock_async')
 
@@ -267,20 +277,20 @@ async def _test_bridge_lock_async():
     await br.s_to_a(lambda: SLockThing().run())()
 
 
-def _test_bridge_lock_sync2():
+def _test_bridge_lock_sync2(expects_async):
     print()
     print('_test_bridge_lock_sync2')
 
-    _test_bridge_lock_sync()
-    br.a_to_s(_test_bridge_lock_async)()
+    _test_bridge_lock_sync(expects_async)
+    br.a_to_s(_test_bridge_lock_async)(expects_async)
 
 
-async def _test_bridge_lock_async2():
+async def _test_bridge_lock_async2(expects_async):
     print()
     print('_test_bridge_lock_async2')
 
-    await br.s_to_a(_test_bridge_lock_sync)()
-    await _test_bridge_lock_async()
+    await br.s_to_a(_test_bridge_lock_sync)(expects_async)
+    await _test_bridge_lock_async(expects_async)
 
 
 @ptu.skip_if_cant_import('greenlet')
@@ -288,8 +298,8 @@ def test_bridge_lock_sync():
     print()
     print('test_bridge_lock_sync')
 
-    _test_bridge_lock_sync2()
-    br.a_to_s(_test_bridge_lock_async2)()
+    _test_bridge_lock_sync2(False)
+    br.a_to_s(_test_bridge_lock_async2)(False)
 
 
 @ptu.skip_if_cant_import('greenlet')
@@ -299,5 +309,5 @@ async def test_bridge_lock_async():
     print()
     print('test_bridge_lock_async')
 
-    await br.s_to_a(_test_bridge_lock_sync2)()
-    await _test_bridge_lock_async2()
+    await br.s_to_a(_test_bridge_lock_sync2)(True)
+    await _test_bridge_lock_async2(True)
