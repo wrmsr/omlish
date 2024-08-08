@@ -37,6 +37,7 @@ https://github.com/agronholm/anyio/blob/8907964926a24461840eee0925d3f355e729f15d
  - pytest_fixture_setup
 
 """  # noqa
+import functools
 import inspect
 import typing as ta
 
@@ -46,6 +47,12 @@ from .... import lang
 from ....asyncs import trio_asyncio as trai
 from ....diag import pydevd as pdu
 from ._registry import register
+
+
+if ta.TYPE_CHECKING:
+    import trio_asyncio
+else:
+    trio_asyncio = lang.proxy_import('trio_asyncio')
 
 
 ALL_ASYNCS_MARK = 'all_asyncs'
@@ -117,6 +124,13 @@ class AsyncsPlugin:
             raise Exception(f'{item.nodeid}: async def function and no async plugin specified')
 
         if 'trio_asyncio' in bes:
-            item.obj = trai.with_trio_asyncio_loop(wait=True)(item.obj)
+            obj = item.obj
+
+            @functools.wraps(obj)
+            @trai.with_trio_asyncio_loop(wait=True)
+            async def run(*args, **kwargs):
+                await trio_asyncio.aio_as_trio(obj)(*args, **kwargs)
+
+            item.obj = run
 
         yield
