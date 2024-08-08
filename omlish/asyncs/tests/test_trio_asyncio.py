@@ -171,24 +171,13 @@ async def test_trio_asyncio_loop(harness) -> None:
 
 @skip_if_cant_import('trio_asyncio')
 @pytest.mark.all_async_backends
-async def test_all_async_backends_no_loop(__async_backend):
+async def test_all_async_backends_no_loop(__async_backend):  # noqa
     backend = sniffio.current_async_library()
     assert __async_backend == backend
 
     assert trai.current_loop.get() is None
 
     await anyio.sleep(.1)
-
-
-# @skip_if_cant_import('trio_asyncio')
-# @pytest.mark.all_async_backends
-# async def test_all_anyio_backends_no_loop(anyio_backend):
-#     backend = sniffio.current_async_library()
-#     assert anyio_backend == backend
-#
-#     assert trai.current_loop.get() is None
-#
-#     await anyio.sleep(.1)
 
 
 @skip_if_cant_import('trio_asyncio')
