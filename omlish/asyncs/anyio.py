@@ -86,7 +86,7 @@ def get_backend_task(at: anyio.TaskInfo) -> BackendTask | None:
         # https://github.com/agronholm/anyio/blob/8907964926a24461840eee0925d3f355e729f15d/src/anyio/_backends/_asyncio.py#L1846  # noqa
         # weakref.ref
         obj = at._task()  # type: ignore  # noqa
-        if obj is not None and not _is_class_named(obj, 'asyncio.tasks', 'Task'):
+        if obj is not None and not _is_class_named(obj, '_asyncio', 'Task'):
             raise TypeError(obj)
         return obj
 
