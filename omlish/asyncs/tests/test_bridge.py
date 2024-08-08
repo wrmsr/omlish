@@ -8,9 +8,9 @@ import functools
 import anyio
 import pytest
 
+from ...testing.pytest import skip_if_cant_import
 from .. import anyio as aiu
 from .. import bridge as br
-from ...testing.pytest import skip_if_cant_import
 
 
 ##
@@ -48,6 +48,7 @@ def _test_trivial_bridge(a_to_s, s_to_a):
     assert a_to_s(a_func)(s_to_a(callback), 'arg') == 'a_func(arg) -> callback(arg)'
 
 
+@pytest.mark.all_asyncs
 async def test_trivial_async_bridge():
     await _test_trivial_async_bridge(br.trivial_a_to_s, br.trivial_s_to_a)
 
@@ -57,6 +58,7 @@ def test_trivial_bridge():
 
 
 @skip_if_cant_import('greenlet')
+@pytest.mark.all_asyncs
 async def test_nontrivial_async_bridge():
     await _test_trivial_async_bridge(br.a_to_s, br.s_to_a)
 
