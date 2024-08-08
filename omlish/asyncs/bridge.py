@@ -159,7 +159,10 @@ def is_in_bridge() -> bool:
     except AttributeError:
         last_g = None
     else:
-        last_g = gl[-1]
+        if gl:
+            last_g = gl[-1]
+        else:
+            last_g = None
 
     if last_t is None:
         if last_g is None:
