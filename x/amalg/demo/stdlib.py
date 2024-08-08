@@ -1,4 +1,6 @@
-import typing as ta
+import os.path  # noqa
+import pprint  # noqa
+import typing as ta  # noqa
 
 
 ##
@@ -23,6 +25,8 @@ def check_not_none(obj: ta.Optional[T]) -> T:
 
 def _main() -> None:
     check_not_none(5)
+
+    pprint.pprint('hi')
 
 
 if __name__ == '__main__':
