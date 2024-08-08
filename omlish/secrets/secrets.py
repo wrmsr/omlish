@@ -39,7 +39,7 @@ EMPTY_SECRETS = EmptySecrets()
 
 
 class SimpleSecrets(Secrets):
-    def __init_(self, dct: ta.Mapping[str, str]) -> None:
+    def __init__(self, dct: ta.Mapping[str, str]) -> None:
         super().__init__()
         self._dct = dct
 

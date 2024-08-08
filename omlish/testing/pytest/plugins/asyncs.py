@@ -1,4 +1,8 @@
 """
+TODO:
+ - auto drain_asyncio
+
+==
 
 _pytest:
 https://github.com/pytest-dev/pytest/blob/ef9b8f9d748b6f50eab5d43e32d93008f7880899/src/_pytest/python.py#L155
@@ -97,7 +101,13 @@ class AsyncsPlugin:
 
     @pytest.hookimpl(hookwrapper=True)
     def pytest_runtest_call(self, item):
-        if item.get_closest_marker('trio_asyncio') is not None:
+        bes = [be for be in self.ASYNC_BACKENDS if item.get_closest_marker(be) is not None]
+        if len(bes) > 1:
+            raise Exception(f'{item.nodeid}: multiple async backends specified: {bes}')
+        elif is_async_function(item.obj) and not bes:
+            raise Exception(f'{item.nodeid}: async def function and no async plugin specified')
+
+        if 'trio_asyncio' in bes:
             obj = item.obj
             import trio_asyncio
 
@@ -107,11 +117,5 @@ class AsyncsPlugin:
                     await trio_asyncio.aio_as_trio(obj)(*args, **kwargs)
 
             item.obj = run
-
-        elif (
-                is_async_function(item.obj) and
-                not any(item.get_closest_marker(be) is not None for be in self.ASYNC_BACKENDS)
-        ):
-            raise Exception(f'{item.nodeid}: async def function and no async plugin specified')
 
         yield

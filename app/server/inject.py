@@ -6,6 +6,7 @@ import sqlalchemy.ext.asyncio as saa
 
 from omlish import inject as inj
 from omlish import lang
+from omlish import secrets as sec
 from omlish import sql
 from omlish.http import sessions
 from omlish.http.asgi import AsgiApp
@@ -30,7 +31,7 @@ log = logging.getLogger(__name__)
 def _bind_cookie_session_store() -> inj.Elemental:
     return inj.private(
         inj.bind(sessions.Signer.Config(
-            secret_key='secret-key-goes-here',  # noqa
+            secret_key=sec.Secret('session_secret_key'),
         )),
         inj.bind(sessions.Signer, singleton=True),
 
@@ -74,6 +75,10 @@ def base_server_url() -> BaseServerUrl:
 
 def bind() -> inj.Elemental:
     return inj.private(
+        inj.bind(sec.Secrets, to_const=sec.SimpleSecrets({
+            'session_secret_key': 'secret-key-goes-here',  # noqa
+        })),
+
         inj.bind(J2Templates.Config(
             resource_root=__package__ + '.templates',
             reload=True,
