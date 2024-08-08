@@ -7,6 +7,7 @@ from .std.check import check_not_none
 from .std.logging import log
 from .std.logging import setup_standard_logging
 from .std.runtime import check_runtime_version
+from .std.subprocesses import subprocess_check_output
 
 
 @cached_nullary
@@ -25,6 +26,8 @@ def _main() -> None:
     check_not_none(_foo())  # Inline comment
 
     pprint.pprint('hi')
+
+    print(subprocess_check_output('uptime'))
 
 
 if __name__ == '__main__':

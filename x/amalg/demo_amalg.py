@@ -2,6 +2,7 @@ import functools
 import logging
 import os.path  # noqa
 import pprint
+import subprocess
 import sys
 import typing as ta  # noqa
 
@@ -72,6 +73,24 @@ def check_runtime_version() -> None:
 
 
 ########################################
+# /Users/spinlock/src/wrmsr/omlish/x/amalg/demo/std/subprocesses.py
+
+
+def _mask_env_kwarg(kwargs):
+    return {**kwargs, **({'env': '...'} if 'env' in kwargs else {})}
+
+
+def subprocess_check_call(*args, stdout=sys.stderr, **kwargs):
+    log.debug((args, _mask_env_kwarg(kwargs)))
+    return subprocess.check_call(*args, stdout=stdout, **kwargs)  # type: ignore
+
+
+def subprocess_check_output(*args, **kwargs):
+    log.debug((args, _mask_env_kwarg(kwargs)))
+    return subprocess.check_output(*args, **kwargs)
+
+
+########################################
 # /Users/spinlock/src/wrmsr/omlish/x/amalg/demo/demo.py
 
 
@@ -91,6 +110,8 @@ def _main() -> None:
     check_not_none(_foo())  # Inline comment
 
     pprint.pprint('hi')
+
+    print(subprocess_check_output('uptime'))
 
 
 if __name__ == '__main__':
