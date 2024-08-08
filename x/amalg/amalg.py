@@ -165,7 +165,7 @@ class SrcFile:
 ##
 
 
-SECTION_SEP = '## ' + '=' * 40 + '\n'
+SECTION_SEP = '#' * 40 + '\n'
 
 
 def _main() -> None:
@@ -225,6 +225,9 @@ def _main() -> None:
     ##
 
     print(out.getvalue())
+
+    with open(os.path.join(root_dir, 'demo_amalg.py'), 'w') as f:
+        f.write(out.getvalue())
 
 
 if __name__ == '__main__':
