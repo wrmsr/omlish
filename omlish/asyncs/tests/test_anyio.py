@@ -133,3 +133,13 @@ async def test_all_async_backends(__async_backend):
     assert __async_backend == backend
 
     await anyio.sleep(.1)
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize('anyio_backend', ['asyncio', 'trio'])
+async def test_all_anyio_all_backends(anyio_backend):
+    backend = sniffio.current_async_library()
+    assert anyio_backend == backend
+    # if backend == 'asyncio':
+    #     import trio_asyncio
+    #     assert trio_asyncio.current_loop.get() is not None
