@@ -165,6 +165,9 @@ class SrcFile:
 ##
 
 
+SECTION_SEP = '## ' + '=' * 40 + '\n'
+
+
 def _main() -> None:
     root_dir = os.path.dirname(__file__)
     main_path = os.path.abspath(os.path.join(root_dir, 'demo/demo.py'))
@@ -197,6 +200,8 @@ def _main() -> None:
         dct.setdefault((k := (imp.mod, imp.item, imp.as_)), []).append(imp)
     for _, l in sorted(dct.items()):
         out.write(join_toks(l[0].toks))
+    if dct:
+        out.write('\n\n')
 
     ##
 
@@ -206,10 +211,16 @@ def _main() -> None:
     }))
     sfs = [sf for ss in ts for sf in sorted(ss)]
 
-    for sf in sfs:
+    for i, sf in enumerate(sfs):
         f = src_files[sf]
-        for cl in f.content_lines():
-            out.write(join_toks(cl))
+        out.write(SECTION_SEP)
+        out.write(f'# {f.path}\n\n\n')
+        sf_src = ''.join(join_toks(cl) for cl in f.content_lines())
+        out.write(sf_src.strip())
+        if i < len(sfs) - 1:
+            out.write('\n\n\n')
+        else:
+            out.write('\n')
 
     ##
 
