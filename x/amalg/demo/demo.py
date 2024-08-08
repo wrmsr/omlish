@@ -6,7 +6,10 @@ from .stdlib import check_not_none
 
 
 def _main() -> None:
-    check_not_none(5)
+    """Docstring"""
+
+    # Comment
+    check_not_none(5)  # Inline comment
 
     pprint.pprint('hi')
 

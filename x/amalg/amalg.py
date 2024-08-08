@@ -28,6 +28,7 @@ def ignore_ws(toks: ta.Iterable[trt.Token]) -> ta.Iterable[trt.Token]:
 @dc.dataclass(frozen=True, kw_only=True)
 class Import:
     mod: str
+    item: str | None
     as_: str | None
 
     src_file: str
@@ -44,32 +45,39 @@ def make_import(
         return None
     ft = lts[0]
 
-    if ft.name == 'NAME' and ft.src == 'import':
-        ml = []
-        as_ = None
-        for tok in (it := iter(ignore_ws(lts[1:]))):
-            if tok.name in ('NAME', 'OP'):
-                if tok.src == 'as':
-                    check.none(as_)
-                    nt = next(it)
-                    check.equal(nt.name, 'NAME')
-                    as_ = nt.src
-                else:
-                    ml.append(tok.src)
+    if ft.name != 'NAME' or ft.src not in ('import', 'from'):
+        return None
+
+    ml = []
+    il = None
+    as_ = None
+    for tok in (it := iter(ignore_ws(lts[1:]))):
+        if tok.name in ('NAME', 'OP'):
+            if tok.src == 'as':
+                check.none(as_)
+                nt = next(it)
+                check.equal(nt.name, 'NAME')
+                as_ = nt.src
+            elif tok.src == 'import':
+                check.equal(ft.src, 'from')
+                il = []
+            elif il is not None:
+                il.append(tok.src)
             else:
-                breakpoint()
+                ml.append(tok.src)
+        else:
+            raise Exception(tok)
 
-        return Import(
-            mod=''.join(ml),
-            as_=as_,
+    return Import(
+        mod=''.join(ml),
+        item=''.join(il) if il is not None else None,
+        as_=as_,
 
-            src_file=src_file,
-            line=ft.line,
+        src_file=src_file,
+        line=ft.line,
 
-            toks=lts,
-        )
-
-    return None
+        toks=lts,
+    )
 
 
 def _main() -> None:
