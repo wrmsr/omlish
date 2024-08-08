@@ -11,6 +11,7 @@ import pytest
 
 from omlish import check
 from omlish import lang
+from omlish.testing import pytest as ptu
 from omserv.server.config import Config
 from omserv.server.tests.utils import get_free_port
 from omserv.server.tests.utils import get_timeout_s
@@ -25,6 +26,7 @@ def randhex(l: int) -> str:
     return hex(secrets.randbits(4 * l))[2:]
 
 
+@ptu.skip_if_cant_import('greenlet')
 @pytest.mark.trio
 # @pytest.mark.asyncio
 async def test_demo_auth():

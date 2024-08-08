@@ -8,7 +8,7 @@ import functools
 import anyio
 import pytest
 
-from ...testing.pytest import skip_if_cant_import
+from ...testing import pytest as ptu
 from .. import anyio as aiu
 from .. import bridge as br
 
@@ -57,13 +57,13 @@ def test_trivial_bridge():
     _test_trivial_bridge(br.trivial_a_to_s, br.trivial_s_to_a)
 
 
-@skip_if_cant_import('greenlet')
+@ptu.skip_if_cant_import('greenlet')
 @pytest.mark.all_asyncs
 async def test_nontrivial_async_bridge():
     await _test_trivial_async_bridge(br.a_to_s, br.s_to_a)
 
 
-@skip_if_cant_import('greenlet')
+@ptu.skip_if_cant_import('greenlet')
 def test_nontrivial_bridge():
     _test_trivial_bridge(br.a_to_s, br.s_to_a)
 
@@ -104,7 +104,7 @@ async def a_sleep_callback4(arg):
     return f'a_sleep_callback4({arg})'
 
 
-@skip_if_cant_import('greenlet')
+@ptu.skip_if_cant_import('greenlet')
 @pytest.mark.all_asyncs
 async def test_async_bridge2():
     await anyio.sleep(.01)
@@ -123,7 +123,7 @@ async def test_async_bridge2():
 ##
 
 
-@skip_if_cant_import('greenlet')
+@ptu.skip_if_cant_import('greenlet')
 @pytest.mark.all_asyncs
 async def test_async_bridge3():
     n = 4
@@ -283,7 +283,7 @@ async def _test_bridge_lock_async2():
     await _test_bridge_lock_async()
 
 
-@skip_if_cant_import('greenlet')
+@ptu.skip_if_cant_import('greenlet')
 def test_bridge_lock_sync():
     print()
     print('test_bridge_lock_sync')
@@ -292,7 +292,7 @@ def test_bridge_lock_sync():
     br.a_to_s(_test_bridge_lock_async2)()
 
 
-@skip_if_cant_import('greenlet')
+@ptu.skip_if_cant_import('greenlet')
 @pytest.mark.all_asyncs
 async def test_bridge_lock_async():
     print()
