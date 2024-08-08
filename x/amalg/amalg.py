@@ -93,7 +93,7 @@ class SrcFile:
 
     @lang.cached_function
     def src(self) -> str:
-        with open(os.path.join(self.path)) as f:
+        with open(self.path) as f:
             return f.read()
 
     @lang.cached_function
@@ -110,7 +110,7 @@ class SrcFile:
         ta.Sequence[Tokens],
     ]:
         imps: list[Import] = []
-        ctls: list[list[trt.Token]] = []
+        ctls: list[Tokens] = []
         for line in self.lines():
             if (imp := make_import(line, self.path)) is not None:
                 imps.append(imp)
@@ -120,11 +120,11 @@ class SrcFile:
 
     @lang.cached_function
     def imports(self) -> ta.Sequence[Import]:
-        return self._process_lines[0]
+        return self._process_lines()[0]
 
     @lang.cached_function
     def content_lines(self) -> ta.Sequence[Tokens]:
-        return self._process_lines[1]
+        return self._process_lines()[1]
 
 
 ##
@@ -132,27 +132,24 @@ class SrcFile:
 
 def _main() -> None:
     root_dir = os.path.dirname(__file__)
-
-    main_file = 'demo/demo.py'
+    main_file = os.path.abspath(os.path.join(root_dir, 'demo/demo.py'))
     src_files = [main_file]
     while src_files:
         src_file = src_files.pop()
+        f = SrcFile(src_file)
         print(src_file)
 
-        with open(os.path.join(root_dir, src_file)) as f:
-            src = f.read()
+        for imp in f.imports():
+            print(imp)
 
-        toks = trt.src_to_tokens(src)
-        tok_lines = [list(it) for g, it in itertools.groupby(toks, lambda t: t.line)]
-
-        imps = [i for lts in tok_lines if (i := make_import(lts, src_file)) is not None]
-        for imp in imps:
             if not imp.mod.startswith('.'):
                 continue
             parts = imp.mod.split('.')
             nd = len(parts) - parts[::-1].index('')
-            rel_path = os.path.join('../' * (nd - 1), *parts[nd:-1], parts[-1] + '.py')
+            rel_path = os.path.join(os.path.dirname(src_file), '../' * (nd - 1), *parts[nd:-1], parts[-1] + '.py')
             src_files.append(rel_path)
+
+        print()
 
 
 if __name__ == '__main__':
