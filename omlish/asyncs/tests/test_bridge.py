@@ -4,6 +4,7 @@ See:
 """  # noqa
 import abc
 import functools
+import threading
 
 import anyio
 import pytest
@@ -169,22 +170,32 @@ class ALock(abc.ABC):
 
 
 class SLockImpl(SLock):
+    def __init__(self):
+        self._lock = threading.RLock()
+
     def lock(self):
         print(f'{self!r}.lock')
+        self._lock.acquire()
         self.lc += 1
 
     def unlock(self):
         print(f'{self!r}.unlock')
+        self._lock.release()
         self.uc += 1
 
 
 class ALockImpl(ALock):
+    def __init__(self):
+        self._lock = anyio.Lock()
+
     async def lock(self):
         print(f'{self!r}.lock')
+        await self._lock.acquire()
         self.lc += 1
 
     async def unlock(self):
         print(f'{self!r}.unlock')
+        self._lock.release()
         self.uc += 1
 
 
