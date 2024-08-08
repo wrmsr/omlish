@@ -102,7 +102,7 @@ class AsyncsPlugin:
     @pytest.hookimpl(hookwrapper=True)
     def pytest_runtest_call(self, item):
         bes = [be for be in self.ASYNC_BACKENDS if item.get_closest_marker(be) is not None]
-        if len(bes) > 1:
+        if len(bes) > 1 and set(bes) != {'trio', 'trio_asyncio'}:
             raise Exception(f'{item.nodeid}: multiple async backends specified: {bes}')
         elif is_async_function(item.obj) and not bes:
             raise Exception(f'{item.nodeid}: async def function and no async plugin specified')
