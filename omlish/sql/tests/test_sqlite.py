@@ -1,9 +1,6 @@
 """
 TODO:
  - https://github.com/asg017/sqlite-vec/tree/main
- - https://github.com/wrmsr/sqlean.py (3.13)
- - async
- - duckdb - https://github.com/Mause/duckdb_engine
 """
 import contextlib
 
@@ -13,7 +10,6 @@ import sqlalchemy.ext.asyncio
 
 from ... import lang
 from ...testing import pytest as ptu
-from .. import sqlean as _sqlean
 
 
 ##
@@ -57,15 +53,6 @@ def _test_sqlite(scheme: str) -> None:
 
 def test_sqlite():
     _test_sqlite('sqlite')
-
-
-@ptu.skip_if_cant_import('sqlean')
-def test_sqlite_sqlean():
-    _test_sqlite(_sqlean.SqleanDialect.name)
-
-    with lang.disposing(sa.create_engine(f'{_sqlean.SqleanDialect.name}://', echo=True)) as engine:
-        with engine.connect() as conn:
-            print(conn.execute(sa.text('select cos(0)')).fetchall())
 
 
 ##

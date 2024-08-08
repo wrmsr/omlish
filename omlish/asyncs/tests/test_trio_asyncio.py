@@ -170,6 +170,7 @@ async def test_trio_asyncio_loop(harness) -> None:
         await trai.aio_as_trio(asyncio.sleep)(.1)
 
 
+@skip_if_cant_import('trio_asyncio')
 @pytest.mark.all_asyncs
 async def test_all_asyncs(__async_backend):  # noqa
     backend = sniffio.current_async_library()
@@ -192,6 +193,7 @@ async def test_all_asyncs(__async_backend):  # noqa
     await anyio.sleep(.1)
 
 
+@skip_if_cant_import('trio_asyncio')
 @pytest.mark.trio_asyncio
 async def test_just_trio_asyncio(__async_backend):  # noqa
     assert __async_backend == 'trio_asyncio'
