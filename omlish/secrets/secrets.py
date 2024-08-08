@@ -35,6 +35,9 @@ class EmptySecrets(Secrets):
         raise KeyError(key)
 
 
+EMPTY_SECRETS = EmptySecrets()
+
+
 class SimpleSecrets(Secrets):
     def __init_(self, dct: ta.Mapping[str, str]) -> None:
         super().__init__()

@@ -10,6 +10,7 @@ import zlib
 
 from .. import fnpairs as fps
 from .. import lang
+from .. import secrets as sec
 from .cookies import dump_cookie
 from .cookies import parse_cookie
 from .json import JSON_TAGGER
@@ -44,13 +45,19 @@ def bytes_to_int(bytestr: bytes) -> int:
 class Signer:
     @dc.dataclass(frozen=True)
     class Config:
-        secret_key: str
+        secret_key: str | sec.Secret = dc.field()
         salt: str = 'cookie-session'
 
-    def __init__(self, config: Config) -> None:
+    def __init__(
+            self,
+            config: Config,
+            *,
+            secrets: sec.Secrets = sec.EMPTY_SECRETS,
+    ) -> None:
         super().__init__()
 
         self._config = config
+        self._secrets = secrets
 
     @lang.cached_function
     def digest(self) -> ta.Any:
@@ -58,7 +65,7 @@ class Signer:
 
     @lang.cached_function
     def derive_key(self) -> bytes:
-        mac = hmac.new(self._config.secret_key.encode(), digestmod=self.digest())
+        mac = hmac.new(self._secrets.fix(self._config.secret_key).encode(), digestmod=self.digest())
         mac.update(self._config.salt.encode())
         return mac.digest()
 
