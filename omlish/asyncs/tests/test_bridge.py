@@ -10,6 +10,7 @@ import pytest
 
 from .. import anyio as aiu
 from .. import bridge as br
+from ...testing.pytest import skip_if_cant_import
 
 
 ##
@@ -31,12 +32,7 @@ async def a_func(a_cb, arg):
     return f'a_func({arg}) -> {await a_cb(arg)}'
 
 
-@pytest.mark.all_asyncs
-@pytest.mark.parametrize(('a_to_s', 's_to_a'), [
-    (br.a_to_s, br.s_to_a),
-    (br.trivial_a_to_s, br.trivial_s_to_a),
-])
-async def test_trivial_async_bridge(a_to_s, s_to_a):
+async def _test_trivial_async_bridge(a_to_s, s_to_a):
     assert (await a_func(a_callback, 'arg')) == 'a_func(arg) -> a_callback(arg)'
     assert (await a_func(s_to_a(callback), 'arg')) == 'a_func(arg) -> callback(arg)'
 
@@ -44,16 +40,30 @@ async def test_trivial_async_bridge(a_to_s, s_to_a):
     assert (await s_to_a(func)(a_to_s(a_callback), 'arg')) == 'func(arg) -> a_callback(arg)'
 
 
-@pytest.mark.parametrize(('a_to_s', 's_to_a'), [
-    (br.a_to_s, br.s_to_a),
-    (br.trivial_a_to_s, br.trivial_s_to_a),
-])
-def test_trivial_bridge(a_to_s, s_to_a):
+def _test_trivial_bridge(a_to_s, s_to_a):
     assert func(callback, 'arg') == 'func(arg) -> callback(arg)'
     assert func(a_to_s(a_callback), 'arg') == 'func(arg) -> a_callback(arg)'
 
     assert a_to_s(a_func)(a_callback, 'arg') == 'a_func(arg) -> a_callback(arg)'
     assert a_to_s(a_func)(s_to_a(callback), 'arg') == 'a_func(arg) -> callback(arg)'
+
+
+async def test_trivial_async_bridge():
+    await _test_trivial_async_bridge(br.trivial_a_to_s, br.trivial_s_to_a)
+
+
+def test_trivial_bridge():
+    _test_trivial_bridge(br.trivial_a_to_s, br.trivial_s_to_a)
+
+
+@skip_if_cant_import('greenlet')
+async def test_nontrivial_async_bridge():
+    await _test_trivial_async_bridge(br.a_to_s, br.s_to_a)
+
+
+@skip_if_cant_import('greenlet')
+def test_nontrivial_bridge():
+    _test_trivial_bridge(br.a_to_s, br.s_to_a)
 
 
 ##
@@ -92,6 +102,7 @@ async def a_sleep_callback4(arg):
     return f'a_sleep_callback4({arg})'
 
 
+@skip_if_cant_import('greenlet')
 @pytest.mark.all_asyncs
 async def test_async_bridge2():
     await anyio.sleep(.01)
@@ -110,6 +121,7 @@ async def test_async_bridge2():
 ##
 
 
+@skip_if_cant_import('greenlet')
 @pytest.mark.all_asyncs
 async def test_async_bridge3():
     n = 4
@@ -269,6 +281,7 @@ async def _test_bridge_lock_async2():
     await _test_bridge_lock_async()
 
 
+@skip_if_cant_import('greenlet')
 def test_bridge_lock_sync():
     print()
     print('test_bridge_lock_sync')
@@ -277,6 +290,7 @@ def test_bridge_lock_sync():
     br.a_to_s(_test_bridge_lock_async2)()
 
 
+@skip_if_cant_import('greenlet')
 @pytest.mark.all_asyncs
 async def test_bridge_lock_async():
     print()
