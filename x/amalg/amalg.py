@@ -35,7 +35,7 @@ class Import:
     item: str | None
     as_: str | None
 
-    src_file: str
+    src_path: str
     line: int
 
     toks: Tokens = dc.field(repr=False)
@@ -43,7 +43,7 @@ class Import:
 
 def make_import(
         lts: Tokens,
-        src_file: str,
+        src_path: str,
 ) -> Import | None:
     if not lts:
         return None
@@ -77,7 +77,7 @@ def make_import(
         item=''.join(il) if il is not None else None,
         as_=as_,
 
-        src_file=src_file,
+        src_path=src_path,
         line=ft.line,
 
         toks=lts,
@@ -137,13 +137,13 @@ def _main() -> None:
     src_files: dict[str, SrcFile] = {}
     todo = [main_file]
     while todo:
-        src_file = todo.pop()
-        if src_file in src_files:
+        src_path = todo.pop()
+        if src_path in src_files:
             continue
 
-        f = SrcFile(src_file)
-        src_files[src_file] = f
-        print(src_file)
+        f = SrcFile(src_path)
+        src_files[src_path] = f
+        print(src_path)
 
         for imp in f.imports():
             print(imp)
@@ -153,8 +153,15 @@ def _main() -> None:
 
             parts = imp.mod.split('.')
             nd = len(parts) - parts[::-1].index('')
-            rel_path = os.path.join(os.path.dirname(src_file), '../' * (nd - 1), *parts[nd:-1], parts[-1] + '.py')
-            todo.append(check.isinstance(rel_path, str))
+            imp_path = os.path.abspath(
+                os.path.join(
+                    os.path.dirname(src_path),
+                    '../' * (nd - 1),
+                    *parts[nd:-1],
+                    parts[-1] + '.py',
+                ),
+            )
+            todo.append(check.isinstance(imp_path, str))
 
         print()
 
