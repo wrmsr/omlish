@@ -88,7 +88,7 @@ _BRIDGE_GREENLET_ATTR = f'__{__package__.replace(".", "__")}__bridge_greenlet__'
 
 
 _DEBUG_PRINT: ta.Callable[..., None] | None = None
-_DEBUG_PRINT = print  # noqa
+# _DEBUG_PRINT = print  # noqa
 
 
 def _push_transition(a_to_s: bool, l: list[_BridgeTransition], t: _BridgeTransition) -> _BridgeTransition:
@@ -129,16 +129,42 @@ def _get_transitions() -> list[_BridgeTransition]:
 
 
 def is_in_bridge() -> bool:
-    # has_t = (t := aiu.get_current_backend_task()) is not None
-    # has_tb = t is not None and t in _BRIDGED_TASKS
-    # has_g = getattr(greenlet.getcurrent(), _BRIDGE_GREENLET_ATTR, False)
-    # print(f'{has_t=} {has_tb=} {has_g=}')
-    # return has_g
-    # raise NotImplementedError
     if _DEBUG_PRINT:
-        l = _get_transitions()
-        import pprint
-        pprint.pprint(l)
+        _DEBUG_PRINT(_get_transitions())
+
+    if (t := aiu.get_current_backend_task()) is not None:
+        try:
+            tl = _BRIDGED_TASKS[t]
+        except KeyError:
+            first_t = None
+        else:
+            first_t = tl[0]
+    else:
+        first_t = None
+
+    g = greenlet.getcurrent()
+    try:
+        gl = getattr(g, _BRIDGE_GREENLET_ATTR)
+    except AttributeError:
+        first_g = None
+    else:
+        first_g = gl[0]
+
+    if first_t is None:
+        if first_g is None:
+            return False
+        o = first_g
+    else:
+        if first_g is None or first_g.seq > first_t.seq:
+            o = first_t
+        else:
+            o = first_g
+
+    print(f'{o.a_to_s=} {(t is None)=}')
+
+    # if o.a_to_s is not (t is None):
+    #     raise UnexpectedBridgeNestingError
+    # raise NotImplementedError
     return False
 
 
