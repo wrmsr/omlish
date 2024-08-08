@@ -140,6 +140,9 @@ async def test_async_bridge3():
 
 
 class SLock(abc.ABC):
+    lc = 0
+    uc = 0
+
     @abc.abstractmethod
     def lock(self):
         raise NotImplementedError
@@ -150,6 +153,9 @@ class SLock(abc.ABC):
 
 
 class ALock(abc.ABC):
+    lc = 0
+    uc = 0
+
     @abc.abstractmethod
     async def lock(self):
         raise NotImplementedError
@@ -163,9 +169,6 @@ class ALock(abc.ABC):
 
 
 class SLockImpl(SLock):
-    lc = 0
-    uc = 0
-
     def lock(self):
         print(f'{self!r}.lock')
         self.lc += 1
@@ -176,9 +179,6 @@ class SLockImpl(SLock):
 
 
 class ALockImpl(ALock):
-    lc = 0
-    uc = 0
-
     async def lock(self):
         print(f'{self!r}.lock')
         self.lc += 1
@@ -195,6 +195,9 @@ class AtoSLock(SLock):
     def __init__(self, alock: ALock) -> None:
         self.alock = alock
 
+    lc = property(lambda self: self.alock.lc)  # type: ignore
+    uc = property(lambda self: self.alock.uc)  # type: ignore
+
     def lock(self):
         return br.a_to_s(self.alock.lock)()
 
@@ -205,6 +208,9 @@ class AtoSLock(SLock):
 class StoALock(ALock):
     def __init__(self, slock: SLock) -> None:
         self.slock = slock
+
+    lc = property(lambda self: self.slock.lc)  # type: ignore
+    uc = property(lambda self: self.slock.uc)  # type: ignore
 
     async def lock(self):
         return await br.s_to_a(self.slock.lock)()
@@ -258,6 +264,7 @@ class ALockThing:
 
 def _assert_s_lock(expects_async):
     sl = SLockThing()
+    assert isinstance(sl.slock, AtoSLock) == expects_async
     assert sl.slock.lc == sl.slock.uc == 0
     sl.run()
     assert sl.slock.lc == sl.slock.uc == 1
@@ -265,48 +272,34 @@ def _assert_s_lock(expects_async):
 
 async def _assert_a_lock(expects_async):
     al = ALockThing()
+    assert isinstance(al.alock, StoALock) == (not expects_async)
     assert al.alock.lc == al.alock.uc == 0
     await al.run()
     assert al.alock.lc == al.alock.uc == 1
 
 
 def _test_bridge_lock_sync(expects_async):
-    print()
-    print('_test_bridge_lock_sync')
-
     _assert_s_lock(expects_async)
     br.a_to_s(_assert_a_lock)(expects_async)
 
 
 async def _test_bridge_lock_async(expects_async):
-    print()
-    print('_test_bridge_lock_async')
-
     await _assert_a_lock(expects_async)
     await br.s_to_a(_assert_s_lock)(expects_async)
 
 
 def _test_bridge_lock_sync2(expects_async):
-    print()
-    print('_test_bridge_lock_sync2')
-
     _test_bridge_lock_sync(expects_async)
     br.a_to_s(_test_bridge_lock_async)(expects_async)
 
 
 async def _test_bridge_lock_async2(expects_async):
-    print()
-    print('_test_bridge_lock_async2')
-
     await br.s_to_a(_test_bridge_lock_sync)(expects_async)
     await _test_bridge_lock_async(expects_async)
 
 
 @ptu.skip_if_cant_import('greenlet')
 def test_bridge_lock_sync():
-    print()
-    print('test_bridge_lock_sync')
-
     _test_bridge_lock_sync2(False)
     br.a_to_s(_test_bridge_lock_async2)(False)
 
@@ -315,8 +308,5 @@ def test_bridge_lock_sync():
 # @pytest.mark.all_asyncs
 @pytest.mark.trio
 async def test_bridge_lock_async():
-    print()
-    print('test_bridge_lock_async')
-
     await br.s_to_a(_test_bridge_lock_sync2)(True)
     await _test_bridge_lock_async2(True)
