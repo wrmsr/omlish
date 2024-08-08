@@ -1,4 +1,6 @@
 """
+https://github.com/kubernetes/kubernetes/blob/60c4c2b2521fb454ce69dee737e3eb91a25e0535/pkg/controller/volume/persistentvolume/pv_controller.go#L60-L63
+
 TODO:
  - reuse greenlet if nested somehow?
 """
@@ -63,6 +65,18 @@ class UnexpectedBridgeNestingError(Exception):
         # breakpoint()
 
 
+#
+
+
+_DEBUG_PRINT: ta.Callable[..., None] | None = None
+# _DEBUG_PRINT = print  # noqa
+
+_TRACK_TRANSITION_OBJS = False
+
+
+#
+
+
 _BRIDGE_TRANSITIONS_SEQ = itertools.count()
 
 
@@ -80,15 +94,9 @@ def _make_transition(seq: int, a_to_s: bool, obj: ta.Any) -> _BridgeTransition:
     return _BridgeTransition(seq, a_to_s, obj.__class__.__name__, id(obj), (obj if _TRACK_TRANSITION_OBJS else None))
 
 
-_TRACK_TRANSITION_OBJS = False
-
 _BRIDGED_TASKS: ta.MutableMapping[ta.Any, list[_BridgeTransition]] = weakref.WeakKeyDictionary()
 
 _BRIDGE_GREENLET_ATTR = f'__{__package__.replace(".", "__")}__bridge_greenlet__'
-
-
-_DEBUG_PRINT: ta.Callable[..., None] | None = None
-# _DEBUG_PRINT = print  # noqa
 
 
 def _push_transition(a_to_s: bool, l: list[_BridgeTransition], t: _BridgeTransition) -> _BridgeTransition:
@@ -136,36 +144,39 @@ def is_in_bridge() -> bool:
         try:
             tl = _BRIDGED_TASKS[t]
         except KeyError:
-            first_t = None
+            last_t = None
         else:
-            first_t = tl[0]
+            if tl:
+                last_t = tl[-1]
+            else:
+                last_t = None
     else:
-        first_t = None
+        last_t = None
 
     g = greenlet.getcurrent()
     try:
         gl = getattr(g, _BRIDGE_GREENLET_ATTR)
     except AttributeError:
-        first_g = None
+        last_g = None
     else:
-        first_g = gl[0]
+        last_g = gl[-1]
 
-    if first_t is None:
-        if first_g is None:
+    if last_t is None:
+        if last_g is None:
             return False
-        o = first_g
-    else:
-        if first_g is None or first_g.seq > first_t.seq:
-            o = first_t
+        o = last_g
+    else:  # noqa
+        if last_g is None or last_g.seq < last_t.seq:
+            o = last_t
         else:
-            o = first_g
+            o = last_g
 
-    print(f'{o.a_to_s=} {(t is None)=}')
+    in_a = (t is not None)
 
-    # if o.a_to_s is not (t is None):
-    #     raise UnexpectedBridgeNestingError
-    # raise NotImplementedError
-    return False
+    if _DEBUG_PRINT:
+        _DEBUG_PRINT(f'{o.a_to_s=} {in_a=}')
+
+    return in_a != o.a_to_s
 
 
 def _safe_cancel_awaitable(awaitable: ta.Awaitable[ta.Any]) -> None:
