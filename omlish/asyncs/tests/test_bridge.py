@@ -248,6 +248,7 @@ class SLockThing:
             print(f'{self!r}.run')
         finally:
             self.slock.unlock()
+        print()
 
 
 class ALockThing:
@@ -260,6 +261,7 @@ class ALockThing:
             print(f'{self!r}.run')
         finally:
             await self.alock.unlock()
+        print()
 
 
 def _assert_s_lock(expects_async):
