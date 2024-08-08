@@ -74,3 +74,5 @@ sqlean.py==3.45.1; python_version < '3.13'
 duckdb==1.0.0
 
 tokenize_rt==6.0.0
+
+pycparser==2.22
