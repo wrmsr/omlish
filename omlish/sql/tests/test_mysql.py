@@ -113,6 +113,7 @@ async def _test_mysql_async(url: str) -> None:
 
 
 @ptu.skip_if_cant_import('aiomysql')
+@ptu.skip_if_cant_import('greenlet')
 @pytest.mark.asyncio
 async def test_async_mysql_aiomysql(harness) -> None:
     url = check.isinstance(harness[Dbs].specs()['mysql'].loc, UrlDbLoc).url
