@@ -1,3 +1,4 @@
+import itertools
 import os.path
 import pprint
 
@@ -20,6 +21,9 @@ def _main() -> None:
 
         toks = tokenize_rt.src_to_tokens(src)
         pprint.pprint(toks)
+
+        tok_lines = [list(it) for g, it in itertools.groupby(toks, lambda t: t.line)]
+        pprint.pprint(tok_lines)
 
         src2 = tokenize_rt.tokens_to_src(toks)
         print(src2)
