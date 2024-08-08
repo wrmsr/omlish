@@ -6,10 +6,10 @@ TODO:
 import asyncio
 import functools
 
-from ...testing.pytest import skip_if_cant_import
+from ...testing import pytest as ptu
 
 
-@skip_if_cant_import('greenlet')
+@ptu.skip_if_cant_import('greenlet')
 def test_greenlet():
     import greenlet
 
@@ -35,7 +35,7 @@ def test_greenlet():
     assert done == 2
 
 
-@skip_if_cant_import('greenlet')
+@ptu.skip_if_cant_import('greenlet')
 def test_bridge(event_loop):
     import greenlet
 
