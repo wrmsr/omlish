@@ -40,6 +40,7 @@ import typing as ta
 import pytest
 
 from .... import lang
+from ....diag.pydevd import patch_for_trio_asyncio
 from ._registry import register
 
 
@@ -86,6 +87,7 @@ class AsyncsPlugin:
         for c in metafunc._calls:  # noqa
             be = c.params[PARAM_NAME]
             if be == 'trio_asyncio':
+                patch_for_trio_asyncio()
                 c.marks.extend([
                     pytest.mark.trio.mark,
                     pytest.mark.trio_asyncio.mark,
