@@ -132,10 +132,10 @@ class SrcFile:
 
 def _main() -> None:
     root_dir = os.path.dirname(__file__)
-    main_file = os.path.abspath(os.path.join(root_dir, 'demo/demo.py'))
+    main_path = os.path.abspath(os.path.join(root_dir, 'demo/demo.py'))
 
     src_files: dict[str, SrcFile] = {}
-    todo = [main_file]
+    todo = [main_path]
     while todo:
         src_path = todo.pop()
         if src_path in src_files:
