@@ -84,21 +84,18 @@ import argparse
 import json
 import os.path
 import pwd
-import shlex
 import sys
 import textwrap
 import typing as ta
 
-from ....std.cached import cached_nullary
 from ....std.logging import log
 from ....std.logging import setup_standard_logging
 from ....std.runtime import check_runtime_version
-from ....std.subprocesses import subprocess_check_call
-from .concerns import Concern
-from .concerns import Phase
-from .concerns import run_in_phase
+from .base import Concern
+from .base import Phase
+from .base import run_in_phase
 from .configs import DeployConfig
-from .configs import HostConfig
+from .base import Deployment
 
 
 ##
@@ -262,67 +259,22 @@ class Nginx(Concern):
 ##
 
 
-class Deployment:
-    concern_cls_list: ta.ClassVar[ta.List[ta.Type[Concern]]] = [
-        User,
-        Dirs,
-        GlobalNginx,
-        GlobalSupervisor,
-        Repo,
-        Venv,
-        Supervisor,
-        Nginx,
-    ]
-
-    def __init__(
-            self,
-            cfg: DeployConfig,
-            host_cfg: HostConfig = HostConfig(),
-    ) -> None:
-        super().__init__()
-        self._cfg = cfg
-        self._host_cfg = host_cfg
-
-        self._concerns: ta.List[Concern] = [cls(self) for cls in self.concern_cls_list]
-
-    @property
-    def cfg(self) -> DeployConfig:
-        return self._cfg
-
-    @property
-    def host_cfg(self) -> HostConfig:
-        return self._host_cfg
-
-    def sh(self, *ss: str) -> None:
-        s = ' && '.join(ss)
-        log.info('Executing: %s', s)
-        subprocess_check_call(s, shell=True)
-
-    def ush(self, *ss: str) -> None:
-        s = ' && '.join(ss)
-        self.sh(f'su - {self._host_cfg.username} -c {shlex.quote(s)}')
-
-    @cached_nullary
-    def home_dir(self) -> str:
-        return os.path.expanduser(f'~{self._host_cfg.username}')
-
-    @cached_nullary
-    def deploy(self) -> None:
-        for p in Phase:
-            log.info('Phase %s', p.name)
-            for c in self._concerns:
-                c.run_phase(p)
-
-        log.info('Shitty deploy complete!')
-
-
-##
-
-
 def _deploy_cmd(args) -> None:
     dct = json.loads(args.cfg)
     cfg = DeployConfig(**dct)
-    dp = Deployment(cfg)
+    dp = Deployment(
+        cfg,
+        [
+            User,
+            Dirs,
+            GlobalNginx,
+            GlobalSupervisor,
+            Repo,
+            Venv,
+            Supervisor,
+            Nginx,
+        ],
+    )
     dp.deploy()
 
 
