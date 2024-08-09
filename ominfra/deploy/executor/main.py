@@ -46,7 +46,7 @@ import json
 import sys
 import typing as ta
 
-from omdev.amalg.std.logging import setup_standard_logging
+from omdev.amalg.std.logs import setup_standard_logging
 from omdev.amalg.std.runtime import check_runtime_version
 
 from ..configs import DeployConfig

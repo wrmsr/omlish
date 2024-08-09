@@ -8,7 +8,7 @@ import typing as ta
 
 from ..amalg.std.cached import cached_nullary
 from ..amalg.std.check import check_not_none
-from ..amalg.std.logging import log
+from ..amalg.std.logs import log
 from ..amalg.std.subprocesses import subprocess_check_call
 from ..amalg.std.subprocesses import subprocess_check_output
 

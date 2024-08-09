@@ -2,7 +2,7 @@
 import os.path
 import typing as ta
 
-from ..amalg.std.logging import log
+from ..amalg.std.logs import log
 from ..amalg.std.subprocesses import subprocess_check_output
 
 

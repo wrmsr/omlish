@@ -27,7 +27,7 @@ import typing as ta
 from ..amalg.std.cached import cached_nullary
 from ..amalg.std.check import check_not
 from ..amalg.std.check import check_not_none
-from ..amalg.std.logging import setup_standard_logging
+from ..amalg.std.logs import setup_standard_logging
 from ..amalg.std.runtime import check_runtime_version
 from ..amalg.std.subprocesses import subprocess_check_call
 from ..amalg.std.subprocesses import subprocess_check_output
