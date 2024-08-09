@@ -7,6 +7,9 @@ import sys
 import typing as ta  # noqa
 
 
+T = ta.TypeVar('T')
+
+
 ########################################
 # /Users/spinlock/src/wrmsr/omlish/x/amalg/demo/std/cached.py
 
