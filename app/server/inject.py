@@ -2,8 +2,10 @@ import datetime
 import logging
 import os
 
+import sqlalchemy as sa
 import sqlalchemy.ext.asyncio as saa
 
+from omlish import check
 from omlish import inject as inj
 from omlish import lang
 from omlish import secrets as sec
@@ -53,7 +55,15 @@ def _bind_in_memory_user_store() -> inj.Elemental:
 
 def _bind_db_user_store() -> inj.Elemental:
     def build_engine():
-        return sql.async_adapt(saa.create_async_engine(get_db_url(), echo=True))
+        e = sql.async_adapt(saa.create_async_engine(get_db_url(), echo=True))
+        log.info('Sqlalchemy engine created: %r', e)
+
+        @sa.event.listens_for(e.underlying.sync_engine, 'engine_disposed')
+        def on_disposed(_e):
+            check.is_(e.underlying.sync_engine, _e)
+            log.info('Sqlalchemy engine disposed: %r', e)
+
+        return e
 
     return inj.as_elements(
         inj.bind(
