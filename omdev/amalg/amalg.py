@@ -22,6 +22,7 @@ Targets:
  - deploy
  - supervisor?
 """
+import argparse
 import dataclasses as dc
 import io
 import itertools
@@ -379,8 +380,31 @@ def gen_amalg(
 ##
 
 
+def _gen_cmd(args) -> None:
+    raise NotImplementedError
+
+
+def _build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser()
+
+    subparsers = parser.add_subparsers()
+
+    parser_gen = subparsers.add_parser('gen')
+    parser_gen.add_argument('--mount', '-m', action='append')
+    parser_gen.add_argument('--output-directory', '-o')
+    parser_gen.add_argument('--inputs', nargs='+')
+    parser_gen.set_defaults(func=_gen_cmd)
+
+    return parser
+
+
 def _main() -> None:
-    pass
+    parser = _build_parser()
+    args = parser.parse_args()
+    if not getattr(args, 'func', None):
+        parser.print_help()
+    else:
+        args.func(args)
 
 
 if __name__ == '__main__':

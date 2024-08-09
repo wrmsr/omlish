@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# @omdev-amalg ../scripts/interp.py
 """
 TODO:
  - check / tests, src dir sets
