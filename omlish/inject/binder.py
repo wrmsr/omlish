@@ -87,13 +87,13 @@ def bind(
         *,
         tag: ta.Any = None,
 
-        in_: Scope | None = None,
-        singleton: bool = False,
-
         to_fn: ta.Any = None,
         to_ctor: ta.Any = None,
         to_const: ta.Any = None,
         to_key: ta.Any = None,
+
+        in_: Scope | None = None,
+        singleton: bool = False,
 
         eager: bool = False,
         expose: bool = False,
