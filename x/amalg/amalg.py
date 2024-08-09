@@ -223,78 +223,82 @@ SECTION_SEP = '#' * 40 + '\n'
 
 def _main() -> None:
     root_dir = os.path.dirname(__file__)
-    main_path = os.path.abspath(os.path.join(root_dir, 'demo/demo.py'))
+    for main_file in [
+        'demo/demo.py',
+        'demo/interp/interp.py',
+    ]:
+        main_path = os.path.abspath(os.path.join(root_dir, main_file))
 
-    src_files: dict[str, SrcFile] = {}
-    todo = [main_path]
-    while todo:
-        src_path = todo.pop()
-        if src_path in src_files:
-            continue
+        src_files: dict[str, SrcFile] = {}
+        todo = [main_path]
+        while todo:
+            src_path = todo.pop()
+            if src_path in src_files:
+                continue
 
-        f = SrcFile(src_path)
-        src_files[src_path] = f
+            f = SrcFile(src_path)
+            src_files[src_path] = f
 
-        for imp in f.imports():
-            if (mp := imp.mod_path) is not None:
-                todo.append(mp)
+            for imp in f.imports():
+                if (mp := imp.mod_path) is not None:
+                    todo.append(mp)
 
-    ##
+        ##
 
-    out = io.StringIO()
+        out = io.StringIO()
 
-    ##
+        ##
 
-    all_imps = [i for f in src_files.values() for i in f.imports()]
-    gl_imps = [i for i in all_imps if i.mod_path is None]
+        all_imps = [i for f in src_files.values() for i in f.imports()]
+        gl_imps = [i for i in all_imps if i.mod_path is None]
 
-    dct = {}
-    for imp in gl_imps:
-        dct.setdefault((k := (imp.mod, imp.item, imp.as_)), []).append(imp)
-    for _, l in sorted(dct.items()):
-        out.write(join_toks(l[0].toks))
-    if dct:
-        out.write('\n\n')
+        dct = {}
+        for imp in gl_imps:
+            dct.setdefault((k := (imp.mod, imp.item, imp.as_)), []).append(imp)
+        for _, l in sorted(dct.items()):
+            out.write(join_toks(l[0].toks))
+        if dct:
+            out.write('\n\n')
 
-    ##
+        ##
 
-    ts = list(col.toposort({
-        f.path: {mp for i in f.imports() if (mp := i.mod_path) is not None}
-        for f in src_files.values()
-    }))
-    sfs = [sf for ss in ts for sf in sorted(ss)]
+        ts = list(col.toposort({
+            f.path: {mp for i in f.imports() if (mp := i.mod_path) is not None}
+            for f in src_files.values()
+        }))
+        sfs = [sf for ss in ts for sf in sorted(ss)]
 
-    ##
+        ##
 
-    tys = set()
-    for sf in sfs:
-        f = src_files[sf]
-        for ty in f.typings():
-            if ty.src not in tys:
-                out.write(ty.src)
-                tys.add(ty.src)
-    if tys:
-        out.write('\n\n')
+        tys = set()
+        for sf in sfs:
+            f = src_files[sf]
+            for ty in f.typings():
+                if ty.src not in tys:
+                    out.write(ty.src)
+                    tys.add(ty.src)
+        if tys:
+            out.write('\n\n')
 
-    ##
+        ##
 
-    for i, sf in enumerate(sfs):
-        f = src_files[sf]
-        out.write(SECTION_SEP)
-        out.write(f'# {f.path}\n\n\n')
-        sf_src = ''.join(join_toks(cl) for cl in f.content_lines())
-        out.write(sf_src.strip())
-        if i < len(sfs) - 1:
-            out.write('\n\n\n')
-        else:
-            out.write('\n')
+        for i, sf in enumerate(sfs):
+            f = src_files[sf]
+            out.write(SECTION_SEP)
+            out.write(f'# {f.path}\n\n\n')
+            sf_src = ''.join(join_toks(cl) for cl in f.content_lines())
+            out.write(sf_src.strip())
+            if i < len(sfs) - 1:
+                out.write('\n\n\n')
+            else:
+                out.write('\n')
 
-    ##
+        ##
 
-    print(out.getvalue())
+        print(out.getvalue())
 
-    with open(os.path.join(root_dir, 'demo_amalg.py'), 'w') as f:
-        f.write(out.getvalue())
+        with open(os.path.join(root_dir, os.path.basename(main_file).rpartition('.')[0] + '_amalg.py'), 'w') as f:
+            f.write(out.getvalue())
 
 
 if __name__ == '__main__':
