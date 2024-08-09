@@ -1,69 +1,12 @@
 # ruff: noqa: UP007
 import os.path
 import shutil
-import sys
 import typing as ta
 
-from ..amalg.std.cached import cached_nullary
-from ..amalg.std.check import check_not_none
-from .cmd import cmd
-
-
-class InterpResolver:
-
-    def __init__(
-            self,
-            version: str,
-            *,
-            debug: bool = False,
-            include_current_python: bool = False,
-    ) -> None:
-        if version is not None and not (isinstance(version, str) and version.strip()):
-            raise ValueError(f'version: {version!r}')
-        if not isinstance(debug, bool):
-            raise TypeError(f'debug: {debug!r}')
-
-        super().__init__()
-
-        self._version = version.strip()
-        self._debug = debug
-        self._include_current_python = include_current_python
-
-    def _get_python_ver(self, bin_path: str) -> ta.Optional[str]:
-        s = cmd([bin_path, '--version'], try_=True)
-        if s is None:
-            return None
-        ps = s.strip().splitlines()[0].split()
-        if ps[0] != 'Python':
-            return None
-        return ps[1]
-
-    def _resolve_which_python(self) -> ta.Optional[str]:
-        wp = shutil.which('python3')
-        if wp is None:
-            return None
-        wpv = self._get_python_ver(wp)
-        if wpv == self._version:
-            return wp
-        return None
-
-    def _resolve_current_python(self) -> ta.Optional[str]:
-        if sys.version.split()[0] == self._version:
-            return sys.executable
-        return None
-
-    def _resolvers(self) -> ta.Sequence[ta.Callable[[], ta.Optional[str]]]:
-        return [
-            self._resolve_which_python,
-            *((self._resolve_current_python,) if self._include_current_python else ()),
-        ]
-
-    def resolve(self) -> ta.Optional[str]:
-        for fn in self._resolvers():
-            p = fn()
-            if p is not None:
-                return p
-        return None
+from ...amalg.std.cached import cached_nullary
+from ...amalg.std.check import check_not_none
+from ..cmd import cmd
+from .base import InterpResolver
 
 
 class PyenvInstallOpts(ta.NamedTuple):
@@ -203,74 +146,4 @@ class PyenvInterpResolver(InterpResolver):
             *super()._resolvers(),
             self._resolve_pyenv_existing_python,
             self._resolve_pyenv_install_python,
-        ]
-
-
-class MacInterpResolver(PyenvInterpResolver):
-
-    @cached_nullary
-    def _framework_pio(self) -> PyenvInstallOpts:
-        return PyenvInstallOpts.new(conf_opts=['--enable-framework'])
-
-    @cached_nullary
-    def _has_brew(self) -> bool:
-        return shutil.which('brew') is not None
-
-    _PYENV_BREW_DEPS: ta.Sequence[str] = [
-        'openssl',
-        'readline',
-        'sqlite3',
-        'zlib',
-    ]
-
-    @cached_nullary
-    def _brew_deps_pio(self) -> PyenvInstallOpts:
-        cflags = []
-        ldflags = []
-        for dep in self._PYENV_BREW_DEPS:
-            dep_prefix = cmd(['brew', '--prefix', dep])
-            cflags.append(f'-I{dep_prefix}/include')
-            ldflags.append(f'-L{dep_prefix}/lib')
-        return PyenvInstallOpts.new(
-            cflags=cflags,
-            ldflags=ldflags,
-        )
-
-    @cached_nullary
-    def _brew_tcl_pio(self) -> PyenvInstallOpts:
-        pfx = cmd(['brew', '--prefix', 'tcl-tk'], try_=True)
-        if pfx is None:
-            return PyenvInstallOpts.new()
-
-        tcl_tk_prefix = ta.cast(str, cmd(['brew', '--prefix', 'tcl-tk']))
-        tcl_tk_ver_str = ta.cast(str, cmd(['brew', 'ls', '--versions', 'tcl-tk']))
-        tcl_tk_ver = '.'.join(tcl_tk_ver_str.split()[1].split('.')[:2])
-
-        return PyenvInstallOpts.new(conf_opts=[
-            f"--with-tcltk-includes='-I{tcl_tk_prefix}/include'",
-            f"--with-tcltk-libs='-L{tcl_tk_prefix}/lib -ltcl{tcl_tk_ver} -ltk{tcl_tk_ver}'",
-        ])
-
-    @cached_nullary
-    def _brew_ssl_pio(self) -> PyenvInstallOpts:
-        pkg_config_path = ta.cast(str, cmd(['brew', '--prefix', 'openssl']))
-        if 'PKG_CONFIG_PATH' in os.environ:
-            pkg_config_path += ':' + os.environ['PKG_CONFIG_PATH']
-        return PyenvInstallOpts.new(env={'PKG_CONFIG_PATH': pkg_config_path})
-
-    def _pyenv_pios(self) -> ta.Sequence[PyenvInstallOpts]:
-        return [
-            *super()._pyenv_pios(),
-            self._framework_pio(),
-            self._brew_deps_pio(),
-            self._brew_tcl_pio(),
-            self._brew_ssl_pio(),
-        ]
-
-
-class LinuxInterpResolver(PyenvInterpResolver):
-
-    def _pyenv_pios(self) -> ta.Sequence[PyenvInstallOpts]:
-        return [
-            *super()._pyenv_pios(),
         ]

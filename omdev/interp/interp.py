@@ -13,8 +13,8 @@ import typing as ta
 
 from ..amalg.std.logging import setup_standard_logging
 from ..amalg.std.runtime import check_runtime_version
-from .resolvers import LinuxInterpResolver
-from .resolvers import MacInterpResolver
+from .resolvers.linux import LinuxInterpResolver
+from .resolvers.mac import MacInterpResolver
 
 
 def _resolve_cmd(args) -> None:

@@ -152,7 +152,7 @@ def cmd(
 
 
 ########################################
-# ../resolvers.py
+# ../resolvers/base.py
 # ruff: noqa: UP007
 
 
@@ -211,6 +211,11 @@ class InterpResolver:
             if p is not None:
                 return p
         return None
+
+
+########################################
+# ../resolvers/pyenv.py
+# ruff: noqa: UP007
 
 
 class PyenvInstallOpts(ta.NamedTuple):
@@ -353,6 +358,22 @@ class PyenvInterpResolver(InterpResolver):
         ]
 
 
+########################################
+# ../resolvers/linux.py
+
+
+class LinuxInterpResolver(PyenvInterpResolver):
+
+    def _pyenv_pios(self) -> ta.Sequence[PyenvInstallOpts]:
+        return [
+            *super()._pyenv_pios(),
+        ]
+
+
+########################################
+# ../resolvers/mac.py
+
+
 class MacInterpResolver(PyenvInterpResolver):
 
     @cached_nullary
@@ -412,14 +433,6 @@ class MacInterpResolver(PyenvInterpResolver):
             self._brew_deps_pio(),
             self._brew_tcl_pio(),
             self._brew_ssl_pio(),
-        ]
-
-
-class LinuxInterpResolver(PyenvInterpResolver):
-
-    def _pyenv_pios(self) -> ta.Sequence[PyenvInstallOpts]:
-        return [
-            *super()._pyenv_pios(),
         ]
 
 
