@@ -15,6 +15,103 @@ import typing as ta
 
 
 ########################################
+# /Users/spinlock/src/wrmsr/omlish/x/amalg/demo/deploy/concerns.py
+
+
+class Phase(enum.Enum):
+    HOST = enum.auto()
+    ENV = enum.auto()
+    BACKEND = enum.auto()
+    FRONTEND = enum.auto()
+    START_BACKEND = enum.auto()
+    START_FRONTEND = enum.auto()
+
+
+def run_in_phase(*ps: Phase):
+    def inner(fn):
+        fn.__deployment_phases__ = ps
+        return fn
+    return inner
+
+
+class Concern(abc.ABC):
+    def __init__(self, d: 'Deployment') -> None:
+        super().__init__()
+        self._d = d
+
+    _phase_fns: ta.ClassVar[ta.Mapping[Phase, ta.Sequence[ta.Callable]]]
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        dct: ta.Dict[Phase, ta.List[ta.Callable]] = {}
+        for fn, ps in [
+            (v, ps)
+            for a in dir(cls)
+            if not (a.startswith('__') and a.endswith('__'))
+            for v in [getattr(cls, a, None)]
+            for ps in [getattr(v, '__deployment_phases__', None)]
+            if ps
+        ]:
+            dct.update({p: [*dct.get(p, []), fn] for p in ps})
+        cls._phase_fns = dct
+
+    @dc.dataclass(frozen=True)
+    class Output(abc.ABC):
+        path: str
+        is_file: bool
+
+    def outputs(self) -> ta.Sequence[Output]:
+        return ()
+
+    def run_phase(self, p: Phase) -> None:
+        for fn in self._phase_fns.get(p, ()):
+            fn.__get__(self, type(self))()
+
+
+########################################
+# /Users/spinlock/src/wrmsr/omlish/x/amalg/demo/deploy/configs.py
+
+
+@dc.dataclass(frozen=True)
+class DeployConfig:
+    python_bin: str
+    app_name: str
+    repo_url: str
+    revision: str
+    requirements_txt: str
+    entrypoint: str
+
+
+@dc.dataclass(frozen=True)
+class HostConfig:
+    username: str = 'deploy'
+
+    global_supervisor_conf_file_path: str = '/etc/supervisor/conf.d/supervisord.conf'
+    global_nginx_conf_file_path: str = '/etc/nginx/sites-enabled/deploy.conf'
+
+
+########################################
+# /Users/spinlock/src/wrmsr/omlish/x/amalg/demo/std/cached.py
+
+
+class cached_nullary:  # noqa
+    def __init__(self, fn):
+        super().__init__()
+        self._fn = fn
+        self._value = self._missing = object()
+        functools.update_wrapper(self, fn)
+
+    def __call__(self, *args, **kwargs):  # noqa
+        if self._value is self._missing:
+            self._value = self._fn()
+        return self._value
+
+    def __get__(self, instance, owner):  # noqa
+        bound = instance.__dict__[self._fn.__name__] = self.__class__(self._fn.__get__(instance, owner))
+        return bound
+
+
+########################################
 # /Users/spinlock/src/wrmsr/omlish/x/amalg/demo/std/logging.py
 
 
@@ -37,6 +134,24 @@ def check_runtime_version() -> None:
     if sys.version_info < REQUIRED_PYTHON_VERSION:
         raise EnvironmentError(
             f'Requires python {REQUIRED_PYTHON_VERSION}, got {sys.version_info} from {sys.executable}')  # noqa
+
+
+########################################
+# /Users/spinlock/src/wrmsr/omlish/x/amalg/demo/std/subprocesses.py
+
+
+def _mask_env_kwarg(kwargs):
+    return {**kwargs, **({'env': '...'} if 'env' in kwargs else {})}
+
+
+def subprocess_check_call(*args, stdout=sys.stderr, **kwargs):
+    log.debug((args, _mask_env_kwarg(kwargs)))
+    return subprocess.check_call(*args, stdout=stdout, **kwargs)  # type: ignore
+
+
+def subprocess_check_output(*args, **kwargs):
+    log.debug((args, _mask_env_kwarg(kwargs)))
+    return subprocess.check_output(*args, **kwargs)
 
 
 ########################################
@@ -126,111 +241,6 @@ sudo systemctl enable hello.service
 sudo systemctl start hello.service
 """  # noqa
 
-
-
-##
-
-
-class cached_nullary:  # noqa
-    def __init__(self, fn):
-        self._fn = fn
-        self._value = self._missing = object()
-        functools.update_wrapper(self, fn)
-    def __call__(self, *args, **kwargs):  # noqa
-        if self._value is self._missing:
-            self._value = self._fn()
-        return self._value
-    def __get__(self, instance, owner):  # noqa
-        bound = instance.__dict__[self._fn.__name__] = self.__class__(self._fn.__get__(instance, owner))
-        return bound
-
-
-def _mask_env_kwarg(kwargs):
-    return {**kwargs, **({'env': '...'} if 'env' in kwargs else {})}
-
-
-def _subprocess_check_call(*args, stdout=sys.stderr, **kwargs):
-    log.debug((args, _mask_env_kwarg(kwargs)))
-    return subprocess.check_call(*args, stdout=stdout, **kwargs)  # type: ignore
-
-
-def _subprocess_check_output(*args, **kwargs):
-    log.debug((args, _mask_env_kwarg(kwargs)))
-    return subprocess.check_output(*args, **kwargs)
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class DeployConfig:
-    python_bin: str
-    app_name: str
-    repo_url: str
-    revision: str
-    requirements_txt: str
-    entrypoint: str
-
-
-@dc.dataclass(frozen=True)
-class HostConfig:
-    username: str = 'deploy'
-
-    global_supervisor_conf_file_path: str = '/etc/supervisor/conf.d/supervisord.conf'
-    global_nginx_conf_file_path: str = '/etc/nginx/sites-enabled/deploy.conf'
-
-
-##
-
-
-class Phase(enum.Enum):
-    HOST = enum.auto()
-    ENV = enum.auto()
-    BACKEND = enum.auto()
-    FRONTEND = enum.auto()
-    START_BACKEND = enum.auto()
-    START_FRONTEND = enum.auto()
-
-
-def run_in_phase(*ps: Phase):
-    def inner(fn):
-        fn.__deployment_phases__ = ps
-        return fn
-    return inner
-
-
-class Concern(abc.ABC):
-    def __init__(self, d: 'Deployment') -> None:
-        super().__init__()
-        self._d = d
-
-    _phase_fns: ta.ClassVar[ta.Mapping[Phase, ta.Sequence[ta.Callable]]]
-
-    def __init_subclass__(cls, **kwargs):
-        super().__init_subclass__(**kwargs)
-        dct: ta.Dict[Phase, ta.List[ta.Callable]] = {}
-        for fn, ps in [
-            (v, ps)
-            for a in dir(cls)
-            if not (a.startswith('__') and a.endswith('__'))
-            for v in [getattr(cls, a, None)]
-            for ps in [getattr(v, '__deployment_phases__', None)]
-            if ps
-        ]:
-            dct.update({p: [*dct.get(p, []), fn] for p in ps})
-        cls._phase_fns = dct
-
-    @dc.dataclass(frozen=True)
-    class Output(abc.ABC):
-        path: str
-        is_file: bool
-
-    def outputs(self) -> ta.Sequence[Output]:
-        return ()
-
-    def run_phase(self, p: Phase) -> None:
-        for fn in self._phase_fns.get(p, ()):
-            fn.__get__(self, type(self))()
 
 
 ##
@@ -428,7 +438,7 @@ class Deployment:
     def sh(self, *ss: str) -> None:
         s = ' && '.join(ss)
         log.info('Executing: %s', s)
-        _subprocess_check_call(s, shell=True)
+        subprocess_check_call(s, shell=True)
 
     def ush(self, *ss: str) -> None:
         s = ' && '.join(ss)

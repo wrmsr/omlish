@@ -299,7 +299,7 @@ def _main() -> None:
 
         print(out.getvalue())
 
-        with open(os.path.join(root_dir, 'out', os.path.basename(main_file).rpartition('.')[0] + '_amalg.py'), 'w') as f:
+        with open(os.path.join(root_dir, 'out', os.path.basename(main_file)), 'w') as f:
             f.write(out.getvalue())
 
 
