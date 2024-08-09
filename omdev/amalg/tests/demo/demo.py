@@ -15,6 +15,7 @@ from ...std.logging import log
 from ...std.logging import setup_standard_logging
 from ...std.runtime import check_runtime_version
 from ...std.subprocesses import subprocess_check_output
+from .incl.foo import foo
 
 
 @cached_nullary
@@ -32,7 +33,7 @@ def _main() -> None:
     # Comment
     check_not_none(_foo())  # Inline comment
 
-    pprint.pprint('hi')
+    pprint.pprint(foo())
 
     print(subprocess_check_output('uptime'))
 
