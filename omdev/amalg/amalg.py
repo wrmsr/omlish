@@ -461,7 +461,7 @@ def _gen_cmd(args) -> None:
     for i in args.inputs:
         if os.path.isdir(i):
             log.info('Scanning %s', i)
-            for we_dirpath, we_dirnames, we_filenames in os.walk(i):
+            for we_dirpath, we_dirnames, we_filenames in os.walk(i):  # noqa
                 for fname in we_filenames:
                     _scan_one(
                         os.path.abspath(os.path.join(we_dirpath, fname)),
