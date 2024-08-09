@@ -24,7 +24,7 @@ def server_addr(server_sock: socket.socket) -> tuple[str, int]:
     return server_sock.getsockname()[:2]
 
 
-@pytest.mark.all_asyncs
+@pytest.mark.asyncs
 async def test_send_receive_all_backends(
         server_sock: socket.socket,
         server_addr: tuple[str, int],
