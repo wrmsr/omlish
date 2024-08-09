@@ -94,6 +94,11 @@ def subprocess_check_output(*args, **kwargs):
 # /Users/spinlock/src/wrmsr/omlish/x/amalg/demo/demo.py
 
 
+T = ta.TypeVar('T')
+Foo = ta.Mapping[int, str]
+
+
+
 @cached_nullary
 def _foo():
     return 5

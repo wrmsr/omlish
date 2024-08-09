@@ -126,6 +126,47 @@ def make_import(
 ##
 
 
+@dc.dataclass(frozen=True, kw_only=True)
+class Typing:
+    pass
+
+
+"""
+[
+    Token(name='NAME', src='T', line=1, utf8_byte_offset=0),
+    Token(name='UNIMPORTANT_WS', src=' ', line=1, utf8_byte_offset=1),
+    Token(name='OP', src='=', line=1, utf8_byte_offset=2),
+    Token(name='UNIMPORTANT_WS', src=' ', line=1, utf8_byte_offset=3),
+    Token(name='NAME', src='ta', line=1, utf8_byte_offset=4),
+    Token(name='OP', src='.', line=1, utf8_byte_offset=6),
+    Token(name='NAME', src='TypeVar', line=1, utf8_byte_offset=7),
+    Token(name='OP', src='(', line=1, utf8_byte_offset=14),
+    Token(name='STRING', src="'T'", line=1, utf8_byte_offset=15),
+    Token(name='OP', src=')', line=1, utf8_byte_offset=18),
+    Token(name='NEWLINE', src='\n', line=1, utf8_byte_offset=19),
+]
+[
+    Token(name='NAME', src='Foo', line=2, utf8_byte_offset=0),
+    Token(name='UNIMPORTANT_WS', src=' ', line=2, utf8_byte_offset=3),
+    Token(name='OP', src='=', line=2, utf8_byte_offset=4),
+    Token(name='UNIMPORTANT_WS', src=' ', line=2, utf8_byte_offset=5),
+    Token(name='NAME', src='ta', line=2, utf8_byte_offset=6),
+    Token(name='OP', src='.', line=2, utf8_byte_offset=8),
+    Token(name='NAME', src='Mapping', line=2, utf8_byte_offset=9),
+    Token(name='OP', src='[', line=2, utf8_byte_offset=16),
+    Token(name='NAME', src='int', line=2, utf8_byte_offset=17),
+    Token(name='OP', src=',', line=2, utf8_byte_offset=20),
+    Token(name='UNIMPORTANT_WS', src=' ', line=2, utf8_byte_offset=21),
+    Token(name='NAME', src='str', line=2, utf8_byte_offset=22),
+    Token(name='OP', src=']', line=2, utf8_byte_offset=25),
+    Token(name='NEWLINE', src='\n', line=2, utf8_byte_offset=26),
+]
+"""
+
+
+##
+
+
 @dc.dataclass(frozen=True)
 class SrcFile:
     path: str
