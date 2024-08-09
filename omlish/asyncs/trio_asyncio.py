@@ -44,7 +44,7 @@ def with_trio_asyncio_loop(*, wait=False, strict=False):
                     if wait:
                         # FIXME: lol
                         while asyncio.all_tasks(loop):
-                            await asyncio.sleep(.2)
+                            await asyncio.sleep(.1)
 
         return inner
 
