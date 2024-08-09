@@ -283,6 +283,8 @@ RUFF_DISABLES: ta.Sequence[str] = [
     # 'UP007',  # Use `X | Y` for type annotations
 ]
 
+SCANNER_COMMENT = '# @omdev-amalg '
+
 
 def gen_amalg(
         main_path: str,
@@ -380,6 +382,23 @@ def gen_amalg(
 ##
 
 
+def _gen_one(
+        input_path: str,
+        output_path: str,
+        *,
+        mounts: ta.Mapping[str, str],
+) -> None:
+    src = gen_amalg(
+        input_path,
+        mounts=mounts,
+    )
+
+    with open(output_path, 'w') as f:
+        f.write(src)
+
+    os.chmod(output_path, os.stat(input_path).st_mode)
+
+
 def _gen_cmd(args) -> None:
     if not os.path.isfile('pyproject.toml'):
         raise Exception('Not in project root')
@@ -393,21 +412,19 @@ def _gen_cmd(args) -> None:
             mounts[k] = os.path.abspath(v)
 
     for i in args.inputs:
-        output_dir = args.output
-        if output_dir is None:
-            raise Exception('Must specify output dir')
+        if os.path.isdir(i):
+            raise NotImplementedError
 
-        main_path = os.path.abspath(i)
+        else:
+            output_dir = args.output
+            if output_dir is None:
+                raise Exception('Must specify output dir')
 
-        src = gen_amalg(
-            main_path,
-            mounts=mounts,
-        )
-
-        out_path = os.path.join(output_dir, os.path.basename(main_path))
-        with open(out_path, 'w') as f:
-            f.write(src)
-        os.chmod(out_path, os.stat(main_path).st_mode)
+            _gen_one(
+                os.path.abspath(i),
+                check.isinstance(os.path.join(output_dir, os.path.basename(i)), str),
+                mounts=mounts,
+            )
 
 
 def _build_parser() -> argparse.ArgumentParser:
