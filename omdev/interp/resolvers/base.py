@@ -3,7 +3,7 @@ import shutil
 import sys
 import typing as ta
 
-from ..cmd import cmd
+from ..subprocesses import cmd
 
 
 class InterpResolver:

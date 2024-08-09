@@ -3,7 +3,7 @@ import shutil
 import typing as ta
 
 from ...amalg.std.cached import cached_nullary
-from ..cmd import cmd
+from ..subprocesses import cmd
 from .pyenv import PyenvInstallOpts
 from .pyenv import PyenvInterpResolver
 

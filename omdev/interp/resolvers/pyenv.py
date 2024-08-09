@@ -5,7 +5,7 @@ import typing as ta
 
 from ...amalg.std.cached import cached_nullary
 from ...amalg.std.check import check_not_none
-from ..cmd import cmd
+from ..subprocesses import cmd
 from .base import InterpResolver
 
 
