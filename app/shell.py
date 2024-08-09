@@ -73,7 +73,7 @@ async def a_run_shell(app: ShellApp) -> None:
 
 
         nr = NodeRegistrant(
-            engine,
+            sql.async_adapt(engine),
             extras={
                 'procstats': get_procstats,
             },
