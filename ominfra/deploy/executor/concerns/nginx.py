@@ -8,7 +8,7 @@ from ..base import Phase
 from ..base import run_in_phase
 
 
-class GlobalNginx(Concern):
+class GlobalNginxConcern(Concern):
     @run_in_phase(Phase.HOST)
     def create_global_nginx_conf(self) -> None:
         nginx_conf_dir = os.path.join(self._d.home_dir(), 'conf/nginx')
@@ -18,7 +18,7 @@ class GlobalNginx(Concern):
                 f.write(f'include {nginx_conf_dir}/*.conf;\n')
 
 
-class Nginx(Concern):
+class NginxConcern(Concern):
     @run_in_phase(Phase.FRONTEND)
     def create_nginx_conf(self) -> None:
         nginx_conf = textwrap.dedent(f"""

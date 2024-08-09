@@ -3,7 +3,7 @@ from ..base import Phase
 from ..base import run_in_phase
 
 
-class Repo(Concern):
+class RepoConcern(Concern):
     @run_in_phase(Phase.ENV)
     def clone_repo(self) -> None:
         clone_submodules = False

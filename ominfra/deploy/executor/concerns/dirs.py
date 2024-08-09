@@ -8,7 +8,7 @@ from ..base import Phase
 from ..base import run_in_phase
 
 
-class Dirs(Concern):
+class DirsConcern(Concern):
     @run_in_phase(Phase.HOST)
     def create_dirs(self) -> None:
         pwn = pwd.getpwnam(self._d.host_cfg.username)
