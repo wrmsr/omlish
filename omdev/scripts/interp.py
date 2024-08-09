@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# @omdev-amalg-output ../interp/interp.py
 """
 TODO:
  - install (git clone) pyenv
