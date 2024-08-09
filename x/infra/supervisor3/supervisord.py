@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-# @omdev-amalg _amalg.py
+# -- # @omdev-amalg _amalg.py
+"""
+TODO:
+ - amalg or not? only use om.logs and dc's
+"""
 import logging
 import signal
 import time
