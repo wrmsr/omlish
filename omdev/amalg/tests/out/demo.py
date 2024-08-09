@@ -87,6 +87,18 @@ def check_runtime_version() -> None:
 
 
 ########################################
+# ../incl/foo.py
+"""
+foo includes
+"""
+# Hi!
+
+
+def foo() -> str:
+    return os.getcwd()
+
+
+########################################
 # ../../../../../omlish/os.py
 
 
@@ -163,7 +175,7 @@ def _main() -> None:
     # Comment
     check_not_none(_foo())  # Inline comment
 
-    pprint.pprint('hi')
+    pprint.pprint(foo())
 
     print(subprocess_check_output('uptime'))
 
