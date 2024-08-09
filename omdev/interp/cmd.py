@@ -1,8 +1,9 @@
+# ruff: noqa: UP006 UP007
 import os.path
 import typing as ta
 
-from ....std.logging import log
-from ....std.subprocesses import subprocess_check_output
+from ..amalg.std.logging import log
+from ..amalg.std.subprocesses import subprocess_check_output
 
 
 DEFAULT_CMD_TRY_EXCEPTIONS: ta.AbstractSet[ta.Type[Exception]] = frozenset([

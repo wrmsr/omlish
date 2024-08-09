@@ -5,12 +5,13 @@ TODO:
  - https://github.com/asdf-vm/asdf support (instead of pyenv)
  - free-threading https://github.com/pyenv/pyenv/commit/d660c5a84f6b03a94961eb0e49adb2b25cd091b1
 """
+# ruff: noqa: UP007
 import argparse
 import sys
 import typing as ta
 
-from ....std.logging import setup_standard_logging
-from ....std.runtime import check_runtime_version
+from ..amalg.std.logging import setup_standard_logging
+from ..amalg.std.runtime import check_runtime_version
 from .resolvers import LinuxResolver
 from .resolvers import MacResolver
 
