@@ -99,7 +99,7 @@ gen: gen-amalg
 
 .PHONY: gen-amalg
 gen-amalg: venv
-	${PYTHON} -m omdev.amalg.amalg -m omlish -m omdev ${SRCS}
+	${PYTHON} -m omdev.amalg.amalg gen -m omlish -m omdev ${SRCS}
 
 
 ### Check
