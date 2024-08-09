@@ -148,7 +148,50 @@ def check_runtime_version() -> None:
 
 
 ########################################
-# ../concerns.py
+# ../configs.py
+
+
+@dc.dataclass(frozen=True)
+class DeployConfig:
+    python_bin: str
+    app_name: str
+    repo_url: str
+    revision: str
+    requirements_txt: str
+    entrypoint: str
+
+
+@dc.dataclass(frozen=True)
+class HostConfig:
+    username: str = 'deploy'
+
+    global_supervisor_conf_file_path: str = '/etc/supervisor/conf.d/supervisord.conf'
+    global_nginx_conf_file_path: str = '/etc/nginx/sites-enabled/deploy.conf'
+
+
+########################################
+# ../../../../std/subprocesses.py
+
+
+def _mask_env_kwarg(kwargs):
+    return {**kwargs, **({'env': '...'} if 'env' in kwargs else {})}
+
+
+def subprocess_check_call(*args, stdout=sys.stderr, **kwargs):
+    log.debug((args, _mask_env_kwarg(kwargs)))
+    return subprocess.check_call(*args, stdout=stdout, **kwargs)  # type: ignore
+
+
+def subprocess_check_output(*args, **kwargs):
+    log.debug((args, _mask_env_kwarg(kwargs)))
+    return subprocess.check_output(*args, **kwargs)
+
+
+########################################
+# ../base.py
+
+
+##
 
 
 class Phase(enum.Enum):
@@ -201,44 +244,52 @@ class Concern(abc.ABC):
             fn.__get__(self, type(self))()
 
 
-########################################
-# ../configs.py
+##
 
 
-@dc.dataclass(frozen=True)
-class DeployConfig:
-    python_bin: str
-    app_name: str
-    repo_url: str
-    revision: str
-    requirements_txt: str
-    entrypoint: str
+class Deployment:
 
+    def __init__(
+            self,
+            cfg: DeployConfig,
+            concern_cls_list: ta.List[ta.Type[Concern]],
+            host_cfg: HostConfig = HostConfig(),
+    ) -> None:
+        super().__init__()
+        self._cfg = cfg
+        self._host_cfg = host_cfg
 
-@dc.dataclass(frozen=True)
-class HostConfig:
-    username: str = 'deploy'
+        self._concerns: ta.List[Concern] = [cls(self) for cls in concern_cls_list]
 
-    global_supervisor_conf_file_path: str = '/etc/supervisor/conf.d/supervisord.conf'
-    global_nginx_conf_file_path: str = '/etc/nginx/sites-enabled/deploy.conf'
+    @property
+    def cfg(self) -> DeployConfig:
+        return self._cfg
 
+    @property
+    def host_cfg(self) -> HostConfig:
+        return self._host_cfg
 
-########################################
-# ../../../../std/subprocesses.py
+    def sh(self, *ss: str) -> None:
+        s = ' && '.join(ss)
+        log.info('Executing: %s', s)
+        subprocess_check_call(s, shell=True)
 
+    def ush(self, *ss: str) -> None:
+        s = ' && '.join(ss)
+        self.sh(f'su - {self._host_cfg.username} -c {shlex.quote(s)}')
 
-def _mask_env_kwarg(kwargs):
-    return {**kwargs, **({'env': '...'} if 'env' in kwargs else {})}
+    @cached_nullary
+    def home_dir(self) -> str:
+        return os.path.expanduser(f'~{self._host_cfg.username}')
 
+    @cached_nullary
+    def deploy(self) -> None:
+        for p in Phase:
+            log.info('Phase %s', p.name)
+            for c in self._concerns:
+                c.run_phase(p)
 
-def subprocess_check_call(*args, stdout=sys.stderr, **kwargs):
-    log.debug((args, _mask_env_kwarg(kwargs)))
-    return subprocess.check_call(*args, stdout=stdout, **kwargs)  # type: ignore
-
-
-def subprocess_check_output(*args, **kwargs):
-    log.debug((args, _mask_env_kwarg(kwargs)))
-    return subprocess.check_output(*args, **kwargs)
+        log.info('Shitty deploy complete!')
 
 
 ########################################
@@ -406,67 +457,22 @@ class Nginx(Concern):
 ##
 
 
-class Deployment:
-    concern_cls_list: ta.ClassVar[ta.List[ta.Type[Concern]]] = [
-        User,
-        Dirs,
-        GlobalNginx,
-        GlobalSupervisor,
-        Repo,
-        Venv,
-        Supervisor,
-        Nginx,
-    ]
-
-    def __init__(
-            self,
-            cfg: DeployConfig,
-            host_cfg: HostConfig = HostConfig(),
-    ) -> None:
-        super().__init__()
-        self._cfg = cfg
-        self._host_cfg = host_cfg
-
-        self._concerns: ta.List[Concern] = [cls(self) for cls in self.concern_cls_list]
-
-    @property
-    def cfg(self) -> DeployConfig:
-        return self._cfg
-
-    @property
-    def host_cfg(self) -> HostConfig:
-        return self._host_cfg
-
-    def sh(self, *ss: str) -> None:
-        s = ' && '.join(ss)
-        log.info('Executing: %s', s)
-        subprocess_check_call(s, shell=True)
-
-    def ush(self, *ss: str) -> None:
-        s = ' && '.join(ss)
-        self.sh(f'su - {self._host_cfg.username} -c {shlex.quote(s)}')
-
-    @cached_nullary
-    def home_dir(self) -> str:
-        return os.path.expanduser(f'~{self._host_cfg.username}')
-
-    @cached_nullary
-    def deploy(self) -> None:
-        for p in Phase:
-            log.info('Phase %s', p.name)
-            for c in self._concerns:
-                c.run_phase(p)
-
-        log.info('Shitty deploy complete!')
-
-
-##
-
-
 def _deploy_cmd(args) -> None:
     dct = json.loads(args.cfg)
     cfg = DeployConfig(**dct)
-    dp = Deployment(cfg)
+    dp = Deployment(
+        cfg,
+        [
+            User,
+            Dirs,
+            GlobalNginx,
+            GlobalSupervisor,
+            Repo,
+            Venv,
+            Supervisor,
+            Nginx,
+        ],
+    )
     dp.deploy()
 
 
