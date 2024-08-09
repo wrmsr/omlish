@@ -33,7 +33,7 @@ def _main() -> None:
 
         ##
 
-        with open(os.path.join(os.path.dirname(__file__), '../../executor/_amalg.py')) as f:
+        with open(os.path.join(os.path.dirname(__file__), '../../_executor.py')) as f:
             buf = f.read()
 
         if PYCHARM_DEBUG:

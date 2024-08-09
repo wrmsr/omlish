@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # noinspection DuplicatedCode
-# @omdev-amalg-output main.py
+# @omdev-amalg-output executor/main.py
 r"""
 TODO:
  - flock
