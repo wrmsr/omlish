@@ -43,10 +43,11 @@ Nodes = Node.__table__
 install_updated_at_trigger(Metadata, 'nodes')
 
 
-async def recreate_all(engine: sql.AsyncEngineLike) -> None:
+async def setup_db(engine: sql.AsyncEngineLike, *, drop: bool = False) -> None:
     conn: sql.AsyncConnection
     async with sql.async_adapt(engine).connect() as conn:
         async with conn.begin():
-            await conn.run_sync(Metadata.drop_all)
+            if drop:
+                await conn.run_sync(Metadata.drop_all)
             await conn.execute(sa.text(CREATE_UPDATED_AT_FUNCTION_STATEMENT))
             await conn.run_sync(Metadata.create_all)
