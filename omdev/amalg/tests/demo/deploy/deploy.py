@@ -92,10 +92,10 @@ from ....std.logging import log
 from ....std.logging import setup_standard_logging
 from ....std.runtime import check_runtime_version
 from .base import Concern
+from .base import Deployment
 from .base import Phase
 from .base import run_in_phase
 from .configs import DeployConfig
-from .base import Deployment
 
 
 ##
