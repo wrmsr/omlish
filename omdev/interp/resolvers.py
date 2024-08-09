@@ -1,10 +1,11 @@
+# ruff: noqa: UP007
 import os.path
 import shutil
 import sys
 import typing as ta
 
-from ....std.cached import cached_nullary
-from ....std.check import check_not_none
+from ..amalg.std.cached import cached_nullary
+from ..amalg.std.check import check_not_none
 from .cmd import cmd
 
 

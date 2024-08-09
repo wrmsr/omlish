@@ -80,6 +80,7 @@ WantedBy=multi-user.target
 sudo systemctl enable hello.service
 sudo systemctl start hello.service
 """  # noqa
+# ruff: noqa: UP007
 import argparse
 import json
 import os.path

@@ -238,12 +238,6 @@ ignore = [
 '**/scripts/*' = [
     'UP',
 ]
-'omdev/amalg/std/*' = [
-    'UP',
-]
-'omdev/amalg/tests/*' = [
-    'UP',
-]
 'omlish/testing/*' = [
     'S101',  # use of `assert` detected
 ]
