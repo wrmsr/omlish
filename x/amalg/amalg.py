@@ -366,9 +366,9 @@ def _main() -> None:
     src_base_dir = os.path.dirname(__file__)
     for main_file in [
         'demo/demo.py',
-        # 'demo/deploy/deploy.py',
-        # 'demo/interp/interp.py',
-        # 'demo/pyproject/pyproject.py',
+        'demo/deploy/deploy.py',
+        'demo/interp/interp.py',
+        'demo/pyproject/pyproject.py',
     ]:
         main_path = os.path.abspath(os.path.join(src_base_dir, main_file))
 
