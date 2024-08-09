@@ -60,14 +60,14 @@ def _test_postgres(url: str) -> None:
 
 @ptu.skip_if_cant_import('pg8000')
 def test_postgres_pg8000(harness) -> None:
-    url = check.isinstance(harness[Dbs].specs()['postgres'].loc, UrlDbLoc).url
+    url = check.isinstance(check.isinstance(harness[Dbs].specs()['postgres'].loc, UrlDbLoc).url, str)
     url = set_url_engine(url, 'postgresql+pg8000')
     _test_postgres(url)
 
 
 @ptu.skip_if_cant_import('psycopg2')
 def test_postgres_psycopg2(harness) -> None:
-    url = check.isinstance(harness[Dbs].specs()['postgres'].loc, UrlDbLoc).url
+    url = check.isinstance(check.isinstance(harness[Dbs].specs()['postgres'].loc, UrlDbLoc).url, str)
     url = set_url_engine(url, 'postgresql+psycopg2')
     _test_postgres(url)
 
@@ -101,7 +101,7 @@ async def _test_postgres_async(url: str) -> None:
 @ptu.skip_if_cant_import('asyncpg')
 @pytest.mark.asyncio
 async def test_async_postgres_asyncpg(harness) -> None:
-    url = check.isinstance(harness[Dbs].specs()['postgres'].loc, UrlDbLoc).url
+    url = check.isinstance(check.isinstance(harness[Dbs].specs()['postgres'].loc, UrlDbLoc).url, str)
     url = set_url_engine(url, 'postgresql+asyncpg')
     await _test_postgres_async(url)
 
@@ -111,7 +111,7 @@ async def test_async_postgres_asyncpg(harness) -> None:
 @ptu.skip_if_cant_import('trio_asyncio')
 @pytest.mark.trio
 async def test_trio_postgres_asyncpg(harness) -> None:
-    url = check.isinstance(harness[Dbs].specs()['postgres'].loc, UrlDbLoc).url
+    url = check.isinstance(check.isinstance(harness[Dbs].specs()['postgres'].loc, UrlDbLoc).url, str)
     url = set_url_engine(url, 'postgresql+asyncpg')
 
     import trio_asyncio  # noqa
