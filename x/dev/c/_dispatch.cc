@@ -284,8 +284,8 @@ static PyMethodDef _dispatch_module_methods[] = {
 };
 
 static struct PyModuleDef_Slot _dispatch_module_slots[] = {
-        {Py_mod_exec, (void *) _dispatch_module_exec},
-        {0, NULL}
+    {Py_mod_exec, (void *) _dispatch_module_exec},
+    {0, NULL}
 };
 
 static struct PyModuleDef _dispatch_module = {
