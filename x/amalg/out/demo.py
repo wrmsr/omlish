@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+"""
+Hi!
+"""
+# also
 import contextlib
 import functools
 import logging
@@ -93,6 +98,10 @@ def check_not(v: ta.Any) -> None:
 
 ########################################
 # /Users/spinlock/src/wrmsr/omlish/x/amalg/demo/std/logging.py
+"""
+TODO:
+ - debug
+"""
 
 
 log = logging.getLogger(__name__)

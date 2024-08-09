@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+"""
+Hi!
+"""
+# also
 import os.path  # noqa
 import pprint
 import typing as ta  # noqa

@@ -1,3 +1,19 @@
+#!/usr/bin/env python3
+"""
+TODO:
+ - check / tests, src dir sets
+ - ci
+ - build / package / publish
+  - {pkg_name: [src_dirs]}, default excludes, generate MANIFST.in, ...
+
+lookit:
+ - https://pdm-project.org/en/latest/
+ - https://rye.astral.sh/philosophy/
+ - https://github.com/indygreg/python-build-standalone/blob/main/pythonbuild/cpython.py
+ - https://astral.sh/blog/uv
+ - https://github.com/jazzband/pip-tools
+ - https://github.com/Osiris-Team/1JPM
+"""
 import argparse
 import dataclasses as dc
 import functools
@@ -54,6 +70,10 @@ def check_not(v: ta.Any) -> None:
 
 ########################################
 # /Users/spinlock/src/wrmsr/omlish/x/amalg/demo/std/logging.py
+"""
+TODO:
+ - debug
+"""
 
 
 log = logging.getLogger(__name__)
@@ -265,26 +285,6 @@ class Venv:
 
 ########################################
 # /Users/spinlock/src/wrmsr/omlish/x/amalg/demo/pyproject/pyproject.py
-
-
-#!/usr/bin/env python3
-"""
-TODO:
- - check / tests, src dir sets
- - ci
- - build / package / publish
-  - {pkg_name: [src_dirs]}, default excludes, generate MANIFST.in, ...
-
-lookit:
- - https://pdm-project.org/en/latest/
- - https://rye.astral.sh/philosophy/
- - https://github.com/indygreg/python-build-standalone/blob/main/pythonbuild/cpython.py
- - https://astral.sh/blog/uv
- - https://github.com/jazzband/pip-tools
- - https://github.com/Osiris-Team/1JPM
-"""
-
-
 
 
 ##

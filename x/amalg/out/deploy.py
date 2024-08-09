@@ -1,3 +1,85 @@
+r"""
+TODO:
+ - flock
+ - interp.py
+
+deployment matrix
+ - os: ubuntu / amzn / generic
+ - arch: amd64 / arm64
+ - host: bare / docker
+ - init: supervisor-provided / supervisor-must-configure / systemd (/ self?)
+ - interp: system / pyenv / interp.py
+ - venv: none / yes
+ - nginx: no / provided / must-configure
+
+==
+
+~deploy
+  deploy.pid (flock)
+  /app
+    /<appspec> - shallow clone
+  /conf
+    /env
+      <appspec>.env
+    /nginx
+      <appspec>.conf
+    /supervisor
+      <appspec>.conf
+  /venv
+    /<appspec>
+
+?
+  /logs
+    /wrmsr--omlish--<spec>
+
+spec = <name>--<rev>--<when>
+
+https://docs.docker.com/config/containers/multi-service_container/#use-a-process-manager
+https://serverfault.com/questions/211525/supervisor-not-loading-new-configuration-files
+
+==
+
+cat /etc/systemd/system/hello.service
+
+--
+
+[Unit]
+Description=hello
+After= \
+    syslog.target \
+    network.target \
+    remote-fs.target \
+    nss-lookup.target \
+    network-online.target
+Requires=network-online.target
+
+[Service]
+Type=simple
+StandardOutput=journal
+ExecStart=sleep infinity
+
+# User=
+# WorkingDirectory=
+
+# https://serverfault.com/questions/617823/how-to-set-systemd-service-dependencies
+# PIDFile=/run/nginx.pid
+# ExecStartPre=/usr/sbin/nginx -t
+# ExecStart=/usr/sbin/nginx
+# ExecReload=/bin/kill -s HUP $MAINPID
+# ExecStop=/bin/kill -s QUIT $MAINPID
+# PrivateTmp=true
+
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
+
+--
+
+sudo systemctl enable hello.service
+sudo systemctl start hello.service
+"""  # noqa
 import abc
 import argparse
 import dataclasses as dc
@@ -113,6 +195,10 @@ class cached_nullary:  # noqa
 
 ########################################
 # /Users/spinlock/src/wrmsr/omlish/x/amalg/demo/std/logging.py
+"""
+TODO:
+ - debug
+"""
 
 
 log = logging.getLogger(__name__)
@@ -156,91 +242,6 @@ def subprocess_check_output(*args, **kwargs):
 
 ########################################
 # /Users/spinlock/src/wrmsr/omlish/x/amalg/demo/deploy/deploy.py
-
-
-r"""
-TODO:
- - flock
- - interp.py
-
-deployment matrix
- - os: ubuntu / amzn / generic
- - arch: amd64 / arm64
- - host: bare / docker
- - init: supervisor-provided / supervisor-must-configure / systemd (/ self?)
- - interp: system / pyenv / interp.py
- - venv: none / yes
- - nginx: no / provided / must-configure
-
-==
-
-~deploy
-  deploy.pid (flock)
-  /app
-    /<appspec> - shallow clone
-  /conf
-    /env
-      <appspec>.env
-    /nginx
-      <appspec>.conf
-    /supervisor
-      <appspec>.conf
-  /venv
-    /<appspec>
-
-?
-  /logs
-    /wrmsr--omlish--<spec>
-
-spec = <name>--<rev>--<when>
-
-https://docs.docker.com/config/containers/multi-service_container/#use-a-process-manager
-https://serverfault.com/questions/211525/supervisor-not-loading-new-configuration-files
-
-==
-
-cat /etc/systemd/system/hello.service
-
---
-
-[Unit]
-Description=hello
-After= \
-    syslog.target \
-    network.target \
-    remote-fs.target \
-    nss-lookup.target \
-    network-online.target
-Requires=network-online.target
-
-[Service]
-Type=simple
-StandardOutput=journal
-ExecStart=sleep infinity
-
-# User=
-# WorkingDirectory=
-
-# https://serverfault.com/questions/617823/how-to-set-systemd-service-dependencies
-# PIDFile=/run/nginx.pid
-# ExecStartPre=/usr/sbin/nginx -t
-# ExecStart=/usr/sbin/nginx
-# ExecReload=/bin/kill -s HUP $MAINPID
-# ExecStop=/bin/kill -s QUIT $MAINPID
-# PrivateTmp=true
-
-Restart=always
-RestartSec=3
-
-[Install]
-WantedBy=multi-user.target
-
---
-
-sudo systemctl enable hello.service
-sudo systemctl start hello.service
-"""  # noqa
-
 
 
 ##

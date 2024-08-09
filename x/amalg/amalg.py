@@ -30,7 +30,6 @@ import typing as ta
 
 from omlish import check
 from omlish import collections as col
-from omlish import lang
 import tokenize_rt as trt
 
 
@@ -51,14 +50,17 @@ def ignore_ws(toks: ta.Iterable[trt.Token]) -> ta.Iterable[trt.Token]:
     return (t for t in toks if not is_ws(t))
 
 
-def split_prefix_ws(toks: ta.Iterable[trt.Token]) -> tuple[list[trt.Token], list[trt.Token]]:
+HEADER_NAMES = (*WS_NAMES, 'COMMENT', 'STRING')
+
+
+def split_header_lines(lines: ta.Iterable[Tokens]) -> tuple[list[Tokens], list[Tokens]]:
     ws = []
     nws = []
-    for tok in (it := iter(toks)):
-        if tok.name in WS_NAMES:
-            ws.append(tok)
+    for line in (it := iter(lines)):
+        if line[0].name in HEADER_NAMES:
+            ws.append(line)
         else:
-            nws.append(ws)
+            nws.append(line)
             nws.extend(it)
             break
     return ws, nws
@@ -66,6 +68,10 @@ def split_prefix_ws(toks: ta.Iterable[trt.Token]) -> tuple[list[trt.Token], list
 
 def join_toks(ts: Tokens) -> str:
     return ''.join(t.src for t in ts)
+
+
+def join_lines(ls: ta.Iterable[Tokens]) -> str:
+    return ''.join(map(join_toks, ls))
 
 
 ##
@@ -211,6 +217,7 @@ class SrcFile:
     tokens: Tokens = dc.field(repr=False)
     lines: ta.Sequence[Tokens] = dc.field(repr=False)
 
+    header_lines: ta.Sequence[Tokens] = dc.field(repr=False)
     imports: ta.Sequence[Import] = dc.field(repr=False)
     typings: ta.Sequence[Typing] = dc.field(repr=False)
     content_lines: ta.Sequence[Tokens] = dc.field(repr=False)
@@ -227,11 +234,13 @@ def make_src_file(
     tokens = trt.src_to_tokens(src)
     lines = [list(it) for g, it in itertools.groupby(tokens, lambda t: t.line)]
 
+    hls, cls = split_header_lines(lines)
+
     imps: list[Import] = []
     tys: list[Typing] = []
     ctls: list[Tokens] = []
 
-    for line in lines:
+    for line in cls:
         if (imp := make_import(
                 line,
                 src_path=path,
@@ -255,6 +264,7 @@ def make_src_file(
         tokens=tokens,
         lines=lines,
 
+        header_lines=hls,
         imports=imps,
         typings=tys,
         content_lines=ctls,
@@ -295,6 +305,12 @@ def gen_amalg(
 
     ##
 
+    mf = src_files[main_path]
+    if mf.header_lines:
+        out.write(join_lines(mf.header_lines))
+
+    ##
+
     all_imps = [i for f in src_files.values() for i in f.imports]
     gl_imps = [i for i in all_imps if i.mod_path is None]
 
@@ -331,8 +347,11 @@ def gen_amalg(
     for i, sf in enumerate(sfs):
         f = src_files[sf]
         out.write(SECTION_SEP)
-        out.write(f'# {f.path}\n\n\n')
-        sf_src = ''.join(join_toks(cl) for cl in f.content_lines)
+        out.write(f'# {f.path}\n')
+        if f is not mf and f.header_lines:
+            out.write(join_lines(f.header_lines))
+        out.write(f'\n\n')
+        sf_src = join_lines(f.content_lines)
         out.write(sf_src.strip())
         if i < len(sfs) - 1:
             out.write('\n\n\n')
