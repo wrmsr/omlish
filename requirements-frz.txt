@@ -25,14 +25,14 @@ audioread==3.0.1
 babel==2.16.0
 bayesian-optimization==1.5.1
 beautifulsoup4==4.12.3
-bellows==0.40.2
+bellows==0.40.3
 bitsandbytes==0.42.0
 black==24.8.0
 bleach==6.1.0
 blis==0.7.11
 blobfile==2.1.1
-boto3==1.34.157
-botocore==1.34.157
+boto3==1.34.158
+botocore==1.34.158
 bs4==0.0.2
 bsddb3==6.2.9
 build==1.2.1
