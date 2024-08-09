@@ -16,10 +16,10 @@ def _main() -> None:
 
     u.build_docker_image(img_name, cur_dir)
     with u.launch_docker_container(
-            img_name,
             '-p', '9322:22',
             '-p', '9380:80',
             '-p', '9343:443',
+            img_name,
             timebomb_delay_s=TIMEBOMB_DELAY_S,
     ) as ctr_id:
         cfg = dict(
