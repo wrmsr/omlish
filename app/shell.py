@@ -6,87 +6,67 @@ import contextlib
 import dataclasses as dc
 import functools
 import logging
-import signal
 import typing as ta
 
 import anyio.abc
-import sqlalchemy.ext.asyncio as saa
 
 from omlish import asyncs as au
-from omlish import lang
+from omlish import inject as inj
 from omlish import logs
-from omlish import sql
+from omlish.asyncs import anyio as anu
 from omlish.diag import procstats
-from omserv.dbs import get_db_url
-from omserv.node.models import recreate_all
-from omserv.node.registry import NodeRegistrant
+from omserv.node import registry as node_reg
 
 
-ShutdownTrigger: ta.TypeAlias = ta.Callable[..., ta.Awaitable[None]]
-ShellApp: ta.TypeAlias = ta.Callable[[ShutdownTrigger], ta.Awaitable[None]]
+ShellApp = ta.NewType('ShellApp', ta.Callable[[anyio.Event], ta.Awaitable[None]])
 
 
 log = logging.getLogger(__name__)
 
 
-async def _install_signal_handler(
-        tg: anyio.abc.TaskGroup,
-        event: anyio.Event | None = None,
-        *,
-        signals: ta.Iterable[int] = (signal.SIGINT, signal.SIGTERM),
-        echo: bool = False,
-) -> ta.Callable[..., ta.Awaitable[None]] | None:
-    if event is None:
-        event = anyio.Event()
+@dc.dataclass(frozen=True)
+class CompositeShellApp:
+    apps: ta.AbstractSet[ShellApp]
 
-    async def _handler(*, task_status=anyio.TASK_STATUS_IGNORED):
-        with anyio.open_signal_receiver(*signals) as it:  # type: ignore
-            task_status.started()
-            async for signum in it:
-                if echo:
-                    if signum == signal.SIGINT:
-                        print('Ctrl+C pressed!')
-                    else:
-                        print('Terminated!')
-                event.set()
-                return
-
-    await tg.start(_handler)
-    return event.wait
+    @au.mark_anyio
+    async def run(
+            self,
+            shutdown: anyio.Event,
+            *,
+            task_status: anyio.abc.TaskStatus[None] = anyio.TASK_STATUS_IGNORED,
+    ) -> None:
+        async with anyio.create_task_group() as tg:
+            for app in self.apps:
+                tg.start_soon(app)
 
 
 async def get_procstats() -> ta.Mapping[str, ta.Any]:
     return dc.asdict(procstats.get_psutil_procstats())
 
 
-async def killer(shutdown: anyio.Event, sleep_s: float) -> None:
-    log.warning('Killing in %d seconds', sleep_s)
-    await anyio.sleep(sleep_s)
-    log.warning('Killing')
-    shutdown.set()
+def bind_node_registrant() -> inj.Elemental:
+    from .dbs import bind_dbs
+
+    return inj.as_elements(
+        inj.private(
+            inj.bind(node_reg.NodeRegistrant, singleton=True, expose=True),
+
+            inj.map_binder[str, node_reg.ExtrasProvider]().bind('procstats', get_procstats),
+
+            bind_dbs(),
+        ),
+
+        inj.set_binder[ShellApp]().bind(node_reg.NodeRegistrant),
+    )
 
 
 @au.with_adapter_loop(wait=True)
 async def a_run_shell(app: ShellApp) -> None:
     async with contextlib.AsyncExitStack() as aes:
-        engine = sql.async_adapt(saa.create_async_engine(get_db_url(), echo=True))
-        await aes.enter_async_context(lang.a_defer(engine.dispose()))
-
-        await recreate_all(engine)
-
-        nr = NodeRegistrant(
-            engine,
-            extras={
-                'procstats': get_procstats,
-            },
-        )
-
         shutdown = anyio.Event()
 
         async with anyio.create_task_group() as tg:
-            await _install_signal_handler(tg, shutdown)
-
-            # tg.start_soon(killer, shutdown, 10.)
+            await anu.install_shutdown_signal_handler(tg, shutdown)
 
             await tg.start(functools.partial(nr.run, shutdown))
 
