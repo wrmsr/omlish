@@ -404,7 +404,7 @@ def _gen_cmd(args) -> None:
             mounts=mounts,
         )
 
-        out_path = os.path.join(output_dir, 'out', os.path.basename(main_path))
+        out_path = os.path.join(output_dir, os.path.basename(main_path))
         with open(out_path, 'w') as f:
             f.write(src)
         os.chmod(out_path, os.stat(main_path).st_mode)
