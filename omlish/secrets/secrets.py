@@ -13,6 +13,15 @@ class Secret:
     key: str
 
 
+def secret_repr(o: str | Secret | None) -> str | None:
+    if isinstance(o, str):
+        return '...'
+    elif isinstance(o, Secret):
+        return repr(o)
+    else:
+        return None
+
+
 ##
 
 

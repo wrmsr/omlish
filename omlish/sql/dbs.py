@@ -3,6 +3,7 @@ import urllib.parse
 
 from .. import dataclasses as dc
 from .. import lang
+from .. import secrets as sec
 
 
 ##
@@ -44,7 +45,7 @@ class DbLoc(lang.Abstract):
 
 @dc.dataclass(frozen=True)
 class UrlDbLoc(DbLoc, lang.Final):
-    url: str
+    url: str | sec.Secret = dc.xfield(repr_fn=sec.secret_repr)
 
 
 @dc.dataclass(frozen=True)
@@ -53,7 +54,7 @@ class HostDbLoc(DbLoc, lang.Final):
     port: int | None = None
 
     username: str | None = None
-    password: str | None = dc.xfield(default=None, repr_fn=lambda pw: '...' if pw is not None else None)
+    password: str | sec.Secret | None = dc.xfield(default=None, repr_fn=sec.secret_repr)
 
 
 ##

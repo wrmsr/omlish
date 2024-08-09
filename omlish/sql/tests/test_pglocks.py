@@ -62,7 +62,7 @@ def _compile_pg_lock_name(
 
 
 def test_pglocks(harness) -> None:
-    url = check.isinstance(harness[Dbs].specs()['postgres'].loc, UrlDbLoc).url
+    url = check.isinstance(check.isinstance(harness[Dbs].specs()['postgres'].loc, UrlDbLoc).url, str)
     url = set_url_engine(url, 'postgresql+pg8000')
 
     with contextlib.ExitStack() as es:
