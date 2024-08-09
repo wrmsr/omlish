@@ -71,6 +71,7 @@ async def a_run_shell(app: ShellApp) -> None:
         engine = sql.async_adapt(saa.create_async_engine(get_db_url(), echo=True))
         await aes.enter_async_context(lang.a_defer(engine.dispose()))
 
+
         nr = NodeRegistrant(
             engine,
             extras={
