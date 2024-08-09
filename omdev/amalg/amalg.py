@@ -26,6 +26,7 @@ import argparse
 import dataclasses as dc
 import io
 import itertools
+import logging
 import os.path
 import typing as ta
 
@@ -33,9 +34,13 @@ import tokenize_rt as trt
 
 from omlish import check
 from omlish import collections as col
+from omlish import logs
 
 
 Tokens: ta.TypeAlias = ta.Sequence[trt.Token]
+
+
+log = logging.getLogger(__name__)
 
 
 ##
@@ -317,9 +322,9 @@ def gen_amalg(
     mf = src_files[main_path]
     if mf.header_lines:
         out.write(''.join(
-            l
+            ls
             for lts in mf.header_lines
-            if not (l := join_toks(lts)).startswith(SCANNER_COMMENT)
+            if not (ls := join_toks(lts)).startswith(SCANNER_COMMENT)
         ))
 
     if RUFF_DISABLES:
@@ -392,6 +397,8 @@ def _gen_one(
         *,
         mounts: ta.Mapping[str, str],
 ) -> None:
+    log.info('Generating: %s -> %s', input_path, output_path)
+
     src = gen_amalg(
         input_path,
         mounts=mounts,
@@ -446,6 +453,8 @@ def _build_parser() -> argparse.ArgumentParser:
 
 
 def _main() -> None:
+    logs.configure_standard_logging('INFO')
+
     parser = _build_parser()
     args = parser.parse_args()
     if not getattr(args, 'func', None):
