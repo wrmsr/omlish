@@ -5,12 +5,8 @@ Conventions:
 
 TODO:
  - check 3.8 compat
- - scan: `#@ ominfra-amalg`
- - make gen
- - argparse
  - more sanity checks lol
  - flake8 / ruff mgmt
- - if shebang chmod a+x
 
 Targets:
  - interp
