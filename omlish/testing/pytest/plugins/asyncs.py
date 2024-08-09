@@ -95,15 +95,15 @@ class AsyncsPlugin:
         else:
             return
 
+        if pdu.is_present():
+            pdu.patch_for_trio_asyncio()
+
         metafunc.fixturenames.append(PARAM_NAME)
         metafunc.parametrize(PARAM_NAME, bes)
 
         for c in metafunc._calls:  # noqa
             be = c.params[PARAM_NAME]
             if be == 'trio_asyncio':
-                if pdu.is_present():
-                    pdu.patch_for_trio_asyncio()
-
                 c.marks.extend([
                     pytest.mark.trio.mark,
                     pytest.mark.trio_asyncio.mark,
