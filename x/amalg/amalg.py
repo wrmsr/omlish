@@ -8,6 +8,7 @@ TODO:
  - relpath comments
  - check 3.8 compat
  - scan: `#@ ominfra-amalg`
+ - make gen
  - argparse
 
 Targets:
@@ -48,6 +49,19 @@ def is_ws(tok: trt.Token) -> bool:
 
 def ignore_ws(toks: ta.Iterable[trt.Token]) -> ta.Iterable[trt.Token]:
     return (t for t in toks if not is_ws(t))
+
+
+def split_prefix_ws(toks: ta.Iterable[trt.Token]) -> tuple[list[trt.Token], list[trt.Token]]:
+    ws = []
+    nws = []
+    for tok in (it := iter(toks)):
+        if tok.name in WS_NAMES:
+            ws.append(tok)
+        else:
+            nws.append(ws)
+            nws.extend(it)
+            break
+    return ws, nws
 
 
 def join_toks(ts: Tokens) -> str:
