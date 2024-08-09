@@ -1,7 +1,6 @@
 import contextlib
 import functools
 import json
-import os
 import secrets
 import urllib.parse
 
@@ -15,6 +14,7 @@ from omlish import inject as inj
 from omlish import lang
 from omlish.http.asgi import AsgiApp
 from omlish.testing import pytest as ptu
+from omserv.apps.base import BaseServerUrl
 from omserv.server.config import Config
 from omserv.server.tests.utils import get_free_port
 from omserv.server.tests.utils import get_timeout_s
@@ -37,14 +37,12 @@ def randhex(l: int) -> str:
     # 'trio_asyncio',
 )
 @au.with_adapter_loop(wait=True)
-async def test_demo_auth():
+async def test_auth():
     # from omlish import logs  # noqa
     # logs.configure_standard_logging('INFO')  # noqa
 
     port = get_free_port()
     base_url = f'http://127.0.0.1:{port}/'
-
-    os.environ['BASE_SERVER_URL'] = base_url
 
     sev = anyio.Event()
 
@@ -130,8 +128,14 @@ async def test_demo_auth():
                 assert dct['tokens'] == [21943, 2318, 275, 1031, 627, 87, 23105, 612]
 
     async with inj.create_async_managed_injector(
-        bind_app(),
-        dbs.bind_dbs(),
+        inj.override(
+            inj.as_elements(
+                inj.bind(BaseServerUrl, to_const=base_url),
+            ),
+
+            bind_app(),
+            dbs.bind_dbs(),
+        )
     ) as i:
         app = await au.s_to_a(i.provide)(AsgiApp)
 
