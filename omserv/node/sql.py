@@ -95,7 +95,7 @@ def _compile_create_update_at_trigger(
         **kw: ta.Any,
 ):
     return textwrap.dedent(f"""
-        create trigger {get_update_at_trigger_name(element.table_name)}
+        create or replace trigger {get_update_at_trigger_name(element.table_name)}
             before update
             on {element.table_name}
             for each row
