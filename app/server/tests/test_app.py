@@ -22,7 +22,8 @@ from omserv.server.tests.utils import headers_time_patch  # noqa
 from omserv.server.types import AsgiWrapper
 from omserv.server.workers import serve
 
-from ... import dbs
+from ...dbs import bind_dbs
+from ...secrets import bind_secrets
 from ..inject import bind_app
 
 
@@ -135,7 +136,8 @@ async def test_auth():
             ),
 
             bind_app(),
-            dbs.bind_dbs(),
+            bind_dbs(),
+            bind_secrets(),
         ),
     ) as i:
         app = await au.s_to_a(i.provide)(AsgiApp)

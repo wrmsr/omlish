@@ -14,6 +14,7 @@ TODO:
 import contextlib
 import functools
 import itertools
+import logging
 import typing as ta
 import weakref
 
@@ -37,6 +38,11 @@ from .elements import ElementCollection
 from .inspect import build_kwargs_target
 from .scopes import ScopeImpl
 from .scopes import make_scope_impl
+
+
+log = logging.getLogger(__name__)
+
+_DEBUG_LOGGING = False
 
 
 DEFAULT_SCOPES: list[Scope] = [
@@ -105,6 +111,7 @@ class InjectorImpl(Injector, lang.Final):
             self._injector = injector
             self._provisions: dict[Key, ta.Any] = {}
             self._seen_keys: set[Key] = set()
+            self._kt_stack: list[KwargsTarget] = []
 
         def handle_key(self, key: Key) -> lang.Maybe:
             try:
@@ -120,6 +127,16 @@ class InjectorImpl(Injector, lang.Final):
             check.in_(key, self._seen_keys)
             check.not_in(key, self._provisions)
             self._provisions[key] = v
+
+        @contextlib.contextmanager
+        def push_kt(self, kt: KwargsTarget | None) -> ta.Iterator[None]:
+            self._kt_stack.append(kt)
+            try:
+                yield
+            finally:
+                nkt = self._kt_stack.pop()
+                if kt is not nkt:
+                    raise Exception(f'Stack error: {kt=} is not {nkt=}')
 
         def __enter__(self) -> ta.Self:
             return self
@@ -140,38 +157,42 @@ class InjectorImpl(Injector, lang.Final):
             finally:
                 self.__cur_req = None
 
-    def try_provide(self, key: ta.Any) -> lang.Maybe[ta.Any]:
+    def _try_provide(self, key: ta.Any, *, kt: KwargsTarget | None = None) -> lang.Maybe[ta.Any]:
         key = as_key(key)
 
         with self._current_request() as cr:
-            ic = self._internal_consts.get(key)
-            if ic is not None:
-                return lang.just(ic)
+            with cr.push_kt(kt):
+                ic = self._internal_consts.get(key)
+                if ic is not None:
+                    return lang.just(ic)
 
-            if (rv := cr.handle_key(key)).present:
-                return rv
+                if (rv := cr.handle_key(key)).present:
+                    return rv
 
-            bi = self._bim.get(key)
-            if bi is not None:
-                sc = self._scopes[bi.scope]
+                bi = self._bim.get(key)
+                if bi is not None:
+                    sc = self._scopes[bi.scope]
 
-                fn = lambda: sc.provide(bi, self)  # noqa
-                for pl in self._pls:
-                    fn = functools.partial(pl, self, key, bi.binding, fn)
-                v = fn()
+                    fn = lambda: sc.provide(bi, self)  # noqa
+                    for pl in self._pls:
+                        fn = functools.partial(pl, self, key, bi.binding, fn)
+                    v = fn()
 
-                cr.handle_provision(key, v)
-                return lang.just(v)
+                    cr.handle_provision(key, v)
+                    return lang.just(v)
 
-            if self._p is not None:
-                pv = self._p.try_provide(key)
-                if pv is not None:
-                    return pv
+                if self._p is not None:
+                    pv = self._p._try_provide(key, kt=kt)
+                    if pv is not None:
+                        return pv
 
-            return lang.empty()
+                return lang.empty()
+
+    def try_provide(self, key: ta.Any) -> lang.Maybe[ta.Any]:
+        return self.try_provide(key)
 
     def provide(self, key: ta.Any) -> ta.Any:
-        v = self.try_provide(key)
+        v = self._try_provide(key)
         if v.present:
             return v.must()
         raise UnboundKeyError(key)
@@ -180,7 +201,7 @@ class InjectorImpl(Injector, lang.Final):
         ret: dict[str, ta.Any] = {}
         for kw in kt.kwargs:
             if kw.has_default:
-                if not (mv := self.try_provide(kw.key)).present:
+                if not (mv := self._try_provide(kw.key, kt=kt)).present:
                     continue
                 v = mv.must()
             else:
