@@ -128,6 +128,8 @@ def make_import(
 
 @dc.dataclass(frozen=True, kw_only=True)
 class Typing:
+    src: str
+
     src_path: str
     line: int
 
@@ -153,6 +155,8 @@ def make_typing(
         return None
 
     return Typing(
+        src=join_toks(lts),
+
         src_path=src_path,
         line=wts[0].line,
 
@@ -193,7 +197,7 @@ class SrcFile:
             if (imp := make_import(line, self.path)) is not None:
                 imps.append(imp)
             elif (ty := make_typing(line, self.path)) is not None:
-                tys.append(imp)
+                tys.append(ty)
             else:
                 ctls.append(line)
         return imps, tys, ctls
@@ -259,6 +263,20 @@ def _main() -> None:
         for f in src_files.values()
     }))
     sfs = [sf for ss in ts for sf in sorted(ss)]
+
+    ##
+
+    tys = set()
+    for sf in sfs:
+        f = src_files[sf]
+        for ty in f.typings():
+            if ty.src not in tys:
+                out.write(ty.src)
+                tys.add(ty.src)
+    if tys:
+        out.write('\n\n')
+
+    ##
 
     for i, sf in enumerate(sfs):
         f = src_files[sf]
