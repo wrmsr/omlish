@@ -9,6 +9,7 @@ if ta.TYPE_CHECKING:
 
     import sniffio
     import trio_asyncio
+
 else:
     asyncio = lang.proxy_import('asyncio')
 
