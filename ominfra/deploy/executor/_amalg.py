@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# @omdev-amalg-output executor.py
+# @omdev-amalg-output main.py
 r"""
 TODO:
  - flock
@@ -296,10 +296,7 @@ class Deployment:
 
 
 ########################################
-# executor.py
-
-
-##
+# ../concerns/user.py
 
 
 class User(Concern):
@@ -318,6 +315,10 @@ class User(Concern):
                 self._d.host_cfg.username,
             ]))
             pwd.getpwnam(self._d.host_cfg.username)
+
+
+########################################
+# main.py
 
 
 ##
