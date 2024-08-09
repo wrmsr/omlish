@@ -36,7 +36,7 @@ def render_script(*cs: list[str] | tuple[str, ...]) -> str:
     ))
 
 
-async def do_deploy(
+async def do_remote_deploy(
         cr: cmds.CommandRunner,
         rev: str = 'master',
         *,
@@ -81,7 +81,7 @@ async def _a_main():
         cwd=cwd,
     ))
 
-    await do_deploy(
+    await do_remote_deploy(
         cr,
         local_repo_path=os.path.expanduser('~/src/wrmsr/omlish/.git'),
     )
