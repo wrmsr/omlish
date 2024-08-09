@@ -2,14 +2,11 @@ import sqlalchemy as sa
 import sqlalchemy.ext.compiler
 
 
-class ParenExpression(sa.sql.expression.UnaryExpression):
+class paren(sa.sql.expression.UnaryExpression):  # noqa
     __visit_name__ = 'paren'
     inherit_cache = True
 
 
-paren = ParenExpression
-
-
-@sa.ext.compiler.compiles(ParenExpression)
-def visit_paren(element, compiler, **kw):
+@sa.ext.compiler.compiles(paren)
+def _compile_paren(element, compiler, **kw):
     return '(%s)' % (element.element._compiler_dispatch(compiler),)  # noqa
