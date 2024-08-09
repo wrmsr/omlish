@@ -13,10 +13,10 @@ _MISSING = object()
 
 class PeekIterator(ta.Iterator[T]):
 
-    def __init__(self, it: ta.Iterator[T]) -> None:
+    def __init__(self, it: ta.Iterable[T]) -> None:
         super().__init__()
 
-        self._it = it
+        self._it = iter(it)
         self._pos = -1
         self._next_item: ta.Any = _MISSING
 
