@@ -97,11 +97,13 @@ class NodeRegistrant:
             log.info('Node started: nid=%d', nid)
             task_status.started()
 
+            start_t = end_t = 0.
             while True:
                 await anu.first(
-                    lambda: anyio.sleep(1.),
+                    lambda: anyio.sleep(1. - (end_t - start_t)),  # noqa
                     shutdown.wait,
                 )
+                start_t = anyio.current_time()
 
                 if shutdown.is_set():
                     log.info('Node shutting down')
@@ -118,3 +120,5 @@ class NodeRegistrant:
                         heartbeat_at=utcnow(),
                         extra=self._info.extra,
                     ))
+
+                end_t = anyio.current_time()
