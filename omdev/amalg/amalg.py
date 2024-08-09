@@ -410,6 +410,30 @@ def _gen_one(
     os.chmod(output_path, os.stat(input_path).st_mode)
 
 
+def _scan_one(
+        input_path: str,
+        **kwargs: ta.Any,
+) -> None:
+    if not input_path.endswith('.py'):
+        return
+
+    with open(input_path) as f:
+        src = f.read()
+
+    sls = [l for l in src.splitlines() if l.startswith(SCANNER_COMMENT)]
+    for sl in sls:
+        sas = sl[len(SCANNER_COMMENT):].split()
+        if len(sas) != 1:
+            raise Exception(f'Invalid scan args: {input_path=} {sas=}')
+
+        output_path = os.path.abspath(os.path.join(os.path.dirname(input_path), sas[0]))
+        _gen_one(
+            input_path,
+            output_path,
+            **kwargs,
+        )
+
+
 def _gen_cmd(args) -> None:
     if not os.path.isfile('pyproject.toml'):
         raise Exception('Not in project root')
@@ -424,7 +448,13 @@ def _gen_cmd(args) -> None:
 
     for i in args.inputs:
         if os.path.isdir(i):
-            raise NotImplementedError
+            log.info('Scanning %s', i)
+            for we_dirpath, we_dirnames, we_filenames in os.walk(i):
+                for fname in we_filenames:
+                    _scan_one(
+                        os.path.abspath(os.path.join(we_dirpath, fname)),
+                        mounts=mounts,
+                    )
 
         else:
             output_dir = args.output
