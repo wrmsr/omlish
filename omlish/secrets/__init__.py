@@ -4,4 +4,5 @@ from .secrets import (  # noqa
     Secret,
     Secrets,
     SimpleSecrets,
+    secret_repr,
 )
