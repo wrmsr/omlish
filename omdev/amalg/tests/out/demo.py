@@ -3,7 +3,6 @@
 Hi!
 """
 # also
-# ruff: noqa: UP006 UP007
 import contextlib
 import functools
 import logging
@@ -43,9 +42,10 @@ class cached_nullary:  # noqa
 
 ########################################
 # ../../../std/check.py
+# ruff: noqa: UP007
 
 
-def check_not_none(v: ta.Optional[T]) -> T:  # noqa
+def check_not_none(v: ta.Optional[T]) -> T:
     if v is None:
         raise ValueError
     return v
