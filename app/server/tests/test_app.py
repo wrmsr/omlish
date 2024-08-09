@@ -9,9 +9,11 @@ import anyio
 import httpx
 import pytest
 
-from omlish import asyncs as aiu
+from omlish import asyncs as au
 from omlish import check
+from omlish import inject as inj
 from omlish import lang
+from omlish.http.asgi import AsgiApp
 from omlish.testing import pytest as ptu
 from omserv.server.config import Config
 from omserv.server.tests.utils import get_free_port
@@ -20,7 +22,8 @@ from omserv.server.tests.utils import headers_time_patch  # noqa
 from omserv.server.types import AsgiWrapper
 from omserv.server.workers import serve
 
-from ..app import server_app_context
+from ... import dbs
+from ..inject import bind as bind_app
 
 
 def randhex(l: int) -> str:
@@ -33,7 +36,7 @@ def randhex(l: int) -> str:
     'trio',
     # 'trio_asyncio',
 )
-@aiu.with_adapter_loop(wait=True)
+@au.with_adapter_loop(wait=True)
 async def test_demo_auth():
     # from omlish import logs  # noqa
     # logs.configure_standard_logging('INFO')  # noqa
@@ -126,14 +129,20 @@ async def test_demo_auth():
                 assert dct['user_name'] == name
                 assert dct['tokens'] == [21943, 2318, 275, 1031, 627, 87, 23105, 612]
 
-    async with server_app_context() as server_app:
+    async with inj.create_async_managed_injector(
+        bind_app(),
+        dbs.bind_dbs(),
+    ) as i:
+        app = await au.s_to_a(i.provide)(AsgiApp)
+
         async with anyio.create_task_group() as tg:
             tg.start_soon(functools.partial(
                 serve,
-                AsgiWrapper(server_app),  # type: ignore
+                AsgiWrapper(app),
                 Config(
                     bind=(f'127.0.0.1:{port}',),
                 ),
                 shutdown_trigger=sev.wait,
             ))
+
             tg.start_soon(inner)

@@ -1,5 +1,14 @@
+"""
+TODO:
+ - remember - just a second cookie lol
+ - chrome save text boxes / login
+ - with_session / with_user / login_required as *marks* not wrappers
+  - maybe *both*, just to last-ditch validate login_required
+ - logout is POST
+
+https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login
+"""
 import datetime
-import logging
 import os
 
 from omlish import inject as inj
@@ -15,9 +24,6 @@ from ..users import UserStore
 from ..usersdb import DbUserStore
 from .apps import inject as apps_inj
 from .handlers import inject as handlers_inj
-
-
-log = logging.getLogger(__name__)
 
 
 ##
