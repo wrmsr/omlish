@@ -277,9 +277,9 @@ def make_src_file(
 
 SECTION_SEP = '#' * 40 + '\n'
 
-RUFF_DISABLES = [
-    'UP006',  # Use `list` instead of `ta.List` for type annotation
-    'UP007',  # Use `X | Y` for type annotations
+RUFF_DISABLES: ta.Sequence[str] = [
+    # 'UP006',  # Use `list` instead of `ta.List` for type annotation
+    # 'UP007',  # Use `X | Y` for type annotations
 ]
 
 
