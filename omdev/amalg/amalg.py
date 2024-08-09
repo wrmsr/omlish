@@ -87,7 +87,7 @@ class Import:
     src_path: str
     line: int
 
-    mod_path: str
+    mod_path: str | None
 
     toks: Tokens = dc.field(repr=False)
 
@@ -106,7 +106,7 @@ def make_import(
         return None
 
     ml = []
-    il = None
+    il: list[str] | None = None
     as_ = None
     for tok in (it := iter(ignore_ws(lts[1:]))):
         if tok.name in ('NAME', 'OP'):
@@ -323,7 +323,7 @@ def gen_amalg(
     all_imps = [i for f in src_files.values() for i in f.imports]
     gl_imps = [i for i in all_imps if i.mod_path is None]
 
-    dct = {}
+    dct: dict = {}
     for imp in gl_imps:
         dct.setdefault((imp.mod, imp.item, imp.as_), []).append(imp)
     for _, l in sorted(dct.items()):
