@@ -1,7 +1,15 @@
 """
+Conventions:
+ - must import whole global modules, if aliased must all match
+ - must import 'from' items for local modules
+
 TODO:
  - shebang
  - hoist initial docstring/comments
+ - check 3.
+ - scan: '#@ ominfra-amalg
+ - root dir
+ - argparse
 
 Targets:
  - interp
@@ -59,30 +67,16 @@ class Import:
     src_path: str
     line: int
 
+    mod_path: str
+
     toks: Tokens = dc.field(repr=False)
-
-    @lang.cached_property
-    def mod_path(self) -> str | None:
-        if not self.mod.startswith('.'):
-            return None
-
-        parts = self.mod.split('.')
-        nd = len(parts) - parts[::-1].index('')
-        mod_path = os.path.abspath(
-            os.path.join(
-                os.path.dirname(self.src_path),
-                '../' * (nd - 1),
-                *parts[nd:-1],
-                parts[-1] + '.py',
-            ),
-        )
-
-        return check.isinstance(mod_path, str)
 
 
 def make_import(
         lts: Tokens,
+        *,
         src_path: str,
+        mounts: ta.Mapping[str, str],
 ) -> Import | None:
     if not lts:
         return None
@@ -111,13 +105,41 @@ def make_import(
         else:
             raise Exception(tok)
 
+    mod = ''.join(ml)
+    item = ''.join(il) if il is not None else None
+
+    if (mnt := mounts.get(mod.partition('.')[0])) is not None:
+        ps = mod.split('.')
+        mod_path = os.path.abspath(os.path.join(
+            mnt,
+            *ps[1:-1],
+            ps[-1] + '.py',
+        ))
+
+    elif not mod.startswith('.'):
+        mod_path = None
+
+    else:
+        parts = mod.split('.')
+        nd = len(parts) - parts[::-1].index('')
+        mod_path = os.path.abspath(os.path.join(
+            os.path.dirname(src_path),
+            '../' * (nd - 1),
+            *parts[nd:-1],
+            parts[-1] + '.py',
+        ))
+
+        mod = check.isinstance(mod_path, str)
+
     return Import(
-        mod=''.join(ml),
-        item=''.join(il) if il is not None else None,
+        mod=mod,
+        item=item,
         as_=as_,
 
         src_path=src_path,
         line=ft.line,
+
+        mod_path=mod_path,
 
         toks=lts,
     )
@@ -138,6 +160,7 @@ class Typing:
 
 def make_typing(
         lts: Tokens,
+        *,
         src_path: str,
 ) -> Typing | None:
     if not lts or lts[0].name == 'UNIMPORTANT_WS':
@@ -167,9 +190,11 @@ def make_typing(
 ##
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, kw_only=True)
 class SrcFile:
     path: str
+
+    mounts: ta.Mapping[str, str] = dc.field(repr=False)
 
     @lang.cached_function
     def src(self) -> str:
@@ -194,9 +219,9 @@ class SrcFile:
         tys: list[Typing] = []
         ctls: list[Tokens] = []
         for line in self.lines():
-            if (imp := make_import(line, self.path)) is not None:
+            if (imp := make_import(line, src_path=self.path, mounts=self.mounts)) is not None:
                 imps.append(imp)
-            elif (ty := make_typing(line, self.path)) is not None:
+            elif (ty := make_typing(line, src_path=self.path)) is not None:
                 tys.append(ty)
             else:
                 ctls.append(line)
@@ -222,14 +247,29 @@ SECTION_SEP = '#' * 40 + '\n'
 
 
 def _main() -> None:
-    root_dir = os.path.dirname(__file__)
+    prj_dir = os.getcwd()
+    if not os.path.isfile(os.path.join(prj_dir, 'pyproject.toml')):
+        raise Exception('Not in project root')
+
+    mounts = {
+        n: os.path.abspath(os.path.join(prj_dir, n))
+        for n in [
+            'omdev',
+            'ominfra',
+            'omlish',
+            'omml',
+            'omserv',
+        ]
+    }
+
+    src_base_dir = os.path.dirname(__file__)
     for main_file in [
         'demo/demo.py',
-        'demo/deploy/deploy.py',
-        'demo/interp/interp.py',
-        'demo/pyproject/pyproject.py',
+        # 'demo/deploy/deploy.py',
+        # 'demo/interp/interp.py',
+        # 'demo/pyproject/pyproject.py',
     ]:
-        main_path = os.path.abspath(os.path.join(root_dir, main_file))
+        main_path = os.path.abspath(os.path.join(src_base_dir, main_file))
 
         src_files: dict[str, SrcFile] = {}
         todo = [main_path]
@@ -238,7 +278,10 @@ def _main() -> None:
             if src_path in src_files:
                 continue
 
-            f = SrcFile(src_path)
+            f = SrcFile(
+                path=src_path,
+                mounts=mounts,
+            )
             src_files[src_path] = f
 
             for imp in f.imports():
@@ -299,7 +342,7 @@ def _main() -> None:
 
         print(out.getvalue())
 
-        with open(os.path.join(root_dir, 'out', os.path.basename(main_file)), 'w') as f:
+        with open(os.path.join(src_base_dir, 'out', os.path.basename(main_file)), 'w') as f:
             f.write(out.getvalue())
 
 

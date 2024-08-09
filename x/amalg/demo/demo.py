@@ -2,6 +2,8 @@ import os.path  # noqa
 import pprint
 import typing as ta  # noqa
 
+from omlish.os import PAGE_SIZE
+
 from .std.cached import cached_nullary
 from .std.check import check_not_none
 from .std.logging import log
@@ -28,6 +30,8 @@ def _main() -> None:
     pprint.pprint('hi')
 
     print(subprocess_check_output('uptime'))
+
+    print(PAGE_SIZE)
 
 
 if __name__ == '__main__':
