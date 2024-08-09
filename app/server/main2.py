@@ -1,8 +1,3 @@
-"""
-TODO:
- - get current revision, package OR live git repo
-"""
-import contextlib
 import dataclasses as dc
 import functools
 import logging
@@ -16,32 +11,20 @@ from omlish import lang
 from omlish import logs
 from omlish.asyncs import anyio as anu
 from omlish.diag import procstats
+from omlish.http.asgi import AsgiApp
 from omserv import server
-from omserv.node import registry as node_reg
+from omserv.node import registry as nr
 
-from .app import server_app_context
+from .inject import bind as bind_app
 
 
-ShellApp = ta.NewType('ShellApp', ta.Callable[[anyio.Event], ta.Awaitable[None]])
+Task = ta.NewType('Task', ta.Callable[[anyio.Event], ta.Awaitable[None]])
 
 
 log = logging.getLogger(__name__)
 
 
-@dc.dataclass(frozen=True)
-class CompositeShellApp:
-    apps: ta.AbstractSet[ShellApp]
-
-    @au.mark_anyio
-    async def run(
-            self,
-            shutdown: anyio.Event,
-            *,
-            task_status: anyio.abc.TaskStatus[None] = anyio.TASK_STATUS_IGNORED,
-    ) -> None:
-        async with anyio.create_task_group() as tg:
-            for app in self.apps:
-                tg.start_soon(app)
+##
 
 
 async def get_procstats() -> ta.Mapping[str, ta.Any]:
@@ -53,34 +36,71 @@ def bind_node_registrant() -> inj.Elemental:
 
     return inj.as_elements(
         inj.private(
-            inj.bind(node_reg.NodeRegistrant, singleton=True, expose=True),
+            inj.bind(nr.NodeRegistrant, singleton=True, expose=True),
 
-            inj.map_binder[str, node_reg.ExtrasProvider]().bind('procstats', get_procstats),
+            inj.bind(nr.ExtrasProvider, tag=nr.ExtrasProvider, to_const=get_procstats),
+            inj.map_binder[str, nr.ExtrasProvider]().bind('procstats', inj.Key(nr.ExtrasProvider, tag=get_procstats)),  # noqa
 
             bind_dbs(),
         ),
 
-        inj.bind(ShellApp, tag=node_reg.NodeRegistrant, to_fn=lang.typed_lambda(nr=node_reg.NodeRegistrant)(lambda nr: nr.run)),  # noqa
-        inj.set_binder[ShellApp]().bind(inj.Key(ShellApp, tag=node_reg.NodeRegistrant)),
+        inj.bind(Task, tag=nr.NodeRegistrant, to_fn=lang.typed_lambda(o=nr.NodeRegistrant)(lambda o: o.run)),
+        inj.set_binder[Task]().bind(inj.Key(Task, tag=nr.NodeRegistrant)),
     )
 
 
-@au.with_adapter_loop(wait=True)
-async def a_run_shell(app: ShellApp) -> None:
-    async with contextlib.AsyncExitStack() as aes:
-        shutdown = anyio.Event()
+##
 
+
+class AsgiServerTask:
+    def __init__(self, app: AsgiApp) -> None:
+        super().__init__()
+        self._app = app
+
+    async def run(
+            self,
+            shutdown: anyio.Event,
+            *,
+            task_status: anyio.abc.TaskStatus[ta.Sequence[str]] = anyio.TASK_STATUS_IGNORED,
+    ) -> None:
+        await server.serve(
+            self._app,  # type: ignore
+            server.Config(),
+            shutdown_trigger=shutdown.wait,
+        )
+
+
+def bind_server() -> inj.Elemental:
+    return inj.private(
+        bind_app(),
+
+        inj.bind(AsgiServerTask, singleton=True, expose=True),
+
+        inj.bind(Task, tag=AsgiServerTask, to_fn=lang.typed_lambda(o=AsgiServerTask)(lambda o: o.run)),
+        inj.set_binder[Task]().bind(inj.Key(Task, tag=AsgiServerTask)),
+    )
+
+
+##
+
+
+@au.with_adapter_loop(wait=True)
+async def _a_main() -> None:
+    async with inj.create_async_managed_injector(
+            bind_node_registrant(),
+            bind_server(),
+    ) as i:
+        tasks = await au.s_to_a(i.provide)(ta.AbstractSet[Task])
+
+        shutdown = anyio.Event()
         async with anyio.create_task_group() as tg:
             await anu.install_shutdown_signal_handler(tg, shutdown)
 
-            await tg.start(functools.partial(nr.run, shutdown))
-
-            tg.start_soon(functools.partial(app, shutdown.wait))
-
-            log.info('Node running')
+            for task in tasks:
+                tg.start_soon(functools.partial(task, shutdown))
 
 
-def run_shell(app: ShellApp) -> None:
+def _main() -> None:
     logs.configure_standard_logging('DEBUG')
 
     # _backend = 'asyncio'
@@ -90,21 +110,8 @@ def run_shell(app: ShellApp) -> None:
         from omlish.diag.pydevd import patch_for_trio_asyncio  # noqa
         patch_for_trio_asyncio()  # noqa
 
-    anyio.run(functools.partial(a_run_shell, app), backend=_backend)
-
-
-async def server_main(shutdown_trigger: ShutdownTrigger) -> None:
-    async with server_app_context() as server_app:
-        async with anyio.create_task_group() as tg:
-            tg.start_soon(functools.partial(
-                server.serve,
-                server_app,  # type: ignore
-                server.Config(),
-                shutdown_trigger=shutdown_trigger,
-            ))
-
-            log.info('Server running')
+    anyio.run(_a_main, backend=_backend)  # noqa
 
 
 if __name__ == '__main__':
-    run_shell(server_main)
+    _main()
