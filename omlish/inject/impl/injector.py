@@ -111,7 +111,7 @@ class InjectorImpl(Injector, lang.Final):
             self._injector = injector
             self._provisions: dict[Key, ta.Any] = {}
             self._seen_keys: set[Key] = set()
-            self._kt_stack: list[KwargsTarget] = []
+            self._source_stack: list[ta.Any] = []
 
         def handle_key(self, key: Key) -> lang.Maybe:
             try:
@@ -129,14 +129,14 @@ class InjectorImpl(Injector, lang.Final):
             self._provisions[key] = v
 
         @contextlib.contextmanager
-        def push_kt(self, kt: KwargsTarget | None) -> ta.Iterator[None]:
-            self._kt_stack.append(kt)
+        def push_source(self, source: ta.Any) -> ta.Iterator[None]:
+            self._source_stack.append(source)
             try:
                 yield
             finally:
-                nkt = self._kt_stack.pop()
-                if kt is not nkt:
-                    raise Exception(f'Stack error: {kt=} is not {nkt=}')
+                nsource = self._source_stack.pop()
+                if source is not nsource:
+                    raise Exception(f'Stack error: {source=} is not {nsource=}')
 
         def __enter__(self) -> ta.Self:
             return self
@@ -157,11 +157,11 @@ class InjectorImpl(Injector, lang.Final):
             finally:
                 self.__cur_req = None
 
-    def _try_provide(self, key: ta.Any, *, kt: KwargsTarget | None = None) -> lang.Maybe[ta.Any]:
+    def _try_provide(self, key: ta.Any, *, source: ta.Any = None) -> lang.Maybe[ta.Any]:
         key = as_key(key)
 
         with self._current_request() as cr:
-            with cr.push_kt(kt):
+            with cr.push_source(source):
                 ic = self._internal_consts.get(key)
                 if ic is not None:
                     return lang.just(ic)
@@ -182,11 +182,19 @@ class InjectorImpl(Injector, lang.Final):
                     return lang.just(v)
 
                 if self._p is not None:
-                    pv = self._p._try_provide(key, kt=kt)
+                    pv = self._p._try_provide(key, source=source)
                     if pv is not None:
                         return pv
 
                 return lang.empty()
+
+    def _provide(self, key: ta.Any, *, source: ta.Any = None) -> ta.Any:
+        v = self._try_provide(key, source=source)
+        if v.present:
+            return v.must()
+        raise UnboundKeyError(key)
+
+    #
 
     def try_provide(self, key: ta.Any) -> lang.Maybe[ta.Any]:
         return self.try_provide(key)
@@ -201,11 +209,11 @@ class InjectorImpl(Injector, lang.Final):
         ret: dict[str, ta.Any] = {}
         for kw in kt.kwargs:
             if kw.has_default:
-                if not (mv := self._try_provide(kw.key, kt=kt)).present:
+                if not (mv := self._try_provide(kw.key, source=kt)).present:
                     continue
                 v = mv.must()
             else:
-                v = self.provide(kw.key)
+                v = self._provide(kw.key, source=kt)
             ret[kw.name] = v
         return ret
 
