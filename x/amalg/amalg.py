@@ -4,11 +4,10 @@ Conventions:
  - must import 'from' items for local modules
 
 TODO:
- - shebang
- - hoist initial docstring/comments
- - check 3.
- - scan: '#@ ominfra-amalg
- - root dir
+ - hoist initial docstring/comments (incl shebang)
+ - relpath comments
+ - check 3.8 compat
+ - scan: `#@ ominfra-amalg`
  - argparse
 
 Targets:
@@ -246,6 +245,86 @@ class SrcFile:
 SECTION_SEP = '#' * 40 + '\n'
 
 
+def gen_amalg(
+        main_path: str,
+        *,
+        mounts: ta.Mapping[str, str],
+) -> str:
+    src_files: dict[str, SrcFile] = {}
+    todo = [main_path]
+    while todo:
+        src_path = todo.pop()
+        if src_path in src_files:
+            continue
+
+        f = SrcFile(
+            path=src_path,
+            mounts=mounts,
+        )
+        src_files[src_path] = f
+
+        for imp in f.imports():
+            if (mp := imp.mod_path) is not None:
+                todo.append(mp)
+
+    ##
+
+    out = io.StringIO()
+
+    ##
+
+    all_imps = [i for f in src_files.values() for i in f.imports()]
+    gl_imps = [i for i in all_imps if i.mod_path is None]
+
+    dct = {}
+    for imp in gl_imps:
+        dct.setdefault((k := (imp.mod, imp.item, imp.as_)), []).append(imp)
+    for _, l in sorted(dct.items()):
+        out.write(join_toks(l[0].toks))
+    if dct:
+        out.write('\n\n')
+
+    ##
+
+    ts = list(col.toposort({  # noqa
+        f.path: {mp for i in f.imports() if (mp := i.mod_path) is not None}
+        for f in src_files.values()
+    }))
+    sfs = [sf for ss in ts for sf in sorted(ss)]
+
+    ##
+
+    tys = set()
+    for sf in sfs:
+        f = src_files[sf]
+        for ty in f.typings():
+            if ty.src not in tys:
+                out.write(ty.src)
+                tys.add(ty.src)
+    if tys:
+        out.write('\n\n')
+
+    ##
+
+    for i, sf in enumerate(sfs):
+        f = src_files[sf]
+        out.write(SECTION_SEP)
+        out.write(f'# {f.path}\n\n\n')
+        sf_src = ''.join(join_toks(cl) for cl in f.content_lines())
+        out.write(sf_src.strip())
+        if i < len(sfs) - 1:
+            out.write('\n\n\n')
+        else:
+            out.write('\n')
+
+    ##
+
+    return out.getvalue()
+
+
+##
+
+
 def _main() -> None:
     prj_dir = os.getcwd()
     if not os.path.isfile(os.path.join(prj_dir, 'pyproject.toml')):
@@ -271,79 +350,13 @@ def _main() -> None:
     ]:
         main_path = os.path.abspath(os.path.join(src_base_dir, main_file))
 
-        src_files: dict[str, SrcFile] = {}
-        todo = [main_path]
-        while todo:
-            src_path = todo.pop()
-            if src_path in src_files:
-                continue
-
-            f = SrcFile(
-                path=src_path,
-                mounts=mounts,
-            )
-            src_files[src_path] = f
-
-            for imp in f.imports():
-                if (mp := imp.mod_path) is not None:
-                    todo.append(mp)
-
-        ##
-
-        out = io.StringIO()
-
-        ##
-
-        all_imps = [i for f in src_files.values() for i in f.imports()]
-        gl_imps = [i for i in all_imps if i.mod_path is None]
-
-        dct = {}
-        for imp in gl_imps:
-            dct.setdefault((k := (imp.mod, imp.item, imp.as_)), []).append(imp)
-        for _, l in sorted(dct.items()):
-            out.write(join_toks(l[0].toks))
-        if dct:
-            out.write('\n\n')
-
-        ##
-
-        ts = list(col.toposort({
-            f.path: {mp for i in f.imports() if (mp := i.mod_path) is not None}
-            for f in src_files.values()
-        }))
-        sfs = [sf for ss in ts for sf in sorted(ss)]
-
-        ##
-
-        tys = set()
-        for sf in sfs:
-            f = src_files[sf]
-            for ty in f.typings():
-                if ty.src not in tys:
-                    out.write(ty.src)
-                    tys.add(ty.src)
-        if tys:
-            out.write('\n\n')
-
-        ##
-
-        for i, sf in enumerate(sfs):
-            f = src_files[sf]
-            out.write(SECTION_SEP)
-            out.write(f'# {f.path}\n\n\n')
-            sf_src = ''.join(join_toks(cl) for cl in f.content_lines())
-            out.write(sf_src.strip())
-            if i < len(sfs) - 1:
-                out.write('\n\n\n')
-            else:
-                out.write('\n')
-
-        ##
-
-        print(out.getvalue())
+        src = gen_amalg(
+            main_path,
+            mounts=mounts,
+        )
 
         with open(os.path.join(src_base_dir, 'out', os.path.basename(main_file)), 'w') as f:
-            f.write(out.getvalue())
+            f.write(src)
 
 
 if __name__ == '__main__':
