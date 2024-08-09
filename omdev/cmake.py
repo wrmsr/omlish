@@ -21,15 +21,16 @@ class Var:
 @dc.dataclass(frozen=True)
 class Target(abc.ABC):
     name: str
-    source_files: ta.Sequence[str]
+    src_files: ta.Sequence[str]
 
-    include_directories: ta.Sequence[str] | None = None
-    compile_options: ta.Sequence[str] | None = None
-    link_options: ta.Sequence[str] | None = None
+    include_dirs: ta.Sequence[str] | None = None
+    compile_opts: ta.Sequence[str] | None = None
+    link_dirs: ta.Sequence[str] | None = None
+    link_opts: ta.Sequence[str] | None = None
 
     compile_flags_by_source_file: ta.Mapping[str, ta.Sequence[str]] | None = None
 
-    link_libraries: ta.Sequence[str] | None = None
+    link_libs: ta.Sequence[str] | None = None
 
     @property
     @abc.abstractmethod
@@ -129,19 +130,26 @@ class CmakeGen:
 
     def write_target(self, target: Target) -> None:
         self.write_section(target.name)
-        self.write_cmd(Command(target.command_name, [target.name, *target.command_extra], target.source_files))
-        if target.include_directories:
-            self.write_cmd(Command('target_include_directories', [target.name, 'PRIVATE'], target.include_directories))
-        if target.compile_options:
-            self.write_cmd(Command('target_compile_options', [target.name, 'PRIVATE'], target.compile_options))
-        if target.link_options:
-            self.write_cmd(Command('target_link_options', [target.name, 'PRIVATE'], target.link_options))
+
+        self.write_cmd(Command(target.command_name, [target.name, *target.command_extra], target.src_files))
+
+        if target.include_dirs:
+            self.write_cmd(Command('target_include_directories', [target.name, 'PRIVATE'], target.include_dirs))
+        if target.compile_opts:
+            self.write_cmd(Command('target_compile_options', [target.name, 'PRIVATE'], target.compile_opts))
+
+        if target.link_dirs:
+            self.write_cmd(Command('target_link_directories', [target.name, 'PRIVATE'], target.link_dirs))
+        if target.link_opts:
+            self.write_cmd(Command('target_link_options', [target.name, 'PRIVATE'], target.link_opts))
+
         if target.compile_flags_by_source_file:
             for sf, cf in target.compile_flags_by_source_file.items():
                 cf = ['"' + f.replace('"', '\\"') + '"' for f in cf]
                 self.write_cmd(Command('set_source_files_properties', [sf, 'PROPERTIES', 'COMPILE_FLAGS'], cf))
-        if target.link_libraries:
-            self.write_cmd(Command('target_link_libraries', [target.name, 'PRIVATE'], target.link_libraries))
+
+        if target.link_libs:
+            self.write_cmd(Command('target_link_libraries', [target.name, 'PRIVATE'], target.link_libs))
 
     @property
     def preamble(self) -> ta.Sequence[str]:

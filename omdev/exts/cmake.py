@@ -3,27 +3,6 @@ import io
 from .. import cmake
 
 
-##
-
-
-EXT_TEMPLATE = """
-
-##
-
-add_library({name} MODULE
-        {name}.cc
-)
-
-target_include_directories({name} PUBLIC ${{var_pfx}_INCLUDE_DIRECTORIES})
-target_compile_options({name} PUBLIC ${{var_pfx}_COMPILE_OPTIONS})
-target_link_directories({name} PUBLIC ${{var_pfx}_LINK_DIRECTORIES})
-target_link_libraries({name} ${{var_pfx}_LINK_LIBRARIES})
-"""  # noqa
-
-
-##
-
-
 def _main() -> None:
     out = io.StringIO()
     gen = cmake.CmakeGen(out)
@@ -81,6 +60,37 @@ def _main() -> None:
             # $ENV{HOME}/src/python/cpython
         ],
     ))
+
+    gen.write_var(cmake.Var(
+        f'{var_prefix}_LINK_LIBRARIES',
+        [
+            '-bundle',
+            '"-undefined dynamic_lookup"',
+        ],
+    ))
+
+    for ext_name in [
+        'junk',
+        'foo',
+    ]:
+        gen.write_target(cmake.ModuleLibrary(
+            ext_name,
+            src_files=[
+                f'{ext_name}.cc',
+            ],
+            include_dirs=[
+                f'${{{var_prefix}_INCLUDE_DIRECTORIES}}',
+            ],
+            compile_opts=[
+                f'${{{var_prefix}_COMPILE_OPTIONS}}',
+            ],
+            link_dirs=[
+                f'${{{var_prefix}_LINK_DIRECTORIES}}',
+            ],
+            link_libs=[
+                f'${{{var_prefix}_LINK_LIBRARIES}}',
+            ],
+        ))
 
     print(out.getvalue())
 
