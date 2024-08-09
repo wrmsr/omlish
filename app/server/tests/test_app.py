@@ -39,8 +39,8 @@ def randhex(l: int) -> str:
 )
 @au.with_adapter_loop(wait=True)
 async def test_auth():
-    # from omlish import logs  # noqa
-    # logs.configure_standard_logging('INFO')  # noqa
+    from omlish import logs  # noqa
+    logs.configure_standard_logging('DEBUG')  # noqa
 
     port = get_free_port()
     server_bind = f'127.0.0.1:{port}'
