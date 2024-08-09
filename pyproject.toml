@@ -63,9 +63,21 @@ exclude = ['*.tests', '*.tests.*']
 ##
 
 [tool.omlish.pyproject.srcs]
-main = ['omlish', 'omdev', 'ominfra', 'omserv', 'app']
-ml = ['@main', 'omml']
-all = ['@ml', 'x']
+main = [
+    'omlish',
+    'omdev',
+    'ominfra',
+    'omserv',
+    'app',
+]
+ml = [
+    '@main',
+    'omml',
+]
+all = [
+    '@ml',
+    'x',
+]
 
 [tool.omlish.pyproject.venvs]
 all = { interp = '@12', requires = 'requirements-dev.txt', srcs = ['@main'] }
