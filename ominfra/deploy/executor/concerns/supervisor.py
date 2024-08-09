@@ -44,4 +44,3 @@ class Supervisor(Concern):
     def poke_supervisor(self) -> None:
         log.info('Poking supervisor')
         self._d.sh('kill -HUP 1')
-
