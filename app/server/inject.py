@@ -69,27 +69,29 @@ def base_server_url() -> BaseServerUrl:
 
 
 def bind() -> inj.Elemental:
-    return inj.private(
-        inj.bind(sec.Secrets, to_const=sec.SimpleSecrets({
-            'session_secret_key': 'secret-key-goes-here',  # noqa
-        })),
+    return inj.as_elements(
+        inj.private(
+            inj.bind(sec.Secrets, to_const=sec.SimpleSecrets({
+                'session_secret_key': 'secret-key-goes-here',  # noqa
+            })),
 
-        inj.bind(J2Templates.Config(
-            resource_root=__package__ + '.templates',
-            reload=True,
-        )),
+            inj.bind(J2Templates.Config(
+                resource_root=__package__ + '.templates',
+                reload=True,
+            )),
+
+            apps_inj.bind(),
+
+            handlers_inj.bind(),
+
+            _bind_in_memory_user_store(),
+            # _bind_db_user_store(),
+
+            _bind_cookie_session_store(),
+
+            inj.bind(RouteHandlerApp, singleton=True),
+            inj.bind(AsgiApp, to_key=RouteHandlerApp, expose=True),
+        ),
 
         inj.bind(base_server_url, singleton=True),
-
-        apps_inj.bind(),
-
-        handlers_inj.bind(),
-
-        _bind_in_memory_user_store(),
-        # _bind_db_user_store(),
-
-        _bind_cookie_session_store(),
-
-        inj.bind(RouteHandlerApp, singleton=True),
-        inj.bind(AsgiApp, to_key=RouteHandlerApp, expose=True),
     )
