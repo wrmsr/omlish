@@ -4,12 +4,12 @@ Conventions:
  - must import 'from' items for local modules
 
 TODO:
- - hoist initial docstring/comments (incl shebang)
- - relpath comments
  - check 3.8 compat
  - scan: `#@ ominfra-amalg`
  - make gen
  - argparse
+ - more sanity checks lol
+ - flake8 / ruff mgmt
 
 Targets:
  - interp
@@ -25,7 +25,6 @@ import dataclasses as dc
 import io
 import itertools
 import os.path
-import pprint  # noqa
 import typing as ta
 
 from omlish import check
@@ -316,7 +315,7 @@ def gen_amalg(
 
     dct = {}
     for imp in gl_imps:
-        dct.setdefault((k := (imp.mod, imp.item, imp.as_)), []).append(imp)
+        dct.setdefault((imp.mod, imp.item, imp.as_), []).append(imp)
     for _, l in sorted(dct.items()):
         out.write(join_toks(l[0].toks))
     if dct:
@@ -371,37 +370,7 @@ def gen_amalg(
 
 
 def _main() -> None:
-    prj_dir = os.getcwd()
-    if not os.path.isfile(os.path.join(prj_dir, 'pyproject.toml')):
-        raise Exception('Not in project root')
-
-    mounts = {
-        n: os.path.abspath(os.path.join(prj_dir, n))
-        for n in [
-            'omdev',
-            'ominfra',
-            'omlish',
-            'omml',
-            'omserv',
-        ]
-    }
-
-    src_base_dir = os.path.dirname(__file__)
-    for main_file in [
-        'demo/demo.py',
-        'demo/deploy/deploy.py',
-        'demo/interp/interp.py',
-        'demo/pyproject/pyproject.py',
-    ]:
-        main_path = os.path.abspath(os.path.join(src_base_dir, main_file))
-
-        src = gen_amalg(
-            main_path,
-            mounts=mounts,
-        )
-
-        with open(os.path.join(src_base_dir, 'out', os.path.basename(main_file)), 'w') as f:
-            f.write(src)
+    pass
 
 
 if __name__ == '__main__':

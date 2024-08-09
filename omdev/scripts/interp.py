@@ -1,3 +1,10 @@
+#!/usr/bin/env python3
+"""
+TODO:
+ - install (git clone) pyenv
+ - https://github.com/asdf-vm/asdf support (instead of pyenv)
+ - free-threading https://github.com/pyenv/pyenv/commit/d660c5a84f6b03a94961eb0e49adb2b25cd091b1
+"""
 import argparse
 import functools
 import logging
@@ -11,88 +18,50 @@ import typing as ta
 T = ta.TypeVar('T')
 
 
-########################################
-# /Users/spinlock/src/wrmsr/omlish/x/amalg/demo/std/cached.py
-
-
-class cached_nullary:  # noqa
-    def __init__(self, fn):
-        super().__init__()
-        self._fn = fn
-        self._value = self._missing = object()
-        functools.update_wrapper(self, fn)
-
-    def __call__(self, *args, **kwargs):  # noqa
-        if self._value is self._missing:
-            self._value = self._fn()
-        return self._value
-
-    def __get__(self, instance, owner):  # noqa
-        bound = instance.__dict__[self._fn.__name__] = self.__class__(self._fn.__get__(instance, owner))
-        return bound
-
-
-########################################
-# /Users/spinlock/src/wrmsr/omlish/x/amalg/demo/std/check.py
-
-
-def check_not_none(v: ta.Optional[T]) -> T:  # noqa
-    if v is None:
-        raise ValueError
-    return v
-
-
-def check_not(v: ta.Any) -> None:
-    if v:
-        raise ValueError(v)
-    return v
-
-
-########################################
-# /Users/spinlock/src/wrmsr/omlish/x/amalg/demo/std/logging.py
-
-
 log = logging.getLogger(__name__)
-
-
-def setup_standard_logging() -> None:
-    logging.root.addHandler(logging.StreamHandler())
-    logging.root.setLevel('INFO')
-
-
-########################################
-# /Users/spinlock/src/wrmsr/omlish/x/amalg/demo/std/runtime.py
 
 
 REQUIRED_PYTHON_VERSION = (3, 8)
 
 
-def check_runtime_version() -> None:
-    if sys.version_info < REQUIRED_PYTHON_VERSION:
-        raise EnvironmentError(
-            f'Requires python {REQUIRED_PYTHON_VERSION}, got {sys.version_info} from {sys.executable}')  # noqa
+##
 
 
-########################################
-# /Users/spinlock/src/wrmsr/omlish/x/amalg/demo/std/subprocesses.py
+def _check_not_none(v: ta.Optional[T]) -> T:
+    if v is None:
+        raise ValueError
+    return v
+
+
+class cached_nullary:  # noqa
+    def __init__(self, fn):
+        self._fn = fn
+        self._value = self._missing = object()
+        functools.update_wrapper(self, fn)
+    def __call__(self, *args, **kwargs):  # noqa
+        if self._value is self._missing:
+            self._value = self._fn()
+        return self._value
+    def __get__(self, instance, owner):  # noqa
+        bound = instance.__dict__[self._fn.__name__] = self.__class__(self._fn.__get__(instance, owner))
+        return bound
 
 
 def _mask_env_kwarg(kwargs):
     return {**kwargs, **({'env': '...'} if 'env' in kwargs else {})}
 
 
-def subprocess_check_call(*args, stdout=sys.stderr, **kwargs):
+def _subprocess_check_call(*args, stdout=sys.stderr, **kwargs):
     log.debug((args, _mask_env_kwarg(kwargs)))
     return subprocess.check_call(*args, stdout=stdout, **kwargs)  # type: ignore
 
 
-def subprocess_check_output(*args, **kwargs):
+def _subprocess_check_output(*args, **kwargs):
     log.debug((args, _mask_env_kwarg(kwargs)))
     return subprocess.check_output(*args, **kwargs)
 
 
-########################################
-# /Users/spinlock/src/wrmsr/omlish/x/amalg/demo/interp/cmd.py
+##
 
 
 DEFAULT_CMD_TRY_EXCEPTIONS: ta.AbstractSet[ta.Type[Exception]] = frozenset([
@@ -100,7 +69,7 @@ DEFAULT_CMD_TRY_EXCEPTIONS: ta.AbstractSet[ta.Type[Exception]] = frozenset([
 ])
 
 
-def cmd(
+def _cmd(
         cmd: ta.Union[str, ta.Sequence[str]],
         *,
         try_: ta.Union[bool, ta.Iterable[ta.Type[Exception]]] = False,
@@ -122,7 +91,7 @@ def cmd(
         try_ = True
 
     try:
-        buf = subprocess_check_output(cmd, env=env, **kwargs)
+        buf = _subprocess_check_output(cmd, env=env, **kwargs)
     except es:
         if try_:
             log.exception('cmd failed: %r', cmd)
@@ -135,8 +104,7 @@ def cmd(
     return out
 
 
-########################################
-# /Users/spinlock/src/wrmsr/omlish/x/amalg/demo/interp/resolvers.py
+##
 
 
 class Resolver:
@@ -160,7 +128,7 @@ class Resolver:
         self._include_current_python = include_current_python
 
     def _get_python_ver(self, bin_path: str) -> ta.Optional[str]:
-        s = cmd([bin_path, '--version'], try_=True)
+        s = _cmd([bin_path, '--version'], try_=True)
         if s is None:
             return None
         ps = s.strip().splitlines()[0].split()
@@ -265,7 +233,7 @@ class PyenvResolver(Resolver):
             return self._pyenv_root_kw
 
         if shutil.which('pyenv'):
-            return cmd(['pyenv', 'root'])
+            return _cmd(['pyenv', 'root'])
 
         d = os.path.expanduser('~/.pyenv')
         if os.path.isdir(d) and os.path.isfile(os.path.join(d, 'bin', 'pyenv')):
@@ -275,7 +243,7 @@ class PyenvResolver(Resolver):
 
     @cached_nullary
     def _pyenv_bin(self) -> str:
-        return os.path.join(check_not_none(self._pyenv_root()), 'bin', 'pyenv')
+        return os.path.join(_check_not_none(self._pyenv_root()), 'bin', 'pyenv')
 
     @cached_nullary
     def _pyenv_install_name(self) -> str:
@@ -283,7 +251,7 @@ class PyenvResolver(Resolver):
 
     @cached_nullary
     def _pyenv_install_path(self) -> str:
-        return str(os.path.join(check_not_none(self._pyenv_root()), 'versions', self._pyenv_install_name()))
+        return str(os.path.join(_check_not_none(self._pyenv_root()), 'versions', self._pyenv_install_name()))
 
     @cached_nullary
     def _pyenv_basic_pio(self) -> PyenvInstallOpts:
@@ -321,7 +289,7 @@ class PyenvResolver(Resolver):
                 v += ' ' + os.environ[k]
             env[k] = v
 
-        cmd([self._pyenv_bin(), 'install', *pio.opts, self._version], env=env)
+        _cmd([self._pyenv_bin(), 'install', *pio.opts, self._version], env=env)
 
         bin_path = os.path.join(self._pyenv_install_path(), 'bin', 'python')
         if not os.path.isfile(bin_path):
@@ -358,7 +326,7 @@ class MacResolver(PyenvResolver):
         cflags = []
         ldflags = []
         for dep in self._PYENV_BREW_DEPS:
-            dep_prefix = cmd(['brew', '--prefix', dep])
+            dep_prefix = _cmd(['brew', '--prefix', dep])
             cflags.append(f'-I{dep_prefix}/include')
             ldflags.append(f'-L{dep_prefix}/lib')
         return PyenvInstallOpts.new(
@@ -368,12 +336,12 @@ class MacResolver(PyenvResolver):
 
     @cached_nullary
     def _brew_tcl_pio(self) -> PyenvInstallOpts:
-        pfx = cmd(['brew', '--prefix', 'tcl-tk'], try_=True)
+        pfx = _cmd(['brew', '--prefix', 'tcl-tk'], try_=True)
         if pfx is None:
             return PyenvInstallOpts.new()
 
-        tcl_tk_prefix = ta.cast(str, cmd(['brew', '--prefix', 'tcl-tk']))
-        tcl_tk_ver_str = ta.cast(str, cmd(['brew', 'ls', '--versions', 'tcl-tk']))
+        tcl_tk_prefix = ta.cast(str, _cmd(['brew', '--prefix', 'tcl-tk']))
+        tcl_tk_ver_str = ta.cast(str, _cmd(['brew', 'ls', '--versions', 'tcl-tk']))
         tcl_tk_ver = '.'.join(tcl_tk_ver_str.split()[1].split('.')[:2])
 
         return PyenvInstallOpts.new(conf_opts=[
@@ -383,7 +351,7 @@ class MacResolver(PyenvResolver):
 
     @cached_nullary
     def _brew_ssl_pio(self) -> PyenvInstallOpts:
-        pkg_config_path = ta.cast(str, cmd(['brew', '--prefix', 'openssl']))
+        pkg_config_path = ta.cast(str, _cmd(['brew', '--prefix', 'openssl']))
         if 'PKG_CONFIG_PATH' in os.environ:
             pkg_config_path += ':' + os.environ['PKG_CONFIG_PATH']
         return PyenvInstallOpts.new(env={'PKG_CONFIG_PATH': pkg_config_path})
@@ -406,18 +374,7 @@ class LinuxResolver(PyenvResolver):
         ]
 
 
-########################################
-# /Users/spinlock/src/wrmsr/omlish/x/amalg/demo/interp/interp.py
-
-
-#!/usr/bin/env python3
-"""
-TODO:
- - install (git clone) pyenv
- - https://github.com/asdf-vm/asdf support (instead of pyenv)
- - free-threading https://github.com/pyenv/pyenv/commit/d660c5a84f6b03a94961eb0e49adb2b25cd091b1
-"""
-
+##
 
 
 def _resolve_cmd(args) -> None:
@@ -439,6 +396,9 @@ def _resolve_cmd(args) -> None:
     print(resolved)
 
 
+##
+
+
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
 
@@ -453,8 +413,12 @@ def _build_parser() -> argparse.ArgumentParser:
 
 
 def _main(argv: ta.Optional[ta.Sequence[str]] = None) -> None:
-    check_runtime_version()
-    setup_standard_logging()
+    if sys.version_info < REQUIRED_PYTHON_VERSION:
+        raise EnvironmentError(f'Requires python {REQUIRED_PYTHON_VERSION}, got {sys.version_info} from {sys.executable}')  # noqa
+
+    # FIXME: -v
+    logging.root.addHandler(logging.StreamHandler())
+    logging.root.setLevel('INFO')
 
     parser = _build_parser()
     args = parser.parse_args(argv)

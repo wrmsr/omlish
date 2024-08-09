@@ -22,13 +22,13 @@ import shutil
 import sys
 import typing as ta
 
-from ..std.cached import cached_nullary
-from ..std.check import check_not
-from ..std.check import check_not_none
-from ..std.logging import setup_standard_logging
-from ..std.subprocesses import subprocess_check_call
-from ..std.subprocesses import subprocess_check_output
-from ..std.runtime import check_runtime_version
+from ....std.cached import cached_nullary
+from ....std.check import check_not
+from ....std.check import check_not_none
+from ....std.logging import setup_standard_logging
+from ....std.subprocesses import subprocess_check_call
+from ....std.subprocesses import subprocess_check_output
+from ....std.runtime import check_runtime_version
 
 from .venvs import Venv
 from .venvs import build_venv_specs

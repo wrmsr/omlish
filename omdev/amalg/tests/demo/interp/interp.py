@@ -9,8 +9,8 @@ import argparse
 import sys
 import typing as ta
 
-from ..std.logging import setup_standard_logging
-from ..std.runtime import check_runtime_version
+from ....std.logging import setup_standard_logging
+from ....std.runtime import check_runtime_version
 from .resolvers import MacResolver
 from .resolvers import LinuxResolver
 

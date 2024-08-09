@@ -32,7 +32,7 @@ T = ta.TypeVar('T')
 
 
 ########################################
-# ../../std/cached.py
+# ../../../../std/cached.py
 
 
 class cached_nullary:  # noqa
@@ -53,7 +53,7 @@ class cached_nullary:  # noqa
 
 
 ########################################
-# ../../std/check.py
+# ../../../../std/check.py
 
 
 def check_not_none(v: ta.Optional[T]) -> T:  # noqa
@@ -69,7 +69,7 @@ def check_not(v: ta.Any) -> None:
 
 
 ########################################
-# ../../std/logging.py
+# ../../../../std/logging.py
 """
 TODO:
  - debug
@@ -85,7 +85,7 @@ def setup_standard_logging() -> None:
 
 
 ########################################
-# ../../std/runtime.py
+# ../../../../std/runtime.py
 
 
 REQUIRED_PYTHON_VERSION = (3, 8)
@@ -98,7 +98,7 @@ def check_runtime_version() -> None:
 
 
 ########################################
-# ../../std/subprocesses.py
+# ../../../../std/subprocesses.py
 
 
 def _mask_env_kwarg(kwargs):
