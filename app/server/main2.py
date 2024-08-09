@@ -38,7 +38,7 @@ def bind_node_registrant() -> inj.Elemental:
         inj.private(
             inj.bind(nr.NodeRegistrant, singleton=True, expose=True),
 
-            inj.bind(nr.ExtrasProvider, tag=nr.ExtrasProvider, to_const=get_procstats),
+            inj.bind(nr.ExtrasProvider, tag=get_procstats, to_const=get_procstats),
             inj.map_binder[str, nr.ExtrasProvider]().bind('procstats', inj.Key(nr.ExtrasProvider, tag=get_procstats)),  # noqa
 
             bind_dbs(),
