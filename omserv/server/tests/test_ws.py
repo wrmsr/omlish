@@ -28,7 +28,7 @@ from .utils import headers_time_patch  # noqa
 from .utils import is_connection_refused_exception
 
 
-@pytest.mark.all_asyncs
+@pytest.mark.asyncs
 async def test_server_websocket():
     port = get_free_port()
     sev = anyio.Event()
