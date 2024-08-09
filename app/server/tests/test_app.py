@@ -135,7 +135,7 @@ async def test_auth():
 
             bind_app(),
             dbs.bind_dbs(),
-        )
+        ),
     ) as i:
         app = await au.s_to_a(i.provide)(AsgiApp)
 
