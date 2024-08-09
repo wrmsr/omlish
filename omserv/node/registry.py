@@ -37,13 +37,13 @@ ExtrasProvider = ta.NewType('ExtrasProvider', ta.Callable[[], ta.Awaitable[ta.An
 class NodeRegistrant:
     def __init__(
             self,
-            engine: sql.AsyncEngineLike,
+            engine: sql.AsyncEngine,
             *,
             extras: ta.Mapping[str, ExtrasProvider] | None = None,
     ) -> None:
         super().__init__()
 
-        self._engine = sql.async_adapt(engine)
+        self._engine = check.isinstance(engine, sql.AsyncEngine)
         self._extras = extras
 
         self._info = NodeInfo(
