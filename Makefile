@@ -99,7 +99,7 @@ gen: gen-amalg
 
 .PHONY: gen-amalg
 gen-amalg: venv
-	${PYTHON} -m omdev.amalg.amalg gen \
+	${PYTHON} -m omdev.amalg gen \
 		-m omlish \
 		-m omdev \
 		${SRCS}
