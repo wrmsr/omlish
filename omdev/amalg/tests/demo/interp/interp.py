@@ -21,7 +21,7 @@ def _resolve_cmd(args) -> None:
     elif sys.platform in ['linux', 'linux2']:
         resolver_cls = LinuxResolver
     else:
-        raise EnvironmentError(f'Unsupported platform: {sys.platform}')
+        raise OSError(f'Unsupported platform: {sys.platform}')
 
     resolver = resolver_cls(
         args.version,

@@ -68,7 +68,7 @@ def _find_docker_service_container(cfg_path: str, svc_name: str) -> str:
 def _script_rel_path() -> str:
     cwd = os.getcwd()
     if not (f := __file__).startswith(cwd):
-        raise EnvironmentError(f'file {f} not in {cwd}')
+        raise OSError(f'file {f} not in {cwd}')
     return f[len(cwd):].lstrip(os.sep)
 
 
@@ -88,7 +88,7 @@ class Run:
     @cached_nullary
     def raw_cfg(self) -> ta.Mapping[str, ta.Any]:
         if self._raw_cfg is None:
-            with open('pyproject.toml', 'r') as f:
+            with open('pyproject.toml') as f:
                 buf = f.read()
         elif isinstance(self._raw_cfg, str):
             buf = self._raw_cfg

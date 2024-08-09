@@ -14,6 +14,7 @@ lookit:
  - https://github.com/jazzband/pip-tools
  - https://github.com/Osiris-Team/1JPM
 """
+# ruff: noqa: UP006 UP007
 import argparse
 import dataclasses as dc
 import functools
@@ -93,7 +94,7 @@ REQUIRED_PYTHON_VERSION = (3, 8)
 
 def check_runtime_version() -> None:
     if sys.version_info < REQUIRED_PYTHON_VERSION:
-        raise EnvironmentError(
+        raise OSError(
             f'Requires python {REQUIRED_PYTHON_VERSION}, got {sys.version_info} from {sys.executable}')  # noqa
 
 
@@ -123,7 +124,7 @@ def subprocess_check_output(*args, **kwargs):
 def _read_versions_file(file_name: str = '.versions') -> ta.Mapping[str, str]:
     if not os.path.exists(file_name):
         return {}
-    with open(file_name, 'r') as f:
+    with open(file_name) as f:
         lines = f.readlines()
     return {
         k: v
@@ -321,7 +322,7 @@ def _find_docker_service_container(cfg_path: str, svc_name: str) -> str:
 def _script_rel_path() -> str:
     cwd = os.getcwd()
     if not (f := __file__).startswith(cwd):
-        raise EnvironmentError(f'file {f} not in {cwd}')
+        raise OSError(f'file {f} not in {cwd}')
     return f[len(cwd):].lstrip(os.sep)
 
 
@@ -341,7 +342,7 @@ class Run:
     @cached_nullary
     def raw_cfg(self) -> ta.Mapping[str, ta.Any]:
         if self._raw_cfg is None:
-            with open('pyproject.toml', 'r') as f:
+            with open('pyproject.toml') as f:
                 buf = f.read()
         elif isinstance(self._raw_cfg, str):
             buf = self._raw_cfg

@@ -5,6 +5,7 @@ TODO:
  - https://github.com/asdf-vm/asdf support (instead of pyenv)
  - free-threading https://github.com/pyenv/pyenv/commit/d660c5a84f6b03a94961eb0e49adb2b25cd091b1
 """
+# ruff: noqa: UP006 UP007
 import argparse
 import functools
 import logging
@@ -80,7 +81,7 @@ REQUIRED_PYTHON_VERSION = (3, 8)
 
 def check_runtime_version() -> None:
     if sys.version_info < REQUIRED_PYTHON_VERSION:
-        raise EnvironmentError(
+        raise OSError(
             f'Requires python {REQUIRED_PYTHON_VERSION}, got {sys.version_info} from {sys.executable}')  # noqa
 
 
@@ -427,7 +428,7 @@ def _resolve_cmd(args) -> None:
     elif sys.platform in ['linux', 'linux2']:
         resolver_cls = LinuxResolver
     else:
-        raise EnvironmentError(f'Unsupported platform: {sys.platform}')
+        raise OSError(f'Unsupported platform: {sys.platform}')
 
     resolver = resolver_cls(
         args.version,
