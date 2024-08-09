@@ -82,162 +82,24 @@ WantedBy=multi-user.target
 sudo systemctl enable hello.service
 sudo systemctl start hello.service
 """  # noqa
-# ruff: noqa: UP007
 import argparse
 import json
-import os.path
-import pwd
 import sys
-import textwrap
 import typing as ta
 
-from omdev.amalg.std.logging import log
 from omdev.amalg.std.logging import setup_standard_logging
 from omdev.amalg.std.runtime import check_runtime_version
 
 from ..configs import DeployConfig
-from .base import Concern
 from .base import Deployment
-from .base import Phase
-from .base import run_in_phase
+from .concerns.dirs import Dirs
+from .concerns.nginx import GlobalNginx
+from .concerns.nginx import Nginx
+from .concerns.repo import Repo
+from .concerns.supervisor import GlobalSupervisor
+from .concerns.supervisor import Supervisor
 from .concerns.user import User
-
-
-##
-
-
-class Dirs(Concern):
-    @run_in_phase(Phase.HOST)
-    def create_dirs(self) -> None:
-        pwn = pwd.getpwnam(self._d.host_cfg.username)
-
-        for dn in [
-            'app',
-            'conf',
-            'conf/env',
-            'conf/nginx',
-            'conf/supervisor',
-            'venv',
-        ]:
-            fp = os.path.join(self._d.home_dir(), dn)
-            if not os.path.exists(fp):
-                log.info('Creating directory: %s', fp)
-                os.mkdir(fp)
-                os.chown(fp, pwn.pw_uid, pwn.pw_gid)
-
-
-##
-
-
-class Repo(Concern):
-    @run_in_phase(Phase.ENV)
-    def clone_repo(self) -> None:
-        clone_submodules = False
-        self._d.ush(
-            'cd ~/app',
-            f'git clone --depth 1 {self._d.cfg.repo_url} {self._d.cfg.app_name}',
-            *([
-                f'cd {self._d.cfg.app_name}',
-                'git submodule update --init',
-            ] if clone_submodules else []),
-        )
-
-
-##
-
-
-class Venv(Concern):
-    @run_in_phase(Phase.ENV)
-    def setup_venv(self) -> None:
-        self._d.ush(
-            'cd ~/venv',
-            f'{self._d.cfg.python_bin} -mvenv {self._d.cfg.app_name}',
-
-            # https://stackoverflow.com/questions/77364550/attributeerror-module-pkgutil-has-no-attribute-impimporter-did-you-mean
-            f'{self._d.cfg.app_name}/bin/python -m ensurepip',
-            f'{self._d.cfg.app_name}/bin/python -mpip install --upgrade setuptools pip',
-
-            f'{self._d.cfg.app_name}/bin/python -mpip install -r ~deploy/app/{self._d.cfg.app_name}/{self._d.cfg.requirements_txt}',  # noqa
-        )
-
-
-##
-
-
-class GlobalSupervisor(Concern):
-    @run_in_phase(Phase.HOST)
-    def create_global_supervisor_conf(self) -> None:
-        sup_conf_dir = os.path.join(self._d.home_dir(), 'conf/supervisor')
-        with open(self._d.host_cfg.global_supervisor_conf_file_path) as f:
-            glo_sup_conf = f.read()
-        if sup_conf_dir not in glo_sup_conf:
-            log.info('Updating global supervisor conf at %s', self._d.host_cfg.global_supervisor_conf_file_path)  # noqa
-            glo_sup_conf += textwrap.dedent(f"""
-                [include]
-                files = {self._d.home_dir()}/conf/supervisor/*.conf
-            """)
-            with open(self._d.host_cfg.global_supervisor_conf_file_path, 'w') as f:
-                f.write(glo_sup_conf)
-
-
-class Supervisor(Concern):
-    @run_in_phase(Phase.BACKEND)
-    def create_supervisor_conf(self) -> None:
-        sup_conf = textwrap.dedent(f"""
-            [program:{self._d.cfg.app_name}]
-            command={self._d.home_dir()}/venv/{self._d.cfg.app_name}/bin/python -m {self._d.cfg.entrypoint}
-            directory={self._d.home_dir()}/app/{self._d.cfg.app_name}
-            user={self._d.host_cfg.username}
-            autostart=true
-            autorestart=true
-        """)
-        sup_conf_file = os.path.join(self._d.home_dir(), f'conf/supervisor/{self._d.cfg.app_name}.conf')
-        log.info('Writing supervisor conf to %s', sup_conf_file)
-        with open(sup_conf_file, 'w') as f:
-            f.write(sup_conf)
-
-    @run_in_phase(Phase.START_BACKEND)
-    def poke_supervisor(self) -> None:
-        log.info('Poking supervisor')
-        self._d.sh('kill -HUP 1')
-
-
-##
-
-
-class GlobalNginx(Concern):
-    @run_in_phase(Phase.HOST)
-    def create_global_nginx_conf(self) -> None:
-        nginx_conf_dir = os.path.join(self._d.home_dir(), 'conf/nginx')
-        if not os.path.isfile(self._d.host_cfg.global_nginx_conf_file_path):
-            log.info('Writing global nginx conf at %s', self._d.host_cfg.global_nginx_conf_file_path)
-            with open(self._d.host_cfg.global_nginx_conf_file_path, 'w') as f:
-                f.write(f'include {nginx_conf_dir}/*.conf;\n')
-
-
-class Nginx(Concern):
-    @run_in_phase(Phase.FRONTEND)
-    def create_nginx_conf(self) -> None:
-        nginx_conf = textwrap.dedent(f"""
-            server {{
-                listen 80;
-                location / {{
-                    proxy_pass http://127.0.0.1:8000/;
-                }}
-            }}
-        """)
-        nginx_conf_file = os.path.join(self._d.home_dir(), f'conf/nginx/{self._d.cfg.app_name}.conf')
-        log.info('Writing nginx conf to %s', nginx_conf_file)
-        with open(nginx_conf_file, 'w') as f:
-            f.write(nginx_conf)
-
-    @run_in_phase(Phase.START_FRONTEND)
-    def poke_nginx(self) -> None:
-        log.info('Starting nginx')
-        self._d.sh('service nginx start')
-
-        log.info('Poking nginx')
-        self._d.sh('nginx -s reload')
+from .concerns.venv import Venv
 
 
 ##
