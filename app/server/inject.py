@@ -2,20 +2,13 @@ import datetime
 import logging
 import os
 
-import sqlalchemy as sa
-import sqlalchemy.ext.asyncio as saa
-
-from omlish import check
 from omlish import inject as inj
-from omlish import lang
 from omlish import secrets as sec
-from omlish import sql
 from omlish.http import sessions
 from omlish.http.asgi import AsgiApp
 from omserv.apps.base import BaseServerUrl
 from omserv.apps.routes import RouteHandlerApp
 from omserv.apps.templates import J2Templates
-from omserv.dbs import get_db_url
 
 from ..users import InMemoryUserStore
 from ..users import UserStore
@@ -54,26 +47,7 @@ def _bind_in_memory_user_store() -> inj.Elemental:
 
 
 def _bind_db_user_store() -> inj.Elemental:
-    def build_engine():
-        e = sql.async_adapt(saa.create_async_engine(get_db_url(), echo=True))
-        log.info('Sqlalchemy engine created: %r', e)
-
-        @sa.event.listens_for(e.underlying.sync_engine, 'engine_disposed')
-        def on_disposed(_e):
-            check.is_(e.underlying.sync_engine, _e)
-            log.info('Sqlalchemy engine disposed: %r', e)
-
-        return e
-
     return inj.as_elements(
-        inj.bind(
-            sql.AsyncEngine,
-            to_fn=inj.make_async_managed_provider(
-                build_engine,
-                lambda e: lang.a_defer(e.dispose()),  # noqa
-            ),
-        ),
-
         inj.bind(DbUserStore, singleton=True),
         inj.bind(UserStore, to_key=DbUserStore),
     )
