@@ -1,4 +1,5 @@
-# @omdev-amalg-output deploy.py
+#!/usr/bin/env python3
+# @omdev-amalg ../_executor_amalg.py
 r"""
 TODO:
  - flock
@@ -82,220 +83,23 @@ sudo systemctl enable hello.service
 sudo systemctl start hello.service
 """  # noqa
 # ruff: noqa: UP007
-import abc
 import argparse
-import dataclasses as dc
-import enum
-import functools
 import json
-import logging
 import os.path
 import pwd
-import shlex
-import subprocess
 import sys
 import textwrap
 import typing as ta
 
+from omdev.amalg.std.logging import log
+from omdev.amalg.std.logging import setup_standard_logging
+from omdev.amalg.std.runtime import check_runtime_version
 
-########################################
-# ../../../../std/cached.py
-
-
-class cached_nullary:  # noqa
-    def __init__(self, fn):
-        super().__init__()
-        self._fn = fn
-        self._value = self._missing = object()
-        functools.update_wrapper(self, fn)
-
-    def __call__(self, *args, **kwargs):  # noqa
-        if self._value is self._missing:
-            self._value = self._fn()
-        return self._value
-
-    def __get__(self, instance, owner):  # noqa
-        bound = instance.__dict__[self._fn.__name__] = self.__class__(self._fn.__get__(instance, owner))
-        return bound
-
-
-########################################
-# ../../../../std/logging.py
-"""
-TODO:
- - debug
-"""
-
-
-log = logging.getLogger(__name__)
-
-
-def setup_standard_logging() -> None:
-    logging.root.addHandler(logging.StreamHandler())
-    logging.root.setLevel('INFO')
-
-
-########################################
-# ../../../../std/runtime.py
-
-
-REQUIRED_PYTHON_VERSION = (3, 8)
-
-
-def check_runtime_version() -> None:
-    if sys.version_info < REQUIRED_PYTHON_VERSION:
-        raise OSError(
-            f'Requires python {REQUIRED_PYTHON_VERSION}, got {sys.version_info} from {sys.executable}')  # noqa
-
-
-########################################
-# ../configs.py
-
-
-@dc.dataclass(frozen=True)
-class DeployConfig:
-    python_bin: str
-    app_name: str
-    repo_url: str
-    revision: str
-    requirements_txt: str
-    entrypoint: str
-
-
-@dc.dataclass(frozen=True)
-class HostConfig:
-    username: str = 'deploy'
-
-    global_supervisor_conf_file_path: str = '/etc/supervisor/conf.d/supervisord.conf'
-    global_nginx_conf_file_path: str = '/etc/nginx/sites-enabled/deploy.conf'
-
-
-########################################
-# ../../../../std/subprocesses.py
-
-
-def _mask_env_kwarg(kwargs):
-    return {**kwargs, **({'env': '...'} if 'env' in kwargs else {})}
-
-
-def subprocess_check_call(*args, stdout=sys.stderr, **kwargs):
-    log.debug((args, _mask_env_kwarg(kwargs)))
-    return subprocess.check_call(*args, stdout=stdout, **kwargs)  # type: ignore
-
-
-def subprocess_check_output(*args, **kwargs):
-    log.debug((args, _mask_env_kwarg(kwargs)))
-    return subprocess.check_output(*args, **kwargs)
-
-
-########################################
-# ../base.py
-# ruff: noqa: UP006
-
-
-##
-
-
-class Phase(enum.Enum):
-    HOST = enum.auto()
-    ENV = enum.auto()
-    BACKEND = enum.auto()
-    FRONTEND = enum.auto()
-    START_BACKEND = enum.auto()
-    START_FRONTEND = enum.auto()
-
-
-def run_in_phase(*ps: Phase):
-    def inner(fn):
-        fn.__deployment_phases__ = ps
-        return fn
-    return inner
-
-
-class Concern(abc.ABC):
-    def __init__(self, d: 'Deployment') -> None:
-        super().__init__()
-        self._d = d
-
-    _phase_fns: ta.ClassVar[ta.Mapping[Phase, ta.Sequence[ta.Callable]]]
-
-    def __init_subclass__(cls, **kwargs):
-        super().__init_subclass__(**kwargs)
-        dct: ta.Dict[Phase, ta.List[ta.Callable]] = {}
-        for fn, ps in [
-            (v, ps)
-            for a in dir(cls)
-            if not (a.startswith('__') and a.endswith('__'))
-            for v in [getattr(cls, a, None)]
-            for ps in [getattr(v, '__deployment_phases__', None)]
-            if ps
-        ]:
-            dct.update({p: [*dct.get(p, []), fn] for p in ps})
-        cls._phase_fns = dct
-
-    @dc.dataclass(frozen=True)
-    class Output(abc.ABC):
-        path: str
-        is_file: bool
-
-    def outputs(self) -> ta.Sequence[Output]:
-        return ()
-
-    def run_phase(self, p: Phase) -> None:
-        for fn in self._phase_fns.get(p, ()):
-            fn.__get__(self, type(self))()
-
-
-##
-
-
-class Deployment:
-
-    def __init__(
-            self,
-            cfg: DeployConfig,
-            concern_cls_list: ta.List[ta.Type[Concern]],
-            host_cfg: HostConfig = HostConfig(),
-    ) -> None:
-        super().__init__()
-        self._cfg = cfg
-        self._host_cfg = host_cfg
-
-        self._concerns: ta.List[Concern] = [cls(self) for cls in concern_cls_list]
-
-    @property
-    def cfg(self) -> DeployConfig:
-        return self._cfg
-
-    @property
-    def host_cfg(self) -> HostConfig:
-        return self._host_cfg
-
-    def sh(self, *ss: str) -> None:
-        s = ' && '.join(ss)
-        log.info('Executing: %s', s)
-        subprocess_check_call(s, shell=True)
-
-    def ush(self, *ss: str) -> None:
-        s = ' && '.join(ss)
-        self.sh(f'su - {self._host_cfg.username} -c {shlex.quote(s)}')
-
-    @cached_nullary
-    def home_dir(self) -> str:
-        return os.path.expanduser(f'~{self._host_cfg.username}')
-
-    @cached_nullary
-    def deploy(self) -> None:
-        for p in Phase:
-            log.info('Phase %s', p.name)
-            for c in self._concerns:
-                c.run_phase(p)
-
-        log.info('Shitty deploy complete!')
-
-
-########################################
-# deploy.py
+from ..configs import DeployConfig
+from .base import Concern
+from .base import Deployment
+from .base import Phase
+from .base import run_in_phase
 
 
 ##

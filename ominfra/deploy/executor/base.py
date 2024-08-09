@@ -6,11 +6,12 @@ import os.path
 import shlex
 import typing as ta
 
-from ....std.cached import cached_nullary
-from ....std.logging import log
-from ....std.subprocesses import subprocess_check_call
-from .configs import DeployConfig
-from .configs import HostConfig
+from omdev.amalg.std.cached import cached_nullary
+from omdev.amalg.std.logging import log
+from omdev.amalg.std.subprocesses import subprocess_check_call
+
+from ..configs import DeployConfig
+from ..configs import HostConfig
 
 
 ##
