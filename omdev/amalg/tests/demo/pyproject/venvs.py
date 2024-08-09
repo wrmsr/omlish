@@ -16,7 +16,7 @@ from ....std.subprocesses import subprocess_check_output
 def _read_versions_file(file_name: str = '.versions') -> ta.Mapping[str, str]:
     if not os.path.exists(file_name):
         return {}
-    with open(file_name, 'r') as f:
+    with open(file_name) as f:
         lines = f.readlines()
     return {
         k: v

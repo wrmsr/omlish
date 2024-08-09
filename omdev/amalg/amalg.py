@@ -10,6 +10,7 @@ TODO:
  - argparse
  - more sanity checks lol
  - flake8 / ruff mgmt
+ - if shebang chmod a+x
 
 Targets:
  - interp
@@ -275,6 +276,11 @@ def make_src_file(
 
 SECTION_SEP = '#' * 40 + '\n'
 
+RUFF_DISABLES = [
+    'UP006',  # Use `list` instead of `ta.List` for type annotation
+    'UP007',  # Use `X | Y` for type annotations
+]
+
 
 def gen_amalg(
         main_path: str,
@@ -307,6 +313,9 @@ def gen_amalg(
     mf = src_files[main_path]
     if mf.header_lines:
         out.write(join_lines(mf.header_lines))
+
+    if RUFF_DISABLES:
+        out.write(f'# ruff: noqa: {" ".join(RUFF_DISABLES)}\n')
 
     ##
 
