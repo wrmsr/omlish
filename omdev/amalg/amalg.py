@@ -316,7 +316,11 @@ def gen_amalg(
 
     mf = src_files[main_path]
     if mf.header_lines:
-        out.write(join_lines(mf.header_lines))
+        out.write(''.join(
+            l
+            for lts in mf.header_lines
+            if not (l := join_toks(lts)).startswith(SCANNER_COMMENT)
+        ))
 
     if RUFF_DISABLES:
         out.write(f'# ruff: noqa: {" ".join(RUFF_DISABLES)}\n')
