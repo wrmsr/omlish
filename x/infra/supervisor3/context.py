@@ -28,7 +28,7 @@ from .exceptions import NotFound
 
 
 if ta.TYPE_CHECKING:
-    from . import process
+    from .process import Subprocess
 
 
 log = logging.getLogger(__name__)
@@ -45,7 +45,7 @@ class ServerContext:
 
         self.config = config
 
-        self.pid_history: dict[int, 'process.Subprocess'] = {}
+        self.pid_history: dict[int, 'Subprocess'] = {}
         self.state: SupervisorState = SupervisorStates.RUNNING
 
         self.signal_receiver = SignalReceiver()

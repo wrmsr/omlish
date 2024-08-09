@@ -15,7 +15,7 @@ from .events import notify_event
 
 
 if ta.TYPE_CHECKING:
-    from . import process as process_
+    from .process import Subprocess
 
 
 log = logging.getLogger(__name__)
@@ -23,7 +23,7 @@ log = logging.getLogger(__name__)
 
 class Dispatcher:
 
-    def __init__(self, process: 'process_.Subprocess', channel: str, fd: int) -> None:
+    def __init__(self, process: 'Subprocess', channel: str, fd: int) -> None:
         super().__init__()
 
         self.process = process  # process which "owns" this dispatcher
@@ -78,7 +78,7 @@ class OutputDispatcher(Dispatcher):
     capture_mode = False  # are we capturing process event data
     output_buffer = b''  # data waiting to be logged
 
-    def __init__(self, process: 'process_.Subprocess', event_type, fd):
+    def __init__(self, process: 'Subprocess', event_type, fd):
         """
         Initialize the dispatcher.
 
