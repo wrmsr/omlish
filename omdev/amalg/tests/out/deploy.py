@@ -80,6 +80,7 @@ WantedBy=multi-user.target
 sudo systemctl enable hello.service
 sudo systemctl start hello.service
 """  # noqa
+# ruff: noqa: UP006 UP007
 import abc
 import argparse
 import dataclasses as dc
@@ -142,7 +143,7 @@ REQUIRED_PYTHON_VERSION = (3, 8)
 
 def check_runtime_version() -> None:
     if sys.version_info < REQUIRED_PYTHON_VERSION:
-        raise EnvironmentError(
+        raise OSError(
             f'Requires python {REQUIRED_PYTHON_VERSION}, got {sys.version_info} from {sys.executable}')  # noqa
 
 
@@ -330,7 +331,7 @@ class GlobalSupervisor(Concern):
     @run_in_phase(Phase.HOST)
     def create_global_supervisor_conf(self) -> None:
         sup_conf_dir = os.path.join(self._d.home_dir(), 'conf/supervisor')
-        with open(self._d.host_cfg.global_supervisor_conf_file_path, 'r') as f:
+        with open(self._d.host_cfg.global_supervisor_conf_file_path) as f:
             glo_sup_conf = f.read()
         if sup_conf_dir not in glo_sup_conf:
             log.info('Updating global supervisor conf at %s', self._d.host_cfg.global_supervisor_conf_file_path)  # noqa
@@ -488,7 +489,7 @@ def _main(argv: ta.Optional[ta.Sequence[str]] = None) -> None:
     check_runtime_version()
 
     if getattr(sys, 'platform') != 'linux':  # noqa
-        raise EnvironmentError('must run on linux')
+        raise OSError('must run on linux')
 
     setup_standard_logging()
 

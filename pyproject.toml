@@ -140,87 +140,87 @@ select = ['ALL']
 
 ignore = [
 
-    'ANN001',  # missing-type-function-argument
-    'ANN002',  # missing-type-args
-    'ANN003',  # missing-type-kwargs
-    'ANN201',  # missing-return-type-undocumented-public-function
-    'ANN202',  # missing-return-type-private-function
-    'ANN204',  # missing-return-type-special-method
-    'ANN205',  # missing return type annotation for staticmethod
-    'ANN206',  # missing return type annotation for classmethod
-    'ANN401',  # dynamically typed expressions (typing.Any) are disallowed in `*args`
-    'ARG001',  # unused function argument,
-    'ARG002',  # unused method argument
-    'B008',  # do not perform function call in argument defaults
-    'B009',  # do not call `getattr` with a constant attribute value
-    'B010',  # set-attr-with-constant
-    'B028',  # no explicit `stacklevel` keyword argument found
+    'ANN001',  # Missing-type-function-argument
+    'ANN002',  # Missing-type-args
+    'ANN003',  # Missing-type-kwargs
+    'ANN201',  # Missing-return-type-undocumented-public-function
+    'ANN202',  # Missing-return-type-private-function
+    'ANN204',  # Missing-return-type-special-method
+    'ANN205',  # Missing return type annotation for staticmethod
+    'ANN206',  # Missing return type annotation for classmethod
+    'ANN401',  # Dynamically typed expressions (typing.Any) are disallowed in `*args`
+    'ARG001',  # Unused function argument,
+    'ARG002',  # Unused method argument
+    'B008',  # Do not perform function call in argument defaults
+    'B009',  # Do not call `getattr` with a constant attribute value
+    'B010',  # Set-attr-with-constant
+    'B028',  # No explicit `stacklevel` keyword argument found
     'B905',  # `zip()` without an explicit `strict=` parameter'
-    'C408',  # unnecessary `dict` call (rewrite as a literal)
-    'C901',  # function is too complex
-    'D',  # docstrings
-    'E731',  # do not assign a `lambda` expression, use a `def`
-    'E741',  # ambiguous variable name
-    'E742',  # ambiguous class name
-    'EM101',  # exception must not use a string literal, assign to variable first
-    'EM102',  # exception must not use an f-string literal, assign to variable first
-    'ERA001',  # found commented-out code
-    'F541',  # f-string without any placeholders
-    'FBT001',  # boolean-typed positional argument in function definition
-    'FBT002',  # boolean default positional argument in function definition
-    'FBT003',  # boolean positional value in function call
+    'C408',  # Unnecessary `dict` call (rewrite as a literal)
+    'C901',  # Function is too complex
+    'D',  # Docstrings
+    'E731',  # Do not assign a `lambda` expression, use a `def`
+    'E741',  # Ambiguous variable name
+    'E742',  # Ambiguous class name
+    'EM101',  # Exception must not use a string literal, assign to variable first
+    'EM102',  # Exception must not use an f-string literal, assign to variable first
+    'ERA001',  # Found commented-out code
+    'F541',  # F-string without any placeholders
+    'FBT001',  # Boolean-typed positional argument in function definition
+    'FBT002',  # Boolean default positional argument in function definition
+    'FBT003',  # Boolean positional value in function call
     'FIX',
-    'FLY002',  # static-join-to-f-string
-    'N804',  # first argument of a class method should be named `cls`
-    'PERF401',  # use a list comprehension to create a transformed list
-    'PGH003',  # use specific rule codes when ignoring type issues
-    'PGH004',  # use specific rule codes when using `noqa`
-    'PLC0208',  # iteration-over-set
-    'PLR0911',  # too many return statements
-    'PLR0912',  # too many branches
-    'PLR0913',  # too many arguments in function definition
-    'PLR0915',  # too many statements
-    'PLR2004',  # magic value used in comparison
-    'PLR2044',  # line with empty comment
-    'PLW0603',  # using the global statement is discouraged
+    'FLY002',  # Static-join-to-f-string
+    'N804',  # First argument of a class method should be named `cls`
+    'PERF401',  # Use a list comprehension to create a transformed list
+    'PGH003',  # Use specific rule codes when ignoring type issues
+    'PGH004',  # Use specific rule codes when using `noqa`
+    'PLC0208',  # Iteration-over-set
+    'PLR0911',  # Too many return statements
+    'PLR0912',  # Too many branches
+    'PLR0913',  # Too many arguments in function definition
+    'PLR0915',  # Too many statements
+    'PLR2004',  # Magic value used in comparison
+    'PLR2044',  # Line with empty comment
+    'PLW0603',  # Using the global statement is discouraged
     'PLW2901',  # `for` loop variable overwritten by assignment target
-    'PT004',  # fixture does not return anything, add leading underscore
-    'PT016',  # pytest-fail-without-message
-    'PT018',  # assertion should be broken down into multiple parts
+    'PT004',  # Fixture does not return anything, add leading underscore
+    'PT016',  # Pytest-fail-without-message
+    'PT018',  # Assertion should be broken down into multiple parts
     'PTH',  # pathlib
-    'Q003',  # change outer quotes to avoid escaping inner quotes
-    'RET504',  # unnecessary assignment before `return` statement
-    'RET505',  # unnecessary `else` after `return` statement
-    'RET506',  # unnecessary `elif` after `raise` statement
-    'RET508',  # unnecessary `elif` after `break` statement
-    'RUF009',  # do not perform function call `col.TypeMap` in dataclass defaults
-    'RUF018',  # avoid assignment expressions in `assert` statements
-    'RUF100',  # unused blanket `noqa` directive
-    'S102',  # use of `exec` detected
-    'S311',  # standard pseudo-random generators are not suitable for cryptographic purposes
+    'Q003',  # Change outer quotes to avoid escaping inner quotes
+    'RET504',  # Unnecessary assignment before `return` statement
+    'RET505',  # Unnecessary `else` after `return` statement
+    'RET506',  # Unnecessary `elif` after `raise` statement
+    'RET508',  # Unnecessary `elif` after `break` statement
+    'RUF009',  # Do not perform function call `col.TypeMap` in dataclass defaults
+    'RUF018',  # Avoid assignment expressions in `assert` statements
+    'RUF100',  # Unused blanket `noqa` directive
+    'S102',  # Use of `exec` detected
+    'S311',  # Standard pseudo-random generators are not suitable for cryptographic purposes
     'S603',  # `subprocess` call: check for execution of untrusted input
-    'S604',  # call-with-shell-equals-true
-    'S606',  # starting a process without a shell
-    'S607',  # starting a process with a partial executable path
-    'SIM102',  # use a single `if` statement instead of nested `if` statements
-    'SIM103',  # return the negated condition directly
-    'SIM105',  # use `contextlib.suppress(KeyError)` instead of `try`-`except`-`pass`
-    'SIM108',  # use ternary operator
-    'SIM114',  # combine `if` branches using logical `or` operator
-    'SIM117',  # combine `with` statements
+    'S604',  # Call-with-shell-equals-true
+    'S606',  # Starting a process without a shell
+    'S607',  # Starting a process with a partial executable path
+    'SIM102',  # Use a single `if` statement instead of nested `if` statements
+    'SIM103',  # Return the negated condition directly
+    'SIM105',  # Use `contextlib.suppress(KeyError)` instead of `try`-`except`-`pass`
+    'SIM108',  # Use ternary operator
+    'SIM114',  # Combine `if` branches using logical `or` operator
+    'SIM117',  # Combine `with` statements
     'T201',  # `print` found
     'T203',  # `pprint` found
     'TCH001',  # typing-only-first-party-import
-    'TD001', # invalid TODO tag
-    'TD002',  # missing author in TODO
-    'TD003',  # missing issue link on the line following this TODO
-    'TD004',  # missing colon in TODO
-    'TD005',  # missing issue description after `TODO`
-    'TID252',  # prefer absolute imports over relative imports from parent modules
-    'TRY002',  # create your own exception
-    'TRY003',  # avoid specifying long messages outside the exception class
-    'TRY300',  # try-consider-else
-    'UP038',  # use `X | Y` in `isinstance` call instead of `(X, Y)`
+    'TD001', # Invalid TODO tag
+    'TD002',  # Missing author in TODO
+    'TD003',  # Missing issue link on the line following this TODO
+    'TD004',  # Missing colon in TODO
+    'TD005',  # Missing issue description after `TODO`
+    'TID252',  # Prefer absolute imports over relative imports from parent modules
+    'TRY002',  # Create your own exception
+    'TRY003',  # Avoid specifying long messages outside the exception class
+    'TRY300',  # Try-consider-else
+    'UP038',  # Use `X | Y` in `isinstance` call instead of `(X, Y)`
 
     # FIXME: mypy error: PEP 695 type aliases are not yet supported
     'UP040',  # type alias uses `TypeAlias` annotation instead of the `type` keyword
@@ -236,6 +236,12 @@ ignore = [
     'S101',  # use of `assert` detected
 ]
 '**/scripts/*' = [
+    'UP',
+]
+'omdev/amalg/std/*' = [
+    'UP',
+]
+'omdev/amalg/tests/*' = [
     'UP',
 ]
 'omlish/testing/*' = [
