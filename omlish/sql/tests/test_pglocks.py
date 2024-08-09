@@ -52,7 +52,7 @@ class pg_lock_name(sqlalchemy.sql.expression.UnaryExpression):  # noqa
 
 
 @sa.ext.compiler.compiles(pg_lock_name)
-def _pg_lock_name(
+def _compile_pg_lock_name(
         element: pg_lock_name,
         compiler: sa.sql.compiler.SQLCompiler,
         **kw: ta.Any,
