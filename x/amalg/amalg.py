@@ -128,40 +128,36 @@ def make_import(
 
 @dc.dataclass(frozen=True, kw_only=True)
 class Typing:
-    pass
+    src_path: str
+    line: int
+
+    toks: Tokens = dc.field(repr=False)
 
 
-r"""
-[
-    Token(name='NAME', src='T', line=1, utf8_byte_offset=0),
-    Token(name='UNIMPORTANT_WS', src=' ', line=1, utf8_byte_offset=1),
-    Token(name='OP', src='=', line=1, utf8_byte_offset=2),
-    Token(name='UNIMPORTANT_WS', src=' ', line=1, utf8_byte_offset=3),
-    Token(name='NAME', src='ta', line=1, utf8_byte_offset=4),
-    Token(name='OP', src='.', line=1, utf8_byte_offset=6),
-    Token(name='NAME', src='TypeVar', line=1, utf8_byte_offset=7),
-    Token(name='OP', src='(', line=1, utf8_byte_offset=14),
-    Token(name='STRING', src="'T'", line=1, utf8_byte_offset=15),
-    Token(name='OP', src=')', line=1, utf8_byte_offset=18),
-    Token(name='NEWLINE', src='\n', line=1, utf8_byte_offset=19),
-]
-[
-    Token(name='NAME', src='Foo', line=2, utf8_byte_offset=0),
-    Token(name='UNIMPORTANT_WS', src=' ', line=2, utf8_byte_offset=3),
-    Token(name='OP', src='=', line=2, utf8_byte_offset=4),
-    Token(name='UNIMPORTANT_WS', src=' ', line=2, utf8_byte_offset=5),
-    Token(name='NAME', src='ta', line=2, utf8_byte_offset=6),
-    Token(name='OP', src='.', line=2, utf8_byte_offset=8),
-    Token(name='NAME', src='Mapping', line=2, utf8_byte_offset=9),
-    Token(name='OP', src='[', line=2, utf8_byte_offset=16),
-    Token(name='NAME', src='int', line=2, utf8_byte_offset=17),
-    Token(name='OP', src=',', line=2, utf8_byte_offset=20),
-    Token(name='UNIMPORTANT_WS', src=' ', line=2, utf8_byte_offset=21),
-    Token(name='NAME', src='str', line=2, utf8_byte_offset=22),
-    Token(name='OP', src=']', line=2, utf8_byte_offset=25),
-    Token(name='NEWLINE', src='\n', line=2, utf8_byte_offset=26),
-]
-"""
+def make_typing(
+        lts: Tokens,
+        src_path: str,
+) -> Typing | None:
+    if not lts:
+        return None
+
+    wts = list(ignore_ws(lts))
+    if not (
+            len(wts) >= 5 and
+            wts[0].name == 'NAME' and
+            wts[1].name == 'OP' and wts[1].src == '=' and
+            wts[2].name == 'NAME' and wts[2].src == 'ta' and
+            wts[3].name == 'OP' and wts[3].src == '.'
+
+    ):
+        return None
+
+    return Typing(
+        src_path=src_path,
+        line=wts[0].line,
+
+        toks=lts,
+    )
 
 
 ##
@@ -187,24 +183,32 @@ class SrcFile:
     @lang.cached_function
     def _process_lines(self) -> tuple[
         ta.Sequence[Import],
+        ta.Sequence[Typing],
         ta.Sequence[Tokens],
     ]:
         imps: list[Import] = []
+        tys: list[Typing] = []
         ctls: list[Tokens] = []
         for line in self.lines():
             if (imp := make_import(line, self.path)) is not None:
                 imps.append(imp)
+            elif (ty := make_typing(line, self.path)) is not None:
+                tys.append(imp)
             else:
                 ctls.append(line)
-        return imps, ctls
+        return imps, tys, ctls
 
     @lang.cached_function
     def imports(self) -> ta.Sequence[Import]:
         return self._process_lines()[0]
 
     @lang.cached_function
-    def content_lines(self) -> ta.Sequence[Tokens]:
+    def typings(self) -> ta.Sequence[Typing]:
         return self._process_lines()[1]
+
+    @lang.cached_function
+    def content_lines(self) -> ta.Sequence[Tokens]:
+        return self._process_lines()[2]
 
 
 ##

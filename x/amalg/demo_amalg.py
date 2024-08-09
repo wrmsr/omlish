@@ -32,9 +32,6 @@ class cached_nullary:  # noqa
 # /Users/spinlock/src/wrmsr/omlish/x/amalg/demo/std/check.py
 
 
-T = ta.TypeVar('T')
-
-
 def check_not_none(v: ta.Optional[T]) -> T:  # noqa
     if v is None:
         raise ValueError
@@ -92,11 +89,6 @@ def subprocess_check_output(*args, **kwargs):
 
 ########################################
 # /Users/spinlock/src/wrmsr/omlish/x/amalg/demo/demo.py
-
-
-T = ta.TypeVar('T')
-Foo = ta.Mapping[int, str]
-
 
 
 @cached_nullary
