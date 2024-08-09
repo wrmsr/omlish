@@ -1,11 +1,11 @@
 import typing as ta
 
-from .gen import CmakeGen
-from .gen import Executable
-from .gen import ModuleLibrary
-from .gen import StaticLibrary
-from .gen import Target
-from .gen import Var
+from omdev.cmake import CmakeGen
+from omdev.cmake import Executable
+from omdev.cmake import ModuleLibrary
+from omdev.cmake import StaticLibrary
+from omdev.cmake import Target
+from omdev.cmake import Var
 
 
 class CpythonCmakeGen(CmakeGen):
