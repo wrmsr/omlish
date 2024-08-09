@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # @omdev-amalg _amalg.py
 import logging
 import signal
