@@ -8,6 +8,7 @@
 
 typedef struct _uuid_state {
     PyObject *uuid_cls;
+    PyObject *safe_uuid_cls;
 } _uuid_state;
 
 static inline _uuid_state * get_uuid_state(PyObject *module)
@@ -40,6 +41,10 @@ static int _uuid_exec(PyObject *module)
         Py_DECREF(uuid_module);
         return -1;
     }
+    if ((state->safe_uuid_cls = PyObject_GetAttrString(uuid_module, "SafeUUID")) == NULL) {
+        Py_DECREF(uuid_module);
+        return -1;
+    }
     Py_DECREF(uuid_module);
 
     return 0;
@@ -49,6 +54,7 @@ static int _uuid_traverse(PyObject *module, visitproc visit, void *arg)
 {
     _uuid_state *state = get_uuid_state(module);
     Py_VISIT(state->uuid_cls);
+    Py_VISIT(state->safe_uuid_cls);
     return 0;
 }
 
@@ -56,6 +62,7 @@ static int _uuid_clear(PyObject *module)
 {
     _uuid_state *state = get_uuid_state(module);
     Py_CLEAR(state->uuid_cls);
+    Py_CLEAR(state->safe_uuid_cls);
     return 0;
 }
 

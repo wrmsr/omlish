@@ -1,11 +1,54 @@
 """
 TODO:
- - tenacity obv
  - coordination (redis? coord iface?)
  - dogpile
  - mv faults?
 
 https://engineering.shopify.com/blogs/engineering/circuit-breaker-misconfigured
+
+==
+
+_retry_never
+_retry_always
+retry_if_exception
+retry_if_exception_type
+retry_if_not_exception_type
+retry_unless_exception_type
+retry_if_exception_cause_type
+retry_if_result
+retry_if_not_result
+retry_if_exception_message
+retry_if_not_exception_message
+retry_any
+retry_all
+
+stop_any
+stop_all
+_stop_never
+stop_when_event_set
+stop_after_attempt
+stop_after_delay
+stop_before_delay
+
+wait_fixed
+wait_none
+wait_random
+wait_combine
+wait_chain
+wait_incrementing
+wait_exponential
+wait_random_exponential
+wait_exponential_jitter
+
+==
+
+IterState:
+    actions
+    retry_run_result
+    delay_since_first_attempt
+    stop_run_result
+    is_explicit_retry
+
 """
 import time
 import typing as ta
@@ -37,6 +80,7 @@ class Call:
         # self._outcome_timestamp = None
         # self._idle_for = 0.
         # self._next_action = None
+        # self._upcoming_sleep = 0.
 
     @classmethod
     def of(cls, retrier: 'Retrier', fn: ta.Callable, *args, **kwargs) -> 'Call':
@@ -72,15 +116,15 @@ CallbackFn = ta.Callable[['RetryFn'], None]
 
 
 class Retry(lang.Namespace):
-    ALWAYS = _repr_fn('Retry.ALWAYS', lambda _: True)
+    ALWAYS: RetryFn = _repr_fn('Retry.ALWAYS', lambda _: True)
 
 
 class Wait(lang.Namespace):
-    NONE = _repr_fn('Wait.NONE', lambda _: 0.)
+    NONE: WaitFn = _repr_fn('Wait.NONE', lambda _: 0.)
 
 
 class Stop(lang.Namespace):
-    NEVER = _repr_fn('Stop.NEVER', lambda _: False)
+    NEVER: StopFn = _repr_fn('Stop.NEVER', lambda _: False)
 
 
 class Retrier:
