@@ -60,7 +60,7 @@ def _bind_db_user_store() -> inj.Elemental:
             sql.AsyncEngine,
             to_fn=inj.make_async_managed_provider(
                 build_engine,
-                lambda e: lang.a_defer(e.dispose),  # noqa
+                lambda e: lang.a_defer(e.dispose()),  # noqa
             ),
         ),
 
@@ -90,8 +90,8 @@ def bind() -> inj.Elemental:
 
         handlers_inj.bind(),
 
-        _bind_in_memory_user_store(),
-        # _bind_db_user_store(),
+        # _bind_in_memory_user_store(),
+        _bind_db_user_store(),
 
         _bind_cookie_session_store(),
 
