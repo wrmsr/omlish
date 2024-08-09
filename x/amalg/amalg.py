@@ -225,6 +225,7 @@ def _main() -> None:
     root_dir = os.path.dirname(__file__)
     for main_file in [
         'demo/demo.py',
+        'demo/deploy/deploy.py',
         'demo/interp/interp.py',
         'demo/pyproject/pyproject.py',
     ]:
@@ -298,7 +299,7 @@ def _main() -> None:
 
         print(out.getvalue())
 
-        with open(os.path.join(root_dir, os.path.basename(main_file).rpartition('.')[0] + '_amalg.py'), 'w') as f:
+        with open(os.path.join(root_dir, 'out', os.path.basename(main_file).rpartition('.')[0] + '_amalg.py'), 'w') as f:
             f.write(out.getvalue())
 
 
