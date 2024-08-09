@@ -1,8 +1,12 @@
 import abc
+import logging
 import typing as ta
 
 from .. import dataclasses as dc
 from .. import lang
+
+
+log = logging.getLogger(__name__)
 
 
 ##
@@ -39,6 +43,9 @@ class Secrets(lang.Abstract):
         raise NotImplementedError
 
 
+#
+
+
 class EmptySecrets(Secrets):
     def get(self, key: str) -> str:
         raise KeyError(key)
@@ -47,10 +54,59 @@ class EmptySecrets(Secrets):
 EMPTY_SECRETS = EmptySecrets()
 
 
+#
+
+
 class SimpleSecrets(Secrets):
     def __init__(self, dct: ta.Mapping[str, str]) -> None:
         super().__init__()
         self._dct = dct
 
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({{{", ".join(map(repr, self._dct.keys()))}}})'
+
     def get(self, key: str) -> str:
         return self._dct[key]
+
+
+#
+
+
+class CompositeSecrets(Secrets):
+    def __init__(self, *children: Secrets) -> None:
+        super().__init__()
+        self._children = children
+
+    def get(self, key: str) -> str:
+        for c in self._children:
+            try:
+                return c.get(key)
+            except KeyError:
+                pass
+        raise KeyError(key)
+
+
+#
+
+
+class LoggingSecrets(Secrets):
+    def __init__(
+            self,
+            child: Secrets,
+            *,
+            log: logging.Logger | None = None,  # noqa
+    ) -> None:
+        super().__init__()
+        self._child = child
+        self._log = log if log is not None else globals()['log']
+
+    def get(self, key: str) -> str:
+        self._log.info('Attempting to access secret: %s', key)
+        try:
+            ret = self._child.get(key)
+        except KeyError:
+            self._log.info('Failed to access secret: %s', key)
+            raise
+        else:
+            self._log.info('Successfully accessed secret: %s', key)
+            return ret
