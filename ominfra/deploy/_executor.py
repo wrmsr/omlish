@@ -5,6 +5,7 @@ r"""
 TODO:
  - flock
  - interp.py
+ - systemd
 
 deployment matrix
  - os: ubuntu / amzn / generic
@@ -39,49 +40,6 @@ spec = <name>--<rev>--<when>
 
 https://docs.docker.com/config/containers/multi-service_container/#use-a-process-manager
 https://serverfault.com/questions/211525/supervisor-not-loading-new-configuration-files
-
-==
-
-cat /etc/systemd/system/hello.service
-
---
-
-[Unit]
-Description=hello
-After= \
-    syslog.target \
-    network.target \
-    remote-fs.target \
-    nss-lookup.target \
-    network-online.target
-Requires=network-online.target
-
-[Service]
-Type=simple
-StandardOutput=journal
-ExecStart=sleep infinity
-
-# User=
-# WorkingDirectory=
-
-# https://serverfault.com/questions/617823/how-to-set-systemd-service-dependencies
-# PIDFile=/run/nginx.pid
-# ExecStartPre=/usr/sbin/nginx -t
-# ExecStart=/usr/sbin/nginx
-# ExecReload=/bin/kill -s HUP $MAINPID
-# ExecStop=/bin/kill -s QUIT $MAINPID
-# PrivateTmp=true
-
-Restart=always
-RestartSec=3
-
-[Install]
-WantedBy=multi-user.target
-
---
-
-sudo systemctl enable hello.service
-sudo systemctl start hello.service
 """  # noqa
 # ruff: noqa: UP007
 import abc
@@ -300,7 +258,7 @@ class Deployment:
 # ../concerns/dirs.py
 
 
-class Dirs(Concern):
+class DirsConcern(Concern):
     @run_in_phase(Phase.HOST)
     def create_dirs(self) -> None:
         pwn = pwd.getpwnam(self._d.host_cfg.username)
@@ -324,7 +282,7 @@ class Dirs(Concern):
 # ../concerns/nginx.py
 
 
-class GlobalNginx(Concern):
+class GlobalNginxConcern(Concern):
     @run_in_phase(Phase.HOST)
     def create_global_nginx_conf(self) -> None:
         nginx_conf_dir = os.path.join(self._d.home_dir(), 'conf/nginx')
@@ -334,7 +292,7 @@ class GlobalNginx(Concern):
                 f.write(f'include {nginx_conf_dir}/*.conf;\n')
 
 
-class Nginx(Concern):
+class NginxConcern(Concern):
     @run_in_phase(Phase.FRONTEND)
     def create_nginx_conf(self) -> None:
         nginx_conf = textwrap.dedent(f"""
@@ -363,7 +321,7 @@ class Nginx(Concern):
 # ../concerns/repo.py
 
 
-class Repo(Concern):
+class RepoConcern(Concern):
     @run_in_phase(Phase.ENV)
     def clone_repo(self) -> None:
         clone_submodules = False
@@ -381,7 +339,7 @@ class Repo(Concern):
 # ../concerns/supervisor.py
 
 
-class GlobalSupervisor(Concern):
+class GlobalSupervisorConcern(Concern):
     @run_in_phase(Phase.HOST)
     def create_global_supervisor_conf(self) -> None:
         sup_conf_dir = os.path.join(self._d.home_dir(), 'conf/supervisor')
@@ -397,7 +355,7 @@ class GlobalSupervisor(Concern):
                 f.write(glo_sup_conf)
 
 
-class Supervisor(Concern):
+class SupervisorConcern(Concern):
     @run_in_phase(Phase.BACKEND)
     def create_supervisor_conf(self) -> None:
         sup_conf = textwrap.dedent(f"""
@@ -423,7 +381,7 @@ class Supervisor(Concern):
 # ../concerns/user.py
 
 
-class User(Concern):
+class UserConcern(Concern):
     @run_in_phase(Phase.HOST)
     def create_user(self) -> None:
         try:
@@ -445,7 +403,7 @@ class User(Concern):
 # ../concerns/venv.py
 
 
-class Venv(Concern):
+class VenvConcern(Concern):
     @run_in_phase(Phase.ENV)
     def setup_venv(self) -> None:
         self._d.ush(
@@ -473,14 +431,14 @@ def _deploy_cmd(args) -> None:
     dp = Deployment(
         cfg,
         [
-            User,
-            Dirs,
-            GlobalNginx,
-            GlobalSupervisor,
-            Repo,
-            Venv,
-            Supervisor,
-            Nginx,
+            UserConcern,
+            DirsConcern,
+            GlobalNginxConcern,
+            GlobalSupervisorConcern,
+            RepoConcern,
+            VenvConcern,
+            SupervisorConcern,
+            NginxConcern,
         ],
     )
     dp.deploy()

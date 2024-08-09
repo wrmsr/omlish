@@ -8,7 +8,7 @@ from ..base import Phase
 from ..base import run_in_phase
 
 
-class GlobalSupervisor(Concern):
+class GlobalSupervisorConcern(Concern):
     @run_in_phase(Phase.HOST)
     def create_global_supervisor_conf(self) -> None:
         sup_conf_dir = os.path.join(self._d.home_dir(), 'conf/supervisor')
@@ -24,7 +24,7 @@ class GlobalSupervisor(Concern):
                 f.write(glo_sup_conf)
 
 
-class Supervisor(Concern):
+class SupervisorConcern(Concern):
     @run_in_phase(Phase.BACKEND)
     def create_supervisor_conf(self) -> None:
         sup_conf = textwrap.dedent(f"""

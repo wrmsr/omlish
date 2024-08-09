@@ -156,7 +156,7 @@ def cmd(
 # ruff: noqa: UP007
 
 
-class Resolver:
+class InterpResolver:
 
     def __init__(
             self,
@@ -261,7 +261,7 @@ class PyenvInstallOpts(ta.NamedTuple):
         )
 
 
-class PyenvResolver(Resolver):
+class PyenvInterpResolver(InterpResolver):
 
     def __init__(
             self,
@@ -353,7 +353,7 @@ class PyenvResolver(Resolver):
         ]
 
 
-class MacResolver(PyenvResolver):
+class MacInterpResolver(PyenvInterpResolver):
 
     @cached_nullary
     def _framework_pio(self) -> PyenvInstallOpts:
@@ -415,7 +415,7 @@ class MacResolver(PyenvResolver):
         ]
 
 
-class LinuxResolver(PyenvResolver):
+class LinuxInterpResolver(PyenvInterpResolver):
 
     def _pyenv_pios(self) -> ta.Sequence[PyenvInstallOpts]:
         return [
@@ -429,9 +429,9 @@ class LinuxResolver(PyenvResolver):
 
 def _resolve_cmd(args) -> None:
     if sys.platform == 'darwin':
-        resolver_cls = MacResolver
+        resolver_cls = MacInterpResolver
     elif sys.platform in ['linux', 'linux2']:
-        resolver_cls = LinuxResolver
+        resolver_cls = LinuxInterpResolver
     else:
         raise OSError(f'Unsupported platform: {sys.platform}')
 

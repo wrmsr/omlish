@@ -13,15 +13,15 @@ import typing as ta
 
 from ..amalg.std.logging import setup_standard_logging
 from ..amalg.std.runtime import check_runtime_version
-from .resolvers import LinuxResolver
-from .resolvers import MacResolver
+from .resolvers import LinuxInterpResolver
+from .resolvers import MacInterpResolver
 
 
 def _resolve_cmd(args) -> None:
     if sys.platform == 'darwin':
-        resolver_cls = MacResolver
+        resolver_cls = MacInterpResolver
     elif sys.platform in ['linux', 'linux2']:
-        resolver_cls = LinuxResolver
+        resolver_cls = LinuxInterpResolver
     else:
         raise OSError(f'Unsupported platform: {sys.platform}')
 
