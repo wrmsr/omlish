@@ -4,6 +4,7 @@ r"""
 TODO:
  - flock
  - interp.py
+ - systemd
 
 deployment matrix
  - os: ubuntu / amzn / generic
@@ -38,49 +39,6 @@ spec = <name>--<rev>--<when>
 
 https://docs.docker.com/config/containers/multi-service_container/#use-a-process-manager
 https://serverfault.com/questions/211525/supervisor-not-loading-new-configuration-files
-
-==
-
-cat /etc/systemd/system/hello.service
-
---
-
-[Unit]
-Description=hello
-After= \
-    syslog.target \
-    network.target \
-    remote-fs.target \
-    nss-lookup.target \
-    network-online.target
-Requires=network-online.target
-
-[Service]
-Type=simple
-StandardOutput=journal
-ExecStart=sleep infinity
-
-# User=
-# WorkingDirectory=
-
-# https://serverfault.com/questions/617823/how-to-set-systemd-service-dependencies
-# PIDFile=/run/nginx.pid
-# ExecStartPre=/usr/sbin/nginx -t
-# ExecStart=/usr/sbin/nginx
-# ExecReload=/bin/kill -s HUP $MAINPID
-# ExecStop=/bin/kill -s QUIT $MAINPID
-# PrivateTmp=true
-
-Restart=always
-RestartSec=3
-
-[Install]
-WantedBy=multi-user.target
-
---
-
-sudo systemctl enable hello.service
-sudo systemctl start hello.service
 """  # noqa
 # ruff: noqa: UP007
 import argparse
@@ -93,14 +51,14 @@ from omdev.amalg.std.runtime import check_runtime_version
 
 from ..configs import DeployConfig
 from .base import Deployment
-from .concerns.dirs import Dirs
-from .concerns.nginx import GlobalNginx
-from .concerns.nginx import Nginx
-from .concerns.repo import Repo
-from .concerns.supervisor import GlobalSupervisor
-from .concerns.supervisor import Supervisor
-from .concerns.user import User
-from .concerns.venv import Venv
+from .concerns.dirs import DirsConcern
+from .concerns.nginx import GlobalNginxConcern
+from .concerns.nginx import NginxConcern
+from .concerns.repo import RepoConcern
+from .concerns.supervisor import GlobalSupervisorConcern
+from .concerns.supervisor import SupervisorConcern
+from .concerns.user import UserConcern
+from .concerns.venv import VenvConcern
 
 
 ##
@@ -112,14 +70,14 @@ def _deploy_cmd(args) -> None:
     dp = Deployment(
         cfg,
         [
-            User,
-            Dirs,
-            GlobalNginx,
-            GlobalSupervisor,
-            Repo,
-            Venv,
-            Supervisor,
-            Nginx,
+            UserConcern,
+            DirsConcern,
+            GlobalNginxConcern,
+            GlobalSupervisorConcern,
+            RepoConcern,
+            VenvConcern,
+            SupervisorConcern,
+            NginxConcern,
         ],
     )
     dp.deploy()

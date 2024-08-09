@@ -7,7 +7,7 @@ from ..base import Phase
 from ..base import run_in_phase
 
 
-class User(Concern):
+class UserConcern(Concern):
     @run_in_phase(Phase.HOST)
     def create_user(self) -> None:
         try:

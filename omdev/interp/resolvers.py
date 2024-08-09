@@ -9,7 +9,7 @@ from ..amalg.std.check import check_not_none
 from .cmd import cmd
 
 
-class Resolver:
+class InterpResolver:
 
     def __init__(
             self,
@@ -114,7 +114,7 @@ class PyenvInstallOpts(ta.NamedTuple):
         )
 
 
-class PyenvResolver(Resolver):
+class PyenvInterpResolver(InterpResolver):
 
     def __init__(
             self,
@@ -206,7 +206,7 @@ class PyenvResolver(Resolver):
         ]
 
 
-class MacResolver(PyenvResolver):
+class MacInterpResolver(PyenvInterpResolver):
 
     @cached_nullary
     def _framework_pio(self) -> PyenvInstallOpts:
@@ -268,7 +268,7 @@ class MacResolver(PyenvResolver):
         ]
 
 
-class LinuxResolver(PyenvResolver):
+class LinuxInterpResolver(PyenvInterpResolver):
 
     def _pyenv_pios(self) -> ta.Sequence[PyenvInstallOpts]:
         return [

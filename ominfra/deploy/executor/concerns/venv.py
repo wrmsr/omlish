@@ -3,7 +3,7 @@ from ..base import Phase
 from ..base import run_in_phase
 
 
-class Venv(Concern):
+class VenvConcern(Concern):
     @run_in_phase(Phase.ENV)
     def setup_venv(self) -> None:
         self._d.ush(
