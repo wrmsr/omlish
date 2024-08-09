@@ -55,7 +55,7 @@ else:
     trio_asyncio = lang.proxy_import('trio_asyncio')
 
 
-ALL_ASYNCS_MARK = 'all_asyncs'
+ASYNCS_MARK = 'asyncs'
 
 KNOWN_BACKENDS = (
     'asyncio',
@@ -81,11 +81,11 @@ class AsyncsPlugin:
     ]
 
     def pytest_configure(self, config):
-        config.addinivalue_line('markers', f'{ALL_ASYNCS_MARK}: marks for all async backends')
+        config.addinivalue_line('markers', f'{ASYNCS_MARK}: marks for all async backends')
         config.addinivalue_line('markers', 'trio_asyncio: marks for trio_asyncio backend')
 
     def pytest_generate_tests(self, metafunc):
-        if (m := metafunc.definition.get_closest_marker(ALL_ASYNCS_MARK)) is not None:
+        if (m := metafunc.definition.get_closest_marker(ASYNCS_MARK)) is not None:
             if m.args:
                 bes = m.args
             else:

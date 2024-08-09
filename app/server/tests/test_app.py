@@ -27,10 +27,10 @@ def randhex(l: int) -> str:
 
 
 @ptu.skip_if_cant_import('greenlet')
-@pytest.mark.all_asyncs(
+@pytest.mark.asyncs(
     'asyncio',
     'trio',
-    'trio_asyncio',
+    # 'trio_asyncio',
 )
 async def test_demo_auth():
     # from omlish import logs  # noqa

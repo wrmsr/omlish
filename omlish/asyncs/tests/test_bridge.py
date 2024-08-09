@@ -49,7 +49,7 @@ def _test_trivial_bridge(a_to_s, s_to_a):
     assert a_to_s(a_func)(s_to_a(callback), 'arg') == 'a_func(arg) -> callback(arg)'
 
 
-@pytest.mark.all_asyncs
+@pytest.mark.asyncs
 async def test_trivial_async_bridge():
     await _test_trivial_async_bridge(br.trivial_a_to_s, br.trivial_s_to_a)
 
@@ -59,7 +59,7 @@ def test_trivial_bridge():
 
 
 @ptu.skip_if_cant_import('greenlet')
-@pytest.mark.all_asyncs
+@pytest.mark.asyncs
 async def test_nontrivial_async_bridge():
     await _test_trivial_async_bridge(br.a_to_s, br.s_to_a)
 
@@ -106,7 +106,7 @@ async def a_sleep_callback4(arg):
 
 
 @ptu.skip_if_cant_import('greenlet')
-@pytest.mark.all_asyncs
+@pytest.mark.asyncs
 async def test_async_bridge2():
     await anyio.sleep(.01)
 
@@ -125,7 +125,7 @@ async def test_async_bridge2():
 
 
 @ptu.skip_if_cant_import('greenlet')
-@pytest.mark.all_asyncs
+@pytest.mark.asyncs
 async def test_async_bridge3():
     n = 4
 
@@ -318,7 +318,7 @@ def test_bridge_lock_sync():
 
 
 @ptu.skip_if_cant_import('greenlet')
-@pytest.mark.all_asyncs
+@pytest.mark.asyncs
 # @pytest.mark.trio
 async def test_bridge_lock_async():
     await br.s_to_a(_test_bridge_lock_sync2)(True)

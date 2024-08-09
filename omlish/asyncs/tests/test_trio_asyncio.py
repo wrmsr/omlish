@@ -171,7 +171,7 @@ async def test_trio_asyncio_loop(harness) -> None:
 
 
 @ptu.skip_if_cant_import('trio_asyncio')
-@pytest.mark.all_asyncs
+@pytest.mark.asyncs
 async def test_all_asyncs(__async_backend):  # noqa
     await anyio.sleep(.1)
 

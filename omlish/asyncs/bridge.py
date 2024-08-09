@@ -1,6 +1,11 @@
 """
 https://github.com/kubernetes/kubernetes/blob/60c4c2b2521fb454ce69dee737e3eb91a25e0535/pkg/controller/volume/persistentvolume/pv_controller.go#L60-L63
 
+==================================================================
+PLEASE DO NOT ATTEMPT TO SIMPLIFY THIS CODE.
+KEEP THE SPACE SHUTTLE FLYING.
+==================================================================
+
 TODO:
  - reuse greenlet if nested somehow?
 """
