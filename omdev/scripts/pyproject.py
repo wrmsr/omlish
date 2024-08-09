@@ -14,6 +14,7 @@ lookit:
  - https://github.com/jazzband/pip-tools
  - https://github.com/Osiris-Team/1JPM
 """
+# ruff: noqa: UP007
 import argparse
 import dataclasses as dc
 import functools
@@ -31,85 +32,101 @@ import typing as ta
 T = ta.TypeVar('T')
 
 
-log = logging.getLogger(__name__)
+########################################
+# ../../amalg/std/cached.py
 
 
-REQUIRED_PYTHON_VERSION = (3, 8)
+class cached_nullary:  # noqa
+    def __init__(self, fn):
+        super().__init__()
+        self._fn = fn
+        self._value = self._missing = object()
+        functools.update_wrapper(self, fn)
+
+    def __call__(self, *args, **kwargs):  # noqa
+        if self._value is self._missing:
+            self._value = self._fn()
+        return self._value
+
+    def __get__(self, instance, owner):  # noqa
+        bound = instance.__dict__[self._fn.__name__] = self.__class__(self._fn.__get__(instance, owner))
+        return bound
 
 
-##
+########################################
+# ../../amalg/std/check.py
+# ruff: noqa: UP007
 
 
-def _check_not_none(v: ta.Optional[T]) -> T:
+def check_not_none(v: ta.Optional[T]) -> T:
     if v is None:
         raise ValueError
     return v
 
 
-def _check_not(v: ta.Any) -> None:
+def check_not(v: ta.Any) -> None:
     if v:
         raise ValueError(v)
     return v
 
 
-class cached_nullary:  # noqa
-    def __init__(self, fn):
-        self._fn = fn
-        self._value = self._missing = object()
-        functools.update_wrapper(self, fn)
-    def __call__(self, *args, **kwargs):  # noqa
-        if self._value is self._missing:
-            self._value = self._fn()
-        return self._value
-    def __get__(self, instance, owner):  # noqa
-        bound = instance.__dict__[self._fn.__name__] = self.__class__(self._fn.__get__(instance, owner))
-        return bound
+########################################
+# ../../amalg/std/logging.py
+"""
+TODO:
+ - debug
+"""
+
+
+log = logging.getLogger(__name__)
+
+
+def setup_standard_logging() -> None:
+    logging.root.addHandler(logging.StreamHandler())
+    logging.root.setLevel('INFO')
+
+
+########################################
+# ../../amalg/std/runtime.py
+
+
+REQUIRED_PYTHON_VERSION = (3, 8)
+
+
+def check_runtime_version() -> None:
+    if sys.version_info < REQUIRED_PYTHON_VERSION:
+        raise OSError(
+            f'Requires python {REQUIRED_PYTHON_VERSION}, got {sys.version_info} from {sys.executable}')  # noqa
+
+
+########################################
+# ../../amalg/std/subprocesses.py
 
 
 def _mask_env_kwarg(kwargs):
     return {**kwargs, **({'env': '...'} if 'env' in kwargs else {})}
 
 
-def _subprocess_check_call(*args, stdout=sys.stderr, **kwargs):
+def subprocess_check_call(*args, stdout=sys.stderr, **kwargs):
     log.debug((args, _mask_env_kwarg(kwargs)))
     return subprocess.check_call(*args, stdout=stdout, **kwargs)  # type: ignore
 
 
-def _subprocess_check_output(*args, **kwargs):
+def subprocess_check_output(*args, **kwargs):
     log.debug((args, _mask_env_kwarg(kwargs)))
     return subprocess.check_output(*args, **kwargs)
 
 
-##
-
-
-def _toml_loads(s: str) -> ta.Any:
-    toml: ta.Any = None
-    try:
-        import tomllib as toml
-    except ImportError:
-        try:
-            mod = __import__('pip._vendor.tomli')
-        except ImportError:
-            pass
-        else:
-            toml = mod._vendor.tomli  # noqa
-    if toml is not None:
-        return toml.loads(s)
-
-    if shutil.which('toml2json') is None:
-        _subprocess_check_call(['cargo', 'install', 'toml2json'])
-    jsonb = _subprocess_check_output(['toml2json'], input=s.encode())
-
-    import json
-    return json.loads(jsonb.decode().strip())
+########################################
+# ../venvs.py
+# ruff: noqa: UP006 UP007
 
 
 @cached_nullary
 def _read_versions_file(file_name: str = '.versions') -> ta.Mapping[str, str]:
     if not os.path.exists(file_name):
         return {}
-    with open(file_name, 'r') as f:
+    with open(file_name) as f:
         lines = f.readlines()
     return {
         k: v
@@ -117,11 +134,6 @@ def _read_versions_file(file_name: str = '.versions') -> ta.Mapping[str, str]:
         if (sl := l.split('#')[0].strip())
         for k, _, v in (sl.partition('='),)
     }
-
-
-def _find_docker_service_container(cfg_path: str, svc_name: str) -> str:
-    out = _subprocess_check_output(['docker-compose', '-f', cfg_path, 'ps', '-q', svc_name])
-    return out.decode().strip()
 
 
 def _get_interp_exe(s: str, *, interp_script: ta.Optional[str] = None) -> str:
@@ -138,7 +150,7 @@ def _get_interp_exe(s: str, *, interp_script: ta.Optional[str] = None) -> str:
     ver = vers.get(s[1:], s[1:])
     if interp_script is None:
         interp_script = os.path.join(os.path.dirname(__file__), 'interp.py')
-    exe = _subprocess_check_output([
+    exe = subprocess_check_output([
         sys.executable,
         interp_script,
         'resolve',
@@ -146,14 +158,6 @@ def _get_interp_exe(s: str, *, interp_script: ta.Optional[str] = None) -> str:
         ver,
     ]).decode().strip()
     return exe
-
-
-@cached_nullary
-def _script_rel_path() -> str:
-    cwd = os.getcwd()
-    if not (f := __file__).startswith(cwd):
-        raise EnvironmentError(f'file {f} not in {cwd}')
-    return f[len(cwd):].lstrip(os.sep)
 
 
 ##
@@ -199,7 +203,7 @@ class VenvSpec:
     srcs: ta.Union[str, ta.List[str], None] = None
 
 
-def _build_venv_specs(cfgs: ta.Mapping[str, ta.Any]) -> ta.Mapping[str, VenvSpec]:
+def build_venv_specs(cfgs: ta.Mapping[str, ta.Any]) -> ta.Mapping[str, VenvSpec]:
     venv_specs = {n: VenvSpec(name=n, **vs) for n, vs in cfgs.items()}
     if (all_venv_spec := venv_specs.pop('all')) is not None:
         avkw = dc.asdict(all_venv_spec)
@@ -237,7 +241,7 @@ class Venv:
 
     @cached_nullary
     def interp_exe(self) -> str:
-        return _get_interp_exe(_check_not_none(self._spec.interp))
+        return _get_interp_exe(check_not_none(self._spec.interp))
 
     @cached_nullary
     def exe(self) -> str:
@@ -254,11 +258,11 @@ class Venv:
             return False
 
         log.info('Using interpreter %s', (ie := self.interp_exe()))
-        _subprocess_check_call([ie, '-m', 'venv', dn])
+        subprocess_check_call([ie, '-m', 'venv', dn])
 
         ve = self.exe()
 
-        _subprocess_check_call([
+        subprocess_check_call([
             ve,
             '-m', 'pip',
             'install', '-v', '--upgrade',
@@ -268,7 +272,7 @@ class Venv:
         ])
 
         if (sr := self._spec.requires):
-            _subprocess_check_call([
+            subprocess_check_call([
                 ve,
                 '-m', 'pip',
                 'install', '-v',
@@ -280,6 +284,51 @@ class Venv:
     @cached_nullary
     def srcs(self) -> ta.Sequence[str]:
         return _resolve_srcs(self._spec.srcs or [], self._src_aliases or {})
+
+
+########################################
+# pyproject.py
+
+
+##
+
+
+def _toml_loads(s: str) -> ta.Any:
+    toml: ta.Any = None
+    try:
+        import tomllib as toml
+    except ImportError:
+        try:
+            mod = __import__('pip._vendor.tomli')
+        except ImportError:
+            pass
+        else:
+            toml = mod._vendor.tomli  # noqa
+    if toml is not None:
+        return toml.loads(s)
+
+    if shutil.which('toml2json') is None:
+        subprocess_check_call(['cargo', 'install', 'toml2json'])
+    jsonb = subprocess_check_output(['toml2json'], input=s.encode())
+
+    import json
+    return json.loads(jsonb.decode().strip())
+
+
+def _find_docker_service_container(cfg_path: str, svc_name: str) -> str:
+    out = subprocess_check_output(['docker-compose', '-f', cfg_path, 'ps', '-q', svc_name])
+    return out.decode().strip()
+
+
+@cached_nullary
+def _script_rel_path() -> str:
+    cwd = os.getcwd()
+    if not (f := __file__).startswith(cwd):
+        raise OSError(f'file {f} not in {cwd}')
+    return f[len(cwd):].lstrip(os.sep)
+
+
+##
 
 
 class Run:
@@ -295,7 +344,7 @@ class Run:
     @cached_nullary
     def raw_cfg(self) -> ta.Mapping[str, ta.Any]:
         if self._raw_cfg is None:
-            with open('pyproject.toml', 'r') as f:
+            with open('pyproject.toml') as f:
                 buf = f.read()
         elif isinstance(self._raw_cfg, str):
             buf = self._raw_cfg
@@ -313,7 +362,7 @@ class Run:
 
     @cached_nullary
     def venvs(self) -> ta.Mapping[str, Venv]:
-        venv_specs = _build_venv_specs(self.cfg()['venvs'])
+        venv_specs = build_venv_specs(self.cfg()['venvs'])
         return {n: Venv(vs, src_aliases=self.src_aliases()) for n, vs in venv_specs.items()}
 
 
@@ -330,7 +379,7 @@ def _venv_cmd(args) -> None:
             f'--_docker_container={shlex.quote(sd)}',
             *map(shlex.quote, sys.argv[1:]),
         ])
-        _subprocess_check_call([
+        subprocess_check_call([
             'docker',
             'exec',
             *itertools.chain.from_iterable(
@@ -349,27 +398,27 @@ def _venv_cmd(args) -> None:
         pass
 
     elif cmd == 'exe':
-        _check_not(args.args)
+        check_not(args.args)
         print(venv.exe())
 
     elif cmd == 'run':
-        sh = _check_not_none(shutil.which('bash'))
+        sh = check_not_none(shutil.which('bash'))
         script = ' '.join(args.args)
         if not script:
             script = sh
         os.execl(
-            (bash := _check_not_none(sh)),
+            (bash := check_not_none(sh)),
             bash,
             '-c',
             f'. {venv.dir_name}/bin/activate && ' + script,
         )
 
     elif cmd == 'srcs':
-        _check_not(args.args)
+        check_not(args.args)
         print('\n'.join(venv.srcs()))
 
     elif cmd == 'test':
-        _subprocess_check_call([venv.exe(), '-m', 'pytest', *(args.args or []), *venv.srcs()])
+        subprocess_check_call([venv.exe(), '-m', 'pytest', *(args.args or []), *venv.srcs()])
 
     else:
         raise Exception(f'unknown subcommand: {cmd}')
@@ -395,12 +444,8 @@ def _build_parser() -> argparse.ArgumentParser:
 
 
 def _main(argv: ta.Optional[ta.Sequence[str]] = None) -> None:
-    if sys.version_info < REQUIRED_PYTHON_VERSION:
-        raise EnvironmentError(f'Requires python {REQUIRED_PYTHON_VERSION}, got {sys.version_info} from {sys.executable}')  # noqa
-
-    # FIXME: -v
-    logging.root.addHandler(logging.StreamHandler())
-    logging.root.setLevel('INFO')
+    check_runtime_version()
+    setup_standard_logging()
 
     parser = _build_parser()
     args = parser.parse_args(argv)
