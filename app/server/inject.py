@@ -68,13 +68,9 @@ def base_server_url() -> BaseServerUrl:
     return BaseServerUrl(os.environ.get('BASE_SERVER_URL', 'http://localhost:8000/'))
 
 
-def bind() -> inj.Elemental:
+def bind_app() -> inj.Elemental:
     return inj.as_elements(
         inj.private(
-            inj.bind(sec.Secrets, to_const=sec.SimpleSecrets({
-                'session_secret_key': 'secret-key-goes-here',  # noqa
-            })),
-
             inj.bind(J2Templates.Config(
                 resource_root=__package__ + '.templates',
                 reload=True,
@@ -84,8 +80,8 @@ def bind() -> inj.Elemental:
 
             handlers_inj.bind(),
 
-            _bind_in_memory_user_store(),
-            # _bind_db_user_store(),
+            # _bind_in_memory_user_store(),
+            _bind_db_user_store(),
 
             _bind_cookie_session_store(),
 

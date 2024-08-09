@@ -23,7 +23,7 @@ from omserv.server.types import AsgiWrapper
 from omserv.server.workers import serve
 
 from ... import dbs
-from ..inject import bind as bind_app
+from ..inject import bind_app
 
 
 def randhex(l: int) -> str:
