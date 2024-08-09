@@ -13,9 +13,20 @@ lookit:
  - https://github.com/M-o-a-T/aevent
  - https://github.com/florimondmanca/aiometer
  - https://github.com/sanitizers/octomachinery/blob/b36c3d3d49da813ac46e361424132955a4e99ac8/octomachinery/utils/asynctools.py
+
+==
+
+async def killer(shutdown: anyio.Event, sleep_s: float) -> None:
+    log.warning('Killing in %d seconds', sleep_s)
+    await anyio.sleep(sleep_s)
+    log.warning('Killing')
+    shutdown.set()
+
 """  # noqa
+import signal
 import typing as ta
 
+import anyio.abc
 import anyio.streams.memory
 import anyio.streams.stapled
 import sniffio
@@ -214,3 +225,32 @@ class LazyFn(ta.Generic[T]):
             self._v = lang.just(await self._fn())
         await self._once.do(do)
         return self._v.must()
+
+
+##
+
+
+async def install_shutdown_signal_handler(
+        tg: anyio.abc.TaskGroup,
+        event: anyio.Event | None = None,
+        *,
+        signals: ta.Iterable[int] = (signal.SIGINT, signal.SIGTERM),
+        echo: bool = False,
+) -> ta.Callable[..., ta.Awaitable[None]] | None:
+    if event is None:
+        event = anyio.Event()
+
+    async def _handler(*, task_status=anyio.TASK_STATUS_IGNORED):
+        with anyio.open_signal_receiver(*signals) as it:  # type: ignore
+            task_status.started()
+            async for signum in it:
+                if echo:
+                    if signum == signal.SIGINT:
+                        print('Ctrl+C pressed!')
+                    else:
+                        print('Terminated!')
+                event.set()
+                return
+
+    await tg.start(_handler)
+    return event.wait

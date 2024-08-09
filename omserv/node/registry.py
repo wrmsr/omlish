@@ -14,6 +14,7 @@ from omlish import sql
 from omlish.asyncs import anyio as anu
 
 from .models import Nodes
+from .models import setup_db
 from .sql import utcnow
 
 
@@ -30,7 +31,7 @@ class NodeInfo:
     extra: ta.Mapping[str, ta.Any]
 
 
-ExtrasProvider: ta.TypeAlias = ta.Callable[[], ta.Awaitable[ta.Any]]
+ExtrasProvider = ta.NewType('ExtrasProvider', ta.Callable[[], ta.Awaitable[ta.Any]])
 
 
 class NodeRegistrant:
@@ -67,6 +68,8 @@ class NodeRegistrant:
             *,
             task_status: anyio.abc.TaskStatus[None] = anyio.TASK_STATUS_IGNORED,
     ) -> None:
+        await setup_db(self._engine)
+
         await self._update_info()
 
         async with contextlib.AsyncExitStack() as aes:

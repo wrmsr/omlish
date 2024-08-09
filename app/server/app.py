@@ -14,18 +14,12 @@ import typing as ta
 
 from omlish import asyncs as au
 from omlish import inject as inj
-from omlish import lang
 from omlish.http.asgi import AsgiApp
 
 from .inject import bind
 
 
 log = logging.getLogger(__name__)
-
-
-@lang.cached_function
-def _server_app() -> AsgiApp:
-    return inj.create_injector(bind()).provide(AsgiApp)
 
 
 @contextlib.asynccontextmanager
