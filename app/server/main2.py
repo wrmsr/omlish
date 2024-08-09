@@ -16,7 +16,10 @@ from omlish import lang
 from omlish import logs
 from omlish.asyncs import anyio as anu
 from omlish.diag import procstats
+from omserv import server
 from omserv.node import registry as node_reg
+
+from .app import server_app_context
 
 
 ShellApp = ta.NewType('ShellApp', ta.Callable[[anyio.Event], ta.Awaitable[None]])
@@ -46,7 +49,7 @@ async def get_procstats() -> ta.Mapping[str, ta.Any]:
 
 
 def bind_node_registrant() -> inj.Elemental:
-    from .dbs import bind_dbs
+    from ..dbs import bind_dbs
 
     return inj.as_elements(
         inj.private(
@@ -88,3 +91,20 @@ def run_shell(app: ShellApp) -> None:
         patch_for_trio_asyncio()  # noqa
 
     anyio.run(functools.partial(a_run_shell, app), backend=_backend)
+
+
+async def server_main(shutdown_trigger: ShutdownTrigger) -> None:
+    async with server_app_context() as server_app:
+        async with anyio.create_task_group() as tg:
+            tg.start_soon(functools.partial(
+                server.serve,
+                server_app,  # type: ignore
+                server.Config(),
+                shutdown_trigger=shutdown_trigger,
+            ))
+
+            log.info('Server running')
+
+
+if __name__ == '__main__':
+    run_shell(server_main)
