@@ -89,14 +89,14 @@ class _BridgeTransition(ta.NamedTuple):
     seq: int
     a_to_s: bool
 
-    obj_cls: str
+    obj_cls: type
     obj_id: int
 
     obj: ta.Any
 
 
 def _make_transition(seq: int, a_to_s: bool, obj: ta.Any) -> _BridgeTransition:
-    return _BridgeTransition(seq, a_to_s, obj.__class__.__name__, id(obj), (obj if _TRACK_TRANSITION_OBJS else None))
+    return _BridgeTransition(seq, a_to_s, obj.__class__, id(obj), (obj if _TRACK_TRANSITION_OBJS else None))
 
 
 _BRIDGED_TASKS: ta.MutableMapping[ta.Any, list[_BridgeTransition]] = weakref.WeakKeyDictionary()
