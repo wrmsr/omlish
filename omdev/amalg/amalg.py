@@ -288,6 +288,7 @@ RUFF_DISABLES: ta.Sequence[str] = [
     # 'UP007',  # Use `X | Y` for type annotations
 ]
 
+OUTPUT_COMMENT = '# @omdev-amalg-output '
 SCANNER_COMMENT = '# @omdev-amalg '
 
 
@@ -295,6 +296,7 @@ def gen_amalg(
         main_path: str,
         *,
         mounts: ta.Mapping[str, str],
+        output_dir: str | None = None,
 ) -> str:
     src_files: dict[str, SrcFile] = {}
     todo = [main_path]
@@ -321,11 +323,20 @@ def gen_amalg(
 
     mf = src_files[main_path]
     if mf.header_lines:
-        out.write(''.join(
-            ls
-            for lts in mf.header_lines
-            if not (ls := join_toks(lts)).startswith(SCANNER_COMMENT)
-        ))
+        hls = [
+            hl
+            for hlts in mf.header_lines
+            if not (hl := join_toks(hlts)).startswith(SCANNER_COMMENT)
+        ]
+        if output_dir is not None:
+            ogf = os.path.relpath(main_path, output_dir)
+        else:
+            ogf = os.path.basename(main_path)
+        hls.insert(
+            1 if hls[0].startswith('#!') else 0,
+            f'{OUTPUT_COMMENT.strip()} {ogf}\n',
+        )
+        out.write(''.join(hls))
 
     if RUFF_DISABLES:
         out.write(f'# ruff: noqa: {" ".join(RUFF_DISABLES)}\n')
@@ -402,6 +413,7 @@ def _gen_one(
     src = gen_amalg(
         input_path,
         mounts=mounts,
+        output_dir=os.path.dirname(output_path),
     )
 
     with open(output_path, 'w') as f:
