@@ -22,7 +22,7 @@ def check_trio_asyncio() -> None:
         raise RuntimeError('trio_asyncio loop not running')
 
 
-def with_trio_asyncio_loop(*, wait=False):
+def with_trio_asyncio_loop(*, wait=False, strict=False):
     def outer(fn):
         @functools.wraps(fn)
         async def inner(*args, **kwargs):
@@ -31,7 +31,10 @@ def with_trio_asyncio_loop(*, wait=False):
                 return
 
             if sniffio.current_async_library() != 'trio':
-                raise RuntimeError('trio loop not running')
+                if strict:
+                    raise RuntimeError('trio loop not running')
+                await fn(*args, **kwargs)
+                return
 
             loop: asyncio.BaseEventLoop
             async with trio_asyncio.open_loop() as loop:

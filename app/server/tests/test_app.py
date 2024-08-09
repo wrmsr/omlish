@@ -9,6 +9,7 @@ import anyio
 import httpx
 import pytest
 
+from omlish import asyncs as aiu
 from omlish import check
 from omlish import lang
 from omlish.testing import pytest as ptu
@@ -32,6 +33,7 @@ def randhex(l: int) -> str:
     'trio',
     # 'trio_asyncio',
 )
+@aiu.with_adapter_loop(wait=True)
 async def test_demo_auth():
     # from omlish import logs  # noqa
     # logs.configure_standard_logging('INFO')  # noqa
@@ -124,8 +126,8 @@ async def test_demo_auth():
                 assert dct['user_name'] == name
                 assert dct['tokens'] == [21943, 2318, 275, 1031, 627, 87, 23105, 612]
 
-    async with anyio.create_task_group() as tg:
-        async with server_app_context() as server_app:
+    async with server_app_context() as server_app:
+        async with anyio.create_task_group() as tg:
             tg.start_soon(functools.partial(
                 serve,
                 AsgiWrapper(server_app),  # type: ignore
