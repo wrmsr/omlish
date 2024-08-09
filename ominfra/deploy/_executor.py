@@ -170,7 +170,7 @@ def subprocess_check_output(*args, **kwargs):
 
 
 ########################################
-# ../../../../omdev/interp/cmd.py
+# ../../../../omdev/interp/subprocesses.py
 # ruff: noqa: UP006 UP007
 
 
@@ -686,6 +686,10 @@ class LinuxInterpResolver(PyenvInterpResolver):
 
 ########################################
 # ../concerns/venv.py
+"""
+TODO:
+ - use LinuxInterpResolver lol
+"""
 
 
 class VenvConcern(Concern):
