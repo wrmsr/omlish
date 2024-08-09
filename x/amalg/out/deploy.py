@@ -97,7 +97,7 @@ import typing as ta
 
 
 ########################################
-# /Users/spinlock/src/wrmsr/omlish/x/amalg/demo/deploy/concerns.py
+# ../concerns.py
 
 
 class Phase(enum.Enum):
@@ -151,7 +151,7 @@ class Concern(abc.ABC):
 
 
 ########################################
-# /Users/spinlock/src/wrmsr/omlish/x/amalg/demo/deploy/configs.py
+# ../configs.py
 
 
 @dc.dataclass(frozen=True)
@@ -173,7 +173,7 @@ class HostConfig:
 
 
 ########################################
-# /Users/spinlock/src/wrmsr/omlish/x/amalg/demo/std/cached.py
+# ../../std/cached.py
 
 
 class cached_nullary:  # noqa
@@ -194,7 +194,7 @@ class cached_nullary:  # noqa
 
 
 ########################################
-# /Users/spinlock/src/wrmsr/omlish/x/amalg/demo/std/logging.py
+# ../../std/logging.py
 """
 TODO:
  - debug
@@ -210,7 +210,7 @@ def setup_standard_logging() -> None:
 
 
 ########################################
-# /Users/spinlock/src/wrmsr/omlish/x/amalg/demo/std/runtime.py
+# ../../std/runtime.py
 
 
 REQUIRED_PYTHON_VERSION = (3, 8)
@@ -223,7 +223,7 @@ def check_runtime_version() -> None:
 
 
 ########################################
-# /Users/spinlock/src/wrmsr/omlish/x/amalg/demo/std/subprocesses.py
+# ../../std/subprocesses.py
 
 
 def _mask_env_kwarg(kwargs):
@@ -241,7 +241,7 @@ def subprocess_check_output(*args, **kwargs):
 
 
 ########################################
-# /Users/spinlock/src/wrmsr/omlish/x/amalg/demo/deploy/deploy.py
+# deploy.py
 
 
 ##

@@ -347,7 +347,11 @@ def gen_amalg(
     for i, sf in enumerate(sfs):
         f = src_files[sf]
         out.write(SECTION_SEP)
-        out.write(f'# {f.path}\n')
+        if f is not mf:
+            rp = os.path.relpath(f.path, mf.path)
+        else:
+            rp = os.path.basename(f.path)
+        out.write(f'# {rp}\n')
         if f is not mf and f.header_lines:
             out.write(join_lines(f.header_lines))
         out.write(f'\n\n')

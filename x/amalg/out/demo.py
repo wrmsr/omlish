@@ -20,7 +20,7 @@ T = ta.TypeVar('T')
 
 
 ########################################
-# /Users/spinlock/src/wrmsr/omlish/omlish/os.py
+# ../../../../omlish/os.py
 
 
 PAGE_SIZE = resource.getpagesize()
@@ -60,7 +60,7 @@ def tmp_file(
 
 
 ########################################
-# /Users/spinlock/src/wrmsr/omlish/x/amalg/demo/std/cached.py
+# ../std/cached.py
 
 
 class cached_nullary:  # noqa
@@ -81,7 +81,7 @@ class cached_nullary:  # noqa
 
 
 ########################################
-# /Users/spinlock/src/wrmsr/omlish/x/amalg/demo/std/check.py
+# ../std/check.py
 
 
 def check_not_none(v: ta.Optional[T]) -> T:  # noqa
@@ -97,7 +97,7 @@ def check_not(v: ta.Any) -> None:
 
 
 ########################################
-# /Users/spinlock/src/wrmsr/omlish/x/amalg/demo/std/logging.py
+# ../std/logging.py
 """
 TODO:
  - debug
@@ -113,7 +113,7 @@ def setup_standard_logging() -> None:
 
 
 ########################################
-# /Users/spinlock/src/wrmsr/omlish/x/amalg/demo/std/runtime.py
+# ../std/runtime.py
 
 
 REQUIRED_PYTHON_VERSION = (3, 8)
@@ -126,7 +126,7 @@ def check_runtime_version() -> None:
 
 
 ########################################
-# /Users/spinlock/src/wrmsr/omlish/x/amalg/demo/std/subprocesses.py
+# ../std/subprocesses.py
 
 
 def _mask_env_kwarg(kwargs):
@@ -144,7 +144,7 @@ def subprocess_check_output(*args, **kwargs):
 
 
 ########################################
-# /Users/spinlock/src/wrmsr/omlish/x/amalg/demo/demo.py
+# demo.py
 
 
 @cached_nullary
