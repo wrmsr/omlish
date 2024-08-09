@@ -12,6 +12,7 @@ import anyio.abc
 
 from omlish import asyncs as au
 from omlish import inject as inj
+from omlish import lang
 from omlish import logs
 from omlish.asyncs import anyio as anu
 from omlish.diag import procstats
@@ -56,7 +57,8 @@ def bind_node_registrant() -> inj.Elemental:
             bind_dbs(),
         ),
 
-        inj.set_binder[ShellApp]().bind(node_reg.NodeRegistrant),
+        inj.bind(ShellApp, tag=node_reg.NodeRegistrant, to_fn=lang.typed_lambda(nr=node_reg.NodeRegistrant)(lambda nr: nr.run)),  # noqa
+        inj.set_binder[ShellApp]().bind(inj.Key(ShellApp, tag=node_reg.NodeRegistrant)),
     )
 
 
