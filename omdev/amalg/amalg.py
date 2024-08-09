@@ -285,7 +285,7 @@ RUFF_DISABLES: ta.Sequence[str] = [
 ]
 
 OUTPUT_COMMENT = '# @omdev-amalg-output '
-SCANNER_COMMENT = '# @omdev-amalg '
+SCAN_COMMENT = '# @omdev-amalg '
 
 
 def gen_amalg(
@@ -322,7 +322,7 @@ def gen_amalg(
         hls = [
             hl
             for hlts in mf.header_lines
-            if not (hl := join_toks(hlts)).startswith(SCANNER_COMMENT)
+            if not (hl := join_toks(hlts)).startswith(SCAN_COMMENT)
         ]
         if output_dir is not None:
             ogf = os.path.relpath(main_path, output_dir)
@@ -432,9 +432,9 @@ def _scan_one(
     with open(input_path) as f:
         src = f.read()
 
-    sls = [l for l in src.splitlines() if l.startswith(SCANNER_COMMENT)]
+    sls = [l for l in src.splitlines() if l.startswith(SCAN_COMMENT)]
     for sl in sls:
-        sas = sl[len(SCANNER_COMMENT):].split()
+        sas = sl[len(SCAN_COMMENT):].split()
         if len(sas) != 1:
             raise Exception(f'Invalid scan args: {input_path=} {sas=}')
 
