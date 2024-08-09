@@ -71,10 +71,12 @@ class AsgiServerTask:
 
 
 def bind_server() -> inj.Elemental:
-    return inj.private(
-        bind_app(),
+    return inj.as_elements(
+        inj.private(
+            bind_app(),
 
-        inj.bind(AsgiServerTask, singleton=True, expose=True),
+            inj.bind(AsgiServerTask, singleton=True, expose=True),
+        ),
 
         inj.bind(Task, tag=AsgiServerTask, to_fn=lang.typed_lambda(o=AsgiServerTask)(lambda o: o.run)),
         inj.set_binder[Task]().bind(inj.Key(Task, tag=AsgiServerTask)),
