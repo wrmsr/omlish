@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# noinspection DuplicatedCode
 # @omdev-amalg-output ../pyproject/pyproject.py
 """
 TODO:
