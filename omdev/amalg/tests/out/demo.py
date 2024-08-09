@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# @omdev-amalg-output demo.py
 """
 Hi!
 """

@@ -92,6 +92,16 @@ dep-refresh: venv
 	${PYTHON} -mpip install -r requirements-ext.txt
 
 
+### Gen
+
+.PHONY: gen
+gen: gen-amalg
+
+.PHONY: gen-amalg
+gen-amalg: venv
+	${PYTHON} -m omdev.amalg.amalg -m omlish -m omdev ${SRCS}
+
+
 ### Check
 
 .PHONY: check
