@@ -207,50 +207,58 @@ def make_typing(
 class SrcFile:
     path: str
 
-    mounts: ta.Mapping[str, str] = dc.field(repr=False)
+    src: str = dc.field(repr=False)
+    tokens: Tokens = dc.field(repr=False)
+    lines: ta.Sequence[Tokens] = dc.field(repr=False)
 
-    @lang.cached_function
-    def src(self) -> str:
-        with open(self.path) as f:
-            return f.read().strip()
+    imports: ta.Sequence[Import] = dc.field(repr=False)
+    typings: ta.Sequence[Typing] = dc.field(repr=False)
+    content_lines: ta.Sequence[Tokens] = dc.field(repr=False)
 
-    @lang.cached_function
-    def tokens(self) -> Tokens:
-        return trt.src_to_tokens(self.src())
 
-    @lang.cached_function
-    def lines(self) -> ta.Sequence[Tokens]:
-        return [list(it) for g, it in itertools.groupby(self.tokens(), lambda t: t.line)]
+def make_src_file(
+        path: str,
+        *,
+        mounts: ta.Mapping[str, str],
+) -> SrcFile:
+    with open(path) as f:
+        src = f.read().strip()
 
-    @lang.cached_function
-    def _process_lines(self) -> tuple[
-        ta.Sequence[Import],
-        ta.Sequence[Typing],
-        ta.Sequence[Tokens],
-    ]:
-        imps: list[Import] = []
-        tys: list[Typing] = []
-        ctls: list[Tokens] = []
-        for line in self.lines():
-            if (imp := make_import(line, src_path=self.path, mounts=self.mounts)) is not None:
-                imps.append(imp)
-            elif (ty := make_typing(line, src_path=self.path)) is not None:
-                tys.append(ty)
-            else:
-                ctls.append(line)
-        return imps, tys, ctls
+    tokens = trt.src_to_tokens(src)
+    lines = [list(it) for g, it in itertools.groupby(tokens, lambda t: t.line)]
 
-    @lang.cached_function
-    def imports(self) -> ta.Sequence[Import]:
-        return self._process_lines()[0]
+    imps: list[Import] = []
+    tys: list[Typing] = []
+    ctls: list[Tokens] = []
 
-    @lang.cached_function
-    def typings(self) -> ta.Sequence[Typing]:
-        return self._process_lines()[1]
+    for line in lines:
+        if (imp := make_import(
+                line,
+                src_path=path,
+                mounts=mounts,
+        )) is not None:
+            imps.append(imp)
 
-    @lang.cached_function
-    def content_lines(self) -> ta.Sequence[Tokens]:
-        return self._process_lines()[2]
+        elif (ty := make_typing(
+                line,
+                src_path=path,
+        )) is not None:
+            tys.append(ty)
+
+        else:
+            ctls.append(line)
+
+    return SrcFile(
+        path=path,
+
+        src=src,
+        tokens=tokens,
+        lines=lines,
+
+        imports=imps,
+        typings=tys,
+        content_lines=ctls,
+    )
 
 
 ##
@@ -271,13 +279,13 @@ def gen_amalg(
         if src_path in src_files:
             continue
 
-        f = SrcFile(
-            path=src_path,
+        f = make_src_file(
+            src_path,
             mounts=mounts,
         )
         src_files[src_path] = f
 
-        for imp in f.imports():
+        for imp in f.imports:
             if (mp := imp.mod_path) is not None:
                 todo.append(mp)
 
@@ -287,7 +295,7 @@ def gen_amalg(
 
     ##
 
-    all_imps = [i for f in src_files.values() for i in f.imports()]
+    all_imps = [i for f in src_files.values() for i in f.imports]
     gl_imps = [i for i in all_imps if i.mod_path is None]
 
     dct = {}
@@ -301,7 +309,7 @@ def gen_amalg(
     ##
 
     ts = list(col.toposort({  # noqa
-        f.path: {mp for i in f.imports() if (mp := i.mod_path) is not None}
+        f.path: {mp for i in f.imports if (mp := i.mod_path) is not None}
         for f in src_files.values()
     }))
     sfs = [sf for ss in ts for sf in sorted(ss)]
@@ -311,7 +319,7 @@ def gen_amalg(
     tys = set()
     for sf in sfs:
         f = src_files[sf]
-        for ty in f.typings():
+        for ty in f.typings:
             if ty.src not in tys:
                 out.write(ty.src)
                 tys.add(ty.src)
@@ -324,7 +332,7 @@ def gen_amalg(
         f = src_files[sf]
         out.write(SECTION_SEP)
         out.write(f'# {f.path}\n\n\n')
-        sf_src = ''.join(join_toks(cl) for cl in f.content_lines())
+        sf_src = ''.join(join_toks(cl) for cl in f.content_lines)
         out.write(sf_src.strip())
         if i < len(sfs) - 1:
             out.write('\n\n\n')
