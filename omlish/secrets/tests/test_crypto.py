@@ -1,4 +1,7 @@
 """
+TODO:
+ - stdlib secrets, secure rand gen
+
 FIXME:
  - macos pipe size lol, and just like checking at all
 
