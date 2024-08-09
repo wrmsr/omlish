@@ -6,17 +6,18 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>NotFlask Auth Example</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.2/css/bulma.min.css"/>
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.2/css/bulma.min.css"/> -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css"/>
 </head>
 
 <body>
 
-<section class="hero is-primary is-fullheight">
+<section class="is-primary is-fullheight">
 
-    <div class="hero-head">
+    <div>
         <nav class="navbar">
             <div class="container">
-                <div id="navbarMenuHeroA" class="navbar-menu is-active">
+                <div id="navbarMenu" class="navbar-menu is-active">
                     <div class="navbar-end">
 
                         <a href="{{ url_for('') }}" class="navbar-item">
@@ -51,7 +52,7 @@
         </nav>
     </div>
 
-    <div class="hero-body">
+    <div>
         <div class="container has-text-centered">
             {% block content %}
             {% endblock %}

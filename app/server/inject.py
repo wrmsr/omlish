@@ -5,6 +5,7 @@ TODO:
  - with_session / with_user / login_required as *marks* not wrappers
   - maybe *both*, just to last-ditch validate login_required
  - logout is POST
+ - template reload doesn't reload includes
 
 https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login
 """
