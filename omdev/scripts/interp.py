@@ -59,7 +59,7 @@ def check_not(v: ta.Any) -> None:
 
 
 ########################################
-# ../../amalg/std/logging.py
+# ../../amalg/std/logs.py
 """
 TODO:
  - debug

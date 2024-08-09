@@ -1,7 +1,7 @@
 import subprocess
 import sys
 
-from .logging import log
+from .logs import log
 
 
 def _mask_env_kwarg(kwargs):
