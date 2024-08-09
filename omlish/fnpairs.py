@@ -4,11 +4,7 @@ TODO:
   - csv
   - csvloader
   - cbor
-  - cloudpickle
   - alt json backends
- - compression
-  - snappy
-  - lz4
  - wrapped (wait for usecase)
 """
 import abc
