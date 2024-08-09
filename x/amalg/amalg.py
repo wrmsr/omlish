@@ -226,6 +226,7 @@ def _main() -> None:
     for main_file in [
         'demo/demo.py',
         'demo/interp/interp.py',
+        'demo/pyproject/pyproject.py',
     ]:
         main_path = os.path.abspath(os.path.join(root_dir, main_file))
 
