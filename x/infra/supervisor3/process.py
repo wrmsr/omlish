@@ -8,7 +8,7 @@ import time
 import traceback
 import typing as ta
 
-from . import events
+
 from .compat import as_bytes
 from .compat import as_string
 from .compat import close_fd
@@ -29,6 +29,18 @@ from .datatypes import RestartUnconditionally
 from .dispatchers import Dispatcher
 from .dispatchers import InputDispatcher
 from .dispatchers import OutputDispatcher
+from .events import EventRejectedEvent
+from .events import ProcessCommunicationStderrEvent
+from .events import ProcessCommunicationStdoutEvent
+from .events import ProcessStateBackoffEvent
+from .events import ProcessStateExitedEvent
+from .events import ProcessStateFatalEvent
+from .events import ProcessStateRunningEvent
+from .events import ProcessStateStartingEvent
+from .events import ProcessStateStoppedEvent
+from .events import ProcessStateStoppingEvent
+from .events import ProcessStateUnknownEvent
+from .events import notify_event
 from .exceptions import BadCommand
 from .exceptions import ProcessException
 from .states import ProcessState
@@ -154,14 +166,14 @@ class Subprocess:
         return filename, commandargs
 
     event_map = {
-        ProcessStates.BACKOFF: events.ProcessStateBackoffEvent,
-        ProcessStates.FATAL: events.ProcessStateFatalEvent,
-        ProcessStates.UNKNOWN: events.ProcessStateUnknownEvent,
-        ProcessStates.STOPPED: events.ProcessStateStoppedEvent,
-        ProcessStates.EXITED: events.ProcessStateExitedEvent,
-        ProcessStates.RUNNING: events.ProcessStateRunningEvent,
-        ProcessStates.STARTING: events.ProcessStateStartingEvent,
-        ProcessStates.STOPPING: events.ProcessStateStoppingEvent,
+        ProcessStates.BACKOFF: ProcessStateBackoffEvent,
+        ProcessStates.FATAL: ProcessStateFatalEvent,
+        ProcessStates.UNKNOWN: ProcessStateUnknownEvent,
+        ProcessStates.STOPPED: ProcessStateStoppedEvent,
+        ProcessStates.EXITED: ProcessStateExitedEvent,
+        ProcessStates.RUNNING: ProcessStateRunningEvent,
+        ProcessStates.STARTING: ProcessStateStartingEvent,
+        ProcessStates.STOPPING: ProcessStateStoppingEvent,
     }
 
     def change_state(self, new_state: ProcessState, expected: bool = True) -> bool:
@@ -178,7 +190,7 @@ class Subprocess:
         event_class = self.event_map.get(new_state)
         if event_class is not None:
             event = event_class(self, old_state, expected)
-            events.notify(event)
+            notify_event(event)
 
         return True
 
@@ -268,10 +280,10 @@ class Subprocess:
         stdout_fd, stderr_fd, stdin_fd = p['stdout'], p['stderr'], p['stdin']
         dispatchers: dict[int, Dispatcher] = {}
         if stdout_fd is not None:
-            etype = events.ProcessCommunicationStdoutEvent
+            etype = ProcessCommunicationStdoutEvent
             dispatchers[stdout_fd] = OutputDispatcher(self, etype, stdout_fd)
         if stderr_fd is not None:
-            etype = events.ProcessCommunicationStderrEvent
+            etype = ProcessCommunicationStderrEvent
             dispatchers[stderr_fd] = OutputDispatcher(self, etype, stderr_fd)
         if stdin_fd is not None:
             dispatchers[stdin_fd] = InputDispatcher(self, 'stdin', stdin_fd)
@@ -596,7 +608,7 @@ class Subprocess:
         # system that this event was rejected so it can be processed again.
         if self.event is not None:
             # Note: this should only be true if we were in the BUSY state when finish() was called.
-            events.notify(events.EventRejectedEvent(self, self.event))
+            notify_event(EventRejectedEvent(self, self.event))
             self.event = None
 
     def set_uid(self) -> str | None:

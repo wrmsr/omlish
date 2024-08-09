@@ -1,9 +1,8 @@
-# @omlish-amalg _amalg.py
+# @omdev-amalg _amalg.py
 import logging
 import signal
 import time
 
-from . import events
 from .compat import ExitNow
 from .compat import as_string
 from .compat import decode_wait_status
@@ -12,6 +11,13 @@ from .configs import ProcessConfig
 from .configs import ProcessGroupConfig
 from .configs import ServerConfig
 from .context import ServerContext
+from .events import ProcessGroupAddedEvent
+from .events import ProcessGroupRemovedEvent
+from .events import SupervisorRunningEvent
+from .events import SupervisorStoppingEvent
+from .events import TICK_EVENTS
+from .events import clear_events
+from .events import notify_event
 from .process import ProcessGroup
 from .states import SupervisorStates
 from .states import get_process_state_description
@@ -53,7 +59,7 @@ class Supervisor:
     def run(self):
         self.process_groups = {}  # clear
         self.stop_groups = None  # clear
-        events.clear()
+        clear_events()
         try:
             for config in self.context.config.groups:
                 self.add_process_group(config)
@@ -85,7 +91,7 @@ class Supervisor:
         if name not in self.process_groups:
             group = self.process_groups[name] = ProcessGroup(config, self.context)
             group.after_setuid()
-            events.notify(events.ProcessGroupAddedEvent(name))
+            notify_event(ProcessGroupAddedEvent(name))
             return True
         return False
 
@@ -94,7 +100,7 @@ class Supervisor:
             return False
         self.process_groups[name].before_remove()
         del self.process_groups[name]
-        events.notify(events.ProcessGroupRemovedEvent(name))
+        notify_event(ProcessGroupRemovedEvent(name))
         return True
 
     def get_process_map(self):
@@ -140,7 +146,7 @@ class Supervisor:
                 self.stop_groups.append(group)
 
     def runforever(self):
-        events.notify(events.SupervisorRunningEvent())
+        notify_event(SupervisorRunningEvent())
         timeout = 1  # this cannot be fewer than the smallest TickEvent (5)
 
         while 1:
@@ -155,7 +161,7 @@ class Supervisor:
                     # first time, set the stopping flag, do a notification and set stop_groups
                     self.stopping = True
                     self.stop_groups = pgroups[:]
-                    events.notify(events.SupervisorStoppingEvent())
+                    notify_event(SupervisorStoppingEvent())
 
                 self.ordered_stop_groups_phase_1()
 
@@ -229,7 +235,7 @@ class Supervisor:
         if now is None:
             # now won't be None in unit tests
             now = time.time()
-        for event in events.TICK_EVENTS:
+        for event in TICK_EVENTS:
             period = event.period
             last_tick = self.ticks.get(period)
             if last_tick is None:
@@ -238,7 +244,7 @@ class Supervisor:
             this_tick = timeslice(period, now)
             if this_tick != last_tick:
                 self.ticks[period] = this_tick
-                events.notify(event(this_tick, self))
+                notify_event(event(this_tick, self))
 
     def reap(self, once=False, recursionguard=0):
         if recursionguard == 100:

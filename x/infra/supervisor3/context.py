@@ -11,7 +11,7 @@ import stat
 import typing as ta
 import warnings
 
-from . import poller
+from .poller import Poller
 from .states import SupervisorState
 from .states import SupervisorStates
 from .compat import SignalReceiver
@@ -50,7 +50,7 @@ class ServerContext:
 
         self.signal_receiver = SignalReceiver()
 
-        self.poller = poller.Poller()
+        self.poller = Poller()
 
         if self.config.user is not None:
             uid = name_to_uid(self.config.user)

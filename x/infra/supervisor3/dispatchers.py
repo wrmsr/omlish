@@ -11,7 +11,7 @@ from .compat import strip_escapes
 from .configs import ProcessConfig
 from .events import ProcessLogStderrEvent
 from .events import ProcessLogStdoutEvent
-from .events import notify
+from .events import notify_event
 
 
 if ta.TYPE_CHECKING:
@@ -68,7 +68,7 @@ class OutputDispatcher(Dispatcher):
     Dispatcher for one channel (stdout or stderr) of one process. Serves several purposes:
 
     - capture output sent within <!--XSUPERVISOR:BEGIN--> and <!--XSUPERVISOR:END--> tags and signal a
-      ProcessCommunicationEvent by calling notify(event).
+      ProcessCommunicationEvent by calling notify_event(event).
     - route the output to the appropriate log handlers as specified in the config.
     """
 
@@ -184,9 +184,9 @@ class OutputDispatcher(Dispatcher):
                     channel=self.channel, data=text)
             if self.channel == 'stdout':
                 if self.stdout_events_enabled:
-                    notify(ProcessLogStdoutEvent(self.process, self.process.pid, data))
+                    notify_event(ProcessLogStdoutEvent(self.process, self.process.pid, data))
             elif self.stderr_events_enabled:
-                notify(ProcessLogStderrEvent(self.process, self.process.pid, data))
+                notify_event(ProcessLogStderrEvent(self.process, self.process.pid, data))
 
     def record_output(self):
         if self.capture_log is None:
@@ -237,7 +237,7 @@ class OutputDispatcher(Dispatcher):
                 channel = self.channel
                 procname = self.process.config.name
                 event = self.event_type(self.process, self.process.pid, data)
-                notify(event)
+                notify_event(event)
 
                 msg = '%(procname)r %(channel)s emitted a comm event'
                 log.debug(msg, procname=procname, channel=channel)
