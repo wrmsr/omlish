@@ -296,32 +296,7 @@ class Deployment:
 
 
 ########################################
-# ../concerns/user.py
-
-
-class User(Concern):
-    @run_in_phase(Phase.HOST)
-    def create_user(self) -> None:
-        try:
-            pwd.getpwnam(self._d.host_cfg.username)
-        except KeyError:
-            log.info('Creating user %s', self._d.host_cfg.username)
-            self._d.sh(' '.join([
-                'adduser',
-                '--system',
-                '--disabled-password',
-                '--group',
-                '--shell /bin/bash',
-                self._d.host_cfg.username,
-            ]))
-            pwd.getpwnam(self._d.host_cfg.username)
-
-
-########################################
-# main.py
-
-
-##
+# ../concerns/dirs.py
 
 
 class Dirs(Concern):
@@ -344,7 +319,47 @@ class Dirs(Concern):
                 os.chown(fp, pwn.pw_uid, pwn.pw_gid)
 
 
-##
+########################################
+# ../concerns/nginx.py
+
+
+class GlobalNginx(Concern):
+    @run_in_phase(Phase.HOST)
+    def create_global_nginx_conf(self) -> None:
+        nginx_conf_dir = os.path.join(self._d.home_dir(), 'conf/nginx')
+        if not os.path.isfile(self._d.host_cfg.global_nginx_conf_file_path):
+            log.info('Writing global nginx conf at %s', self._d.host_cfg.global_nginx_conf_file_path)
+            with open(self._d.host_cfg.global_nginx_conf_file_path, 'w') as f:
+                f.write(f'include {nginx_conf_dir}/*.conf;\n')
+
+
+class Nginx(Concern):
+    @run_in_phase(Phase.FRONTEND)
+    def create_nginx_conf(self) -> None:
+        nginx_conf = textwrap.dedent(f"""
+            server {{
+                listen 80;
+                location / {{
+                    proxy_pass http://127.0.0.1:8000/;
+                }}
+            }}
+        """)
+        nginx_conf_file = os.path.join(self._d.home_dir(), f'conf/nginx/{self._d.cfg.app_name}.conf')
+        log.info('Writing nginx conf to %s', nginx_conf_file)
+        with open(nginx_conf_file, 'w') as f:
+            f.write(nginx_conf)
+
+    @run_in_phase(Phase.START_FRONTEND)
+    def poke_nginx(self) -> None:
+        log.info('Starting nginx')
+        self._d.sh('service nginx start')
+
+        log.info('Poking nginx')
+        self._d.sh('nginx -s reload')
+
+
+########################################
+# ../concerns/repo.py
 
 
 class Repo(Concern):
@@ -361,25 +376,8 @@ class Repo(Concern):
         )
 
 
-##
-
-
-class Venv(Concern):
-    @run_in_phase(Phase.ENV)
-    def setup_venv(self) -> None:
-        self._d.ush(
-            'cd ~/venv',
-            f'{self._d.cfg.python_bin} -mvenv {self._d.cfg.app_name}',
-
-            # https://stackoverflow.com/questions/77364550/attributeerror-module-pkgutil-has-no-attribute-impimporter-did-you-mean
-            f'{self._d.cfg.app_name}/bin/python -m ensurepip',
-            f'{self._d.cfg.app_name}/bin/python -mpip install --upgrade setuptools pip',
-
-            f'{self._d.cfg.app_name}/bin/python -mpip install -r ~deploy/app/{self._d.cfg.app_name}/{self._d.cfg.requirements_txt}',  # noqa
-        )
-
-
-##
+########################################
+# ../concerns/supervisor.py
 
 
 class GlobalSupervisor(Concern):
@@ -420,42 +418,49 @@ class Supervisor(Concern):
         self._d.sh('kill -HUP 1')
 
 
-##
+########################################
+# ../concerns/user.py
 
 
-class GlobalNginx(Concern):
+class User(Concern):
     @run_in_phase(Phase.HOST)
-    def create_global_nginx_conf(self) -> None:
-        nginx_conf_dir = os.path.join(self._d.home_dir(), 'conf/nginx')
-        if not os.path.isfile(self._d.host_cfg.global_nginx_conf_file_path):
-            log.info('Writing global nginx conf at %s', self._d.host_cfg.global_nginx_conf_file_path)
-            with open(self._d.host_cfg.global_nginx_conf_file_path, 'w') as f:
-                f.write(f'include {nginx_conf_dir}/*.conf;\n')
+    def create_user(self) -> None:
+        try:
+            pwd.getpwnam(self._d.host_cfg.username)
+        except KeyError:
+            log.info('Creating user %s', self._d.host_cfg.username)
+            self._d.sh(' '.join([
+                'adduser',
+                '--system',
+                '--disabled-password',
+                '--group',
+                '--shell /bin/bash',
+                self._d.host_cfg.username,
+            ]))
+            pwd.getpwnam(self._d.host_cfg.username)
 
 
-class Nginx(Concern):
-    @run_in_phase(Phase.FRONTEND)
-    def create_nginx_conf(self) -> None:
-        nginx_conf = textwrap.dedent(f"""
-            server {{
-                listen 80;
-                location / {{
-                    proxy_pass http://127.0.0.1:8000/;
-                }}
-            }}
-        """)
-        nginx_conf_file = os.path.join(self._d.home_dir(), f'conf/nginx/{self._d.cfg.app_name}.conf')
-        log.info('Writing nginx conf to %s', nginx_conf_file)
-        with open(nginx_conf_file, 'w') as f:
-            f.write(nginx_conf)
+########################################
+# ../concerns/venv.py
 
-    @run_in_phase(Phase.START_FRONTEND)
-    def poke_nginx(self) -> None:
-        log.info('Starting nginx')
-        self._d.sh('service nginx start')
 
-        log.info('Poking nginx')
-        self._d.sh('nginx -s reload')
+class Venv(Concern):
+    @run_in_phase(Phase.ENV)
+    def setup_venv(self) -> None:
+        self._d.ush(
+            'cd ~/venv',
+            f'{self._d.cfg.python_bin} -mvenv {self._d.cfg.app_name}',
+
+            # https://stackoverflow.com/questions/77364550/attributeerror-module-pkgutil-has-no-attribute-impimporter-did-you-mean
+            f'{self._d.cfg.app_name}/bin/python -m ensurepip',
+            f'{self._d.cfg.app_name}/bin/python -mpip install --upgrade setuptools pip',
+
+            f'{self._d.cfg.app_name}/bin/python -mpip install -r ~deploy/app/{self._d.cfg.app_name}/{self._d.cfg.requirements_txt}',  # noqa
+        )
+
+
+########################################
+# main.py
 
 
 ##

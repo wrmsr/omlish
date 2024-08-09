@@ -11,7 +11,7 @@ class Repo(Concern):
             'cd ~/app',
             f'git clone --depth 1 {self._d.cfg.repo_url} {self._d.cfg.app_name}',
             *([
-                  f'cd {self._d.cfg.app_name}',
-                  'git submodule update --init',
-              ] if clone_submodules else []),
+                f'cd {self._d.cfg.app_name}',
+                'git submodule update --init',
+            ] if clone_submodules else []),
         )
