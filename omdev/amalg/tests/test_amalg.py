@@ -32,5 +32,7 @@ def test_amalg() -> None:
             mounts=mounts,
         )
 
-        with open(os.path.join(src_base_dir, 'out', os.path.basename(main_file)), 'w') as f:
+        out_path = os.path.join(src_base_dir, 'out', os.path.basename(main_file))
+        with open(out_path, 'w') as f:
             f.write(src)
+        os.chmod(out_path, os.stat(main_path).st_mode)
