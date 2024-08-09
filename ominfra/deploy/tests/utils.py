@@ -5,8 +5,8 @@ import textwrap
 import traceback
 import typing as ta
 
+from omlish.diag.pydevd import silence_subprocess_check
 from omlish.docker import timebomb_payload
-from omlish.testing.pydevd import silence_subprocess_check
 
 
 def run(*args, **kwargs):

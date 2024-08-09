@@ -10,7 +10,7 @@ from omlish import check
 
 from .... import cmds
 from .... import ssh
-from ...deploy import do_deploy
+from ...remote import do_remote_deploy
 from .. import utils as u
 
 
