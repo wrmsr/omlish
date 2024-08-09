@@ -1,3 +1,4 @@
+// @omdev-ext
 /*
 TODO:
  - error handle no arg / no dispatched type (NULL / None)
