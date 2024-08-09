@@ -391,7 +391,23 @@ def _gen_cmd(args) -> None:
         else:
             k, v = m.split(':')
             mounts[k] = os.path.abspath(v)
-    raise NotImplementedError
+
+    for i in args.inputs:
+        output_dir = args.output
+        if output_dir is None:
+            raise Exception('Must specify output dir')
+
+        main_path = os.path.abspath(i)
+
+        src = gen_amalg(
+            main_path,
+            mounts=mounts,
+        )
+
+        out_path = os.path.join(output_dir, 'out', os.path.basename(main_path))
+        with open(out_path, 'w') as f:
+            f.write(src)
+        os.chmod(out_path, os.stat(main_path).st_mode)
 
 
 def _build_parser() -> argparse.ArgumentParser:
