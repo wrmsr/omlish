@@ -1,7 +1,7 @@
 import os.path
 import textwrap
 
-from omdev.amalg.std.logging import log
+from omdev.amalg.std.logs import log
 
 from ..base import Concern
 from ..base import Phase

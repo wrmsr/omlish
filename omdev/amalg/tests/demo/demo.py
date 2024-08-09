@@ -11,8 +11,8 @@ from omlish.os import PAGE_SIZE
 
 from ...std.cached import cached_nullary
 from ...std.check import check_not_none
-from ...std.logging import log
-from ...std.logging import setup_standard_logging
+from ...std.logs import log
+from ...std.logs import setup_standard_logging
 from ...std.runtime import check_runtime_version
 from ...std.subprocesses import subprocess_check_output
 from .incl.foo import foo

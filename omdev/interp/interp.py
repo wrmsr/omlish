@@ -10,7 +10,7 @@ import argparse
 import sys
 import typing as ta
 
-from ..amalg.std.logging import setup_standard_logging
+from ..amalg.std.logs import setup_standard_logging
 from ..amalg.std.runtime import check_runtime_version
 from .resolvers.linux import LinuxInterpResolver
 from .resolvers.mac import MacInterpResolver
