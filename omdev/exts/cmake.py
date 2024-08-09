@@ -1,9 +1,17 @@
 import io
+import os.path
+import sys
 
 from .. import cmake
 
 
 def _main() -> None:
+    # py_root = '$ENV{HOME}/.pyenv/versions/3.11.8/'
+
+    exe = os.path.realpath(sys.executable)
+    py_root = os.path.abspath(os.path.join(os.path.dirname(exe), '..'))
+    py_sfx = '.'.join(map(str, sys.version_info[:2]))
+
     out = io.StringIO()
     gen = cmake.CmakeGen(out)
 
@@ -23,7 +31,7 @@ def _main() -> None:
 
             '',
 
-            '$ENV{HOME}/.pyenv/versions/3.11.8/include/python3.11',
+            f'{py_root}/include/python{py_sfx}',
 
             # $ENV{HOME}/src/python/cpython
             # $ENV{HOME}/src/python/cpython/include
@@ -55,7 +63,7 @@ def _main() -> None:
     gen.write_var(cmake.Var(
         f'{var_prefix}_LINK_DIRECTORIES',
         [
-            '$ENV{HOME}/.pyenv/versions/3.11.8/lib',
+            f'{py_root}/lib',
 
             # $ENV{HOME}/src/python/cpython
         ],
