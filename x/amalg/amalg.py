@@ -140,7 +140,7 @@ def make_typing(
         lts: Tokens,
         src_path: str,
 ) -> Typing | None:
-    if not lts:
+    if not lts or lts[0].name == 'UNIMPORTANT_WS':
         return None
 
     wts = list(ignore_ws(lts))
