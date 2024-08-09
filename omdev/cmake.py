@@ -1,20 +1,21 @@
 import abc
+import io
 import typing as ta
 
-from ... import dataclasses as dc
+from omlish import dataclasses as dc
 
 
 @dc.dataclass(frozen=True)
 class Command:
     name: str
-    args: ta.Union[str, ta.Sequence[str]]
-    lines: ta.Optional[ta.Sequence[str]] = None
+    args: str | ta.Sequence[str]
+    lines: ta.Sequence[str] | None = None
 
 
 @dc.dataclass(frozen=True)
 class Var:
     name: str
-    value: ta.Union[str, ta.Sequence[str]]
+    value: str | ta.Sequence[str]
 
 
 @dc.dataclass(frozen=True)
@@ -22,15 +23,16 @@ class Target(abc.ABC):
     name: str
     source_files: ta.Sequence[str]
 
-    include_directories: ta.Optional[ta.Sequence[str]] = None
-    compile_options: ta.Optional[ta.Sequence[str]] = None
-    link_options: ta.Optional[ta.Sequence[str]] = None
+    include_directories: ta.Sequence[str] | None = None
+    compile_options: ta.Sequence[str] | None = None
+    link_options: ta.Sequence[str] | None = None
 
-    compile_flags_by_source_file: ta.Optional[ta.Mapping[str, ta.Sequence[str]]] = None
+    compile_flags_by_source_file: ta.Mapping[str, ta.Sequence[str]] | None = None
 
-    link_libraries: ta.Optional[ta.Sequence[str]] = None
+    link_libraries: ta.Sequence[str] | None = None
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def command_name(self) -> str:
         raise NotImplementedError
 
@@ -73,17 +75,17 @@ class Executable(Target):
 
 class CmakeGen:
 
-    def __init__(self, out) -> None:
+    def __init__(self, out: io.TextIOBase) -> None:
         super().__init__()
 
         self._out = out
 
     def _write(
             self,
-            obj: ta.Union[str, ta.Sequence[str]] = '',
+            obj: str | ta.Sequence[str] = '',
             *,
-            spacing: ta.Union[int, str] = 0,
-            indent: ta.Union[int, str, None] = None,
+            spacing: int | str = 0,
+            indent: int | str | None = None,
     ) -> None:
         if isinstance(obj, str):
             obj = [obj]

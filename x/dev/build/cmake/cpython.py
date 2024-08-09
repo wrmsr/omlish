@@ -1059,7 +1059,7 @@ class CpythonCmakeGen(CmakeGen):
 
 def main():
     with open('CMakeLists.txt', 'w') as f:
-        CmakeGen(f).write()
+        CpythonCmakeGen(f).write()
 
 
 if __name__ == '__main__':

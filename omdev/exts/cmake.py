@@ -55,3 +55,11 @@ target_compile_options({name} PUBLIC ${{var_pfx}_COMPILE_OPTIONS})
 target_link_directories({name} PUBLIC ${{var_pfx}_LINK_DIRECTORIES})
 target_link_libraries({name} ${{var_pfx}_LINK_LIBRARIES})
 """  # noqa
+
+
+def _main() -> None:
+    pass
+
+
+if __name__ == '__main__':
+    _main()
