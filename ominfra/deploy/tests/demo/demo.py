@@ -54,7 +54,7 @@ async def _a_main():
         ))
 
         try:
-            await do_deploy(
+            await do_remote_deploy(
                 cr,
                 skip_submodules=True,
             )
