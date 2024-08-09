@@ -107,7 +107,7 @@ def subprocess_check_output(*args, **kwargs):
 
 
 ########################################
-# ../cmd.py
+# ../subprocesses.py
 # ruff: noqa: UP006 UP007
 
 

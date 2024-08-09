@@ -42,7 +42,8 @@ async def test_auth():
     # logs.configure_standard_logging('INFO')  # noqa
 
     port = get_free_port()
-    base_url = f'http://127.0.0.1:{port}/'
+    server_bind = f'127.0.0.1:{port}'
+    base_url = f'http://{server_bind}/'
 
     sev = anyio.Event()
 
@@ -144,7 +145,7 @@ async def test_auth():
                 serve,
                 AsgiWrapper(app),
                 Config(
-                    bind=(f'127.0.0.1:{port}',),
+                    bind=(server_bind,),
                 ),
                 shutdown_trigger=sev.wait,
             ))

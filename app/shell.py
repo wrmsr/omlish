@@ -60,9 +60,14 @@ def bind_node_registrant() -> inj.Elemental:
 
 
 class AsgiServerShellTask:
-    def __init__(self, app: AsgiApp) -> None:
+    def __init__(
+            self,
+            app: AsgiApp,
+            config: server.Config = server.Config(),
+    ) -> None:
         super().__init__()
         self._app = app
+        self._config = config
 
     async def run(
             self,
@@ -72,7 +77,7 @@ class AsgiServerShellTask:
     ) -> None:
         await server.serve(
             self._app,  # type: ignore
-            server.Config(),
+            self._config,
             shutdown_trigger=shutdown.wait,
         )
 
