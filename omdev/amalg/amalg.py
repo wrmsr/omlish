@@ -28,9 +28,10 @@ import itertools
 import os.path
 import typing as ta
 
+import tokenize_rt as trt
+
 from omlish import check
 from omlish import collections as col
-import tokenize_rt as trt
 
 
 Tokens: ta.TypeAlias = ta.Sequence[trt.Token]
