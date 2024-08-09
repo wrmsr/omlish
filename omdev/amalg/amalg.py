@@ -381,6 +381,16 @@ def gen_amalg(
 
 
 def _gen_cmd(args) -> None:
+    if not os.path.isfile('pyproject.toml'):
+        raise Exception('Not in project root')
+
+    mounts = {}
+    for m in args.mounts or ():
+        if ':' not in m:
+            mounts[m] = os.path.abspath(m)
+        else:
+            k, v = m.split(':')
+            mounts[k] = os.path.abspath(v)
     raise NotImplementedError
 
 
@@ -390,9 +400,9 @@ def _build_parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers()
 
     parser_gen = subparsers.add_parser('gen')
-    parser_gen.add_argument('--mount', '-m', action='append')
-    parser_gen.add_argument('--output-directory', '-o')
-    parser_gen.add_argument('--inputs', nargs='+')
+    parser_gen.add_argument('--mount', '-m', dest='mounts', action='append')
+    parser_gen.add_argument('--output', '-o')
+    parser_gen.add_argument('inputs', nargs='+')
     parser_gen.set_defaults(func=_gen_cmd)
 
     return parser
