@@ -10,6 +10,7 @@ import sqlalchemy as sa
 
 from omlish import asyncs as au
 from omlish import check
+from omlish import lang
 from omlish import sql
 from omlish.asyncs import anyio as anu
 
@@ -31,7 +32,7 @@ class NodeInfo:
     extra: ta.Mapping[str, ta.Any]
 
 
-ExtrasProvider = ta.NewType('ExtrasProvider', ta.Callable[[], ta.Awaitable[ta.Any]])
+ExtrasProvider = ta.NewType('ExtrasProvider', lang.Func0[ta.Awaitable[ta.Any]])
 
 
 class NodeRegistrant:
