@@ -1,5 +1,5 @@
+# @omlish-amalg _amalg.py
 import logging
-import os
 import signal
 import time
 
