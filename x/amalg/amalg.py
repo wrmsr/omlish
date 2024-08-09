@@ -131,7 +131,7 @@ class Typing:
     pass
 
 
-"""
+r"""
 [
     Token(name='NAME', src='T', line=1, utf8_byte_offset=0),
     Token(name='UNIMPORTANT_WS', src=' ', line=1, utf8_byte_offset=1),
