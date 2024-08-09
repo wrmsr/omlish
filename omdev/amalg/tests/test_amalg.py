@@ -30,6 +30,5 @@ def test_amalg() -> None:
         )
 
         out_path = os.path.join(src_base_dir, 'out', os.path.basename(main_file))
-        with open(out_path, 'w') as f:
-            f.write(src)
-        os.chmod(out_path, os.stat(main_path).st_mode)
+        mod = compile(src, out_path, 'exec')
+        print(mod)
