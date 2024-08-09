@@ -328,10 +328,14 @@ def gen_amalg(
             ogf = os.path.relpath(main_path, output_dir)
         else:
             ogf = os.path.basename(main_path)
-        hls.insert(
-            1 if hls[0].startswith('#!') else 0,
+        nhls = []
+        if hls[0].startswith('#!'):
+            nhls.append(hls.pop(0))
+        nhls.extend([
+            '# noinspection DuplicatedCode\n',
             f'{OUTPUT_COMMENT.strip()} {ogf}\n',
-        )
+        ])
+        hls = [*nhls, *hls]
         out.write(''.join(hls))
 
     if RUFF_DISABLES:
