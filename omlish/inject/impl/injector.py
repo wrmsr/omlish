@@ -1,5 +1,6 @@
 """
 TODO:
+ - better source tracking
  - cache/export ElementCollections lol
  - scope bindings, auto in root
  - injector-internal / blacklisted bindings (Injector itself, default scopes) without rebuilding ElementCollection
@@ -107,26 +108,25 @@ class InjectorImpl(Injector, lang.Final):
         def __init__(self, injector: 'InjectorImpl') -> None:
             super().__init__()
             self._injector = injector
-            self._provisions: dict[Key, ta.Any] = {}
+            self._provisions: dict[Key, lang.Maybe] = {}
             self._seen_keys: set[Key] = set()
             self._source_stack: list[ta.Any] = []
 
-        def handle_key(self, key: Key) -> lang.Maybe:
+        def handle_key(self, key: Key) -> lang.Maybe[lang.Maybe]:
             try:
                 return lang.just(self._provisions[key])
             except KeyError:
                 pass
-            if isinstance(key.ty, type) and key.ty.__name__ == 'Secrets':
-                breakpoint()
             if key in self._seen_keys:
                 raise CyclicDependencyError(key)
             self._seen_keys.add(key)
             return lang.empty()
 
-        def handle_provision(self, key: Key, v: ta.Any) -> None:
+        def handle_provision(self, key: Key, mv: lang.Maybe) -> lang.Maybe:
             check.in_(key, self._seen_keys)
             check.not_in(key, self._provisions)
-            self._provisions[key] = v
+            self._provisions[key] = mv
+            return mv
 
         @contextlib.contextmanager
         def push_source(self, source: ta.Any) -> ta.Iterator[None]:
@@ -160,16 +160,15 @@ class InjectorImpl(Injector, lang.Final):
     def _try_provide(self, key: ta.Any, *, source: ta.Any = None) -> lang.Maybe[ta.Any]:
         key = as_key(key)
 
-        this is all wrong lol - handle_provision needs to cache maybes? maybe?
-
+        cr: InjectorImpl._Request
         with self._current_request() as cr:
             with cr.push_source(source):
+                if (rv := cr.handle_key(key)).present:
+                    return rv.must()
+
                 ic = self._internal_consts.get(key)
                 if ic is not None:
-                    return lang.just(ic)
-
-                if (rv := cr.handle_key(key)).present:
-                    return rv
+                    return cr.handle_provision(key, lang.just(ic))
 
                 bi = self._bim.get(key)
                 if bi is not None:
@@ -180,16 +179,14 @@ class InjectorImpl(Injector, lang.Final):
                         fn = functools.partial(pl, self, key, bi.binding, fn)
                     v = fn()
 
-                    cr.handle_provision(key, v)
-                    return lang.just(v)
+                    return cr.handle_provision(key, lang.just(v))
 
                 if self._p is not None:
-                    pv = self._p._try_provide(key, source=source)
+                    pv = self._p._try_provide(key, source=source)  # noqa
                     if pv.present:
-                        cr.handle_provision(key, pv.must())
-                        return pv
+                        return cr.handle_provision(key, pv)
 
-                return lang.empty()
+                return cr.handle_provision(key, lang.empty())
 
     def _provide(self, key: ta.Any, *, source: ta.Any = None) -> ta.Any:
         v = self._try_provide(key, source=source)
