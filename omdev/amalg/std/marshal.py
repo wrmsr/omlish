@@ -26,10 +26,10 @@ class ObjMarshaler(abc.ABC):
 
 class NopObjMarshaler(ObjMarshaler):
     def marshal(self, o: ta.Any) -> ta.Any:
-        pass
+        return o
 
     def unmarshal(self, o: ta.Any, ty: ta.Any) -> ta.Any:
-        pass
+        return o
 
 
 class UuidObjMarshaler(ObjMarshaler):
@@ -52,7 +52,7 @@ class OptionalObjMarshaler(ObjMarshaler):
     def unmarshal(self, o: ta.Any, ty: ta.Any) -> ta.Any:
         if o is None:
             return None
-        return self.item.unmarshal(o)
+        return self.item.unmarshal(o, ty)
 
 
 def marshal_obj(o: ta.Any) -> ta.Any:
