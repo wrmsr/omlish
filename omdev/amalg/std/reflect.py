@@ -12,7 +12,7 @@ _GENERIC_ALIAS_TYPES = (
 def is_generic_alias(obj, *, origin: ta.Any = None) -> bool:
     return (
         isinstance(obj, _GENERIC_ALIAS_TYPES) and
-        (origin is None or obj.__origin__ is origin)
+        (origin is None or ta.get_origin(obj) is origin)
     )
 
 
@@ -35,12 +35,12 @@ is_mutable_sequence_alias = functools.partial(is_generic_alias, origin=collectio
 def is_optional_alias(spec: ta.Any) -> bool:
     return (
         isinstance(spec, _GENERIC_ALIAS_TYPES) and  # noqa
-        spec.__origin__ is ta.Union and
-        len(spec.__args__) == 2 and
-        any(a in (None, type(None)) for a in spec.__args__)
+        ta.get_origin(spec) is ta.Union and
+        len(ta.get_args(spec)) == 2 and
+        any(a in (None, type(None)) for a in ta.get_args(spec))
     )
 
 
 def get_optional_alias_arg(spec: ta.Any) -> ta.Any:
-    [it] = [it for it in spec.__args__ if it not in (None, type(None))]
+    [it] = [it for it in ta.get_args(spec) if it not in (None, type(None))]
     return it

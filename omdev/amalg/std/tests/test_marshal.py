@@ -34,15 +34,22 @@ class TestMarshal(unittest.TestCase):
             {1, 2},
             {'a': {'b': 3}},
             Foo(),
+            ({1: 2}, ta.Dict[int, int]),
         ]:
             if isinstance(st, tuple):
                 v, ty = st
             else:
                 v, ty = st, type(st)
 
+            print((v, ty))
             m = msh.marshal_obj(v)
+            print(m)
             s = json.dumps(m)
+            print(m)
             x = json.loads(s)
+            print(x)
             u = msh.unmarshal_obj(x, ty)
+            print(u)
 
             self.assertEqual(u, v)
+            print()
