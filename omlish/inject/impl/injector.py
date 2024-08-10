@@ -1,5 +1,6 @@
 """
 TODO:
+ - ** can currently bind in a child/private scope shadowing an external parent binding **
  - better source tracking
  - cache/export ElementCollections lol
  - scope bindings, auto in root
