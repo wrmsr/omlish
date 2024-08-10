@@ -8,14 +8,6 @@ import uuid
 import weakref  # noqa
 
 
-MARSHAL_BUILTIN_TYPES = (
-    float,
-    int,
-    str,
-    type(None),
-)
-
-
 class ObjMarshaler(abc.ABC):
     @abc.abstractmethod
     def marshal(self, o: ta.Any) -> ta.Any:
@@ -34,28 +26,23 @@ class NopObjMarshaler(ObjMarshaler):
         return o
 
 
+@dc.dataclass(frozen=True)
+class CastObjMarshaler(ObjMarshaler):
+    ty: type
+
+    def marshal(self, o: ta.Any) -> ta.Any:
+        return o
+
+    def unmarshal(self, o: ta.Any) -> ta.Any:
+        return self.ty(o)
+
+
 class DynamicObjMarshaler(ObjMarshaler):
     def marshal(self, o: ta.Any) -> ta.Any:
         return marshal_obj(o)
 
     def unmarshal(self, o: ta.Any) -> ta.Any:
         return o
-
-
-class DatetimeObjMarshaler(ObjMarshaler):
-    def marshal(self, o: ta.Any) -> ta.Any:
-        return o.isoformat()
-
-    def unmarshal(self, o: ta.Any) -> ta.Any:
-        return datetime.datetime.fromisoformat(o)
-
-
-class UuidObjMarshaler(ObjMarshaler):
-    def marshal(self, o: ta.Any) -> ta.Any:
-        return str(o)
-
-    def unmarshal(self, o: ta.Any) -> ta.Any:
-        return uuid.UUID(o)
 
 
 @dc.dataclass(frozen=True)
@@ -97,6 +84,19 @@ class SequenceObjMarshaler(ObjMarshaler):
 
 
 @dc.dataclass(frozen=True)
+class MappingObjMarshaler(ObjMarshaler):
+    ty: type
+    km: ObjMarshaler
+    vm: ObjMarshaler
+
+    def marshal(self, o: ta.Any) -> ta.Any:
+        return {self.km.marshal(k): self.vm.marshal(v) for k, v in o.items()}
+
+    def unmarshal(self, o: ta.Any) -> ta.Any:
+        return self.ty((self.km.unmarshal(k), self.vm.unmarshal(v)) for k, v in o.items())
+
+
+@dc.dataclass(frozen=True)
 class DataclassObjMarshaler(ObjMarshaler):
     ty: type
     fs: ta.Mapping[str, ObjMarshaler]
@@ -108,12 +108,31 @@ class DataclassObjMarshaler(ObjMarshaler):
         return self.ty(**{k: m.unmarshal(o[k]) for k, m in self.fs.items()})
 
 
+class DatetimeObjMarshaler(ObjMarshaler):
+    def marshal(self, o: ta.Any) -> ta.Any:
+        return o.isoformat()
+
+    def unmarshal(self, o: ta.Any) -> ta.Any:
+        return datetime.datetime.fromisoformat(o)
+
+
+class UuidObjMarshaler(ObjMarshaler):
+    def marshal(self, o: ta.Any) -> ta.Any:
+        return str(o)
+
+    def unmarshal(self, o: ta.Any) -> ta.Any:
+        return uuid.UUID(o)
+
+
 _OBJ_MARSHALERS: ta.Dict[ta.Any, ObjMarshaler] = {
-    **{t: NopObjMarshaler() for t in MARSHAL_BUILTIN_TYPES},
-    uuid.UUID: UuidObjMarshaler(),
-    datetime.datetime: DatetimeObjMarshaler(),
+    **{t: NopObjMarshaler() for t in (type(None),)},
+    **{t: CastObjMarshaler(t) for t in (int, float, str)},
     **{t: Base64ObjMarshaler(t) for t in (bytes, bytearray)},
-    list: SequenceObjMarshaler(list, DynamicObjMarshaler()),
+    **{t: SequenceObjMarshaler(t, DynamicObjMarshaler()) for t in (list, tuple, set, frozenset)},
+    **{t: MappingObjMarshaler(t, DynamicObjMarshaler(), DynamicObjMarshaler()) for t in (dict,)},
+
+    datetime.datetime: DatetimeObjMarshaler(),
+    uuid.UUID: UuidObjMarshaler(),
 }
 
 
