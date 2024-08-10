@@ -18,7 +18,7 @@ def build_ext(
         sources=[src_path],
         include_dirs=[os.path.dirname(src_path)],
         extra_compile_args=[
-            *(['-std=c++14'] if any(src_path.endswith(sf) for sf in ('cc', 'cpp')) else []),
+            *(['-std=c++20'] if any(src_path.endswith(sf) for sf in ('cc', 'cpp')) else []),
         ],
         extra_link_args=extra_link_args,
         undef_macros=['BARF'],

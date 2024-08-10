@@ -1,4 +1,4 @@
-# ruff: noqa: PT009
+# ruff: noqa: PT009 UP006
 import dataclasses as dc
 import datetime
 import json
@@ -21,6 +21,10 @@ class Bar:
     i: int = 24
 
 
+_DEBUG_PRINT = lambda *a: None  # noqa
+# _DEBUG_PRINT = print
+
+
 class TestMarshal(unittest.TestCase):
     def test_marshal(self):
         for st in [
@@ -29,7 +33,7 @@ class TestMarshal(unittest.TestCase):
             'abc',
             b'abc',
             bytearray(b'abc'),
-            datetime.datetime.now(),
+            datetime.datetime.now(),  # noqa
             [1, '2'],
             {1, 2},
             {'a': {'b': 3}},
@@ -41,15 +45,15 @@ class TestMarshal(unittest.TestCase):
             else:
                 v, ty = st, type(st)
 
-            print((v, ty))
+            _DEBUG_PRINT((v, ty))
             m = msh.marshal_obj(v)
-            print(m)
+            _DEBUG_PRINT(m)
             s = json.dumps(m)
-            print(m)
+            _DEBUG_PRINT(m)
             x = json.loads(s)
-            print(x)
+            _DEBUG_PRINT(x)
             u = msh.unmarshal_obj(x, ty)
-            print(u)
+            _DEBUG_PRINT(u)
 
             self.assertEqual(u, v)
-            print()
+            _DEBUG_PRINT()
