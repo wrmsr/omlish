@@ -1,9 +1,24 @@
 # ruff: noqa: PT009
+import dataclasses as dc
 import datetime
 import json
+import typing as ta
 import unittest
 
 from .. import marshal as msh
+
+
+@dc.dataclass
+class Foo:
+    i: int = 42
+    dt: datetime.datetime = dc.field(default_factory=datetime.datetime.now)
+
+
+@dc.dataclass
+class Bar:
+    l: ta.List[Foo]
+    d: ta.Dict[str, Foo]
+    i: int = 24
 
 
 class TestMarshal(unittest.TestCase):
@@ -15,6 +30,8 @@ class TestMarshal(unittest.TestCase):
             b'abc',
             bytearray(b'abc'),
             datetime.datetime.now(),
+            [1, '2'],
+            Foo(),
         ]:
             if isinstance(st, tuple):
                 o, ty = st
