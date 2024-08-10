@@ -149,6 +149,7 @@ from .objects import (  # noqa
     SimpleProxy,
     arg_repr,
     attr_repr,
+    can_weakref,
     new_type,
     opt_repr,
     super_meta,
