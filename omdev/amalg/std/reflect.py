@@ -34,7 +34,7 @@ is_mutable_sequence_alias = functools.partial(is_generic_alias, origin=collectio
 
 def is_optional_alias(spec: ta.Any) -> bool:
     return (
-        isinstance(spec, ta._GenericAlias) and  # type: ignore  # noqa
+        isinstance(spec, _GENERIC_ALIAS_TYPES) and  # noqa
         spec.__origin__ is ta.Union and
         len(spec.__args__) == 2 and
         any(a in (None, type(None)) for a in spec.__args__)
