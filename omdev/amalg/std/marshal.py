@@ -96,6 +96,18 @@ class SequenceObjMarshaler(ObjMarshaler):
         return self.ty(self.item.unmarshal(e) for e in o)
 
 
+@dc.dataclass(frozen=True)
+class DataclassObjMarshaler(ObjMarshaler):
+    ty: type
+    fs: ta.Mapping[str, ObjMarshaler]
+
+    def marshal(self, o: ta.Any) -> ta.Any:
+        return {k: m.marshal(getattr(o, k)) for k, m in self.fs.items()}
+
+    def unmarshal(self, o: ta.Any) -> ta.Any:
+        return self.ty(**{k: m.unmarshal(o[k]) for k, m in self.fs.items()})
+
+
 _OBJ_MARSHALERS: ta.Dict[ta.Any, ObjMarshaler] = {
     **{t: NopObjMarshaler() for t in MARSHAL_BUILTIN_TYPES},
     uuid.UUID: UuidObjMarshaler(),
@@ -111,10 +123,19 @@ def get_obj_marshaler(ty: ta.Any) -> ObjMarshaler:
     except KeyError:
         pass
 
-    if dc.is_dataclass(ty):
-        raise NotImplementedError
+    m: ObjMarshaler
 
-    raise TypeError(ty)
+    if dc.is_dataclass(ty):
+        m = DataclassObjMarshaler(
+            ty,
+            {f.name: get_obj_marshaler(f.type) for f in dc.fields(ty)},
+        )
+
+    else:
+        raise TypeError(ty)
+
+    _OBJ_MARSHALERS[ty] = m
+    return m
 
 
 def marshal_obj(o: ta.Any, ty: ta.Any = None) -> ta.Any:
