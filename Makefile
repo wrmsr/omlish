@@ -183,7 +183,7 @@ test:
 
 # all
 .PHONY: venv-all
-venv-all: venv venv-13 venv-13t venv-8 venv-9 venv-10 venv-11 venv-docker
+venv-all: venv venv-13 venv-13t venv-old
 
 # 13
 
@@ -205,23 +205,28 @@ venv-13t:
 test-13t:
 	${PYPROJECT} venv 13t test -- ${PYTEST_OPTS} --ignore=omlish/sql
 
-# 8-11
+# old
 
-.PHONY: venv-8
-venv-8:
-	${PYPROJECT} venv 8 exe
+OLD_VENVS=\
+	8 \
+	9 \
+	10 \
+	11
 
-.PHONY: venv-9
-venv-9:
-	${PYPROJECT} venv 9 exe
+.PHONY: venv-old
+venv-old:
+	for V in ${OLD_VENVS} ; do \
+		${PYPROJECT} venv $$V exe ; \
+	done
 
-.PHONY: venv-10
-venv-10:
-	${PYPROJECT} venv 10 exe
+.PHONY: test-old
+test-old:
+	for V in ${OLD_VENVS} ; do \
+		$$(${PYPROJECT} venv $$V exe) -munittest discover \
+			omdev.amalg.std \
+			; \
+	done
 
-.PHONY: venv-11
-venv-11:
-	${PYPROJECT} venv 11 exe
 
 # docker
 
