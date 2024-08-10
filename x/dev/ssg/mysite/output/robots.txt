@@ -1,0 +1,4 @@
+Sitemap: https://example.com/sitemapindex.xml
+
+User-Agent: *
+Host: example.com
