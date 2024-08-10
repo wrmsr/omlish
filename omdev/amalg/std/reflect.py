@@ -5,15 +5,14 @@ import typing as ta
 
 _GENERIC_ALIAS_TYPES = (
     ta._GenericAlias,  # type: ignore  # noqa
-    *([ta._SpecialGenericAlias] if hasattr(ta, '_SpecialGenericAlias') else []),  # type: ignore  # noqa
+    *([ta._SpecialGenericAlias] if hasattr(ta, '_SpecialGenericAlias') else []),  # noqa
 )
-
 
 
 def is_generic_alias(obj, *, origin: ta.Any = None) -> bool:
     return (
-            isinstance(obj, _GENERIC_ALIAS_TYPES) and
-            (origin is None or obj.__origin__ is origin)
+        isinstance(obj, _GENERIC_ALIAS_TYPES) and
+        (origin is None or obj.__origin__ is origin)
     )
 
 
@@ -35,10 +34,10 @@ is_mutable_sequence_alias = functools.partial(is_generic_alias, origin=collectio
 
 def is_optional_alias(spec: ta.Any) -> bool:
     return (
-            isinstance(spec, ta._GenericAlias) and  # type: ignore  # noqa
-            spec.__origin__ is ta.Union and
-            len(spec.__args__) == 2 and
-            any(a in (None, type(None)) for a in spec.__args__)
+        isinstance(spec, ta._GenericAlias) and  # type: ignore  # noqa
+        spec.__origin__ is ta.Union and
+        len(spec.__args__) == 2 and
+        any(a in (None, type(None)) for a in spec.__args__)
     )
 
 

@@ -1,3 +1,4 @@
+# ruff: noqa: UP006
 import abc
 import dataclasses as dc  # noqa
 import datetime
@@ -20,7 +21,7 @@ class ObjMarshaler(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def unmarshal(self, o: ta.Any, ty: ta.Any) -> ta.Any:
+    def unmarshal(self, o: ta.Any) -> ta.Any:
         raise NotImplementedError
 
 
@@ -28,15 +29,23 @@ class NopObjMarshaler(ObjMarshaler):
     def marshal(self, o: ta.Any) -> ta.Any:
         return o
 
-    def unmarshal(self, o: ta.Any, ty: ta.Any) -> ta.Any:
+    def unmarshal(self, o: ta.Any) -> ta.Any:
         return o
+
+
+class DatetimeObjMarshaler(ObjMarshaler):
+    def marshal(self, o: ta.Any) -> ta.Any:
+        return o.isofmrat()
+
+    def unmarshal(self, o: ta.Any) -> ta.Any:
+        return datetime.datetime.fromisoformat(o)
 
 
 class UuidObjMarshaler(ObjMarshaler):
     def marshal(self, o: ta.Any) -> ta.Any:
         return str(o)
 
-    def unmarshal(self, o: ta.Any, ty: ta.Any) -> ta.Any:
+    def unmarshal(self, o: ta.Any) -> ta.Any:
         return uuid.UUID(o)
 
 
@@ -49,33 +58,29 @@ class OptionalObjMarshaler(ObjMarshaler):
             return None
         return self.item.marshal(o)
 
-    def unmarshal(self, o: ta.Any, ty: ta.Any) -> ta.Any:
+    def unmarshal(self, o: ta.Any) -> ta.Any:
         if o is None:
             return None
-        return self.item.unmarshal(o, ty)
+        return self.item.unmarshal(o)
+
+
+_OBJ_MARSHALERS: ta.Dict[ta.Any, ObjMarshaler] = {
+    **{t: NopObjMarshaler() for t in MARSHAL_BUILTIN_TYPES},
+    uuid.UUID: UuidObjMarshaler(),
+    datetime.datetime: DatetimeObjMarshaler(),
+}
+
+
+def get_obj_marshaler(ty: ta.Any) -> ObjMarshaler:
+    try:
+        return _OBJ_MARSHALERS[ty]
+    except KeyError:
+        raise TypeError(ty)  # noqa
 
 
 def marshal_obj(o: ta.Any) -> ta.Any:
-    if isinstance(o, MARSHAL_BUILTIN_TYPES):
-        return o
-
-    if isinstance(o, datetime.datetime):
-        return o.isoformat()
-
-    if isinstance(o, uuid.UUID):
-        return str(o)
-
-    raise TypeError(o)
+    return get_obj_marshaler(type(o)).marshal(o)
 
 
 def unmarshal_obj(o: ta.Any, ty: ta.Any) -> ta.Any:
-    if ty in MARSHAL_BUILTIN_TYPES:
-        return o
-
-    if ty is datetime.datetime:
-        return datetime.datetime.fromisoformat(o)
-
-    if ty is uuid.UUID:
-        return uuid.UUID(o)
-
-    raise TypeError(o)
+    return get_obj_marshaler(ty).unmarshal(o)
