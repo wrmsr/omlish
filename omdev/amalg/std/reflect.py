@@ -3,9 +3,16 @@ import functools
 import typing as ta
 
 
+_GENERIC_ALIAS_TYPES = (
+    ta._GenericAlias,  # type: ignore  # noqa
+    *([ta._SpecialGenericAlias] if hasattr(ta, '_SpecialGenericAlias') else []),  # type: ignore  # noqa
+)
+
+
+
 def is_generic_alias(obj, *, origin: ta.Any = None) -> bool:
     return (
-            isinstance(obj, (ta._GenericAlias, ta._SpecialGenericAlias)) and  # type: ignore  # noqa
+            isinstance(obj, _GENERIC_ALIAS_TYPES) and
             (origin is None or obj.__origin__ is origin)
     )
 
