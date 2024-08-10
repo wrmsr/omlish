@@ -165,6 +165,9 @@ pre-commit:
 PYTEST_OPTS=
 PYTEST_JUNIT_XML_PATH:=$$(echo "$${OMLISH_JUNIT_XML_PATH}")
 
+.PHONY: test-all
+test-all: test test-13 test-old
+
 .PHONY: test
 test:
 	if [ ! -z "${PYTEST_JUNIT_XML_PATH}" ] && [ -f "${PYTEST_JUNIT_XML_PATH}" ] ; then \
@@ -226,7 +229,6 @@ test-old:
 			omdev.amalg.std \
 			; \
 	done
-
 
 # docker
 
