@@ -34,6 +34,14 @@ class NopObjMarshaler(ObjMarshaler):
         return o
 
 
+class DynamicObjMarshaler(ObjMarshaler):
+    def marshal(self, o: ta.Any) -> ta.Any:
+        return marshal_obj(o)
+
+    def unmarshal(self, o: ta.Any) -> ta.Any:
+        return o
+
+
 class DatetimeObjMarshaler(ObjMarshaler):
     def marshal(self, o: ta.Any) -> ta.Any:
         return o.isoformat()
@@ -76,11 +84,24 @@ class OptionalObjMarshaler(ObjMarshaler):
         return self.item.unmarshal(o)
 
 
+@dc.dataclass(frozen=True)
+class SequenceObjMarshaler(ObjMarshaler):
+    ty: type
+    item: ObjMarshaler
+
+    def marshal(self, o: ta.Any) -> ta.Any:
+        return [self.item.marshal(e) for e in o]
+
+    def unmarshal(self, o: ta.Any) -> ta.Any:
+        return self.ty(self.item.unmarshal(e) for e in o)
+
+
 _OBJ_MARSHALERS: ta.Dict[ta.Any, ObjMarshaler] = {
     **{t: NopObjMarshaler() for t in MARSHAL_BUILTIN_TYPES},
     uuid.UUID: UuidObjMarshaler(),
     datetime.datetime: DatetimeObjMarshaler(),
     **{t: Base64ObjMarshaler(t) for t in (bytes, bytearray)},
+    list: SequenceObjMarshaler(list, DynamicObjMarshaler()),
 }
 
 
@@ -88,7 +109,12 @@ def get_obj_marshaler(ty: ta.Any) -> ObjMarshaler:
     try:
         return _OBJ_MARSHALERS[ty]
     except KeyError:
-        raise TypeError(ty)  # noqa
+        pass
+
+    if dc.is_dataclass(ty):
+        raise NotImplementedError
+
+    raise TypeError(ty)
 
 
 def marshal_obj(o: ta.Any, ty: ta.Any = None) -> ta.Any:
