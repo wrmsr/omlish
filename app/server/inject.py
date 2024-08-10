@@ -54,11 +54,7 @@ def _bind_in_memory_user_store() -> inj.Elemental:
 
 
 def _bind_db_user_store() -> inj.Elemental:
-    from ..dbs import bind_dbs
-
     return inj.as_elements(
-        bind_dbs(),
-
         inj.bind(DbUserStore, singleton=True),
         inj.bind(UserStore, to_key=DbUserStore),
     )
@@ -80,8 +76,8 @@ def bind_app() -> inj.Elemental:
 
             handlers_inj.bind(),
 
-            _bind_in_memory_user_store(),
-            # _bind_db_user_store(),
+            # _bind_in_memory_user_store(),
+            _bind_db_user_store(),
 
             _bind_cookie_session_store(),
 
