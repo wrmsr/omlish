@@ -1,5 +1,6 @@
 import types
 import typing as ta
+import weakref
 
 
 T = ta.TypeVar('T')
@@ -23,6 +24,28 @@ def opt_repr(obj: ta.Any) -> str | None:
     if obj is None:
         return None
     return repr(obj)
+
+
+##
+
+
+_CAN_WEAKREF_TYPE_MAP: ta.MutableMapping[type, bool] = weakref.WeakKeyDictionary()
+
+
+def can_weakref(obj: ta.Any) -> bool:
+    _type = type(obj)
+    try:
+        return _CAN_WEAKREF_TYPE_MAP[_type]
+    except KeyError:
+        pass
+    try:
+        weakref.ref(obj)
+    except TypeError:
+        ret = False
+    else:
+        ret = True
+    _CAN_WEAKREF_TYPE_MAP[_type] = ret
+    return ret
 
 
 ##
