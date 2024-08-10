@@ -32,7 +32,7 @@ class TestMarshal(unittest.TestCase):
             datetime.datetime.now(),
             [1, '2'],
             {1, 2},
-            {1: {2: 3}},
+            {'a': {'b': 3}},
             Foo(),
         ]:
             if isinstance(st, tuple):
