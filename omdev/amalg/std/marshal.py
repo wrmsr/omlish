@@ -7,6 +7,8 @@ import typing as ta
 import uuid
 import weakref  # noqa
 
+from .reflect import is_dict_alias
+
 
 class ObjMarshaler(abc.ABC):
     @abc.abstractmethod
@@ -149,6 +151,10 @@ def get_obj_marshaler(ty: ta.Any) -> ObjMarshaler:
             ty,
             {f.name: get_obj_marshaler(f.type) for f in dc.fields(ty)},
         )
+
+    elif is_dict_alias(ty):
+        k, v = ta.get_args(ty)
+        return MappingObjMarshaler(dict, get_obj_marshaler(k), get_obj_marshaler(v))
 
     else:
         raise TypeError(ty)
