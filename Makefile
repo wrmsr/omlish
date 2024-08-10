@@ -183,7 +183,7 @@ test:
 
 # all
 .PHONY: venv-all
-venv-all: venv venv-13 venv-13t venv-8 venv-docker
+venv-all: venv venv-13 venv-13t venv-8 venv-9 venv-10 venv-11 venv-docker
 
 # 13
 
@@ -205,11 +205,23 @@ venv-13t:
 test-13t:
 	${PYPROJECT} venv 13t test -- ${PYTEST_OPTS} --ignore=omlish/sql
 
-# 8
+# 8-11
 
 .PHONY: venv-8
 venv-8:
 	${PYPROJECT} venv 8 exe
+
+.PHONY: venv-9
+venv-9:
+	${PYPROJECT} venv 9 exe
+
+.PHONY: venv-10
+venv-10:
+	${PYPROJECT} venv 10 exe
+
+.PHONY: venv-11
+venv-11:
+	${PYPROJECT} venv 11 exe
 
 # docker
 
