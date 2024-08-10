@@ -31,16 +31,18 @@ class TestMarshal(unittest.TestCase):
             bytearray(b'abc'),
             datetime.datetime.now(),
             [1, '2'],
+            {1, 2},
+            {1: {2: 3}},
             Foo(),
         ]:
             if isinstance(st, tuple):
-                o, ty = st
+                v, ty = st
             else:
-                o, ty = st, type(st)
+                v, ty = st, type(st)
 
-            m = msh.marshal_obj(o)
+            m = msh.marshal_obj(v)
             s = json.dumps(m)
             x = json.loads(s)
             u = msh.unmarshal_obj(x, ty)
 
-            self.assertEqual(u, o)
+            self.assertEqual(u, v)
