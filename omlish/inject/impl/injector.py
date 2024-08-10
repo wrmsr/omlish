@@ -42,8 +42,6 @@ from .scopes import make_scope_impl
 
 log = logging.getLogger(__name__)
 
-_DEBUG_LOGGING = True
-
 
 DEFAULT_SCOPES: list[Scope] = [
     Unscoped(),
@@ -118,6 +116,8 @@ class InjectorImpl(Injector, lang.Final):
                 return lang.just(self._provisions[key])
             except KeyError:
                 pass
+            if isinstance(key.ty, type) and key.ty.__name__ == 'Secrets':
+                breakpoint()
             if key in self._seen_keys:
                 raise CyclicDependencyError(key)
             self._seen_keys.add(key)
@@ -160,20 +160,15 @@ class InjectorImpl(Injector, lang.Final):
     def _try_provide(self, key: ta.Any, *, source: ta.Any = None) -> lang.Maybe[ta.Any]:
         key = as_key(key)
 
-        if _DEBUG_LOGGING:
-            log.debug('InjectorImpl._try_provide id=%x key=%r source=%r', id(self), key, source)
+        this is all wrong lol - handle_provision needs to cache maybes? maybe?
 
         with self._current_request() as cr:
             with cr.push_source(source):
                 ic = self._internal_consts.get(key)
                 if ic is not None:
-                    if _DEBUG_LOGGING:
-                        log.debug('InjectorImpl._try_provide id=%x key=%r internal_const=%x', id(self), key, id(ic))  # noqa
                     return lang.just(ic)
 
                 if (rv := cr.handle_key(key)).present:
-                    if _DEBUG_LOGGING:
-                        log.debug('InjectorImpl._try_provide id=%x key=%r request_cached=%x', id(self), key, id(rv.must()))  # noqa
                     return rv
 
                 bi = self._bim.get(key)
@@ -183,24 +178,17 @@ class InjectorImpl(Injector, lang.Final):
                     fn = lambda: sc.provide(bi, self)  # noqa
                     for pl in self._pls:
                         fn = functools.partial(pl, self, key, bi.binding, fn)
-                    if _DEBUG_LOGGING:
-                        log.debug('InjectorImpl._try_provide.binding id=%x key=%r binding=%r', id(self), key, bi)  # noqa
                     v = fn()
 
                     cr.handle_provision(key, v)
-                    if _DEBUG_LOGGING:
-                        log.debug('InjectorImpl._try_provide id=%x key=%r provided=%x', id(self), key, id(v))  # noqa
                     return lang.just(v)
 
                 if self._p is not None:
                     pv = self._p._try_provide(key, source=source)
-                    if pv is not None:
-                        if _DEBUG_LOGGING:
-                            log.debug('InjectorImpl._try_provide id=%x key=%r parent_provided=%s', id(self), key, '%x' % (id(pv),) if pv.present else '')  # noqa
+                    if pv.present:
+                        cr.handle_provision(key, pv.must())
                         return pv
 
-                if _DEBUG_LOGGING:
-                    log.debug('InjectorImpl._try_provide id=%x key=%r provided=', id(self), key)
                 return lang.empty()
 
     def _provide(self, key: ta.Any, *, source: ta.Any = None) -> ta.Any:
