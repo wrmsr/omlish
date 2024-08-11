@@ -8,6 +8,7 @@ import base64
 import collections.abc
 import dataclasses as dc  # noqa
 import datetime
+import enum
 import typing as ta
 import uuid
 import weakref  # noqa
@@ -75,6 +76,17 @@ class Base64ObjMarshaler(ObjMarshaler):
 
     def unmarshal(self, o: ta.Any) -> ta.Any:
         return self.ty(base64.b64decode(o))
+
+
+@dc.dataclass(frozen=True)
+class EnumObjMarshaler(ObjMarshaler):
+    ty: type
+
+    def marshal(self, o: ta.Any) -> ta.Any:
+        return o.name
+
+    def unmarshal(self, o: ta.Any) -> ta.Any:
+        return self.ty.__members__[o]  # type: ignore
 
 
 @dc.dataclass(frozen=True)
@@ -211,6 +223,9 @@ def _make_obj_marshaler(ty: ta.Any) -> ObjMarshaler:
             {i.ty: i for i in impls},
             {i.tag: i for i in impls},
         )
+
+    if isinstance(ty, type) and issubclass(ty, enum.Enum):
+        return EnumObjMarshaler(ty)
 
     if dc.is_dataclass(ty):
         return DataclassObjMarshaler(
