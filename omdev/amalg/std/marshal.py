@@ -140,13 +140,13 @@ _OBJ_MARSHALERS: ta.Dict[ta.Any, ObjMarshaler] = {
     uuid.UUID: UuidObjMarshaler(),
 }
 
-_OBJ_MARSHALER_GENERIC_SEQUENCE_TYPES = {
+_OBJ_MARSHALER_GENERIC_SEQUENCE_TYPES: ta.Dict[ta.Any, type] = {
     **{t: t for t in (list, tuple, set, frozenset)},
     **{t: frozenset for t in (collections.abc.Set, collections.abc.MutableSet)},
     **{t: tuple for t in (collections.abc.Sequence, collections.abc.MutableSequence)},
 }
 
-_OBJ_MARSHALER_GENERIC_MAPPING_TYPES = {
+_OBJ_MARSHALER_GENERIC_MAPPING_TYPES: ta.Dict[ta.Any, type] = {
     **{t: t for t in (dict,)},
     **{t: dict for t in (collections.abc.Mapping, collections.abc.MutableMapping)},
 }
