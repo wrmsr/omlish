@@ -148,5 +148,6 @@ class TestMarshalPolymorphic(AbstractTestMarshal):
             (PolyA('a'), Poly),
 
             (ValueNode(5), Node),
+            (OpNode('+', [OpNode('*', [ValueNode(2), ValueNode(3)]), ValueNode(5)]), Node),
         ]:
             self._assert_marshal(*(st if isinstance(st, tuple) else (st,)))
