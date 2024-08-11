@@ -225,7 +225,7 @@ venv-old:
 .PHONY: test-old
 test-old:
 	for V in ${OLD_VENVS} ; do \
-		$$(${PYPROJECT} venv $$V exe) -munittest discover \
+		$$(${PYPROJECT} venv $$V exe) -munittest discover -v \
 			omdev.amalg.std \
 			; \
 	done
