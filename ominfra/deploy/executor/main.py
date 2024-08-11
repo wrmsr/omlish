@@ -47,6 +47,7 @@ import sys
 import typing as ta
 
 from omdev.amalg.std.logs import setup_standard_logging
+from omdev.amalg.std.marshal import unmarshal_obj
 from omdev.amalg.std.runtime import check_runtime_version
 
 from ..configs import DeployConfig
@@ -66,7 +67,7 @@ from .concerns.venv import VenvConcern
 
 def _deploy_cmd(args) -> None:
     dct = json.loads(args.cfg)
-    cfg = DeployConfig(**dct)
+    cfg = unmarshal_obj(dct, DeployConfig)
     dp = Deployment(
         cfg,
         [
