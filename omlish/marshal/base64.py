@@ -24,7 +24,7 @@ class Base64MarshalerUnmarshaler(Marshaler, Unmarshaler, ta.Generic[T]):
         return base64.b64encode(o).decode()
 
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> T:
-        return self.ty(base64.b64decode(check.isinstance(v, str).encode()))
+        return self.ty(base64.b64decode(check.isinstance(v, str).encode()))  # type: ignore
 
 
 BASE64_TYPES = (
