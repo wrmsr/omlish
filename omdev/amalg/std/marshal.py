@@ -161,12 +161,15 @@ class PolymorphicObjMarshaler(ObjMarshaler):
         return impl.m.unmarshal(v)
 
 
+@dc.dataclass(frozen=True)
 class DatetimeObjMarshaler(ObjMarshaler):
+    ty: type
+
     def marshal(self, o: ta.Any) -> ta.Any:
         return o.isoformat()
 
     def unmarshal(self, o: ta.Any) -> ta.Any:
-        return datetime.datetime.fromisoformat(o)
+        return self.ty.fromisoformat(o)  # type: ignore
 
 
 class UuidObjMarshaler(ObjMarshaler):
@@ -186,7 +189,7 @@ _OBJ_MARSHALERS: ta.Dict[ta.Any, ObjMarshaler] = {
 
     ta.Any: DynamicObjMarshaler(),
 
-    datetime.datetime: DatetimeObjMarshaler(),
+    **{t: DatetimeObjMarshaler(t) for t in (datetime.date, datetime.time, datetime.datetime)},
     uuid.UUID: UuidObjMarshaler(),
 }
 

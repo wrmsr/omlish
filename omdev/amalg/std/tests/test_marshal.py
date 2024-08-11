@@ -18,9 +18,11 @@ _DEBUG_PRINT = lambda *a: None  # noqa
 
 
 class AbstractTestMarshal(unittest.TestCase):
-    def _assert_marshal(self, v, ty=None):
-        if ty is None:
-            ty = type(v)
+    def _assert_marshal(self, a):
+        if isinstance(a, tuple):
+            v, ty = a
+        else:
+            v, ty = a, type(a)
 
         _DEBUG_PRINT((v, ty))
 
@@ -45,21 +47,38 @@ class AbstractTestMarshal(unittest.TestCase):
 
 class TestMarshalSimple(AbstractTestMarshal):
     def test_marshal_simple(self):
-        for st in [
+        for a in [
             5,
             5.,
             'abc',
             b'abc',
             bytearray(b'abc'),
-            datetime.datetime.now(),  # noqa
+        ]:
+            self._assert_marshal(a)
+
+    def test_marshal_collections(self):
+        for a in [
             [1, '2'],
             {1, 2},
             {'a': {'b': 3}},
+        ]:
+            self._assert_marshal(a)
+
+    def test_marshal_datetimes(self):
+        for a in [
+            datetime.date.today(),  # noqa
+            datetime.datetime.now(),  # noqa
+            datetime.datetime.now().time(),  # noqa
+        ]:
+            self._assert_marshal(a)
+
+    def test_marshal_generics(self):
+        for a in [
             ({1: 2}, ta.Dict[int, int]),
             (1, ta.Optional[int]),
             (None, ta.Optional[int]),
         ]:
-            self._assert_marshal(*(st if isinstance(st, tuple) else (st,)))
+            self._assert_marshal(a)
 
 
 ##
@@ -80,11 +99,11 @@ class Bar:
 
 class TestMarshalDataclasses(AbstractTestMarshal):
     def test_marshal_dataclasses(self):
-        for o in [
+        for a in [
             Foo(),
             Bar([Foo(), Foo(i=11)], {'barf': Foo(i=-1)}),
         ]:
-            self._assert_marshal(o)
+            self._assert_marshal(a)
 
 
 ##
@@ -144,14 +163,14 @@ class OpNode(Node):
 
 class TestMarshalPolymorphic(AbstractTestMarshal):
     def test_polymorphic(self):
-        for st in [
+        for a in [
             PolyA('a'),
             (PolyA('a'), Poly),
 
             (ValueNode(5), Node),
             (OpNode('+', [OpNode('*', [ValueNode(2), ValueNode(3)]), ValueNode(5)]), Node),
         ]:
-            self._assert_marshal(*(st if isinstance(st, tuple) else (st,)))
+            self._assert_marshal(a)
 
 
 ##
