@@ -1,4 +1,4 @@
-# ruff: noqa: PT009 UP006
+# ruff: noqa: PT009 UP006 UP007
 import abc
 import dataclasses as dc
 import datetime
@@ -79,13 +79,17 @@ class Bar:
 
 class TestMarshalDataclasses(AbstractTestMarshal):
     def test_marshal_dataclasses(self):
-        self._assert_marshal(Foo())
+        for o in [
+            Foo(),
+            Bar([Foo(), Foo(i=11)], {'barf': Foo(i=-1)}),
+        ]:
+            self._assert_marshal(o)
 
 
 ##
 
 
-class Poly(abc.ABC):
+class Poly(abc.ABC):  # noqa
     pass
 
 
@@ -100,3 +104,6 @@ class PolyB(PolyA):
 class PolyC(Poly):
     pass
 
+
+class TestMarshalPolymorphic(AbstractTestMarshal):
+    pass
