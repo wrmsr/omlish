@@ -14,6 +14,7 @@ def is_generic_alias(obj, *, origin: ta.Any = None) -> bool:
         (origin is None or ta.get_origin(obj) is origin)
     )
 
+
 is_union_alias = functools.partial(is_generic_alias, origin=ta.Union)
 is_callable_alias = functools.partial(is_generic_alias, origin=ta.Callable)
 
