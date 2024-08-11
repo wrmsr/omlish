@@ -123,10 +123,30 @@ class PolyF(PolyD):
     f: str
 
 
+#
+
+
+class Node(abc.ABC):
+    pass
+
+
+@dc.dataclass
+class ValueNode(Node):
+    v: ta.Any
+
+
+@dc.dataclass
+class OpNode(Node):
+    op: str
+    args: ta.List[Node]
+
+
 class TestMarshalPolymorphic(AbstractTestMarshal):
     def test_polymorphic(self):
         for st in [
             PolyA('a'),
             (PolyA('a'), Poly),
+
+            (ValueNode(5), Node),
         ]:
             self._assert_marshal(*(st if isinstance(st, tuple) else (st,)))
