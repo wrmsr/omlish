@@ -13,7 +13,7 @@ from .. import marshal as msh
 
 
 _DEBUG_PRINT = lambda *a: None  # noqa
-# _DEBUG_PRINT = print
+_DEBUG_PRINT = print
 
 
 class AbstractTestMarshal(unittest.TestCase):
@@ -126,7 +126,7 @@ class PolyF(PolyD):
 #
 
 
-class Node(abc.ABC):
+class Node(abc.ABC):  # noqa
     pass
 
 
