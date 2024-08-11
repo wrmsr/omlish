@@ -190,6 +190,12 @@ _OBJ_MARSHALER_GENERIC_MAPPING_TYPES: ta.Dict[ta.Any, type] = {
 }
 
 
+def register_opj_marshaler(ty: ta.Any, m: ObjMarshaler) -> None:
+    if ty in _OBJ_MARSHALERS:
+        raise KeyError(ty)
+    _OBJ_MARSHALERS[ty] = m
+
+
 def _make_obj_marshaler(ty: ta.Any) -> ObjMarshaler:
     if isinstance(ty, type) and abc.ABC in ty.__bases__:
         impls = [
