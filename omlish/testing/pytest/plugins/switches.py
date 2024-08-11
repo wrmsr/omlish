@@ -4,6 +4,7 @@ TODO:
  - dynamic registration
  - dynamic switching (skip docker if not running, skip online if not online, ...)
 """
+import enum
 import typing as ta
 
 import pytest
@@ -19,6 +20,15 @@ SWITCHES = {
     'docker': True,
     'online': True,
     'slow': False,
+}
+
+
+SwitchState: ta.TypeAlias = bool | ta.Literal['only']
+
+SWITCH_STATE_OPT_PREFIXES = {
+    True: '--',
+    False: '--no-',
+    'only': '--only-',
 }
 
 
@@ -42,11 +52,21 @@ def skip_if_disabled(obj: Configable | None, name: str) -> None:
         pytest.skip(f'{name} disabled')
 
 
-def get_switches(obj: Configable) -> ta.Mapping[str, bool]:
-    return {
-        sw: _get_obj_config(obj).getoption(f'--no-{sw}')
-        for sw in SWITCHES
-    }
+def get_switches(obj: Configable) -> ta.Mapping[str, SwitchState]:
+    ret = {}
+    for sw, d in SWITCHES.items():
+        sts = {
+            st
+            for st, pfx in SWITCH_STATE_OPT_PREFIXES.items()
+            if _get_obj_config(obj).getoption(pfx + sw)
+        }
+        if sts:
+            if len(sts) > 1:
+                raise Exception(f'Multiple switches specified for {sw}')
+            ret[sw] = check.single(sts)
+        else:
+            ret[sw] = d
+    return ret
 
 
 @register
@@ -59,10 +79,11 @@ class SwitchesPlugin:
     def pytest_addoption(self, parser):
         for sw in SWITCHES:
             parser.addoption(f'--no-{sw}', action='store_true', default=False, help=f'disable {sw} tests')
-            # parser.addoption(f'--{sw}', action='store_true', default=False, help=f'enables {sw} tests')
-            # parser.addoption(f'--only-{sw}', action='store_true', default=False, help=f'enables only {sw} tests')
+            parser.addoption(f'--{sw}', action='store_true', default=False, help=f'enables {sw} tests')
+            parser.addoption(f'--only-{sw}', action='store_true', default=False, help=f'enables only {sw} tests')
 
     def pytest_collection_modifyitems(self, config, items):
+        sws = get_switches(config)
         for sw in SWITCHES:
             if not config.getoption(f'--no-{sw}'):
                 continue
