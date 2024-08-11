@@ -22,6 +22,7 @@ import dataclasses as dc
 import functools
 import glob
 import itertools
+import json
 import logging
 import os.path
 import shlex
@@ -117,6 +118,31 @@ def subprocess_check_call(*args, stdout=sys.stderr, **kwargs):
 def subprocess_check_output(*args, **kwargs):
     log.debug((args, _mask_env_kwarg(kwargs)))
     return subprocess.check_output(*args, **kwargs)
+
+
+########################################
+# ../../amalg/std/toml.py
+
+
+def toml_loads(s: str) -> ta.Any:
+    toml: ta.Any = None
+    try:
+        import tomllib as toml
+    except ImportError:
+        try:
+            mod = __import__('pip._vendor.tomli')
+        except ImportError:
+            pass
+        else:
+            toml = mod._vendor.tomli  # noqa
+    if toml is not None:
+        return toml.loads(s)
+
+    if shutil.which('toml2json') is None:
+        subprocess_check_call(['cargo', 'install', 'toml2json'])
+    jsonb = subprocess_check_output(['toml2json'], input=s.encode())
+
+    return json.loads(jsonb.decode().strip())
 
 
 ########################################
@@ -295,28 +321,6 @@ class Venv:
 ##
 
 
-def _toml_loads(s: str) -> ta.Any:
-    toml: ta.Any = None
-    try:
-        import tomllib as toml
-    except ImportError:
-        try:
-            mod = __import__('pip._vendor.tomli')
-        except ImportError:
-            pass
-        else:
-            toml = mod._vendor.tomli  # noqa
-    if toml is not None:
-        return toml.loads(s)
-
-    if shutil.which('toml2json') is None:
-        subprocess_check_call(['cargo', 'install', 'toml2json'])
-    jsonb = subprocess_check_output(['toml2json'], input=s.encode())
-
-    import json
-    return json.loads(jsonb.decode().strip())
-
-
 def _find_docker_service_container(cfg_path: str, svc_name: str) -> str:
     out = subprocess_check_output(['docker-compose', '-f', cfg_path, 'ps', '-q', svc_name])
     return out.decode().strip()
@@ -352,7 +356,7 @@ class Run:
             buf = self._raw_cfg
         else:
             return self._raw_cfg
-        return _toml_loads(buf)
+        return toml_loads(buf)
 
     @cached_nullary
     def cfg(self) -> ta.Mapping[str, ta.Any]:
