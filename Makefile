@@ -278,7 +278,7 @@ test-debug:
 
 DOCKER_USER=wrmsr
 
-DOCKER_COMPOSE=docker-compose -f docker/docker-compose.yml
+DOCKER_COMPOSE=docker compose -f docker/compose.yml
 
 .PHONY: docker-stop
 docker-stop:
@@ -350,11 +350,11 @@ publish: package
 
 .PHONY: my-repl
 my-repl: venv
-	${PYTHON} -m omdev.tools.sqlrepl repl mysql docker/docker-compose.yml:omlish-mysql
+	${PYTHON} -m omdev.tools.sqlrepl repl mysql docker/compose.yml:omlish-mysql
 
 .PHONY: pg-repl
 pg-repl: venv
-	${PYTHON} -m omdev.tools.sqlrepl repl postgres docker/docker-compose.yml:omlish-postgres
+	${PYTHON} -m omdev.tools.sqlrepl repl postgres docker/compose.yml:omlish-postgres
 
 .PHONY: secret-pg-repl
 secret-pg-repl: venv

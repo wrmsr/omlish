@@ -169,7 +169,7 @@ class Cli(ap.Cli):
         with open(l) as f:
             cfg = yaml.safe_load(f.read())
         dialect = self.args.dialect
-        if lf == 'docker-compose.yml':
+        if lf == 'compose.yml':
             svc = cfg['services'][r]
             if dialect == 'mysql':
                 spec = spec_from_mysql_docker_compose(svc)

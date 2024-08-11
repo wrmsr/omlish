@@ -40,7 +40,7 @@ from .venvs import build_venv_specs
 
 
 def _find_docker_service_container(cfg_path: str, svc_name: str) -> str:
-    out = subprocess_check_output(['docker-compose', '-f', cfg_path, 'ps', '-q', svc_name])
+    out = subprocess_check_output(['docker', 'compose', '-f', cfg_path, 'ps', '-q', svc_name])
     return out.decode().strip()
 
 
@@ -96,7 +96,7 @@ class Run:
 def _venv_cmd(args) -> None:
     venv = Run().venvs()[args.name]
     if (sd := venv.spec.docker) is not None and sd != (cd := args._docker_container):  # noqa
-        ctr = _find_docker_service_container('docker/docker-compose.yml', sd)
+        ctr = _find_docker_service_container('docker/compose.yml', sd)
         script = ' '.join([
             'python3',
             shlex.quote(_script_rel_path()),

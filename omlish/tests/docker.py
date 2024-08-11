@@ -9,5 +9,5 @@ class ComposeServices:
     def compose_config(self) -> ComposeConfig:
         return ComposeConfig(
             'omlish-',
-            file_path='docker/docker-compose.yml',
+            file_path='docker/compose.yml',
         )
