@@ -23,7 +23,7 @@ class AbstractTestMarshal(unittest.TestCase):
 
         _DEBUG_PRINT((v, ty))
 
-        m = msh.marshal_obj(v)
+        m = msh.marshal_obj(v, ty)
         _DEBUG_PRINT(m)
 
         s = json.dumps(m)
