@@ -170,6 +170,9 @@ def make_import(
 ##
 
 
+TYPE_ALIAS_COMMENT = '# ta.TypeAlias'
+
+
 @dc.dataclass(frozen=True, kw_only=True)
 class Typing:
     src: str
@@ -180,6 +183,23 @@ class Typing:
     toks: Tokens = dc.field(repr=False)
 
 
+def _is_typing(lts: Tokens) -> bool:
+    if join_toks(lts).strip().endswith(TYPE_ALIAS_COMMENT):
+        return True
+
+    wts = list(ignore_ws(lts))
+    if (
+            len(wts) >= 5 and
+            wts[0].name == 'NAME' and
+            wts[1].name == 'OP' and wts[1].src == '=' and
+            wts[2].name == 'NAME' and wts[2].src == 'ta' and
+            wts[3].name == 'OP' and wts[3].src == '.'
+    ):
+        return True
+
+    return False
+
+
 def make_typing(
         lts: Tokens,
         *,
@@ -188,22 +208,15 @@ def make_typing(
     if not lts or lts[0].name == 'UNIMPORTANT_WS':
         return None
 
-    wts = list(ignore_ws(lts))
-    if not (
-            len(wts) >= 5 and
-            wts[0].name == 'NAME' and
-            wts[1].name == 'OP' and wts[1].src == '=' and
-            wts[2].name == 'NAME' and wts[2].src == 'ta' and
-            wts[3].name == 'OP' and wts[3].src == '.'
-
-    ):
+    if not _is_typing(lts):
         return None
 
+    ft = next(iter(ignore_ws(lts)))
     return Typing(
         src=join_toks(lts),
 
         src_path=src_path,
-        line=wts[0].line,
+        line=ft.line,
 
         toks=lts,
     )
