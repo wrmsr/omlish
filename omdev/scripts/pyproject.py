@@ -37,6 +37,7 @@ import typing as ta
 
 T = ta.TypeVar('T')
 TomlParseFloat = ta.Callable[[str], ta.Any]
+TomlKey = ta.Tuple[str, ...]
 TomlPos = int  # ta.TypeAlias
 
 
@@ -113,9 +114,7 @@ def check_runtime_version() -> None:
 # SPDX-FileCopyrightText: 2021 Taneli Hukkinen
 # Licensed to PSF under a Contributor Agreement.
 # https://github.com/python/cpython/blob/f5009b69e0cd94b990270e04e65b9d4d2b365844/Lib/tomllib/_parser.py
-
-
-TomlKey = tuple[str, ...]
+# ruff: noqa: UP006 UP007
 
 
 ##
@@ -156,7 +155,7 @@ TOML_RE_DATETIME = re.compile(
 )
 
 
-def toml_match_to_datetime(match: re.Match) -> datetime.datetime | datetime.date:
+def toml_match_to_datetime(match: re.Match) -> ta.Union[datetime.datetime, datetime.date]:
     """Convert a `RE_DATETIME` match to `datetime.datetime` or `datetime.date`.
 
     Raises ValueError if the match does not correspond to a valid date or datetime.
@@ -180,7 +179,7 @@ def toml_match_to_datetime(match: re.Match) -> datetime.datetime | datetime.date
     hour, minute, sec = int(hour_str), int(minute_str), int(sec_str)
     micros = int(micros_str.ljust(6, '0')) if micros_str else 0
     if offset_sign_str:
-        tz: datetime.tzinfo | None = toml_cached_tz(
+        tz: ta.Optional[datetime.tzinfo] = toml_cached_tz(
             offset_hour_str, offset_minute_str, offset_sign_str,
         )
     elif zulu_time:
@@ -190,7 +189,7 @@ def toml_match_to_datetime(match: re.Match) -> datetime.datetime | datetime.date
     return datetime.datetime(year, month, day, hour, minute, sec, micros, tzinfo=tz)
 
 
-@functools.cache
+@functools.lru_cache()  # noqa
 def toml_cached_tz(hour_str: str, minute_str: str, sign_str: str) -> datetime.timezone:
     sign = 1 if sign_str == '+' else -1
     return datetime.timezone(
@@ -248,7 +247,7 @@ class TomlDecodeError(ValueError):
     """An error raised if a document is not valid TOML."""
 
 
-def toml_load(fp: ta.BinaryIO, /, *, parse_float: TomlParseFloat = float) -> dict[str, ta.Any]:
+def toml_load(fp: ta.BinaryIO, /, *, parse_float: TomlParseFloat = float) -> ta.Dict[str, ta.Any]:
     """Parse TOML from a binary file object."""
     b = fp.read()
     try:
@@ -260,7 +259,7 @@ def toml_load(fp: ta.BinaryIO, /, *, parse_float: TomlParseFloat = float) -> dic
     return toml_loads(s, parse_float=parse_float)
 
 
-def toml_loads(s: str, /, *, parse_float: TomlParseFloat = float) -> dict[str, ta.Any]:  # noqa: C901
+def toml_loads(s: str, /, *, parse_float: TomlParseFloat = float) -> ta.Dict[str, ta.Any]:  # noqa: C901
     """Parse TOML from a string."""
 
     # The spec allows converting "\r\n" to "\n", even in string literals. Let's do so to simplify parsing.
@@ -295,7 +294,7 @@ def toml_loads(s: str, /, *, parse_float: TomlParseFloat = float) -> dict[str, t
             pos = toml_skip_chars(src, pos, TOML_WS)
         elif char == '[':
             try:
-                second_char: str | None = src[pos + 1]
+                second_char: ta.Optional[str] = src[pos + 1]
             except IndexError:
                 second_char = None
             out.flags.finalize_pending()
@@ -333,8 +332,8 @@ class TomlFlags:
     EXPLICIT_NEST = 1
 
     def __init__(self) -> None:
-        self._flags: dict[str, dict] = {}
-        self._pending_flags: set[tuple[TomlKey, int]] = set()
+        self._flags: ta.Dict[str, dict] = {}
+        self._pending_flags: ta.Set[ta.Tuple[TomlKey, int]] = set()
 
     def add_pending(self, key: TomlKey, flag: int) -> None:
         self._pending_flags.add((key, flag))
@@ -384,7 +383,7 @@ class TomlFlags:
 class TomlNestedDict:
     def __init__(self) -> None:
         # The parsed content of the TOML document
-        self.dict: dict[str, ta.Any] = {}
+        self.dict: ta.Dict[str, ta.Any] = {}
 
     def get_or_create_nest(
             self,
@@ -434,7 +433,7 @@ def toml_skip_until(
         pos: TomlPos,
         expect: str,
         *,
-        error_on: frozenset[str],
+        error_on: ta.FrozenSet[str],
         error_on_eof: bool,
 ) -> TomlPos:
     try:
@@ -453,7 +452,7 @@ def toml_skip_until(
 
 def toml_skip_comment(src: str, pos: TomlPos) -> TomlPos:
     try:
-        char: str | None = src[pos]
+        char: ta.Optional[str] = src[pos]
     except IndexError:
         char = None
     if char == '#':
@@ -472,7 +471,7 @@ def toml_skip_comments_and_array_ws(src: str, pos: TomlPos) -> TomlPos:
             return pos
 
 
-def toml_create_dict_rule(src: str, pos: TomlPos, out: TomlOutput) -> tuple[TomlPos, TomlKey]:
+def toml_create_dict_rule(src: str, pos: TomlPos, out: TomlOutput) -> ta.Tuple[TomlPos, TomlKey]:
     pos += 1  # Skip "["
     pos = toml_skip_chars(src, pos, TOML_WS)
     pos, key = toml_parse_key(src, pos)
@@ -490,7 +489,7 @@ def toml_create_dict_rule(src: str, pos: TomlPos, out: TomlOutput) -> tuple[Toml
     return pos + 1, key
 
 
-def toml_create_list_rule(src: str, pos: TomlPos, out: TomlOutput) -> tuple[TomlPos, TomlKey]:
+def toml_create_list_rule(src: str, pos: TomlPos, out: TomlOutput) -> ta.Tuple[TomlPos, TomlKey]:
     pos += 2  # Skip "[["
     pos = toml_skip_chars(src, pos, TOML_WS)
     pos, key = toml_parse_key(src, pos)
@@ -547,10 +546,10 @@ def toml_key_value_rule(
 
 def toml_parse_key_value_pair(
         src: str, pos: TomlPos, parse_float: TomlParseFloat,
-) -> tuple[TomlPos, TomlKey, ta.Any]:
+) -> ta.Tuple[TomlPos, TomlKey, ta.Any]:
     pos, key = toml_parse_key(src, pos)
     try:
-        char: str | None = src[pos]
+        char: ta.Optional[str] = src[pos]
     except IndexError:
         char = None
     if char != '=':
@@ -561,13 +560,13 @@ def toml_parse_key_value_pair(
     return pos, key, value
 
 
-def toml_parse_key(src: str, pos: TomlPos) -> tuple[TomlPos, TomlKey]:
+def toml_parse_key(src: str, pos: TomlPos) -> ta.Tuple[TomlPos, TomlKey]:
     pos, key_part = toml_parse_key_part(src, pos)
     key: TomlKey = (key_part,)
     pos = toml_skip_chars(src, pos, TOML_WS)
     while True:
         try:
-            char: str | None = src[pos]
+            char: ta.Optional[str] = src[pos]
         except IndexError:
             char = None
         if char != '.':
@@ -579,9 +578,9 @@ def toml_parse_key(src: str, pos: TomlPos) -> tuple[TomlPos, TomlKey]:
         pos = toml_skip_chars(src, pos, TOML_WS)
 
 
-def toml_parse_key_part(src: str, pos: TomlPos) -> tuple[TomlPos, str]:
+def toml_parse_key_part(src: str, pos: TomlPos) -> ta.Tuple[TomlPos, str]:
     try:
-        char: str | None = src[pos]
+        char: ta.Optional[str] = src[pos]
     except IndexError:
         char = None
     if char in TOML_BARE_KEY_CHARS:
@@ -595,12 +594,12 @@ def toml_parse_key_part(src: str, pos: TomlPos) -> tuple[TomlPos, str]:
     raise toml_suffixed_err(src, pos, 'Invalid initial character for a key part')
 
 
-def toml_parse_one_line_basic_str(src: str, pos: TomlPos) -> tuple[TomlPos, str]:
+def toml_parse_one_line_basic_str(src: str, pos: TomlPos) -> ta.Tuple[TomlPos, str]:
     pos += 1
     return toml_parse_basic_str(src, pos, multiline=False)
 
 
-def toml_parse_array(src: str, pos: TomlPos, parse_float: TomlParseFloat) -> tuple[TomlPos, list]:
+def toml_parse_array(src: str, pos: TomlPos, parse_float: TomlParseFloat) -> ta.Tuple[TomlPos, list]:
     pos += 1
     array: list = []
 
@@ -624,7 +623,7 @@ def toml_parse_array(src: str, pos: TomlPos, parse_float: TomlParseFloat) -> tup
             return pos + 1, array
 
 
-def toml_parse_inline_table(src: str, pos: TomlPos, parse_float: TomlParseFloat) -> tuple[TomlPos, dict]:
+def toml_parse_inline_table(src: str, pos: TomlPos, parse_float: TomlParseFloat) -> ta.Tuple[TomlPos, dict]:
     pos += 1
     nested_dict = TomlNestedDict()
     flags = TomlFlags()
@@ -658,7 +657,7 @@ def toml_parse_inline_table(src: str, pos: TomlPos, parse_float: TomlParseFloat)
 
 def toml_parse_basic_str_escape(
         src: str, pos: TomlPos, *, multiline: bool = False,
-) -> tuple[TomlPos, str]:
+) -> ta.Tuple[TomlPos, str]:
     escape_id = src[pos:pos + 2]
     pos += 2
     if multiline and escape_id in {'\\ ', '\\\t', '\\\n'}:
@@ -685,11 +684,11 @@ def toml_parse_basic_str_escape(
         raise toml_suffixed_err(src, pos, "Unescaped '\\' in a string") from None
 
 
-def toml_parse_basic_str_escape_multiline(src: str, pos: TomlPos) -> tuple[TomlPos, str]:
+def toml_parse_basic_str_escape_multiline(src: str, pos: TomlPos) -> ta.Tuple[TomlPos, str]:
     return toml_parse_basic_str_escape(src, pos, multiline=True)
 
 
-def toml_parse_hex_char(src: str, pos: TomlPos, hex_len: int) -> tuple[TomlPos, str]:
+def toml_parse_hex_char(src: str, pos: TomlPos, hex_len: int) -> ta.Tuple[TomlPos, str]:
     hex_str = src[pos:pos + hex_len]
     if len(hex_str) != hex_len or not TOML_HEXDIGIT_CHARS.issuperset(hex_str):
         raise toml_suffixed_err(src, pos, 'Invalid hex value')
@@ -700,7 +699,7 @@ def toml_parse_hex_char(src: str, pos: TomlPos, hex_len: int) -> tuple[TomlPos, 
     return pos, chr(hex_int)
 
 
-def toml_parse_literal_str(src: str, pos: TomlPos) -> tuple[TomlPos, str]:
+def toml_parse_literal_str(src: str, pos: TomlPos) -> ta.Tuple[TomlPos, str]:
     pos += 1  # Skip starting apostrophe
     start_pos = pos
     pos = toml_skip_until(
@@ -709,7 +708,7 @@ def toml_parse_literal_str(src: str, pos: TomlPos) -> tuple[TomlPos, str]:
     return pos + 1, src[start_pos:pos]  # Skip ending apostrophe
 
 
-def toml_parse_multiline_str(src: str, pos: TomlPos, *, literal: bool) -> tuple[TomlPos, str]:
+def toml_parse_multiline_str(src: str, pos: TomlPos, *, literal: bool) -> ta.Tuple[TomlPos, str]:
     pos += 3
     if src.startswith('\n', pos):
         pos += 1
@@ -739,7 +738,7 @@ def toml_parse_multiline_str(src: str, pos: TomlPos, *, literal: bool) -> tuple[
     return pos, result + (delim * 2)
 
 
-def toml_parse_basic_str(src: str, pos: TomlPos, *, multiline: bool) -> tuple[TomlPos, str]:
+def toml_parse_basic_str(src: str, pos: TomlPos, *, multiline: bool) -> ta.Tuple[TomlPos, str]:
     if multiline:
         error_on = TOML_ILLEGAL_MULTILINE_BASIC_STR_CHARS
         parse_escapes = toml_parse_basic_str_escape_multiline
@@ -773,9 +772,9 @@ def toml_parse_basic_str(src: str, pos: TomlPos, *, multiline: bool) -> tuple[To
 
 def toml_parse_value(  # noqa: C901
         src: str, pos: TomlPos, parse_float: TomlParseFloat,
-) -> tuple[TomlPos, ta.Any]:
+) -> ta.Tuple[TomlPos, ta.Any]:
     try:
-        char: str | None = src[pos]
+        char: ta.Optional[str] = src[pos]
     except IndexError:
         char = None
 
