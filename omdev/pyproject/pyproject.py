@@ -31,33 +31,12 @@ from ..amalg.std.logs import setup_standard_logging
 from ..amalg.std.runtime import check_runtime_version
 from ..amalg.std.subprocesses import subprocess_check_call
 from ..amalg.std.subprocesses import subprocess_check_output
+from ..amalg.std.toml import toml_loads
 from .venvs import Venv
 from .venvs import build_venv_specs
 
 
 ##
-
-
-def _toml_loads(s: str) -> ta.Any:
-    toml: ta.Any = None
-    try:
-        import tomllib as toml
-    except ImportError:
-        try:
-            mod = __import__('pip._vendor.tomli')
-        except ImportError:
-            pass
-        else:
-            toml = mod._vendor.tomli  # noqa
-    if toml is not None:
-        return toml.loads(s)
-
-    if shutil.which('toml2json') is None:
-        subprocess_check_call(['cargo', 'install', 'toml2json'])
-    jsonb = subprocess_check_output(['toml2json'], input=s.encode())
-
-    import json
-    return json.loads(jsonb.decode().strip())
 
 
 def _find_docker_service_container(cfg_path: str, svc_name: str) -> str:
@@ -95,7 +74,7 @@ class Run:
             buf = self._raw_cfg
         else:
             return self._raw_cfg
-        return _toml_loads(buf)
+        return toml_loads(buf)
 
     @cached_nullary
     def cfg(self) -> ta.Mapping[str, ta.Any]:
