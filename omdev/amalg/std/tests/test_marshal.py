@@ -93,17 +93,40 @@ class Poly(abc.ABC):  # noqa
     pass
 
 
+@dc.dataclass
 class PolyA(Poly):
-    pass
+    a: str
 
 
+@dc.dataclass
 class PolyB(PolyA):
-    pass
+    b: str
 
 
+@dc.dataclass
 class PolyC(Poly):
-    pass
+    c: str
+
+
+@dc.dataclass
+class PolyD(PolyA, abc.ABC):
+    d: str
+
+
+@dc.dataclass
+class PolyE(PolyD):
+    e: str
+
+
+@dc.dataclass
+class PolyF(PolyD):
+    f: str
 
 
 class TestMarshalPolymorphic(AbstractTestMarshal):
-    pass
+    def test_polymorphic(self):
+        for st in [
+            PolyA('a'),
+            (PolyA('a'), Poly),
+        ]:
+            self._assert_marshal(*(st if isinstance(st, tuple) else (st,)))
