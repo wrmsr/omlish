@@ -1,13 +1,14 @@
 # ruff: noqa: UP006
 import abc
 import base64
+import collections.abc
 import dataclasses as dc  # noqa
 import datetime
 import typing as ta
 import uuid
 import weakref  # noqa
 
-from .reflect import is_dict_alias
+from .reflect import is_generic_alias
 
 
 class ObjMarshaler(abc.ABC):
@@ -138,28 +139,51 @@ _OBJ_MARSHALERS: ta.Dict[ta.Any, ObjMarshaler] = {
 }
 
 
+_OBJ_MARSHALER_GENERIC_SEQUENCE_TYPES = {
+    **{t: t for t in (list, tuple, set, frozenset)},
+    **{t: frozenset for t in (collections.abc.Set, collections.abc.MutableSet)},
+    **{t: tuple for t in (collections.abc.Sequence, collections.abc.MutableSequence)},
+}
+
+_OBJ_MARSHALER_GENERIC_MAPPING_TYPES = {
+    **{t: t for t in (dict,)},
+    **{t: dict for t in (collections.abc.Mapping, collections.abc.MutableMapping)},
+}
+
+
+def _make_obj_marshaler(ty: ta.Any) -> ObjMarshaler:
+    if dc.is_dataclass(ty):
+        return DataclassObjMarshaler(
+            ty,
+            {f.name: get_obj_marshaler(f.type) for f in dc.fields(ty)},
+        )
+
+    if is_generic_alias(ty):
+        try:
+            st = _OBJ_MARSHALER_GENERIC_SEQUENCE_TYPES[ta.get_origin(ty)]
+        except KeyError:
+            pass
+        else:
+            [e] = ta.get_args(ty)
+            return SequenceObjMarshaler(st, get_obj_marshaler(e))
+
+        try:
+            mt = _OBJ_MARSHALER_GENERIC_MAPPING_TYPES[ta.get_origin(ty)]
+        except KeyError:
+            pass
+        else:
+            k, v = ta.get_args(ty)
+            return MappingObjMarshaler(mt, get_obj_marshaler(k), get_obj_marshaler(v))
+
+    raise TypeError(ty)
+
+
 def get_obj_marshaler(ty: ta.Any) -> ObjMarshaler:
     try:
         return _OBJ_MARSHALERS[ty]
     except KeyError:
         pass
-
-    m: ObjMarshaler
-
-    if dc.is_dataclass(ty):
-        m = DataclassObjMarshaler(
-            ty,
-            {f.name: get_obj_marshaler(f.type) for f in dc.fields(ty)},
-        )
-
-    elif is_dict_alias(ty):
-        k, v = ta.get_args(ty)
-        return MappingObjMarshaler(dict, get_obj_marshaler(k), get_obj_marshaler(v))
-
-    else:
-        raise TypeError(ty)
-
-    _OBJ_MARSHALERS[ty] = m
+    m = _OBJ_MARSHALERS[ty] = _make_obj_marshaler(ty)
     return m
 
 

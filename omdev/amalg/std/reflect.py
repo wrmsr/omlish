@@ -1,4 +1,3 @@
-import collections.abc
 import functools
 import typing as ta
 
@@ -15,21 +14,8 @@ def is_generic_alias(obj, *, origin: ta.Any = None) -> bool:
         (origin is None or ta.get_origin(obj) is origin)
     )
 
-
-is_list_alias = functools.partial(is_generic_alias, origin=list)
-is_set_alias = functools.partial(is_generic_alias, origin=set)
-is_frozenset_alias = functools.partial(is_generic_alias, origin=frozenset)
-is_dict_alias = functools.partial(is_generic_alias, origin=dict)
-
 is_union_alias = functools.partial(is_generic_alias, origin=ta.Union)
 is_callable_alias = functools.partial(is_generic_alias, origin=ta.Callable)
-
-is_abstractset_alias = functools.partial(is_generic_alias, origin=collections.abc.Set)
-is_mutable_set_alias = functools.partial(is_generic_alias, origin=collections.abc.MutableSet)
-is_mapping_alias = functools.partial(is_generic_alias, origin=collections.abc.Mapping)
-is_mutable_mapping_alias = functools.partial(is_generic_alias, origin=collections.abc.MutableMapping)
-is_sequence_alias = functools.partial(is_generic_alias, origin=collections.abc.Sequence)
-is_mutable_sequence_alias = functools.partial(is_generic_alias, origin=collections.abc.MutableSequence)
 
 
 def is_optional_alias(spec: ta.Any) -> bool:
