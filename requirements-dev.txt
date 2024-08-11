@@ -76,5 +76,5 @@ duckdb==1.0.0
 tokenize_rt==6.0.0
 
 pycparser==2.22
-cff==1.17.0
+cffi==1.17.0
 pcpp==1.30
