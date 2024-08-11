@@ -31,6 +31,7 @@ def randhex(l: int) -> str:
     return hex(secrets.randbits(4 * l))[2:]
 
 
+@pytest.mark.integration
 @ptu.skip_if_cant_import('greenlet')
 @pytest.mark.asyncs(
     'asyncio',
