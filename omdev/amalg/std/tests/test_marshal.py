@@ -2,6 +2,7 @@
 import abc
 import dataclasses as dc
 import datetime
+import enum
 import json
 import typing as ta
 import unittest
@@ -149,5 +150,22 @@ class TestMarshalPolymorphic(AbstractTestMarshal):
 
             (ValueNode(5), Node),
             (OpNode('+', [OpNode('*', [ValueNode(2), ValueNode(3)]), ValueNode(5)]), Node),
+        ]:
+            self._assert_marshal(*(st if isinstance(st, tuple) else (st,)))
+
+
+##
+
+
+class FooEnum(enum.Enum):
+    X = enum.auto()
+    Y = enum.auto()
+    Z = enum.auto()
+
+
+class TestMarshalEnum(AbstractTestMarshal):
+    def test_polymorphic(self):
+        for st in [
+            FooEnum.X,
         ]:
             self._assert_marshal(*(st if isinstance(st, tuple) else (st,)))
