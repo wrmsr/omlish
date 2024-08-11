@@ -8,7 +8,9 @@ import typing as ta
 import uuid
 import weakref  # noqa
 
+from .reflect import get_optional_alias_arg
 from .reflect import is_generic_alias
+from .reflect import is_union_alias
 
 
 class ObjMarshaler(abc.ABC):
@@ -138,7 +140,6 @@ _OBJ_MARSHALERS: ta.Dict[ta.Any, ObjMarshaler] = {
     uuid.UUID: UuidObjMarshaler(),
 }
 
-
 _OBJ_MARSHALER_GENERIC_SEQUENCE_TYPES = {
     **{t: t for t in (list, tuple, set, frozenset)},
     **{t: frozenset for t in (collections.abc.Set, collections.abc.MutableSet)},
@@ -174,6 +175,9 @@ def _make_obj_marshaler(ty: ta.Any) -> ObjMarshaler:
         else:
             k, v = ta.get_args(ty)
             return MappingObjMarshaler(mt, get_obj_marshaler(k), get_obj_marshaler(v))
+
+        if is_union_alias(ty):
+            return OptionalObjMarshaler(get_obj_marshaler(get_optional_alias_arg(ty)))
 
     raise TypeError(ty)
 
