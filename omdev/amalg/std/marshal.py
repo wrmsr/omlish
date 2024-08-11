@@ -156,6 +156,8 @@ _OBJ_MARSHALERS: ta.Dict[ta.Any, ObjMarshaler] = {
     **{t: SequenceObjMarshaler(t, DynamicObjMarshaler()) for t in (list, tuple, set, frozenset)},
     **{t: MappingObjMarshaler(t, DynamicObjMarshaler(), DynamicObjMarshaler()) for t in (dict,)},
 
+    ta.Any: DynamicObjMarshaler(),
+
     datetime.datetime: DatetimeObjMarshaler(),
     uuid.UUID: UuidObjMarshaler(),
 }
