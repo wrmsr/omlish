@@ -13,7 +13,7 @@ from .. import marshal as msh
 
 
 _DEBUG_PRINT = lambda *a: None  # noqa
-_DEBUG_PRINT = print
+# _DEBUG_PRINT = print
 
 
 class AbstractTestMarshal(unittest.TestCase):
