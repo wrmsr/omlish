@@ -117,16 +117,20 @@ class DataclassObjMarshaler(ObjMarshaler):
 class PolymorphicObjMarshaler(ObjMarshaler):
     class Impl(ta.NamedTuple):
         ty: type
-        name: str
+        tag: str
         m: ObjMarshaler
 
-    impls: ta.Sequence[Impl]
+    impls_by_ty: ta.Mapping[type, Impl]
+    impls_by_tag: ta.Mapping[str, Impl]
 
     def marshal(self, o: ta.Any) -> ta.Any:
-        raise NotImplementedError
+        impl = self.impls_by_ty[type(o)]
+        return {impl.tag: impl.m.marshal(o)}
 
     def unmarshal(self, o: ta.Any) -> ta.Any:
-        raise NotImplementedError
+        [(t, v)] = o.items()
+        impl = self.impls_by_tag[t]
+        return impl.m.unmarshal(v)
 
 
 class DatetimeObjMarshaler(ObjMarshaler):
@@ -170,7 +174,7 @@ _OBJ_MARSHALER_GENERIC_MAPPING_TYPES: ta.Dict[ta.Any, type] = {
 
 def _make_obj_marshaler(ty: ta.Any) -> ObjMarshaler:
     if isinstance(ty, type) and abc.ABC in ty.__bases__:
-        return PolymorphicObjMarshaler([
+        impls = [
             PolymorphicObjMarshaler.Impl(
                 ity,
                 ity.__name__,
@@ -178,7 +182,11 @@ def _make_obj_marshaler(ty: ta.Any) -> ObjMarshaler:
             )
             for ity in ty.__subclasses__()
             if abc.ABC not in ity.__bases__
-        ])
+        ]
+        return PolymorphicObjMarshaler(
+            {i.ty: i for i in impls},
+            {i.tag: i for i in impls},
+        )
 
     if dc.is_dataclass(ty):
         return DataclassObjMarshaler(
