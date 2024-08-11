@@ -9,17 +9,17 @@ import typing as ta
 import pytest
 
 from .... import check
-from .... import collections as col
 from ._registry import register
 
 
 Configable = pytest.FixtureRequest | pytest.Config
 
 
-SWITCHES = col.OrderedSet([
-    'online',
-    'slow',
-])
+SWITCHES = {
+    'docker': True,
+    'online': True,
+    'slow': False,
+}
 
 
 def _get_obj_config(obj: Configable) -> pytest.Config:
@@ -52,9 +52,15 @@ def get_switches(obj: Configable) -> ta.Mapping[str, bool]:
 @register
 class SwitchesPlugin:
 
+    def pytest_configure(self, config):
+        for sw in SWITCHES:
+            config.addinivalue_line('markers', f'{sw}: mark test as {sw}')
+
     def pytest_addoption(self, parser):
         for sw in SWITCHES:
             parser.addoption(f'--no-{sw}', action='store_true', default=False, help=f'disable {sw} tests')
+            # parser.addoption(f'--{sw}', action='store_true', default=False, help=f'enables {sw} tests')
+            # parser.addoption(f'--only-{sw}', action='store_true', default=False, help=f'enables only {sw} tests')
 
     def pytest_collection_modifyitems(self, config, items):
         for sw in SWITCHES:
@@ -64,7 +70,3 @@ class SwitchesPlugin:
             for item in items:
                 if sw in item.keywords:
                     item.add_marker(skip)
-
-    def pytest_configure(self, config):
-        for sw in SWITCHES:
-            config.addinivalue_line('markers', f'{sw}: mark test as {sw}')
