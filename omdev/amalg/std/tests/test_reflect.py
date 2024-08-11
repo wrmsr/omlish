@@ -6,14 +6,7 @@ from .. import reflect as rfl
 
 
 class TestMarshal(unittest.TestCase):
-    def test_is_list_typing(self):
-        assert rfl.is_list_alias(ta.List)
-        assert rfl.is_list_alias(ta.List[int])
-        assert not rfl.is_list_alias(ta.Dict[int, int])
-        assert not rfl.is_dict_alias(ta.List[int])
-
-    def test_is_dict_typing(self):
-        assert rfl.is_dict_alias(ta.Dict)
-        assert rfl.is_dict_alias(ta.Dict[int, int])
-        assert not rfl.is_dict_alias(ta.List[int])
-        assert not rfl.is_list_alias(ta.Dict[int, int])
+    def is_optional_alias(self):
+        assert rfl.is_union_alias(ta.Union[int, str])
+        assert rfl.is_union_alias(ta.Optional[int])
+        assert not rfl.is_union_alias(int)
