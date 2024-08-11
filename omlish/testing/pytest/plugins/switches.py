@@ -4,12 +4,12 @@ TODO:
  - dynamic registration
  - dynamic switching (skip docker if not running, skip online if not online, ...)
 """
-import enum
 import typing as ta
 
 import pytest
 
 from .... import check
+from .... import collections as col
 from ._registry import register
 
 
@@ -19,13 +19,14 @@ Configable = pytest.FixtureRequest | pytest.Config
 SWITCHES = {
     'docker': True,
     'online': True,
+    'integration': True,
     'slow': False,
 }
 
 
 SwitchState: ta.TypeAlias = bool | ta.Literal['only']
 
-SWITCH_STATE_OPT_PREFIXES = {
+SWITCH_STATE_OPT_PREFIXES: ta.Mapping[SwitchState, str] = {
     True: '--',
     False: '--no-',
     'only': '--only-',
@@ -53,7 +54,7 @@ def skip_if_disabled(obj: Configable | None, name: str) -> None:
 
 
 def get_switches(obj: Configable) -> ta.Mapping[str, SwitchState]:
-    ret = {}
+    ret: dict[str, SwitchState] = {}
     for sw, d in SWITCHES.items():
         sts = {
             st
@@ -83,11 +84,22 @@ class SwitchesPlugin:
             parser.addoption(f'--only-{sw}', action='store_true', default=False, help=f'enables only {sw} tests')
 
     def pytest_collection_modifyitems(self, config, items):
-        sws = get_switches(config)
-        for sw in SWITCHES:
-            if not config.getoption(f'--no-{sw}'):
-                continue
-            skip = pytest.mark.skip(reason=f'omit --no-{sw} to run')
-            for item in items:
-                if sw in item.keywords:
-                    item.add_marker(skip)
+        sts = get_switches(config)
+        stx = col.multi_map(map(reversed, sts.items()))  # type: ignore
+        ts, fs, onlys = (stx.get(k, ()) for k in (True, False, 'only'))
+
+        def process(item):
+            sws = {sw for sw in SWITCHES if sw in item.keywords}
+
+            if onlys:
+                if not any(sw in onlys for sw in sws):
+                    item.add_marker(pytest.mark.skip(reason=f'skipping switches {sws}'))
+                    return
+
+            else:
+                for sw in sws:
+                    if sw in fs:
+                        item.add_marker(pytest.mark.skip(reason=f'skipping switches {sw}'))
+
+        for item in items:
+            process(item)
