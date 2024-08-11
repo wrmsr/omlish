@@ -1,3 +1,7 @@
+"""
+TODO:
+ - pickle stdlib objs? have to pin to 3.8 pickle protocol, will be cross-version
+"""
 # ruff: noqa: UP006
 import abc
 import base64
@@ -8,6 +12,7 @@ import typing as ta
 import uuid
 import weakref  # noqa
 
+from .check import check_not_none
 from .reflect import get_optional_alias_arg
 from .reflect import is_generic_alias
 from .reflect import is_union_alias
@@ -29,6 +34,17 @@ class NopObjMarshaler(ObjMarshaler):
 
     def unmarshal(self, o: ta.Any) -> ta.Any:
         return o
+
+
+@dc.dataclass()
+class ProxyObjMarshaler(ObjMarshaler):
+    m: ta.Optional[ObjMarshaler] = None
+
+    def marshal(self, o: ta.Any) -> ta.Any:
+        return check_not_none(self.m).marshal(o)
+
+    def unmarshal(self, o: ta.Any) -> ta.Any:
+        return check_not_none(self.m).unmarshal(o)
 
 
 @dc.dataclass(frozen=True)
@@ -224,8 +240,17 @@ def get_obj_marshaler(ty: ta.Any) -> ObjMarshaler:
         return _OBJ_MARSHALERS[ty]
     except KeyError:
         pass
-    m = _OBJ_MARSHALERS[ty] = _make_obj_marshaler(ty)
-    return m
+    p = ProxyObjMarshaler()
+    _OBJ_MARSHALERS[ty] = p
+    try:
+        m = _make_obj_marshaler(ty)
+    except Exception:
+        del _OBJ_MARSHALERS[ty]
+        raise
+    else:
+        p.m = m
+        _OBJ_MARSHALERS[ty] = m
+        return m
 
 
 def marshal_obj(o: ta.Any, ty: ta.Any = None) -> ta.Any:
