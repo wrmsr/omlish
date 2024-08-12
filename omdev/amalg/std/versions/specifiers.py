@@ -26,15 +26,15 @@ from __future__ import annotations
 import abc
 import itertools
 import re
-from typing import Callable, Iterable, Iterator, TypeVar, Union
+import typing as ta
 
-from .utils import canonicalize_version
+from .versions import canonicalize_version
 from .versions import Version
 
 
-UnparsedVersion = Union[Version, str]
-UnparsedVersionVar = TypeVar("UnparsedVersionVar", bound=UnparsedVersion)
-CallableOperator = Callable[[Version, str], bool]
+UnparsedVersion = ta.Union[Version, str]
+UnparsedVersionVar = ta.TypeVar("UnparsedVersionVar", bound=UnparsedVersion)
+CallableOperator = ta.Callable[[Version, str], bool]
 
 
 def _coerce_version(version: UnparsedVersion) -> Version:
@@ -75,8 +75,10 @@ class BaseSpecifier(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def filter(
-        self, iterable: Iterable[UnparsedVersionVar], prereleases: bool | None = None
-    ) -> Iterator[UnparsedVersionVar]:
+            self,
+            iterable: ta.Iterable[UnparsedVersionVar],
+            prereleases: bool | None = None,
+    ) -> ta.Iterator[UnparsedVersionVar]:
         raise NotImplementedError
 
 
@@ -186,7 +188,7 @@ class Specifier(BaseSpecifier):
 
         self._prereleases = prereleases
 
-    @property  # type: ignore[override]
+    @property
     def prereleases(self) -> bool:
         if self._prereleases is not None:
             return self._prereleases
@@ -336,8 +338,10 @@ class Specifier(BaseSpecifier):
         return operator_callable(normalized_item, self.version)
 
     def filter(
-        self, iterable: Iterable[UnparsedVersionVar], prereleases: bool | None = None
-    ) -> Iterator[UnparsedVersionVar]:
+            self,
+            iterable: ta.Iterable[UnparsedVersionVar],
+            prereleases: bool | None = None,
+    ) -> ta.Iterator[UnparsedVersionVar]:
         yielded = False
         found_prereleases = []
 
@@ -388,15 +392,12 @@ def _is_not_suffix(segment: str) -> bool:
 def _pad_version(left: list[str], right: list[str]) -> tuple[list[str], list[str]]:
     left_split, right_split = [], []
 
-    # Get the release segment of our versions
     left_split.append(list(itertools.takewhile(lambda x: x.isdigit(), left)))
     right_split.append(list(itertools.takewhile(lambda x: x.isdigit(), right)))
 
-    # Get the rest of our versions
     left_split.append(left[len(left_split[0]) :])
     right_split.append(right[len(right_split[0]) :])
 
-    # Insert our padding
     left_split.insert(1, ["0"] * max(0, len(right_split[0]) - len(left_split[0])))
     right_split.insert(1, ["0"] * max(0, len(left_split[0]) - len(right_split[0])))
 
@@ -473,7 +474,7 @@ class SpecifierSet(BaseSpecifier):
     def __len__(self) -> int:
         return len(self._specs)
 
-    def __iter__(self) -> Iterator[Specifier]:
+    def __iter__(self) -> ta.Iterator[Specifier]:
         return iter(self._specs)
 
     def __contains__(self, item: UnparsedVersion) -> bool:
@@ -500,10 +501,10 @@ class SpecifierSet(BaseSpecifier):
         return all(s.contains(item, prereleases=prereleases) for s in self._specs)
 
     def filter(
-        self,
-            iterable: Iterable[UnparsedVersionVar],
+            self,
+            iterable: ta.Iterable[UnparsedVersionVar],
             prereleases: bool | None = None,
-    ) -> Iterator[UnparsedVersionVar]:
+    ) -> ta.Iterator[UnparsedVersionVar]:
         if prereleases is None:
             prereleases = self.prereleases
 

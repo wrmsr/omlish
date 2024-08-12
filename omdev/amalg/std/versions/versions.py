@@ -29,25 +29,6 @@ import typing as ta
 ##
 
 
-# Core metadata spec for `Name`
-_validate_regex = re.compile( r"^([A-Z0-9]|[A-Z0-9][A-Z0-9._-]*[A-Z0-9])$", re.IGNORECASE)
-_canonicalize_regex = re.compile(r"[-_.]+")
-_normalized_regex = re.compile(r"^([a-z0-9]|[a-z0-9]([a-z0-9-](?!--))*[a-z0-9])$")
-# PEP 427: The build number must start with a digit.
-_build_tag_regex = re.compile(r"(\d+)(.*)")
-
-
-def canonicalize_name(name: str, *, validate: bool = False) -> NormalizedName:
-    if validate and not _validate_regex.match(name):
-        raise InvalidName(f"name is invalid: {name!r}")
-    # This is taken from PEP 503.
-    value = _canonicalize_regex.sub("-", name).lower()
-    return cast(NormalizedName, value)
-
-
-##
-
-
 class InfinityVersionType:
     def __repr__(self) -> str:
         return 'Infinity'
@@ -397,3 +378,44 @@ def _version_cmpkey(
         _local = tuple((i, '') if isinstance(i, int) else (NegativeInfinityVersion, i) for i in local)
 
     return epoch, _release, _pre, _post, _dev, _local
+
+
+##
+
+
+def canonicalize_version(
+        version: ta.Union[Version, str],
+        *,
+        strip_trailing_zero: bool = True,
+) -> str:
+    if isinstance(version, str):
+        try:
+            parsed = Version(version)
+        except InvalidVersion:
+            return version
+    else:
+        parsed = version
+
+    parts = []
+
+    if parsed.epoch != 0:
+        parts.append(f"{parsed.epoch}!")
+
+    release_segment = ".".join(str(x) for x in parsed.release)
+    if strip_trailing_zero:
+        release_segment = re.sub(r"(\.0)+$", "", release_segment)
+    parts.append(release_segment)
+
+    if parsed.pre is not None:
+        parts.append("".join(str(x) for x in parsed.pre))
+
+    if parsed.post is not None:
+        parts.append(f".post{parsed.post}")
+
+    if parsed.dev is not None:
+        parts.append(f".dev{parsed.dev}")
+
+    if parsed.local is not None:
+        parts.append(f"+{parsed.local}")
+
+    return "".join(parts)
