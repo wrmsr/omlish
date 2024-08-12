@@ -18,7 +18,6 @@ import dataclasses as dc
 import json
 import shutil
 import sys
-import sysconfig
 import typing as ta
 
 from ...amalg.std.cached import cached_nullary
@@ -39,9 +38,9 @@ class InterpVersion:
 
 @dc.dataclass(frozen=True)
 class Interp:
-    version: InterpVersion
+    exe: str
     provider: str
-    path: str
+    version: InterpVersion
 
 
 ##
@@ -118,9 +117,9 @@ class RunningInterpProvider(InterpProvider):
         if version != self.version():
             raise KeyError(version)
         return Interp(
-            self.version(),
-            self.name,
-            sys.executable,
+            exe=sys.executable,
+            provider=self.name,
+            version=self.version(),
         )
 
 
@@ -155,7 +154,7 @@ class SystemInterpProvider(InterpProvider):
         if version != self.version():
             raise KeyError(version)
         return Interp(
-            self.version(),
-            self.name,
-            self.exe(),
+            exe=self.exe(),
+            provider=self.name,
+            version=self.version(),
         )
