@@ -1,5 +1,5 @@
-import unittest
 import sys
+import unittest
 
 from .. import pyenv as pe
 
