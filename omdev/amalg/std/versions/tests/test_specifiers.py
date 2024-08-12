@@ -1,4 +1,4 @@
-# ruff: noqa: PT009 PT027
+# ruff: noqa: PT009
 import unittest
 
 from ..specifiers import Specifier
