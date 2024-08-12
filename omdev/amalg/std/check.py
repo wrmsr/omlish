@@ -11,6 +11,12 @@ def check_isinstance(v: T, spec: ta.Union[ta.Type[T], tuple]) -> T:
     return v
 
 
+def check_not_isinstance(v: T, spec: ta.Union[type, tuple]) -> T:
+    if isinstance(v, spec):
+        raise TypeError(v)
+    return v
+
+
 def check_not_none(v: ta.Optional[T]) -> T:
     if v is None:
         raise ValueError

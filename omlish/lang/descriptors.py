@@ -114,7 +114,7 @@ class _decorator_descriptor:  # noqa
             self._wrapper, self._fn = wrapper, fn
             update_wrapper_except_dict(self, fn)
 
-        def __get__(self, instance, owner):
+        def __get__(self, instance, owner=None):
             return functools.update_wrapper(functools.partial(self._wrapper, fn := self._fn.__get__(instance, owner)), fn)  # noqa
 
     else:
@@ -123,7 +123,7 @@ class _decorator_descriptor:  # noqa
             self._md = _has_method_descriptor(fn)
             update_wrapper_except_dict(self, fn)
 
-        def __get__(self, instance, owner):
+        def __get__(self, instance, owner=None):
             fn = self._fn.__get__(instance, owner)
             if self._md or instance is not None:
                 @functools.wraps(fn)
@@ -218,7 +218,7 @@ class _ClassOnly:
     def _mth(self, x):
         self.__mth = x
 
-    def __get__(self, instance, owner):
+    def __get__(self, instance, owner=None):
         if instance is not None:
             raise TypeError(f'method must not be used on instance: {self._mth}')
         return self._mth[0].__get__(instance, owner)

@@ -136,7 +136,7 @@ class _cached_class_property:  # noqa
     def __set_name__(self, owner, name):
         self._attr = '_' + name
 
-    def __get__(self, instance, owner):
+    def __get__(self, instance, owner=None):
         if owner is None:
             if instance is None:
                 raise RuntimeError

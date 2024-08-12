@@ -1,5 +1,11 @@
+"""
+TODO:
+ - https://intellij-support.jetbrains.com/hc/en-us/community/posts/206608485-Multiple-Jetbrain-IDE-sharing-the-same-project-directory really?
+  - aight, generate a whole cmake subdir with symlinks to src files
+"""  # noqa
 import io
 import os.path
+import shutil
 import sys
 
 from omlish import check
@@ -9,6 +15,16 @@ from .. import cmake
 
 def _main() -> None:
     # py_root = '$ENV{HOME}/.pyenv/versions/3.11.8/'
+
+    prj_root = os.path.abspath(os.getcwd())
+    if not os.path.isfile(os.path.join(prj_root, 'pyproject.toml')):
+        raise Exception('Must be run in project root')
+
+    cmake_dir = os.path.join(prj_root, 'cmake')
+    if os.path.exists(cmake_dir):
+        shutil.rmtree(cmake_dir)
+
+    os.mkdir(cmake_dir)
 
     venv_exe = sys.executable
     venv_root = os.path.abspath(os.path.join(os.path.dirname(venv_exe), '..'))
@@ -93,10 +109,21 @@ def _main() -> None:
         ('junk', ['x/dev/c/junk.cc']),
         ('_uuid', ['x/dev/c/_uuid.cc']),
     ]:
+        src_links = []
+        for sf in ext_srcs:
+            sl = os.path.join(cmake_dir, sf)
+            sal = os.path.abspath(sl)
+            sd = os.path.dirname(sal)
+            if not os.path.isdir(sd):
+                os.makedirs(sd)
+            rp = os.path.relpath(os.path.abspath(sf), sd)
+            os.symlink(rp, sal)
+            src_links.append(sl)
+
         gen.write_target(cmake.ModuleLibrary(
             ext_name,
             src_files=[
-                *ext_srcs,
+                *src_links,
             ],
             include_dirs=[
                 f'${{{var_prefix}_INCLUDE_DIRECTORIES}}',
@@ -113,7 +140,7 @@ def _main() -> None:
         ))
 
     print(out.getvalue())
-    with open('CMakeLists.txt', 'w') as f:
+    with open(os.path.join(cmake_dir, 'CMakeLists.txt'), 'w') as f:
         f.write(out.getvalue())
 
 
