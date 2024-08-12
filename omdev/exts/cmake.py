@@ -3,9 +3,18 @@ TODO:
  - symlink headers, included src files (hamt_impl, ...)
  - point / copy output to dst dirs
 
+==
+
 Done:
  - https://intellij-support.jetbrains.com/hc/en-us/community/posts/206608485-Multiple-Jetbrain-IDE-sharing-the-same-project-directory really?
   - aight, generate a whole cmake subdir with symlinks to src files lol
+
+==
+
+add_custom_command(TARGET junk POST_BUILD
+        COMMAND echo ${CMAKE_COMMAND} -E copy $<TARGET_FILE_NAME:junk>
+        COMMAND_EXPAND_LISTS
+)
 """  # noqa
 import io
 import os.path
@@ -26,9 +35,19 @@ def _main() -> None:
 
     cmake_dir = os.path.join(prj_root, 'cmake')
     if os.path.exists(cmake_dir):
-        shutil.rmtree(cmake_dir)
+        for e in os.listdir(cmake_dir):
+            if e == '.idea':
+                continue
+            ep = os.path.join(cmake_dir, e)
+            if os.path.isfile(ep):
+                os.unlink(ep)
+            else:
+                shutil.rmtree(ep)
+    else:
+        os.mkdir(cmake_dir)
 
-    os.mkdir(cmake_dir)
+    with open(os.path.join(cmake_dir, '.gitignore'), 'w') as f:
+        f.write('\n'.join(sorted(['/cmake-*', '/build'])))
 
     venv_exe = sys.executable
     venv_root = os.path.abspath(os.path.join(os.path.dirname(venv_exe), '..'))
@@ -109,25 +128,22 @@ def _main() -> None:
         ),
     ))
 
-    for ext_name, ext_srcs in [
-        ('junk', ['x/dev/c/junk.cc']),
-        ('_uuid', ['x/dev/c/_uuid.cc']),
+    for ext_name, ext_src in [
+        ('junk', 'x/dev/c/junk.cc'),
+        ('_uuid', 'x/dev/c/_uuid.cc'),
     ]:
-        src_links = []
-        for sf in ext_srcs:
-            sl = os.path.join(cmake_dir, sf)
-            sal = os.path.abspath(sl)
-            sd = os.path.dirname(sal)
-            if not os.path.isdir(sd):
-                os.makedirs(sd)
-            rp = os.path.relpath(os.path.abspath(sf), sd)
-            os.symlink(rp, sal)
-            src_links.append(sl)
+        sl = os.path.join(cmake_dir, ext_src)
+        sal = os.path.abspath(sl)
+        sd = os.path.dirname(sal)
+        if not os.path.isdir(sd):
+            os.makedirs(sd)
+        rp = os.path.relpath(os.path.abspath(ext_src), sd)
+        os.symlink(rp, sal)
 
         gen.write_target(cmake.ModuleLibrary(
             ext_name,
             src_files=[
-                *src_links,
+                sl,
             ],
             include_dirs=[
                 f'${{{var_prefix}_INCLUDE_DIRECTORIES}}',
@@ -140,6 +156,19 @@ def _main() -> None:
             ],
             link_libs=[
                 f'${{{var_prefix}_LINK_LIBRARIES}}',
+            ],
+            extra_cmds=[
+                cmake.Command(
+                    'add_custom_command',
+                    ['TARGET', ext_name, 'POST_BUILD'],
+                    [
+                        ' '.join([
+                            'COMMAND echo ${CMAKE_COMMAND} -E ',
+                            f'copy $<TARGET_FILE_NAME:{ext_name}> {os.path.dirname(rp)}/foo/',
+                        ]),
+                        'COMMAND_EXPAND_LISTS',
+                    ],
+                ),
             ],
         ))
 
