@@ -14,32 +14,17 @@ from .datatypes import octal_type
 
 @dc.dataclass(frozen=True)
 class ServerConfig:
-    def add(
-            self,
-            name=None,  # attribute name on self
-            confname=None,  # dotted config path name
-            short=None,  # short option name
-            long=None,  # long option name
-
-            handler=None,  # handler (defaults to string)
-            default=None,  # default value
-            required=None,  # message if not provided
-            flag=None,  # if not None, flag value
-            env=None,  # if not None, environment variable
-    ):
-        pass
-
     user: str | None = None
     nodaemon: bool = False
-    umask: int = dc.xfield(0o22, coerce=octal_type)
-    directory: str | None = dc.xfield(None, coerce=lambda d: existing_directory(d) if d is not None else None)
-    logfile: str = dc.xfield('supervisord.log', coerce=existing_dirpath)
-    logfile_maxbytes: int = dc.xfield(50 * 1024 * 1024, coerce=byte_size)
-    logfile_backups: int = dc.xfield(10)
-    loglevel: int = dc.xfield(logging.INFO, coerce=logging_level)
-    pidfile: str = dc.xfield('supervisord.pid', coerce=existing_dirpath)
-    identifier: str = dc.xfield('supervisor')
-    child_logdir: str = dc.xfield(default_factory=lambda: tempfile.gettempdir(), coerce=existing_directory)
+    umask: int = 0o22
+    directory: str | None = None
+    logfile: str = 'supervisord.log'
+    logfile_maxbytes: int = 50 * 1024 * 1024
+    logfile_backups: int = 10
+    loglevel: int = logging.INFO
+    pidfile: str = 'supervisord.pid'
+    identifier: str = 'supervisor'
+    child_logdir: str = '/dev/null'
     minfds: int = 1024
     minprocs: int = 200
     nocleanup: bool = False
@@ -47,6 +32,29 @@ class ServerConfig:
     silent: bool = False
 
     groups: ta.Sequence['ProcessGroupConfig'] | None = None
+
+    @classmethod
+    def new(
+            cls,
+            umask: int | str = 0o22,
+            directory: str | None = None,
+            logfile: str = 'supervisord.log',
+            logfile_maxbytes: int | str = 50 * 1024 * 1024,
+            loglevel: int | str = logging.INFO,
+            pidfile: str = 'supervisord.pid',
+            child_logdir: str | None = None,
+            **kwargs: ta.Any
+    ) -> 'ServerConfig':
+        return cls(
+            umask=octal_type(umask),
+            directory=existing_directory(directory) if directory is not None else None,
+            logfile=existing_dirpath(logfile),
+            logfile_maxbytes=byte_size(logfile_maxbytes),
+            loglevel=logging_level(loglevel),
+            pidfile=existing_dirpath(pidfile),
+            child_logdir=tempfile.gettempdir() if not child_logdir else child_logdir,
+            **kwargs,
+        )
 
 
 @dc.dataclass(frozen=True)

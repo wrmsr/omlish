@@ -8,6 +8,8 @@ import logging
 import signal
 import time
 
+from omdev.amalg.std.logs import setup_standard_logging
+
 from .compat import ExitNow
 from .compat import as_string
 from .compat import decode_wait_status
@@ -302,13 +304,12 @@ def timeslice(period, when):
 
 
 def main(args=None, test=False):
-    from omlish import logs
-    logs.configure_standard_logging('INFO')
+    setup_standard_logging('INFO')
 
     # if we hup, restart by making a new Supervisor()
     first = True
     while True:
-        config = ServerConfig(
+        config = ServerConfig.new(
             nodaemon=True,
             groups=[
                 ProcessGroupConfig(
