@@ -149,26 +149,26 @@ class Venv:
             return False
 
         log.info('Using interpreter %s', (ie := self.interp_exe()))
-        subprocess_check_call([ie, '-m', 'venv', dn])
+        subprocess_check_call(ie, '-m', 'venv', dn)
 
         ve = self.exe()
 
-        subprocess_check_call([
+        subprocess_check_call(
             ve,
             '-m', 'pip',
             'install', '-v', '--upgrade',
             'pip',
             'setuptools',
             'wheel',
-        ])
+        )
 
         if (sr := self._spec.requires):
-            subprocess_check_call([
+            subprocess_check_call(
                 ve,
                 '-m', 'pip',
                 'install', '-v',
                 *itertools.chain.from_iterable(['-r', r] for r in ([sr] if isinstance(sr, str) else sr)),
-            ])
+            )
 
         return True
 

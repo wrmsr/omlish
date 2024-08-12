@@ -103,7 +103,7 @@ def _venv_cmd(args) -> None:
             f'--_docker_container={shlex.quote(sd)}',
             *map(shlex.quote, sys.argv[1:]),
         ])
-        subprocess_check_call([
+        subprocess_check_call(
             'docker',
             'exec',
             *itertools.chain.from_iterable(
@@ -112,7 +112,7 @@ def _venv_cmd(args) -> None:
             ),
             '-it', ctr,
             'bash', '--login', '-c', script,
-        ])
+        )
         return
 
     venv.create()
@@ -142,7 +142,7 @@ def _venv_cmd(args) -> None:
         print('\n'.join(venv.srcs()))
 
     elif cmd == 'test':
-        subprocess_check_call([venv.exe(), '-m', 'pytest', *(args.args or []), *venv.srcs()])
+        subprocess_check_call(venv.exe(), '-m', 'pytest', *(args.args or []), *venv.srcs())
 
     else:
         raise Exception(f'unknown subcommand: {cmd}')
