@@ -5,10 +5,10 @@ import typing as ta
 from ...amalg.std.cached import cached_nullary
 from ..subprocesses import cmd
 from .pyenv import PyenvInstallOpts
-from .pyenv import PyenvInterpResolver
+from .pyenv import PyenvInterpProvider
 
 
-class MacInterpResolver(PyenvInterpResolver):
+class MacInterpProvider(PyenvInterpProvider):
 
     @cached_nullary
     def _framework_pio(self) -> PyenvInstallOpts:

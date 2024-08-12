@@ -1,10 +1,10 @@
 import typing as ta
 
 from .pyenv import PyenvInstallOpts
-from .pyenv import PyenvInterpResolver
+from .pyenv import PyenvInterpProvider
 
 
-class LinuxInterpResolver(PyenvInterpResolver):
+class LinuxInterpProvider(PyenvInterpProvider):
 
     def _pyenv_pios(self) -> ta.Sequence[PyenvInstallOpts]:
         return [
