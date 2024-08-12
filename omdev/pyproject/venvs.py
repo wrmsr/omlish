@@ -41,13 +41,13 @@ def _get_interp_exe(s: str, *, interp_script: ta.Optional[str] = None) -> str:
     ver = vers.get(s[1:], s[1:])
     if interp_script is None:
         interp_script = os.path.join(os.path.dirname(__file__), 'interp.py')
-    exe = subprocess_check_output([
+    exe = subprocess_check_output(
         sys.executable,
         interp_script,
         'resolve',
         *(['--debug'] if dbg else []),
         ver,
-    ]).decode().strip()
+    ).decode().strip()
     return exe
 
 
