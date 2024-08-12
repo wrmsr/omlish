@@ -23,8 +23,8 @@ import typing as ta
 
 from ...amalg.std.cached import cached_nullary
 from ...amalg.std.subprocesses import subprocess_check_output
-from ...amalg.std.versions import Version
-from ...amalg.std.versions import parse_version
+from ...amalg.std.versions.versions import Version
+from ...amalg.std.versions.versions import parse_version
 
 
 ##

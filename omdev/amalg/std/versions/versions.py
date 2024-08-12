@@ -399,23 +399,23 @@ def canonicalize_version(
     parts = []
 
     if parsed.epoch != 0:
-        parts.append(f"{parsed.epoch}!")
+        parts.append(f'{parsed.epoch}!')
 
-    release_segment = ".".join(str(x) for x in parsed.release)
+    release_segment = '.'.join(str(x) for x in parsed.release)
     if strip_trailing_zero:
-        release_segment = re.sub(r"(\.0)+$", "", release_segment)
+        release_segment = re.sub(r'(\.0)+$', '', release_segment)
     parts.append(release_segment)
 
     if parsed.pre is not None:
-        parts.append("".join(str(x) for x in parsed.pre))
+        parts.append(''.join(str(x) for x in parsed.pre))
 
     if parsed.post is not None:
-        parts.append(f".post{parsed.post}")
+        parts.append(f'.post{parsed.post}')
 
     if parsed.dev is not None:
-        parts.append(f".dev{parsed.dev}")
+        parts.append(f'.dev{parsed.dev}')
 
     if parsed.local is not None:
-        parts.append(f"+{parsed.local}")
+        parts.append(f'+{parsed.local}')
 
-    return "".join(parts)
+    return ''.join(parts)
