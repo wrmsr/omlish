@@ -20,14 +20,15 @@
 # Apache License, Version 2.0, and the BSD License. See the LICENSE file in the root of this repository for complete
 # details.
 # https://github.com/pypa/packaging/blob/2c885fe91a54559e2382902dce28428ad2887be5/src/packaging/version.py
-import typing as ta
+# ruff: noqa: UP006 UP007
 import itertools
 import re
+import typing as ta
 
 
 class InfinityType:
     def __repr__(self) -> str:
-        return "Infinity"
+        return 'Infinity'
 
     def __hash__(self) -> int:
         return hash(repr(self))
@@ -47,7 +48,7 @@ class InfinityType:
     def __ge__(self, other: object) -> bool:
         return True
 
-    def __neg__(self: object) -> "NegativeInfinityType":
+    def __neg__(self: object) -> 'NegativeInfinityType':
         return NegativeInfinity
 
 
@@ -56,7 +57,7 @@ Infinity = InfinityType()
 
 class NegativeInfinityType:
     def __repr__(self) -> str:
-        return "-Infinity"
+        return '-Infinity'
 
     def __hash__(self) -> int:
         return hash(repr(self))
@@ -82,16 +83,16 @@ class NegativeInfinityType:
 
 NegativeInfinity = NegativeInfinityType()
 
-LocalType = ta.Tuple[ta.Union[int, str], ...]
+LocalType = tuple[int | str, ...]
 
-CmpPrePostDevType = ta.Union[InfinityType, NegativeInfinityType, ta.Tuple[str, int]]
+CmpPrePostDevType = ta.Union[InfinityType, NegativeInfinityType, tuple[str, int]]
 CmpLocalType = ta.Union[
     NegativeInfinityType,
-    ta.Tuple[ta.Union[ta.Tuple[int, str], ta.Tuple[NegativeInfinityType, ta.Union[int, str]]], ...],
+    tuple[tuple[int, str] | tuple[NegativeInfinityType, int | str], ...],
 ]
-CmpKey = ta.Tuple[
+CmpKey = tuple[
     int,
-    ta.Tuple[int, ...],
+    tuple[int, ...],
     CmpPrePostDevType,
     CmpPrePostDevType,
     CmpPrePostDevType,
@@ -102,23 +103,23 @@ VersionComparisonMethod = ta.Callable[[CmpKey, CmpKey], bool]
 
 class _Version(ta.NamedTuple):
     epoch: int
-    release: ta.Tuple[int, ...]
-    dev: ta.Optional[ta.Tuple[str, int]]
-    pre: ta.Optional[ta.Tuple[str, int]]
-    post: ta.Optional[ta.Tuple[str, int]]
-    local: ta.Optional[LocalType]
+    release: tuple[int, ...]
+    dev: tuple[str, int] | None
+    pre: tuple[str, int] | None
+    post: tuple[str, int] | None
+    local: LocalType | None
 
 
 def parse(version: str) -> 'Version':
     return Version(version)
 
 
-class InvalidVersion(ValueError):
+class InvalidVersion(ValueError):  # noqa
     pass
 
 
 class _BaseVersion:
-    _key: ta.Tuple[ta.Any, ...]
+    _key: tuple[ta.Any, ...]
 
     def __hash__(self) -> int:
         return hash(self._key)
@@ -189,7 +190,7 @@ VERSION_PATTERN = _VERSION_PATTERN
 
 
 class Version(_BaseVersion):
-    _regex = re.compile(r"^\s*" + VERSION_PATTERN + r"\s*$", re.VERBOSE | re.IGNORECASE)
+    _regex = re.compile(r'^\s*' + VERSION_PATTERN + r'\s*$', re.VERBOSE | re.IGNORECASE)
     _key: CmpKey
 
     def __init__(self, version: str) -> None:
@@ -198,12 +199,12 @@ class Version(_BaseVersion):
             raise InvalidVersion(f"Invalid version: '{version}'")
 
         self._version = _Version(
-            epoch=int(match.group("epoch")) if match.group("epoch") else 0,
-            release=tuple(int(i) for i in match.group("release").split(".")),
-            pre=_parse_letter_version(match.group("pre_l"), match.group("pre_n")),
-            post=_parse_letter_version(match.group("post_l"), match.group("post_n1") or match.group("post_n2")),
-            dev=_parse_letter_version(match.group("dev_l"), match.group("dev_n")),
-            local=_parse_local_version(match.group("local")),
+            epoch=int(match.group('epoch')) if match.group('epoch') else 0,
+            release=tuple(int(i) for i in match.group('release').split('.')),
+            pre=_parse_letter_version(match.group('pre_l'), match.group('pre_n')),
+            post=_parse_letter_version(match.group('post_l'), match.group('post_n1') or match.group('post_n2')),
+            dev=_parse_letter_version(match.group('dev_l'), match.group('dev_n')),
+            local=_parse_local_version(match.group('local')),
         )
 
         self._key = _cmpkey(
@@ -222,54 +223,54 @@ class Version(_BaseVersion):
         parts = []
 
         if self.epoch != 0:
-            parts.append(f"{self.epoch}!")
+            parts.append(f'{self.epoch}!')
 
-        parts.append(".".join(str(x) for x in self.release))
+        parts.append('.'.join(str(x) for x in self.release))
 
         if self.pre is not None:
-            parts.append("".join(str(x) for x in self.pre))
+            parts.append(''.join(str(x) for x in self.pre))
 
         if self.post is not None:
-            parts.append(f".post{self.post}")
+            parts.append(f'.post{self.post}')
 
         if self.dev is not None:
-            parts.append(f".dev{self.dev}")
+            parts.append(f'.dev{self.dev}')
 
         if self.local is not None:
-            parts.append(f"+{self.local}")
+            parts.append(f'+{self.local}')
 
-        return "".join(parts)
+        return ''.join(parts)
 
     @property
     def epoch(self) -> int:
         return self._version.epoch
 
     @property
-    def release(self) -> ta.Tuple[int, ...]:
+    def release(self) -> tuple[int, ...]:
         return self._version.release
 
     @property
-    def pre(self) -> ta.Optional[ta.Tuple[str, int]]:
+    def pre(self) -> tuple[str, int] | None:
         return self._version.pre
 
     @property
-    def post(self) -> ta.Optional[int]:
+    def post(self) -> int | None:
         return self._version.post[1] if self._version.post else None
 
     @property
-    def dev(self) -> ta.Optional[int]:
+    def dev(self) -> int | None:
         return self._version.dev[1] if self._version.dev else None
 
     @property
-    def local(self) -> ta.Optional[str]:
+    def local(self) -> str | None:
         if self._version.local:
-            return ".".join(str(x) for x in self._version.local)
+            return '.'.join(str(x) for x in self._version.local)
         else:
             return None
 
     @property
     def public(self) -> str:
-        return str(self).split("+", 1)[0]
+        return str(self).split('+', 1)[0]
 
     @property
     def base_version(self) -> str:
@@ -277,12 +278,12 @@ class Version(_BaseVersion):
 
         # Epoch
         if self.epoch != 0:
-            parts.append(f"{self.epoch}!")
+            parts.append(f'{self.epoch}!')
 
         # Release segment
-        parts.append(".".join(str(x) for x in self.release))
+        parts.append('.'.join(str(x) for x in self.release))
 
-        return "".join(parts)
+        return ''.join(parts)
 
     @property
     def is_prerelease(self) -> bool:
@@ -310,35 +311,35 @@ class Version(_BaseVersion):
 
 
 def _parse_letter_version(
-        letter: ta.Optional[str],
-        number: ta.Union[str, bytes, ta.SupportsInt, None],
-) -> ta.Optional[ta.Tuple[str, int]]:
+        letter: str | None,
+        number: str | bytes | ta.SupportsInt | None,
+) -> tuple[str, int] | None:
     if letter:
         if number is None:
             number = 0
 
         letter = letter.lower()
-        if letter == "alpha":
-            letter = "a"
-        elif letter == "beta":
-            letter = "b"
-        elif letter in ["c", "pre", "preview"]:
-            letter = "rc"
-        elif letter in ["rev", "r"]:
-            letter = "post"
+        if letter == 'alpha':
+            letter = 'a'
+        elif letter == 'beta':
+            letter = 'b'
+        elif letter in ['c', 'pre', 'preview']:
+            letter = 'rc'
+        elif letter in ['rev', 'r']:
+            letter = 'post'
 
         return letter, int(number)
     if not letter and number:
-        letter = "post"
+        letter = 'post'
         return letter, int(number)
 
     return None
 
 
-_local_version_separators = re.compile(r"[\._-]")
+_local_version_separators = re.compile(r'[\._-]')
 
 
-def _parse_local_version(local: ta.Optional[str]) -> ta.Optional[LocalType]:
+def _parse_local_version(local: str | None) -> LocalType | None:
     if local is not None:
         return tuple(
             part.lower() if not part.isdigit() else int(part)
@@ -349,11 +350,11 @@ def _parse_local_version(local: ta.Optional[str]) -> ta.Optional[LocalType]:
 
 def _cmpkey(
     epoch: int,
-    release: ta.Tuple[int, ...],
-    pre: ta.Optional[ta.Tuple[str, int]],
-    post: ta.Optional[ta.Tuple[str, int]],
-    dev: ta.Optional[ta.Tuple[str, int]],
-    local: ta.Optional[LocalType],
+    release: tuple[int, ...],
+    pre: tuple[str, int] | None,
+    post: tuple[str, int] | None,
+    dev: tuple[str, int] | None,
+    local: LocalType | None,
 ) -> CmpKey:
     _release = tuple(reversed(list(itertools.dropwhile(lambda x: x == 0, reversed(release)))))
 
@@ -377,6 +378,6 @@ def _cmpkey(
     if local is None:
         _local: CmpLocalType = NegativeInfinity
     else:
-        _local = tuple((i, "") if isinstance(i, int) else (NegativeInfinity, i) for i in local)
+        _local = tuple((i, '') if isinstance(i, int) else (NegativeInfinity, i) for i in local)
 
     return epoch, _release, _pre, _post, _dev, _local
