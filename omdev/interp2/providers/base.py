@@ -15,6 +15,7 @@ TODO:
 # ruff: noqa: UP007
 import abc
 import dataclasses as dc
+import json
 import shutil
 import sys
 import sysconfig
@@ -22,14 +23,16 @@ import typing as ta
 
 from ...amalg.std.cached import cached_nullary
 from ...amalg.std.subprocesses import subprocess_try_output
+from ...amalg.std.versions import Version
+from ...amalg.std.versions import parse_version
 
 
-InterpVersionNum = tuple[int, ...]  # ta.TypeAlias
+##
 
 
 @dc.dataclass(frozen=True)
 class InterpVersion:
-    num: InterpVersionNum
+    version: Version
     debug: bool = False
     threaded: bool = False
 
@@ -41,14 +44,36 @@ class Interp:
     path: str
 
 
-def query_interp_exe_version_num(path: str) -> ta.Optional[InterpVersionNum]:
-    out = subprocess_try_output([path, '--version'], try_=True)
+##
+
+
+_RAW_QUERY_INTERP_VERSION_CODE = """
+__import__('json').dumps(dict(
+    version=__import__('sys').version,
+    debug=bool(__import__('sysconfig').get_config_var('Py_DEBUG')),
+    threaded=bool(__import__('sysconfig').get_config_var('Py_GIL_DISABLED')),
+))"""
+
+_QUERY_INTERP_VERSION_CODE = ''.join(l.strip() for l in _RAW_QUERY_INTERP_VERSION_CODE.splitlines())
+
+
+def _translate_queried_interp_version(out: str) -> InterpVersion:
+    dct = json.loads(out)
+    return InterpVersion(
+        parse_version(dct['version']),
+        debug=dct['debug'],
+        threaded=dct['threaded'],
+    )
+
+
+def query_interp_exe_version(path: str) -> ta.Optional[InterpVersion]:
+    out = subprocess_try_output(path, '-c', f'print({_QUERY_INTERP_VERSION_CODE})')
     if out is None:
         return None
-    ps = out.decode('utf-8').strip().splitlines()[0].split()
-    if ps[0] != 'Python':
-        return None
-    return tuple(map(int, ps[1].split('.')))
+    return _translate_queried_interp_version(out.decode())
+
+
+##
 
 
 class InterpProvider(abc.ABC):
@@ -80,11 +105,8 @@ class RunningInterpProvider(InterpProvider):
 
     @cached_nullary
     def version(self) -> InterpVersion:
-        return InterpVersion(
-            tuple(map(int, sys.version_info)),
-            debug=bool(sysconfig.get_config_var('Py_DEBUG')),
-            threaded=bool(sysconfig.get_config_var('Py_GIL_DISABLED')),
-        )
+        out = eval(_QUERY_INTERP_VERSION_CODE)
+        return _translate_queried_interp_version(out)
 
     def installed_versions(self) -> ta.Sequence[InterpVersion]:
         return [self.version()]
@@ -121,9 +143,7 @@ class SystemInterpProvider(InterpProvider):
     def version(self) -> ta.Optional[InterpVersion]:
         if (exe := self.exe()) is None:
             return None
-        return InterpVersion(
-            query_interp_exe_version_num(exe),
-        )
+        return query_interp_exe_version(exe)
 
     def installed_versions(self) -> ta.Sequence[InterpVersion]:
         raise NotImplementedError
