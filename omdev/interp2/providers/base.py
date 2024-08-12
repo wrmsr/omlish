@@ -21,7 +21,7 @@ import sys
 import typing as ta
 
 from ...amalg.std.cached import cached_nullary
-from ...amalg.std.subprocesses import subprocess_try_output
+from ...amalg.std.subprocesses import subprocess_check_output
 from ...amalg.std.versions import Version
 from ...amalg.std.versions import parse_version
 
@@ -66,9 +66,7 @@ def _translate_queried_interp_version(out: str) -> InterpVersion:
 
 
 def query_interp_exe_version(path: str) -> ta.Optional[InterpVersion]:
-    out = subprocess_try_output(path, '-c', f'print({_QUERY_INTERP_VERSION_CODE})')
-    if out is None:
-        return None
+    out = subprocess_check_output(path, '-c', f'print({_QUERY_INTERP_VERSION_CODE})')
     return _translate_queried_interp_version(out.decode())
 
 
