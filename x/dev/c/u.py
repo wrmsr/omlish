@@ -5,14 +5,22 @@ import shutil
 from omdev.exts import importhook
 
 
-def _main():
-    here = os.path.join(os.path.dirname(__file__))
-    if os.path.exists(bdir := os.path.join(here, 'build')):
-        shutil.rmtree(bdir)
-    for f in glob.glob(os.path.join(here, '*.so')):
-        os.remove(f)
+DEBUG = True
 
-    importhook.install()
+
+def _main():
+    if DEBUG:
+        print(os.getpid())
+        input()
+
+    else:
+        here = os.path.join(os.path.dirname(__file__))
+        if os.path.exists(bdir := os.path.join(here, 'build')):
+            shutil.rmtree(bdir)
+        for f in glob.glob(os.path.join(here, '*.so')):
+            os.remove(f)
+
+        importhook.install()
 
     ##
 
@@ -21,7 +29,7 @@ def _main():
 
     ##
 
-    importhook.uninstall()
+    # importhook.uninstall()
 
 
 if __name__ == '__main__':
