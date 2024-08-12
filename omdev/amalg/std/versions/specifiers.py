@@ -60,7 +60,7 @@ class BaseSpecifier(metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
-    def prereleases(self) -> bool | None:
+    def prereleases(self) -> ta.Optional[bool]:
         raise NotImplementedError
 
     @prereleases.setter
@@ -68,14 +68,14 @@ class BaseSpecifier(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def contains(self, item: str, prereleases: bool | None = None) -> bool:
+    def contains(self, item: str, prereleases: ta.Optional[bool] = None) -> bool:
         raise NotImplementedError
 
     @abc.abstractmethod
     def filter(
             self,
             iterable: ta.Iterable[UnparsedVersionVar],
-            prereleases: bool | None = None,
+            prereleases: ta.Optional[bool] = None,
     ) -> ta.Iterator[UnparsedVersionVar]:
         raise NotImplementedError
 
@@ -177,13 +177,13 @@ class Specifier(BaseSpecifier):
     def __init__(
             self,
             spec: str = '',
-            prereleases: bool | None = None,
+            prereleases: ta.Optional[bool] = None,
     ) -> None:
         match = self._regex.search(spec)
         if not match:
             raise InvalidSpecifier(f"Invalid specifier: '{spec}'")
 
-        self._spec: tuple[str, str] = (
+        self._spec: ta.Tuple[str, str] = (
             match.group('operator').strip(),
             match.group('version').strip(),
         )
@@ -230,7 +230,7 @@ class Specifier(BaseSpecifier):
         return '{}{}'.format(*self._spec)
 
     @property
-    def _canonical_spec(self) -> tuple[str, str]:
+    def _canonical_spec(self) -> ta.Tuple[str, str]:
         canonical_version = canonicalize_version(
             self._spec[1],
             strip_trailing_zero=(self._spec[0] != '~='),
@@ -324,10 +324,10 @@ class Specifier(BaseSpecifier):
     def _compare_arbitrary(self, prospective: Version, spec: str) -> bool:
         return str(prospective).lower() == str(spec).lower()
 
-    def __contains__(self, item: str | Version) -> bool:
+    def __contains__(self, item: ta.Union[str, Version]) -> bool:
         return self.contains(item)
 
-    def contains(self, item: UnparsedVersion, prereleases: bool | None = None) -> bool:
+    def contains(self, item: UnparsedVersion, prereleases: ta.Optional[bool] = None) -> bool:
         if prereleases is None:
             prereleases = self.prereleases
 
@@ -342,7 +342,7 @@ class Specifier(BaseSpecifier):
     def filter(
             self,
             iterable: ta.Iterable[UnparsedVersionVar],
-            prereleases: bool | None = None,
+            prereleases: ta.Optional[bool] = None,
     ) -> ta.Iterator[UnparsedVersionVar]:
         yielded = False
         found_prereleases = []
@@ -367,8 +367,8 @@ class Specifier(BaseSpecifier):
 _version_prefix_regex = re.compile(r'^([0-9]+)((?:a|b|c|rc)[0-9]+)$')
 
 
-def _version_split(version: str) -> list[str]:
-    result: list[str] = []
+def _version_split(version: str) -> ta.List[str]:
+    result: ta.List[str] = []
 
     epoch, _, rest = version.rpartition('!')
     result.append(epoch or '0')
@@ -382,7 +382,7 @@ def _version_split(version: str) -> list[str]:
     return result
 
 
-def _version_join(components: list[str]) -> str:
+def _version_join(components: ta.List[str]) -> str:
     epoch, *rest = components
     return f"{epoch}!{'.'.join(rest)}"
 
@@ -391,7 +391,7 @@ def _is_not_version_suffix(segment: str) -> bool:
     return not any(segment.startswith(prefix) for prefix in ('dev', 'a', 'b', 'rc', 'post'))
 
 
-def _pad_version(left: list[str], right: list[str]) -> tuple[list[str], list[str]]:
+def _pad_version(left: ta.List[str], right: ta.List[str]) -> ta.Tuple[ta.List[str], ta.List[str]]:
     left_split, right_split = [], []
 
     left_split.append(list(itertools.takewhile(lambda x: x.isdigit(), left)))
@@ -413,7 +413,7 @@ class SpecifierSet(BaseSpecifier):
     def __init__(
             self,
             specifiers: str = '',
-            prereleases: bool | None = None,
+            prereleases: ta.Optional[bool] = None,
     ) -> None:
         split_specifiers = [s.strip() for s in specifiers.split(',') if s.strip()]
 
@@ -421,7 +421,7 @@ class SpecifierSet(BaseSpecifier):
         self._prereleases = prereleases
 
     @property
-    def prereleases(self) -> bool | None:
+    def prereleases(self) -> ta.Optional[bool]:
         if self._prereleases is not None:
             return self._prereleases
 
@@ -489,8 +489,8 @@ class SpecifierSet(BaseSpecifier):
     def contains(
         self,
         item: UnparsedVersion,
-        prereleases: bool | None = None,
-        installed: bool | None = None,
+        prereleases: ta.Optional[bool] = None,
+        installed: ta.Optional[bool] = None,
     ) -> bool:
         if not isinstance(item, Version):
             item = Version(item)
@@ -509,7 +509,7 @@ class SpecifierSet(BaseSpecifier):
     def filter(
             self,
             iterable: ta.Iterable[UnparsedVersionVar],
-            prereleases: bool | None = None,
+            prereleases: ta.Optional[bool] = None,
     ) -> ta.Iterator[UnparsedVersionVar]:
         if prereleases is None:
             prereleases = self.prereleases
@@ -519,8 +519,8 @@ class SpecifierSet(BaseSpecifier):
                 iterable = spec.filter(iterable, prereleases=bool(prereleases))
             return iter(iterable)
         else:
-            filtered: list[UnparsedVersionVar] = []
-            found_prereleases: list[UnparsedVersionVar] = []
+            filtered: ta.List[UnparsedVersionVar] = []
+            found_prereleases: ta.List[UnparsedVersionVar] = []
 
             for item in iterable:
                 parsed_version = _coerce_version(item)
