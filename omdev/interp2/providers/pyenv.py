@@ -4,12 +4,13 @@ TODO:
  - optionally install / upgrade pyenv itself
  - new vers dont need these custom mac opts, only run on old vers
 """
-# ruff: noqa: UP007
+# ruff: noqa: UP006 UP007
 import abc
 import dataclasses as dc
 import itertools
 import os.path
 import shutil
+import sys
 import typing as ta
 
 from ...amalg.std.cached import cached_nullary
@@ -123,7 +124,7 @@ class LinuxPyenvInstallOpts(PyenvInstallOptsProvider):
         return PyenvInstallOpts()
 
 
-class MacPyenvInstallOpts(PyenvInstallOptsProvider):
+class DarwinPyenvInstallOpts(PyenvInstallOptsProvider):
 
     @cached_nullary
     def framework_opts(self) -> PyenvInstallOpts:
@@ -183,6 +184,12 @@ class MacPyenvInstallOpts(PyenvInstallOptsProvider):
         )
 
 
+PLATFORM_PYENV_INSTALL_OPTS: ta.Dict[str, PyenvInstallOptsProvider] = {
+    'darwin': DarwinPyenvInstallOpts(),
+    'linux': LinuxPyenvInstallOpts(),
+}
+
+
 ##
 
 
@@ -191,17 +198,32 @@ class PyenvVersionInstaller:
     def __init__(
             self,
             version: str,
-            opts: PyenvInstallOpts,
+            opts: ta.Optional[PyenvInstallOpts] = None,
             *,
             debug: bool = False,
             pyenv: Pyenv = Pyenv(),
     ) -> None:
         super().__init__()
 
+        if opts is None:
+            lst = [DEFAULT_PYENV_INSTALL_OPTS]
+            if debug:
+                lst.append(DEBUG_PYENV_INSTALL_OPTS)
+            lst.append(PLATFORM_PYENV_INSTALL_OPTS[sys.platform])
+            opts = PyenvInstallOpts().merge(*lst)
+
         self._version = version
         self._opts = opts
         self._debug = debug
         self._pyenv = pyenv
+
+    @property
+    def version(self) -> str:
+        return self._version
+
+    @property
+    def opts(self) -> PyenvInstallOpts:
+        return self._opts
 
     @cached_nullary
     def install_name(self) -> str:
@@ -212,7 +234,7 @@ class PyenvVersionInstaller:
         return str(os.path.join(check_not_none(self._pyenv.root()), 'versions', self.install_name()))
 
     @cached_nullary
-    def build(self) -> str:
+    def install(self) -> str:
         env = dict(self._opts.env)
         for k, l in [
             ('CFLAGS', self._opts.cflags),
