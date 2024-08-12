@@ -33,7 +33,7 @@ def cmd(
         try_ = True
 
     try:
-        buf = subprocess_check_output(*cmd, env=env, **kwargs)
+        buf = subprocess_check_output(cmd, env=env, **kwargs)
     except es:
         if try_:
             log.exception('cmd failed: %r', cmd)
