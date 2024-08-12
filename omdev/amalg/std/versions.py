@@ -26,7 +26,10 @@ import re
 import typing as ta
 
 
-class InfinityType:
+##
+
+
+class InfinityVersionType:
     def __repr__(self) -> str:
         return 'Infinity'
 
@@ -48,14 +51,14 @@ class InfinityType:
     def __ge__(self, other: object) -> bool:
         return True
 
-    def __neg__(self: object) -> 'NegativeInfinityType':
-        return NegativeInfinity
+    def __neg__(self: object) -> 'NegativeInfinityVersionType':
+        return NegativeInfinityVersion
 
 
-Infinity = InfinityType()
+InfinityVersion = InfinityVersionType()
 
 
-class NegativeInfinityType:
+class NegativeInfinityVersionType:
     def __repr__(self) -> str:
         return '-Infinity'
 
@@ -77,28 +80,23 @@ class NegativeInfinityType:
     def __ge__(self, other: object) -> bool:
         return False
 
-    def __neg__(self: object) -> InfinityType:
-        return Infinity
+    def __neg__(self: object) -> InfinityVersionType:
+        return InfinityVersion
 
 
-NegativeInfinity = NegativeInfinityType()
+NegativeInfinityVersion = NegativeInfinityVersionType()
 
-LocalType = ta.Tuple[ta.Union[int, str], ...]
+##
 
-CmpPrePostDevType = ta.Union[InfinityType, NegativeInfinityType, ta.Tuple[str, int]]
-CmpLocalType = ta.Union[
-    NegativeInfinityType,
-    ta.Tuple[ta.Union[ta.Tuple[int, str], ta.Tuple[NegativeInfinityType, ta.Union[int, str]]], ...],
-]
-CmpKey = ta.Tuple[
-    int,
-    ta.Tuple[int, ...],
-    CmpPrePostDevType,
-    CmpPrePostDevType,
-    CmpPrePostDevType,
-    CmpLocalType,
-]
-VersionComparisonMethod = ta.Callable[[CmpKey, CmpKey], bool]
+
+VersionLocalType = ta.Tuple[ta.Union[int, str], ...]
+
+VersionCmpPrePostDevType = ta.Union[InfinityVersionType, NegativeInfinityVersionType, ta.Tuple[str, int]]
+_VersionCmpLocalType0 = ta.Tuple[ta.Union[ta.Tuple[int, str], ta.Tuple[NegativeInfinityVersionType, ta.Union[int, str]]], ...]  # noqa
+VersionCmpLocalType = ta.Union[NegativeInfinityVersionType, _VersionCmpLocalType0]
+_VersionCmpKey0 = VersionCmpPrePostDevType, VersionCmpPrePostDevType, VersionCmpPrePostDevType, VersionCmpLocalType
+VersionCmpKey = ta.Tuple[int, ta.Tuple[int, ...], _VersionCmpKey0]
+VersionComparisonMethod = ta.Callable[[VersionCmpKey, VersionCmpKey], bool]
 
 
 class _Version(ta.NamedTuple):
@@ -107,10 +105,10 @@ class _Version(ta.NamedTuple):
     dev: ta.Optional[ta.Tuple[str, int]]
     pre: ta.Optional[ta.Tuple[str, int]]
     post: ta.Optional[ta.Tuple[str, int]]
-    local: ta.Optional[LocalType]
+    local: ta.Optional[VersionLocalType]
 
 
-def parse(version: str) -> 'Version':
+def parse_version(version: str) -> 'Version':
     return Version(version)
 
 
@@ -191,7 +189,7 @@ VERSION_PATTERN = _VERSION_PATTERN
 
 class Version(_BaseVersion):
     _regex = re.compile(r'^\s*' + VERSION_PATTERN + r'\s*$', re.VERBOSE | re.IGNORECASE)
-    _key: CmpKey
+    _key: VersionCmpKey
 
     def __init__(self, version: str) -> None:
         match = self._regex.search(version)
@@ -207,7 +205,7 @@ class Version(_BaseVersion):
             local=_parse_local_version(match.group('local')),
         )
 
-        self._key = _cmpkey(
+        self._key = _version_cmpkey(
             self._version.epoch,
             self._version.release,
             self._version.pre,
@@ -339,7 +337,7 @@ def _parse_letter_version(
 _local_version_separators = re.compile(r'[\._-]')
 
 
-def _parse_local_version(local: ta.Optional[str]) -> ta.Optional[LocalType]:
+def _parse_local_version(local: ta.Optional[str]) -> ta.Optional[VersionLocalType]:
     if local is not None:
         return tuple(
             part.lower() if not part.isdigit() else int(part)
@@ -348,36 +346,36 @@ def _parse_local_version(local: ta.Optional[str]) -> ta.Optional[LocalType]:
     return None
 
 
-def _cmpkey(
+def _version_cmpkey(
     epoch: int,
     release: ta.Tuple[int, ...],
     pre: ta.Optional[ta.Tuple[str, int]],
     post: ta.Optional[ta.Tuple[str, int]],
     dev: ta.Optional[ta.Tuple[str, int]],
-    local: ta.Optional[LocalType],
-) -> CmpKey:
+    local: ta.Optional[VersionLocalType],
+) -> VersionCmpKey:
     _release = tuple(reversed(list(itertools.dropwhile(lambda x: x == 0, reversed(release)))))
 
     if pre is None and post is None and dev is not None:
-        _pre: CmpPrePostDevType = NegativeInfinity
+        _pre: VersionCmpPrePostDevType = NegativeInfinityVersion
     elif pre is None:
-        _pre = Infinity
+        _pre = InfinityVersion
     else:
         _pre = pre
 
     if post is None:
-        _post: CmpPrePostDevType = NegativeInfinity
+        _post: VersionCmpPrePostDevType = NegativeInfinityVersion
     else:
         _post = post
 
     if dev is None:
-        _dev: CmpPrePostDevType = Infinity
+        _dev: VersionCmpPrePostDevType = InfinityVersion
     else:
         _dev = dev
 
     if local is None:
-        _local: CmpLocalType = NegativeInfinity
+        _local: VersionCmpLocalType = NegativeInfinityVersion
     else:
-        _local = tuple((i, '') if isinstance(i, int) else (NegativeInfinity, i) for i in local)
+        _local = tuple((i, '') if isinstance(i, int) else (NegativeInfinityVersion, i) for i in local)
 
     return epoch, _release, _pre, _post, _dev, _local
