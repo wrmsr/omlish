@@ -24,7 +24,7 @@ from ...amalg.std.cached import cached_nullary
 from ...amalg.std.subprocesses import subprocess_try_output
 
 
-InterpVersionNum = ta.Tuple[int, ...]  # ta.TypeAlias
+InterpVersionNum = tuple[int, ...]  # ta.TypeAlias
 
 
 @dc.dataclass(frozen=True)
