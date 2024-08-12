@@ -32,7 +32,7 @@ from .versions import Version
 
 UnparsedVersion = ta.Union[Version, str]
 UnparsedVersionVar = ta.TypeVar("UnparsedVersionVar", bound=UnparsedVersion)
-CallableOperator = ta.Callable[[Version, str], bool]
+CallableVersionOperator = ta.Callable[[Version, str], bool]
 
 
 def _coerce_version(version: UnparsedVersion) -> Version:
@@ -251,14 +251,14 @@ class Specifier(BaseSpecifier):
 
         return self._canonical_spec == other._canonical_spec
 
-    def _get_operator(self, op: str) -> CallableOperator:
-        operator_callable: CallableOperator = getattr(
+    def _get_operator(self, op: str) -> CallableVersionOperator:
+        operator_callable: CallableVersionOperator = getattr(
             self, f"_compare_{self._operators[op]}"
         )
         return operator_callable
 
     def _compare_compatible(self, prospective: Version, spec: str) -> bool:
-        prefix = _version_join(list(itertools.takewhile(_is_not_suffix, _version_split(spec)))[:-1])
+        prefix = _version_join(list(itertools.takewhile(_is_not_version_suffix, _version_split(spec)))[:-1])
         prefix += ".*"
 
         return self._get_operator(">=")(prospective, spec) and self._get_operator("==")(prospective, prefix)
@@ -336,7 +336,7 @@ class Specifier(BaseSpecifier):
         if normalized_item.is_prerelease and not prereleases:
             return False
 
-        operator_callable: CallableOperator = self._get_operator(self.operator)
+        operator_callable: CallableVersionOperator = self._get_operator(self.operator)
         return operator_callable(normalized_item, self.version)
 
     def filter(
@@ -364,7 +364,7 @@ class Specifier(BaseSpecifier):
                 yield version
 
 
-_prefix_regex = re.compile(r"^([0-9]+)((?:a|b|c|rc)[0-9]+)$")
+_version_prefix_regex = re.compile(r"^([0-9]+)((?:a|b|c|rc)[0-9]+)$")
 
 
 def _version_split(version: str) -> list[str]:
@@ -374,7 +374,7 @@ def _version_split(version: str) -> list[str]:
     result.append(epoch or "0")
 
     for item in rest.split("."):
-        match = _prefix_regex.search(item)
+        match = _version_prefix_regex.search(item)
         if match:
             result.extend(match.groups())
         else:
@@ -387,7 +387,7 @@ def _version_join(components: list[str]) -> str:
     return f"{epoch}!{'.'.join(rest)}"
 
 
-def _is_not_suffix(segment: str) -> bool:
+def _is_not_version_suffix(segment: str) -> bool:
     return not any(segment.startswith(prefix) for prefix in ("dev", "a", "b", "rc", "post"))
 
 
@@ -449,7 +449,7 @@ class SpecifierSet(BaseSpecifier):
     def __hash__(self) -> int:
         return hash(self._specs)
 
-    def __and__(self, other: SpecifierSet | str) -> SpecifierSet:
+    def __and__(self, other: 'SpecifierSet' | str) -> 'SpecifierSet':
         if isinstance(other, str):
             other = SpecifierSet(other)
         elif not isinstance(other, SpecifierSet):
