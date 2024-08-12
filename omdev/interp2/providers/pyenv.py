@@ -14,12 +14,14 @@ import typing as ta
 
 from ...amalg.std.cached import cached_nullary
 from ...amalg.std.check import check_not_none
+from ...amalg.std.logs import log
 from ...amalg.std.subprocesses import subprocess_check_call
 from ...amalg.std.subprocesses import subprocess_check_output_str
 from ...amalg.std.subprocesses import subprocess_try_output
 from .base import Interp
 from .base import InterpProvider
 from .base import InterpVersion
+from .base import query_interp_exe_version
 
 
 ##
@@ -225,9 +227,34 @@ class PyenvInterpProvider(InterpProvider):
     def name(self) -> str:
         return 'pyenv'
 
+    class Installed(ta.NamedTuple):
+        name: str
+        exe: str
+        version: InterpVersion
+
+    @cached_nullary
+    def installed(self) -> ta.Dict[InterpVersion, Installed]:
+        ret: ta.Dict[InterpVersion, PyenvInterpProvider.Installed] = {}
+        vp = os.path.join(self._pyenv.root(), 'versions')
+        for vn in os.listdir(vp):
+            ep = os.path.join(vp, vn, 'bin', 'python3')
+            if not os.path.isfile(ep):
+                continue
+            try:
+                ev = query_interp_exe_version(ep)
+            except Exception as e:  # noqa
+                log.exception('Error querying pyenv python version: %s', ep)
+                continue
+            ret[ev] = PyenvInterpProvider.Installed(
+                name=vn,
+                exe=ep,
+                version=ev,
+            )
+        return ret
+
     @cached_nullary
     def installed_versions(self) -> ta.Sequence[InterpVersion]:
-        raise NotImplementedError
+        return list(self.installed())
 
     def installable_versions(self) -> ta.Sequence[InterpVersion]:
         raise NotImplementedError
