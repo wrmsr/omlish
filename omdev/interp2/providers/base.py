@@ -146,10 +146,16 @@ class SystemInterpProvider(InterpProvider):
         return query_interp_exe_version(exe)
 
     def installed_versions(self) -> ta.Sequence[InterpVersion]:
-        raise NotImplementedError
+        return [self.version()]
 
     def installable_versions(self) -> ta.Sequence[InterpVersion]:
-        raise NotImplementedError
+        return []
 
     def get_version(self, version: InterpVersion) -> Interp:
-        raise NotImplementedError
+        if version != self.version():
+            raise KeyError(version)
+        return Interp(
+            self.version(),
+            self.name,
+            self.exe(),
+        )
