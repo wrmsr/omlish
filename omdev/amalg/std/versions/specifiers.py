@@ -26,12 +26,12 @@ import itertools
 import re
 import typing as ta
 
-from .versions import canonicalize_version
 from .versions import Version
+from .versions import canonicalize_version
 
 
 UnparsedVersion = ta.Union[Version, str]
-UnparsedVersionVar = ta.TypeVar("UnparsedVersionVar", bound=UnparsedVersion)
+UnparsedVersionVar = ta.TypeVar('UnparsedVersionVar', bound=UnparsedVersion)
 CallableVersionOperator = ta.Callable[[Version, str], bool]
 
 
@@ -41,7 +41,7 @@ def _coerce_version(version: UnparsedVersion) -> Version:
     return version
 
 
-class InvalidSpecifier(ValueError):
+class InvalidSpecifier(ValueError):  # noqa
     pass
 
 
@@ -159,24 +159,24 @@ class Specifier(BaseSpecifier):
         """
 
     _regex = re.compile(
-        r"^\s*" + _operator_regex_str + _version_regex_str + r"\s*$",
+        r'^\s*' + _operator_regex_str + _version_regex_str + r'\s*$',
         re.VERBOSE | re.IGNORECASE,
     )
 
-    _operators = {
-        "~=": "compatible",
-        "==": "equal",
-        "!=": "not_equal",
-        "<=": "less_than_equal",
-        ">=": "greater_than_equal",
-        "<": "less_than",
-        ">": "greater_than",
-        "===": "arbitrary",
+    _operators: ta.ClassVar[ta.Mapping[str, str]] = {
+        '~=': 'compatible',
+        '==': 'equal',
+        '!=': 'not_equal',
+        '<=': 'less_than_equal',
+        '>=': 'greater_than_equal',
+        '<': 'less_than',
+        '>': 'greater_than',
+        '===': 'arbitrary',
     }
 
     def __init__(
             self,
-            spec: str = "",
+            spec: str = '',
             prereleases: bool | None = None,
     ) -> None:
         match = self._regex.search(spec)
@@ -184,20 +184,20 @@ class Specifier(BaseSpecifier):
             raise InvalidSpecifier(f"Invalid specifier: '{spec}'")
 
         self._spec: tuple[str, str] = (
-            match.group("operator").strip(),
-            match.group("version").strip(),
+            match.group('operator').strip(),
+            match.group('version').strip(),
         )
 
         self._prereleases = prereleases
 
-    @property
+    @property  # type: ignore
     def prereleases(self) -> bool:
         if self._prereleases is not None:
             return self._prereleases
 
         operator, version = self._spec
-        if operator in ["==", ">=", "<=", "~=", "==="]:
-            if operator == "==" and version.endswith(".*"):
+        if operator in ['==', '>=', '<=', '~=', '===']:
+            if operator == '==' and version.endswith('.*'):
                 version = version[:-2]
 
             if Version(version).is_prerelease:
@@ -219,21 +219,21 @@ class Specifier(BaseSpecifier):
 
     def __repr__(self) -> str:
         pre = (
-            f", prereleases={self.prereleases!r}"
+            f', prereleases={self.prereleases!r}'
             if self._prereleases is not None
-            else ""
+            else ''
         )
 
-        return f"<{self.__class__.__name__}({str(self)!r}{pre})>"
+        return f'<{self.__class__.__name__}({str(self)!r}{pre})>'
 
     def __str__(self) -> str:
-        return "{}{}".format(*self._spec)
+        return '{}{}'.format(*self._spec)
 
     @property
     def _canonical_spec(self) -> tuple[str, str]:
         canonical_version = canonicalize_version(
             self._spec[1],
-            strip_trailing_zero=(self._spec[0] != "~="),
+            strip_trailing_zero=(self._spec[0] != '~='),
         )
         return self._spec[0], canonical_version
 
@@ -253,18 +253,18 @@ class Specifier(BaseSpecifier):
 
     def _get_operator(self, op: str) -> CallableVersionOperator:
         operator_callable: CallableVersionOperator = getattr(
-            self, f"_compare_{self._operators[op]}"
+            self, f'_compare_{self._operators[op]}',
         )
         return operator_callable
 
     def _compare_compatible(self, prospective: Version, spec: str) -> bool:
         prefix = _version_join(list(itertools.takewhile(_is_not_version_suffix, _version_split(spec)))[:-1])
-        prefix += ".*"
+        prefix += '.*'
 
-        return self._get_operator(">=")(prospective, spec) and self._get_operator("==")(prospective, prefix)
+        return self._get_operator('>=')(prospective, spec) and self._get_operator('==')(prospective, prefix)
 
     def _compare_equal(self, prospective: Version, spec: str) -> bool:
-        if spec.endswith(".*"):
+        if spec.endswith('.*'):
             normalized_prospective = canonicalize_version(prospective.public, strip_trailing_zero=False)
             normalized_spec = canonicalize_version(spec[:-2], strip_trailing_zero=False)
             split_spec = _version_split(normalized_spec)
@@ -347,7 +347,7 @@ class Specifier(BaseSpecifier):
         yielded = False
         found_prereleases = []
 
-        kw = {"prereleases": prereleases if prereleases is not None else True}
+        kw = {'prereleases': prereleases if prereleases is not None else True}
 
         for version in iterable:
             parsed_version = _coerce_version(version)
@@ -364,16 +364,16 @@ class Specifier(BaseSpecifier):
                 yield version
 
 
-_version_prefix_regex = re.compile(r"^([0-9]+)((?:a|b|c|rc)[0-9]+)$")
+_version_prefix_regex = re.compile(r'^([0-9]+)((?:a|b|c|rc)[0-9]+)$')
 
 
 def _version_split(version: str) -> list[str]:
     result: list[str] = []
 
-    epoch, _, rest = version.rpartition("!")
-    result.append(epoch or "0")
+    epoch, _, rest = version.rpartition('!')
+    result.append(epoch or '0')
 
-    for item in rest.split("."):
+    for item in rest.split('.'):
         match = _version_prefix_regex.search(item)
         if match:
             result.extend(match.groups())
@@ -388,7 +388,7 @@ def _version_join(components: list[str]) -> str:
 
 
 def _is_not_version_suffix(segment: str) -> bool:
-    return not any(segment.startswith(prefix) for prefix in ("dev", "a", "b", "rc", "post"))
+    return not any(segment.startswith(prefix) for prefix in ('dev', 'a', 'b', 'rc', 'post'))
 
 
 def _pad_version(left: list[str], right: list[str]) -> tuple[list[str], list[str]]:
@@ -397,11 +397,11 @@ def _pad_version(left: list[str], right: list[str]) -> tuple[list[str], list[str
     left_split.append(list(itertools.takewhile(lambda x: x.isdigit(), left)))
     right_split.append(list(itertools.takewhile(lambda x: x.isdigit(), right)))
 
-    left_split.append(left[len(left_split[0]) :])
-    right_split.append(right[len(right_split[0]) :])
+    left_split.append(left[len(left_split[0]):])
+    right_split.append(right[len(right_split[0]):])
 
-    left_split.insert(1, ["0"] * max(0, len(right_split[0]) - len(left_split[0])))
-    right_split.insert(1, ["0"] * max(0, len(left_split[0]) - len(right_split[0])))
+    left_split.insert(1, ['0'] * max(0, len(right_split[0]) - len(left_split[0])))
+    right_split.insert(1, ['0'] * max(0, len(left_split[0]) - len(right_split[0])))
 
     return (
         list(itertools.chain.from_iterable(left_split)),
@@ -412,10 +412,10 @@ def _pad_version(left: list[str], right: list[str]) -> tuple[list[str], list[str
 class SpecifierSet(BaseSpecifier):
     def __init__(
             self,
-            specifiers: str = "",
+            specifiers: str = '',
             prereleases: bool | None = None,
     ) -> None:
-        split_specifiers = [s.strip() for s in specifiers.split(",") if s.strip()]
+        split_specifiers = [s.strip() for s in specifiers.split(',') if s.strip()]
 
         self._specs = frozenset(map(Specifier, split_specifiers))
         self._prereleases = prereleases
@@ -436,24 +436,24 @@ class SpecifierSet(BaseSpecifier):
 
     def __repr__(self) -> str:
         pre = (
-            f", prereleases={self.prereleases!r}"
+            f', prereleases={self.prereleases!r}'
             if self._prereleases is not None
-            else ""
+            else ''
         )
 
-        return f"<SpecifierSet({str(self)!r}{pre})>"
+        return f'<SpecifierSet({str(self)!r}{pre})>'
 
     def __str__(self) -> str:
-        return ",".join(sorted(str(s) for s in self._specs))
+        return ','.join(sorted(str(s) for s in self._specs))
 
     def __hash__(self) -> int:
         return hash(self._specs)
 
-    def __and__(self, other: 'SpecifierSet' | str) -> 'SpecifierSet':
+    def __and__(self, other: ta.Union['SpecifierSet', str]) -> 'SpecifierSet':
         if isinstance(other, str):
             other = SpecifierSet(other)
         elif not isinstance(other, SpecifierSet):
-            return NotImplemented
+            return NotImplemented  # type: ignore
 
         specifier = SpecifierSet()
         specifier._specs = frozenset(self._specs | other._specs)
@@ -465,7 +465,7 @@ class SpecifierSet(BaseSpecifier):
         elif self._prereleases == other._prereleases:
             specifier._prereleases = self._prereleases
         else:
-            raise ValueError("Cannot combine SpecifierSets with True and False prerelease overrides.")
+            raise ValueError('Cannot combine SpecifierSets with True and False prerelease overrides.')
 
         return specifier
 
