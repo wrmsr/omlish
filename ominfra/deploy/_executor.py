@@ -500,14 +500,18 @@ def _prepare_subprocess_invocation(
     )
 
 
-def subprocess_check_call(*args: ta.Any, stdout=sys.stderr, **kwargs) -> None:
+def subprocess_check_call(*args: ta.Any, stdout=sys.stderr, **kwargs: ta.Any) -> None:
     args, kwargs = _prepare_subprocess_invocation(*args, stdout=stdout, **kwargs)
     return subprocess.check_call(args, **kwargs)  # type: ignore
 
 
-def subprocess_check_output(*args: ta.Any, **kwargs) -> bytes:
+def subprocess_check_output(*args: ta.Any, **kwargs: ta.Any) -> bytes:
     args, kwargs = _prepare_subprocess_invocation(*args, **kwargs)
     return subprocess.check_output(args, **kwargs)
+
+
+def subprocess_check_output_str(*args: ta.Any, **kwargs: ta.Any) -> str:
+    return subprocess_check_output(*args, **kwargs).decode().strip()
 
 
 ##
@@ -522,7 +526,7 @@ DEFAULT_SUBPROCESS_TRY_EXCEPTIONS: ta.Tuple[ta.Type[Exception], ...] = (
 def subprocess_try_call(
         *args: ta.Any,
         try_exceptions: ta.Tuple[ta.Type[Exception], ...] = DEFAULT_SUBPROCESS_TRY_EXCEPTIONS,
-        **kwargs,
+        **kwargs: ta.Any,
 ) -> bool:
     try:
         subprocess_check_call(*args, **kwargs)
@@ -537,7 +541,7 @@ def subprocess_try_call(
 def subprocess_try_output(
         *args: ta.Any,
         try_exceptions: ta.Tuple[ta.Type[Exception], ...] = DEFAULT_SUBPROCESS_TRY_EXCEPTIONS,
-        **kwargs,
+        **kwargs: ta.Any,
 ) -> ta.Optional[bytes]:
     try:
         return subprocess_check_output(*args, **kwargs)
@@ -545,6 +549,11 @@ def subprocess_try_output(
         if log.isEnabledFor(logging.DEBUG):
             log.exception('command failed')
         return None
+
+
+def subprocess_try_output_str(*args: ta.Any, **kwargs: ta.Any) -> ta.Optional[str]:
+    out = subprocess_try_output(*args, **kwargs)
+    return out.decode().strip() if out is not None else None
 
 
 ########################################
