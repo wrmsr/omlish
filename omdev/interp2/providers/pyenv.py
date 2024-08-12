@@ -18,6 +18,8 @@ from ...amalg.std.logs import log
 from ...amalg.std.subprocesses import subprocess_check_call
 from ...amalg.std.subprocesses import subprocess_check_output_str
 from ...amalg.std.subprocesses import subprocess_try_output
+from ...amalg.std.versions import InvalidVersion
+from ...amalg.std.versions import parse_version
 from .base import Interp
 from .base import InterpProvider
 from .base import InterpVersion
@@ -232,29 +234,66 @@ class PyenvInterpProvider(InterpProvider):
         exe: str
         version: InterpVersion
 
-    @cached_nullary
-    def installed(self) -> ta.Dict[InterpVersion, Installed]:
-        ret: ta.Dict[InterpVersion, PyenvInterpProvider.Installed] = {}
+    def query_installed(self) -> ta.List[Installed]:
+        ret: ta.List[PyenvInterpProvider.Installed] = []
         vp = os.path.join(self._pyenv.root(), 'versions')
-        for vn in os.listdir(vp):
-            ep = os.path.join(vp, vn, 'bin', 'python3')
+        for dn in os.listdir(vp):
+            ep = os.path.join(vp, dn, 'bin', 'python3')
             if not os.path.isfile(ep):
                 continue
+
             try:
                 ev = query_interp_exe_version(ep)
             except Exception as e:  # noqa
                 log.exception('Error querying pyenv python version: %s', ep)
                 continue
-            ret[ev] = PyenvInterpProvider.Installed(
-                name=vn,
+
+            ret.append(PyenvInterpProvider.Installed(
+                name=dn,
                 exe=ep,
                 version=ev,
-            )
+            ))
+
+        return ret
+
+    def guess_installed(self) -> ta.List[Installed]:
+        def strip_sfx(s: str, sfx: str) -> ta.Tuple[str, bool]:
+            if s.endswith(sfx):
+                return s[:-len(sfx)], True
+            return s, False
+
+        ret: ta.List[PyenvInterpProvider.Installed] = []
+        vp = os.path.join(self._pyenv.root(), 'versions')
+        for dn in os.listdir(vp):
+            ep = os.path.join(vp, dn, 'bin', 'python3')
+            if not os.path.isfile(ep):
+                continue
+
+            vn = dn
+            vn, debug = strip_sfx(vn, '-debug')
+            vn, threaded = strip_sfx(vn, 't')
+
+            try:
+                v = parse_version(vn)
+            except InvalidVersion:
+                log.debug('Invalid guessed pyenv version: %s', dn)
+                continue
+
+            ret.append(PyenvInterpProvider.Installed(
+                name=vn,
+                exe=ep,
+                version=InterpVersion(
+                    version=v,
+                    debug=debug,
+                    threaded=threaded,
+                ),
+            ))
+
         return ret
 
     @cached_nullary
     def installed_versions(self) -> ta.Sequence[InterpVersion]:
-        return list(self.installed())
+        return [i.version for i in self.guess_installed()]
 
     def installable_versions(self) -> ta.Sequence[InterpVersion]:
         raise NotImplementedError
