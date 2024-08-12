@@ -94,7 +94,7 @@ VersionLocalType = ta.Tuple[ta.Union[int, str], ...]
 VersionCmpPrePostDevType = ta.Union[InfinityVersionType, NegativeInfinityVersionType, ta.Tuple[str, int]]
 _VersionCmpLocalType0 = ta.Tuple[ta.Union[ta.Tuple[int, str], ta.Tuple[NegativeInfinityVersionType, ta.Union[int, str]]], ...]  # noqa
 VersionCmpLocalType = ta.Union[NegativeInfinityVersionType, _VersionCmpLocalType0]
-_VersionCmpKey0 = VersionCmpPrePostDevType, VersionCmpPrePostDevType, VersionCmpPrePostDevType, VersionCmpLocalType
+_VersionCmpKey0 = ta.Union[VersionCmpPrePostDevType, VersionCmpPrePostDevType, VersionCmpPrePostDevType, VersionCmpLocalType]  # noqa
 VersionCmpKey = ta.Tuple[int, ta.Tuple[int, ...], _VersionCmpKey0]
 VersionComparisonMethod = ta.Callable[[VersionCmpKey, VersionCmpKey], bool]
 
