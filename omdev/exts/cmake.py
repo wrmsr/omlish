@@ -89,14 +89,14 @@ def _main() -> None:
         ),
     ))
 
-    for ext_name in [
-        'junk',
-        'foo',
+    for ext_name, ext_srcs in [
+        ('junk', ['x/dev/c/junk.cc']),
+        ('_uuid', ['x/dev/c/_uuid.cc']),
     ]:
         gen.write_target(cmake.ModuleLibrary(
             ext_name,
             src_files=[
-                f'{ext_name}.cc',
+                *ext_srcs,
             ],
             include_dirs=[
                 f'${{{var_prefix}_INCLUDE_DIRECTORIES}}',
@@ -113,6 +113,8 @@ def _main() -> None:
         ))
 
     print(out.getvalue())
+    with open('CMakeLists.txt', 'w') as f:
+        f.write(out.getvalue())
 
 
 if __name__ == '__main__':
