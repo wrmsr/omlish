@@ -1,21 +1,20 @@
 import subprocess
-
-import pytest
+import unittest
 
 from .. import subprocesses as su
 
 
-def test_subprocesses_call():
-    su.subprocess_check_call('true')
-    with pytest.raises(subprocess.CalledProcessError):
-        su.subprocess_check_call('false')
-    assert su.subprocess_try_call('true')
-    assert not su.subprocess_try_call('false')
+class TestSubprocesses(unittest.TestCase):
+    def test_subprocesses_call(self):
+        su.subprocess_check_call('true')
+        with self.assertRaises(subprocess.CalledProcessError):
+            su.subprocess_check_call('false')
+        self.assertTrue(su.subprocess_try_call('true'))
+        self.assertFalse(su.subprocess_try_call('false'))
 
-
-def test_subprocesses_output():
-    su.subprocess_check_output('echo', 'hi')
-    with pytest.raises(FileNotFoundError):
-        su.subprocess_check_output('xcho', 'hi')
-    su.subprocess_try_output('echo', 'hi')
-    assert su.subprocess_try_output('xcho', 'hi') is None
+    def test_subprocesses_output(self):
+        su.subprocess_check_output('echo', 'hi')
+        with self.assertRaises(FileNotFoundError):
+            su.subprocess_check_output('xcho', 'hi')
+        self.assertEqual(su.subprocess_try_output('echo', 'hi').decode(), 'hi\n')
+        self.assertIsNone(su.subprocess_try_output('xcho', 'hi'))
