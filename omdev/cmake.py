@@ -32,6 +32,8 @@ class Target(abc.ABC):
 
     link_libs: ta.Sequence[str] | None = None
 
+    extra_cmds: ta.Sequence[Command] | None = None
+
     @property
     @abc.abstractmethod
     def command_name(self) -> str:
@@ -150,6 +152,9 @@ class CmakeGen:
 
         if target.link_libs:
             self.write_cmd(Command('target_link_libraries', [target.name, 'PRIVATE'], target.link_libs))
+
+        for cmd in (target.extra_cmds or ()):
+            self.write_cmd(cmd)
 
     @property
     def preamble(self) -> ta.Sequence[str]:
