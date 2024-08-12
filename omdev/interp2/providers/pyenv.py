@@ -61,6 +61,28 @@ class Pyenv:
     def exe(self) -> str:
         return os.path.join(check_not_none(self.root()), 'bin', 'pyenv')
 
+    def version_exes(self) -> ta.List[ta.Tuple[str, str]]:
+        ret = []
+        vp = os.path.join(self.root(), 'versions')
+        for dn in os.listdir(vp):
+            ep = os.path.join(vp, dn, 'bin', 'python3')
+            if not os.path.isfile(ep):
+                continue
+            ret.append((dn, ep))
+        return ret
+
+    def installable_versions(self) -> ta.List[str]:
+        ret = []
+        s = subprocess_check_output_str(self.exe, 'install', '--list')
+        for l in s.splitlines():
+            if not l.startswith('  '):
+                continue
+            l = l.strip()
+            if not l:
+                continue
+            ret.append(l)
+        return ret
+
 
 ##
 
@@ -236,12 +258,7 @@ class PyenvInterpProvider(InterpProvider):
 
     def query_installed(self) -> ta.List[Installed]:
         ret: ta.List[PyenvInterpProvider.Installed] = []
-        vp = os.path.join(self._pyenv.root(), 'versions')
-        for dn in os.listdir(vp):
-            ep = os.path.join(vp, dn, 'bin', 'python3')
-            if not os.path.isfile(ep):
-                continue
-
+        for vn, ep in self._pyenv.version_exes():
             try:
                 ev = query_interp_exe_version(ep)
             except Exception as e:  # noqa
@@ -249,7 +266,7 @@ class PyenvInterpProvider(InterpProvider):
                 continue
 
             ret.append(PyenvInterpProvider.Installed(
-                name=dn,
+                name=vn,
                 exe=ep,
                 version=ev,
             ))
@@ -263,20 +280,14 @@ class PyenvInterpProvider(InterpProvider):
             return s, False
 
         ret: ta.List[PyenvInterpProvider.Installed] = []
-        vp = os.path.join(self._pyenv.root(), 'versions')
-        for dn in os.listdir(vp):
-            ep = os.path.join(vp, dn, 'bin', 'python3')
-            if not os.path.isfile(ep):
-                continue
-
-            vn = dn
-            vn, debug = strip_sfx(vn, '-debug')
-            vn, threaded = strip_sfx(vn, 't')
+        for vn, ep in self._pyenv.version_exes():
+            pvn, debug = strip_sfx(vn, '-debug')
+            pvn, threaded = strip_sfx(pvn, 't')
 
             try:
-                v = parse_version(vn)
+                v = parse_version(pvn)
             except InvalidVersion:
-                log.debug('Invalid guessed pyenv version: %s', dn)
+                log.debug('Invalid guessed pyenv version: %s', pvn)
                 continue
 
             ret.append(PyenvInterpProvider.Installed(
