@@ -60,7 +60,7 @@ _QUERY_INTERP_VERSION_CODE = ''.join(l.strip() for l in _RAW_QUERY_INTERP_VERSIO
 def _translate_queried_interp_version(out: str) -> InterpVersion:
     dct = json.loads(out)
     return InterpVersion(
-        parse_version(dct['version']),
+        parse_version(dct['version'].split()[0]),
         debug=dct['debug'],
         threaded=dct['threaded'],
     )
