@@ -15,4 +15,4 @@ class TestPyenv(unittest.TestCase):
 
     def test_pyenv(self):
         p = pe.PyenvInterpProvider()
-        print(p.installed_versions())
+        print(p.guess_installed())
