@@ -9,8 +9,9 @@ Reqs:
   - deadsnakes?
  - loose versions
 
-TODO:
- - https://packaging.pypa.io/en/latest/version.html#packaging.version.Version ?
+SEE:
+ - https://github.com/tusharsadhwani/yen/blob/8d1bb0c1232c7b0159caefb1bf3a5348b93f7b43/src/yen/github.py
+ - https://github.com/pypa/pipx/blob/4fbbe9c7c83740b33aa306e48435ea0e8c96c769/src/pipx/interpreter.py
 """
 # ruff: noqa: UP007
 import abc

@@ -19,8 +19,8 @@ from ...amalg.std.logs import log
 from ...amalg.std.subprocesses import subprocess_check_call
 from ...amalg.std.subprocesses import subprocess_check_output_str
 from ...amalg.std.subprocesses import subprocess_try_output
-from ...amalg.std.versions import InvalidVersion
-from ...amalg.std.versions import parse_version
+from ...amalg.std.versions.versions import InvalidVersion
+from ...amalg.std.versions.versions import parse_version
 from .base import Interp
 from .base import InterpProvider
 from .base import InterpVersion
