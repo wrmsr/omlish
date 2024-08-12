@@ -3,5 +3,7 @@ import unittest
 from .. import base as bp
 
 
-class
-
+class TestBaseProviders(unittest.TestCase):
+    def test_running(self):
+        v = bp.RunningInterpProvider().installed_versions()
+        bp.RunningInterpProvider().get_version(v[0])
