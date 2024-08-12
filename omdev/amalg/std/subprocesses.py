@@ -1,3 +1,4 @@
+# ruff: noqa: UP006 UP007
 import logging
 import os
 import subprocess
@@ -15,7 +16,7 @@ def _prepare_subprocess_invocation(
         env: ta.Optional[ta.Mapping[str, ta.Any]] = None,
         extra_env: ta.Optional[ta.Mapping[str, ta.Any]] = None,
         **kwargs: ta.Any,
-) -> ta.Tuple[ta.Tuple[ta.Any, ...], ta.Mapping[str, ta.Any]]:
+) -> ta.Tuple[ta.Tuple[ta.Any, ...], ta.Dict[str, ta.Any]]:
     log.debug(args)
     if extra_env:
         log.debug(extra_env)
@@ -25,7 +26,7 @@ def _prepare_subprocess_invocation(
 
     return args, dict(
         env=env,
-        **kwargs
+        **kwargs,
     )
 
 
