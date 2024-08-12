@@ -26,40 +26,43 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-LAST_TAG_FOR_I686_LINUX = "118809599"  # tag name: "20230826"
+from ...amalg.std.check import check_not_none
+
+
+LAST_TAG_FOR_I686_LINUX = '118809599'  # tag name: "20230826"
 
 MACHINE_SUFFIX: dict[str, dict[str, ta.Any]] = {
-    "Darwin": {
-        "arm64": ["aarch64-apple-darwin-install_only.tar.gz"],
-        "x86_64": ["x86_64-apple-darwin-install_only.tar.gz"],
+    'Darwin': {
+        'arm64': ['aarch64-apple-darwin-install_only.tar.gz'],
+        'x86_64': ['x86_64-apple-darwin-install_only.tar.gz'],
     },
-    "Linux": {
-        "aarch64": {
-            "glibc": ["aarch64-unknown-linux-gnu-install_only.tar.gz"],
+    'Linux': {
+        'aarch64': {
+            'glibc': ['aarch64-unknown-linux-gnu-install_only.tar.gz'],
             # musl doesn't exist
         },
-        "x86_64": {
-            "glibc": [
-                "x86_64_v3-unknown-linux-gnu-install_only.tar.gz",
-                "x86_64-unknown-linux-gnu-install_only.tar.gz",
+        'x86_64': {
+            'glibc': [
+                'x86_64_v3-unknown-linux-gnu-install_only.tar.gz',
+                'x86_64-unknown-linux-gnu-install_only.tar.gz',
             ],
-            "musl": ["x86_64_v3-unknown-linux-musl-install_only.tar.gz"],
+            'musl': ['x86_64_v3-unknown-linux-musl-install_only.tar.gz'],
         },
-        "i686": {
-            "glibc": ["i686-unknown-linux-gnu-install_only.tar.gz"],
+        'i686': {
+            'glibc': ['i686-unknown-linux-gnu-install_only.tar.gz'],
             # musl doesn't exist
         },
     },
-    "Windows": {
-        "AMD64": ["x86_64-pc-windows-msvc-shared-install_only.tar.gz"],
-        "i686": ["i686-pc-windows-msvc-install_only.tar.gz"],
+    'Windows': {
+        'AMD64': ['x86_64-pc-windows-msvc-shared-install_only.tar.gz'],
+        'i686': ['i686-pc-windows-msvc-install_only.tar.gz'],
     },
 }
 
 GITHUB_API_RELEASES_URL = (
-    "https://api.github.com/repos/indygreg/python-build-standalone/releases/"
+    'https://api.github.com/repos/indygreg/python-build-standalone/releases/'
 )
-PYTHON_VERSION_REGEX = re.compile(r"cpython-(\d+\.\d+\.\d+)")
+PYTHON_VERSION_REGEX = re.compile(r'cpython-(\d+\.\d+\.\d+)')
 
 
 class GitHubReleaseData(ta.TypedDict):
@@ -74,11 +77,11 @@ class GitHubAsset(ta.TypedDict):
 
 def trim_github_release_data(release_data: dict[str, ta.Any]) -> GitHubReleaseData:
     return {
-        "id": release_data["id"],
-        "html_url": release_data["html_url"],
-        "assets": [
-            {"browser_download_url": asset["browser_download_url"]}
-            for asset in release_data["assets"]
+        'id': release_data['id'],
+        'html_url': release_data['html_url'],
+        'assets': [
+            {'browser_download_url': asset['browser_download_url']}
+            for asset in release_data['assets']
         ],
     }
 
@@ -86,15 +89,15 @@ def trim_github_release_data(release_data: dict[str, ta.Any]) -> GitHubReleaseDa
 def fallback_release_data() -> GitHubReleaseData:
     """Returns the fallback release data, for when GitHub API gives an error."""
     print(
-        "\033[33mWarning: GitHub unreachable. Using fallback release data.\033[m",
+        '\033[33mWarning: GitHub unreachable. Using fallback release data.\033[m',
         file=sys.stderr,
     )
-    data_file = os.path.join(os.path.dirname(__file__), "fallback_release_data.json")
+    data_file = os.path.join(os.path.dirname(__file__), 'fallback_release_data.json')
     with open(data_file) as data:
         return typing.cast(GitHubReleaseData, json.load(data))
 
 
-class NotAvailable(Exception):
+class NotAvailableError(Exception):
     """Raised when the asked Python version is not available."""
 
 
@@ -102,13 +105,13 @@ def get_latest_python_releases(is_linux_i686: bool) -> GitHubReleaseData:
     """Returns the list of python download links from the latest github release."""
     # They stopped shipping for 32 bit linux since after the 20230826 tag
     if is_linux_i686:
-        data_file = os.path.join(os.path.dirname(__file__), "linux_i686_release.json")
+        data_file = os.path.join(os.path.dirname(__file__), 'linux_i686_release.json')
         with open(data_file) as data:
             return typing.cast(GitHubReleaseData, json.load(data))
 
-    latest_release_url = urllib.parse.urljoin(GITHUB_API_RELEASES_URL, "latest")
+    latest_release_url = urllib.parse.urljoin(GITHUB_API_RELEASES_URL, 'latest')
     try:
-        with urllib.request.urlopen(latest_release_url) as response:
+        with urllib.request.urlopen(latest_release_url) as response:  # noqa
             release_data = typing.cast(GitHubReleaseData, json.load(response))
 
     except urllib.error.URLError:
@@ -122,14 +125,14 @@ def list_pythons() -> dict[str, str]:
     system, machine = platform.system(), platform.machine()
     download_link_suffixes = MACHINE_SUFFIX[system][machine]
     # linux suffixes are nested under glibc or musl builds
-    if system == "Linux":
+    if system == 'Linux':
         # fallback to musl if libc version is not found
-        libc_version = platform.libc_ver()[0] or "musl"
+        libc_version = platform.libc_ver()[0] or 'musl'
         download_link_suffixes = download_link_suffixes[libc_version]
 
-    is_linux_i686 = system == "Linux" and machine == "i686"
+    is_linux_i686 = system == 'Linux' and machine == 'i686'
     releases = get_latest_python_releases(is_linux_i686)
-    python_releases = [asset["browser_download_url"] for asset in releases["assets"]]
+    python_releases = [asset['browser_download_url'] for asset in releases['assets']]
 
     available_python_links = [
         link
@@ -142,8 +145,7 @@ def list_pythons() -> dict[str, str]:
     python_versions: dict[str, str] = {}
     for link in available_python_links:
         match = PYTHON_VERSION_REGEX.search(link)
-        assert match is not None
-        python_version = match[1]
+        python_version = check_not_none(match)[1]
         # Don't override already found versions, as they are in order of preference
         if python_version in python_versions:
             continue
@@ -155,7 +157,7 @@ def list_pythons() -> dict[str, str]:
         for version in sorted(
             python_versions,
             # sort by semver
-            key=lambda version: [int(k) for k in version.split(".")],
+            key=lambda version: [int(k) for k in version.split('.')],
             reverse=True,
         )
     }
@@ -163,7 +165,7 @@ def list_pythons() -> dict[str, str]:
 
 
 def _parse_python_version(version: str) -> tuple[int, ...]:
-    return tuple(int(k) for k in version.split("."))
+    return tuple(int(k) for k in version.split('.'))
 
 
 def resolve_python_version(requested_version: str | None) -> tuple[str, str]:
@@ -184,6 +186,6 @@ def resolve_python_version(requested_version: str | None) -> tuple[str, str]:
             download_link = version_download_link
             break
     else:
-        raise NotAvailable
+        raise NotAvailableError
 
     return python_version, download_link
