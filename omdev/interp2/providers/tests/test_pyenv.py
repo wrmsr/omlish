@@ -11,9 +11,8 @@ class TestPyenv(unittest.TestCase):
 
     @unittest.skipUnless(sys.platform == 'darwin', 'requires darwin')
     def test_mac(self):
-        pass
+        print(pe.MacPyenvInstallOpts().install_opts())
 
     @unittest.skipUnless(sys.platform == 'linux', 'requires linux')
     def test_linux(self):
-        pass
-
+        print(pe.LinuxPyenvInstallOpts().install_opts())

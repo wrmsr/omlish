@@ -1,3 +1,9 @@
+"""
+TODO:
+ - custom tags
+ - optionally install / upgrade pyenv itself
+ - new vers dont need these custom mac opts, only run on old vers
+"""
 # ruff: noqa: UP007
 import abc
 import dataclasses as dc
@@ -9,7 +15,7 @@ import typing as ta
 from ...amalg.std.cached import cached_nullary
 from ...amalg.std.check import check_not_none
 from ...amalg.std.subprocesses import subprocess_check_call
-from ...amalg.std.subprocesses import subprocess_check_output
+from ...amalg.std.subprocesses import subprocess_check_output_str
 from ...amalg.std.subprocesses import subprocess_try_output
 from .base import Interp
 from .base import InterpProvider
@@ -36,7 +42,7 @@ class Pyenv:
             return self._root_kw
 
         if shutil.which('pyenv'):
-            return subprocess_check_output('pyenv', 'root').decode()
+            return subprocess_check_output_str('pyenv', 'root')
 
         d = os.path.expanduser('~/.pyenv')
         if os.path.isdir(d) and os.path.isfile(os.path.join(d, 'bin', 'pyenv')):
@@ -53,7 +59,7 @@ class Pyenv:
 
 
 @dc.dataclass(frozen=True)
-class PyenvInstallOpts(ta.NamedTuple):
+class PyenvInstallOpts:
     opts: ta.Sequence[str] = ()
     conf_opts: ta.Sequence[str] = ()
     cflags: ta.Sequence[str] = ()
@@ -62,10 +68,10 @@ class PyenvInstallOpts(ta.NamedTuple):
 
     def merge(self, *others: 'PyenvInstallOpts') -> 'PyenvInstallOpts':
         return PyenvInstallOpts(
-            opts=itertools.chain.from_iterable(o.opts for o in [self, *others]),
-            conf_opts=itertools.chain.from_iterable(o.conf_opts for o in [self, *others]),
-            cflags=itertools.chain.from_iterable(o.cflags for o in [self, *others]),
-            ldflags=itertools.chain.from_iterable(o.ldflags for o in [self, *others]),
+            opts=list(itertools.chain.from_iterable(o.opts for o in [self, *others])),
+            conf_opts=list(itertools.chain.from_iterable(o.conf_opts for o in [self, *others])),
+            cflags=list(itertools.chain.from_iterable(o.cflags for o in [self, *others])),
+            ldflags=list(itertools.chain.from_iterable(o.ldflags for o in [self, *others])),
             env=dict(itertools.chain.from_iterable(o.env.items() for o in [self, *others])),
         )
 
@@ -110,7 +116,7 @@ class MacPyenvInstallOpts(PyenvInstallOptsProvider):
         cflags = []
         ldflags = []
         for dep in self.BREW_DEPS:
-            dep_prefix = subprocess_check_output('brew', '--prefix', dep).decode()
+            dep_prefix = subprocess_check_output_str('brew', '--prefix', dep)
             cflags.append(f'-I{dep_prefix}/include')
             ldflags.append(f'-L{dep_prefix}/lib')
         return PyenvInstallOpts(
@@ -123,8 +129,8 @@ class MacPyenvInstallOpts(PyenvInstallOptsProvider):
         if subprocess_try_output('brew', '--prefix', 'tcl-tk') is None:
             return PyenvInstallOpts()
 
-        tcl_tk_prefix = subprocess_check_output('brew', '--prefix', 'tcl-tk').decode()
-        tcl_tk_ver_str = subprocess_check_output('brew', 'ls', '--versions', 'tcl-tk').decode()
+        tcl_tk_prefix = subprocess_check_output_str('brew', '--prefix', 'tcl-tk')
+        tcl_tk_ver_str = subprocess_check_output_str('brew', 'ls', '--versions', 'tcl-tk')
         tcl_tk_ver = '.'.join(tcl_tk_ver_str.split()[1].split('.')[:2])
 
         return PyenvInstallOpts(conf_opts=[
@@ -134,7 +140,7 @@ class MacPyenvInstallOpts(PyenvInstallOptsProvider):
 
     @cached_nullary
     def brew_ssl_opts(self) -> PyenvInstallOpts:
-        pkg_config_path = subprocess_check_output('brew', '--prefix', 'openssl').decode()
+        pkg_config_path = subprocess_check_output_str('brew', '--prefix', 'openssl')
         if 'PKG_CONFIG_PATH' in os.environ:
             pkg_config_path += ':' + os.environ['PKG_CONFIG_PATH']
         return PyenvInstallOpts(env={'PKG_CONFIG_PATH': pkg_config_path})
@@ -150,37 +156,54 @@ class MacPyenvInstallOpts(PyenvInstallOptsProvider):
 
 ##
 
+
 class PyenvVersionInstaller:
 
     def __init__(
             self,
+            version: str,
+            opts: PyenvInstallOpts,
             *,
+            debug: bool = False,
             pyenv: Pyenv = Pyenv(),
     ) -> None:
         super().__init__()
 
+        self._version = version
+        self._opts = opts
+        self._debug = debug
         self._pyenv = pyenv
 
-    def build(self) -> str:
-        pio = PyenvInstallOpts().merge(*self._pyenv_pios())
+    @cached_nullary
+    def install_name(self) -> str:
+        return self._version + ('-debug' if self._debug else '')
 
-        env = dict(pio.env)
+    @cached_nullary
+    def install_dir(self) -> str:
+        return str(os.path.join(check_not_none(self._pyenv.root()), 'versions', self.install_name()))
+
+    @cached_nullary
+    def build(self) -> str:
+        env = dict(self._opts.env)
         for k, l in [
-            ('CFLAGS', pio.cflags),
-            ('LDFLAGS', pio.ldflags),
-            ('PYTHON_CONFIGURE_OPTS', pio.conf_opts),
+            ('CFLAGS', self._opts.cflags),
+            ('LDFLAGS', self._opts.ldflags),
+            ('PYTHON_CONFIGURE_OPTS', self._opts.conf_opts),
         ]:
             v = ' '.join(l)
             if k in os.environ:
                 v += ' ' + os.environ[k]
             env[k] = v
 
-        subprocess_check_call([self._pyenv.exe(), 'install', *pio.opts, self._version], env=env)
+        subprocess_check_call(self._pyenv.exe(), 'install', *self._opts.opts, self._version, env=env)
 
-        bin_path = os.path.join(self._pyenv_install_path(), 'bin', 'python')
-        if not os.path.isfile(bin_path):
-            raise RuntimeError(f'Interpreter not found: {bin_path}')
-        return bin_path
+        exe = os.path.join(self.install_dir(), 'bin', 'python')
+        if not os.path.isfile(exe):
+            raise RuntimeError(f'Interpreter not found: {exe}')
+        return exe
+
+
+##
 
 
 class PyenvInterpProvider(InterpProvider):
@@ -201,33 +224,6 @@ class PyenvInterpProvider(InterpProvider):
     @property
     def name(self) -> str:
         return 'pyenv'
-
-    # @cached_nullary
-    # def _pyenv_install_name(self) -> str:
-    #     return self._version + ('-debug' if self._debug else '')
-    #
-    # @cached_nullary
-    # def _pyenv_install_path(self) -> str:
-    #     return str(os.path.join(check_not_none(self._pyenv_root()), 'versions', self._pyenv_install_name()))
-    #
-    # def _pyenv_pios(self) -> ta.Sequence[PyenvInstallOpts]:
-    #     return [
-    #         self._pyenv_basic_pio(),
-    #         self._pyenv_debug_pio(),
-    #     ]
-    #
-    # def _provide_pyenv_existing_python(self) -> ta.Optional[str]:
-    #     bin_path = os.path.join(self._pyenv_install_path(), 'bin', 'python')
-    #     if os.path.isfile(bin_path):
-    #         return bin_path
-    #     return None
-    #
-    # def _providers(self) -> ta.Sequence[ta.Callable[[], ta.Optional[str]]]:
-    #     return [
-    #         *super()._providers(),
-    #         self._provide_pyenv_existing_python,
-    #         self._provide_pyenv_install_python,
-    #     ]
 
     def installed_versions(self) -> ta.Sequence[InterpVersion]:
         raise NotImplementedError
