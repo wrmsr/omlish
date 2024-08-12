@@ -24,6 +24,7 @@ import functools
 import glob
 import itertools
 import logging
+import os
 import os.path
 import re
 import shlex
@@ -67,6 +68,12 @@ class cached_nullary:  # noqa
 # ruff: noqa: UP006 UP007
 
 
+def check_isinstance(v: T, spec: ta.Union[ta.Type[T], tuple]) -> T:
+    if not isinstance(v, spec):
+        raise TypeError(v)
+    return v
+
+
 def check_not_none(v: ta.Optional[T]) -> T:
     if v is None:
         raise ValueError
@@ -76,12 +83,6 @@ def check_not_none(v: ta.Optional[T]) -> T:
 def check_not(v: ta.Any) -> None:
     if v:
         raise ValueError(v)
-    return v
-
-
-def check_isinstance(v: T, spec: ta.Union[ta.Type[T], tuple]) -> T:
-    if not isinstance(v, spec):
-        raise TypeError(v)
     return v
 
 
@@ -884,20 +885,76 @@ def toml_make_safe_parse_float(parse_float: TomlParseFloat) -> TomlParseFloat:
 
 ########################################
 # ../../amalg/std/subprocesses.py
+# ruff: noqa: UP006 UP007
 
 
-def _mask_env_kwarg(kwargs):
-    return {**kwargs, **({'env': '...'} if 'env' in kwargs else {})}
+##
 
 
-def subprocess_check_call(*args, stdout=sys.stderr, **kwargs):
-    log.debug((args, _mask_env_kwarg(kwargs)))
-    return subprocess.check_call(*args, stdout=stdout, **kwargs)  # type: ignore
+def _prepare_subprocess_invocation(
+        *args: ta.Any,
+        env: ta.Optional[ta.Mapping[str, ta.Any]] = None,
+        extra_env: ta.Optional[ta.Mapping[str, ta.Any]] = None,
+        **kwargs: ta.Any,
+) -> ta.Tuple[ta.Tuple[ta.Any, ...], ta.Dict[str, ta.Any]]:
+    log.debug(args)
+    if extra_env:
+        log.debug(extra_env)
+
+    if extra_env:
+        env = {**(env if env is not None else os.environ), **extra_env}
+
+    return args, dict(
+        env=env,
+        **kwargs,
+    )
 
 
-def subprocess_check_output(*args, **kwargs):
-    log.debug((args, _mask_env_kwarg(kwargs)))
-    return subprocess.check_output(*args, **kwargs)
+def subprocess_check_call(*args: ta.Any, stdout=sys.stderr, **kwargs) -> None:
+    args, kwargs = _prepare_subprocess_invocation(*args, stdout=stdout, **kwargs)
+    return subprocess.check_call(args, **kwargs)  # type: ignore
+
+
+def subprocess_check_output(*args: ta.Any, **kwargs) -> bytes:
+    args, kwargs = _prepare_subprocess_invocation(*args, **kwargs)
+    return subprocess.check_output(args, **kwargs)
+
+
+##
+
+
+DEFAULT_SUBPROCESS_TRY_EXCEPTIONS: ta.Tuple[ta.Type[Exception], ...] = (
+    FileNotFoundError,
+    subprocess.CalledProcessError,
+)
+
+
+def subprocess_try_call(
+        *args: ta.Any,
+        try_exceptions: ta.Tuple[ta.Type[Exception], ...] = DEFAULT_SUBPROCESS_TRY_EXCEPTIONS,
+        **kwargs,
+) -> bool:
+    try:
+        subprocess_check_call(*args, **kwargs)
+    except try_exceptions as e:  # noqa
+        if log.isEnabledFor(logging.DEBUG):
+            log.exception('command failed')
+        return False
+    else:
+        return True
+
+
+def subprocess_try_output(
+        *args: ta.Any,
+        try_exceptions: ta.Tuple[ta.Type[Exception], ...] = DEFAULT_SUBPROCESS_TRY_EXCEPTIONS,
+        **kwargs,
+) -> ta.Optional[bytes]:
+    try:
+        return subprocess_check_output(*args, **kwargs)
+    except try_exceptions as e:  # noqa
+        if log.isEnabledFor(logging.DEBUG):
+            log.exception('command failed')
+        return None
 
 
 ########################################
@@ -933,13 +990,13 @@ def _get_interp_exe(s: str, *, interp_script: ta.Optional[str] = None) -> str:
     ver = vers.get(s[1:], s[1:])
     if interp_script is None:
         interp_script = os.path.join(os.path.dirname(__file__), 'interp.py')
-    exe = subprocess_check_output([
+    exe = subprocess_check_output(
         sys.executable,
         interp_script,
         'resolve',
         *(['--debug'] if dbg else []),
         ver,
-    ]).decode().strip()
+    ).decode().strip()
     return exe
 
 
@@ -1077,7 +1134,7 @@ class Venv:
 
 
 def _find_docker_service_container(cfg_path: str, svc_name: str) -> str:
-    out = subprocess_check_output(['docker', 'compose', '-f', cfg_path, 'ps', '-q', svc_name])
+    out = subprocess_check_output('docker', 'compose', '-f', cfg_path, 'ps', '-q', svc_name)
     return out.decode().strip()
 
 
