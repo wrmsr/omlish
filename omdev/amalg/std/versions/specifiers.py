@@ -21,8 +21,6 @@
 # details.
 # https://github.com/pypa/packaging/blob/2c885fe91a54559e2382902dce28428ad2887be5/src/packaging/specifiers.py
 # ruff: noqa: UP006 UP007
-from __future__ import annotations
-
 import abc
 import itertools
 import re
@@ -176,7 +174,11 @@ class Specifier(BaseSpecifier):
         "===": "arbitrary",
     }
 
-    def __init__(self, spec: str = "", prereleases: bool | None = None) -> None:
+    def __init__(
+            self,
+            spec: str = "",
+            prereleases: bool | None = None,
+    ) -> None:
         match = self._regex.search(spec)
         if not match:
             raise InvalidSpecifier(f"Invalid specifier: '{spec}'")
@@ -408,7 +410,11 @@ def _pad_version(left: list[str], right: list[str]) -> tuple[list[str], list[str
 
 
 class SpecifierSet(BaseSpecifier):
-    def __init__(self, specifiers: str = "", prereleases: bool | None = None) -> None:
+    def __init__(
+            self,
+            specifiers: str = "",
+            prereleases: bool | None = None,
+    ) -> None:
         split_specifiers = [s.strip() for s in specifiers.split(",") if s.strip()]
 
         self._specs = frozenset(map(Specifier, split_specifiers))
