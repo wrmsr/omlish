@@ -214,7 +214,7 @@ OLD_VENVS=\
 	8 \
 	9 \
 	10 \
-	11
+	11 \
 
 .PHONY: venv-old
 venv-old:
@@ -222,12 +222,16 @@ venv-old:
 		${PYPROJECT} venv $$V exe ; \
 	done
 
+OLD_TESTS=\
+	omdev.amalg.std \
+	omdev.interp2 \
+
 .PHONY: test-old
 test-old:
 	for V in ${OLD_VENVS} ; do \
-		$$(${PYPROJECT} venv $$V exe) -munittest discover -v \
-			omdev.amalg.std \
-		; \
+  		for T in ${OLD_TESTS} ; do \
+			$$(${PYPROJECT} venv $$V exe) -munittest discover -v $$T ; \
+		done ; \
 	done
 
 # docker
