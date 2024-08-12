@@ -6,7 +6,7 @@ import typing as ta
 from ...amalg.std.cached import cached_nullary
 from ...amalg.std.check import check_not_none
 from ..subprocesses import cmd
-from .base import InterpResolver
+from .base import InterpProvider
 
 
 class PyenvInstallOpts(ta.NamedTuple):
@@ -57,7 +57,7 @@ class PyenvInstallOpts(ta.NamedTuple):
         )
 
 
-class PyenvInterpResolver(InterpResolver):
+class PyenvInterpProvider(InterpProvider):
 
     def __init__(
             self,
@@ -114,13 +114,13 @@ class PyenvInterpResolver(InterpResolver):
             self._pyenv_debug_pio(),
         ]
 
-    def _resolve_pyenv_existing_python(self) -> ta.Optional[str]:
+    def _provide_pyenv_existing_python(self) -> ta.Optional[str]:
         bin_path = os.path.join(self._pyenv_install_path(), 'bin', 'python')
         if os.path.isfile(bin_path):
             return bin_path
         return None
 
-    def _resolve_pyenv_install_python(self) -> ta.Optional[str]:
+    def _provide_pyenv_install_python(self) -> ta.Optional[str]:
         pio = PyenvInstallOpts.new().combine(*self._pyenv_pios())
 
         env = dict(pio.env)
@@ -141,9 +141,9 @@ class PyenvInterpResolver(InterpResolver):
             raise RuntimeError(f'Interpreter not found: {bin_path}')
         return bin_path
 
-    def _resolvers(self) -> ta.Sequence[ta.Callable[[], ta.Optional[str]]]:
+    def _providers(self) -> ta.Sequence[ta.Callable[[], ta.Optional[str]]]:
         return [
-            *super()._resolvers(),
-            self._resolve_pyenv_existing_python,
-            self._resolve_pyenv_install_python,
+            *super()._providers(),
+            self._provide_pyenv_existing_python,
+            self._provide_pyenv_install_python,
         ]
