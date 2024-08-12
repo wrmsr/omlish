@@ -20,7 +20,6 @@
 # Apache License, Version 2.0, and the BSD License. See the LICENSE file in the root of this repository for complete
 # details.
 # https://github.com/pypa/packaging/blob/2c885fe91a54559e2382902dce28428ad2887be5/src/packaging/version.py
-from __future__ import annotations
 import typing as ta
 import itertools
 import re
@@ -110,7 +109,7 @@ class _Version(ta.NamedTuple):
     local: ta.Optional[LocalType]
 
 
-def parse(version: str) -> Version:
+def parse(version: str) -> 'Version':
     return Version(version)
 
 
@@ -124,12 +123,12 @@ class _BaseVersion:
     def __hash__(self) -> int:
         return hash(self._key)
 
-    def __lt__(self, other: _BaseVersion) -> bool:
+    def __lt__(self, other: '_BaseVersion') -> bool:
         if not isinstance(other, _BaseVersion):
             return NotImplemented
         return self._key < other._key
 
-    def __le__(self, other: _BaseVersion) -> bool:
+    def __le__(self, other: '_BaseVersion') -> bool:
         if not isinstance(other, _BaseVersion):
             return NotImplemented
         return self._key <= other._key
@@ -139,12 +138,12 @@ class _BaseVersion:
             return NotImplemented
         return self._key == other._key
 
-    def __ge__(self, other: _BaseVersion) -> bool:
+    def __ge__(self, other: '_BaseVersion') -> bool:
         if not isinstance(other, _BaseVersion):
             return NotImplemented
         return self._key >= other._key
 
-    def __gt__(self, other: _BaseVersion) -> bool:
+    def __gt__(self, other: '_BaseVersion') -> bool:
         if not isinstance(other, _BaseVersion):
             return NotImplemented
         return self._key > other._key
