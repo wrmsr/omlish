@@ -6,32 +6,30 @@ TODO:
 """
 # ruff: noqa: UP007
 import argparse
-import sys
 import typing as ta
 
 from ..amalg.std.logs import setup_standard_logging
 from ..amalg.std.runtime import check_runtime_version
-from .resolvers.linux import LinuxInterpResolver
-from .resolvers.mac import MacInterpResolver
 
 
 def _resolve_cmd(args) -> None:
-    if sys.platform == 'darwin':
-        resolver_cls = MacInterpResolver
-    elif sys.platform in ['linux', 'linux2']:
-        resolver_cls = LinuxInterpResolver
-    else:
-        raise OSError(f'Unsupported platform: {sys.platform}')
-
-    resolver = resolver_cls(
-        args.version,
-        debug=args.debug,
-    )
-
-    resolved = resolver.resolve()
-    if resolved is None:
-        raise RuntimeError(f'Failed to resolve python version: {args.version}')
-    print(resolved)
+    # if sys.platform == 'darwin':
+    #     resolver_cls = MacInterpResolver
+    # elif sys.platform in ['linux', 'linux2']:
+    #     resolver_cls = LinuxInterpResolver
+    # else:
+    #     raise OSError(f'Unsupported platform: {sys.platform}')
+    #
+    # resolver = resolver_cls(
+    #     args.version,
+    #     debug=args.debug,
+    # )
+    #
+    # resolved = resolver.resolve()
+    # if resolved is None:
+    #     raise RuntimeError(f'Failed to resolve python version: {args.version}')
+    # print(resolved)
+    raise NotImplementedError
 
 
 def _build_parser() -> argparse.ArgumentParser:

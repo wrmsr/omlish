@@ -102,7 +102,7 @@ class RunningInterpProvider(InterpProvider):
 
     @cached_nullary
     def version(self) -> InterpVersion:
-        out = eval(_QUERY_INTERP_VERSION_CODE)
+        out = eval(_QUERY_INTERP_VERSION_CODE)  # noqa
         return _translate_queried_interp_version(out)
 
     def installed_versions(self) -> ta.Sequence[InterpVersion]:
