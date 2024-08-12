@@ -115,12 +115,12 @@ DEBUG_PYENV_INSTALL_OPTS = PyenvInstallOpts(opts=['-g'])
 
 class PyenvInstallOptsProvider(abc.ABC):
     @abc.abstractmethod
-    def install_opts(self) -> PyenvInstallOpts:
+    def opts(self) -> PyenvInstallOpts:
         raise NotImplementedError
 
 
 class LinuxPyenvInstallOpts(PyenvInstallOptsProvider):
-    def install_opts(self) -> PyenvInstallOpts:
+    def opts(self) -> PyenvInstallOpts:
         return PyenvInstallOpts()
 
 
@@ -175,7 +175,7 @@ class DarwinPyenvInstallOpts(PyenvInstallOptsProvider):
             pkg_config_path += ':' + os.environ['PKG_CONFIG_PATH']
         return PyenvInstallOpts(env={'PKG_CONFIG_PATH': pkg_config_path})
 
-    def install_opts(self) -> PyenvInstallOpts:
+    def opts(self) -> PyenvInstallOpts:
         return PyenvInstallOpts().merge(
             self.framework_opts(),
             self.brew_deps_opts(),
@@ -209,7 +209,7 @@ class PyenvVersionInstaller:
             lst = [DEFAULT_PYENV_INSTALL_OPTS]
             if debug:
                 lst.append(DEBUG_PYENV_INSTALL_OPTS)
-            lst.append(PLATFORM_PYENV_INSTALL_OPTS[sys.platform])
+            lst.append(PLATFORM_PYENV_INSTALL_OPTS[sys.platform].opts())
             opts = PyenvInstallOpts().merge(*lst)
 
         self._version = version
