@@ -65,7 +65,7 @@ def _translate_queried_interp_version(out: str) -> InterpVersion:
     )
 
 
-def query_interp_exe_version(path: str) -> ta.Optional[InterpVersion]:
+def query_interp_exe_version(path: str) -> InterpVersion:
     out = subprocess_check_output(path, '-c', f'print({_QUERY_INTERP_VERSION_CODE})')
     return _translate_queried_interp_version(out.decode())
 

@@ -94,8 +94,7 @@ VersionLocalType = ta.Tuple[ta.Union[int, str], ...]
 VersionCmpPrePostDevType = ta.Union[InfinityVersionType, NegativeInfinityVersionType, ta.Tuple[str, int]]
 _VersionCmpLocalType0 = ta.Tuple[ta.Union[ta.Tuple[int, str], ta.Tuple[NegativeInfinityVersionType, ta.Union[int, str]]], ...]  # noqa
 VersionCmpLocalType = ta.Union[NegativeInfinityVersionType, _VersionCmpLocalType0]
-_VersionCmpKey0 = ta.Union[VersionCmpPrePostDevType, VersionCmpPrePostDevType, VersionCmpPrePostDevType, VersionCmpLocalType]  # noqa
-VersionCmpKey = ta.Tuple[int, ta.Tuple[int, ...], _VersionCmpKey0]
+VersionCmpKey = ta.Tuple[int, ta.Tuple[int, ...], VersionCmpPrePostDevType, VersionCmpPrePostDevType, VersionCmpPrePostDevType, VersionCmpLocalType]  # noqa
 VersionComparisonMethod = ta.Callable[[VersionCmpKey, VersionCmpKey], bool]
 
 
@@ -124,12 +123,12 @@ class _BaseVersion:
 
     def __lt__(self, other: '_BaseVersion') -> bool:
         if not isinstance(other, _BaseVersion):
-            return NotImplemented
+            return NotImplemented  # type: ignore
         return self._key < other._key
 
     def __le__(self, other: '_BaseVersion') -> bool:
         if not isinstance(other, _BaseVersion):
-            return NotImplemented
+            return NotImplemented  # type: ignore
         return self._key <= other._key
 
     def __eq__(self, other: object) -> bool:
@@ -139,12 +138,12 @@ class _BaseVersion:
 
     def __ge__(self, other: '_BaseVersion') -> bool:
         if not isinstance(other, _BaseVersion):
-            return NotImplemented
+            return NotImplemented  # type: ignore
         return self._key >= other._key
 
     def __gt__(self, other: '_BaseVersion') -> bool:
         if not isinstance(other, _BaseVersion):
-            return NotImplemented
+            return NotImplemented  # type: ignore
         return self._key > other._key
 
     def __ne__(self, other: object) -> bool:
