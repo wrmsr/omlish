@@ -7,6 +7,7 @@ TODO:
  - check 3.8 compat
  - more sanity checks lol
  - flake8 / ruff mgmt
+ - typealias - support # noqa, other comments, and lamely support multiline by just stealing lines till it parses
 
 Targets:
  - interp
