@@ -66,7 +66,7 @@ networkx==3.3
 
 nevergrad==1.0.3
 
-sympy==1.13.1
+sympy==1.13.2
 
 # --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/Triton-Nightly/pypi/simple/
 # triton-nightly; platform_machine == 'x86_64'
@@ -74,7 +74,7 @@ sympy==1.13.1
 
 wgpu==0.16.0
 
-hypothesis==6.110.1
+hypothesis==6.111.0
 
 hexdump==3.3
 
@@ -130,7 +130,7 @@ geopandas==1.0.1; sys_platform == 'darwin'  # FIXME: libgdal-dev gdal-bin?
 gutenberg==0.8.2
 # h5py
 mwparserfromhell==0.6.6
-nltk==3.8.1
+nltk==3.8.2
 
 ### problematic
 
@@ -161,7 +161,7 @@ blobfile==2.1.1
 
 ### infra
 
-boto3>=1.34.158
+boto3>=1.34.159
 
 google-cloud-compute==1.19.2
 
@@ -172,11 +172,11 @@ selectolax==0.3.21
 
 soco==0.30.4
 
-sounddevice==0.4.7
+sounddevice==0.5.0
 # vosk==0.3.45
 
-bellows==0.40.3
-zigpy==0.65.3
+bellows==0.40.4
+zigpy==0.65.4
 
 # python-openzwave
 zwave-js-server-python==0.57.0
@@ -200,7 +200,7 @@ cloudpickle==3.0.0
 
 ##
 
-openai==1.40.2
+openai==1.40.5
 
 trl==0.9.6
 tf-keras==2.17.0
