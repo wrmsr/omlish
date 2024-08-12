@@ -20,6 +20,7 @@ import io
 import os.path
 import shutil
 import sys
+import sysconfig
 
 from omlish import check
 
@@ -48,6 +49,10 @@ def _main() -> None:
 
     with open(os.path.join(cmake_dir, '.gitignore'), 'w') as f:
         f.write('\n'.join(sorted(['/cmake-*', '/build'])))
+
+    if os.path.isdir(os.path.join(cmake_dir, '.idea')):
+        with open(os.path.join(cmake_dir, '.idea', '.name'), 'w') as f:
+            f.write('omlish')
 
     venv_exe = sys.executable
     venv_root = os.path.abspath(os.path.join(os.path.dirname(venv_exe), '..'))
@@ -132,6 +137,13 @@ def _main() -> None:
         ('junk', 'x/dev/c/junk.cc'),
         ('_uuid', 'x/dev/c/_uuid.cc'),
     ]:
+        so_name = ''.join([
+            os.path.basename(ext_src).split('.')[0],
+            '.',
+            sysconfig.get_config_var('SOABI'),
+            sysconfig.get_config_var('SHLIB_SUFFIX'),
+        ])
+
         sl = os.path.join(cmake_dir, ext_src)
         sal = os.path.abspath(sl)
         sd = os.path.dirname(sal)
@@ -164,7 +176,7 @@ def _main() -> None:
                     [
                         ' '.join([
                             'COMMAND ${CMAKE_COMMAND} -E ',
-                            f'copy $<TARGET_FILE_NAME:{ext_name}> ../{os.path.dirname(ext_src)}/foo/',
+                            f'copy $<TARGET_FILE_NAME:{ext_name}> ../../{os.path.dirname(ext_src)}/{so_name}',
                         ]),
                         'COMMAND_EXPAND_LISTS',
                     ],
