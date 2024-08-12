@@ -1,7 +1,11 @@
 """
 TODO:
+ - symlink headers, included src files (hamt_impl, ...)
+ - point / copy output to dst dirs
+
+Done:
  - https://intellij-support.jetbrains.com/hc/en-us/community/posts/206608485-Multiple-Jetbrain-IDE-sharing-the-same-project-directory really?
-  - aight, generate a whole cmake subdir with symlinks to src files
+  - aight, generate a whole cmake subdir with symlinks to src files lol
 """  # noqa
 import io
 import os.path
