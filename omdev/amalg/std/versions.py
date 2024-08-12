@@ -21,14 +21,14 @@
 # details.
 # https://github.com/pypa/packaging/blob/2c885fe91a54559e2382902dce28428ad2887be5/src/packaging/version.py
 # ruff: noqa: UP006 UP007
-import typing as ta
 import itertools
 import re
+import typing as ta
 
 
 class InfinityType:
     def __repr__(self) -> str:
-        return "Infinity"
+        return 'Infinity'
 
     def __hash__(self) -> int:
         return hash(repr(self))
@@ -48,7 +48,7 @@ class InfinityType:
     def __ge__(self, other: object) -> bool:
         return True
 
-    def __neg__(self: object) -> "NegativeInfinityType":
+    def __neg__(self: object) -> 'NegativeInfinityType':
         return NegativeInfinity
 
 
@@ -57,7 +57,7 @@ Infinity = InfinityType()
 
 class NegativeInfinityType:
     def __repr__(self) -> str:
-        return "-Infinity"
+        return '-Infinity'
 
     def __hash__(self) -> int:
         return hash(repr(self))
@@ -114,7 +114,7 @@ def parse(version: str) -> 'Version':
     return Version(version)
 
 
-class InvalidVersion(ValueError):
+class InvalidVersion(ValueError):  # noqa
     pass
 
 
@@ -190,7 +190,7 @@ VERSION_PATTERN = _VERSION_PATTERN
 
 
 class Version(_BaseVersion):
-    _regex = re.compile(r"^\s*" + VERSION_PATTERN + r"\s*$", re.VERBOSE | re.IGNORECASE)
+    _regex = re.compile(r'^\s*' + VERSION_PATTERN + r'\s*$', re.VERBOSE | re.IGNORECASE)
     _key: CmpKey
 
     def __init__(self, version: str) -> None:
@@ -199,12 +199,12 @@ class Version(_BaseVersion):
             raise InvalidVersion(f"Invalid version: '{version}'")
 
         self._version = _Version(
-            epoch=int(match.group("epoch")) if match.group("epoch") else 0,
-            release=tuple(int(i) for i in match.group("release").split(".")),
-            pre=_parse_letter_version(match.group("pre_l"), match.group("pre_n")),
-            post=_parse_letter_version(match.group("post_l"), match.group("post_n1") or match.group("post_n2")),
-            dev=_parse_letter_version(match.group("dev_l"), match.group("dev_n")),
-            local=_parse_local_version(match.group("local")),
+            epoch=int(match.group('epoch')) if match.group('epoch') else 0,
+            release=tuple(int(i) for i in match.group('release').split('.')),
+            pre=_parse_letter_version(match.group('pre_l'), match.group('pre_n')),
+            post=_parse_letter_version(match.group('post_l'), match.group('post_n1') or match.group('post_n2')),
+            dev=_parse_letter_version(match.group('dev_l'), match.group('dev_n')),
+            local=_parse_local_version(match.group('local')),
         )
 
         self._key = _cmpkey(
@@ -223,23 +223,23 @@ class Version(_BaseVersion):
         parts = []
 
         if self.epoch != 0:
-            parts.append(f"{self.epoch}!")
+            parts.append(f'{self.epoch}!')
 
-        parts.append(".".join(str(x) for x in self.release))
+        parts.append('.'.join(str(x) for x in self.release))
 
         if self.pre is not None:
-            parts.append("".join(str(x) for x in self.pre))
+            parts.append(''.join(str(x) for x in self.pre))
 
         if self.post is not None:
-            parts.append(f".post{self.post}")
+            parts.append(f'.post{self.post}')
 
         if self.dev is not None:
-            parts.append(f".dev{self.dev}")
+            parts.append(f'.dev{self.dev}')
 
         if self.local is not None:
-            parts.append(f"+{self.local}")
+            parts.append(f'+{self.local}')
 
-        return "".join(parts)
+        return ''.join(parts)
 
     @property
     def epoch(self) -> int:
@@ -264,13 +264,13 @@ class Version(_BaseVersion):
     @property
     def local(self) -> ta.Optional[str]:
         if self._version.local:
-            return ".".join(str(x) for x in self._version.local)
+            return '.'.join(str(x) for x in self._version.local)
         else:
             return None
 
     @property
     def public(self) -> str:
-        return str(self).split("+", 1)[0]
+        return str(self).split('+', 1)[0]
 
     @property
     def base_version(self) -> str:
@@ -278,12 +278,12 @@ class Version(_BaseVersion):
 
         # Epoch
         if self.epoch != 0:
-            parts.append(f"{self.epoch}!")
+            parts.append(f'{self.epoch}!')
 
         # Release segment
-        parts.append(".".join(str(x) for x in self.release))
+        parts.append('.'.join(str(x) for x in self.release))
 
-        return "".join(parts)
+        return ''.join(parts)
 
     @property
     def is_prerelease(self) -> bool:
@@ -319,24 +319,24 @@ def _parse_letter_version(
             number = 0
 
         letter = letter.lower()
-        if letter == "alpha":
-            letter = "a"
-        elif letter == "beta":
-            letter = "b"
-        elif letter in ["c", "pre", "preview"]:
-            letter = "rc"
-        elif letter in ["rev", "r"]:
-            letter = "post"
+        if letter == 'alpha':
+            letter = 'a'
+        elif letter == 'beta':
+            letter = 'b'
+        elif letter in ['c', 'pre', 'preview']:
+            letter = 'rc'
+        elif letter in ['rev', 'r']:
+            letter = 'post'
 
         return letter, int(number)
     if not letter and number:
-        letter = "post"
+        letter = 'post'
         return letter, int(number)
 
     return None
 
 
-_local_version_separators = re.compile(r"[\._-]")
+_local_version_separators = re.compile(r'[\._-]')
 
 
 def _parse_local_version(local: ta.Optional[str]) -> ta.Optional[LocalType]:
@@ -378,6 +378,6 @@ def _cmpkey(
     if local is None:
         _local: CmpLocalType = NegativeInfinity
     else:
-        _local = tuple((i, "") if isinstance(i, int) else (NegativeInfinity, i) for i in local)
+        _local = tuple((i, '') if isinstance(i, int) else (NegativeInfinity, i) for i in local)
 
     return epoch, _release, _pre, _post, _dev, _local
