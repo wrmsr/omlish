@@ -3,6 +3,7 @@ import subprocess
 import unittest
 
 from .. import subprocesses as su
+from ..check import check_not_none
 
 
 class TestSubprocesses(unittest.TestCase):
@@ -17,5 +18,5 @@ class TestSubprocesses(unittest.TestCase):
         su.subprocess_check_output('echo', 'hi')
         with self.assertRaises(FileNotFoundError):
             su.subprocess_check_output('xcho', 'hi')
-        self.assertEqual(su.subprocess_try_output('echo', 'hi').decode(), 'hi\n')
+        self.assertEqual(check_not_none(su.subprocess_try_output('echo', 'hi')).decode(), 'hi\n')
         self.assertIsNone(su.subprocess_try_output('xcho', 'hi'))

@@ -121,7 +121,9 @@ class SystemInterpProvider(InterpProvider):
     def version(self) -> ta.Optional[InterpVersion]:
         if (exe := self.exe()) is None:
             return None
-        return query_interp_exe_version_num(exe)
+        return InterpVersion(
+            query_interp_exe_version_num(exe),
+        )
 
     def installed_versions(self) -> ta.Sequence[InterpVersion]:
         raise NotImplementedError
