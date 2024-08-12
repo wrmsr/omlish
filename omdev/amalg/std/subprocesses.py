@@ -40,6 +40,10 @@ def subprocess_check_output(*args: ta.Any, **kwargs) -> bytes:
     return subprocess.check_output(args, **kwargs)
 
 
+def subprocess_check_output_str(*args: ta.Any, **kwargs) -> str:
+    return subprocess_check_output(*args, **kwargs).decode().strip()
+
+
 ##
 
 
@@ -75,3 +79,8 @@ def subprocess_try_output(
         if log.isEnabledFor(logging.DEBUG):
             log.exception('command failed')
         return None
+
+
+def subprocess_try_output_str(*args: ta.Any, **kwargs) -> str:
+    out = subprocess_try_output(*args, **kwargs)
+    return out.decode().strip() if out is not None else out
