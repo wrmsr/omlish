@@ -32,6 +32,9 @@ class Pyenv:
             *,
             root: ta.Optional[str] = None,
     ) -> None:
+        if root is not None and not (isinstance(root, str) and root):
+            raise ValueError(f'pyenv_root: {root!r}')
+
         super().__init__()
 
         self._root_kw = root
@@ -211,20 +214,18 @@ class PyenvInterpProvider(InterpProvider):
     def __init__(
             self,
             *args,
-            pyenv_root: ta.Optional[str] = None,
+            pyenv: Pyenv = Pyenv(),
             **kwargs,
     ) -> None:
-        if pyenv_root is not None and not (isinstance(pyenv_root, str) and pyenv_root):
-            raise ValueError(f'pyenv_root: {pyenv_root!r}')
-
         super().__init__(*args, **kwargs)
 
-        self._pyenv_root_kw = pyenv_root
+        self._pyenv = pyenv
 
     @property
     def name(self) -> str:
         return 'pyenv'
 
+    @cached_nullary
     def installed_versions(self) -> ta.Sequence[InterpVersion]:
         raise NotImplementedError
 
