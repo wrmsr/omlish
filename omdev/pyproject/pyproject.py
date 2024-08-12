@@ -40,7 +40,7 @@ from .venvs import build_venv_specs
 
 
 def _find_docker_service_container(cfg_path: str, svc_name: str) -> str:
-    out = subprocess_check_output(['docker', 'compose', '-f', cfg_path, 'ps', '-q', svc_name])
+    out = subprocess_check_output('docker', 'compose', '-f', cfg_path, 'ps', '-q', svc_name)
     return out.decode().strip()
 
 
