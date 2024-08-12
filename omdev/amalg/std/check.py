@@ -1,8 +1,14 @@
-# ruff: noqa: UP007
+# ruff: noqa: UP006 UP007
 import typing as ta
 
 
 T = ta.TypeVar('T')
+
+
+def check_isinstance(v: T, spec: ta.Union[ta.Type[T], tuple]) -> T:
+    if not isinstance(v, spec):
+        raise TypeError(v)
+    return v
 
 
 def check_not_none(v: ta.Optional[T]) -> T:

@@ -15,7 +15,7 @@ if ! [ $# -eq 0 ] ; then
     fi
 fi
 
-CONTAINER_ID=$(docker-compose -f 'docker/docker-compose.yml' ps -q "$SERVICE_NAME")
+CONTAINER_ID=$(docker-compose -f 'docker/compose.yml' ps -q "$SERVICE_NAME")
 if [ -z "$CONTAINER_ID" ] ; then
     echo "$SERVICE_NAME not running" 1>&2
     exit 1

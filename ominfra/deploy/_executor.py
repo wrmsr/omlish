@@ -90,7 +90,7 @@ class cached_nullary:  # noqa
 
 ########################################
 # ../../../../omdev/amalg/std/check.py
-# ruff: noqa: UP007
+# ruff: noqa: UP006 UP007
 
 
 def check_not_none(v: ta.Optional[T]) -> T:
@@ -102,6 +102,12 @@ def check_not_none(v: ta.Optional[T]) -> T:
 def check_not(v: ta.Any) -> None:
     if v:
         raise ValueError(v)
+    return v
+
+
+def check_isinstance(v: T, spec: ta.Union[ta.Type[T], tuple]) -> T:
+    if not isinstance(v, spec):
+        raise TypeError(v)
     return v
 
 
