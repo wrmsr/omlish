@@ -1,9 +1,8 @@
+import dataclasses as dc
 import logging
 import signal
 import tempfile
 import typing as ta
-
-from omlish import dataclasses as dc
 
 from .datatypes import byte_size
 from .datatypes import existing_directory
