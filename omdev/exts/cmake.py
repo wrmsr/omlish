@@ -163,8 +163,8 @@ def _main() -> None:
                     ['TARGET', ext_name, 'POST_BUILD'],
                     [
                         ' '.join([
-                            'COMMAND echo ${CMAKE_COMMAND} -E ',
-                            f'copy $<TARGET_FILE_NAME:{ext_name}> {os.path.dirname(rp)}/foo/',
+                            'COMMAND ${CMAKE_COMMAND} -E ',
+                            f'copy $<TARGET_FILE_NAME:{ext_name}> ../{os.path.dirname(ext_src)}/foo/',
                         ]),
                         'COMMAND_EXPAND_LISTS',
                     ],
