@@ -25,6 +25,17 @@ from .values import Value
 ##
 
 
+class ObjectTypeTagging(lang.Abstract, lang.Sealed):
+    pass
+
+
+class WrapperObjectTypeTagging(ObjectTypeTagging, lang.Final):
+    pass
+
+
+##
+
+
 @dc.dataclass(frozen=True)
 class Impl:
     ty: type

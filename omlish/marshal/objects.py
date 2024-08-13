@@ -9,7 +9,6 @@ import typing as ta
 
 from .. import check
 from .. import dataclasses as dc
-from .. import lang
 from .base import MarshalContext
 from .base import Marshaler
 from .base import MarshalerFactory
@@ -18,17 +17,6 @@ from .base import Unmarshaler
 from .base import UnmarshalerFactory
 from .naming import Naming
 from .values import Value
-
-
-##
-
-
-class ObjectTypeTagging(lang.Abstract, lang.Sealed):
-    pass
-
-
-class WrapperObjectTypeTagging(ObjectTypeTagging, lang.Final):
-    pass
 
 
 ##
