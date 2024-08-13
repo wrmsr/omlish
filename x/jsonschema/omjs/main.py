@@ -18,6 +18,7 @@ from omlish import collections as col
 from .keywords import KEYWORD_TYPES_BY_TAG
 from .keywords import Keyword
 from .keywords import Keywords
+from .keywords import NumberKeyword
 from .keywords import StrKeyword
 from .keywords import StrOrStrsKeyword
 from .keywords import StrToKeywordsKeyword
@@ -30,10 +31,13 @@ KeywordT = ta.TypeVar('KeywordT', bound=Keyword)
 
 
 def build_keyword(cls: type[KeywordT], v: ta.Any) -> KeywordT:
-    if issubclass(cls, StrKeyword):
+    if issubclass(cls, NumberKeyword):
+        return cls(check.isinstance(v, (int, float)))
+
+    elif issubclass(cls, StrKeyword):
         return cls(check.isinstance(v, str))
 
-    if issubclass(cls, StrOrStrsKeyword):
+    elif issubclass(cls, StrOrStrsKeyword):
         ss: str | ta.Sequence[str]
         if isinstance(v, str):
             ss = v
@@ -43,10 +47,11 @@ def build_keyword(cls: type[KeywordT], v: ta.Any) -> KeywordT:
             raise TypeError(v)
         return cls(ss)
 
-    if issubclass(cls, StrToKeywordsKeyword):
+    elif issubclass(cls, StrToKeywordsKeyword):
         return cls({k: build_keywords(mv) for k, mv in v.items()})
 
-    raise TypeError(cls)
+    else:
+        raise TypeError(cls)
 
 
 def build_keywords(dct: ta.Mapping[str, ta.Any]) -> Keywords:
