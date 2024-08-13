@@ -66,7 +66,7 @@ class Pyenv:
         ret = []
         vp = os.path.join(self.root(), 'versions')
         for dn in os.listdir(vp):
-            ep = os.path.join(vp, dn, 'bin', 'python3')
+            ep = os.path.join(vp, dn, 'bin', 'python')
             if not os.path.isfile(ep):
                 continue
             ret.append((dn, ep))

@@ -15,6 +15,7 @@
 # COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 # https://github.com/tusharsadhwani/yen/blob/8d1bb0c1232c7b0159caefb1bf3a5348b93f7b43/src/yen/github.py
+# ruff: noqa: UP006 UP007
 import json
 import os.path
 import platform
@@ -27,11 +28,12 @@ import urllib.parse
 import urllib.request
 
 from ...amalg.std.check import check_not_none
+from ...amalg.std.logs import log
 
 
 LAST_TAG_FOR_I686_LINUX = '118809599'  # tag name: "20230826"
 
-MACHINE_SUFFIX: dict[str, dict[str, ta.Any]] = {
+MACHINE_SUFFIX: ta.Dict[str, ta.Dict[str, ta.Any]] = {
     'Darwin': {
         'arm64': ['aarch64-apple-darwin-install_only.tar.gz'],
         'x86_64': ['x86_64-apple-darwin-install_only.tar.gz'],
@@ -59,23 +61,22 @@ MACHINE_SUFFIX: dict[str, dict[str, ta.Any]] = {
     },
 }
 
-GITHUB_API_RELEASES_URL = (
-    'https://api.github.com/repos/indygreg/python-build-standalone/releases/'
-)
+GITHUB_API_RELEASES_URL = 'https://api.github.com/repos/indygreg/python-build-standalone/releases/'
+
 PYTHON_VERSION_REGEX = re.compile(r'cpython-(\d+\.\d+\.\d+)')
 
 
 class GitHubReleaseData(ta.TypedDict):
     id: int
     html_url: str
-    assets: list['GitHubAsset']
+    assets: ta.List['GitHubAsset']
 
 
 class GitHubAsset(ta.TypedDict):
     browser_download_url: str
 
 
-def trim_github_release_data(release_data: dict[str, ta.Any]) -> GitHubReleaseData:
+def trim_github_release_data(release_data: ta.Dict[str, ta.Any]) -> GitHubReleaseData:
     return {
         'id': release_data['id'],
         'html_url': release_data['html_url'],
@@ -88,10 +89,7 @@ def trim_github_release_data(release_data: dict[str, ta.Any]) -> GitHubReleaseDa
 
 def fallback_release_data() -> GitHubReleaseData:
     """Returns the fallback release data, for when GitHub API gives an error."""
-    print(
-        '\033[33mWarning: GitHub unreachable. Using fallback release data.\033[m',
-        file=sys.stderr,
-    )
+    log.warning('GitHub unreachable. Using fallback release data.')
     data_file = os.path.join(os.path.dirname(__file__), 'fallback_release_data.json')
     with open(data_file) as data:
         return typing.cast(GitHubReleaseData, json.load(data))
@@ -120,7 +118,7 @@ def get_latest_python_releases(is_linux_i686: bool) -> GitHubReleaseData:
     return release_data
 
 
-def list_pythons() -> dict[str, str]:
+def list_pythons() -> ta.Dict[str, str]:
     """Returns available python versions for your machine and their download links."""
     system, machine = platform.system(), platform.machine()
     download_link_suffixes = MACHINE_SUFFIX[system][machine]
@@ -142,7 +140,7 @@ def list_pythons() -> dict[str, str]:
         if link.endswith(download_link_suffix)
     ]
 
-    python_versions: dict[str, str] = {}
+    python_versions: ta.Dict[str, str] = {}
     for link in available_python_links:
         match = PYTHON_VERSION_REGEX.search(link)
         python_version = check_not_none(match)[1]
@@ -164,11 +162,11 @@ def list_pythons() -> dict[str, str]:
     return sorted_python_versions
 
 
-def _parse_python_version(version: str) -> tuple[int, ...]:
+def _parse_python_version(version: str) -> ta.Tuple[int, ...]:
     return tuple(int(k) for k in version.split('.'))
 
 
-def resolve_python_version(requested_version: str | None) -> tuple[str, str]:
+def resolve_python_version(requested_version: ta.Optional[str]) -> ta.Tuple[str, str]:
     pythons = list_pythons()
 
     if requested_version is None:
