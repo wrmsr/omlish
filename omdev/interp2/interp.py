@@ -11,11 +11,12 @@ import typing as ta
 
 from ..amalg.std.logs import configure_standard_logging
 from ..amalg.std.runtime import check_runtime_version
+from ..amalg.std.versions.specifiers import SpecifierSet
 from .providers.system import SystemInterpProvider
 
 
 def _resolve_cmd(args) -> None:
-    for i in SystemInterpProvider().installed_versions():
+    for i in SystemInterpProvider().installed_versions(SpecifierSet('3')):
         print(i)
 
 
