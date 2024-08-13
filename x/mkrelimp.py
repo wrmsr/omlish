@@ -41,6 +41,8 @@ def _main() -> None:
                 continue
 
             print((dp, fn))
+            rel_path = os.path.relpath(dp, mod_path)
+            print(rel_path)
 
             with open(os.path.join(dp, fn)) as f:
                 src = f.read()
