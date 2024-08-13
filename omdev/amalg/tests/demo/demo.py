@@ -12,7 +12,7 @@ from omlish.os import PAGE_SIZE
 from ...std.cached import cached_nullary
 from ...std.check import check_not_none
 from ...std.logs import log
-from ...std.logs import setup_standard_logging
+from ...std.logs import configure_standard_logging
 from ...std.runtime import check_runtime_version
 from ...std.subprocesses import subprocess_check_output
 from .incl.foo import foo
@@ -27,7 +27,7 @@ def _main() -> None:
     """Docstring"""
 
     check_runtime_version()
-    setup_standard_logging()
+    configure_standard_logging()
     log.info('hi')
 
     # Comment

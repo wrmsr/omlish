@@ -97,7 +97,7 @@ TODO:
 log = logging.getLogger(__name__)
 
 
-def setup_standard_logging() -> None:
+def configure_standard_logging() -> None:
     logging.root.addHandler(logging.StreamHandler())
     logging.root.setLevel('INFO')
 
@@ -1272,7 +1272,7 @@ def _build_parser() -> argparse.ArgumentParser:
 
 def _main(argv: ta.Optional[ta.Sequence[str]] = None) -> None:
     check_runtime_version()
-    setup_standard_logging()
+    configure_standard_logging()
 
     parser = _build_parser()
     args = parser.parse_args(argv)
