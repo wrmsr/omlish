@@ -1,3 +1,4 @@
+import itertools
 import typing as ta
 
 from omlish import lang
@@ -27,6 +28,10 @@ def ignore_ws(toks: ta.Iterable[trt.Token]) -> ta.Iterable[trt.Token]:
 
 
 ##
+
+
+def split_lines(ts: Tokens) -> list[Tokens]:
+    return [list(it) for g, it in itertools.groupby(ts, lambda t: t.line)]
 
 
 def join_toks(ts: Tokens) -> str:

@@ -22,7 +22,6 @@ Targets:
 import argparse
 import dataclasses as dc
 import io
-import itertools
 import logging
 import os.path
 import typing as ta
@@ -232,7 +231,7 @@ def make_src_file(
         src = f.read().strip()
 
     tokens = trt.src_to_tokens(src)
-    lines = [list(it) for g, it in itertools.groupby(tokens, lambda t: t.line)]
+    lines = tks.split_lines(tokens)
 
     hls, cls = split_header_lines(lines)
 
