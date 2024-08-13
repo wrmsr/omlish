@@ -13,7 +13,7 @@ import warnings
 from attrs import define
 from referencing.exceptions import Unresolvable as _Unresolvable
 
-from jsonschema import _utils
+from . import _utils
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Mapping, MutableMapping, Sequence

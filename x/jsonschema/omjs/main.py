@@ -1,4 +1,10 @@
 """
+TODO:
+ - jsonpointer
+
+
+===
+
 https://json-schema.org/specification
 https://json-schema.org/draft/2020-12/json-schema-validation
 https://datatracker.ietf.org/doc/html/draft-bhutton-relative-json-pointer-00

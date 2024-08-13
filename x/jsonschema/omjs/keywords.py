@@ -1,5 +1,3 @@
-import abc
-import enum
 import operator
 import typing as ta
 
@@ -13,7 +11,7 @@ from omlish import lang
 KeywordT = ta.TypeVar('KeywordT', bound='Keyword')
 
 
-class Keyword(lang.Abstract, lang.Sealed):
+class Keyword(lang.Abstract, lang.PackageSealed):
     tag: ta.ClassVar[str]
 
     def __init_subclass__(cls, *, tag: str | None = None, **kwargs: ta.Any) -> None:
