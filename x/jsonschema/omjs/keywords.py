@@ -54,6 +54,11 @@ class Keywords(lang.Final):
 
 
 @dc.dataclass(frozen=True)
+class NumberKeyword(Keyword, lang.Abstract):
+    n: int | float
+
+
+@dc.dataclass(frozen=True)
 class StrKeyword(Keyword, lang.Abstract):
     s: str
 
@@ -109,6 +114,25 @@ class Required(StrOrStrsKeyword, lang.Final, tag='required'):
 
 @dc.dataclass(frozen=True)
 class Properties(StrToKeywordsKeyword, lang.Final, tag='properties'):
+    pass
+
+
+##
+
+
+class Maximum(NumberKeyword, lang.Final, tag='maximum'):
+    pass
+
+
+class ExclusiveMaximum(NumberKeyword, lang.Final, tag='exclusiveMaximum'):
+    pass
+
+
+class Minimum(NumberKeyword, lang.Final, tag='minimum'):
+    pass
+
+
+class ExclusiveMinimum(NumberKeyword, lang.Final, tag='exclusiveMinimum'):
     pass
 
 
