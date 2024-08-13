@@ -2,6 +2,7 @@
 TODO:
  - symlink headers, included src files (hamt_impl, ...)
  - point / copy output to dst dirs
+ - libs - pybind, catch2? - FindPackages? FetchContent? built_ext won't have that
 
 ==
 
