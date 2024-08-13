@@ -4,6 +4,7 @@ from .base import (  # noqa
 )
 
 from .core import (  # noqa
+    CoreKeyword,
     Id,
     Ref,
     SchemaKeyword,
@@ -11,6 +12,7 @@ from .core import (  # noqa
 
 from .metadata import (  # noqa
     Description,
+    MetadataKeyword,
     Title,
 )
 
@@ -31,4 +33,5 @@ from .validation import (  # noqa
     Required,
     Type,
     UniqueItems,
+    ValidationKeyword,
 )

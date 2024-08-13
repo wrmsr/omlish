@@ -1,18 +1,26 @@
 from omlish import lang
 
+from .base import Keyword
 from .base import StrKeyword
 
 
 ##
 
 
-class Id(StrKeyword, lang.Final, tag='$id'):
+class CoreKeyword(Keyword, lang.Abstract):
     pass
 
 
-class SchemaKeyword(StrKeyword, lang.Final, tag='$schema'):
+##
+
+
+class Id(StrKeyword, CoreKeyword, lang.Final, tag='$id'):
     pass
 
 
-class Ref(StrKeyword, lang.Final, tag='$ref'):
+class SchemaKeyword(StrKeyword, CoreKeyword, lang.Final, tag='$schema'):
+    pass
+
+
+class Ref(StrKeyword, CoreKeyword, lang.Final, tag='$ref'):
     pass
