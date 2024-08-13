@@ -155,3 +155,70 @@ def try_import(spec: str) -> types.ModuleType | None:
         return __import__(s, globals(), level=l)
     except ImportError:
         return None
+
+
+##
+
+
+def resolve_import_name(name: str, package: str | None = None) -> str:
+    level = 0
+
+    if name.startswith('.'):
+        if not package:
+            raise TypeError("the 'package' argument is required to perform a relative import for {name!r}")
+        for character in name:
+            if character != '.':
+                break
+            level += 1
+
+    name = name[level:]
+
+    if not isinstance(name, str):
+        raise TypeError(f'module name must be str, not {type(name)}')
+    if level < 0:
+        raise ValueError('level must be >= 0')
+    if level > 0:
+        if not isinstance(package, str):
+            raise TypeError('__package__ not set to a string')
+        elif not package:
+            raise ImportError('attempted relative import with no known parent package')
+    if not name and level == 0:
+        raise ValueError('Empty module name')
+
+    if level > 0:
+        bits = package.rsplit('.', level - 1)  # type: ignore
+        if len(bits) < level:
+            raise ImportError('attempted relative import beyond top-level package')
+        base = bits[0]
+        name = f'{base}.{name}' if name else base
+
+    return name
+
+
+##
+
+
+_REGISTERED_CONDITIONAL_IMPORTS: dict[str, list[str] | None] = {}
+
+
+def _register_conditional_import(when: str, then: str, package: str | None = None) -> None:
+    wn = resolve_import_name(when, package)
+    tn = resolve_import_name(then, package)
+    if tn in sys.modules:
+        return
+    if wn in sys.modules:
+        __import__(tn)
+    else:
+        tns = _REGISTERED_CONDITIONAL_IMPORTS.setdefault(wn, [])
+        if tns is None:
+            raise Exception(f'Conditional import trigger already cleared: {wn=} {tn=}')
+        tns.append(tn)
+
+
+def _trigger_conditional_imports(package: str) -> None:
+    tns = _REGISTERED_CONDITIONAL_IMPORTS.get(package, [])
+    if tns is None:
+        raise Exception(f'Conditional import trigger already cleared: {package=}')
+    _REGISTERED_CONDITIONAL_IMPORTS[package] = None
+    for tn in tns:
+        __import__(tn)
