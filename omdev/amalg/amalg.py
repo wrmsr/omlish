@@ -439,7 +439,6 @@ def _gen_one(
         print(src)
 
 
-
 def _scan_one(
         input_path: str,
         **kwargs: ta.Any,

@@ -26,6 +26,15 @@ import re
 import typing as ta
 
 
+VersionLocalType = ta.Tuple[ta.Union[int, str], ...]
+
+VersionCmpPrePostDevType = ta.Union['InfinityVersionType', 'NegativeInfinityVersionType', ta.Tuple[str, int]]
+_VersionCmpLocalType0 = ta.Tuple[ta.Union[ta.Tuple[int, str], ta.Tuple['NegativeInfinityVersionType', ta.Union[int, str]]], ...]  # noqa
+VersionCmpLocalType = ta.Union['NegativeInfinityVersionType', _VersionCmpLocalType0]
+VersionCmpKey = ta.Tuple[int, ta.Tuple[int, ...], VersionCmpPrePostDevType, VersionCmpPrePostDevType, VersionCmpPrePostDevType, VersionCmpLocalType]  # noqa
+VersionComparisonMethod = ta.Callable[[VersionCmpKey, VersionCmpKey], bool]
+
+
 ##
 
 
@@ -88,15 +97,6 @@ NegativeInfinityVersion = NegativeInfinityVersionType()
 
 
 ##
-
-
-VersionLocalType = ta.Tuple[ta.Union[int, str], ...]
-
-VersionCmpPrePostDevType = ta.Union['InfinityVersionType', 'NegativeInfinityVersionType', ta.Tuple[str, int]]
-_VersionCmpLocalType0 = ta.Tuple[ta.Union[ta.Tuple[int, str], ta.Tuple['NegativeInfinityVersionType', ta.Union[int, str]]], ...]  # noqa
-VersionCmpLocalType = ta.Union['NegativeInfinityVersionType', _VersionCmpLocalType0]
-VersionCmpKey = ta.Tuple[int, ta.Tuple[int, ...], VersionCmpPrePostDevType, VersionCmpPrePostDevType, VersionCmpPrePostDevType, VersionCmpLocalType]  # noqa
-VersionComparisonMethod = ta.Callable[[VersionCmpKey, VersionCmpKey], bool]
 
 
 class _Version(ta.NamedTuple):
