@@ -24,6 +24,9 @@ class Keyword(lang.Abstract, lang.PackageSealed):
             check.none(tag)
 
 
+##
+
+
 @dc.dataclass(frozen=True)
 class Keywords(lang.Final):
     lst: ta.Sequence[Keyword]
@@ -47,6 +50,9 @@ class Keywords(lang.Final):
             raise TypeError(item)
 
 
+##
+
+
 @dc.dataclass(frozen=True)
 class StrKeyword(Keyword, lang.Abstract):
     s: str
@@ -55,6 +61,11 @@ class StrKeyword(Keyword, lang.Abstract):
 @dc.dataclass(frozen=True)
 class StrOrStrsKeyword(Keyword, lang.Abstract):
     ss: str | ta.Sequence[str]
+
+
+@dc.dataclass(frozen=True)
+class StrToKeywordsKeyword(Keyword, lang.Abstract):
+    m: ta.Mapping[str, Keywords]
 
 
 ##
@@ -97,8 +108,8 @@ class Required(StrOrStrsKeyword, lang.Final, tag='required'):
 
 
 @dc.dataclass(frozen=True)
-class Properties(Keyword, lang.Final, tag='properties'):
-    dct: ta.Mapping[str, Keywords]
+class Properties(StrToKeywordsKeyword, lang.Final, tag='properties'):
+    pass
 
 
 ##

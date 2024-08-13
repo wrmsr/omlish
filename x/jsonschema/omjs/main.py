@@ -20,6 +20,7 @@ from .keywords import Keyword
 from .keywords import Keywords
 from .keywords import StrKeyword
 from .keywords import StrOrStrsKeyword
+from .keywords import StrToKeywordsKeyword
 
 
 KeywordT = ta.TypeVar('KeywordT', bound=Keyword)
@@ -41,6 +42,9 @@ def build_keyword(cls: type[KeywordT], v: ta.Any) -> KeywordT:
         else:
             raise TypeError(v)
         return cls(ss)
+
+    if issubclass(cls, StrToKeywordsKeyword):
+        return cls({k: build_keywords(mv) for k, mv in v.items()})
 
     raise TypeError(cls)
 
