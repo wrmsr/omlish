@@ -179,7 +179,14 @@ https://datatracker.ietf.org/doc/html/draft-bhutton-relative-json-pointer-00
   }
 }
 """
+import abc
 import enum
+import typing as ta
+
+from omlish import cached
+from omlish import collections as col
+from omlish import dataclasses as dc
+from omlish import lang
 
 
 CORE_VOCABULARY = {
@@ -196,6 +203,10 @@ VALIDATION_VOCABULARY = {
     'exclusiveMinimum',
 }
 
+
+##
+
+
 """
 Unrecognized individual keywords simply have their values collected as annotations, while the behavior with respect to
 an unrecognized vocabulary can be controlled when declaring which vocabularies are in use.
@@ -211,7 +222,50 @@ Keyword categories:
      results
  - reserved locations: do not directly affect results, but reserve a place for a specific purpose to ensur
      interoperability
+
+A missing keyword MUST NOT produce a false assertion result, MUST NOT produce annotation results, and MUST NOT cause any
+other schema to be evaluated as part of its own behavioral definition.
+
+However, even if the value which produces the default behavior would produce annotation results if present, the default
+behavior still MUST NOT result in annotations.
 """
+
+
+"""
+While most JSON Schema keywords can be evaluated on their own, or at most need to take into account the values or
+results of adjacent keywords in the same schema object, a few have more complex behavior.
+
+The lexical scope of a keyword is determined by the nested JSON data structure of objects and arrays. The largest such
+scope is an entire schema document. The smallest scope is a single schema object with no subschemas.
+
+Keywords MAY be defined with a partial value, such as a URI-reference, which must be resolved against another value,
+such as another URI-reference or a full URI, which is found through the lexical structure of the JSON document. The
+"$id", "$ref", and "$dynamicRef" core keywords, and the "base" JSON Hyper-Schema keyword, are examples of this sort of
+behavior.
+
+Note that some keywords, such as "$schema", apply to the lexical scope of the entire schema resource, and therefore MUST
+only appear in a schema resource's root schema.
+
+Other keywords may take into account the dynamic scope that exists during the evaluation of a schema, typically together
+with an instance document. The outermost dynamic scope is the schema object at which processing begins, even if it is
+not a schema resource root. The path from this root schema to any particular keyword (that includes any "$ref" and
+"$dynamicRef" keywords that may have been resolved) is considered the keyword's "validation path."
+
+Lexical and dynamic scopes align until a reference keyword is encountered. While following the reference keyword moves
+processing from one lexical scope into a different one, from the perspective of dynamic scope, following a reference is
+no different from descending into a subschema present as a value. A keyword on the far side of that reference that
+resolves information through the dynamic scope will consider the originating side of the reference to be their dynamic
+parent, rather than examining the local lexically enclosing parent.
+
+The concept of dynamic scope is primarily used with "$dynamicRef" and "$dynamicAnchor", and should be considered an
+advanced feature and used with caution when defining additional keywords. It also appears when reporting errors and
+collected annotations, as it may be possible to revisit the same lexical scope repeatedly with different dynamic scopes.
+In such cases, it is important to inform the user of the dynamic path that produced the error or annotation.
+"""
+
+
+##
+
 
 class JsonType(enum.Enum):
     NULL = enum.auto()
@@ -222,67 +276,185 @@ class JsonType(enum.Enum):
     STRING = enum.auto()
 
 
+##
+
+
+# @dc.dataclass(frozen=True, kw_only=True)
+# class Schema(lang.Abstract, lang.Sealed):
+#     id: str | None = None
+#
+#
+# ##
+#
+#
+# class TypeSchema(lang.Abstract):
+#     pass
+#
+#
+# class NullSchema(TypeSchema, lang.Final):
+#     pass
+#
+#
+# class BooleanSchema(TypeSchema, lang.Final):
+#     pass
+#
+#
+# class ObjectSchema(TypeSchema, lang.Final):
+#     pass
+#
+#
+# class ArraySchema(TypeSchema, lang.Final):
+#     pass
+#
+#
+# class NumberSchema(TypeSchema, lang.Final):
+#     pass
+#
+#
+# class StringSchema(TypeSchema, lang.Final):
+#     pass
+#
+#
+# ##
+#
+#
+# @dc.dataclass(frozen=True, kw_only=True)
+# class RootSchema(Schema, lang.Final):
+#     metaschema: str | None = None
+#      type_: TypeSchema | None = None
+
+
+##
+
+
+class Keyword(lang.Abstract, lang.Sealed):
+    tag: ta.ClassVar[str]
+
+
+@dc.dataclass(frozen=True)
+class Keywords(lang.Final):
+    lst: ta.Sequence[Keyword]
+
+    @cached.property
+    def by_type(self) -> ta.Mapping[ta.Type[Keyword], Keyword]:
+        return col.unique_map_by(type, self.lst, strict=True)  # type: ignore
+
+
+@dc.dataclass(frozen=True)
+class StrKeyword(Keyword, lang.Abstract):
+    s: str
+
+
+class Id(StrKeyword, lang.Final):
+    tag = '$id'
+
+
+class SchemaKeyword(StrKeyword, lang.Final):
+    tag = '$schema'
+
+
+class Title(StrKeyword, lang.Final):
+    tag = 'title'
+
+
+class Description(StrKeyword, lang.Final):
+    tag = 'description'
+
+
+@dc.dataclass(frozen=True)
+class Required(Keyword, lang.Final):
+    lst: ta.Sequence[str]
+
+
+##
+
+
 def _main() -> None:
     # https://json-schema.org/learn/getting-started-step-by-step
 
     product = {
-        "productId": 1,
-        "productName": "A green door",
-        "price": 12.50,
-        "tags": ["home", "green"],
+        'productId': 1,
+        'productName': 'A green door',
+        'price': 12.50,
+        'tags': ['home', 'green'],
     }
 
     schema_id_root = 'https://github.com/wrmsr/omlish/jsonschemas/'
 
-    product_schema = {
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": schema_id_root + "product.schema.json",
-        "title": "Product",
-        "description": "A product in the catalog",
-        "type": "object",
-        "properties": {
-            "productId": {
-                "description": "The unique identifier for a product",
-                "type": "integer",
+    warehouse_location_schema = {
+        '$id': schema_id_root + 'geographical-location.schema.json',
+        '$schema': 'https://json-schema.org/draft/2020-12/schema',
+        'title': 'Longitude and Latitude',
+        'description': 'A geographical coordinate on a planet (most commonly Earth).',
+        'required': ['latitude', 'longitude'],
+        'type': 'object',
+        'properties': {
+            'latitude': {
+                'type': 'number',
+                'minimum': -90,
+                'maximum': 90,
             },
-            "productName": {
-                "description": "Name of the product",
-                "type": "string",
-            },
-            "price": {
-                "description": "The price of the product",
-                "type": "number",
-                "exclusiveMinimum": 0,
-            },
-            "tags": {
-                "description": "Tags for the product",
-                "type": "array",
-                "items": {
-                    "type": "string",
-                },
-                "minItems": 1,
-                "uniqueItems": True,
-            },
-            "dimensions": {
-                "type": "object",
-                "properties": {
-                    "length": {
-                        "type": "number",
-                    },
-                    "width": {
-                        "type": "number",
-                    },
-                    "height": {
-                        "type": "number",
-                    },
-                },
-                "required": ["length", "width", "height"],
+            'longitude': {
+                'type': 'number',
+                'minimum': -180,
+                'maximum': 180,
             },
         },
-        "required": [
-            "productId",
-            "productName",
-            "price",
+    }
+
+    product_schema = {
+        '$id': schema_id_root + 'product.schema.json',
+        '$schema': 'https://json-schema.org/draft/2020-12/schema',
+        'title': 'Product',
+        'description': 'A product in the catalog',
+        'type': 'object',
+        'properties': {
+            'productId': {
+                'description': 'The unique identifier for a product',
+                'type': 'integer',
+            },
+            'productName': {
+                'description': 'Name of the product',
+                'type': 'string',
+            },
+            'price': {
+                'description': 'The price of the product',
+                'type': 'number',
+                'exclusiveMinimum': 0,
+            },
+            'tags': {
+                'description': 'Tags for the product',
+                'type': 'array',
+                'items': {
+                    'type': 'string',
+                },
+                'minItems': 1,
+                'uniqueItems': True,
+            },
+            'dimensions': {
+                'type': 'object',
+                'properties': {
+                    'length': {
+                        'type': 'number',
+                    },
+                    'width': {
+                        'type': 'number',
+                    },
+                    'height': {
+                        'type': 'number',
+                    },
+                },
+                'required': ['length', 'width', 'height'],
+            },
+            'warehouseLocation': {
+                'description': 'Coordinates of the warehouse where the product is located.',
+                '$ref': schema_id_root + 'geographical-location.schema.json',
+            },
+        },
+        'required': [
+            'productId',
+            'productName',
+            'price',
         ],
     }
 

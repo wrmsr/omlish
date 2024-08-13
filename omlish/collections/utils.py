@@ -3,6 +3,8 @@ import itertools
 import typing as ta
 
 from .. import check
+from .. import lang
+from .exceptions import DuplicateKeyError
 from .identity import IdentityKeyDict
 from .identity import IdentitySet
 
@@ -48,29 +50,56 @@ def partition(items: ta.Iterable[T], pred: ta.Callable[[T], bool]) -> tuple[list
     return t, f
 
 
-def unique(it: ta.Iterable[T], *, identity: bool = False) -> list[T]:
+def unique(
+        it: ta.Iterable[T],
+        *,
+        key: ta.Callable[[T], ta.Any] = lang.identity,
+        identity: bool = False,
+        strict: bool = False,
+) -> list[T]:
     if isinstance(it, str):
         raise TypeError(it)
     ret: list[T] = []
-    seen: ta.MutableSet[T] = IdentitySet() if identity else set()
+    seen: ta.MutableSet = IdentitySet() if identity else set()
     for e in it:
-        if e not in seen:
-            seen.add(e)
+        k = key(e)
+        if k in seen:
+            if strict:
+                raise DuplicateKeyError(k, e)
+        else:
+            seen.add(k)
             ret.append(e)
     return ret
 
 
-def unique_map(kvs: ta.Iterable[tuple[K, V]], *, identity: bool = False) -> ta.MutableMapping[K, V]:
+def unique_map(
+        kvs: ta.Iterable[tuple[K, V]],
+        *,
+        identity: bool = False,
+        strict: bool = False,
+) -> ta.MutableMapping[K, V]:
     d: ta.MutableMapping[K, V] = IdentityKeyDict() if identity else {}
     for k, v in kvs:
         if k in d:
-            raise KeyError(k)
-        d[k] = v
+            if strict:
+                raise DuplicateKeyError(k)
+        else:
+            d[k] = v
     return d
 
 
-def unique_map_by(fn: ta.Callable[[V], K], vs: ta.Iterable[V], *, identity: bool = False) -> ta.MutableMapping[K, V]:
-    return unique_map(((fn(v), v) for v in vs), identity=identity)
+def unique_map_by(
+        fn: ta.Callable[[V], K],
+        vs: ta.Iterable[V],
+        *,
+        identity: bool = False,
+        strict: bool = False,
+) -> ta.MutableMapping[K, V]:
+    return unique_map(
+        ((fn(v), v) for v in vs),
+        identity=identity,
+        strict=strict,
+    )
 
 
 def multi_map(kvs: ta.Iterable[tuple[K, V]], *, identity: bool = False) -> ta.MutableMapping[K, list[V]]:

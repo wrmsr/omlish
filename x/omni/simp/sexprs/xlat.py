@@ -43,7 +43,7 @@ class Xlator:
         }
 
         self._arity_overloaded_named_macros: ta.Mapping[str, ta.Mapping[int, NamedMacro]] = {
-            n: col.unique_map((check.isinstance(m.arity, int), m) for m in ms)
+            n: col.unique_map(((check.isinstance(m.arity, int), m) for m in ms), strict=True)
             for n, ms in named_macro_lists.items()
             if len(ms) > 1
         }
