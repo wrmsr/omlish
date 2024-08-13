@@ -1,4 +1,7 @@
-
+"""
+TODO:
+ - auto-register union - need consistent placement in marshal - raise exception on ambiguous 'registered' impls
+"""
 import collections.abc
 import typing as ta
 
