@@ -52,12 +52,22 @@ class StrKeyword(Keyword, lang.Abstract):
     s: str
 
 
+##
+
+
 class Id(StrKeyword, lang.Final, tag='$id'):
     pass
 
 
 class SchemaKeyword(StrKeyword, lang.Final, tag='$schema'):
     pass
+
+
+class Ref(StrKeyword, lang.Final, tag='$ref'):
+    pass
+
+
+##
 
 
 class Title(StrKeyword, lang.Final, tag='title'):
@@ -73,6 +83,9 @@ class Type(Keyword, lang.Final, tag='type'):
     t: str | ta.Sequence[str]
 
 
+##
+
+
 @dc.dataclass(frozen=True)
 class Required(Keyword, lang.Final, tag='required'):
     lst: ta.Sequence[str]
@@ -81,6 +94,9 @@ class Required(Keyword, lang.Final, tag='required'):
 @dc.dataclass(frozen=True)
 class Properties(Keyword, lang.Final, tag='properties'):
     dct: ta.Mapping[str, Keywords]
+
+
+##
 
 
 KEYWORD_TYPES_BY_TAG: ta.Mapping[str, type[Keyword]] = col.unique_map_by(  # type: ignore

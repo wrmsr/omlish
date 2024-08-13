@@ -10,8 +10,29 @@ https://json-schema.org/draft/2020-12/json-schema-validation
 https://datatracker.ietf.org/doc/html/draft-bhutton-relative-json-pointer-00
 
 """
+import typing as ta
+
 from .keywords import Keyword
+from .keywords import Keywords
 from .keywords import KEYWORD_TYPES_BY_TAG
+
+
+KeywordT = ta.TypeVar('KeywordT', bound=Keyword)
+
+
+##
+
+
+def build_keyword(cls: type[KeywordT], v: ta.Any) -> KeywordT:
+    raise NotImplementedError
+
+
+def build_keywords(dct: ta.Mapping[str, ta.Any]) -> Keywords:
+    lst: list[Keyword] = []
+    for k, v in dct.items():
+        cls = KEYWORD_TYPES_BY_TAG[k]
+        lst.append(build_keyword(cls, v))
+    return Keywords(lst)
 
 
 ##
@@ -105,6 +126,8 @@ def _main() -> None:
             'price',
         ],
     }
+
+    build_keywords(product_schema)
 
 
 if __name__ == '__main__':
