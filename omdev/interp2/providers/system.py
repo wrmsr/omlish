@@ -5,6 +5,7 @@ TODO:
 # ruff: noqa: UP006 UP007
 import dataclasses as dc
 import os
+import re
 import typing as ta
 
 from ...amalg.std.cached import cached_nullary
@@ -28,11 +29,11 @@ class SystemInterpProvider(InterpProvider):
 
     @staticmethod
     def _which(
-            cmd: str,
+            pat: re.Pattern,
             *,
             mode: int = os.F_OK | os.X_OK,
             path: ta.Optional[str] = None,
-    ) -> ta.Optional[str]:
+    ) -> ta.List[str]:
         if path is None:
             path = os.environ.get('PATH', None)
             if path is None:
@@ -42,30 +43,43 @@ class SystemInterpProvider(InterpProvider):
                     path = os.defpath
 
         if not path:
-            return None
+            return []
 
         path = os.fsdecode(path)
         pathlst = path.split(os.pathsep)
 
         def _access_check(fn: str, mode: int) -> bool:
-            return (os.path.exists(fn) and os.access(fn, mode) and not os.path.isdir(fn))
+            return os.path.exists(fn) and os.access(fn, mode)
 
-        files = [cmd]
+        out = []
         seen = set()
         for d in pathlst:
             normdir = os.path.normcase(d)
             if normdir not in seen:
                 seen.add(normdir)
-                for thefile in files:
+                if not _access_check(normdir, mode):
+                    continue
+                for thefile in os.listdir(d):
                     name = os.path.join(d, thefile)
-                    if _access_check(name, mode):
-                        return name
+                    if not (
+                            os.path.isfile(name) and
+                            pat.fullmatch(thefile) and
+                            _access_check(name, mode)
+                    ):
+                        continue
+                    out.append(name)
 
-        return None
+        return out
 
     @cached_nullary
     def exe(self) -> ta.Optional[str]:
-        return self._which(self.cmd, path=self.path)
+        lst = self._which(
+            re.compile(re.escape(self.cmd)),
+            path=self.path,
+        )
+        if not lst:
+            return None
+        return lst[0]
 
     @cached_nullary
     def version(self) -> ta.Optional[InterpVersion]:
