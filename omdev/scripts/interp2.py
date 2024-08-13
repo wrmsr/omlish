@@ -16,6 +16,7 @@ import json
 import logging
 import os
 import re
+import shlex
 import subprocess
 import sys
 import typing as ta
@@ -532,6 +533,10 @@ def canonicalize_version(
 ##
 
 
+_SUBPROCESS_SHELL_WRAP_EXECS = True
+# _SUBPROCESS_SHELL_WRAP_EXECS = False
+
+
 def _prepare_subprocess_invocation(
         *args: ta.Any,
         env: ta.Optional[ta.Mapping[str, ta.Any]] = None,
@@ -549,6 +554,9 @@ def _prepare_subprocess_invocation(
     if quiet and 'stderr' not in kwargs:
         if not log.isEnabledFor(logging.DEBUG):
             kwargs['stderr'] = subprocess.DEVNULL
+
+    if _SUBPROCESS_SHELL_WRAP_EXECS:
+        args = ('sh', '-c', ' '.join(map(shlex.quote, args)))
 
     return args, dict(
         env=env,
@@ -857,7 +865,14 @@ class SystemInterpProvider(InterpProvider):
         return out
 
     @cached_nullary
-    def exe2(self) -> ta.Optional[str]:  # FIXME
+    def exes(self) -> ta.List[str]:
+        return self._re_which(
+            re.compile(r'python3(\.\d+)?'),
+            path=self.path,
+        )
+
+    @cached_nullary
+    def exe(self) -> ta.Optional[str]:
         lst = self._re_which(
             re.compile(re.escape(self.cmd)),
             path=self.path,
@@ -865,11 +880,6 @@ class SystemInterpProvider(InterpProvider):
         if not lst:
             return None
         return lst[0]
-
-    @cached_nullary
-    def exe(self) -> ta.Optional[str]:
-        import shutil
-        return shutil.which(self.cmd)
 
     @cached_nullary
     def version(self) -> ta.Optional[InterpVersion]:
