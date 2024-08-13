@@ -30,9 +30,9 @@ from .versions import Version
 from .versions import canonicalize_version
 
 
-UnparsedVersion = ta.Union[Version, str]
+UnparsedVersion = ta.Union['Version', str]
 UnparsedVersionVar = ta.TypeVar('UnparsedVersionVar', bound=UnparsedVersion)
-CallableVersionOperator = ta.Callable[[Version, str], bool]
+CallableVersionOperator = ta.Callable[['Version', str], bool]
 
 
 ##

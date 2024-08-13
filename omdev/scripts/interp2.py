@@ -29,9 +29,9 @@ _VersionCmpLocalType0 = ta.Tuple[ta.Union[ta.Tuple[int, str], ta.Tuple['Negative
 VersionCmpLocalType = ta.Union['NegativeInfinityVersionType', _VersionCmpLocalType0]
 VersionCmpKey = ta.Tuple[int, ta.Tuple[int, ...], VersionCmpPrePostDevType, VersionCmpPrePostDevType, VersionCmpPrePostDevType, VersionCmpLocalType]  # noqa
 VersionComparisonMethod = ta.Callable[[VersionCmpKey, VersionCmpKey], bool]
-UnparsedVersion = ta.Union[Version, str]
+UnparsedVersion = ta.Union['Version', str]
 UnparsedVersionVar = ta.TypeVar('UnparsedVersionVar', bound=UnparsedVersion)
-CallableVersionOperator = ta.Callable[[Version, str], bool]
+CallableVersionOperator = ta.Callable[['Version', str], bool]
 
 
 ########################################
