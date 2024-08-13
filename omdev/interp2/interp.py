@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# @omdev-amalg ../scripts/interp2.py
 """
 TODO:
  - partial best-matches - '3.12'
@@ -10,26 +11,12 @@ import typing as ta
 
 from ..amalg.std.logs import configure_standard_logging
 from ..amalg.std.runtime import check_runtime_version
+from .providers.system import SystemInterpProvider
 
 
 def _resolve_cmd(args) -> None:
-    # if sys.platform == 'darwin':
-    #     resolver_cls = MacInterpResolver
-    # elif sys.platform in ['linux', 'linux2']:
-    #     resolver_cls = LinuxInterpResolver
-    # else:
-    #     raise OSError(f'Unsupported platform: {sys.platform}')
-    #
-    # resolver = resolver_cls(
-    #     args.version,
-    #     debug=args.debug,
-    # )
-    #
-    # resolved = resolver.resolve()
-    # if resolved is None:
-    #     raise RuntimeError(f'Failed to resolve python version: {args.version}')
-    # print(resolved)
-    raise NotImplementedError
+    for i in SystemInterpProvider().installed_versions():
+        print(i)
 
 
 def _build_parser() -> argparse.ArgumentParser:
