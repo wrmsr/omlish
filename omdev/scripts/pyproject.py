@@ -901,8 +901,7 @@ def toml_make_safe_parse_float(parse_float: TomlParseFloat) -> TomlParseFloat:
 ##
 
 
-_SUBPROCESS_SHELL_WRAP_EXECS = True
-# _SUBPROCESS_SHELL_WRAP_EXECS = False
+_SUBPROCESS_SHELL_WRAP_EXECS = False
 
 
 def _prepare_subprocess_invocation(
