@@ -488,6 +488,10 @@ def unmarshal_obj(o: ta.Any, ty: ta.Any) -> ta.Any:
 ##
 
 
+_SUBPROCESS_SHELL_WRAP_EXECS = True
+# _SUBPROCESS_SHELL_WRAP_EXECS = False
+
+
 def _prepare_subprocess_invocation(
         *args: ta.Any,
         env: ta.Optional[ta.Mapping[str, ta.Any]] = None,
@@ -505,6 +509,9 @@ def _prepare_subprocess_invocation(
     if quiet and 'stderr' not in kwargs:
         if not log.isEnabledFor(logging.DEBUG):
             kwargs['stderr'] = subprocess.DEVNULL
+
+    if _SUBPROCESS_SHELL_WRAP_EXECS:
+        args = ('sh', '-c', ' '.join(map(shlex.quote, args)))
 
     return args, dict(
         env=env,
