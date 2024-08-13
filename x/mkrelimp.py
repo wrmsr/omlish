@@ -65,6 +65,15 @@ def _main() -> None:
                     print(ps)
                     rel_path = os.path.relpath(os.path.join(mod_path, *ps[1:]), dp)
                     print(rel_path)
+                    sr = rel_path.split(os.sep)
+                    print(sr)
+                    nr = indexfn(lambda s: s != '..', sr)
+                    print(nr)
+                    if nr < 0:
+                        ps = ['.' * (len(sr) + 1)]
+                    else:
+                        ps = ['.' * nr, *sr[nr:]]
+                    print(ps)
 
                     ##
 
