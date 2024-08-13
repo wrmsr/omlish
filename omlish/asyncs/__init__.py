@@ -33,12 +33,3 @@ from .flavors import (  # noqa
     mark_trio,
     with_adapter_loop,
 )
-
-from .futures import (  # noqa
-    FutureError,
-    FutureTimeoutError,
-    ImmediateExecutor,
-    new_thread_or_immediate_executor,
-    wait_dependent_futures,
-    wait_futures,
-)
