@@ -23,10 +23,11 @@ from ...amalg.std.subprocesses import subprocess_try_output
 from ...amalg.std.versions.specifiers import SpecifierSet
 from ...amalg.std.versions.versions import InvalidVersion
 from ...amalg.std.versions.versions import parse_version
-from .base import Interp
 from .base import InterpProvider
-from .base import InterpVersion
 from .base import query_interp_exe_version
+from .types import Interp
+from .types import InterpOpts
+from .types import InterpVersion
 
 
 ##
@@ -320,8 +321,10 @@ class PyenvInterpProvider(InterpProvider):
                 exe=ep,
                 version=InterpVersion(
                     version=v,
-                    debug=debug,
-                    threaded=threaded,
+                    opts=InterpOpts(
+                        debug=debug,
+                        threaded=threaded,
+                    ),
                 ),
             ))
 
