@@ -18,7 +18,7 @@ import re
 import typing as ta
 
 from omlish import argparse as ap
-from omlish import asyncs
+from omlish import concurrent as cu
 from omlish import lang
 from omlish import logs
 from omlish import cached
@@ -124,10 +124,10 @@ class Cli(ap.Cli):
             if parallelism is not None and parallelism > 0:
                 exe = es.enter_context(cf.ThreadPoolExecutor(parallelism))
             else:
-                exe = asyncs.ImmediateExecutor()
+                exe = cu.ImmediateExecutor()
 
             futs = [exe.submit(process_g4, fp) for fp in sorted(wps)]
-            asyncs.await_futures(futs, raise_exceptions=True, timeout_s=60 * 60)
+            cu.wait_futures(futs, raise_exceptions=True, timeout_s=60 * 60)
 
         for ap in sorted(aps):
             fns = [fn for fn in os.listdir(ap) if not fn.endswith('.py')]
