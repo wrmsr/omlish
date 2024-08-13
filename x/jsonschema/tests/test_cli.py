@@ -12,17 +12,17 @@ import sys
 import tempfile
 import warnings
 
-from jsonschema import Draft4Validator, Draft202012Validator
-from jsonschema.exceptions import (
+from .. import Draft4Validator, Draft202012Validator
+from ..exceptions import (
     SchemaError,
     ValidationError,
     _RefResolutionError,
 )
-from jsonschema.validators import _LATEST_VERSION, validate
+from ..validators import _LATEST_VERSION, validate
 
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
-    from jsonschema import cli
+    from .. import cli
 
 
 def fake_validator(*errors):

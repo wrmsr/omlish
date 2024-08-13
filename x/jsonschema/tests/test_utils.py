@@ -1,7 +1,7 @@
 from math import nan
 from unittest import TestCase
 
-from jsonschema._utils import equal
+from .._utils import equal
 
 
 class TestEqual(TestCase):

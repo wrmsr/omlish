@@ -25,10 +25,10 @@ if TYPE_CHECKING:
 
     import referencing.jsonschema
 
-    from jsonschema import _typing
-    from jsonschema.exceptions import ValidationError
-    import jsonschema
-    import jsonschema.validators
+    from . import _typing
+    from .exceptions import ValidationError
+    from .. import jsonschema
+    from . import validators as _
 
 # For code authors working on the validator protocol, these are the three
 # use-cases which should be kept in mind:

@@ -4,9 +4,9 @@ Tests for the parts of jsonschema related to the :kw:`format` keyword.
 
 from unittest import TestCase
 
-from jsonschema import FormatChecker, ValidationError
-from jsonschema.exceptions import FormatError
-from jsonschema.validators import Draft4Validator
+from .. import FormatChecker, ValidationError
+from ..exceptions import FormatError
+from ..validators import Draft4Validator
 
 BOOM = ValueError("Boom!")
 BANG = ZeroDivisionError("Bang!")

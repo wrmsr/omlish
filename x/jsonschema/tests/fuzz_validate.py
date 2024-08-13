@@ -8,7 +8,7 @@ import sys
 
 from hypothesis import given, strategies
 
-import jsonschema
+from ... import jsonschema
 
 PRIM = strategies.one_of(
     strategies.booleans(),

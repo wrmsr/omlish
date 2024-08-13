@@ -9,7 +9,7 @@ import urllib.request
 
 import referencing.exceptions
 
-from jsonschema import FormatChecker, exceptions, protocols, validators
+from .. import FormatChecker, exceptions, protocols, validators
 
 
 class TestDeprecations(TestCase):

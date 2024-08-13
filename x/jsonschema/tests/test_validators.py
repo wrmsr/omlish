@@ -17,7 +17,7 @@ from attrs import define, field
 from referencing.jsonschema import DRAFT202012
 import referencing.exceptions
 
-from jsonschema import (
+from .. import (
     FormatChecker,
     TypeChecker,
     exceptions,

@@ -23,8 +23,8 @@ if TYPE_CHECKING:
 
     import pyperf
 
-from jsonschema.validators import _VALIDATORS
-import jsonschema
+from ..validators import _VALIDATORS
+from ... import jsonschema
 
 _DELIMITERS = re.compile(r"[\W\- ]+")
 

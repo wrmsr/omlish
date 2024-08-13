@@ -8,8 +8,8 @@ See https://github.com/json-schema-org/JSON-Schema-Test-Suite for details.
 
 import sys
 
-from jsonschema.tests._suite import Suite
-import jsonschema
+from ._suite import Suite
+from ... import jsonschema
 
 SUITE = Suite()
 DRAFT3 = SUITE.version(name="draft3")

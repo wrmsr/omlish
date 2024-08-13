@@ -10,10 +10,10 @@ for you.
 """
 import warnings
 
-from jsonschema._format import FormatChecker
-from jsonschema._types import TypeChecker
-from jsonschema.exceptions import SchemaError, ValidationError
-from jsonschema.validators import (
+from ._format import FormatChecker
+from ._types import TypeChecker
+from .exceptions import SchemaError, ValidationError
+from .validators import (
     Draft3Validator,
     Draft4Validator,
     Draft6Validator,

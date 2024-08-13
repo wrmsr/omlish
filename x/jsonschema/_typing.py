@@ -5,7 +5,7 @@ from typing import Any, Callable, Iterable, Protocol, Tuple, Union
 
 import referencing.jsonschema
 
-from jsonschema.protocols import Validator
+from .protocols import Validator
 
 
 class SchemaKeywordValidator(Protocol):

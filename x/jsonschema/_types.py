@@ -6,7 +6,7 @@ import numbers
 from attrs import evolve, field, frozen
 from rpds import HashTrieMap
 
-from jsonschema.exceptions import UndefinedTypeCheck
+from .exceptions import UndefinedTypeCheck
 
 
 # unfortunately, the type of HashTrieMap is generic, and if used as an attrs

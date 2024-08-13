@@ -18,8 +18,8 @@ except ImportError:
 
 from attrs import define, field
 
-from jsonschema.exceptions import SchemaError
-from jsonschema.validators import _RefResolver, validator_for
+from .exceptions import SchemaError
+from .validators import _RefResolver, validator_for
 
 warnings.warn(
     (
