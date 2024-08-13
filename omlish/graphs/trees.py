@@ -190,7 +190,7 @@ class BasicTreeAnalysis(ta.Generic[NodeT]):
         e: ta.Any
         d: ta.Any
         if identity:
-            e, d = id, col.unique_map((id(n), n) for n, _ in pairs)
+            e, d = id, col.unique_map(((id(n), n) for n, _ in pairs), strict=True)
         else:
             e, d = lang.identity, lang.identity
         tsd = {e(n): {e(p)} for n, p in parents_by_node.items()}

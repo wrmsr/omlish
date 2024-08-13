@@ -1,0 +1,2 @@
+class DuplicateKeyError(KeyError):
+    pass
