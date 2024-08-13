@@ -17,7 +17,6 @@ SEE:
 import abc
 import dataclasses as dc
 import json
-import shutil
 import sys
 import typing as ta
 
@@ -117,43 +116,6 @@ class RunningInterpProvider(InterpProvider):
             raise KeyError(version)
         return Interp(
             exe=sys.executable,
-            provider=self.name,
-            version=self.version(),
-        )
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class SystemInterpProvider(InterpProvider):
-    cmd: str = 'python3'
-
-    @property
-    def name(self) -> str:
-        return 'system'
-
-    @cached_nullary
-    def exe(self) -> ta.Optional[str]:
-        return shutil.which(self.cmd)
-
-    @cached_nullary
-    def version(self) -> ta.Optional[InterpVersion]:
-        if (exe := self.exe()) is None:
-            return None
-        return query_interp_exe_version(exe)
-
-    def installed_versions(self) -> ta.Sequence[InterpVersion]:
-        return [self.version()]
-
-    def installable_versions(self) -> ta.Sequence[InterpVersion]:
-        return []
-
-    def get_version(self, version: InterpVersion) -> Interp:
-        if version != self.version():
-            raise KeyError(version)
-        return Interp(
-            exe=self.exe(),
             provider=self.name,
             version=self.version(),
         )
