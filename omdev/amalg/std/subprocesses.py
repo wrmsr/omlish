@@ -1,6 +1,7 @@
 # ruff: noqa: UP006 UP007
 import logging
 import os
+import shlex
 import subprocess
 import sys
 import typing as ta
@@ -9,6 +10,10 @@ from .logs import log
 
 
 ##
+
+
+_SUBPROCESS_SHELL_WRAP_EXECS = True
+# _SUBPROCESS_SHELL_WRAP_EXECS = False
 
 
 def _prepare_subprocess_invocation(
@@ -28,6 +33,9 @@ def _prepare_subprocess_invocation(
     if quiet and 'stderr' not in kwargs:
         if not log.isEnabledFor(logging.DEBUG):
             kwargs['stderr'] = subprocess.DEVNULL
+
+    if _SUBPROCESS_SHELL_WRAP_EXECS:
+        args = ('sh', '-c', ' '.join(map(shlex.quote, args)))
 
     return args, dict(
         env=env,
