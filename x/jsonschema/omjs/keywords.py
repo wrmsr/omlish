@@ -54,6 +54,11 @@ class Keywords(lang.Final):
 
 
 @dc.dataclass(frozen=True)
+class BooleanKeyword(Keyword, lang.Abstract):
+    b: bool
+
+
+@dc.dataclass(frozen=True)
 class NumberKeyword(Keyword, lang.Abstract):
     n: int | float
 
@@ -124,6 +129,21 @@ class Properties(StrToKeywordsKeyword, lang.Final, tag='properties'):
 
 
 ##
+
+
+class MaxItems(NumberKeyword, lang.Final, tag='maxItems'):
+    pass
+
+
+class MinItems(NumberKeyword, lang.Final, tag='minItems'):
+    pass
+
+
+class UniqueItems(BooleanKeyword, lang.Final, tag='uniqueItems'):
+    pass
+
+
+#
 
 
 class Maximum(NumberKeyword, lang.Final, tag='maximum'):

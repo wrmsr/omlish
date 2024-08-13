@@ -3,6 +3,7 @@ import typing as ta
 from omlish import check
 from omlish import collections as col
 
+from .keywords import BooleanKeyword
 from .keywords import KEYWORD_TYPES_BY_TAG
 from .keywords import Keyword
 from .keywords import Keywords
@@ -17,7 +18,10 @@ KeywordT = ta.TypeVar('KeywordT', bound=Keyword)
 
 
 def parse_keyword(cls: type[KeywordT], v: ta.Any) -> KeywordT:
-    if issubclass(cls, NumberKeyword):
+    if issubclass(cls, BooleanKeyword):
+        return cls(check.isinstance(v, bool))
+
+    elif issubclass(cls, NumberKeyword):
         return cls(check.isinstance(v, (int, float)))
 
     elif issubclass(cls, StrKeyword):
