@@ -25,8 +25,7 @@ def query_interp_exe_version(exe: str) -> InterpVersion:
     ins = check_not_none(INTERP_INSPECTOR.inspect(exe))
     return InterpVersion(
         version=ins.version,
-        debug=ins.debug,
-        threaded=ins.threaded,
+        opts=ins.opts,
     )
 
 

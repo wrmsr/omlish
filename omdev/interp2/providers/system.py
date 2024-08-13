@@ -11,10 +11,10 @@ import typing as ta
 
 from ...amalg.std.cached import cached_nullary
 from ...amalg.std.versions.specifiers import SpecifierSet
-from .base import Interp
 from .base import InterpProvider
-from .base import InterpVersion
 from .base import query_interp_exe_version
+from .types import Interp
+from .types import InterpVersion
 
 
 ##
