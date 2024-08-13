@@ -8,7 +8,7 @@ import logging
 import signal
 import time
 
-from omdev.amalg.std.logs import setup_standard_logging
+from omdev.amalg.std.logs import configure_standard_logging
 
 from .compat import ExitNow
 from .compat import as_string
@@ -304,7 +304,7 @@ def timeslice(period, when):
 
 
 def main(args=None, test=False):
-    setup_standard_logging('INFO')
+    configure_standard_logging('INFO')
 
     # if we hup, restart by making a new Supervisor()
     first = True

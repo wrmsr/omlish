@@ -42,7 +42,7 @@ TODO:
 log = logging.getLogger(__name__)
 
 
-def setup_standard_logging(level: ta.Union[int, str] = logging.INFO) -> None:
+def configure_standard_logging(level: ta.Union[int, str] = logging.INFO) -> None:
     logging.root.addHandler(logging.StreamHandler())
     logging.root.setLevel(level)
 
@@ -2779,7 +2779,7 @@ def timeslice(period, when):
 
 
 def main(args=None, test=False):
-    setup_standard_logging('INFO')
+    configure_standard_logging('INFO')
 
     # if we hup, restart by making a new Supervisor()
     first = True
