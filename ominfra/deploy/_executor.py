@@ -492,6 +492,7 @@ def _prepare_subprocess_invocation(
         *args: ta.Any,
         env: ta.Optional[ta.Mapping[str, ta.Any]] = None,
         extra_env: ta.Optional[ta.Mapping[str, ta.Any]] = None,
+        quiet: bool = False,
         **kwargs: ta.Any,
 ) -> ta.Tuple[ta.Tuple[ta.Any, ...], ta.Dict[str, ta.Any]]:
     log.debug(args)
@@ -500,6 +501,10 @@ def _prepare_subprocess_invocation(
 
     if extra_env:
         env = {**(env if env is not None else os.environ), **extra_env}
+
+    if quiet and 'stderr' not in kwargs:
+        if not log.isEnabledFor(logging.DEBUG):
+            kwargs['stderr'] = subprocess.DEVNULL
 
     return args, dict(
         env=env,

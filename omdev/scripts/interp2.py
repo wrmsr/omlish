@@ -16,12 +16,12 @@ import json
 import logging
 import os
 import re
-import shutil
 import subprocess
 import sys
 import typing as ta
 
 
+T = ta.TypeVar('T')
 VersionLocalType = ta.Tuple[ta.Union[int, str], ...]
 VersionCmpPrePostDevType = ta.Union['InfinityVersionType', 'NegativeInfinityVersionType', ta.Tuple[str, int]]
 _VersionCmpLocalType0 = ta.Tuple[ta.Union[ta.Tuple[int, str], ta.Tuple['NegativeInfinityVersionType', ta.Union[int, str]]], ...]  # noqa
@@ -49,6 +49,35 @@ class cached_nullary:  # noqa
     def __get__(self, instance, owner):  # noqa
         bound = instance.__dict__[self._fn.__name__] = self.__class__(self._fn.__get__(instance, owner))
         return bound
+
+
+########################################
+# ../../amalg/std/check.py
+# ruff: noqa: UP006 UP007
+
+
+def check_isinstance(v: T, spec: ta.Union[ta.Type[T], tuple]) -> T:
+    if not isinstance(v, spec):
+        raise TypeError(v)
+    return v
+
+
+def check_not_isinstance(v: T, spec: ta.Union[type, tuple]) -> T:
+    if isinstance(v, spec):
+        raise TypeError(v)
+    return v
+
+
+def check_not_none(v: ta.Optional[T]) -> T:
+    if v is None:
+        raise ValueError
+    return v
+
+
+def check_not(v: ta.Any) -> None:
+    if v:
+        raise ValueError(v)
+    return v
 
 
 ########################################
@@ -507,6 +536,7 @@ def _prepare_subprocess_invocation(
         *args: ta.Any,
         env: ta.Optional[ta.Mapping[str, ta.Any]] = None,
         extra_env: ta.Optional[ta.Mapping[str, ta.Any]] = None,
+        quiet: bool = False,
         **kwargs: ta.Any,
 ) -> ta.Tuple[ta.Tuple[ta.Any, ...], ta.Dict[str, ta.Any]]:
     log.debug(args)
@@ -515,6 +545,10 @@ def _prepare_subprocess_invocation(
 
     if extra_env:
         env = {**(env if env is not None else os.environ), **extra_env}
+
+    if quiet and 'stderr' not in kwargs:
+        if not log.isEnabledFor(logging.DEBUG):
+            kwargs['stderr'] = subprocess.DEVNULL
 
     return args, dict(
         env=env,
@@ -579,6 +613,93 @@ def subprocess_try_output_str(*args: ta.Any, **kwargs: ta.Any) -> ta.Optional[st
 
 
 ########################################
+# ../providers/inspect.py
+# ruff: noqa: UP006 UP007
+
+
+@dc.dataclass(frozen=True)
+class InterpInspection:
+    exe: str
+    version: Version
+
+    version_str: str
+    config_vars: ta.Mapping[str, str]
+    prefix: str
+    base_prefix: str
+
+    @property
+    def debug(self) -> bool:
+        return bool(self.config_vars.get('Py_DEBUG'))
+
+    @property
+    def threaded(self) -> bool:
+        return bool(self.config_vars.get('Py_GIL_DISABLED'))
+
+    @property
+    def is_venv(self) -> bool:
+        return self.prefix != self.base_prefix
+
+
+class InterpInspector:
+
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._cache: ta.Dict[str, ta.Optional[InterpInspection]] = {}
+
+    _RAW_INSPECTION_CODE = """
+    __import__('json').dumps(dict(
+        version_str=__import__('sys').version,
+        prefix=__import__('sys').prefix,
+        base_prefix=__import__('sys').base_prefix,
+        config_vars=__import__('sysconfig').get_config_vars(),
+    ))"""
+
+    _INSPECTION_CODE = ''.join(l.strip() for l in _RAW_INSPECTION_CODE.splitlines())
+
+    def _build_inspection(
+            self,
+            exe: str,
+            output: str,
+    ) -> InterpInspection:
+        dct = json.loads(output)
+
+        version = parse_version(dct['version_str'].split()[0])
+
+        return InterpInspection(
+            exe=exe,
+            version=version,
+            **{k: dct[k] for k in (
+                'version_str',
+                'prefix',
+                'base_prefix',
+                'config_vars',
+            )},
+        )
+
+    def _inspect(self, exe: str) -> InterpInspection:
+        output = subprocess_check_output(exe, '-c', f'print({self._INSPECTION_CODE})', quiet=True)
+        return self._build_inspection(exe, output.decode())
+
+    def inspect(self, exe: str) -> ta.Optional[InterpInspection]:
+        try:
+            return self._cache[exe]
+        except KeyError:
+            ret: ta.Optional[InterpInspection]
+            try:
+                ret = self._inspect(exe)
+            except Exception as e:  # noqa
+                if log.isEnabledFor(logging.DEBUG):
+                    log.exception('Failed to inspect interp: %s', exe)
+                ret = None
+            self._cache[exe] = ret
+            return ret
+
+
+INTERP_INSPECTOR = InterpInspector()
+
+
+########################################
 # ../providers/base.py
 """
 TODO:
@@ -610,28 +731,13 @@ class Interp:
 ##
 
 
-_RAW_QUERY_INTERP_VERSION_CODE = """
-__import__('json').dumps(dict(
-    version=__import__('sys').version,
-    debug=bool(__import__('sysconfig').get_config_var('Py_DEBUG')),
-    threaded=bool(__import__('sysconfig').get_config_var('Py_GIL_DISABLED')),
-))"""
-
-_QUERY_INTERP_VERSION_CODE = ''.join(l.strip() for l in _RAW_QUERY_INTERP_VERSION_CODE.splitlines())
-
-
-def _translate_queried_interp_version(out: str) -> InterpVersion:
-    dct = json.loads(out)
+def query_interp_exe_version(exe: str) -> InterpVersion:
+    ins = check_not_none(INTERP_INSPECTOR.inspect(exe))
     return InterpVersion(
-        parse_version(dct['version'].split()[0]),
-        debug=dct['debug'],
-        threaded=dct['threaded'],
+        version=ins.version,
+        debug=ins.debug,
+        threaded=ins.threaded,
     )
-
-
-def query_interp_exe_version(path: str) -> InterpVersion:
-    out = subprocess_check_output(path, '-c', f'print({_QUERY_INTERP_VERSION_CODE})')
-    return _translate_queried_interp_version(out.decode())
 
 
 ##
@@ -666,8 +772,7 @@ class RunningInterpProvider(InterpProvider):
 
     @cached_nullary
     def version(self) -> InterpVersion:
-        out = eval(_QUERY_INTERP_VERSION_CODE)  # noqa
-        return _translate_queried_interp_version(out)
+        return query_interp_exe_version(sys.executable)
 
     def installed_versions(self) -> ta.Sequence[InterpVersion]:
         return [self.version()]
@@ -690,8 +795,9 @@ class RunningInterpProvider(InterpProvider):
 """
 TODO:
  - python, python3, python3.12, ...
+ - check if path py's are venvs: sys.prefix != sys.base_prefix
 """
-# ruff: noqa: UP007
+# ruff: noqa: UP006 UP007
 
 
 ##
@@ -700,13 +806,69 @@ TODO:
 @dc.dataclass(frozen=True)
 class SystemInterpProvider(InterpProvider):
     cmd: str = 'python3'
+    path: ta.Optional[str] = None
 
     @property
     def name(self) -> str:
         return 'system'
 
+    @staticmethod
+    def _re_which(
+            pat: re.Pattern,
+            *,
+            mode: int = os.F_OK | os.X_OK,
+            path: ta.Optional[str] = None,
+    ) -> ta.List[str]:
+        if path is None:
+            path = os.environ.get('PATH', None)
+            if path is None:
+                try:
+                    path = os.confstr('CS_PATH')
+                except (AttributeError, ValueError):
+                    path = os.defpath
+
+        if not path:
+            return []
+
+        path = os.fsdecode(path)
+        pathlst = path.split(os.pathsep)
+
+        def _access_check(fn: str, mode: int) -> bool:
+            return os.path.exists(fn) and os.access(fn, mode)
+
+        out = []
+        seen = set()
+        for d in pathlst:
+            normdir = os.path.normcase(d)
+            if normdir not in seen:
+                seen.add(normdir)
+                if not _access_check(normdir, mode):
+                    continue
+                for thefile in os.listdir(d):
+                    name = os.path.join(d, thefile)
+                    if not (
+                            os.path.isfile(name) and
+                            pat.fullmatch(thefile) and
+                            _access_check(name, mode)
+                    ):
+                        continue
+                    out.append(name)
+
+        return out
+
+    @cached_nullary
+    def exe2(self) -> ta.Optional[str]:  # FIXME
+        lst = self._re_which(
+            re.compile(re.escape(self.cmd)),
+            path=self.path,
+        )
+        if not lst:
+            return None
+        return lst[0]
+
     @cached_nullary
     def exe(self) -> ta.Optional[str]:
+        import shutil
         return shutil.which(self.cmd)
 
     @cached_nullary
