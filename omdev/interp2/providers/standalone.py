@@ -20,7 +20,6 @@ import json
 import os.path
 import platform
 import re
-import sys
 import typing
 import typing as ta
 import urllib.error
