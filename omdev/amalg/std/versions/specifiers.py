@@ -98,12 +98,10 @@ class Specifier(BaseSpecifier):
             |
             (?:
                 (?<===|!=)
-
                 \s*
                 v?
                 (?:[0-9]+!)?
                 [0-9]+(?:\.[0-9]+)*
-
                 (?:
                     \.\*
                     |
@@ -123,7 +121,6 @@ class Specifier(BaseSpecifier):
             |
             (?:
                 (?<=~=)
-
                 \s*
                 v?
                 (?:[0-9]+!)?
@@ -142,7 +139,6 @@ class Specifier(BaseSpecifier):
             |
             (?:
                 (?<!==|!=|~=)
-
                 \s*
                 v?
                 (?:[0-9]+!)?

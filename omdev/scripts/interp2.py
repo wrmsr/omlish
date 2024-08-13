@@ -259,15 +259,15 @@ class _BaseVersion:
 _VERSION_PATTERN = r"""
     v?
     (?:
-        (?:(?P<epoch>[0-9]+)!)?                           # epoch
-        (?P<release>[0-9]+(?:\.[0-9]+)*)                  # release segment
-        (?P<pre>                                          # pre-release
+        (?:(?P<epoch>[0-9]+)!)?
+        (?P<release>[0-9]+(?:\.[0-9]+)*)
+        (?P<pre>
             [-_\.]?
             (?P<pre_l>alpha|a|beta|b|preview|pre|c|rc)
             [-_\.]?
             (?P<pre_n>[0-9]+)?
         )?
-        (?P<post>                                         # post release
+        (?P<post>
             (?:-(?P<post_n1>[0-9]+))
             |
             (?:
@@ -277,14 +277,14 @@ _VERSION_PATTERN = r"""
                 (?P<post_n2>[0-9]+)?
             )
         )?
-        (?P<dev>                                          # dev release
+        (?P<dev>
             [-_\.]?
             (?P<dev_l>dev)
             [-_\.]?
             (?P<dev_n>[0-9]+)?
         )?
     )
-    (?:\+(?P<local>[a-z0-9]+(?:[-_\.][a-z0-9]+)*))?       # local version
+    (?:\+(?P<local>[a-z0-9]+(?:[-_\.][a-z0-9]+)*))?
 """
 
 VERSION_PATTERN = _VERSION_PATTERN
@@ -533,8 +533,7 @@ def canonicalize_version(
 ##
 
 
-_SUBPROCESS_SHELL_WRAP_EXECS = True
-# _SUBPROCESS_SHELL_WRAP_EXECS = False
+_SUBPROCESS_SHELL_WRAP_EXECS = False
 
 
 def _prepare_subprocess_invocation(
