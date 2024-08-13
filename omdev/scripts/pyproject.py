@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # noinspection DuplicatedCode
-# @omdev-amalg-output ../pyproject/pyproject.py
+# @omdev-amalg-output ../pyproject2/pyproject.py
 """
 TODO:
  - check / tests, src dir sets
@@ -15,6 +15,9 @@ lookit:
  - https://astral.sh/blog/uv
  - https://github.com/jazzband/pip-tools
  - https://github.com/Osiris-Team/1JPM
+ - https://github.com/brettcannon/microvenv
+ - https://github.com/pypa/pipx
+ - https://github.com/tox-dev/tox/
 """
 # ruff: noqa: UP007
 import argparse
@@ -74,6 +77,12 @@ def check_isinstance(v: T, spec: ta.Union[ta.Type[T], tuple]) -> T:
     return v
 
 
+def check_not_isinstance(v: T, spec: ta.Union[type, tuple]) -> T:
+    if isinstance(v, spec):
+        raise TypeError(v)
+    return v
+
+
 def check_not_none(v: ta.Optional[T]) -> T:
     if v is None:
         raise ValueError
@@ -92,14 +101,15 @@ def check_not(v: ta.Any) -> None:
 TODO:
  - debug
 """
+# ruff: noqa: UP007
 
 
 log = logging.getLogger(__name__)
 
 
-def configure_standard_logging() -> None:
+def configure_standard_logging(level: ta.Union[int, str] = logging.INFO) -> None:
     logging.root.addHandler(logging.StreamHandler())
-    logging.root.setLevel('INFO')
+    logging.root.setLevel(level)
 
 
 ########################################
