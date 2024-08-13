@@ -7,31 +7,15 @@ TODO:
 """
 # ruff: noqa: UP007
 import abc
-import dataclasses as dc
 import sys
 import typing as ta
 
 from ...amalg.std.cached import cached_nullary
 from ...amalg.std.check import check_not_none
-from ...amalg.std.versions.versions import Version
+from ...amalg.std.versions.specifiers import SpecifierSet
 from .inspect import INTERP_INSPECTOR
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class InterpVersion:
-    version: Version
-    debug: bool = False
-    threaded: bool = False
-
-
-@dc.dataclass(frozen=True)
-class Interp:
-    exe: str
-    provider: str
-    version: InterpVersion
+from .types import Interp
+from .types import InterpVersion
 
 
 ##
@@ -56,11 +40,11 @@ class InterpProvider(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def installed_versions(self) -> ta.Sequence[InterpVersion]:
+    def installed_versions(self, spec: SpecifierSet) -> ta.Sequence[InterpVersion]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def installable_versions(self) -> ta.Sequence[InterpVersion]:
+    def installable_versions(self, spec: SpecifierSet) -> ta.Sequence[InterpVersion]:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -80,10 +64,10 @@ class RunningInterpProvider(InterpProvider):
     def version(self) -> InterpVersion:
         return query_interp_exe_version(sys.executable)
 
-    def installed_versions(self) -> ta.Sequence[InterpVersion]:
+    def installed_versions(self, spec: SpecifierSet) -> ta.Sequence[InterpVersion]:
         return [self.version()]
 
-    def installable_versions(self) -> ta.Sequence[InterpVersion]:
+    def installable_versions(self, spec: SpecifierSet) -> ta.Sequence[InterpVersion]:
         return []
 
     def get_version(self, version: InterpVersion) -> Interp:

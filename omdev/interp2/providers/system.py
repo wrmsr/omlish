@@ -10,6 +10,7 @@ import re
 import typing as ta
 
 from ...amalg.std.cached import cached_nullary
+from ...amalg.std.versions.specifiers import SpecifierSet
 from .base import Interp
 from .base import InterpProvider
 from .base import InterpVersion
@@ -95,10 +96,10 @@ class SystemInterpProvider(InterpProvider):
             return None
         return query_interp_exe_version(exe)
 
-    def installed_versions(self) -> ta.Sequence[InterpVersion]:
+    def installed_versions(self, spec: SpecifierSet) -> ta.Sequence[InterpVersion]:
         return [self.version()]
 
-    def installable_versions(self) -> ta.Sequence[InterpVersion]:
+    def installable_versions(self, spec: SpecifierSet) -> ta.Sequence[InterpVersion]:
         return []
 
     def get_version(self, version: InterpVersion) -> Interp:
