@@ -52,20 +52,30 @@ def _main() -> None:
                 if ft.name != 'NAME' or ft.src not in ('import', 'from'):
                     continue
                 if len(l) >= 3 and l[2].name == 'NAME' and l[2].src == mod_name:
-                    print(tks.join_toks(l))
+                    print(tks.join_toks(l).strip())
+
+                    ##
+
                     e = indexfn(tks.is_ws, l, 3)
                     ip = list(l[2:e])
                     del l[2:e]
                     ps = [t.src for t in ip if t.name == 'NAME']
-                    ip.extend([
-                        *interleave(
-                            trt.Token(name='OP', src='.'),
-                            [trt.Token(name='NAME', src=p) for p in ps],
-                        ),
-                        trt.Token(name='UNIMPORTANT_WS', src=' '),
-                    ])
-                    l[2:3] = ip
-                    print(tks.join_toks(l))
+
+                    ##
+
+                    print(ps)
+
+                    ##
+
+                    l[2:2] = interleave(
+                        trt.Token(name='OP', src='.'),
+                        [trt.Token(name='NAME', src=p) for p in ps],
+                    )
+
+                    ##
+
+                    print(tks.join_toks(l).strip())
+                    print()
 
 
 if __name__ == '__main__':
