@@ -27,7 +27,7 @@ from omlish import cached
 log = logging.getLogger(__name__)
 
 
-ANTLR_VERSION = '4.13.1'
+ANTLR_VERSION = '4.13.2'
 
 ANTLR_RUNTIME_PACKAGE = 'antlr4-python3-runtime'
 ANTLR_GITHUB_REPO = 'antlr/antlr4'
