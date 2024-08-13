@@ -30,6 +30,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
+from ...amalg.std.cached import cached_nullary
 from ...amalg.std.check import check_not_none
 from ...amalg.std.logs import log
 
@@ -115,7 +116,8 @@ class StandalonePythons:
 
         return release_data
 
-    def list_pythons(self) -> ta.Dict[str, str]:
+    @cached_nullary
+    def list_pythons(self) -> ta.Mapping[str, str]:
         """Returns available python versions for your machine and their download links."""
         system, machine = platform.system(), platform.machine()
         download_link_suffixes = self.MACHINE_SUFFIX[system][machine]
