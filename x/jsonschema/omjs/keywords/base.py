@@ -11,6 +11,9 @@ from omlish import lang
 KeywordT = ta.TypeVar('KeywordT', bound='Keyword')
 
 
+##
+
+
 class Keyword(lang.Abstract, lang.PackageSealed):
     tag: ta.ClassVar[str]
 
@@ -81,92 +84,3 @@ class KeywordsKeyword(Keyword, lang.Abstract):
 @dc.dataclass(frozen=True)
 class StrToKeywordsKeyword(Keyword, lang.Abstract):
     m: ta.Mapping[str, Keywords]
-
-
-##
-
-
-class Id(StrKeyword, lang.Final, tag='$id'):
-    pass
-
-
-class SchemaKeyword(StrKeyword, lang.Final, tag='$schema'):
-    pass
-
-
-class Ref(StrKeyword, lang.Final, tag='$ref'):
-    pass
-
-
-##
-
-
-class Title(StrKeyword, lang.Final, tag='title'):
-    pass
-
-
-class Description(StrKeyword, lang.Final, tag='description'):
-    pass
-
-
-class Type(StrOrStrsKeyword, lang.Final, tag='type'):
-    pass
-
-
-class Items(KeywordsKeyword, lang.Final, tag='items'):
-    pass
-
-
-##
-
-
-class Required(StrOrStrsKeyword, lang.Final, tag='required'):
-    pass
-
-
-class Properties(StrToKeywordsKeyword, lang.Final, tag='properties'):
-    pass
-
-
-##
-
-
-class MaxItems(NumberKeyword, lang.Final, tag='maxItems'):
-    pass
-
-
-class MinItems(NumberKeyword, lang.Final, tag='minItems'):
-    pass
-
-
-class UniqueItems(BooleanKeyword, lang.Final, tag='uniqueItems'):
-    pass
-
-
-#
-
-
-class Maximum(NumberKeyword, lang.Final, tag='maximum'):
-    pass
-
-
-class ExclusiveMaximum(NumberKeyword, lang.Final, tag='exclusiveMaximum'):
-    pass
-
-
-class Minimum(NumberKeyword, lang.Final, tag='minimum'):
-    pass
-
-
-class ExclusiveMinimum(NumberKeyword, lang.Final, tag='exclusiveMinimum'):
-    pass
-
-
-##
-
-
-KEYWORD_TYPES_BY_TAG: ta.Mapping[str, type[Keyword]] = col.unique_map_by(  # type: ignore
-    operator.attrgetter('tag'),
-    (cls for cls in lang.deep_subclasses(Keyword) if not lang.is_abstract_class(cls)),
-    strict=True,
-)

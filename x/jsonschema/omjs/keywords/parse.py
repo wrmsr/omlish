@@ -1,20 +1,34 @@
+import operator
 import typing as ta
 
 from omlish import check
 from omlish import collections as col
+from omlish import lang
 
-from .keywords import BooleanKeyword
-from .keywords import KEYWORD_TYPES_BY_TAG
-from .keywords import Keyword
-from .keywords import Keywords
-from .keywords import KeywordsKeyword
-from .keywords import NumberKeyword
-from .keywords import StrKeyword
-from .keywords import StrOrStrsKeyword
-from .keywords import StrToKeywordsKeyword
+from . import core as _  # noqa
+from . import metadata as _  # noqa
+from . import validation as _  # noqa
+from .base import BooleanKeyword
+from .base import Keyword
+from .base import Keywords
+from .base import KeywordsKeyword
+from .base import NumberKeyword
+from .base import StrKeyword
+from .base import StrOrStrsKeyword
+from .base import StrToKeywordsKeyword
 
 
 KeywordT = ta.TypeVar('KeywordT', bound=Keyword)
+
+
+##
+
+
+KEYWORD_TYPES_BY_TAG: ta.Mapping[str, type[Keyword]] = col.unique_map_by(  # type: ignore
+    operator.attrgetter('tag'),
+    (cls for cls in lang.deep_subclasses(Keyword) if not lang.is_abstract_class(cls)),
+    strict=True,
+)
 
 
 def parse_keyword(cls: type[KeywordT], v: ta.Any) -> KeywordT:
