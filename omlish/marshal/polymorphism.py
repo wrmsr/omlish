@@ -19,18 +19,24 @@ from .base import Unmarshaler
 from .base import UnmarshalerFactory
 from .naming import Naming
 from .naming import translate_name
+from .registries import RegistryItem
 from .values import Value
 
 
 ##
 
 
-class ObjectTypeTagging(lang.Abstract, lang.Sealed):
+class TypeTagging(RegistryItem, lang.Abstract, lang.Sealed):
     pass
 
 
-class WrapperObjectTypeTagging(ObjectTypeTagging, lang.Final):
+class WrapperTypeTagging(TypeTagging, lang.Final):
     pass
+
+
+@dc.dataclass(frozen=True)
+class FieldTypeTagging(TypeTagging, lang.Final):
+    field: str
 
 
 ##
@@ -44,7 +50,11 @@ class Impl:
 
 
 class Polymorphism:
-    def __init__(self, ty: type, impls: ta.Iterable[Impl]) -> None:
+    def __init__(
+            self,
+            ty: type,
+            impls: ta.Iterable[Impl],
+    ) -> None:
         super().__init__()
         self._ty = ty
         self._impls = list(impls)
@@ -83,7 +93,11 @@ class Polymorphism:
         return self._by_tag
 
 
-def polymorphism_from_subclasses(ty: type, *, naming: Naming | None = None) -> Polymorphism:
+def polymorphism_from_subclasses(
+        ty: type,
+        *,
+        naming: Naming | None = None,
+) -> Polymorphism:
     dct: dict[str, Impl] = {}
     seen: set[type] = set()
     todo: list[type] = [ty]
@@ -108,7 +122,7 @@ def polymorphism_from_subclasses(ty: type, *, naming: Naming | None = None) -> P
 
 
 @dc.dataclass(frozen=True)
-class DictKeyPolymorphismMarshaler(Marshaler):
+class WrapperPolymorphismMarshaler(Marshaler):
     m: ta.Mapping[type, tuple[str, Marshaler]]
 
     def marshal(self, ctx: MarshalContext, o: ta.Any | None) -> Value:
@@ -117,15 +131,32 @@ class DictKeyPolymorphismMarshaler(Marshaler):
 
 
 @dc.dataclass(frozen=True)
+class FieldPolymorphismMarshaler(Marshaler):
+    m: ta.Mapping[type, tuple[str, Marshaler]]
+    tf: str
+
+    def marshal(self, ctx: MarshalContext, o: ta.Any | None) -> Value:
+        tag, m = self.m[type(o)]
+        return {self.tf: tag, **m.marshal(ctx, o)}  # type: ignore
+
+
+@dc.dataclass(frozen=True)
 class PolymorphismMarshalerFactory(MarshalerFactory):
     p: Polymorphism
+    tt: TypeTagging = WrapperTypeTagging()
 
     def __call__(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler | None:
         if rty is self.p.ty:
-            return DictKeyPolymorphismMarshaler({
+            m = {
                 i.ty: (i.tag, ctx.make(i.ty))
                 for i in self.p.impls
-            })
+            }
+            if isinstance(self.tt, WrapperTypeTagging):
+                return WrapperPolymorphismMarshaler(m)
+            elif isinstance(self.tt, FieldTypeTagging):
+                return FieldPolymorphismMarshaler(m, self.tt.field)
+            else:
+                raise TypeError(self.tt)
         return None
 
 
@@ -133,7 +164,7 @@ class PolymorphismMarshalerFactory(MarshalerFactory):
 
 
 @dc.dataclass(frozen=True)
-class DictKeyPolymorphismUnmarshaler(Unmarshaler):
+class WrapperPolymorphismUnmarshaler(Unmarshaler):
     m: ta.Mapping[str, Unmarshaler]
 
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any | None:
@@ -144,15 +175,34 @@ class DictKeyPolymorphismUnmarshaler(Unmarshaler):
 
 
 @dc.dataclass(frozen=True)
+class FieldPolymorphismUnmarshaler(Unmarshaler):
+    m: ta.Mapping[str, Unmarshaler]
+    tf: str
+
+    def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any | None:
+        ma = dict(check.isinstance(v, collections.abc.Mapping))
+        tag = ma.pop(self.tf)  # type: ignore
+        u = self.m[tag]  # type: ignore
+        return u.unmarshal(ctx, ma)
+
+
+@dc.dataclass(frozen=True)
 class PolymorphismUnmarshalerFactory(UnmarshalerFactory):
     p: Polymorphism
+    tt: TypeTagging = WrapperTypeTagging()
 
     def __call__(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler | None:
         if rty is self.p.ty:
-            return DictKeyPolymorphismUnmarshaler({
+            m = {
                 t: u
                 for i in self.p.impls
                 for u in [ctx.make(i.ty)]
                 for t in [i.tag, *i.alts]
-            })
+            }
+            if isinstance(self.tt, WrapperTypeTagging):
+                return WrapperPolymorphismUnmarshaler(m)
+            elif isinstance(self.tt, FieldTypeTagging):
+                return FieldPolymorphismUnmarshaler(m, self.tt.field)
+            else:
+                raise TypeError(self.tt)
         return None

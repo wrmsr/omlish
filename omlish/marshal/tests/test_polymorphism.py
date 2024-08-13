@@ -11,8 +11,10 @@ from ..dataclasses import DataclassMarshalerFactory
 from ..dataclasses import DataclassUnmarshalerFactory
 from ..factories import CompositeFactory
 from ..factories import TypeCacheFactory
+from ..polymorphism import FieldTypeTagging
 from ..polymorphism import PolymorphismMarshalerFactory
 from ..polymorphism import PolymorphismUnmarshalerFactory
+from ..polymorphism import WrapperTypeTagging
 from ..primitives import PRIMITIVE_MARSHALER_FACTORY
 from ..primitives import PRIMITIVE_UNMARSHALER_FACTORY
 from ..registries import Registry
@@ -38,20 +40,21 @@ class PS2(PB):
     b: PB
 
 
-def test_polymorphism():
-    p = poly.Polymorphism(
-        PB,
-        [
-            poly.Impl(PS0, 's0'),
-            poly.Impl(PS1, 's1'),
-            poly.Impl(PS2, 's2'),
-        ],
-    )
+P_POLYMORPHISM = poly.Polymorphism(
+    PB,
+    [
+        poly.Impl(PS0, 's0'),
+        poly.Impl(PS1, 's1'),
+        poly.Impl(PS2, 's2'),
+    ],
+)
 
+
+def _test_polymorphism(tt):
     mf: MarshalerFactory = TypeCacheFactory(
         RecursiveMarshalerFactory(
             CompositeFactory(
-                PolymorphismMarshalerFactory(p),
+                PolymorphismMarshalerFactory(P_POLYMORPHISM, tt),
                 DataclassMarshalerFactory(),
                 PRIMITIVE_MARSHALER_FACTORY,
             ),
@@ -61,7 +64,7 @@ def test_polymorphism():
     uf: UnmarshalerFactory = TypeCacheFactory(
         RecursiveUnmarshalerFactory(
             CompositeFactory(
-                PolymorphismUnmarshalerFactory(p),
+                PolymorphismUnmarshalerFactory(P_POLYMORPHISM, tt),
                 DataclassUnmarshalerFactory(),
                 PRIMITIVE_UNMARSHALER_FACTORY,
             ),
@@ -79,3 +82,11 @@ def test_polymorphism():
     uc = UnmarshalContext(registry=reg, factory=uf)
     o2 = uc.make(PB).unmarshal(uc, v)
     print(o2)
+
+
+def test_polymorphism_wrapper():
+    _test_polymorphism(WrapperTypeTagging())
+
+
+def test_polymorphism_field():
+    _test_polymorphism(FieldTypeTagging('$type'))
