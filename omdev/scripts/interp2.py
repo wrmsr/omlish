@@ -1,3 +1,88 @@
+#!/usr/bin/env python3
+# noinspection DuplicatedCode
+# @omdev-amalg-output ../interp2/interp.py
+"""
+TODO:
+ - partial best-matches - '3.12'
+ - https://github.com/asdf-vm/asdf support (instead of pyenv) ?
+"""
+# ruff: noqa: UP007
+import abc
+import argparse
+import dataclasses as dc
+import functools
+import itertools
+import json
+import logging
+import os
+import re
+import shutil
+import subprocess
+import sys
+import typing as ta
+
+
+VersionLocalType = ta.Tuple[ta.Union[int, str], ...]
+VersionCmpPrePostDevType = ta.Union['InfinityVersionType', 'NegativeInfinityVersionType', ta.Tuple[str, int]]
+_VersionCmpLocalType0 = ta.Tuple[ta.Union[ta.Tuple[int, str], ta.Tuple['NegativeInfinityVersionType', ta.Union[int, str]]], ...]  # noqa
+VersionCmpLocalType = ta.Union['NegativeInfinityVersionType', _VersionCmpLocalType0]
+VersionCmpKey = ta.Tuple[int, ta.Tuple[int, ...], VersionCmpPrePostDevType, VersionCmpPrePostDevType, VersionCmpPrePostDevType, VersionCmpLocalType]  # noqa
+VersionComparisonMethod = ta.Callable[[VersionCmpKey, VersionCmpKey], bool]
+
+
+########################################
+# ../../amalg/std/cached.py
+
+
+class cached_nullary:  # noqa
+    def __init__(self, fn):
+        super().__init__()
+        self._fn = fn
+        self._value = self._missing = object()
+        functools.update_wrapper(self, fn)
+
+    def __call__(self, *args, **kwargs):  # noqa
+        if self._value is self._missing:
+            self._value = self._fn()
+        return self._value
+
+    def __get__(self, instance, owner):  # noqa
+        bound = instance.__dict__[self._fn.__name__] = self.__class__(self._fn.__get__(instance, owner))
+        return bound
+
+
+########################################
+# ../../amalg/std/logs.py
+"""
+TODO:
+ - debug
+"""
+# ruff: noqa: UP007
+
+
+log = logging.getLogger(__name__)
+
+
+def configure_standard_logging(level: ta.Union[int, str] = logging.INFO) -> None:
+    logging.root.addHandler(logging.StreamHandler())
+    logging.root.setLevel(level)
+
+
+########################################
+# ../../amalg/std/runtime.py
+
+
+REQUIRED_PYTHON_VERSION = (3, 8)
+
+
+def check_runtime_version() -> None:
+    if sys.version_info < REQUIRED_PYTHON_VERSION:
+        raise OSError(
+            f'Requires python {REQUIRED_PYTHON_VERSION}, got {sys.version_info} from {sys.executable}')  # noqa
+
+
+########################################
+# ../../amalg/std/versions/versions.py
 # Copyright (c) Donald Stufft and individual contributors.
 # All rights reserved.
 #
@@ -21,9 +106,6 @@
 # details.
 # https://github.com/pypa/packaging/blob/2c885fe91a54559e2382902dce28428ad2887be5/src/packaging/version.py
 # ruff: noqa: UP006 UP007
-import itertools
-import re
-import typing as ta
 
 
 ##
@@ -90,13 +172,7 @@ NegativeInfinityVersion = NegativeInfinityVersionType()
 ##
 
 
-VersionLocalType = ta.Tuple[ta.Union[int, str], ...]
 
-VersionCmpPrePostDevType = ta.Union['InfinityVersionType', 'NegativeInfinityVersionType', ta.Tuple[str, int]]
-_VersionCmpLocalType0 = ta.Tuple[ta.Union[ta.Tuple[int, str], ta.Tuple['NegativeInfinityVersionType', ta.Union[int, str]]], ...]  # noqa
-VersionCmpLocalType = ta.Union['NegativeInfinityVersionType', _VersionCmpLocalType0]
-VersionCmpKey = ta.Tuple[int, ta.Tuple[int, ...], VersionCmpPrePostDevType, VersionCmpPrePostDevType, VersionCmpPrePostDevType, VersionCmpLocalType]  # noqa
-VersionComparisonMethod = ta.Callable[[VersionCmpKey, VersionCmpKey], bool]
 
 
 class _Version(ta.NamedTuple):
@@ -420,3 +496,277 @@ def canonicalize_version(
         parts.append(f'+{parsed.local}')
 
     return ''.join(parts)
+
+
+########################################
+# ../../amalg/std/subprocesses.py
+# ruff: noqa: UP006 UP007
+
+
+##
+
+
+def _prepare_subprocess_invocation(
+        *args: ta.Any,
+        env: ta.Optional[ta.Mapping[str, ta.Any]] = None,
+        extra_env: ta.Optional[ta.Mapping[str, ta.Any]] = None,
+        **kwargs: ta.Any,
+) -> ta.Tuple[ta.Tuple[ta.Any, ...], ta.Dict[str, ta.Any]]:
+    log.debug(args)
+    if extra_env:
+        log.debug(extra_env)
+
+    if extra_env:
+        env = {**(env if env is not None else os.environ), **extra_env}
+
+    return args, dict(
+        env=env,
+        **kwargs,
+    )
+
+
+def subprocess_check_call(*args: ta.Any, stdout=sys.stderr, **kwargs: ta.Any) -> None:
+    args, kwargs = _prepare_subprocess_invocation(*args, stdout=stdout, **kwargs)
+    return subprocess.check_call(args, **kwargs)  # type: ignore
+
+
+def subprocess_check_output(*args: ta.Any, **kwargs: ta.Any) -> bytes:
+    args, kwargs = _prepare_subprocess_invocation(*args, **kwargs)
+    return subprocess.check_output(args, **kwargs)
+
+
+def subprocess_check_output_str(*args: ta.Any, **kwargs: ta.Any) -> str:
+    return subprocess_check_output(*args, **kwargs).decode().strip()
+
+
+##
+
+
+DEFAULT_SUBPROCESS_TRY_EXCEPTIONS: ta.Tuple[ta.Type[Exception], ...] = (
+    FileNotFoundError,
+    subprocess.CalledProcessError,
+)
+
+
+def subprocess_try_call(
+        *args: ta.Any,
+        try_exceptions: ta.Tuple[ta.Type[Exception], ...] = DEFAULT_SUBPROCESS_TRY_EXCEPTIONS,
+        **kwargs: ta.Any,
+) -> bool:
+    try:
+        subprocess_check_call(*args, **kwargs)
+    except try_exceptions as e:  # noqa
+        if log.isEnabledFor(logging.DEBUG):
+            log.exception('command failed')
+        return False
+    else:
+        return True
+
+
+def subprocess_try_output(
+        *args: ta.Any,
+        try_exceptions: ta.Tuple[ta.Type[Exception], ...] = DEFAULT_SUBPROCESS_TRY_EXCEPTIONS,
+        **kwargs: ta.Any,
+) -> ta.Optional[bytes]:
+    try:
+        return subprocess_check_output(*args, **kwargs)
+    except try_exceptions as e:  # noqa
+        if log.isEnabledFor(logging.DEBUG):
+            log.exception('command failed')
+        return None
+
+
+def subprocess_try_output_str(*args: ta.Any, **kwargs: ta.Any) -> ta.Optional[str]:
+    out = subprocess_try_output(*args, **kwargs)
+    return out.decode().strip() if out is not None else None
+
+
+########################################
+# ../providers/base.py
+"""
+TODO:
+ - backends
+  - local builds
+  - deadsnakes?
+ - loose versions
+"""
+# ruff: noqa: UP007
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class InterpVersion:
+    version: Version
+    debug: bool = False
+    threaded: bool = False
+
+
+@dc.dataclass(frozen=True)
+class Interp:
+    exe: str
+    provider: str
+    version: InterpVersion
+
+
+##
+
+
+_RAW_QUERY_INTERP_VERSION_CODE = """
+__import__('json').dumps(dict(
+    version=__import__('sys').version,
+    debug=bool(__import__('sysconfig').get_config_var('Py_DEBUG')),
+    threaded=bool(__import__('sysconfig').get_config_var('Py_GIL_DISABLED')),
+))"""
+
+_QUERY_INTERP_VERSION_CODE = ''.join(l.strip() for l in _RAW_QUERY_INTERP_VERSION_CODE.splitlines())
+
+
+def _translate_queried_interp_version(out: str) -> InterpVersion:
+    dct = json.loads(out)
+    return InterpVersion(
+        parse_version(dct['version'].split()[0]),
+        debug=dct['debug'],
+        threaded=dct['threaded'],
+    )
+
+
+def query_interp_exe_version(path: str) -> InterpVersion:
+    out = subprocess_check_output(path, '-c', f'print({_QUERY_INTERP_VERSION_CODE})')
+    return _translate_queried_interp_version(out.decode())
+
+
+##
+
+
+class InterpProvider(abc.ABC):
+    @property
+    @abc.abstractmethod
+    def name(self) -> str:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def installed_versions(self) -> ta.Sequence[InterpVersion]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def installable_versions(self) -> ta.Sequence[InterpVersion]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def get_version(self, version: InterpVersion) -> Interp:
+        raise NotImplementedError
+
+
+##
+
+
+class RunningInterpProvider(InterpProvider):
+    @property
+    def name(self) -> str:
+        return 'running'
+
+    @cached_nullary
+    def version(self) -> InterpVersion:
+        out = eval(_QUERY_INTERP_VERSION_CODE)  # noqa
+        return _translate_queried_interp_version(out)
+
+    def installed_versions(self) -> ta.Sequence[InterpVersion]:
+        return [self.version()]
+
+    def installable_versions(self) -> ta.Sequence[InterpVersion]:
+        return []
+
+    def get_version(self, version: InterpVersion) -> Interp:
+        if version != self.version():
+            raise KeyError(version)
+        return Interp(
+            exe=sys.executable,
+            provider=self.name,
+            version=self.version(),
+        )
+
+
+########################################
+# ../providers/system.py
+"""
+TODO:
+ - python, python3, python3.12, ...
+"""
+# ruff: noqa: UP007
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class SystemInterpProvider(InterpProvider):
+    cmd: str = 'python3'
+
+    @property
+    def name(self) -> str:
+        return 'system'
+
+    @cached_nullary
+    def exe(self) -> ta.Optional[str]:
+        return shutil.which(self.cmd)
+
+    @cached_nullary
+    def version(self) -> ta.Optional[InterpVersion]:
+        if (exe := self.exe()) is None:
+            return None
+        return query_interp_exe_version(exe)
+
+    def installed_versions(self) -> ta.Sequence[InterpVersion]:
+        return [self.version()]
+
+    def installable_versions(self) -> ta.Sequence[InterpVersion]:
+        return []
+
+    def get_version(self, version: InterpVersion) -> Interp:
+        if version != self.version():
+            raise KeyError(version)
+        return Interp(
+            exe=self.exe(),
+            provider=self.name,
+            version=self.version(),
+        )
+
+
+########################################
+# interp.py
+
+
+def _resolve_cmd(args) -> None:
+    for i in SystemInterpProvider().installed_versions():
+        print(i)
+
+
+def _build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser()
+
+    subparsers = parser.add_subparsers()
+
+    parser_resolve = subparsers.add_parser('resolve')
+    parser_resolve.add_argument('version')
+    parser_resolve.add_argument('--debug', action='store_true')
+    parser_resolve.set_defaults(func=_resolve_cmd)
+
+    return parser
+
+
+def _main(argv: ta.Optional[ta.Sequence[str]] = None) -> None:
+    check_runtime_version()
+    configure_standard_logging()
+
+    parser = _build_parser()
+    args = parser.parse_args(argv)
+    if not getattr(args, 'func', None):
+        parser.print_help()
+    else:
+        args.func(args)
+
+
+if __name__ == '__main__':
+    _main()
