@@ -40,7 +40,8 @@ def _main() -> None:
             if not fn.endswith('.py'):
                 continue
 
-            with open(os.path.join(dp, fn)) as f:
+            fp = os.path.join(dp, fn)
+            with open(fp) as f:
                 src = f.read()
 
             ts = trt.src_to_tokens(src)
@@ -89,7 +90,7 @@ def _main() -> None:
 
             new_src = tks.join_lines(ls)
 
-            with open(os.path.join(dp, fn), 'w') as f:
+            with open(fp, 'w') as f:
                 f.write(new_src)
 
 
