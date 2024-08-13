@@ -85,6 +85,21 @@ def super_meta(
 ##
 
 
+def deep_subclasses(cls: type) -> ta.Iterator[type]:
+    seen = set()
+    todo = list(reversed(cls.__subclasses__()))
+    while todo:
+        cur = todo.pop()
+        if cur in seen:
+            continue
+        seen.add(cur)
+        yield cur
+        todo.extend(reversed(cur.__subclasses__()))
+
+
+##
+
+
 class SimpleProxy(ta.Generic[T]):
 
     class Descriptor:
