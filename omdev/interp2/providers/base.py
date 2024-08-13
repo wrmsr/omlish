@@ -8,14 +8,13 @@ TODO:
 # ruff: noqa: UP007
 import abc
 import dataclasses as dc
-import json
 import sys
 import typing as ta
 
 from ...amalg.std.cached import cached_nullary
-from ...amalg.std.subprocesses import subprocess_check_output
+from ...amalg.std.check import check_not_none
 from ...amalg.std.versions.versions import Version
-from ...amalg.std.versions.versions import parse_version
+from .inspect import INTERP_INSPECTOR
 
 
 ##
@@ -38,28 +37,13 @@ class Interp:
 ##
 
 
-_RAW_QUERY_INTERP_VERSION_CODE = """
-__import__('json').dumps(dict(
-    version=__import__('sys').version,
-    debug=bool(__import__('sysconfig').get_config_var('Py_DEBUG')),
-    threaded=bool(__import__('sysconfig').get_config_var('Py_GIL_DISABLED')),
-))"""
-
-_QUERY_INTERP_VERSION_CODE = ''.join(l.strip() for l in _RAW_QUERY_INTERP_VERSION_CODE.splitlines())
-
-
-def _translate_queried_interp_version(out: str) -> InterpVersion:
-    dct = json.loads(out)
+def query_interp_exe_version(exe: str) -> InterpVersion:
+    ins = check_not_none(INTERP_INSPECTOR.inspect(exe))
     return InterpVersion(
-        parse_version(dct['version'].split()[0]),
-        debug=dct['debug'],
-        threaded=dct['threaded'],
+        version=ins.version,
+        debug=ins.debug,
+        threaded=ins.threaded,
     )
-
-
-def query_interp_exe_version(path: str) -> InterpVersion:
-    out = subprocess_check_output(path, '-c', f'print({_QUERY_INTERP_VERSION_CODE})')
-    return _translate_queried_interp_version(out.decode())
 
 
 ##
@@ -94,8 +78,7 @@ class RunningInterpProvider(InterpProvider):
 
     @cached_nullary
     def version(self) -> InterpVersion:
-        out = eval(_QUERY_INTERP_VERSION_CODE)  # noqa
-        return _translate_queried_interp_version(out)
+        return query_interp_exe_version(sys.executable)
 
     def installed_versions(self) -> ta.Sequence[InterpVersion]:
         return [self.version()]

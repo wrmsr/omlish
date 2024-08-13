@@ -73,7 +73,7 @@ class SystemInterpProvider(InterpProvider):
         return out
 
     @cached_nullary
-    def exe2(self) -> ta.Optional[str]:
+    def exe2(self) -> ta.Optional[str]:  # FIXME
         lst = self._re_which(
             re.compile(re.escape(self.cmd)),
             path=self.path,

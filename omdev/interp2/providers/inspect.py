@@ -1,8 +1,10 @@
-# ruff: noqa: UP006
+# ruff: noqa: UP006 UP007
 import dataclasses as dc
 import json
+import logging
 import typing as ta
 
+from ...amalg.std.logs import log
 from ...amalg.std.subprocesses import subprocess_check_output
 from ...amalg.std.versions.versions import Version
 from ...amalg.std.versions.versions import parse_version
@@ -36,7 +38,7 @@ class InterpInspector:
     def __init__(self) -> None:
         super().__init__()
 
-        self._cache: ta.Dict[str, InterpInspection] = {}
+        self._cache: ta.Dict[str, ta.Optional[InterpInspection]] = {}
 
     _RAW_INSPECTION_CODE = """
     __import__('json').dumps(dict(
@@ -55,7 +57,7 @@ class InterpInspector:
     ) -> InterpInspection:
         dct = json.loads(output)
 
-        version = parse_version(dct['version'].split()[0])
+        version = parse_version(dct['version_str'].split()[0])
 
         return InterpInspection(
             exe=exe,
@@ -69,14 +71,21 @@ class InterpInspector:
         )
 
     def _inspect(self, exe: str) -> InterpInspection:
-        output = subprocess_check_output(exe, '-c', f'print({self._INSPECTION_CODE})')
+        output = subprocess_check_output(exe, '-c', f'print({self._INSPECTION_CODE})', quiet=True)
         return self._build_inspection(exe, output.decode())
 
-    def inspect(self, exe: str) -> InterpInspection:
+    def inspect(self, exe: str) -> ta.Optional[InterpInspection]:
         try:
             return self._cache[exe]
         except KeyError:
-            ret = self._cache[exe] = self._inspect(exe)
+            ret: ta.Optional[InterpInspection]
+            try:
+                ret = self._inspect(exe)
+            except Exception as e:  # noqa
+                if log.isEnabledFor(logging.DEBUG):
+                    log.exception('Failed to inspect interp: %s', exe)
+                ret = None
+            self._cache[exe] = ret
             return ret
 
 
