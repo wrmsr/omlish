@@ -12,9 +12,14 @@ https://datatracker.ietf.org/doc/html/draft-bhutton-relative-json-pointer-00
 """
 import typing as ta
 
+from omlish import check
+from omlish import collections as col
+
+from .keywords import KEYWORD_TYPES_BY_TAG
 from .keywords import Keyword
 from .keywords import Keywords
-from .keywords import KEYWORD_TYPES_BY_TAG
+from .keywords import StrKeyword
+from .keywords import StrOrStrsKeyword
 
 
 KeywordT = ta.TypeVar('KeywordT', bound=Keyword)
@@ -24,7 +29,20 @@ KeywordT = ta.TypeVar('KeywordT', bound=Keyword)
 
 
 def build_keyword(cls: type[KeywordT], v: ta.Any) -> KeywordT:
-    raise NotImplementedError
+    if issubclass(cls, StrKeyword):
+        return cls(check.isinstance(v, str))
+
+    if issubclass(cls, StrOrStrsKeyword):
+        ss: str | ta.Sequence[str]
+        if isinstance(v, str):
+            ss = v
+        elif isinstance(v, ta.Iterable):
+            ss = col.seq_of(check.of_isinstance(str))(v)
+        else:
+            raise TypeError(v)
+        return cls(ss)
+
+    raise TypeError(cls)
 
 
 def build_keywords(dct: ta.Mapping[str, ta.Any]) -> Keywords:

@@ -52,6 +52,11 @@ class StrKeyword(Keyword, lang.Abstract):
     s: str
 
 
+@dc.dataclass(frozen=True)
+class StrOrStrsKeyword(Keyword, lang.Abstract):
+    ss: str | ta.Sequence[str]
+
+
 ##
 
 
@@ -79,16 +84,16 @@ class Description(StrKeyword, lang.Final, tag='description'):
 
 
 @dc.dataclass(frozen=True)
-class Type(Keyword, lang.Final, tag='type'):
-    t: str | ta.Sequence[str]
+class Type(StrOrStrsKeyword, lang.Final, tag='type'):
+    pass
 
 
 ##
 
 
 @dc.dataclass(frozen=True)
-class Required(Keyword, lang.Final, tag='required'):
-    lst: ta.Sequence[str]
+class Required(StrOrStrsKeyword, lang.Final, tag='required'):
+    pass
 
 
 @dc.dataclass(frozen=True)
