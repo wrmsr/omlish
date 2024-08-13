@@ -16,7 +16,9 @@ class TestSubprocesses(unittest.TestCase):
 
     def test_subprocesses_output(self):
         su.subprocess_check_output('echo', 'hi')
-        with self.assertRaises(FileNotFoundError):
+        with self.assertRaises(
+                FileNotFoundError if not su._SUBPROCESS_SHELL_WRAP_EXECS else subprocess.CalledProcessError,  # noqa
+        ):
             su.subprocess_check_output('xcho', 'hi')
         self.assertEqual(check_not_none(su.subprocess_try_output('echo', 'hi')).decode(), 'hi\n')
         self.assertIsNone(su.subprocess_try_output('xcho', 'hi'))

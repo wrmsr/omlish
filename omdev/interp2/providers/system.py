@@ -75,14 +75,19 @@ class SystemInterpProvider(InterpProvider):
     @cached_nullary
     def exes(self) -> ta.List[str]:
         return self._re_which(
-            re.compile(re.escape(self.cmd)),
+            re.compile(r'(python3)|(python3\.12)'),
             path=self.path,
         )
 
     @cached_nullary
     def exe(self) -> ta.Optional[str]:
-        import shutil
-        return shutil.which(self.cmd)
+        lst = self._re_which(
+            re.compile(re.escape(self.cmd)),
+            path=self.path,
+        )
+        if not lst:
+            return None
+        return lst[0]
 
     @cached_nullary
     def version(self) -> ta.Optional[InterpVersion]:
