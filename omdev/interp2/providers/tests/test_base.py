@@ -6,4 +6,4 @@ from .. import base as bp
 class TestBaseProviders(unittest.TestCase):
     def test_running(self):
         v = bp.RunningInterpProvider().installed_versions()
-        bp.RunningInterpProvider().get_version(v[0])
+        print(bp.RunningInterpProvider().get_version(v[0]))
