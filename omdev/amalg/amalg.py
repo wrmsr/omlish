@@ -33,8 +33,10 @@ from omlish import check
 from omlish import collections as col
 from omlish import logs
 
+from .. import tokens as tks
 
-Tokens: ta.TypeAlias = ta.Sequence[trt.Token]
+
+Tokens: ta.TypeAlias = tks.Tokens
 
 
 log = logging.getLogger(__name__)
@@ -43,18 +45,7 @@ log = logging.getLogger(__name__)
 ##
 
 
-WS_NAMES = ('UNIMPORTANT_WS', 'NEWLINE', 'COMMENT')
-
-
-def is_ws(tok: trt.Token) -> bool:
-    return tok.name in WS_NAMES
-
-
-def ignore_ws(toks: ta.Iterable[trt.Token]) -> ta.Iterable[trt.Token]:
-    return (t for t in toks if not is_ws(t))
-
-
-HEADER_NAMES = (*WS_NAMES, 'COMMENT', 'STRING')
+HEADER_NAMES = (*tks.WS_NAMES, 'COMMENT', 'STRING')
 
 
 def split_header_lines(lines: ta.Iterable[Tokens]) -> tuple[list[Tokens], list[Tokens]]:
@@ -68,14 +59,6 @@ def split_header_lines(lines: ta.Iterable[Tokens]) -> tuple[list[Tokens], list[T
             nws.extend(it)
             break
     return ws, nws
-
-
-def join_toks(ts: Tokens) -> str:
-    return ''.join(t.src for t in ts)
-
-
-def join_lines(ls: ta.Iterable[Tokens]) -> str:
-    return ''.join(map(join_toks, ls))
 
 
 ##
@@ -111,7 +94,7 @@ def make_import(
     ml = []
     il: list[str] | None = None
     as_ = None
-    for tok in (it := iter(ignore_ws(lts[1:]))):
+    for tok in (it := iter(tks.ignore_ws(lts[1:]))):
         if tok.name in ('NAME', 'OP'):
             if tok.src == 'as':
                 check.none(as_)
@@ -185,10 +168,10 @@ class Typing:
 
 
 def _is_typing(lts: Tokens) -> bool:
-    if join_toks(lts).strip().endswith(TYPE_ALIAS_COMMENT):
+    if tks.join_toks(lts).strip().endswith(TYPE_ALIAS_COMMENT):
         return True
 
-    wts = list(ignore_ws(lts))
+    wts = list(tks.ignore_ws(lts))
     if (
             len(wts) >= 5 and
             wts[0].name == 'NAME' and
@@ -212,9 +195,9 @@ def make_typing(
     if not _is_typing(lts):
         return None
 
-    ft = next(iter(ignore_ws(lts)))
+    ft = next(iter(tks.ignore_ws(lts)))
     return Typing(
-        src=join_toks(lts),
+        src=tks.join_toks(lts),
 
         src_path=src_path,
         line=ft.line,
@@ -336,7 +319,7 @@ def gen_amalg(
         hls = [
             hl
             for hlts in mf.header_lines
-            if not (hl := join_toks(hlts)).startswith(SCAN_COMMENT)
+            if not (hl := tks.join_toks(hlts)).startswith(SCAN_COMMENT)
         ]
         if output_dir is not None:
             ogf = os.path.relpath(main_path, output_dir)
@@ -364,7 +347,7 @@ def gen_amalg(
     for imp in gl_imps:
         dct.setdefault((imp.mod, imp.item, imp.as_), []).append(imp)
     for _, l in sorted(dct.items()):
-        out.write(join_toks(l[0].toks))
+        out.write(tks.join_toks(l[0].toks))
     if dct:
         out.write('\n\n')
 
@@ -399,9 +382,9 @@ def gen_amalg(
             rp = os.path.basename(f.path)
         out.write(f'# {rp}\n')
         if f is not mf and f.header_lines:
-            out.write(join_lines(f.header_lines))
+            out.write(tks.join_lines(f.header_lines))
         out.write(f'\n\n')
-        sf_src = join_lines(f.content_lines)
+        sf_src = tks.join_lines(f.content_lines)
         out.write(sf_src.strip())
         if i < len(sfs) - 1:
             out.write('\n\n\n')
