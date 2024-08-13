@@ -274,11 +274,9 @@ class Version(_BaseVersion):
     def base_version(self) -> str:
         parts = []
 
-        # Epoch
         if self.epoch != 0:
             parts.append(f'{self.epoch}!')
 
-        # Release segment
         parts.append('.'.join(str(x) for x in self.release))
 
         return ''.join(parts)
