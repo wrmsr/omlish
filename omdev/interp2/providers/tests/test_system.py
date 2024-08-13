@@ -1,7 +1,7 @@
 import unittest
 
-from .. import system as sp
 from ....amalg.std.versions.specifiers import SpecifierSet
+from .. import system as sp
 
 
 class TestBaseProviders(unittest.TestCase):
