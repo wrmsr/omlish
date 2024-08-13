@@ -185,6 +185,7 @@ import operator
 import typing as ta
 
 from omlish import cached
+from omlish import check
 from omlish import collections as col
 from omlish import dataclasses as dc
 from omlish import lang
@@ -334,6 +335,15 @@ KeywordT = ta.TypeVar('KeywordT', bound='Keyword')
 class Keyword(lang.Abstract, lang.Sealed):
     tag: ta.ClassVar[str]
 
+    def __init_subclass__(cls, *, tag: str | None = None, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+        check.not_in('tag', dir(cls))
+        if not lang.is_abstract_class(cls):
+            check.issubclass(cls, lang.Final)
+            cls.tag = check.non_empty_str(tag)
+        else:
+            check.none(tag)
+
 
 @dc.dataclass(frozen=True)
 class Keywords(lang.Final):
@@ -363,24 +373,24 @@ class StrKeyword(Keyword, lang.Abstract):
     s: str
 
 
-class Id(StrKeyword, lang.Final):
-    tag = '$id'
+class Id(StrKeyword, lang.Final, tag='$id'):
+    pass
 
 
-class SchemaKeyword(StrKeyword, lang.Final):
-    tag = '$schema'
+class SchemaKeyword(StrKeyword, lang.Final, tag='$schema'):
+    pass
 
 
-class Title(StrKeyword, lang.Final):
-    tag = 'title'
+class Title(StrKeyword, lang.Final, tag='title'):
+    pass
 
 
-class Description(StrKeyword, lang.Final):
-    tag = 'description'
+class Description(StrKeyword, lang.Final, tag='description'):
+    pass
 
 
 @dc.dataclass(frozen=True)
-class Required(Keyword, lang.Final):
+class Required(Keyword, lang.Final, tag='required'):
     lst: ta.Sequence[str]
 
 
