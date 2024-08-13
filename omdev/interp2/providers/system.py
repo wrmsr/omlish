@@ -1,6 +1,7 @@
 """
 TODO:
  - python, python3, python3.12, ...
+ - check if path py's are venvs: sys.prefix != sys.base_prefix
 """
 # ruff: noqa: UP006 UP007
 import dataclasses as dc
@@ -28,7 +29,7 @@ class SystemInterpProvider(InterpProvider):
         return 'system'
 
     @staticmethod
-    def _which(
+    def _re_which(
             pat: re.Pattern,
             *,
             mode: int = os.F_OK | os.X_OK,
@@ -72,14 +73,19 @@ class SystemInterpProvider(InterpProvider):
         return out
 
     @cached_nullary
-    def exe(self) -> ta.Optional[str]:
-        lst = self._which(
+    def exe2(self) -> ta.Optional[str]:
+        lst = self._re_which(
             re.compile(re.escape(self.cmd)),
             path=self.path,
         )
         if not lst:
             return None
         return lst[0]
+
+    @cached_nullary
+    def exe(self) -> ta.Optional[str]:
+        import shutil
+        return shutil.which(self.cmd)
 
     @cached_nullary
     def version(self) -> ta.Optional[InterpVersion]:
