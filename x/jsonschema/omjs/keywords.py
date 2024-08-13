@@ -69,7 +69,7 @@ class Description(StrKeyword, lang.Final, tag='description'):
 
 
 @dc.dataclass(frozen=True)
-class Type(Keyword, lang.Final, rag='type'):
+class Type(Keyword, lang.Final, tag='type'):
     t: str | ta.Sequence[str]
 
 
