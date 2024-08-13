@@ -20,6 +20,7 @@ from ...amalg.std.logs import log
 from ...amalg.std.subprocesses import subprocess_check_call
 from ...amalg.std.subprocesses import subprocess_check_output_str
 from ...amalg.std.subprocesses import subprocess_try_output
+from ...amalg.std.versions.specifiers import SpecifierSet
 from ...amalg.std.versions.versions import InvalidVersion
 from ...amalg.std.versions.versions import parse_version
 from .base import Interp
@@ -326,11 +327,10 @@ class PyenvInterpProvider(InterpProvider):
 
         return ret
 
-    @cached_nullary
-    def installed_versions(self) -> ta.Sequence[InterpVersion]:
+    def installed_versions(self, spec: SpecifierSet) -> ta.Sequence[InterpVersion]:
         return [i.version for i in self.guess_installed()]
 
-    def installable_versions(self) -> ta.Sequence[InterpVersion]:
+    def installable_versions(self, spec: SpecifierSet) -> ta.Sequence[InterpVersion]:
         raise NotImplementedError
 
     def get_version(self, version: InterpVersion) -> Interp:

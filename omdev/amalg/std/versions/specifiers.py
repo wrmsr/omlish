@@ -251,15 +251,12 @@ class Specifier(BaseSpecifier):
         return self._canonical_spec == other._canonical_spec
 
     def _get_operator(self, op: str) -> CallableVersionOperator:
-        operator_callable: CallableVersionOperator = getattr(
-            self, f'_compare_{self._operators[op]}',
-        )
+        operator_callable: CallableVersionOperator = getattr(self, f'_compare_{self._operators[op]}')
         return operator_callable
 
     def _compare_compatible(self, prospective: Version, spec: str) -> bool:
         prefix = _version_join(list(itertools.takewhile(_is_not_version_suffix, _version_split(spec)))[:-1])
         prefix += '.*'
-
         return self._get_operator('>=')(prospective, spec) and self._get_operator('==')(prospective, prefix)
 
     def _compare_equal(self, prospective: Version, spec: str) -> bool:
@@ -269,18 +266,15 @@ class Specifier(BaseSpecifier):
             split_spec = _version_split(normalized_spec)
 
             split_prospective = _version_split(normalized_prospective)
-
             padded_prospective, _ = _pad_version(split_prospective, split_spec)
-
             shortened_prospective = padded_prospective[: len(split_spec)]
 
             return shortened_prospective == split_spec
+
         else:
             spec_version = Version(spec)
-
             if not spec_version.local:
                 prospective = Version(prospective.public)
-
             return prospective == spec_version
 
     def _compare_not_equal(self, prospective: Version, spec: str) -> bool:
@@ -517,6 +511,7 @@ class SpecifierSet(BaseSpecifier):
             for spec in self._specs:
                 iterable = spec.filter(iterable, prereleases=bool(prereleases))
             return iter(iterable)
+
         else:
             filtered: ta.List[UnparsedVersionVar] = []
             found_prereleases: ta.List[UnparsedVersionVar] = []
