@@ -1,6 +1,8 @@
 """
 TODO:
  - reflecty generalized rewriter, obviously..
+ - env vars
+ - coalescing - {$FOO|$BAR|baz}
 """
 import collections.abc
 import typing as ta

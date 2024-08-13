@@ -1,3 +1,8 @@
+"""
+Note: string.Formatter (and string.Template) shouldn't be ignored - if they can be used they probably should be.
+ - https://docs.python.org/3/library/string.html#custom-string-formatting
+ - https://docs.python.org/3/library/string.html#template-strings
+"""
 import dataclasses as dc
 import re
 
