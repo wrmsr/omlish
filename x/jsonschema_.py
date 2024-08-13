@@ -394,6 +394,13 @@ class Required(Keyword, lang.Final, tag='required'):
     lst: ta.Sequence[str]
 
 
+KEYWORD_TYPES_BY_TAG: ta.Mapping[str, type[Keyword]] = col.unique_map_by(  # type: ignore
+    operator.attrgetter('tag'),
+    (cls for cls in lang.deep_subclasses(Keyword) if not lang.is_abstract_class(cls)),
+    strict=True,
+)
+
+
 ##
 
 
