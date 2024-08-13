@@ -180,9 +180,47 @@ https://datatracker.ietf.org/doc/html/draft-bhutton-relative-json-pointer-00
 }
 """
 
+CORE_VOCABULARY = {
+    '$schema',
+    '$id',
+}
+
+VALIDATION_VOCABULARY = {
+    'type',
+
+    'properties',
+    'required',
+
+    'exclusiveMinimum',
+}
+
+
+"""
+Unrecognized individual keywords simply have their values collected as annotations, while the behavior with respect to
+an unrecognized vocabulary can be controlled when declaring which vocabularies are in use.
+
+A JSON Schema MUST be an object or a boolean.
+
+Keyword categories:
+ - identifiers: control schema identification through setting a URI for the schema and/or changing how the base URI is
+     determined
+ - assertions: produce a boolean result when applied to an instance
+ - annotations: attach information to an instance for application use
+ - applicators: apply one or more subschemas to a particular location in the instance, and combine or modify thei
+     results
+ - reserved locations: do not directly affect results, but reserve a place for a specific purpose to ensur
+     interoperability
+"""
 
 def _main() -> None:
     # https://json-schema.org/learn/getting-started-step-by-step
+
+    product = {
+        "productId": 1,
+        "productName": "A green door",
+        "price": 12.50,
+        "tags": ["home", "green"],
+    }
 
     schema_id_root = 'https://github.com/wrmsr/omlish/jsonschemas/'
 
@@ -191,7 +229,27 @@ def _main() -> None:
         "$id": schema_id_root + "product.schema.json",
         "title": "Product",
         "description": "A product in the catalog",
-        "type": "object"
+        "type": "object",
+        "properties": {
+            "productId": {
+                "description": "The unique identifier for a product",
+                "type": "integer",
+            },
+            "productName": {
+                "description": "Name of the product",
+                "type": "string",
+            },
+            "price": {
+                "description": "The price of the product",
+                "type": "number",
+                "exclusiveMinimum": 0,
+            },
+        },
+        "required": [
+            "productId",
+            "productName",
+            "price",
+        ],
     }
 
 
