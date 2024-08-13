@@ -10,7 +10,7 @@ from .. import secrets as sec
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class DbType:
+class DbType(lang.Final):
     name: str
     dialect_name: str
 
@@ -39,7 +39,7 @@ class DbTypes(lang.Namespace, lang.Final):
 ##
 
 
-class DbLoc(lang.Abstract):
+class DbLoc(lang.Abstract, lang.Sealed):
     pass
 
 
@@ -61,7 +61,7 @@ class HostDbLoc(DbLoc, lang.Final):
 
 
 @dc.dataclass(frozen=True)
-class DbSpec:
+class DbSpec(lang.Final):
     name: str
     type: DbType
     loc: DbLoc
