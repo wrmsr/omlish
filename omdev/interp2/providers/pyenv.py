@@ -8,6 +8,7 @@ TODO:
 import abc
 import dataclasses as dc
 import itertools
+import logging
 import os.path
 import shutil
 import sys
@@ -284,7 +285,8 @@ class PyenvInterpProvider(InterpProvider):
             try:
                 ev = query_interp_exe_version(ep)
             except Exception as e:  # noqa
-                log.exception('Error querying pyenv python version: %s', ep)
+                if log.isEnabledFor(logging.DEBUG):
+                    log.exception('Error querying pyenv python version: %s', ep)
                 continue
 
             ret.append(PyenvInterpProvider.Installed(
