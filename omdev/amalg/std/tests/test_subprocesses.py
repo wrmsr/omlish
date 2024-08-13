@@ -1,12 +1,24 @@
 # ruff: noqa: PT009 PT027
+import abc
 import subprocess
 import unittest
 
 from .. import subprocesses as su
 from ..check import check_not_none
+from ..contextmanagers import attr_setting
 
 
-class TestSubprocesses(unittest.TestCase):
+class SubprocessPatchingTest(abc.ABC):  # noqa
+    def setUp(self):  # noqa
+        super().setUp()  # type: ignore
+
+        cm = attr_setting(su, '_SUBPROCESS_SHELL_WRAP_EXECS', True)
+        cm.__enter__()
+        self.addCleanup(cm.__exit__, None, None, None)  # type: ignore
+
+
+class TestSubprocesses(SubprocessPatchingTest, unittest.TestCase):
+
     def test_subprocesses_call(self):
         su.subprocess_check_call('true')
         with self.assertRaises(subprocess.CalledProcessError):
