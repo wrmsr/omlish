@@ -87,6 +87,11 @@ def _main() -> None:
                     print(tks.join_toks(l).strip())
                     print()
 
+            new_src = tks.join_lines(ls)
+
+            with open(os.path.join(dp, fn), 'w') as f:
+                f.write(new_src)
+
 
 if __name__ == '__main__':
     _main()
