@@ -86,6 +86,7 @@ class NegativeInfinityVersionType:
 
 NegativeInfinityVersion = NegativeInfinityVersionType()
 
+
 ##
 
 
