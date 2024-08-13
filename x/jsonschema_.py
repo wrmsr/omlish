@@ -194,7 +194,6 @@ VALIDATION_VOCABULARY = {
     'exclusiveMinimum',
 }
 
-
 """
 Unrecognized individual keywords simply have their values collected as annotations, while the behavior with respect to
 an unrecognized vocabulary can be controlled when declaring which vocabularies are in use.
@@ -211,6 +210,7 @@ Keyword categories:
  - reserved locations: do not directly affect results, but reserve a place for a specific purpose to ensur
      interoperability
 """
+
 
 def _main() -> None:
     # https://json-schema.org/learn/getting-started-step-by-step
@@ -243,6 +243,30 @@ def _main() -> None:
                 "description": "The price of the product",
                 "type": "number",
                 "exclusiveMinimum": 0,
+            },
+            "tags": {
+                "description": "Tags for the product",
+                "type": "array",
+                "items": {
+                    "type": "string",
+                },
+                "minItems": 1,
+                "uniqueItems": True,
+            },
+            "dimensions": {
+                "type": "object",
+                "properties": {
+                    "length": {
+                        "type": "number",
+                    },
+                    "width": {
+                        "type": "number",
+                    },
+                    "height": {
+                        "type": "number",
+                    },
+                },
+                "required": ["length", "width", "height"],
             },
         },
         "required": [
