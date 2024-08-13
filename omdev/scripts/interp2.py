@@ -172,9 +172,6 @@ NegativeInfinityVersion = NegativeInfinityVersionType()
 ##
 
 
-
-
-
 class _Version(ta.NamedTuple):
     epoch: int
     release: ta.Tuple[int, ...]
