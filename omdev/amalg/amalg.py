@@ -418,7 +418,7 @@ def gen_amalg(
 
 def _gen_one(
         input_path: str,
-        output_path: str,
+        output_path: str | None,
         *,
         mounts: ta.Mapping[str, str],
 ) -> None:
@@ -427,13 +427,17 @@ def _gen_one(
     src = gen_amalg(
         input_path,
         mounts=mounts,
-        output_dir=os.path.dirname(output_path),
+        output_dir=os.path.dirname(output_path if output_path is not None else input_path),
     )
 
-    with open(output_path, 'w') as f:
-        f.write(src)
+    if output_path is not None:
+        with open(output_path, 'w') as f:
+            f.write(src)
+        os.chmod(output_path, os.stat(input_path).st_mode)
 
-    os.chmod(output_path, os.stat(input_path).st_mode)
+    else:
+        print(src)
+
 
 
 def _scan_one(
@@ -484,12 +488,14 @@ def _gen_cmd(args) -> None:
 
         else:
             output_dir = args.output
-            if output_dir is None:
-                raise Exception('Must specify output dir')
+            if output_dir is not None:
+                output_path = check.isinstance(os.path.join(output_dir, os.path.basename(i)), str)
+            else:
+                output_path = None
 
             _gen_one(
                 os.path.abspath(i),
-                check.isinstance(os.path.join(output_dir, os.path.basename(i)), str),
+                output_path,
                 mounts=mounts,
             )
 
