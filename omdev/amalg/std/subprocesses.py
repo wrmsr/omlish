@@ -12,8 +12,7 @@ from .logs import log
 ##
 
 
-_SUBPROCESS_SHELL_WRAP_EXECS = True
-# _SUBPROCESS_SHELL_WRAP_EXECS = False
+_SUBPROCESS_SHELL_WRAP_EXECS = False
 
 
 def _prepare_subprocess_invocation(

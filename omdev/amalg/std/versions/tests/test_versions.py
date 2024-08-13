@@ -2,10 +2,11 @@
 import sys
 import unittest
 
+from ...tests.test_subprocesses import SubprocessPatchingTest
 from ..versions import parse_version
 
 
-class TestVersions(unittest.TestCase):
+class TestVersions(SubprocessPatchingTest, unittest.TestCase):
     def test_versions(self):
         for s in [
             sys.version.split()[0],
