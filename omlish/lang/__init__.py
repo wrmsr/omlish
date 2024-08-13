@@ -151,6 +151,7 @@ from .objects import (  # noqa
     arg_repr,
     attr_repr,
     can_weakref,
+    deep_subclasses,
     new_type,
     opt_repr,
     super_meta,
