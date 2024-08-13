@@ -1,7 +1,7 @@
 import unittest
 
-from .. import base as bp
 from ....amalg.std.versions.specifiers import SpecifierSet
+from .. import base as bp
 
 
 class TestBaseProviders(unittest.TestCase):
