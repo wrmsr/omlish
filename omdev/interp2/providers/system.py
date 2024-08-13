@@ -75,7 +75,7 @@ class SystemInterpProvider(InterpProvider):
     @cached_nullary
     def exes(self) -> ta.List[str]:
         return self._re_which(
-            re.compile(r'(python3)|(python3\.12)'),
+            re.compile(r'python3(\.\d+)?'),
             path=self.path,
         )
 
