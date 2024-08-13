@@ -46,7 +46,7 @@ import json
 import sys
 import typing as ta
 
-from omdev.amalg.std.logs import setup_standard_logging
+from omdev.amalg.std.logs import configure_standard_logging
 from omdev.amalg.std.marshal import unmarshal_obj
 from omdev.amalg.std.runtime import check_runtime_version
 
@@ -105,7 +105,7 @@ def _main(argv: ta.Optional[ta.Sequence[str]] = None) -> None:
     if getattr(sys, 'platform') != 'linux':  # noqa
         raise OSError('must run on linux')
 
-    setup_standard_logging()
+    configure_standard_logging()
 
     parser = _build_parser()
     args = parser.parse_args(argv)

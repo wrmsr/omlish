@@ -8,7 +8,7 @@ TODO:
 import argparse
 import typing as ta
 
-from ..amalg.std.logs import setup_standard_logging
+from ..amalg.std.logs import configure_standard_logging
 from ..amalg.std.runtime import check_runtime_version
 
 
@@ -47,7 +47,7 @@ def _build_parser() -> argparse.ArgumentParser:
 
 def _main(argv: ta.Optional[ta.Sequence[str]] = None) -> None:
     check_runtime_version()
-    setup_standard_logging()
+    configure_standard_logging()
 
     parser = _build_parser()
     args = parser.parse_args(argv)
