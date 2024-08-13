@@ -179,6 +179,8 @@ https://datatracker.ietf.org/doc/html/draft-bhutton-relative-json-pointer-00
   }
 }
 """
+import enum
+
 
 CORE_VOCABULARY = {
     '$schema',
@@ -210,6 +212,14 @@ Keyword categories:
  - reserved locations: do not directly affect results, but reserve a place for a specific purpose to ensur
      interoperability
 """
+
+class JsonType(enum.Enum):
+    NULL = enum.auto()
+    BOOLEAN = enum.auto()
+    OBJECT = enum.auto()
+    ARRAY = enum.auto()
+    NUMBER = enum.auto()
+    STRING = enum.auto()
 
 
 def _main() -> None:
