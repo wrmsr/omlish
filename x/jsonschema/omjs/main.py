@@ -10,7 +10,7 @@ https://json-schema.org/draft/2020-12/json-schema-validation
 https://datatracker.ietf.org/doc/html/draft-bhutton-relative-json-pointer-00
 
 """
-from .parse import parse_keywords
+from . import keywords
 
 
 def _main() -> None:
@@ -102,7 +102,7 @@ def _main() -> None:
         ],
     }
 
-    print(parse_keywords(product_schema))
+    print(keywords.parse_keywords(product_schema))
 
 
 if __name__ == '__main__':
