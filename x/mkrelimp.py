@@ -1,5 +1,6 @@
 import os.path
 
+from omdev import tokens as tks
 from omlish import check
 import tokenize_rt as tr
 
