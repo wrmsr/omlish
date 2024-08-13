@@ -69,6 +69,11 @@ class StrOrStrsKeyword(Keyword, lang.Abstract):
 
 
 @dc.dataclass(frozen=True)
+class KeywordsKeyword(Keyword, lang.Abstract):
+    kw: Keywords
+
+
+@dc.dataclass(frozen=True)
 class StrToKeywordsKeyword(Keyword, lang.Abstract):
     m: ta.Mapping[str, Keywords]
 
@@ -99,20 +104,21 @@ class Description(StrKeyword, lang.Final, tag='description'):
     pass
 
 
-@dc.dataclass(frozen=True)
 class Type(StrOrStrsKeyword, lang.Final, tag='type'):
+    pass
+
+
+class Items(KeywordsKeyword, lang.Final, tag='items'):
     pass
 
 
 ##
 
 
-@dc.dataclass(frozen=True)
 class Required(StrOrStrsKeyword, lang.Final, tag='required'):
     pass
 
 
-@dc.dataclass(frozen=True)
 class Properties(StrToKeywordsKeyword, lang.Final, tag='properties'):
     pass
 
