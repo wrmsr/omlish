@@ -181,6 +181,7 @@ https://datatracker.ietf.org/doc/html/draft-bhutton-relative-json-pointer-00
 """
 import abc
 import enum
+import operator
 import typing as ta
 
 from omlish import cached
@@ -327,6 +328,9 @@ class JsonType(enum.Enum):
 ##
 
 
+KeywordT = ta.TypeVar('KeywordT', bound='Keyword')
+
+
 class Keyword(lang.Abstract, lang.Sealed):
     tag: ta.ClassVar[str]
 
@@ -336,8 +340,22 @@ class Keywords(lang.Final):
     lst: ta.Sequence[Keyword]
 
     @cached.property
-    def by_type(self) -> ta.Mapping[ta.Type[Keyword], Keyword]:
+    @dc.init
+    def by_type(self) -> ta.Mapping[type[Keyword], Keyword]:
         return col.unique_map_by(type, self.lst, strict=True)  # type: ignore
+
+    @cached.property
+    @dc.init
+    def by_tag(self) -> ta.Mapping[str, Keyword]:
+        return col.unique_map_by(operator.attrgetter('tag'), self.lst, strict=True)  # type: ignore
+
+    def __getitem__(self, item: type[KeywordT] | str) -> KeywordT:
+        if isinstance(item, type):
+            return self.by_type[item]  # type: ignore
+        elif isinstance(item, str):
+            return self.by_tag[item]
+        else:
+            raise TypeError(item)
 
 
 @dc.dataclass(frozen=True)
