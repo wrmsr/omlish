@@ -73,14 +73,11 @@ class SystemInterpProvider(InterpProvider):
         return out
 
     @cached_nullary
-    def exe2(self) -> ta.Optional[str]:  # FIXME
-        lst = self._re_which(
+    def exes(self) -> ta.List[str]:
+        return self._re_which(
             re.compile(re.escape(self.cmd)),
             path=self.path,
         )
-        if not lst:
-            return None
-        return lst[0]
 
     @cached_nullary
     def exe(self) -> ta.Optional[str]:
