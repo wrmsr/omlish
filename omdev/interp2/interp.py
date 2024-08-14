@@ -17,7 +17,9 @@ from .providers.types import InterpSpecifier
 
 
 def _resolve_cmd(args) -> None:
-    for si in SystemInterpProvider().installed_versions(InterpSpecifier.parse('3.12')):
+    s = InterpSpecifier.parse(args.version)
+
+    for si in SystemInterpProvider().installed_versions(s):
         print(si)
     for pi in PyenvInterpProvider().guess_installed():
         print(pi)

@@ -40,18 +40,10 @@ class InterpVersion:
     opts: InterpOpts
 
     def __str__(self) -> str:
-        return ','.join([str(self.version), *(() if not (gs := str(self.opts)) else [gs])])
+        return ''.join([str(self.version), *(() if not (gs := str(self.opts)) else [gs])])
 
     @classmethod
     def parse(cls, s: str) -> 'InterpVersion':
-        v, o = s.split(',') if ',' in s else (s, '')
-        return cls(
-            version=Version(v),
-            opts=InterpOpts.parse(o),
-        )
-
-    @classmethod
-    def parse_abi(cls, s: str) -> 'InterpVersion':
         s, o = InterpOpts.parse_suffix(s)
         v = Version(s)
         return cls(
@@ -60,9 +52,9 @@ class InterpVersion:
         )
 
     @classmethod
-    def try_parse_abi(cls, s: str) -> ta.Optional['InterpVersion']:
+    def try_parse(cls, s: str) -> ta.Optional['InterpVersion']:
         try:
-            return cls.parse_abi(s)
+            return cls.parse(s)
         except (KeyError, InvalidVersion):
             return None
 
