@@ -332,7 +332,10 @@ class PyenvInterpProvider(InterpProvider):
         for vs in self._pyenv.installable_versions():
             if (iv := self.guess_version(vs)) is None:
                 continue
-            lst.append(iv)
+            if iv.opts.threaded:
+                raise Exception('Pyenv installable versions not expected to have debug suffix')
+            for d in [False, True]:
+                lst.append(dc.replace(iv, opts=iv.opts.))
         return lst
 
     def get_version(self, version: InterpVersion) -> Interp:
