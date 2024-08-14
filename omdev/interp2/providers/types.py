@@ -89,5 +89,4 @@ class InterpSpecifier:
 @dc.dataclass(frozen=True)
 class Interp:
     exe: str
-    provider: str
     version: InterpVersion

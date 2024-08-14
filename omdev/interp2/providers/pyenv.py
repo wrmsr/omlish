@@ -276,10 +276,6 @@ class PyenvInterpProvider(InterpProvider):
         self._inspect = inspect
         self._inspector = inspector
 
-    @property
-    def name(self) -> str:
-        return 'pyenv'
-
     #
 
     @staticmethod

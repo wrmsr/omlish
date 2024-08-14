@@ -31,10 +31,6 @@ class SystemInterpProvider(InterpProvider):
     inspect: bool = False
     inspector: InterpInspector = INTERP_INSPECTOR
 
-    @property
-    def name(self) -> str:
-        return 'system'
-
     #
 
     @staticmethod
@@ -126,7 +122,6 @@ class SystemInterpProvider(InterpProvider):
                 continue
             return Interp(
                 exe=e,
-                provider=self.name,
                 version=ev,
             )
         raise KeyError(version)
