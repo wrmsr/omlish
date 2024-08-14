@@ -14,7 +14,7 @@ import typing as ta
 from .. import iterators as it
 from .. import lang
 from .. import os as oos
-from ..serde import json
+from ..formats import json
 from .procstats import ProcStats
 
 
