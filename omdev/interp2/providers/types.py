@@ -1,8 +1,8 @@
 import dataclasses as dc
 import typing as ta
 
+from ...amalg.std.versions.specifiers import Specifier
 from ...amalg.std.versions.versions import Version
-from ...amalg.std.versions.versions import parse_version
 
 
 INTERP_OPT_GLYPHS: ta.Mapping[str, str] = {
@@ -21,10 +21,7 @@ class InterpOpts:
 
     @classmethod
     def parse(cls, s: str) -> 'InterpOpts':
-        kw = {}
-        for g in s:
-            kw[INTERP_OPT_GLYPHS[g]] = True
-        return cls(**kw)
+        return cls(**{INTERP_OPT_GLYPHS[g]: True for g in s})
 
 
 @dc.dataclass(frozen=True)
@@ -33,19 +30,32 @@ class InterpVersion:
     opts: InterpOpts
 
     def __str__(self) -> str:
-        s = str(self.version)
-        if (gs := str(self.opts)):
-            s += ',' + gs
-        return s
+        return ','.join([str(self.version), *(() if not (gs := str(self.opts)) else [gs])])
 
     @classmethod
     def parse(cls, s: str) -> 'InterpVersion':
-        if ',' in s:
-            v, o = s.split(',')
-        else:
-            v, o = s, ''
+        v, o = s.split(',') if ',' in s else (s, '')
         return cls(
-            version=parse_version(v),
+            version=Version(v),
+            opts=InterpOpts.parse(o),
+        )
+
+
+@dc.dataclass(frozen=True)
+class InterpSpecifier:
+    specifier: Specifier
+    opts: InterpOpts
+
+    def __str__(self) -> str:
+        return ','.join([str(self.specifier), *(() if not (gs := str(self.opts)) else [gs])])
+
+    @classmethod
+    def parse(cls, s: str) -> 'InterpSpecifier':
+        v, o = s.split(',') if ',' in s else (s, '')
+        if not any(v.startswith(o) for o in Specifier.OPERATORS):
+            v = '~=' + v
+        return cls(
+            specifier=Specifier(v),
             opts=InterpOpts.parse(o),
         )
 
