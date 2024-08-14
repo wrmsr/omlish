@@ -6,7 +6,7 @@ import logging
 import typing as ta
 
 from .. import term
-from ..serde import json
+from ..formats import json
 
 
 class StandardLogFormatter(logging.Formatter):

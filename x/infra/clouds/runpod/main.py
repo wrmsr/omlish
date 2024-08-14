@@ -24,7 +24,7 @@ import typing as ta
 
 import aiohttp
 
-from omlish.serde import json
+from omlish.formats import json
 
 from omserv.secrets import load_secrets
 

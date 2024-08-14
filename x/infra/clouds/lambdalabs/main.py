@@ -7,7 +7,7 @@ curl -u "$LAMBDALABS_API_KEY:" https://cloud.lambdalabs.com/api/v1/instance-type
 """
 import asyncio
 
-from omlish.serde import json
+from omlish.formats import json
 import aiohttp
 
 from omserv.secrets import load_secrets

@@ -1,13 +1,15 @@
 """
 TODO:
  - pydevd connect-back
- - logging
+ - (more) logging
  - env vars, files
  - repl server
  - packaging fixups
  - profiling
  - rlimits
  - chdir
+ - pidfile
+ - daemonize
 """
 import faulthandler
 import gc
