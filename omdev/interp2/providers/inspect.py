@@ -24,8 +24,8 @@ class InterpInspection:
     @property
     def opts(self) -> InterpOpts:
         return InterpOpts(
-            debug=bool(self.config_vars.get('Py_DEBUG')),
             threaded=bool(self.config_vars.get('Py_GIL_DISABLED')),
+            debug=bool(self.config_vars.get('Py_DEBUG')),
         )
 
     @property
