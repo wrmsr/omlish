@@ -5,7 +5,7 @@ TODO:
  - partial best-matches - '3.12'
  - https://github.com/asdf-vm/asdf support (instead of pyenv) ?
 """
-# ruff: noqa: UP007
+# ruff: noqa: UP006 UP007
 import argparse
 import collections
 import typing as ta

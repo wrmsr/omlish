@@ -1,5 +1,5 @@
-import unittest
 import tempfile
+import unittest
 
 from ..interps import VenvInterps
 
@@ -18,6 +18,6 @@ PYTHON_DEV=3.14-dev
 
 class TestInterps(unittest.TestCase):
     def test_venv_interps(self):
-        with open((vf := tempfile.mktemp('-omdev-pyproject2')), 'w') as f:
+        with open((vf := tempfile.mktemp('-omdev-pyproject2')), 'w') as f:  # noqa
             f.write(_TEST_VERSIONS_FILE)
         print(VenvInterps(versions_file=vf).versions_file_pythons())
