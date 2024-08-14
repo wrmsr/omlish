@@ -21,11 +21,6 @@ from .types import InterpVersion
 
 
 class InterpProvider(abc.ABC):
-    @property
-    @abc.abstractmethod
-    def name(self) -> str:
-        raise NotImplementedError
-
     @abc.abstractmethod
     def installed_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
         raise NotImplementedError
@@ -43,10 +38,6 @@ class InterpProvider(abc.ABC):
 
 
 class RunningInterpProvider(InterpProvider):
-    @property
-    def name(self) -> str:
-        return 'running'
-
     @cached_nullary
     def version(self) -> InterpVersion:
         return InterpInspector.running().iv
@@ -62,6 +53,5 @@ class RunningInterpProvider(InterpProvider):
             raise KeyError(version)
         return Interp(
             exe=sys.executable,
-            provider=self.name,
             version=self.version(),
         )
