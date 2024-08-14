@@ -10,16 +10,14 @@ import re
 import typing as ta
 
 from ...amalg.std.cached import cached_nullary
+from ...amalg.std.check import check_not_none
 from .base import InterpProvider
-from .base import query_interp_exe_version
+from .inspect import INTERP_INSPECTOR
+from .inspect import InterpInspector
 from .types import Interp
 from .types import InterpSpecifier
 from .types import InterpVersion
-from ...amalg.std.check import check_not_none
-from .inspect import INTERP_INSPECTOR
-from .inspect import InterpInspector
-def query_interp_exe_version(exe: str) -> InterpVersion:
-    return check_not_none(INTERP_INSPECTOR.inspect(exe)).iv
+
 
 ##
 
@@ -101,7 +99,7 @@ class SystemInterpProvider(InterpProvider):
     def version(self) -> ta.Optional[InterpVersion]:
         if (exe := self.exe()) is None:
             return None
-        return query_interp_exe_version(exe)
+        return check_not_none(self.inspector.inspect(exe)).iv
 
     def installed_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
         return [self.version()]
