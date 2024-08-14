@@ -9,6 +9,9 @@ TODO:
  - flake8 / ruff mgmt
  - typealias - support # noqa, other comments, and lamely support multiline by just stealing lines till it parses
 
+See:
+ - https://github.com/xonsh/amalgamate - mine is for portability not speed, and doesn't try to work on unmodified code
+
 Targets:
  - interp
  - pyproject
