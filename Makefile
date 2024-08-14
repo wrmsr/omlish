@@ -225,6 +225,7 @@ venv-old:
 OLD_TESTS=\
 	omdev.amalg.std \
 	omdev.interp2 \
+	omdev.pyproject2 \
 
 .PHONY: test-old
 test-old:
