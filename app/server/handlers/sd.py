@@ -90,7 +90,7 @@ def run_sd(args: SdArgs) -> bytes:
     del model.cond_stage_model
 
     timesteps = list(range(1, 1000, 1000 // args.steps))
-    log.info('Running for %d timesteps', timesteps)
+    log.info('Running for timesteps %r', timesteps)
     alphas = model.alphas_cumprod[tg.tensor.Tensor(timesteps)]
     alphas_prev = tg.tensor.Tensor([1.0]).cat(alphas[:-1])
 
