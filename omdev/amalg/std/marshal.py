@@ -138,7 +138,7 @@ class DataclassObjMarshaler(ObjMarshaler):
         return {k: m.marshal(getattr(o, k)) for k, m in self.fs.items()}
 
     def unmarshal(self, o: ta.Any) -> ta.Any:
-        return self.ty(**{k: m.unmarshal(o[k]) for k, m in self.fs.items()})
+        return self.ty(**{k: self.fs[k].unmarshal(v) for k, v in o.items()})
 
 
 @dc.dataclass(frozen=True)
