@@ -287,16 +287,13 @@ class PyenvInterpProvider(InterpProvider):
             if s.endswith(sfx):
                 return s[:-len(sfx)], True
             return s, False
-
         ok = {}
         s, ok['debug'] = strip_sfx(s, '-debug')
         s, ok['threaded'] = strip_sfx(s, 't')
-
         try:
             v = Version(s)
         except InvalidVersion:
             return None
-
         return InterpVersion(v, InterpOpts(**ok))
 
     class Installed(ta.NamedTuple):
@@ -304,31 +301,22 @@ class PyenvInterpProvider(InterpProvider):
         exe: str
         version: InterpVersion
 
-    def inspect_installed(self) -> ta.List[Installed]:
+    def installed(self) -> ta.List[Installed]:
         ret: ta.List[PyenvInterpProvider.Installed] = []
         for vn, ep in self._pyenv.version_exes():
-            try:
-                ev = check_not_none(self._inspector.inspect(ep)).iv
-            except Exception as e:  # noqa
-                if log.isEnabledFor(logging.DEBUG):
-                    log.exception('Error querying pyenv python version: %s', ep)
-                continue
+            if self._inspect:
+                try:
+                    iv = check_not_none(self._inspector.inspect(ep)).iv
+                except Exception as e:  # noqa
+                    if log.isEnabledFor(logging.DEBUG):
+                        log.exception('Error querying pyenv python version: %s', ep)
+                    continue
 
-            ret.append(PyenvInterpProvider.Installed(
-                name=vn,
-                exe=ep,
-                version=ev,
-            ))
-
-        return ret
-
-    def guess_installed(self) -> ta.List[Installed]:
-        ret: ta.List[PyenvInterpProvider.Installed] = []
-        for vn, ep in self._pyenv.version_exes():
-            iv = self.guess_version(vn)
-            if iv is None:
-                log.debug('Invalid guessed pyenv version: %s', vn)
-                continue
+            else:
+                iv = self.guess_version(vn)
+                if iv is None:
+                    log.debug('Invalid guessed pyenv version: %s', vn)
+                    continue
 
             ret.append(PyenvInterpProvider.Installed(
                 name=vn,
@@ -338,12 +326,10 @@ class PyenvInterpProvider(InterpProvider):
 
         return ret
 
+    #
+
     def installed_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
-        if self._inspect_installed:
-            lst = self.inspect_installed()
-        else:
-            lst = self.guess_installed()
-        return [i.version for i in lst]
+        return [i.version for i in self.installed()]
 
     def installable_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
         raise NotImplementedError
