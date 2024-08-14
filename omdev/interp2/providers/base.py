@@ -12,9 +12,9 @@ import typing as ta
 
 from ...amalg.std.cached import cached_nullary
 from ...amalg.std.check import check_not_none
-from ...amalg.std.versions.specifiers import SpecifierSet
 from .inspect import INTERP_INSPECTOR
 from .types import Interp
+from .types import InterpSpecifier
 from .types import InterpVersion
 
 
@@ -22,11 +22,7 @@ from .types import InterpVersion
 
 
 def query_interp_exe_version(exe: str) -> InterpVersion:
-    ins = check_not_none(INTERP_INSPECTOR.inspect(exe))
-    return InterpVersion(
-        version=ins.version,
-        opts=ins.opts,
-    )
+    return check_not_none(INTERP_INSPECTOR.inspect(exe)).iv
 
 
 ##
@@ -39,11 +35,11 @@ class InterpProvider(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def installed_versions(self, spec: SpecifierSet) -> ta.Sequence[InterpVersion]:
+    def installed_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def installable_versions(self, spec: SpecifierSet) -> ta.Sequence[InterpVersion]:
+    def installable_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -63,10 +59,10 @@ class RunningInterpProvider(InterpProvider):
     def version(self) -> InterpVersion:
         return query_interp_exe_version(sys.executable)
 
-    def installed_versions(self, spec: SpecifierSet) -> ta.Sequence[InterpVersion]:
+    def installed_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
         return [self.version()]
 
-    def installable_versions(self, spec: SpecifierSet) -> ta.Sequence[InterpVersion]:
+    def installable_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
         return []
 
     def get_version(self, version: InterpVersion) -> Interp:

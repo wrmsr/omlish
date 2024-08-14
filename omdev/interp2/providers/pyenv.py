@@ -20,13 +20,13 @@ from ...amalg.std.logs import log
 from ...amalg.std.subprocesses import subprocess_check_call
 from ...amalg.std.subprocesses import subprocess_check_output_str
 from ...amalg.std.subprocesses import subprocess_try_output
-from ...amalg.std.versions.specifiers import SpecifierSet
 from ...amalg.std.versions.versions import InvalidVersion
 from ...amalg.std.versions.versions import Version
 from .base import InterpProvider
 from .base import query_interp_exe_version
 from .types import Interp
 from .types import InterpOpts
+from .types import InterpSpecifier
 from .types import InterpVersion
 
 
@@ -266,11 +266,13 @@ class PyenvInterpProvider(InterpProvider):
             self,
             *args,
             pyenv: Pyenv = Pyenv(),
+            inspect_installed: bool = False,
             **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
 
         self._pyenv = pyenv
+        self._inspect_installed = inspect_installed
 
     @property
     def name(self) -> str:
@@ -281,7 +283,7 @@ class PyenvInterpProvider(InterpProvider):
         exe: str
         version: InterpVersion
 
-    def query_installed(self) -> ta.List[Installed]:
+    def inspect_installed(self) -> ta.List[Installed]:
         ret: ta.List[PyenvInterpProvider.Installed] = []
         for vn, ep in self._pyenv.version_exes():
             try:
@@ -330,10 +332,14 @@ class PyenvInterpProvider(InterpProvider):
 
         return ret
 
-    def installed_versions(self, spec: SpecifierSet) -> ta.Sequence[InterpVersion]:
-        return [i.version for i in self.guess_installed()]
+    def installed_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
+        if self._inspect_installed:
+            lst = self.inspect_installed()
+        else:
+            lst = self.guess_installed()
+        return [i.version for i in lst]
 
-    def installable_versions(self, spec: SpecifierSet) -> ta.Sequence[InterpVersion]:
+    def installable_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
         raise NotImplementedError
 
     def get_version(self, version: InterpVersion) -> Interp:
