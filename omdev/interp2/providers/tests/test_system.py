@@ -1,11 +1,10 @@
 import unittest
 
-from ....amalg.std.tests.helpers import SubprocessPatchingTest
 from .. import system as sp
 from ..types import InterpSpecifier
 
 
-class TestBaseProviders(SubprocessPatchingTest, unittest.TestCase):
+class TestBaseProviders(unittest.TestCase):
     def test_system(self):
         v = sp.SystemInterpProvider().installed_versions(InterpSpecifier.parse('3.12'))
         print(sp.SystemInterpProvider().get_version(v[0]))
