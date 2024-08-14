@@ -42,3 +42,12 @@ def update_field_metadata(f: dc.Field, nmd: ta.Mapping) -> dc.Field:
     check.isinstance(f, dc.Field)
     f.metadata = chain_metadata(nmd, f.metadata)
     return f
+
+
+def deep_replace(o: T, *args: str | ta.Callable[[ta.Any], ta.Mapping[str, ta.Any]]) -> T:
+    if not args:
+        return o
+    elif len(args) == 1:
+        return dc.replace(o, **args[0](o))
+    else:
+        return dc.replace(o, **{args[0]: deep_replace(getattr(o, args[0]), *args[1:])})
