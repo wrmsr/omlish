@@ -30,18 +30,28 @@ class Resolver:
     def list(self, spec: InterpSpecifier) -> None:
         print('installed:')
         for n, p in self._providers.items():
-            print(n)
-            for si in p.get_installed_versions(spec):
-                if spec.contains(si):
+            lst = [
+                si
+                for si in p.get_installed_versions(spec)
+                if spec.contains(si)
+            ]
+            if lst:
+                print(n)
+                for si in lst:
                     print(si)
 
         print()
 
         print('installable:')
         for n, p in self._providers.items():
-            print(n)
-            for si in p.get_installable_versions(spec):
-                if spec.contains(si):
+            lst = [
+                si
+                for si in p.get_installable_versions(spec)
+                if spec.contains(si)
+            ]
+            if lst:
+                print(n)
+                for si in lst:
                     print(si)
 
 
