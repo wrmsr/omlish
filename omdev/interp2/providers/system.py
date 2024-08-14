@@ -34,6 +34,8 @@ class SystemInterpProvider(InterpProvider):
     def name(self) -> str:
         return 'system'
 
+    #
+
     @staticmethod
     def _re_which(
             pat: re.Pattern,
@@ -85,33 +87,37 @@ class SystemInterpProvider(InterpProvider):
             path=self.path,
         )
 
-    @cached_nullary
-    def exe(self) -> ta.Optional[str]:
-        lst = self._re_which(
-            re.compile(re.escape(self.cmd)),
-            path=self.path,
-        )
-        if not lst:
-            return None
-        return lst[0]
+    #
+
+    def exe_version(self, exe: str) -> ta.Optional[InterpVersion]:
+        if self.inspect:
+            return self.inspector.inspect(exe).iv
+        s = os.path.basename(exe)
+        if s.startswith('python'):
+            s = s[len('python'):]
+        if '.' not in s:
+            return self.inspector.inspect(exe).iv
+        return InterpVersion.parse(s)
 
     @cached_nullary
-    def version(self) -> ta.Optional[InterpVersion]:
-        if (exe := self.exe()) is None:
-            return None
-        return check_not_none(self.inspector.inspect(exe)).iv
+    def exe_versions(self) -> ta.Sequence[ta.Tuple[str, InterpVersion]]:
+        return [(e, ev) for e in self.exes() if (ev := self.exe_version(e)) is not None]
+
+    #
 
     def installed_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
-        return [self.version()]
+        return [ev for e, ev in self.exe_versions()]
 
     def installable_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
         return []
 
     def get_version(self, version: InterpVersion) -> Interp:
-        if version != self.version():
-            raise KeyError(version)
-        return Interp(
-            exe=self.exe(),
-            provider=self.name,
-            version=self.version(),
-        )
+        for e, ev in self.exe_versions():
+            if ev.version != version:
+                continue
+            return Interp(
+                exe=e,
+                provider=self.name,
+                version=ev,
+            )
+        raise KeyError(version)
