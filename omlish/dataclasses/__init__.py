@@ -85,6 +85,7 @@ from .impl.reflect import (  # noqa
 
 from .utils import (  # noqa
     chain_metadata,
+    deep_replace,
     field_modifier,
     maybe_post_init,
     opt_repr,
