@@ -11,13 +11,13 @@ import typing as ta
 
 from ..amalg.std.logs import configure_standard_logging
 from ..amalg.std.runtime import check_runtime_version
-from ..amalg.std.versions.specifiers import SpecifierSet
 from .providers.pyenv import PyenvInterpProvider
 from .providers.system import SystemInterpProvider
+from .providers.types import InterpSpecifier
 
 
 def _resolve_cmd(args) -> None:
-    for si in SystemInterpProvider().installed_versions(SpecifierSet('~=3.12')):
+    for si in SystemInterpProvider().installed_versions(InterpSpecifier.parse('3.12')):
         print(si)
     for pi in PyenvInterpProvider().guess_installed():
         print(pi)

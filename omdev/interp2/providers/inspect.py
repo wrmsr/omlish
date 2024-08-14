@@ -8,6 +8,7 @@ from ...amalg.std.logs import log
 from ...amalg.std.subprocesses import subprocess_check_output
 from ...amalg.std.versions.versions import Version
 from .types import InterpOpts
+from .types import InterpVersion
 
 
 @dc.dataclass(frozen=True)
@@ -25,6 +26,13 @@ class InterpInspection:
         return InterpOpts(
             threaded=bool(self.config_vars.get('Py_GIL_DISABLED')),
             debug=bool(self.config_vars.get('Py_DEBUG')),
+        )
+
+    @property
+    def iv(self) -> InterpVersion:
+        return InterpVersion(
+            version=self.version,
+            opts=self.opts,
         )
 
     @property
