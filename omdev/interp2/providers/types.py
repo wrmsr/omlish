@@ -1,14 +1,17 @@
+import collections
 import dataclasses as dc
 import typing as ta
 
 from ...amalg.std.versions.specifiers import Specifier
+from ...amalg.std.versions.versions import InvalidVersion
 from ...amalg.std.versions.versions import Version
 
 
-INTERP_OPT_GLYPHS: ta.Mapping[str, str] = {
-    'threaded': 't',
-    'debug': 'd',
-}
+# See https://peps.python.org/pep-3149/
+INTERP_OPT_GLYPHS: ta.Mapping[str, str] = collections.OrderedDict([
+    ('debug', 'd'),
+    ('threaded', 't'),
+])
 
 
 @dc.dataclass(frozen=True)
@@ -22,6 +25,13 @@ class InterpOpts:
     @classmethod
     def parse(cls, s: str) -> 'InterpOpts':
         return cls(**{INTERP_OPT_GLYPHS[g]: True for g in s})
+
+    @classmethod
+    def parse_suffix(cls, s: str) -> ta.Tuple[str, 'InterpOpts']:
+        kw = {}
+        while s and (a := INTERP_OPT_GLYPHS.get(s[-1])):
+            s, kw[a] = s[:-1], True
+        return s, cls(**kw)
 
 
 @dc.dataclass(frozen=True)
@@ -39,6 +49,22 @@ class InterpVersion:
             version=Version(v),
             opts=InterpOpts.parse(o),
         )
+
+    @classmethod
+    def parse_abi(cls, s: str) -> 'InterpVersion':
+        s, o = InterpOpts.parse_suffix(s)
+        v = Version(s)
+        return cls(
+            version=v,
+            opts=o,
+        )
+
+    @classmethod
+    def try_parse_abi(cls, s: str) -> ta.Optional['InterpVersion']:
+        try:
+            return cls.parse_abi(s)
+        except (KeyError, InvalidVersion):
+            return None
 
 
 @dc.dataclass(frozen=True)
