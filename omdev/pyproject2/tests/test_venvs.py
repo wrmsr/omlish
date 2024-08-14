@@ -15,67 +15,71 @@ main = [
     'omserv',
     'app',
 ]
+
 ml = [
     '@main',
     'omml',
 ]
+
 all = [
     '@ml',
     'x',
 ]
 
-[tool.omlish.pyproject.venvs.all]
+[tool.omlish.pyproject.venvs._default]
 interp = '@12'
 requires = ['requirements-dev.txt']
 srcs = ['@main']
 
 [tool.omlish.pyproject.venvs.default]
+inherits = ['_default']
 requires = ['requirements-ext.txt']
 
 [tool.omlish.pyproject.venvs.'13']
+inherits = ['_default']
 interp = '@13'
 
 [tool.omlish.pyproject.venvs.'13t']
+inherits = ['_default']
 interp = '@13t'
 
-[tool.omlish.pyproject.venvs.'11']
-interp = '@11'
+[tool.omlish.pyproject.venvs._old]
 requires = []
 srcs = []
+
+[tool.omlish.pyproject.venvs.'11']
+inherits = ['_old']
+interp = '@11'
 
 [tool.omlish.pyproject.venvs.'10']
+inherits = ['_old']
 interp = '@10'
-requires = []
-srcs = []
 
 [tool.omlish.pyproject.venvs.'9']
+inherits = ['_old']
 interp = '@9'
-requires = []
-srcs = []
 
 [tool.omlish.pyproject.venvs.'8']
+inherits = ['_old']
 interp = '@8'
-requires = []
-srcs = []
 
 [tool.omlish.pyproject.venvs.docker]
+inherits = ['_default']
 docker = 'omlish-dev'
 
 [tool.omlish.pyproject.venvs.docker-amd64]
+inherits = ['_default']
 docker = 'omlish-dev-amd64'
 
 [tool.omlish.pyproject.venvs.deploy]
-interp = 'python3.12'
+interp = '3.12'
 requires = ['requirements.txt']
-
-
-[tool.omlish.pyproject.venvs.debug]
-interp = '@12-debug'
 """
 
 
 @dc.dataclass(frozen=True)
 class VenvConfig:
+    inherits: ta.Optional[ta.Sequence[str]] = None
     interp: ta.Optional[str] = None
     requires: ta.Optional[ta.List[str]] = None
     docker: ta.Optional[str] = None
