@@ -1,11 +1,10 @@
 import sys
 import unittest
 
-from ....amalg.std.tests.helpers import SubprocessPatchingTest
 from .. import pyenv as pe
 
 
-class TestPyenv(SubprocessPatchingTest, unittest.TestCase):
+class TestPyenv(unittest.TestCase):
     @unittest.skipUnless(sys.platform == 'darwin', 'requires darwin')
     def test_darwin(self):
         print(pe.DarwinPyenvInstallOpts().opts())
