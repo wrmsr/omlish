@@ -6,5 +6,5 @@ from ..types import InterpSpecifier
 
 class TestBaseProviders(unittest.TestCase):
     def test_running(self):
-        v = bp.RunningInterpProvider().installed_versions(InterpSpecifier.parse('3.12'))
-        print(bp.RunningInterpProvider().get_version(v[0]))
+        v = bp.RunningInterpProvider().get_installed_versions(InterpSpecifier.parse('3.12'))
+        print(bp.RunningInterpProvider().get_installed_version(v[0]))
