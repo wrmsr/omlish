@@ -3,6 +3,7 @@ import json
 import typing as ta
 import unittest
 
+from ...amalg.std.marshal import unmarshal_obj
 from ...amalg.std.toml import toml_loads
 
 
@@ -94,5 +95,8 @@ class PyprojectConfig:
 
 class TestVenvs(unittest.TestCase):
     def test_venvs(self):
-        dct = toml_loads(_TEST_TOML)
+        dct = toml_loads(_TEST_TOML)['tool']['omlish']['pyproject']
         print(json.dumps(dct, indent=2, separators=(', ', ': ')))
+
+        pcfg = unmarshal_obj(dct, PyprojectConfig)
+        print(pcfg)
