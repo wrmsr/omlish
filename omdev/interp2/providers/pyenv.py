@@ -77,7 +77,7 @@ class Pyenv:
 
     def installable_versions(self) -> ta.List[str]:
         ret = []
-        s = subprocess_check_output_str(self.exe, 'install', '--list')
+        s = subprocess_check_output_str(self.exe(), 'install', '--list')
         for l in s.splitlines():
             if not l.startswith('  '):
                 continue
@@ -332,7 +332,12 @@ class PyenvInterpProvider(InterpProvider):
         return [i.version for i in self.installed()]
 
     def installable_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
-        raise NotImplementedError
+        lst = []
+        for vs in self._pyenv.installable_versions():
+            if (iv := self.guess_version(vs)) is None:
+                continue
+            lst.append(iv)
+        return lst
 
     def get_version(self, version: InterpVersion) -> Interp:
         raise NotImplementedError

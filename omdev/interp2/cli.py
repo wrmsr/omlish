@@ -11,19 +11,34 @@ import typing as ta
 
 from ..amalg.std.logs import configure_standard_logging
 from ..amalg.std.runtime import check_runtime_version
+from .providers.base import RunningInterpProvider
 from .providers.pyenv import PyenvInterpProvider
 from .providers.system import SystemInterpProvider
 from .providers.types import InterpSpecifier
 
 
 def _resolve_cmd(args) -> None:
-    s = InterpSpecifier.parse(args.version)
-    for ip in [
+    ips = [
+        RunningInterpProvider(),
         SystemInterpProvider(),
         PyenvInterpProvider(),
-    ]:
+    ]
+    s = InterpSpecifier.parse(args.version)
+    print('installed:')
+    for ip in ips:
+        print(ip.__class__.__name__)
         for si in ip.installed_versions(s):
-            print(si)
+            if s.contains(si):
+                print(si)
+
+    print()
+
+    print('installable:')
+    for ip in ips:
+        print(ip.__class__.__name__)
+        for si in ip.installable_versions(s):
+            if s.contains(si):
+                print(si)
 
 
 def _build_parser() -> argparse.ArgumentParser:
