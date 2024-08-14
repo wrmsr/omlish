@@ -36,9 +36,9 @@ class Resolver:
                 if spec.contains(si)
             ]
             if lst:
-                print(n)
+                print(f'  {n}')
                 for si in lst:
-                    print(si)
+                    print(f'    {si}')
 
         print()
 
@@ -50,9 +50,9 @@ class Resolver:
                 if spec.contains(si)
             ]
             if lst:
-                print(n)
+                print(f'  {n}')
                 for si in lst:
-                    print(si)
+                    print(f'    {si}')
 
 
 def _resolve_cmd(args) -> None:
