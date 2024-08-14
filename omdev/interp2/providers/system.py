@@ -122,7 +122,7 @@ class SystemInterpProvider(InterpProvider):
 
     def get_version(self, version: InterpVersion) -> Interp:
         for e, ev in self.exe_versions():
-            if ev.version != version:
+            if ev != version:
                 continue
             return Interp(
                 exe=e,
