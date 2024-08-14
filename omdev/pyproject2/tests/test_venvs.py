@@ -1,6 +1,7 @@
 import dataclasses as dc
-import unittest
+import json
 import typing as ta
+import unittest
 
 from ...amalg.std.toml import toml_loads
 
@@ -23,19 +24,53 @@ all = [
     'x',
 ]
 
-[tool.omlish.pyproject.venvs]
-all = { interp = '@12', requires = ['requirements-dev.txt'], srcs = ['@main'] }
-default = { requires = ['requirements-ext.txt'] }
-'13' = { interp = '@13' }
-'13t' = { interp = '@13t' }
-'11' = { interp = '@11', requires = [], srcs = [] }
-'10' = { interp = '@10', requires = [], srcs = [] }
-'9' = { interp = '@9', requires = [], srcs = [] }
-'8' = { interp = '@8', requires = [], srcs = [] }
-docker = { docker = 'omlish-dev' }
-docker-amd64 = { docker = 'omlish-dev-amd64' }
-deploy = { interp = 'python3.12', requires = ['requirements.txt'] }
-debug = { interp = '@12-debug' }
+[tool.omlish.pyproject.venvs.all]
+interp = '@12'
+requires = ['requirements-dev.txt']
+srcs = ['@main']
+
+[tool.omlish.pyproject.venvs.default]
+requires = ['requirements-ext.txt']
+
+[tool.omlish.pyproject.venvs.'13']
+interp = '@13'
+
+[tool.omlish.pyproject.venvs.'13t']
+interp = '@13t'
+
+[tool.omlish.pyproject.venvs.'11']
+interp = '@11'
+requires = []
+srcs = []
+
+[tool.omlish.pyproject.venvs.'10']
+interp = '@10'
+requires = []
+srcs = []
+
+[tool.omlish.pyproject.venvs.'9']
+interp = '@9'
+requires = []
+srcs = []
+
+[tool.omlish.pyproject.venvs.'8']
+interp = '@8'
+requires = []
+srcs = []
+
+[tool.omlish.pyproject.venvs.docker]
+docker = 'omlish-dev'
+
+[tool.omlish.pyproject.venvs.docker-amd64]
+docker = 'omlish-dev-amd64'
+
+[tool.omlish.pyproject.venvs.deploy]
+interp = 'python3.12'
+requires = ['requirements.txt']
+
+
+[tool.omlish.pyproject.venvs.debug]
+interp = '@12-debug'
 """
 
 
@@ -56,4 +91,4 @@ class PyprojectConfig:
 class TestVenvs(unittest.TestCase):
     def test_venvs(self):
         dct = toml_loads(_TEST_TOML)
-        print(dct)
+        print(json.dumps(dct, indent=2, separators=(', ', ': ')))
