@@ -58,8 +58,8 @@ class Resolver:
 def _resolve_cmd(args) -> None:
     r = Resolver([
         ('running', RunningInterpProvider()),
-        ('system', SystemInterpProvider()),
         ('pyenv', PyenvInterpProvider()),
+        ('system', SystemInterpProvider()),
     ])
 
     s = InterpSpecifier.parse(args.version)
