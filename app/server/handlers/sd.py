@@ -20,16 +20,17 @@ import logging
 import typing as ta
 
 import anyio.to_thread
+import httpx
 
 from omlish import http as hu
 from omlish import lang
 from omlish import secrets as sec
+from omlish.formats import json
 from omlish.http.asgi import AsgiRecv
 from omlish.http.asgi import AsgiScope
 from omlish.http.asgi import AsgiSend
 from omlish.http.asgi import read_body
 from omlish.http.asgi import send_response
-from omlish.serde import json
 from omserv.apps.routes import Handler_
 from omserv.apps.routes import Route
 from omserv.apps.routes import handles
@@ -130,20 +131,29 @@ def run_sd(args: SdArgs) -> bytes:
 ##
 
 
+def _check_auth(scope: AsgiScope, sec_token: str) -> bool:
+    if not sec_token:
+        return False
+
+    hdrs = dict(scope['headers'])
+    auth = hdrs.get(hu.consts.HEADER_AUTH.lower())
+    if not auth or not auth.startswith(hu.consts.BEARER_AUTH_HEADER_PREFIX):
+        return False
+
+    auth_token = auth[len(hu.consts.BEARER_AUTH_HEADER_PREFIX):].decode()
+    if auth_token != sec_token:
+        return False
+
+    return True
+
+
 @dc.dataclass(frozen=True)
 class SdHandler(Handler_):
     _secrets: sec.Secrets
 
     @handles(Route.post('/sd'))
     async def handle_post_sd(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
-        hdrs = dict(scope['headers'])
-        auth = hdrs.get(hu.consts.HEADER_AUTH.lower())
-        if not auth or not auth.startswith(hu.consts.BEARER_AUTH_HEADER_PREFIX):
-            await send_response(send, 401)
-            return
-
-        auth_token = auth[len(hu.consts.BEARER_AUTH_HEADER_PREFIX):].decode()
-        if auth_token != self._secrets.get('sd_auth_token'):
+        if not _check_auth(scope, self._secrets.get('sd_auth_token')):
             await send_response(send, 401)
             return
 
@@ -152,3 +162,17 @@ class SdHandler(Handler_):
         sd_out_png = await anyio.to_thread.run_sync(functools.partial(run_sd, sd_args))
 
         await send_response(send, 200, hu.consts.CONTENT_TYPE_PNG, body=sd_out_png)
+
+    @handles(Route.post('/sd2'))
+    async def handle_post_sd2(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
+        if not _check_auth(scope, self._secrets.get('sd_auth_token')):
+            await send_response(send, 401)
+            return
+
+        sd2_url = self._secrets.get('sd2_url')
+
+        req_body = await read_body(recv)
+
+        async with httpx.AsyncClient(timeout=180) as client:
+            resp = await client.post(f'{sd2_url}/sd', content=req_body)
+            await send_response(send, resp.status_code, hu.consts.CONTENT_TYPE_PNG, body=resp.content)

@@ -5,6 +5,7 @@ TODO:
 import dataclasses as dc
 import functools
 import logging
+import os.path
 import typing as ta
 
 import anyio.abc
@@ -15,6 +16,7 @@ from omlish import lang
 from omlish import logs
 from omlish.asyncs import anyio as anu
 from omlish.diag import procstats
+from omlish.formats import dotenv
 from omlish.http.asgi import AsgiApp
 from omserv import server
 from omserv.node import registry as nr
@@ -113,6 +115,12 @@ async def a_run_shell(*args: inj.Elemental) -> None:
 
 def run_shell(*args: inj.Elemental) -> None:
     logs.configure_standard_logging('DEBUG')
+
+    if os.path.isfile('.env'):
+        with open('.env') as f:
+            for eb in dotenv.parse_stream(f):
+                if eb.key is not None and eb.value is not None:
+                    os.environ[eb.key] = eb.value
 
     # _backend = 'asyncio'
     _backend = 'trio'

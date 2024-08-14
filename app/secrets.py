@@ -14,6 +14,8 @@ def bind_secrets() -> inj.Elemental:
         inj.bind(sec.Secrets, to_const=sec.LoggingSecrets(sec.SimpleSecrets({
             'session_secret_key': 'secret-key-goes-here',  # noqa
             'db_url': get_db_url(),
-            'sd_auth_token': os.environ.get('SD_AUTH_TOKEN', 'abc'),
+
+            'sd_auth_token': os.environ.get('SD_AUTH_TOKEN', ''),
+            'sd2_url': os.environ.get('SD2_URL', ''),
         }))),
     )
