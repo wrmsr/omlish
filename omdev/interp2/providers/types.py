@@ -78,6 +78,9 @@ class InterpSpecifier:
             opts=InterpOpts.parse(o),
         )
 
+    def contains(self, iv: InterpVersion) -> bool:
+        return self.specifier.contains(iv.version) and self.opts == iv.opts
+
 
 @dc.dataclass(frozen=True)
 class Interp:
