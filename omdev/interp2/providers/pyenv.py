@@ -301,33 +301,36 @@ class PyenvInterpProvider(InterpProvider):
 
         return ret
 
-    def guess_installed(self) -> ta.List[Installed]:
+    @staticmethod
+    def guess_version(s: str) -> ta.Optional[InterpVersion]:
         def strip_sfx(s: str, sfx: str) -> ta.Tuple[str, bool]:
             if s.endswith(sfx):
                 return s[:-len(sfx)], True
             return s, False
 
+        ok = {}
+        s, ok['debug'] = strip_sfx(s, '-debug')
+        s, ok['threaded'] = strip_sfx(s, 't')
+
+        try:
+            v = Version(s)
+        except InvalidVersion:
+            return None
+
+        return InterpVersion(v, InterpOpts(**ok))
+
+    def guess_installed(self) -> ta.List[Installed]:
         ret: ta.List[PyenvInterpProvider.Installed] = []
         for vn, ep in self._pyenv.version_exes():
-            pvn, debug = strip_sfx(vn, '-debug')
-            pvn, threaded = strip_sfx(pvn, 't')
-
-            try:
-                v = Version(pvn)
-            except InvalidVersion:
-                log.debug('Invalid guessed pyenv version: %s', pvn)
+            iv = self.guess_version(vn)
+            if iv is None:
+                log.debug('Invalid guessed pyenv version: %s', vn)
                 continue
 
             ret.append(PyenvInterpProvider.Installed(
                 name=vn,
                 exe=ep,
-                version=InterpVersion(
-                    version=v,
-                    opts=InterpOpts(
-                        debug=debug,
-                        threaded=threaded,
-                    ),
-                ),
+                version=iv,
             ))
 
         return ret
