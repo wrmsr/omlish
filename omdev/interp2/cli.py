@@ -4,6 +4,7 @@
 TODO:
  - partial best-matches - '3.12'
  - https://github.com/asdf-vm/asdf support (instead of pyenv) ?
+ - colon sep provider name prefix - pyenv:3.12
 """
 # ruff: noqa: UP006 UP007
 import argparse
