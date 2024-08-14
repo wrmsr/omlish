@@ -15,7 +15,11 @@ from .base import query_interp_exe_version
 from .types import Interp
 from .types import InterpSpecifier
 from .types import InterpVersion
-
+from ...amalg.std.check import check_not_none
+from .inspect import INTERP_INSPECTOR
+from .inspect import InterpInspector
+def query_interp_exe_version(exe: str) -> InterpVersion:
+    return check_not_none(INTERP_INSPECTOR.inspect(exe)).iv
 
 ##
 
@@ -24,6 +28,9 @@ from .types import InterpVersion
 class SystemInterpProvider(InterpProvider):
     cmd: str = 'python3'
     path: ta.Optional[str] = None
+
+    inspect: bool = False
+    inspector: InterpInspector = INTERP_INSPECTOR
 
     @property
     def name(self) -> str:

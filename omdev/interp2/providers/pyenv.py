@@ -29,6 +29,12 @@ from .types import InterpOpts
 from .types import InterpSpecifier
 from .types import InterpVersion
 
+from ...amalg.std.check import check_not_none
+from .inspect import INTERP_INSPECTOR
+from .inspect import InterpInspector
+def query_interp_exe_version(exe: str) -> InterpVersion:
+    return check_not_none(INTERP_INSPECTOR.inspect(exe)).iv
+
 
 ##
 
@@ -264,15 +270,15 @@ class PyenvInterpProvider(InterpProvider):
 
     def __init__(
             self,
-            *args,
             pyenv: Pyenv = Pyenv(),
-            inspect_installed: bool = False,
-            **kwargs,
+
+            inspect: bool = False,
+            inspector: InterpInspector = INTERP_INSPECTOR,
     ) -> None:
-        super().__init__(*args, **kwargs)
+        super().__init__()
 
         self._pyenv = pyenv
-        self._inspect_installed = inspect_installed
+        self._inspect = inspect
 
     @property
     def name(self) -> str:
