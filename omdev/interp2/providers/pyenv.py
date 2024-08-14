@@ -298,28 +298,30 @@ class PyenvInterpProvider(InterpProvider):
         exe: str
         version: InterpVersion
 
-    def _make_installed_version(self, vn: str, ep: str) -> ta.Optional[InterpVersion]:
+    def _make_installed(self, vn: str, ep: str) -> ta.Optional[Installed]:
+        iv: ta.Optional[InterpVersion]
         if self._inspect:
             try:
-                return check_not_none(self._inspector.inspect(ep)).iv
+                iv = check_not_none(self._inspector.inspect(ep)).iv
             except Exception as e:  # noqa
                 return None
         else:
-            return self.guess_version(vn)
+            iv = self.guess_version(vn)
+        if iv is None:
+            return None
+        return PyenvInterpProvider.Installed(
+            name=vn,
+            exe=ep,
+            version=iv,
+        )
 
     def installed(self) -> ta.Sequence[Installed]:
         ret: ta.List[PyenvInterpProvider.Installed] = []
         for vn, ep in self._pyenv.version_exes():
-            if (iv := self._make_installed_version(vn, ep)) is None:
+            if (i := self._make_installed(vn, ep)) is None:
                 log.debug('Invalid pyenv version: %s', vn)
                 continue
-
-            ret.append(PyenvInterpProvider.Installed(
-                name=vn,
-                exe=ep,
-                version=iv,
-            ))
-
+            ret.append(i)
         return ret
 
     #
