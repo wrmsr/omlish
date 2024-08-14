@@ -2,6 +2,7 @@
 import dataclasses as dc
 import json
 import logging
+import sys
 import typing as ta
 
 from ...amalg.std.logs import log
@@ -57,8 +58,8 @@ class InterpInspector:
 
     _INSPECTION_CODE = ''.join(l.strip() for l in _RAW_INSPECTION_CODE.splitlines())
 
+    @staticmethod
     def _build_inspection(
-            self,
             exe: str,
             output: str,
     ) -> InterpInspection:
@@ -76,6 +77,10 @@ class InterpInspector:
                 'config_vars',
             )},
         )
+
+    @classmethod
+    def running(cls) -> 'InterpInspection':
+        return cls._build_inspection(sys.executable, eval(cls._INSPECTION_CODE))  # noqa
 
     def _inspect(self, exe: str) -> InterpInspection:
         output = subprocess_check_output(exe, '-c', f'print({self._INSPECTION_CODE})', quiet=True)
