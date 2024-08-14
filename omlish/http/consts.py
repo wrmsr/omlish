@@ -1,3 +1,7 @@
+"""
+TODO:
+ - import mimetypes lol
+"""
 import base64
 import http
 
@@ -45,6 +49,8 @@ CONTENT_TYPE_ICON = b'image/x-icon'
 
 CONTENT_TYPE_JSON = b'application/json'
 CONTENT_TYPE_JSON_UTF8 = b'; '.join([CONTENT_TYPE_JSON, CONTENT_CHARSET_UTF8])
+
+CONTENT_TYPE_PNG = b'image/png'
 
 CONTENT_TYPE_TEXT = b'text/plain'
 CONTENT_TYPE_TEXT_UTF8 = b'; '.join([CONTENT_TYPE_TEXT, CONTENT_CHARSET_UTF8])

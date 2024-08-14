@@ -100,7 +100,7 @@ class NodeRegistrant:
             start_t = end_t = 0.
             while True:
                 await anu.first(
-                    lambda: anyio.sleep(1. - (end_t - start_t)),  # noqa
+                    lambda: anyio.sleep(max(0, 1. - (end_t - start_t))),  # noqa
                     shutdown.wait,
                 )
                 start_t = anyio.current_time()
