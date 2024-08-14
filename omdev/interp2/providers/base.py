@@ -11,18 +11,10 @@ import sys
 import typing as ta
 
 from ...amalg.std.cached import cached_nullary
-from ...amalg.std.check import check_not_none
-from .inspect import INTERP_INSPECTOR
+from .inspect import InterpInspector
 from .types import Interp
 from .types import InterpSpecifier
 from .types import InterpVersion
-
-
-##
-
-
-def query_interp_exe_version(exe: str) -> InterpVersion:
-    return check_not_none(INTERP_INSPECTOR.inspect(exe)).iv
 
 
 ##
@@ -57,7 +49,7 @@ class RunningInterpProvider(InterpProvider):
 
     @cached_nullary
     def version(self) -> InterpVersion:
-        return query_interp_exe_version(sys.executable)
+        return InterpInspector.running().iv
 
     def installed_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
         return [self.version()]
