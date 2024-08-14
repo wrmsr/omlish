@@ -18,11 +18,12 @@ from .providers.types import InterpSpecifier
 
 def _resolve_cmd(args) -> None:
     s = InterpSpecifier.parse(args.version)
-
-    for si in SystemInterpProvider().installed_versions(s):
-        print(si)
-    for pi in PyenvInterpProvider().guess_installed():
-        print(pi)
+    for ip in [
+        SystemInterpProvider(),
+        PyenvInterpProvider(),
+    ]:
+        for si in ip.installed_versions(s):
+            print(si)
 
 
 def _build_parser() -> argparse.ArgumentParser:

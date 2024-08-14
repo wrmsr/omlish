@@ -16,6 +16,4 @@ class TestPyenv(SubprocessPatchingTest, unittest.TestCase):
 
     def test_pyenv(self):
         p = pe.PyenvInterpProvider()
-        print(p.guess_installed())
-        print(p.inspect_installed())
-0
+        print(p.installed())

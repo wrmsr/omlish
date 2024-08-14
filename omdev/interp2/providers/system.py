@@ -90,25 +90,24 @@ class SystemInterpProvider(InterpProvider):
 
     #
 
-    def exe_version(self, exe: str) -> ta.Optional[InterpVersion]:
-        if self.inspect:
-            return self.inspector.inspect(exe).iv
-        s = os.path.basename(exe)
-        if s.startswith('python'):
-            s = s[len('python'):]
-        if '.' not in s:
-            return self.inspector.inspect(exe).iv
-        try:
-            return InterpVersion.parse(s)
-        except InvalidVersion:
-            return None
+    def get_exe_version(self, exe: str) -> ta.Optional[InterpVersion]:
+        if not self.inspect:
+            s = os.path.basename(exe)
+            if s.startswith('python'):
+                s = s[len('python'):]
+            if '.' in s:
+                try:
+                    return InterpVersion.parse(s)
+                except InvalidVersion:
+                    pass
+        ii = self.inspector.inspect(exe)
+        return ii.iv if ii is not None else None
 
-    @cached_nullary
     def exe_versions(self) -> ta.Sequence[ta.Tuple[str, InterpVersion]]:
         lst = []
         for e in self.exes():
-            if (ev := self.exe_version(e)) is None:
-                log.debug('Invalid guessed system version: %s', e)
+            if (ev := self.get_exe_version(e)) is None:
+                log.debug('Invalid system version: %s', e)
                 continue
             lst.append((e, ev))
         return lst
