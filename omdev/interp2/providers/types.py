@@ -41,7 +41,7 @@ class InterpVersion:
     opts: InterpOpts
 
     def __str__(self) -> str:
-        return ''.join([str(self.version), *(() if not (gs := str(self.opts)) else [gs])])
+        return str(self.version) + str(self.opts)
 
     @classmethod
     def parse(cls, s: str) -> 'InterpVersion':
@@ -66,16 +66,14 @@ class InterpSpecifier:
     opts: InterpOpts
 
     def __str__(self) -> str:
-        return ','.join([str(self.specifier), *(() if not (gs := str(self.opts)) else [gs])])
+        return str(self.specifier) + str(self.opts)
 
     @classmethod
     def parse(cls, s: str) -> 'InterpSpecifier':
-        v, o = s.split(',') if ',' in s else (s, '')
-        if not any(v.startswith(o) for o in Specifier.OPERATORS):
-            v = '~=' + v
+        s, o = InterpOpts.parse_suffix(s)
         return cls(
-            specifier=Specifier(v),
-            opts=InterpOpts.parse(o),
+            specifier=Specifier(s),
+            opts=o,
         )
 
     def contains(self, iv: InterpVersion) -> bool:
