@@ -3,7 +3,7 @@ import sys
 import unittest
 
 from ...tests.test_subprocesses import SubprocessPatchingTest
-from ..versions import parse_version
+from ..versions import Version
 
 
 class TestVersions(SubprocessPatchingTest, unittest.TestCase):
@@ -13,5 +13,5 @@ class TestVersions(SubprocessPatchingTest, unittest.TestCase):
             '3.13.0rc1',
         ]:
             print(s)
-            v = parse_version(s)
+            v = Version(s)
             print(v)

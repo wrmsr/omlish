@@ -22,7 +22,7 @@ from ...amalg.std.subprocesses import subprocess_check_output_str
 from ...amalg.std.subprocesses import subprocess_try_output
 from ...amalg.std.versions.specifiers import SpecifierSet
 from ...amalg.std.versions.versions import InvalidVersion
-from ...amalg.std.versions.versions import parse_version
+from ...amalg.std.versions.versions import Version
 from .base import InterpProvider
 from .base import query_interp_exe_version
 from .types import Interp
@@ -311,7 +311,7 @@ class PyenvInterpProvider(InterpProvider):
             pvn, threaded = strip_sfx(pvn, 't')
 
             try:
-                v = parse_version(pvn)
+                v = Version(pvn)
             except InvalidVersion:
                 log.debug('Invalid guessed pyenv version: %s', pvn)
                 continue

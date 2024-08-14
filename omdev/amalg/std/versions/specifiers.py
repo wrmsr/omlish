@@ -162,7 +162,7 @@ class Specifier(BaseSpecifier):
         re.VERBOSE | re.IGNORECASE,
     )
 
-    _operators: ta.ClassVar[ta.Mapping[str, str]] = {
+    OPERATORS: ta.ClassVar[ta.Mapping[str, str]] = {
         '~=': 'compatible',
         '==': 'equal',
         '!=': 'not_equal',
@@ -251,7 +251,7 @@ class Specifier(BaseSpecifier):
         return self._canonical_spec == other._canonical_spec
 
     def _get_operator(self, op: str) -> CallableVersionOperator:
-        operator_callable: CallableVersionOperator = getattr(self, f'_compare_{self._operators[op]}')
+        operator_callable: CallableVersionOperator = getattr(self, f'_compare_{self.OPERATORS[op]}')
         return operator_callable
 
     def _compare_compatible(self, prospective: Version, spec: str) -> bool:
