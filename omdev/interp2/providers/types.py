@@ -9,10 +9,14 @@ from ...amalg.std.versions.versions import Version
 
 
 # See https://peps.python.org/pep-3149/
-INTERP_OPT_GLYPHS: ta.Mapping[str, str] = collections.OrderedDict([
+INTERP_OPT_GLYPHS_BY_ATTR: ta.Mapping[str, str] = collections.OrderedDict([
     ('debug', 'd'),
     ('threaded', 't'),
 ])
+
+INTERP_OPT_ATTRS_BY_GLYPH: ta.Mapping[str, str] = collections.OrderedDict(
+    (g, a) for a, g in INTERP_OPT_GLYPHS_BY_ATTR.items()
+)
 
 
 @dc.dataclass(frozen=True)
@@ -21,16 +25,16 @@ class InterpOpts:
     debug: bool = False
 
     def __str__(self) -> str:
-        return ''.join(g for a, g in INTERP_OPT_GLYPHS.items() if getattr(self, a))
+        return ''.join(g for a, g in INTERP_OPT_GLYPHS_BY_ATTR.items() if getattr(self, a))
 
     @classmethod
     def parse(cls, s: str) -> 'InterpOpts':
-        return cls(**{INTERP_OPT_GLYPHS[g]: True for g in s})
+        return cls(**{INTERP_OPT_ATTRS_BY_GLYPH[g]: True for g in s})
 
     @classmethod
     def parse_suffix(cls, s: str) -> ta.Tuple[str, 'InterpOpts']:
         kw = {}
-        while s and (a := INTERP_OPT_GLYPHS.get(s[-1])):
+        while s and (a := INTERP_OPT_ATTRS_BY_GLYPH.get(s[-1])):
             s, kw[a] = s[:-1], True
         return s, cls(**kw)
 
