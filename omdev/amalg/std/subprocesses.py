@@ -7,6 +7,7 @@ import sys
 import typing as ta
 
 from .logs import log
+from .runtime import is_debugger_attached
 
 
 ##
@@ -33,7 +34,7 @@ def _prepare_subprocess_invocation(
         if not log.isEnabledFor(logging.DEBUG):
             kwargs['stderr'] = subprocess.DEVNULL
 
-    if _SUBPROCESS_SHELL_WRAP_EXECS:
+    if _SUBPROCESS_SHELL_WRAP_EXECS or is_debugger_attached():
         args = ('sh', '-c', ' '.join(map(shlex.quote, args)))
 
     return args, dict(
