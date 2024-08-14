@@ -11,7 +11,7 @@ import typing as ta
 
 from ...amalg.std.cached import cached_nullary
 from ...amalg.std.logs import log
-from ...amalg.std.check import check_not_none
+from ...amalg.std.versions.versions import InvalidVersion
 from .base import InterpProvider
 from .inspect import INTERP_INSPECTOR
 from .inspect import InterpInspector
@@ -98,7 +98,10 @@ class SystemInterpProvider(InterpProvider):
             s = s[len('python'):]
         if '.' not in s:
             return self.inspector.inspect(exe).iv
-        return InterpVersion.parse(s)
+        try:
+            return InterpVersion.parse(s)
+        except InvalidVersion:
+            return None
 
     @cached_nullary
     def exe_versions(self) -> ta.Sequence[ta.Tuple[str, InterpVersion]]:
