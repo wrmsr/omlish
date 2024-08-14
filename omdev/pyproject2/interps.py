@@ -9,7 +9,7 @@ class VenvInterps:
     def __init__(
             self,
             *,
-            versions_file: str | None = '.versions',
+            versions_file: ta.Optional[str] = '.versions',
     ) -> None:
         super().__init__()
 
