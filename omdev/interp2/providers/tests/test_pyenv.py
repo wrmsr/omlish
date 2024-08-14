@@ -1,8 +1,8 @@
 import sys
 import unittest
 
-from .. import pyenv as pe
 from ....amalg.std.tests.helpers import SubprocessPatchingTest
+from .. import pyenv as pe
 
 
 class TestPyenv(SubprocessPatchingTest, unittest.TestCase):
