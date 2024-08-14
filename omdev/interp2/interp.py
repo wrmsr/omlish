@@ -17,10 +17,10 @@ from .providers.system import SystemInterpProvider
 
 
 def _resolve_cmd(args) -> None:
-    for i in SystemInterpProvider().installed_versions(SpecifierSet('~=3.12')):
-        print(i)
-    for i in PyenvInterpProvider().guess_installed():
-        print(i)
+    for si in SystemInterpProvider().installed_versions(SpecifierSet('~=3.12')):
+        print(si)
+    for pi in PyenvInterpProvider().guess_installed():
+        print(pi)
 
 
 def _build_parser() -> argparse.ArgumentParser:
