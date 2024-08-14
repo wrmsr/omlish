@@ -10,6 +10,7 @@ import re
 import typing as ta
 
 from ...amalg.std.cached import cached_nullary
+from ...amalg.std.logs import log
 from ...amalg.std.check import check_not_none
 from .base import InterpProvider
 from .inspect import INTERP_INSPECTOR
@@ -101,7 +102,13 @@ class SystemInterpProvider(InterpProvider):
 
     @cached_nullary
     def exe_versions(self) -> ta.Sequence[ta.Tuple[str, InterpVersion]]:
-        return [(e, ev) for e in self.exes() if (ev := self.exe_version(e)) is not None]
+        lst = []
+        for e in self.exes():
+            if (ev := self.exe_version(e)) is None:
+                log.debug('Invalid guessed system version: %s', e)
+                continue
+            lst.append((e, ev))
+        return lst
 
     #
 
