@@ -23,11 +23,13 @@ def _resolve_cmd(args) -> None:
         SystemInterpProvider(),
         PyenvInterpProvider(),
     ]
+
     s = InterpSpecifier.parse(args.version)
+
     print('installed:')
     for ip in ips:
         print(ip.__class__.__name__)
-        for si in ip.installed_versions(s):
+        for si in ip.get_installed_versions(s):
             if s.contains(si):
                 print(si)
 
@@ -36,7 +38,7 @@ def _resolve_cmd(args) -> None:
     print('installable:')
     for ip in ips:
         print(ip.__class__.__name__)
-        for si in ip.installable_versions(s):
+        for si in ip.get_installable_versions(s):
             if s.contains(si):
                 print(si)
 
