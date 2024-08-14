@@ -7,40 +7,54 @@ TODO:
 """
 # ruff: noqa: UP007
 import argparse
+import collections
 import typing as ta
 
 from ..amalg.std.logs import configure_standard_logging
 from ..amalg.std.runtime import check_runtime_version
+from .providers.base import InterpProvider
 from .providers.base import RunningInterpProvider
 from .providers.pyenv import PyenvInterpProvider
 from .providers.system import SystemInterpProvider
 from .providers.types import InterpSpecifier
 
 
+class Resolver:
+    def __init__(
+            self,
+            providers: ta.Sequence[ta.Tuple[str, InterpProvider]],
+    ) -> None:
+        super().__init__()
+        self._providers: ta.Mapping[str, InterpProvider] = collections.OrderedDict(providers)
+
+    def list(self, spec: InterpSpecifier) -> None:
+        print('installed:')
+        for n, p in self._providers.items():
+            print(n)
+            for si in p.get_installed_versions(spec):
+                if spec.contains(si):
+                    print(si)
+
+        print()
+
+        print('installable:')
+        for n, p in self._providers.items():
+            print(n)
+            for si in p.get_installable_versions(spec):
+                if spec.contains(si):
+                    print(si)
+
+
 def _resolve_cmd(args) -> None:
-    ips = [
-        RunningInterpProvider(),
-        SystemInterpProvider(),
-        PyenvInterpProvider(),
-    ]
+    r = Resolver([
+        ('running', RunningInterpProvider()),
+        ('system', SystemInterpProvider()),
+        ('pyenv', PyenvInterpProvider()),
+    ])
 
     s = InterpSpecifier.parse(args.version)
 
-    print('installed:')
-    for ip in ips:
-        print(ip.__class__.__name__)
-        for si in ip.get_installed_versions(s):
-            if s.contains(si):
-                print(si)
-
-    print()
-
-    print('installable:')
-    for ip in ips:
-        print(ip.__class__.__name__)
-        for si in ip.get_installable_versions(s):
-            if s.contains(si):
-                print(si)
+    r.list(s)
 
 
 def _build_parser() -> argparse.ArgumentParser:
