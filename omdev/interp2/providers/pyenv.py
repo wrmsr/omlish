@@ -281,6 +281,24 @@ class PyenvInterpProvider(InterpProvider):
     def name(self) -> str:
         return 'pyenv'
 
+    @staticmethod
+    def guess_version(s: str) -> ta.Optional[InterpVersion]:
+        def strip_sfx(s: str, sfx: str) -> ta.Tuple[str, bool]:
+            if s.endswith(sfx):
+                return s[:-len(sfx)], True
+            return s, False
+
+        ok = {}
+        s, ok['debug'] = strip_sfx(s, '-debug')
+        s, ok['threaded'] = strip_sfx(s, 't')
+
+        try:
+            v = Version(s)
+        except InvalidVersion:
+            return None
+
+        return InterpVersion(v, InterpOpts(**ok))
+
     class Installed(ta.NamedTuple):
         name: str
         exe: str
@@ -303,24 +321,6 @@ class PyenvInterpProvider(InterpProvider):
             ))
 
         return ret
-
-    @staticmethod
-    def guess_version(s: str) -> ta.Optional[InterpVersion]:
-        def strip_sfx(s: str, sfx: str) -> ta.Tuple[str, bool]:
-            if s.endswith(sfx):
-                return s[:-len(sfx)], True
-            return s, False
-
-        ok = {}
-        s, ok['debug'] = strip_sfx(s, '-debug')
-        s, ok['threaded'] = strip_sfx(s, 't')
-
-        try:
-            v = Version(s)
-        except InvalidVersion:
-            return None
-
-        return InterpVersion(v, InterpOpts(**ok))
 
     def guess_installed(self) -> ta.List[Installed]:
         ret: ta.List[PyenvInterpProvider.Installed] = []
