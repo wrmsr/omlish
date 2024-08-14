@@ -37,6 +37,7 @@ T = ta.TypeVar('T')
 TODO:
  - debug
 """
+# ruff: noqa: UP007
 
 
 log = logging.getLogger(__name__)
