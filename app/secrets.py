@@ -17,5 +17,5 @@ def bind_secrets() -> inj.Elemental:
 
             'sd_auth_token': os.environ.get('SD_AUTH_TOKEN', ''),
             'sd2_url': os.environ.get('SD2_URL', ''),
-        }))),
+        })), singleton=True),
     )
