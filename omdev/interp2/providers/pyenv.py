@@ -298,7 +298,7 @@ class PyenvInterpProvider(InterpProvider):
         exe: str
         version: InterpVersion
 
-    def get_installed_version(self, vn: str, ep: str) -> ta.Optional[InterpVersion]:
+    def _make_installed_version(self, vn: str, ep: str) -> ta.Optional[InterpVersion]:
         if self._inspect:
             try:
                 return check_not_none(self._inspector.inspect(ep)).iv
@@ -310,7 +310,7 @@ class PyenvInterpProvider(InterpProvider):
     def installed(self) -> ta.Sequence[Installed]:
         ret: ta.List[PyenvInterpProvider.Installed] = []
         for vn, ep in self._pyenv.version_exes():
-            if (iv := self.get_installed_version(vn, ep)) is None:
+            if (iv := self._make_installed_version(vn, ep)) is None:
                 log.debug('Invalid pyenv version: %s', vn)
                 continue
 
@@ -324,10 +324,15 @@ class PyenvInterpProvider(InterpProvider):
 
     #
 
-    def installed_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
+    def get_installed_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
         return [i.version for i in self.installed()]
 
-    def installable_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
+    def get_installed_version(self, version: InterpVersion) -> Interp:
+        raise NotImplementedError
+
+    #
+
+    def get_installable_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
         lst = []
         for vs in self._pyenv.installable_versions():
             if (iv := self.guess_version(vs)) is None:
@@ -337,6 +342,3 @@ class PyenvInterpProvider(InterpProvider):
             for d in [False, True]:
                 lst.append(dc.replace(iv, opts=dc.replace(iv.opts, debug=d)))
         return lst
-
-    def get_version(self, version: InterpVersion) -> Interp:
-        raise NotImplementedError

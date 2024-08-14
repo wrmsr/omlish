@@ -83,7 +83,7 @@ class InterpSpecifier:
         )
 
     def contains(self, iv: InterpVersion) -> bool:
-        return self.specifier.contains(iv.version) and self.opts == iv.opts
+        return self.specifier.contains(iv.version, prereleases=True) and self.opts == iv.opts
 
 
 @dc.dataclass(frozen=True)
