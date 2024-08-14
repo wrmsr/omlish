@@ -92,9 +92,9 @@ def bind_asgi_server(*args: inj.Elemental) -> inj.Elemental:
             inj.bind(AsgiServerShellTask, singleton=True, expose=True),
         ),
 
-        inj.bind(server.Config(
-            bind=os.environ.get('SERVER_BIND', '127.0.0.1:8000'),
-        )),
+        inj.bind(server.Config, to_fn=lambda: server.Config(
+            bind=os.environ.get('SERVER_BIND', '127.0.0.1:8000').split(','),
+        ), singleton=True),
 
         inj.bind(ShellTask, tag=AsgiServerShellTask, to_fn=lang.typed_lambda(o=AsgiServerShellTask)(lambda o: o.run)),
         inj.set_binder[ShellTask]().bind(inj.Key(ShellTask, tag=AsgiServerShellTask)),
