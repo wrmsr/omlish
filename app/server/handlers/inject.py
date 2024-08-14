@@ -7,6 +7,7 @@ from .index import IndexHandler
 from .login import LoginHandler
 from .logout import LogoutHandler
 from .profile import ProfileHandler
+from .sd import SdHandler
 from .signup import SignupHandler
 from .tik import TikHandler
 
@@ -19,6 +20,7 @@ def bind() -> inj.Elemental:
         bind_handler(LoginHandler),
         bind_handler(LogoutHandler),
         bind_handler(ProfileHandler),
+        bind_handler(SdHandler),
         bind_handler(SignupHandler),
         bind_handler(TikHandler),
     )

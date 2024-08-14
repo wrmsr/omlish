@@ -1,4 +1,5 @@
 import logging
+import os
 
 from omlish import inject as inj
 from omlish import secrets as sec
@@ -13,5 +14,6 @@ def bind_secrets() -> inj.Elemental:
         inj.bind(sec.Secrets, to_const=sec.LoggingSecrets(sec.SimpleSecrets({
             'session_secret_key': 'secret-key-goes-here',  # noqa
             'db_url': get_db_url(),
+            'sd_auth_token': os.environ.get('SD_AUTH_TOKEN', 'abc'),
         }))),
     )
