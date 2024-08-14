@@ -108,10 +108,6 @@ class _Version(ta.NamedTuple):
     local: ta.Optional[VersionLocalType]
 
 
-def parse_version(version: str) -> 'Version':
-    return Version(version)
-
-
 class InvalidVersion(ValueError):  # noqa
     pass
 

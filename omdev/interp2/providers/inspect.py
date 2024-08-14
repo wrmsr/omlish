@@ -7,7 +7,6 @@ import typing as ta
 from ...amalg.std.logs import log
 from ...amalg.std.subprocesses import subprocess_check_output
 from ...amalg.std.versions.versions import Version
-from ...amalg.std.versions.versions import parse_version
 from .types import InterpOpts
 
 
@@ -57,7 +56,7 @@ class InterpInspector:
     ) -> InterpInspection:
         dct = json.loads(output)
 
-        version = parse_version(dct['version_str'].split()[0])
+        version = Version(dct['version_str'].split()[0])
 
         return InterpInspection(
             exe=exe,
