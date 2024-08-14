@@ -75,6 +75,8 @@ class InterpSpecifier:
     @classmethod
     def parse(cls, s: str) -> 'InterpSpecifier':
         s, o = InterpOpts.parse_suffix(s)
+        if not any(s.startswith(o) for o in Specifier.OPERATORS):
+            s = '~=' + s
         return cls(
             specifier=Specifier(s),
             opts=o,
