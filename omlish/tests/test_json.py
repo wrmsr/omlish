@@ -1,4 +1,4 @@
-from ..serde import json
+from ..formats import json
 
 
 def test_json():
