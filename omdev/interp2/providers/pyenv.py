@@ -8,7 +8,6 @@ TODO:
 import abc
 import dataclasses as dc
 import itertools
-import logging
 import os.path
 import shutil
 import sys
@@ -281,6 +280,8 @@ class PyenvInterpProvider(InterpProvider):
     def name(self) -> str:
         return 'pyenv'
 
+    #
+
     @staticmethod
     def guess_version(s: str) -> ta.Optional[InterpVersion]:
         def strip_sfx(s: str, sfx: str) -> ta.Tuple[str, bool]:
@@ -301,22 +302,21 @@ class PyenvInterpProvider(InterpProvider):
         exe: str
         version: InterpVersion
 
-    def installed(self) -> ta.List[Installed]:
+    def get_installed_version(self, vn: str, ep: str) -> ta.Optional[InterpVersion]:
+        if self._inspect:
+            try:
+                return check_not_none(self._inspector.inspect(ep)).iv
+            except Exception as e:  # noqa
+                return None
+        else:
+            return self.guess_version(vn)
+
+    def installed(self) -> ta.Sequence[Installed]:
         ret: ta.List[PyenvInterpProvider.Installed] = []
         for vn, ep in self._pyenv.version_exes():
-            if self._inspect:
-                try:
-                    iv = check_not_none(self._inspector.inspect(ep)).iv
-                except Exception as e:  # noqa
-                    if log.isEnabledFor(logging.DEBUG):
-                        log.exception('Error querying pyenv python version: %s', ep)
-                    continue
-
-            else:
-                iv = self.guess_version(vn)
-                if iv is None:
-                    log.debug('Invalid guessed pyenv version: %s', vn)
-                    continue
+            if (iv := self.get_installed_version(vn, ep)) is None:
+                log.debug('Invalid pyenv version: %s', vn)
+                continue
 
             ret.append(PyenvInterpProvider.Installed(
                 name=vn,
