@@ -23,17 +23,12 @@ from ...amalg.std.subprocesses import subprocess_try_output
 from ...amalg.std.versions.versions import InvalidVersion
 from ...amalg.std.versions.versions import Version
 from .base import InterpProvider
-from .base import query_interp_exe_version
+from .inspect import INTERP_INSPECTOR
+from .inspect import InterpInspector
 from .types import Interp
 from .types import InterpOpts
 from .types import InterpSpecifier
 from .types import InterpVersion
-
-from ...amalg.std.check import check_not_none
-from .inspect import INTERP_INSPECTOR
-from .inspect import InterpInspector
-def query_interp_exe_version(exe: str) -> InterpVersion:
-    return check_not_none(INTERP_INSPECTOR.inspect(exe)).iv
 
 
 ##
@@ -278,7 +273,9 @@ class PyenvInterpProvider(InterpProvider):
         super().__init__()
 
         self._pyenv = pyenv
+
         self._inspect = inspect
+        self._inspector = inspector
 
     @property
     def name(self) -> str:
@@ -293,7 +290,7 @@ class PyenvInterpProvider(InterpProvider):
         ret: ta.List[PyenvInterpProvider.Installed] = []
         for vn, ep in self._pyenv.version_exes():
             try:
-                ev = query_interp_exe_version(ep)
+                ev = check_not_none(self._inspector.inspect(ep)).iv
             except Exception as e:  # noqa
                 if log.isEnabledFor(logging.DEBUG):
                     log.exception('Error querying pyenv python version: %s', ep)
