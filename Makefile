@@ -230,7 +230,7 @@ OLD_TESTS=\
 test-old:
 	for V in ${OLD_VENVS} ; do \
   		for T in ${OLD_TESTS} ; do \
-			$$(${PYPROJECT} venv $$V exe) -munittest discover -v $$T ; \
+			$$(${PYPROJECT} venv $$V exe) -munittest discover -vb $$T ; \
 		done ; \
 	done
 
