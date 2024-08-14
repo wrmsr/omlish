@@ -1,4 +1,12 @@
+import inspect
 import sys
+
+from .cached import cached_nullary
+
+
+@cached_nullary
+def is_debugger_attached() -> bool:
+    return any(frame[1].endswith('pydevd.py') for frame in inspect.stack())
 
 
 REQUIRED_PYTHON_VERSION = (3, 8)
