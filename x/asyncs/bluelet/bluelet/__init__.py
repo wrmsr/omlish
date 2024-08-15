@@ -44,8 +44,8 @@ from .files import (  # noqa
 )
 
 from .run_ import (  # noqa
+    CoroException,
     run,
-    ThreadException,
 )
 
 from .sockets import (   # noqa
