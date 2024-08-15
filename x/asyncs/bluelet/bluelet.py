@@ -51,7 +51,7 @@ class Event(abc.ABC):  # noqa
     """
 
 
-class WaitableEvent(Event):
+class WaitableEvent(Event, abc.ABC):  # noqa
     """
     A waitable event is one encapsulating an action that can be waited for using a select() call. That is, it's an event
     with an associated file descriptor.
