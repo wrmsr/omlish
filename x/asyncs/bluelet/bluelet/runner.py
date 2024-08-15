@@ -12,6 +12,11 @@ TDOO:
  - shutdown
  - ensure resource cleanup
 """
+# Based on bluelet ( https://github.com/sampsyo/bluelet ) by Adrian Sampson, original license:
+# THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+# WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+# COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+# OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 # ruff: noqa: UP006 UP007
 import collections
 import dataclasses as dc
@@ -24,20 +29,20 @@ import types
 import typing as ta
 import weakref
 
-from .core import CoreEvent
+from .core import CoreBlueletEvent
 from .core import BlueletCoro
-from .core import DelegationEvent
-from .core import ExceptionEvent
+from .core import DelegationBlueletEvent
+from .core import ExceptionBlueletEvent
 from .core import BlueletExcInfo
-from .core import JoinEvent
-from .core import KillEvent
-from .core import ReturnEvent
-from .core import SleepEvent
-from .core import SpawnEvent
-from .core import ValueEvent
-from .events import Event
+from .core import JoinBlueletEvent
+from .core import KillBlueletEvent
+from .core import ReturnBlueletEvent
+from .core import SleepBlueletEvent
+from .core import SpawnBlueletEvent
+from .core import ValueBlueletEvent
+from .events import BlueletEvent
 from .events import Waitable
-from .events import WaitableEvent
+from .events import WaitableBlueletEvent
 
 
 ##
@@ -64,13 +69,13 @@ class BlueletCoroException(Exception):  # noqa
 ##
 
 
-def _event_select(events: ta.Iterable[Event]) -> ta.Set[WaitableEvent]:
+def _event_select(events: ta.Iterable[BlueletEvent]) -> ta.Set[WaitableBlueletEvent]:
     """
     Perform a select() over all the Events provided, returning the ones ready to be fired. Only WaitableEvents
     (including SleepEvents) matter here; all other events are ignored (and thus postponed).
     """
 
-    waitable_to_event: ta.Dict[ta.Tuple[str, Waitable], WaitableEvent] = {}
+    waitable_to_event: ta.Dict[ta.Tuple[str, Waitable], WaitableBlueletEvent] = {}
     rlist: ta.List[Waitable] = []
     wlist: ta.List[Waitable] = []
     xlist: ta.List[Waitable] = []
@@ -78,13 +83,13 @@ def _event_select(events: ta.Iterable[Event]) -> ta.Set[WaitableEvent]:
 
     # Gather waitables and wakeup times.
     for event in events:
-        if isinstance(event, SleepEvent):
+        if isinstance(event, SleepBlueletEvent):
             if not earliest_wakeup:
                 earliest_wakeup = event.wakeup_time
             else:
                 earliest_wakeup = min(earliest_wakeup, event.wakeup_time)
 
-        elif isinstance(event, WaitableEvent):
+        elif isinstance(event, WaitableBlueletEvent):
             ew = event.waitables()
             rlist.extend(ew.r)
             wlist.extend(ew.w)
@@ -111,7 +116,7 @@ def _event_select(events: ta.Iterable[Event]) -> ta.Set[WaitableEvent]:
             time.sleep(timeout)
 
     # Gather ready events corresponding to the ready waitables.
-    ready_events: ta.Set[WaitableEvent] = set()
+    ready_events: ta.Set[WaitableBlueletEvent] = set()
     for ready in rready:
         ready_events.add(waitable_to_event[('r', ready)])
     for ready in wready:
@@ -121,7 +126,7 @@ def _event_select(events: ta.Iterable[Event]) -> ta.Set[WaitableEvent]:
 
     # Gather any finished sleeps.
     for event in events:
-        if isinstance(event, SleepEvent) and not event.time_left():
+        if isinstance(event, SleepBlueletEvent) and not event.time_left():
             ready_events.add(event)
 
     return ready_events
@@ -130,15 +135,15 @@ def _event_select(events: ta.Iterable[Event]) -> ta.Set[WaitableEvent]:
 ##
 
 
-class _SuspendedEvent(CoreEvent):
+class _SuspendedBlueletEvent(CoreBlueletEvent):
     pass
 
 
-_SUSPENDED = _SuspendedEvent()  # Special sentinel placeholder for suspended coros.
+_SUSPENDED = _SuspendedBlueletEvent()  # Special sentinel placeholder for suspended coros.
 
 
 @dc.dataclass(frozen=True, eq=False)
-class _DelegatedEvent(CoreEvent):
+class _DelegatedBlueletEvent(CoreBlueletEvent):
     """Placeholder indicating that a coro has delegated execution to a different coro."""
 
     child: BlueletCoro
@@ -159,7 +164,7 @@ class _Runner:
         # coroutines to their currently "blocking" event. The event value may be SUSPENDED if the coroutine is waiting
         # on some other condition: namely, a delegated coroutine or a joined coroutine. In this case, the coroutine
         # should *also* appear as a value in one of the below dictionaries `delegators` or `joiners`.
-        self._coros: ta.Dict[BlueletCoro, Event] = {self._root_coro: ValueEvent(None)}
+        self._coros: ta.Dict[BlueletCoro, BlueletEvent] = {self._root_coro: ValueBlueletEvent(None)}
 
         # Maps child coroutines to delegating parents.
         self._delegators: ta.Dict[BlueletCoro, BlueletCoro] = {}
@@ -168,7 +173,7 @@ class _Runner:
         self._joiners: ta.MutableMapping[BlueletCoro, ta.List[BlueletCoro]] = collections.defaultdict(list)
 
         # History of spawned coroutines for joining of already completed coroutines.
-        self._history: ta.MutableMapping[BlueletCoro, ta.Optional[Event]] = weakref.WeakKeyDictionary({self._root_coro: None})
+        self._history: ta.MutableMapping[BlueletCoro, ta.Optional[BlueletEvent]] = weakref.WeakKeyDictionary({self._root_coro: None})
 
     def _complete_coro(self, coro: BlueletCoro, return_value: ta.Any) -> None:
         """
@@ -180,13 +185,13 @@ class _Runner:
 
         # Resume delegator.
         if coro in self._delegators:
-            self._coros[self._delegators[coro]] = ValueEvent(return_value)
+            self._coros[self._delegators[coro]] = ValueBlueletEvent(return_value)
             del self._delegators[coro]
 
         # Resume joiners.
         if coro in self._joiners:
             for parent in self._joiners[coro]:
-                self._coros[parent] = ValueEvent(None)
+                self._coros[parent] = ValueBlueletEvent(None)
             del self._joiners[coro]
 
     def _advance_coro(self, coro: BlueletCoro, value: ta.Any, is_exc: bool = False) -> None:
@@ -216,7 +221,7 @@ class _Runner:
         else:
             if isinstance(next_event, ta.Generator):
                 # Automatically invoke sub-coroutines. (Shorthand for explicit bluelet.call().)
-                next_event = DelegationEvent(next_event)
+                next_event = DelegationBlueletEvent(next_event)
             self._coros[coro] = next_event
 
     def _kill_coro(self, coro: BlueletCoro) -> None:
@@ -224,7 +229,7 @@ class _Runner:
 
         # Collect all coroutines in the delegation stack.
         coros = [coro]
-        while isinstance((cur := self._coros[coro]), _DelegatedEvent):
+        while isinstance((cur := self._coros[coro]), _DelegatedBlueletEvent):
             coro = cur.child  # noqa
             coros.append(coro)
 
@@ -239,47 +244,47 @@ class _Runner:
 
         self._coros.clear()
 
-    def _handle_core_event(self, coro: BlueletCoro, event: CoreEvent) -> bool:
-        if isinstance(event, SpawnEvent):
-            self._coros[event.spawned] = ValueEvent(None)  # Spawn.
+    def _handle_core_event(self, coro: BlueletCoro, event: CoreBlueletEvent) -> bool:
+        if isinstance(event, SpawnBlueletEvent):
+            self._coros[event.spawned] = ValueBlueletEvent(None)  # Spawn.
             self._history[event.spawned] = None  # Record in history.
             self._advance_coro(coro, None)
             return True
 
-        elif isinstance(event, ValueEvent):
+        elif isinstance(event, ValueBlueletEvent):
             self._advance_coro(coro, event.value)
             return True
 
-        elif isinstance(event, ExceptionEvent):
+        elif isinstance(event, ExceptionBlueletEvent):
             self._advance_coro(coro, event.exc_info, True)
             return True
 
-        elif isinstance(event, DelegationEvent):
-            self._coros[coro] = _DelegatedEvent(event.spawned)  # Suspend.
-            self._coros[event.spawned] = ValueEvent(None)  # Spawn.
+        elif isinstance(event, DelegationBlueletEvent):
+            self._coros[coro] = _DelegatedBlueletEvent(event.spawned)  # Suspend.
+            self._coros[event.spawned] = ValueBlueletEvent(None)  # Spawn.
             self._history[event.spawned] = None  # Record in history.
             self._delegators[event.spawned] = coro
             return True
 
-        elif isinstance(event, ReturnEvent):
+        elif isinstance(event, ReturnBlueletEvent):
             # Coro is done.
             self._complete_coro(coro, event.value)
             return True
 
-        elif isinstance(event, JoinEvent):
+        elif isinstance(event, JoinBlueletEvent):
             if event.child not in self._coros and event.child in self._history:
-                self._coros[coro] = ValueEvent(None)
+                self._coros[coro] = ValueBlueletEvent(None)
             else:
                 self._coros[coro] = _SUSPENDED  # Suspend.
                 self._joiners[event.child].append(coro)
             return True
 
-        elif isinstance(event, KillEvent):
-            self._coros[coro] = ValueEvent(None)
+        elif isinstance(event, KillBlueletEvent):
+            self._coros[coro] = ValueBlueletEvent(None)
             self._kill_coro(event.child)
             return True
 
-        elif isinstance(event, (_DelegatedEvent, _SuspendedEvent)):
+        elif isinstance(event, (_DelegatedBlueletEvent, _SuspendedBlueletEvent)):
             return False
 
         else:
@@ -291,9 +296,9 @@ class _Runner:
             while True:
                 have_ready = False
                 for coro, event in list(self._coros.items()):
-                    if isinstance(event, CoreEvent) and not isinstance(event, SleepEvent):
+                    if isinstance(event, CoreBlueletEvent) and not isinstance(event, SleepBlueletEvent):
                         have_ready |= self._handle_core_event(coro, event)
-                    elif isinstance(event, WaitableEvent):
+                    elif isinstance(event, WaitableBlueletEvent):
                         pass
                     else:
                         raise TypeError(event)
@@ -318,13 +323,13 @@ class _Runner:
                     else:
                         traceback.print_exc()
                     # Abort the coroutine.
-                    self._coros[event2coro[event]] = ReturnEvent(None)
+                    self._coros[event2coro[event]] = ReturnBlueletEvent(None)
                 else:
                     self._advance_coro(event2coro[event], value)
 
         except BlueletCoroException as te:
             # Exception raised from inside a coro.
-            event = ExceptionEvent(te.exc_info)
+            event = ExceptionBlueletEvent(te.exc_info)
             if te.coro in self._delegators:
                 # The coro is a delegate. Raise exception in its delegator.
                 self._coros[self._delegators[te.coro]] = event
@@ -335,7 +340,7 @@ class _Runner:
 
         except:  # noqa
             # For instance, KeyboardInterrupt during select(). Raise into root coro and terminate others.
-            self._coros = {self._root_coro: ExceptionEvent(BlueletCoroException._exc_info())}  # noqa
+            self._coros = {self._root_coro: ExceptionBlueletEvent(BlueletCoroException._exc_info())}  # noqa
 
         return None
 

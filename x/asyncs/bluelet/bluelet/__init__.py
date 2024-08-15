@@ -1,23 +1,17 @@
 # @omlish-lite
-# Based on bluelet by Adrian Sampson, original license:
-# THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
-# WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-# COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-# OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-# https://github.com/sampsyo/bluelet
 
 from .core import (  # noqa
-    CoreEvent,
+    CoreBlueletEvent as CoreEvent,
     BlueletCoro as Coro,
-    DelegationEvent,
+    DelegationBlueletEvent as DelegationEvent,
     BlueletExcInfo as ExcInfo,
-    ExceptionEvent,
-    JoinEvent,
-    KillEvent,
-    ReturnEvent,
-    SleepEvent,
-    SpawnEvent,
-    ValueEvent,
+    ExceptionBlueletEvent as ExceptionEvent,
+    JoinBlueletEvent as JoinEvent,
+    KillBlueletEvent as KillEvent,
+    ReturnBlueletEvent as ReturnEvent,
+    SleepBlueletEvent as SleepEvent,
+    SpawnBlueletEvent as SpawnEvent,
+    ValueBlueletEvent as ValueEvent,
     call,
     end,
     join,
@@ -28,17 +22,17 @@ from .core import (  # noqa
 )
 
 from .events import (  # noqa
-    Event,
+    BlueletEvent as Event,
     HasFileno,
     Waitable,
-    WaitableEvent,
+    WaitableBlueletEvent as WaitableEvent,
     Waitables,
 )
 
 from .files import (  # noqa
-    FileEvent,
-    ReadEvent,
-    WriteEvent,
+    FileBlueletEvent as FileEvent,
+    ReadBlueletEvent as ReadEvent,
+    WriteBlueletEvent as WriteEvent,
     read,
     write,
 )
@@ -49,13 +43,13 @@ from .runner import (  # noqa
 )
 
 from .sockets import (   # noqa
-    AcceptEvent,
+    AcceptBlueletEvent as AcceptEvent,
     Connection,
     Listener,
-    ReceiveEvent,
-    SendEvent,
+    ReceiveBlueletEvent as ReceiveEvent,
+    SendBlueletEvent as SendEvent,
     SocketClosedError,
-    SocketEvent,
+    SocketBlueletEvent as SocketEvent,
     connect,
     server,
 )

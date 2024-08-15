@@ -1,3 +1,8 @@
+# Based on bluelet ( https://github.com/sampsyo/bluelet ) by Adrian Sampson, original license:
+# THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+# WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+# COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+# OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 # ruff: noqa: UP007
 import abc
 import dataclasses as dc
@@ -7,7 +12,7 @@ import typing as ta
 ##
 
 
-class Event(abc.ABC):  # noqa
+class BlueletEvent(abc.ABC):  # noqa
     """
     Just a base class identifying Bluelet events. An event is an object yielded from a Bluelet coro coroutine to
     suspend operation and communicate with the scheduler.
@@ -31,7 +36,7 @@ class Waitables:
     x: ta.Sequence[Waitable] = ()
 
 
-class WaitableEvent(Event, abc.ABC):  # noqa
+class WaitableBlueletEvent(BlueletEvent, abc.ABC):  # noqa
     """
     A waitable event is one encapsulating an action that can be waited for using a select() call. That is, it's an event
     with an associated file descriptor.

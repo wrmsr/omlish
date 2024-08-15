@@ -1,3 +1,8 @@
+# Based on bluelet ( https://github.com/sampsyo/bluelet ) by Adrian Sampson, original license:
+# THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+# WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+# COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+# OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 # ruff: noqa: UP006 UP007
 import abc
 import dataclasses as dc
@@ -5,11 +10,11 @@ import socket
 import typing as ta
 
 from .core import BlueletCoro
-from .core import ReturnEvent
-from .core import ValueEvent
+from .core import ReturnBlueletEvent
+from .core import ValueBlueletEvent
 from .core import spawn
-from .events import Event
-from .events import WaitableEvent
+from .events import BlueletEvent
+from .events import WaitableBlueletEvent
 from .events import Waitables
 
 
@@ -36,7 +41,7 @@ class Listener:
         sock.bind((host, port))
         sock.listen(5)
 
-    def accept(self) -> Event:
+    def accept(self) -> BlueletEvent:
         """
         An event that waits for a connection on the listening socket. When a connection is made, the event returns a
         Connection object.
@@ -44,7 +49,7 @@ class Listener:
 
         if self._closed:
             raise SocketClosedError
-        return AcceptEvent(self)
+        return AcceptBlueletEvent(self)
 
     def close(self) -> None:
         """Immediately close the listening socket. (Not an event.)"""
@@ -69,7 +74,7 @@ class Connection:
         self._closed = True
         self.sock.close()
 
-    def recv(self, size: int) -> Event:
+    def recv(self, size: int) -> BlueletEvent:
         """Read at most size bytes of data from the socket."""
 
         if self._closed:
@@ -79,23 +84,23 @@ class Connection:
             # We already have data read previously.
             out = self._buf[:size]
             self._buf = self._buf[size:]
-            return ValueEvent(bytes(out))
+            return ValueBlueletEvent(bytes(out))
         else:
-            return ReceiveEvent(self, size)
+            return ReceiveBlueletEvent(self, size)
 
-    def send(self, data: bytes) -> Event:
+    def send(self, data: bytes) -> BlueletEvent:
         """Sends data on the socket, returning the number of bytes successfully sent."""
 
         if self._closed:
             raise SocketClosedError
-        return SendEvent(self, data)
+        return SendBlueletEvent(self, data)
 
-    def sendall(self, data: bytes) -> Event:
+    def sendall(self, data: bytes) -> BlueletEvent:
         """Send all of data on the socket."""
 
         if self._closed:
             raise SocketClosedError
-        return SendEvent(self, data, True)
+        return SendBlueletEvent(self, data, True)
 
     def readline(self, terminator: bytes = b'\n', bufsize: int = 1024) -> BlueletCoro:
         """Reads a line (delimited by terminator) from the socket."""
@@ -107,22 +112,22 @@ class Connection:
             if terminator in self._buf:
                 line, self._buf = self._buf.split(terminator, 1)
                 line += terminator
-                yield ReturnEvent(bytes(line))
+                yield ReturnBlueletEvent(bytes(line))
                 break
-            data = yield ReceiveEvent(self, bufsize)
+            data = yield ReceiveBlueletEvent(self, bufsize)
             if data:
                 self._buf += data
             else:
                 line = self._buf
                 self._buf = bytearray()
-                yield ReturnEvent(bytes(line))
+                yield ReturnBlueletEvent(bytes(line))
                 break
 
 
 ##
 
 
-class SocketEvent(Event, abc.ABC):  # noqa
+class SocketBlueletEvent(BlueletEvent, abc.ABC):  # noqa
     pass
 
 
@@ -130,7 +135,7 @@ class SocketEvent(Event, abc.ABC):  # noqa
 
 
 @dc.dataclass(frozen=True, eq=False)
-class AcceptEvent(WaitableEvent, SocketEvent):
+class AcceptBlueletEvent(WaitableBlueletEvent, SocketBlueletEvent):
     """An event for Listener objects (listening sockets) that suspends execution until the socket gets a connection."""
 
     listener: Listener
@@ -147,7 +152,7 @@ class AcceptEvent(WaitableEvent, SocketEvent):
 
 
 @dc.dataclass(frozen=True, eq=False)
-class ReceiveEvent(WaitableEvent, SocketEvent):
+class ReceiveBlueletEvent(WaitableBlueletEvent, SocketBlueletEvent):
     """An event for Connection objects (connected sockets) for asynchronously reading data."""
 
     conn: Connection
@@ -164,7 +169,7 @@ class ReceiveEvent(WaitableEvent, SocketEvent):
 
 
 @dc.dataclass(frozen=True, eq=False)
-class SendEvent(WaitableEvent, SocketEvent):
+class SendBlueletEvent(WaitableBlueletEvent, SocketBlueletEvent):
     """An event for Connection objects (connected sockets) for asynchronously writing data."""
 
     conn: Connection
@@ -185,12 +190,12 @@ class SendEvent(WaitableEvent, SocketEvent):
 ##
 
 
-def connect(host: str, port: int) -> Event:
+def connect(host: str, port: int) -> BlueletEvent:
     """Event: connect to a network address and return a Connection object for communicating on the socket."""
 
     addr = (host, port)
     sock = socket.create_connection(addr)
-    return ValueEvent(Connection(sock, addr))
+    return ValueBlueletEvent(Connection(sock, addr))
 
 
 def server(host: str, port: int, func) -> BlueletCoro:
