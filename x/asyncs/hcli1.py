@@ -8,7 +8,8 @@ def _main():
     conn = h11.Connection(our_role=h11.CLIENT)
     ctx = ssl.create_default_context()
     sock = ctx.wrap_socket(
-        socket.create_connection(("httpbin.org", 443)), server_hostname="httpbin.org"
+        socket.create_connection(("httpbin.org", 443)),
+        server_hostname="httpbin.org",
     )
 
     def send(event):
@@ -20,13 +21,11 @@ def _main():
         # Send the resulting bytes on the wire
         sock.sendall(data)
 
-    send(
-        h11.Request(
-            method="GET",
-            target="/get",
-            headers=[("Host", "httpbin.org"), ("Connection", "close")],
-        )
-    )
+    send(h11.Request(
+        method="GET",
+        target="/get",
+        headers=[("Host", "httpbin.org"), ("Connection", "close")],
+    ))
     send(h11.EndOfMessage())
 
     def next_event():
