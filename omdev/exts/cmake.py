@@ -6,8 +6,9 @@ TODO:
   - ..
    - pybind
    - catch2?
-   - jsoncpp?
+   - json? https://github.com/nlohmann/json
   - FindPackages? FetchContent? built_ext won't have that
+  - move omml git / data retriever stuff into omdev, get just the one header file from git via sha?
 
 ==
 
