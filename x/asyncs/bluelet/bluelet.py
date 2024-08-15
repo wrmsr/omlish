@@ -68,42 +68,42 @@ class WaitableEvent(Event):
         """Called when an associated file descriptor becomes ready (i.e., is returned from a select() call)."""
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, eq=False)
 class ValueEvent(Event):
     """An event that does nothing but return a fixed value."""
 
     value: ta.Any
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, eq=False)
 class ExceptionEvent(Event):
     """Raise an exception at the yield point. Used internally."""
 
     exc_info: ExcInfo
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, eq=False)
 class SpawnEvent(Event):
     """Add a new coroutine thread to the scheduler."""
 
     spawned: Coro
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, eq=False)
 class JoinEvent(Event):
     """Suspend the thread until the specified child thread has completed."""
 
     child: Coro
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, eq=False)
 class KillEvent(Event):
     """Unschedule a child thread."""
 
     child: Coro
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, eq=False)
 class DelegationEvent(Event):
     """
     Suspend execution of the current thread, start a new thread and, once the child thread finished, return control to
@@ -113,14 +113,14 @@ class DelegationEvent(Event):
     spawned: Coro
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, eq=False)
 class ReturnEvent(Event):
     """Return a value the current thread's delegator at the point of delegation. Ends the current (delegate) thread."""
 
     value: ta.Any
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, eq=False)
 class SleepEvent(WaitableEvent):
     """Suspend the thread for a given duration."""
 
@@ -130,7 +130,7 @@ class SleepEvent(WaitableEvent):
         return max(self.wakeup_time - time.time(), 0.0)
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, eq=False)
 class ReadEvent(WaitableEvent):
     """Reads from a file-like object."""
 
@@ -144,7 +144,7 @@ class ReadEvent(WaitableEvent):
         return self.fd.read(self.bufsize)
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, eq=False)
 class WriteEvent(WaitableEvent):
     """Writes to a file-like object."""
 
@@ -167,12 +167,13 @@ def _event_select(events):
     (including SleepEvents) matter here; all other events are ignored (and thus postponed).
     """
 
-    # Gather waitables and wakeup times.
     waitable_to_event: dict[tuple[str, Waitable], Event] = {}
     rlist: list[Waitable] = []
     wlist: list[Waitable] = []
     xlist: list[Waitable] = []
-    earliest_wakeup = None
+    earliest_wakeup: float | None = None
+
+    # Gather waitables and wakeup times.
     for event in events:
         if isinstance(event, SleepEvent):
             if not earliest_wakeup:
@@ -207,7 +208,7 @@ def _event_select(events):
             time.sleep(timeout)
 
     # Gather ready events corresponding to the ready waitables.
-    ready_events = set()
+    ready_events: set[Event] = set()
     for ready in rready:
         ready_events.add(waitable_to_event[('r', ready)])
     for ready in wready:
@@ -217,7 +218,7 @@ def _event_select(events):
 
     # Gather any finished sleeps.
     for event in events:
-        if isinstance(event, SleepEvent) and event.time_left() == 0.0:
+        if isinstance(event, SleepEvent) and not event.time_left():
             ready_events.add(event)
 
     return ready_events
@@ -233,19 +234,18 @@ class ThreadException(Exception):
         self.coro = coro
         self.exc_info = exc_info
 
-    def reraise(self):
+    def reraise(self) -> ta.NoReturn:
         _reraise(self.exc_info[0], self.exc_info[1], self.exc_info[2])
 
 
 SUSPENDED = Event()  # Special sentinel placeholder for suspended threads.
 
 
+@dc.dataclass(frozen=True, eq=False)
 class Delegated(Event):
     """Placeholder indicating that a thread has delegated execution to a different thread."""
 
-    def __init__(self, child) -> None:
-        super().__init__()
-        self.child = child
+    child: Coro
 
 
 def run(root_coro: Coro) -> None:
@@ -258,17 +258,17 @@ def run(root_coro: Coro) -> None:
     # to their currently "blocking" event. The event value may be SUSPENDED if the coroutine is waiting on some other
     # condition: namely, a delegated coroutine or a joined coroutine. In this case, the coroutine should *also* appear
     # as a value in one of the below dictionaries `delegators` or `joiners`.
-    threads = {root_coro: ValueEvent(None)}
+    threads: dict[Coro, Event] = {root_coro: ValueEvent(None)}
 
     # Maps child coroutines to delegating parents.
-    delegators = {}
+    delegators: dict[Coro, Coro] = {}
 
     # Maps child coroutines to joining (exit-waiting) parents.
     joiners: ta.MutableMapping[Coro, list[Coro]] = collections.defaultdict(list)
 
     # History of spawned coroutines for joining of already completed
     # coroutines.
-    history = weakref.WeakKeyDictionary({root_coro: None})
+    history: ta.MutableMapping[Coro, Event | None] = weakref.WeakKeyDictionary({root_coro: None})
 
     def complete_thread(coro: Coro, return_value: ta.Any) -> None:
         """
