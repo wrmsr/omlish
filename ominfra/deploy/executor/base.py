@@ -6,9 +6,9 @@ import os.path
 import shlex
 import typing as ta
 
-from omdev.amalg.std.cached import cached_nullary
-from omdev.amalg.std.logs import log
-from omdev.amalg.std.subprocesses import subprocess_check_call
+from omlish.lite.cached import cached_nullary
+from omlish.lite.logs import log
+from omlish.lite.subprocesses import subprocess_check_call
 
 from ..configs import DeployConfig
 from ..configs import HostConfig

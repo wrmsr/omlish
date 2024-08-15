@@ -37,81 +37,14 @@ import types
 import typing as ta
 
 
-T = ta.TypeVar('T')
 TomlParseFloat = ta.Callable[[str], ta.Any]
 TomlKey = ta.Tuple[str, ...]
 TomlPos = int  # ta.TypeAlias
+T = ta.TypeVar('T')
 
 
 ########################################
-# ../../amalg/std/cached.py
-
-
-class cached_nullary:  # noqa
-    def __init__(self, fn):
-        super().__init__()
-        self._fn = fn
-        self._value = self._missing = object()
-        functools.update_wrapper(self, fn)
-
-    def __call__(self, *args, **kwargs):  # noqa
-        if self._value is self._missing:
-            self._value = self._fn()
-        return self._value
-
-    def __get__(self, instance, owner):  # noqa
-        bound = instance.__dict__[self._fn.__name__] = self.__class__(self._fn.__get__(instance, owner))
-        return bound
-
-
-########################################
-# ../../amalg/std/check.py
-# ruff: noqa: UP006 UP007
-
-
-def check_isinstance(v: T, spec: ta.Union[ta.Type[T], tuple]) -> T:
-    if not isinstance(v, spec):
-        raise TypeError(v)
-    return v
-
-
-def check_not_isinstance(v: T, spec: ta.Union[type, tuple]) -> T:
-    if isinstance(v, spec):
-        raise TypeError(v)
-    return v
-
-
-def check_not_none(v: ta.Optional[T]) -> T:
-    if v is None:
-        raise ValueError
-    return v
-
-
-def check_not(v: ta.Any) -> None:
-    if v:
-        raise ValueError(v)
-    return v
-
-
-########################################
-# ../../amalg/std/logs.py
-"""
-TODO:
- - debug
-"""
-# ruff: noqa: UP007
-
-
-log = logging.getLogger(__name__)
-
-
-def configure_standard_logging(level: ta.Union[int, str] = logging.INFO) -> None:
-    logging.root.addHandler(logging.StreamHandler())
-    logging.root.setLevel(level)
-
-
-########################################
-# ../../amalg/std/toml.py
+# ../../toml/toml.py
 # SPDX-License-Identifier: MIT
 # SPDX-FileCopyrightText: 2021 Taneli Hukkinen
 # Licensed to PSF under a Contributor Agreement.
@@ -916,7 +849,74 @@ def toml_make_safe_parse_float(parse_float: TomlParseFloat) -> TomlParseFloat:
 
 
 ########################################
-# ../../amalg/std/runtime.py
+# ../../../omlish/lite/cached.py
+
+
+class cached_nullary:  # noqa
+    def __init__(self, fn):
+        super().__init__()
+        self._fn = fn
+        self._value = self._missing = object()
+        functools.update_wrapper(self, fn)
+
+    def __call__(self, *args, **kwargs):  # noqa
+        if self._value is self._missing:
+            self._value = self._fn()
+        return self._value
+
+    def __get__(self, instance, owner):  # noqa
+        bound = instance.__dict__[self._fn.__name__] = self.__class__(self._fn.__get__(instance, owner))
+        return bound
+
+
+########################################
+# ../../../omlish/lite/check.py
+# ruff: noqa: UP006 UP007
+
+
+def check_isinstance(v: T, spec: ta.Union[ta.Type[T], tuple]) -> T:
+    if not isinstance(v, spec):
+        raise TypeError(v)
+    return v
+
+
+def check_not_isinstance(v: T, spec: ta.Union[type, tuple]) -> T:
+    if isinstance(v, spec):
+        raise TypeError(v)
+    return v
+
+
+def check_not_none(v: ta.Optional[T]) -> T:
+    if v is None:
+        raise ValueError
+    return v
+
+
+def check_not(v: ta.Any) -> None:
+    if v:
+        raise ValueError(v)
+    return v
+
+
+########################################
+# ../../../omlish/lite/logs.py
+"""
+TODO:
+ - debug
+"""
+# ruff: noqa: UP007
+
+
+log = logging.getLogger(__name__)
+
+
+def configure_standard_logging(level: ta.Union[int, str] = logging.INFO) -> None:
+    logging.root.addHandler(logging.StreamHandler())
+    logging.root.setLevel(level)
+
+
+########################################
+# ../../../omlish/lite/runtime.py
 
 
 @cached_nullary
@@ -934,7 +934,7 @@ def check_runtime_version() -> None:
 
 
 ########################################
-# ../../amalg/std/subprocesses.py
+# ../../../omlish/lite/subprocesses.py
 # ruff: noqa: UP006 UP007
 
 

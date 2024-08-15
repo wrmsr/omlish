@@ -166,6 +166,7 @@ ignore = [
     'ANN401',  # Dynamically typed expressions (typing.Any) are disallowed in `*args`
     'ARG001',  # Unused function argument,
     'ARG002',  # Unused method argument
+    'ASYNC115',  # Use `asyncio.lowlevel.checkpoint()` instead of `asyncio.sleep(0)`
     'B008',  # Do not perform function call in argument defaults
     'B009',  # Do not call `getattr` with a constant attribute value
     'B010',  # Set-attr-with-constant

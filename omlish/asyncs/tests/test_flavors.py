@@ -31,7 +31,7 @@ def _patch_for_trio_asyncio_fixture():
 
 @flavors.mark_anyio
 async def _anyio_func(call_asyncio, call_trio):
-    await asyncio.lowlevel.checkpoint()
+    await anyio.sleep(0)
     if call_asyncio:
         await flavors.from_asyncio(asyncio.sleep)(0)
     if call_trio:
@@ -42,7 +42,7 @@ async def _anyio_func(call_asyncio, call_trio):
 async def _asyncio_func(cross):
     assert sniffio.current_async_library() == 'asyncio'
 
-    await asyncio.lowlevel.checkpoint()
+    await anyio.sleep(0)
     await asyncio.sleep(0)
     if cross:
         await trio_asyncio.trio_as_aio(trio.sleep)(0)
@@ -52,7 +52,7 @@ async def _asyncio_func(cross):
 async def _trio_func(cross):
     assert sniffio.current_async_library() == 'trio'
 
-    await asyncio.lowlevel.checkpoint()
+    await anyio.sleep(0)
     if cross:
         await trio_asyncio.aio_as_trio(asyncio.sleep)(0)
     await trio.sleep(0)  # noqa

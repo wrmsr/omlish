@@ -46,9 +46,9 @@ import json
 import sys
 import typing as ta
 
-from omdev.amalg.std.logs import configure_standard_logging
-from omdev.amalg.std.marshal import unmarshal_obj
-from omdev.amalg.std.runtime import check_runtime_version
+from omlish.lite.logs import configure_standard_logging
+from omlish.lite.marshal import unmarshal_obj
+from omlish.lite.runtime import check_runtime_version
 
 from ..configs import DeployConfig
 from .base import Deployment

@@ -27,87 +27,20 @@ import sys
 import typing as ta
 
 
-T = ta.TypeVar('T')
 VersionLocalType = ta.Tuple[ta.Union[int, str], ...]
 VersionCmpPrePostDevType = ta.Union['InfinityVersionType', 'NegativeInfinityVersionType', ta.Tuple[str, int]]
 _VersionCmpLocalType0 = ta.Tuple[ta.Union[ta.Tuple[int, str], ta.Tuple['NegativeInfinityVersionType', ta.Union[int, str]]], ...]  # noqa
 VersionCmpLocalType = ta.Union['NegativeInfinityVersionType', _VersionCmpLocalType0]
 VersionCmpKey = ta.Tuple[int, ta.Tuple[int, ...], VersionCmpPrePostDevType, VersionCmpPrePostDevType, VersionCmpPrePostDevType, VersionCmpLocalType]  # noqa
 VersionComparisonMethod = ta.Callable[[VersionCmpKey, VersionCmpKey], bool]
+T = ta.TypeVar('T')
 UnparsedVersion = ta.Union['Version', str]
 UnparsedVersionVar = ta.TypeVar('UnparsedVersionVar', bound=UnparsedVersion)
 CallableVersionOperator = ta.Callable[['Version', str], bool]
 
 
 ########################################
-# ../../amalg/std/cached.py
-
-
-class cached_nullary:  # noqa
-    def __init__(self, fn):
-        super().__init__()
-        self._fn = fn
-        self._value = self._missing = object()
-        functools.update_wrapper(self, fn)
-
-    def __call__(self, *args, **kwargs):  # noqa
-        if self._value is self._missing:
-            self._value = self._fn()
-        return self._value
-
-    def __get__(self, instance, owner):  # noqa
-        bound = instance.__dict__[self._fn.__name__] = self.__class__(self._fn.__get__(instance, owner))
-        return bound
-
-
-########################################
-# ../../amalg/std/check.py
-# ruff: noqa: UP006 UP007
-
-
-def check_isinstance(v: T, spec: ta.Union[ta.Type[T], tuple]) -> T:
-    if not isinstance(v, spec):
-        raise TypeError(v)
-    return v
-
-
-def check_not_isinstance(v: T, spec: ta.Union[type, tuple]) -> T:
-    if isinstance(v, spec):
-        raise TypeError(v)
-    return v
-
-
-def check_not_none(v: ta.Optional[T]) -> T:
-    if v is None:
-        raise ValueError
-    return v
-
-
-def check_not(v: ta.Any) -> None:
-    if v:
-        raise ValueError(v)
-    return v
-
-
-########################################
-# ../../amalg/std/logs.py
-"""
-TODO:
- - debug
-"""
-# ruff: noqa: UP007
-
-
-log = logging.getLogger(__name__)
-
-
-def configure_standard_logging(level: ta.Union[int, str] = logging.INFO) -> None:
-    logging.root.addHandler(logging.StreamHandler())
-    logging.root.setLevel(level)
-
-
-########################################
-# ../../amalg/std/versions/versions.py
+# ../../versioning/versions.py
 # Copyright (c) Donald Stufft and individual contributors.
 # All rights reserved.
 #
@@ -515,25 +448,74 @@ def canonicalize_version(
 
 
 ########################################
-# ../../amalg/std/runtime.py
+# ../../../omlish/lite/cached.py
 
 
-@cached_nullary
-def is_debugger_attached() -> bool:
-    return any(frame[1].endswith('pydevd.py') for frame in inspect.stack())
+class cached_nullary:  # noqa
+    def __init__(self, fn):
+        super().__init__()
+        self._fn = fn
+        self._value = self._missing = object()
+        functools.update_wrapper(self, fn)
 
+    def __call__(self, *args, **kwargs):  # noqa
+        if self._value is self._missing:
+            self._value = self._fn()
+        return self._value
 
-REQUIRED_PYTHON_VERSION = (3, 8)
-
-
-def check_runtime_version() -> None:
-    if sys.version_info < REQUIRED_PYTHON_VERSION:
-        raise OSError(
-            f'Requires python {REQUIRED_PYTHON_VERSION}, got {sys.version_info} from {sys.executable}')  # noqa
+    def __get__(self, instance, owner):  # noqa
+        bound = instance.__dict__[self._fn.__name__] = self.__class__(self._fn.__get__(instance, owner))
+        return bound
 
 
 ########################################
-# ../../amalg/std/versions/specifiers.py
+# ../../../omlish/lite/check.py
+# ruff: noqa: UP006 UP007
+
+
+def check_isinstance(v: T, spec: ta.Union[ta.Type[T], tuple]) -> T:
+    if not isinstance(v, spec):
+        raise TypeError(v)
+    return v
+
+
+def check_not_isinstance(v: T, spec: ta.Union[type, tuple]) -> T:
+    if isinstance(v, spec):
+        raise TypeError(v)
+    return v
+
+
+def check_not_none(v: ta.Optional[T]) -> T:
+    if v is None:
+        raise ValueError
+    return v
+
+
+def check_not(v: ta.Any) -> None:
+    if v:
+        raise ValueError(v)
+    return v
+
+
+########################################
+# ../../../omlish/lite/logs.py
+"""
+TODO:
+ - debug
+"""
+# ruff: noqa: UP007
+
+
+log = logging.getLogger(__name__)
+
+
+def configure_standard_logging(level: ta.Union[int, str] = logging.INFO) -> None:
+    logging.root.addHandler(logging.StreamHandler())
+    logging.root.setLevel(level)
+
+
+########################################
+# ../../versioning/specifiers.py
 # Copyright (c) Donald Stufft and individual contributors.
 # All rights reserved.
 #
@@ -1056,7 +1038,114 @@ class SpecifierSet(BaseSpecifier):
 
 
 ########################################
-# ../../amalg/std/subprocesses.py
+# ../../../omlish/lite/runtime.py
+
+
+@cached_nullary
+def is_debugger_attached() -> bool:
+    return any(frame[1].endswith('pydevd.py') for frame in inspect.stack())
+
+
+REQUIRED_PYTHON_VERSION = (3, 8)
+
+
+def check_runtime_version() -> None:
+    if sys.version_info < REQUIRED_PYTHON_VERSION:
+        raise OSError(
+            f'Requires python {REQUIRED_PYTHON_VERSION}, got {sys.version_info} from {sys.executable}')  # noqa
+
+
+########################################
+# ../providers/types.py
+# ruff: noqa: UP006
+
+
+# See https://peps.python.org/pep-3149/
+INTERP_OPT_GLYPHS_BY_ATTR: ta.Mapping[str, str] = collections.OrderedDict([
+    ('debug', 'd'),
+    ('threaded', 't'),
+])
+
+INTERP_OPT_ATTRS_BY_GLYPH: ta.Mapping[str, str] = collections.OrderedDict(
+    (g, a) for a, g in INTERP_OPT_GLYPHS_BY_ATTR.items()
+)
+
+
+@dc.dataclass(frozen=True)
+class InterpOpts:
+    threaded: bool = False
+    debug: bool = False
+
+    def __str__(self) -> str:
+        return ''.join(g for a, g in INTERP_OPT_GLYPHS_BY_ATTR.items() if getattr(self, a))
+
+    @classmethod
+    def parse(cls, s: str) -> 'InterpOpts':
+        return cls(**{INTERP_OPT_ATTRS_BY_GLYPH[g]: True for g in s})
+
+    @classmethod
+    def parse_suffix(cls, s: str) -> ta.Tuple[str, 'InterpOpts']:
+        kw = {}
+        while s and (a := INTERP_OPT_ATTRS_BY_GLYPH.get(s[-1])):
+            s, kw[a] = s[:-1], True
+        return s, cls(**kw)
+
+
+@dc.dataclass(frozen=True)
+class InterpVersion:
+    version: Version
+    opts: InterpOpts
+
+    def __str__(self) -> str:
+        return str(self.version) + str(self.opts)
+
+    @classmethod
+    def parse(cls, s: str) -> 'InterpVersion':
+        s, o = InterpOpts.parse_suffix(s)
+        v = Version(s)
+        return cls(
+            version=v,
+            opts=o,
+        )
+
+    @classmethod
+    def try_parse(cls, s: str) -> ta.Optional['InterpVersion']:
+        try:
+            return cls.parse(s)
+        except (KeyError, InvalidVersion):
+            return None
+
+
+@dc.dataclass(frozen=True)
+class InterpSpecifier:
+    specifier: Specifier
+    opts: InterpOpts
+
+    def __str__(self) -> str:
+        return str(self.specifier) + str(self.opts)
+
+    @classmethod
+    def parse(cls, s: str) -> 'InterpSpecifier':
+        s, o = InterpOpts.parse_suffix(s)
+        if not any(s.startswith(o) for o in Specifier.OPERATORS):
+            s = '~=' + s
+        return cls(
+            specifier=Specifier(s),
+            opts=o,
+        )
+
+    def contains(self, iv: InterpVersion) -> bool:
+        return self.specifier.contains(iv.version) and self.opts == iv.opts
+
+
+@dc.dataclass(frozen=True)
+class Interp:
+    exe: str
+    version: InterpVersion
+
+
+########################################
+# ../../../omlish/lite/subprocesses.py
 # ruff: noqa: UP006 UP007
 
 
@@ -1147,95 +1236,6 @@ def subprocess_try_output(
 def subprocess_try_output_str(*args: ta.Any, **kwargs: ta.Any) -> ta.Optional[str]:
     out = subprocess_try_output(*args, **kwargs)
     return out.decode().strip() if out is not None else None
-
-
-########################################
-# ../providers/types.py
-# ruff: noqa: UP006
-
-
-# See https://peps.python.org/pep-3149/
-INTERP_OPT_GLYPHS_BY_ATTR: ta.Mapping[str, str] = collections.OrderedDict([
-    ('debug', 'd'),
-    ('threaded', 't'),
-])
-
-INTERP_OPT_ATTRS_BY_GLYPH: ta.Mapping[str, str] = collections.OrderedDict(
-    (g, a) for a, g in INTERP_OPT_GLYPHS_BY_ATTR.items()
-)
-
-
-@dc.dataclass(frozen=True)
-class InterpOpts:
-    threaded: bool = False
-    debug: bool = False
-
-    def __str__(self) -> str:
-        return ''.join(g for a, g in INTERP_OPT_GLYPHS_BY_ATTR.items() if getattr(self, a))
-
-    @classmethod
-    def parse(cls, s: str) -> 'InterpOpts':
-        return cls(**{INTERP_OPT_ATTRS_BY_GLYPH[g]: True for g in s})
-
-    @classmethod
-    def parse_suffix(cls, s: str) -> ta.Tuple[str, 'InterpOpts']:
-        kw = {}
-        while s and (a := INTERP_OPT_ATTRS_BY_GLYPH.get(s[-1])):
-            s, kw[a] = s[:-1], True
-        return s, cls(**kw)
-
-
-@dc.dataclass(frozen=True)
-class InterpVersion:
-    version: Version
-    opts: InterpOpts
-
-    def __str__(self) -> str:
-        return str(self.version) + str(self.opts)
-
-    @classmethod
-    def parse(cls, s: str) -> 'InterpVersion':
-        s, o = InterpOpts.parse_suffix(s)
-        v = Version(s)
-        return cls(
-            version=v,
-            opts=o,
-        )
-
-    @classmethod
-    def try_parse(cls, s: str) -> ta.Optional['InterpVersion']:
-        try:
-            return cls.parse(s)
-        except (KeyError, InvalidVersion):
-            return None
-
-
-@dc.dataclass(frozen=True)
-class InterpSpecifier:
-    specifier: Specifier
-    opts: InterpOpts
-
-    def __str__(self) -> str:
-        return str(self.specifier) + str(self.opts)
-
-    @classmethod
-    def parse(cls, s: str) -> 'InterpSpecifier':
-        s, o = InterpOpts.parse_suffix(s)
-        if not any(s.startswith(o) for o in Specifier.OPERATORS):
-            s = '~=' + s
-        return cls(
-            specifier=Specifier(s),
-            opts=o,
-        )
-
-    def contains(self, iv: InterpVersion) -> bool:
-        return self.specifier.contains(iv.version) and self.opts == iv.opts
-
-
-@dc.dataclass(frozen=True)
-class Interp:
-    exe: str
-    version: InterpVersion
 
 
 ########################################

@@ -41,7 +41,7 @@ if ta.TYPE_CHECKING:
     import numpy as np  # noqa
     import tinygrad as tg
     import tinygrad.tensor  # noqa
-    from tinygrad import nn  # type: ignore
+    from tinygrad import nn
     from examples import stable_diffusion as sd
     from PIL import Image as pi  # noqa
 else:
@@ -73,8 +73,9 @@ def run_sd(args: SdArgs) -> bytes:
 
     # load in weights
     weights_url = 'https://huggingface.co/CompVis/stable-diffusion-v-1-4-original/resolve/main/sd-v1-4.ckpt'
-    fetched_weights = tg.helpers.fetch(weights_url, 'sd-v1-4.ckpt')  # type: ignore
-    nn.state.load_state_dict(model, nn.state.torch_load(str(fetched_weights))['state_dict'], strict=False)
+    fetched_weights = tg.helpers.fetch(weights_url, 'sd-v1-4.ckpt')
+    fw: dict[str, ta.Any] = nn.state.torch_load(str(fetched_weights))
+    nn.state.load_state_dict(model, fw['state_dict'], strict=False)
 
     # run through CLIP to get context
     tokenizer = sd.Tokenizer.ClipTokenizer()
@@ -99,7 +100,7 @@ def run_sd(args: SdArgs) -> bytes:
         tg.tensor.Tensor.manual_seed(args.seed)
     latent = tg.tensor.Tensor.randn(1, 4, 64, 64)
 
-    @tg.TinyJit  # type: ignore
+    @tg.TinyJit
     def run(model, *x):
         return model(*x).realize()
 
