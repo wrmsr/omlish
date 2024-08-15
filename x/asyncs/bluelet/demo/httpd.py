@@ -2,8 +2,9 @@
 import mimetypes
 import os
 import sys
+import typing as ta
 
-from .. import bluelet
+from .. import bluelet as bl
 
 
 ROOT = '.'
@@ -64,7 +65,7 @@ def respond(method, path, headers):
 
     elif os.path.exists(filename):
         # Send file contents.
-        with open(filename) as f:
+        with open(filename, 'rb') as f:
             return '200 OK', {'Content-Type': mime_type(filename)}, f.read()
 
     else:
@@ -77,7 +78,7 @@ def respond(method, path, headers):
         )
 
 
-def webrequest(conn):
+def webrequest(conn: bl.Connection) -> ta.Iterator[bl.Event]:
     """A Bluelet coroutine implementing an HTTP server."""
     # Get the HTTP request.
     request = []
@@ -109,4 +110,4 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         ROOT = os.path.expanduser(sys.argv[1])
     print('http://127.0.0.1:8000/')
-    bluelet.run(bluelet.server('', 8000, webrequest))
+    bl.run(bl.server('', 8000, webrequest))

@@ -17,16 +17,29 @@ import sys
 import time
 import traceback
 import types
+import typing as ta
 import weakref
 
 
-# A little bit of "six" (Python 2/3 compatibility): cope with PEP 3109 syntax changes.
+ExcInfo: ta.TypeAlias = tuple[type[BaseException], BaseException, types.TracebackType]
 
-def _reraise(typ, exc, tb):
-    raise exc.with_traceback(tb)
+Coro: ta.TypeAlias = ta.Generator['Event', ta.Any, None]
 
 
-# Basic events used for thread scheduling.
+class HasFileno(ta.Protocol):
+    def fileno(self) -> int: ...
+
+
+Waitable: ta.TypeAlias = int | HasFileno
+Waitables: ta.TypeAlias = tuple[
+    ta.Sequence[Waitable],
+    ta.Sequence[Waitable],
+    ta.Sequence[Waitable],
+]
+
+
+##
+
 
 class Event:
     """
@@ -41,50 +54,54 @@ class WaitableEvent(Event):
     with an associated file descriptor.
     """
 
-    def waitables(self):
+    def waitables(self) -> Waitables:
         """
         Return "waitable" objects to pass to select(). Should return three iterables for input readiness, output
         readiness, and exceptional conditions (i.e., the three lists passed to select()).
         """
         return (), (), ()
 
-    def fire(self):
+    def fire(self) -> ta.Any:
         """Called when an associated file descriptor becomes ready (i.e., is returned from a select() call)."""
 
 
 class ValueEvent(Event):
     """An event that does nothing but return a fixed value."""
 
-    def __init__(self, value):
+    def __init__(self, value: ta.Any) -> None:
+        super().__init__()
         self.value = value
 
 
 class ExceptionEvent(Event):
     """Raise an exception at the yield point. Used internally."""
 
-    def __init__(self, exc_info):
+    def __init__(self, exc_info) -> None:
+        super().__init__()
         self.exc_info = exc_info
 
 
 class SpawnEvent(Event):
     """Add a new coroutine thread to the scheduler."""
 
-    def __init__(self, coro):
+    def __init__(self, coro: Coro) -> None:
+        super().__init__()
         self.spawned = coro
 
 
 class JoinEvent(Event):
-    """Suspend the thread until the specified child thread has completed.
-    """
+    """Suspend the thread until the specified child thread has completed."""
 
-    def __init__(self, child):
+    def __init__(self, child) -> None:
+        super().__init__()
         self.child = child
 
 
 class KillEvent(Event):
     """Unschedule a child thread."""
 
-    def __init__(self, child):
+    def __init__(self, child) -> None:
+        super().__init__()
         self.child = child
 
 
@@ -94,23 +111,24 @@ class DelegationEvent(Event):
     the parent thread.
     """
 
-    def __init__(self, coro):
+    def __init__(self, coro: Coro) -> None:
+        super().__init__()
         self.spawned = coro
 
 
 class ReturnEvent(Event):
-    """
-    Return a value the current thread's delegator at the point of delegation. Ends the current (delegate) thread.
-    """
+    """Return a value the current thread's delegator at the point of delegation. Ends the current (delegate) thread."""
 
-    def __init__(self, value):
+    def __init__(self, value: ta.Any) -> None:
+        super().__init__()
         self.value = value
 
 
 class SleepEvent(WaitableEvent):
     """Suspend the thread for a given duration."""
 
-    def __init__(self, duration):
+    def __init__(self, duration: float) -> None:
+        super().__init__()
         self.wakeup_time = time.time() + duration
 
     def time_left(self):
@@ -120,11 +138,12 @@ class SleepEvent(WaitableEvent):
 class ReadEvent(WaitableEvent):
     """Reads from a file-like object."""
 
-    def __init__(self, fd, bufsize):
+    def __init__(self, fd: ta.IO, bufsize: int) -> None:
+        super().__init__()
         self.fd = fd
         self.bufsize = bufsize
 
-    def waitables(self):
+    def waitables(self) -> Waitables:
         return (self.fd,), (), ()
 
     def fire(self):
@@ -134,27 +153,32 @@ class ReadEvent(WaitableEvent):
 class WriteEvent(WaitableEvent):
     """Writes to a file-like object."""
 
-    def __init__(self, fd, data):
+    def __init__(self, fd: ta.IO, data) -> None:
+        super().__init__()
         self.fd = fd
         self.data = data
 
     def waitable(self):
         return (), (self.fd,), ()
 
-    def fire(self):
+    def fire(self) -> None:
         self.fd.write(self.data)
 
 
 # Core logic for executing and scheduling threads.
+
 
 def _event_select(events):
     """
     Perform a select() over all the Events provided, returning the ones ready to be fired. Only WaitableEvents
     (including SleepEvents) matter here; all other events are ignored (and thus postponed).
     """
+
     # Gather waitables and wakeup times.
-    waitable_to_event = {}
-    rlist, wlist, xlist = [], [], []
+    waitable_to_event: dict[tuple[str, Waitable], Event] = {}
+    rlist: list[Waitable] = []
+    wlist: list[Waitable] = []
+    xlist: list[Waitable] = []
     earliest_wakeup = None
     for event in events:
         if isinstance(event, SleepEvent):
@@ -162,11 +186,12 @@ def _event_select(events):
                 earliest_wakeup = event.wakeup_time
             else:
                 earliest_wakeup = min(earliest_wakeup, event.wakeup_time)
+
         elif isinstance(event, WaitableEvent):
             r, w, x = event.waitables()
-            rlist += r
-            wlist += w
-            xlist += x
+            rlist.extend(r)
+            wlist.extend(w)
+            xlist.extend(x)
             for waitable in r:
                 waitable_to_event[('r', waitable)] = event
             for waitable in w:
@@ -205,8 +230,13 @@ def _event_select(events):
     return ready_events
 
 
+def _reraise(typ: type[BaseException], exc: BaseException, tb: types.TracebackType) -> ta.NoReturn:
+    raise exc.with_traceback(tb)
+
+
 class ThreadException(Exception):
-    def __init__(self, coro, exc_info):
+    def __init__(self, coro: Coro, exc_info) -> None:
+        super().__init__()
         self.coro = coro
         self.exc_info = exc_info
 
@@ -220,11 +250,12 @@ SUSPENDED = Event()  # Special sentinel placeholder for suspended threads.
 class Delegated(Event):
     """Placeholder indicating that a thread has delegated execution to a different thread."""
 
-    def __init__(self, child):
+    def __init__(self, child) -> None:
+        super().__init__()
         self.child = child
 
 
-def run(root_coro):
+def run(root_coro: Coro) -> None:
     """
     Schedules a coroutine, running it to completion. This encapsulates the Bluelet scheduler, which the root coroutine
     can add to by spawning new coroutines.
@@ -239,13 +270,13 @@ def run(root_coro):
     delegators = {}
 
     # Maps child coroutines to joining (exit-waiting) parents.
-    joiners = collections.defaultdict(list)
+    joiners: ta.MutableMapping[Coro, list[Coro]] = collections.defaultdict(list)
 
     # History of spawned coroutines for joining of already completed
     # coroutines.
     history = weakref.WeakKeyDictionary({root_coro: None})
 
-    def complete_thread(coro, return_value):
+    def complete_thread(coro: types.GeneratorType, return_value):
         """
         Remove a coroutine from the scheduling pool, awaking delegators and joiners as necessary and returning the
         specified value to any delegating parent.
@@ -263,7 +294,7 @@ def run(root_coro):
                 threads[parent] = ValueEvent(None)
             del joiners[coro]
 
-    def advance_thread(coro, value, is_exc=False):
+    def advance_thread(coro: types.GeneratorType, value, is_exc=False):
         """
         After an event is fired, run a given coroutine associated with it in the threads dict until it yields again. If
         the coroutine exits, then the thread is removed from the pool. If the coroutine raises an exception, it is
@@ -314,22 +345,27 @@ def run(root_coro):
                         history[event.spawned] = None  # Record in history.
                         advance_thread(coro, None)
                         have_ready = True
+
                     elif isinstance(event, ValueEvent):
                         advance_thread(coro, event.value)
                         have_ready = True
+
                     elif isinstance(event, ExceptionEvent):
                         advance_thread(coro, event.exc_info, True)
                         have_ready = True
+
                     elif isinstance(event, DelegationEvent):
                         threads[coro] = Delegated(event.spawned)  # Suspend.
                         threads[event.spawned] = ValueEvent(None)  # Spawn.
                         history[event.spawned] = None  # Record in history.
                         delegators[event.spawned] = coro
                         have_ready = True
+
                     elif isinstance(event, ReturnEvent):
                         # Thread is done.
                         complete_thread(coro, event.value)
                         have_ready = True
+
                     elif isinstance(event, JoinEvent):
                         if event.child not in threads and event.child in history:
                             threads[coro] = ValueEvent(None)
@@ -337,6 +373,7 @@ def run(root_coro):
                             threads[coro] = SUSPENDED  # Suspend.
                             joiners[event.child].append(coro)
                         have_ready = True
+
                     elif isinstance(event, KillEvent):
                         threads[coro] = ValueEvent(None)
                         kill_thread(event.child)
@@ -400,17 +437,19 @@ class SocketClosedError(Exception):
 class Listener:
     """A socket wrapper object for listening sockets."""
 
-    def __init__(self, host, port):
+    def __init__(self, host: str, port: int) -> None:
         """Create a listening socket on the given hostname and port."""
+        super().__init__()
         self._closed = False
         self.host = host
         self.port = port
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.sock.bind((host, port))
-        self.sock.listen(5)
 
-    def accept(self):
+        self.sock = sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        sock.bind((host, port))
+        sock.listen(5)
+
+    def accept(self) -> Event:
         """
         An event that waits for a connection on the listening socket. When a connection is made, the event returns a
         Connection object.
@@ -419,7 +458,7 @@ class Listener:
             raise SocketClosedError
         return AcceptEvent(self)
 
-    def close(self):
+    def close(self) -> None:
         """Immediately close the listening socket. (Not an event.)"""
         self._closed = True
         self.sock.close()
@@ -428,18 +467,19 @@ class Listener:
 class Connection:
     """A socket wrapper object for connected sockets."""
 
-    def __init__(self, sock, addr):
+    def __init__(self, sock: socket.socket, addr: tuple[str, int]) -> None:
+        super().__init__()
         self.sock = sock
         self.addr = addr
-        self._buf = b''
-        self._closed = False
+        self._buf: bytes = b''
+        self._closed: bool = False
 
-    def close(self):
+    def close(self) -> None:
         """Close the connection."""
         self._closed = True
         self.sock.close()
 
-    def recv(self, size):
+    def recv(self, size: int) -> Event:
         """Read at most size bytes of data from the socket."""
         if self._closed:
             raise SocketClosedError
@@ -452,7 +492,7 @@ class Connection:
         else:
             return ReceiveEvent(self, size)
 
-    def send(self, data):
+    def send(self, data: bytes) -> Event:
         """Sends data on the socket, returning the number of bytes
         successfully sent.
         """
@@ -460,13 +500,13 @@ class Connection:
             raise SocketClosedError
         return SendEvent(self, data)
 
-    def sendall(self, data):
+    def sendall(self, data: bytes) -> Event:
         """Send all of data on the socket."""
         if self._closed:
             raise SocketClosedError
         return SendEvent(self, data, True)
 
-    def readline(self, terminator=b'\n', bufsize=1024):
+    def readline(self, terminator: bytes = b'\n', bufsize: int = 1024) -> ta.Iterator[Event]:
         """Reads a line (delimited by terminator) from the socket."""
         if self._closed:
             raise SocketClosedError
@@ -490,13 +530,14 @@ class Connection:
 class AcceptEvent(WaitableEvent):
     """An event for Listener objects (listening sockets) that suspends execution until the socket gets a connection."""
 
-    def __init__(self, listener):
+    def __init__(self, listener: Listener) -> None:
+        super().__init__()
         self.listener = listener
 
-    def waitables(self):
+    def waitables(self) -> Waitables:
         return (self.listener.sock,), (), ()
 
-    def fire(self):
+    def fire(self) -> Connection:
         sock, addr = self.listener.sock.accept()
         return Connection(sock, addr)
 
@@ -504,29 +545,31 @@ class AcceptEvent(WaitableEvent):
 class ReceiveEvent(WaitableEvent):
     """An event for Connection objects (connected sockets) for asynchronously reading data."""
 
-    def __init__(self, conn, bufsize):
+    def __init__(self, conn: Connection, bufsize: int) -> None:
+        super().__init__()
         self.conn = conn
         self.bufsize = bufsize
 
-    def waitables(self):
+    def waitables(self) -> Waitables:
         return (self.conn.sock,), (), ()
 
-    def fire(self):
+    def fire(self) -> bytes:
         return self.conn.sock.recv(self.bufsize)
 
 
 class SendEvent(WaitableEvent):
     """An event for Connection objects (connected sockets) for asynchronously writing data."""
 
-    def __init__(self, conn, data, sendall=False):
+    def __init__(self, conn: Connection, data: bytes, sendall: bool = False) -> None:
+        super().__init__()
         self.conn = conn
         self.data = data
         self.sendall = sendall
 
-    def waitables(self):
+    def waitables(self) -> Waitables:
         return (), (self.conn.sock,), ()
 
-    def fire(self):
+    def fire(self) -> int | None:
         if self.sendall:
             return self.conn.sock.sendall(self.data)
         else:
@@ -535,19 +578,19 @@ class SendEvent(WaitableEvent):
 
 # Public interface for threads; each returns an event object that can immediately be "yield"ed.
 
-def null():
+def null() -> Event:
     """Event: yield to the scheduler without doing anything special."""
     return ValueEvent(None)
 
 
-def spawn(coro):
+def spawn(coro) -> Event:
     """Event: add another coroutine to the scheduler. Both the parent and child coroutines run concurrently."""
     if not isinstance(coro, types.GeneratorType):
         raise ValueError('%s is not a coroutine' % str(coro))
     return SpawnEvent(coro)
 
 
-def call(coro):
+def call(coro) -> Event:
     """
     Event: delegate to another coroutine. The current coroutine is resumed once the sub-coroutine finishes. If the
     sub-coroutine returns a value using end(), then this event returns that value.
@@ -557,12 +600,12 @@ def call(coro):
     return DelegationEvent(coro)
 
 
-def end(value=None):
+def end(value=None) -> Event:
     """Event: ends the coroutine and returns a value to its delegator."""
     return ReturnEvent(value)
 
 
-def read(fd, bufsize=None):
+def read(fd: ta.IO, bufsize: int | None = None) -> Event:
     """Event: read from a file descriptor asynchronously."""
     if bufsize is None:
         # Read all.
@@ -581,36 +624,36 @@ def read(fd, bufsize=None):
         return ReadEvent(fd, bufsize)
 
 
-def write(fd, data):
+def write(fd: ta.IO, data: bytes) -> Event:
     """Event: write to a file descriptor asynchronously."""
     return WriteEvent(fd, data)
 
 
-def connect(host, port):
+def connect(host: str, port: int) -> Event:
     """Event: connect to a network address and return a Connection object for communicating on the socket."""
     addr = (host, port)
     sock = socket.create_connection(addr)
     return ValueEvent(Connection(sock, addr))
 
 
-def sleep(duration):
+def sleep(duration: float) -> Event:
     """Event: suspend the thread for ``duration`` seconds."""
     return SleepEvent(duration)
 
 
-def join(coro):
+def join(coro) -> Event:
     """Suspend the thread until another, previously `spawn`ed thread completes."""
     return JoinEvent(coro)
 
 
-def kill(coro):
+def kill(coro) -> Event:
     """Halt the execution of a different `spawn`ed thread."""
     return KillEvent(coro)
 
 
 # Convenience function for running socket servers.
 
-def server(host, port, func):
+def server(host: str, port: int, func) -> ta.Iterator[Event]:
     """
     A coroutine that runs a network server. Host and port specify the listening address. func should be a coroutine that
     takes a single parameter, a Connection object. The coroutine is invoked for every incoming connection on the
