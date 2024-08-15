@@ -12,8 +12,8 @@ import weakref
 from .core import CoreEvent
 from .core import Coro
 from .core import DelegationEvent
-from .core import ExcInfo
 from .core import ExceptionEvent
+from .core import ExcInfo
 from .core import JoinEvent
 from .core import KillEvent
 from .core import ReturnEvent
