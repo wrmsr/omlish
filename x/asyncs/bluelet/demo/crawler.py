@@ -6,14 +6,17 @@ blocking HTTP libraries, taking advantage of asynchronous I/O currently
 entails writing a custom HTTP client. This example includes a very
 simple, GET-only HTTP requester.
 """
-from __future__ import print_function
-import sys
+
 import json
-import threading
 import multiprocessing
+import sys
+import threading
 import time
+
+
 sys.path.insert(0, '..')
 import bluelet
+
 
 # Python 2/3 compatibility.
 
@@ -22,18 +25,20 @@ if PY3:
     from urllib.parse import urlparse
     from urllib.request import urlopen
 else:
-    from urlparse import urlparse
     from urllib import urlopen
 
+    from urlparse import urlparse
 
 URL = 'http://api.twitter.com/1/statuses/user_timeline.json' \
       '?screen_name=%s&count=1'
 USERNAMES = ('samps', 'b33ts', 'twitter', 'twitterapi', 'Support')
 
-class AsyncHTTPClient(object):
+
+class AsyncHTTPClient:
     """A basic Bluelet-based asynchronous HTTP client. Only supports
     very simple GET queries.
     """
+
     def __init__(self, host, port, path):
         self.host = host
         self.port = port
@@ -42,12 +47,11 @@ class AsyncHTTPClient(object):
     def headers(self):
         """Returns the HTTP headers for this request."""
         heads = [
-            "GET %s HTTP/1.1" % self.path,
-            "Host: %s" % self.host,
-            "User-Agent: bluelet-example",
+            'GET %s HTTP/1.1' % self.path,
+            'Host: %s' % self.host,
+            'User-Agent: bluelet-example',
         ]
-        return "\r\n".join(heads).encode('utf8') + b"\r\n\r\n"
-
+        return '\r\n'.join(heads).encode('utf8') + b'\r\n\r\n'
 
     # Convenience methods.
 
@@ -70,7 +74,6 @@ class AsyncHTTPClient(object):
         yield client._request()
         status, headers, body = yield client._read()
         yield bluelet.end(body)
-    
 
     # Internal coroutines.
 
@@ -90,13 +93,13 @@ class AsyncHTTPClient(object):
         response = ''.join(buf)
 
         # Parse response.
-        headers, body = response.split("\r\n\r\n", 1)
-        headers = headers.split("\r\n")
+        headers, body = response.split('\r\n\r\n', 1)
+        headers = headers.split('\r\n')
         status = headers.pop(0)
         version, code, message = status.split(' ', 2)
         headervals = {}
         for header in headers:
-            key, value = header.split(": ")
+            key, value = header.split(': ')
             headervals[key] = value
 
         yield bluelet.end((int(code), headers, body))
@@ -121,6 +124,7 @@ def run_bluelet():
     bluelet.run(crawl())
     return tweets
 
+
 def run_sequential():
     tweets = {}
 
@@ -132,6 +136,7 @@ def run_sequential():
 
     return tweets
 
+
 def run_threaded():
     # We need a lock to avoid conflicting updates to the tweet
     # dictionary.
@@ -142,6 +147,7 @@ def run_threaded():
         def __init__(self, username):
             threading.Thread.__init__(self)
             self.username = username
+
         def run(self):
             url = URL % self.username
             f = urlopen(url)
@@ -159,6 +165,7 @@ def run_threaded():
 
     return tweets
 
+
 def _process_fetch(username):
     # Mapped functions in multiprocessing can't be closures, so this
     # has to be at the module-global scope.
@@ -167,6 +174,8 @@ def _process_fetch(username):
     data = f.read().decode('utf8')
     tweet = json.loads(data)[0]['text']
     return (username, tweet)
+
+
 def run_processes():
     pool = multiprocessing.Pool(len(USERNAMES))
     tweet_pairs = pool.map(_process_fetch, USERNAMES)

@@ -11,14 +11,13 @@ Bluelet: easy concurrency without all the messy parallelism.
 """
 import collections
 import errno
+import select
 import socket
 import sys
 import time
 import traceback
 import types
 import weakref
-
-import select
 
 
 # A little bit of "six" (Python 2/3 compatibility): cope with PEP 3109 syntax changes.
@@ -34,7 +33,6 @@ class Event:
     Just a base class identifying Bluelet events. An event is an object yielded from a Bluelet thread coroutine to
     suspend operation and communicate with the scheduler.
     """
-    pass
 
 
 class WaitableEvent(Event):
@@ -354,7 +352,7 @@ def run(root_coro):
                 # Run the IO operation, but catch socket errors.
                 try:
                     value = event.fire()
-                except socket.error as exc:
+                except OSError as exc:
                     if isinstance(exc.args, tuple) and exc.args[0] == errno.EPIPE:
                         # Broken pipe. Remote host disconnected.
                         pass
@@ -418,7 +416,7 @@ class Listener:
         Connection object.
         """
         if self._closed:
-            raise SocketClosedError()
+            raise SocketClosedError
         return AcceptEvent(self)
 
     def close(self):
@@ -444,7 +442,7 @@ class Connection:
     def recv(self, size):
         """Read at most size bytes of data from the socket."""
         if self._closed:
-            raise SocketClosedError()
+            raise SocketClosedError
 
         if self._buf:
             # We already have data read previously.
@@ -459,19 +457,19 @@ class Connection:
         successfully sent.
         """
         if self._closed:
-            raise SocketClosedError()
+            raise SocketClosedError
         return SendEvent(self, data)
 
     def sendall(self, data):
         """Send all of data on the socket."""
         if self._closed:
-            raise SocketClosedError()
+            raise SocketClosedError
         return SendEvent(self, data, True)
 
-    def readline(self, terminator=b"\n", bufsize=1024):
+    def readline(self, terminator=b'\n', bufsize=1024):
         """Reads a line (delimited by terminator) from the socket."""
         if self._closed:
-            raise SocketClosedError()
+            raise SocketClosedError
 
         while True:
             if terminator in self._buf:

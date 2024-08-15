@@ -1,6 +1,9 @@
 import sys
+
+
 sys.path.insert(0, '..')
 import bluelet
+
 
 def echoer(conn):
     while True:
@@ -8,6 +11,7 @@ def echoer(conn):
         if not data:
             break
         yield conn.sendall(data)
+
 
 if __name__ == '__main__':
     bluelet.run(bluelet.server('', 4915, echoer))

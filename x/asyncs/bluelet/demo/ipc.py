@@ -1,10 +1,14 @@
-from __future__ import print_function
+
 import sys
+
+
 sys.path.insert(0, '..')
-import bluelet
 import multiprocessing
 import pickle
 import uuid
+
+import bluelet
+
 
 def server(ep):
     while True:
@@ -13,12 +17,14 @@ def server(ep):
             break
         yield ep.put(message ** 2)
 
+
 def client(ep):
     for i in range(10):
         yield ep.put(i)
         squared = yield ep.get()
         print(squared)
     yield ep.put('stop')
+
 
 class BlueletProc(multiprocessing.Process):
     def __init__(self, coro):
@@ -28,7 +34,8 @@ class BlueletProc(multiprocessing.Process):
     def run(self):
         bluelet.run(self.coro)
 
-class Endpoint(object):
+
+class Endpoint:
     def __init__(self, conn, sentinel):
         self.conn = conn
         self.sentinel = sentinel
@@ -41,6 +48,7 @@ class Endpoint(object):
         data = data[:-len(self.sentinel)]
         yield bluelet.end(pickle.loads(data))
 
+
 def channel(port=4915):
     # Create a pair of connected sockets.
     connections = [None, None]
@@ -48,6 +56,7 @@ def channel(port=4915):
 
     def listen():
         connections[0] = yield listener.accept()  # Avoiding nonlocal.
+
     listen_thread = listen()
     yield bluelet.spawn(listen_thread)
 
@@ -59,6 +68,7 @@ def channel(port=4915):
     sentinel = uuid.uuid4().bytes  # Somewhat hacky...
     yield bluelet.end((Endpoint(connections[0], sentinel),
                        Endpoint(connections[1], sentinel)))
+
 
 def main():
     ep1, ep2 = yield channel()
@@ -74,6 +84,7 @@ def main():
         tb.start()
         ta.join()
         tb.join()
+
 
 if __name__ == '__main__':
     bluelet.run(main())

@@ -1,7 +1,10 @@
-from __future__ import print_function
+
 import sys
+
+
 sys.path.insert(0, '..')
 import bluelet
+
 
 def echoer(conn):
     print('Connected: %s' % conn.addr[0])
@@ -15,7 +18,8 @@ def echoer(conn):
     finally:
         print('Disconnected: %s' % conn.addr[0])
         conn.close()
-        
+
+
 def echoserver():
     listener = bluelet.Listener('', 4915)
     try:
@@ -27,6 +31,7 @@ def echoserver():
     finally:
         print('Exiting.')
         listener.close()
+
 
 if __name__ == '__main__':
     bluelet.run(echoserver())

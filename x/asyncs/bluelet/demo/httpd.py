@@ -1,15 +1,16 @@
 """A simple Web server built with Bluelet to support concurrent requests
 in a single OS thread.
 """
-from __future__ import print_function
-import sys
-import os
 import mimetypes
-sys.path.insert(0, '..')
-import bluelet
+import os
+import sys
+
+from .. import bluelet
+
 
 ROOT = '.'
 INDEX_FILENAME = 'index.html'
+
 
 def parse_request(lines):
     """Parse an HTTP request."""
@@ -22,6 +23,7 @@ def parse_request(lines):
         headers[key] = value
     return method, path, headers
 
+
 def mime_type(filename):
     """Return a reasonable MIME type for the file or text/plain as a
     fallback.
@@ -31,6 +33,7 @@ def mime_type(filename):
         return mt
     else:
         return 'text/plain'
+
 
 def respond(method, path, headers):
     """Generate an HTTP response for a parsed request."""
@@ -56,8 +59,8 @@ def respond(method, path, headers):
         files = []
         for name in os.listdir(filename):
             files.append('<li><a href="%s">%s</a></li>' % (name, name))
-        html = "<html><head><title>%s</title></head><body>" \
-               "<h1>%s</h1><ul>%s</ul></body></html>""" % \
+        html = '<html><head><title>%s</title></head><body>' \
+               '<h1>%s</h1><ul>%s</ul></body></html>' % \
                (path, path, ''.join(files))
         return '200 OK', {'Content-Type': 'text/html'}, html
 
@@ -70,8 +73,9 @@ def respond(method, path, headers):
         # Not found.
         print('Not found.')
         return '404 Not Found', {'Content-Type': 'text/html'}, \
-               '<html><head><title>404 Not Found</title></head>' \
-               '<body><h1>Not found.</h1></body></html>'
+            '<html><head><title>404 Not Found</title></head>' \
+            '<body><h1>Not found.</h1></body></html>'
+
 
 def webrequest(conn):
     """A Bluelet coroutine implementing an HTTP server."""
@@ -94,11 +98,12 @@ def webrequest(conn):
     status, headers, content = respond(method, path, headers)
 
     # Send response.
-    yield conn.sendall(("HTTP/1.1 %s\r\n" % status).encode('utf8'))
+    yield conn.sendall(('HTTP/1.1 %s\r\n' % status).encode('utf8'))
     for key, value in headers.items():
-        yield conn.sendall(("%s: %s\r\n" % (key, value)).encode('utf8'))
-    yield conn.sendall(b"\r\n")
+        yield conn.sendall(('%s: %s\r\n' % (key, value)).encode('utf8'))
+    yield conn.sendall(b'\r\n')
     yield conn.sendall(content)
+
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
