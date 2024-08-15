@@ -149,7 +149,7 @@ def run(root_coro: Coro) -> None:
     joiners: ta.MutableMapping[Coro, list[Coro]] = collections.defaultdict(list)
 
     # History of spawned coroutines for joining of already completed coroutines.
-    history: ta.MutableMapping[Coro, Event | None] = weakref.WeakKeyDictionary({root_coro: None})
+    history: ta.MutableMapping[Coro, ta.Optional[Event]] = weakref.WeakKeyDictionary({root_coro: None})
 
     def complete_thread(coro: Coro, return_value: ta.Any) -> None:
         """
