@@ -11,8 +11,8 @@ import typing as ta
 from .core import DelegationBlueletEvent
 from .core import ReturnBlueletEvent
 from .events import BlueletEvent
-from .events import WaitableBlueletEvent
 from .events import BlueletWaitables
+from .events import WaitableBlueletEvent
 
 
 ##

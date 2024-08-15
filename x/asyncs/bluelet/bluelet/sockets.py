@@ -14,8 +14,8 @@ from .core import ReturnBlueletEvent
 from .core import ValueBlueletEvent
 from .core import bluelet_spawn
 from .events import BlueletEvent
-from .events import WaitableBlueletEvent
 from .events import BlueletWaitables
+from .events import WaitableBlueletEvent
 
 
 ##
