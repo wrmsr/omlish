@@ -276,7 +276,7 @@ class _Runner:
             self._kill_coro(event.child)
             return True
 
-        elif isinstance(event, _DelegatedEvent):
+        elif isinstance(event, (_DelegatedEvent, _SuspendedEvent)):
             return False
 
         else:
