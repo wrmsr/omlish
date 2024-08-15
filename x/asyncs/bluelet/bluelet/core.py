@@ -60,7 +60,7 @@ def spawn(coro: Coro) -> Event:
     """Event: add another coroutine to the scheduler. Both the parent and child coroutines run concurrently."""
 
     if not isinstance(coro, types.GeneratorType):
-        raise ValueError('%s is not a coroutine' % str(coro))
+        raise TypeError(f'{coro} is not a coroutine')
     return SpawnEvent(coro)
 
 
@@ -116,7 +116,7 @@ def call(coro: Coro) -> Event:
     """
 
     if not isinstance(coro, types.GeneratorType):
-        raise ValueError('%s is not a coroutine' % str(coro))
+        raise TypeError(f'{coro} is not a coroutine')
     return DelegationEvent(coro)
 
 

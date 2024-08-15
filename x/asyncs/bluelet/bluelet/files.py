@@ -2,11 +2,11 @@ import abc
 import dataclasses as dc
 import typing as ta
 
+from .core import DelegationEvent
+from .core import ReturnEvent
 from .events import Event
 from .events import WaitableEvent
 from .events import Waitables
-from .core import DelegationEvent
-from .core import ReturnEvent
 
 
 ##

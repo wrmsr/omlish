@@ -36,7 +36,7 @@ def _reraise(typ: type[BaseException], exc: BaseException, tb: types.TracebackTy
     raise exc.with_traceback(tb)
 
 
-class ThreadException(Exception):
+class ThreadException(Exception):  # noqa
     def __init__(self, coro: Coro, exc_info: ExcInfo) -> None:
         super().__init__()
         self.coro = coro
@@ -190,7 +190,8 @@ def run(root_coro: Coro) -> None:
         except:  # noqa
             # Thread raised some other exception.
             del threads[coro]
-            raise ThreadException(coro, _exc_info())
+            # Note: Don't use `raise from` as this should support 3.8.
+            raise ThreadException(coro, _exc_info())  # noqa
 
         else:
             if isinstance(next_event, ta.Generator):
@@ -263,7 +264,7 @@ def run(root_coro: Coro) -> None:
                     break
 
             # Wait and fire.
-            event2coro = dict((v, k) for k, v in threads.items())
+            event2coro = {v: k for k, v in threads.items()}
             for event in _event_select(threads.values()):
                 # Run the IO operation, but catch socket errors.
                 try:
@@ -294,7 +295,7 @@ def run(root_coro: Coro) -> None:
                 exit_te = te
                 break
 
-        except:
+        except:  # noqa
             # For instance, KeyboardInterrupt during select(). Raise into root thread and terminate others.
             threads = {root_coro: ExceptionEvent(_exc_info())}
 
