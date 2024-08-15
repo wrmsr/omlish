@@ -64,6 +64,8 @@ def set_origins(obj: HasOriginsT, origins: Origins) -> HasOriginsT:
 
 
 class HasOriginsImpl(HasOrigins):
+    """Note: inheritors must be dataclasses."""
+
     @property
     def origins(self) -> Origins:
         return self.__dict__[ORIGINS_ATTR]
