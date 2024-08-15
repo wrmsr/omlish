@@ -50,6 +50,7 @@ import dataclasses as dc
 import datetime
 import enum
 import functools
+import inspect
 import json
 import logging
 import os
@@ -168,19 +169,6 @@ def is_optional_alias(spec: ta.Any) -> bool:
 def get_optional_alias_arg(spec: ta.Any) -> ta.Any:
     [it] = [it for it in ta.get_args(spec) if it not in (None, type(None))]
     return it
-
-
-########################################
-# ../../../../omdev/amalg/std/runtime.py
-
-
-REQUIRED_PYTHON_VERSION = (3, 8)
-
-
-def check_runtime_version() -> None:
-    if sys.version_info < REQUIRED_PYTHON_VERSION:
-        raise OSError(
-            f'Requires python {REQUIRED_PYTHON_VERSION}, got {sys.version_info} from {sys.executable}')  # noqa
 
 
 ########################################
@@ -333,7 +321,7 @@ class DataclassObjMarshaler(ObjMarshaler):
         return {k: m.marshal(getattr(o, k)) for k, m in self.fs.items()}
 
     def unmarshal(self, o: ta.Any) -> ta.Any:
-        return self.ty(**{k: m.unmarshal(o[k]) for k, m in self.fs.items()})
+        return self.ty(**{k: self.fs[k].unmarshal(v) for k, v in o.items()})
 
 
 @dc.dataclass(frozen=True)
@@ -481,6 +469,24 @@ def unmarshal_obj(o: ta.Any, ty: ta.Any) -> ta.Any:
 
 
 ########################################
+# ../../../../omdev/amalg/std/runtime.py
+
+
+@cached_nullary
+def is_debugger_attached() -> bool:
+    return any(frame[1].endswith('pydevd.py') for frame in inspect.stack())
+
+
+REQUIRED_PYTHON_VERSION = (3, 8)
+
+
+def check_runtime_version() -> None:
+    if sys.version_info < REQUIRED_PYTHON_VERSION:
+        raise OSError(
+            f'Requires python {REQUIRED_PYTHON_VERSION}, got {sys.version_info} from {sys.executable}')  # noqa
+
+
+########################################
 # ../../../../omdev/amalg/std/subprocesses.py
 # ruff: noqa: UP006 UP007
 
@@ -509,7 +515,7 @@ def _prepare_subprocess_invocation(
         if not log.isEnabledFor(logging.DEBUG):
             kwargs['stderr'] = subprocess.DEVNULL
 
-    if _SUBPROCESS_SHELL_WRAP_EXECS:
+    if _SUBPROCESS_SHELL_WRAP_EXECS or is_debugger_attached():
         args = ('sh', '-c', ' '.join(map(shlex.quote, args)))
 
     return args, dict(
