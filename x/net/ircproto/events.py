@@ -58,7 +58,7 @@ class Command(IrcEvent):
 
     command: str | None = None
     privileged: bool = False
-    allowed_replies: ta.Container[int] = ()
+    allowed_replies: frozenset[int] = ()
 
     def process_reply(self, code):
         if code not in consts.REPLY_NAMES:
@@ -283,7 +283,11 @@ class Join(Command):
 # Section 3.2.2
 class Part(Command):
     command = 'PART'
-    allowed_replies = (consts.ERR_NEEDMOREPARAMS, consts.ERR_NOSUCHCHANNEL, consts.ERR_NOTONCHANNEL)
+    allowed_replies = frozenset([
+        consts.ERR_NEEDMOREPARAMS,
+        consts.ERR_NOSUCHCHANNEL,
+        consts.ERR_NOTONCHANNEL,
+    ])
 
     def __init__(self, sender, channel, message=None):
         super().__init__(sender)
@@ -297,8 +301,14 @@ class Part(Command):
 # Section 3.2.4
 class Topic(Command):
     command = 'TOPIC'
-    allowed_replies = (consts.ERR_NEEDMOREPARAMS, consts.ERR_NOTONCHANNEL, consts.RPL_NOTOPIC, consts.RPL_TOPIC,
-                       consts.ERR_CHANOPRIVSNEEDED, consts.ERR_NOCHANMODES)
+    allowed_replies = frozenset([
+        consts.ERR_NEEDMOREPARAMS,
+        consts.ERR_NOTONCHANNEL,
+        consts.RPL_NOTOPIC,
+        consts.RPL_TOPIC,
+        consts.ERR_CHANOPRIVSNEEDED,
+        consts.ERR_NOCHANMODES,
+    ])
 
     def __init__(self, sender, channel, topic):
         super().__init__(sender)
@@ -312,20 +322,35 @@ class Topic(Command):
 # Section 3.2.5
 class Names(Command):
     command = 'NAMES'
-    allowed_replies = (consts.ERR_NOSUCHSERVER, consts.RPL_NAMREPLY, consts.RPL_ENDOFNAMES)
+    allowed_replies = frozenset([
+        consts.ERR_NOSUCHSERVER,
+        consts.RPL_NAMREPLY,
+        consts.RPL_ENDOFNAMES,
+    ])
 
 
 # Section 3.2.6
 class List(Command):
     command = 'LIST'
-    allowed_replies = (consts.ERR_NOSUCHSERVER, consts.RPL_LIST, consts.RPL_LISTEND)
+    allowed_replies = frozenset([
+        consts.ERR_NOSUCHSERVER,
+        consts.RPL_LIST,
+        consts.RPL_LISTEND,
+    ])
 
 
 # Section 3.2.7
 class Invite(Command):
     command = 'INVITE'
-    allowed_replies = (consts.ERR_NEEDMOREPARAMS, consts.ERR_NOSUCHNICK, consts.ERR_NOTONCHANNEL, consts.ERR_USERONCHANNEL,
-                       consts.ERR_CHANOPRIVSNEEDED, consts.RPL_INVITING, consts.RPL_AWAY)
+    allowed_replies = frozenset([
+        consts.ERR_NEEDMOREPARAMS,
+        consts.ERR_NOSUCHNICK,
+        consts.ERR_NOTONCHANNEL,
+        consts.ERR_USERONCHANNEL,
+        consts.ERR_CHANOPRIVSNEEDED,
+        consts.RPL_INVITING,
+        consts.RPL_AWAY,
+    ])
 
     def __init__(self, sender, nickname, channel):
         super().__init__(sender)
@@ -339,8 +364,14 @@ class Invite(Command):
 # Section 3.2.8
 class Kick(Command):
     command = 'KICK'
-    allowed_replies = (consts.ERR_NEEDMOREPARAMS, consts.ERR_NOSUCHCHANNEL, consts.ERR_BADCHANMASK,
-                       consts.ERR_CHANOPRIVSNEEDED, consts.ERR_USERNOTINCHANNEL, consts.ERR_NOTONCHANNEL)
+    allowed_replies = frozenset([
+        consts.ERR_NEEDMOREPARAMS,
+        consts.ERR_NOSUCHCHANNEL,
+        consts.ERR_BADCHANMASK,
+        consts.ERR_CHANOPRIVSNEEDED,
+        consts.ERR_USERNOTINCHANNEL,
+        consts.ERR_NOTONCHANNEL,
+    ])
 
     def __init__(self, sender, channel, nickname, comment=None):
         super().__init__(sender)
@@ -355,8 +386,16 @@ class Kick(Command):
 # Section 3.3.1
 class PrivateMessage(Command):
     command = 'PRIVMSG'
-    allowed_replies = (consts.ERR_NORECIPIENT, consts.ERR_NOTEXTTOSEND, consts.ERR_CANNOTSENDTOCHAN, consts.ERR_NOTOPLEVEL,
-                       consts.ERR_WILDTOPLEVEL, consts.ERR_TOOMANYTARGETS, consts.ERR_NOSUCHNICK, consts.RPL_AWAY)
+    allowed_replies = frozenset([
+        consts.ERR_NORECIPIENT,
+        consts.ERR_NOTEXTTOSEND,
+        consts.ERR_CANNOTSENDTOCHAN,
+        consts.ERR_NOTOPLEVEL,
+        consts.ERR_WILDTOPLEVEL,
+        consts.ERR_TOOMANYTARGETS,
+        consts.ERR_NOSUCHNICK,
+        consts.RPL_AWAY,
+    ])
 
     def __init__(self, sender, recipient, message):
         super().__init__(sender)
@@ -370,8 +409,15 @@ class PrivateMessage(Command):
 # Section 3.3.2
 class Notice(Command):
     command = 'NOTICE'
-    allowed_replies = (consts.ERR_NORECIPIENT, consts.ERR_NOTEXTTOSEND, consts.ERR_CANNOTSENDTOCHAN, consts.ERR_NOTOPLEVEL,
-                       consts.ERR_WILDTOPLEVEL, consts.ERR_TOOMANYTARGETS, consts.ERR_NOSUCHNICK)
+    allowed_replies = frozenset([
+        consts.ERR_NORECIPIENT,
+        consts.ERR_NOTEXTTOSEND,
+        consts.ERR_CANNOTSENDTOCHAN,
+        consts.ERR_NOTOPLEVEL,
+        consts.ERR_WILDTOPLEVEL,
+        consts.ERR_TOOMANYTARGETS,
+        consts.ERR_NOSUCHNICK,
+    ])
 
     def __init__(self, sender, recipient, message):
         super().__init__(sender)
@@ -409,7 +455,12 @@ class CTCPMessage(IrcEvent):
 # Section 3.4.1
 class Motd(Command):
     command = 'MOTD'
-    allowed_replies = (consts.RPL_MOTDSTART, consts.RPL_MOTD, consts.RPL_ENDOFMOTD, consts.ERR_NOMOTD)
+    allowed_replies = frozenset([
+        consts.RPL_MOTDSTART,
+        consts.RPL_MOTD,
+        consts.RPL_ENDOFMOTD,
+        consts.ERR_NOMOTD,
+    ])
 
     def __init__(self, sender, target=None):
         super().__init__(sender)
@@ -422,8 +473,14 @@ class Motd(Command):
 # Section 3.4.2
 class Lusers(Command):
     command = 'LUSERS'
-    allowed_replies = (consts.RPL_LUSERCLIENT, consts.RPL_LUSEROP, consts.RPL_LUSERUNKNOWN, consts.RPL_LUSERCHANNELS,
-                       consts.RPL_LUSERME, consts.ERR_NOSUCHSERVER)
+    allowed_replies = frozenset([
+        consts.RPL_LUSERCLIENT,
+        consts.RPL_LUSEROP,
+        consts.RPL_LUSERUNKNOWN,
+        consts.RPL_LUSERCHANNELS,
+        consts.RPL_LUSERME,
+        consts.ERR_NOSUCHSERVER,
+    ])
 
     def __init__(self, sender, mask=None, target=None):
         super().__init__(sender)
@@ -437,7 +494,10 @@ class Lusers(Command):
 # Section 3.4.3
 class Version(Command):
     command = 'VERSION'
-    allowed_replies = (consts.ERR_NOSUCHSERVER, consts.RPL_VERSION)
+    allowed_replies = frozenset([
+        consts.ERR_NOSUCHSERVER,
+        consts.RPL_VERSION,
+    ])
 
     def __init__(self, sender, target=None):
         super().__init__(sender)
@@ -450,8 +510,14 @@ class Version(Command):
 # Section 3.4.4
 class Stats(Command):
     command = 'STATS'
-    allowed_replies = (consts.ERR_NOSUCHSERVER, consts.RPL_STATSLINKINFO, consts.RPL_STATSUPTIME, consts.RPL_STATSCOMMANDS,
-                       consts.RPL_STATSOLINE, consts.RPL_ENDOFSTATS)
+    allowed_replies = frozenset([
+        consts.ERR_NOSUCHSERVER,
+        consts.RPL_STATSLINKINFO,
+        consts.RPL_STATSUPTIME,
+        consts.RPL_STATSCOMMANDS,
+        consts.RPL_STATSOLINE,
+        consts.RPL_ENDOFSTATS,
+    ])
 
     def __init__(self, sender, query=None, target=None):
         super().__init__(sender)
@@ -465,8 +531,14 @@ class Stats(Command):
 # Section 3.4.5
 class Links(Command):
     command = 'LINKS'
-    allowed_replies = (consts.ERR_NOSUCHSERVER, consts.RPL_STATSLINKINFO, consts.RPL_STATSUPTIME, consts.RPL_STATSCOMMANDS,
-                       consts.RPL_STATSOLINE, consts.RPL_ENDOFSTATS)
+    allowed_replies = frozenset([
+        consts.ERR_NOSUCHSERVER,
+        consts.RPL_STATSLINKINFO,
+        consts.RPL_STATSUPTIME,
+        consts.RPL_STATSCOMMANDS,
+        consts.RPL_STATSOLINE,
+        consts.RPL_ENDOFSTATS,
+    ])
 
     def __init__(self, sender, remote_server=None, server_mask=None):
         super().__init__(sender)
@@ -480,7 +552,10 @@ class Links(Command):
 # Section 3.4.6
 class Time(Command):
     command = 'TIME'
-    allowed_replies = (consts.ERR_NOSUCHSERVER, consts.RPL_TIME)
+    allowed_replies = frozenset([
+        consts.ERR_NOSUCHSERVER,
+        consts.RPL_TIME,
+    ])
 
     def __init__(self, sender, target=None):
         super().__init__(sender)
@@ -494,7 +569,11 @@ class Time(Command):
 class Connect(Command):
     command = 'CONNECT'
     privileged = True
-    allowed_replies = (consts.ERR_NOSUCHSERVER, consts.ERR_NOPRIVILEGES, consts.ERR_NEEDMOREPARAMS)
+    allowed_replies = frozenset([
+        consts.ERR_NOSUCHSERVER,
+        consts.ERR_NOPRIVILEGES,
+        consts.ERR_NEEDMOREPARAMS,
+    ])
 
     def __init__(self, sender, target_server, port, remote_server=None):
         super().__init__(sender)
@@ -509,10 +588,21 @@ class Connect(Command):
 # Section 3.4.8
 class Trace(Command):
     command = 'TRACE'
-    allowed_replies = (consts.ERR_NOSUCHSERVER, consts.RPL_TRACELINK, consts.RPL_TRACECONNECTING, consts.RPL_TRACEHANDSHAKE,
-                       consts.RPL_TRACEUNKNOWN, consts.RPL_TRACEOPERATOR, consts.RPL_TRACEUSER, consts.RPL_TRACESERVER,
-                       consts.RPL_TRACESERVICE, consts.RPL_TRACENEWTYPE, consts.RPL_TRACECLASS, consts.RPL_TRACELOG,
-                       consts.RPL_TRACEEND)
+    allowed_replies = frozenset([
+        consts.ERR_NOSUCHSERVER,
+        consts.RPL_TRACELINK,
+        consts.RPL_TRACECONNECTING,
+        consts.RPL_TRACEHANDSHAKE,
+        consts.RPL_TRACEUNKNOWN,
+        consts.RPL_TRACEOPERATOR,
+        consts.RPL_TRACEUSER,
+        consts.RPL_TRACESERVER,
+        consts.RPL_TRACESERVICE,
+        consts.RPL_TRACENEWTYPE,
+        consts.RPL_TRACECLASS,
+        consts.RPL_TRACELOG,
+        consts.RPL_TRACEEND,
+    ])
 
     def __init__(self, sender, target=None):
         super().__init__(sender)
@@ -525,7 +615,13 @@ class Trace(Command):
 # Section 3.4.9
 class Admin(Command):
     command = 'ADMIN'
-    allowed_replies = (consts.ERR_NOSUCHSERVER, consts.RPL_ADMINME, consts.RPL_ADMINLOC1, consts.RPL_ADMINLOC2, consts.RPL_ADMINEMAIL)
+    allowed_replies = frozenset([
+        consts.ERR_NOSUCHSERVER,
+        consts.RPL_ADMINME,
+        consts.RPL_ADMINLOC1,
+        consts.RPL_ADMINLOC2,
+        consts.RPL_ADMINEMAIL,
+    ])
 
     def __init__(self, sender, target=None):
         super().__init__(sender)
@@ -538,7 +634,11 @@ class Admin(Command):
 # Section 3.4.10
 class Info(Command):
     command = 'INFO'
-    allowed_replies = (consts.ERR_NOSUCHSERVER, consts.RPL_INFO, consts.RPL_ENDOFINFO)
+    allowed_replies = frozenset([
+        consts.ERR_NOSUCHSERVER,
+        consts.RPL_INFO,
+        consts.RPL_ENDOFINFO,
+    ])
 
     def __init__(self, sender, target=None):
         super().__init__(sender)
@@ -552,7 +652,12 @@ class Info(Command):
 class Kill(Command):
     command = 'KILL'
     privileged = True
-    allowed_replies = (consts.ERR_NOPRIVILEGES, consts.ERR_NEEDMOREPARAMS, consts.ERR_NOSUCHNICK, consts.ERR_CANTKILLSERVER)
+    allowed_replies = frozenset([
+        consts.ERR_NOPRIVILEGES,
+        consts.ERR_NEEDMOREPARAMS,
+        consts.ERR_NOSUCHNICK,
+        consts.ERR_CANTKILLSERVER,
+    ])
 
     def __init__(self, sender, nickname, comment):
         super().__init__(sender)
@@ -566,7 +671,10 @@ class Kill(Command):
 # Section 3.7.2
 class Ping(Command):
     command = 'PING'
-    allowed_replies = (consts.ERR_NOORIGIN, consts.ERR_NOSUCHSERVER)
+    allowed_replies = frozenset([
+        consts.ERR_NOORIGIN,
+        consts.ERR_NOSUCHSERVER,
+    ])
 
     def __init__(self, sender, server1, server2=None):
         super().__init__(sender)
@@ -580,7 +688,10 @@ class Ping(Command):
 # Section 3.7.3
 class Pong(Command):
     command = 'PONG'
-    allowed_replies = (consts.ERR_NOORIGIN, consts.ERR_NOSUCHSERVER)
+    allowed_replies = frozenset([
+        consts.ERR_NOORIGIN,
+        consts.ERR_NOSUCHSERVER,
+    ])
 
     def __init__(self, sender, server1, server2=None):
         super().__init__(sender)
@@ -606,7 +717,10 @@ class Error(Command):
 # Section 4.1
 class Away(Command):
     command = 'AWAY'
-    allowed_replies = (consts.RPL_UNAWAY, consts.RPL_NOWAWAY)
+    allowed_replies = frozenset([
+        consts.RPL_UNAWAY,
+        consts.RPL_NOWAWAY,
+    ])
 
     def __init__(self, sender, text=None):
         super().__init__(sender)
@@ -620,28 +734,41 @@ class Away(Command):
 class Rehash(Command):
     command = 'REHASH'
     privileged = True
-    allowed_replies = (consts.RPL_REHASHING, consts.ERR_NOPRIVILEGES)
+    allowed_replies = frozenset([
+        consts.RPL_REHASHING,
+        consts.ERR_NOPRIVILEGES,
+    ])
 
 
 # Section 4.3
 class Die(Command):
     command = 'DIE'
     privileged = True
-    allowed_replies = (consts.ERR_NOPRIVILEGES,)
+    allowed_replies = frozenset([
+        consts.ERR_NOPRIVILEGES,
+    ])
 
 
 # Section 4.3
 class Restart(Command):
     command = 'RESTART'
     privileged = True
-    allowed_replies = (consts.ERR_NOPRIVILEGES,)
+    allowed_replies = frozenset([
+        consts.ERR_NOPRIVILEGES,
+    ])
 
 
 # Section 4.5
 class Summon(Command):
     command = 'SUMMON'
-    allowed_replies = (consts.ERR_NORECIPIENT, consts.ERR_FILEERROR, consts.ERR_NOLOGIN, consts.ERR_NOSUCHSERVER,
-                       consts.ERR_SUMMONDISABLED, consts.RPL_SUMMONING)
+    allowed_replies = frozenset([
+        consts.ERR_NORECIPIENT,
+        consts.ERR_FILEERROR,
+        consts.ERR_NOLOGIN,
+        consts.ERR_NOSUCHSERVER,
+        consts.ERR_SUMMONDISABLED,
+        consts.RPL_SUMMONING,
+    ])
 
     def __init__(self, sender, user, target=None, channel=None):
         super().__init__(sender)
@@ -656,8 +783,14 @@ class Summon(Command):
 # Section 4.6
 class Users(Command):
     command = 'USERS'
-    allowed_replies = (consts.ERR_NORECIPIENT, consts.ERR_FILEERROR, consts.ERR_NOLOGIN, consts.ERR_NOSUCHSERVER,
-                       consts.ERR_SUMMONDISABLED, consts.RPL_SUMMONING)
+    allowed_replies = frozenset([
+        consts.ERR_NORECIPIENT,
+        consts.ERR_FILEERROR,
+        consts.ERR_NOLOGIN,
+        consts.ERR_NOSUCHSERVER,
+        consts.ERR_SUMMONDISABLED,
+        consts.RPL_SUMMONING,
+    ])
 
     def __init__(self, sender, target=None):
         super().__init__(sender)
@@ -670,7 +803,9 @@ class Users(Command):
 # Section 4.7
 class Operwall(Command):
     command = 'WALLOPS'
-    allowed_replies = (consts.ERR_NEEDMOREPARAMS,)
+    allowed_replies = frozenset([
+        consts.ERR_NEEDMOREPARAMS,
+    ])
 
     def __init__(self, sender, text=None):
         super().__init__(sender)
@@ -683,7 +818,10 @@ class Operwall(Command):
 # Section 4.8
 class Userhost(Command):
     command = 'USERHOST'
-    allowed_replies = (consts.RPL_USERHOST, consts.ERR_NEEDMOREPARAMS)
+    allowed_replies = frozenset([
+        consts.RPL_USERHOST,
+        consts.ERR_NEEDMOREPARAMS,
+    ])
 
     def __init__(self, sender, nickname, *nicknames):
         super().__init__(sender)
@@ -696,7 +834,10 @@ class Userhost(Command):
 # Section 4.9
 class Ison(Command):
     command = 'ISON'
-    allowed_replies = (consts.RPL_ISON, consts.ERR_NEEDMOREPARAMS)
+    allowed_replies = frozenset([
+        consts.RPL_ISON,
+        consts.ERR_NEEDMOREPARAMS,
+    ])
 
     def __init__(self, sender, nickname, *nicknames):
         super().__init__(sender)
@@ -706,12 +847,18 @@ class Ison(Command):
         return super().encode(*self.nicknames)
 
 
-commands = {cls.command: cls for cls in locals().values()  # type: ignore
-            if isinstance(cls, type) and issubclass(cls, Command)}
+commands = {
+    cls.command: cls
+    for cls in locals().values()  # type: ignore
+    if isinstance(cls, type) and issubclass(cls, Command)
+}
 
 
-def decode_event(buffer, decoder=codecs.getdecoder('utf-8'),
-                 fallback_decoder=codecs.getdecoder('iso-8859-1')):
+def decode_event(
+        buffer,
+        decoder=codecs.getdecoder('utf-8'),
+        fallback_decoder=codecs.getdecoder('iso-8859-1'),
+):
     end_index = buffer.find(b'\r\n')
     if end_index == -1:
         return None
