@@ -170,6 +170,8 @@ from .strings import (  # noqa
 )
 
 from .sys import (  # noqa
+    REQUIRED_PYTHON_VERSION,
+    check_runtime_version,
     is_gil_enabled,
 )
 

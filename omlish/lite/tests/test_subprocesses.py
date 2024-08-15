@@ -4,10 +4,9 @@ import unittest
 
 from .. import subprocesses as su
 from ..check import check_not_none
-from .helpers import SubprocessPatchingTest
 
 
-class TestSubprocesses(SubprocessPatchingTest, unittest.TestCase):
+class TestSubprocesses(unittest.TestCase):
 
     def test_subprocesses_call(self):
         su.subprocess_check_call('true')
