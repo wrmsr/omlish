@@ -82,7 +82,7 @@ def respond(method, path, headers):
         )
 
 
-def webrequest(conn: bl.Connection) -> ta.Generator[bl.Event, ta.Any, None]:
+def webrequest(conn: bl.Connection) -> bl.Coro:
     """A Bluelet coroutine implementing an HTTP server."""
 
     # Get the HTTP request.

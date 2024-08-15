@@ -26,7 +26,7 @@ import weakref
 
 ExcInfo: ta.TypeAlias = tuple[type[BaseException], BaseException, types.TracebackType]
 
-Coro: ta.TypeAlias = ta.Generator['Event', ta.Any, None]
+Coro: ta.TypeAlias = ta.Generator[ta.Union['Event', 'Coro'], ta.Any, None]
 
 
 class HasFileno(ta.Protocol):
@@ -516,7 +516,7 @@ class Connection:
             raise SocketClosedError
         return SendEvent(self, data, True)
 
-    def readline(self, terminator: bytes = b'\n', bufsize: int = 1024) -> ta.Generator[Event, ta.Any, None]:
+    def readline(self, terminator: bytes = b'\n', bufsize: int = 1024) -> Coro:
         """Reads a line (delimited by terminator) from the socket."""
 
         if self._closed:
@@ -674,7 +674,7 @@ def kill(coro: Coro) -> Event:
 # Convenience function for running socket servers.
 
 
-def server(host: str, port: int, func) -> ta.Iterator[Event]:
+def server(host: str, port: int, func) -> Coro:
     """
     A coroutine that runs a network server. Host and port specify the listening address. func should be a coroutine that
     takes a single parameter, a Connection object. The coroutine is invoked for every incoming connection on the
