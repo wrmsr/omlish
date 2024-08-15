@@ -9,9 +9,9 @@ from .events import Event
 from .events import WaitableEvent
 
 
-ExcInfo: ta.TypeAlias = ta.Tuple[ta.Type[BaseException], BaseException, types.TracebackType]
+ExcInfo = ta.Tuple[ta.Type[BaseException], BaseException, types.TracebackType]  # ta.TypeAlias
 
-Coro: ta.TypeAlias = ta.Generator[ta.Union['Event', 'Coro'], ta.Any, None]
+Coro = ta.Generator[ta.Union['Event', 'Coro'], ta.Any, None]  # ta.TypeAlias
 
 
 ##

@@ -1,9 +1,11 @@
 """
 TDOO:
+ - (unit)tests lol
  - amalgify? prefix everything w/ Blue? prob want some helper Namespace or smth
  - task groups
  - gather
  - locks / semaphores / events / etc
+ - subprocesses
  - ensure no unknown event types - Waitable subtypes okay
  - rename Coro to Bluelet?
 """
@@ -59,7 +61,7 @@ class CoroException(Exception):  # noqa
 ##
 
 
-def _event_select(events: ta.Iterable[Event]) -> set[WaitableEvent]:
+def _event_select(events: ta.Iterable[Event]) -> ta.Set[WaitableEvent]:
     """
     Perform a select() over all the Events provided, returning the ones ready to be fired. Only WaitableEvents
     (including SleepEvents) matter here; all other events are ignored (and thus postponed).
@@ -106,7 +108,7 @@ def _event_select(events: ta.Iterable[Event]) -> set[WaitableEvent]:
             time.sleep(timeout)
 
     # Gather ready events corresponding to the ready waitables.
-    ready_events: set[WaitableEvent] = set()
+    ready_events: ta.Set[WaitableEvent] = set()
     for ready in rready:
         ready_events.add(waitable_to_event[('r', ready)])
     for ready in wready:

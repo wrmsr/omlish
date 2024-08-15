@@ -21,7 +21,7 @@ class HasFileno(ta.Protocol):
     def fileno(self) -> int: ...
 
 
-Waitable: ta.TypeAlias = ta.Union[int, HasFileno]
+Waitable = ta.Union[int, HasFileno]  # ta.TypeAlias
 
 
 @dc.dataclass(frozen=True)
