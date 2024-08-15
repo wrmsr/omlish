@@ -205,7 +205,7 @@ def _event_select(events: ta.Iterable[Event]) -> set[WaitableEvent]:
     if rlist or wlist or xlist:
         rready, wready, xready = select.select(rlist, wlist, xlist, timeout)
     else:
-        rready, wready, xready = (), (), ()
+        rready, wready, xready = [], [], []
         if timeout:
             time.sleep(timeout)
 
