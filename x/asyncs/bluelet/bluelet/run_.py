@@ -1,4 +1,4 @@
-# ruff: noqa: UP007
+# ruff: noqa: UP006 UP007
 import collections
 import dataclasses as dc
 import errno
@@ -33,7 +33,7 @@ def _exc_info() -> ExcInfo:
     return sys.exc_info()  # type: ignore
 
 
-def _reraise(typ: type[BaseException], exc: BaseException, tb: types.TracebackType) -> ta.NoReturn:
+def _reraise(typ: ta.Type[BaseException], exc: BaseException, tb: types.TracebackType) -> ta.NoReturn:
     raise exc.with_traceback(tb)
 
 
@@ -56,10 +56,10 @@ def _event_select(events: ta.Iterable[Event]) -> set[WaitableEvent]:
     (including SleepEvents) matter here; all other events are ignored (and thus postponed).
     """
 
-    waitable_to_event: dict[tuple[str, Waitable], WaitableEvent] = {}
-    rlist: list[Waitable] = []
-    wlist: list[Waitable] = []
-    xlist: list[Waitable] = []
+    waitable_to_event: ta.Dict[ta.Tuple[str, Waitable], WaitableEvent] = {}
+    rlist: ta.List[Waitable] = []
+    wlist: ta.List[Waitable] = []
+    xlist: ta.List[Waitable] = []
     earliest_wakeup: ta.Optional[float] = None
 
     # Gather waitables and wakeup times.
@@ -140,13 +140,13 @@ def run(root_coro: Coro) -> None:
     # to their currently "blocking" event. The event value may be SUSPENDED if the coroutine is waiting on some other
     # condition: namely, a delegated coroutine or a joined coroutine. In this case, the coroutine should *also* appear
     # as a value in one of the below dictionaries `delegators` or `joiners`.
-    threads: dict[Coro, Event] = {root_coro: ValueEvent(None)}
+    threads: ta.Dict[Coro, Event] = {root_coro: ValueEvent(None)}
 
     # Maps child coroutines to delegating parents.
-    delegators: dict[Coro, Coro] = {}
+    delegators: ta.Dict[Coro, Coro] = {}
 
     # Maps child coroutines to joining (exit-waiting) parents.
-    joiners: ta.MutableMapping[Coro, list[Coro]] = collections.defaultdict(list)
+    joiners: ta.MutableMapping[Coro, ta.List[Coro]] = collections.defaultdict(list)
 
     # History of spawned coroutines for joining of already completed coroutines.
     history: ta.MutableMapping[Coro, ta.Optional[Event]] = weakref.WeakKeyDictionary({root_coro: None})

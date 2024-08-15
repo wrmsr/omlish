@@ -1,4 +1,4 @@
-# ruff: noqa: UP007
+# ruff: noqa: UP006 UP007
 import abc
 import dataclasses as dc
 import socket
@@ -56,7 +56,7 @@ class Listener:
 class Connection:
     """A socket wrapper object for connected sockets."""
 
-    def __init__(self, sock: socket.socket, addr: tuple[str, int]) -> None:
+    def __init__(self, sock: socket.socket, addr: ta.Tuple[str, int]) -> None:
         super().__init__()
         self.sock = sock
         self.addr = addr

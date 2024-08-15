@@ -1,3 +1,4 @@
+# ruff: noqa: UP006 UP007
 import abc
 import dataclasses as dc
 import time
@@ -8,7 +9,7 @@ from .events import Event
 from .events import WaitableEvent
 
 
-ExcInfo: ta.TypeAlias = tuple[type[BaseException], BaseException, types.TracebackType]
+ExcInfo: ta.TypeAlias = ta.Tuple[ta.Type[BaseException], BaseException, types.TracebackType]
 
 Coro: ta.TypeAlias = ta.Generator[ta.Union['Event', 'Coro'], ta.Any, None]
 
