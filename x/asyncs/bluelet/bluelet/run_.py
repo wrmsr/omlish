@@ -187,7 +187,7 @@ def run(root_coro: Coro) -> None:
             # Thread is done.
             complete_thread(coro, None)
 
-        except:
+        except:  # noqa
             # Thread raised some other exception.
             del threads[coro]
             raise ThreadException(coro, _exc_info())
@@ -204,7 +204,7 @@ def run(root_coro: Coro) -> None:
         # Collect all coroutines in the delegation stack.
         coros = [coro]
         while isinstance((cur := threads[coro]), _DelegatedEvent):
-            coro = cur.child
+            coro = cur.child  # noqa
             coros.append(coro)
 
         # Complete each coroutine from the top to the bottom of the stack.
