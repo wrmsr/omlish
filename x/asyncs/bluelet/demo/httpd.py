@@ -22,9 +22,9 @@ class Request:
 def parse_request(lines: ta.Sequence[bytes]) -> Request:
     """Parse an HTTP request."""
 
-    method, path, version = lines.pop(0).split(None, 2)
+    method, path, version = lines[0].split(None, 2)
     headers: dict[bytes, bytes] = {}
-    for line in lines:
+    for line in lines[1:]:
         if not line:
             continue
         key, value = line.split(b': ', 1)
@@ -53,10 +53,10 @@ def respond(req: Request) -> Response:
     """Generate an HTTP response for a parsed request."""
 
     # Remove query string, if any.
-    path = req.path
-    if b'?' in path:
-        path, query = path.split(b'?', 1)
-    path = path.decode('utf8')
+    pathb = req.path
+    if b'?' in pathb:
+        pathb, query = pathb.split(b'?', 1)
+    path = pathb.decode('utf8')
 
     # Strip leading / and add prefix.
     if path.startswith('/') and len(path) > 0:
@@ -120,7 +120,7 @@ def webrequest(conn: bl.Connection) -> bl.Coro:
 
     # Parse and log the request and get the response values.
     req = parse_request(req_lines)
-    print('%s %s' % (req.method, req.path))
+    print('%r %r' % (req.method, req.path))
     resp = respond(req)
 
     # Send response.
