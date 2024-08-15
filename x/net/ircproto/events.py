@@ -74,7 +74,7 @@ class Command(IrcEvent):
         try:
             return cls(sender, *params)
         except TypeError:
-            raise ProtocolError(f'wrong number of arguments for {cls.command}')
+            raise ProtocolError(f'wrong number of arguments for {cls.command}')  # noqa
 
     def encode(self, *params):
         return super().encode(self.command, *params)
@@ -824,7 +824,7 @@ class Userhost(Command):
 
     def __init__(self, sender, nickname, *nicknames):
         super().__init__(sender)
-        self.nicknames = (nickname,) + nicknames
+        self.nicknames = (nickname, *nicknames)
 
     def encode(self):
         return super().encode(*self.nicknames)
@@ -840,7 +840,7 @@ class Ison(Command):
 
     def __init__(self, sender, nickname, *nicknames):
         super().__init__(sender)
-        self.nicknames = (nickname,) + nicknames
+        self.nicknames = (nickname, *nicknames)
 
     def encode(self):
         return super().encode(*self.nicknames)

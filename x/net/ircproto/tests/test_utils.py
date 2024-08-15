@@ -22,5 +22,4 @@ def test_validate_nickname(name):
 ], ids=['empty', 'toolong', 'starts_with_number', 'starts_with_nul', 'space'])
 def test_validate_nickname_invalid(name):
     exc = pytest.raises(ProtocolError, validate_nickname, name)
-    assert str(exc.value) == ('IRC protocol violation: invalid nickname: %s' %
-                              name.decode('ascii', errors='backslashreplace'))
+    assert str(exc.value) == (f'IRC protocol violation: invalid nickname: {name.decode("ascii", errors="backslashreplace")}')  # noqa
