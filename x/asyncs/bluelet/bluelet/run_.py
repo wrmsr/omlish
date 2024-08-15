@@ -226,6 +226,15 @@ class _Runner:
         for coro in reversed(coros):
             self._complete_thread(coro, None)
 
+    def close(self) -> None:
+        # If any threads still remain, kill them.
+        for coro in self._threads:
+            coro.close()
+
+        self._threads.clear()
+
+    def _step(self) -> ta.Optional[ThreadException]:
+
     def run(self) -> None:
         # Continue advancing threads until root thread exits.
         exit_te: ThreadException | None = None
@@ -314,9 +323,7 @@ class _Runner:
                 # For instance, KeyboardInterrupt during select(). Raise into root thread and terminate others.
                 self._threads = {self._root_coro: ExceptionEvent(_exc_info())}
 
-        # If any threads still remain, kill them.
-        for coro in self._threads:
-            coro.close()
+        self.close()
 
         # If we're exiting with an exception, raise it in the client.
         if exit_te:
