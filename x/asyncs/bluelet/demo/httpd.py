@@ -32,7 +32,7 @@ def parse_request(lines: ta.Sequence[bytes]) -> Request:
     return Request(method, path, headers)
 
 
-def mime_type(filename):
+def mime_type(filename: str) -> str:
     """Return a reasonable MIME type for the file or text/plain as a fallback."""
 
     mt, _ = mimetypes.guess_type(filename)
