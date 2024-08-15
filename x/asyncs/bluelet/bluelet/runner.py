@@ -1,7 +1,8 @@
 """
 TDOO:
- - (unit)tests lol
  - amalgify? prefix everything w/ Blue? prob want some helper Namespace or smth
+  - *** __init__.py *isn't* amalg'd - include terse names for everything ***
+ - (unit)tests lol
  - task groups
  - gather
  - locks / semaphores / events / etc
@@ -42,22 +43,22 @@ from .events import WaitableEvent
 ##
 
 
-def _exc_info() -> ExcInfo:
-    return sys.exc_info()  # type: ignore
-
-
-def _reraise(typ: ta.Type[BaseException], exc: BaseException, tb: types.TracebackType) -> ta.NoReturn:
-    raise exc.with_traceback(tb)
-
-
 class CoroException(Exception):  # noqa
     def __init__(self, coro: Coro, exc_info: ExcInfo) -> None:
         super().__init__()
         self.coro = coro
         self.exc_info = exc_info
 
+    @staticmethod
+    def _exc_info() -> ExcInfo:
+        return sys.exc_info()  # type: ignore
+
+    @staticmethod
+    def _reraise(typ: ta.Type[BaseException], exc: BaseException, tb: types.TracebackType) -> ta.NoReturn:
+        raise exc.with_traceback(tb)
+
     def reraise(self) -> ta.NoReturn:
-        _reraise(self.exc_info[0], self.exc_info[1], self.exc_info[2])
+        self._reraise(self.exc_info[0], self.exc_info[1], self.exc_info[2])
 
 
 ##
@@ -210,7 +211,7 @@ class _Runner:
             # Coro raised some other exception.
             del self._coros[coro]
             # Note: Don't use `raise from` as this should support 3.8.
-            raise CoroException(coro, _exc_info())  # noqa
+            raise CoroException(coro, CoroException._exc_info())  # noqa
 
         else:
             if isinstance(next_event, ta.Generator):
@@ -334,7 +335,7 @@ class _Runner:
 
         except:  # noqa
             # For instance, KeyboardInterrupt during select(). Raise into root coro and terminate others.
-            self._coros = {self._root_coro: ExceptionEvent(_exc_info())}
+            self._coros = {self._root_coro: ExceptionEvent(CoroException._exc_info())}  # noqa
 
         return None
 
