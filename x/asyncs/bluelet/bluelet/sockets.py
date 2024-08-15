@@ -1,6 +1,8 @@
+# ruff: noqa: UP007
 import abc
 import dataclasses as dc
 import socket
+import typing as ta
 
 from .core import Coro
 from .core import ReturnEvent
@@ -172,7 +174,7 @@ class SendEvent(WaitableEvent, SocketEvent):
     def waitables(self) -> Waitables:
         return Waitables(w=[self.conn.sock])
 
-    def fire(self) -> int | None:
+    def fire(self) -> ta.Optional[int]:
         if self.sendall:
             self.conn.sock.sendall(self.data)
             return None
