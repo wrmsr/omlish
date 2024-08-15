@@ -2,7 +2,7 @@ import os.path
 import shutil
 import typing as ta
 
-from ...amalg.std.cached import cached_nullary
+from omlish.lite.cached import cached_nullary
 from ..subprocesses import cmd
 from .pyenv import PyenvInstallOpts
 from .pyenv import PyenvInterpResolver

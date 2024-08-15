@@ -5,9 +5,9 @@ import json
 import typing as ta
 import unittest
 
-from ...amalg.std.marshal import marshal_obj
-from ...amalg.std.marshal import unmarshal_obj
-from ...amalg.std.toml import toml_loads
+from omlish.lite.marshal import marshal_obj
+from omlish.lite.marshal import unmarshal_obj
+from ...toml import toml_loads
 from ..interps import VenvInterps
 
 

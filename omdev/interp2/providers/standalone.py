@@ -31,9 +31,9 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-from ...amalg.std.cached import cached_nullary
-from ...amalg.std.check import check_not_none
-from ...amalg.std.logs import log
+from omlish.lite.cached import cached_nullary
+from omlish.lite.check import check_not_none
+from omlish.lite.logs import log
 
 
 class StandalonePythons:
