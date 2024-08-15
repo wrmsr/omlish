@@ -291,7 +291,7 @@ class _Runner:
                 have_ready = False
                 for coro, event in list(self._coros.items()):
                     if isinstance(event, CoreEvent) and not isinstance(event, SleepEvent):
-                        have_ready = self._handle_core_event(coro, event)
+                        have_ready |= self._handle_core_event(coro, event)
                     elif isinstance(event, WaitableEvent):
                         pass
                     else:
