@@ -65,7 +65,7 @@ def channel(port=4915):
                        Endpoint(connections[1], sentinel)))
 
 
-def main(serial=False):
+def ipc_demo(serial=False):
     ep1, ep2 = yield channel()
     if serial:
         # Run in bl (i.e., no parallelism).
@@ -82,4 +82,4 @@ def main(serial=False):
 
 
 if __name__ == '__main__':
-    bl.run(main())
+    bl.run(ipc_demo())
