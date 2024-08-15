@@ -429,6 +429,7 @@ def run(root_coro: Coro) -> None:
 
 # Sockets and their associated events.
 
+
 class SocketClosedError(Exception):
     pass
 
@@ -532,12 +533,11 @@ class Connection:
                 break
 
 
+@dc.dataclass(frozen=True, eq=False)
 class AcceptEvent(WaitableEvent):
     """An event for Listener objects (listening sockets) that suspends execution until the socket gets a connection."""
 
-    def __init__(self, listener: Listener) -> None:
-        super().__init__()
-        self.listener = listener
+    listener: Listener
 
     def waitables(self) -> Waitables:
         return (self.listener.sock,), (), ()
@@ -547,13 +547,12 @@ class AcceptEvent(WaitableEvent):
         return Connection(sock, addr)
 
 
+@dc.dataclass(frozen=True, eq=False)
 class ReceiveEvent(WaitableEvent):
     """An event for Connection objects (connected sockets) for asynchronously reading data."""
 
-    def __init__(self, conn: Connection, bufsize: int) -> None:
-        super().__init__()
-        self.conn = conn
-        self.bufsize = bufsize
+    conn: Connection
+    bufsize: int
 
     def waitables(self) -> Waitables:
         return (self.conn.sock,), (), ()
@@ -562,14 +561,13 @@ class ReceiveEvent(WaitableEvent):
         return self.conn.sock.recv(self.bufsize)
 
 
+@dc.dataclass(frozen=True, eq=False)
 class SendEvent(WaitableEvent):
     """An event for Connection objects (connected sockets) for asynchronously writing data."""
 
-    def __init__(self, conn: Connection, data: bytes, sendall: bool = False) -> None:
-        super().__init__()
-        self.conn = conn
-        self.data = data
-        self.sendall = sendall
+    conn: Connection
+    data: bytes
+    sendall: bool = False
 
     def waitables(self) -> Waitables:
         return (), (self.conn.sock,), ()
@@ -583,13 +581,14 @@ class SendEvent(WaitableEvent):
 
 # Public interface for threads; each returns an event object that can immediately be "yield"ed.
 
+
 def null() -> Event:
     """Event: yield to the scheduler without doing anything special."""
 
     return ValueEvent(None)
 
 
-def spawn(coro) -> Event:
+def spawn(coro: Coro) -> Event:
     """Event: add another coroutine to the scheduler. Both the parent and child coroutines run concurrently."""
 
     if not isinstance(coro, types.GeneratorType):
@@ -597,7 +596,7 @@ def spawn(coro) -> Event:
     return SpawnEvent(coro)
 
 
-def call(coro) -> Event:
+def call(coro: Coro) -> Event:
     """
     Event: delegate to another coroutine. The current coroutine is resumed once the sub-coroutine finishes. If the
     sub-coroutine returns a value using end(), then this event returns that value.
@@ -608,7 +607,7 @@ def call(coro) -> Event:
     return DelegationEvent(coro)
 
 
-def end(value=None) -> Event:
+def end(value: ta.Any = None) -> Event:
     """Event: ends the coroutine and returns a value to its delegator."""
 
     return ReturnEvent(value)
@@ -654,13 +653,13 @@ def sleep(duration: float) -> Event:
     return SleepEvent(time.time() + duration)
 
 
-def join(coro) -> Event:
+def join(coro: Coro) -> Event:
     """Suspend the thread until another, previously `spawn`ed thread completes."""
 
     return JoinEvent(coro)
 
 
-def kill(coro) -> Event:
+def kill(coro: Coro) -> Event:
     """Halt the execution of a different `spawn`ed thread."""
 
     return KillEvent(coro)
