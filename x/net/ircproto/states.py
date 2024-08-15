@@ -15,8 +15,6 @@ class IrcChannel:
     :ivar list invites: list of nicknames who are invited to join the channel
     """
 
-    __slots__ = ('name', 'modes', 'topic', 'key', 'limit', 'users', 'bans', 'invites')
-
     def __init__(self, name, modes):
         self.name = name
         self.modes = modes
@@ -35,8 +33,6 @@ class IrcServer:
     :ivar dict channels: dictionary of channel names to :class:`.IrcChannel` instances
     :ivar dict nicknames: dictionary of nicknames to client connections
     """
-
-    __slots__ = ('host', 'default_channel_modes', 'clients', 'servers', 'channels', 'nicknames')
 
     def __init__(self, host, default_channel_modes='nt'):
         self.host = host

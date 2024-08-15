@@ -12,8 +12,6 @@ class IrcEvent:
     :ivar sender: either a server host name or nickname!username@host
     """
 
-    __slots__ = ('sender',)
-
     def __init__(self, sender):
         self.sender = sender
 
@@ -55,8 +53,6 @@ class Command(IrcEvent):
     :var tuple allowed_replies: allowed reply codes for this command
     """
 
-    __slots__ = ()
-
     command = None  # type: str
     privileged = False
     allowed_replies = ()
@@ -90,8 +86,6 @@ class Reply(IrcEvent):
     :ivar str message: the reply message
     """
 
-    __slots__ = ('code', 'message')
-
     def __init__(self, sender, code, message):
         super().__init__(sender)
         self.code = int(code)
@@ -108,8 +102,6 @@ class Reply(IrcEvent):
 
 # Section 3.1.1
 class Password(Command):
-    __slots__ = ('password',)
-
     command = 'PASS'
     allowed_replies = (consts.ERR_NEEDMOREPARAMS, consts.ERR_ALREADYREGISTRED)
 
@@ -123,8 +115,6 @@ class Password(Command):
 
 # Section 3.1.2
 class Nick(Command):
-    __slots__ = ('nickname',)
-
     command = 'NICK'
     allowed_replies = (consts.ERR_NONICKNAMEGIVEN, consts.ERR_ERRONEUSNICKNAME, consts.ERR_NICKNAMEINUSE,
                        consts.ERR_NICKCOLLISION, consts.ERR_UNAVAILRESOURCE, consts.ERR_RESTRICTED)
@@ -139,8 +129,6 @@ class Nick(Command):
 
 # Section 3.1.3
 class User(Command):
-    __slots__ = ('user', 'mode', 'realname')
-
     command = 'USER'
     allowed_replies = (consts.ERR_NEEDMOREPARAMS, consts.ERR_ALREADYREGISTRED)
 
@@ -160,8 +148,6 @@ class User(Command):
 
 # Section 3.1.4
 class Oper(Command):
-    __slots__ = ('name', 'password')
-
     command = 'OPER'
     allowed_replies = (consts.ERR_NEEDMOREPARAMS, consts.ERR_NOOPERHOST, consts.ERR_PASSWDMISMATCH, consts.RPL_YOUREOPER)
 
@@ -176,8 +162,6 @@ class Oper(Command):
 
 # Section 3.1.5 / 3.2.3
 class Mode(Command):
-    __slots__ = ('target', 'modes', 'modeparams')
-
     command = 'MODE'
     allowed_replies = (consts.ERR_NEEDMOREPARAMS, consts.ERR_USERSDONTMATCH, consts.ERR_UMODEUNKNOWNFLAG, consts.RPL_UMODEIS)
 
@@ -193,8 +177,6 @@ class Mode(Command):
 
 # Section 3.1.6
 class Service(Command):
-    __slots__ = ('nickname', 'distribution', 'type', 'info')
-
     command = 'SERVICE'
     allowed_replies = (consts.ERR_ALREADYREGISTRED, consts.ERR_NEEDMOREPARAMS, consts.ERR_ERRONEUSNICKNAME,
                        consts.RPL_YOURESERVICE, consts.RPL_YOURHOST, consts.RPL_MYINFO)
@@ -212,8 +194,6 @@ class Service(Command):
 
 # Section 3.1.7
 class Quit(Command):
-    __slots = ('message',)
-
     command = 'QUIT'
 
     def __init__(self, sender, message=None):
@@ -226,8 +206,6 @@ class Quit(Command):
 
 # Section 3.1.8
 class SQuit(Command):
-    __slots__ = ('server', 'comment')
-
     command = 'SQUIT'
     privileged = True
     allowed_replies = (consts.ERR_NOPRIVILEGES, consts.ERR_NOSUCHSERVER, consts.ERR_NEEDMOREPARAMS)
@@ -243,8 +221,6 @@ class SQuit(Command):
 
 # Section 3.2.1
 class Join(Command):
-    __slots__ = ('channel', 'key')
-
     command = 'JOIN'
     allowed_replies = (consts.ERR_NEEDMOREPARAMS, consts.ERR_BANNEDFROMCHAN, consts.ERR_INVITEONLYCHAN,
                        consts.ERR_BADCHANNELKEY, consts.ERR_CHANNELISFULL, consts.ERR_BADCHANMASK, consts.ERR_NOSUCHCHANNEL,
@@ -261,8 +237,6 @@ class Join(Command):
 
 # Section 3.2.2
 class Part(Command):
-    __slots__ = ('channel', 'message')
-
     command = 'PART'
     allowed_replies = (consts.ERR_NEEDMOREPARAMS, consts.ERR_NOSUCHCHANNEL, consts.ERR_NOTONCHANNEL)
 
@@ -277,8 +251,6 @@ class Part(Command):
 
 # Section 3.2.4
 class Topic(Command):
-    __slots__ = ('channel', 'topic')
-
     command = 'TOPIC'
     allowed_replies = (consts.ERR_NEEDMOREPARAMS, consts.ERR_NOTONCHANNEL, consts.RPL_NOTOPIC, consts.RPL_TOPIC,
                        consts.ERR_CHANOPRIVSNEEDED, consts.ERR_NOCHANMODES)
@@ -294,24 +266,18 @@ class Topic(Command):
 
 # Section 3.2.5
 class Names(Command):
-    __slots__ = ()
-
     command = 'NAMES'
     allowed_replies = (consts.ERR_NOSUCHSERVER, consts.RPL_NAMREPLY, consts.RPL_ENDOFNAMES)
 
 
 # Section 3.2.6
 class List(Command):
-    __slots__ = ()
-
     command = 'LIST'
     allowed_replies = (consts.ERR_NOSUCHSERVER, consts.RPL_LIST, consts.RPL_LISTEND)
 
 
 # Section 3.2.7
 class Invite(Command):
-    __slots__ = ('nickname', 'channel')
-
     command = 'INVITE'
     allowed_replies = (consts.ERR_NEEDMOREPARAMS, consts.ERR_NOSUCHNICK, consts.ERR_NOTONCHANNEL, consts.ERR_USERONCHANNEL,
                        consts.ERR_CHANOPRIVSNEEDED, consts.RPL_INVITING, consts.RPL_AWAY)
@@ -327,8 +293,6 @@ class Invite(Command):
 
 # Section 3.2.8
 class Kick(Command):
-    __slots__ = ('channel', 'nickname', 'comment')
-
     command = 'KICK'
     allowed_replies = (consts.ERR_NEEDMOREPARAMS, consts.ERR_NOSUCHCHANNEL, consts.ERR_BADCHANMASK,
                        consts.ERR_CHANOPRIVSNEEDED, consts.ERR_USERNOTINCHANNEL, consts.ERR_NOTONCHANNEL)
@@ -345,8 +309,6 @@ class Kick(Command):
 
 # Section 3.3.1
 class PrivateMessage(Command):
-    __slots__ = ('recipient', 'message')
-
     command = 'PRIVMSG'
     allowed_replies = (consts.ERR_NORECIPIENT, consts.ERR_NOTEXTTOSEND, consts.ERR_CANNOTSENDTOCHAN, consts.ERR_NOTOPLEVEL,
                        consts.ERR_WILDTOPLEVEL, consts.ERR_TOOMANYTARGETS, consts.ERR_NOSUCHNICK, consts.RPL_AWAY)
@@ -362,8 +324,6 @@ class PrivateMessage(Command):
 
 # Section 3.3.2
 class Notice(Command):
-    __slots__ = ('recipient', 'message')
-
     command = 'NOTICE'
     allowed_replies = (consts.ERR_NORECIPIENT, consts.ERR_NOTEXTTOSEND, consts.ERR_CANNOTSENDTOCHAN, consts.ERR_NOTOPLEVEL,
                        consts.ERR_WILDTOPLEVEL, consts.ERR_TOOMANYTARGETS, consts.ERR_NOSUCHNICK)
@@ -403,8 +363,6 @@ class CTCPMessage(IrcEvent):
 
 # Section 3.4.1
 class Motd(Command):
-    __slots__ = ('target',)
-
     command = 'MOTD'
     allowed_replies = (consts.RPL_MOTDSTART, consts.RPL_MOTD, consts.RPL_ENDOFMOTD, consts.ERR_NOMOTD)
 
@@ -418,8 +376,6 @@ class Motd(Command):
 
 # Section 3.4.2
 class Lusers(Command):
-    __slots__ = ('mask', 'target')
-
     command = 'LUSERS'
     allowed_replies = (consts.RPL_LUSERCLIENT, consts.RPL_LUSEROP, consts.RPL_LUSERUNKNOWN, consts.RPL_LUSERCHANNELS,
                        consts.RPL_LUSERME, consts.ERR_NOSUCHSERVER)
@@ -435,8 +391,6 @@ class Lusers(Command):
 
 # Section 3.4.3
 class Version(Command):
-    __slots__ = ('target',)
-
     command = 'VERSION'
     allowed_replies = (consts.ERR_NOSUCHSERVER, consts.RPL_VERSION)
 
@@ -450,8 +404,6 @@ class Version(Command):
 
 # Section 3.4.4
 class Stats(Command):
-    __slots__ = ('query', 'target')
-
     command = 'STATS'
     allowed_replies = (consts.ERR_NOSUCHSERVER, consts.RPL_STATSLINKINFO, consts.RPL_STATSUPTIME, consts.RPL_STATSCOMMANDS,
                        consts.RPL_STATSOLINE, consts.RPL_ENDOFSTATS)
@@ -467,8 +419,6 @@ class Stats(Command):
 
 # Section 3.4.5
 class Links(Command):
-    __slots__ = ('remote_server', 'server_mask')
-
     command = 'LINKS'
     allowed_replies = (consts.ERR_NOSUCHSERVER, consts.RPL_STATSLINKINFO, consts.RPL_STATSUPTIME, consts.RPL_STATSCOMMANDS,
                        consts.RPL_STATSOLINE, consts.RPL_ENDOFSTATS)
@@ -484,8 +434,6 @@ class Links(Command):
 
 # Section 3.4.6
 class Time(Command):
-    __slots__ = ('target',)
-
     command = 'TIME'
     allowed_replies = (consts.ERR_NOSUCHSERVER, consts.RPL_TIME)
 
@@ -499,8 +447,6 @@ class Time(Command):
 
 # Section 3.4.7
 class Connect(Command):
-    __slots__ = ('target_server', 'port', 'remote_server')
-
     command = 'CONNECT'
     privileged = True
     allowed_replies = (consts.ERR_NOSUCHSERVER, consts.ERR_NOPRIVILEGES, consts.ERR_NEEDMOREPARAMS)
@@ -517,8 +463,6 @@ class Connect(Command):
 
 # Section 3.4.8
 class Trace(Command):
-    __slots__ = ('target',)
-
     command = 'TRACE'
     allowed_replies = (consts.ERR_NOSUCHSERVER, consts.RPL_TRACELINK, consts.RPL_TRACECONNECTING, consts.RPL_TRACEHANDSHAKE,
                        consts.RPL_TRACEUNKNOWN, consts.RPL_TRACEOPERATOR, consts.RPL_TRACEUSER, consts.RPL_TRACESERVER,
@@ -535,8 +479,6 @@ class Trace(Command):
 
 # Section 3.4.9
 class Admin(Command):
-    __slots__ = ('target',)
-
     command = 'ADMIN'
     allowed_replies = (consts.ERR_NOSUCHSERVER, consts.RPL_ADMINME, consts.RPL_ADMINLOC1, consts.RPL_ADMINLOC2, consts.RPL_ADMINEMAIL)
 
@@ -550,8 +492,6 @@ class Admin(Command):
 
 # Section 3.4.10
 class Info(Command):
-    __slots__ = ('target',)
-
     command = 'INFO'
     allowed_replies = (consts.ERR_NOSUCHSERVER, consts.RPL_INFO, consts.RPL_ENDOFINFO)
 
@@ -565,8 +505,6 @@ class Info(Command):
 
 # Section 3.7.1
 class Kill(Command):
-    __slots__ = ('nickname', 'comment')
-
     command = 'KILL'
     privileged = True
     allowed_replies = (consts.ERR_NOPRIVILEGES, consts.ERR_NEEDMOREPARAMS, consts.ERR_NOSUCHNICK, consts.ERR_CANTKILLSERVER)
@@ -582,8 +520,6 @@ class Kill(Command):
 
 # Section 3.7.2
 class Ping(Command):
-    __slots__ = ('server1', 'server2')
-
     command = 'PING'
     allowed_replies = (consts.ERR_NOORIGIN, consts.ERR_NOSUCHSERVER)
 
@@ -598,8 +534,6 @@ class Ping(Command):
 
 # Section 3.7.3
 class Pong(Command):
-    __slots__ = ('server1', 'server2')
-
     command = 'PONG'
     allowed_replies = (consts.ERR_NOORIGIN, consts.ERR_NOSUCHSERVER)
 
@@ -614,8 +548,6 @@ class Pong(Command):
 
 # Section 3.7.4
 class Error(Command):
-    __slots__ = ('message',)
-
     command = 'ERROR'
 
     def __init__(self, sender, message):
@@ -628,8 +560,6 @@ class Error(Command):
 
 # Section 4.1
 class Away(Command):
-    __slots__ = ('text',)
-
     command = 'AWAY'
     allowed_replies = (consts.RPL_UNAWAY, consts.RPL_NOWAWAY)
 
@@ -643,8 +573,6 @@ class Away(Command):
 
 # Section 4.2
 class Rehash(Command):
-    __slots__ = ()
-
     command = 'REHASH'
     privileged = True
     allowed_replies = (consts.RPL_REHASHING, consts.ERR_NOPRIVILEGES)
@@ -652,8 +580,6 @@ class Rehash(Command):
 
 # Section 4.3
 class Die(Command):
-    __slots__ = ()
-
     command = 'DIE'
     privileged = True
     allowed_replies = (consts.ERR_NOPRIVILEGES,)
@@ -661,8 +587,6 @@ class Die(Command):
 
 # Section 4.3
 class Restart(Command):
-    __slots__ = ()
-
     command = 'RESTART'
     privileged = True
     allowed_replies = (consts.ERR_NOPRIVILEGES,)
@@ -670,8 +594,6 @@ class Restart(Command):
 
 # Section 4.5
 class Summon(Command):
-    __slots__ = ('user', 'target', 'channel')
-
     command = 'SUMMON'
     allowed_replies = (consts.ERR_NORECIPIENT, consts.ERR_FILEERROR, consts.ERR_NOLOGIN, consts.ERR_NOSUCHSERVER,
                        consts.ERR_SUMMONDISABLED, consts.RPL_SUMMONING)
@@ -688,8 +610,6 @@ class Summon(Command):
 
 # Section 4.6
 class Users(Command):
-    __slots__ = ('target',)
-
     command = 'USERS'
     allowed_replies = (consts.ERR_NORECIPIENT, consts.ERR_FILEERROR, consts.ERR_NOLOGIN, consts.ERR_NOSUCHSERVER,
                        consts.ERR_SUMMONDISABLED, consts.RPL_SUMMONING)
@@ -704,8 +624,6 @@ class Users(Command):
 
 # Section 4.7
 class Operwall(Command):
-    __slots__ = ('text',)
-
     command = 'WALLOPS'
     allowed_replies = (consts.ERR_NEEDMOREPARAMS,)
 
@@ -719,8 +637,6 @@ class Operwall(Command):
 
 # Section 4.8
 class Userhost(Command):
-    __slots__ = ('nicknames',)
-
     command = 'USERHOST'
     allowed_replies = (consts.RPL_USERHOST, consts.ERR_NEEDMOREPARAMS)
 
@@ -734,8 +650,6 @@ class Userhost(Command):
 
 # Section 4.9
 class Ison(Command):
-    __slots__ = ('nicknames',)
-
     command = 'ISON'
     allowed_replies = (consts.RPL_ISON, consts.ERR_NEEDMOREPARAMS)
 

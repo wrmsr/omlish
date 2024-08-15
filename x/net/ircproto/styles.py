@@ -73,8 +73,8 @@ def styled(text, foreground=None, background=None, styles=None):
     :param foreground: the foreground color
     :param background: the background color (only works if foreground is defined too)
     :param styles: a text style or iterable of text styles to apply
-
     """
+
     # Apply coloring
     if foreground and not background:
         text = '\x03%d%s\x03' % (foreground.value, text)
@@ -99,6 +99,6 @@ def strip_styles(text):
 
     :param str text: the text to be sanitized
     :return: input text with styles removed
-
     """
+
     return styles_re.sub('', text)

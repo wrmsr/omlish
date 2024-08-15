@@ -12,19 +12,15 @@ from .replies import reply_templates
 class BaseIrcConnection:
     """Base class for IRC connection state machines."""
 
-    __slots__ = (
-        'output_codec',
-        'input_decoder',
-        'fallback_decoder',
-        '_input_buffer',
-        '_output_buffer',
-        '_closed',
-    )
+    sender: str | None = None
 
-    sender = None  # type: str
-
-    def __init__(self, output_encoding='utf-8', input_encoding='utf-8',
-                 fallback_encoding='iso-8859-1'):
+    def __init__(
+            self,
+            output_encoding='utf-8',
+            input_encoding='utf-8',
+            fallback_encoding='iso-8859-1',
+    ):
+        super().__init__()
         self.output_codec = codecs.getencoder(output_encoding)
         self.input_decoder = codecs.getdecoder(input_encoding)
         self.fallback_decoder = codecs.getdecoder(fallback_encoding)
@@ -36,8 +32,7 @@ class BaseIrcConnection:
         """
         Feed data to the internal buffer of the connection.
 
-        If there is enough data to generate one or more events, they will be added to the list
-        returned from this call.
+        If there is enough data to generate one or more events, they will be added to the list returned from this call.
 
         Sometimes this call generates outgoing data so it is important to call
         :meth:`.data_to_send` afterwards and write those bytes to the output.
@@ -46,8 +41,8 @@ class BaseIrcConnection:
         :raise ircproto.ProtocolError: if the protocol is violated
         :return: the list of generated events
         :rtype: list
-
         """
+
         self._input_buffer.extend(data)
         events = []
         while True:
@@ -63,8 +58,8 @@ class BaseIrcConnection:
         Return any data that is due to be sent to the other end.
 
         :rtype: bytes
-
         """
+
         data = bytes(self._output_buffer)
         del self._output_buffer[:]
         return data
@@ -83,8 +78,8 @@ class BaseIrcConnection:
 
         :param str command: name of the command (``NICK``, ``PRIVMSG`` etc.)
         :param str params: arguments for the constructor of the command class
-
         """
+
         if isinstance(command, bytes):
             command = command.decode('ascii')
 
@@ -101,8 +96,8 @@ class BaseIrcConnection:
         Send an event to the peer.
 
         :param ircproto.events.Event event: the event to send
-
         """
+
         if self._closed:
             raise ProtocolError('the connection has been closed')
 
@@ -113,8 +108,6 @@ class BaseIrcConnection:
 class IrcClientConnection(BaseIrcConnection):
     """An IRC client's connection to a server."""
 
-    __slots__ = ('nickname', 'realname')
-
     def __init__(self):
         super().__init__()
         self.nickname = self.realname = None
@@ -122,8 +115,6 @@ class IrcClientConnection(BaseIrcConnection):
 
 class IrcServerConnection(BaseIrcConnection):
     """A server side connection to either an IRC client or another IRC server."""
-
-    __slots__ = ('host', '_server_state')
 
     def __init__(self, host, server_state):
         super().__init__()
@@ -139,8 +130,8 @@ class IrcServerConnection(BaseIrcConnection):
 
         :param int code: reply code
         :param templatevars: variables required for the reply message template
-
         """
+
         # Format the reply message
         message = reply_templates[code].format(**templatevars)
         event = Reply(self.sender, code, message)

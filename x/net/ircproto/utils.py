@@ -14,11 +14,10 @@ def validate_channel_name(name):
 
     :param bytes name: the channel name to validate
     :raises ..exceptions.ProtocolError: if the channel name is invalid
-
     """
+
     if not channel_re.match(name):
-        raise ProtocolError('invalid channel name: %s' % name.decode('ascii',
-                                                                      errors='backslashreplace'))
+        raise ProtocolError('invalid channel name: %s' % name.decode('ascii', errors='backslashreplace'))
 
 
 def validate_nickname(name):
@@ -27,11 +26,10 @@ def validate_nickname(name):
 
     :param bytes name: the nickname to validate
     :raises ..exceptions.ProtocolError: if the nickname is invalid
-
     """
+
     if not nickname_re.match(name):
-        raise ProtocolError('invalid nickname: %s' % name.decode('ascii',
-                                                                  errors='backslashreplace'))
+        raise ProtocolError('invalid nickname: %s' % name.decode('ascii', errors='backslashreplace'))
 
 
 def validate_hostmask(mask):
@@ -40,11 +38,10 @@ def validate_hostmask(mask):
 
     :param bytes mask: the mask to validate
     :raises ..exceptions.ProtocolError: if the host mask is invalid
-
     """
+
     if not hostmask_re.match(mask):
-        raise ProtocolError('invalid host mask: %s' % mask.decode('ascii',
-                                                                   errors='backslashreplace'))
+        raise ProtocolError('invalid host mask: %s' % mask.decode('ascii', errors='backslashreplace'))
 
 
 def match_hostmask(prefix, mask):
@@ -54,8 +51,8 @@ def match_hostmask(prefix, mask):
     :param bytes prefix: prefix to match the mask against
     :param bytes mask: a mask that may contain wildcards like ``*`` or ``?``
     :return: ``True`` if the prefix matches the mask, ``False`` otherwise
-
     """
+
     prefix_index = mask_index = 0
     escape = False
     while prefix_index < len(prefix) and mask_index < len(mask):
