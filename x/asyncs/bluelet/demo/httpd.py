@@ -56,9 +56,10 @@ def respond(method, path, headers):
 
     if os.path.isdir(filename):
         # Directory listing.
+        pfx = (path[1:] + '/') if len(path) > 1 else ''
         files = []
         for name in sorted(os.listdir(filename), key=lambda n: (not os.path.isdir(n), n)):
-            files.append(f'<li><a href="{name}">{"/" if os.path.isdir(name) else ""}{name}</a></li>')
+            files.append(f'<li><a href="{pfx}{name}">{"/" if os.path.isdir(name) else ""}{name}</a></li>')
         html = f'<html><head><title>{path}</title></head><body><h1>{path}</h1><ul>{"".join(files)}</ul></body></html>'
         return (
             '200 OK',

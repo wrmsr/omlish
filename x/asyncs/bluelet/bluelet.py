@@ -1,3 +1,4 @@
+# Based on bluelet by Adrian Sampson, original license:
 # THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
 # WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
 # COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
@@ -119,41 +120,38 @@ class ReturnEvent(Event):
     value: ta.Any
 
 
+@dc.dataclass(frozen=True)
 class SleepEvent(WaitableEvent):
     """Suspend the thread for a given duration."""
 
-    def __init__(self, duration: float) -> None:
-        super().__init__()
-        self.wakeup_time = time.time() + duration
+    wakeup_time: float
 
     def time_left(self) -> float:
         return max(self.wakeup_time - time.time(), 0.0)
 
 
+@dc.dataclass(frozen=True)
 class ReadEvent(WaitableEvent):
     """Reads from a file-like object."""
 
-    def __init__(self, fd: ta.IO, bufsize: int) -> None:
-        super().__init__()
-        self.fd = fd
-        self.bufsize = bufsize
+    fd: ta.IO
+    bufsize: int
 
     def waitables(self) -> Waitables:
         return (self.fd,), (), ()
 
-    def fire(self):
+    def fire(self) -> bytes:
         return self.fd.read(self.bufsize)
 
 
+@dc.dataclass(frozen=True)
 class WriteEvent(WaitableEvent):
     """Writes to a file-like object."""
 
-    def __init__(self, fd: ta.IO, data) -> None:
-        super().__init__()
-        self.fd = fd
-        self.data = data
+    fd: ta.IO
+    data: bytes
 
-    def waitable(self):
+    def waitables(self) -> Waitables:
         return (), (self.fd,), ()
 
     def fire(self) -> None:
@@ -653,7 +651,7 @@ def connect(host: str, port: int) -> Event:
 def sleep(duration: float) -> Event:
     """Event: suspend the thread for ``duration`` seconds."""
 
-    return SleepEvent(duration)
+    return SleepEvent(time.time() + duration)
 
 
 def join(coro) -> Event:
