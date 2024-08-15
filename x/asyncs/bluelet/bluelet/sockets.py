@@ -12,20 +12,20 @@ import typing as ta
 from .core import BlueletCoro
 from .core import ReturnBlueletEvent
 from .core import ValueBlueletEvent
-from .core import spawn
+from .core import bluelet_spawn
 from .events import BlueletEvent
 from .events import WaitableBlueletEvent
-from .events import Waitables
+from .events import BlueletWaitables
 
 
 ##
 
 
-class SocketClosedError(Exception):
+class SocketClosedBlueletError(Exception):
     pass
 
 
-class Listener:
+class BlueletListener:
     """A socket wrapper object for listening sockets."""
 
     def __init__(self, host: str, port: int) -> None:
@@ -41,14 +41,14 @@ class Listener:
         sock.bind((host, port))
         sock.listen(5)
 
-    def accept(self) -> BlueletEvent:
+    def accept(self) -> 'AcceptBlueletEvent':
         """
         An event that waits for a connection on the listening socket. When a connection is made, the event returns a
         Connection object.
         """
 
         if self._closed:
-            raise SocketClosedError
+            raise SocketClosedBlueletError
         return AcceptBlueletEvent(self)
 
     def close(self) -> None:
@@ -58,7 +58,7 @@ class Listener:
         self.sock.close()
 
 
-class Connection:
+class BlueletConnection:
     """A socket wrapper object for connected sockets."""
 
     def __init__(self, sock: socket.socket, addr: ta.Tuple[str, int]) -> None:
@@ -78,7 +78,7 @@ class Connection:
         """Read at most size bytes of data from the socket."""
 
         if self._closed:
-            raise SocketClosedError
+            raise SocketClosedBlueletError
 
         if self._buf:
             # We already have data read previously.
@@ -92,21 +92,21 @@ class Connection:
         """Sends data on the socket, returning the number of bytes successfully sent."""
 
         if self._closed:
-            raise SocketClosedError
+            raise SocketClosedBlueletError
         return SendBlueletEvent(self, data)
 
     def sendall(self, data: bytes) -> BlueletEvent:
         """Send all of data on the socket."""
 
         if self._closed:
-            raise SocketClosedError
+            raise SocketClosedBlueletError
         return SendBlueletEvent(self, data, True)
 
     def readline(self, terminator: bytes = b'\n', bufsize: int = 1024) -> BlueletCoro:
         """Reads a line (delimited by terminator) from the socket."""
 
         if self._closed:
-            raise SocketClosedError
+            raise SocketClosedBlueletError
 
         while True:
             if terminator in self._buf:
@@ -138,14 +138,14 @@ class SocketBlueletEvent(BlueletEvent, abc.ABC):  # noqa
 class AcceptBlueletEvent(WaitableBlueletEvent, SocketBlueletEvent):
     """An event for Listener objects (listening sockets) that suspends execution until the socket gets a connection."""
 
-    listener: Listener
+    listener: BlueletListener
 
-    def waitables(self) -> Waitables:
-        return Waitables(r=[self.listener.sock])
+    def waitables(self) -> BlueletWaitables:
+        return BlueletWaitables(r=[self.listener.sock])
 
-    def fire(self) -> Connection:
+    def fire(self) -> BlueletConnection:
         sock, addr = self.listener.sock.accept()
-        return Connection(sock, addr)
+        return BlueletConnection(sock, addr)
 
 
 #
@@ -155,11 +155,11 @@ class AcceptBlueletEvent(WaitableBlueletEvent, SocketBlueletEvent):
 class ReceiveBlueletEvent(WaitableBlueletEvent, SocketBlueletEvent):
     """An event for Connection objects (connected sockets) for asynchronously reading data."""
 
-    conn: Connection
+    conn: BlueletConnection
     bufsize: int
 
-    def waitables(self) -> Waitables:
-        return Waitables(r=[self.conn.sock])
+    def waitables(self) -> BlueletWaitables:
+        return BlueletWaitables(r=[self.conn.sock])
 
     def fire(self) -> bytes:
         return self.conn.sock.recv(self.bufsize)
@@ -172,12 +172,12 @@ class ReceiveBlueletEvent(WaitableBlueletEvent, SocketBlueletEvent):
 class SendBlueletEvent(WaitableBlueletEvent, SocketBlueletEvent):
     """An event for Connection objects (connected sockets) for asynchronously writing data."""
 
-    conn: Connection
+    conn: BlueletConnection
     data: bytes
     sendall: bool = False
 
-    def waitables(self) -> Waitables:
-        return Waitables(w=[self.conn.sock])
+    def waitables(self) -> BlueletWaitables:
+        return BlueletWaitables(w=[self.conn.sock])
 
     def fire(self) -> ta.Optional[int]:
         if self.sendall:
@@ -190,15 +190,15 @@ class SendBlueletEvent(WaitableBlueletEvent, SocketBlueletEvent):
 ##
 
 
-def connect(host: str, port: int) -> BlueletEvent:
+def bluelet_connect(host: str, port: int) -> BlueletEvent:
     """Event: connect to a network address and return a Connection object for communicating on the socket."""
 
     addr = (host, port)
     sock = socket.create_connection(addr)
-    return ValueBlueletEvent(Connection(sock, addr))
+    return ValueBlueletEvent(BlueletConnection(sock, addr))
 
 
-def server(host: str, port: int, func) -> BlueletCoro:
+def bluelet_server(host: str, port: int, func) -> BlueletCoro:
     """
     A coroutine that runs a network server. Host and port specify the listening address. func should be a coroutine that
     takes a single parameter, a Connection object. The coroutine is invoked for every incoming connection on the
@@ -211,11 +211,11 @@ def server(host: str, port: int, func) -> BlueletCoro:
         finally:
             conn.close()
 
-    listener = Listener(host, port)
+    listener = BlueletListener(host, port)
     try:
         while True:
             conn = yield listener.accept()
-            yield spawn(handler(conn))
+            yield bluelet_spawn(handler(conn))
     except KeyboardInterrupt:
         pass
     finally:

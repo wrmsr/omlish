@@ -22,18 +22,18 @@ class BlueletEvent(abc.ABC):  # noqa
 ##
 
 
-class HasFileno(ta.Protocol):
+class BlueletHasFileno(ta.Protocol):
     def fileno(self) -> int: ...
 
 
-Waitable = ta.Union[int, HasFileno]  # ta.TypeAlias
+BlueletWaitable = ta.Union[int, BlueletHasFileno]  # ta.TypeAlias
 
 
 @dc.dataclass(frozen=True)
-class Waitables:
-    r: ta.Sequence[Waitable] = ()
-    w: ta.Sequence[Waitable] = ()
-    x: ta.Sequence[Waitable] = ()
+class BlueletWaitables:
+    r: ta.Sequence[BlueletWaitable] = ()
+    w: ta.Sequence[BlueletWaitable] = ()
+    x: ta.Sequence[BlueletWaitable] = ()
 
 
 class WaitableBlueletEvent(BlueletEvent, abc.ABC):  # noqa
@@ -42,12 +42,12 @@ class WaitableBlueletEvent(BlueletEvent, abc.ABC):  # noqa
     with an associated file descriptor.
     """
 
-    def waitables(self) -> Waitables:
+    def waitables(self) -> BlueletWaitables:
         """
         Return "waitable" objects to pass to select(). Should return three iterables for input readiness, output
         readiness, and exceptional conditions (i.e., the three lists passed to select()).
         """
-        return Waitables()
+        return BlueletWaitables()
 
     def fire(self) -> ta.Any:
         """Called when an associated file descriptor becomes ready (i.e., is returned from a select() call)."""

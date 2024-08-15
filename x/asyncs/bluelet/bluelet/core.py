@@ -36,13 +36,13 @@ class ValueBlueletEvent(CoreBlueletEvent):
     value: ta.Any
 
 
-def value(v: ta.Any) -> BlueletEvent:
+def bluelet_value(v: ta.Any) -> BlueletEvent:
     """Event: yield a value."""
 
     return ValueBlueletEvent(v)
 
 
-def null() -> BlueletEvent:
+def bluelet_null() -> BlueletEvent:
     """Event: yield to the scheduler without doing anything special."""
 
     return ValueBlueletEvent(None)
@@ -68,7 +68,7 @@ class SpawnBlueletEvent(CoreBlueletEvent):
     spawned: BlueletCoro
 
 
-def spawn(coro: BlueletCoro) -> BlueletEvent:
+def bluelet_spawn(coro: BlueletCoro) -> BlueletEvent:
     """Event: add another coroutine to the scheduler. Both the parent and child coroutines run concurrently."""
 
     if not isinstance(coro, types.GeneratorType):
@@ -86,7 +86,7 @@ class JoinBlueletEvent(CoreBlueletEvent):
     child: BlueletCoro
 
 
-def join(coro: BlueletCoro) -> BlueletEvent:
+def bluelet_join(coro: BlueletCoro) -> BlueletEvent:
     """Suspend the coro until another, previously `spawn`ed coro completes."""
 
     return JoinBlueletEvent(coro)
@@ -102,7 +102,7 @@ class KillBlueletEvent(CoreBlueletEvent):
     child: BlueletCoro
 
 
-def kill(coro: BlueletCoro) -> BlueletEvent:
+def bluelet_kill(coro: BlueletCoro) -> BlueletEvent:
     """Halt the execution of a different `spawn`ed coro."""
 
     return KillBlueletEvent(coro)
@@ -121,7 +121,7 @@ class DelegationBlueletEvent(CoreBlueletEvent):
     spawned: BlueletCoro
 
 
-def call(coro: BlueletCoro) -> BlueletEvent:
+def bluelet_call(coro: BlueletCoro) -> BlueletEvent:
     """
     Event: delegate to another coroutine. The current coroutine is resumed once the sub-coroutine finishes. If the
     sub-coroutine returns a value using end(), then this event returns that value.
@@ -142,7 +142,7 @@ class ReturnBlueletEvent(CoreBlueletEvent):
     value: ta.Any
 
 
-def end(value: ta.Any = None) -> BlueletEvent:
+def bluelet_end(value: ta.Any = None) -> BlueletEvent:
     """Event: ends the coroutine and returns a value to its delegator."""
 
     return ReturnBlueletEvent(value)
@@ -161,7 +161,7 @@ class SleepBlueletEvent(WaitableBlueletEvent, CoreBlueletEvent):
         return max(self.wakeup_time - time.time(), 0.)
 
 
-def sleep(duration: float) -> BlueletEvent:
+def bluelet_sleep(duration: float) -> BlueletEvent:
     """Event: suspend the coro for ``duration`` seconds."""
 
     return SleepBlueletEvent(time.time() + duration)

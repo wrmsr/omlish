@@ -12,7 +12,7 @@ from .core import DelegationBlueletEvent
 from .core import ReturnBlueletEvent
 from .events import BlueletEvent
 from .events import WaitableBlueletEvent
-from .events import Waitables
+from .events import BlueletWaitables
 
 
 ##
@@ -32,14 +32,14 @@ class ReadBlueletEvent(WaitableBlueletEvent, FileBlueletEvent):
     fd: ta.IO
     bufsize: int
 
-    def waitables(self) -> Waitables:
-        return Waitables(r=[self.fd])
+    def waitables(self) -> BlueletWaitables:
+        return BlueletWaitables(r=[self.fd])
 
     def fire(self) -> bytes:
         return self.fd.read(self.bufsize)
 
 
-def read(fd: ta.IO, bufsize: ta.Optional[int] = None) -> BlueletEvent:
+def bluelet_read(fd: ta.IO, bufsize: ta.Optional[int] = None) -> BlueletEvent:
     """Event: read from a file descriptor asynchronously."""
 
     if bufsize is None:
@@ -47,7 +47,7 @@ def read(fd: ta.IO, bufsize: ta.Optional[int] = None) -> BlueletEvent:
         def reader():
             buf = []
             while True:
-                data = yield read(fd, 1024)
+                data = yield bluelet_read(fd, 1024)
                 if not data:
                     break
                 buf.append(data)
@@ -69,14 +69,14 @@ class WriteBlueletEvent(WaitableBlueletEvent, FileBlueletEvent):
     fd: ta.IO
     data: bytes
 
-    def waitables(self) -> Waitables:
-        return Waitables(w=[self.fd])
+    def waitables(self) -> BlueletWaitables:
+        return BlueletWaitables(w=[self.fd])
 
     def fire(self) -> None:
         self.fd.write(self.data)
 
 
-def write(fd: ta.IO, data: bytes) -> BlueletEvent:
+def bluelet_write(fd: ta.IO, data: bytes) -> BlueletEvent:
     """Event: write to a file descriptor asynchronously."""
 
     return WriteBlueletEvent(fd, data)

@@ -29,11 +29,11 @@ import types
 import typing as ta
 import weakref
 
-from .core import CoreBlueletEvent
 from .core import BlueletCoro
+from .core import BlueletExcInfo
+from .core import CoreBlueletEvent
 from .core import DelegationBlueletEvent
 from .core import ExceptionBlueletEvent
-from .core import BlueletExcInfo
 from .core import JoinBlueletEvent
 from .core import KillBlueletEvent
 from .core import ReturnBlueletEvent
@@ -41,7 +41,7 @@ from .core import SleepBlueletEvent
 from .core import SpawnBlueletEvent
 from .core import ValueBlueletEvent
 from .events import BlueletEvent
-from .events import Waitable
+from .events import BlueletWaitable
 from .events import WaitableBlueletEvent
 
 
@@ -69,16 +69,16 @@ class BlueletCoroException(Exception):  # noqa
 ##
 
 
-def _event_select(events: ta.Iterable[BlueletEvent]) -> ta.Set[WaitableBlueletEvent]:
+def _bluelet_event_select(events: ta.Iterable[BlueletEvent]) -> ta.Set[WaitableBlueletEvent]:
     """
     Perform a select() over all the Events provided, returning the ones ready to be fired. Only WaitableEvents
     (including SleepEvents) matter here; all other events are ignored (and thus postponed).
     """
 
-    waitable_to_event: ta.Dict[ta.Tuple[str, Waitable], WaitableBlueletEvent] = {}
-    rlist: ta.List[Waitable] = []
-    wlist: ta.List[Waitable] = []
-    xlist: ta.List[Waitable] = []
+    waitable_to_event: ta.Dict[ta.Tuple[str, BlueletWaitable], WaitableBlueletEvent] = {}
+    rlist: ta.List[BlueletWaitable] = []
+    wlist: ta.List[BlueletWaitable] = []
+    xlist: ta.List[BlueletWaitable] = []
     earliest_wakeup: ta.Optional[float] = None
 
     # Gather waitables and wakeup times.
@@ -139,7 +139,7 @@ class _SuspendedBlueletEvent(CoreBlueletEvent):
     pass
 
 
-_SUSPENDED = _SuspendedBlueletEvent()  # Special sentinel placeholder for suspended coros.
+_BLUELET_SUSPENDED = _SuspendedBlueletEvent()  # Special sentinel placeholder for suspended coros.
 
 
 @dc.dataclass(frozen=True, eq=False)
@@ -149,7 +149,7 @@ class _DelegatedBlueletEvent(CoreBlueletEvent):
     child: BlueletCoro
 
 
-class _Runner:
+class _BlueletRunner:
     """
     Schedules a coroutine, running it to completion. This encapsulates the Bluelet scheduler, which the root coroutine
     can add to by spawning new coroutines.
@@ -275,7 +275,7 @@ class _Runner:
             if event.child not in self._coros and event.child in self._history:
                 self._coros[coro] = ValueBlueletEvent(None)
             else:
-                self._coros[coro] = _SUSPENDED  # Suspend.
+                self._coros[coro] = _BLUELET_SUSPENDED  # Suspend.
                 self._joiners[event.child].append(coro)
             return True
 
@@ -309,7 +309,7 @@ class _Runner:
 
             # Wait and fire.
             event2coro = {v: k for k, v in self._coros.items()}
-            for event in _event_select(self._coros.values()):
+            for event in _bluelet_event_select(self._coros.values()):
                 # Run the IO operation, but catch socket errors.
                 try:
                     value = event.fire()
@@ -357,5 +357,5 @@ class _Runner:
             exit_ce.reraise()
 
 
-def run(root_coro: BlueletCoro) -> None:
-    _Runner(root_coro).run()
+def bluelet_run(root_coro: BlueletCoro) -> None:
+    _BlueletRunner(root_coro).run()
