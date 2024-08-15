@@ -29,6 +29,9 @@ ExcInfo: ta.TypeAlias = tuple[type[BaseException], BaseException, types.Tracebac
 Coro: ta.TypeAlias = ta.Generator[ta.Union['Event', 'Coro'], ta.Any, None]
 
 
+##
+
+
 class HasFileno(ta.Protocol):
     def fileno(self) -> int: ...
 
@@ -70,43 +73,95 @@ class WaitableEvent(Event, abc.ABC):  # noqa
         """Called when an associated file descriptor becomes ready (i.e., is returned from a select() call)."""
 
 
+##
+# Core events
+
+
+class CoreEvent(Event, abc.ABC):  # noqa
+    pass
+
+
+#
+
+
 @dc.dataclass(frozen=True, eq=False)
-class ValueEvent(Event):
+class ValueEvent(CoreEvent):
     """An event that does nothing but return a fixed value."""
 
     value: ta.Any
 
 
+def null() -> Event:
+    """Event: yield to the scheduler without doing anything special."""
+
+    return ValueEvent(None)
+
+
+#
+
+
 @dc.dataclass(frozen=True, eq=False)
-class ExceptionEvent(Event):
+class ExceptionEvent(CoreEvent):
     """Raise an exception at the yield point. Used internally."""
 
     exc_info: ExcInfo
 
 
+#
+
+
 @dc.dataclass(frozen=True, eq=False)
-class SpawnEvent(Event):
+class SpawnEvent(CoreEvent):
     """Add a new coroutine thread to the scheduler."""
 
     spawned: Coro
 
 
+def spawn(coro: Coro) -> Event:
+    """Event: add another coroutine to the scheduler. Both the parent and child coroutines run concurrently."""
+
+    if not isinstance(coro, types.GeneratorType):
+        raise ValueError('%s is not a coroutine' % str(coro))
+    return SpawnEvent(coro)
+
+
+#
+
+
 @dc.dataclass(frozen=True, eq=False)
-class JoinEvent(Event):
+class JoinEvent(CoreEvent):
     """Suspend the thread until the specified child thread has completed."""
 
     child: Coro
 
 
+def join(coro: Coro) -> Event:
+    """Suspend the thread until another, previously `spawn`ed thread completes."""
+
+    return JoinEvent(coro)
+
+
+#
+
+
 @dc.dataclass(frozen=True, eq=False)
-class KillEvent(Event):
+class KillEvent(CoreEvent):
     """Unschedule a child thread."""
 
     child: Coro
 
 
+def kill(coro: Coro) -> Event:
+    """Halt the execution of a different `spawn`ed thread."""
+
+    return KillEvent(coro)
+
+
+#
+
+
 @dc.dataclass(frozen=True, eq=False)
-class DelegationEvent(Event):
+class DelegationEvent(CoreEvent):
     """
     Suspend execution of the current thread, start a new thread and, once the child thread finished, return control to
     the parent thread.
@@ -115,15 +170,38 @@ class DelegationEvent(Event):
     spawned: Coro
 
 
+def call(coro: Coro) -> Event:
+    """
+    Event: delegate to another coroutine. The current coroutine is resumed once the sub-coroutine finishes. If the
+    sub-coroutine returns a value using end(), then this event returns that value.
+    """
+
+    if not isinstance(coro, types.GeneratorType):
+        raise ValueError('%s is not a coroutine' % str(coro))
+    return DelegationEvent(coro)
+
+
+#
+
+
 @dc.dataclass(frozen=True, eq=False)
-class ReturnEvent(Event):
+class ReturnEvent(CoreEvent):
     """Return a value the current thread's delegator at the point of delegation. Ends the current (delegate) thread."""
 
     value: ta.Any
 
 
+def end(value: ta.Any = None) -> Event:
+    """Event: ends the coroutine and returns a value to its delegator."""
+
+    return ReturnEvent(value)
+
+
+#
+
+
 @dc.dataclass(frozen=True, eq=False)
-class SleepEvent(WaitableEvent):
+class SleepEvent(WaitableEvent, CoreEvent):
     """Suspend the thread for a given duration."""
 
     wakeup_time: float
@@ -132,8 +210,22 @@ class SleepEvent(WaitableEvent):
         return max(self.wakeup_time - time.time(), 0.0)
 
 
+def sleep(duration: float) -> Event:
+    """Event: suspend the thread for ``duration`` seconds."""
+
+    return SleepEvent(time.time() + duration)
+
+
+##
+# File events
+
+
+class FileEvent(Event, abc.ABC):
+    pass
+
+
 @dc.dataclass(frozen=True, eq=False)
-class ReadEvent(WaitableEvent):
+class ReadEvent(WaitableEvent, FileEvent):
     """Reads from a file-like object."""
 
     fd: ta.IO
@@ -146,8 +238,31 @@ class ReadEvent(WaitableEvent):
         return self.fd.read(self.bufsize)
 
 
+def read(fd: ta.IO, bufsize: int | None = None) -> Event:
+    """Event: read from a file descriptor asynchronously."""
+
+    if bufsize is None:
+        # Read all.
+        def reader():
+            buf = []
+            while True:
+                data = yield read(fd, 1024)
+                if not data:
+                    break
+                buf.append(data)
+            yield ReturnEvent(''.join(buf))
+
+        return DelegationEvent(reader())
+
+    else:
+        return ReadEvent(fd, bufsize)
+
+
+#
+
+
 @dc.dataclass(frozen=True, eq=False)
-class WriteEvent(WaitableEvent):
+class WriteEvent(WaitableEvent, FileEvent):
     """Writes to a file-like object."""
 
     fd: ta.IO
@@ -158,6 +273,15 @@ class WriteEvent(WaitableEvent):
 
     def fire(self) -> None:
         self.fd.write(self.data)
+
+
+def write(fd: ta.IO, data: bytes) -> Event:
+    """Event: write to a file descriptor asynchronously."""
+
+    return WriteEvent(fd, data)
+
+
+##
 
 
 # Core logic for executing and scheduling threads.
@@ -248,7 +372,7 @@ SUSPENDED = Event()  # Special sentinel placeholder for suspended threads.
 
 
 @dc.dataclass(frozen=True, eq=False)
-class Delegated(Event):
+class DelegatedEvent(Event):
     """Placeholder indicating that a thread has delegated execution to a different thread."""
 
     child: Coro
@@ -328,7 +452,7 @@ def run(root_coro: Coro) -> None:
 
         # Collect all coroutines in the delegation stack.
         coros = [coro]
-        while isinstance((cur := threads[coro]), Delegated):
+        while isinstance((cur := threads[coro]), DelegatedEvent):
             coro = cur.child
             coros.append(coro)
 
@@ -359,7 +483,7 @@ def run(root_coro: Coro) -> None:
                         have_ready = True
 
                     elif isinstance(event, DelegationEvent):
-                        threads[coro] = Delegated(event.spawned)  # Suspend.
+                        threads[coro] = DelegatedEvent(event.spawned)  # Suspend.
                         threads[event.spawned] = ValueEvent(None)  # Spawn.
                         history[event.spawned] = None  # Record in history.
                         delegators[event.spawned] = coro
@@ -432,6 +556,7 @@ def run(root_coro: Coro) -> None:
         exit_te.reraise()
 
 
+##
 # Sockets and their associated events.
 
 
@@ -538,8 +663,18 @@ class Connection:
                 break
 
 
+#
+
+
+class SocketEvent(Event, abc.ABC):  # noqa
+    pass
+
+
+#
+
+
 @dc.dataclass(frozen=True, eq=False)
-class AcceptEvent(WaitableEvent):
+class AcceptEvent(WaitableEvent, SocketEvent):
     """An event for Listener objects (listening sockets) that suspends execution until the socket gets a connection."""
 
     listener: Listener
@@ -553,7 +688,7 @@ class AcceptEvent(WaitableEvent):
 
 
 @dc.dataclass(frozen=True, eq=False)
-class ReceiveEvent(WaitableEvent):
+class ReceiveEvent(WaitableEvent, SocketEvent):
     """An event for Connection objects (connected sockets) for asynchronously reading data."""
 
     conn: Connection
@@ -567,7 +702,7 @@ class ReceiveEvent(WaitableEvent):
 
 
 @dc.dataclass(frozen=True, eq=False)
-class SendEvent(WaitableEvent):
+class SendEvent(WaitableEvent, SocketEvent):
     """An event for Connection objects (connected sockets) for asynchronously writing data."""
 
     conn: Connection
@@ -585,64 +720,7 @@ class SendEvent(WaitableEvent):
             return self.conn.sock.send(self.data)
 
 
-# Public interface for threads; each returns an event object that can immediately be "yield"ed.
-
-
-def null() -> Event:
-    """Event: yield to the scheduler without doing anything special."""
-
-    return ValueEvent(None)
-
-
-def spawn(coro: Coro) -> Event:
-    """Event: add another coroutine to the scheduler. Both the parent and child coroutines run concurrently."""
-
-    if not isinstance(coro, types.GeneratorType):
-        raise ValueError('%s is not a coroutine' % str(coro))
-    return SpawnEvent(coro)
-
-
-def call(coro: Coro) -> Event:
-    """
-    Event: delegate to another coroutine. The current coroutine is resumed once the sub-coroutine finishes. If the
-    sub-coroutine returns a value using end(), then this event returns that value.
-    """
-
-    if not isinstance(coro, types.GeneratorType):
-        raise ValueError('%s is not a coroutine' % str(coro))
-    return DelegationEvent(coro)
-
-
-def end(value: ta.Any = None) -> Event:
-    """Event: ends the coroutine and returns a value to its delegator."""
-
-    return ReturnEvent(value)
-
-
-def read(fd: ta.IO, bufsize: int | None = None) -> Event:
-    """Event: read from a file descriptor asynchronously."""
-
-    if bufsize is None:
-        # Read all.
-        def reader():
-            buf = []
-            while True:
-                data = yield read(fd, 1024)
-                if not data:
-                    break
-                buf.append(data)
-            yield ReturnEvent(''.join(buf))
-
-        return DelegationEvent(reader())
-
-    else:
-        return ReadEvent(fd, bufsize)
-
-
-def write(fd: ta.IO, data: bytes) -> Event:
-    """Event: write to a file descriptor asynchronously."""
-
-    return WriteEvent(fd, data)
+#
 
 
 def connect(host: str, port: int) -> Event:
@@ -651,27 +729,6 @@ def connect(host: str, port: int) -> Event:
     addr = (host, port)
     sock = socket.create_connection(addr)
     return ValueEvent(Connection(sock, addr))
-
-
-def sleep(duration: float) -> Event:
-    """Event: suspend the thread for ``duration`` seconds."""
-
-    return SleepEvent(time.time() + duration)
-
-
-def join(coro: Coro) -> Event:
-    """Suspend the thread until another, previously `spawn`ed thread completes."""
-
-    return JoinEvent(coro)
-
-
-def kill(coro: Coro) -> Event:
-    """Halt the execution of a different `spawn`ed thread."""
-
-    return KillEvent(coro)
-
-
-# Convenience function for running socket servers.
 
 
 def server(host: str, port: int, func) -> Coro:

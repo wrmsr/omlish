@@ -846,7 +846,7 @@ class Ison(Command):
         return super().encode(*self.nicknames)
 
 
-commands = {
+COMMANDS = {
     cls.command: cls
     for cls in locals().values()  # type: ignore
     if isinstance(cls, type) and issubclass(cls, Command)
@@ -883,7 +883,7 @@ def decode_event(
         return Reply(prefix, command, rest)
 
     try:
-        command_class = commands[command]
+        command_class = COMMANDS[command]
     except KeyError:
         raise UnknownCommandError(command)  # noqa
 

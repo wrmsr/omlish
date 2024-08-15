@@ -3,7 +3,7 @@ import codecs
 
 from .events import Ping
 from .events import Reply
-from .events import commands
+from .events import COMMANDS
 from .events import decode_event
 from .exceptions import ProtocolError
 from .replies import reply_templates
@@ -84,7 +84,7 @@ class BaseIrcConnection(abc.ABC):  # noqa
             command = command.decode('ascii')
 
         try:
-            command_cls = commands[command]
+            command_cls = COMMANDS[command]
         except KeyError:
             raise ProtocolError(f'no such command: {command}')  # noqa
 
