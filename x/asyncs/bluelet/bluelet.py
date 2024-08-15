@@ -314,7 +314,7 @@ def run(root_coro: Coro) -> None:
             raise ThreadException(coro, sys.exc_info())
 
         else:
-            if isinstance(next_event, types.GeneratorType):
+            if isinstance(next_event, ta.Generator):
                 # Automatically invoke sub-coroutines. (Shorthand for explicit bluelet.call().)
                 next_event = DelegationEvent(next_event)
             threads[coro] = next_event
@@ -512,7 +512,7 @@ class Connection:
             raise SocketClosedError
         return SendEvent(self, data, True)
 
-    def readline(self, terminator: bytes = b'\n', bufsize: int = 1024) -> ta.Iterator[Event]:
+    def readline(self, terminator: bytes = b'\n', bufsize: int = 1024) -> ta.Generator[Event, ta.Any, None]:
         """Reads a line (delimited by terminator) from the socket."""
 
         if self._closed:
@@ -575,7 +575,8 @@ class SendEvent(WaitableEvent):
 
     def fire(self) -> int | None:
         if self.sendall:
-            return self.conn.sock.sendall(self.data)
+            self.conn.sock.sendall(self.data)
+            return None
         else:
             return self.conn.sock.send(self.data)
 
