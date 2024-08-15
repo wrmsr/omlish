@@ -34,11 +34,13 @@ class HasFileno(ta.Protocol):
 
 
 Waitable: ta.TypeAlias = int | HasFileno
-Waitables: ta.TypeAlias = tuple[
-    ta.Sequence[Waitable],
-    ta.Sequence[Waitable],
-    ta.Sequence[Waitable],
-]
+
+
+@dc.dataclass(frozen=True)
+class Waitables:
+    r: ta.Sequence[Waitable] = ()
+    w: ta.Sequence[Waitable] = ()
+    x: ta.Sequence[Waitable] = ()
 
 
 ##
@@ -62,7 +64,7 @@ class WaitableEvent(Event, abc.ABC):  # noqa
         Return "waitable" objects to pass to select(). Should return three iterables for input readiness, output
         readiness, and exceptional conditions (i.e., the three lists passed to select()).
         """
-        return (), (), ()
+        return Waitables()
 
     def fire(self) -> ta.Any:
         """Called when an associated file descriptor becomes ready (i.e., is returned from a select() call)."""
@@ -138,7 +140,7 @@ class ReadEvent(WaitableEvent):
     bufsize: int
 
     def waitables(self) -> Waitables:
-        return (self.fd,), (), ()
+        return Waitables(r=[self.fd])
 
     def fire(self) -> bytes:
         return self.fd.read(self.bufsize)
@@ -152,7 +154,7 @@ class WriteEvent(WaitableEvent):
     data: bytes
 
     def waitables(self) -> Waitables:
-        return (), (self.fd,), ()
+        return Waitables(w=[self.fd])
 
     def fire(self) -> None:
         self.fd.write(self.data)
@@ -161,13 +163,13 @@ class WriteEvent(WaitableEvent):
 # Core logic for executing and scheduling threads.
 
 
-def _event_select(events):
+def _event_select(events: ta.Iterable[Event]) -> set[WaitableEvent]:
     """
     Perform a select() over all the Events provided, returning the ones ready to be fired. Only WaitableEvents
     (including SleepEvents) matter here; all other events are ignored (and thus postponed).
     """
 
-    waitable_to_event: dict[tuple[str, Waitable], Event] = {}
+    waitable_to_event: dict[tuple[str, Waitable], WaitableEvent] = {}
     rlist: list[Waitable] = []
     wlist: list[Waitable] = []
     xlist: list[Waitable] = []
@@ -182,15 +184,15 @@ def _event_select(events):
                 earliest_wakeup = min(earliest_wakeup, event.wakeup_time)
 
         elif isinstance(event, WaitableEvent):
-            r, w, x = event.waitables()
-            rlist.extend(r)
-            wlist.extend(w)
-            xlist.extend(x)
-            for waitable in r:
+            ew = event.waitables()
+            rlist.extend(ew.r)
+            wlist.extend(ew.w)
+            xlist.extend(ew.x)
+            for waitable in ew.r:
                 waitable_to_event[('r', waitable)] = event
-            for waitable in w:
+            for waitable in ew.w:
                 waitable_to_event[('w', waitable)] = event
-            for waitable in x:
+            for waitable in ew.x:
                 waitable_to_event[('x', waitable)] = event
 
     # If we have a any sleeping threads, determine how long to sleep.
@@ -208,7 +210,7 @@ def _event_select(events):
             time.sleep(timeout)
 
     # Gather ready events corresponding to the ready waitables.
-    ready_events: set[Event] = set()
+    ready_events: set[WaitableEvent] = set()
     for ready in rready:
         ready_events.add(waitable_to_event[('r', ready)])
     for ready in wready:
@@ -254,7 +256,7 @@ def run(root_coro: Coro) -> None:
     can add to by spawning new coroutines.
     """
 
-    # The "threads" dictionary keeps track of all the currently- executing and suspended coroutines. It maps coroutines
+    # The "threads" dictionary keeps track of all the currently-executing and suspended coroutines. It maps coroutines
     # to their currently "blocking" event. The event value may be SUSPENDED if the coroutine is waiting on some other
     # condition: namely, a delegated coroutine or a joined coroutine. In this case, the coroutine should *also* appear
     # as a value in one of the below dictionaries `delegators` or `joiners`.
@@ -266,8 +268,7 @@ def run(root_coro: Coro) -> None:
     # Maps child coroutines to joining (exit-waiting) parents.
     joiners: ta.MutableMapping[Coro, list[Coro]] = collections.defaultdict(list)
 
-    # History of spawned coroutines for joining of already completed
-    # coroutines.
+    # History of spawned coroutines for joining of already completed coroutines.
     history: ta.MutableMapping[Coro, Event | None] = weakref.WeakKeyDictionary({root_coro: None})
 
     def complete_thread(coro: Coro, return_value: ta.Any) -> None:
@@ -323,8 +324,8 @@ def run(root_coro: Coro) -> None:
 
         # Collect all coroutines in the delegation stack.
         coros = [coro]
-        while isinstance(threads[coro], Delegated):
-            coro = threads[coro].child
+        while isinstance((cur := threads[coro]), Delegated):
+            coro = cur.child
             coros.append(coro)
 
         # Complete each coroutine from the top to the bottom of the stack.
@@ -540,7 +541,7 @@ class AcceptEvent(WaitableEvent):
     listener: Listener
 
     def waitables(self) -> Waitables:
-        return (self.listener.sock,), (), ()
+        return Waitables(r=[self.listener.sock])
 
     def fire(self) -> Connection:
         sock, addr = self.listener.sock.accept()
@@ -555,7 +556,7 @@ class ReceiveEvent(WaitableEvent):
     bufsize: int
 
     def waitables(self) -> Waitables:
-        return (self.conn.sock,), (), ()
+        return Waitables(r=[self.conn.sock])
 
     def fire(self) -> bytes:
         return self.conn.sock.recv(self.bufsize)
@@ -570,7 +571,7 @@ class SendEvent(WaitableEvent):
     sendall: bool = False
 
     def waitables(self) -> Waitables:
-        return (), (self.conn.sock,), ()
+        return Waitables(w=[self.conn.sock])
 
     def fire(self) -> int | None:
         if self.sendall:
