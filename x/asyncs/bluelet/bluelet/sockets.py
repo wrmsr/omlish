@@ -4,7 +4,7 @@ import dataclasses as dc
 import socket
 import typing as ta
 
-from .core import Coro
+from .core import BlueletCoro
 from .core import ReturnEvent
 from .core import ValueEvent
 from .core import spawn
@@ -97,7 +97,7 @@ class Connection:
             raise SocketClosedError
         return SendEvent(self, data, True)
 
-    def readline(self, terminator: bytes = b'\n', bufsize: int = 1024) -> Coro:
+    def readline(self, terminator: bytes = b'\n', bufsize: int = 1024) -> BlueletCoro:
         """Reads a line (delimited by terminator) from the socket."""
 
         if self._closed:
@@ -193,7 +193,7 @@ def connect(host: str, port: int) -> Event:
     return ValueEvent(Connection(sock, addr))
 
 
-def server(host: str, port: int, func) -> Coro:
+def server(host: str, port: int, func) -> BlueletCoro:
     """
     A coroutine that runs a network server. Host and port specify the listening address. func should be a coroutine that
     takes a single parameter, a Connection object. The coroutine is invoked for every incoming connection on the

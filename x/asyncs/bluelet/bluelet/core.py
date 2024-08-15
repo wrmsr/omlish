@@ -9,9 +9,9 @@ from .events import Event
 from .events import WaitableEvent
 
 
-ExcInfo = ta.Tuple[ta.Type[BaseException], BaseException, types.TracebackType]  # ta.TypeAlias
+BlueletExcInfo = ta.Tuple[ta.Type[BaseException], BaseException, types.TracebackType]  # ta.TypeAlias
 
-Coro = ta.Generator[ta.Union['Event', 'Coro'], ta.Any, None]  # ta.TypeAlias
+BlueletCoro = ta.Generator[ta.Union['Event', 'BlueletCoro'], ta.Any, None]  # ta.TypeAlias
 
 
 ##
@@ -50,7 +50,7 @@ def null() -> Event:
 class ExceptionEvent(CoreEvent):
     """Raise an exception at the yield point. Used internally."""
 
-    exc_info: ExcInfo
+    exc_info: BlueletExcInfo
 
 
 ##
@@ -60,10 +60,10 @@ class ExceptionEvent(CoreEvent):
 class SpawnEvent(CoreEvent):
     """Add a new coroutine coro to the scheduler."""
 
-    spawned: Coro
+    spawned: BlueletCoro
 
 
-def spawn(coro: Coro) -> Event:
+def spawn(coro: BlueletCoro) -> Event:
     """Event: add another coroutine to the scheduler. Both the parent and child coroutines run concurrently."""
 
     if not isinstance(coro, types.GeneratorType):
@@ -78,10 +78,10 @@ def spawn(coro: Coro) -> Event:
 class JoinEvent(CoreEvent):
     """Suspend the coro until the specified child coro has completed."""
 
-    child: Coro
+    child: BlueletCoro
 
 
-def join(coro: Coro) -> Event:
+def join(coro: BlueletCoro) -> Event:
     """Suspend the coro until another, previously `spawn`ed coro completes."""
 
     return JoinEvent(coro)
@@ -94,10 +94,10 @@ def join(coro: Coro) -> Event:
 class KillEvent(CoreEvent):
     """Unschedule a child coro."""
 
-    child: Coro
+    child: BlueletCoro
 
 
-def kill(coro: Coro) -> Event:
+def kill(coro: BlueletCoro) -> Event:
     """Halt the execution of a different `spawn`ed coro."""
 
     return KillEvent(coro)
@@ -113,10 +113,10 @@ class DelegationEvent(CoreEvent):
     the parent coro.
     """
 
-    spawned: Coro
+    spawned: BlueletCoro
 
 
-def call(coro: Coro) -> Event:
+def call(coro: BlueletCoro) -> Event:
     """
     Event: delegate to another coroutine. The current coroutine is resumed once the sub-coroutine finishes. If the
     sub-coroutine returns a value using end(), then this event returns that value.

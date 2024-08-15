@@ -25,10 +25,10 @@ import typing as ta
 import weakref
 
 from .core import CoreEvent
-from .core import Coro
+from .core import BlueletCoro
 from .core import DelegationEvent
 from .core import ExceptionEvent
-from .core import ExcInfo
+from .core import BlueletExcInfo
 from .core import JoinEvent
 from .core import KillEvent
 from .core import ReturnEvent
@@ -43,14 +43,14 @@ from .events import WaitableEvent
 ##
 
 
-class CoroException(Exception):  # noqa
-    def __init__(self, coro: Coro, exc_info: ExcInfo) -> None:
+class BlueletCoroException(Exception):  # noqa
+    def __init__(self, coro: BlueletCoro, exc_info: BlueletExcInfo) -> None:
         super().__init__()
         self.coro = coro
         self.exc_info = exc_info
 
     @staticmethod
-    def _exc_info() -> ExcInfo:
+    def _exc_info() -> BlueletExcInfo:
         return sys.exc_info()  # type: ignore
 
     @staticmethod
@@ -141,7 +141,7 @@ _SUSPENDED = _SuspendedEvent()  # Special sentinel placeholder for suspended cor
 class _DelegatedEvent(CoreEvent):
     """Placeholder indicating that a coro has delegated execution to a different coro."""
 
-    child: Coro
+    child: BlueletCoro
 
 
 class _Runner:
@@ -150,7 +150,7 @@ class _Runner:
     can add to by spawning new coroutines.
     """
 
-    def __init__(self, root_coro: Coro) -> None:
+    def __init__(self, root_coro: BlueletCoro) -> None:
         super().__init__()
 
         self._root_coro = root_coro
@@ -159,18 +159,18 @@ class _Runner:
         # coroutines to their currently "blocking" event. The event value may be SUSPENDED if the coroutine is waiting
         # on some other condition: namely, a delegated coroutine or a joined coroutine. In this case, the coroutine
         # should *also* appear as a value in one of the below dictionaries `delegators` or `joiners`.
-        self._coros: ta.Dict[Coro, Event] = {self._root_coro: ValueEvent(None)}
+        self._coros: ta.Dict[BlueletCoro, Event] = {self._root_coro: ValueEvent(None)}
 
         # Maps child coroutines to delegating parents.
-        self._delegators: ta.Dict[Coro, Coro] = {}
+        self._delegators: ta.Dict[BlueletCoro, BlueletCoro] = {}
 
         # Maps child coroutines to joining (exit-waiting) parents.
-        self._joiners: ta.MutableMapping[Coro, ta.List[Coro]] = collections.defaultdict(list)
+        self._joiners: ta.MutableMapping[BlueletCoro, ta.List[BlueletCoro]] = collections.defaultdict(list)
 
         # History of spawned coroutines for joining of already completed coroutines.
-        self._history: ta.MutableMapping[Coro, ta.Optional[Event]] = weakref.WeakKeyDictionary({self._root_coro: None})
+        self._history: ta.MutableMapping[BlueletCoro, ta.Optional[Event]] = weakref.WeakKeyDictionary({self._root_coro: None})
 
-    def _complete_coro(self, coro: Coro, return_value: ta.Any) -> None:
+    def _complete_coro(self, coro: BlueletCoro, return_value: ta.Any) -> None:
         """
         Remove a coroutine from the scheduling pool, awaking delegators and joiners as necessary and returning the
         specified value to any delegating parent.
@@ -189,7 +189,7 @@ class _Runner:
                 self._coros[parent] = ValueEvent(None)
             del self._joiners[coro]
 
-    def _advance_coro(self, coro: Coro, value: ta.Any, is_exc: bool = False) -> None:
+    def _advance_coro(self, coro: BlueletCoro, value: ta.Any, is_exc: bool = False) -> None:
         """
         After an event is fired, run a given coroutine associated with it in the coros dict until it yields again. If
         the coroutine exits, then the coro is removed from the pool. If the coroutine raises an exception, it is
@@ -211,7 +211,7 @@ class _Runner:
             # Coro raised some other exception.
             del self._coros[coro]
             # Note: Don't use `raise from` as this should support 3.8.
-            raise CoroException(coro, CoroException._exc_info())  # noqa
+            raise BlueletCoroException(coro, BlueletCoroException._exc_info())  # noqa
 
         else:
             if isinstance(next_event, ta.Generator):
@@ -219,7 +219,7 @@ class _Runner:
                 next_event = DelegationEvent(next_event)
             self._coros[coro] = next_event
 
-    def _kill_coro(self, coro: Coro) -> None:
+    def _kill_coro(self, coro: BlueletCoro) -> None:
         """Unschedule this coro and its (recursive) delegates."""
 
         # Collect all coroutines in the delegation stack.
@@ -239,7 +239,7 @@ class _Runner:
 
         self._coros.clear()
 
-    def _handle_core_event(self, coro: Coro, event: CoreEvent) -> bool:
+    def _handle_core_event(self, coro: BlueletCoro, event: CoreEvent) -> bool:
         if isinstance(event, SpawnEvent):
             self._coros[event.spawned] = ValueEvent(None)  # Spawn.
             self._history[event.spawned] = None  # Record in history.
@@ -285,7 +285,7 @@ class _Runner:
         else:
             raise TypeError(event)
 
-    def _step(self) -> ta.Optional[CoroException]:
+    def _step(self) -> ta.Optional[BlueletCoroException]:
         try:
             # Look for events that can be run immediately. Continue running immediate events until nothing is ready.
             while True:
@@ -322,7 +322,7 @@ class _Runner:
                 else:
                     self._advance_coro(event2coro[event], value)
 
-        except CoroException as te:
+        except BlueletCoroException as te:
             # Exception raised from inside a coro.
             event = ExceptionEvent(te.exc_info)
             if te.coro in self._delegators:
@@ -335,13 +335,13 @@ class _Runner:
 
         except:  # noqa
             # For instance, KeyboardInterrupt during select(). Raise into root coro and terminate others.
-            self._coros = {self._root_coro: ExceptionEvent(CoroException._exc_info())}  # noqa
+            self._coros = {self._root_coro: ExceptionEvent(BlueletCoroException._exc_info())}  # noqa
 
         return None
 
     def run(self) -> None:
         # Continue advancing coros until root coro exits.
-        exit_ce: CoroException | None = None
+        exit_ce: BlueletCoroException | None = None
         while self._coros:
             exit_ce = self._step()
 
@@ -352,5 +352,5 @@ class _Runner:
             exit_ce.reraise()
 
 
-def run(root_coro: Coro) -> None:
+def run(root_coro: BlueletCoro) -> None:
     _Runner(root_coro).run()

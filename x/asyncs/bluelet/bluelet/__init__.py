@@ -8,9 +8,9 @@
 
 from .core import (  # noqa
     CoreEvent,
-    Coro,
+    BlueletCoro as Coro,
     DelegationEvent,
-    ExcInfo,
+    BlueletExcInfo as ExcInfo,
     ExceptionEvent,
     JoinEvent,
     KillEvent,
@@ -44,7 +44,7 @@ from .files import (  # noqa
 )
 
 from .runner import (  # noqa
-    CoroException,
+    BlueletCoroException as CoroException,
     run,
 )
 
