@@ -1,3 +1,4 @@
+# ruff: noqa: UP007
 import collections
 import dataclasses as dc
 import errno
@@ -59,7 +60,7 @@ def _event_select(events: ta.Iterable[Event]) -> set[WaitableEvent]:
     rlist: list[Waitable] = []
     wlist: list[Waitable] = []
     xlist: list[Waitable] = []
-    earliest_wakeup: float | None = None
+    earliest_wakeup: ta.Optional[float] = None
 
     # Gather waitables and wakeup times.
     for event in events:

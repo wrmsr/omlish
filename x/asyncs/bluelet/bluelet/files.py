@@ -1,3 +1,4 @@
+# ruff: noqa: UP007
 import abc
 import dataclasses as dc
 import typing as ta
@@ -33,7 +34,7 @@ class ReadEvent(WaitableEvent, FileEvent):
         return self.fd.read(self.bufsize)
 
 
-def read(fd: ta.IO, bufsize: int | None = None) -> Event:
+def read(fd: ta.IO, bufsize: ta.Optional[int] = None) -> Event:
     """Event: read from a file descriptor asynchronously."""
 
     if bufsize is None:

@@ -1,3 +1,4 @@
+# ruff: noqa: UP007
 import abc
 import dataclasses as dc
 import typing as ta
@@ -20,7 +21,7 @@ class HasFileno(ta.Protocol):
     def fileno(self) -> int: ...
 
 
-Waitable: ta.TypeAlias = int | HasFileno
+Waitable: ta.TypeAlias = ta.Union[int, HasFileno]
 
 
 @dc.dataclass(frozen=True)
