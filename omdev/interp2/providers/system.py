@@ -9,9 +9,9 @@ import os
 import re
 import typing as ta
 
-from ...amalg.std.cached import cached_nullary
-from ...amalg.std.logs import log
-from ...amalg.std.versions.versions import InvalidVersion
+from omlish.lite.cached import cached_nullary
+from omlish.lite.logs import log
+from ...versioning.versions import InvalidVersion
 from .base import InterpProvider
 from .inspect import INTERP_INSPECTOR
 from .inspect import InterpInspector

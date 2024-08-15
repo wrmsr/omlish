@@ -8,13 +8,13 @@ import pprint
 import typing as ta  # noqa
 
 from omlish.os import PAGE_SIZE
+from omlish.lite.cached import cached_nullary
+from omlish.lite.check import check_not_none
+from omlish.lite.logs import log
+from omlish.lite.logs import configure_standard_logging
+from omlish.lite.runtime import check_runtime_version
+from omlish.lite.subprocesses import subprocess_check_output
 
-from ...std.cached import cached_nullary
-from ...std.check import check_not_none
-from ...std.logs import log
-from ...std.logs import configure_standard_logging
-from ...std.runtime import check_runtime_version
-from ...std.subprocesses import subprocess_check_output
 from .incl.foo import foo
 
 
