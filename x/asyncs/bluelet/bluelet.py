@@ -479,7 +479,7 @@ class Connection:
         super().__init__()
         self.sock = sock
         self.addr = addr
-        self._buf: bytes = b''
+        self._buf = bytearray()
         self._closed: bool = False
 
     def close(self) -> None:
@@ -498,7 +498,7 @@ class Connection:
             # We already have data read previously.
             out = self._buf[:size]
             self._buf = self._buf[size:]
-            return ValueEvent(out)
+            return ValueEvent(bytes(out))
         else:
             return ReceiveEvent(self, size)
 
@@ -526,15 +526,15 @@ class Connection:
             if terminator in self._buf:
                 line, self._buf = self._buf.split(terminator, 1)
                 line += terminator
-                yield ReturnEvent(line)
+                yield ReturnEvent(bytes(line))
                 break
             data = yield ReceiveEvent(self, bufsize)
             if data:
                 self._buf += data
             else:
                 line = self._buf
-                self._buf = b''
-                yield ReturnEvent(line)
+                self._buf = bytearray()
+                yield ReturnEvent(bytes(line))
                 break
 
 

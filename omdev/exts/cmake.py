@@ -3,9 +3,10 @@ TODO:
  - symlink headers, included src files (hamt_impl, ...)
  - point / copy output to dst dirs
  - libs
-  - pybind
-  - catch2?
-  - jsoncpp?
+  - ..
+   - pybind
+   - catch2?
+   - jsoncpp?
   - FindPackages? FetchContent? built_ext won't have that
 
 ==
