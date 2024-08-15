@@ -4,7 +4,9 @@ import curio
 
 from ..connection import IrcClientConnection
 from ..constants import RPL_MYINFO
-from ..events import Reply, Error, Join
+from ..events import Error
+from ..events import Join
+from ..events import Reply
 
 
 async def send_message_to_channel(host, port, nickname, channel, message):

@@ -3,7 +3,7 @@ import re
 from .exceptions import ProtocolError
 
 
-nickname_re = re.compile(b'[a-zA-Z[\]\\\\`_^{|}][a-zA-Z[\]\\\\`_^{|}0-9-]{0,8}$')
+nickname_re = re.compile(b'[a-zA-Z[\\]\\\\`_^{|}][a-zA-Z[\\]\\\\`_^{|}0-9-]{0,8}$')
 channel_re = re.compile(b'([#+&]|![A-Z0-9]{5})[^\x00\x0b\r\n ,:]+$')
 hostmask_re = re.compile(b'(?:[^\x00?*]|[^\x00\\\\]\\?|\\*)+')
 
@@ -17,7 +17,7 @@ def validate_channel_name(name):
 
     """
     if not channel_re.match(name):
-        raise ProtocolError(u'invalid channel name: %s' % name.decode('ascii',
+        raise ProtocolError('invalid channel name: %s' % name.decode('ascii',
                                                                       errors='backslashreplace'))
 
 
@@ -30,7 +30,7 @@ def validate_nickname(name):
 
     """
     if not nickname_re.match(name):
-        raise ProtocolError(u'invalid nickname: %s' % name.decode('ascii',
+        raise ProtocolError('invalid nickname: %s' % name.decode('ascii',
                                                                   errors='backslashreplace'))
 
 
@@ -43,7 +43,7 @@ def validate_hostmask(mask):
 
     """
     if not hostmask_re.match(mask):
-        raise ProtocolError(u'invalid host mask: %s' % mask.decode('ascii',
+        raise ProtocolError('invalid host mask: %s' % mask.decode('ascii',
                                                                    errors='backslashreplace'))
 
 

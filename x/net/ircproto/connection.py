@@ -1,8 +1,10 @@
-from __future__ import unicode_literals
 
 import codecs
 
-from .events import decode_event, commands, Reply, Ping
+from .events import Ping
+from .events import Reply
+from .events import commands
+from .events import decode_event
 from .exceptions import ProtocolError
 from .replies import reply_templates
 

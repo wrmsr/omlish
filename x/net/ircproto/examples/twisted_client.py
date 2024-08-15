@@ -1,11 +1,15 @@
 from argparse import ArgumentParser
 
 from twisted.internet import reactor
-from twisted.internet.protocol import Protocol, connectionDone, ClientFactory
+from twisted.internet.protocol import ClientFactory
+from twisted.internet.protocol import Protocol
+from twisted.internet.protocol import connectionDone
 
 from ..connection import IrcClientConnection
 from ..constants import RPL_MYINFO
-from ..events import Reply, Error, Join
+from ..events import Error
+from ..events import Join
+from ..events import Reply
 
 
 class IrcProtocol(Protocol):

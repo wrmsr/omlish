@@ -1,7 +1,8 @@
 import codecs
 
 from . import constants as consts
-from .exceptions import ProtocolError, UnknownCommand
+from .exceptions import ProtocolError
+from .exceptions import UnknownCommand
 
 
 class IrcEvent:

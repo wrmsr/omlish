@@ -62,7 +62,7 @@ class IrcTextStyle(Enum):
     plain = '\x0f'
 
 
-styles_re = re.compile(b'(\x03\d+(?:,\d+)?)|[\x02\x03\x1d\x1f\x16\x0f]')
+styles_re = re.compile(b'(\x03\\d+(?:,\\d+)?)|[\x02\x03\x1d\x1f\x16\x0f]')
 
 
 def styled(text, foreground=None, background=None, styles=None):

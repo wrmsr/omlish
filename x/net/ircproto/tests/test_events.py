@@ -1,8 +1,10 @@
 import codecs
 
 import pytest
+
 from ..events import decode_event
-from ..exceptions import ProtocolError, UnknownCommand
+from ..exceptions import ProtocolError
+from ..exceptions import UnknownCommand
 
 
 def test_decode_event_oversized():

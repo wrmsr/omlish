@@ -1,12 +1,14 @@
-from argparse import ArgumentParser
 
-from ..connection import IrcClientConnection
-from ..constants import RPL_MYINFO
-from ..events import Reply, Error, Join
+from asyncio import Protocol
+from asyncio import get_event_loop
 
 from omserv.secrets import load_secrets
 
-from asyncio import get_event_loop, Protocol
+from ..connection import IrcClientConnection
+from ..constants import RPL_MYINFO
+from ..events import Error
+from ..events import Join
+from ..events import Reply
 
 
 class MessageSendProtocol(Protocol):
