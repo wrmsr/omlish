@@ -70,7 +70,29 @@ T = ta.TypeVar('T')
 
 
 ########################################
-# ../../../../omdev/amalg/std/cached.py
+# ../../configs.py
+
+
+@dc.dataclass(frozen=True)
+class DeployConfig:
+    python_bin: str
+    app_name: str
+    repo_url: str
+    revision: str
+    requirements_txt: str
+    entrypoint: str
+
+
+@dc.dataclass(frozen=True)
+class HostConfig:
+    username: str = 'deploy'
+
+    global_supervisor_conf_file_path: str = '/etc/supervisor/conf.d/supervisord.conf'
+    global_nginx_conf_file_path: str = '/etc/nginx/sites-enabled/deploy.conf'
+
+
+########################################
+# ../../../../omlish/lite/cached.py
 
 
 class cached_nullary:  # noqa
@@ -91,7 +113,7 @@ class cached_nullary:  # noqa
 
 
 ########################################
-# ../../../../omdev/amalg/std/check.py
+# ../../../../omlish/lite/check.py
 # ruff: noqa: UP006 UP007
 
 
@@ -120,7 +142,7 @@ def check_not(v: ta.Any) -> None:
 
 
 ########################################
-# ../../../../omdev/amalg/std/logs.py
+# ../../../../omlish/lite/logs.py
 """
 TODO:
  - debug
@@ -137,7 +159,7 @@ def configure_standard_logging(level: ta.Union[int, str] = logging.INFO) -> None
 
 
 ########################################
-# ../../../../omdev/amalg/std/reflect.py
+# ../../../../omlish/lite/reflect.py
 
 
 _GENERIC_ALIAS_TYPES = (
@@ -172,29 +194,7 @@ def get_optional_alias_arg(spec: ta.Any) -> ta.Any:
 
 
 ########################################
-# ../../configs.py
-
-
-@dc.dataclass(frozen=True)
-class DeployConfig:
-    python_bin: str
-    app_name: str
-    repo_url: str
-    revision: str
-    requirements_txt: str
-    entrypoint: str
-
-
-@dc.dataclass(frozen=True)
-class HostConfig:
-    username: str = 'deploy'
-
-    global_supervisor_conf_file_path: str = '/etc/supervisor/conf.d/supervisord.conf'
-    global_nginx_conf_file_path: str = '/etc/nginx/sites-enabled/deploy.conf'
-
-
-########################################
-# ../../../../omdev/amalg/std/marshal.py
+# ../../../../omlish/lite/marshal.py
 """
 TODO:
  - pickle stdlib objs? have to pin to 3.8 pickle protocol, will be cross-version
@@ -469,7 +469,7 @@ def unmarshal_obj(o: ta.Any, ty: ta.Any) -> ta.Any:
 
 
 ########################################
-# ../../../../omdev/amalg/std/runtime.py
+# ../../../../omlish/lite/runtime.py
 
 
 @cached_nullary
@@ -487,7 +487,7 @@ def check_runtime_version() -> None:
 
 
 ########################################
-# ../../../../omdev/amalg/std/subprocesses.py
+# ../../../../omlish/lite/subprocesses.py
 # ruff: noqa: UP006 UP007
 
 
