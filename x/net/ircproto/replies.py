@@ -54,22 +54,28 @@ reply_templates = {
     consts.RPL_USERS: ":{username} {ttyline} {hostname}",
     consts.RPL_ENDOFUSERS: ":End of users",
     consts.RPL_NOUSERS: ":Nobody logged in",
-    consts.RPL_TRACELINK: ("Link {version_debug_level} {destination} {next_server} V{protocol_version} "
-                    "{link uptime in seconds} {backstream_sendq} {upstream_sendq}"),
+    consts.RPL_TRACELINK: (
+        "Link {version_debug_level} {destination} {next_server} V{protocol_version} "
+        "{link uptime in seconds} {backstream_sendq} {upstream_sendq}"
+    ),
     consts.RPL_TRACECONNECTING: "Try. {class} {server}",
     consts.RPL_TRACEHANDSHAKE: "H.S. {class} {server}",
     consts.RPL_TRACEUNKNOWN: "???? {class} [{client IP address in dot form}]",
     consts.RPL_TRACEOPERATOR: "Oper {class} {nick}",
     consts.RPL_TRACEUSER: "User {class} {nick}",
-    consts.RPL_TRACESERVER: ("Serv {class} {int}S {int}C {server} {nick!user|*!*}@{host|server} "
-                      "V{protocol_version}"),
+    consts.RPL_TRACESERVER: (
+        "Serv {class} {int}S {int}C {server} {nick!user|*!*}@{host|server} "
+        "V{protocol_version}"
+    ),
     consts.RPL_TRACESERVICE: "Service {class} {name} {type} {active_type}",
     consts.RPL_TRACENEWTYPE: "{newtype} 0 {client_name}",
     consts.RPL_TRACECLASS: "Class {class} {count}",
     consts.RPL_TRACELOG: "File {logfile} {debug_level}",
     consts.RPL_TRACEEND: "{server_name} {version & debug level} :End of TRACE",
-    consts.RPL_STATSLINKINFO: ("{linkname} {sendq} {sent_messages} {sent_kbytes} {received_messages} "
-                        "{received_kbytes} {time_open}"),
+    consts.RPL_STATSLINKINFO: (
+        "{linkname} {sendq} {sent_messages} {sent_kbytes} {received_messages} "
+        "{received_kbytes} {time_open}"
+    ),
     consts.RPL_STATSCOMMANDS: "{command} {count} {byte_count} {remote_count}",
     consts.RPL_ENDOFSTATS: "{stats_letter} :End of STATS report",
     consts.RPL_STATSUPTIME: ":Server Up %d days %d:%02d:%02d",

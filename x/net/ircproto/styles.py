@@ -2,7 +2,7 @@ import re
 from enum import Enum
 
 
-class IRCTextColor(Enum):
+class IrcTextColor(Enum):
     """
     Enumeration of colors usable with :func:`styled`.
 
@@ -43,7 +43,7 @@ class IRCTextColor(Enum):
     lightgray = 15
 
 
-class IRCTextStyle(Enum):
+class IrcTextStyle(Enum):
     """
     Enumeration of text styles usable with :func:`styled`.
 
@@ -83,12 +83,12 @@ def styled(text, foreground=None, background=None, styles=None):
 
     # Apply text styles
     if styles:
-        if isinstance(styles, IRCTextStyle):
+        if isinstance(styles, IrcTextStyle):
             text = styles.value + text
         else:
             text = ''.join(style.value for style in styles) + text
 
-        text += IRCTextStyle.plain.value  # reset to default at the end
+        text += IrcTextStyle.plain.value  # reset to default at the end
 
     return text
 

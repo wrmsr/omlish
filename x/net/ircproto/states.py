@@ -2,7 +2,7 @@ from .constants import *
 from .utils import match_hostmask
 
 
-class IrcChannel(object):
+class IrcChannel:
     """
     Represents the state of an IRC channel.
 
@@ -26,7 +26,7 @@ class IrcChannel(object):
         self.users = []
 
 
-class IrcServer(object):
+class IrcServer:
     """
     Represents the state of an IRC server.
 

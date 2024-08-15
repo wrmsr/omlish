@@ -134,4 +134,4 @@ ERR_NOOPERHOST = 491
 ERR_UMODEUNKNOWNFLAG = 501
 ERR_USERSDONTMATCH = 502
 
-reply_names = {value: key for key, value in locals().items() if isinstance(value, int)}
+REPLY_NAMES = {value: key for key, value in locals().items() if isinstance(value, int)}

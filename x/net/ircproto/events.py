@@ -61,11 +61,11 @@ class Command(IrcEvent):
     allowed_replies = ()
 
     def process_reply(self, code):
-        if code not in consts.reply_names:
+        if code not in consts.REPLY_NAMES:
             raise ProtocolError('%s is not a known reply code' % code)
 
         if code not in self.allowed_replies:
-            code_name = consts.reply_names[code]
+            code_name = consts.REPLY_NAMES[code]
             raise ProtocolError('reply code %s is not allowed for %s' % (code_name, self.command))
 
         return True

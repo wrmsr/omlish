@@ -1,14 +1,14 @@
 import pytest
 
-from ..styles import styled, IRCTextColor, IRCTextStyle, strip_styles
+from ..styles import styled, IrcTextColor, IrcTextStyle, strip_styles
 
 
 @pytest.mark.parametrize('args, expected', [
-    (('test', IRCTextColor.cyan), '\x0311test\x03'),
-    (('test', IRCTextColor.cyan, IRCTextColor.red), '\x0311,4test\x03'),
-    (('test', None, None, IRCTextStyle.bold), '\x02test\x0f'),
-    (('test', None, None, [IRCTextStyle.bold, IRCTextStyle.italic]), '\x02\x1dtest\x0f'),
-    (('test', IRCTextColor.cyan, IRCTextColor.red, [IRCTextStyle.bold, IRCTextStyle.italic]),
+    (('test', IrcTextColor.cyan), '\x0311test\x03'),
+    (('test', IrcTextColor.cyan, IrcTextColor.red), '\x0311,4test\x03'),
+    (('test', None, None, IrcTextStyle.bold), '\x02test\x0f'),
+    (('test', None, None, [IrcTextStyle.bold, IrcTextStyle.italic]), '\x02\x1dtest\x0f'),
+    (('test', IrcTextColor.cyan, IrcTextColor.red, [IrcTextStyle.bold, IrcTextStyle.italic]),
      '\x02\x1d\x0311,4test\x03\x0f')
 ], ids=['foreground', 'both_colors', 'bold', 'bold_italic', 'colors_styles'])
 def test_styled(args, expected):
