@@ -1,4 +1,5 @@
 """A simple Web server built with Bluelet to support concurrent requests in a single OS thread."""
+import dataclasses as dc
 import mimetypes
 import os
 import sys
@@ -11,17 +12,24 @@ ROOT = '.'
 INDEX_FILENAME = 'index.html'
 
 
-def parse_request(lines):
+@dc.dataclass(frozen=True)
+class Request:
+    method: bytes
+    path: bytes
+    headers: ta.Mapping[bytes, bytes]
+
+
+def parse_request(lines: ta.Sequence[bytes]) -> Request:
     """Parse an HTTP request."""
 
     method, path, version = lines.pop(0).split(None, 2)
-    headers = {}
+    headers: dict[bytes, bytes] = {}
     for line in lines:
         if not line:
             continue
         key, value = line.split(b': ', 1)
         headers[key] = value
-    return method, path, headers
+    return Request(method, path, headers)
 
 
 def mime_type(filename):
@@ -34,10 +42,18 @@ def mime_type(filename):
         return 'text/plain'
 
 
-def respond(method, path, headers):
+@dc.dataclass(frozen=True)
+class Response:
+    status: str
+    headers: ta.Mapping[str, str]
+    content: bytes
+
+
+def respond(req: Request) -> Response:
     """Generate an HTTP response for a parsed request."""
 
     # Remove query string, if any.
+    path = req.path
     if b'?' in path:
         path, query = path.split(b'?', 1)
     path = path.decode('utf8')
@@ -61,7 +77,7 @@ def respond(method, path, headers):
         for name in sorted(os.listdir(filename), key=lambda n: (not os.path.isdir(n), n)):
             files.append(f'<li><a href="{pfx}{name}">{"/" if os.path.isdir(name) else ""}{name}</a></li>')
         html = f'<html><head><title>{path}</title></head><body><h1>{path}</h1><ul>{"".join(files)}</ul></body></html>'
-        return (
+        return Response(
             '200 OK',
             {'Content-Type': 'text/html'},
             html.encode('utf8'),
@@ -70,12 +86,16 @@ def respond(method, path, headers):
     elif os.path.exists(filename):
         # Send file contents.
         with open(filename, 'rb') as f:
-            return '200 OK', {'Content-Type': mime_type(filename)}, f.read()
+            return Response(
+                '200 OK',
+                {'Content-Type': mime_type(filename)},
+                f.read(),
+            )
 
     else:
         # Not found.
         print('Not found.')
-        return (
+        return Response(
             '404 Not Found',
             {'Content-Type': 'text/html'},
             b'<html><head><title>404 Not Found</title></head><body><h1>Not found.</h1></body></html>',
@@ -86,29 +106,29 @@ def webrequest(conn: bl.Connection) -> bl.Coro:
     """A Bluelet coroutine implementing an HTTP server."""
 
     # Get the HTTP request.
-    request = []
+    req_lines: list[bytes] = []
     while True:
         line = (yield conn.readline(b'\r\n')).strip()
         if not line:
             # End of headers.
             break
-        request.append(line)
+        req_lines.append(line)
 
     # Make sure a request was sent.
-    if not request:
+    if not req_lines:
         return
 
     # Parse and log the request and get the response values.
-    method, path, headers = parse_request(request)
-    print('%s %s' % (method, path))
-    status, headers, content = respond(method, path, headers)
+    req = parse_request(req_lines)
+    print('%s %s' % (req.method, req.path))
+    resp = respond(req)
 
     # Send response.
-    yield conn.sendall(f'HTTP/1.1 {status}\r\n'.encode('utf8'))
-    for key, value in headers.items():
+    yield conn.sendall(f'HTTP/1.1 {resp.status}\r\n'.encode('utf8'))
+    for key, value in resp.headers.items():
         yield conn.sendall(f'{key}: {value}\r\n'.encode('utf8'))
     yield conn.sendall(b'\r\n')
-    yield conn.sendall(content)
+    yield conn.sendall(resp.content)
 
 
 if __name__ == '__main__':

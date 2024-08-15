@@ -20,10 +20,8 @@ URL = 'http://api.twitter.com/1/statuses/user_timeline.json?screen_name=%s&count
 USERNAMES = ('samps', 'b33ts', 'twitter', 'twitterapi', 'Support')
 
 
-class AsyncHTTPClient:
-    """A basic Bluelet-based asynchronous HTTP client. Only supports
-    very simple GET queries.
-    """
+class AsyncHttpClient:
+    """A basic Bluelet-based asynchronous HTTP client. Only supports very simple GET queries."""
 
     def __init__(self, host, port, path):
         self.host = host
@@ -93,6 +91,7 @@ class AsyncHTTPClient:
 
 # Various ways of writing the crawler.
 
+
 def run_bluelet():
     # No lock is required guarding the shared variable because only
     # one thread is actually running at a time.
@@ -100,7 +99,7 @@ def run_bluelet():
 
     def fetch(username):
         url = URL % username
-        data = yield AsyncHTTPClient.fetch(url)
+        data = yield AsyncHttpClient.fetch(url)
         tweets[username] = json.loads(data)[0]['text']
 
     def crawl():
@@ -169,6 +168,7 @@ def run_processes():
 
 
 # Main driver.
+
 
 if __name__ == '__main__':
     strategies = {
