@@ -8,7 +8,7 @@ import unittest
 from omlish.lite.marshal import marshal_obj
 from omlish.lite.marshal import unmarshal_obj
 
-from ...toml import toml_loads
+from ...toml.toml import toml_loads
 from ..interps import VenvInterps
 
 
