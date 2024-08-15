@@ -145,17 +145,17 @@ class User(Command):
     allowed_replies = (consts.ERR_NEEDMOREPARAMS, consts.ERR_ALREADYREGISTRED)
 
     def __init__(self, sender, user, mode, realname):
-        super(User, self).__init__(sender)
+        super().__init__(sender)
         self.user = user
         self.mode = mode
         self.realname = realname
 
     @classmethod
     def decode(cls, sender, *params):
-        return super(User).decode(sender, params[0], params[1], params[3])
+        return super().decode(sender, params[0], params[1], params[3])
 
     def encode(self):
-        return super(User, self).encode(self.user, self.mode, '*', self.realname)
+        return super().encode(self.user, self.mode, '*', self.realname)
 
 
 # Section 3.1.4
@@ -166,12 +166,12 @@ class Oper(Command):
     allowed_replies = (consts.ERR_NEEDMOREPARAMS, consts.ERR_NOOPERHOST, consts.ERR_PASSWDMISMATCH, consts.RPL_YOUREOPER)
 
     def __init__(self, sender, name, password):
-        super(Oper, self).__init__(sender)
+        super().__init__(sender)
         self.name = name
         self.password = password
 
     def encode(self):
-        return super(Oper, self).encode(self.name, self.password)
+        return super().encode(self.name, self.password)
 
 
 # Section 3.1.5 / 3.2.3
@@ -182,13 +182,13 @@ class Mode(Command):
     allowed_replies = (consts.ERR_NEEDMOREPARAMS, consts.ERR_USERSDONTMATCH, consts.ERR_UMODEUNKNOWNFLAG, consts.RPL_UMODEIS)
 
     def __init__(self, sender, target, modes, *modeparams):
-        super(Mode, self).__init__(sender)
+        super().__init__(sender)
         self.target = target
         self.modes = modes
         self.modeparams = modeparams
 
     def encode(self):
-        return super(Mode, self).encode(self.target, self.modes, *self.modeparams)
+        return super().encode(self.target, self.modes, *self.modeparams)
 
 
 # Section 3.1.6
@@ -200,15 +200,14 @@ class Service(Command):
                        consts.RPL_YOURESERVICE, consts.RPL_YOURHOST, consts.RPL_MYINFO)
 
     def __init__(self, sender, nickname, distribution, type_, info):
-        super(Service, self).__init__(sender)
+        super().__init__(sender)
         self.nickname = nickname
         self.distribution = distribution
         self.type = type_
         self.info = info
 
     def encode(self):
-        return super(Service, self).encode(self.nickname, '*', self.distribution, self.type, '*',
-                                           self.info)
+        return super().encode(self.nickname, '*', self.distribution, self.type, '*', self.info)
 
 
 # Section 3.1.7
@@ -218,11 +217,11 @@ class Quit(Command):
     command = 'QUIT'
 
     def __init__(self, sender, message=None):
-        super(Quit, self).__init__(sender)
+        super().__init__(sender)
         self.message = message
 
     def encode(self):
-        return super(Quit, self).encode(self.message)
+        return super().encode(self.message)
 
 
 # Section 3.1.8
@@ -234,12 +233,12 @@ class SQuit(Command):
     allowed_replies = (consts.ERR_NOPRIVILEGES, consts.ERR_NOSUCHSERVER, consts.ERR_NEEDMOREPARAMS)
 
     def __init__(self, sender, server, comment):
-        super(SQuit, self).__init__(sender)
+        super().__init__(sender)
         self.server = server
         self.comment = comment
 
     def encode(self):
-        return super(SQuit, self).encode(self.server, self.comment)
+        return super().encode(self.server, self.comment)
 
 
 # Section 3.2.1
@@ -252,12 +251,12 @@ class Join(Command):
                        consts.ERR_TOOMANYCHANNELS, consts.ERR_TOOMANYTARGETS, consts.ERR_UNAVAILRESOURCE, consts.RPL_TOPIC)
 
     def __init__(self, sender, channel, key=None):
-        super(Join, self).__init__(sender)
+        super().__init__(sender)
         self.channel = channel
         self.key = key
 
     def encode(self):
-        return super(Join, self).encode(self.channel, self.key)
+        return super().encode(self.channel, self.key)
 
 
 # Section 3.2.2
@@ -268,12 +267,12 @@ class Part(Command):
     allowed_replies = (consts.ERR_NEEDMOREPARAMS, consts.ERR_NOSUCHCHANNEL, consts.ERR_NOTONCHANNEL)
 
     def __init__(self, sender, channel, message=None):
-        super(Part, self).__init__(sender)
+        super().__init__(sender)
         self.channel = channel
         self.message = message
 
     def encode(self):
-        return super(Part, self).encode(self.channel, self.message)
+        return super().encode(self.channel, self.message)
 
 
 # Section 3.2.4
@@ -285,12 +284,12 @@ class Topic(Command):
                        consts.ERR_CHANOPRIVSNEEDED, consts.ERR_NOCHANMODES)
 
     def __init__(self, sender, channel, topic):
-        super(Topic, self).__init__(sender)
+        super().__init__(sender)
         self.channel = channel
         self.topic = topic
 
     def encode(self, *params):
-        return super(Topic, self).encode(self.channel, self.topic)
+        return super().encode(self.channel, self.topic)
 
 
 # Section 3.2.5
@@ -318,12 +317,12 @@ class Invite(Command):
                        consts.ERR_CHANOPRIVSNEEDED, consts.RPL_INVITING, consts.RPL_AWAY)
 
     def __init__(self, sender, nickname, channel):
-        super(Invite, self).__init__(sender)
+        super().__init__(sender)
         self.nickname = nickname
         self.channel = channel
 
     def encode(self):
-        return super(Invite, self).encode(self.nickname, self.channel)
+        return super().encode(self.nickname, self.channel)
 
 
 # Section 3.2.8
@@ -335,13 +334,13 @@ class Kick(Command):
                        consts.ERR_CHANOPRIVSNEEDED, consts.ERR_USERNOTINCHANNEL, consts.ERR_NOTONCHANNEL)
 
     def __init__(self, sender, channel, nickname, comment=None):
-        super(Kick, self).__init__(sender)
+        super().__init__(sender)
         self.channel = channel
         self.nickname = nickname
         self.comment = comment
 
     def encode(self):
-        return super(Kick, self).encode(self.channel, self.nickname, self.comment)
+        return super().encode(self.channel, self.nickname, self.comment)
 
 
 # Section 3.3.1
@@ -353,12 +352,12 @@ class PrivateMessage(Command):
                        consts.ERR_WILDTOPLEVEL, consts.ERR_TOOMANYTARGETS, consts.ERR_NOSUCHNICK, consts.RPL_AWAY)
 
     def __init__(self, sender, recipient, message):
-        super(PrivateMessage, self).__init__(sender)
+        super().__init__(sender)
         self.recipient = recipient
         self.message = message
 
     def encode(self):
-        return super(PrivateMessage, self).encode(self.recipient, self.message)
+        return super().encode(self.recipient, self.message)
 
 
 # Section 3.3.2
@@ -370,7 +369,7 @@ class Notice(Command):
                        consts.ERR_WILDTOPLEVEL, consts.ERR_TOOMANYTARGETS, consts.ERR_NOSUCHNICK)
 
     def __init__(self, sender, recipient, message):
-        super(Notice, self).__init__(sender)
+        super().__init__(sender)
         self.recipient = recipient
         self.message = message
 
@@ -383,7 +382,7 @@ class Notice(Command):
             return Notice(sender, *params)
 
     def encode(self):
-        return super(Notice, self).encode(self.recipient, self.message)
+        return super().encode(self.recipient, self.message)
 
 
 class CTCPMessage(IrcEvent):
@@ -394,12 +393,12 @@ class CTCPMessage(IrcEvent):
     """
 
     def __init__(self, sender, recipient, message):
-        super(CTCPMessage, self).__init__(sender)
+        super().__init__(sender)
         self.recipient = recipient
         self.message = message
 
     def encode(self):
-        return super(CTCPMessage, self).encode(self.recipient, '\x01' + self.message + '\x01')
+        return super().encode(self.recipient, '\x01' + self.message + '\x01')
 
 
 # Section 3.4.1
@@ -410,11 +409,11 @@ class Motd(Command):
     allowed_replies = (consts.RPL_MOTDSTART, consts.RPL_MOTD, consts.RPL_ENDOFMOTD, consts.ERR_NOMOTD)
 
     def __init__(self, sender, target=None):
-        super(Motd, self).__init__(sender)
+        super().__init__(sender)
         self.target = target
 
     def encode(self):
-        return super(Motd, self).encode(self.target)
+        return super().encode(self.target)
 
 
 # Section 3.4.2
@@ -426,12 +425,12 @@ class Lusers(Command):
                        consts.RPL_LUSERME, consts.ERR_NOSUCHSERVER)
 
     def __init__(self, sender, mask=None, target=None):
-        super(Lusers, self).__init__(sender)
+        super().__init__(sender)
         self.mask = mask
         self.target = target
 
     def encode(self):
-        return super(Lusers, self).encode(self.mask, self.target)
+        return super().encode(self.mask, self.target)
 
 
 # Section 3.4.3
@@ -442,11 +441,11 @@ class Version(Command):
     allowed_replies = (consts.ERR_NOSUCHSERVER, consts.RPL_VERSION)
 
     def __init__(self, sender, target=None):
-        super(Version, self).__init__(sender)
+        super().__init__(sender)
         self.target = target
 
     def encode(self):
-        return super(Version, self).encode(self.target)
+        return super().encode(self.target)
 
 
 # Section 3.4.4
@@ -458,12 +457,12 @@ class Stats(Command):
                        consts.RPL_STATSOLINE, consts.RPL_ENDOFSTATS)
 
     def __init__(self, sender, query=None, target=None):
-        super(Stats, self).__init__(sender)
+        super().__init__(sender)
         self.query = query
         self.target = target
 
     def encode(self):
-        return super(Stats, self).encode(self.query, self.target)
+        return super().encode(self.query, self.target)
 
 
 # Section 3.4.5
@@ -475,12 +474,12 @@ class Links(Command):
                        consts.RPL_STATSOLINE, consts.RPL_ENDOFSTATS)
 
     def __init__(self, sender, remote_server=None, server_mask=None):
-        super(Links, self).__init__(sender)
+        super().__init__(sender)
         self.remote_server = remote_server
         self.server_mask = server_mask
 
     def encode(self):
-        return super(Links, self).encode(self.remote_server, self.server_mask)
+        return super().encode(self.remote_server, self.server_mask)
 
 
 # Section 3.4.6
@@ -491,11 +490,11 @@ class Time(Command):
     allowed_replies = (consts.ERR_NOSUCHSERVER, consts.RPL_TIME)
 
     def __init__(self, sender, target=None):
-        super(Time, self).__init__(sender)
+        super().__init__(sender)
         self.target = target
 
     def encode(self):
-        return super(Time, self).encode(self.target)
+        return super().encode(self.target)
 
 
 # Section 3.4.7
@@ -507,13 +506,13 @@ class Connect(Command):
     allowed_replies = (consts.ERR_NOSUCHSERVER, consts.ERR_NOPRIVILEGES, consts.ERR_NEEDMOREPARAMS)
 
     def __init__(self, sender, target_server, port, remote_server=None):
-        super(Connect, self).__init__(sender)
+        super().__init__(sender)
         self.target_server = target_server
         self.port = int(port)
         self.remote_server = remote_server
 
     def encode(self):
-        return super(Connect, self).encode(self.target_server, self.port, self.remote_server)
+        return super().encode(self.target_server, self.port, self.remote_server)
 
 
 # Section 3.4.8
@@ -527,11 +526,11 @@ class Trace(Command):
                        consts.RPL_TRACEEND)
 
     def __init__(self, sender, target=None):
-        super(Trace, self).__init__(sender)
+        super().__init__(sender)
         self.target = target
 
     def encode(self):
-        return super(Trace, self).encode(self.target)
+        return super().encode(self.target)
 
 
 # Section 3.4.9
@@ -542,11 +541,11 @@ class Admin(Command):
     allowed_replies = (consts.ERR_NOSUCHSERVER, consts.RPL_ADMINME, consts.RPL_ADMINLOC1, consts.RPL_ADMINLOC2, consts.RPL_ADMINEMAIL)
 
     def __init__(self, sender, target=None):
-        super(Admin, self).__init__(sender)
+        super().__init__(sender)
         self.target = target
 
     def encode(self):
-        return super(Admin, self).encode(self.target)
+        return super().encode(self.target)
 
 
 # Section 3.4.10
@@ -557,11 +556,11 @@ class Info(Command):
     allowed_replies = (consts.ERR_NOSUCHSERVER, consts.RPL_INFO, consts.RPL_ENDOFINFO)
 
     def __init__(self, sender, target=None):
-        super(Info, self).__init__(sender)
+        super().__init__(sender)
         self.target = target
 
     def encode(self):
-        return super(Info, self).encode(self.target)
+        return super().encode(self.target)
 
 
 # Section 3.7.1
@@ -573,12 +572,12 @@ class Kill(Command):
     allowed_replies = (consts.ERR_NOPRIVILEGES, consts.ERR_NEEDMOREPARAMS, consts.ERR_NOSUCHNICK, consts.ERR_CANTKILLSERVER)
 
     def __init__(self, sender, nickname, comment):
-        super(Kill, self).__init__(sender)
+        super().__init__(sender)
         self.nickname = nickname
         self.comment = comment
 
     def encode(self):
-        return super(Kill, self).encode(self.nickname, self.comment)
+        return super().encode(self.nickname, self.comment)
 
 
 # Section 3.7.2
@@ -589,12 +588,12 @@ class Ping(Command):
     allowed_replies = (consts.ERR_NOORIGIN, consts.ERR_NOSUCHSERVER)
 
     def __init__(self, sender, server1, server2=None):
-        super(Ping, self).__init__(sender)
+        super().__init__(sender)
         self.server1 = server1
         self.server2 = server2
 
     def encode(self):
-        return super(Ping, self).encode(self.server1, self.server2)
+        return super().encode(self.server1, self.server2)
 
 
 # Section 3.7.3
@@ -605,12 +604,12 @@ class Pong(Command):
     allowed_replies = (consts.ERR_NOORIGIN, consts.ERR_NOSUCHSERVER)
 
     def __init__(self, sender, server1, server2=None):
-        super(Pong, self).__init__(sender)
+        super().__init__(sender)
         self.server1 = server1
         self.server2 = server2
 
     def encode(self):
-        return super(Pong, self).encode(self.server1, self.server2)
+        return super().encode(self.server1, self.server2)
 
 
 # Section 3.7.4
@@ -620,11 +619,11 @@ class Error(Command):
     command = 'ERROR'
 
     def __init__(self, sender, message):
-        super(Error, self).__init__(sender)
+        super().__init__(sender)
         self.message = message
 
     def encode(self):
-        return super(Error, self).encode(self.message)
+        return super().encode(self.message)
 
 
 # Section 4.1
@@ -635,11 +634,11 @@ class Away(Command):
     allowed_replies = (consts.RPL_UNAWAY, consts.RPL_NOWAWAY)
 
     def __init__(self, sender, text=None):
-        super(Away, self).__init__(sender)
+        super().__init__(sender)
         self.text = text
 
     def encode(self):
-        return super(Away, self).encode(self.text)
+        return super().encode(self.text)
 
 
 # Section 4.2
@@ -678,13 +677,13 @@ class Summon(Command):
                        consts.ERR_SUMMONDISABLED, consts.RPL_SUMMONING)
 
     def __init__(self, sender, user, target=None, channel=None):
-        super(Summon, self).__init__(sender)
+        super().__init__(sender)
         self.user = user
         self.target = target
         self.channel = channel
 
     def encode(self):
-        return super(Summon, self).encode(self.user, self.target, self.channel)
+        return super().encode(self.user, self.target, self.channel)
 
 
 # Section 4.6
@@ -696,11 +695,11 @@ class Users(Command):
                        consts.ERR_SUMMONDISABLED, consts.RPL_SUMMONING)
 
     def __init__(self, sender, target=None):
-        super(Users, self).__init__(sender)
+        super().__init__(sender)
         self.target = target
 
     def encode(self):
-        return super(Users, self).encode(self.target)
+        return super().encode(self.target)
 
 
 # Section 4.7
@@ -711,11 +710,11 @@ class Operwall(Command):
     allowed_replies = (consts.ERR_NEEDMOREPARAMS,)
 
     def __init__(self, sender, text=None):
-        super(Operwall, self).__init__(sender)
+        super().__init__(sender)
         self.text = text
 
     def encode(self):
-        return super(Operwall, self).encode(self.text)
+        return super().encode(self.text)
 
 
 # Section 4.8
@@ -726,11 +725,11 @@ class Userhost(Command):
     allowed_replies = (consts.RPL_USERHOST, consts.ERR_NEEDMOREPARAMS)
 
     def __init__(self, sender, nickname, *nicknames):
-        super(Userhost, self).__init__(sender)
+        super().__init__(sender)
         self.nicknames = (nickname,) + nicknames
 
     def encode(self):
-        return super(Userhost, self).encode(*self.nicknames)
+        return super().encode(*self.nicknames)
 
 
 # Section 4.9
@@ -741,11 +740,11 @@ class Ison(Command):
     allowed_replies = (consts.RPL_ISON, consts.ERR_NEEDMOREPARAMS)
 
     def __init__(self, sender, nickname, *nicknames):
-        super(Ison, self).__init__(sender)
+        super().__init__(sender)
         self.nicknames = (nickname,) + nicknames
 
     def encode(self):
-        return super(Ison, self).encode(*self.nicknames)
+        return super().encode(*self.nicknames)
 
 
 commands = {cls.command: cls for cls in locals().values()  # type: ignore
