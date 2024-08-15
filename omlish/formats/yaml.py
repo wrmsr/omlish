@@ -152,7 +152,7 @@ class _cached_class_property:  # noqa
 class WrappedLoaders(lang.Namespace):
 
     @staticmethod
-    def _wrap(cls):
+    def _wrap(cls):  # noqa
         return type('NodeWrapping$' + cls.__name__, (NodeWrappingConstructorMixin, cls), {})
 
     Base: type['yaml.BaseLoader'] = _cached_class_property(lambda cls: cls._wrap(yaml.BaseLoader))  # type: ignore
