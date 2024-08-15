@@ -1,4 +1,4 @@
-from .. import bluelet
+from .. import bluelet as bl
 
 
 def echoer(conn):
@@ -10,4 +10,4 @@ def echoer(conn):
 
 
 if __name__ == '__main__':
-    bluelet.run(bluelet.server('', 4915, echoer))
+    bl.run(bl.server('', 4915, echoer))

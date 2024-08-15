@@ -1,4 +1,4 @@
-from .. import bluelet
+from .. import bluelet as bl
 
 
 def echoer(conn):
@@ -16,11 +16,11 @@ def echoer(conn):
 
 
 def echoserver():
-    listener = bluelet.Listener('', 4915)
+    listener = bl.Listener('', 4915)
     try:
         while True:
             conn = yield listener.accept()
-            yield bluelet.spawn(echoer(conn))
+            yield bl.spawn(echoer(conn))
     except KeyboardInterrupt:
         print()
     finally:
@@ -29,4 +29,4 @@ def echoserver():
 
 
 if __name__ == '__main__':
-    bluelet.run(echoserver())
+    bl.run(echoserver())

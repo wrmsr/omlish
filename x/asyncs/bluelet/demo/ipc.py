@@ -2,7 +2,7 @@ import multiprocessing
 import pickle
 import uuid
 
-from .. import bluelet
+from .. import bluelet as bl
 
 
 def server(ep):
@@ -27,7 +27,7 @@ class BlueletProc(multiprocessing.Process):
         self.coro = coro
 
     def run(self):
-        bluelet.run(self.coro)
+        bl.run(self.coro)
 
 
 class Endpoint:
@@ -41,36 +41,36 @@ class Endpoint:
     def get(self):
         data = yield self.conn.readline(self.sentinel)
         data = data[:-len(self.sentinel)]
-        yield bluelet.end(pickle.loads(data))
+        yield bl.end(pickle.loads(data))
 
 
 def channel(port=4915):
     # Create a pair of connected sockets.
     connections = [None, None]
-    listener = bluelet.Listener('127.0.0.1', port)
+    listener = bl.Listener('127.0.0.1', port)
 
     def listen():
         connections[0] = yield listener.accept()  # Avoiding nonlocal.
 
     listen_thread = listen()
-    yield bluelet.spawn(listen_thread)
+    yield bl.spawn(listen_thread)
 
-    connections[1] = yield bluelet.connect('127.0.0.1', port)
+    connections[1] = yield bl.connect('127.0.0.1', port)
 
-    yield bluelet.join(listen_thread)
+    yield bl.join(listen_thread)
 
     # Wrap sockets in Endpoints.
     sentinel = uuid.uuid4().bytes  # Somewhat hacky...
-    yield bluelet.end((Endpoint(connections[0], sentinel),
+    yield bl.end((Endpoint(connections[0], sentinel),
                        Endpoint(connections[1], sentinel)))
 
 
 def main(serial=False):
     ep1, ep2 = yield channel()
     if serial:
-        # Run in bluelet (i.e., no parallelism).
-        yield bluelet.spawn(server(ep1))
-        yield bluelet.spawn(client(ep2))
+        # Run in bl (i.e., no parallelism).
+        yield bl.spawn(server(ep1))
+        yield bl.spawn(client(ep2))
     else:
         # Run in separate processes.
         ta = BlueletProc(server(ep1))
@@ -82,4 +82,4 @@ def main(serial=False):
 
 
 if __name__ == '__main__':
-    bluelet.run(main())
+    bl.run(main())

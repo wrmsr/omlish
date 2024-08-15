@@ -13,7 +13,7 @@ import time
 from urllib.parse import urlparse
 from urllib.request import urlopen
 
-from .. import bluelet
+from .. import bluelet as bl
 
 
 URL = 'http://api.twitter.com/1/statuses/user_timeline.json?screen_name=%s&count=1'
@@ -33,7 +33,7 @@ class AsyncHttpClient:
         heads = [
             'GET %s HTTP/1.1' % self.path,
             'Host: %s' % self.host,
-            'User-Agent: bluelet-example',
+            'User-Agent: bl-example',
         ]
         return '\r\n'.join(heads).encode('utf8') + b'\r\n\r\n'
 
@@ -51,18 +51,18 @@ class AsyncHttpClient:
     @classmethod
     def fetch(cls, url):
         """Fetch content from an HTTP URL. This is a coroutine suitable
-        for yielding to bluelet.
+        for yielding to bl.
         """
         client = cls.from_url(url)
         yield client._connect()
         yield client._request()
         status, headers, body = yield client._read()
-        yield bluelet.end(body)
+        yield bl.end(body)
 
     # Internal coroutines.
 
     def _connect(self):
-        self.conn = yield bluelet.connect(self.host, self.port)
+        self.conn = yield bl.connect(self.host, self.port)
 
     def _request(self):
         yield self.conn.sendall(self.headers())
@@ -86,13 +86,13 @@ class AsyncHttpClient:
             key, value = header.split(': ')
             headervals[key] = value
 
-        yield bluelet.end((int(code), headers, body))
+        yield bl.end((int(code), headers, body))
 
 
 # Various ways of writing the crawler.
 
 
-def run_bluelet():
+def run_bl():
     # No lock is required guarding the shared variable because only
     # one thread is actually running at a time.
     tweets = {}
@@ -104,9 +104,9 @@ def run_bluelet():
 
     def crawl():
         for username in USERNAMES:
-            yield bluelet.spawn(fetch(username))
+            yield bl.spawn(fetch(username))
 
-    bluelet.run(crawl())
+    bl.run(crawl())
     return tweets
 
 
@@ -172,7 +172,7 @@ def run_processes():
 
 if __name__ == '__main__':
     strategies = {
-        'bluelet': run_bluelet,
+        'bl': run_bl,
         'sequential': run_sequential,
         'threading': run_threaded,
         'multiprocessing': run_processes,
