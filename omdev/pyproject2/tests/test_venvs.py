@@ -3,6 +3,7 @@ import json
 import typing as ta
 import unittest
 
+from ...amalg.std.marshal import marshal_obj
 from ...amalg.std.marshal import unmarshal_obj
 from ...amalg.std.toml import toml_loads
 
@@ -93,10 +94,38 @@ class PyprojectConfig:
     venvs: ta.Mapping[str, VenvConfig]
 
 
+def inherit_venvs(m: ta.Mapping[str, VenvConfig]) -> ta.Mapping[str, VenvConfig]:
+    done = {}
+
+    def rec(k):
+        try:
+            return done[k]
+        except KeyError:
+            pass
+        c = m[k]
+        kw = dc.asdict(c)
+        for i in c.inherits or ():
+            ic = rec(i)
+            kw.update({k: v for k, v in dc.asdict(ic).items() if v is not None})
+        del kw['inherits']
+        d = done[k] = VenvConfig(**kw)
+        return d
+
+    for k in m:
+        rec(k)
+    return done
+
+
 class TestVenvs(unittest.TestCase):
     def test_venvs(self):
-        dct = toml_loads(_TEST_TOML)['tool']['omlish']['pyproject']
-        print(json.dumps(dct, indent=2, separators=(', ', ': ')))
+        def pj(o):
+            print(json.dumps(o, indent=2, separators=(', ', ': ')))
 
-        pcfg = unmarshal_obj(dct, PyprojectConfig)
+        dct = toml_loads(_TEST_TOML)['tool']['omlish']['pyproject']
+        pj(dct)
+
+        pcfg: PyprojectConfig = unmarshal_obj(dct, PyprojectConfig)
         print(pcfg)
+
+        ivs = inherit_venvs(pcfg.venvs or {})
+        pj(marshal_obj(ivs))
