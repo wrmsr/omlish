@@ -1,7 +1,7 @@
 import os.path
 import pwd
 
-from omdev.amalg.std.logs import log
+from omlish.lite.logs import log
 
 from ..base import Concern
 from ..base import Phase

@@ -24,7 +24,7 @@ T = ta.TypeVar('T')
 
 
 ########################################
-# ../../amalg/std/cached.py
+# ../../../omlish/lite/cached.py
 
 
 class cached_nullary:  # noqa
@@ -45,7 +45,7 @@ class cached_nullary:  # noqa
 
 
 ########################################
-# ../../amalg/std/check.py
+# ../../../omlish/lite/check.py
 # ruff: noqa: UP006 UP007
 
 
@@ -74,7 +74,7 @@ def check_not(v: ta.Any) -> None:
 
 
 ########################################
-# ../../amalg/std/logs.py
+# ../../../omlish/lite/logs.py
 """
 TODO:
  - debug
@@ -91,7 +91,7 @@ def configure_standard_logging(level: ta.Union[int, str] = logging.INFO) -> None
 
 
 ########################################
-# ../../amalg/std/runtime.py
+# ../../../omlish/lite/runtime.py
 
 
 @cached_nullary
@@ -109,7 +109,7 @@ def check_runtime_version() -> None:
 
 
 ########################################
-# ../../amalg/std/subprocesses.py
+# ../../../omlish/lite/subprocesses.py
 # ruff: noqa: UP006 UP007
 
 
