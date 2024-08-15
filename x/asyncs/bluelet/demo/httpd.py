@@ -13,6 +13,7 @@ INDEX_FILENAME = 'index.html'
 
 def parse_request(lines):
     """Parse an HTTP request."""
+
     method, path, version = lines.pop(0).split(None, 2)
     headers = {}
     for line in lines:
@@ -25,6 +26,7 @@ def parse_request(lines):
 
 def mime_type(filename):
     """Return a reasonable MIME type for the file or text/plain as a fallback."""
+
     mt, _ = mimetypes.guess_type(filename)
     if mt:
         return mt
@@ -34,6 +36,7 @@ def mime_type(filename):
 
 def respond(method, path, headers):
     """Generate an HTTP response for a parsed request."""
+
     # Remove query string, if any.
     if b'?' in path:
         path, query = path.split(b'?', 1)
@@ -78,8 +81,9 @@ def respond(method, path, headers):
         )
 
 
-def webrequest(conn: bl.Connection) -> ta.Iterator[bl.Event]:
+def webrequest(conn: bl.Connection) -> ta.Generator[bl.Event, ta.Any, None]:
     """A Bluelet coroutine implementing an HTTP server."""
+
     # Get the HTTP request.
     request = []
     while True:

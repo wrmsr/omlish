@@ -9,7 +9,9 @@ Eventlet. Bluelet can also be thought of as a less-terrible replacement for asyn
 
 Bluelet: easy concurrency without all the messy parallelism.
 """
+import abc
 import collections
+import dataclasses as dc
 import errno
 import select
 import socket
@@ -41,7 +43,7 @@ Waitables: ta.TypeAlias = tuple[
 ##
 
 
-class Event:
+class Event(abc.ABC):  # noqa
     """
     Just a base class identifying Bluelet events. An event is an object yielded from a Bluelet thread coroutine to
     suspend operation and communicate with the scheduler.
@@ -65,63 +67,56 @@ class WaitableEvent(Event):
         """Called when an associated file descriptor becomes ready (i.e., is returned from a select() call)."""
 
 
+@dc.dataclass(frozen=True)
 class ValueEvent(Event):
     """An event that does nothing but return a fixed value."""
 
-    def __init__(self, value: ta.Any) -> None:
-        super().__init__()
-        self.value = value
+    value: ta.Any
 
 
+@dc.dataclass(frozen=True)
 class ExceptionEvent(Event):
     """Raise an exception at the yield point. Used internally."""
 
-    def __init__(self, exc_info) -> None:
-        super().__init__()
-        self.exc_info = exc_info
+    exc_info: ExcInfo
 
 
+@dc.dataclass(frozen=True)
 class SpawnEvent(Event):
     """Add a new coroutine thread to the scheduler."""
 
-    def __init__(self, coro: Coro) -> None:
-        super().__init__()
-        self.spawned = coro
+    spawned: Coro
 
 
+@dc.dataclass(frozen=True)
 class JoinEvent(Event):
     """Suspend the thread until the specified child thread has completed."""
 
-    def __init__(self, child) -> None:
-        super().__init__()
-        self.child = child
+    child: Coro
 
 
+@dc.dataclass(frozen=True)
 class KillEvent(Event):
     """Unschedule a child thread."""
 
-    def __init__(self, child) -> None:
-        super().__init__()
-        self.child = child
+    child: Coro
 
 
+@dc.dataclass(frozen=True)
 class DelegationEvent(Event):
     """
     Suspend execution of the current thread, start a new thread and, once the child thread finished, return control to
     the parent thread.
     """
 
-    def __init__(self, coro: Coro) -> None:
-        super().__init__()
-        self.spawned = coro
+    spawned: Coro
 
 
+@dc.dataclass(frozen=True)
 class ReturnEvent(Event):
     """Return a value the current thread's delegator at the point of delegation. Ends the current (delegate) thread."""
 
-    def __init__(self, value: ta.Any) -> None:
-        super().__init__()
-        self.value = value
+    value: ta.Any
 
 
 class SleepEvent(WaitableEvent):
@@ -131,7 +126,7 @@ class SleepEvent(WaitableEvent):
         super().__init__()
         self.wakeup_time = time.time() + duration
 
-    def time_left(self):
+    def time_left(self) -> float:
         return max(self.wakeup_time - time.time(), 0.0)
 
 
@@ -235,7 +230,7 @@ def _reraise(typ: type[BaseException], exc: BaseException, tb: types.TracebackTy
 
 
 class ThreadException(Exception):
-    def __init__(self, coro: Coro, exc_info) -> None:
+    def __init__(self, coro: Coro, exc_info: ExcInfo) -> None:
         super().__init__()
         self.coro = coro
         self.exc_info = exc_info
@@ -260,6 +255,7 @@ def run(root_coro: Coro) -> None:
     Schedules a coroutine, running it to completion. This encapsulates the Bluelet scheduler, which the root coroutine
     can add to by spawning new coroutines.
     """
+
     # The "threads" dictionary keeps track of all the currently- executing and suspended coroutines. It maps coroutines
     # to their currently "blocking" event. The event value may be SUSPENDED if the coroutine is waiting on some other
     # condition: namely, a delegated coroutine or a joined coroutine. In this case, the coroutine should *also* appear
@@ -276,11 +272,12 @@ def run(root_coro: Coro) -> None:
     # coroutines.
     history = weakref.WeakKeyDictionary({root_coro: None})
 
-    def complete_thread(coro: types.GeneratorType, return_value):
+    def complete_thread(coro: Coro, return_value: ta.Any) -> None:
         """
         Remove a coroutine from the scheduling pool, awaking delegators and joiners as necessary and returning the
         specified value to any delegating parent.
         """
+
         del threads[coro]
 
         # Resume delegator.
@@ -294,34 +291,38 @@ def run(root_coro: Coro) -> None:
                 threads[parent] = ValueEvent(None)
             del joiners[coro]
 
-    def advance_thread(coro: types.GeneratorType, value, is_exc=False):
+    def advance_thread(coro: Coro, value, is_exc=False) -> None:
         """
         After an event is fired, run a given coroutine associated with it in the threads dict until it yields again. If
         the coroutine exits, then the thread is removed from the pool. If the coroutine raises an exception, it is
         reraised in a ThreadException. If is_exc is True, then the value must be an exc_info tuple and the exception is
         thrown into the coroutine.
         """
+
         try:
             if is_exc:
                 next_event = coro.throw(*value)
             else:
                 next_event = coro.send(value)
+
         except StopIteration:
             # Thread is done.
             complete_thread(coro, None)
+
         except:
             # Thread raised some other exception.
             del threads[coro]
             raise ThreadException(coro, sys.exc_info())
+
         else:
             if isinstance(next_event, types.GeneratorType):
-                # Automatically invoke sub-coroutines. (Shorthand for
-                # explicit bluelet.call().)
+                # Automatically invoke sub-coroutines. (Shorthand for explicit bluelet.call().)
                 next_event = DelegationEvent(next_event)
             threads[coro] = next_event
 
     def kill_thread(coro):
         """Unschedule this thread and its (recursive) delegates."""
+
         # Collect all coroutines in the delegation stack.
         coros = [coro]
         while isinstance(threads[coro], Delegated):
@@ -439,6 +440,7 @@ class Listener:
 
     def __init__(self, host: str, port: int) -> None:
         """Create a listening socket on the given hostname and port."""
+
         super().__init__()
         self._closed = False
         self.host = host
@@ -454,12 +456,14 @@ class Listener:
         An event that waits for a connection on the listening socket. When a connection is made, the event returns a
         Connection object.
         """
+
         if self._closed:
             raise SocketClosedError
         return AcceptEvent(self)
 
     def close(self) -> None:
         """Immediately close the listening socket. (Not an event.)"""
+
         self._closed = True
         self.sock.close()
 
@@ -476,11 +480,13 @@ class Connection:
 
     def close(self) -> None:
         """Close the connection."""
+
         self._closed = True
         self.sock.close()
 
     def recv(self, size: int) -> Event:
         """Read at most size bytes of data from the socket."""
+
         if self._closed:
             raise SocketClosedError
 
@@ -493,21 +499,22 @@ class Connection:
             return ReceiveEvent(self, size)
 
     def send(self, data: bytes) -> Event:
-        """Sends data on the socket, returning the number of bytes
-        successfully sent.
-        """
+        """Sends data on the socket, returning the number of bytes successfully sent."""
+
         if self._closed:
             raise SocketClosedError
         return SendEvent(self, data)
 
     def sendall(self, data: bytes) -> Event:
         """Send all of data on the socket."""
+
         if self._closed:
             raise SocketClosedError
         return SendEvent(self, data, True)
 
     def readline(self, terminator: bytes = b'\n', bufsize: int = 1024) -> ta.Iterator[Event]:
         """Reads a line (delimited by terminator) from the socket."""
+
         if self._closed:
             raise SocketClosedError
 
@@ -580,11 +587,13 @@ class SendEvent(WaitableEvent):
 
 def null() -> Event:
     """Event: yield to the scheduler without doing anything special."""
+
     return ValueEvent(None)
 
 
 def spawn(coro) -> Event:
     """Event: add another coroutine to the scheduler. Both the parent and child coroutines run concurrently."""
+
     if not isinstance(coro, types.GeneratorType):
         raise ValueError('%s is not a coroutine' % str(coro))
     return SpawnEvent(coro)
@@ -595,6 +604,7 @@ def call(coro) -> Event:
     Event: delegate to another coroutine. The current coroutine is resumed once the sub-coroutine finishes. If the
     sub-coroutine returns a value using end(), then this event returns that value.
     """
+
     if not isinstance(coro, types.GeneratorType):
         raise ValueError('%s is not a coroutine' % str(coro))
     return DelegationEvent(coro)
@@ -602,11 +612,13 @@ def call(coro) -> Event:
 
 def end(value=None) -> Event:
     """Event: ends the coroutine and returns a value to its delegator."""
+
     return ReturnEvent(value)
 
 
 def read(fd: ta.IO, bufsize: int | None = None) -> Event:
     """Event: read from a file descriptor asynchronously."""
+
     if bufsize is None:
         # Read all.
         def reader():
@@ -626,11 +638,13 @@ def read(fd: ta.IO, bufsize: int | None = None) -> Event:
 
 def write(fd: ta.IO, data: bytes) -> Event:
     """Event: write to a file descriptor asynchronously."""
+
     return WriteEvent(fd, data)
 
 
 def connect(host: str, port: int) -> Event:
     """Event: connect to a network address and return a Connection object for communicating on the socket."""
+
     addr = (host, port)
     sock = socket.create_connection(addr)
     return ValueEvent(Connection(sock, addr))
@@ -638,20 +652,24 @@ def connect(host: str, port: int) -> Event:
 
 def sleep(duration: float) -> Event:
     """Event: suspend the thread for ``duration`` seconds."""
+
     return SleepEvent(duration)
 
 
 def join(coro) -> Event:
     """Suspend the thread until another, previously `spawn`ed thread completes."""
+
     return JoinEvent(coro)
 
 
 def kill(coro) -> Event:
     """Halt the execution of a different `spawn`ed thread."""
+
     return KillEvent(coro)
 
 
 # Convenience function for running socket servers.
+
 
 def server(host: str, port: int, func) -> ta.Iterator[Event]:
     """
