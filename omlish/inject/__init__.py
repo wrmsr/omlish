@@ -117,3 +117,7 @@ from .types import (  # noqa
     Tag,
     Unscoped,
 )
+
+from .utils import (  # noqa
+    ConstFn,
+)
