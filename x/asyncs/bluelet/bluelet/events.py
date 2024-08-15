@@ -26,7 +26,7 @@ class BlueletHasFileno(ta.Protocol):
     def fileno(self) -> int: ...
 
 
-BlueletWaitable = ta.Union[int, BlueletHasFileno]  # ta.TypeAlias
+BlueletWaitable = ta.Union[int, 'BlueletHasFileno']  # ta.TypeAlias
 
 
 @dc.dataclass(frozen=True)
