@@ -59,7 +59,7 @@ class BlueletCoroException(Exception):  # noqa
         return sys.exc_info()  # type: ignore
 
     @staticmethod
-    def _reraise(typ: ta.Type[BaseException], exc: BaseException, tb: types.TracebackType) -> ta.NoReturn:
+    def _reraise(typ: ta.Type[BaseException], exc: BaseException, tb: types.TracebackType) -> ta.NoReturn:  # noqa
         raise exc.with_traceback(tb)
 
     def reraise(self) -> ta.NoReturn:
@@ -173,7 +173,7 @@ class _BlueletRunner:
         self._joiners: ta.MutableMapping[BlueletCoro, ta.List[BlueletCoro]] = collections.defaultdict(list)
 
         # History of spawned coroutines for joining of already completed coroutines.
-        self._history: ta.MutableMapping[BlueletCoro, ta.Optional[BlueletEvent]] = weakref.WeakKeyDictionary({self._root_coro: None})
+        self._history: ta.MutableMapping[BlueletCoro, ta.Optional[BlueletEvent]] = weakref.WeakKeyDictionary({self._root_coro: None})  # noqa
 
     def _complete_coro(self, coro: BlueletCoro, return_value: ta.Any) -> None:
         """
