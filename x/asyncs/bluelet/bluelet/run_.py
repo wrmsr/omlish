@@ -234,94 +234,96 @@ class _Runner:
         self._threads.clear()
 
     def _step(self) -> ta.Optional[ThreadException]:
+        try:
+            # Look for events that can be run immediately. Continue running immediate events until nothing is ready.
+            while True:
+                have_ready = False
+                for coro, event in list(self._threads.items()):
+                    if isinstance(event, SpawnEvent):
+                        self._threads[event.spawned] = ValueEvent(None)  # Spawn.
+                        self._history[event.spawned] = None  # Record in history.
+                        self._advance_thread(coro, None)
+                        have_ready = True
+
+                    elif isinstance(event, ValueEvent):
+                        self._advance_thread(coro, event.value)
+                        have_ready = True
+
+                    elif isinstance(event, ExceptionEvent):
+                        self._advance_thread(coro, event.exc_info, True)
+                        have_ready = True
+
+                    elif isinstance(event, DelegationEvent):
+                        self._threads[coro] = _DelegatedEvent(event.spawned)  # Suspend.
+                        self._threads[event.spawned] = ValueEvent(None)  # Spawn.
+                        self._history[event.spawned] = None  # Record in history.
+                        self._delegators[event.spawned] = coro
+                        have_ready = True
+
+                    elif isinstance(event, ReturnEvent):
+                        # Thread is done.
+                        self._complete_thread(coro, event.value)
+                        have_ready = True
+
+                    elif isinstance(event, JoinEvent):
+                        if event.child not in self._threads and event.child in self._history:
+                            self._threads[coro] = ValueEvent(None)
+                        else:
+                            self._threads[coro] = _SUSPENDED  # Suspend.
+                            self._joiners[event.child].append(coro)
+                        have_ready = True
+
+                    elif isinstance(event, KillEvent):
+                        self._threads[coro] = ValueEvent(None)
+                        self._kill_thread(event.child)
+                        have_ready = True
+
+                # Only start the select when nothing else is ready.
+                if not have_ready:
+                    break
+
+            # Wait and fire.
+            event2coro = {v: k for k, v in self._threads.items()}
+            for event in _event_select(self._threads.values()):
+                # Run the IO operation, but catch socket errors.
+                try:
+                    value = event.fire()
+                except OSError as exc:
+                    if isinstance(exc.args, tuple) and exc.args[0] == errno.EPIPE:
+                        # Broken pipe. Remote host disconnected.
+                        pass
+                    elif isinstance(exc.args, tuple) and exc.args[0] == errno.ECONNRESET:
+                        # Connection was reset by peer.
+                        pass
+                    else:
+                        traceback.print_exc()
+                    # Abort the coroutine.
+                    self._threads[event2coro[event]] = ReturnEvent(None)
+                else:
+                    self._advance_thread(event2coro[event], value)
+
+        except ThreadException as te:
+            # Exception raised from inside a thread.
+            event = ExceptionEvent(te.exc_info)
+            if te.coro in self._delegators:
+                # The thread is a delegate. Raise exception in its delegator.
+                self._threads[self._delegators[te.coro]] = event
+                del self._delegators[te.coro]
+            else:
+                # The thread is root-level. Raise in client code.
+                return te
+
+        except:  # noqa
+            # For instance, KeyboardInterrupt during select(). Raise into root thread and terminate others.
+            self._threads = {self._root_coro: ExceptionEvent(_exc_info())}
+
+        return None
 
     def run(self) -> None:
         # Continue advancing threads until root thread exits.
         exit_te: ThreadException | None = None
         while self._threads:
-            try:
-                # Look for events that can be run immediately. Continue running immediate events until nothing is ready.
-                while True:
-                    have_ready = False
-                    for coro, event in list(self._threads.items()):
-                        if isinstance(event, SpawnEvent):
-                            self._threads[event.spawned] = ValueEvent(None)  # Spawn.
-                            self._history[event.spawned] = None  # Record in history.
-                            self._advance_thread(coro, None)
-                            have_ready = True
-
-                        elif isinstance(event, ValueEvent):
-                            self._advance_thread(coro, event.value)
-                            have_ready = True
-
-                        elif isinstance(event, ExceptionEvent):
-                            self._advance_thread(coro, event.exc_info, True)
-                            have_ready = True
-
-                        elif isinstance(event, DelegationEvent):
-                            self._threads[coro] = _DelegatedEvent(event.spawned)  # Suspend.
-                            self._threads[event.spawned] = ValueEvent(None)  # Spawn.
-                            self._history[event.spawned] = None  # Record in history.
-                            self._delegators[event.spawned] = coro
-                            have_ready = True
-
-                        elif isinstance(event, ReturnEvent):
-                            # Thread is done.
-                            self._complete_thread(coro, event.value)
-                            have_ready = True
-
-                        elif isinstance(event, JoinEvent):
-                            if event.child not in self._threads and event.child in self._history:
-                                self._threads[coro] = ValueEvent(None)
-                            else:
-                                self._threads[coro] = _SUSPENDED  # Suspend.
-                                self._joiners[event.child].append(coro)
-                            have_ready = True
-
-                        elif isinstance(event, KillEvent):
-                            self._threads[coro] = ValueEvent(None)
-                            self._kill_thread(event.child)
-                            have_ready = True
-
-                    # Only start the select when nothing else is ready.
-                    if not have_ready:
-                        break
-
-                # Wait and fire.
-                event2coro = {v: k for k, v in self._threads.items()}
-                for event in _event_select(self._threads.values()):
-                    # Run the IO operation, but catch socket errors.
-                    try:
-                        value = event.fire()
-                    except OSError as exc:
-                        if isinstance(exc.args, tuple) and exc.args[0] == errno.EPIPE:
-                            # Broken pipe. Remote host disconnected.
-                            pass
-                        elif isinstance(exc.args, tuple) and exc.args[0] == errno.ECONNRESET:
-                            # Connection was reset by peer.
-                            pass
-                        else:
-                            traceback.print_exc()
-                        # Abort the coroutine.
-                        self._threads[event2coro[event]] = ReturnEvent(None)
-                    else:
-                        self._advance_thread(event2coro[event], value)
-
-            except ThreadException as te:
-                # Exception raised from inside a thread.
-                event = ExceptionEvent(te.exc_info)
-                if te.coro in self._delegators:
-                    # The thread is a delegate. Raise exception in its delegator.
-                    self._threads[self._delegators[te.coro]] = event
-                    del self._delegators[te.coro]
-                else:
-                    # The thread is root-level. Raise in client code.
-                    exit_te = te
-                    break
-
-            except:  # noqa
-                # For instance, KeyboardInterrupt during select(). Raise into root thread and terminate others.
-                self._threads = {self._root_coro: ExceptionEvent(_exc_info())}
+            exit_te = self._step()
 
         self.close()
 
