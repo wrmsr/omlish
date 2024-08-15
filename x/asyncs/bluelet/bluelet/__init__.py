@@ -1,7 +1,3 @@
-"""
-TODO:
- - amalgify? prefix everything w/ Blue? prob want some helper Namespace or smth
-"""
 # @omlish-lite
 # Based on bluelet by Adrian Sampson, original license:
 # THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE

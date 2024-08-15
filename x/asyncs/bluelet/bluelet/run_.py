@@ -1,3 +1,11 @@
+"""
+TDOO:
+ - amalgify? prefix everything w/ Blue? prob want some helper Namespace or smth
+ - task groups
+ - gather
+ - locks / semaphores / events / etc
+ - ensure no unknown event types - Waitable subtypes okay
+"""
 # ruff: noqa: UP006 UP007
 import collections
 import dataclasses as dc
@@ -170,7 +178,7 @@ def run(root_coro: Coro) -> None:
                 threads[parent] = ValueEvent(None)
             del joiners[coro]
 
-    def advance_thread(coro: Coro, value, is_exc=False) -> None:
+    def advance_thread(coro: Coro, value: ta.Any, is_exc: bool = False) -> None:
         """
         After an event is fired, run a given coroutine associated with it in the threads dict until it yields again. If
         the coroutine exits, then the thread is removed from the pool. If the coroutine raises an exception, it is
@@ -200,7 +208,7 @@ def run(root_coro: Coro) -> None:
                 next_event = DelegationEvent(next_event)
             threads[coro] = next_event
 
-    def kill_thread(coro):
+    def kill_thread(coro: Coro) -> None:
         """Unschedule this thread and its (recursive) delegates."""
 
         # Collect all coroutines in the delegation stack.
@@ -214,7 +222,7 @@ def run(root_coro: Coro) -> None:
             complete_thread(coro, None)
 
     # Continue advancing threads until root thread exits.
-    exit_te = None
+    exit_te: ThreadException | None = None
     while threads:
         try:
             # Look for events that can be run immediately. Continue running immediate events until nothing is ready.

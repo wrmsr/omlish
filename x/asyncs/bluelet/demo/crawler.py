@@ -1,10 +1,9 @@
-"""Demonstrates various ways of writing an application that makes
-many URL requests.
+"""
+Demonstrates various ways of writing an application that makes many URL requests.
 
-Unfortunately, because the Python standard library only includes
-blocking HTTP libraries, taking advantage of asynchronous I/O currently
-entails writing a custom HTTP client. This example includes a very
-simple, GET-only HTTP requester.
+Unfortunately, because the Python standard library only includes blocking HTTP libraries, taking advantage of
+asynchronous I/O currently entails writing a custom HTTP client. This example includes a very simple, GET-only HTTP
+requester.
 """
 import json
 import multiprocessing
@@ -31,8 +30,8 @@ class AsyncHttpClient:
     def headers(self):
         """Returns the HTTP headers for this request."""
         heads = [
-            'GET %s HTTP/1.1' % self.path,
-            'Host: %s' % self.host,
+            f'GET {self.path} HTTP/1.1',
+            f'Host: {self.host}',
             'User-Agent: bl-example',
         ]
         return '\r\n'.join(heads).encode('utf8') + b'\r\n\r\n'
@@ -50,9 +49,7 @@ class AsyncHttpClient:
 
     @classmethod
     def fetch(cls, url):
-        """Fetch content from an HTTP URL. This is a coroutine suitable
-        for yielding to bl.
-        """
+        """Fetch content from an HTTP URL. This is a coroutine suitable for yielding to bl."""
         client = cls.from_url(url)
         yield client._connect()
         yield client._request()
@@ -93,8 +90,7 @@ class AsyncHttpClient:
 
 
 def run_bl():
-    # No lock is required guarding the shared variable because only
-    # one thread is actually running at a time.
+    # No lock is required guarding the shared variable because only one thread is actually running at a time.
     tweets = {}
 
     def fetch(username):
@@ -123,8 +119,7 @@ def run_sequential():
 
 
 def run_threaded():
-    # We need a lock to avoid conflicting updates to the tweet
-    # dictionary.
+    # We need a lock to avoid conflicting updates to the tweet dictionary.
     lock = threading.Lock()
     tweets = {}
 
@@ -152,8 +147,7 @@ def run_threaded():
 
 
 def _process_fetch(username):
-    # Mapped functions in multiprocessing can't be closures, so this
-    # has to be at the module-global scope.
+    # Mapped functions in multiprocessing can't be closures, so this has to be at the module-global scope.
     url = URL % username
     f = urlopen(url)
     data = f.read().decode('utf8')
@@ -181,9 +175,9 @@ if __name__ == '__main__':
         start = time.time()
         tweets = func()
         end = time.time()
-        print('%s: %.2f seconds' % (name, (end - start)))
+        print(f'{name}: {end - start:.2f} seconds')
 
     # Show the tweets, just for fun.
     print()
     for username, tweet in tweets.items():
-        print('%s: %s' % (username, tweet))
+        print(f'{username}: {tweet}')
