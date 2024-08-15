@@ -1,13 +1,8 @@
-
-import sys
-
-
-sys.path.insert(0, '..')
 import multiprocessing
 import pickle
 import uuid
 
-import bluelet
+from .. import bluelet
 
 
 def server(ep):
@@ -28,7 +23,7 @@ def client(ep):
 
 class BlueletProc(multiprocessing.Process):
     def __init__(self, coro):
-        super(BlueletProc, self).__init__()
+        super().__init__()
         self.coro = coro
 
     def run(self):

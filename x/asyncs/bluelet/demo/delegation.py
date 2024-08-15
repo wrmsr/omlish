@@ -1,11 +1,7 @@
 """A demonstration of Bluelet's approach to invoking (delegating to)
 sub-coroutines and spawning child coroutines.
 """
-import sys
-
-
-sys.path.insert(0, '..')
-import bluelet
+from .. import bluelet
 
 
 def child():

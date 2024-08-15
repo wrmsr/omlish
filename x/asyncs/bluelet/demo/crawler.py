@@ -6,31 +6,17 @@ blocking HTTP libraries, taking advantage of asynchronous I/O currently
 entails writing a custom HTTP client. This example includes a very
 simple, GET-only HTTP requester.
 """
-
 import json
 import multiprocessing
-import sys
 import threading
 import time
+from urllib.parse import urlparse
+from urllib.request import urlopen
+
+from .. import bluelet
 
 
-sys.path.insert(0, '..')
-import bluelet
-
-
-# Python 2/3 compatibility.
-
-PY3 = sys.version_info[0] == 3
-if PY3:
-    from urllib.parse import urlparse
-    from urllib.request import urlopen
-else:
-    from urllib import urlopen
-
-    from urlparse import urlparse
-
-URL = 'http://api.twitter.com/1/statuses/user_timeline.json' \
-      '?screen_name=%s&count=1'
+URL = 'http://api.twitter.com/1/statuses/user_timeline.json?screen_name=%s&count=1'
 USERNAMES = ('samps', 'b33ts', 'twitter', 'twitterapi', 'Support')
 
 

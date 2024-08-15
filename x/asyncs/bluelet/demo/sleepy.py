@@ -1,9 +1,4 @@
-
-import sys
-
-
-sys.path.insert(0, '..')
-import bluelet
+from .. import bluelet
 
 
 def sleeper(duration):
