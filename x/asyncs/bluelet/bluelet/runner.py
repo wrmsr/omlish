@@ -233,50 +233,64 @@ class _Runner:
 
         self._coros.clear()
 
+    def _handle_core_event(self, coro: Coro, event: CoreEvent) -> bool:
+        if isinstance(event, SpawnEvent):
+            self._coros[event.spawned] = ValueEvent(None)  # Spawn.
+            self._history[event.spawned] = None  # Record in history.
+            self._advance_coro(coro, None)
+            return True
+
+        elif isinstance(event, ValueEvent):
+            self._advance_coro(coro, event.value)
+            return True
+
+        elif isinstance(event, ExceptionEvent):
+            self._advance_coro(coro, event.exc_info, True)
+            return True
+
+        elif isinstance(event, DelegationEvent):
+            self._coros[coro] = _DelegatedEvent(event.spawned)  # Suspend.
+            self._coros[event.spawned] = ValueEvent(None)  # Spawn.
+            self._history[event.spawned] = None  # Record in history.
+            self._delegators[event.spawned] = coro
+            return True
+
+        elif isinstance(event, ReturnEvent):
+            # Coro is done.
+            self._complete_coro(coro, event.value)
+            return True
+
+        elif isinstance(event, JoinEvent):
+            if event.child not in self._coros and event.child in self._history:
+                self._coros[coro] = ValueEvent(None)
+            else:
+                self._coros[coro] = _SUSPENDED  # Suspend.
+                self._joiners[event.child].append(coro)
+            return True
+
+        elif isinstance(event, KillEvent):
+            self._coros[coro] = ValueEvent(None)
+            self._kill_coro(event.child)
+            return True
+
+        elif isinstance(event, _DelegatedEvent):
+            return False
+
+        else:
+            raise TypeError(event)
+
     def _step(self) -> ta.Optional[CoroException]:
         try:
             # Look for events that can be run immediately. Continue running immediate events until nothing is ready.
             while True:
                 have_ready = False
                 for coro, event in list(self._coros.items()):
-                    if isinstance(event, SpawnEvent):
-                        self._coros[event.spawned] = ValueEvent(None)  # Spawn.
-                        self._history[event.spawned] = None  # Record in history.
-                        self._advance_coro(coro, None)
-                        have_ready = True
-
-                    elif isinstance(event, ValueEvent):
-                        self._advance_coro(coro, event.value)
-                        have_ready = True
-
-                    elif isinstance(event, ExceptionEvent):
-                        self._advance_coro(coro, event.exc_info, True)
-                        have_ready = True
-
-                    elif isinstance(event, DelegationEvent):
-                        self._coros[coro] = _DelegatedEvent(event.spawned)  # Suspend.
-                        self._coros[event.spawned] = ValueEvent(None)  # Spawn.
-                        self._history[event.spawned] = None  # Record in history.
-                        self._delegators[event.spawned] = coro
-                        have_ready = True
-
-                    elif isinstance(event, ReturnEvent):
-                        # Coro is done.
-                        self._complete_coro(coro, event.value)
-                        have_ready = True
-
-                    elif isinstance(event, JoinEvent):
-                        if event.child not in self._coros and event.child in self._history:
-                            self._coros[coro] = ValueEvent(None)
-                        else:
-                            self._coros[coro] = _SUSPENDED  # Suspend.
-                            self._joiners[event.child].append(coro)
-                        have_ready = True
-
-                    elif isinstance(event, KillEvent):
-                        self._coros[coro] = ValueEvent(None)
-                        self._kill_coro(event.child)
-                        have_ready = True
+                    if isinstance(event, CoreEvent) and not isinstance(event, SleepEvent):
+                        have_ready = self._handle_core_event(coro, event)
+                    elif isinstance(event, WaitableEvent):
+                        pass
+                    else:
+                        raise TypeError(event)
 
                 # Only start the select when nothing else is ready.
                 if not have_ready:

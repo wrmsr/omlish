@@ -43,7 +43,7 @@ from .files import (  # noqa
     write,
 )
 
-from .runner (  # noqa
+from .runner import (  # noqa
     CoroException,
     run,
 )
