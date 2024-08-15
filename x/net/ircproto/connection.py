@@ -7,11 +7,17 @@ from .exceptions import ProtocolError
 from .replies import reply_templates
 
 
-class BaseIRCConnection(object):
+class BaseIRCConnection:
     """Base class for IRC connection state machines."""
 
-    __slots__ = ('output_codec', 'input_decoder', 'fallback_decoder', '_input_buffer',
-                 '_output_buffer', '_closed')
+    __slots__ = (
+        'output_codec',
+        'input_decoder',
+        'fallback_decoder',
+        '_input_buffer',
+        '_output_buffer',
+        '_closed',
+    )
 
     sender = None  # type: str
 
@@ -102,13 +108,13 @@ class BaseIRCConnection(object):
         self._output_buffer.extend(self.output_codec(encoded_event)[0])
 
 
-class IRCClientConnection(BaseIRCConnection):
+class IrcClientConnection(BaseIRCConnection):
     """An IRC client's connection to a server."""
 
     __slots__ = ('nickname', 'realname')
 
     def __init__(self):
-        super(IRCClientConnection, self).__init__()
+        super(IrcClientConnection, self).__init__()
         self.nickname = self.realname = None
 
 

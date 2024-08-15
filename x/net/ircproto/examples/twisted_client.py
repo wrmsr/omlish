@@ -3,7 +3,7 @@ from argparse import ArgumentParser
 from twisted.internet import reactor
 from twisted.internet.protocol import Protocol, connectionDone, ClientFactory
 
-from ..connection import IRCClientConnection
+from ..connection import IrcClientConnection
 from ..constants import RPL_MYINFO
 from ..events import Reply, Error, Join
 
@@ -13,7 +13,7 @@ class IRCProtocol(Protocol):
         self.nickname = nickname
         self.channel = channel
         self.message = message
-        self.conn = IRCClientConnection()
+        self.conn = IrcClientConnection()
 
     def connectionMade(self):
         self.conn.send_command('NICK', self.nickname)
@@ -54,7 +54,7 @@ class IRCProtocol(Protocol):
             self.transport.write(output)
 
 
-class IRCClientFactory(ClientFactory):
+class IrcClientFactory(ClientFactory):
     def buildProtocol(self, addr):
         return IRCProtocol(args.nickname, args.channel, args.message)
 
@@ -67,5 +67,5 @@ parser.add_argument('message', help='message to send once joined')
 args = parser.parse_args()
 host, _, port = args.host.partition(':')
 
-reactor.connectTCP(host, int(port or 6667), IRCClientFactory())
+reactor.connectTCP(host, int(port or 6667), IrcClientFactory())
 reactor.run()

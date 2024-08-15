@@ -1,6 +1,6 @@
 from argparse import ArgumentParser
 
-from ..connection import IRCClientConnection
+from ..connection import IrcClientConnection
 from ..constants import RPL_MYINFO
 from ..events import Reply, Error, Join
 
@@ -14,7 +14,7 @@ class MessageSendProtocol(Protocol):
         self.nickname = nickname
         self.channel = channel
         self.message = message
-        self.conn = IRCClientConnection()
+        self.conn = IrcClientConnection()
         self.transport = None
 
     def connection_made(self, transport):

@@ -2,7 +2,7 @@ from argparse import ArgumentParser
 
 import curio
 
-from ..connection import IRCClientConnection
+from ..connection import IrcClientConnection
 from ..constants import RPL_MYINFO
 from ..events import Reply, Error, Join
 
@@ -18,7 +18,7 @@ async def send_message_to_channel(host, port, nickname, channel, message):
 
     sock = await curio.open_connection(host, port)
     async with sock:
-        conn = IRCClientConnection()
+        conn = IrcClientConnection()
         conn.send_command('NICK', nickname)
         conn.send_command('USER', 'ircproto', '0', 'ircproto example client')
         await send_outgoing_data()
