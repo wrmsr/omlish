@@ -8,7 +8,7 @@ from .impl.origins import HasOriginsImpl
 
 
 class Element(HasOriginsImpl, lang.Abstract, lang.PackageSealed):
-    pass
+    """Note: inheritors must be dataclasses."""
 
 
 class ElementGenerator(lang.Abstract, lang.PackageSealed):
