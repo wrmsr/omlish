@@ -90,7 +90,7 @@ def _event_select(events: ta.Iterable[Event]) -> set[WaitableEvent]:
             for waitable in ew.x:
                 waitable_to_event[('x', waitable)] = event
 
-    # If we have a any sleeping threads, determine how long to sleep.
+    # If we have a any sleeping coros, determine how long to sleep.
     if earliest_wakeup:
         timeout = max(earliest_wakeup - time.time(), 0.)
     else:
@@ -128,12 +128,12 @@ class _SuspendedEvent(CoreEvent):
     pass
 
 
-_SUSPENDED = _SuspendedEvent()  # Special sentinel placeholder for suspended threads.
+_SUSPENDED = _SuspendedEvent()  # Special sentinel placeholder for suspended coros.
 
 
 @dc.dataclass(frozen=True, eq=False)
 class _DelegatedEvent(CoreEvent):
-    """Placeholder indicating that a thread has delegated execution to a different thread."""
+    """Placeholder indicating that a coro has delegated execution to a different coro."""
 
     child: Coro
 
@@ -149,7 +149,7 @@ class _Runner:
 
         self._root_coro = root_coro
 
-        # The "threads" dictionary keeps track of all the currently-executing and suspended coroutines. It maps
+        # The "coros" dictionary keeps track of all the currently-executing and suspended coroutines. It maps
         # coroutines to their currently "blocking" event. The event value may be SUSPENDED if the coroutine is waiting
         # on some other condition: namely, a delegated coroutine or a joined coroutine. In this case, the coroutine
         # should *also* appear as a value in one of the below dictionaries `delegators` or `joiners`.
@@ -164,7 +164,7 @@ class _Runner:
         # History of spawned coroutines for joining of already completed coroutines.
         self._history: ta.MutableMapping[Coro, ta.Optional[Event]] = weakref.WeakKeyDictionary({self._root_coro: None})
 
-    def _complete_thread(self, coro: Coro, return_value: ta.Any) -> None:
+    def _complete_coro(self, coro: Coro, return_value: ta.Any) -> None:
         """
         Remove a coroutine from the scheduling pool, awaking delegators and joiners as necessary and returning the
         specified value to any delegating parent.
@@ -183,10 +183,10 @@ class _Runner:
                 self._coros[parent] = ValueEvent(None)
             del self._joiners[coro]
 
-    def _advance_thread(self, coro: Coro, value: ta.Any, is_exc: bool = False) -> None:
+    def _advance_coro(self, coro: Coro, value: ta.Any, is_exc: bool = False) -> None:
         """
-        After an event is fired, run a given coroutine associated with it in the threads dict until it yields again. If
-        the coroutine exits, then the thread is removed from the pool. If the coroutine raises an exception, it is
+        After an event is fired, run a given coroutine associated with it in the coros dict until it yields again. If
+        the coroutine exits, then the coro is removed from the pool. If the coroutine raises an exception, it is
         reraised in a CoroException. If is_exc is True, then the value must be an exc_info tuple and the exception is
         thrown into the coroutine.
         """
@@ -199,7 +199,7 @@ class _Runner:
 
         except StopIteration:
             # Coro is done.
-            self._complete_thread(coro, None)
+            self._complete_coro(coro, None)
 
         except:  # noqa
             # Coro raised some other exception.
@@ -213,8 +213,8 @@ class _Runner:
                 next_event = DelegationEvent(next_event)
             self._coros[coro] = next_event
 
-    def _kill_thread(self, coro: Coro) -> None:
-        """Unschedule this thread and its (recursive) delegates."""
+    def _kill_coro(self, coro: Coro) -> None:
+        """Unschedule this coro and its (recursive) delegates."""
 
         # Collect all coroutines in the delegation stack.
         coros = [coro]
@@ -224,10 +224,10 @@ class _Runner:
 
         # Complete each coroutine from the top to the bottom of the stack.
         for coro in reversed(coros):
-            self._complete_thread(coro, None)
+            self._complete_coro(coro, None)
 
     def close(self) -> None:
-        # If any threads still remain, kill them.
+        # If any coros still remain, kill them.
         for coro in self._coros:
             coro.close()
 
@@ -242,15 +242,15 @@ class _Runner:
                     if isinstance(event, SpawnEvent):
                         self._coros[event.spawned] = ValueEvent(None)  # Spawn.
                         self._history[event.spawned] = None  # Record in history.
-                        self._advance_thread(coro, None)
+                        self._advance_coro(coro, None)
                         have_ready = True
 
                     elif isinstance(event, ValueEvent):
-                        self._advance_thread(coro, event.value)
+                        self._advance_coro(coro, event.value)
                         have_ready = True
 
                     elif isinstance(event, ExceptionEvent):
-                        self._advance_thread(coro, event.exc_info, True)
+                        self._advance_coro(coro, event.exc_info, True)
                         have_ready = True
 
                     elif isinstance(event, DelegationEvent):
@@ -262,7 +262,7 @@ class _Runner:
 
                     elif isinstance(event, ReturnEvent):
                         # Coro is done.
-                        self._complete_thread(coro, event.value)
+                        self._complete_coro(coro, event.value)
                         have_ready = True
 
                     elif isinstance(event, JoinEvent):
@@ -275,7 +275,7 @@ class _Runner:
 
                     elif isinstance(event, KillEvent):
                         self._coros[coro] = ValueEvent(None)
-                        self._kill_thread(event.child)
+                        self._kill_coro(event.child)
                         have_ready = True
 
                 # Only start the select when nothing else is ready.
@@ -300,27 +300,27 @@ class _Runner:
                     # Abort the coroutine.
                     self._coros[event2coro[event]] = ReturnEvent(None)
                 else:
-                    self._advance_thread(event2coro[event], value)
+                    self._advance_coro(event2coro[event], value)
 
         except CoroException as te:
-            # Exception raised from inside a thread.
+            # Exception raised from inside a coro.
             event = ExceptionEvent(te.exc_info)
             if te.coro in self._delegators:
-                # The thread is a delegate. Raise exception in its delegator.
+                # The coro is a delegate. Raise exception in its delegator.
                 self._coros[self._delegators[te.coro]] = event
                 del self._delegators[te.coro]
             else:
-                # The thread is root-level. Raise in client code.
+                # The coro is root-level. Raise in client code.
                 return te
 
         except:  # noqa
-            # For instance, KeyboardInterrupt during select(). Raise into root thread and terminate others.
+            # For instance, KeyboardInterrupt during select(). Raise into root coro and terminate others.
             self._coros = {self._root_coro: ExceptionEvent(_exc_info())}
 
         return None
 
     def run(self) -> None:
-        # Continue advancing threads until root thread exits.
+        # Continue advancing coros until root coro exits.
         exit_ce: CoroException | None = None
         while self._coros:
             exit_ce = self._step()

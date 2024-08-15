@@ -9,7 +9,7 @@ import typing as ta
 
 class Event(abc.ABC):  # noqa
     """
-    Just a base class identifying Bluelet events. An event is an object yielded from a Bluelet thread coroutine to
+    Just a base class identifying Bluelet events. An event is an object yielded from a Bluelet coro coroutine to
     suspend operation and communicate with the scheduler.
     """
 

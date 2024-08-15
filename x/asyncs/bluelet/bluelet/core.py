@@ -58,7 +58,7 @@ class ExceptionEvent(CoreEvent):
 
 @dc.dataclass(frozen=True, eq=False)
 class SpawnEvent(CoreEvent):
-    """Add a new coroutine thread to the scheduler."""
+    """Add a new coroutine coro to the scheduler."""
 
     spawned: Coro
 
@@ -76,13 +76,13 @@ def spawn(coro: Coro) -> Event:
 
 @dc.dataclass(frozen=True, eq=False)
 class JoinEvent(CoreEvent):
-    """Suspend the thread until the specified child thread has completed."""
+    """Suspend the coro until the specified child coro has completed."""
 
     child: Coro
 
 
 def join(coro: Coro) -> Event:
-    """Suspend the thread until another, previously `spawn`ed thread completes."""
+    """Suspend the coro until another, previously `spawn`ed coro completes."""
 
     return JoinEvent(coro)
 
@@ -92,13 +92,13 @@ def join(coro: Coro) -> Event:
 
 @dc.dataclass(frozen=True, eq=False)
 class KillEvent(CoreEvent):
-    """Unschedule a child thread."""
+    """Unschedule a child coro."""
 
     child: Coro
 
 
 def kill(coro: Coro) -> Event:
-    """Halt the execution of a different `spawn`ed thread."""
+    """Halt the execution of a different `spawn`ed coro."""
 
     return KillEvent(coro)
 
@@ -109,8 +109,8 @@ def kill(coro: Coro) -> Event:
 @dc.dataclass(frozen=True, eq=False)
 class DelegationEvent(CoreEvent):
     """
-    Suspend execution of the current thread, start a new thread and, once the child thread finished, return control to
-    the parent thread.
+    Suspend execution of the current coro, start a new coro and, once the child coro finished, return control to
+    the parent coro.
     """
 
     spawned: Coro
@@ -132,7 +132,7 @@ def call(coro: Coro) -> Event:
 
 @dc.dataclass(frozen=True, eq=False)
 class ReturnEvent(CoreEvent):
-    """Return a value the current thread's delegator at the point of delegation. Ends the current (delegate) thread."""
+    """Return a value the current coro's delegator at the point of delegation. Ends the current (delegate) coro."""
 
     value: ta.Any
 
@@ -148,7 +148,7 @@ def end(value: ta.Any = None) -> Event:
 
 @dc.dataclass(frozen=True, eq=False)
 class SleepEvent(WaitableEvent, CoreEvent):
-    """Suspend the thread for a given duration."""
+    """Suspend the coro for a given duration."""
 
     wakeup_time: float
 
@@ -157,6 +157,6 @@ class SleepEvent(WaitableEvent, CoreEvent):
 
 
 def sleep(duration: float) -> Event:
-    """Event: suspend the thread for ``duration`` seconds."""
+    """Event: suspend the coro for ``duration`` seconds."""
 
     return SleepEvent(time.time() + duration)
