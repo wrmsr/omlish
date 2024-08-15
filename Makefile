@@ -166,7 +166,7 @@ PYTEST_OPTS=
 PYTEST_JUNIT_XML_PATH:=$$(echo "$${OMLISH_JUNIT_XML_PATH}")
 
 .PHONY: test-all
-test-all: test test-13 test-old
+test-all: test test-13 test-lite
 
 .PHONY: test
 test:
@@ -186,7 +186,7 @@ test:
 
 # all
 .PHONY: venv-all
-venv-all: venv venv-13 venv-13t venv-old
+venv-all: venv venv-13 venv-13t venv-lite
 
 # 13
 
@@ -208,29 +208,31 @@ venv-13t:
 test-13t:
 	${PYPROJECT} venv 13t test -- ${PYTEST_OPTS} --ignore=omlish/sql
 
-# old
+# lite
 
-OLD_VENVS=\
+LITE_VENVS=\
 	8 \
 	9 \
 	10 \
 	11 \
 
-.PHONY: venv-old
-venv-old:
-	for V in ${OLD_VENVS} ; do \
+.PHONY: venv-lite
+venv-lite:
+	for V in ${LITE_VENVS} ; do \
 		${PYPROJECT} venv $$V exe ; \
 	done
 
-OLD_TESTS=\
-	omdev.amalg.std \
+LITE_TESTS=\
+	omlish.lite \
 	omdev.interp2 \
 	omdev.pyproject2 \
+	omdev.toml \
+	omdev.versioning \
 
-.PHONY: test-old
-test-old:
-	for V in ${OLD_VENVS} ; do \
-  		for T in ${OLD_TESTS} ; do \
+.PHONY: test-lite
+test-lite:
+	for V in ${LITE_VENVS} ; do \
+  		for T in ${LITE_TESTS} ; do \
 			$$(${PYPROJECT} venv $$V exe) -munittest discover -vb $$T ; \
 		done ; \
 	done
