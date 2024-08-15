@@ -2,7 +2,7 @@ from .constants import *
 from .utils import match_hostmask
 
 
-class IRCChannel(object):
+class IrcChannel(object):
     """
     Represents the state of an IRC channel.
 
@@ -26,13 +26,13 @@ class IRCChannel(object):
         self.users = []
 
 
-class IRCServer(object):
+class IrcServer(object):
     """
     Represents the state of an IRC server.
 
     :ivar str host: host name of the server
     :ivar dict clients: list of all client connections
-    :ivar dict channels: dictionary of channel names to :class:`.IRCChannel` instances
+    :ivar dict channels: dictionary of channel names to :class:`.IrcChannel` instances
     :ivar dict nicknames: dictionary of nicknames to client connections
     """
 
@@ -56,7 +56,7 @@ class IRCServer(object):
         channel_name = event.channel
         channel = self.channels.get(channel_name)
         if not channel:
-            channel = self.channels[channel_name] = IRCChannel(channel_name,
+            channel = self.channels[channel_name] = IrcChannel(channel_name,
                                                                self.default_channel_modes)
         else:
             if channel.limit and len(channel.users) >= channel.limit:

@@ -8,7 +8,7 @@ from ..constants import RPL_MYINFO
 from ..events import Reply, Error, Join
 
 
-class IRCProtocol(Protocol):
+class IrcProtocol(Protocol):
     def __init__(self, nickname, channel, message):
         self.nickname = nickname
         self.channel = channel
@@ -56,7 +56,7 @@ class IRCProtocol(Protocol):
 
 class IrcClientFactory(ClientFactory):
     def buildProtocol(self, addr):
-        return IRCProtocol(args.nickname, args.channel, args.message)
+        return IrcProtocol(args.nickname, args.channel, args.message)
 
 
 parser = ArgumentParser(description='A sample IRC client')
