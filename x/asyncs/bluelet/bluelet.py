@@ -226,6 +226,10 @@ def _event_select(events: ta.Iterable[Event]) -> set[WaitableEvent]:
     return ready_events
 
 
+def _exc_info() -> ExcInfo:
+    return sys.exc_info()  # type: ignore
+
+
 def _reraise(typ: type[BaseException], exc: BaseException, tb: types.TracebackType) -> ta.NoReturn:
     raise exc.with_traceback(tb)
 
@@ -311,7 +315,7 @@ def run(root_coro: Coro) -> None:
         except:
             # Thread raised some other exception.
             del threads[coro]
-            raise ThreadException(coro, sys.exc_info())
+            raise ThreadException(coro, _exc_info())
 
         else:
             if isinstance(next_event, ta.Generator):
@@ -417,7 +421,7 @@ def run(root_coro: Coro) -> None:
 
         except:
             # For instance, KeyboardInterrupt during select(). Raise into root thread and terminate others.
-            threads = {root_coro: ExceptionEvent(sys.exc_info())}
+            threads = {root_coro: ExceptionEvent(_exc_info())}
 
     # If any threads still remain, kill them.
     for coro in threads:
