@@ -1,9 +1,8 @@
 import codecs
-import typing as ta
 
 from . import constants as consts
 from .exceptions import ProtocolError
-from .exceptions import UnknownCommand
+from .exceptions import UnknownCommandError
 
 
 class IrcEvent:
@@ -62,11 +61,11 @@ class Command(IrcEvent):
 
     def process_reply(self, code):
         if code not in consts.REPLY_NAMES:
-            raise ProtocolError('%s is not a known reply code' % code)
+            raise ProtocolError(f'{code} is not a known reply code')
 
         if code not in self.allowed_replies:
             code_name = consts.REPLY_NAMES[code]
-            raise ProtocolError('reply code %s is not allowed for %s' % (code_name, self.command))
+            raise ProtocolError(f'reply code {code_name} is not allowed for {self.command}')
 
         return True
 
@@ -75,7 +74,7 @@ class Command(IrcEvent):
         try:
             return cls(sender, *params)
         except TypeError:
-            raise ProtocolError('wrong number of arguments for %s' % cls.command)
+            raise ProtocolError(f'wrong number of arguments for {cls.command}')
 
     def encode(self, *params):
         return super().encode(self.command, *params)
@@ -864,7 +863,7 @@ def decode_event(
         return None
     elif end_index > 510:
         # Section 2.3
-        raise ProtocolError('received oversized message (%d bytes)' % (end_index + 2))
+        raise ProtocolError(f'received oversized message ({end_index + 2} bytes)')
 
     try:
         message = decoder(buffer[:end_index])[0]
@@ -886,7 +885,7 @@ def decode_event(
     try:
         command_class = commands[command]
     except KeyError:
-        raise UnknownCommand(command)
+        raise UnknownCommandError(command)  # noqa
 
     params = []
     if rest:

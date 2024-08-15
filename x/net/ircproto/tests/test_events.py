@@ -4,7 +4,7 @@ import pytest
 
 from ..events import decode_event
 from ..exceptions import ProtocolError
-from ..exceptions import UnknownCommand
+from ..exceptions import UnknownCommandError
 
 
 def test_decode_event_oversized():
@@ -15,7 +15,7 @@ def test_decode_event_oversized():
 
 def test_decode_event_unknown_command():
     buffer = bytearray(b':foo!bar@blah FROBNICATE\r\n')
-    exc = pytest.raises(UnknownCommand, decode_event, buffer)
+    exc = pytest.raises(UnknownCommandError, decode_event, buffer)
     assert str(exc.value) == 'IRC protocol violation: unknown command: FROBNICATE'
 
 

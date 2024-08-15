@@ -9,7 +9,7 @@ from .exceptions import ProtocolError
 from .replies import reply_templates
 
 
-class BaseIrcConnection(abc.ABC):
+class BaseIrcConnection(abc.ABC):  # noqa
     """Base class for IRC connection state machines."""
 
     sender: str | None = None
@@ -86,7 +86,7 @@ class BaseIrcConnection(abc.ABC):
         try:
             command_cls = commands[command]
         except KeyError:
-            raise ProtocolError('no such command: %s' % command)
+            raise ProtocolError(f'no such command: {command}')  # noqa
 
         event = command_cls(None, *params)
         self._send_event(event)

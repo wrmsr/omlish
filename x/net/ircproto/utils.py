@@ -17,7 +17,7 @@ def validate_channel_name(name):
     """
 
     if not channel_re.match(name):
-        raise ProtocolError('invalid channel name: %s' % name.decode('ascii', errors='backslashreplace'))
+        raise ProtocolError(f'invalid channel name: {name.decode("ascii", errors="backslashreplace")}')
 
 
 def validate_nickname(name):
@@ -29,7 +29,7 @@ def validate_nickname(name):
     """
 
     if not nickname_re.match(name):
-        raise ProtocolError('invalid nickname: %s' % name.decode('ascii', errors='backslashreplace'))
+        raise ProtocolError(f'invalid nickname: {name.decode("ascii", errors="backslashreplace")}')
 
 
 def validate_hostmask(mask):
@@ -41,7 +41,7 @@ def validate_hostmask(mask):
     """
 
     if not hostmask_re.match(mask):
-        raise ProtocolError('invalid host mask: %s' % mask.decode('ascii', errors='backslashreplace'))
+        raise ProtocolError(f'invalid host mask: {mask.decode("ascii", errors="backslashreplace")}')
 
 
 def match_hostmask(prefix, mask):

@@ -1,4 +1,4 @@
-from .constants import *
+from . import constants as consts
 from .utils import match_hostmask
 
 
@@ -52,19 +52,18 @@ class IrcServer:
         channel_name = event.channel
         channel = self.channels.get(channel_name)
         if not channel:
-            channel = self.channels[channel_name] = IrcChannel(channel_name,
-                                                               self.default_channel_modes)
+            channel = self.channels[channel_name] = IrcChannel(channel_name, self.default_channel_modes)
         elif channel.limit and len(channel.users) >= channel.limit:
-            connection.process_reply(ERR_CHANNELISFULL, channel=channel_name)
+            connection.process_reply(consts.ERR_CHANNELISFULL, channel=channel_name)
             return
         elif any(match_hostmask(connection, mask) for mask in channel.bans):
-            connection.process_reply(ERR_BANNEDFROMCHAN, channel=channel_name)
+            connection.process_reply(consts.ERR_BANNEDFROMCHAN, channel=channel_name)
             return
         elif 'i' in channel.modes and connection.nickname not in channel.invites:
-            connection.process_reply(ERR_INVITEONLYCHAN, channel=channel_name)
+            connection.process_reply(consts.ERR_INVITEONLYCHAN, channel=channel_name)
             return
 
         channel.users.append(connection)
-        connection.process_reply(RPL_TOPIC, channel.topic)
+        connection.process_reply(consts.RPL_TOPIC, channel.topic)
         for conn in (channel.users + self.servers):
             conn.reply()
