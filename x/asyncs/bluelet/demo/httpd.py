@@ -132,7 +132,19 @@ def webrequest(conn: bl.Connection) -> bl.Coro:
 
 
 if __name__ == '__main__':
+    def ticker(delay: float = 3.) -> bl.Coro:
+        i = 0
+        while True:
+            yield bl.sleep(delay)
+            print(f'tick {i}')
+            i += 1
+
+    def _main() -> bl.Coro:
+        yield bl.spawn(bl.server('', 8000, webrequest))
+        yield bl.spawn(ticker())
+
     if len(sys.argv) > 1:
         ROOT = os.path.expanduser(sys.argv[1])
+
     print('http://127.0.0.1:8000/')
-    bl.run(bl.server('', 8000, webrequest))
+    bl.run(_main())
