@@ -65,9 +65,9 @@ def channel(port=4915):
                        Endpoint(connections[1], sentinel)))
 
 
-def main():
+def main(serial=False):
     ep1, ep2 = yield channel()
-    if False:
+    if serial:
         # Run in bluelet (i.e., no parallelism).
         yield bluelet.spawn(server(ep1))
         yield bluelet.spawn(client(ep2))
