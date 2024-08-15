@@ -1,4 +1,5 @@
 import dataclasses as dc
+import glob
 import json
 import typing as ta
 import unittest
@@ -116,6 +117,37 @@ def inherit_venvs(m: ta.Mapping[str, VenvConfig]) -> ta.Mapping[str, VenvConfig]
     return done
 
 
+def resolve_srcs(
+        lst: ta.Sequence[str],
+        aliases: ta.Mapping[str, ta.Sequence[str]],
+) -> ta.List[str]:
+    todo = list(reversed(lst))
+    raw: ta.List[str] = []
+    seen: ta.Set[str] = set()
+    while todo:
+        cur = todo.pop()
+        if cur in seen:
+            continue
+        seen.add(cur)
+        if not cur.startswith('@'):
+            raw.append(cur)
+            continue
+        todo.extend(aliases[cur[1:]][::-1])
+    out: list[str] = []
+    seen.clear()
+    for r in raw:
+        es: list[str]
+        if any(c in r for c in '*?'):
+            es = list(glob.glob(r, recursive=True))
+        else:
+            es = [r]
+        for e in es:
+            if e not in seen:
+                seen.add(e)
+                out.append(e)
+    return out
+
+
 class TestVenvs(unittest.TestCase):
     def test_venvs(self):
         def pj(o):
@@ -127,5 +159,9 @@ class TestVenvs(unittest.TestCase):
         pcfg: PyprojectConfig = unmarshal_obj(dct, PyprojectConfig)
         print(pcfg)
 
-        ivs = inherit_venvs(pcfg.venvs or {})
+        ivs = dict(inherit_venvs(pcfg.venvs or {}))
+        for k, v in ivs.items():
+            v = dc.replace(v, srcs=resolve_srcs(v.srcs or [], pcfg.srcs or {}))
+            ivs[k] = v
+
         pj(marshal_obj(ivs))
