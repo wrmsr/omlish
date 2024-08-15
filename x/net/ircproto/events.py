@@ -78,7 +78,7 @@ class Command(IrcEvent):
             raise ProtocolError('wrong number of arguments for %s' % cls.command)
 
     def encode(self, *params):
-        return super(Command, self).encode(self.command, *params)
+        return super().encode(self.command, *params)
 
 
 class Reply(IrcEvent):
@@ -92,7 +92,7 @@ class Reply(IrcEvent):
     __slots__ = ('code', 'message')
 
     def __init__(self, sender, code, message):
-        super(Reply, self).__init__(sender)
+        super().__init__(sender)
         self.code = int(code)
         self.message = message
 
@@ -102,7 +102,7 @@ class Reply(IrcEvent):
         return self.code >= 400
 
     def encode(self):
-        return super(Reply, self).encode(str(self.code), self.message)
+        return super().encode(str(self.code), self.message)
 
 
 # Section 3.1.1
@@ -113,11 +113,11 @@ class Password(Command):
     allowed_replies = (consts.ERR_NEEDMOREPARAMS, consts.ERR_ALREADYREGISTRED)
 
     def __init__(self, sender, password):
-        super(Password, self).__init__(sender)
+        super().__init__(sender)
         self.password = password
 
     def encode(self):
-        return super(Password, self).encode(self.password)
+        return super().encode(self.password)
 
 
 # Section 3.1.2
@@ -129,11 +129,11 @@ class Nick(Command):
                        consts.ERR_NICKCOLLISION, consts.ERR_UNAVAILRESOURCE, consts.ERR_RESTRICTED)
 
     def __init__(self, sender, nickname):
-        super(Nick, self).__init__(sender)
+        super().__init__(sender)
         self.nickname = nickname
 
     def encode(self):
-        return super(Nick, self).encode(self.nickname)
+        return super().encode(self.nickname)
 
 
 # Section 3.1.3
