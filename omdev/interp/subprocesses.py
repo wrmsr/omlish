@@ -2,8 +2,8 @@
 import os.path
 import typing as ta
 
-from ..amalg.std.logs import log
-from ..amalg.std.subprocesses import subprocess_check_output
+from omlish.lite.logs import log
+from omlish.lite.subprocesses import subprocess_check_output
 
 
 DEFAULT_CMD_TRY_EXCEPTIONS: ta.AbstractSet[ta.Type[Exception]] = frozenset([

@@ -13,14 +13,14 @@ import shutil
 import sys
 import typing as ta
 
-from ...amalg.std.cached import cached_nullary
-from ...amalg.std.check import check_not_none
-from ...amalg.std.logs import log
-from ...amalg.std.subprocesses import subprocess_check_call
-from ...amalg.std.subprocesses import subprocess_check_output_str
-from ...amalg.std.subprocesses import subprocess_try_output
-from ...amalg.std.versions.versions import InvalidVersion
-from ...amalg.std.versions.versions import Version
+from omlish.lite.cached import cached_nullary
+from omlish.lite.check import check_not_none
+from omlish.lite.logs import log
+from omlish.lite.subprocesses import subprocess_check_call
+from omlish.lite.subprocesses import subprocess_check_output_str
+from omlish.lite.subprocesses import subprocess_try_output
+from ...versioning.versions import InvalidVersion
+from ...versioning.versions import Version
 from .base import InterpProvider
 from .inspect import INTERP_INSPECTOR
 from .inspect import InterpInspector

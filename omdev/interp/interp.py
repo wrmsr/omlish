@@ -10,8 +10,9 @@ import argparse
 import sys
 import typing as ta
 
-from ..amalg.std.logs import configure_standard_logging
-from ..amalg.std.runtime import check_runtime_version
+from omlish.lite.logs import configure_standard_logging
+from omlish.lite.runtime import check_runtime_version
+
 from .resolvers.linux import LinuxInterpResolver
 from .resolvers.mac import MacInterpResolver
 

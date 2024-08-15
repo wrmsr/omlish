@@ -24,14 +24,14 @@ import shutil
 import sys
 import typing as ta
 
-from ..amalg.std.cached import cached_nullary
-from ..amalg.std.check import check_not
-from ..amalg.std.check import check_not_none
-from ..amalg.std.logs import configure_standard_logging
-from ..amalg.std.runtime import check_runtime_version
-from ..amalg.std.subprocesses import subprocess_check_call
-from ..amalg.std.subprocesses import subprocess_check_output
-from ..amalg.std.toml import toml_loads
+from omlish.lite.cached import cached_nullary
+from omlish.lite.check import check_not
+from omlish.lite.check import check_not_none
+from omlish.lite.logs import configure_standard_logging
+from omlish.lite.runtime import check_runtime_version
+from omlish.lite.subprocesses import subprocess_check_call
+from omlish.lite.subprocesses import subprocess_check_output
+from ..toml import toml_loads
 from .venvs import Venv
 from .venvs import build_venv_specs
 

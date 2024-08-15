@@ -11,8 +11,8 @@ import argparse
 import collections
 import typing as ta
 
-from ..amalg.std.logs import configure_standard_logging
-from ..amalg.std.runtime import check_runtime_version
+from omlish.lite.logs import configure_standard_logging
+from omlish.lite.runtime import check_runtime_version
 from .providers.base import InterpProvider
 from .providers.base import RunningInterpProvider
 from .providers.pyenv import PyenvInterpProvider

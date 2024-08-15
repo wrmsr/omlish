@@ -10,7 +10,7 @@ import abc
 import sys
 import typing as ta
 
-from ...amalg.std.cached import cached_nullary
+from omlish.lite.cached import cached_nullary
 from .inspect import InterpInspector
 from .types import Interp
 from .types import InterpSpecifier

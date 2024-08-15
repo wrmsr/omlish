@@ -5,9 +5,9 @@ import logging
 import sys
 import typing as ta
 
-from ...amalg.std.logs import log
-from ...amalg.std.subprocesses import subprocess_check_output
-from ...amalg.std.versions.versions import Version
+from omlish.lite.logs import log
+from omlish.lite.subprocesses import subprocess_check_output
+from ...versioning.versions import Version
 from .types import InterpOpts
 from .types import InterpVersion
 
