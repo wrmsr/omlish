@@ -264,9 +264,10 @@ class H2Protocol(Protocol):
                     self.connection.close_connection()
 
             elif isinstance(event, h2.events.DataReceived):
-                await self.streams[event.stream_id].handle(
-                    Body(stream_id=event.stream_id, data=event.data),
-                )
+                await self.streams[event.stream_id].handle(Body(
+                    stream_id=event.stream_id,
+                    data=event.data,
+                ))
                 self.connection.acknowledge_received_data(
                     event.flow_controlled_length, event.stream_id,
                 )
@@ -364,15 +365,13 @@ class H2Protocol(Protocol):
         else:
             self.priority.block(request.stream_id)
 
-        await self.streams[request.stream_id].handle(
-            Request(
-                stream_id=request.stream_id,
-                headers=filter_pseudo_headers(request.headers),
-                http_version='2',
-                method=method,
-                raw_path=raw_path,
-            ),
-        )
+        await self.streams[request.stream_id].handle(Request(
+            stream_id=request.stream_id,
+            headers=filter_pseudo_headers(request.headers),
+            http_version='2',
+            method=method,
+            raw_path=raw_path,
+        ))
         self.keep_alive_requests += 1
         await self.context.mark_request()
 

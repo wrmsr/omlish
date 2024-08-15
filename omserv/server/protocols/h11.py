@@ -133,19 +133,15 @@ class H11Protocol(Protocol):
                 headers = list(itertools.chain(event.headers, response_headers(self.config, 'h11')))
                 if self.keep_alive_requests >= self.config.keep_alive_max_requests:
                     headers.append((b'connection', b'close'))
-                await self._send_h11_event(
-                    h11.Response(
-                        headers=headers,
-                        status_code=event.status_code,
-                    ),
-                )
+                await self._send_h11_event(h11.Response(
+                    headers=headers,
+                    status_code=event.status_code,
+                ))
             else:
-                await self._send_h11_event(
-                    h11.InformationalResponse(
-                        headers=list(itertools.chain(event.headers, response_headers(self.config, 'h11'))),
-                        status_code=event.status_code,
-                    ),
-                )
+                await self._send_h11_event(h11.InformationalResponse(
+                    headers=list(itertools.chain(event.headers, response_headers(self.config, 'h11'))),
+                    status_code=event.status_code,
+                ))
 
         elif isinstance(event, InformationalResponse):
             pass  # Ignore for HTTP/1
@@ -168,11 +164,9 @@ class H11Protocol(Protocol):
     async def _handle_events(self) -> None:
         while True:
             if self.connection.they_are_waiting_for_100_continue:
-                await self._send_h11_event(
-                    h11.InformationalResponse(
-                        status_code=100, headers=response_headers(self.config, 'h11'),
-                    ),
-                )
+                await self._send_h11_event(h11.InformationalResponse(
+                    status_code=100, headers=response_headers(self.config, 'h11'),
+                ))
 
             try:
                 event = self.connection.next_event()
@@ -276,17 +270,15 @@ class H11Protocol(Protocol):
             await self.send(RawData(data=data))
 
     async def _send_error_response(self, status_code: int) -> None:
-        await self._send_h11_event(
-            h11.Response(
-                status_code=status_code,
-                headers=list(
-                    itertools.chain(
-                        [(b'content-length', b'0'), (b'connection', b'close')],
-                        response_headers(self.config, 'h11'),
-                    ),
+        await self._send_h11_event(h11.Response(
+            status_code=status_code,
+            headers=list(
+                itertools.chain(
+                    [(b'content-length', b'0'), (b'connection', b'close')],
+                    response_headers(self.config, 'h11'),
                 ),
             ),
-        )
+        ))
         await self._send_h11_event(h11.EndOfMessage())
 
     async def _maybe_recycle(self) -> None:
@@ -328,16 +320,14 @@ class H11Protocol(Protocol):
         # response and HTTP/2 takes over, so Hypercorn ignores the upgrade and responds in HTTP/1.1. Use a preflight
         # OPTIONS request to initiate the upgrade if really required (or just use h2).
         if upgrade_value.lower() == 'h2c' and not has_body:
-            await self._send_h11_event(
-                h11.InformationalResponse(
-                    status_code=101,
-                    headers=[
-                        *response_headers(self.config, 'h11'),
-                        (b'connection', b'upgrade'),
-                        (b'upgrade', b'h2c'),
-                    ],
-                ),
-            )
+            await self._send_h11_event(h11.InformationalResponse(
+                status_code=101,
+                headers=[
+                    *response_headers(self.config, 'h11'),
+                    (b'connection', b'upgrade'),
+                    (b'upgrade', b'h2c'),
+                ],
+            ))
             raise H2CProtocolRequiredError(self.connection.trailing_data[0], event)
 
         elif event.method == b'PRI' and event.target == b'*' and event.http_version == b'2.0':
