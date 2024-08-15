@@ -1,3 +1,4 @@
+# ruff: noqa: UP006 UP007
 import dataclasses as dc
 import glob
 import json
@@ -7,6 +8,7 @@ import unittest
 from ...amalg.std.marshal import marshal_obj
 from ...amalg.std.marshal import unmarshal_obj
 from ...amalg.std.toml import toml_loads
+from ..interps import VenvInterps
 
 
 _TEST_TOML = """
@@ -96,7 +98,7 @@ class PyprojectConfig:
 
 
 def inherit_venvs(m: ta.Mapping[str, VenvConfig]) -> ta.Mapping[str, VenvConfig]:
-    done = {}
+    done: ta.Dict[str, VenvConfig] = {}
 
     def rec(k):
         try:
@@ -148,6 +150,12 @@ def resolve_srcs(
     return out
 
 
+def fixup_interp(s: ta.Optional[str]) -> ta.Optional[str]:
+    if not s or not s.startswith('@'):
+        return s
+    return VenvInterps().versions_file_pythons()[s[1:]]
+
+
 class TestVenvs(unittest.TestCase):
     def test_venvs(self):
         def pj(o):
@@ -162,6 +170,7 @@ class TestVenvs(unittest.TestCase):
         ivs = dict(inherit_venvs(pcfg.venvs or {}))
         for k, v in ivs.items():
             v = dc.replace(v, srcs=resolve_srcs(v.srcs or [], pcfg.srcs or {}))
+            v = dc.replace(v, interp=fixup_interp(v.interp))
             ivs[k] = v
 
         pj(marshal_obj(ivs))
