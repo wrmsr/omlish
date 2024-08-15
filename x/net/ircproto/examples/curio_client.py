@@ -44,13 +44,17 @@ async def send_message_to_channel(host, port, nickname, channel, message):
             await send_outgoing_data()
 
 
-parser = ArgumentParser(description='A sample IRC client')
-parser.add_argument('host', help='address of irc server (foo.bar.baz or foo.bar.baz:port)')
-parser.add_argument('nickname', help='nickname to register as')
-parser.add_argument('channel', help='channel to join once registered')
-parser.add_argument('message', help='message to send once joined')
-args = parser.parse_args()
-host, _, port = args.host.partition(':')
+def _main() -> None:
+    parser = ArgumentParser(description='A sample IRC client')
+    parser.add_argument('host', help='address of irc server (foo.bar.baz or foo.bar.baz:port)')
+    parser.add_argument('nickname', help='nickname to register as')
+    parser.add_argument('channel', help='channel to join once registered')
+    parser.add_argument('message', help='message to send once joined')
+    args = parser.parse_args()
+    host, _, port = args.host.partition(':')
 
-curio.run(send_message_to_channel(host, int(port or 6667), args.nickname, args.channel,
-                                  args.message))
+    curio.run(send_message_to_channel(host, int(port or 6667), args.nickname, args.channel, args.message))
+
+
+if __name__ == '__main__':
+    _main()

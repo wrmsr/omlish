@@ -1,4 +1,4 @@
-
+import abc
 import codecs
 
 from .events import Ping
@@ -9,7 +9,7 @@ from .exceptions import ProtocolError
 from .replies import reply_templates
 
 
-class BaseIrcConnection:
+class BaseIrcConnection(abc.ABC):
     """Base class for IRC connection state machines."""
 
     sender: str | None = None

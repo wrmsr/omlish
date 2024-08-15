@@ -1,4 +1,5 @@
 import codecs
+import typing as ta
 
 from . import constants as consts
 from .exceptions import ProtocolError
@@ -12,7 +13,9 @@ class IrcEvent:
     :ivar sender: either a server host name or nickname!username@host
     """
 
-    def __init__(self, sender):
+    def __init__(self, sender: str | None) -> None:
+        super().__init__()
+
         self.sender = sender
 
     def encode(self, *params):
@@ -53,9 +56,9 @@ class Command(IrcEvent):
     :var tuple allowed_replies: allowed reply codes for this command
     """
 
-    command = None  # type: str
-    privileged = False
-    allowed_replies = ()
+    command: str | None = None
+    privileged: bool = False
+    allowed_replies: ta.Container[int] = ()
 
     def process_reply(self, code):
         if code not in consts.REPLY_NAMES:
@@ -103,7 +106,10 @@ class Reply(IrcEvent):
 # Section 3.1.1
 class Password(Command):
     command = 'PASS'
-    allowed_replies = (consts.ERR_NEEDMOREPARAMS, consts.ERR_ALREADYREGISTRED)
+    allowed_replies = frozenset([
+        consts.ERR_NEEDMOREPARAMS,
+        consts.ERR_ALREADYREGISTRED,
+    ])
 
     def __init__(self, sender, password):
         super().__init__(sender)
@@ -116,8 +122,14 @@ class Password(Command):
 # Section 3.1.2
 class Nick(Command):
     command = 'NICK'
-    allowed_replies = (consts.ERR_NONICKNAMEGIVEN, consts.ERR_ERRONEUSNICKNAME, consts.ERR_NICKNAMEINUSE,
-                       consts.ERR_NICKCOLLISION, consts.ERR_UNAVAILRESOURCE, consts.ERR_RESTRICTED)
+    allowed_replies = frozenset([
+        consts.ERR_NONICKNAMEGIVEN,
+        consts.ERR_ERRONEUSNICKNAME,
+        consts.ERR_NICKNAMEINUSE,
+        consts.ERR_NICKCOLLISION,
+        consts.ERR_UNAVAILRESOURCE,
+        consts.ERR_RESTRICTED,
+    ])
 
     def __init__(self, sender, nickname):
         super().__init__(sender)
@@ -130,7 +142,10 @@ class Nick(Command):
 # Section 3.1.3
 class User(Command):
     command = 'USER'
-    allowed_replies = (consts.ERR_NEEDMOREPARAMS, consts.ERR_ALREADYREGISTRED)
+    allowed_replies = frozenset([
+        consts.ERR_NEEDMOREPARAMS,
+        consts.ERR_ALREADYREGISTRED,
+    ])
 
     def __init__(self, sender, user, mode, realname):
         super().__init__(sender)
@@ -149,7 +164,12 @@ class User(Command):
 # Section 3.1.4
 class Oper(Command):
     command = 'OPER'
-    allowed_replies = (consts.ERR_NEEDMOREPARAMS, consts.ERR_NOOPERHOST, consts.ERR_PASSWDMISMATCH, consts.RPL_YOUREOPER)
+    allowed_replies = frozenset([
+        consts.ERR_NEEDMOREPARAMS,
+        consts.ERR_NOOPERHOST,
+        consts.ERR_PASSWDMISMATCH,
+        consts.RPL_YOUREOPER,
+    ])
 
     def __init__(self, sender, name, password):
         super().__init__(sender)
@@ -163,7 +183,12 @@ class Oper(Command):
 # Section 3.1.5 / 3.2.3
 class Mode(Command):
     command = 'MODE'
-    allowed_replies = (consts.ERR_NEEDMOREPARAMS, consts.ERR_USERSDONTMATCH, consts.ERR_UMODEUNKNOWNFLAG, consts.RPL_UMODEIS)
+    allowed_replies = frozenset([
+        consts.ERR_NEEDMOREPARAMS,
+        consts.ERR_USERSDONTMATCH,
+        consts.ERR_UMODEUNKNOWNFLAG,
+        consts.RPL_UMODEIS,
+    ])
 
     def __init__(self, sender, target, modes, *modeparams):
         super().__init__(sender)
@@ -178,8 +203,14 @@ class Mode(Command):
 # Section 3.1.6
 class Service(Command):
     command = 'SERVICE'
-    allowed_replies = (consts.ERR_ALREADYREGISTRED, consts.ERR_NEEDMOREPARAMS, consts.ERR_ERRONEUSNICKNAME,
-                       consts.RPL_YOURESERVICE, consts.RPL_YOURHOST, consts.RPL_MYINFO)
+    allowed_replies = frozenset([
+        consts.ERR_ALREADYREGISTRED,
+        consts.ERR_NEEDMOREPARAMS,
+        consts.ERR_ERRONEUSNICKNAME,
+        consts.RPL_YOURESERVICE,
+        consts.RPL_YOURHOST,
+        consts.RPL_MYINFO,
+    ])
 
     def __init__(self, sender, nickname, distribution, type_, info):
         super().__init__(sender)
@@ -208,7 +239,11 @@ class Quit(Command):
 class SQuit(Command):
     command = 'SQUIT'
     privileged = True
-    allowed_replies = (consts.ERR_NOPRIVILEGES, consts.ERR_NOSUCHSERVER, consts.ERR_NEEDMOREPARAMS)
+    allowed_replies = frozenset([
+        consts.ERR_NOPRIVILEGES,
+        consts.ERR_NOSUCHSERVER,
+        consts.ERR_NEEDMOREPARAMS,
+    ])
 
     def __init__(self, sender, server, comment):
         super().__init__(sender)
@@ -222,9 +257,19 @@ class SQuit(Command):
 # Section 3.2.1
 class Join(Command):
     command = 'JOIN'
-    allowed_replies = (consts.ERR_NEEDMOREPARAMS, consts.ERR_BANNEDFROMCHAN, consts.ERR_INVITEONLYCHAN,
-                       consts.ERR_BADCHANNELKEY, consts.ERR_CHANNELISFULL, consts.ERR_BADCHANMASK, consts.ERR_NOSUCHCHANNEL,
-                       consts.ERR_TOOMANYCHANNELS, consts.ERR_TOOMANYTARGETS, consts.ERR_UNAVAILRESOURCE, consts.RPL_TOPIC)
+    allowed_replies = frozenset([
+        consts.ERR_NEEDMOREPARAMS,
+        consts.ERR_BANNEDFROMCHAN,
+        consts.ERR_INVITEONLYCHAN,
+        consts.ERR_BADCHANNELKEY,
+        consts.ERR_CHANNELISFULL,
+        consts.ERR_BADCHANMASK,
+        consts.ERR_NOSUCHCHANNEL,
+        consts.ERR_TOOMANYCHANNELS,
+        consts.ERR_TOOMANYTARGETS,
+        consts.ERR_UNAVAILRESOURCE,
+        consts.RPL_TOPIC,
+    ])
 
     def __init__(self, sender, channel, key=None):
         super().__init__(sender)
