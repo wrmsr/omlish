@@ -58,6 +58,7 @@ class TcpServer:
 
             async with TaskSpawner() as task_spawner:
                 self._task_spawner = task_spawner
+
                 self.protocol = ProtocolWrapper(
                     self.app,
                     self.config,
@@ -67,14 +68,18 @@ class TcpServer:
                     server,
                     self.protocol_send,
                 )
+
                 await self.protocol.initiate()
                 await self._start_idle()
                 await self._read_data()
+
         except* OSError:
             pass
+
         except* Exception as eg:
             for e in eg.exceptions:
                 log.exception('Internal omlicorn error', exc_info=e)
+
         finally:
             await self._close()
 
@@ -85,11 +90,14 @@ class TcpServer:
                     with anyio.CancelScope() as cancel_scope:
                         cancel_scope.shield = True
                         await self.stream.send(event.data)
+
                 except (anyio.BrokenResourceError, anyio.ClosedResourceError):
                     await self.protocol.handle(Closed())
+
         elif isinstance(event, Closed):
             await self._close()
             await self.protocol.handle(Closed())
+
         elif isinstance(event, Updated):
             if event.idle:
                 await self._start_idle()
@@ -101,6 +109,7 @@ class TcpServer:
             try:
                 with anyio.fail_after(self.config.read_timeout or math.inf):
                     data = await self.stream.receive(MAX_RECV)
+
             except (
                     anyio.EndOfStream,
                     anyio.ClosedResourceError,
@@ -108,18 +117,22 @@ class TcpServer:
                     TimeoutError,
             ):
                 break
+
             else:
                 await self.protocol.handle(RawData(data))
                 if data == b'':
                     break
+
         await self.protocol.handle(Closed())
 
     async def _close(self) -> None:
         try:
             await self.stream.send_eof()
+
         except OSError as e:
             if e.errno != errno.EBADF:
                 raise
+
         except (
                 anyio.BrokenResourceError,
                 AttributeError,
@@ -128,6 +141,7 @@ class TcpServer:
         ):
             # They're already gone, nothing to do - or it is a SSL stream
             pass
+
         await self.stream.aclose()
 
     async def _initiate_server_close(self) -> None:
