@@ -5,6 +5,7 @@ TDOO:
  - gather
  - locks / semaphores / events / etc
  - ensure no unknown event types - Waitable subtypes okay
+ - rename Coro to Bluelet?
 """
 # ruff: noqa: UP006 UP007
 import collections

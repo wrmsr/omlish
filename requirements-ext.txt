@@ -161,7 +161,7 @@ blobfile==2.1.1
 
 ### infra
 
-boto3>=1.34.160
+boto3>=1.34.162
 
 google-cloud-compute==1.19.2
 
@@ -200,7 +200,7 @@ cloudpickle==3.0.0
 
 ##
 
-openai==1.40.6
+openai==1.40.7
 
 trl==0.9.6
 tf-keras==2.17.0
@@ -212,3 +212,5 @@ pyzmq==26.1.0
 safetensors==0.4.4
 
 docutils==0.21.2
+
+paramiko==3.4.1
