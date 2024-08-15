@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # noinspection DuplicatedCode
-# @omdev-amalg-output ../pyproject/pyproject.py
+# @omdev-amalg-output ../pyproject2/cli.py
 """
 TODO:
  - check / tests, src dir sets
@@ -15,6 +15,9 @@ lookit:
  - https://astral.sh/blog/uv
  - https://github.com/jazzband/pip-tools
  - https://github.com/Osiris-Team/1JPM
+ - https://github.com/brettcannon/microvenv
+ - https://github.com/pypa/pipx
+ - https://github.com/tox-dev/tox/
 """
 # ruff: noqa: UP007
 import argparse
@@ -1197,7 +1200,7 @@ class Venv:
 
 
 ########################################
-# pyproject.py
+# cli.py
 
 
 ##
