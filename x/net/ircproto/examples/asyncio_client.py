@@ -49,8 +49,8 @@ class MessageSendProtocol(Protocol):
             self.transport.close()
 
     def send_outgoing_data(self):
-        # This is more complicated than it should because we want to print all outgoing data here.
-        # Normally, self.transport.write(self.conn.data_to_send()) would suffice.
+        # This is more complicated than it should because we want to print all outgoing data here. Normally,
+        # self.transport.write(self.conn.data_to_send()) would suffice.
         output = self.conn.data_to_send()
         if output:
             print('>>> ' + output.decode('utf-8').replace('\r\n', '\r\n>>> ').rstrip('> \r\n'))
