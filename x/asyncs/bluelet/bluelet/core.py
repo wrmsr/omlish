@@ -31,6 +31,12 @@ class ValueEvent(CoreEvent):
     value: ta.Any
 
 
+def value(v: ta.Any) -> Event:
+    """Event: yield a value."""
+
+    return ValueEvent(v)
+
+
 def null() -> Event:
     """Event: yield to the scheduler without doing anything special."""
 
@@ -147,7 +153,7 @@ class SleepEvent(WaitableEvent, CoreEvent):
     wakeup_time: float
 
     def time_left(self) -> float:
-        return max(self.wakeup_time - time.time(), 0.0)
+        return max(self.wakeup_time - time.time(), 0.)
 
 
 def sleep(duration: float) -> Event:

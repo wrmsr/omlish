@@ -84,7 +84,7 @@ def _event_select(events: ta.Iterable[Event]) -> set[WaitableEvent]:
 
     # If we have a any sleeping threads, determine how long to sleep.
     if earliest_wakeup:
-        timeout = max(earliest_wakeup - time.time(), 0.0)
+        timeout = max(earliest_wakeup - time.time(), 0.)
     else:
         timeout = None
 
