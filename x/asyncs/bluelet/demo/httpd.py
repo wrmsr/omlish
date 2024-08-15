@@ -1,6 +1,4 @@
-"""A simple Web server built with Bluelet to support concurrent requests
-in a single OS thread.
-"""
+"""A simple Web server built with Bluelet to support concurrent requests in a single OS thread."""
 import mimetypes
 import os
 import sys
@@ -25,9 +23,7 @@ def parse_request(lines):
 
 
 def mime_type(filename):
-    """Return a reasonable MIME type for the file or text/plain as a
-    fallback.
-    """
+    """Return a reasonable MIME type for the file or text/plain as a fallback."""
     mt, _ = mimetypes.guess_type(filename)
     if mt:
         return mt
@@ -57,12 +53,14 @@ def respond(method, path, headers):
     if os.path.isdir(filename):
         # Directory listing.
         files = []
-        for name in os.listdir(filename):
-            files.append('<li><a href="%s">%s</a></li>' % (name, name))
-        html = '<html><head><title>%s</title></head><body>' \
-               '<h1>%s</h1><ul>%s</ul></body></html>' % \
-               (path, path, ''.join(files))
-        return '200 OK', {'Content-Type': 'text/html'}, html
+        for name in sorted(os.listdir(filename), key=lambda n: (not os.path.isdir(n), n)):
+            files.append(f'<li><a href="{name}">{"/" if os.path.isdir(name) else ""}{name}</a></li>')
+        html = f'<html><head><title>{path}</title></head><body><h1>{path}</h1><ul>{"".join(files)}</ul></body></html>'
+        return (
+            '200 OK',
+            {'Content-Type': 'text/html'},
+            html.encode('utf8'),
+        )
 
     elif os.path.exists(filename):
         # Send file contents.
@@ -72,9 +70,11 @@ def respond(method, path, headers):
     else:
         # Not found.
         print('Not found.')
-        return '404 Not Found', {'Content-Type': 'text/html'}, \
-            '<html><head><title>404 Not Found</title></head>' \
-            '<body><h1>Not found.</h1></body></html>'
+        return (
+            '404 Not Found',
+            {'Content-Type': 'text/html'},
+            b'<html><head><title>404 Not Found</title></head><body><h1>Not found.</h1></body></html>',
+        )
 
 
 def webrequest(conn):
@@ -98,9 +98,9 @@ def webrequest(conn):
     status, headers, content = respond(method, path, headers)
 
     # Send response.
-    yield conn.sendall(('HTTP/1.1 %s\r\n' % status).encode('utf8'))
+    yield conn.sendall(f'HTTP/1.1 {status}\r\n'.encode('utf8'))
     for key, value in headers.items():
-        yield conn.sendall(('%s: %s\r\n' % (key, value)).encode('utf8'))
+        yield conn.sendall(f'{key}: {value}\r\n'.encode('utf8'))
     yield conn.sendall(b'\r\n')
     yield conn.sendall(content)
 
