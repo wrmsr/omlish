@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
 # noinspection DuplicatedCode
-# @omdev-amalg-output ../interp2/interp.py
+# @omdev-amalg-output ../interp2/cli.py
 """
 TODO:
  - partial best-matches - '3.12'
  - https://github.com/asdf-vm/asdf support (instead of pyenv) ?
+ - colon sep provider name prefix - pyenv:3.12
 """
-# ruff: noqa: UP007
+# ruff: noqa: UP006 UP007
 import abc
 import argparse
 import collections
 import dataclasses as dc
 import functools
+import inspect
 import itertools
 import json
 import logging
@@ -102,19 +104,6 @@ log = logging.getLogger(__name__)
 def configure_standard_logging(level: ta.Union[int, str] = logging.INFO) -> None:
     logging.root.addHandler(logging.StreamHandler())
     logging.root.setLevel(level)
-
-
-########################################
-# ../../amalg/std/runtime.py
-
-
-REQUIRED_PYTHON_VERSION = (3, 8)
-
-
-def check_runtime_version() -> None:
-    if sys.version_info < REQUIRED_PYTHON_VERSION:
-        raise OSError(
-            f'Requires python {REQUIRED_PYTHON_VERSION}, got {sys.version_info} from {sys.executable}')  # noqa
 
 
 ########################################
@@ -526,97 +515,21 @@ def canonicalize_version(
 
 
 ########################################
-# ../../amalg/std/subprocesses.py
-# ruff: noqa: UP006 UP007
+# ../../amalg/std/runtime.py
 
 
-##
+@cached_nullary
+def is_debugger_attached() -> bool:
+    return any(frame[1].endswith('pydevd.py') for frame in inspect.stack())
 
 
-_SUBPROCESS_SHELL_WRAP_EXECS = False
+REQUIRED_PYTHON_VERSION = (3, 8)
 
 
-def _prepare_subprocess_invocation(
-        *args: ta.Any,
-        env: ta.Optional[ta.Mapping[str, ta.Any]] = None,
-        extra_env: ta.Optional[ta.Mapping[str, ta.Any]] = None,
-        quiet: bool = False,
-        **kwargs: ta.Any,
-) -> ta.Tuple[ta.Tuple[ta.Any, ...], ta.Dict[str, ta.Any]]:
-    log.debug(args)
-    if extra_env:
-        log.debug(extra_env)
-
-    if extra_env:
-        env = {**(env if env is not None else os.environ), **extra_env}
-
-    if quiet and 'stderr' not in kwargs:
-        if not log.isEnabledFor(logging.DEBUG):
-            kwargs['stderr'] = subprocess.DEVNULL
-
-    if _SUBPROCESS_SHELL_WRAP_EXECS:
-        args = ('sh', '-c', ' '.join(map(shlex.quote, args)))
-
-    return args, dict(
-        env=env,
-        **kwargs,
-    )
-
-
-def subprocess_check_call(*args: ta.Any, stdout=sys.stderr, **kwargs: ta.Any) -> None:
-    args, kwargs = _prepare_subprocess_invocation(*args, stdout=stdout, **kwargs)
-    return subprocess.check_call(args, **kwargs)  # type: ignore
-
-
-def subprocess_check_output(*args: ta.Any, **kwargs: ta.Any) -> bytes:
-    args, kwargs = _prepare_subprocess_invocation(*args, **kwargs)
-    return subprocess.check_output(args, **kwargs)
-
-
-def subprocess_check_output_str(*args: ta.Any, **kwargs: ta.Any) -> str:
-    return subprocess_check_output(*args, **kwargs).decode().strip()
-
-
-##
-
-
-DEFAULT_SUBPROCESS_TRY_EXCEPTIONS: ta.Tuple[ta.Type[Exception], ...] = (
-    FileNotFoundError,
-    subprocess.CalledProcessError,
-)
-
-
-def subprocess_try_call(
-        *args: ta.Any,
-        try_exceptions: ta.Tuple[ta.Type[Exception], ...] = DEFAULT_SUBPROCESS_TRY_EXCEPTIONS,
-        **kwargs: ta.Any,
-) -> bool:
-    try:
-        subprocess_check_call(*args, **kwargs)
-    except try_exceptions as e:  # noqa
-        if log.isEnabledFor(logging.DEBUG):
-            log.exception('command failed')
-        return False
-    else:
-        return True
-
-
-def subprocess_try_output(
-        *args: ta.Any,
-        try_exceptions: ta.Tuple[ta.Type[Exception], ...] = DEFAULT_SUBPROCESS_TRY_EXCEPTIONS,
-        **kwargs: ta.Any,
-) -> ta.Optional[bytes]:
-    try:
-        return subprocess_check_output(*args, **kwargs)
-    except try_exceptions as e:  # noqa
-        if log.isEnabledFor(logging.DEBUG):
-            log.exception('command failed')
-        return None
-
-
-def subprocess_try_output_str(*args: ta.Any, **kwargs: ta.Any) -> ta.Optional[str]:
-    out = subprocess_try_output(*args, **kwargs)
-    return out.decode().strip() if out is not None else None
+def check_runtime_version() -> None:
+    if sys.version_info < REQUIRED_PYTHON_VERSION:
+        raise OSError(
+            f'Requires python {REQUIRED_PYTHON_VERSION}, got {sys.version_info} from {sys.executable}')  # noqa
 
 
 ########################################
@@ -1143,15 +1056,113 @@ class SpecifierSet(BaseSpecifier):
 
 
 ########################################
+# ../../amalg/std/subprocesses.py
+# ruff: noqa: UP006 UP007
+
+
+##
+
+
+_SUBPROCESS_SHELL_WRAP_EXECS = False
+
+
+def _prepare_subprocess_invocation(
+        *args: ta.Any,
+        env: ta.Optional[ta.Mapping[str, ta.Any]] = None,
+        extra_env: ta.Optional[ta.Mapping[str, ta.Any]] = None,
+        quiet: bool = False,
+        **kwargs: ta.Any,
+) -> ta.Tuple[ta.Tuple[ta.Any, ...], ta.Dict[str, ta.Any]]:
+    log.debug(args)
+    if extra_env:
+        log.debug(extra_env)
+
+    if extra_env:
+        env = {**(env if env is not None else os.environ), **extra_env}
+
+    if quiet and 'stderr' not in kwargs:
+        if not log.isEnabledFor(logging.DEBUG):
+            kwargs['stderr'] = subprocess.DEVNULL
+
+    if _SUBPROCESS_SHELL_WRAP_EXECS or is_debugger_attached():
+        args = ('sh', '-c', ' '.join(map(shlex.quote, args)))
+
+    return args, dict(
+        env=env,
+        **kwargs,
+    )
+
+
+def subprocess_check_call(*args: ta.Any, stdout=sys.stderr, **kwargs: ta.Any) -> None:
+    args, kwargs = _prepare_subprocess_invocation(*args, stdout=stdout, **kwargs)
+    return subprocess.check_call(args, **kwargs)  # type: ignore
+
+
+def subprocess_check_output(*args: ta.Any, **kwargs: ta.Any) -> bytes:
+    args, kwargs = _prepare_subprocess_invocation(*args, **kwargs)
+    return subprocess.check_output(args, **kwargs)
+
+
+def subprocess_check_output_str(*args: ta.Any, **kwargs: ta.Any) -> str:
+    return subprocess_check_output(*args, **kwargs).decode().strip()
+
+
+##
+
+
+DEFAULT_SUBPROCESS_TRY_EXCEPTIONS: ta.Tuple[ta.Type[Exception], ...] = (
+    FileNotFoundError,
+    subprocess.CalledProcessError,
+)
+
+
+def subprocess_try_call(
+        *args: ta.Any,
+        try_exceptions: ta.Tuple[ta.Type[Exception], ...] = DEFAULT_SUBPROCESS_TRY_EXCEPTIONS,
+        **kwargs: ta.Any,
+) -> bool:
+    try:
+        subprocess_check_call(*args, **kwargs)
+    except try_exceptions as e:  # noqa
+        if log.isEnabledFor(logging.DEBUG):
+            log.exception('command failed')
+        return False
+    else:
+        return True
+
+
+def subprocess_try_output(
+        *args: ta.Any,
+        try_exceptions: ta.Tuple[ta.Type[Exception], ...] = DEFAULT_SUBPROCESS_TRY_EXCEPTIONS,
+        **kwargs: ta.Any,
+) -> ta.Optional[bytes]:
+    try:
+        return subprocess_check_output(*args, **kwargs)
+    except try_exceptions as e:  # noqa
+        if log.isEnabledFor(logging.DEBUG):
+            log.exception('command failed')
+        return None
+
+
+def subprocess_try_output_str(*args: ta.Any, **kwargs: ta.Any) -> ta.Optional[str]:
+    out = subprocess_try_output(*args, **kwargs)
+    return out.decode().strip() if out is not None else None
+
+
+########################################
 # ../providers/types.py
 # ruff: noqa: UP006
 
 
 # See https://peps.python.org/pep-3149/
-INTERP_OPT_GLYPHS: ta.Mapping[str, str] = collections.OrderedDict([
+INTERP_OPT_GLYPHS_BY_ATTR: ta.Mapping[str, str] = collections.OrderedDict([
     ('debug', 'd'),
     ('threaded', 't'),
 ])
+
+INTERP_OPT_ATTRS_BY_GLYPH: ta.Mapping[str, str] = collections.OrderedDict(
+    (g, a) for a, g in INTERP_OPT_GLYPHS_BY_ATTR.items()
+)
 
 
 @dc.dataclass(frozen=True)
@@ -1160,16 +1171,16 @@ class InterpOpts:
     debug: bool = False
 
     def __str__(self) -> str:
-        return ''.join(g for a, g in INTERP_OPT_GLYPHS.items() if getattr(self, a))
+        return ''.join(g for a, g in INTERP_OPT_GLYPHS_BY_ATTR.items() if getattr(self, a))
 
     @classmethod
     def parse(cls, s: str) -> 'InterpOpts':
-        return cls(**{INTERP_OPT_GLYPHS[g]: True for g in s})
+        return cls(**{INTERP_OPT_ATTRS_BY_GLYPH[g]: True for g in s})
 
     @classmethod
     def parse_suffix(cls, s: str) -> ta.Tuple[str, 'InterpOpts']:
         kw = {}
-        while s and (a := INTERP_OPT_GLYPHS.get(s[-1])):
+        while s and (a := INTERP_OPT_ATTRS_BY_GLYPH.get(s[-1])):
             s, kw[a] = s[:-1], True
         return s, cls(**kw)
 
@@ -1180,7 +1191,7 @@ class InterpVersion:
     opts: InterpOpts
 
     def __str__(self) -> str:
-        return ''.join([str(self.version), *(() if not (gs := str(self.opts)) else [gs])])
+        return str(self.version) + str(self.opts)
 
     @classmethod
     def parse(cls, s: str) -> 'InterpVersion':
@@ -1205,23 +1216,25 @@ class InterpSpecifier:
     opts: InterpOpts
 
     def __str__(self) -> str:
-        return ','.join([str(self.specifier), *(() if not (gs := str(self.opts)) else [gs])])
+        return str(self.specifier) + str(self.opts)
 
     @classmethod
     def parse(cls, s: str) -> 'InterpSpecifier':
-        v, o = s.split(',') if ',' in s else (s, '')
-        if not any(v.startswith(o) for o in Specifier.OPERATORS):
-            v = '~=' + v
+        s, o = InterpOpts.parse_suffix(s)
+        if not any(s.startswith(o) for o in Specifier.OPERATORS):
+            s = '~=' + s
         return cls(
-            specifier=Specifier(v),
-            opts=InterpOpts.parse(o),
+            specifier=Specifier(s),
+            opts=o,
         )
+
+    def contains(self, iv: InterpVersion) -> bool:
+        return self.specifier.contains(iv.version) and self.opts == iv.opts
 
 
 @dc.dataclass(frozen=True)
 class Interp:
     exe: str
-    provider: str
     version: InterpVersion
 
 
@@ -1338,48 +1351,37 @@ TODO:
 
 
 class InterpProvider(abc.ABC):
-    @property
     @abc.abstractmethod
-    def name(self) -> str:
+    def get_installed_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def installed_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
+    def get_installed_version(self, version: InterpVersion) -> Interp:
         raise NotImplementedError
 
-    @abc.abstractmethod
-    def installable_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
-        raise NotImplementedError
+    def get_installable_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
+        return []
 
-    @abc.abstractmethod
-    def get_version(self, version: InterpVersion) -> Interp:
-        raise NotImplementedError
+    def install_version(self, version: InterpVersion) -> Interp:
+        raise TypeError
 
 
 ##
 
 
 class RunningInterpProvider(InterpProvider):
-    @property
-    def name(self) -> str:
-        return 'running'
-
     @cached_nullary
     def version(self) -> InterpVersion:
         return InterpInspector.running().iv
 
-    def installed_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
+    def get_installed_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
         return [self.version()]
 
-    def installable_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
-        return []
-
-    def get_version(self, version: InterpVersion) -> Interp:
+    def get_installed_version(self, version: InterpVersion) -> Interp:
         if version != self.version():
             raise KeyError(version)
         return Interp(
             exe=sys.executable,
-            provider=self.name,
             version=self.version(),
         )
 
@@ -1442,7 +1444,7 @@ class Pyenv:
 
     def installable_versions(self) -> ta.List[str]:
         ret = []
-        s = subprocess_check_output_str(self.exe, 'install', '--list')
+        s = subprocess_check_output_str(self.exe(), 'install', '--list')
         for l in s.splitlines():
             if not l.startswith('  '):
                 continue
@@ -1641,10 +1643,6 @@ class PyenvInterpProvider(InterpProvider):
         self._inspect = inspect
         self._inspector = inspector
 
-    @property
-    def name(self) -> str:
-        return 'pyenv'
-
     #
 
     @staticmethod
@@ -1667,40 +1665,52 @@ class PyenvInterpProvider(InterpProvider):
         exe: str
         version: InterpVersion
 
-    def get_installed_version(self, vn: str, ep: str) -> ta.Optional[InterpVersion]:
+    def _make_installed(self, vn: str, ep: str) -> ta.Optional[Installed]:
+        iv: ta.Optional[InterpVersion]
         if self._inspect:
             try:
-                return check_not_none(self._inspector.inspect(ep)).iv
+                iv = check_not_none(self._inspector.inspect(ep)).iv
             except Exception as e:  # noqa
                 return None
         else:
-            return self.guess_version(vn)
+            iv = self.guess_version(vn)
+        if iv is None:
+            return None
+        return PyenvInterpProvider.Installed(
+            name=vn,
+            exe=ep,
+            version=iv,
+        )
 
     def installed(self) -> ta.Sequence[Installed]:
         ret: ta.List[PyenvInterpProvider.Installed] = []
         for vn, ep in self._pyenv.version_exes():
-            if (iv := self.get_installed_version(vn, ep)) is None:
+            if (i := self._make_installed(vn, ep)) is None:
                 log.debug('Invalid pyenv version: %s', vn)
                 continue
-
-            ret.append(PyenvInterpProvider.Installed(
-                name=vn,
-                exe=ep,
-                version=iv,
-            ))
-
+            ret.append(i)
         return ret
 
     #
 
-    def installed_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
+    def get_installed_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
         return [i.version for i in self.installed()]
 
-    def installable_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
+    def get_installed_version(self, version: InterpVersion) -> Interp:
         raise NotImplementedError
 
-    def get_version(self, version: InterpVersion) -> Interp:
-        raise NotImplementedError
+    #
+
+    def get_installable_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
+        lst = []
+        for vs in self._pyenv.installable_versions():
+            if (iv := self.guess_version(vs)) is None:
+                continue
+            if iv.opts.debug:
+                raise Exception('Pyenv installable versions not expected to have debug suffix')
+            for d in [False, True]:
+                lst.append(dc.replace(iv, opts=dc.replace(iv.opts, debug=d)))
+        return lst
 
 
 ########################################
@@ -1723,10 +1733,6 @@ class SystemInterpProvider(InterpProvider):
 
     inspect: bool = False
     inspector: InterpInspector = INTERP_INSPECTOR
-
-    @property
-    def name(self) -> str:
-        return 'system'
 
     #
 
@@ -1807,36 +1813,70 @@ class SystemInterpProvider(InterpProvider):
 
     #
 
-    def installed_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
+    def get_installed_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
         return [ev for e, ev in self.exe_versions()]
 
-    def installable_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
-        return []
-
-    def get_version(self, version: InterpVersion) -> Interp:
+    def get_installed_version(self, version: InterpVersion) -> Interp:
         for e, ev in self.exe_versions():
             if ev != version:
                 continue
             return Interp(
                 exe=e,
-                provider=self.name,
                 version=ev,
             )
         raise KeyError(version)
 
 
 ########################################
-# interp.py
+# cli.py
+
+
+class Resolver:
+    def __init__(
+            self,
+            providers: ta.Sequence[ta.Tuple[str, InterpProvider]],
+    ) -> None:
+        super().__init__()
+        self._providers: ta.Mapping[str, InterpProvider] = collections.OrderedDict(providers)
+
+    def list(self, spec: InterpSpecifier) -> None:
+        print('installed:')
+        for n, p in self._providers.items():
+            lst = [
+                si
+                for si in p.get_installed_versions(spec)
+                if spec.contains(si)
+            ]
+            if lst:
+                print(f'  {n}')
+                for si in lst:
+                    print(f'    {si}')
+
+        print()
+
+        print('installable:')
+        for n, p in self._providers.items():
+            lst = [
+                si
+                for si in p.get_installable_versions(spec)
+                if spec.contains(si)
+            ]
+            if lst:
+                print(f'  {n}')
+                for si in lst:
+                    print(f'    {si}')
 
 
 def _resolve_cmd(args) -> None:
+    r = Resolver([
+        ('running', RunningInterpProvider()),
+        ('pyenv', PyenvInterpProvider()),
+        ('system', SystemInterpProvider()),
+    ])
+
     s = InterpSpecifier.parse(args.version)
-    for ip in [
-        SystemInterpProvider(),
-        PyenvInterpProvider(),
-    ]:
-        for si in ip.installed_versions(s):
-            print(si)
+
+    r.list(s)
 
 
 def _build_parser() -> argparse.ArgumentParser:

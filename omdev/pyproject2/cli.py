@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# @omdev-amalg ../scripts/pyproject.py
+# @omdev-amalg ../scripts/pyproject2.py
 """
 TODO:
  - check / tests, src dir sets
