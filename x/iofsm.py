@@ -90,7 +90,6 @@ class AckedEchoProtocol0(AckedEchoProtocol):
 class AckedEchoProtocol1(AckedEchoProtocol):
     def __init__(self) -> None:
         super().__init__()
-        self._state = 0
         self.accept = self._accept_0
 
     accept: ta.Callable[[Event], ta.Iterable[Event]]
@@ -115,12 +114,47 @@ class AckedEchoProtocol1(AckedEchoProtocol):
         raise IllegalStateException
 
 
+#
+
+
+AckedEchoProtocol2State: ta.TypeAlias = ta.Callable[[Event], tuple['AckedEchoProtocol2State', ta.Iterable[Event]]]
+
+
+class AckedEchoProtocol2(AckedEchoProtocol):
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._state: AckedEchoProtocol2State = self._accept_0
+
+    def accept(self, e: Event) -> ta.Iterable[Event]:
+        self._state, oe = self._state(e)
+        return oe
+
+    def _accept_0(self, e: Event) -> tuple[AckedEchoProtocol2State, ta.Iterable[Event]]:
+        if isinstance(e, RecvdLine):
+            if e.line == self.ACK0:
+                return (self._accept_1, [])
+        raise IllegalStateException
+
+    def _accept_1(self, e: Event) -> tuple[AckedEchoProtocol2State, ta.Iterable[Event]]:
+        if isinstance(e, RecvdLine):
+            if e.line == self.ACK1:
+                return (self._accept_2, [])
+        raise IllegalStateException
+
+    def _accept_2(self, e: Event) -> tuple[AckedEchoProtocol2State, ta.Iterable[Event]]:
+        if isinstance(e, RecvdLine):
+            return (self._accept_2, [SendLine(e.line)])
+        raise IllegalStateException
+
+
 ##
 
 
 def _main() -> None:
     for oe in LineReader().accept(RecvdData(b'hi\nthere\n')):
         print(repr(oe))
+    print()
 
     def handle_output(e: Event) -> None:
         if isinstance(e, SendLine):
@@ -131,7 +165,9 @@ def _main() -> None:
     for p in [
         AckedEchoProtocol0(),
         AckedEchoProtocol1(),
+        AckedEchoProtocol2(),
     ]:
+        print(p)
         for ie in [
             RecvdLine('hi0\n'),
             RecvdLine('hi1\n'),
@@ -140,6 +176,7 @@ def _main() -> None:
         ]:
             for oe in p.accept(ie):
                 handle_output(oe)
+        print()
 
 
 if __name__ == '__main__':
