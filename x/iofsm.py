@@ -1,5 +1,6 @@
 import abc
 import dataclasses as dc
+import random
 import typing as ta
 
 
@@ -181,9 +182,7 @@ class AckedEchoProtocol3(AckedEchoProtocol):
 
 
 def _main() -> None:
-    for oe in LineReader().accept(RecvdData(b'hi\nthere\n')):
-        print(repr(oe))
-    print()
+    input_buf = b'hi0\nhi1\nhi\nthere\n'
 
     def handle_output(e: Event) -> None:
         if isinstance(e, SendLine):
@@ -198,14 +197,17 @@ def _main() -> None:
         AckedEchoProtocol3(),
     ]:
         print(p)
-        for ie in [
-            RecvdLine('hi0\n'),
-            RecvdLine('hi1\n'),
-            RecvdLine('foo\n'),
-            RecvdLine('bar\n'),
-        ]:
-            for oe in p.accept(ie):
-                handle_output(oe)
+
+        spl = random.randint(1, 1 + len(input_buf) - 2)
+        ibs = [input_buf[:spl], input_buf[spl:]]
+        print(ibs)
+
+        lr = LineReader()
+        for ib in ibs:
+            for le in lr.accept(RecvdData(ib)):
+                for oe in p.accept(le):
+                    handle_output(oe)
+
         print()
 
 
