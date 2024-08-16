@@ -127,21 +127,23 @@ class ParamikoSshCommandRunner(CommandRunner):
     def _run_command(self, cmd: CommandRunner.Command) -> CommandRunner.Result:
         arg = ' '.join(map(shlex.quote, cmd.args))
 
+        kw: dict[str, ta.Any] = {}
+        if self._cfg.port is not None:
+            kw.update(port=int(self._cfg.port))
+        if self._cfg.username is not None:
+            kw.update(username=self._cfg.username)
+        if self._cfg.password is not None:
+            kw.update(password=self._cfg.password)
         if self._cfg.key_file_path is not None:
-            key_filename = self._cfg.key_file_path
-        else:
-            key_filename = None
+            kw.update(key_filename=self._cfg.key_file_path)
 
         client: paramiko.client.SSHClient
         with contextlib.closing(paramiko.client.SSHClient()) as client:
             client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
             client.connect(
-                self._cfg.host,
-                **(dict(port=int(self._cfg.port)) if self._cfg.port is not None else {}),
-                **(dict(username=self._cfg.username) if self._cfg.username is not None else {}),
-                **(dict(password=self._cfg.password) if self._cfg.password is not None else {}),
-                key_filename=key_filename,
+                check.not_none(self._cfg.host),
+                **kw,
             )
 
             si, so, se = client.exec_command(arg)
