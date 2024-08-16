@@ -64,7 +64,7 @@ librosa==0.10.2.post1
 
 networkx==3.3
 
-nevergrad==1.0.3
+nevergrad==1.0.4
 
 sympy==1.13.2
 
@@ -74,7 +74,7 @@ sympy==1.13.2
 
 wgpu==0.16.0
 
-hypothesis==6.111.0
+hypothesis==6.111.1
 
 hexdump==3.3
 
