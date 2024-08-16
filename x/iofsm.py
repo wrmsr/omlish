@@ -194,7 +194,7 @@ class AckedEchoProtocol4(AckedEchoProtocol):
         while (o := self._gen.send(e)) is not None:
             yield from o
 
-    def _accept(self) -> ta.Generator[ta.Optional[ta.Iterable[Event]], Event, None]:
+    def _accept(self) -> ta.Generator[ta.Iterable[Event] | None, Event, None]:
         for ack in [self.ACK0, self.ACK1]:
             e = yield
             if not isinstance(e, RecvdLine) and e.line == ack:
@@ -211,7 +211,54 @@ class AckedEchoProtocol4(AckedEchoProtocol):
 #
 
 
+EventStep: ta.TypeAlias = ta.Iterable[Event] | None
+EventGenerator: ta.TypeAlias = ta.Generator[EventStep, Event, ta.Optional['EventGenerator']]
+
+
 class AckedEchoProtocol5(AckedEchoProtocol):
+    """like 4 but can switch acceptor gens."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._gen: EventGenerator | None = self._accept_0()
+        if (n := next(self._gen)):  # noqa
+            raise IllegalStateException
+
+    def accept(self, e: Event) -> ta.Iterable[Event]:
+        if self._gen is None:
+            raise IllegalStateException
+        while True:
+            try:
+                while (o := self._gen.send(e)) is not None:
+                    yield from o
+                return
+            except StopIteration as s:
+                if s.value is None:
+                    raise IllegalStateException
+                self._gen = s.value
+                if (n := next(self._gen)):  # noqa
+                    raise IllegalStateException
+
+    def _accept_0(self) -> EventGenerator:
+        for ack in [self.ACK0, self.ACK1]:
+            e = yield
+            if not isinstance(e, RecvdLine) and e.line == ack:
+                raise IllegalStateException
+        return self._accept_1()
+
+    def _accept_1(self) -> EventGenerator:
+        while True:
+            e = yield
+            if isinstance(e, RecvdLine):
+                yield [SendLine('echo ' + e.line)]
+            else:
+                raise IllegalStateException
+
+
+#
+
+
+class AckedEchoProtocol6(AckedEchoProtocol):
     """TODO: like 2 but states *yield* out events and *return* next state."""
 
 
@@ -242,6 +289,7 @@ def _main() -> None:
         AckedEchoProtocol2(),
         AckedEchoProtocol3(),
         AckedEchoProtocol4(),
+        AckedEchoProtocol5(),
     ]:
         print(p)
 
