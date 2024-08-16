@@ -3,6 +3,7 @@ TDOO:
  - (unit)tests lol
  - * subprocesses
  - canceling
+ - timeouts
  - task groups
  - gather
  - locks / semaphores / events / etc

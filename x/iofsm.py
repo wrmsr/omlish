@@ -59,6 +59,9 @@ class AckedEchoProtocol(abc.ABC):
     ACK1 = 'hi1\n'
 
 
+#
+
+
 class AckedEchoProtocol0(AckedEchoProtocol):
     def __init__(self) -> None:
         super().__init__()
@@ -81,6 +84,37 @@ class AckedEchoProtocol0(AckedEchoProtocol):
         raise IllegalStateException
 
 
+#
+
+
+class AckedEchoProtocol1(AckedEchoProtocol):
+    def __init__(self) -> None:
+        super().__init__()
+        self._state = 0
+        self.accept = self._accept_0
+
+    accept: ta.Callable[[Event], ta.Iterable[Event]]
+
+    def _accept_0(self, e: Event) -> ta.Iterable[Event]:
+        if isinstance(e, RecvdLine):
+            if e.line == self.ACK0:
+                self.accept = self._accept_1
+                return []
+        raise IllegalStateException
+
+    def _accept_1(self, e: Event) -> ta.Iterable[Event]:
+        if isinstance(e, RecvdLine):
+            if e.line == self.ACK1:
+                self.accept = self._accept_2
+                return []
+        raise IllegalStateException
+
+    def _accept_2(self, e: Event) -> ta.Iterable[Event]:
+        if isinstance(e, RecvdLine):
+            return [SendLine(e.line)]
+        raise IllegalStateException
+
+
 ##
 
 
@@ -94,16 +128,18 @@ def _main() -> None:
             return
         raise IllegalStateException
 
-    p = AckedEchoProtocol0()
-
-    for ie in [
-        RecvdLine('hi0\n'),
-        RecvdLine('hi1\n'),
-        RecvdLine('foo\n'),
-        RecvdLine('bar\n'),
+    for p in [
+        AckedEchoProtocol0(),
+        AckedEchoProtocol1(),
     ]:
-        for oe in p.accept(ie):
-            handle_output(oe)
+        for ie in [
+            RecvdLine('hi0\n'),
+            RecvdLine('hi1\n'),
+            RecvdLine('foo\n'),
+            RecvdLine('bar\n'),
+        ]:
+            for oe in p.accept(ie):
+                handle_output(oe)
 
 
 if __name__ == '__main__':
