@@ -9,11 +9,13 @@ T = ta.TypeVar('T')
 class ValueAwaitable(ta.Generic[T]):
     v: T
 
+    def __await__(self):
+        yield self.v
 
 
 async def foo():
-    await 1
-    await 2
+    await ValueAwaitable(1)
+    await ValueAwaitable(2)
     return 3
 
 
