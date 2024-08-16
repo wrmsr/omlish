@@ -211,8 +211,7 @@ class AckedEchoProtocol4(AckedEchoProtocol):
 #
 
 
-EventStep: ta.TypeAlias = ta.Iterable[Event] | None
-EventGenerator: ta.TypeAlias = ta.Generator[EventStep, Event, ta.Optional['EventGenerator']]
+EventGenerator: ta.TypeAlias = ta.Generator[ta.Iterable[Event] | None, Event, ta.Optional['EventGenerator']]
 
 
 class AckedEchoProtocol5(AckedEchoProtocol):
