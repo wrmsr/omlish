@@ -157,9 +157,11 @@ class AckedEchoProtocol3(AckedEchoProtocol):
         self._gen = self._accept()
         if (e := next(self._gen)):  # noqa
             raise IllegalStateException
-        self.accept = self._gen.send
 
-    def _accept(self):
+    def accept(self, e: Event) -> ta.Iterable[Event]:
+        return self._gen.send(e)
+
+    def _accept(self) -> ta.Generator[ta.Iterable[Event], Event, None]:
         out = []
 
         for ack in [self.ACK0, self.ACK1]:
