@@ -147,6 +147,8 @@ class ParamikoSshCommandRunner(CommandRunner):
             )
 
             si, so, se = client.exec_command(arg)
+            si.close()
+
             rc = so.channel.recv_exit_status()
             out = so.read()
             err = se.read()
@@ -175,8 +177,8 @@ async def _a_main() -> None:
     )
 
     for scr in [
-        # SshSubprocessCommandRunner(sc),
-        # AsyncsshSshCommandRunner(sc),
+        SshSubprocessCommandRunner(sc),
+        AsyncsshSshCommandRunner(sc),
         ParamikoSshCommandRunner(sc),
     ]:
         rc = await scr.run_command(cmd)
