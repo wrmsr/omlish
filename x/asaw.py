@@ -13,19 +13,18 @@ class Request(abc.ABC):  # noqa
     pass
 
 
+@dc.dataclass()
 class Task:
-    def __init__(self, req: Request) -> None:
-        super().__init__()
-        self.req = req
-        self.done = False
-        self.res = None
+    req: Request
+    done = False
+    res = None
 
     def __await__(self):
         if not self.done:
             yield self
         if not self.done:
             raise RuntimeError("await wasn't used with task")
-        yield self.res
+        return self.res
 
 
 ##
