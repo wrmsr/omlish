@@ -14,6 +14,8 @@ from .events import BlueletEvent
 from .events import WaitableBlueletEvent
 
 
+T = ta.TypeVar('T')
+
 BlueletExcInfo = ta.Tuple[ta.Type[BaseException], BaseException, types.TracebackType]  # ta.TypeAlias
 
 BlueletCoro = ta.Generator[ta.Union['BlueletEvent', 'BlueletCoro'], ta.Any, None]  # ta.TypeAlias
@@ -30,19 +32,19 @@ class CoreBlueletEvent(BlueletEvent, abc.ABC):  # noqa
 
 
 @dc.dataclass(frozen=True, eq=False)
-class ValueBlueletEvent(CoreBlueletEvent):
+class ValueBlueletEvent(CoreBlueletEvent, ta.Generic[T]):
     """An event that does nothing but return a fixed value."""
 
-    value: ta.Any
+    value: T
 
 
-def bluelet_value(v: ta.Any) -> BlueletEvent:
+def bluelet_value(v: T) -> ValueBlueletEvent[T]:
     """Event: yield a value."""
 
     return ValueBlueletEvent(v)
 
 
-def bluelet_null() -> BlueletEvent:
+def bluelet_null() -> ValueBlueletEvent[None]:
     """Event: yield to the scheduler without doing anything special."""
 
     return ValueBlueletEvent(None)
@@ -68,7 +70,7 @@ class SpawnBlueletEvent(CoreBlueletEvent):
     spawned: BlueletCoro
 
 
-def bluelet_spawn(coro: BlueletCoro) -> BlueletEvent:
+def bluelet_spawn(coro: BlueletCoro) -> SpawnBlueletEvent:
     """Event: add another coroutine to the scheduler. Both the parent and child coroutines run concurrently."""
 
     if not isinstance(coro, types.GeneratorType):
@@ -86,7 +88,7 @@ class JoinBlueletEvent(CoreBlueletEvent):
     child: BlueletCoro
 
 
-def bluelet_join(coro: BlueletCoro) -> BlueletEvent:
+def bluelet_join(coro: BlueletCoro) -> JoinBlueletEvent:
     """Suspend the coro until another, previously `spawn`ed coro completes."""
 
     return JoinBlueletEvent(coro)
@@ -102,7 +104,7 @@ class KillBlueletEvent(CoreBlueletEvent):
     child: BlueletCoro
 
 
-def bluelet_kill(coro: BlueletCoro) -> BlueletEvent:
+def bluelet_kill(coro: BlueletCoro) -> KillBlueletEvent:
     """Halt the execution of a different `spawn`ed coro."""
 
     return KillBlueletEvent(coro)
@@ -121,7 +123,7 @@ class DelegationBlueletEvent(CoreBlueletEvent):
     spawned: BlueletCoro
 
 
-def bluelet_call(coro: BlueletCoro) -> BlueletEvent:
+def bluelet_call(coro: BlueletCoro) -> DelegationBlueletEvent:
     """
     Event: delegate to another coroutine. The current coroutine is resumed once the sub-coroutine finishes. If the
     sub-coroutine returns a value using end(), then this event returns that value.
@@ -136,13 +138,13 @@ def bluelet_call(coro: BlueletCoro) -> BlueletEvent:
 
 
 @dc.dataclass(frozen=True, eq=False)
-class ReturnBlueletEvent(CoreBlueletEvent):
+class ReturnBlueletEvent(CoreBlueletEvent, ta.Generic[T]):
     """Return a value the current coro's delegator at the point of delegation. Ends the current (delegate) coro."""
 
-    value: ta.Any
+    value: T
 
 
-def bluelet_end(value: ta.Any = None) -> BlueletEvent:
+def bluelet_end(value: T = None) -> ReturnBlueletEvent[T]:
     """Event: ends the coroutine and returns a value to its delegator."""
 
     return ReturnBlueletEvent(value)
@@ -161,7 +163,7 @@ class SleepBlueletEvent(WaitableBlueletEvent, CoreBlueletEvent):
         return max(self.wakeup_time - time.time(), 0.)
 
 
-def bluelet_sleep(duration: float) -> BlueletEvent:
+def bluelet_sleep(duration: float) -> SleepBlueletEvent:
     """Event: suspend the coro for ``duration`` seconds."""
 
     return SleepBlueletEvent(time.time() + duration)

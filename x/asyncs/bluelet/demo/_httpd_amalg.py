@@ -5,6 +5,7 @@ import abc
 import collections
 import dataclasses as dc
 import errno
+import logging
 import mimetypes
 import os
 import select
@@ -18,8 +19,26 @@ import weakref
 
 
 BlueletWaitable = ta.Union[int, 'BlueletHasFileno']  # ta.TypeAlias
+T = ta.TypeVar('T')
 BlueletExcInfo = ta.Tuple[ta.Type[BaseException], BaseException, types.TracebackType]  # ta.TypeAlias
 BlueletCoro = ta.Generator[ta.Union['BlueletEvent', 'BlueletCoro'], ta.Any, None]  # ta.TypeAlias
+
+
+########################################
+# ../../../../../omlish/lite/logs.py
+"""
+TODO:
+ - debug
+"""
+# ruff: noqa: UP007
+
+
+log = logging.getLogger(__name__)
+
+
+def configure_standard_logging(level: ta.Union[int, str] = logging.INFO) -> None:
+    logging.root.addHandler(logging.StreamHandler())
+    logging.root.setLevel(level)
 
 
 ########################################
@@ -96,19 +115,19 @@ class CoreBlueletEvent(BlueletEvent, abc.ABC):  # noqa
 
 
 @dc.dataclass(frozen=True, eq=False)
-class ValueBlueletEvent(CoreBlueletEvent):
+class ValueBlueletEvent(CoreBlueletEvent, ta.Generic[T]):
     """An event that does nothing but return a fixed value."""
 
-    value: ta.Any
+    value: T
 
 
-def bluelet_value(v: ta.Any) -> BlueletEvent:
+def bluelet_value(v: T) -> ValueBlueletEvent[T]:
     """Event: yield a value."""
 
     return ValueBlueletEvent(v)
 
 
-def bluelet_null() -> BlueletEvent:
+def bluelet_null() -> ValueBlueletEvent[None]:
     """Event: yield to the scheduler without doing anything special."""
 
     return ValueBlueletEvent(None)
@@ -134,7 +153,7 @@ class SpawnBlueletEvent(CoreBlueletEvent):
     spawned: BlueletCoro
 
 
-def bluelet_spawn(coro: BlueletCoro) -> BlueletEvent:
+def bluelet_spawn(coro: BlueletCoro) -> SpawnBlueletEvent:
     """Event: add another coroutine to the scheduler. Both the parent and child coroutines run concurrently."""
 
     if not isinstance(coro, types.GeneratorType):
@@ -152,7 +171,7 @@ class JoinBlueletEvent(CoreBlueletEvent):
     child: BlueletCoro
 
 
-def bluelet_join(coro: BlueletCoro) -> BlueletEvent:
+def bluelet_join(coro: BlueletCoro) -> JoinBlueletEvent:
     """Suspend the coro until another, previously `spawn`ed coro completes."""
 
     return JoinBlueletEvent(coro)
@@ -168,7 +187,7 @@ class KillBlueletEvent(CoreBlueletEvent):
     child: BlueletCoro
 
 
-def bluelet_kill(coro: BlueletCoro) -> BlueletEvent:
+def bluelet_kill(coro: BlueletCoro) -> KillBlueletEvent:
     """Halt the execution of a different `spawn`ed coro."""
 
     return KillBlueletEvent(coro)
@@ -187,7 +206,7 @@ class DelegationBlueletEvent(CoreBlueletEvent):
     spawned: BlueletCoro
 
 
-def bluelet_call(coro: BlueletCoro) -> BlueletEvent:
+def bluelet_call(coro: BlueletCoro) -> DelegationBlueletEvent:
     """
     Event: delegate to another coroutine. The current coroutine is resumed once the sub-coroutine finishes. If the
     sub-coroutine returns a value using end(), then this event returns that value.
@@ -202,13 +221,13 @@ def bluelet_call(coro: BlueletCoro) -> BlueletEvent:
 
 
 @dc.dataclass(frozen=True, eq=False)
-class ReturnBlueletEvent(CoreBlueletEvent):
+class ReturnBlueletEvent(CoreBlueletEvent, ta.Generic[T]):
     """Return a value the current coro's delegator at the point of delegation. Ends the current (delegate) coro."""
 
-    value: ta.Any
+    value: T
 
 
-def bluelet_end(value: ta.Any = None) -> BlueletEvent:
+def bluelet_end(value: T = None) -> ReturnBlueletEvent[T]:
     """Event: ends the coroutine and returns a value to its delegator."""
 
     return ReturnBlueletEvent(value)
@@ -227,7 +246,7 @@ class SleepBlueletEvent(WaitableBlueletEvent, CoreBlueletEvent):
         return max(self.wakeup_time - time.time(), 0.)
 
 
-def bluelet_sleep(duration: float) -> BlueletEvent:
+def bluelet_sleep(duration: float) -> SleepBlueletEvent:
     """Event: suspend the coro for ``duration`` seconds."""
 
     return SleepBlueletEvent(time.time() + duration)
@@ -236,19 +255,24 @@ def bluelet_sleep(duration: float) -> BlueletEvent:
 ########################################
 # ../../bluelet/runner.py
 """
-TDOO:
- - amalgify? prefix everything w/ Blue? prob want some helper Namespace or smth
-  - *** __init__.py *isn't* amalg'd - include terse names for everything ***
+TODO:
  - (unit)tests lol
+ - * subprocesses
+ - canceling
+ - timeouts
  - task groups
  - gather
  - locks / semaphores / events / etc
- - subprocesses
- - ensure no unknown event types - Waitable subtypes okay
  - rename Coro to Bluelet?
  - shutdown
  - ensure resource cleanup
-"""
+ - run_thread? whatever?
+
+Subprocs:
+ - https://github.com/python/cpython/issues/120804 - GH-120804: Remove get_child_watcher and set_child_watcher from asyncio 
+ - https://github.com/python/cpython/pull/17063/files bpo-38692: Add os.pidfd_open
+ - clone PidfdChildWatcher + ThreadedChildWatcher
+"""  # noqa
 # Based on bluelet ( https://github.com/sampsyo/bluelet ) by Adrian Sampson, original license:
 # THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
 # WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -321,10 +345,14 @@ def _bluelet_event_select(events: ta.Iterable[BlueletEvent]) -> ta.Set[WaitableB
 
     # Perform select() if we have any waitables.
     if rlist or wlist or xlist:
+        log.debug('_bluelet_event_select: +select: %r %r %r %r', rlist, wlist, xlist, timeout)
         rready, wready, xready = select.select(rlist, wlist, xlist, timeout)
+        log.debug('_bluelet_event_select: -select: %r %r %r', rready, wready, xready)
+
     else:
         rready, wready, xready = [], [], []
         if timeout:
+            log.debug('_bluelet_event_select: sleep: %r', timeout)
             time.sleep(timeout)
 
     # Gather ready events corresponding to the ready waitables.
@@ -457,6 +485,8 @@ class _BlueletRunner:
         self._coros.clear()
 
     def _handle_core_event(self, coro: BlueletCoro, event: CoreBlueletEvent) -> bool:
+        log.debug(f'{__class__.__name__}._handle_core_event: %r %r', coro, event)
+
         if isinstance(event, SpawnBlueletEvent):
             self._coros[event.spawned] = ValueBlueletEvent(None)  # Spawn.
             self._history[event.spawned] = None  # Record in history.
@@ -503,6 +533,8 @@ class _BlueletRunner:
             raise TypeError(event)
 
     def _step(self) -> ta.Optional[BlueletCoroException]:
+        log.debug(f'{__class__.__name__}._step')
+
         try:
             # Look for events that can be run immediately. Continue running immediate events until nothing is ready.
             while True:
@@ -513,7 +545,7 @@ class _BlueletRunner:
                     elif isinstance(event, WaitableBlueletEvent):
                         pass
                     else:
-                        raise TypeError(event)
+                        raise TypeError(f'Unknown event type: {event}')
 
                 # Only start the select when nothing else is ready.
                 if not have_ready:
@@ -679,8 +711,8 @@ class BlueletConnection:
                 line += terminator
                 yield ReturnBlueletEvent(bytes(line))
                 break
-            data = yield ReceiveBlueletEvent(self, bufsize)
-            if data:
+
+            if (data := (yield ReceiveBlueletEvent(self, bufsize))):
                 self._buf += data
             else:
                 line = self._buf
