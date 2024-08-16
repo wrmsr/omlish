@@ -21,8 +21,15 @@ async def foo():
 
 def _main():
     g = foo().__await__()
-    for o in g:
-        print(o)
+    gi = iter(g)
+    while True:
+        try:
+            gv = next(gi)
+        except StopIteration as e:
+            print(f'r: {e.value}')
+            break
+        else:
+            print(f'i: {gv}')
 
 
 if __name__ == '__main__':
