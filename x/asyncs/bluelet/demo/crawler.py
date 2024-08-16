@@ -94,7 +94,7 @@ class AsyncHttpClient:
             data = yield self.conn.recv(4096)
             if not data:
                 break
-            buf.append(data)
+            buf.append(data.decode('utf-8'))
         response = ''.join(buf)
 
         # Parse response.
@@ -191,11 +191,11 @@ def run_mp(ctx: mp.context.BaseContext | None = None) -> dict[str, ta.Any]:
 
 def _main() -> None:
     strategies = {
-        # 'bl': run_bl,
-        'seq': run_seq,
-        'thrd': run_thrd,
-        'mp': run_mp,
-        'mp_fork': lambda: run_mp(mp.get_context('fork')),
+        'bl': run_bl,
+        # 'seq': run_seq,
+        # 'thrd': run_thrd,
+        # 'mp': run_mp,
+        # 'mp_fork': lambda: run_mp(mp.get_context('fork')),
     }
     for name, func in strategies.items():
         start = time.time()
