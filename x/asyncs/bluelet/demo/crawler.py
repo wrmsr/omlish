@@ -15,19 +15,28 @@ from urllib.request import urlopen
 from .. import bluelet as bl
 
 
-URL = 'http://api.twitter.com/1/statuses/user_timeline.json?screen_name=%s&count=1'
-USERNAMES = ('samps', 'b33ts', 'twitter', 'twitterapi', 'Support')
+URL = 'https://api.github.com/repos/%s/releases/latest'
+
+REPOS = [
+    'pytorch/pytorch',
+    'tinygrad/tinygrad',
+    'numpy/numpy',
+    'agronholm/anyio',
+    'astral-sh/ruff',
+    'indygreg/python-build-standalone',
+]
 
 
 class AsyncHttpClient:
     """A basic Bluelet-based asynchronous HTTP client. Only supports very simple GET queries."""
 
-    def __init__(self, host, port, path):
+    def __init__(self, host: str, port: int, path: str) -> None:
+        super().__init__()
         self.host = host
         self.port = port
         self.path = path
 
-    def headers(self):
+    def headers(self) -> bytes:
         """Returns the HTTP headers for this request."""
         heads = [
             f'GET {self.path} HTTP/1.1',
@@ -39,7 +48,7 @@ class AsyncHttpClient:
     # Convenience methods.
 
     @classmethod
-    def from_url(cls, url):
+    def from_url(cls, url: str) -> 'AsyncHttpClient':
         """Construct a request for the specified URL."""
         res = urlparse(url)
         path = res.path
@@ -48,7 +57,7 @@ class AsyncHttpClient:
         return cls(res.hostname, res.port or 80, path)
 
     @classmethod
-    def fetch(cls, url):
+    def fetch(cls, url: str) -> bl.Coro:
         """Fetch content from an HTTP URL. This is a coroutine suitable for yielding to bl."""
         client = cls.from_url(url)
         yield client._connect()
@@ -58,13 +67,13 @@ class AsyncHttpClient:
 
     # Internal coroutines.
 
-    def _connect(self):
+    def _connect(self) -> bl.Coro:
         self.conn = yield bl.connect(self.host, self.port)
 
-    def _request(self):
+    def _request(self) -> bl.Coro:
         yield self.conn.sendall(self.headers())
 
-    def _read(self):
+    def _read(self) -> bl.Coro:
         buf = []
         while True:
             data = yield self.conn.recv(4096)
@@ -91,93 +100,98 @@ class AsyncHttpClient:
 
 def run_bl():
     # No lock is required guarding the shared variable because only one thread is actually running at a time.
-    tweets = {}
+    releases = {}
 
-    def fetch(username):
-        url = URL % username
+    def fetch(repo: str) -> bl.Coro:
+        url = URL % repo
         data = yield AsyncHttpClient.fetch(url)
-        tweets[username] = json.loads(data)[0]['text']
+        releases[repo] = json.loads(data)
 
-    def crawl():
-        for username in USERNAMES:
-            yield bl.spawn(fetch(username))
+    def crawl() -> bl.Coro:
+        for repo in REPOS:
+            yield bl.spawn(fetch(repo))
 
     bl.run(crawl())
-    return tweets
+    return releases
 
 
 def run_sequential():
-    tweets = {}
+    releases = {}
 
-    for username in USERNAMES:
-        url = URL % username
+    for repo in REPOS:
+        url = URL % repo
         f = urlopen(url)
         data = f.read().decode('utf8')
-        tweets[username] = json.loads(data)[0]['text']
+        releases[repo] = json.loads(data)
 
-    return tweets
+    return releases
 
 
 def run_threaded():
-    # We need a lock to avoid conflicting updates to the tweet dictionary.
+    # We need a lock to avoid conflicting updates to the releases dictionary.
     lock = threading.Lock()
-    tweets = {}
+    releases = {}
 
     class Fetch(threading.Thread):
-        def __init__(self, username):
+        def __init__(self, repo):
             threading.Thread.__init__(self)
-            self.username = username
+            self.repo = repo
 
         def run(self):
-            url = URL % self.username
+            url = URL % self.repo
             f = urlopen(url)
             data = f.read().decode('utf8')
-            tweet = json.loads(data)[0]['text']
+            release = json.loads(data)
             with lock:
-                tweets[self.username] = tweet
+                releases[self.repo] = release
 
     # Start every thread and then wait for them all to finish.
-    threads = [Fetch(name) for name in USERNAMES]
+    threads = [Fetch(repo) for repo in REPOS]
     for thread in threads:
         thread.start()
     for thread in threads:
         thread.join()
 
-    return tweets
+    return releases
 
 
-def _process_fetch(username):
+def _process_fetch(repo):
     # Mapped functions in multiprocessing can't be closures, so this has to be at the module-global scope.
-    url = URL % username
+    url = URL % repo
     f = urlopen(url)
     data = f.read().decode('utf8')
-    tweet = json.loads(data)[0]['text']
-    return (username, tweet)
+    release = json.loads(data)
+    return (repo, release)
 
 
 def run_processes():
-    pool = multiprocessing.Pool(len(USERNAMES))
-    tweet_pairs = pool.map(_process_fetch, USERNAMES)
-    return dict(tweet_pairs)
+    pool = multiprocessing.Pool(len(REPOS))
+    release_pairs = pool.map(_process_fetch, REPOS)
+    return dict(release_pairs)
 
 
 # Main driver.
 
 
-if __name__ == '__main__':
+def _main() -> None:
     strategies = {
-        'bl': run_bl,
+        # 'bl': run_bl,
         'sequential': run_sequential,
-        'threading': run_threaded,
-        'multiprocessing': run_processes,
+        # 'threading': run_threaded,
+        # 'multiprocessing': run_processes,
     }
     for name, func in strategies.items():
         start = time.time()
-        tweets = func()
+        releases = func()
         end = time.time()
         print(f'{name}: {end - start:.2f} seconds')
 
-    # Show the tweets, just for fun.
     print()
-    for username, tweet in tweets.items():
-        print(f'{username}: {tweet}')
+
+    # Show the releases, just for fun.
+    # for username, tweet in releases.items():  # noqa
+    #     print(f'{username}: {tweet}')
+
+
+if __name__ == '__main__':
+    _main()
