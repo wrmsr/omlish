@@ -19,38 +19,53 @@ import zlib
 ##
 
 
+_BOOTSTRAP_COMM_FD = 100
+_BOOTSTRAP_SRC_FD = 101
+
+_BOOTSTRAP_CHILD_PID_VAR = '_PYR_CPID'
+_BOOTSTRAP_ARGV0_VAR = '_PYR_ARGV0'
+
+_BOOTSTRAP_ACK0 = b'OPYR000\n'
+_BOOTSTRAP_ACK1 = b'OPYR001\n'
+
+_BOOTSTRAP_PROC_TITLE_FMT = '(pyremote:%s)'
+
+
 def _bootstrap_main(context_name: str, main_z_len: int) -> None:
     # Two copies of main src to be sent to parent
     r0, w0 = os.pipe()
     r1, w1 = os.pipe()
 
-    if os.fork():
+    if (cp := os.fork()):
         # Parent process
 
-        # Dup original stdin to fd 100 for use as control channel
-        os.dup2(0, 100)
+        # Dup original stdin to first fd 100 for use as comm channel
+        os.dup2(0, _BOOTSTRAP_COMM_FD)
 
         # Overwrite stdin (fed to python repl) with first copy of src
         os.dup2(r0, 0)
 
-        # Dup second copy of src to fd 101 to recover after launch
-        os.dup2(r1, 101)
+        # Dup second copy of src to src fd to recover after launch
+        os.dup2(r1, _BOOTSTRAP_SRC_FD)
 
         # Close remaining fd's
         for f in [r0, w0, r1, w1]:
             os.close(f)
 
+        # Save child pid to close after relaunch
+        os.environ[_BOOTSTRAP_CHILD_PID_VAR] = str(cp)
+
         # Save original argv0
-        os.environ['ARGV0'] = sys.executable
+        os.environ[_BOOTSTRAP_ARGV0_VAR] = sys.executable
 
         # Start repl reading stdin from r0
-        os.execl(sys.executable, sys.executable + f'(pyremote:{context_name})')
+        os.execl(sys.executable, sys.executable + (_BOOTSTRAP_PROC_TITLE_FMT % (context_name,)))
 
     else:
         # Child process
 
         # Write first ack
-        os.write(1, b'OPYR000\n')
+        os.write(1, _BOOTSTRAP_ACK0)
 
         # Read main src from stdin
         main_src = zlib.decompress(os.fdopen(0, 'rb').read(main_z_len))
@@ -62,7 +77,7 @@ def _bootstrap_main(context_name: str, main_z_len: int) -> None:
             fp.close()
 
         # Write second ack
-        os.write(1, b'OPYR001\n')
+        os.write(1, _BOOTSTRAP_ACK1)
 
         sys.exit(0)
 
@@ -71,11 +86,25 @@ def _bootstrap_main(context_name: str, main_z_len: int) -> None:
 
 
 def _bootstrap_payload(context_name: str, main_z_len: int) -> str:
-    raw_bs_src = textwrap.dedent(inspect.getsource(_bootstrap_main))
+    bs_src = textwrap.dedent(inspect.getsource(_bootstrap_main))
+
+    for gl in [
+        '_BOOTSTRAP_COMM_FD',
+        '_BOOTSTRAP_SRC_FD',
+
+        '_BOOTSTRAP_CHILD_PID_VAR',
+        '_BOOTSTRAP_ARGV0_VAR',
+
+        '_BOOTSTRAP_ACK0',
+        '_BOOTSTRAP_ACK1',
+
+        '_BOOTSTRAP_PROC_TITLE_FMT',
+    ]:
+        bs_src = bs_src.replace(gl, repr(globals()[gl]))
 
     bs_src = '\n'.join(
         cl
-        for l in raw_bs_src.splitlines()
+        for l in bs_src.splitlines()
         if (cl := (l.split('#')[0]).rstrip())
         if cl.strip()
     )
@@ -103,18 +132,18 @@ class PostBoostrap(ta.NamedTuple):
 
 def _post_boostrap() -> PostBoostrap:
     # Reap boostrap child
-    os.wait()
+    os.waitpid(int(os.environ.pop(_BOOTSTRAP_CHILD_PID_VAR)), 0)
 
     # Restore original argv0
-    sys.executable = os.environ.pop('ARGV0')
+    sys.executable = os.environ.pop(_BOOTSTRAP_ARGV0_VAR)
 
     # Read second copy of main src
-    r1 = os.fdopen(101, 'rb', 0)
+    r1 = os.fdopen(_BOOTSTRAP_SRC_FD, 'rb', 0)
     main_src = r1.read().decode('utf-8')
     r1.close()
 
     return PostBoostrap(
-        input=os.fdopen(100, 'rb', 0),
+        input=os.fdopen(_BOOTSTRAP_COMM_FD, 'rb', 0),
         main_src=main_src,
     )
 
@@ -162,8 +191,8 @@ def _connect_docker(ctr_id: str) -> Connection:
     proc.stdin.write(main_z)
     proc.stdin.flush()
 
-    _check_eq(proc.stdout.read(8), b'OPYR000\n')
-    _check_eq(proc.stdout.read(8), b'OPYR001\n')
+    _check_eq(proc.stdout.read(8), _BOOTSTRAP_ACK0)
+    _check_eq(proc.stdout.read(8), _BOOTSTRAP_ACK1)
 
     conn = Connection(
         proc,

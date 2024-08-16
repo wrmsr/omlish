@@ -1,5 +1,5 @@
 """
-TDOO:
+TODO:
  - (unit)tests lol
  - * subprocesses
  - canceling
@@ -10,7 +10,13 @@ TDOO:
  - rename Coro to Bluelet?
  - shutdown
  - ensure resource cleanup
-"""
+ - run_thread? whatever?
+
+Subprocs:
+ - https://github.com/python/cpython/issues/120804 - GH-120804: Remove get_child_watcher and set_child_watcher from asyncio 
+ - https://github.com/python/cpython/pull/17063/files bpo-38692: Add os.pidfd_open
+ - clone PidfdChildWatcher + ThreadedChildWatcher
+"""  # noqa
 # Based on bluelet ( https://github.com/sampsyo/bluelet ) by Adrian Sampson, original license:
 # THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
 # WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -27,6 +33,8 @@ import traceback
 import types
 import typing as ta
 import weakref
+
+from omlish.lite.logs import log
 
 from .core import BlueletCoro
 from .core import BlueletExcInfo
@@ -108,10 +116,14 @@ def _bluelet_event_select(events: ta.Iterable[BlueletEvent]) -> ta.Set[WaitableB
 
     # Perform select() if we have any waitables.
     if rlist or wlist or xlist:
+        log.debug('_bluelet_event_select: +select: %r %r %r %r', rlist, wlist, xlist, timeout)
         rready, wready, xready = select.select(rlist, wlist, xlist, timeout)
+        log.debug('_bluelet_event_select: -select: %r %r %r', rready, wready, xready)
+
     else:
         rready, wready, xready = [], [], []
         if timeout:
+            log.debug('_bluelet_event_select: sleep: %r', timeout)
             time.sleep(timeout)
 
     # Gather ready events corresponding to the ready waitables.
@@ -244,6 +256,8 @@ class _BlueletRunner:
         self._coros.clear()
 
     def _handle_core_event(self, coro: BlueletCoro, event: CoreBlueletEvent) -> bool:
+        log.debug(f'{__class__.__name__}._handle_core_event: %r %r', coro, event)
+
         if isinstance(event, SpawnBlueletEvent):
             self._coros[event.spawned] = ValueBlueletEvent(None)  # Spawn.
             self._history[event.spawned] = None  # Record in history.
@@ -290,6 +304,8 @@ class _BlueletRunner:
             raise TypeError(event)
 
     def _step(self) -> ta.Optional[BlueletCoroException]:
+        log.debug(f'{__class__.__name__}._step')
+
         try:
             # Look for events that can be run immediately. Continue running immediate events until nothing is ready.
             while True:

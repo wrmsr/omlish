@@ -57,6 +57,7 @@ class AsyncHttpClient:
             f'GET {self.path} HTTP/1.1',
             f'Host: {self.host}',
             'User-Agent: bl-example',
+            'Connection: close',
         ]
         return '\r\n'.join(heads).encode('utf8') + b'\r\n\r\n'
 
@@ -190,6 +191,9 @@ def run_mp(ctx: mp.context.BaseContext | None = None) -> dict[str, ta.Any]:
 
 
 def _main() -> None:
+    from omlish.logs import configure_standard_logging
+    configure_standard_logging('DEBUG')
+
     strategies = {
         'bl': run_bl,
         # 'seq': run_seq,
