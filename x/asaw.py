@@ -39,6 +39,9 @@ async def frob(v: T) -> ta.Any:
     return await Task(FrobRequest(v))
 
 
+##
+
+
 async def foo():
     a1 = await frob(1)
     print(f'a1: {a1}')
@@ -47,12 +50,15 @@ async def foo():
     return 3
 
 
+##
+
+
 def _main():
     g = foo().__await__()
     gi = iter(g)
     while True:
         try:
-            t = gi.__next__()
+            t = gi.send(None)
         except StopIteration as e:
             print(f'r: {e.value}')
             break
