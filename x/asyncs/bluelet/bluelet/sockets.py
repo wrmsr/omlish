@@ -114,8 +114,8 @@ class BlueletConnection:
                 line += terminator
                 yield ReturnBlueletEvent(bytes(line))
                 break
-            data = yield ReceiveBlueletEvent(self, bufsize)
-            if data:
+
+            if (data := (yield ReceiveBlueletEvent(self, bufsize))):
                 self._buf += data
             else:
                 line = self._buf

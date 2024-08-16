@@ -54,10 +54,12 @@ class SendLine(Event):
 ##
 
 
-class AckedEchoProtocol0:
+class AckedEchoProtocol(abc.ABC):
     ACK0 = 'hi0\n'
     ACK1 = 'hi1\n'
 
+
+class AckedEchoProtocol0(AckedEchoProtocol):
     def __init__(self) -> None:
         super().__init__()
         self._state = 0
