@@ -164,8 +164,11 @@ def _process_fetch(repo):
     return (repo, release)
 
 
-def run_processes():
-    pool = multiprocessing.Pool(len(REPOS))
+def run_processes(ctx: multiprocessing.context.BaseContext | None = None):
+    if ctx is not None:
+        pool = ctx.Pool(len(REPOS))
+    else:
+        pool = multiprocessing.Pool(len(REPOS))
     release_pairs = pool.map(_process_fetch, REPOS)
     return dict(release_pairs)
 
@@ -177,8 +180,8 @@ def _main() -> None:
     strategies = {
         # 'bl': run_bl,
         'sequential': run_sequential,
-        # 'threading': run_threaded,
-        # 'multiprocessing': run_processes,
+        'threading': run_threaded,
+        'multiprocessing': run_processes,
     }
     for name, func in strategies.items():
         start = time.time()
