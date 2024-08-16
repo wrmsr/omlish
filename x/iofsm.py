@@ -184,6 +184,28 @@ class AckedEchoProtocol3(AckedEchoProtocol):
 class AckedEchoProtocol4(AckedEchoProtocol):
     """TODO: like 3 but some kind of thunky thing to avoid `i = yield o` awkwardness."""
 
+    def __init__(self) -> None:
+        super().__init__()
+        self._gen = self._accept()
+        if (e := next(self._gen)):  # noqa
+            raise IllegalStateException
+
+    def accept(self, e: Event) -> ta.Iterable[Event]:
+        return self._gen.send(e)
+
+    def _accept(self) -> ta.Generator[ta.Optional[ta.Iterable[Event]], Event, None]:
+        for ack in [self.ACK0, self.ACK1]:
+            e = yield
+            if not isinstance(e, RecvdLine) and e.line == ack:
+                raise IllegalStateException
+
+        while True:
+            e = yield
+            if isinstance(e, RecvdLine):
+                yield [SendLine('echo ' + e.line)]
+            else:
+                raise IllegalStateException
+
 
 #
 
@@ -193,6 +215,15 @@ class AckedEchoProtocol5(AckedEchoProtocol):
 
 
 ##
+
+
+"""
+TODO:
+ - if receive 'prefix <s>' change echo prefix
+ - if receive 'rev' reverse all output
+ - if receive 'dup' output n lines
+ - if receive 'seal' forbid further configuration (preferably in a new state)
+"""
 
 
 def _main() -> None:
