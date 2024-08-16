@@ -71,21 +71,21 @@ def _bootstrap_main(context_name: str, main_z_len: int) -> None:
 
 
 def _bootstrap_payload(context_name: str, main_z_len: int) -> str:
-    raw_main_src = textwrap.dedent(inspect.getsource(_bootstrap_main))
+    raw_bs_src = textwrap.dedent(inspect.getsource(_bootstrap_main))
 
-    main_src = '\n'.join(
+    bs_src = '\n'.join(
         cl
-        for l in raw_main_src.splitlines()
+        for l in raw_bs_src.splitlines()
         if (cl := (l.split('#')[0]).rstrip())
         if cl.strip()
     )
 
-    main_z = zlib.compress(main_src.encode('utf-8'))
-    main_z64 = base64.encodebytes(main_z).replace(b'\n', b'')
+    bs_z = zlib.compress(bs_src.encode('utf-8'))
+    bs_z64 = base64.encodebytes(bs_z).replace(b'\n', b'')
 
     stmts = [
         'import base64, os, sys, zlib',
-        f'exec(zlib.decompress(base64.decodebytes({main_z64!r})))',
+        f'exec(zlib.decompress(base64.decodebytes({bs_z64!r})))',
         f'_bootstrap_main({context_name!r}, {main_z_len})'
     ]
 
