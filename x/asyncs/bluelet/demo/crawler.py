@@ -7,7 +7,7 @@ requester.
 """
 import functools
 import json
-import multiprocessing
+import multiprocessing as mp
 import threading
 import time
 import typing as ta
@@ -130,7 +130,7 @@ def run_bl() -> dict[str, ta.Any]:
     return results
 
 
-def run_sequential() -> dict[str, ta.Any]:
+def run_seq() -> dict[str, ta.Any]:
     results = {}
 
     for arg in ARGS:
@@ -142,7 +142,7 @@ def run_sequential() -> dict[str, ta.Any]:
     return results
 
 
-def run_threaded() -> dict[str, ta.Any]:
+def run_thrd() -> dict[str, ta.Any]:
     # We need a lock to avoid conflicting updates to the results dictionary.
     lock = threading.Lock()
     results = {}
@@ -169,7 +169,7 @@ def run_threaded() -> dict[str, ta.Any]:
 
 
 def _process_fetch(arg: str) -> tuple[str, ta.Any]:
-    # Mapped functions in multiprocessing can't be closures, so this has to be at the module-global scope.
+    # Mapped functions in mp can't be closures, so this has to be at the module-global scope.
     url = URL % arg
     f = urllib.request.urlopen(url)
     data = f.read().decode('utf8')
@@ -177,11 +177,11 @@ def _process_fetch(arg: str) -> tuple[str, ta.Any]:
     return (arg, result)
 
 
-def run_processes(ctx: multiprocessing.context.BaseContext | None = None) -> dict[str, ta.Any]:
+def run_mp(ctx: mp.context.BaseContext | None = None) -> dict[str, ta.Any]:
     if ctx is not None:
         pool = ctx.Pool(len(ARGS))
     else:
-        pool = multiprocessing.Pool(len(ARGS))
+        pool = mp.Pool(len(ARGS))
     result_pairs = pool.map(_process_fetch, ARGS)
     return dict(result_pairs)
 
@@ -192,9 +192,10 @@ def run_processes(ctx: multiprocessing.context.BaseContext | None = None) -> dic
 def _main() -> None:
     strategies = {
         # 'bl': run_bl,
-        'sequential': run_sequential,
-        'threading': run_threaded,
-        'multiprocessing': run_processes,
+        'seq': run_seq,
+        'thrd': run_thrd,
+        'mp': run_mp,
+        'mp_fork': lambda: run_mp(mp.get_context('fork')),
     }
     for name, func in strategies.items():
         start = time.time()
