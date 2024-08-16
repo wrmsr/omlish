@@ -10,54 +10,116 @@ import socket
 import struct
 import subprocess
 import sys
+import textwrap
 import time
 import typing as ta
 import zlib
 
 
-class Connection:
-    def __init__(self, proc: subprocess.Popen) -> None:
-        super().__init__()
-        self._proc = proc
+##
 
 
 def _bootstrap_main(context_name: str, main_z_len: int) -> None:
-    r, w = os.pipe()
+    # Two copies of main src to be sent to parent
+    r0, w0 = os.pipe()
+    r1, w1 = os.pipe()
 
     if os.fork():
+        # Parent process
+
+        # Dup original stdin to fd 100 for use as control channel
         os.dup2(0, 100)
-        os.dup2(r, 0)
 
-        os.close(r)
-        os.close(w)
+        # Overwrite stdin (fed to python repl) with first copy of src
+        os.dup2(r0, 0)
 
+        # Dup second copy of src to fd 101 to recover after launch
+        os.dup2(r1, 101)
+
+        # Close remaining fd's
+        for f in [r0, w0, r1, w1]:
+            os.close(f)
+
+        # Save original argv0
         os.environ['ARGV0'] = sys.executable
+
+        # Start repl reading stdin from r0
         os.execl(sys.executable, sys.executable + f'(pyremote:{context_name})')
 
-    os.write(1, b'OPYR000\n')
+    else:
+        # Child process
 
-    main_src = zlib.decompress(os.fdopen(0, 'rb').read(main_z_len))
+        # Write first ack
+        os.write(1, b'OPYR000\n')
 
-    fp = os.fdopen(w, 'wb', 0)
-    fp.write(main_src)
-    fp.close()
+        # Read main src from stdin
+        main_src = zlib.decompress(os.fdopen(0, 'rb').read(main_z_len))
 
-    os.write(1, b'OPYR001\n')
-    os.close(2)
+        # Write both copies of main src
+        for w in [w0, w1]:
+            fp = os.fdopen(w, 'wb', 0)
+            fp.write(main_src)
+            fp.close()
+
+        # Write second ack
+        os.write(1, b'OPYR001\n')
+
+        sys.exit(0)
+
+
+#
 
 
 def _bootstrap_payload(context_name: str, main_z_len: int) -> str:
-    bs_main_src = inspect.getsource(_bootstrap_main)
-    bs_main_z = zlib.compress(bs_main_src.encode('utf-8'))
+    raw_main_src = textwrap.dedent(inspect.getsource(_bootstrap_main))
 
-    bs_main_z64 = base64.encodebytes(bs_main_z).replace(b'\n', b'')
-    bs_stmts = [
+    main_src = '\n'.join(
+        cl
+        for l in raw_main_src.splitlines()
+        if (cl := (l.split('#')[0]).rstrip())
+        if cl.strip()
+    )
+
+    main_z = zlib.compress(main_src.encode('utf-8'))
+    main_z64 = base64.encodebytes(main_z).replace(b'\n', b'')
+
+    stmts = [
         'import base64, os, sys, zlib',
-        f'exec(zlib.decompress(base64.decodebytes({bs_main_z64!r})))',
+        f'exec(zlib.decompress(base64.decodebytes({main_z64!r})))',
         f'_bootstrap_main({context_name!r}, {main_z_len})'
     ]
-    bs_cmd = '; '.join(bs_stmts)
-    return bs_cmd
+
+    cmd = '; '.join(stmts)
+    return cmd
+
+
+#
+
+
+class PostBoostrap(ta.NamedTuple):
+    input: ta.IO
+    main_src: str
+
+
+def _post_boostrap() -> PostBoostrap:
+    # Reap boostrap child
+    os.wait()
+
+    # Restore original argv0
+    sys.executable = os.environ.pop('ARGV0')
+
+    # Read second copy of main src
+    r1 = os.fdopen(101, 'rb', 0)
+    main_src = r1.read().decode('utf-8')
+    r1.close()
+
+    return PostBoostrap(
+        input=os.fdopen(100, 'rb', 0),
+        main_src=main_src,
+    )
+
+
+##
 
 
 T = ta.TypeVar('T')
@@ -67,6 +129,12 @@ def _check_eq(l: T, r: T) -> T:
     if l != r:
         raise Exception(f'Must be equal: {l}, {r}')
     return l
+
+
+class Connection:
+    def __init__(self, proc: subprocess.Popen) -> None:
+        super().__init__()
+        self._proc = proc
 
 
 def _connect_docker(ctr_id: str) -> Connection:
@@ -113,9 +181,7 @@ class HiSayer:
 
 
 def _child_main() -> None:
-    os.wait()
-
-    sys.executable = os.environ.pop('ARGV0')
+    fd, main_src = _post_boostrap()
 
     try:
         f = os.fstat(0)
@@ -126,7 +192,6 @@ def _child_main() -> None:
 
     print(f'hi from child: {socket.gethostname()}', file=sys.stderr)
 
-    fd = os.fdopen(100, 'rb', 0)
     (pkl_len,) = struct.unpack('<L', fd.read(4))
     pkl_buf = fd.read(pkl_len)
     print(f'got pickle: {pkl_buf!r}', file=sys.stderr)
