@@ -178,6 +178,20 @@ class AckedEchoProtocol3(AckedEchoProtocol):
                 raise IllegalStateException
 
 
+#
+
+
+class AckedEchoProtocol4(AckedEchoProtocol):
+    """TODO: like 3 but some kind of thunky thing to avoid `i = yield o` awkwardness."""
+
+
+#
+
+
+class AckedEchoProtocol5(AckedEchoProtocol):
+    """TODO: like 2 but states *yield* out events and *return* next state."""
+
+
 ##
 
 
