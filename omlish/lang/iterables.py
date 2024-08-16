@@ -4,6 +4,8 @@ import typing as ta
 
 
 T = ta.TypeVar('T')
+S = ta.TypeVar('S')
+R = ta.TypeVar('R')
 
 
 BUILTIN_SCALAR_ITERABLE_TYPES: tuple[type, ...] = (
@@ -71,3 +73,34 @@ class itergen(ta.Generic[T]):  # noqa
 
 def renumerate(it: ta.Iterable[T]) -> ta.Iterable[tuple[T, int]]:
     return ((e, i) for i, e in enumerate(it))
+
+
+class Generator(ta.Generator[T, S, R]):
+    def __init__(self, gen: ta.Generator[T, S, R]) -> None:
+        super().__init__()
+        self.gen = gen
+
+    value: R
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        return self.send(None)
+
+    def send(self, v):
+        try:
+            return self.gen.send(v)
+        except StopIteration as e:
+            self.value = e.value
+            raise
+
+    def throw(self, *args):
+        try:
+            return self.gen.throw(*args)
+        except StopIteration as e:
+            self.value = e.value
+            raise
+
+    def close(self):
+        self.gen.close()
