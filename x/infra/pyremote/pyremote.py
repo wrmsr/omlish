@@ -30,6 +30,13 @@ _BOOTSTRAP_ACK1 = b'OPYR001\n'
 
 _BOOTSTRAP_PROC_TITLE_FMT = '(pyremote:%s)'
 
+_BOOTSTRAP_IMPORTS = [
+    'base64',
+    'os',
+    'sys',
+    'zlib',
+]
+
 
 def _bootstrap_main(context_name: str, main_z_len: int) -> None:
     # Two copies of main src to be sent to parent
@@ -113,7 +120,7 @@ def _bootstrap_payload(context_name: str, main_z_len: int) -> str:
     bs_z64 = base64.encodebytes(bs_z).replace(b'\n', b'')
 
     stmts = [
-        'import base64, os, sys, zlib',
+        f'import {", ".join(_BOOTSTRAP_IMPORTS)}',
         f'exec(zlib.decompress(base64.decodebytes({bs_z64!r})))',
         f'_bootstrap_main({context_name!r}, {main_z_len})'
     ]
