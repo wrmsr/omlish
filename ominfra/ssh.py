@@ -147,6 +147,7 @@ class ParamikoSshCommandRunner(CommandRunner):
             )
 
             si, so, se = client.exec_command(arg)
+            # https://stackoverflow.com/questions/60037299/attributeerror-nonetype-object-has-no-attribute-time-paramiko
             si.close()
 
             rc = so.channel.recv_exit_status()
