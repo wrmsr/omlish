@@ -15,15 +15,22 @@ from urllib.request import urlopen
 from .. import bluelet as bl
 
 
-URL = 'https://api.github.com/repos/%s/releases/latest'
+# URL = 'https://api.github.com/args/%s/results/latest'
+# ARGS = [
+#     'pytorch/pytorch',
+#     'tinygrad/tinygrad',
+#     'numpy/numpy',
+#     'agronholm/anyio',
+#     'astral-sh/ruff',
+#     'indygreg/python-build-standalone',
+# ]
 
-REPOS = [
-    'pytorch/pytorch',
-    'tinygrad/tinygrad',
-    'numpy/numpy',
-    'agronholm/anyio',
-    'astral-sh/ruff',
-    'indygreg/python-build-standalone',
+URL = 'https://httpbingo.org/%s'
+ARGS = [
+    'get?foo=bar',
+    'get?baz=qux',
+    'user-agent',
+    'uuid',
 ]
 
 
@@ -100,77 +107,77 @@ class AsyncHttpClient:
 
 def run_bl():
     # No lock is required guarding the shared variable because only one thread is actually running at a time.
-    releases = {}
+    results = {}
 
-    def fetch(repo: str) -> bl.Coro:
-        url = URL % repo
+    def fetch(arg: str) -> bl.Coro:
+        url = URL % arg
         data = yield AsyncHttpClient.fetch(url)
-        releases[repo] = json.loads(data)
+        results[arg] = json.loads(data)
 
     def crawl() -> bl.Coro:
-        for repo in REPOS:
-            yield bl.spawn(fetch(repo))
+        for arg in ARGS:
+            yield bl.spawn(fetch(arg))
 
     bl.run(crawl())
-    return releases
+    return results
 
 
 def run_sequential():
-    releases = {}
+    results = {}
 
-    for repo in REPOS:
-        url = URL % repo
+    for arg in ARGS:
+        url = URL % arg
         f = urlopen(url)
         data = f.read().decode('utf8')
-        releases[repo] = json.loads(data)
+        results[arg] = json.loads(data)
 
-    return releases
+    return results
 
 
 def run_threaded():
-    # We need a lock to avoid conflicting updates to the releases dictionary.
+    # We need a lock to avoid conflicting updates to the results dictionary.
     lock = threading.Lock()
-    releases = {}
+    results = {}
 
     class Fetch(threading.Thread):
-        def __init__(self, repo):
+        def __init__(self, arg):
             threading.Thread.__init__(self)
-            self.repo = repo
+            self.arg = arg
 
         def run(self):
-            url = URL % self.repo
+            url = URL % self.arg
             f = urlopen(url)
             data = f.read().decode('utf8')
-            release = json.loads(data)
+            result = json.loads(data)
             with lock:
-                releases[self.repo] = release
+                results[self.arg] = result
 
     # Start every thread and then wait for them all to finish.
-    threads = [Fetch(repo) for repo in REPOS]
+    threads = [Fetch(arg) for arg in ARGS]
     for thread in threads:
         thread.start()
     for thread in threads:
         thread.join()
 
-    return releases
+    return results
 
 
-def _process_fetch(repo):
+def _process_fetch(arg):
     # Mapped functions in multiprocessing can't be closures, so this has to be at the module-global scope.
-    url = URL % repo
+    url = URL % arg
     f = urlopen(url)
     data = f.read().decode('utf8')
-    release = json.loads(data)
-    return (repo, release)
+    result = json.loads(data)
+    return (arg, result)
 
 
 def run_processes(ctx: multiprocessing.context.BaseContext | None = None):
     if ctx is not None:
-        pool = ctx.Pool(len(REPOS))
+        pool = ctx.Pool(len(ARGS))
     else:
-        pool = multiprocessing.Pool(len(REPOS))
-    release_pairs = pool.map(_process_fetch, REPOS)
-    return dict(release_pairs)
+        pool = multiprocessing.Pool(len(ARGS))
+    result_pairs = pool.map(_process_fetch, ARGS)
+    return dict(result_pairs)
 
 
 # Main driver.
@@ -185,14 +192,14 @@ def _main() -> None:
     }
     for name, func in strategies.items():
         start = time.time()
-        releases = func()
+        results = func()
         end = time.time()
         print(f'{name}: {end - start:.2f} seconds')
 
     print()
 
-    # Show the releases, just for fun.
-    # for username, tweet in releases.items():  # noqa
+    # Show the results, just for fun.
+    # for username, tweet in results.items():  # noqa
     #     print(f'{username}: {tweet}')
 
 
