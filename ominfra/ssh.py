@@ -1,5 +1,6 @@
 """
-https://github.com/ronf/asyncssh
+TODO:
+ - sessionized
 
 bcrypt
 fido2
@@ -11,23 +12,28 @@ pyOpenSSL
 asyncssh[bcrypt,fido2,gssapi,libnacl,pkcs11,pyOpenSSL]
 """
 import asyncio
+import contextlib
 import shlex
 import typing as ta
 
 from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
-
-
-if ta.TYPE_CHECKING:
-    import asyncssh
-else:
-    asyncssh = lang.proxy_import('asyncssh')
-
 from omserv.secrets import load_secrets
 
 from .cmds import CommandRunner
 from .cmds import LocalCommandRunner
+
+
+if ta.TYPE_CHECKING:
+    import asyncssh
+    import paramiko
+else:
+    asyncssh = lang.proxy_import('asyncssh')
+    paramiko = lang.proxy_import('paramiko')
+
+
+##
 
 
 @dc.dataclass(frozen=True)
@@ -108,6 +114,49 @@ class AsyncsshSshCommandRunner(CommandRunner):
         )
 
 
+class ParamikoSshCommandRunner(CommandRunner):
+    def __init__(
+            self,
+            cfg: SshConfig,
+    ) -> None:
+        super().__init__()
+        self._cfg = check.isinstance(cfg, SshConfig)
+
+    def _run_command(self, cmd: CommandRunner.Command) -> CommandRunner.Result:
+        arg = ' '.join(map(shlex.quote, cmd.args))
+
+        if self._cfg.key_file_path is not None:
+            key_filename = self._cfg.key_file_path
+        else:
+            key_filename = None
+
+        client: paramiko.client.SSHClient
+        with contextlib.closing(paramiko.client.SSHClient()) as client:
+            client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+            client.connect(
+                self._cfg.host,
+                **(dict(port=int(self._cfg.port)) if self._cfg.port is not None else {}),
+                **(dict(username=self._cfg.username) if self._cfg.username is not None else {}),
+                **(dict(password=self._cfg.password) if self._cfg.password is not None else {}),
+                key_filename=key_filename,
+            )
+
+            si, so, se = client.exec_command(arg)
+            rc = so.channel.recv_exit_status()
+            out = so.read()
+            err = se.read()
+
+        return CommandRunner.Result(
+            rc=rc,
+            out=out,
+            err=err,
+        )
+
+    async def run_command(self, cmd: CommandRunner.Command) -> CommandRunner.Result:
+        return await asyncio.to_thread(self._run_command, cmd)
+
+
 async def _a_main() -> None:
     cmd = CommandRunner.Command(
         ['ls', '-al'],
@@ -122,8 +171,9 @@ async def _a_main() -> None:
     )
 
     for scr in [
-        SshSubprocessCommandRunner(sc),
-        AsyncsshSshCommandRunner(sc),
+        # SshSubprocessCommandRunner(sc),
+        # AsyncsshSshCommandRunner(sc),
+        ParamikoSshCommandRunner(sc),
     ]:
         rc = await scr.run_command(cmd)
         check.equal(rc.rc, 0)

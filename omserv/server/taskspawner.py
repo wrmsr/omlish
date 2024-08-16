@@ -96,7 +96,7 @@ class TaskSpawner:
     def spawn(self, func: ta.Callable, *args: ta.Any) -> None:
         check.not_none(self._task_group).start_soon(func, *args)
 
-    async def __aenter__(self: ta.Self) -> ta.Self:
+    async def __aenter__(self) -> ta.Self:
         self._task_group = anyio.create_task_group()
         await self._task_group.__aenter__()
         return self

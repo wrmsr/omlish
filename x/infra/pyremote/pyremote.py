@@ -17,6 +17,7 @@ import zlib
 
 
 ##
+# Basically Mitogen's first stage: https://mitogen.networkgenomics.com/howitworks.html
 
 
 _BOOTSTRAP_COMM_FD = 100
@@ -46,13 +47,13 @@ def _bootstrap_main(context_name: str, main_z_len: int) -> None:
     if (cp := os.fork()):
         # Parent process
 
-        # Dup original stdin to first fd 100 for use as comm channel
+        # Dup original stdin to comm_fd for use as comm channel
         os.dup2(0, _BOOTSTRAP_COMM_FD)
 
         # Overwrite stdin (fed to python repl) with first copy of src
         os.dup2(r0, 0)
 
-        # Dup second copy of src to src fd to recover after launch
+        # Dup second copy of src to src_fd to recover after launch
         os.dup2(r1, _BOOTSTRAP_SRC_FD)
 
         # Close remaining fd's
@@ -138,11 +139,11 @@ class PostBoostrap(ta.NamedTuple):
 
 
 def _post_boostrap() -> PostBoostrap:
-    # Reap boostrap child
-    os.waitpid(int(os.environ.pop(_BOOTSTRAP_CHILD_PID_VAR)), 0)
-
     # Restore original argv0
     sys.executable = os.environ.pop(_BOOTSTRAP_ARGV0_VAR)
+
+    # Reap boostrap child
+    os.waitpid(int(os.environ.pop(_BOOTSTRAP_CHILD_PID_VAR)), 0)
 
     # Read second copy of main src
     r1 = os.fdopen(_BOOTSTRAP_SRC_FD, 'rb', 0)
