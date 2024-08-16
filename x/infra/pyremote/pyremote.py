@@ -113,7 +113,16 @@ class HiSayer:
 
 
 def _child_main() -> None:
+    os.wait()
+
     sys.executable = os.environ.pop('ARGV0')
+
+    try:
+        f = os.fstat(0)
+    except OSError:
+        print('stdin invalid', file=sys.stderr)
+    else:
+        print(f'stdin: {f}', file=sys.stderr)
 
     print(f'hi from child: {socket.gethostname()}', file=sys.stderr)
 
@@ -130,7 +139,7 @@ TIMEBOMB_DELAY_S = 20 * 60
 
 def _main() -> None:
     from omlish.docker import timebomb_payload
-    from omlish.testing.pydevd import silence_subprocess_check
+    from omlish.diag.pydevd import silence_subprocess_check
 
     silence_subprocess_check()
 

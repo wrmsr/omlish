@@ -3,7 +3,7 @@ import subprocess
 import threading  # noqa
 
 from omlish.docker import timebomb_payload
-from omlish.testing.pydevd import silence_subprocess_check
+from omlish.diag.pydevd import silence_subprocess_check
 
 
 TIMEBOMB_DELAY_S = 20 * 60
