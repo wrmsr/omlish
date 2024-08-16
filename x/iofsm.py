@@ -272,7 +272,7 @@ O = ta.TypeVar('O')
 MachineGen = ta.Generator  # ta.TypeAlias
 
 
-class Machine(abc.ABC, ta.Generic[I, O]):
+class Machine(ta.Generic[I, O]):
     def __init__(self, _initial: MachineGen) -> None:
         super().__init__()
         self._gen = _initial
@@ -296,12 +296,13 @@ class Machine(abc.ABC, ta.Generic[I, O]):
 #
 
 
-class AckedEchoProtocol6(AckedEchoProtocol, Machine[Event, Event]):
+class AckedEchoProtocol6(AckedEchoProtocol):
     def __init__(self) -> None:
-        super().__init__(self._accept_0())
+        super().__init__()
+        self._m = Machine[Event, Event](self._accept_0())
 
     def accept(self, e: Event) -> ta.Iterable[Event]:
-        return self(e)
+        return self._m(e)
 
     def _accept_0(self) -> EventGenerator:
         for ack in [self.ACK0, self.ACK1]:
