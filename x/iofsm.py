@@ -24,6 +24,11 @@ class RecvdData(Event):
 
 
 class LineReader:
+    """
+    TODO:
+     - max length (ircproto is 510)
+    """
+
     def __init__(self) -> None:
         super().__init__()
         self._buf = bytearray()
@@ -59,6 +64,10 @@ class AckedEchoProtocol(abc.ABC):
     ACK0 = 'hi0\n'
     ACK1 = 'hi1\n'
 
+    @abc.abstractmethod
+    def accept(self, e: Event) -> ta.Iterable[Event]:
+        raise NotImplementedError
+
 
 #
 
@@ -91,21 +100,22 @@ class AckedEchoProtocol0(AckedEchoProtocol):
 class AckedEchoProtocol1(AckedEchoProtocol):
     def __init__(self) -> None:
         super().__init__()
-        self.accept = self._accept_0
+        self._accept = self._accept_0
 
-    accept: ta.Callable[[Event], ta.Iterable[Event]]
+    def accept(self, e: Event) -> ta.Iterable[Event]:
+        return self._accept(e)
 
     def _accept_0(self, e: Event) -> ta.Iterable[Event]:
         if isinstance(e, RecvdLine):
             if e.line == self.ACK0:
-                self.accept = self._accept_1
+                self._accept = self._accept_1
                 return []
         raise IllegalStateException
 
     def _accept_1(self, e: Event) -> ta.Iterable[Event]:
         if isinstance(e, RecvdLine):
             if e.line == self.ACK1:
-                self.accept = self._accept_2
+                self._accept = self._accept_2
                 return []
         raise IllegalStateException
 
@@ -220,7 +230,7 @@ class AckedEchoProtocol5(AckedEchoProtocol):
     def __init__(self) -> None:
         super().__init__()
         self._gen: EventGenerator | None = self._accept_0()
-        if (n := next(self._gen)):  # noqa
+        if (n := next(self._gen)) is not None:  # noqa
             raise IllegalStateException
 
     def accept(self, e: Event) -> ta.Iterable[Event]:
@@ -233,7 +243,7 @@ class AckedEchoProtocol5(AckedEchoProtocol):
             if s.value is None:
                 raise IllegalStateException
             self._gen = s.value
-            if (n := next(self._gen)):  # noqa
+            if (n := next(self._gen)) is not None:  # noqa
                 raise IllegalStateException
 
     def _accept_0(self) -> EventGenerator:
@@ -252,12 +262,61 @@ class AckedEchoProtocol5(AckedEchoProtocol):
                 raise IllegalStateException
 
 
+##
+
+
+I = ta.TypeVar('I')
+O = ta.TypeVar('O')
+
+# MachineGen: ta.TypeAlias = ta.Generator[ta.Iterable[O] | None, I, ta.Optional[MachineGen[I, O]]]
+MachineGen = ta.Generator  # ta.TypeAlias
+
+
+class Machine(abc.ABC, ta.Generic[I, O]):
+    def __init__(self, _initial: MachineGen) -> None:
+        super().__init__()
+        self._gen = _initial
+        if (n := next(self._gen)) is not None:  # noqa
+            raise IllegalStateException
+
+    def __call__(self, i: I) -> ta.Iterable[O]:
+        if self._gen is None:
+            raise IllegalStateException
+        try:
+            while (o := self._gen.send(i)) is not None:
+                yield from o
+        except StopIteration as s:
+            if s.value is None:
+                raise IllegalStateException
+            self._gen = s.value
+            if (n := next(self._gen)) is not None:  # noqa
+                raise IllegalStateException
+
+
 #
 
 
-class AckedEchoProtocol6(AckedEchoProtocol):
-    """TODO: like 2 but states *yield* out events and *return* next state."""
+class AckedEchoProtocol6(AckedEchoProtocol, Machine[Event, Event]):
+    def __init__(self) -> None:
+        super().__init__(self._accept_0())
 
+    def accept(self, e: Event) -> ta.Iterable[Event]:
+        return self(e)
+
+    def _accept_0(self) -> EventGenerator:
+        for ack in [self.ACK0, self.ACK1]:
+            e = yield
+            if not isinstance(e, RecvdLine) and e.line == ack:
+                raise IllegalStateException
+        return self._accept_1()
+
+    def _accept_1(self) -> EventGenerator:
+        while True:
+            e = yield
+            if isinstance(e, RecvdLine):
+                yield [SendLine('echo ' + e.line)]
+            else:
+                raise IllegalStateException
 
 ##
 
@@ -287,6 +346,7 @@ def _main() -> None:
         AckedEchoProtocol3(),
         AckedEchoProtocol4(),
         AckedEchoProtocol5(),
+        AckedEchoProtocol6(),
     ]:
         print(p)
 
