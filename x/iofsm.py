@@ -182,7 +182,7 @@ class AckedEchoProtocol3(AckedEchoProtocol):
 
 
 class AckedEchoProtocol4(AckedEchoProtocol):
-    """TODO: like 3 but some kind of thunky thing to avoid `i = yield o` awkwardness."""
+    """like 3 but some kind of thunky thing to avoid `i = yield o` awkwardness."""
 
     def __init__(self) -> None:
         super().__init__()
@@ -191,7 +191,8 @@ class AckedEchoProtocol4(AckedEchoProtocol):
             raise IllegalStateException
 
     def accept(self, e: Event) -> ta.Iterable[Event]:
-        return self._gen.send(e)
+        while (o := self._gen.send(e)) is not None:
+            yield from o
 
     def _accept(self) -> ta.Generator[ta.Optional[ta.Iterable[Event]], Event, None]:
         for ack in [self.ACK0, self.ACK1]:
@@ -240,6 +241,7 @@ def _main() -> None:
         AckedEchoProtocol1(),
         AckedEchoProtocol2(),
         AckedEchoProtocol3(),
+        AckedEchoProtocol4(),
     ]:
         print(p)
 
