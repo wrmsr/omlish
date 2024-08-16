@@ -27,7 +27,7 @@ class CommandRunner(lang.Abstract):
         out: bytes
         err: bytes
 
-        def check(self: ta.Self) -> ta.Self:
+        def check(self) -> ta.Self:
             if self.rc != 0:
                 raise CommandRunner.ReturnCodeError(self)
             return self
