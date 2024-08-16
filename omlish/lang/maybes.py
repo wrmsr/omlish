@@ -65,6 +65,9 @@ class Maybe(abc.ABC, ta.Generic[T]):
 class _Maybe(Maybe[T], tuple):
     __slots__ = ()
 
+    def __init_subclass__(cls, **kwargs):
+        raise TypeError
+
     @property
     def present(self) -> bool:
         return bool(self)

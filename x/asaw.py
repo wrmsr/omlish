@@ -1,3 +1,4 @@
+import abc
 import dataclasses as dc
 import typing as ta
 
@@ -5,17 +6,45 @@ import typing as ta
 T = ta.TypeVar('T')
 
 
-@dc.dataclass(frozen=True)
-class ValueAwaitable(ta.Generic[T]):
-    v: T
+##
+
+
+class Request(abc.ABC):  # noqa
+    pass
+
+
+class Task:
+    def __init__(self, req: Request) -> None:
+        super().__init__()
+        self.req = req
+        self.done = False
+        self.res = None
 
     def __await__(self):
-        yield self.v
+        if not self.done:
+            yield self
+        if not self.done:
+            raise RuntimeError("await wasn't used with task")
+        yield self.res
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class FrobRequest(Request, ta.Generic[T]):
+    v: T
+
+
+async def frob(v: T) -> ta.Any:
+    return await Task(FrobRequest(v))
 
 
 async def foo():
-    await ValueAwaitable(1)
-    await ValueAwaitable(2)
+    a1 = await frob(1)
+    print(f'a1: {a1}')
+    a2 = await frob(2)
+    print(f'a1: {a2}')
     return 3
 
 
@@ -24,12 +53,17 @@ def _main():
     gi = iter(g)
     while True:
         try:
-            gv = next(gi)
+            t = gi.__next__()
         except StopIteration as e:
             print(f'r: {e.value}')
             break
         else:
-            print(f'i: {gv}')
+            print(f't: {t}')
+            if isinstance(t.req, FrobRequest):
+                t.done = True
+                t.res = f'frobbed: {t.req.v}'
+            else:
+                raise TypeError(t.req)
 
 
 if __name__ == '__main__':
