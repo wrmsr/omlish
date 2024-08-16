@@ -5,14 +5,19 @@ Unfortunately, because the Python standard library only includes blocking HTTP l
 asynchronous I/O currently entails writing a custom HTTP client. This example includes a very simple, GET-only HTTP
 requester.
 """
+import functools
 import json
 import multiprocessing
 import threading
 import time
-from urllib.parse import urlparse
-from urllib.request import urlopen
+import typing as ta
+import urllib.parse
+import urllib.request
 
 from .. import bluelet as bl
+
+
+##
 
 
 # URL = 'https://api.github.com/args/%s/results/latest'
@@ -32,6 +37,9 @@ ARGS = [
     'user-agent',
     'uuid',
 ]
+
+
+##
 
 
 class AsyncHttpClient:
@@ -57,7 +65,7 @@ class AsyncHttpClient:
     @classmethod
     def from_url(cls, url: str) -> 'AsyncHttpClient':
         """Construct a request for the specified URL."""
-        res = urlparse(url)
+        res = urllib.parse.urlparse(url)
         path = res.path
         if res.query:
             path += '?' + res.query
@@ -105,7 +113,7 @@ class AsyncHttpClient:
 # Various ways of writing the crawler.
 
 
-def run_bl():
+def run_bl() -> dict[str, ta.Any]:
     # No lock is required guarding the shared variable because only one thread is actually running at a time.
     results = {}
 
@@ -122,38 +130,36 @@ def run_bl():
     return results
 
 
-def run_sequential():
+def run_sequential() -> dict[str, ta.Any]:
     results = {}
 
     for arg in ARGS:
         url = URL % arg
-        f = urlopen(url)
+        f = urllib.request.urlopen(url)
         data = f.read().decode('utf8')
         results[arg] = json.loads(data)
 
     return results
 
 
-def run_threaded():
+def run_threaded() -> dict[str, ta.Any]:
     # We need a lock to avoid conflicting updates to the results dictionary.
     lock = threading.Lock()
     results = {}
 
-    class Fetch(threading.Thread):
-        def __init__(self, arg):
-            threading.Thread.__init__(self)
-            self.arg = arg
-
-        def run(self):
-            url = URL % self.arg
-            f = urlopen(url)
-            data = f.read().decode('utf8')
-            result = json.loads(data)
-            with lock:
-                results[self.arg] = result
+    def fetch(arg: str) -> None:
+        url = URL % arg
+        f = urllib.request.urlopen(url)
+        data = f.read().decode('utf8')
+        result = json.loads(data)
+        with lock:
+            results[arg] = result
 
     # Start every thread and then wait for them all to finish.
-    threads = [Fetch(arg) for arg in ARGS]
+    threads = [
+        threading.Thread(target=functools.partial(fetch, arg))
+        for arg in ARGS
+    ]
     for thread in threads:
         thread.start()
     for thread in threads:
@@ -162,16 +168,16 @@ def run_threaded():
     return results
 
 
-def _process_fetch(arg):
+def _process_fetch(arg: str) -> tuple[str, ta.Any]:
     # Mapped functions in multiprocessing can't be closures, so this has to be at the module-global scope.
     url = URL % arg
-    f = urlopen(url)
+    f = urllib.request.urlopen(url)
     data = f.read().decode('utf8')
     result = json.loads(data)
     return (arg, result)
 
 
-def run_processes(ctx: multiprocessing.context.BaseContext | None = None):
+def run_processes(ctx: multiprocessing.context.BaseContext | None = None) -> dict[str, ta.Any]:
     if ctx is not None:
         pool = ctx.Pool(len(ARGS))
     else:
