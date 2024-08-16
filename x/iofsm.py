@@ -80,7 +80,7 @@ class AckedEchoProtocol0(AckedEchoProtocol):
                     return []
         if self._state == 2:
             if isinstance(e, RecvdLine):
-                return [SendLine(e.line)]
+                return [SendLine('echo ' + e.line)]
         raise IllegalStateException
 
 
@@ -110,7 +110,7 @@ class AckedEchoProtocol1(AckedEchoProtocol):
 
     def _accept_2(self, e: Event) -> ta.Iterable[Event]:
         if isinstance(e, RecvdLine):
-            return [SendLine(e.line)]
+            return [SendLine('echo ' + e.line)]
         raise IllegalStateException
 
 
@@ -144,8 +144,35 @@ class AckedEchoProtocol2(AckedEchoProtocol):
 
     def _accept_2(self, e: Event) -> tuple[AckedEchoProtocol2State, ta.Iterable[Event]]:
         if isinstance(e, RecvdLine):
-            return (self._accept_2, [SendLine(e.line)])
+            return (self._accept_2, [SendLine('echo ' + e.line)])
         raise IllegalStateException
+
+
+#
+
+
+class AckedEchoProtocol3(AckedEchoProtocol):
+    def __init__(self) -> None:
+        super().__init__()
+        self._gen = self._accept()
+        if (e := next(self._gen)):  # noqa
+            raise IllegalStateException
+        self.accept = self._gen.send
+
+    def _accept(self):
+        out = []
+
+        for ack in [self.ACK0, self.ACK1]:
+            e = yield out
+            if not isinstance(e, RecvdLine) and e.line == ack:
+                raise IllegalStateException
+
+        while True:
+            e = yield out
+            if isinstance(e, RecvdLine):
+                out = [SendLine('echo ' + e.line)]
+            else:
+                raise IllegalStateException
 
 
 ##
@@ -166,6 +193,7 @@ def _main() -> None:
         AckedEchoProtocol0(),
         AckedEchoProtocol1(),
         AckedEchoProtocol2(),
+        AckedEchoProtocol3(),
     ]:
         print(p)
         for ie in [
