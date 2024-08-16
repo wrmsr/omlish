@@ -227,11 +227,14 @@ class AckedEchoProtocol5(AckedEchoProtocol):
     def accept(self, e: Event) -> ta.Iterable[Event]:
         if self._gen is None:
             raise IllegalStateException
+        i = e
         while True:
             try:
-                while (o := self._gen.send(e)) is not None:
-                    yield from o
-                return
+                o = self._gen.send(i)
+                i = None
+                if o is None:
+                    return
+                yield from o
             except StopIteration as s:
                 if s.value is None:
                     raise IllegalStateException
@@ -284,11 +287,11 @@ def _main() -> None:
         raise IllegalStateException
 
     for p in [
-        AckedEchoProtocol0(),
-        AckedEchoProtocol1(),
-        AckedEchoProtocol2(),
-        AckedEchoProtocol3(),
-        AckedEchoProtocol4(),
+        # AckedEchoProtocol0(),
+        # AckedEchoProtocol1(),
+        # AckedEchoProtocol2(),
+        # AckedEchoProtocol3(),
+        # AckedEchoProtocol4(),
         AckedEchoProtocol5(),
     ]:
         print(p)
