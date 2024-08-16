@@ -1,6 +1,8 @@
 """
 TODO:
  - sessionized
+ - streamed
+ - actual timeout
 
 bcrypt
 fido2
