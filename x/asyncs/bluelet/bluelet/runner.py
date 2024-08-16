@@ -1,13 +1,11 @@
 """
 TDOO:
- - amalgify? prefix everything w/ Blue? prob want some helper Namespace or smth
-  - *** __init__.py *isn't* amalg'd - include terse names for everything ***
  - (unit)tests lol
+ - * subprocesses
+ - canceling
  - task groups
  - gather
  - locks / semaphores / events / etc
- - subprocesses
- - ensure no unknown event types - Waitable subtypes okay
  - rename Coro to Bluelet?
  - shutdown
  - ensure resource cleanup
@@ -301,7 +299,7 @@ class _BlueletRunner:
                     elif isinstance(event, WaitableBlueletEvent):
                         pass
                     else:
-                        raise TypeError(event)
+                        raise TypeError(f'Unknown event type: {event}')
 
                 # Only start the select when nothing else is ready.
                 if not have_ready:

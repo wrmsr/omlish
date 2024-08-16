@@ -1,9 +1,39 @@
-class NeedData:
+import abc
+import dataclasses as dc
+
+
+##
+
+
+class InputEvent(abc.ABC):
     pass
 
 
-class GotData:
+@dc.dataclass(frozen=True)
+class RecvdLine(InputEvent):
+    line: str
+
+
+##
+
+
+class OutputEvent(abc.ABC):
     pass
+
+
+@dc.dataclass(frozen=True)
+class SendLine(InputEvent):
+    line: str
+
+
+##
+
+
+class AckedEchoProtocol:
+    pass
+
+
+##
 
 
 def _main():
