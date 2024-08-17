@@ -3,6 +3,8 @@ import dataclasses as dc
 import random
 import typing as ta
 
+from omlish import cached
+
 
 ##
 
@@ -319,6 +321,40 @@ class AckedEchoProtocol6(AckedEchoProtocol):
             else:
                 raise IllegalStateException
 
+
+##
+
+
+@dc.dataclass(frozen=True)
+class AckedEchoProtocol7(AckedEchoProtocol):
+    """ok now injectable!"""
+
+    prefix: str = 'echo'
+
+    @cached.property
+    def _m(self) -> Machine[Event, Event]:
+        return Machine(self._accept_0())
+
+    def accept(self, e: Event) -> ta.Iterable[Event]:
+        return self._m(e)
+
+    def _accept_0(self) -> EventGenerator:
+        for ack in [self.ACK0, self.ACK1]:
+            e = yield
+            if not isinstance(e, RecvdLine) and e.line == ack:
+                raise IllegalStateException
+        return self._accept_1()
+
+    def _accept_1(self) -> EventGenerator:
+        while True:
+            e = yield
+            if isinstance(e, RecvdLine):
+                yield [SendLine(f'{self.prefix} ' + e.line)]
+            else:
+                raise IllegalStateException
+
+
+
 ##
 
 
@@ -348,6 +384,7 @@ def _main() -> None:
         AckedEchoProtocol4(),
         AckedEchoProtocol5(),
         AckedEchoProtocol6(),
+        AckedEchoProtocol7(),
     ]:
         print(p)
 
