@@ -357,23 +357,93 @@ class AckedEchoProtocol7(AckedEchoProtocol):
 ##
 
 
-"""
-TODO:
- - if receive 'prefix <s>' change echo prefix
- - if receive 'rev' reverse all output
- - if receive 'dup' output n lines
- - if receive 'seal' forbid further configuration (preferably in a new state)
-"""
+class AckedEchoProtocol8(AckedEchoProtocol):
+    """
+    TODO:
+     - if receive 'prefix <s>' change echo prefix
+     - if receive 'rev' reverse all output
+     - if receive 'dup' output n lines
+     - if receive 'seal' forbid further configuration (preferably in a new state)
+    """
+
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._prefix = 'echo'
+        self._rev = False
+        self._dup = 1
+
+        self._m = Machine[Event, Event](self._accept_ack())
+
+    def accept(self, e: Event) -> ta.Iterable[Event]:
+        return self._m(e)
+
+    def _accept_ack(self) -> EventGenerator:
+        for ack in [self.ACK0, self.ACK1]:
+            e = yield
+            if not isinstance(e, RecvdLine) and e.line == ack:
+                raise IllegalStateException
+        return self._accept_echo_unsealed()
+
+    def _accept_echo_unsealed(self) -> EventGenerator:
+        while True:
+            e = yield
+            if isinstance(e, RecvdLine):
+                if e.line.startswith('prefix '):
+                    _, self._prefix = e.line.strip().split(' ')
+                elif e.line.strip() == 'rev':
+                    self._rev = not self._rev
+                elif e.line.startswith('dup '):
+                    _, d = e.line.strip().split(' ')
+                    self._dup = int(d)
+                elif e.line.strip() == 'seal':
+                    return self._accept_sealed()
+                else:
+                    for _ in range(self._dup):
+                        yield [SendLine(f'{self._prefix} {e.line}')]
+            else:
+                raise IllegalStateException
+
+    def _accept_sealed(self) -> EventGenerator:
+        while True:
+            e = yield
+            if isinstance(e, RecvdLine):
+                for _ in range(self._dup):
+                    yield [SendLine(f'{self._prefix} {e.line}')]
+            else:
+                raise IllegalStateException
+
+
+##
 
 
 def _main() -> None:
-    input_buf = b'hi0\nhi1\nhi\nthere\n'
-
     def handle_output(e: Event) -> None:
         if isinstance(e, SendLine):
             print(repr(e))
             return
         raise IllegalStateException
+
+    ##
+
+    input_buf = b'\n'.join([
+        b'hi0',
+        b'hi1',
+        b'hi',
+        b'there',
+        b'rev',
+        b'hi',
+        b'there',
+        b'dup 2',
+        b'hi',
+        b'there',
+        b'prefix foo',
+        b'hi',
+        b'there',
+        b'seal',
+        b'hi',
+        b'there',
+    ])
 
     for p in [
         AckedEchoProtocol0(),
@@ -384,6 +454,7 @@ def _main() -> None:
         AckedEchoProtocol5(),
         AckedEchoProtocol6(),
         AckedEchoProtocol7(),
+        AckedEchoProtocol8(),
     ]:
         print(p)
 
