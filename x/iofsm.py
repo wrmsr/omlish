@@ -354,7 +354,6 @@ class AckedEchoProtocol7(AckedEchoProtocol):
                 raise IllegalStateException
 
 
-
 ##
 
 
