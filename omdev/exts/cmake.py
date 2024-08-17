@@ -133,10 +133,10 @@ def _main() -> None:
     gen.write_var(cmake.Var(
         f'{var_prefix}_LINK_LIBRARIES',
         sep_grps(
-            [
+            *([
                 '-bundle',
                 '"-undefined dynamic_lookup"',
-            ],
+            ] if sys.platform == 'darwin' else []),
         ),
     ))
 
