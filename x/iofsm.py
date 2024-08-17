@@ -4,6 +4,7 @@ import random
 import typing as ta
 
 from omlish import cached
+from omlish import check
 
 
 ##
@@ -360,7 +361,7 @@ class AckedEchoProtocol7(AckedEchoProtocol):
 class AckedEchoProtocol8(AckedEchoProtocol):
     """
     TODO:
-     - if receive 'prefix <s>' change echo prefix
+     - if receive 'prefix <n>' change echo prefix
      - if receive 'rev' reverse all output
      - if receive 'dup' output n lines
      - if receive 'seal' forbid further configuration (preferably in a new state)
@@ -426,6 +427,101 @@ class AckedEchoProtocol8(AckedEchoProtocol):
 ##
 
 
+class AckedEchoProtocol9(AckedEchoProtocol):
+    """
+    TODO:
+     - if receive 'prefix <n>' change echo prefix
+     - if receive 'rev' reverse all output
+     - if receive 'dup' output n lines
+     - if receive 'seal' *actually* forbid further configuration (preferably in a new state)
+    """
+
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._prefix = 'echo'
+        self._rev = False
+        self._dup = 1
+
+        self._m = Machine[Event, Event](self._accept_ack())
+
+    def accept(self, e: Event) -> ta.Iterable[Event]:
+        return self._m(e)
+
+    def _accept_ack(self) -> EventGenerator:
+        for ack in [self.ACK0, self.ACK1]:
+            e = yield
+            if not isinstance(e, RecvdLine) and e.line == ack:
+                raise IllegalStateException
+        return self._accept_echo_unsealed()
+
+    class _Control(abc.ABC):  # noqa
+        pass
+
+    @dc.dataclass(frozen=True)
+    class _PrefixControl(_Control):
+        prefix: str
+
+    @dc.dataclass(frozen=True)
+    class _RevControl(_Control):
+        pass
+
+    @dc.dataclass(frozen=True)
+    class _DupControl(_Control):
+        dup: int
+
+    def _parse_control(self, l: str) -> _Control | None:
+        if l.startswith('prefix '):
+            _, p = l.strip().split(' ')
+            return self._PrefixControl(p)
+        elif l.strip() == 'rev':
+            return self._RevControl()
+        elif l.startswith('dup '):
+            _, d = l.strip().split(' ')
+            return self._DupControl(int(d))
+        else:
+            return None
+
+    def _apply_control(self, c: _Control) -> None:
+        if isinstance(c, self._PrefixControl):
+            self._prefix = c.prefix
+        elif isinstance(c, self._RevControl):
+            self._rev = not self._rev
+        elif isinstance(c, self._DupControl):
+            self._dup = c.dup
+        else:
+            raise TypeError(c)
+
+    def _accept_echo_unsealed(self) -> EventGenerator:
+        while True:
+            e = yield
+            if isinstance(e, RecvdLine):
+                if (c := self._parse_control(e.line)) is not None:
+                    self._apply_control(c)
+                    continue
+                elif e.line.strip() == 'seal':
+                    return self._accept_sealed()
+                else:
+                    for _ in range(self._dup):
+                        yield [SendLine(f'{self._prefix} {e.line}')]
+            else:
+                raise IllegalStateException
+
+    def _accept_sealed(self) -> EventGenerator:
+        while True:
+            e = yield
+            if isinstance(e, RecvdLine):
+                if (c := self._parse_control(e.line)) is not None:  # noqa
+                    raise IllegalStateException
+                for _ in range(self._dup):
+                    yield [SendLine(f'{self._prefix} {e.line}')]
+            else:
+                raise IllegalStateException
+
+
+##
+
+
 def _main() -> None:
     def handle_output(e: Event) -> None:
         if isinstance(e, SendLine):
@@ -452,6 +548,8 @@ def _main() -> None:
         b'seal',
         b'hi',
         b'there',
+        b'dup 3',
+        b'',
     ])
 
     for p in [
@@ -464,6 +562,7 @@ def _main() -> None:
         AckedEchoProtocol6(),
         AckedEchoProtocol7(),
         AckedEchoProtocol8(),
+        AckedEchoProtocol9(),
     ]:
         print(p)
 
