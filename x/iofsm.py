@@ -412,8 +412,11 @@ class AckedEchoProtocol8(AckedEchoProtocol):
                 elif e.line.strip() == 'seal':
                     return self._accept_sealed()
                 else:
+                    l = e.line
+                    if self._rev:
+                        l = l.strip()[::-1] + '\n'
                     for _ in range(self._dup):
-                        yield [SendLine(f'{self._prefix} {e.line}')]
+                        yield [SendLine(f'{self._prefix} {l}')]
             else:
                 raise IllegalStateException
 
@@ -421,8 +424,11 @@ class AckedEchoProtocol8(AckedEchoProtocol):
         while True:
             e = yield
             if isinstance(e, RecvdLine):
+                l = e.line
+                if self._rev:
+                    l = l.strip()[::-1] + '\n'
                 for _ in range(self._dup):
-                    yield [SendLine(f'{self._prefix} {e.line}')]
+                    yield [SendLine(f'{self._prefix} {l}')]
             else:
                 raise IllegalStateException
 
@@ -495,6 +501,12 @@ class AckedEchoProtocol9(AckedEchoProtocol):
         else:
             raise TypeError(c)
 
+    def _yield_echo(self, l: str) -> ta.Iterator[Event]:
+        if self._rev:
+            l = l.strip()[::-1] + '\n'
+        for _ in range(self._dup):
+            yield [SendLine(f'{self._prefix} {l}')]
+
     def _accept_echo_unsealed(self) -> EventGenerator:
         while True:
             e = yield
@@ -505,8 +517,7 @@ class AckedEchoProtocol9(AckedEchoProtocol):
                 elif e.line.strip() == 'seal':
                     return self._accept_sealed()
                 else:
-                    for _ in range(self._dup):
-                        yield [SendLine(f'{self._prefix} {e.line}')]
+                    yield from self._yield_echo(e.line)
             else:
                 raise IllegalStateException
 
@@ -516,8 +527,7 @@ class AckedEchoProtocol9(AckedEchoProtocol):
             if isinstance(e, RecvdLine):
                 if (c := self._parse_control(e.line)) is not None:  # noqa
                     raise IllegalStateException
-                for _ in range(self._dup):
-                    yield [SendLine(f'{self._prefix} {e.line}')]
+                yield from self._yield_echo(e.line)
             else:
                 raise IllegalStateException
 
@@ -537,20 +547,26 @@ def _main() -> None:
     input_buf = b'\n'.join([
         b'hi0',
         b'hi1',
+
         b'hi',
         b'there',
+
         b'rev',
         b'hi',
         b'there',
+
         b'dup 2',
         b'hi',
         b'there',
+
         b'prefix foo',
         b'hi',
         b'there',
+
         b'seal',
         b'hi',
         b'there',
+
         b'dup 3',
         b'',
     ])
