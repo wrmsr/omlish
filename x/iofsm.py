@@ -1,10 +1,13 @@
+"""
+TODO:
+ - ** i remember thinking about resource disposal at some point.. make sure everything 'closes'? **
+"""
 import abc
 import dataclasses as dc
 import random
 import typing as ta
 
 from omlish import cached
-from omlish import check
 
 
 ##
@@ -36,7 +39,7 @@ class LineReader:
         super().__init__()
         self._buf = bytearray()
 
-    def accept(self, e: Event) -> ta.Iterable[Event]:
+    def __call__(self, e: Event) -> ta.Iterable[Event]:
         if isinstance(e, RecvdData):
             self._buf += e.data
             out = []
@@ -68,7 +71,7 @@ class AckedEchoProtocol(abc.ABC):
     ACK1 = 'hi1\n'
 
     @abc.abstractmethod
-    def accept(self, e: Event) -> ta.Iterable[Event]:
+    def __call__(self, e: Event) -> ta.Iterable[Event]:
         raise NotImplementedError
 
 
@@ -80,7 +83,7 @@ class AckedEchoProtocol0(AckedEchoProtocol):
         super().__init__()
         self._state = 0
 
-    def accept(self, e: Event) -> ta.Iterable[Event]:
+    def __call__(self, e: Event) -> ta.Iterable[Event]:
         if self._state == 0:
             if isinstance(e, RecvdLine):
                 if e.line == self.ACK0:
@@ -105,7 +108,7 @@ class AckedEchoProtocol1(AckedEchoProtocol):
         super().__init__()
         self._accept = self._accept_0
 
-    def accept(self, e: Event) -> ta.Iterable[Event]:
+    def __call__(self, e: Event) -> ta.Iterable[Event]:
         return self._accept(e)
 
     def _accept_0(self, e: Event) -> ta.Iterable[Event]:
@@ -140,7 +143,7 @@ class AckedEchoProtocol2(AckedEchoProtocol):
         super().__init__()
         self._state: AckedEchoProtocol2State = self._accept_0
 
-    def accept(self, e: Event) -> ta.Iterable[Event]:
+    def __call__(self, e: Event) -> ta.Iterable[Event]:
         self._state, oe = self._state(e)
         return oe
 
@@ -172,7 +175,7 @@ class AckedEchoProtocol3(AckedEchoProtocol):
         if (e := next(self._gen)):  # noqa
             raise IllegalStateException
 
-    def accept(self, e: Event) -> ta.Iterable[Event]:
+    def __call__(self, e: Event) -> ta.Iterable[Event]:
         return self._gen.send(e)
 
     def _accept(self) -> ta.Generator[ta.Iterable[Event], Event, None]:
@@ -203,7 +206,7 @@ class AckedEchoProtocol4(AckedEchoProtocol):
         if (e := next(self._gen)):  # noqa
             raise IllegalStateException
 
-    def accept(self, e: Event) -> ta.Iterable[Event]:
+    def __call__(self, e: Event) -> ta.Iterable[Event]:
         while (o := self._gen.send(e)) is not None:
             yield from o
 
@@ -236,7 +239,7 @@ class AckedEchoProtocol5(AckedEchoProtocol):
         if (n := next(self._gen)) is not None:  # noqa
             raise IllegalStateException
 
-    def accept(self, e: Event) -> ta.Iterable[Event]:
+    def __call__(self, e: Event) -> ta.Iterable[Event]:
         if self._gen is None:
             raise IllegalStateException
         try:
@@ -304,7 +307,7 @@ class AckedEchoProtocol6(AckedEchoProtocol):
         super().__init__()
         self._m = Machine[Event, Event](self._accept_0())
 
-    def accept(self, e: Event) -> ta.Iterable[Event]:
+    def __call__(self, e: Event) -> ta.Iterable[Event]:
         return self._m(e)
 
     def _accept_0(self) -> EventGenerator:
@@ -336,7 +339,7 @@ class AckedEchoProtocol7(AckedEchoProtocol):
     def _m(self) -> Machine[Event, Event]:
         return Machine(self._accept_0())
 
-    def accept(self, e: Event) -> ta.Iterable[Event]:
+    def __call__(self, e: Event) -> ta.Iterable[Event]:
         return self._m(e)
 
     def _accept_0(self) -> EventGenerator:
@@ -376,7 +379,7 @@ class AckedEchoProtocol8(AckedEchoProtocol):
 
         self._m = Machine[Event, Event](self._accept_ack())
 
-    def accept(self, e: Event) -> ta.Iterable[Event]:
+    def __call__(self, e: Event) -> ta.Iterable[Event]:
         return self._m(e)
 
     def _accept_ack(self) -> EventGenerator:
@@ -445,7 +448,7 @@ class AckedEchoProtocol9(AckedEchoProtocol):
 
         self._m = Machine[Event, Event](self._accept_ack())
 
-    def accept(self, e: Event) -> ta.Iterable[Event]:
+    def __call__(self, e: Event) -> ta.Iterable[Event]:
         return self._m(e)
 
     def _accept_ack(self) -> EventGenerator:
@@ -572,8 +575,8 @@ def _main() -> None:
 
         lr = LineReader()
         for ib in ibs:
-            for le in lr.accept(RecvdData(ib)):
-                for oe in p.accept(le):
+            for le in lr(RecvdData(ib)):
+                for oe in p(le):
                     handle_output(oe)
 
         print()
