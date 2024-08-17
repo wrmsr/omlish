@@ -570,14 +570,24 @@ def _main() -> None:
         print(p)
 
         spl = random.randint(1, 1 + len(input_buf) - 2)
-        ibs = [input_buf[:spl], input_buf[spl:]]
+        ibs = list(map(RecvdData, [input_buf[:spl], input_buf[spl:]]))  # noqa
         print(ibs)
 
         lr = LineReader()
-        for ib in ibs:
-            for le in lr(RecvdData(ib)):
-                for oe in p(le):
-                    handle_output(oe)
+
+        # for ib in ibs:
+        #     for le in lr(ib):
+        #         for oe in p(le):
+        #             handle_output(oe)
+
+        g = (
+            oe
+            for ib in ibs
+            for le in lr(ib)
+            for oe in p(le)
+        )
+        for oe in g:
+            handle_output(oe)
 
         print()
 
