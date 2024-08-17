@@ -385,17 +385,26 @@ class AckedEchoProtocol8(AckedEchoProtocol):
                 raise IllegalStateException
         return self._accept_echo_unsealed()
 
+    def _process_control(self, l: str) -> bool:
+        if l.startswith('prefix '):
+            _, self._prefix = l.strip().split(' ')
+            return True
+        elif l.strip() == 'rev':
+            self._rev = not self._rev
+            return True
+        elif l.startswith('dup '):
+            _, d = l.strip().split(' ')
+            self._dup = int(d)
+            return True
+        else:
+            return False
+
     def _accept_echo_unsealed(self) -> EventGenerator:
         while True:
             e = yield
             if isinstance(e, RecvdLine):
-                if e.line.startswith('prefix '):
-                    _, self._prefix = e.line.strip().split(' ')
-                elif e.line.strip() == 'rev':
-                    self._rev = not self._rev
-                elif e.line.startswith('dup '):
-                    _, d = e.line.strip().split(' ')
-                    self._dup = int(d)
+                if self._process_control(e.line):
+                    continue
                 elif e.line.strip() == 'seal':
                     return self._accept_sealed()
                 else:
