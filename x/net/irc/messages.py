@@ -104,7 +104,6 @@ SERVICE = Message(
 
 QUIT = Message(
     'QUIT',
-
     '[ <Quit Message> ]',
     set(),
 )

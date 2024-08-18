@@ -4,6 +4,7 @@ import typing as ta
 from ... import check
 from ... import lang
 
+
 REPLIES: ta.Sequence['Reply'] = []
 REPLIES_BY_CODE: ta.Mapping[int, 'Reply'] = {}
 REPLIES_BY_NAME: ta.Mapping[str, 'Reply'] = {}
