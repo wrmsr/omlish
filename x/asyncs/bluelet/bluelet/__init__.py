@@ -1,5 +1,10 @@
 # @omlish-lite
 
+from .awaitables import (  # noqa
+    BlueletFuture as Future,
+    bluelet_drive_awaitable as drive_awaitable,
+)
+
 from .core import (  # noqa
     CoreBlueletEvent as CoreEvent,
     BlueletCoro as Coro,
