@@ -20,6 +20,7 @@ lookit:
 """
 # ruff: noqa: UP007
 import argparse
+import dataclasses as dc
 import itertools
 import os.path
 import shlex
@@ -36,8 +37,36 @@ from omlish.lite.subprocesses import subprocess_check_call
 from omlish.lite.subprocesses import subprocess_check_output
 
 from ..toml.toml import toml_loads
+from .configs import PyprojectConfig
+from .configs import PyprojectConfigPreparer
 from .venvs import Venv
-from .venvs import build_venv_specs
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class VersionsFile:
+    name: ta.Optional[str] = '.versions'
+
+    @cached_nullary
+    def contents(self) -> ta.Mapping[str, str]:
+        if not self.name or not os.path.exists(self.name):
+            return {}
+        with open(self.name) as f:
+            lines = f.readlines()
+        return {
+            k: v
+            for l in lines
+            if (sl := l.split('#')[0].strip())
+            for k, _, v in (sl.partition('='),)
+        }
+
+    @cached_nullary
+    def pythons(self) -> ta.Mapping[str, str]:
+        raw_vers = self.contents()
+        pfx = 'PYTHON_'
+        return {k[len(pfx):].lower(): v for k, v in raw_vers.items() if k.startswith(pfx)}
 
 
 ##
@@ -81,17 +110,19 @@ class Run:
         return toml_loads(buf)
 
     @cached_nullary
-    def cfg(self) -> ta.Mapping[str, ta.Any]:
-        return self.raw_cfg()['tool']['omlish']['pyproject']
-
-    @cached_nullary
-    def src_aliases(self) -> ta.Mapping[str, ta.Sequence[str]]:
-        return self.cfg()['srcs']
+    def cfg(self) -> PyprojectConfig:
+        dct = self.raw_cfg()['tool']['omlish']['pyproject2']
+        return PyprojectConfigPreparer(
+            python_versions=VersionsFile().pythons(),
+        ).prepare_config(dct)
 
     @cached_nullary
     def venvs(self) -> ta.Mapping[str, Venv]:
-        venv_specs = build_venv_specs(self.cfg()['venvs'])
-        return {n: Venv(vs, src_aliases=self.src_aliases()) for n, vs in venv_specs.items()}
+        return {
+            n: Venv(n, c)
+            for n, c in self.cfg().venvs.items()
+            if not n.startswith('_')
+        }
 
 
 ##
@@ -99,7 +130,7 @@ class Run:
 
 def _venv_cmd(args) -> None:
     venv = Run().venvs()[args.name]
-    if (sd := venv.spec.docker) is not None and sd != (cd := args._docker_container):  # noqa
+    if (sd := venv.cfg.docker) is not None and sd != (cd := args._docker_container):  # noqa
         ctr = _find_docker_service_container('docker/compose.yml', sd)
         script = ' '.join([
             'python3',

@@ -1,9 +1,7 @@
 # ruff: noqa: UP006 UP007
-import dataclasses as dc
 import glob
 import itertools
 import os.path
-import sys
 import typing as ta
 
 from omlish.lite.cached import cached_nullary
@@ -12,72 +10,50 @@ from omlish.lite.logs import log
 from omlish.lite.subprocesses import subprocess_check_call
 from omlish.lite.subprocesses import subprocess_check_output
 
-
-##
-
-
-# out: list[str] = []
-# seen.clear()
-# for r in raw:
-#     es: list[str]
-#     if any(c in r for c in '*?'):
-#         es = list(glob.glob(r, recursive=True))
-#     else:
-#         es = [r]
-#     for e in es:
-#         if e not in seen:
-#             seen.add(e)
-#             out.append(e)
-# return out
+from .configs import VenvConfig
 
 
 ##
 
 
-@dc.dataclass()
-class VenvSpec:
-    name: str
-    interp: ta.Optional[str] = None
-    requires: ta.Union[str, ta.List[str], None] = None
-    docker: ta.Optional[str] = None
-    srcs: ta.Union[str, ta.List[str], None] = None
+def _resolve_srcs(raw: ta.List[str]) -> ta.List[str]:
+    out: list[str] = []
+    seen: ta.Set[str] = set()
+    for r in raw:
+        es: list[str]
+        if any(c in r for c in '*?'):
+            es = list(glob.glob(r, recursive=True))
+        else:
+            es = [r]
+        for e in es:
+            if e not in seen:
+                seen.add(e)
+                out.append(e)
+    return out
 
 
-def build_venv_specs(cfgs: ta.Mapping[str, ta.Any]) -> ta.Mapping[str, VenvSpec]:
-    venv_specs = {n: VenvSpec(name=n, **vs) for n, vs in cfgs.items()}
-    if (all_venv_spec := venv_specs.pop('all')) is not None:
-        avkw = dc.asdict(all_venv_spec)
-        for n, vs in list(venv_specs.items()):
-            vskw = {**avkw, **{k: v for k, v in dc.asdict(vs).items() if v is not None}}
-            venv_specs[n] = VenvSpec(**vskw)
-    return venv_specs
+##
 
 
 class Venv:
     def __init__(
             self,
-            spec: VenvSpec,
-            *,
-            src_aliases: ta.Optional[ta.Mapping[str, ta.Sequence[str]]] = None,
+            name: str,
+            cfg: VenvConfig,
     ) -> None:
-        if spec.name == 'all':
-            raise Exception
         super().__init__()
-        self._spec = spec
-        self._src_aliases = src_aliases
+        self._name = name
+        self._cfg = cfg
 
     @property
-    def spec(self) -> VenvSpec:
-        return self._spec
+    def cfg(self) -> VenvConfig:
+        return self._cfg
 
-    DIR_NAME_PREFIX = '.venv'
-    DIR_NAME_SEP = '-'
+    DIR_NAME = '.venvs'
 
     @property
     def dir_name(self) -> str:
-        if (n := self._spec.name) == 'default':
-            return self.DIR_NAME_PREFIX
-        return ''.join([self.DIR_NAME_PREFIX, self.DIR_NAME_SEP, n])
+        return os.path.join(self.DIR_NAME, self._name)
 
     @cached_nullary
     def interp_exe(self) -> str:
