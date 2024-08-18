@@ -1,33 +1,7 @@
 import dataclasses as dc
-import os.path
 import typing as ta
 
-from omlish.lite.cached import cached_nullary
 from omlish.lite.marshal import unmarshal_obj
-
-
-@dc.dataclass(frozen=True)
-class VersionsFile:
-    name: ta.Optional[str] = '.versions'
-
-    @cached_nullary
-    def contents(self) -> ta.Mapping[str, str]:
-        if not self.name or not os.path.exists(self.name):
-            return {}
-        with open(self.name) as f:
-            lines = f.readlines()
-        return {
-            k: v
-            for l in lines
-            if (sl := l.split('#')[0].strip())
-            for k, _, v in (sl.partition('='),)
-        }
-
-    @cached_nullary
-    def pythons(self) -> ta.Mapping[str, str]:
-        raw_vers = self.contents()
-        pfx = 'PYTHON_'
-        return {k[len(pfx):].lower(): v for k, v in raw_vers.items() if k.startswith(pfx)}
 
 
 @dc.dataclass(frozen=True)
