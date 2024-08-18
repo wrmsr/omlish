@@ -27,7 +27,10 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
-async = ['anyio']
+async = [
+    'anyio',
+    'greenlet; python_version < 3.13',
+]
 trio = [
     'trio',
     'trio-asyncio',
@@ -36,6 +39,7 @@ http = ['httpx']
 sql = ['sqlalchemy']
 wrapt = ['wrapt']
 yaml = ['pyyaml']
+jinja2 = ['jinja2']
 
 server = [
     'h11',
