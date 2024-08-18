@@ -13,76 +13,25 @@ from omlish.lite.subprocesses import subprocess_check_call
 from omlish.lite.subprocesses import subprocess_check_output
 
 
-@cached_nullary
-def _read_versions_file(file_name: str = '.versions') -> ta.Mapping[str, str]:
-    if not os.path.exists(file_name):
-        return {}
-    with open(file_name) as f:
-        lines = f.readlines()
-    return {
-        k: v
-        for l in lines
-        if (sl := l.split('#')[0].strip())
-        for k, _, v in (sl.partition('='),)
-    }
-
-
-def _get_interp_exe(s: str, *, interp_script: ta.Optional[str] = None) -> str:
-    if not s.startswith('@'):
-        return s
-    dbg_sfx = '-debug'
-    if s.endswith(dbg_sfx):
-        s, dbg = s[:-len(dbg_sfx)], True
-    else:
-        dbg = False
-    raw_vers = _read_versions_file()
-    pfx = 'PYTHON_'
-    vers = {k[len(pfx):].lower(): v for k, v in raw_vers.items() if k.startswith(pfx)}
-    ver = vers.get(s[1:], s[1:])
-    if interp_script is None:
-        interp_script = os.path.join(os.path.dirname(__file__), 'interp.py')
-    exe = subprocess_check_output(
-        sys.executable,
-        interp_script,
-        'resolve',
-        *(['--debug'] if dbg else []),
-        ver,
-    ).decode().strip()
-    return exe
-
-
 ##
 
 
-def _resolve_srcs(
-        lst: ta.Sequence[str],
-        aliases: ta.Mapping[str, ta.Sequence[str]],
-) -> ta.List[str]:
-    todo = list(reversed(lst))
-    raw: ta.List[str] = []
-    seen: ta.Set[str] = set()
-    while todo:
-        cur = todo.pop()
-        if cur in seen:
-            continue
-        seen.add(cur)
-        if not cur.startswith('@'):
-            raw.append(cur)
-            continue
-        todo.extend(aliases[cur[1:]][::-1])
-    out: list[str] = []
-    seen.clear()
-    for r in raw:
-        es: list[str]
-        if any(c in r for c in '*?'):
-            es = list(glob.glob(r, recursive=True))
-        else:
-            es = [r]
-        for e in es:
-            if e not in seen:
-                seen.add(e)
-                out.append(e)
-    return out
+# out: list[str] = []
+# seen.clear()
+# for r in raw:
+#     es: list[str]
+#     if any(c in r for c in '*?'):
+#         es = list(glob.glob(r, recursive=True))
+#     else:
+#         es = [r]
+#     for e in es:
+#         if e not in seen:
+#             seen.add(e)
+#             out.append(e)
+# return out
+
+
+##
 
 
 @dc.dataclass()
