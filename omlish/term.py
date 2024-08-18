@@ -20,7 +20,7 @@ def set_title(title: str) -> str:
 
 
 def strip_ansi_codes(s: str) -> str:
-    return re.sub(r'\033\\[([0-9]+)(;[0-9]+)*m', '', s)
+    return re.sub(r'\033\[([0-9]+)(;[0-9]+)*m', '', s)
 
 
 class ControlSequence:
