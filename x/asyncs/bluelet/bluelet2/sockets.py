@@ -75,7 +75,7 @@ class BlueletConnection:
         self._closed = True
         self.sock.close()
 
-    def recv(self, size: int) -> BlueletEvent:
+    def recv(self, size: int) -> BlueletFuture[BlueletEvent, bytes]:
         """Read at most size bytes of data from the socket."""
 
         if self._closed:
@@ -85,9 +85,9 @@ class BlueletConnection:
             # We already have data read previously.
             out = self._buf[:size]
             self._buf = self._buf[size:]
-            return ValueBlueletEvent(bytes(out))
+            return BlueletFuture(ValueBlueletEvent(bytes(out)))
         else:
-            return ReceiveBlueletEvent(self, size)
+            return BlueletFuture(ReceiveBlueletEvent(self, size))
 
     def send(self, data: bytes) -> BlueletEvent:
         """Sends data on the socket, returning the number of bytes successfully sent."""
@@ -96,12 +96,12 @@ class BlueletConnection:
             raise SocketClosedBlueletError
         return SendBlueletEvent(self, data)
 
-    def sendall(self, data: bytes) -> BlueletEvent:
+    def sendall(self, data: bytes) -> BlueletFuture[BlueletEvent, None]:
         """Send all of data on the socket."""
 
         if self._closed:
             raise SocketClosedBlueletError
-        return SendBlueletEvent(self, data, True)
+        return BlueletFuture(SendBlueletEvent(self, data, True))
 
     async def readline(self, terminator: bytes = b'\n', bufsize: int = 1024) -> None:
         """Reads a line (delimited by terminator) from the socket."""

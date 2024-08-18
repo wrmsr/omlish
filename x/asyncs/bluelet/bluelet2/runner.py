@@ -26,6 +26,7 @@ Subprocs:
 import collections
 import dataclasses as dc
 import errno
+import logging
 import select
 import sys
 import time
@@ -48,6 +49,7 @@ from .core import SleepBlueletEvent
 from .core import SpawnBlueletEvent
 from .core import ValueBlueletEvent
 from .events import BlueletEvent
+from .events import BlueletFuture
 from .events import BlueletWaitable
 from .events import WaitableBlueletEvent
 
@@ -176,6 +178,7 @@ class _BlueletRunner:
         # on some other condition: namely, a delegated coroutine or a joined coroutine. In this case, the coroutine
         # should *also* appear as a value in one of the below dictionaries `delegators` or `joiners`.
         self._coros: ta.Dict[BlueletCoro, BlueletEvent] = {self._root_coro: ValueBlueletEvent(None)}
+        self._futures: ta.Dict[BlueletCoro, BlueletFuture] = {self._root_coro: BlueletFuture(ValueBlueletEvent(None))}
 
         # Maps child coroutines to delegating parents.
         self._delegators: ta.Dict[BlueletCoro, BlueletCoro] = {}
@@ -213,11 +216,15 @@ class _BlueletRunner:
         thrown into the coroutine.
         """
 
+        cur_future = self._futures.pop(coro)
+        cur_future.done = True
+        cur_future.result = value
+
         try:
             if is_exc:
-                next_event = coro.throw(*value)
+                next_future = coro.throw(*value)
             else:
-                next_event = coro.send(value)
+                next_future = coro.send(value)
 
         except StopIteration:
             # Coro is done.
@@ -230,10 +237,14 @@ class _BlueletRunner:
             raise BlueletCoroException(coro, BlueletCoroException._exc_info())  # noqa
 
         else:
-            if isinstance(next_event, ta.Generator):
-                # Automatically invoke sub-coroutines. (Shorthand for explicit bluelet.call().)
-                next_event = DelegationBlueletEvent(next_event)
-            self._coros[coro] = next_event
+            # if isinstance(next_obj, types.CoroutineType):
+            #     # Automatically invoke sub-coroutines. (Shorthand for explicit bluelet.call().)
+            #     next_event = BlueletFuture(DelegationBlueletEvent(next_event))
+            if not isinstance(next_future, BlueletFuture):
+                raise TypeError(next_future)
+
+            self._coros[coro] = next_future.event
+            self._futures[coro] = next_future
 
     def _kill_coro(self, coro: BlueletCoro) -> None:
         """Unschedule this coro and its (recursive) delegates."""
@@ -260,6 +271,7 @@ class _BlueletRunner:
 
         if isinstance(event, SpawnBlueletEvent):
             self._coros[event.spawned] = ValueBlueletEvent(None)  # Spawn.
+            self._futures[event.spawned] = BlueletFuture(ValueBlueletEvent(None))
             self._history[event.spawned] = None  # Record in history.
             self._advance_coro(coro, None)
             return True
@@ -354,8 +366,12 @@ class _BlueletRunner:
                 return te
 
         except:  # noqa
+            ei = BlueletCoroException._exc_info()
+            if log.isEnabledFor(logging.DEBUG):
+                log.exception(f'{__class__.__name__}._step')
+
             # For instance, KeyboardInterrupt during select(). Raise into root coro and terminate others.
-            self._coros = {self._root_coro: ExceptionBlueletEvent(BlueletCoroException._exc_info())}  # noqa
+            self._coros = {self._root_coro: ExceptionBlueletEvent(ei)}  # noqa
 
         return None
 

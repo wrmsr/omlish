@@ -74,7 +74,7 @@ class SpawnBlueletEvent(CoreBlueletEvent):
 def bluelet_spawn(coro: BlueletCoro) -> BlueletFuture[SpawnBlueletEvent, None]:
     """Event: add another coroutine to the scheduler. Both the parent and child coroutines run concurrently."""
 
-    if not isinstance(coro, types.GeneratorType):
+    if not isinstance(coro, types.CoroutineType):
         raise TypeError(f'{coro} is not a coroutine')
     return BlueletFuture(SpawnBlueletEvent(coro))
 

@@ -132,6 +132,9 @@ async def webrequest(conn: bl.Connection) -> bl.Coro:
 
 
 if __name__ == '__main__':
+    from omlish.lite.logs import configure_standard_logging
+    configure_standard_logging('DEBUG')
+
     async def ticker(delay: float = 3.):
         i = 0
         while True:
