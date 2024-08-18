@@ -18,6 +18,9 @@ class PyprojectConfig:
     srcs: ta.Mapping[str, ta.Sequence[str]]
     venvs: ta.Mapping[str, VenvConfig]
 
+    venvs_dir: str = '.venvs'
+    versions_file: ta.Optional[str] = '.versions'
+
 
 class PyprojectConfigPreparer:
     def __init__(
