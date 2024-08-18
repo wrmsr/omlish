@@ -96,6 +96,77 @@ debug = { interp = '@12-debug' }
 
 ##
 
+[tool.omlish.pyproject2.srcs]
+main = [
+    'omlish',
+    'omdev',
+    'ominfra',
+    'omserv',
+    'app',
+]
+
+ml = [
+    '@main',
+    'omml',
+]
+
+all = [
+    '@ml',
+    'x',
+]
+
+[tool.omlish.pyproject2.venvs._default]
+interp = '@12'
+requires = ['requirements-dev.txt']
+srcs = ['@main']
+
+[tool.omlish.pyproject2.venvs.default]
+inherits = ['_default']
+requires = ['requirements-ext.txt']
+
+[tool.omlish.pyproject2.venvs.'13']
+inherits = ['_default']
+interp = '@13'
+
+[tool.omlish.pyproject2.venvs.'13t']
+inherits = ['_default']
+interp = '@13t'
+
+[tool.omlish.pyproject2.venvs._old]
+requires = []
+srcs = []
+
+[tool.omlish.pyproject2.venvs.'11']
+inherits = ['_old']
+interp = '@11'
+
+[tool.omlish.pyproject2.venvs.'10']
+inherits = ['_old']
+interp = '@10'
+
+[tool.omlish.pyproject2.venvs.'9']
+inherits = ['_old']
+interp = '@9'
+
+[tool.omlish.pyproject2.venvs.'8']
+inherits = ['_old']
+interp = '@8'
+
+[tool.omlish.pyproject2.venvs.docker]
+inherits = ['_default']
+docker = 'omlish-dev'
+
+[tool.omlish.pyproject2.venvs.docker-amd64]
+inherits = ['_default']
+docker = 'omlish-dev-amd64'
+
+[tool.omlish.pyproject2.venvs.deploy]
+interp = '3.12'
+requires = ['requirements.txt']
+
+
+##
+
 [tool.mypy]
 ignore_missing_imports = true
 no_implicit_optional = true
