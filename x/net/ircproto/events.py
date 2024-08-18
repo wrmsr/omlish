@@ -1,4 +1,5 @@
 import codecs
+import typing as ta
 
 from . import constants as consts
 from .exceptions import ProtocolError
@@ -17,14 +18,14 @@ class IrcEvent:
 
         self.sender = sender
 
-    def encode(self, *params):
+    def encode(self, *params: ta.Any) -> str:
         """
         Encode the event into a string.
 
         :return: a unicode string ending in CRLF
         :raises ProtocolError: if any parameter save the last one contains spaces
-
         """
+
         buffer = ''
         if self.sender:
             buffer += ':' + self.sender + ' '
@@ -846,18 +847,20 @@ class Ison(Command):
         return super().encode(*self.nicknames)
 
 
-COMMANDS = {
+COMMANDS: ta.Mapping[str, type[Command]] = {
     cls.command: cls
-    for cls in locals().values()  # type: ignore
-    if isinstance(cls, type) and issubclass(cls, Command)
+    for cls in Command.__subclasses__()
 }
 
 
+Decoder: ta.TypeAlias = ta.Callable[[bytes | bytearray], tuple[str, int]]
+
+
 def decode_event(
-        buffer,
-        decoder=codecs.getdecoder('utf-8'),
-        fallback_decoder=codecs.getdecoder('iso-8859-1'),
-):
+        buffer: bytearray,
+        decoder: Decoder = codecs.getdecoder('utf-8'),
+        fallback_decoder: Decoder = codecs.getdecoder('iso-8859-1'),
+) -> IrcEvent | None:
     end_index = buffer.find(b'\r\n')
     if end_index == -1:
         return None

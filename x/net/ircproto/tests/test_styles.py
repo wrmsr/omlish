@@ -7,11 +7,11 @@ from ..styles import styled
 
 
 @pytest.mark.parametrize(('args', 'expected'), [
-    (('test', IrcTextColor.cyan), '\x0311test\x03'),
-    (('test', IrcTextColor.cyan, IrcTextColor.red), '\x0311,4test\x03'),
-    (('test', None, None, IrcTextStyle.bold), '\x02test\x0f'),
-    (('test', None, None, [IrcTextStyle.bold, IrcTextStyle.italic]), '\x02\x1dtest\x0f'),
-    (('test', IrcTextColor.cyan, IrcTextColor.red, [IrcTextStyle.bold, IrcTextStyle.italic]), '\x02\x1d\x0311,4test\x03\x0f'),  # noqa
+    (('test', IrcTextColor.CYAN), '\x0311test\x03'),
+    (('test', IrcTextColor.CYAN, IrcTextColor.RED), '\x0311,4test\x03'),
+    (('test', None, None, IrcTextStyle.BOLD), '\x02test\x0f'),
+    (('test', None, None, [IrcTextStyle.BOLD, IrcTextStyle.ITALIC]), '\x02\x1dtest\x0f'),
+    (('test', IrcTextColor.CYAN, IrcTextColor.RED, [IrcTextStyle.BOLD, IrcTextStyle.ITALIC]), '\x02\x1d\x0311,4test\x03\x0f'),  # noqa
 ], ids=['foreground', 'both_colors', 'bold', 'bold_italic', 'colors_styles'])
 def test_styled(args, expected):
     assert styled(*args) == expected

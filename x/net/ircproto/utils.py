@@ -3,55 +3,37 @@ import re
 from .exceptions import ProtocolError
 
 
-nickname_re = re.compile(b'[a-zA-Z[\\]\\\\`_^{|}][a-zA-Z[\\]\\\\`_^{|}0-9-]{0,8}$')
-channel_re = re.compile(b'([#+&]|![A-Z0-9]{5})[^\x00\x0b\r\n ,:]+$')
-hostmask_re = re.compile(b'(?:[^\x00?*]|[^\x00\\\\]\\?|\\*)+')
+NICKNAME_RE = re.compile(b'[a-zA-Z[\\]\\\\`_^{|}][a-zA-Z[\\]\\\\`_^{|}0-9-]{0,8}$')
+CHANNEL_RE = re.compile(b'([#+&]|![A-Z0-9]{5})[^\x00\x0b\r\n ,:]+$')
+HOSTMASK_RE = re.compile(b'(?:[^\x00?*]|[^\x00\\\\]\\?|\\*)+')
 
 
-def validate_channel_name(name):
-    """
-    Ensure that a channel name conforms to the restrictions of RFC 2818.
+def validate_channel_name(name: bytes) -> bytes:
+    """Ensure that a channel name conforms to the restrictions of RFC 2818."""
 
-    :param bytes name: the channel name to validate
-    :raises ..exceptions.ProtocolError: if the channel name is invalid
-    """
-
-    if not channel_re.match(name):
+    if not CHANNEL_RE.match(name):
         raise ProtocolError(f'invalid channel name: {name.decode("ascii", errors="backslashreplace")}')
+    return name
 
 
-def validate_nickname(name):
-    """
-    Ensure that a nickname conforms to the restrictions of RFC 2818.
+def validate_nickname(name: bytes) -> bytes:
+    """Ensure that a nickname conforms to the restrictions of RFC 2818."""
 
-    :param bytes name: the nickname to validate
-    :raises ..exceptions.ProtocolError: if the nickname is invalid
-    """
-
-    if not nickname_re.match(name):
+    if not NICKNAME_RE.match(name):
         raise ProtocolError(f'invalid nickname: {name.decode("ascii", errors="backslashreplace")}')
+    return name
 
 
-def validate_hostmask(mask):
-    """
-    Ensure that a host mask conforms to the restrictions of RFC 2818.
+def validate_hostmask(mask: bytes) -> bytes:
+    """Ensure that a host mask conforms to the restrictions of RFC 2818."""
 
-    :param bytes mask: the mask to validate
-    :raises ..exceptions.ProtocolError: if the host mask is invalid
-    """
-
-    if not hostmask_re.match(mask):
+    if not HOSTMASK_RE.match(mask):
         raise ProtocolError(f'invalid host mask: {mask.decode("ascii", errors="backslashreplace")}')
+    return mask
 
 
-def match_hostmask(prefix, mask):
-    """
-    Match a prefix against a hostmask.
-
-    :param bytes prefix: prefix to match the mask against
-    :param bytes mask: a mask that may contain wildcards like ``*`` or ``?``
-    :return: ``True`` if the prefix matches the mask, ``False`` otherwise
-    """
+def match_hostmask(prefix: bytes, mask: bytes) -> bool:
+    """Match a prefix against a hostmask."""
 
     prefix_index = mask_index = 0
     escape = False

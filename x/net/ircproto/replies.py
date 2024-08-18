@@ -1,7 +1,9 @@
+import typing as ta
+
 from . import constants as consts
 
 
-reply_templates = {
+REPLY_TEMPLATES: ta.Mapping[int, str] = {
     consts.RPL_WELCOME: 'Welcome to the Internet Relay Network {nickname}!{username}@{host}',
     consts.RPL_YOURHOST: 'Your host is {host}, running version {version}',
     consts.RPL_CREATED: 'This server was created {date}',

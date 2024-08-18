@@ -1,3 +1,6 @@
+import typing as ta
+
+
 RPL_WELCOME = 1
 RPL_YOURHOST = 2
 RPL_CREATED = 3
@@ -80,6 +83,7 @@ RPL_ADMINLOC1 = 257
 RPL_ADMINLOC2 = 258
 RPL_ADMINEMAIL = 259
 RPL_TRYAGAIN = 263
+
 ERR_NOSUCHNICK = 401
 ERR_NOSUCHSERVER = 402
 ERR_NOSUCHCHANNEL = 403
@@ -134,4 +138,8 @@ ERR_NOOPERHOST = 491
 ERR_UMODEUNKNOWNFLAG = 501
 ERR_USERSDONTMATCH = 502
 
-REPLY_NAMES = {value: key for key, value in locals().items() if isinstance(value, int)}
+REPLY_NAMES: ta.Mapping[int, str] = {
+    value: key
+    for key, value in locals().items()
+    if isinstance(value, int)
+}

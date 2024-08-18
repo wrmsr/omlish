@@ -1,79 +1,45 @@
+import enum
 import re
-from enum import Enum
+import typing as ta
 
 
-class IrcTextColor(Enum):
-    """
-    Enumeration of colors usable with :func:`styled`.
-
-    Available values:
-     * white
-     * black
-     * navy
-     * green
-     * red
-     * maroon
-     * purple
-     * olive
-     * yellow
-     * lightgreen
-     * teal
-     * cyan
-     * royalblue
-     * magenta
-     * gray
-     * lightgray
-    """
-
-    white = 0
-    black = 1
-    navy = 2
-    green = 3
-    red = 4
-    maroon = 5
-    purple = 6
-    olive = 7
-    yellow = 8
-    lightgreen = 9
-    teal = 10
-    cyan = 11
-    royalblue = 12
-    magenta = 13
-    gray = 14
-    lightgray = 15
+class IrcTextColor(enum.Enum):
+    WHITE = 0
+    BLACK = 1
+    NAVY = 2
+    GREEN = 3
+    RED = 4
+    MAROON = 5
+    PURPLE = 6
+    OLIVE = 7
+    YELLOW = 8
+    LIGHTGREEN = 9
+    TEAL = 10
+    CYAN = 11
+    ROYALBLUE = 12
+    MAGENTA = 13
+    GRAY = 14
+    LIGHTGRAY = 15
 
 
-class IrcTextStyle(Enum):
-    """
-    Enumeration of text styles usable with :func:`styled`.
-
-    Available values:
-     * bold
-     * italic
-     * underline
-     * reverse
-     * plain
-    """
-
-    bold = '\x02'
-    italic = '\x1d'
-    underline = '\x1f'
-    reverse = '\x16'
-    plain = '\x0f'
+class IrcTextStyle(enum.Enum):
+    BOLD = '\x02'
+    ITALIC = '\x1d'
+    UNDERLINE = '\x1f'
+    REVERSE = '\x16'
+    PLAIN = '\x0f'
 
 
-styles_re = re.compile(b'(\x03\\d+(?:,\\d+)?)|[\x02\x03\x1d\x1f\x16\x0f]')
+STYLES_RE = re.compile(b'(\x03\\d+(?:,\\d+)?)|[\x02\x03\x1d\x1f\x16\x0f]')
 
 
-def styled(text, foreground=None, background=None, styles=None):
-    """
-    Apply mIRC compatible colors and styles to the given text.
-
-    :param text: the text to be styled
-    :param foreground: the foreground color
-    :param background: the background color (only works if foreground is defined too)
-    :param styles: a text style or iterable of text styles to apply
-    """
+def styled(
+        text: str,
+        foreground: IrcTextColor | None = None,
+        background: IrcTextColor | None = None,
+        styles: ta.Iterable[IrcTextStyle] | None = None,
+) -> str:
+    """Apply mIRC compatible colors and styles to the given text."""
 
     # Apply coloring
     if foreground and not background:
@@ -93,12 +59,7 @@ def styled(text, foreground=None, background=None, styles=None):
     return text
 
 
-def strip_styles(text):
-    """
-    Remove all mIRC compatible styles and coloring from the given text.
+def strip_styles(text: str) -> str:
+    """Remove all mIRC compatible styles and coloring from the given text."""
 
-    :param str text: the text to be sanitized
-    :return: input text with styles removed
-    """
-
-    return styles_re.sub('', text)
+    return STYLES_RE.sub('', text)

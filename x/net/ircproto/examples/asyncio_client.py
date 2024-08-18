@@ -12,7 +12,7 @@ from ..events import Reply
 
 
 class MessageSendProtocol(Protocol):
-    def __init__(self, nickname, channel, message):
+    def __init__(self, nickname: str, channel: str, message: str) -> None:
         self.nickname = nickname
         self.channel = channel
         self.message = message
@@ -28,7 +28,7 @@ class MessageSendProtocol(Protocol):
     def connection_lost(self, exc):
         get_event_loop().stop()
 
-    def data_received(self, data):
+    def data_received(self, data: bytes):
         close_connection = False
         for event in self.conn.feed_data(data):
             print('<<< ' + event.encode().rstrip())

@@ -1,12 +1,14 @@
 import abc
 import codecs
+import typing as ta
 
+from .events import COMMANDS
+from .events import IrcEvent
 from .events import Ping
 from .events import Reply
-from .events import COMMANDS
 from .events import decode_event
 from .exceptions import ProtocolError
-from .replies import reply_templates
+from .replies import REPLY_TEMPLATES
 
 
 class BaseIrcConnection(abc.ABC):  # noqa
@@ -16,10 +18,10 @@ class BaseIrcConnection(abc.ABC):  # noqa
 
     def __init__(
             self,
-            output_encoding='utf-8',
-            input_encoding='utf-8',
-            fallback_encoding='iso-8859-1',
-    ):
+            output_encoding: str = 'utf-8',
+            input_encoding: str = 'utf-8',
+            fallback_encoding: str = 'iso-8859-1',
+    ) -> None:
         super().__init__()
         self.output_codec = codecs.getencoder(output_encoding)
         self.input_decoder = codecs.getdecoder(input_encoding)
@@ -28,7 +30,7 @@ class BaseIrcConnection(abc.ABC):  # noqa
         self._output_buffer = bytearray()
         self._closed = False
 
-    def feed_data(self, data):
+    def feed_data(self, data: bytes) -> ta.Sequence[IrcEvent]:
         """
         Feed data to the internal buffer of the connection.
 
@@ -53,7 +55,7 @@ class BaseIrcConnection(abc.ABC):  # noqa
                 self.handle_event(event)
                 events.append(event)
 
-    def data_to_send(self):
+    def data_to_send(self) -> bytes:
         """
         Return any data that is due to be sent to the other end.
 
@@ -64,12 +66,12 @@ class BaseIrcConnection(abc.ABC):  # noqa
         del self._output_buffer[:]
         return data
 
-    def handle_event(self, event):
+    def handle_event(self, event: IrcEvent) -> None:
         # Automatically respond to pings
         if isinstance(event, Ping):
             self.send_command('PONG', event.server1, event.server2)
 
-    def send_command(self, command, *params):
+    def send_command(self, command: str | bytes, *params: ta.Any) -> None:
         """
         Send a command to the peer.
 
@@ -91,7 +93,7 @@ class BaseIrcConnection(abc.ABC):  # noqa
         event = command_cls(None, *params)
         self._send_event(event)
 
-    def _send_event(self, event):
+    def _send_event(self, event: IrcEvent) -> None:
         """
         Send an event to the peer.
 
@@ -108,7 +110,7 @@ class BaseIrcConnection(abc.ABC):  # noqa
 class IrcClientConnection(BaseIrcConnection):
     """An IRC client's connection to a server."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.nickname = self.realname = None
 
@@ -116,7 +118,7 @@ class IrcClientConnection(BaseIrcConnection):
 class IrcServerConnection(BaseIrcConnection):
     """A server side connection to either an IRC client or another IRC server."""
 
-    def __init__(self, host, server_state):
+    def __init__(self, host: str, server_state) -> None:
         super().__init__()
         self.host = host
         self._server_state = server_state
@@ -133,7 +135,7 @@ class IrcServerConnection(BaseIrcConnection):
         """
 
         # Format the reply message
-        message = reply_templates[code].format(**templatevars)
+        message = REPLY_TEMPLATES[code].format(**templatevars)
         event = Reply(self.sender, code, message)
         self._send_event(event)
 
