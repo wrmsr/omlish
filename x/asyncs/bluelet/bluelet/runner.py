@@ -48,6 +48,7 @@ from .core import SleepBlueletEvent
 from .core import SpawnBlueletEvent
 from .core import ValueBlueletEvent
 from .events import BlueletEvent
+from .events import BlueletFuture
 from .events import BlueletWaitable
 from .events import WaitableBlueletEvent
 
@@ -146,6 +147,26 @@ def _bluelet_event_select(events: ta.Iterable[BlueletEvent]) -> ta.Set[WaitableB
 ##
 
 
+def _bluelet_drive_awaitable(a: ta.Awaitable) -> BlueletCoro:
+    g = a.__await__()
+    gi = iter(g)
+    while True:
+        try:
+            f = gi.send(None)
+        except StopIteration as e:
+            yield ReturnBlueletEvent(e.value)
+            break
+        else:
+            if not isinstance(f, BlueletFuture):
+                raise TypeError(f)
+            res = yield f.event
+            f.done = True
+            f.result = res
+
+
+##
+
+
 class _SuspendedBlueletEvent(CoreBlueletEvent):
     pass
 
@@ -233,6 +254,13 @@ class _BlueletRunner:
             if isinstance(next_event, ta.Generator):
                 # Automatically invoke sub-coroutines. (Shorthand for explicit bluelet.call().)
                 next_event = DelegationBlueletEvent(next_event)
+
+            if isinstance(next_event, types.CoroutineType):
+                next_event = DelegationBlueletEvent(_bluelet_drive_awaitable(next_event))
+
+            if not isinstance(next_event, BlueletEvent):
+                raise TypeError(next_event)
+
             self._coros[coro] = next_event
 
     def _kill_coro(self, coro: BlueletCoro) -> None:

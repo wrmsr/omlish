@@ -9,6 +9,11 @@ import dataclasses as dc
 import typing as ta
 
 
+R = ta.TypeVar('R')
+
+BlueletEventT = ta.TypeVar('BlueletEventT', bound='BlueletEvent')
+
+
 ##
 
 
@@ -17,6 +22,9 @@ class BlueletEvent(abc.ABC):  # noqa
     Just a base class identifying Bluelet events. An event is an object yielded from a Bluelet coro coroutine to
     suspend operation and communicate with the scheduler.
     """
+
+    def __await__(self):
+        return BlueletFuture(self).__await__()
 
 
 ##
@@ -51,3 +59,20 @@ class WaitableBlueletEvent(BlueletEvent, abc.ABC):  # noqa
 
     def fire(self) -> ta.Any:
         """Called when an associated file descriptor becomes ready (i.e., is returned from a select() call)."""
+
+
+##
+
+
+@dc.dataclass(eq=False)
+class BlueletFuture(ta.Generic[BlueletEventT, R]):
+    event: BlueletEventT
+    done: bool = False
+    result: R = None
+
+    def __await__(self):
+        if not self.done:
+            yield self
+        if not self.done:
+            raise RuntimeError("await wasn't used with event future")
+        return self.result

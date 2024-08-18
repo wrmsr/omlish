@@ -11,21 +11,18 @@ def echoer(conn):
 
 async def aechoer(conn):
     while True:
-        data = await bl.Future(conn.recv(1024))
+        data = await conn.recv(1024)
         if not data:
             break
-        await bl.Future(conn.sendall(data))
+        await conn.sendall(data)
 
 
 if __name__ == '__main__':
-    def ahandler(conn):
-        yield bl.DelegationEvent(bl.drive_awaitable(aechoer(conn)))
-
     bl.run(
         bl.server(
             '',
             4915,
             # echoer,
-            ahandler,
+            aechoer
         ),
     )
