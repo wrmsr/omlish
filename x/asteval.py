@@ -65,7 +65,14 @@ class EvalAstVisitor(AstVisitor[None, ta.Any]):
 
     @AstVisitor._visit.register  # noqa
     def _visit_Compare(self, n: ast.Compare, c: None) -> ta.Any:  # noqa
-        raise NotImplementedError
+        left = self.visit(n, c)
+        for o, r in zip(n.ops, n.comparators):
+            right = self.visit(n, c)
+            op = self._CMP_OP_CLS_TO_OPERATOR[type(o)]
+            if not op(left, right):
+                return False
+            left = right
+        return True
 
     @AstVisitor._visit.register  # noqa
     def _visit_Constant(self, n: ast.Constant, c: None) -> ta.Any:  # noqa
