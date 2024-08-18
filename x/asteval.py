@@ -1,4 +1,5 @@
 import ast
+import operator
 import typing as ta
 
 from omlish import check
@@ -10,22 +11,47 @@ C = ta.TypeVar('C')
 
 
 class AstVisitor(ta.Generic[C, T]):
-    @dispatch.method
     def visit(self, n: ast.AST, c: C) -> T:
-        raise NotImplementedError
+        return self._visit(n, c)
+
+    @dispatch.method
+    def _visit(self, n: ast.AST, c: C) -> T:
+        raise TypeError(n)
 
 
 class EvalAstVisitor(AstVisitor[None, ta.Any]):
-    @AstVisitor.visit.register
-    def _visit_bin_op(self, n: ast.BinOp, c: None) -> ta.Any:
-        raise NotImplementedError
+    @AstVisitor._visit.register  # noqa
+    def _visit_Expr(self, n: ast.Expr, c: None) -> ta.Any:  # noqa
+        return self.visit(n.value, c)
+
+    _OP_CLS_TO_OPERATOR: ta.Mapping = {
+        ast.Add: operator.add,
+        ast.Sub: operator.sub,
+        ast.Mult: operator.mul,
+        ast.Div: operator.truediv,
+        ast.FloorDiv: operator.floordiv,
+    }
+
+    @AstVisitor._visit.register  # noqa
+    def _visit_BinOp(self, n: ast.BinOp, c: None) -> ta.Any:  # noqa
+        left = self.visit(n.left, c)
+        right = self.visit(n.right, c)
+        op = self._OP_CLS_TO_OPERATOR[type(n.op)]
+        return op(left, right)
+
+    @AstVisitor._visit.register  # noqa
+    def _visit_Constant(self, n: ast.Constant, c: None) -> ta.Any:  # noqa
+        return n.value
 
 
 def _main():
-    n = ast.parse('2 + 3')
-    e = check.single(check.isinstance(n, ast.Module).body)
-    o = EvalAstVisitor().visit(e, None)
-    print(o)
+    for s, e in [
+        ('2 + 3 + (4 * 2)', 13),
+    ]:
+        a = ast.parse(s)
+        n = check.single(check.isinstance(a, ast.Module).body)
+        o = EvalAstVisitor().visit(n, None)
+        assert o == e
 
 
 if __name__ == '__main__':
