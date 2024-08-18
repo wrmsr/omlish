@@ -72,11 +72,6 @@ class VersionsFile:
 ##
 
 
-def _find_docker_service_container(cfg_path: str, svc_name: str) -> str:
-    out = subprocess_check_output('docker', 'compose', '-f', cfg_path, 'ps', '-q', svc_name)
-    return out.decode().strip()
-
-
 @cached_nullary
 def _script_rel_path() -> str:
     cwd = os.getcwd()
@@ -131,7 +126,6 @@ class Run:
 def _venv_cmd(args) -> None:
     venv = Run().venvs()[args.name]
     if (sd := venv.cfg.docker) is not None and sd != (cd := args._docker_container):  # noqa
-        ctr = _find_docker_service_container('docker/compose.yml', sd)
         script = ' '.join([
             'python3',
             shlex.quote(_script_rel_path()),
@@ -140,12 +134,14 @@ def _venv_cmd(args) -> None:
         ])
         subprocess_check_call(
             'docker',
+            'compose',
+            '-f', 'docker/compose.yml',
             'exec',
             *itertools.chain.from_iterable(
                 ('-e', f'{e}={os.environ.get(e, "")}' if '=' not in e else e)
                 for e in (args.docker_env or [])
             ),
-            '-it', ctr,
+            '-it', sd,
             'bash', '--login', '-c', script,
         )
         return
