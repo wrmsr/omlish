@@ -18,7 +18,6 @@ lookit:
  - https://github.com/pypa/pipx
  - https://github.com/tox-dev/tox/
 """
-# ruff: noqa: UP007
 import argparse
 import dataclasses as dc
 import glob
@@ -37,6 +36,8 @@ from omlish.lite.logs import log
 from omlish.lite.runtime import check_runtime_version
 from omlish.lite.subprocesses import subprocess_check_call
 
+from ..interp2.providers.base import InterpSpecifier
+from ..interp2.resolvers import DEFAULT_INTERP_RESOLVER
 from ..toml.toml import toml_loads
 from .configs import PyprojectConfig
 from .configs import PyprojectConfigPreparer
@@ -106,7 +107,8 @@ class Venv:
 
     @cached_nullary
     def interp_exe(self) -> str:
-        return _get_interp_exe(check_not_none(self._cfg.interp))
+        i = InterpSpecifier.parse(check_not_none(self._cfg.interp))
+        return DEFAULT_INTERP_RESOLVER.resolve(i).exe
 
     @cached_nullary
     def exe(self) -> str:
