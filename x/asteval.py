@@ -65,9 +65,9 @@ class EvalAstVisitor(AstVisitor[None, ta.Any]):
 
     @AstVisitor._visit.register  # noqa
     def _visit_Compare(self, n: ast.Compare, c: None) -> ta.Any:  # noqa
-        left = self.visit(n, c)
+        left = self.visit(n.left, c)
         for o, r in zip(n.ops, n.comparators):
-            right = self.visit(n, c)
+            right = self.visit(r, c)
             op = self._CMP_OP_CLS_TO_OPERATOR[type(o)]
             if not op(left, right):
                 return False
