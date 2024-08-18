@@ -16,6 +16,8 @@ from .events import WaitableBlueletEvent
 
 T = ta.TypeVar('T')
 
+BlueletEventT = ta.TypeVar('BlueletEventT', bound='BlueletEvent')
+
 BlueletExcInfo = ta.Tuple[ta.Type[BaseException], BaseException, types.TracebackType]  # ta.TypeAlias
 
 BlueletCoro = ta.Generator[ta.Union['BlueletEvent', 'BlueletCoro'], ta.Any, None]  # ta.TypeAlias

@@ -55,7 +55,6 @@ async def foo():
 
 def _main():
     g = foo().__await__()
-    gi = iter(g)
     while True:
         try:
             t = gi.send(None)
