@@ -196,6 +196,7 @@ class _BlueletRunner:
         """
 
         del self._coros[coro]
+        self._futures.pop(coro, None)
 
         # Resume delegator.
         if coro in self._delegators:

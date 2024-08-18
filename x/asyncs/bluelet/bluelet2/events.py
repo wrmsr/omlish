@@ -60,7 +60,7 @@ class WaitableBlueletEvent(BlueletEvent, abc.ABC):  # noqa
 ##
 
 
-@dc.dataclass()
+@dc.dataclass(eq=False)
 class BlueletFuture(ta.Generic[BlueletEventT, R]):
     event: BlueletEventT
     done: bool = False
