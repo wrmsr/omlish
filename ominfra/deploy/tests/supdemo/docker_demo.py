@@ -26,7 +26,7 @@ def _main() -> None:
             python_bin='python3.12',
             app_name='omlish',
             repo_url='https://github.com/wrmsr/omlish',
-            revision='f19ce4d04f5d7cc273a380e6c502d59707ec8638',
+            revision='f8b740a90b94620965ca8f1d21d5e95c752e6a2d',
             requirements_txt='requirements.txt',
             entrypoint='app.server',
         )
