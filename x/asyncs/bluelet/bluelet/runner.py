@@ -1,5 +1,6 @@
 """
 TODO:
+ - wrap coros in Tasks :|
  - (unit)tests lol
  - * subprocesses
  - canceling

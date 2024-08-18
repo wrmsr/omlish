@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-# @omdev-amalg ../scripts/pyproject2.py
+# @omdev-amalg ../scripts/pyproject.py
+# ruff: noqa: UP006 UP007
 """
 TODO:
  - check / tests, src dir sets
@@ -36,8 +37,8 @@ from omlish.lite.logs import log
 from omlish.lite.runtime import check_runtime_version
 from omlish.lite.subprocesses import subprocess_check_call
 
-from ..interp2.providers.base import InterpSpecifier
-from ..interp2.resolvers import DEFAULT_INTERP_RESOLVER
+from ..interp.resolvers import DEFAULT_INTERP_RESOLVER
+from ..interp.types import InterpSpecifier
 from ..toml.toml import toml_loads
 from .configs import PyprojectConfig
 from .configs import PyprojectConfigPreparer
@@ -195,7 +196,7 @@ class Run:
 
     @cached_nullary
     def cfg(self) -> PyprojectConfig:
-        dct = self.raw_cfg()['tool']['omlish']['pyproject2']
+        dct = self.raw_cfg()['tool']['omlish']['pyproject']
         return PyprojectConfigPreparer(
             python_versions=VersionsFile().pythons(),
         ).prepare_config(dct)
