@@ -28,7 +28,8 @@ def _main() -> None:
             repo_url='https://github.com/wrmsr/omlish',
             revision='f8b740a90b94620965ca8f1d21d5e95c752e6a2d',
             requirements_txt='requirements.txt',
-            entrypoint='app.server',
+            # entrypoint='app.server',
+            entrypoint='omserv.server.tests.hello',
         )
 
         ##
