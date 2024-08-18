@@ -6,63 +6,18 @@ TODO:
  - https://github.com/asdf-vm/asdf support (instead of pyenv) ?
  - colon sep provider name prefix - pyenv:3.12
 """
-# ruff: noqa: UP006 UP007
 import argparse
-import collections
 import typing as ta
 
 from omlish.lite.logs import configure_standard_logging
 from omlish.lite.runtime import check_runtime_version
 
-from .providers.base import InterpProvider
-from .providers.base import RunningInterpProvider
-from .providers.pyenv import PyenvInterpProvider
-from .providers.system import SystemInterpProvider
 from .providers.types import InterpSpecifier
-
-
-class Resolver:
-    def __init__(
-            self,
-            providers: ta.Sequence[ta.Tuple[str, InterpProvider]],
-    ) -> None:
-        super().__init__()
-        self._providers: ta.Mapping[str, InterpProvider] = collections.OrderedDict(providers)
-
-    def list(self, spec: InterpSpecifier) -> None:
-        print('installed:')
-        for n, p in self._providers.items():
-            lst = [
-                si
-                for si in p.get_installed_versions(spec)
-                if spec.contains(si)
-            ]
-            if lst:
-                print(f'  {n}')
-                for si in lst:
-                    print(f'    {si}')
-
-        print()
-
-        print('installable:')
-        for n, p in self._providers.items():
-            lst = [
-                si
-                for si in p.get_installable_versions(spec)
-                if spec.contains(si)
-            ]
-            if lst:
-                print(f'  {n}')
-                for si in lst:
-                    print(f'    {si}')
+from .resolvers import DEFAULT_INTERP_RESOLVER
 
 
 def _resolve_cmd(args) -> None:
-    r = Resolver([
-        ('running', RunningInterpProvider()),
-        ('pyenv', PyenvInterpProvider()),
-        ('system', SystemInterpProvider()),
-    ])
+    r = DEFAULT_INTERP_RESOLVER
 
     s = InterpSpecifier.parse(args.version)
 
