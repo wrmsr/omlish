@@ -31,7 +31,7 @@
 /.ruff_cache/
 /.tox/
 /.vector_cache/
-/.venv*/
+/.venv*
 /MANIFEST
 /build/
 /cmake/
