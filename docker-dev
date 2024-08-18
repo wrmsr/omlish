@@ -26,4 +26,4 @@ docker exec \
     --privileged \
     --detach-keys 'ctrl-o,ctrl-d' \
     -it "$CONTAINER_ID" \
-    $*
+    "$@"

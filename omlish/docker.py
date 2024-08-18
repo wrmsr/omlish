@@ -18,6 +18,7 @@ import datetime
 import re
 import shlex
 import subprocess
+import sys
 import typing as ta
 
 from . import check
@@ -168,3 +169,17 @@ def timebomb_payload(delay_s: float, name: str = 'omlish-docker-timebomb') -> st
         'sh -c \'killall5 -9 -o $PPID -o $$ ; kill 1\''
         ') &'
     )
+
+
+##
+
+
+_LIKELY_IN_DOCKER_PATTERN = re.compile(r'^overlay / .*/docker/')
+
+
+def is_likely_in_docker() -> bool:
+    if sys.platform != 'linux':
+        return False
+    with open('/proc/mounts') as f:  # type: ignore
+        ls = f.readlines()
+    return any(_LIKELY_IN_DOCKER_PATTERN.match(l) for l in ls)
