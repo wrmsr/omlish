@@ -72,7 +72,7 @@ def _main():
     sys.path_importer_cache.clear()
     importlib.invalidate_caches()
 
-    from mypy.__main__ import console_entry
+    from mypy.__main__ import console_entry  # noqa
 
     sys.argv[0] = re.sub(r'(-script\.pyw|\.exe)?$', '', sys.argv[0])
 
