@@ -102,13 +102,13 @@ def respond(req: Request) -> Response:
         )
 
 
-def webrequest(conn: bl.Connection) -> bl.Coro:
+async def webrequest(conn: bl.Connection) -> None:
     """A Bluelet coroutine implementing an HTTP server."""
 
     # Get the HTTP request.
     req_lines: list[bytes] = []
     while True:
-        line = (yield conn.readline(b'\r\n')).strip()
+        line = (await bl.Future(conn.readline(b'\r\n'))).strip()
         if not line:
             # End of headers.
             break
@@ -124,11 +124,11 @@ def webrequest(conn: bl.Connection) -> bl.Coro:
     resp = respond(req)
 
     # Send response.
-    yield conn.sendall(f'HTTP/1.1 {resp.status}\r\n'.encode('utf8'))
+    await conn.sendall(f'HTTP/1.1 {resp.status}\r\n'.encode('utf8'))
     for key, value in resp.headers.items():
-        yield conn.sendall(f'{key}: {value}\r\n'.encode('utf8'))
-    yield conn.sendall(b'\r\n')
-    yield conn.sendall(resp.content)
+        await conn.sendall(f'{key}: {value}\r\n'.encode('utf8'))
+    await conn.sendall(b'\r\n')
+    await conn.sendall(resp.content)
 
 
 if __name__ == '__main__':

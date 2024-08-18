@@ -48,8 +48,8 @@ from .core import ReturnBlueletEvent
 from .core import SleepBlueletEvent
 from .core import SpawnBlueletEvent
 from .core import ValueBlueletEvent
+from .core import _bluelet_drive_awaitable
 from .events import BlueletEvent
-from .events import BlueletFuture
 from .events import BlueletWaitable
 from .events import WaitableBlueletEvent
 
