@@ -75,6 +75,13 @@ def renumerate(it: ta.Iterable[T]) -> ta.Iterable[tuple[T, int]]:
     return ((e, i) for i, e in enumerate(it))
 
 
+flatten = itertools.chain.from_iterable
+
+
+def flatmap(fn: ta.Callable[[T], ta.Iterable[R]], it: ta.Iterable[T]) -> ta.Iterable[R]:
+    return flatten(map(fn, it))
+
+
 class Generator(ta.Generator[T, S, R]):
     def __init__(self, gen: ta.Generator[T, S, R]) -> None:
         super().__init__()
