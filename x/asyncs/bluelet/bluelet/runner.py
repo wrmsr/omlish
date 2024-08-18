@@ -48,7 +48,7 @@ from .core import ReturnBlueletEvent
 from .core import SleepBlueletEvent
 from .core import SpawnBlueletEvent
 from .core import ValueBlueletEvent
-from .core import _bluelet_drive_awaitable
+from .core import _BlueletAwaitableDriver
 from .events import BlueletEvent
 from .events import BlueletWaitable
 from .events import WaitableBlueletEvent
@@ -237,7 +237,7 @@ class _BlueletRunner:
                 next_event = DelegationBlueletEvent(next_event)
 
             if isinstance(next_event, types.CoroutineType):
-                next_event = DelegationBlueletEvent(_bluelet_drive_awaitable(next_event))
+                next_event = DelegationBlueletEvent(_BlueletAwaitableDriver(next_event)())
 
             if not isinstance(next_event, BlueletEvent):
                 raise TypeError(next_event)

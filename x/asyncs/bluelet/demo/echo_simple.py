@@ -9,12 +9,18 @@ def echoer(conn):
         yield conn.sendall(data)
 
 
+async def afoo(conn, data):
+    await conn.sendall(data)
+    return len(data)
+
+
 async def aechoer(conn):
     while True:
         data = await conn.recv(1024)
         if not data:
             break
-        await conn.sendall(data)
+        n = await afoo(conn, data)
+        print(n)
 
 
 if __name__ == '__main__':
