@@ -16,25 +16,6 @@ from .configs import VenvConfig
 ##
 
 
-def _resolve_srcs(raw: ta.List[str]) -> ta.List[str]:
-    out: list[str] = []
-    seen: ta.Set[str] = set()
-    for r in raw:
-        es: list[str]
-        if any(c in r for c in '*?'):
-            es = list(glob.glob(r, recursive=True))
-        else:
-            es = [r]
-        for e in es:
-            if e not in seen:
-                seen.add(e)
-                out.append(e)
-    return out
-
-
-##
-
-
 class Venv:
     def __init__(
             self,
@@ -57,7 +38,7 @@ class Venv:
 
     @cached_nullary
     def interp_exe(self) -> str:
-        return _get_interp_exe(check_not_none(self._spec.interp))
+        return _get_interp_exe(check_not_none(self._cfg.interp))
 
     @cached_nullary
     def exe(self) -> str:
@@ -87,7 +68,7 @@ class Venv:
             'wheel',
         )
 
-        if (sr := self._spec.requires):
+        if (sr := self._cfg.requires):
             subprocess_check_call(
                 ve,
                 '-m', 'pip',
@@ -97,6 +78,22 @@ class Venv:
 
         return True
 
+    @staticmethod
+    def _resolve_srcs(raw: ta.List[str]) -> ta.List[str]:
+        out: list[str] = []
+        seen: ta.Set[str] = set()
+        for r in raw:
+            es: list[str]
+            if any(c in r for c in '*?'):
+                es = list(glob.glob(r, recursive=True))
+            else:
+                es = [r]
+            for e in es:
+                if e not in seen:
+                    seen.add(e)
+                    out.append(e)
+        return out
+
     @cached_nullary
     def srcs(self) -> ta.Sequence[str]:
-        return _resolve_srcs(self._spec.srcs or [], self._src_aliases or {})
+        return self._resolve_srcs(self._cfg.srcs or [])
