@@ -11,6 +11,7 @@ import types
 import typing as ta
 
 from .events import BlueletEvent
+from .events import BlueletFuture
 from .events import WaitableBlueletEvent
 
 
@@ -19,6 +20,26 @@ T = ta.TypeVar('T')
 BlueletExcInfo = ta.Tuple[ta.Type[BaseException], BaseException, types.TracebackType]  # ta.TypeAlias
 
 BlueletCoro = ta.Generator[ta.Union['BlueletEvent', 'BlueletCoro'], ta.Any, None]  # ta.TypeAlias
+
+
+##
+
+
+def _bluelet_drive_awaitable(a: ta.Awaitable) -> BlueletCoro:
+    g = a.__await__()
+    gi = iter(g)
+    while True:
+        try:
+            f = gi.send(None)
+        except StopIteration as e:
+            yield ReturnBlueletEvent(e.value)
+            break
+        else:
+            if not isinstance(f, BlueletFuture):
+                raise TypeError(f)
+            res = yield f.event
+            f.done = True
+            f.result = res
 
 
 ##
@@ -73,8 +94,12 @@ class SpawnBlueletEvent(CoreBlueletEvent):
 def bluelet_spawn(coro: BlueletCoro) -> SpawnBlueletEvent:
     """Event: add another coroutine to the scheduler. Both the parent and child coroutines run concurrently."""
 
+    if isinstance(coro, types.CoroutineType):
+        coro = _bluelet_drive_awaitable(coro)
+
     if not isinstance(coro, types.GeneratorType):
         raise TypeError(f'{coro} is not a coroutine')
+
     return SpawnBlueletEvent(coro)
 
 
@@ -129,8 +154,12 @@ def bluelet_call(coro: BlueletCoro) -> DelegationBlueletEvent:
     sub-coroutine returns a value using end(), then this event returns that value.
     """
 
-    if not isinstance(coro, types.GeneratorType):
+    if isinstance(coro, types.CoroutineType):
+        coro = _bluelet_drive_awaitable(coro)
+
+    if not isinstance(coro, (types.GeneratorType, types.CoroutineType)):
         raise TypeError(f'{coro} is not a coroutine')
+
     return DelegationBlueletEvent(coro)
 
 

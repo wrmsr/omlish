@@ -26,6 +26,7 @@ Subprocs:
 import collections
 import dataclasses as dc
 import errno
+import logging
 import select
 import sys
 import time
@@ -142,26 +143,6 @@ def _bluelet_event_select(events: ta.Iterable[BlueletEvent]) -> ta.Set[WaitableB
             ready_events.add(event)
 
     return ready_events
-
-
-##
-
-
-def _bluelet_drive_awaitable(a: ta.Awaitable) -> BlueletCoro:
-    g = a.__await__()
-    gi = iter(g)
-    while True:
-        try:
-            f = gi.send(None)
-        except StopIteration as e:
-            yield ReturnBlueletEvent(e.value)
-            break
-        else:
-            if not isinstance(f, BlueletFuture):
-                raise TypeError(f)
-            res = yield f.event
-            f.done = True
-            f.result = res
 
 
 ##
@@ -371,6 +352,9 @@ class _BlueletRunner:
                     self._advance_coro(event2coro[event], value)
 
         except BlueletCoroException as te:
+            if log.isEnabledFor(logging.DEBUG):
+                log.exception(f'{__class__.__name__}._step')
+
             # Exception raised from inside a coro.
             event = ExceptionBlueletEvent(te.exc_info)
             if te.coro in self._delegators:
@@ -382,8 +366,13 @@ class _BlueletRunner:
                 return te
 
         except:  # noqa
+            ei = BlueletCoroException._exc_info()
+
+            if log.isEnabledFor(logging.DEBUG):
+                log.exception(f'{__class__.__name__}._step')
+
             # For instance, KeyboardInterrupt during select(). Raise into root coro and terminate others.
-            self._coros = {self._root_coro: ExceptionBlueletEvent(BlueletCoroException._exc_info())}  # noqa
+            self._coros = {self._root_coro: ExceptionBlueletEvent(ei)}  # noqa
 
         return None
 
