@@ -1,9 +1,7 @@
 #!/bin/bash
 set -e
 
-if [ -f /proc/1/cgroup ] &&
-        ( cat /proc/1/cgroup | egrep -o '^[0-9]+:([^:]+,)*cpu(,[^:]+)*:/docker/' > /dev/null ) &&
-        ( cat /proc/1/cgroup | egrep -o '^[0-9]+:([^:]+,)*memory(,[^:]+)*:/docker/' > /dev/null ) ; then
+if [ $(uname) == "Linux" ] && (cat /proc/mounts | egrep '^[^ ]+ / ' | grep '/docker/' > /dev/null) ; then
     VENV=.venv-docker
 else
     VENV=.venv
