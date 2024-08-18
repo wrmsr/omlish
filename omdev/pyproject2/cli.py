@@ -4,7 +4,7 @@
 TODO:
  - check / tests, src dir sets
  - ci
- - build / package / publish
+ - build / package / publish / version roll
   - {pkg_name: [src_dirs]}, default excludes, generate MANIFST.in, ...
 
 lookit:
