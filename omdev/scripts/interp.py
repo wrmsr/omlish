@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # noinspection DuplicatedCode
 # @omdev-amalg-output ../interp/cli.py
+# ruff: noqa: UP007
 """
 TODO:
  - partial best-matches - '3.12'
@@ -1834,6 +1835,7 @@ class SystemInterpProvider(InterpProvider):
 
 ########################################
 # ../resolvers.py
+# ruff: noqa: UP006
 
 
 class InterpResolver:

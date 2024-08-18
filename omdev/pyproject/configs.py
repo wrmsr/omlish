@@ -27,7 +27,7 @@ class PyprojectConfigPreparer:
     def __init__(
             self,
             *,
-            python_versions: ta.Optional[ta.Mapping[str, str]],
+            python_versions: ta.Optional[ta.Mapping[str, str]] = None,
     ) -> None:
         super().__init__()
 
