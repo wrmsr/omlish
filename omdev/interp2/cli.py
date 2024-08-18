@@ -16,18 +16,27 @@ from .providers.types import InterpSpecifier
 from .resolvers import DEFAULT_INTERP_RESOLVER
 
 
+def _list_cmd(args) -> None:
+    r = DEFAULT_INTERP_RESOLVER
+    s = InterpSpecifier.parse(args.version)
+    r.list(s)
+
+
 def _resolve_cmd(args) -> None:
     r = DEFAULT_INTERP_RESOLVER
-
     s = InterpSpecifier.parse(args.version)
-
-    r.list(s)
+    print(r.resolve(s).exe)
 
 
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
 
     subparsers = parser.add_subparsers()
+
+    parser_list = subparsers.add_parser('list')
+    parser_list.add_argument('version')
+    parser_list.add_argument('--debug', action='store_true')
+    parser_list.set_defaults(func=_list_cmd)
 
     parser_resolve = subparsers.add_parser('resolve')
     parser_resolve.add_argument('version')
