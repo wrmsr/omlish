@@ -22,9 +22,9 @@ from omlish.lite.subprocesses import subprocess_try_output
 
 from ..versioning.versions import InvalidVersion
 from ..versioning.versions import Version
-from .providers import InterpProvider
 from .inspect import INTERP_INSPECTOR
 from .inspect import InterpInspector
+from .providers import InterpProvider
 from .types import Interp
 from .types import InterpOpts
 from .types import InterpSpecifier
