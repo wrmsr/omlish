@@ -1,10 +1,10 @@
 #!/bin/bash
 set -e
 
-if [ $(uname) == "Linux" ] && (cat /proc/mounts | egrep '^[^ ]+ / ' | grep '/docker/' > /dev/null) ; then
-    VENV=.venv-docker
+if [ $(uname) == "Linux" ] && (cat /proc/mounts | egrep '^overlay / .*/docker/' > /dev/null) ; then
+    VENV=.venvs/docker
 else
-    VENV=.venv
+    VENV=.venvs/default
 fi
 
 VENV_PYTHON_PATH="${BASH_SOURCE%/*}/$VENV/bin/python"
