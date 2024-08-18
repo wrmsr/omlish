@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # noinspection DuplicatedCode
 # @omdev-amalg-output ../pyproject/cli.py
+# ruff: noqa: UP006 UP007
 """
 TODO:
  - check / tests, src dir sets
@@ -2285,6 +2286,7 @@ class Interp:
 
 ########################################
 # ../configs.py
+# ruff: noqa: UP006 UP007
 
 
 @dc.dataclass(frozen=True)
@@ -2309,7 +2311,7 @@ class PyprojectConfigPreparer:
     def __init__(
             self,
             *,
-            python_versions: ta.Optional[ta.Mapping[str, str]],
+            python_versions: ta.Optional[ta.Mapping[str, str]] = None,
     ) -> None:
         super().__init__()
 
@@ -3070,6 +3072,7 @@ class SystemInterpProvider(InterpProvider):
 
 ########################################
 # ../../interp/resolvers.py
+# ruff: noqa: UP006
 
 
 class InterpResolver:
@@ -3230,7 +3233,7 @@ class Venv:
                 ve,
                 '-m', 'pip',
                 'install', '-v',
-                *itertools.chain.from_iterable(['-r', r] for r in ([sr] if isinstance(sr, str) else sr)),
+                *itertools.chain.from_iterable(['-r', r] for r in sr),
             )
 
         return True
