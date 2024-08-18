@@ -264,6 +264,7 @@ def get_obj_marshaler(ty: ta.Any) -> ObjMarshaler:
         return _OBJ_MARSHALERS[ty]
     except KeyError:
         pass
+
     p = ProxyObjMarshaler()
     _OBJ_MARSHALERS[ty] = p
     try:
