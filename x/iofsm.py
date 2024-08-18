@@ -8,6 +8,7 @@ import random
 import typing as ta
 
 from omlish import cached
+from omlish import lang
 
 
 ##
@@ -572,15 +573,15 @@ def _main() -> None:
     ])
 
     for p in [
-        AckedEchoProtocol0(),
-        AckedEchoProtocol1(),
-        AckedEchoProtocol2(),
-        AckedEchoProtocol3(),
-        AckedEchoProtocol4(),
-        AckedEchoProtocol5(),
-        AckedEchoProtocol6(),
-        AckedEchoProtocol7(),
-        AckedEchoProtocol8(),
+        # AckedEchoProtocol0(),
+        # AckedEchoProtocol1(),
+        # AckedEchoProtocol2(),
+        # AckedEchoProtocol3(),
+        # AckedEchoProtocol4(),
+        # AckedEchoProtocol5(),
+        # AckedEchoProtocol6(),
+        # AckedEchoProtocol7(),
+        # AckedEchoProtocol8(),
         AckedEchoProtocol9(),
     ]:
         print(p)
@@ -596,13 +597,17 @@ def _main() -> None:
         #         for oe in p(le):
         #             handle_output(oe)
 
-        g = (
-            oe
-            for ib in ibs
-            for le in lr(ib)
-            for oe in p(le)
-        )
-        for oe in g:
+        # g = (
+        #     oe
+        #     for ib in ibs
+        #     for le in lr(ib)
+        #     for oe in p(le)
+        # )
+
+        les = lang.flatmap(lr, ibs)
+        oes = lang.flatmap(p, les)
+
+        for oe in oes:
             handle_output(oe)
 
         print()

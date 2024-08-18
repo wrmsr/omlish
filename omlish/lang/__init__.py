@@ -132,6 +132,8 @@ from .iterables import (  # noqa
     Generator,
     asrange,
     exhaust,
+    flatmap,
+    flatten,
     ilen,
     itergen,
     peek,
