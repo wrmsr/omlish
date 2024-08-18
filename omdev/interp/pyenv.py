@@ -20,9 +20,9 @@ from omlish.lite.subprocesses import subprocess_check_call
 from omlish.lite.subprocesses import subprocess_check_output_str
 from omlish.lite.subprocesses import subprocess_try_output
 
-from ...versioning.versions import InvalidVersion
-from ...versioning.versions import Version
-from .base import InterpProvider
+from ..versioning.versions import InvalidVersion
+from ..versioning.versions import Version
+from .providers import InterpProvider
 from .inspect import INTERP_INSPECTOR
 from .inspect import InterpInspector
 from .types import Interp
@@ -331,7 +331,13 @@ class PyenvInterpProvider(InterpProvider):
         return [i.version for i in self.installed()]
 
     def get_installed_version(self, version: InterpVersion) -> Interp:
-        raise NotImplementedError
+        for i in self.installed():
+            if i.version == version:
+                return Interp(
+                    exe=i.exe,
+                    version=i.version,
+                )
+        raise KeyError(version)
 
     #
 

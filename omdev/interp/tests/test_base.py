@@ -1,6 +1,6 @@
 import unittest
 
-from .. import base as bp
+from .. import providers as bp
 from ..types import InterpSpecifier
 
 

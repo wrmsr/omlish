@@ -1,12 +1,13 @@
+# ruff: noqa: UP006
 import collections
 import typing as ta
 
-from .providers.base import InterpProvider
-from .providers.base import RunningInterpProvider
-from .providers.pyenv import PyenvInterpProvider
-from .providers.system import SystemInterpProvider
-from .providers.types import Interp
-from .providers.types import InterpSpecifier
+from .providers import InterpProvider
+from .providers import RunningInterpProvider
+from .pyenv import PyenvInterpProvider
+from .system import SystemInterpProvider
+from .types import Interp
+from .types import InterpSpecifier
 
 
 class InterpResolver:

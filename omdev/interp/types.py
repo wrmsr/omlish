@@ -3,9 +3,9 @@ import collections
 import dataclasses as dc
 import typing as ta
 
-from ...versioning.specifiers import Specifier
-from ...versioning.versions import InvalidVersion
-from ...versioning.versions import Version
+from ..versioning.specifiers import Specifier
+from ..versioning.versions import InvalidVersion
+from ..versioning.versions import Version
 
 
 # See https://peps.python.org/pep-3149/

@@ -1,45 +1,43 @@
 #!/usr/bin/env python3
 # @omdev-amalg ../scripts/interp.py
+# ruff: noqa: UP007
 """
 TODO:
  - partial best-matches - '3.12'
  - https://github.com/asdf-vm/asdf support (instead of pyenv) ?
+ - colon sep provider name prefix - pyenv:3.12
 """
-# ruff: noqa: UP007
 import argparse
-import sys
 import typing as ta
 
 from omlish.lite.logs import configure_standard_logging
 from omlish.lite.runtime import check_runtime_version
 
-from .resolvers.linux import LinuxInterpResolver
-from .resolvers.mac import MacInterpResolver
+from .resolvers import DEFAULT_INTERP_RESOLVER
+from .types import InterpSpecifier
+
+
+def _list_cmd(args) -> None:
+    r = DEFAULT_INTERP_RESOLVER
+    s = InterpSpecifier.parse(args.version)
+    r.list(s)
 
 
 def _resolve_cmd(args) -> None:
-    if sys.platform == 'darwin':
-        resolver_cls = MacInterpResolver
-    elif sys.platform in ['linux', 'linux2']:
-        resolver_cls = LinuxInterpResolver
-    else:
-        raise OSError(f'Unsupported platform: {sys.platform}')
-
-    resolver = resolver_cls(
-        args.version,
-        debug=args.debug,
-    )
-
-    resolved = resolver.resolve()
-    if resolved is None:
-        raise RuntimeError(f'Failed to resolve python version: {args.version}')
-    print(resolved)
+    r = DEFAULT_INTERP_RESOLVER
+    s = InterpSpecifier.parse(args.version)
+    print(r.resolve(s).exe)
 
 
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
 
     subparsers = parser.add_subparsers()
+
+    parser_list = subparsers.add_parser('list')
+    parser_list.add_argument('version')
+    parser_list.add_argument('--debug', action='store_true')
+    parser_list.set_defaults(func=_list_cmd)
 
     parser_resolve = subparsers.add_parser('resolve')
     parser_resolve.add_argument('version')
