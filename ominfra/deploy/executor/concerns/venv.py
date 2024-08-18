@@ -2,8 +2,6 @@
 TODO:
  - use LinuxInterpResolver lol
 """
-from omdev.interp.resolvers.linux import LinuxInterpResolver  # noqa
-
 from ..base import Concern
 from ..base import Phase
 from ..base import run_in_phase

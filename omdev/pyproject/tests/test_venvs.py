@@ -4,6 +4,7 @@ import unittest
 from omlish.lite.marshal import marshal_obj
 
 from ...toml.toml import toml_loads
+from ..cli import VersionsFile
 from ..configs import PyprojectConfigPreparer
 
 
@@ -98,6 +99,8 @@ class TestVenvs(unittest.TestCase):
         dct = toml_loads(_TEST_TOML)['tool']['omlish']['pyproject']
         pj(dct)
 
-        pcfg = PyprojectConfigPreparer().prepare_config(dct)
+        pcfg = PyprojectConfigPreparer(
+            python_versions=VersionsFile.get_pythons(VersionsFile.parse(_TEST_VERSIONS_FILE)),
+        ).prepare_config(dct)
 
         pj(marshal_obj(pcfg))
