@@ -1,4 +1,3 @@
-# ruff: noqa: UP006 UP007
 import json
 import unittest
 
@@ -101,4 +100,4 @@ class TestVenvs(unittest.TestCase):
 
         pcfg = PyprojectConfigPreparer().prepare_config(dct)
 
-        pj(marshal_obj(ivs))
+        pj(marshal_obj(pcfg))

@@ -40,12 +40,14 @@ class PyprojectConfigPreparer:
                 return done[k]
             except KeyError:
                 pass
+
             c = m[k]
             kw = dc.asdict(c)
             for i in c.inherits or ():
                 ic = rec(i)
-                kw.update({k: v for k, v in dc.asdict(ic).items() if v is not None})
+                kw.update({k: v for k, v in dc.asdict(ic).items() if v is not None and kw.get(k) is None})
             del kw['inherits']
+
             d = done[k] = VenvConfig(**kw)
             return d
 
@@ -61,15 +63,19 @@ class PyprojectConfigPreparer:
         todo = list(reversed(lst))
         raw: ta.List[str] = []
         seen: ta.Set[str] = set()
+
         while todo:
             cur = todo.pop()
             if cur in seen:
                 continue
+
             seen.add(cur)
             if not cur.startswith('@'):
                 raw.append(cur)
                 continue
+
             todo.extend(aliases[cur[1:]][::-1])
+
         return raw
 
     def _fixup_interp(self, s: ta.Optional[str]) -> ta.Optional[str]:
@@ -86,4 +92,5 @@ class PyprojectConfigPreparer:
             v = dc.replace(v, interp=self._fixup_interp(v.interp))
             ivs[k] = v
 
+        pcfg = dc.replace(pcfg, venvs=ivs)
         return pcfg
