@@ -1,6 +1,7 @@
 """
 TODO:
  - ** i remember thinking about resource disposal at some point.. make sure everything 'closes'? **
+ - LineReader + BufferedWriter
 """
 import abc
 import dataclasses as dc

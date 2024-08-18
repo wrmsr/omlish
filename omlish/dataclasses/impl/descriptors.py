@@ -2,10 +2,7 @@ import abc
 import dataclasses as dc
 import typing as ta
 
-from omlish import defs
-
-
-_CYTHON_ENABLED = True
+from ... import defs
 
 
 class AbstractFieldDescriptor(abc.ABC):
