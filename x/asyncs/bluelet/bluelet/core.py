@@ -21,6 +21,8 @@ BlueletExcInfo = ta.Tuple[ta.Type[BaseException], BaseException, types.Traceback
 
 BlueletCoro = ta.Generator[ta.Union['BlueletEvent', 'BlueletCoro'], ta.Any, None]  # ta.TypeAlias
 
+BlueletSpawnable = ta.Union[BlueletCoro, ta.Awaitable]  # ta.TypeAlias
+
 
 ##
 
@@ -92,19 +94,19 @@ class ExceptionBlueletEvent(CoreBlueletEvent):
 class SpawnBlueletEvent(CoreBlueletEvent):
     """Add a new coroutine coro to the scheduler."""
 
-    spawned: BlueletCoro
+    spawned: BlueletSpawnable
 
 
-def bluelet_spawn(coro: BlueletCoro) -> SpawnBlueletEvent:
+def bluelet_spawn(spawned: BlueletSpawnable) -> SpawnBlueletEvent:
     """Event: add another coroutine to the scheduler. Both the parent and child coroutines run concurrently."""
 
-    if isinstance(coro, types.CoroutineType):
-        coro = _BlueletAwaitableDriver(coro)()
+    if isinstance(spawned, types.CoroutineType):
+        spawned = _BlueletAwaitableDriver(spawned)()
 
-    if not isinstance(coro, types.GeneratorType):
-        raise TypeError(f'{coro} is not a coroutine')
+    if not isinstance(spawned, types.GeneratorType):
+        raise TypeError(f'{spawned} is not spawnable')
 
-    return SpawnBlueletEvent(coro)
+    return SpawnBlueletEvent(spawned)
 
 
 ##
@@ -152,19 +154,19 @@ class DelegationBlueletEvent(CoreBlueletEvent):
     spawned: BlueletCoro
 
 
-def bluelet_call(coro: BlueletCoro) -> DelegationBlueletEvent:
+def bluelet_call(spawned: BlueletSpawnable) -> DelegationBlueletEvent:
     """
     Event: delegate to another coroutine. The current coroutine is resumed once the sub-coroutine finishes. If the
     sub-coroutine returns a value using end(), then this event returns that value.
     """
 
-    if isinstance(coro, types.CoroutineType):
-        coro = _BlueletAwaitableDriver(coro)()
+    if isinstance(spawned, types.CoroutineType):
+        spawned = _BlueletAwaitableDriver(spawned)()
 
-    if not isinstance(coro, types.GeneratorType):
-        raise TypeError(f'{coro} is not a coroutine')
+    if not isinstance(spawned, types.GeneratorType):
+        raise TypeError(f'{spawned} is not spawnable')
 
-    return DelegationBlueletEvent(coro)
+    return DelegationBlueletEvent(spawned)
 
 
 ##
