@@ -8,9 +8,9 @@ from omlish.lite.json import json_dumps_compact
 from omlish.lite.marshal import marshal_obj
 from omlish.lite.marshal import unmarshal_obj
 
-from ..payload import CommandRequest
-from ..payload import CommandResponse
-from ..payload import _payload_loop  # noqa
+from ..runcommands import CommandRequest
+from ..runcommands import CommandResponse
+from ..runcommands import _run_commands_loop  # noqa
 
 
 class TestPayload(unittest.TestCase):
@@ -27,7 +27,7 @@ class TestPayload(unittest.TestCase):
         input.write(b'\n')
         input.seek(0)
         output = io.BytesIO()
-        _payload_loop(input, output)
+        _run_commands_loop(input, output)
         output.seek(0)
         resps: ta.List[CommandResponse] = [
             unmarshal_obj(json.loads(l.decode('utf-8')), CommandResponse)

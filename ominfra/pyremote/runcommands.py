@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# @omdev-amalg ./_payload.py
+# @omdev-amalg ./_runcommands.py
 """
 TODO:
  - fix stdio/stdout/stderr confusion - why writing results to stderr? and tracebacks clobber it
@@ -34,7 +34,7 @@ class CommandResponse:
     err: bytes
 
 
-def _payload_loop(input: ta.BinaryIO, output: ta.BinaryIO = sys.stderr.buffer) -> None:  # noqa
+def _run_commands_loop(input: ta.BinaryIO, output: ta.BinaryIO = sys.stderr.buffer) -> None:  # noqa
     while (l := input.readline().decode('utf-8').strip()):
         req: CommandRequest = unmarshal_obj(json.loads(l), CommandRequest)
         proc = subprocess.Popen(  # type: ignore
@@ -55,6 +55,6 @@ def _payload_loop(input: ta.BinaryIO, output: ta.BinaryIO = sys.stderr.buffer) -
         output.flush()
 
 
-def payload_main() -> None:
+def run_commands_main() -> None:
     bs = post_boostrap()
-    _payload_loop(bs.input)
+    _run_commands_loop(bs.input)
