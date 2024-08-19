@@ -31,8 +31,8 @@ class CommandResponse:
 
 def _payload_loop(input: ta.IO, output: ta.IO = sys.stderr) -> None:  # noqa
     while (l := input.readline().decode('utf-8').strip()):
-        req = unmarshal_obj(json.loads(l), CommandRequest)
-        proc = subprocess.Popen(
+        req: CommandRequest = unmarshal_obj(json.loads(l), CommandRequest)
+        proc = subprocess.Popen(  # type: ignore
             req.cmd,
             **(dict(stdin=io.BytesIO(req.in_)) if req.in_ is not None else {}),
             stdout=subprocess.PIPE,
