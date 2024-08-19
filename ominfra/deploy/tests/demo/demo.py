@@ -4,9 +4,6 @@ FIXME:
 """
 import asyncio
 import os.path
-import typing as ta
-
-from omlish import check
 
 from .... import cmds
 from .... import ssh
@@ -15,21 +12,6 @@ from .. import utils as u
 
 
 TIMEBOMB_DELAY_S = 20 * 60
-
-
-async def check_call(cmd: ta.Sequence[str], **kwargs: ta.Any) -> None:
-    proc = await asyncio.create_subprocess_exec(*cmd, **kwargs)
-    await proc.wait()
-    if proc.returncode:
-        raise Exception(f'process failed: {proc.returncode}')
-
-
-async def check_output(cmd: ta.Sequence[str], **kwargs: ta.Any) -> bytes:
-    proc = await asyncio.create_subprocess_exec(*cmd, stdout=asyncio.subprocess.PIPE, **kwargs)
-    await proc.wait()
-    if proc.returncode:
-        raise Exception(f'process failed: {proc.returncode}')
-    return await check.not_none(proc.stdout).read()
 
 
 async def _a_main():

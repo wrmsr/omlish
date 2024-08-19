@@ -9,9 +9,7 @@ After= \
     syslog.target \
     network.target \
     remote-fs.target \
-    nss-lookup.target \
-    network-online.target
-Requires=network-online.target
+    nss-lookup.target
 
 [Service]
 Type=simple

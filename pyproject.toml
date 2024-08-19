@@ -78,7 +78,7 @@ sql = [
     'asyncpg; python_version < "3.13"',
 ]
 
-test = [
+testing = [
     'pytest',
 ]
 
