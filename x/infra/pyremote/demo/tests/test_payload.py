@@ -29,6 +29,5 @@ def test_payload_loop():
         for l in output.readlines()
         if l.strip()
     ]
-    print(resps)
     assert len(resps) == 2
-    assert resps[0].out.decode('utf-8') == b'hi\n'
+    assert resps[0].out == b'hi\n'
