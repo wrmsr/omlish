@@ -6,7 +6,7 @@ if __name__ == '__main__':
 
     shell.run_shell(
         shell.bind_asgi_server(bind_app()),
-        shell.bind_node_registrant(),
+        # shell.bind_node_registrant(),
         bind_dbs(),
         bind_secrets(),
     )
