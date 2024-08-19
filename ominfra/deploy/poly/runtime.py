@@ -1,3 +1,4 @@
+# ruff: noqa: UP007
 import os.path
 import typing as ta
 
@@ -24,4 +25,3 @@ class RuntimeImpl(Runtime):
         s = ' && '.join(ss)
         log.info('Executing: %s', s)
         subprocess_check_call(s, shell=True)
-

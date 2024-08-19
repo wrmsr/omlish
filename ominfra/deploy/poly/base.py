@@ -4,6 +4,11 @@ import dataclasses as dc
 import typing as ta
 
 
+T = ta.TypeVar('T')
+ConcernT = ta.TypeVar('ConcernT')
+ConfigT = ta.TypeVar('ConfigT')
+
+
 ##
 
 
@@ -51,6 +56,57 @@ class Runtime(abc.ABC):
 ##
 
 
+class BaseConcernRunner(abc.ABC, ta.Generic[ConcernT, ConfigT]):
+    concern_cls: ta.ClassVar[type]
+
+    def __init__(
+            self,
+            config: ConfigT,
+            runtime: ta.Optional[Runtime] = None,
+    ) -> None:
+        super().__init__()
+        self._config = config
+
+        concern_cls_dct = self._concern_cls_by_config_cls()
+        self._concerns = [
+            concern_cls_dct[type(c)](c, self)  # type: ignore
+            for c in config.concerns  # type: ignore
+        ]
+        self._concerns_by_cls: ta.Dict[ta.Type[ConcernT], ConcernT] = {}
+        for c in self._concerns:
+            if type(c) in self._concerns_by_cls:
+                raise TypeError(f'Duplicate concern type: {c}')
+            self._concerns_by_cls[type(c)] = c
+
+        self._runtime = runtime
+
+    @classmethod
+    def _concern_cls_by_config_cls(cls) -> ta.Mapping[type, ta.Type[ConcernT]]:
+        return {  # noqa
+            c.Config: c  # type: ignore
+            for c in cls.concern_cls.__subclasses__()
+        }
+
+    @property
+    def config(self) -> ConfigT:
+        return self._config
+
+    @property
+    def concerns(self) -> ta.List[ConcernT]:
+        return self._concerns
+
+    def concern(self, cls: ta.Type[T]) -> T:
+        return self._concerns_by_cls[cls]  # type: ignore
+
+    def runtime(self) -> Runtime:
+        if (runtime := self._runtime) is None:
+            raise RuntimeError('No runtime present')
+        return runtime
+
+
+##
+
+
 SiteConcernT = ta.TypeVar('SiteConcernT', bound='SiteConcern')
 SiteConcernConfigT = ta.TypeVar('SiteConcernConfigT', bound='SiteConcern.Config')
 
@@ -77,27 +133,12 @@ class SiteConcern(abc.ABC, ta.Generic[SiteConcernConfigT]):
 ##
 
 
-class Site(abc.ABC):
+class Site(BaseConcernRunner[SiteConcern, 'Site.Config']):
     @dc.dataclass(frozen=True)
     class Config:
         concerns: ta.List[SiteConcern.Config] = dc.field(default_factory=list)
 
-    @property
     @abc.abstractmethod
-    def config(self) -> 'Site.Config':
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def concerns(self) -> ta.List[SiteConcern]:
-        raise NotImplementedError
-
-    def concern(self, cls: ta.Type[SiteConcernT]) -> SiteConcernT:
-        raise NotImplementedError
-
-    def runtime(self) -> Runtime:
-        raise NotImplementedError
-
     def run(self) -> None:
         raise NotImplementedError
 
@@ -134,7 +175,7 @@ class DeployConcern(abc.ABC, ta.Generic[DeployConcernConfigT]):
 ##
 
 
-class Deploy(abc.ABC):
+class Deploy(BaseConcernRunner[DeployConcern, 'Deploy.Config']):
     @dc.dataclass(frozen=True)
     class Config:
         name: str
@@ -143,21 +184,6 @@ class Deploy(abc.ABC):
 
         concerns: ta.List[DeployConcern.Config] = dc.field(default_factory=list)
 
-    @property
     @abc.abstractmethod
-    def config(self) -> 'Deploy.Config':
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def concerns(self) -> ta.List[DeployConcern]:
-        raise NotImplementedError
-
-    def concern(self, cls: ta.Type[DeployConcernT]) -> DeployConcernT:
-        raise NotImplementedError
-
-    def runtime(self) -> Runtime:
-        raise NotImplementedError
-
     def run(self) -> None:
         raise NotImplementedError
