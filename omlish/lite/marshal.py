@@ -222,7 +222,7 @@ def _make_obj_marshaler(ty: ta.Any) -> ObjMarshaler:
         impls = [
             PolymorphicObjMarshaler.Impl(
                 ity,
-                ity.__name__,
+                ity.__qualname__,
                 get_obj_marshaler(ity),
             )
             for ity in ty.__subclasses__()
