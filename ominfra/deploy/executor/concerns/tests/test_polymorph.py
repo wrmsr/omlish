@@ -260,7 +260,10 @@ class TestPolymorph(unittest.TestCase):
         dcfg2: Deploy.Config = unmarshal_obj(json.loads(jdcfg), Deploy.Config)
         print(dcfg2)
 
-        d = Deploy(dcfg2)
+        d = Deploy(
+            dcfg2,
+            runtime_cls=DeployRuntime,
+        )
         print(d)
 
         d.run()
