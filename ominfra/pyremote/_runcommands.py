@@ -1,10 +1,6 @@
 #!/usr/bin/env python3
 # noinspection DuplicatedCode
 # @omdev-amalg-output runcommands.py
-"""
-TODO:
- - fix stdio/stdout/stderr confusion - why writing results to stderr? and tracebacks clobber it
-"""
 # ruff: noqa: UP007
 import abc
 import base64
@@ -726,7 +722,7 @@ class CommandResponse:
     err: bytes
 
 
-def _run_commands_loop(input: ta.BinaryIO, output: ta.BinaryIO = sys.stderr.buffer) -> None:  # noqa
+def _run_commands_loop(input: ta.BinaryIO, output: ta.BinaryIO = sys.stdout.buffer) -> None:  # noqa
     while (l := input.readline().decode('utf-8').strip()):
         req: CommandRequest = unmarshal_obj(json.loads(l), CommandRequest)
         proc = subprocess.Popen(  # type: ignore
