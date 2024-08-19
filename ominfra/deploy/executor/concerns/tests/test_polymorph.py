@@ -20,9 +20,10 @@ class Concern(abc.ABC, ta.Generic[ConcernConfigT]):
     class Config(abc.ABC):  # noqa
         pass
 
-    def __init__(self, config: ConcernConfigT) -> None:
+    def __init__(self, config: ConcernConfigT, deploy: 'Deploy') -> None:
         super().__init__()
         self._config = config
+        self._deploy = deploy
 
 
 ##
@@ -61,7 +62,10 @@ class Deploy:
         super().__init__()
         self._config = config
 
-        self._concerns = [CONCERN_CLS_BY_CONFIG_CLS[type(c)](c) for c in config.concerns]
+        self._concerns = [
+            CONCERN_CLS_BY_CONFIG_CLS[type(c)](c, self)
+            for c in config.concerns
+        ]
         self._concerns_by_cls: ta.Dict[ta.Type[Concern], Concern] = {}
         for c in self._concerns:
             if type(c) in self._concerns_by_cls:
