@@ -19,6 +19,12 @@ from .reflect import is_generic_alias
 from .reflect import is_union_alias
 
 
+T = ta.TypeVar('T')
+
+
+##
+
+
 class ObjMarshaler(abc.ABC):
     @abc.abstractmethod
     def marshal(self, o: ta.Any) -> ta.Any:
@@ -282,5 +288,5 @@ def marshal_obj(o: ta.Any, ty: ta.Any = None) -> ta.Any:
     return get_obj_marshaler(ty if ty is not None else type(o)).marshal(o)
 
 
-def unmarshal_obj(o: ta.Any, ty: ta.Any) -> ta.Any:
+def unmarshal_obj(o: ta.Any, ty: ta.Union[ta.Type[T], ta.Any]) -> T:
     return get_obj_marshaler(ty).unmarshal(o)
