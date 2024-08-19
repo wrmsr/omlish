@@ -1,10 +1,11 @@
-# ruff: noqa: UP006
+# ruff: noqa: UP006 UP007
 import abc
 import dataclasses as dc
 import json
 import os.path
 import tempfile
 import typing as ta
+import unittest
 
 from omlish.lite.cached import cached_nullary
 from omlish.lite.json import json_dumps_compact
@@ -12,6 +13,7 @@ from omlish.lite.logs import configure_standard_logging  # noqa
 from omlish.lite.logs import log
 from omlish.lite.marshal import marshal_obj
 from omlish.lite.marshal import unmarshal_obj
+from omlish.lite.runtime import is_debugger_attached
 from omlish.lite.subprocesses import subprocess_check_call
 
 
@@ -98,9 +100,9 @@ class RepoConcern(Concern['RepoConcern.Config']):
             f'cd {l}',
             f'git clone --depth 1 {self._config.url} {r}',
             *([
-                  f'cd {r}',
-                  'git submodule update --init',
-              ] if self._config.init_submodules else []),
+                f'cd {r}',
+                'git submodule update --init',
+            ] if self._config.init_submodules else []),
         )
 
 
@@ -122,6 +124,8 @@ class VenvConcern(Concern['VenvConcern.Config']):
         return [FsDir(self.venv_dir())]
 
     def run(self) -> None:
+        rd = self._deploy.concern(RepoConcern).repo_dir()
+
         vd = self.venv_dir()
         os.makedirs(vd)
         l, r = os.path.split(vd)
@@ -136,7 +140,7 @@ class VenvConcern(Concern['VenvConcern.Config']):
             f'{vd}/bin/python -m ensurepip',
             f'{vd}/bin/python -mpip install --upgrade setuptools pip',
 
-            f'{vd}/bin/python -mpip install -r {vd}/{self._config.requirements_txt}',  # noqa
+            f'{vd}/bin/python -mpip install -r {rd}/{self._config.requirements_txt}',  # noqa
         )
 
 
@@ -144,7 +148,7 @@ class VenvConcern(Concern['VenvConcern.Config']):
 
 
 CONCERN_CLS_BY_CONFIG_CLS: ta.Mapping[ta.Type[Concern.Config], ta.Type[Concern]] = {
-    cls.Config: cls
+    cls.Config: cls  # type: ignore
     for cls in Concern.__subclasses__()
 }
 
@@ -181,7 +185,7 @@ class Deploy:
         return self._concerns
 
     def concern(self, cls: ta.Type[ConcernT]) -> ConcernT:
-        return self._concerns_by_cls[cls]
+        return self._concerns_by_cls[cls]  # type: ignore
 
     def sh(self, *ss: str) -> None:
         s = ' && '.join(ss)
@@ -196,35 +200,39 @@ class Deploy:
 ##
 
 
-def test_polymorph():
-    configure_standard_logging('DEBUG')
+class TestPolymorph(unittest.TestCase):
+    def test_polymorph(self):
+        if not is_debugger_attached():
+            self.skipTest('debugger only')
 
-    print()
+        configure_standard_logging('DEBUG')
 
-    root_dir = tempfile.mkdtemp('-ominfra-deploy-polymorph-test')
-    print(root_dir)
+        print()
 
-    dcfg = Deploy.Config(
-        name='omlish',
-        root_dir=root_dir,
-        concerns=[
-            RepoConcern.Config(
-                url='https://github.com/wrmsr/omlish',
-            ),
-            VenvConcern.Config(
-                interp_version='3.12.5',
-            ),
-        ],
-    )
-    print(dcfg)
+        root_dir = tempfile.mkdtemp('-ominfra-deploy-polymorph-test')
+        print(root_dir)
 
-    jdcfg = json_dumps_compact(marshal_obj(dcfg))
-    print(jdcfg)
+        dcfg = Deploy.Config(
+            name='omlish',
+            root_dir=root_dir,
+            concerns=[
+                RepoConcern.Config(
+                    url='https://github.com/wrmsr/omlish',
+                ),
+                VenvConcern.Config(
+                    interp_version='3.12.5',
+                ),
+            ],
+        )
+        print(dcfg)
 
-    dcfg2: Deploy.Config = unmarshal_obj(json.loads(jdcfg), Deploy.Config)
-    print(dcfg2)
+        jdcfg = json_dumps_compact(marshal_obj(dcfg))
+        print(jdcfg)
 
-    d = Deploy(dcfg2)
-    print(d)
+        dcfg2: Deploy.Config = unmarshal_obj(json.loads(jdcfg), Deploy.Config)
+        print(dcfg2)
 
-    d.run()
+        d = Deploy(dcfg2)
+        print(d)
+
+        d.run()
