@@ -11,9 +11,9 @@ from omlish.lite.runtime import is_debugger_attached  # noqa
 from ..base import Deploy
 from ..deploy import DeployImpl
 from ..deploy import DeployRuntimeImpl
-from ..nginx import NginxConcern
-from ..repo import RepoConcern
-from ..venv import VenvConcern
+from ..nginx import NginxDeployConcern
+from ..repo import RepoDeployConcern
+from ..venv import VenvDeployConcern
 
 
 class TestPolymorph(unittest.TestCase):
@@ -32,13 +32,13 @@ class TestPolymorph(unittest.TestCase):
             name='omlish',
             root_dir=root_dir,
             concerns=[
-                RepoConcern.Config(
+                RepoDeployConcern.Config(
                     url='https://github.com/wrmsr/omlish',
                 ),
-                VenvConcern.Config(
+                VenvDeployConcern.Config(
                     interp_version='3.12.5',
                 ),
-                NginxConcern.Config(),
+                NginxDeployConcern.Config(),
             ],
         )
         print(dcfg)

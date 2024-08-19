@@ -4,14 +4,14 @@ import typing as ta
 
 from omlish.lite.cached import cached_nullary
 
-from .base import Concern
+from .base import DeployConcern
 from .base import FsDir
 from .base import FsItem
 
 
-class RepoConcern(Concern['RepoConcern.Config']):
+class RepoDeployConcern(DeployConcern['RepoDeployConcern.Config']):
     @dc.dataclass(frozen=True)
-    class Config(Concern.Config):
+    class Config(DeployConcern.Config):
         url: str
         revision: str = 'master'
         init_submodules: bool = False

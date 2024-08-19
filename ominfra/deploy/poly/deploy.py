@@ -5,13 +5,13 @@ import typing as ta
 from omlish.lite.logs import log
 from omlish.lite.subprocesses import subprocess_check_call
 
-from .base import Concern
-from .base import ConcernT
 from .base import Deploy
+from .base import DeployConcern
+from .base import DeployConcernT
 from .base import DeployRuntime
-from .nginx import NginxConcern  # noqa
-from .repo import RepoConcern  # noqa
-from .venv import VenvConcern  # noqa
+from .nginx import NginxDeployConcern  # noqa
+from .repo import RepoDeployConcern  # noqa
+from .venv import VenvDeployConcern  # noqa
 
 
 class DeployRuntimeImpl(DeployRuntime):
@@ -37,9 +37,9 @@ class DeployRuntimeImpl(DeployRuntime):
 ##
 
 
-CONCERN_CLS_BY_CONFIG_CLS: ta.Mapping[ta.Type[Concern.Config], ta.Type[Concern]] = {
+DEPLOY_CONCERN_CLS_BY_CONFIG_CLS: ta.Mapping[ta.Type[DeployConcern.Config], ta.Type[DeployConcern]] = {
     cls.Config: cls  # type: ignore
-    for cls in Concern.__subclasses__()
+    for cls in DeployConcern.__subclasses__()
 }
 
 
@@ -53,10 +53,10 @@ class DeployImpl(Deploy):
         self._config = config
 
         self._concerns = [
-            CONCERN_CLS_BY_CONFIG_CLS[type(c)](c, self)
+            DEPLOY_CONCERN_CLS_BY_CONFIG_CLS[type(c)](c, self)
             for c in config.concerns
         ]
-        self._concerns_by_cls: ta.Dict[ta.Type[Concern], Concern] = {}
+        self._concerns_by_cls: ta.Dict[ta.Type[DeployConcern], DeployConcern] = {}
         for c in self._concerns:
             if type(c) in self._concerns_by_cls:
                 raise TypeError(f'Duplicate concern type: {c}')
@@ -74,10 +74,10 @@ class DeployImpl(Deploy):
         return self._config
 
     @property
-    def concerns(self) -> ta.List[Concern]:
+    def concerns(self) -> ta.List[DeployConcern]:
         return self._concerns
 
-    def concern(self, cls: ta.Type[ConcernT]) -> ConcernT:
+    def concern(self, cls: ta.Type[DeployConcernT]) -> DeployConcernT:
         return self._concerns_by_cls[cls]  # type: ignore
 
     def runtime(self) -> DeployRuntime:

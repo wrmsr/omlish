@@ -34,22 +34,22 @@ class FsDir(FsItem):
 ##
 
 
-ConcernT = ta.TypeVar('ConcernT', bound='Concern')
-ConcernConfigT = ta.TypeVar('ConcernConfigT', bound='Concern.Config')
+DeployConcernT = ta.TypeVar('DeployConcernT', bound='DeployConcern')
+DeployConcernConfigT = ta.TypeVar('DeployConcernConfigT', bound='DeployConcern.Config')
 
 
-class Concern(abc.ABC, ta.Generic[ConcernConfigT]):
+class DeployConcern(abc.ABC, ta.Generic[DeployConcernConfigT]):
     @dc.dataclass(frozen=True)
     class Config(abc.ABC):  # noqa
         pass
 
-    def __init__(self, config: ConcernConfigT, deploy: 'Deploy') -> None:
+    def __init__(self, config: DeployConcernConfigT, deploy: 'Deploy') -> None:
         super().__init__()
         self._config = config
         self._deploy = deploy
 
     @property
-    def config(self) -> ConcernConfigT:
+    def config(self) -> DeployConcernConfigT:
         return self._config
 
     def fs_items(self) -> ta.Sequence[FsItem]:
@@ -87,7 +87,7 @@ class Deploy(abc.ABC):
 
         root_dir: str = '~/deploy'
 
-        concerns: ta.List[Concern.Config] = dc.field(default_factory=list)
+        concerns: ta.List[DeployConcern.Config] = dc.field(default_factory=list)
 
     @property
     @abc.abstractmethod
@@ -96,10 +96,10 @@ class Deploy(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def concerns(self) -> ta.List[Concern]:
+    def concerns(self) -> ta.List[DeployConcern]:
         raise NotImplementedError
 
-    def concern(self, cls: ta.Type[ConcernT]) -> ConcernT:
+    def concern(self, cls: ta.Type[DeployConcernT]) -> DeployConcernT:
         raise NotImplementedError
 
     def runtime(self) -> DeployRuntime:

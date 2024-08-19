@@ -4,15 +4,15 @@ import typing as ta
 
 from omlish.lite.cached import cached_nullary
 
-from .base import Concern
+from .base import DeployConcern
 from .base import FsDir
 from .base import FsItem
-from .repo import RepoConcern
+from .repo import RepoDeployConcern
 
 
-class VenvConcern(Concern['VenvConcern.Config']):
+class VenvDeployConcern(DeployConcern['VenvDeployConcern.Config']):
     @dc.dataclass(frozen=True)
-    class Config(Concern.Config):
+    class Config(DeployConcern.Config):
         interp_version: str
         requirements_txt: str = 'requirements.txt'
 
@@ -25,7 +25,7 @@ class VenvConcern(Concern['VenvConcern.Config']):
         return [FsDir(self.venv_dir())]
 
     def run(self) -> None:
-        rd = self._deploy.concern(RepoConcern).repo_dir()
+        rd = self._deploy.concern(RepoDeployConcern).repo_dir()
 
         vd = self.venv_dir()
         self._deploy.runtime().make_dirs(vd)
