@@ -14,6 +14,7 @@ def test_payload_loop():
     reqs = [
         CommandRequest(cmd=['echo', 'hi']),
         CommandRequest(cmd=['uptime']),
+        CommandRequest(cmd=['false']),
     ]
     input = io.BytesIO()
     for req in reqs:
@@ -29,5 +30,8 @@ def test_payload_loop():
         for l in output.readlines()
         if l.strip()
     ]
-    assert len(resps) == 2
+    assert len(resps) == 3
+    assert resps[0].rc == 0
     assert resps[0].out == b'hi\n'
+    assert resps[1].rc == 0
+    assert resps[2].rc == 1
