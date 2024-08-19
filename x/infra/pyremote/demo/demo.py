@@ -5,8 +5,6 @@ FIXME:
 import asyncio
 import os.path
 
-from ominfra import cmds
-from ominfra import ssh
 from ominfra.deploy.tests import utils as u
 
 
@@ -27,12 +25,6 @@ async def _a_main():
             img_name,
             timebomb_delay_s=TIMEBOMB_DELAY_S,
     ) as ctr_id:  # noqa
-        cr: cmds.CommandRunner = ssh.AsyncsshSshCommandRunner(ssh.SshConfig(
-            host='localhost',
-            port=9082,
-            username='root',
-            password=ssh_password,
-        ))
 
         try:
             pass
