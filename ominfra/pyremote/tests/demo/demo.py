@@ -88,7 +88,7 @@ def _main():
             while True:
                 if lines_buf:
                     return lines_buf.pop(0)
-                lines_buf.extend(line_reader(stdout.read(0x4000)))
+                lines_buf.extend(line_reader(stdout.read1(0x4000)))
 
         ##
 
