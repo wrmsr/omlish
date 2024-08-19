@@ -62,20 +62,18 @@ def _bind_cookie_session_store() -> inj.Elemental:
 
 
 def bind_app() -> inj.Elemental:
-    return inj.as_elements(
-        inj.private(
-            inj.bind(J2Templates.Config(
-                resource_root=__package__ + '.templates',
-                reload=True,
-            )),
+    return inj.private(
+        inj.bind(J2Templates.Config(
+            resource_root=__package__ + '.templates',
+            reload=True,
+        )),
 
-            apps_inj.bind(),
+        apps_inj.bind(),
 
-            handlers_inj.bind(),
+        handlers_inj.bind(),
 
-            _bind_cookie_session_store(),
+        _bind_cookie_session_store(),
 
-            inj.bind(RouteHandlerApp, singleton=True),
-            inj.bind(AsgiApp, to_key=RouteHandlerApp, expose=True),
-        ),
+        inj.bind(RouteHandlerApp, singleton=True),
+        inj.bind(AsgiApp, to_key=RouteHandlerApp, expose=True),
     )
