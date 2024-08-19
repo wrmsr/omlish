@@ -5,6 +5,7 @@ FIXME:
 import json
 import os.path
 import subprocess
+import typing as ta
 import zlib
 
 from ominfra.deploy.tests import utils as u
@@ -18,6 +19,18 @@ from ...bootstrap import BOOTSTRAP_ACK1
 from ...bootstrap import bootstrap_payload
 from ...runcommands import CommandRequest
 from ...runcommands import CommandResponse
+
+
+class LineReader:
+    def __init__(self) -> None:
+        super().__init__()
+        self._buf = bytearray()
+
+    def __call__(self, e: bytes) -> ta.Iterable[bytes]:
+        self._buf += e
+        while (i := self._buf.find(b'\n')) >= 0:
+            yield self._buf[:i+1]
+            self._buf = self._buf[i+1:]
 
 
 TIMEBOMB_DELAY_S = 20 * 60
@@ -66,6 +79,19 @@ def _main():
         check.equal(stdout.read(8), BOOTSTRAP_ACK0)
         check.equal(stdout.read(8), BOOTSTRAP_ACK1)
 
+        ##
+
+        line_reader = LineReader()
+        lines_buf = []
+
+        def next_line() -> bytes:
+            while True:
+                if lines_buf:
+                    return lines_buf.pop(0)
+                lines_buf.extend(line_reader(stdout.read(0x4000)))
+
+        ##
+
         reqs = [
             CommandRequest(cmd=['echo', 'hi']),
             CommandRequest(cmd=['uptime']),
@@ -75,7 +101,7 @@ def _main():
             stdin.write(json_dumps_compact(marshal_obj(req)).encode('utf-8'))
             stdin.write(b'\n')
             stdin.flush()
-            l = stdout.readline()
+            l = next_line()
             resp: CommandResponse = unmarshal_obj(json.loads(l.decode('utf-8')), CommandResponse)
             print(resp)
 
