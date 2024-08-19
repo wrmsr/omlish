@@ -10,7 +10,7 @@ from omlish.lite.runtime import is_debugger_attached  # noqa
 
 from ..base import Deploy
 from ..deploy import DeployImpl
-from ..deploy import DeployRuntimeImpl
+from ..runtime import RuntimeImpl
 from ..nginx import NginxDeployConcern
 from ..repo import RepoDeployConcern
 from ..venv import VenvDeployConcern
@@ -51,7 +51,7 @@ class TestPolymorph(unittest.TestCase):
 
         d = DeployImpl(
             dcfg2,
-            runtime_cls=DeployRuntimeImpl,
+            runtime=RuntimeImpl(),
         )
         print(d)
 
