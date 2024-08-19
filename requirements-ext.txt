@@ -4,20 +4,15 @@
 ### nn
 
 numpy==1.26.4
+# numpy==2.1.0
 # FIXME:
-# - matplotlib 3.9.1 depends on numpy>=1.23
-# - evaluate 0.4.2 depends on numpy>=1.17
-# - datasets 2.20.0 depends on numpy>=1.17
-# - pandas 2.2.2 depends on numpy>=1.26.0; python_version >= "3.12"
-# - pyarrow 17.0.0 depends on numpy>=1.16.6
-# - opencv-python 4.10.0.84 depends on numpy>=1.26.0; python_version >= "3.12"
-# - transformers 4.42.4 depends on numpy<2.0 and >=1.17
-
+# numba 0.60.0 depends on numpy<2.1 and >=1.22
+# librosa==0.10.2.post1 depends on numba>=0.51.0
 ##
 
 matplotlib==3.9.2
 
-huggingface_hub==0.24.5
+huggingface_hub==0.24.6
 evaluate==0.4.2
 datasets==2.21.0
 
