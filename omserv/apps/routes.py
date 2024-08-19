@@ -102,12 +102,23 @@ def get_marked_route_handlers(h: Handler_) -> ta.Sequence[RouteHandler]:
 @dc.dataclass(frozen=True)
 class RouteHandlerApp(AsgiApp_):
     route_handlers: ta.Mapping[Route, AsgiApp]
-    base_server_url: BaseServerUrl
+    base_server_url: BaseServerUrl | None = None
 
     async def __call__(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
         with contextlib.ExitStack() as es:
-            es.enter_context(lang.context_var_setting(BASE_SERVER_URL, self.base_server_url))
             es.enter_context(lang.context_var_setting(SCOPE, scope))
+
+            if self.base_server_url is not None:
+                bsu = self.base_server_url
+            else:
+                sch = scope["scheme"]
+                h, p = scope['server']
+                if (sch, p) not in (('http', 80), ('https', 443)):
+                    ps = f':{p}'
+                else:
+                    ps = ''
+                bsu = f'{sch}://{h}{ps}/'
+            es.enter_context(lang.context_var_setting(BASE_SERVER_URL, bsu))
 
             match scope_ty := scope['type']:
                 case 'lifespan':
