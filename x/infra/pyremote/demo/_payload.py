@@ -12,7 +12,9 @@ import functools
 import inspect
 import io
 import json
+import logging
 import os
+import shlex
 import subprocess
 import sys
 import textwrap
@@ -23,6 +25,27 @@ import zlib
 
 
 T = ta.TypeVar('T')
+
+
+########################################
+# ../../../../../omlish/lite/cached.py
+
+
+class cached_nullary:  # noqa
+    def __init__(self, fn):
+        super().__init__()
+        self._fn = fn
+        self._value = self._missing = object()
+        functools.update_wrapper(self, fn)
+
+    def __call__(self, *args, **kwargs):  # noqa
+        if self._value is self._missing:
+            self._value = self._fn()
+        return self._value
+
+    def __get__(self, instance, owner):  # noqa
+        bound = instance.__dict__[self._fn.__name__] = self.__class__(self._fn.__get__(instance, owner))
+        return bound
 
 
 ########################################
@@ -83,6 +106,23 @@ JSON_COMPACT_KWARGS: ta.Mapping[str, ta.Any] = dict(
 
 json_dump_compact: ta.Callable[..., bytes] = functools.partial(json.dump, **JSON_COMPACT_KWARGS)  # type: ignore
 json_dumps_compact: ta.Callable[..., str] = functools.partial(json.dumps, **JSON_COMPACT_KWARGS)
+
+
+########################################
+# ../../../../../omlish/lite/logs.py
+"""
+TODO:
+ - debug
+"""
+# ruff: noqa: UP007
+
+
+log = logging.getLogger(__name__)
+
+
+def configure_standard_logging(level: ta.Union[int, str] = logging.INFO) -> None:
+    logging.root.addHandler(logging.StreamHandler())
+    logging.root.setLevel(level)
 
 
 ########################################
@@ -543,6 +583,128 @@ def unmarshal_obj(o: ta.Any, ty: ta.Union[ta.Type[T], ta.Any]) -> T:
 
 
 ########################################
+# ../../../../../omlish/lite/runtime.py
+
+
+@cached_nullary
+def is_debugger_attached() -> bool:
+    return any(frame[1].endswith('pydevd.py') for frame in inspect.stack())
+
+
+REQUIRED_PYTHON_VERSION = (3, 8)
+
+
+def check_runtime_version() -> None:
+    if sys.version_info < REQUIRED_PYTHON_VERSION:
+        raise OSError(
+            f'Requires python {REQUIRED_PYTHON_VERSION}, got {sys.version_info} from {sys.executable}')  # noqa
+
+
+########################################
+# ../../../../../omlish/lite/subprocesses.py
+# ruff: noqa: UP006 UP007
+
+
+##
+
+
+_SUBPROCESS_SHELL_WRAP_EXECS = False
+
+
+def subprocess_shell_wrap_exec(args: ta.Sequence[str]) -> ta.Tuple[str, ...]:
+    return ('sh', '-c', ' '.join(map(shlex.quote, args)))
+
+
+def subprocess_maybe_shell_wrap_exec(args: ta.Sequence[str]) -> ta.Tuple[str, ...]:
+    if _SUBPROCESS_SHELL_WRAP_EXECS or is_debugger_attached():
+        return subprocess_shell_wrap_exec(args)
+    else:
+        return tuple(args)
+
+
+def _prepare_subprocess_invocation(
+        *args: ta.Any,
+        env: ta.Optional[ta.Mapping[str, ta.Any]] = None,
+        extra_env: ta.Optional[ta.Mapping[str, ta.Any]] = None,
+        quiet: bool = False,
+        **kwargs: ta.Any,
+) -> ta.Tuple[ta.Tuple[ta.Any, ...], ta.Dict[str, ta.Any]]:
+    log.debug(args)
+    if extra_env:
+        log.debug(extra_env)
+
+    if extra_env:
+        env = {**(env if env is not None else os.environ), **extra_env}
+
+    if quiet and 'stderr' not in kwargs:
+        if not log.isEnabledFor(logging.DEBUG):
+            kwargs['stderr'] = subprocess.DEVNULL
+
+    args = subprocess_maybe_shell_wrap_exec(args)
+
+    return args, dict(
+        env=env,
+        **kwargs,
+    )
+
+
+def subprocess_check_call(*args: ta.Any, stdout=sys.stderr, **kwargs: ta.Any) -> None:
+    args, kwargs = _prepare_subprocess_invocation(*args, stdout=stdout, **kwargs)
+    return subprocess.check_call(args, **kwargs)  # type: ignore
+
+
+def subprocess_check_output(*args: ta.Any, **kwargs: ta.Any) -> bytes:
+    args, kwargs = _prepare_subprocess_invocation(*args, **kwargs)
+    return subprocess.check_output(args, **kwargs)
+
+
+def subprocess_check_output_str(*args: ta.Any, **kwargs: ta.Any) -> str:
+    return subprocess_check_output(*args, **kwargs).decode().strip()
+
+
+##
+
+
+DEFAULT_SUBPROCESS_TRY_EXCEPTIONS: ta.Tuple[ta.Type[Exception], ...] = (
+    FileNotFoundError,
+    subprocess.CalledProcessError,
+)
+
+
+def subprocess_try_call(
+        *args: ta.Any,
+        try_exceptions: ta.Tuple[ta.Type[Exception], ...] = DEFAULT_SUBPROCESS_TRY_EXCEPTIONS,
+        **kwargs: ta.Any,
+) -> bool:
+    try:
+        subprocess_check_call(*args, **kwargs)
+    except try_exceptions as e:  # noqa
+        if log.isEnabledFor(logging.DEBUG):
+            log.exception('command failed')
+        return False
+    else:
+        return True
+
+
+def subprocess_try_output(
+        *args: ta.Any,
+        try_exceptions: ta.Tuple[ta.Type[Exception], ...] = DEFAULT_SUBPROCESS_TRY_EXCEPTIONS,
+        **kwargs: ta.Any,
+) -> ta.Optional[bytes]:
+    try:
+        return subprocess_check_output(*args, **kwargs)
+    except try_exceptions as e:  # noqa
+        if log.isEnabledFor(logging.DEBUG):
+            log.exception('command failed')
+        return None
+
+
+def subprocess_try_output_str(*args: ta.Any, **kwargs: ta.Any) -> ta.Optional[str]:
+    out = subprocess_try_output(*args, **kwargs)
+    return out.decode().strip() if out is not None else None
+
+
+########################################
 # payload.py
 
 
@@ -564,7 +726,7 @@ def _payload_loop(input: ta.IO, output: ta.IO = sys.stderr) -> None:  # noqa
     while (l := input.readline().decode('utf-8').strip()):
         req: CommandRequest = unmarshal_obj(json.loads(l), CommandRequest)
         proc = subprocess.Popen(  # type: ignore
-            req.cmd,
+            subprocess_maybe_shell_wrap_exec(req.cmd),
             **(dict(stdin=io.BytesIO(req.in_)) if req.in_ is not None else {}),
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,

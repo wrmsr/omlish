@@ -11,6 +11,7 @@ import typing as ta
 from omlish.lite.json import json_dumps_compact
 from omlish.lite.marshal import marshal_obj
 from omlish.lite.marshal import unmarshal_obj
+from omlish.lite.subprocesses import subprocess_maybe_shell_wrap_exec
 
 from .bootstrap import post_boostrap
 
@@ -33,7 +34,7 @@ def _payload_loop(input: ta.IO, output: ta.IO = sys.stderr) -> None:  # noqa
     while (l := input.readline().decode('utf-8').strip()):
         req: CommandRequest = unmarshal_obj(json.loads(l), CommandRequest)
         proc = subprocess.Popen(  # type: ignore
-            req.cmd,
+            subprocess_maybe_shell_wrap_exec(req.cmd),
             **(dict(stdin=io.BytesIO(req.in_)) if req.in_ is not None else {}),
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,

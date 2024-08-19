@@ -123,7 +123,7 @@ class RouteHandlerApp(AsgiApp_):
                             ps = f':{p}'
                         else:
                             ps = ''
-                        bsu = f'{sch}://{h}{ps}/'
+                        bsu = BaseServerUrl(f'{sch}://{h}{ps}/')
                     es.enter_context(lang.context_var_setting(BASE_SERVER_URL, bsu))
 
                     route = Route(scope['method'], scope['raw_path'].decode())

@@ -67,7 +67,7 @@ from .concerns.venv import VenvConcern
 
 def _deploy_cmd(args) -> None:
     dct = json.loads(args.cfg)
-    cfg = unmarshal_obj(dct, DeployConfig)
+    cfg: DeployConfig = unmarshal_obj(dct, DeployConfig)
     dp = Deployment(
         cfg,
         [
