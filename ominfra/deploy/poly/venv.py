@@ -39,8 +39,8 @@ class VenvConcern(Concern['VenvConcern.Config']):
             f'{py_exe} -mvenv {r}',
 
             # https://stackoverflow.com/questions/77364550/attributeerror-module-pkgutil-has-no-attribute-impimporter-did-you-mean
-            f'{v_exe}/bin/python -m ensurepip',
-            f'{v_exe}/bin/python -mpip install --upgrade setuptools pip',
+            f'{v_exe} -m ensurepip',
+            f'{v_exe} -mpip install --upgrade setuptools pip',
 
-            f'{v_exe}/bin/python -mpip install -r {rd}/{self._config.requirements_txt}',  # noqa
+            f'{v_exe} -mpip install -r {rd}/{self._config.requirements_txt}',  # noqa
         )
