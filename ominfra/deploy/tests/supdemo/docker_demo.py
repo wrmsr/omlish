@@ -26,10 +26,10 @@ def _main() -> None:
             python_bin='python3.12',
             app_name='omlish',
             repo_url='https://github.com/wrmsr/omlish',
-            revision='f8b740a90b94620965ca8f1d21d5e95c752e6a2d',
+            revision='938143f75faad106351f3cb7742738418266213b',
             requirements_txt='requirements.txt',
-            # entrypoint='app.server',
-            entrypoint='omserv.server.tests.hello',
+            entrypoint='app.server',
+            # entrypoint='omserv.server.tests.hello',
         )
 
         ##
