@@ -29,8 +29,8 @@ class LineReader:
     def __call__(self, e: bytes) -> ta.Iterable[bytes]:
         self._buf += e
         while (i := self._buf.find(b'\n')) >= 0:
-            yield self._buf[:i+1]
-            self._buf = self._buf[i+1:]
+            yield self._buf[:i + 1]
+            self._buf = self._buf[i + 1:]
 
 
 TIMEBOMB_DELAY_S = 20 * 60
@@ -71,7 +71,7 @@ def _main():
         )
         stdin = check.not_none(proc.stdin)
         stdout = check.not_none(proc.stdout)
-        stderr = check.not_none(proc.stderr)
+        stderr = check.not_none(proc.stderr)  # noqa
 
         stdin.write(main_z)
         stdin.flush()
@@ -82,7 +82,7 @@ def _main():
         ##
 
         line_reader = LineReader()
-        lines_buf = []
+        lines_buf: list[bytes] = []
 
         def next_line() -> bytes:
             while True:
@@ -101,7 +101,10 @@ def _main():
             stdin.write(json_dumps_compact(marshal_obj(req)).encode('utf-8'))
             stdin.write(b'\n')
             stdin.flush()
+
+            # l = stdin.readline()
             l = next_line()
+
             resp: CommandResponse = unmarshal_obj(json.loads(l.decode('utf-8')), CommandResponse)
             print(resp)
 
