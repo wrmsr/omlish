@@ -3,6 +3,7 @@ import abc
 import dataclasses as dc
 import json
 import os.path
+import tempfile
 import typing as ta
 
 from omlish.lite.cached import cached_nullary
@@ -113,8 +114,6 @@ class Deploy:
     class Config:
         name: str
 
-        user: str
-
         root_dir: str = '~/deploy'
 
         concerns: ta.List[Concern.Config] = dc.field(default_factory=list)
@@ -149,9 +148,14 @@ class Deploy:
 
 
 def test_polymorph():
+    print()
+
+    root_dir = tempfile.mkdtemp('-ominfra-deploy-polymorph-test')
+    print(root_dir)
+
     dcfg = Deploy.Config(
         name='omlish',
-        user='omlish',
+        root_dir=root_dir,
         concerns=[
             RepoConcern.Config(
                 url='https://github.com/wrmsr/omlish',
