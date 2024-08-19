@@ -108,24 +108,24 @@ class RouteHandlerApp(AsgiApp_):
         with contextlib.ExitStack() as es:
             es.enter_context(lang.context_var_setting(SCOPE, scope))
 
-            if self.base_server_url is not None:
-                bsu = self.base_server_url
-            else:
-                sch = scope["scheme"]
-                h, p = scope['server']
-                if (sch, p) not in (('http', 80), ('https', 443)):
-                    ps = f':{p}'
-                else:
-                    ps = ''
-                bsu = f'{sch}://{h}{ps}/'
-            es.enter_context(lang.context_var_setting(BASE_SERVER_URL, bsu))
-
             match scope_ty := scope['type']:
                 case 'lifespan':
                     await stub_lifespan(scope, recv, send)
                     return
 
                 case 'http':
+                    if self.base_server_url is not None:
+                        bsu = self.base_server_url
+                    else:
+                        sch = scope['scheme']
+                        h, p = scope['server']
+                        if (sch, p) not in (('http', 80), ('https', 443)):
+                            ps = f':{p}'
+                        else:
+                            ps = ''
+                        bsu = f'{sch}://{h}{ps}/'
+                    es.enter_context(lang.context_var_setting(BASE_SERVER_URL, bsu))
+
                     route = Route(scope['method'], scope['raw_path'].decode())
                     handler = self.route_handlers.get(route)
 
