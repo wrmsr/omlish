@@ -13,13 +13,13 @@ def unsubscribe(type, callback):
     callbacks.remove((type, callback))
 
 
-def notify(event):
+def notify_event(event):
     for type, callback in callbacks:
         if isinstance(event, type):
             callback(event)
 
 
-def clear():
+def clear_events():
     callbacks[:] = []
 
 

@@ -8,18 +8,17 @@ import re
 import resource
 import signal
 import stat
-import sys
 import typing as ta
 import warnings
 
-from . import poller
-from . import states
+from .poller import Poller
+from .states import SupervisorState
+from .states import SupervisorStates
 from .compat import SignalReceiver
 from .compat import close_fd
 from .compat import mktempfile
 from .compat import real_exit
 from .compat import try_unlink
-from .configs import ProcessConfig
 from .configs import ServerConfig
 from .datatypes import gid_for_uid
 from .datatypes import name_to_uid
@@ -29,30 +28,7 @@ from .exceptions import NotFound
 
 
 if ta.TYPE_CHECKING:
-    from . import process
-
-
-VERSION = 'foo'
-
-
-def normalize_path(v: str) -> str:
-    return os.path.normpath(os.path.abspath(os.path.expanduser(v)))
-
-
-class Dummy:
-    pass
-
-
-def _get_search_paths() -> list[str]:
-    here = os.path.dirname(os.path.dirname(sys.argv[0]))
-    return [
-        os.path.join(here, 'etc', 'supervisord.conf'),
-        os.path.join(here, 'supervisord.conf'),
-        'supervisord.conf',
-        'etc/supervisord.conf',
-        '/etc/supervisord.conf',
-        '/etc/supervisor/supervisord.conf',
-    ]
+    from .process import Subprocess
 
 
 log = logging.getLogger(__name__)
@@ -69,12 +45,12 @@ class ServerContext:
 
         self.config = config
 
-        self.pid_history: dict[int, 'process.Subprocess'] = {}
-        self.mood: states.SupervisorStates = states.SupervisorStates.RUNNING
+        self.pid_history: dict[int, 'Subprocess'] = {}
+        self.state: SupervisorState = SupervisorStates.RUNNING
 
         self.signal_receiver = SignalReceiver()
 
-        self.poller = poller.Poller()
+        self.poller = Poller()
 
         if self.config.user is not None:
             uid = name_to_uid(self.config.user)
@@ -88,7 +64,7 @@ class ServerContext:
 
     ##
 
-    def setsignals(self) -> None:
+    def set_signals(self) -> None:
         self.signal_receiver.install(
             signal.SIGTERM,
             signal.SIGINT,
@@ -206,7 +182,7 @@ class ServerContext:
         try:
             filenames = os.listdir(child_logdir)
         except OSError:
-            log.warn('Could not clear child_log dir')
+            log.warning('Could not clear child_log dir')
             return
 
         for filename in filenames:
@@ -215,7 +191,7 @@ class ServerContext:
                 try:
                     os.remove(pathname)
                 except OSError:
-                    log.warn('Failed to clean up %r' % pathname)
+                    log.warning('Failed to clean up %r' % pathname)
 
     def daemonize(self) -> None:
         self.poller.before_daemonize()

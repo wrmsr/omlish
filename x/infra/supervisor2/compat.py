@@ -1,39 +1,34 @@
 import errno
-import importlib.metadata
-import io
 import os
 import signal
 import sys
 import tempfile
+import types
 import typing as ta
 
 
-def as_bytes(s, encoding='utf8'):
+T = ta.TypeVar('T')
+
+
+def as_bytes(s: str | bytes, encoding: str = 'utf8') -> bytes:
     if isinstance(s, bytes):
         return s
     else:
         return s.encode(encoding)
 
 
-def as_string(s, encoding='utf8'):
+def as_string(s: str | bytes, encoding='utf8') -> str:
     if isinstance(s, str):
         return s
     else:
         return s.decode(encoding)
 
 
-def is_text_stream(stream):
-    return isinstance(stream, io.TextIOBase)
-
-
-def import_spec(spec):
-    return importlib.metadata.EntryPoint(None, spec, None).load()  # noqa
-
-
-def compact_traceback():
+def compact_traceback() -> tuple[tuple[str, str, int], type[BaseException], BaseException, types.TracebackType]:
     t, v, tb = sys.exc_info()
     tbinfo = []
-    assert tb  # Must have a traceback
+    if not tb:
+        raise RuntimeError('No traceback')
     while tb:
         tbinfo.append((
             tb.tb_frame.f_code.co_filename,
@@ -50,7 +45,7 @@ def compact_traceback():
     return (file, function, line), t, v, info
 
 
-def find_prefix_at_end(haystack: str, needle: str) -> int:
+def find_prefix_at_end(haystack: T, needle: T) -> int:
     l = len(needle) - 1
     while l and not haystack.endswith(needle[:l]):
         l -= 1
@@ -61,23 +56,10 @@ class ExitNow(Exception):
     pass
 
 
-def expand(s: str, expansions: ta.Any, name: str) -> str:
-    try:
-        return s % expansions
-    except KeyError as ex:
-        available = list(expansions.keys())
-        available.sort()
-        raise ValueError(
-            'Format string %r for %r contains names (%s) which cannot be '
-            'expanded. Available names: %s' % (s, name, str(ex), ', '.join(available)))
-    except Exception as ex:
-        raise ValueError('Format string %r for %r is badly formatted: %s' % (s, name, str(ex)))
-
-
 ##
 
 
-def decode_wait_status(sts):
+def decode_wait_status(sts: int) -> tuple[int, str]:
     """
     Decode the status returned by wait() or waitpid().
 
@@ -103,23 +85,17 @@ def decode_wait_status(sts):
         return -1, msg
 
 
-_signames = None
+_signames: ta.Mapping[int, str] | None = None
 
 
-def signame(sig):
-    """
-    Return a symbolic name for a signal.
-
-    Return "signal NNN" if there is no corresponding SIG name in the signal module.
-    """
-
+def signame(sig: int) -> str:
+    global _signames
     if _signames is None:
-        _init_signames()
+        _signames = _init_signames()
     return _signames.get(sig) or 'signal %d' % sig
 
 
-def _init_signames():
-    global _signames
+def _init_signames() -> dict[int, str]:
     d = {}
     for k, v in signal.__dict__.items():
         k_startswith = getattr(k, 'startswith', None)
@@ -127,14 +103,15 @@ def _init_signames():
             continue
         if k_startswith('SIG') and not k_startswith('SIG_'):
             d[v] = k
-    _signames = d
+    return d
 
 
 class SignalReceiver:
-    def __init__(self):
-        self._signals_recvd = []
+    def __init__(self) -> None:
+        super().__init__()
+        self._signals_recvd: list[int] = []
 
-    def receive(self, sig, frame):
+    def receive(self, sig: int, frame: ta.Any) -> None:
         if sig not in self._signals_recvd:
             self._signals_recvd.append(sig)
 
@@ -176,7 +153,7 @@ def close_fd(fd: int) -> bool:
     return True
 
 
-def mktempfile(suffix, prefix, dir):
+def mktempfile(suffix: str, prefix: str, dir: str) -> str:
     # set os._urandomfd as a hack around bad file descriptor bug seen in the wild, see
     # https://web.archive.org/web/20160729044005/http://www.plope.com/software/collector/252
     os._urandomfd = None
@@ -197,3 +174,32 @@ def get_path() -> ta.Sequence[str]:
         if p:
             path = p.split(os.pathsep)
     return path
+
+
+def normalize_path(v: str) -> str:
+    return os.path.normpath(os.path.abspath(os.path.expanduser(v)))
+
+
+ANSI_ESCAPE_BEGIN = b'\x1b['
+ANSI_TERMINATORS = (b'H', b'f', b'A', b'B', b'C', b'D', b'R', b's', b'u', b'J', b'K', b'h', b'l', b'p', b'm')
+
+
+def strip_escapes(s):
+    """Remove all ANSI color escapes from the given string."""
+    result = b''
+    show = 1
+    i = 0
+    L = len(s)
+    while i < L:
+        if show == 0 and s[i:i + 1] in ANSI_TERMINATORS:
+            show = 1
+        elif show:
+            n = s.find(ANSI_ESCAPE_BEGIN, i)
+            if n == -1:
+                return result + s[i:]
+            else:
+                result = result + s[i:n]
+                i = n
+                show = 0
+        i += 1
+    return result
