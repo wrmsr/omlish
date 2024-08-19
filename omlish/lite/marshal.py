@@ -188,7 +188,7 @@ class UuidObjMarshaler(ObjMarshaler):
 
 _OBJ_MARSHALERS: ta.Dict[ta.Any, ObjMarshaler] = {
     **{t: NopObjMarshaler() for t in (type(None),)},
-    **{t: CastObjMarshaler(t) for t in (int, float, str)},
+    **{t: CastObjMarshaler(t) for t in (int, float, str, bool)},
     **{t: Base64ObjMarshaler(t) for t in (bytes, bytearray)},
     **{t: SequenceObjMarshaler(t, DynamicObjMarshaler()) for t in (list, tuple, set, frozenset)},
     **{t: MappingObjMarshaler(t, DynamicObjMarshaler(), DynamicObjMarshaler()) for t in (dict,)},
