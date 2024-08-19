@@ -34,7 +34,7 @@ def _run_commands_loop(input: ta.BinaryIO, output: ta.BinaryIO = sys.stdout.buff
     while (l := input.readline().decode('utf-8').strip()):
         req: CommandRequest = unmarshal_obj(json.loads(l), CommandRequest)
         proc = subprocess.Popen(  # type: ignore
-            subprocess_maybe_shell_wrap_exec(req.cmd),
+            subprocess_maybe_shell_wrap_exec(*req.cmd),
             **(dict(stdin=io.BytesIO(req.in_)) if req.in_ is not None else {}),
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,

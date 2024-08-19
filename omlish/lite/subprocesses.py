@@ -16,19 +16,19 @@ from .runtime import is_debugger_attached
 _SUBPROCESS_SHELL_WRAP_EXECS = False
 
 
-def subprocess_shell_wrap_exec(args: ta.Sequence[str]) -> ta.Tuple[str, ...]:
+def subprocess_shell_wrap_exec(*args: str) -> ta.Tuple[str, ...]:
     return ('sh', '-c', ' '.join(map(shlex.quote, args)))
 
 
-def subprocess_maybe_shell_wrap_exec(args: ta.Sequence[str]) -> ta.Tuple[str, ...]:
+def subprocess_maybe_shell_wrap_exec(*args: str) -> ta.Tuple[str, ...]:
     if _SUBPROCESS_SHELL_WRAP_EXECS or is_debugger_attached():
-        return subprocess_shell_wrap_exec(args)
+        return subprocess_shell_wrap_exec(*args)
     else:
-        return tuple(args)
+        return args
 
 
 def _prepare_subprocess_invocation(
-        *args: ta.Any,
+        *args: str,
         env: ta.Optional[ta.Mapping[str, ta.Any]] = None,
         extra_env: ta.Optional[ta.Mapping[str, ta.Any]] = None,
         quiet: bool = False,
@@ -45,7 +45,7 @@ def _prepare_subprocess_invocation(
         if not log.isEnabledFor(logging.DEBUG):
             kwargs['stderr'] = subprocess.DEVNULL
 
-    args = subprocess_maybe_shell_wrap_exec(args)
+    args = subprocess_maybe_shell_wrap_exec(*args)
 
     return args, dict(
         env=env,
@@ -53,17 +53,17 @@ def _prepare_subprocess_invocation(
     )
 
 
-def subprocess_check_call(*args: ta.Any, stdout=sys.stderr, **kwargs: ta.Any) -> None:
+def subprocess_check_call(*args: str, stdout=sys.stderr, **kwargs: ta.Any) -> None:
     args, kwargs = _prepare_subprocess_invocation(*args, stdout=stdout, **kwargs)
     return subprocess.check_call(args, **kwargs)  # type: ignore
 
 
-def subprocess_check_output(*args: ta.Any, **kwargs: ta.Any) -> bytes:
+def subprocess_check_output(*args: str, **kwargs: ta.Any) -> bytes:
     args, kwargs = _prepare_subprocess_invocation(*args, **kwargs)
     return subprocess.check_output(args, **kwargs)
 
 
-def subprocess_check_output_str(*args: ta.Any, **kwargs: ta.Any) -> str:
+def subprocess_check_output_str(*args: str, **kwargs: ta.Any) -> str:
     return subprocess_check_output(*args, **kwargs).decode().strip()
 
 
@@ -77,7 +77,7 @@ DEFAULT_SUBPROCESS_TRY_EXCEPTIONS: ta.Tuple[ta.Type[Exception], ...] = (
 
 
 def subprocess_try_call(
-        *args: ta.Any,
+        *args: str,
         try_exceptions: ta.Tuple[ta.Type[Exception], ...] = DEFAULT_SUBPROCESS_TRY_EXCEPTIONS,
         **kwargs: ta.Any,
 ) -> bool:
@@ -92,7 +92,7 @@ def subprocess_try_call(
 
 
 def subprocess_try_output(
-        *args: ta.Any,
+        *args: str,
         try_exceptions: ta.Tuple[ta.Type[Exception], ...] = DEFAULT_SUBPROCESS_TRY_EXCEPTIONS,
         **kwargs: ta.Any,
 ) -> ta.Optional[bytes]:
@@ -104,6 +104,6 @@ def subprocess_try_output(
         return None
 
 
-def subprocess_try_output_str(*args: ta.Any, **kwargs: ta.Any) -> ta.Optional[str]:
+def subprocess_try_output_str(*args: str, **kwargs: ta.Any) -> ta.Optional[str]:
     out = subprocess_try_output(*args, **kwargs)
     return out.decode().strip() if out is not None else None
