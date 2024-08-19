@@ -28,7 +28,7 @@ class VenvConcern(Concern['VenvConcern.Config']):
         rd = self._deploy.concern(RepoConcern).repo_dir()
 
         vd = self.venv_dir()
-        self._deploy.runtime().makedirs(vd)
+        self._deploy.runtime().make_dirs(vd)
         l, r = os.path.split(vd)
 
         py_exe = 'python3'

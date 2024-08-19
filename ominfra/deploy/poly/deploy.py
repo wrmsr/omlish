@@ -9,6 +9,7 @@ from .base import Concern
 from .base import ConcernT
 from .base import Deploy
 from .base import DeployRuntime
+from .nginx import NginxConcern  # noqa
 from .repo import RepoConcern  # noqa
 from .venv import VenvConcern  # noqa
 
@@ -18,8 +19,14 @@ class DeployRuntimeImpl(DeployRuntime):
         super().__init__()
         self._deploy = deploy
 
-    def makedirs(self, p: str, exist_ok: bool = False) -> None:
+    def make_dirs(self, p: str, exist_ok: bool = False) -> None:
         os.makedirs(p, exist_ok=exist_ok)
+
+    def write_file(self, p: str, c: ta.Union[str, bytes]) -> None:
+        if os.path.exists(p):
+            raise RuntimeError(f'Path exists: {p}')
+        with open(p, 'w' if isinstance(c, str) else 'wb') as f:
+            f.write(c)
 
     def sh(self, *ss: str) -> None:
         s = ' && '.join(ss)

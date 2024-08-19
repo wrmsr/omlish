@@ -26,7 +26,7 @@ class RepoConcern(Concern['RepoConcern.Config']):
 
     def run(self) -> None:
         rd = self.repo_dir()
-        self._deploy.runtime().makedirs(rd)
+        self._deploy.runtime().make_dirs(rd)
 
         self._deploy.runtime().sh(
             f'cd {rd}',

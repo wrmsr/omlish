@@ -1,4 +1,4 @@
-# ruff: noqa: UP006
+# ruff: noqa: UP006 UP007
 import abc
 import dataclasses as dc
 import typing as ta
@@ -65,7 +65,11 @@ class Concern(abc.ABC, ta.Generic[ConcernConfigT]):
 
 class DeployRuntime(abc.ABC):
     @abc.abstractmethod
-    def makedirs(self, p: str, exist_ok: bool = False) -> None:
+    def make_dirs(self, p: str, exist_ok: bool = False) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def write_file(self, p: str, c: ta.Union[str, bytes]) -> None:
         raise NotImplementedError
 
     @abc.abstractmethod
