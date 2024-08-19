@@ -5,17 +5,16 @@ FIXME:
 import asyncio
 import os.path
 
-from .... import cmds
-from .... import ssh
-from ...remote import do_remote_deploy
-from .. import utils as u
+from ominfra import cmds
+from ominfra import ssh
+from ominfra.deploy.tests import utils as u
 
 
 TIMEBOMB_DELAY_S = 20 * 60
 
 
 async def _a_main():
-    img_name = 'wrmsr/omlish-deploy-demo'
+    img_name = 'wrmsr/omlish-pyremote-demo'
     cur_dir = os.path.dirname(__file__)
     u.build_docker_image(img_name, cur_dir)
 
@@ -36,10 +35,7 @@ async def _a_main():
         ))
 
         try:
-            await do_remote_deploy(
-                cr,
-                skip_submodules=True,
-            )
+            pass
 
         except Exception as e:  # noqa
             print(e)
