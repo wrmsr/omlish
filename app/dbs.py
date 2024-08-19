@@ -1,6 +1,7 @@
 import logging
 
 import sqlalchemy as sa
+import sqlalchemy.event
 import sqlalchemy.ext.asyncio as saa
 
 from omlish import check
