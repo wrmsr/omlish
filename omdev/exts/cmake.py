@@ -16,12 +16,6 @@ Done:
  - https://intellij-support.jetbrains.com/hc/en-us/community/posts/206608485-Multiple-Jetbrain-IDE-sharing-the-same-project-directory really?
   - aight, generate a whole cmake subdir with symlinks to src files lol
 
-==
-
-add_custom_command(TARGET junk POST_BUILD
-        COMMAND echo ${CMAKE_COMMAND} -E copy $<TARGET_FILE_NAME:junk>
-        COMMAND_EXPAND_LISTS
-)
 """  # noqa
 import io
 import os.path
@@ -70,8 +64,8 @@ def _main() -> None:
     out = io.StringIO()
     gen = cmake.CmakeGen(out)
 
-    prj_name = 'junk'
-    var_prefix = 'JUNK'
+    prj_name = 'omlish'
+    var_prefix = prj_name.upper()
 
     gen.write(gen.preamble)
     gen.write('')
