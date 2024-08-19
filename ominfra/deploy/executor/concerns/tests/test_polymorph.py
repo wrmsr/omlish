@@ -188,6 +188,10 @@ class Deploy:
         log.info('Executing: %s', s)
         subprocess_check_call(s, shell=True)
 
+    def run(self) -> None:
+        for c in self._concerns:
+            c.run()
+
 
 ##
 
@@ -222,3 +226,5 @@ def test_polymorph():
 
     d = Deploy(dcfg2)
     print(d)
+
+    d.run()
