@@ -6,11 +6,12 @@ from omlish.lite.json import json_dumps_compact
 from omlish.lite.logs import configure_standard_logging  # noqa
 from omlish.lite.marshal import marshal_obj
 from omlish.lite.marshal import unmarshal_obj
-from omlish.lite.runtime import is_debugger_attached
+from omlish.lite.runtime import is_debugger_attached  # noqa
 
 from ..base import Deploy
 from ..deploy import DeployImpl
 from ..deploy import DeployRuntimeImpl
+from ..nginx import NginxConcern
 from ..repo import RepoConcern
 from ..venv import VenvConcern
 
@@ -37,6 +38,7 @@ class TestPolymorph(unittest.TestCase):
                 VenvConcern.Config(
                     interp_version='3.12.5',
                 ),
+                NginxConcern.Config(),
             ],
         )
         print(dcfg)
