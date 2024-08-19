@@ -28,139 +28,6 @@ T = ta.TypeVar('T')
 
 
 ########################################
-# ../../../../../omlish/lite/cached.py
-
-
-class cached_nullary:  # noqa
-    def __init__(self, fn):
-        super().__init__()
-        self._fn = fn
-        self._value = self._missing = object()
-        functools.update_wrapper(self, fn)
-
-    def __call__(self, *args, **kwargs):  # noqa
-        if self._value is self._missing:
-            self._value = self._fn()
-        return self._value
-
-    def __get__(self, instance, owner):  # noqa
-        bound = instance.__dict__[self._fn.__name__] = self.__class__(self._fn.__get__(instance, owner))
-        return bound
-
-
-########################################
-# ../../../../../omlish/lite/check.py
-# ruff: noqa: UP006 UP007
-
-
-def check_isinstance(v: T, spec: ta.Union[ta.Type[T], tuple]) -> T:
-    if not isinstance(v, spec):
-        raise TypeError(v)
-    return v
-
-
-def check_not_isinstance(v: T, spec: ta.Union[type, tuple]) -> T:
-    if isinstance(v, spec):
-        raise TypeError(v)
-    return v
-
-
-def check_not_none(v: ta.Optional[T]) -> T:
-    if v is None:
-        raise ValueError
-    return v
-
-
-def check_not(v: ta.Any) -> None:
-    if v:
-        raise ValueError(v)
-    return v
-
-
-########################################
-# ../../../../../omlish/lite/json.py
-
-
-##
-
-
-JSON_PRETTY_INDENT = 2
-
-JSON_PRETTY_KWARGS: ta.Mapping[str, ta.Any] = dict(
-    indent=JSON_PRETTY_INDENT,
-)
-
-json_dump_pretty: ta.Callable[..., bytes] = functools.partial(json.dump, **JSON_PRETTY_KWARGS)  # type: ignore
-json_dumps_pretty: ta.Callable[..., str] = functools.partial(json.dumps, **JSON_PRETTY_KWARGS)
-
-
-##
-
-
-JSON_COMPACT_SEPARATORS = (',', ':')
-
-JSON_COMPACT_KWARGS: ta.Mapping[str, ta.Any] = dict(
-    indent=None,
-    separators=JSON_COMPACT_SEPARATORS,
-)
-
-json_dump_compact: ta.Callable[..., bytes] = functools.partial(json.dump, **JSON_COMPACT_KWARGS)  # type: ignore
-json_dumps_compact: ta.Callable[..., str] = functools.partial(json.dumps, **JSON_COMPACT_KWARGS)
-
-
-########################################
-# ../../../../../omlish/lite/logs.py
-"""
-TODO:
- - debug
-"""
-# ruff: noqa: UP007
-
-
-log = logging.getLogger(__name__)
-
-
-def configure_standard_logging(level: ta.Union[int, str] = logging.INFO) -> None:
-    logging.root.addHandler(logging.StreamHandler())
-    logging.root.setLevel(level)
-
-
-########################################
-# ../../../../../omlish/lite/reflect.py
-
-
-_GENERIC_ALIAS_TYPES = (
-    ta._GenericAlias,  # type: ignore  # noqa
-    *([ta._SpecialGenericAlias] if hasattr(ta, '_SpecialGenericAlias') else []),  # noqa
-)
-
-
-def is_generic_alias(obj, *, origin: ta.Any = None) -> bool:
-    return (
-        isinstance(obj, _GENERIC_ALIAS_TYPES) and
-        (origin is None or ta.get_origin(obj) is origin)
-    )
-
-
-is_union_alias = functools.partial(is_generic_alias, origin=ta.Union)
-is_callable_alias = functools.partial(is_generic_alias, origin=ta.Callable)
-
-
-def is_optional_alias(spec: ta.Any) -> bool:
-    return (
-        isinstance(spec, _GENERIC_ALIAS_TYPES) and  # noqa
-        ta.get_origin(spec) is ta.Union and
-        len(ta.get_args(spec)) == 2 and
-        any(a in (None, type(None)) for a in ta.get_args(spec))
-    )
-
-
-def get_optional_alias_arg(spec: ta.Any) -> ta.Any:
-    [it] = [it for it in ta.get_args(spec) if it not in (None, type(None))]
-    return it
-
-
-########################################
 # ../bootstrap.py
 
 
@@ -304,7 +171,140 @@ def post_boostrap() -> PostBoostrap:
 
 
 ########################################
-# ../../../../../omlish/lite/marshal.py
+# ../../../omlish/lite/cached.py
+
+
+class cached_nullary:  # noqa
+    def __init__(self, fn):
+        super().__init__()
+        self._fn = fn
+        self._value = self._missing = object()
+        functools.update_wrapper(self, fn)
+
+    def __call__(self, *args, **kwargs):  # noqa
+        if self._value is self._missing:
+            self._value = self._fn()
+        return self._value
+
+    def __get__(self, instance, owner):  # noqa
+        bound = instance.__dict__[self._fn.__name__] = self.__class__(self._fn.__get__(instance, owner))
+        return bound
+
+
+########################################
+# ../../../omlish/lite/check.py
+# ruff: noqa: UP006 UP007
+
+
+def check_isinstance(v: T, spec: ta.Union[ta.Type[T], tuple]) -> T:
+    if not isinstance(v, spec):
+        raise TypeError(v)
+    return v
+
+
+def check_not_isinstance(v: T, spec: ta.Union[type, tuple]) -> T:
+    if isinstance(v, spec):
+        raise TypeError(v)
+    return v
+
+
+def check_not_none(v: ta.Optional[T]) -> T:
+    if v is None:
+        raise ValueError
+    return v
+
+
+def check_not(v: ta.Any) -> None:
+    if v:
+        raise ValueError(v)
+    return v
+
+
+########################################
+# ../../../omlish/lite/json.py
+
+
+##
+
+
+JSON_PRETTY_INDENT = 2
+
+JSON_PRETTY_KWARGS: ta.Mapping[str, ta.Any] = dict(
+    indent=JSON_PRETTY_INDENT,
+)
+
+json_dump_pretty: ta.Callable[..., bytes] = functools.partial(json.dump, **JSON_PRETTY_KWARGS)  # type: ignore
+json_dumps_pretty: ta.Callable[..., str] = functools.partial(json.dumps, **JSON_PRETTY_KWARGS)
+
+
+##
+
+
+JSON_COMPACT_SEPARATORS = (',', ':')
+
+JSON_COMPACT_KWARGS: ta.Mapping[str, ta.Any] = dict(
+    indent=None,
+    separators=JSON_COMPACT_SEPARATORS,
+)
+
+json_dump_compact: ta.Callable[..., bytes] = functools.partial(json.dump, **JSON_COMPACT_KWARGS)  # type: ignore
+json_dumps_compact: ta.Callable[..., str] = functools.partial(json.dumps, **JSON_COMPACT_KWARGS)
+
+
+########################################
+# ../../../omlish/lite/logs.py
+"""
+TODO:
+ - debug
+"""
+# ruff: noqa: UP007
+
+
+log = logging.getLogger(__name__)
+
+
+def configure_standard_logging(level: ta.Union[int, str] = logging.INFO) -> None:
+    logging.root.addHandler(logging.StreamHandler())
+    logging.root.setLevel(level)
+
+
+########################################
+# ../../../omlish/lite/reflect.py
+
+
+_GENERIC_ALIAS_TYPES = (
+    ta._GenericAlias,  # type: ignore  # noqa
+    *([ta._SpecialGenericAlias] if hasattr(ta, '_SpecialGenericAlias') else []),  # noqa
+)
+
+
+def is_generic_alias(obj, *, origin: ta.Any = None) -> bool:
+    return (
+        isinstance(obj, _GENERIC_ALIAS_TYPES) and
+        (origin is None or ta.get_origin(obj) is origin)
+    )
+
+
+is_union_alias = functools.partial(is_generic_alias, origin=ta.Union)
+is_callable_alias = functools.partial(is_generic_alias, origin=ta.Callable)
+
+
+def is_optional_alias(spec: ta.Any) -> bool:
+    return (
+        isinstance(spec, _GENERIC_ALIAS_TYPES) and  # noqa
+        ta.get_origin(spec) is ta.Union and
+        len(ta.get_args(spec)) == 2 and
+        any(a in (None, type(None)) for a in ta.get_args(spec))
+    )
+
+
+def get_optional_alias_arg(spec: ta.Any) -> ta.Any:
+    [it] = [it for it in ta.get_args(spec) if it not in (None, type(None))]
+    return it
+
+
+########################################
+# ../../../omlish/lite/marshal.py
 """
 TODO:
  - pickle stdlib objs? have to pin to 3.8 pickle protocol, will be cross-version
@@ -583,7 +583,7 @@ def unmarshal_obj(o: ta.Any, ty: ta.Union[ta.Type[T], ta.Any]) -> T:
 
 
 ########################################
-# ../../../../../omlish/lite/runtime.py
+# ../../../omlish/lite/runtime.py
 
 
 @cached_nullary
@@ -601,7 +601,7 @@ def check_runtime_version() -> None:
 
 
 ########################################
-# ../../../../../omlish/lite/subprocesses.py
+# ../../../omlish/lite/subprocesses.py
 # ruff: noqa: UP006 UP007
 
 

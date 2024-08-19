@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 # @omdev-amalg ./_payload.py
+"""
+TODO:
+ - fix stdio/stdout/stderr confusion - why writing results to stderr? and tracebacks clobber it
+"""
 # ruff: noqa: UP007
 import dataclasses as dc
 import io

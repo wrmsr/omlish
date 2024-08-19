@@ -13,11 +13,11 @@ from omlish.lite.json import json_dumps_compact
 from omlish.lite.marshal import marshal_obj
 from omlish.lite.marshal import unmarshal_obj
 
-from .bootstrap import BOOTSTRAP_ACK0
-from .bootstrap import BOOTSTRAP_ACK1
-from .bootstrap import bootstrap_payload
-from .payload import CommandRequest
-from .payload import CommandResponse
+from ...bootstrap import BOOTSTRAP_ACK0
+from ...bootstrap import BOOTSTRAP_ACK1
+from ...bootstrap import bootstrap_payload
+from ...payload import CommandRequest
+from ...payload import CommandResponse
 
 
 TIMEBOMB_DELAY_S = 20 * 60
@@ -38,7 +38,7 @@ def _main():
     ) as ctr_id:  # noqa
         context_name = f'docker:{ctr_id}'
 
-        with open(os.path.join(cur_dir, '_payload.py')) as f:
+        with open(os.path.join(cur_dir, '../..', '_payload.py')) as f:
             real_main_src = f.read()
         main_src = '\n\n'.join([
             real_main_src,
@@ -79,7 +79,9 @@ def _main():
             resp: CommandResponse = unmarshal_obj(json.loads(l.decode('utf-8')), CommandResponse)
             print(resp)
 
-        input()
+        stdin.write(b'\n')
+        stdin.flush()
+        proc.wait(TIMEBOMB_DELAY_S)
 
 
 if __name__ == '__main__':
