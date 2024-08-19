@@ -124,7 +124,7 @@ def bootstrap_payload(context_name: str, main_z_len: int) -> str:
 
 
 class PostBoostrap(ta.NamedTuple):
-    input: ta.IO
+    input: ta.BinaryIO
     main_src: str
 
 
