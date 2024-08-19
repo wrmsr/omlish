@@ -6,6 +6,23 @@ ExecStart=/usr/sbin/nginx
 ExecReload=/bin/kill -s HUP $MAINPID
 ExecStop=/bin/kill -s QUIT $MAINPID
 PrivateTmp=true
+
+# https://gist.github.com/clemensg/7dd024169efe8ce6e7fa4a0b3caa3780
+Type=forking
+PIDFile=/var/run/nginx.pid
+ExecStartPre=/usr/sbin/nginx -t
+ExecStart=/usr/sbin/nginx
+ExecReload=/usr/bin/kill -s HUP $MAINPID
+ExecStop=/usr/bin/kill -s QUIT $MAINPID
+# Hardening
+InaccessiblePaths=/etc/gnupg /etc/shadow /etc/ssh
+ProtectSystem=full
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+SystemCallFilter=~@clock @cpu-emulation @debug @keyring @module @mount @obsolete @raw-io
+MemoryDenyWriteExecute=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictRealtime=yes
 """
 import os.path
 import textwrap
