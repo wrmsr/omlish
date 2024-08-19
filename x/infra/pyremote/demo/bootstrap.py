@@ -113,7 +113,7 @@ def bootstrap_payload(context_name: str, main_z_len: int) -> str:
     stmts = [
         f'import {", ".join(_BOOTSTRAP_IMPORTS)}',
         f'exec(zlib.decompress(base64.decodebytes({bs_z64!r})))',
-        f'_bootstrap_main({context_name!r}, {main_z_len})'
+        f'_bootstrap_main({context_name!r}, {main_z_len})',
     ]
 
     cmd = '; '.join(stmts)

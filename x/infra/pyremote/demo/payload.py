@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # @omdev-amalg ./_payload.py
+# ruff: noqa: UP007
 import dataclasses as dc
 import io
 import json
@@ -28,7 +29,7 @@ class CommandResponse:
     err: bytes
 
 
-def _payload_loop(input: ta.IO, output: ta.IO = sys.stderr) -> None:
+def _payload_loop(input: ta.IO, output: ta.IO = sys.stderr) -> None:  # noqa
     while (l := input.readline().decode('utf-8').strip()):
         req = unmarshal_obj(json.loads(l), CommandRequest)
         proc = subprocess.Popen(

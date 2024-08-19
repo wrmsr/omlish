@@ -5,9 +5,9 @@ from omlish.lite.json import json_dumps_compact
 from omlish.lite.marshal import marshal_obj
 from omlish.lite.marshal import unmarshal_obj
 
-from ..payload import _payload_loop  # noqa
 from ..payload import CommandRequest
 from ..payload import CommandResponse
+from ..payload import _payload_loop  # noqa
 
 
 def test_payload_loop():
@@ -16,7 +16,7 @@ def test_payload_loop():
         CommandRequest(cmd=['uptime']),
         CommandRequest(cmd=['false']),
     ]
-    input = io.BytesIO()
+    input = io.BytesIO()  # noqa
     for req in reqs:
         input.write(json_dumps_compact(marshal_obj(req)).encode('utf-8'))
         input.write(b'\n')
