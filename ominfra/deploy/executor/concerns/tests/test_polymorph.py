@@ -93,10 +93,10 @@ class RepoConcern(Concern['RepoConcern.Config']):
 
     def run(self) -> None:
         rd = self.repo_dir()
-        os.makedirs(rd)
+        self._deploy.runtime().makedirs(rd)
         l, r = os.path.split(rd)
 
-        self._deploy.sh(
+        self._deploy.runtime().sh(
             f'cd {l}',
             f'git clone --depth 1 {self._config.url} {r}',
             *([
@@ -127,12 +127,12 @@ class VenvConcern(Concern['VenvConcern.Config']):
         rd = self._deploy.concern(RepoConcern).repo_dir()
 
         vd = self.venv_dir()
-        os.makedirs(vd)
+        self._deploy.runtime().makedirs(vd)
         l, r = os.path.split(vd)
 
         py_exe = 'python3'
 
-        self._deploy.sh(
+        self._deploy.runtime().sh(
             f'cd {l}',
             f'{py_exe} -mvenv {r}',
 
@@ -142,6 +142,23 @@ class VenvConcern(Concern['VenvConcern.Config']):
 
             f'{vd}/bin/python -mpip install -r {rd}/{self._config.requirements_txt}',  # noqa
         )
+
+
+##
+
+
+class DeployRuntime:
+    def __init__(self, deploy: 'Deploy') -> None:
+        super().__init__()
+        self._deploy = deploy
+
+    def makedirs(self, p: str, exist_ok: bool = False) -> None:
+        os.makedirs(p, exist_ok=exist_ok)
+
+    def sh(self, *ss: str) -> None:
+        s = ' && '.join(ss)
+        log.info('Executing: %s', s)
+        subprocess_check_call(s, shell=True)
 
 
 ##
@@ -162,7 +179,11 @@ class Deploy:
 
         concerns: ta.List[Concern.Config] = dc.field(default_factory=list)
 
-    def __init__(self, config: Config) -> None:
+    def __init__(
+            self,
+            config: Config,
+            runtime_cls: ta.Optional[ta.Type[DeployRuntime]] = None,
+    ) -> None:
         super().__init__()
         self._config = config
 
@@ -176,6 +197,13 @@ class Deploy:
                 raise TypeError(f'Duplicate concern type: {c}')
             self._concerns_by_cls[type(c)] = c
 
+        runtime: ta.Optional[DeployRuntime]
+        if runtime_cls is not None:
+            runtime = runtime_cls(self)
+        else:
+            runtime = None
+        self._runtime = runtime
+
     @property
     def config(self) -> 'Deploy.Config':
         return self._config
@@ -187,10 +215,10 @@ class Deploy:
     def concern(self, cls: ta.Type[ConcernT]) -> ConcernT:
         return self._concerns_by_cls[cls]  # type: ignore
 
-    def sh(self, *ss: str) -> None:
-        s = ' && '.join(ss)
-        log.info('Executing: %s', s)
-        subprocess_check_call(s, shell=True)
+    def runtime(self) -> DeployRuntime:
+        if (runtime := self._runtime) is None:
+            raise RuntimeError('No runtime present')
+        return runtime
 
     def run(self) -> None:
         for c in self._concerns:
