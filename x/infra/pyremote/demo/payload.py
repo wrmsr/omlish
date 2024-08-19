@@ -28,9 +28,9 @@ class CommandResponse:
     err: bytes
 
 
-def _payload_loop(input: ta.IO) -> None:
-    while (l := input.readline()):
-        req = unmarshal_obj(json.loads(l.decode('utf-8')), CommandRequest)
+def _payload_loop(input: ta.IO, output: ta.IO = sys.stderr) -> None:
+    while (l := input.readline().decode('utf-8').strip()):
+        req = unmarshal_obj(json.loads(l), CommandRequest)
         proc = subprocess.Popen(
             req.cmd,
             **(dict(stdin=io.BytesIO(req.in_)) if req.in_ is not None else {}),
@@ -44,7 +44,9 @@ def _payload_loop(input: ta.IO) -> None:
             out=out,
             err=err,
         )
-        print(json_dumps_compact(marshal_obj(resp)), file=sys.stderr)
+        output.write(json_dumps_compact(marshal_obj(resp)).encode('utf-8'))
+        output.write(b'\n')
+        output.flush()
 
 
 def payload_main() -> None:
