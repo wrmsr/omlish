@@ -88,7 +88,10 @@ def _main():
             while True:
                 if lines_buf:
                     return lines_buf.pop(0)
-                lines_buf.extend(line_reader(stdout.read1(0x4000)))
+                print('read1')
+                buf = stdout.read1(0x4000)  # type: ignore
+                print(f'read1: {buf}')
+                lines_buf.extend(line_reader(buf))
 
         ##
 
