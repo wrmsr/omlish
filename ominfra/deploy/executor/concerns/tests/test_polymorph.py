@@ -12,6 +12,7 @@ from omlish.lite.marshal import unmarshal_obj
 ##
 
 
+ConcernT = ta.TypeVar('ConcernT', bound='Concern')
 ConcernConfigT = ta.TypeVar('ConcernConfigT', bound='Concern.Config')
 
 
@@ -33,6 +34,7 @@ class RepoConcern(Concern['RepoConcern.Config']):
     @dc.dataclass(frozen=True)
     class Config(Concern.Config):
         url: str
+        revision: ta.Optional[str] = None
 
 
 ##
@@ -42,6 +44,7 @@ class VenvConcern(Concern['VenvConcern.Config']):
     @dc.dataclass(frozen=True)
     class Config(Concern.Config):
         interp_version: str
+        requirements_tct: str = 'requirements.txt'
 
 
 ##
@@ -71,6 +74,13 @@ class Deploy:
             if type(c) in self._concerns_by_cls:
                 raise TypeError(f'Duplicate concern type: {c}')
             self._concerns_by_cls[type(c)] = c
+
+    @property
+    def concerns(self) -> ta.List[Concern]:
+        return self._concerns
+
+    def concern(self, cls: ta.Type[ConcernT]) -> ConcernT:
+        return self._concerns_by_cls[cls]
 
 
 ##
