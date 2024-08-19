@@ -20,12 +20,10 @@ async def _a_main():
 
     with u.launch_docker_container(
             '-e', f'SSH_PASSWORD={ssh_password}',
-            '-p', '9082:22',
-            '-p', '9081:9081',
+            '-p', '9092:22',
             img_name,
             timebomb_delay_s=TIMEBOMB_DELAY_S,
     ) as ctr_id:  # noqa
-
         try:
             pass
 
