@@ -516,6 +516,7 @@ def _prepare_subprocess_invocation(
         env: ta.Optional[ta.Mapping[str, ta.Any]] = None,
         extra_env: ta.Optional[ta.Mapping[str, ta.Any]] = None,
         quiet: bool = False,
+        shell: bool = False,
         **kwargs: ta.Any,
 ) -> ta.Tuple[ta.Tuple[ta.Any, ...], ta.Dict[str, ta.Any]]:
     log.debug(args)
@@ -529,10 +530,12 @@ def _prepare_subprocess_invocation(
         if not log.isEnabledFor(logging.DEBUG):
             kwargs['stderr'] = subprocess.DEVNULL
 
-    args = subprocess_maybe_shell_wrap_exec(*args)
+    if not shell:
+        args = subprocess_maybe_shell_wrap_exec(*args)
 
     return args, dict(
         env=env,
+        shell=shell,
         **kwargs,
     )
 
@@ -725,6 +728,10 @@ class DirsConcern(Concern):
 
 ########################################
 # ../concerns/nginx.py
+"""
+TODO:
+ - https://stackoverflow.com/questions/3011067/restart-nginx-without-sudo
+"""
 
 
 class GlobalNginxConcern(Concern):
