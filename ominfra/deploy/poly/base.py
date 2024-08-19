@@ -57,6 +57,7 @@ class Runtime(abc.ABC):
 
 
 class BaseConcernRunner(abc.ABC, ta.Generic[ConcernT, ConfigT]):
+    Config: ta.ClassVar[type]
     concern_cls: ta.ClassVar[type]
 
     def __init__(
