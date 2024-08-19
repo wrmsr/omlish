@@ -1,6 +1,7 @@
 import enum
 
 from omlish import dataclasses as dc
+from omlish.configs import strings as cfgstr
 from omlish import inject as inj
 from omserv.apps.base import BaseServerUrl
 
@@ -35,7 +36,15 @@ def bind_user_store(cfg: ServerConfig) -> inj.Elemental:
     raise ValueError(cfg.user_store)
 
 
-def _main(cfg: ServerConfig = ServerConfig()) -> None:
+def _main(cfg: ServerConfig | None = None) -> None:
+    if cfg is None:
+        cfg = ServerConfig()
+
+        def fn(v):
+            raise NotImplementedError
+
+        cfg = cfgstr.StringRewriter(fn)(cfg)
+
     shell.run_shell(
         shell.bind_asgi_server(bind_app()),
 
