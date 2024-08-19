@@ -26,7 +26,9 @@ def test_payload_loop():
     output.seek(0)
     resps = [
         unmarshal_obj(json.loads(l.decode('utf-8')), CommandResponse)
-        for l in input.readlines()
+        for l in output.readlines()
         if l.strip()
     ]
     print(resps)
+    assert len(resps) == 2
+    assert resps[0].out.decode('utf-8') == b'hi\n'
