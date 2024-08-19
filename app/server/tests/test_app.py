@@ -25,6 +25,7 @@ from omserv.server.workers import serve
 from ...dbs import bind_dbs
 from ...secrets import bind_secrets
 from ..inject import bind_app
+from ..inject import bind_in_memory_user_store
 
 
 def randhex(l: int) -> str:
@@ -40,8 +41,8 @@ def randhex(l: int) -> str:
 )
 @au.with_adapter_loop(wait=True)
 async def test_auth():
-    from omlish import logs  # noqa
-    logs.configure_standard_logging('DEBUG')  # noqa
+    # from omlish import logs  # noqa
+    # logs.configure_standard_logging('DEBUG')  # noqa
 
     port = get_free_port()
     server_bind = f'127.0.0.1:{port}'
@@ -131,15 +132,11 @@ async def test_auth():
                 assert dct['tokens'] == [21943, 2318, 275, 1031, 627, 87, 23105, 612]
 
     async with inj.create_async_managed_injector(
-        inj.override(
-            inj.as_elements(
-                inj.bind(BaseServerUrl, to_const=base_url),
-            ),
-
-            bind_app(),
-            bind_dbs(),
-            bind_secrets(),
-        ),
+        inj.bind(BaseServerUrl, to_const=base_url),
+        bind_app(),
+        bind_dbs(),
+        bind_secrets(),
+        bind_in_memory_user_store(),
     ) as i:
         app = await au.s_to_a(i.provide)(AsgiApp)
 

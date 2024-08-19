@@ -10,13 +10,11 @@ TODO:
 https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login
 """
 import datetime
-import os
 
 from omlish import inject as inj
 from omlish import secrets as sec
 from omlish.http import sessions
 from omlish.http.asgi import AsgiApp
-from omserv.apps.base import BaseServerUrl
 from omserv.apps.routes import RouteHandlerApp
 from omserv.apps.templates import J2Templates
 
@@ -25,6 +23,23 @@ from ..users import UserStore
 from ..usersdb import DbUserStore
 from .apps import inject as apps_inj
 from .handlers import inject as handlers_inj
+
+
+##
+
+
+def bind_in_memory_user_store() -> inj.Elemental:
+    return inj.as_elements(
+        inj.bind(InMemoryUserStore, singleton=True),
+        inj.bind(UserStore, to_key=InMemoryUserStore),
+    )
+
+
+def bind_db_user_store() -> inj.Elemental:
+    return inj.as_elements(
+        inj.bind(DbUserStore, singleton=True),
+        inj.bind(UserStore, to_key=DbUserStore),
+    )
 
 
 ##
@@ -46,24 +61,6 @@ def _bind_cookie_session_store() -> inj.Elemental:
     )
 
 
-def _bind_in_memory_user_store() -> inj.Elemental:
-    return inj.as_elements(
-        inj.bind(InMemoryUserStore, singleton=True),
-        inj.bind(UserStore, to_key=InMemoryUserStore),
-    )
-
-
-def _bind_db_user_store() -> inj.Elemental:
-    return inj.as_elements(
-        inj.bind(DbUserStore, singleton=True),
-        inj.bind(UserStore, to_key=DbUserStore),
-    )
-
-
-def base_server_url() -> BaseServerUrl:
-    return BaseServerUrl(os.environ.get('BASE_SERVER_URL', 'http://localhost:8000/'))
-
-
 def bind_app() -> inj.Elemental:
     return inj.as_elements(
         inj.private(
@@ -76,14 +73,9 @@ def bind_app() -> inj.Elemental:
 
             handlers_inj.bind(),
 
-            _bind_in_memory_user_store(),
-            # _bind_db_user_store(),
-
             _bind_cookie_session_store(),
 
             inj.bind(RouteHandlerApp, singleton=True),
             inj.bind(AsgiApp, to_key=RouteHandlerApp, expose=True),
         ),
-
-        inj.bind(base_server_url, singleton=True),
     )
