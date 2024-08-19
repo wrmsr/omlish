@@ -90,7 +90,7 @@ scipy==1.14.0
 scikit-learn==1.5.1
 scikit-image==0.24.0
 
-simsimd==5.0.0
+simsimd==5.0.1
 
 spacy==3.7.5
 
@@ -130,7 +130,7 @@ geopandas==1.0.1; sys_platform == 'darwin'  # FIXME: libgdal-dev gdal-bin?
 gutenberg==0.8.2
 # h5py
 mwparserfromhell==0.6.6
-nltk==3.8.1
+nltk==3.9.1
 
 ### problematic
 

@@ -95,4 +95,4 @@ aiomysql==0.2.0
 aiosqlite==0.20.0
 asyncpg==0.29.0; python_version < '3.13'  # greenlet
 
-asyncssh==2.15.0; python_version < '3.13'  # cffi
+asyncssh==2.16.0; python_version < '3.13'  # cffi
