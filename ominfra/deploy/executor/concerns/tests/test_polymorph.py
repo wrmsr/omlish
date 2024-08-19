@@ -8,8 +8,11 @@ import typing as ta
 
 from omlish.lite.cached import cached_nullary
 from omlish.lite.json import json_dumps_compact
+from omlish.lite.logs import configure_standard_logging  # noqa
+from omlish.lite.logs import log
 from omlish.lite.marshal import marshal_obj
 from omlish.lite.marshal import unmarshal_obj
+from omlish.lite.subprocesses import subprocess_check_call
 
 
 ##
@@ -63,6 +66,10 @@ class Concern(abc.ABC, ta.Generic[ConcernConfigT]):
     def fs_items(self) -> ta.Sequence[FsItem]:
         return []
 
+    @abc.abstractmethod
+    def run(self) -> None:
+        raise NotImplementedError
+
 
 ##
 
@@ -72,6 +79,7 @@ class RepoConcern(Concern['RepoConcern.Config']):
     class Config(Concern.Config):
         url: str
         revision: ta.Optional[str] = None
+        init_submodules: bool = False
 
     @cached_nullary
     def repo_dir(self) -> str:
@@ -81,6 +89,20 @@ class RepoConcern(Concern['RepoConcern.Config']):
     def fs_items(self) -> ta.Sequence[FsItem]:
         return [FsDir(self.repo_dir())]
 
+    def run(self) -> None:
+        rd = self.repo_dir()
+        os.makedirs(rd)
+        l, r = os.path.split(rd)
+
+        self._deploy.sh(
+            f'cd {l}',
+            f'git clone --depth 1 {self._config.url} {r}',
+            *([
+                  f'cd {r}',
+                  'git submodule update --init',
+              ] if self._config.init_submodules else []),
+        )
+
 
 ##
 
@@ -89,7 +111,7 @@ class VenvConcern(Concern['VenvConcern.Config']):
     @dc.dataclass(frozen=True)
     class Config(Concern.Config):
         interp_version: str
-        requirements_tct: str = 'requirements.txt'
+        requirements_txt: str = 'requirements.txt'
 
     @cached_nullary
     def venv_dir(self) -> str:
@@ -98,6 +120,24 @@ class VenvConcern(Concern['VenvConcern.Config']):
     @cached_nullary
     def fs_items(self) -> ta.Sequence[FsItem]:
         return [FsDir(self.venv_dir())]
+
+    def run(self) -> None:
+        vd = self.venv_dir()
+        os.makedirs(vd)
+        l, r = os.path.split(vd)
+
+        py_exe = 'python3'
+
+        self._deploy.sh(
+            f'cd {l}',
+            f'{py_exe} -mvenv {r}',
+
+            # https://stackoverflow.com/questions/77364550/attributeerror-module-pkgutil-has-no-attribute-impimporter-did-you-mean
+            f'{vd}/bin/python -m ensurepip',
+            f'{vd}/bin/python -mpip install --upgrade setuptools pip',
+
+            f'{vd}/bin/python -mpip install -r {vd}/{self._config.requirements_txt}',  # noqa
+        )
 
 
 ##
@@ -143,11 +183,18 @@ class Deploy:
     def concern(self, cls: ta.Type[ConcernT]) -> ConcernT:
         return self._concerns_by_cls[cls]
 
+    def sh(self, *ss: str) -> None:
+        s = ' && '.join(ss)
+        log.info('Executing: %s', s)
+        subprocess_check_call(s, shell=True)
+
 
 ##
 
 
 def test_polymorph():
+    configure_standard_logging('DEBUG')
+
     print()
 
     root_dir = tempfile.mkdtemp('-ominfra-deploy-polymorph-test')
