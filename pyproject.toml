@@ -29,17 +29,35 @@ classifiers = [
 [project.optional-dependencies]
 async = [
     'anyio',
-    'greenlet; python_version < 3.13',
-]
-trio = [
+    'sniffio',
+
+    'greenlet; python_version < "3.13"',
+
     'trio',
-    'trio-asyncio',
+    'trio-asyncio; python_version < "3.13"',
 ]
-http = ['httpx']
-sql = ['sqlalchemy']
-wrapt = ['wrapt']
-yaml = ['pyyaml']
-jinja2 = ['jinja2']
+
+compression=[
+    'lz4',
+    'python-snappy; python_version < "3.13"',
+    'zstd',
+]
+
+formats = [
+    'orjson',
+    'cloudpickle',
+    'pyyaml',
+]
+
+http = [
+    'httpx[http2]',
+]
+
+misc = [
+    'jinja2',
+    'psutil',
+    'wrapt',
+]
 
 server = [
     'h11',
@@ -48,7 +66,21 @@ server = [
     'wsproto',
 ]
 
-test=['pytest']
+sql = [
+    'sqlalchemy; python_version >= "3.13"',
+    'sqlalchemy[asyncio]; python_version < "3.13"',
+
+    'pg8000',
+    'pymysql',
+
+    'aiomysql',
+    'aiosqlite',
+    'asyncpg; python_version < "3.13"',
+]
+
+test = [
+    'pytest',
+]
 
 
 ##
