@@ -132,7 +132,6 @@ async def test_auth():
                 assert dct['tokens'] == [21943, 2318, 275, 1031, 627, 87, 23105, 612]
 
     async with inj.create_async_managed_injector(
-        inj.bind(BaseServerUrl, to_const=base_url),
         bind_app(),
         bind_dbs(),
         bind_secrets(),
