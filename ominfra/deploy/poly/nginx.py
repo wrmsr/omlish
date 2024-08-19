@@ -5,14 +5,14 @@ import typing as ta
 
 from omlish.lite.cached import cached_nullary
 
-from .base import Concern
+from .base import DeployConcern
 from .base import FsFile
 from .base import FsItem
 
 
-class NginxConcern(Concern['NginxConcern.Config']):
+class NginxDeployConcern(DeployConcern['NginxDeployConcern.Config']):
     @dc.dataclass(frozen=True)
-    class Config(Concern.Config):
+    class Config(DeployConcern.Config):
         listen_port: int = 80
         proxy_port: int = 8000
 
