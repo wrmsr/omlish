@@ -281,9 +281,14 @@ MachineGen = ta.Generator  # ta.TypeAlias
 
 
 class Machine(ta.Generic[I, O]):
-    def __init__(self, _initial: MachineGen) -> None:
+    def __init__(self, initial: MachineGen) -> None:
         super().__init__()
-        self._gen = _initial
+        self._advance(initial)
+
+    _gen: MachineGen
+
+    def _advance(self, gen: MachineGen) -> None:
+        self._gen = gen
         if (n := next(self._gen)) is not None:  # noqa
             raise IllegalStateException
 
@@ -296,9 +301,7 @@ class Machine(ta.Generic[I, O]):
         except StopIteration as s:
             if s.value is None:
                 raise IllegalStateException
-            self._gen = s.value
-            if (n := next(self._gen)) is not None:  # noqa
-                raise IllegalStateException
+            self._advance(s.value)
 
 
 #
