@@ -14,7 +14,6 @@ from omlish import inject as inj
 from omlish import lang
 from omlish.http.asgi import AsgiApp
 from omlish.testing import pytest as ptu
-from omserv.apps.base import BaseServerUrl
 from omserv.server.config import Config
 from omserv.server.tests.utils import get_free_port
 from omserv.server.tests.utils import get_timeout_s

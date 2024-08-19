@@ -1910,6 +1910,9 @@ TODO:
 # ruff: noqa: UP006 UP007
 
 
+##
+
+
 class ObjMarshaler(abc.ABC):
     @abc.abstractmethod
     def marshal(self, o: ta.Any) -> ta.Any:
@@ -2173,7 +2176,7 @@ def marshal_obj(o: ta.Any, ty: ta.Any = None) -> ta.Any:
     return get_obj_marshaler(ty if ty is not None else type(o)).marshal(o)
 
 
-def unmarshal_obj(o: ta.Any, ty: ta.Any) -> ta.Any:
+def unmarshal_obj(o: ta.Any, ty: ta.Union[ta.Type[T], ta.Any]) -> T:
     return get_obj_marshaler(ty).unmarshal(o)
 
 
@@ -2392,6 +2395,17 @@ class PyprojectConfigPreparer:
 _SUBPROCESS_SHELL_WRAP_EXECS = False
 
 
+def subprocess_shell_wrap_exec(args: ta.Sequence[str]) -> ta.Tuple[str, ...]:
+    return ('sh', '-c', ' '.join(map(shlex.quote, args)))
+
+
+def subprocess_maybe_shell_wrap_exec(args: ta.Sequence[str]) -> ta.Tuple[str, ...]:
+    if _SUBPROCESS_SHELL_WRAP_EXECS or is_debugger_attached():
+        return subprocess_shell_wrap_exec(args)
+    else:
+        return tuple(args)
+
+
 def _prepare_subprocess_invocation(
         *args: ta.Any,
         env: ta.Optional[ta.Mapping[str, ta.Any]] = None,
@@ -2410,8 +2424,7 @@ def _prepare_subprocess_invocation(
         if not log.isEnabledFor(logging.DEBUG):
             kwargs['stderr'] = subprocess.DEVNULL
 
-    if _SUBPROCESS_SHELL_WRAP_EXECS or is_debugger_attached():
-        args = ('sh', '-c', ' '.join(map(shlex.quote, args)))
+    args = subprocess_maybe_shell_wrap_exec(args)
 
     return args, dict(
         env=env,

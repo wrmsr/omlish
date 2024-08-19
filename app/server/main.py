@@ -1,8 +1,8 @@
 import enum
 
 from omlish import dataclasses as dc
-from omlish.configs import strings as cfgstr
 from omlish import inject as inj
+from omlish.configs import strings as cfgstr
 from omserv.apps.base import BaseServerUrl
 
 from .. import shell

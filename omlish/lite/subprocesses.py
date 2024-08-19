@@ -16,6 +16,17 @@ from .runtime import is_debugger_attached
 _SUBPROCESS_SHELL_WRAP_EXECS = False
 
 
+def subprocess_shell_wrap_exec(args: ta.Sequence[str]) -> ta.Tuple[str, ...]:
+    return ('sh', '-c', ' '.join(map(shlex.quote, args)))
+
+
+def subprocess_maybe_shell_wrap_exec(args: ta.Sequence[str]) -> ta.Tuple[str, ...]:
+    if _SUBPROCESS_SHELL_WRAP_EXECS or is_debugger_attached():
+        return subprocess_shell_wrap_exec(args)
+    else:
+        return tuple(args)
+
+
 def _prepare_subprocess_invocation(
         *args: ta.Any,
         env: ta.Optional[ta.Mapping[str, ta.Any]] = None,
@@ -34,8 +45,7 @@ def _prepare_subprocess_invocation(
         if not log.isEnabledFor(logging.DEBUG):
             kwargs['stderr'] = subprocess.DEVNULL
 
-    if _SUBPROCESS_SHELL_WRAP_EXECS or is_debugger_attached():
-        args = ('sh', '-c', ' '.join(map(shlex.quote, args)))
+    args = subprocess_maybe_shell_wrap_exec(args)
 
     return args, dict(
         env=env,
