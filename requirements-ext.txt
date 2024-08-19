@@ -156,7 +156,7 @@ blobfile==2.1.1
 
 ### infra
 
-boto3>=1.35.0
+boto3>=1.35.1
 
 google-cloud-compute==1.19.2
 
