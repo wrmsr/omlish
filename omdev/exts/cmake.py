@@ -154,8 +154,7 @@ def _main() -> None:
         sl = os.path.join(cmake_dir, ext_src)
         sal = os.path.abspath(sl)
         sd = os.path.dirname(sal)
-        if not os.path.isdir(sd):
-            os.makedirs(sd)
+        os.makedirs(sd, exist_ok=True)
         rp = os.path.relpath(os.path.abspath(ext_src), sd)
         os.symlink(rp, sal)
 
