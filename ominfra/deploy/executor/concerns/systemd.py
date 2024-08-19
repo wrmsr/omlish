@@ -1,9 +1,4 @@
 """
-TODO:
- - loginctl enable-linger $USER
-
-==
-
 # https://serverfault.com/questions/617823/how-to-set-systemd-service-dependencies
 PIDFile=/run/nginx.pid
 ExecStartPre=/usr/sbin/nginx -t
@@ -20,6 +15,13 @@ from omlish.lite.logs import log
 from ..base import Concern
 from ..base import Phase
 from ..base import run_in_phase
+
+
+class GlobalSystemdConcern(Concern):
+    @run_in_phase(Phase.HOST)
+    def enable_user_linger(self) -> None:
+        log.info('Enabling user linger')
+        self._d.sh(f'loginctl enable-linger {self._d.host_cfg.username}')
 
 
 class SystemdConcern(Concern):
