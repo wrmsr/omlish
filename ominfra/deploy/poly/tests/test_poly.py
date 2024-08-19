@@ -10,9 +10,9 @@ from omlish.lite.runtime import is_debugger_attached  # noqa
 
 from ..base import Deploy
 from ..deploy import DeployImpl
-from ..runtime import RuntimeImpl
 from ..nginx import NginxDeployConcern
 from ..repo import RepoDeployConcern
+from ..runtime import RuntimeImpl
 from ..venv import VenvDeployConcern
 
 
