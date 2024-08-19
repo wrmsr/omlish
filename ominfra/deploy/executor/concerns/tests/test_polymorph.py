@@ -2,11 +2,40 @@
 import abc
 import dataclasses as dc
 import json
+import os.path
 import typing as ta
 
+from omlish.lite.cached import cached_nullary
 from omlish.lite.json import json_dumps_compact
 from omlish.lite.marshal import marshal_obj
 from omlish.lite.marshal import unmarshal_obj
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class FsItem(abc.ABC):
+    path: str
+
+    @property
+    @abc.abstractmethod
+    def is_dir(self) -> bool:
+        raise NotImplementedError
+
+
+@dc.dataclass(frozen=True)
+class FsFile(FsItem):
+    @property
+    def is_dir(self) -> bool:
+        return False
+
+
+@dc.dataclass(frozen=True)
+class FsDir(FsItem):
+    @property
+    def is_dir(self) -> bool:
+        return True
 
 
 ##
@@ -26,6 +55,13 @@ class Concern(abc.ABC, ta.Generic[ConcernConfigT]):
         self._config = config
         self._deploy = deploy
 
+    @property
+    def config(self) -> ConcernConfigT:
+        return self._config
+
+    def fs_items(self) -> ta.Sequence[FsItem]:
+        return []
+
 
 ##
 
@@ -36,6 +72,14 @@ class RepoConcern(Concern['RepoConcern.Config']):
         url: str
         revision: ta.Optional[str] = None
 
+    @cached_nullary
+    def repo_dir(self) -> str:
+        return os.path.join(self._deploy.config.root_dir, 'repos', self._deploy.config.name)
+
+    @cached_nullary
+    def fs_items(self) -> ta.Sequence[FsItem]:
+        return [FsDir(self.repo_dir())]
+
 
 ##
 
@@ -45,6 +89,14 @@ class VenvConcern(Concern['VenvConcern.Config']):
     class Config(Concern.Config):
         interp_version: str
         requirements_tct: str = 'requirements.txt'
+
+    @cached_nullary
+    def venv_dir(self) -> str:
+        return os.path.join(self._deploy.config.root_dir, 'venvs', self._deploy.config.name)
+
+    @cached_nullary
+    def fs_items(self) -> ta.Sequence[FsItem]:
+        return [FsDir(self.venv_dir())]
 
 
 ##
@@ -59,7 +111,13 @@ CONCERN_CLS_BY_CONFIG_CLS: ta.Mapping[ta.Type[Concern.Config], ta.Type[Concern]]
 class Deploy:
     @dc.dataclass(frozen=True)
     class Config:
-        concerns: ta.List[Concern.Config]
+        name: str
+
+        user: str
+
+        root_dir: str = '~/deploy'
+
+        concerns: ta.List[Concern.Config] = dc.field(default_factory=list)
 
     def __init__(self, config: Config) -> None:
         super().__init__()
@@ -76,6 +134,10 @@ class Deploy:
             self._concerns_by_cls[type(c)] = c
 
     @property
+    def config(self) -> 'Deploy.Config':
+        return self._config
+
+    @property
     def concerns(self) -> ta.List[Concern]:
         return self._concerns
 
@@ -88,6 +150,8 @@ class Deploy:
 
 def test_polymorph():
     dcfg = Deploy.Config(
+        name='omlish',
+        user='omlish',
         concerns=[
             RepoConcern.Config(
                 url='https://github.com/wrmsr/omlish',
