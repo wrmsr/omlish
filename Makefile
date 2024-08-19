@@ -222,18 +222,16 @@ venv-lite:
 		${PYPROJECT} venv $$V exe ; \
 	done
 
-LITE_TESTS=\
-	omlish.lite \
-	omdev.interp2 \
-	omdev.pyproject2 \
-	omdev.toml \
-	omdev.versioning \
-
 .PHONY: test-lite
 test-lite:
+	LITE_PATHS=$$(${PYTHON} -m omdev.scripts.findmagic --py -x py -m '# @omlish-lite' ${SRCS}) ; \
 	for V in ${LITE_VENVS} ; do \
-  		for T in ${LITE_TESTS} ; do \
-			$$(${PYPROJECT} venv $$V exe) -munittest discover -vb $$T ; \
+  		for T in $$LITE_PATHS ; do \
+			if [ -d $$(echo "$$T" | tr '.' '/') ] ; then \
+				$$(${PYPROJECT} venv $$V exe) -munittest discover -vb $$T ; \
+			else \
+				$$(${PYPROJECT} venv $$V exe) -munittest -vb $$T ; \
+			fi ; \
 		done ; \
 	done
 
