@@ -2,20 +2,19 @@
 https://github.com/jaanli/variational-autoencoder
 """
 """Train variational autoencoder on binary MNIST data."""
-
-import numpy as np
+import argparse
+import pathlib
 import random
 import time
 
+from torch import nn
+import numpy as np
 import torch
 import torch.utils
 import torch.utils.data
-from torch import nn
 
 import data
 import flow
-import argparse
-import pathlib
 
 
 def add_args(parser):
