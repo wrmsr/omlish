@@ -75,7 +75,7 @@ def _main():
             stdin.write(json_dumps_compact(marshal_obj(req)).encode('utf-8'))
             stdin.write(b'\n')
             stdin.flush()
-            l = stderr.readline()
+            l = stdout.readline()
             resp: CommandResponse = unmarshal_obj(json.loads(l.decode('utf-8')), CommandResponse)
             print(resp)
 
