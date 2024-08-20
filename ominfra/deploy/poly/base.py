@@ -181,6 +181,8 @@ class Deploy(BaseConcernRunner[DeployConcern, 'Deploy.Config']):
     class Config:
         name: str
 
+        user = 'omlish'
+
         root_dir: str = '~/deploy'
 
         concerns: ta.List[DeployConcern.Config] = dc.field(default_factory=list)
