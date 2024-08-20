@@ -12,6 +12,7 @@ from ..base import Deploy
 from ..base import Site
 from ..deploy import DeployImpl
 from ..nginx import NginxDeployConcern
+from ..nginx import NginxSiteConcern
 from ..repo import RepoDeployConcern
 from ..runtime import RuntimeImpl
 from ..site import SiteImpl
@@ -32,9 +33,13 @@ class TestPolymorph(unittest.TestCase):
         print(root_dir)
 
         dcfg = Deploy.Config(
-            site=Site.Config(),
+            site=Site.Config(
+                root_dir=root_dir,
+                concerns=[
+                    NginxSiteConcern.Config(),
+                ],
+            ),
             name='omlish',
-            root_dir=root_dir,
             concerns=[
                 RepoDeployConcern.Config(
                     url='https://github.com/wrmsr/omlish',

@@ -38,7 +38,7 @@ class SupervisorDeployConcern(DeployConcern['SupervisorDeployConcern.Config']):
 
     @cached_nullary
     def conf_file(self) -> str:
-        return os.path.join(self._deploy.config.root_dir, 'conf', 'supervisor', self._deploy.config.name + '.conf')
+        return os.path.join(self._deploy.site.config.root_dir, 'conf', 'supervisor', self._deploy.config.name + '.conf')
 
     @cached_nullary
     def fs_items(self) -> ta.Sequence[FsItem]:
@@ -54,7 +54,7 @@ class SupervisorDeployConcern(DeployConcern['SupervisorDeployConcern.Config']):
             [program:{self._deploy.config.name}]
             command={vx} -m {self._config.entrypoint}
             directory={rd}
-            user={self._deploy.config.user}
+            user={self._deploy.site.config.user}
             autostart=true
             autorestart=true
         """)
