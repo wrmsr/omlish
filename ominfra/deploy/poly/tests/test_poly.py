@@ -13,6 +13,7 @@ from ..deploy import DeployImpl
 from ..nginx import NginxDeployConcern
 from ..repo import RepoDeployConcern
 from ..runtime import RuntimeImpl
+from ..supervisor import SupervisorDeployConcern
 from ..venv import VenvDeployConcern
 
 
@@ -37,6 +38,9 @@ class TestPolymorph(unittest.TestCase):
                 ),
                 VenvDeployConcern.Config(
                     interp_version='3.12.5',
+                ),
+                SupervisorDeployConcern.Config(
+                    entrypoint='app.server',
                 ),
                 NginxDeployConcern.Config(),
             ],
