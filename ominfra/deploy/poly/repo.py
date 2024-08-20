@@ -8,11 +8,12 @@ from .base import DeployConcern
 from .base import FsDir
 from .base import FsItem
 from .base import Runtime
+from .configs import DeployConcernConfig
 
 
 class RepoDeployConcern(DeployConcern['RepoDeployConcern.Config']):
     @dc.dataclass(frozen=True)
-    class Config(DeployConcern.Config):
+    class Config(DeployConcernConfig):
         url: str
         revision: str = 'master'
         init_submodules: bool = False

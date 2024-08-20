@@ -9,6 +9,7 @@ from .base import DeployConcern
 from .base import FsFile
 from .base import FsItem
 from .base import Runtime
+from .configs import DeployConcernConfig
 from .repo import RepoDeployConcern
 from .venv import VenvDeployConcern
 
@@ -34,7 +35,7 @@ from .venv import VenvDeployConcern
 
 class SupervisorDeployConcern(DeployConcern['SupervisorDeployConcern.Config']):
     @dc.dataclass(frozen=True)
-    class Config(DeployConcern.Config):
+    class Config(DeployConcernConfig):
         entrypoint: str
 
     @cached_nullary
