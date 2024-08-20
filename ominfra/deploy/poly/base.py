@@ -63,6 +63,7 @@ class BaseConcernRunner(abc.ABC, ta.Generic[ConcernT, ConfigT]):
     def __init__(
             self,
             config: ConfigT,
+            *,
             runtime: ta.Optional[Runtime] = None,
     ) -> None:
         super().__init__()
@@ -179,6 +180,8 @@ class DeployConcern(abc.ABC, ta.Generic[DeployConcernConfigT]):
 class Deploy(BaseConcernRunner[DeployConcern, 'Deploy.Config']):
     @dc.dataclass(frozen=True)
     class Config:
+        site: Site.Config
+
         name: str
 
         user = 'omlish'
@@ -186,6 +189,11 @@ class Deploy(BaseConcernRunner[DeployConcern, 'Deploy.Config']):
         root_dir: str = '~/deploy'
 
         concerns: ta.List[DeployConcern.Config] = dc.field(default_factory=list)
+
+    @property
+    @abc.abstractmethod
+    def site(self) -> Site:
+        raise NotImplementedError
 
     @abc.abstractmethod
     def run(self) -> None:
