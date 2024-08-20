@@ -45,6 +45,8 @@ class SupervisorDeployConcern(DeployConcern['SupervisorDeployConcern.Config']):
         return [FsFile(self.conf_file())]
 
     def run(self) -> None:
+        self._deploy.runtime().make_dirs(os.path.dirname(self.conf_file()))
+
         rd = self._deploy.concern(RepoDeployConcern).repo_dir()
         vx = self._deploy.concern(VenvDeployConcern).exe()
 
