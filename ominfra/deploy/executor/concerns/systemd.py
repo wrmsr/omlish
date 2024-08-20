@@ -46,7 +46,7 @@ class SystemdConcern(Concern):
 
     @run_in_phase(Phase.HOST)
     def create_systemd_path(self) -> None:
-        sd_svc_dir = os.path.join(self._d.home_dir(), f'.config/systemd/user')
+        sd_svc_dir = os.path.join(self._d.home_dir(), '.config/systemd/user')
         if not os.path.exists(sd_svc_dir):
             log.info('Creating directory: %s', sd_svc_dir)
             os.makedirs(sd_svc_dir)
