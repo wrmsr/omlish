@@ -10,11 +10,13 @@ from .base import FsFile
 from .base import FsItem
 from .base import Runtime
 from .base import SiteConcern
+from .configs import DeployConcernConfig
+from .configs import SiteConcernConfig
 
 
 class NginxSiteConcern(SiteConcern['NginxSiteConcern.Config']):
     @dc.dataclass(frozen=True)
-    class Config(SiteConcern.Config):
+    class Config(SiteConcernConfig):
         global_conf_file: str = '/etc/nginx/sites-enabled/omlish.conf'
 
     @cached_nullary
@@ -31,7 +33,7 @@ class NginxSiteConcern(SiteConcern['NginxSiteConcern.Config']):
 
 class NginxDeployConcern(DeployConcern['NginxDeployConcern.Config']):
     @dc.dataclass(frozen=True)
-    class Config(DeployConcern.Config):
+    class Config(DeployConcernConfig):
         listen_port: int = 80
         proxy_port: int = 8000
 
