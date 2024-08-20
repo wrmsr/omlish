@@ -24,6 +24,10 @@ class VenvDeployConcern(DeployConcern['VenvDeployConcern.Config']):
     def fs_items(self) -> ta.Sequence[FsItem]:
         return [FsDir(self.venv_dir())]
 
+    @cached_nullary
+    def exe(self) -> str:
+        return os.path.join(self.venv_dir(), 'bin', 'python')
+
     def run(self) -> None:
         rd = self._deploy.concern(RepoDeployConcern).repo_dir()
 
@@ -31,16 +35,16 @@ class VenvDeployConcern(DeployConcern['VenvDeployConcern.Config']):
         self._deploy.runtime().make_dirs(vd)
         l, r = os.path.split(vd)
 
+        # FIXME: lol
         py_exe = 'python3'
-        v_exe = os.path.join(vd, 'bin', 'python')
 
         self._deploy.runtime().sh(
             f'cd {l}',
             f'{py_exe} -mvenv {r}',
 
             # https://stackoverflow.com/questions/77364550/attributeerror-module-pkgutil-has-no-attribute-impimporter-did-you-mean
-            f'{v_exe} -m ensurepip',
-            f'{v_exe} -mpip install --upgrade setuptools pip',
+            f'{self.exe()} -m ensurepip',
+            f'{self.exe()} -mpip install --upgrade setuptools pip',
 
-            f'{v_exe} -mpip install -r {rd}/{self._config.requirements_txt}',  # noqa
+            f'{self.exe()} -mpip install -r {rd}/{self._config.requirements_txt}',  # noqa
         )

@@ -1,13 +1,17 @@
-# import dataclasses as dc
-# import os.path
-# import textwrap
-#
-# from omlish.lite.logs import log
-#
-# from .base import DeployConcern
-# from .base import SiteConcern
-#
-#
+import dataclasses as dc
+import os.path
+import textwrap
+import typing as ta
+
+from omlish.lite.cached import cached_nullary
+
+from .base import DeployConcern
+from .base import FsFile
+from .base import FsItem
+from .repo import RepoDeployConcern
+from .venv import VenvDeployConcern
+
+
 # class SupervisorSiteConcern(SiteConcern['SupervisorSiteConcern.Config']):
 #     @dc.dataclass(frozen=True)
 #     class Config(DeployConcern.Config):
@@ -25,23 +29,32 @@
 #             """)
 #             with open(self._d.host_cfg.global_supervisor_conf_file_path, 'w') as f:
 #                 f.write(glo_sup_conf)
-#
-#
-# class SupervisorDeployConcern(DeployConcern['SupervisorDeployConcern.Config']):
-#     @dc.dataclass(frozen=True)
-#     class Config(DeployConcern.Config):
-#         pass
-#
-#     def run(self) -> None:
-#         sup_conf = textwrap.dedent(f"""
-#             [program:{self._d.cfg.app_name}]
-#             command={self._d.home_dir()}/venv/{self._d.cfg.app_name}/bin/python -m {self._d.cfg.entrypoint}
-#             directory={self._d.home_dir()}/app/{self._d.cfg.app_name}
-#             user={self._d.host_cfg.username}
-#             autostart=true
-#             autorestart=true
-#         """)
-#         sup_conf_file = os.path.join(self._d.home_dir(), f'conf/supervisor/{self._d.cfg.app_name}.conf')
-#         log.info('Writing supervisor conf to %s', sup_conf_file)
-#         with open(sup_conf_file, 'w') as f:
-#             f.write(sup_conf)
+
+
+class SupervisorDeployConcern(DeployConcern['SupervisorDeployConcern.Config']):
+    @dc.dataclass(frozen=True)
+    class Config(DeployConcern.Config):
+        entrypoint: str
+
+    @cached_nullary
+    def conf_file(self) -> str:
+        return os.path.join(self._deploy.config.root_dir, 'conf', 'supervisor', self._deploy.config.name + '.conf')
+
+    @cached_nullary
+    def fs_items(self) -> ta.Sequence[FsItem]:
+        return [FsFile(self.conf_file())]
+
+    def run(self) -> None:
+        rd = self._deploy.concern(RepoDeployConcern).repo_dir()
+        vx = self._deploy.concern(VenvDeployConcern).exe()
+
+        conf = textwrap.dedent(f"""
+            [program:{self._deploy.config.name}]
+            command={vx} -m {self._config.entrypoint}
+            directory={rd}
+            user={self._deploy.config.user}
+            autostart=true
+            autorestart=true
+        """)
+
+        self._deploy.runtime().write_file(self.conf_file(), conf)
