@@ -8,6 +8,7 @@ from omlish.lite.cached import cached_nullary
 from .base import DeployConcern
 from .base import FsFile
 from .base import FsItem
+from .base import Runtime
 from .base import SiteConcern
 
 
@@ -20,9 +21,9 @@ class NginxSiteConcern(SiteConcern['NginxSiteConcern.Config']):
     def confs_dir(self) -> str:
         return os.path.join(self._site.config.root_dir, 'conf', 'nginx')
 
-    def run(self) -> None:
-        if self._site.runtime().stat(self._config.global_conf_file) is None:
-            self._site.runtime().write_file(
+    def run(self, runtime: Runtime) -> None:
+        if runtime.stat(self._config.global_conf_file) is None:
+            runtime.write_file(
                 self._config.global_conf_file,
                 f'include {self.confs_dir()}/*.conf;\n',
             )
@@ -42,8 +43,8 @@ class NginxDeployConcern(DeployConcern['NginxDeployConcern.Config']):
     def fs_items(self) -> ta.Sequence[FsItem]:
         return [FsFile(self.conf_file())]
 
-    def run(self) -> None:
-        self._deploy.runtime().make_dirs(os.path.dirname(self.conf_file()))
+    def run(self, runtime: Runtime) -> None:
+        runtime.make_dirs(os.path.dirname(self.conf_file()))
 
         conf = textwrap.dedent(f"""
             server {{
@@ -54,4 +55,4 @@ class NginxDeployConcern(DeployConcern['NginxDeployConcern.Config']):
             }}
         """)
 
-        self._deploy.runtime().write_file(self.conf_file(), conf)
+        runtime.write_file(self.conf_file(), conf)
