@@ -151,7 +151,7 @@ class Venv:
                 ve,
                 '-m', 'pip',
                 'install', '-v',
-                *itertools.chain.from_iterable(['-r', r] for r in sr),
+                *sr,
             )
 
         return True
