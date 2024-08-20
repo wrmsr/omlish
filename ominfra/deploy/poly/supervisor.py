@@ -16,7 +16,7 @@ from .venv import VenvDeployConcern
 # class SupervisorSiteConcern(SiteConcern['SupervisorSiteConcern.Config']):
 #     @dc.dataclass(frozen=True)
 #     class Config(DeployConcern.Config):
-#         pass
+#         global_conf_file: str = '/etc/supervisor/conf.d/supervisord.conf'
 #
 #     def run(self) -> None:
 #         sup_conf_dir = os.path.join(self._d.home_dir(), 'conf/supervisor')
