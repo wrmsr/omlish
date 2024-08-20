@@ -1,6 +1,3 @@
-# ruff: noqa: UP007
-import typing as ta
-
 from .base import Deploy
 from .base import DeployConcern
 from .base import Runtime
@@ -14,16 +11,14 @@ class DeployImpl(Deploy):
             self,
             config: Deploy.Config,
             site: Site,
-            *,
-            runtime: ta.Optional[Runtime] = None,
     ) -> None:
-        super().__init__(config, runtime=runtime)
+        super().__init__(config)
         self._site = site
 
     @property
     def site(self) -> Site:
         return self._site
 
-    def run(self) -> None:
+    def run(self, runtime: Runtime) -> None:
         for c in self._concerns:
-            c.run()
+            c.run(runtime)
