@@ -3,6 +3,11 @@ import abc
 import dataclasses as dc
 import typing as ta
 
+from .configs import DeployConcernConfig
+from .configs import DeployConfig
+from .configs import SiteConcernConfig
+from .configs import SiteConfig
+
 
 T = ta.TypeVar('T')
 ConcernT = ta.TypeVar('ConcernT')
@@ -65,7 +70,6 @@ class Runtime(abc.ABC):
 
 
 class ConcernsContainer(abc.ABC, ta.Generic[ConcernT, ConfigT]):
-    Config: ta.ClassVar[type]
     concern_cls: ta.ClassVar[type]
 
     def __init__(
@@ -109,14 +113,10 @@ class ConcernsContainer(abc.ABC, ta.Generic[ConcernT, ConfigT]):
 
 
 SiteConcernT = ta.TypeVar('SiteConcernT', bound='SiteConcern')
-SiteConcernConfigT = ta.TypeVar('SiteConcernConfigT', bound='SiteConcern.Config')
+SiteConcernConfigT = ta.TypeVar('SiteConcernConfigT', bound='SiteConcernConfig')
 
 
 class SiteConcern(abc.ABC, ta.Generic[SiteConcernConfigT]):
-    @dc.dataclass(frozen=True)
-    class Config(abc.ABC):  # noqa
-        pass
-
     def __init__(self, config: SiteConcernConfigT, site: 'Site') -> None:
         super().__init__()
         self._config = config
@@ -134,15 +134,7 @@ class SiteConcern(abc.ABC, ta.Generic[SiteConcernConfigT]):
 ##
 
 
-class Site(ConcernsContainer[SiteConcern, 'Site.Config']):
-    @dc.dataclass(frozen=True)
-    class Config:
-        user = 'omlish'
-
-        root_dir: str = '~/deploy'
-
-        concerns: ta.List[SiteConcern.Config] = dc.field(default_factory=list)
-
+class Site(ConcernsContainer[SiteConcern, SiteConfig]):
     @abc.abstractmethod
     def run(self, runtime: Runtime) -> None:
         raise NotImplementedError
@@ -152,14 +144,10 @@ class Site(ConcernsContainer[SiteConcern, 'Site.Config']):
 
 
 DeployConcernT = ta.TypeVar('DeployConcernT', bound='DeployConcern')
-DeployConcernConfigT = ta.TypeVar('DeployConcernConfigT', bound='DeployConcern.Config')
+DeployConcernConfigT = ta.TypeVar('DeployConcernConfigT', bound='DeployConcernConfig')
 
 
 class DeployConcern(abc.ABC, ta.Generic[DeployConcernConfigT]):
-    @dc.dataclass(frozen=True)
-    class Config(abc.ABC):  # noqa
-        pass
-
     def __init__(self, config: DeployConcernConfigT, deploy: 'Deploy') -> None:
         super().__init__()
         self._config = config
@@ -180,15 +168,7 @@ class DeployConcern(abc.ABC, ta.Generic[DeployConcernConfigT]):
 ##
 
 
-class Deploy(ConcernsContainer[DeployConcern, 'Deploy.Config']):
-    @dc.dataclass(frozen=True)
-    class Config:
-        site: Site.Config
-
-        name: str
-
-        concerns: ta.List[DeployConcern.Config] = dc.field(default_factory=list)
-
+class Deploy(ConcernsContainer[DeployConcern, DeployConfig]):
     @property
     @abc.abstractmethod
     def site(self) -> Site:

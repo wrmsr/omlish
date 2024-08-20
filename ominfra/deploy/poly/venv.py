@@ -8,12 +8,13 @@ from .base import DeployConcern
 from .base import FsDir
 from .base import FsItem
 from .base import Runtime
+from .configs import DeployConcernConfig
 from .repo import RepoDeployConcern
 
 
 class VenvDeployConcern(DeployConcern['VenvDeployConcern.Config']):
     @dc.dataclass(frozen=True)
-    class Config(DeployConcern.Config):
+    class Config(DeployConcernConfig):
         interp_version: str
         requirements_txt: str = 'requirements.txt'
 

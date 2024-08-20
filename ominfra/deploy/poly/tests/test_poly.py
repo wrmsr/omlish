@@ -8,8 +8,8 @@ from omlish.lite.marshal import marshal_obj
 from omlish.lite.marshal import unmarshal_obj
 from omlish.lite.runtime import is_debugger_attached  # noqa
 
-from ..base import Deploy
-from ..base import Site
+from ..configs import DeployConfig
+from ..configs import SiteConfig
 from ..deploy import DeployImpl
 from ..nginx import NginxDeployConcern
 from ..nginx import NginxSiteConcern
@@ -32,8 +32,8 @@ class TestPolymorph(unittest.TestCase):
         root_dir = tempfile.mkdtemp('-ominfra-deploy-polymorph-test')
         print(root_dir)
 
-        dcfg = Deploy.Config(
-            site=Site.Config(
+        dcfg = DeployConfig(
+            site=SiteConfig(
                 root_dir=root_dir,
                 concerns=[
                     NginxSiteConcern.Config(),
@@ -58,7 +58,7 @@ class TestPolymorph(unittest.TestCase):
         jdcfg = json_dumps_compact(marshal_obj(dcfg))
         print(jdcfg)
 
-        dcfg2: Deploy.Config = unmarshal_obj(json.loads(jdcfg), Deploy.Config)
+        dcfg2: DeployConfig = unmarshal_obj(json.loads(jdcfg), DeployConfig)
         print(dcfg2)
 
         d = DeployImpl(

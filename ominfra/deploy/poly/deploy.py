@@ -2,6 +2,7 @@ from .base import Deploy
 from .base import DeployConcern
 from .base import Runtime
 from .base import Site
+from .configs import DeployConfig
 
 
 class DeployImpl(Deploy):
@@ -9,7 +10,7 @@ class DeployImpl(Deploy):
 
     def __init__(
             self,
-            config: Deploy.Config,
+            config: DeployConfig,
             site: Site,
     ) -> None:
         super().__init__(config)
