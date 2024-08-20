@@ -8,6 +8,7 @@ from omlish.lite.cached import cached_nullary
 from .base import DeployConcern
 from .base import FsFile
 from .base import FsItem
+from .base import Runtime
 from .repo import RepoDeployConcern
 from .venv import VenvDeployConcern
 
@@ -44,8 +45,8 @@ class SupervisorDeployConcern(DeployConcern['SupervisorDeployConcern.Config']):
     def fs_items(self) -> ta.Sequence[FsItem]:
         return [FsFile(self.conf_file())]
 
-    def run(self) -> None:
-        self._deploy.runtime().make_dirs(os.path.dirname(self.conf_file()))
+    def run(self, runtime: Runtime) -> None:
+        runtime.make_dirs(os.path.dirname(self.conf_file()))
 
         rd = self._deploy.concern(RepoDeployConcern).repo_dir()
         vx = self._deploy.concern(VenvDeployConcern).exe()
@@ -59,4 +60,4 @@ class SupervisorDeployConcern(DeployConcern['SupervisorDeployConcern.Config']):
             autorestart=true
         """)
 
-        self._deploy.runtime().write_file(self.conf_file(), conf)
+        runtime.write_file(self.conf_file(), conf)

@@ -7,6 +7,7 @@ from omlish.lite.cached import cached_nullary
 from .base import DeployConcern
 from .base import FsDir
 from .base import FsItem
+from .base import Runtime
 
 
 class RepoDeployConcern(DeployConcern['RepoDeployConcern.Config']):
@@ -24,10 +25,10 @@ class RepoDeployConcern(DeployConcern['RepoDeployConcern.Config']):
     def fs_items(self) -> ta.Sequence[FsItem]:
         return [FsDir(self.repo_dir())]
 
-    def run(self) -> None:
-        self._deploy.runtime().make_dirs(self.repo_dir())
+    def run(self, runtime: Runtime) -> None:
+        runtime.make_dirs(self.repo_dir())
 
-        self._deploy.runtime().sh(
+        runtime.sh(
             f'cd {self.repo_dir()}',
             'git init',
             f'git remote add origin {self._config.url}',

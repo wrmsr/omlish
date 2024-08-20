@@ -64,15 +64,13 @@ class Runtime(abc.ABC):
 ##
 
 
-class BaseConcernRunner(abc.ABC, ta.Generic[ConcernT, ConfigT]):
+class ConcernsContainer(abc.ABC, ta.Generic[ConcernT, ConfigT]):
     Config: ta.ClassVar[type]
     concern_cls: ta.ClassVar[type]
 
     def __init__(
             self,
             config: ConfigT,
-            *,
-            runtime: ta.Optional[Runtime] = None,
     ) -> None:
         super().__init__()
         self._config = config
@@ -87,8 +85,6 @@ class BaseConcernRunner(abc.ABC, ta.Generic[ConcernT, ConfigT]):
             if type(c) in self._concerns_by_cls:
                 raise TypeError(f'Duplicate concern type: {c}')
             self._concerns_by_cls[type(c)] = c
-
-        self._runtime = runtime
 
     @classmethod
     def _concern_cls_by_config_cls(cls) -> ta.Mapping[type, ta.Type[ConcernT]]:
@@ -107,11 +103,6 @@ class BaseConcernRunner(abc.ABC, ta.Generic[ConcernT, ConfigT]):
 
     def concern(self, cls: ta.Type[T]) -> T:
         return self._concerns_by_cls[cls]  # type: ignore
-
-    def runtime(self) -> Runtime:
-        if (runtime := self._runtime) is None:
-            raise RuntimeError('No runtime present')
-        return runtime
 
 
 ##
@@ -136,14 +127,14 @@ class SiteConcern(abc.ABC, ta.Generic[SiteConcernConfigT]):
         return self._config
 
     @abc.abstractmethod
-    def run(self) -> None:
+    def run(self, runtime: Runtime) -> None:
         raise NotImplementedError
 
 
 ##
 
 
-class Site(BaseConcernRunner[SiteConcern, 'Site.Config']):
+class Site(ConcernsContainer[SiteConcern, 'Site.Config']):
     @dc.dataclass(frozen=True)
     class Config:
         user = 'omlish'
@@ -153,7 +144,7 @@ class Site(BaseConcernRunner[SiteConcern, 'Site.Config']):
         concerns: ta.List[SiteConcern.Config] = dc.field(default_factory=list)
 
     @abc.abstractmethod
-    def run(self) -> None:
+    def run(self, runtime: Runtime) -> None:
         raise NotImplementedError
 
 
@@ -182,14 +173,14 @@ class DeployConcern(abc.ABC, ta.Generic[DeployConcernConfigT]):
         return []
 
     @abc.abstractmethod
-    def run(self) -> None:
+    def run(self, runtime: Runtime) -> None:
         raise NotImplementedError
 
 
 ##
 
 
-class Deploy(BaseConcernRunner[DeployConcern, 'Deploy.Config']):
+class Deploy(ConcernsContainer[DeployConcern, 'Deploy.Config']):
     @dc.dataclass(frozen=True)
     class Config:
         site: Site.Config
@@ -204,5 +195,5 @@ class Deploy(BaseConcernRunner[DeployConcern, 'Deploy.Config']):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def run(self) -> None:
+    def run(self, runtime: Runtime) -> None:
         raise NotImplementedError

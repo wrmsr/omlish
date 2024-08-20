@@ -7,6 +7,7 @@ from omlish.lite.cached import cached_nullary
 from .base import DeployConcern
 from .base import FsDir
 from .base import FsItem
+from .base import Runtime
 from .repo import RepoDeployConcern
 
 
@@ -28,8 +29,8 @@ class VenvDeployConcern(DeployConcern['VenvDeployConcern.Config']):
     def exe(self) -> str:
         return os.path.join(self.venv_dir(), 'bin', 'python')
 
-    def run(self) -> None:
-        self._deploy.runtime().make_dirs(self.venv_dir())
+    def run(self, runtime: Runtime) -> None:
+        runtime.make_dirs(self.venv_dir())
 
         rd = self._deploy.concern(RepoDeployConcern).repo_dir()
 
@@ -38,7 +39,7 @@ class VenvDeployConcern(DeployConcern['VenvDeployConcern.Config']):
         # FIXME: lol
         py_exe = 'python3'
 
-        self._deploy.runtime().sh(
+        runtime.sh(
             f'cd {l}',
             f'{py_exe} -mvenv {r}',
 

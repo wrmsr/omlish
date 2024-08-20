@@ -66,8 +66,7 @@ class TestPolymorph(unittest.TestCase):
             SiteImpl(
                 dcfg2.site,
             ),
-            runtime=RuntimeImpl(),
         )
         print(d)
 
-        d.run()
+        d.run(RuntimeImpl())
