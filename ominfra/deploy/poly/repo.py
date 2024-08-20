@@ -25,11 +25,10 @@ class RepoDeployConcern(DeployConcern['RepoDeployConcern.Config']):
         return [FsDir(self.repo_dir())]
 
     def run(self) -> None:
-        rd = self.repo_dir()
-        self._deploy.runtime().make_dirs(rd)
+        self._deploy.runtime().make_dirs(self.repo_dir())
 
         self._deploy.runtime().sh(
-            f'cd {rd}',
+            f'cd {self.repo_dir()}',
             'git init',
             f'git remote add origin {self._config.url}',
             f'git fetch --depth 1 origin {self._config.revision}',

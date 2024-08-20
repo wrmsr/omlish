@@ -29,11 +29,11 @@ class VenvDeployConcern(DeployConcern['VenvDeployConcern.Config']):
         return os.path.join(self.venv_dir(), 'bin', 'python')
 
     def run(self) -> None:
+        self._deploy.runtime().make_dirs(self.venv_dir())
+
         rd = self._deploy.concern(RepoDeployConcern).repo_dir()
 
-        vd = self.venv_dir()
-        self._deploy.runtime().make_dirs(vd)
-        l, r = os.path.split(vd)
+        l, r = os.path.split(self.venv_dir())
 
         # FIXME: lol
         py_exe = 'python3'
