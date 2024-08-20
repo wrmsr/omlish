@@ -119,12 +119,12 @@ all = [
 
 [tool.omlish.pyproject.venvs._default]
 interp = '@12'
-requires = ['requirements-dev.txt']
+requires = ['-rrequirements-dev.txt']
 srcs = ['@main']
 
 [tool.omlish.pyproject.venvs.default]
 inherits = ['_default']
-requires = ['requirements-ext.txt']
+requires = ['-rrequirements-ext.txt']
 
 [tool.omlish.pyproject.venvs.'13']
 inherits = ['_default']
@@ -164,7 +164,7 @@ docker = 'omlish-dev-amd64'
 
 [tool.omlish.pyproject.venvs.deploy]
 interp = '3.12'
-requires = ['requirements.txt']
+requires = ['-rrequirements.txt']
 
 
 ##
