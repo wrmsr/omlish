@@ -9,10 +9,12 @@ from omlish.lite.marshal import unmarshal_obj
 from omlish.lite.runtime import is_debugger_attached  # noqa
 
 from ..base import Deploy
+from ..base import Site
 from ..deploy import DeployImpl
 from ..nginx import NginxDeployConcern
 from ..repo import RepoDeployConcern
 from ..runtime import RuntimeImpl
+from ..site import SiteImpl
 from ..supervisor import SupervisorDeployConcern
 from ..venv import VenvDeployConcern
 
@@ -30,6 +32,7 @@ class TestPolymorph(unittest.TestCase):
         print(root_dir)
 
         dcfg = Deploy.Config(
+            site=Site.Config(),
             name='omlish',
             root_dir=root_dir,
             concerns=[
@@ -55,6 +58,9 @@ class TestPolymorph(unittest.TestCase):
 
         d = DeployImpl(
             dcfg2,
+            SiteImpl(
+                dcfg2.site,
+            ),
             runtime=RuntimeImpl(),
         )
         print(d)
