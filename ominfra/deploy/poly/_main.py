@@ -19,8 +19,85 @@ import typing as ta
 T = ta.TypeVar('T')
 ConcernT = ta.TypeVar('ConcernT')
 ConfigT = ta.TypeVar('ConfigT')
-SiteConcernConfigT = ta.TypeVar('SiteConcernConfigT', bound='SiteConcern.Config')
-DeployConcernConfigT = ta.TypeVar('DeployConcernConfigT', bound='DeployConcern.Config')
+SiteConcernConfigT = ta.TypeVar('SiteConcernConfigT', bound='SiteConcernConfig')
+DeployConcernConfigT = ta.TypeVar('DeployConcernConfigT', bound='DeployConcernConfig')
+
+
+########################################
+# ../configs.py
+# ruff: noqa: UP006
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class SiteConcernConfig(abc.ABC):  # noqa
+    pass
+
+
+@dc.dataclass(frozen=True)
+class SiteConfig:
+    user = 'omlish'
+
+    root_dir: str = '~/deploy'
+
+    concerns: ta.List[SiteConcernConfig] = dc.field(default_factory=list)
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class DeployConcernConfig(abc.ABC):  # noqa
+    pass
+
+
+@dc.dataclass(frozen=True)
+class DeployConfig:
+    site: SiteConfig
+
+    name: str
+
+    concerns: ta.List[DeployConcernConfig] = dc.field(default_factory=list)
+
+
+########################################
+# ../../../../omlish/lite/cached.py
+
+
+class cached_nullary:  # noqa
+    def __init__(self, fn):
+        super().__init__()
+        self._fn = fn
+        self._value = self._missing = object()
+        functools.update_wrapper(self, fn)
+
+    def __call__(self, *args, **kwargs):  # noqa
+        if self._value is self._missing:
+            self._value = self._fn()
+        return self._value
+
+    def __get__(self, instance, owner):  # noqa
+        bound = instance.__dict__[self._fn.__name__] = self.__class__(self._fn.__get__(instance, owner))
+        return bound
+
+
+########################################
+# ../../../../omlish/lite/logs.py
+"""
+TODO:
+ - debug
+"""
+# ruff: noqa: UP007
+
+
+log = logging.getLogger(__name__)
+
+
+def configure_standard_logging(level: ta.Union[int, str] = logging.INFO) -> None:
+    logging.root.addHandler(logging.StreamHandler())
+    logging.root.setLevel(level)
 
 
 ########################################
@@ -84,7 +161,6 @@ class Runtime(abc.ABC):
 
 
 class ConcernsContainer(abc.ABC, ta.Generic[ConcernT, ConfigT]):
-    Config: ta.ClassVar[type]
     concern_cls: ta.ClassVar[type]
 
     def __init__(
@@ -131,10 +207,6 @@ SiteConcernT = ta.TypeVar('SiteConcernT', bound='SiteConcern')
 
 
 class SiteConcern(abc.ABC, ta.Generic[SiteConcernConfigT]):
-    @dc.dataclass(frozen=True)
-    class Config(abc.ABC):  # noqa
-        pass
-
     def __init__(self, config: SiteConcernConfigT, site: 'Site') -> None:
         super().__init__()
         self._config = config
@@ -152,15 +224,7 @@ class SiteConcern(abc.ABC, ta.Generic[SiteConcernConfigT]):
 ##
 
 
-class Site(ConcernsContainer[SiteConcern, 'Site.Config']):
-    @dc.dataclass(frozen=True)
-    class Config:
-        user = 'omlish'
-
-        root_dir: str = '~/deploy'
-
-        concerns: ta.List[SiteConcern.Config] = dc.field(default_factory=list)
-
+class Site(ConcernsContainer[SiteConcern, SiteConfig]):
     @abc.abstractmethod
     def run(self, runtime: Runtime) -> None:
         raise NotImplementedError
@@ -173,10 +237,6 @@ DeployConcernT = ta.TypeVar('DeployConcernT', bound='DeployConcern')
 
 
 class DeployConcern(abc.ABC, ta.Generic[DeployConcernConfigT]):
-    @dc.dataclass(frozen=True)
-    class Config(abc.ABC):  # noqa
-        pass
-
     def __init__(self, config: DeployConcernConfigT, deploy: 'Deploy') -> None:
         super().__init__()
         self._config = config
@@ -197,15 +257,7 @@ class DeployConcern(abc.ABC, ta.Generic[DeployConcernConfigT]):
 ##
 
 
-class Deploy(ConcernsContainer[DeployConcern, 'Deploy.Config']):
-    @dc.dataclass(frozen=True)
-    class Config:
-        site: Site.Config
-
-        name: str
-
-        concerns: ta.List[DeployConcern.Config] = dc.field(default_factory=list)
-
+class Deploy(ConcernsContainer[DeployConcern, DeployConfig]):
     @property
     @abc.abstractmethod
     def site(self) -> Site:
@@ -217,41 +269,21 @@ class Deploy(ConcernsContainer[DeployConcern, 'Deploy.Config']):
 
 
 ########################################
-# ../../../../omlish/lite/cached.py
+# ../../../../omlish/lite/runtime.py
 
 
-class cached_nullary:  # noqa
-    def __init__(self, fn):
-        super().__init__()
-        self._fn = fn
-        self._value = self._missing = object()
-        functools.update_wrapper(self, fn)
-
-    def __call__(self, *args, **kwargs):  # noqa
-        if self._value is self._missing:
-            self._value = self._fn()
-        return self._value
-
-    def __get__(self, instance, owner):  # noqa
-        bound = instance.__dict__[self._fn.__name__] = self.__class__(self._fn.__get__(instance, owner))
-        return bound
+@cached_nullary
+def is_debugger_attached() -> bool:
+    return any(frame[1].endswith('pydevd.py') for frame in inspect.stack())
 
 
-########################################
-# ../../../../omlish/lite/logs.py
-"""
-TODO:
- - debug
-"""
-# ruff: noqa: UP007
+REQUIRED_PYTHON_VERSION = (3, 8)
 
 
-log = logging.getLogger(__name__)
-
-
-def configure_standard_logging(level: ta.Union[int, str] = logging.INFO) -> None:
-    logging.root.addHandler(logging.StreamHandler())
-    logging.root.setLevel(level)
+def check_runtime_version() -> None:
+    if sys.version_info < REQUIRED_PYTHON_VERSION:
+        raise OSError(
+            f'Requires python {REQUIRED_PYTHON_VERSION}, got {sys.version_info} from {sys.executable}')  # noqa
 
 
 ########################################
@@ -263,7 +295,7 @@ class DeployImpl(Deploy):
 
     def __init__(
             self,
-            config: Deploy.Config,
+            config: DeployConfig,
             site: Site,
     ) -> None:
         super().__init__(config)
@@ -284,7 +316,7 @@ class DeployImpl(Deploy):
 
 class NginxSiteConcern(SiteConcern['NginxSiteConcern.Config']):
     @dc.dataclass(frozen=True)
-    class Config(SiteConcern.Config):
+    class Config(SiteConcernConfig):
         global_conf_file: str = '/etc/nginx/sites-enabled/omlish.conf'
 
     @cached_nullary
@@ -301,7 +333,7 @@ class NginxSiteConcern(SiteConcern['NginxSiteConcern.Config']):
 
 class NginxDeployConcern(DeployConcern['NginxDeployConcern.Config']):
     @dc.dataclass(frozen=True)
-    class Config(DeployConcern.Config):
+    class Config(DeployConcernConfig):
         listen_port: int = 80
         proxy_port: int = 8000
 
@@ -334,7 +366,7 @@ class NginxDeployConcern(DeployConcern['NginxDeployConcern.Config']):
 
 class RepoDeployConcern(DeployConcern['RepoDeployConcern.Config']):
     @dc.dataclass(frozen=True)
-    class Config(DeployConcern.Config):
+    class Config(DeployConcernConfig):
         url: str
         revision: str = 'master'
         init_submodules: bool = False
@@ -372,68 +404,6 @@ class SiteImpl(Site):
     def run(self, runtime: Runtime) -> None:
         for c in self._concerns:
             c.run(runtime)
-
-
-########################################
-# ../../../../omlish/lite/runtime.py
-
-
-@cached_nullary
-def is_debugger_attached() -> bool:
-    return any(frame[1].endswith('pydevd.py') for frame in inspect.stack())
-
-
-REQUIRED_PYTHON_VERSION = (3, 8)
-
-
-def check_runtime_version() -> None:
-    if sys.version_info < REQUIRED_PYTHON_VERSION:
-        raise OSError(
-            f'Requires python {REQUIRED_PYTHON_VERSION}, got {sys.version_info} from {sys.executable}')  # noqa
-
-
-########################################
-# ../venv.py
-
-
-class VenvDeployConcern(DeployConcern['VenvDeployConcern.Config']):
-    @dc.dataclass(frozen=True)
-    class Config(DeployConcern.Config):
-        interp_version: str
-        requirements_txt: str = 'requirements.txt'
-
-    @cached_nullary
-    def venv_dir(self) -> str:
-        return os.path.join(self._deploy.site.config.root_dir, 'venvs', self._deploy.config.name)
-
-    @cached_nullary
-    def fs_items(self) -> ta.Sequence[FsItem]:
-        return [FsDir(self.venv_dir())]
-
-    @cached_nullary
-    def exe(self) -> str:
-        return os.path.join(self.venv_dir(), 'bin', 'python')
-
-    def run(self, runtime: Runtime) -> None:
-        runtime.make_dirs(self.venv_dir())
-
-        rd = self._deploy.concern(RepoDeployConcern).repo_dir()
-
-        l, r = os.path.split(self.venv_dir())
-
-        # FIXME: lol
-        py_exe = 'python3'
-
-        runtime.sh(
-            f'cd {l}',
-            f'{py_exe} -mvenv {r}',
-
-            # https://stackoverflow.com/questions/77364550/attributeerror-module-pkgutil-has-no-attribute-impimporter-did-you-mean
-            f'{self.exe()} -m ensurepip',
-            f'{self.exe()} -mpip install --upgrade setuptools pip',
-
-            f'{self.exe()} -mpip install -r {rd}/{self._config.requirements_txt}',  # noqa
-        )
 
 
 ########################################
@@ -579,6 +549,50 @@ class RuntimeImpl(Runtime):
 
 
 ########################################
+# ../venv.py
+
+
+class VenvDeployConcern(DeployConcern['VenvDeployConcern.Config']):
+    @dc.dataclass(frozen=True)
+    class Config(DeployConcernConfig):
+        interp_version: str
+        requirements_txt: str = 'requirements.txt'
+
+    @cached_nullary
+    def venv_dir(self) -> str:
+        return os.path.join(self._deploy.site.config.root_dir, 'venvs', self._deploy.config.name)
+
+    @cached_nullary
+    def fs_items(self) -> ta.Sequence[FsItem]:
+        return [FsDir(self.venv_dir())]
+
+    @cached_nullary
+    def exe(self) -> str:
+        return os.path.join(self.venv_dir(), 'bin', 'python')
+
+    def run(self, runtime: Runtime) -> None:
+        runtime.make_dirs(self.venv_dir())
+
+        rd = self._deploy.concern(RepoDeployConcern).repo_dir()
+
+        l, r = os.path.split(self.venv_dir())
+
+        # FIXME: lol
+        py_exe = 'python3'
+
+        runtime.sh(
+            f'cd {l}',
+            f'{py_exe} -mvenv {r}',
+
+            # https://stackoverflow.com/questions/77364550/attributeerror-module-pkgutil-has-no-attribute-impimporter-did-you-mean
+            f'{self.exe()} -m ensurepip',
+            f'{self.exe()} -mpip install --upgrade setuptools pip',
+
+            f'{self.exe()} -mpip install -r {rd}/{self._config.requirements_txt}',  # noqa
+        )
+
+
+########################################
 # ../supervisor.py
 
 
@@ -603,7 +617,7 @@ class RuntimeImpl(Runtime):
 
 class SupervisorDeployConcern(DeployConcern['SupervisorDeployConcern.Config']):
     @dc.dataclass(frozen=True)
-    class Config(DeployConcern.Config):
+    class Config(DeployConcernConfig):
         entrypoint: str
 
     @cached_nullary
