@@ -18,7 +18,7 @@ class RepoDeployConcern(DeployConcern['RepoDeployConcern.Config']):
 
     @cached_nullary
     def repo_dir(self) -> str:
-        return os.path.join(self._deploy.config.root_dir, 'repos', self._deploy.config.name)
+        return os.path.join(self._deploy.site.config.root_dir, 'repos', self._deploy.config.name)
 
     @cached_nullary
     def fs_items(self) -> ta.Sequence[FsItem]:

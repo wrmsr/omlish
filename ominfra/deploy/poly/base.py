@@ -40,6 +40,14 @@ class FsDir(FsItem):
 
 
 class Runtime(abc.ABC):
+    class Stat(ta.NamedTuple):
+        path: str
+        is_dir: bool
+
+    @abc.abstractmethod
+    def stat(self, p: str) -> ta.Optional[Stat]:
+        raise NotImplementedError
+
     @abc.abstractmethod
     def make_dirs(self, p: str, exist_ok: bool = False) -> None:
         raise NotImplementedError
@@ -138,6 +146,10 @@ class SiteConcern(abc.ABC, ta.Generic[SiteConcernConfigT]):
 class Site(BaseConcernRunner[SiteConcern, 'Site.Config']):
     @dc.dataclass(frozen=True)
     class Config:
+        user = 'omlish'
+
+        root_dir: str = '~/deploy'
+
         concerns: ta.List[SiteConcern.Config] = dc.field(default_factory=list)
 
     @abc.abstractmethod
@@ -183,10 +195,6 @@ class Deploy(BaseConcernRunner[DeployConcern, 'Deploy.Config']):
         site: Site.Config
 
         name: str
-
-        user = 'omlish'
-
-        root_dir: str = '~/deploy'
 
         concerns: ta.List[DeployConcern.Config] = dc.field(default_factory=list)
 

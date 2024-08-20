@@ -1,5 +1,6 @@
 # ruff: noqa: UP007
 import os.path
+import stat
 import typing as ta
 
 from omlish.lite.logs import log
@@ -11,6 +12,17 @@ from .base import Runtime
 class RuntimeImpl(Runtime):
     def __init__(self) -> None:
         super().__init__()
+
+    def stat(self, p: str) -> ta.Optional[Runtime.Stat]:
+        try:
+            st = os.stat(p)
+        except FileNotFoundError:
+            return None
+        else:
+            return Runtime.Stat(
+                path=p,
+                is_dir=bool(st.st_mode & stat.S_IFDIR),
+            )
 
     def make_dirs(self, p: str, exist_ok: bool = False) -> None:
         os.makedirs(p, exist_ok=exist_ok)
