@@ -18,7 +18,7 @@ class VenvDeployConcern(DeployConcern['VenvDeployConcern.Config']):
 
     @cached_nullary
     def venv_dir(self) -> str:
-        return os.path.join(self._deploy.config.root_dir, 'venvs', self._deploy.config.name)
+        return os.path.join(self._deploy.site.config.root_dir, 'venvs', self._deploy.config.name)
 
     @cached_nullary
     def fs_items(self) -> ta.Sequence[FsItem]:
