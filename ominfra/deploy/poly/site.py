@@ -7,4 +7,3 @@ class SiteImpl(Site):
 
     def run(self) -> None:
         pass
-
