@@ -2,6 +2,8 @@ import abc
 import dataclasses as dc
 import typing as ta
 
+from . import lang
+
 
 T = ta.TypeVar('T')
 P = ta.ParamSpec('P')
@@ -86,3 +88,55 @@ class MultiMatchFn(MatchFn[P, T]):
 
 def multi(*children: MatchFn[P, T], strict: bool = False):
     return MultiMatchFn(children, strict=strict)
+
+
+##
+
+
+class CachedMultiFn(MatchFn[P, T]):
+    @staticmethod
+    def _default_key(*args, **kwargs):
+        return (args, tuple(sorted(kwargs.items(), key=lambda t: t[0])))
+
+    def __init__(
+            self,
+            f: MatchFn[P, T],
+            *,
+            key: ta.Callable[P, ta.Any] = _default_key,
+    ) -> None:
+        super().__init__()
+        self._f = f
+        self._dct: dict[ta.Any, lang.Maybe[ta.Any]] = {}
+        self._key = key
+
+    def guard(self, *args: P.args, **kwargs: P.kwargs) -> bool:
+        k = self._key(*args, **kwargs)
+        try:
+            e = self._dct[k]
+        except KeyError:
+            if self._f.guard(*args, **kwargs):
+                return True
+            else:
+                self._dct[k] = lang.empty()
+                return False
+        else:
+            return e.present
+
+    def fn(self, *args: P.args, **kwargs: P.kwargs) -> T:
+        k = self._key(*args, **kwargs)
+        try:
+            e = self._dct[k]
+        except KeyError:
+            try:
+                ret = self._f.fn(*args, **kwargs)
+            except MatchGuardError:
+                self._dct[k] = lang.empty()
+                raise
+            else:
+                self._dct[k] = lang.just(ret)
+                return ret
+        else:
+            if e.present:
+                return e.must()
+            else:
+                raise MatchGuardError(*args, **kwargs)
