@@ -5,6 +5,7 @@ import abc
 import dataclasses as dc
 import functools
 import inspect
+import json
 import logging
 import os
 import os.path
@@ -84,20 +85,34 @@ class cached_nullary:  # noqa
 
 
 ########################################
-# ../../../../omlish/lite/logs.py
-"""
-TODO:
- - debug
-"""
-# ruff: noqa: UP007
+# ../../../../omlish/lite/json.py
 
 
-log = logging.getLogger(__name__)
+##
 
 
-def configure_standard_logging(level: ta.Union[int, str] = logging.INFO) -> None:
-    logging.root.addHandler(logging.StreamHandler())
-    logging.root.setLevel(level)
+JSON_PRETTY_INDENT = 2
+
+JSON_PRETTY_KWARGS: ta.Mapping[str, ta.Any] = dict(
+    indent=JSON_PRETTY_INDENT,
+)
+
+json_dump_pretty: ta.Callable[..., bytes] = functools.partial(json.dump, **JSON_PRETTY_KWARGS)  # type: ignore
+json_dumps_pretty: ta.Callable[..., str] = functools.partial(json.dumps, **JSON_PRETTY_KWARGS)
+
+
+##
+
+
+JSON_COMPACT_SEPARATORS = (',', ':')
+
+JSON_COMPACT_KWARGS: ta.Mapping[str, ta.Any] = dict(
+    indent=None,
+    separators=JSON_COMPACT_SEPARATORS,
+)
+
+json_dump_compact: ta.Callable[..., bytes] = functools.partial(json.dump, **JSON_COMPACT_KWARGS)  # type: ignore
+json_dumps_compact: ta.Callable[..., str] = functools.partial(json.dumps, **JSON_COMPACT_KWARGS)
 
 
 ########################################
@@ -266,6 +281,58 @@ class Deploy(ConcernsContainer[DeployConcern, DeployConfig]):
     @abc.abstractmethod
     def run(self, runtime: Runtime) -> None:
         raise NotImplementedError
+
+
+########################################
+# ../../../../omlish/lite/logs.py
+"""
+TODO:
+ - debug
+"""
+# ruff: noqa: UP007
+
+
+log = logging.getLogger(__name__)
+
+
+class JsonLogFormatter(logging.Formatter):
+
+    KEYS: ta.Mapping[str, bool] = {
+        'name': False,
+        'msg': False,
+        'args': False,
+        'levelname': False,
+        'levelno': False,
+        'pathname': False,
+        'filename': False,
+        'module': False,
+        'exc_info': True,
+        'exc_text': True,
+        'stack_info': True,
+        'lineno': False,
+        'funcName': False,
+        'created': False,
+        'msecs': False,
+        'relativeCreated': False,
+        'thread': False,
+        'threadName': False,
+        'processName': False,
+        'process': False,
+    }
+
+    def format(self, record: logging.LogRecord) -> str:
+        dct = {
+            k: v
+            for k, o in self.KEYS.items()
+            for v in [getattr(record, k)]
+            if not (o and v is None)
+        }
+        return json_dumps_compact(dct)
+
+
+def configure_standard_logging(level: ta.Union[int, str] = logging.INFO) -> None:
+    logging.root.addHandler(logging.StreamHandler())
+    logging.root.setLevel(level)
 
 
 ########################################
