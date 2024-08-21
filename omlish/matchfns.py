@@ -118,7 +118,7 @@ class MultiMatchFn(MatchFn[P, T]):
 
 
 def multi(*children: MatchFn[P, T], strict: bool = False):
-    return MultiMatchFn(children, strict=strict)
+    return MultiMatchFn(children, strict=strict)  # noqa
 
 
 ##
@@ -178,7 +178,7 @@ class CachedMultiFn(MatchFn[P, T]):
                     raise MatchGuardError(*args, **kwargs)
 
     def __get__(self, instance, owner=None):
-        return self.__class__(self._f.__get__(instance, owner), key=self._key)
+        return self.__class__(self._f.__get__(instance, owner), key=self._key)  # noqa
 
 
 cached = CachedMultiFn
