@@ -34,3 +34,30 @@ def test_matchfns():
     assert mmf1(1) == 'one!'
     with pytest.raises(mf.MatchGuardError):
         mmf1(2)
+
+
+def test_cached():
+    c = 0
+
+    def foo(i: int) -> str:
+        nonlocal c
+        c += 1
+        return str(i)
+
+    mf0: mf.MatchFn[[int], str] = mf.simple(lambda i: 0 <= i < 10, foo)
+    assert mf0.guard(0)
+    assert not mf0.guard(-1)
+    assert not mf0.guard(10)
+    assert c == 0
+    assert mf0(2) == '2'
+    assert c == 1
+
+    mf1 = mf.cached(mf0)
+    assert mf1.guard(0)
+    assert not mf1.guard(-1)
+    assert not mf1.guard(10)
+    assert c == 1
+    assert mf1(2) == '2'
+    assert c == 2
+    assert mf1(2) == '2'
+    assert c == 2
