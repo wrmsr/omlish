@@ -47,7 +47,7 @@ def test_marshal():
 
     uc = UnmarshalContext(registry=reg, factory=uf)
     for _ in range(2):
-        uobj = uc.make(type(obj)).unmarshal(uc, mobj)
+        uobj = uc.make(type(obj)).unmarshal(uc, mobj)  # noqa
         print(uobj)
     print()
 

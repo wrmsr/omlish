@@ -2,6 +2,7 @@ import dataclasses as dc
 import threading
 import typing as ta
 
+from .. import check
 from .. import matchfns as mfs
 from .. import reflect as rfl
 
@@ -17,14 +18,21 @@ C = ta.TypeVar('C')
 class TypeMapFactory(mfs.MatchFn[[C, rfl.Type], R]):
     m: ta.Mapping[rfl.Type, R] = dc.field(default_factory=dict)
 
-    def guard(self, ctx: C, ty: rfl.Type) -> bool:
-        return ty in self.m
+    def __post_init__(self) -> None:
+        for k in self.m:
+            if not isinstance(k, rfl.TYPES):
+                raise TypeError(k)
 
-    def fn(self, ctx: C, ty: rfl.Type) -> R:
+    def guard(self, ctx: C, rty: rfl.Type) -> bool:
+        check.isinstance(rty, rfl.TYPES)
+        return rty in self.m
+
+    def fn(self, ctx: C, rty: rfl.Type) -> R:
+        check.isinstance(rty, rfl.TYPES)
         try:
-            return self.m[ty]
+            return self.m[rty]
         except KeyError:
-            raise mfs.MatchGuardError(ctx, ty)  # noqa
+            raise mfs.MatchGuardError(ctx, rty)  # noqa
 
 
 ##
@@ -37,35 +45,37 @@ class TypeCacheFactory(mfs.MatchFn[[C, rfl.Type], R]):
         self._dct: dict[rfl.Type, R | None] = {}
         self._mtx = threading.RLock()
 
-    def guard(self, ctx: C, ty: rfl.Type) -> bool:
+    def guard(self, ctx: C, rty: rfl.Type) -> bool:
+        check.isinstance(rty, rfl.TYPES)
         with self._mtx:
             try:
-                e = self._dct[ty]
+                e = self._dct[rty]
             except KeyError:
-                if self._f.guard(ctx, ty):
+                if self._f.guard(ctx, rty):
                     return True
                 else:
-                    self._dct[ty] = None
+                    self._dct[rty] = None
                     return False
             else:
                 return e is not None
 
-    def fn(self, ctx: C, ty: rfl.Type) -> R:
+    def fn(self, ctx: C, rty: rfl.Type) -> R:
+        check.isinstance(rty, rfl.TYPES)
         with self._mtx:
             try:
-                e = self._dct[ty]
+                e = self._dct[rty]
             except KeyError:
                 try:
-                    ret = self._f(ctx, ty)
+                    ret = self._f(ctx, rty)
                 except mfs.MatchGuardError:
-                    self._dct[ty] = None
+                    self._dct[rty] = None
                     raise
                 else:
-                    self._dct[ty] = ret
+                    self._dct[rty] = ret
                     return ret
             else:
                 if e is None:
-                    raise mfs.MatchGuardError(ctx, ty)
+                    raise mfs.MatchGuardError(ctx, rty)
                 else:
                     return e
 
@@ -84,10 +94,12 @@ class RecursiveTypeFactory(mfs.MatchFn[[C, rfl.Type], R]):
         self._prx = prx
         self._dct: dict[rfl.Type, R] = {}
 
-    def guard(self, ctx: C, ty: rfl.Type) -> bool:
-        return self._f.guard(ctx, ty)
+    def guard(self, ctx: C, rty: rfl.Type) -> bool:
+        check.isinstance(rty, rfl.TYPES)
+        return self._f.guard(ctx, rty)
 
     def fn(self, ctx: C, rty: rfl.Type) -> R:
+        check.isinstance(rty, rfl.TYPES)
         try:
             return self._dct[rty]
         except KeyError:
