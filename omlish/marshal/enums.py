@@ -45,7 +45,5 @@ class EnumUnmarshalerFactory(UnmarshalerFactory):
         return isinstance(rty, type) and issubclass(rty, enum.Enum)
 
     def __call__(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler | None:
-
-        if isinstance(rty, type) and issubclass(rty, enum.Enum):
-            return EnumUnmarshaler(rty)
-        return None
+        check.state(isinstance(rty, type) and issubclass(rty, enum.Enum))
+        return EnumUnmarshaler(rty)

@@ -84,9 +84,7 @@ class DataclassMarshalerFactory(MarshalerFactory):
         return dc.is_dataclass(rty)
 
     def fn(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler:
-        if not isinstance(rty, type) and dc.is_dataclass(rty):
-            raise mfs.MatchGuardError(ctx, rty)
-
+        check.state(dc.is_dataclass(rty))
         dc_md = get_dataclass_metadata(rty)
         fields = [
             (fi, _make_field_obj(ctx, fi.type, fi.metadata.marshaler, fi.metadata.marshaler_factory))
@@ -106,9 +104,7 @@ class DataclassUnmarshalerFactory(UnmarshalerFactory):
         return dc.is_dataclass(rty)
 
     def fn(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler:
-        if not dc.is_dataclass(rty):
-            raise mfs.MatchGuardError(ctx, rty)
-
+        check.state(dc.is_dataclass(rty))
         dc_md = get_dataclass_metadata(rty)
         d: dict[str, tuple[FieldInfo, Unmarshaler]] = {}
         for fi in get_field_infos(rty, ctx.options):

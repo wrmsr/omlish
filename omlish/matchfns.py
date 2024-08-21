@@ -128,7 +128,7 @@ class CachedMultiFn(MatchFn[P, T]):
             e = self._dct[k]
         except KeyError:
             try:
-                ret = self._f.fn(*args, **kwargs)
+                ret = self._f(*args, **kwargs)
             except MatchGuardError:
                 self._dct[k] = lang.empty()
                 raise
@@ -140,3 +140,6 @@ class CachedMultiFn(MatchFn[P, T]):
                 return e.must()
             else:
                 raise MatchGuardError(*args, **kwargs)
+
+
+cached = CachedMultiFn
