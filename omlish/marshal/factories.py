@@ -24,7 +24,7 @@ class TypeMapFactory(mfs.MatchFn[[C, rfl.Type], R]):
         try:
             return self.m[ty]
         except KeyError:
-            raise mfs.MatchGuardError(ctx, ty)
+            raise mfs.MatchGuardError(ctx, ty)  # noqa
 
 
 ##
