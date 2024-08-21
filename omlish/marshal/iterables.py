@@ -8,10 +8,10 @@ from .. import matchfns as mfs
 from .. import reflect as rfl
 from .base import MarshalContext
 from .base import Marshaler
-from .base import MarshalerFactory
+from .base import MarshalerFactoryMatchClass
 from .base import UnmarshalContext
 from .base import Unmarshaler
-from .base import UnmarshalerFactory
+from .base import UnmarshalerFactoryMatchClass
 from .values import Value
 
 
@@ -23,7 +23,7 @@ class IterableMarshaler(Marshaler):
         return list(map(functools.partial(self.e.marshal, ctx), o))
 
 
-class IterableMarshalerFactory(mfs.MatchFnClass[[MarshalContext, rfl.Type], Marshaler]):
+class IterableMarshalerFactory(MarshalerFactoryMatchClass):
     @mfs.simple(lambda _, ctx, rty: isinstance(rty, rfl.Generic) and issubclass(rty.cls, collections.abc.Iterable))
     def _build_generic(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler:
         if (e := ctx.make(check.single(rty.args))) is None:
@@ -46,14 +46,15 @@ class IterableUnmarshaler(Unmarshaler):
         return self.ctor(map(functools.partial(self.e.unmarshal, ctx), check.isinstance(v, collections.abc.Iterable)))
 
 
-class IterableUnmarshalerFactory(UnmarshalerFactory):
-    def __call__(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler | None:
-        if isinstance(rty, rfl.Generic) and issubclass(rty.cls, collections.abc.Iterable):
-            if (e := ctx.make(check.single(rty.args))) is None:
-                return None  # type: ignore
-            return IterableUnmarshaler(rty.cls, e)  # noqa
-        if isinstance(rty, type) and issubclass(rty, collections.abc.Iterable):
-            if (e := ctx.make(ta.Any)) is None:
-                return None  # type: ignore
-            return IterableUnmarshaler(rty, e)  # noqa
-        return None
+class IterableUnmarshalerFactory(UnmarshalerFactoryMatchClass):
+    @mfs.simple(lambda _, ctx, rty: isinstance(rty, rfl.Generic) and issubclass(rty.cls, collections.abc.Iterable))
+    def _build_generic(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler | None:
+        if (e := ctx.make(check.single(rty.args))) is None:
+            return None  # type: ignore
+        return IterableUnmarshaler(rty.cls, e)  # noqa
+
+    @mfs.simple(lambda _, ctx, rty: isinstance(rty, type) and issubclass(rty, collections.abc.Iterable))
+    def _build_concrete(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler | None:
+        if (e := ctx.make(ta.Any)) is None:
+            return None  # type: ignore
+        return IterableUnmarshaler(rty, e)  # noqa

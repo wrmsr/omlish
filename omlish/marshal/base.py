@@ -108,6 +108,9 @@ class Unmarshaler(lang.Abstract):
 MarshalerFactory: ta.TypeAlias = mfs.MatchFn[['MarshalContext', rfl.Type], Marshaler]
 UnmarshalerFactory: ta.TypeAlias = mfs.MatchFn[['UnmarshalContext', rfl.Type], Unmarshaler]
 
+MarshalerFactoryMatchClass: ta.TypeAlias = mfs.MatchFnClass[['MarshalContext', rfl.Type], Marshaler]
+UnmarshalerFactoryMatchClass: ta.TypeAlias = mfs.MatchFnClass[['UnmarshalContext', rfl.Type], Unmarshaler]
+
 
 ##
 
