@@ -23,6 +23,7 @@ class MatchFn(abc.ABC, ta.Generic[P, T]):
     def fn(self, *args: P.args, **kwargs: P.kwargs) -> T:
         raise NotImplementedError
 
+    @ta.final
     def __call__(self, *args: P.args, **kwargs: P.kwargs) -> T:
         if not self.guard(*args, **kwargs):
             raise MatchGuardError(*args, **kwargs)

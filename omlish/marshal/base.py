@@ -80,9 +80,9 @@ import typing as ta
 from .. import check
 from .. import collections as col
 from .. import lang
+from .. import matchfns as mfs
 from .. import reflect as rfl
 from .exceptions import UnhandledTypeError
-from .factories import Factory
 from .factories import RecursiveTypeFactory
 from .registries import Registry
 from .registries import RegistryItem
@@ -105,8 +105,8 @@ class Unmarshaler(lang.Abstract):
         raise NotImplementedError
 
 
-MarshalerFactory = Factory[Marshaler, 'MarshalContext', rfl.Type]
-UnmarshalerFactory = Factory[Unmarshaler, 'UnmarshalContext', rfl.Type]
+MarshalerFactory: ta.TypeAlias = mfs.MatchFn[['MarshalContext', rfl.Type], Marshaler]
+UnmarshalerFactory: ta.TypeAlias = mfs.MatchFn[['UnmarshalContext', rfl.Type], Unmarshaler]
 
 
 ##
@@ -174,7 +174,7 @@ class _ProxyMarshaler(_Proxy[Marshaler], Marshaler):
         return self._obj.marshal(ctx, o)
 
 
-class RecursiveMarshalerFactory(RecursiveTypeFactory[Marshaler, MarshalContext], lang.Final):
+class RecursiveMarshalerFactory(RecursiveTypeFactory[MarshalContext, Marshaler], lang.Final):
     def __init__(self, f: MarshalerFactory) -> None:
         super().__init__(f, _ProxyMarshaler._new)  # noqa
 
@@ -184,7 +184,7 @@ class _ProxyUnmarshaler(_Proxy[Unmarshaler], Unmarshaler):
         return self._obj.unmarshal(ctx, v)
 
 
-class RecursiveUnmarshalerFactory(RecursiveTypeFactory[Unmarshaler, UnmarshalContext], lang.Final):
+class RecursiveUnmarshalerFactory(RecursiveTypeFactory[UnmarshalContext, Unmarshaler], lang.Final):
     def __init__(self, f: UnmarshalerFactory) -> None:
         super().__init__(f, _ProxyUnmarshaler._new)  # noqa
 

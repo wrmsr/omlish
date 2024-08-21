@@ -3,6 +3,7 @@ import typing as ta
 from .. import check
 from .. import collections as col
 from .. import dataclasses as dc
+from .. import matchfns as mfs
 from .. import reflect as rfl
 from .base import MarshalContext
 from .base import Marshaler
@@ -79,37 +80,45 @@ def _make_field_obj(ctx, ty, obj, fac):
 
 
 class DataclassMarshalerFactory(MarshalerFactory):
-    def __call__(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler | None:
-        if isinstance(rty, type) and dc.is_dataclass(rty):
-            dc_md = get_dataclass_metadata(rty)
-            fields = [
-                (fi, _make_field_obj(ctx, fi.type, fi.metadata.marshaler, fi.metadata.marshaler_factory))
-                for fi in get_field_infos(rty, ctx.options)
-            ]
-            return ObjectMarshaler(
-                fields,
-                unknown_field=dc_md.unknown_field,
-            )
-        return None
+    def guard(self, ctx: MarshalContext, rty: rfl.Type) -> bool:
+        return dc.is_dataclass(rty)
+
+    def fn(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler:
+        if not isinstance(rty, type) and dc.is_dataclass(rty):
+            raise mfs.MatchGuardError(ctx, rty)
+
+        dc_md = get_dataclass_metadata(rty)
+        fields = [
+            (fi, _make_field_obj(ctx, fi.type, fi.metadata.marshaler, fi.metadata.marshaler_factory))
+            for fi in get_field_infos(rty, ctx.options)
+        ]
+        return ObjectMarshaler(
+            fields,
+            unknown_field=dc_md.unknown_field,
+        )
 
 
 ##
 
 
 class DataclassUnmarshalerFactory(UnmarshalerFactory):
-    def __call__(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler | None:
-        if isinstance(rty, type) and dc.is_dataclass(rty):
-            dc_md = get_dataclass_metadata(rty)
-            d: dict[str, tuple[FieldInfo, Unmarshaler]] = {}
-            for fi in get_field_infos(rty, ctx.options):
-                tup = (fi, _make_field_obj(ctx, fi.type, fi.metadata.unmarshaler, fi.metadata.unmarshaler_factory))
-                for un in fi.unmarshal_names:
-                    if un in d:
-                        raise KeyError(f'Duplicate fields for name {un!r}: {fi.name!r}, {d[un][0].name!r}')
-                    d[un] = tup
-            return ObjectUnmarshaler(
-                rty,
-                d,
-                unknown_field=dc_md.unknown_field,
-            )
-        return None
+    def guard(self, ctx: UnmarshalContext, rty: rfl.Type) -> bool:
+        return dc.is_dataclass(rty)
+
+    def fn(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler:
+        if not dc.is_dataclass(rty):
+            raise mfs.MatchGuardError(ctx, rty)
+
+        dc_md = get_dataclass_metadata(rty)
+        d: dict[str, tuple[FieldInfo, Unmarshaler]] = {}
+        for fi in get_field_infos(rty, ctx.options):
+            tup = (fi, _make_field_obj(ctx, fi.type, fi.metadata.unmarshaler, fi.metadata.unmarshaler_factory))
+            for un in fi.unmarshal_names:
+                if un in d:
+                    raise KeyError(f'Duplicate fields for name {un!r}: {fi.name!r}, {d[un][0].name!r}')
+                d[un] = tup
+        return ObjectUnmarshaler(
+            rty,
+            d,
+            unknown_field=dc_md.unknown_field,
+        )
