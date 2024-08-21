@@ -25,6 +25,9 @@ class MatchFn(abc.ABC, ta.Generic[P, T]):
     def fn(self, *args: P.args, **kwargs: P.kwargs) -> T:
         raise NotImplementedError
 
+    def __get__(self, instance, owner=None):
+        return self
+
     @ta.final
     def __call__(self, *args: P.args, **kwargs: P.kwargs) -> T:
         if not self.guard(*args, **kwargs):
@@ -46,8 +49,30 @@ class SimpleMatchFn(MatchFn[P, T]):
     def fn(self, *args: P.args, **kwargs: P.kwargs) -> T:
         return self._fn(*args, **kwargs)
 
+    def __get__(self, instance, owner=None):
+        return self.__class__(
+            self._guard.__get__(instance, owner),  # noqa
+            self._fn.__get__(instance, owner),  # noqa
+        )
 
-simple = SimpleMatchFn
+
+@ta.overload
+def simple(guard: ta.Callable[P, bool], fn: ta.Callable[P, T]) -> SimpleMatchFn[P, T]:
+    ...
+
+
+@ta.overload
+def simple(guard: ta.Callable[P, bool]) -> ta.Callable[[ta.Callable[P, T]], SimpleMatchFn[P, T]]:
+    ...
+
+
+def simple(guard, fn=None):
+    def inner(fn):  # noqa
+        return SimpleMatchFn(guard, fn)
+    if fn is not None:
+        return inner(fn)
+    else:
+        return inner
 
 
 ##
@@ -85,6 +110,12 @@ class MultiMatchFn(MatchFn[P, T]):
             raise MatchGuardError(*args, **kwargs)
         return m.fn(*args, **kwargs)
 
+    def __get__(self, instance, owner=None):
+        return self.__class__(
+            [c.__get__(instance, owner) for c in self.children],
+            strict=self.strict,
+        )
+
 
 def multi(*children: MatchFn[P, T], strict: bool = False):
     return MultiMatchFn(children, strict=strict)
@@ -106,8 +137,8 @@ class CachedMultiFn(MatchFn[P, T]):
     ) -> None:
         super().__init__()
         self._f = f
-        self._dct: dict[ta.Any, lang.Maybe[ta.Any]] = {}
         self._key = key
+        self._dct: dict[ta.Any, lang.Maybe[ta.Any]] = {}
 
     def guard(self, *args: P.args, **kwargs: P.kwargs) -> bool:
         k = self._key(*args, **kwargs)
@@ -140,6 +171,9 @@ class CachedMultiFn(MatchFn[P, T]):
                 return e.must()
             else:
                 raise MatchGuardError(*args, **kwargs)
+
+    def __get__(self, instance, owner=None):
+        return self.__class__(self._f, key=self.key)
 
 
 cached = CachedMultiFn
