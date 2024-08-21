@@ -3,13 +3,14 @@ import dataclasses as dc
 import typing as ta
 
 from .. import check
+from .. import matchfns as mfs
 from .. import reflect as rfl
 from .base import MarshalContext
 from .base import Marshaler
-from .base import MarshalerFactory
+from .base import MarshalerFactoryMatchClass
 from .base import UnmarshalContext
 from .base import Unmarshaler
-from .base import UnmarshalerFactory
+from .base import UnmarshalerFactoryMatchClass
 from .values import Value
 
 
@@ -25,18 +26,19 @@ class MappingMarshaler(Marshaler):
         }
 
 
-class MappingMarshalerFactory(MarshalerFactory):
-    def __call__(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler | None:
-        if isinstance(rty, rfl.Generic) and issubclass(rty.cls, collections.abc.Mapping):
-            kt, vt = rty.args
-            if (ke := ctx.make(kt)) is None or (ve := ctx.make(vt)) is None:
-                return None  # type: ignore
-            return MappingMarshaler(ke, ve)
-        if isinstance(rty, type) and issubclass(rty, collections.abc.Mapping):
-            if (e := ctx.make(ta.Any)) is None:
-                return None  # type: ignore
-            return MappingMarshaler(e, e)
-        return None
+class MappingMarshalerFactory(MarshalerFactoryMatchClass):
+    @mfs.simple(lambda _, ctx, rty: isinstance(rty, rfl.Generic) and issubclass(rty.cls, collections.abc.Mapping))
+    def _build_generic(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler | None:
+        kt, vt = rty.args
+        if (ke := ctx.make(kt)) is None or (ve := ctx.make(vt)) is None:
+            return None  # type: ignore
+        return MappingMarshaler(ke, ve)
+
+    @mfs.simple(lambda _, ctx, rty: isinstance(rty, type) and issubclass(rty, collections.abc.Mapping))
+    def _build_concrete(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler | None:
+        if (e := ctx.make(ta.Any)) is None:
+            return None  # type: ignore
+        return MappingMarshaler(e, e)
 
 
 @dc.dataclass(frozen=True)
@@ -52,15 +54,16 @@ class MappingUnmarshaler(Unmarshaler):
         return self.ctor(dct)
 
 
-class MappingUnmarshalerFactory(UnmarshalerFactory):
-    def __call__(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler | None:
-        if isinstance(rty, rfl.Generic) and issubclass(rty.cls, collections.abc.Mapping):
-            kt, vt = rty.args
-            if (ke := ctx.make(kt)) is None or (ve := ctx.make(vt)) is None:
-                return None  # type: ignore
-            return MappingUnmarshaler(rty.cls, ke, ve)
-        if isinstance(rty, type) and issubclass(rty, collections.abc.Mapping):
-            if (e := ctx.make(ta.Any)) is None:
-                return None  # type: ignore
-            return MappingUnmarshaler(rty, e, e)
-        return None
+class MappingUnmarshalerFactory(UnmarshalerFactoryMatchClass):
+    @mfs.simple(lambda _, ctx, rty: isinstance(rty, rfl.Generic) and issubclass(rty.cls, collections.abc.Mapping))
+    def _build_generic(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler | None:
+        kt, vt = rty.args
+        if (ke := ctx.make(kt)) is None or (ve := ctx.make(vt)) is None:
+            return None  # type: ignore
+        return MappingUnmarshaler(rty.cls, ke, ve)
+
+    @mfs.simple(lambda _, ctx, rty: isinstance(rty, type) and issubclass(rty, collections.abc.Mapping))
+    def _build_concrete(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler | None:
+        if (e := ctx.make(ta.Any)) is None:
+            return None  # type: ignore
+        return MappingUnmarshaler(rty, e, e)
