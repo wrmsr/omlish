@@ -9,7 +9,6 @@ from .base import TypeMapMarshalerFactory
 from .base import TypeMapUnmarshalerFactory
 from .base import UnmarshalContext
 from .base import Unmarshaler
-from .base import UnmarshalerFactory
 from .values import Value
 
 
@@ -36,6 +35,6 @@ BASE64_MARSHALER_FACTORY = TypeMapMarshalerFactory({
     ty: Base64MarshalerUnmarshaler(ty) for ty in BASE64_TYPES
 })
 
-BASE64_UNMARSHALER_FACTORY: UnmarshalerFactory = TypeMapUnmarshalerFactory({
+BASE64_UNMARSHALER_FACTORY = TypeMapUnmarshalerFactory({
     ty: Base64MarshalerUnmarshaler(ty) for ty in BASE64_TYPES
 })
