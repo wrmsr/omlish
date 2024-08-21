@@ -67,5 +67,10 @@ class JsonLogFormatter(logging.Formatter):
     }
 
     def format(self, record: logging.LogRecord) -> str:
-        dct = {k: v for k, o in self.KEYS.items() for v in [getattr(record, k)] if not (o and v is None)}
+        dct = {
+            k: v
+            for k, o in self.KEYS.items()
+            for v in [getattr(record, k)]
+            if not (o and v is None)
+        }
         return json.dumps_compact(dct)
