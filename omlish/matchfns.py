@@ -134,43 +134,48 @@ class CachedMultiFn(MatchFn[P, T]):
             f: MatchFn[P, T],
             *,
             key: ta.Callable[P, ta.Any] = _default_key,
+            lock: lang.DefaultLockable = None,
     ) -> None:
         super().__init__()
         self._f = f
         self._key = key
+        self._lock = lock
+        self._lock_impl = lang.default_lock(lock)
         self._dct: dict[ta.Any, lang.Maybe[ta.Any]] = {}
 
     def guard(self, *args: P.args, **kwargs: P.kwargs) -> bool:
-        k = self._key(*args, **kwargs)
-        try:
-            e = self._dct[k]
-        except KeyError:
-            if self._f.guard(*args, **kwargs):
-                return True
+        with self._lock_impl:
+            k = self._key(*args, **kwargs)
+            try:
+                e = self._dct[k]
+            except KeyError:
+                if self._f.guard(*args, **kwargs):
+                    return True
+                else:
+                    self._dct[k] = lang.empty()
+                    return False
             else:
-                self._dct[k] = lang.empty()
-                return False
-        else:
-            return e.present
+                return e.present
 
     def fn(self, *args: P.args, **kwargs: P.kwargs) -> T:
-        k = self._key(*args, **kwargs)
-        try:
-            e = self._dct[k]
-        except KeyError:
+        with self._lock_impl:
+            k = self._key(*args, **kwargs)
             try:
-                ret = self._f(*args, **kwargs)
-            except MatchGuardError:
-                self._dct[k] = lang.empty()
-                raise
+                e = self._dct[k]
+            except KeyError:
+                try:
+                    ret = self._f(*args, **kwargs)
+                except MatchGuardError:
+                    self._dct[k] = lang.empty()
+                    raise
+                else:
+                    self._dct[k] = lang.just(ret)
+                    return ret
             else:
-                self._dct[k] = lang.just(ret)
-                return ret
-        else:
-            if e.present:
-                return e.must()
-            else:
-                raise MatchGuardError(*args, **kwargs)
+                if e.present:
+                    return e.must()
+                else:
+                    raise MatchGuardError(*args, **kwargs)
 
     def __get__(self, instance, owner=None):
         return self.__class__(self._f, key=self.key)

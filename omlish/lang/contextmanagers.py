@@ -307,7 +307,7 @@ Lockable = ta.Callable[[], ta.ContextManager]
 DefaultLockable = bool | Lockable | ta.ContextManager | None
 
 
-def default_lock(value: DefaultLockable, default: DefaultLockable) -> Lockable:
+def default_lock(value: DefaultLockable, default: DefaultLockable = None) -> Lockable:
     if value is None:
         value = default
 
