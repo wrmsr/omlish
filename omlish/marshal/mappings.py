@@ -28,12 +28,12 @@ class MappingMarshaler(Marshaler):
 
 class MappingMarshalerFactory(MarshalerFactoryMatchClass):
     @mfs.simple(lambda _, ctx, rty: isinstance(rty, rfl.Generic) and issubclass(rty.cls, collections.abc.Mapping))
-    def _build_generic(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler | None:
+    def _build_generic(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler:
         kt, vt = rty.args
         return MappingMarshaler(ctx.make(kt), ctx.make(vt))
 
     @mfs.simple(lambda _, ctx, rty: isinstance(rty, type) and issubclass(rty, collections.abc.Mapping))
-    def _build_concrete(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler | None:
+    def _build_concrete(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler:
         return MappingMarshaler(a := ctx.make(ta.Any), a)
 
 
@@ -52,10 +52,10 @@ class MappingUnmarshaler(Unmarshaler):
 
 class MappingUnmarshalerFactory(UnmarshalerFactoryMatchClass):
     @mfs.simple(lambda _, ctx, rty: isinstance(rty, rfl.Generic) and issubclass(rty.cls, collections.abc.Mapping))
-    def _build_generic(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler | None:
+    def _build_generic(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler:
         kt, vt = rty.args
         return MappingUnmarshaler(rty.cls, ctx.make(kt), ctx.make(vt))
 
     @mfs.simple(lambda _, ctx, rty: isinstance(rty, type) and issubclass(rty, collections.abc.Mapping))
-    def _build_concrete(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler | None:
+    def _build_concrete(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler:
         return MappingUnmarshaler(rty, a := ctx.make(ta.Any), a)
