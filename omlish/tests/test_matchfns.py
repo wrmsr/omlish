@@ -61,3 +61,30 @@ def test_cached():
     assert c == 2
     assert mf1(2) == '2'
     assert c == 2
+
+
+##
+
+
+# class MatchFnClass(mf.MatchFn[mf.P, mf.T]):
+#     def __init_subclass__(cls, **kwargs):
+#         super().__init_subclass__()
+#         d = {}
+#         for c in cls.__mro__:
+#             for a, o in c.__dict__:
+#                 if isinstance(o, mf.MatchFn) and a not in d:
+#                     d[a] = o
+#
+#
+# class Foo:
+#     @mf.simple(lambda self, x: isinstance(x, str))
+#     def _foo_str(self, s: str) -> str:
+#         return f'str: {s}'
+#
+#     @mf.simple(lambda self, x: isinstance(x, int))
+#     def _foo_str(self, s: int) -> str:
+#         return f'int: {s}'
+#
+#
+# def test_class():
+#
