@@ -84,6 +84,7 @@ from .. import matchfns as mfs
 from .. import reflect as rfl
 from .exceptions import UnhandledTypeError
 from .factories import RecursiveTypeFactory
+from .factories import TypeMapFactory
 from .registries import Registry
 from .registries import RegistryItem
 from .utils import _Proxy
@@ -110,6 +111,9 @@ UnmarshalerFactory: ta.TypeAlias = mfs.MatchFn[['UnmarshalContext', rfl.Type], U
 
 MarshalerFactoryMatchClass: ta.TypeAlias = mfs.MatchFnClass[['MarshalContext', rfl.Type], Marshaler]
 UnmarshalerFactoryMatchClass: ta.TypeAlias = mfs.MatchFnClass[['UnmarshalContext', rfl.Type], Unmarshaler]
+
+TypeMapMarshalerFactory: ta.TypeAlias = TypeMapFactory['MarshalContext', Marshaler]
+TypeMapUnmarshalerFactory: ta.TypeAlias = TypeMapFactory['UnmarshalContext', Unmarshaler]
 
 
 ##

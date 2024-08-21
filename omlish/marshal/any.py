@@ -1,12 +1,14 @@
 import typing as ta
 
+from .. import reflect as rfl
 from .base import MarshalContext
 from .base import Marshaler
 from .base import MarshalerFactory
+from .base import TypeMapMarshalerFactory
+from .base import TypeMapUnmarshalerFactory
 from .base import UnmarshalContext
 from .base import Unmarshaler
 from .base import UnmarshalerFactory
-from .factories import TypeMapFactory
 from .values import Value
 
 
@@ -21,5 +23,5 @@ class AnyMarshalerUnmarshaler(Marshaler, Unmarshaler):
 
 ANY_MARSHALER_UNMARSHALER = AnyMarshalerUnmarshaler()
 
-ANY_MARSHALER_FACTORY: MarshalerFactory = TypeMapFactory({ta.Any: ANY_MARSHALER_UNMARSHALER})  # type: ignore
-ANY_UNMARSHALER_FACTORY: UnmarshalerFactory = TypeMapFactory({ta.Any: ANY_MARSHALER_UNMARSHALER})  # type: ignore
+ANY_MARSHALER_FACTORY: MarshalerFactory = TypeMapMarshalerFactory({rfl.ANY: ANY_MARSHALER_UNMARSHALER})
+ANY_UNMARSHALER_FACTORY: UnmarshalerFactory = TypeMapUnmarshalerFactory({rfl.ANY: ANY_MARSHALER_UNMARSHALER})

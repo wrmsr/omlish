@@ -82,12 +82,12 @@ class RecursiveTypeFactory(mfs.MatchFn[[C, rfl.Type], R]):
         super().__init__()
         self._f = f
         self._prx = prx
-        self._dct: dict[rfl.Type, R | None] = {}
+        self._dct: dict[rfl.Type, R] = {}
 
     def guard(self, ctx: C, ty: rfl.Type) -> bool:
         return self._f.guard(ctx, ty)
 
-    def fn(self, ctx: C, rty: rfl.Type) -> R | None:
+    def fn(self, ctx: C, rty: rfl.Type) -> R:
         try:
             return self._dct[rty]
         except KeyError:
