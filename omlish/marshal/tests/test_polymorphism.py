@@ -1,7 +1,7 @@
 import dataclasses as dc
 
-from .. import polymorphism as poly
 from ... import matchfns as mfs
+from .. import polymorphism as poly
 from ..base import MarshalContext
 from ..base import MarshalerFactory
 from ..base import RecursiveMarshalerFactory
