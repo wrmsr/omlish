@@ -140,7 +140,7 @@ class CachedMultiFn(MatchFn[P, T]):
         self._f = f
         self._key = key
         self._lock = lock
-        self._lock_impl = lang.default_lock(lock)
+        self._lock_impl = lang.default_lock(lock)()
         self._dct: dict[ta.Any, lang.Maybe[ta.Any]] = {}
 
     def guard(self, *args: P.args, **kwargs: P.kwargs) -> bool:
@@ -178,7 +178,7 @@ class CachedMultiFn(MatchFn[P, T]):
                     raise MatchGuardError(*args, **kwargs)
 
     def __get__(self, instance, owner=None):
-        return self.__class__(self._f, key=self.key)
+        return self.__class__(self._f.__get__(instance, owner), key=self._key)
 
 
 cached = CachedMultiFn
