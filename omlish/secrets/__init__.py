@@ -2,6 +2,7 @@ from .secrets import (  # noqa
     CompositeSecrets,
     EMPTY_SECRETS,
     EmptySecrets,
+    EnvVarSecrets,
     LoggingSecrets,
     Secret,
     Secrets,
