@@ -1,5 +1,6 @@
 import abc
 import logging
+import os
 import typing as ta
 
 from .. import dataclasses as dc
@@ -43,7 +44,7 @@ class Secrets(lang.Abstract):
         raise NotImplementedError
 
 
-#
+##
 
 
 class EmptySecrets(Secrets):
@@ -54,7 +55,7 @@ class EmptySecrets(Secrets):
 EMPTY_SECRETS = EmptySecrets()
 
 
-#
+##
 
 
 class SimpleSecrets(Secrets):
@@ -69,7 +70,7 @@ class SimpleSecrets(Secrets):
         return self._dct[key]
 
 
-#
+##
 
 
 class CompositeSecrets(Secrets):
@@ -86,7 +87,7 @@ class CompositeSecrets(Secrets):
         raise KeyError(key)
 
 
-#
+##
 
 
 class LoggingSecrets(Secrets):
@@ -110,3 +111,37 @@ class LoggingSecrets(Secrets):
         else:
             self._log.info('Successfully accessed secret: %s', key)
             return ret
+
+
+##
+
+
+class EnvVarSecrets(Secrets):
+    def __init__(
+            self,
+            *,
+            env: ta.MutableMapping[str, str] | None = None,
+            upcase: bool = False,
+            prefix: str | None = None,
+            pop: bool = False,
+    ) -> None:
+        super().__init__()
+        self._env = env
+        self._upcase = upcase
+        self._prefix = prefix
+        self._pop = pop
+
+    def get(self, key: str) -> str:
+        ekey = key
+        if self._upcase:
+            ekey = ekey.upper()
+        if self._prefix is not None:
+            ekey = self._prefix + ekey
+        if self._env is not None:
+            dct = self._env
+        else:
+            dct = os.environ
+        if self._pop:
+            return dct.pop(ekey)
+        else:
+            return dct[ekey]
