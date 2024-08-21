@@ -163,9 +163,10 @@ class MarshalContext(BaseContext, lang.Final):
 
     def make(self, o: ta.Any) -> Marshaler:
         rty = rfl.type_(o)
-        if (m := check.not_none(self.factory)(self, rty)) is not None:  # noqa
-            return m
-        raise UnhandledTypeError(rty)
+        try:
+            return check.not_none(self.factory)(self, rty)
+        except mfs.MatchGuardError:
+            raise UnhandledTypeError(rty)  # noqa
 
 
 @dc.dataclass(frozen=True)
@@ -174,9 +175,10 @@ class UnmarshalContext(BaseContext, lang.Final):
 
     def make(self, o: ta.Any) -> Unmarshaler:
         rty = rfl.type_(o)
-        if (m := check.not_none(self.factory)(self, rty)) is not None:  # noqa
-            return m
-        raise UnhandledTypeError(rty)
+        try:
+            return check.not_none(self.factory)(self, rty)
+        except mfs.MatchGuardError:
+            raise UnhandledTypeError(rty)  # noqa
 
 
 ##

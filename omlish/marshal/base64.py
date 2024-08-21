@@ -36,6 +36,7 @@ BASE64_TYPES = (
 BASE64_MARSHALER_FACTORY: MarshalerFactory = TypeMapMarshalerFactory({
     ty: Base64MarshalerUnmarshaler(ty) for ty in BASE64_TYPES
 })
+
 BASE64_UNMARSHALER_FACTORY: UnmarshalerFactory = TypeMapUnmarshalerFactory({
     ty: Base64MarshalerUnmarshaler(ty) for ty in BASE64_TYPES
 })

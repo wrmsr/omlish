@@ -60,4 +60,4 @@ class MappingUnmarshalerFactory(UnmarshalerFactoryMatchClass):
 
     @mfs.simple(lambda _, ctx, rty: isinstance(rty, type) and issubclass(rty, collections.abc.Mapping))
     def _build_concrete(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler:
-        return MappingUnmarshaler(rty, a := ctx.make(ta.Any), a)
+        return MappingUnmarshaler(check.isinstance(rty, type), a := ctx.make(ta.Any), a)
