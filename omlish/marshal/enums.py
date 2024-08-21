@@ -3,7 +3,6 @@ import enum
 import typing as ta
 
 from .. import check
-from .. import matchfns as mfs
 from .. import reflect as rfl
 from .base import MarshalContext
 from .base import Marshaler
@@ -27,9 +26,9 @@ class EnumMarshalerFactory(MarshalerFactory):
         return isinstance(rty, type) and issubclass(rty, enum.Enum)
 
     def fn(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler:
-        if not isinstance(rty, type) and issubclass(rty, enum.Enum):
-            raise mfs.MatchGuardError(ctx, rty)
-        return EnumMarshaler(rty)
+        ty = check.isinstance(rty, type)
+        check.state(issubclass(ty, enum.Enum))
+        return EnumMarshaler(ty)
 
 
 @dc.dataclass(frozen=True)
@@ -45,5 +44,6 @@ class EnumUnmarshalerFactory(UnmarshalerFactory):
         return isinstance(rty, type) and issubclass(rty, enum.Enum)
 
     def fn(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler:
-        check.state(isinstance(rty, type) and issubclass(rty, enum.Enum))
-        return EnumUnmarshaler(rty)
+        ty = check.isinstance(rty, type)
+        check.state(issubclass(ty, enum.Enum))
+        return EnumUnmarshaler(ty)
