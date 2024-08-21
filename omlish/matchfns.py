@@ -57,12 +57,12 @@ class SimpleMatchFn(MatchFn[P, T]):
 
 
 @ta.overload
-def simple(guard: ta.Callable[P, bool], fn: ta.Callable[P, T]) -> SimpleMatchFn[P, T]:
+def simple(guard: ta.Callable[..., bool], fn: ta.Callable[P, T]) -> SimpleMatchFn[P, T]:
     ...
 
 
 @ta.overload
-def simple(guard: ta.Callable[P, bool]) -> ta.Callable[[ta.Callable[P, T]], SimpleMatchFn[P, T]]:
+def simple(guard: ta.Callable[..., bool]) -> ta.Callable[[ta.Callable[P, T]], SimpleMatchFn[P, T]]:
     ...
 
 
