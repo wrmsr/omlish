@@ -56,7 +56,7 @@ class TypeCacheFactory(mfs.MatchFn[[C, rfl.Type], R]):
                 e = self._dct[ty]
             except KeyError:
                 try:
-                    ret = self._f.fn(ctx, ty)
+                    ret = self._f(ctx, ty)
                 except mfs.MatchGuardError:
                     self._dct[ty] = None
                     raise
