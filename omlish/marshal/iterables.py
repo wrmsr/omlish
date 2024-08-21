@@ -29,7 +29,7 @@ class IterableMarshalerFactory(MarshalerFactoryMatchClass):
         return IterableMarshaler(ctx.make(check.single(rty.args)))
 
     @mfs.simple(lambda _, ctx, rty: isinstance(rty, type) and issubclass(rty, collections.abc.Iterable))
-    def _build_concrete(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler | None:
+    def _build_concrete(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler:
         return IterableMarshaler(ctx.make(ta.Any))
 
 
@@ -44,9 +44,9 @@ class IterableUnmarshaler(Unmarshaler):
 
 class IterableUnmarshalerFactory(UnmarshalerFactoryMatchClass):
     @mfs.simple(lambda _, ctx, rty: isinstance(rty, rfl.Generic) and issubclass(rty.cls, collections.abc.Iterable))
-    def _build_generic(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler | None:
+    def _build_generic(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler:
         return IterableUnmarshaler(rty.cls, ctx.make(check.single(rty.args)))  # noqa
 
     @mfs.simple(lambda _, ctx, rty: isinstance(rty, type) and issubclass(rty, collections.abc.Iterable))
-    def _build_concrete(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler | None:
+    def _build_concrete(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler:
         return IterableUnmarshaler(rty, ctx.make(ta.Any))
