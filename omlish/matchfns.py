@@ -182,3 +182,37 @@ class CachedMultiFn(MatchFn[P, T]):
 
 
 cached = CachedMultiFn
+
+
+##
+
+
+class MatchFnClass(MatchFn[P, T]):
+    _cls_match_fn: ta.ClassVar[MultiMatchFn]
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.__match_fn: MatchFn[P, T] | None = None
+
+    @property
+    def _match_fn(self) -> MatchFn[P, T]:
+        if (mf := self.__match_fn) is None:
+            mf = self.__match_fn = self._cls_match_fn.__get__(self)
+        return mf
+
+    def __init_subclass__(cls, strict: bool = False, **kwargs):
+        super().__init_subclass__()
+        if '_cls_match_fn' in cls.__dict__:
+            raise AttributeError('_cls_match_fn')
+        d = {}
+        for c in cls.__mro__:
+            for a, o in c.__dict__.items():
+                if isinstance(o, MatchFn) and a not in d:
+                    d[a] = o
+        cls._cls_match_fn = MultiMatchFn(list(d.values()), strict=strict)
+
+    def guard(self, *args: P.args, **kwargs: P.kwargs) -> bool:
+        return self._match_fn.guard(*args, **kwargs)
+
+    def fn(self, *args: P.args, **kwargs: P.kwargs) -> T:
+        return self._match_fn.fn(*args, **kwargs)
