@@ -77,7 +77,7 @@ class RecursiveTypeFactory(mfs.MatchFn[[C, rfl.Type], R]):
     def __init__(
             self,
             f: mfs.MatchFn[[C, rfl.Type], R],
-            prx: ta.Callable[[], tuple[R | None, ta.Callable[[R | None], None]]],
+            prx: ta.Callable[[], tuple[R, ta.Callable[[R], None]]],
     ) -> None:
         super().__init__()
         self._f = f
