@@ -4,8 +4,8 @@ import typing as ta
 
 import pytest
 
-from .. import check
-from .. import reflect as rfl
+from ... import check
+from ... import reflect as rfl
 
 
 K = ta.TypeVar('K')
@@ -15,7 +15,7 @@ U = ta.TypeVar('U')
 
 P = ta.ParamSpec('P')
 
-_0, _1, _2, _3 = rfl._KNOWN_SPECIAL_TYPE_VARS[:4]  # noqa
+_0, _1, _2, _3 = rfl.types._KNOWN_SPECIAL_TYPE_VARS[:4]  # noqa
 
 
 def assert_generic_full_eq(l: ta.Any, r: rfl.Generic) -> None:
