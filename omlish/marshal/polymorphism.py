@@ -196,7 +196,7 @@ class PolymorphismUnmarshalerFactory(UnmarshalerFactory):
     def guard(self, ctx: UnmarshalContext, rty: rfl.Type) -> bool:
         return rty is self.p.ty
 
-    def __call__(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler:
+    def fn(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler:
         check.is_(rty, self.p.ty)
         m = {
             t: u
