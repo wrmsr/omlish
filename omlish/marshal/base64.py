@@ -6,10 +6,11 @@ from .. import dataclasses as dc
 from .base import MarshalContext
 from .base import Marshaler
 from .base import MarshalerFactory
+from .base import TypeMapMarshalerFactory
+from .base import TypeMapUnmarshalerFactory
 from .base import UnmarshalContext
 from .base import Unmarshaler
 from .base import UnmarshalerFactory
-from .factories import TypeMapFactory
 from .values import Value
 
 
@@ -32,9 +33,9 @@ BASE64_TYPES = (
     bytearray,
 )
 
-BASE64_MARSHALER_FACTORY: MarshalerFactory = TypeMapFactory({
+BASE64_MARSHALER_FACTORY: MarshalerFactory = TypeMapMarshalerFactory({
     ty: Base64MarshalerUnmarshaler(ty) for ty in BASE64_TYPES
 })
-BASE64_UNMARSHALER_FACTORY: UnmarshalerFactory = TypeMapFactory({
+BASE64_UNMARSHALER_FACTORY: UnmarshalerFactory = TypeMapUnmarshalerFactory({
     ty: Base64MarshalerUnmarshaler(ty) for ty in BASE64_TYPES
 })
