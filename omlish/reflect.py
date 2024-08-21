@@ -114,6 +114,7 @@ Type = ta.Union[
     'Generic',
     'NewType',
     'Annotated',
+    'Any',
 ]
 
 
@@ -168,6 +169,13 @@ class Annotated:
     obj: ta.Any = dc.field(compare=False, repr=False)
 
 
+class Any:
+    pass
+
+
+ANY = Any()
+
+
 TYPES: tuple[type, ...] = (
     type,
     ta.TypeVar,
@@ -175,6 +183,7 @@ TYPES: tuple[type, ...] = (
     Generic,
     NewType,
     Annotated,
+    Any,
 )
 
 
@@ -182,7 +191,7 @@ TYPES: tuple[type, ...] = (
 
 
 def is_type(obj: ta.Any) -> bool:
-    if isinstance(obj, (Union, Generic, ta.TypeVar, NewType)):  # noqa
+    if isinstance(obj, (Union, Generic, ta.TypeVar, NewType, Any)):  # noqa
         return True
 
     oty = type(obj)
@@ -209,6 +218,9 @@ def type_(obj: ta.Any) -> Type:
         return obj
 
     oty = type(obj)
+
+    if oty is ta.Any:
+        return ANY
 
     if oty is _UnionGenericAlias or oty is types.UnionType:
         return Union(frozenset(type_(a) for a in ta.get_args(obj)))
