@@ -2,12 +2,10 @@ import typing as ta
 
 from .base import MarshalContext
 from .base import Marshaler
-from .base import MarshalerFactory
 from .base import TypeMapMarshalerFactory
 from .base import TypeMapUnmarshalerFactory
 from .base import UnmarshalContext
 from .base import Unmarshaler
-from .base import UnmarshalerFactory
 from .values import Value
 
 
@@ -35,10 +33,10 @@ class PrimitiveMarshalerUnmarshaler(Marshaler, Unmarshaler):
 
 PRIMITIVE_MARSHALER_UNMARSHALER = PrimitiveMarshalerUnmarshaler()
 
-PRIMITIVE_MARSHALER_FACTORY: MarshalerFactory = TypeMapMarshalerFactory({  # noqa
+PRIMITIVE_MARSHALER_FACTORY = TypeMapMarshalerFactory({  # noqa
     t: PRIMITIVE_MARSHALER_UNMARSHALER for t in PRIMITIVE_TYPES
 })
 
-PRIMITIVE_UNMARSHALER_FACTORY: UnmarshalerFactory = TypeMapUnmarshalerFactory({  # noqa
+PRIMITIVE_UNMARSHALER_FACTORY = TypeMapUnmarshalerFactory({  # noqa
     t: PRIMITIVE_MARSHALER_UNMARSHALER for t in PRIMITIVE_TYPES
 })
