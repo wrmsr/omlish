@@ -228,7 +228,6 @@ select = ['ALL']
 
 ignore = [
 
-    'ARG005',  # unused-lambda-argument
     'ANN001',  # missing-type-function-argument
     'ANN002',  # missing-type-args
     'ANN003',  # missing-type-kwargs
@@ -240,6 +239,7 @@ ignore = [
     'ANN401',  # any-type
     'ARG001',  # unused-function-argument
     'ARG002',  # unused-method-argument
+    'ARG005',  # unused-lambda-argument
     'ASYNC115',  # async-zero-sleep (bugged)
     'B008',  # function-call-in-default-argument
     'B009',  # get-attr-with-constant
