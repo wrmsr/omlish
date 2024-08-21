@@ -145,19 +145,21 @@ class PolymorphismMarshalerFactory(MarshalerFactory):
     p: Polymorphism
     tt: TypeTagging = WrapperTypeTagging()
 
-    def __call__(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler | None:
-        if rty is self.p.ty:
-            m = {
-                i.ty: (i.tag, ctx.make(i.ty))
-                for i in self.p.impls
-            }
-            if isinstance(self.tt, WrapperTypeTagging):
-                return WrapperPolymorphismMarshaler(m)
-            elif isinstance(self.tt, FieldTypeTagging):
-                return FieldPolymorphismMarshaler(m, self.tt.field)
-            else:
-                raise TypeError(self.tt)
-        return None
+    def guard(self, ctx: MarshalContext, rty: rfl.Type) -> bool:
+        return rty is self.p.ty
+
+    def fn(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler:
+        check.is_(rty, self.p.ty)
+        m = {
+            i.ty: (i.tag, ctx.make(i.ty))
+            for i in self.p.impls
+        }
+        if isinstance(self.tt, WrapperTypeTagging):
+            return WrapperPolymorphismMarshaler(m)
+        elif isinstance(self.tt, FieldTypeTagging):
+            return FieldPolymorphismMarshaler(m, self.tt.field)
+        else:
+            raise TypeError(self.tt)
 
 
 ##
@@ -191,18 +193,20 @@ class PolymorphismUnmarshalerFactory(UnmarshalerFactory):
     p: Polymorphism
     tt: TypeTagging = WrapperTypeTagging()
 
-    def __call__(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler | None:
-        if rty is self.p.ty:
-            m = {
-                t: u
-                for i in self.p.impls
-                for u in [ctx.make(i.ty)]
-                for t in [i.tag, *i.alts]
-            }
-            if isinstance(self.tt, WrapperTypeTagging):
-                return WrapperPolymorphismUnmarshaler(m)
-            elif isinstance(self.tt, FieldTypeTagging):
-                return FieldPolymorphismUnmarshaler(m, self.tt.field)
-            else:
-                raise TypeError(self.tt)
-        return None
+    def guard(self, ctx: UnmarshalContext, rty: rfl.Type) -> bool:
+        return rty is self.p.ty
+
+    def __call__(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler:
+        check.is_(rty, self.p.ty)
+        m = {
+            t: u
+            for i in self.p.impls
+            for u in [ctx.make(i.ty)]
+            for t in [i.tag, *i.alts]
+        }
+        if isinstance(self.tt, WrapperTypeTagging):
+            return WrapperPolymorphismUnmarshaler(m)
+        elif isinstance(self.tt, FieldTypeTagging):
+            return FieldPolymorphismUnmarshaler(m, self.tt.field)
+        else:
+            raise TypeError(self.tt)
