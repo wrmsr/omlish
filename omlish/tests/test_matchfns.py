@@ -1,3 +1,5 @@
+import typing as ta
+
 import pytest
 
 from .. import matchfns as mf
@@ -66,25 +68,53 @@ def test_cached():
 ##
 
 
-# class MatchFnClass(mf.MatchFn[mf.P, mf.T]):
-#     def __init_subclass__(cls, **kwargs):
-#         super().__init_subclass__()
-#         d = {}
-#         for c in cls.__mro__:
-#             for a, o in c.__dict__:
-#                 if isinstance(o, mf.MatchFn) and a not in d:
-#                     d[a] = o
+class MatchFnClass(mf.MatchFn[mf.P, mf.T]):
+    _cls_match_fn: ta.ClassVar[mf.MultiMatchFn]
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.__match_fn: mf.MatchFn[mf.P, mf.T] | None = None
+
+    @property
+    def _match_fn(self) -> mf.MatchFn[mf.P, mf.T]:
+        if (f := self.__match_fn) is None:
+            f = self.__match_fn = self._cls_match_fn.__get__(self)
+        return f
+
+    def __init_subclass__(cls, strict: bool = False, **kwargs):
+        super().__init_subclass__()
+        if '_cls_match_fn' in cls.__dict__:
+            raise AttributeError('_cls_match_fn')
+        d = {}
+        for c in cls.__mro__:
+            for a, o in c.__dict__.items():
+                if isinstance(o, mf.MatchFn) and a not in d:
+                    d[a] = o
+        cls._cls_match_fn = mf.MultiMatchFn(list(d.values()), strict=strict)
+
+    def guard(self, *args: mf.P.args, **kwargs: mf.P.kwargs) -> bool:
+        return self._match_fn.guard(*args, **kwargs)
+
+    def fn(self, *args: mf.P.args, **kwargs: mf.P.kwargs) -> mf.T:
+        return self._match_fn.fn(*args, **kwargs)
+
+
 #
-#
-# class Foo:
-#     @mf.simple(lambda self, x: isinstance(x, str))
-#     def _foo_str(self, s: str) -> str:
-#         return f'str: {s}'
-#
-#     @mf.simple(lambda self, x: isinstance(x, int))
-#     def _foo_str(self, s: int) -> str:
-#         return f'int: {s}'
-#
-#
-# def test_class():
-#
+
+
+class Foo(MatchFnClass[ta.Any, ta.Any]):
+    @mf.simple(lambda self, x: isinstance(x, str))
+    def _foo_str(self, s: str) -> str:
+        return f'str: {s}'
+
+    @mf.simple(lambda self, x: isinstance(x, int))
+    def _foo_int(self, s: int) -> str:
+        return f'int: {s}'
+
+
+def test_class():
+    f = Foo()
+    assert f('hi') == 'str: hi'
+    assert f(0) == 'int: 0'
+    with pytest.raises(mf.MatchGuardError):
+        assert f(.2)
