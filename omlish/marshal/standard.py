@@ -4,6 +4,8 @@ from .any import ANY_UNMARSHALER_FACTORY
 from .base import MarshalerFactory
 from .base import RecursiveMarshalerFactory
 from .base import RecursiveUnmarshalerFactory
+from .base import TypeCacheMarshalerFactory
+from .base import TypeCacheUnmarshalerFactory
 from .base import UnmarshalerFactory
 from .base64 import BASE64_MARSHALER_FACTORY
 from .base64 import BASE64_UNMARSHALER_FACTORY
@@ -13,7 +15,6 @@ from .datetimes import DATETIME_MARSHALER_FACTORY
 from .datetimes import DATETIME_UNMARSHALER_FACTORY
 from .enums import EnumMarshalerFactory
 from .enums import EnumUnmarshalerFactory
-from .factories import TypeCacheFactory
 from .iterables import IterableMarshalerFactory
 from .iterables import IterableUnmarshalerFactory
 from .mappings import MappingMarshalerFactory
@@ -44,7 +45,7 @@ STANDARD_MARSHALER_FACTORIES: list[MarshalerFactory] = [
 
 
 def new_standard_marshaler_factory() -> MarshalerFactory:
-    return TypeCacheFactory(  # noqa
+    return TypeCacheMarshalerFactory(
         RecursiveMarshalerFactory(
             mfs.MultiMatchFn(
                 STANDARD_MARSHALER_FACTORIES,
@@ -71,7 +72,7 @@ STANDARD_UNMARSHALER_FACTORIES: list[UnmarshalerFactory] = [
 
 
 def new_standard_unmarshaler_factory() -> UnmarshalerFactory:
-    return TypeCacheFactory(  # noqa
+    return TypeCacheUnmarshalerFactory(
         RecursiveUnmarshalerFactory(
             mfs.MultiMatchFn(
                 STANDARD_UNMARSHALER_FACTORIES,
