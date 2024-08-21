@@ -68,12 +68,12 @@ def test_cached():
 #
 
 
-class Foo(MatchFnClass[ta.Any, ta.Any]):
-    @mf.simple(lambda self, x: isinstance(x, str))
+class Foo(mf.MatchFnClass[ta.Any, ta.Any]):
+    @mf.simple(lambda _, x: isinstance(x, str))
     def _foo_str(self, s: str) -> str:
         return f'str: {s}'
 
-    @mf.simple(lambda self, x: isinstance(x, int))
+    @mf.simple(lambda _, x: isinstance(x, int))
     def _foo_int(self, s: int) -> str:
         return f'int: {s}'
 

@@ -3,7 +3,6 @@ import typing as ta
 from .. import check
 from .. import collections as col
 from .. import dataclasses as dc
-from .. import matchfns as mfs
 from .. import reflect as rfl
 from .base import MarshalContext
 from .base import Marshaler
@@ -36,11 +35,7 @@ def get_field_infos(ty: type, opts: col.TypeMap[Option] = col.TypeMap()) -> ta.S
     dc_md = get_dataclass_metadata(ty)
     dc_naming = dc_md.field_naming or opts.get(Naming)
 
-    try:
-        type_hints = ta.get_type_hints(ty)
-    except Exception as e:
-        breakpoint()
-        raise
+    type_hints = ta.get_type_hints(ty)
 
     ret: list[FieldInfo] = []
     for field in dc.fields(ty):
