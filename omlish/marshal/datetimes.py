@@ -6,10 +6,11 @@ from .. import check
 from .base import MarshalContext
 from .base import Marshaler
 from .base import MarshalerFactory
+from .base import TypeMapMarshalerFactory
+from .base import TypeMapUnmarshalerFactory
 from .base import UnmarshalContext
 from .base import Unmarshaler
 from .base import UnmarshalerFactory
-from .factories import TypeMapFactory
 from .values import Value
 
 
@@ -77,8 +78,8 @@ class DatetimeUnmarshaler(Unmarshaler):
 DATETIME_MARSHALER = DatetimeMarshaler(DATETIME_FORMATS[0])
 DATETIME_UNMARSHALER = DatetimeUnmarshaler(DATETIME_FORMATS, try_iso=True)
 
-DATETIME_MARSHALER_FACTORY: MarshalerFactory = TypeMapFactory({datetime.datetime: DATETIME_MARSHALER})
-DATETIME_UNMARSHALER_FACTORY: UnmarshalerFactory = TypeMapFactory({datetime.datetime: DATETIME_UNMARSHALER})
+DATETIME_MARSHALER_FACTORY: MarshalerFactory = TypeMapMarshalerFactory({datetime.datetime: DATETIME_MARSHALER})
+DATETIME_UNMARSHALER_FACTORY: UnmarshalerFactory = TypeMapUnmarshalerFactory({datetime.datetime: DATETIME_UNMARSHALER})
 
 
 class IsoDatetimeMarshalerUnmarshaler(Marshaler, Unmarshaler):
