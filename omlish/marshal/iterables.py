@@ -26,15 +26,11 @@ class IterableMarshaler(Marshaler):
 class IterableMarshalerFactory(MarshalerFactoryMatchClass):
     @mfs.simple(lambda _, ctx, rty: isinstance(rty, rfl.Generic) and issubclass(rty.cls, collections.abc.Iterable))
     def _build_generic(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler:
-        if (e := ctx.make(check.single(rty.args))) is None:
-            return None  # type: ignore
-        return IterableMarshaler(e)
+        return IterableMarshaler(ctx.make(check.single(rty.args)))
 
     @mfs.simple(lambda _, ctx, rty: isinstance(rty, type) and issubclass(rty, collections.abc.Iterable))
     def _build_concrete(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler | None:
-        if (e := ctx.make(ta.Any)) is None:
-            return None  # type: ignore
-        return IterableMarshaler(e)
+        return IterableMarshaler(ctx.make(ta.Any))
 
 
 @dc.dataclass(frozen=True)
@@ -49,12 +45,8 @@ class IterableUnmarshaler(Unmarshaler):
 class IterableUnmarshalerFactory(UnmarshalerFactoryMatchClass):
     @mfs.simple(lambda _, ctx, rty: isinstance(rty, rfl.Generic) and issubclass(rty.cls, collections.abc.Iterable))
     def _build_generic(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler | None:
-        if (e := ctx.make(check.single(rty.args))) is None:
-            return None  # type: ignore
-        return IterableUnmarshaler(rty.cls, e)  # noqa
+        return IterableUnmarshaler(rty.cls, ctx.make(check.single(rty.args)))  # noqa
 
     @mfs.simple(lambda _, ctx, rty: isinstance(rty, type) and issubclass(rty, collections.abc.Iterable))
     def _build_concrete(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler | None:
-        if (e := ctx.make(ta.Any)) is None:
-            return None  # type: ignore
-        return IterableUnmarshaler(rty, e)  # noqa
+        return IterableUnmarshaler(rty, ctx.make(ta.Any))
