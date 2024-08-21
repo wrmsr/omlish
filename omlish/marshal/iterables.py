@@ -51,4 +51,4 @@ class IterableUnmarshalerFactory(UnmarshalerFactoryMatchClass):
 
     @mfs.simple(lambda _, ctx, rty: isinstance(rty, type) and issubclass(rty, collections.abc.Iterable))
     def _build_concrete(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler:
-        return IterableUnmarshaler(rty, ctx.make(ta.Any))
+        return IterableUnmarshaler(check.isinstance(rty, type), ctx.make(ta.Any))
