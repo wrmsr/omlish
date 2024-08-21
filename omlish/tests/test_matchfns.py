@@ -65,40 +65,6 @@ def test_cached():
     assert c == 2
 
 
-##
-
-
-class MatchFnClass(mf.MatchFn[mf.P, mf.T]):
-    _cls_match_fn: ta.ClassVar[mf.MultiMatchFn]
-
-    def __init__(self) -> None:
-        super().__init__()
-        self.__match_fn: mf.MatchFn[mf.P, mf.T] | None = None
-
-    @property
-    def _match_fn(self) -> mf.MatchFn[mf.P, mf.T]:
-        if (f := self.__match_fn) is None:
-            f = self.__match_fn = self._cls_match_fn.__get__(self)
-        return f
-
-    def __init_subclass__(cls, strict: bool = False, **kwargs):
-        super().__init_subclass__()
-        if '_cls_match_fn' in cls.__dict__:
-            raise AttributeError('_cls_match_fn')
-        d = {}
-        for c in cls.__mro__:
-            for a, o in c.__dict__.items():
-                if isinstance(o, mf.MatchFn) and a not in d:
-                    d[a] = o
-        cls._cls_match_fn = mf.MultiMatchFn(list(d.values()), strict=strict)
-
-    def guard(self, *args: mf.P.args, **kwargs: mf.P.kwargs) -> bool:
-        return self._match_fn.guard(*args, **kwargs)
-
-    def fn(self, *args: mf.P.args, **kwargs: mf.P.kwargs) -> mf.T:
-        return self._match_fn.fn(*args, **kwargs)
-
-
 #
 
 
