@@ -302,34 +302,34 @@ ignore = [
     'T203',  # p-print
     'TCH001',  # typing-only-first-party-import
     'TD001', # invalid-todo-tag
-    'TD002',  # Missing author in TODO
-    'TD003',  # Missing issue link on the line following this TODO
-    'TD004',  # Missing colon in TODO
-    'TD005',  # Missing issue description after `TODO`
-    'TID252',  # Prefer absolute imports over relative imports from parent modules
-    'TRY002',  # Create your own exception
-    'TRY003',  # Avoid specifying long messages outside the exception class
+    'TD002',  # missing-todo-author
+    'TD003',  # missing-todo-link
+    'TD004',  # missing-todo-colon
+    'TD005',  # missing-todo-description
+    'TID252',  # relative-imports
+    'TRY002',  # raise-vanilla-class
+    'TRY003',  # raise-vanilla-args
     'TRY300',  # try-consider-else
-    'UP038',  # Use `X | Y` in `isinstance` call instead of `(X, Y)`
+    'UP038',  # non-pep604-isinstance
 
     # FIXME: mypy error: PEP 695 type aliases are not yet supported
-    'UP040',  # type alias uses `TypeAlias` annotation instead of the `type` keyword
+    'UP040',  # non-pep695-type-alias
 
 ]
 
 [tool.ruff.lint.per-file-ignores]
 '**/__init__.py' = [
-    'F401',  # imported but unused
+    'F401',  # unused-import
 ]
 '**/tests/*' = [
-    'B011',  # do not `assert False
-    'S101',  # use of `assert` detected
+    'B011',  # assert-false
+    'S101',  # assert
 ]
 '**/scripts/*' = [
     'UP',
 ]
 'omlish/testing/*' = [
-    'S101',  # use of `assert` detected
+    'S101',  # assert
 ]
 
 [tool.ruff.lint.flake8-pytest-style]
