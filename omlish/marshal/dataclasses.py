@@ -36,7 +36,11 @@ def get_field_infos(ty: type, opts: col.TypeMap[Option] = col.TypeMap()) -> ta.S
     dc_md = get_dataclass_metadata(ty)
     dc_naming = dc_md.field_naming or opts.get(Naming)
 
-    type_hints = ta.get_type_hints(ty)
+    try:
+        type_hints = ta.get_type_hints(ty)
+    except Exception as e:
+        breakpoint()
+        raise
 
     ret: list[FieldInfo] = []
     for field in dc.fields(ty):
@@ -81,10 +85,10 @@ def _make_field_obj(ctx, ty, obj, fac):
 
 class DataclassMarshalerFactory(MarshalerFactory):
     def guard(self, ctx: MarshalContext, rty: rfl.Type) -> bool:
-        return dc.is_dataclass(rty)
+        return isinstance(rty, type) and dc.is_dataclass(rty)
 
     def fn(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler:
-        check.state(dc.is_dataclass(rty))
+        check.state(isinstance(rty, type) and dc.is_dataclass(rty))
         dc_md = get_dataclass_metadata(rty)
         fields = [
             (fi, _make_field_obj(ctx, fi.type, fi.metadata.marshaler, fi.metadata.marshaler_factory))
@@ -101,10 +105,10 @@ class DataclassMarshalerFactory(MarshalerFactory):
 
 class DataclassUnmarshalerFactory(UnmarshalerFactory):
     def guard(self, ctx: UnmarshalContext, rty: rfl.Type) -> bool:
-        return dc.is_dataclass(rty)
+        return isinstance(rty, type) and dc.is_dataclass(rty)
 
     def fn(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler:
-        check.state(dc.is_dataclass(rty))
+        check.state(isinstance(rty, type) and dc.is_dataclass(rty))
         dc_md = get_dataclass_metadata(rty)
         d: dict[str, tuple[FieldInfo, Unmarshaler]] = {}
         for fi in get_field_infos(rty, ctx.options):
