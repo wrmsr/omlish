@@ -1327,20 +1327,34 @@ def check_not(v: ta.Any) -> None:
 
 
 ########################################
-# ../../../omlish/lite/logs.py
-"""
-TODO:
- - debug
-"""
-# ruff: noqa: UP007
+# ../../../omlish/lite/json.py
 
 
-log = logging.getLogger(__name__)
+##
 
 
-def configure_standard_logging(level: ta.Union[int, str] = logging.INFO) -> None:
-    logging.root.addHandler(logging.StreamHandler())
-    logging.root.setLevel(level)
+JSON_PRETTY_INDENT = 2
+
+JSON_PRETTY_KWARGS: ta.Mapping[str, ta.Any] = dict(
+    indent=JSON_PRETTY_INDENT,
+)
+
+json_dump_pretty: ta.Callable[..., bytes] = functools.partial(json.dump, **JSON_PRETTY_KWARGS)  # type: ignore
+json_dumps_pretty: ta.Callable[..., str] = functools.partial(json.dumps, **JSON_PRETTY_KWARGS)
+
+
+##
+
+
+JSON_COMPACT_SEPARATORS = (',', ':')
+
+JSON_COMPACT_KWARGS: ta.Mapping[str, ta.Any] = dict(
+    indent=None,
+    separators=JSON_COMPACT_SEPARATORS,
+)
+
+json_dump_compact: ta.Callable[..., bytes] = functools.partial(json.dump, **JSON_COMPACT_KWARGS)  # type: ignore
+json_dumps_compact: ta.Callable[..., str] = functools.partial(json.dumps, **JSON_COMPACT_KWARGS)
 
 
 ########################################
@@ -1902,6 +1916,58 @@ class SpecifierSet(BaseSpecifier):
 
 
 ########################################
+# ../../../omlish/lite/logs.py
+"""
+TODO:
+ - debug
+"""
+# ruff: noqa: UP007
+
+
+log = logging.getLogger(__name__)
+
+
+class JsonLogFormatter(logging.Formatter):
+
+    KEYS: ta.Mapping[str, bool] = {
+        'name': False,
+        'msg': False,
+        'args': False,
+        'levelname': False,
+        'levelno': False,
+        'pathname': False,
+        'filename': False,
+        'module': False,
+        'exc_info': True,
+        'exc_text': True,
+        'stack_info': True,
+        'lineno': False,
+        'funcName': False,
+        'created': False,
+        'msecs': False,
+        'relativeCreated': False,
+        'thread': False,
+        'threadName': False,
+        'processName': False,
+        'process': False,
+    }
+
+    def format(self, record: logging.LogRecord) -> str:
+        dct = {
+            k: v
+            for k, o in self.KEYS.items()
+            for v in [getattr(record, k)]
+            if not (o and v is None)
+        }
+        return json_dumps_compact(dct)
+
+
+def configure_standard_logging(level: ta.Union[int, str] = logging.INFO) -> None:
+    logging.root.addHandler(logging.StreamHandler())
+    logging.root.setLevel(level)
+
+
+########################################
 # ../../../omlish/lite/marshal.py
 """
 TODO:
@@ -1999,18 +2065,6 @@ class OptionalObjMarshaler(ObjMarshaler):
 
 
 @dc.dataclass(frozen=True)
-class SequenceObjMarshaler(ObjMarshaler):
-    ty: type
-    item: ObjMarshaler
-
-    def marshal(self, o: ta.Any) -> ta.Any:
-        return [self.item.marshal(e) for e in o]
-
-    def unmarshal(self, o: ta.Any) -> ta.Any:
-        return self.ty(self.item.unmarshal(e) for e in o)
-
-
-@dc.dataclass(frozen=True)
 class MappingObjMarshaler(ObjMarshaler):
     ty: type
     km: ObjMarshaler
@@ -2021,6 +2075,18 @@ class MappingObjMarshaler(ObjMarshaler):
 
     def unmarshal(self, o: ta.Any) -> ta.Any:
         return self.ty((self.km.unmarshal(k), self.vm.unmarshal(v)) for k, v in o.items())
+
+
+@dc.dataclass(frozen=True)
+class IterableObjMarshaler(ObjMarshaler):
+    ty: type
+    item: ObjMarshaler
+
+    def marshal(self, o: ta.Any) -> ta.Any:
+        return [self.item.marshal(e) for e in o]
+
+    def unmarshal(self, o: ta.Any) -> ta.Any:
+        return self.ty(self.item.unmarshal(e) for e in o)
 
 
 @dc.dataclass(frozen=True)
@@ -2078,7 +2144,7 @@ _OBJ_MARSHALERS: ta.Dict[ta.Any, ObjMarshaler] = {
     **{t: NopObjMarshaler() for t in (type(None),)},
     **{t: CastObjMarshaler(t) for t in (int, float, str, bool)},
     **{t: Base64ObjMarshaler(t) for t in (bytes, bytearray)},
-    **{t: SequenceObjMarshaler(t, DynamicObjMarshaler()) for t in (list, tuple, set, frozenset)},
+    **{t: IterableObjMarshaler(t, DynamicObjMarshaler()) for t in (list, tuple, set, frozenset)},
     **{t: MappingObjMarshaler(t, DynamicObjMarshaler(), DynamicObjMarshaler()) for t in (dict,)},
 
     ta.Any: DynamicObjMarshaler(),
@@ -2087,15 +2153,15 @@ _OBJ_MARSHALERS: ta.Dict[ta.Any, ObjMarshaler] = {
     uuid.UUID: UuidObjMarshaler(),
 }
 
-_OBJ_MARSHALER_GENERIC_SEQUENCE_TYPES: ta.Dict[ta.Any, type] = {
-    **{t: t for t in (list, tuple, set, frozenset)},
-    **{t: frozenset for t in (collections.abc.Set, collections.abc.MutableSet)},
-    **{t: tuple for t in (collections.abc.Sequence, collections.abc.MutableSequence)},
-}
-
 _OBJ_MARSHALER_GENERIC_MAPPING_TYPES: ta.Dict[ta.Any, type] = {
     **{t: t for t in (dict,)},
     **{t: dict for t in (collections.abc.Mapping, collections.abc.MutableMapping)},
+}
+
+_OBJ_MARSHALER_GENERIC_ITERABLE_TYPES: ta.Dict[ta.Any, type] = {
+    **{t: t for t in (list, tuple, set, frozenset)},
+    **{t: frozenset for t in (collections.abc.Set, collections.abc.MutableSet)},
+    **{t: tuple for t in (collections.abc.Sequence, collections.abc.MutableSequence)},
 }
 
 
@@ -2132,20 +2198,20 @@ def _make_obj_marshaler(ty: ta.Any) -> ObjMarshaler:
 
     if is_generic_alias(ty):
         try:
-            st = _OBJ_MARSHALER_GENERIC_SEQUENCE_TYPES[ta.get_origin(ty)]
-        except KeyError:
-            pass
-        else:
-            [e] = ta.get_args(ty)
-            return SequenceObjMarshaler(st, get_obj_marshaler(e))
-
-        try:
             mt = _OBJ_MARSHALER_GENERIC_MAPPING_TYPES[ta.get_origin(ty)]
         except KeyError:
             pass
         else:
             k, v = ta.get_args(ty)
             return MappingObjMarshaler(mt, get_obj_marshaler(k), get_obj_marshaler(v))
+
+        try:
+            st = _OBJ_MARSHALER_GENERIC_ITERABLE_TYPES[ta.get_origin(ty)]
+        except KeyError:
+            pass
+        else:
+            [e] = ta.get_args(ty)
+            return IterableObjMarshaler(st, get_obj_marshaler(e))
 
         if is_union_alias(ty):
             return OptionalObjMarshaler(get_obj_marshaler(get_optional_alias_arg(ty)))
