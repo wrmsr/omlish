@@ -32,8 +32,8 @@ import pytest
 
 from ... import check
 from ..subprocesses import SubprocessFileInputMethod
-from ..subprocesses import temp_subprocess_file_input
 from ..subprocesses import pipe_fd_subprocess_file_input
+from ..subprocesses import temp_subprocess_file_input
 
 
 class Crypto(abc.ABC):
