@@ -1,11 +1,19 @@
 """
 TODO:
- - stdlib secrets, secure rand gen
+ - cryptography vs pycryptodome[x]
+ - standardize failure exception
+ - chains - take first
+ - keysets
 
-FIXME:
- - macos pipe size lol, and just like checking at all
+See:
+ - https://soatok.blog/2020/05/13/why-aes-gcm-sucks/
+ - https://pycryptodome.readthedocs.io/en/latest/src/cipher/chacha20_poly1305.html
+
+==
 
 https://www.tecmint.com/gpg-encrypt-decrypt-files/
+
+==
 
 gpg --batch --passphrase '' --quick-gen-key wrmsr default default
 gpg --batch --passphrase '' --quick-gen-key wrmsr2 default default
@@ -21,8 +29,10 @@ openssl aes-256-cbc -d -pbkdf2 -in secret.txt.enc -out secret3.txt -kfile barf.k
 
 https://wiki.openssl.org/index.php/Enc#Options
 -pass 'file:...'
+
 """
 import abc
+import secrets
 import subprocess
 import typing as ta
 
@@ -35,7 +45,9 @@ from .subprocesses import temp_subprocess_file_input  # noqa
 
 if ta.TYPE_CHECKING:
     from cryptography import fernet
+    from cryptography.hazmat.primitives.ciphers import aead
 else:
+    aead = lang.proxy_import('cryptography.hazmat.primitives.ciphers.aead')
     fernet = lang.proxy_import('cryptography.fernet')
 
 
@@ -149,3 +161,31 @@ class FernetCrypto(Crypto):
 
     def decrypt(self, data: bytes, key: bytes) -> bytes:
         return fernet.Fernet(key).decrypt(data)
+
+
+class AesgsmCrypto(Crypto):
+    """https://stackoverflow.com/a/59835994"""
+
+    def generate_key(self) -> bytes:
+        return secrets.token_bytes(32)
+
+    def encrypt(self, data: bytes, key: bytes) -> bytes:
+        nonce = secrets.token_bytes(12)
+        return nonce + aead.AESGCM(key).encrypt(nonce, data, b'')
+
+    def decrypt(self, data: bytes, key: bytes) -> bytes:
+        return aead.AESGCM(key).decrypt(data[:12], data[12:], b'')
+
+
+class Chacha20Poly1305Crypto(Crypto):
+    """https://cryptography.io/en/latest/hazmat/primitives/aead/#cryptography.hazmat.primitives.ciphers.aead.ChaCha20Poly1305"""  # noqa
+
+    def generate_key(self) -> bytes:
+        return aead.ChaCha20Poly1305.generate_key()
+
+    def encrypt(self, data: bytes, key: bytes) -> bytes:
+        nonce = secrets.token_bytes(12)
+        return aead.ChaCha20Poly1305(key).encrypt(nonce, data, b'')
+
+    def decrypt(self, data: bytes, key: bytes) -> bytes:
+        return aead.ChaCha20Poly1305(key).decrypt(data[:12], data[12:], b'')
