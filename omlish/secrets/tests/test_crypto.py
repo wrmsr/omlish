@@ -10,19 +10,14 @@ from ..subprocesses import temp_subprocess_file_input
     crypto.OpensslSubprocessCrypto(file_input=pipe_fd_subprocess_file_input),  # noqa
 ])
 def test_openssl_subproc_crypto(sec: crypto.Crypto) -> None:
-    key = sec.generate_key()
+    # key = sec.generate_key()
+    key = b'password'
 
-    raw = b'hi there'
+    raw = b'hello\n'
     enc = sec.encrypt(raw, key)
+    enc2 = b'Salted__\xf9\x95\xd1\xd5\xdc6\x04\x8f\xa3G`%\x83\x0f\x9d]\x0bmZX6i\xb1B'
 
     ##
-
-    # import hashlib
-    # block_size = 16
-    # key_length = 32
-    # iv_length = 16
-    # salt = enc[len('Salted__'):block_size]
-    # dk = hashlib.pbkdf2_hmac('sha512', key, salt, 10_000, key_length + iv_length)
 
     # # def derive_key_and_iv(password, salt, key_length, iv_length):
     # #     d = d_i = ''
@@ -43,11 +38,36 @@ def test_openssl_subproc_crypto(sec: crypto.Crypto) -> None:
     # #         finished = True
     # #     out_file.write(chunk)
 
-    # from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-    # cipher = Cipher(algorithms.AES256(dk[:key_length]), modes.CBC(dk[key_length:key_length + iv_length]))
-    # decryptor = cipher.decryptor()
-    # dec2 = decryptor.update(enc[16:]) + decryptor.finalize()
-    # print(dec2)
+    # last_byte = block_size - (len(enc) % block_size)
+    # enc += bytes([last_byte] * last_byte)
+
+    # https://github.com/openssl/openssl/blob/3c1713aeed4dc7d1ac25e9e365b8bd98afead638/apps/enc.c#L555-L573
+
+    import hashlib
+
+    block_size = 16
+    key_length = 32
+    iv_length = 16
+    salt = enc[len('Salted__'):block_size]
+    # https://stackoverflow.com/a/58824167
+    dk = hashlib.pbkdf2_hmac('sha256', key, salt, 10_000, key_length + iv_length)
+
+    from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+    ck = dk[:key_length]
+    iv = dk[key_length:]
+    cipher = Cipher(algorithms.AES256(ck), modes.CBC(iv))
+    decryptor = cipher.decryptor()
+    dec2 = decryptor.update(enc[block_size:]) + decryptor.finalize()
+
+    last_byte = dec2[-1]
+    if last_byte > block_size:
+        raise Exception('bad padding')
+    dec2 = dec2[:-last_byte]
+
+    print(dec2)
+    if dec2 == raw:
+        breakpoint()
+    breakpoint()
 
     ##
 

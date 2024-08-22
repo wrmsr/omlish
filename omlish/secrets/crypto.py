@@ -107,19 +107,26 @@ class OpensslSubprocessCrypto(Crypto):
         self._timeout = timeout
         self._file_input = file_input
 
-    DEFAULT_KEY_SIZE: ta.ClassVar[int] = 1024
+    DEFAULT_KEY_SIZE: ta.ClassVar[int] = 64
 
     def generate_key(self, sz: int = DEFAULT_KEY_SIZE) -> bytes:
         return secrets.token_bytes(sz)
 
     def encrypt(self, data: bytes, key: bytes) -> bytes:
-        with self._file_input(key.hex().upper().encode('ascii')) as fi:
+        with self._file_input(
+                # key.hex().upper().encode('ascii'),
+                key,
+        ) as fi:
             proc = subprocess.Popen(
                 [
                     *self._cmd,
                     'aes-256-cbc',
+
                     '-e',
+
                     '-pbkdf2',
+                    '-salt',
+                    '-iter', '10000',
 
                     '-in', '-',
                     '-out', '-',
@@ -139,13 +146,20 @@ class OpensslSubprocessCrypto(Crypto):
             return out
 
     def decrypt(self, data: bytes, key: bytes) -> bytes:
-        with self._file_input(key.hex().upper().encode('ascii')) as fi:
+        with self._file_input(
+                # key.hex().upper().encode('ascii'),
+                key,
+        ) as fi:
             proc = subprocess.Popen(
                 [
                     *self._cmd,
                     'aes-256-cbc',
+
                     '-d',
+
                     '-pbkdf2',
+                    '-salt',
+                    '-iter', '10000',
 
                     '-in', '-',
                     '-out', '-',
