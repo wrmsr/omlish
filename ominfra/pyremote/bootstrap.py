@@ -1,3 +1,6 @@
+"""
+Basically this: https://mitogen.networkgenomics.com/howitworks.html
+"""
 import base64
 import inspect
 import os
