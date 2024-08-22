@@ -209,3 +209,5 @@ safetensors==0.4.4
 docutils==0.21.2
 
 paramiko==3.4.1
+
+customtkinter==5.2.2
