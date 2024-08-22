@@ -14,8 +14,8 @@ SubprocessFileInputMethod: ta.TypeAlias = ta.Callable[[bytes], ta.ContextManager
 
 
 @contextlib.contextmanager
-def temp_subprocess_file_input(buf: bytes) -> ta.Generator[SubprocessFileInput]:
-    with tempfile.NamedTemporaryFile() as kf:
+def temp_subprocess_file_input(buf: bytes) -> ta.Iterator[SubprocessFileInput]:
+    with tempfile.NamedTemporaryFile(delete=True) as kf:
         kf.write(buf)
         kf.flush()
         yield SubprocessFileInput(kf.name, [])
