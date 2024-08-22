@@ -28,8 +28,8 @@ class IndexHandler(Handler_):
     async def handle_get_index(self, scope: AsgiScope, recv: AsgiRecv, send: AsgiSend) -> None:
         session = self._current_session()
 
-        session['c'] = session.get('c', 0) + 1
+        views = session['c'] = session.get('c', 0) + 1
 
-        html = self._templates.render('index.html.j2')
+        html = self._templates.render('index.html.j2', views=views)
         await start_response(send, 200, hu.consts.CONTENT_TYPE_HTML_UTF8)  # noqa
         await finish_response(send, html)
