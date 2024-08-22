@@ -47,9 +47,19 @@ class OpensslAes265CbcPbkdf2:
             if len(salt) != self.salt_length:
                 raise Exception('bad salt length')
 
+        last_byte = self.block_size - (len(data) % self.block_size)
+        raw = bytes([last_byte] * last_byte)
+
         cipher = self._make_cipher(key, salt)
 
-        ct = encryptor.update(b"a secret message") + encryptor.finalize()
+        encryptor = cipher.encryptor()
+        enc = encryptor.update(raw) + encryptor.finalize()
+
+        return b''.join([
+            self.prefix,
+            salt,
+            enc,
+        ])
 
     def decrypt(self, data: bytes, key: bytes) -> bytes:
         if not data.startswith(self.prefix):
