@@ -4,6 +4,8 @@ import typing as ta
 
 from .. import c3
 from .. import lang
+from .ops import get_concrete_type
+from .ops import to_annotation
 from .types import Any
 from .types import Generic
 from .types import NewType
@@ -11,8 +13,6 @@ from .types import Type
 from .types import Union
 from .types import get_params
 from .types import type_
-from .ops import to_annotation
-from .ops import get_concrete_type
 
 
 if ta.TYPE_CHECKING:
