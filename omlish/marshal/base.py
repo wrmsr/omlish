@@ -2,6 +2,7 @@
 TODO:
  - mappings
  - redacted
+ - strongly typed MarshalerFactory base class?
  - strongly typed Composite/Cached Marshaler/Unmarshaler factories - footgun
  - streaming? Start/EndObject, etc..
 

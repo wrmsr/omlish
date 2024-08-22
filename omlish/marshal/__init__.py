@@ -18,6 +18,12 @@ from .base import (  # noqa
     SetType,
 )
 
+from .exceptions import (  # noqa
+    ForbiddenTypeError,
+    MarshalError,
+    UnhandledTypeError,
+)
+
 from .naming import (  # noqa
     Naming,
     translate_name,
