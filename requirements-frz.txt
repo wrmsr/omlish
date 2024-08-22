@@ -32,8 +32,8 @@ black==24.8.0
 bleach==6.1.0
 blis==0.7.11
 blobfile==2.1.1
-boto3==1.35.3
-botocore==1.35.3
+boto3==1.35.4
+botocore==1.35.4
 bs4==0.0.2
 bsddb3==6.2.9
 build==1.2.1
@@ -248,6 +248,7 @@ pyasn1==0.6.0
 pyasn1_modules==0.4.0
 pycodestyle==2.12.1
 pycparser==2.22
+pycryptodome==3.20.0
 pycryptodomex==3.20.0
 pydantic==2.8.2
 pydantic_core==2.20.1
