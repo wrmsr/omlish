@@ -36,7 +36,6 @@ import secrets
 import subprocess
 import typing as ta
 
-from .. import check
 from .. import lang
 from .subprocesses import SubprocessFileInputMethod
 from .subprocesses import pipe_fd_subprocess_file_input  # noqa
@@ -44,14 +43,24 @@ from .subprocesses import temp_subprocess_file_input  # noqa
 
 
 if ta.TYPE_CHECKING:
-    from cryptography import fernet
-    from cryptography.hazmat.primitives.ciphers import aead
+    from cryptography import exceptions as cry_exc
+    from cryptography import fernet as cry_fernet
+    from cryptography.hazmat.primitives.ciphers import aead as cry_aead
 else:
-    aead = lang.proxy_import('cryptography.hazmat.primitives.ciphers.aead')
-    fernet = lang.proxy_import('cryptography.fernet')
+    cry_aead = lang.proxy_import('cryptography.hazmat.primitives.ciphers.aead')
+    cry_exc = lang.proxy_import('cryptography.exceptions')
+    cry_fernet = lang.proxy_import('cryptography.fernet')
 
 
 ##
+
+
+class EncryptionError(Exception):
+    pass
+
+
+class DecryptionError(Exception):
+    pass
 
 
 class Crypto(abc.ABC):
@@ -87,26 +96,11 @@ class OpensslSubprocessCrypto(Crypto):
     DEFAULT_KEY_SIZE: ta.ClassVar[int] = 1024
 
     def generate_key(self, sz: int = DEFAULT_KEY_SIZE) -> bytes:
-        check.arg(sz > 0)
-        ret = subprocess.run(
-            [
-                *self._cmd,
-                'rand',
-                '-rand',
-                '/dev/urandom',
-                str(sz),
-            ],
-            stdout=subprocess.PIPE,
-            timeout=self._timeout,
-            check=True,
-        )
-        out = ret.stdout
-        check.equal(len(out), sz)
-        return out
+        return secrets.token_bytes(sz)
 
     def encrypt(self, data: bytes, key: bytes) -> bytes:
         with self._file_input(key) as fi:
-            ret = subprocess.run(
+            proc = subprocess.Popen(
                 [
                     *self._cmd,
                     'enc',
@@ -117,18 +111,22 @@ class OpensslSubprocessCrypto(Crypto):
                     '-pbkdf2',
                     '-kfile', fi.file_path,
                 ],
-                input=data,
+                stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
-                timeout=self._timeout,
-                check=True,
+                stderr=subprocess.PIPE,
                 pass_fds=[*fi.pass_fds],
             )
-            out = ret.stdout
+            out, err = proc.communicate(
+                data,
+                timeout=self._timeout,
+            )
+            if proc.returncode != 0:
+                raise EncryptionError
             return out
 
     def decrypt(self, data: bytes, key: bytes) -> bytes:
         with self._file_input(key) as fi:
-            ret = subprocess.run(
+            proc = subprocess.Popen(
                 [
                     *self._cmd,
                     'aes-256-cbc',
@@ -138,13 +136,17 @@ class OpensslSubprocessCrypto(Crypto):
                     '-out', '-',
                     '-kfile', fi.file_path,
                 ],
-                input=data,
+                stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
-                timeout=self._timeout,
-                check=True,
+                stderr=subprocess.PIPE,
                 pass_fds=[*fi.pass_fds],
             )
-            out = ret.stdout
+            out, err = proc.communicate(
+                data,
+                timeout=self._timeout,
+            )
+            if proc.returncode != 0:
+                raise DecryptionError
             return out
 
 
@@ -154,13 +156,16 @@ class OpensslSubprocessCrypto(Crypto):
 class FernetCrypto(Crypto):
 
     def generate_key(self) -> bytes:
-        return fernet.Fernet.generate_key()
+        return cry_fernet.Fernet.generate_key()
 
     def encrypt(self, data: bytes, key: bytes) -> bytes:
-        return fernet.Fernet(key).encrypt(data)
+        return cry_fernet.Fernet(key).encrypt(data)
 
     def decrypt(self, data: bytes, key: bytes) -> bytes:
-        return fernet.Fernet(key).decrypt(data)
+        try:
+            return cry_fernet.Fernet(key).decrypt(data)
+        except cry_fernet.InvalidToken as e:
+            raise DecryptionError from e
 
 
 class AesgsmCrypto(Crypto):
@@ -171,21 +176,27 @@ class AesgsmCrypto(Crypto):
 
     def encrypt(self, data: bytes, key: bytes) -> bytes:
         nonce = secrets.token_bytes(12)
-        return nonce + aead.AESGCM(key).encrypt(nonce, data, b'')
+        return nonce + cry_aead.AESGCM(key).encrypt(nonce, data, b'')
 
     def decrypt(self, data: bytes, key: bytes) -> bytes:
-        return aead.AESGCM(key).decrypt(data[:12], data[12:], b'')
+        try:
+            return cry_aead.AESGCM(key).decrypt(data[:12], data[12:], b'')
+        except cry_exc.InvalidTag as e:
+            raise DecryptionError from e
 
 
 class Chacha20Poly1305Crypto(Crypto):
     """https://cryptography.io/en/latest/hazmat/primitives/aead/#cryptography.hazmat.primitives.ciphers.aead.ChaCha20Poly1305"""  # noqa
 
     def generate_key(self) -> bytes:
-        return aead.ChaCha20Poly1305.generate_key()
+        return cry_aead.ChaCha20Poly1305.generate_key()
 
     def encrypt(self, data: bytes, key: bytes) -> bytes:
         nonce = secrets.token_bytes(12)
-        return aead.ChaCha20Poly1305(key).encrypt(nonce, data, b'')
+        return nonce + cry_aead.ChaCha20Poly1305(key).encrypt(nonce, data, b'')
 
     def decrypt(self, data: bytes, key: bytes) -> bytes:
-        return aead.ChaCha20Poly1305(key).decrypt(data[:12], data[12:], b'')
+        try:
+            return cry_aead.ChaCha20Poly1305(key).decrypt(data[:12], data[12:], b'')
+        except cry_exc.InvalidTag as e:
+            raise DecryptionError from e
