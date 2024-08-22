@@ -30,9 +30,13 @@ log = logging.getLogger(__name__)
 class Secret(lang.NotPicklable, lang.Final):
     _VALUE_ATTR = '__secret_value__'
 
-    def __init__(self, value: str) -> None:
+    def __init__(self, *, key: str | None, value: str) -> None:
         super().__init__()
+        self._key = key
         setattr(self, self._VALUE_ATTR, lambda: value)
+
+    def __repr__(self) -> str:
+        return f'Secret<{self._key or ""}>'
 
     def __str__(self) -> ta.NoReturn:
         raise TypeError
@@ -68,6 +72,7 @@ def secret_field(f: dc.Field) -> dc.Field:
     return dc.update_field_extras(
         f,
         repr_fn=secret_repr,
+        unless_non_default=True,
     )
 
 
@@ -79,7 +84,7 @@ class Secrets(lang.Abstract):
         if isinstance(obj, Secret):
             return obj
         elif isinstance(obj, str):
-            return Secret(obj)
+            return Secret(key=None, value=obj)
         elif isinstance(obj, SecretRef):
             return self.get(obj.key)
         else:
@@ -91,7 +96,7 @@ class Secrets(lang.Abstract):
         except KeyError:  # noqa
             raise
         else:
-            return Secret(raw)
+            return Secret(key=key, value=raw)
 
     @abc.abstractmethod
     def _get_raw(self, key: str) -> str:

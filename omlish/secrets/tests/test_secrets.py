@@ -7,7 +7,7 @@ from .. import secrets as sec
 
 
 def test_opaque():
-    o = sec.Secret('foo')
+    o = sec.Secret(key='bar', value='foo')
     assert o.reveal() == 'foo'
     with pytest.raises(TypeError):
         pickle.dumps(o)

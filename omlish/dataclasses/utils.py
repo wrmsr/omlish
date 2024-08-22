@@ -4,6 +4,7 @@ import types
 import typing as ta
 
 from .. import check
+from .impl.params import DEFAULT_FIELD_EXTRAS
 from .impl.params import FieldExtras
 from .impl.params import get_field_extras
 
@@ -46,13 +47,14 @@ def update_field_metadata(f: dc.Field, nmd: ta.Mapping) -> dc.Field:
     return f
 
 
-def update_field_extras(f: dc.Field, **kwargs: ta.Any) -> dc.Field:
-    # check.isinstance(f, dc.Field)
-    # f.metadata = chain_metadata(nmd, f.metadata)
-    # return f
+def update_field_extras(f: dc.Field, *, unless_non_default: bool = False, **kwargs: ta.Any) -> dc.Field:
     fe = get_field_extras(f)
     return update_field_metadata(f, {
-        FieldExtras: dc.replace(fe, **kwargs),
+        FieldExtras: dc.replace(fe, **{
+            k: v
+            for k, v in kwargs.items()
+            if not unless_non_default or v != getattr(DEFAULT_FIELD_EXTRAS, k)
+        }),
     })
 
 
