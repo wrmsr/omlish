@@ -4,9 +4,9 @@ from .secrets import (  # noqa
     EmptySecrets,
     EnvVarSecrets,
     LoggingSecrets,
+    MappingSecrets,
     Secret,
     Secrets,
-    SimpleSecrets,
     secret_repr,
 )
 

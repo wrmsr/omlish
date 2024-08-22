@@ -3,9 +3,11 @@ TODO:
  - encryption? key in env + values in file?
 """
 import abc
+import heapq
 import logging
 import os
 import sys
+import time
 import types  # noqa
 import typing as ta
 
@@ -64,7 +66,7 @@ EMPTY_SECRETS = EmptySecrets()
 ##
 
 
-class SimpleSecrets(Secrets):
+class MappingSecrets(Secrets):
     def __init__(self, dct: ta.Mapping[str, str]) -> None:
         super().__init__()
         self._dct = dct
@@ -74,6 +76,57 @@ class SimpleSecrets(Secrets):
 
     def get(self, key: str) -> str:
         return self._dct[key]
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class FnSecrets(Secrets):
+    fn: ta.Callable[[str], str]
+
+    def get(self, key: str) -> str:
+        return self.fn(key)
+
+
+##
+
+
+class CachingSecrets(Secrets):
+    def __init__(
+            self,
+            child: Secrets,
+            *,
+            ttl_s: float | None = None,
+            clock: ta.Callable[..., float] = time.time,
+    ) -> None:
+        super().__init__()
+        self._child = child
+        self._dct: dict[str, str] = {}
+        self._ttl_s = ttl_s
+        self._clock = clock
+        self._ttl_heap: list[tuple[float, str]] = []
+
+    def evict(self) -> None:
+        now = self._clock()
+        while self._ttl_heap:
+            dl, k = self._ttl_heap[0]
+            if now >= dl:
+                heapq.heappop(self._ttl_heap)
+            else:
+                break
+
+    def get(self, key: str) -> str:
+        self.evict()
+        try:
+            return self._dct[key]
+        except KeyError:
+            pass
+        out = self._child.get(key)
+        self._dct[key] = out
+        if self._ttl_s is not None:
+            dl = self._clock() + self._ttl_s
+            heapq.heappush(self._ttl_heap, (dl, key))
 
 
 ##

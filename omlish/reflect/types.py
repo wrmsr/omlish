@@ -27,7 +27,8 @@ _AnnotatedAlias = ta._AnnotatedAlias  # type: ignore  # noqa
 ##
 
 
-class _Special(ta.NamedTuple):
+@dc.dataclass(frozen=True)
+class _Special:
     name: str
     alias: _SpecialGenericAlias  # type: ignore
     origin: type

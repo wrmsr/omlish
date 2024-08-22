@@ -11,7 +11,7 @@ log = logging.getLogger(__name__)
 
 def bind_secrets() -> inj.Elemental:
     return inj.as_elements(
-        inj.bind(sec.Secrets, to_fn=lambda: sec.LoggingSecrets(sec.SimpleSecrets({
+        inj.bind(sec.Secrets, to_fn=lambda: sec.LoggingSecrets(sec.MappingSecrets({
             'session_secret_key': 'secret-key-goes-here',  # noqa
             'db_url': get_db_url(),
 
