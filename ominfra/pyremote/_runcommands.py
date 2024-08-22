@@ -29,6 +29,9 @@ T = ta.TypeVar('T')
 
 ########################################
 # ../bootstrap.py
+"""
+Basically this: https://mitogen.networkgenomics.com/howitworks.html
+"""
 
 
 ##
