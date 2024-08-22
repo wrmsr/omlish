@@ -45,7 +45,7 @@ class DbLoc(lang.Abstract, lang.Sealed):
 
 @dc.dataclass(frozen=True)
 class UrlDbLoc(DbLoc, lang.Final):
-    url: str | sec.Secret = dc.xfield(repr_fn=sec.secret_repr)
+    url: str | sec.SecretRef = dc.xfield(repr_fn=sec.secret_repr)
 
 
 @dc.dataclass(frozen=True)
@@ -54,7 +54,7 @@ class HostDbLoc(DbLoc, lang.Final):
     port: int | None = None
 
     username: str | None = None
-    password: str | sec.Secret | None = dc.xfield(default=None, repr_fn=sec.secret_repr)
+    password: str | sec.SecretRef | None = dc.xfield(default=None, repr_fn=sec.secret_repr)
 
 
 ##

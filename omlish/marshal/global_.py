@@ -1,8 +1,11 @@
 import typing as ta
 
+from .. import lang
 from .base import MarshalContext
 from .base import UnmarshalContext
 from .registries import Registry
+from .base import MarshalerFactory
+from .base import UnmarshalerFactory
 from .standard import new_standard_marshaler_factory
 from .standard import new_standard_unmarshaler_factory
 from .values import Value
@@ -20,20 +23,24 @@ GLOBAL_REGISTRY = Registry()
 ##
 
 
-GLOBAL_MARSHALER_FACTORY = new_standard_marshaler_factory()
+@lang.cached_function(lock=True)
+def global_marshaler_factory() -> MarshalerFactory:
+    return new_standard_marshaler_factory()
 
 
 def marshal(obj: ta.Any, ty: type | None = None, **kwargs: ta.Any) -> Value:
-    mc = MarshalContext(GLOBAL_REGISTRY, factory=GLOBAL_MARSHALER_FACTORY, **kwargs)
+    mc = MarshalContext(GLOBAL_REGISTRY, factory=global_marshaler_factory(), **kwargs)
     return mc.make(ty if ty is not None else type(obj)).marshal(mc, obj)
 
 
 ##
 
 
-GLOBAL_UNMARSHALER_FACTORY = new_standard_unmarshaler_factory()
+@lang.cached_function(lock=True)
+def global_unmarshaler_factory() -> UnmarshalerFactory:
+    return new_standard_unmarshaler_factory()
 
 
 def unmarshal(v: Value, ty: type[T], **kwargs: ta.Any) -> T:
-    uc = UnmarshalContext(GLOBAL_REGISTRY, factory=GLOBAL_UNMARSHALER_FACTORY, **kwargs)
+    uc = UnmarshalContext(GLOBAL_REGISTRY, factory=global_unmarshaler_factory(), **kwargs)
     return uc.make(ty).unmarshal(uc, v)

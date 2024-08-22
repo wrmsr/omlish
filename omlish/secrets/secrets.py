@@ -24,14 +24,14 @@ log = logging.getLogger(__name__)
 
 
 @dc.dataclass(frozen=True)
-class Secret:
+class SecretRef:
     key: str
 
 
-def secret_repr(o: str | Secret | None) -> str | None:
+def secret_repr(o: str | SecretRef | None) -> str | None:
     if isinstance(o, str):
         return '...'
-    elif isinstance(o, Secret):
+    elif isinstance(o, SecretRef):
         return repr(o)
     else:
         return None
@@ -41,10 +41,10 @@ def secret_repr(o: str | Secret | None) -> str | None:
 
 
 class Secrets(lang.Abstract):
-    def fix(self, obj: str | Secret) -> str:
+    def fix(self, obj: str | SecretRef) -> str:
         if isinstance(obj, str):
             return obj
-        elif isinstance(obj, Secret):
+        elif isinstance(obj, SecretRef):
             return self.get(obj.key)
         else:
             raise TypeError(obj)

@@ -39,7 +39,7 @@ def bind_dbs() -> inj.Elemental:
             dbs.DbSpec(
                 'primary',
                 dbs.DbTypes.POSTGRES,
-                dbs.UrlDbLoc(sec.Secret('db_url')),
+                dbs.UrlDbLoc(sec.SecretRef('db_url')),
             ),
         ),
 

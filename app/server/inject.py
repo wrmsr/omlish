@@ -48,7 +48,7 @@ def bind_db_user_store() -> inj.Elemental:
 def _bind_cookie_session_store() -> inj.Elemental:
     return inj.private(
         inj.bind(sessions.Signer.Config(
-            secret_key=sec.Secret('session_secret_key'),
+            secret_key=sec.SecretRef('session_secret_key'),
         )),
         inj.bind(sessions.Signer, singleton=True),
 

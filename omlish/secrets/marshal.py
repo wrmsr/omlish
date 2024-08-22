@@ -1,5 +1,6 @@
 """
 TODO:
+ - auto-register forbidden factory for Secret
  - auto-register union - need consistent placement in marshal - raise exception on ambiguous 'registered' impls
 """
 import collections.abc
@@ -8,20 +9,18 @@ import typing as ta
 from .. import check
 from .. import dataclasses as dc
 from .. import marshal as msh
-from .secrets import Secret
+from .secrets import SecretRef
 
 
-class StrOrSecretMarshaler(msh.Marshaler):
+class StrOrSecretRefMarshalerUnmarshaler(msh.Marshaler, msh.Unmarshaler):
     def marshal(self, ctx: msh.MarshalContext, o: ta.Any) -> msh.Value:
         if isinstance(o, str):
             return o
-        elif isinstance(o, Secret):
+        elif isinstance(o, SecretRef):
             return {'secret': o.key}
         else:
             raise TypeError(o)
 
-
-class StrOrSecretUnmarshaler(msh.Unmarshaler):
     def unmarshal(self, ctx: msh.UnmarshalContext, v: msh.Value) -> ta.Any:
         if isinstance(v, str):
             return v
@@ -29,7 +28,7 @@ class StrOrSecretUnmarshaler(msh.Unmarshaler):
             [(mk, mv)] = v.items()
             if mk != 'secret':
                 raise TypeError(v)
-            return Secret(check.isinstance(mv, str))
+            return SecretRef(check.isinstance(mv, str))
         else:
             raise TypeError(v)
 
@@ -39,7 +38,7 @@ def marshal_secret_field(f: dc.Field) -> dc.Field:
     return dc.update_field_metadata(f, {
         msh.FieldMetadata: dc.replace(
             f.metadata.get(msh.FieldMetadata, msh.FieldMetadata()),
-            marshaler=StrOrSecretMarshaler(),
-            unmarshaler=StrOrSecretUnmarshaler(),
+            marshaler=StrOrSecretRefMarshalerUnmarshaler(),
+            unmarshaler=StrOrSecretRefMarshalerUnmarshaler(),
         ),
     })

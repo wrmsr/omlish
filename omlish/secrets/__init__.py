@@ -7,7 +7,7 @@ from .secrets import (  # noqa
     FnSecrets,
     LoggingSecrets,
     MappingSecrets,
-    Secret,
+    SecretRef,
     Secrets,
     secret_repr,
 )
