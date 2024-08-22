@@ -159,11 +159,19 @@ class FernetCrypto(Crypto):
         return cry_fernet.Fernet.generate_key()
 
     def encrypt(self, data: bytes, key: bytes) -> bytes:
-        return cry_fernet.Fernet(key).encrypt(data)
+        try:
+            f = cry_fernet.Fernet(key)
+        except ValueError as e:
+            raise EncryptionError from e
+        return f.encrypt(data)
 
     def decrypt(self, data: bytes, key: bytes) -> bytes:
         try:
-            return cry_fernet.Fernet(key).decrypt(data)
+            f = cry_fernet.Fernet(key)
+        except ValueError as e:
+            raise DecryptionError from e
+        try:
+            return f.decrypt(data)
         except cry_fernet.InvalidToken as e:
             raise DecryptionError from e
 
