@@ -47,13 +47,9 @@ decryptor.update(ct) + decryptor.finalize()
 """
 import abc
 import secrets
-import subprocess
 import typing as ta
 
 from .. import lang
-from .subprocesses import SubprocessFileInputMethod
-from .subprocesses import pipe_fd_subprocess_file_input  # noqa
-from .subprocesses import temp_subprocess_file_input  # noqa
 
 
 if ta.TYPE_CHECKING:
@@ -89,95 +85,6 @@ class Crypto(abc.ABC):
     @abc.abstractmethod
     def decrypt(self, data: bytes, key: bytes) -> bytes:
         raise NotImplementedError
-
-
-##
-
-
-class OpensslSubprocessCrypto(Crypto):
-    def __init__(
-            self,
-            *,
-            cmd: ta.Sequence[str] = ('openssl',),
-            timeout: float = 5.,
-            file_input: SubprocessFileInputMethod = temp_subprocess_file_input,
-    ) -> None:
-        super().__init__()
-        self._cmd = cmd
-        self._timeout = timeout
-        self._file_input = file_input
-
-    DEFAULT_KEY_SIZE: ta.ClassVar[int] = 64
-
-    def generate_key(self, sz: int = DEFAULT_KEY_SIZE) -> bytes:
-        return secrets.token_bytes(sz)
-
-    def encrypt(self, data: bytes, key: bytes) -> bytes:
-        with self._file_input(
-                # FIXME: !!!! https://docs.openssl.org/3.0/man7/passphrase-encoding/
-                # key.hex().upper().encode('ascii'),
-                key,
-        ) as fi:
-            proc = subprocess.Popen(
-                [
-                    *self._cmd,
-                    'aes-256-cbc',
-
-                    '-e',
-
-                    '-pbkdf2',
-                    '-salt',
-                    '-iter', '10000',
-
-                    '-in', '-',
-                    '-out', '-',
-                    '-pass', f'file:{fi.file_path}',
-                ],
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                pass_fds=[*fi.pass_fds],
-            )
-            out, err = proc.communicate(
-                data,
-                timeout=self._timeout,
-            )
-            if proc.returncode != 0:
-                raise EncryptionError
-            return out
-
-    def decrypt(self, data: bytes, key: bytes) -> bytes:
-        with self._file_input(
-                # key.hex().upper().encode('ascii'),
-                key,
-        ) as fi:
-            proc = subprocess.Popen(
-                [
-                    *self._cmd,
-                    'aes-256-cbc',
-
-                    '-d',
-
-                    '-pbkdf2',
-                    '-salt',
-                    '-iter', '10000',
-
-                    '-in', '-',
-                    '-out', '-',
-                    '-pass', f'file:{fi.file_path}',
-                ],
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                pass_fds=[*fi.pass_fds],
-            )
-            out, err = proc.communicate(
-                data,
-                timeout=self._timeout,
-            )
-            if proc.returncode != 0:
-                raise DecryptionError
-            return out
 
 
 ##
