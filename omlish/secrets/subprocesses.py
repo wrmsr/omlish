@@ -1,3 +1,7 @@
+"""
+FIXME:
+ - macos pipe size lol, and just like checking at all
+"""
 import contextlib
 import fcntl
 import os
