@@ -7,7 +7,9 @@ import base64
 import collections.abc
 import dataclasses as dc
 import datetime
+import decimal
 import enum
+import fractions
 import functools
 import inspect
 import io
@@ -506,6 +508,24 @@ class DatetimeObjMarshaler(ObjMarshaler):
         return self.ty.fromisoformat(o)  # type: ignore
 
 
+class DecimalObjMarshaler(ObjMarshaler):
+    def marshal(self, o: ta.Any) -> ta.Any:
+        return str(check_isinstance(o, decimal.Decimal))
+
+    def unmarshal(self, v: ta.Any) -> ta.Any:
+        return decimal.Decimal(check_isinstance(v, str))
+
+
+class FractionObjMarshaler(ObjMarshaler):
+    def marshal(self, o: ta.Any) -> ta.Any:
+        fr = check_isinstance(o, fractions.Fraction)
+        return [fr.numerator, fr.denominator]
+
+    def unmarshal(self, v: ta.Any) -> ta.Any:
+        num, denom = check_isinstance(v, list)
+        return fractions.Fraction(num, denom)
+
+
 class UuidObjMarshaler(ObjMarshaler):
     def marshal(self, o: ta.Any) -> ta.Any:
         return str(o)
@@ -524,6 +544,8 @@ _OBJ_MARSHALERS: ta.Dict[ta.Any, ObjMarshaler] = {
     ta.Any: DynamicObjMarshaler(),
 
     **{t: DatetimeObjMarshaler(t) for t in (datetime.date, datetime.time, datetime.datetime)},
+    decimal.Decimal: DecimalObjMarshaler(),
+    fractions.Fraction: FractionObjMarshaler(),
     uuid.UUID: UuidObjMarshaler(),
 }
 
