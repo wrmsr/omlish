@@ -65,7 +65,7 @@ class Signer:
 
     @lang.cached_function
     def derive_key(self) -> bytes:
-        mac = hmac.new(self._secrets.fix(self._config.secret_key).encode(), digestmod=self.digest())
+        mac = hmac.new(self._secrets.fix(self._config.secret_key).reveal().encode(), digestmod=self.digest())
         mac.update(self._config.salt.encode())
         return mac.digest()
 
