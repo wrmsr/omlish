@@ -1,8 +1,71 @@
+import hashlib
 import pytest
+import secrets
 
 from .. import crypto
 from ..subprocesses import pipe_fd_subprocess_file_input
 from ..subprocesses import temp_subprocess_file_input
+
+from cryptography.hazmat.primitives import ciphers as cry_ciphs
+from cryptography.hazmat.primitives.ciphers import algorithms as cry_algs
+from cryptography.hazmat.primitives.ciphers import modes as cry_modes
+
+
+class OpensslAes265CbcPbkdf2:
+    def __init__(
+            self,
+            *,
+            iters: int = 10_000,
+    ) -> None:
+        super().__init__()
+        self._iters = iters
+
+    block_size = 16
+    key_length = 32
+    iv_length = 16
+    salt_length = 8
+    prefix = b'Salted__'
+
+    def _make_cipher(self, key: bytes, salt: bytes) -> 'cry_ciphs.Cipher':
+        dk = hashlib.pbkdf2_hmac(
+            'sha256',
+            key,
+            salt,
+            self._iters,
+            self.key_length + self.iv_length,
+        )
+
+        return cry_ciphs.Cipher(
+            cry_algs.AES256(dk[:self.key_length]),
+            cry_modes.CBC(dk[self.key_length:]),
+        )
+
+    def encrypt(self, data: bytes, key: bytes, *, salt: bytes | None = None) -> bytes:
+        if salt is None:
+            salt = secrets.token_bytes(self.salt_length)
+        else:
+            if len(salt) != self.salt_length:
+                raise Exception('bad salt length')
+
+        cipher = self._make_cipher(key, salt)
+
+        ct = encryptor.update(b"a secret message") + encryptor.finalize()
+
+    def decrypt(self, data: bytes, key: bytes) -> bytes:
+        if not data.startswith(self.prefix):
+            raise Exception('bad prefix')
+
+        salt = data[len(self.prefix):self.block_size]
+        cipher = self._make_cipher(key, salt)
+
+        decryptor = cipher.decryptor()
+        dec = decryptor.update(data[self.block_size:]) + decryptor.finalize()
+
+        last_byte = dec[-1]
+        if last_byte > self.block_size:
+            raise Exception('bad padding')
+
+        return dec[:-last_byte]
 
 
 @pytest.mark.parametrize('sec', [
