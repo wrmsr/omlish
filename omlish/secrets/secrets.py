@@ -1,6 +1,11 @@
+"""
+TODO:
+ - encryption? key in env + values in file?
+"""
 import abc
 import logging
 import os
+import sys
 import typing as ta
 
 from .. import dataclasses as dc
@@ -101,15 +106,38 @@ class LoggingSecrets(Secrets):
         self._child = child
         self._log = log if log is not None else globals()['log']
 
+    _IGNORE_PACKAGES: ta.ClassVar[ta.AbstractSet[str]] = {
+        __package__,
+    }
+
+    def _get_caller_str(self, n: int = 3) -> str:
+        l: list[str] = []
+        f = sys._getframe(2)  # noqa
+        while f is not None and len(l) < n:
+            gl = f.f_globals
+            try:
+                pkg = gl['__package__']
+            except KeyError:
+                pkg = None
+            else:
+                if pkg in self._IGNORE_PACKAGES:
+                    continue
+            if (fn := f.f_code.co_filename):
+                l.append(f'{fn}:{f.f_lineno}')
+            else:
+                l.append(pkg)
+        return ', '.join(l)
+
     def get(self, key: str) -> str:
-        self._log.info('Attempting to access secret: %s', key)
+        cs = self._get_caller_str()
+        self._log.info('Attempting to access secret: %s, %s', key, cs)
         try:
             ret = self._child.get(key)
         except KeyError:
-            self._log.info('Failed to access secret: %s', key)
+            self._log.info('Failed to access secret: %s, cs', key, cs)
             raise
         else:
-            self._log.info('Successfully accessed secret: %s', key)
+            self._log.info('Successfully accessed secret: %s, cs', key, cs)
             return ret
 
 
