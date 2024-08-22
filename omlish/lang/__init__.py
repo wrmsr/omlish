@@ -68,13 +68,6 @@ from .contextmanagers import (  # noqa
     maybe_managing,
 )
 
-from .datetimes import (  # noqa
-    months_ago,
-    parse_date,
-    parse_timedelta,
-    to_seconds,
-)
-
 from .descriptors import (  # noqa
     AccessForbiddenError,
     access_forbidden,
