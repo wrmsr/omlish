@@ -59,6 +59,10 @@ misc = [
     'wrapt',
 ]
 
+secrets = [
+    'cryptography',
+]
+
 server = [
     'h11',
     'h2',
