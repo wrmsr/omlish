@@ -114,6 +114,7 @@ class OpensslSubprocessCrypto(Crypto):
 
     def encrypt(self, data: bytes, key: bytes) -> bytes:
         with self._file_input(
+                # FIXME: !!!! https://docs.openssl.org/3.0/man7/passphrase-encoding/
                 # key.hex().upper().encode('ascii'),
                 key,
         ) as fi:
