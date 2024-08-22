@@ -97,15 +97,19 @@ class NotInstantiable(Abstract):
 class NotPicklable:
     __slots__ = ()
 
+    @ta.final
     def __reduce__(self) -> ta.NoReturn:
         raise TypeError
 
+    @ta.final
     def __reduce_ex__(self, protocol) -> ta.NoReturn:
         raise TypeError
 
+    @ta.final
     def __getstate__(self) -> ta.NoReturn:
         raise TypeError
 
+    @ta.final
     def __setstate__(self, state) -> ta.NoReturn:
         raise TypeError
 
