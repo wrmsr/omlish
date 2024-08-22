@@ -45,7 +45,7 @@ def bytes_to_int(bytestr: bytes) -> int:
 class Signer:
     @dc.dataclass(frozen=True)
     class Config:
-        secret_key: str | sec.Secret = dc.field()
+        secret_key: str | sec.SecretRef = dc.field()
         salt: str = 'cookie-session'
 
     def __init__(
