@@ -1,5 +1,6 @@
 import pickle
 
+import cloudpickle
 import pytest
 
 from .. import secrets as sec
@@ -10,6 +11,8 @@ def test_opaque():
     assert o.reveal() == 'foo'
     with pytest.raises(TypeError):
         pickle.dumps(o)
+    with pytest.raises(TypeError):
+        cloudpickle.dumps(o)
 
 
 def test_logging():
