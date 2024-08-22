@@ -54,7 +54,7 @@ class Crypto(abc.ABC):
 ##
 
 
-class OpensslShellCrypto(Crypto):
+class OpensslSubprocessCrypto(Crypto):
     def __init__(
             self,
             *,

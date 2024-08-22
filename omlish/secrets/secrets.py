@@ -6,6 +6,7 @@ import abc
 import logging
 import os
 import sys
+import types  # noqa
 import typing as ta
 
 from .. import dataclasses as dc
@@ -112,20 +113,21 @@ class LoggingSecrets(Secrets):
 
     def _get_caller_str(self, n: int = 3) -> str:
         l: list[str] = []
-        f = sys._getframe(2)  # noqa
+        f: types.FrameType | None = sys._getframe(2)  # noqa
         while f is not None and len(l) < n:
-            gl = f.f_globals
             try:
-                pkg = gl['__package__']
+                pkg = f.f_globals['__package__']
             except KeyError:
                 pkg = None
             else:
                 if pkg in self.IGNORE_PACKAGES:
+                    f = f.f_back
                     continue
             if (fn := f.f_code.co_filename):
                 l.append(f'{fn}:{f.f_lineno}')
             else:
                 l.append(pkg)
+            f = f.f_back
         return ', '.join(l)
 
     def get(self, key: str) -> str:
