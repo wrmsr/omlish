@@ -105,7 +105,10 @@ class CachingSecrets(Secrets):
         self._dct: dict[str, str] = {}
         self._ttl_s = ttl_s
         self._clock = clock
-        self._deque: ta.Deque[tuple[str, float]] = collections.deque()
+        self._deque: collections.deque[tuple[str, float]] = collections.deque()
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({{{", ".join(map(repr, self._dct.keys()))}}})'
 
     def evict(self) -> None:
         now = self._clock()

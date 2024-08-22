@@ -9,7 +9,7 @@ def test_logging():
 
 
 def test_cache_ttl():
-    cts = {}
+    cts: dict[str, int] = {}
 
     def f(k):
         cts[k] = cts.get(k, 0) + 1
@@ -41,3 +41,22 @@ def test_cache_ttl():
     now = 1.
     assert s.get('a') == 'a!'
     assert cts['a'] == 2
+    assert s.get('a') == 'a!'
+    assert cts['a'] == 2
+    assert s.get('b') == 'b!'
+    assert cts['b'] == 1
+    now = 1.89
+    assert s.get('c') == 'c!'
+    assert cts['c'] == 1
+    assert s.get('b') == 'b!'
+    assert cts['b'] == 2
+    now = 1.9
+    assert s.get('c') == 'c!'
+    assert cts['c'] == 2
+    assert s.get('b') == 'b!'
+    assert cts['b'] == 2
+    assert s.get('a') == 'a!'
+    assert cts['a'] == 2
+    now = 2.
+    assert s.get('a') == 'a!'
+    assert cts['a'] == 3
