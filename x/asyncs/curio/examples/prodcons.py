@@ -2,7 +2,7 @@
 #
 # Example of a producer/consumer setup with queues
 
-import curio
+from ... import curio
 
 
 async def producer(queue):

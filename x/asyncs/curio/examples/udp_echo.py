@@ -2,7 +2,7 @@
 #
 # An example of a simple UDP echo server.
 
-import curio
+from ... import curio
 
 from .. import socket
 

@@ -4,7 +4,7 @@
 
 import time
 
-import curio
+from ... import curio
 
 from .. import ssl
 

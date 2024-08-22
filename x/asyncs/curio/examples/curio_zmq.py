@@ -36,7 +36,7 @@ methods replaced by asynchronous versions:
 
 Here is an example of task that uses a ZMQ PUSH socket::
 
-    import curio_zmq as zmq
+    from . import curio_zmq as zmq
 
     async def pusher(address):
         ctx = zmq.Context()
@@ -51,7 +51,7 @@ Here is an example of task that uses a ZMQ PUSH socket::
 
 Here is an example of a Curio task that receives messages::
 
-    import curio_zmq as zmq
+    from . import curio_zmq as zmq
 
     async def puller(address):
         ctx = zmq.Context()

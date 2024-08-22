@@ -8,7 +8,7 @@
 import os
 import signal
 
-import curio
+from ... import curio
 
 
 signal_evt = curio.UniversalEvent()

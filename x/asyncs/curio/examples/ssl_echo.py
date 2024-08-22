@@ -2,7 +2,7 @@
 #
 # An example of a simple SSL echo server.   Use ssl_echo_client.py to test.
 
-import curio
+from ... import curio
 
 from .. import network
 from .. import ssl

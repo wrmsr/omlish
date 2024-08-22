@@ -2,7 +2,7 @@
 #
 # An example of a UDP echo client
 
-import curio
+from ... import curio
 
 
 async def main(addr):

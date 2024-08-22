@@ -1,6 +1,6 @@
 # zmq RPC client example. Requires zmq_rpcserv.py to be runnig
 
-import curio_zmq as zmq
+from . import curio_zmq as zmq
 from fibserve import fib
 
 from .. import sleep

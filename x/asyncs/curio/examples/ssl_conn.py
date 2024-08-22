@@ -1,6 +1,6 @@
 # Example of making an SSL connection and downloading data
 
-import curio
+from ... import curio
 
 
 async def main():

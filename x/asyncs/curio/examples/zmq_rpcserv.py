@@ -1,6 +1,6 @@
 # zmq rpc example.
 
-import curio_zmq as zmq
+from . import curio_zmq as zmq
 
 
 async def rpc_server(address):
