@@ -3,7 +3,7 @@ TODO:
  - encryption? key in env + values in file?
 """
 import abc
-import heapq
+import collections
 import logging
 import os
 import sys
@@ -105,16 +105,16 @@ class CachingSecrets(Secrets):
         self._dct: dict[str, str] = {}
         self._ttl_s = ttl_s
         self._clock = clock
-        self._ttl_heap: list[tuple[float, str]] = []
+        self._deque: ta.Deque[tuple[str, float]] = collections.deque()
 
     def evict(self) -> None:
         now = self._clock()
-        while self._ttl_heap:
-            dl, k = self._ttl_heap[0]
-            if now >= dl:
-                heapq.heappop(self._ttl_heap)
-            else:
+        while self._deque:
+            k, dl = self._deque[0]
+            if now < dl:
                 break
+            del self._dct[k]
+            self._deque.popleft()
 
     def get(self, key: str) -> str:
         self.evict()
@@ -126,7 +126,8 @@ class CachingSecrets(Secrets):
         self._dct[key] = out
         if self._ttl_s is not None:
             dl = self._clock() + self._ttl_s
-            heapq.heappush(self._ttl_heap, (dl, key))
+            self._deque.append((key, dl))
+        return out
 
 
 ##
